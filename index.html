@@ -2,66 +2,82 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>UCM Mandala Engine</title>
+  <title>UCM Mandala Engine v0.3</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <canvas id="viz"></canvas>
+
   <div class="overlay">
     <header>
-      <h1>UCM Mandala Engine</h1>
-      <p class="subtitle">八観を音で曼荼羅化する、自動生成コンセプト音源</p>
+      <h1>UCM Mandala Engine v0.3</h1>
+      <p class="subtitle">Concept Music Build · Eight Views Mixer</p>
     </header>
 
     <main>
-      <section class="controls">
-        <div class="control-row">
-          <button id="toggleBtn">Start Engine</button>
+      <section class="mixer">
+        <div class="row">
+          <button id="toggleBtn" class="btn-main">Start Engine</button>
+          <div class="mode-select">
+            <label for="mode">観 Mode</label>
+            <select id="mode">
+              <option value="void">Void 観</option>
+              <option value="wave">波 観</option>
+              <option value="body">体 観</option>
+              <option value="thought">思 観</option>
+              <option value="creation">創 観</option>
+              <option value="value">財 観</option>
+              <option value="observer">観察者 観</option>
+              <option value="circle">円 観</option>
+            </select>
+          </div>
         </div>
 
-        <div class="control-row">
-          <label for="mode">観モード</label>
-          <select id="mode">
-            <option value="void">Void 観</option>
-            <option value="wave">波 観</option>
-            <option value="body">体 観</option>
-            <option value="thought">思 観</option>
-            <option value="creation">創 観</option>
-            <option value="value">財 観</option>
-            <option value="observer">観察者 観</option>
-            <option value="circle">円 観</option>
-          </select>
+        <div class="row crossfader-row">
+          <span class="label-side">Ambient</span>
+          <div class="crossfader-wrap">
+            <label for="energy">Energy / Club</label>
+            <input id="energy" type="range" min="0" max="1" step="0.01" value="0.25">
+          </div>
+          <span class="label-side">Club</span>
         </div>
 
-        <div class="control-row">
-          <label for="depth">Pattern Depth
-            <span id="depthValue">2</span>
-          </label>
-          <input id="depth" type="range" min="1" max="4" step="1" value="2">
-        </div>
+        <div class="row knobs-row">
+          <div class="knob-block">
+            <div class="knob" data-target="depth">
+              <input id="depth" type="range" min="1" max="4" step="1" value="2">
+              <div class="knob-face">
+                <div class="knob-indicator"></div>
+              </div>
+            </div>
+            <span class="knob-label">Pattern Depth</span>
+          </div>
 
-        <div class="control-row">
-          <label for="intensity">Intensity
-            <span id="intensityValue">0.5</span>
-          </label>
-          <input id="intensity" type="range" min="0" max="1" step="0.01" value="0.5">
+          <div class="knob-block">
+            <div class="knob" data-target="intensity">
+              <input id="intensity" type="range" min="0" max="1" step="0.01" value="0.5">
+              <div class="knob-face">
+                <div class="knob-indicator"></div>
+              </div>
+            </div>
+            <span class="knob-label">Intensity</span>
+          </div>
         </div>
       </section>
 
       <section class="status">
-        <p id="statusText">Idle — “Start Engine” を押して生成開始。</p>
+        <p id="statusText">Idle — “Start Engine” を押すと生成開始。</p>
       </section>
 
       <section class="mode-desc">
         <h2 id="modeTitle">Void 観</h2>
         <p id="modeText">
-          ほぼ静寂。低いドローンがゆっくり揺れるだけの状態。すべての音の「前」の空気。
+          ほぼ静寂。低いドローンだけがわずかに揺れ、他の音はほとんど出てこない領域。
         </p>
       </section>
     </main>
   </div>
-
-  <canvas id="viz"></canvas>
 
   <script src="engine.js"></script>
 </body>
