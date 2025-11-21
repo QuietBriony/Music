@@ -1,6 +1,6 @@
 # UCM Mandala Engine — 音響曼荼羅OS（2026 β）
 総合芸術 × 自動音楽生成 × 観システム同期エンジン  
-Version: 0.9 (Markdown Spec Edition)
+Version: 1.0 (Markdown Spec Edition)
 
 ## 🎯 目的
 UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、  
