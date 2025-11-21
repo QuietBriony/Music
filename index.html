@@ -1,110 +1,31 @@
-<!-- index.html (Markdown version) -->
-<!-- UCM Mandala Engine – UI Structure only -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCM Mandala Engine — 音響曼荼羅OS</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UCM Mandala Engine</title>
 
-    <!-- Style -->
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Scripts -->
-    <script src="mandala_engine.js" defer></script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="engine.js" defer></script> <!-- ★ 修正 -->
 </head>
 
 <body>
 
-    <!-- 0. Language Switch -->
-    <div id="lang-switch">
-        <button data-lang="jp">JP</button>
-        <button data-lang="en" class="active">EN</button>
-    </div>
-
-    <!-- 1. Mandala Visual (background layers) -->
     <div id="mandala-container">
-        <img src="assets/background.svg" id="mandala-bg">
-
-        <!-- Dynamic layers -->
-        <div id="mandala-layers">
-            <!-- JS will inject:  mandala_layer_01.svg → mandala_layer_06.svg -->
-        </div>
+        <img src="assets/background.svg" id="mandala-bg" />
+        <div id="mandala-layers"></div>
     </div>
 
-    <!-- 2. Main UI Panel -->
     <div id="control-panel">
 
-        <!-- Static–Dynamic Fader -->
         <div class="fader-block">
-            <label class="fader-label" data-i18n="static_dynamic">静 ⇄ 動</label>
-            <input type="range" id="fader_energy" min="0" max="100" value="20">
+            <label>静 ⇄ 動</label>
+            <input type="range" id="fader_energy" min="0" max="100" value="20" />
         </div>
 
-        <!-- Eight-Observation Faders -->
-        <div id="obs-faders">
-
-            <div class="fader-block">
-                <label data-i18n="wave">波観</label>
-                <input type="range" id="fader_wave" min="0" max="100" value="40">
-            </div>
-
-            <div class="fader-block">
-                <label data-i18n="mind">思観</label>
-                <input type="range" id="fader_mind" min="0" max="100" value="50">
-            </div>
-
-            <div class="fader-block">
-                <label data-i18n="creation">創観</label>
-                <input type="range" id="fader_creation" min="0" max="100" value="50">
-            </div>
-
-            <div class="fader-block">
-                <label data-i18n="void">Void</label>
-                <input type="range" id="fader_void" min="0" max="100" value="30">
-            </div>
-
-            <div class="fader-block">
-                <label data-i18n="circle">円観</label>
-                <input type="range" id="fader_circle" min="0" max="100" value="50">
-            </div>
-
-            <div class="fader-block">
-                <label data-i18n="body">体観</label>
-                <input type="range" id="fader_body" min="0" max="100" value="40">
-            </div>
-
-            <div class="fader-block">
-                <label data-i18n="resource">財観</label>
-                <input type="range" id="fader_resource" min="0" max="100" value="60">
-            </div>
-
-            <div class="fader-block">
-                <label data-i18n="observer">観察者</label>
-                <input type="range" id="fader_observer" min="0" max="100" value="50">
-            </div>
-
-        </div>
-
-        <!-- 3. Auto Mode -->
-        <div id="auto-block">
-            <label data-i18n="auto_mode">AUTO CYCLE</label>
-            <input type="checkbox" id="auto_toggle">
-            <div id="auto_duration">
-                <label>1–10 min</label>
-                <input type="range" id="auto_cycle" min="1" max="10" value="3">
-            </div>
-        </div>
-
-        <!-- 4. Transport -->
-        <div id="transport">
-            <button id="btn_start" data-i18n="start">Start</button>
-            <button id="btn_stop" data-i18n="stop">Stop</button>
-        </div>
-
+        <button id="btn_start">Start</button>
+        <button id="btn_stop">Stop</button>
     </div>
 
 </body>
 </html>
-
