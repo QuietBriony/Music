@@ -2,21 +2,35 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Concept Music Build Engine</title>
+  <title>UCM Mandala Engine</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="overlay">
     <header>
-      <h1>Concept Music Build Engine</h1>
-      <p class="subtitle">UCM-2026β Deep Sync / Infinite Generative Audio</p>
+      <h1>UCM Mandala Engine</h1>
+      <p class="subtitle">八観を音で曼荼羅化する、自動生成コンセプト音源</p>
     </header>
 
     <main>
       <section class="controls">
         <div class="control-row">
           <button id="toggleBtn">Start Engine</button>
+        </div>
+
+        <div class="control-row">
+          <label for="mode">観モード</label>
+          <select id="mode">
+            <option value="void">Void 観</option>
+            <option value="wave">波 観</option>
+            <option value="body">体 観</option>
+            <option value="thought">思 観</option>
+            <option value="creation">創 観</option>
+            <option value="value">財 観</option>
+            <option value="observer">観察者 観</option>
+            <option value="circle">円 観</option>
+          </select>
         </div>
 
         <div class="control-row">
@@ -35,17 +49,13 @@
       </section>
 
       <section class="status">
-        <p id="statusText">Idle — click “Start Engine” to begin.</p>
+        <p id="statusText">Idle — “Start Engine” を押して生成開始。</p>
       </section>
 
-      <section class="explain">
-        <h2>About</h2>
-        <p>
-          This page runs a small Web Audio engine inspired by Aphex Twin / TidalCycles and your UCM-2026β concept.
-          Nothing is pre-rendered: all sound is synthesized and scheduled in the browser in real time.
-        </p>
-        <p>
-          Pattern depth increases structural complexity: more layers, more polymetric pulses, and deeper modulation.
+      <section class="mode-desc">
+        <h2 id="modeTitle">Void 観</h2>
+        <p id="modeText">
+          ほぼ静寂。低いドローンがゆっくり揺れるだけの状態。すべての音の「前」の空気。
         </p>
       </section>
     </main>
