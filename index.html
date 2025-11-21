@@ -3,49 +3,224 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>UCM Mandala Engine</title>
 
-    <!-- CSS -->
+    <!-- Style -->
     <link rel="stylesheet" href="style.css" />
 
-    <!-- 🔥 Tone.js (必須) -->
+    <!-- Tone.js -->
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
 
-    <!-- 🔥 Mandala Engine -->
+    <!-- Engine -->
     <script src="engine.js" defer></script>
 </head>
 
 <body>
 
-    <!-- ============================
-         MANDALA VISUAL LAYER
-    ============================== -->
+    <!-- 言語切替（見た目だけ先に用意：今はダミー） -->
+    <div id="lang-switch">
+        <button class="active" data-lang="jp">JP</button>
+        <button data-lang="en">EN</button>
+    </div>
+
+    <!-- 曼荼羅ビジュアル -->
     <div id="mandala-container">
         <img src="assets/background.svg" id="mandala-bg" />
         <div id="mandala-layers"></div>
     </div>
 
-    <!-- ============================
-         CONTROL PANEL
-    ============================== -->
-    <div id="control-panel">
+    <!-- UIラッパ（中央寄せパネル） -->
+    <div id="ui-shell">
 
-        <!-- Energy（静⇄動） -->
-        <div class="fader-block">
-            <label>静 ⇄ 動</label>
-            <input type="range" id="fader_energy" min="0" max="100" value="20" />
-        </div>
+        <!-- タイトル行 -->
+        <header id="ui-header">
+            <div>
+                <h1>UCM Mandala Engine</h1>
+                <p class="subtitle">観フェーダー × 自動生成サウンド（Ambient ⇄ Club）</p>
+            </div>
+            <div id="mode-indicator">
+                <span class="label">Mode</span>
+                <span id="mode-label">LIVE GENERATOR</span>
+            </div>
+        </header>
 
-        <!-- Start / Stop -->
-        <button id="btn_start">Start</button>
-        <button id="btn_stop">Stop</button>
+        <!-- コントロールエリア -->
+        <main id="control-panel">
 
-        <!-- Auto Cycle（あればここで追加可能） -->
-        <!--
-        <label><input type="checkbox" id="auto_toggle" /> Auto</label>
-        -->
+            <!-- 左：メインフェーダー（静⇄動） -->
+            <section id="energy-column">
+                <div class="fader-column">
+                    <div class="fader-title">ENERGY</div>
+                    <div class="fader-vertical">
+                        <span class="fader-min">静</span>
+                        <input type="range" id="fader_energy" min="0" max="100" value="40" />
+                        <span class="fader-max">動</span>
+                    </div>
+                    <div class="fader-value" id="energy-value">40</div>
+                </div>
+
+                <div id="bpm-indicator">
+                    <span class="label">Tempo</span>
+                    <span id="bpm-value">80 BPM</span>
+                </div>
+            </section>
+
+            <!-- 中央：観フェーダー群 -->
+            <section id="obs-grid">
+
+                <div class="fader-group">
+                    <div class="fader-label">波観</div>
+                    <div class="fader-vertical small">
+                        <span class="fader-min">Soft</span>
+                        <input type="range" id="fader_wave" min="0" max="100" value="40" />
+                        <span class="fader-max">Wild</span>
+                    </div>
+                </div>
+
+                <div class="fader-group">
+                    <div class="fader-label">思観</div>
+                    <div class="fader-vertical small">
+                        <span class="fader-min">Simple</span>
+                        <input type="range" id="fader_mind" min="0" max="100" value="50" />
+                        <span class="fader-max">Complex</span>
+                    </div>
+                </div>
+
+                <div class="fader-group">
+                    <div class="fader-label">創観</div>
+                    <div class="fader-vertical small">
+                        <span class="fader-min">Plain</span>
+                        <input type="range" id="fader_creation" min="0" max="100" value="50" />
+                        <span class="fader-max">Crazy</span>
+                    </div>
+                </div>
+
+                <div class="fader-group">
+                    <div class="fader-label">Void</div>
+                    <div class="fader-vertical small">
+                        <span class="fader-min">Full</span>
+                        <input type="range" id="fader_void" min="0" max="100" value="20" />
+                        <span class="fader-max">Empty</span>
+                    </div>
+                </div>
+
+                <div class="fader-group">
+                    <div class="fader-label">円観</div>
+                    <div class="fader-vertical small">
+                        <span class="fader-min">Edge</span>
+                        <input type="range" id="fader_circle" min="0" max="100" value="60" />
+                        <span class="fader-max">Smooth</span>
+                    </div>
+                </div>
+
+                <div class="fader-group">
+                    <div class="fader-label">体観</div>
+                    <div class="fader-vertical small">
+                        <span class="fader-min">Light</span>
+                        <input type="range" id="fader_body" min="0" max="100" value="50" />
+                        <span class="fader-max">Heavy</span>
+                    </div>
+                </div>
+
+                <div class="fader-group">
+                    <div class="fader-label">財観</div>
+                    <div class="fader-vertical small">
+                        <span class="fader-min">Sparse</span>
+                        <input type="range" id="fader_resource" min="0" max="100" value="60" />
+                        <span class="fader-max">Dense</span>
+                    </div>
+                </div>
+
+                <div class="fader-group">
+                    <div class="fader-label">観察者</div>
+                    <div class="fader-vertical small">
+                        <span class="fader-min">Near</span>
+                        <input type="range" id="fader_observer" min="0" max="100" value="50" />
+                        <span class="fader-max">Far</span>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- 右：Auto & Transport -->
+            <section id="right-column">
+
+                <!-- Auto -->
+                <div id="auto-block">
+                    <div class="auto-header">
+                        <span class="title">Auto Mix</span>
+                        <label class="switch">
+                            <input type="checkbox" id="auto_toggle" />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="auto-body">
+                        <span class="label">観サイクル</span>
+                        <input type="range" id="auto_cycle" min="1" max="10" value="3" />
+                        <span class="hint">1–10 min</span>
+                    </div>
+                </div>
+
+                <!-- Transport -->
+                <div id="transport">
+                    <button id="btn_start" class="primary">Start</button>
+                    <button id="btn_stop" class="ghost">Stop</button>
+                </div>
+
+                <!-- ステータス -->
+                <div id="status-line">
+                    <span id="status-text">Ready</span>
+                </div>
+
+            </section>
+
+        </main>
+
     </div>
+
+    <!-- UI の表示用だけの簡易スクリプト（BPMとStatus更新） -->
+    <script>
+        function uiMap(value, inMin, inMax, outMin, outMax) {
+            if (inMax === inMin) return outMin;
+            const t = (value - inMin) / (inMax - inMin);
+            return Math.round(outMin + t * (outMax - outMin));
+        }
+
+        function updateEnergyUI() {
+            const energySlider = document.getElementById("fader_energy");
+            const energyValue  = document.getElementById("energy-value");
+            const bpmValue     = document.getElementById("bpm-value");
+            if (!energySlider || !energyValue || !bpmValue) return;
+
+            const val = parseInt(energySlider.value, 10) || 0;
+            energyValue.textContent = val;
+            const bpm = uiMap(val, 0, 100, 48, 148);
+            bpmValue.textContent = bpm + " BPM";
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const energySlider = document.getElementById("fader_energy");
+            if (energySlider) {
+                energySlider.addEventListener("input", updateEnergyUI);
+                updateEnergyUI();
+            }
+
+            const btnStart = document.getElementById("btn_start");
+            const btnStop = document.getElementById("btn_stop");
+            const statusText = document.getElementById("status-text");
+
+            if (btnStart && statusText) {
+                btnStart.addEventListener("click", () => {
+                    statusText.textContent = "Playing…";
+                });
+            }
+            if (btnStop && statusText) {
+                btnStop.addEventListener("click", () => {
+                    statusText.textContent = "Stopped";
+                });
+            }
+        });
+    </script>
 
 </body>
 </html>
