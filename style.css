@@ -1,266 +1,237 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* ----------------------------------------------------
+   UCM Mandala Engine — style.css
+   青 × 白金 × 透明曼荼羅 × フェーダー優先UI
+   Version: 0.9
+---------------------------------------------------- */
 
-html, body {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
+/* ---------------------------
+   0. Global
+--------------------------- */
 
 body {
-  background: radial-gradient(circle at top, #020617 0%, #020617 40%, #000000 100%);
-  color: #e5e7eb;
+    margin: 0;
+    padding: 0;
+    background: radial-gradient(circle at center,
+        #0a1b2e 0%,
+        #081624 45%,
+        #050e18 100%);
+    font-family: 'Inter', 'Noto Sans JP', sans-serif;
+    color: #e6edf7;
+    overflow: hidden;
+    user-select: none;
 }
 
-#viz {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
+button, input {
+    font-family: inherit;
 }
 
-/* glass card */
-.overlay {
-  position: relative;
-  z-index: 2;
-  max-width: 980px;
-  margin: 1.6rem auto;
-  padding: 1.7rem 1.4rem 2.6rem;
-  background: rgba(15, 23, 42, 0.86);
-  border-radius: 1.75rem;
-  box-shadow: 0 26px 85px rgba(0,0,0,0.7);
-  border: 1px solid rgba(148, 163, 184, 0.55);
-  backdrop-filter: blur(18px);
+/* Language switch */
+#lang-switch {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 20;
 }
 
-header h1 {
-  font-size: 1.9rem;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.25rem;
+#lang-switch button {
+    background: rgba(255, 255, 255, 0.1);
+    color: #dfe8ff;
+    padding: 6px 12px;
+    border: 1px solid #4c78b7;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.25s;
 }
 
-.subtitle {
-  font-size: 0.86rem;
-  color: #9ca3af;
+#lang-switch button.active,
+#lang-switch button:hover {
+    background: rgba(90, 150, 255, 0.25);
+    border-color: #73a6ff;
 }
 
-main {
-  margin-top: 1.4rem;
+
+/* ---------------------------
+   1. Mandala Visual
+--------------------------- */
+
+#mandala-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    pointer-events: none;
 }
 
-/* mixer layout */
-.mixer {
-  display: flex;
-  flex-direction: column;
-  gap: 1.1rem;
-  margin-bottom: 1.1rem;
+#mandala-bg {
+    position: absolute;
+    width: 160%;
+    left: -30%;
+    top: -20%;
+    opacity: 0.22;
+    filter: blur(4px);
 }
 
-.row {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
+#mandala-layers img {
+    position: absolute;
+    width: 140%;
+    left: -20%;
+    top: -20%;
+    opacity: 0.25;
+    mix-blend-mode: screen;
+    animation: mandala-rotate 90s linear infinite;
 }
 
-.row.crossfader-row {
-  align-items: flex-end;
+@keyframes mandala-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
-.btn-main {
-  flex: 0 0 auto;
-  padding: 0.7rem 1.5rem;
-  border-radius: 9999px;
-  border: 1px solid rgba(196,181,253,0.9);
-  background: radial-gradient(circle at top left, #4c1d95, #1e293b);
-  color: #e5e7eb;
-  font-size: 0.96rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease, border-color 0.2s ease;
-  box-shadow: 0 11px 32px rgba(79,70,229,0.66);
+
+/* ---------------------------
+   2. Control Panel
+--------------------------- */
+
+#control-panel {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 900px;
+    padding: 20px 25px;
+    background: rgba(10, 20, 35, 0.40);
+    backdrop-filter: blur(14px) saturate(150%);
+    border: 1px solid rgba(180, 210, 255, 0.28);
+    border-radius: 20px;
+    box-shadow: 0px 0px 25px rgba(0, 120, 255, 0.15);
 }
 
-.btn-main:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 17px 46px rgba(79,70,229,0.9);
-  border-color: rgba(216,180,254,1);
+/* Fader blocks */
+.fader-block {
+    margin: 12px 0;
+    display: flex;
+    flex-direction: column;
 }
 
-.btn-main.running {
-  background: radial-gradient(circle at top left, #16a34a, #065f46);
-  box-shadow: 0 14px 40px rgba(22,163,74,0.9);
-  border-color: rgba(134,239,172,1);
+.fader-label {
+    margin-bottom: 6px;
+    font-size: 14px;
+    opacity: 0.85;
 }
 
-.mode-select {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.6rem;
-}
+/* ---------------------------
+   Fancy Faders
+--------------------------- */
 
-.mode-select label {
-  font-size: 0.9rem;
-  color: #cbd5f5;
-}
-
-.mode-select select {
-  flex: 0 0 170px;
-  padding: 0.4rem 0.7rem;
-  border-radius: 9999px;
-  border: 1px solid rgba(148, 163, 184, 0.9);
-  background: rgba(15, 23, 42, 0.95);
-  color: #e5e7eb;
-  font-size: 0.86rem;
-}
-
-/* crossfader */
-.label-side {
-  font-size: 0.76rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #9ca3af;
-}
-
-.crossfader-wrap {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.crossfader-wrap label {
-  font-size: 0.8rem;
-  color: #cbd5f5;
-  text-align: center;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-/* style sliders to feel like Urei fader */
 input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  background: transparent;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    outline: none;
+    transition: 0.2s;
 }
 
+/* Track */
 input[type="range"]::-webkit-slider-runnable-track {
-  height: 6px;
-  background: linear-gradient(to right, #0f172a, #1f2937);
-  border-radius: 9999px;
-  border: 1px solid rgba(148,163,184,0.9);
+    height: 6px;
+    background: linear-gradient(90deg,
+        #3a7bd5,
+        #348dfc,
+        #4eb3ff,
+        #3a7bd5);
+    border-radius: 6px;
 }
 
-input[type="range"]::-moz-range-track {
-  height: 6px;
-  background: linear-gradient(to right, #0f172a, #1f2937);
-  border-radius: 9999px;
-  border: 1px solid rgba(148,163,184,0.9);
-}
-
+/* Thumb */
 input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  margin-top: -5px;
-  width: 22px;
-  height: 16px;
-  border-radius: 8px;
-  background: radial-gradient(circle at top, #e5e7eb, #9ca3af);
-  box-shadow: 0 0 0 1px rgba(15,23,42,0.7), 0 6px 14px rgba(0,0,0,0.7);
-  cursor: pointer;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #f3f6ff;
+    border: 2px solid #5ea3ff;
+    border-radius: 50%;
+    margin-top: -5px;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
-input[type="range"]::-moz-range-thumb {
-  width: 22px;
-  height: 16px;
-  border-radius: 8px;
-  background: radial-gradient(circle at top, #e5e7eb, #9ca3af);
-  box-shadow: 0 0 0 1px rgba(15,23,42,0.7), 0 6px 14px rgba(0,0,0,0.7);
-  cursor: pointer;
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #ffffff;
+    border-color: #9cc6ff;
 }
 
-/* knobs */
-.knobs-row {
-  justify-content: center;
+
+/* ---------------------------
+   3. Observation Faders Grid
+--------------------------- */
+
+#obs-faders {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 26px;
 }
 
-.knob-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
+/* ---------------------------
+   4. Auto Mode
+--------------------------- */
+
+#auto-block {
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.15);
 }
 
-.knob {
-  position: relative;
-  width: 64px;
-  height: 64px;
+#auto_duration {
+    margin-top: 8px;
+    opacity: 0.85;
 }
 
-.knob input[type="range"] {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
+/* ---------------------------
+   5. Transport Buttons
+--------------------------- */
+
+#transport {
+    margin-top: 28px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
 }
 
-.knob-face {
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  background: radial-gradient(circle at 30% 20%, #f9fafb, #9ca3af 40%, #020617 75%);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.9), 0 0 0 2px rgba(15,23,42,0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+#transport button {
+    background: rgba(255,255,255,0.12);
+    color: #e8efff;
+    padding: 10px 22px;
+    border: 1px solid #6ea0e4;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.25s;
 }
 
-.knob-indicator {
-  width: 3px;
-  height: 18px;
-  border-radius: 9999px;
-  background: #111827;
-  transform-origin: bottom center;
-  transform: rotate(-135deg);
+#transport button:hover {
+    background: rgba(120,170,255,0.25);
+    border-color: #9ec3ff;
 }
 
-.knob-label {
-  font-size: 0.74rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #cbd5f5;
+/* ---------------------------
+   6. Responsive
+--------------------------- */
+
+@media (max-width: 600px) {
+    #obs-faders {
+        grid-template-columns: 1fr;
+    }
+
+    #control-panel {
+        width: 92%;
+        padding: 16px;
+    }
 }
 
-.status {
-  margin-bottom: 0.9rem;
-  font-size: 0.85rem;
-  color: #9ca3af;
-}
-
-.mode-desc h2 {
-  font-size: 1rem;
-  margin-bottom: 0.3rem;
-}
-
-.mode-desc p {
-  font-size: 0.85rem;
-  line-height: 1.6;
-  color: #e5e7eb;
-}
-
-/* responsive */
-@media (min-width: 768px) {
-  .overlay {
-    margin-top: 2.4rem;
-    padding: 2.1rem 2.2rem 3rem;
-  }
-
-  header h1 {
-    font-size: 2.05rem;
-  }
-}
