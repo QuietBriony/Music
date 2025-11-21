@@ -1,8 +1,9 @@
 /* =========================================================
-   UCM Mandala Engine v3.0 (Full)
-   Tone.js × Tidal風パターン × 観フェーダー同期 × 自動生成
-   - ファイル音源不要
-   - GitHub Pages 上で動作
+   UCM Mandala Engine v3.0 Lite
+   Tone.js × Tidal風 × 観フェーダー同期（軽量化版）
+   - Instruments削減
+   - FX簡略化
+   - スケジューリング最適化
 ========================================================= */
 
 /* --------------------
@@ -10,15 +11,15 @@
 -------------------- */
 
 const UCM = {
-  energy: 40,    // 静 ⇄ 動
-  wave: 40,      // リズム揺らぎ
-  mind: 50,      // 和声・テンション
-  creation: 50,  // サウンドデザイン
-  void: 20,      // 休符の多さ
-  circle: 60,    // 全体の滑らかさ
-  body: 50,      // 低域
-  resource: 60,  // 密度・情報量
-  observer: 50,  // 空間・リバーブ
+  energy:   40, // 静 ⇄ 動
+  wave:     40, // リズム揺らぎ
+  mind:     50, // 和声・テンション
+  creation: 50, // サウンド変化
+  void:     20, // 休符量
+  circle:   60, // 滑らかさ
+  body:     50, // 低域
+  resource: 60, // 密度
+  observer: 50, // 空間
 
   auto: {
     enabled: false,
@@ -27,7 +28,7 @@ const UCM = {
 };
 
 let initialized = false;
-let isPlaying  = false;
+let isPlaying   = false;
 
 /* =========================================================
    1. ヘルパー
@@ -40,7 +41,6 @@ function getSliderValue(id, fallback = 50) {
 }
 
 function updateFromUI() {
-  // UIが存在しない場合にも耐える
   UCM.energy   = getSliderValue("fader_energy",   UCM.energy);
   UCM.wave     = getSliderValue("fader_wave",     UCM.wave);
   UCM.mind     = getSliderValue("fader_mind",     UCM.mind);
@@ -65,91 +65,66 @@ function rand(prob) {
 }
 
 /* =========================================================
-   2. Tone.js グローバル構成
+   2. Tone.js 構成（軽量版）
 ========================================================= */
 
-// マスター処理
+// マスター処理（少なめ）
 const masterLimiter = new Tone.Limiter(-1).toDestination();
-const masterComp    = new Tone.Compressor(-18, 3).connect(masterLimiter);
-const masterGain    = new Tone.Gain(0.8).connect(masterComp);
+const masterGain    = new Tone.Gain(0.8).connect(masterLimiter);
 
-// FX センド
+// シンプルなリバーブ＆ディレイのみ
 const globalReverb = new Tone.Reverb({
-  decay: 8,
-  wet: 0.45
+  decay: 5,
+  wet: 0.3,
 }).connect(masterGain);
 
 const globalDelay = new Tone.PingPongDelay({
   delayTime: "8n",
-  feedback: 0.45,
-  wet: 0.25
-}).connect(masterGain);
-
-const textureReverb = new Tone.Reverb({
-  decay: 10,
-  wet: 0.7
+  feedback: 0.3,
+  wet: 0.2,
 }).connect(masterGain);
 
 // バス
-const drumBus    = new Tone.Gain(0.9).connect(globalReverb);
-const bassBus    = new Tone.Gain(0.8).connect(globalDelay);
-const padBus     = new Tone.Gain(0.9).connect(globalReverb);
-const textureBus = new Tone.Gain(0.4).connect(textureReverb);
+const drumBus = new Tone.Gain(0.9).connect(globalReverb);
+const padBus  = new Tone.Gain(0.9).connect(globalReverb);
+const bassBus = new Tone.Gain(0.8).connect(globalDelay);
 
-// ===== 楽器定義 =====
+// ===== 楽器（3+1に絞る） =====
 
-// Kick
+// Kick（ベーシック）
 const kick = new Tone.MembraneSynth({
   pitchDecay: 0.03,
-  octaves: 6,
+  octaves: 5,
   oscillator: { type: "sine" },
-  envelope: { attack: 0.001, decay: 0.4, sustain: 0 }
+  envelope: { attack: 0.001, decay: 0.35, sustain: 0 }
 }).connect(drumBus);
 
-// Snare
-const snare = new Tone.NoiseSynth({
-  noise: { type: "white" },
-  envelope: { attack: 0.004, decay: 0.2, sustain: 0 }
-}).connect(drumBus);
-
-// Hat
+// Hat（1台だけ）
 const hat = new Tone.MetalSynth({
   frequency: 300,
-  envelope: { attack: 0.001, decay: 0.07, release: 0.02 },
+  envelope: { attack: 0.001, decay: 0.05, release: 0.02 },
   harmonicity: 5,
-  modulationIndex: 40,
-  resonance: 3000
+  modulationIndex: 32,
+  resonance: 2500
 }).connect(drumBus);
 
-// Perc（クリックやリムショット的）
-const percFilter = new Tone.Filter(2500, "bandpass").connect(drumBus);
-const perc = new Tone.NoiseSynth({
-  noise: { type: "white" },
-  envelope: { attack: 0.001, decay: 0.1, sustain: 0 }
-}).connect(percFilter);
-
-// Bass
+// Bass（単純なMono）
 const bass = new Tone.MonoSynth({
-  oscillator: { type: "sawtooth" },
+  oscillator: { type: "square" },
   filter: { type: "lowpass", Q: 1 },
-  filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.4, baseFrequency: 100, octaves: 2 },
-  envelope: { attack: 0.005, decay: 0.3, sustain: 0.3, release: 0.6 }
+  filterEnvelope: {
+    attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.3,
+    baseFrequency: 80, octaves: 2
+  },
+  envelope: { attack: 0.005, decay: 0.25, sustain: 0.3, release: 0.4 }
 }).connect(bassBus);
 
-// Pad
-const padFilter = new Tone.Filter(1200, "lowpass").connect(padBus);
-const padReverb = new Tone.Reverb({ decay: 6, wet: 0.4 }).connect(padFilter);
-
+// Pad（PolySynth だけ残す）
+const padFilter = new Tone.Filter(1000, "lowpass").connect(padBus);
 const pad = new Tone.PolySynth(Tone.Synth, {
   oscillator: { type: "triangle" },
-  envelope: { attack: 1.5, decay: 0.8, sustain: 0.7, release: 4.0 }
-}).connect(padReverb);
-
-// Texture（空気の揺らぎ）
-const textureNoise = new Tone.Noise("pink").start();
-const textureFilter = new Tone.Filter(800, "lowpass").connect(textureBus);
-const textureGain   = new Tone.Gain(0.1).connect(textureFilter);
-textureNoise.connect(textureGain);
+  envelope: { attack: 1.2, decay: 0.7, sustain: 0.7, release: 3.5 }
+}).connect(padFilter);
 
 /* =========================================================
    3. パラメータ構造
@@ -157,90 +132,67 @@ textureNoise.connect(textureGain);
 
 const EngineParams = {
   bpm: 80,
-  stepCount: 16,
-  mode: "ambient", // ambient / lofi / techno / trance / dub
+  stepCount: 8,          // 16 → 8 にしてスケジューリング半減
+  mode: "ambient",
 
   kickProb: 0.7,
-  snareProb: 0.4,
-  hatProb: 0.7,
-  percProb: 0.3,
+  hatProb:  0.7,
   bassProb: 0.4,
-  padProb: 0.4,
+  padProb:  0.4,
   restProb: 0.2,
 
-  bassPattern: "x...x..x....x..x",
-  kickPattern: "x...x...x...x...",
-  snarePattern: "...x....x....x..",
-  hatPattern:   "x.x.x.x.x.x.x.x.",
-  padPattern:   "x...x...x...x..."
+  kickPattern: "x...x...",
+  hatPattern:  "x.x.x.x.",
+  bassPattern: "x...x..x",
+  padPattern:  "x...x..."
 };
 
-// スケール
 let currentScale = ["C4", "D4", "E4", "G4", "A4"];
 let bassRoot     = "C2";
 
+/* =========================================================
+   4. UCM → パラメータ変換（簡略チューン）
+========================================================= */
+
 function chooseMode() {
   const e = UCM.energy;
-  if (e < 20) return "deep-ambient";
-  if (e < 40) return "ambient";
-  if (e < 60) return "lofi";
-  if (e < 80) return "techno";
-  return "trance-dub";
+  if (e < 25) return "ambient";
+  if (e < 50) return "lofi";
+  if (e < 75) return "techno";
+  return "trance";
 }
-
-/* =========================================================
-   4. UCM → 音楽パラメータ
-========================================================= */
 
 function applyUCMToParams() {
   // BPM
-  EngineParams.bpm = Math.round(mapValue(UCM.energy, 0, 100, 48, 148));
+  EngineParams.bpm = Math.round(mapValue(UCM.energy, 0, 100, 50, 135));
   Tone.Transport.bpm.rampTo(EngineParams.bpm, 0.3);
 
-  // モード選択
+  // モード
   EngineParams.mode = chooseMode();
 
-  // 休符率（Void）
-  EngineParams.restProb = mapValue(UCM.void, 0, 100, 0.05, 0.65);
+  // 休符
+  EngineParams.restProb = mapValue(UCM.void, 0, 100, 0.05, 0.6);
 
   // ドラム密度
-  EngineParams.kickProb =
-    mapValue(UCM.body, 0, 100, 0.3, EngineParams.mode.includes("ambient") ? 0.7 : 0.98);
-  EngineParams.snareProb =
-    mapValue(UCM.wave, 0, 100, 0.1, EngineParams.mode === "lofi" ? 0.7 : 0.5);
-  EngineParams.hatProb =
-    mapValue(UCM.resource, 0, 100, 0.1, EngineParams.mode.includes("techno") ? 0.95 : 0.6);
-  EngineParams.percProb =
-    mapValue(UCM.creation, 0, 100, 0.0, 0.6);
+  EngineParams.kickProb = mapValue(UCM.body, 0, 100, 0.3, 0.95);
+  EngineParams.hatProb  = mapValue(UCM.resource, 0, 100, 0.2, 0.9);
 
-  // Bass・Pad
-  EngineParams.bassProb =
-    mapValue(UCM.body, 0, 100, 0.1, EngineParams.mode.includes("ambient") ? 0.3 : 0.8);
-  EngineParams.padProb =
-    mapValue(UCM.circle, 0, 100, 0.15, 0.8);
+  // Bass / Pad
+  EngineParams.bassProb = mapValue(UCM.body, 0, 100, 0.1, 0.7);
+  EngineParams.padProb  = mapValue(UCM.circle, 0, 100, 0.2, 0.8);
 
-  // フィルタ・リバーブ
-  const padCutoff = mapValue(UCM.observer, 0, 100, 500, 5000);
-  padFilter.frequency.rampTo(padCutoff, 1.0);
+  // リバーブ/ディレイ量を少しだけ動かす（軽量）
+  const reverbWet = mapValue(UCM.observer, 0, 100, 0.15, 0.5);
+  globalReverb.wet.rampTo(reverbWet, 1.5);
 
-  const reverbWet = mapValue(UCM.observer, 0, 100, 0.2, 0.9);
-  padReverb.wet.rampTo(reverbWet, 2.0);
-  globalReverb.wet.rampTo(reverbWet * 0.8, 2.0);
-
-  // Delay のウェットとフィードバック（トランス/ダブ寄りで強く）
-  const delayWet = EngineParams.mode.includes("trance") || EngineParams.mode.includes("dub")
-    ? mapValue(UCM.creation, 0, 100, 0.2, 0.6)
-    : mapValue(UCM.creation, 0, 100, 0.05, 0.3);
+  const delayWet = mapValue(UCM.creation, 0, 100, 0.05, 0.35);
   globalDelay.wet.rampTo(delayWet, 1.0);
 
-  const feedback = mapValue(UCM.wave, 0, 100, 0.25, 0.7);
-  globalDelay.feedback.rampTo(feedback, 1.0);
+  // Padのカットオフ
+  const cutoff = mapValue(UCM.observer, 0, 100, 400, 4000);
+  padFilter.frequency.rampTo(cutoff, 1.0);
 
-  // テクスチャの量（環境ノイズ）
-  const texGain = mapValue(UCM.circle, 0, 100, 0.05, 0.2);
-  textureGain.gain.rampTo(texGain, 2.0);
-
-  // スケール選択：mind / creation
+  // スケール
   const baseScale = ["C4", "D4", "E4", "G4", "A4"];
   const tensions  = ["B3", "B4", "D5", "F5"];
   if (UCM.mind > 60 || UCM.creation > 60) {
@@ -249,68 +201,53 @@ function applyUCMToParams() {
     currentScale = baseScale;
   }
 
-  // ルート音（mode によって若干変える）
-  if (EngineParams.mode === "lofi") {
-    bassRoot = "A1";
-  } else if (EngineParams.mode.includes("trance")) {
-    bassRoot = "D2";
-  } else if (EngineParams.mode.includes("techno")) {
-    bassRoot = "C2";
-  } else {
-    bassRoot = "F1";
+  // ルート
+  switch (EngineParams.mode) {
+    case "ambient": bassRoot = "F1"; break;
+    case "lofi":    bassRoot = "A1"; break;
+    case "techno":  bassRoot = "C2"; break;
+    case "trance":  bassRoot = "D2"; break;
   }
 
-  // パターン雛形（Tidal風）
   setPatternsByMode();
 }
 
 function setPatternsByMode() {
+  // シンプルに 8 ステップだけ切り替え
   switch (EngineParams.mode) {
-    case "deep-ambient":
-      EngineParams.kickPattern  = "................";
-      EngineParams.snarePattern = "................";
-      EngineParams.hatPattern   = "x...x...x...x...";
-      EngineParams.bassPattern  = "x...............";
-      EngineParams.padPattern   = "x...x...x...x...";
-      break;
     case "ambient":
-      EngineParams.kickPattern  = "x...............";
-      EngineParams.snarePattern = ".......x........";
-      EngineParams.hatPattern   = "x.x.x.x.x.x.x.x.";
-      EngineParams.bassPattern  = "x......x........";
-      EngineParams.padPattern   = "x...x...x...x...";
+      EngineParams.kickPattern = "x.......";
+      EngineParams.hatPattern  = "x.x.x.x.";
+      EngineParams.bassPattern = "x......x";
+      EngineParams.padPattern  = "x...x...";
       break;
     case "lofi":
-      EngineParams.kickPattern  = "x...x...x..x....";
-      EngineParams.snarePattern = "....x.......x...";
-      EngineParams.hatPattern   = "x.x.x.x.x.x.x.x.";
-      EngineParams.bassPattern  = "x...x...x...x...";
-      EngineParams.padPattern   = "x...x...x...x...";
+      EngineParams.kickPattern = "x...x..x";
+      EngineParams.hatPattern  = "x.x.x.x.";
+      EngineParams.bassPattern = "x...x...";
+      EngineParams.padPattern  = "x...x...";
       break;
     case "techno":
-      EngineParams.kickPattern  = "x...x...x...x...";
-      EngineParams.snarePattern = "....x.......x...";
-      EngineParams.hatPattern   = "x.x.x.x.x.x.x.x.";
-      EngineParams.bassPattern  = "x..x..x..x..x..x";
-      EngineParams.padPattern   = "x...x...x...x...";
+      EngineParams.kickPattern = "x.x.x.x.";
+      EngineParams.hatPattern  = "x.x.x.x.";
+      EngineParams.bassPattern = "x..x..x.";
+      EngineParams.padPattern  = "x...x...";
       break;
-    case "trance-dub":
+    case "trance":
     default:
-      EngineParams.kickPattern  = "x...x...x...x...";
-      EngineParams.snarePattern = "....x.......x...";
-      EngineParams.hatPattern   = "x.xxx.x.xxx.x.xx";
-      EngineParams.bassPattern  = "x..x..x..x..x..x";
-      EngineParams.padPattern   = "x...x...x...x...";
+      EngineParams.kickPattern = "x.x.x.x.";
+      EngineParams.hatPattern  = "xxxx.xxx";
+      EngineParams.bassPattern = "x..x..x.";
+      EngineParams.padPattern  = "x...x...";
       break;
   }
 }
 
 /* =========================================================
-   5. Tidal風ステップシーケンサ
+   5. ステップシーケンサ（8ステップ）
 ========================================================= */
 
 let stepIndex = 0;
-let barIndex  = 0;
 
 function patternAt(pattern, step) {
   if (!pattern || pattern.length === 0) return false;
@@ -326,7 +263,7 @@ function randomNoteFromScale() {
 function scheduleStep(time) {
   const step = stepIndex % EngineParams.stepCount;
 
-  // 休符チェック（Void）
+  // 休符判定
   const isRest = rand(EngineParams.restProb);
 
   if (!isRest) {
@@ -335,51 +272,25 @@ function scheduleStep(time) {
       kick.triggerAttackRelease("C2", "8n", time);
     }
 
-    // Snare
-    if (patternAt(EngineParams.snarePattern, step) && rand(EngineParams.snareProb)) {
-      snare.triggerAttackRelease("16n", time);
-    }
-
     // Hat
     if (patternAt(EngineParams.hatPattern, step) && rand(EngineParams.hatProb)) {
       hat.triggerAttackRelease("32n", time);
     }
 
-    // Perc（グリッチ要素）
-    if (rand(EngineParams.percProb) && (step % 3 === 0)) {
-      perc.triggerAttackRelease("32n", time);
-    }
-
     // Bass
     if (patternAt(EngineParams.bassPattern, step) && rand(EngineParams.bassProb)) {
-      const bassNote = bassRoot;
-      bass.triggerAttackRelease(bassNote, "8n", time);
+      bass.triggerAttackRelease(bassRoot, "8n", time);
     }
 
-    // Pad / メロ
+    // Pad（ゆっくり）
     if (patternAt(EngineParams.padPattern, step) && rand(EngineParams.padProb)) {
       const note = randomNoteFromScale();
-      const dur  = (EngineParams.mode.includes("ambient") || EngineParams.mode === "deep-ambient")
-        ? "2n"
-        : (rand(0.3) ? "2n" : "4n");
+      const dur  = EngineParams.mode === "ambient" ? "2n" : "4n";
       pad.triggerAttackRelease(note, dur, time);
     }
   }
 
   stepIndex++;
-
-  if (stepIndex % EngineParams.stepCount === 0) {
-    barIndex++;
-    // 数小節ごとにわずかに揺らぎ
-    if (barIndex % 8 === 0) {
-      smallDrift();
-    }
-  }
-}
-
-function smallDrift() {
-  // わずかに EngineParams をランダムウォークさせる（長時間聴いても飽きないように）
-  EngineParams.restProb = Math.min(0.8, Math.max(0.0, EngineParams.restProb + (Math.random() - 0.5) * 0.05));
 }
 
 /* =========================================================
@@ -428,11 +339,21 @@ function stopAutoCycle() {
 }
 
 /* =========================================================
-   7. UI バインド
+   7. UI バインド（throttle付き）
 ========================================================= */
 
+function throttle(fn, delay) {
+  let last = 0;
+  return (...args) => {
+    const now = performance.now();
+    if (now - last > delay) {
+      last = now;
+      fn(...args);
+    }
+  };
+}
+
 function attachUI() {
-  // フェーダー
   const ids = [
     "fader_energy",
     "fader_wave",
@@ -445,34 +366,37 @@ function attachUI() {
     "fader_observer"
   ];
 
+  const onSlide = throttle(updateFromUI, 30); // 30msごとに制限
+
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.addEventListener("input", () => {
-      updateFromUI();
-    });
+    el.addEventListener("input", onSlide);
   });
 
   const btnStart   = document.getElementById("btn_start");
   const btnStop    = document.getElementById("btn_stop");
   const autoToggle = document.getElementById("auto_toggle");
+  const statusText = document.getElementById("status-text");
+  const modeLabel  = document.getElementById("mode-label");
 
   if (btnStart) {
     btnStart.onclick = async () => {
       if (!initialized) {
-        await Tone.start();       // ブラウザ制約解除
+        await Tone.start();
         initialized = true;
 
-        // Transport にステップを登録
         Tone.Transport.scheduleRepeat((time) => {
           scheduleStep(time);
-        }, "16n");
+        }, "8n"); // 16n → 8n にして負荷軽減＋グルーヴ感維持
       }
       updateFromUI();
       if (!isPlaying) {
         Tone.Transport.start();
         isPlaying = true;
+        if (statusText) statusText.textContent = "Playing…";
       }
+      if (modeLabel) modeLabel.textContent = EngineParams.mode.toUpperCase();
     };
   }
 
@@ -480,6 +404,7 @@ function attachUI() {
     btnStop.onclick = () => {
       Tone.Transport.stop();
       isPlaying = false;
+      if (statusText) statusText.textContent = "Stopped";
     };
   }
 
@@ -498,5 +423,5 @@ function attachUI() {
 window.addEventListener("DOMContentLoaded", () => {
   attachUI();
   applyUCMToParams();
-  console.log("UCM Mandala Engine v3.0 (Full) ready");
+  console.log("UCM Mandala Engine v3.0 Lite ready");
 });
