@@ -250,36 +250,3 @@ document.getElementById("auto_toggle").onchange = (ev) => {
 ======================================================== */
 console.log("UCM Mandala Engine — JS Loaded");
 
-
-presets/ambient.json.md
-{
-  "name": "ambient",
-  "description": "Deep Ambient / Drone / Meditation / Home Atmosphere",
-  "ucm": {
-    "energy": 10,
-    "wave": 30,
-    "mind": 20,
-    "creation": 25,
-    "void": 60,
-    "circle": 70,
-    "body": 20,
-    "resource": 40,
-    "observer": 55
-  },
-  "audio": {
-    "tempo": 50,
-    "density": 0.08,
-    "brightness": 0.2,
-    "silenceRate": 0.35,
-    "bassWeight": 0.6,
-    "harmonicDeviation": 0.1,
-    "smoothing": 0.9
-  },
-  "patterns": {
-    "drone": true,
-    "droneLayers": 3,
-    "glitch": false,
-    "jazzStabs": false,
-    "percussion": false
-  }
-}
