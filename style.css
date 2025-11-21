@@ -1,0 +1,32 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: #222;
+    line-height: 1.7;
+}
+
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.2em;
+}
+
+h2 {
+    margin-top: 2em;
+}
+
+a {
+    color: #0070f3;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+footer {
+    margin-top: 4em;
+    color: #666;
+    font-size: 0.9rem;
+}
