@@ -1,84 +1,110 @@
+<!-- index.html (Markdown version) -->
+<!-- UCM Mandala Engine – UI Structure only -->
+
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>UCM Mandala Engine v0.3</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCM Mandala Engine — 音響曼荼羅OS</title>
+
+    <!-- Style -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Scripts -->
+    <script src="mandala_engine.js" defer></script>
 </head>
+
 <body>
-  <canvas id="viz"></canvas>
 
-  <div class="overlay">
-    <header>
-      <h1>UCM Mandala Engine v0.3</h1>
-      <p class="subtitle">Concept Music Build · Eight Views Mixer</p>
-    </header>
+    <!-- 0. Language Switch -->
+    <div id="lang-switch">
+        <button data-lang="jp">JP</button>
+        <button data-lang="en" class="active">EN</button>
+    </div>
 
-    <main>
-      <section class="mixer">
-        <div class="row">
-          <button id="toggleBtn" class="btn-main">Start Engine</button>
-          <div class="mode-select">
-            <label for="mode">観 Mode</label>
-            <select id="mode">
-              <option value="void">Void 観</option>
-              <option value="wave">波 観</option>
-              <option value="body">体 観</option>
-              <option value="thought">思 観</option>
-              <option value="creation">創 観</option>
-              <option value="value">財 観</option>
-              <option value="observer">観察者 観</option>
-              <option value="circle">円 観</option>
-            </select>
-          </div>
+    <!-- 1. Mandala Visual (background layers) -->
+    <div id="mandala-container">
+        <img src="assets/background.svg" id="mandala-bg">
+
+        <!-- Dynamic layers -->
+        <div id="mandala-layers">
+            <!-- JS will inject:  mandala_layer_01.svg → mandala_layer_06.svg -->
+        </div>
+    </div>
+
+    <!-- 2. Main UI Panel -->
+    <div id="control-panel">
+
+        <!-- Static–Dynamic Fader -->
+        <div class="fader-block">
+            <label class="fader-label" data-i18n="static_dynamic">静 ⇄ 動</label>
+            <input type="range" id="fader_energy" min="0" max="100" value="20">
         </div>
 
-        <div class="row crossfader-row">
-          <span class="label-side">Ambient</span>
-          <div class="crossfader-wrap">
-            <label for="energy">Energy / Club</label>
-            <input id="energy" type="range" min="0" max="1" step="0.01" value="0.25">
-          </div>
-          <span class="label-side">Club</span>
-        </div>
+        <!-- Eight-Observation Faders -->
+        <div id="obs-faders">
 
-        <div class="row knobs-row">
-          <div class="knob-block">
-            <div class="knob" data-target="depth">
-              <input id="depth" type="range" min="1" max="4" step="1" value="2">
-              <div class="knob-face">
-                <div class="knob-indicator"></div>
-              </div>
+            <div class="fader-block">
+                <label data-i18n="wave">波観</label>
+                <input type="range" id="fader_wave" min="0" max="100" value="40">
             </div>
-            <span class="knob-label">Pattern Depth</span>
-          </div>
 
-          <div class="knob-block">
-            <div class="knob" data-target="intensity">
-              <input id="intensity" type="range" min="0" max="1" step="0.01" value="0.5">
-              <div class="knob-face">
-                <div class="knob-indicator"></div>
-              </div>
+            <div class="fader-block">
+                <label data-i18n="mind">思観</label>
+                <input type="range" id="fader_mind" min="0" max="100" value="50">
             </div>
-            <span class="knob-label">Intensity</span>
-          </div>
+
+            <div class="fader-block">
+                <label data-i18n="creation">創観</label>
+                <input type="range" id="fader_creation" min="0" max="100" value="50">
+            </div>
+
+            <div class="fader-block">
+                <label data-i18n="void">Void</label>
+                <input type="range" id="fader_void" min="0" max="100" value="30">
+            </div>
+
+            <div class="fader-block">
+                <label data-i18n="circle">円観</label>
+                <input type="range" id="fader_circle" min="0" max="100" value="50">
+            </div>
+
+            <div class="fader-block">
+                <label data-i18n="body">体観</label>
+                <input type="range" id="fader_body" min="0" max="100" value="40">
+            </div>
+
+            <div class="fader-block">
+                <label data-i18n="resource">財観</label>
+                <input type="range" id="fader_resource" min="0" max="100" value="60">
+            </div>
+
+            <div class="fader-block">
+                <label data-i18n="observer">観察者</label>
+                <input type="range" id="fader_observer" min="0" max="100" value="50">
+            </div>
+
         </div>
-      </section>
 
-      <section class="status">
-        <p id="statusText">Idle — “Start Engine” を押すと生成開始。</p>
-      </section>
+        <!-- 3. Auto Mode -->
+        <div id="auto-block">
+            <label data-i18n="auto_mode">AUTO CYCLE</label>
+            <input type="checkbox" id="auto_toggle">
+            <div id="auto_duration">
+                <label>1–10 min</label>
+                <input type="range" id="auto_cycle" min="1" max="10" value="3">
+            </div>
+        </div>
 
-      <section class="mode-desc">
-        <h2 id="modeTitle">Void 観</h2>
-        <p id="modeText">
-          ほぼ静寂。低いドローンだけがわずかに揺れ、他の音はほとんど出てこない領域。
-        </p>
-      </section>
-    </main>
-  </div>
+        <!-- 4. Transport -->
+        <div id="transport">
+            <button id="btn_start" data-i18n="start">Start</button>
+            <button id="btn_stop" data-i18n="stop">Stop</button>
+        </div>
 
-  <script src="engine.js"></script>
+    </div>
+
 </body>
 </html>
+
