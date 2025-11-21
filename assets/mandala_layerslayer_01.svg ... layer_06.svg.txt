@@ -1,0 +1,160 @@
+# Mandala Layers — Specification  
+UCM Mandala Engine / Visual System  
+Version: 0.9 (SVG-ready spec)
+
+---
+
+## 🎨 概要
+曼荼羅レイヤーは **計6層**。  
+1〜6 の順に外側 → 中心へ向かって深くなる。
+
+- **Layer 1**：外周の大円・青グラデ  
+- **Layer 2**：三角分割（波観）  
+- **Layer 3**：矩形＋線分（思観）  
+- **Layer 4**：有機パターン（創観）  
+- **Layer 5**：点群（観察者観）  
+- **Layer 6**：中心の白金核（Meta-Self）
+
+全レイヤーは SVG 向け構造で、  
+JS で rotate / fade / blend を制御する前提。
+
+---
+
+## 🌀 レイヤー構造詳細
+
+### **Layer 1 — Outer Ring (体観 / 円観)**
+- 半径：ビューポートの 65〜70%
+- 塗り：radial-gradient(#0e2340 → #04101d)
+- ブレンド：overlay
+- 透明度：0.28
+- 役割：世界の“境界”を表す
+
+---
+
+### **Layer 2 — Triangle Field (波観)**
+- 16 または 24 の三角分割
+- 回転速度：90s / 360°
+- 線色：#5ca8ff（透明度 0.25）
+- ライン幅：1.2 px
+- 役割：周期・テンポ・周波数構造
+
+---
+
+### **Layer 3 — Rect + Cross-lines (思観)**
+- 薄い矩形グリッド（ずらし）
+- 斜線の交差パターン
+- ブレンド：screen
+- 透明度：0.22
+- 役割：構造・概念・理解の骨格
+
+---
+
+### **Layer 4 — Organic Curves (創観)**
+- 手書き風の有機曲線（上下非対称）
+- バスキア系の“揺れ線”
+- 色：#74c7ff / #aedaff（ランダム）
+- 透明度：0.28
+- 役割：偶然・創造・変容
+
+---
+
+### **Layer 5 — Particle Field (観察者観)**
+- 粒子数：40〜70
+- 粒径：1〜3 px
+- 色：白 → 青
+- ゆっくり浮遊（JSで動かす）
+- 透明度：0.4
+- 役割：観察者層の“注意の粒”
+
+---
+
+### **Layer 6 — Core Glyph (Meta-Self)**
+- 中心円（白金）
+- 半径：ビューポートの 10〜12%
+- 外縁の薄い光（#def3ff, 0.6）
+- ゆらぎ：1〜2px の拡大縮小（JSアニメ）
+- 役割：呼吸同期・全体整流
+
+---
+
+## 🔧 描画ルール（ZIP化後にSVG自動生成）
+
+### 1) JSで読み込んで挿入  
+- 各レイヤーは  
+  `assets/mandala_layers/layer_01.svg`  
+  のように保存
+
+### 2) Blend Mode 指定
+- 背景：opacity  
+- Layer 2-4：screen  
+- Layer 5：lighten  
+- Layer 6：normal (center)
+
+### 3) フレームレート
+- 30fps  
+- 回転は CPU 負荷抑えて CSS rotate による
+
+---
+
+## ✔ 意味論（UCM対応）
+
+| Layer | 観 | 意味 |
+|------|-----|------|
+| 1 | 体観・円観 | 世界の境界・呼吸の外円 |
+| 2 | 波観 | 周期・テンポ・揺らぎ |
+| 3 | 思観 | 構造・理解・言語 |
+| 4 | 创観 | 変容・生成・偶然 |
+| 5 | 観察者 | 注意・焦点・気配 |
+| 6 | Meta-Self | 中心・核・整流 |
+
+六層全体で **“音と意識の曼荼羅OS”** を描く。
+
+
+
+ui_icons.md
+# UI Icons — Specification  
+UCM Mandala Engine  
+Version 0.9
+
+---
+
+## アイコン一覧
+
+### 1. 言語切替  
+- 名前：lang_jp.svg / lang_en.svg  
+- 形状：丸枠＋JP / EN 文字  
+- 色：#dbe5ff  
+- サイズ：32×32 px  
+
+### 2. Start / Stop  
+- start.svg：▲（白金）  
+- stop.svg：■（白金）  
+- サイズ：36×36 px  
+
+### 3. Auto Cycle  
+- auto.svg：円形に三角が巡る記号  
+- 色：#a1c4ff  
+- サイズ：32×32 px  
+
+### 4. Fader handle  
+- handle.svg：白金の丸（影つき）  
+- サイズ：16×16 px  
+
+---
+
+## デザイン仕様
+
+### 線幅
+- 1.2 px  
+- 角はラウンド  
+- 発光は弱め（#90caff / 0.35）
+
+### カラー
+- ベース：#e3efff  
+- ライン：#8ebcff  
+- ハイライト：#bfe0ff  
+- 背景は透明
+
+### ファイル形式
+- すべて SVG  
+- ZIP 化時は `/assets/icons/` 配下に保存  
