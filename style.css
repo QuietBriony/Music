@@ -1,0 +1,573 @@
+/* =========================================
+   UCM Mandala Engine – UI Styling v1.0
+========================================= */
+
+/* ---------------------------
+   Global
+--------------------------- */
+
+:root {
+  --bg-deep: #040e18;
+  --bg-mid:  #081624;
+  --bg-light:#0b2440;
+  --accent:  #6fa8ff;
+  --accent-soft: #9cc6ff;
+  --text-main: #e6edf7;
+  --text-sub:  #9fb3d9;
+  --panel-bg: rgba(8, 18, 35, 0.72);
+  --panel-border: rgba(170, 200, 255, 0.45);
+  --shadow-soft: 0 0 30px rgba(0, 100, 255, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Noto Sans JP", sans-serif;
+  background: radial-gradient(circle at center,
+    var(--bg-light) 0%,
+    var(--bg-mid) 45%,
+    var(--bg-deep) 100%);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ---------------------------
+   Lang Switch
+--------------------------- */
+
+#lang-switch {
+  position: fixed;
+  top: 14px;
+  right: 18px;
+  display: flex;
+  gap: 8px;
+  z-index: 50;
+}
+
+#lang-switch button {
+  background: rgba(5, 15, 32, 0.7);
+  border: 1px solid rgba(140, 180, 255, 0.5);
+  color: var(--text-sub);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#lang-switch button.active,
+#lang-switch button:hover {
+  background: rgba(125, 170, 255, 0.4);
+  color: #f7fbff;
+}
+
+/* ---------------------------
+   Mandala Visual
+--------------------------- */
+
+#mandala-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#mandala-bg {
+  position: absolute;
+  inset: 0;
+  width: 160%;
+  left: -30%;
+  top: -25%;
+  opacity: 0.22;
+  filter: blur(4px);
+}
+
+#mandala-layers img {
+  position: absolute;
+  width: 140%;
+  left: -20%;
+  top: -20%;
+  opacity: 0.25;
+  mix-blend-mode: screen;
+  animation: mandala-rotate 90s linear infinite;
+}
+
+@keyframes mandala-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ---------------------------
+   UI Shell
+--------------------------- */
+
+#ui-shell {
+  position: absolute;
+  inset: auto 0 18px 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: auto; /* allow header/select interaction */
+}
+
+#control-panel {
+  width: min(1080px, 96vw);
+  background: var(--panel-bg);
+  border-radius: 20px;
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow-soft);
+  padding: 16px 18px 18px;
+  backdrop-filter: blur(18px) saturate(160%);
+  pointer-events: auto;
+}
+
+/* Header */
+
+#ui-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+#ui-header h1 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+#mode-indicator {
+  text-align: right;
+  font-size: 11px;
+}
+
+#mode-indicator .label {
+  display: block;
+  color: var(--text-sub);
+  margin-bottom: 2px;
+}
+
+#mode-label {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(130, 175, 255, 0.7);
+  background: radial-gradient(circle at top left,
+    rgba(130, 170, 255, 0.2),
+    rgba(5, 15, 32, 0.9));
+}
+
+/* ---------------------------
+   Layout Columns
+--------------------------- */
+
+#control-panel main,
+#control-panel #control-panel {
+  /* safety for old structure: we style by id */
+}
+
+#control-panel {
+  display: grid;
+  grid-template-columns: 1.1fr 2.1fr 1.0fr;
+  column-gap: 18px;
+}
+
+/* 左カラム：ENERGY ＋ BPM */
+
+#energy-column {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  padding-right: 8px;
+  border-right: 1px solid rgba(200, 220, 255, 0.16);
+}
+
+.fader-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fader-title {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  color: var(--accent-soft);
+}
+
+#bpm-indicator {
+  margin-top: 10px;
+  text-align: center;
+}
+
+#bpm-indicator .label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-sub);
+}
+
+#bpm-value {
+  font-size: 14px;
+}
+
+/* 中央カラム：観フェーダーグリッド */
+
+#obs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 10px;
+  padding: 0 8px;
+}
+
+.fader-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fader-label {
+  font-size: 11px;
+  margin-bottom: 4px;
+  color: var(--text-sub);
+}
+
+/* 右カラム：Auto & Transport */
+
+#right-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-left: 8px;
+  border-left: 1px solid rgba(200, 220, 255, 0.16);
+}
+
+/* ---------------------------
+   Vertical Faders
+--------------------------- */
+
+.fader-vertical {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 160px;
+  gap: 4px;
+}
+
+.fader-vertical.small {
+  height: 120px;
+}
+
+.fader-min,
+.fader-max {
+  font-size: 10px;
+  color: var(--text-sub);
+}
+
+.fader-value {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.fader-vertical input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 6px;
+  height: 100px;
+  writing-mode: bt-lr; /* Safari fallback */
+  transform: rotate(-90deg);
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* トラック */
+.fader-vertical input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    rgba(80, 140, 255, 0.25),
+    rgba(150, 200, 255, 0.9));
+}
+.fader-vertical input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg,
+    rgba(80, 140, 255, 0.25),
+    rgba(150, 200, 255, 0.9));
+}
+
+/* サム（つまみ） */
+.fader-vertical input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid rgba(120, 190, 255, 0.9);
+  background: #f5f8ff;
+  box-shadow: 0 0 10px rgba(120, 190, 255, 0.7);
+  margin-top: -5px;
+}
+.fader-vertical input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid rgba(120, 190, 255, 0.9);
+  background: #f5f8ff;
+  box-shadow: 0 0 10px rgba(120, 190, 255, 0.7);
+}
+
+/* ---------------------------
+   Auto Block
+--------------------------- */
+
+#auto-block {
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(140, 180, 255, 0.4);
+  background: radial-gradient(circle at top left,
+    rgba(120, 180, 255, 0.1),
+    rgba(3, 10, 24, 0.9));
+  margin-bottom: 10px;
+}
+
+.auto-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.auto-header .title {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auto-body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.auto-body .label {
+  color: var(--text-sub);
+}
+
+.auto-body input[type="range"] {
+  flex: 1;
+}
+
+/* Auto の range を横向きに普通に表示 */
+.auto-body input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  cursor: pointer;
+}
+.auto-body input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 2px solid var(--accent);
+  background: #f6f8ff;
+}
+.auto-body input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+}
+.auto-body input[type="range"]::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 2px solid var(--accent);
+  background: #f6f8ff;
+}
+
+.auto-body .hint {
+  font-size: 10px;
+  color: var(--text-sub);
+}
+
+/* スイッチ */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 18px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch .slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: rgba(120, 140, 180, 0.6);
+  border-radius: 999px;
+  transition: 0.2s;
+}
+
+.switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 2px;
+  bottom: 2px;
+  background-color: #f5f8ff;
+  border-radius: 999px;
+  transition: 0.2s;
+}
+
+.switch input:checked + .slider {
+  background-color: rgba(120, 190, 255, 0.8);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(16px);
+}
+
+/* ---------------------------
+   Transport
+--------------------------- */
+
+#transport {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+#transport button {
+  min-width: 80px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(140, 180, 255, 0.7);
+  background: rgba(5, 15, 32, 0.8);
+  color: var(--text-main);
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.18s;
+}
+
+#transport button.primary {
+  background: linear-gradient(
+    135deg,
+    rgba(120, 190, 255, 0.9),
+    rgba(90, 150, 255, 0.9)
+  );
+  border-color: rgba(150, 210, 255, 0.9);
+  color: #020712;
+}
+
+#transport button.ghost:hover {
+  background: rgba(18, 30, 55, 0.95);
+}
+
+/* ステータス */
+#status-line {
+  margin-top: 6px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--text-sub);
+}
+
+/* ---------------------------
+   Responsive
+--------------------------- */
+
+@media (max-width: 880px) {
+  #control-panel {
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+  }
+
+  #energy-column,
+  #right-column {
+    border: none;
+    padding: 0;
+  }
+
+  #obs-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  #ui-shell {
+    inset: auto 0 8px 0;
+  }
+}
+
+@media (max-width: 640px) {
+  #control-panel {
+    padding: 12px;
+  }
+
+  #obs-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #ui-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+
+/* Touch safety for mobile sliders/buttons */
+input[type="range"], button, select { touch-action: manipulation; }
+
+/* ---------------------------
+   Preset Block
+--------------------------- */
+
+#preset-block{
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(140, 180, 255, 0.4);
+  background: radial-gradient(circle at top left,
+    rgba(120, 180, 255, 0.08),
+    rgba(3, 10, 24, 0.92));
+  margin-bottom: 10px;
+}
+
+#preset_select{
+  width: 100%;
+  background: rgba(5, 15, 32, 0.7);
+  border: 1px solid rgba(140, 180, 255, 0.45);
+  color: var(--text-main);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+#btn_reload_presets{
+  min-width: unset;
+}
