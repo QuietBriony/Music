@@ -27,6 +27,14 @@ const UCM = {
   }
 };
 
+// --- Smoothing state (v1.3) ---
+// Sliders/presets write into UCM_TARGET.
+// Engine reads a smoothed UCM_CUR so visuals + audio don't jump.
+const UCM_TARGET = { energy: UCM.energy, wave: UCM.wave, mind: UCM.mind, creation: UCM.creation, void: UCM.void, circle: UCM.circle, body: UCM.body, resource: UCM.resource, observer: UCM.observer };
+const UCM_CUR    = { energy: UCM.energy, wave: UCM.wave, mind: UCM.mind, creation: UCM.creation, void: UCM.void, circle: UCM.circle, body: UCM.body, resource: UCM.resource, observer: UCM.observer };
+// seconds to reach target (larger = smoother)
+let UCM_SMOOTH_SEC = 1.6;
+
 let initialized = false;
 let isPlaying   = false;
 
@@ -41,15 +49,15 @@ function getSliderValue(id, fallback = 50) {
 }
 
 function updateFromUI() {
-  UCM.energy   = getSliderValue("fader_energy",   UCM.energy);
-  UCM.wave     = getSliderValue("fader_wave",     UCM.wave);
-  UCM.mind     = getSliderValue("fader_mind",     UCM.mind);
-  UCM.creation = getSliderValue("fader_creation", UCM.creation);
-  UCM.void     = getSliderValue("fader_void",     UCM.void);
-  UCM.circle   = getSliderValue("fader_circle",   UCM.circle);
-  UCM.body     = getSliderValue("fader_body",     UCM.body);
-  UCM.resource = getSliderValue("fader_resource", UCM.resource);
-  UCM.observer = getSliderValue("fader_observer", UCM.observer);
+  UCM_TARGET.energy = getSliderValue("fader_energy", UCM_TARGET.energy);
+  UCM_TARGET.wave = getSliderValue("fader_wave", UCM_TARGET.wave);
+  UCM_TARGET.mind = getSliderValue("fader_mind", UCM_TARGET.mind);
+  UCM_TARGET.creation = getSliderValue("fader_creation", UCM_TARGET.creation);
+  UCM_TARGET.void = getSliderValue("fader_void", UCM_TARGET.void);
+  UCM_TARGET.circle = getSliderValue("fader_circle", UCM_TARGET.circle);
+  UCM_TARGET.body = getSliderValue("fader_body", UCM_TARGET.body);
+  UCM_TARGET.resource = getSliderValue("fader_resource", UCM_TARGET.resource);
+  UCM_TARGET.observer = getSliderValue("fader_observer", UCM_TARGET.observer);
 
   applyUCMToParams();
 }
@@ -250,6 +258,14 @@ function applyPresetToEngineParams(preset){
   if (preset.delayWet != null){
     globalDelay.wet.rampTo(clamp01(preset.delayWet), 0.6);
   }
+
+  // smoothing (0..1): higher = smoother/longer reaction
+  if (typeof audio.smoothing === "number") {
+    const s = clamp01(audio.smoothing);
+    // 0.35..2.4 sec
+    UCM_SMOOTH_SEC = 0.35 + s * 2.05;
+  }
+
 }
 
 
@@ -296,6 +312,70 @@ function resolveMode(){
   return chooseMode();
 }
 
+
+let lastMode = null;
+
+// Mode-specific sound personality (v1.3)
+function updateSoundForMode(mode){
+  // Keep changes gentle; use .set and ramp where possible
+  try{
+    if(mode==="ambient"){
+      pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.8, decay:1.0, sustain:0.8, release:5.5} });
+      padFilter.frequency.rampTo(800, 1.2);
+      globalReverb.decay = 7.5;
+      globalReverb.wet.rampTo(0.42, 1.2);
+      globalDelay.wet.rampTo(0.10, 1.2);
+      bass.set({ oscillator:{type:"triangle"}, envelope:{attack:0.02, decay:0.35, sustain:0.25, release:1.2} });
+    }else if(mode==="lofi"){
+      pad.set({ oscillator:{type:"triangle"}, envelope:{attack:1.0, decay:0.8, sustain:0.7, release:4.2} });
+      padFilter.frequency.rampTo(1200, 1.0);
+      globalReverb.decay = 5.5;
+      globalReverb.wet.rampTo(0.28, 1.0);
+      globalDelay.wet.rampTo(0.18, 1.0);
+      bass.set({ oscillator:{type:"square"}, filterEnvelope:{baseFrequency:70, octaves:2.2} });
+    }else if(mode==="dub"){
+      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.9, decay:0.6, sustain:0.6, release:3.6} });
+      padFilter.frequency.rampTo(1400, 0.9);
+      globalReverb.decay = 6.2;
+      globalReverb.wet.rampTo(0.34, 0.9);
+      globalDelay.delayTime = "4n.";
+      globalDelay.feedback.rampTo(0.55, 0.8);
+      globalDelay.wet.rampTo(0.32, 0.8);
+      bass.set({ oscillator:{type:"square"}, filter:{Q:1.2}, filterEnvelope:{baseFrequency:65, octaves:2.6} });
+    }else if(mode==="jazz"){
+      pad.set({ oscillator:{type:"triangle"}, envelope:{attack:0.8, decay:0.7, sustain:0.65, release:3.8} });
+      padFilter.frequency.rampTo(1600, 0.9);
+      globalReverb.decay = 4.8;
+      globalReverb.wet.rampTo(0.22, 0.9);
+      globalDelay.wet.rampTo(0.14, 0.9);
+      bass.set({ oscillator:{type:"triangle"}, filterEnvelope:{baseFrequency:80, octaves:2.0} });
+    }else if(mode==="techno"){
+      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.7, decay:0.5, sustain:0.55, release:2.8} });
+      padFilter.frequency.rampTo(2200, 0.7);
+      globalReverb.decay = 4.2;
+      globalReverb.wet.rampTo(0.18, 0.7);
+      globalDelay.delayTime = "8n";
+      globalDelay.feedback.rampTo(0.28, 0.7);
+      globalDelay.wet.rampTo(0.16, 0.7);
+      bass.set({ oscillator:{type:"sawtooth"}, filter:{Q:2.2}, filterEnvelope:{baseFrequency:55, octaves:3.3}, envelope:{attack:0.005, decay:0.18, sustain:0.2, release:0.25} });
+    }else if(mode==="trance"){
+      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.9, decay:0.6, sustain:0.7, release:4.6} });
+      padFilter.frequency.rampTo(2600, 0.9);
+      globalReverb.decay = 6.8;
+      globalReverb.wet.rampTo(0.30, 0.9);
+      globalDelay.delayTime = "8n.";
+      globalDelay.feedback.rampTo(0.34, 0.9);
+      globalDelay.wet.rampTo(0.22, 0.9);
+      bass.set({ oscillator:{type:"square"}, filter:{Q:1.8}, filterEnvelope:{baseFrequency:60, octaves:3.0} });
+    }else{
+      // fallback
+      globalReverb.wet.rampTo(0.26, 1.0);
+      globalDelay.wet.rampTo(0.18, 1.0);
+    }
+  }catch(e){
+    console.warn("updateSoundForMode failed", e);
+  }
+}
 let bassRoot     = "C2";
 
 /* =========================================================
@@ -303,7 +383,7 @@ let bassRoot     = "C2";
 ========================================================= */
 
 function chooseMode() {
-  const e = UCM.energy;
+  const e = UCM_CUR.energy;
   if (e < 25) return "ambient";
   if (e < 50) return "lofi";
   if (e < 75) return "techno";
@@ -312,38 +392,52 @@ function chooseMode() {
 
 function applyUCMToParams() {
   // BPM
-  EngineParams.bpm = Math.round(mapValue(UCM.energy, 0, 100, 50, 135));
-  Tone.Transport.bpm.rampTo(EngineParams.bpm, 0.3);
+  EngineParams.bpm = Math.round(mapValue(UCM_CUR.energy, 0, 100, 50, 135));
+  Tone.Transport.bpm.rampTo(EngineParams.bpm, 1.2);
 
   // モード
-  EngineParams.mode = resolveMode();
+  const newMode = resolveMode();
+  if (EngineParams.mode !== newMode){
+    EngineParams.mode = newMode;
+  } else {
+    EngineParams.mode = newMode;
+  }
+
+  // mode-change hooks (patterns + sound)
+  if (lastMode !== EngineParams.mode){
+    lastMode = EngineParams.mode;
+    setPatternsByMode();
+    updateSoundForMode(EngineParams.mode);
+    const modeLabel = document.getElementById("mode-label");
+    if (modeLabel) modeLabel.textContent = EngineParams.mode.toUpperCase();
+  }
 
   // 休符
-  EngineParams.restProb = mapValue(UCM.void, 0, 100, 0.05, 0.6);
+  EngineParams.restProb = mapValue(UCM_CUR.void, 0, 100, 0.05, 0.6);
 
   // ドラム密度
-  EngineParams.kickProb = mapValue(UCM.body, 0, 100, 0.3, 0.95);
-  EngineParams.hatProb  = mapValue(UCM.resource, 0, 100, 0.2, 0.9);
+  EngineParams.kickProb = mapValue(UCM_CUR.body, 0, 100, 0.3, 0.95);
+  EngineParams.hatProb  = mapValue(UCM_CUR.resource, 0, 100, 0.2, 0.9);
 
   // Bass / Pad
-  EngineParams.bassProb = mapValue(UCM.body, 0, 100, 0.1, 0.7);
-  EngineParams.padProb  = mapValue(UCM.circle, 0, 100, 0.2, 0.8);
+  EngineParams.bassProb = mapValue(UCM_CUR.body, 0, 100, 0.1, 0.7);
+  EngineParams.padProb  = mapValue(UCM_CUR.circle, 0, 100, 0.2, 0.8);
 
   // リバーブ/ディレイ量を少しだけ動かす（軽量）
-  const reverbWet = mapValue(UCM.observer, 0, 100, 0.15, 0.5);
+  const reverbWet = mapValue(UCM_CUR.observer, 0, 100, 0.15, 0.5);
   globalReverb.wet.rampTo(reverbWet, 1.5);
 
-  const delayWet = mapValue(UCM.creation, 0, 100, 0.05, 0.35);
+  const delayWet = mapValue(UCM_CUR.creation, 0, 100, 0.05, 0.35);
   globalDelay.wet.rampTo(delayWet, 1.0);
 
   // Padのカットオフ
-  const cutoff = mapValue(UCM.observer, 0, 100, 400, 4000);
+  const cutoff = mapValue(UCM_CUR.observer, 0, 100, 400, 4000);
   padFilter.frequency.rampTo(cutoff, 1.0);
 
   // スケール
   const baseScale = ["C4", "D4", "E4", "G4", "A4"];
   const tensions  = ["B3", "B4", "D5", "F5"];
-  if (UCM.mind > 60 || UCM.creation > 60) {
+  if (UCM_CUR.mind > 60 || UCM_CUR.creation > 60) {
     currentScale = baseScale.concat(tensions);
   } else {
     currentScale = baseScale;
@@ -380,31 +474,57 @@ function updateUIFromParams(){
 }
 
 function setPatternsByMode() {
-  // シンプルに 8 ステップだけ切り替え
+  // Distinct patterns per mode (v1.3). We use 16 steps for feel.
+  EngineParams.stepCount = 16;
+
   switch (EngineParams.mode) {
     case "ambient":
-      EngineParams.kickPattern = "x.......";
+      EngineParams.kickPattern = "................";
+      EngineParams.hatPattern  = "....x.......x...";
+      EngineParams.bassPattern = "x...............";
+      EngineParams.padPattern  = "x.......x.......";
+      break;
+
+    case "lofi":
+      EngineParams.kickPattern = "x...x.....x...x..";
+      EngineParams.hatPattern  = "..x...x...x...x...";
+      EngineParams.bassPattern = "x.......x...x.....";
+      EngineParams.padPattern  = "x.......x.......x.";
+      break;
+
+    case "dub":
+      EngineParams.kickPattern = "x.......x.......";
+      EngineParams.hatPattern  = "....x...x...x...x";
+      EngineParams.bassPattern = "x...x.......x...x";
+      EngineParams.padPattern  = "....x.......x....";
+      break;
+
+    case "jazz":
+      EngineParams.kickPattern = "x.....x...x......";
+      EngineParams.hatPattern  = "..x.x...x.x...x.x.";
+      EngineParams.bassPattern = "x...x...x...x...x.";
+      EngineParams.padPattern  = "x.......x...x.....";
+      break;
+
+    case "techno":
+      EngineParams.kickPattern = "x...x...x...x...";
+      EngineParams.hatPattern  = "..x...x...x...x...";
+      EngineParams.bassPattern = "x.x...x.x...x.x...";
+      EngineParams.padPattern  = "....x.......x....";
+      break;
+
+    case "trance":
+      EngineParams.kickPattern = "x...x...x...x...";
+      EngineParams.hatPattern  = "....x.......x....";
+      EngineParams.bassPattern = "x...x...x...x...";
+      EngineParams.padPattern  = "x.......x.......x";
+      break;
+
+    default:
+      EngineParams.stepCount = 8;
+      EngineParams.kickPattern = "x...x...";
       EngineParams.hatPattern  = "x.x.x.x.";
       EngineParams.bassPattern = "x......x";
-      EngineParams.padPattern  = "x...x...";
-      break;
-    case "lofi":
-      EngineParams.kickPattern = "x...x..x";
-      EngineParams.hatPattern  = "x.x.x.x.";
-      EngineParams.bassPattern = "x...x...";
-      EngineParams.padPattern  = "x...x...";
-      break;
-    case "techno":
-      EngineParams.kickPattern = "x.x.x.x.";
-      EngineParams.hatPattern  = "x.x.x.x.";
-      EngineParams.bassPattern = "x..x..x.";
-      EngineParams.padPattern  = "x...x...";
-      break;
-    case "trance":
-    default:
-      EngineParams.kickPattern = "x.x.x.x.";
-      EngineParams.hatPattern  = "xxxx.xxx";
-      EngineParams.bassPattern = "x..x..x.";
       EngineParams.padPattern  = "x...x...";
       break;
   }
@@ -615,8 +735,36 @@ function attachUI() {
 window.addEventListener("DOMContentLoaded", () => {
   mountMandalaLayers();
   attachUI();
-  loadPresets().finally(()=>{ applyUCMToParams(); });
-  console.log("UCM Mandala Engine v3.0 Lite ready");
+  loadPresets().finally(()=>{ 
+    // prime
+    applyUCMToParams(); 
+  });
+
+  // Smooth loop: UCM_TARGET -> UCM_CUR -> params (v1.3)
+  let lastT = performance.now();
+  function smoothTick(t){
+    const dt = Math.max(0.001, (t - lastT) / 1000);
+    lastT = t;
+    const a = 1 - Math.exp(-dt / UCM_SMOOTH_SEC);
+
+    // Smooth all UCM dimensions
+    const keys = ["energy","wave","mind","creation","void","circle","body","resource","observer"];
+    for(const k of keys){
+      UCM_CUR[k] = UCM_CUR[k] + (UCM_TARGET[k] - UCM_CUR[k]) * a;
+      // keep the legacy UCM mirror updated for UI text
+      UCM[k] = Math.round(UCM_CUR[k]);
+    }
+
+    // Apply to audio/engine (uses UCM_CUR internally)
+    if (typeof Tone !== "undefined" && Tone && Tone.Transport){
+      try{ applyUCMToParams(); }catch(e){}
+    }
+
+    requestAnimationFrame(smoothTick);
+  }
+  requestAnimationFrame(smoothTick);
+
+  console.log("UCM Mandala Engine v3.1 (v1.3 smoothing) ready");
 });
 
 /* =========================================================
