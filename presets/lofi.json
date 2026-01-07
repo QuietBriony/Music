@@ -1,0 +1,30 @@
+{
+  "name": "lofi",
+  "description": "Lofi HipHop / Nujabes style / Chillhop / Night Street Jazz",
+  "ucm": {
+    "energy": 35,
+    "wave": 50,
+    "mind": 40,
+    "creation": 35,
+    "void": 25,
+    "circle": 65,
+    "body": 30,
+    "resource": 50,
+    "observer": 55
+  },
+  "audio": {
+    "tempo": 72,
+    "density": 0.18,
+    "brightness": 0.35,
+    "silenceRate": 0.18,
+    "bassWeight": 0.9,
+    "harmonicDeviation": 0.25,
+    "smoothing": 0.75
+  },
+  "patterns": {
+    "drone": false,
+    "jazzStabs": true,
+    "glitch": false,
+    "percussion": true
+  }
+}

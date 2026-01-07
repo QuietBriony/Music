@@ -161,6 +161,36 @@ const PresetManager = {
   selected: "__auto__",
 };
 
+
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+
+// Apply preset.ucm -> UCM + UI sliders (so faders actually move + logic follows).
+function applyPresetUCM(preset){
+  const u = preset && preset.ucm;
+  if (!u || typeof u !== "object") return;
+
+  const map = {
+    energy: "fader_energy",
+    wave: "fader_wave",
+    mind: "fader_mind",
+    creation: "fader_creation",
+    void: "fader_void",
+    circle: "fader_circle",
+    body: "fader_body",
+    resource: "fader_resource",
+    observer: "fader_observer"
+  };
+
+  for (const k of Object.keys(map)){
+    if (typeof u[k] !== "number") continue;
+    const v = Math.max(0, Math.min(100, Math.round(u[k])));
+    if (k in UCM) UCM[k] = v;
+
+    const el = document.getElementById(map[k]);
+    if (el) el.value = String(v);
+  }
+}
+
 async function fetchJson(path){
   const res = await fetch(path, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status}`);
@@ -168,47 +198,60 @@ async function fetchJson(path){
 }
 
 // Normalize preset into EngineParams-compatible fields (best-effort).
+// Normalize preset into EngineParams-compatible fields (schema-aware).
 function applyPresetToEngineParams(preset){
   if (!preset || typeof preset !== "object") return;
 
-  // bpm
-  if (typeof preset.bpm === "number") EngineParams.bpm = preset.bpm;
-  if (preset.bpmRange && typeof preset.bpmRange.min === "number" && typeof preset.bpmRange.max === "number"){
-    EngineParams.bpm = Math.round(mapValue(UCM.energy, 0, 100, preset.bpmRange.min, preset.bpmRange.max));
-  }
+  // v1 schema: { audio:{tempo,density,brightness,silenceRate,bassWeight...}, patterns:{percussion,glitch,drone...}, ucm:{...} }
+  const audio = preset.audio || {};
+  const flags = preset.patterns || {};
+
+  // tempo -> bpm
+  if (typeof audio.tempo === "number") EngineParams.bpm = Math.round(audio.tempo);
+  if (typeof preset.bpm === "number") EngineParams.bpm = Math.round(preset.bpm);
+
+  // density / brightness / silence
+  const density = (typeof audio.density === "number") ? clamp01(audio.density) : 0.5;
+  const bright  = (typeof audio.brightness === "number") ? clamp01(audio.brightness) : 0.5;
+  const silence = (typeof audio.silenceRate === "number") ? clamp01(audio.silenceRate) : (typeof preset.restProb === "number" ? clamp01(preset.restProb) : 0.12);
+  const bassW   = (typeof audio.bassWeight === "number") ? audio.bassWeight : 1.0;
+
+  // kick/hat/bass/pad probabilities (best effort, but deterministic)
+  const percussionBoost = flags.percussion ? 0.10 : 0.0;
+  const glitchBoost     = flags.glitch ? 0.05 : 0.0;
+  const droneBoost      = flags.drone ? 0.22 : 0.0;
+
+  EngineParams.kickProb = clamp01(0.35 + density*0.45 + percussionBoost);
+  EngineParams.hatProb  = clamp01(0.22 + density*0.55 + bright*0.18 + glitchBoost);
+  EngineParams.bassProb = clamp01(0.18 + density*0.42 + (bassW-1.0)*0.15);
+  EngineParams.padProb  = clamp01(0.10 + (1-density)*0.18 + droneBoost);
+
+  EngineParams.restProb = clamp01(Math.min(0.6, silence));
+
+  // If preset explicitly carries EngineParams-like fields, let them override.
+  if (typeof preset.kickProb === "number") EngineParams.kickProb = clamp01(preset.kickProb);
+  if (typeof preset.hatProb  === "number") EngineParams.hatProb  = clamp01(preset.hatProb);
+  if (typeof preset.bassProb === "number") EngineParams.bassProb = clamp01(preset.bassProb);
+  if (typeof preset.padProb  === "number") EngineParams.padProb  = clamp01(preset.padProb);
 
   if (typeof preset.stepCount === "number") EngineParams.stepCount = preset.stepCount;
 
-  // patterns
-  const pat = preset.patterns || preset;
+  // patterns strings override (optional advanced schema)
+  const pat = preset.patternStrings || preset.pattern || {};
   if (typeof pat.kick === "string") EngineParams.kickPattern = pat.kick;
-  if (typeof pat.hat === "string")  EngineParams.hatPattern  = pat.hat;
+  if (typeof pat.hat  === "string") EngineParams.hatPattern  = pat.hat;
   if (typeof pat.bass === "string") EngineParams.bassPattern = pat.bass;
-  if (typeof pat.pad === "string")  EngineParams.padPattern  = pat.pad;
+  if (typeof pat.pad  === "string") EngineParams.padPattern  = pat.pad;
 
-  // probabilities
-  const pr = preset.prob || preset.probs || preset;
-  if (typeof pr.kick === "number") EngineParams.kickProb = pr.kick;
-  if (typeof pr.hat === "number")  EngineParams.hatProb  = pr.hat;
-  if (typeof pr.bass === "number") EngineParams.bassProb = pr.bass;
-  if (typeof pr.pad === "number")  EngineParams.padProb  = pr.pad;
-  if (typeof pr.rest === "number") EngineParams.restProb  = pr.rest;
-
-  // scale
-  const sc = preset.scale || preset.notes;
-  if (Array.isArray(sc) && sc.length) currentScale = sc;
-
-  // bass root
-  if (typeof preset.bassRoot === "string") bassRoot = preset.bassRoot;
-
-  // fx
+  // FX (optional)
   if (preset.reverbWet != null){
-    globalReverb.wet.rampTo(Math.max(0, Math.min(1, preset.reverbWet)), 0.6);
+    globalReverb.wet.rampTo(clamp01(preset.reverbWet), 0.6);
   }
   if (preset.delayWet != null){
-    globalDelay.wet.rampTo(Math.max(0, Math.min(1, preset.delayWet)), 0.6);
+    globalDelay.wet.rampTo(clamp01(preset.delayWet), 0.6);
   }
 }
+
 
 async function loadPresets(){
   const status = document.getElementById("preset-status");
@@ -546,6 +589,13 @@ function attachUI() {
   if (presetSelect){
     presetSelect.addEventListener("change", () => {
       PresetManager.selected = presetSelect.value || "__auto__";
+
+      // If manual, also apply UCM targets from preset (so faders + mood change immediately)
+      if (PresetManager.selected !== "__auto__"){
+        const p = PresetManager.presets[PresetManager.selected];
+        if (p) applyPresetUCM(p);
+      }
+
       updateFromUI();
     });
   }

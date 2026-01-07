@@ -1,0 +1,30 @@
+{
+  "name": "dub",
+  "description": "Trip-Hop / Dub / Massive Attack / Dark Downbeat",
+  "ucm": {
+    "energy": 40,
+    "wave": 55,
+    "mind": 50,
+    "creation": 45,
+    "void": 35,
+    "circle": 70,
+    "body": 80,
+    "resource": 65,
+    "observer": 60
+  },
+  "audio": {
+    "tempo": 86,
+    "density": 0.25,
+    "brightness": 0.45,
+    "silenceRate": 0.22,
+    "bassWeight": 1.7,
+    "harmonicDeviation": 0.3,
+    "smoothing": 0.7
+  },
+  "patterns": {
+    "drone": false,
+    "glitch": true,
+    "jazzStabs": false,
+    "percussion": true
+  }
+}
