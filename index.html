@@ -196,49 +196,7 @@
 
     </div>
 
-    <!-- UI の表示用だけの簡易スクリプト（BPMとStatus更新） -->
-    <script>
-        function uiMap(value, inMin, inMax, outMin, outMax) {
-            if (inMax === inMin) return outMin;
-            const t = (value - inMin) / (inMax - inMin);
-            return Math.round(outMin + t * (outMax - outMin));
-        }
-
-        function updateEnergyUI() {
-            const energySlider = document.getElementById("fader_energy");
-            const energyValue  = document.getElementById("energy-value");
-            const bpmValue     = document.getElementById("bpm-value");
-            if (!energySlider || !energyValue || !bpmValue) return;
-
-            const val = parseInt(energySlider.value, 10) || 0;
-            energyValue.textContent = val;
-            const bpm = uiMap(val, 0, 100, 48, 148);
-            bpmValue.textContent = bpm + " BPM";
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const energySlider = document.getElementById("fader_energy");
-            if (energySlider) {
-                energySlider.addEventListener("input", updateEnergyUI);
-                updateEnergyUI();
-            }
-
-            const btnStart = document.getElementById("btn_start");
-            const btnStop = document.getElementById("btn_stop");
-            const statusText = document.getElementById("status-text");
-
-            if (btnStart && statusText) {
-                btnStart.addEventListener("click", () => {
-                    statusText.textContent = "Playing…";
-                });
-            }
-            if (btnStop && statusText) {
-                btnStop.addEventListener("click", () => {
-                    statusText.textContent = "Stopped";
-                });
-            }
-        });
-    </script>
+    <!-- BPM表示はengine.js側(updateUIFromParams)の単一ソースで更新 -->
 
 </body>
 </html>
