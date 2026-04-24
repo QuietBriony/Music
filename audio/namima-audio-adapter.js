@@ -1,10 +1,13 @@
 /**
  * Music → namima AudioEngine bridge adapter.
  * Delegates to window.AudioEngine when present and tolerates missing methods.
+ * Phase1: if window.AudioEngine is not loaded/available, all calls are safe no-op.
  */
 (function () {
   const STORAGE = {
     started: false,
+    lastStyle: null,
+    lastStyleEnergy: null,
     styleByEnergy: {
       ambient: 0.18,
       lofi: 0.36,
@@ -63,15 +66,28 @@
 
   async function start() {
     if (STORAGE.started) return true;
-    if (getAudioEngine() && getAudioEngine().started) {
+    const engine = getAudioEngine();
+    if (!engine) {
+      console.warn("[Music] Phase1 no-op: window.AudioEngine is not available.");
+      return false;
+    }
+
+    if (engine.started) {
       STORAGE.started = true;
       return true;
     }
 
+    if (typeof engine.start !== "function") {
+      console.warn("[Music] Phase1 no-op: window.AudioEngine.start is not available.");
+      return false;
+    }
+
     try {
-      const maybePromise = withAudioEngine("start");
+      const maybePromise = engine.start();
       if (maybePromise && typeof maybePromise.then === "function") {
-        await maybePromise;
+        await maybePromise.catch((error) => {
+          throw error;
+        });
       }
       STORAGE.started = true;
       return true;
@@ -96,9 +112,14 @@
   }
 
   function updateStyle(styleOrRatio) {
+    STORAGE.lastStyle = styleOrRatio;
     const mapped = normalizeStyle(styleOrRatio);
-    if (mapped == null) return false;
-    return updateEnergy(mapped);
+    if (mapped == null) {
+      STORAGE.lastStyleEnergy = null;
+      return false;
+    }
+    STORAGE.lastStyleEnergy = mapped;
+    return true;
   }
 
   function onTap(xNorm = 0, intensity = 0.6) {

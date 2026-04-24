@@ -482,6 +482,7 @@ function applyUCMToParams() {
   setPatternsByMode();
   updateUIFromParams();
 
+  // Phase1: energy is canonical; style is mode-notification only.
   safeCallMusicAudioAdapter("updateEnergy", UCM_CUR.energy / 100);
   safeCallMusicAudioAdapter("updateStyle", EngineParams.mode);
 }
