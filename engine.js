@@ -381,6 +381,97 @@ const TimbreState = {
   fracture: 0.2,
 };
 
+const PRESET_CHARACTERS = {
+  ambient: {
+    label: "submerged chapel",
+    air: 0.22,
+    glass: 0.16,
+    grit: -0.18,
+    fracture: -0.1,
+    restScale: 1.18,
+    kickScale: 0.62,
+    hatScale: 0.7,
+    bassScale: 0.72,
+    padScale: 1.2,
+    textureScale: 0.7,
+    glassScale: 1.24,
+  },
+  dub: {
+    label: "echo pressure",
+    air: 0.02,
+    glass: -0.03,
+    grit: 0.08,
+    fracture: -0.02,
+    restScale: 0.98,
+    kickScale: 0.9,
+    hatScale: 0.78,
+    bassScale: 1.16,
+    padScale: 0.86,
+    textureScale: 0.82,
+    glassScale: 0.8,
+  },
+  jazz: {
+    label: "bent circuitry",
+    air: 0.06,
+    glass: 0.1,
+    grit: -0.02,
+    fracture: 0.08,
+    restScale: 0.92,
+    kickScale: 0.78,
+    hatScale: 1.0,
+    bassScale: 0.94,
+    padScale: 1.02,
+    textureScale: 0.95,
+    glassScale: 1.06,
+  },
+  lofi: {
+    label: "dust memory",
+    air: 0.08,
+    glass: 0.04,
+    grit: 0.04,
+    fracture: -0.04,
+    restScale: 1.04,
+    kickScale: 0.82,
+    hatScale: 0.86,
+    bassScale: 0.88,
+    padScale: 1.14,
+    textureScale: 0.9,
+    glassScale: 0.94,
+  },
+  techno: {
+    label: "machine weather",
+    air: -0.1,
+    glass: -0.02,
+    grit: 0.18,
+    fracture: 0.16,
+    restScale: 0.74,
+    kickScale: 1.12,
+    hatScale: 1.1,
+    bassScale: 1.08,
+    padScale: 0.78,
+    textureScale: 1.12,
+    glassScale: 0.84,
+  },
+  trance: {
+    label: "burning horizon",
+    air: 0.02,
+    glass: 0.12,
+    grit: 0.08,
+    fracture: 0.08,
+    restScale: 0.82,
+    kickScale: 1.02,
+    hatScale: 0.92,
+    bassScale: 1.02,
+    padScale: 1.08,
+    textureScale: 0.94,
+    glassScale: 1.12,
+  },
+};
+
+function currentPresetCharacter() {
+  return PRESET_CHARACTERS[EngineParams.mode] || PRESET_CHARACTERS.ambient;
+}
+
 function unitValue(value) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return 0;
@@ -418,14 +509,17 @@ function updateWorldStateFromUCM() {
   updateTimbreStateFromWorld({ energy, wave, creation, voidness, circle, body, resource, observer, ethereal, pressure });
   renderModeLabel();
   const bodyEl = document.body;
-  if (bodyEl) bodyEl.dataset.world = WorldState.key;
+  if (bodyEl) {
+    bodyEl.dataset.world = WorldState.key;
+    bodyEl.dataset.character = EngineParams.mode;
+  }
   return WorldState;
 }
 
 function renderModeLabel() {
   const label = document.getElementById("mode-label");
   if (!label) return;
-  label.textContent = `${EngineParams.mode.toUpperCase()} / ${WorldState.label}`;
+  label.textContent = `${EngineParams.mode.toUpperCase()} / ${WorldState.label} / ${currentPresetCharacter().label}`;
 }
 
 
@@ -440,11 +534,12 @@ function safeToneRamp(param, value, seconds = 0.18) {
 
 function updateTimbreStateFromWorld(parts) {
   const { energy, wave, creation, voidness, circle, body, resource, observer, ethereal, pressure } = parts;
+  const character = currentPresetCharacter();
 
-  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08), 0, 1);
-  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12), 0, 1);
-  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14), 0, 1);
-  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24), 0, 1);
+  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + character.air, 0, 1);
+  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + character.glass, 0, 1);
+  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + character.grit, 0, 1);
+  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + character.fracture, 0, 1);
 
   const airyPad = -24 + (TimbreState.air * 5) - (TimbreState.grit * 2);
   const glassLevel = -33 + (TimbreState.glass * 7) + (WorldState.spectrum * 2);
@@ -465,13 +560,14 @@ function maybeTriggerWorldAccents(time) {
   if (!isPlaying) return;
 
   const spectrum = WorldState.spectrum;
+  const character = currentPresetCharacter();
   const ethereal = 1 - spectrum;
   const pulse = GrooveState.cycle || 0;
   const isDownbeat = pulse % 16 === 0;
   const isTurnaround = pulse % 16 === 14;
   const sparseGate = pulse % (spectrum > 0.72 ? 4 : 8) === 0;
 
-  if (texture && sparseGate && Math.random() < 0.026 + (spectrum * 0.035) + (TimbreState.grit * 0.035)) {
+  if (texture && sparseGate && Math.random() < (0.026 + (spectrum * 0.035) + (TimbreState.grit * 0.035)) * character.textureScale) {
     const textureVel = clampValue(0.02 + (spectrum * 0.045) + (TimbreState.fracture * 0.035), 0.02, 0.09);
     try {
       texture.triggerAttackRelease("64n", time, textureVel);
@@ -480,7 +576,7 @@ function maybeTriggerWorldAccents(time) {
     }
   }
 
-  if (glass && (isDownbeat || isTurnaround || Math.random() < 0.014 + (ethereal * 0.024) + (TimbreState.glass * 0.026))) {
+  if (glass && (isDownbeat || isTurnaround || Math.random() < (0.014 + (ethereal * 0.024) + (TimbreState.glass * 0.026)) * character.glassScale)) {
     const notes = spectrum > 0.72 ? ["C6", "Db6", "G6", "Bb6"] : ["E5", "G5", "B5", "D6"];
     const note = notes[Math.floor(Math.random() * notes.length)];
     const offset = clampValue(WorldState.micro, 0, 1) * 0.018 * Math.random();
@@ -785,6 +881,12 @@ function applyUCMToParams(options = {}) {
   // Bass / Pad
   EngineParams.bassProb = mapValue(UCM_CUR.body, 0, 100, 0.12, 0.68);
   EngineParams.padProb  = mapValue(UCM_CUR.circle, 0, 100, 0.12, 0.42);
+  const character = currentPresetCharacter();
+  EngineParams.restProb = clamp01(EngineParams.restProb * character.restScale);
+  EngineParams.kickProb = clamp01(EngineParams.kickProb * character.kickScale);
+  EngineParams.hatProb = clamp01(EngineParams.hatProb * character.hatScale);
+  EngineParams.bassProb = clamp01(EngineParams.bassProb * character.bassScale);
+  EngineParams.padProb = clamp01(EngineParams.padProb * character.padScale);
 
   // リバーブ/ディレイ量を少しだけ動かす（軽量）
   const reverbWet = mapValue(UCM_CUR.observer, 0, 100, 0.12, 0.42);
