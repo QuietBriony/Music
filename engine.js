@@ -62,6 +62,28 @@ function updateFromUI() {
   applyUCMToParams();
 }
 
+function getMusicAudioAdapter() {
+  return window && window.MusicNamimaAudioAdapter ? window.MusicNamimaAudioAdapter : null;
+}
+
+function safeCallMusicAudioAdapter(methodName, ...args) {
+  const adapter = getMusicAudioAdapter();
+  if (!adapter || typeof adapter[methodName] !== "function") return undefined;
+
+  try {
+    const result = adapter[methodName](...args);
+    if (result && typeof result.catch === "function") {
+      return result.catch((error) => {
+        console.warn("[Music] audio adapter call failed:", methodName, error);
+      });
+    }
+    return result;
+  } catch (error) {
+    console.warn("[Music] audio adapter call failed:", methodName, error);
+    return undefined;
+  }
+}
+
 function mapValue(x, inMin, inMax, outMin, outMax) {
   if (inMax === inMin) return outMin;
   const t = (x - inMin) / (inMax - inMin);
@@ -459,6 +481,10 @@ function applyUCMToParams() {
 
   setPatternsByMode();
   updateUIFromParams();
+
+  // Phase1: energy is canonical; style is mode-notification only.
+  safeCallMusicAudioAdapter("updateEnergy", UCM_CUR.energy / 100);
+  safeCallMusicAudioAdapter("updateStyle", EngineParams.mode);
 }
 
 
@@ -672,6 +698,7 @@ function attachUI() {
       if (!initialized) {
         await Tone.start();
         initialized = true;
+        await safeCallMusicAudioAdapter("start");
 
         Tone.Transport.scheduleRepeat((time) => {
           scheduleStep(time);
@@ -690,6 +717,7 @@ function attachUI() {
   if (btnStop) {
     btnStop.onclick = () => {
       Tone.Transport.stop();
+      safeCallMusicAudioAdapter("stop");
       isPlaying = false;
       if (statusText) statusText.textContent = "Stopped";
     };
