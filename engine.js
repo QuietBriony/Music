@@ -368,6 +368,100 @@ const GrooveState = {
   bassOffset: 0,
   microJitterScale: 1
 };
+const WorldState = {
+  spectrum: 0.35,
+  key: "idm",
+  label: "IDM DRIFT",
+  micro: 0,
+};
+
+function unitValue(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  return clampValue(numeric / 100, 0, 1);
+}
+
+function updateWorldStateFromUCM() {
+  const energy = unitValue(UCM_CUR.energy);
+  const wave = unitValue(UCM_CUR.wave);
+  const creation = unitValue(UCM_CUR.creation);
+  const voidness = unitValue(UCM_CUR.void);
+  const circle = unitValue(UCM_CUR.circle);
+  const body = unitValue(UCM_CUR.body);
+  const resource = unitValue(UCM_CUR.resource);
+  const observer = unitValue(UCM_CUR.observer);
+
+  const ethereal = clampValue((observer * 0.3) + (circle * 0.24) + (voidness * 0.24) + ((1 - energy) * 0.22), 0, 1);
+  const pressure = clampValue((energy * 0.34) + (creation * 0.22) + (resource * 0.18) + (body * 0.16) + (wave * 0.1) - (voidness * 0.08), 0, 1);
+  const spectrum = clampValue((pressure * 0.74) + ((1 - ethereal) * 0.26), 0, 1);
+
+  WorldState.spectrum = spectrum;
+  WorldState.micro = clampValue((wave * 0.4) + (creation * 0.24) + (observer * 0.18) + (energy * 0.18), 0, 1);
+
+  if (spectrum < 0.34) {
+    WorldState.key = "ambient";
+    WorldState.label = "LIMINAL AMBIENT";
+  } else if (spectrum > 0.72) {
+    WorldState.key = "hardcore";
+    WorldState.label = "HARDCORE WEATHER";
+  } else {
+    WorldState.key = "idm";
+    WorldState.label = "IDM DRIFT";
+  }
+
+  renderModeLabel();
+  const bodyEl = document.body;
+  if (bodyEl) bodyEl.dataset.world = WorldState.key;
+  return WorldState;
+}
+
+function renderModeLabel() {
+  const label = document.getElementById("mode-label");
+  if (!label) return;
+  label.textContent = `${EngineParams.mode.toUpperCase()} / ${WorldState.label}`;
+}
+
+function maybeTriggerWorldAccents(time) {
+  if (!isPlaying) return;
+
+  const spectrum = WorldState.spectrum;
+  const ethereal = 1 - spectrum;
+  const pulse = GrooveState.cycle || 0;
+  const isDownbeat = pulse % 16 === 0;
+  const isTurnaround = pulse % 16 === 14;
+  const sparseGate = pulse % (spectrum > 0.72 ? 4 : 8) === 0;
+
+  if (texture && sparseGate && Math.random() < 0.035 + (spectrum * 0.045)) {
+    const textureVel = clampValue(0.025 + (spectrum * 0.055), 0.02, 0.09);
+    try {
+      texture.triggerAttackRelease("64n", time, textureVel);
+    } catch (error) {
+      console.warn("[Music] Texture accent failed:", error);
+    }
+  }
+
+  if (glass && (isDownbeat || isTurnaround || Math.random() < 0.018 + (ethereal * 0.028))) {
+    const notes = spectrum > 0.72 ? ["C6", "Db6", "G6", "Bb6"] : ["E5", "G5", "B5", "D6"];
+    const note = notes[Math.floor(Math.random() * notes.length)];
+    const offset = clampValue(WorldState.micro, 0, 1) * 0.018 * Math.random();
+    const glassVel = clampValue(0.025 + (ethereal * 0.05) + (spectrum * 0.025), 0.02, 0.09);
+    try {
+      glass.triggerAttackRelease(note, "32n", time + offset, glassVel);
+    } catch (error) {
+      console.warn("[Music] Glass accent failed:", error);
+    }
+  }
+
+  if (bass && spectrum > 0.78 && isTurnaround && Math.random() < 0.42) {
+    const bassNotes = ["C2", "Eb2", "F2", "Bb1"];
+    const note = bassNotes[Math.floor(Math.random() * bassNotes.length)];
+    try {
+      bass.triggerAttackRelease(note, "32n", time + 0.028, 0.18);
+    } catch (error) {
+      console.warn("[Music] Bass ratchet failed:", error);
+    }
+  }
+}
 
 /* =========================================================
    3.5 Presets (Genre) Loader
@@ -631,7 +725,7 @@ function applyUCMToParams(options = {}) {
       applyPresetToEngineParams(PresetManager.presets[EngineParams.mode]);
     }
     const modeLabel = document.getElementById("mode-label");
-    if (modeLabel) modeLabel.textContent = EngineParams.mode.toUpperCase();
+    renderModeLabel();
   }
 
   // 休符
@@ -682,7 +776,7 @@ function applyUCMToParams(options = {}) {
 
 function updateUIFromParams(){
   const modeLabel = document.getElementById("mode-label");
-  if (modeLabel) modeLabel.textContent = EngineParams.mode.toUpperCase();
+  renderModeLabel();
 
   const bpmValue = document.getElementById("bpm-value");
   if (bpmValue) bpmValue.textContent = `${EngineParams.bpm} BPM`;
@@ -836,6 +930,7 @@ function ensureTransportScheduled() {
 }
 
 function scheduleStep(time) {
+  maybeTriggerWorldAccents(time);
   const step = stepIndex % EngineParams.stepCount;
   if (step === 0) advanceGrooveStructure();
 
@@ -1016,7 +1111,7 @@ function attachUI() {
         if (autoToggle && autoToggle.checked) {
           startAutoCycle();
         }
-        if (modeLabel) modeLabel.textContent = EngineParams.mode.toUpperCase();
+        renderModeLabel();
       } catch (error) {
         console.warn("[Music] start failed:", error);
         isPlaying = false;
