@@ -379,6 +379,8 @@ const TimbreState = {
   glass: 0.4,
   grit: 0.35,
   fracture: 0.2,
+  harp: 0.35,
+  warmth: 0.3,
 };
 
 const PRESET_CHARACTERS = {
@@ -388,6 +390,8 @@ const PRESET_CHARACTERS = {
     glass: 0.16,
     grit: -0.18,
     fracture: -0.1,
+    harp: 0.2,
+    warmth: 0.16,
     restScale: 1.18,
     kickScale: 0.62,
     hatScale: 0.7,
@@ -402,6 +406,8 @@ const PRESET_CHARACTERS = {
     glass: -0.03,
     grit: 0.08,
     fracture: -0.02,
+    harp: -0.04,
+    warmth: 0.22,
     restScale: 0.98,
     kickScale: 0.9,
     hatScale: 0.78,
@@ -416,6 +422,8 @@ const PRESET_CHARACTERS = {
     glass: 0.1,
     grit: -0.02,
     fracture: 0.08,
+    harp: 0.12,
+    warmth: 0.12,
     restScale: 0.92,
     kickScale: 0.78,
     hatScale: 1.0,
@@ -430,6 +438,8 @@ const PRESET_CHARACTERS = {
     glass: 0.04,
     grit: 0.04,
     fracture: -0.04,
+    harp: 0.08,
+    warmth: 0.24,
     restScale: 1.04,
     kickScale: 0.82,
     hatScale: 0.86,
@@ -444,6 +454,8 @@ const PRESET_CHARACTERS = {
     glass: -0.02,
     grit: 0.18,
     fracture: 0.16,
+    harp: -0.1,
+    warmth: 0.02,
     restScale: 0.74,
     kickScale: 1.12,
     hatScale: 1.1,
@@ -458,6 +470,8 @@ const PRESET_CHARACTERS = {
     glass: 0.12,
     grit: 0.08,
     fracture: 0.08,
+    harp: 0.14,
+    warmth: 0.06,
     restScale: 0.82,
     kickScale: 1.02,
     hatScale: 0.92,
@@ -466,6 +480,15 @@ const PRESET_CHARACTERS = {
     textureScale: 0.94,
     glassScale: 1.12,
   },
+};
+
+const HARP_NOTE_POOLS = {
+  ambient: ["F4", "A4", "C5", "E5", "G5", "A5"],
+  dub: ["C4", "Eb4", "G4", "Bb4", "C5"],
+  jazz: ["D4", "F4", "A4", "C5", "E5", "G5"],
+  lofi: ["A3", "C4", "E4", "G4", "B4", "D5"],
+  techno: ["C4", "Eb4", "G4", "Bb4"],
+  trance: ["D4", "F#4", "A4", "C#5", "E5", "A5"],
 };
 
 function currentPresetCharacter() {
@@ -532,6 +555,11 @@ function safeToneRamp(param, value, seconds = 0.18) {
   }
 }
 
+function setEnvelopeValue(envelope, key, value) {
+  if (!envelope || typeof envelope[key] !== "number") return;
+  envelope[key] = value;
+}
+
 function updateTimbreStateFromWorld(parts) {
   const { energy, wave, creation, voidness, circle, body, resource, observer, ethereal, pressure } = parts;
   const character = currentPresetCharacter();
@@ -540,20 +568,31 @@ function updateTimbreStateFromWorld(parts) {
   TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + character.glass, 0, 1);
   TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + character.grit, 0, 1);
   TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + character.fracture, 0, 1);
+  TimbreState.harp = clampValue((TimbreState.glass * 0.46) + (TimbreState.air * 0.24) + (circle * 0.18) + ((1 - TimbreState.grit) * 0.12) + (character.harp || 0), 0, 1);
+  TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (character.warmth || 0), 0, 1);
 
-  const airyPad = -24 + (TimbreState.air * 5) - (TimbreState.grit * 2);
-  const glassLevel = -33 + (TimbreState.glass * 7) + (WorldState.spectrum * 2);
-  const textureLevel = -38 + (TimbreState.grit * 8) + (TimbreState.fracture * 3);
-  const bassCutoff = 120 + (TimbreState.grit * 520) + (resource * 180);
-  const bassBite = 0.8 + (TimbreState.grit * 5.2);
+  const airyPad = -24 + (TimbreState.air * 5) - (TimbreState.grit * 2) + (TimbreState.warmth * 1.2);
+  const glassLevel = -35 + (TimbreState.glass * 5.8) + (TimbreState.harp * 3.2) + (WorldState.spectrum * 1.2);
+  const textureLevel = -39 + (TimbreState.grit * 7.2) + (TimbreState.fracture * 2.4) - (TimbreState.warmth * 1.8);
+  const bassCutoff = 110 + (TimbreState.grit * 470) + (resource * 150) - (TimbreState.warmth * 44);
+  const bassBite = 0.7 + (TimbreState.grit * 4.6) + (TimbreState.warmth * 0.8);
 
   safeToneRamp(pad?.volume, airyPad, 0.28);
   safeToneRamp(glass?.volume, glassLevel, 0.22);
   safeToneRamp(texture?.volume, textureLevel, 0.2);
   safeToneRamp(bass?.filter?.frequency, bassCutoff, 0.18);
   safeToneRamp(bass?.filter?.Q, bassBite, 0.2);
-  safeToneRamp(glass?.harmonicity, 1.1 + (TimbreState.glass * 1.8), 0.24);
-  safeToneRamp(glass?.modulationIndex, 1.4 + (TimbreState.fracture * 4.6), 0.2);
+  safeToneRamp(glass?.harmonicity, 1.0 + (TimbreState.glass * 1.2) + (TimbreState.harp * 0.8), 0.24);
+  safeToneRamp(glass?.modulationIndex, 1.0 + (TimbreState.fracture * 3.2) + (TimbreState.harp * 1.1) - (TimbreState.warmth * 0.4), 0.2);
+
+  setEnvelopeValue(glass?.envelope, "attack", 0.003 + (TimbreState.harp * 0.01));
+  setEnvelopeValue(glass?.envelope, "decay", 0.08 + (TimbreState.harp * 0.18) + (TimbreState.air * 0.08));
+  setEnvelopeValue(glass?.envelope, "sustain", 0.015 + (TimbreState.warmth * 0.035));
+  setEnvelopeValue(glass?.envelope, "release", 0.1 + (TimbreState.air * 0.16) + (TimbreState.warmth * 0.18));
+  setEnvelopeValue(glass?.modulationEnvelope, "attack", 0.002);
+  setEnvelopeValue(glass?.modulationEnvelope, "decay", 0.06 + (TimbreState.harp * 0.12));
+  setEnvelopeValue(glass?.modulationEnvelope, "sustain", 0.01);
+  setEnvelopeValue(glass?.modulationEnvelope, "release", 0.08 + (TimbreState.warmth * 0.1));
 }
 
 function maybeTriggerWorldAccents(time) {
@@ -566,6 +605,7 @@ function maybeTriggerWorldAccents(time) {
   const isDownbeat = pulse % 16 === 0;
   const isTurnaround = pulse % 16 === 14;
   const sparseGate = pulse % (spectrum > 0.72 ? 4 : 8) === 0;
+  const harpGate = pulse % (spectrum > 0.72 ? 12 : 8) === 4;
 
   if (texture && sparseGate && Math.random() < (0.026 + (spectrum * 0.035) + (TimbreState.grit * 0.035)) * character.textureScale) {
     const textureVel = clampValue(0.02 + (spectrum * 0.045) + (TimbreState.fracture * 0.035), 0.02, 0.09);
@@ -585,6 +625,22 @@ function maybeTriggerWorldAccents(time) {
       glass.triggerAttackRelease(note, "32n", time + offset, glassVel);
     } catch (error) {
       console.warn("[Music] Glass accent failed:", error);
+    }
+  }
+
+  if (glass && harpGate && Math.random() < (0.04 + (TimbreState.harp * 0.16)) * character.glassScale) {
+    const notes = HARP_NOTE_POOLS[EngineParams.mode] || HARP_NOTE_POOLS.ambient;
+    const first = notes[Math.floor(Math.random() * notes.length)];
+    const second = notes[(notes.indexOf(first) + 2 + Math.floor(Math.random() * 2)) % notes.length];
+    const delay = 0.018 + (WorldState.micro * 0.02) + (Math.random() * 0.018);
+    const vel = clampValue(0.022 + (TimbreState.harp * 0.048) + (TimbreState.warmth * 0.018), 0.024, 0.082);
+    try {
+      glass.triggerAttackRelease(first, "16n", time + delay, vel);
+      if (TimbreState.harp > 0.56 && Math.random() < 0.42) {
+        glass.triggerAttackRelease(second, "32n", time + delay + 0.052, vel * 0.72);
+      }
+    } catch (error) {
+      console.warn("[Music] Harp pluck failed:", error);
     }
   }
 
