@@ -35,7 +35,14 @@
 1. `Energy` の slider を急速に上下させる。
 2. BPM/表示/UI が追従し、反対方向に逆走しないことを確認。
 3. 指を離した直後に音が固まらず、ノイズが突然増幅しないことを確認。
-4. Energy以外の縦／横 slider でも同様の逆方向操作を確認。
+4. Energy以外の横 slider でも同様に操作し、つまみが巻き戻らないことを確認。
+
+## Groove / Texture確認
+- 3分以上再生し、固定の「ポー」音だけが残り続けないことを確認。
+- `AutoMix OFF` でも、短い texture / glass / click 系アクセントがうるさすぎず低確率で出ることを確認。
+- `AutoMix ON` では、2〜8小節程度の間隔で小さなfill/variationが自然に増えるか確認。
+- `STOP` 後に pad / bass / texture / glass のtailが残り続けないことを確認。
+- Energy高めでもノイズバーストがLimiterに頼りすぎた大音量にならないことを確認。
 
 ## Consoleで見るエラー
 - `F12` の Console を開き、次を継続監視。
