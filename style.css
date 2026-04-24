@@ -736,3 +736,43 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-moz-range-thumb {
   box-shadow: 0 0 14px var(--world-shadow), 0 0 0 1px rgba(255, 255, 255, 0.5);
 }
+/* Identity polish: the app is a browser-native autonomous sound garden, not a generic synth toy. */
+body[data-world="ambient"] #mode-label {
+  text-shadow: 0 0 24px rgba(176, 255, 229, 0.32), 0 0 54px rgba(101, 214, 213, 0.18);
+}
+
+body[data-world="idm"] #mode-label {
+  text-shadow: 0 0 22px rgba(91, 222, 255, 0.3), 0 0 44px rgba(255, 214, 116, 0.16);
+}
+
+body[data-world="hardcore"] #mode-label {
+  text-shadow: 0 0 18px rgba(255, 74, 65, 0.38), 0 0 48px rgba(255, 201, 74, 0.18);
+}
+
+body[data-world="ambient"] .fader-card,
+body[data-world="ambient"] .transport-card,
+body[data-world="ambient"] .preset-card {
+  backdrop-filter: blur(18px) saturate(1.18);
+}
+
+body[data-world="hardcore"] .fader-card,
+body[data-world="hardcore"] .transport-card,
+body[data-world="hardcore"] .preset-card {
+  backdrop-filter: blur(10px) contrast(1.12) saturate(1.22);
+}
+
+body[data-world="hardcore"] input[type="range"]::-webkit-slider-runnable-track {
+  background: repeating-linear-gradient(90deg, var(--world-accent) 0 10px, var(--world-accent-strong) 10px 16px);
+}
+
+body[data-world="hardcore"] input[type="range"]::-moz-range-track {
+  background: repeating-linear-gradient(90deg, var(--world-accent) 0 10px, var(--world-accent-strong) 10px 16px);
+}
+
+body[data-world="ambient"] input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, rgba(127, 238, 218, 0.72), rgba(222, 252, 255, 0.92));
+}
+
+body[data-world="ambient"] input[type="range"]::-moz-range-track {
+  background: linear-gradient(90deg, rgba(127, 238, 218, 0.72), rgba(222, 252, 255, 0.92));
+}

@@ -374,6 +374,12 @@ const WorldState = {
   label: "IDM DRIFT",
   micro: 0,
 };
+const TimbreState = {
+  air: 0.45,
+  glass: 0.4,
+  grit: 0.35,
+  fracture: 0.2,
+};
 
 function unitValue(value) {
   const numeric = Number(value);
@@ -409,6 +415,7 @@ function updateWorldStateFromUCM() {
     WorldState.label = "IDM DRIFT";
   }
 
+  updateTimbreStateFromWorld({ energy, wave, creation, voidness, circle, body, resource, observer, ethereal, pressure });
   renderModeLabel();
   const bodyEl = document.body;
   if (bodyEl) bodyEl.dataset.world = WorldState.key;
@@ -421,6 +428,39 @@ function renderModeLabel() {
   label.textContent = `${EngineParams.mode.toUpperCase()} / ${WorldState.label}`;
 }
 
+
+function safeToneRamp(param, value, seconds = 0.18) {
+  if (!param || typeof param.rampTo !== "function") return;
+  try {
+    param.rampTo(value, seconds);
+  } catch (error) {
+    console.warn("[Music] Timbre ramp failed:", error);
+  }
+}
+
+function updateTimbreStateFromWorld(parts) {
+  const { energy, wave, creation, voidness, circle, body, resource, observer, ethereal, pressure } = parts;
+
+  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08), 0, 1);
+  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12), 0, 1);
+  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14), 0, 1);
+  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24), 0, 1);
+
+  const airyPad = -24 + (TimbreState.air * 5) - (TimbreState.grit * 2);
+  const glassLevel = -33 + (TimbreState.glass * 7) + (WorldState.spectrum * 2);
+  const textureLevel = -38 + (TimbreState.grit * 8) + (TimbreState.fracture * 3);
+  const bassCutoff = 120 + (TimbreState.grit * 520) + (resource * 180);
+  const bassBite = 0.8 + (TimbreState.grit * 5.2);
+
+  safeToneRamp(pad?.volume, airyPad, 0.28);
+  safeToneRamp(glass?.volume, glassLevel, 0.22);
+  safeToneRamp(texture?.volume, textureLevel, 0.2);
+  safeToneRamp(bass?.filter?.frequency, bassCutoff, 0.18);
+  safeToneRamp(bass?.filter?.Q, bassBite, 0.2);
+  safeToneRamp(glass?.harmonicity, 1.1 + (TimbreState.glass * 1.8), 0.24);
+  safeToneRamp(glass?.modulationIndex, 1.4 + (TimbreState.fracture * 4.6), 0.2);
+}
+
 function maybeTriggerWorldAccents(time) {
   if (!isPlaying) return;
 
@@ -431,8 +471,8 @@ function maybeTriggerWorldAccents(time) {
   const isTurnaround = pulse % 16 === 14;
   const sparseGate = pulse % (spectrum > 0.72 ? 4 : 8) === 0;
 
-  if (texture && sparseGate && Math.random() < 0.035 + (spectrum * 0.045)) {
-    const textureVel = clampValue(0.025 + (spectrum * 0.055), 0.02, 0.09);
+  if (texture && sparseGate && Math.random() < 0.026 + (spectrum * 0.035) + (TimbreState.grit * 0.035)) {
+    const textureVel = clampValue(0.02 + (spectrum * 0.045) + (TimbreState.fracture * 0.035), 0.02, 0.09);
     try {
       texture.triggerAttackRelease("64n", time, textureVel);
     } catch (error) {
@@ -440,11 +480,11 @@ function maybeTriggerWorldAccents(time) {
     }
   }
 
-  if (glass && (isDownbeat || isTurnaround || Math.random() < 0.018 + (ethereal * 0.028))) {
+  if (glass && (isDownbeat || isTurnaround || Math.random() < 0.014 + (ethereal * 0.024) + (TimbreState.glass * 0.026))) {
     const notes = spectrum > 0.72 ? ["C6", "Db6", "G6", "Bb6"] : ["E5", "G5", "B5", "D6"];
     const note = notes[Math.floor(Math.random() * notes.length)];
     const offset = clampValue(WorldState.micro, 0, 1) * 0.018 * Math.random();
-    const glassVel = clampValue(0.025 + (ethereal * 0.05) + (spectrum * 0.025), 0.02, 0.09);
+    const glassVel = clampValue(0.018 + (TimbreState.air * 0.04) + (TimbreState.glass * 0.035) + (spectrum * 0.018), 0.02, 0.09);
     try {
       glass.triggerAttackRelease(note, "32n", time + offset, glassVel);
     } catch (error) {
@@ -452,6 +492,13 @@ function maybeTriggerWorldAccents(time) {
     }
   }
 
+  if (hat && spectrum > 0.62 && pulse % 8 === 6 && Math.random() < 0.08 + (TimbreState.fracture * 0.16)) {
+    try {
+      hat.triggerAttackRelease("64n", time + 0.032, clampValue(0.045 + (TimbreState.grit * 0.06), 0.035, 0.11));
+    } catch (error) {
+      console.warn("[Music] Hat fracture failed:", error);
+    }
+  }
   if (bass && spectrum > 0.78 && isTurnaround && Math.random() < 0.42) {
     const bassNotes = ["C2", "Eb2", "F2", "Bb1"];
     const note = bassNotes[Math.floor(Math.random() * bassNotes.length)];
@@ -725,7 +772,7 @@ function applyUCMToParams(options = {}) {
       applyPresetToEngineParams(PresetManager.presets[EngineParams.mode]);
     }
     const modeLabel = document.getElementById("mode-label");
-    renderModeLabel();
+  renderModeLabel();
   }
 
   // 休符
@@ -1111,7 +1158,7 @@ function attachUI() {
         if (autoToggle && autoToggle.checked) {
           startAutoCycle();
         }
-        renderModeLabel();
+  renderModeLabel();
       } catch (error) {
         console.warn("[Music] start failed:", error);
         isPlaying = false;
