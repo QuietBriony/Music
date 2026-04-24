@@ -32,11 +32,33 @@ const UCM = {
 // Engine reads a smoothed UCM_CUR so visuals + audio don't jump.
 const UCM_TARGET = { energy: UCM.energy, wave: UCM.wave, mind: UCM.mind, creation: UCM.creation, void: UCM.void, circle: UCM.circle, body: UCM.body, resource: UCM.resource, observer: UCM.observer };
 const UCM_CUR    = { energy: UCM.energy, wave: UCM.wave, mind: UCM.mind, creation: UCM.creation, void: UCM.void, circle: UCM.circle, body: UCM.body, resource: UCM.resource, observer: UCM.observer };
+const UCM_KEYS = ["energy", "wave", "mind", "creation", "void", "circle", "body", "resource", "observer"];
+const AUTOMIX_KEYS = ["wave", "mind", "creation", "void", "circle", "body", "resource", "observer"];
+const SLIDER_BY_UCM = {
+  energy: "fader_energy",
+  wave: "fader_wave",
+  mind: "fader_mind",
+  creation: "fader_creation",
+  void: "fader_void",
+  circle: "fader_circle",
+  body: "fader_body",
+  resource: "fader_resource",
+  observer: "fader_observer"
+};
 // seconds to reach target (larger = smoother)
 let UCM_SMOOTH_SEC = 1.6;
 
 let initialized = false;
 let isPlaying   = false;
+let isStarting  = false;
+let transportEventId = null;
+
+const RAMP_CACHE = {};
+const NAMIMA_ADAPTER_UPDATE_INTERVAL_MS = 180;
+const NAMIMA_ADAPTER_ENERGY_DELTA = 0.015;
+let namimaAdapterLastSentAt = 0;
+let namimaAdapterLastEnergy = null;
+let namimaAdapterLastMode = null;
 
 /* =========================================================
    1. ヘルパー
@@ -48,7 +70,7 @@ function getSliderValue(id, fallback = 50) {
   return parseInt(el.value, 10);
 }
 
-function updateFromUI() {
+function updateFromUI(options = {}) {
   UCM_TARGET.energy = getSliderValue("fader_energy", UCM_TARGET.energy);
   UCM_TARGET.wave = getSliderValue("fader_wave", UCM_TARGET.wave);
   UCM_TARGET.mind = getSliderValue("fader_mind", UCM_TARGET.mind);
@@ -59,7 +81,9 @@ function updateFromUI() {
   UCM_TARGET.resource = getSliderValue("fader_resource", UCM_TARGET.resource);
   UCM_TARGET.observer = getSliderValue("fader_observer", UCM_TARGET.observer);
 
-  applyUCMToParams();
+  if (options.apply !== false) {
+    applyUCMToParams({ force: options.force === true });
+  }
 }
 
 function getMusicAudioAdapter() {
@@ -81,6 +105,62 @@ function safeCallMusicAudioAdapter(methodName, ...args) {
   } catch (error) {
     console.warn("[Music] audio adapter call failed:", methodName, error);
     return undefined;
+  }
+}
+
+function clampValue(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function rampParam(cacheKey, param, value, seconds, minDelta = 0.001) {
+  if (!param || typeof param.rampTo !== "function" || typeof value !== "number" || Number.isNaN(value)) return;
+
+  const previous = RAMP_CACHE[cacheKey];
+  if (typeof previous === "number" && Math.abs(previous - value) < minDelta) return;
+
+  RAMP_CACHE[cacheKey] = value;
+  try {
+    param.rampTo(value, seconds);
+  } catch (error) {
+    console.warn("[Music] param ramp failed:", cacheKey, error);
+  }
+}
+
+function syncSliderFromTarget(key) {
+  const id = SLIDER_BY_UCM[key];
+  if (!id) return;
+
+  const el = document.getElementById(id);
+  if (!el || document.activeElement === el) return;
+  el.value = String(Math.round(UCM_TARGET[key]));
+}
+
+function syncMusicAudioAdapterFromUCM(force = false) {
+  const now = typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now();
+
+  if (!force && now - namimaAdapterLastSentAt < NAMIMA_ADAPTER_UPDATE_INTERVAL_MS) return;
+
+  const energy = clampValue(UCM_CUR.energy / 100, 0, 1);
+  const mode = EngineParams.mode;
+  const shouldSendEnergy =
+    force ||
+    namimaAdapterLastEnergy === null ||
+    Math.abs(energy - namimaAdapterLastEnergy) >= NAMIMA_ADAPTER_ENERGY_DELTA;
+  const shouldSendMode = force || namimaAdapterLastMode !== mode;
+
+  if (!shouldSendEnergy && !shouldSendMode) return;
+  namimaAdapterLastSentAt = now;
+
+  if (shouldSendEnergy) {
+    safeCallMusicAudioAdapter("updateEnergy", energy);
+    namimaAdapterLastEnergy = energy;
+  }
+
+  if (shouldSendMode) {
+    safeCallMusicAudioAdapter("updateStyle", mode);
+    namimaAdapterLastMode = mode;
   }
 }
 
@@ -118,6 +198,7 @@ const globalDelay = new Tone.PingPongDelay({
 const drumBus = new Tone.Gain(0.9).connect(globalReverb);
 const padBus  = new Tone.Gain(0.9).connect(globalReverb);
 const bassBus = new Tone.Gain(0.8).connect(globalDelay);
+const textureBus = new Tone.Gain(0.16).connect(globalDelay);
 
 // ===== 楽器（3+1に絞る） =====
 
@@ -156,6 +237,20 @@ const pad = new Tone.PolySynth(Tone.Synth, {
   envelope: { attack: 1.2, decay: 0.7, sustain: 0.7, release: 3.5 }
 }).connect(padFilter);
 
+const texture = new Tone.NoiseSynth({
+  noise: { type: "pink" },
+  envelope: { attack: 0.001, decay: 0.045, sustain: 0, release: 0.02 }
+}).connect(textureBus);
+
+const glass = new Tone.FMSynth({
+  harmonicity: 1.5,
+  modulationIndex: 8,
+  oscillator: { type: "sine" },
+  envelope: { attack: 0.005, decay: 0.12, sustain: 0, release: 0.18 },
+  modulation: { type: "triangle" },
+  modulationEnvelope: { attack: 0.002, decay: 0.08, sustain: 0, release: 0.1 }
+}).connect(globalDelay);
+
 /* =========================================================
    3. パラメータ構造
 ========================================================= */
@@ -178,6 +273,36 @@ const EngineParams = {
 };
 
 let currentScale = ["C4", "D4", "E4", "G4", "A4"];
+const MODE_CHORDS = {
+  ambient: [
+    ["F3", "C4", "G4"],
+    ["A3", "E4", "G4"],
+    ["D3", "A3", "E4"]
+  ],
+  lofi: [
+    ["A3", "C4", "E4", "G4"],
+    ["F3", "A3", "C4", "E4"],
+    ["D3", "F4", "A4"]
+  ],
+  dub: [
+    ["C3", "G3", "Bb3"],
+    ["F3", "C4", "Eb4"]
+  ],
+  jazz: [
+    ["D3", "F4", "A4", "C5"],
+    ["G3", "B3", "D4", "F4"]
+  ],
+  techno: [
+    ["C3", "G3"],
+    ["C3", "Bb3"],
+    ["F3", "C4"]
+  ],
+  trance: [
+    ["D3", "A3", "E4"],
+    ["F3", "C4", "G4"]
+  ]
+};
+const GLASS_NOTES = ["C5", "D5", "Eb5", "G5", "A5", "Bb5", "D6"];
 
 /* =========================================================
    3.5 Presets (Genre) Loader
@@ -342,21 +467,21 @@ function updateSoundForMode(mode){
   // Keep changes gentle; use .set and ramp where possible
   try{
     if(mode==="ambient"){
-      pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.8, decay:1.0, sustain:0.8, release:5.5} });
+      pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.2, decay:0.8, sustain:0.62, release:3.2} });
       padFilter.frequency.rampTo(800, 1.2);
-      globalReverb.decay = 7.5;
-      globalReverb.wet.rampTo(0.42, 1.2);
+      globalReverb.decay = 5.8;
+      globalReverb.wet.rampTo(0.32, 1.2);
       globalDelay.wet.rampTo(0.10, 1.2);
       bass.set({ oscillator:{type:"triangle"}, envelope:{attack:0.02, decay:0.35, sustain:0.25, release:1.2} });
     }else if(mode==="lofi"){
-      pad.set({ oscillator:{type:"triangle"}, envelope:{attack:1.0, decay:0.8, sustain:0.7, release:4.2} });
+      pad.set({ oscillator:{type:"triangle"}, envelope:{attack:0.8, decay:0.7, sustain:0.58, release:2.8} });
       padFilter.frequency.rampTo(1200, 1.0);
       globalReverb.decay = 5.5;
       globalReverb.wet.rampTo(0.28, 1.0);
       globalDelay.wet.rampTo(0.18, 1.0);
       bass.set({ oscillator:{type:"square"}, filterEnvelope:{baseFrequency:70, octaves:2.2} });
     }else if(mode==="dub"){
-      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.9, decay:0.6, sustain:0.6, release:3.6} });
+      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.65, decay:0.5, sustain:0.5, release:2.5} });
       padFilter.frequency.rampTo(1400, 0.9);
       globalReverb.decay = 6.2;
       globalReverb.wet.rampTo(0.34, 0.9);
@@ -365,14 +490,14 @@ function updateSoundForMode(mode){
       globalDelay.wet.rampTo(0.32, 0.8);
       bass.set({ oscillator:{type:"square"}, filter:{Q:1.2}, filterEnvelope:{baseFrequency:65, octaves:2.6} });
     }else if(mode==="jazz"){
-      pad.set({ oscillator:{type:"triangle"}, envelope:{attack:0.8, decay:0.7, sustain:0.65, release:3.8} });
+      pad.set({ oscillator:{type:"triangle"}, envelope:{attack:0.55, decay:0.6, sustain:0.48, release:2.2} });
       padFilter.frequency.rampTo(1600, 0.9);
       globalReverb.decay = 4.8;
       globalReverb.wet.rampTo(0.22, 0.9);
       globalDelay.wet.rampTo(0.14, 0.9);
       bass.set({ oscillator:{type:"triangle"}, filterEnvelope:{baseFrequency:80, octaves:2.0} });
     }else if(mode==="techno"){
-      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.7, decay:0.5, sustain:0.55, release:2.8} });
+      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.35, decay:0.35, sustain:0.36, release:1.4} });
       padFilter.frequency.rampTo(2200, 0.7);
       globalReverb.decay = 4.2;
       globalReverb.wet.rampTo(0.18, 0.7);
@@ -381,7 +506,7 @@ function updateSoundForMode(mode){
       globalDelay.wet.rampTo(0.16, 0.7);
       bass.set({ oscillator:{type:"sawtooth"}, filter:{Q:2.2}, filterEnvelope:{baseFrequency:55, octaves:3.3}, envelope:{attack:0.005, decay:0.18, sustain:0.2, release:0.25} });
     }else if(mode==="trance"){
-      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.9, decay:0.6, sustain:0.7, release:4.6} });
+      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.45, decay:0.45, sustain:0.45, release:1.8} });
       padFilter.frequency.rampTo(2600, 0.9);
       globalReverb.decay = 6.8;
       globalReverb.wet.rampTo(0.30, 0.9);
@@ -412,49 +537,52 @@ function chooseMode() {
   return "trance";
 }
 
-function applyUCMToParams() {
+function applyUCMToParams(options = {}) {
+  const force = options.force === true;
   // BPM
-  EngineParams.bpm = Math.round(mapValue(UCM_CUR.energy, 0, 100, 50, 135));
-  Tone.Transport.bpm.rampTo(EngineParams.bpm, 1.2);
+  EngineParams.bpm = Math.round(mapValue(UCM_CUR.energy, 0, 100, 58, 148));
+  rampParam("transport-bpm", Tone.Transport.bpm, EngineParams.bpm, force ? 0.18 : 0.45, force ? 0 : 1);
 
   // モード
   const newMode = resolveMode();
   if (EngineParams.mode !== newMode){
     EngineParams.mode = newMode;
-  } else {
-    EngineParams.mode = newMode;
   }
+  const manual = PresetManager.selected && PresetManager.selected !== "__auto__";
 
   // mode-change hooks (patterns + sound)
   if (lastMode !== EngineParams.mode){
     lastMode = EngineParams.mode;
     setPatternsByMode();
     updateSoundForMode(EngineParams.mode);
+    if (manual && PresetManager.presets[EngineParams.mode]) {
+      applyPresetToEngineParams(PresetManager.presets[EngineParams.mode]);
+    }
     const modeLabel = document.getElementById("mode-label");
     if (modeLabel) modeLabel.textContent = EngineParams.mode.toUpperCase();
   }
 
   // 休符
-  EngineParams.restProb = mapValue(UCM_CUR.void, 0, 100, 0.05, 0.6);
+  EngineParams.restProb = mapValue(UCM_CUR.void, 0, 100, 0.03, 0.42);
 
   // ドラム密度
-  EngineParams.kickProb = mapValue(UCM_CUR.body, 0, 100, 0.3, 0.95);
-  EngineParams.hatProb  = mapValue(UCM_CUR.resource, 0, 100, 0.2, 0.9);
+  EngineParams.kickProb = mapValue(UCM_CUR.body, 0, 100, 0.25, 0.9);
+  EngineParams.hatProb  = mapValue(UCM_CUR.resource, 0, 100, 0.16, 0.78);
 
   // Bass / Pad
-  EngineParams.bassProb = mapValue(UCM_CUR.body, 0, 100, 0.1, 0.7);
-  EngineParams.padProb  = mapValue(UCM_CUR.circle, 0, 100, 0.2, 0.8);
+  EngineParams.bassProb = mapValue(UCM_CUR.body, 0, 100, 0.12, 0.68);
+  EngineParams.padProb  = mapValue(UCM_CUR.circle, 0, 100, 0.12, 0.42);
 
   // リバーブ/ディレイ量を少しだけ動かす（軽量）
-  const reverbWet = mapValue(UCM_CUR.observer, 0, 100, 0.15, 0.5);
-  globalReverb.wet.rampTo(reverbWet, 1.5);
+  const reverbWet = mapValue(UCM_CUR.observer, 0, 100, 0.12, 0.42);
+  rampParam("reverb-wet", globalReverb.wet, reverbWet, 0.8, force ? 0 : 0.012);
 
-  const delayWet = mapValue(UCM_CUR.creation, 0, 100, 0.05, 0.35);
-  globalDelay.wet.rampTo(delayWet, 1.0);
+  const delayWet = mapValue(UCM_CUR.creation, 0, 100, 0.04, 0.32);
+  rampParam("delay-wet", globalDelay.wet, delayWet, 0.55, force ? 0 : 0.012);
 
   // Padのカットオフ
-  const cutoff = mapValue(UCM_CUR.observer, 0, 100, 400, 4000);
-  padFilter.frequency.rampTo(cutoff, 1.0);
+  const cutoff = mapValue(UCM_CUR.observer + UCM_CUR.energy * 0.35, 0, 135, 360, 3600);
+  rampParam("pad-cutoff", padFilter.frequency, cutoff, 0.5, force ? 0 : 70);
 
   // スケール
   const baseScale = ["C4", "D4", "E4", "G4", "A4"];
@@ -473,18 +601,10 @@ function applyUCMToParams() {
     case "trance":  bassRoot = "D2"; break;
   }
 
-  // If a preset is manually selected, apply it (best-effort).
-  const manual = PresetManager.selected && PresetManager.selected !== "__auto__";
-  if (manual && PresetManager.presets[EngineParams.mode]) {
-    applyPresetToEngineParams(PresetManager.presets[EngineParams.mode]);
-  }
-
-  setPatternsByMode();
+  if (!manual) setPatternsByMode();
   updateUIFromParams();
 
-  // Phase1: energy is canonical; style is mode-notification only.
-  safeCallMusicAudioAdapter("updateEnergy", UCM_CUR.energy / 100);
-  safeCallMusicAudioAdapter("updateStyle", EngineParams.mode);
+  syncMusicAudioAdapterFromUCM(force);
 }
 
 
@@ -512,38 +632,38 @@ function setPatternsByMode() {
       break;
 
     case "lofi":
-      EngineParams.kickPattern = "x...x.....x...x..";
-      EngineParams.hatPattern  = "..x...x...x...x...";
-      EngineParams.bassPattern = "x.......x...x.....";
-      EngineParams.padPattern  = "x.......x.......x.";
+      EngineParams.kickPattern = "x...x...x...x...";
+      EngineParams.hatPattern  = "..x...x...x...x.";
+      EngineParams.bassPattern = "x......x....x...";
+      EngineParams.padPattern  = "x.......x......x";
       break;
 
     case "dub":
       EngineParams.kickPattern = "x.......x.......";
-      EngineParams.hatPattern  = "....x...x...x...x";
-      EngineParams.bassPattern = "x...x.......x...x";
-      EngineParams.padPattern  = "....x.......x....";
+      EngineParams.hatPattern  = "....x...x...x...";
+      EngineParams.bassPattern = "x...x.......x...";
+      EngineParams.padPattern  = "....x......x....";
       break;
 
     case "jazz":
-      EngineParams.kickPattern = "x.....x...x......";
-      EngineParams.hatPattern  = "..x.x...x.x...x.x.";
-      EngineParams.bassPattern = "x...x...x...x...x.";
-      EngineParams.padPattern  = "x.......x...x.....";
+      EngineParams.kickPattern = "x.....x...x.....";
+      EngineParams.hatPattern  = "..x.x...x.x...x.";
+      EngineParams.bassPattern = "x...x...x...x...";
+      EngineParams.padPattern  = "x.......x...x...";
       break;
 
     case "techno":
       EngineParams.kickPattern = "x...x...x...x...";
-      EngineParams.hatPattern  = "..x...x...x...x...";
-      EngineParams.bassPattern = "x.x...x.x...x.x...";
-      EngineParams.padPattern  = "....x.......x....";
+      EngineParams.hatPattern  = "..x...x...x...x.";
+      EngineParams.bassPattern = "x.x...x.x...x...";
+      EngineParams.padPattern  = "....x......x....";
       break;
 
     case "trance":
       EngineParams.kickPattern = "x...x...x...x...";
-      EngineParams.hatPattern  = "....x.......x....";
+      EngineParams.hatPattern  = "....x......x....";
       EngineParams.bassPattern = "x...x...x...x...";
-      EngineParams.padPattern  = "x.......x.......x";
+      EngineParams.padPattern  = "x.......x.......";
       break;
 
     default:
@@ -573,34 +693,86 @@ function randomNoteFromScale() {
   return currentScale[idx];
 }
 
+function randomChordForMode() {
+  const chords = MODE_CHORDS[EngineParams.mode] || MODE_CHORDS.ambient;
+  return chords[Math.floor(Math.random() * chords.length)];
+}
+
+function releaseAllVoices(time) {
+  const t = typeof time === "number" ? time : Tone.now();
+  try { pad.releaseAll(t); } catch(e) {}
+  try { bass.triggerRelease(t); } catch(e) {}
+  try { kick.triggerRelease(t); } catch(e) {}
+  try { hat.triggerRelease(t); } catch(e) {}
+  try { texture.triggerRelease(t); } catch(e) {}
+  try { glass.triggerRelease(t); } catch(e) {}
+}
+
+function restoreMasterLevel() {
+  rampParam("master-gain", masterGain.gain, 0.82, 0.08, 0);
+}
+
+function quietMasterLevel() {
+  rampParam("master-gain", masterGain.gain, 0.0001, 0.06, 0);
+}
+
+function ensureTransportScheduled() {
+  if (transportEventId !== null) return;
+
+  transportEventId = Tone.Transport.scheduleRepeat((time) => {
+    if (!isPlaying) return;
+    try {
+      scheduleStep(time);
+    } catch (error) {
+      console.warn("[Music] scheduleStep failed:", error);
+      releaseAllVoices(time);
+    }
+  }, "8n");
+}
+
 function scheduleStep(time) {
   const step = stepIndex % EngineParams.stepCount;
 
   // 休符判定
   const isRest = rand(EngineParams.restProb);
+  const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
+  const creationNorm = clampValue(UCM_CUR.creation / 100, 0, 1);
+  const waveNorm = clampValue(UCM_CUR.wave / 100, 0, 1);
+  const grooveJitter = (step % 2 === 1 ? mapValue(waveNorm, 0, 1, 0, 0.018) : 0);
+  const t = time + grooveJitter;
 
   if (!isRest) {
     // Kick
     if (patternAt(EngineParams.kickPattern, step) && rand(EngineParams.kickProb)) {
-      kick.triggerAttackRelease("C2", "8n", time);
+      kick.triggerAttackRelease("C2", "8n", t, 0.72 + energyNorm * 0.18);
     }
 
     // Hat
     if (patternAt(EngineParams.hatPattern, step) && rand(EngineParams.hatProb)) {
-      hat.triggerAttackRelease("32n", time);
+      hat.triggerAttackRelease("32n", t, 0.12 + energyNorm * 0.16);
     }
 
     // Bass
     if (patternAt(EngineParams.bassPattern, step) && rand(EngineParams.bassProb)) {
-      bass.triggerAttackRelease(bassRoot, "8n", time);
+      bass.triggerAttackRelease(bassRoot, EngineParams.mode === "ambient" ? "4n" : "8n", t, 0.34 + energyNorm * 0.22);
     }
 
     // Pad（ゆっくり）
     if (patternAt(EngineParams.padPattern, step) && rand(EngineParams.padProb)) {
-      const note = randomNoteFromScale();
-      const dur  = EngineParams.mode === "ambient" ? "2n" : "4n";
-      pad.triggerAttackRelease(note, dur, time);
+      const dur = EngineParams.mode === "ambient" || EngineParams.mode === "lofi" ? "2n" : "4n";
+      pad.triggerAttackRelease(randomChordForMode(), dur, t, 0.08 + clampValue(UCM_CUR.circle / 100, 0, 1) * 0.08);
     }
+  }
+
+  const textureProb = mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.02, 0.22);
+  if (rand(textureProb) && step % 2 === 1) {
+    texture.triggerAttackRelease("32n", t + 0.01, 0.05 + creationNorm * 0.12);
+  }
+
+  const glassProb = mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.01, 0.14);
+  if (rand(glassProb) && (step % 8 === 3 || step % 16 === 11)) {
+    const note = GLASS_NOTES[Math.floor(Math.random() * GLASS_NOTES.length)];
+    glass.triggerAttackRelease(note, "16n", t + 0.015, 0.06 + energyNorm * 0.12);
   }
 
   stepIndex++;
@@ -622,21 +794,25 @@ function startAutoCycle() {
   UCM.auto.timer = setInterval(() => {
     if (!isPlaying) return;
 
-    const keys = ["wave", "mind", "creation", "void", "circle", "body", "resource", "observer"];
+    const keys = AUTOMIX_KEYS
+      .slice()
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3);
     let changed = false;
 
     for (const key of keys) {
       const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : 50;
-      const delta = Math.floor((Math.random() - 0.5) * 20); // -10〜+10
+      const delta = Math.floor((Math.random() - 0.5) * 12); // -6〜+6
       const next = Math.max(0, Math.min(100, current + delta));
 
       if (next !== current) {
         UCM_TARGET[key] = next;
+        syncSliderFromTarget(key);
         changed = true;
       }
     }
 
-    if (!changed) return;
+    if (changed) updateUIFromParams();
   }, intervalMs);
 }
 
@@ -694,34 +870,54 @@ function attachUI() {
 
   if (btnStart) {
     btnStart.onclick = async () => {
-      if (!initialized) {
-        await Tone.start();
-        initialized = true;
-        await safeCallMusicAudioAdapter("start");
+      if (isStarting) return;
+      isStarting = true;
 
-        Tone.Transport.scheduleRepeat((time) => {
-          scheduleStep(time);
-        }, "8n"); // 16n → 8n にして負荷軽減＋グルーヴ感維持
+      try {
+        await Tone.start();
+        if (Tone.context && Tone.context.state !== "running") {
+          const resumeResult = Tone.context.resume?.();
+          if (resumeResult && typeof resumeResult.then === "function") await resumeResult;
+        }
+
+        ensureTransportScheduled();
+        initialized = true;
+        safeCallMusicAudioAdapter("start");
+
+        updateFromUI({ apply: false });
+        releaseAllVoices();
+        restoreMasterLevel();
+        applyUCMToParams({ force: true });
+
+        if (!isPlaying) {
+          isPlaying = true;
+          Tone.Transport.start("+0.03");
+          if (statusText) statusText.textContent = "Playing…";
+        }
+
+        if (autoToggle && autoToggle.checked) {
+          startAutoCycle();
+        }
+        if (modeLabel) modeLabel.textContent = EngineParams.mode.toUpperCase();
+      } catch (error) {
+        console.warn("[Music] start failed:", error);
+        isPlaying = false;
+        releaseAllVoices();
+        if (statusText) statusText.textContent = "Start failed";
+      } finally {
+        isStarting = false;
       }
-      updateFromUI();
-      if (!isPlaying) {
-        Tone.Transport.start();
-        isPlaying = true;
-        if (statusText) statusText.textContent = "Playing…";
-      }
-      if (autoToggle && autoToggle.checked && UCM.auto.enabled) {
-        startAutoCycle();
-      }
-      if (modeLabel) modeLabel.textContent = EngineParams.mode.toUpperCase();
     };
   }
 
   if (btnStop) {
     btnStop.onclick = () => {
-      Tone.Transport.stop();
-      safeCallMusicAudioAdapter("stop");
-      stopAutoCycle({ keepEnabled: true });
       isPlaying = false;
+      stopAutoCycle({ keepEnabled: true });
+      try { Tone.Transport.stop(); } catch(e) {}
+      releaseAllVoices();
+      quietMasterLevel();
+      safeCallMusicAudioAdapter("stop");
       if (statusText) statusText.textContent = "Stopped";
     };
   }
@@ -747,13 +943,13 @@ function attachUI() {
         if (p) applyPresetUCM(p);
       }
 
-      updateFromUI();
+      updateFromUI({ force: true });
     });
   }
   if (btnReloadPresets){
     btnReloadPresets.addEventListener("click", async () => {
       await loadPresets();
-      updateFromUI();
+      updateFromUI({ force: true });
     });
   }
 
@@ -768,13 +964,13 @@ window.addEventListener("DOMContentLoaded", () => {
   attachUI();
   loadPresets().finally(()=>{ 
     // prime
-    applyUCMToParams(); 
+    applyUCMToParams({ force: true });
   });
 
   // Smooth loop: UCM_TARGET -> UCM_CUR -> params (v1.3)
   // v1.4: throttle applyUCMToParams() to ~120ms so we don't fire 4x rampTo @ 60Hz,
   // clamp dt so a backgrounded tab doesn't catch-up with a huge automation burst.
-  const APPLY_UCM_INTERVAL_SEC = 0.12;
+  const APPLY_UCM_INTERVAL_SEC = 0.18;
   const SMOOTH_DT_MAX_SEC = 0.1;
   let lastT = performance.now();
   let applyUcmAcc = 0;
@@ -785,8 +981,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const a = 1 - Math.exp(-dt / UCM_SMOOTH_SEC);
 
     // Smooth all UCM dimensions (keep 60Hz for visual smoothness)
-    const keys = ["energy","wave","mind","creation","void","circle","body","resource","observer"];
-    for(const k of keys){
+    for(const k of UCM_KEYS){
       UCM_CUR[k] = UCM_CUR[k] + (UCM_TARGET[k] - UCM_CUR[k]) * a;
       // keep the legacy UCM mirror updated for UI text
       UCM[k] = Math.round(UCM_CUR[k]);
@@ -797,7 +992,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (applyUcmAcc >= APPLY_UCM_INTERVAL_SEC){
       applyUcmAcc = 0;
       if (typeof Tone !== "undefined" && Tone && Tone.Transport){
-        try{ applyUCMToParams(); }catch(e){}
+        try{ applyUCMToParams(); }catch(e){ console.warn("[Music] applyUCMToParams failed:", e); }
       }
     }
 
@@ -818,6 +1013,11 @@ window.addEventListener("DOMContentLoaded", () => {
             console.warn("[Music] AudioContext resume failed:", error);
           });
         }
+      }
+      if (isPlaying && Tone && Tone.Transport && Tone.Transport.state !== "started") {
+        console.warn("[Music] Transport not started:", Tone.Transport.state, "-> start");
+        ensureTransportScheduled();
+        Tone.Transport.start("+0.03");
       }
     } catch(e){ /* swallow */ }
   }, 2000);
