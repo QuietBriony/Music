@@ -3,6 +3,12 @@
 この文書は、Music統合を始める前に、参照・移植・運用の約束事を固定するための実装前ガイドです。  
 実装は本roadmap外の別PRで段階実施します。
 
+## 0. 現在地
+
+- `engine.js` は Music の安定版v1 groove engineとして段階的に更新済み。
+- 以後の音作りPRは、`runtime-stability-checklist.md` のSTART/STOP、AutoMix、長時間再生、texture/glass音量確認を通す。
+- 本文書の「実装前」記述は統合判断の基準として残し、実装変更は小〜中規模PRで分離する。
+
 ## 1. 統合対象
 
 対象repo（評価対象）:
@@ -109,6 +115,6 @@
 - `drum-floor` のVCVパッチ実装（拡張計画で別管理）
 - test/chill の全体一括merge
 - サンプル素材の新規追加・再取得
-- `Music` の既存 `index.html / engine.js / style.css` への直接改修
+- `Music` の既存 `index.html / engine.js / style.css` への無計画な一括改修
 - repository設定変更（archive/delete/settings）
 

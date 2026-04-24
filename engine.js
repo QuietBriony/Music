@@ -174,6 +174,10 @@ function rand(prob) {
   return Math.random() < prob;
 }
 
+function chance(value) {
+  return clampValue(value, 0, 1);
+}
+
 /* =========================================================
    2. Tone.js 構成（軽量版）
 ========================================================= */
@@ -303,6 +307,25 @@ const MODE_CHORDS = {
   ]
 };
 const GLASS_NOTES = ["C5", "D5", "Eb5", "G5", "A5", "Bb5", "D6"];
+const MODE_BASS_NOTES = {
+  ambient: ["F1", "C2", "A1", "D2"],
+  lofi: ["A1", "E2", "G1", "C2"],
+  dub: ["C2", "C2", "Bb1", "F1"],
+  jazz: ["D2", "G1", "C2", "A1"],
+  techno: ["C2", "C2", "Bb1", "C2"],
+  trance: ["D2", "A1", "C2", "D2"]
+};
+const GLASS_ACCENT_STEPS = [3, 5, 7, 10, 11, 14];
+
+const GrooveState = {
+  cycle: 0,
+  accentStep: 7,
+  fillActive: false,
+  textureLift: 0,
+  glassLift: 0,
+  bassOffset: 0,
+  microJitterScale: 1
+};
 
 /* =========================================================
    3.5 Presets (Genre) Loader
@@ -543,6 +566,13 @@ function applyUCMToParams(options = {}) {
   EngineParams.bpm = Math.round(mapValue(UCM_CUR.energy, 0, 100, 58, 148));
   rampParam("transport-bpm", Tone.Transport.bpm, EngineParams.bpm, force ? 0.18 : 0.45, force ? 0 : 1);
 
+  const swing = mapValue(UCM_CUR.wave, 0, 100, 0.015, 0.105);
+  if (force || typeof RAMP_CACHE["transport-swing"] !== "number" || Math.abs(RAMP_CACHE["transport-swing"] - swing) > 0.008) {
+    Tone.Transport.swing = swing;
+    Tone.Transport.swingSubdivision = "8n";
+    RAMP_CACHE["transport-swing"] = swing;
+  }
+
   // モード
   const newMode = resolveMode();
   if (EngineParams.mode !== newMode){
@@ -682,6 +712,14 @@ function setPatternsByMode() {
 
 let stepIndex = 0;
 
+function resetRuntimeCounters() {
+  stepIndex = 0;
+  GrooveState.cycle = 0;
+  GrooveState.fillActive = false;
+  GrooveState.textureLift = 0;
+  GrooveState.glassLift = 0;
+}
+
 function patternAt(pattern, step) {
   if (!pattern || pattern.length === 0) return false;
   const ch = pattern[step % pattern.length];
@@ -696,6 +734,31 @@ function randomNoteFromScale() {
 function randomChordForMode() {
   const chords = MODE_CHORDS[EngineParams.mode] || MODE_CHORDS.ambient;
   return chords[Math.floor(Math.random() * chords.length)];
+}
+
+function advanceGrooveStructure() {
+  GrooveState.cycle++;
+
+  const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
+  const creationNorm = clampValue(UCM_CUR.creation / 100, 0, 1);
+  const resourceNorm = clampValue(UCM_CUR.resource / 100, 0, 1);
+  const waveNorm = clampValue(UCM_CUR.wave / 100, 0, 1);
+  const phraseStep = GrooveState.cycle % 4;
+  const density = (energyNorm + creationNorm + resourceNorm) / 3;
+  const fillChance = mapValue(density, 0, 1, 0.04, 0.30);
+
+  GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
+  GrooveState.textureLift = GrooveState.fillActive ? 0.10 + creationNorm * 0.12 : creationNorm * 0.035;
+  GrooveState.glassLift = (phraseStep === 1 || phraseStep === 3) ? 0.04 + creationNorm * 0.08 : 0.015;
+  GrooveState.accentStep = GLASS_ACCENT_STEPS[(GrooveState.cycle + Math.floor(waveNorm * 6)) % GLASS_ACCENT_STEPS.length];
+  GrooveState.bassOffset = (GrooveState.cycle + Math.floor(UCM_CUR.mind / 18)) % 4;
+  GrooveState.microJitterScale = GrooveState.fillActive ? 1.4 : 0.7 + waveNorm * 0.7;
+}
+
+function bassNoteForStep(step) {
+  const notes = MODE_BASS_NOTES[EngineParams.mode] || MODE_BASS_NOTES.techno;
+  const phraseIndex = Math.floor(step / 4) + GrooveState.bassOffset;
+  return notes[phraseIndex % notes.length];
 }
 
 function releaseAllVoices(time) {
@@ -732,47 +795,56 @@ function ensureTransportScheduled() {
 
 function scheduleStep(time) {
   const step = stepIndex % EngineParams.stepCount;
+  if (step === 0) advanceGrooveStructure();
 
   // 休符判定
   const isRest = rand(EngineParams.restProb);
   const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
   const creationNorm = clampValue(UCM_CUR.creation / 100, 0, 1);
+  const resourceNorm = clampValue(UCM_CUR.resource / 100, 0, 1);
   const waveNorm = clampValue(UCM_CUR.wave / 100, 0, 1);
-  const grooveJitter = (step % 2 === 1 ? mapValue(waveNorm, 0, 1, 0, 0.018) : 0);
+  const isAccentStep = step === GrooveState.accentStep || (GrooveState.fillActive && (step % 4 === 3 || step % 8 === 6));
+  const grooveJitter = (step % 2 === 1 ? mapValue(waveNorm, 0, 1, 0, 0.014) * GrooveState.microJitterScale : 0);
+  const fillBoost = GrooveState.fillActive ? 0.14 : 0;
   const t = time + grooveJitter;
 
   if (!isRest) {
     // Kick
-    if (patternAt(EngineParams.kickPattern, step) && rand(EngineParams.kickProb)) {
-      kick.triggerAttackRelease("C2", "8n", t, 0.72 + energyNorm * 0.18);
+    const kickChance = chance(EngineParams.kickProb + (isAccentStep ? 0.08 : 0));
+    if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
+      kick.triggerAttackRelease("C2", "8n", t, 0.70 + energyNorm * 0.18 + (isAccentStep ? 0.06 : 0));
     }
 
     // Hat
-    if (patternAt(EngineParams.hatPattern, step) && rand(EngineParams.hatProb)) {
-      hat.triggerAttackRelease("32n", t, 0.12 + energyNorm * 0.16);
+    const hatChance = chance(EngineParams.hatProb + fillBoost + (isAccentStep ? 0.10 : 0));
+    if ((patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2)) && rand(hatChance)) {
+      hat.triggerAttackRelease("32n", t, 0.10 + energyNorm * 0.13 + (isAccentStep ? 0.05 : 0));
     }
 
     // Bass
-    if (patternAt(EngineParams.bassPattern, step) && rand(EngineParams.bassProb)) {
-      bass.triggerAttackRelease(bassRoot, EngineParams.mode === "ambient" ? "4n" : "8n", t, 0.34 + energyNorm * 0.22);
+    const bassChance = chance(EngineParams.bassProb + (GrooveState.fillActive && step % 8 === 6 ? 0.10 : 0));
+    if (patternAt(EngineParams.bassPattern, step) && rand(bassChance)) {
+      const note = step % 8 === 0 ? bassRoot : bassNoteForStep(step);
+      bass.triggerAttackRelease(note, EngineParams.mode === "ambient" ? "4n" : "8n", t, 0.32 + energyNorm * 0.20);
     }
 
     // Pad（ゆっくり）
     if (patternAt(EngineParams.padPattern, step) && rand(EngineParams.padProb)) {
       const dur = EngineParams.mode === "ambient" || EngineParams.mode === "lofi" ? "2n" : "4n";
-      pad.triggerAttackRelease(randomChordForMode(), dur, t, 0.08 + clampValue(UCM_CUR.circle / 100, 0, 1) * 0.08);
+      pad.triggerAttackRelease(randomChordForMode(), dur, t, 0.07 + clampValue(UCM_CUR.circle / 100, 0, 1) * 0.07);
     }
   }
 
-  const textureProb = mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.02, 0.22);
-  if (rand(textureProb) && step % 2 === 1) {
-    texture.triggerAttackRelease("32n", t + 0.01, 0.05 + creationNorm * 0.12);
+  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.015, 0.18) + GrooveState.textureLift);
+  if (rand(textureProb) && (step % 2 === 1 || isAccentStep)) {
+    const textureTime = t + (isAccentStep ? 0.006 : 0.012);
+    texture.triggerAttackRelease("32n", textureTime, 0.035 + creationNorm * 0.10 + resourceNorm * 0.035);
   }
 
-  const glassProb = mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.01, 0.14);
-  if (rand(glassProb) && (step % 8 === 3 || step % 16 === 11)) {
+  const glassProb = chance(mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.008, 0.10) + GrooveState.glassLift);
+  if (rand(glassProb) && (isAccentStep || step % 8 === 3 || step % 16 === 11)) {
     const note = GLASS_NOTES[Math.floor(Math.random() * GLASS_NOTES.length)];
-    glass.triggerAttackRelease(note, "16n", t + 0.015, 0.06 + energyNorm * 0.12);
+    glass.triggerAttackRelease(note, "16n", t + 0.015, 0.045 + energyNorm * 0.10);
   }
 
   stepIndex++;
@@ -886,6 +958,7 @@ function attachUI() {
 
         updateFromUI({ apply: false });
         releaseAllVoices();
+        resetRuntimeCounters();
         restoreMasterLevel();
         applyUCMToParams({ force: true });
 
@@ -916,6 +989,7 @@ function attachUI() {
       stopAutoCycle({ keepEnabled: true });
       try { Tone.Transport.stop(); } catch(e) {}
       releaseAllVoices();
+      resetRuntimeCounters();
       quietMasterLevel();
       safeCallMusicAudioAdapter("stop");
       if (statusText) statusText.textContent = "Stopped";
@@ -968,7 +1042,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // Smooth loop: UCM_TARGET -> UCM_CUR -> params (v1.3)
-  // v1.4: throttle applyUCMToParams() to ~120ms so we don't fire 4x rampTo @ 60Hz,
+  // v1.4+: throttle applyUCMToParams() so we don't fire rampTo updates at 60Hz,
   // clamp dt so a backgrounded tab doesn't catch-up with a huge automation burst.
   const APPLY_UCM_INTERVAL_SEC = 0.18;
   const SMOOTH_DT_MAX_SEC = 0.1;
@@ -987,7 +1061,7 @@ window.addEventListener("DOMContentLoaded", () => {
       UCM[k] = Math.round(UCM_CUR[k]);
     }
 
-    // Apply to audio/engine at most every ~120ms (was every frame -> Tone scheduler overload)
+    // Apply to audio/engine on a slow control tick (was every frame -> Tone scheduler overload)
     applyUcmAcc += dt;
     if (applyUcmAcc >= APPLY_UCM_INTERVAL_SEC){
       applyUcmAcc = 0;
