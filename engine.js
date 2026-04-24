@@ -611,40 +611,39 @@ function scheduleStep(time) {
 ========================================================= */
 
 function startAutoCycle() {
-  stopAutoCycle();
-  UCM.auto.enabled = true;
+  stopAutoCycle({ keepEnabled: true });
 
   const autoSlider = document.getElementById("auto_cycle");
-  const minutes = autoSlider ? parseInt(autoSlider.value, 10) || 3 : 3;
-  const intervalMs = minutes * 60 * 1000;
+  const rawMinutes = autoSlider ? parseInt(autoSlider.value, 10) : 3;
+  const minutes = Number.isFinite(rawMinutes) && rawMinutes > 0 ? rawMinutes : 3;
+  const intervalMs = Math.max(1000, minutes * 60 * 1000);
 
+  UCM.auto.enabled = true;
   UCM.auto.timer = setInterval(() => {
-    const ids = [
-      "fader_wave",
-      "fader_mind",
-      "fader_creation",
-      "fader_void",
-      "fader_circle",
-      "fader_body",
-      "fader_resource",
-      "fader_observer"
-    ];
+    if (!isPlaying) return;
 
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      let v = parseInt(el.value, 10);
+    const keys = ["wave", "mind", "creation", "void", "circle", "body", "resource", "observer"];
+    let changed = false;
+
+    for (const key of keys) {
+      const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : 50;
       const delta = Math.floor((Math.random() - 0.5) * 20); // -10〜+10
-      v = Math.max(0, Math.min(100, v + delta));
-      el.value = v;
-    });
+      const next = Math.max(0, Math.min(100, current + delta));
 
-    updateFromUI();
+      if (next !== current) {
+        UCM_TARGET[key] = next;
+        changed = true;
+      }
+    }
+
+    if (!changed) return;
   }, intervalMs);
 }
 
-function stopAutoCycle() {
-  UCM.auto.enabled = false;
+function stopAutoCycle(options = {}) {
+  const keepEnabled = options && options.keepEnabled;
+  if (!keepEnabled) UCM.auto.enabled = false;
+
   if (UCM.auto.timer) {
     clearInterval(UCM.auto.timer);
     UCM.auto.timer = null;
@@ -710,6 +709,9 @@ function attachUI() {
         isPlaying = true;
         if (statusText) statusText.textContent = "Playing…";
       }
+      if (autoToggle && autoToggle.checked && UCM.auto.enabled) {
+        startAutoCycle();
+      }
       if (modeLabel) modeLabel.textContent = EngineParams.mode.toUpperCase();
     };
   }
@@ -718,6 +720,7 @@ function attachUI() {
     btnStop.onclick = () => {
       Tone.Transport.stop();
       safeCallMusicAudioAdapter("stop");
+      stopAutoCycle({ keepEnabled: true });
       isPlaying = false;
       if (statusText) statusText.textContent = "Stopped";
     };
