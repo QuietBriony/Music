@@ -24,6 +24,7 @@ const UCM = {
   auto: {
     enabled: false,
     timer: null,
+    phase: 0,
   }
 };
 
@@ -33,7 +34,7 @@ const UCM = {
 const UCM_TARGET = { energy: UCM.energy, wave: UCM.wave, mind: UCM.mind, creation: UCM.creation, void: UCM.void, circle: UCM.circle, body: UCM.body, resource: UCM.resource, observer: UCM.observer };
 const UCM_CUR    = { energy: UCM.energy, wave: UCM.wave, mind: UCM.mind, creation: UCM.creation, void: UCM.void, circle: UCM.circle, body: UCM.body, resource: UCM.resource, observer: UCM.observer };
 const UCM_KEYS = ["energy", "wave", "mind", "creation", "void", "circle", "body", "resource", "observer"];
-const AUTOMIX_KEYS = ["wave", "mind", "creation", "void", "circle", "body", "resource", "observer"];
+const AUTOMIX_MOTION_KEYS = ["energy", "wave", "mind", "creation", "void", "circle", "body", "resource", "observer"];
 const SLIDER_BY_UCM = {
   energy: "fader_energy",
   wave: "fader_wave",
@@ -45,6 +46,19 @@ const SLIDER_BY_UCM = {
   resource: "fader_resource",
   observer: "fader_observer"
 };
+const AUTOMIX_PROFILE = {
+  energy: { base: 48, depth: 26, phase: 0.00, step: 3.0 },
+  wave: { base: 55, depth: 30, phase: 0.13, step: 4.0 },
+  mind: { base: 50, depth: 22, phase: 0.31, step: 3.0 },
+  creation: { base: 54, depth: 30, phase: 0.47, step: 4.2 },
+  void: { base: 24, depth: 18, phase: 0.62, step: 2.6 },
+  circle: { base: 58, depth: 24, phase: 0.71, step: 3.2 },
+  body: { base: 56, depth: 28, phase: 0.83, step: 3.8 },
+  resource: { base: 62, depth: 28, phase: 0.91, step: 4.0 },
+  observer: { base: 52, depth: 22, phase: 0.38, step: 3.0 }
+};
+const AUTO_MOTION_TICK_MS = 3500;
+const AUTO_SLIDER_SYNC_INTERVAL_MS = 240;
 // seconds to reach target (larger = smoother)
 let UCM_SMOOTH_SEC = 1.6;
 
@@ -59,6 +73,7 @@ const NAMIMA_ADAPTER_ENERGY_DELTA = 0.015;
 let namimaAdapterLastSentAt = 0;
 let namimaAdapterLastEnergy = null;
 let namimaAdapterLastMode = null;
+let autoSliderLastSyncAt = 0;
 
 /* =========================================================
    1. ヘルパー
@@ -126,13 +141,34 @@ function rampParam(cacheKey, param, value, seconds, minDelta = 0.001) {
   }
 }
 
-function syncSliderFromTarget(key) {
+function syncSliderValue(key, value) {
   const id = SLIDER_BY_UCM[key];
   if (!id) return;
 
   const el = document.getElementById(id);
   if (!el || document.activeElement === el) return;
-  el.value = String(Math.round(UCM_TARGET[key]));
+  el.value = String(Math.round(clampValue(value, 0, 100)));
+}
+
+function syncSliderFromTarget(key) {
+  syncSliderValue(key, UCM_TARGET[key]);
+}
+
+function syncAutoSlidersFromCurrent(now) {
+  if (!UCM.auto.enabled || !isPlaying) return;
+  if (now - autoSliderLastSyncAt < AUTO_SLIDER_SYNC_INTERVAL_MS) return;
+
+  autoSliderLastSyncAt = now;
+  for (const key of UCM_KEYS) {
+    syncSliderValue(key, UCM_CUR[key]);
+  }
+  updateUIFromParams();
+}
+
+function updateRuntimeUiState() {
+  if (!document.body) return;
+  document.body.dataset.playing = isPlaying ? "true" : "false";
+  document.body.dataset.auto = UCM.auto.enabled ? "true" : "false";
 }
 
 function syncMusicAudioAdapterFromUCM(force = false) {
@@ -176,6 +212,12 @@ function rand(prob) {
 
 function chance(value) {
   return clampValue(value, 0, 1);
+}
+
+function approachValue(current, target, maxStep) {
+  const delta = target - current;
+  if (Math.abs(delta) <= maxStep) return target;
+  return current + Math.sign(delta) * maxStep;
 }
 
 /* =========================================================
@@ -860,32 +902,32 @@ function startAutoCycle() {
   const autoSlider = document.getElementById("auto_cycle");
   const rawMinutes = autoSlider ? parseInt(autoSlider.value, 10) : 3;
   const minutes = Number.isFinite(rawMinutes) && rawMinutes > 0 ? rawMinutes : 3;
-  const intervalMs = Math.max(1000, minutes * 60 * 1000);
+  const cycleMs = Math.max(30000, minutes * 60 * 1000);
 
   UCM.auto.enabled = true;
+  updateRuntimeUiState();
+  updateAutoMixTargets(cycleMs);
+
   UCM.auto.timer = setInterval(() => {
-    if (!isPlaying) return;
+    updateAutoMixTargets(cycleMs);
+  }, AUTO_MOTION_TICK_MS);
+}
 
-    const keys = AUTOMIX_KEYS
-      .slice()
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3);
-    let changed = false;
+function updateAutoMixTargets(cycleMs) {
+  if (!UCM.auto.enabled || !isPlaying) return;
 
-    for (const key of keys) {
-      const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : 50;
-      const delta = Math.floor((Math.random() - 0.5) * 12); // -6〜+6
-      const next = Math.max(0, Math.min(100, current + delta));
-
-      if (next !== current) {
-        UCM_TARGET[key] = next;
-        syncSliderFromTarget(key);
-        changed = true;
-      }
-    }
-
-    if (changed) updateUIFromParams();
-  }, intervalMs);
+  UCM.auto.phase = (UCM.auto.phase + AUTO_MOTION_TICK_MS / cycleMs) % 1;
+  for (const key of AUTOMIX_MOTION_KEYS) {
+    const profile = AUTOMIX_PROFILE[key];
+    const phase = (UCM.auto.phase + profile.phase) % 1;
+    const wave = Math.sin(phase * Math.PI * 2);
+    const ripple = Math.sin((phase * 2.7 + profile.phase) * Math.PI * 2) * 0.23;
+    const desired = clampValue(profile.base + profile.depth * (wave + ripple), 4, 96);
+    const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : profile.base;
+    UCM_TARGET[key] = approachValue(current, desired, profile.step);
+    syncSliderFromTarget(key);
+  }
+  updateUIFromParams();
 }
 
 function stopAutoCycle(options = {}) {
@@ -896,6 +938,7 @@ function stopAutoCycle(options = {}) {
     clearInterval(UCM.auto.timer);
     UCM.auto.timer = null;
   }
+  updateRuntimeUiState();
 }
 
 /* =========================================================
@@ -937,6 +980,7 @@ function attachUI() {
   const btnStart   = document.getElementById("btn_start");
   const btnStop    = document.getElementById("btn_stop");
   const autoToggle = document.getElementById("auto_toggle");
+  const autoCycle  = document.getElementById("auto_cycle");
   const statusText = document.getElementById("status-text");
   const modeLabel  = document.getElementById("mode-label");
 
@@ -967,6 +1011,7 @@ function attachUI() {
           Tone.Transport.start("+0.03");
           if (statusText) statusText.textContent = "Playing…";
         }
+        updateRuntimeUiState();
 
         if (autoToggle && autoToggle.checked) {
           startAutoCycle();
@@ -975,6 +1020,7 @@ function attachUI() {
       } catch (error) {
         console.warn("[Music] start failed:", error);
         isPlaying = false;
+        updateRuntimeUiState();
         releaseAllVoices();
         if (statusText) statusText.textContent = "Start failed";
       } finally {
@@ -993,6 +1039,7 @@ function attachUI() {
       quietMasterLevel();
       safeCallMusicAudioAdapter("stop");
       if (statusText) statusText.textContent = "Stopped";
+      updateRuntimeUiState();
     };
   }
 
@@ -1001,6 +1048,12 @@ function attachUI() {
       if (e.target.checked) startAutoCycle();
       else stopAutoCycle();
     };
+  }
+
+  if (autoCycle) {
+    autoCycle.addEventListener("change", () => {
+      if (autoToggle && autoToggle.checked) startAutoCycle();
+    });
   }
 
   // Preset UI
@@ -1036,6 +1089,7 @@ function attachUI() {
 window.addEventListener("DOMContentLoaded", () => {
   mountMandalaLayers();
   attachUI();
+  updateRuntimeUiState();
   loadPresets().finally(()=>{ 
     // prime
     applyUCMToParams({ force: true });
@@ -1060,6 +1114,7 @@ window.addEventListener("DOMContentLoaded", () => {
       // keep the legacy UCM mirror updated for UI text
       UCM[k] = Math.round(UCM_CUR[k]);
     }
+    syncAutoSlidersFromCurrent(t);
 
     // Apply to audio/engine on a slow control tick (was every frame -> Tone scheduler overload)
     applyUcmAcc += dt;
