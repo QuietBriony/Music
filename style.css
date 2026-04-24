@@ -776,3 +776,25 @@ body[data-world="ambient"] input[type="range"]::-webkit-slider-runnable-track {
 body[data-world="ambient"] input[type="range"]::-moz-range-track {
   background: linear-gradient(90deg, rgba(127, 238, 218, 0.72), rgba(222, 252, 255, 0.92));
 }
+
+.identity-line {
+  margin: 4px 0 0;
+  color: rgba(223, 245, 255, 0.66);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+body[data-character="ambient"] .identity-line {
+  color: rgba(198, 255, 233, 0.76);
+}
+
+body[data-character="techno"] .identity-line,
+body[data-character="trance"] .identity-line {
+  color: rgba(255, 221, 126, 0.76);
+}
+
+body[data-character="dub"] .identity-line,
+body[data-character="lofi"] .identity-line {
+  color: rgba(190, 217, 255, 0.72);
+}
