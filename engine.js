@@ -809,7 +809,12 @@ window.addEventListener("DOMContentLoaded", () => {
     try {
       if (isPlaying && typeof Tone !== "undefined" && Tone && Tone.context && Tone.context.state !== "running") {
         console.warn("[Music] AudioContext not running:", Tone.context.state, "-> resume");
-        if (typeof Tone.context.resume === "function") Tone.context.resume();
+        const resumeResult = Tone.context.resume?.();
+        if (resumeResult && typeof resumeResult.catch === "function") {
+          resumeResult.catch((error) => {
+            console.warn("[Music] AudioContext resume failed:", error);
+          });
+        }
       }
     } catch(e){ /* swallow */ }
   }, 2000);
