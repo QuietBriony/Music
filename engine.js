@@ -66,6 +66,13 @@ function getMusicAudioAdapter() {
   return window && window.MusicNamimaAudioAdapter ? window.MusicNamimaAudioAdapter : null;
 }
 
+// Namima adapter throttling state (Phase2前の最小安定化)
+const NAMIMA_ADAPTER_UPDATE_INTERVAL_MS = 120;
+const NAMIMA_ADAPTER_ENERGY_DELTA = 0.01; // 1%未満は更新しない
+let namimaAdapterLastSentAt = 0;
+let namimaAdapterLastEnergy = null;
+let namimaAdapterLastMode = null;
+
 function safeCallMusicAudioAdapter(methodName, ...args) {
   const adapter = getMusicAudioAdapter();
   if (!adapter || typeof adapter[methodName] !== "function") return undefined;
@@ -81,6 +88,45 @@ function safeCallMusicAudioAdapter(methodName, ...args) {
   } catch (error) {
     console.warn("[Music] audio adapter call failed:", methodName, error);
     return undefined;
+  }
+}
+
+function syncMusicAudioAdapterFromUCM(force = false) {
+  const now = typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now();
+
+  if (!force && now - namimaAdapterLastSentAt < NAMIMA_ADAPTER_UPDATE_INTERVAL_MS) {
+    return;
+  }
+
+  const mode = EngineParams.mode;
+  const energy = UCM_CUR.energy / 100;
+
+  // Energy/styleは変化が小さい場合は省略して呼び出し頻度を抑える
+  const shouldSendEnergy =
+    typeof energy === "number" &&
+    (namimaAdapterLastEnergy === null || Math.abs(energy - namimaAdapterLastEnergy) >= NAMIMA_ADAPTER_ENERGY_DELTA);
+
+  const shouldSendMode =
+    typeof mode === "string" && namimaAdapterLastMode !== mode;
+
+  if (!shouldSendEnergy && !shouldSendMode) {
+    if (!force) {
+      return;
+    }
+  }
+
+  namimaAdapterLastSentAt = now;
+
+  if (shouldSendEnergy) {
+    safeCallMusicAudioAdapter("updateEnergy", energy);
+    namimaAdapterLastEnergy = energy;
+  }
+
+  if (shouldSendMode) {
+    safeCallMusicAudioAdapter("updateStyle", mode);
+    namimaAdapterLastMode = mode;
   }
 }
 
@@ -482,9 +528,8 @@ function applyUCMToParams() {
   setPatternsByMode();
   updateUIFromParams();
 
-  // Phase1: energy is canonical; style is mode-notification only.
-  safeCallMusicAudioAdapter("updateEnergy", UCM_CUR.energy / 100);
-  safeCallMusicAudioAdapter("updateStyle", EngineParams.mode);
+  // Phase1 adapter bridge: energy/style are rate-limited + 差分ガード
+  syncMusicAudioAdapterFromUCM();
 }
 
 
@@ -698,7 +743,7 @@ function attachUI() {
       if (!initialized) {
         await Tone.start();
         initialized = true;
-        await safeCallMusicAudioAdapter("start");
+        safeCallMusicAudioAdapter("start");
 
         Tone.Transport.scheduleRepeat((time) => {
           scheduleStep(time);
