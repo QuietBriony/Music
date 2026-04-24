@@ -289,8 +289,7 @@ body {
   appearance: none;
   width: 6px;
   height: 100px;
-  writing-mode: bt-lr; /* Safari fallback */
-  transform: rotate(-90deg);
+  transform: rotate(90deg);
   margin: 0;
   background: transparent;
   cursor: pointer;
