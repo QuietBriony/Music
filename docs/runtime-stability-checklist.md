@@ -28,6 +28,7 @@
 ## AutoMix OFF / ON確認
 - AutoMix OFF: `auto_toggle` がオフの状態で3分以上再生。無音化・固まりが起きないか。
 - AutoMix ON: `auto_cycle` の値を短め（2〜3分）/中（5分）/長（10分）で切り替え、安定性を比較。
+- AutoMix ON中は各横sliderが急に跳ねず、ゆっくり追従しているかを見る。
 - いずれでも `STOP` 時に `timer` が残留しないかを目視。
 - `START/STOP` を複数回挟んだ際の再開挙動を同条件で比較。
 

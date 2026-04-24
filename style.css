@@ -12,6 +12,8 @@
   --bg-light:#0b2440;
   --accent:  #6fa8ff;
   --accent-soft: #9cc6ff;
+  --accent-glass: #7df0d4;
+  --accent-heat: #ffcf70;
   --text-main: #e6edf7;
   --text-sub:  #9fb3d9;
   --panel-bg: rgba(8, 18, 35, 0.72);
@@ -35,6 +37,16 @@ body {
   color: var(--text-main);
   height: 100vh;
   overflow: hidden;
+}
+
+body[data-playing="true"] {
+  --panel-border: rgba(125, 240, 212, 0.48);
+  --shadow-soft: 0 0 36px rgba(70, 210, 210, 0.24);
+}
+
+body[data-playing="true"][data-auto="true"] {
+  --accent: var(--accent-glass);
+  --accent-soft: #b8fff1;
 }
 
 /* ---------------------------
@@ -124,6 +136,7 @@ body {
   padding: 16px 18px 18px;
   backdrop-filter: blur(18px) saturate(160%);
   pointer-events: auto;
+  transition: border-color 0.45s ease, box-shadow 0.45s ease, background 0.45s ease;
 }
 
 /* Header */
@@ -167,6 +180,13 @@ body {
   background: radial-gradient(circle at top left,
     rgba(130, 170, 255, 0.2),
     rgba(5, 15, 32, 0.9));
+  transition: border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
+}
+
+body[data-playing="true"] #mode-label {
+  border-color: rgba(125, 240, 212, 0.72);
+  color: #dffff8;
+  box-shadow: 0 0 16px rgba(125, 240, 212, 0.16);
 }
 
 /* ---------------------------
@@ -238,12 +258,24 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 148px;
+  padding: 8px 7px;
+  border: 1px solid rgba(150, 190, 255, 0.14);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(10, 24, 44, 0.48), rgba(3, 10, 22, 0.32));
+  transition: border-color 0.3s ease, background 0.3s ease, transform 0.3s ease;
 }
 
 .fader-label {
   font-size: 11px;
   margin-bottom: 4px;
   color: var(--text-sub);
+  letter-spacing: 0.04em;
+}
+
+body[data-playing="true"][data-auto="true"] .fader-group {
+  border-color: rgba(125, 240, 212, 0.22);
+  background: linear-gradient(180deg, rgba(15, 38, 54, 0.56), rgba(3, 12, 23, 0.34));
 }
 
 /* 右カラム：Auto & Transport */
@@ -267,6 +299,7 @@ body {
   align-items: center;
   height: 160px;
   gap: 4px;
+  justify-content: center;
 }
 
 .fader-vertical.small {
@@ -277,6 +310,7 @@ body {
 .fader-max {
   font-size: 10px;
   color: var(--text-sub);
+  opacity: 0.72;
 }
 
 .fader-value {
@@ -293,6 +327,7 @@ body {
   margin: 0;
   background: transparent;
   cursor: pointer;
+  transition: filter 0.25s ease;
 }
 
 /* トラック */
@@ -301,15 +336,17 @@ body {
   height: 6px;
   border-radius: 999px;
   background: linear-gradient(90deg,
-    rgba(80, 140, 255, 0.25),
-    rgba(150, 200, 255, 0.9));
+    rgba(80, 140, 255, 0.22),
+    rgba(125, 240, 212, 0.62),
+    rgba(255, 207, 112, 0.72));
 }
 .fader-vertical input[type="range"]::-moz-range-track {
   height: 6px;
   border-radius: 999px;
   background: linear-gradient(90deg,
-    rgba(80, 140, 255, 0.25),
-    rgba(150, 200, 255, 0.9));
+    rgba(80, 140, 255, 0.22),
+    rgba(125, 240, 212, 0.62),
+    rgba(255, 207, 112, 0.72));
 }
 
 /* サム（つまみ） */
@@ -319,18 +356,22 @@ body {
   width: 16px;
   height: 16px;
   border-radius: 999px;
-  border: 2px solid rgba(120, 190, 255, 0.9);
+  border: 2px solid var(--accent-soft);
   background: #f5f8ff;
-  box-shadow: 0 0 10px rgba(120, 190, 255, 0.7);
+  box-shadow: 0 0 10px rgba(125, 240, 212, 0.46);
   margin-top: -5px;
 }
 .fader-vertical input[type="range"]::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 999px;
-  border: 2px solid rgba(120, 190, 255, 0.9);
+  border: 2px solid var(--accent-soft);
   background: #f5f8ff;
-  box-shadow: 0 0 10px rgba(120, 190, 255, 0.7);
+  box-shadow: 0 0 10px rgba(125, 240, 212, 0.46);
+}
+
+body[data-playing="true"][data-auto="true"] .fader-vertical input[type="range"] {
+  filter: saturate(1.2) brightness(1.08);
 }
 
 /* ---------------------------
@@ -345,6 +386,13 @@ body {
     rgba(120, 180, 255, 0.1),
     rgba(3, 10, 24, 0.9));
   margin-bottom: 10px;
+  transition: border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+}
+
+body[data-playing="true"][data-auto="true"] #auto-block {
+  border-color: rgba(125, 240, 212, 0.62);
+  box-shadow: 0 0 18px rgba(125, 240, 212, 0.16);
+  background: linear-gradient(135deg, rgba(22, 58, 70, 0.56), rgba(3, 10, 24, 0.90));
 }
 
 .auto-header {
@@ -447,7 +495,7 @@ body {
 }
 
 .switch input:checked + .slider {
-  background-color: rgba(120, 190, 255, 0.8);
+  background-color: rgba(125, 240, 212, 0.82);
 }
 
 .switch input:checked + .slider:before {
