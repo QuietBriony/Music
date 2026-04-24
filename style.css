@@ -618,3 +618,121 @@ input[type="range"], button, select { touch-action: manipulation; }
 #btn_reload_presets{
   min-width: unset;
 }
+
+/* World spectrum visual system: original liminal ambient / IDM / hardcore states. */
+body {
+  --world-accent: rgba(83, 220, 255, 0.74);
+  --world-accent-strong: rgba(255, 213, 122, 0.82);
+  --world-shadow: rgba(40, 190, 255, 0.2);
+  --world-panel: rgba(8, 20, 31, 0.82);
+  transition: background 900ms ease, color 900ms ease;
+}
+
+body[data-world="ambient"] {
+  --world-accent: rgba(155, 244, 217, 0.82);
+  --world-accent-strong: rgba(215, 245, 255, 0.88);
+  --world-shadow: rgba(124, 226, 211, 0.18);
+  --world-panel: rgba(8, 28, 28, 0.8);
+  background:
+    linear-gradient(180deg, rgba(7, 20, 26, 0.96) 0%, rgba(12, 35, 37, 0.94) 52%, rgba(9, 17, 24, 0.98) 100%),
+    repeating-linear-gradient(90deg, rgba(177, 255, 230, 0.05) 0 1px, transparent 1px 74px);
+}
+
+body[data-world="idm"] {
+  --world-accent: rgba(92, 218, 255, 0.78);
+  --world-accent-strong: rgba(255, 216, 122, 0.84);
+  --world-shadow: rgba(255, 204, 92, 0.16);
+  --world-panel: rgba(10, 22, 34, 0.84);
+  background:
+    linear-gradient(180deg, rgba(5, 14, 25, 0.97) 0%, rgba(18, 24, 36, 0.94) 45%, rgba(8, 12, 21, 0.99) 100%),
+    repeating-linear-gradient(135deg, rgba(255, 219, 120, 0.045) 0 1px, transparent 1px 62px);
+}
+
+body[data-world="hardcore"] {
+  --world-accent: rgba(255, 78, 74, 0.78);
+  --world-accent-strong: rgba(255, 226, 119, 0.9);
+  --world-shadow: rgba(255, 67, 54, 0.2);
+  --world-panel: rgba(32, 12, 14, 0.84);
+  background:
+    linear-gradient(180deg, rgba(19, 7, 12, 0.98) 0%, rgba(37, 14, 18, 0.96) 48%, rgba(8, 8, 13, 0.99) 100%),
+    repeating-linear-gradient(90deg, rgba(255, 75, 55, 0.055) 0 2px, transparent 2px 46px);
+}
+
+#mode-label {
+  color: var(--world-accent-strong);
+  letter-spacing: 0.16em;
+  text-shadow: 0 0 18px var(--world-shadow);
+  transition: color 700ms ease, text-shadow 700ms ease;
+}
+
+#control-panel,
+.fader-card,
+.preset-card,
+.transport-card {
+  background: var(--world-panel);
+  border-color: var(--world-accent);
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.28), 0 0 28px var(--world-shadow);
+  transition: background 800ms ease, border-color 800ms ease, box-shadow 800ms ease;
+}
+
+#mandala-container {
+  isolation: isolate;
+}
+
+#mandala-container::before,
+#mandala-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  transition: opacity 900ms ease, background 900ms ease, filter 900ms ease;
+}
+
+#mandala-container::before {
+  z-index: 1;
+  opacity: 0.18;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 9px),
+    linear-gradient(135deg, transparent, var(--world-shadow));
+  mix-blend-mode: screen;
+}
+
+#mandala-container::after {
+  z-index: 2;
+  opacity: 0.16;
+  background: radial-gradient(circle at center, transparent 0 44%, var(--world-shadow) 100%);
+  mix-blend-mode: screen;
+}
+
+body[data-world="ambient"] #mandala-container::before {
+  opacity: 0.1;
+  filter: blur(0.4px);
+}
+
+body[data-world="hardcore"] #mandala-container::before {
+  opacity: 0.28;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 226, 119, 0.12) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(0deg, rgba(255, 72, 61, 0.1) 0 1px, transparent 1px 13px);
+}
+
+body[data-world="hardcore"] #mandala-container::after {
+  opacity: 0.28;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, var(--world-accent), var(--world-accent-strong));
+}
+
+input[type="range"]::-moz-range-track {
+  background: linear-gradient(90deg, var(--world-accent), var(--world-accent-strong));
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  box-shadow: 0 0 14px var(--world-shadow), 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+input[type="range"]::-moz-range-thumb {
+  box-shadow: 0 0 14px var(--world-shadow), 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
