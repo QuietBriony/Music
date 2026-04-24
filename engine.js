@@ -769,13 +769,19 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // Smooth loop: UCM_TARGET -> UCM_CUR -> params (v1.3)
+  // v1.4: throttle applyUCMToParams() to ~120ms so we don't fire 4x rampTo @ 60Hz,
+  // clamp dt so a backgrounded tab doesn't catch-up with a huge automation burst.
+  const APPLY_UCM_INTERVAL_SEC = 0.12;
+  const SMOOTH_DT_MAX_SEC = 0.1;
   let lastT = performance.now();
+  let applyUcmAcc = 0;
   function smoothTick(t){
-    const dt = Math.max(0.001, (t - lastT) / 1000);
+    let dt = (t - lastT) / 1000;
     lastT = t;
+    dt = Math.max(0.001, Math.min(dt, SMOOTH_DT_MAX_SEC));
     const a = 1 - Math.exp(-dt / UCM_SMOOTH_SEC);
 
-    // Smooth all UCM dimensions
+    // Smooth all UCM dimensions (keep 60Hz for visual smoothness)
     const keys = ["energy","wave","mind","creation","void","circle","body","resource","observer"];
     for(const k of keys){
       UCM_CUR[k] = UCM_CUR[k] + (UCM_TARGET[k] - UCM_CUR[k]) * a;
@@ -783,16 +789,37 @@ window.addEventListener("DOMContentLoaded", () => {
       UCM[k] = Math.round(UCM_CUR[k]);
     }
 
-    // Apply to audio/engine (uses UCM_CUR internally)
-    if (typeof Tone !== "undefined" && Tone && Tone.Transport){
-      try{ applyUCMToParams(); }catch(e){}
+    // Apply to audio/engine at most every ~120ms (was every frame -> Tone scheduler overload)
+    applyUcmAcc += dt;
+    if (applyUcmAcc >= APPLY_UCM_INTERVAL_SEC){
+      applyUcmAcc = 0;
+      if (typeof Tone !== "undefined" && Tone && Tone.Transport){
+        try{ applyUCMToParams(); }catch(e){}
+      }
     }
 
     requestAnimationFrame(smoothTick);
   }
   requestAnimationFrame(smoothTick);
 
-  console.log("UCM Mandala Engine v3.1 (v1.3 smoothing) ready");
+  // AudioContext watchdog: browsers (especially Chrome/Safari on idle tabs or mobile)
+  // can auto-suspend the AudioContext while Tone.Transport appears to keep running,
+  // producing "suddenly no sound". Check every 2s and resume if needed.
+  setInterval(() => {
+    try {
+      if (isPlaying && typeof Tone !== "undefined" && Tone && Tone.context && Tone.context.state !== "running") {
+        console.warn("[Music] AudioContext not running:", Tone.context.state, "-> resume");
+        const resumeResult = Tone.context.resume?.();
+        if (resumeResult && typeof resumeResult.catch === "function") {
+          resumeResult.catch((error) => {
+            console.warn("[Music] AudioContext resume failed:", error);
+          });
+        }
+      }
+    } catch(e){ /* swallow */ }
+  }, 2000);
+
+  console.log("UCM Mandala Engine v3.1 (v1.4 throttle+watchdog) ready");
 });
 
 /* =========================================================
