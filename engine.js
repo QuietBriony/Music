@@ -181,12 +181,57 @@ const RecorderState = {
 
 function getRecorderMimeType() {
   if (typeof MediaRecorder === "undefined") return "";
+  const nav = typeof navigator !== "undefined" ? navigator : {};
+  const ua = nav.userAgent || "";
+  const isAppleMobile = /iPad|iPhone|iPod/.test(ua) || (nav.platform === "MacIntel" && nav.maxTouchPoints > 1);
+  const mp4First = [
+    "audio/mp4",
+    "audio/mp4;codecs=mp4a.40.2",
+    "audio/webm;codecs=opus",
+    "audio/webm"
+  ];
+  const webmFirst = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/mp4;codecs=mp4a.40.2"
+  ];
+  const candidates = isAppleMobile ? mp4First : webmFirst;
+  return candidates.find((type) => MediaRecorder.isTypeSupported?.(type)) || "";
+}
+
+function getRecorderExtension(mimeType) {
+  return mimeType.includes("mp4") ? "m4a" : "webm";
+}
+
+function getRecorderSavedMessage(mimeType, sizeKb) {
+  if (mimeType.includes("mp4")) {
+    return `Recorded ${sizeKb} KB as m4a-compatible audio`;
+  }
+  if (mimeType.includes("webm")) {
+    return `WebM saved ${sizeKb} KB. iPhone app may reject; use PC/convert to m4a.`;
+  }
+  return `Recorded ${sizeKb} KB`;
+}
+
+function getRecorderFallbackMessage() {
+  return "Recorder unavailable on this browser";
+}
+
+function getRecorderStartMessage(mimeType) {
+  if (mimeType.includes("mp4")) return "Recording Music output as m4a-compatible audio...";
+  if (mimeType.includes("webm")) return "Recording WebM audio; iPhone upload may need conversion...";
+  return "Recording Music output...";
+}
+
+function getRecorderDefaultMimeType() {
+  if (RecorderState.mimeType) return RecorderState.mimeType;
   const candidates = [
     "audio/webm;codecs=opus",
     "audio/webm",
     "audio/mp4"
   ];
-  return candidates.find((type) => MediaRecorder.isTypeSupported?.(type)) || "";
+  return candidates.find((type) => typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported?.(type)) || "audio/webm";
 }
 
 function setRecorderStatus(message) {
@@ -217,7 +262,7 @@ function startLocalRecorder() {
   if (link) link.hidden = true;
 
   if (typeof MediaRecorder === "undefined" || !recorderDestination?.stream) {
-    setRecorderStatus("Recorder unavailable on this browser");
+    setRecorderStatus(getRecorderFallbackMessage());
     return;
   }
   if (RecorderState.recorder && RecorderState.recorder.state === "recording") return;
@@ -232,7 +277,7 @@ function startLocalRecorder() {
       : new MediaRecorder(recorderDestination.stream);
   } catch (error) {
     console.warn("[Music] recorder start failed:", error);
-    setRecorderStatus("Recorder unavailable on this browser");
+    setRecorderStatus(getRecorderFallbackMessage());
     RecorderState.recorder = null;
     return;
   }
@@ -246,9 +291,9 @@ function startLocalRecorder() {
     setRecorderStatus("Recorder stopped");
   };
   RecorderState.recorder.onstop = () => {
-    const mimeType = RecorderState.mimeType || "audio/webm";
+    const mimeType = getRecorderDefaultMimeType();
     const blob = new Blob(RecorderState.chunks, { type: mimeType });
-    const extension = mimeType.includes("mp4") ? "mp4" : "webm";
+    const extension = getRecorderExtension(mimeType);
     RecorderState.chunks = [];
     RecorderState.recorder = null;
     setRecorderButton(false);
@@ -264,20 +309,20 @@ function startLocalRecorder() {
       download.textContent = "save";
       download.hidden = false;
     }
-    setRecorderStatus(`Recorded ${Math.round(blob.size / 1024)} KB`);
+    setRecorderStatus(getRecorderSavedMessage(mimeType, Math.round(blob.size / 1024)));
   };
 
   try {
     RecorderState.recorder.start(1000);
     RecorderState.startedAt = Date.now();
     setRecorderButton(true);
-    setRecorderStatus("Recording Music output...");
+    setRecorderStatus(getRecorderStartMessage(RecorderState.mimeType));
     clearTimeout(RecorderState.stopTimer);
     RecorderState.stopTimer = setTimeout(() => stopLocalRecorder(), RecorderState.maxMs);
   } catch (error) {
     console.warn("[Music] recorder start failed:", error);
     setRecorderButton(false);
-    setRecorderStatus("Recorder unavailable on this browser");
+    setRecorderStatus(getRecorderFallbackMessage());
   }
 }
 
