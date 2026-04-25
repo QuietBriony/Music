@@ -169,6 +169,144 @@ function safeCallMusicAudioAdapter(methodName, ...args) {
   }
 }
 
+const RecorderState = {
+  recorder: null,
+  chunks: [],
+  startedAt: 0,
+  objectUrl: null,
+  mimeType: "",
+  maxMs: 30000,
+  stopTimer: null
+};
+
+function getRecorderMimeType() {
+  if (typeof MediaRecorder === "undefined") return "";
+  const candidates = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4"
+  ];
+  return candidates.find((type) => MediaRecorder.isTypeSupported?.(type)) || "";
+}
+
+function setRecorderStatus(message) {
+  const statusText = document.getElementById("status-text");
+  if (statusText) statusText.textContent = message;
+}
+
+function setRecorderButton(recording) {
+  const btn = document.getElementById("btn_rec");
+  if (btn) btn.textContent = recording ? "STOP REC" : "REC";
+  if (document.body) document.body.dataset.recording = recording ? "true" : "false";
+}
+
+function cleanupRecorderObjectUrl() {
+  if (!RecorderState.objectUrl) return;
+  try { URL.revokeObjectURL(RecorderState.objectUrl); } catch(e) {}
+  RecorderState.objectUrl = null;
+}
+
+function makeReviewFileName(extension = "webm") {
+  const now = new Date();
+  const pad = (value) => String(value).padStart(2, "0");
+  return `music-review-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.${extension}`;
+}
+
+function startLocalRecorder() {
+  const link = document.getElementById("rec_download");
+  if (link) link.hidden = true;
+
+  if (typeof MediaRecorder === "undefined" || !recorderDestination?.stream) {
+    setRecorderStatus("Recorder unavailable on this browser");
+    return;
+  }
+  if (RecorderState.recorder && RecorderState.recorder.state === "recording") return;
+
+  cleanupRecorderObjectUrl();
+  RecorderState.chunks = [];
+  RecorderState.mimeType = getRecorderMimeType();
+
+  try {
+    RecorderState.recorder = RecorderState.mimeType
+      ? new MediaRecorder(recorderDestination.stream, { mimeType: RecorderState.mimeType })
+      : new MediaRecorder(recorderDestination.stream);
+  } catch (error) {
+    console.warn("[Music] recorder start failed:", error);
+    setRecorderStatus("Recorder unavailable on this browser");
+    RecorderState.recorder = null;
+    return;
+  }
+
+  RecorderState.recorder.ondataavailable = (event) => {
+    if (event.data && event.data.size > 0) RecorderState.chunks.push(event.data);
+  };
+  RecorderState.recorder.onerror = (event) => {
+    console.warn("[Music] recorder error:", event.error || event);
+    stopLocalRecorder();
+    setRecorderStatus("Recorder stopped");
+  };
+  RecorderState.recorder.onstop = () => {
+    const mimeType = RecorderState.mimeType || "audio/webm";
+    const blob = new Blob(RecorderState.chunks, { type: mimeType });
+    const extension = mimeType.includes("mp4") ? "mp4" : "webm";
+    RecorderState.chunks = [];
+    RecorderState.recorder = null;
+    setRecorderButton(false);
+    if (!blob.size) {
+      setRecorderStatus("No recording captured");
+      return;
+    }
+    RecorderState.objectUrl = URL.createObjectURL(blob);
+    const download = document.getElementById("rec_download");
+    if (download) {
+      download.href = RecorderState.objectUrl;
+      download.download = makeReviewFileName(extension);
+      download.textContent = "save";
+      download.hidden = false;
+    }
+    setRecorderStatus(`Recorded ${Math.round(blob.size / 1024)} KB`);
+  };
+
+  try {
+    RecorderState.recorder.start(1000);
+    RecorderState.startedAt = Date.now();
+    setRecorderButton(true);
+    setRecorderStatus("Recording Music output...");
+    clearTimeout(RecorderState.stopTimer);
+    RecorderState.stopTimer = setTimeout(() => stopLocalRecorder(), RecorderState.maxMs);
+  } catch (error) {
+    console.warn("[Music] recorder start failed:", error);
+    setRecorderButton(false);
+    setRecorderStatus("Recorder unavailable on this browser");
+  }
+}
+
+function stopLocalRecorder() {
+  clearTimeout(RecorderState.stopTimer);
+  RecorderState.stopTimer = null;
+  const recorder = RecorderState.recorder;
+  if (!recorder) {
+    setRecorderButton(false);
+    return;
+  }
+  try {
+    if (recorder.state !== "inactive") recorder.stop();
+  } catch (error) {
+    console.warn("[Music] recorder stop failed:", error);
+    RecorderState.recorder = null;
+    setRecorderButton(false);
+    setRecorderStatus("Recorder stopped");
+  }
+}
+
+function toggleLocalRecorder() {
+  if (RecorderState.recorder && RecorderState.recorder.state === "recording") {
+    stopLocalRecorder();
+  } else {
+    startLocalRecorder();
+  }
+}
+
 function clampValue(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -273,6 +411,12 @@ function approachValue(current, target, maxStep) {
 // マスター処理（少なめ）
 const masterLimiter = new Tone.Limiter(-1).toDestination();
 const masterGain    = new Tone.Gain(0.8).connect(masterLimiter);
+const recorderDestination = Tone.context.createMediaStreamDestination();
+try {
+  masterLimiter.connect(recorderDestination);
+} catch (error) {
+  console.warn("[Music] recorder tap unavailable:", error);
+}
 
 // シンプルなリバーブ＆ディレイのみ
 const globalReverb = new Tone.Reverb({
@@ -1394,6 +1538,7 @@ function attachUI() {
   const autoCycle  = document.getElementById("auto_cycle");
   const statusText = document.getElementById("status-text");
   const modeLabel  = document.getElementById("mode-label");
+  const btnRec = document.getElementById("btn_rec");
 
   if (btnStart) {
     btnStart.onclick = async () => {
@@ -1443,6 +1588,7 @@ function attachUI() {
   if (btnStop) {
     btnStop.onclick = () => {
       isPlaying = false;
+      stopLocalRecorder();
       stopAutoCycle({ keepEnabled: true });
       try { Tone.Transport.stop(); } catch(e) {}
       releaseAllVoices();
@@ -1466,6 +1612,10 @@ function attachUI() {
     autoCycle.addEventListener("change", () => {
       if (autoToggle && autoToggle.checked) startAutoCycle();
     });
+  }
+
+  if (btnRec) {
+    btnRec.addEventListener("click", toggleLocalRecorder);
   }
 
   // Preset UI
