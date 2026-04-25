@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>UCM Mandala Engine</title>
 
     <!-- Style -->
@@ -18,14 +18,7 @@
 </head>
 
 <body>
-
-    <!-- 言語切替（見た目だけ先に用意：今はダミー） -->
-    <div id="lang-switch">
-        <button class="active" data-lang="jp">JP</button>
-        <button data-lang="en">EN</button>
-    </div>
-
-    <!-- 曼荼羅ビジュアル -->
+<!-- 曼荼羅ビジュアル -->
     <div id="mandala-container">
         <img src="assets/background.svg" id="mandala-bg" />
         <div id="mandala-layers"></div>
@@ -53,7 +46,7 @@
             <!-- 左：メインフェーダー（静⇄動） -->
             <section id="energy-column">
                 <div class="fader-column">
-                    <div class="fader-title">ENERGY</div>
+                    <div class="fader-title"><span class="label-main">ENERGY</span><span class="label-sub">静動</span></div>
                     <div class="fader-vertical">
                         <span class="fader-min">静</span>
                         <input type="range" id="fader_energy" min="0" max="100" value="40" />
@@ -72,7 +65,7 @@
             <section id="obs-grid">
 
                 <div class="fader-group">
-                    <div class="fader-label">波観</div>
+                    <div class="fader-label"><span class="label-main">WAVE</span><span class="label-sub">波観</span></div>
                     <div class="fader-vertical small">
                         <span class="fader-min">Soft</span>
                         <input type="range" id="fader_wave" min="0" max="100" value="40" />
@@ -81,7 +74,7 @@
                 </div>
 
                 <div class="fader-group">
-                    <div class="fader-label">思観</div>
+                    <div class="fader-label"><span class="label-main">THOUGHT</span><span class="label-sub">思観</span></div>
                     <div class="fader-vertical small">
                         <span class="fader-min">Simple</span>
                         <input type="range" id="fader_mind" min="0" max="100" value="50" />
@@ -90,7 +83,7 @@
                 </div>
 
                 <div class="fader-group">
-                    <div class="fader-label">創観</div>
+                    <div class="fader-label"><span class="label-main">CREATION</span><span class="label-sub">創観</span></div>
                     <div class="fader-vertical small">
                         <span class="fader-min">Plain</span>
                         <input type="range" id="fader_creation" min="0" max="100" value="50" />
@@ -99,7 +92,7 @@
                 </div>
 
                 <div class="fader-group">
-                    <div class="fader-label">Void</div>
+                    <div class="fader-label"><span class="label-main">VOID</span><span class="label-sub">Void</span></div>
                     <div class="fader-vertical small">
                         <span class="fader-min">Full</span>
                         <input type="range" id="fader_void" min="0" max="100" value="20" />
@@ -108,7 +101,7 @@
                 </div>
 
                 <div class="fader-group">
-                    <div class="fader-label">円観</div>
+                    <div class="fader-label"><span class="label-main">CIRCLE</span><span class="label-sub">円観</span></div>
                     <div class="fader-vertical small">
                         <span class="fader-min">Edge</span>
                         <input type="range" id="fader_circle" min="0" max="100" value="60" />
@@ -117,7 +110,7 @@
                 </div>
 
                 <div class="fader-group">
-                    <div class="fader-label">体観</div>
+                    <div class="fader-label"><span class="label-main">BODY</span><span class="label-sub">体観</span></div>
                     <div class="fader-vertical small">
                         <span class="fader-min">Light</span>
                         <input type="range" id="fader_body" min="0" max="100" value="50" />
@@ -126,7 +119,7 @@
                 </div>
 
                 <div class="fader-group">
-                    <div class="fader-label">財観</div>
+                    <div class="fader-label"><span class="label-main">VALUE</span><span class="label-sub">財観</span></div>
                     <div class="fader-vertical small">
                         <span class="fader-min">Sparse</span>
                         <input type="range" id="fader_resource" min="0" max="100" value="60" />
@@ -135,7 +128,7 @@
                 </div>
 
                 <div class="fader-group">
-                    <div class="fader-label">観察者</div>
+                    <div class="fader-label"><span class="label-main">OBSERVER</span><span class="label-sub">観察者</span></div>
                     <div class="fader-vertical small">
                         <span class="fader-min">Near</span>
                         <input type="range" id="fader_observer" min="0" max="100" value="50" />
@@ -151,7 +144,7 @@
                 <!-- Auto -->
                 <div id="auto-block">
                     <div class="auto-header">
-                        <span class="title">Auto Mix</span>
+                        <span class="title">AUTO MIX / 自走</span>
                         <label class="switch">
                             <input type="checkbox" id="auto_toggle" />
                             <span class="slider"></span>
@@ -168,7 +161,7 @@
                 <!-- Preset / Genre -->
                 <div id="preset-block">
                     <div class="auto-header" style="margin-bottom:8px;">
-                        <span class="title">Preset</span>
+                        <span class="title">PRESET / 音像</span>
                         <span class="hint" id="preset-status" style="opacity:.7;font-size:10px;">loading…</span>
                     </div>
                     <div class="auto-body" style="flex-direction:column;align-items:stretch;gap:8px;">
@@ -182,8 +175,8 @@
 
                 <!-- Transport -->
                 <div id="transport">
-                    <button id="btn_start" class="primary">Start</button>
-                    <button id="btn_stop" class="ghost">Stop</button>
+                    <button id="btn_start" class="primary">START</button>
+                    <button id="btn_stop" class="ghost">STOP</button>
                 </div>
 
                 <!-- ステータス -->
