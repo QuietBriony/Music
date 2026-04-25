@@ -59,7 +59,21 @@ const AUTOMIX_PROFILE = {
 };
 const AUTO_MOTION_TICK_MS = 3500;
 const AUTO_SLIDER_SYNC_INTERVAL_MS = 240;
-// seconds to reach target (larger = smoother)
+const MANUAL_INFLUENCE_HOLD_MS = 2600;
+const manualInfluenceUntil = {};
+const SLIDER_KEY_BY_ID = Object.fromEntries(Object.entries(SLIDER_BY_UCM).map(([key, id]) => [id, key]));
+
+function markManualInfluenceFromEvent(event) {
+  const id = event && event.target && event.target.id;
+  const key = SLIDER_KEY_BY_ID[id];
+  if (!key) return;
+  const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
+  manualInfluenceUntil[key] = now + MANUAL_INFLUENCE_HOLD_MS;
+}
+
+function isManualInfluenceActive(key, now) {
+  return typeof manualInfluenceUntil[key] === "number" && now < manualInfluenceUntil[key];
+}// seconds to reach target (larger = smoother)
 let UCM_SMOOTH_SEC = 1.6;
 
 let initialized = false;
@@ -86,6 +100,7 @@ function getSliderValue(id, fallback = 50) {
 }
 
 function updateFromUI(options = {}) {
+  markManualInfluenceFromEvent(options);
   UCM_TARGET.energy = getSliderValue("fader_energy", UCM_TARGET.energy);
   UCM_TARGET.wave = getSliderValue("fader_wave", UCM_TARGET.wave);
   UCM_TARGET.mind = getSliderValue("fader_mind", UCM_TARGET.mind);
@@ -348,7 +363,7 @@ const MODE_CHORDS = {
     ["F3", "C4", "G4"]
   ]
 };
-const GLASS_NOTES = ["C5", "D5", "Eb5", "G5", "A5", "Bb5", "D6"];
+const GLASS_NOTES = ["D5", "F#5", "G5", "E5", "D6", "F#6", "G6", "E6"];
 const MODE_BASS_NOTES = {
   ambient: ["F1", "C2", "A1", "D2"],
   lofi: ["A1", "E2", "G1", "C2"],
@@ -483,10 +498,10 @@ const PRESET_CHARACTERS = {
 };
 
 const HARP_NOTE_POOLS = {
-  ambient: ["F4", "A4", "C5", "E5", "G5", "A5"],
+  ambient: ["D4", "F#4", "G4", "E5", "D5", "F#5"],
   dub: ["C4", "Eb4", "G4", "Bb4", "C5"],
   jazz: ["D4", "F4", "A4", "C5", "E5", "G5"],
-  lofi: ["A3", "C4", "E4", "G4", "B4", "D5"],
+  lofi: ["D4", "E4", "F#4", "G4", "D5", "E5"],
   techno: ["C4", "Eb4", "G4", "Bb4"],
   trance: ["D4", "F#4", "A4", "C#5", "E5", "A5"],
 };
@@ -945,14 +960,14 @@ function applyUCMToParams(options = {}) {
   EngineParams.padProb = clamp01(EngineParams.padProb * character.padScale);
 
   // リバーブ/ディレイ量を少しだけ動かす（軽量）
-  const reverbWet = mapValue(UCM_CUR.observer, 0, 100, 0.12, 0.42);
+  const reverbWet = mapValue(UCM_CUR.observer + UCM_CUR.void * 0.35, 0, 135, 0.14, 0.46);
   rampParam("reverb-wet", globalReverb.wet, reverbWet, 0.8, force ? 0 : 0.012);
 
-  const delayWet = mapValue(UCM_CUR.creation, 0, 100, 0.04, 0.32);
+  const delayWet = mapValue(UCM_CUR.creation + UCM_CUR.observer * 0.22, 0, 122, 0.035, 0.28);
   rampParam("delay-wet", globalDelay.wet, delayWet, 0.55, force ? 0 : 0.012);
 
   // Padのカットオフ
-  const cutoff = mapValue(UCM_CUR.observer + UCM_CUR.energy * 0.35, 0, 135, 360, 3600);
+  const cutoff = mapValue(UCM_CUR.observer + UCM_CUR.energy * 0.28 - UCM_CUR.void * 0.18, -18, 128, 280, 2600);
   rampParam("pad-cutoff", padFilter.frequency, cutoff, 0.5, force ? 0 : 70);
 
   // スケール
@@ -1224,6 +1239,11 @@ function updateAutoMixTargets(cycleMs) {
     const ripple = Math.sin((phase * 2.7 + profile.phase) * Math.PI * 2) * 0.23;
     const desired = clampValue(profile.base + profile.depth * (wave + ripple), 4, 96);
     const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : profile.base;
+    const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
+    if (isManualInfluenceActive(key, now)) {
+      syncSliderFromTarget(key);
+      continue;
+    }
     UCM_TARGET[key] = approachValue(current, desired, profile.step);
     syncSliderFromTarget(key);
   }
