@@ -1385,7 +1385,6 @@ function attachUI() {
     pad.addEventListener("pointerdown", activate);
     pad.addEventListener("pointerup", release);
     pad.addEventListener("pointercancel", release);
-    pad.addEventListener("pointerleave", release);
     pad.addEventListener("blur", release);
   });
 
