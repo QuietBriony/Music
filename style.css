@@ -619,6 +619,65 @@ input[type="range"], button, select { touch-action: manipulation; }
   min-width: unset;
 }
 
+/* ---------------------------
+   Momentary Performance Pads
+--------------------------- */
+
+#performance-pads {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.performance-pad {
+  min-height: 42px;
+  padding: 7px 8px;
+  border: 1px solid rgba(93, 211, 220, 0.34);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(6, 22, 25, 0.88), rgba(1, 8, 10, 0.92)),
+    repeating-linear-gradient(90deg, rgba(83, 238, 232, 0.05) 0 1px, transparent 1px 14px);
+  color: rgba(218, 250, 255, 0.9);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease, transform 0.12s ease;
+}
+
+.performance-pad .pad-main,
+.performance-pad .pad-sub {
+  display: block;
+  line-height: 1.05;
+}
+
+.performance-pad .pad-main {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+}
+
+.performance-pad .pad-sub {
+  margin-top: 4px;
+  font-size: 9px;
+  color: rgba(104, 178, 188, 0.78);
+  letter-spacing: 0.08em;
+}
+
+.performance-pad.active,
+.performance-pad:active {
+  transform: translateY(1px);
+  border-color: rgba(246, 91, 86, 0.78);
+  background:
+    linear-gradient(180deg, rgba(61, 18, 18, 0.92), rgba(8, 8, 10, 0.96)),
+    repeating-linear-gradient(90deg, rgba(255, 89, 75, 0.09) 0 1px, transparent 1px 10px);
+  color: rgba(255, 235, 226, 0.95);
+}
+
+.performance-pad.active .pad-sub,
+.performance-pad:active .pad-sub {
+  color: rgba(255, 164, 150, 0.86);
+}
+
 /* World spectrum visual system: original liminal ambient / IDM / hardcore states. */
 body {
   --world-accent: rgba(83, 220, 255, 0.74);
@@ -1032,12 +1091,14 @@ body[data-character="lofi"] .identity-line {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
       "auto transport"
+      "pads pads"
       "preset status";
     gap: 6px;
   }
 
   #auto-block,
   #preset-block,
+  #performance-pads,
   #transport,
   #status-line {
     margin: 0;
@@ -1052,6 +1113,29 @@ body[data-character="lofi"] .identity-line {
   #preset-block {
     grid-area: preset;
     padding: 6px;
+  }
+
+  #performance-pads {
+    grid-area: pads;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .performance-pad {
+    min-height: 34px;
+    padding: 5px 3px;
+    border-radius: 0;
+  }
+
+  .performance-pad .pad-main {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .performance-pad .pad-sub {
+    margin-top: 2px;
+    font-size: 7px;
   }
 
   #transport {
@@ -1134,6 +1218,15 @@ body[data-character="lofi"] .identity-line {
 
   #obs-grid {
     gap: 4px;
+  }
+
+  #performance-pads {
+    gap: 4px;
+  }
+
+  .performance-pad {
+    min-height: 28px;
+    padding: 3px 2px;
   }
 
   .fader-group {
