@@ -55,6 +55,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Apple Music references: [references/apple-music-refs.json](references/apple-music-refs.json)
 - Reference analysis template: [docs/reference-analysis-template.md](docs/reference-analysis-template.md)
 - Music stack integration index: [docs/music-stack-integration-index.md](docs/music-stack-integration-index.md)
+- Preset translation schema: [docs/preset-translation-schema.md](docs/preset-translation-schema.md)
 
 ---
 
