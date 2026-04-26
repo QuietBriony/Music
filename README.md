@@ -56,6 +56,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Reference analysis template: [docs/reference-analysis-template.md](docs/reference-analysis-template.md)
 - Music stack integration index: [docs/music-stack-integration-index.md](docs/music-stack-integration-index.md)
 - Preset translation schema: [docs/preset-translation-schema.md](docs/preset-translation-schema.md)
+- Archive repo harvest audit: [docs/archive-repo-harvest-audit.md](docs/archive-repo-harvest-audit.md)
 
 ---
 
