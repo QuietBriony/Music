@@ -1,0 +1,329 @@
+{
+  "version": 1,
+  "policy": {
+    "stores_audio": false,
+    "stores_lyrics": false,
+    "stores_samples": false,
+    "stores_metadata_only": true,
+    "purpose": "production parameter translation, not copying"
+  },
+  "references": [
+    {
+      "artist": "Aphex Twin",
+      "title": "Xtal",
+      "album": "Selected Ambient Works 85-92",
+      "genre_hint": [
+        "ambient",
+        "idm",
+        "glitch"
+      ],
+      "taste_notes": [
+        "温度の低い空間感",
+        "長い呼吸を持つレイヤー遷移",
+        "高域の粒度のある余韻"
+      ],
+      "production_translation": {
+        "timbre": [
+          "中低域を長く残しつつ、高域は薄く点在させる",
+          "ノイズ帯の濃度を抑え、鳴りの継続時間を長めに取る"
+        ],
+        "rhythm": [
+          "拍の核より“経過”を主役にする",
+          "周期を乱数的に崩すよりも、ゆるやかな揺れを基準にする"
+        ],
+        "space": [
+          "遅延よりも残響尾の密度で空間を形成",
+          "高域はやや引いて、広がりを広く感じる設計にする"
+        ],
+        "structure": [
+          "導入→漂い→再接続→再分散の3層を意識する",
+          "大きな盛り上がりは避け、微分化で密度を上げる"
+        ],
+        "gesture": [
+          "入力は急変ではなく“なだらかな傾き”として反映",
+          "padと低域が同時に支配しないようにする"
+        ]
+      },
+      "implementation_notes": [
+        "UIのEnergyで長周期を維持しやすいマッピングを優先",
+        "pad系に急峻なエンベロープを避ける"
+      ]
+    },
+    {
+      "artist": "Aphex Twin",
+      "title": "Tha",
+      "album": "",
+      "genre_hint": [
+        "ambient",
+        "idm"
+      ],
+      "taste_notes": [
+        "冷たさのある空間を保ったまま粒度を上げる",
+        "無音感と存在感の境界を揺らす"
+      ],
+      "production_translation": {
+        "timbre": [
+          "薄い倍音層を2〜3段階に分離",
+          "超低域は常時起動より、イベントでの短時間補強を優先"
+        ],
+        "rhythm": [
+          "律動は薄く、リスナーを先導する程度に留める",
+          "拍ごとの決定打より時間差イベントに重点"
+        ],
+        "space": [
+          "空間は密度で作る。乾いたアタックを避ける",
+          "短いディレイの重なりより長い尾を選ぶ"
+        ],
+        "structure": [
+          "小さな転換点を連続的に挿入して単調化を防ぐ",
+          "変化は“目立ちすぎない”速度で進める"
+        ],
+        "gesture": [
+          "一部の音が前景に出るより、全体が重力を持つ挙動に寄せる",
+          "エネルギー急上昇を避ける"
+        ]
+      },
+      "implementation_notes": [
+        "pad/textureの更新は短いインターバルで分割しない",
+        "静かな床感を壊さないよう limiter 余裕を残す"
+      ]
+    },
+    {
+      "artist": "Boards of Canada",
+      "title": "Olson",
+      "album": "Music Has the Right to Children",
+      "genre_hint": [
+        "ambient",
+        "downtempo"
+      ],
+      "taste_notes": [
+        "懐かしさのある質感と温度感",
+        "周期が見えるが単調に聞こえない反復"
+      ],
+      "production_translation": {
+        "timbre": [
+          "低中域の暖かさを残す",
+          "高域は刺さらないよう広く散らす"
+        ],
+        "rhythm": [
+          "ループ感を残しつつ周期ズレを軽く入れる",
+          "ベースとシンバル系の重なりをコントロール"
+        ],
+        "space": [
+          "左右定位より前後の距離感に重点",
+          "ノイズ帯をわずかに残し空間の粒感を作る"
+        ],
+        "structure": [
+          "短いセクションを反復し、毎回1〜2パラメータだけ変更",
+          "同じ音価でも再生位置が違う印象になるよう調整"
+        ],
+        "gesture": [
+          "入力に対して“やわらかく引き込む”挙動を増やす",
+          "大振りのダイナミクス変化を避ける"
+        ]
+      },
+      "implementation_notes": [
+        "drone層とクリック系イベントのバランスを独立制御する",
+        "温度感のある mid-band を優先"
+      ]
+    },
+    {
+      "artist": "Boards of Canada",
+      "title": "Roygbiv",
+      "album": "Music Has the Right to Children",
+      "genre_hint": [
+        "ambient",
+        "idm"
+      ],
+      "taste_notes": [
+        "明瞭な輪郭の上に柔らかな遅延",
+        "反復の中で揺れる明滅感"
+      ],
+      "production_translation": {
+        "timbre": [
+          "明るさを出しすぎず輪郭を薄く保つ",
+          "短い粒の変動を多点で重ねる"
+        ],
+        "rhythm": [
+          "16分寄りの揺れを感じるフレーズ骨子",
+          "同一フレーズの位相ずらしで進行感を出す"
+        ],
+        "space": [
+          "広い空間ではなく“近接しながら距離がある”感触を作る",
+          "空白領域を恐れず残す"
+        ],
+        "structure": [
+          "明確なA/Bよりも連続変調を主軸にする",
+          "聴取者が迷わない程度に戻り点を置く"
+        ],
+        "gesture": [
+          "イベントは多点で少しずつ加算",
+          "瞬間的な打楽系ピークは抑える"
+        ]
+      },
+      "implementation_notes": [
+        "pad厚みとノイズ尾を別faderで調整できると再現しやすい",
+        "長時間聴取で疲れにくい帯域を維持"
+      ]
+    },
+    {
+      "artist": "Autechre",
+      "title": "Eggshell",
+      "album": "",
+      "genre_hint": [
+        "idm",
+        "experimental",
+        "abstract"
+      ],
+      "taste_notes": [
+        "硬い輪郭と滑らかに揺れる背景の二層構造",
+        "不確定性を残したまま進行する"
+      ],
+      "production_translation": {
+        "timbre": [
+          "粗めのデジタル感を軽く残す",
+          "複数帯の歪みを短く分割して使う"
+        ],
+        "rhythm": [
+          "正確さより間のずれを可聴化",
+          "微小なアクセントで流れを作る"
+        ],
+        "space": [
+          "近接する音と離れた音を明確に分離",
+          "空間内での前景情報を最小化"
+        ],
+        "structure": [
+          "変化はイベントの密度で調整",
+          "全域崩壊ではなく局所崩しを積む"
+        ],
+        "gesture": [
+          "“切る”より“ずらす”を優先",
+          "連打ではなく流れるような変動"
+        ]
+      },
+      "implementation_notes": [
+        "変形量パラメータを低めに保ち、無音転移を起こさない",
+        "高密度化は段階的に実験する"
+      ]
+    },
+    {
+      "artist": "Burial",
+      "title": "Archangel",
+      "album": "Untrue",
+      "genre_hint": [
+        "dubstep",
+        "ambient",
+        "two-step"
+      ],
+      "taste_notes": [
+        "深い重力感を維持したノイズ系の揺れ",
+        "空間に溶けるドラム的エッジ"
+      ],
+      "production_translation": {
+        "timbre": [
+          "中低域のうねりを短く抑制",
+          "空洞のあるメロディックノイズを少量挿入"
+        ],
+        "rhythm": [
+          "二段階の揺れで拍感を作る",
+          "過度なkick中心設計を避け、裏拍で輪郭を作る"
+        ],
+        "space": [
+          "広い空間より重心が低い室内感",
+          "ノイズ尾を短くして濁りを回避"
+        ],
+        "structure": [
+          "導入部で期待を上げるより、“今ある音の厚み”を維持",
+          "サブセクションの接続点を増やす"
+        ],
+        "gesture": [
+          "入力変化は遅めのカーブで反映",
+          "ドラムイベントは強制ではなく自然発生に寄せる"
+        ]
+      },
+      "implementation_notes": [
+        "drum関連は既存AutoMixとの干渉を監視しながら小刻みに導入",
+        "無音化しやすい遷移は避ける"
+      ]
+    },
+    {
+      "artist": "Burial",
+      "title": "In McDonalds",
+      "album": "",
+      "genre_hint": [
+        "ambient",
+        "dubstep"
+      ],
+      "taste_notes": [
+        "湿度感のあるノイズと暗めの床感",
+        "空隙を多く残すと全体が立ち上がる印象"
+      ],
+      "production_translation": {
+        "timbre": [
+          "粒立ちの高域を薄く広げる",
+          "低域の連続音を抑え、間欠的に補強"
+        ],
+        "rhythm": [
+          "躍動は小さく、揺れを長く引き続ける",
+          "ヒートアップは微差分で"
+        ],
+        "space": [
+          "空白の時間を確保しつつ、背景ノイズを保つ",
+          "逆相感のある空間感を軽く"
+        ],
+        "structure": [
+          "長い曲線を優先し、細かい切り替えは最小限",
+          "変換点を聴取時点で再確認しやすく"
+        ],
+        "gesture": [
+          "入力の高振幅を一度に反映しない",
+          "持続力を見える化するイベント配分"
+        ]
+      },
+      "implementation_notes": [
+        "低域を長時間で膨らませすぎないよう制限値を設定",
+        "再生継続時の無音閾値に注意"
+      ]
+    },
+    {
+      "artist": "Oneohtrix Point Never",
+      "title": "Chrome Country",
+      "album": "",
+      "genre_hint": [
+        "ambient",
+        "experimental",
+        "abstract"
+      ],
+      "taste_notes": [
+        "鋭い輪郭と幻想的な空間の同居",
+        "温度差のある層分け"
+      ],
+      "production_translation": {
+        "timbre": [
+          "明瞭帯と柔らかい帯を同居させる",
+          "極端な過負荷になる帯域を避ける"
+        ],
+        "rhythm": [
+          "律動は地味に揺らし、主観的な進行を作る",
+          "イベント間の息継ぎを意識"
+        ],
+        "space": [
+          "遠近が明確な多層空間を作る",
+          "狭くなりすぎないよう反射感を抑える"
+        ],
+        "structure": [
+          "短い到達→長い滞留のサイクル",
+          "強化点を少数に絞る"
+        ],
+        "gesture": [
+          "ノンリニアな起伏を少しずつ投入",
+          "入力は1回で大きく変えない"
+        ]
+      },
+      "implementation_notes": [
+        "透明感を維持するための高域抑制と空間パラメータを先に固定",
+        "録音レビューで音の伸びと静かな床感を同時に確認する"
+      ]
+    }
+  ]
+}
