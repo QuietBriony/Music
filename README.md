@@ -50,6 +50,11 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - 財観
 - 観察者
 
+### 参考資料
+- Reference-Driven Generative Rig: [docs/reference-driven-generative-rig.md](docs/reference-driven-generative-rig.md)
+- Apple Music references: [references/apple-music-refs.json](references/apple-music-refs.json)
+- Reference analysis template: [docs/reference-analysis-template.md](docs/reference-analysis-template.md)
+
 ---
 
 ## 🔁 オートモード
