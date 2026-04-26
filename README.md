@@ -54,6 +54,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Reference-Driven Generative Rig: [docs/reference-driven-generative-rig.md](docs/reference-driven-generative-rig.md)
 - Apple Music references: [references/apple-music-refs.json](references/apple-music-refs.json)
 - Reference analysis template: [docs/reference-analysis-template.md](docs/reference-analysis-template.md)
+- Music stack integration index: [docs/music-stack-integration-index.md](docs/music-stack-integration-index.md)
 
 ---
 
