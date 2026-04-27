@@ -467,6 +467,43 @@ body[data-playing="true"][data-auto="true"] #auto-block {
   text-align: right;
 }
 
+.route-body {
+  margin-top: 7px;
+}
+
+#audio_output_select {
+  min-width: 0;
+  flex: 1;
+  height: 22px;
+  border: 1px solid rgba(140, 180, 255, 0.42);
+  border-radius: 6px;
+  background: rgba(5, 15, 32, 0.72);
+  color: var(--text-main);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.mini-action {
+  border: 1px solid rgba(93, 211, 220, 0.34);
+  border-radius: 4px;
+  background: rgba(1, 8, 10, 0.72);
+  color: rgba(218, 250, 255, 0.86);
+  cursor: pointer;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  padding: 5px 7px;
+  text-transform: uppercase;
+  touch-action: manipulation;
+}
+
+.mini-action.active,
+.mini-action[aria-pressed="true"] {
+  border-color: rgba(246, 91, 86, 0.78);
+  box-shadow: 0 0 12px rgba(246, 91, 86, 0.16);
+  color: rgba(255, 231, 224, 0.96);
+}
+
 /* スイッチ */
 
 .switch {
@@ -1245,6 +1282,29 @@ body[data-character="lofi"] .identity-line {
     letter-spacing: 0.08em;
   }
 
+  .route-body {
+    margin-top: 4px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .route-body .label,
+  .route-body .hint {
+    display: none;
+  }
+
+  #audio_output_select {
+    height: 24px;
+    font-size: 8px;
+    padding: 2px 4px;
+  }
+
+  .mini-action {
+    min-height: 24px;
+    padding: 4px 5px;
+    font-size: 7px;
+  }
+
   #preset_select {
     min-height: 30px;
     padding: 5px 6px;
@@ -1652,7 +1712,9 @@ body::after {
 .recorder-button,
 .recorder-link,
 #preset_select,
-#btn_reload_presets {
+#btn_reload_presets,
+#audio_output_select,
+.mini-action {
   border-radius: 0;
   font-family: inherit;
 }
@@ -1708,6 +1770,26 @@ body::after {
 #preset_select {
   border-color: rgba(143, 255, 245, 0.24);
   background: rgba(1, 4, 5, 0.94);
+}
+
+#audio_output_select {
+  border-color: rgba(143, 255, 245, 0.24);
+  background: rgba(1, 4, 5, 0.94);
+  color: rgba(233, 244, 239, 0.9);
+}
+
+.mini-action {
+  border-color: rgba(143, 255, 245, 0.28);
+  background:
+    linear-gradient(180deg, rgba(8, 16, 17, 0.94), rgba(1, 4, 5, 0.96));
+  color: rgba(233, 244, 239, 0.88);
+}
+
+.mini-action:hover,
+.mini-action.active,
+.mini-action[aria-pressed="true"] {
+  border-color: rgba(255, 74, 61, 0.82);
+  color: rgba(255, 235, 226, 0.95);
 }
 
 #status-line {

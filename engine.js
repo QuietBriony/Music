@@ -78,6 +78,14 @@ const PerformancePadState = {
 const OutputState = {
   level: 75
 };
+const PlaybackState = {
+  outputDeviceId: "",
+  outputDeviceLabel: "SYSTEM / BT",
+  wakeLockEnabled: false,
+  wakeLockSentinel: null,
+  wakeLockSupported: typeof navigator !== "undefined" && !!navigator.wakeLock,
+  mediaSessionSupported: typeof navigator !== "undefined" && !!navigator.mediaSession
+};
 
 function markManualInfluenceFromEvent(event) {
   const id = event && event.target && event.target.id;
@@ -435,6 +443,241 @@ function applyOutputLevel(options = {}) {
   rampParam("master-gain", masterGain.gain, outputGainFromLevel(OutputState.level), seconds, 0.003);
 }
 
+function setAudioOutputStatus(message) {
+  const el = document.getElementById("audio_output_status");
+  if (el) el.textContent = message;
+}
+
+function setBackgroundStatus(message) {
+  const el = document.getElementById("background_value");
+  if (el) el.textContent = message;
+}
+
+function getNativeAudioContext() {
+  if (typeof Tone === "undefined" || !Tone.context) return null;
+  return Tone.context.rawContext || Tone.context._context || Tone.context.context || Tone.context;
+}
+
+function getAudioOutputSinkTarget() {
+  const context = getNativeAudioContext();
+  return context && typeof context.setSinkId === "function" ? context : null;
+}
+
+function getOutputDeviceLabel(device) {
+  if (!device) return "SYSTEM / BT";
+  return device.label || (device.deviceId === "default" ? "System default" : "Audio output");
+}
+
+async function refreshAudioOutputDevices(selectedDeviceId = PlaybackState.outputDeviceId) {
+  const select = document.getElementById("audio_output_select");
+  if (!select) return;
+
+  const canEnumerate = !!navigator.mediaDevices?.enumerateDevices;
+  const canRoute = !!getAudioOutputSinkTarget();
+  select.innerHTML = "";
+
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.textContent = "SYSTEM / BT";
+  select.appendChild(defaultOption);
+
+  if (!canEnumerate) {
+    select.disabled = true;
+    setAudioOutputStatus("system");
+    return;
+  }
+
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const outputs = devices.filter((device) => device.kind === "audiooutput");
+    outputs.forEach((device, index) => {
+      const option = document.createElement("option");
+      option.value = device.deviceId;
+      option.textContent = device.label || `Output ${index + 1}`;
+      select.appendChild(option);
+    });
+
+    select.disabled = !canRoute || outputs.length === 0;
+    if (selectedDeviceId && [...select.options].some((option) => option.value === selectedDeviceId)) {
+      select.value = selectedDeviceId;
+    } else {
+      select.value = "";
+    }
+
+    if (!canRoute) {
+      setAudioOutputStatus("system");
+    } else if (outputs.length === 0) {
+      setAudioOutputStatus("default");
+    } else {
+      setAudioOutputStatus(PlaybackState.outputDeviceLabel || "ready");
+    }
+  } catch (error) {
+    console.warn("[Music] audio output list failed:", error);
+    select.disabled = !canRoute;
+    setAudioOutputStatus(canRoute ? "ready" : "system");
+  }
+}
+
+async function applyAudioOutputDevice(deviceId, label = "") {
+  const sinkTarget = getAudioOutputSinkTarget();
+  PlaybackState.outputDeviceId = deviceId || "";
+  PlaybackState.outputDeviceLabel = label || (deviceId ? "Audio output" : "SYSTEM / BT");
+
+  if (!sinkTarget) {
+    setAudioOutputStatus("system");
+    return false;
+  }
+
+  try {
+    await sinkTarget.setSinkId(deviceId || "");
+    setAudioOutputStatus(deviceId ? "routed" : "system");
+    return true;
+  } catch (error) {
+    console.warn("[Music] audio output route failed:", error);
+    setAudioOutputStatus("blocked");
+    return false;
+  }
+}
+
+async function chooseAudioOutputDevice() {
+  if (!navigator.mediaDevices) {
+    setAudioOutputStatus("system");
+    return;
+  }
+
+  try {
+    if (typeof navigator.mediaDevices.selectAudioOutput === "function") {
+      const device = await navigator.mediaDevices.selectAudioOutput();
+      await applyAudioOutputDevice(device.deviceId, getOutputDeviceLabel(device));
+      await refreshAudioOutputDevices(device.deviceId);
+      return;
+    }
+
+    await refreshAudioOutputDevices();
+    const select = document.getElementById("audio_output_select");
+    if (select && !select.disabled) {
+      setAudioOutputStatus("select");
+    } else {
+      setAudioOutputStatus("system");
+    }
+  } catch (error) {
+    if (error && error.name !== "NotAllowedError") {
+      console.warn("[Music] audio output choose failed:", error);
+    }
+    setAudioOutputStatus("system");
+  }
+}
+
+async function resumeAudioContext(reason = "resume") {
+  if (typeof Tone === "undefined" || !Tone.context) return false;
+  try {
+    if (Tone.context.state !== "running") {
+      const result = Tone.context.resume?.();
+      if (result && typeof result.then === "function") await result;
+    }
+    return Tone.context.state === "running";
+  } catch (error) {
+    console.warn("[Music] AudioContext resume failed:", reason, error);
+    return false;
+  }
+}
+
+function setupMediaSessionControls() {
+  if (!navigator.mediaSession) return;
+
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: "Music Core Rig",
+      artist: "QuietBriony",
+      album: "Reference-Driven Generative Rig"
+    });
+  } catch (error) {
+    console.warn("[Music] media session metadata failed:", error);
+  }
+
+  const handlers = {
+    play: () => document.getElementById("btn_start")?.click(),
+    pause: () => document.getElementById("btn_stop")?.click(),
+    stop: () => document.getElementById("btn_stop")?.click()
+  };
+
+  Object.entries(handlers).forEach(([action, handler]) => {
+    try {
+      navigator.mediaSession.setActionHandler(action, handler);
+    } catch (error) {
+      // Some browsers expose Media Session but not every action.
+    }
+  });
+}
+
+function updateMediaSessionPlaybackState() {
+  if (!navigator.mediaSession) return;
+  try {
+    navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+  } catch (error) {
+    console.warn("[Music] media session state failed:", error);
+  }
+}
+
+async function requestPlaybackWakeLock() {
+  if (!PlaybackState.wakeLockEnabled || !navigator.wakeLock?.request) {
+    setBackgroundStatus(navigator.wakeLock?.request ? "off" : "n/a");
+    return false;
+  }
+  if (document.visibilityState && document.visibilityState !== "visible") {
+    setBackgroundStatus("hidden");
+    return false;
+  }
+  if (PlaybackState.wakeLockSentinel && !PlaybackState.wakeLockSentinel.released) {
+    setBackgroundStatus("keep");
+    return true;
+  }
+
+  try {
+    PlaybackState.wakeLockSentinel = await navigator.wakeLock.request("screen");
+    PlaybackState.wakeLockSentinel.addEventListener("release", () => {
+      PlaybackState.wakeLockSentinel = null;
+      if (PlaybackState.wakeLockEnabled && isPlaying) setBackgroundStatus("resume");
+      else setBackgroundStatus("off");
+    });
+    setBackgroundStatus("keep");
+    return true;
+  } catch (error) {
+    console.warn("[Music] wake lock failed:", error);
+    setBackgroundStatus("blocked");
+    return false;
+  }
+}
+
+async function releasePlaybackWakeLock() {
+  const sentinel = PlaybackState.wakeLockSentinel;
+  PlaybackState.wakeLockSentinel = null;
+  if (sentinel && !sentinel.released) {
+    try {
+      await sentinel.release();
+    } catch (error) {
+      console.warn("[Music] wake lock release failed:", error);
+    }
+  }
+  setBackgroundStatus(PlaybackState.wakeLockEnabled ? "ready" : "off");
+}
+
+function setKeepAwakeEnabled(enabled) {
+  PlaybackState.wakeLockEnabled = !!enabled;
+  const button = document.getElementById("btn_keep_awake");
+  if (button) {
+    button.classList.toggle("active", PlaybackState.wakeLockEnabled);
+    button.setAttribute("aria-pressed", PlaybackState.wakeLockEnabled ? "true" : "false");
+    button.textContent = PlaybackState.wakeLockEnabled ? "KEEP ON" : "KEEP";
+  }
+
+  if (PlaybackState.wakeLockEnabled && isPlaying) {
+    requestPlaybackWakeLock();
+  } else {
+    releasePlaybackWakeLock();
+  }
+}
+
 function syncSliderValue(key, value) {
   const id = SLIDER_BY_UCM[key];
   if (!id) return;
@@ -530,14 +773,14 @@ try {
 
 // シンプルなリバーブ＆ディレイのみ
 const globalReverb = new Tone.Reverb({
-  decay: 5,
-  wet: 0.3,
+  decay: 5.6,
+  wet: 0.31,
 }).connect(masterGain);
 
 const globalDelay = new Tone.PingPongDelay({
   delayTime: "8n",
-  feedback: 0.3,
-  wet: 0.2,
+  feedback: 0.32,
+  wet: 0.21,
 }).connect(masterGain);
 
 // バス
@@ -585,16 +828,16 @@ const pad = new Tone.PolySynth(Tone.Synth, {
 
 const texture = new Tone.NoiseSynth({
   noise: { type: "pink" },
-  envelope: { attack: 0.001, decay: 0.045, sustain: 0, release: 0.02 }
+  envelope: { attack: 0.001, decay: 0.055, sustain: 0, release: 0.03 }
 }).connect(textureBus);
 
 const glass = new Tone.FMSynth({
   harmonicity: 1.5,
   modulationIndex: 8,
   oscillator: { type: "sine" },
-  envelope: { attack: 0.005, decay: 0.12, sustain: 0, release: 0.18 },
+  envelope: { attack: 0.006, decay: 0.14, sustain: 0, release: 0.22 },
   modulation: { type: "triangle" },
-  modulationEnvelope: { attack: 0.002, decay: 0.08, sustain: 0, release: 0.1 }
+  modulationEnvelope: { attack: 0.003, decay: 0.09, sustain: 0, release: 0.12 }
 }).connect(globalDelay);
 
 function organicFragment(offset = 0) {
@@ -1042,14 +1285,14 @@ function updateTimbreStateFromWorld(parts) {
   safeToneRamp(glass?.harmonicity, 1.0 + (TimbreState.glass * 0.95) + (TimbreState.harp * 0.72) + (organicColor * 0.12) + (PerformancePadState.void * 0.24), 0.24);
   safeToneRamp(glass?.modulationIndex, 0.68 + (TimbreState.fracture * 2.25) + (TimbreState.harp * 0.82) + (pressureColor * 0.12) - (TimbreState.warmth * 0.46) - (PerformancePadState.void * 0.22), 0.2);
 
-  setEnvelopeValue(glass?.envelope, "attack", 0.003 + (TimbreState.harp * 0.01));
-  setEnvelopeValue(glass?.envelope, "decay", 0.07 + (TimbreState.harp * 0.16) + (TimbreState.air * 0.08) + (PerformancePadState.void * 0.11));
+  setEnvelopeValue(glass?.envelope, "attack", 0.004 + (TimbreState.harp * 0.012));
+  setEnvelopeValue(glass?.envelope, "decay", 0.082 + (TimbreState.harp * 0.17) + (TimbreState.air * 0.09) + (PerformancePadState.void * 0.11));
   setEnvelopeValue(glass?.envelope, "sustain", 0.015 + (TimbreState.warmth * 0.035));
-  setEnvelopeValue(glass?.envelope, "release", 0.1 + (TimbreState.air * 0.16) + (TimbreState.warmth * 0.16) + (PerformancePadState.void * 0.16));
-  setEnvelopeValue(glass?.modulationEnvelope, "attack", 0.002);
-  setEnvelopeValue(glass?.modulationEnvelope, "decay", 0.06 + (TimbreState.harp * 0.12));
+  setEnvelopeValue(glass?.envelope, "release", 0.12 + (TimbreState.air * 0.17) + (TimbreState.warmth * 0.16) + (PerformancePadState.void * 0.16));
+  setEnvelopeValue(glass?.modulationEnvelope, "attack", 0.003);
+  setEnvelopeValue(glass?.modulationEnvelope, "decay", 0.07 + (TimbreState.harp * 0.12));
   setEnvelopeValue(glass?.modulationEnvelope, "sustain", 0.01);
-  setEnvelopeValue(glass?.modulationEnvelope, "release", 0.08 + (TimbreState.warmth * 0.1));
+  setEnvelopeValue(glass?.modulationEnvelope, "release", 0.1 + (TimbreState.warmth * 0.1));
 }
 
 function maybeTriggerWorldAccents(time) {
@@ -1663,10 +1906,10 @@ function triggerAudibleGrooveFloor(step, time, context) {
   }
 
   const hazeGate = step % 8 === 0 || step % 8 === 4 || (voiding && step % 8 === 6);
-  const hazeChance = chance((0.18 + observerNorm * 0.16 + circleNorm * 0.14 + (1 - energyNorm) * 0.07 + gradient.haze * 0.08 + gradient.chrome * 0.04 + PerformancePadState.void * 0.16) * hazeScale);
+  const hazeChance = chance((0.19 + observerNorm * 0.17 + circleNorm * 0.145 + (1 - energyNorm) * 0.075 + gradient.haze * 0.085 + gradient.chrome * 0.045 + PerformancePadState.void * 0.16) * hazeScale);
   if (hazeGate && (inWarmup || rand(hazeChance))) {
     try {
-      pad.triggerAttackRelease(randomHazeChord(), voiding ? "2n" : "1n", airTime + 0.018, clampValue(0.026 + observerNorm * 0.026 + circleNorm * 0.014 + (1 - energyNorm) * 0.012 + gradient.haze * 0.006, 0.022, 0.074));
+      pad.triggerAttackRelease(randomHazeChord(), voiding ? "2n" : "1n", airTime + 0.018, clampValue(0.027 + observerNorm * 0.027 + circleNorm * 0.015 + (1 - energyNorm) * 0.012 + gradient.haze * 0.006, 0.023, 0.076));
     } catch (error) {
       console.warn("[Music] haze bed pad failed:", error);
     }
@@ -1692,7 +1935,7 @@ function triggerOrganicTexture(step, time, context) {
   const dustScale = (character.dustScale || 1) * (0.92 + gradient.memory * 0.08 + gradient.micro * 0.08);
   const pressureColor = (character.pressureColor || 0.5) * (0.9 + gradient.ghost * 0.2);
   const pluckGate = step % 8 === 1 || step % 8 === 5 || (PerformancePadState.drift && step % 8 === 3);
-  const organicProb = chance((0.016 + observerNorm * 0.03 + creationNorm * 0.026 + waveNorm * 0.02 + gradient.organic * 0.018 + PerformancePadState.drift * 0.052 + PerformancePadState.void * 0.022) * organicScale);
+  const organicProb = chance((0.02 + observerNorm * 0.032 + creationNorm * 0.028 + waveNorm * 0.021 + gradient.organic * 0.019 + PerformancePadState.drift * 0.052 + PerformancePadState.void * 0.022) * organicScale);
 
   if (pluckGate && rand(organicProb)) {
     const note = ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + Math.floor(waveNorm * 4)) % ORGANIC_PLUCK_FRAGMENTS.length];
@@ -1701,7 +1944,7 @@ function triggerOrganicTexture(step, time, context) {
     const vel = clampValue(0.024 + observerNorm * 0.034 + creationNorm * 0.026 + gradient.organic * 0.006 + PerformancePadState.drift * 0.016, 0.018, 0.094);
     try {
       glass.triggerAttackRelease(note, "64n", pluckTime, vel);
-      if (rand(0.22 + TimbreState.harp * 0.26 + gradient.micro * 0.08 + PerformancePadState.repeat * 0.2)) {
+      if (rand(0.24 + TimbreState.harp * 0.27 + gradient.micro * 0.08 + PerformancePadState.repeat * 0.2)) {
         glass.triggerAttackRelease(echoNote, "64n", pluckTime + 0.046 + Math.random() * 0.018, vel * 0.64);
       }
       if (rand(0.22 + dustScale * 0.08)) {
@@ -2058,6 +2301,9 @@ function attachUI() {
   const autoToggle = document.getElementById("auto_toggle");
   const autoCycle  = document.getElementById("auto_cycle");
   const outputLevel = document.getElementById("output_level");
+  const audioOutputSelect = document.getElementById("audio_output_select");
+  const btnAudioOutput = document.getElementById("btn_audio_output");
+  const btnKeepAwake = document.getElementById("btn_keep_awake");
   const statusText = document.getElementById("status-text");
   const modeLabel  = document.getElementById("mode-label");
   const btnRec = document.getElementById("btn_rec");
@@ -2069,10 +2315,7 @@ function attachUI() {
 
       try {
         await Tone.start();
-        if (Tone.context && Tone.context.state !== "running") {
-          const resumeResult = Tone.context.resume?.();
-          if (resumeResult && typeof resumeResult.then === "function") await resumeResult;
-        }
+        await resumeAudioContext("start");
 
         ensureTransportScheduled();
         initialized = true;
@@ -2095,6 +2338,9 @@ function attachUI() {
         if (autoToggle && autoToggle.checked) {
           startAutoCycle();
         }
+        setupMediaSessionControls();
+        updateMediaSessionPlaybackState();
+        requestPlaybackWakeLock();
   renderModeLabel();
       } catch (error) {
         console.warn("[Music] start failed:", error);
@@ -2119,6 +2365,8 @@ function attachUI() {
       clearPerformancePads();
       quietMasterLevel();
       safeCallMusicAudioAdapter("stop");
+      updateMediaSessionPlaybackState();
+      releasePlaybackWakeLock();
       if (statusText) statusText.textContent = "Stopped";
       updateRuntimeUiState();
     };
@@ -2140,6 +2388,25 @@ function attachUI() {
   if (outputLevel) {
     outputLevel.addEventListener("input", () => updateOutputLevel());
     updateOutputLevel({ apply: false });
+  }
+
+  if (audioOutputSelect) {
+    audioOutputSelect.addEventListener("change", () => {
+      const option = audioOutputSelect.selectedOptions && audioOutputSelect.selectedOptions[0];
+      applyAudioOutputDevice(audioOutputSelect.value, option ? option.textContent : "");
+    });
+    refreshAudioOutputDevices();
+  }
+
+  if (btnAudioOutput) {
+    btnAudioOutput.addEventListener("click", chooseAudioOutputDevice);
+  }
+
+  if (btnKeepAwake) {
+    btnKeepAwake.addEventListener("click", () => {
+      setKeepAwakeEnabled(!PlaybackState.wakeLockEnabled);
+    });
+    setKeepAwakeEnabled(false);
   }
 
   if (btnRec) {
@@ -2180,6 +2447,8 @@ window.addEventListener("DOMContentLoaded", () => {
   mountMandalaLayers();
   attachUI();
   updateRuntimeUiState();
+  setupMediaSessionControls();
+  updateMediaSessionPlaybackState();
   loadPresets().finally(()=>{ 
     // prime
     applyUCMToParams({ force: true });
@@ -2226,12 +2495,7 @@ window.addEventListener("DOMContentLoaded", () => {
     try {
       if (isPlaying && typeof Tone !== "undefined" && Tone && Tone.context && Tone.context.state !== "running") {
         console.warn("[Music] AudioContext not running:", Tone.context.state, "-> resume");
-        const resumeResult = Tone.context.resume?.();
-        if (resumeResult && typeof resumeResult.catch === "function") {
-          resumeResult.catch((error) => {
-            console.warn("[Music] AudioContext resume failed:", error);
-          });
-        }
+        resumeAudioContext("watchdog");
       }
       if (isPlaying && Tone && Tone.Transport && Tone.Transport.state !== "started") {
         console.warn("[Music] Transport not started:", Tone.Transport.state, "-> start");
@@ -2243,6 +2507,25 @@ window.addEventListener("DOMContentLoaded", () => {
 
   console.log("UCM Mandala Engine v3.1 (v1.4 throttle+watchdog) ready");
 });
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    if (isPlaying) {
+      resumeAudioContext("visible");
+      requestPlaybackWakeLock();
+    }
+    refreshAudioOutputDevices();
+  } else if (PlaybackState.wakeLockEnabled && isPlaying) {
+    setBackgroundStatus("hidden");
+  }
+  updateMediaSessionPlaybackState();
+});
+
+if (navigator.mediaDevices && typeof navigator.mediaDevices.addEventListener === "function") {
+  navigator.mediaDevices.addEventListener("devicechange", () => {
+    refreshAudioOutputDevices();
+  });
+}
 
 /* =========================================================
    9. Mandala Layers Loader (assets/layer_01.svg ...)
