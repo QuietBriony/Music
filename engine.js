@@ -973,39 +973,42 @@ function triggerPadSignature(name) {
   const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
   const observerNorm = clampValue(UCM_CUR.observer / 100, 0, 1);
   const creationNorm = clampValue(UCM_CUR.creation / 100, 0, 1);
-  const gradient = updateReferenceGradient(currentGradientParts());
+  const gradientParts = currentGradientParts();
+  const gradient = updateReferenceGradient(gradientParts);
+  const depth = updateReferenceDepth(gradientParts, gradient);
 
   try {
     if (name === "drift") {
       const note = transparentFragment();
       const driftNote = transparentFragment(2);
       const pluckNote = organicFragment(4);
-      glass.triggerAttackRelease(note, "16n", now + 0.006, clampValue(0.064 + observerNorm * 0.048 + gradient.chrome * 0.012, 0.054, 0.13));
-      glass.triggerAttackRelease(driftNote, "32n", now + 0.056, clampValue(0.044 + creationNorm * 0.03 + gradient.memory * 0.01, 0.036, 0.092));
-      glass.triggerAttackRelease(GLASS_NOTES[(stepIndex + 3) % GLASS_NOTES.length], "32n", now + 0.108, clampValue(0.03 + creationNorm * 0.026 + gradient.haze * 0.006, 0.026, 0.076));
-      glass.triggerAttackRelease(pluckNote, "64n", now + 0.142, clampValue(0.026 + observerNorm * 0.03 + gradient.memory * 0.008, 0.022, 0.072));
+      glass.triggerAttackRelease(note, "16n", now + 0.006, clampValue(0.064 + observerNorm * 0.048 + gradient.chrome * 0.012 + depth.tail * 0.006, 0.054, 0.136));
+      glass.triggerAttackRelease(driftNote, "32n", now + 0.056, clampValue(0.044 + creationNorm * 0.03 + gradient.memory * 0.01 + depth.particle * 0.006, 0.036, 0.098));
+      glass.triggerAttackRelease(GLASS_NOTES[(stepIndex + 3) % GLASS_NOTES.length], "32n", now + 0.108, clampValue(0.03 + creationNorm * 0.026 + gradient.haze * 0.006 + depth.bed * 0.004, 0.026, 0.08));
+      glass.triggerAttackRelease(pluckNote, "64n", now + 0.142, clampValue(0.026 + observerNorm * 0.03 + gradient.memory * 0.008 + depth.gesture * 0.006, 0.022, 0.078));
       texture.triggerAttackRelease("64n", now + 0.018, clampValue(0.034 + creationNorm * 0.034, 0.028, 0.078));
     } else if (name === "repeat") {
       const note = GLASS_NOTES[(GrooveState.cycle + stepIndex) % GLASS_NOTES.length];
       const chipNote = transparentFragment(1);
-      glass.triggerAttackRelease(note, "64n", now + 0.004, clampValue(0.062 + energyNorm * 0.032 + gradient.micro * 0.01, 0.052, 0.108));
-      glass.triggerAttackRelease(note, "64n", now + 0.052, clampValue(0.048 + energyNorm * 0.026 + gradient.micro * 0.008, 0.04, 0.09));
-      glass.triggerAttackRelease(chipNote, "64n", now + 0.086, clampValue(0.026 + observerNorm * 0.028 + gradient.organic * 0.008, 0.022, 0.07));
+      glass.triggerAttackRelease(note, "64n", now + 0.004, clampValue(0.062 + energyNorm * 0.032 + gradient.micro * 0.01 + depth.particle * 0.006, 0.052, 0.112));
+      glass.triggerAttackRelease(note, "64n", now + 0.052, clampValue(0.048 + energyNorm * 0.026 + gradient.micro * 0.008 + depth.gesture * 0.006, 0.04, 0.096));
+      glass.triggerAttackRelease(chipNote, "64n", now + 0.086, clampValue(0.026 + observerNorm * 0.028 + gradient.organic * 0.008 + depth.particle * 0.004, 0.022, 0.074));
+      glass.triggerAttackRelease(transparentFragment(4), "64n", now + 0.132, clampValue(0.016 + depth.particle * 0.028, 0.014, 0.048));
       hat.triggerAttackRelease("64n", now + 0.026, clampValue(0.056 + energyNorm * 0.038, 0.048, 0.112));
       texture.triggerAttackRelease("64n", now + 0.068, clampValue(0.032 + creationNorm * 0.028, 0.026, 0.07));
     } else if (name === "punch") {
       kick.triggerAttackRelease("C2", "16n", now + 0.002, clampValue(0.38 + energyNorm * 0.11, 0.34, 0.54));
       bass.triggerAttackRelease(bassRoot || "C2", "32n", now + 0.016, clampValue(0.11 + energyNorm * 0.07, 0.1, 0.2));
-      glass.triggerAttackRelease(organicFragment(2), "64n", now + 0.032, clampValue(0.032 + creationNorm * 0.026 + gradient.organic * 0.008, 0.026, 0.078));
-      texture.triggerAttackRelease("64n", now + 0.014, clampValue(0.074 + creationNorm * 0.04 + gradient.ghost * 0.01, 0.062, 0.132));
+      glass.triggerAttackRelease(organicFragment(2), "64n", now + 0.032, clampValue(0.032 + creationNorm * 0.026 + gradient.organic * 0.008 + depth.gesture * 0.004, 0.026, 0.082));
+      texture.triggerAttackRelease("64n", now + 0.014, clampValue(0.074 + creationNorm * 0.04 + gradient.ghost * 0.01 + depth.pulse * 0.006, 0.062, 0.136));
     } else if (name === "void") {
       const airNote = transparentFragment(2);
       const bloomNote = transparentFragment(5);
       const dustNote = transparentFragment(1);
-      glass.triggerAttackRelease(airNote, "8n", now + 0.01, clampValue(0.052 + observerNorm * 0.046 + gradient.chrome * 0.012, 0.044, 0.11));
-      glass.triggerAttackRelease(bloomNote, "16n", now + 0.096, clampValue(0.034 + observerNorm * 0.034 + gradient.haze * 0.008, 0.03, 0.084));
-      glass.triggerAttackRelease(dustNote, "32n", now + 0.176, clampValue(0.022 + observerNorm * 0.03 + gradient.chrome * 0.006, 0.02, 0.066));
-      pad.triggerAttackRelease(randomHazeChord(), "2n", now + 0.02, clampValue(0.042 + observerNorm * 0.028 + gradient.haze * 0.006, 0.034, 0.082));
+      glass.triggerAttackRelease(airNote, "8n", now + 0.01, clampValue(0.052 + observerNorm * 0.046 + gradient.chrome * 0.012 + depth.tail * 0.006, 0.044, 0.116));
+      glass.triggerAttackRelease(bloomNote, "16n", now + 0.096, clampValue(0.034 + observerNorm * 0.034 + gradient.haze * 0.008 + depth.bed * 0.005, 0.03, 0.09));
+      glass.triggerAttackRelease(dustNote, "32n", now + 0.176, clampValue(0.022 + observerNorm * 0.03 + gradient.chrome * 0.006 + depth.tail * 0.004, 0.02, 0.07));
+      pad.triggerAttackRelease(randomHazeChord(), "2n", now + 0.02, clampValue(0.042 + observerNorm * 0.028 + gradient.haze * 0.006 + depth.tail * 0.006, 0.034, 0.088));
       texture.triggerAttackRelease("32n", now + 0.034, clampValue(0.024 + observerNorm * 0.03, 0.02, 0.064));
     }
   } catch (error) {
@@ -1116,6 +1119,14 @@ const GradientState = {
   ghost: 0.35,
   chrome: 0.35,
   organic: 0.35
+};
+const DepthState = {
+  bed: 0.45,
+  pulse: 0.34,
+  particle: 0.36,
+  lowMidClean: 0.34,
+  tail: 0.42,
+  gesture: 0.2
 };
 
 const PRESET_CHARACTERS = {
@@ -1373,27 +1384,101 @@ function updateReferenceGradient(parts) {
   return GradientState;
 }
 
+function updateReferenceDepth(parts, gradient = GradientState) {
+  const { energy, mind, creation, voidness, circle, body, resource, observer } = parts;
+  const padIntensity = clampValue(
+    PerformancePadState.drift +
+      PerformancePadState.repeat +
+      PerformancePadState.punch +
+      PerformancePadState.void,
+    0,
+    1
+  );
+
+  DepthState.bed = clampValue(
+    (gradient.haze * 0.34) +
+      (gradient.memory * 0.18) +
+      (circle * 0.18) +
+      (observer * 0.16) +
+      ((1 - energy) * 0.14),
+    0,
+    1
+  );
+  DepthState.pulse = clampValue(
+    (gradient.ghost * 0.3) +
+      (energy * 0.18) +
+      (body * 0.16) +
+      (gradient.micro * 0.14) +
+      (resource * 0.12) +
+      ((1 - voidness) * 0.1),
+    0,
+    1
+  );
+  DepthState.particle = clampValue(
+    (gradient.chrome * 0.24) +
+      (gradient.micro * 0.22) +
+      (gradient.organic * 0.2) +
+      (creation * 0.16) +
+      (mind * 0.12) +
+      (observer * 0.06),
+    0,
+    1
+  );
+  DepthState.lowMidClean = clampValue(
+    (gradient.chrome * 0.2) +
+      (voidness * 0.2) +
+      (observer * 0.18) +
+      ((1 - resource) * 0.16) +
+      ((1 - body) * 0.14) +
+      (gradient.haze * 0.12),
+    0,
+    1
+  );
+  DepthState.tail = clampValue(
+    (gradient.haze * 0.28) +
+      (gradient.chrome * 0.22) +
+      (voidness * 0.18) +
+      (observer * 0.18) +
+      (circle * 0.14),
+    0,
+    1
+  );
+  DepthState.gesture = clampValue(
+    (padIntensity * 0.45) +
+      (gradient.micro * 0.15) +
+      (gradient.ghost * 0.14) +
+      (gradient.organic * 0.12) +
+      (gradient.chrome * 0.08) +
+      (body * 0.06),
+    0,
+    1
+  );
+
+  return DepthState;
+}
+
 function updateTimbreStateFromWorld(parts) {
   const { energy, wave, creation, voidness, circle, body, resource, observer, ethereal, pressure } = parts;
   const character = currentPresetCharacter();
   const gradient = updateReferenceGradient(parts);
+  const depth = updateReferenceDepth(parts, gradient);
 
-  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + character.air, 0, 1);
-  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + character.glass, 0, 1);
-  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + (gradient.ghost * 0.032) + (gradient.micro * 0.022) - (gradient.haze * 0.035) + character.grit, 0, 1);
-  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + (gradient.micro * 0.06) + (gradient.organic * 0.025) + character.fracture, 0, 1);
-  TimbreState.harp = clampValue((TimbreState.glass * 0.46) + (TimbreState.air * 0.24) + (circle * 0.18) + ((1 - TimbreState.grit) * 0.12) + (gradient.chrome * 0.05) + (gradient.memory * 0.035) + (character.harp || 0), 0, 1);
-  TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (gradient.memory * 0.045) + (gradient.organic * 0.025) + (character.warmth || 0), 0, 1);
+  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + character.air, 0, 1);
+  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + character.glass, 0, 1);
+  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + (gradient.ghost * 0.032) + (gradient.micro * 0.022) - (gradient.haze * 0.035) - (depth.lowMidClean * 0.036) + character.grit, 0, 1);
+  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + (gradient.micro * 0.06) + (gradient.organic * 0.025) + (depth.particle * 0.035) + character.fracture, 0, 1);
+  TimbreState.harp = clampValue((TimbreState.glass * 0.46) + (TimbreState.air * 0.24) + (circle * 0.18) + ((1 - TimbreState.grit) * 0.12) + (gradient.chrome * 0.05) + (gradient.memory * 0.035) + (depth.tail * 0.032) + (character.harp || 0), 0, 1);
+  TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (gradient.memory * 0.045) + (gradient.organic * 0.025) + (depth.bed * 0.026) - (depth.lowMidClean * 0.018) + (character.warmth || 0), 0, 1);
 
   const organicColor = (character.organicScale || 1) - 1;
   const dustColor = (character.dustScale || 1) - 1;
   const pressureColor = character.pressureColor || 0.5;
   const hazeColor = (character.hazeScale || 1) - 1;
-  const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) + (hazeColor * 1.25) + (gradient.haze * 0.42) + (gradient.chrome * 0.22) - (PerformancePadState.void * 1.55);
-  const glassLevel = -34.5 + (TimbreState.glass * 5.4) + (TimbreState.harp * 3.4) + (WorldState.spectrum * 0.9) + (organicColor * 1.15) + (gradient.chrome * 0.38) + (gradient.micro * 0.22) + (PerformancePadState.void * 2.15);
-  const textureLevel = -38.2 + (TimbreState.grit * 6.0) + (TimbreState.fracture * 2.3) + (dustColor * 1.35) + ((pressureColor - 0.5) * WorldState.spectrum * 0.62) + (gradient.micro * 0.28) + (gradient.ghost * 0.16) - (TimbreState.warmth * 1.65) - (PerformancePadState.void * 1.15);
-  const bassCutoff = 96 + (TimbreState.grit * 350) + (resource * 102) + (pressureColor * pressure * 34) - (TimbreState.warmth * 54) - (PerformancePadState.void * 82) + (PerformancePadState.punch * 62);
-  const bassBite = 0.58 + (TimbreState.grit * 3.8) + (TimbreState.warmth * 0.62) + (pressureColor * pressure * 0.24) + (PerformancePadState.punch * 0.3);
+  const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) + (hazeColor * 1.25) + (gradient.haze * 0.42) + (gradient.chrome * 0.22) + (depth.bed * 0.34) + (depth.tail * 0.22) - (PerformancePadState.void * 1.55);
+  const glassLevel = -34.5 + (TimbreState.glass * 5.4) + (TimbreState.harp * 3.4) + (WorldState.spectrum * 0.9) + (organicColor * 1.15) + (gradient.chrome * 0.38) + (gradient.micro * 0.22) + (depth.particle * 0.28) + (depth.gesture * 0.16) + (PerformancePadState.void * 2.15);
+  const textureLevel = -38.2 + (TimbreState.grit * 6.0) + (TimbreState.fracture * 2.3) + (dustColor * 1.35) + ((pressureColor - 0.5) * WorldState.spectrum * 0.62) + (gradient.micro * 0.28) + (gradient.ghost * 0.16) + (depth.particle * 0.18) + (depth.pulse * 0.1) - (TimbreState.warmth * 1.65) - (depth.lowMidClean * 0.12) - (PerformancePadState.void * 1.15);
+  const bassCutoff = 96 + (TimbreState.grit * 350) + (resource * 102) + (pressureColor * pressure * 34) - (TimbreState.warmth * 54) - (depth.lowMidClean * 44) - (PerformancePadState.void * 82) + (PerformancePadState.punch * 62);
+  const bassBite = 0.58 + (TimbreState.grit * 3.8) + (TimbreState.warmth * 0.62) + (pressureColor * pressure * 0.24) - (depth.lowMidClean * 0.22) + (PerformancePadState.punch * 0.3);
 
   safeToneRamp(pad?.volume, airyPad, 0.28);
   safeToneRamp(glass?.volume, glassLevel, 0.22);
@@ -1777,6 +1862,8 @@ function applyUCMToParams(options = {}) {
   // リバーブ/ディレイ量を少しだけ動かす（軽量）
   const reverbWet = clampValue(
     mapValue(UCM_CUR.observer + UCM_CUR.void * 0.35, 0, 135, 0.14, 0.46) +
+      DepthState.tail * 0.035 +
+      DepthState.bed * 0.018 +
       PerformancePadState.void * 0.16 +
       PerformancePadState.drift * 0.04,
     0.08,
@@ -1786,6 +1873,8 @@ function applyUCMToParams(options = {}) {
 
   const delayWet = clampValue(
     mapValue(UCM_CUR.creation + UCM_CUR.observer * 0.22, 0, 122, 0.035, 0.28) +
+      DepthState.particle * 0.018 +
+      DepthState.gesture * 0.012 +
       PerformancePadState.repeat * 0.11 +
       PerformancePadState.drift * 0.055 +
       PerformancePadState.void * 0.045,
@@ -1797,6 +1886,7 @@ function applyUCMToParams(options = {}) {
   // Padのカットオフ
   const cutoff = clampValue(
     mapValue(UCM_CUR.observer + UCM_CUR.energy * 0.28 - UCM_CUR.void * 0.18, -18, 128, 280, 2600) -
+      DepthState.lowMidClean * 82 -
       PerformancePadState.void * 720 +
       PerformancePadState.punch * 72,
     180,
@@ -1969,8 +2059,9 @@ function triggerAudibleGrooveFloor(step, time, context) {
   } = context;
   const character = currentPresetCharacter();
   const gradient = GradientState;
-  const hazeScale = (character.hazeScale || 1) * (0.9 + gradient.haze * 0.18 + gradient.chrome * 0.08);
-  const pulseScale = (character.pulseScale || 1) * (0.9 + gradient.ghost * 0.16 + gradient.micro * 0.08);
+  const depth = DepthState;
+  const hazeScale = (character.hazeScale || 1) * (0.88 + gradient.haze * 0.16 + gradient.chrome * 0.07 + depth.bed * 0.08 + depth.tail * 0.05);
+  const pulseScale = (character.pulseScale || 1) * (0.88 + gradient.ghost * 0.14 + gradient.micro * 0.07 + depth.pulse * 0.1);
   const inWarmup = GrooveState.floorWarmupSteps > 0;
   const voiding = PerformancePadState.void > 0;
   const floorGate = inWarmup || step % 2 === 0 || (isRest && step % 8 === 2);
@@ -1978,12 +2069,12 @@ function triggerAudibleGrooveFloor(step, time, context) {
 
   const airTime = time + 0.008 + (PerformancePadState.drift ? Math.random() * 0.026 : Math.random() * 0.01);
   const ghostTextureVel = clampValue(
-    0.012 + observerNorm * 0.018 + creationNorm * 0.012 + gradient.ghost * 0.004 + gradient.micro * 0.003 + PerformancePadState.drift * 0.016 + voiding * 0.014,
+    0.012 + observerNorm * 0.018 + creationNorm * 0.012 + gradient.ghost * 0.004 + gradient.micro * 0.003 + depth.particle * 0.003 + PerformancePadState.drift * 0.016 + voiding * 0.014,
     0.012,
     0.054
   );
   const ghostGlassVel = clampValue(
-    0.014 + observerNorm * 0.03 + (1 - energyNorm) * 0.012 + gradient.chrome * 0.006 + gradient.memory * 0.004 + PerformancePadState.void * 0.026,
+    0.014 + observerNorm * 0.03 + (1 - energyNorm) * 0.012 + gradient.chrome * 0.006 + gradient.memory * 0.004 + depth.tail * 0.004 + PerformancePadState.void * 0.026,
     0.014,
     0.078
   );
@@ -2024,10 +2115,10 @@ function triggerAudibleGrooveFloor(step, time, context) {
   }
 
   const hazeGate = step % 8 === 0 || step % 8 === 4 || (voiding && step % 8 === 6);
-  const hazeChance = chance((0.19 + observerNorm * 0.17 + circleNorm * 0.145 + (1 - energyNorm) * 0.075 + gradient.haze * 0.085 + gradient.chrome * 0.045 + PerformancePadState.void * 0.16) * hazeScale);
+  const hazeChance = chance((0.18 + observerNorm * 0.16 + circleNorm * 0.14 + (1 - energyNorm) * 0.07 + gradient.haze * 0.08 + gradient.chrome * 0.04 + depth.bed * 0.04 + depth.tail * 0.025 + PerformancePadState.void * 0.16) * hazeScale);
   if (hazeGate && (inWarmup || rand(hazeChance))) {
     try {
-      pad.triggerAttackRelease(randomHazeChord(), voiding ? "2n" : "1n", airTime + 0.018, clampValue(0.027 + observerNorm * 0.027 + circleNorm * 0.015 + (1 - energyNorm) * 0.012 + gradient.haze * 0.006, 0.023, 0.076));
+      pad.triggerAttackRelease(randomHazeChord(), voiding ? "2n" : "1n", airTime + 0.018, clampValue(0.027 + observerNorm * 0.027 + circleNorm * 0.015 + (1 - energyNorm) * 0.012 + gradient.haze * 0.006 + depth.bed * 0.004, 0.023, 0.078));
     } catch (error) {
       console.warn("[Music] haze bed pad failed:", error);
     }
@@ -2049,17 +2140,18 @@ function triggerOrganicTexture(step, time, context) {
   } = context;
   const character = currentPresetCharacter();
   const gradient = GradientState;
-  const organicScale = (character.organicScale || 1) * (0.9 + gradient.organic * 0.2);
-  const dustScale = (character.dustScale || 1) * (0.92 + gradient.memory * 0.08 + gradient.micro * 0.08);
+  const depth = DepthState;
+  const organicScale = (character.organicScale || 1) * (0.88 + gradient.organic * 0.18 + depth.particle * 0.08);
+  const dustScale = (character.dustScale || 1) * (0.9 + gradient.memory * 0.07 + gradient.micro * 0.07 + depth.bed * 0.05 + depth.particle * 0.04);
   const pressureColor = (character.pressureColor || 0.5) * (0.9 + gradient.ghost * 0.2);
   const pluckGate = step % 8 === 1 || step % 8 === 5 || (PerformancePadState.drift && step % 8 === 3);
-  const organicProb = chance((0.02 + observerNorm * 0.032 + creationNorm * 0.028 + waveNorm * 0.021 + gradient.organic * 0.019 + PerformancePadState.drift * 0.052 + PerformancePadState.void * 0.022) * organicScale);
+  const organicProb = chance((0.019 + observerNorm * 0.031 + creationNorm * 0.027 + waveNorm * 0.02 + gradient.organic * 0.018 + depth.particle * 0.012 + PerformancePadState.drift * 0.052 + PerformancePadState.void * 0.022) * organicScale);
 
   if (pluckGate && rand(organicProb)) {
     const note = ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + Math.floor(waveNorm * 4)) % ORGANIC_PLUCK_FRAGMENTS.length];
     const echoNote = ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + 3) % ORGANIC_PLUCK_FRAGMENTS.length];
     const pluckTime = time + 0.014 + Math.random() * (0.012 + waveNorm * 0.014);
-    const vel = clampValue(0.024 + observerNorm * 0.034 + creationNorm * 0.026 + gradient.organic * 0.006 + PerformancePadState.drift * 0.016, 0.018, 0.094);
+    const vel = clampValue(0.024 + observerNorm * 0.034 + creationNorm * 0.026 + gradient.organic * 0.006 + depth.particle * 0.004 + PerformancePadState.drift * 0.016, 0.018, 0.096);
     try {
       glass.triggerAttackRelease(note, "64n", pluckTime, vel);
       if (rand(0.24 + TimbreState.harp * 0.27 + gradient.micro * 0.08 + PerformancePadState.repeat * 0.2)) {
@@ -2084,6 +2176,81 @@ function triggerOrganicTexture(step, time, context) {
       }
     } catch (error) {
       console.warn("[Music] pressure color failed:", error);
+    }
+  }
+}
+
+function triggerReferenceDepthDetails(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    isAccentStep
+  } = context;
+  const gradient = GradientState;
+  const depth = DepthState;
+
+  const bedGate = step % 8 === 0 || step % 8 === 4;
+  if (bedGate && rand(0.035 + depth.bed * 0.055 + depth.tail * 0.035 + PerformancePadState.void * 0.04)) {
+    try {
+      pad.triggerAttackRelease(
+        randomHazeChord(),
+        PerformancePadState.void ? "2n" : "1n",
+        time + 0.026 + Math.random() * 0.018,
+        clampValue(0.022 + observerNorm * 0.022 + circleNorm * 0.012 + depth.bed * 0.008, 0.02, 0.064)
+      );
+    } catch (error) {
+      console.warn("[Music] depth bed failed:", error);
+    }
+  }
+
+  const memoryGate = step % 8 === 3 || step % 16 === 11 || PerformancePadState.drift;
+  if (memoryGate && rand(0.018 + depth.particle * 0.05 + gradient.memory * 0.038 + PerformancePadState.drift * 0.04)) {
+    const note = rand(0.48 + gradient.chrome * 0.18)
+      ? TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 3) % TRANSPARENT_AIR_FRAGMENTS.length]
+      : ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + 1) % ORGANIC_PLUCK_FRAGMENTS.length];
+    const echoNote = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 6) % TRANSPARENT_AIR_FRAGMENTS.length];
+    const particleTime = time + 0.018 + Math.random() * (0.018 + waveNorm * 0.018);
+    const vel = clampValue(0.018 + observerNorm * 0.024 + creationNorm * 0.022 + depth.particle * 0.01, 0.016, 0.074);
+    try {
+      glass.triggerAttackRelease(note, "32n", particleTime, vel);
+      if (rand(0.26 + depth.tail * 0.28 + PerformancePadState.repeat * 0.12)) {
+        glass.triggerAttackRelease(echoNote, "64n", particleTime + 0.058 + Math.random() * 0.026, vel * 0.58);
+      }
+    } catch (error) {
+      console.warn("[Music] depth particle failed:", error);
+    }
+  }
+
+  const pulseGate = (step % 8 === 6 || isAccentStep) && !PerformancePadState.void;
+  if (pulseGate && rand(0.018 + depth.pulse * 0.055 + gradient.ghost * 0.028)) {
+    try {
+      texture.triggerAttackRelease("64n", time + 0.012, clampValue(0.022 + depth.pulse * 0.045 + creationNorm * 0.026, 0.02, 0.092));
+      if (rand(0.22 + gradient.ghost * 0.22)) {
+        glass.triggerAttackRelease(
+          FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + 2) % FIELD_MURK_FRAGMENTS.length],
+          "64n",
+          time + 0.032,
+          clampValue(0.016 + energyNorm * 0.022 + depth.pulse * 0.014, 0.014, 0.052)
+        );
+      }
+    } catch (error) {
+      console.warn("[Music] depth pulse failed:", error);
+    }
+  }
+
+  if (PerformancePadState.void && (step % 8 === 7 || step % 16 === 15) && rand(0.18 + depth.tail * 0.34)) {
+    try {
+      glass.triggerAttackRelease(
+        TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 4) % TRANSPARENT_AIR_FRAGMENTS.length],
+        "16n",
+        time + 0.04,
+        clampValue(0.022 + observerNorm * 0.034 + depth.tail * 0.01, 0.02, 0.074)
+      );
+    } catch (error) {
+      console.warn("[Music] depth void tail failed:", error);
     }
   }
 }
@@ -2204,10 +2371,13 @@ function scheduleStep(time) {
   const fillBoost = GrooveState.fillActive ? 0.14 : 0;
   const t = time + grooveJitter;
   const stepContext = { energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm, isRest, isAccentStep };
-  const gradient = updateReferenceGradient(currentGradientParts());
+  const gradientParts = currentGradientParts();
+  const gradient = updateReferenceGradient(gradientParts);
+  updateReferenceDepth(gradientParts, gradient);
 
   triggerAudibleGrooveFloor(step, t, stepContext);
   triggerOrganicTexture(step, t, stepContext);
+  triggerReferenceDepthDetails(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
   if (!isRest) {
@@ -2260,33 +2430,33 @@ function scheduleStep(time) {
     }
   }
 
-  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.185) + GrooveState.textureLift + gradient.micro * 0.012 + gradient.ghost * 0.006 + PerformancePadState.drift * 0.088 - PerformancePadState.void * 0.012);
+  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.022, 0.18) + GrooveState.textureLift + gradient.micro * 0.011 + gradient.ghost * 0.006 + DepthState.particle * 0.012 + DepthState.gesture * 0.008 + PerformancePadState.drift * 0.084 - PerformancePadState.void * 0.012);
   if (rand(textureProb) && (step % 2 === 1 || isAccentStep)) {
     const textureTime = t + (isAccentStep ? 0.006 : 0.012);
-    texture.triggerAttackRelease("32n", textureTime, clampValue(0.026 + creationNorm * 0.095 + resourceNorm * 0.026 + PerformancePadState.punch * 0.016, 0.018, 0.125));
+    texture.triggerAttackRelease("32n", textureTime, clampValue(0.026 + creationNorm * 0.092 + resourceNorm * 0.024 + DepthState.gesture * 0.008 + PerformancePadState.punch * 0.016, 0.018, 0.126));
   }
 
-  const particleProb = chance(0.03 + creationNorm * 0.032 + waveNorm * 0.022 + observerNorm * 0.018 + gradient.chrome * 0.012 + gradient.micro * 0.008 + PerformancePadState.drift * 0.105 + PerformancePadState.repeat * 0.055 + PerformancePadState.void * 0.06);
+  const particleProb = chance(0.028 + creationNorm * 0.03 + waveNorm * 0.021 + observerNorm * 0.018 + gradient.chrome * 0.011 + gradient.micro * 0.008 + DepthState.particle * 0.018 + PerformancePadState.drift * 0.102 + PerformancePadState.repeat * 0.052 + PerformancePadState.void * 0.058);
   if (rand(particleProb) && (step % 4 === 1 || step % 8 === 5 || isAccentStep)) {
     const note = FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + Math.floor(Math.random() * FIELD_MURK_FRAGMENTS.length)) % FIELD_MURK_FRAGMENTS.length];
     try {
-      glass.triggerAttackRelease(note, "32n", t + 0.019 + Math.random() * 0.018, clampValue(0.022 + creationNorm * 0.036 + gradient.micro * 0.006 + PerformancePadState.repeat * 0.038 + PerformancePadState.void * 0.018, 0.016, 0.098));
+      glass.triggerAttackRelease(note, "32n", t + 0.019 + Math.random() * 0.018, clampValue(0.022 + creationNorm * 0.035 + gradient.micro * 0.006 + DepthState.particle * 0.006 + PerformancePadState.repeat * 0.036 + PerformancePadState.void * 0.018, 0.016, 0.1));
     } catch (error) {
       console.warn("[Music] field particle failed:", error);
     }
   }
 
-  const airProb = chance(0.026 + observerNorm * 0.042 + circleNorm * 0.018 + gradient.chrome * 0.014 + gradient.haze * 0.008 + PerformancePadState.void * 0.145 + PerformancePadState.drift * 0.066 + PerformancePadState.repeat * 0.022);
+  const airProb = chance(0.024 + observerNorm * 0.04 + circleNorm * 0.018 + gradient.chrome * 0.013 + gradient.haze * 0.008 + DepthState.tail * 0.022 + PerformancePadState.void * 0.14 + PerformancePadState.drift * 0.064 + PerformancePadState.repeat * 0.02);
   if (rand(airProb) && (step % 8 === 4 || step % 8 === 7)) {
     const note = TRANSPARENT_AIR_FRAGMENTS[(step + Math.floor(Math.random() * TRANSPARENT_AIR_FRAGMENTS.length)) % TRANSPARENT_AIR_FRAGMENTS.length];
     try {
-      glass.triggerAttackRelease(note, "32n", t + 0.024, clampValue(0.016 + observerNorm * 0.038 + gradient.chrome * 0.006 + PerformancePadState.void * 0.026 + PerformancePadState.repeat * 0.012, 0.012, 0.082));
+      glass.triggerAttackRelease(note, "32n", t + 0.024, clampValue(0.016 + observerNorm * 0.038 + gradient.chrome * 0.006 + DepthState.tail * 0.006 + PerformancePadState.void * 0.025 + PerformancePadState.repeat * 0.012, 0.012, 0.086));
     } catch (error) {
       console.warn("[Music] transparent air failed:", error);
     }
   }
 
-  const glassProb = chance(mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.02, 0.136) + GrooveState.glassLift + gradient.memory * 0.01 + gradient.chrome * 0.01 + gradient.micro * 0.008 + PerformancePadState.drift * 0.09 + PerformancePadState.repeat * 0.07 + PerformancePadState.void * 0.038);
+  const glassProb = chance(mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.018, 0.13) + GrooveState.glassLift + gradient.memory * 0.01 + gradient.chrome * 0.01 + gradient.micro * 0.008 + DepthState.particle * 0.012 + DepthState.gesture * 0.008 + PerformancePadState.drift * 0.086 + PerformancePadState.repeat * 0.066 + PerformancePadState.void * 0.036);
   if (rand(glassProb) && (isAccentStep || step % 8 === 3 || step % 16 === 11)) {
     const note = GLASS_NOTES[Math.floor(Math.random() * GLASS_NOTES.length)];
     glass.triggerAttackRelease(note, "16n", t + 0.015, clampValue(0.035 + energyNorm * 0.065 + PerformancePadState.void * 0.014, 0.026, 0.118));
