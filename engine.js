@@ -59,9 +59,15 @@ const AUTOMIX_PROFILE = {
 };
 const AUTO_MOTION_TICK_MS = 3500;
 const AUTO_SLIDER_SYNC_INTERVAL_MS = 240;
-const MANUAL_INFLUENCE_HOLD_MS = 2600;
+const MANUAL_INFLUENCE_HOLD_MS = 4300;
 const manualInfluenceUntil = {};
 const SLIDER_KEY_BY_ID = Object.fromEntries(Object.entries(SLIDER_BY_UCM).map(([key, id]) => [id, key]));
+const PERFORMANCE_PAD_STATUS = {
+  drift: "DRIFT active",
+  repeat: "REPEAT active",
+  punch: "PUNCH active",
+  void: "VOID open"
+};
 const PerformancePadState = {
   drift: 0,
   repeat: 0,
@@ -86,12 +92,14 @@ function setPerformancePad(name, active) {
   if (!Object.prototype.hasOwnProperty.call(PerformancePadState, name)) return;
   PerformancePadState[name] = active ? 1 : 0;
   PerformancePadState.lastTouchAt = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
+  if (active) triggerPadSignature(name);
   if (document.body) {
     document.body.dataset.padActive = Object.entries(PerformancePadState)
       .some(([key, value]) => key !== "lastTouchAt" && value > 0)
       ? "true"
       : "false";
   }
+  updatePerformancePadStatus();
 }
 
 function clearPerformancePads() {
@@ -102,6 +110,7 @@ function clearPerformancePads() {
   document.querySelectorAll("[data-performance-pad].active").forEach((pad) => {
     pad.classList.remove("active");
   });
+  updatePerformancePadStatus();
 }
 
 // seconds to reach target (larger = smoother)
@@ -352,6 +361,23 @@ function toggleLocalRecorder() {
   }
 }
 
+function activePerformancePadName() {
+  return ["drift", "repeat", "punch", "void"].find((name) => PerformancePadState[name] > 0) || "";
+}
+
+function updatePerformancePadStatus() {
+  const statusText = document.getElementById("status-text");
+  if (!statusText) return;
+  if (RecorderState.recorder && RecorderState.recorder.state === "recording") return;
+
+  const activeName = activePerformancePadName();
+  if (activeName) {
+    statusText.textContent = PERFORMANCE_PAD_STATUS[activeName] || `${activeName.toUpperCase()} active`;
+  } else if (isPlaying) {
+    statusText.textContent = UCM.auto.enabled ? "Playing / AutoMix" : "Playing…";
+  }
+}
+
 function clampValue(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -531,6 +557,40 @@ const glass = new Tone.FMSynth({
   modulation: { type: "triangle" },
   modulationEnvelope: { attack: 0.002, decay: 0.08, sustain: 0, release: 0.1 }
 }).connect(globalDelay);
+
+function triggerPadSignature(name) {
+  if (!isPlaying || !initialized || typeof Tone === "undefined") return;
+
+  const now = Tone.now();
+  const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
+  const observerNorm = clampValue(UCM_CUR.observer / 100, 0, 1);
+  const creationNorm = clampValue(UCM_CUR.creation / 100, 0, 1);
+
+  try {
+    if (name === "drift") {
+      const note = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex) % TRANSPARENT_AIR_FRAGMENTS.length];
+      glass.triggerAttackRelease(note, "16n", now + 0.006, clampValue(0.052 + observerNorm * 0.04, 0.044, 0.102));
+      glass.triggerAttackRelease(GLASS_NOTES[(stepIndex + 3) % GLASS_NOTES.length], "32n", now + 0.074, clampValue(0.026 + creationNorm * 0.025, 0.024, 0.066));
+      texture.triggerAttackRelease("64n", now + 0.018, clampValue(0.032 + creationNorm * 0.035, 0.026, 0.078));
+    } else if (name === "repeat") {
+      const note = GLASS_NOTES[(GrooveState.cycle + stepIndex) % GLASS_NOTES.length];
+      glass.triggerAttackRelease(note, "64n", now + 0.004, clampValue(0.048 + energyNorm * 0.026, 0.04, 0.082));
+      glass.triggerAttackRelease(note, "64n", now + 0.058, clampValue(0.034 + energyNorm * 0.022, 0.03, 0.068));
+      hat.triggerAttackRelease("64n", now + 0.028, clampValue(0.045 + energyNorm * 0.035, 0.038, 0.102));
+    } else if (name === "punch") {
+      kick.triggerAttackRelease("C2", "16n", now + 0.002, clampValue(0.42 + energyNorm * 0.14, 0.38, 0.62));
+      bass.triggerAttackRelease(bassRoot || "C2", "32n", now + 0.016, clampValue(0.13 + energyNorm * 0.09, 0.12, 0.24));
+      texture.triggerAttackRelease("64n", now + 0.014, clampValue(0.065 + creationNorm * 0.035, 0.056, 0.12));
+    } else if (name === "void") {
+      const airNote = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + 2) % TRANSPARENT_AIR_FRAGMENTS.length];
+      glass.triggerAttackRelease(airNote, "8n", now + 0.01, clampValue(0.04 + observerNorm * 0.038, 0.036, 0.086));
+      pad.triggerAttackRelease(randomChordForMode(), "2n", now + 0.02, clampValue(0.036 + observerNorm * 0.024, 0.03, 0.068));
+      texture.triggerAttackRelease("32n", now + 0.032, clampValue(0.022 + observerNorm * 0.028, 0.018, 0.062));
+    }
+  } catch (error) {
+    console.warn("[Music] performance pad signature failed:", name, error);
+  }
+}
 
 /* =========================================================
    3. パラメータ構造
@@ -1135,6 +1195,14 @@ function chooseMode() {
 
 function applyUCMToParams(options = {}) {
   const force = options.force === true;
+  const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
+  const waveNorm = clampValue(UCM_CUR.wave / 100, 0, 1);
+  const voidNorm = clampValue(UCM_CUR.void / 100, 0, 1);
+  const circleNorm = clampValue(UCM_CUR.circle / 100, 0, 1);
+  const bodyNorm = clampValue(UCM_CUR.body / 100, 0, 1);
+  const resourceNorm = clampValue(UCM_CUR.resource / 100, 0, 1);
+  const observerNorm = clampValue(UCM_CUR.observer / 100, 0, 1);
+
   // BPM
   EngineParams.bpm = Math.round(mapValue(UCM_CUR.energy, 0, 100, 58, 148));
   rampParam("transport-bpm", Tone.Transport.bpm, EngineParams.bpm, force ? 0.18 : 0.45, force ? 0 : 1);
@@ -1164,17 +1232,18 @@ function applyUCMToParams(options = {}) {
     const modeLabel = document.getElementById("mode-label");
   renderModeLabel();
   }
+  updateWorldStateFromUCM();
 
   // 休符
-  EngineParams.restProb = mapValue(UCM_CUR.void, 0, 100, 0.03, 0.42);
+  EngineParams.restProb = clampValue(mapValue(UCM_CUR.void, 0, 100, 0.025, 0.42) - energyNorm * 0.035 + observerNorm * 0.012, 0.02, 0.46);
 
   // ドラム密度
-  EngineParams.kickProb = mapValue(UCM_CUR.body, 0, 100, 0.25, 0.9);
-  EngineParams.hatProb  = mapValue(UCM_CUR.resource, 0, 100, 0.16, 0.78);
+  EngineParams.kickProb = mapValue((bodyNorm * 0.72 + energyNorm * 0.28) * 100, 0, 100, 0.24, 0.86);
+  EngineParams.hatProb  = mapValue((resourceNorm * 0.64 + energyNorm * 0.24 + waveNorm * 0.12) * 100, 0, 100, 0.14, 0.76);
 
   // Bass / Pad
-  EngineParams.bassProb = mapValue(UCM_CUR.body, 0, 100, 0.12, 0.68);
-  EngineParams.padProb  = mapValue(UCM_CUR.circle, 0, 100, 0.12, 0.42);
+  EngineParams.bassProb = mapValue((bodyNorm * 0.82 + energyNorm * 0.18) * 100, 0, 100, 0.11, 0.58);
+  EngineParams.padProb  = mapValue((circleNorm * 0.66 + observerNorm * 0.18 + voidNorm * 0.16) * 100, 0, 100, 0.14, 0.46);
   const character = currentPresetCharacter();
   EngineParams.restProb = clampValue(EngineParams.restProb * character.restScale, 0.04, PerformancePadState.void ? 0.58 : 0.46);
   EngineParams.kickProb = clampValue(EngineParams.kickProb * character.kickScale, PerformancePadState.void ? 0.08 : 0.18, 0.86);
@@ -1372,17 +1441,17 @@ function triggerAudibleGrooveFloor(step, time, context) {
   } = context;
   const inWarmup = GrooveState.floorWarmupSteps > 0;
   const voiding = PerformancePadState.void > 0;
-  const floorGate = inWarmup || step % 4 === 0 || (isRest && step % 8 === 2);
+  const floorGate = inWarmup || step % 2 === 0 || (isRest && step % 8 === 2);
   if (!floorGate) return;
 
   const airTime = time + 0.008 + (PerformancePadState.drift ? Math.random() * 0.026 : Math.random() * 0.01);
   const ghostTextureVel = clampValue(
-    0.014 + observerNorm * 0.02 + creationNorm * 0.014 + PerformancePadState.drift * 0.018 + voiding * 0.016,
+    0.012 + observerNorm * 0.018 + creationNorm * 0.012 + PerformancePadState.drift * 0.016 + voiding * 0.014,
     0.012,
-    0.062
+    0.054
   );
   const ghostGlassVel = clampValue(
-    0.016 + observerNorm * 0.03 + (1 - energyNorm) * 0.01 + PerformancePadState.void * 0.018,
+    0.014 + observerNorm * 0.028 + (1 - energyNorm) * 0.012 + PerformancePadState.void * 0.018,
     0.014,
     0.072
   );
@@ -1413,7 +1482,70 @@ function triggerAudibleGrooveFloor(step, time, context) {
     }
   }
 
+  if ((step % 16 === 12 || (voiding && step % 8 === 4)) && (energyNorm < 0.72 || voiding) && rand(0.38 + observerNorm * 0.22 + PerformancePadState.void * 0.18)) {
+    try {
+      pad.triggerAttackRelease(randomChordForMode(), "2n", airTime + 0.018, clampValue(0.026 + observerNorm * 0.024 + (1 - energyNorm) * 0.012, 0.024, 0.058));
+    } catch (error) {
+      console.warn("[Music] room-bed pad failed:", error);
+    }
+  }
+
   if (GrooveState.floorWarmupSteps > 0) GrooveState.floorWarmupSteps--;
+}
+
+function triggerPadHoldMinimums(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    waveNorm,
+    observerNorm,
+    isAccentStep
+  } = context;
+
+  if (PerformancePadState.drift && (step % 8 === 1 || step % 8 === 5)) {
+    const note = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle) % TRANSPARENT_AIR_FRAGMENTS.length];
+    try {
+      glass.triggerAttackRelease(note, "32n", time + 0.018 + waveNorm * 0.018, clampValue(0.028 + observerNorm * 0.034 + creationNorm * 0.014, 0.024, 0.082));
+      texture.triggerAttackRelease("64n", time + 0.026, clampValue(0.024 + waveNorm * 0.032, 0.02, 0.07));
+    } catch (error) {
+      console.warn("[Music] drift hold failed:", error);
+    }
+  }
+
+  if (PerformancePadState.repeat && (step % 8 === 2 || step % 8 === 6)) {
+    const note = GLASS_NOTES[(step + GrooveState.cycle) % GLASS_NOTES.length];
+    try {
+      glass.triggerAttackRelease(note, "64n", time + 0.012, clampValue(0.038 + energyNorm * 0.036, 0.032, 0.086));
+      glass.triggerAttackRelease(note, "64n", time + 0.055, clampValue(0.026 + energyNorm * 0.028, 0.022, 0.064));
+      if (step % 8 === 6) hat.triggerAttackRelease("64n", time + 0.034, clampValue(0.038 + energyNorm * 0.04, 0.032, 0.096));
+    } catch (error) {
+      console.warn("[Music] repeat hold failed:", error);
+    }
+  }
+
+  if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep)) {
+    try {
+      kick.triggerAttackRelease("C2", "16n", time + 0.004, clampValue(0.32 + energyNorm * 0.18, 0.28, 0.56));
+      if (step % 8 === 0) {
+        bass.triggerAttackRelease(bassRoot || "C2", "32n", time + 0.026, clampValue(0.12 + energyNorm * 0.08, 0.1, 0.22));
+      }
+      texture.triggerAttackRelease("64n", time + 0.018, clampValue(0.052 + creationNorm * 0.042, 0.044, 0.108));
+    } catch (error) {
+      console.warn("[Music] punch hold failed:", error);
+    }
+  }
+
+  if (PerformancePadState.void && (step % 8 === 4 || step % 16 === 13)) {
+    const note = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 2) % TRANSPARENT_AIR_FRAGMENTS.length];
+    try {
+      glass.triggerAttackRelease(note, "16n", time + 0.022, clampValue(0.026 + observerNorm * 0.038, 0.024, 0.078));
+      if (step % 8 === 4) {
+        pad.triggerAttackRelease(randomChordForMode(), "2n", time + 0.04, clampValue(0.026 + observerNorm * 0.024, 0.022, 0.056));
+      }
+    } catch (error) {
+      console.warn("[Music] void hold failed:", error);
+    }
+  }
 }
 
 function releaseAllVoices(time) {
@@ -1464,8 +1596,10 @@ function scheduleStep(time) {
   const grooveJitter = (step % 2 === 1 ? mapValue(waveNorm, 0, 1, 0, 0.014 + PerformancePadState.drift * 0.026) * GrooveState.microJitterScale : 0);
   const fillBoost = GrooveState.fillActive ? 0.14 : 0;
   const t = time + grooveJitter;
+  const stepContext = { energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, isRest, isAccentStep };
 
-  triggerAudibleGrooveFloor(step, t, { energyNorm, creationNorm, waveNorm, observerNorm, isRest, isAccentStep });
+  triggerAudibleGrooveFloor(step, t, stepContext);
+  triggerPadHoldMinimums(step, t, stepContext);
 
   if (!isRest) {
     // Kick
