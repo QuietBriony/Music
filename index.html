@@ -166,6 +166,19 @@
                         <input type="range" id="output_level" min="0" max="100" value="75" aria-label="Output level" />
                         <span class="hint" id="output_value">75</span>
                     </div>
+                    <div class="auto-body route-body" id="audio-route-body">
+                        <span class="label">AUDIO</span>
+                        <select id="audio_output_select" aria-label="Audio output device">
+                            <option value="">SYSTEM / BT</option>
+                        </select>
+                        <button type="button" id="btn_audio_output" class="mini-action">PAIR</button>
+                        <span class="hint" id="audio_output_status">system</span>
+                    </div>
+                    <div class="auto-body route-body" id="background-body">
+                        <span class="label">BG</span>
+                        <button type="button" id="btn_keep_awake" class="mini-action" aria-pressed="false">KEEP</button>
+                        <span class="hint" id="background_value">off</span>
+                    </div>
                 </div>
 
                 <!-- Momentary performance pads -->
