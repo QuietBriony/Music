@@ -84,7 +84,10 @@ const PlaybackState = {
   wakeLockEnabled: false,
   wakeLockSentinel: null,
   wakeLockSupported: typeof navigator !== "undefined" && !!navigator.wakeLock,
-  mediaSessionSupported: typeof navigator !== "undefined" && !!navigator.mediaSession
+  mediaSessionSupported: typeof navigator !== "undefined" && !!navigator.mediaSession,
+  backgroundBridgeActive: false,
+  backgroundAudio: null,
+  iosSafariBridgePreferred: false
 };
 
 function markManualInfluenceFromEvent(event) {
@@ -443,6 +446,21 @@ function applyOutputLevel(options = {}) {
   rampParam("master-gain", masterGain.gain, outputGainFromLevel(OutputState.level), seconds, 0.003);
 }
 
+function isAppleMobileDevice() {
+  const nav = typeof navigator !== "undefined" ? navigator : {};
+  const ua = nav.userAgent || "";
+  return /iPad|iPhone|iPod/.test(ua) || (nav.platform === "MacIntel" && nav.maxTouchPoints > 1);
+}
+
+function isSafariFamily() {
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent || "" : "";
+  return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+}
+
+function shouldPreferBackgroundAudioBridge() {
+  return isAppleMobileDevice() && isSafariFamily();
+}
+
 function setAudioOutputStatus(message) {
   const el = document.getElementById("audio_output_status");
   if (el) el.textContent = message;
@@ -461,6 +479,11 @@ function getNativeAudioContext() {
 function getAudioOutputSinkTarget() {
   const context = getNativeAudioContext();
   return context && typeof context.setSinkId === "function" ? context : null;
+}
+
+function getHtmlAudioSinkTarget() {
+  const audio = PlaybackState.backgroundAudio;
+  return audio && typeof audio.setSinkId === "function" ? audio : null;
 }
 
 function getOutputDeviceLabel(device) {
@@ -520,18 +543,27 @@ async function refreshAudioOutputDevices(selectedDeviceId = PlaybackState.output
 
 async function applyAudioOutputDevice(deviceId, label = "") {
   const sinkTarget = getAudioOutputSinkTarget();
+  const htmlSinkTarget = getHtmlAudioSinkTarget();
   PlaybackState.outputDeviceId = deviceId || "";
   PlaybackState.outputDeviceLabel = label || (deviceId ? "Audio output" : "SYSTEM / BT");
 
-  if (!sinkTarget) {
+  if (!sinkTarget && !htmlSinkTarget) {
     setAudioOutputStatus("system");
     return false;
   }
 
+  let routed = false;
   try {
-    await sinkTarget.setSinkId(deviceId || "");
-    setAudioOutputStatus(deviceId ? "routed" : "system");
-    return true;
+    if (sinkTarget) {
+      await sinkTarget.setSinkId(deviceId || "");
+      routed = true;
+    }
+    if (htmlSinkTarget) {
+      await htmlSinkTarget.setSinkId(deviceId || "");
+      routed = true;
+    }
+    setAudioOutputStatus(deviceId && routed ? "routed" : "system");
+    return routed;
   } catch (error) {
     console.warn("[Music] audio output route failed:", error);
     setAudioOutputStatus("blocked");
@@ -678,6 +710,84 @@ function setKeepAwakeEnabled(enabled) {
   }
 }
 
+function ensureBackgroundPlaybackElement() {
+  if (PlaybackState.backgroundAudio) return PlaybackState.backgroundAudio;
+  if (!backgroundPlaybackDestination?.stream || typeof document === "undefined") return null;
+
+  const audio = document.createElement("audio");
+  audio.id = "ios_background_audio";
+  audio.autoplay = false;
+  audio.controls = false;
+  audio.loop = false;
+  audio.muted = false;
+  audio.playsInline = true;
+  audio.srcObject = backgroundPlaybackDestination.stream;
+  audio.setAttribute("aria-hidden", "true");
+  audio.setAttribute("playsinline", "");
+  audio.style.position = "fixed";
+  audio.style.width = "1px";
+  audio.style.height = "1px";
+  audio.style.opacity = "0";
+  audio.style.pointerEvents = "none";
+  audio.style.left = "-9999px";
+  audio.style.bottom = "0";
+
+  const host = document.body || document.documentElement;
+  host.appendChild(audio);
+  PlaybackState.backgroundAudio = audio;
+  return audio;
+}
+
+function routeHardwareOutputForBridge(active, force = false) {
+  const value = active ? 0.0001 : 1;
+  rampParam("hardware-output", hardwareOutput.gain, value, force ? 0.04 : 0.12, 0.003);
+}
+
+async function startBackgroundAudioBridge(options = {}) {
+  const force = options.force === true;
+  if (!force && !shouldPreferBackgroundAudioBridge()) {
+    routeHardwareOutputForBridge(false);
+    return false;
+  }
+
+  const audio = ensureBackgroundPlaybackElement();
+  if (!audio) {
+    setBackgroundStatus("direct");
+    routeHardwareOutputForBridge(false);
+    return false;
+  }
+
+  try {
+    audio.muted = false;
+    audio.volume = 1;
+    if (PlaybackState.outputDeviceId && typeof audio.setSinkId === "function") {
+      await audio.setSinkId(PlaybackState.outputDeviceId);
+    }
+    const result = audio.play();
+    if (result && typeof result.then === "function") await result;
+    PlaybackState.backgroundBridgeActive = true;
+    routeHardwareOutputForBridge(true, force);
+    setBackgroundStatus(shouldPreferBackgroundAudioBridge() ? "ios bg" : "bridge");
+    return true;
+  } catch (error) {
+    console.warn("[Music] background audio bridge failed:", error);
+    PlaybackState.backgroundBridgeActive = false;
+    routeHardwareOutputForBridge(false, true);
+    setBackgroundStatus("direct");
+    return false;
+  }
+}
+
+function stopBackgroundAudioBridge() {
+  const audio = PlaybackState.backgroundAudio;
+  PlaybackState.backgroundBridgeActive = false;
+  routeHardwareOutputForBridge(false, true);
+  if (audio) {
+    try { audio.pause(); } catch(e) {}
+  }
+  setBackgroundStatus(PlaybackState.wakeLockEnabled ? "ready" : "off");
+}
+
 function syncSliderValue(key, value) {
   const id = SLIDER_BY_UCM[key];
   if (!id) return;
@@ -762,13 +872,21 @@ function approachValue(current, target, maxStep) {
 ========================================================= */
 
 // マスター処理（少なめ）
-const masterLimiter = new Tone.Limiter(-1).toDestination();
+const masterLimiter = new Tone.Limiter(-1);
+const hardwareOutput = new Tone.Gain(1).toDestination();
 const masterGain    = new Tone.Gain(0.8).connect(masterLimiter);
 const recorderDestination = Tone.context.createMediaStreamDestination();
+const backgroundPlaybackDestination = Tone.context.createMediaStreamDestination();
+masterLimiter.connect(hardwareOutput);
 try {
   masterLimiter.connect(recorderDestination);
 } catch (error) {
   console.warn("[Music] recorder tap unavailable:", error);
+}
+try {
+  masterLimiter.connect(backgroundPlaybackDestination);
+} catch (error) {
+  console.warn("[Music] background playback tap unavailable:", error);
 }
 
 // シンプルなリバーブ＆ディレイのみ
@@ -2340,6 +2458,7 @@ function attachUI() {
         }
         setupMediaSessionControls();
         updateMediaSessionPlaybackState();
+        await startBackgroundAudioBridge();
         requestPlaybackWakeLock();
   renderModeLabel();
       } catch (error) {
@@ -2367,6 +2486,7 @@ function attachUI() {
       safeCallMusicAudioAdapter("stop");
       updateMediaSessionPlaybackState();
       releasePlaybackWakeLock();
+      stopBackgroundAudioBridge();
       if (statusText) statusText.textContent = "Stopped";
       updateRuntimeUiState();
     };
@@ -2449,6 +2569,11 @@ window.addEventListener("DOMContentLoaded", () => {
   updateRuntimeUiState();
   setupMediaSessionControls();
   updateMediaSessionPlaybackState();
+  PlaybackState.iosSafariBridgePreferred = shouldPreferBackgroundAudioBridge();
+  if (PlaybackState.iosSafariBridgePreferred) {
+    ensureBackgroundPlaybackElement();
+    setBackgroundStatus("ios ready");
+  }
   loadPresets().finally(()=>{ 
     // prime
     applyUCMToParams({ force: true });
@@ -2512,6 +2637,9 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     if (isPlaying) {
       resumeAudioContext("visible");
+      if (PlaybackState.iosSafariBridgePreferred && !PlaybackState.backgroundBridgeActive) {
+        startBackgroundAudioBridge();
+      }
       requestPlaybackWakeLock();
     }
     refreshAudioOutputDevices();
