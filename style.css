@@ -458,6 +458,15 @@ body[data-playing="true"][data-auto="true"] #auto-block {
   color: var(--text-sub);
 }
 
+#output-body {
+  margin-top: 7px;
+}
+
+#output_value {
+  min-width: 22px;
+  text-align: right;
+}
+
 /* スイッチ */
 
 .switch {
@@ -1223,6 +1232,17 @@ body[data-character="lofi"] .identity-line {
   #btn_reload_presets,
   #preset-block .hint {
     display: none;
+  }
+
+  #output-body {
+    margin-top: 5px;
+  }
+
+  #output-body .label,
+  #output_value {
+    display: inline;
+    font-size: 8px;
+    letter-spacing: 0.08em;
   }
 
   #preset_select {
