@@ -75,6 +75,9 @@ const PerformancePadState = {
   void: 0,
   lastTouchAt: 0
 };
+const OutputState = {
+  level: 75
+};
 
 function markManualInfluenceFromEvent(event) {
   const id = event && event.target && event.target.id;
@@ -394,6 +397,40 @@ function rampParam(cacheKey, param, value, seconds, minDelta = 0.001) {
   } catch (error) {
     console.warn("[Music] param ramp failed:", cacheKey, error);
   }
+}
+
+function outputGainFromLevel(level) {
+  const safeLevel = clampValue(Number.isFinite(level) ? level : 75, 0, 100);
+  if (safeLevel <= 0) return 0.0001;
+  if (safeLevel <= 50) {
+    return mapValue(safeLevel, 0, 50, 0.0001, 0.82);
+  }
+  if (safeLevel <= 75) {
+    return mapValue(safeLevel, 50, 75, 0.82, 1.22);
+  }
+  return mapValue(safeLevel, 75, 100, 1.22, 1.6);
+}
+
+function updateOutputLevelUi() {
+  const value = document.getElementById("output_value");
+  if (value) value.textContent = String(Math.round(OutputState.level));
+}
+
+function updateOutputLevel(options = {}) {
+  const slider = document.getElementById("output_level");
+  const nextLevel = slider ? parseInt(slider.value, 10) : OutputState.level;
+  OutputState.level = clampValue(Number.isFinite(nextLevel) ? nextLevel : OutputState.level, 0, 100);
+  updateOutputLevelUi();
+  if (options.apply !== false) {
+    applyOutputLevel({ force: options.force === true });
+  }
+}
+
+function applyOutputLevel(options = {}) {
+  const allowWhenStopped = options.allowWhenStopped === true;
+  if (!isPlaying && !allowWhenStopped) return;
+  const seconds = options.force === true ? 0.08 : 0.18;
+  rampParam("master-gain", masterGain.gain, outputGainFromLevel(OutputState.level), seconds, 0.003);
 }
 
 function syncSliderValue(key, value) {
@@ -1568,7 +1605,7 @@ function releaseAllVoices(time) {
 }
 
 function restoreMasterLevel() {
-  rampParam("master-gain", masterGain.gain, 0.82, 0.08, 0);
+  applyOutputLevel({ force: true, allowWhenStopped: true });
 }
 
 function quietMasterLevel() {
@@ -1817,6 +1854,7 @@ function attachUI() {
   const btnStop    = document.getElementById("btn_stop");
   const autoToggle = document.getElementById("auto_toggle");
   const autoCycle  = document.getElementById("auto_cycle");
+  const outputLevel = document.getElementById("output_level");
   const statusText = document.getElementById("status-text");
   const modeLabel  = document.getElementById("mode-label");
   const btnRec = document.getElementById("btn_rec");
@@ -1838,6 +1876,7 @@ function attachUI() {
         safeCallMusicAudioAdapter("start");
 
         updateFromUI({ apply: false });
+        updateOutputLevel({ apply: false });
         releaseAllVoices();
         resetRuntimeCounters();
         restoreMasterLevel();
@@ -1893,6 +1932,11 @@ function attachUI() {
     autoCycle.addEventListener("change", () => {
       if (autoToggle && autoToggle.checked) startAutoCycle();
     });
+  }
+
+  if (outputLevel) {
+    outputLevel.addEventListener("input", () => updateOutputLevel());
+    updateOutputLevel({ apply: false });
   }
 
   if (btnRec) {
