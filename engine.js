@@ -59,6 +59,9 @@ const AUTOMIX_PROFILE = {
 };
 const AUTO_MOTION_TICK_MS = 3500;
 const AUTO_SLIDER_SYNC_INTERVAL_MS = 240;
+const AUTO_GESTURE_MIN_GAP_MS = 4200;
+const AUTO_GESTURE_MANUAL_GRACE_MS = 1800;
+const AUTO_GESTURE_DURATIONS = { drift: 980, repeat: 760, punch: 420, void: 880 };
 const MANUAL_INFLUENCE_HOLD_MS = 4300;
 const manualInfluenceUntil = {};
 const SLIDER_KEY_BY_ID = Object.fromEntries(Object.entries(SLIDER_BY_UCM).map(([key, id]) => [id, key]));
@@ -74,6 +77,12 @@ const PerformancePadState = {
   punch: 0,
   void: 0,
   lastTouchAt: 0
+};
+const AutoGestureState = {
+  active: "",
+  timer: null,
+  seq: 0,
+  lastAt: 0
 };
 const OutputState = {
   level: 75
@@ -94,7 +103,7 @@ function markManualInfluenceFromEvent(event) {
   const id = event && event.target && event.target.id;
   const key = SLIDER_KEY_BY_ID[id];
   if (!key) return;
-  const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
+  const now = performanceNowMs();
   manualInfluenceUntil[key] = now + MANUAL_INFLUENCE_HOLD_MS;
 }
 
@@ -102,31 +111,125 @@ function isManualInfluenceActive(key, now) {
   return typeof manualInfluenceUntil[key] === "number" && now < manualInfluenceUntil[key];
 }
 
-function setPerformancePad(name, active) {
+function performanceNowMs() {
+  return typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
+}
+
+function cancelAutoGesture(options = {}) {
+  if (AutoGestureState.timer) {
+    clearTimeout(AutoGestureState.timer);
+    AutoGestureState.timer = null;
+  }
+  const active = AutoGestureState.active;
+  AutoGestureState.active = "";
+  AutoGestureState.seq += 1;
+  if (options.clearPad && active && Object.prototype.hasOwnProperty.call(PerformancePadState, active)) {
+    PerformancePadState[active] = 0;
+    const pad = typeof document !== "undefined" ? document.querySelector(`[data-performance-pad="${active}"]`) : null;
+    if (pad) pad.classList.remove("active");
+  }
+}
+
+function updatePerformancePadDataset() {
+  if (typeof document === "undefined" || !document.body) return;
+  document.body.dataset.padActive = Object.entries(PerformancePadState)
+    .some(([key, value]) => key !== "lastTouchAt" && value > 0)
+    ? "true"
+    : "false";
+}
+
+function setPerformancePad(name, active, options = {}) {
   if (!Object.prototype.hasOwnProperty.call(PerformancePadState, name)) return;
+  const source = options.source || "manual";
+  if (source !== "auto") cancelAutoGesture({ clearPad: true });
   PerformancePadState[name] = active ? 1 : 0;
-  PerformancePadState.lastTouchAt = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
+  if (source !== "auto") PerformancePadState.lastTouchAt = performanceNowMs();
   if (initialized) updateTimbreStateFromWorld(currentGradientParts());
   if (active) triggerPadSignature(name);
-  if (document.body) {
-    document.body.dataset.padActive = Object.entries(PerformancePadState)
-      .some(([key, value]) => key !== "lastTouchAt" && value > 0)
-      ? "true"
-      : "false";
-  }
+  updatePerformancePadDataset();
   updatePerformancePadStatus();
 }
 
 function clearPerformancePads() {
+  cancelAutoGesture({ clearPad: false });
   ["drift", "repeat", "punch", "void"].forEach((name) => {
     PerformancePadState[name] = 0;
   });
   if (initialized) updateTimbreStateFromWorld(currentGradientParts());
-  if (document.body) document.body.dataset.padActive = "false";
+  updatePerformancePadDataset();
   document.querySelectorAll("[data-performance-pad].active").forEach((pad) => {
     pad.classList.remove("active");
   });
   updatePerformancePadStatus();
+}
+
+function hasActivePerformancePad() {
+  return ["drift", "repeat", "punch", "void"].some((name) => PerformancePadState[name] > 0);
+}
+
+function chooseAutoGesture(context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    observerNorm,
+    voidNorm,
+    circleNorm
+  } = context;
+  const weighted = [
+    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1],
+    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08],
+    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12],
+    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08]
+  ];
+  const total = weighted.reduce((sum, [, weight]) => sum + Math.max(0, weight), 0);
+  let pick = Math.random() * total;
+  for (const [name, weight] of weighted) {
+    pick -= Math.max(0, weight);
+    if (pick <= 0) return name;
+  }
+  return "drift";
+}
+
+function startAutoPerformanceGesture(name) {
+  if (!Object.prototype.hasOwnProperty.call(PerformancePadState, name)) return;
+  cancelAutoGesture({ clearPad: true });
+
+  const now = performanceNowMs();
+  const seq = AutoGestureState.seq + 1;
+  AutoGestureState.seq = seq;
+  AutoGestureState.active = name;
+  AutoGestureState.lastAt = now;
+  setPerformancePad(name, true, { source: "auto" });
+
+  const pad = typeof document !== "undefined" ? document.querySelector(`[data-performance-pad="${name}"]`) : null;
+  if (pad) pad.classList.add("active");
+
+  const duration = (AUTO_GESTURE_DURATIONS[name] || 720) + Math.random() * 180;
+  AutoGestureState.timer = setTimeout(() => {
+    if (AutoGestureState.seq !== seq || AutoGestureState.active !== name) return;
+    PerformancePadState[name] = 0;
+    AutoGestureState.active = "";
+    AutoGestureState.timer = null;
+    if (pad) pad.classList.remove("active");
+    if (initialized) updateTimbreStateFromWorld(currentGradientParts());
+    updatePerformancePadDataset();
+    updatePerformancePadStatus();
+  }, duration);
+}
+
+function maybeTriggerAutoPerformanceGesture(step, context) {
+  if (!UCM.auto.enabled || !isPlaying) return;
+  const now = performanceNowMs();
+  if (hasActivePerformancePad()) return;
+  if (now - PerformancePadState.lastTouchAt < AUTO_GESTURE_MANUAL_GRACE_MS) return;
+  if (now - AutoGestureState.lastAt < AUTO_GESTURE_MIN_GAP_MS) return;
+  if (!(step % 8 === 0 || step % 8 === 4)) return;
+
+  const chanceValue = 0.13 + context.creationNorm * 0.05 + context.observerNorm * 0.035 + context.waveNorm * 0.035 + context.resourceNorm * 0.025;
+  if (!rand(chance(chanceValue))) return;
+  startAutoPerformanceGesture(chooseAutoGesture(context));
 }
 
 // seconds to reach target (larger = smoother)
@@ -2047,6 +2150,53 @@ function bassNoteForStep(step) {
   return notes[phraseIndex % notes.length];
 }
 
+function triggerLowMotion(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  if (!bass || PerformancePadState.void > 0.75) return;
+
+  const repeat = PerformancePadState.repeat;
+  const punch = PerformancePadState.punch;
+  const ghost = GradientState.ghost;
+  const motion = clampValue(
+    energyNorm * 0.2 +
+      (UCM_CUR.body / 100) * 0.2 +
+      waveNorm * 0.22 +
+      creationNorm * 0.12 +
+      resourceNorm * 0.1 +
+      ghost * 0.1 +
+      repeat * 0.08 +
+      punch * 0.04 -
+      voidNorm * 0.16,
+    0,
+    1
+  );
+  const gate = step % 8 === 2 || step % 8 === 6 || (repeat && step % 4 === 2) || (isAccentStep && step % 2 === 0);
+  if (!gate || !rand(chance(0.024 + motion * 0.12 + repeat * 0.052 + punch * 0.018))) return;
+
+  const notes = MODE_BASS_NOTES[EngineParams.mode] || MODE_BASS_NOTES.ambient;
+  const note = rand(0.44 + waveNorm * 0.22)
+    ? notes[(GrooveState.cycle + step + 1) % notes.length]
+    : PRESSURE_TURN_NOTES[(GrooveState.cycle + step) % PRESSURE_TURN_NOTES.length];
+  const tickTime = time + 0.018 + Math.random() * (0.012 + waveNorm * 0.016);
+  const vel = clampValue(0.052 + motion * 0.078 + repeat * 0.018, 0.046, 0.145);
+
+  try {
+    bass.triggerAttackRelease(note, repeat ? "64n" : "32n", tickTime, vel);
+    if (repeat && rand(0.24 + motion * 0.14)) {
+      bass.triggerAttackRelease(note, "64n", tickTime + 0.042 + Math.random() * 0.012, vel * 0.58);
+    }
+  } catch (error) {
+    console.warn("[Music] low motion failed:", error);
+  }
+}
+
 function triggerAudibleGrooveFloor(step, time, context) {
   const {
     energyNorm,
@@ -2433,11 +2583,13 @@ function scheduleStep(time) {
   const gradientParts = currentGradientParts();
   const gradient = updateReferenceGradient(gradientParts);
   updateReferenceDepth(gradientParts, gradient);
+  maybeTriggerAutoPerformanceGesture(step, stepContext);
 
   triggerAudibleGrooveFloor(step, t, stepContext);
   triggerOrganicTexture(step, t, stepContext);
   triggerReferenceDepthDetails(step, t, stepContext);
   triggerGranularDetail(step, t, stepContext);
+  triggerLowMotion(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
   if (!isRest) {
@@ -2579,6 +2731,7 @@ function updateAutoMixTargets(cycleMs) {
 function stopAutoCycle(options = {}) {
   const keepEnabled = options && options.keepEnabled;
   if (!keepEnabled) UCM.auto.enabled = false;
+  cancelAutoGesture({ clearPad: true });
 
   if (UCM.auto.timer) {
     clearInterval(UCM.auto.timer);
