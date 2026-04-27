@@ -946,16 +946,16 @@ const pad = new Tone.PolySynth(Tone.Synth, {
 
 const texture = new Tone.NoiseSynth({
   noise: { type: "pink" },
-  envelope: { attack: 0.001, decay: 0.055, sustain: 0, release: 0.03 }
+  envelope: { attack: 0.002, decay: 0.064, sustain: 0, release: 0.036 }
 }).connect(textureBus);
 
 const glass = new Tone.FMSynth({
   harmonicity: 1.5,
-  modulationIndex: 8,
+  modulationIndex: 7.2,
   oscillator: { type: "sine" },
-  envelope: { attack: 0.006, decay: 0.14, sustain: 0, release: 0.22 },
+  envelope: { attack: 0.007, decay: 0.13, sustain: 0, release: 0.24 },
   modulation: { type: "triangle" },
-  modulationEnvelope: { attack: 0.003, decay: 0.09, sustain: 0, release: 0.12 }
+  modulationEnvelope: { attack: 0.004, decay: 0.085, sustain: 0, release: 0.13 }
 }).connect(globalDelay);
 
 function organicFragment(offset = 0) {
@@ -1486,14 +1486,14 @@ function updateTimbreStateFromWorld(parts) {
   safeToneRamp(bass?.filter?.frequency, bassCutoff, 0.18);
   safeToneRamp(bass?.filter?.Q, bassBite, 0.2);
   safeToneRamp(glass?.harmonicity, 1.0 + (TimbreState.glass * 0.95) + (TimbreState.harp * 0.72) + (organicColor * 0.12) + (PerformancePadState.void * 0.24), 0.24);
-  safeToneRamp(glass?.modulationIndex, 0.68 + (TimbreState.fracture * 2.25) + (TimbreState.harp * 0.82) + (pressureColor * 0.12) - (TimbreState.warmth * 0.46) - (PerformancePadState.void * 0.22), 0.2);
+  safeToneRamp(glass?.modulationIndex, 0.58 + (TimbreState.fracture * 2.08) + (TimbreState.harp * 0.92) + (pressureColor * 0.1) - (TimbreState.warmth * 0.5) - (PerformancePadState.void * 0.2), 0.2);
 
-  setEnvelopeValue(glass?.envelope, "attack", 0.004 + (TimbreState.harp * 0.012));
-  setEnvelopeValue(glass?.envelope, "decay", 0.082 + (TimbreState.harp * 0.17) + (TimbreState.air * 0.09) + (PerformancePadState.void * 0.11));
+  setEnvelopeValue(glass?.envelope, "attack", 0.005 + (TimbreState.harp * 0.012));
+  setEnvelopeValue(glass?.envelope, "decay", 0.078 + (TimbreState.harp * 0.16) + (TimbreState.air * 0.1) + (PerformancePadState.void * 0.11));
   setEnvelopeValue(glass?.envelope, "sustain", 0.015 + (TimbreState.warmth * 0.035));
-  setEnvelopeValue(glass?.envelope, "release", 0.12 + (TimbreState.air * 0.17) + (TimbreState.warmth * 0.16) + (PerformancePadState.void * 0.16));
-  setEnvelopeValue(glass?.modulationEnvelope, "attack", 0.003);
-  setEnvelopeValue(glass?.modulationEnvelope, "decay", 0.07 + (TimbreState.harp * 0.12));
+  setEnvelopeValue(glass?.envelope, "release", 0.13 + (TimbreState.air * 0.18) + (TimbreState.warmth * 0.15) + (PerformancePadState.void * 0.16));
+  setEnvelopeValue(glass?.modulationEnvelope, "attack", 0.004);
+  setEnvelopeValue(glass?.modulationEnvelope, "decay", 0.068 + (TimbreState.harp * 0.11));
   setEnvelopeValue(glass?.modulationEnvelope, "sustain", 0.01);
   setEnvelopeValue(glass?.modulationEnvelope, "release", 0.1 + (TimbreState.warmth * 0.1));
 }
@@ -2145,20 +2145,20 @@ function triggerOrganicTexture(step, time, context) {
   const dustScale = (character.dustScale || 1) * (0.9 + gradient.memory * 0.07 + gradient.micro * 0.07 + depth.bed * 0.05 + depth.particle * 0.04);
   const pressureColor = (character.pressureColor || 0.5) * (0.9 + gradient.ghost * 0.2);
   const pluckGate = step % 8 === 1 || step % 8 === 5 || (PerformancePadState.drift && step % 8 === 3);
-  const organicProb = chance((0.019 + observerNorm * 0.031 + creationNorm * 0.027 + waveNorm * 0.02 + gradient.organic * 0.018 + depth.particle * 0.012 + PerformancePadState.drift * 0.052 + PerformancePadState.void * 0.022) * organicScale);
+  const organicProb = chance((0.022 + observerNorm * 0.034 + creationNorm * 0.028 + waveNorm * 0.022 + gradient.organic * 0.022 + depth.particle * 0.014 + PerformancePadState.drift * 0.054 + PerformancePadState.void * 0.022) * organicScale);
 
   if (pluckGate && rand(organicProb)) {
     const note = ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + Math.floor(waveNorm * 4)) % ORGANIC_PLUCK_FRAGMENTS.length];
     const echoNote = ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + 3) % ORGANIC_PLUCK_FRAGMENTS.length];
     const pluckTime = time + 0.014 + Math.random() * (0.012 + waveNorm * 0.014);
-    const vel = clampValue(0.024 + observerNorm * 0.034 + creationNorm * 0.026 + gradient.organic * 0.006 + depth.particle * 0.004 + PerformancePadState.drift * 0.016, 0.018, 0.096);
+    const vel = clampValue(0.023 + observerNorm * 0.036 + creationNorm * 0.026 + gradient.organic * 0.008 + depth.particle * 0.006 + PerformancePadState.drift * 0.016, 0.018, 0.092);
     try {
       glass.triggerAttackRelease(note, "64n", pluckTime, vel);
-      if (rand(0.24 + TimbreState.harp * 0.27 + gradient.micro * 0.08 + PerformancePadState.repeat * 0.2)) {
-        glass.triggerAttackRelease(echoNote, "64n", pluckTime + 0.046 + Math.random() * 0.018, vel * 0.64);
+      if (rand(0.3 + TimbreState.harp * 0.28 + gradient.micro * 0.1 + PerformancePadState.repeat * 0.2)) {
+        glass.triggerAttackRelease(echoNote, "64n", pluckTime + 0.044 + Math.random() * 0.02, vel * 0.58);
       }
-      if (rand(0.22 + dustScale * 0.08)) {
-        texture.triggerAttackRelease("64n", pluckTime + 0.01, clampValue(0.016 + creationNorm * 0.026 + dustScale * 0.012, 0.014, 0.066));
+      if (rand(0.28 + dustScale * 0.1)) {
+        texture.triggerAttackRelease("64n", pluckTime + 0.01, clampValue(0.016 + creationNorm * 0.026 + dustScale * 0.014, 0.014, 0.07));
       }
     } catch (error) {
       console.warn("[Music] organic pluck failed:", error);
@@ -2177,6 +2177,65 @@ function triggerOrganicTexture(step, time, context) {
     } catch (error) {
       console.warn("[Music] pressure color failed:", error);
     }
+  }
+}
+
+function triggerGranularDetail(step, time, context) {
+  const {
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    observerNorm,
+    isAccentStep
+  } = context;
+  const gradient = GradientState;
+  const depth = DepthState;
+  const drift = PerformancePadState.drift;
+  const repeat = PerformancePadState.repeat;
+  const voiding = PerformancePadState.void;
+  const focus = clampValue(
+    (gradient.micro * 0.28) +
+      (gradient.chrome * 0.22) +
+      (gradient.organic * 0.16) +
+      (depth.particle * 0.2) +
+      (observerNorm * 0.12) +
+      (creationNorm * 0.12) +
+      (repeat * 0.08) +
+      (drift * 0.06),
+    0,
+    1
+  );
+  const grainGate = step % 8 === 1 || step % 8 === 5 || (isAccentStep && step % 2 === 1);
+  const grainChance = chance(0.018 + focus * 0.105 + resourceNorm * 0.018 + voiding * 0.018);
+  if (!grainGate || !rand(grainChance)) return;
+
+  const brightPool = voiding || gradient.chrome > gradient.organic
+    ? TRANSPARENT_AIR_FRAGMENTS
+    : GLASS_NOTES;
+  const organicPool = ORGANIC_PLUCK_FRAGMENTS;
+  const root = brightPool[(step + GrooveState.cycle + Math.floor(waveNorm * 5)) % brightPool.length];
+  const lift = brightPool[(step + GrooveState.cycle + 2 + Math.floor(observerNorm * 4)) % brightPool.length];
+  const wood = organicPool[(step + GrooveState.cycle + 3) % organicPool.length];
+  const grainTime = time + 0.014 + Math.random() * (0.012 + waveNorm * 0.018);
+  const baseVel = clampValue(
+    0.018 + focus * 0.048 + observerNorm * 0.016 + creationNorm * 0.012 + voiding * 0.008,
+    0.016,
+    0.088
+  );
+
+  try {
+    glass.triggerAttackRelease(root, "64n", grainTime, baseVel);
+    if (rand(0.34 + gradient.micro * 0.22 + repeat * 0.18)) {
+      glass.triggerAttackRelease(lift, "64n", grainTime + 0.034 + Math.random() * 0.018, baseVel * clampValue(0.62 + focus * 0.18, 0.56, 0.78));
+    }
+    if (rand(0.18 + gradient.organic * 0.16 + drift * 0.14)) {
+      glass.triggerAttackRelease(wood, "64n", grainTime + 0.066 + Math.random() * 0.024, baseVel * 0.52);
+    }
+    if (rand(0.24 + gradient.micro * 0.16 + depth.gesture * 0.12)) {
+      texture.triggerAttackRelease("64n", grainTime + 0.008, clampValue(0.014 + focus * 0.034 + resourceNorm * 0.01, 0.012, 0.062));
+    }
+  } catch (error) {
+    console.warn("[Music] granular detail failed:", error);
   }
 }
 
@@ -2378,6 +2437,7 @@ function scheduleStep(time) {
   triggerAudibleGrooveFloor(step, t, stepContext);
   triggerOrganicTexture(step, t, stepContext);
   triggerReferenceDepthDetails(step, t, stepContext);
+  triggerGranularDetail(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
   if (!isRest) {
