@@ -92,6 +92,15 @@ const OrganicChaosState = {
   lastGesture: "",
   lastAt: 0
 };
+const MotifMemoryState = {
+  root: "D5",
+  reply: "F#5",
+  shade: "D4",
+  strength: 0,
+  air: 0,
+  lastStep: -99,
+  source: ""
+};
 const OutputState = {
   level: 75
 };
@@ -152,7 +161,10 @@ function setPerformancePad(name, active, options = {}) {
   if (source !== "auto") cancelAutoGesture({ clearPad: true });
   PerformancePadState[name] = active ? 1 : 0;
   if (source !== "auto") PerformancePadState.lastTouchAt = performanceNowMs();
-  if (active) exciteOrganicChaos(name, source);
+  if (active) {
+    exciteOrganicChaos(name, source);
+    rememberGestureMotif(name, source);
+  }
   if (initialized) updateTimbreStateFromWorld(currentGradientParts());
   if (active) triggerPadSignature(name);
   updatePerformancePadDataset();
@@ -162,6 +174,7 @@ function setPerformancePad(name, active, options = {}) {
 function clearPerformancePads() {
   cancelAutoGesture({ clearPad: false });
   resetOrganicChaos();
+  resetMotifMemory();
   ["drift", "repeat", "punch", "void"].forEach((name) => {
     PerformancePadState[name] = 0;
   });
@@ -288,6 +301,51 @@ function organicChaosAmount() {
     0,
     1
   );
+}
+
+function rememberMotif(root, options = {}) {
+  if (!root) return;
+  MotifMemoryState.root = root;
+  MotifMemoryState.reply = options.reply || root;
+  MotifMemoryState.shade = options.shade || root;
+  MotifMemoryState.strength = clampValue(MotifMemoryState.strength * 0.72 + (options.strength || 0.16), 0, 1);
+  MotifMemoryState.air = clampValue(MotifMemoryState.air * 0.62 + (options.air || 0), 0, 1);
+  MotifMemoryState.lastStep = stepIndex;
+  MotifMemoryState.source = options.source || "";
+}
+
+function rememberGestureMotif(name, source = "manual") {
+  const autoScale = source === "auto" ? 0.78 : 1;
+  const offset = { drift: 1, repeat: 3, punch: 5, void: 2 }[name] || 0;
+  const pool = name === "void" || name === "drift"
+    ? TRANSPARENT_AIR_FRAGMENTS
+    : name === "punch"
+      ? ORGANIC_PLUCK_FRAGMENTS
+      : GLASS_NOTES;
+  const root = pool[(GrooveState.cycle + stepIndex + offset) % pool.length];
+  const reply = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + offset + 2) % TRANSPARENT_AIR_FRAGMENTS.length];
+  const shade = FIELD_MURK_FRAGMENTS[(GrooveState.cycle + stepIndex + offset + 1) % FIELD_MURK_FRAGMENTS.length];
+  rememberMotif(root, {
+    reply,
+    shade,
+    strength: (0.22 + OrganicChaosState.impulse * 0.1) * autoScale,
+    air: name === "void" || name === "drift" ? 0.28 * autoScale : 0.1 * autoScale,
+    source: name
+  });
+}
+
+function decayMotifMemory() {
+  MotifMemoryState.strength *= 0.972;
+  MotifMemoryState.air *= 0.968;
+  if (MotifMemoryState.strength < 0.001) MotifMemoryState.strength = 0;
+  if (MotifMemoryState.air < 0.001) MotifMemoryState.air = 0;
+}
+
+function resetMotifMemory() {
+  MotifMemoryState.strength = 0;
+  MotifMemoryState.air = 0;
+  MotifMemoryState.lastStep = -99;
+  MotifMemoryState.source = "";
 }
 
 // seconds to reach target (larger = smoother)
@@ -2367,6 +2425,13 @@ function triggerOrganicTexture(step, time, context) {
     const vel = clampValue(0.023 + observerNorm * 0.036 + creationNorm * 0.026 + gradient.organic * 0.008 + depth.particle * 0.006 + chaos.impulse * 0.014 + PerformancePadState.drift * 0.016, 0.018, 0.104);
     try {
       glass.triggerAttackRelease(note, "64n", pluckTime, vel);
+      rememberMotif(note, {
+        reply: echoNote,
+        shade: FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + 2) % FIELD_MURK_FRAGMENTS.length],
+        strength: 0.035 + vel * 0.18,
+        air: PerformancePadState.void ? 0.12 : 0.04,
+        source: "organic"
+      });
       if (rand(0.3 + TimbreState.harp * 0.28 + gradient.micro * 0.1 + chaos.tangle * 0.16 + PerformancePadState.repeat * 0.2)) {
         glass.triggerAttackRelease(echoNote, "64n", pluckTime + 0.044 + Math.random() * (0.02 + chaos.tangle * 0.018), vel * clampValue(0.54 + chaos.airPull * 0.08, 0.5, 0.66));
       }
@@ -2441,6 +2506,13 @@ function triggerGranularDetail(step, time, context) {
 
   try {
     glass.triggerAttackRelease(root, "64n", grainTime, baseVel);
+    rememberMotif(root, {
+      reply: lift,
+      shade: wood,
+      strength: 0.028 + baseVel * 0.16 + chaos.tangle * 0.025,
+      air: voiding ? 0.16 : chaos.airPull * 0.08,
+      source: "grain"
+    });
     if (rand(0.34 + gradient.micro * 0.22 + chaos.tangle * 0.14 + repeat * 0.18)) {
       glass.triggerAttackRelease(lift, "64n", grainTime + 0.034 + Math.random() * (0.018 + chaos.tangle * 0.014), baseVel * clampValue(0.6 + focus * 0.16 + chaos.airPull * 0.08, 0.54, 0.8));
     }
@@ -2452,6 +2524,54 @@ function triggerGranularDetail(step, time, context) {
     }
   } catch (error) {
     console.warn("[Music] granular detail failed:", error);
+  }
+}
+
+function triggerMotifAfterimage(step, time, context) {
+  const {
+    creationNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    isAccentStep
+  } = context;
+  const memory = MotifMemoryState;
+  if (!glass || memory.strength < 0.024) return;
+  if (stepIndex - memory.lastStep < 3) return;
+
+  const chaos = organicChaosAmount();
+  const replyGate = step % 8 === 3 || step % 8 === 7 || (OrganicChaosState.airPull > 0.18 && step % 8 === 5) || (isAccentStep && step % 2 === 1);
+  const replyChance = chance(
+    0.018 +
+      memory.strength * 0.16 +
+      memory.air * 0.04 +
+      chaos * 0.05 +
+      observerNorm * 0.03 +
+      creationNorm * 0.018
+  );
+  if (!replyGate || !rand(replyChance)) return;
+
+  const airy = memory.air + PerformancePadState.void + OrganicChaosState.airPull > 0.34;
+  const first = airy ? memory.reply : memory.root;
+  const second = airy
+    ? TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + 2) % TRANSPARENT_AIR_FRAGMENTS.length]
+    : memory.shade;
+  const afterTime = time + 0.022 + Math.random() * (0.018 + waveNorm * 0.016 + chaos * 0.016);
+  const vel = clampValue(0.018 + memory.strength * 0.07 + observerNorm * 0.018 + circleNorm * 0.01, 0.016, 0.09);
+
+  try {
+    glass.triggerAttackRelease(first, airy ? "16n" : "32n", afterTime, vel);
+    if (rand(0.2 + memory.strength * 0.22 + OrganicChaosState.tangle * 0.1)) {
+      glass.triggerAttackRelease(second, "64n", afterTime + 0.05 + Math.random() * 0.024, vel * 0.56);
+    }
+    if (rand(0.18 + memory.strength * 0.16 + OrganicChaosState.tangle * 0.08)) {
+      texture.triggerAttackRelease("64n", afterTime + 0.012, clampValue(0.012 + memory.strength * 0.034, 0.012, 0.058));
+    }
+    memory.strength *= 0.74;
+    memory.air *= 0.78;
+    memory.lastStep = stepIndex;
+  } catch (error) {
+    console.warn("[Music] motif afterimage failed:", error);
   }
 }
 
@@ -2632,6 +2752,7 @@ function scheduleStep(time) {
   const step = stepIndex % EngineParams.stepCount;
   if (step === 0) advanceGrooveStructure();
   decayOrganicChaos();
+  decayMotifMemory();
 
   // 休符判定
   const isRest = rand(clampValue(EngineParams.restProb + PerformancePadState.void * 0.18 - PerformancePadState.punch * 0.06, 0.02, PerformancePadState.void ? 0.6 : 0.48));
@@ -2657,6 +2778,7 @@ function scheduleStep(time) {
   triggerOrganicTexture(step, t, stepContext);
   triggerReferenceDepthDetails(step, t, stepContext);
   triggerGranularDetail(step, t, stepContext);
+  triggerMotifAfterimage(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
