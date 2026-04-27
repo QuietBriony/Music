@@ -324,6 +324,326 @@
         "透明感を維持するための高域抑制と空間パラメータを先に固定",
         "録音レビューで音の伸びと静かな床感を同時に確認する"
       ]
+    },
+    {
+      "artist": "Richard D. James",
+      "title": "Donkey Rhubarb",
+      "album": "",
+      "genre_hint": [
+        "idm",
+        "electronic",
+        "gesture"
+      ],
+      "taste_notes": [
+        "明るい断片と奇妙な身体性",
+        "音源参照ではなくgesture/color参照として扱う"
+      ],
+      "production_translation": {
+        "timbre": [
+          "硬い明度ではなく、短い色彩アクセントとして扱う",
+          "FM glassやtexture transientに小さな遊びを持たせる"
+        ],
+        "rhythm": [
+          "短い跳ねを挿入し、常時走らせない",
+          "明るい動きは局所イベントとして配置する"
+        ],
+        "space": [
+          "前景の色を短く出し、尾は暗い空間へ戻す",
+          "全体のfield-murkを壊さない"
+        ],
+        "structure": [
+          "曲全体の方向ではなく、瞬間的なgesture色に限定する",
+          "Padやfader操作時の小さな転調感へ翻訳する"
+        ],
+        "gesture": [
+          "押した瞬間に分かる短い色変化",
+          "ユーモラスだが過剰に派手にしない"
+        ]
+      },
+      "implementation_notes": [
+        "Apple Music上でmusic videoとして返る場合があるためaudio referenceとして保存しない",
+        "PUNCH/REPEAT系の短いcolor event候補として扱う"
+      ]
+    },
+    {
+      "artist": "Autechre",
+      "title": "Bike (Mixed)",
+      "album": "",
+      "genre_hint": [
+        "idm",
+        "experimental",
+        "micro-rhythm"
+      ],
+      "taste_notes": [
+        "不均一な機械感",
+        "細かい断片が流れを作る"
+      ],
+      "production_translation": {
+        "timbre": [
+          "金属的な硬さを丸めた短い粒へ変換",
+          "透明glassとdustを小さく交互に出す"
+        ],
+        "rhythm": [
+          "均一な連打ではなく、stepごとの確率差で揺らす",
+          "短いrepeat fragmentを1小節内に少量だけ置く"
+        ],
+        "space": [
+          "乾いた近接音と遠い尾を分ける",
+          "空間を埋めすぎず前景イベントを残す"
+        ],
+        "structure": [
+          "broken logicを局所的に入れ、全体の床は維持する",
+          "密度変化で展開を作る"
+        ],
+        "gesture": [
+          "REPEAT padで短いtic/ticの存在感を出す",
+          "DRIFT時はmicrotimingのズレとして翻訳する"
+        ]
+      },
+      "implementation_notes": [
+        "runtimeへ直接コピーせず、pattern probabilityとmicro-event設計へ翻訳する",
+        "machine-gun化を避ける"
+      ]
+    },
+    {
+      "artist": "Huerco S.",
+      "title": "A Sea of Love (Mixed)",
+      "album": "",
+      "genre_hint": [
+        "ambient",
+        "dub",
+        "deep listening"
+      ],
+      "taste_notes": [
+        "にじむ長い空間",
+        "音像が前に出すぎない湿度"
+      ],
+      "production_translation": {
+        "timbre": [
+          "低中域の膜を保ちつつ、上に細いairを置く",
+          "texture floorは一定音量ではなく息をするように動かす"
+        ],
+        "rhythm": [
+          "拍を強調せず、緩いpulseだけを残す",
+          "イベント間隔を長めにして沈みを作る"
+        ],
+        "space": [
+          "広いが明るすぎないroom/sea bed",
+          "tailを残し、直接音を控えめにする"
+        ],
+        "structure": [
+          "長い滞留を主役にし、変化はごく小さくする",
+          "fader操作後の自然な戻りを重視する"
+        ],
+        "gesture": [
+          "VOIDはmuteではなく開く感覚へ寄せる",
+          "DRIFTは水面のようなズレとして扱う"
+        ]
+      },
+      "implementation_notes": [
+        "ambient bedとtransparent air floorの設計参考",
+        "録音レビューでapparent silenceを確認する"
+      ]
+    },
+    {
+      "artist": "The Future Sound of London",
+      "title": "Papua New Guinea (12)",
+      "album": "",
+      "genre_hint": [
+        "ambient",
+        "breakbeat",
+        "organic electronic"
+      ],
+      "taste_notes": [
+        "有機的な動きと電子的な床の同居",
+        "展開感があるが過剰に前に出ない"
+      ],
+      "production_translation": {
+        "timbre": [
+          "生音そのものではなく、organic motionの気配へ変換",
+          "dustとpluck illusionを短く重ねる"
+        ],
+        "rhythm": [
+          "breakbeat感は直接再現せず、細かな推進力として扱う",
+          "低域を増やさずtexture transientで動きを作る"
+        ],
+        "space": [
+          "広い背景に小さな前景粒を置く",
+          "空間の尾で展開を感じさせる"
+        ],
+        "structure": [
+          "ループの反復に小さな発見を混ぜる",
+          "section変化ではなく色の遷移で進める"
+        ],
+        "gesture": [
+          "Pad押下時に短いorganic accentを出す",
+          "AutoMix時は控えめに漂わせる"
+        ]
+      },
+      "implementation_notes": [
+        "organic acoustic-illusion textureの設計参考",
+        "外部音源やsample-based実装は使わない"
+      ]
+    },
+    {
+      "artist": "Global Communication",
+      "title": "14:31",
+      "album": "76:14",
+      "genre_hint": [
+        "ambient",
+        "long-form",
+        "space"
+      ],
+      "taste_notes": [
+        "長い時間感覚",
+        "静かな広がりと深い空間"
+      ],
+      "production_translation": {
+        "timbre": [
+          "音色変化を急がず、air/padの長い曲線を優先",
+          "透明粒は少量に留め、空間の広さを保つ"
+        ],
+        "rhythm": [
+          "明確なbeatではなく、遅い周期の密度変化",
+          "pulseは床を支える程度にする"
+        ],
+        "space": [
+          "長いreverb tailと暗い奥行きを使う",
+          "短い反射を増やしすぎない"
+        ],
+        "structure": [
+          "大きな展開より持続の説得力を優先",
+          "録音30秒内でも変化が微かに見えるよう設計する"
+        ],
+        "gesture": [
+          "fader操作は地形をゆっくり曲げる",
+          "VOIDは空白ではなく奥行きとして扱う"
+        ]
+      },
+      "implementation_notes": [
+        "long-form ambient bedの参照",
+        "engine tuning前にm4aで平均音量とtailを確認する"
+      ]
+    },
+    {
+      "artist": "Brian Eno",
+      "title": "An Ending (Ascent)",
+      "album": "Apollo: Atmospheres and Soundtracks",
+      "genre_hint": [
+        "ambient",
+        "space music",
+        "emotional air"
+      ],
+      "taste_notes": [
+        "透明で感情的な空気",
+        "少ない要素で広がる余韻"
+      ],
+      "production_translation": {
+        "timbre": [
+          "高域を上げずに透明感を作る",
+          "pad tailを柔らかく保ち、glassは少量だけ浮かせる"
+        ],
+        "rhythm": [
+          "rhythmはほぼ消し、周期的な呼吸として残す",
+          "drum eventは前に出しすぎない"
+        ],
+        "space": [
+          "明るすぎない広い空間",
+          "残響尾の濁りを抑える"
+        ],
+        "structure": [
+          "変化量より持続の質を重視",
+          "録音の短い範囲でも静かな移ろいを感じさせる"
+        ],
+        "gesture": [
+          "VOID padのair bloom候補",
+          "Observer/Circleが上がった時のsoft glass候補"
+        ]
+      },
+      "implementation_notes": [
+        "public-friendlyな透明ambient方向の参照にも使える",
+        "Musicではdark/field-murk側へ寄せて扱う"
+      ]
+    },
+    {
+      "artist": "Four Tet",
+      "title": "Parallel Jalebi",
+      "album": "Beautiful Rewind",
+      "genre_hint": [
+        "electronic",
+        "organic rhythm",
+        "texture"
+      ],
+      "taste_notes": [
+        "軽い有機的な動き",
+        "短い粒とrhythmの細かな絡み"
+      ],
+      "production_translation": {
+        "timbre": [
+          "pluck-likeな短い粒を硬くしすぎない",
+          "dustとglassを小さく交互に出す"
+        ],
+        "rhythm": [
+          "細かな動きはtexture transientで作る",
+          "kick/bassではなく中高域の粒で推進する"
+        ],
+        "space": [
+          "前景粒を乾かしすぎず、delayに少し溶かす",
+          "空間は広げすぎず密度の隙間を残す"
+        ],
+        "structure": [
+          "loop hypnosisに小さな変化を混ぜる",
+          "短いイベントが積み重なる展開感を作る"
+        ],
+        "gesture": [
+          "DRIFT/REPEAT padのorganic tic候補",
+          "fader操作時のlight motion候補"
+        ]
+      },
+      "implementation_notes": [
+        "organic pluck illusionとtransparent particleの参照",
+        "明るいクラブ寄りに傾きすぎないよう注意"
+      ]
+    },
+    {
+      "artist": "Biosphere",
+      "title": "Novelty Waves",
+      "album": "Patashnik",
+      "genre_hint": [
+        "ambient techno",
+        "atmospheric",
+        "pulse"
+      ],
+      "taste_notes": [
+        "暗い空間内の細い推進力",
+        "冷たい質感と低い重心"
+      ],
+      "production_translation": {
+        "timbre": [
+          "低中域の床を維持しつつ、透明な粒を上に置く",
+          "金属感は丸めてfield-murkへ統合する"
+        ],
+        "rhythm": [
+          "pulseを感じさせるがbassを増やしすぎない",
+          "細い反復で前進感を作る"
+        ],
+        "space": [
+          "寒色の広がりと低い奥行き",
+          "reverb/delayは濁らない範囲で使う"
+        ],
+        "structure": [
+          "長い床の上で小さな動きが変化する",
+          "AutoMix中の自走感を支える"
+        ],
+        "gesture": [
+          "REPEATの控えめなpulse候補",
+          "Energy/Creation高めのpressure color候補"
+        ]
+      },
+      "implementation_notes": [
+        "dark but not dullの参照",
+        "low-end safetyを守り、透明粒で変化を出す"
+      ]
     }
   ]
 }
