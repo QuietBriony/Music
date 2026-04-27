@@ -705,6 +705,12 @@ const FIELD_MURK_FRAGMENTS = ["D4", "F#4", "G4", "E4", "D5", "F#5", "G5", "E5"];
 const TRANSPARENT_AIR_FRAGMENTS = ["D6", "F#6", "G6", "E6", "D7", "F#7"];
 const ORGANIC_PLUCK_FRAGMENTS = ["D4", "F#4", "G4", "E4", "D5", "F#5", "G5", "E5", "D6", "F#6"];
 const PRESSURE_TURN_NOTES = ["D2", "E2", "F#2", "G2"];
+const HAZE_CHORDS = [
+  ["D4", "F#4", "E5"],
+  ["G4", "D5", "F#5"],
+  ["E4", "G4", "D5"],
+  ["F#4", "E5", "G5"]
+];
 const MODE_BASS_NOTES = {
   ambient: ["F1", "C2", "A1", "D2"],
   lofi: ["A1", "E2", "G1", "C2"],
@@ -759,6 +765,8 @@ const PRESET_CHARACTERS = {
     organicScale: 1.18,
     dustScale: 0.78,
     pressureColor: 0.18,
+    hazeScale: 1.24,
+    pulseScale: 0.72,
   },
   dub: {
     label: "echo pressure",
@@ -778,6 +786,8 @@ const PRESET_CHARACTERS = {
     organicScale: 0.78,
     dustScale: 0.9,
     pressureColor: 0.64,
+    hazeScale: 0.9,
+    pulseScale: 1.02,
   },
   jazz: {
     label: "bent circuitry",
@@ -797,6 +807,8 @@ const PRESET_CHARACTERS = {
     organicScale: 1.2,
     dustScale: 0.98,
     pressureColor: 0.38,
+    hazeScale: 1.02,
+    pulseScale: 0.88,
   },
   lofi: {
     label: "dust memory",
@@ -816,6 +828,8 @@ const PRESET_CHARACTERS = {
     organicScale: 1.14,
     dustScale: 1.18,
     pressureColor: 0.42,
+    hazeScale: 1.16,
+    pulseScale: 0.92,
   },
   techno: {
     label: "machine weather",
@@ -835,6 +849,8 @@ const PRESET_CHARACTERS = {
     organicScale: 0.68,
     dustScale: 1.04,
     pressureColor: 0.92,
+    hazeScale: 0.74,
+    pulseScale: 1.18,
   },
   trance: {
     label: "burning horizon",
@@ -854,6 +870,8 @@ const PRESET_CHARACTERS = {
     organicScale: 0.9,
     dustScale: 0.86,
     pressureColor: 0.72,
+    hazeScale: 1.0,
+    pulseScale: 1.06,
   },
 };
 
@@ -949,7 +967,8 @@ function updateTimbreStateFromWorld(parts) {
   const organicColor = (character.organicScale || 1) - 1;
   const dustColor = (character.dustScale || 1) - 1;
   const pressureColor = character.pressureColor || 0.5;
-  const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) - (PerformancePadState.void * 2.4);
+  const hazeColor = (character.hazeScale || 1) - 1;
+  const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) + (hazeColor * 1.25) - (PerformancePadState.void * 1.55);
   const glassLevel = -34.5 + (TimbreState.glass * 5.4) + (TimbreState.harp * 3.4) + (WorldState.spectrum * 0.9) + (organicColor * 1.15) + (PerformancePadState.void * 2.15);
   const textureLevel = -38.2 + (TimbreState.grit * 6.0) + (TimbreState.fracture * 2.3) + (dustColor * 1.35) + ((pressureColor - 0.5) * WorldState.spectrum * 0.62) - (TimbreState.warmth * 1.65) - (PerformancePadState.void * 1.15);
   const bassCutoff = 96 + (TimbreState.grit * 350) + (resource * 102) + (pressureColor * pressure * 34) - (TimbreState.warmth * 54) - (PerformancePadState.void * 82) + (PerformancePadState.punch * 62);
@@ -964,9 +983,9 @@ function updateTimbreStateFromWorld(parts) {
   safeToneRamp(glass?.modulationIndex, 0.68 + (TimbreState.fracture * 2.25) + (TimbreState.harp * 0.82) + (pressureColor * 0.12) - (TimbreState.warmth * 0.46) - (PerformancePadState.void * 0.22), 0.2);
 
   setEnvelopeValue(glass?.envelope, "attack", 0.003 + (TimbreState.harp * 0.01));
-  setEnvelopeValue(glass?.envelope, "decay", 0.07 + (TimbreState.harp * 0.16) + (TimbreState.air * 0.07) + (PerformancePadState.void * 0.11));
+  setEnvelopeValue(glass?.envelope, "decay", 0.07 + (TimbreState.harp * 0.16) + (TimbreState.air * 0.08) + (PerformancePadState.void * 0.11));
   setEnvelopeValue(glass?.envelope, "sustain", 0.015 + (TimbreState.warmth * 0.035));
-  setEnvelopeValue(glass?.envelope, "release", 0.1 + (TimbreState.air * 0.14) + (TimbreState.warmth * 0.16) + (PerformancePadState.void * 0.16));
+  setEnvelopeValue(glass?.envelope, "release", 0.1 + (TimbreState.air * 0.16) + (TimbreState.warmth * 0.16) + (PerformancePadState.void * 0.16));
   setEnvelopeValue(glass?.modulationEnvelope, "attack", 0.002);
   setEnvelopeValue(glass?.modulationEnvelope, "decay", 0.06 + (TimbreState.harp * 0.12));
   setEnvelopeValue(glass?.modulationEnvelope, "sustain", 0.01);
@@ -1326,13 +1345,13 @@ function applyUCMToParams(options = {}) {
 
   // Bass / Pad
   EngineParams.bassProb = mapValue((bodyNorm * 0.82 + energyNorm * 0.18) * 100, 0, 100, 0.11, 0.58);
-  EngineParams.padProb  = mapValue((circleNorm * 0.66 + observerNorm * 0.18 + voidNorm * 0.16) * 100, 0, 100, 0.14, 0.46);
+  EngineParams.padProb  = mapValue((circleNorm * 0.62 + observerNorm * 0.2 + voidNorm * 0.18) * 100, 0, 100, 0.18, 0.52);
   const character = currentPresetCharacter();
   EngineParams.restProb = clampValue(EngineParams.restProb * character.restScale, 0.04, PerformancePadState.void ? 0.58 : 0.46);
   EngineParams.kickProb = clampValue(EngineParams.kickProb * character.kickScale, PerformancePadState.void ? 0.08 : 0.18, 0.86);
   EngineParams.hatProb = clampValue(EngineParams.hatProb * character.hatScale, PerformancePadState.void ? 0.12 : 0.2, 0.82);
   EngineParams.bassProb = clampValue(EngineParams.bassProb * character.bassScale, PerformancePadState.void ? 0.07 : 0.14, 0.62);
-  EngineParams.padProb = clampValue(EngineParams.padProb * character.padScale, PerformancePadState.void ? 0.1 : 0.14, 0.5);
+  EngineParams.padProb = clampValue(EngineParams.padProb * character.padScale * (character.hazeScale || 1), PerformancePadState.void ? 0.16 : 0.18, 0.56);
 
   // リバーブ/ディレイ量を少しだけ動かす（軽量）
   const reverbWet = clampValue(
@@ -1487,6 +1506,10 @@ function randomChordForMode() {
   return chords[Math.floor(Math.random() * chords.length)];
 }
 
+function randomHazeChord() {
+  return HAZE_CHORDS[(GrooveState.cycle + Math.floor(Math.random() * HAZE_CHORDS.length)) % HAZE_CHORDS.length];
+}
+
 function advanceGrooveStructure() {
   GrooveState.cycle++;
 
@@ -1519,9 +1542,13 @@ function triggerAudibleGrooveFloor(step, time, context) {
     creationNorm,
     waveNorm,
     observerNorm,
+    circleNorm,
     isRest,
     isAccentStep
   } = context;
+  const character = currentPresetCharacter();
+  const hazeScale = character.hazeScale || 1;
+  const pulseScale = character.pulseScale || 1;
   const inWarmup = GrooveState.floorWarmupSteps > 0;
   const voiding = PerformancePadState.void > 0;
   const floorGate = inWarmup || step % 2 === 0 || (isRest && step % 8 === 2);
@@ -1547,11 +1574,20 @@ function triggerAudibleGrooveFloor(step, time, context) {
     console.warn("[Music] ghost texture floor failed:", error);
   }
 
-  if (step % 8 === 0 && !voiding) {
+  if (step % 8 === 0 && !voiding && rand(0.82 * pulseScale)) {
     try {
-      kick.triggerAttackRelease("C2", "16n", time + 0.004, clampValue(0.18 + energyNorm * 0.08 + PerformancePadState.punch * 0.08, 0.14, 0.36));
+      kick.triggerAttackRelease("C2", "16n", time + 0.004, clampValue(0.16 + energyNorm * 0.07 + PerformancePadState.punch * 0.08, 0.12, 0.32));
     } catch (error) {
       console.warn("[Music] ghost pulse failed:", error);
+    }
+  }
+
+  if ((step % 8 === 2 || step % 8 === 6) && rand((0.28 + observerNorm * 0.18 + waveNorm * 0.08) * pulseScale)) {
+    const note = FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle) % FIELD_MURK_FRAGMENTS.length];
+    try {
+      glass.triggerAttackRelease(note, "64n", airTime + 0.018, clampValue(0.018 + observerNorm * 0.024 + PerformancePadState.repeat * 0.018, 0.014, 0.062));
+    } catch (error) {
+      console.warn("[Music] soft pulse glass failed:", error);
     }
   }
 
@@ -1565,11 +1601,13 @@ function triggerAudibleGrooveFloor(step, time, context) {
     }
   }
 
-  if ((step % 8 === 4 || (voiding && step % 8 === 6)) && (energyNorm < 0.72 || voiding) && rand(0.38 + observerNorm * 0.22 + PerformancePadState.void * 0.18)) {
+  const hazeGate = step % 8 === 0 || step % 8 === 4 || (voiding && step % 8 === 6);
+  const hazeChance = chance((0.2 + observerNorm * 0.18 + circleNorm * 0.16 + (1 - energyNorm) * 0.08 + PerformancePadState.void * 0.16) * hazeScale);
+  if (hazeGate && (inWarmup || rand(hazeChance))) {
     try {
-      pad.triggerAttackRelease(randomChordForMode(), "2n", airTime + 0.018, clampValue(0.026 + observerNorm * 0.024 + (1 - energyNorm) * 0.012, 0.024, 0.058));
+      pad.triggerAttackRelease(randomHazeChord(), voiding ? "2n" : "1n", airTime + 0.018, clampValue(0.026 + observerNorm * 0.026 + circleNorm * 0.014 + (1 - energyNorm) * 0.012, 0.022, 0.07));
     } catch (error) {
-      console.warn("[Music] room-bed pad failed:", error);
+      console.warn("[Music] haze bed pad failed:", error);
     }
   }
 
@@ -1736,11 +1774,12 @@ function scheduleStep(time) {
   const waveNorm = clampValue(UCM_CUR.wave / 100, 0, 1);
   const observerNorm = clampValue(UCM_CUR.observer / 100, 0, 1);
   const voidNorm = clampValue(UCM_CUR.void / 100, 0, 1);
+  const circleNorm = clampValue(UCM_CUR.circle / 100, 0, 1);
   const isAccentStep = step === GrooveState.accentStep || (GrooveState.fillActive && (step % 4 === 3 || step % 8 === 6));
   const grooveJitter = (step % 2 === 1 ? mapValue(waveNorm, 0, 1, 0, 0.014 + PerformancePadState.drift * 0.026) * GrooveState.microJitterScale : 0);
   const fillBoost = GrooveState.fillActive ? 0.14 : 0;
   const t = time + grooveJitter;
-  const stepContext = { energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, isRest, isAccentStep };
+  const stepContext = { energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm, isRest, isAccentStep };
 
   triggerAudibleGrooveFloor(step, t, stepContext);
   triggerOrganicTexture(step, t, stepContext);
@@ -1791,17 +1830,18 @@ function scheduleStep(time) {
     // Pad（ゆっくり）
     if (patternAt(EngineParams.padPattern, step) && rand(EngineParams.padProb)) {
       const dur = EngineParams.mode === "ambient" || EngineParams.mode === "lofi" ? "2n" : "4n";
-      pad.triggerAttackRelease(randomChordForMode(), dur, t, 0.07 + clampValue(UCM_CUR.circle / 100, 0, 1) * 0.07);
+      const chord = rand(0.42 + observerNorm * 0.24 + PerformancePadState.void * 0.18) ? randomHazeChord() : randomChordForMode();
+      pad.triggerAttackRelease(chord, dur, t, clampValue(0.054 + circleNorm * 0.058 + observerNorm * 0.018, 0.046, 0.13));
     }
   }
 
-  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + PerformancePadState.drift * 0.095 - PerformancePadState.void * 0.015);
+  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.026, 0.19) + GrooveState.textureLift + PerformancePadState.drift * 0.095 - PerformancePadState.void * 0.01);
   if (rand(textureProb) && (step % 2 === 1 || isAccentStep)) {
     const textureTime = t + (isAccentStep ? 0.006 : 0.012);
     texture.triggerAttackRelease("32n", textureTime, clampValue(0.026 + creationNorm * 0.095 + resourceNorm * 0.026 + PerformancePadState.punch * 0.016, 0.018, 0.125));
   }
 
-  const particleProb = chance(0.028 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.014 + PerformancePadState.drift * 0.11 + PerformancePadState.repeat * 0.06 + PerformancePadState.void * 0.065);
+  const particleProb = chance(0.032 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.018 + PerformancePadState.drift * 0.11 + PerformancePadState.repeat * 0.06 + PerformancePadState.void * 0.065);
   if (rand(particleProb) && (step % 4 === 1 || step % 8 === 5 || isAccentStep)) {
     const note = FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + Math.floor(Math.random() * FIELD_MURK_FRAGMENTS.length)) % FIELD_MURK_FRAGMENTS.length];
     try {
@@ -1811,7 +1851,7 @@ function scheduleStep(time) {
     }
   }
 
-  const airProb = chance(0.022 + observerNorm * 0.04 + PerformancePadState.void * 0.15 + PerformancePadState.drift * 0.07 + PerformancePadState.repeat * 0.025);
+  const airProb = chance(0.028 + observerNorm * 0.044 + circleNorm * 0.018 + PerformancePadState.void * 0.15 + PerformancePadState.drift * 0.07 + PerformancePadState.repeat * 0.025);
   if (rand(airProb) && (step % 8 === 4 || step % 8 === 7)) {
     const note = TRANSPARENT_AIR_FRAGMENTS[(step + Math.floor(Math.random() * TRANSPARENT_AIR_FRAGMENTS.length)) % TRANSPARENT_AIR_FRAGMENTS.length];
     try {
