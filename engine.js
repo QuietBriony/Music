@@ -569,23 +569,28 @@ function triggerPadSignature(name) {
   try {
     if (name === "drift") {
       const note = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex) % TRANSPARENT_AIR_FRAGMENTS.length];
-      glass.triggerAttackRelease(note, "16n", now + 0.006, clampValue(0.052 + observerNorm * 0.04, 0.044, 0.102));
-      glass.triggerAttackRelease(GLASS_NOTES[(stepIndex + 3) % GLASS_NOTES.length], "32n", now + 0.074, clampValue(0.026 + creationNorm * 0.025, 0.024, 0.066));
-      texture.triggerAttackRelease("64n", now + 0.018, clampValue(0.032 + creationNorm * 0.035, 0.026, 0.078));
+      const driftNote = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + 2) % TRANSPARENT_AIR_FRAGMENTS.length];
+      glass.triggerAttackRelease(note, "16n", now + 0.006, clampValue(0.064 + observerNorm * 0.048, 0.054, 0.122));
+      glass.triggerAttackRelease(driftNote, "32n", now + 0.056, clampValue(0.044 + creationNorm * 0.03, 0.036, 0.084));
+      glass.triggerAttackRelease(GLASS_NOTES[(stepIndex + 3) % GLASS_NOTES.length], "32n", now + 0.108, clampValue(0.03 + creationNorm * 0.026, 0.026, 0.07));
+      texture.triggerAttackRelease("64n", now + 0.018, clampValue(0.034 + creationNorm * 0.034, 0.028, 0.078));
     } else if (name === "repeat") {
       const note = GLASS_NOTES[(GrooveState.cycle + stepIndex) % GLASS_NOTES.length];
-      glass.triggerAttackRelease(note, "64n", now + 0.004, clampValue(0.048 + energyNorm * 0.026, 0.04, 0.082));
-      glass.triggerAttackRelease(note, "64n", now + 0.058, clampValue(0.034 + energyNorm * 0.022, 0.03, 0.068));
-      hat.triggerAttackRelease("64n", now + 0.028, clampValue(0.045 + energyNorm * 0.035, 0.038, 0.102));
+      glass.triggerAttackRelease(note, "64n", now + 0.004, clampValue(0.062 + energyNorm * 0.032, 0.052, 0.102));
+      glass.triggerAttackRelease(note, "64n", now + 0.052, clampValue(0.048 + energyNorm * 0.026, 0.04, 0.084));
+      hat.triggerAttackRelease("64n", now + 0.026, clampValue(0.056 + energyNorm * 0.038, 0.048, 0.112));
+      texture.triggerAttackRelease("64n", now + 0.068, clampValue(0.032 + creationNorm * 0.028, 0.026, 0.07));
     } else if (name === "punch") {
-      kick.triggerAttackRelease("C2", "16n", now + 0.002, clampValue(0.42 + energyNorm * 0.14, 0.38, 0.62));
-      bass.triggerAttackRelease(bassRoot || "C2", "32n", now + 0.016, clampValue(0.13 + energyNorm * 0.09, 0.12, 0.24));
-      texture.triggerAttackRelease("64n", now + 0.014, clampValue(0.065 + creationNorm * 0.035, 0.056, 0.12));
+      kick.triggerAttackRelease("C2", "16n", now + 0.002, clampValue(0.38 + energyNorm * 0.11, 0.34, 0.54));
+      bass.triggerAttackRelease(bassRoot || "C2", "32n", now + 0.016, clampValue(0.11 + energyNorm * 0.07, 0.1, 0.2));
+      texture.triggerAttackRelease("64n", now + 0.014, clampValue(0.074 + creationNorm * 0.04, 0.062, 0.128));
     } else if (name === "void") {
       const airNote = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + 2) % TRANSPARENT_AIR_FRAGMENTS.length];
-      glass.triggerAttackRelease(airNote, "8n", now + 0.01, clampValue(0.04 + observerNorm * 0.038, 0.036, 0.086));
-      pad.triggerAttackRelease(randomChordForMode(), "2n", now + 0.02, clampValue(0.036 + observerNorm * 0.024, 0.03, 0.068));
-      texture.triggerAttackRelease("32n", now + 0.032, clampValue(0.022 + observerNorm * 0.028, 0.018, 0.062));
+      const bloomNote = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + 5) % TRANSPARENT_AIR_FRAGMENTS.length];
+      glass.triggerAttackRelease(airNote, "8n", now + 0.01, clampValue(0.052 + observerNorm * 0.046, 0.044, 0.102));
+      glass.triggerAttackRelease(bloomNote, "16n", now + 0.096, clampValue(0.034 + observerNorm * 0.034, 0.03, 0.078));
+      pad.triggerAttackRelease(randomChordForMode(), "2n", now + 0.02, clampValue(0.042 + observerNorm * 0.028, 0.034, 0.078));
+      texture.triggerAttackRelease("32n", now + 0.034, clampValue(0.024 + observerNorm * 0.03, 0.02, 0.064));
     }
   } catch (error) {
     console.warn("[Music] performance pad signature failed:", name, error);
@@ -870,23 +875,23 @@ function updateTimbreStateFromWorld(parts) {
   TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (character.warmth || 0), 0, 1);
 
   const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) - (PerformancePadState.void * 2.4);
-  const glassLevel = -34.5 + (TimbreState.glass * 5.4) + (TimbreState.harp * 3.4) + (WorldState.spectrum * 0.9) + (PerformancePadState.void * 1.2);
-  const textureLevel = -38.2 + (TimbreState.grit * 6.0) + (TimbreState.fracture * 2.3) - (TimbreState.warmth * 1.65) - (PerformancePadState.void * 0.8);
-  const bassCutoff = 96 + (TimbreState.grit * 350) + (resource * 102) - (TimbreState.warmth * 54) - (PerformancePadState.void * 58) + (PerformancePadState.punch * 76);
-  const bassBite = 0.58 + (TimbreState.grit * 3.8) + (TimbreState.warmth * 0.62) + (PerformancePadState.punch * 0.42);
+  const glassLevel = -34.5 + (TimbreState.glass * 5.4) + (TimbreState.harp * 3.4) + (WorldState.spectrum * 0.9) + (PerformancePadState.void * 2.15);
+  const textureLevel = -38.2 + (TimbreState.grit * 6.0) + (TimbreState.fracture * 2.3) - (TimbreState.warmth * 1.65) - (PerformancePadState.void * 1.15);
+  const bassCutoff = 96 + (TimbreState.grit * 350) + (resource * 102) - (TimbreState.warmth * 54) - (PerformancePadState.void * 82) + (PerformancePadState.punch * 62);
+  const bassBite = 0.58 + (TimbreState.grit * 3.8) + (TimbreState.warmth * 0.62) + (PerformancePadState.punch * 0.3);
 
   safeToneRamp(pad?.volume, airyPad, 0.28);
   safeToneRamp(glass?.volume, glassLevel, 0.22);
   safeToneRamp(texture?.volume, textureLevel, 0.2);
   safeToneRamp(bass?.filter?.frequency, bassCutoff, 0.18);
   safeToneRamp(bass?.filter?.Q, bassBite, 0.2);
-  safeToneRamp(glass?.harmonicity, 1.0 + (TimbreState.glass * 0.95) + (TimbreState.harp * 0.72) + (PerformancePadState.void * 0.18), 0.24);
-  safeToneRamp(glass?.modulationIndex, 0.68 + (TimbreState.fracture * 2.25) + (TimbreState.harp * 0.82) - (TimbreState.warmth * 0.46) - (PerformancePadState.void * 0.3), 0.2);
+  safeToneRamp(glass?.harmonicity, 1.0 + (TimbreState.glass * 0.95) + (TimbreState.harp * 0.72) + (PerformancePadState.void * 0.24), 0.24);
+  safeToneRamp(glass?.modulationIndex, 0.68 + (TimbreState.fracture * 2.25) + (TimbreState.harp * 0.82) - (TimbreState.warmth * 0.46) - (PerformancePadState.void * 0.22), 0.2);
 
   setEnvelopeValue(glass?.envelope, "attack", 0.003 + (TimbreState.harp * 0.01));
-  setEnvelopeValue(glass?.envelope, "decay", 0.07 + (TimbreState.harp * 0.16) + (TimbreState.air * 0.07) + (PerformancePadState.void * 0.08));
+  setEnvelopeValue(glass?.envelope, "decay", 0.07 + (TimbreState.harp * 0.16) + (TimbreState.air * 0.07) + (PerformancePadState.void * 0.11));
   setEnvelopeValue(glass?.envelope, "sustain", 0.015 + (TimbreState.warmth * 0.035));
-  setEnvelopeValue(glass?.envelope, "release", 0.1 + (TimbreState.air * 0.14) + (TimbreState.warmth * 0.16) + (PerformancePadState.void * 0.12));
+  setEnvelopeValue(glass?.envelope, "release", 0.1 + (TimbreState.air * 0.14) + (TimbreState.warmth * 0.16) + (PerformancePadState.void * 0.16));
   setEnvelopeValue(glass?.modulationEnvelope, "attack", 0.002);
   setEnvelopeValue(glass?.modulationEnvelope, "decay", 0.06 + (TimbreState.harp * 0.12));
   setEnvelopeValue(glass?.modulationEnvelope, "sustain", 0.01);
@@ -1254,28 +1259,28 @@ function applyUCMToParams(options = {}) {
   // リバーブ/ディレイ量を少しだけ動かす（軽量）
   const reverbWet = clampValue(
     mapValue(UCM_CUR.observer + UCM_CUR.void * 0.35, 0, 135, 0.14, 0.46) +
-      PerformancePadState.void * 0.12 +
+      PerformancePadState.void * 0.16 +
       PerformancePadState.drift * 0.04,
     0.08,
-    0.58
+    0.62
   );
   rampParam("reverb-wet", globalReverb.wet, reverbWet, 0.8, force ? 0 : 0.012);
 
   const delayWet = clampValue(
     mapValue(UCM_CUR.creation + UCM_CUR.observer * 0.22, 0, 122, 0.035, 0.28) +
-      PerformancePadState.repeat * 0.09 +
-      PerformancePadState.drift * 0.045 +
-      PerformancePadState.void * 0.025,
+      PerformancePadState.repeat * 0.11 +
+      PerformancePadState.drift * 0.055 +
+      PerformancePadState.void * 0.045,
     0.02,
-    0.38
+    0.4
   );
   rampParam("delay-wet", globalDelay.wet, delayWet, 0.55, force ? 0 : 0.012);
 
   // Padのカットオフ
   const cutoff = clampValue(
     mapValue(UCM_CUR.observer + UCM_CUR.energy * 0.28 - UCM_CUR.void * 0.18, -18, 128, 280, 2600) -
-      PerformancePadState.void * 620 +
-      PerformancePadState.punch * 96,
+      PerformancePadState.void * 720 +
+      PerformancePadState.punch * 72,
     180,
     2600
   );
@@ -1451,9 +1456,9 @@ function triggerAudibleGrooveFloor(step, time, context) {
     0.054
   );
   const ghostGlassVel = clampValue(
-    0.014 + observerNorm * 0.028 + (1 - energyNorm) * 0.012 + PerformancePadState.void * 0.018,
+    0.014 + observerNorm * 0.03 + (1 - energyNorm) * 0.012 + PerformancePadState.void * 0.026,
     0.014,
-    0.072
+    0.078
   );
 
   try {
@@ -1472,17 +1477,17 @@ function triggerAudibleGrooveFloor(step, time, context) {
     }
   }
 
-  if ((step % 8 === 4 || inWarmup || voiding || isAccentStep) && rand(0.52 + PerformancePadState.void * 0.24)) {
+  if ((step % 8 === 4 || inWarmup || voiding || isAccentStep) && rand(0.52 + PerformancePadState.void * 0.34)) {
     const notes = voiding ? TRANSPARENT_AIR_FRAGMENTS : FIELD_MURK_FRAGMENTS;
     const note = notes[(step + GrooveState.cycle + Math.floor(waveNorm * 5)) % notes.length];
     try {
-      glass.triggerAttackRelease(note, "32n", airTime + 0.012, ghostGlassVel);
+      glass.triggerAttackRelease(note, voiding ? "16n" : "32n", airTime + 0.012, ghostGlassVel);
     } catch (error) {
       console.warn("[Music] ghost glass floor failed:", error);
     }
   }
 
-  if ((step % 16 === 12 || (voiding && step % 8 === 4)) && (energyNorm < 0.72 || voiding) && rand(0.38 + observerNorm * 0.22 + PerformancePadState.void * 0.18)) {
+  if ((step % 8 === 4 || (voiding && step % 8 === 6)) && (energyNorm < 0.72 || voiding) && rand(0.38 + observerNorm * 0.22 + PerformancePadState.void * 0.18)) {
     try {
       pad.triggerAttackRelease(randomChordForMode(), "2n", airTime + 0.018, clampValue(0.026 + observerNorm * 0.024 + (1 - energyNorm) * 0.012, 0.024, 0.058));
     } catch (error) {
@@ -1504,9 +1509,11 @@ function triggerPadHoldMinimums(step, time, context) {
 
   if (PerformancePadState.drift && (step % 8 === 1 || step % 8 === 5)) {
     const note = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle) % TRANSPARENT_AIR_FRAGMENTS.length];
+    const liftNote = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 3) % TRANSPARENT_AIR_FRAGMENTS.length];
     try {
-      glass.triggerAttackRelease(note, "32n", time + 0.018 + waveNorm * 0.018, clampValue(0.028 + observerNorm * 0.034 + creationNorm * 0.014, 0.024, 0.082));
-      texture.triggerAttackRelease("64n", time + 0.026, clampValue(0.024 + waveNorm * 0.032, 0.02, 0.07));
+      glass.triggerAttackRelease(note, "32n", time + 0.018 + waveNorm * 0.02, clampValue(0.036 + observerNorm * 0.038 + creationNorm * 0.016, 0.03, 0.096));
+      glass.triggerAttackRelease(liftNote, "64n", time + 0.066 + waveNorm * 0.018, clampValue(0.022 + observerNorm * 0.026, 0.018, 0.064));
+      texture.triggerAttackRelease("64n", time + 0.026, clampValue(0.026 + waveNorm * 0.034, 0.022, 0.074));
     } catch (error) {
       console.warn("[Music] drift hold failed:", error);
     }
@@ -1515,9 +1522,9 @@ function triggerPadHoldMinimums(step, time, context) {
   if (PerformancePadState.repeat && (step % 8 === 2 || step % 8 === 6)) {
     const note = GLASS_NOTES[(step + GrooveState.cycle) % GLASS_NOTES.length];
     try {
-      glass.triggerAttackRelease(note, "64n", time + 0.012, clampValue(0.038 + energyNorm * 0.036, 0.032, 0.086));
-      glass.triggerAttackRelease(note, "64n", time + 0.055, clampValue(0.026 + energyNorm * 0.028, 0.022, 0.064));
-      if (step % 8 === 6) hat.triggerAttackRelease("64n", time + 0.034, clampValue(0.038 + energyNorm * 0.04, 0.032, 0.096));
+      glass.triggerAttackRelease(note, "64n", time + 0.012, clampValue(0.048 + energyNorm * 0.038, 0.04, 0.098));
+      glass.triggerAttackRelease(note, "64n", time + 0.052, clampValue(0.034 + energyNorm * 0.03, 0.028, 0.074));
+      if (step % 8 === 6) hat.triggerAttackRelease("64n", time + 0.034, clampValue(0.046 + energyNorm * 0.042, 0.038, 0.108));
     } catch (error) {
       console.warn("[Music] repeat hold failed:", error);
     }
@@ -1525,22 +1532,24 @@ function triggerPadHoldMinimums(step, time, context) {
 
   if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep)) {
     try {
-      kick.triggerAttackRelease("C2", "16n", time + 0.004, clampValue(0.32 + energyNorm * 0.18, 0.28, 0.56));
+      kick.triggerAttackRelease("C2", "16n", time + 0.004, clampValue(0.3 + energyNorm * 0.16, 0.26, 0.52));
       if (step % 8 === 0) {
-        bass.triggerAttackRelease(bassRoot || "C2", "32n", time + 0.026, clampValue(0.12 + energyNorm * 0.08, 0.1, 0.22));
+        bass.triggerAttackRelease(bassRoot || "C2", "32n", time + 0.026, clampValue(0.1 + energyNorm * 0.07, 0.09, 0.2));
       }
-      texture.triggerAttackRelease("64n", time + 0.018, clampValue(0.052 + creationNorm * 0.042, 0.044, 0.108));
+      texture.triggerAttackRelease("64n", time + 0.018, clampValue(0.06 + creationNorm * 0.044, 0.05, 0.118));
     } catch (error) {
       console.warn("[Music] punch hold failed:", error);
     }
   }
 
-  if (PerformancePadState.void && (step % 8 === 4 || step % 16 === 13)) {
+  if (PerformancePadState.void && (step % 8 === 4 || step % 8 === 7)) {
     const note = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 2) % TRANSPARENT_AIR_FRAGMENTS.length];
+    const tailNote = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 5) % TRANSPARENT_AIR_FRAGMENTS.length];
     try {
-      glass.triggerAttackRelease(note, "16n", time + 0.022, clampValue(0.026 + observerNorm * 0.038, 0.024, 0.078));
+      glass.triggerAttackRelease(note, "16n", time + 0.022, clampValue(0.034 + observerNorm * 0.042, 0.03, 0.092));
+      glass.triggerAttackRelease(tailNote, "32n", time + 0.112, clampValue(0.022 + observerNorm * 0.032, 0.02, 0.068));
       if (step % 8 === 4) {
-        pad.triggerAttackRelease(randomChordForMode(), "2n", time + 0.04, clampValue(0.026 + observerNorm * 0.024, 0.022, 0.056));
+        pad.triggerAttackRelease(randomChordForMode(), "2n", time + 0.04, clampValue(0.03 + observerNorm * 0.026, 0.026, 0.064));
       }
     } catch (error) {
       console.warn("[Music] void hold failed:", error);
@@ -1603,9 +1612,9 @@ function scheduleStep(time) {
 
   if (!isRest) {
     // Kick
-    const kickChance = chance(EngineParams.kickProb + (isAccentStep ? 0.05 : 0) + PerformancePadState.punch * 0.14 - PerformancePadState.void * 0.12);
+    const kickChance = chance(EngineParams.kickProb + (isAccentStep ? 0.05 : 0) + PerformancePadState.punch * 0.1 - PerformancePadState.void * 0.12);
     if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
-      kick.triggerAttackRelease("C2", "8n", t, clampValue(0.58 + energyNorm * 0.13 + (isAccentStep ? 0.04 : 0) + PerformancePadState.punch * 0.12, 0.46, 0.88));
+      kick.triggerAttackRelease("C2", "8n", t, clampValue(0.58 + energyNorm * 0.13 + (isAccentStep ? 0.04 : 0) + PerformancePadState.punch * 0.08, 0.46, 0.84));
       if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep) && rand(0.46)) {
         try {
           texture.triggerAttackRelease("64n", t + 0.012, clampValue(0.045 + energyNorm * 0.06, 0.035, 0.11));
@@ -1633,8 +1642,8 @@ function scheduleStep(time) {
     const bassChance = chance(EngineParams.bassProb + (GrooveState.fillActive && step % 8 === 6 ? 0.10 : 0) - PerformancePadState.void * 0.12);
     if (patternAt(EngineParams.bassPattern, step) && rand(bassChance)) {
       const note = step % 8 === 0 ? bassRoot : bassNoteForStep(step);
-      bass.triggerAttackRelease(note, EngineParams.mode === "ambient" ? "4n" : "8n", t, clampValue(0.26 + energyNorm * 0.16 + PerformancePadState.punch * 0.06, 0.18, 0.5));
-      if (PerformancePadState.repeat && step % 8 === 0 && rand(0.22)) {
+      bass.triggerAttackRelease(note, EngineParams.mode === "ambient" ? "4n" : "8n", t, clampValue(0.26 + energyNorm * 0.16 + PerformancePadState.punch * 0.04, 0.18, 0.48));
+      if (PerformancePadState.repeat && step % 8 === 0 && rand(0.1)) {
         try {
           bass.triggerAttackRelease(note, "32n", t + 0.036, clampValue(0.12 + energyNorm * 0.06, 0.09, 0.22));
         } catch (error) {
@@ -1650,33 +1659,33 @@ function scheduleStep(time) {
     }
   }
 
-  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + PerformancePadState.drift * 0.085 - PerformancePadState.void * 0.025);
+  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + PerformancePadState.drift * 0.095 - PerformancePadState.void * 0.015);
   if (rand(textureProb) && (step % 2 === 1 || isAccentStep)) {
     const textureTime = t + (isAccentStep ? 0.006 : 0.012);
     texture.triggerAttackRelease("32n", textureTime, clampValue(0.026 + creationNorm * 0.095 + resourceNorm * 0.026 + PerformancePadState.punch * 0.016, 0.018, 0.125));
   }
 
-  const particleProb = chance(0.024 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.014 + PerformancePadState.drift * 0.088 + PerformancePadState.repeat * 0.035 + PerformancePadState.void * 0.045);
+  const particleProb = chance(0.028 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.014 + PerformancePadState.drift * 0.11 + PerformancePadState.repeat * 0.06 + PerformancePadState.void * 0.065);
   if (rand(particleProb) && (step % 4 === 1 || step % 8 === 5 || isAccentStep)) {
     const note = FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + Math.floor(Math.random() * FIELD_MURK_FRAGMENTS.length)) % FIELD_MURK_FRAGMENTS.length];
     try {
-      glass.triggerAttackRelease(note, "32n", t + 0.019 + Math.random() * 0.018, clampValue(0.022 + creationNorm * 0.036 + PerformancePadState.repeat * 0.03 + PerformancePadState.void * 0.014, 0.016, 0.086));
+      glass.triggerAttackRelease(note, "32n", t + 0.019 + Math.random() * 0.018, clampValue(0.022 + creationNorm * 0.036 + PerformancePadState.repeat * 0.04 + PerformancePadState.void * 0.02, 0.016, 0.096));
     } catch (error) {
       console.warn("[Music] field particle failed:", error);
     }
   }
 
-  const airProb = chance(0.018 + observerNorm * 0.034 + PerformancePadState.void * 0.11 + PerformancePadState.drift * 0.05);
-  if (rand(airProb) && (step % 8 === 4 || step % 16 === 13)) {
+  const airProb = chance(0.022 + observerNorm * 0.04 + PerformancePadState.void * 0.15 + PerformancePadState.drift * 0.07 + PerformancePadState.repeat * 0.025);
+  if (rand(airProb) && (step % 8 === 4 || step % 8 === 7)) {
     const note = TRANSPARENT_AIR_FRAGMENTS[(step + Math.floor(Math.random() * TRANSPARENT_AIR_FRAGMENTS.length)) % TRANSPARENT_AIR_FRAGMENTS.length];
     try {
-      glass.triggerAttackRelease(note, "32n", t + 0.024, clampValue(0.014 + observerNorm * 0.034 + PerformancePadState.void * 0.022, 0.012, 0.068));
+      glass.triggerAttackRelease(note, "32n", t + 0.024, clampValue(0.016 + observerNorm * 0.038 + PerformancePadState.void * 0.028 + PerformancePadState.repeat * 0.014, 0.012, 0.08));
     } catch (error) {
       console.warn("[Music] transparent air failed:", error);
     }
   }
 
-  const glassProb = chance(mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.02, 0.13) + GrooveState.glassLift + PerformancePadState.drift * 0.075 + PerformancePadState.repeat * 0.055 + PerformancePadState.void * 0.026);
+  const glassProb = chance(mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.022, 0.14) + GrooveState.glassLift + PerformancePadState.drift * 0.095 + PerformancePadState.repeat * 0.075 + PerformancePadState.void * 0.04);
   if (rand(glassProb) && (isAccentStep || step % 8 === 3 || step % 16 === 11)) {
     const note = GLASS_NOTES[Math.floor(Math.random() * GLASS_NOTES.length)];
     glass.triggerAttackRelease(note, "16n", t + 0.015, clampValue(0.035 + energyNorm * 0.065 + PerformancePadState.void * 0.014, 0.026, 0.118));
