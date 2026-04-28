@@ -785,14 +785,10 @@ function rememberMotif(root, options = {}) {
 function rememberGestureMotif(name, source = "manual") {
   const autoScale = source === "auto" ? 0.78 : 1;
   const offset = { drift: 1, repeat: 3, punch: 5, void: 2 }[name] || 0;
-  const pool = name === "void" || name === "drift"
-    ? TRANSPARENT_AIR_FRAGMENTS
-    : name === "punch"
-      ? ORGANIC_PLUCK_FRAGMENTS
-      : GLASS_NOTES;
-  const root = pool[(GrooveState.cycle + stepIndex + offset) % pool.length];
-  const reply = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + offset + 2) % TRANSPARENT_AIR_FRAGMENTS.length];
-  const shade = FIELD_MURK_FRAGMENTS[(GrooveState.cycle + stepIndex + offset + 1) % FIELD_MURK_FRAGMENTS.length];
+  const airy = name === "void" || name === "drift";
+  const root = airy ? tonalRhymeHigh(stepIndex, offset) : tonalRhymeMid(stepIndex, offset);
+  const reply = tonalRhymeHigh(stepIndex, offset + 2);
+  const shade = name === "punch" ? tonalRhymeLow(stepIndex, offset + 1) : tonalRhymeMid(stepIndex, offset + 1);
   rememberMotif(root, {
     reply,
     shade,
@@ -5022,6 +5018,95 @@ function triggerMotifAfterimage(step, time, context) {
   }
 }
 
+function triggerTonalRhymeResponse(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  if (!glass || MixGovernorState.eventLoad > 0.88) return;
+
+  const autoDrive = (UCM.auto.enabled || HazamaBridgeState.active) ? 1 : 0;
+  const acid = clampValue(AcidLockState.intensity || 0, 0, 1);
+  const memory = MotifMemoryState;
+  const phraseTurn = step % 16 === 0;
+  const offReply = step % 16 === 6 || step % 16 === 10;
+  const accentReply = isAccentStep && step % 2 === 1;
+  if (!phraseTurn && !offReply && !accentReply) return;
+
+  const response = clampValue(
+    0.1 +
+      memory.strength * 0.24 +
+      BpmCrossfadeState.refrain * 0.16 +
+      VoiceEmergenceState.refrain * 0.14 +
+      GenomeState.genes.refrain * 0.14 +
+      LongformArcState.breath * 0.05 +
+      autoDrive * 0.08 +
+      acid * 0.12,
+    0,
+    1
+  );
+  const gateChance = chance(
+    0.018 +
+      response * 0.14 +
+      observerNorm * 0.02 +
+      creationNorm * 0.014 +
+      GradientState.memory * 0.02 -
+      voidNorm * 0.02
+  );
+  if (!rand(gateChance)) return;
+
+  const airy = PerformancePadState.void || voidNorm > 0.56 || GradientState.haze > 0.58;
+  const pressure = acid > 0.38 || GenreBlendState.pressure > 0.32;
+  const root = airy ? tonalRhymeHigh(step, 0) : tonalRhymeMid(step, 0);
+  const reply = pressure ? tonalRhymeMid(step, 3) : tonalRhymeHigh(step, 2);
+  const shade = airy ? tonalRhymeHigh(step, 5) : tonalRhymeMid(step, 5);
+  const low = tonalRhymeLow(step, phraseTurn ? 0 : 2);
+  const responseTime = time + 0.018 + Math.random() * (0.012 + waveNorm * 0.014);
+  const baseVel = clampValue(
+    0.016 +
+      response * 0.05 +
+      observerNorm * 0.012 +
+      circleNorm * 0.008 +
+      acid * 0.012,
+    0.014,
+    0.09
+  );
+
+  try {
+    if (phraseTurn && pad && rand(0.18 + response * 0.18 + circleNorm * 0.08)) {
+      pad.triggerAttackRelease(randomHazeChord(), airy ? "1n" : "2n", responseTime + 0.012, clampValue(0.014 + response * 0.036 + circleNorm * 0.008, 0.012, 0.06));
+    }
+    glass.triggerAttackRelease(root, pressure ? "64n" : "32n", responseTime, baseVel);
+    if (rand(0.42 + response * 0.22)) {
+      glass.triggerAttackRelease(reply, airy ? "16n" : "64n", responseTime + 0.052 + Math.random() * 0.02, clampValue(baseVel * (airy ? 0.58 : 0.7), 0.012, 0.072));
+    }
+    if (rand(0.22 + response * 0.16 + GradientState.organic * 0.1)) {
+      glass.triggerAttackRelease(shade, "64n", responseTime + 0.092 + Math.random() * 0.018, clampValue(baseVel * 0.44, 0.01, 0.05));
+    }
+    if (bass && (phraseTurn || pressure) && rand(0.16 + response * 0.12 + acid * 0.18 - MixGovernorState.lowGuard * 0.1)) {
+      bass.triggerAttackRelease(low, pressure ? "64n" : "32n", responseTime + 0.026, clampValue(0.036 + response * 0.038 + energyNorm * 0.016 + acid * 0.03 - MixGovernorState.lowGuard * 0.02, 0.03, pressure ? 0.14 : 0.1));
+    }
+    if (texture && !airy && rand(0.16 + response * 0.14 + pressure * 0.12)) {
+      texture.triggerAttackRelease("64n", responseTime + 0.01, clampValue(0.012 + response * 0.032 + pressure * 0.018, 0.012, 0.064));
+    }
+    rememberMotif(root, {
+      reply,
+      shade,
+      strength: 0.032 + response * 0.08,
+      air: airy ? 0.16 + response * 0.1 : 0.05 + GradientState.chrome * 0.04,
+      source: "tonal-response"
+    });
+    markMixEvent(0.08 + response * 0.05);
+  } catch (error) {
+    console.warn("[Music] tonal response failed:", error);
+  }
+}
+
 function triggerBpmCrossfadeRefrain(step, time, context) {
   const {
     energyNorm,
@@ -5695,6 +5780,7 @@ function scheduleStep(time) {
   triggerGranularDetail(step, t, stepContext);
   triggerClarityFilament(step, t, stepContext);
   triggerMotifAfterimage(step, t, stepContext);
+  triggerTonalRhymeResponse(step, t, stepContext);
   triggerBpmCrossfadeRefrain(step, t, stepContext);
   triggerGoldenGenomeDevelopment(step, t, stepContext);
   triggerLongformArcTurn(step, t, stepContext);
