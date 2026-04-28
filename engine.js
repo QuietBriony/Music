@@ -216,6 +216,140 @@ const BpmCrossfadeState = {
   motifShade: "D4",
   motifIndex: 0
 };
+const GOLDEN_RATIO = 1.61803398875;
+const GOLDEN_RATIO_INVERSE = 1 / GOLDEN_RATIO;
+const GenomeState = {
+  generation: 0,
+  phase: 0,
+  growth: 0.22,
+  mutation: 0.12,
+  resonance: 0,
+  lastPulseCycle: -99,
+  root: "D5",
+  reply: "F#5",
+  shade: "D4",
+  genes: {
+    haze: 0.48,
+    pulse: 0.34,
+    micro: 0.36,
+    chrome: 0.4,
+    organic: 0.42,
+    pressure: 0.24,
+    refrain: 0.36,
+    voidTail: 0.32
+  }
+};
+const GENOME_GENE_KEYS = ["haze", "pulse", "micro", "chrome", "organic", "pressure", "refrain", "voidTail"];
+const VoiceColorState = {
+  atmosphere: "auto",
+  source: "genome"
+};
+const VoiceMorphState = {
+  transition: 0,
+  gradient: {
+    haze: 0,
+    memory: 0,
+    micro: 0,
+    ghost: 0,
+    chrome: 0,
+    organic: 0
+  },
+  genes: {
+    haze: 0,
+    pulse: 0,
+    micro: 0,
+    chrome: 0,
+    organic: 0,
+    pressure: 0,
+    refrain: 0,
+    voidTail: 0
+  }
+};
+const AUTO_SOURCE_MORPH_KEYS = ["xtal", "boc", "opn", "fsol", "autechre", "burial"];
+const AUTO_ATMOSPHERE_MORPH_KEYS = ["haze", "chrome", "void", "organic", "ghost"];
+const AutoVoiceMorphState = {
+  sourceIndex: 0,
+  sourceNextIndex: 1,
+  sourceAge: 0,
+  sourceSegmentCycles: 54,
+  sourceBlend: 0,
+  atmosphereIndex: 0,
+  atmosphereNextIndex: 1,
+  atmosphereAge: 0,
+  atmosphereSegmentCycles: 38,
+  atmosphereBlend: 0,
+  generation: 0,
+  lastCycle: -1
+};
+const ATMOSPHERE_COLORS = {
+  auto: {
+    label: "AUTO AIR",
+    gradient: {},
+    genes: {}
+  },
+  haze: {
+    label: "SOFT HAZE",
+    gradient: { haze: 0.16, memory: 0.07, chrome: 0.04, ghost: -0.02 },
+    genes: { haze: 0.18, refrain: 0.08, voidTail: 0.04, pressure: -0.04 }
+  },
+  chrome: {
+    label: "CHROME AIR",
+    gradient: { chrome: 0.18, micro: 0.07, haze: 0.04, organic: -0.02 },
+    genes: { chrome: 0.2, micro: 0.08, voidTail: 0.05 }
+  },
+  ghost: {
+    label: "GHOST RAIN",
+    gradient: { ghost: 0.15, haze: 0.08, memory: 0.05, chrome: 0.03 },
+    genes: { pulse: 0.12, voidTail: 0.12, pressure: 0.04, refrain: 0.06 }
+  },
+  organic: {
+    label: "ORGANIC DUST",
+    gradient: { organic: 0.2, memory: 0.08, micro: 0.06, chrome: -0.02 },
+    genes: { organic: 0.22, refrain: 0.08, micro: 0.06, haze: 0.04 }
+  },
+  void: {
+    label: "VOID BLOOM",
+    gradient: { haze: 0.14, chrome: 0.14, ghost: -0.04, micro: -0.02 },
+    genes: { voidTail: 0.24, haze: 0.12, chrome: 0.1, pressure: -0.06 }
+  }
+};
+const SOURCE_COLORS = {
+  genome: {
+    label: "GENOME",
+    gradient: {},
+    genes: { refrain: 0.04, organic: 0.03, micro: 0.03 }
+  },
+  xtal: {
+    label: "XTAL / THA",
+    gradient: { haze: 0.13, chrome: 0.09, memory: 0.05, ghost: -0.03 },
+    genes: { haze: 0.16, chrome: 0.1, refrain: 0.08, pressure: -0.05 }
+  },
+  boc: {
+    label: "BoC MEMORY",
+    gradient: { memory: 0.16, organic: 0.08, haze: 0.08, micro: -0.02 },
+    genes: { organic: 0.12, refrain: 0.12, haze: 0.08, chrome: -0.02 }
+  },
+  autechre: {
+    label: "BROKEN LOGIC",
+    gradient: { micro: 0.18, chrome: 0.08, organic: 0.04, haze: -0.04 },
+    genes: { micro: 0.2, pressure: 0.08, chrome: 0.08, haze: -0.05 }
+  },
+  burial: {
+    label: "GHOST PULSE",
+    gradient: { ghost: 0.17, haze: 0.07, memory: 0.05, chrome: 0.02 },
+    genes: { pulse: 0.18, voidTail: 0.12, refrain: 0.06, pressure: 0.04 }
+  },
+  opn: {
+    label: "CHROME HYMN",
+    gradient: { chrome: 0.2, haze: 0.08, memory: 0.03, ghost: -0.02 },
+    genes: { chrome: 0.22, voidTail: 0.08, haze: 0.06, micro: 0.03 }
+  },
+  fsol: {
+    label: "ORGANIC MOTION",
+    gradient: { organic: 0.14, micro: 0.09, ghost: 0.08 },
+    genes: { organic: 0.16, pulse: 0.12, micro: 0.08, pressure: 0.04 }
+  }
+};
 const OutputState = {
   level: 75
 };
@@ -550,6 +684,11 @@ function decayBpmCrossfadeMemory() {
   if (BpmCrossfadeState.refrain < 0.001) BpmCrossfadeState.refrain = 0;
 }
 
+function decayGenerativeGenome() {
+  GenomeState.resonance *= 0.982;
+  if (GenomeState.resonance < 0.001) GenomeState.resonance = 0;
+}
+
 function resetMotifMemory() {
   MotifMemoryState.strength = 0;
   MotifMemoryState.air = 0;
@@ -568,6 +707,26 @@ function resetBpmCrossfadeMemory() {
   BpmCrossfadeState.motifReply = "F#5";
   BpmCrossfadeState.motifShade = "D4";
   BpmCrossfadeState.motifIndex = 0;
+}
+
+function resetGenerativeGenome() {
+  GenomeState.generation = 0;
+  GenomeState.phase = 0;
+  GenomeState.growth = 0.22;
+  GenomeState.mutation = 0.12;
+  GenomeState.resonance = 0;
+  GenomeState.lastPulseCycle = -99;
+  GenomeState.root = "D5";
+  GenomeState.reply = "F#5";
+  GenomeState.shade = "D4";
+  GenomeState.genes.haze = 0.48;
+  GenomeState.genes.pulse = 0.34;
+  GenomeState.genes.micro = 0.36;
+  GenomeState.genes.chrome = 0.4;
+  GenomeState.genes.organic = 0.42;
+  GenomeState.genes.pressure = 0.24;
+  GenomeState.genes.refrain = 0.36;
+  GenomeState.genes.voidTail = 0.32;
 }
 
 function resetOrganicEcosystem() {
@@ -794,6 +953,364 @@ function updateBpmCrossfadeMemory(parts) {
   if (motionAmount > 0.24) {
     BpmCrossfadeState.blend = clampValue(BpmCrossfadeState.blend + motionAmount * 0.025, 0, 0.72);
     BpmCrossfadeState.refrain = clampValue(BpmCrossfadeState.refrain + motionAmount * 0.018, 0, 0.62);
+  }
+}
+
+function fractionalPart(value) {
+  return value - Math.floor(value);
+}
+
+function goldenPulseGate(step, offset = 0) {
+  const point = (step + GenomeState.generation + offset) % 13;
+  return point === 0 || point === 5 || point === 8;
+}
+
+function geneValue(key) {
+  return clampValue(GenomeState.genes[key] || 0, 0, 1);
+}
+
+function currentVoiceColor() {
+  const atmosphere = ATMOSPHERE_COLORS[VoiceColorState.atmosphere] || ATMOSPHERE_COLORS.auto;
+  const source = SOURCE_COLORS[VoiceColorState.source] || SOURCE_COLORS.genome;
+  return { atmosphere, source };
+}
+
+function smoothStep01(value) {
+  const x = clampValue(value, 0, 1);
+  return x * x * (3 - 2 * x);
+}
+
+function autoVoiceKey(palette, index) {
+  return palette[((index % palette.length) + palette.length) % palette.length];
+}
+
+function autoVoiceSegmentCycles(base, span, offset = 0) {
+  const phi = fractionalPart((AutoVoiceMorphState.generation + 1 + offset) * GOLDEN_RATIO_INVERSE);
+  const tempoMotion = clampValue(Math.abs(DJTempoState.motion || 0) / 18, 0, 1);
+  const energyLift = clampValue(UCM_CUR.energy / 100, 0, 1) * 0.16;
+  return Math.round(base + span * phi - span * 0.18 * tempoMotion - span * energyLift);
+}
+
+function autoVoiceBlendValue(map, fromKey, toKey, blend, key, amountKey) {
+  const from = map[fromKey]?.[amountKey]?.[key] || 0;
+  const to = map[toKey]?.[amountKey]?.[key] || 0;
+  return from * (1 - blend) + to * blend;
+}
+
+function autoVoiceSourceActive() {
+  return VoiceColorState.source === "genome";
+}
+
+function autoVoiceAtmosphereActive() {
+  return VoiceColorState.atmosphere === "auto";
+}
+
+function activeAutoSourceKey() {
+  return autoVoiceKey(AUTO_SOURCE_MORPH_KEYS, AutoVoiceMorphState.sourceIndex);
+}
+
+function nextAutoSourceKey() {
+  return autoVoiceKey(AUTO_SOURCE_MORPH_KEYS, AutoVoiceMorphState.sourceNextIndex);
+}
+
+function activeAutoAtmosphereKey() {
+  return autoVoiceKey(AUTO_ATMOSPHERE_MORPH_KEYS, AutoVoiceMorphState.atmosphereIndex);
+}
+
+function nextAutoAtmosphereKey() {
+  return autoVoiceKey(AUTO_ATMOSPHERE_MORPH_KEYS, AutoVoiceMorphState.atmosphereNextIndex);
+}
+
+function effectiveVoiceSourceKey() {
+  return autoVoiceSourceActive() ? activeAutoSourceKey() : VoiceColorState.source;
+}
+
+function effectiveVoiceAtmosphereKey() {
+  return autoVoiceAtmosphereActive() ? activeAutoAtmosphereKey() : VoiceColorState.atmosphere;
+}
+
+function autoVoiceMorphLabel() {
+  const sourceFrom = SOURCE_COLORS[activeAutoSourceKey()]?.label || "GENOME";
+  const sourceTo = SOURCE_COLORS[nextAutoSourceKey()]?.label || sourceFrom;
+  const atmosphereFrom = ATMOSPHERE_COLORS[activeAutoAtmosphereKey()]?.label || "AUTO AIR";
+  const atmosphereTo = ATMOSPHERE_COLORS[nextAutoAtmosphereKey()]?.label || atmosphereFrom;
+  const sourceLabel = AutoVoiceMorphState.sourceBlend > 0.18 && AutoVoiceMorphState.sourceBlend < 0.82
+    ? `${sourceFrom} -> ${sourceTo}`
+    : sourceFrom;
+  const atmosphereLabel = AutoVoiceMorphState.atmosphereBlend > 0.18 && AutoVoiceMorphState.atmosphereBlend < 0.82
+    ? `${atmosphereFrom} -> ${atmosphereTo}`
+    : atmosphereFrom;
+
+  return { sourceLabel, atmosphereLabel };
+}
+
+function autoVoiceMorphBias(key, amountKey) {
+  let bias = 0;
+
+  if (autoVoiceAtmosphereActive()) {
+    bias += autoVoiceBlendValue(
+      ATMOSPHERE_COLORS,
+      activeAutoAtmosphereKey(),
+      nextAutoAtmosphereKey(),
+      AutoVoiceMorphState.atmosphereBlend,
+      key,
+      amountKey
+    ) * 0.72;
+  }
+
+  if (autoVoiceSourceActive()) {
+    bias += autoVoiceBlendValue(
+      SOURCE_COLORS,
+      activeAutoSourceKey(),
+      nextAutoSourceKey(),
+      AutoVoiceMorphState.sourceBlend,
+      key,
+      amountKey
+    ) * 0.78;
+  }
+
+  return bias;
+}
+
+function voiceRawGradientBias(key) {
+  const { atmosphere, source } = currentVoiceColor();
+  return (atmosphere.gradient?.[key] || 0) + (source.gradient?.[key] || 0) + autoVoiceMorphBias(key, "gradient");
+}
+
+function voiceRawGeneBias(key) {
+  const { atmosphere, source } = currentVoiceColor();
+  return (atmosphere.genes?.[key] || 0) + (source.genes?.[key] || 0) + autoVoiceMorphBias(key, "genes");
+}
+
+function voiceTransitionAmount() {
+  return clampValue(VoiceMorphState.transition || 0, 0, 1);
+}
+
+function smoothVoiceBias(store, key, target, baseStep, transitionStep) {
+  const current = typeof store[key] === "number" ? store[key] : target;
+  const next = approachValue(current, target, baseStep + voiceTransitionAmount() * transitionStep);
+  store[key] = clampValue(next, -0.32, 0.32);
+  return store[key];
+}
+
+function voiceGradientBias(key) {
+  return smoothVoiceBias(VoiceMorphState.gradient, key, voiceRawGradientBias(key), 0.016, 0.048);
+}
+
+function voiceGeneBias(key) {
+  return smoothVoiceBias(VoiceMorphState.genes, key, voiceRawGeneBias(key), 0.012, 0.036);
+}
+
+function decayVoiceMorph() {
+  VoiceMorphState.transition = approachValue(VoiceMorphState.transition, 0, 0.07);
+}
+
+function resetAutoVoiceMorph() {
+  AutoVoiceMorphState.sourceIndex = 0;
+  AutoVoiceMorphState.sourceNextIndex = 1;
+  AutoVoiceMorphState.sourceAge = 0;
+  AutoVoiceMorphState.sourceSegmentCycles = 54;
+  AutoVoiceMorphState.sourceBlend = 0;
+  AutoVoiceMorphState.atmosphereIndex = 0;
+  AutoVoiceMorphState.atmosphereNextIndex = 1;
+  AutoVoiceMorphState.atmosphereAge = 0;
+  AutoVoiceMorphState.atmosphereSegmentCycles = 38;
+  AutoVoiceMorphState.atmosphereBlend = 0;
+  AutoVoiceMorphState.generation = 0;
+  AutoVoiceMorphState.lastCycle = -1;
+  VoiceMorphState.transition = 1;
+}
+
+function advanceAutoVoiceMorphPhrase() {
+  if (AutoVoiceMorphState.lastCycle === GrooveState.cycle) return;
+  AutoVoiceMorphState.lastCycle = GrooveState.cycle;
+
+  AutoVoiceMorphState.sourceAge += 1;
+  AutoVoiceMorphState.atmosphereAge += 1;
+  let sourceTurned = false;
+  let atmosphereTurned = false;
+
+  if (AutoVoiceMorphState.sourceAge >= AutoVoiceMorphState.sourceSegmentCycles) {
+    AutoVoiceMorphState.sourceIndex = AutoVoiceMorphState.sourceNextIndex;
+    AutoVoiceMorphState.sourceNextIndex = (AutoVoiceMorphState.sourceNextIndex + 1) % AUTO_SOURCE_MORPH_KEYS.length;
+    AutoVoiceMorphState.sourceAge = 0;
+    AutoVoiceMorphState.sourceSegmentCycles = autoVoiceSegmentCycles(42, 34, 0);
+    AutoVoiceMorphState.generation += 1;
+    VoiceMorphState.transition = 1;
+    sourceTurned = true;
+  }
+
+  if (AutoVoiceMorphState.atmosphereAge >= AutoVoiceMorphState.atmosphereSegmentCycles) {
+    AutoVoiceMorphState.atmosphereIndex = AutoVoiceMorphState.atmosphereNextIndex;
+    AutoVoiceMorphState.atmosphereNextIndex = (AutoVoiceMorphState.atmosphereNextIndex + 1) % AUTO_ATMOSPHERE_MORPH_KEYS.length;
+    AutoVoiceMorphState.atmosphereAge = 0;
+    AutoVoiceMorphState.atmosphereSegmentCycles = autoVoiceSegmentCycles(30, 24, 2);
+    AutoVoiceMorphState.generation += 1;
+    VoiceMorphState.transition = 1;
+    atmosphereTurned = true;
+  }
+
+  AutoVoiceMorphState.sourceBlend = smoothStep01(AutoVoiceMorphState.sourceAge / Math.max(1, AutoVoiceMorphState.sourceSegmentCycles));
+  AutoVoiceMorphState.atmosphereBlend = smoothStep01(AutoVoiceMorphState.atmosphereAge / Math.max(1, AutoVoiceMorphState.atmosphereSegmentCycles));
+
+  if (isPlaying && ((sourceTurned && autoVoiceSourceActive()) || (atmosphereTurned && autoVoiceAtmosphereActive()))) {
+    triggerVoiceColorCue();
+  }
+
+  if ((autoVoiceSourceActive() || autoVoiceAtmosphereActive()) && GrooveState.cycle % 4 === 0) {
+    updateVoiceColorUi();
+  }
+}
+
+function publishMusicRuntimeState() {
+  if (typeof window === "undefined") return;
+
+  const autoLabels = autoVoiceMorphLabel();
+  const state = {
+    version: 1,
+    playing: isPlaying,
+    initialized,
+    cycle: GrooveState.cycle,
+    step: stepIndex,
+    bpm: EngineParams.bpm,
+    mode: EngineParams.mode,
+    world: {
+      key: WorldState.key,
+      label: WorldState.label,
+      spectrum: WorldState.spectrum,
+      micro: WorldState.micro
+    },
+    voice: {
+      atmosphere: VoiceColorState.atmosphere,
+      source: VoiceColorState.source,
+      effectiveAtmosphere: effectiveVoiceAtmosphereKey(),
+      effectiveSource: effectiveVoiceSourceKey(),
+      autoAtmosphere: activeAutoAtmosphereKey(),
+      autoAtmosphereNext: nextAutoAtmosphereKey(),
+      autoAtmosphereBlend: AutoVoiceMorphState.atmosphereBlend,
+      autoSource: activeAutoSourceKey(),
+      autoSourceNext: nextAutoSourceKey(),
+      autoSourceBlend: AutoVoiceMorphState.sourceBlend,
+      atmosphereLabel: autoLabels.atmosphereLabel,
+      sourceLabel: autoLabels.sourceLabel,
+      autoActive: autoVoiceAtmosphereActive() || autoVoiceSourceActive()
+    },
+    gradient: { ...GradientState },
+    depth: { ...DepthState },
+    genre: { ...GenreBlendState },
+    genome: {
+      generation: GenomeState.generation,
+      phase: GenomeState.phase,
+      growth: GenomeState.growth,
+      mutation: GenomeState.mutation,
+      genes: { ...GenomeState.genes }
+    },
+    pads: { ...PerformancePadState },
+    output: { level: OutputState.level },
+    updatedAt: Date.now()
+  };
+
+  window.MusicRuntimeState = state;
+  try {
+    window.dispatchEvent(new CustomEvent("music-runtime-state", { detail: state }));
+  } catch (error) {}
+}
+
+function updateVoiceColorUi() {
+  const { atmosphere, source } = currentVoiceColor();
+  const autoLabels = autoVoiceMorphLabel();
+  const status = document.getElementById("voice_status");
+  if (status) {
+    const atmosphereLabel = autoVoiceAtmosphereActive() ? `AUTO ${autoLabels.atmosphereLabel}` : atmosphere.label;
+    const sourceLabel = autoVoiceSourceActive() ? `AUTO ${autoLabels.sourceLabel}` : source.label;
+    status.textContent = `${atmosphereLabel} / ${sourceLabel}`;
+  }
+  if (document.body) {
+    document.body.dataset.atmosphere = VoiceColorState.atmosphere;
+    document.body.dataset.sourceColor = VoiceColorState.source;
+    document.body.dataset.autoAtmosphere = autoVoiceAtmosphereActive() ? activeAutoAtmosphereKey() : "";
+    document.body.dataset.autoSourceColor = autoVoiceSourceActive() ? activeAutoSourceKey() : "";
+    document.body.dataset.autoVoiceMorph = autoVoiceSourceActive() || autoVoiceAtmosphereActive() ? "true" : "false";
+  }
+  publishMusicRuntimeState();
+}
+
+function updateVoiceColorFromUI(options = {}) {
+  const atmosphereSelect = document.getElementById("atmosphere_select");
+  const sourceSelect = document.getElementById("source_color_select");
+  const nextAtmosphere = atmosphereSelect ? atmosphereSelect.value || "auto" : VoiceColorState.atmosphere;
+  const nextSource = sourceSelect ? sourceSelect.value || "genome" : VoiceColorState.source;
+  const changed = nextAtmosphere !== VoiceColorState.atmosphere || nextSource !== VoiceColorState.source;
+  VoiceColorState.atmosphere = nextAtmosphere;
+  VoiceColorState.source = nextSource;
+  if (changed) VoiceMorphState.transition = 1;
+  updateVoiceColorUi();
+  if (options.apply !== false && initialized) {
+    updateTimbreStateFromWorld(currentGradientParts());
+    applyUCMToParams({ force: options.force === true });
+    if (changed) triggerVoiceColorCue();
+  }
+}
+
+function genomeDominantPool() {
+  const genes = GenomeState.genes;
+  if (genes.voidTail > 0.58 || genes.chrome > 0.62) return TRANSPARENT_AIR_FRAGMENTS;
+  if (genes.organic > genes.micro && genes.organic > 0.48) return ORGANIC_PLUCK_FRAGMENTS;
+  if (genes.micro > 0.54 || genes.pressure > 0.56) return GLASS_NOTES;
+  return FIELD_MURK_FRAGMENTS;
+}
+
+function updateGenerativeGenome(parts) {
+  const genes = GenomeState.genes;
+  const phiPhase = fractionalPart((GrooveState.cycle + 1) * GOLDEN_RATIO_INVERSE + GenomeState.generation * 0.03398875);
+  const mutationNoise = (Math.random() - 0.5) * GenomeState.mutation;
+  const pressure = parts.pressure || 0;
+  const targets = {
+    haze: clampValue((1 - parts.energy) * 0.24 + parts.voidness * 0.18 + parts.circle * 0.18 + parts.observer * 0.18 + GradientState.haze * 0.22, 0, 1),
+    pulse: clampValue(parts.energy * 0.24 + parts.body * 0.2 + parts.resource * 0.16 + GradientState.ghost * 0.16 + GenreBlendState.techno * 0.14 + BpmCrossfadeState.blend * 0.1, 0, 1),
+    micro: clampValue(parts.creation * 0.26 + parts.resource * 0.2 + parts.wave * 0.18 + GradientState.micro * 0.22 + GenreBlendState.idm * 0.14, 0, 1),
+    chrome: clampValue(parts.observer * 0.24 + parts.mind * 0.2 + parts.circle * 0.16 + GradientState.chrome * 0.24 + BpmCrossfadeState.refrain * 0.16, 0, 1),
+    organic: clampValue(parts.wave * 0.22 + parts.creation * 0.2 + GradientState.organic * 0.24 + OrganicEcosystemState.sprout * 0.16 + OrganicEcosystemState.ferment * 0.12 + (1 - pressure) * 0.06, 0, 1),
+    pressure: clampValue(pressure * 0.34 + parts.energy * 0.18 + parts.body * 0.18 + GenreBlendState.pressure * 0.2 + OrganicChaosState.lowMotion * 0.1, 0, 1),
+    refrain: clampValue(MotifMemoryState.strength * 0.24 + BpmCrossfadeState.refrain * 0.26 + LongformArcState.turn * 0.18 + parts.observer * 0.12 + parts.circle * 0.1 + phiPhase * 0.1, 0, 1),
+    voidTail: clampValue(parts.voidness * 0.28 + parts.observer * 0.18 + GradientState.haze * 0.16 + DepthState.tail * 0.2 + PerformancePadState.void * 0.18, 0, 1)
+  };
+
+  for (const key of GENOME_GENE_KEYS) {
+    targets[key] = clampValue(targets[key] + voiceGeneBias(key) * 0.22, 0, 1);
+    genes[key] = approachValue(genes[key], targets[key], 0.012 + GenomeState.growth * 0.008);
+  }
+
+  const selectedKey = GENOME_GENE_KEYS[(GenomeState.generation + Math.floor(phiPhase * GENOME_GENE_KEYS.length)) % GENOME_GENE_KEYS.length];
+  genes[selectedKey] = clampValue(genes[selectedKey] + mutationNoise * 0.18 + (targets[selectedKey] - genes[selectedKey]) * 0.05, 0, 1);
+
+  GenomeState.phase = phiPhase;
+  GenomeState.growth = approachValue(
+    GenomeState.growth,
+    clampValue(0.2 + OrganicEcosystemState.bloom * 0.12 + BpmCrossfadeState.refrain * 0.1 + Math.abs(DJTempoState.motion) * 0.004 + LongformArcState.contrast * 0.08, 0.16, 0.72),
+    0.025
+  );
+  GenomeState.mutation = approachValue(
+    GenomeState.mutation,
+    clampValue(0.08 + OrganicChaosState.tangle * 0.08 + parts.creation * 0.05 + parts.wave * 0.04 + BpmCrossfadeState.blend * 0.05, 0.05, 0.26),
+    0.02
+  );
+  GenomeState.resonance = clampValue(GenomeState.resonance + (targets.refrain + targets.micro + targets.organic) * 0.012, 0, 1);
+
+  if (GenomeState.phase < GOLDEN_RATIO_INVERSE * 0.08 && GrooveState.cycle - GenomeState.lastPulseCycle > 1) {
+    GenomeState.generation += 1;
+    GenomeState.lastPulseCycle = GrooveState.cycle;
+    const pool = genomeDominantPool();
+    GenomeState.root = pool[(GrooveState.cycle + GenomeState.generation) % pool.length];
+    GenomeState.reply = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + GenomeState.generation + 3) % TRANSPARENT_AIR_FRAGMENTS.length];
+    GenomeState.shade = FIELD_MURK_FRAGMENTS[(GrooveState.cycle + GenomeState.generation + 5) % FIELD_MURK_FRAGMENTS.length];
+    rememberMotif(GenomeState.root, {
+      reply: GenomeState.reply,
+      shade: GenomeState.shade,
+      strength: 0.05 + geneValue("refrain") * 0.08 + GenomeState.growth * 0.04,
+      air: geneValue("voidTail") * 0.12 + geneValue("chrome") * 0.08,
+      source: `genome:${GenomeState.generation}`
+    });
   }
 }
 
@@ -1586,6 +2103,7 @@ function updateRuntimeUiState() {
   if (!document.body) return;
   document.body.dataset.playing = isPlaying ? "true" : "false";
   document.body.dataset.auto = UCM.auto.enabled ? "true" : "false";
+  publishMusicRuntimeState();
 }
 
 function syncMusicAudioAdapterFromUCM(force = false) {
@@ -1736,6 +2254,66 @@ function transparentFragment(offset = 0) {
   return TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + offset) % TRANSPARENT_AIR_FRAGMENTS.length];
 }
 
+function voiceNotePool(fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
+  const atmosphereKey = effectiveVoiceAtmosphereKey();
+  const sourceKey = effectiveVoiceSourceKey();
+
+  if (atmosphereKey === "chrome" || atmosphereKey === "void" || sourceKey === "opn" || sourceKey === "xtal") {
+    return TRANSPARENT_AIR_FRAGMENTS;
+  }
+  if (atmosphereKey === "organic" || sourceKey === "fsol") return ORGANIC_PLUCK_FRAGMENTS;
+  if (atmosphereKey === "ghost" || sourceKey === "burial" || sourceKey === "boc") return FIELD_MURK_FRAGMENTS;
+  if (sourceKey === "autechre") return GLASS_NOTES;
+  return fallbackPool;
+}
+
+function voiceFragment(offset = 0, fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
+  const pool = voiceNotePool(fallbackPool);
+  const phaseOffset = Math.floor((GenomeState.phase || 0) * pool.length);
+  const index = GrooveState.cycle + stepIndex + GenomeState.generation + phaseOffset + offset;
+  return pool[((index % pool.length) + pool.length) % pool.length];
+}
+
+function triggerVoiceColorCue() {
+  if (!isPlaying || !initialized || typeof Tone === "undefined") return;
+
+  const now = Tone.now();
+  const atmosphereKey = effectiveVoiceAtmosphereKey();
+  const sourceKey = effectiveVoiceSourceKey();
+  const gradientParts = currentGradientParts();
+  const gradient = updateReferenceGradient(gradientParts);
+  const depth = updateReferenceDepth(gradientParts, gradient);
+  const cueVel = clampValue(0.026 + depth.particle * 0.018 + depth.tail * 0.012 + voiceTransitionAmount() * 0.026, 0.022, 0.086);
+
+  try {
+    if (sourceKey === "autechre") {
+      const note = voiceFragment(0, GLASS_NOTES);
+      glass.triggerAttackRelease(note, "64n", now + 0.006, clampValue(cueVel + gradient.micro * 0.012, 0.026, 0.094));
+      glass.triggerAttackRelease(note, "64n", now + 0.046, clampValue(cueVel * 0.62, 0.018, 0.058));
+      texture.triggerAttackRelease("64n", now + 0.022, clampValue(0.018 + gradient.micro * 0.034, 0.014, 0.068));
+    } else if (sourceKey === "burial" || atmosphereKey === "ghost") {
+      texture.triggerAttackRelease("32n", now + 0.012, clampValue(0.026 + gradient.ghost * 0.042, 0.02, 0.082));
+      glass.triggerAttackRelease(voiceFragment(2, FIELD_MURK_FRAGMENTS), "32n", now + 0.052, clampValue(cueVel * 0.72, 0.018, 0.064));
+    } else if (sourceKey === "fsol" || atmosphereKey === "organic") {
+      const note = voiceFragment(1, ORGANIC_PLUCK_FRAGMENTS);
+      glass.triggerAttackRelease(note, "64n", now + 0.008, clampValue(cueVel + gradient.organic * 0.012, 0.026, 0.09));
+      glass.triggerAttackRelease(voiceFragment(4, ORGANIC_PLUCK_FRAGMENTS), "64n", now + 0.064, clampValue(cueVel * 0.52, 0.014, 0.052));
+      texture.triggerAttackRelease("64n", now + 0.018, clampValue(0.014 + gradient.organic * 0.026, 0.012, 0.058));
+    } else if (sourceKey === "opn" || atmosphereKey === "chrome" || atmosphereKey === "void") {
+      glass.triggerAttackRelease(voiceFragment(0, TRANSPARENT_AIR_FRAGMENTS), "16n", now + 0.012, clampValue(cueVel + gradient.chrome * 0.014, 0.028, 0.092));
+      glass.triggerAttackRelease(voiceFragment(3, TRANSPARENT_AIR_FRAGMENTS), "32n", now + 0.092, clampValue(cueVel * 0.5, 0.014, 0.05));
+      if (atmosphereKey === "void") {
+        pad.triggerAttackRelease(randomHazeChord(), "2n", now + 0.026, clampValue(0.024 + depth.tail * 0.026, 0.022, 0.064));
+      }
+    } else {
+      pad.triggerAttackRelease(randomHazeChord(), "1n", now + 0.018, clampValue(0.022 + gradient.haze * 0.026, 0.02, 0.064));
+      glass.triggerAttackRelease(voiceFragment(2, FIELD_MURK_FRAGMENTS), "32n", now + 0.052, clampValue(cueVel * 0.66, 0.016, 0.056));
+    }
+  } catch (error) {
+    console.warn("[Music] voice color cue failed:", error);
+  }
+}
+
 function triggerPadSignature(name) {
   if (!isPlaying || !initialized || typeof Tone === "undefined") return;
 
@@ -1749,32 +2327,32 @@ function triggerPadSignature(name) {
 
   try {
     if (name === "drift") {
-      const note = transparentFragment();
-      const driftNote = transparentFragment(2);
-      const pluckNote = organicFragment(4);
+      const note = voiceFragment(0, TRANSPARENT_AIR_FRAGMENTS);
+      const driftNote = voiceFragment(2, TRANSPARENT_AIR_FRAGMENTS);
+      const pluckNote = voiceFragment(4, ORGANIC_PLUCK_FRAGMENTS);
       glass.triggerAttackRelease(note, "16n", now + 0.006, clampValue(0.064 + observerNorm * 0.048 + gradient.chrome * 0.012 + depth.tail * 0.006, 0.054, 0.136));
       glass.triggerAttackRelease(driftNote, "32n", now + 0.056, clampValue(0.044 + creationNorm * 0.03 + gradient.memory * 0.01 + depth.particle * 0.006, 0.036, 0.098));
-      glass.triggerAttackRelease(GLASS_NOTES[(stepIndex + 3) % GLASS_NOTES.length], "32n", now + 0.108, clampValue(0.03 + creationNorm * 0.026 + gradient.haze * 0.006 + depth.bed * 0.004, 0.026, 0.08));
+      glass.triggerAttackRelease(voiceFragment(3, GLASS_NOTES), "32n", now + 0.108, clampValue(0.03 + creationNorm * 0.026 + gradient.haze * 0.006 + depth.bed * 0.004, 0.026, 0.08));
       glass.triggerAttackRelease(pluckNote, "64n", now + 0.142, clampValue(0.026 + observerNorm * 0.03 + gradient.memory * 0.008 + depth.gesture * 0.006, 0.022, 0.078));
       texture.triggerAttackRelease("64n", now + 0.018, clampValue(0.034 + creationNorm * 0.034, 0.028, 0.078));
     } else if (name === "repeat") {
-      const note = GLASS_NOTES[(GrooveState.cycle + stepIndex) % GLASS_NOTES.length];
-      const chipNote = transparentFragment(1);
+      const note = voiceFragment(0, GLASS_NOTES);
+      const chipNote = voiceFragment(1, TRANSPARENT_AIR_FRAGMENTS);
       glass.triggerAttackRelease(note, "64n", now + 0.004, clampValue(0.062 + energyNorm * 0.032 + gradient.micro * 0.01 + depth.particle * 0.006, 0.052, 0.112));
       glass.triggerAttackRelease(note, "64n", now + 0.052, clampValue(0.048 + energyNorm * 0.026 + gradient.micro * 0.008 + depth.gesture * 0.006, 0.04, 0.096));
       glass.triggerAttackRelease(chipNote, "64n", now + 0.086, clampValue(0.026 + observerNorm * 0.028 + gradient.organic * 0.008 + depth.particle * 0.004, 0.022, 0.074));
-      glass.triggerAttackRelease(transparentFragment(4), "64n", now + 0.132, clampValue(0.016 + depth.particle * 0.028, 0.014, 0.048));
+      glass.triggerAttackRelease(voiceFragment(4, TRANSPARENT_AIR_FRAGMENTS), "64n", now + 0.132, clampValue(0.016 + depth.particle * 0.028, 0.014, 0.048));
       hat.triggerAttackRelease("64n", now + 0.026, clampValue(0.056 + energyNorm * 0.038, 0.048, 0.112));
       texture.triggerAttackRelease("64n", now + 0.068, clampValue(0.032 + creationNorm * 0.028, 0.026, 0.07));
     } else if (name === "punch") {
       kick.triggerAttackRelease("C2", "16n", now + 0.002, clampValue(0.28 + energyNorm * 0.08, 0.24, 0.42));
       bass.triggerAttackRelease(bassRoot || "C2", "32n", now + 0.018, clampValue(0.075 + energyNorm * 0.045, 0.065, 0.14));
-      glass.triggerAttackRelease(organicFragment(2), "64n", now + 0.032, clampValue(0.038 + creationNorm * 0.028 + gradient.organic * 0.01 + depth.gesture * 0.006, 0.03, 0.092));
+      glass.triggerAttackRelease(voiceFragment(2, ORGANIC_PLUCK_FRAGMENTS), "64n", now + 0.032, clampValue(0.038 + creationNorm * 0.028 + gradient.organic * 0.01 + depth.gesture * 0.006, 0.03, 0.092));
       texture.triggerAttackRelease("64n", now + 0.014, clampValue(0.08 + creationNorm * 0.042 + gradient.ghost * 0.012 + depth.pulse * 0.006, 0.064, 0.142));
     } else if (name === "void") {
-      const airNote = transparentFragment(2);
-      const bloomNote = transparentFragment(5);
-      const dustNote = transparentFragment(1);
+      const airNote = voiceFragment(2, TRANSPARENT_AIR_FRAGMENTS);
+      const bloomNote = voiceFragment(5, TRANSPARENT_AIR_FRAGMENTS);
+      const dustNote = voiceFragment(1, TRANSPARENT_AIR_FRAGMENTS);
       glass.triggerAttackRelease(airNote, "8n", now + 0.01, clampValue(0.052 + observerNorm * 0.046 + gradient.chrome * 0.012 + depth.tail * 0.006, 0.044, 0.116));
       glass.triggerAttackRelease(bloomNote, "16n", now + 0.096, clampValue(0.034 + observerNorm * 0.034 + gradient.haze * 0.008 + depth.bed * 0.005, 0.03, 0.09));
       glass.triggerAttackRelease(dustNote, "32n", now + 0.176, clampValue(0.022 + observerNorm * 0.03 + gradient.chrome * 0.006 + depth.tail * 0.004, 0.02, 0.07));
@@ -2179,6 +2757,22 @@ function updateReferenceGradient(parts) {
     }
   }
 
+  if (GenomeState.growth > 0) {
+    const genes = GenomeState.genes;
+    const genomeScale = clampValue(GenomeState.growth * 0.2 + GenomeState.resonance * 0.08, 0, 0.24);
+    GradientState.haze = clampValue(GradientState.haze + genes.haze * genomeScale + genes.voidTail * genomeScale * 0.32, 0, 1);
+    GradientState.memory = clampValue(GradientState.memory + genes.refrain * genomeScale * 0.5 + genes.organic * genomeScale * 0.32, 0, 1);
+    GradientState.micro = clampValue(GradientState.micro + genes.micro * genomeScale + genes.pressure * genomeScale * 0.2, 0, 1);
+    GradientState.ghost = clampValue(GradientState.ghost + genes.pulse * genomeScale * 0.58 + genes.pressure * genomeScale * 0.6, 0, 1);
+    GradientState.chrome = clampValue(GradientState.chrome + genes.chrome * genomeScale + genes.voidTail * genomeScale * 0.24, 0, 1);
+    GradientState.organic = clampValue(GradientState.organic + genes.organic * genomeScale + genes.refrain * genomeScale * 0.18, 0, 1);
+  }
+
+  const voiceScale = 0.68;
+  for (const key of Object.keys(GradientState)) {
+    GradientState[key] = clampValue(GradientState[key] + voiceGradientBias(key) * voiceScale, 0, 1);
+  }
+
   if (longformArcActive()) {
     const arc = currentLongformArcStage();
     const arcShape = longformArcShape();
@@ -2227,6 +2821,16 @@ function updateReferenceDepth(parts, gradient = GradientState) {
   const genre = GenreBlendState;
   const bpmBlend = BpmCrossfadeState.blend;
   const refrain = BpmCrossfadeState.refrain;
+  const genes = GenomeState.genes;
+  const genomeGrowth = GenomeState.growth;
+  const voiceHaze = voiceGeneBias("haze");
+  const voicePulse = voiceGeneBias("pulse");
+  const voiceMicro = voiceGeneBias("micro");
+  const voiceChrome = voiceGeneBias("chrome");
+  const voiceOrganic = voiceGeneBias("organic");
+  const voiceRefrain = voiceGeneBias("refrain");
+  const voiceVoidTail = voiceGeneBias("voidTail");
+  const voicePressure = voiceGeneBias("pressure");
 
   DepthState.bed = clampValue(
     (gradient.haze * 0.34) +
@@ -2240,6 +2844,10 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoRise * 0.018 +
       bpmBlend * 0.018 +
       refrain * 0.012 +
+      genes.haze * genomeGrowth * 0.03 +
+      genes.voidTail * genomeGrowth * 0.018 +
+      voiceHaze * 0.018 +
+      voiceVoidTail * 0.012 +
       arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.045 : 0.018),
     0,
     1
@@ -2256,6 +2864,10 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoRise * 0.04 -
       tempoFall * 0.016 +
       bpmBlend * 0.026 +
+      genes.pulse * genomeGrowth * 0.032 +
+      genes.pressure * genomeGrowth * 0.026 +
+      voicePulse * 0.018 +
+      voicePressure * 0.012 +
       arcShape * (arcStage.name === "root" ? 0.035 : 0.012),
     0,
     1
@@ -2273,6 +2885,12 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoFall * 0.012 +
       bpmBlend * 0.04 +
       refrain * 0.025 +
+      genes.micro * genomeGrowth * 0.04 +
+      genes.chrome * genomeGrowth * 0.025 +
+      genes.organic * genomeGrowth * 0.025 +
+      voiceMicro * 0.024 +
+      voiceChrome * 0.018 +
+      voiceOrganic * 0.016 +
       arcShape * (arcStage.name === "sprout" || arcStage.name === "ferment" ? 0.04 : 0.014),
     0,
     1
@@ -2289,6 +2907,12 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoFall * 0.014 -
       tempoRise * 0.01 +
       bpmBlend * 0.008 +
+      genes.chrome * genomeGrowth * 0.012 +
+      genes.voidTail * genomeGrowth * 0.01 -
+      genes.pressure * genomeGrowth * 0.008 +
+      voiceChrome * 0.01 +
+      voiceVoidTail * 0.012 -
+      voicePressure * 0.006 +
       arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.025 : 0.008),
     0,
     1
@@ -2304,6 +2928,11 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoFall * 0.045 -
       tempoRise * 0.012 +
       refrain * 0.018 +
+      genes.voidTail * genomeGrowth * 0.04 +
+      genes.haze * genomeGrowth * 0.02 +
+      voiceVoidTail * 0.024 +
+      voiceHaze * 0.012 +
+      voiceChrome * 0.008 +
       arcShape * (arcStage.name === "exhale" ? 0.05 : 0.018),
     0,
     1
@@ -2322,6 +2951,11 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoFall * 0.012 +
       bpmBlend * 0.045 +
       refrain * 0.042 +
+      genes.refrain * genomeGrowth * 0.05 +
+      genes.micro * genomeGrowth * 0.026 +
+      voiceRefrain * 0.022 +
+      voiceMicro * 0.012 +
+      voiceOrganic * 0.01 +
       LongformArcState.turn * 0.06,
     0,
     1
@@ -2339,13 +2973,21 @@ function updateTimbreStateFromWorld(parts) {
   updateMixGovernor(parts, gradient, depth);
   const lowGuard = MixGovernorState.lowGuard;
   const clarity = MixGovernorState.clarity;
+  const voiceHaze = voiceGeneBias("haze");
+  const voicePulse = voiceGeneBias("pulse");
+  const voiceMicro = voiceGeneBias("micro");
+  const voiceChrome = voiceGeneBias("chrome");
+  const voiceOrganic = voiceGeneBias("organic");
+  const voiceRefrain = voiceGeneBias("refrain");
+  const voiceVoidTail = voiceGeneBias("voidTail");
+  const voicePressure = voiceGeneBias("pressure");
 
-  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + genre.ambient * 0.05 - genre.techno * 0.025 + clarity * 0.028 + character.air, 0, 1);
-  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + genre.idm * 0.035 + clarity * 0.035 + character.glass, 0, 1);
-  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + (gradient.ghost * 0.032) + (gradient.micro * 0.022) + genre.techno * 0.04 + genre.pressure * 0.035 - (gradient.haze * 0.035) - (depth.lowMidClean * 0.036) - lowGuard * 0.035 + character.grit, 0, 1);
-  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + (gradient.micro * 0.06) + (gradient.organic * 0.025) + (depth.particle * 0.035) + genre.idm * 0.045 + genre.techno * 0.035 + character.fracture, 0, 1);
-  TimbreState.harp = clampValue((TimbreState.glass * 0.46) + (TimbreState.air * 0.24) + (circle * 0.18) + ((1 - TimbreState.grit) * 0.12) + (gradient.chrome * 0.05) + (gradient.memory * 0.035) + (depth.tail * 0.032) + genre.ambient * 0.03 + genre.idm * 0.02 - genre.techno * 0.035 + (character.harp || 0), 0, 1);
-  TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (gradient.memory * 0.045) + (gradient.organic * 0.025) + (depth.bed * 0.026) + genre.ambient * 0.025 - genre.techno * 0.035 - (depth.lowMidClean * 0.018) + (character.warmth || 0), 0, 1);
+  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + genre.ambient * 0.05 - genre.techno * 0.025 + clarity * 0.028 + voiceHaze * 0.024 + voiceVoidTail * 0.026 + character.air, 0, 1);
+  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + genre.idm * 0.035 + clarity * 0.035 + voiceChrome * 0.028 + voiceMicro * 0.014 + character.glass, 0, 1);
+  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + (gradient.ghost * 0.032) + (gradient.micro * 0.022) + genre.techno * 0.04 + genre.pressure * 0.035 + voicePressure * 0.018 - voiceHaze * 0.012 - (gradient.haze * 0.035) - (depth.lowMidClean * 0.036) - lowGuard * 0.035 + character.grit, 0, 1);
+  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + (gradient.micro * 0.06) + (gradient.organic * 0.025) + (depth.particle * 0.035) + genre.idm * 0.045 + genre.techno * 0.035 + voiceMicro * 0.03 + voicePressure * 0.012 + character.fracture, 0, 1);
+  TimbreState.harp = clampValue((TimbreState.glass * 0.46) + (TimbreState.air * 0.24) + (circle * 0.18) + ((1 - TimbreState.grit) * 0.12) + (gradient.chrome * 0.05) + (gradient.memory * 0.035) + (depth.tail * 0.032) + genre.ambient * 0.03 + genre.idm * 0.02 - genre.techno * 0.035 + voiceChrome * 0.028 + voiceRefrain * 0.012 + (character.harp || 0), 0, 1);
+  TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (gradient.memory * 0.045) + (gradient.organic * 0.025) + (depth.bed * 0.026) + genre.ambient * 0.025 - genre.techno * 0.035 - (depth.lowMidClean * 0.018) + voiceOrganic * 0.018 + voicePulse * 0.006 - voicePressure * 0.01 + (character.warmth || 0), 0, 1);
 
   const organicColor = (character.organicScale || 1) - 1;
   const dustColor = (character.dustScale || 1) - 1;
@@ -2354,9 +2996,9 @@ function updateTimbreStateFromWorld(parts) {
   const tempoLift = clampValue(DJTempoState.motion / 24, -1, 1);
   const tempoRise = Math.max(0, tempoLift);
   const tempoFall = Math.max(0, -tempoLift);
-  const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) + (hazeColor * 1.25) + (gradient.haze * 0.42) + (gradient.chrome * 0.22) + (depth.bed * 0.34) + (depth.tail * 0.22) + genre.ambient * 0.42 - genre.techno * 0.34 + tempoFall * 0.24 - tempoRise * 0.1 - (PerformancePadState.void * 1.55);
-  const glassLevel = -33.8 + (TimbreState.glass * 5.6) + (TimbreState.harp * 3.6) + (WorldState.spectrum * 0.94) + (organicColor * 1.18) + (gradient.chrome * 0.44) + (gradient.micro * 0.26) + (depth.particle * 0.34) + (depth.gesture * 0.2) + genre.idm * 0.3 + genre.techno * 0.16 + tempoRise * 0.24 + tempoFall * 0.08 + clarity * 0.44 + (PerformancePadState.void * 2.2);
-  const textureLevel = -37.6 + (TimbreState.grit * 5.6) + (TimbreState.fracture * 2.45) + (dustColor * 1.4) + ((pressureColor - 0.5) * WorldState.spectrum * 0.54) + (gradient.micro * 0.34) + (gradient.ghost * 0.18) + (depth.particle * 0.24) + (depth.pulse * 0.08) + genre.techno * 0.44 + genre.pressure * 0.18 + tempoRise * 0.2 - tempoFall * 0.04 + clarity * 0.24 - (TimbreState.warmth * 1.75) - (depth.lowMidClean * 0.22) - lowGuard * 0.16 - (PerformancePadState.void * 1.05);
+  const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) + (hazeColor * 1.25) + (gradient.haze * 0.42) + (gradient.chrome * 0.22) + (depth.bed * 0.34) + (depth.tail * 0.22) + voiceHaze * 0.28 + voiceVoidTail * 0.18 + genre.ambient * 0.42 - genre.techno * 0.34 + tempoFall * 0.24 - tempoRise * 0.1 - (PerformancePadState.void * 1.55);
+  const glassLevel = -33.8 + (TimbreState.glass * 5.6) + (TimbreState.harp * 3.6) + (WorldState.spectrum * 0.94) + (organicColor * 1.18) + (gradient.chrome * 0.44) + (gradient.micro * 0.26) + (depth.particle * 0.34) + (depth.gesture * 0.2) + voiceChrome * 0.34 + voiceMicro * 0.18 + voiceOrganic * 0.12 + genre.idm * 0.3 + genre.techno * 0.16 + tempoRise * 0.24 + tempoFall * 0.08 + clarity * 0.44 + (PerformancePadState.void * 2.2);
+  const textureLevel = -37.6 + (TimbreState.grit * 5.6) + (TimbreState.fracture * 2.45) + (dustColor * 1.4) + ((pressureColor - 0.5) * WorldState.spectrum * 0.54) + (gradient.micro * 0.34) + (gradient.ghost * 0.18) + (depth.particle * 0.24) + (depth.pulse * 0.08) + voiceMicro * 0.16 + voicePressure * 0.12 + voicePulse * 0.08 + genre.techno * 0.44 + genre.pressure * 0.18 + tempoRise * 0.2 - tempoFall * 0.04 + clarity * 0.24 - (TimbreState.warmth * 1.75) - (depth.lowMidClean * 0.22) - lowGuard * 0.16 - (PerformancePadState.void * 1.05);
   const bassCutoff = 86 + (TimbreState.grit * 308) + (resource * 84) + (pressureColor * pressure * 24) - (TimbreState.warmth * 62) - (depth.lowMidClean * 64) - lowGuard * 46 - (PerformancePadState.void * 88) + (PerformancePadState.punch * 26);
   const bassBite = 0.46 + (TimbreState.grit * 3.1) + (TimbreState.warmth * 0.5) + (pressureColor * pressure * 0.16) - (depth.lowMidClean * 0.3) - lowGuard * 0.18 + (PerformancePadState.punch * 0.1);
 
@@ -2885,6 +3527,8 @@ function resetRuntimeCounters() {
   resetMixGovernor();
   resetGenreBlend();
   resetDJTempo();
+  resetGenerativeGenome();
+  resetAutoVoiceMorph();
 }
 
 function patternAt(pattern, step) {
@@ -2922,6 +3566,8 @@ function advanceGrooveStructure() {
   advanceLongformArcPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
   updateBpmCrossfadeMemory(currentGradientParts());
+  advanceAutoVoiceMorphPhrase();
+  updateGenerativeGenome(currentGradientParts());
 
   GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
   GrooveState.textureLift = GrooveState.fillActive ? 0.10 + creationNorm * 0.12 : creationNorm * 0.035;
@@ -3371,6 +4017,86 @@ function triggerBpmCrossfadeRefrain(step, time, context) {
     markMixEvent(0.12 + blend * 0.05);
   } catch (error) {
     console.warn("[Music] bpm crossfade refrain failed:", error);
+  }
+}
+
+function triggerGoldenGenomeDevelopment(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  if (!glass || GenomeState.growth < 0.12 || MixGovernorState.eventLoad > 0.88) return;
+
+  const genes = GenomeState.genes;
+  const phaseOffset = Math.floor(GenomeState.phase * 13);
+  const goldenGate = goldenPulseGate(step, phaseOffset) || (isAccentStep && GenomeState.resonance > 0.22);
+  const generativeChance = chance(
+    0.012 +
+      GenomeState.growth * 0.07 +
+      GenomeState.resonance * 0.046 +
+      genes.refrain * 0.036 +
+      genes.micro * 0.024 +
+      genes.organic * 0.02 +
+      PerformancePadState.repeat * 0.03 +
+      PerformancePadState.drift * 0.022
+  );
+  if (!goldenGate || !rand(generativeChance)) return;
+
+  const pool = genomeDominantPool();
+  const index = (GrooveState.cycle + step + GenomeState.generation + phaseOffset) % pool.length;
+  const root = pool[index];
+  const reply = genes.chrome + genes.voidTail > genes.organic
+    ? TRANSPARENT_AIR_FRAGMENTS[(index + 2) % TRANSPARENT_AIR_FRAGMENTS.length]
+    : ORGANIC_PLUCK_FRAGMENTS[(index + 3) % ORGANIC_PLUCK_FRAGMENTS.length];
+  const shade = FIELD_MURK_FRAGMENTS[(index + 5) % FIELD_MURK_FRAGMENTS.length];
+  const seedDelay = 0.026 + GenomeState.phase * 0.018 + waveNorm * 0.01;
+  const replyDelay = seedDelay * GOLDEN_RATIO;
+  const shadeDelay = replyDelay * GOLDEN_RATIO;
+  const airy = genes.voidTail > 0.46 || PerformancePadState.void || voidNorm > 0.58;
+  const vel = clampValue(
+    0.016 +
+      GenomeState.growth * 0.034 +
+      GenomeState.resonance * 0.024 +
+      observerNorm * 0.012 +
+      creationNorm * 0.012,
+    0.014,
+    0.088
+  );
+
+  try {
+    if (airy || genes.haze > 0.56) {
+      pad.triggerAttackRelease(randomHazeChord(), airy ? "1n" : "2n", time + seedDelay * GOLDEN_RATIO_INVERSE, clampValue(0.014 + genes.haze * 0.026 + circleNorm * 0.01, 0.012, 0.058));
+    }
+    glass.triggerAttackRelease(root, genes.micro > 0.54 || genes.pressure > 0.52 ? "64n" : "32n", time + seedDelay, vel);
+    if (rand(0.38 + genes.refrain * 0.24 + GenomeState.resonance * 0.08)) {
+      glass.triggerAttackRelease(reply, airy ? "16n" : "64n", time + replyDelay, clampValue(vel * (airy ? 0.62 : 0.7), 0.012, 0.07));
+    }
+    if (rand(0.24 + genes.organic * 0.2 + genes.micro * 0.1)) {
+      glass.triggerAttackRelease(shade, "64n", time + shadeDelay, clampValue(vel * 0.44, 0.01, 0.048));
+    }
+    if (!airy && rand(0.2 + genes.pulse * 0.16 + genes.pressure * 0.1 + resourceNorm * 0.04)) {
+      texture.triggerAttackRelease("64n", time + seedDelay * 0.72, clampValue(0.012 + genes.micro * 0.028 + genes.pressure * 0.018 + energyNorm * 0.008, 0.012, 0.064));
+    }
+    GenomeState.root = root;
+    GenomeState.reply = reply;
+    GenomeState.shade = shade;
+    GenomeState.resonance = clampValue(GenomeState.resonance + 0.045 + genes.refrain * 0.035, 0, 1);
+    rememberMotif(root, {
+      reply,
+      shade,
+      strength: 0.034 + genes.refrain * 0.09 + GenomeState.growth * 0.04,
+      air: airy ? 0.18 + genes.voidTail * 0.1 : genes.chrome * 0.08,
+      source: `golden-genome:${GenomeState.generation}`
+    });
+    markMixEvent(0.1 + GenomeState.growth * 0.04);
+  } catch (error) {
+    console.warn("[Music] golden genome development failed:", error);
   }
 }
 
@@ -3852,9 +4578,11 @@ function scheduleStep(time) {
   decayOrganicChaos();
   decayMotifMemory();
   decayBpmCrossfadeMemory();
+  decayGenerativeGenome();
   decayOrganicEcosystem();
   decayLongformArc();
   decayMixGovernor();
+  decayVoiceMorph();
 
   // 休符判定
   const genre = GenreBlendState;
@@ -3877,6 +4605,12 @@ function scheduleStep(time) {
   updateReferenceDepth(gradientParts, gradient);
   const lowGuard = MixGovernorState.lowGuard;
   const clarity = MixGovernorState.clarity;
+  const voiceMicro = voiceGeneBias("micro");
+  const voiceChrome = voiceGeneBias("chrome");
+  const voiceOrganic = voiceGeneBias("organic");
+  const voiceVoidTail = voiceGeneBias("voidTail");
+  const voicePulse = voiceGeneBias("pulse");
+  const voiceRefrain = voiceGeneBias("refrain");
   maybeTriggerAutoPerformanceGesture(step, stepContext);
   triggerAutoDirectorCadence(step, t, stepContext);
 
@@ -3888,6 +4622,7 @@ function scheduleStep(time) {
   triggerClarityFilament(step, t, stepContext);
   triggerMotifAfterimage(step, t, stepContext);
   triggerBpmCrossfadeRefrain(step, t, stepContext);
+  triggerGoldenGenomeDevelopment(step, t, stepContext);
   triggerLongformArcTurn(step, t, stepContext);
   triggerOrganicEcosystemBloom(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
@@ -3951,15 +4686,15 @@ function scheduleStep(time) {
     }
   }
 
-  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + genre.techno * 0.042 + genre.idm * 0.018 + gradient.micro * 0.014 + gradient.ghost * 0.006 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + PerformancePadState.drift * 0.086 - genre.ambient * 0.018 - PerformancePadState.void * 0.01);
+  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + genre.techno * 0.042 + genre.idm * 0.018 + gradient.micro * 0.014 + gradient.ghost * 0.006 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceMicro * 0.01 + voicePulse * 0.006 + PerformancePadState.drift * 0.086 - genre.ambient * 0.018 - PerformancePadState.void * 0.01);
   if (rand(textureProb) && (step % 2 === 1 || isAccentStep)) {
     const textureTime = t + (isAccentStep ? 0.006 : 0.012);
     texture.triggerAttackRelease("32n", textureTime, clampValue(0.028 + creationNorm * 0.088 + resourceNorm * 0.024 + gradient.micro * 0.006 + DepthState.gesture * 0.012 + PerformancePadState.punch * 0.014, 0.02, 0.13));
   }
 
-  const particleProb = chance(0.03 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.022 + genre.idm * 0.034 + genre.techno * 0.018 + gradient.chrome * 0.014 + gradient.micro * 0.01 + DepthState.particle * 0.022 + clarity * 0.018 + PerformancePadState.drift * 0.104 + PerformancePadState.repeat * 0.056 + PerformancePadState.void * 0.06 - genre.ambient * 0.012);
+  const particleProb = chance(0.03 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.022 + genre.idm * 0.034 + genre.techno * 0.018 + gradient.chrome * 0.014 + gradient.micro * 0.01 + DepthState.particle * 0.022 + clarity * 0.018 + voiceChrome * 0.011 + voiceOrganic * 0.008 + voiceRefrain * 0.006 + PerformancePadState.drift * 0.104 + PerformancePadState.repeat * 0.056 + PerformancePadState.void * 0.06 - genre.ambient * 0.012);
   if (rand(particleProb) && (step % 4 === 1 || step % 8 === 5 || isAccentStep)) {
-    const note = FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + Math.floor(Math.random() * FIELD_MURK_FRAGMENTS.length)) % FIELD_MURK_FRAGMENTS.length];
+    const note = voiceFragment(Math.floor(Math.random() * FIELD_MURK_FRAGMENTS.length), FIELD_MURK_FRAGMENTS);
     try {
       glass.triggerAttackRelease(note, "32n", t + 0.019 + Math.random() * 0.018, clampValue(0.026 + creationNorm * 0.038 + gradient.micro * 0.008 + DepthState.particle * 0.008 + clarity * 0.008 + PerformancePadState.repeat * 0.038 + PerformancePadState.void * 0.018, 0.018, 0.112));
     } catch (error) {
@@ -3967,9 +4702,9 @@ function scheduleStep(time) {
     }
   }
 
-  const airProb = chance(0.03 + observerNorm * 0.046 + circleNorm * 0.021 + gradient.chrome * 0.016 + gradient.haze * 0.009 + DepthState.tail * 0.026 + PerformancePadState.void * 0.14 + PerformancePadState.drift * 0.066 + PerformancePadState.repeat * 0.022);
+  const airProb = chance(0.03 + observerNorm * 0.046 + circleNorm * 0.021 + gradient.chrome * 0.016 + gradient.haze * 0.009 + DepthState.tail * 0.026 + voiceChrome * 0.012 + voiceVoidTail * 0.016 + PerformancePadState.void * 0.14 + PerformancePadState.drift * 0.066 + PerformancePadState.repeat * 0.022);
   if (rand(airProb) && (step % 8 === 4 || step % 8 === 7)) {
-    const note = TRANSPARENT_AIR_FRAGMENTS[(step + Math.floor(Math.random() * TRANSPARENT_AIR_FRAGMENTS.length)) % TRANSPARENT_AIR_FRAGMENTS.length];
+    const note = voiceFragment(Math.floor(Math.random() * TRANSPARENT_AIR_FRAGMENTS.length), TRANSPARENT_AIR_FRAGMENTS);
     try {
       glass.triggerAttackRelease(note, "32n", t + 0.024, clampValue(0.02 + observerNorm * 0.042 + gradient.chrome * 0.008 + DepthState.tail * 0.008 + PerformancePadState.void * 0.025 + PerformancePadState.repeat * 0.012, 0.014, 0.095));
     } catch (error) {
@@ -3977,9 +4712,9 @@ function scheduleStep(time) {
     }
   }
 
-  const glassProb = chance(mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.022, 0.145) + GrooveState.glassLift + genre.idm * 0.028 + genre.techno * 0.014 + gradient.memory * 0.012 + gradient.chrome * 0.013 + gradient.micro * 0.009 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + PerformancePadState.drift * 0.088 + PerformancePadState.repeat * 0.068 + PerformancePadState.void * 0.038 - genre.ambient * 0.01);
+  const glassProb = chance(mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.022, 0.145) + GrooveState.glassLift + genre.idm * 0.028 + genre.techno * 0.014 + gradient.memory * 0.012 + gradient.chrome * 0.013 + gradient.micro * 0.009 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceChrome * 0.012 + voiceRefrain * 0.008 + PerformancePadState.drift * 0.088 + PerformancePadState.repeat * 0.068 + PerformancePadState.void * 0.038 - genre.ambient * 0.01);
   if (rand(glassProb) && (isAccentStep || step % 8 === 3 || step % 16 === 11)) {
-    const note = GLASS_NOTES[Math.floor(Math.random() * GLASS_NOTES.length)];
+    const note = voiceFragment(Math.floor(Math.random() * GLASS_NOTES.length), GLASS_NOTES);
     glass.triggerAttackRelease(note, "16n", t + 0.015, clampValue(0.039 + energyNorm * 0.055 + observerNorm * 0.018 + PerformancePadState.void * 0.014, 0.028, 0.124));
     if (PerformancePadState.repeat && rand(0.72)) {
       try {
@@ -3992,6 +4727,7 @@ function scheduleStep(time) {
   }
 
   stepIndex++;
+  publishMusicRuntimeState();
 }
 
 /* =========================================================
@@ -4115,6 +4851,8 @@ function attachUI() {
   const autoToggle = document.getElementById("auto_toggle");
   const autoCycle  = document.getElementById("auto_cycle");
   const outputLevel = document.getElementById("output_level");
+  const atmosphereSelect = document.getElementById("atmosphere_select");
+  const sourceColorSelect = document.getElementById("source_color_select");
   const audioOutputSelect = document.getElementById("audio_output_select");
   const btnAudioOutput = document.getElementById("btn_audio_output");
   const btnKeepAwake = document.getElementById("btn_keep_awake");
@@ -4137,6 +4875,7 @@ function attachUI() {
 
         updateFromUI({ apply: false });
         updateOutputLevel({ apply: false });
+        updateVoiceColorFromUI({ apply: false });
         releaseAllVoices();
         resetRuntimeCounters();
         restoreMasterLevel();
@@ -4205,6 +4944,16 @@ function attachUI() {
     outputLevel.addEventListener("input", () => updateOutputLevel());
     updateOutputLevel({ apply: false });
   }
+
+  if (atmosphereSelect) {
+    atmosphereSelect.addEventListener("change", () => updateVoiceColorFromUI({ force: true }));
+  }
+
+  if (sourceColorSelect) {
+    sourceColorSelect.addEventListener("change", () => updateVoiceColorFromUI({ force: true }));
+  }
+
+  updateVoiceColorFromUI({ apply: false });
 
   if (audioOutputSelect) {
     audioOutputSelect.addEventListener("change", () => {
