@@ -446,6 +446,7 @@ const HazamaBridgeState = {
   baseAudio: {},
   audio: {},
   patterns: {},
+  pending: false,
   lastExternalAt: 0,
   lastAutonomyCycle: -1,
   autonomyGeneration: 0,
@@ -1531,6 +1532,7 @@ function publishMusicRuntimeState() {
       source: HazamaBridgeState.source,
       name: HazamaBridgeState.name,
       style: HazamaBridgeState.style,
+      pending: HazamaBridgeState.pending,
       stage: HazamaBridgeState.stage,
       depthId: HazamaBridgeState.depthId,
       stability: HazamaBridgeState.stability,
@@ -2493,6 +2495,19 @@ function safeHazamaNumber(value, fallback = 0) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+const HAZAMA_ALLOWED_ORIGINS = new Set([
+  "https://quietbriony.github.io",
+  "http://127.0.0.1:8000",
+  "http://localhost:8000",
+  "http://127.0.0.1:8095",
+  "http://localhost:8095"
+]);
+
+function isAllowedHazamaOrigin(origin) {
+  if (typeof origin !== "string" || !origin || origin === "null") return false;
+  return HAZAMA_ALLOWED_ORIGINS.has(origin);
+}
+
 function decodeBase64UrlJson(value) {
   if (typeof value !== "string" || !value) return null;
   try {
@@ -2507,15 +2522,26 @@ function decodeBase64UrlJson(value) {
   } catch (error) {
     console.warn("[Music] invalid hazama payload:", error);
     HazamaBridgeState.lastError = "invalid payload";
+    setHazamaStatus("HAZAMA.ERROR");
     return null;
   }
 }
 
 function profileFromHazamaPayload(payload) {
   if (!payload || typeof payload !== "object") return null;
-  if (payload.type && payload.type !== "hazama-profile") return null;
-  if (payload.provider && payload.provider !== "music") return null;
-  const profile = payload.profile || payload;
+  if (payload.type !== "hazama-profile") {
+    HazamaBridgeState.lastError = "invalid type";
+    return null;
+  }
+  if (payload.version !== 1) {
+    HazamaBridgeState.lastError = "invalid version";
+    return null;
+  }
+  if (payload.provider !== "music") {
+    HazamaBridgeState.lastError = "invalid provider";
+    return null;
+  }
+  const profile = payload.profile;
   return profile && typeof profile === "object" ? profile : null;
 }
 
@@ -2529,12 +2555,16 @@ function importHazamaProfile(profile, options = {}) {
   const style = sanitizeHazamaStyle(profile.style);
   const importedUcm = {};
   let touchedUcm = false;
+  const smoothUpdate = initialized && isPlaying && options.force !== true;
 
   for (const key of UCM_KEYS) {
     if (typeof ucm[key] !== "number" || !Number.isFinite(ucm[key])) continue;
     const value = Math.round(clampValue(ucm[key], 0, 100));
     UCM_TARGET[key] = value;
-    UCM[key] = value;
+    if (!smoothUpdate) {
+      UCM_CUR[key] = value;
+      UCM[key] = value;
+    }
     importedUcm[key] = value;
     syncSliderFromTarget(key);
     touchedUcm = true;
@@ -2557,7 +2587,9 @@ function importHazamaProfile(profile, options = {}) {
     silenceRate: typeof audio.silenceRate === "number" ? clamp01(audio.silenceRate) : null,
     bassWeight: typeof audio.bassWeight === "number" ? clamp01(audio.bassWeight) : null,
     harmonicDeviation: typeof audio.harmonicDeviation === "number" ? clamp01(audio.harmonicDeviation) : null,
-    smoothing: typeof audio.smoothing === "number" ? clamp01(audio.smoothing) : null
+    smoothing: typeof audio.smoothing === "number" ? clamp01(audio.smoothing) : null,
+    droneStability: typeof audio.droneStability === "number" ? clamp01(audio.droneStability) : null,
+    space: typeof audio.space === "number" ? clamp01(audio.space) : null
   };
   HazamaBridgeState.baseUcm = Object.fromEntries(UCM_KEYS.map((key) => [key, typeof importedUcm[key] === "number" ? importedUcm[key] : UCM_TARGET[key]]));
   HazamaBridgeState.baseAudio = { ...HazamaBridgeState.audio };
@@ -2565,10 +2597,12 @@ function importHazamaProfile(profile, options = {}) {
     drone: patterns.drone === true,
     droneLayers: typeof patterns.droneLayers === "number" ? clampValue(patterns.droneLayers, 0, 6) : 0,
     glitch: patterns.glitch === true,
+    glitchRate: typeof patterns.glitchRate === "number" ? clamp01(patterns.glitchRate) : 0,
     jazzStabs: patterns.jazzStabs === true,
     percussion: patterns.percussion === true,
     gatePulse: patterns.gatePulse === true
   };
+  HazamaBridgeState.pending = !initialized || !isPlaying;
   HazamaBridgeState.lastExternalAt = Date.now();
   HazamaBridgeState.lastAutonomyCycle = -1;
   HazamaBridgeState.evolution = {
@@ -2610,20 +2644,40 @@ function importHazamaProfile(profile, options = {}) {
   }
   updateHazamaUiState();
   updateRuntimeUiState();
-  setHazamaStatus("HZM.LOADED");
+  setHazamaStatus(HazamaBridgeState.pending ? "HAZAMA.PENDING" : "HAZAMA.SYNC");
   return true;
 }
 
 function handleHazamaPayload(payload, options = {}) {
   const profile = profileFromHazamaPayload(payload);
-  if (!profile) return false;
+  if (!profile) {
+    setHazamaStatus("HAZAMA.ERROR");
+    return false;
+  }
   return importHazamaProfile(profile, options);
+}
+
+function applyPendingHazamaProfileOnStart() {
+  if (!HazamaBridgeState.loaded) return false;
+  HazamaBridgeState.pending = false;
+  for (const key of UCM_KEYS) {
+    if (typeof UCM_TARGET[key] !== "number") continue;
+    UCM_CUR[key] = UCM_TARGET[key];
+    UCM[key] = Math.round(UCM_CUR[key]);
+    syncSliderFromTarget(key);
+  }
+  applyHazamaProfileToEngineParams({ force: true });
+  updateHazamaUiState();
+  updateRuntimeUiState();
+  setHazamaStatus("HAZAMA.SYNC");
+  return true;
 }
 
 function importHazamaFromHash() {
   if (typeof window === "undefined" || !window.location || !window.location.hash) return false;
   const match = window.location.hash.match(/(?:^#|&)hazama=([^&]+)/);
   if (!match) return false;
+  setHazamaStatus("HAZAMA.READY");
   const payload = decodeBase64UrlJson(decodeURIComponent(match[1]));
   return handleHazamaPayload(payload, { source: "hash", force: true });
 }
@@ -2637,6 +2691,7 @@ function setupHazamaBridge() {
 
   window.addEventListener("message", (event) => {
     const data = event && event.data;
+    if (!isAllowedHazamaOrigin(event.origin)) return;
     if (!data || typeof data !== "object") return;
     if (data.type !== "hazama-profile") return;
     if (data.provider !== "music") return;
@@ -3930,8 +3985,12 @@ function applyHazamaProfileToEngineParams(options = {}) {
   const stability = clampValue(HazamaBridgeState.stability / 100, 0, 1);
   const resonance = clampValue(HazamaBridgeState.resonance / 100, 0, 1);
   const marks = clampValue(HazamaBridgeState.marks / 100, 0, 1);
-  const droneBoost = patterns.drone ? 0.14 + patterns.droneLayers * 0.018 + (evolution.air || 0) * 0.035 : 0;
-  const glitchBoost = (patterns.glitch ? 0.075 : 0) + (evolution.micro || 0) * 0.035;
+  const harmonicDeviation = typeof audio.harmonicDeviation === "number" ? audio.harmonicDeviation : 0.08;
+  const droneStability = typeof audio.droneStability === "number" ? audio.droneStability : stability;
+  const space = typeof audio.space === "number" ? audio.space : silenceRate;
+  const glitchRate = typeof patterns.glitchRate === "number" ? patterns.glitchRate : 0;
+  const droneBoost = patterns.drone ? 0.14 + patterns.droneLayers * 0.018 + droneStability * 0.04 + (evolution.air || 0) * 0.035 : 0;
+  const glitchBoost = (patterns.glitch ? 0.075 : 0) + glitchRate * 0.09 + harmonicDeviation * 0.05 + (evolution.micro || 0) * 0.035;
   const percussionBoost = (patterns.percussion || patterns.gatePulse ? 0.09 : 0) + (evolution.pulse || 0) * 0.025;
   const stageVoid = stage === "submerge" || stage === "exhale" ? 0.06 : 0;
   const stagePulse = stage === "root" || stage === "ferment" ? 0.06 : 0;
@@ -3993,8 +4052,8 @@ function applyHazamaProfileToEngineParams(options = {}) {
     EngineParams.hatPattern = "..x.x...x...x.x.";
   }
 
-  const reverbTarget = clampValue(0.18 + silenceRate * 0.22 + stability * 0.06 + droneBoost * 0.18 + stageVoid * 0.9, 0.12, 0.58);
-  const delayTarget = clampValue(0.04 + glitchBoost * 0.8 + marks * 0.08 + resonance * 0.05 + brightness * 0.06, 0.02, 0.36);
+  const reverbTarget = clampValue(0.18 + silenceRate * 0.14 + space * 0.18 + stability * 0.06 + droneBoost * 0.18 + stageVoid * 0.9, 0.12, 0.62);
+  const delayTarget = clampValue(0.04 + glitchBoost * 0.8 + marks * 0.08 + resonance * 0.05 + brightness * 0.06 + harmonicDeviation * 0.06, 0.02, 0.38);
   rampParam("hazama-reverb", globalReverb.wet, reverbTarget, force ? 0.25 : 1.1, force ? 0 : 0.01);
   rampParam("hazama-delay", globalDelay.wet, delayTarget, force ? 0.25 : 0.9, force ? 0 : 0.01);
 }
@@ -6050,6 +6109,7 @@ function attachUI() {
         updateFromUI({ apply: false });
         updateOutputLevel({ apply: false });
         updateVoiceColorFromUI({ apply: false });
+        applyPendingHazamaProfileOnStart();
         releaseAllVoices();
         resetRuntimeCounters();
         restoreMasterLevel();
@@ -6204,7 +6264,7 @@ window.addEventListener("DOMContentLoaded", () => {
   loadPresets().finally(()=>{ 
     // prime
     applyUCMToParams({ force: true });
-    if (HazamaBridgeState.loaded) setHazamaStatus("HZM.LOADED");
+    if (HazamaBridgeState.loaded) setHazamaStatus(HazamaBridgeState.pending ? "HAZAMA.PENDING" : "HAZAMA.SYNC");
   });
 
   // Smooth loop: UCM_TARGET -> UCM_CUR -> params (v1.3)
