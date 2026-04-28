@@ -3447,6 +3447,109 @@ function triggerReferenceDepthDetails(step, time, context) {
   }
 }
 
+function triggerReferenceTimbreResearch(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  if (!glass || MixGovernorState.eventLoad > 0.84) return;
+
+  const gradient = GradientState;
+  const depth = DepthState;
+  const genre = GenreBlendState;
+  const tempoLift = clampValue(DJTempoState.motion / 28, -1, 1);
+  const tempoRise = Math.max(0, tempoLift);
+  const tempoFall = Math.max(0, -tempoLift);
+  const researchAmount = clampValue(
+    0.14 +
+      gradient.micro * 0.16 +
+      gradient.chrome * 0.14 +
+      gradient.organic * 0.12 +
+      depth.particle * 0.12 +
+      depth.tail * 0.08 +
+      creationNorm * 0.1 +
+      observerNorm * 0.08 +
+      Math.abs(tempoLift) * 0.08,
+    0,
+    1
+  );
+
+  const voidAir = PerformancePadState.void || voidNorm > 0.64 || tempoFall > 0.2;
+  if (voidAir && (step % 16 === 7 || step % 16 === 15) && rand(0.026 + depth.tail * 0.06 + tempoFall * 0.05 + PerformancePadState.void * 0.08)) {
+    const note = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 5) % TRANSPARENT_AIR_FRAGMENTS.length];
+    try {
+      glass.triggerAttackRelease(note, "16n", time + 0.034 + Math.random() * 0.018, clampValue(0.018 + observerNorm * 0.034 + depth.tail * 0.012 + tempoFall * 0.012, 0.016, 0.082));
+      if (rand(0.22 + gradient.haze * 0.18 + PerformancePadState.void * 0.14)) {
+        pad.triggerAttackRelease(randomHazeChord(), "1n", time + 0.054, clampValue(0.018 + circleNorm * 0.02 + observerNorm * 0.018, 0.016, 0.06));
+      }
+      markMixEvent(0.08);
+      return;
+    } catch (error) {
+      console.warn("[Music] reference air research failed:", error);
+    }
+  }
+
+  const gridColor = clampValue(genre.techno * 0.36 + genre.pressure * 0.2 + tempoRise * 0.22 + resourceNorm * 0.12 + energyNorm * 0.1, 0, 1);
+  if (!PerformancePadState.void && gridColor > 0.22 && (step % 4 === 1 || step % 4 === 3 || isAccentStep) && rand(0.014 + gridColor * 0.08 + depth.gesture * 0.018)) {
+    const note = FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + 2) % FIELD_MURK_FRAGMENTS.length];
+    try {
+      texture.triggerAttackRelease("64n", time + 0.01 + Math.random() * 0.01, clampValue(0.014 + gridColor * 0.046 + creationNorm * 0.012, 0.012, 0.082));
+      glass.triggerAttackRelease(note, "64n", time + 0.026 + Math.random() * 0.012, clampValue(0.014 + gridColor * 0.034 + gradient.micro * 0.008, 0.012, 0.07));
+      markMixEvent(0.1);
+      return;
+    } catch (error) {
+      console.warn("[Music] reference grid research failed:", error);
+    }
+  }
+
+  const brokenColor = clampValue(genre.idm * 0.34 + gradient.micro * 0.2 + gradient.organic * 0.14 + waveNorm * 0.12 + tempoRise * 0.08, 0, 1);
+  if (brokenColor > 0.24 && (step % 8 === 3 || step % 8 === 5 || isAccentStep) && rand(0.018 + brokenColor * 0.08 + researchAmount * 0.025)) {
+    const first = ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + 1) % ORGANIC_PLUCK_FRAGMENTS.length];
+    const reply = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 4) % TRANSPARENT_AIR_FRAGMENTS.length];
+    const dt = 0.036 + Math.random() * (0.026 + waveNorm * 0.018);
+    try {
+      glass.triggerAttackRelease(first, "64n", time + 0.018 + Math.random() * 0.014, clampValue(0.018 + brokenColor * 0.038 + observerNorm * 0.01, 0.016, 0.082));
+      if (rand(0.32 + gradient.memory * 0.16 + PerformancePadState.repeat * 0.18)) {
+        glass.triggerAttackRelease(reply, "64n", time + 0.018 + dt, clampValue(0.014 + brokenColor * 0.026 + gradient.chrome * 0.008, 0.012, 0.064));
+      }
+      if (rand(0.18 + gradient.organic * 0.18)) {
+        texture.triggerAttackRelease("64n", time + 0.026, clampValue(0.012 + brokenColor * 0.028, 0.012, 0.058));
+      }
+      rememberMotif(first, {
+        reply,
+        shade: FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + 3) % FIELD_MURK_FRAGMENTS.length],
+        strength: 0.026 + brokenColor * 0.06,
+        air: gradient.chrome * 0.08 + tempoFall * 0.06,
+        source: "research"
+      });
+      markMixEvent(0.12);
+      return;
+    } catch (error) {
+      console.warn("[Music] reference broken research failed:", error);
+    }
+  }
+
+  const hazeColor = clampValue(genre.ambient * 0.34 + gradient.haze * 0.2 + gradient.memory * 0.14 + tempoFall * 0.18 + (1 - energyNorm) * 0.08, 0, 1);
+  if (hazeColor > 0.3 && (step % 16 === 0 || step % 16 === 8 || step % 16 === 12) && rand(0.014 + hazeColor * 0.058 + depth.bed * 0.018)) {
+    const note = rand(0.48 + gradient.chrome * 0.16)
+      ? TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 1) % TRANSPARENT_AIR_FRAGMENTS.length]
+      : FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + 4) % FIELD_MURK_FRAGMENTS.length];
+    try {
+      pad.triggerAttackRelease(randomHazeChord(), "1n", time + 0.028, clampValue(0.018 + hazeColor * 0.034 + circleNorm * 0.01, 0.016, 0.062));
+      glass.triggerAttackRelease(note, "32n", time + 0.046 + Math.random() * 0.02, clampValue(0.014 + hazeColor * 0.026 + observerNorm * 0.01, 0.012, 0.06));
+      markMixEvent(0.08);
+    } catch (error) {
+      console.warn("[Music] reference haze research failed:", error);
+    }
+  }
+}
+
 function triggerPadHoldMinimums(step, time, context) {
   const {
     energyNorm,
@@ -3585,6 +3688,7 @@ function scheduleStep(time) {
   triggerAudibleGrooveFloor(step, t, stepContext);
   triggerOrganicTexture(step, t, stepContext);
   triggerReferenceDepthDetails(step, t, stepContext);
+  triggerReferenceTimbreResearch(step, t, stepContext);
   triggerGranularDetail(step, t, stepContext);
   triggerClarityFilament(step, t, stepContext);
   triggerMotifAfterimage(step, t, stepContext);
