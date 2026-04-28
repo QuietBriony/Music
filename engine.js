@@ -938,12 +938,14 @@ function resetTimbreFamily() {
   TimbreFamilyState.voiceDust = 0.2;
   TimbreFamilyState.acidBiyon = 0;
   TimbreFamilyState.sub808 = 0.14;
+  TimbreFamilyState.reedBuzz = 0.06;
   TimbreFamilyState.chain = 0.3;
   TimbreFamilyState.inner.drumSkin = 0.18;
   TimbreFamilyState.inner.pianoMemory = 0.26;
   TimbreFamilyState.inner.voiceDust = 0.2;
   TimbreFamilyState.inner.acidBiyon = 0;
   TimbreFamilyState.inner.sub808 = 0.14;
+  TimbreFamilyState.inner.reedBuzz = 0.06;
   TimbreFamilyState.inner.chain = 0.3;
   TimbreFamilyState.inner.bloom = 0;
   TimbreFamilyState.inner.focus = "pianoMemory";
@@ -3063,10 +3065,26 @@ const subImpact = new Tone.MonoSynth({
   envelope: { attack: 0.004, decay: 0.34, sustain: 0, release: 0.16 }
 }).connect(bassBus);
 
+const reedBuzzFilter = new Tone.Filter(170, "bandpass").connect(globalReverb);
+const reedBuzz = new Tone.MonoSynth({
+  oscillator: { type: "sawtooth" },
+  filter: { type: "bandpass", Q: 2.6 },
+  filterEnvelope: {
+    attack: 0.04,
+    decay: 0.42,
+    sustain: 0.18,
+    release: 0.58,
+    baseFrequency: 72,
+    octaves: 1.15
+  },
+  envelope: { attack: 0.035, decay: 0.34, sustain: 0.34, release: 0.72 }
+}).connect(reedBuzzFilter);
+
 pianoMemory.volume.value = -41;
 voiceDust.volume.value = -43;
 drumSkin.volume.value = -32;
 subImpact.volume.value = -30;
+reedBuzz.volume.value = -48;
 
 function organicFragment(offset = 0) {
   return ORGANIC_PLUCK_FRAGMENTS[tonalRhymeIndex(stepIndex, offset) % ORGANIC_PLUCK_FRAGMENTS.length];
@@ -3301,15 +3319,16 @@ const MixGovernorState = {
   eventLoad: 0,
   lastAirCycle: -99
 };
-const INNER_SOURCE_FAMILY_KEYS = ["drumSkin", "pianoMemory", "voiceDust", "acidBiyon", "sub808", "chain"];
+const INNER_SOURCE_FAMILY_KEYS = ["drumSkin", "pianoMemory", "voiceDust", "acidBiyon", "sub808", "reedBuzz", "chain"];
 const SOURCE_DEPTH_PROFILES = [
-  { name: "hazeBed", focus: "voiceDust", span: 12, weights: { voiceDust: 0.18, pianoMemory: 0.08, chain: 0.08 } },
-  { name: "membrane", focus: "sub808", span: 10, weights: { sub808: 0.12, voiceDust: 0.1, chain: 0.06 } },
+  { name: "hazeBed", focus: "voiceDust", span: 12, weights: { voiceDust: 0.18, pianoMemory: 0.08, reedBuzz: 0.04, chain: 0.08 } },
+  { name: "membrane", focus: "sub808", span: 10, weights: { sub808: 0.12, reedBuzz: 0.1, voiceDust: 0.1, chain: 0.06 } },
   { name: "memoryRefrain", focus: "pianoMemory", span: 9, weights: { pianoMemory: 0.2, chain: 0.12, voiceDust: 0.04 } },
   { name: "brokenSplice", focus: "drumSkin", span: 7, weights: { drumSkin: 0.14, chain: 0.1, acidBiyon: 0.04 } },
-  { name: "ghostBody", focus: "drumSkin", span: 8, weights: { drumSkin: 0.12, sub808: 0.1, voiceDust: 0.05 } },
+  { name: "ghostBody", focus: "drumSkin", span: 8, weights: { drumSkin: 0.12, sub808: 0.1, reedBuzz: 0.06, voiceDust: 0.05 } },
   { name: "chromeHymn", focus: "voiceDust", span: 11, weights: { voiceDust: 0.18, pianoMemory: 0.08, chain: 0.1 } },
-  { name: "coldPulse", focus: "chain", span: 8, weights: { chain: 0.16, drumSkin: 0.08, acidBiyon: 0.06 } }
+  { name: "coldPulse", focus: "chain", span: 8, weights: { chain: 0.16, drumSkin: 0.08, acidBiyon: 0.06 } },
+  { name: "earthBuzz", focus: "reedBuzz", span: 13, weights: { reedBuzz: 0.2, sub808: 0.07, voiceDust: 0.07, chain: 0.05 } }
 ];
 const TimbreFamilyState = {
   drumSkin: 0.18,
@@ -3317,6 +3336,7 @@ const TimbreFamilyState = {
   voiceDust: 0.2,
   acidBiyon: 0,
   sub808: 0.14,
+  reedBuzz: 0.06,
   chain: 0.3,
   inner: {
     drumSkin: 0.18,
@@ -3324,6 +3344,7 @@ const TimbreFamilyState = {
     voiceDust: 0.2,
     acidBiyon: 0,
     sub808: 0.14,
+    reedBuzz: 0.06,
     chain: 0.3,
     bloom: 0,
     focus: "pianoMemory",
@@ -3872,6 +3893,7 @@ function chooseInnerSourceProfile(parts, gradient, depth, genre) {
   if (hazamaMicro > 0.55 || gradient.micro > 0.58) return sourceDepthProfileByName("brokenSplice");
   if (hazamaPulse > 0.58 || gradient.ghost > 0.56) return sourceDepthProfileByName("ghostBody");
   if (hazamaBloom > 0.48 || observer > 0.62 || gradient.chrome > 0.58 || PerformancePadState.void) return sourceDepthProfileByName("chromeHymn");
+  if (lowBpm && (gradient.ghost > 0.42 || depth.bed > 0.5) && GrooveState.cycle % 13 < 4) return sourceDepthProfileByName("earthBuzz");
   if (lowBpm && (voidness > 0.48 || hazamaAir > 0.42 || depth.bed > 0.55)) return sourceDepthProfileByName("hazeBed");
   if (lowBpm || depth.bed > 0.54) return sourceDepthProfileByName("membrane");
   if (gradient.memory > 0.52 || MotifMemoryState.strength > 0.22) return sourceDepthProfileByName("memoryRefrain");
@@ -3904,6 +3926,7 @@ function updateInnerSourceFamily(parts, gradient = GradientState, depth = DepthS
     voiceDust: clampValue((profileWeights.voiceDust || 0) + gradient.chrome * 0.07 + depth.tail * 0.06 + (HazamaBridgeState.active ? 0.03 : 0) + (lowBpm ? 0.06 : 0), 0, 1),
     acidBiyon: clampValue((profileWeights.acidBiyon || 0) + acid * 0.18 + genre.techno * 0.04 + gradient.micro * 0.04 - parts.voidness * 0.08, 0, 1),
     sub808: clampValue((profileWeights.sub808 || 0) + gradient.ghost * 0.06 + parts.body * 0.05 + acid * 0.04 - MixGovernorState.lowGuard * 0.12 - (lowBpm ? 0.04 : 0), 0, 1),
+    reedBuzz: clampValue((profileWeights.reedBuzz || 0) + gradient.ghost * 0.06 + depth.bed * 0.05 + parts.body * 0.04 + (HazamaBridgeState.active ? 0.025 : 0) + (lowBpm ? 0.08 : 0) - acid * 0.04 - MixGovernorState.lowGuard * 0.08, 0, 1),
     chain: clampValue((profileWeights.chain || 0) + GenomeState.growth * 0.05 + BpmCrossfadeState.refrain * 0.05 + gradient.organic * 0.05 + (UCM.auto.enabled || HazamaBridgeState.active ? 0.04 : 0), 0, 1)
   };
 
@@ -4014,6 +4037,21 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
     0,
     1
   );
+  const reedTarget = clampValue(
+    gradient.ghost * 0.18 +
+      depth.bed * 0.15 +
+      depth.tail * 0.1 +
+      body * 0.1 +
+      hazamaAir * 0.08 +
+      hazamaBloom * 0.05 +
+      (EngineParams.bpm < 84 ? 0.08 : 0) -
+      acid * 0.08 -
+      lowGuard * 0.16 +
+      (inner.reedBuzz || 0) * innerLift +
+      (inner.focus === "reedBuzz" ? (inner.bloom || 0) * 0.025 : 0),
+    0,
+    1
+  );
   const chainTarget = clampValue(
     motif * 0.22 +
       genome * 0.2 +
@@ -4035,6 +4073,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
   TimbreFamilyState.voiceDust = approachValue(TimbreFamilyState.voiceDust, voiceTarget, 0.032);
   TimbreFamilyState.acidBiyon = approachValue(TimbreFamilyState.acidBiyon, acidTarget, 0.04);
   TimbreFamilyState.sub808 = approachValue(TimbreFamilyState.sub808, subTarget, 0.035);
+  TimbreFamilyState.reedBuzz = approachValue(TimbreFamilyState.reedBuzz, reedTarget, 0.026);
   TimbreFamilyState.chain = approachValue(TimbreFamilyState.chain, chainTarget, 0.03);
   return TimbreFamilyState;
 }
@@ -4089,9 +4128,13 @@ function updateTimbreStateFromWorld(parts) {
   safeToneRamp(voiceDust?.volume, -48 + family.voiceDust * 9.4 + family.chain * 1.2 + PerformancePadState.void * 1.4 - genre.pressure * 0.7, 0.32);
   safeToneRamp(drumSkin?.volume, -42 + family.drumSkin * 9.2 + family.acidBiyon * 1.8 - lowGuard * 2.6, 0.22);
   safeToneRamp(subImpact?.volume, -39 + family.sub808 * 8.8 + family.acidBiyon * 2.4 - lowGuard * 4.4, 0.22);
+  safeToneRamp(reedBuzz?.volume, -52 + family.reedBuzz * 10.4 + (TimbreFamilyState.inner?.reedBuzz || 0) * 1.8 - lowGuard * 4.2 - genre.techno * 0.9, 0.36);
   safeToneRamp(pianoMemoryFilter?.frequency, 960 + family.pianoMemory * 1580 + gradient.chrome * 420 - genre.techno * 260, 0.32);
   safeToneRamp(voiceDustFilter?.frequency, 1180 + family.voiceDust * 1700 + gradient.chrome * 540 + PerformancePadState.void * 420, 0.32);
   safeToneRamp(subImpact?.filter?.frequency, 46 + family.sub808 * 94 + family.acidBiyon * 42 - lowGuard * 20, 0.18);
+  safeToneRamp(reedBuzzFilter?.frequency, 96 + family.reedBuzz * 210 + depth.bed * 48 + PerformancePadState.void * 32, 0.42);
+  safeToneRamp(reedBuzz?.filter?.frequency, 84 + family.reedBuzz * 160 + body * 52 - lowGuard * 24, 0.32);
+  safeToneRamp(reedBuzz?.filter?.Q, 1.9 + family.reedBuzz * 3.4 + gradient.ghost * 0.9 - lowGuard * 0.7, 0.32);
 
   setEnvelopeValue(glass?.envelope, "attack", 0.005 + (TimbreState.harp * 0.012) - genre.techno * 0.0015);
   setEnvelopeValue(glass?.envelope, "decay", 0.078 + (TimbreState.harp * 0.16) + (TimbreState.air * 0.1) + genre.ambient * 0.025 - genre.techno * 0.018 + (PerformancePadState.void * 0.11));
@@ -5511,6 +5554,7 @@ function triggerTimbreFamilyResponse(step, time, context) {
   const brokenLogic = clampValue(gradient.micro * 0.26 + genre.idm * 0.18 + family.drumSkin * 0.12 + family.acidBiyon * 0.12 + BpmCrossfadeState.refrain * 0.1 + PerformancePadState.repeat * 0.12, 0, 1);
   const ghostBody = clampValue(gradient.ghost * 0.24 + depth.pulse * 0.18 + family.sub808 * 0.16 + genre.pressure * 0.12 + PerformancePadState.punch * 0.12 - lowGuard * 0.16, 0, 1);
   const coldPulse = clampValue(genre.techno * 0.18 + genre.idm * 0.12 + gradient.micro * 0.12 + depth.gesture * 0.12 + family.chain * 0.1 + AcidLockState.intensity * 0.12 - genre.ambient * 0.08, 0, 1);
+  const earthBuzz = clampValue(family.reedBuzz * 0.34 + (inner.reedBuzz || 0) * 0.18 + gradient.ghost * 0.16 + depth.bed * 0.14 + (droneThin ? 0.1 : 0) - lowGuard * 0.18 - acidOn * 0.06, 0, 1);
 
   if (pianoMemory && (step % 16 === 4 || step % 16 === 10 || (PerformancePadState.drift && step % 4 === 1) || (chain > 0.52 && step % 8 === 5))) {
     const pianoChance = chance(0.014 + family.pianoMemory * 0.15 + chain * 0.04 + PerformancePadState.drift * 0.055 - eventLoad * 0.04);
@@ -5603,6 +5647,35 @@ function triggerTimbreFamilyResponse(step, time, context) {
         markMixEvent(0.06 + family.sub808 * 0.06 + family.acidBiyon * 0.04);
       } catch (error) {
         console.warn("[Music] sub impact failed:", error);
+      }
+    }
+  }
+
+  if (reedBuzz && earthBuzz > 0.26 && !PerformancePadState.punch && (step % 16 === 0 || step % 16 === 8 || (PerformancePadState.void && step % 8 === 4))) {
+    const buzzChance = chance(0.012 + earthBuzz * 0.12 + (HazamaBridgeState.active ? 0.018 : 0) + PerformancePadState.void * 0.035 - eventLoad * 0.035);
+    if (rand(buzzChance)) {
+      const buzzNote = rand(0.58 + gradient.ghost * 0.14)
+        ? tonalRhymeLow(step, phaseOffset - 1)
+        : tonalRhymeSub(step, phaseOffset + 1);
+      const buzzTime = time + 0.032 + Math.random() * (0.024 + waveNorm * 0.016);
+      const vel = clampValue(0.018 + earthBuzz * 0.07 - lowGuard * 0.026, 0.014, 0.098);
+      try {
+        reedBuzz.triggerAttackRelease(buzzNote, PerformancePadState.void ? "1n" : "2n", buzzTime, vel);
+        if (voiceDust && rand(0.18 + earthBuzz * 0.2)) {
+          voiceDust.triggerAttackRelease(tonalRhymeMid(step, phaseOffset + 4), "8n", buzzTime + 0.12, clampValue(vel * 0.36, 0.008, 0.034));
+        }
+        rememberMotif(tonalRhymeMid(step, phaseOffset + 1), {
+          reply: tonalRhymeHigh(step, phaseOffset + 3),
+          shade: buzzNote,
+          strength: 0.022 + earthBuzz * 0.052,
+          air: 0.08 + depth.tail * 0.04,
+          source: "reed-buzz"
+        });
+        nudgeInnerSourceFamily("reedBuzz", 0.024 + earthBuzz * 0.018);
+        nudgeInnerSourceFamily("voiceDust", 0.006);
+        markMixEvent(0.04 + earthBuzz * 0.035);
+      } catch (error) {
+        console.warn("[Music] reed buzz failed:", error);
       }
     }
   }
@@ -6060,6 +6133,10 @@ function triggerReferenceDepthDetails(step, time, context) {
       }
       nudgeInnerSourceFamily("voiceDust", 0.018 + membrane * 0.012);
       if (lowGuard < 0.54) nudgeInnerSourceFamily("sub808", 0.01 + membrane * 0.008);
+      if (reedBuzz && membrane > 0.42 && lowGuard < 0.58 && rand(0.08 + membrane * 0.1)) {
+        reedBuzz.triggerAttackRelease(lowNote, "2n", time + 0.088 + Math.random() * 0.032, clampValue(0.012 + membrane * 0.038, 0.01, 0.048));
+        nudgeInnerSourceFamily("reedBuzz", 0.018 + membrane * 0.01);
+      }
       markMixEvent(0.035 + membrane * 0.025);
     } catch (error) {
       console.warn("[Music] low-mid membrane failed:", error);
@@ -6342,6 +6419,7 @@ function releaseAllVoices(time) {
   try { voiceDust.triggerRelease(t); } catch(e) {}
   try { drumSkin.triggerRelease(t); } catch(e) {}
   try { subImpact.triggerRelease(t); } catch(e) {}
+  try { reedBuzz.triggerRelease(t); } catch(e) {}
 }
 
 function restoreMasterLevel() {
