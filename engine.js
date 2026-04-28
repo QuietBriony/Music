@@ -240,6 +240,79 @@ const GenomeState = {
   }
 };
 const GENOME_GENE_KEYS = ["haze", "pulse", "micro", "chrome", "organic", "pressure", "refrain", "voidTail"];
+const VoiceColorState = {
+  atmosphere: "auto",
+  source: "genome"
+};
+const ATMOSPHERE_COLORS = {
+  auto: {
+    label: "AUTO AIR",
+    gradient: {},
+    genes: {}
+  },
+  haze: {
+    label: "SOFT HAZE",
+    gradient: { haze: 0.16, memory: 0.07, chrome: 0.04, ghost: -0.02 },
+    genes: { haze: 0.18, refrain: 0.08, voidTail: 0.04, pressure: -0.04 }
+  },
+  chrome: {
+    label: "CHROME AIR",
+    gradient: { chrome: 0.18, micro: 0.07, haze: 0.04, organic: -0.02 },
+    genes: { chrome: 0.2, micro: 0.08, voidTail: 0.05 }
+  },
+  ghost: {
+    label: "GHOST RAIN",
+    gradient: { ghost: 0.15, haze: 0.08, memory: 0.05, chrome: 0.03 },
+    genes: { pulse: 0.12, voidTail: 0.12, pressure: 0.04, refrain: 0.06 }
+  },
+  organic: {
+    label: "ORGANIC DUST",
+    gradient: { organic: 0.2, memory: 0.08, micro: 0.06, chrome: -0.02 },
+    genes: { organic: 0.22, refrain: 0.08, micro: 0.06, haze: 0.04 }
+  },
+  void: {
+    label: "VOID BLOOM",
+    gradient: { haze: 0.14, chrome: 0.14, ghost: -0.04, micro: -0.02 },
+    genes: { voidTail: 0.24, haze: 0.12, chrome: 0.1, pressure: -0.06 }
+  }
+};
+const SOURCE_COLORS = {
+  genome: {
+    label: "GENOME",
+    gradient: {},
+    genes: { refrain: 0.04, organic: 0.03, micro: 0.03 }
+  },
+  xtal: {
+    label: "XTAL / THA",
+    gradient: { haze: 0.13, chrome: 0.09, memory: 0.05, ghost: -0.03 },
+    genes: { haze: 0.16, chrome: 0.1, refrain: 0.08, pressure: -0.05 }
+  },
+  boc: {
+    label: "BoC MEMORY",
+    gradient: { memory: 0.16, organic: 0.08, haze: 0.08, micro: -0.02 },
+    genes: { organic: 0.12, refrain: 0.12, haze: 0.08, chrome: -0.02 }
+  },
+  autechre: {
+    label: "BROKEN LOGIC",
+    gradient: { micro: 0.18, chrome: 0.08, organic: 0.04, haze: -0.04 },
+    genes: { micro: 0.2, pressure: 0.08, chrome: 0.08, haze: -0.05 }
+  },
+  burial: {
+    label: "GHOST PULSE",
+    gradient: { ghost: 0.17, haze: 0.07, memory: 0.05, chrome: 0.02 },
+    genes: { pulse: 0.18, voidTail: 0.12, refrain: 0.06, pressure: 0.04 }
+  },
+  opn: {
+    label: "CHROME HYMN",
+    gradient: { chrome: 0.2, haze: 0.08, memory: 0.03, ghost: -0.02 },
+    genes: { chrome: 0.22, voidTail: 0.08, haze: 0.06, micro: 0.03 }
+  },
+  fsol: {
+    label: "ORGANIC MOTION",
+    gradient: { organic: 0.14, micro: 0.09, ghost: 0.08 },
+    genes: { organic: 0.16, pulse: 0.12, micro: 0.08, pressure: 0.04 }
+  }
+};
 const OutputState = {
   level: 75
 };
@@ -859,6 +932,44 @@ function geneValue(key) {
   return clampValue(GenomeState.genes[key] || 0, 0, 1);
 }
 
+function currentVoiceColor() {
+  const atmosphere = ATMOSPHERE_COLORS[VoiceColorState.atmosphere] || ATMOSPHERE_COLORS.auto;
+  const source = SOURCE_COLORS[VoiceColorState.source] || SOURCE_COLORS.genome;
+  return { atmosphere, source };
+}
+
+function voiceGradientBias(key) {
+  const { atmosphere, source } = currentVoiceColor();
+  return (atmosphere.gradient?.[key] || 0) + (source.gradient?.[key] || 0);
+}
+
+function voiceGeneBias(key) {
+  const { atmosphere, source } = currentVoiceColor();
+  return (atmosphere.genes?.[key] || 0) + (source.genes?.[key] || 0);
+}
+
+function updateVoiceColorUi() {
+  const { atmosphere, source } = currentVoiceColor();
+  const status = document.getElementById("voice_status");
+  if (status) status.textContent = `${atmosphere.label} / ${source.label}`;
+  if (document.body) {
+    document.body.dataset.atmosphere = VoiceColorState.atmosphere;
+    document.body.dataset.sourceColor = VoiceColorState.source;
+  }
+}
+
+function updateVoiceColorFromUI(options = {}) {
+  const atmosphereSelect = document.getElementById("atmosphere_select");
+  const sourceSelect = document.getElementById("source_color_select");
+  VoiceColorState.atmosphere = atmosphereSelect ? atmosphereSelect.value || "auto" : VoiceColorState.atmosphere;
+  VoiceColorState.source = sourceSelect ? sourceSelect.value || "genome" : VoiceColorState.source;
+  updateVoiceColorUi();
+  if (options.apply !== false && initialized) {
+    updateTimbreStateFromWorld(currentGradientParts());
+    applyUCMToParams({ force: options.force === true });
+  }
+}
+
 function genomeDominantPool() {
   const genes = GenomeState.genes;
   if (genes.voidTail > 0.58 || genes.chrome > 0.62) return TRANSPARENT_AIR_FRAGMENTS;
@@ -884,6 +995,7 @@ function updateGenerativeGenome(parts) {
   };
 
   for (const key of GENOME_GENE_KEYS) {
+    targets[key] = clampValue(targets[key] + voiceGeneBias(key) * 0.22, 0, 1);
     genes[key] = approachValue(genes[key], targets[key], 0.012 + GenomeState.growth * 0.008);
   }
 
@@ -2313,6 +2425,11 @@ function updateReferenceGradient(parts) {
     GradientState.organic = clampValue(GradientState.organic + genes.organic * genomeScale + genes.refrain * genomeScale * 0.18, 0, 1);
   }
 
+  const voiceScale = 0.68;
+  for (const key of Object.keys(GradientState)) {
+    GradientState[key] = clampValue(GradientState[key] + voiceGradientBias(key) * voiceScale, 0, 1);
+  }
+
   if (longformArcActive()) {
     const arc = currentLongformArcStage();
     const arcShape = longformArcShape();
@@ -2363,6 +2480,14 @@ function updateReferenceDepth(parts, gradient = GradientState) {
   const refrain = BpmCrossfadeState.refrain;
   const genes = GenomeState.genes;
   const genomeGrowth = GenomeState.growth;
+  const voiceHaze = voiceGeneBias("haze");
+  const voicePulse = voiceGeneBias("pulse");
+  const voiceMicro = voiceGeneBias("micro");
+  const voiceChrome = voiceGeneBias("chrome");
+  const voiceOrganic = voiceGeneBias("organic");
+  const voiceRefrain = voiceGeneBias("refrain");
+  const voiceVoidTail = voiceGeneBias("voidTail");
+  const voicePressure = voiceGeneBias("pressure");
 
   DepthState.bed = clampValue(
     (gradient.haze * 0.34) +
@@ -2378,6 +2503,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       refrain * 0.012 +
       genes.haze * genomeGrowth * 0.03 +
       genes.voidTail * genomeGrowth * 0.018 +
+      voiceHaze * 0.018 +
+      voiceVoidTail * 0.012 +
       arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.045 : 0.018),
     0,
     1
@@ -2396,6 +2523,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       bpmBlend * 0.026 +
       genes.pulse * genomeGrowth * 0.032 +
       genes.pressure * genomeGrowth * 0.026 +
+      voicePulse * 0.018 +
+      voicePressure * 0.012 +
       arcShape * (arcStage.name === "root" ? 0.035 : 0.012),
     0,
     1
@@ -2416,6 +2545,9 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       genes.micro * genomeGrowth * 0.04 +
       genes.chrome * genomeGrowth * 0.025 +
       genes.organic * genomeGrowth * 0.025 +
+      voiceMicro * 0.024 +
+      voiceChrome * 0.018 +
+      voiceOrganic * 0.016 +
       arcShape * (arcStage.name === "sprout" || arcStage.name === "ferment" ? 0.04 : 0.014),
     0,
     1
@@ -2435,6 +2567,9 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       genes.chrome * genomeGrowth * 0.012 +
       genes.voidTail * genomeGrowth * 0.01 -
       genes.pressure * genomeGrowth * 0.008 +
+      voiceChrome * 0.01 +
+      voiceVoidTail * 0.012 -
+      voicePressure * 0.006 +
       arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.025 : 0.008),
     0,
     1
@@ -2452,6 +2587,9 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       refrain * 0.018 +
       genes.voidTail * genomeGrowth * 0.04 +
       genes.haze * genomeGrowth * 0.02 +
+      voiceVoidTail * 0.024 +
+      voiceHaze * 0.012 +
+      voiceChrome * 0.008 +
       arcShape * (arcStage.name === "exhale" ? 0.05 : 0.018),
     0,
     1
@@ -2472,6 +2610,9 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       refrain * 0.042 +
       genes.refrain * genomeGrowth * 0.05 +
       genes.micro * genomeGrowth * 0.026 +
+      voiceRefrain * 0.022 +
+      voiceMicro * 0.012 +
+      voiceOrganic * 0.01 +
       LongformArcState.turn * 0.06,
     0,
     1
@@ -4349,6 +4490,8 @@ function attachUI() {
   const autoToggle = document.getElementById("auto_toggle");
   const autoCycle  = document.getElementById("auto_cycle");
   const outputLevel = document.getElementById("output_level");
+  const atmosphereSelect = document.getElementById("atmosphere_select");
+  const sourceColorSelect = document.getElementById("source_color_select");
   const audioOutputSelect = document.getElementById("audio_output_select");
   const btnAudioOutput = document.getElementById("btn_audio_output");
   const btnKeepAwake = document.getElementById("btn_keep_awake");
@@ -4371,6 +4514,7 @@ function attachUI() {
 
         updateFromUI({ apply: false });
         updateOutputLevel({ apply: false });
+        updateVoiceColorFromUI({ apply: false });
         releaseAllVoices();
         resetRuntimeCounters();
         restoreMasterLevel();
@@ -4439,6 +4583,16 @@ function attachUI() {
     outputLevel.addEventListener("input", () => updateOutputLevel());
     updateOutputLevel({ apply: false });
   }
+
+  if (atmosphereSelect) {
+    atmosphereSelect.addEventListener("change", () => updateVoiceColorFromUI({ force: true }));
+  }
+
+  if (sourceColorSelect) {
+    sourceColorSelect.addEventListener("change", () => updateVoiceColorFromUI({ force: true }));
+  }
+
+  updateVoiceColorFromUI({ apply: false });
 
   if (audioOutputSelect) {
     audioOutputSelect.addEventListener("change", () => {

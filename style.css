@@ -695,6 +695,51 @@ input[type="range"], button, select { touch-action: manipulation; }
   font-size: 13px;
 }
 
+#atmosphere_select,
+#source_color_select {
+  width: 100%;
+  min-width: 0;
+  background: rgba(5, 15, 32, 0.72);
+  border: 1px solid rgba(93, 211, 220, 0.34);
+  color: var(--text-main);
+  border-radius: 8px;
+  padding: 6px 7px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+.voice-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.voice-control {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.voice-label {
+  color: var(--text-sub);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.voice-readout {
+  border: 1px solid rgba(93, 211, 220, 0.18);
+  background:
+    linear-gradient(90deg, rgba(93, 211, 220, 0.08), rgba(246, 91, 86, 0.05)),
+    rgba(1, 8, 10, 0.42);
+  color: rgba(218, 250, 255, 0.82);
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  line-height: 1.2;
+  padding: 5px 6px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 #btn_reload_presets{
   min-width: unset;
 }
@@ -1313,6 +1358,24 @@ body[data-character="lofi"] .identity-line {
     background: rgba(1, 8, 10, 0.88);
   }
 
+  #atmosphere_select,
+  #source_color_select {
+    min-height: 24px;
+    padding: 3px 4px;
+    border-radius: 0;
+    font-size: 8px;
+    background: rgba(1, 8, 10, 0.88);
+  }
+
+  .voice-controls {
+    gap: 4px;
+  }
+
+  .voice-label,
+  .voice-readout {
+    display: none;
+  }
+
   #transport button {
     min-width: 0;
     min-height: 42px;
@@ -1367,6 +1430,10 @@ body[data-character="lofi"] .identity-line {
   #auto-block,
   #preset-block {
     padding: 5px;
+  }
+
+  .voice-controls {
+    gap: 3px;
   }
 
   #transport button {
