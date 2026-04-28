@@ -921,6 +921,7 @@ function markMixEvent(amount = 0.08) {
 function updateGenreBlend(parts) {
   const { energy, wave, creation, voidness, circle, body, resource, observer, pressure } = parts;
   const bpmNorm = clampValue((EngineParams.bpm - 58) / 90, 0, 1);
+  const acid = AcidLockState.enabled ? clampValue(AcidLockState.intensity || 0.42, 0, 1) : 0;
   const midBpm = 1 - Math.abs(bpmNorm - 0.5) * 2;
   const activeGrid = clampValue((energy * 0.42) + (resource * 0.28) + (bpmNorm * 0.3), 0, 1);
   const ambientTarget = clampValue(
@@ -929,7 +930,8 @@ function updateGenreBlend(parts) {
       (voidness * 0.16) +
       (observer * 0.12) +
       (circle * 0.1) -
-      (resource * 0.08),
+      (resource * 0.08) -
+      acid * 0.16,
     0,
     1
   );
@@ -951,7 +953,8 @@ function updateGenreBlend(parts) {
       (creation * 0.08) +
       ((1 - voidness) * 0.08) +
       (activeGrid * 0.1) -
-      (observer * 0.06),
+      (observer * 0.06) +
+      acid * 0.24,
     0,
     1
   );
@@ -961,7 +964,8 @@ function updateGenreBlend(parts) {
       (pressure * 0.2) +
       (resource * 0.12) +
       (bpmNorm * 0.1) -
-      (voidness * 0.12),
+      (voidness * 0.12) +
+      acid * 0.18,
     0,
     1
   );
@@ -993,12 +997,12 @@ function updateAcidLockIntensity(step = 0.02) {
 
 function resolvePerformanceTempoTarget(rawTarget) {
   const acidAmount = updateAcidLockIntensity(0.012);
-  const noAcidCeiling = 118;
+  const noAcidCeiling = 114;
   if (acidAmount < 0.08) return clampValue(rawTarget, 54, noAcidCeiling);
 
-  const acidFloor = 120 + acidAmount * 4;
-  const acidLift = acidAmount * 12;
-  return clampValue(Math.max(rawTarget + acidLift, acidFloor), acidFloor, 144);
+  const acidFloor = 124 + acidAmount * 4;
+  const acidLift = acidAmount * 18;
+  return clampValue(Math.max(rawTarget + acidLift, acidFloor), acidFloor, 146);
 }
 
 function updateDJTempo(parts, options = {}) {
@@ -2289,7 +2293,8 @@ function setKeepAwakeEnabled(enabled) {
 
 function setAcidLockEnabled(enabled) {
   AcidLockState.enabled = !!enabled;
-  AcidLockState.intensity = AcidLockState.enabled ? Math.max(AcidLockState.intensity, 0.42) : 0;
+  AcidLockState.intensity = AcidLockState.enabled ? Math.max(AcidLockState.intensity, 0.58) : 0;
+  VoiceMorphState.transition = Math.max(VoiceMorphState.transition, AcidLockState.enabled ? 0.7 : 0.38);
   const button = document.getElementById("btn_acid_lock");
   if (button) {
     button.classList.toggle("active", AcidLockState.enabled);
@@ -4373,46 +4378,55 @@ function triggerAcidTechnoTrace(step, time, context) {
   const gradient = GradientState;
   const lowGuard = MixGovernorState.lowGuard;
   const acid = clampValue(
-    (EngineParams.mode === "trance" ? 0.34 : 0) +
-      genre.techno * 0.2 +
-      genre.pressure * 0.18 +
-      energyNorm * 0.16 +
-      creationNorm * 0.18 +
-      resourceNorm * 0.14 +
-      gradient.micro * 0.08 +
-      voiceGeneBias("pressure") * 0.1 -
+    0.22 +
+      (EngineParams.mode === "trance" ? 0.34 : 0) +
+      genre.techno * 0.26 +
+      genre.pressure * 0.22 +
+      energyNorm * 0.14 +
+      creationNorm * 0.22 +
+      resourceNorm * 0.18 +
+      gradient.micro * 0.1 +
+      gradient.chrome * 0.04 +
+      voiceGeneBias("pressure") * 0.14 -
       voidNorm * 0.24 -
-      lowGuard * 0.22,
+      lowGuard * 0.26,
     0,
     1
   ) * AcidLockState.intensity;
-  if (acid < 0.26) return;
+  if (acid < 0.22) return;
 
-  const gate = step % 16 === 1 || step % 16 === 3 || step % 16 === 6 || step % 16 === 9 || step % 16 === 11 || step % 16 === 14 || (isAccentStep && step % 2 === 1);
-  if (!gate || !rand(0.018 + acid * 0.14 + PerformancePadState.repeat * 0.04)) return;
+  const gate = step % 16 === 0 || step % 16 === 1 || step % 16 === 3 || step % 16 === 6 || step % 16 === 8 || step % 16 === 9 || step % 16 === 11 || step % 16 === 14 || (isAccentStep && step % 2 === 1);
+  if (!gate || !rand(0.04 + acid * 0.2 + PerformancePadState.repeat * 0.05)) return;
 
   const acidPhase = Math.floor((GenomeState.phase || 0) * ACID_TURN_NOTES.length);
   const note = ACID_TURN_NOTES[(GrooveState.cycle + step + acidPhase) % ACID_TURN_NOTES.length];
+  const turnNote = ACID_TURN_NOTES[(GrooveState.cycle + step + acidPhase + 2) % ACID_TURN_NOTES.length];
   const reply = GLASS_NOTES[(GrooveState.cycle + step + acidPhase + 2) % GLASS_NOTES.length];
   const acidTime = time + 0.012 + Math.random() * (0.01 + waveNorm * 0.012);
-  const vel = clampValue(0.046 + acid * 0.082 - lowGuard * 0.026, 0.034, 0.128);
-  const cutoff = clampValue(150 + acid * 520 + resourceNorm * 180 + waveNorm * 90 - lowGuard * 80, 110, 880);
-  const q = clampValue(2.0 + acid * 3.2 + creationNorm * 0.5 - lowGuard * 0.5, 1.4, 5.4);
+  const vel = clampValue(0.052 + acid * 0.11 - lowGuard * 0.036, 0.038, 0.152);
+  const cutoff = clampValue(190 + acid * 860 + resourceNorm * 220 + waveNorm * 120 - lowGuard * 120, 130, 1260);
+  const q = clampValue(2.4 + acid * 4.4 + creationNorm * 0.7 - lowGuard * 0.7, 1.6, 7.2);
 
   try {
     safeToneRamp(bass?.filter?.Q, q, 0.055);
     safeToneRamp(bass?.filter?.frequency, cutoff, 0.045);
     bass.triggerAttackRelease(note, "32n", acidTime, vel);
-    if (rand(0.28 + acid * 0.22)) {
+    if (rand(0.34 + acid * 0.32)) {
       bass.triggerAttackRelease(note, "64n", acidTime + 0.046 + Math.random() * 0.012, vel * 0.52);
     }
-    if (glass && rand(0.22 + acid * 0.26)) {
-      glass.triggerAttackRelease(reply, "64n", acidTime + 0.022, clampValue(0.018 + acid * 0.046 + gradient.chrome * 0.008, 0.014, 0.078));
+    if ((step % 8 === 3 || step % 8 === 6 || isAccentStep) && rand(0.18 + acid * 0.22)) {
+      bass.triggerAttackRelease(turnNote, "64n", acidTime + 0.074 + Math.random() * 0.014, vel * 0.42);
     }
-    if (texture && rand(0.18 + acid * 0.22)) {
-      texture.triggerAttackRelease("64n", acidTime + 0.016, clampValue(0.014 + acid * 0.042, 0.012, 0.072));
+    if (glass && rand(0.32 + acid * 0.34)) {
+      glass.triggerAttackRelease(reply, "64n", acidTime + 0.022, clampValue(0.022 + acid * 0.06 + gradient.chrome * 0.01, 0.016, 0.096));
     }
-    markMixEvent(0.08 + acid * 0.06);
+    if (hat && (step % 4 === 1 || step % 4 === 3 || isAccentStep) && rand(0.24 + acid * 0.32)) {
+      hat.triggerAttackRelease("64n", acidTime + 0.008, clampValue(0.04 + acid * 0.08 + energyNorm * 0.018, 0.032, 0.14));
+    }
+    if (texture && rand(0.26 + acid * 0.3)) {
+      texture.triggerAttackRelease("64n", acidTime + 0.016, clampValue(0.018 + acid * 0.058, 0.014, 0.09));
+    }
+    markMixEvent(0.1 + acid * 0.08);
   } catch (error) {
     console.warn("[Music] acid trace failed:", error);
   }
