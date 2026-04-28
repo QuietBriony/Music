@@ -62,6 +62,43 @@ const AUTO_SLIDER_SYNC_INTERVAL_MS = 240;
 const AUTO_GESTURE_MIN_GAP_MS = 4200;
 const AUTO_GESTURE_MANUAL_GRACE_MS = 1800;
 const AUTO_GESTURE_DURATIONS = { drift: 980, repeat: 760, punch: 420, void: 880 };
+const AUTO_DIRECTOR_SCENES = [
+  {
+    name: "haze",
+    length: 5,
+    bias: { energy: -10, wave: 6, mind: 4, creation: -2, void: 10, circle: 12, body: -10, resource: -8, observer: 14 },
+    gesture: { drift: 0.18, repeat: 0.04, punch: 0.02, void: 0.18 },
+    gestureChance: 0.02
+  },
+  {
+    name: "stir",
+    length: 4,
+    bias: { energy: 4, wave: 12, mind: 2, creation: 10, void: -4, circle: 2, body: 0, resource: 8, observer: 6 },
+    gesture: { drift: 0.14, repeat: 0.13, punch: 0.04, void: 0.04 },
+    gestureChance: 0.045
+  },
+  {
+    name: "tangle",
+    length: 4,
+    bias: { energy: 8, wave: 16, mind: 10, creation: 16, void: -6, circle: -8, body: -2, resource: 14, observer: 4 },
+    gesture: { drift: 0.08, repeat: 0.28, punch: 0.07, void: 0.02 },
+    gestureChance: 0.07
+  },
+  {
+    name: "body",
+    length: 3,
+    bias: { energy: 12, wave: 6, mind: -2, creation: 6, void: -8, circle: -4, body: 12, resource: 8, observer: -2 },
+    gesture: { drift: 0.04, repeat: 0.08, punch: 0.22, void: 0.01 },
+    gestureChance: 0.055
+  },
+  {
+    name: "open",
+    length: 5,
+    bias: { energy: -8, wave: 8, mind: 8, creation: 2, void: 14, circle: 10, body: -12, resource: -6, observer: 16 },
+    gesture: { drift: 0.18, repeat: 0.03, punch: 0.01, void: 0.24 },
+    gestureChance: 0.05
+  }
+];
 const MANUAL_INFLUENCE_HOLD_MS = 4300;
 const manualInfluenceUntil = {};
 const SLIDER_KEY_BY_ID = Object.fromEntries(Object.entries(SLIDER_BY_UCM).map(([key, id]) => [id, key]));
@@ -100,6 +137,13 @@ const MotifMemoryState = {
   air: 0,
   lastStep: -99,
   source: ""
+};
+const AutoDirectorState = {
+  sceneIndex: 0,
+  phrase: 0,
+  intensity: 0.58,
+  cadence: "",
+  lastScene: "haze"
 };
 const OutputState = {
   level: 75
@@ -190,6 +234,46 @@ function hasActivePerformancePad() {
   return ["drift", "repeat", "punch", "void"].some((name) => PerformancePadState[name] > 0);
 }
 
+function currentAutoDirectorScene() {
+  return AUTO_DIRECTOR_SCENES[AutoDirectorState.sceneIndex % AUTO_DIRECTOR_SCENES.length] || AUTO_DIRECTOR_SCENES[0];
+}
+
+function autoDirectorSceneBias(key) {
+  if (!UCM.auto.enabled || !isPlaying) return 0;
+  const scene = currentAutoDirectorScene();
+  const sceneLength = Math.max(1, scene.length || 1);
+  const progress = clampValue(AutoDirectorState.phrase / sceneLength, 0, 1);
+  const phraseShape = 0.72 + Math.sin(progress * Math.PI) * 0.28;
+  const intensity = clampValue(AutoDirectorState.intensity, 0.35, 0.9);
+  return (scene.bias?.[key] || 0) * phraseShape * intensity;
+}
+
+function resetAutoDirector() {
+  AutoDirectorState.sceneIndex = 0;
+  AutoDirectorState.phrase = 0;
+  AutoDirectorState.intensity = 0.58;
+  AutoDirectorState.cadence = "";
+  AutoDirectorState.lastScene = currentAutoDirectorScene().name;
+}
+
+function advanceAutoDirectorPhrase() {
+  if (!UCM.auto.enabled || !isPlaying) return;
+  const scene = currentAutoDirectorScene();
+  AutoDirectorState.phrase += 1;
+  if (AutoDirectorState.phrase >= (scene.length || 4)) {
+    AutoDirectorState.sceneIndex = (AutoDirectorState.sceneIndex + 1) % AUTO_DIRECTOR_SCENES.length;
+    AutoDirectorState.phrase = 0;
+    AutoDirectorState.intensity = clampValue(0.48 + Math.random() * 0.24 + organicChaosAmount() * 0.1, 0.44, 0.84);
+    AutoDirectorState.cadence = "scene";
+    AutoDirectorState.lastScene = currentAutoDirectorScene().name;
+    return;
+  }
+
+  if (AutoDirectorState.phrase % 2 === 0) {
+    AutoDirectorState.cadence = "phrase";
+  }
+}
+
 function chooseAutoGesture(context) {
   const {
     energyNorm,
@@ -200,11 +284,12 @@ function chooseAutoGesture(context) {
     voidNorm,
     circleNorm
   } = context;
+  const scene = currentAutoDirectorScene();
   const weighted = [
-    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1 + OrganicChaosState.airPull * 0.08],
-    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08 + OrganicChaosState.tangle * 0.12],
-    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12 + OrganicChaosState.lowMotion * 0.1],
-    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08 + OrganicChaosState.impulse * 0.06]
+    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1 + OrganicChaosState.airPull * 0.08 + (scene.gesture?.drift || 0)],
+    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08 + OrganicChaosState.tangle * 0.12 + (scene.gesture?.repeat || 0)],
+    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12 + OrganicChaosState.lowMotion * 0.1 + (scene.gesture?.punch || 0)],
+    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08 + OrganicChaosState.impulse * 0.06 + (scene.gesture?.void || 0)]
   ];
   const total = weighted.reduce((sum, [, weight]) => sum + Math.max(0, weight), 0);
   let pick = Math.random() * total;
@@ -250,7 +335,8 @@ function maybeTriggerAutoPerformanceGesture(step, context) {
   if (now - AutoGestureState.lastAt < AUTO_GESTURE_MIN_GAP_MS) return;
   if (!(step % 8 === 0 || step % 8 === 4)) return;
 
-  const chanceValue = 0.13 + context.creationNorm * 0.05 + context.observerNorm * 0.035 + context.waveNorm * 0.035 + context.resourceNorm * 0.025;
+  const scene = currentAutoDirectorScene();
+  const chanceValue = 0.11 + (scene.gestureChance || 0.03) + context.creationNorm * 0.045 + context.observerNorm * 0.032 + context.waveNorm * 0.032 + context.resourceNorm * 0.022;
   if (!rand(chance(chanceValue))) return;
   startAutoPerformanceGesture(chooseAutoGesture(context));
 }
@@ -2218,6 +2304,7 @@ function resetRuntimeCounters() {
   GrooveState.textureLift = 0;
   GrooveState.glassLift = 0;
   GrooveState.floorWarmupSteps = 10;
+  resetAutoDirector();
 }
 
 function patternAt(pattern, step) {
@@ -2242,6 +2329,7 @@ function randomHazeChord() {
 
 function advanceGrooveStructure() {
   GrooveState.cycle++;
+  advanceAutoDirectorPhrase();
 
   const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
   const creationNorm = clampValue(UCM_CUR.creation / 100, 0, 1);
@@ -2575,6 +2663,72 @@ function triggerMotifAfterimage(step, time, context) {
   }
 }
 
+function triggerAutoDirectorCadence(step, time, context) {
+  if (!UCM.auto.enabled || !AutoDirectorState.cadence || step !== 0) return;
+  const cadence = AutoDirectorState.cadence;
+  AutoDirectorState.cadence = "";
+
+  const scene = currentAutoDirectorScene();
+  const isSceneChange = cadence === "scene";
+  const {
+    energyNorm,
+    creationNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm
+  } = context;
+  const sceneName = scene.name || "haze";
+  const cadenceTime = time + 0.018 + Math.random() * (0.016 + waveNorm * 0.012);
+  const accentVel = clampValue((isSceneChange ? 0.034 : 0.022) + observerNorm * 0.018 + creationNorm * 0.012, 0.018, 0.082);
+
+  try {
+    if (isSceneChange) {
+      const gesture = sceneName === "body" ? "punch" : sceneName === "tangle" ? "repeat" : sceneName === "open" ? "void" : "drift";
+      exciteOrganicChaos(gesture, "auto");
+      rememberGestureMotif(gesture, "auto");
+    }
+
+    if (sceneName === "haze" || sceneName === "open") {
+      const note = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + (sceneName === "open" ? 3 : 1)) % TRANSPARENT_AIR_FRAGMENTS.length];
+      pad.triggerAttackRelease(randomHazeChord(), isSceneChange ? "2n" : "1n", cadenceTime + 0.02, clampValue(0.026 + observerNorm * 0.026 + circleNorm * 0.014, 0.022, 0.07));
+      glass.triggerAttackRelease(note, "16n", cadenceTime + 0.04, clampValue(accentVel + 0.006, 0.02, 0.09));
+      rememberMotif(note, {
+        reply: TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + 4) % TRANSPARENT_AIR_FRAGMENTS.length],
+        shade: FIELD_MURK_FRAGMENTS[(GrooveState.cycle + stepIndex + 2) % FIELD_MURK_FRAGMENTS.length],
+        strength: isSceneChange ? 0.13 : 0.07,
+        air: isSceneChange ? 0.22 : 0.12,
+        source: sceneName
+      });
+    } else if (sceneName === "tangle" || sceneName === "stir") {
+      const note = GLASS_NOTES[(GrooveState.cycle + stepIndex + (sceneName === "tangle" ? 5 : 2)) % GLASS_NOTES.length];
+      const reply = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + 1) % TRANSPARENT_AIR_FRAGMENTS.length];
+      glass.triggerAttackRelease(note, "64n", cadenceTime + 0.012, clampValue(accentVel + 0.014, 0.024, 0.096));
+      glass.triggerAttackRelease(reply, "64n", cadenceTime + 0.058 + Math.random() * 0.018, clampValue(accentVel * 0.62, 0.016, 0.06));
+      texture.triggerAttackRelease("64n", cadenceTime + 0.026, clampValue(0.018 + creationNorm * 0.034, 0.016, 0.072));
+      rememberMotif(note, {
+        reply,
+        shade: ORGANIC_PLUCK_FRAGMENTS[(GrooveState.cycle + stepIndex + 3) % ORGANIC_PLUCK_FRAGMENTS.length],
+        strength: isSceneChange ? 0.16 : 0.08,
+        air: 0.08,
+        source: sceneName
+      });
+    } else if (sceneName === "body") {
+      const note = PRESSURE_TURN_NOTES[(GrooveState.cycle + stepIndex) % PRESSURE_TURN_NOTES.length];
+      bass.triggerAttackRelease(note, "32n", cadenceTime + 0.02, clampValue(0.058 + energyNorm * 0.048, 0.046, 0.13));
+      texture.triggerAttackRelease("64n", cadenceTime + 0.028, clampValue(0.028 + creationNorm * 0.04, 0.024, 0.094));
+      rememberMotif(ORGANIC_PLUCK_FRAGMENTS[(GrooveState.cycle + stepIndex + 2) % ORGANIC_PLUCK_FRAGMENTS.length], {
+        reply: TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + 2) % TRANSPARENT_AIR_FRAGMENTS.length],
+        shade: note,
+        strength: isSceneChange ? 0.12 : 0.06,
+        air: 0.04,
+        source: sceneName
+      });
+    }
+  } catch (error) {
+    console.warn("[Music] auto director cadence failed:", error);
+  }
+}
+
 function triggerReferenceDepthDetails(step, time, context) {
   const {
     energyNorm,
@@ -2773,6 +2927,7 @@ function scheduleStep(time) {
   const gradient = updateReferenceGradient(gradientParts);
   updateReferenceDepth(gradientParts, gradient);
   maybeTriggerAutoPerformanceGesture(step, stepContext);
+  triggerAutoDirectorCadence(step, t, stepContext);
 
   triggerAudibleGrooveFloor(step, t, stepContext);
   triggerOrganicTexture(step, t, stepContext);
@@ -2888,6 +3043,7 @@ function startAutoCycle() {
   const cycleMs = Math.max(30000, minutes * 60 * 1000);
 
   UCM.auto.enabled = true;
+  resetAutoDirector();
   updateRuntimeUiState();
   updateAutoMixTargets(cycleMs);
 
@@ -2905,7 +3061,8 @@ function updateAutoMixTargets(cycleMs) {
     const phase = (UCM.auto.phase + profile.phase) % 1;
     const wave = Math.sin(phase * Math.PI * 2);
     const ripple = Math.sin((phase * 2.7 + profile.phase) * Math.PI * 2) * 0.23;
-    const desired = clampValue(profile.base + profile.depth * (wave + ripple), 4, 96);
+    const directorBias = autoDirectorSceneBias(key);
+    const desired = clampValue(profile.base + directorBias + profile.depth * (wave + ripple), 4, 96);
     const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : profile.base;
     const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
     if (isManualInfluenceActive(key, now)) {
