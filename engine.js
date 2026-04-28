@@ -145,6 +145,14 @@ const AutoDirectorState = {
   cadence: "",
   lastScene: "haze"
 };
+const OrganicEcosystemState = {
+  breath: 0.52,
+  sprout: 0.18,
+  ferment: 0.16,
+  rootTurn: 0.14,
+  bloom: 0,
+  lastBloomCycle: -99
+};
 const OutputState = {
   level: 75
 };
@@ -432,6 +440,54 @@ function resetMotifMemory() {
   MotifMemoryState.air = 0;
   MotifMemoryState.lastStep = -99;
   MotifMemoryState.source = "";
+}
+
+function resetOrganicEcosystem() {
+  OrganicEcosystemState.breath = 0.52;
+  OrganicEcosystemState.sprout = 0.18;
+  OrganicEcosystemState.ferment = 0.16;
+  OrganicEcosystemState.rootTurn = 0.14;
+  OrganicEcosystemState.bloom = 0;
+  OrganicEcosystemState.lastBloomCycle = -99;
+}
+
+function decayOrganicEcosystem() {
+  OrganicEcosystemState.bloom *= 0.9;
+  OrganicEcosystemState.sprout *= 0.995;
+  OrganicEcosystemState.ferment *= 0.996;
+  OrganicEcosystemState.rootTurn *= 0.996;
+  if (OrganicEcosystemState.bloom < 0.001) OrganicEcosystemState.bloom = 0;
+}
+
+function advanceOrganicEcosystemPhrase(parts) {
+  if (!UCM.auto.enabled || !isPlaying) return;
+  const scene = currentAutoDirectorScene();
+  const chaos = organicChaosAmount();
+  const sceneName = scene.name || "haze";
+  const sceneSprout = sceneName === "stir" || sceneName === "tangle" ? 0.07 : sceneName === "open" ? 0.035 : 0.025;
+  const sceneFerment = sceneName === "tangle" ? 0.08 : sceneName === "body" ? 0.065 : 0.025;
+  const sceneRoot = sceneName === "body" ? 0.09 : sceneName === "tangle" ? 0.045 : 0.02;
+  const breathTarget = clampValue(
+    0.48 +
+      Math.sin(GrooveState.cycle * 0.31) * 0.18 +
+      parts.observerNorm * 0.1 +
+      parts.circleNorm * 0.08 +
+      parts.voidNorm * 0.06 -
+      parts.energyNorm * 0.08,
+    0.18,
+    0.88
+  );
+
+  OrganicEcosystemState.breath = approachValue(OrganicEcosystemState.breath, breathTarget, 0.05);
+  OrganicEcosystemState.sprout = clampValue(OrganicEcosystemState.sprout * 0.84 + sceneSprout + parts.creationNorm * 0.035 + parts.waveNorm * 0.018 + Math.random() * 0.025, 0, 1);
+  OrganicEcosystemState.ferment = clampValue(OrganicEcosystemState.ferment * 0.86 + sceneFerment + parts.resourceNorm * 0.032 + chaos * 0.07, 0, 1);
+  OrganicEcosystemState.rootTurn = clampValue(OrganicEcosystemState.rootTurn * 0.86 + sceneRoot + (UCM_CUR.body / 100) * 0.032 + parts.waveNorm * 0.026 + OrganicChaosState.lowMotion * 0.05, 0, 1);
+
+  const bloomChance = 0.08 + OrganicEcosystemState.sprout * 0.08 + OrganicEcosystemState.ferment * 0.06 + (AutoDirectorState.cadence === "scene" ? 0.1 : 0);
+  if (GrooveState.cycle - OrganicEcosystemState.lastBloomCycle > 2 && rand(chance(bloomChance))) {
+    OrganicEcosystemState.bloom = clampValue(OrganicEcosystemState.bloom + 0.28 + Math.random() * 0.22 + chaos * 0.08, 0, 1);
+    OrganicEcosystemState.lastBloomCycle = GrooveState.cycle;
+  }
 }
 
 // seconds to reach target (larger = smoother)
@@ -2305,6 +2361,7 @@ function resetRuntimeCounters() {
   GrooveState.glassLift = 0;
   GrooveState.floorWarmupSteps = 10;
   resetAutoDirector();
+  resetOrganicEcosystem();
 }
 
 function patternAt(pattern, step) {
@@ -2339,6 +2396,7 @@ function advanceGrooveStructure() {
   const phraseStep = GrooveState.cycle % 4;
   const density = (energyNorm + creationNorm + resourceNorm) / 3;
   const fillChance = mapValue(density, 0, 1, 0.04, 0.30);
+  advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
 
   GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
   GrooveState.textureLift = GrooveState.fillActive ? 0.10 + creationNorm * 0.12 : creationNorm * 0.035;
@@ -2369,6 +2427,7 @@ function triggerLowMotion(step, time, context) {
   const punch = PerformancePadState.punch;
   const ghost = GradientState.ghost;
   const chaos = OrganicChaosState;
+  const eco = OrganicEcosystemState;
   const motion = clampValue(
     energyNorm * 0.2 +
       (UCM_CUR.body / 100) * 0.2 +
@@ -2378,21 +2437,22 @@ function triggerLowMotion(step, time, context) {
       ghost * 0.1 +
       chaos.lowMotion * 0.22 +
       chaos.impulse * 0.08 +
+      eco.rootTurn * 0.16 +
       repeat * 0.08 +
       punch * 0.04 -
       voidNorm * 0.16,
     0,
     1
   );
-  const gate = step % 8 === 2 || step % 8 === 6 || (repeat && step % 4 === 2) || (chaos.lowMotion > 0.18 && step % 8 === 3) || (isAccentStep && step % 2 === 0);
-  if (!gate || !rand(chance(0.024 + motion * 0.12 + repeat * 0.052 + punch * 0.018 + chaos.lowMotion * 0.04))) return;
+  const gate = step % 8 === 2 || step % 8 === 6 || (repeat && step % 4 === 2) || (chaos.lowMotion > 0.18 && step % 8 === 3) || (eco.rootTurn > 0.34 && step % 8 === 5) || (isAccentStep && step % 2 === 0);
+  if (!gate || !rand(chance(0.024 + motion * 0.12 + repeat * 0.052 + punch * 0.018 + chaos.lowMotion * 0.04 + eco.rootTurn * 0.026))) return;
 
   const notes = MODE_BASS_NOTES[EngineParams.mode] || MODE_BASS_NOTES.ambient;
   const note = rand(0.44 + waveNorm * 0.22)
     ? notes[(GrooveState.cycle + step + 1) % notes.length]
     : PRESSURE_TURN_NOTES[(GrooveState.cycle + step) % PRESSURE_TURN_NOTES.length];
-  const tickTime = time + 0.018 + Math.random() * (0.012 + waveNorm * 0.016 + chaos.tangle * 0.012);
-  const vel = clampValue(0.052 + motion * 0.074 + repeat * 0.018 + chaos.lowMotion * 0.018, 0.044, 0.15);
+  const tickTime = time + 0.018 + Math.random() * (0.012 + waveNorm * 0.016 + chaos.tangle * 0.012 + eco.ferment * 0.008);
+  const vel = clampValue(0.052 + motion * 0.07 + repeat * 0.018 + chaos.lowMotion * 0.018 + eco.rootTurn * 0.012, 0.044, 0.15);
 
   try {
     bass.triggerAttackRelease(note, repeat ? "64n" : "32n", tickTime, vel);
@@ -2418,7 +2478,8 @@ function triggerAudibleGrooveFloor(step, time, context) {
   const gradient = GradientState;
   const depth = DepthState;
   const chaos = OrganicChaosState;
-  const hazeScale = (character.hazeScale || 1) * (0.88 + gradient.haze * 0.16 + gradient.chrome * 0.07 + depth.bed * 0.08 + depth.tail * 0.05);
+  const eco = OrganicEcosystemState;
+  const hazeScale = (character.hazeScale || 1) * (0.88 + gradient.haze * 0.16 + gradient.chrome * 0.07 + depth.bed * 0.08 + depth.tail * 0.05 + eco.breath * 0.05);
   const pulseScale = (character.pulseScale || 1) * (0.88 + gradient.ghost * 0.14 + gradient.micro * 0.07 + depth.pulse * 0.1 + chaos.lowMotion * 0.06);
   const inWarmup = GrooveState.floorWarmupSteps > 0;
   const voiding = PerformancePadState.void > 0;
@@ -2432,7 +2493,7 @@ function triggerAudibleGrooveFloor(step, time, context) {
     0.06
   );
   const ghostGlassVel = clampValue(
-    0.018 + observerNorm * 0.034 + (1 - energyNorm) * 0.012 + gradient.chrome * 0.008 + gradient.memory * 0.005 + depth.tail * 0.005 + chaos.airPull * 0.014 + PerformancePadState.void * 0.026,
+    0.018 + observerNorm * 0.034 + (1 - energyNorm) * 0.012 + gradient.chrome * 0.008 + gradient.memory * 0.005 + depth.tail * 0.005 + chaos.airPull * 0.014 + eco.breath * 0.006 + PerformancePadState.void * 0.026,
     0.016,
     0.086
   );
@@ -2560,6 +2621,7 @@ function triggerGranularDetail(step, time, context) {
   const repeat = PerformancePadState.repeat;
   const voiding = PerformancePadState.void;
   const chaos = OrganicChaosState;
+  const eco = OrganicEcosystemState;
   const focus = clampValue(
     (gradient.micro * 0.28) +
       (gradient.chrome * 0.22) +
@@ -2567,6 +2629,8 @@ function triggerGranularDetail(step, time, context) {
       (depth.particle * 0.2) +
       (chaos.tangle * 0.24) +
       (chaos.airPull * 0.12) +
+      (eco.sprout * 0.08) +
+      (eco.ferment * 0.06) +
       (observerNorm * 0.12) +
       (creationNorm * 0.12) +
       (repeat * 0.08) +
@@ -2574,8 +2638,8 @@ function triggerGranularDetail(step, time, context) {
     0,
     1
   );
-  const grainGate = step % 8 === 1 || step % 8 === 5 || (chaos.tangle > 0.18 && step % 8 === 3) || (isAccentStep && step % 2 === 1);
-  const grainChance = chance(0.018 + focus * 0.105 + resourceNorm * 0.018 + chaos.tangle * 0.04 + voiding * 0.018);
+  const grainGate = step % 8 === 1 || step % 8 === 5 || (chaos.tangle > 0.18 && step % 8 === 3) || (eco.sprout > 0.32 && step % 8 === 7) || (isAccentStep && step % 2 === 1);
+  const grainChance = chance(0.018 + focus * 0.105 + resourceNorm * 0.018 + chaos.tangle * 0.04 + eco.sprout * 0.024 + voiding * 0.018);
   if (!grainGate || !rand(grainChance)) return;
 
   const brightPool = voiding || gradient.chrome > gradient.organic
@@ -2585,7 +2649,7 @@ function triggerGranularDetail(step, time, context) {
   const root = brightPool[(step + GrooveState.cycle + Math.floor(waveNorm * 5)) % brightPool.length];
   const lift = brightPool[(step + GrooveState.cycle + 2 + Math.floor(observerNorm * 4)) % brightPool.length];
   const wood = organicPool[(step + GrooveState.cycle + 3) % organicPool.length];
-  const grainTime = time + 0.014 + Math.random() * (0.012 + waveNorm * 0.018 + chaos.tangle * 0.018);
+  const grainTime = time + 0.014 + Math.random() * (0.012 + waveNorm * 0.018 + chaos.tangle * 0.018 + eco.ferment * 0.012);
   const baseVel = clampValue(
     0.018 + focus * 0.046 + observerNorm * 0.016 + creationNorm * 0.012 + chaos.impulse * 0.01 + voiding * 0.008,
     0.016,
@@ -2604,7 +2668,7 @@ function triggerGranularDetail(step, time, context) {
     if (rand(0.34 + gradient.micro * 0.22 + chaos.tangle * 0.14 + repeat * 0.18)) {
       glass.triggerAttackRelease(lift, "64n", grainTime + 0.034 + Math.random() * (0.018 + chaos.tangle * 0.014), baseVel * clampValue(0.6 + focus * 0.16 + chaos.airPull * 0.08, 0.54, 0.8));
     }
-    if (rand(0.18 + gradient.organic * 0.16 + chaos.tangle * 0.12 + drift * 0.14)) {
+    if (rand(0.18 + gradient.organic * 0.16 + chaos.tangle * 0.12 + eco.sprout * 0.08 + drift * 0.14)) {
       glass.triggerAttackRelease(wood, "64n", grainTime + 0.066 + Math.random() * (0.024 + chaos.tangle * 0.018), baseVel * 0.5);
     }
     if (rand(0.24 + gradient.micro * 0.16 + depth.gesture * 0.12 + chaos.impulse * 0.1)) {
@@ -2660,6 +2724,61 @@ function triggerMotifAfterimage(step, time, context) {
     memory.lastStep = stepIndex;
   } catch (error) {
     console.warn("[Music] motif afterimage failed:", error);
+  }
+}
+
+function triggerOrganicEcosystemBloom(step, time, context) {
+  if (!UCM.auto.enabled || !isPlaying) return;
+  const eco = OrganicEcosystemState;
+  const scene = currentAutoDirectorScene();
+  const bloom = clampValue(eco.bloom + eco.sprout * 0.18 + eco.ferment * 0.12, 0, 1);
+  if (bloom < 0.08) return;
+
+  const {
+    energyNorm,
+    creationNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    isAccentStep
+  } = context;
+  const sceneName = scene.name || "haze";
+  const bloomGate = step % 8 === 1 || step % 8 === 5 || (isAccentStep && step % 2 === 1) || (eco.bloom > 0.32 && step % 8 === 7);
+  const bloomChance = chance(0.018 + bloom * 0.12 + observerNorm * 0.022 + creationNorm * 0.018);
+  if (!bloomGate || !rand(bloomChance)) return;
+
+  const airy = sceneName === "open" || sceneName === "haze" || eco.breath > 0.62;
+  const firstPool = airy ? TRANSPARENT_AIR_FRAGMENTS : ORGANIC_PLUCK_FRAGMENTS;
+  const first = firstPool[(GrooveState.cycle + stepIndex + Math.floor(waveNorm * 5)) % firstPool.length];
+  const reply = airy
+    ? TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + 3) % TRANSPARENT_AIR_FRAGMENTS.length]
+    : GLASS_NOTES[(GrooveState.cycle + stepIndex + 2) % GLASS_NOTES.length];
+  const shade = FIELD_MURK_FRAGMENTS[(GrooveState.cycle + stepIndex + 1) % FIELD_MURK_FRAGMENTS.length];
+  const bloomTime = time + 0.018 + Math.random() * (0.02 + waveNorm * 0.018 + eco.ferment * 0.012);
+  const vel = clampValue(0.02 + bloom * 0.048 + observerNorm * 0.018, 0.016, 0.09);
+
+  try {
+    glass.triggerAttackRelease(first, airy ? "32n" : "64n", bloomTime, vel);
+    if (rand(0.24 + eco.sprout * 0.18 + eco.breath * 0.08)) {
+      glass.triggerAttackRelease(reply, "64n", bloomTime + 0.052 + Math.random() * 0.028, vel * 0.58);
+    }
+    if (rand(0.22 + eco.ferment * 0.18)) {
+      texture.triggerAttackRelease("64n", bloomTime + 0.012, clampValue(0.014 + eco.ferment * 0.034 + creationNorm * 0.012, 0.012, 0.07));
+    }
+    if (eco.rootTurn > 0.28 && sceneName !== "open" && rand(0.18 + eco.rootTurn * 0.14)) {
+      const lowNote = PRESSURE_TURN_NOTES[(GrooveState.cycle + stepIndex + 1) % PRESSURE_TURN_NOTES.length];
+      bass.triggerAttackRelease(lowNote, "64n", bloomTime + 0.026, clampValue(0.046 + energyNorm * 0.028 + eco.rootTurn * 0.025, 0.04, 0.11));
+    }
+    rememberMotif(first, {
+      reply,
+      shade,
+      strength: 0.05 + bloom * 0.08,
+      air: airy ? 0.16 + eco.breath * 0.08 : 0.06,
+      source: `ecosystem:${sceneName}`
+    });
+    eco.bloom *= 0.72;
+  } catch (error) {
+    console.warn("[Music] organic ecosystem bloom failed:", error);
   }
 }
 
@@ -2907,6 +3026,7 @@ function scheduleStep(time) {
   if (step === 0) advanceGrooveStructure();
   decayOrganicChaos();
   decayMotifMemory();
+  decayOrganicEcosystem();
 
   // 休符判定
   const isRest = rand(clampValue(EngineParams.restProb + PerformancePadState.void * 0.18 - PerformancePadState.punch * 0.06, 0.02, PerformancePadState.void ? 0.6 : 0.48));
@@ -2934,6 +3054,7 @@ function scheduleStep(time) {
   triggerReferenceDepthDetails(step, t, stepContext);
   triggerGranularDetail(step, t, stepContext);
   triggerMotifAfterimage(step, t, stepContext);
+  triggerOrganicEcosystemBloom(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
