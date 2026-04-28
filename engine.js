@@ -248,6 +248,15 @@ const AcidLockState = {
   enabled: false,
   intensity: 0
 };
+const PerformanceColorDriftState = {
+  lastCycle: -1,
+  phase: 0,
+  haze: 0.4,
+  chrome: 0.36,
+  dust: 0.34,
+  pressure: 0.18,
+  acid: 0
+};
 const VoiceMorphState = {
   transition: 0,
   gradient: {
@@ -761,6 +770,51 @@ function resetGenerativeGenome() {
   GenomeState.genes.voidTail = 0.32;
 }
 
+function advancePerformanceColorDrift() {
+  if (PerformanceColorDriftState.lastCycle === GrooveState.cycle) return;
+  PerformanceColorDriftState.lastCycle = GrooveState.cycle;
+
+  const cycle = GrooveState.cycle + 1;
+  const acid = updateAcidLockIntensity(0.028);
+  const energy = clampValue(UCM_CUR.energy / 100, 0, 1);
+  const creation = clampValue(UCM_CUR.creation / 100, 0, 1);
+  const resource = clampValue(UCM_CUR.resource / 100, 0, 1);
+  const observer = clampValue(UCM_CUR.observer / 100, 0, 1);
+  const voidness = clampValue(UCM_CUR.void / 100, 0, 1);
+  const bpmNorm = clampValue((EngineParams.bpm - 58) / 86, 0, 1);
+  const phase = fractionalPart(cycle * 0.034 + GenomeState.generation * 0.055 + (acid > 0.08 ? 0.17 : 0));
+  const slow = (Math.sin(cycle * 0.13 + phase * Math.PI * 2) + 1) / 2;
+  const off = (Math.sin(cycle * 0.071 + 1.9) + 1) / 2;
+  const shimmer = (Math.sin(cycle * 0.21 + 0.7) + 1) / 2;
+
+  PerformanceColorDriftState.phase = phase;
+  PerformanceColorDriftState.haze = approachValue(
+    PerformanceColorDriftState.haze,
+    clampValue(0.28 + voidness * 0.26 + observer * 0.12 + (1 - energy) * 0.16 + slow * 0.18 - acid * 0.06, 0, 1),
+    0.035
+  );
+  PerformanceColorDriftState.chrome = approachValue(
+    PerformanceColorDriftState.chrome,
+    clampValue(0.22 + observer * 0.22 + shimmer * 0.26 + GenomeState.genes.chrome * 0.12 + acid * 0.06, 0, 1),
+    0.035
+  );
+  PerformanceColorDriftState.dust = approachValue(
+    PerformanceColorDriftState.dust,
+    clampValue(0.2 + creation * 0.2 + resource * 0.14 + off * 0.24 + GenomeState.genes.organic * 0.1, 0, 1),
+    0.035
+  );
+  PerformanceColorDriftState.pressure = approachValue(
+    PerformanceColorDriftState.pressure,
+    clampValue(energy * 0.2 + resource * 0.16 + bpmNorm * 0.14 + acid * 0.32 + off * 0.1 - voidness * 0.14, 0, 1),
+    0.03
+  );
+  PerformanceColorDriftState.acid = approachValue(
+    PerformanceColorDriftState.acid,
+    clampValue(acid * (0.38 + bpmNorm * 0.34 + creation * 0.18 + resource * 0.12), 0, 1),
+    0.04
+  );
+}
+
 function resetOrganicEcosystem() {
   OrganicEcosystemState.breath = 0.52;
   OrganicEcosystemState.sprout = 0.18;
@@ -892,6 +946,21 @@ function longformTempoBias() {
   return stageBias * clampValue(0.42 + longformArcShape() * 0.8, 0.25, 1);
 }
 
+function updateAcidLockIntensity(step = 0.02) {
+  AcidLockState.intensity = approachValue(AcidLockState.intensity, AcidLockState.enabled ? 1 : 0, step);
+  return AcidLockState.intensity;
+}
+
+function resolvePerformanceTempoTarget(rawTarget) {
+  const acidAmount = updateAcidLockIntensity(0.012);
+  const noAcidCeiling = 118;
+  if (acidAmount < 0.08) return clampValue(rawTarget, 54, noAcidCeiling);
+
+  const acidFloor = 120 + acidAmount * 4;
+  const acidLift = acidAmount * 12;
+  return clampValue(Math.max(rawTarget + acidLift, acidFloor), acidFloor, 144);
+}
+
 function updateDJTempo(parts, options = {}) {
   const force = options.force === true;
   const { energy, wave, creation, body, resource, observer, voidness } = parts;
@@ -904,7 +973,7 @@ function updateDJTempo(parts, options = {}) {
     genre.pressure * 3;
   const contour = Math.sin((GrooveState.cycle * 0.045) + (LongformArcState.stageIndex * 0.9)) * (1.2 + longformArcShape() * 2.4);
   const pressureLift = clampValue((body * 0.22) + (resource * 0.18) + (creation * 0.12) - (observer * 0.08) - (voidness * 0.08), -0.12, 0.36) * 8;
-  const target = clampValue(rawBpm + longformTempoBias() + genreBias + pressureLift + contour, 54, 152);
+  const target = resolvePerformanceTempoTarget(rawBpm + longformTempoBias() + genreBias + pressureLift + contour);
   const targetStep = force ? 96 : 0.55 + Math.abs(DJTempoState.targetBpm - target) * 0.018;
   const bpmStep = force ? 96 : 0.42 + wave * 0.18 + genre.techno * 0.16;
 
@@ -1229,7 +1298,8 @@ function publishMusicRuntimeState() {
     },
     acid: {
       enabled: AcidLockState.enabled,
-      intensity: AcidLockState.intensity
+      intensity: AcidLockState.intensity,
+      color: { ...PerformanceColorDriftState }
     },
     gradient: { ...GradientState },
     depth: { ...DepthState },
@@ -3142,6 +3212,14 @@ function updateReferenceGradient(parts) {
     GradientState.organic = clampValue(GradientState.organic + genes.organic * genomeScale + genes.refrain * genomeScale * 0.18, 0, 1);
   }
 
+  const color = PerformanceColorDriftState;
+  GradientState.haze = clampValue(GradientState.haze + color.haze * 0.045 - color.acid * 0.018, 0, 1);
+  GradientState.memory = clampValue(GradientState.memory + color.haze * 0.018 + color.dust * 0.025, 0, 1);
+  GradientState.micro = clampValue(GradientState.micro + color.dust * 0.046 + color.acid * 0.07, 0, 1);
+  GradientState.ghost = clampValue(GradientState.ghost + color.pressure * 0.04 + color.acid * 0.032, 0, 1);
+  GradientState.chrome = clampValue(GradientState.chrome + color.chrome * 0.052 + color.acid * 0.018, 0, 1);
+  GradientState.organic = clampValue(GradientState.organic + color.dust * 0.042 + color.haze * 0.015, 0, 1);
+
   const voiceScale = 0.68;
   for (const key of Object.keys(GradientState)) {
     GradientState[key] = clampValue(GradientState[key] + voiceGradientBias(key) * voiceScale, 0, 1);
@@ -3602,8 +3680,9 @@ function applyHazamaProfileToEngineParams(options = {}) {
   }
 
   if (typeof audio.tempo === "number") {
-    const step = force ? 128 : 0.62 + Math.abs((DJTempoState.targetBpm || EngineParams.bpm) - audio.tempo) * 0.012;
-    DJTempoState.targetBpm = approachValue(DJTempoState.targetBpm || audio.tempo, audio.tempo, step);
+    const tempoTarget = resolvePerformanceTempoTarget(audio.tempo);
+    const step = force ? 128 : 0.62 + Math.abs((DJTempoState.targetBpm || EngineParams.bpm) - tempoTarget) * 0.012;
+    DJTempoState.targetBpm = approachValue(DJTempoState.targetBpm || tempoTarget, tempoTarget, step);
     DJTempoState.bpm = approachValue(DJTempoState.bpm || audio.tempo, DJTempoState.targetBpm, force ? 128 : 0.5);
     EngineParams.bpm = Math.round(DJTempoState.bpm);
     if (typeof Tone !== "undefined" && Tone.Transport?.bpm) {
@@ -4028,6 +4107,7 @@ function advanceGrooveStructure() {
   advanceAutoDirectorPhrase();
   advanceHazamaAutonomy();
   syncHazamaTransportControls(0);
+  advancePerformanceColorDrift();
 
   const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
   const creationNorm = clampValue(UCM_CUR.creation / 100, 0, 1);
@@ -4209,6 +4289,49 @@ function triggerDroneResonanceBed(step, time, context) {
     markMixEvent(0.045);
   } catch (error) {
     console.warn("[Music] drone resonance failed:", error);
+  }
+}
+
+function triggerPerformanceColorDriftDetail(step, time, context) {
+  const {
+    creationNorm,
+    observerNorm,
+    circleNorm,
+    waveNorm,
+    isAccentStep
+  } = context;
+  if (!glass || MixGovernorState.eventLoad > 0.9) return;
+
+  const color = PerformanceColorDriftState;
+  const amount = clampValue(color.haze * 0.2 + color.chrome * 0.22 + color.dust * 0.2 + color.pressure * 0.1 + color.acid * 0.24, 0, 1);
+  if (amount < 0.24) return;
+
+  const gate = step % 16 === 5 || step % 16 === 13 || (isAccentStep && step % 2 === 1);
+  if (!gate || !rand(0.018 + amount * 0.08 + color.acid * 0.035)) return;
+
+  const pool = color.acid > 0.18 || color.dust > color.haze
+    ? GLASS_NOTES
+    : color.chrome > color.dust
+      ? TRANSPARENT_AIR_FRAGMENTS
+      : ORGANIC_PLUCK_FRAGMENTS;
+  const note = pool[(GrooveState.cycle + step + Math.floor(color.phase * pool.length)) % pool.length];
+  const reply = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + 3) % TRANSPARENT_AIR_FRAGMENTS.length];
+  const driftTime = time + 0.018 + Math.random() * (0.016 + waveNorm * 0.016);
+
+  try {
+    glass.triggerAttackRelease(note, color.acid > 0.18 ? "64n" : "32n", driftTime, clampValue(0.016 + amount * 0.044 + observerNorm * 0.008, 0.014, 0.082));
+    if (color.chrome > 0.42 && rand(0.22 + color.chrome * 0.18)) {
+      glass.triggerAttackRelease(reply, "64n", driftTime + 0.052 + Math.random() * 0.018, clampValue(0.012 + color.chrome * 0.034, 0.012, 0.058));
+    }
+    if (texture && color.dust > 0.38 && rand(0.18 + color.dust * 0.18)) {
+      texture.triggerAttackRelease("64n", driftTime + 0.012, clampValue(0.012 + color.dust * 0.036 + creationNorm * 0.008, 0.012, 0.066));
+    }
+    if (pad && color.haze > 0.54 && step % 16 === 13 && rand(0.16 + circleNorm * 0.16)) {
+      pad.triggerAttackRelease(randomHazeChord(), "2n", driftTime + 0.04, clampValue(0.018 + color.haze * 0.035 + circleNorm * 0.008, 0.016, 0.064));
+    }
+    markMixEvent(0.06 + amount * 0.04);
+  } catch (error) {
+    console.warn("[Music] color drift detail failed:", error);
   }
 }
 
@@ -5203,6 +5326,7 @@ function scheduleStep(time) {
   triggerLongformArcTurn(step, t, stepContext);
   triggerOrganicEcosystemBloom(step, t, stepContext);
   triggerDroneResonanceBed(step, t, stepContext);
+  triggerPerformanceColorDriftDetail(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
   triggerAcidTechnoTrace(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
