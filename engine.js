@@ -265,6 +265,22 @@ const VoiceMorphState = {
     voidTail: 0
   }
 };
+const AUTO_SOURCE_MORPH_KEYS = ["xtal", "boc", "opn", "fsol", "autechre", "burial"];
+const AUTO_ATMOSPHERE_MORPH_KEYS = ["haze", "chrome", "void", "organic", "ghost"];
+const AutoVoiceMorphState = {
+  sourceIndex: 0,
+  sourceNextIndex: 1,
+  sourceAge: 0,
+  sourceSegmentCycles: 54,
+  sourceBlend: 0,
+  atmosphereIndex: 0,
+  atmosphereNextIndex: 1,
+  atmosphereAge: 0,
+  atmosphereSegmentCycles: 38,
+  atmosphereBlend: 0,
+  generation: 0,
+  lastCycle: -1
+};
 const ATMOSPHERE_COLORS = {
   auto: {
     label: "AUTO AIR",
@@ -959,14 +975,111 @@ function currentVoiceColor() {
   return { atmosphere, source };
 }
 
+function smoothStep01(value) {
+  const x = clampValue(value, 0, 1);
+  return x * x * (3 - 2 * x);
+}
+
+function autoVoiceKey(palette, index) {
+  return palette[((index % palette.length) + palette.length) % palette.length];
+}
+
+function autoVoiceSegmentCycles(base, span, offset = 0) {
+  const phi = fractionalPart((AutoVoiceMorphState.generation + 1 + offset) * GOLDEN_RATIO_INVERSE);
+  const tempoMotion = clampValue(Math.abs(DJTempoState.motion || 0) / 18, 0, 1);
+  const energyLift = clampValue(UCM_CUR.energy / 100, 0, 1) * 0.16;
+  return Math.round(base + span * phi - span * 0.18 * tempoMotion - span * energyLift);
+}
+
+function autoVoiceBlendValue(map, fromKey, toKey, blend, key, amountKey) {
+  const from = map[fromKey]?.[amountKey]?.[key] || 0;
+  const to = map[toKey]?.[amountKey]?.[key] || 0;
+  return from * (1 - blend) + to * blend;
+}
+
+function autoVoiceSourceActive() {
+  return VoiceColorState.source === "genome";
+}
+
+function autoVoiceAtmosphereActive() {
+  return VoiceColorState.atmosphere === "auto";
+}
+
+function activeAutoSourceKey() {
+  return autoVoiceKey(AUTO_SOURCE_MORPH_KEYS, AutoVoiceMorphState.sourceIndex);
+}
+
+function nextAutoSourceKey() {
+  return autoVoiceKey(AUTO_SOURCE_MORPH_KEYS, AutoVoiceMorphState.sourceNextIndex);
+}
+
+function activeAutoAtmosphereKey() {
+  return autoVoiceKey(AUTO_ATMOSPHERE_MORPH_KEYS, AutoVoiceMorphState.atmosphereIndex);
+}
+
+function nextAutoAtmosphereKey() {
+  return autoVoiceKey(AUTO_ATMOSPHERE_MORPH_KEYS, AutoVoiceMorphState.atmosphereNextIndex);
+}
+
+function effectiveVoiceSourceKey() {
+  return autoVoiceSourceActive() ? activeAutoSourceKey() : VoiceColorState.source;
+}
+
+function effectiveVoiceAtmosphereKey() {
+  return autoVoiceAtmosphereActive() ? activeAutoAtmosphereKey() : VoiceColorState.atmosphere;
+}
+
+function autoVoiceMorphLabel() {
+  const sourceFrom = SOURCE_COLORS[activeAutoSourceKey()]?.label || "GENOME";
+  const sourceTo = SOURCE_COLORS[nextAutoSourceKey()]?.label || sourceFrom;
+  const atmosphereFrom = ATMOSPHERE_COLORS[activeAutoAtmosphereKey()]?.label || "AUTO AIR";
+  const atmosphereTo = ATMOSPHERE_COLORS[nextAutoAtmosphereKey()]?.label || atmosphereFrom;
+  const sourceLabel = AutoVoiceMorphState.sourceBlend > 0.18 && AutoVoiceMorphState.sourceBlend < 0.82
+    ? `${sourceFrom} -> ${sourceTo}`
+    : sourceFrom;
+  const atmosphereLabel = AutoVoiceMorphState.atmosphereBlend > 0.18 && AutoVoiceMorphState.atmosphereBlend < 0.82
+    ? `${atmosphereFrom} -> ${atmosphereTo}`
+    : atmosphereFrom;
+
+  return { sourceLabel, atmosphereLabel };
+}
+
+function autoVoiceMorphBias(key, amountKey) {
+  let bias = 0;
+
+  if (autoVoiceAtmosphereActive()) {
+    bias += autoVoiceBlendValue(
+      ATMOSPHERE_COLORS,
+      activeAutoAtmosphereKey(),
+      nextAutoAtmosphereKey(),
+      AutoVoiceMorphState.atmosphereBlend,
+      key,
+      amountKey
+    ) * 0.72;
+  }
+
+  if (autoVoiceSourceActive()) {
+    bias += autoVoiceBlendValue(
+      SOURCE_COLORS,
+      activeAutoSourceKey(),
+      nextAutoSourceKey(),
+      AutoVoiceMorphState.sourceBlend,
+      key,
+      amountKey
+    ) * 0.78;
+  }
+
+  return bias;
+}
+
 function voiceRawGradientBias(key) {
   const { atmosphere, source } = currentVoiceColor();
-  return (atmosphere.gradient?.[key] || 0) + (source.gradient?.[key] || 0);
+  return (atmosphere.gradient?.[key] || 0) + (source.gradient?.[key] || 0) + autoVoiceMorphBias(key, "gradient");
 }
 
 function voiceRawGeneBias(key) {
   const { atmosphere, source } = currentVoiceColor();
-  return (atmosphere.genes?.[key] || 0) + (source.genes?.[key] || 0);
+  return (atmosphere.genes?.[key] || 0) + (source.genes?.[key] || 0) + autoVoiceMorphBias(key, "genes");
 }
 
 function voiceTransitionAmount() {
@@ -992,14 +1105,134 @@ function decayVoiceMorph() {
   VoiceMorphState.transition = approachValue(VoiceMorphState.transition, 0, 0.07);
 }
 
+function resetAutoVoiceMorph() {
+  AutoVoiceMorphState.sourceIndex = 0;
+  AutoVoiceMorphState.sourceNextIndex = 1;
+  AutoVoiceMorphState.sourceAge = 0;
+  AutoVoiceMorphState.sourceSegmentCycles = 54;
+  AutoVoiceMorphState.sourceBlend = 0;
+  AutoVoiceMorphState.atmosphereIndex = 0;
+  AutoVoiceMorphState.atmosphereNextIndex = 1;
+  AutoVoiceMorphState.atmosphereAge = 0;
+  AutoVoiceMorphState.atmosphereSegmentCycles = 38;
+  AutoVoiceMorphState.atmosphereBlend = 0;
+  AutoVoiceMorphState.generation = 0;
+  AutoVoiceMorphState.lastCycle = -1;
+  VoiceMorphState.transition = 1;
+}
+
+function advanceAutoVoiceMorphPhrase() {
+  if (AutoVoiceMorphState.lastCycle === GrooveState.cycle) return;
+  AutoVoiceMorphState.lastCycle = GrooveState.cycle;
+
+  AutoVoiceMorphState.sourceAge += 1;
+  AutoVoiceMorphState.atmosphereAge += 1;
+  let sourceTurned = false;
+  let atmosphereTurned = false;
+
+  if (AutoVoiceMorphState.sourceAge >= AutoVoiceMorphState.sourceSegmentCycles) {
+    AutoVoiceMorphState.sourceIndex = AutoVoiceMorphState.sourceNextIndex;
+    AutoVoiceMorphState.sourceNextIndex = (AutoVoiceMorphState.sourceNextIndex + 1) % AUTO_SOURCE_MORPH_KEYS.length;
+    AutoVoiceMorphState.sourceAge = 0;
+    AutoVoiceMorphState.sourceSegmentCycles = autoVoiceSegmentCycles(42, 34, 0);
+    AutoVoiceMorphState.generation += 1;
+    VoiceMorphState.transition = 1;
+    sourceTurned = true;
+  }
+
+  if (AutoVoiceMorphState.atmosphereAge >= AutoVoiceMorphState.atmosphereSegmentCycles) {
+    AutoVoiceMorphState.atmosphereIndex = AutoVoiceMorphState.atmosphereNextIndex;
+    AutoVoiceMorphState.atmosphereNextIndex = (AutoVoiceMorphState.atmosphereNextIndex + 1) % AUTO_ATMOSPHERE_MORPH_KEYS.length;
+    AutoVoiceMorphState.atmosphereAge = 0;
+    AutoVoiceMorphState.atmosphereSegmentCycles = autoVoiceSegmentCycles(30, 24, 2);
+    AutoVoiceMorphState.generation += 1;
+    VoiceMorphState.transition = 1;
+    atmosphereTurned = true;
+  }
+
+  AutoVoiceMorphState.sourceBlend = smoothStep01(AutoVoiceMorphState.sourceAge / Math.max(1, AutoVoiceMorphState.sourceSegmentCycles));
+  AutoVoiceMorphState.atmosphereBlend = smoothStep01(AutoVoiceMorphState.atmosphereAge / Math.max(1, AutoVoiceMorphState.atmosphereSegmentCycles));
+
+  if (isPlaying && ((sourceTurned && autoVoiceSourceActive()) || (atmosphereTurned && autoVoiceAtmosphereActive()))) {
+    triggerVoiceColorCue();
+  }
+
+  if ((autoVoiceSourceActive() || autoVoiceAtmosphereActive()) && GrooveState.cycle % 4 === 0) {
+    updateVoiceColorUi();
+  }
+}
+
+function publishMusicRuntimeState() {
+  if (typeof window === "undefined") return;
+
+  const autoLabels = autoVoiceMorphLabel();
+  const state = {
+    version: 1,
+    playing: isPlaying,
+    initialized,
+    cycle: GrooveState.cycle,
+    step: stepIndex,
+    bpm: EngineParams.bpm,
+    mode: EngineParams.mode,
+    world: {
+      key: WorldState.key,
+      label: WorldState.label,
+      spectrum: WorldState.spectrum,
+      micro: WorldState.micro
+    },
+    voice: {
+      atmosphere: VoiceColorState.atmosphere,
+      source: VoiceColorState.source,
+      effectiveAtmosphere: effectiveVoiceAtmosphereKey(),
+      effectiveSource: effectiveVoiceSourceKey(),
+      autoAtmosphere: activeAutoAtmosphereKey(),
+      autoAtmosphereNext: nextAutoAtmosphereKey(),
+      autoAtmosphereBlend: AutoVoiceMorphState.atmosphereBlend,
+      autoSource: activeAutoSourceKey(),
+      autoSourceNext: nextAutoSourceKey(),
+      autoSourceBlend: AutoVoiceMorphState.sourceBlend,
+      atmosphereLabel: autoLabels.atmosphereLabel,
+      sourceLabel: autoLabels.sourceLabel,
+      autoActive: autoVoiceAtmosphereActive() || autoVoiceSourceActive()
+    },
+    gradient: { ...GradientState },
+    depth: { ...DepthState },
+    genre: { ...GenreBlendState },
+    genome: {
+      generation: GenomeState.generation,
+      phase: GenomeState.phase,
+      growth: GenomeState.growth,
+      mutation: GenomeState.mutation,
+      genes: { ...GenomeState.genes }
+    },
+    pads: { ...PerformancePadState },
+    output: { level: OutputState.level },
+    updatedAt: Date.now()
+  };
+
+  window.MusicRuntimeState = state;
+  try {
+    window.dispatchEvent(new CustomEvent("music-runtime-state", { detail: state }));
+  } catch (error) {}
+}
+
 function updateVoiceColorUi() {
   const { atmosphere, source } = currentVoiceColor();
+  const autoLabels = autoVoiceMorphLabel();
   const status = document.getElementById("voice_status");
-  if (status) status.textContent = `${atmosphere.label} / ${source.label}`;
+  if (status) {
+    const atmosphereLabel = autoVoiceAtmosphereActive() ? `AUTO ${autoLabels.atmosphereLabel}` : atmosphere.label;
+    const sourceLabel = autoVoiceSourceActive() ? `AUTO ${autoLabels.sourceLabel}` : source.label;
+    status.textContent = `${atmosphereLabel} / ${sourceLabel}`;
+  }
   if (document.body) {
     document.body.dataset.atmosphere = VoiceColorState.atmosphere;
     document.body.dataset.sourceColor = VoiceColorState.source;
+    document.body.dataset.autoAtmosphere = autoVoiceAtmosphereActive() ? activeAutoAtmosphereKey() : "";
+    document.body.dataset.autoSourceColor = autoVoiceSourceActive() ? activeAutoSourceKey() : "";
+    document.body.dataset.autoVoiceMorph = autoVoiceSourceActive() || autoVoiceAtmosphereActive() ? "true" : "false";
   }
+  publishMusicRuntimeState();
 }
 
 function updateVoiceColorFromUI(options = {}) {
@@ -1870,6 +2103,7 @@ function updateRuntimeUiState() {
   if (!document.body) return;
   document.body.dataset.playing = isPlaying ? "true" : "false";
   document.body.dataset.auto = UCM.auto.enabled ? "true" : "false";
+  publishMusicRuntimeState();
 }
 
 function syncMusicAudioAdapterFromUCM(force = false) {
@@ -2021,8 +2255,8 @@ function transparentFragment(offset = 0) {
 }
 
 function voiceNotePool(fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
-  const atmosphereKey = VoiceColorState.atmosphere;
-  const sourceKey = VoiceColorState.source;
+  const atmosphereKey = effectiveVoiceAtmosphereKey();
+  const sourceKey = effectiveVoiceSourceKey();
 
   if (atmosphereKey === "chrome" || atmosphereKey === "void" || sourceKey === "opn" || sourceKey === "xtal") {
     return TRANSPARENT_AIR_FRAGMENTS;
@@ -2044,8 +2278,8 @@ function triggerVoiceColorCue() {
   if (!isPlaying || !initialized || typeof Tone === "undefined") return;
 
   const now = Tone.now();
-  const atmosphereKey = VoiceColorState.atmosphere;
-  const sourceKey = VoiceColorState.source;
+  const atmosphereKey = effectiveVoiceAtmosphereKey();
+  const sourceKey = effectiveVoiceSourceKey();
   const gradientParts = currentGradientParts();
   const gradient = updateReferenceGradient(gradientParts);
   const depth = updateReferenceDepth(gradientParts, gradient);
@@ -3294,6 +3528,7 @@ function resetRuntimeCounters() {
   resetGenreBlend();
   resetDJTempo();
   resetGenerativeGenome();
+  resetAutoVoiceMorph();
 }
 
 function patternAt(pattern, step) {
@@ -3331,6 +3566,7 @@ function advanceGrooveStructure() {
   advanceLongformArcPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
   updateBpmCrossfadeMemory(currentGradientParts());
+  advanceAutoVoiceMorphPhrase();
   updateGenerativeGenome(currentGradientParts());
 
   GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
@@ -4491,6 +4727,7 @@ function scheduleStep(time) {
   }
 
   stepIndex++;
+  publishMusicRuntimeState();
 }
 
 /* =========================================================
