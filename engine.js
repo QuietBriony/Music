@@ -278,6 +278,46 @@ const VoiceMorphState = {
     voidTail: 0
   }
 };
+const VOICE_EMERGENCE_KEYS = ["haze", "memory", "micro", "ghost", "chrome", "organic"];
+const VoiceEmergenceState = {
+  lastCycle: -1,
+  phrase: 0,
+  phraseCycles: 10,
+  focus: "haze",
+  nextFocus: "chrome",
+  blend: 0,
+  phase: 0,
+  bloom: 0,
+  splice: 0,
+  shimmer: 0,
+  refrain: 0
+};
+const VOICE_EMERGENCE_COLORS = {
+  haze: {
+    gradient: { haze: 0.085, memory: 0.035, chrome: 0.018, micro: -0.012 },
+    genes: { haze: 0.08, refrain: 0.04, voidTail: 0.026, pressure: -0.018 }
+  },
+  memory: {
+    gradient: { memory: 0.09, organic: 0.035, haze: 0.028, chrome: -0.008 },
+    genes: { refrain: 0.064, organic: 0.04, haze: 0.026, micro: -0.01 }
+  },
+  micro: {
+    gradient: { micro: 0.095, chrome: 0.038, organic: 0.018, haze: -0.018 },
+    genes: { micro: 0.088, chrome: 0.03, pressure: 0.026, haze: -0.018 }
+  },
+  ghost: {
+    gradient: { ghost: 0.088, haze: 0.032, memory: 0.024, chrome: 0.012 },
+    genes: { pulse: 0.07, voidTail: 0.046, pressure: 0.022, refrain: 0.02 }
+  },
+  chrome: {
+    gradient: { chrome: 0.092, haze: 0.032, micro: 0.026, organic: -0.008 },
+    genes: { chrome: 0.09, voidTail: 0.038, micro: 0.026, haze: 0.018 }
+  },
+  organic: {
+    gradient: { organic: 0.096, memory: 0.04, micro: 0.024, chrome: -0.008 },
+    genes: { organic: 0.092, refrain: 0.04, micro: 0.026, haze: 0.018 }
+  }
+};
 const AUTO_SOURCE_MORPH_KEYS = ["xtal", "boc", "opn", "fsol", "autechre", "burial"];
 const AUTO_ATMOSPHERE_MORPH_KEYS = ["haze", "chrome", "void", "organic", "ghost"];
 const AutoVoiceMorphState = {
@@ -1173,14 +1213,70 @@ function autoVoiceMorphBias(key, amountKey) {
   return bias;
 }
 
+function voiceEmergencePalette() {
+  const sourceKey = effectiveVoiceSourceKey();
+  const atmosphereKey = effectiveVoiceAtmosphereKey();
+  const palette = [];
+  const push = (...keys) => {
+    for (const key of keys) {
+      if (VOICE_EMERGENCE_KEYS.includes(key) && !palette.includes(key)) palette.push(key);
+    }
+  };
+
+  if (sourceKey === "xtal" || atmosphereKey === "haze") push("haze", "chrome", "memory");
+  if (sourceKey === "boc") push("memory", "haze", "organic");
+  if (sourceKey === "opn" || atmosphereKey === "chrome" || atmosphereKey === "void") push("chrome", "haze", "micro");
+  if (sourceKey === "autechre") push("micro", "chrome", "organic");
+  if (sourceKey === "burial" || atmosphereKey === "ghost") push("ghost", "memory", "haze");
+  if (sourceKey === "fsol" || atmosphereKey === "organic") push("organic", "micro", "ghost");
+
+  if (GenreBlendState.ambient > 0.42 || EngineParams.bpm < 84) push("haze", "chrome");
+  if (GenreBlendState.idm > 0.38) push("micro", "organic", "memory");
+  if (GenreBlendState.techno > 0.34 || AcidLockState.intensity > 0.18) push("micro", "ghost", "chrome");
+  if (GenreBlendState.pressure > 0.34) push("ghost", "organic");
+  if (palette.length < 3) push("haze", "memory", "chrome", "organic");
+  return palette;
+}
+
+function chooseVoiceEmergenceFocus(offset = 0) {
+  const palette = voiceEmergencePalette();
+  const index = Math.floor(fractionalPart((GrooveState.cycle + 1 + AutoVoiceMorphState.generation * 3 + offset) * GOLDEN_RATIO_INVERSE) * palette.length);
+  return palette[((index % palette.length) + palette.length) % palette.length];
+}
+
+function voiceEmergenceSegmentCycles(offset = 0) {
+  const phi = fractionalPart((AutoVoiceMorphState.generation + GrooveState.cycle + 1 + offset) * GOLDEN_RATIO_INVERSE);
+  const energy = clampValue(UCM_CUR.energy / 100, 0, 1);
+  const activity = clampValue(GenreBlendState.idm * 0.26 + GenreBlendState.techno * 0.22 + AcidLockState.intensity * 0.18 + energy * 0.12, 0, 0.36);
+  return Math.round(clampValue(8 + phi * 9 - activity * 6, 6, 16));
+}
+
+function voiceEmergenceBias(key, amountKey) {
+  const from = VOICE_EMERGENCE_COLORS[VoiceEmergenceState.focus]?.[amountKey]?.[key] || 0;
+  const to = VOICE_EMERGENCE_COLORS[VoiceEmergenceState.nextFocus]?.[amountKey]?.[key] || 0;
+  const blended = from * (1 - VoiceEmergenceState.blend) + to * VoiceEmergenceState.blend;
+  const lift = 0.66 + VoiceEmergenceState.bloom * 0.16 + VoiceEmergenceState.splice * 0.1 + VoiceEmergenceState.shimmer * 0.08 + VoiceEmergenceState.refrain * 0.06;
+  return blended * clampValue(lift, 0.5, 0.96);
+}
+
 function voiceRawGradientBias(key) {
   const { atmosphere, source } = currentVoiceColor();
-  return (atmosphere.gradient?.[key] || 0) + (source.gradient?.[key] || 0) + autoVoiceMorphBias(key, "gradient");
+  return (
+    (atmosphere.gradient?.[key] || 0) +
+    (source.gradient?.[key] || 0) +
+    autoVoiceMorphBias(key, "gradient") +
+    voiceEmergenceBias(key, "gradient")
+  );
 }
 
 function voiceRawGeneBias(key) {
   const { atmosphere, source } = currentVoiceColor();
-  return (atmosphere.genes?.[key] || 0) + (source.genes?.[key] || 0) + autoVoiceMorphBias(key, "genes");
+  return (
+    (atmosphere.genes?.[key] || 0) +
+    (source.genes?.[key] || 0) +
+    autoVoiceMorphBias(key, "genes") +
+    voiceEmergenceBias(key, "genes")
+  );
 }
 
 function voiceTransitionAmount() {
@@ -1220,6 +1316,68 @@ function resetAutoVoiceMorph() {
   AutoVoiceMorphState.generation = 0;
   AutoVoiceMorphState.lastCycle = -1;
   VoiceMorphState.transition = 1;
+  resetVoiceEmergence();
+}
+
+function resetVoiceEmergence() {
+  VoiceEmergenceState.lastCycle = -1;
+  VoiceEmergenceState.phrase = 0;
+  VoiceEmergenceState.phraseCycles = 10;
+  VoiceEmergenceState.focus = chooseVoiceEmergenceFocus(0);
+  VoiceEmergenceState.nextFocus = chooseVoiceEmergenceFocus(2);
+  VoiceEmergenceState.blend = 0;
+  VoiceEmergenceState.phase = 0;
+  VoiceEmergenceState.bloom = 0;
+  VoiceEmergenceState.splice = 0;
+  VoiceEmergenceState.shimmer = 0;
+  VoiceEmergenceState.refrain = 0;
+}
+
+function advanceVoiceEmergencePhrase() {
+  if (VoiceEmergenceState.lastCycle === GrooveState.cycle) return;
+  VoiceEmergenceState.lastCycle = GrooveState.cycle;
+
+  VoiceEmergenceState.phrase += 1;
+  if (VoiceEmergenceState.phrase >= VoiceEmergenceState.phraseCycles) {
+    VoiceEmergenceState.focus = VoiceEmergenceState.nextFocus;
+    VoiceEmergenceState.nextFocus = chooseVoiceEmergenceFocus(VoiceEmergenceState.phrase + 2);
+    VoiceEmergenceState.phrase = 0;
+    VoiceEmergenceState.phraseCycles = voiceEmergenceSegmentCycles(3);
+    VoiceMorphState.transition = Math.max(VoiceMorphState.transition, 0.42);
+  }
+
+  const progress = VoiceEmergenceState.phrase / Math.max(1, VoiceEmergenceState.phraseCycles);
+  const energy = clampValue(UCM_CUR.energy / 100, 0, 1);
+  const observer = clampValue(UCM_CUR.observer / 100, 0, 1);
+  const creation = clampValue(UCM_CUR.creation / 100, 0, 1);
+  const resource = clampValue(UCM_CUR.resource / 100, 0, 1);
+  const voidness = clampValue(UCM_CUR.void / 100, 0, 1);
+  const circle = clampValue(UCM_CUR.circle / 100, 0, 1);
+  const color = PerformanceColorDriftState;
+  const pulse = (Math.sin((GrooveState.cycle + 1) * 0.19 + AutoVoiceMorphState.generation * 0.31) + 1) / 2;
+
+  VoiceEmergenceState.blend = smoothStep01(progress);
+  VoiceEmergenceState.phase = fractionalPart((GrooveState.cycle + 1) * GOLDEN_RATIO_INVERSE + AutoVoiceMorphState.generation * 0.0618);
+  VoiceEmergenceState.bloom = approachValue(
+    VoiceEmergenceState.bloom,
+    clampValue(0.22 + color.haze * 0.22 + color.chrome * 0.16 + observer * 0.12 + voidness * 0.1 + pulse * 0.1 - energy * 0.05, 0, 1),
+    0.045
+  );
+  VoiceEmergenceState.splice = approachValue(
+    VoiceEmergenceState.splice,
+    clampValue(0.12 + color.dust * 0.18 + color.acid * 0.22 + creation * 0.16 + resource * 0.12 + GenreBlendState.idm * 0.1 + GenreBlendState.techno * 0.08, 0, 1),
+    0.045
+  );
+  VoiceEmergenceState.shimmer = approachValue(
+    VoiceEmergenceState.shimmer,
+    clampValue(0.14 + color.chrome * 0.24 + observer * 0.18 + circle * 0.1 + GenomeState.genes.chrome * 0.08 + pulse * 0.08, 0, 1),
+    0.04
+  );
+  VoiceEmergenceState.refrain = approachValue(
+    VoiceEmergenceState.refrain,
+    clampValue(0.16 + GenomeState.genes.refrain * 0.18 + circle * 0.14 + VoiceMorphState.transition * 0.08 + BpmCrossfadeState.refrain * 0.14, 0, 1),
+    0.035
+  );
 }
 
 function advanceAutoVoiceMorphPhrase() {
@@ -1294,7 +1452,8 @@ function publishMusicRuntimeState() {
       autoSourceBlend: AutoVoiceMorphState.sourceBlend,
       atmosphereLabel: autoLabels.atmosphereLabel,
       sourceLabel: autoLabels.sourceLabel,
-      autoActive: autoVoiceAtmosphereActive() || autoVoiceSourceActive()
+      autoActive: autoVoiceAtmosphereActive() || autoVoiceSourceActive(),
+      emergence: { ...VoiceEmergenceState }
     },
     acid: {
       enabled: AcidLockState.enabled,
@@ -1366,7 +1525,13 @@ function updateVoiceColorFromUI(options = {}) {
   const changed = nextAtmosphere !== VoiceColorState.atmosphere || nextSource !== VoiceColorState.source;
   VoiceColorState.atmosphere = nextAtmosphere;
   VoiceColorState.source = nextSource;
-  if (changed) VoiceMorphState.transition = 1;
+  if (changed) {
+    VoiceMorphState.transition = 1;
+    VoiceEmergenceState.focus = chooseVoiceEmergenceFocus(0);
+    VoiceEmergenceState.nextFocus = chooseVoiceEmergenceFocus(2);
+    VoiceEmergenceState.phrase = 0;
+    VoiceEmergenceState.blend = 0;
+  }
   updateVoiceColorUi();
   if (options.apply !== false && initialized) {
     updateTimbreStateFromWorld(currentGradientParts());
@@ -4121,6 +4286,7 @@ function advanceGrooveStructure() {
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
   updateBpmCrossfadeMemory(currentGradientParts());
   advanceAutoVoiceMorphPhrase();
+  advanceVoiceEmergencePhrase();
   updateGenerativeGenome(currentGradientParts());
 
   GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
@@ -4332,6 +4498,91 @@ function triggerPerformanceColorDriftDetail(step, time, context) {
     markMixEvent(0.06 + amount * 0.04);
   } catch (error) {
     console.warn("[Music] color drift detail failed:", error);
+  }
+}
+
+function triggerVoiceEmergenceDetail(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  if (!glass || MixGovernorState.eventLoad > 0.84) return;
+
+  const state = VoiceEmergenceState;
+  const focus = state.blend > 0.56 ? state.nextFocus : state.focus;
+  const amount = clampValue(
+    0.16 +
+      state.bloom * 0.2 +
+      state.splice * 0.2 +
+      state.shimmer * 0.18 +
+      state.refrain * 0.16 +
+      voiceTransitionAmount() * 0.1 +
+      PerformancePadState.drift * 0.05 +
+      PerformancePadState.repeat * 0.05 +
+      PerformancePadState.void * 0.04,
+    0,
+    1
+  );
+  const gate = step % 16 === 3 || step % 16 === 7 || step % 16 === 11 || step % 16 === 15 || (isAccentStep && step % 2 === 1);
+  if (!gate || !rand(0.016 + amount * 0.078 + state.splice * 0.028 + AcidLockState.intensity * 0.018)) return;
+
+  const offset = Math.floor(state.phase * 9) + Math.floor(state.blend * 5);
+  const airNote = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + offset) % TRANSPARENT_AIR_FRAGMENTS.length];
+  const pluckNote = ORGANIC_PLUCK_FRAGMENTS[(GrooveState.cycle + step + offset + 2) % ORGANIC_PLUCK_FRAGMENTS.length];
+  const glassNote = GLASS_NOTES[(GrooveState.cycle + step + offset + 1) % GLASS_NOTES.length];
+  const shadeNote = FIELD_MURK_FRAGMENTS[(GrooveState.cycle + step + offset + 3) % FIELD_MURK_FRAGMENTS.length];
+  const dt = 0.026 + Math.random() * (0.022 + waveNorm * 0.02);
+  const vel = clampValue(0.014 + amount * 0.04 + observerNorm * 0.006, 0.012, 0.076);
+
+  try {
+    if (focus === "micro") {
+      glass.triggerAttackRelease(glassNote, "64n", time + 0.012, clampValue(vel + creationNorm * 0.012 + state.splice * 0.018, 0.014, 0.086));
+      if (rand(0.34 + state.splice * 0.2 + PerformancePadState.repeat * 0.16)) {
+        glass.triggerAttackRelease(glassNote, "64n", time + 0.012 + dt, clampValue(vel * 0.68 + resourceNorm * 0.01, 0.012, 0.06));
+      }
+      if (texture && rand(0.18 + state.splice * 0.18)) {
+        texture.triggerAttackRelease("64n", time + 0.02, clampValue(0.012 + state.splice * 0.036, 0.012, 0.058));
+      }
+      rememberMotif(glassNote, { reply: airNote, shade: shadeNote, strength: 0.024 + amount * 0.05, air: state.shimmer * 0.06, source: "voice-micro" });
+    } else if (focus === "organic") {
+      glass.triggerAttackRelease(pluckNote, "64n", time + 0.018 + waveNorm * 0.014, clampValue(vel + creationNorm * 0.014 + state.refrain * 0.012, 0.014, 0.084));
+      if (rand(0.28 + state.refrain * 0.2)) {
+        glass.triggerAttackRelease(airNote, "64n", time + 0.082 + Math.random() * 0.022, clampValue(vel * 0.52 + state.shimmer * 0.012, 0.012, 0.05));
+      }
+      if (texture && rand(0.2 + state.bloom * 0.16)) {
+        texture.triggerAttackRelease("64n", time + 0.032, clampValue(0.012 + state.bloom * 0.032 + creationNorm * 0.006, 0.012, 0.054));
+      }
+      rememberMotif(pluckNote, { reply: airNote, shade: shadeNote, strength: 0.026 + state.refrain * 0.05, air: state.bloom * 0.05, source: "voice-organic" });
+    } else if (focus === "chrome") {
+      glass.triggerAttackRelease(airNote, "32n", time + 0.02 + Math.random() * 0.018, clampValue(vel + state.shimmer * 0.026 + observerNorm * 0.01, 0.016, 0.09));
+      if (rand(0.24 + state.shimmer * 0.22)) {
+        glass.triggerAttackRelease(TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + offset + 3) % TRANSPARENT_AIR_FRAGMENTS.length], "64n", time + 0.096, clampValue(vel * 0.48 + state.bloom * 0.01, 0.012, 0.052));
+      }
+    } else if (focus === "ghost") {
+      if (texture) {
+        texture.triggerAttackRelease("64n", time + 0.014, clampValue(0.014 + amount * 0.042 + energyNorm * 0.008, 0.012, 0.074));
+      }
+      glass.triggerAttackRelease(shadeNote, "32n", time + 0.048 + Math.random() * 0.02, clampValue(vel + state.refrain * 0.014 - voidNorm * 0.006, 0.014, 0.072));
+      rememberMotif(shadeNote, { reply: airNote, shade: pluckNote, strength: 0.022 + state.refrain * 0.045, air: state.bloom * 0.04, source: "voice-ghost" });
+    } else {
+      const hazeVel = clampValue(0.016 + state.bloom * 0.04 + circleNorm * 0.008 - energyNorm * 0.006, 0.014, 0.068);
+      if (focus === "haze" && pad && (step % 16 === 7 || step % 16 === 15) && rand(0.18 + state.bloom * 0.16)) {
+        pad.triggerAttackRelease(randomHazeChord(), "1n", time + 0.03, hazeVel);
+      }
+      glass.triggerAttackRelease(focus === "memory" ? pluckNote : airNote, "32n", time + 0.054 + Math.random() * 0.026, clampValue(vel + state.refrain * 0.018, 0.014, 0.072));
+      if (focus === "memory") {
+        rememberMotif(pluckNote, { reply: airNote, shade: shadeNote, strength: 0.024 + state.refrain * 0.052, air: state.bloom * 0.052, source: "voice-memory" });
+      }
+    }
+    markMixEvent(0.052 + amount * 0.04);
+  } catch (error) {
+    console.warn("[Music] voice emergence detail failed:", error);
   }
 }
 
@@ -5327,6 +5578,7 @@ function scheduleStep(time) {
   triggerOrganicEcosystemBloom(step, t, stepContext);
   triggerDroneResonanceBed(step, t, stepContext);
   triggerPerformanceColorDriftDetail(step, t, stepContext);
+  triggerVoiceEmergenceDetail(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
   triggerAcidTechnoTrace(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
