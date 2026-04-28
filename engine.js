@@ -177,6 +177,16 @@ const MotifMemoryState = {
   lastStep: -99,
   source: ""
 };
+const TONAL_RHYME_SUB = ["D1", "F#1", "G1", "E1", "D2", "F#2", "E2", "G2"];
+const TONAL_RHYME_LOW = ["D2", "F#2", "G2", "E2", "D3", "F#3", "E3", "G3"];
+const TONAL_RHYME_MID = ["D4", "F#4", "G4", "E4", "D5", "F#5", "E5", "G5"];
+const TONAL_RHYME_HIGH = ["D5", "F#5", "G5", "E5", "D6", "F#6", "E6", "G6"];
+const TonalRhymeState = {
+  phrase: 0,
+  stepOffset: 0,
+  lowOffset: 0,
+  lastCycle: -1
+};
 const AutoDirectorState = {
   sceneIndex: 0,
   phrase: 0,
@@ -722,6 +732,45 @@ function organicChaosAmount() {
   );
 }
 
+function tonalRhymeIndex(step = stepIndex, offset = 0) {
+  const phaseOffset = Math.floor((GenomeState.phase || 0) * 8);
+  const refrainOffset = Math.floor((MotifMemoryState.strength || 0) * 5);
+  const voiceOffset = Math.floor((VoiceEmergenceState?.refrain || 0) * 4);
+  const index = GrooveState.cycle + step + phaseOffset + refrainOffset + voiceOffset + TonalRhymeState.stepOffset + offset;
+  return ((index % 8) + 8) % 8;
+}
+
+function tonalRhymeNote(pool, step = stepIndex, offset = 0) {
+  return pool[tonalRhymeIndex(step, offset) % pool.length];
+}
+
+function tonalRhymeSub(step = stepIndex, offset = 0) {
+  return tonalRhymeNote(TONAL_RHYME_SUB, step, TonalRhymeState.lowOffset + offset);
+}
+
+function tonalRhymeLow(step = stepIndex, offset = 0) {
+  return tonalRhymeNote(TONAL_RHYME_LOW, step, TonalRhymeState.lowOffset + offset);
+}
+
+function tonalRhymeMid(step = stepIndex, offset = 0) {
+  return tonalRhymeNote(TONAL_RHYME_MID, step, offset);
+}
+
+function tonalRhymeHigh(step = stepIndex, offset = 0) {
+  return tonalRhymeNote(TONAL_RHYME_HIGH, step, offset);
+}
+
+function advanceTonalRhymePhrase() {
+  if (TonalRhymeState.lastCycle === GrooveState.cycle) return;
+  TonalRhymeState.lastCycle = GrooveState.cycle;
+  if (GrooveState.cycle % 2 !== 0) return;
+
+  const phrase = Math.floor(GrooveState.cycle / 2);
+  TonalRhymeState.phrase = phrase;
+  TonalRhymeState.stepOffset = Math.floor(fractionalPart((phrase + GenomeState.generation + 1) * GOLDEN_RATIO_INVERSE) * 8);
+  TonalRhymeState.lowOffset = (phrase + Math.floor((MotifMemoryState.strength || 0) * 4) + (AcidLockState.enabled ? 2 : 0)) % 4;
+}
+
 function rememberMotif(root, options = {}) {
   if (!root) return;
   MotifMemoryState.root = root;
@@ -777,6 +826,10 @@ function resetMotifMemory() {
   MotifMemoryState.air = 0;
   MotifMemoryState.lastStep = -99;
   MotifMemoryState.source = "";
+  TonalRhymeState.phrase = 0;
+  TonalRhymeState.stepOffset = 0;
+  TonalRhymeState.lowOffset = 0;
+  TonalRhymeState.lastCycle = -1;
   resetBpmCrossfadeMemory();
 }
 
@@ -2900,11 +2953,11 @@ const glass = new Tone.FMSynth({
 }).connect(globalDelay);
 
 function organicFragment(offset = 0) {
-  return ORGANIC_PLUCK_FRAGMENTS[(GrooveState.cycle + stepIndex + offset) % ORGANIC_PLUCK_FRAGMENTS.length];
+  return ORGANIC_PLUCK_FRAGMENTS[tonalRhymeIndex(stepIndex, offset) % ORGANIC_PLUCK_FRAGMENTS.length];
 }
 
 function transparentFragment(offset = 0) {
-  return TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + offset) % TRANSPARENT_AIR_FRAGMENTS.length];
+  return TRANSPARENT_AIR_FRAGMENTS[tonalRhymeIndex(stepIndex, offset) % TRANSPARENT_AIR_FRAGMENTS.length];
 }
 
 function voiceNotePool(fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
@@ -2923,7 +2976,7 @@ function voiceNotePool(fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
 function voiceFragment(offset = 0, fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
   const pool = voiceNotePool(fallbackPool);
   const phaseOffset = Math.floor((GenomeState.phase || 0) * pool.length);
-  const index = GrooveState.cycle + stepIndex + GenomeState.generation + phaseOffset + offset;
+  const index = tonalRhymeIndex(stepIndex, GenomeState.generation + phaseOffset + offset);
   return pool[((index % pool.length) + pool.length) % pool.length];
 }
 
@@ -2998,8 +3051,8 @@ function triggerPadSignature(name) {
       hat.triggerAttackRelease("64n", now + 0.026, clampValue(0.056 + energyNorm * 0.038, 0.048, 0.112));
       texture.triggerAttackRelease("64n", now + 0.068, clampValue(0.032 + creationNorm * 0.028, 0.026, 0.07));
     } else if (name === "punch") {
-      kick.triggerAttackRelease("C2", "16n", now + 0.002, clampValue(0.28 + energyNorm * 0.08, 0.24, 0.42));
-      bass.triggerAttackRelease(bassRoot || "C2", "32n", now + 0.018, clampValue(0.075 + energyNorm * 0.045, 0.065, 0.14));
+      kick.triggerAttackRelease(tonalRhymeLow(stepIndex, 0), "16n", now + 0.002, clampValue(0.28 + energyNorm * 0.08, 0.24, 0.42));
+      bass.triggerAttackRelease(tonalRhymeSub(stepIndex, 1), "32n", now + 0.018, clampValue(0.075 + energyNorm * 0.045, 0.065, 0.14));
       glass.triggerAttackRelease(voiceFragment(2, ORGANIC_PLUCK_FRAGMENTS), "64n", now + 0.032, clampValue(0.038 + creationNorm * 0.028 + gradient.organic * 0.01 + depth.gesture * 0.006, 0.03, 0.092));
       texture.triggerAttackRelease("64n", now + 0.014, clampValue(0.08 + creationNorm * 0.042 + gradient.ghost * 0.012 + depth.pulse * 0.006, 0.064, 0.142));
     } else if (name === "void") {
@@ -3038,56 +3091,46 @@ const EngineParams = {
   padPattern:  "x...x..."
 };
 
-let currentScale = ["C4", "D4", "E4", "G4", "A4"];
+let currentScale = ["D4", "F#4", "G4", "E4", "D5"];
 const MODE_CHORDS = {
   ambient: [
-    ["F3", "C4", "G4"],
-    ["A3", "E4", "G4"],
-    ["D3", "A3", "E4"]
+    ["D3", "F#3", "E4"],
+    ["G3", "D4", "F#4"],
+    ["E3", "G3", "D4"]
   ],
   lofi: [
-    ["A3", "C4", "E4", "G4"],
-    ["F3", "A3", "C4", "E4"],
-    ["D3", "F4", "A4"]
+    ["D3", "F#3", "A3", "E4"],
+    ["G3", "D4", "F#4", "E4"],
+    ["E3", "G3", "B3"]
   ],
   dub: [
-    ["C3", "G3", "Bb3"],
-    ["F3", "C4", "Eb4"]
+    ["D3", "A3", "E4"],
+    ["G3", "D4", "F#4"]
   ],
   jazz: [
-    ["D3", "F4", "A4", "C5"],
-    ["G3", "B3", "D4", "F4"]
+    ["D3", "F#3", "A3", "E4"],
+    ["G3", "B3", "D4", "F#4"]
   ],
   techno: [
-    ["C3", "G3"],
-    ["C3", "Bb3"],
-    ["F3", "C4"]
+    ["D3", "F#3"],
+    ["G3", "E4"],
+    ["D3", "E4"]
   ],
   trance: [
-    ["D3", "A3", "E4"],
-    ["F3", "C4", "G4"]
+    ["D3", "F#3", "A3"],
+    ["E3", "G3", "B3"]
   ]
 };
 const GLASS_NOTES = ["D5", "F#5", "G5", "E5", "D6", "F#6", "G6", "E6"];
 const FIELD_MURK_FRAGMENTS = ["D4", "F#4", "G4", "E4", "D5", "F#5", "G5", "E5"];
 const TRANSPARENT_AIR_FRAGMENTS = ["D6", "F#6", "G6", "E6", "D7", "F#7"];
 const ORGANIC_PLUCK_FRAGMENTS = ["D4", "F#4", "G4", "E4", "D5", "F#5", "G5", "E5", "D6", "F#6"];
-const PRESSURE_TURN_NOTES = ["D2", "E2", "F#2", "G2"];
 const HAZE_CHORDS = [
   ["D4", "F#4", "E5"],
   ["G4", "D5", "F#5"],
   ["E4", "G4", "D5"],
   ["F#4", "E5", "G5"]
 ];
-const MODE_BASS_NOTES = {
-  ambient: ["F1", "C2", "A1", "D2"],
-  lofi: ["A1", "E2", "G1", "C2"],
-  dub: ["C2", "C2", "Bb1", "F1"],
-  jazz: ["D2", "G1", "C2", "A1"],
-  techno: ["C2", "C2", "Bb1", "C2"],
-  trance: ["D2", "A1", "C2", "D2"]
-};
-const ACID_TURN_NOTES = ["D2", "F#2", "A2", "C3", "D3", "E2"];
 const GLASS_ACCENT_STEPS = [3, 5, 7, 10, 11, 14];
 
 const GrooveState = {
@@ -3274,11 +3317,11 @@ const PRESET_CHARACTERS = {
 
 const HARP_NOTE_POOLS = {
   ambient: ["D4", "F#4", "G4", "E5", "D5", "F#5"],
-  dub: ["C4", "Eb4", "G4", "Bb4", "C5"],
-  jazz: ["D4", "F4", "A4", "C5", "E5", "G5"],
+  dub: ["D4", "A4", "E5", "G5", "F#5"],
+  jazz: ["D4", "F#4", "A4", "B4", "E5", "G5"],
   lofi: ["D4", "E4", "F#4", "G4", "D5", "E5"],
-  techno: ["C4", "Eb4", "G4", "Bb4"],
-  trance: ["D4", "F#4", "A4", "C#5", "E5", "A5"],
+  techno: ["D4", "F#4", "G4", "E5", "D5"],
+  trance: ["D4", "F#4", "A4", "B4", "E5", "G5"],
 };
 
 function currentPresetCharacter() {
@@ -3368,8 +3411,20 @@ function renderModeLabel() {
 
 function safeToneRamp(param, value, seconds = 0.18) {
   if (!param || typeof param.rampTo !== "function") return;
+  let target = Number(value);
+  if (!Number.isFinite(target)) return;
+  const minValue = Number.isFinite(param.minValue) ? param.minValue : null;
+  const maxValue = Number.isFinite(param.maxValue) ? param.maxValue : null;
+  if (minValue !== null && maxValue !== null) {
+    if (minValue === maxValue) return;
+    target = clampValue(target, minValue, maxValue);
+  }
   try {
-    param.rampTo(value, seconds);
+    if (typeof param.linearRampTo === "function") {
+      param.linearRampTo(target, seconds);
+      return;
+    }
+    param.rampTo(target, seconds);
   } catch (error) {
     console.warn("[Music] Timbre ramp failed:", error);
   }
@@ -3744,8 +3799,7 @@ function maybeTriggerWorldAccents(time) {
     }
   }
   if (bass && spectrum > 0.78 && isTurnaround && Math.random() < 0.12 + pressureColor * 0.12) {
-    const bassNotes = PRESSURE_TURN_NOTES;
-    const note = bassNotes[Math.floor(Math.random() * bassNotes.length)];
+    const note = tonalRhymeLow(stepIndex, pulse % 4);
     try {
       bass.triggerAttackRelease(note, "32n", time + 0.03, clampValue(0.06 + pressureColor * 0.04, 0.055, 0.11));
     } catch (error) {
@@ -4063,7 +4117,7 @@ function updateSoundForMode(mode){
     console.warn("updateSoundForMode failed", e);
   }
 }
-let bassRoot     = "C2";
+let bassRoot     = "D2";
 
 /* =========================================================
    4. UCM → パラメータ変換（簡略チューン）
@@ -4178,8 +4232,8 @@ function applyUCMToParams(options = {}) {
   rampParam("pad-cutoff", padFilter.frequency, cutoff, 0.5, force ? 0 : 70);
 
   // スケール
-  const baseScale = ["C4", "D4", "E4", "G4", "A4"];
-  const tensions  = ["B3", "B4", "D5", "F5"];
+  const baseScale = ["D4", "F#4", "G4", "E4", "D5"];
+  const tensions  = ["A4", "B4", "F#5", "E5"];
   if (UCM_CUR.mind > 60 || UCM_CUR.creation > 60) {
     currentScale = baseScale.concat(tensions);
   } else {
@@ -4188,10 +4242,10 @@ function applyUCMToParams(options = {}) {
 
   // ルート
   switch (EngineParams.mode) {
-    case "ambient": bassRoot = "F1"; break;
-    case "lofi":    bassRoot = "A1"; break;
-    case "techno":  bassRoot = "C2"; break;
-    case "trance":  bassRoot = "D2"; break;
+    case "ambient": bassRoot = tonalRhymeSub(stepIndex, -1); break;
+    case "lofi":    bassRoot = tonalRhymeSub(stepIndex, 0); break;
+    case "techno":  bassRoot = tonalRhymeSub(stepIndex, 1); break;
+    case "trance":  bassRoot = tonalRhymeSub(stepIndex, 2); break;
   }
 
   if (!manual) setPatternsByMode();
@@ -4310,7 +4364,7 @@ function randomChordForMode() {
 }
 
 function randomHazeChord() {
-  return HAZE_CHORDS[(GrooveState.cycle + Math.floor(Math.random() * HAZE_CHORDS.length)) % HAZE_CHORDS.length];
+  return HAZE_CHORDS[tonalRhymeIndex(stepIndex, Math.floor(Math.random() * HAZE_CHORDS.length)) % HAZE_CHORDS.length];
 }
 
 function advanceGrooveStructure() {
@@ -4318,6 +4372,7 @@ function advanceGrooveStructure() {
   advanceAutoDirectorPhrase();
   advanceHazamaAutonomy();
   syncHazamaTransportControls(0);
+  advanceTonalRhymePhrase();
   advancePerformanceColorDrift();
 
   const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
@@ -4344,9 +4399,10 @@ function advanceGrooveStructure() {
 }
 
 function bassNoteForStep(step) {
-  const notes = MODE_BASS_NOTES[EngineParams.mode] || MODE_BASS_NOTES.techno;
   const phraseIndex = Math.floor(step / 4) + GrooveState.bassOffset;
-  return notes[phraseIndex % notes.length];
+  return step % 8 === 0
+    ? tonalRhymeSub(step, phraseIndex)
+    : tonalRhymeLow(step, phraseIndex);
 }
 
 function triggerLowMotion(step, time, context) {
@@ -4385,10 +4441,9 @@ function triggerLowMotion(step, time, context) {
   const gate = step % 8 === 2 || step % 8 === 6 || (repeat && step % 4 === 2) || (chaos.lowMotion > 0.18 && step % 8 === 3) || (eco.rootTurn > 0.34 && step % 8 === 5) || (isAccentStep && step % 2 === 0);
   if (!gate || !rand(chance((0.024 + motion * 0.12 + repeat * 0.052 + punch * 0.018 + chaos.lowMotion * 0.04 + eco.rootTurn * 0.026) * (1 - lowGuard * 0.18)))) return;
 
-  const notes = MODE_BASS_NOTES[EngineParams.mode] || MODE_BASS_NOTES.ambient;
   const note = rand(0.44 + waveNorm * 0.22)
-    ? notes[(GrooveState.cycle + step + 1) % notes.length]
-    : PRESSURE_TURN_NOTES[(GrooveState.cycle + step) % PRESSURE_TURN_NOTES.length];
+    ? tonalRhymeLow(step, 1)
+    : tonalRhymeLow(step, 3);
   const tickTime = time + 0.018 + Math.random() * (0.012 + waveNorm * 0.016 + chaos.tangle * 0.012 + eco.ferment * 0.008);
   const vel = clampValue(0.052 + motion * 0.07 + repeat * 0.018 + chaos.lowMotion * 0.018 + eco.rootTurn * 0.012 - lowGuard * 0.018, 0.04, 0.14);
 
@@ -4443,10 +4498,10 @@ function triggerAcidTechnoTrace(step, time, context) {
     : 0.075 + acid * 0.3 + PerformancePadState.repeat * 0.06;
   if (!gate || !rand(gateChance)) return;
 
-  const acidPhase = Math.floor((GenomeState.phase || 0) * ACID_TURN_NOTES.length);
-  const note = ACID_TURN_NOTES[(GrooveState.cycle + step + acidPhase) % ACID_TURN_NOTES.length];
-  const turnNote = ACID_TURN_NOTES[(GrooveState.cycle + step + acidPhase + 2) % ACID_TURN_NOTES.length];
-  const reply = GLASS_NOTES[(GrooveState.cycle + step + acidPhase + 2) % GLASS_NOTES.length];
+  const acidPhase = Math.floor((GenomeState.phase || 0) * TONAL_RHYME_LOW.length);
+  const note = tonalRhymeLow(step, acidPhase);
+  const turnNote = tonalRhymeLow(step, acidPhase + 2);
+  const reply = tonalRhymeHigh(step, acidPhase + 2);
   const acidTime = time + 0.012 + Math.random() * (0.01 + waveNorm * 0.012);
   const vel = clampValue(0.056 + acid * 0.122 - lowGuard * 0.038, 0.04, 0.166);
   const impactVel = clampValue(0.24 + acid * 0.2 + energyNorm * 0.045 - lowGuard * 0.095, 0.18, 0.48);
@@ -4458,11 +4513,11 @@ function triggerAcidTechnoTrace(step, time, context) {
     safeToneRamp(bass?.filter?.Q, q, 0.055);
     safeToneRamp(bass?.filter?.frequency, cutoff, 0.045);
     if (impactGate && kick && rand(0.62 + acid * 0.26 - lowGuard * 0.12)) {
-      kick.triggerAttackRelease("C2", "16n", acidTime + 0.002, impactVel);
+      kick.triggerAttackRelease(tonalRhymeLow(step, -1), "16n", acidTime + 0.002, impactVel);
     }
     bass.triggerAttackRelease(note, "32n", acidTime, vel);
     if (impactGate && rand(0.58 + acid * 0.24 - lowGuard * 0.12)) {
-      bass.triggerAttackRelease(step % 16 === 8 ? "F#2" : "D2", "16n", acidTime + 0.018, jabVel);
+      bass.triggerAttackRelease(tonalRhymeSub(step, step % 16 === 8 ? 1 : 0), "16n", acidTime + 0.018, jabVel);
     }
     if (rand(0.34 + acid * 0.32)) {
       bass.triggerAttackRelease(note, "64n", acidTime + 0.046 + Math.random() * 0.012, vel * 0.52);
@@ -4506,7 +4561,7 @@ function triggerDroneResonanceBed(step, time, context) {
   if (drone < 0.34 || !(step % 16 === 0 || step % 16 === 8)) return;
   if (!rand(0.22 + drone * 0.36 + DepthState.bed * 0.08)) return;
 
-  const lowNote = drone > 0.62 ? "F1" : "C2";
+  const lowNote = drone > 0.62 ? tonalRhymeSub(step, -1) : tonalRhymeLow(step, 0);
   const airNote = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + Math.floor(GenomeState.phase * 7)) % TRANSPARENT_AIR_FRAGMENTS.length];
   const chord = randomHazeChord();
   const droneTime = time + 0.018 + Math.random() * (0.024 + waveNorm * 0.018);
@@ -4697,7 +4752,7 @@ function triggerAudibleGrooveFloor(step, time, context) {
 
   if (step % 8 === 0 && !voiding && rand(0.64 * pulseScale)) {
     try {
-      kick.triggerAttackRelease("C2", "16n", time + 0.006, clampValue(0.095 + energyNorm * 0.036 + PerformancePadState.punch * 0.036, 0.07, 0.19));
+      kick.triggerAttackRelease(tonalRhymeLow(step, -1), "16n", time + 0.006, clampValue(0.095 + energyNorm * 0.036 + PerformancePadState.punch * 0.036, 0.07, 0.19));
     } catch (error) {
       console.warn("[Music] ghost pulse failed:", error);
     }
@@ -4784,7 +4839,7 @@ function triggerOrganicTexture(step, time, context) {
   const pressure = clampValue((energyNorm * 0.42) + (creationNorm * 0.34) + (resourceNorm * 0.16) + (waveNorm * 0.08) - (voidNorm * 0.22), 0, 1);
   const pressureGate = !isRest && !PerformancePadState.void && pressure > 0.62 && (step % 16 === 10 || isAccentStep);
   if (pressureGate && rand((0.024 + pressure * 0.062 + gradient.ghost * 0.018 + chaos.lowMotion * 0.02) * pressureColor)) {
-    const turnNote = PRESSURE_TURN_NOTES[(GrooveState.cycle + step) % PRESSURE_TURN_NOTES.length];
+    const turnNote = tonalRhymeLow(step, 2);
     try {
       glass.triggerAttackRelease(organicFragment(1), "64n", time + 0.012, clampValue(0.024 + pressure * 0.042, 0.022, 0.078));
       if (rand(0.36)) {
@@ -5170,7 +5225,7 @@ function triggerLongformArcTurn(step, time, context) {
       texture.triggerAttackRelease("64n", arcTime + 0.014, clampValue(0.012 + LongformArcState.contrast * 0.04 + creationNorm * 0.012, 0.012, 0.064));
     }
     if (pressure && rand(0.16 + energyNorm * 0.1)) {
-      const lowNote = PRESSURE_TURN_NOTES[(GrooveState.cycle + stepIndex + 2) % PRESSURE_TURN_NOTES.length];
+      const lowNote = tonalRhymeLow(step, 2);
       bass.triggerAttackRelease(lowNote, "64n", arcTime + 0.026, clampValue(0.038 + LongformArcState.turn * 0.036 + energyNorm * 0.012, 0.034, 0.09));
     }
 
@@ -5226,7 +5281,7 @@ function triggerOrganicEcosystemBloom(step, time, context) {
       texture.triggerAttackRelease("64n", bloomTime + 0.012, clampValue(0.014 + eco.ferment * 0.034 + creationNorm * 0.012, 0.012, 0.07));
     }
     if (eco.rootTurn > 0.28 && sceneName !== "open" && rand(0.18 + eco.rootTurn * 0.14)) {
-      const lowNote = PRESSURE_TURN_NOTES[(GrooveState.cycle + stepIndex + 1) % PRESSURE_TURN_NOTES.length];
+      const lowNote = tonalRhymeLow(step, 1);
       bass.triggerAttackRelease(lowNote, "64n", bloomTime + 0.026, clampValue(0.046 + energyNorm * 0.028 + eco.rootTurn * 0.025, 0.04, 0.11));
     }
     rememberMotif(first, {
@@ -5292,7 +5347,7 @@ function triggerAutoDirectorCadence(step, time, context) {
         source: sceneName
       });
     } else if (sceneName === "body") {
-      const note = PRESSURE_TURN_NOTES[(GrooveState.cycle + stepIndex) % PRESSURE_TURN_NOTES.length];
+      const note = tonalRhymeLow(step, 0);
       bass.triggerAttackRelease(note, "32n", cadenceTime + 0.02, clampValue(0.058 + energyNorm * 0.048, 0.046, 0.13));
       texture.triggerAttackRelease("64n", cadenceTime + 0.028, clampValue(0.028 + creationNorm * 0.04, 0.024, 0.094));
       rememberMotif(ORGANIC_PLUCK_FRAGMENTS[(GrooveState.cycle + stepIndex + 2) % ORGANIC_PLUCK_FRAGMENTS.length], {
@@ -5530,9 +5585,9 @@ function triggerPadHoldMinimums(step, time, context) {
 
   if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep)) {
     try {
-      kick.triggerAttackRelease("C2", "16n", time + 0.006, clampValue(0.2 + energyNorm * 0.08 + genre.pressure * 0.032, 0.16, 0.36));
+      kick.triggerAttackRelease(tonalRhymeLow(step, -1), "16n", time + 0.006, clampValue(0.2 + energyNorm * 0.08 + genre.pressure * 0.032, 0.16, 0.36));
       if (step % 8 === 0) {
-        bass.triggerAttackRelease(bassRoot || "C2", "32n", time + 0.028, clampValue(0.07 + energyNorm * 0.045, 0.06, 0.14));
+        bass.triggerAttackRelease(tonalRhymeSub(step, 1), "32n", time + 0.028, clampValue(0.07 + energyNorm * 0.045, 0.06, 0.14));
       }
       glass.triggerAttackRelease(ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + 2) % ORGANIC_PLUCK_FRAGMENTS.length], "64n", time + 0.036, clampValue(0.032 + creationNorm * 0.03 + gradient.organic * 0.008, 0.026, 0.088));
       texture.triggerAttackRelease("64n", time + 0.018, clampValue(0.062 + creationNorm * 0.044 + genre.pressure * 0.024 + genre.techno * 0.012 + gradient.ghost * 0.01, 0.05, 0.136));
@@ -5657,7 +5712,7 @@ function scheduleStep(time) {
     // Kick
     const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + genre.pressure * 0.024 + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.14) * droneDrumScale);
     if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
-      kick.triggerAttackRelease("C2", "16n", t + 0.004, clampValue(0.32 + energyNorm * 0.072 + genre.pressure * 0.02 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.026 - lowGuard * 0.04, 0.18, droneDrumThin ? 0.32 : 0.5));
+      kick.triggerAttackRelease(tonalRhymeLow(step, -1), "16n", t + 0.004, clampValue(0.32 + energyNorm * 0.072 + genre.pressure * 0.02 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.026 - lowGuard * 0.04, 0.18, droneDrumThin ? 0.32 : 0.5));
       if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep) && rand(0.46)) {
         try {
           texture.triggerAttackRelease("64n", t + 0.012, clampValue(0.05 + energyNorm * 0.064, 0.038, 0.118));
