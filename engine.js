@@ -364,6 +364,23 @@ const PlaybackState = {
   backgroundAudio: null,
   iosSafariBridgePreferred: false
 };
+const HazamaBridgeState = {
+  active: false,
+  loaded: false,
+  source: "",
+  name: "",
+  style: "",
+  stage: "",
+  depthId: "",
+  stability: 0,
+  resonance: 0,
+  marks: 0,
+  importedAt: 0,
+  profile: null,
+  audio: {},
+  patterns: {},
+  lastError: ""
+};
 
 function markManualInfluenceFromEvent(event) {
   const id = event && event.target && event.target.id;
@@ -1204,6 +1221,21 @@ function publishMusicRuntimeState() {
       growth: GenomeState.growth,
       mutation: GenomeState.mutation,
       genes: { ...GenomeState.genes }
+    },
+    hazama: {
+      active: HazamaBridgeState.active,
+      loaded: HazamaBridgeState.loaded,
+      source: HazamaBridgeState.source,
+      name: HazamaBridgeState.name,
+      style: HazamaBridgeState.style,
+      stage: HazamaBridgeState.stage,
+      depthId: HazamaBridgeState.depthId,
+      stability: HazamaBridgeState.stability,
+      resonance: HazamaBridgeState.resonance,
+      marks: HazamaBridgeState.marks,
+      importedAt: HazamaBridgeState.importedAt,
+      audio: { ...HazamaBridgeState.audio },
+      patterns: { ...HazamaBridgeState.patterns }
     },
     pads: { ...PerformancePadState },
     output: { level: OutputState.level },
@@ -2088,6 +2120,185 @@ function syncSliderValue(key, value) {
 
 function syncSliderFromTarget(key) {
   syncSliderValue(key, UCM_TARGET[key]);
+}
+
+function setHazamaStatus(text) {
+  const status = document.getElementById("status-text");
+  if (status && !isPlaying) status.textContent = text;
+  const presetStatus = document.getElementById("preset-status");
+  if (presetStatus && HazamaBridgeState.loaded) presetStatus.textContent = text;
+}
+
+function updateHazamaUiState() {
+  const button = document.getElementById("btn_start");
+  if (button) {
+    button.textContent = HazamaBridgeState.loaded ? "START.HZM" : "START";
+    button.setAttribute("aria-label", HazamaBridgeState.loaded ? "Start Hazama audio" : "Start audio");
+    button.setAttribute("title", HazamaBridgeState.loaded ? "Start Hazama audio" : "Start audio");
+  }
+  if (document.body) {
+    document.body.dataset.hazama = HazamaBridgeState.loaded ? "true" : "false";
+    document.body.dataset.hazamaStage = HazamaBridgeState.stage || "";
+  }
+}
+
+function sanitizeHazamaStyle(style) {
+  const normalized = typeof style === "string" ? style.trim().toLowerCase() : "";
+  if (PresetManager.names.includes(normalized)) return normalized;
+  if (normalized === "idm" || normalized === "field" || normalized === "haze") return "ambient";
+  if (normalized === "broken" || normalized === "glitch") return "lofi";
+  return "";
+}
+
+function normalizeHazamaTempo(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  if (value >= 40 && value <= 180) return clampValue(value, 54, 152);
+  return mapValue(clampValue(value, 0, 100), 0, 100, 54, 142);
+}
+
+function safeHazamaNumber(value, fallback = 0) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function decodeBase64UrlJson(value) {
+  if (typeof value !== "string" || !value) return null;
+  try {
+    const base64 = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    const json = typeof TextDecoder !== "undefined"
+      ? new TextDecoder("utf-8").decode(bytes)
+      : decodeURIComponent(Array.from(bytes).map((byte) => `%${byte.toString(16).padStart(2, "0")}`).join(""));
+    return JSON.parse(json);
+  } catch (error) {
+    console.warn("[Music] invalid hazama payload:", error);
+    HazamaBridgeState.lastError = "invalid payload";
+    return null;
+  }
+}
+
+function profileFromHazamaPayload(payload) {
+  if (!payload || typeof payload !== "object") return null;
+  if (payload.type && payload.type !== "hazama-profile") return null;
+  if (payload.provider && payload.provider !== "music") return null;
+  const profile = payload.profile || payload;
+  return profile && typeof profile === "object" ? profile : null;
+}
+
+function importHazamaProfile(profile, options = {}) {
+  if (!profile || typeof profile !== "object") return false;
+
+  const ucm = profile.ucm && typeof profile.ucm === "object" ? profile.ucm : {};
+  const audio = profile.audio && typeof profile.audio === "object" ? profile.audio : {};
+  const patterns = profile.patterns && typeof profile.patterns === "object" ? profile.patterns : {};
+  const source = profile.source && typeof profile.source === "object" ? profile.source : {};
+  const style = sanitizeHazamaStyle(profile.style);
+  let touchedUcm = false;
+
+  for (const key of UCM_KEYS) {
+    if (typeof ucm[key] !== "number" || !Number.isFinite(ucm[key])) continue;
+    const value = Math.round(clampValue(ucm[key], 0, 100));
+    UCM_TARGET[key] = value;
+    UCM[key] = value;
+    syncSliderFromTarget(key);
+    touchedUcm = true;
+  }
+
+  HazamaBridgeState.active = true;
+  HazamaBridgeState.loaded = true;
+  HazamaBridgeState.source = options.source || source.repo || "hazama";
+  HazamaBridgeState.name = typeof profile.name === "string" ? profile.name.slice(0, 80) : "hazama";
+  HazamaBridgeState.style = style;
+  HazamaBridgeState.stage = typeof source.stage === "string" ? source.stage.slice(0, 40) : "";
+  HazamaBridgeState.depthId = typeof source.depthId === "string" ? source.depthId.slice(0, 24) : "";
+  HazamaBridgeState.stability = clampValue(safeHazamaNumber(source.stability, 0), 0, 100);
+  HazamaBridgeState.resonance = clampValue(safeHazamaNumber(source.resonance, 0), 0, 100);
+  HazamaBridgeState.marks = clampValue(safeHazamaNumber(source.marks, 0), 0, 100);
+  HazamaBridgeState.audio = {
+    tempo: normalizeHazamaTempo(audio.tempo),
+    density: typeof audio.density === "number" ? clamp01(audio.density) : null,
+    brightness: typeof audio.brightness === "number" ? clamp01(audio.brightness) : null,
+    silenceRate: typeof audio.silenceRate === "number" ? clamp01(audio.silenceRate) : null,
+    bassWeight: typeof audio.bassWeight === "number" ? clamp01(audio.bassWeight) : null,
+    harmonicDeviation: typeof audio.harmonicDeviation === "number" ? clamp01(audio.harmonicDeviation) : null,
+    smoothing: typeof audio.smoothing === "number" ? clamp01(audio.smoothing) : null
+  };
+  HazamaBridgeState.patterns = {
+    drone: patterns.drone === true,
+    droneLayers: typeof patterns.droneLayers === "number" ? clampValue(patterns.droneLayers, 0, 6) : 0,
+    glitch: patterns.glitch === true,
+    jazzStabs: patterns.jazzStabs === true,
+    percussion: patterns.percussion === true,
+    gatePulse: patterns.gatePulse === true
+  };
+  HazamaBridgeState.importedAt = Date.now();
+  HazamaBridgeState.profile = {
+    name: HazamaBridgeState.name,
+    style: HazamaBridgeState.style,
+    source: {
+      repo: source.repo || "QuietBriony/hazama",
+      depthId: HazamaBridgeState.depthId,
+      stage: HazamaBridgeState.stage,
+      stability: HazamaBridgeState.stability,
+      resonance: HazamaBridgeState.resonance,
+      marks: HazamaBridgeState.marks,
+      rawInputStored: false
+    },
+    ucm: Object.fromEntries(UCM_KEYS.map((key) => [key, UCM_TARGET[key]])),
+    audio: { ...HazamaBridgeState.audio },
+    patterns: { ...HazamaBridgeState.patterns }
+  };
+  HazamaBridgeState.lastError = "";
+
+  if (style) {
+    EngineParams.mode = style;
+    lastMode = null;
+  }
+
+  if (typeof HazamaBridgeState.audio.smoothing === "number") {
+    UCM_SMOOTH_SEC = 0.45 + HazamaBridgeState.audio.smoothing * 2.2;
+  }
+
+  if (touchedUcm || options.force) {
+    applyUCMToParams({ force: options.force === true });
+  }
+  updateHazamaUiState();
+  updateRuntimeUiState();
+  setHazamaStatus("HZM.LOADED");
+  return true;
+}
+
+function handleHazamaPayload(payload, options = {}) {
+  const profile = profileFromHazamaPayload(payload);
+  if (!profile) return false;
+  return importHazamaProfile(profile, options);
+}
+
+function importHazamaFromHash() {
+  if (typeof window === "undefined" || !window.location || !window.location.hash) return false;
+  const match = window.location.hash.match(/(?:^#|&)hazama=([^&]+)/);
+  if (!match) return false;
+  const payload = decodeBase64UrlJson(decodeURIComponent(match[1]));
+  return handleHazamaPayload(payload, { source: "hash", force: true });
+}
+
+function setupHazamaBridge() {
+  importHazamaFromHash();
+
+  window.addEventListener("hashchange", () => {
+    importHazamaFromHash();
+  });
+
+  window.addEventListener("message", (event) => {
+    const data = event && event.data;
+    if (!data || typeof data !== "object") return;
+    if (data.type !== "hazama-profile") return;
+    if (data.provider !== "music") return;
+    handleHazamaPayload(data, { source: "postMessage" });
+  });
+
+  window.importHazamaProfile = importHazamaProfile;
 }
 
 function syncAutoSlidersFromCurrent(now) {
@@ -3204,6 +3415,86 @@ function applyPresetToEngineParams(preset){
 
 }
 
+function applyHazamaProfileToEngineParams(options = {}) {
+  if (!HazamaBridgeState.active || !HazamaBridgeState.loaded) return;
+
+  const audio = HazamaBridgeState.audio || {};
+  const patterns = HazamaBridgeState.patterns || {};
+  const stage = HazamaBridgeState.stage || "";
+  const force = options.force === true;
+  const density = typeof audio.density === "number" ? audio.density : 0.24;
+  const brightness = typeof audio.brightness === "number" ? audio.brightness : 0.36;
+  const silenceRate = typeof audio.silenceRate === "number" ? audio.silenceRate : 0.24;
+  const bassWeight = typeof audio.bassWeight === "number" ? audio.bassWeight : 0.34;
+  const stability = clampValue(HazamaBridgeState.stability / 100, 0, 1);
+  const resonance = clampValue(HazamaBridgeState.resonance / 100, 0, 1);
+  const marks = clampValue(HazamaBridgeState.marks / 100, 0, 1);
+  const droneBoost = patterns.drone ? 0.14 + patterns.droneLayers * 0.018 : 0;
+  const glitchBoost = patterns.glitch ? 0.075 : 0;
+  const percussionBoost = patterns.percussion || patterns.gatePulse ? 0.09 : 0;
+  const stageVoid = stage === "submerge" || stage === "exhale" ? 0.06 : 0;
+  const stagePulse = stage === "root" || stage === "ferment" ? 0.06 : 0;
+
+  if (typeof audio.smoothing === "number") {
+    UCM_SMOOTH_SEC = 0.45 + audio.smoothing * 2.2;
+  }
+
+  if (typeof audio.tempo === "number") {
+    const step = force ? 128 : 0.62 + Math.abs((DJTempoState.targetBpm || EngineParams.bpm) - audio.tempo) * 0.012;
+    DJTempoState.targetBpm = approachValue(DJTempoState.targetBpm || audio.tempo, audio.tempo, step);
+    DJTempoState.bpm = approachValue(DJTempoState.bpm || audio.tempo, DJTempoState.targetBpm, force ? 128 : 0.5);
+    EngineParams.bpm = Math.round(DJTempoState.bpm);
+    if (typeof Tone !== "undefined" && Tone.Transport?.bpm) {
+      rampParam("transport-bpm", Tone.Transport.bpm, DJTempoState.bpm, force ? 0.25 : 1.6, force ? 0 : 0.08);
+    }
+  }
+
+  EngineParams.restProb = clampValue(
+    EngineParams.restProb * 0.72 + silenceRate * 0.3 + stageVoid - density * 0.05 - marks * 0.04,
+    0.04,
+    0.62
+  );
+  EngineParams.kickProb = clampValue(
+    EngineParams.kickProb * 0.7 + density * 0.18 + percussionBoost + stagePulse - stability * 0.035,
+    0.04,
+    0.62
+  );
+  EngineParams.hatProb = clampValue(
+    EngineParams.hatProb * 0.68 + density * 0.2 + brightness * 0.12 + glitchBoost + percussionBoost * 0.42,
+    0.08,
+    0.8
+  );
+  EngineParams.bassProb = clampValue(
+    EngineParams.bassProb * 0.74 + bassWeight * 0.18 + resonance * 0.05 - silenceRate * 0.04,
+    0.04,
+    0.46
+  );
+  EngineParams.padProb = clampValue(
+    EngineParams.padProb * 0.7 + droneBoost + (1 - density) * 0.12 + silenceRate * 0.06 + stability * 0.05,
+    0.16,
+    0.68
+  );
+
+  if (patterns.drone) {
+    EngineParams.padPattern = stage === "submerge" ? "x.......x......." : "x...x...x.......";
+  }
+  if (!patterns.percussion && !patterns.gatePulse) {
+    EngineParams.kickPattern = "................";
+    EngineParams.hatPattern = patterns.glitch ? "....x.......x..." : "................";
+  }
+  if (patterns.gatePulse) {
+    EngineParams.hatPattern = "..x...x...x...x.";
+  }
+  if (patterns.glitch) {
+    EngineParams.hatPattern = "..x.x...x...x.x.";
+  }
+
+  const reverbTarget = clampValue(0.18 + silenceRate * 0.22 + stability * 0.06 + droneBoost * 0.18 + stageVoid * 0.9, 0.12, 0.58);
+  const delayTarget = clampValue(0.04 + glitchBoost * 0.8 + marks * 0.08 + resonance * 0.05 + brightness * 0.06, 0.02, 0.36);
+  rampParam("hazama-reverb", globalReverb.wet, reverbTarget, force ? 0.25 : 1.1, force ? 0 : 0.01);
+  rampParam("hazama-delay", globalDelay.wet, delayTarget, force ? 0.25 : 0.9, force ? 0 : 0.01);
+}
+
 
 async function loadPresets(){
   const status = document.getElementById("preset-status");
@@ -3244,6 +3535,7 @@ async function loadPresets(){
 }
 
 function resolveMode(){
+  if (HazamaBridgeState.active && HazamaBridgeState.style) return HazamaBridgeState.style;
   if (PresetManager.selected && PresetManager.selected !== "__auto__") return PresetManager.selected;
   return chooseMode();
 }
@@ -3436,6 +3728,7 @@ function applyUCMToParams(options = {}) {
   }
 
   if (!manual) setPatternsByMode();
+  applyHazamaProfileToEngineParams({ force });
   updateUIFromParams();
 
   syncMusicAudioAdapterFromUCM(force);
@@ -4757,6 +5050,11 @@ function startAutoCycle() {
 
 function updateAutoMixTargets(cycleMs) {
   if (!UCM.auto.enabled || !isPlaying) return;
+  if (HazamaBridgeState.active) {
+    for (const key of AUTOMIX_MOTION_KEYS) syncSliderFromTarget(key);
+    updateUIFromParams();
+    return;
+  }
 
   UCM.auto.phase = (UCM.auto.phase + AUTO_MOTION_TICK_MS / cycleMs) % 1;
   for (const key of AUTOMIX_MOTION_KEYS) {
@@ -5013,6 +5311,7 @@ function attachUI() {
 window.addEventListener("DOMContentLoaded", () => {
   mountMandalaLayers();
   attachUI();
+  setupHazamaBridge();
   updateRuntimeUiState();
   setupMediaSessionControls();
   updateMediaSessionPlaybackState();
@@ -5024,6 +5323,7 @@ window.addEventListener("DOMContentLoaded", () => {
   loadPresets().finally(()=>{ 
     // prime
     applyUCMToParams({ force: true });
+    if (HazamaBridgeState.loaded) setHazamaStatus("HZM.LOADED");
   });
 
   // Smooth loop: UCM_TARGET -> UCM_CUR -> params (v1.3)
