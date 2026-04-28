@@ -104,31 +104,36 @@ const LONGFORM_ARC_STAGES = [
     name: "submerge",
     length: 9,
     bias: { energy: -7, wave: 5, mind: 3, creation: -2, void: 9, circle: 10, body: -8, resource: -6, observer: 12 },
-    gradient: { haze: 0.11, memory: 0.05, micro: 0.0, ghost: 0.03, chrome: 0.06, organic: 0.02 }
+    gradient: { haze: 0.11, memory: 0.05, micro: 0.0, ghost: 0.03, chrome: 0.06, organic: 0.02 },
+    gesture: { drift: 0.12, repeat: 0.02, punch: 0, void: 0.16 }
   },
   {
     name: "sprout",
     length: 8,
     bias: { energy: -1, wave: 10, mind: 4, creation: 8, void: 3, circle: 7, body: -4, resource: 4, observer: 10 },
-    gradient: { haze: 0.06, memory: 0.08, micro: 0.04, ghost: 0.01, chrome: 0.06, organic: 0.1 }
+    gradient: { haze: 0.06, memory: 0.08, micro: 0.04, ghost: 0.01, chrome: 0.06, organic: 0.1 },
+    gesture: { drift: 0.12, repeat: 0.08, punch: 0.02, void: 0.03 }
   },
   {
     name: "ferment",
     length: 8,
     bias: { energy: 4, wave: 13, mind: 8, creation: 12, void: -2, circle: -2, body: -2, resource: 10, observer: 6 },
-    gradient: { haze: 0.02, memory: 0.06, micro: 0.12, ghost: 0.04, chrome: 0.05, organic: 0.08 }
+    gradient: { haze: 0.02, memory: 0.06, micro: 0.12, ghost: 0.04, chrome: 0.05, organic: 0.08 },
+    gesture: { drift: 0.04, repeat: 0.18, punch: 0.04, void: 0 }
   },
   {
     name: "root",
     length: 6,
     bias: { energy: 5, wave: 6, mind: -1, creation: 4, void: -5, circle: -3, body: 6, resource: 5, observer: 0 },
-    gradient: { haze: 0.0, memory: 0.02, micro: 0.04, ghost: 0.12, chrome: 0.0, organic: 0.05 }
+    gradient: { haze: 0.0, memory: 0.02, micro: 0.04, ghost: 0.12, chrome: 0.0, organic: 0.05 },
+    gesture: { drift: 0, repeat: 0.04, punch: 0.16, void: 0.01 }
   },
   {
     name: "exhale",
     length: 9,
     bias: { energy: -9, wave: 7, mind: 7, creation: 1, void: 12, circle: 11, body: -10, resource: -7, observer: 15 },
-    gradient: { haze: 0.12, memory: 0.05, micro: 0.01, ghost: 0.03, chrome: 0.11, organic: 0.02 }
+    gradient: { haze: 0.12, memory: 0.05, micro: 0.01, ghost: 0.03, chrome: 0.11, organic: 0.02 },
+    gesture: { drift: 0.1, repeat: 0.01, punch: 0, void: 0.2 }
   }
 ];
 const MANUAL_INFLUENCE_HOLD_MS = 4300;
@@ -256,6 +261,7 @@ function setPerformancePad(name, active, options = {}) {
   if (active) {
     exciteOrganicChaos(name, source);
     rememberGestureMotif(name, source);
+    nudgeLongformArcFromGesture(name, source);
   }
   if (initialized) updateTimbreStateFromWorld(currentGradientParts());
   if (active) triggerPadSignature(name);
@@ -308,6 +314,27 @@ function longformArcBias(key) {
   return (stage.bias?.[key] || 0) * longformArcShape();
 }
 
+function longformArcGestureBias(name) {
+  if (!longformArcActive()) return 0;
+  const stage = currentLongformArcStage();
+  return (stage.gesture?.[name] || 0) * (0.58 + LongformArcState.contrast * 0.7 + LongformArcState.turn * 0.24);
+}
+
+function nudgeLongformArcFromGesture(name, source = "manual") {
+  if (!isPlaying) return;
+  const scale = source === "auto" ? 0.55 : 0.85;
+  const shape = {
+    drift: { breath: 0.05, contrast: 0.035, turn: 0.055 },
+    repeat: { breath: -0.015, contrast: 0.075, turn: 0.075 },
+    punch: { breath: -0.035, contrast: 0.09, turn: 0.085 },
+    void: { breath: 0.07, contrast: -0.01, turn: 0.065 }
+  }[name] || { breath: 0.02, contrast: 0.025, turn: 0.04 };
+
+  LongformArcState.breath = clampValue(LongformArcState.breath + shape.breath * scale, 0.16, 0.84);
+  LongformArcState.contrast = clampValue(LongformArcState.contrast + shape.contrast * scale, 0.06, 0.62);
+  LongformArcState.turn = clampValue(LongformArcState.turn + shape.turn * scale, 0, 0.82);
+}
+
 function autoDirectorSceneBias(key) {
   if (!UCM.auto.enabled || !isPlaying) return 0;
   const scene = currentAutoDirectorScene();
@@ -356,10 +383,10 @@ function chooseAutoGesture(context) {
   } = context;
   const scene = currentAutoDirectorScene();
   const weighted = [
-    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1 + OrganicChaosState.airPull * 0.08 + (scene.gesture?.drift || 0)],
-    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08 + OrganicChaosState.tangle * 0.12 + (scene.gesture?.repeat || 0)],
-    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12 + OrganicChaosState.lowMotion * 0.1 + (scene.gesture?.punch || 0)],
-    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08 + OrganicChaosState.impulse * 0.06 + (scene.gesture?.void || 0)]
+    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1 + OrganicChaosState.airPull * 0.08 + (scene.gesture?.drift || 0) + longformArcGestureBias("drift")],
+    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08 + OrganicChaosState.tangle * 0.12 + (scene.gesture?.repeat || 0) + longformArcGestureBias("repeat")],
+    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12 + OrganicChaosState.lowMotion * 0.1 + (scene.gesture?.punch || 0) + longformArcGestureBias("punch")],
+    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08 + OrganicChaosState.impulse * 0.06 + (scene.gesture?.void || 0) + longformArcGestureBias("void")]
   ];
   const total = weighted.reduce((sum, [, weight]) => sum + Math.max(0, weight), 0);
   let pick = Math.random() * total;
@@ -406,7 +433,8 @@ function maybeTriggerAutoPerformanceGesture(step, context) {
   if (!(step % 8 === 0 || step % 8 === 4)) return;
 
   const scene = currentAutoDirectorScene();
-  const chanceValue = 0.11 + (scene.gestureChance || 0.03) + context.creationNorm * 0.045 + context.observerNorm * 0.032 + context.waveNorm * 0.032 + context.resourceNorm * 0.022;
+  const arcLift = longformArcActive() ? LongformArcState.contrast * 0.026 + LongformArcState.turn * 0.018 : 0;
+  const chanceValue = 0.11 + (scene.gestureChance || 0.03) + context.creationNorm * 0.045 + context.observerNorm * 0.032 + context.waveNorm * 0.032 + context.resourceNorm * 0.022 + arcLift;
   if (!rand(chance(chanceValue))) return;
   startAutoPerformanceGesture(chooseAutoGesture(context));
 }
