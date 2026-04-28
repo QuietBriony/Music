@@ -216,6 +216,30 @@ const BpmCrossfadeState = {
   motifShade: "D4",
   motifIndex: 0
 };
+const GOLDEN_RATIO = 1.61803398875;
+const GOLDEN_RATIO_INVERSE = 1 / GOLDEN_RATIO;
+const GenomeState = {
+  generation: 0,
+  phase: 0,
+  growth: 0.22,
+  mutation: 0.12,
+  resonance: 0,
+  lastPulseCycle: -99,
+  root: "D5",
+  reply: "F#5",
+  shade: "D4",
+  genes: {
+    haze: 0.48,
+    pulse: 0.34,
+    micro: 0.36,
+    chrome: 0.4,
+    organic: 0.42,
+    pressure: 0.24,
+    refrain: 0.36,
+    voidTail: 0.32
+  }
+};
+const GENOME_GENE_KEYS = ["haze", "pulse", "micro", "chrome", "organic", "pressure", "refrain", "voidTail"];
 const OutputState = {
   level: 75
 };
@@ -550,6 +574,11 @@ function decayBpmCrossfadeMemory() {
   if (BpmCrossfadeState.refrain < 0.001) BpmCrossfadeState.refrain = 0;
 }
 
+function decayGenerativeGenome() {
+  GenomeState.resonance *= 0.982;
+  if (GenomeState.resonance < 0.001) GenomeState.resonance = 0;
+}
+
 function resetMotifMemory() {
   MotifMemoryState.strength = 0;
   MotifMemoryState.air = 0;
@@ -568,6 +597,26 @@ function resetBpmCrossfadeMemory() {
   BpmCrossfadeState.motifReply = "F#5";
   BpmCrossfadeState.motifShade = "D4";
   BpmCrossfadeState.motifIndex = 0;
+}
+
+function resetGenerativeGenome() {
+  GenomeState.generation = 0;
+  GenomeState.phase = 0;
+  GenomeState.growth = 0.22;
+  GenomeState.mutation = 0.12;
+  GenomeState.resonance = 0;
+  GenomeState.lastPulseCycle = -99;
+  GenomeState.root = "D5";
+  GenomeState.reply = "F#5";
+  GenomeState.shade = "D4";
+  GenomeState.genes.haze = 0.48;
+  GenomeState.genes.pulse = 0.34;
+  GenomeState.genes.micro = 0.36;
+  GenomeState.genes.chrome = 0.4;
+  GenomeState.genes.organic = 0.42;
+  GenomeState.genes.pressure = 0.24;
+  GenomeState.genes.refrain = 0.36;
+  GenomeState.genes.voidTail = 0.32;
 }
 
 function resetOrganicEcosystem() {
@@ -794,6 +843,80 @@ function updateBpmCrossfadeMemory(parts) {
   if (motionAmount > 0.24) {
     BpmCrossfadeState.blend = clampValue(BpmCrossfadeState.blend + motionAmount * 0.025, 0, 0.72);
     BpmCrossfadeState.refrain = clampValue(BpmCrossfadeState.refrain + motionAmount * 0.018, 0, 0.62);
+  }
+}
+
+function fractionalPart(value) {
+  return value - Math.floor(value);
+}
+
+function goldenPulseGate(step, offset = 0) {
+  const point = (step + GenomeState.generation + offset) % 13;
+  return point === 0 || point === 5 || point === 8;
+}
+
+function geneValue(key) {
+  return clampValue(GenomeState.genes[key] || 0, 0, 1);
+}
+
+function genomeDominantPool() {
+  const genes = GenomeState.genes;
+  if (genes.voidTail > 0.58 || genes.chrome > 0.62) return TRANSPARENT_AIR_FRAGMENTS;
+  if (genes.organic > genes.micro && genes.organic > 0.48) return ORGANIC_PLUCK_FRAGMENTS;
+  if (genes.micro > 0.54 || genes.pressure > 0.56) return GLASS_NOTES;
+  return FIELD_MURK_FRAGMENTS;
+}
+
+function updateGenerativeGenome(parts) {
+  const genes = GenomeState.genes;
+  const phiPhase = fractionalPart((GrooveState.cycle + 1) * GOLDEN_RATIO_INVERSE + GenomeState.generation * 0.03398875);
+  const mutationNoise = (Math.random() - 0.5) * GenomeState.mutation;
+  const pressure = parts.pressure || 0;
+  const targets = {
+    haze: clampValue((1 - parts.energy) * 0.24 + parts.voidness * 0.18 + parts.circle * 0.18 + parts.observer * 0.18 + GradientState.haze * 0.22, 0, 1),
+    pulse: clampValue(parts.energy * 0.24 + parts.body * 0.2 + parts.resource * 0.16 + GradientState.ghost * 0.16 + GenreBlendState.techno * 0.14 + BpmCrossfadeState.blend * 0.1, 0, 1),
+    micro: clampValue(parts.creation * 0.26 + parts.resource * 0.2 + parts.wave * 0.18 + GradientState.micro * 0.22 + GenreBlendState.idm * 0.14, 0, 1),
+    chrome: clampValue(parts.observer * 0.24 + parts.mind * 0.2 + parts.circle * 0.16 + GradientState.chrome * 0.24 + BpmCrossfadeState.refrain * 0.16, 0, 1),
+    organic: clampValue(parts.wave * 0.22 + parts.creation * 0.2 + GradientState.organic * 0.24 + OrganicEcosystemState.sprout * 0.16 + OrganicEcosystemState.ferment * 0.12 + (1 - pressure) * 0.06, 0, 1),
+    pressure: clampValue(pressure * 0.34 + parts.energy * 0.18 + parts.body * 0.18 + GenreBlendState.pressure * 0.2 + OrganicChaosState.lowMotion * 0.1, 0, 1),
+    refrain: clampValue(MotifMemoryState.strength * 0.24 + BpmCrossfadeState.refrain * 0.26 + LongformArcState.turn * 0.18 + parts.observer * 0.12 + parts.circle * 0.1 + phiPhase * 0.1, 0, 1),
+    voidTail: clampValue(parts.voidness * 0.28 + parts.observer * 0.18 + GradientState.haze * 0.16 + DepthState.tail * 0.2 + PerformancePadState.void * 0.18, 0, 1)
+  };
+
+  for (const key of GENOME_GENE_KEYS) {
+    genes[key] = approachValue(genes[key], targets[key], 0.012 + GenomeState.growth * 0.008);
+  }
+
+  const selectedKey = GENOME_GENE_KEYS[(GenomeState.generation + Math.floor(phiPhase * GENOME_GENE_KEYS.length)) % GENOME_GENE_KEYS.length];
+  genes[selectedKey] = clampValue(genes[selectedKey] + mutationNoise * 0.18 + (targets[selectedKey] - genes[selectedKey]) * 0.05, 0, 1);
+
+  GenomeState.phase = phiPhase;
+  GenomeState.growth = approachValue(
+    GenomeState.growth,
+    clampValue(0.2 + OrganicEcosystemState.bloom * 0.12 + BpmCrossfadeState.refrain * 0.1 + Math.abs(DJTempoState.motion) * 0.004 + LongformArcState.contrast * 0.08, 0.16, 0.72),
+    0.025
+  );
+  GenomeState.mutation = approachValue(
+    GenomeState.mutation,
+    clampValue(0.08 + OrganicChaosState.tangle * 0.08 + parts.creation * 0.05 + parts.wave * 0.04 + BpmCrossfadeState.blend * 0.05, 0.05, 0.26),
+    0.02
+  );
+  GenomeState.resonance = clampValue(GenomeState.resonance + (targets.refrain + targets.micro + targets.organic) * 0.012, 0, 1);
+
+  if (GenomeState.phase < GOLDEN_RATIO_INVERSE * 0.08 && GrooveState.cycle - GenomeState.lastPulseCycle > 1) {
+    GenomeState.generation += 1;
+    GenomeState.lastPulseCycle = GrooveState.cycle;
+    const pool = genomeDominantPool();
+    GenomeState.root = pool[(GrooveState.cycle + GenomeState.generation) % pool.length];
+    GenomeState.reply = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + GenomeState.generation + 3) % TRANSPARENT_AIR_FRAGMENTS.length];
+    GenomeState.shade = FIELD_MURK_FRAGMENTS[(GrooveState.cycle + GenomeState.generation + 5) % FIELD_MURK_FRAGMENTS.length];
+    rememberMotif(GenomeState.root, {
+      reply: GenomeState.reply,
+      shade: GenomeState.shade,
+      strength: 0.05 + geneValue("refrain") * 0.08 + GenomeState.growth * 0.04,
+      air: geneValue("voidTail") * 0.12 + geneValue("chrome") * 0.08,
+      source: `genome:${GenomeState.generation}`
+    });
   }
 }
 
@@ -2179,6 +2302,17 @@ function updateReferenceGradient(parts) {
     }
   }
 
+  if (GenomeState.growth > 0) {
+    const genes = GenomeState.genes;
+    const genomeScale = clampValue(GenomeState.growth * 0.2 + GenomeState.resonance * 0.08, 0, 0.24);
+    GradientState.haze = clampValue(GradientState.haze + genes.haze * genomeScale + genes.voidTail * genomeScale * 0.32, 0, 1);
+    GradientState.memory = clampValue(GradientState.memory + genes.refrain * genomeScale * 0.5 + genes.organic * genomeScale * 0.32, 0, 1);
+    GradientState.micro = clampValue(GradientState.micro + genes.micro * genomeScale + genes.pressure * genomeScale * 0.2, 0, 1);
+    GradientState.ghost = clampValue(GradientState.ghost + genes.pulse * genomeScale * 0.58 + genes.pressure * genomeScale * 0.6, 0, 1);
+    GradientState.chrome = clampValue(GradientState.chrome + genes.chrome * genomeScale + genes.voidTail * genomeScale * 0.24, 0, 1);
+    GradientState.organic = clampValue(GradientState.organic + genes.organic * genomeScale + genes.refrain * genomeScale * 0.18, 0, 1);
+  }
+
   if (longformArcActive()) {
     const arc = currentLongformArcStage();
     const arcShape = longformArcShape();
@@ -2227,6 +2361,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
   const genre = GenreBlendState;
   const bpmBlend = BpmCrossfadeState.blend;
   const refrain = BpmCrossfadeState.refrain;
+  const genes = GenomeState.genes;
+  const genomeGrowth = GenomeState.growth;
 
   DepthState.bed = clampValue(
     (gradient.haze * 0.34) +
@@ -2240,6 +2376,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoRise * 0.018 +
       bpmBlend * 0.018 +
       refrain * 0.012 +
+      genes.haze * genomeGrowth * 0.03 +
+      genes.voidTail * genomeGrowth * 0.018 +
       arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.045 : 0.018),
     0,
     1
@@ -2256,6 +2394,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoRise * 0.04 -
       tempoFall * 0.016 +
       bpmBlend * 0.026 +
+      genes.pulse * genomeGrowth * 0.032 +
+      genes.pressure * genomeGrowth * 0.026 +
       arcShape * (arcStage.name === "root" ? 0.035 : 0.012),
     0,
     1
@@ -2273,6 +2413,9 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoFall * 0.012 +
       bpmBlend * 0.04 +
       refrain * 0.025 +
+      genes.micro * genomeGrowth * 0.04 +
+      genes.chrome * genomeGrowth * 0.025 +
+      genes.organic * genomeGrowth * 0.025 +
       arcShape * (arcStage.name === "sprout" || arcStage.name === "ferment" ? 0.04 : 0.014),
     0,
     1
@@ -2289,6 +2432,9 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoFall * 0.014 -
       tempoRise * 0.01 +
       bpmBlend * 0.008 +
+      genes.chrome * genomeGrowth * 0.012 +
+      genes.voidTail * genomeGrowth * 0.01 -
+      genes.pressure * genomeGrowth * 0.008 +
       arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.025 : 0.008),
     0,
     1
@@ -2304,6 +2450,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoFall * 0.045 -
       tempoRise * 0.012 +
       refrain * 0.018 +
+      genes.voidTail * genomeGrowth * 0.04 +
+      genes.haze * genomeGrowth * 0.02 +
       arcShape * (arcStage.name === "exhale" ? 0.05 : 0.018),
     0,
     1
@@ -2322,6 +2470,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       tempoFall * 0.012 +
       bpmBlend * 0.045 +
       refrain * 0.042 +
+      genes.refrain * genomeGrowth * 0.05 +
+      genes.micro * genomeGrowth * 0.026 +
       LongformArcState.turn * 0.06,
     0,
     1
@@ -2885,6 +3035,7 @@ function resetRuntimeCounters() {
   resetMixGovernor();
   resetGenreBlend();
   resetDJTempo();
+  resetGenerativeGenome();
 }
 
 function patternAt(pattern, step) {
@@ -2922,6 +3073,7 @@ function advanceGrooveStructure() {
   advanceLongformArcPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
   updateBpmCrossfadeMemory(currentGradientParts());
+  updateGenerativeGenome(currentGradientParts());
 
   GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
   GrooveState.textureLift = GrooveState.fillActive ? 0.10 + creationNorm * 0.12 : creationNorm * 0.035;
@@ -3371,6 +3523,86 @@ function triggerBpmCrossfadeRefrain(step, time, context) {
     markMixEvent(0.12 + blend * 0.05);
   } catch (error) {
     console.warn("[Music] bpm crossfade refrain failed:", error);
+  }
+}
+
+function triggerGoldenGenomeDevelopment(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  if (!glass || GenomeState.growth < 0.12 || MixGovernorState.eventLoad > 0.88) return;
+
+  const genes = GenomeState.genes;
+  const phaseOffset = Math.floor(GenomeState.phase * 13);
+  const goldenGate = goldenPulseGate(step, phaseOffset) || (isAccentStep && GenomeState.resonance > 0.22);
+  const generativeChance = chance(
+    0.012 +
+      GenomeState.growth * 0.07 +
+      GenomeState.resonance * 0.046 +
+      genes.refrain * 0.036 +
+      genes.micro * 0.024 +
+      genes.organic * 0.02 +
+      PerformancePadState.repeat * 0.03 +
+      PerformancePadState.drift * 0.022
+  );
+  if (!goldenGate || !rand(generativeChance)) return;
+
+  const pool = genomeDominantPool();
+  const index = (GrooveState.cycle + step + GenomeState.generation + phaseOffset) % pool.length;
+  const root = pool[index];
+  const reply = genes.chrome + genes.voidTail > genes.organic
+    ? TRANSPARENT_AIR_FRAGMENTS[(index + 2) % TRANSPARENT_AIR_FRAGMENTS.length]
+    : ORGANIC_PLUCK_FRAGMENTS[(index + 3) % ORGANIC_PLUCK_FRAGMENTS.length];
+  const shade = FIELD_MURK_FRAGMENTS[(index + 5) % FIELD_MURK_FRAGMENTS.length];
+  const seedDelay = 0.026 + GenomeState.phase * 0.018 + waveNorm * 0.01;
+  const replyDelay = seedDelay * GOLDEN_RATIO;
+  const shadeDelay = replyDelay * GOLDEN_RATIO;
+  const airy = genes.voidTail > 0.46 || PerformancePadState.void || voidNorm > 0.58;
+  const vel = clampValue(
+    0.016 +
+      GenomeState.growth * 0.034 +
+      GenomeState.resonance * 0.024 +
+      observerNorm * 0.012 +
+      creationNorm * 0.012,
+    0.014,
+    0.088
+  );
+
+  try {
+    if (airy || genes.haze > 0.56) {
+      pad.triggerAttackRelease(randomHazeChord(), airy ? "1n" : "2n", time + seedDelay * GOLDEN_RATIO_INVERSE, clampValue(0.014 + genes.haze * 0.026 + circleNorm * 0.01, 0.012, 0.058));
+    }
+    glass.triggerAttackRelease(root, genes.micro > 0.54 || genes.pressure > 0.52 ? "64n" : "32n", time + seedDelay, vel);
+    if (rand(0.38 + genes.refrain * 0.24 + GenomeState.resonance * 0.08)) {
+      glass.triggerAttackRelease(reply, airy ? "16n" : "64n", time + replyDelay, clampValue(vel * (airy ? 0.62 : 0.7), 0.012, 0.07));
+    }
+    if (rand(0.24 + genes.organic * 0.2 + genes.micro * 0.1)) {
+      glass.triggerAttackRelease(shade, "64n", time + shadeDelay, clampValue(vel * 0.44, 0.01, 0.048));
+    }
+    if (!airy && rand(0.2 + genes.pulse * 0.16 + genes.pressure * 0.1 + resourceNorm * 0.04)) {
+      texture.triggerAttackRelease("64n", time + seedDelay * 0.72, clampValue(0.012 + genes.micro * 0.028 + genes.pressure * 0.018 + energyNorm * 0.008, 0.012, 0.064));
+    }
+    GenomeState.root = root;
+    GenomeState.reply = reply;
+    GenomeState.shade = shade;
+    GenomeState.resonance = clampValue(GenomeState.resonance + 0.045 + genes.refrain * 0.035, 0, 1);
+    rememberMotif(root, {
+      reply,
+      shade,
+      strength: 0.034 + genes.refrain * 0.09 + GenomeState.growth * 0.04,
+      air: airy ? 0.18 + genes.voidTail * 0.1 : genes.chrome * 0.08,
+      source: `golden-genome:${GenomeState.generation}`
+    });
+    markMixEvent(0.1 + GenomeState.growth * 0.04);
+  } catch (error) {
+    console.warn("[Music] golden genome development failed:", error);
   }
 }
 
@@ -3852,6 +4084,7 @@ function scheduleStep(time) {
   decayOrganicChaos();
   decayMotifMemory();
   decayBpmCrossfadeMemory();
+  decayGenerativeGenome();
   decayOrganicEcosystem();
   decayLongformArc();
   decayMixGovernor();
@@ -3888,6 +4121,7 @@ function scheduleStep(time) {
   triggerClarityFilament(step, t, stepContext);
   triggerMotifAfterimage(step, t, stepContext);
   triggerBpmCrossfadeRefrain(step, t, stepContext);
+  triggerGoldenGenomeDevelopment(step, t, stepContext);
   triggerLongformArcTurn(step, t, stepContext);
   triggerOrganicEcosystemBloom(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
