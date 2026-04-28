@@ -550,6 +550,13 @@ function resetLongformArc() {
   LongformArcState.lastStage = currentLongformArcStage().name;
 }
 
+function resetMixGovernor() {
+  MixGovernorState.lowGuard = 0;
+  MixGovernorState.clarity = 0.34;
+  MixGovernorState.eventLoad = 0;
+  MixGovernorState.lastAirCycle = -99;
+}
+
 function decayOrganicEcosystem() {
   OrganicEcosystemState.bloom *= 0.9;
   OrganicEcosystemState.sprout *= 0.995;
@@ -561,6 +568,45 @@ function decayOrganicEcosystem() {
 function decayLongformArc() {
   LongformArcState.turn *= 0.92;
   if (LongformArcState.turn < 0.001) LongformArcState.turn = 0;
+}
+
+function decayMixGovernor() {
+  MixGovernorState.eventLoad *= 0.88;
+  if (MixGovernorState.eventLoad < 0.001) MixGovernorState.eventLoad = 0;
+}
+
+function markMixEvent(amount = 0.08) {
+  MixGovernorState.eventLoad = clampValue(MixGovernorState.eventLoad + amount, 0, 1);
+}
+
+function updateMixGovernor(parts, gradient = GradientState, depth = DepthState) {
+  const { energy, creation, voidness, body, resource, observer, pressure } = parts;
+  const lowTarget = clampValue(
+    body * 0.34 +
+      energy * 0.22 +
+      pressure * 0.2 +
+      gradient.ghost * 0.1 +
+      LongformArcState.turn * 0.09 -
+      depth.lowMidClean * 0.16 -
+      voidness * 0.08,
+    0,
+    1
+  );
+  const clarityTarget = clampValue(
+    observer * 0.24 +
+      creation * 0.18 +
+      gradient.chrome * 0.2 +
+      gradient.micro * 0.16 +
+      depth.particle * 0.12 +
+      (1 - resource) * 0.06 +
+      LongformArcState.breath * 0.04 -
+      lowTarget * 0.08,
+    0.08,
+    0.84
+  );
+
+  MixGovernorState.lowGuard = approachValue(MixGovernorState.lowGuard, lowTarget, 0.08);
+  MixGovernorState.clarity = approachValue(MixGovernorState.clarity, clarityTarget, 0.07);
 }
 
 function advanceLongformArcPhrase(parts) {
@@ -1634,6 +1680,12 @@ const DepthState = {
   tail: 0.42,
   gesture: 0.2
 };
+const MixGovernorState = {
+  lowGuard: 0,
+  clarity: 0.34,
+  eventLoad: 0,
+  lastAirCycle: -99
+};
 
 const PRESET_CHARACTERS = {
   ambient: {
@@ -1985,10 +2037,13 @@ function updateTimbreStateFromWorld(parts) {
   const character = currentPresetCharacter();
   const gradient = updateReferenceGradient(parts);
   const depth = updateReferenceDepth(parts, gradient);
+  updateMixGovernor(parts, gradient, depth);
+  const lowGuard = MixGovernorState.lowGuard;
+  const clarity = MixGovernorState.clarity;
 
-  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + character.air, 0, 1);
-  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + character.glass, 0, 1);
-  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + (gradient.ghost * 0.032) + (gradient.micro * 0.022) - (gradient.haze * 0.035) - (depth.lowMidClean * 0.036) + character.grit, 0, 1);
+  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + clarity * 0.028 + character.air, 0, 1);
+  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + clarity * 0.035 + character.glass, 0, 1);
+  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + (gradient.ghost * 0.032) + (gradient.micro * 0.022) - (gradient.haze * 0.035) - (depth.lowMidClean * 0.036) - lowGuard * 0.035 + character.grit, 0, 1);
   TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + (gradient.micro * 0.06) + (gradient.organic * 0.025) + (depth.particle * 0.035) + character.fracture, 0, 1);
   TimbreState.harp = clampValue((TimbreState.glass * 0.46) + (TimbreState.air * 0.24) + (circle * 0.18) + ((1 - TimbreState.grit) * 0.12) + (gradient.chrome * 0.05) + (gradient.memory * 0.035) + (depth.tail * 0.032) + (character.harp || 0), 0, 1);
   TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (gradient.memory * 0.045) + (gradient.organic * 0.025) + (depth.bed * 0.026) - (depth.lowMidClean * 0.018) + (character.warmth || 0), 0, 1);
@@ -1998,10 +2053,10 @@ function updateTimbreStateFromWorld(parts) {
   const pressureColor = character.pressureColor || 0.5;
   const hazeColor = (character.hazeScale || 1) - 1;
   const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) + (hazeColor * 1.25) + (gradient.haze * 0.42) + (gradient.chrome * 0.22) + (depth.bed * 0.34) + (depth.tail * 0.22) - (PerformancePadState.void * 1.55);
-  const glassLevel = -33.8 + (TimbreState.glass * 5.6) + (TimbreState.harp * 3.6) + (WorldState.spectrum * 0.94) + (organicColor * 1.18) + (gradient.chrome * 0.44) + (gradient.micro * 0.26) + (depth.particle * 0.34) + (depth.gesture * 0.2) + (PerformancePadState.void * 2.2);
-  const textureLevel = -37.6 + (TimbreState.grit * 5.6) + (TimbreState.fracture * 2.45) + (dustColor * 1.4) + ((pressureColor - 0.5) * WorldState.spectrum * 0.54) + (gradient.micro * 0.34) + (gradient.ghost * 0.18) + (depth.particle * 0.24) + (depth.pulse * 0.08) - (TimbreState.warmth * 1.75) - (depth.lowMidClean * 0.22) - (PerformancePadState.void * 1.05);
-  const bassCutoff = 86 + (TimbreState.grit * 308) + (resource * 84) + (pressureColor * pressure * 24) - (TimbreState.warmth * 62) - (depth.lowMidClean * 64) - (PerformancePadState.void * 88) + (PerformancePadState.punch * 34);
-  const bassBite = 0.46 + (TimbreState.grit * 3.1) + (TimbreState.warmth * 0.5) + (pressureColor * pressure * 0.16) - (depth.lowMidClean * 0.3) + (PerformancePadState.punch * 0.14);
+  const glassLevel = -33.8 + (TimbreState.glass * 5.6) + (TimbreState.harp * 3.6) + (WorldState.spectrum * 0.94) + (organicColor * 1.18) + (gradient.chrome * 0.44) + (gradient.micro * 0.26) + (depth.particle * 0.34) + (depth.gesture * 0.2) + clarity * 0.44 + (PerformancePadState.void * 2.2);
+  const textureLevel = -37.6 + (TimbreState.grit * 5.6) + (TimbreState.fracture * 2.45) + (dustColor * 1.4) + ((pressureColor - 0.5) * WorldState.spectrum * 0.54) + (gradient.micro * 0.34) + (gradient.ghost * 0.18) + (depth.particle * 0.24) + (depth.pulse * 0.08) + clarity * 0.24 - (TimbreState.warmth * 1.75) - (depth.lowMidClean * 0.22) - lowGuard * 0.16 - (PerformancePadState.void * 1.05);
+  const bassCutoff = 86 + (TimbreState.grit * 308) + (resource * 84) + (pressureColor * pressure * 24) - (TimbreState.warmth * 62) - (depth.lowMidClean * 64) - lowGuard * 46 - (PerformancePadState.void * 88) + (PerformancePadState.punch * 26);
+  const bassBite = 0.46 + (TimbreState.grit * 3.1) + (TimbreState.warmth * 0.5) + (pressureColor * pressure * 0.16) - (depth.lowMidClean * 0.3) - lowGuard * 0.18 + (PerformancePadState.punch * 0.1);
 
   safeToneRamp(pad?.volume, airyPad, 0.28);
   safeToneRamp(glass?.volume, glassLevel, 0.22);
@@ -2525,6 +2580,7 @@ function resetRuntimeCounters() {
   resetAutoDirector();
   resetOrganicEcosystem();
   resetLongformArc();
+  resetMixGovernor();
 }
 
 function patternAt(pattern, step) {
@@ -2592,6 +2648,7 @@ function triggerLowMotion(step, time, context) {
   const ghost = GradientState.ghost;
   const chaos = OrganicChaosState;
   const eco = OrganicEcosystemState;
+  const lowGuard = MixGovernorState.lowGuard;
   const motion = clampValue(
     energyNorm * 0.2 +
       (UCM_CUR.body / 100) * 0.2 +
@@ -2609,14 +2666,14 @@ function triggerLowMotion(step, time, context) {
     1
   );
   const gate = step % 8 === 2 || step % 8 === 6 || (repeat && step % 4 === 2) || (chaos.lowMotion > 0.18 && step % 8 === 3) || (eco.rootTurn > 0.34 && step % 8 === 5) || (isAccentStep && step % 2 === 0);
-  if (!gate || !rand(chance(0.024 + motion * 0.12 + repeat * 0.052 + punch * 0.018 + chaos.lowMotion * 0.04 + eco.rootTurn * 0.026))) return;
+  if (!gate || !rand(chance((0.024 + motion * 0.12 + repeat * 0.052 + punch * 0.018 + chaos.lowMotion * 0.04 + eco.rootTurn * 0.026) * (1 - lowGuard * 0.18)))) return;
 
   const notes = MODE_BASS_NOTES[EngineParams.mode] || MODE_BASS_NOTES.ambient;
   const note = rand(0.44 + waveNorm * 0.22)
     ? notes[(GrooveState.cycle + step + 1) % notes.length]
     : PRESSURE_TURN_NOTES[(GrooveState.cycle + step) % PRESSURE_TURN_NOTES.length];
   const tickTime = time + 0.018 + Math.random() * (0.012 + waveNorm * 0.016 + chaos.tangle * 0.012 + eco.ferment * 0.008);
-  const vel = clampValue(0.052 + motion * 0.07 + repeat * 0.018 + chaos.lowMotion * 0.018 + eco.rootTurn * 0.012, 0.044, 0.15);
+  const vel = clampValue(0.052 + motion * 0.07 + repeat * 0.018 + chaos.lowMotion * 0.018 + eco.rootTurn * 0.012 - lowGuard * 0.018, 0.04, 0.14);
 
   try {
     bass.triggerAttackRelease(note, repeat ? "64n" : "32n", tickTime, vel);
@@ -2840,6 +2897,54 @@ function triggerGranularDetail(step, time, context) {
     }
   } catch (error) {
     console.warn("[Music] granular detail failed:", error);
+  }
+}
+
+function triggerClarityFilament(step, time, context) {
+  const {
+    creationNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    isAccentStep
+  } = context;
+  const clarity = MixGovernorState.clarity;
+  if (!glass || clarity < 0.24 || MixGovernorState.eventLoad > 0.82) return;
+
+  const gradient = GradientState;
+  const depth = DepthState;
+  const lowGuard = MixGovernorState.lowGuard;
+  const gate = step % 8 === 3 || step % 8 === 7 || (isAccentStep && step % 2 === 1);
+  const chanceValue = chance(
+    0.012 +
+      clarity * 0.058 +
+      gradient.chrome * 0.018 +
+      depth.tail * 0.018 +
+      LongformArcState.breath * 0.012 -
+      lowGuard * 0.016
+  );
+  if (!gate || !rand(chanceValue)) return;
+
+  const note = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + Math.floor(waveNorm * 4)) % TRANSPARENT_AIR_FRAGMENTS.length];
+  const reply = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + 3) % TRANSPARENT_AIR_FRAGMENTS.length];
+  const organicNote = ORGANIC_PLUCK_FRAGMENTS[(GrooveState.cycle + stepIndex + 2) % ORGANIC_PLUCK_FRAGMENTS.length];
+  const filamentTime = time + 0.016 + Math.random() * (0.014 + waveNorm * 0.014);
+  const vel = clampValue(0.016 + clarity * 0.04 + observerNorm * 0.016 + creationNorm * 0.008, 0.014, 0.078);
+
+  try {
+    glass.triggerAttackRelease(note, "64n", filamentTime, vel);
+    if (rand(0.24 + circleNorm * 0.16 + gradient.memory * 0.12)) {
+      glass.triggerAttackRelease(reply, "64n", filamentTime + 0.046 + Math.random() * 0.022, vel * 0.58);
+    }
+    if (rand(0.14 + gradient.organic * 0.14 + LongformArcState.contrast * 0.08)) {
+      glass.triggerAttackRelease(organicNote, "64n", filamentTime + 0.084 + Math.random() * 0.018, vel * 0.42);
+    }
+    if (rand(0.18 + clarity * 0.16)) {
+      texture.triggerAttackRelease("64n", filamentTime + 0.006, clampValue(0.012 + clarity * 0.026, 0.012, 0.052));
+    }
+    markMixEvent(0.16);
+  } catch (error) {
+    console.warn("[Music] clarity filament failed:", error);
   }
 }
 
@@ -3262,6 +3367,7 @@ function scheduleStep(time) {
   decayMotifMemory();
   decayOrganicEcosystem();
   decayLongformArc();
+  decayMixGovernor();
 
   // 休符判定
   const isRest = rand(clampValue(EngineParams.restProb + PerformancePadState.void * 0.18 - PerformancePadState.punch * 0.06, 0.02, PerformancePadState.void ? 0.6 : 0.48));
@@ -3281,6 +3387,8 @@ function scheduleStep(time) {
   const gradientParts = currentGradientParts();
   const gradient = updateReferenceGradient(gradientParts);
   updateReferenceDepth(gradientParts, gradient);
+  const lowGuard = MixGovernorState.lowGuard;
+  const clarity = MixGovernorState.clarity;
   maybeTriggerAutoPerformanceGesture(step, stepContext);
   triggerAutoDirectorCadence(step, t, stepContext);
 
@@ -3288,6 +3396,7 @@ function scheduleStep(time) {
   triggerOrganicTexture(step, t, stepContext);
   triggerReferenceDepthDetails(step, t, stepContext);
   triggerGranularDetail(step, t, stepContext);
+  triggerClarityFilament(step, t, stepContext);
   triggerMotifAfterimage(step, t, stepContext);
   triggerLongformArcTurn(step, t, stepContext);
   triggerOrganicEcosystemBloom(step, t, stepContext);
@@ -3296,9 +3405,9 @@ function scheduleStep(time) {
 
   if (!isRest) {
     // Kick
-    const kickChance = chance(EngineParams.kickProb + (isAccentStep ? 0.032 : 0) + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14);
+    const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.032 : 0) + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.12));
     if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
-      kick.triggerAttackRelease("C2", "16n", t + 0.004, clampValue(0.36 + energyNorm * 0.085 + (isAccentStep ? 0.018 : 0) + PerformancePadState.punch * 0.032, 0.28, 0.56));
+      kick.triggerAttackRelease("C2", "16n", t + 0.004, clampValue(0.34 + energyNorm * 0.078 + (isAccentStep ? 0.016 : 0) + PerformancePadState.punch * 0.028 - lowGuard * 0.038, 0.25, 0.52));
       if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep) && rand(0.46)) {
         try {
           texture.triggerAttackRelease("64n", t + 0.012, clampValue(0.05 + energyNorm * 0.064, 0.038, 0.118));
@@ -3323,10 +3432,10 @@ function scheduleStep(time) {
     }
 
     // Bass
-    const bassChance = chance(EngineParams.bassProb + (GrooveState.fillActive && step % 8 === 6 ? 0.08 : 0) - PerformancePadState.void * 0.14);
+    const bassChance = chance((EngineParams.bassProb + (GrooveState.fillActive && step % 8 === 6 ? 0.08 : 0) - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.14));
     if (patternAt(EngineParams.bassPattern, step) && rand(bassChance)) {
       const note = step % 8 === 0 ? bassRoot : bassNoteForStep(step);
-      bass.triggerAttackRelease(note, "8n", t + 0.004, clampValue(0.2 + energyNorm * 0.1 + PerformancePadState.punch * 0.024, 0.14, 0.36));
+      bass.triggerAttackRelease(note, "8n", t + 0.004, clampValue(0.19 + energyNorm * 0.092 + PerformancePadState.punch * 0.02 - lowGuard * 0.024, 0.12, 0.33));
       if (PerformancePadState.repeat && step % 8 === 0 && rand(0.1)) {
         try {
           bass.triggerAttackRelease(note, "32n", t + 0.04, clampValue(0.08 + energyNorm * 0.04, 0.06, 0.14));
@@ -3350,11 +3459,11 @@ function scheduleStep(time) {
     texture.triggerAttackRelease("32n", textureTime, clampValue(0.028 + creationNorm * 0.088 + resourceNorm * 0.024 + gradient.micro * 0.006 + DepthState.gesture * 0.012 + PerformancePadState.punch * 0.014, 0.02, 0.13));
   }
 
-  const particleProb = chance(0.034 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.022 + gradient.chrome * 0.014 + gradient.micro * 0.01 + DepthState.particle * 0.022 + PerformancePadState.drift * 0.104 + PerformancePadState.repeat * 0.056 + PerformancePadState.void * 0.06);
+  const particleProb = chance(0.034 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.022 + gradient.chrome * 0.014 + gradient.micro * 0.01 + DepthState.particle * 0.022 + clarity * 0.018 + PerformancePadState.drift * 0.104 + PerformancePadState.repeat * 0.056 + PerformancePadState.void * 0.06);
   if (rand(particleProb) && (step % 4 === 1 || step % 8 === 5 || isAccentStep)) {
     const note = FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + Math.floor(Math.random() * FIELD_MURK_FRAGMENTS.length)) % FIELD_MURK_FRAGMENTS.length];
     try {
-      glass.triggerAttackRelease(note, "32n", t + 0.019 + Math.random() * 0.018, clampValue(0.026 + creationNorm * 0.038 + gradient.micro * 0.008 + DepthState.particle * 0.008 + PerformancePadState.repeat * 0.038 + PerformancePadState.void * 0.018, 0.018, 0.11));
+      glass.triggerAttackRelease(note, "32n", t + 0.019 + Math.random() * 0.018, clampValue(0.026 + creationNorm * 0.038 + gradient.micro * 0.008 + DepthState.particle * 0.008 + clarity * 0.008 + PerformancePadState.repeat * 0.038 + PerformancePadState.void * 0.018, 0.018, 0.112));
     } catch (error) {
       console.warn("[Music] field particle failed:", error);
     }
