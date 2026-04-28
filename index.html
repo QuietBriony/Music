@@ -176,7 +176,8 @@
                     </div>
                     <div class="auto-body route-body" id="background-body">
                         <span class="label">BG</span>
-                        <button type="button" id="btn_keep_awake" class="mini-action" aria-pressed="false">KEEP</button>
+                        <button type="button" id="btn_keep_awake" class="mini-action" aria-pressed="false" aria-label="Keep playback awake" title="Keep playback awake">KEEP</button>
+                        <button type="button" id="btn_acid_lock" class="mini-action" aria-pressed="false" aria-label="Acid color lock" title="Acid color lock">ACID</button>
                         <span class="hint" id="background_value">off</span>
                     </div>
                 </div>
@@ -205,7 +206,7 @@
                 <!-- Preset / Genre -->
                 <div id="preset-block">
                     <div class="auto-header" style="margin-bottom:8px;">
-                        <span class="title">AIR / SOURCE</span>
+                        <span class="title">AIR / SRC</span>
                         <span class="hint" id="preset-status" style="opacity:.7;font-size:10px;">loading…</span>
                     </div>
                     <div class="auto-body" style="flex-direction:column;align-items:stretch;gap:8px;">
@@ -213,33 +214,33 @@
                             <label class="voice-control">
                                 <span class="voice-label">AIR</span>
                                 <select id="atmosphere_select" aria-label="Atmosphere">
-                                    <option value="auto">AUTO AIR</option>
-                                    <option value="haze">SOFT HAZE</option>
-                                    <option value="chrome">CHROME AIR</option>
-                                    <option value="ghost">GHOST RAIN</option>
-                                    <option value="organic">ORGANIC DUST</option>
-                                    <option value="void">VOID BLOOM</option>
+                                    <option value="auto">AUTO.AIR</option>
+                                    <option value="haze">HAZE.01</option>
+                                    <option value="chrome">CHROME.02</option>
+                                    <option value="ghost">GHOST.03</option>
+                                    <option value="organic">ORG.DUST</option>
+                                    <option value="void">VOID.05</option>
                                 </select>
                             </label>
                             <label class="voice-control">
                                 <span class="voice-label">SRC</span>
                                 <select id="source_color_select" aria-label="Timbre source">
                                     <option value="genome">GENOME</option>
-                                    <option value="xtal">XTAL / THA</option>
-                                    <option value="boc">BoC MEMORY</option>
-                                    <option value="autechre">BROKEN LOGIC</option>
-                                    <option value="burial">GHOST PULSE</option>
-                                    <option value="opn">CHROME HYMN</option>
-                                    <option value="fsol">ORGANIC MOTION</option>
+                                    <option value="xtal">XTAL.THA</option>
+                                    <option value="boc">BoC.MEM</option>
+                                    <option value="autechre">AE.LOGIC</option>
+                                    <option value="burial">GHOST.PULSE</option>
+                                    <option value="opn">OPN.CHROME</option>
+                                    <option value="fsol">FSOL.MOTION</option>
                                 </select>
                             </label>
                         </div>
-                        <div class="voice-readout" id="voice_status">AUTO AIR / GENOME</div>
+                        <div class="voice-readout" id="voice_status">AUTO.AIR / GENOME</div>
                         <select id="preset_select" aria-label="Preset">
                             <option value="__auto__">AUTO (by Energy)</option>
                         </select>
-                        <button id="btn_reload_presets" class="ghost" style="width:100%;">Reload presets</button>
-                        <div class="hint" style="text-align:center;">/presets/*.json</div>
+                        <button id="btn_reload_presets" class="ghost" style="width:100%;">PRST.RLD</button>
+                        <div class="hint" style="text-align:center;">/PRESETS</div>
                     </div>
                 </div>
 

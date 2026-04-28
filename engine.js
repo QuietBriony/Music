@@ -244,6 +244,19 @@ const VoiceColorState = {
   atmosphere: "auto",
   source: "genome"
 };
+const AcidLockState = {
+  enabled: false,
+  intensity: 0
+};
+const PerformanceColorDriftState = {
+  lastCycle: -1,
+  phase: 0,
+  haze: 0.4,
+  chrome: 0.36,
+  dust: 0.34,
+  pressure: 0.18,
+  acid: 0
+};
 const VoiceMorphState = {
   transition: 0,
   gradient: {
@@ -283,32 +296,32 @@ const AutoVoiceMorphState = {
 };
 const ATMOSPHERE_COLORS = {
   auto: {
-    label: "AUTO AIR",
+    label: "AUTO.AIR",
     gradient: {},
     genes: {}
   },
   haze: {
-    label: "SOFT HAZE",
+    label: "HAZE.01",
     gradient: { haze: 0.16, memory: 0.07, chrome: 0.04, ghost: -0.02 },
     genes: { haze: 0.18, refrain: 0.08, voidTail: 0.04, pressure: -0.04 }
   },
   chrome: {
-    label: "CHROME AIR",
+    label: "CHROME.02",
     gradient: { chrome: 0.18, micro: 0.07, haze: 0.04, organic: -0.02 },
     genes: { chrome: 0.2, micro: 0.08, voidTail: 0.05 }
   },
   ghost: {
-    label: "GHOST RAIN",
+    label: "GHOST.03",
     gradient: { ghost: 0.15, haze: 0.08, memory: 0.05, chrome: 0.03 },
     genes: { pulse: 0.12, voidTail: 0.12, pressure: 0.04, refrain: 0.06 }
   },
   organic: {
-    label: "ORGANIC DUST",
+    label: "ORG.DUST",
     gradient: { organic: 0.2, memory: 0.08, micro: 0.06, chrome: -0.02 },
     genes: { organic: 0.22, refrain: 0.08, micro: 0.06, haze: 0.04 }
   },
   void: {
-    label: "VOID BLOOM",
+    label: "VOID.05",
     gradient: { haze: 0.14, chrome: 0.14, ghost: -0.04, micro: -0.02 },
     genes: { voidTail: 0.24, haze: 0.12, chrome: 0.1, pressure: -0.06 }
   }
@@ -320,32 +333,32 @@ const SOURCE_COLORS = {
     genes: { refrain: 0.04, organic: 0.03, micro: 0.03 }
   },
   xtal: {
-    label: "XTAL / THA",
+    label: "XTAL.THA",
     gradient: { haze: 0.13, chrome: 0.09, memory: 0.05, ghost: -0.03 },
     genes: { haze: 0.16, chrome: 0.1, refrain: 0.08, pressure: -0.05 }
   },
   boc: {
-    label: "BoC MEMORY",
+    label: "BoC.MEM",
     gradient: { memory: 0.16, organic: 0.08, haze: 0.08, micro: -0.02 },
     genes: { organic: 0.12, refrain: 0.12, haze: 0.08, chrome: -0.02 }
   },
   autechre: {
-    label: "BROKEN LOGIC",
+    label: "AE.LOGIC",
     gradient: { micro: 0.18, chrome: 0.08, organic: 0.04, haze: -0.04 },
     genes: { micro: 0.2, pressure: 0.08, chrome: 0.08, haze: -0.05 }
   },
   burial: {
-    label: "GHOST PULSE",
+    label: "GHOST.PULSE",
     gradient: { ghost: 0.17, haze: 0.07, memory: 0.05, chrome: 0.02 },
     genes: { pulse: 0.18, voidTail: 0.12, refrain: 0.06, pressure: 0.04 }
   },
   opn: {
-    label: "CHROME HYMN",
+    label: "OPN.CHROME",
     gradient: { chrome: 0.2, haze: 0.08, memory: 0.03, ghost: -0.02 },
     genes: { chrome: 0.22, voidTail: 0.08, haze: 0.06, micro: 0.03 }
   },
   fsol: {
-    label: "ORGANIC MOTION",
+    label: "FSOL.MOTION",
     gradient: { organic: 0.14, micro: 0.09, ghost: 0.08 },
     genes: { organic: 0.16, pulse: 0.12, micro: 0.08, pressure: 0.04 }
   }
@@ -363,6 +376,34 @@ const PlaybackState = {
   backgroundBridgeActive: false,
   backgroundAudio: null,
   iosSafariBridgePreferred: false
+};
+const HazamaBridgeState = {
+  active: false,
+  loaded: false,
+  source: "",
+  name: "",
+  style: "",
+  stage: "",
+  depthId: "",
+  stability: 0,
+  resonance: 0,
+  marks: 0,
+  importedAt: 0,
+  profile: null,
+  baseUcm: {},
+  baseAudio: {},
+  audio: {},
+  patterns: {},
+  lastExternalAt: 0,
+  lastAutonomyCycle: -1,
+  autonomyGeneration: 0,
+  evolution: {
+    air: 0,
+    pulse: 0,
+    micro: 0,
+    bloom: 0
+  },
+  lastError: ""
 };
 
 function markManualInfluenceFromEvent(event) {
@@ -729,6 +770,51 @@ function resetGenerativeGenome() {
   GenomeState.genes.voidTail = 0.32;
 }
 
+function advancePerformanceColorDrift() {
+  if (PerformanceColorDriftState.lastCycle === GrooveState.cycle) return;
+  PerformanceColorDriftState.lastCycle = GrooveState.cycle;
+
+  const cycle = GrooveState.cycle + 1;
+  const acid = updateAcidLockIntensity(0.028);
+  const energy = clampValue(UCM_CUR.energy / 100, 0, 1);
+  const creation = clampValue(UCM_CUR.creation / 100, 0, 1);
+  const resource = clampValue(UCM_CUR.resource / 100, 0, 1);
+  const observer = clampValue(UCM_CUR.observer / 100, 0, 1);
+  const voidness = clampValue(UCM_CUR.void / 100, 0, 1);
+  const bpmNorm = clampValue((EngineParams.bpm - 58) / 86, 0, 1);
+  const phase = fractionalPart(cycle * 0.034 + GenomeState.generation * 0.055 + (acid > 0.08 ? 0.17 : 0));
+  const slow = (Math.sin(cycle * 0.13 + phase * Math.PI * 2) + 1) / 2;
+  const off = (Math.sin(cycle * 0.071 + 1.9) + 1) / 2;
+  const shimmer = (Math.sin(cycle * 0.21 + 0.7) + 1) / 2;
+
+  PerformanceColorDriftState.phase = phase;
+  PerformanceColorDriftState.haze = approachValue(
+    PerformanceColorDriftState.haze,
+    clampValue(0.28 + voidness * 0.26 + observer * 0.12 + (1 - energy) * 0.16 + slow * 0.18 - acid * 0.06, 0, 1),
+    0.035
+  );
+  PerformanceColorDriftState.chrome = approachValue(
+    PerformanceColorDriftState.chrome,
+    clampValue(0.22 + observer * 0.22 + shimmer * 0.26 + GenomeState.genes.chrome * 0.12 + acid * 0.06, 0, 1),
+    0.035
+  );
+  PerformanceColorDriftState.dust = approachValue(
+    PerformanceColorDriftState.dust,
+    clampValue(0.2 + creation * 0.2 + resource * 0.14 + off * 0.24 + GenomeState.genes.organic * 0.1, 0, 1),
+    0.035
+  );
+  PerformanceColorDriftState.pressure = approachValue(
+    PerformanceColorDriftState.pressure,
+    clampValue(energy * 0.2 + resource * 0.16 + bpmNorm * 0.14 + acid * 0.32 + off * 0.1 - voidness * 0.14, 0, 1),
+    0.03
+  );
+  PerformanceColorDriftState.acid = approachValue(
+    PerformanceColorDriftState.acid,
+    clampValue(acid * (0.38 + bpmNorm * 0.34 + creation * 0.18 + resource * 0.12), 0, 1),
+    0.04
+  );
+}
+
 function resetOrganicEcosystem() {
   OrganicEcosystemState.breath = 0.52;
   OrganicEcosystemState.sprout = 0.18;
@@ -860,6 +946,21 @@ function longformTempoBias() {
   return stageBias * clampValue(0.42 + longformArcShape() * 0.8, 0.25, 1);
 }
 
+function updateAcidLockIntensity(step = 0.02) {
+  AcidLockState.intensity = approachValue(AcidLockState.intensity, AcidLockState.enabled ? 1 : 0, step);
+  return AcidLockState.intensity;
+}
+
+function resolvePerformanceTempoTarget(rawTarget) {
+  const acidAmount = updateAcidLockIntensity(0.012);
+  const noAcidCeiling = 118;
+  if (acidAmount < 0.08) return clampValue(rawTarget, 54, noAcidCeiling);
+
+  const acidFloor = 120 + acidAmount * 4;
+  const acidLift = acidAmount * 12;
+  return clampValue(Math.max(rawTarget + acidLift, acidFloor), acidFloor, 144);
+}
+
 function updateDJTempo(parts, options = {}) {
   const force = options.force === true;
   const { energy, wave, creation, body, resource, observer, voidness } = parts;
@@ -872,7 +973,7 @@ function updateDJTempo(parts, options = {}) {
     genre.pressure * 3;
   const contour = Math.sin((GrooveState.cycle * 0.045) + (LongformArcState.stageIndex * 0.9)) * (1.2 + longformArcShape() * 2.4);
   const pressureLift = clampValue((body * 0.22) + (resource * 0.18) + (creation * 0.12) - (observer * 0.08) - (voidness * 0.08), -0.12, 0.36) * 8;
-  const target = clampValue(rawBpm + longformTempoBias() + genreBias + pressureLift + contour, 54, 152);
+  const target = resolvePerformanceTempoTarget(rawBpm + longformTempoBias() + genreBias + pressureLift + contour);
   const targetStep = force ? 96 : 0.55 + Math.abs(DJTempoState.targetBpm - target) * 0.018;
   const bpmStep = force ? 96 : 0.42 + wave * 0.18 + genre.techno * 0.16;
 
@@ -1032,7 +1133,7 @@ function effectiveVoiceAtmosphereKey() {
 function autoVoiceMorphLabel() {
   const sourceFrom = SOURCE_COLORS[activeAutoSourceKey()]?.label || "GENOME";
   const sourceTo = SOURCE_COLORS[nextAutoSourceKey()]?.label || sourceFrom;
-  const atmosphereFrom = ATMOSPHERE_COLORS[activeAutoAtmosphereKey()]?.label || "AUTO AIR";
+  const atmosphereFrom = ATMOSPHERE_COLORS[activeAutoAtmosphereKey()]?.label || "AUTO.AIR";
   const atmosphereTo = ATMOSPHERE_COLORS[nextAutoAtmosphereKey()]?.label || atmosphereFrom;
   const sourceLabel = AutoVoiceMorphState.sourceBlend > 0.18 && AutoVoiceMorphState.sourceBlend < 0.82
     ? `${sourceFrom} -> ${sourceTo}`
@@ -1195,6 +1296,11 @@ function publishMusicRuntimeState() {
       sourceLabel: autoLabels.sourceLabel,
       autoActive: autoVoiceAtmosphereActive() || autoVoiceSourceActive()
     },
+    acid: {
+      enabled: AcidLockState.enabled,
+      intensity: AcidLockState.intensity,
+      color: { ...PerformanceColorDriftState }
+    },
     gradient: { ...GradientState },
     depth: { ...DepthState },
     genre: { ...GenreBlendState },
@@ -1204,6 +1310,23 @@ function publishMusicRuntimeState() {
       growth: GenomeState.growth,
       mutation: GenomeState.mutation,
       genes: { ...GenomeState.genes }
+    },
+    hazama: {
+      active: HazamaBridgeState.active,
+      loaded: HazamaBridgeState.loaded,
+      source: HazamaBridgeState.source,
+      name: HazamaBridgeState.name,
+      style: HazamaBridgeState.style,
+      stage: HazamaBridgeState.stage,
+      depthId: HazamaBridgeState.depthId,
+      stability: HazamaBridgeState.stability,
+      resonance: HazamaBridgeState.resonance,
+      marks: HazamaBridgeState.marks,
+      importedAt: HazamaBridgeState.importedAt,
+      autonomyGeneration: HazamaBridgeState.autonomyGeneration,
+      evolution: { ...HazamaBridgeState.evolution },
+      audio: { ...HazamaBridgeState.audio },
+      patterns: { ...HazamaBridgeState.patterns }
     },
     pads: { ...PerformancePadState },
     output: { level: OutputState.level },
@@ -1987,7 +2110,9 @@ function setKeepAwakeEnabled(enabled) {
   if (button) {
     button.classList.toggle("active", PlaybackState.wakeLockEnabled);
     button.setAttribute("aria-pressed", PlaybackState.wakeLockEnabled ? "true" : "false");
-    button.textContent = PlaybackState.wakeLockEnabled ? "KEEP ON" : "KEEP";
+    button.setAttribute("aria-label", PlaybackState.wakeLockEnabled ? "Keep playback awake on" : "Keep playback awake");
+    button.setAttribute("title", PlaybackState.wakeLockEnabled ? "Keep playback awake on" : "Keep playback awake");
+    button.textContent = PlaybackState.wakeLockEnabled ? "KEEP.ON" : "KEEP";
   }
 
   if (PlaybackState.wakeLockEnabled && isPlaying) {
@@ -1995,6 +2120,25 @@ function setKeepAwakeEnabled(enabled) {
   } else {
     releasePlaybackWakeLock();
   }
+}
+
+function setAcidLockEnabled(enabled) {
+  AcidLockState.enabled = !!enabled;
+  AcidLockState.intensity = AcidLockState.enabled ? Math.max(AcidLockState.intensity, 0.42) : 0;
+  const button = document.getElementById("btn_acid_lock");
+  if (button) {
+    button.classList.toggle("active", AcidLockState.enabled);
+    button.setAttribute("aria-pressed", AcidLockState.enabled ? "true" : "false");
+    button.setAttribute("aria-label", AcidLockState.enabled ? "Acid color lock on" : "Acid color lock");
+    button.setAttribute("title", AcidLockState.enabled ? "Acid color lock on" : "Acid color lock");
+    button.textContent = AcidLockState.enabled ? "ACID.ON" : "ACID";
+  }
+  if (document.body) document.body.dataset.acid = AcidLockState.enabled ? "true" : "false";
+  if (initialized) {
+    updateTimbreStateFromWorld(currentGradientParts());
+    applyUCMToParams({ force: true });
+  }
+  updateRuntimeUiState();
 }
 
 function ensureBackgroundPlaybackElement() {
@@ -2086,6 +2230,304 @@ function syncSliderValue(key, value) {
 
 function syncSliderFromTarget(key) {
   syncSliderValue(key, UCM_TARGET[key]);
+}
+
+function setHazamaStatus(text) {
+  const status = document.getElementById("status-text");
+  if (status && !isPlaying) status.textContent = text;
+  const presetStatus = document.getElementById("preset-status");
+  if (presetStatus && HazamaBridgeState.loaded) presetStatus.textContent = text;
+}
+
+function updateHazamaUiState() {
+  const button = document.getElementById("btn_start");
+  if (button) {
+    button.textContent = HazamaBridgeState.loaded ? "START.HZM" : "START";
+    button.setAttribute("aria-label", HazamaBridgeState.loaded ? "Start Hazama audio" : "Start audio");
+    button.setAttribute("title", HazamaBridgeState.loaded ? "Start Hazama audio" : "Start audio");
+  }
+  if (document.body) {
+    document.body.dataset.hazama = HazamaBridgeState.loaded ? "true" : "false";
+    document.body.dataset.hazamaStage = HazamaBridgeState.stage || "";
+  }
+}
+
+function sanitizeHazamaStyle(style) {
+  const normalized = typeof style === "string" ? style.trim().toLowerCase() : "";
+  if (normalized === "trance" || normalized === "acid-techno" || normalized === "acid_techno") return "techno";
+  if (normalized === "acid-house" || normalized === "acid_house") return "lofi";
+  if (PresetManager.names.includes(normalized)) return normalized;
+  if (normalized === "idm" || normalized === "field" || normalized === "haze") return "ambient";
+  if (normalized === "broken" || normalized === "glitch") return "lofi";
+  return "";
+}
+
+function normalizeHazamaTempo(value) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+  if (value <= 100) return mapValue(clampValue(value, 0, 100), 0, 100, 54, 142);
+  return clampValue(value, 54, 152);
+}
+
+function safeHazamaNumber(value, fallback = 0) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function decodeBase64UrlJson(value) {
+  if (typeof value !== "string" || !value) return null;
+  try {
+    const base64 = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    const json = typeof TextDecoder !== "undefined"
+      ? new TextDecoder("utf-8").decode(bytes)
+      : decodeURIComponent(Array.from(bytes).map((byte) => `%${byte.toString(16).padStart(2, "0")}`).join(""));
+    return JSON.parse(json);
+  } catch (error) {
+    console.warn("[Music] invalid hazama payload:", error);
+    HazamaBridgeState.lastError = "invalid payload";
+    return null;
+  }
+}
+
+function profileFromHazamaPayload(payload) {
+  if (!payload || typeof payload !== "object") return null;
+  if (payload.type && payload.type !== "hazama-profile") return null;
+  if (payload.provider && payload.provider !== "music") return null;
+  const profile = payload.profile || payload;
+  return profile && typeof profile === "object" ? profile : null;
+}
+
+function importHazamaProfile(profile, options = {}) {
+  if (!profile || typeof profile !== "object") return false;
+
+  const ucm = profile.ucm && typeof profile.ucm === "object" ? profile.ucm : {};
+  const audio = profile.audio && typeof profile.audio === "object" ? profile.audio : {};
+  const patterns = profile.patterns && typeof profile.patterns === "object" ? profile.patterns : {};
+  const source = profile.source && typeof profile.source === "object" ? profile.source : {};
+  const style = sanitizeHazamaStyle(profile.style);
+  const importedUcm = {};
+  let touchedUcm = false;
+
+  for (const key of UCM_KEYS) {
+    if (typeof ucm[key] !== "number" || !Number.isFinite(ucm[key])) continue;
+    const value = Math.round(clampValue(ucm[key], 0, 100));
+    UCM_TARGET[key] = value;
+    UCM[key] = value;
+    importedUcm[key] = value;
+    syncSliderFromTarget(key);
+    touchedUcm = true;
+  }
+
+  HazamaBridgeState.active = true;
+  HazamaBridgeState.loaded = true;
+  HazamaBridgeState.source = options.source || source.repo || "hazama";
+  HazamaBridgeState.name = typeof profile.name === "string" ? profile.name.slice(0, 80) : "hazama";
+  HazamaBridgeState.style = style;
+  HazamaBridgeState.stage = typeof source.stage === "string" ? source.stage.slice(0, 40) : "";
+  HazamaBridgeState.depthId = typeof source.depthId === "string" ? source.depthId.slice(0, 24) : "";
+  HazamaBridgeState.stability = clampValue(safeHazamaNumber(source.stability, 0), 0, 100);
+  HazamaBridgeState.resonance = clampValue(safeHazamaNumber(source.resonance, 0), 0, 100);
+  HazamaBridgeState.marks = clampValue(safeHazamaNumber(source.marks, 0), 0, 100);
+  HazamaBridgeState.audio = {
+    tempo: normalizeHazamaTempo(audio.tempo),
+    density: typeof audio.density === "number" ? clamp01(audio.density) : null,
+    brightness: typeof audio.brightness === "number" ? clamp01(audio.brightness) : null,
+    silenceRate: typeof audio.silenceRate === "number" ? clamp01(audio.silenceRate) : null,
+    bassWeight: typeof audio.bassWeight === "number" ? clamp01(audio.bassWeight) : null,
+    harmonicDeviation: typeof audio.harmonicDeviation === "number" ? clamp01(audio.harmonicDeviation) : null,
+    smoothing: typeof audio.smoothing === "number" ? clamp01(audio.smoothing) : null
+  };
+  HazamaBridgeState.baseUcm = Object.fromEntries(UCM_KEYS.map((key) => [key, typeof importedUcm[key] === "number" ? importedUcm[key] : UCM_TARGET[key]]));
+  HazamaBridgeState.baseAudio = { ...HazamaBridgeState.audio };
+  HazamaBridgeState.patterns = {
+    drone: patterns.drone === true,
+    droneLayers: typeof patterns.droneLayers === "number" ? clampValue(patterns.droneLayers, 0, 6) : 0,
+    glitch: patterns.glitch === true,
+    jazzStabs: patterns.jazzStabs === true,
+    percussion: patterns.percussion === true,
+    gatePulse: patterns.gatePulse === true
+  };
+  HazamaBridgeState.lastExternalAt = Date.now();
+  HazamaBridgeState.lastAutonomyCycle = -1;
+  HazamaBridgeState.evolution = {
+    air: 0,
+    pulse: 0,
+    micro: 0,
+    bloom: 0
+  };
+  HazamaBridgeState.importedAt = Date.now();
+  HazamaBridgeState.profile = {
+    name: HazamaBridgeState.name,
+    style: HazamaBridgeState.style,
+    source: {
+      repo: source.repo || "QuietBriony/hazama",
+      depthId: HazamaBridgeState.depthId,
+      stage: HazamaBridgeState.stage,
+      stability: HazamaBridgeState.stability,
+      resonance: HazamaBridgeState.resonance,
+      marks: HazamaBridgeState.marks,
+      rawInputStored: false
+    },
+    ucm: Object.fromEntries(UCM_KEYS.map((key) => [key, UCM_TARGET[key]])),
+    audio: { ...HazamaBridgeState.audio },
+    patterns: { ...HazamaBridgeState.patterns }
+  };
+  HazamaBridgeState.lastError = "";
+
+  if (style) {
+    EngineParams.mode = style;
+    lastMode = null;
+  }
+
+  if (typeof HazamaBridgeState.audio.smoothing === "number") {
+    UCM_SMOOTH_SEC = 0.45 + HazamaBridgeState.audio.smoothing * 2.2;
+  }
+
+  if (touchedUcm || options.force) {
+    applyUCMToParams({ force: options.force === true });
+  }
+  updateHazamaUiState();
+  updateRuntimeUiState();
+  setHazamaStatus("HZM.LOADED");
+  return true;
+}
+
+function handleHazamaPayload(payload, options = {}) {
+  const profile = profileFromHazamaPayload(payload);
+  if (!profile) return false;
+  return importHazamaProfile(profile, options);
+}
+
+function importHazamaFromHash() {
+  if (typeof window === "undefined" || !window.location || !window.location.hash) return false;
+  const match = window.location.hash.match(/(?:^#|&)hazama=([^&]+)/);
+  if (!match) return false;
+  const payload = decodeBase64UrlJson(decodeURIComponent(match[1]));
+  return handleHazamaPayload(payload, { source: "hash", force: true });
+}
+
+function setupHazamaBridge() {
+  importHazamaFromHash();
+
+  window.addEventListener("hashchange", () => {
+    importHazamaFromHash();
+  });
+
+  window.addEventListener("message", (event) => {
+    const data = event && event.data;
+    if (!data || typeof data !== "object") return;
+    if (data.type !== "hazama-profile") return;
+    if (data.provider !== "music") return;
+    handleHazamaPayload(data, { source: "postMessage" });
+  });
+
+  window.importHazamaProfile = importHazamaProfile;
+}
+
+function hazamaBaseValue(key) {
+  const base = HazamaBridgeState.baseUcm || {};
+  const value = typeof base[key] === "number" ? base[key] : UCM_TARGET[key];
+  return clampValue(value, 0, 100);
+}
+
+function hazamaIdleAutonomyAmount() {
+  const lastExternalAt = HazamaBridgeState.lastExternalAt || Date.now();
+  const idleSec = Math.max(0, (Date.now() - lastExternalAt) / 1000);
+  return clampValue(0.28 + idleSec / 30, 0.28, 0.88);
+}
+
+function advanceHazamaAutonomy() {
+  if (!HazamaBridgeState.active || !HazamaBridgeState.loaded || !isPlaying) return;
+  if (HazamaBridgeState.lastAutonomyCycle === GrooveState.cycle) return;
+
+  HazamaBridgeState.lastAutonomyCycle = GrooveState.cycle;
+
+  const cycle = GrooveState.cycle + 1;
+  const phase = fractionalPart(cycle * GOLDEN_RATIO_INVERSE + HazamaBridgeState.autonomyGeneration * 0.037);
+  const slow = Math.sin(cycle * 0.17 + phase * Math.PI * 2);
+  const deep = Math.sin(cycle * 0.041 + HazamaBridgeState.autonomyGeneration * 0.61);
+  const shimmer = Math.sin(cycle * 0.29 + 1.7);
+  const idle = hazamaIdleAutonomyAmount();
+  const stability = clampValue(HazamaBridgeState.stability / 100, 0, 1);
+  const resonance = clampValue(HazamaBridgeState.resonance / 100, 0, 1);
+  const marks = clampValue(HazamaBridgeState.marks / 100, 0, 1);
+  const stage = HazamaBridgeState.stage || "";
+  const stageOpen = stage === "submerge" || stage === "exhale" ? 0.18 : 0.05;
+  const stagePulse = stage === "root" || stage === "ferment" ? 0.16 : 0.04;
+  const baseAudio = HazamaBridgeState.baseAudio || {};
+
+  const base = {
+    energy: hazamaBaseValue("energy") / 100,
+    wave: hazamaBaseValue("wave") / 100,
+    mind: hazamaBaseValue("mind") / 100,
+    creation: hazamaBaseValue("creation") / 100,
+    void: hazamaBaseValue("void") / 100,
+    circle: hazamaBaseValue("circle") / 100,
+    body: hazamaBaseValue("body") / 100,
+    resource: hazamaBaseValue("resource") / 100,
+    observer: hazamaBaseValue("observer") / 100
+  };
+
+  const air = clampValue(base.void * 0.28 + base.observer * 0.24 + base.circle * 0.18 + stageOpen + phase * 0.16 + stability * 0.06, 0, 1);
+  const pulse = clampValue(base.energy * 0.22 + base.body * 0.2 + base.resource * 0.14 + stagePulse + (1 - stability) * 0.08 + (slow + 1) * 0.07, 0, 1);
+  const micro = clampValue(base.creation * 0.24 + base.wave * 0.22 + base.resource * 0.18 + marks * 0.12 + (shimmer + 1) * 0.08, 0, 1);
+  const bloom = clampValue(base.mind * 0.18 + base.circle * 0.18 + base.observer * 0.2 + resonance * 0.12 + (deep + 1) * 0.07, 0, 1);
+
+  HazamaBridgeState.evolution = { air, pulse, micro, bloom };
+  if (phase < 0.12) HazamaBridgeState.autonomyGeneration += 1;
+
+  const depth = idle * (0.72 + (1 - stability) * 0.18 + marks * 0.12);
+  const targets = {
+    energy: hazamaBaseValue("energy") + (pulse * 18 - air * 7 + slow * 5) * depth,
+    wave: hazamaBaseValue("wave") + (air * 9 + micro * 7 + shimmer * 6) * depth,
+    mind: hazamaBaseValue("mind") + (bloom * 9 + phase * 6 - pulse * 2) * depth,
+    creation: hazamaBaseValue("creation") + (micro * 17 + bloom * 5 + shimmer * 4) * depth,
+    void: hazamaBaseValue("void") + (air * 13 - pulse * 5 + deep * 4) * depth,
+    circle: hazamaBaseValue("circle") + (bloom * 9 + air * 5 - micro * 2) * depth,
+    body: hazamaBaseValue("body") + (pulse * 9 + deep * 4 - air * 3) * depth,
+    resource: hazamaBaseValue("resource") + (micro * 14 + pulse * 5 - air * 3) * depth,
+    observer: hazamaBaseValue("observer") + (air * 12 + bloom * 7 + phase * 4) * depth
+  };
+
+  for (const key of UCM_KEYS) {
+    UCM_TARGET[key] = approachValue(UCM_TARGET[key], clampValue(targets[key], 0, 100), 1.1 + depth * 1.9);
+  }
+
+  const baseTempo = typeof baseAudio.tempo === "number" ? baseAudio.tempo : EngineParams.bpm;
+  const baseDensity = typeof baseAudio.density === "number" ? baseAudio.density : 0.24;
+  const baseBrightness = typeof baseAudio.brightness === "number" ? baseAudio.brightness : 0.34;
+  const baseSilence = typeof baseAudio.silenceRate === "number" ? baseAudio.silenceRate : 0.28;
+  const baseBass = typeof baseAudio.bassWeight === "number" ? baseAudio.bassWeight : 0.32;
+  const baseDeviation = typeof baseAudio.harmonicDeviation === "number" ? baseAudio.harmonicDeviation : 0.08;
+
+  HazamaBridgeState.audio.tempo = clampValue(baseTempo + (pulse * 15 + micro * 8 - air * 6 + slow * 4) * depth, 54, 152);
+  HazamaBridgeState.audio.density = clamp01(baseDensity + (pulse * 0.13 + micro * 0.09 - air * 0.04) * depth);
+  HazamaBridgeState.audio.brightness = clamp01(baseBrightness + (air * 0.08 + micro * 0.08 + bloom * 0.04) * depth);
+  HazamaBridgeState.audio.silenceRate = clamp01(baseSilence - (pulse * 0.14 + micro * 0.08) * depth + air * 0.035);
+  HazamaBridgeState.audio.bassWeight = clamp01(baseBass + (pulse * 0.06 - air * 0.035) * depth);
+  HazamaBridgeState.audio.harmonicDeviation = clamp01(baseDeviation + (micro * 0.08 + bloom * 0.05) * depth);
+
+  if (typeof document !== "undefined" && document.visibilityState !== "hidden" && GrooveState.cycle % 4 === 0) {
+    for (const key of UCM_KEYS) syncSliderFromTarget(key);
+  }
+}
+
+function syncHazamaTransportControls(step) {
+  if (!HazamaBridgeState.active || !HazamaBridgeState.loaded || !isPlaying) return;
+  if (step % 4 !== 0) return;
+
+  const maxStep = step === 0 ? 2.4 : 1.25;
+  for (const key of UCM_KEYS) {
+    UCM_CUR[key] = approachValue(UCM_CUR[key], UCM_TARGET[key], maxStep);
+    UCM[key] = Math.round(UCM_CUR[key]);
+  }
+
+  try {
+    applyUCMToParams();
+  } catch (error) {
+    console.warn("[Music] Hazama transport control failed:", error);
+  }
 }
 
 function syncAutoSlidersFromCurrent(now) {
@@ -2434,6 +2876,7 @@ const MODE_BASS_NOTES = {
   techno: ["C2", "C2", "Bb1", "C2"],
   trance: ["D2", "A1", "C2", "D2"]
 };
+const ACID_TURN_NOTES = ["D2", "F#2", "A2", "C3", "D3", "E2"];
 const GLASS_ACCENT_STEPS = [3, 5, 7, 10, 11, 14];
 
 const GrooveState = {
@@ -2596,25 +3039,25 @@ const PRESET_CHARACTERS = {
     pulseScale: 1.18,
   },
   trance: {
-    label: "burning horizon",
-    air: 0.02,
-    glass: 0.12,
-    grit: 0.08,
-    fracture: 0.08,
+    label: "acid horizon",
+    air: -0.01,
+    glass: 0.1,
+    grit: 0.14,
+    fracture: 0.14,
     harp: 0.14,
-    warmth: 0.06,
-    restScale: 0.82,
+    warmth: 0.02,
+    restScale: 0.78,
     kickScale: 1.02,
-    hatScale: 0.92,
-    bassScale: 1.02,
-    padScale: 1.08,
-    textureScale: 0.94,
-    glassScale: 1.12,
-    organicScale: 0.9,
-    dustScale: 0.86,
-    pressureColor: 0.72,
-    hazeScale: 1.0,
-    pulseScale: 1.06,
+    hatScale: 1.04,
+    bassScale: 0.98,
+    padScale: 0.96,
+    textureScale: 1.04,
+    glassScale: 1.08,
+    organicScale: 0.84,
+    dustScale: 0.94,
+    pressureColor: 0.86,
+    hazeScale: 0.9,
+    pulseScale: 1.14,
   },
 };
 
@@ -2707,7 +3150,8 @@ function updateWorldStateFromUCM() {
 function renderModeLabel() {
   const label = document.getElementById("mode-label");
   if (!label) return;
-  label.textContent = `${EngineParams.mode.toUpperCase()} / ${WorldState.label} / ${currentPresetCharacter().label}`;
+  const modeName = EngineParams.mode === "trance" ? "ACID.TECH" : EngineParams.mode.toUpperCase();
+  label.textContent = `${modeName} / ${WorldState.label} / ${currentPresetCharacter().label}`;
 }
 
 
@@ -2767,6 +3211,14 @@ function updateReferenceGradient(parts) {
     GradientState.chrome = clampValue(GradientState.chrome + genes.chrome * genomeScale + genes.voidTail * genomeScale * 0.24, 0, 1);
     GradientState.organic = clampValue(GradientState.organic + genes.organic * genomeScale + genes.refrain * genomeScale * 0.18, 0, 1);
   }
+
+  const color = PerformanceColorDriftState;
+  GradientState.haze = clampValue(GradientState.haze + color.haze * 0.045 - color.acid * 0.018, 0, 1);
+  GradientState.memory = clampValue(GradientState.memory + color.haze * 0.018 + color.dust * 0.025, 0, 1);
+  GradientState.micro = clampValue(GradientState.micro + color.dust * 0.046 + color.acid * 0.07, 0, 1);
+  GradientState.ghost = clampValue(GradientState.ghost + color.pressure * 0.04 + color.acid * 0.032, 0, 1);
+  GradientState.chrome = clampValue(GradientState.chrome + color.chrome * 0.052 + color.acid * 0.018, 0, 1);
+  GradientState.organic = clampValue(GradientState.organic + color.dust * 0.042 + color.haze * 0.015, 0, 1);
 
   const voiceScale = 0.68;
   for (const key of Object.keys(GradientState)) {
@@ -3202,6 +3654,90 @@ function applyPresetToEngineParams(preset){
 
 }
 
+function applyHazamaProfileToEngineParams(options = {}) {
+  if (!HazamaBridgeState.active || !HazamaBridgeState.loaded) return;
+
+  const audio = HazamaBridgeState.audio || {};
+  const patterns = HazamaBridgeState.patterns || {};
+  const evolution = HazamaBridgeState.evolution || {};
+  const stage = HazamaBridgeState.stage || "";
+  const force = options.force === true;
+  const density = typeof audio.density === "number" ? audio.density : 0.24;
+  const brightness = typeof audio.brightness === "number" ? audio.brightness : 0.36;
+  const silenceRate = typeof audio.silenceRate === "number" ? audio.silenceRate : 0.24;
+  const bassWeight = typeof audio.bassWeight === "number" ? audio.bassWeight : 0.34;
+  const stability = clampValue(HazamaBridgeState.stability / 100, 0, 1);
+  const resonance = clampValue(HazamaBridgeState.resonance / 100, 0, 1);
+  const marks = clampValue(HazamaBridgeState.marks / 100, 0, 1);
+  const droneBoost = patterns.drone ? 0.14 + patterns.droneLayers * 0.018 + (evolution.air || 0) * 0.035 : 0;
+  const glitchBoost = (patterns.glitch ? 0.075 : 0) + (evolution.micro || 0) * 0.035;
+  const percussionBoost = (patterns.percussion || patterns.gatePulse ? 0.09 : 0) + (evolution.pulse || 0) * 0.025;
+  const stageVoid = stage === "submerge" || stage === "exhale" ? 0.06 : 0;
+  const stagePulse = stage === "root" || stage === "ferment" ? 0.06 : 0;
+
+  if (typeof audio.smoothing === "number") {
+    UCM_SMOOTH_SEC = 0.45 + audio.smoothing * 2.2;
+  }
+
+  if (typeof audio.tempo === "number") {
+    const tempoTarget = resolvePerformanceTempoTarget(audio.tempo);
+    const step = force ? 128 : 0.62 + Math.abs((DJTempoState.targetBpm || EngineParams.bpm) - tempoTarget) * 0.012;
+    DJTempoState.targetBpm = approachValue(DJTempoState.targetBpm || tempoTarget, tempoTarget, step);
+    DJTempoState.bpm = approachValue(DJTempoState.bpm || audio.tempo, DJTempoState.targetBpm, force ? 128 : 0.5);
+    EngineParams.bpm = Math.round(DJTempoState.bpm);
+    if (typeof Tone !== "undefined" && Tone.Transport?.bpm) {
+      rampParam("transport-bpm", Tone.Transport.bpm, DJTempoState.bpm, force ? 0.25 : 1.6, force ? 0 : 0.08);
+    }
+  }
+
+  EngineParams.restProb = clampValue(
+    EngineParams.restProb * 0.72 + silenceRate * 0.3 + stageVoid - density * 0.05 - marks * 0.04,
+    0.04,
+    0.62
+  );
+  EngineParams.kickProb = clampValue(
+    EngineParams.kickProb * 0.7 + density * 0.18 + percussionBoost + stagePulse - stability * 0.035,
+    0.04,
+    0.62
+  );
+  EngineParams.hatProb = clampValue(
+    EngineParams.hatProb * 0.68 + density * 0.2 + brightness * 0.12 + glitchBoost + percussionBoost * 0.42,
+    0.08,
+    0.8
+  );
+  EngineParams.bassProb = clampValue(
+    EngineParams.bassProb * 0.74 + bassWeight * 0.18 + resonance * 0.05 - silenceRate * 0.04,
+    0.04,
+    0.46
+  );
+  EngineParams.padProb = clampValue(
+    EngineParams.padProb * 0.7 + droneBoost + (1 - density) * 0.12 + silenceRate * 0.06 + stability * 0.05,
+    0.16,
+    0.68
+  );
+
+  if (patterns.drone) {
+    EngineParams.padPattern = (evolution.bloom || 0) > 0.58
+      ? "x...x.......x..."
+      : stage === "submerge" ? "x.......x......." : "x...x...x.......";
+  }
+  if (!patterns.percussion && !patterns.gatePulse) {
+    EngineParams.kickPattern = "................";
+    EngineParams.hatPattern = patterns.glitch || (evolution.micro || 0) > 0.62 ? "....x.......x..." : "................";
+  }
+  if (patterns.gatePulse) {
+    EngineParams.hatPattern = "..x...x...x...x.";
+  }
+  if (patterns.glitch) {
+    EngineParams.hatPattern = "..x.x...x...x.x.";
+  }
+
+  const reverbTarget = clampValue(0.18 + silenceRate * 0.22 + stability * 0.06 + droneBoost * 0.18 + stageVoid * 0.9, 0.12, 0.58);
+  const delayTarget = clampValue(0.04 + glitchBoost * 0.8 + marks * 0.08 + resonance * 0.05 + brightness * 0.06, 0.02, 0.36);
+  rampParam("hazama-reverb", globalReverb.wet, reverbTarget, force ? 0.25 : 1.1, force ? 0 : 0.01);
+  rampParam("hazama-delay", globalDelay.wet, delayTarget, force ? 0.25 : 0.9, force ? 0 : 0.01);
+}
+
 
 async function loadPresets(){
   const status = document.getElementById("preset-status");
@@ -3230,7 +3766,7 @@ async function loadPresets(){
     ok.forEach(n=>{
       const opt = document.createElement("option");
       opt.value = n;
-      opt.textContent = n.toUpperCase();
+      opt.textContent = n === "trance" ? "ACID.TECH" : n.toUpperCase();
       sel.appendChild(opt);
     });
     if ([...sel.options].some(o=>o.value===current)) sel.value = current;
@@ -3242,6 +3778,7 @@ async function loadPresets(){
 }
 
 function resolveMode(){
+  if (HazamaBridgeState.active && HazamaBridgeState.style) return HazamaBridgeState.style;
   if (PresetManager.selected && PresetManager.selected !== "__auto__") return PresetManager.selected;
   return chooseMode();
 }
@@ -3300,7 +3837,12 @@ function updateSoundForMode(mode){
       globalDelay.delayTime = "8n.";
       globalDelay.feedback.rampTo(0.34, 0.9);
       globalDelay.wet.rampTo(0.22, 0.9);
-      bass.set({ oscillator:{type:"square"}, filter:{Q:1.8}, filterEnvelope:{baseFrequency:60, octaves:3.0} });
+      bass.set({
+        oscillator:{type:"sawtooth"},
+        filter:{Q:2.7},
+        filterEnvelope:{attack:0.004, decay:0.14, sustain:0.045, release:0.18, baseFrequency:68, octaves:3.9},
+        envelope:{attack:0.004, decay:0.14, sustain:0.08, release:0.22}
+      });
     }else{
       // fallback
       globalReverb.wet.rampTo(0.26, 1.0);
@@ -3318,10 +3860,9 @@ let bassRoot     = "C2";
 
 function chooseMode() {
   const e = UCM_CUR.energy;
-  if (e < 25) return "ambient";
-  if (e < 50) return "lofi";
-  if (e < 75) return "techno";
-  return "trance";
+  if (e < 34) return "ambient";
+  if (e < 68) return "lofi";
+  return "techno";
 }
 
 function applyUCMToParams(options = {}) {
@@ -3375,11 +3916,20 @@ function applyUCMToParams(options = {}) {
   EngineParams.padProb  = mapValue((circleNorm * 0.62 + observerNorm * 0.2 + voidNorm * 0.18) * 100, 0, 100, 0.18, 0.52);
   const character = currentPresetCharacter();
   const genre = GenreBlendState;
+  const droneZone = EngineParams.bpm < 84 || energyNorm < 0.3 || genre.ambient > 0.42;
   EngineParams.restProb = clampValue(EngineParams.restProb * character.restScale + genre.ambient * 0.035 - genre.techno * 0.035, 0.035, PerformancePadState.void ? 0.58 : 0.46);
   EngineParams.kickProb = clampValue(EngineParams.kickProb * character.kickScale + genre.pressure * 0.024 - genre.ambient * 0.018, PerformancePadState.void ? 0.06 : 0.11, 0.7);
   EngineParams.hatProb = clampValue(EngineParams.hatProb * character.hatScale + genre.techno * 0.11 + genre.idm * 0.035 - genre.ambient * 0.05, PerformancePadState.void ? 0.11 : 0.18, 0.86);
   EngineParams.bassProb = clampValue(EngineParams.bassProb * character.bassScale + genre.pressure * 0.018 - genre.ambient * 0.018, PerformancePadState.void ? 0.05 : 0.09, 0.48);
   EngineParams.padProb = clampValue(EngineParams.padProb * character.padScale * (character.hazeScale || 1) + genre.ambient * 0.055 - genre.techno * 0.045, PerformancePadState.void ? 0.15 : 0.16, 0.58);
+  if (droneZone) {
+    const droneAmount = clampValue((84 - EngineParams.bpm) / 34 + (0.34 - energyNorm) + genre.ambient * 0.62 + voidNorm * 0.18, 0, 1);
+    EngineParams.restProb = clampValue(EngineParams.restProb + droneAmount * 0.08, 0.06, 0.58);
+    EngineParams.kickProb = clampValue(EngineParams.kickProb * (0.08 + (1 - droneAmount) * 0.24), 0.004, 0.16);
+    EngineParams.hatProb = clampValue(EngineParams.hatProb * (0.18 + (1 - droneAmount) * 0.34), 0.015, 0.22);
+    EngineParams.bassProb = clampValue(EngineParams.bassProb * (0.34 + (1 - droneAmount) * 0.28), 0.025, 0.22);
+    EngineParams.padProb = clampValue(EngineParams.padProb + droneAmount * 0.15, 0.24, 0.68);
+  }
 
   // リバーブ/ディレイ量を少しだけ動かす（軽量）
   const reverbWet = clampValue(
@@ -3434,6 +3984,7 @@ function applyUCMToParams(options = {}) {
   }
 
   if (!manual) setPatternsByMode();
+  applyHazamaProfileToEngineParams({ force });
   updateUIFromParams();
 
   syncMusicAudioAdapterFromUCM(force);
@@ -3493,8 +4044,8 @@ function setPatternsByMode() {
 
     case "trance":
       EngineParams.kickPattern = "x...x...x...x...";
-      EngineParams.hatPattern  = "....x......x....";
-      EngineParams.bassPattern = "x...x...x...x...";
+      EngineParams.hatPattern  = "..x.x.x...x.x.x.";
+      EngineParams.bassPattern = "x.x...x.x...x...";
       EngineParams.padPattern  = "x.......x.......";
       break;
 
@@ -3554,6 +4105,9 @@ function randomHazeChord() {
 function advanceGrooveStructure() {
   GrooveState.cycle++;
   advanceAutoDirectorPhrase();
+  advanceHazamaAutonomy();
+  syncHazamaTransportControls(0);
+  advancePerformanceColorDrift();
 
   const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
   const creationNorm = clampValue(UCM_CUR.creation / 100, 0, 1);
@@ -3633,6 +4187,151 @@ function triggerLowMotion(step, time, context) {
     }
   } catch (error) {
     console.warn("[Music] low motion failed:", error);
+  }
+}
+
+function triggerAcidTechnoTrace(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  if (!bass || PerformancePadState.void > 0.55) return;
+  AcidLockState.intensity = approachValue(AcidLockState.intensity, AcidLockState.enabled ? 1 : 0, 0.018);
+  if (AcidLockState.intensity < 0.08) return;
+
+  const genre = GenreBlendState;
+  const gradient = GradientState;
+  const lowGuard = MixGovernorState.lowGuard;
+  const acid = clampValue(
+    (EngineParams.mode === "trance" ? 0.34 : 0) +
+      genre.techno * 0.2 +
+      genre.pressure * 0.18 +
+      energyNorm * 0.16 +
+      creationNorm * 0.18 +
+      resourceNorm * 0.14 +
+      gradient.micro * 0.08 +
+      voiceGeneBias("pressure") * 0.1 -
+      voidNorm * 0.24 -
+      lowGuard * 0.22,
+    0,
+    1
+  ) * AcidLockState.intensity;
+  if (acid < 0.26) return;
+
+  const gate = step % 16 === 1 || step % 16 === 3 || step % 16 === 6 || step % 16 === 9 || step % 16 === 11 || step % 16 === 14 || (isAccentStep && step % 2 === 1);
+  if (!gate || !rand(0.018 + acid * 0.14 + PerformancePadState.repeat * 0.04)) return;
+
+  const acidPhase = Math.floor((GenomeState.phase || 0) * ACID_TURN_NOTES.length);
+  const note = ACID_TURN_NOTES[(GrooveState.cycle + step + acidPhase) % ACID_TURN_NOTES.length];
+  const reply = GLASS_NOTES[(GrooveState.cycle + step + acidPhase + 2) % GLASS_NOTES.length];
+  const acidTime = time + 0.012 + Math.random() * (0.01 + waveNorm * 0.012);
+  const vel = clampValue(0.046 + acid * 0.082 - lowGuard * 0.026, 0.034, 0.128);
+  const cutoff = clampValue(150 + acid * 520 + resourceNorm * 180 + waveNorm * 90 - lowGuard * 80, 110, 880);
+  const q = clampValue(2.0 + acid * 3.2 + creationNorm * 0.5 - lowGuard * 0.5, 1.4, 5.4);
+
+  try {
+    safeToneRamp(bass?.filter?.Q, q, 0.055);
+    safeToneRamp(bass?.filter?.frequency, cutoff, 0.045);
+    bass.triggerAttackRelease(note, "32n", acidTime, vel);
+    if (rand(0.28 + acid * 0.22)) {
+      bass.triggerAttackRelease(note, "64n", acidTime + 0.046 + Math.random() * 0.012, vel * 0.52);
+    }
+    if (glass && rand(0.22 + acid * 0.26)) {
+      glass.triggerAttackRelease(reply, "64n", acidTime + 0.022, clampValue(0.018 + acid * 0.046 + gradient.chrome * 0.008, 0.014, 0.078));
+    }
+    if (texture && rand(0.18 + acid * 0.22)) {
+      texture.triggerAttackRelease("64n", acidTime + 0.016, clampValue(0.014 + acid * 0.042, 0.012, 0.072));
+    }
+    markMixEvent(0.08 + acid * 0.06);
+  } catch (error) {
+    console.warn("[Music] acid trace failed:", error);
+  }
+}
+
+function triggerDroneResonanceBed(step, time, context) {
+  const {
+    energyNorm,
+    observerNorm,
+    circleNorm,
+    voidNorm,
+    waveNorm
+  } = context;
+  const genre = GenreBlendState;
+  const drone = clampValue(
+    genre.ambient * 0.34 +
+      (1 - energyNorm) * 0.26 +
+      voidNorm * 0.18 +
+      circleNorm * 0.14 +
+      observerNorm * 0.08,
+    0,
+    1
+  );
+  if (drone < 0.34 || !(step % 16 === 0 || step % 16 === 8)) return;
+  if (!rand(0.22 + drone * 0.36 + DepthState.bed * 0.08)) return;
+
+  const lowNote = drone > 0.62 ? "F1" : "C2";
+  const airNote = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + Math.floor(GenomeState.phase * 7)) % TRANSPARENT_AIR_FRAGMENTS.length];
+  const chord = randomHazeChord();
+  const droneTime = time + 0.018 + Math.random() * (0.024 + waveNorm * 0.018);
+
+  try {
+    pad.triggerAttackRelease(chord, "1n", droneTime, clampValue(0.036 + drone * 0.05 + observerNorm * 0.012, 0.03, 0.108));
+    if (bass && rand(0.34 + drone * 0.22)) {
+      bass.triggerAttackRelease(lowNote, "2n", droneTime + 0.024, clampValue(0.032 + drone * 0.048 - MixGovernorState.lowGuard * 0.018, 0.026, 0.09));
+    }
+    if (glass && rand(0.26 + drone * 0.18)) {
+      glass.triggerAttackRelease(airNote, "4n", droneTime + 0.052, clampValue(0.018 + drone * 0.032 + DepthState.tail * 0.008, 0.014, 0.07));
+    }
+    markMixEvent(0.045);
+  } catch (error) {
+    console.warn("[Music] drone resonance failed:", error);
+  }
+}
+
+function triggerPerformanceColorDriftDetail(step, time, context) {
+  const {
+    creationNorm,
+    observerNorm,
+    circleNorm,
+    waveNorm,
+    isAccentStep
+  } = context;
+  if (!glass || MixGovernorState.eventLoad > 0.9) return;
+
+  const color = PerformanceColorDriftState;
+  const amount = clampValue(color.haze * 0.2 + color.chrome * 0.22 + color.dust * 0.2 + color.pressure * 0.1 + color.acid * 0.24, 0, 1);
+  if (amount < 0.24) return;
+
+  const gate = step % 16 === 5 || step % 16 === 13 || (isAccentStep && step % 2 === 1);
+  if (!gate || !rand(0.018 + amount * 0.08 + color.acid * 0.035)) return;
+
+  const pool = color.acid > 0.18 || color.dust > color.haze
+    ? GLASS_NOTES
+    : color.chrome > color.dust
+      ? TRANSPARENT_AIR_FRAGMENTS
+      : ORGANIC_PLUCK_FRAGMENTS;
+  const note = pool[(GrooveState.cycle + step + Math.floor(color.phase * pool.length)) % pool.length];
+  const reply = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + 3) % TRANSPARENT_AIR_FRAGMENTS.length];
+  const driftTime = time + 0.018 + Math.random() * (0.016 + waveNorm * 0.016);
+
+  try {
+    glass.triggerAttackRelease(note, color.acid > 0.18 ? "64n" : "32n", driftTime, clampValue(0.016 + amount * 0.044 + observerNorm * 0.008, 0.014, 0.082));
+    if (color.chrome > 0.42 && rand(0.22 + color.chrome * 0.18)) {
+      glass.triggerAttackRelease(reply, "64n", driftTime + 0.052 + Math.random() * 0.018, clampValue(0.012 + color.chrome * 0.034, 0.012, 0.058));
+    }
+    if (texture && color.dust > 0.38 && rand(0.18 + color.dust * 0.18)) {
+      texture.triggerAttackRelease("64n", driftTime + 0.012, clampValue(0.012 + color.dust * 0.036 + creationNorm * 0.008, 0.012, 0.066));
+    }
+    if (pad && color.haze > 0.54 && step % 16 === 13 && rand(0.16 + circleNorm * 0.16)) {
+      pad.triggerAttackRelease(randomHazeChord(), "2n", driftTime + 0.04, clampValue(0.018 + color.haze * 0.035 + circleNorm * 0.008, 0.016, 0.064));
+    }
+    markMixEvent(0.06 + amount * 0.04);
+  } catch (error) {
+    console.warn("[Music] color drift detail failed:", error);
   }
 }
 
@@ -4575,6 +5274,7 @@ function scheduleStep(time) {
   maybeTriggerWorldAccents(time);
   const step = stepIndex % EngineParams.stepCount;
   if (step === 0) advanceGrooveStructure();
+  else syncHazamaTransportControls(step);
   decayOrganicChaos();
   decayMotifMemory();
   decayBpmCrossfadeMemory();
@@ -4625,14 +5325,19 @@ function scheduleStep(time) {
   triggerGoldenGenomeDevelopment(step, t, stepContext);
   triggerLongformArcTurn(step, t, stepContext);
   triggerOrganicEcosystemBloom(step, t, stepContext);
+  triggerDroneResonanceBed(step, t, stepContext);
+  triggerPerformanceColorDriftDetail(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
+  triggerAcidTechnoTrace(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
   if (!isRest) {
+    const droneDrumThin = EngineParams.bpm < 84 || energyNorm < 0.3 || genre.ambient > 0.44;
+    const droneDrumScale = droneDrumThin ? clampValue(0.12 + (energyNorm * 0.56) + genre.techno * 0.28, 0.08, 0.5) : 1;
     // Kick
-    const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + genre.pressure * 0.024 + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.14));
+    const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + genre.pressure * 0.024 + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.14) * droneDrumScale);
     if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
-      kick.triggerAttackRelease("C2", "16n", t + 0.004, clampValue(0.32 + energyNorm * 0.072 + genre.pressure * 0.02 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.026 - lowGuard * 0.04, 0.24, 0.5));
+      kick.triggerAttackRelease("C2", "16n", t + 0.004, clampValue(0.32 + energyNorm * 0.072 + genre.pressure * 0.02 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.026 - lowGuard * 0.04, 0.18, droneDrumThin ? 0.32 : 0.5));
       if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep) && rand(0.46)) {
         try {
           texture.triggerAttackRelease("64n", t + 0.012, clampValue(0.05 + energyNorm * 0.064, 0.038, 0.118));
@@ -4643,7 +5348,7 @@ function scheduleStep(time) {
     }
 
     // Hat
-    const hatChance = chance(EngineParams.hatProb + fillBoost + genre.techno * 0.12 + genre.idm * 0.045 + (isAccentStep ? 0.08 : 0) - genre.ambient * 0.045 - PerformancePadState.void * 0.1);
+    const hatChance = chance((EngineParams.hatProb + fillBoost + genre.techno * 0.12 + genre.idm * 0.045 + (isAccentStep ? 0.08 : 0) - genre.ambient * 0.045 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.42 : 1));
     if ((patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2)) && rand(hatChance)) {
       hat.triggerAttackRelease("32n", t, clampValue(0.086 + energyNorm * 0.108 + genre.techno * 0.038 + (isAccentStep ? 0.04 : 0), 0.054, 0.23));
     }
@@ -4665,7 +5370,7 @@ function scheduleStep(time) {
     }
 
     // Bass
-    const bassChance = chance((EngineParams.bassProb + genre.pressure * 0.018 + (GrooveState.fillActive && step % 8 === 6 ? 0.07 : 0) - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16));
+    const bassChance = chance((EngineParams.bassProb + genre.pressure * 0.018 + (GrooveState.fillActive && step % 8 === 6 ? 0.07 : 0) - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16) * (droneDrumThin ? 0.58 : 1));
     if (patternAt(EngineParams.bassPattern, step) && rand(bassChance)) {
       const note = step % 8 === 0 ? bassRoot : bassNoteForStep(step);
       bass.triggerAttackRelease(note, "8n", t + 0.004, clampValue(0.19 + energyNorm * 0.092 + PerformancePadState.punch * 0.02 - lowGuard * 0.024, 0.12, 0.33));
@@ -4755,6 +5460,11 @@ function startAutoCycle() {
 
 function updateAutoMixTargets(cycleMs) {
   if (!UCM.auto.enabled || !isPlaying) return;
+  if (HazamaBridgeState.active) {
+    for (const key of AUTOMIX_MOTION_KEYS) syncSliderFromTarget(key);
+    updateUIFromParams();
+    return;
+  }
 
   UCM.auto.phase = (UCM.auto.phase + AUTO_MOTION_TICK_MS / cycleMs) % 1;
   for (const key of AUTOMIX_MOTION_KEYS) {
@@ -4856,6 +5566,7 @@ function attachUI() {
   const audioOutputSelect = document.getElementById("audio_output_select");
   const btnAudioOutput = document.getElementById("btn_audio_output");
   const btnKeepAwake = document.getElementById("btn_keep_awake");
+  const btnAcidLock = document.getElementById("btn_acid_lock");
   const statusText = document.getElementById("status-text");
   const modeLabel  = document.getElementById("mode-label");
   const btnRec = document.getElementById("btn_rec");
@@ -4974,6 +5685,13 @@ function attachUI() {
     setKeepAwakeEnabled(false);
   }
 
+  if (btnAcidLock) {
+    btnAcidLock.addEventListener("click", () => {
+      setAcidLockEnabled(!AcidLockState.enabled);
+    });
+    setAcidLockEnabled(false);
+  }
+
   if (btnRec) {
     btnRec.addEventListener("click", toggleLocalRecorder);
   }
@@ -5011,6 +5729,7 @@ function attachUI() {
 window.addEventListener("DOMContentLoaded", () => {
   mountMandalaLayers();
   attachUI();
+  setupHazamaBridge();
   updateRuntimeUiState();
   setupMediaSessionControls();
   updateMediaSessionPlaybackState();
@@ -5022,6 +5741,7 @@ window.addEventListener("DOMContentLoaded", () => {
   loadPresets().finally(()=>{ 
     // prime
     applyUCMToParams({ force: true });
+    if (HazamaBridgeState.loaded) setHazamaStatus("HZM.LOADED");
   });
 
   // Smooth loop: UCM_TARGET -> UCM_CUR -> params (v1.3)
