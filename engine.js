@@ -205,6 +205,17 @@ const DJTempoState = {
   drift: 0,
   motion: 0
 };
+const BpmCrossfadeState = {
+  zone: "ambient",
+  previousZone: "ambient",
+  blend: 0,
+  refrain: 0,
+  lastCrossCycle: -99,
+  motifRoot: "D5",
+  motifReply: "F#5",
+  motifShade: "D4",
+  motifIndex: 0
+};
 const OutputState = {
   level: 75
 };
@@ -532,11 +543,31 @@ function decayMotifMemory() {
   if (MotifMemoryState.air < 0.001) MotifMemoryState.air = 0;
 }
 
+function decayBpmCrossfadeMemory() {
+  BpmCrossfadeState.blend *= 0.93;
+  BpmCrossfadeState.refrain *= 0.968;
+  if (BpmCrossfadeState.blend < 0.001) BpmCrossfadeState.blend = 0;
+  if (BpmCrossfadeState.refrain < 0.001) BpmCrossfadeState.refrain = 0;
+}
+
 function resetMotifMemory() {
   MotifMemoryState.strength = 0;
   MotifMemoryState.air = 0;
   MotifMemoryState.lastStep = -99;
   MotifMemoryState.source = "";
+  resetBpmCrossfadeMemory();
+}
+
+function resetBpmCrossfadeMemory() {
+  BpmCrossfadeState.zone = "ambient";
+  BpmCrossfadeState.previousZone = "ambient";
+  BpmCrossfadeState.blend = 0;
+  BpmCrossfadeState.refrain = 0;
+  BpmCrossfadeState.lastCrossCycle = -99;
+  BpmCrossfadeState.motifRoot = "D5";
+  BpmCrossfadeState.motifReply = "F#5";
+  BpmCrossfadeState.motifShade = "D4";
+  BpmCrossfadeState.motifIndex = 0;
 }
 
 function resetOrganicEcosystem() {
@@ -695,6 +726,74 @@ function updateDJTempo(parts, options = {}) {
 
   if (typeof Tone !== "undefined" && Tone.Transport?.bpm) {
     rampParam("transport-bpm", Tone.Transport.bpm, DJTempoState.bpm, force ? 0.35 : 1.6, force ? 0 : 0.08);
+  }
+}
+
+function bpmZoneForTempo(bpm, genre = GenreBlendState) {
+  if (bpm < 82 || genre.ambient > 0.46) return "ambient";
+  if (bpm < 112 || genre.idm > genre.techno + 0.08) return "idm";
+  if (bpm < 136 || genre.techno > genre.pressure) return "grid";
+  return "pressure";
+}
+
+function motifPoolForZone(zone) {
+  if (zone === "ambient") return TRANSPARENT_AIR_FRAGMENTS;
+  if (zone === "idm") return ORGANIC_PLUCK_FRAGMENTS;
+  if (zone === "grid") return GLASS_NOTES;
+  return FIELD_MURK_FRAGMENTS;
+}
+
+function bpmZoneGradientBias(zone) {
+  switch (zone) {
+    case "ambient":
+      return { haze: 0.12, memory: 0.04, micro: 0.01, ghost: 0.02, chrome: 0.1, organic: 0.03 };
+    case "idm":
+      return { haze: 0.03, memory: 0.11, micro: 0.12, ghost: 0.02, chrome: 0.07, organic: 0.1 };
+    case "grid":
+      return { haze: -0.02, memory: 0.02, micro: 0.15, ghost: 0.08, chrome: 0.04, organic: 0.04 };
+    case "pressure":
+      return { haze: -0.03, memory: 0.01, micro: 0.08, ghost: 0.14, chrome: 0.02, organic: 0.05 };
+    default:
+      return { haze: 0, memory: 0, micro: 0, ghost: 0, chrome: 0, organic: 0 };
+  }
+}
+
+function updateBpmCrossfadeMemory(parts) {
+  const nextZone = bpmZoneForTempo(DJTempoState.bpm, GenreBlendState);
+  const currentZone = BpmCrossfadeState.zone || nextZone;
+  const crossed = nextZone !== currentZone;
+  const motionAmount = clampValue(Math.abs(DJTempoState.motion) / 22, 0, 1);
+  const pressure = parts.pressure || 0;
+
+  if (crossed) {
+    const fromPool = motifPoolForZone(currentZone);
+    const toPool = motifPoolForZone(nextZone);
+    const root = fromPool[(GrooveState.cycle + BpmCrossfadeState.motifIndex) % fromPool.length];
+    const reply = toPool[(GrooveState.cycle + BpmCrossfadeState.motifIndex + 2) % toPool.length];
+    const shade = FIELD_MURK_FRAGMENTS[(GrooveState.cycle + BpmCrossfadeState.motifIndex + 1) % FIELD_MURK_FRAGMENTS.length];
+
+    BpmCrossfadeState.previousZone = currentZone;
+    BpmCrossfadeState.zone = nextZone;
+    BpmCrossfadeState.blend = clampValue(0.62 + motionAmount * 0.22 + LongformArcState.turn * 0.08, 0, 0.92);
+    BpmCrossfadeState.refrain = clampValue(0.52 + motionAmount * 0.18 + pressure * 0.08, 0, 0.84);
+    BpmCrossfadeState.lastCrossCycle = GrooveState.cycle;
+    BpmCrossfadeState.motifRoot = root;
+    BpmCrossfadeState.motifReply = reply;
+    BpmCrossfadeState.motifShade = shade;
+    BpmCrossfadeState.motifIndex = (BpmCrossfadeState.motifIndex + 1) % 16;
+    rememberMotif(root, {
+      reply,
+      shade,
+      strength: 0.12 + BpmCrossfadeState.refrain * 0.18,
+      air: nextZone === "ambient" ? 0.18 : 0.08 + motionAmount * 0.08,
+      source: `bpm:${currentZone}->${nextZone}`
+    });
+    return;
+  }
+
+  if (motionAmount > 0.24) {
+    BpmCrossfadeState.blend = clampValue(BpmCrossfadeState.blend + motionAmount * 0.025, 0, 0.72);
+    BpmCrossfadeState.refrain = clampValue(BpmCrossfadeState.refrain + motionAmount * 0.018, 0, 0.62);
   }
 }
 
@@ -2070,6 +2169,16 @@ function updateReferenceGradient(parts) {
   GradientState.chrome = clampValue(GradientState.chrome + genre.ambient * 0.035 + genre.idm * 0.035 + tempoFall * 0.02, 0, 1);
   GradientState.organic = clampValue(GradientState.organic + genre.idm * 0.045 + genre.ambient * 0.02 - genre.techno * 0.018 + tempoRise * 0.02, 0, 1);
 
+  if (BpmCrossfadeState.blend > 0) {
+    const fromBias = bpmZoneGradientBias(BpmCrossfadeState.previousZone);
+    const toBias = bpmZoneGradientBias(BpmCrossfadeState.zone);
+    const blend = BpmCrossfadeState.blend;
+    for (const key of Object.keys(GradientState)) {
+      const mixedBias = (fromBias[key] || 0) * 0.42 + (toBias[key] || 0) * 0.58;
+      GradientState[key] = clampValue(GradientState[key] + mixedBias * blend, 0, 1);
+    }
+  }
+
   if (longformArcActive()) {
     const arc = currentLongformArcStage();
     const arcShape = longformArcShape();
@@ -2116,6 +2225,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
   const arcShape = longformArcShape();
   const arcStage = currentLongformArcStage();
   const genre = GenreBlendState;
+  const bpmBlend = BpmCrossfadeState.blend;
+  const refrain = BpmCrossfadeState.refrain;
 
   DepthState.bed = clampValue(
     (gradient.haze * 0.34) +
@@ -2127,6 +2238,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       genre.techno * 0.02 +
       tempoFall * 0.035 -
       tempoRise * 0.018 +
+      bpmBlend * 0.018 +
+      refrain * 0.012 +
       arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.045 : 0.018),
     0,
     1
@@ -2142,6 +2255,7 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       genre.pressure * 0.035 +
       tempoRise * 0.04 -
       tempoFall * 0.016 +
+      bpmBlend * 0.026 +
       arcShape * (arcStage.name === "root" ? 0.035 : 0.012),
     0,
     1
@@ -2157,6 +2271,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       genre.techno * 0.035 +
       tempoRise * 0.046 +
       tempoFall * 0.012 +
+      bpmBlend * 0.04 +
+      refrain * 0.025 +
       arcShape * (arcStage.name === "sprout" || arcStage.name === "ferment" ? 0.04 : 0.014),
     0,
     1
@@ -2172,6 +2288,7 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       genre.techno * 0.018 +
       tempoFall * 0.014 -
       tempoRise * 0.01 +
+      bpmBlend * 0.008 +
       arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.025 : 0.008),
     0,
     1
@@ -2186,6 +2303,7 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       genre.techno * 0.014 +
       tempoFall * 0.045 -
       tempoRise * 0.012 +
+      refrain * 0.018 +
       arcShape * (arcStage.name === "exhale" ? 0.05 : 0.018),
     0,
     1
@@ -2202,6 +2320,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       genre.pressure * 0.04 +
       tempoRise * 0.05 +
       tempoFall * 0.012 +
+      bpmBlend * 0.045 +
+      refrain * 0.042 +
       LongformArcState.turn * 0.06,
     0,
     1
@@ -2801,6 +2921,7 @@ function advanceGrooveStructure() {
   const fillChance = mapValue(density, 0, 1, 0.04, 0.30);
   advanceLongformArcPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
+  updateBpmCrossfadeMemory(currentGradientParts());
 
   GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
   GrooveState.textureLift = GrooveState.fillActive ? 0.10 + creationNorm * 0.12 : creationNorm * 0.035;
@@ -3141,7 +3262,8 @@ function triggerMotifAfterimage(step, time, context) {
     isAccentStep
   } = context;
   const memory = MotifMemoryState;
-  if (!glass || memory.strength < 0.024) return;
+  const refrain = BpmCrossfadeState.refrain;
+  if (!glass || memory.strength + refrain * 0.16 < 0.024) return;
   if (stepIndex - memory.lastStep < 3) return;
 
   const chaos = organicChaosAmount();
@@ -3152,7 +3274,9 @@ function triggerMotifAfterimage(step, time, context) {
       memory.air * 0.04 +
       chaos * 0.05 +
       observerNorm * 0.03 +
-      creationNorm * 0.018
+      creationNorm * 0.018 +
+      refrain * 0.045 +
+      BpmCrossfadeState.blend * 0.022
   );
   if (!replyGate || !rand(replyChance)) return;
 
@@ -3162,11 +3286,11 @@ function triggerMotifAfterimage(step, time, context) {
     ? TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + 2) % TRANSPARENT_AIR_FRAGMENTS.length]
     : memory.shade;
   const afterTime = time + 0.022 + Math.random() * (0.018 + waveNorm * 0.016 + chaos * 0.016);
-  const vel = clampValue(0.018 + memory.strength * 0.07 + observerNorm * 0.018 + circleNorm * 0.01, 0.016, 0.09);
+  const vel = clampValue(0.018 + memory.strength * 0.07 + refrain * 0.018 + observerNorm * 0.018 + circleNorm * 0.01, 0.016, 0.096);
 
   try {
     glass.triggerAttackRelease(first, airy ? "16n" : "32n", afterTime, vel);
-    if (rand(0.2 + memory.strength * 0.22 + OrganicChaosState.tangle * 0.1)) {
+    if (rand(0.2 + memory.strength * 0.22 + OrganicChaosState.tangle * 0.1 + refrain * 0.08)) {
       glass.triggerAttackRelease(second, "64n", afterTime + 0.05 + Math.random() * 0.024, vel * 0.56);
     }
     if (rand(0.18 + memory.strength * 0.16 + OrganicChaosState.tangle * 0.08)) {
@@ -3177,6 +3301,76 @@ function triggerMotifAfterimage(step, time, context) {
     memory.lastStep = stepIndex;
   } catch (error) {
     console.warn("[Music] motif afterimage failed:", error);
+  }
+}
+
+function triggerBpmCrossfadeRefrain(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  const state = BpmCrossfadeState;
+  const blend = clampValue(state.blend, 0, 1);
+  const refrain = clampValue(state.refrain, 0, 1);
+  if (!glass || (blend < 0.035 && refrain < 0.04)) return;
+  if (MixGovernorState.eventLoad > 0.86 && !PerformancePadState.void) return;
+
+  const phraseGate = step % 16 === 0 || step % 16 === 4 || step % 16 === 8 || step % 16 === 12 || isAccentStep;
+  const gateChance = chance(
+    0.02 +
+      blend * 0.1 +
+      refrain * 0.12 +
+      DepthState.gesture * 0.024 +
+      observerNorm * 0.018 +
+      creationNorm * 0.014 -
+      voidNorm * 0.018
+  );
+  if (!phraseGate || !rand(gateChance)) return;
+
+  const rising = DJTempoState.motion > 1.5;
+  const falling = DJTempoState.motion < -1.5 || PerformancePadState.void;
+  const fromZone = state.previousZone || "ambient";
+  const toZone = state.zone || fromZone;
+  const root = state.motifRoot || ORGANIC_PLUCK_FRAGMENTS[(GrooveState.cycle + step) % ORGANIC_PLUCK_FRAGMENTS.length];
+  const reply = state.motifReply || TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + 2) % TRANSPARENT_AIR_FRAGMENTS.length];
+  const shade = state.motifShade || FIELD_MURK_FRAGMENTS[(GrooveState.cycle + step + 1) % FIELD_MURK_FRAGMENTS.length];
+  const refrainTime = time + 0.018 + Math.random() * (0.012 + waveNorm * 0.018);
+  const baseVel = clampValue(0.018 + refrain * 0.052 + blend * 0.03 + observerNorm * 0.012, 0.016, 0.092);
+  const replyDelay = rising ? 0.044 : falling ? 0.074 : 0.058;
+
+  try {
+    if (falling || toZone === "ambient") {
+      pad.triggerAttackRelease(randomHazeChord(), PerformancePadState.void ? "2n" : "1n", refrainTime + 0.018, clampValue(0.016 + blend * 0.03 + circleNorm * 0.012 + observerNorm * 0.012, 0.014, 0.064));
+    }
+
+    glass.triggerAttackRelease(root, rising || toZone === "grid" ? "64n" : "32n", refrainTime, baseVel);
+    if (rand(0.45 + refrain * 0.22 + GradientState.memory * 0.12)) {
+      glass.triggerAttackRelease(reply, falling ? "16n" : "64n", refrainTime + replyDelay + Math.random() * 0.018, clampValue(baseVel * (falling ? 0.62 : 0.74), 0.012, 0.076));
+    }
+    if (rand(0.26 + blend * 0.24 + GradientState.organic * 0.1)) {
+      glass.triggerAttackRelease(shade, "64n", refrainTime + replyDelay * 1.72 + Math.random() * 0.02, clampValue(baseVel * 0.48, 0.01, 0.052));
+    }
+    if (!falling && rand(0.22 + blend * 0.18 + (toZone === "grid" || toZone === "pressure" ? 0.14 : 0))) {
+      texture.triggerAttackRelease("64n", refrainTime + 0.01, clampValue(0.012 + blend * 0.042 + energyNorm * 0.012, 0.012, 0.07));
+    }
+    if (fromZone !== toZone && rand(0.34 + refrain * 0.18)) {
+      rememberMotif(reply, {
+        reply: root,
+        shade,
+        strength: 0.04 + refrain * 0.11,
+        air: falling ? 0.18 : 0.07,
+        source: `refrain:${fromZone}->${toZone}`
+      });
+    }
+    state.refrain *= 0.86;
+    markMixEvent(0.12 + blend * 0.05);
+  } catch (error) {
+    console.warn("[Music] bpm crossfade refrain failed:", error);
   }
 }
 
@@ -3657,6 +3851,7 @@ function scheduleStep(time) {
   if (step === 0) advanceGrooveStructure();
   decayOrganicChaos();
   decayMotifMemory();
+  decayBpmCrossfadeMemory();
   decayOrganicEcosystem();
   decayLongformArc();
   decayMixGovernor();
@@ -3692,6 +3887,7 @@ function scheduleStep(time) {
   triggerGranularDetail(step, t, stepContext);
   triggerClarityFilament(step, t, stepContext);
   triggerMotifAfterimage(step, t, stepContext);
+  triggerBpmCrossfadeRefrain(step, t, stepContext);
   triggerLongformArcTurn(step, t, stepContext);
   triggerOrganicEcosystemBloom(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
