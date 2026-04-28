@@ -932,6 +932,15 @@ function resetMixGovernor() {
   MixGovernorState.lastAirCycle = -99;
 }
 
+function resetTimbreFamily() {
+  TimbreFamilyState.drumSkin = 0.18;
+  TimbreFamilyState.pianoMemory = 0.26;
+  TimbreFamilyState.voiceDust = 0.2;
+  TimbreFamilyState.acidBiyon = 0;
+  TimbreFamilyState.sub808 = 0.14;
+  TimbreFamilyState.chain = 0.3;
+}
+
 function resetGenreBlend() {
   GenreBlendState.ambient = 0.45;
   GenreBlendState.idm = 0.34;
@@ -3007,6 +3016,46 @@ const glass = new Tone.FMSynth({
   modulationEnvelope: { attack: 0.004, decay: 0.085, sustain: 0, release: 0.13 }
 }).connect(globalDelay);
 
+const pianoMemoryFilter = new Tone.Filter(1800, "lowpass").connect(globalDelay);
+const pianoMemory = new Tone.PolySynth(Tone.Synth, {
+  oscillator: { type: "triangle" },
+  envelope: { attack: 0.004, decay: 0.18, sustain: 0.045, release: 0.5 }
+}).connect(pianoMemoryFilter);
+
+const voiceDustFilter = new Tone.Filter(2400, "bandpass").connect(globalReverb);
+const voiceDust = new Tone.FMSynth({
+  harmonicity: 0.76,
+  modulationIndex: 1.85,
+  oscillator: { type: "sine" },
+  envelope: { attack: 0.018, decay: 0.22, sustain: 0.02, release: 0.48 },
+  modulation: { type: "triangle" },
+  modulationEnvelope: { attack: 0.012, decay: 0.16, sustain: 0, release: 0.24 }
+}).connect(voiceDustFilter);
+
+const drumSkin = new Tone.NoiseSynth({
+  noise: { type: "brown" },
+  envelope: { attack: 0.001, decay: 0.038, sustain: 0, release: 0.025 }
+}).connect(drumBus);
+
+const subImpact = new Tone.MonoSynth({
+  oscillator: { type: "sine" },
+  filter: { type: "lowpass", Q: 0.58 },
+  filterEnvelope: {
+    attack: 0.003,
+    decay: 0.26,
+    sustain: 0,
+    release: 0.08,
+    baseFrequency: 42,
+    octaves: 1.35
+  },
+  envelope: { attack: 0.004, decay: 0.34, sustain: 0, release: 0.16 }
+}).connect(bassBus);
+
+pianoMemory.volume.value = -41;
+voiceDust.volume.value = -43;
+drumSkin.volume.value = -32;
+subImpact.volume.value = -30;
+
 function organicFragment(offset = 0) {
   return ORGANIC_PLUCK_FRAGMENTS[tonalRhymeIndex(stepIndex, offset) % ORGANIC_PLUCK_FRAGMENTS.length];
 }
@@ -3239,6 +3288,14 @@ const MixGovernorState = {
   clarity: 0.34,
   eventLoad: 0,
   lastAirCycle: -99
+};
+const TimbreFamilyState = {
+  drumSkin: 0.18,
+  pianoMemory: 0.26,
+  voiceDust: 0.2,
+  acidBiyon: 0,
+  sub808: 0.14,
+  chain: 0.3
 };
 
 const PRESET_CHARACTERS = {
@@ -3737,6 +3794,116 @@ function updateReferenceDepth(parts, gradient = GradientState) {
   return DepthState;
 }
 
+function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthState, genre = GenreBlendState) {
+  const energy = clampValue(parts.energy ?? unitValue(UCM_CUR.energy), 0, 1);
+  const wave = clampValue(parts.wave ?? unitValue(UCM_CUR.wave), 0, 1);
+  const creation = clampValue(parts.creation ?? unitValue(UCM_CUR.creation), 0, 1);
+  const voidness = clampValue(parts.voidness ?? unitValue(UCM_CUR.void), 0, 1);
+  const circle = clampValue(parts.circle ?? unitValue(UCM_CUR.circle), 0, 1);
+  const body = clampValue(parts.body ?? unitValue(UCM_CUR.body), 0, 1);
+  const resource = clampValue(parts.resource ?? unitValue(UCM_CUR.resource), 0, 1);
+  const observer = clampValue(parts.observer ?? unitValue(UCM_CUR.observer), 0, 1);
+  const pressure = clampValue(parts.pressure ?? 0, 0, 1);
+  const evolution = HazamaBridgeState.evolution || {};
+  const hazamaAir = HazamaBridgeState.active ? clampValue(evolution.air || 0, 0, 1) : 0;
+  const hazamaPulse = HazamaBridgeState.active ? clampValue(evolution.pulse || 0, 0, 1) : 0;
+  const hazamaMicro = HazamaBridgeState.active ? clampValue(evolution.micro || 0, 0, 1) : 0;
+  const hazamaBloom = HazamaBridgeState.active ? clampValue(evolution.bloom || 0, 0, 1) : 0;
+  const acid = AcidLockState.enabled ? clampValue(AcidLockState.intensity || 0.36, 0, 1) : clampValue(AcidLockState.intensity || 0, 0, 1) * 0.18;
+  const autoDrive = UCM.auto.enabled || HazamaBridgeState.active ? 1 : 0;
+  const motif = MotifMemoryState.strength || 0;
+  const genome = clampValue(GenomeState.growth * 0.42 + GenomeState.resonance * 0.28, 0, 1);
+  const refrain = clampValue(BpmCrossfadeState.refrain + VoiceEmergenceState.refrain * 0.5, 0, 1);
+  const lowGuard = MixGovernorState.lowGuard;
+
+  const drumTarget = clampValue(
+    genre.techno * 0.3 +
+      genre.pressure * 0.22 +
+      depth.pulse * 0.18 +
+      resource * 0.12 +
+      creation * 0.08 +
+      hazamaPulse * 0.08 +
+      acid * 0.12 -
+      genre.ambient * 0.12 -
+      voidness * 0.14,
+    0,
+    1
+  );
+  const pianoTarget = clampValue(
+    gradient.memory * 0.28 +
+      gradient.organic * 0.18 +
+      gradient.haze * 0.12 +
+      circle * 0.12 +
+      observer * 0.1 +
+      refrain * 0.08 +
+      hazamaBloom * 0.08 -
+      pressure * 0.08 -
+      genre.techno * 0.08,
+    0,
+    1
+  );
+  const voiceTarget = clampValue(
+    gradient.chrome * 0.2 +
+      gradient.ghost * 0.14 +
+      gradient.haze * 0.12 +
+      depth.tail * 0.16 +
+      VoiceEmergenceState.bloom * 0.12 +
+      hazamaAir * 0.12 +
+      observer * 0.08 +
+      voidness * 0.06 -
+      genre.pressure * 0.08,
+    0,
+    1
+  );
+  const acidTarget = clampValue(
+    acid * 0.58 +
+      (AcidLockState.enabled ? 0.18 : 0) +
+      genre.techno * 0.12 +
+      genre.pressure * 0.1 +
+      gradient.micro * 0.08 +
+      creation * 0.07 +
+      resource * 0.05 -
+      voidness * 0.18 -
+      lowGuard * 0.14,
+    0,
+    1
+  );
+  const subTarget = clampValue(
+    body * 0.24 +
+      gradient.ghost * 0.18 +
+      depth.pulse * 0.15 +
+      pressure * 0.12 +
+      hazamaPulse * 0.08 +
+      acid * 0.18 +
+      PerformancePadState.punch * 0.1 -
+      voidness * 0.18 -
+      lowGuard * 0.2,
+    0,
+    1
+  );
+  const chainTarget = clampValue(
+    motif * 0.22 +
+      genome * 0.2 +
+      refrain * 0.18 +
+      gradient.organic * 0.12 +
+      gradient.micro * 0.1 +
+      wave * 0.08 +
+      autoDrive * 0.07 +
+      hazamaMicro * 0.06 +
+      energy * 0.04,
+    0,
+    1
+  );
+
+  TimbreFamilyState.drumSkin = approachValue(TimbreFamilyState.drumSkin, drumTarget, 0.035);
+  TimbreFamilyState.pianoMemory = approachValue(TimbreFamilyState.pianoMemory, pianoTarget, 0.032);
+  TimbreFamilyState.voiceDust = approachValue(TimbreFamilyState.voiceDust, voiceTarget, 0.032);
+  TimbreFamilyState.acidBiyon = approachValue(TimbreFamilyState.acidBiyon, acidTarget, 0.04);
+  TimbreFamilyState.sub808 = approachValue(TimbreFamilyState.sub808, subTarget, 0.035);
+  TimbreFamilyState.chain = approachValue(TimbreFamilyState.chain, chainTarget, 0.03);
+  return TimbreFamilyState;
+}
+
 function updateTimbreStateFromWorld(parts) {
   const { energy, wave, creation, voidness, circle, body, resource, observer, ethereal, pressure } = parts;
   const character = currentPresetCharacter();
@@ -3744,6 +3911,7 @@ function updateTimbreStateFromWorld(parts) {
   const gradient = updateReferenceGradient(parts);
   const depth = updateReferenceDepth(parts, gradient);
   updateMixGovernor(parts, gradient, depth);
+  const family = updateTimbreFamilyBlend(parts, gradient, depth, genre);
   const lowGuard = MixGovernorState.lowGuard;
   const clarity = MixGovernorState.clarity;
   const voiceHaze = voiceGeneBias("haze");
@@ -3782,6 +3950,13 @@ function updateTimbreStateFromWorld(parts) {
   safeToneRamp(bass?.filter?.Q, bassBite, 0.2);
   safeToneRamp(glass?.harmonicity, 1.0 + (TimbreState.glass * 0.95) + (TimbreState.harp * 0.72) + (organicColor * 0.12) + genre.idm * 0.08 + genre.techno * 0.06 + (PerformancePadState.void * 0.24), 0.24);
   safeToneRamp(glass?.modulationIndex, 0.58 + (TimbreState.fracture * 2.08) + (TimbreState.harp * 0.92) + (pressureColor * 0.1) + genre.techno * 0.16 - genre.ambient * 0.12 - (TimbreState.warmth * 0.5) - (PerformancePadState.void * 0.2), 0.2);
+  safeToneRamp(pianoMemory?.volume, -45.2 + family.pianoMemory * 8.2 + family.chain * 1.4 + clarity * 0.8 - genre.techno * 0.8, 0.3);
+  safeToneRamp(voiceDust?.volume, -48 + family.voiceDust * 9.4 + family.chain * 1.2 + PerformancePadState.void * 1.4 - genre.pressure * 0.7, 0.32);
+  safeToneRamp(drumSkin?.volume, -42 + family.drumSkin * 9.2 + family.acidBiyon * 1.8 - lowGuard * 2.6, 0.22);
+  safeToneRamp(subImpact?.volume, -39 + family.sub808 * 8.8 + family.acidBiyon * 2.4 - lowGuard * 4.4, 0.22);
+  safeToneRamp(pianoMemoryFilter?.frequency, 960 + family.pianoMemory * 1580 + gradient.chrome * 420 - genre.techno * 260, 0.32);
+  safeToneRamp(voiceDustFilter?.frequency, 1180 + family.voiceDust * 1700 + gradient.chrome * 540 + PerformancePadState.void * 420, 0.32);
+  safeToneRamp(subImpact?.filter?.frequency, 46 + family.sub808 * 94 + family.acidBiyon * 42 - lowGuard * 20, 0.18);
 
   setEnvelopeValue(glass?.envelope, "attack", 0.005 + (TimbreState.harp * 0.012) - genre.techno * 0.0015);
   setEnvelopeValue(glass?.envelope, "decay", 0.078 + (TimbreState.harp * 0.16) + (TimbreState.air * 0.1) + genre.ambient * 0.025 - genre.techno * 0.018 + (PerformancePadState.void * 0.11));
@@ -4400,6 +4575,7 @@ function resetRuntimeCounters() {
   resetOrganicEcosystem();
   resetLongformArc();
   resetMixGovernor();
+  resetTimbreFamily();
   resetGenreBlend();
   resetDJTempo();
   resetGenerativeGenome();
@@ -5170,6 +5346,139 @@ function triggerTonalRhymeResponse(step, time, context) {
   }
 }
 
+function triggerTimbreFamilyResponse(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    observerNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  const family = TimbreFamilyState;
+  const genre = GenreBlendState;
+  const gradient = GradientState;
+  const depth = DepthState;
+  const lowGuard = MixGovernorState.lowGuard;
+  const eventLoad = MixGovernorState.eventLoad;
+  if (eventLoad > 0.94 && !PerformancePadState.void) return;
+
+  const phaseOffset = Math.floor((GenomeState.phase || 0) * 8) + TonalRhymeState.stepOffset;
+  const chain = clampValue(family.chain + MotifMemoryState.strength * 0.18 + (HazamaBridgeState.active ? 0.08 : 0), 0, 1);
+  const droneThin = EngineParams.bpm < 84 || energyNorm < 0.32 || genre.ambient > 0.46;
+  const acidOn = AcidLockState.enabled && family.acidBiyon > 0.18 && PerformancePadState.void < 0.5;
+  const phraseTurn = step % 16 === 0 || step % 16 === 8;
+  const offPulse = step % 16 === 3 || step % 16 === 6 || step % 16 === 11 || step % 16 === 14;
+  const driftedTime = time + Math.random() * (0.01 + waveNorm * 0.018 + PerformancePadState.drift * 0.018);
+
+  if (pianoMemory && (step % 16 === 4 || step % 16 === 10 || (PerformancePadState.drift && step % 4 === 1) || (chain > 0.52 && step % 8 === 5))) {
+    const pianoChance = chance(0.014 + family.pianoMemory * 0.15 + chain * 0.04 + PerformancePadState.drift * 0.055 - eventLoad * 0.04);
+    if (rand(pianoChance)) {
+      const root = tonalRhymeMid(step, phaseOffset + 1);
+      const reply = tonalRhymeHigh(step, phaseOffset + 3);
+      const shade = tonalRhymeMid(step, phaseOffset + 5);
+      const vel = clampValue(0.018 + family.pianoMemory * 0.06 + gradient.memory * 0.012 + chain * 0.012, 0.016, 0.096);
+      try {
+        pianoMemory.triggerAttackRelease(root, "16n", driftedTime + 0.004, vel);
+        if (rand(0.34 + family.pianoMemory * 0.28 + chain * 0.12)) {
+          pianoMemory.triggerAttackRelease(reply, "32n", driftedTime + 0.06 + Math.random() * 0.022, vel * 0.58);
+        }
+        if (glass && rand(0.2 + gradient.chrome * 0.16)) {
+          glass.triggerAttackRelease(shade, "64n", driftedTime + 0.102, clampValue(vel * 0.46, 0.01, 0.052));
+        }
+        rememberMotif(root, { reply, shade, strength: 0.04 + family.pianoMemory * 0.08, air: 0.08 + gradient.haze * 0.08, source: "piano-memory" });
+        markMixEvent(0.045 + family.pianoMemory * 0.035);
+      } catch (error) {
+        console.warn("[Music] piano memory failed:", error);
+      }
+    }
+  }
+
+  if (voiceDust && (step % 16 === 2 || step % 16 === 7 || step % 16 === 13 || (PerformancePadState.void && step % 8 === 5))) {
+    const voiceChance = chance(0.012 + family.voiceDust * 0.13 + depth.tail * 0.035 + PerformancePadState.void * 0.05 + (HazamaBridgeState.active ? 0.022 : 0) - genre.pressure * 0.02);
+    if (rand(voiceChance)) {
+      const root = tonalRhymeHigh(step, phaseOffset + 2);
+      const reply = tonalRhymeHigh(step, phaseOffset + 6);
+      const shade = tonalRhymeMid(step, phaseOffset + 4);
+      const voiceTime = driftedTime + 0.018 + Math.random() * 0.03;
+      const vel = clampValue(0.012 + family.voiceDust * 0.058 + observerNorm * 0.014 + PerformancePadState.void * 0.012, 0.01, 0.078);
+      try {
+        voiceDust.triggerAttackRelease(root, PerformancePadState.void ? "8n" : "16n", voiceTime, vel);
+        if (glass && rand(0.18 + family.voiceDust * 0.2 + gradient.chrome * 0.1)) {
+          glass.triggerAttackRelease(reply, "32n", voiceTime + 0.072, clampValue(vel * 0.56, 0.008, 0.048));
+        }
+        if (texture && rand(0.12 + gradient.ghost * 0.14)) {
+          texture.triggerAttackRelease("64n", voiceTime + 0.018, clampValue(0.012 + family.voiceDust * 0.03, 0.01, 0.052));
+        }
+        rememberMotif(root, { reply, shade, strength: 0.03 + family.voiceDust * 0.07, air: 0.18 + depth.tail * 0.08, source: "voice-dust" });
+        markMixEvent(0.035 + family.voiceDust * 0.035);
+      } catch (error) {
+        console.warn("[Music] voice dust failed:", error);
+      }
+    }
+  }
+
+  if (drumSkin && !PerformancePadState.void && (offPulse || isAccentStep)) {
+    const drumChance = chance((0.01 + family.drumSkin * 0.16 + genre.techno * 0.035 + PerformancePadState.repeat * 0.05 + (acidOn ? 0.035 : 0) - eventLoad * 0.035) * (droneThin ? 0.42 : 1));
+    if (rand(drumChance)) {
+      try {
+        drumSkin.triggerAttackRelease("64n", time + 0.008 + Math.random() * 0.012, clampValue(0.018 + family.drumSkin * 0.074 + creationNorm * 0.018 + (acidOn ? 0.024 : 0), 0.014, 0.13));
+        if (hat && (genre.techno > 0.24 || acidOn) && rand(0.16 + family.drumSkin * 0.18)) {
+          hat.triggerAttackRelease("64n", time + 0.024 + Math.random() * 0.014, clampValue(0.028 + family.drumSkin * 0.055 + energyNorm * 0.018, 0.024, 0.11));
+        }
+        markMixEvent(0.04 + family.drumSkin * 0.035);
+      } catch (error) {
+        console.warn("[Music] drum skin failed:", error);
+      }
+    }
+  }
+
+  if (subImpact && !PerformancePadState.void && (phraseTurn || (acidOn && step % 8 === 4) || (PerformancePadState.punch && step % 4 === 0))) {
+    const subChance = chance(0.018 + family.sub808 * 0.14 + family.acidBiyon * 0.08 + PerformancePadState.punch * 0.08 - lowGuard * 0.14);
+    if (rand(subChance)) {
+      const note = tonalRhymeSub(step, phaseOffset + (phraseTurn ? 0 : 2));
+      const dur = acidOn || PerformancePadState.punch ? "16n" : "8n";
+      const vel = clampValue(0.036 + family.sub808 * 0.12 + family.acidBiyon * 0.054 + PerformancePadState.punch * 0.03 - lowGuard * 0.05, 0.028, acidOn ? 0.24 : 0.17);
+      try {
+        subImpact.triggerAttackRelease(note, dur, time + 0.006, vel);
+        rememberMotif(tonalRhymeLow(step, phaseOffset), { reply: tonalRhymeMid(step, phaseOffset + 2), shade: note, strength: 0.026 + family.sub808 * 0.06, air: 0.03, source: "sub808-rhyme" });
+        markMixEvent(0.06 + family.sub808 * 0.06 + family.acidBiyon * 0.04);
+      } catch (error) {
+        console.warn("[Music] sub impact failed:", error);
+      }
+    }
+  }
+
+  if (bass && acidOn && !PerformancePadState.void && (offPulse || step % 16 === 1 || step % 16 === 9 || isAccentStep)) {
+    const acidChance = chance(0.12 + family.acidBiyon * 0.34 + resourceNorm * 0.05 + PerformancePadState.repeat * 0.05 - lowGuard * 0.12);
+    if (rand(acidChance)) {
+      const acidTime = time + 0.014 + Math.random() * (0.012 + waveNorm * 0.012);
+      const note = tonalRhymeLow(step, phaseOffset + 1);
+      const turn = tonalRhymeLow(step, phaseOffset + 3);
+      const high = tonalRhymeHigh(step, phaseOffset + 2);
+      const vel = clampValue(0.06 + family.acidBiyon * 0.13 + energyNorm * 0.018 - lowGuard * 0.04, 0.045, 0.22);
+      const cutoff = clampValue(240 + family.acidBiyon * 980 + creationNorm * 260 + resourceNorm * 140 - lowGuard * 140, 140, 1450);
+      const q = clampValue(2.2 + family.acidBiyon * 5.2 + creationNorm * 0.8 - lowGuard * 0.8, 1.6, 8.0);
+      try {
+        safeToneRamp(bass?.filter?.frequency, cutoff, 0.04);
+        safeToneRamp(bass?.filter?.Q, q, 0.04);
+        bass.triggerAttackRelease(note, "64n", acidTime, vel);
+        if (rand(0.42 + family.acidBiyon * 0.26)) {
+          bass.triggerAttackRelease(turn, "64n", acidTime + 0.047 + Math.random() * 0.014, vel * 0.52);
+        }
+        if (glass && rand(0.28 + family.acidBiyon * 0.22)) {
+          glass.triggerAttackRelease(high, "64n", acidTime + 0.026, clampValue(0.018 + family.acidBiyon * 0.056, 0.014, 0.086));
+        }
+        rememberMotif(note, { reply: high, shade: turn, strength: 0.04 + family.acidBiyon * 0.08, air: 0.02 + gradient.chrome * 0.05, source: "acid-biyon" });
+        markMixEvent(0.07 + family.acidBiyon * 0.08);
+      } catch (error) {
+        console.warn("[Music] acid biyon failed:", error);
+      }
+    }
+  }
+}
+
 function triggerBpmCrossfadeRefrain(step, time, context) {
   const {
     energyNorm,
@@ -5767,6 +6076,10 @@ function releaseAllVoices(time) {
   try { hat.triggerRelease(t); } catch(e) {}
   try { texture.triggerRelease(t); } catch(e) {}
   try { glass.triggerRelease(t); } catch(e) {}
+  try { pianoMemory.releaseAll(t); } catch(e) {}
+  try { voiceDust.triggerRelease(t); } catch(e) {}
+  try { drumSkin.triggerRelease(t); } catch(e) {}
+  try { subImpact.triggerRelease(t); } catch(e) {}
 }
 
 function restoreMasterLevel() {
@@ -5825,6 +6138,7 @@ function scheduleStep(time) {
   const gradientParts = currentGradientParts();
   const gradient = updateReferenceGradient(gradientParts);
   updateReferenceDepth(gradientParts, gradient);
+  updateTimbreFamilyBlend(gradientParts, gradient, DepthState, genre);
   const lowGuard = MixGovernorState.lowGuard;
   const clarity = MixGovernorState.clarity;
   const voiceMicro = voiceGeneBias("micro");
@@ -5844,6 +6158,7 @@ function scheduleStep(time) {
   triggerClarityFilament(step, t, stepContext);
   triggerMotifAfterimage(step, t, stepContext);
   triggerTonalRhymeResponse(step, t, stepContext);
+  triggerTimbreFamilyResponse(step, t, stepContext);
   triggerBpmCrossfadeRefrain(step, t, stepContext);
   triggerGoldenGenomeDevelopment(step, t, stepContext);
   triggerLongformArcTurn(step, t, stepContext);
