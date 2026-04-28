@@ -2777,6 +2777,7 @@ const MODE_BASS_NOTES = {
   techno: ["C2", "C2", "Bb1", "C2"],
   trance: ["D2", "A1", "C2", "D2"]
 };
+const ACID_TURN_NOTES = ["D2", "F#2", "A2", "C3", "D3", "E2"];
 const GLASS_ACCENT_STEPS = [3, 5, 7, 10, 11, 14];
 
 const GrooveState = {
@@ -2939,25 +2940,25 @@ const PRESET_CHARACTERS = {
     pulseScale: 1.18,
   },
   trance: {
-    label: "burning horizon",
-    air: 0.02,
-    glass: 0.12,
-    grit: 0.08,
-    fracture: 0.08,
+    label: "acid horizon",
+    air: -0.01,
+    glass: 0.1,
+    grit: 0.14,
+    fracture: 0.14,
     harp: 0.14,
-    warmth: 0.06,
-    restScale: 0.82,
+    warmth: 0.02,
+    restScale: 0.78,
     kickScale: 1.02,
-    hatScale: 0.92,
-    bassScale: 1.02,
-    padScale: 1.08,
-    textureScale: 0.94,
-    glassScale: 1.12,
-    organicScale: 0.9,
-    dustScale: 0.86,
-    pressureColor: 0.72,
-    hazeScale: 1.0,
-    pulseScale: 1.06,
+    hatScale: 1.04,
+    bassScale: 0.98,
+    padScale: 0.96,
+    textureScale: 1.04,
+    glassScale: 1.08,
+    organicScale: 0.84,
+    dustScale: 0.94,
+    pressureColor: 0.86,
+    hazeScale: 0.9,
+    pulseScale: 1.14,
   },
 };
 
@@ -3727,7 +3728,12 @@ function updateSoundForMode(mode){
       globalDelay.delayTime = "8n.";
       globalDelay.feedback.rampTo(0.34, 0.9);
       globalDelay.wet.rampTo(0.22, 0.9);
-      bass.set({ oscillator:{type:"square"}, filter:{Q:1.8}, filterEnvelope:{baseFrequency:60, octaves:3.0} });
+      bass.set({
+        oscillator:{type:"sawtooth"},
+        filter:{Q:2.7},
+        filterEnvelope:{attack:0.004, decay:0.14, sustain:0.045, release:0.18, baseFrequency:68, octaves:3.9},
+        envelope:{attack:0.004, decay:0.14, sustain:0.08, release:0.22}
+      });
     }else{
       // fallback
       globalReverb.wet.rampTo(0.26, 1.0);
@@ -3921,8 +3927,8 @@ function setPatternsByMode() {
 
     case "trance":
       EngineParams.kickPattern = "x...x...x...x...";
-      EngineParams.hatPattern  = "....x......x....";
-      EngineParams.bassPattern = "x...x...x...x...";
+      EngineParams.hatPattern  = "..x.x.x...x.x.x.";
+      EngineParams.bassPattern = "x.x...x.x...x...";
       EngineParams.padPattern  = "x.......x.......";
       break;
 
@@ -4063,6 +4069,66 @@ function triggerLowMotion(step, time, context) {
     }
   } catch (error) {
     console.warn("[Music] low motion failed:", error);
+  }
+}
+
+function triggerAcidTechnoTrace(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  if (!bass || PerformancePadState.void > 0.55) return;
+
+  const genre = GenreBlendState;
+  const gradient = GradientState;
+  const lowGuard = MixGovernorState.lowGuard;
+  const acid = clampValue(
+    (EngineParams.mode === "trance" ? 0.34 : 0) +
+      genre.techno * 0.2 +
+      genre.pressure * 0.18 +
+      energyNorm * 0.16 +
+      creationNorm * 0.18 +
+      resourceNorm * 0.14 +
+      gradient.micro * 0.08 +
+      voiceGeneBias("pressure") * 0.1 -
+      voidNorm * 0.24 -
+      lowGuard * 0.22,
+    0,
+    1
+  );
+  if (acid < 0.26) return;
+
+  const gate = step % 16 === 1 || step % 16 === 3 || step % 16 === 6 || step % 16 === 9 || step % 16 === 11 || step % 16 === 14 || (isAccentStep && step % 2 === 1);
+  if (!gate || !rand(0.018 + acid * 0.14 + PerformancePadState.repeat * 0.04)) return;
+
+  const acidPhase = Math.floor((GenomeState.phase || 0) * ACID_TURN_NOTES.length);
+  const note = ACID_TURN_NOTES[(GrooveState.cycle + step + acidPhase) % ACID_TURN_NOTES.length];
+  const reply = GLASS_NOTES[(GrooveState.cycle + step + acidPhase + 2) % GLASS_NOTES.length];
+  const acidTime = time + 0.012 + Math.random() * (0.01 + waveNorm * 0.012);
+  const vel = clampValue(0.046 + acid * 0.082 - lowGuard * 0.026, 0.034, 0.128);
+  const cutoff = clampValue(150 + acid * 520 + resourceNorm * 180 + waveNorm * 90 - lowGuard * 80, 110, 880);
+  const q = clampValue(2.0 + acid * 3.2 + creationNorm * 0.5 - lowGuard * 0.5, 1.4, 5.4);
+
+  try {
+    safeToneRamp(bass?.filter?.Q, q, 0.055);
+    safeToneRamp(bass?.filter?.frequency, cutoff, 0.045);
+    bass.triggerAttackRelease(note, "32n", acidTime, vel);
+    if (rand(0.28 + acid * 0.22)) {
+      bass.triggerAttackRelease(note, "64n", acidTime + 0.046 + Math.random() * 0.012, vel * 0.52);
+    }
+    if (glass && rand(0.22 + acid * 0.26)) {
+      glass.triggerAttackRelease(reply, "64n", acidTime + 0.022, clampValue(0.018 + acid * 0.046 + gradient.chrome * 0.008, 0.014, 0.078));
+    }
+    if (texture && rand(0.18 + acid * 0.22)) {
+      texture.triggerAttackRelease("64n", acidTime + 0.016, clampValue(0.014 + acid * 0.042, 0.012, 0.072));
+    }
+    markMixEvent(0.08 + acid * 0.06);
+  } catch (error) {
+    console.warn("[Music] acid trace failed:", error);
   }
 }
 
@@ -5057,6 +5123,7 @@ function scheduleStep(time) {
   triggerLongformArcTurn(step, t, stepContext);
   triggerOrganicEcosystemBloom(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
+  triggerAcidTechnoTrace(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
   if (!isRest) {
