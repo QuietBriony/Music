@@ -283,32 +283,32 @@ const AutoVoiceMorphState = {
 };
 const ATMOSPHERE_COLORS = {
   auto: {
-    label: "AUTO AIR",
+    label: "AUTO.AIR",
     gradient: {},
     genes: {}
   },
   haze: {
-    label: "SOFT HAZE",
+    label: "HAZE.01",
     gradient: { haze: 0.16, memory: 0.07, chrome: 0.04, ghost: -0.02 },
     genes: { haze: 0.18, refrain: 0.08, voidTail: 0.04, pressure: -0.04 }
   },
   chrome: {
-    label: "CHROME AIR",
+    label: "CHROME.02",
     gradient: { chrome: 0.18, micro: 0.07, haze: 0.04, organic: -0.02 },
     genes: { chrome: 0.2, micro: 0.08, voidTail: 0.05 }
   },
   ghost: {
-    label: "GHOST RAIN",
+    label: "GHOST.03",
     gradient: { ghost: 0.15, haze: 0.08, memory: 0.05, chrome: 0.03 },
     genes: { pulse: 0.12, voidTail: 0.12, pressure: 0.04, refrain: 0.06 }
   },
   organic: {
-    label: "ORGANIC DUST",
+    label: "ORG.DUST",
     gradient: { organic: 0.2, memory: 0.08, micro: 0.06, chrome: -0.02 },
     genes: { organic: 0.22, refrain: 0.08, micro: 0.06, haze: 0.04 }
   },
   void: {
-    label: "VOID BLOOM",
+    label: "VOID.05",
     gradient: { haze: 0.14, chrome: 0.14, ghost: -0.04, micro: -0.02 },
     genes: { voidTail: 0.24, haze: 0.12, chrome: 0.1, pressure: -0.06 }
   }
@@ -320,32 +320,32 @@ const SOURCE_COLORS = {
     genes: { refrain: 0.04, organic: 0.03, micro: 0.03 }
   },
   xtal: {
-    label: "XTAL / THA",
+    label: "XTAL.THA",
     gradient: { haze: 0.13, chrome: 0.09, memory: 0.05, ghost: -0.03 },
     genes: { haze: 0.16, chrome: 0.1, refrain: 0.08, pressure: -0.05 }
   },
   boc: {
-    label: "BoC MEMORY",
+    label: "BoC.MEM",
     gradient: { memory: 0.16, organic: 0.08, haze: 0.08, micro: -0.02 },
     genes: { organic: 0.12, refrain: 0.12, haze: 0.08, chrome: -0.02 }
   },
   autechre: {
-    label: "BROKEN LOGIC",
+    label: "AE.LOGIC",
     gradient: { micro: 0.18, chrome: 0.08, organic: 0.04, haze: -0.04 },
     genes: { micro: 0.2, pressure: 0.08, chrome: 0.08, haze: -0.05 }
   },
   burial: {
-    label: "GHOST PULSE",
+    label: "GHOST.PULSE",
     gradient: { ghost: 0.17, haze: 0.07, memory: 0.05, chrome: 0.02 },
     genes: { pulse: 0.18, voidTail: 0.12, refrain: 0.06, pressure: 0.04 }
   },
   opn: {
-    label: "CHROME HYMN",
+    label: "OPN.CHROME",
     gradient: { chrome: 0.2, haze: 0.08, memory: 0.03, ghost: -0.02 },
     genes: { chrome: 0.22, voidTail: 0.08, haze: 0.06, micro: 0.03 }
   },
   fsol: {
-    label: "ORGANIC MOTION",
+    label: "FSOL.MOTION",
     gradient: { organic: 0.14, micro: 0.09, ghost: 0.08 },
     genes: { organic: 0.16, pulse: 0.12, micro: 0.08, pressure: 0.04 }
   }
@@ -1032,7 +1032,7 @@ function effectiveVoiceAtmosphereKey() {
 function autoVoiceMorphLabel() {
   const sourceFrom = SOURCE_COLORS[activeAutoSourceKey()]?.label || "GENOME";
   const sourceTo = SOURCE_COLORS[nextAutoSourceKey()]?.label || sourceFrom;
-  const atmosphereFrom = ATMOSPHERE_COLORS[activeAutoAtmosphereKey()]?.label || "AUTO AIR";
+  const atmosphereFrom = ATMOSPHERE_COLORS[activeAutoAtmosphereKey()]?.label || "AUTO.AIR";
   const atmosphereTo = ATMOSPHERE_COLORS[nextAutoAtmosphereKey()]?.label || atmosphereFrom;
   const sourceLabel = AutoVoiceMorphState.sourceBlend > 0.18 && AutoVoiceMorphState.sourceBlend < 0.82
     ? `${sourceFrom} -> ${sourceTo}`
@@ -1987,7 +1987,9 @@ function setKeepAwakeEnabled(enabled) {
   if (button) {
     button.classList.toggle("active", PlaybackState.wakeLockEnabled);
     button.setAttribute("aria-pressed", PlaybackState.wakeLockEnabled ? "true" : "false");
-    button.textContent = PlaybackState.wakeLockEnabled ? "KEEP ON" : "KEEP";
+    button.setAttribute("aria-label", PlaybackState.wakeLockEnabled ? "Keep playback awake on" : "Keep playback awake");
+    button.setAttribute("title", PlaybackState.wakeLockEnabled ? "Keep playback awake on" : "Keep playback awake");
+    button.textContent = PlaybackState.wakeLockEnabled ? "KEEP.ON" : "KEEP";
   }
 
   if (PlaybackState.wakeLockEnabled && isPlaying) {
