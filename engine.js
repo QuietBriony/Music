@@ -244,6 +244,27 @@ const VoiceColorState = {
   atmosphere: "auto",
   source: "genome"
 };
+const VoiceMorphState = {
+  transition: 0,
+  gradient: {
+    haze: 0,
+    memory: 0,
+    micro: 0,
+    ghost: 0,
+    chrome: 0,
+    organic: 0
+  },
+  genes: {
+    haze: 0,
+    pulse: 0,
+    micro: 0,
+    chrome: 0,
+    organic: 0,
+    pressure: 0,
+    refrain: 0,
+    voidTail: 0
+  }
+};
 const ATMOSPHERE_COLORS = {
   auto: {
     label: "AUTO AIR",
@@ -938,14 +959,37 @@ function currentVoiceColor() {
   return { atmosphere, source };
 }
 
-function voiceGradientBias(key) {
+function voiceRawGradientBias(key) {
   const { atmosphere, source } = currentVoiceColor();
   return (atmosphere.gradient?.[key] || 0) + (source.gradient?.[key] || 0);
 }
 
-function voiceGeneBias(key) {
+function voiceRawGeneBias(key) {
   const { atmosphere, source } = currentVoiceColor();
   return (atmosphere.genes?.[key] || 0) + (source.genes?.[key] || 0);
+}
+
+function voiceTransitionAmount() {
+  return clampValue(VoiceMorphState.transition || 0, 0, 1);
+}
+
+function smoothVoiceBias(store, key, target, baseStep, transitionStep) {
+  const current = typeof store[key] === "number" ? store[key] : target;
+  const next = approachValue(current, target, baseStep + voiceTransitionAmount() * transitionStep);
+  store[key] = clampValue(next, -0.32, 0.32);
+  return store[key];
+}
+
+function voiceGradientBias(key) {
+  return smoothVoiceBias(VoiceMorphState.gradient, key, voiceRawGradientBias(key), 0.016, 0.048);
+}
+
+function voiceGeneBias(key) {
+  return smoothVoiceBias(VoiceMorphState.genes, key, voiceRawGeneBias(key), 0.012, 0.036);
+}
+
+function decayVoiceMorph() {
+  VoiceMorphState.transition = approachValue(VoiceMorphState.transition, 0, 0.07);
 }
 
 function updateVoiceColorUi() {
@@ -961,12 +1005,17 @@ function updateVoiceColorUi() {
 function updateVoiceColorFromUI(options = {}) {
   const atmosphereSelect = document.getElementById("atmosphere_select");
   const sourceSelect = document.getElementById("source_color_select");
-  VoiceColorState.atmosphere = atmosphereSelect ? atmosphereSelect.value || "auto" : VoiceColorState.atmosphere;
-  VoiceColorState.source = sourceSelect ? sourceSelect.value || "genome" : VoiceColorState.source;
+  const nextAtmosphere = atmosphereSelect ? atmosphereSelect.value || "auto" : VoiceColorState.atmosphere;
+  const nextSource = sourceSelect ? sourceSelect.value || "genome" : VoiceColorState.source;
+  const changed = nextAtmosphere !== VoiceColorState.atmosphere || nextSource !== VoiceColorState.source;
+  VoiceColorState.atmosphere = nextAtmosphere;
+  VoiceColorState.source = nextSource;
+  if (changed) VoiceMorphState.transition = 1;
   updateVoiceColorUi();
   if (options.apply !== false && initialized) {
     updateTimbreStateFromWorld(currentGradientParts());
     applyUCMToParams({ force: options.force === true });
+    if (changed) triggerVoiceColorCue();
   }
 }
 
@@ -1971,6 +2020,66 @@ function transparentFragment(offset = 0) {
   return TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + stepIndex + offset) % TRANSPARENT_AIR_FRAGMENTS.length];
 }
 
+function voiceNotePool(fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
+  const atmosphereKey = VoiceColorState.atmosphere;
+  const sourceKey = VoiceColorState.source;
+
+  if (atmosphereKey === "chrome" || atmosphereKey === "void" || sourceKey === "opn" || sourceKey === "xtal") {
+    return TRANSPARENT_AIR_FRAGMENTS;
+  }
+  if (atmosphereKey === "organic" || sourceKey === "fsol") return ORGANIC_PLUCK_FRAGMENTS;
+  if (atmosphereKey === "ghost" || sourceKey === "burial" || sourceKey === "boc") return FIELD_MURK_FRAGMENTS;
+  if (sourceKey === "autechre") return GLASS_NOTES;
+  return fallbackPool;
+}
+
+function voiceFragment(offset = 0, fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
+  const pool = voiceNotePool(fallbackPool);
+  const phaseOffset = Math.floor((GenomeState.phase || 0) * pool.length);
+  const index = GrooveState.cycle + stepIndex + GenomeState.generation + phaseOffset + offset;
+  return pool[((index % pool.length) + pool.length) % pool.length];
+}
+
+function triggerVoiceColorCue() {
+  if (!isPlaying || !initialized || typeof Tone === "undefined") return;
+
+  const now = Tone.now();
+  const atmosphereKey = VoiceColorState.atmosphere;
+  const sourceKey = VoiceColorState.source;
+  const gradientParts = currentGradientParts();
+  const gradient = updateReferenceGradient(gradientParts);
+  const depth = updateReferenceDepth(gradientParts, gradient);
+  const cueVel = clampValue(0.026 + depth.particle * 0.018 + depth.tail * 0.012 + voiceTransitionAmount() * 0.026, 0.022, 0.086);
+
+  try {
+    if (sourceKey === "autechre") {
+      const note = voiceFragment(0, GLASS_NOTES);
+      glass.triggerAttackRelease(note, "64n", now + 0.006, clampValue(cueVel + gradient.micro * 0.012, 0.026, 0.094));
+      glass.triggerAttackRelease(note, "64n", now + 0.046, clampValue(cueVel * 0.62, 0.018, 0.058));
+      texture.triggerAttackRelease("64n", now + 0.022, clampValue(0.018 + gradient.micro * 0.034, 0.014, 0.068));
+    } else if (sourceKey === "burial" || atmosphereKey === "ghost") {
+      texture.triggerAttackRelease("32n", now + 0.012, clampValue(0.026 + gradient.ghost * 0.042, 0.02, 0.082));
+      glass.triggerAttackRelease(voiceFragment(2, FIELD_MURK_FRAGMENTS), "32n", now + 0.052, clampValue(cueVel * 0.72, 0.018, 0.064));
+    } else if (sourceKey === "fsol" || atmosphereKey === "organic") {
+      const note = voiceFragment(1, ORGANIC_PLUCK_FRAGMENTS);
+      glass.triggerAttackRelease(note, "64n", now + 0.008, clampValue(cueVel + gradient.organic * 0.012, 0.026, 0.09));
+      glass.triggerAttackRelease(voiceFragment(4, ORGANIC_PLUCK_FRAGMENTS), "64n", now + 0.064, clampValue(cueVel * 0.52, 0.014, 0.052));
+      texture.triggerAttackRelease("64n", now + 0.018, clampValue(0.014 + gradient.organic * 0.026, 0.012, 0.058));
+    } else if (sourceKey === "opn" || atmosphereKey === "chrome" || atmosphereKey === "void") {
+      glass.triggerAttackRelease(voiceFragment(0, TRANSPARENT_AIR_FRAGMENTS), "16n", now + 0.012, clampValue(cueVel + gradient.chrome * 0.014, 0.028, 0.092));
+      glass.triggerAttackRelease(voiceFragment(3, TRANSPARENT_AIR_FRAGMENTS), "32n", now + 0.092, clampValue(cueVel * 0.5, 0.014, 0.05));
+      if (atmosphereKey === "void") {
+        pad.triggerAttackRelease(randomHazeChord(), "2n", now + 0.026, clampValue(0.024 + depth.tail * 0.026, 0.022, 0.064));
+      }
+    } else {
+      pad.triggerAttackRelease(randomHazeChord(), "1n", now + 0.018, clampValue(0.022 + gradient.haze * 0.026, 0.02, 0.064));
+      glass.triggerAttackRelease(voiceFragment(2, FIELD_MURK_FRAGMENTS), "32n", now + 0.052, clampValue(cueVel * 0.66, 0.016, 0.056));
+    }
+  } catch (error) {
+    console.warn("[Music] voice color cue failed:", error);
+  }
+}
+
 function triggerPadSignature(name) {
   if (!isPlaying || !initialized || typeof Tone === "undefined") return;
 
@@ -1984,32 +2093,32 @@ function triggerPadSignature(name) {
 
   try {
     if (name === "drift") {
-      const note = transparentFragment();
-      const driftNote = transparentFragment(2);
-      const pluckNote = organicFragment(4);
+      const note = voiceFragment(0, TRANSPARENT_AIR_FRAGMENTS);
+      const driftNote = voiceFragment(2, TRANSPARENT_AIR_FRAGMENTS);
+      const pluckNote = voiceFragment(4, ORGANIC_PLUCK_FRAGMENTS);
       glass.triggerAttackRelease(note, "16n", now + 0.006, clampValue(0.064 + observerNorm * 0.048 + gradient.chrome * 0.012 + depth.tail * 0.006, 0.054, 0.136));
       glass.triggerAttackRelease(driftNote, "32n", now + 0.056, clampValue(0.044 + creationNorm * 0.03 + gradient.memory * 0.01 + depth.particle * 0.006, 0.036, 0.098));
-      glass.triggerAttackRelease(GLASS_NOTES[(stepIndex + 3) % GLASS_NOTES.length], "32n", now + 0.108, clampValue(0.03 + creationNorm * 0.026 + gradient.haze * 0.006 + depth.bed * 0.004, 0.026, 0.08));
+      glass.triggerAttackRelease(voiceFragment(3, GLASS_NOTES), "32n", now + 0.108, clampValue(0.03 + creationNorm * 0.026 + gradient.haze * 0.006 + depth.bed * 0.004, 0.026, 0.08));
       glass.triggerAttackRelease(pluckNote, "64n", now + 0.142, clampValue(0.026 + observerNorm * 0.03 + gradient.memory * 0.008 + depth.gesture * 0.006, 0.022, 0.078));
       texture.triggerAttackRelease("64n", now + 0.018, clampValue(0.034 + creationNorm * 0.034, 0.028, 0.078));
     } else if (name === "repeat") {
-      const note = GLASS_NOTES[(GrooveState.cycle + stepIndex) % GLASS_NOTES.length];
-      const chipNote = transparentFragment(1);
+      const note = voiceFragment(0, GLASS_NOTES);
+      const chipNote = voiceFragment(1, TRANSPARENT_AIR_FRAGMENTS);
       glass.triggerAttackRelease(note, "64n", now + 0.004, clampValue(0.062 + energyNorm * 0.032 + gradient.micro * 0.01 + depth.particle * 0.006, 0.052, 0.112));
       glass.triggerAttackRelease(note, "64n", now + 0.052, clampValue(0.048 + energyNorm * 0.026 + gradient.micro * 0.008 + depth.gesture * 0.006, 0.04, 0.096));
       glass.triggerAttackRelease(chipNote, "64n", now + 0.086, clampValue(0.026 + observerNorm * 0.028 + gradient.organic * 0.008 + depth.particle * 0.004, 0.022, 0.074));
-      glass.triggerAttackRelease(transparentFragment(4), "64n", now + 0.132, clampValue(0.016 + depth.particle * 0.028, 0.014, 0.048));
+      glass.triggerAttackRelease(voiceFragment(4, TRANSPARENT_AIR_FRAGMENTS), "64n", now + 0.132, clampValue(0.016 + depth.particle * 0.028, 0.014, 0.048));
       hat.triggerAttackRelease("64n", now + 0.026, clampValue(0.056 + energyNorm * 0.038, 0.048, 0.112));
       texture.triggerAttackRelease("64n", now + 0.068, clampValue(0.032 + creationNorm * 0.028, 0.026, 0.07));
     } else if (name === "punch") {
       kick.triggerAttackRelease("C2", "16n", now + 0.002, clampValue(0.28 + energyNorm * 0.08, 0.24, 0.42));
       bass.triggerAttackRelease(bassRoot || "C2", "32n", now + 0.018, clampValue(0.075 + energyNorm * 0.045, 0.065, 0.14));
-      glass.triggerAttackRelease(organicFragment(2), "64n", now + 0.032, clampValue(0.038 + creationNorm * 0.028 + gradient.organic * 0.01 + depth.gesture * 0.006, 0.03, 0.092));
+      glass.triggerAttackRelease(voiceFragment(2, ORGANIC_PLUCK_FRAGMENTS), "64n", now + 0.032, clampValue(0.038 + creationNorm * 0.028 + gradient.organic * 0.01 + depth.gesture * 0.006, 0.03, 0.092));
       texture.triggerAttackRelease("64n", now + 0.014, clampValue(0.08 + creationNorm * 0.042 + gradient.ghost * 0.012 + depth.pulse * 0.006, 0.064, 0.142));
     } else if (name === "void") {
-      const airNote = transparentFragment(2);
-      const bloomNote = transparentFragment(5);
-      const dustNote = transparentFragment(1);
+      const airNote = voiceFragment(2, TRANSPARENT_AIR_FRAGMENTS);
+      const bloomNote = voiceFragment(5, TRANSPARENT_AIR_FRAGMENTS);
+      const dustNote = voiceFragment(1, TRANSPARENT_AIR_FRAGMENTS);
       glass.triggerAttackRelease(airNote, "8n", now + 0.01, clampValue(0.052 + observerNorm * 0.046 + gradient.chrome * 0.012 + depth.tail * 0.006, 0.044, 0.116));
       glass.triggerAttackRelease(bloomNote, "16n", now + 0.096, clampValue(0.034 + observerNorm * 0.034 + gradient.haze * 0.008 + depth.bed * 0.005, 0.03, 0.09));
       glass.triggerAttackRelease(dustNote, "32n", now + 0.176, clampValue(0.022 + observerNorm * 0.03 + gradient.chrome * 0.006 + depth.tail * 0.004, 0.02, 0.07));
@@ -2630,13 +2739,21 @@ function updateTimbreStateFromWorld(parts) {
   updateMixGovernor(parts, gradient, depth);
   const lowGuard = MixGovernorState.lowGuard;
   const clarity = MixGovernorState.clarity;
+  const voiceHaze = voiceGeneBias("haze");
+  const voicePulse = voiceGeneBias("pulse");
+  const voiceMicro = voiceGeneBias("micro");
+  const voiceChrome = voiceGeneBias("chrome");
+  const voiceOrganic = voiceGeneBias("organic");
+  const voiceRefrain = voiceGeneBias("refrain");
+  const voiceVoidTail = voiceGeneBias("voidTail");
+  const voicePressure = voiceGeneBias("pressure");
 
-  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + genre.ambient * 0.05 - genre.techno * 0.025 + clarity * 0.028 + character.air, 0, 1);
-  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + genre.idm * 0.035 + clarity * 0.035 + character.glass, 0, 1);
-  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + (gradient.ghost * 0.032) + (gradient.micro * 0.022) + genre.techno * 0.04 + genre.pressure * 0.035 - (gradient.haze * 0.035) - (depth.lowMidClean * 0.036) - lowGuard * 0.035 + character.grit, 0, 1);
-  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + (gradient.micro * 0.06) + (gradient.organic * 0.025) + (depth.particle * 0.035) + genre.idm * 0.045 + genre.techno * 0.035 + character.fracture, 0, 1);
-  TimbreState.harp = clampValue((TimbreState.glass * 0.46) + (TimbreState.air * 0.24) + (circle * 0.18) + ((1 - TimbreState.grit) * 0.12) + (gradient.chrome * 0.05) + (gradient.memory * 0.035) + (depth.tail * 0.032) + genre.ambient * 0.03 + genre.idm * 0.02 - genre.techno * 0.035 + (character.harp || 0), 0, 1);
-  TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (gradient.memory * 0.045) + (gradient.organic * 0.025) + (depth.bed * 0.026) + genre.ambient * 0.025 - genre.techno * 0.035 - (depth.lowMidClean * 0.018) + (character.warmth || 0), 0, 1);
+  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + genre.ambient * 0.05 - genre.techno * 0.025 + clarity * 0.028 + voiceHaze * 0.024 + voiceVoidTail * 0.026 + character.air, 0, 1);
+  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + genre.idm * 0.035 + clarity * 0.035 + voiceChrome * 0.028 + voiceMicro * 0.014 + character.glass, 0, 1);
+  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + (gradient.ghost * 0.032) + (gradient.micro * 0.022) + genre.techno * 0.04 + genre.pressure * 0.035 + voicePressure * 0.018 - voiceHaze * 0.012 - (gradient.haze * 0.035) - (depth.lowMidClean * 0.036) - lowGuard * 0.035 + character.grit, 0, 1);
+  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + (gradient.micro * 0.06) + (gradient.organic * 0.025) + (depth.particle * 0.035) + genre.idm * 0.045 + genre.techno * 0.035 + voiceMicro * 0.03 + voicePressure * 0.012 + character.fracture, 0, 1);
+  TimbreState.harp = clampValue((TimbreState.glass * 0.46) + (TimbreState.air * 0.24) + (circle * 0.18) + ((1 - TimbreState.grit) * 0.12) + (gradient.chrome * 0.05) + (gradient.memory * 0.035) + (depth.tail * 0.032) + genre.ambient * 0.03 + genre.idm * 0.02 - genre.techno * 0.035 + voiceChrome * 0.028 + voiceRefrain * 0.012 + (character.harp || 0), 0, 1);
+  TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (gradient.memory * 0.045) + (gradient.organic * 0.025) + (depth.bed * 0.026) + genre.ambient * 0.025 - genre.techno * 0.035 - (depth.lowMidClean * 0.018) + voiceOrganic * 0.018 + voicePulse * 0.006 - voicePressure * 0.01 + (character.warmth || 0), 0, 1);
 
   const organicColor = (character.organicScale || 1) - 1;
   const dustColor = (character.dustScale || 1) - 1;
@@ -2645,9 +2762,9 @@ function updateTimbreStateFromWorld(parts) {
   const tempoLift = clampValue(DJTempoState.motion / 24, -1, 1);
   const tempoRise = Math.max(0, tempoLift);
   const tempoFall = Math.max(0, -tempoLift);
-  const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) + (hazeColor * 1.25) + (gradient.haze * 0.42) + (gradient.chrome * 0.22) + (depth.bed * 0.34) + (depth.tail * 0.22) + genre.ambient * 0.42 - genre.techno * 0.34 + tempoFall * 0.24 - tempoRise * 0.1 - (PerformancePadState.void * 1.55);
-  const glassLevel = -33.8 + (TimbreState.glass * 5.6) + (TimbreState.harp * 3.6) + (WorldState.spectrum * 0.94) + (organicColor * 1.18) + (gradient.chrome * 0.44) + (gradient.micro * 0.26) + (depth.particle * 0.34) + (depth.gesture * 0.2) + genre.idm * 0.3 + genre.techno * 0.16 + tempoRise * 0.24 + tempoFall * 0.08 + clarity * 0.44 + (PerformancePadState.void * 2.2);
-  const textureLevel = -37.6 + (TimbreState.grit * 5.6) + (TimbreState.fracture * 2.45) + (dustColor * 1.4) + ((pressureColor - 0.5) * WorldState.spectrum * 0.54) + (gradient.micro * 0.34) + (gradient.ghost * 0.18) + (depth.particle * 0.24) + (depth.pulse * 0.08) + genre.techno * 0.44 + genre.pressure * 0.18 + tempoRise * 0.2 - tempoFall * 0.04 + clarity * 0.24 - (TimbreState.warmth * 1.75) - (depth.lowMidClean * 0.22) - lowGuard * 0.16 - (PerformancePadState.void * 1.05);
+  const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) + (hazeColor * 1.25) + (gradient.haze * 0.42) + (gradient.chrome * 0.22) + (depth.bed * 0.34) + (depth.tail * 0.22) + voiceHaze * 0.28 + voiceVoidTail * 0.18 + genre.ambient * 0.42 - genre.techno * 0.34 + tempoFall * 0.24 - tempoRise * 0.1 - (PerformancePadState.void * 1.55);
+  const glassLevel = -33.8 + (TimbreState.glass * 5.6) + (TimbreState.harp * 3.6) + (WorldState.spectrum * 0.94) + (organicColor * 1.18) + (gradient.chrome * 0.44) + (gradient.micro * 0.26) + (depth.particle * 0.34) + (depth.gesture * 0.2) + voiceChrome * 0.34 + voiceMicro * 0.18 + voiceOrganic * 0.12 + genre.idm * 0.3 + genre.techno * 0.16 + tempoRise * 0.24 + tempoFall * 0.08 + clarity * 0.44 + (PerformancePadState.void * 2.2);
+  const textureLevel = -37.6 + (TimbreState.grit * 5.6) + (TimbreState.fracture * 2.45) + (dustColor * 1.4) + ((pressureColor - 0.5) * WorldState.spectrum * 0.54) + (gradient.micro * 0.34) + (gradient.ghost * 0.18) + (depth.particle * 0.24) + (depth.pulse * 0.08) + voiceMicro * 0.16 + voicePressure * 0.12 + voicePulse * 0.08 + genre.techno * 0.44 + genre.pressure * 0.18 + tempoRise * 0.2 - tempoFall * 0.04 + clarity * 0.24 - (TimbreState.warmth * 1.75) - (depth.lowMidClean * 0.22) - lowGuard * 0.16 - (PerformancePadState.void * 1.05);
   const bassCutoff = 86 + (TimbreState.grit * 308) + (resource * 84) + (pressureColor * pressure * 24) - (TimbreState.warmth * 62) - (depth.lowMidClean * 64) - lowGuard * 46 - (PerformancePadState.void * 88) + (PerformancePadState.punch * 26);
   const bassBite = 0.46 + (TimbreState.grit * 3.1) + (TimbreState.warmth * 0.5) + (pressureColor * pressure * 0.16) - (depth.lowMidClean * 0.3) - lowGuard * 0.18 + (PerformancePadState.punch * 0.1);
 
@@ -4229,6 +4346,7 @@ function scheduleStep(time) {
   decayOrganicEcosystem();
   decayLongformArc();
   decayMixGovernor();
+  decayVoiceMorph();
 
   // 休符判定
   const genre = GenreBlendState;
@@ -4251,6 +4369,12 @@ function scheduleStep(time) {
   updateReferenceDepth(gradientParts, gradient);
   const lowGuard = MixGovernorState.lowGuard;
   const clarity = MixGovernorState.clarity;
+  const voiceMicro = voiceGeneBias("micro");
+  const voiceChrome = voiceGeneBias("chrome");
+  const voiceOrganic = voiceGeneBias("organic");
+  const voiceVoidTail = voiceGeneBias("voidTail");
+  const voicePulse = voiceGeneBias("pulse");
+  const voiceRefrain = voiceGeneBias("refrain");
   maybeTriggerAutoPerformanceGesture(step, stepContext);
   triggerAutoDirectorCadence(step, t, stepContext);
 
@@ -4326,15 +4450,15 @@ function scheduleStep(time) {
     }
   }
 
-  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + genre.techno * 0.042 + genre.idm * 0.018 + gradient.micro * 0.014 + gradient.ghost * 0.006 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + PerformancePadState.drift * 0.086 - genre.ambient * 0.018 - PerformancePadState.void * 0.01);
+  const textureProb = chance(mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + genre.techno * 0.042 + genre.idm * 0.018 + gradient.micro * 0.014 + gradient.ghost * 0.006 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceMicro * 0.01 + voicePulse * 0.006 + PerformancePadState.drift * 0.086 - genre.ambient * 0.018 - PerformancePadState.void * 0.01);
   if (rand(textureProb) && (step % 2 === 1 || isAccentStep)) {
     const textureTime = t + (isAccentStep ? 0.006 : 0.012);
     texture.triggerAttackRelease("32n", textureTime, clampValue(0.028 + creationNorm * 0.088 + resourceNorm * 0.024 + gradient.micro * 0.006 + DepthState.gesture * 0.012 + PerformancePadState.punch * 0.014, 0.02, 0.13));
   }
 
-  const particleProb = chance(0.03 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.022 + genre.idm * 0.034 + genre.techno * 0.018 + gradient.chrome * 0.014 + gradient.micro * 0.01 + DepthState.particle * 0.022 + clarity * 0.018 + PerformancePadState.drift * 0.104 + PerformancePadState.repeat * 0.056 + PerformancePadState.void * 0.06 - genre.ambient * 0.012);
+  const particleProb = chance(0.03 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.022 + genre.idm * 0.034 + genre.techno * 0.018 + gradient.chrome * 0.014 + gradient.micro * 0.01 + DepthState.particle * 0.022 + clarity * 0.018 + voiceChrome * 0.011 + voiceOrganic * 0.008 + voiceRefrain * 0.006 + PerformancePadState.drift * 0.104 + PerformancePadState.repeat * 0.056 + PerformancePadState.void * 0.06 - genre.ambient * 0.012);
   if (rand(particleProb) && (step % 4 === 1 || step % 8 === 5 || isAccentStep)) {
-    const note = FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + Math.floor(Math.random() * FIELD_MURK_FRAGMENTS.length)) % FIELD_MURK_FRAGMENTS.length];
+    const note = voiceFragment(Math.floor(Math.random() * FIELD_MURK_FRAGMENTS.length), FIELD_MURK_FRAGMENTS);
     try {
       glass.triggerAttackRelease(note, "32n", t + 0.019 + Math.random() * 0.018, clampValue(0.026 + creationNorm * 0.038 + gradient.micro * 0.008 + DepthState.particle * 0.008 + clarity * 0.008 + PerformancePadState.repeat * 0.038 + PerformancePadState.void * 0.018, 0.018, 0.112));
     } catch (error) {
@@ -4342,9 +4466,9 @@ function scheduleStep(time) {
     }
   }
 
-  const airProb = chance(0.03 + observerNorm * 0.046 + circleNorm * 0.021 + gradient.chrome * 0.016 + gradient.haze * 0.009 + DepthState.tail * 0.026 + PerformancePadState.void * 0.14 + PerformancePadState.drift * 0.066 + PerformancePadState.repeat * 0.022);
+  const airProb = chance(0.03 + observerNorm * 0.046 + circleNorm * 0.021 + gradient.chrome * 0.016 + gradient.haze * 0.009 + DepthState.tail * 0.026 + voiceChrome * 0.012 + voiceVoidTail * 0.016 + PerformancePadState.void * 0.14 + PerformancePadState.drift * 0.066 + PerformancePadState.repeat * 0.022);
   if (rand(airProb) && (step % 8 === 4 || step % 8 === 7)) {
-    const note = TRANSPARENT_AIR_FRAGMENTS[(step + Math.floor(Math.random() * TRANSPARENT_AIR_FRAGMENTS.length)) % TRANSPARENT_AIR_FRAGMENTS.length];
+    const note = voiceFragment(Math.floor(Math.random() * TRANSPARENT_AIR_FRAGMENTS.length), TRANSPARENT_AIR_FRAGMENTS);
     try {
       glass.triggerAttackRelease(note, "32n", t + 0.024, clampValue(0.02 + observerNorm * 0.042 + gradient.chrome * 0.008 + DepthState.tail * 0.008 + PerformancePadState.void * 0.025 + PerformancePadState.repeat * 0.012, 0.014, 0.095));
     } catch (error) {
@@ -4352,9 +4476,9 @@ function scheduleStep(time) {
     }
   }
 
-  const glassProb = chance(mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.022, 0.145) + GrooveState.glassLift + genre.idm * 0.028 + genre.techno * 0.014 + gradient.memory * 0.012 + gradient.chrome * 0.013 + gradient.micro * 0.009 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + PerformancePadState.drift * 0.088 + PerformancePadState.repeat * 0.068 + PerformancePadState.void * 0.038 - genre.ambient * 0.01);
+  const glassProb = chance(mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.022, 0.145) + GrooveState.glassLift + genre.idm * 0.028 + genre.techno * 0.014 + gradient.memory * 0.012 + gradient.chrome * 0.013 + gradient.micro * 0.009 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceChrome * 0.012 + voiceRefrain * 0.008 + PerformancePadState.drift * 0.088 + PerformancePadState.repeat * 0.068 + PerformancePadState.void * 0.038 - genre.ambient * 0.01);
   if (rand(glassProb) && (isAccentStep || step % 8 === 3 || step % 16 === 11)) {
-    const note = GLASS_NOTES[Math.floor(Math.random() * GLASS_NOTES.length)];
+    const note = voiceFragment(Math.floor(Math.random() * GLASS_NOTES.length), GLASS_NOTES);
     glass.triggerAttackRelease(note, "16n", t + 0.015, clampValue(0.039 + energyNorm * 0.055 + observerNorm * 0.018 + PerformancePadState.void * 0.014, 0.028, 0.124));
     if (PerformancePadState.repeat && rand(0.72)) {
       try {

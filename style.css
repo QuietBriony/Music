@@ -727,6 +727,8 @@ input[type="range"], button, select { touch-action: manipulation; }
 }
 
 .voice-readout {
+  position: relative;
+  overflow: hidden;
   border: 1px solid rgba(93, 211, 220, 0.18);
   background:
     linear-gradient(90deg, rgba(93, 211, 220, 0.08), rgba(246, 91, 86, 0.05)),
@@ -738,6 +740,51 @@ input[type="range"], button, select { touch-action: manipulation; }
   padding: 5px 6px;
   text-align: center;
   text-transform: uppercase;
+}
+
+.voice-readout::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 3px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(93, 211, 220, 0.58), transparent);
+  opacity: 0.5;
+}
+
+body[data-atmosphere="haze"] .voice-readout {
+  border-color: rgba(158, 222, 203, 0.32);
+  color: rgba(226, 255, 244, 0.86);
+}
+
+body[data-atmosphere="chrome"] .voice-readout,
+body[data-source-color="opn"] .voice-readout {
+  border-color: rgba(126, 218, 255, 0.42);
+  color: rgba(220, 249, 255, 0.9);
+}
+
+body[data-atmosphere="ghost"] .voice-readout,
+body[data-source-color="burial"] .voice-readout {
+  border-color: rgba(128, 158, 205, 0.38);
+  color: rgba(210, 226, 255, 0.86);
+}
+
+body[data-atmosphere="organic"] .voice-readout,
+body[data-source-color="fsol"] .voice-readout {
+  border-color: rgba(177, 222, 162, 0.36);
+  color: rgba(232, 255, 220, 0.86);
+}
+
+body[data-atmosphere="void"] .voice-readout {
+  border-color: rgba(203, 227, 255, 0.38);
+  background:
+    linear-gradient(90deg, rgba(203, 227, 255, 0.08), rgba(93, 211, 220, 0.04)),
+    rgba(1, 8, 10, 0.56);
+}
+
+body[data-source-color="autechre"] #preset-block {
+  box-shadow: inset 0 0 0 1px rgba(93, 211, 220, 0.09);
 }
 
 #btn_reload_presets{
