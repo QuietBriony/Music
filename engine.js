@@ -25,6 +25,8 @@ const UCM = {
     enabled: false,
     timer: null,
     phase: 0,
+    cycleMs: 180000,
+    lastTransportStep: -1,
   }
 };
 
@@ -2698,6 +2700,45 @@ function syncHazamaTransportControls(step) {
   } catch (error) {
     console.warn("[Music] Hazama transport control failed:", error);
   }
+}
+
+function autoMixUiSyncAllowed(step) {
+  if (typeof document === "undefined") return false;
+  if (document.visibilityState === "hidden") return false;
+  return step % 4 === 0;
+}
+
+function syncAutoMixTransportControls(step) {
+  if (!UCM.auto.enabled || !isPlaying || HazamaBridgeState.active) return;
+  if (step % 4 !== 0) return;
+
+  const maxStep = step === 0 ? 2.1 : 1.05;
+  for (const key of UCM_KEYS) {
+    UCM_CUR[key] = approachValue(UCM_CUR[key], UCM_TARGET[key], maxStep);
+    UCM[key] = Math.round(UCM_CUR[key]);
+  }
+
+  try {
+    applyUCMToParams();
+  } catch (error) {
+    console.warn("[Music] AutoMix transport control failed:", error);
+  }
+}
+
+function advanceAutoMixTransport(step) {
+  if (!UCM.auto.enabled || !isPlaying) return;
+  if (UCM.auto.lastTransportStep === stepIndex) return;
+  UCM.auto.lastTransportStep = stepIndex;
+
+  const cycleMs = Math.max(30000, UCM.auto.cycleMs || 180000);
+  const bpm = Math.max(40, Math.min(180, DJTempoState.bpm || EngineParams.bpm || 80));
+  const eighthNoteMs = 30000 / bpm;
+  const phaseDelta = eighthNoteMs / cycleMs;
+  updateAutoMixTargets(cycleMs, {
+    phaseDelta,
+    syncUi: autoMixUiSyncAllowed(step)
+  });
+  syncAutoMixTransportControls(step);
 }
 
 function syncAutoSlidersFromCurrent(now) {
@@ -5552,6 +5593,7 @@ function scheduleStep(time) {
   const step = stepIndex % EngineParams.stepCount;
   if (step === 0) advanceGrooveStructure();
   else syncHazamaTransportControls(step);
+  advanceAutoMixTransport(step);
   decayOrganicChaos();
   decayMotifMemory();
   decayBpmCrossfadeMemory();
@@ -5726,25 +5768,27 @@ function startAutoCycle() {
   const cycleMs = Math.max(30000, minutes * 60 * 1000);
 
   UCM.auto.enabled = true;
+  UCM.auto.cycleMs = cycleMs;
+  UCM.auto.lastTransportStep = -1;
   resetAutoDirector();
   resetLongformArc();
   updateRuntimeUiState();
-  updateAutoMixTargets(cycleMs);
-
-  UCM.auto.timer = setInterval(() => {
-    updateAutoMixTargets(cycleMs);
-  }, AUTO_MOTION_TICK_MS);
+  updateAutoMixTargets(cycleMs, { phaseDelta: 0, syncUi: true });
 }
 
-function updateAutoMixTargets(cycleMs) {
+function updateAutoMixTargets(cycleMs, options = {}) {
   if (!UCM.auto.enabled || !isPlaying) return;
+  const syncUi = options.syncUi !== false;
   if (HazamaBridgeState.active) {
-    for (const key of AUTOMIX_MOTION_KEYS) syncSliderFromTarget(key);
-    updateUIFromParams();
+    if (syncUi) {
+      for (const key of AUTOMIX_MOTION_KEYS) syncSliderFromTarget(key);
+      updateUIFromParams();
+    }
     return;
   }
 
-  UCM.auto.phase = (UCM.auto.phase + AUTO_MOTION_TICK_MS / cycleMs) % 1;
+  const phaseDelta = typeof options.phaseDelta === "number" ? options.phaseDelta : AUTO_MOTION_TICK_MS / cycleMs;
+  UCM.auto.phase = (UCM.auto.phase + phaseDelta) % 1;
   for (const key of AUTOMIX_MOTION_KEYS) {
     const profile = AUTOMIX_PROFILE[key];
     const phase = (UCM.auto.phase + profile.phase) % 1;
@@ -5756,13 +5800,13 @@ function updateAutoMixTargets(cycleMs) {
     const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : profile.base;
     const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
     if (isManualInfluenceActive(key, now)) {
-      syncSliderFromTarget(key);
+      if (syncUi) syncSliderFromTarget(key);
       continue;
     }
     UCM_TARGET[key] = approachValue(current, desired, profile.step);
-    syncSliderFromTarget(key);
+    if (syncUi) syncSliderFromTarget(key);
   }
-  updateUIFromParams();
+  if (syncUi) updateUIFromParams();
 }
 
 function stopAutoCycle(options = {}) {
