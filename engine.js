@@ -244,6 +244,10 @@ const VoiceColorState = {
   atmosphere: "auto",
   source: "genome"
 };
+const AcidLockState = {
+  enabled: false,
+  intensity: 0
+};
 const VoiceMorphState = {
   transition: 0,
   gradient: {
@@ -1223,6 +1227,10 @@ function publishMusicRuntimeState() {
       sourceLabel: autoLabels.sourceLabel,
       autoActive: autoVoiceAtmosphereActive() || autoVoiceSourceActive()
     },
+    acid: {
+      enabled: AcidLockState.enabled,
+      intensity: AcidLockState.intensity
+    },
     gradient: { ...GradientState },
     depth: { ...DepthState },
     genre: { ...GenreBlendState },
@@ -2044,6 +2052,25 @@ function setKeepAwakeEnabled(enabled) {
   }
 }
 
+function setAcidLockEnabled(enabled) {
+  AcidLockState.enabled = !!enabled;
+  AcidLockState.intensity = AcidLockState.enabled ? Math.max(AcidLockState.intensity, 0.42) : 0;
+  const button = document.getElementById("btn_acid_lock");
+  if (button) {
+    button.classList.toggle("active", AcidLockState.enabled);
+    button.setAttribute("aria-pressed", AcidLockState.enabled ? "true" : "false");
+    button.setAttribute("aria-label", AcidLockState.enabled ? "Acid color lock on" : "Acid color lock");
+    button.setAttribute("title", AcidLockState.enabled ? "Acid color lock on" : "Acid color lock");
+    button.textContent = AcidLockState.enabled ? "ACID.ON" : "ACID";
+  }
+  if (document.body) document.body.dataset.acid = AcidLockState.enabled ? "true" : "false";
+  if (initialized) {
+    updateTimbreStateFromWorld(currentGradientParts());
+    applyUCMToParams({ force: true });
+  }
+  updateRuntimeUiState();
+}
+
 function ensureBackgroundPlaybackElement() {
   if (PlaybackState.backgroundAudio) return PlaybackState.backgroundAudio;
   if (!backgroundPlaybackDestination?.stream || typeof document === "undefined") return null;
@@ -2157,6 +2184,8 @@ function updateHazamaUiState() {
 
 function sanitizeHazamaStyle(style) {
   const normalized = typeof style === "string" ? style.trim().toLowerCase() : "";
+  if (normalized === "trance" || normalized === "acid-techno" || normalized === "acid_techno") return "techno";
+  if (normalized === "acid-house" || normalized === "acid_house") return "lofi";
   if (PresetManager.names.includes(normalized)) return normalized;
   if (normalized === "idm" || normalized === "field" || normalized === "haze") return "ambient";
   if (normalized === "broken" || normalized === "glitch") return "lofi";
@@ -3051,7 +3080,8 @@ function updateWorldStateFromUCM() {
 function renderModeLabel() {
   const label = document.getElementById("mode-label");
   if (!label) return;
-  label.textContent = `${EngineParams.mode.toUpperCase()} / ${WorldState.label} / ${currentPresetCharacter().label}`;
+  const modeName = EngineParams.mode === "trance" ? "ACID.TECH" : EngineParams.mode.toUpperCase();
+  label.textContent = `${modeName} / ${WorldState.label} / ${currentPresetCharacter().label}`;
 }
 
 
@@ -3657,7 +3687,7 @@ async function loadPresets(){
     ok.forEach(n=>{
       const opt = document.createElement("option");
       opt.value = n;
-      opt.textContent = n.toUpperCase();
+      opt.textContent = n === "trance" ? "ACID.TECH" : n.toUpperCase();
       sel.appendChild(opt);
     });
     if ([...sel.options].some(o=>o.value===current)) sel.value = current;
@@ -3751,10 +3781,9 @@ let bassRoot     = "C2";
 
 function chooseMode() {
   const e = UCM_CUR.energy;
-  if (e < 25) return "ambient";
-  if (e < 50) return "lofi";
-  if (e < 75) return "techno";
-  return "trance";
+  if (e < 34) return "ambient";
+  if (e < 68) return "lofi";
+  return "techno";
 }
 
 function applyUCMToParams(options = {}) {
@@ -3808,11 +3837,20 @@ function applyUCMToParams(options = {}) {
   EngineParams.padProb  = mapValue((circleNorm * 0.62 + observerNorm * 0.2 + voidNorm * 0.18) * 100, 0, 100, 0.18, 0.52);
   const character = currentPresetCharacter();
   const genre = GenreBlendState;
+  const droneZone = EngineParams.bpm < 84 || energyNorm < 0.3 || genre.ambient > 0.42;
   EngineParams.restProb = clampValue(EngineParams.restProb * character.restScale + genre.ambient * 0.035 - genre.techno * 0.035, 0.035, PerformancePadState.void ? 0.58 : 0.46);
   EngineParams.kickProb = clampValue(EngineParams.kickProb * character.kickScale + genre.pressure * 0.024 - genre.ambient * 0.018, PerformancePadState.void ? 0.06 : 0.11, 0.7);
   EngineParams.hatProb = clampValue(EngineParams.hatProb * character.hatScale + genre.techno * 0.11 + genre.idm * 0.035 - genre.ambient * 0.05, PerformancePadState.void ? 0.11 : 0.18, 0.86);
   EngineParams.bassProb = clampValue(EngineParams.bassProb * character.bassScale + genre.pressure * 0.018 - genre.ambient * 0.018, PerformancePadState.void ? 0.05 : 0.09, 0.48);
   EngineParams.padProb = clampValue(EngineParams.padProb * character.padScale * (character.hazeScale || 1) + genre.ambient * 0.055 - genre.techno * 0.045, PerformancePadState.void ? 0.15 : 0.16, 0.58);
+  if (droneZone) {
+    const droneAmount = clampValue((84 - EngineParams.bpm) / 34 + (0.34 - energyNorm) + genre.ambient * 0.62 + voidNorm * 0.18, 0, 1);
+    EngineParams.restProb = clampValue(EngineParams.restProb + droneAmount * 0.08, 0.06, 0.58);
+    EngineParams.kickProb = clampValue(EngineParams.kickProb * (0.08 + (1 - droneAmount) * 0.24), 0.004, 0.16);
+    EngineParams.hatProb = clampValue(EngineParams.hatProb * (0.18 + (1 - droneAmount) * 0.34), 0.015, 0.22);
+    EngineParams.bassProb = clampValue(EngineParams.bassProb * (0.34 + (1 - droneAmount) * 0.28), 0.025, 0.22);
+    EngineParams.padProb = clampValue(EngineParams.padProb + droneAmount * 0.15, 0.24, 0.68);
+  }
 
   // リバーブ/ディレイ量を少しだけ動かす（軽量）
   const reverbWet = clampValue(
@@ -4082,6 +4120,8 @@ function triggerAcidTechnoTrace(step, time, context) {
     isAccentStep
   } = context;
   if (!bass || PerformancePadState.void > 0.55) return;
+  AcidLockState.intensity = approachValue(AcidLockState.intensity, AcidLockState.enabled ? 1 : 0, 0.018);
+  if (AcidLockState.intensity < 0.08) return;
 
   const genre = GenreBlendState;
   const gradient = GradientState;
@@ -4099,7 +4139,7 @@ function triggerAcidTechnoTrace(step, time, context) {
       lowGuard * 0.22,
     0,
     1
-  );
+  ) * AcidLockState.intensity;
   if (acid < 0.26) return;
 
   const gate = step % 16 === 1 || step % 16 === 3 || step % 16 === 6 || step % 16 === 9 || step % 16 === 11 || step % 16 === 14 || (isAccentStep && step % 2 === 1);
@@ -4129,6 +4169,46 @@ function triggerAcidTechnoTrace(step, time, context) {
     markMixEvent(0.08 + acid * 0.06);
   } catch (error) {
     console.warn("[Music] acid trace failed:", error);
+  }
+}
+
+function triggerDroneResonanceBed(step, time, context) {
+  const {
+    energyNorm,
+    observerNorm,
+    circleNorm,
+    voidNorm,
+    waveNorm
+  } = context;
+  const genre = GenreBlendState;
+  const drone = clampValue(
+    genre.ambient * 0.34 +
+      (1 - energyNorm) * 0.26 +
+      voidNorm * 0.18 +
+      circleNorm * 0.14 +
+      observerNorm * 0.08,
+    0,
+    1
+  );
+  if (drone < 0.34 || !(step % 16 === 0 || step % 16 === 8)) return;
+  if (!rand(0.22 + drone * 0.36 + DepthState.bed * 0.08)) return;
+
+  const lowNote = drone > 0.62 ? "F1" : "C2";
+  const airNote = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + Math.floor(GenomeState.phase * 7)) % TRANSPARENT_AIR_FRAGMENTS.length];
+  const chord = randomHazeChord();
+  const droneTime = time + 0.018 + Math.random() * (0.024 + waveNorm * 0.018);
+
+  try {
+    pad.triggerAttackRelease(chord, "1n", droneTime, clampValue(0.036 + drone * 0.05 + observerNorm * 0.012, 0.03, 0.108));
+    if (bass && rand(0.34 + drone * 0.22)) {
+      bass.triggerAttackRelease(lowNote, "2n", droneTime + 0.024, clampValue(0.032 + drone * 0.048 - MixGovernorState.lowGuard * 0.018, 0.026, 0.09));
+    }
+    if (glass && rand(0.26 + drone * 0.18)) {
+      glass.triggerAttackRelease(airNote, "4n", droneTime + 0.052, clampValue(0.018 + drone * 0.032 + DepthState.tail * 0.008, 0.014, 0.07));
+    }
+    markMixEvent(0.045);
+  } catch (error) {
+    console.warn("[Music] drone resonance failed:", error);
   }
 }
 
@@ -5122,15 +5202,18 @@ function scheduleStep(time) {
   triggerGoldenGenomeDevelopment(step, t, stepContext);
   triggerLongformArcTurn(step, t, stepContext);
   triggerOrganicEcosystemBloom(step, t, stepContext);
+  triggerDroneResonanceBed(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
   triggerAcidTechnoTrace(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
   if (!isRest) {
+    const droneDrumThin = EngineParams.bpm < 84 || energyNorm < 0.3 || genre.ambient > 0.44;
+    const droneDrumScale = droneDrumThin ? clampValue(0.12 + (energyNorm * 0.56) + genre.techno * 0.28, 0.08, 0.5) : 1;
     // Kick
-    const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + genre.pressure * 0.024 + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.14));
+    const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + genre.pressure * 0.024 + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.14) * droneDrumScale);
     if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
-      kick.triggerAttackRelease("C2", "16n", t + 0.004, clampValue(0.32 + energyNorm * 0.072 + genre.pressure * 0.02 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.026 - lowGuard * 0.04, 0.24, 0.5));
+      kick.triggerAttackRelease("C2", "16n", t + 0.004, clampValue(0.32 + energyNorm * 0.072 + genre.pressure * 0.02 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.026 - lowGuard * 0.04, 0.18, droneDrumThin ? 0.32 : 0.5));
       if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep) && rand(0.46)) {
         try {
           texture.triggerAttackRelease("64n", t + 0.012, clampValue(0.05 + energyNorm * 0.064, 0.038, 0.118));
@@ -5141,7 +5224,7 @@ function scheduleStep(time) {
     }
 
     // Hat
-    const hatChance = chance(EngineParams.hatProb + fillBoost + genre.techno * 0.12 + genre.idm * 0.045 + (isAccentStep ? 0.08 : 0) - genre.ambient * 0.045 - PerformancePadState.void * 0.1);
+    const hatChance = chance((EngineParams.hatProb + fillBoost + genre.techno * 0.12 + genre.idm * 0.045 + (isAccentStep ? 0.08 : 0) - genre.ambient * 0.045 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.42 : 1));
     if ((patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2)) && rand(hatChance)) {
       hat.triggerAttackRelease("32n", t, clampValue(0.086 + energyNorm * 0.108 + genre.techno * 0.038 + (isAccentStep ? 0.04 : 0), 0.054, 0.23));
     }
@@ -5163,7 +5246,7 @@ function scheduleStep(time) {
     }
 
     // Bass
-    const bassChance = chance((EngineParams.bassProb + genre.pressure * 0.018 + (GrooveState.fillActive && step % 8 === 6 ? 0.07 : 0) - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16));
+    const bassChance = chance((EngineParams.bassProb + genre.pressure * 0.018 + (GrooveState.fillActive && step % 8 === 6 ? 0.07 : 0) - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16) * (droneDrumThin ? 0.58 : 1));
     if (patternAt(EngineParams.bassPattern, step) && rand(bassChance)) {
       const note = step % 8 === 0 ? bassRoot : bassNoteForStep(step);
       bass.triggerAttackRelease(note, "8n", t + 0.004, clampValue(0.19 + energyNorm * 0.092 + PerformancePadState.punch * 0.02 - lowGuard * 0.024, 0.12, 0.33));
@@ -5359,6 +5442,7 @@ function attachUI() {
   const audioOutputSelect = document.getElementById("audio_output_select");
   const btnAudioOutput = document.getElementById("btn_audio_output");
   const btnKeepAwake = document.getElementById("btn_keep_awake");
+  const btnAcidLock = document.getElementById("btn_acid_lock");
   const statusText = document.getElementById("status-text");
   const modeLabel  = document.getElementById("mode-label");
   const btnRec = document.getElementById("btn_rec");
@@ -5475,6 +5559,13 @@ function attachUI() {
       setKeepAwakeEnabled(!PlaybackState.wakeLockEnabled);
     });
     setKeepAwakeEnabled(false);
+  }
+
+  if (btnAcidLock) {
+    btnAcidLock.addEventListener("click", () => {
+      setAcidLockEnabled(!AcidLockState.enabled);
+    });
+    setAcidLockEnabled(false);
   }
 
   if (btnRec) {
