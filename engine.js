@@ -198,6 +198,13 @@ const LongformArcState = {
   turn: 0,
   lastStage: "submerge"
 };
+const DJTempoState = {
+  bpm: 80,
+  targetBpm: 80,
+  rawBpm: 80,
+  drift: 0,
+  motion: 0
+};
 const OutputState = {
   level: 75
 };
@@ -564,6 +571,15 @@ function resetGenreBlend() {
   GenreBlendState.pressure = 0.07;
 }
 
+function resetDJTempo() {
+  const current = Number.isFinite(EngineParams.bpm) ? EngineParams.bpm : 80;
+  DJTempoState.bpm = current;
+  DJTempoState.targetBpm = current;
+  DJTempoState.rawBpm = current;
+  DJTempoState.drift = 0;
+  DJTempoState.motion = 0;
+}
+
 function decayOrganicEcosystem() {
   OrganicEcosystemState.bloom *= 0.9;
   OrganicEcosystemState.sprout *= 0.995;
@@ -640,6 +656,46 @@ function updateGenreBlend(parts) {
   GenreBlendState.techno = approachValue(GenreBlendState.techno, technoTarget / total, 0.08);
   GenreBlendState.pressure = approachValue(GenreBlendState.pressure, pressureTarget / total, 0.08);
   return GenreBlendState;
+}
+
+function longformTempoBias() {
+  const stageName = currentLongformArcStage().name || "submerge";
+  const stageBias = {
+    submerge: -7,
+    sprout: 3,
+    ferment: 9,
+    root: 5,
+    exhale: -8
+  }[stageName] || 0;
+  return stageBias * clampValue(0.42 + longformArcShape() * 0.8, 0.25, 1);
+}
+
+function updateDJTempo(parts, options = {}) {
+  const force = options.force === true;
+  const { energy, wave, creation, body, resource, observer, voidness } = parts;
+  const genre = GenreBlendState;
+  const rawBpm = mapValue(energy, 0, 1, 58, 148);
+  const genreBias =
+    genre.ambient * -7 +
+    genre.idm * 2.5 +
+    genre.techno * 7 +
+    genre.pressure * 3;
+  const contour = Math.sin((GrooveState.cycle * 0.045) + (LongformArcState.stageIndex * 0.9)) * (1.2 + longformArcShape() * 2.4);
+  const pressureLift = clampValue((body * 0.22) + (resource * 0.18) + (creation * 0.12) - (observer * 0.08) - (voidness * 0.08), -0.12, 0.36) * 8;
+  const target = clampValue(rawBpm + longformTempoBias() + genreBias + pressureLift + contour, 54, 152);
+  const targetStep = force ? 96 : 0.55 + Math.abs(DJTempoState.targetBpm - target) * 0.018;
+  const bpmStep = force ? 96 : 0.42 + wave * 0.18 + genre.techno * 0.16;
+
+  DJTempoState.rawBpm = rawBpm;
+  DJTempoState.targetBpm = approachValue(DJTempoState.targetBpm, target, targetStep);
+  DJTempoState.bpm = approachValue(DJTempoState.bpm, DJTempoState.targetBpm, bpmStep);
+  DJTempoState.drift = DJTempoState.bpm - rawBpm;
+  DJTempoState.motion = DJTempoState.targetBpm - DJTempoState.bpm;
+  EngineParams.bpm = Math.round(DJTempoState.bpm);
+
+  if (typeof Tone !== "undefined" && Tone.Transport?.bpm) {
+    rampParam("transport-bpm", Tone.Transport.bpm, DJTempoState.bpm, force ? 0.35 : 1.6, force ? 0 : 0.08);
+  }
 }
 
 function updateMixGovernor(parts, gradient = GradientState, depth = DepthState) {
@@ -1996,6 +2052,9 @@ function updateReferenceGradient(parts) {
   const { energy, wave, mind, creation, voidness, circle, body, resource, observer, pressure } = parts;
   const harshness = clampValue((pressure * 0.58) + (resource * 0.24) + (energy * 0.18), 0, 1);
   const genre = GenreBlendState;
+  const tempoLift = clampValue(DJTempoState.motion / 22, -1, 1);
+  const tempoRise = Math.max(0, tempoLift);
+  const tempoFall = Math.max(0, -tempoLift);
 
   GradientState.haze = clampValue((circle * 0.28) + (observer * 0.28) + (voidness * 0.18) + ((1 - energy) * 0.18) + ((1 - resource) * 0.08), 0, 1);
   GradientState.memory = clampValue((wave * 0.32) + (circle * 0.28) + (mind * 0.22) + ((1 - harshness) * 0.18), 0, 1);
@@ -2004,12 +2063,12 @@ function updateReferenceGradient(parts) {
   GradientState.chrome = clampValue((mind * 0.3) + (observer * 0.3) + (circle * 0.24) + (creation * 0.12) + ((1 - voidness) * 0.04), 0, 1);
   GradientState.organic = clampValue((wave * 0.28) + (creation * 0.26) + (circle * 0.16) + (observer * 0.14) + ((1 - harshness) * 0.16), 0, 1);
 
-  GradientState.haze = clampValue(GradientState.haze + genre.ambient * 0.08 - genre.techno * 0.035, 0, 1);
-  GradientState.memory = clampValue(GradientState.memory + genre.idm * 0.055 + genre.ambient * 0.025, 0, 1);
-  GradientState.micro = clampValue(GradientState.micro + genre.idm * 0.07 + genre.techno * 0.085, 0, 1);
-  GradientState.ghost = clampValue(GradientState.ghost + genre.techno * 0.045 + genre.pressure * 0.09, 0, 1);
-  GradientState.chrome = clampValue(GradientState.chrome + genre.ambient * 0.035 + genre.idm * 0.035, 0, 1);
-  GradientState.organic = clampValue(GradientState.organic + genre.idm * 0.045 + genre.ambient * 0.02 - genre.techno * 0.018, 0, 1);
+  GradientState.haze = clampValue(GradientState.haze + genre.ambient * 0.08 - genre.techno * 0.035 + tempoFall * 0.04, 0, 1);
+  GradientState.memory = clampValue(GradientState.memory + genre.idm * 0.055 + genre.ambient * 0.025 + tempoFall * 0.025, 0, 1);
+  GradientState.micro = clampValue(GradientState.micro + genre.idm * 0.07 + genre.techno * 0.085 + tempoRise * 0.05, 0, 1);
+  GradientState.ghost = clampValue(GradientState.ghost + genre.techno * 0.045 + genre.pressure * 0.09 + tempoRise * 0.035, 0, 1);
+  GradientState.chrome = clampValue(GradientState.chrome + genre.ambient * 0.035 + genre.idm * 0.035 + tempoFall * 0.02, 0, 1);
+  GradientState.organic = clampValue(GradientState.organic + genre.idm * 0.045 + genre.ambient * 0.02 - genre.techno * 0.018 + tempoRise * 0.02, 0, 1);
 
   if (longformArcActive()) {
     const arc = currentLongformArcStage();
@@ -2043,6 +2102,9 @@ function updateReferenceGradient(parts) {
 
 function updateReferenceDepth(parts, gradient = GradientState) {
   const { energy, mind, creation, voidness, circle, body, resource, observer } = parts;
+  const tempoLift = clampValue(DJTempoState.motion / 24, -1, 1);
+  const tempoRise = Math.max(0, tempoLift);
+  const tempoFall = Math.max(0, -tempoLift);
   const padIntensity = clampValue(
     PerformancePadState.drift +
       PerformancePadState.repeat +
@@ -2063,6 +2125,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       ((1 - energy) * 0.14) +
       genre.ambient * 0.04 -
       genre.techno * 0.02 +
+      tempoFall * 0.035 -
+      tempoRise * 0.018 +
       arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.045 : 0.018),
     0,
     1
@@ -2076,6 +2140,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       ((1 - voidness) * 0.1) +
       genre.techno * 0.045 +
       genre.pressure * 0.035 +
+      tempoRise * 0.04 -
+      tempoFall * 0.016 +
       arcShape * (arcStage.name === "root" ? 0.035 : 0.012),
     0,
     1
@@ -2089,6 +2155,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       (observer * 0.06) +
       genre.idm * 0.045 +
       genre.techno * 0.035 +
+      tempoRise * 0.046 +
+      tempoFall * 0.012 +
       arcShape * (arcStage.name === "sprout" || arcStage.name === "ferment" ? 0.04 : 0.014),
     0,
     1
@@ -2102,6 +2170,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       (gradient.haze * 0.12) +
       genre.ambient * 0.025 +
       genre.techno * 0.018 +
+      tempoFall * 0.014 -
+      tempoRise * 0.01 +
       arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.025 : 0.008),
     0,
     1
@@ -2114,6 +2184,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       (circle * 0.14) +
       genre.ambient * 0.04 -
       genre.techno * 0.014 +
+      tempoFall * 0.045 -
+      tempoRise * 0.012 +
       arcShape * (arcStage.name === "exhale" ? 0.05 : 0.018),
     0,
     1
@@ -2128,6 +2200,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       genre.idm * 0.03 +
       genre.techno * 0.035 +
       genre.pressure * 0.04 +
+      tempoRise * 0.05 +
+      tempoFall * 0.012 +
       LongformArcState.turn * 0.06,
     0,
     1
@@ -2157,9 +2231,12 @@ function updateTimbreStateFromWorld(parts) {
   const dustColor = (character.dustScale || 1) - 1;
   const pressureColor = character.pressureColor || 0.5;
   const hazeColor = (character.hazeScale || 1) - 1;
-  const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) + (hazeColor * 1.25) + (gradient.haze * 0.42) + (gradient.chrome * 0.22) + (depth.bed * 0.34) + (depth.tail * 0.22) + genre.ambient * 0.42 - genre.techno * 0.34 - (PerformancePadState.void * 1.55);
-  const glassLevel = -33.8 + (TimbreState.glass * 5.6) + (TimbreState.harp * 3.6) + (WorldState.spectrum * 0.94) + (organicColor * 1.18) + (gradient.chrome * 0.44) + (gradient.micro * 0.26) + (depth.particle * 0.34) + (depth.gesture * 0.2) + genre.idm * 0.3 + genre.techno * 0.16 + clarity * 0.44 + (PerformancePadState.void * 2.2);
-  const textureLevel = -37.6 + (TimbreState.grit * 5.6) + (TimbreState.fracture * 2.45) + (dustColor * 1.4) + ((pressureColor - 0.5) * WorldState.spectrum * 0.54) + (gradient.micro * 0.34) + (gradient.ghost * 0.18) + (depth.particle * 0.24) + (depth.pulse * 0.08) + genre.techno * 0.44 + genre.pressure * 0.18 + clarity * 0.24 - (TimbreState.warmth * 1.75) - (depth.lowMidClean * 0.22) - lowGuard * 0.16 - (PerformancePadState.void * 1.05);
+  const tempoLift = clampValue(DJTempoState.motion / 24, -1, 1);
+  const tempoRise = Math.max(0, tempoLift);
+  const tempoFall = Math.max(0, -tempoLift);
+  const airyPad = -25.2 + (TimbreState.air * 4.4) - (TimbreState.grit * 2.6) + (TimbreState.warmth * 1.1) + (hazeColor * 1.25) + (gradient.haze * 0.42) + (gradient.chrome * 0.22) + (depth.bed * 0.34) + (depth.tail * 0.22) + genre.ambient * 0.42 - genre.techno * 0.34 + tempoFall * 0.24 - tempoRise * 0.1 - (PerformancePadState.void * 1.55);
+  const glassLevel = -33.8 + (TimbreState.glass * 5.6) + (TimbreState.harp * 3.6) + (WorldState.spectrum * 0.94) + (organicColor * 1.18) + (gradient.chrome * 0.44) + (gradient.micro * 0.26) + (depth.particle * 0.34) + (depth.gesture * 0.2) + genre.idm * 0.3 + genre.techno * 0.16 + tempoRise * 0.24 + tempoFall * 0.08 + clarity * 0.44 + (PerformancePadState.void * 2.2);
+  const textureLevel = -37.6 + (TimbreState.grit * 5.6) + (TimbreState.fracture * 2.45) + (dustColor * 1.4) + ((pressureColor - 0.5) * WorldState.spectrum * 0.54) + (gradient.micro * 0.34) + (gradient.ghost * 0.18) + (depth.particle * 0.24) + (depth.pulse * 0.08) + genre.techno * 0.44 + genre.pressure * 0.18 + tempoRise * 0.2 - tempoFall * 0.04 + clarity * 0.24 - (TimbreState.warmth * 1.75) - (depth.lowMidClean * 0.22) - lowGuard * 0.16 - (PerformancePadState.void * 1.05);
   const bassCutoff = 86 + (TimbreState.grit * 308) + (resource * 84) + (pressureColor * pressure * 24) - (TimbreState.warmth * 62) - (depth.lowMidClean * 64) - lowGuard * 46 - (PerformancePadState.void * 88) + (PerformancePadState.punch * 26);
   const bassBite = 0.46 + (TimbreState.grit * 3.1) + (TimbreState.warmth * 0.5) + (pressureColor * pressure * 0.16) - (depth.lowMidClean * 0.3) - lowGuard * 0.18 + (PerformancePadState.punch * 0.1);
 
@@ -2494,10 +2571,7 @@ function applyUCMToParams(options = {}) {
   const bodyNorm = clampValue(UCM_CUR.body / 100, 0, 1);
   const resourceNorm = clampValue(UCM_CUR.resource / 100, 0, 1);
   const observerNorm = clampValue(UCM_CUR.observer / 100, 0, 1);
-
-  // BPM
-  EngineParams.bpm = Math.round(mapValue(UCM_CUR.energy, 0, 100, 58, 148));
-  rampParam("transport-bpm", Tone.Transport.bpm, EngineParams.bpm, force ? 0.18 : 0.45, force ? 0 : 1);
+  const currentParts = currentGradientParts();
 
   const swing = mapValue(UCM_CUR.wave, 0, 100, 0.015, 0.105);
   if (force || typeof RAMP_CACHE["transport-swing"] !== "number" || Math.abs(RAMP_CACHE["transport-swing"] - swing) > 0.008) {
@@ -2525,6 +2599,7 @@ function applyUCMToParams(options = {}) {
   renderModeLabel();
   }
   updateWorldStateFromUCM();
+  updateDJTempo(currentParts, { force });
 
   // 休符
   EngineParams.restProb = clampValue(mapValue(UCM_CUR.void, 0, 100, 0.025, 0.42) - energyNorm * 0.035 + observerNorm * 0.012, 0.02, 0.46);
@@ -2689,6 +2764,7 @@ function resetRuntimeCounters() {
   resetLongformArc();
   resetMixGovernor();
   resetGenreBlend();
+  resetDJTempo();
 }
 
 function patternAt(pattern, step) {
