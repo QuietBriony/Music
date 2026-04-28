@@ -4395,22 +4395,34 @@ function triggerAcidTechnoTrace(step, time, context) {
   ) * AcidLockState.intensity;
   if (acid < 0.22) return;
 
-  const gate = step % 16 === 0 || step % 16 === 1 || step % 16 === 3 || step % 16 === 6 || step % 16 === 8 || step % 16 === 9 || step % 16 === 11 || step % 16 === 14 || (isAccentStep && step % 2 === 1);
-  if (!gate || !rand(0.04 + acid * 0.2 + PerformancePadState.repeat * 0.05)) return;
+  const impactGate = step % 8 === 0 || (step % 16 === 8 && genre.pressure > 0.18);
+  const gate = impactGate || step % 16 === 1 || step % 16 === 3 || step % 16 === 6 || step % 16 === 9 || step % 16 === 11 || step % 16 === 14 || (isAccentStep && step % 2 === 1);
+  const gateChance = impactGate
+    ? 0.46 + acid * 0.32 + energyNorm * 0.08
+    : 0.075 + acid * 0.3 + PerformancePadState.repeat * 0.06;
+  if (!gate || !rand(gateChance)) return;
 
   const acidPhase = Math.floor((GenomeState.phase || 0) * ACID_TURN_NOTES.length);
   const note = ACID_TURN_NOTES[(GrooveState.cycle + step + acidPhase) % ACID_TURN_NOTES.length];
   const turnNote = ACID_TURN_NOTES[(GrooveState.cycle + step + acidPhase + 2) % ACID_TURN_NOTES.length];
   const reply = GLASS_NOTES[(GrooveState.cycle + step + acidPhase + 2) % GLASS_NOTES.length];
   const acidTime = time + 0.012 + Math.random() * (0.01 + waveNorm * 0.012);
-  const vel = clampValue(0.052 + acid * 0.11 - lowGuard * 0.036, 0.038, 0.152);
+  const vel = clampValue(0.056 + acid * 0.122 - lowGuard * 0.038, 0.04, 0.166);
+  const impactVel = clampValue(0.24 + acid * 0.2 + energyNorm * 0.045 - lowGuard * 0.095, 0.18, 0.48);
+  const jabVel = clampValue(0.085 + acid * 0.12 + resourceNorm * 0.018 - lowGuard * 0.04, 0.065, 0.22);
   const cutoff = clampValue(190 + acid * 860 + resourceNorm * 220 + waveNorm * 120 - lowGuard * 120, 130, 1260);
   const q = clampValue(2.4 + acid * 4.4 + creationNorm * 0.7 - lowGuard * 0.7, 1.6, 7.2);
 
   try {
     safeToneRamp(bass?.filter?.Q, q, 0.055);
     safeToneRamp(bass?.filter?.frequency, cutoff, 0.045);
+    if (impactGate && kick && rand(0.62 + acid * 0.26 - lowGuard * 0.12)) {
+      kick.triggerAttackRelease("C2", "16n", acidTime + 0.002, impactVel);
+    }
     bass.triggerAttackRelease(note, "32n", acidTime, vel);
+    if (impactGate && rand(0.58 + acid * 0.24 - lowGuard * 0.12)) {
+      bass.triggerAttackRelease(step % 16 === 8 ? "F#2" : "D2", "16n", acidTime + 0.018, jabVel);
+    }
     if (rand(0.34 + acid * 0.32)) {
       bass.triggerAttackRelease(note, "64n", acidTime + 0.046 + Math.random() * 0.012, vel * 0.52);
     }
@@ -4424,9 +4436,9 @@ function triggerAcidTechnoTrace(step, time, context) {
       hat.triggerAttackRelease("64n", acidTime + 0.008, clampValue(0.04 + acid * 0.08 + energyNorm * 0.018, 0.032, 0.14));
     }
     if (texture && rand(0.26 + acid * 0.3)) {
-      texture.triggerAttackRelease("64n", acidTime + 0.016, clampValue(0.018 + acid * 0.058, 0.014, 0.09));
+      texture.triggerAttackRelease("64n", acidTime + 0.016, clampValue(0.024 + acid * 0.07 + (impactGate ? 0.018 : 0), 0.016, 0.116));
     }
-    markMixEvent(0.1 + acid * 0.08);
+    markMixEvent(0.12 + acid * 0.1 + (impactGate ? 0.05 : 0));
   } catch (error) {
     console.warn("[Music] acid trace failed:", error);
   }
