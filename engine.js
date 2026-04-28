@@ -99,6 +99,38 @@ const AUTO_DIRECTOR_SCENES = [
     gestureChance: 0.05
   }
 ];
+const LONGFORM_ARC_STAGES = [
+  {
+    name: "submerge",
+    length: 9,
+    bias: { energy: -7, wave: 5, mind: 3, creation: -2, void: 9, circle: 10, body: -8, resource: -6, observer: 12 },
+    gradient: { haze: 0.11, memory: 0.05, micro: 0.0, ghost: 0.03, chrome: 0.06, organic: 0.02 }
+  },
+  {
+    name: "sprout",
+    length: 8,
+    bias: { energy: -1, wave: 10, mind: 4, creation: 8, void: 3, circle: 7, body: -4, resource: 4, observer: 10 },
+    gradient: { haze: 0.06, memory: 0.08, micro: 0.04, ghost: 0.01, chrome: 0.06, organic: 0.1 }
+  },
+  {
+    name: "ferment",
+    length: 8,
+    bias: { energy: 4, wave: 13, mind: 8, creation: 12, void: -2, circle: -2, body: -2, resource: 10, observer: 6 },
+    gradient: { haze: 0.02, memory: 0.06, micro: 0.12, ghost: 0.04, chrome: 0.05, organic: 0.08 }
+  },
+  {
+    name: "root",
+    length: 6,
+    bias: { energy: 5, wave: 6, mind: -1, creation: 4, void: -5, circle: -3, body: 6, resource: 5, observer: 0 },
+    gradient: { haze: 0.0, memory: 0.02, micro: 0.04, ghost: 0.12, chrome: 0.0, organic: 0.05 }
+  },
+  {
+    name: "exhale",
+    length: 9,
+    bias: { energy: -9, wave: 7, mind: 7, creation: 1, void: 12, circle: 11, body: -10, resource: -7, observer: 15 },
+    gradient: { haze: 0.12, memory: 0.05, micro: 0.01, ghost: 0.03, chrome: 0.11, organic: 0.02 }
+  }
+];
 const MANUAL_INFLUENCE_HOLD_MS = 4300;
 const manualInfluenceUntil = {};
 const SLIDER_KEY_BY_ID = Object.fromEntries(Object.entries(SLIDER_BY_UCM).map(([key, id]) => [id, key]));
@@ -152,6 +184,14 @@ const OrganicEcosystemState = {
   rootTurn: 0.14,
   bloom: 0,
   lastBloomCycle: -99
+};
+const LongformArcState = {
+  stageIndex: 0,
+  phrase: 0,
+  breath: 0.48,
+  contrast: 0.18,
+  turn: 0,
+  lastStage: "submerge"
 };
 const OutputState = {
   level: 75
@@ -244,6 +284,28 @@ function hasActivePerformancePad() {
 
 function currentAutoDirectorScene() {
   return AUTO_DIRECTOR_SCENES[AutoDirectorState.sceneIndex % AUTO_DIRECTOR_SCENES.length] || AUTO_DIRECTOR_SCENES[0];
+}
+
+function currentLongformArcStage() {
+  return LONGFORM_ARC_STAGES[LongformArcState.stageIndex % LONGFORM_ARC_STAGES.length] || LONGFORM_ARC_STAGES[0];
+}
+
+function longformArcActive() {
+  return !!(UCM.auto.enabled && isPlaying);
+}
+
+function longformArcShape() {
+  if (!longformArcActive()) return 0;
+  const stage = currentLongformArcStage();
+  const length = Math.max(1, stage.length || 1);
+  const progress = clampValue(LongformArcState.phrase / length, 0, 1);
+  return clampValue((0.52 + Math.sin(progress * Math.PI) * 0.42) * LongformArcState.breath, 0, 1);
+}
+
+function longformArcBias(key) {
+  if (!longformArcActive()) return 0;
+  const stage = currentLongformArcStage();
+  return (stage.bias?.[key] || 0) * longformArcShape();
 }
 
 function autoDirectorSceneBias(key) {
@@ -451,6 +513,15 @@ function resetOrganicEcosystem() {
   OrganicEcosystemState.lastBloomCycle = -99;
 }
 
+function resetLongformArc() {
+  LongformArcState.stageIndex = 0;
+  LongformArcState.phrase = 0;
+  LongformArcState.breath = 0.48;
+  LongformArcState.contrast = 0.18;
+  LongformArcState.turn = 0;
+  LongformArcState.lastStage = currentLongformArcStage().name;
+}
+
 function decayOrganicEcosystem() {
   OrganicEcosystemState.bloom *= 0.9;
   OrganicEcosystemState.sprout *= 0.995;
@@ -459,21 +530,67 @@ function decayOrganicEcosystem() {
   if (OrganicEcosystemState.bloom < 0.001) OrganicEcosystemState.bloom = 0;
 }
 
+function decayLongformArc() {
+  LongformArcState.turn *= 0.92;
+  if (LongformArcState.turn < 0.001) LongformArcState.turn = 0;
+}
+
+function advanceLongformArcPhrase(parts) {
+  if (!longformArcActive()) return;
+  const stage = currentLongformArcStage();
+  LongformArcState.phrase += 1;
+
+  if (LongformArcState.phrase >= (stage.length || 8)) {
+    LongformArcState.stageIndex = (LongformArcState.stageIndex + 1) % LONGFORM_ARC_STAGES.length;
+    LongformArcState.phrase = 0;
+    LongformArcState.turn = clampValue(0.42 + Math.random() * 0.24 + organicChaosAmount() * 0.08, 0, 0.78);
+    LongformArcState.lastStage = currentLongformArcStage().name;
+  }
+
+  const next = currentLongformArcStage();
+  const progress = clampValue(LongformArcState.phrase / Math.max(1, next.length || 1), 0, 1);
+  const quietAir = (parts.observerNorm + parts.circleNorm + parts.voidNorm) / 3;
+  const activeMass = (parts.energyNorm + parts.creationNorm + parts.resourceNorm) / 3;
+  const breathTarget = clampValue(
+    0.36 +
+      quietAir * 0.34 +
+      Math.sin((GrooveState.cycle * 0.083) + progress * Math.PI) * 0.12 -
+      activeMass * 0.1,
+    0.18,
+    0.82
+  );
+  const contrastTarget = clampValue(
+    0.12 +
+      parts.waveNorm * 0.18 +
+      parts.creationNorm * 0.16 +
+      organicChaosAmount() * 0.12 +
+      LongformArcState.turn * 0.16,
+    0.08,
+    0.56
+  );
+
+  LongformArcState.breath = approachValue(LongformArcState.breath, breathTarget, 0.035);
+  LongformArcState.contrast = approachValue(LongformArcState.contrast, contrastTarget, 0.045);
+}
+
 function advanceOrganicEcosystemPhrase(parts) {
   if (!UCM.auto.enabled || !isPlaying) return;
   const scene = currentAutoDirectorScene();
   const chaos = organicChaosAmount();
+  const arc = currentLongformArcStage();
+  const arcName = arc.name || "submerge";
   const sceneName = scene.name || "haze";
-  const sceneSprout = sceneName === "stir" || sceneName === "tangle" ? 0.07 : sceneName === "open" ? 0.035 : 0.025;
-  const sceneFerment = sceneName === "tangle" ? 0.08 : sceneName === "body" ? 0.065 : 0.025;
-  const sceneRoot = sceneName === "body" ? 0.09 : sceneName === "tangle" ? 0.045 : 0.02;
+  const sceneSprout = (sceneName === "stir" || sceneName === "tangle" ? 0.07 : sceneName === "open" ? 0.035 : 0.025) + (arcName === "sprout" ? 0.035 : arcName === "ferment" ? 0.018 : 0);
+  const sceneFerment = (sceneName === "tangle" ? 0.08 : sceneName === "body" ? 0.065 : 0.025) + (arcName === "ferment" ? 0.04 : arcName === "root" ? 0.018 : 0);
+  const sceneRoot = (sceneName === "body" ? 0.09 : sceneName === "tangle" ? 0.045 : 0.02) + (arcName === "root" ? 0.045 : 0);
   const breathTarget = clampValue(
     0.48 +
       Math.sin(GrooveState.cycle * 0.31) * 0.18 +
       parts.observerNorm * 0.1 +
       parts.circleNorm * 0.08 +
       parts.voidNorm * 0.06 -
-      parts.energyNorm * 0.08,
+      parts.energyNorm * 0.08 +
+      LongformArcState.breath * 0.06,
     0.18,
     0.88
   );
@@ -1272,10 +1389,10 @@ const textureBus = new Tone.Gain(0.19).connect(globalDelay);
 
 // Kick（ベーシック）
 const kick = new Tone.MembraneSynth({
-  pitchDecay: 0.022,
-  octaves: 4.1,
+  pitchDecay: 0.018,
+  octaves: 3.7,
   oscillator: { type: "sine" },
-  envelope: { attack: 0.004, decay: 0.28, sustain: 0 }
+  envelope: { attack: 0.006, decay: 0.26, sustain: 0 }
 }).connect(drumBus);
 
 // Hat（1台だけ）
@@ -1724,6 +1841,15 @@ function updateReferenceGradient(parts) {
   GradientState.chrome = clampValue((mind * 0.3) + (observer * 0.3) + (circle * 0.24) + (creation * 0.12) + ((1 - voidness) * 0.04), 0, 1);
   GradientState.organic = clampValue((wave * 0.28) + (creation * 0.26) + (circle * 0.16) + (observer * 0.14) + ((1 - harshness) * 0.16), 0, 1);
 
+  if (longformArcActive()) {
+    const arc = currentLongformArcStage();
+    const arcShape = longformArcShape();
+    const turnGlow = LongformArcState.turn * 0.035;
+    for (const key of Object.keys(GradientState)) {
+      GradientState[key] = clampValue(GradientState[key] + (arc.gradient?.[key] || 0) * arcShape + turnGlow, 0, 1);
+    }
+  }
+
   if (PerformancePadState.drift) {
     GradientState.haze = clampValue(GradientState.haze + 0.08, 0, 1);
     GradientState.memory = clampValue(GradientState.memory + 0.12, 0, 1);
@@ -1755,13 +1881,16 @@ function updateReferenceDepth(parts, gradient = GradientState) {
     0,
     1
   );
+  const arcShape = longformArcShape();
+  const arcStage = currentLongformArcStage();
 
   DepthState.bed = clampValue(
     (gradient.haze * 0.34) +
       (gradient.memory * 0.18) +
       (circle * 0.18) +
       (observer * 0.16) +
-      ((1 - energy) * 0.14),
+      ((1 - energy) * 0.14) +
+      arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.045 : 0.018),
     0,
     1
   );
@@ -1771,7 +1900,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       (body * 0.16) +
       (gradient.micro * 0.14) +
       (resource * 0.12) +
-      ((1 - voidness) * 0.1),
+      ((1 - voidness) * 0.1) +
+      arcShape * (arcStage.name === "root" ? 0.035 : 0.012),
     0,
     1
   );
@@ -1781,7 +1911,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       (gradient.organic * 0.2) +
       (creation * 0.16) +
       (mind * 0.12) +
-      (observer * 0.06),
+      (observer * 0.06) +
+      arcShape * (arcStage.name === "sprout" || arcStage.name === "ferment" ? 0.04 : 0.014),
     0,
     1
   );
@@ -1791,7 +1922,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       (observer * 0.18) +
       ((1 - resource) * 0.16) +
       ((1 - body) * 0.14) +
-      (gradient.haze * 0.12),
+      (gradient.haze * 0.12) +
+      arcShape * (arcStage.name === "submerge" || arcStage.name === "exhale" ? 0.025 : 0.008),
     0,
     1
   );
@@ -1800,7 +1932,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       (gradient.chrome * 0.22) +
       (voidness * 0.18) +
       (observer * 0.18) +
-      (circle * 0.14),
+      (circle * 0.14) +
+      arcShape * (arcStage.name === "exhale" ? 0.05 : 0.018),
     0,
     1
   );
@@ -1810,7 +1943,8 @@ function updateReferenceDepth(parts, gradient = GradientState) {
       (gradient.ghost * 0.14) +
       (gradient.organic * 0.12) +
       (gradient.chrome * 0.08) +
-      (body * 0.06),
+      (body * 0.06) +
+      LongformArcState.turn * 0.06,
     0,
     1
   );
@@ -2362,6 +2496,7 @@ function resetRuntimeCounters() {
   GrooveState.floorWarmupSteps = 10;
   resetAutoDirector();
   resetOrganicEcosystem();
+  resetLongformArc();
 }
 
 function patternAt(pattern, step) {
@@ -2396,6 +2531,7 @@ function advanceGrooveStructure() {
   const phraseStep = GrooveState.cycle % 4;
   const density = (energyNorm + creationNorm + resourceNorm) / 3;
   const fillChance = mapValue(density, 0, 1, 0.04, 0.30);
+  advanceLongformArcPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
 
   GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
@@ -2508,7 +2644,7 @@ function triggerAudibleGrooveFloor(step, time, context) {
 
   if (step % 8 === 0 && !voiding && rand(0.64 * pulseScale)) {
     try {
-      kick.triggerAttackRelease("C2", "16n", time + 0.006, clampValue(0.11 + energyNorm * 0.045 + PerformancePadState.punch * 0.045, 0.08, 0.22));
+      kick.triggerAttackRelease("C2", "16n", time + 0.006, clampValue(0.095 + energyNorm * 0.036 + PerformancePadState.punch * 0.036, 0.07, 0.19));
     } catch (error) {
       console.warn("[Music] ghost pulse failed:", error);
     }
@@ -2724,6 +2860,76 @@ function triggerMotifAfterimage(step, time, context) {
     memory.lastStep = stepIndex;
   } catch (error) {
     console.warn("[Music] motif afterimage failed:", error);
+  }
+}
+
+function triggerLongformArcTurn(step, time, context) {
+  if (!longformArcActive() || LongformArcState.turn < 0.035) return;
+  if (!(step % 8 === 0 || step % 8 === 4)) return;
+
+  const stage = currentLongformArcStage();
+  const stageName = stage.name || "submerge";
+  const {
+    energyNorm,
+    creationNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm
+  } = context;
+  const gate = chance(0.052 + LongformArcState.turn * 0.2 + observerNorm * 0.018 + creationNorm * 0.012);
+  if (!rand(gate)) return;
+
+  const airy = stageName === "submerge" || stageName === "exhale";
+  const organic = stageName === "sprout" || stageName === "ferment";
+  const pressure = stageName === "root";
+  const arcTime = time + 0.02 + Math.random() * (0.018 + waveNorm * 0.014);
+  const first = airy
+    ? transparentFragment(stageName === "exhale" ? 4 : 1)
+    : organic
+      ? organicFragment(stageName === "ferment" ? 5 : 2)
+      : FIELD_MURK_FRAGMENTS[(GrooveState.cycle + stepIndex + 1) % FIELD_MURK_FRAGMENTS.length];
+  const reply = airy
+    ? transparentFragment(stageName === "exhale" ? 1 : 3)
+    : GLASS_NOTES[(GrooveState.cycle + stepIndex + 3) % GLASS_NOTES.length];
+  const shade = organicFragment(4);
+  const vel = clampValue(
+    0.018 +
+      LongformArcState.turn * 0.042 +
+      observerNorm * 0.018 +
+      circleNorm * 0.008,
+    0.016,
+    0.084
+  );
+
+  try {
+    if (airy) {
+      pad.triggerAttackRelease(randomHazeChord(), stageName === "exhale" ? "2n" : "1n", arcTime + 0.016, clampValue(0.024 + LongformArcState.breath * 0.028 + observerNorm * 0.018, 0.02, 0.074));
+      glass.triggerAttackRelease(first, "16n", arcTime + 0.038, vel);
+    } else {
+      glass.triggerAttackRelease(first, organic ? "64n" : "32n", arcTime, vel);
+    }
+
+    if (rand(0.3 + LongformArcState.contrast * 0.24)) {
+      glass.triggerAttackRelease(reply, "64n", arcTime + 0.052 + Math.random() * 0.026, vel * 0.58);
+    }
+    if (rand(0.2 + LongformArcState.turn * 0.22 + (organic ? 0.08 : 0))) {
+      texture.triggerAttackRelease("64n", arcTime + 0.014, clampValue(0.012 + LongformArcState.contrast * 0.04 + creationNorm * 0.012, 0.012, 0.064));
+    }
+    if (pressure && rand(0.16 + energyNorm * 0.1)) {
+      const lowNote = PRESSURE_TURN_NOTES[(GrooveState.cycle + stepIndex + 2) % PRESSURE_TURN_NOTES.length];
+      bass.triggerAttackRelease(lowNote, "64n", arcTime + 0.026, clampValue(0.038 + LongformArcState.turn * 0.036 + energyNorm * 0.012, 0.034, 0.09));
+    }
+
+    rememberMotif(first, {
+      reply,
+      shade,
+      strength: 0.052 + LongformArcState.turn * 0.08,
+      air: airy ? 0.18 + LongformArcState.breath * 0.08 : 0.06,
+      source: `arc:${stageName}`
+    });
+    LongformArcState.turn *= 0.68;
+  } catch (error) {
+    console.warn("[Music] longform arc turn failed:", error);
   }
 }
 
@@ -3027,6 +3233,7 @@ function scheduleStep(time) {
   decayOrganicChaos();
   decayMotifMemory();
   decayOrganicEcosystem();
+  decayLongformArc();
 
   // 休符判定
   const isRest = rand(clampValue(EngineParams.restProb + PerformancePadState.void * 0.18 - PerformancePadState.punch * 0.06, 0.02, PerformancePadState.void ? 0.6 : 0.48));
@@ -3054,6 +3261,7 @@ function scheduleStep(time) {
   triggerReferenceDepthDetails(step, t, stepContext);
   triggerGranularDetail(step, t, stepContext);
   triggerMotifAfterimage(step, t, stepContext);
+  triggerLongformArcTurn(step, t, stepContext);
   triggerOrganicEcosystemBloom(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
@@ -3062,7 +3270,7 @@ function scheduleStep(time) {
     // Kick
     const kickChance = chance(EngineParams.kickProb + (isAccentStep ? 0.032 : 0) + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14);
     if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
-      kick.triggerAttackRelease("C2", "16n", t + 0.004, clampValue(0.43 + energyNorm * 0.095 + (isAccentStep ? 0.025 : 0) + PerformancePadState.punch * 0.04, 0.32, 0.66));
+      kick.triggerAttackRelease("C2", "16n", t + 0.004, clampValue(0.36 + energyNorm * 0.085 + (isAccentStep ? 0.018 : 0) + PerformancePadState.punch * 0.032, 0.28, 0.56));
       if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep) && rand(0.46)) {
         try {
           texture.triggerAttackRelease("64n", t + 0.012, clampValue(0.05 + energyNorm * 0.064, 0.038, 0.118));
@@ -3165,6 +3373,7 @@ function startAutoCycle() {
 
   UCM.auto.enabled = true;
   resetAutoDirector();
+  resetLongformArc();
   updateRuntimeUiState();
   updateAutoMixTargets(cycleMs);
 
@@ -3183,7 +3392,8 @@ function updateAutoMixTargets(cycleMs) {
     const wave = Math.sin(phase * Math.PI * 2);
     const ripple = Math.sin((phase * 2.7 + profile.phase) * Math.PI * 2) * 0.23;
     const directorBias = autoDirectorSceneBias(key);
-    const desired = clampValue(profile.base + directorBias + profile.depth * (wave + ripple), 4, 96);
+    const arcBias = longformArcBias(key);
+    const desired = clampValue(profile.base + directorBias + arcBias + profile.depth * (wave + ripple), 4, 96);
     const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : profile.base;
     const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
     if (isManualInfluenceActive(key, now)) {
