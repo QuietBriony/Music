@@ -5371,6 +5371,10 @@ function triggerTimbreFamilyResponse(step, time, context) {
   const phraseTurn = step % 16 === 0 || step % 16 === 8;
   const offPulse = step % 16 === 3 || step % 16 === 6 || step % 16 === 11 || step % 16 === 14;
   const driftedTime = time + Math.random() * (0.01 + waveNorm * 0.018 + PerformancePadState.drift * 0.018);
+  const chromeHymn = clampValue(gradient.chrome * 0.28 + gradient.haze * 0.18 + depth.tail * 0.18 + observerNorm * 0.12 + family.voiceDust * 0.1 + chain * 0.08, 0, 1);
+  const brokenLogic = clampValue(gradient.micro * 0.26 + genre.idm * 0.18 + family.drumSkin * 0.12 + family.acidBiyon * 0.12 + BpmCrossfadeState.refrain * 0.1 + PerformancePadState.repeat * 0.12, 0, 1);
+  const ghostBody = clampValue(gradient.ghost * 0.24 + depth.pulse * 0.18 + family.sub808 * 0.16 + genre.pressure * 0.12 + PerformancePadState.punch * 0.12 - lowGuard * 0.16, 0, 1);
+  const coldPulse = clampValue(genre.techno * 0.18 + genre.idm * 0.12 + gradient.micro * 0.12 + depth.gesture * 0.12 + family.chain * 0.1 + AcidLockState.intensity * 0.12 - genre.ambient * 0.08, 0, 1);
 
   if (pianoMemory && (step % 16 === 4 || step % 16 === 10 || (PerformancePadState.drift && step % 4 === 1) || (chain > 0.52 && step % 8 === 5))) {
     const pianoChance = chance(0.014 + family.pianoMemory * 0.15 + chain * 0.04 + PerformancePadState.drift * 0.055 - eventLoad * 0.04);
@@ -5383,6 +5387,9 @@ function triggerTimbreFamilyResponse(step, time, context) {
         pianoMemory.triggerAttackRelease(root, "16n", driftedTime + 0.004, vel);
         if (rand(0.34 + family.pianoMemory * 0.28 + chain * 0.12)) {
           pianoMemory.triggerAttackRelease(reply, "32n", driftedTime + 0.06 + Math.random() * 0.022, vel * 0.58);
+        }
+        if (rand(0.18 + gradient.memory * 0.2 + family.pianoMemory * 0.12)) {
+          pianoMemory.triggerAttackRelease(shade, "64n", driftedTime + 0.128 + Math.random() * 0.02, vel * 0.42);
         }
         if (glass && rand(0.2 + gradient.chrome * 0.16)) {
           glass.triggerAttackRelease(shade, "64n", driftedTime + 0.102, clampValue(vel * 0.46, 0.01, 0.052));
@@ -5411,6 +5418,9 @@ function triggerTimbreFamilyResponse(step, time, context) {
         if (texture && rand(0.12 + gradient.ghost * 0.14)) {
           texture.triggerAttackRelease("64n", voiceTime + 0.018, clampValue(0.012 + family.voiceDust * 0.03, 0.01, 0.052));
         }
+        if (chromeHymn > 0.46 && rand(0.16 + chromeHymn * 0.18)) {
+          voiceDust.triggerAttackRelease(reply, "32n", voiceTime + 0.13 + Math.random() * 0.026, clampValue(vel * 0.46, 0.008, 0.04));
+        }
         rememberMotif(root, { reply, shade, strength: 0.03 + family.voiceDust * 0.07, air: 0.18 + depth.tail * 0.08, source: "voice-dust" });
         markMixEvent(0.035 + family.voiceDust * 0.035);
       } catch (error) {
@@ -5426,6 +5436,12 @@ function triggerTimbreFamilyResponse(step, time, context) {
         drumSkin.triggerAttackRelease("64n", time + 0.008 + Math.random() * 0.012, clampValue(0.018 + family.drumSkin * 0.074 + creationNorm * 0.018 + (acidOn ? 0.024 : 0), 0.014, 0.13));
         if (hat && (genre.techno > 0.24 || acidOn) && rand(0.16 + family.drumSkin * 0.18)) {
           hat.triggerAttackRelease("64n", time + 0.024 + Math.random() * 0.014, clampValue(0.028 + family.drumSkin * 0.055 + energyNorm * 0.018, 0.024, 0.11));
+        }
+        if (texture && ghostBody > 0.3 && rand(0.16 + ghostBody * 0.22)) {
+          texture.triggerAttackRelease("64n", time + 0.034 + Math.random() * 0.012, clampValue(0.014 + ghostBody * 0.044, 0.012, 0.07));
+        }
+        if (glass && brokenLogic > 0.32 && rand(0.12 + brokenLogic * 0.2)) {
+          glass.triggerAttackRelease(tonalRhymeHigh(step, phaseOffset + 4), "64n", time + 0.044 + Math.random() * 0.016, clampValue(0.014 + brokenLogic * 0.042, 0.012, 0.068));
         }
         markMixEvent(0.04 + family.drumSkin * 0.035);
       } catch (error) {
@@ -5470,10 +5486,36 @@ function triggerTimbreFamilyResponse(step, time, context) {
         if (glass && rand(0.28 + family.acidBiyon * 0.22)) {
           glass.triggerAttackRelease(high, "64n", acidTime + 0.026, clampValue(0.018 + family.acidBiyon * 0.056, 0.014, 0.086));
         }
+        if (drumSkin && rand(0.18 + family.acidBiyon * 0.18)) {
+          drumSkin.triggerAttackRelease("64n", acidTime + 0.016, clampValue(0.018 + family.acidBiyon * 0.05, 0.014, 0.09));
+        }
         rememberMotif(note, { reply: high, shade: turn, strength: 0.04 + family.acidBiyon * 0.08, air: 0.02 + gradient.chrome * 0.05, source: "acid-biyon" });
         markMixEvent(0.07 + family.acidBiyon * 0.08);
       } catch (error) {
         console.warn("[Music] acid biyon failed:", error);
+      }
+    }
+  }
+
+  if (glass && coldPulse > 0.28 && !PerformancePadState.void && (step % 16 === 5 || step % 16 === 12 || (isAccentStep && step % 2 === 1))) {
+    const pulseChance = chance(0.012 + coldPulse * 0.12 + brokenLogic * 0.04 - eventLoad * 0.04);
+    if (rand(pulseChance)) {
+      const root = tonalRhymeMid(step, phaseOffset + 6);
+      const reply = tonalRhymeHigh(step, phaseOffset + 1);
+      const pulseTime = time + 0.02 + Math.random() * (0.012 + waveNorm * 0.014);
+      const vel = clampValue(0.014 + coldPulse * 0.052 + creationNorm * 0.012, 0.012, 0.076);
+      try {
+        glass.triggerAttackRelease(root, "64n", pulseTime, vel);
+        if (rand(0.34 + brokenLogic * 0.24)) {
+          glass.triggerAttackRelease(reply, "64n", pulseTime + 0.046 + Math.random() * 0.014, vel * 0.58);
+        }
+        if (texture && rand(0.2 + coldPulse * 0.18)) {
+          texture.triggerAttackRelease("64n", pulseTime + 0.014, clampValue(0.012 + coldPulse * 0.032, 0.01, 0.058));
+        }
+        rememberMotif(root, { reply, shade: tonalRhymeLow(step, phaseOffset + 2), strength: 0.024 + coldPulse * 0.06, air: gradient.chrome * 0.08, source: "cold-pulse" });
+        markMixEvent(0.045 + coldPulse * 0.04);
+      } catch (error) {
+        console.warn("[Music] cold pulse failed:", error);
       }
     }
   }
@@ -5827,11 +5869,14 @@ function triggerReferenceDepthDetails(step, time, context) {
     waveNorm,
     observerNorm,
     circleNorm,
+    voidNorm,
     isAccentStep
   } = context;
   const gradient = GradientState;
   const depth = DepthState;
   const genre = GenreBlendState;
+  const family = TimbreFamilyState;
+  const lowGuard = MixGovernorState.lowGuard;
 
   const bedGate = step % 8 === 0 || step % 8 === 4;
   if (bedGate && rand(0.035 + genre.ambient * 0.034 + depth.bed * 0.055 + depth.tail * 0.035 + PerformancePadState.void * 0.04 - genre.techno * 0.016)) {
@@ -5844,6 +5889,62 @@ function triggerReferenceDepthDetails(step, time, context) {
       );
     } catch (error) {
       console.warn("[Music] depth bed failed:", error);
+    }
+  }
+
+  const membrane = clampValue(
+    depth.bed * 0.24 +
+      gradient.haze * 0.18 +
+      gradient.ghost * 0.12 +
+      family.pianoMemory * 0.08 +
+      (1 - energyNorm) * 0.12 +
+      voidNorm * 0.08 -
+      lowGuard * 0.2,
+    0,
+    1
+  );
+  if (membrane > 0.28 && !PerformancePadState.punch && (step % 16 === 0 || step % 16 === 8) && rand(0.016 + membrane * 0.12 + genre.ambient * 0.03 - genre.techno * 0.018)) {
+    const lowNote = tonalRhymeLow(step, Math.floor(GenomeState.phase * 4));
+    const airNote = tonalRhymeHigh(step, Math.floor(GenomeState.phase * 6) + 2);
+    try {
+      if (bass && lowGuard < 0.66) {
+        bass.triggerAttackRelease(lowNote, PerformancePadState.void ? "2n" : "1n", time + 0.034, clampValue(0.02 + membrane * 0.05 - lowGuard * 0.02, 0.018, 0.084));
+      }
+      if (voiceDust && rand(0.18 + membrane * 0.22 + depth.tail * 0.08)) {
+        voiceDust.triggerAttackRelease(airNote, "4n", time + 0.072 + Math.random() * 0.04, clampValue(0.012 + membrane * 0.04, 0.01, 0.052));
+      }
+      markMixEvent(0.035 + membrane * 0.025);
+    } catch (error) {
+      console.warn("[Music] low-mid membrane failed:", error);
+    }
+  }
+
+  const chromeHymn = clampValue(
+    gradient.chrome * 0.24 +
+      depth.tail * 0.2 +
+      observerNorm * 0.16 +
+      circleNorm * 0.1 +
+      PerformancePadState.void * 0.14 +
+      family.voiceDust * 0.08,
+    0,
+    1
+  );
+  if (chromeHymn > 0.36 && (step % 16 === 12 || (PerformancePadState.void && step % 8 === 4)) && rand(0.018 + chromeHymn * 0.11 - genre.pressure * 0.02)) {
+    const note = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + Math.floor(GenomeState.phase * 5)) % TRANSPARENT_AIR_FRAGMENTS.length];
+    try {
+      if (pad && rand(0.16 + chromeHymn * 0.2)) {
+        pad.triggerAttackRelease(randomHazeChord(), "1n", time + 0.036, clampValue(0.014 + chromeHymn * 0.034 + circleNorm * 0.008, 0.012, 0.056));
+      }
+      if (voiceDust) {
+        voiceDust.triggerAttackRelease(note, "8n", time + 0.058 + Math.random() * 0.028, clampValue(0.012 + chromeHymn * 0.046 + PerformancePadState.void * 0.01, 0.01, 0.062));
+      }
+      if (glass && rand(0.28 + gradient.chrome * 0.18)) {
+        glass.triggerAttackRelease(tonalRhymeHigh(step, 4), "32n", time + 0.126, clampValue(0.014 + chromeHymn * 0.032, 0.012, 0.054));
+      }
+      rememberMotif(note, { reply: tonalRhymeHigh(step, 6), shade: tonalRhymeMid(step, 2), strength: 0.025 + chromeHymn * 0.055, air: 0.18 + depth.tail * 0.08, source: "chrome-hymn" });
+      markMixEvent(0.045 + chromeHymn * 0.035);
+    } catch (error) {
+      console.warn("[Music] chrome hymn failed:", error);
     }
   }
 
@@ -5860,6 +5961,10 @@ function triggerReferenceDepthDetails(step, time, context) {
       if (rand(0.26 + depth.tail * 0.28 + PerformancePadState.repeat * 0.12)) {
         glass.triggerAttackRelease(echoNote, "64n", particleTime + 0.058 + Math.random() * 0.026, vel * 0.58);
       }
+      if (pianoMemory && rand(0.18 + gradient.memory * 0.2 + family.pianoMemory * 0.14)) {
+        pianoMemory.triggerAttackRelease(note, "64n", particleTime + 0.034 + Math.random() * 0.018, clampValue(vel * 0.56, 0.01, 0.048));
+      }
+      rememberMotif(note, { reply: echoNote, shade: tonalRhymeMid(step, 3), strength: 0.02 + gradient.memory * 0.05, air: depth.tail * 0.05, source: "depth-memory" });
     } catch (error) {
       console.warn("[Music] depth particle failed:", error);
     }
@@ -5876,6 +5981,9 @@ function triggerReferenceDepthDetails(step, time, context) {
           time + 0.032,
           clampValue(0.016 + energyNorm * 0.022 + depth.pulse * 0.014, 0.014, 0.052)
         );
+      }
+      if (drumSkin && rand(0.12 + gradient.ghost * 0.22 + family.drumSkin * 0.12)) {
+        drumSkin.triggerAttackRelease("64n", time + 0.024 + Math.random() * 0.012, clampValue(0.014 + depth.pulse * 0.04 + gradient.ghost * 0.018, 0.012, 0.07));
       }
     } catch (error) {
       console.warn("[Music] depth pulse failed:", error);
