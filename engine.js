@@ -2542,7 +2542,11 @@ function profileFromHazamaPayload(payload) {
     return null;
   }
   const profile = payload.profile;
-  return profile && typeof profile === "object" ? profile : null;
+  if (!profile || typeof profile !== "object") {
+    HazamaBridgeState.lastError = "missing profile";
+    return null;
+  }
+  return profile;
 }
 
 function importHazamaProfile(profile, options = {}) {
@@ -6109,10 +6113,10 @@ function attachUI() {
         updateFromUI({ apply: false });
         updateOutputLevel({ apply: false });
         updateVoiceColorFromUI({ apply: false });
-        applyPendingHazamaProfileOnStart();
         releaseAllVoices();
         resetRuntimeCounters();
         restoreMasterLevel();
+        applyPendingHazamaProfileOnStart();
         applyUCMToParams({ force: true });
 
         if (!isPlaying) {
