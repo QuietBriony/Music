@@ -60,6 +60,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Xtal reference gradient: [docs/xtal-reference-gradient.md](docs/xtal-reference-gradient.md)
 - Xtal reference gradient depth map: [docs/xtal-reference-gradient-depth-map.md](docs/xtal-reference-gradient-depth-map.md)
 - iOS Safari background playback check: [docs/ios-safari-background-playback-check.md](docs/ios-safari-background-playback-check.md)
+- Browser listening checklist: [docs/runtime-browser-listening-checklist.md](docs/runtime-browser-listening-checklist.md)
 
 ---
 
