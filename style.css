@@ -2072,3 +2072,407 @@ body[data-playing="true"][data-auto="true"] .fader-group {
     grid-template-columns: 1fr;
   }
 }
+
+/* Final responsive operation pass.
+   This sits last so the industrial skin cannot collapse the mobile controls. */
+#transport-dock {
+  display: grid;
+  gap: 6px;
+}
+
+@media (max-width: 880px) {
+  html,
+  body {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  body {
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+  }
+
+  #ui-shell {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    min-height: 100dvh;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+    display: grid;
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    justify-content: stretch;
+  }
+
+  #ui-header,
+  #control-panel {
+    width: 100%;
+    max-width: 720px;
+    justify-self: center;
+  }
+
+  #ui-header {
+    grid-template-columns: 1fr;
+  }
+
+  #control-panel {
+    min-width: 0;
+    max-height: none;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 10px;
+  }
+
+  #energy-column,
+  #right-column {
+    min-width: 0;
+    border-left: 0;
+    border-right: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  #obs-grid {
+    min-width: 0;
+    overflow: visible;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #right-column {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  #auto-block,
+  #preset-block,
+  #performance-pads,
+  #transport-dock,
+  #transport,
+  #status-line {
+    grid-area: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  html,
+  body {
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-x: none;
+  }
+
+  #ui-shell {
+    min-height: 100dvh;
+    padding-bottom: calc(108px + env(safe-area-inset-bottom));
+    gap: 8px;
+  }
+
+  #ui-header {
+    padding: 8px;
+  }
+
+  #ui-header h1 {
+    font-size: 13px;
+  }
+
+  #header-runtime span {
+    min-height: 34px;
+  }
+
+  #control-panel {
+    padding: 8px;
+    grid-template-rows: none;
+    row-gap: 8px;
+    backdrop-filter: none;
+  }
+
+  #energy-column {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  #bpm-indicator {
+    min-width: 0;
+    padding: 7px 8px;
+    border: 1px solid rgba(76, 202, 209, 0.2);
+    text-align: left;
+  }
+
+  .fader-column,
+  .fader-group {
+    min-width: 0;
+    align-items: stretch;
+  }
+
+  .fader-group {
+    min-height: 68px;
+    padding: 8px;
+  }
+
+  .fader-vertical,
+  .fader-vertical.small {
+    height: auto;
+    min-height: 40px;
+    display: grid;
+    grid-template-columns: minmax(34px, auto) minmax(0, 1fr) minmax(40px, auto);
+    gap: 8px;
+    align-items: center;
+  }
+
+  .fader-vertical input[type="range"],
+  .auto-body input[type="range"] {
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    touch-action: pan-y;
+  }
+
+  .fader-vertical input[type="range"]::-webkit-slider-runnable-track,
+  .auto-body input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+  }
+
+  .fader-vertical input[type="range"]::-moz-range-track,
+  .auto-body input[type="range"]::-moz-range-track {
+    height: 6px;
+  }
+
+  .fader-vertical input[type="range"]::-webkit-slider-thumb,
+  .auto-body input[type="range"]::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+    margin-top: -9px;
+  }
+
+  .fader-vertical input[type="range"]::-moz-range-thumb,
+  .auto-body input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+  }
+
+  #right-column {
+    grid-template-areas: none;
+  }
+
+  #auto-block,
+  #preset-block {
+    padding: 8px;
+  }
+
+  .auto-body,
+  .route-body {
+    min-height: 44px;
+    display: grid;
+    grid-template-columns: minmax(48px, auto) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .route-body .label,
+  .auto-body .label,
+  .auto-body .hint,
+  .route-body .hint {
+    display: inline;
+  }
+
+  #odd-logic-body {
+    grid-template-columns: minmax(48px, auto) minmax(0, 1fr) auto auto;
+  }
+
+  #background-body {
+    grid-template-columns: minmax(48px, auto) 1fr 1fr auto;
+  }
+
+  .switch {
+    width: 48px;
+    height: 28px;
+  }
+
+  .switch input {
+    width: 48px;
+    height: 28px;
+  }
+
+  .switch .slider::before {
+    width: 22px;
+    height: 22px;
+    left: 2px;
+    bottom: 2px;
+  }
+
+  .switch input:checked + .slider::before {
+    transform: translateX(20px);
+  }
+
+  button,
+  select,
+  .mini-action,
+  .recorder-button,
+  .recorder-link,
+  #preset_select,
+  #atmosphere_select,
+  #source_color_select,
+  #audio_output_select,
+  #odd_logic_mode,
+  #culture_grammar_select,
+  #auto_arc_mode {
+    min-height: 44px;
+    font-size: 11px;
+    touch-action: manipulation;
+  }
+
+  #performance-pads {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .performance-pad {
+    min-height: 54px;
+  }
+
+  #transport-dock {
+    position: fixed;
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 20;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 8px;
+    border: 1px solid rgba(233, 244, 239, 0.24);
+    background:
+      linear-gradient(90deg, rgba(255, 74, 61, 0.12), transparent 34%),
+      rgba(1, 4, 5, 0.94);
+    box-shadow: 0 -14px 36px rgba(0, 0, 0, 0.58), inset 0 0 0 1px rgba(143, 255, 245, 0.08);
+    backdrop-filter: blur(10px) contrast(1.08);
+  }
+
+  #transport {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+  }
+
+  #transport button {
+    min-width: 0;
+    min-height: 50px;
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+
+  #status-line {
+    min-height: 44px;
+    margin: 0;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    text-align: left;
+  }
+
+  #recorder-tools {
+    margin-left: 0;
+  }
+
+  .recorder-button {
+    min-width: 58px;
+  }
+}
+
+@media (max-width: 430px) {
+  #ui-shell {
+    padding-left: max(6px, env(safe-area-inset-left));
+    padding-right: max(6px, env(safe-area-inset-right));
+  }
+
+  #ui-header {
+    gap: 6px;
+  }
+
+  .subtitle,
+  .identity-line {
+    display: none;
+  }
+
+  #control-panel {
+    padding: 6px;
+  }
+
+  #obs-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  #energy-column,
+  .fader-group {
+    min-height: 52px;
+  }
+
+  .fader-title,
+  .fader-label {
+    margin-bottom: 2px;
+  }
+
+  .fader-vertical,
+  .fader-vertical.small {
+    min-height: 36px;
+    grid-template-columns: 32px minmax(0, 1fr) 40px;
+    gap: 6px;
+  }
+
+  .label-main {
+    font-size: 9px;
+  }
+
+  .label-sub,
+  .fader-min,
+  .fader-max {
+    font-size: 8px;
+  }
+
+  .auto-body,
+  .route-body,
+  #odd-logic-body,
+  #background-body {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  #odd-logic-body,
+  #background-body {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #odd-logic-body .label,
+  #odd-logic-body .hint,
+  #background-body .label,
+  #background-body .hint,
+  #audio-route-body .hint {
+    display: none;
+  }
+
+  .voice-controls {
+    grid-template-columns: 1fr;
+  }
+
+  #transport-dock {
+    padding: 7px;
+  }
+
+  #transport button {
+    min-height: 48px;
+  }
+}

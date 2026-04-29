@@ -12,6 +12,7 @@
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
     <!-- Phase1: if window.AudioEngine is not present, adapter stays no-op -->
     <script src="audio/namima-audio-adapter.js" defer></script>
+    <script src="audio/human-groove-governor.js" defer></script>
 
     <!-- Engine -->
     <script src="engine.js" defer></script>
@@ -276,19 +277,21 @@
                     </div>
                 </div>
 
-                <!-- Transport -->
-                <div id="transport">
-                    <button id="btn_start" class="primary">START</button>
-                    <button id="btn_stop" class="ghost">STOP</button>
-                </div>
+                <div id="transport-dock">
+                    <!-- Transport -->
+                    <div id="transport">
+                        <button id="btn_start" class="primary">START</button>
+                        <button id="btn_stop" class="ghost">STOP</button>
+                    </div>
 
-                <!-- ステータス -->
-                <div id="status-line">
-                    <span id="status-text">Ready</span>
-                    <span id="recorder-tools">
-                        <button type="button" id="btn_rec" class="recorder-button">REC</button>
-                        <a id="rec_download" class="recorder-link" hidden download>save</a>
-                    </span>
+                    <!-- ステータス -->
+                    <div id="status-line">
+                        <span id="status-text">Ready</span>
+                        <span id="recorder-tools">
+                            <button type="button" id="btn_rec" class="recorder-button">REC</button>
+                            <a id="rec_download" class="recorder-link" hidden download>save</a>
+                        </span>
+                    </div>
                 </div>
 
             </section>
