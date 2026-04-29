@@ -2483,6 +2483,7 @@ function publishMusicRuntimeState() {
     hazama: {
       active: HazamaBridgeState.active,
       loaded: HazamaBridgeState.loaded,
+      connectionState: hazamaConnectionState(),
       source: HazamaBridgeState.source,
       name: HazamaBridgeState.name,
       style: HazamaBridgeState.style,
@@ -2525,6 +2526,32 @@ function hazamaRuntimeFeedbackEnabled() {
 
 function hazamaAutoFollowActive() {
   return !!(HazamaBridgeState.loaded && HazamaBridgeState.active && HazamaBridgeState.autoFollow);
+}
+
+function hazamaConnectionState() {
+  if (!HazamaBridgeState.loaded) return "off";
+  if (HazamaBridgeState.lastError) return "error";
+  if (HazamaBridgeState.controlPending) return "control-pending";
+  if (hazamaAutoFollowActive()) return "follow";
+  if (isPlaying && HazamaBridgeState.active) return "sync";
+  if (HazamaBridgeState.controlAction === "pause") return "paused";
+  if (HazamaBridgeState.controlAction === "stop") return "stopped";
+  if (HazamaBridgeState.pending) return "pending";
+  return "ready";
+}
+
+function hazamaUiStatusLabel() {
+  return {
+    off: "",
+    error: "HAZAMA.ERROR",
+    "control-pending": "HAZAMA.PENDING",
+    follow: "HAZAMA.FOLLOW",
+    sync: "HAZAMA.SYNC",
+    paused: "HAZAMA.PAUSE",
+    stopped: "HAZAMA.STOP",
+    pending: "HAZAMA.PENDING",
+    ready: "HAZAMA.READY"
+  }[hazamaConnectionState()] || "HAZAMA.READY";
 }
 
 function effectiveAutoPerformanceActive() {
@@ -2591,6 +2618,7 @@ function buildHazamaRuntimeFeedbackPayload(kind = "heartbeat", state = window.Mu
       hazama: {
         active: !!HazamaBridgeState.active,
         autoFollow: hazamaAutoFollowActive(),
+        connectionState: hazamaConnectionState(),
         controlAction: HazamaBridgeState.controlAction || "",
         name: HazamaBridgeState.name || "",
         stage: HazamaBridgeState.stage || "",
@@ -3612,16 +3640,20 @@ function setHazamaStatus(text) {
 }
 
 function updateHazamaUiState() {
+  const statusLabel = hazamaUiStatusLabel();
   const button = document.getElementById("btn_start");
   if (button) {
-    button.textContent = HazamaBridgeState.loaded ? "START.HZM" : "START";
+    button.textContent = HazamaBridgeState.loaded ? (hazamaAutoFollowActive() ? "HZM.ON" : "START.HZM") : "START";
     button.setAttribute("aria-label", HazamaBridgeState.loaded ? "Start Hazama audio" : "Start audio");
     button.setAttribute("title", HazamaBridgeState.loaded ? "Start Hazama audio" : "Start audio");
   }
   if (document.body) {
     document.body.dataset.hazama = HazamaBridgeState.loaded ? "true" : "false";
     document.body.dataset.hazamaStage = HazamaBridgeState.stage || "";
+    document.body.dataset.hazamaState = hazamaConnectionState();
   }
+  const presetStatus = document.getElementById("preset-status");
+  if (presetStatus && HazamaBridgeState.loaded) presetStatus.textContent = statusLabel;
   updateHeaderRuntimeUi();
 }
 
@@ -3728,6 +3760,7 @@ function importHazamaProfile(profile, options = {}) {
   HazamaBridgeState.loaded = true;
   HazamaBridgeState.autoFollow = !!isPlaying || HazamaBridgeState.autoFollow;
   HazamaBridgeState.controlPending = false;
+  if (isPlaying) HazamaBridgeState.controlAction = "";
   HazamaBridgeState.source = options.source || source.repo || "hazama";
   HazamaBridgeState.name = typeof profile.name === "string" ? profile.name.slice(0, 80) : "hazama";
   HazamaBridgeState.style = style;
@@ -3800,7 +3833,7 @@ function importHazamaProfile(profile, options = {}) {
   }
   updateHazamaUiState();
   updateRuntimeUiState();
-  setHazamaStatus(HazamaBridgeState.pending ? "HAZAMA.PENDING" : "HAZAMA.SYNC");
+  setHazamaStatus(hazamaUiStatusLabel());
   requestHazamaRuntimeFeedback("profile");
   return true;
 }
@@ -3836,8 +3869,10 @@ function handleHazamaControlPayload(payload, options = {}) {
   if (action === "stop" || action === "pause") {
     HazamaBridgeState.autoFollow = false;
     HazamaBridgeState.pending = HazamaBridgeState.loaded;
+    if (action === "stop") HazamaBridgeState.active = false;
     stopPlayback({ source: `hazama-control.${action}`, feedbackKind: action === "stop" ? "control.stop" : "control.pause" });
-    setHazamaStatus(action === "stop" ? "HAZAMA.STOP" : "HAZAMA.PAUSE");
+    updateHazamaUiState();
+    setHazamaStatus(hazamaUiStatusLabel());
     return true;
   }
 
@@ -3875,7 +3910,7 @@ function applyPendingHazamaProfileOnStart() {
   applyHazamaProfileToEngineParams({ force: true });
   updateHazamaUiState();
   updateRuntimeUiState();
-  setHazamaStatus("HAZAMA.SYNC");
+  setHazamaStatus(hazamaUiStatusLabel());
   requestHazamaRuntimeFeedback("start.hazama");
   return true;
 }
@@ -3884,7 +3919,7 @@ function importHazamaFromHash() {
   if (typeof window === "undefined" || !window.location || !window.location.hash) return false;
   const match = window.location.hash.match(/(?:^#|&)hazama=([^&]+)/);
   if (!match) return false;
-  setHazamaStatus("HAZAMA.READY");
+  setHazamaStatus(hazamaUiStatusLabel() || "HAZAMA.READY");
   const payload = decodeBase64UrlJson(decodeURIComponent(match[1]));
   return handleHazamaPayload(payload, { source: "hash", force: true });
 }
@@ -3911,6 +3946,21 @@ function setupHazamaBridge() {
   });
 
   window.importHazamaProfile = importHazamaProfile;
+  window.handleHazamaControl = handleHazamaControlPayload;
+  window.MusicHazamaBridge = {
+    importProfile: importHazamaProfile,
+    handleControl: handleHazamaControlPayload,
+    getState: () => ({
+      loaded: HazamaBridgeState.loaded,
+      active: HazamaBridgeState.active,
+      autoFollow: hazamaAutoFollowActive(),
+      pending: HazamaBridgeState.pending,
+      connectionState: hazamaConnectionState(),
+      controlAction: HazamaBridgeState.controlAction,
+      stage: HazamaBridgeState.stage,
+      depthId: HazamaBridgeState.depthId
+    })
+  };
 }
 
 function hazamaBaseValue(key) {
@@ -5936,7 +5986,13 @@ function updateUIFromParams(){
 }
 
 function headerRuntimeSyncLabel() {
-  if (HazamaBridgeState.loaded) return HazamaBridgeState.depthId ? `HZM.${HazamaBridgeState.depthId}` : "HZM";
+  if (HazamaBridgeState.loaded) {
+    if (hazamaAutoFollowActive()) return HazamaBridgeState.depthId ? `HZM.${HazamaBridgeState.depthId}` : "HZM.AUTO";
+    if (HazamaBridgeState.controlAction === "pause") return "HZM.PAUS";
+    if (HazamaBridgeState.controlAction === "stop") return "HZM.STOP";
+    if (HazamaBridgeState.pending || HazamaBridgeState.controlPending) return "HZM.PEND";
+    return "HZM.RDY";
+  }
   if (albumArcActive()) return currentAlbumArcChapter()?.label || "ARC";
   if (UCM.auto.enabled) return "AUTO";
   return isPlaying ? "PLAY" : "LIVE";
@@ -8119,6 +8175,7 @@ function stopPlayback(options = {}) {
   releasePlaybackWakeLock();
   stopBackgroundAudioBridge();
   if (statusText) statusText.textContent = "Stopped";
+  if (HazamaBridgeState.loaded) updateHazamaUiState();
   updateRuntimeUiState();
   requestHazamaRuntimeFeedback(feedbackKind);
 }
