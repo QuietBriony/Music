@@ -752,6 +752,10 @@ const HazamaBridgeState = {
   audio: {},
   patterns: {},
   pending: false,
+  autoFollow: false,
+  controlAction: "",
+  controlPending: false,
+  controlAt: 0,
   lastExternalAt: 0,
   lastAutonomyCycle: -1,
   autonomyGeneration: 0,
@@ -772,7 +776,9 @@ const HazamaRuntimeFeedbackState = {
 const HAZAMA_RUNTIME_FEEDBACK_TARGET_ORIGINS = [
   "https://quietbriony.github.io",
   "http://127.0.0.1:8000",
-  "http://localhost:8000"
+  "http://localhost:8000",
+  "http://127.0.0.1:8095",
+  "http://localhost:8095"
 ];
 
 function markManualInfluenceFromEvent(event) {
@@ -1478,7 +1484,7 @@ function resetAutoDirector() {
 }
 
 function advanceAutoDirectorPhrase() {
-  if (!UCM.auto.enabled || !isPlaying) return;
+  if (!effectiveAutoPerformanceActive() || !isPlaying) return;
   const scene = currentAutoDirectorScene();
   AutoDirectorState.phrase += 1;
   if (AutoDirectorState.phrase >= (scene.length || 4)) {
@@ -1549,7 +1555,7 @@ function startAutoPerformanceGesture(name) {
 }
 
 function maybeTriggerAutoPerformanceGesture(step, context) {
-  if (!UCM.auto.enabled || !isPlaying) return;
+  if (!effectiveAutoPerformanceActive() || !isPlaying) return;
   const now = performanceNowMs();
   if (hasActivePerformancePad()) return;
   if (now - PerformancePadState.lastTouchAt < AUTO_GESTURE_MANUAL_GRACE_MS) return;
@@ -2456,6 +2462,7 @@ function publishMusicRuntimeState() {
     humanGroove: typeof window.HumanGrooveGovernor?.getState === "function"
       ? window.HumanGrooveGovernor.getState()
       : (typeof window.HumanGrooveGovernor?.state === "object" ? { ...window.HumanGrooveGovernor.state } : null),
+    autoFollow: hazamaAutoFollowActive(),
     albumArc: {
       mode: AlbumArcState.mode,
       active: albumArcActive(),
@@ -2480,6 +2487,9 @@ function publishMusicRuntimeState() {
       name: HazamaBridgeState.name,
       style: HazamaBridgeState.style,
       pending: HazamaBridgeState.pending,
+      autoFollow: HazamaBridgeState.autoFollow,
+      controlAction: HazamaBridgeState.controlAction,
+      controlPending: HazamaBridgeState.controlPending,
       stage: HazamaBridgeState.stage,
       depthId: HazamaBridgeState.depthId,
       stability: HazamaBridgeState.stability,
@@ -2513,6 +2523,14 @@ function hazamaRuntimeFeedbackEnabled() {
   return !!(HazamaBridgeState.loaded || HazamaBridgeState.active);
 }
 
+function hazamaAutoFollowActive() {
+  return !!(HazamaBridgeState.loaded && HazamaBridgeState.active && HazamaBridgeState.autoFollow);
+}
+
+function effectiveAutoPerformanceActive() {
+  return !!(UCM.auto.enabled || hazamaAutoFollowActive());
+}
+
 function sourceFamilyFeedback() {
   const family = typeof TimbreFamilyState !== "undefined" ? TimbreFamilyState : {};
   const inner = family.inner || {};
@@ -2540,7 +2558,8 @@ function buildHazamaRuntimeFeedbackPayload(kind = "heartbeat", state = window.Mu
     target: "hazama",
     runtime: {
       playing: !!isPlaying,
-      auto: !!UCM.auto.enabled,
+      auto: !!(UCM.auto.enabled || hazamaAutoFollowActive()),
+      autoFollow: hazamaAutoFollowActive(),
       bpm: Math.round(EngineParams.bpm || 0),
       mode: EngineParams.mode,
       outputLevel: Math.round(OutputState.level || 0),
@@ -2571,6 +2590,8 @@ function buildHazamaRuntimeFeedbackPayload(kind = "heartbeat", state = window.Mu
       },
       hazama: {
         active: !!HazamaBridgeState.active,
+        autoFollow: hazamaAutoFollowActive(),
+        controlAction: HazamaBridgeState.controlAction || "",
         name: HazamaBridgeState.name || "",
         stage: HazamaBridgeState.stage || "",
         depthId: HazamaBridgeState.depthId || ""
@@ -2603,7 +2624,8 @@ function buildHazamaRuntimeFeedbackPayload(kind = "heartbeat", state = window.Mu
       acidDrive: true,
       sourceFamilies: true,
       cultureGrammar: true,
-      oddLogicProposal: true
+      oddLogicProposal: true,
+      hazamaControl: true
     }
   };
 }
@@ -2632,7 +2654,7 @@ function hazamaRuntimeFeedbackSignature() {
   const inner = family.inner || {};
   return [
     isPlaying ? "1" : "0",
-    UCM.auto.enabled ? "auto" : "manual",
+    UCM.auto.enabled ? "auto" : (hazamaAutoFollowActive() ? "hazama" : "manual"),
     Math.round((EngineParams.bpm || 0) / 2) * 2,
     albumArcActive() ? currentAlbumArcChapter()?.label || "" : "live",
     CultureGrammarState.selected || "auto",
@@ -3144,7 +3166,11 @@ function updatePerformancePadStatus() {
   if (activeName) {
     statusText.textContent = PERFORMANCE_PAD_STATUS[activeName] || `${activeName.toUpperCase()} active`;
   } else if (isPlaying) {
-    statusText.textContent = albumArcActive() ? `Playing / ${currentAlbumArcChapter().label}` : UCM.auto.enabled ? "Playing / AutoMix" : "Playing…";
+    statusText.textContent = albumArcActive()
+      ? `Playing / ${currentAlbumArcChapter().label}`
+      : hazamaAutoFollowActive()
+        ? "Playing / Hazama"
+        : UCM.auto.enabled ? "Playing / AutoMix" : "Playing…";
   }
 }
 
@@ -3700,6 +3726,8 @@ function importHazamaProfile(profile, options = {}) {
 
   HazamaBridgeState.active = true;
   HazamaBridgeState.loaded = true;
+  HazamaBridgeState.autoFollow = !!isPlaying || HazamaBridgeState.autoFollow;
+  HazamaBridgeState.controlPending = false;
   HazamaBridgeState.source = options.source || source.repo || "hazama";
   HazamaBridgeState.name = typeof profile.name === "string" ? profile.name.slice(0, 80) : "hazama";
   HazamaBridgeState.style = style;
@@ -3786,9 +3814,58 @@ function handleHazamaPayload(payload, options = {}) {
   return importHazamaProfile(profile, options);
 }
 
+function controlFromHazamaPayload(payload) {
+  if (!payload || typeof payload !== "object") return null;
+  if (payload.type !== "hazama-control") return null;
+  if (payload.version !== 1) return null;
+  if (payload.provider !== "music") return null;
+  if (payload.target !== "music") return null;
+  const action = typeof payload.action === "string" ? payload.action.trim().toLowerCase() : "";
+  if (!["pause", "resume", "stop"].includes(action)) return null;
+  return action;
+}
+
+function handleHazamaControlPayload(payload, options = {}) {
+  const action = controlFromHazamaPayload(payload);
+  if (!action) return false;
+
+  HazamaBridgeState.controlAction = action;
+  HazamaBridgeState.controlAt = Date.now();
+  HazamaBridgeState.controlPending = false;
+
+  if (action === "stop" || action === "pause") {
+    HazamaBridgeState.autoFollow = false;
+    HazamaBridgeState.pending = HazamaBridgeState.loaded;
+    stopPlayback({ source: `hazama-control.${action}`, feedbackKind: action === "stop" ? "control.stop" : "control.pause" });
+    setHazamaStatus(action === "stop" ? "HAZAMA.STOP" : "HAZAMA.PAUSE");
+    return true;
+  }
+
+  if (!HazamaBridgeState.loaded) {
+    HazamaBridgeState.controlPending = true;
+    setHazamaStatus("HAZAMA.PENDING");
+    requestHazamaRuntimeFeedback("control.pending");
+    return true;
+  }
+
+  if (!initialized) {
+    HazamaBridgeState.pending = true;
+    HazamaBridgeState.controlPending = true;
+    setHazamaStatus("HAZAMA.PENDING");
+    requestHazamaRuntimeFeedback("control.pending");
+    return true;
+  }
+
+  startPlayback({ source: options.source || "hazama-control.resume", feedbackKind: "control.resume" });
+  return true;
+}
+
 function applyPendingHazamaProfileOnStart() {
   if (!HazamaBridgeState.loaded) return false;
   HazamaBridgeState.pending = false;
+  HazamaBridgeState.active = true;
+  HazamaBridgeState.autoFollow = true;
+  HazamaBridgeState.controlPending = false;
   for (const key of UCM_KEYS) {
     if (typeof UCM_TARGET[key] !== "number") continue;
     UCM_CUR[key] = UCM_TARGET[key];
@@ -3823,9 +3900,14 @@ function setupHazamaBridge() {
     const data = event && event.data;
     if (!isAllowedHazamaOrigin(event.origin)) return;
     if (!data || typeof data !== "object") return;
-    if (data.type !== "hazama-profile") return;
     if (data.provider !== "music") return;
-    handleHazamaPayload(data, { source: "postMessage" });
+    if (data.type === "hazama-profile") {
+      handleHazamaPayload(data, { source: "postMessage" });
+      return;
+    }
+    if (data.type === "hazama-control") {
+      handleHazamaControlPayload(data, { source: "postMessage" });
+    }
   });
 
   window.importHazamaProfile = importHazamaProfile;
@@ -7966,6 +8048,81 @@ function throttle(fn, delay) {
   };
 }
 
+async function startPlayback(options = {}) {
+  if (isStarting) return false;
+  isStarting = true;
+
+  const autoToggle = document.getElementById("auto_toggle");
+  const statusText = document.getElementById("status-text");
+  const feedbackKind = options.feedbackKind || (HazamaBridgeState.loaded ? "start.hazama" : "start");
+
+  try {
+    await Tone.start();
+    await resumeAudioContext(options.source || "start");
+
+    ensureTransportScheduled();
+    initialized = true;
+    safeCallMusicAudioAdapter("start");
+
+    updateFromUI({ apply: false });
+    updateOutputLevel({ apply: false });
+    updateVoiceColorFromUI({ apply: false });
+    releaseAllVoices();
+    resetRuntimeCounters();
+    restoreMasterLevel();
+    applyPendingHazamaProfileOnStart();
+    applyUCMToParams({ force: true });
+
+    if (!isPlaying) {
+      isPlaying = true;
+      Tone.Transport.start("+0.03");
+    }
+    if (statusText) statusText.textContent = hazamaAutoFollowActive() ? "Playing / Hazama" : "Playing…";
+    updateRuntimeUiState();
+
+    if (autoToggle && autoToggle.checked) {
+      startAutoCycle();
+    }
+    setupMediaSessionControls();
+    updateMediaSessionPlaybackState();
+    await startBackgroundAudioBridge();
+    requestPlaybackWakeLock();
+    requestHazamaRuntimeFeedback(feedbackKind);
+    renderModeLabel();
+    return true;
+  } catch (error) {
+    console.warn("[Music] start failed:", error);
+    isPlaying = false;
+    updateRuntimeUiState();
+    releaseAllVoices();
+    if (statusText) statusText.textContent = "Start failed";
+    return false;
+  } finally {
+    isStarting = false;
+  }
+}
+
+function stopPlayback(options = {}) {
+  const statusText = document.getElementById("status-text");
+  const feedbackKind = options.feedbackKind || "stop";
+
+  isPlaying = false;
+  stopLocalRecorder();
+  stopAutoCycle({ keepEnabled: true });
+  try { Tone.Transport.stop(); } catch(e) {}
+  releaseAllVoices();
+  resetRuntimeCounters();
+  clearPerformancePads();
+  quietMasterLevel();
+  safeCallMusicAudioAdapter("stop");
+  updateMediaSessionPlaybackState();
+  releasePlaybackWakeLock();
+  stopBackgroundAudioBridge();
+  if (statusText) statusText.textContent = "Stopped";
+  updateRuntimeUiState();
+  requestHazamaRuntimeFeedback(feedbackKind);
+}
+
 function attachUI() {
   const ids = [
     "fader_energy",
@@ -8028,72 +8185,18 @@ function attachUI() {
   const btnRec = document.getElementById("btn_rec");
 
   if (btnStart) {
-    btnStart.onclick = async () => {
-      if (isStarting) return;
-      isStarting = true;
-
-      try {
-        await Tone.start();
-        await resumeAudioContext("start");
-
-        ensureTransportScheduled();
-        initialized = true;
-        safeCallMusicAudioAdapter("start");
-
-        updateFromUI({ apply: false });
-        updateOutputLevel({ apply: false });
-        updateVoiceColorFromUI({ apply: false });
-        releaseAllVoices();
-        resetRuntimeCounters();
-        restoreMasterLevel();
-        applyPendingHazamaProfileOnStart();
-        applyUCMToParams({ force: true });
-
-        if (!isPlaying) {
-          isPlaying = true;
-          Tone.Transport.start("+0.03");
-          if (statusText) statusText.textContent = "Playing…";
-        }
-        updateRuntimeUiState();
-
-        if (autoToggle && autoToggle.checked) {
-          startAutoCycle();
-        }
-        setupMediaSessionControls();
-        updateMediaSessionPlaybackState();
-        await startBackgroundAudioBridge();
-        requestPlaybackWakeLock();
-        requestHazamaRuntimeFeedback("start");
-  renderModeLabel();
-      } catch (error) {
-        console.warn("[Music] start failed:", error);
-        isPlaying = false;
-        updateRuntimeUiState();
-        releaseAllVoices();
-        if (statusText) statusText.textContent = "Start failed";
-      } finally {
-        isStarting = false;
-      }
+    btnStart.onclick = () => {
+      startPlayback({ source: HazamaBridgeState.loaded ? "start.hazama" : "start" });
     };
   }
 
   if (btnStop) {
     btnStop.onclick = () => {
-      isPlaying = false;
-      stopLocalRecorder();
-      stopAutoCycle({ keepEnabled: true });
-      try { Tone.Transport.stop(); } catch(e) {}
-      releaseAllVoices();
-      resetRuntimeCounters();
-      clearPerformancePads();
-      quietMasterLevel();
-      safeCallMusicAudioAdapter("stop");
-      updateMediaSessionPlaybackState();
-      releasePlaybackWakeLock();
-      stopBackgroundAudioBridge();
-      if (statusText) statusText.textContent = "Stopped";
-      updateRuntimeUiState();
-      requestHazamaRuntimeFeedback("stop");
+      if (HazamaBridgeState.loaded) {
+        HazamaBridgeState.autoFollow = false;
+        HazamaBridgeState.pending = true;
+      }
+      stopPlayback({ source: "manual.stop" });
     };
   }
 
@@ -8289,10 +8392,17 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     if (isPlaying) {
       resumeAudioContext("visible");
+      try {
+        if (Tone && Tone.Transport && Tone.Transport.state !== "started") {
+          ensureTransportScheduled();
+          Tone.Transport.start("+0.03");
+        }
+      } catch(e) {}
       if (PlaybackState.iosSafariBridgePreferred && !PlaybackState.backgroundBridgeActive) {
         startBackgroundAudioBridge();
       }
       requestPlaybackWakeLock();
+      if (HazamaBridgeState.loaded) requestHazamaRuntimeFeedback("focus");
     }
     refreshAudioOutputDevices();
   } else if (PlaybackState.wakeLockEnabled && isPlaying) {
