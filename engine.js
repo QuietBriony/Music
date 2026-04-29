@@ -138,6 +138,81 @@ const LONGFORM_ARC_STAGES = [
     gesture: { drift: 0.1, repeat: 0.01, punch: 0, void: 0.2 }
   }
 ];
+const ALBUM_ARC_TOTAL_MS = 36 * 60 * 1000;
+const ALBUM_ARC_PROGRAM = [
+  {
+    name: "SUBMERGE",
+    label: "ARC.SUB",
+    durationMs: 7 * 60 * 1000,
+    tempoBias: -15,
+    acidDrive: 0,
+    bias: { energy: -18, wave: 7, mind: 4, creation: -7, void: 18, circle: 17, body: -16, resource: -14, observer: 18 },
+    gradient: { haze: 0.18, memory: 0.05, micro: -0.03, ghost: 0.04, chrome: 0.1, organic: 0.04 },
+    family: { voiceDust: 0.1, pianoMemory: 0.05, reedBuzz: 0.035, sub808: -0.035, drumSkin: -0.1, acidBiyon: -0.08, chain: 0.02 },
+    gesture: { drift: 0.16, repeat: 0.01, punch: -0.04, void: 0.18 },
+    drumThin: 0.72
+  },
+  {
+    name: "MEMORY",
+    label: "ARC.MEM",
+    durationMs: 6 * 60 * 1000,
+    tempoBias: -7,
+    acidDrive: 0,
+    bias: { energy: -7, wave: 13, mind: 8, creation: 7, void: 7, circle: 12, body: -9, resource: 1, observer: 13 },
+    gradient: { haze: 0.1, memory: 0.16, micro: 0.02, ghost: 0.02, chrome: 0.07, organic: 0.11 },
+    family: { pianoMemory: 0.11, voiceDust: 0.06, chain: 0.05, reedBuzz: 0.015, drumSkin: -0.04, acidBiyon: -0.05 },
+    gesture: { drift: 0.14, repeat: 0.1, punch: -0.02, void: 0.03 },
+    drumThin: 0.38
+  },
+  {
+    name: "BROKEN",
+    label: "ARC.AE",
+    durationMs: 6 * 60 * 1000,
+    tempoBias: 4,
+    acidDrive: 0.08,
+    bias: { energy: 5, wave: 16, mind: 10, creation: 16, void: -4, circle: -2, body: -4, resource: 14, observer: 7 },
+    gradient: { haze: -0.02, memory: 0.07, micro: 0.18, ghost: 0.04, chrome: 0.08, organic: 0.08 },
+    family: { drumSkin: 0.04, pianoMemory: 0.04, chain: 0.12, acidBiyon: 0.035, sub808: -0.02, reedBuzz: -0.025 },
+    gesture: { drift: 0.04, repeat: 0.22, punch: 0.02, void: -0.01 },
+    drumThin: 0.1
+  },
+  {
+    name: "GHOST",
+    label: "ARC.GST",
+    durationMs: 6 * 60 * 1000,
+    tempoBias: 8,
+    acidDrive: 0.16,
+    bias: { energy: 10, wave: 8, mind: 1, creation: 8, void: 2, circle: -4, body: 11, resource: 8, observer: 8 },
+    gradient: { haze: 0.03, memory: 0.03, micro: 0.06, ghost: 0.16, chrome: 0.03, organic: 0.07 },
+    family: { drumSkin: 0.07, sub808: 0.1, voiceDust: 0.04, reedBuzz: 0.02, chain: 0.05 },
+    gesture: { drift: 0, repeat: 0.05, punch: 0.18, void: 0.08 },
+    drumThin: 0
+  },
+  {
+    name: "ACID",
+    label: "ARC.ACD",
+    durationMs: 5 * 60 * 1000,
+    tempoBias: 24,
+    acidDrive: 0.78,
+    bias: { energy: 23, wave: 9, mind: 2, creation: 18, void: -12, circle: -10, body: 14, resource: 18, observer: -3 },
+    gradient: { haze: -0.06, memory: -0.01, micro: 0.18, ghost: 0.12, chrome: 0.05, organic: 0.04 },
+    family: { acidBiyon: 0.26, sub808: 0.13, chain: 0.12, drumSkin: 0.06, voiceDust: -0.04, reedBuzz: -0.08 },
+    gesture: { drift: -0.02, repeat: 0.2, punch: 0.18, void: -0.05 },
+    drumThin: 0
+  },
+  {
+    name: "EXHALE",
+    label: "ARC.XHL",
+    durationMs: 6 * 60 * 1000,
+    tempoBias: -12,
+    acidDrive: 0,
+    bias: { energy: -16, wave: 8, mind: 11, creation: 0, void: 20, circle: 18, body: -16, resource: -12, observer: 22 },
+    gradient: { haze: 0.16, memory: 0.05, micro: -0.02, ghost: 0.02, chrome: 0.18, organic: 0.03 },
+    family: { voiceDust: 0.12, pianoMemory: 0.05, chain: 0.04, sub808: -0.04, drumSkin: -0.1, acidBiyon: -0.1, reedBuzz: 0.015 },
+    gesture: { drift: 0.11, repeat: -0.02, punch: -0.05, void: 0.22 },
+    drumThin: 0.66
+  }
+];
 const MANUAL_INFLUENCE_HOLD_MS = 4300;
 const manualInfluenceUntil = {};
 const SLIDER_KEY_BY_ID = Object.fromEntries(Object.entries(SLIDER_BY_UCM).map(([key, id]) => [id, key]));
@@ -209,6 +284,16 @@ const LongformArcState = {
   contrast: 0.18,
   turn: 0,
   lastStage: "submerge"
+};
+const AlbumArcState = {
+  mode: "live",
+  elapsedMs: 0,
+  chapterIndex: 0,
+  progress: 0,
+  blend: 0,
+  acidDrive: 0,
+  chapterTurn: 0,
+  lastChapter: "SUBMERGE"
 };
 const DJTempoState = {
   bpm: 80,
@@ -566,6 +651,150 @@ function longformArcGestureBias(name) {
   return (stage.gesture?.[name] || 0) * (0.58 + LongformArcState.contrast * 0.7 + LongformArcState.turn * 0.24);
 }
 
+function albumArcActive() {
+  return !!(UCM.auto.enabled && isPlaying && AlbumArcState.mode === "arc36");
+}
+
+function resetAlbumArc(options = {}) {
+  if (options.keepElapsed !== true) AlbumArcState.elapsedMs = 0;
+  AlbumArcState.chapterIndex = 0;
+  AlbumArcState.progress = 0;
+  AlbumArcState.blend = 0;
+  AlbumArcState.acidDrive = 0;
+  AlbumArcState.chapterTurn = 0;
+  AlbumArcState.lastChapter = ALBUM_ARC_PROGRAM[0]?.name || "SUBMERGE";
+  updateAlbumArcUi();
+}
+
+function albumArcChapterAt(elapsedMs) {
+  const total = ALBUM_ARC_PROGRAM.reduce((sum, chapter) => sum + chapter.durationMs, 0) || ALBUM_ARC_TOTAL_MS;
+  const wrapped = ((elapsedMs % total) + total) % total;
+  let cursor = 0;
+  for (let index = 0; index < ALBUM_ARC_PROGRAM.length; index++) {
+    const chapter = ALBUM_ARC_PROGRAM[index];
+    const nextCursor = cursor + chapter.durationMs;
+    if (wrapped < nextCursor || index === ALBUM_ARC_PROGRAM.length - 1) {
+      const progress = clampValue((wrapped - cursor) / Math.max(1, chapter.durationMs), 0, 1);
+      return { chapter, index, progress };
+    }
+    cursor = nextCursor;
+  }
+  return { chapter: ALBUM_ARC_PROGRAM[0], index: 0, progress: 0 };
+}
+
+function currentAlbumArcChapter() {
+  return ALBUM_ARC_PROGRAM[AlbumArcState.chapterIndex] || ALBUM_ARC_PROGRAM[0];
+}
+
+function nextAlbumArcChapter() {
+  const nextIndex = (AlbumArcState.chapterIndex + 1) % ALBUM_ARC_PROGRAM.length;
+  return ALBUM_ARC_PROGRAM[nextIndex] || currentAlbumArcChapter();
+}
+
+function albumArcTransitionBlend() {
+  if (!albumArcActive()) return 0;
+  return smoothStep01(clampValue((AlbumArcState.progress - 0.78) / 0.22, 0, 1));
+}
+
+function albumArcValue(section, key) {
+  if (!albumArcActive()) return 0;
+  const current = currentAlbumArcChapter();
+  const next = nextAlbumArcChapter();
+  const blend = albumArcTransitionBlend();
+  return ((current?.[section]?.[key] || 0) * (1 - blend)) + ((next?.[section]?.[key] || 0) * blend);
+}
+
+function albumArcBias(key) {
+  return albumArcValue("bias", key) * (0.72 + LongformArcState.breath * 0.28);
+}
+
+function albumArcGradientBias(key) {
+  return albumArcValue("gradient", key) * (0.72 + LongformArcState.contrast * 0.36);
+}
+
+function albumArcFamilyBias(key) {
+  return albumArcValue("family", key) * (0.7 + LongformArcState.turn * 0.26);
+}
+
+function albumArcGestureBias(name) {
+  return albumArcValue("gesture", name) * (0.8 + LongformArcState.contrast * 0.32);
+}
+
+function albumArcTempoBias() {
+  if (!albumArcActive()) return 0;
+  const current = currentAlbumArcChapter();
+  const next = nextAlbumArcChapter();
+  const blend = albumArcTransitionBlend();
+  const base = (current?.tempoBias || 0) * (1 - blend) + (next?.tempoBias || 0) * blend;
+  return base + Math.sin((AlbumArcState.elapsedMs / 1000) * 0.008 + AlbumArcState.chapterIndex) * 1.8;
+}
+
+function albumArcDrumThin() {
+  if (!albumArcActive()) return 0;
+  const current = currentAlbumArcChapter();
+  const next = nextAlbumArcChapter();
+  const blend = albumArcTransitionBlend();
+  return clampValue((current?.drumThin || 0) * (1 - blend) + (next?.drumThin || 0) * blend, 0, 1);
+}
+
+function albumArcAcidDrive() {
+  return albumArcActive() ? clampValue(AlbumArcState.acidDrive || 0, 0, 1) : 0;
+}
+
+function acidPerformanceAmount() {
+  return clampValue(Math.max(AcidLockState.intensity || 0, albumArcAcidDrive()), 0, 1);
+}
+
+function advanceAlbumArcTransport(eighthNoteMs) {
+  if (!albumArcActive()) {
+    AlbumArcState.acidDrive = 0;
+    return;
+  }
+
+  AlbumArcState.elapsedMs = (AlbumArcState.elapsedMs + Math.max(1, eighthNoteMs || 0)) % ALBUM_ARC_TOTAL_MS;
+  const next = albumArcChapterAt(AlbumArcState.elapsedMs);
+  const changed = next.chapter.name !== AlbumArcState.lastChapter;
+  AlbumArcState.chapterIndex = next.index;
+  AlbumArcState.progress = next.progress;
+  AlbumArcState.blend = albumArcTransitionBlend();
+  const current = currentAlbumArcChapter();
+  const following = nextAlbumArcChapter();
+  AlbumArcState.acidDrive = clampValue((current.acidDrive || 0) * (1 - AlbumArcState.blend) + (following.acidDrive || 0) * AlbumArcState.blend, 0, 1);
+
+  if (changed) {
+    AlbumArcState.chapterTurn = 1;
+    AlbumArcState.lastChapter = next.chapter.name;
+    BpmCrossfadeState.blend = clampValue(Math.max(BpmCrossfadeState.blend, 0.48), 0, 0.9);
+    BpmCrossfadeState.refrain = clampValue(Math.max(BpmCrossfadeState.refrain, 0.44), 0, 0.86);
+    if (typeof document !== "undefined" && document.visibilityState !== "hidden") updateAlbumArcUi();
+  } else {
+    AlbumArcState.chapterTurn *= 0.965;
+  }
+}
+
+function updateAlbumArcUi() {
+  if (typeof document === "undefined") return;
+  const select = document.getElementById("auto_arc_mode");
+  if (select && select.value !== AlbumArcState.mode) select.value = AlbumArcState.mode;
+  const status = document.getElementById("auto_arc_status");
+  const chapter = currentAlbumArcChapter();
+  if (status) status.textContent = AlbumArcState.mode === "arc36" ? chapter.label : "LIVE";
+  if (document.body) {
+    document.body.dataset.autoArc = AlbumArcState.mode;
+    document.body.dataset.autoArcChapter = AlbumArcState.mode === "arc36" ? chapter.name.toLowerCase() : "";
+  }
+}
+
+function updateAlbumArcModeFromUI(options = {}) {
+  const select = typeof document !== "undefined" ? document.getElementById("auto_arc_mode") : null;
+  const nextMode = select ? select.value || "live" : AlbumArcState.mode;
+  const changed = nextMode !== AlbumArcState.mode;
+  AlbumArcState.mode = nextMode === "arc36" ? "arc36" : "live";
+  if (changed || options.reset === true) resetAlbumArc();
+  updateAlbumArcUi();
+  if (initialized) applyUCMToParams({ force: true });
+}
+
 function nudgeLongformArcFromGesture(name, source = "manual") {
   if (!isPlaying) return;
   const scale = source === "auto" ? 0.55 : 0.85;
@@ -629,10 +858,10 @@ function chooseAutoGesture(context) {
   } = context;
   const scene = currentAutoDirectorScene();
   const weighted = [
-    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1 + OrganicChaosState.airPull * 0.08 + (scene.gesture?.drift || 0) + longformArcGestureBias("drift")],
-    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08 + OrganicChaosState.tangle * 0.12 + (scene.gesture?.repeat || 0) + longformArcGestureBias("repeat")],
-    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12 + OrganicChaosState.lowMotion * 0.1 + (scene.gesture?.punch || 0) + longformArcGestureBias("punch")],
-    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08 + OrganicChaosState.impulse * 0.06 + (scene.gesture?.void || 0) + longformArcGestureBias("void")]
+    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1 + OrganicChaosState.airPull * 0.08 + (scene.gesture?.drift || 0) + longformArcGestureBias("drift") + albumArcGestureBias("drift")],
+    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08 + OrganicChaosState.tangle * 0.12 + (scene.gesture?.repeat || 0) + longformArcGestureBias("repeat") + albumArcGestureBias("repeat")],
+    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12 + OrganicChaosState.lowMotion * 0.1 + (scene.gesture?.punch || 0) + longformArcGestureBias("punch") + albumArcGestureBias("punch")],
+    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08 + OrganicChaosState.impulse * 0.06 + (scene.gesture?.void || 0) + longformArcGestureBias("void") + albumArcGestureBias("void")]
   ];
   const total = weighted.reduce((sum, [, weight]) => sum + Math.max(0, weight), 0);
   let pick = Math.random() * total;
@@ -680,7 +909,8 @@ function maybeTriggerAutoPerformanceGesture(step, context) {
 
   const scene = currentAutoDirectorScene();
   const arcLift = longformArcActive() ? LongformArcState.contrast * 0.026 + LongformArcState.turn * 0.018 : 0;
-  const chanceValue = 0.11 + (scene.gestureChance || 0.03) + context.creationNorm * 0.045 + context.observerNorm * 0.032 + context.waveNorm * 0.032 + context.resourceNorm * 0.022 + arcLift;
+  const albumLift = albumArcActive() ? 0.018 + AlbumArcState.chapterTurn * 0.025 + albumArcAcidDrive() * 0.026 : 0;
+  const chanceValue = 0.11 + (scene.gestureChance || 0.03) + context.creationNorm * 0.045 + context.observerNorm * 0.032 + context.waveNorm * 0.032 + context.resourceNorm * 0.022 + arcLift + albumLift;
   if (!rand(chance(chanceValue))) return;
   startAutoPerformanceGesture(chooseAutoGesture(context));
 }
@@ -769,7 +999,7 @@ function advanceTonalRhymePhrase() {
   const phrase = Math.floor(GrooveState.cycle / 2);
   TonalRhymeState.phrase = phrase;
   TonalRhymeState.stepOffset = Math.floor(fractionalPart((phrase + GenomeState.generation + 1) * GOLDEN_RATIO_INVERSE) * 8);
-  TonalRhymeState.lowOffset = (phrase + Math.floor((MotifMemoryState.strength || 0) * 4) + (AcidLockState.enabled ? 2 : 0)) % 4;
+  TonalRhymeState.lowOffset = (phrase + Math.floor((MotifMemoryState.strength || 0) * 4) + (acidPerformanceAmount() > 0.18 ? 2 : 0)) % 4;
 }
 
 function rememberMotif(root, options = {}) {
@@ -867,7 +1097,8 @@ function advancePerformanceColorDrift() {
   PerformanceColorDriftState.lastCycle = GrooveState.cycle;
 
   const cycle = GrooveState.cycle + 1;
-  const acid = updateAcidLockIntensity(0.028);
+  updateAcidLockIntensity(0.028);
+  const acid = acidPerformanceAmount();
   const energy = clampValue(UCM_CUR.energy / 100, 0, 1);
   const creation = clampValue(UCM_CUR.creation / 100, 0, 1);
   const resource = clampValue(UCM_CUR.resource / 100, 0, 1);
@@ -997,7 +1228,7 @@ function markMixEvent(amount = 0.08) {
 function updateGenreBlend(parts) {
   const { energy, wave, creation, voidness, circle, body, resource, observer, pressure } = parts;
   const bpmNorm = clampValue((EngineParams.bpm - 58) / 90, 0, 1);
-  const acid = AcidLockState.enabled ? clampValue(AcidLockState.intensity || 0.42, 0, 1) : 0;
+  const acid = acidPerformanceAmount();
   const midBpm = 1 - Math.abs(bpmNorm - 0.5) * 2;
   const activeGrid = clampValue((energy * 0.42) + (resource * 0.28) + (bpmNorm * 0.3), 0, 1);
   const ambientTarget = clampValue(
@@ -1072,7 +1303,8 @@ function updateAcidLockIntensity(step = 0.02) {
 }
 
 function resolvePerformanceTempoTarget(rawTarget) {
-  const acidAmount = updateAcidLockIntensity(0.012);
+  updateAcidLockIntensity(0.012);
+  const acidAmount = acidPerformanceAmount();
   const noAcidCeiling = 114;
   if (acidAmount < 0.08) return clampValue(rawTarget, 54, noAcidCeiling);
 
@@ -1093,7 +1325,7 @@ function updateDJTempo(parts, options = {}) {
     genre.pressure * 3;
   const contour = Math.sin((GrooveState.cycle * 0.045) + (LongformArcState.stageIndex * 0.9)) * (1.2 + longformArcShape() * 2.4);
   const pressureLift = clampValue((body * 0.22) + (resource * 0.18) + (creation * 0.12) - (observer * 0.08) - (voidness * 0.08), -0.12, 0.36) * 8;
-  const target = resolvePerformanceTempoTarget(rawBpm + longformTempoBias() + genreBias + pressureLift + contour);
+  const target = resolvePerformanceTempoTarget(rawBpm + longformTempoBias() + albumArcTempoBias() + genreBias + pressureLift + contour);
   const targetStep = force ? 96 : 0.55 + Math.abs(DJTempoState.targetBpm - target) * 0.018;
   const bpmStep = force ? 96 : 0.42 + wave * 0.18 + genre.techno * 0.16;
 
@@ -1312,7 +1544,7 @@ function voiceEmergencePalette() {
 
   if (GenreBlendState.ambient > 0.42 || EngineParams.bpm < 84) push("haze", "chrome");
   if (GenreBlendState.idm > 0.38) push("micro", "organic", "memory");
-  if (GenreBlendState.techno > 0.34 || AcidLockState.intensity > 0.18) push("micro", "ghost", "chrome");
+  if (GenreBlendState.techno > 0.34 || acidPerformanceAmount() > 0.18) push("micro", "ghost", "chrome");
   if (GenreBlendState.pressure > 0.34) push("ghost", "organic");
   if (palette.length < 3) push("haze", "memory", "chrome", "organic");
   return palette;
@@ -1327,7 +1559,7 @@ function chooseVoiceEmergenceFocus(offset = 0) {
 function voiceEmergenceSegmentCycles(offset = 0) {
   const phi = fractionalPart((AutoVoiceMorphState.generation + GrooveState.cycle + 1 + offset) * GOLDEN_RATIO_INVERSE);
   const energy = clampValue(UCM_CUR.energy / 100, 0, 1);
-  const activity = clampValue(GenreBlendState.idm * 0.26 + GenreBlendState.techno * 0.22 + AcidLockState.intensity * 0.18 + energy * 0.12, 0, 0.36);
+  const activity = clampValue(GenreBlendState.idm * 0.26 + GenreBlendState.techno * 0.22 + acidPerformanceAmount() * 0.18 + energy * 0.12, 0, 0.36);
   return Math.round(clampValue(8 + phi * 9 - activity * 6, 6, 16));
 }
 
@@ -1538,11 +1770,23 @@ function publishMusicRuntimeState() {
     acid: {
       enabled: AcidLockState.enabled,
       intensity: AcidLockState.intensity,
+      performance: acidPerformanceAmount(),
+      arcDrive: albumArcAcidDrive(),
       color: { ...PerformanceColorDriftState }
     },
     gradient: { ...GradientState },
     depth: { ...DepthState },
     genre: { ...GenreBlendState },
+    albumArc: {
+      mode: AlbumArcState.mode,
+      active: albumArcActive(),
+      elapsedMs: AlbumArcState.elapsedMs,
+      chapter: currentAlbumArcChapter()?.name || "",
+      label: currentAlbumArcChapter()?.label || "",
+      progress: AlbumArcState.progress,
+      blend: AlbumArcState.blend,
+      acidDrive: AlbumArcState.acidDrive
+    },
     genome: {
       generation: GenomeState.generation,
       phase: GenomeState.phase,
@@ -2047,7 +2291,7 @@ function updatePerformancePadStatus() {
   if (activeName) {
     statusText.textContent = PERFORMANCE_PAD_STATUS[activeName] || `${activeName.toUpperCase()} active`;
   } else if (isPlaying) {
-    statusText.textContent = UCM.auto.enabled ? "Playing / AutoMix" : "Playing…";
+    statusText.textContent = albumArcActive() ? `Playing / ${currentAlbumArcChapter().label}` : UCM.auto.enabled ? "Playing / AutoMix" : "Playing…";
   }
 }
 
@@ -2857,6 +3101,7 @@ function advanceAutoMixTransport(step) {
   const cycleMs = Math.max(30000, UCM.auto.cycleMs || 180000);
   const bpm = Math.max(40, Math.min(180, DJTempoState.bpm || EngineParams.bpm || 80));
   const eighthNoteMs = 30000 / bpm;
+  advanceAlbumArcTransport(eighthNoteMs);
   const phaseDelta = eighthNoteMs / cycleMs;
   updateAutoMixTargets(cycleMs, {
     phaseDelta,
@@ -2880,6 +3125,7 @@ function updateRuntimeUiState() {
   if (!document.body) return;
   document.body.dataset.playing = isPlaying ? "true" : "false";
   document.body.dataset.auto = UCM.auto.enabled ? "true" : "false";
+  updateAlbumArcUi();
   publishMusicRuntimeState();
 }
 
@@ -3568,7 +3814,8 @@ function renderModeLabel() {
   const label = document.getElementById("mode-label");
   if (!label) return;
   const modeName = EngineParams.mode === "trance" ? "ACID.TECH" : EngineParams.mode.toUpperCase();
-  label.textContent = `${modeName} / ${WorldState.label} / ${currentPresetCharacter().label}`;
+  const arcPrefix = albumArcActive() ? `${currentAlbumArcChapter().label} / ` : "";
+  label.textContent = `${arcPrefix}${modeName} / ${WorldState.label} / ${currentPresetCharacter().label}`;
 }
 
 
@@ -3660,6 +3907,12 @@ function updateReferenceGradient(parts) {
     const turnGlow = LongformArcState.turn * 0.035;
     for (const key of Object.keys(GradientState)) {
       GradientState[key] = clampValue(GradientState[key] + (arc.gradient?.[key] || 0) * arcShape + turnGlow, 0, 1);
+    }
+  }
+
+  if (albumArcActive()) {
+    for (const key of Object.keys(GradientState)) {
+      GradientState[key] = clampValue(GradientState[key] + albumArcGradientBias(key) + AlbumArcState.chapterTurn * 0.012, 0, 1);
     }
   }
 
@@ -3881,7 +4134,7 @@ function chooseInnerSourceProfile(parts, gradient, depth, genre) {
   const hazamaMicro = HazamaBridgeState.active ? clampValue(evolution.micro || 0, 0, 1) : 0;
   const hazamaBloom = HazamaBridgeState.active ? clampValue(evolution.bloom || 0, 0, 1) : 0;
   const lowBpm = EngineParams.bpm < 82 || genre.ambient > 0.5 || energy < 0.32;
-  const acid = AcidLockState.enabled ? clampValue(AcidLockState.intensity || 0.42, 0, 1) : 0;
+  const acid = acidPerformanceAmount();
 
   if (acid > 0.18 && (genre.techno > 0.16 || parts.creation > 0.28 || parts.resource > 0.34)) return sourceDepthProfileByName("coldPulse");
   if (hazamaMicro > 0.55 || gradient.micro > 0.58) return sourceDepthProfileByName("brokenSplice");
@@ -3911,17 +4164,17 @@ function updateInnerSourceFamily(parts, gradient = GradientState, depth = DepthS
     inner.bloom = clampValue((inner.bloom || 0) + 0.12, 0, 1);
   }
 
-  const acid = AcidLockState.enabled ? clampValue(AcidLockState.intensity || 0.36, 0, 1) : 0;
+  const acid = acidPerformanceAmount();
   const lowBpm = EngineParams.bpm < 82 || genre.ambient > 0.5 || parts.energy < 0.32;
   const profileWeights = profile.weights || {};
   const targets = {
-    drumSkin: clampValue((profileWeights.drumSkin || 0) + genre.techno * 0.08 + genre.pressure * 0.055 + depth.pulse * 0.045 + acid * 0.045 - (lowBpm ? 0.12 : 0), 0, 1),
-    pianoMemory: clampValue((profileWeights.pianoMemory || 0) + gradient.memory * 0.09 + gradient.organic * 0.055 + MotifMemoryState.strength * 0.065 + (lowBpm ? 0.065 : 0), 0, 1),
-    voiceDust: clampValue((profileWeights.voiceDust || 0) + gradient.chrome * 0.08 + depth.tail * 0.07 + (HazamaBridgeState.active ? 0.035 : 0) + (lowBpm ? 0.075 : 0), 0, 1),
-    acidBiyon: clampValue((profileWeights.acidBiyon || 0) + acid * 0.24 + genre.techno * 0.06 + gradient.micro * 0.055 - parts.voidness * 0.08, 0, 1),
-    sub808: clampValue((profileWeights.sub808 || 0) + gradient.ghost * 0.06 + parts.body * 0.055 + acid * 0.075 - MixGovernorState.lowGuard * 0.14 - (lowBpm ? 0.065 : 0), 0, 1),
-    reedBuzz: clampValue((profileWeights.reedBuzz || 0) + gradient.ghost * 0.052 + depth.bed * 0.045 + parts.body * 0.03 + (HazamaBridgeState.active ? 0.022 : 0) + (lowBpm ? 0.05 : 0) - acid * 0.07 - MixGovernorState.lowGuard * 0.1, 0, 1),
-    chain: clampValue((profileWeights.chain || 0) + GenomeState.growth * 0.05 + BpmCrossfadeState.refrain * 0.05 + gradient.organic * 0.05 + (UCM.auto.enabled || HazamaBridgeState.active ? 0.04 : 0), 0, 1)
+    drumSkin: clampValue((profileWeights.drumSkin || 0) + genre.techno * 0.08 + genre.pressure * 0.055 + depth.pulse * 0.045 + acid * 0.045 + albumArcFamilyBias("drumSkin") - (lowBpm ? 0.12 : 0), 0, 1),
+    pianoMemory: clampValue((profileWeights.pianoMemory || 0) + gradient.memory * 0.09 + gradient.organic * 0.055 + MotifMemoryState.strength * 0.065 + albumArcFamilyBias("pianoMemory") + (lowBpm ? 0.065 : 0), 0, 1),
+    voiceDust: clampValue((profileWeights.voiceDust || 0) + gradient.chrome * 0.08 + depth.tail * 0.07 + (HazamaBridgeState.active ? 0.035 : 0) + albumArcFamilyBias("voiceDust") + (lowBpm ? 0.075 : 0), 0, 1),
+    acidBiyon: clampValue((profileWeights.acidBiyon || 0) + acid * 0.24 + genre.techno * 0.06 + gradient.micro * 0.055 + albumArcFamilyBias("acidBiyon") - parts.voidness * 0.08, 0, 1),
+    sub808: clampValue((profileWeights.sub808 || 0) + gradient.ghost * 0.06 + parts.body * 0.055 + acid * 0.075 + albumArcFamilyBias("sub808") - MixGovernorState.lowGuard * 0.14 - (lowBpm ? 0.065 : 0), 0, 1),
+    reedBuzz: clampValue((profileWeights.reedBuzz || 0) + gradient.ghost * 0.052 + depth.bed * 0.045 + parts.body * 0.03 + (HazamaBridgeState.active ? 0.022 : 0) + albumArcFamilyBias("reedBuzz") + (lowBpm ? 0.05 : 0) - acid * 0.07 - MixGovernorState.lowGuard * 0.1, 0, 1),
+    chain: clampValue((profileWeights.chain || 0) + GenomeState.growth * 0.05 + BpmCrossfadeState.refrain * 0.05 + gradient.organic * 0.05 + albumArcFamilyBias("chain") + (UCM.auto.enabled || HazamaBridgeState.active ? 0.04 : 0), 0, 1)
   };
 
   for (const key of INNER_SOURCE_FAMILY_KEYS) {
@@ -3947,7 +4200,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
   const hazamaPulse = HazamaBridgeState.active ? clampValue(evolution.pulse || 0, 0, 1) : 0;
   const hazamaMicro = HazamaBridgeState.active ? clampValue(evolution.micro || 0, 0, 1) : 0;
   const hazamaBloom = HazamaBridgeState.active ? clampValue(evolution.bloom || 0, 0, 1) : 0;
-  const acid = AcidLockState.enabled ? clampValue(AcidLockState.intensity || 0.36, 0, 1) : clampValue(AcidLockState.intensity || 0, 0, 1) * 0.18;
+  const acid = acidPerformanceAmount();
   const autoDrive = UCM.auto.enabled || HazamaBridgeState.active ? 1 : 0;
   const motif = MotifMemoryState.strength || 0;
   const genome = clampValue(GenomeState.growth * 0.42 + GenomeState.resonance * 0.28, 0, 1);
@@ -3966,6 +4219,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       acid * 0.1 -
       genre.ambient * 0.18 -
       voidness * 0.14 +
+      albumArcFamilyBias("drumSkin") * 0.42 +
       (inner.drumSkin || 0) * innerLift +
       (inner.focus === "drumSkin" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -3981,6 +4235,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       hazamaBloom * 0.08 -
       pressure * 0.08 -
       genre.techno * 0.08 +
+      albumArcFamilyBias("pianoMemory") * 0.44 +
       (inner.pianoMemory || 0) * innerLift +
       (inner.focus === "pianoMemory" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -3996,6 +4251,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       observer * 0.08 +
       voidness * 0.06 -
       genre.pressure * 0.08 +
+      albumArcFamilyBias("voiceDust") * 0.44 +
       (inner.voiceDust || 0) * innerLift +
       (inner.focus === "voiceDust" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4011,6 +4267,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       resource * 0.06 -
       voidness * 0.18 -
       lowGuard * 0.14 +
+      albumArcFamilyBias("acidBiyon") * 0.58 +
       (inner.acidBiyon || 0) * innerLift +
       (inner.focus === "acidBiyon" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4026,6 +4283,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       PerformancePadState.punch * 0.1 -
       voidness * 0.18 -
       lowGuard * 0.2 +
+      albumArcFamilyBias("sub808") * 0.52 +
       (inner.sub808 || 0) * innerLift +
       (inner.focus === "sub808" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4041,6 +4299,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       (EngineParams.bpm < 84 ? 0.065 : 0) -
       acid * 0.12 -
       lowGuard * 0.18 +
+      albumArcFamilyBias("reedBuzz") * 0.44 +
       (inner.reedBuzz || 0) * innerLift +
       (inner.focus === "reedBuzz" ? (inner.bloom || 0) * 0.025 : 0),
     0,
@@ -4056,6 +4315,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       autoDrive * 0.07 +
       hazamaMicro * 0.06 +
       energy * 0.04 +
+      albumArcFamilyBias("chain") * 0.46 +
       (inner.chain || 0) * innerLift +
       (inner.focus === "chain" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4588,11 +4848,18 @@ function applyUCMToParams(options = {}) {
   const character = currentPresetCharacter();
   const genre = GenreBlendState;
   const droneZone = EngineParams.bpm < 84 || energyNorm < 0.3 || genre.ambient > 0.42;
+  const arcDrumThin = albumArcDrumThin();
   EngineParams.restProb = clampValue(EngineParams.restProb * character.restScale + genre.ambient * 0.035 - genre.techno * 0.035, 0.035, PerformancePadState.void ? 0.58 : 0.46);
   EngineParams.kickProb = clampValue(EngineParams.kickProb * character.kickScale + genre.pressure * 0.024 - genre.ambient * 0.018, PerformancePadState.void ? 0.06 : 0.11, 0.7);
   EngineParams.hatProb = clampValue(EngineParams.hatProb * character.hatScale + genre.techno * 0.11 + genre.idm * 0.035 - genre.ambient * 0.05, PerformancePadState.void ? 0.11 : 0.18, 0.86);
   EngineParams.bassProb = clampValue(EngineParams.bassProb * character.bassScale + genre.pressure * 0.018 - genre.ambient * 0.018, PerformancePadState.void ? 0.05 : 0.09, 0.48);
   EngineParams.padProb = clampValue(EngineParams.padProb * character.padScale * (character.hazeScale || 1) + genre.ambient * 0.055 - genre.techno * 0.045, PerformancePadState.void ? 0.15 : 0.16, 0.58);
+  if (arcDrumThin > 0) {
+    EngineParams.kickProb = clampValue(EngineParams.kickProb * (1 - arcDrumThin * 0.62), 0.002, 0.42);
+    EngineParams.hatProb = clampValue(EngineParams.hatProb * (1 - arcDrumThin * 0.48), 0.01, 0.56);
+    EngineParams.bassProb = clampValue(EngineParams.bassProb * (1 - arcDrumThin * 0.34), 0.025, 0.34);
+    EngineParams.padProb = clampValue(EngineParams.padProb + arcDrumThin * 0.08, 0.2, 0.72);
+  }
   if (droneZone) {
     const droneAmount = clampValue((84 - EngineParams.bpm) / 34 + (0.34 - energyNorm) + genre.ambient * 0.62 + voidNorm * 0.18, 0, 1);
     EngineParams.restProb = clampValue(EngineParams.restProb + droneAmount * 0.08, 0.06, 0.58);
@@ -4752,6 +5019,7 @@ function resetRuntimeCounters() {
   resetDJTempo();
   resetGenerativeGenome();
   resetAutoVoiceMorph();
+  resetAlbumArc();
 }
 
 function patternAt(pattern, step) {
@@ -4874,8 +5142,9 @@ function triggerAcidTechnoTrace(step, time, context) {
     isAccentStep
   } = context;
   if (!bass || PerformancePadState.void > 0.55) return;
-  AcidLockState.intensity = approachValue(AcidLockState.intensity, AcidLockState.enabled ? 1 : 0, 0.018);
-  if (AcidLockState.intensity < 0.08) return;
+  updateAcidLockIntensity(0.018);
+  const acidIntensity = acidPerformanceAmount();
+  if (acidIntensity < 0.08) return;
 
   const genre = GenreBlendState;
   const gradient = GradientState;
@@ -4895,7 +5164,7 @@ function triggerAcidTechnoTrace(step, time, context) {
       lowGuard * 0.26,
     0,
     1
-  ) * AcidLockState.intensity;
+  ) * acidIntensity;
   if (acid < 0.22) return;
 
   const impactGate = step % 8 === 0 || (step % 16 === 8 && genre.pressure > 0.18);
@@ -5059,7 +5328,7 @@ function triggerVoiceEmergenceDetail(step, time, context) {
     1
   );
   const gate = step % 16 === 3 || step % 16 === 7 || step % 16 === 11 || step % 16 === 15 || (isAccentStep && step % 2 === 1);
-  if (!gate || !rand(0.016 + amount * 0.078 + state.splice * 0.028 + AcidLockState.intensity * 0.018)) return;
+  if (!gate || !rand(0.016 + amount * 0.078 + state.splice * 0.028 + acidPerformanceAmount() * 0.018)) return;
 
   const offset = Math.floor(state.phase * 9) + Math.floor(state.blend * 5);
   const airNote = TRANSPARENT_AIR_FRAGMENTS[(GrooveState.cycle + step + offset) % TRANSPARENT_AIR_FRAGMENTS.length];
@@ -5442,7 +5711,7 @@ function triggerTonalRhymeResponse(step, time, context) {
   if (!glass || MixGovernorState.eventLoad > 0.88) return;
 
   const autoDrive = (UCM.auto.enabled || HazamaBridgeState.active) ? 1 : 0;
-  const acid = clampValue(AcidLockState.intensity || 0, 0, 1);
+  const acid = acidPerformanceAmount();
   const memory = MotifMemoryState;
   const phraseTurn = step % 16 === 0;
   const offReply = step % 16 === 6 || step % 16 === 10;
@@ -5540,14 +5809,15 @@ function triggerTimbreFamilyResponse(step, time, context) {
   const phaseOffset = Math.floor((GenomeState.phase || 0) * 8) + TonalRhymeState.stepOffset + (inner.generation || 0);
   const chain = clampValue(family.chain + (inner.chain || 0) * 0.08 + MotifMemoryState.strength * 0.18 + (HazamaBridgeState.active ? 0.08 : 0), 0, 1);
   const droneThin = EngineParams.bpm < 84 || energyNorm < 0.32 || genre.ambient > 0.46;
-  const acidOn = AcidLockState.enabled && family.acidBiyon > 0.18 && PerformancePadState.void < 0.5;
+  const acidAmount = acidPerformanceAmount();
+  const acidOn = acidAmount > 0.18 && family.acidBiyon > 0.18 && PerformancePadState.void < 0.5;
   const phraseTurn = step % 16 === 0 || step % 16 === 8;
   const offPulse = step % 16 === 3 || step % 16 === 6 || step % 16 === 11 || step % 16 === 14;
   const driftedTime = time + Math.random() * (0.01 + waveNorm * 0.018 + PerformancePadState.drift * 0.018);
   const chromeHymn = clampValue(gradient.chrome * 0.28 + gradient.haze * 0.18 + depth.tail * 0.18 + observerNorm * 0.12 + family.voiceDust * 0.1 + chain * 0.08, 0, 1);
   const brokenLogic = clampValue(gradient.micro * 0.26 + genre.idm * 0.18 + family.drumSkin * 0.12 + family.acidBiyon * 0.12 + BpmCrossfadeState.refrain * 0.1 + PerformancePadState.repeat * 0.12, 0, 1);
   const ghostBody = clampValue(gradient.ghost * 0.24 + depth.pulse * 0.18 + family.sub808 * 0.16 + genre.pressure * 0.12 + PerformancePadState.punch * 0.12 - lowGuard * 0.16, 0, 1);
-  const coldPulse = clampValue(genre.techno * 0.18 + genre.idm * 0.12 + gradient.micro * 0.12 + depth.gesture * 0.12 + family.chain * 0.1 + AcidLockState.intensity * 0.12 - genre.ambient * 0.08, 0, 1);
+  const coldPulse = clampValue(genre.techno * 0.18 + genre.idm * 0.12 + gradient.micro * 0.12 + depth.gesture * 0.12 + family.chain * 0.1 + acidAmount * 0.12 + albumArcFamilyBias("chain") * 0.1 - genre.ambient * 0.08, 0, 1);
   const earthBuzz = clampValue(family.reedBuzz * 0.34 + (inner.reedBuzz || 0) * 0.18 + gradient.ghost * 0.16 + depth.bed * 0.14 + (droneThin ? 0.1 : 0) - lowGuard * 0.18 - acidOn * 0.06, 0, 1);
 
   if (pianoMemory && (step % 16 === 4 || step % 16 === 10 || (PerformancePadState.drift && step % 4 === 1) || (chain > 0.52 && step % 8 === 5))) {
@@ -5752,11 +6022,12 @@ function triggerBpmCrossfadeRefrain(step, time, context) {
   if (!glass || (blend < 0.035 && refrain < 0.04)) return;
   if (MixGovernorState.eventLoad > 0.86 && !PerformancePadState.void) return;
 
-  const phraseGate = step % 16 === 0 || step % 16 === 4 || step % 16 === 8 || step % 16 === 12 || isAccentStep;
+  const phraseGate = step % 16 === 0 || step % 16 === 4 || step % 16 === 8 || step % 16 === 12 || isAccentStep || AlbumArcState.chapterTurn > 0.24;
   const gateChance = chance(
     0.02 +
       blend * 0.1 +
       refrain * 0.12 +
+      AlbumArcState.chapterTurn * 0.06 +
       DepthState.gesture * 0.024 +
       observerNorm * 0.018 +
       creationNorm * 0.014 -
@@ -6510,8 +6781,9 @@ function scheduleStep(time) {
   triggerPadHoldMinimums(step, t, stepContext);
 
   if (!isRest) {
-    const droneDrumThin = EngineParams.bpm < 84 || energyNorm < 0.3 || genre.ambient > 0.44;
-    const droneDrumScale = droneDrumThin ? clampValue(0.12 + (energyNorm * 0.56) + genre.techno * 0.28, 0.08, 0.5) : 1;
+    const arcDrumThin = albumArcDrumThin();
+    const droneDrumThin = EngineParams.bpm < 84 || energyNorm < 0.3 || genre.ambient > 0.44 || arcDrumThin > 0.42;
+    const droneDrumScale = droneDrumThin ? clampValue(0.12 + (energyNorm * 0.56) + genre.techno * 0.28 - arcDrumThin * 0.18, 0.06, 0.5) : 1;
     // Kick
     const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + genre.pressure * 0.024 + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.14) * droneDrumScale);
     if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
@@ -6630,6 +6902,7 @@ function startAutoCycle() {
   UCM.auto.lastTransportStep = -1;
   resetAutoDirector();
   resetLongformArc();
+  resetAlbumArc();
   updateRuntimeUiState();
   updateAutoMixTargets(cycleMs, { phaseDelta: 0, syncUi: true });
 }
@@ -6654,7 +6927,8 @@ function updateAutoMixTargets(cycleMs, options = {}) {
     const ripple = Math.sin((phase * 2.7 + profile.phase) * Math.PI * 2) * 0.23;
     const directorBias = autoDirectorSceneBias(key);
     const arcBias = longformArcBias(key);
-    const desired = clampValue(profile.base + directorBias + arcBias + profile.depth * (wave + ripple), 4, 96);
+    const albumBias = albumArcBias(key);
+    const desired = clampValue(profile.base + directorBias + arcBias + albumBias + profile.depth * (wave + ripple), 4, 96);
     const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : profile.base;
     const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
     if (isManualInfluenceActive(key, now)) {
@@ -6740,6 +7014,7 @@ function attachUI() {
   const btnStop    = document.getElementById("btn_stop");
   const autoToggle = document.getElementById("auto_toggle");
   const autoCycle  = document.getElementById("auto_cycle");
+  const autoArcMode = document.getElementById("auto_arc_mode");
   const outputLevel = document.getElementById("output_level");
   const atmosphereSelect = document.getElementById("atmosphere_select");
   const sourceColorSelect = document.getElementById("source_color_select");
@@ -6830,6 +7105,14 @@ function attachUI() {
     autoCycle.addEventListener("change", () => {
       if (autoToggle && autoToggle.checked) startAutoCycle();
     });
+  }
+
+  if (autoArcMode) {
+    autoArcMode.addEventListener("change", () => {
+      updateAlbumArcModeFromUI({ reset: true });
+      if (autoToggle && autoToggle.checked) startAutoCycle();
+    });
+    updateAlbumArcModeFromUI({ reset: false });
   }
 
   if (outputLevel) {
