@@ -1995,6 +1995,7 @@ function updateDJTempo(parts, options = {}) {
   DJTempoState.drift = DJTempoState.bpm - rawBpm;
   DJTempoState.motion = DJTempoState.targetBpm - DJTempoState.bpm;
   EngineParams.bpm = Math.round(DJTempoState.bpm);
+  updateHeaderRuntimeUi();
 
   if (typeof Tone !== "undefined" && Tone.Transport?.bpm) {
     rampParam("transport-bpm", Tone.Transport.bpm, DJTempoState.bpm, force ? 0.35 : 1.6, force ? 0 : 0.08);
@@ -3177,6 +3178,7 @@ function outputGainFromLevel(level) {
 function updateOutputLevelUi() {
   const value = document.getElementById("output_value");
   if (value) value.textContent = String(Math.round(OutputState.level));
+  updateHeaderRuntimeUi();
 }
 
 function updateOutputLevel(options = {}) {
@@ -3591,6 +3593,7 @@ function updateHazamaUiState() {
     document.body.dataset.hazama = HazamaBridgeState.loaded ? "true" : "false";
     document.body.dataset.hazamaStage = HazamaBridgeState.stage || "";
   }
+  updateHeaderRuntimeUi();
 }
 
 function sanitizeHazamaStyle(style) {
@@ -3979,6 +3982,7 @@ function updateRuntimeUiState() {
   updateAlbumArcUi();
   updateCultureGrammarUi();
   updateOddLogicUi();
+  updateHeaderRuntimeUi();
   publishMusicRuntimeState();
 }
 
@@ -5502,6 +5506,7 @@ function applyHazamaProfileToEngineParams(options = {}) {
     DJTempoState.targetBpm = approachValue(DJTempoState.targetBpm || tempoTarget, tempoTarget, step);
     DJTempoState.bpm = approachValue(DJTempoState.bpm || audio.tempo, DJTempoState.targetBpm, force ? 128 : 0.5);
     EngineParams.bpm = Math.round(DJTempoState.bpm);
+    updateHeaderRuntimeUi();
     if (typeof Tone !== "undefined" && Tone.Transport?.bpm) {
       rampParam("transport-bpm", Tone.Transport.bpm, DJTempoState.bpm, force ? 0.25 : 1.6, force ? 0 : 0.08);
     }
@@ -5842,6 +5847,24 @@ function updateUIFromParams(){
 
   const energyValue = document.getElementById("energy-value");
   if (energyValue) energyValue.textContent = `${UCM.energy}`;
+  updateHeaderRuntimeUi();
+}
+
+function headerRuntimeSyncLabel() {
+  if (HazamaBridgeState.loaded) return HazamaBridgeState.depthId ? `HZM.${HazamaBridgeState.depthId}` : "HZM";
+  if (albumArcActive()) return currentAlbumArcChapter()?.label || "ARC";
+  if (UCM.auto.enabled) return "AUTO";
+  return isPlaying ? "PLAY" : "LIVE";
+}
+
+function updateHeaderRuntimeUi() {
+  if (typeof document === "undefined") return;
+  const bpm = document.getElementById("header_bpm");
+  const output = document.getElementById("header_output");
+  const sync = document.getElementById("header_sync");
+  if (bpm) bpm.textContent = String(Math.round(EngineParams.bpm || 0));
+  if (output) output.textContent = String(Math.round(OutputState.level || 0));
+  if (sync) sync.textContent = headerRuntimeSyncLabel();
 }
 
 function setPatternsByMode() {

@@ -1641,19 +1641,18 @@ body::after {
 }
 
 #ui-shell::before {
-  content: "MUSIC STACK / REFERENCE-GENERATIVE CORE / NO SAMPLE STORAGE";
-  width: min(1080px, 96vw);
-  color: rgba(143, 255, 245, 0.54);
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  text-align: right;
+  content: "";
+  display: none;
 }
 
 #ui-header {
-  width: min(1080px, 96vw);
+  width: min(960px, 96vw);
+  display: grid;
+  grid-template-columns: minmax(220px, 0.95fr) minmax(230px, 1fr) minmax(188px, 0.78fr);
+  align-items: center;
+  gap: 10px;
   margin: 0;
-  padding: 8px 10px;
+  padding: 7px 9px;
   border: 1px solid rgba(233, 244, 239, 0.24);
   border-left: 3px solid var(--core-red);
   border-radius: 0;
@@ -1664,57 +1663,24 @@ body::after {
   box-shadow: 0 14px 36px var(--core-shadow), inset 0 0 0 1px rgba(143, 255, 245, 0.06);
 }
 
-.manufacturer-line {
-  margin: 0 0 3px;
-  color: var(--core-red);
-  font-size: 9px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-}
-
 #ui-header h1 {
   color: var(--core-paper);
-  font-size: 20px;
-  letter-spacing: 0.18em;
+  font-size: 18px;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
 .subtitle {
   color: rgba(233, 244, 239, 0.62);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
 }
 
 .identity-line {
   color: rgba(143, 255, 245, 0.62);
-  letter-spacing: 0.18em;
-}
-
-#core-seal {
-  align-self: stretch;
-  min-width: 76px;
-  border: 1px solid rgba(143, 255, 245, 0.42);
-  display: grid;
-  place-items: center;
-  padding: 5px 8px;
-  color: var(--core-paper);
-  background:
-    linear-gradient(135deg, transparent 0 18%, rgba(143, 255, 245, 0.08) 18% 19%, transparent 19%),
-    rgba(1, 4, 5, 0.78);
-}
-
-#core-seal span,
-#core-seal em {
-  font-size: 8px;
-  font-style: normal;
-  letter-spacing: 0.2em;
-  color: rgba(143, 255, 245, 0.7);
-}
-
-#core-seal strong {
-  font-size: 22px;
-  line-height: 1;
-  letter-spacing: 0.08em;
-  color: var(--core-red);
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #mode-indicator .label,
@@ -1724,7 +1690,13 @@ body::after {
   color: rgba(194, 218, 213, 0.54);
 }
 
+#mode-indicator {
+  min-width: 0;
+  text-align: center;
+}
+
 #mode-label {
+  max-width: 100%;
   border-radius: 0;
   border-color: rgba(143, 255, 245, 0.4);
   background:
@@ -1734,10 +1706,58 @@ body::after {
   font-size: 10px;
   letter-spacing: 0.18em;
   box-shadow: inset 0 0 0 1px rgba(233, 244, 239, 0.05);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#header-runtime {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  min-width: 0;
+}
+
+#header-runtime span {
+  min-width: 0;
+  min-height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 4px 5px;
+  border: 1px solid rgba(143, 255, 245, 0.26);
+  background:
+    linear-gradient(180deg, rgba(143, 255, 245, 0.055), rgba(1, 4, 5, 0.72)),
+    rgba(2, 6, 7, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(233, 244, 239, 0.035);
+}
+
+#header-runtime strong {
+  display: block;
+  max-width: 100%;
+  color: var(--core-red);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#header-runtime em {
+  display: block;
+  color: rgba(143, 255, 245, 0.66);
+  font-size: 7px;
+  font-style: normal;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 #control-panel {
   position: relative;
+  width: min(960px, 96vw);
+  grid-template-columns: 0.82fr 1.58fr 0.94fr;
+  column-gap: 12px;
+  padding: 12px 13px 13px;
   border-radius: 0;
   border-color: rgba(233, 244, 239, 0.24);
   background:
@@ -1753,18 +1773,29 @@ body::after {
 }
 
 #control-panel::before {
-  content: "SEALED GENERATIVE DEVICE";
-  position: absolute;
-  top: -18px;
-  right: 8px;
-  color: rgba(233, 244, 239, 0.34);
-  font-size: 8px;
-  letter-spacing: 0.22em;
+  content: "";
+  display: none;
 }
 
 #energy-column,
 #right-column {
   border-color: rgba(233, 244, 239, 0.16);
+}
+
+#energy-column {
+  padding-right: 6px;
+}
+
+#obs-grid {
+  column-gap: 8px;
+  row-gap: 8px;
+  padding: 0 4px;
+}
+
+#right-column {
+  justify-content: flex-start;
+  gap: 8px;
+  padding-left: 6px;
 }
 
 .fader-group,
@@ -1965,6 +1996,24 @@ body[data-playing="true"][data-auto="true"] .fader-group {
     rgba(3, 7, 8, 0.9);
 }
 
+#auto-block,
+#preset-block {
+  padding: 7px 8px;
+  margin-bottom: 0;
+}
+
+.auto-header {
+  margin-bottom: 5px;
+}
+
+.auto-body {
+  gap: 6px;
+}
+
+.route-body {
+  margin-top: 5px;
+}
+
 @media (max-width: 640px), (max-height: 760px) {
   body::before {
     opacity: 0.34;
@@ -1980,10 +2029,7 @@ body[data-playing="true"][data-auto="true"] .fader-group {
   }
 
   #ui-shell::before {
-    width: 100%;
-    font-size: 7px;
-    letter-spacing: 0.12em;
-    text-align: left;
+    display: none;
   }
 
   #ui-header {
@@ -1993,22 +2039,27 @@ body[data-playing="true"][data-auto="true"] .fader-group {
     border-left-width: 2px;
   }
 
-  .manufacturer-line {
-    font-size: 7px;
-    letter-spacing: 0.16em;
-  }
-
   #ui-header h1 {
     font-size: 12px;
     letter-spacing: 0.12em;
   }
 
-  #core-seal {
-    display: none;
-  }
-
   #mode-indicator {
     grid-column: 1 / -1;
+  }
+
+  #header-runtime {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  #header-runtime span {
+    min-height: 25px;
+    padding: 3px 4px;
+  }
+
+  #header-runtime strong {
+    font-size: 11px;
   }
 
   #control-panel::before {
@@ -2017,10 +2068,6 @@ body[data-playing="true"][data-auto="true"] .fader-group {
 }
 
 @media (max-width: 380px), (max-height: 700px) {
-  #core-seal {
-    display: none;
-  }
-
   #ui-header {
     grid-template-columns: 1fr;
   }
