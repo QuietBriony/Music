@@ -940,6 +940,7 @@ function resetTimbreFamily() {
   TimbreFamilyState.sub808 = 0.14;
   TimbreFamilyState.reedBuzz = 0.06;
   TimbreFamilyState.chain = 0.3;
+  TimbreFamilyState.lastReedBuzzCycle = -99;
   TimbreFamilyState.inner.drumSkin = 0.18;
   TimbreFamilyState.inner.pianoMemory = 0.26;
   TimbreFamilyState.inner.voiceDust = 0.2;
@@ -1799,6 +1800,7 @@ let namimaAdapterLastSentAt = 0;
 let namimaAdapterLastEnergy = null;
 let namimaAdapterLastMode = null;
 let autoSliderLastSyncAt = 0;
+const TRANSPORT_CONTROL_SYNC_STEPS = 4;
 
 /* =========================================================
    1. ヘルパー
@@ -2818,19 +2820,7 @@ function advanceHazamaAutonomy() {
 
 function syncHazamaTransportControls(step) {
   if (!HazamaBridgeState.active || !HazamaBridgeState.loaded || !isPlaying) return;
-  if (step % 4 !== 0) return;
-
-  const maxStep = step === 0 ? 2.4 : 1.25;
-  for (const key of UCM_KEYS) {
-    UCM_CUR[key] = approachValue(UCM_CUR[key], UCM_TARGET[key], maxStep);
-    UCM[key] = Math.round(UCM_CUR[key]);
-  }
-
-  try {
-    applyUCMToParams();
-  } catch (error) {
-    console.warn("[Music] Hazama transport control failed:", error);
-  }
+  syncTransportControlValues(step, step === 0 ? 2.4 : 1.25, "Hazama");
 }
 
 function autoMixUiSyncAllowed(step) {
@@ -2841,9 +2831,12 @@ function autoMixUiSyncAllowed(step) {
 
 function syncAutoMixTransportControls(step) {
   if (!UCM.auto.enabled || !isPlaying || HazamaBridgeState.active) return;
-  if (step % 4 !== 0) return;
+  syncTransportControlValues(step, step === 0 ? 2.1 : 1.05, "AutoMix");
+}
 
-  const maxStep = step === 0 ? 2.1 : 1.05;
+function syncTransportControlValues(step, maxStep, label) {
+  if (step % TRANSPORT_CONTROL_SYNC_STEPS !== 0) return;
+
   for (const key of UCM_KEYS) {
     UCM_CUR[key] = approachValue(UCM_CUR[key], UCM_TARGET[key], maxStep);
     UCM[key] = Math.round(UCM_CUR[key]);
@@ -2852,7 +2845,7 @@ function syncAutoMixTransportControls(step) {
   try {
     applyUCMToParams();
   } catch (error) {
-    console.warn("[Music] AutoMix transport control failed:", error);
+    console.warn(`[Music] ${label} transport control failed:`, error);
   }
 }
 
@@ -3321,14 +3314,14 @@ const MixGovernorState = {
 };
 const INNER_SOURCE_FAMILY_KEYS = ["drumSkin", "pianoMemory", "voiceDust", "acidBiyon", "sub808", "reedBuzz", "chain"];
 const SOURCE_DEPTH_PROFILES = [
-  { name: "hazeBed", focus: "voiceDust", span: 12, weights: { voiceDust: 0.18, pianoMemory: 0.08, reedBuzz: 0.04, chain: 0.08 } },
-  { name: "membrane", focus: "sub808", span: 10, weights: { sub808: 0.12, reedBuzz: 0.1, voiceDust: 0.1, chain: 0.06 } },
-  { name: "memoryRefrain", focus: "pianoMemory", span: 9, weights: { pianoMemory: 0.2, chain: 0.12, voiceDust: 0.04 } },
-  { name: "brokenSplice", focus: "drumSkin", span: 7, weights: { drumSkin: 0.14, chain: 0.1, acidBiyon: 0.04 } },
-  { name: "ghostBody", focus: "drumSkin", span: 8, weights: { drumSkin: 0.12, sub808: 0.1, reedBuzz: 0.06, voiceDust: 0.05 } },
-  { name: "chromeHymn", focus: "voiceDust", span: 11, weights: { voiceDust: 0.18, pianoMemory: 0.08, chain: 0.1 } },
-  { name: "coldPulse", focus: "chain", span: 8, weights: { chain: 0.16, drumSkin: 0.08, acidBiyon: 0.06 } },
-  { name: "earthBuzz", focus: "reedBuzz", span: 13, weights: { reedBuzz: 0.2, sub808: 0.07, voiceDust: 0.07, chain: 0.05 } }
+  { name: "hazeBed", focus: "voiceDust", span: 12, weights: { voiceDust: 0.22, pianoMemory: 0.1, reedBuzz: 0.035, chain: 0.08 } },
+  { name: "membrane", focus: "sub808", span: 12, weights: { sub808: 0.085, reedBuzz: 0.075, voiceDust: 0.12, chain: 0.06 } },
+  { name: "memoryRefrain", focus: "pianoMemory", span: 9, weights: { pianoMemory: 0.22, chain: 0.12, voiceDust: 0.055 } },
+  { name: "brokenSplice", focus: "drumSkin", span: 7, weights: { drumSkin: 0.13, chain: 0.11, acidBiyon: 0.05 } },
+  { name: "ghostBody", focus: "drumSkin", span: 8, weights: { drumSkin: 0.1, sub808: 0.11, reedBuzz: 0.045, voiceDust: 0.055 } },
+  { name: "chromeHymn", focus: "voiceDust", span: 11, weights: { voiceDust: 0.2, pianoMemory: 0.09, chain: 0.11 } },
+  { name: "coldPulse", focus: "chain", span: 8, weights: { chain: 0.18, drumSkin: 0.07, acidBiyon: 0.09 } },
+  { name: "earthBuzz", focus: "reedBuzz", span: 21, weights: { reedBuzz: 0.16, sub808: 0.045, voiceDust: 0.08, chain: 0.045 } }
 ];
 const TimbreFamilyState = {
   drumSkin: 0.18,
@@ -3338,6 +3331,7 @@ const TimbreFamilyState = {
   sub808: 0.14,
   reedBuzz: 0.06,
   chain: 0.3,
+  lastReedBuzzCycle: -99,
   inner: {
     drumSkin: 0.18,
     pianoMemory: 0.26,
@@ -3889,11 +3883,11 @@ function chooseInnerSourceProfile(parts, gradient, depth, genre) {
   const lowBpm = EngineParams.bpm < 82 || genre.ambient > 0.5 || energy < 0.32;
   const acid = AcidLockState.enabled ? clampValue(AcidLockState.intensity || 0.42, 0, 1) : 0;
 
-  if (acid > 0.3 && (genre.techno > 0.18 || parts.creation > 0.34)) return sourceDepthProfileByName("coldPulse");
+  if (acid > 0.18 && (genre.techno > 0.16 || parts.creation > 0.28 || parts.resource > 0.34)) return sourceDepthProfileByName("coldPulse");
   if (hazamaMicro > 0.55 || gradient.micro > 0.58) return sourceDepthProfileByName("brokenSplice");
   if (hazamaPulse > 0.58 || gradient.ghost > 0.56) return sourceDepthProfileByName("ghostBody");
   if (hazamaBloom > 0.48 || observer > 0.62 || gradient.chrome > 0.58 || PerformancePadState.void) return sourceDepthProfileByName("chromeHymn");
-  if (lowBpm && (gradient.ghost > 0.42 || depth.bed > 0.5) && GrooveState.cycle % 13 < 4) return sourceDepthProfileByName("earthBuzz");
+  if (lowBpm && (gradient.ghost > 0.45 || depth.bed > 0.56) && GrooveState.cycle % 21 < 3) return sourceDepthProfileByName("earthBuzz");
   if (lowBpm && (voidness > 0.48 || hazamaAir > 0.42 || depth.bed > 0.55)) return sourceDepthProfileByName("hazeBed");
   if (lowBpm || depth.bed > 0.54) return sourceDepthProfileByName("membrane");
   if (gradient.memory > 0.52 || MotifMemoryState.strength > 0.22) return sourceDepthProfileByName("memoryRefrain");
@@ -3921,12 +3915,12 @@ function updateInnerSourceFamily(parts, gradient = GradientState, depth = DepthS
   const lowBpm = EngineParams.bpm < 82 || genre.ambient > 0.5 || parts.energy < 0.32;
   const profileWeights = profile.weights || {};
   const targets = {
-    drumSkin: clampValue((profileWeights.drumSkin || 0) + genre.techno * 0.08 + genre.pressure * 0.06 + depth.pulse * 0.05 + acid * 0.05 - (lowBpm ? 0.08 : 0), 0, 1),
-    pianoMemory: clampValue((profileWeights.pianoMemory || 0) + gradient.memory * 0.08 + gradient.organic * 0.05 + MotifMemoryState.strength * 0.06 + (lowBpm ? 0.05 : 0), 0, 1),
-    voiceDust: clampValue((profileWeights.voiceDust || 0) + gradient.chrome * 0.07 + depth.tail * 0.06 + (HazamaBridgeState.active ? 0.03 : 0) + (lowBpm ? 0.06 : 0), 0, 1),
-    acidBiyon: clampValue((profileWeights.acidBiyon || 0) + acid * 0.18 + genre.techno * 0.04 + gradient.micro * 0.04 - parts.voidness * 0.08, 0, 1),
-    sub808: clampValue((profileWeights.sub808 || 0) + gradient.ghost * 0.06 + parts.body * 0.05 + acid * 0.04 - MixGovernorState.lowGuard * 0.12 - (lowBpm ? 0.04 : 0), 0, 1),
-    reedBuzz: clampValue((profileWeights.reedBuzz || 0) + gradient.ghost * 0.06 + depth.bed * 0.05 + parts.body * 0.04 + (HazamaBridgeState.active ? 0.025 : 0) + (lowBpm ? 0.08 : 0) - acid * 0.04 - MixGovernorState.lowGuard * 0.08, 0, 1),
+    drumSkin: clampValue((profileWeights.drumSkin || 0) + genre.techno * 0.08 + genre.pressure * 0.055 + depth.pulse * 0.045 + acid * 0.045 - (lowBpm ? 0.12 : 0), 0, 1),
+    pianoMemory: clampValue((profileWeights.pianoMemory || 0) + gradient.memory * 0.09 + gradient.organic * 0.055 + MotifMemoryState.strength * 0.065 + (lowBpm ? 0.065 : 0), 0, 1),
+    voiceDust: clampValue((profileWeights.voiceDust || 0) + gradient.chrome * 0.08 + depth.tail * 0.07 + (HazamaBridgeState.active ? 0.035 : 0) + (lowBpm ? 0.075 : 0), 0, 1),
+    acidBiyon: clampValue((profileWeights.acidBiyon || 0) + acid * 0.24 + genre.techno * 0.06 + gradient.micro * 0.055 - parts.voidness * 0.08, 0, 1),
+    sub808: clampValue((profileWeights.sub808 || 0) + gradient.ghost * 0.06 + parts.body * 0.055 + acid * 0.075 - MixGovernorState.lowGuard * 0.14 - (lowBpm ? 0.065 : 0), 0, 1),
+    reedBuzz: clampValue((profileWeights.reedBuzz || 0) + gradient.ghost * 0.052 + depth.bed * 0.045 + parts.body * 0.03 + (HazamaBridgeState.active ? 0.022 : 0) + (lowBpm ? 0.05 : 0) - acid * 0.07 - MixGovernorState.lowGuard * 0.1, 0, 1),
     chain: clampValue((profileWeights.chain || 0) + GenomeState.growth * 0.05 + BpmCrossfadeState.refrain * 0.05 + gradient.organic * 0.05 + (UCM.auto.enabled || HazamaBridgeState.active ? 0.04 : 0), 0, 1)
   };
 
@@ -3964,13 +3958,13 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
 
   const drumTarget = clampValue(
     genre.techno * 0.3 +
-      genre.pressure * 0.22 +
-      depth.pulse * 0.18 +
+      genre.pressure * 0.2 +
+      depth.pulse * 0.15 +
       resource * 0.12 +
-      creation * 0.08 +
+      creation * 0.075 +
       hazamaPulse * 0.08 +
-      acid * 0.12 -
-      genre.ambient * 0.12 -
+      acid * 0.1 -
+      genre.ambient * 0.18 -
       voidness * 0.14 +
       (inner.drumSkin || 0) * innerLift +
       (inner.focus === "drumSkin" ? (inner.bloom || 0) * 0.02 : 0),
@@ -4008,13 +4002,13 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
     1
   );
   const acidTarget = clampValue(
-    acid * 0.58 +
-      (AcidLockState.enabled ? 0.18 : 0) +
-      genre.techno * 0.12 +
-      genre.pressure * 0.1 +
-      gradient.micro * 0.08 +
-      creation * 0.07 +
-      resource * 0.05 -
+    acid * 0.66 +
+      (AcidLockState.enabled ? 0.22 : 0) +
+      genre.techno * 0.13 +
+      genre.pressure * 0.11 +
+      gradient.micro * 0.09 +
+      creation * 0.08 +
+      resource * 0.06 -
       voidness * 0.18 -
       lowGuard * 0.14 +
       (inner.acidBiyon || 0) * innerLift +
@@ -4028,7 +4022,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       depth.pulse * 0.15 +
       pressure * 0.12 +
       hazamaPulse * 0.08 +
-      acid * 0.18 +
+      acid * 0.24 +
       PerformancePadState.punch * 0.1 -
       voidness * 0.18 -
       lowGuard * 0.2 +
@@ -4038,15 +4032,15 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
     1
   );
   const reedTarget = clampValue(
-    gradient.ghost * 0.18 +
-      depth.bed * 0.15 +
+    gradient.ghost * 0.15 +
+      depth.bed * 0.13 +
       depth.tail * 0.1 +
-      body * 0.1 +
+      body * 0.075 +
       hazamaAir * 0.08 +
       hazamaBloom * 0.05 +
-      (EngineParams.bpm < 84 ? 0.08 : 0) -
-      acid * 0.08 -
-      lowGuard * 0.16 +
+      (EngineParams.bpm < 84 ? 0.065 : 0) -
+      acid * 0.12 -
+      lowGuard * 0.18 +
       (inner.reedBuzz || 0) * innerLift +
       (inner.focus === "reedBuzz" ? (inner.bloom || 0) * 0.025 : 0),
     0,
@@ -4602,10 +4596,10 @@ function applyUCMToParams(options = {}) {
   if (droneZone) {
     const droneAmount = clampValue((84 - EngineParams.bpm) / 34 + (0.34 - energyNorm) + genre.ambient * 0.62 + voidNorm * 0.18, 0, 1);
     EngineParams.restProb = clampValue(EngineParams.restProb + droneAmount * 0.08, 0.06, 0.58);
-    EngineParams.kickProb = clampValue(EngineParams.kickProb * (0.08 + (1 - droneAmount) * 0.24), 0.004, 0.16);
-    EngineParams.hatProb = clampValue(EngineParams.hatProb * (0.18 + (1 - droneAmount) * 0.34), 0.015, 0.22);
-    EngineParams.bassProb = clampValue(EngineParams.bassProb * (0.34 + (1 - droneAmount) * 0.28), 0.025, 0.22);
-    EngineParams.padProb = clampValue(EngineParams.padProb + droneAmount * 0.15, 0.24, 0.68);
+    EngineParams.kickProb = clampValue(EngineParams.kickProb * (0.045 + (1 - droneAmount) * 0.2), 0.002, 0.12);
+    EngineParams.hatProb = clampValue(EngineParams.hatProb * (0.12 + (1 - droneAmount) * 0.28), 0.01, 0.18);
+    EngineParams.bassProb = clampValue(EngineParams.bassProb * (0.38 + (1 - droneAmount) * 0.28), 0.025, 0.2);
+    EngineParams.padProb = clampValue(EngineParams.padProb + droneAmount * 0.17, 0.26, 0.7);
   }
 
   // リバーブ/ディレイ量を少しだけ動かす（軽量）
@@ -5613,10 +5607,10 @@ function triggerTimbreFamilyResponse(step, time, context) {
   }
 
   if (drumSkin && !PerformancePadState.void && (offPulse || isAccentStep)) {
-    const drumChance = chance((0.01 + family.drumSkin * 0.16 + genre.techno * 0.035 + PerformancePadState.repeat * 0.05 + (acidOn ? 0.035 : 0) - eventLoad * 0.035) * (droneThin ? 0.42 : 1));
+    const drumChance = chance((0.01 + family.drumSkin * 0.16 + genre.techno * 0.035 + PerformancePadState.repeat * 0.05 + (acidOn ? 0.035 : 0) - eventLoad * 0.035) * (droneThin ? 0.3 : 1));
     if (rand(drumChance)) {
       try {
-        drumSkin.triggerAttackRelease("64n", time + 0.008 + Math.random() * 0.012, clampValue(0.018 + family.drumSkin * 0.074 + creationNorm * 0.018 + (acidOn ? 0.024 : 0), 0.014, 0.13));
+        drumSkin.triggerAttackRelease("64n", time + 0.008 + Math.random() * 0.012, clampValue(0.014 + family.drumSkin * 0.066 + creationNorm * 0.016 + (acidOn ? 0.024 : 0), 0.01, droneThin ? 0.072 : 0.13));
         if (hat && (genre.techno > 0.24 || acidOn) && rand(0.16 + family.drumSkin * 0.18)) {
           hat.triggerAttackRelease("64n", time + 0.024 + Math.random() * 0.014, clampValue(0.028 + family.drumSkin * 0.055 + energyNorm * 0.018, 0.024, 0.11));
         }
@@ -5635,11 +5629,11 @@ function triggerTimbreFamilyResponse(step, time, context) {
   }
 
   if (subImpact && !PerformancePadState.void && (phraseTurn || (acidOn && step % 8 === 4) || (PerformancePadState.punch && step % 4 === 0))) {
-    const subChance = chance(0.018 + family.sub808 * 0.14 + family.acidBiyon * 0.08 + PerformancePadState.punch * 0.08 - lowGuard * 0.14);
+    const subChance = chance((0.018 + family.sub808 * 0.14 + family.acidBiyon * 0.08 + PerformancePadState.punch * 0.08 - lowGuard * 0.14) * (droneThin && !acidOn ? 0.56 : 1));
     if (rand(subChance)) {
       const note = tonalRhymeSub(step, phaseOffset + (phraseTurn ? 0 : 2));
       const dur = acidOn || PerformancePadState.punch ? "16n" : "8n";
-      const vel = clampValue(0.036 + family.sub808 * 0.12 + family.acidBiyon * 0.054 + PerformancePadState.punch * 0.03 - lowGuard * 0.05, 0.028, acidOn ? 0.24 : 0.17);
+      const vel = clampValue(0.032 + family.sub808 * 0.12 + family.acidBiyon * 0.06 + PerformancePadState.punch * 0.03 - lowGuard * 0.05, 0.022, acidOn ? 0.25 : droneThin ? 0.105 : 0.17);
       try {
         subImpact.triggerAttackRelease(note, dur, time + 0.006, vel);
         rememberMotif(tonalRhymeLow(step, phaseOffset), { reply: tonalRhymeMid(step, phaseOffset + 2), shade: note, strength: 0.026 + family.sub808 * 0.06, air: 0.03, source: "sub808-rhyme" });
@@ -5652,7 +5646,9 @@ function triggerTimbreFamilyResponse(step, time, context) {
   }
 
   if (reedBuzz && earthBuzz > 0.26 && !PerformancePadState.punch && (step % 16 === 0 || step % 16 === 8 || (PerformancePadState.void && step % 8 === 4))) {
-    const buzzChance = chance(0.012 + earthBuzz * 0.12 + (HazamaBridgeState.active ? 0.018 : 0) + PerformancePadState.void * 0.035 - eventLoad * 0.035);
+    const lastBuzzCycle = typeof family.lastReedBuzzCycle === "number" ? family.lastReedBuzzCycle : -99;
+    const cycleGap = GrooveState.cycle - lastBuzzCycle;
+    const buzzChance = cycleGap < 3 ? 0 : chance(0.008 + earthBuzz * 0.075 + (HazamaBridgeState.active ? 0.012 : 0) + PerformancePadState.void * 0.026 - eventLoad * 0.04);
     if (rand(buzzChance)) {
       const buzzNote = rand(0.58 + gradient.ghost * 0.14)
         ? tonalRhymeLow(step, phaseOffset - 1)
@@ -5661,6 +5657,7 @@ function triggerTimbreFamilyResponse(step, time, context) {
       const vel = clampValue(0.018 + earthBuzz * 0.07 - lowGuard * 0.026, 0.014, 0.098);
       try {
         reedBuzz.triggerAttackRelease(buzzNote, PerformancePadState.void ? "1n" : "2n", buzzTime, vel);
+        family.lastReedBuzzCycle = GrooveState.cycle;
         if (voiceDust && rand(0.18 + earthBuzz * 0.2)) {
           voiceDust.triggerAttackRelease(tonalRhymeMid(step, phaseOffset + 4), "8n", buzzTime + 0.12, clampValue(vel * 0.36, 0.008, 0.034));
         }
@@ -6133,8 +6130,10 @@ function triggerReferenceDepthDetails(step, time, context) {
       }
       nudgeInnerSourceFamily("voiceDust", 0.018 + membrane * 0.012);
       if (lowGuard < 0.54) nudgeInnerSourceFamily("sub808", 0.01 + membrane * 0.008);
-      if (reedBuzz && membrane > 0.42 && lowGuard < 0.58 && rand(0.08 + membrane * 0.1)) {
-        reedBuzz.triggerAttackRelease(lowNote, "2n", time + 0.088 + Math.random() * 0.032, clampValue(0.012 + membrane * 0.038, 0.01, 0.048));
+      const lastBuzzCycle = typeof family.lastReedBuzzCycle === "number" ? family.lastReedBuzzCycle : -99;
+      if (reedBuzz && membrane > 0.42 && lowGuard < 0.58 && GrooveState.cycle - lastBuzzCycle >= 3 && rand(0.05 + membrane * 0.072)) {
+        reedBuzz.triggerAttackRelease(lowNote, "2n", time + 0.088 + Math.random() * 0.032, clampValue(0.01 + membrane * 0.032, 0.008, 0.04));
+        family.lastReedBuzzCycle = GrooveState.cycle;
         nudgeInnerSourceFamily("reedBuzz", 0.018 + membrane * 0.01);
       }
       markMixEvent(0.035 + membrane * 0.025);
@@ -6516,7 +6515,7 @@ function scheduleStep(time) {
     // Kick
     const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + genre.pressure * 0.024 + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.14) * droneDrumScale);
     if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
-      kick.triggerAttackRelease(tonalRhymeLow(step, -1), "16n", t + 0.004, clampValue(0.32 + energyNorm * 0.072 + genre.pressure * 0.02 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.026 - lowGuard * 0.04, 0.18, droneDrumThin ? 0.32 : 0.5));
+      kick.triggerAttackRelease(tonalRhymeLow(step, -1), droneDrumThin ? "32n" : "16n", t + 0.004, clampValue(0.18 + energyNorm * 0.074 + genre.pressure * 0.02 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.026 - lowGuard * 0.045, 0.09, droneDrumThin ? 0.24 : 0.5));
       if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep) && rand(0.46)) {
         try {
           texture.triggerAttackRelease("64n", t + 0.012, clampValue(0.05 + energyNorm * 0.064, 0.038, 0.118));
@@ -6527,7 +6526,7 @@ function scheduleStep(time) {
     }
 
     // Hat
-    const hatChance = chance((EngineParams.hatProb + fillBoost + genre.techno * 0.12 + genre.idm * 0.045 + (isAccentStep ? 0.08 : 0) - genre.ambient * 0.045 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.42 : 1));
+    const hatChance = chance((EngineParams.hatProb + fillBoost + genre.techno * 0.12 + genre.idm * 0.045 + (isAccentStep ? 0.08 : 0) - genre.ambient * 0.045 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.34 : 1));
     if ((patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2)) && rand(hatChance)) {
       hat.triggerAttackRelease("32n", t, clampValue(0.086 + energyNorm * 0.108 + genre.techno * 0.038 + (isAccentStep ? 0.04 : 0), 0.054, 0.23));
     }
@@ -6549,10 +6548,10 @@ function scheduleStep(time) {
     }
 
     // Bass
-    const bassChance = chance((EngineParams.bassProb + genre.pressure * 0.018 + (GrooveState.fillActive && step % 8 === 6 ? 0.07 : 0) - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16) * (droneDrumThin ? 0.58 : 1));
+    const bassChance = chance((EngineParams.bassProb + genre.pressure * 0.018 + (GrooveState.fillActive && step % 8 === 6 ? 0.07 : 0) - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16) * (droneDrumThin ? 0.52 : 1));
     if (patternAt(EngineParams.bassPattern, step) && rand(bassChance)) {
       const note = step % 8 === 0 ? bassRoot : bassNoteForStep(step);
-      bass.triggerAttackRelease(note, "8n", t + 0.004, clampValue(0.19 + energyNorm * 0.092 + PerformancePadState.punch * 0.02 - lowGuard * 0.024, 0.12, 0.33));
+      bass.triggerAttackRelease(note, droneDrumThin ? "4n" : "8n", t + 0.004, clampValue(0.14 + energyNorm * 0.092 + PerformancePadState.punch * 0.02 - lowGuard * 0.028, 0.085, droneDrumThin ? 0.2 : 0.33));
       if (PerformancePadState.repeat && step % 8 === 0 && rand(0.1)) {
         try {
           bass.triggerAttackRelease(note, "32n", t + 0.04, clampValue(0.08 + energyNorm * 0.04, 0.06, 0.14));
