@@ -58,6 +58,40 @@ Fail signs:
 - Low-end blooms continuously or clips.
 - The mix becomes bright EDM rather than dark acid/IDM pressure.
 
+## AUTO ARC Check
+
+Use `ARC.36` when reviewing album-length self-running behavior.
+
+Setup:
+
+1. Press `START` or `START.HZM`.
+2. Turn `AUTO MIX` on.
+3. Set `ARC` to `ARC.36`.
+4. Keep `OUTPUT` around 75 to 85.
+
+Expected long-form order:
+
+- `ARC.SUB`: low BPM haze/drone, thin drums, membrane, chrome, rare reed buzz.
+- `ARC.MEM`: warped memory, pluck-like refrains, softened recurrence.
+- `ARC.AE`: broken micro-events, short repeat, dry fragments.
+- `ARC.GST`: ghost pulse, body pressure, dark transient.
+- `ARC.ACD`: 120 BPM or higher acid/808/body pressure without forcing the visible `ACID` button on.
+- `ARC.XHL`: chrome air, open tail, return to soft space.
+
+Fast review:
+
+- Listen for 5 minutes and confirm that `window.MusicRuntimeState.albumArc.progress` advances.
+- Listen past 7 minutes or temporarily inspect `window.MusicRuntimeState.albumArc` to confirm chapter movement.
+- Manual pads should still work during every chapter.
+- Turning `ACID` on manually should override and strengthen the acid behavior, not fight `ARC.36`.
+
+Fail signs:
+
+- `ARC.36` sounds the same as `LIVE`.
+- Chapter transitions create abrupt bursts.
+- The ACID chapter crushes the limiter or overfills the bass floor.
+- Submerge/Exhale become drum-forward instead of drone-forward.
+
 ## AutoMix / Hazama Background Check
 
 Use this to confirm self-running behavior without relying on visible UI animation.
