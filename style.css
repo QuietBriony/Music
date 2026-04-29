@@ -472,6 +472,7 @@ body[data-playing="true"][data-auto="true"] #auto-block {
 }
 
 #audio_output_select,
+#culture_grammar_select,
 #auto_arc_mode {
   min-width: 0;
   flex: 1;
@@ -485,6 +486,11 @@ body[data-playing="true"][data-auto="true"] #auto-block {
 }
 
 #auto_arc_status {
+  min-width: 44px;
+  text-align: right;
+}
+
+#culture_grammar_status {
   min-width: 44px;
   text-align: right;
 }

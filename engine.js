@@ -213,6 +213,88 @@ const ALBUM_ARC_PROGRAM = [
     drumThin: 0.66
   }
 ];
+const CULTURE_GRAMMARS = {
+  ambient_room: {
+    label: "HAZE",
+    genre: { ambient: 0.18, idm: -0.03, techno: -0.1, pressure: -0.08 },
+    gradient: { haze: 0.16, memory: 0.03, micro: -0.04, ghost: 0.03, chrome: 0.1, organic: 0.04 },
+    family: { voiceDust: 0.11, pianoMemory: 0.04, reedBuzz: 0.035, sub808: -0.04, drumSkin: -0.11, acidBiyon: -0.09, chain: 0.02 },
+    rhythm: { rest: 0.06, drumThin: 0.52, repeat: -0.04, pulse: -0.05 },
+    space: { reverb: 0.045, delay: 0.012 },
+    gesture: { drift: 0.1, repeat: -0.02, punch: -0.05, void: 0.09 },
+    refrain: 0.04
+  },
+  tape_memory: {
+    label: "TAPE",
+    genre: { ambient: 0.04, idm: 0.09, techno: -0.05, pressure: -0.04 },
+    gradient: { haze: 0.07, memory: 0.17, micro: 0.02, ghost: 0.02, chrome: 0.04, organic: 0.1 },
+    family: { pianoMemory: 0.13, voiceDust: 0.05, chain: 0.08, reedBuzz: 0.015, drumSkin: -0.04, acidBiyon: -0.06 },
+    rhythm: { rest: 0.025, drumThin: 0.28, repeat: 0.045, pulse: 0 },
+    space: { reverb: 0.025, delay: 0.022 },
+    gesture: { drift: 0.1, repeat: 0.08, punch: -0.02, void: 0.02 },
+    refrain: 0.13
+  },
+  broken_machine: {
+    label: "BROKEN",
+    genre: { ambient: -0.04, idm: 0.16, techno: 0.05, pressure: 0.01 },
+    gradient: { haze: -0.04, memory: 0.06, micro: 0.2, ghost: 0.04, chrome: 0.07, organic: 0.04 },
+    family: { drumSkin: 0.07, chain: 0.15, acidBiyon: 0.04, pianoMemory: 0.03, reedBuzz: -0.03 },
+    rhythm: { rest: -0.025, drumThin: 0.04, repeat: 0.17, pulse: 0.05 },
+    space: { reverb: -0.015, delay: 0.035 },
+    gesture: { drift: 0.01, repeat: 0.18, punch: 0.03, void: -0.02 },
+    refrain: 0.1
+  },
+  ghost_dub: {
+    label: "GHOST",
+    genre: { ambient: 0.02, idm: 0.02, techno: 0.05, pressure: 0.11 },
+    gradient: { haze: 0.03, memory: 0.03, micro: 0.05, ghost: 0.18, chrome: 0.02, organic: 0.06 },
+    family: { drumSkin: 0.06, sub808: 0.12, reedBuzz: 0.035, voiceDust: 0.04, chain: 0.04 },
+    rhythm: { rest: 0.02, drumThin: 0.06, repeat: 0.02, pulse: 0.1 },
+    space: { reverb: 0.035, delay: 0.04 },
+    gesture: { drift: 0, repeat: 0.03, punch: 0.12, void: 0.08 },
+    refrain: 0.06
+  },
+  acid_core: {
+    label: "ACID",
+    genre: { ambient: -0.14, idm: 0.02, techno: 0.18, pressure: 0.12 },
+    gradient: { haze: -0.08, memory: -0.02, micro: 0.16, ghost: 0.1, chrome: 0.04, organic: 0.03 },
+    family: { acidBiyon: 0.26, sub808: 0.12, chain: 0.1, drumSkin: 0.06, voiceDust: -0.05, reedBuzz: -0.09 },
+    rhythm: { rest: -0.08, drumThin: 0, repeat: 0.14, pulse: 0.18 },
+    space: { reverb: -0.02, delay: 0.018 },
+    gesture: { drift: -0.02, repeat: 0.15, punch: 0.13, void: -0.06 },
+    refrain: 0.08
+  },
+  chrome_hymn: {
+    label: "CHROME",
+    genre: { ambient: 0.12, idm: 0.02, techno: -0.06, pressure: -0.08 },
+    gradient: { haze: 0.1, memory: 0.04, micro: -0.02, ghost: 0.01, chrome: 0.19, organic: 0.03 },
+    family: { voiceDust: 0.13, pianoMemory: 0.06, chain: 0.06, sub808: -0.04, drumSkin: -0.09, acidBiyon: -0.1 },
+    rhythm: { rest: 0.055, drumThin: 0.44, repeat: -0.03, pulse: -0.04 },
+    space: { reverb: 0.06, delay: 0.018 },
+    gesture: { drift: 0.08, repeat: -0.02, punch: -0.05, void: 0.16 },
+    refrain: 0.05
+  },
+  earth_reed: {
+    label: "EARTH",
+    genre: { ambient: 0.06, idm: -0.02, techno: -0.06, pressure: 0.02 },
+    gradient: { haze: 0.08, memory: 0.01, micro: -0.03, ghost: 0.12, chrome: 0.02, organic: 0.08 },
+    family: { reedBuzz: 0.18, sub808: 0.035, voiceDust: 0.08, chain: 0.03, drumSkin: -0.03, acidBiyon: -0.08 },
+    rhythm: { rest: 0.04, drumThin: 0.42, repeat: -0.03, pulse: 0.02 },
+    space: { reverb: 0.04, delay: 0.006 },
+    gesture: { drift: 0.04, repeat: -0.02, punch: -0.03, void: 0.09 },
+    refrain: 0.02
+  }
+};
+const CULTURE_GRAMMAR_OPTIONS = {
+  auto: "AUTO",
+  ambient_room: "HAZE",
+  tape_memory: "TAPE",
+  broken_machine: "BROKEN",
+  ghost_dub: "GHOST",
+  acid_core: "ACID",
+  chrome_hymn: "CHROME",
+  earth_reed: "EARTH"
+};
 const MANUAL_INFLUENCE_HOLD_MS = 4300;
 const manualInfluenceUntil = {};
 const SLIDER_KEY_BY_ID = Object.fromEntries(Object.entries(SLIDER_BY_UCM).map(([key, id]) => [id, key]));
@@ -340,6 +422,13 @@ const GENOME_GENE_KEYS = ["haze", "pulse", "micro", "chrome", "organic", "pressu
 const VoiceColorState = {
   atmosphere: "auto",
   source: "genome"
+};
+const CultureGrammarState = {
+  selected: "auto",
+  active: "ambient_room",
+  label: "AUTO",
+  strength: 0.72,
+  lastActive: "ambient_room"
 };
 const AcidLockState = {
   enabled: false,
@@ -804,7 +893,124 @@ function updateAlbumArcModeFromUI(options = {}) {
   AlbumArcState.mode = nextMode === "arc36" ? "arc36" : "live";
   if (changed || options.reset === true) resetAlbumArc();
   updateAlbumArcUi();
+  updateCultureGrammarState({ nudge: changed });
   if (initialized) applyUCMToParams({ force: true });
+}
+
+function cultureGrammarByKey(key) {
+  return CULTURE_GRAMMARS[key] || CULTURE_GRAMMARS.ambient_room;
+}
+
+function albumArcCultureKey() {
+  if (!albumArcActive()) return "";
+  const chapter = currentAlbumArcChapter()?.name || "";
+  return {
+    SUBMERGE: "ambient_room",
+    MEMORY: "tape_memory",
+    BROKEN: "broken_machine",
+    GHOST: "ghost_dub",
+    ACID: "acid_core",
+    EXHALE: "chrome_hymn"
+  }[chapter] || "";
+}
+
+function autoCultureGrammarKey() {
+  const arcKey = albumArcCultureKey();
+  if (arcKey) return arcKey;
+  const acid = acidPerformanceAmount();
+  const inner = typeof TimbreFamilyState !== "undefined" ? TimbreFamilyState.inner || {} : {};
+  const genre = typeof GenreBlendState !== "undefined" ? GenreBlendState : {};
+  const gradient = typeof GradientState !== "undefined" ? GradientState : {};
+  if (acid > 0.28 || AcidLockState.enabled) return "acid_core";
+  const reedAmount = typeof TimbreFamilyState !== "undefined" ? TimbreFamilyState.reedBuzz || 0 : 0;
+  if (inner.profile === "earthBuzz" || reedAmount > 0.42) return "earth_reed";
+  if (EngineParams.bpm < 82 || (genre.ambient || 0) > 0.52) {
+    return (gradient.chrome || 0) > (gradient.haze || 0) + 0.1 ? "chrome_hymn" : "ambient_room";
+  }
+  if ((gradient.memory || 0) > 0.56 || inner.profile === "memoryRefrain") return "tape_memory";
+  if ((gradient.micro || 0) > 0.55 || inner.profile === "brokenSplice") return "broken_machine";
+  if ((gradient.ghost || 0) > 0.54 || inner.profile === "ghostBody") return "ghost_dub";
+  if ((gradient.chrome || 0) > 0.58 || inner.profile === "chromeHymn") return "chrome_hymn";
+  return "tape_memory";
+}
+
+function currentCultureGrammarKey() {
+  if (CultureGrammarState.selected && CultureGrammarState.selected !== "auto") return CultureGrammarState.selected;
+  return autoCultureGrammarKey();
+}
+
+function updateCultureGrammarState(options = {}) {
+  const key = currentCultureGrammarKey();
+  const grammar = cultureGrammarByKey(key);
+  const changed = key !== CultureGrammarState.active;
+  CultureGrammarState.lastActive = CultureGrammarState.active;
+  CultureGrammarState.active = key;
+  CultureGrammarState.label = grammar.label;
+  CultureGrammarState.strength = CultureGrammarState.selected === "auto" ? 0.72 : 0.9;
+  if (changed && options.nudge !== false) {
+    BpmCrossfadeState.refrain = clampValue(Math.max(BpmCrossfadeState.refrain, grammar.refrain || 0), 0, 0.86);
+    if (grammar.family) {
+      const familyKey = Object.entries(grammar.family).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0]?.[0];
+      if (familyKey && INNER_SOURCE_FAMILY_KEYS.includes(familyKey)) nudgeInnerSourceFamily(familyKey, 0.018);
+    }
+  }
+  if (changed || options.forceUi === true) updateCultureGrammarUi();
+  return grammar;
+}
+
+function currentCultureGrammar() {
+  return cultureGrammarByKey(CultureGrammarState.active || currentCultureGrammarKey());
+}
+
+function cultureGrammarBias(section, key, scale = 1) {
+  const grammar = currentCultureGrammar();
+  return (grammar?.[section]?.[key] || 0) * CultureGrammarState.strength * scale;
+}
+
+function cultureGenreBias(key) {
+  return cultureGrammarBias("genre", key, 0.72);
+}
+
+function cultureGradientBias(key) {
+  return cultureGrammarBias("gradient", key, 0.82);
+}
+
+function cultureFamilyBias(key) {
+  return cultureGrammarBias("family", key, 0.86);
+}
+
+function cultureRhythmBias(key) {
+  return cultureGrammarBias("rhythm", key, 1);
+}
+
+function cultureSpaceBias(key) {
+  return cultureGrammarBias("space", key, 1);
+}
+
+function cultureGestureBias(key) {
+  return cultureGrammarBias("gesture", key, 0.8);
+}
+
+function updateCultureGrammarUi() {
+  if (typeof document === "undefined") return;
+  const select = document.getElementById("culture_grammar_select");
+  if (select && select.value !== CultureGrammarState.selected) select.value = CultureGrammarState.selected;
+  const status = document.getElementById("culture_grammar_status");
+  if (status) status.textContent = CultureGrammarState.label || "AUTO";
+  if (document.body) {
+    document.body.dataset.culture = CultureGrammarState.active || "";
+    document.body.dataset.cultureMode = CultureGrammarState.selected || "auto";
+  }
+}
+
+function updateCultureGrammarFromUI(options = {}) {
+  const select = typeof document !== "undefined" ? document.getElementById("culture_grammar_select") : null;
+  const next = select ? select.value || "auto" : CultureGrammarState.selected;
+  CultureGrammarState.selected = CULTURE_GRAMMAR_OPTIONS[next] ? next : "auto";
+  updateCultureGrammarState({ nudge: options.nudge !== false, forceUi: true });
+  if (initialized && options.apply !== false) applyUCMToParams({ force: options.force === true });
+  publishMusicRuntimeState();
+  requestHazamaRuntimeFeedback("culture");
 }
 
 function nudgeLongformArcFromGesture(name, source = "manual") {
@@ -870,10 +1076,10 @@ function chooseAutoGesture(context) {
   } = context;
   const scene = currentAutoDirectorScene();
   const weighted = [
-    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1 + OrganicChaosState.airPull * 0.08 + (scene.gesture?.drift || 0) + longformArcGestureBias("drift") + albumArcGestureBias("drift")],
-    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08 + OrganicChaosState.tangle * 0.12 + (scene.gesture?.repeat || 0) + longformArcGestureBias("repeat") + albumArcGestureBias("repeat")],
-    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12 + OrganicChaosState.lowMotion * 0.1 + (scene.gesture?.punch || 0) + longformArcGestureBias("punch") + albumArcGestureBias("punch")],
-    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08 + OrganicChaosState.impulse * 0.06 + (scene.gesture?.void || 0) + longformArcGestureBias("void") + albumArcGestureBias("void")]
+    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1 + OrganicChaosState.airPull * 0.08 + (scene.gesture?.drift || 0) + longformArcGestureBias("drift") + albumArcGestureBias("drift") + cultureGestureBias("drift")],
+    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08 + OrganicChaosState.tangle * 0.12 + (scene.gesture?.repeat || 0) + longformArcGestureBias("repeat") + albumArcGestureBias("repeat") + cultureGestureBias("repeat")],
+    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12 + OrganicChaosState.lowMotion * 0.1 + (scene.gesture?.punch || 0) + longformArcGestureBias("punch") + albumArcGestureBias("punch") + cultureGestureBias("punch")],
+    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08 + OrganicChaosState.impulse * 0.06 + (scene.gesture?.void || 0) + longformArcGestureBias("void") + albumArcGestureBias("void") + cultureGestureBias("void")]
   ];
   const total = weighted.reduce((sum, [, weight]) => sum + Math.max(0, weight), 0);
   let pick = Math.random() * total;
@@ -1241,9 +1447,10 @@ function updateGenreBlend(parts) {
   const { energy, wave, creation, voidness, circle, body, resource, observer, pressure } = parts;
   const bpmNorm = clampValue((EngineParams.bpm - 58) / 90, 0, 1);
   const acid = acidPerformanceAmount();
+  updateCultureGrammarState({ nudge: false });
   const midBpm = 1 - Math.abs(bpmNorm - 0.5) * 2;
   const activeGrid = clampValue((energy * 0.42) + (resource * 0.28) + (bpmNorm * 0.3), 0, 1);
-  const ambientTarget = clampValue(
+  let ambientTarget = clampValue(
     ((1 - bpmNorm) * 0.32) +
       ((1 - energy) * 0.26) +
       (voidness * 0.16) +
@@ -1254,7 +1461,7 @@ function updateGenreBlend(parts) {
     0,
     1
   );
-  const idmTarget = clampValue(
+  let idmTarget = clampValue(
     (midBpm * 0.22) +
       (wave * 0.22) +
       (creation * 0.22) +
@@ -1265,7 +1472,7 @@ function updateGenreBlend(parts) {
     0,
     1
   );
-  const technoTarget = clampValue(
+  let technoTarget = clampValue(
     (bpmNorm * 0.34) +
       (energy * 0.22) +
       (resource * 0.18) +
@@ -1277,7 +1484,7 @@ function updateGenreBlend(parts) {
     0,
     1
   );
-  const pressureTarget = clampValue(
+  let pressureTarget = clampValue(
     (energy * 0.26) +
       (body * 0.24) +
       (pressure * 0.2) +
@@ -1288,6 +1495,11 @@ function updateGenreBlend(parts) {
     0,
     1
   );
+  ambientTarget = clampValue(ambientTarget + cultureGenreBias("ambient"), 0, 1);
+  idmTarget = clampValue(idmTarget + cultureGenreBias("idm"), 0, 1);
+  technoTarget = clampValue(technoTarget + cultureGenreBias("techno"), 0, 1);
+  pressureTarget = clampValue(pressureTarget + cultureGenreBias("pressure"), 0, 1);
+
   const total = Math.max(0.001, ambientTarget + idmTarget + technoTarget + pressureTarget);
 
   GenreBlendState.ambient = approachValue(GenreBlendState.ambient, ambientTarget / total, 0.08);
@@ -1335,9 +1547,13 @@ function updateDJTempo(parts, options = {}) {
     genre.idm * 2.5 +
     genre.techno * 7 +
     genre.pressure * 3;
+  const cultureTempoBias =
+    cultureRhythmBias("pulse") * 11 +
+    cultureRhythmBias("repeat") * 4 -
+    cultureRhythmBias("drumThin") * 8;
   const contour = Math.sin((GrooveState.cycle * 0.045) + (LongformArcState.stageIndex * 0.9)) * (1.2 + longformArcShape() * 2.4);
   const pressureLift = clampValue((body * 0.22) + (resource * 0.18) + (creation * 0.12) - (observer * 0.08) - (voidness * 0.08), -0.12, 0.36) * 8;
-  const target = resolvePerformanceTempoTarget(rawBpm + longformTempoBias() + albumArcTempoBias() + genreBias + pressureLift + contour);
+  const target = resolvePerformanceTempoTarget(rawBpm + longformTempoBias() + albumArcTempoBias() + genreBias + cultureTempoBias + pressureLift + contour);
   const targetStep = force ? 96 : 0.55 + Math.abs(DJTempoState.targetBpm - target) * 0.018;
   const bpmStep = force ? 96 : 0.42 + wave * 0.18 + genre.techno * 0.16;
 
@@ -1779,6 +1995,12 @@ function publishMusicRuntimeState() {
       autoActive: autoVoiceAtmosphereActive() || autoVoiceSourceActive(),
       emergence: { ...VoiceEmergenceState }
     },
+    culture: {
+      selected: CultureGrammarState.selected,
+      active: CultureGrammarState.active,
+      label: CultureGrammarState.label,
+      strength: CultureGrammarState.strength
+    },
     acid: {
       enabled: AcidLockState.enabled,
       intensity: AcidLockState.intensity,
@@ -1877,6 +2099,12 @@ function buildHazamaRuntimeFeedbackPayload(kind = "heartbeat", state = window.Mu
       bpm: Math.round(EngineParams.bpm || 0),
       mode: EngineParams.mode,
       outputLevel: Math.round(OutputState.level || 0),
+      culture: {
+        selected: CultureGrammarState.selected || "auto",
+        active: CultureGrammarState.active || "ambient_room",
+        label: CultureGrammarState.label || "AUTO",
+        strength: feedbackNumber(CultureGrammarState.strength || 0)
+      },
       albumArc: {
         active: !!albumArcActive(),
         chapter: currentAlbumArcChapter()?.name || "",
@@ -1920,7 +2148,8 @@ function buildHazamaRuntimeFeedbackPayload(kind = "heartbeat", state = window.Mu
       feedbackVersion: 1,
       albumArc: true,
       acidDrive: true,
-      sourceFamilies: true
+      sourceFamilies: true,
+      cultureGrammar: true
     }
   };
 }
@@ -1952,6 +2181,8 @@ function hazamaRuntimeFeedbackSignature() {
     UCM.auto.enabled ? "auto" : "manual",
     Math.round((EngineParams.bpm || 0) / 2) * 2,
     albumArcActive() ? currentAlbumArcChapter()?.label || "" : "live",
+    CultureGrammarState.selected || "auto",
+    CultureGrammarState.active || "",
     Math.round(acidPerformanceAmount() * 10),
     inner.profile || "",
     dominantInnerSourceFamily(inner)
@@ -3293,6 +3524,7 @@ function updateRuntimeUiState() {
   document.body.dataset.playing = isPlaying ? "true" : "false";
   document.body.dataset.auto = UCM.auto.enabled ? "true" : "false";
   updateAlbumArcUi();
+  updateCultureGrammarUi();
   publishMusicRuntimeState();
 }
 
@@ -3982,7 +4214,8 @@ function renderModeLabel() {
   if (!label) return;
   const modeName = EngineParams.mode === "trance" ? "ACID.TECH" : EngineParams.mode.toUpperCase();
   const arcPrefix = albumArcActive() ? `${currentAlbumArcChapter().label} / ` : "";
-  label.textContent = `${arcPrefix}${modeName} / ${WorldState.label} / ${currentPresetCharacter().label}`;
+  const cultureLabel = CultureGrammarState.label || "AUTO";
+  label.textContent = `${arcPrefix}${modeName} / ${cultureLabel} / ${WorldState.label} / ${currentPresetCharacter().label}`;
 }
 
 
@@ -4081,6 +4314,10 @@ function updateReferenceGradient(parts) {
     for (const key of Object.keys(GradientState)) {
       GradientState[key] = clampValue(GradientState[key] + albumArcGradientBias(key) + AlbumArcState.chapterTurn * 0.012, 0, 1);
     }
+  }
+
+  for (const key of Object.keys(GradientState)) {
+    GradientState[key] = clampValue(GradientState[key] + cultureGradientBias(key), 0, 1);
   }
 
   if (PerformancePadState.drift) {
@@ -4302,7 +4539,15 @@ function chooseInnerSourceProfile(parts, gradient, depth, genre) {
   const hazamaBloom = HazamaBridgeState.active ? clampValue(evolution.bloom || 0, 0, 1) : 0;
   const lowBpm = EngineParams.bpm < 82 || genre.ambient > 0.5 || energy < 0.32;
   const acid = acidPerformanceAmount();
+  const culture = CultureGrammarState.active || "ambient_room";
 
+  if (culture === "earth_reed" && lowBpm) return sourceDepthProfileByName("earthBuzz");
+  if (culture === "chrome_hymn" && (lowBpm || gradient.chrome > 0.46)) return sourceDepthProfileByName("chromeHymn");
+  if (culture === "ambient_room" && lowBpm) return sourceDepthProfileByName("hazeBed");
+  if (culture === "tape_memory" && gradient.memory > 0.36) return sourceDepthProfileByName("memoryRefrain");
+  if (culture === "broken_machine" && gradient.micro > 0.34) return sourceDepthProfileByName("brokenSplice");
+  if (culture === "ghost_dub" && gradient.ghost > 0.34) return sourceDepthProfileByName("ghostBody");
+  if ((culture === "acid_core" || acid > 0.18) && (acid > 0.1 || genre.techno > 0.16 || parts.creation > 0.28 || parts.resource > 0.34)) return sourceDepthProfileByName("coldPulse");
   if (acid > 0.18 && (genre.techno > 0.16 || parts.creation > 0.28 || parts.resource > 0.34)) return sourceDepthProfileByName("coldPulse");
   if (hazamaMicro > 0.55 || gradient.micro > 0.58) return sourceDepthProfileByName("brokenSplice");
   if (hazamaPulse > 0.58 || gradient.ghost > 0.56) return sourceDepthProfileByName("ghostBody");
@@ -4335,13 +4580,13 @@ function updateInnerSourceFamily(parts, gradient = GradientState, depth = DepthS
   const lowBpm = EngineParams.bpm < 82 || genre.ambient > 0.5 || parts.energy < 0.32;
   const profileWeights = profile.weights || {};
   const targets = {
-    drumSkin: clampValue((profileWeights.drumSkin || 0) + genre.techno * 0.08 + genre.pressure * 0.055 + depth.pulse * 0.045 + acid * 0.045 + albumArcFamilyBias("drumSkin") - (lowBpm ? 0.12 : 0), 0, 1),
-    pianoMemory: clampValue((profileWeights.pianoMemory || 0) + gradient.memory * 0.09 + gradient.organic * 0.055 + MotifMemoryState.strength * 0.065 + albumArcFamilyBias("pianoMemory") + (lowBpm ? 0.065 : 0), 0, 1),
-    voiceDust: clampValue((profileWeights.voiceDust || 0) + gradient.chrome * 0.08 + depth.tail * 0.07 + (HazamaBridgeState.active ? 0.035 : 0) + albumArcFamilyBias("voiceDust") + (lowBpm ? 0.075 : 0), 0, 1),
-    acidBiyon: clampValue((profileWeights.acidBiyon || 0) + acid * 0.24 + genre.techno * 0.06 + gradient.micro * 0.055 + albumArcFamilyBias("acidBiyon") - parts.voidness * 0.08, 0, 1),
-    sub808: clampValue((profileWeights.sub808 || 0) + gradient.ghost * 0.06 + parts.body * 0.055 + acid * 0.075 + albumArcFamilyBias("sub808") - MixGovernorState.lowGuard * 0.14 - (lowBpm ? 0.065 : 0), 0, 1),
-    reedBuzz: clampValue((profileWeights.reedBuzz || 0) + gradient.ghost * 0.052 + depth.bed * 0.045 + parts.body * 0.03 + (HazamaBridgeState.active ? 0.022 : 0) + albumArcFamilyBias("reedBuzz") + (lowBpm ? 0.05 : 0) - acid * 0.07 - MixGovernorState.lowGuard * 0.1, 0, 1),
-    chain: clampValue((profileWeights.chain || 0) + GenomeState.growth * 0.05 + BpmCrossfadeState.refrain * 0.05 + gradient.organic * 0.05 + albumArcFamilyBias("chain") + (UCM.auto.enabled || HazamaBridgeState.active ? 0.04 : 0), 0, 1)
+    drumSkin: clampValue((profileWeights.drumSkin || 0) + genre.techno * 0.08 + genre.pressure * 0.055 + depth.pulse * 0.045 + acid * 0.045 + albumArcFamilyBias("drumSkin") + cultureFamilyBias("drumSkin") - (lowBpm ? 0.12 : 0), 0, 1),
+    pianoMemory: clampValue((profileWeights.pianoMemory || 0) + gradient.memory * 0.09 + gradient.organic * 0.055 + MotifMemoryState.strength * 0.065 + albumArcFamilyBias("pianoMemory") + cultureFamilyBias("pianoMemory") + (lowBpm ? 0.065 : 0), 0, 1),
+    voiceDust: clampValue((profileWeights.voiceDust || 0) + gradient.chrome * 0.08 + depth.tail * 0.07 + (HazamaBridgeState.active ? 0.035 : 0) + albumArcFamilyBias("voiceDust") + cultureFamilyBias("voiceDust") + (lowBpm ? 0.075 : 0), 0, 1),
+    acidBiyon: clampValue((profileWeights.acidBiyon || 0) + acid * 0.24 + genre.techno * 0.06 + gradient.micro * 0.055 + albumArcFamilyBias("acidBiyon") + cultureFamilyBias("acidBiyon") - parts.voidness * 0.08, 0, 1),
+    sub808: clampValue((profileWeights.sub808 || 0) + gradient.ghost * 0.06 + parts.body * 0.055 + acid * 0.075 + albumArcFamilyBias("sub808") + cultureFamilyBias("sub808") - MixGovernorState.lowGuard * 0.14 - (lowBpm ? 0.065 : 0), 0, 1),
+    reedBuzz: clampValue((profileWeights.reedBuzz || 0) + gradient.ghost * 0.052 + depth.bed * 0.045 + parts.body * 0.03 + (HazamaBridgeState.active ? 0.022 : 0) + albumArcFamilyBias("reedBuzz") + cultureFamilyBias("reedBuzz") + (lowBpm ? 0.05 : 0) - acid * 0.07 - MixGovernorState.lowGuard * 0.1, 0, 1),
+    chain: clampValue((profileWeights.chain || 0) + GenomeState.growth * 0.05 + BpmCrossfadeState.refrain * 0.05 + gradient.organic * 0.05 + albumArcFamilyBias("chain") + cultureFamilyBias("chain") + (UCM.auto.enabled || HazamaBridgeState.active ? 0.04 : 0), 0, 1)
   };
 
   for (const key of INNER_SOURCE_FAMILY_KEYS) {
@@ -4387,6 +4632,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       genre.ambient * 0.18 -
       voidness * 0.14 +
       albumArcFamilyBias("drumSkin") * 0.42 +
+      cultureFamilyBias("drumSkin") * 0.48 +
       (inner.drumSkin || 0) * innerLift +
       (inner.focus === "drumSkin" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4403,6 +4649,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       pressure * 0.08 -
       genre.techno * 0.08 +
       albumArcFamilyBias("pianoMemory") * 0.44 +
+      cultureFamilyBias("pianoMemory") * 0.5 +
       (inner.pianoMemory || 0) * innerLift +
       (inner.focus === "pianoMemory" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4419,6 +4666,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       voidness * 0.06 -
       genre.pressure * 0.08 +
       albumArcFamilyBias("voiceDust") * 0.44 +
+      cultureFamilyBias("voiceDust") * 0.48 +
       (inner.voiceDust || 0) * innerLift +
       (inner.focus === "voiceDust" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4435,6 +4683,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       voidness * 0.18 -
       lowGuard * 0.14 +
       albumArcFamilyBias("acidBiyon") * 0.58 +
+      cultureFamilyBias("acidBiyon") * 0.62 +
       (inner.acidBiyon || 0) * innerLift +
       (inner.focus === "acidBiyon" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4451,6 +4700,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       voidness * 0.18 -
       lowGuard * 0.2 +
       albumArcFamilyBias("sub808") * 0.52 +
+      cultureFamilyBias("sub808") * 0.44 +
       (inner.sub808 || 0) * innerLift +
       (inner.focus === "sub808" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4467,6 +4717,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       acid * 0.12 -
       lowGuard * 0.18 +
       albumArcFamilyBias("reedBuzz") * 0.44 +
+      cultureFamilyBias("reedBuzz") * 0.54 +
       (inner.reedBuzz || 0) * innerLift +
       (inner.focus === "reedBuzz" ? (inner.bloom || 0) * 0.025 : 0),
     0,
@@ -4483,6 +4734,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       hazamaMicro * 0.06 +
       energy * 0.04 +
       albumArcFamilyBias("chain") * 0.46 +
+      cultureFamilyBias("chain") * 0.42 +
       (inner.chain || 0) * innerLift +
       (inner.focus === "chain" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4518,12 +4770,12 @@ function updateTimbreStateFromWorld(parts) {
   const voiceVoidTail = voiceGeneBias("voidTail");
   const voicePressure = voiceGeneBias("pressure");
 
-  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + genre.ambient * 0.05 - genre.techno * 0.025 + clarity * 0.028 + voiceHaze * 0.024 + voiceVoidTail * 0.026 + character.air, 0, 1);
-  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + genre.idm * 0.035 + clarity * 0.035 + voiceChrome * 0.028 + voiceMicro * 0.014 + character.glass, 0, 1);
-  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + (gradient.ghost * 0.032) + (gradient.micro * 0.022) + genre.techno * 0.04 + genre.pressure * 0.035 + voicePressure * 0.018 - voiceHaze * 0.012 - (gradient.haze * 0.035) - (depth.lowMidClean * 0.036) - lowGuard * 0.035 + character.grit, 0, 1);
-  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + (gradient.micro * 0.06) + (gradient.organic * 0.025) + (depth.particle * 0.035) + genre.idm * 0.045 + genre.techno * 0.035 + voiceMicro * 0.03 + voicePressure * 0.012 + character.fracture, 0, 1);
-  TimbreState.harp = clampValue((TimbreState.glass * 0.46) + (TimbreState.air * 0.24) + (circle * 0.18) + ((1 - TimbreState.grit) * 0.12) + (gradient.chrome * 0.05) + (gradient.memory * 0.035) + (depth.tail * 0.032) + genre.ambient * 0.03 + genre.idm * 0.02 - genre.techno * 0.035 + voiceChrome * 0.028 + voiceRefrain * 0.012 + (character.harp || 0), 0, 1);
-  TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (gradient.memory * 0.045) + (gradient.organic * 0.025) + (depth.bed * 0.026) + genre.ambient * 0.025 - genre.techno * 0.035 - (depth.lowMidClean * 0.018) + voiceOrganic * 0.018 + voicePulse * 0.006 - voicePressure * 0.01 + (character.warmth || 0), 0, 1);
+  TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + genre.ambient * 0.05 - genre.techno * 0.025 + cultureGradientBias("haze") * 0.03 + cultureGradientBias("chrome") * 0.02 + clarity * 0.028 + voiceHaze * 0.024 + voiceVoidTail * 0.026 + character.air, 0, 1);
+  TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + genre.idm * 0.035 + cultureGradientBias("chrome") * 0.035 + cultureGradientBias("memory") * 0.018 + clarity * 0.035 + voiceChrome * 0.028 + voiceMicro * 0.014 + character.glass, 0, 1);
+  TimbreState.grit = clampValue((pressure * 0.48) + (resource * 0.22) + (body * 0.16) + (energy * 0.14) + (gradient.ghost * 0.032) + (gradient.micro * 0.022) + genre.techno * 0.04 + genre.pressure * 0.035 + cultureGradientBias("ghost") * 0.024 + cultureGradientBias("micro") * 0.018 + voicePressure * 0.018 - voiceHaze * 0.012 - (gradient.haze * 0.035) - (depth.lowMidClean * 0.036) - lowGuard * 0.035 + character.grit, 0, 1);
+  TimbreState.fracture = clampValue((creation * 0.32) + (wave * 0.24) + (resource * 0.2) + (WorldState.spectrum * 0.24) + (gradient.micro * 0.06) + (gradient.organic * 0.025) + (depth.particle * 0.035) + genre.idm * 0.045 + genre.techno * 0.035 + cultureGradientBias("micro") * 0.04 + cultureGradientBias("organic") * 0.018 + voiceMicro * 0.03 + voicePressure * 0.012 + character.fracture, 0, 1);
+  TimbreState.harp = clampValue((TimbreState.glass * 0.46) + (TimbreState.air * 0.24) + (circle * 0.18) + ((1 - TimbreState.grit) * 0.12) + (gradient.chrome * 0.05) + (gradient.memory * 0.035) + (depth.tail * 0.032) + genre.ambient * 0.03 + genre.idm * 0.02 - genre.techno * 0.035 + cultureGradientBias("chrome") * 0.024 + cultureGradientBias("memory") * 0.02 + voiceChrome * 0.028 + voiceRefrain * 0.012 + (character.harp || 0), 0, 1);
+  TimbreState.warmth = clampValue((circle * 0.22) + (body * 0.16) + (resource * 0.16) + ((1 - TimbreState.fracture) * 0.18) + ((1 - pressure) * 0.08) + (gradient.memory * 0.045) + (gradient.organic * 0.025) + (depth.bed * 0.026) + genre.ambient * 0.025 - genre.techno * 0.035 + cultureGradientBias("memory") * 0.024 + cultureGradientBias("organic") * 0.018 - (depth.lowMidClean * 0.018) + voiceOrganic * 0.018 + voicePulse * 0.006 - voicePressure * 0.01 + (character.warmth || 0), 0, 1);
 
   const organicColor = (character.organicScale || 1) - 1;
   const dustColor = (character.dustScale || 1) - 1;
@@ -5016,11 +5268,15 @@ function applyUCMToParams(options = {}) {
   const genre = GenreBlendState;
   const droneZone = EngineParams.bpm < 84 || energyNorm < 0.3 || genre.ambient > 0.42;
   const arcDrumThin = albumArcDrumThin();
-  EngineParams.restProb = clampValue(EngineParams.restProb * character.restScale + genre.ambient * 0.035 - genre.techno * 0.035, 0.035, PerformancePadState.void ? 0.58 : 0.46);
-  EngineParams.kickProb = clampValue(EngineParams.kickProb * character.kickScale + genre.pressure * 0.024 - genre.ambient * 0.018, PerformancePadState.void ? 0.06 : 0.11, 0.7);
-  EngineParams.hatProb = clampValue(EngineParams.hatProb * character.hatScale + genre.techno * 0.11 + genre.idm * 0.035 - genre.ambient * 0.05, PerformancePadState.void ? 0.11 : 0.18, 0.86);
-  EngineParams.bassProb = clampValue(EngineParams.bassProb * character.bassScale + genre.pressure * 0.018 - genre.ambient * 0.018, PerformancePadState.void ? 0.05 : 0.09, 0.48);
-  EngineParams.padProb = clampValue(EngineParams.padProb * character.padScale * (character.hazeScale || 1) + genre.ambient * 0.055 - genre.techno * 0.045, PerformancePadState.void ? 0.15 : 0.16, 0.58);
+  const cultureDrumThin = clampValue(cultureRhythmBias("drumThin"), 0, 0.72);
+  const culturePulse = clampValue(cultureRhythmBias("pulse"), -0.2, 0.32);
+  const cultureRepeat = clampValue(cultureRhythmBias("repeat"), 0, 0.3);
+  const cultureRest = clampValue(cultureRhythmBias("rest"), -0.14, 0.18);
+  EngineParams.restProb = clampValue(EngineParams.restProb * character.restScale + genre.ambient * 0.035 - genre.techno * 0.035 + cultureRest + cultureDrumThin * 0.035, 0.035, PerformancePadState.void ? 0.6 : 0.5);
+  EngineParams.kickProb = clampValue(EngineParams.kickProb * character.kickScale + genre.pressure * 0.024 - genre.ambient * 0.018 + culturePulse * 0.035 - cultureDrumThin * 0.09, PerformancePadState.void ? 0.04 : 0.08, 0.7);
+  EngineParams.hatProb = clampValue(EngineParams.hatProb * character.hatScale + genre.techno * 0.11 + genre.idm * 0.035 - genre.ambient * 0.05 + cultureRepeat * 0.08 - cultureDrumThin * 0.12, PerformancePadState.void ? 0.08 : 0.12, 0.86);
+  EngineParams.bassProb = clampValue(EngineParams.bassProb * character.bassScale + genre.pressure * 0.018 - genre.ambient * 0.018 + culturePulse * 0.03 - cultureDrumThin * 0.045, PerformancePadState.void ? 0.04 : 0.07, 0.48);
+  EngineParams.padProb = clampValue(EngineParams.padProb * character.padScale * (character.hazeScale || 1) + genre.ambient * 0.055 - genre.techno * 0.045 + cultureDrumThin * 0.1 + cultureSpaceBias("reverb") * 0.035, PerformancePadState.void ? 0.16 : 0.17, 0.68);
   if (arcDrumThin > 0) {
     EngineParams.kickProb = clampValue(EngineParams.kickProb * (1 - arcDrumThin * 0.62), 0.002, 0.42);
     EngineParams.hatProb = clampValue(EngineParams.hatProb * (1 - arcDrumThin * 0.48), 0.01, 0.56);
@@ -5041,6 +5297,9 @@ function applyUCMToParams(options = {}) {
     mapValue(UCM_CUR.observer + UCM_CUR.void * 0.35, 0, 135, 0.14, 0.46) +
       DepthState.tail * 0.035 +
       DepthState.bed * 0.018 +
+      cultureSpaceBias("reverb") * 0.085 +
+      cultureSpaceBias("tail") * 0.075 -
+      cultureSpaceBias("dry") * 0.055 +
       PerformancePadState.void * 0.16 +
       PerformancePadState.drift * 0.04,
     0.08,
@@ -5052,6 +5311,8 @@ function applyUCMToParams(options = {}) {
     mapValue(UCM_CUR.creation + UCM_CUR.observer * 0.22, 0, 122, 0.035, 0.28) +
       DepthState.particle * 0.018 +
       DepthState.gesture * 0.012 +
+      cultureSpaceBias("delay") * 0.07 -
+      cultureSpaceBias("dry") * 0.035 +
       PerformancePadState.repeat * 0.11 +
       PerformancePadState.drift * 0.055 +
       PerformancePadState.void * 0.045,
@@ -6195,6 +6456,7 @@ function triggerBpmCrossfadeRefrain(step, time, context) {
       blend * 0.1 +
       refrain * 0.12 +
       AlbumArcState.chapterTurn * 0.06 +
+      cultureGrammarBias("refrain", "amount", 0.18) +
       DepthState.gesture * 0.024 +
       observerNorm * 0.018 +
       creationNorm * 0.014 -
@@ -7182,6 +7444,7 @@ function attachUI() {
   const autoToggle = document.getElementById("auto_toggle");
   const autoCycle  = document.getElementById("auto_cycle");
   const autoArcMode = document.getElementById("auto_arc_mode");
+  const cultureGrammarSelect = document.getElementById("culture_grammar_select");
   const outputLevel = document.getElementById("output_level");
   const atmosphereSelect = document.getElementById("atmosphere_select");
   const sourceColorSelect = document.getElementById("source_color_select");
@@ -7282,6 +7545,11 @@ function attachUI() {
       if (autoToggle && autoToggle.checked) startAutoCycle();
     });
     updateAlbumArcModeFromUI({ reset: false });
+  }
+
+  if (cultureGrammarSelect) {
+    cultureGrammarSelect.addEventListener("change", () => updateCultureGrammarFromUI({ force: true }));
+    updateCultureGrammarFromUI({ apply: false, nudge: false });
   }
 
   if (outputLevel) {
