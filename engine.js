@@ -295,6 +295,113 @@ const CULTURE_GRAMMAR_OPTIONS = {
   chrome_hymn: "CHROME",
   earth_reed: "EARTH"
 };
+const ODD_LOGIC_MOVES = {
+  soft_wrong_lullaby: {
+    label: "WANT.LULL",
+    want: { wantsGlass: 0.3, wantsRefrain: 0.22, wantsBreak: 0.05 },
+    gradientBias: { memory: 0.1, organic: 0.08, haze: 0.05, chrome: 0.04, micro: -0.02 },
+    familyBias: { pianoMemory: 0.14, voiceDust: 0.05, chain: 0.04, drumSkin: -0.04, acidBiyon: -0.06 },
+    rhythmBias: { rest: 0.035, drumThin: 0.26, repeat: 0.04, pulse: -0.02 },
+    spaceBias: { reverb: 0.025, delay: 0.018 },
+    gestureHint: { drift: 0.1, repeat: 0.05, punch: -0.02, void: 0.02 },
+    tempoBias: -2.4,
+    motifSeed: "D5"
+  },
+  toy_color_flash: {
+    label: "WANT.TOY",
+    want: { wantsGlass: 0.34, wantsBreak: 0.1, wantsRefrain: 0.08 },
+    gradientBias: { chrome: 0.12, micro: 0.07, organic: 0.05, haze: -0.02 },
+    familyBias: { voiceDust: 0.08, chain: 0.08, pianoMemory: 0.04, drumSkin: -0.02 },
+    rhythmBias: { rest: -0.01, drumThin: 0.08, repeat: 0.08, pulse: 0.02 },
+    spaceBias: { reverb: 0.012, delay: 0.024 },
+    gestureHint: { drift: 0.04, repeat: 0.11, punch: 0.01, void: -0.02 },
+    tempoBias: 1.6,
+    motifSeed: "G5"
+  },
+  dry_machine_crumbs: {
+    label: "WANT.BRK",
+    want: { wantsBreak: 0.38, wantsRefrain: 0.12, wantsGlass: 0.08 },
+    gradientBias: { micro: 0.16, chrome: 0.05, organic: 0.03, haze: -0.05, ghost: 0.03 },
+    familyBias: { drumSkin: 0.08, chain: 0.14, acidBiyon: 0.03, voiceDust: -0.02 },
+    rhythmBias: { rest: -0.025, drumThin: -0.02, repeat: 0.18, pulse: 0.06 },
+    spaceBias: { reverb: -0.02, delay: 0.026, dry: 0.04 },
+    gestureHint: { drift: 0, repeat: 0.18, punch: 0.04, void: -0.03 },
+    tempoBias: 3.4,
+    motifSeed: "F#5"
+  },
+  rubber_acid_prank: {
+    label: "WANT.RBR",
+    want: { wantsRubber: 0.5, wantsBreak: 0.08, wantsRefrain: 0.04 },
+    gradientBias: { micro: 0.14, ghost: 0.08, chrome: 0.04, haze: -0.08 },
+    familyBias: { acidBiyon: 0.24, sub808: 0.08, chain: 0.08, drumSkin: 0.04, reedBuzz: -0.06 },
+    rhythmBias: { rest: -0.08, drumThin: -0.03, repeat: 0.13, pulse: 0.18 },
+    spaceBias: { reverb: -0.018, delay: 0.018, dry: 0.025 },
+    gestureHint: { drift: -0.02, repeat: 0.13, punch: 0.12, void: -0.06 },
+    tempoBias: 10,
+    motifSeed: "D3"
+  },
+  rain_ghost_body: {
+    label: "WANT.GST",
+    want: { wantsAir: 0.14, wantsVoid: 0.12, wantsRefrain: 0.08 },
+    gradientBias: { ghost: 0.14, haze: 0.05, memory: 0.03, organic: 0.04 },
+    familyBias: { sub808: 0.08, drumSkin: 0.06, voiceDust: 0.06, reedBuzz: 0.025 },
+    rhythmBias: { rest: 0.02, drumThin: 0.05, repeat: 0.02, pulse: 0.1 },
+    spaceBias: { reverb: 0.04, delay: 0.035 },
+    gestureHint: { drift: 0.02, repeat: 0.03, punch: 0.1, void: 0.08 },
+    tempoBias: 2.2,
+    motifSeed: "D2"
+  },
+  chrome_hymn_bend: {
+    label: "WANT.CRM",
+    want: { wantsAir: 0.26, wantsGlass: 0.2, wantsVoid: 0.12 },
+    gradientBias: { chrome: 0.17, haze: 0.08, memory: 0.03, micro: -0.02 },
+    familyBias: { voiceDust: 0.14, pianoMemory: 0.05, chain: 0.04, drumSkin: -0.08, acidBiyon: -0.08 },
+    rhythmBias: { rest: 0.05, drumThin: 0.42, repeat: -0.02, pulse: -0.04 },
+    spaceBias: { reverb: 0.06, delay: 0.016, tail: 0.04 },
+    gestureHint: { drift: 0.06, repeat: -0.02, punch: -0.04, void: 0.14 },
+    tempoBias: -4.5,
+    motifSeed: "E5"
+  },
+  earth_nasal_drone: {
+    label: "WANT.REED",
+    want: { wantsReed: 0.45, wantsVoid: 0.12, wantsAir: 0.08 },
+    gradientBias: { ghost: 0.12, haze: 0.08, organic: 0.08, chrome: 0.02, micro: -0.04 },
+    familyBias: { reedBuzz: 0.2, voiceDust: 0.08, sub808: 0.035, drumSkin: -0.04, acidBiyon: -0.08 },
+    rhythmBias: { rest: 0.045, drumThin: 0.46, repeat: -0.03, pulse: 0.02 },
+    spaceBias: { reverb: 0.045, delay: 0.006 },
+    gestureHint: { drift: 0.04, repeat: -0.02, punch: -0.03, void: 0.09 },
+    tempoBias: -6,
+    motifSeed: "D2"
+  },
+  sub_joke_turn: {
+    label: "WANT.SUB",
+    want: { wantsRubber: 0.18, wantsBreak: 0.08, wantsRefrain: 0.1 },
+    gradientBias: { ghost: 0.1, micro: 0.06, organic: 0.04, haze: -0.03 },
+    familyBias: { sub808: 0.12, acidBiyon: 0.08, drumSkin: 0.04, chain: 0.04 },
+    rhythmBias: { rest: -0.04, drumThin: 0.02, repeat: 0.06, pulse: 0.12 },
+    spaceBias: { reverb: -0.006, delay: 0.018 },
+    gestureHint: { drift: -0.02, repeat: 0.06, punch: 0.14, void: -0.02 },
+    tempoBias: 5.5,
+    motifSeed: "F#2"
+  },
+  void_afterimage: {
+    label: "WANT.VOID",
+    want: { wantsVoid: 0.4, wantsAir: 0.18, wantsGlass: 0.08 },
+    gradientBias: { haze: 0.12, chrome: 0.12, memory: 0.04, ghost: 0.02, micro: -0.04 },
+    familyBias: { voiceDust: 0.12, pianoMemory: 0.04, reedBuzz: 0.02, drumSkin: -0.1, acidBiyon: -0.09, sub808: -0.04 },
+    rhythmBias: { rest: 0.07, drumThin: 0.55, repeat: -0.035, pulse: -0.05 },
+    spaceBias: { reverb: 0.07, delay: 0.025, tail: 0.08 },
+    gestureHint: { drift: 0.07, repeat: -0.03, punch: -0.05, void: 0.18 },
+    tempoBias: -8,
+    motifSeed: "A5"
+  }
+};
+const ODD_LOGIC_OPTIONS = {
+  auto: "AUTO",
+  rare: "RARE",
+  wild: "WILD",
+  off: "OFF"
+};
 const MANUAL_INFLUENCE_HOLD_MS = 4300;
 const manualInfluenceUntil = {};
 const SLIDER_KEY_BY_ID = Object.fromEntries(Object.entries(SLIDER_BY_UCM).map(([key, id]) => [id, key]));
@@ -429,6 +536,30 @@ const CultureGrammarState = {
   label: "AUTO",
   strength: 0.72,
   lastActive: "ambient_room"
+};
+const OddLogicDirectorState = {
+  mode: "auto",
+  active: false,
+  move: "soft_wrong_lullaby",
+  label: "WANT.LULL",
+  want: "glass",
+  intensity: 0,
+  phase: 0,
+  askPulse: 0,
+  cuePending: false,
+  lastCycle: -1,
+  lastMoveCycle: -99,
+  lastCueCycle: -99,
+  generation: 0,
+  vector: {
+    wantsGlass: 0,
+    wantsBreak: 0,
+    wantsAir: 0,
+    wantsRefrain: 0,
+    wantsRubber: 0,
+    wantsReed: 0,
+    wantsVoid: 0
+  }
 };
 const AcidLockState = {
   enabled: false,
@@ -1013,6 +1144,306 @@ function updateCultureGrammarFromUI(options = {}) {
   requestHazamaRuntimeFeedback("culture");
 }
 
+function oddLogicMoveByKey(key) {
+  return ODD_LOGIC_MOVES[key] || ODD_LOGIC_MOVES.soft_wrong_lullaby;
+}
+
+function currentOddLogicMove() {
+  return oddLogicMoveByKey(OddLogicDirectorState.move);
+}
+
+function oddLogicModeAmount() {
+  if (OddLogicDirectorState.mode === "off") return 0;
+  if (OddLogicDirectorState.mode === "wild") return 0.95;
+  if (OddLogicDirectorState.mode === "rare") return 0.48;
+  return 0.68;
+}
+
+function oddLogicShouldRun() {
+  return !!(isPlaying && OddLogicDirectorState.mode !== "off" && (UCM.auto.enabled || albumArcActive() || HazamaBridgeState.active));
+}
+
+function computeOddLogicWantVector() {
+  const lowGuard = MixGovernorState.lowGuard || 0;
+  const family = TimbreFamilyState || {};
+  const gradient = GradientState || {};
+  const genre = GenreBlendState || {};
+  const acid = acidPerformanceAmount();
+  const hazamaDeep = HazamaBridgeState.active
+    ? clampValue((HazamaBridgeState.marks || 0) / 120 + (100 - (HazamaBridgeState.stability || 50)) / 180 + (HazamaBridgeState.stage === "submerge" ? 0.2 : 0), 0, 1)
+    : 0;
+  const longSameMove = clampValue((GrooveState.cycle - OddLogicDirectorState.lastMoveCycle) / 48, 0, 1);
+  return {
+    wantsGlass: clampValue((1 - (gradient.chrome || 0)) * 0.3 + (1 - (family.voiceDust || 0)) * 0.18 + lowGuard * 0.12 + genre.ambient * 0.08, 0, 1),
+    wantsBreak: clampValue((1 - (gradient.micro || 0)) * 0.26 + (1 - OrganicChaosState.tangle) * 0.16 + genre.idm * 0.1 + longSameMove * 0.1, 0, 1),
+    wantsAir: clampValue(lowGuard * 0.3 + (family.sub808 || 0) * 0.14 + (1 - DepthState.tail) * 0.16 + (PerformancePadState.void ? 0.2 : 0), 0, 1),
+    wantsRefrain: clampValue((1 - (MotifMemoryState.strength || 0)) * 0.24 + (1 - BpmCrossfadeState.refrain) * 0.12 + longSameMove * 0.14, 0, 1),
+    wantsRubber: clampValue(acid * 0.58 + (AcidLockState.enabled ? 0.34 : 0) + albumArcAcidDrive() * 0.28, 0, 1),
+    wantsReed: clampValue(hazamaDeep * 0.32 + (CultureGrammarState.active === "earth_reed" ? 0.24 : 0) + (EngineParams.bpm < 82 ? 0.12 : 0), 0, 1),
+    wantsVoid: clampValue(unitValue(UCM_CUR.void) * 0.24 + DepthState.tail * 0.1 + (albumArcActive() && currentAlbumArcChapter()?.name === "EXHALE" ? 0.26 : 0) + hazamaDeep * 0.12, 0, 1)
+  };
+}
+
+function dominantOddWant(vector) {
+  let bestKey = "wantsGlass";
+  let bestValue = -1;
+  for (const [key, value] of Object.entries(vector || {})) {
+    if (value > bestValue) {
+      bestKey = key;
+      bestValue = value;
+    }
+  }
+  return bestKey.replace(/^wants/, "").toLowerCase();
+}
+
+function oddLogicArcMoveBias(key) {
+  if (!albumArcActive()) return 0;
+  const chapter = currentAlbumArcChapter()?.name || "";
+  const map = {
+    SUBMERGE: { soft_wrong_lullaby: 0.12, chrome_hymn_bend: 0.1, earth_nasal_drone: 0.1, void_afterimage: 0.08 },
+    MEMORY: { soft_wrong_lullaby: 0.12, toy_color_flash: 0.1, chrome_hymn_bend: 0.03 },
+    BROKEN: { dry_machine_crumbs: 0.18, toy_color_flash: 0.08, sub_joke_turn: 0.04 },
+    GHOST: { rain_ghost_body: 0.16, sub_joke_turn: 0.1, void_afterimage: 0.06 },
+    ACID: { rubber_acid_prank: 0.24, sub_joke_turn: 0.14, dry_machine_crumbs: 0.06 },
+    EXHALE: { chrome_hymn_bend: 0.18, void_afterimage: 0.14, soft_wrong_lullaby: 0.08, earth_nasal_drone: 0.04 }
+  };
+  return map[chapter]?.[key] || 0;
+}
+
+function chooseOddLogicMove(vector, options = {}) {
+  const entries = Object.entries(ODD_LOGIC_MOVES);
+  const phase = fractionalPart((GrooveState.cycle + 1 + OddLogicDirectorState.generation * 5) * GOLDEN_RATIO_INVERSE);
+  const culture = CultureGrammarState.active || "ambient_room";
+  const acid = acidPerformanceAmount();
+  const weights = entries.map(([key, move], index) => {
+    let weight = 0.03 + oddLogicArcMoveBias(key);
+    for (const [wantKey, amount] of Object.entries(move.want || {})) {
+      weight += (vector[wantKey] || 0) * amount;
+    }
+    if (culture === "acid_core" && (key === "rubber_acid_prank" || key === "sub_joke_turn")) weight += 0.14;
+    if (culture === "broken_machine" && key === "dry_machine_crumbs") weight += 0.12;
+    if (culture === "tape_memory" && key === "soft_wrong_lullaby") weight += 0.1;
+    if (culture === "chrome_hymn" && (key === "chrome_hymn_bend" || key === "void_afterimage")) weight += 0.1;
+    if (culture === "earth_reed" && key === "earth_nasal_drone") weight += 0.16;
+    if (acid < 0.12 && key === "rubber_acid_prank") weight *= 0.36;
+    if (EngineParams.bpm < 84 && (key === "rubber_acid_prank" || key === "sub_joke_turn")) weight *= 0.42;
+    weight += fractionalPart((index + 1) * GOLDEN_RATIO_INVERSE + phase) * 0.035;
+    return [key, Math.max(0, weight)];
+  });
+
+  if (options.avoidCurrent !== false && weights.length > 1) {
+    const current = OddLogicDirectorState.move;
+    for (const item of weights) {
+      if (item[0] === current) item[1] *= 0.45;
+    }
+  }
+
+  const total = weights.reduce((sum, [, weight]) => sum + weight, 0) || 1;
+  let pick = (options.force ? Math.random() : phase) * total;
+  for (const [key, weight] of weights) {
+    pick -= weight;
+    if (pick <= 0) return key;
+  }
+  return weights[0][0];
+}
+
+function setOddLogicMove(key, options = {}) {
+  const move = oddLogicMoveByKey(key);
+  const changed = key !== OddLogicDirectorState.move;
+  OddLogicDirectorState.move = key;
+  OddLogicDirectorState.label = move.label || "WANT.IDEA";
+  OddLogicDirectorState.want = dominantOddWant(OddLogicDirectorState.vector);
+  OddLogicDirectorState.active = OddLogicDirectorState.intensity > 0.03 || oddLogicShouldRun();
+  if (changed || options.cue === true) {
+    OddLogicDirectorState.lastMoveCycle = GrooveState.cycle;
+    OddLogicDirectorState.generation += 1;
+    OddLogicDirectorState.cuePending = isPlaying;
+    BpmCrossfadeState.refrain = clampValue(Math.max(BpmCrossfadeState.refrain, 0.14 + (move.rhythmBias?.repeat || 0) * 0.5), 0, 0.86);
+    const familyKey = Object.entries(move.familyBias || {}).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0]?.[0];
+    if (familyKey && typeof nudgeInnerSourceFamily === "function") nudgeInnerSourceFamily(familyKey, 0.016 + OddLogicDirectorState.intensity * 0.02);
+    requestHazamaRuntimeFeedback("proposal");
+  }
+  updateOddLogicUi();
+}
+
+function requestOddLogicProposal(options = {}) {
+  const vector = computeOddLogicWantVector();
+  OddLogicDirectorState.vector = vector;
+  OddLogicDirectorState.askPulse = options.source === "ask" ? 1 : OddLogicDirectorState.askPulse;
+  OddLogicDirectorState.intensity = clampValue(Math.max(OddLogicDirectorState.intensity, options.source === "ask" ? 0.72 : oddLogicModeAmount() * 0.55), 0, 1);
+  const key = chooseOddLogicMove(vector, { force: options.source === "ask", avoidCurrent: true });
+  setOddLogicMove(key, { cue: options.cue !== false });
+  if (initialized && options.apply !== false) applyUCMToParams({ force: options.force === true });
+  publishMusicRuntimeState();
+}
+
+function advanceOddLogicDirectorPhrase() {
+  if (OddLogicDirectorState.lastCycle === GrooveState.cycle) return;
+  OddLogicDirectorState.lastCycle = GrooveState.cycle;
+  const canRun = oddLogicShouldRun();
+  const vector = computeOddLogicWantVector();
+  OddLogicDirectorState.vector = vector;
+  const modeAmount = oddLogicModeAmount();
+  const pulse = (Math.sin((GrooveState.cycle + 1) * 0.23 + OddLogicDirectorState.generation * 0.71) + 1) / 2;
+  const target = canRun ? modeAmount * (0.74 + pulse * 0.18) : OddLogicDirectorState.askPulse * 0.5;
+  OddLogicDirectorState.intensity = approachValue(OddLogicDirectorState.intensity, target, OddLogicDirectorState.mode === "wild" ? 0.16 : 0.08);
+  OddLogicDirectorState.active = OddLogicDirectorState.intensity > 0.04;
+  OddLogicDirectorState.phase = fractionalPart((GrooveState.cycle + OddLogicDirectorState.generation + 1) * GOLDEN_RATIO_INVERSE);
+
+  const gap = OddLogicDirectorState.mode === "wild" ? 6 : OddLogicDirectorState.mode === "rare" ? 28 : 14;
+  const chapterKick = albumArcActive() && AlbumArcState.chapterTurn > 0.42;
+  const wantKick = Math.max(...Object.values(vector)) > 0.58 && GrooveState.cycle - OddLogicDirectorState.lastMoveCycle > Math.floor(gap * 0.58);
+  if (canRun && (chapterKick || wantKick || GrooveState.cycle - OddLogicDirectorState.lastMoveCycle >= gap)) {
+    setOddLogicMove(chooseOddLogicMove(vector, { avoidCurrent: true }), { cue: true });
+  } else {
+    OddLogicDirectorState.want = dominantOddWant(vector);
+    updateOddLogicUi();
+  }
+}
+
+function decayOddLogicDirector() {
+  OddLogicDirectorState.askPulse *= 0.88;
+  if (!oddLogicShouldRun() && OddLogicDirectorState.askPulse < 0.04) {
+    OddLogicDirectorState.intensity = approachValue(OddLogicDirectorState.intensity, 0, 0.06);
+    OddLogicDirectorState.active = OddLogicDirectorState.intensity > 0.04;
+  }
+}
+
+function oddLogicBias(section, key, scale = 1) {
+  if (OddLogicDirectorState.mode === "off") return 0;
+  const move = currentOddLogicMove();
+  return (move?.[section]?.[key] || 0) * clampValue(OddLogicDirectorState.intensity, 0, 1) * scale;
+}
+
+function oddLogicGradientBias(key) {
+  return oddLogicBias("gradientBias", key, 0.72);
+}
+
+function oddLogicFamilyBias(key) {
+  return oddLogicBias("familyBias", key, 0.78);
+}
+
+function oddLogicRhythmBias(key) {
+  return oddLogicBias("rhythmBias", key, 1);
+}
+
+function oddLogicSpaceBias(key) {
+  return oddLogicBias("spaceBias", key, 1);
+}
+
+function oddLogicGestureBias(key) {
+  return oddLogicBias("gestureHint", key, 0.72);
+}
+
+function oddLogicTempoBias() {
+  if (OddLogicDirectorState.mode === "off") return 0;
+  return (currentOddLogicMove().tempoBias || 0) * clampValue(OddLogicDirectorState.intensity, 0, 1);
+}
+
+function oddLogicSourceProfileName() {
+  if (OddLogicDirectorState.mode === "off" || OddLogicDirectorState.intensity < 0.22) return "";
+  return {
+    soft_wrong_lullaby: "memoryRefrain",
+    toy_color_flash: "chromeHymn",
+    dry_machine_crumbs: "brokenSplice",
+    rubber_acid_prank: "coldPulse",
+    rain_ghost_body: "ghostBody",
+    chrome_hymn_bend: "chromeHymn",
+    earth_nasal_drone: "earthBuzz",
+    sub_joke_turn: "ghostBody",
+    void_afterimage: "hazeBed"
+  }[OddLogicDirectorState.move] || "";
+}
+
+function updateOddLogicUi() {
+  if (typeof document === "undefined") return;
+  const select = document.getElementById("odd_logic_mode");
+  if (select && select.value !== OddLogicDirectorState.mode) select.value = OddLogicDirectorState.mode;
+  const status = document.getElementById("odd_logic_status");
+  if (status) {
+    status.textContent = OddLogicDirectorState.mode === "off"
+      ? "OFF"
+      : OddLogicDirectorState.active
+        ? OddLogicDirectorState.label
+        : `WANT.${(OddLogicDirectorState.want || "glass").toUpperCase()}`;
+  }
+  if (document.body) {
+    document.body.dataset.oddLogic = OddLogicDirectorState.mode;
+    document.body.dataset.oddLogicMove = OddLogicDirectorState.active ? OddLogicDirectorState.move : "";
+  }
+}
+
+function updateOddLogicFromUI(options = {}) {
+  const select = typeof document !== "undefined" ? document.getElementById("odd_logic_mode") : null;
+  const next = select ? select.value || "auto" : OddLogicDirectorState.mode;
+  OddLogicDirectorState.mode = ODD_LOGIC_OPTIONS[next] ? next : "auto";
+  if (OddLogicDirectorState.mode === "off") {
+    OddLogicDirectorState.active = false;
+    OddLogicDirectorState.cuePending = false;
+    OddLogicDirectorState.intensity = 0;
+  } else if (options.propose !== false) {
+    requestOddLogicProposal({ source: "ui", cue: false, apply: options.apply });
+  }
+  updateOddLogicUi();
+  publishMusicRuntimeState();
+  requestHazamaRuntimeFeedback("proposal");
+}
+
+function triggerOddLogicProposalCue(step, time, context = {}) {
+  if (!OddLogicDirectorState.cuePending || OddLogicDirectorState.mode === "off" || !isPlaying) return;
+  if (OddLogicDirectorState.lastCueCycle === GrooveState.cycle && step !== 0) return;
+  if (!(step % 4 === 0 || step % 8 === 5)) return;
+
+  const moveKey = OddLogicDirectorState.move;
+  const move = currentOddLogicMove();
+  const intensity = clampValue(OddLogicDirectorState.intensity + OddLogicDirectorState.askPulse * 0.35, 0.18, 1);
+  const lowGuard = MixGovernorState.lowGuard || 0;
+  const seed = move.motifSeed || "D5";
+  OddLogicDirectorState.cuePending = false;
+  OddLogicDirectorState.lastCueCycle = GrooveState.cycle;
+
+  try {
+    if (moveKey === "rubber_acid_prank" && bass && !PerformancePadState.void) {
+      safeToneRamp(bass?.filter?.frequency, 460 + intensity * 720 - lowGuard * 180, 0.045);
+      safeToneRamp(bass?.filter?.Q, 3.2 + intensity * 3.8 - lowGuard, 0.045);
+      bass.triggerAttackRelease(tonalRhymeLow(step, 2), "64n", time + 0.012, clampValue(0.07 + intensity * 0.09 - lowGuard * 0.04, 0.045, 0.18));
+      if (glass) glass.triggerAttackRelease(tonalRhymeHigh(step, 1), "64n", time + 0.044, clampValue(0.018 + intensity * 0.04, 0.014, 0.07));
+    } else if (moveKey === "earth_nasal_drone" && reedBuzz) {
+      reedBuzz.triggerAttackRelease(tonalRhymeSub(step, -1), "2n", time + 0.018, clampValue(0.026 + intensity * 0.048 - lowGuard * 0.02, 0.018, 0.08));
+    } else if (moveKey === "void_afterimage" && pad) {
+      pad.triggerAttackRelease(randomHazeChord(), "1n", time + 0.018, clampValue(0.025 + intensity * 0.036, 0.018, 0.07));
+      if (glass) glass.triggerAttackRelease(voiceFragment(step, TRANSPARENT_AIR_FRAGMENTS), "16n", time + 0.075, clampValue(0.018 + intensity * 0.034, 0.014, 0.064));
+    } else if (moveKey === "sub_joke_turn" && subImpact && !PerformancePadState.void) {
+      subImpact.triggerAttackRelease(tonalRhymeSub(step, 1), "32n", time + 0.006, clampValue(0.045 + intensity * 0.075 - lowGuard * 0.04, 0.028, 0.16));
+      if (bass) bass.triggerAttackRelease(tonalRhymeLow(step, 3), "64n", time + 0.05, clampValue(0.045 + intensity * 0.048 - lowGuard * 0.025, 0.03, 0.12));
+    } else if (moveKey === "rain_ghost_body" && voiceDust) {
+      voiceDust.triggerAttackRelease(seed, "8n", time + 0.036, clampValue(0.016 + intensity * 0.046, 0.012, 0.074));
+      if (drumSkin && !PerformancePadState.void) drumSkin.triggerAttackRelease("64n", time + 0.018, clampValue(0.018 + intensity * 0.038, 0.014, 0.07));
+    } else if (moveKey === "dry_machine_crumbs" && texture) {
+      texture.triggerAttackRelease("64n", time + 0.012, clampValue(0.024 + intensity * 0.06, 0.018, 0.09));
+      if (glass) glass.triggerAttackRelease(tonalRhymeHigh(step, 4), "64n", time + 0.046, clampValue(0.016 + intensity * 0.04, 0.012, 0.066));
+    } else if (glass) {
+      const pool = moveKey === "chrome_hymn_bend" || moveKey === "toy_color_flash" ? TRANSPARENT_AIR_FRAGMENTS : ORGANIC_PLUCK_FRAGMENTS;
+      const first = voiceFragment(step, pool);
+      const second = voiceFragment(step + 3, pool);
+      glass.triggerAttackRelease(first, "32n", time + 0.018, clampValue(0.022 + intensity * 0.052, 0.016, 0.09));
+      if (moveKey === "toy_color_flash" || moveKey === "soft_wrong_lullaby") {
+        glass.triggerAttackRelease(second, "64n", time + 0.072, clampValue(0.014 + intensity * 0.034, 0.012, 0.058));
+      }
+    }
+    rememberMotif(seed, {
+      reply: moveKey === "rubber_acid_prank" ? tonalRhymeHigh(step, 1) : voiceFragment(step + 2, TRANSPARENT_AIR_FRAGMENTS),
+      shade: tonalRhymeLow(step, 1),
+      strength: 0.035 + intensity * 0.07,
+      air: moveKey === "void_afterimage" || moveKey === "chrome_hymn_bend" ? 0.16 : 0.06,
+      source: `odd:${moveKey}`
+    });
+    markMixEvent(0.05 + intensity * 0.06);
+  } catch (error) {
+    console.warn("[Music] odd logic cue failed:", error);
+  }
+}
+
 function nudgeLongformArcFromGesture(name, source = "manual") {
   if (!isPlaying) return;
   const scale = source === "auto" ? 0.55 : 0.85;
@@ -1076,10 +1507,10 @@ function chooseAutoGesture(context) {
   } = context;
   const scene = currentAutoDirectorScene();
   const weighted = [
-    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1 + OrganicChaosState.airPull * 0.08 + (scene.gesture?.drift || 0) + longformArcGestureBias("drift") + albumArcGestureBias("drift") + cultureGestureBias("drift")],
-    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08 + OrganicChaosState.tangle * 0.12 + (scene.gesture?.repeat || 0) + longformArcGestureBias("repeat") + albumArcGestureBias("repeat") + cultureGestureBias("repeat")],
-    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12 + OrganicChaosState.lowMotion * 0.1 + (scene.gesture?.punch || 0) + longformArcGestureBias("punch") + albumArcGestureBias("punch") + cultureGestureBias("punch")],
-    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08 + OrganicChaosState.impulse * 0.06 + (scene.gesture?.void || 0) + longformArcGestureBias("void") + albumArcGestureBias("void") + cultureGestureBias("void")]
+    ["drift", 0.18 + waveNorm * 0.3 + observerNorm * 0.12 + circleNorm * 0.1 + OrganicChaosState.airPull * 0.08 + (scene.gesture?.drift || 0) + longformArcGestureBias("drift") + albumArcGestureBias("drift") + cultureGestureBias("drift") + oddLogicGestureBias("drift")],
+    ["repeat", 0.16 + creationNorm * 0.28 + resourceNorm * 0.22 + waveNorm * 0.08 + OrganicChaosState.tangle * 0.12 + (scene.gesture?.repeat || 0) + longformArcGestureBias("repeat") + albumArcGestureBias("repeat") + cultureGestureBias("repeat") + oddLogicGestureBias("repeat")],
+    ["punch", 0.1 + energyNorm * 0.16 + UCM_CUR.body / 100 * 0.12 + OrganicChaosState.lowMotion * 0.1 + (scene.gesture?.punch || 0) + longformArcGestureBias("punch") + albumArcGestureBias("punch") + cultureGestureBias("punch") + oddLogicGestureBias("punch")],
+    ["void", 0.12 + voidNorm * 0.22 + observerNorm * 0.16 + circleNorm * 0.08 + OrganicChaosState.impulse * 0.06 + (scene.gesture?.void || 0) + longformArcGestureBias("void") + albumArcGestureBias("void") + cultureGestureBias("void") + oddLogicGestureBias("void")]
   ];
   const total = weighted.reduce((sum, [, weight]) => sum + Math.max(0, weight), 0);
   let pick = Math.random() * total;
@@ -1128,7 +1559,8 @@ function maybeTriggerAutoPerformanceGesture(step, context) {
   const scene = currentAutoDirectorScene();
   const arcLift = longformArcActive() ? LongformArcState.contrast * 0.026 + LongformArcState.turn * 0.018 : 0;
   const albumLift = albumArcActive() ? 0.018 + AlbumArcState.chapterTurn * 0.025 + albumArcAcidDrive() * 0.026 : 0;
-  const chanceValue = 0.11 + (scene.gestureChance || 0.03) + context.creationNorm * 0.045 + context.observerNorm * 0.032 + context.waveNorm * 0.032 + context.resourceNorm * 0.022 + arcLift + albumLift;
+  const oddLift = OddLogicDirectorState.active ? 0.012 + OddLogicDirectorState.intensity * 0.026 : 0;
+  const chanceValue = 0.11 + (scene.gestureChance || 0.03) + context.creationNorm * 0.045 + context.observerNorm * 0.032 + context.waveNorm * 0.032 + context.resourceNorm * 0.022 + arcLift + albumLift + oddLift;
   if (!rand(chance(chanceValue))) return;
   startAutoPerformanceGesture(chooseAutoGesture(context));
 }
@@ -1553,7 +1985,7 @@ function updateDJTempo(parts, options = {}) {
     cultureRhythmBias("drumThin") * 8;
   const contour = Math.sin((GrooveState.cycle * 0.045) + (LongformArcState.stageIndex * 0.9)) * (1.2 + longformArcShape() * 2.4);
   const pressureLift = clampValue((body * 0.22) + (resource * 0.18) + (creation * 0.12) - (observer * 0.08) - (voidness * 0.08), -0.12, 0.36) * 8;
-  const target = resolvePerformanceTempoTarget(rawBpm + longformTempoBias() + albumArcTempoBias() + genreBias + cultureTempoBias + pressureLift + contour);
+  const target = resolvePerformanceTempoTarget(rawBpm + longformTempoBias() + albumArcTempoBias() + genreBias + cultureTempoBias + oddLogicTempoBias() + pressureLift + contour);
   const targetStep = force ? 96 : 0.55 + Math.abs(DJTempoState.targetBpm - target) * 0.018;
   const bpmStep = force ? 96 : 0.42 + wave * 0.18 + genre.techno * 0.16;
 
@@ -2001,6 +2433,15 @@ function publishMusicRuntimeState() {
       label: CultureGrammarState.label,
       strength: CultureGrammarState.strength
     },
+    proposal: {
+      mode: OddLogicDirectorState.mode,
+      active: OddLogicDirectorState.active,
+      label: OddLogicDirectorState.label,
+      want: OddLogicDirectorState.want,
+      move: OddLogicDirectorState.move,
+      intensity: OddLogicDirectorState.intensity,
+      vector: { ...OddLogicDirectorState.vector }
+    },
     acid: {
       enabled: AcidLockState.enabled,
       intensity: AcidLockState.intensity,
@@ -2105,6 +2546,14 @@ function buildHazamaRuntimeFeedbackPayload(kind = "heartbeat", state = window.Mu
         label: CultureGrammarState.label || "AUTO",
         strength: feedbackNumber(CultureGrammarState.strength || 0)
       },
+      proposal: {
+        mode: OddLogicDirectorState.mode || "auto",
+        active: !!OddLogicDirectorState.active,
+        label: OddLogicDirectorState.label || "",
+        want: OddLogicDirectorState.want || "",
+        move: OddLogicDirectorState.move || "",
+        intensity: feedbackNumber(OddLogicDirectorState.intensity || 0)
+      },
       albumArc: {
         active: !!albumArcActive(),
         chapter: currentAlbumArcChapter()?.name || "",
@@ -2149,7 +2598,8 @@ function buildHazamaRuntimeFeedbackPayload(kind = "heartbeat", state = window.Mu
       albumArc: true,
       acidDrive: true,
       sourceFamilies: true,
-      cultureGrammar: true
+      cultureGrammar: true,
+      oddLogicProposal: true
     }
   };
 }
@@ -2183,6 +2633,9 @@ function hazamaRuntimeFeedbackSignature() {
     albumArcActive() ? currentAlbumArcChapter()?.label || "" : "live",
     CultureGrammarState.selected || "auto",
     CultureGrammarState.active || "",
+    OddLogicDirectorState.mode || "auto",
+    OddLogicDirectorState.move || "",
+    Math.round((OddLogicDirectorState.intensity || 0) * 10),
     Math.round(acidPerformanceAmount() * 10),
     inner.profile || "",
     dominantInnerSourceFamily(inner)
@@ -3525,6 +3978,7 @@ function updateRuntimeUiState() {
   document.body.dataset.auto = UCM.auto.enabled ? "true" : "false";
   updateAlbumArcUi();
   updateCultureGrammarUi();
+  updateOddLogicUi();
   publishMusicRuntimeState();
 }
 
@@ -4320,6 +4774,10 @@ function updateReferenceGradient(parts) {
     GradientState[key] = clampValue(GradientState[key] + cultureGradientBias(key), 0, 1);
   }
 
+  for (const key of Object.keys(GradientState)) {
+    GradientState[key] = clampValue(GradientState[key] + oddLogicGradientBias(key), 0, 1);
+  }
+
   if (PerformancePadState.drift) {
     GradientState.haze = clampValue(GradientState.haze + 0.08, 0, 1);
     GradientState.memory = clampValue(GradientState.memory + 0.12, 0, 1);
@@ -4540,7 +4998,9 @@ function chooseInnerSourceProfile(parts, gradient, depth, genre) {
   const lowBpm = EngineParams.bpm < 82 || genre.ambient > 0.5 || energy < 0.32;
   const acid = acidPerformanceAmount();
   const culture = CultureGrammarState.active || "ambient_room";
+  const oddProfile = oddLogicSourceProfileName();
 
+  if (oddProfile && (OddLogicDirectorState.askPulse > 0.2 || GrooveState.cycle % 5 === 0 || OddLogicDirectorState.intensity > 0.56)) return sourceDepthProfileByName(oddProfile);
   if (culture === "earth_reed" && lowBpm) return sourceDepthProfileByName("earthBuzz");
   if (culture === "chrome_hymn" && (lowBpm || gradient.chrome > 0.46)) return sourceDepthProfileByName("chromeHymn");
   if (culture === "ambient_room" && lowBpm) return sourceDepthProfileByName("hazeBed");
@@ -4580,13 +5040,13 @@ function updateInnerSourceFamily(parts, gradient = GradientState, depth = DepthS
   const lowBpm = EngineParams.bpm < 82 || genre.ambient > 0.5 || parts.energy < 0.32;
   const profileWeights = profile.weights || {};
   const targets = {
-    drumSkin: clampValue((profileWeights.drumSkin || 0) + genre.techno * 0.08 + genre.pressure * 0.055 + depth.pulse * 0.045 + acid * 0.045 + albumArcFamilyBias("drumSkin") + cultureFamilyBias("drumSkin") - (lowBpm ? 0.12 : 0), 0, 1),
-    pianoMemory: clampValue((profileWeights.pianoMemory || 0) + gradient.memory * 0.09 + gradient.organic * 0.055 + MotifMemoryState.strength * 0.065 + albumArcFamilyBias("pianoMemory") + cultureFamilyBias("pianoMemory") + (lowBpm ? 0.065 : 0), 0, 1),
-    voiceDust: clampValue((profileWeights.voiceDust || 0) + gradient.chrome * 0.08 + depth.tail * 0.07 + (HazamaBridgeState.active ? 0.035 : 0) + albumArcFamilyBias("voiceDust") + cultureFamilyBias("voiceDust") + (lowBpm ? 0.075 : 0), 0, 1),
-    acidBiyon: clampValue((profileWeights.acidBiyon || 0) + acid * 0.24 + genre.techno * 0.06 + gradient.micro * 0.055 + albumArcFamilyBias("acidBiyon") + cultureFamilyBias("acidBiyon") - parts.voidness * 0.08, 0, 1),
-    sub808: clampValue((profileWeights.sub808 || 0) + gradient.ghost * 0.06 + parts.body * 0.055 + acid * 0.075 + albumArcFamilyBias("sub808") + cultureFamilyBias("sub808") - MixGovernorState.lowGuard * 0.14 - (lowBpm ? 0.065 : 0), 0, 1),
-    reedBuzz: clampValue((profileWeights.reedBuzz || 0) + gradient.ghost * 0.052 + depth.bed * 0.045 + parts.body * 0.03 + (HazamaBridgeState.active ? 0.022 : 0) + albumArcFamilyBias("reedBuzz") + cultureFamilyBias("reedBuzz") + (lowBpm ? 0.05 : 0) - acid * 0.07 - MixGovernorState.lowGuard * 0.1, 0, 1),
-    chain: clampValue((profileWeights.chain || 0) + GenomeState.growth * 0.05 + BpmCrossfadeState.refrain * 0.05 + gradient.organic * 0.05 + albumArcFamilyBias("chain") + cultureFamilyBias("chain") + (UCM.auto.enabled || HazamaBridgeState.active ? 0.04 : 0), 0, 1)
+    drumSkin: clampValue((profileWeights.drumSkin || 0) + genre.techno * 0.08 + genre.pressure * 0.055 + depth.pulse * 0.045 + acid * 0.045 + albumArcFamilyBias("drumSkin") + cultureFamilyBias("drumSkin") + oddLogicFamilyBias("drumSkin") - (lowBpm ? 0.12 : 0), 0, 1),
+    pianoMemory: clampValue((profileWeights.pianoMemory || 0) + gradient.memory * 0.09 + gradient.organic * 0.055 + MotifMemoryState.strength * 0.065 + albumArcFamilyBias("pianoMemory") + cultureFamilyBias("pianoMemory") + oddLogicFamilyBias("pianoMemory") + (lowBpm ? 0.065 : 0), 0, 1),
+    voiceDust: clampValue((profileWeights.voiceDust || 0) + gradient.chrome * 0.08 + depth.tail * 0.07 + (HazamaBridgeState.active ? 0.035 : 0) + albumArcFamilyBias("voiceDust") + cultureFamilyBias("voiceDust") + oddLogicFamilyBias("voiceDust") + (lowBpm ? 0.075 : 0), 0, 1),
+    acidBiyon: clampValue((profileWeights.acidBiyon || 0) + acid * 0.24 + genre.techno * 0.06 + gradient.micro * 0.055 + albumArcFamilyBias("acidBiyon") + cultureFamilyBias("acidBiyon") + oddLogicFamilyBias("acidBiyon") - parts.voidness * 0.08, 0, 1),
+    sub808: clampValue((profileWeights.sub808 || 0) + gradient.ghost * 0.06 + parts.body * 0.055 + acid * 0.075 + albumArcFamilyBias("sub808") + cultureFamilyBias("sub808") + oddLogicFamilyBias("sub808") - MixGovernorState.lowGuard * 0.14 - (lowBpm ? 0.065 : 0), 0, 1),
+    reedBuzz: clampValue((profileWeights.reedBuzz || 0) + gradient.ghost * 0.052 + depth.bed * 0.045 + parts.body * 0.03 + (HazamaBridgeState.active ? 0.022 : 0) + albumArcFamilyBias("reedBuzz") + cultureFamilyBias("reedBuzz") + oddLogicFamilyBias("reedBuzz") + (lowBpm ? 0.05 : 0) - acid * 0.07 - MixGovernorState.lowGuard * 0.1, 0, 1),
+    chain: clampValue((profileWeights.chain || 0) + GenomeState.growth * 0.05 + BpmCrossfadeState.refrain * 0.05 + gradient.organic * 0.05 + albumArcFamilyBias("chain") + cultureFamilyBias("chain") + oddLogicFamilyBias("chain") + (UCM.auto.enabled || HazamaBridgeState.active ? 0.04 : 0), 0, 1)
   };
 
   for (const key of INNER_SOURCE_FAMILY_KEYS) {
@@ -4633,6 +5093,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       voidness * 0.14 +
       albumArcFamilyBias("drumSkin") * 0.42 +
       cultureFamilyBias("drumSkin") * 0.48 +
+      oddLogicFamilyBias("drumSkin") * 0.46 +
       (inner.drumSkin || 0) * innerLift +
       (inner.focus === "drumSkin" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4650,6 +5111,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       genre.techno * 0.08 +
       albumArcFamilyBias("pianoMemory") * 0.44 +
       cultureFamilyBias("pianoMemory") * 0.5 +
+      oddLogicFamilyBias("pianoMemory") * 0.48 +
       (inner.pianoMemory || 0) * innerLift +
       (inner.focus === "pianoMemory" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4667,6 +5129,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       genre.pressure * 0.08 +
       albumArcFamilyBias("voiceDust") * 0.44 +
       cultureFamilyBias("voiceDust") * 0.48 +
+      oddLogicFamilyBias("voiceDust") * 0.48 +
       (inner.voiceDust || 0) * innerLift +
       (inner.focus === "voiceDust" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4684,6 +5147,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       lowGuard * 0.14 +
       albumArcFamilyBias("acidBiyon") * 0.58 +
       cultureFamilyBias("acidBiyon") * 0.62 +
+      oddLogicFamilyBias("acidBiyon") * 0.64 +
       (inner.acidBiyon || 0) * innerLift +
       (inner.focus === "acidBiyon" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4701,6 +5165,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       lowGuard * 0.2 +
       albumArcFamilyBias("sub808") * 0.52 +
       cultureFamilyBias("sub808") * 0.44 +
+      oddLogicFamilyBias("sub808") * 0.5 +
       (inner.sub808 || 0) * innerLift +
       (inner.focus === "sub808" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -4718,6 +5183,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       lowGuard * 0.18 +
       albumArcFamilyBias("reedBuzz") * 0.44 +
       cultureFamilyBias("reedBuzz") * 0.54 +
+      oddLogicFamilyBias("reedBuzz") * 0.56 +
       (inner.reedBuzz || 0) * innerLift +
       (inner.focus === "reedBuzz" ? (inner.bloom || 0) * 0.025 : 0),
     0,
@@ -4735,6 +5201,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       energy * 0.04 +
       albumArcFamilyBias("chain") * 0.46 +
       cultureFamilyBias("chain") * 0.42 +
+      oddLogicFamilyBias("chain") * 0.46 +
       (inner.chain || 0) * innerLift +
       (inner.focus === "chain" ? (inner.bloom || 0) * 0.02 : 0),
     0,
@@ -5272,11 +5739,15 @@ function applyUCMToParams(options = {}) {
   const culturePulse = clampValue(cultureRhythmBias("pulse"), -0.2, 0.32);
   const cultureRepeat = clampValue(cultureRhythmBias("repeat"), 0, 0.3);
   const cultureRest = clampValue(cultureRhythmBias("rest"), -0.14, 0.18);
-  EngineParams.restProb = clampValue(EngineParams.restProb * character.restScale + genre.ambient * 0.035 - genre.techno * 0.035 + cultureRest + cultureDrumThin * 0.035, 0.035, PerformancePadState.void ? 0.6 : 0.5);
-  EngineParams.kickProb = clampValue(EngineParams.kickProb * character.kickScale + genre.pressure * 0.024 - genre.ambient * 0.018 + culturePulse * 0.035 - cultureDrumThin * 0.09, PerformancePadState.void ? 0.04 : 0.08, 0.7);
-  EngineParams.hatProb = clampValue(EngineParams.hatProb * character.hatScale + genre.techno * 0.11 + genre.idm * 0.035 - genre.ambient * 0.05 + cultureRepeat * 0.08 - cultureDrumThin * 0.12, PerformancePadState.void ? 0.08 : 0.12, 0.86);
-  EngineParams.bassProb = clampValue(EngineParams.bassProb * character.bassScale + genre.pressure * 0.018 - genre.ambient * 0.018 + culturePulse * 0.03 - cultureDrumThin * 0.045, PerformancePadState.void ? 0.04 : 0.07, 0.48);
-  EngineParams.padProb = clampValue(EngineParams.padProb * character.padScale * (character.hazeScale || 1) + genre.ambient * 0.055 - genre.techno * 0.045 + cultureDrumThin * 0.1 + cultureSpaceBias("reverb") * 0.035, PerformancePadState.void ? 0.16 : 0.17, 0.68);
+  const oddDrumThin = clampValue(oddLogicRhythmBias("drumThin"), -0.08, 0.58);
+  const oddPulse = clampValue(oddLogicRhythmBias("pulse"), -0.16, 0.28);
+  const oddRepeat = clampValue(oddLogicRhythmBias("repeat"), -0.08, 0.28);
+  const oddRest = clampValue(oddLogicRhythmBias("rest"), -0.12, 0.16);
+  EngineParams.restProb = clampValue(EngineParams.restProb * character.restScale + genre.ambient * 0.035 - genre.techno * 0.035 + cultureRest + oddRest + cultureDrumThin * 0.035 + oddDrumThin * 0.028, 0.035, PerformancePadState.void ? 0.62 : 0.52);
+  EngineParams.kickProb = clampValue(EngineParams.kickProb * character.kickScale + genre.pressure * 0.024 - genre.ambient * 0.018 + culturePulse * 0.035 + oddPulse * 0.036 - cultureDrumThin * 0.09 - oddDrumThin * 0.07, PerformancePadState.void ? 0.04 : 0.08, 0.7);
+  EngineParams.hatProb = clampValue(EngineParams.hatProb * character.hatScale + genre.techno * 0.11 + genre.idm * 0.035 - genre.ambient * 0.05 + cultureRepeat * 0.08 + oddRepeat * 0.09 - cultureDrumThin * 0.12 - oddDrumThin * 0.1, PerformancePadState.void ? 0.08 : 0.12, 0.86);
+  EngineParams.bassProb = clampValue(EngineParams.bassProb * character.bassScale + genre.pressure * 0.018 - genre.ambient * 0.018 + culturePulse * 0.03 + oddPulse * 0.032 - cultureDrumThin * 0.045 - oddDrumThin * 0.035, PerformancePadState.void ? 0.04 : 0.07, 0.5);
+  EngineParams.padProb = clampValue(EngineParams.padProb * character.padScale * (character.hazeScale || 1) + genre.ambient * 0.055 - genre.techno * 0.045 + cultureDrumThin * 0.1 + oddDrumThin * 0.09 + cultureSpaceBias("reverb") * 0.035 + oddLogicSpaceBias("reverb") * 0.03, PerformancePadState.void ? 0.16 : 0.17, 0.7);
   if (arcDrumThin > 0) {
     EngineParams.kickProb = clampValue(EngineParams.kickProb * (1 - arcDrumThin * 0.62), 0.002, 0.42);
     EngineParams.hatProb = clampValue(EngineParams.hatProb * (1 - arcDrumThin * 0.48), 0.01, 0.56);
@@ -5300,6 +5771,9 @@ function applyUCMToParams(options = {}) {
       cultureSpaceBias("reverb") * 0.085 +
       cultureSpaceBias("tail") * 0.075 -
       cultureSpaceBias("dry") * 0.055 +
+      oddLogicSpaceBias("reverb") * 0.08 +
+      oddLogicSpaceBias("tail") * 0.07 -
+      oddLogicSpaceBias("dry") * 0.05 +
       PerformancePadState.void * 0.16 +
       PerformancePadState.drift * 0.04,
     0.08,
@@ -5313,6 +5787,8 @@ function applyUCMToParams(options = {}) {
       DepthState.gesture * 0.012 +
       cultureSpaceBias("delay") * 0.07 -
       cultureSpaceBias("dry") * 0.035 +
+      oddLogicSpaceBias("delay") * 0.064 -
+      oddLogicSpaceBias("dry") * 0.032 +
       PerformancePadState.repeat * 0.11 +
       PerformancePadState.drift * 0.055 +
       PerformancePadState.void * 0.045,
@@ -5488,6 +5964,7 @@ function advanceGrooveStructure() {
   const fillChance = mapValue(density, 0, 1, 0.04, 0.30);
   advanceLongformArcPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm: clampValue(UCM_CUR.void / 100, 0, 1), circleNorm: clampValue(UCM_CUR.circle / 100, 0, 1) });
+  advanceOddLogicDirectorPhrase();
   updateBpmCrossfadeMemory(currentGradientParts());
   advanceAutoVoiceMorphPhrase();
   advanceVoiceEmergencePhrase();
@@ -6457,6 +6934,7 @@ function triggerBpmCrossfadeRefrain(step, time, context) {
       refrain * 0.12 +
       AlbumArcState.chapterTurn * 0.06 +
       cultureGrammarBias("refrain", "amount", 0.18) +
+      oddLogicBias("rhythmBias", "repeat", 0.14) +
       DepthState.gesture * 0.024 +
       observerNorm * 0.018 +
       creationNorm * 0.014 -
@@ -7157,6 +7635,7 @@ function scheduleStep(time) {
   decayLongformArc();
   decayMixGovernor();
   decayVoiceMorph();
+  decayOddLogicDirector();
 
   // 休符判定
   const genre = GenreBlendState;
@@ -7187,6 +7666,7 @@ function scheduleStep(time) {
   const voicePulse = voiceGeneBias("pulse");
   const voiceRefrain = voiceGeneBias("refrain");
   maybeTriggerAutoPerformanceGesture(step, stepContext);
+  triggerOddLogicProposalCue(step, t, stepContext);
   triggerAutoDirectorCadence(step, t, stepContext);
 
   triggerAudibleGrooveFloor(step, t, stepContext);
@@ -7445,6 +7925,8 @@ function attachUI() {
   const autoCycle  = document.getElementById("auto_cycle");
   const autoArcMode = document.getElementById("auto_arc_mode");
   const cultureGrammarSelect = document.getElementById("culture_grammar_select");
+  const oddLogicMode = document.getElementById("odd_logic_mode");
+  const btnOddLogicAsk = document.getElementById("btn_odd_logic_ask");
   const outputLevel = document.getElementById("output_level");
   const atmosphereSelect = document.getElementById("atmosphere_select");
   const sourceColorSelect = document.getElementById("source_color_select");
@@ -7550,6 +8032,21 @@ function attachUI() {
   if (cultureGrammarSelect) {
     cultureGrammarSelect.addEventListener("change", () => updateCultureGrammarFromUI({ force: true }));
     updateCultureGrammarFromUI({ apply: false, nudge: false });
+  }
+
+  if (oddLogicMode) {
+    oddLogicMode.addEventListener("change", () => updateOddLogicFromUI({ apply: true }));
+    updateOddLogicFromUI({ apply: false, propose: false });
+  }
+
+  if (btnOddLogicAsk) {
+    btnOddLogicAsk.addEventListener("click", () => {
+      if (OddLogicDirectorState.mode === "off") {
+        OddLogicDirectorState.mode = "auto";
+        if (oddLogicMode) oddLogicMode.value = "auto";
+      }
+      requestOddLogicProposal({ source: "ask", cue: true, force: true });
+    });
   }
 
   if (outputLevel) {
