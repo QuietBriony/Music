@@ -618,7 +618,15 @@ const SignatureCellState = {
   blend: 0,
   cooldownSteps: 0,
   intensity: 0,
-  lastStep: -99
+  lastStep: -99,
+  lowBreathCooldownSteps: 0,
+  lowBreathIntensity: 0,
+  lowBreathLastStep: -99,
+  brokenTextureCooldownSteps: 0,
+  brokenTextureIntensity: 0,
+  brokenTextureLastStep: -99,
+  globalCooldownSteps: 0,
+  lastFlavor: ""
 };
 const VOICE_EMERGENCE_COLORS = {
   haze: {
@@ -1892,6 +1900,15 @@ function decaySignatureCells() {
   if (SignatureCellState.cooldownSteps > 0) {
     SignatureCellState.cooldownSteps = Math.max(0, SignatureCellState.cooldownSteps - 1);
   }
+  if (SignatureCellState.lowBreathCooldownSteps > 0) {
+    SignatureCellState.lowBreathCooldownSteps = Math.max(0, SignatureCellState.lowBreathCooldownSteps - 1);
+  }
+  if (SignatureCellState.brokenTextureCooldownSteps > 0) {
+    SignatureCellState.brokenTextureCooldownSteps = Math.max(0, SignatureCellState.brokenTextureCooldownSteps - 1);
+  }
+  if (SignatureCellState.globalCooldownSteps > 0) {
+    SignatureCellState.globalCooldownSteps = Math.max(0, SignatureCellState.globalCooldownSteps - 1);
+  }
 }
 
 function markMixEvent(amount = 0.08) {
@@ -2338,6 +2355,14 @@ function resetSignatureCells() {
   SignatureCellState.cooldownSteps = 0;
   SignatureCellState.intensity = 0;
   SignatureCellState.lastStep = -99;
+  SignatureCellState.lowBreathCooldownSteps = 0;
+  SignatureCellState.lowBreathIntensity = 0;
+  SignatureCellState.lowBreathLastStep = -99;
+  SignatureCellState.brokenTextureCooldownSteps = 0;
+  SignatureCellState.brokenTextureIntensity = 0;
+  SignatureCellState.brokenTextureLastStep = -99;
+  SignatureCellState.globalCooldownSteps = 0;
+  SignatureCellState.lastFlavor = "";
 }
 
 function signatureCellCollapseAmount(context = {}) {
@@ -2410,18 +2435,90 @@ function advanceSignatureCells(context = {}) {
     ),
     0.055
   );
+
+  SignatureCellState.lowBreathIntensity = approachValue(
+    SignatureCellState.lowBreathIntensity,
+    clampValue(
+      0.14 +
+        (DepthState.bed || 0) * 0.18 +
+        (DepthState.tail || 0) * 0.08 +
+        (GradientState.ghost || 0) * 0.13 +
+        (TimbreFamilyState.sub808 || 0) * 0.12 +
+        (TimbreFamilyState.reedBuzz || 0) * 0.12 +
+        (GenreBlendState.ambient || 0) * 0.08 +
+        (context.voidNorm || 0) * 0.08 -
+        (MixGovernorState.lowGuard || 0) * 0.18 -
+        (MixGovernorState.eventLoad || 0) * 0.1,
+      0,
+      1
+    ),
+    0.045
+  );
+
+  SignatureCellState.brokenTextureIntensity = approachValue(
+    SignatureCellState.brokenTextureIntensity,
+    clampValue(
+      0.12 +
+        collapse * 0.18 +
+        (GradientState.micro || 0) * 0.18 +
+        (GradientState.ghost || 0) * 0.08 +
+        (TimbreFamilyState.drumSkin || 0) * 0.13 +
+        (TimbreFamilyState.chain || 0) * 0.06 +
+        (GenreBlendState.idm || 0) * 0.1 +
+        PerformancePadState.repeat * 0.08 +
+        PerformancePadState.drift * 0.04 -
+        (context.voidNorm || 0) * 0.06 -
+        (MixGovernorState.eventLoad || 0) * 0.1,
+      0,
+      1
+    ),
+    0.05
+  );
 }
 
 function signatureCellsRuntimeState() {
   const stepsSince = stepIndex - SignatureCellState.lastStep;
+  const lowStepsSince = stepIndex - SignatureCellState.lowBreathLastStep;
+  const textureStepsSince = stepIndex - SignatureCellState.brokenTextureLastStep;
+  const ghostActive = SignatureCellState.lastStep >= 0 && stepsSince >= 0 && stepsSince <= Math.max(2, SignatureCellState.cooldownSteps + 1);
+  const lowBreathActive = SignatureCellState.lowBreathLastStep >= 0 && lowStepsSince >= 0 && lowStepsSince <= Math.max(2, SignatureCellState.lowBreathCooldownSteps + 1);
+  const brokenTextureActive = SignatureCellState.brokenTextureLastStep >= 0 && textureStepsSince >= 0 && textureStepsSince <= Math.max(2, SignatureCellState.brokenTextureCooldownSteps + 1);
+  const flavor = SignatureCellState.lastFlavor || "ghostGlass";
+  const currentFlavorState = flavor === "lowBreath"
+    ? { intensity: SignatureCellState.lowBreathIntensity, cooldownSteps: SignatureCellState.lowBreathCooldownSteps, lastStep: SignatureCellState.lowBreathLastStep }
+    : flavor === "brokenTexture"
+      ? { intensity: SignatureCellState.brokenTextureIntensity, cooldownSteps: SignatureCellState.brokenTextureCooldownSteps, lastStep: SignatureCellState.brokenTextureLastStep }
+      : { intensity: SignatureCellState.intensity, cooldownSteps: SignatureCellState.cooldownSteps, lastStep: SignatureCellState.lastStep };
   return {
-    active: SignatureCellState.lastStep >= 0 && stepsSince >= 0 && stepsSince <= Math.max(2, SignatureCellState.cooldownSteps + 1),
-    flavor: "ghostGlass",
+    active: ghostActive || lowBreathActive || brokenTextureActive,
+    flavor,
     phrase: SignatureCellState.phrase,
     motif: SignatureCellState.motif,
-    intensity: SignatureCellState.intensity,
-    cooldownSteps: SignatureCellState.cooldownSteps,
-    lastStep: SignatureCellState.lastStep
+    intensity: currentFlavorState.intensity,
+    cooldownSteps: currentFlavorState.cooldownSteps,
+    lastStep: currentFlavorState.lastStep,
+    globalCooldownSteps: SignatureCellState.globalCooldownSteps,
+    flavors: {
+      ghostGlass: {
+        active: ghostActive,
+        motif: SignatureCellState.motif,
+        intensity: SignatureCellState.intensity,
+        cooldownSteps: SignatureCellState.cooldownSteps,
+        lastStep: SignatureCellState.lastStep
+      },
+      lowBreath: {
+        active: lowBreathActive,
+        intensity: SignatureCellState.lowBreathIntensity,
+        cooldownSteps: SignatureCellState.lowBreathCooldownSteps,
+        lastStep: SignatureCellState.lowBreathLastStep
+      },
+      brokenTexture: {
+        active: brokenTextureActive,
+        intensity: SignatureCellState.brokenTextureIntensity,
+        cooldownSteps: SignatureCellState.brokenTextureCooldownSteps,
+        lastStep: SignatureCellState.brokenTextureLastStep
+      }
+    }
   };
 }
 
@@ -6613,8 +6710,9 @@ function triggerGhostGlassSignatureCell(step, time, context) {
     voidNorm
   } = context;
   if (!glass) return;
+  if (SignatureCellState.globalCooldownSteps > 0) return;
   if (SignatureCellState.cooldownSteps > 0) return;
-  if (stepIndex - SignatureCellState.lastStep < 3) return;
+  if (stepIndex - SignatureCellState.lastStep < 5) return;
 
   const eventLoad = MixGovernorState.eventLoad || 0;
   const voiding = PerformancePadState.void > 0;
@@ -6639,7 +6737,7 @@ function triggerGhostGlassSignatureCell(step, time, context) {
   const phaseOffset = Math.floor(fractionalPart((GrooveState.cycle + SignatureCellState.phrase + GenomeState.generation + 1) * GOLDEN_RATIO_INVERSE) * 8);
   const chanceValue = chance(
     0.034 +
-      SignatureCellState.intensity * 0.15 +
+      SignatureCellState.intensity * 0.12 +
       (gradient.chrome || 0) * 0.04 +
       (depth.tail || 0) * 0.034 +
       (family.voiceDust || 0) * 0.025 +
@@ -6693,10 +6791,187 @@ function triggerGhostGlassSignatureCell(step, time, context) {
       nudgeInnerSourceFamily("chain", 0.012 + collapse * 0.012);
       markMixEvent(0.05 + intensity * 0.034);
     }
-    SignatureCellState.cooldownSteps = motif === "scar" || voiding ? 4 : 3;
+    SignatureCellState.cooldownSteps = motif === "scar" || voiding ? 6 : 5;
+    SignatureCellState.globalCooldownSteps = motif === "scar" || voiding ? 5 : 4;
     SignatureCellState.lastStep = stepIndex;
+    SignatureCellState.lastFlavor = "ghostGlass";
   } catch (error) {
     console.warn("[Music] ghost glass signature failed:", error);
+  }
+}
+
+function triggerLowBreathSignatureCell(step, time, context) {
+  const {
+    energyNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  if (!subImpact && !reedBuzz && !voiceDust) return;
+  if (SignatureCellState.globalCooldownSteps > 0) return;
+  if (SignatureCellState.lowBreathCooldownSteps > 0) return;
+  if (stepIndex - SignatureCellState.lowBreathLastStep < 10) return;
+
+  const eventLoad = MixGovernorState.eventLoad || 0;
+  const lowGuard = MixGovernorState.lowGuard || 0;
+  const voiding = PerformancePadState.void > 0;
+  if (eventLoad > (voiding ? 0.86 : 0.76)) return;
+  if (!voiding && lowGuard > 0.72) return;
+
+  const step16 = step % 16;
+  const gate = voiding
+    ? step16 === 4 || step16 === 7
+    : step16 === 0 || step16 === 8 || (isAccentStep && step16 === 4);
+  if (!gate) return;
+
+  const depth = DepthState;
+  const gradient = GradientState;
+  const family = TimbreFamilyState;
+  const intensity = SignatureCellState.lowBreathIntensity;
+  const chanceValue = chance(
+    0.02 +
+      intensity * 0.09 +
+      (depth.bed || 0) * 0.036 +
+      (gradient.ghost || 0) * 0.03 +
+      (family.reedBuzz || 0) * 0.026 +
+      voiding * 0.026 -
+      lowGuard * 0.045 -
+      eventLoad * 0.05
+  );
+  if (!rand(chanceValue)) return;
+
+  const phaseOffset = Math.floor(fractionalPart((GrooveState.cycle + SignatureCellState.phrase + GenomeState.generation + 2) * GOLDEN_RATIO_INVERSE) * 5);
+  const lowNote = tonalRhymeSub(step, phaseOffset);
+  const reedNote = tonalRhymeLow(step, phaseOffset + 1);
+  const airNote = tonalRhymeHigh(step, phaseOffset + 3);
+  const breathTime = time + 0.022 + Math.random() * (0.016 + waveNorm * 0.018 + (voiding ? 0.016 : 0));
+
+  try {
+    if (subImpact && !voiding && lowGuard < 0.58) {
+      subImpact.triggerAttackRelease(
+        lowNote,
+        "16n",
+        breathTime,
+        clampValue(0.026 + intensity * 0.074 + energyNorm * 0.018 - lowGuard * 0.03, 0.018, 0.12)
+      );
+      nudgeInnerSourceFamily("sub808", 0.014 + intensity * 0.012);
+    }
+    if (reedBuzz && rand(0.16 + intensity * 0.28 + (depth.bed || 0) * 0.16 + voiding * 0.16)) {
+      reedBuzz.triggerAttackRelease(
+        reedNote,
+        voiding ? "1n" : "2n",
+        breathTime + 0.066 + Math.random() * 0.026,
+        clampValue(0.01 + intensity * 0.036 + (depth.bed || 0) * 0.01 - lowGuard * 0.014, 0.008, 0.052)
+      );
+      nudgeInnerSourceFamily("reedBuzz", 0.014 + intensity * 0.01);
+    }
+    if (voiceDust && (voiding || rand(0.2 + observerNorm * 0.18 + intensity * 0.16))) {
+      voiceDust.triggerAttackRelease(
+        airNote,
+        voiding ? "4n" : "8n",
+        breathTime + 0.108 + Math.random() * 0.032,
+        clampValue(0.008 + intensity * 0.032 + voidNorm * 0.01, 0.008, 0.046)
+      );
+      nudgeInnerSourceFamily("voiceDust", 0.01 + intensity * 0.008);
+    }
+    if (glass && voiding && rand(0.16 + (depth.tail || 0) * 0.22)) {
+      glass.triggerAttackRelease(
+        TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + phaseOffset + 2) % TRANSPARENT_AIR_FRAGMENTS.length],
+        "16n",
+        breathTime + 0.14,
+        clampValue(0.012 + intensity * 0.03 + observerNorm * 0.008, 0.01, 0.054)
+      );
+    }
+    if (pad && voiding && rand(0.12 + circleNorm * 0.14 + (depth.tail || 0) * 0.16)) {
+      pad.triggerAttackRelease(randomHazeChord(), "2n", breathTime + 0.044, clampValue(0.014 + intensity * 0.028 + circleNorm * 0.008, 0.012, 0.052));
+    }
+    rememberMotif(reedNote, { reply: airNote, shade: lowNote, strength: 0.022 + intensity * 0.05, air: 0.08 + voidNorm * 0.12 + (depth.tail || 0) * 0.06, source: "signature-low-breath" });
+    markMixEvent(0.04 + intensity * 0.035);
+    SignatureCellState.lowBreathCooldownSteps = voiding ? 12 : 10;
+    SignatureCellState.globalCooldownSteps = voiding ? 7 : 6;
+    SignatureCellState.lowBreathLastStep = stepIndex;
+    SignatureCellState.lastFlavor = "lowBreath";
+  } catch (error) {
+    console.warn("[Music] low breath signature failed:", error);
+  }
+}
+
+function triggerBrokenTextureSignatureCell(step, time, context) {
+  const {
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    voidNorm,
+    isAccentStep
+  } = context;
+  if (!texture && !drumSkin && !glass) return;
+  if (SignatureCellState.globalCooldownSteps > 0) return;
+  if (SignatureCellState.brokenTextureCooldownSteps > 0) return;
+  if (stepIndex - SignatureCellState.brokenTextureLastStep < 7) return;
+
+  const eventLoad = MixGovernorState.eventLoad || 0;
+  const voiding = PerformancePadState.void > 0;
+  if (eventLoad > (voiding ? 0.74 : 0.82)) return;
+  if (voiding && !PerformancePadState.repeat && (GradientState.micro || 0) < 0.5) return;
+
+  const collapse = signatureCellCollapseAmount(context);
+  const intensity = SignatureCellState.brokenTextureIntensity;
+  const ready = collapse > 0.34 || (GradientState.micro || 0) > 0.32 || PerformancePadState.repeat || PerformancePadState.drift || isAccentStep;
+  if (!ready || intensity < 0.24) return;
+
+  const step16 = step % 16;
+  const gate = step16 === 5 || step16 === 13 || (PerformancePadState.repeat && (step16 === 2 || step16 === 10));
+  if (!gate) return;
+
+  const gradient = GradientState;
+  const family = TimbreFamilyState;
+  const phaseOffset = Math.floor(fractionalPart((GrooveState.cycle + SignatureCellState.phrase + GenomeState.generation + 4) * GOLDEN_RATIO_INVERSE) * 7);
+  const shard = FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + phaseOffset + 2) % FIELD_MURK_FRAGMENTS.length];
+  const glassShard = GLASS_NOTES[(step + GrooveState.cycle + phaseOffset + 5) % GLASS_NOTES.length];
+  const scarTime = time + 0.01 + Math.random() * (0.01 + waveNorm * 0.014 + PerformancePadState.drift * 0.014);
+  const chanceValue = chance(
+    0.022 +
+      intensity * 0.1 +
+      collapse * 0.04 +
+      (gradient.micro || 0) * 0.04 +
+      (family.drumSkin || 0) * 0.032 +
+      PerformancePadState.repeat * 0.04 -
+      voidNorm * 0.04 -
+      eventLoad * 0.04
+  );
+  if (!rand(chanceValue)) return;
+
+  try {
+    if (texture) {
+      texture.triggerAttackRelease("64n", scarTime, clampValue(0.014 + intensity * 0.052 + creationNorm * 0.012 + resourceNorm * 0.008, 0.012, 0.082));
+    }
+    if (drumSkin && !voiding && rand(0.16 + intensity * 0.18 + PerformancePadState.repeat * 0.14)) {
+      drumSkin.triggerAttackRelease("64n", scarTime + 0.014 + Math.random() * 0.01, clampValue(0.012 + intensity * 0.04 + (family.drumSkin || 0) * 0.018, 0.01, 0.07));
+      nudgeInnerSourceFamily("drumSkin", 0.012 + intensity * 0.012);
+    }
+    if (glass && rand(0.18 + intensity * 0.2 + (gradient.micro || 0) * 0.12)) {
+      glass.triggerAttackRelease(shard, "64n", scarTime + 0.028 + Math.random() * 0.012, clampValue(0.012 + intensity * 0.034, 0.01, 0.058));
+      if (PerformancePadState.repeat && rand(0.22 + collapse * 0.18)) {
+        glass.triggerAttackRelease(glassShard, "64n", scarTime + 0.058, clampValue(0.01 + intensity * 0.024, 0.008, 0.042));
+      }
+    }
+    rememberMotif(shard, {
+      reply: glassShard,
+      shade: tonalRhymeMid(step, phaseOffset + 1),
+      strength: 0.02 + intensity * 0.052,
+      air: (GradientState.chrome || 0) * 0.05,
+      source: "signature-broken-texture"
+    });
+    nudgeInnerSourceFamily("chain", 0.01 + intensity * 0.01);
+    markMixEvent(0.04 + intensity * 0.032);
+    SignatureCellState.brokenTextureCooldownSteps = PerformancePadState.repeat ? 8 : 7;
+    SignatureCellState.globalCooldownSteps = PerformancePadState.repeat ? 6 : 5;
+    SignatureCellState.brokenTextureLastStep = stepIndex;
+    SignatureCellState.lastFlavor = "brokenTexture";
+  } catch (error) {
+    console.warn("[Music] broken texture signature failed:", error);
   }
 }
 
@@ -8118,7 +8393,9 @@ function scheduleStep(time) {
   triggerPerformanceColorDriftDetail(step, t, stepContext);
   triggerVoiceEmergenceDetail(step, t, stepContext);
   triggerGhostGlassSignatureCell(step, t, stepContext);
+  triggerBrokenTextureSignatureCell(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
+  triggerLowBreathSignatureCell(step, t, stepContext);
   triggerAcidTechnoTrace(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
