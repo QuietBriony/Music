@@ -609,6 +609,17 @@ const VoiceEmergenceState = {
   shimmer: 0,
   refrain: 0
 };
+const SIGNATURE_CELL_MOTIFS = ["call", "answer", "scar"];
+const SignatureCellState = {
+  phrase: 0,
+  phraseCycles: 6,
+  motif: "call",
+  nextMotif: "answer",
+  blend: 0,
+  cooldownSteps: 0,
+  intensity: 0,
+  lastStep: -99
+};
 const VOICE_EMERGENCE_COLORS = {
   haze: {
     gradient: { haze: 0.085, memory: 0.035, chrome: 0.018, micro: -0.012 },
@@ -1877,6 +1888,12 @@ function decayMixGovernor() {
   if (MixGovernorState.eventLoad < 0.001) MixGovernorState.eventLoad = 0;
 }
 
+function decaySignatureCells() {
+  if (SignatureCellState.cooldownSteps > 0) {
+    SignatureCellState.cooldownSteps = Math.max(0, SignatureCellState.cooldownSteps - 1);
+  }
+}
+
 function markMixEvent(amount = 0.08) {
   MixGovernorState.eventLoad = clampValue(MixGovernorState.eventLoad + amount, 0, 1);
 }
@@ -2312,6 +2329,102 @@ function resetVoiceEmergence() {
   VoiceEmergenceState.refrain = 0;
 }
 
+function resetSignatureCells() {
+  SignatureCellState.phrase = 0;
+  SignatureCellState.phraseCycles = 6;
+  SignatureCellState.motif = "call";
+  SignatureCellState.nextMotif = "answer";
+  SignatureCellState.blend = 0;
+  SignatureCellState.cooldownSteps = 0;
+  SignatureCellState.intensity = 0;
+  SignatureCellState.lastStep = -99;
+}
+
+function signatureCellCollapseAmount(context = {}) {
+  const creation = clampValue(context.creationNorm ?? unitValue(UCM_CUR.creation), 0, 1);
+  const wave = clampValue(context.waveNorm ?? unitValue(UCM_CUR.wave), 0, 1);
+  const resource = clampValue(context.resourceNorm ?? unitValue(UCM_CUR.resource), 0, 1);
+  const circle = clampValue(context.circleNorm ?? unitValue(UCM_CUR.circle), 0, 1);
+  const observer = clampValue(context.observerNorm ?? unitValue(UCM_CUR.observer), 0, 1);
+  const voidness = clampValue(context.voidNorm ?? unitValue(UCM_CUR.void), 0, 1);
+  const micro = clampValue((GradientState.micro || 0) + (WorldState.micro || 0), 0, 1);
+  const chaos = organicChaosAmount();
+  return clampValue(
+    creation * 0.3 +
+      wave * 0.24 +
+      resource * 0.2 +
+      micro * 0.16 +
+      chaos * 0.14 -
+      circle * 0.18 -
+      observer * 0.12 -
+      voidness * 0.1,
+    0,
+    1
+  );
+}
+
+function signatureCellMotifPool(collapse) {
+  const scarReady = collapse > 0.42 || PerformancePadState.drift || PerformancePadState.repeat;
+  return scarReady ? SIGNATURE_CELL_MOTIFS : ["call", "answer"];
+}
+
+function chooseSignatureCellMotif(offset = 0, collapse = signatureCellCollapseAmount()) {
+  const pool = signatureCellMotifPool(collapse);
+  const phi = fractionalPart((GrooveState.cycle + SignatureCellState.phrase + GenomeState.generation + offset + 1) * GOLDEN_RATIO_INVERSE);
+  const index = Math.min(pool.length - 1, Math.floor(phi * pool.length));
+  return pool[index] || "call";
+}
+
+function signatureCellPhraseCycles(offset = 0) {
+  const phi = fractionalPart((GrooveState.cycle + GenomeState.generation + offset + 1) * GOLDEN_RATIO_INVERSE);
+  return Math.round(5 + phi * 5);
+}
+
+function advanceSignatureCells(context = {}) {
+  SignatureCellState.phrase += 1;
+  const collapse = signatureCellCollapseAmount(context);
+
+  if (SignatureCellState.phrase >= SignatureCellState.phraseCycles) {
+    SignatureCellState.motif = SignatureCellState.nextMotif;
+    SignatureCellState.nextMotif = chooseSignatureCellMotif(2, collapse);
+    SignatureCellState.phrase = 0;
+    SignatureCellState.phraseCycles = signatureCellPhraseCycles(3);
+  }
+
+  const progress = SignatureCellState.phrase / Math.max(1, SignatureCellState.phraseCycles);
+  SignatureCellState.blend = smoothStep01(progress);
+  SignatureCellState.intensity = approachValue(
+    SignatureCellState.intensity,
+    clampValue(
+      0.18 +
+        collapse * 0.22 +
+        (GradientState.chrome || 0) * 0.16 +
+        (DepthState.tail || 0) * 0.12 +
+        (GenreBlendState.idm || 0) * 0.1 +
+        (context.voidNorm || 0) * 0.07 +
+        PerformancePadState.drift * 0.1 +
+        PerformancePadState.repeat * 0.07 -
+        (MixGovernorState.eventLoad || 0) * 0.12,
+      0,
+      1
+    ),
+    0.055
+  );
+}
+
+function signatureCellsRuntimeState() {
+  const stepsSince = stepIndex - SignatureCellState.lastStep;
+  return {
+    active: SignatureCellState.lastStep >= 0 && stepsSince >= 0 && stepsSince <= Math.max(2, SignatureCellState.cooldownSteps + 1),
+    flavor: "ghostGlass",
+    phrase: SignatureCellState.phrase,
+    motif: SignatureCellState.motif,
+    intensity: SignatureCellState.intensity,
+    cooldownSteps: SignatureCellState.cooldownSteps,
+    lastStep: SignatureCellState.lastStep
+  };
+}
+
 function advanceVoiceEmergencePhrase() {
   if (VoiceEmergenceState.lastCycle === GrooveState.cycle) return;
   VoiceEmergenceState.lastCycle = GrooveState.cycle;
@@ -2462,6 +2575,7 @@ function publishMusicRuntimeState() {
     humanGroove: typeof window.HumanGrooveGovernor?.getState === "function"
       ? window.HumanGrooveGovernor.getState()
       : (typeof window.HumanGrooveGovernor?.state === "object" ? { ...window.HumanGrooveGovernor.state } : null),
+    signatureCells: signatureCellsRuntimeState(),
     autoFollow: hazamaAutoFollowActive(),
     albumArc: {
       mode: AlbumArcState.mode,
@@ -6087,6 +6201,7 @@ function resetRuntimeCounters() {
   resetDJTempo();
   resetGenerativeGenome();
   resetAutoVoiceMorph();
+  resetSignatureCells();
   resetAlbumArc();
   if (typeof window !== "undefined" && typeof window.HumanGrooveGovernor?.reset === "function") {
     window.HumanGrooveGovernor.reset();
@@ -6137,6 +6252,7 @@ function advanceGrooveStructure() {
   updateBpmCrossfadeMemory(currentGradientParts());
   advanceAutoVoiceMorphPhrase();
   advanceVoiceEmergencePhrase();
+  advanceSignatureCells({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   updateGenerativeGenome(currentGradientParts());
 
   const humanGroove = typeof window !== "undefined" ? window.HumanGrooveGovernor : null;
@@ -6485,6 +6601,102 @@ function triggerVoiceEmergenceDetail(step, time, context) {
     markMixEvent(0.052 + amount * 0.04);
   } catch (error) {
     console.warn("[Music] voice emergence detail failed:", error);
+  }
+}
+
+function triggerGhostGlassSignatureCell(step, time, context) {
+  const {
+    creationNorm,
+    waveNorm,
+    observerNorm,
+    circleNorm,
+    voidNorm
+  } = context;
+  if (!glass) return;
+  if (SignatureCellState.cooldownSteps > 0) return;
+  if (stepIndex - SignatureCellState.lastStep < 3) return;
+
+  const eventLoad = MixGovernorState.eventLoad || 0;
+  const voiding = PerformancePadState.void > 0;
+  if (eventLoad > (voiding ? 0.88 : 0.8)) return;
+
+  const collapse = signatureCellCollapseAmount(context);
+  const scarReady = collapse > 0.42 || PerformancePadState.drift || PerformancePadState.repeat;
+  let motif = SignatureCellState.blend > 0.55 ? SignatureCellState.nextMotif : SignatureCellState.motif;
+  if (motif === "scar" && !scarReady) motif = "call";
+
+  const step16 = step % 16;
+  const gate = motif === "call"
+    ? step16 === 3 || step16 === 11
+    : motif === "answer"
+      ? (voiding ? step16 === 7 || step16 === 15 : step16 === 6 || step16 === 14)
+      : step16 === 5 || step16 === 13;
+  if (!gate) return;
+
+  const gradient = GradientState;
+  const depth = DepthState;
+  const family = TimbreFamilyState;
+  const phaseOffset = Math.floor(fractionalPart((GrooveState.cycle + SignatureCellState.phrase + GenomeState.generation + 1) * GOLDEN_RATIO_INVERSE) * 8);
+  const chanceValue = chance(
+    0.034 +
+      SignatureCellState.intensity * 0.15 +
+      (gradient.chrome || 0) * 0.04 +
+      (depth.tail || 0) * 0.034 +
+      (family.voiceDust || 0) * 0.025 +
+      PerformancePadState.drift * 0.035 +
+      PerformancePadState.repeat * 0.034 +
+      voiding * 0.034 -
+      eventLoad * 0.05
+  );
+  if (!rand(chanceValue)) return;
+
+  const airRoot = tonalRhymeHigh(step, phaseOffset + 2);
+  const airReply = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + phaseOffset + 3) % TRANSPARENT_AIR_FRAGMENTS.length];
+  const glassRoot = GLASS_NOTES[(step + GrooveState.cycle + phaseOffset + 1) % GLASS_NOTES.length];
+  const shade = FIELD_MURK_FRAGMENTS[(step + GrooveState.cycle + phaseOffset + 4) % FIELD_MURK_FRAGMENTS.length];
+  const cellTime = time + 0.016 + Math.random() * (0.016 + waveNorm * 0.018 + PerformancePadState.drift * 0.018);
+  const intensity = SignatureCellState.intensity;
+
+  try {
+    if (motif === "call") {
+      const vel = clampValue(0.018 + intensity * 0.044 + observerNorm * 0.01 + creationNorm * 0.006, 0.014, 0.086);
+      glass.triggerAttackRelease(glassRoot, "64n", cellTime, vel);
+      glass.triggerAttackRelease(airReply, "64n", cellTime + 0.052 + Math.random() * 0.022, clampValue(vel * 0.58 + depth.tail * 0.008, 0.012, 0.058));
+      if (voiceDust && rand(0.14 + (family.voiceDust || 0) * 0.18 + voiding * 0.18)) {
+        voiceDust.triggerAttackRelease(airRoot, voiding ? "8n" : "16n", cellTime + 0.088, clampValue(vel * 0.42, 0.008, 0.04));
+      }
+      rememberMotif(glassRoot, { reply: airReply, shade, strength: 0.028 + intensity * 0.05, air: 0.08 + depth.tail * 0.08, source: "ghost-glass-call" });
+      nudgeInnerSourceFamily("chain", 0.008 + intensity * 0.006);
+      markMixEvent(0.045 + intensity * 0.032);
+    } else if (motif === "answer") {
+      const vel = clampValue(0.012 + intensity * 0.036 + observerNorm * 0.012 + voidNorm * 0.01, 0.01, 0.064);
+      if (voiceDust) {
+        voiceDust.triggerAttackRelease(airRoot, voiding ? "4n" : "8n", cellTime + 0.024, vel);
+      }
+      glass.triggerAttackRelease(airReply, voiding ? "16n" : "32n", cellTime + 0.066 + Math.random() * 0.026, clampValue(vel * 0.72 + depth.tail * 0.01, 0.01, 0.056));
+      if (pad && (voiding || circleNorm > 0.42) && rand(0.14 + circleNorm * 0.16 + depth.tail * 0.14)) {
+        pad.triggerAttackRelease(randomHazeChord(), voiding ? "2n" : "1n", cellTime + 0.034, clampValue(0.016 + intensity * 0.03 + circleNorm * 0.008, 0.014, 0.056));
+      }
+      rememberMotif(airRoot, { reply: airReply, shade, strength: 0.024 + intensity * 0.046, air: 0.16 + depth.tail * 0.1 + voidNorm * 0.08, source: "ghost-glass-answer" });
+      nudgeInnerSourceFamily("voiceDust", 0.018 + intensity * 0.01);
+      markMixEvent(0.035 + intensity * 0.028);
+    } else {
+      const vel = clampValue(0.014 + intensity * 0.046 + collapse * 0.018 + PerformancePadState.repeat * 0.018, 0.012, 0.078);
+      if (texture) {
+        texture.triggerAttackRelease("64n", cellTime + 0.004, clampValue(0.014 + collapse * 0.042 + creationNorm * 0.012, 0.012, 0.072));
+      }
+      glass.triggerAttackRelease(shade, "64n", cellTime + 0.026, vel);
+      if (PerformancePadState.repeat && rand(0.24 + collapse * 0.22)) {
+        glass.triggerAttackRelease(shade, "64n", cellTime + 0.056, clampValue(vel * 0.54, 0.01, 0.048));
+      }
+      rememberMotif(shade, { reply: airReply, shade: glassRoot, strength: 0.022 + collapse * 0.054, air: depth.tail * 0.06, source: "ghost-glass-scar" });
+      nudgeInnerSourceFamily("chain", 0.012 + collapse * 0.012);
+      markMixEvent(0.05 + intensity * 0.034);
+    }
+    SignatureCellState.cooldownSteps = motif === "scar" || voiding ? 4 : 3;
+    SignatureCellState.lastStep = stepIndex;
+  } catch (error) {
+    console.warn("[Music] ghost glass signature failed:", error);
   }
 }
 
@@ -7833,6 +8045,7 @@ function scheduleStep(time) {
   decayOrganicEcosystem();
   decayLongformArc();
   decayMixGovernor();
+  decaySignatureCells();
   decayVoiceMorph();
   decayOddLogicDirector();
 
@@ -7904,6 +8117,7 @@ function scheduleStep(time) {
   triggerDroneResonanceBed(step, t, stepContext);
   triggerPerformanceColorDriftDetail(step, t, stepContext);
   triggerVoiceEmergenceDetail(step, t, stepContext);
+  triggerGhostGlassSignatureCell(step, t, stepContext);
   triggerLowMotion(step, t, stepContext);
   triggerAcidTechnoTrace(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
