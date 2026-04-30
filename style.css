@@ -2476,3 +2476,226 @@ body[data-playing="true"][data-auto="true"] .fader-group {
     min-height: 48px;
   }
 }
+
+/* Final desktop interaction recovery pass.
+   Keep the transport inside the control surface except on phone layouts. */
+html,
+body {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+body {
+  height: auto;
+  overflow-y: auto;
+}
+
+#ui-shell {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  min-height: 100dvh;
+  padding: clamp(10px, 2vh, 18px) clamp(10px, 2vw, 18px);
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+}
+
+#ui-header,
+#control-panel {
+  width: min(980px, calc(100vw - 24px));
+  max-width: 980px;
+  justify-self: center;
+}
+
+#control-panel {
+  min-width: 0;
+  max-height: none;
+  overflow: visible;
+  display: grid;
+  grid-template-columns: minmax(140px, 0.78fr) minmax(360px, 1.65fr) minmax(260px, 1fr);
+  gap: 12px;
+}
+
+#energy-column,
+#obs-grid,
+#right-column {
+  min-width: 0;
+}
+
+#right-column {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "auto"
+    "pads"
+    "preset"
+    "transport";
+  align-content: start;
+  gap: 8px;
+}
+
+#auto-block {
+  grid-area: auto;
+}
+
+#performance-pads {
+  grid-area: pads;
+}
+
+#preset-block {
+  grid-area: preset;
+}
+
+#transport-dock {
+  grid-area: transport;
+  position: static;
+  inset: auto;
+  z-index: auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  display: grid;
+  gap: 7px;
+}
+
+#transport {
+  grid-area: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  position: relative;
+  z-index: 2;
+}
+
+#transport button {
+  min-width: 0;
+  min-height: 56px;
+  padding: 12px 10px;
+  cursor: pointer;
+  touch-action: manipulation;
+  pointer-events: auto;
+}
+
+#status-line {
+  grid-area: status;
+  min-width: 0;
+  min-height: 48px;
+  margin: 0;
+  padding: 7px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  text-align: left;
+}
+
+#recorder-tools {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 1100px) {
+  #ui-shell {
+    align-content: start;
+  }
+
+  #control-panel {
+    grid-template-columns: minmax(130px, 0.72fr) minmax(320px, 1.48fr) minmax(250px, 0.98fr);
+  }
+}
+
+@media (max-width: 880px) {
+  #ui-shell {
+    min-height: 100dvh;
+    padding:
+      max(8px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+  }
+
+  #ui-header,
+  #control-panel {
+    width: 100%;
+    max-width: 720px;
+  }
+
+  #control-panel {
+    grid-template-columns: 1fr;
+    row-gap: 10px;
+  }
+
+  #right-column {
+  grid-template-areas:
+    "auto"
+    "pads"
+    "preset"
+    "transport";
+  }
+
+  #auto-block,
+  #preset-block,
+  #performance-pads,
+  #transport-dock,
+  #transport,
+  #status-line {
+    grid-area: unset;
+  }
+
+  #auto-block {
+    grid-area: auto;
+  }
+
+  #performance-pads {
+    grid-area: pads;
+  }
+
+  #preset-block {
+    grid-area: preset;
+  }
+
+  #transport-dock {
+    grid-area: transport;
+    position: static;
+  }
+
+}
+
+@media (max-width: 640px) {
+  #ui-shell {
+    padding-bottom: calc(108px + env(safe-area-inset-bottom));
+  }
+
+  #transport-dock {
+    position: fixed;
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 20;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 8px;
+    border: 1px solid rgba(233, 244, 239, 0.24);
+    background:
+      linear-gradient(90deg, rgba(255, 74, 61, 0.12), transparent 34%),
+      rgba(1, 4, 5, 0.94);
+    box-shadow: 0 -14px 36px rgba(0, 0, 0, 0.58), inset 0 0 0 1px rgba(143, 255, 245, 0.08);
+    backdrop-filter: blur(10px) contrast(1.08);
+  }
+
+  #transport button {
+    min-height: 50px;
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+}
