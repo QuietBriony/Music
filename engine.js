@@ -1903,6 +1903,14 @@ function resetGenreBlend() {
   GenreBlendState.pressure = 0.07;
 }
 
+function resetGenreTimbreKits() {
+  GenreTimbreKitState.ambientKit = 0.44;
+  GenreTimbreKitState.idmKit = 0.34;
+  GenreTimbreKitState.technoKit = 0.16;
+  GenreTimbreKitState.pressureKit = 0.12;
+  GenreTimbreKitState.spaceKit = 0.32;
+}
+
 function resetDJTempo() {
   const current = Number.isFinite(EngineParams.bpm) ? EngineParams.bpm : 80;
   DJTempoState.bpm = current;
@@ -2017,6 +2025,116 @@ function updateGenreBlend(parts) {
   GenreBlendState.techno = approachValue(GenreBlendState.techno, technoTarget / total, 0.08);
   GenreBlendState.pressure = approachValue(GenreBlendState.pressure, pressureTarget / total, 0.08);
   return GenreBlendState;
+}
+
+function genreTimbreKitRuntimeState() {
+  return {
+    ambientKit: GenreTimbreKitState.ambientKit,
+    idmKit: GenreTimbreKitState.idmKit,
+    technoKit: GenreTimbreKitState.technoKit,
+    pressureKit: GenreTimbreKitState.pressureKit,
+    spaceKit: GenreTimbreKitState.spaceKit
+  };
+}
+
+function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthState, genre = GenreBlendState) {
+  const energy = clampValue(parts.energy ?? unitValue(UCM_CUR.energy), 0, 1);
+  const wave = clampValue(parts.wave ?? unitValue(UCM_CUR.wave), 0, 1);
+  const creation = clampValue(parts.creation ?? unitValue(UCM_CUR.creation), 0, 1);
+  const voidness = clampValue(parts.voidness ?? unitValue(UCM_CUR.void), 0, 1);
+  const circle = clampValue(parts.circle ?? unitValue(UCM_CUR.circle), 0, 1);
+  const body = clampValue(parts.body ?? unitValue(UCM_CUR.body), 0, 1);
+  const resource = clampValue(parts.resource ?? unitValue(UCM_CUR.resource), 0, 1);
+  const observer = clampValue(parts.observer ?? unitValue(UCM_CUR.observer), 0, 1);
+  const pressure = clampValue(parts.pressure ?? 0, 0, 1);
+  const bpmNorm = clampValue((EngineParams.bpm - 58) / 90, 0, 1);
+  const lowBpm = 1 - bpmNorm;
+  const midBpm = clampValue(1 - Math.abs(bpmNorm - 0.5) * 2, 0, 1);
+  const pulse = clampValue(energy * 0.34 + resource * 0.26 + (1 - voidness) * 0.16 + bpmNorm * 0.18 + (depth.pulse || 0) * 0.06, 0, 1);
+  const eventLoad = MixGovernorState.eventLoad || 0;
+  const lowGuard = MixGovernorState.lowGuard || 0;
+
+  const ambientTarget = clampValue(
+    (1 - energy) * 0.22 +
+      lowBpm * 0.2 +
+      circle * 0.16 +
+      observer * 0.14 +
+      voidness * 0.1 +
+      (1 - resource) * 0.08 +
+      (gradient.haze || 0) * 0.1 +
+      genre.ambient * 0.18 -
+      genre.techno * 0.06,
+    0,
+    1
+  );
+  const idmTarget = clampValue(
+    midBpm * 0.13 +
+      wave * 0.18 +
+      creation * 0.2 +
+      resource * 0.15 +
+      observer * 0.1 +
+      (gradient.micro || 0) * 0.1 +
+      (gradient.organic || 0) * 0.06 +
+      genre.idm * 0.18 +
+      ReferenceMorphState.broken * 0.06 -
+      eventLoad * 0.04,
+    0,
+    1
+  );
+  const technoTarget = clampValue(
+    bpmNorm * 0.22 +
+      energy * 0.19 +
+      resource * 0.17 +
+      (1 - voidness) * 0.13 +
+      pulse * 0.14 +
+      (gradient.micro || 0) * 0.06 +
+      genre.techno * 0.2 +
+      ReferenceMorphState.pulse * 0.06 -
+      genre.ambient * 0.08 -
+      eventLoad * 0.03,
+    0,
+    1
+  );
+  const pressureTarget = clampValue(
+    body * 0.2 +
+      energy * 0.18 +
+      pressure * 0.18 +
+      (PerformancePadState.punch || 0) * 0.18 +
+      (gradient.ghost || 0) * 0.08 +
+      genre.pressure * 0.18 +
+      ReferenceMorphState.pulse * 0.04 -
+      voidness * 0.12 -
+      lowGuard * 0.14,
+    0,
+    1
+  );
+  const spaceTarget = clampValue(
+    voidness * 0.22 +
+      observer * 0.22 +
+      (depth.tail || 0) * 0.18 +
+      (depth.lowMidClean || 0) * 0.12 +
+      circle * 0.08 +
+      (PerformancePadState.void || 0) * 0.16 +
+      genre.ambient * 0.08 -
+      resource * 0.05 -
+      lowGuard * 0.05,
+    0,
+    1
+  );
+
+  GenreTimbreKitState.ambientKit = approachValue(GenreTimbreKitState.ambientKit, ambientTarget, 0.055);
+  GenreTimbreKitState.idmKit = approachValue(GenreTimbreKitState.idmKit, idmTarget, 0.06);
+  GenreTimbreKitState.technoKit = approachValue(GenreTimbreKitState.technoKit, technoTarget, 0.062);
+  GenreTimbreKitState.pressureKit = approachValue(GenreTimbreKitState.pressureKit, pressureTarget, 0.058);
+  GenreTimbreKitState.spaceKit = approachValue(GenreTimbreKitState.spaceKit, spaceTarget, 0.05);
+
+  depth.bed = clampValue(depth.bed + GenreTimbreKitState.ambientKit * 0.025 - GenreTimbreKitState.technoKit * 0.02, 0, 1);
+  depth.particle = clampValue(depth.particle + GenreTimbreKitState.idmKit * 0.032 + GenreTimbreKitState.technoKit * 0.022, 0, 1);
+  depth.lowMidClean = clampValue(depth.lowMidClean + GenreTimbreKitState.spaceKit * 0.04 + GenreTimbreKitState.technoKit * 0.012 - GenreTimbreKitState.pressureKit * 0.012, 0, 1);
+  depth.tail = clampValue(depth.tail + GenreTimbreKitState.spaceKit * 0.04 + GenreTimbreKitState.ambientKit * 0.026 - GenreTimbreKitState.technoKit * 0.02, 0, 1);
+  depth.gesture = clampValue(depth.gesture + GenreTimbreKitState.idmKit * 0.028 + GenreTimbreKitState.technoKit * 0.034 + GenreTimbreKitState.pressureKit * 0.024, 0, 1);
+
+  return GenreTimbreKitState;
 }
 
 function longformTempoBias() {
@@ -2921,6 +3039,7 @@ function publishMusicRuntimeState() {
     gradient: { ...GradientState },
     depth: { ...DepthState },
     genre: { ...GenreBlendState },
+    genreTimbreKits: genreTimbreKitRuntimeState(),
     referenceMorph: referenceMorphRuntimeState(),
     rdjGrowth: rdjGrowthRuntimeState(),
     humanGroove: typeof window.HumanGrooveGovernor?.getState === "function"
@@ -5009,6 +5128,13 @@ const GenreBlendState = {
   techno: 0.14,
   pressure: 0.07
 };
+const GenreTimbreKitState = {
+  ambientKit: 0.44,
+  idmKit: 0.34,
+  technoKit: 0.16,
+  pressureKit: 0.12,
+  spaceKit: 0.32
+};
 const MixGovernorState = {
   lowGuard: 0,
   clarity: 0.34,
@@ -5682,6 +5808,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
   const genome = clampValue(GenomeState.growth * 0.42 + GenomeState.resonance * 0.28, 0, 1);
   const refrain = clampValue(BpmCrossfadeState.refrain + VoiceEmergenceState.refrain * 0.5, 0, 1);
   const lowGuard = MixGovernorState.lowGuard;
+  const kits = GenreTimbreKitState;
   const inner = updateInnerSourceFamily(parts, gradient, depth, genre);
   const innerLift = 0.035 + (inner.bloom || 0) * 0.035;
 
@@ -5691,8 +5818,12 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       depth.pulse * 0.15 +
       resource * 0.12 +
       creation * 0.075 +
+      kits.technoKit * 0.1 +
+      kits.idmKit * 0.045 +
+      kits.pressureKit * 0.055 +
       hazamaPulse * 0.08 +
       acid * 0.1 -
+      kits.ambientKit * 0.055 -
       genre.ambient * 0.18 -
       voidness * 0.14 +
       albumArcFamilyBias("drumSkin") * 0.42 +
@@ -5710,6 +5841,10 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       circle * 0.12 +
       observer * 0.1 +
       refrain * 0.08 +
+      kits.ambientKit * 0.055 +
+      kits.idmKit * 0.055 +
+      kits.spaceKit * 0.025 -
+      kits.technoKit * 0.04 -
       hazamaBloom * 0.08 -
       pressure * 0.08 -
       genre.techno * 0.08 +
@@ -5727,6 +5862,10 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       gradient.haze * 0.12 +
       depth.tail * 0.16 +
       VoiceEmergenceState.bloom * 0.12 +
+      kits.ambientKit * 0.05 +
+      kits.spaceKit * 0.075 +
+      kits.idmKit * 0.02 -
+      kits.technoKit * 0.025 -
       hazamaAir * 0.12 +
       observer * 0.08 +
       voidness * 0.06 -
@@ -5745,6 +5884,9 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       genre.techno * 0.13 +
       genre.pressure * 0.11 +
       gradient.micro * 0.09 +
+      kits.technoKit * 0.09 +
+      kits.idmKit * 0.035 -
+      kits.spaceKit * 0.05 -
       creation * 0.08 +
       resource * 0.06 -
       voidness * 0.18 -
@@ -5762,6 +5904,9 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       gradient.ghost * 0.18 +
       depth.pulse * 0.15 +
       pressure * 0.12 +
+      kits.pressureKit * 0.075 +
+      kits.technoKit * 0.03 -
+      kits.spaceKit * 0.055 -
       hazamaPulse * 0.08 +
       acid * 0.24 +
       PerformancePadState.punch * 0.1 -
@@ -5780,6 +5925,9 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       depth.bed * 0.13 +
       depth.tail * 0.1 +
       body * 0.075 +
+      kits.ambientKit * 0.035 +
+      kits.spaceKit * 0.045 -
+      kits.technoKit * 0.035 -
       hazamaAir * 0.08 +
       hazamaBloom * 0.05 +
       (EngineParams.bpm < 84 ? 0.065 : 0) -
@@ -5800,6 +5948,9 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
       gradient.organic * 0.12 +
       gradient.micro * 0.1 +
       wave * 0.08 +
+      kits.idmKit * 0.075 +
+      kits.technoKit * 0.055 +
+      kits.ambientKit * 0.018 +
       autoDrive * 0.07 +
       hazamaMicro * 0.06 +
       energy * 0.04 +
@@ -5828,6 +5979,7 @@ function updateTimbreStateFromWorld(parts) {
   const genre = updateGenreBlend(parts);
   const gradient = updateReferenceGradient(parts);
   const depth = updateReferenceDepth(parts, gradient);
+  updateGenreTimbreKits(parts, gradient, depth, genre);
   updateMixGovernor(parts, gradient, depth);
   const family = updateTimbreFamilyBlend(parts, gradient, depth, genre);
   const lowGuard = MixGovernorState.lowGuard;
@@ -6549,6 +6701,7 @@ function resetRuntimeCounters() {
   resetMixGovernor();
   resetTimbreFamily();
   resetGenreBlend();
+  resetGenreTimbreKits();
   resetDJTempo();
   resetGenerativeGenome();
   resetAutoVoiceMorph();
@@ -7737,6 +7890,7 @@ function triggerTimbreFamilyResponse(step, time, context) {
   const genre = GenreBlendState;
   const gradient = GradientState;
   const depth = DepthState;
+  const kits = GenreTimbreKitState;
   const lowGuard = MixGovernorState.lowGuard;
   const eventLoad = MixGovernorState.eventLoad;
   if (eventLoad > 0.94 && !PerformancePadState.void) return;
@@ -7750,14 +7904,14 @@ function triggerTimbreFamilyResponse(step, time, context) {
   const phraseTurn = step % 16 === 0 || step % 16 === 8;
   const offPulse = step % 16 === 3 || step % 16 === 6 || step % 16 === 11 || step % 16 === 14;
   const driftedTime = time + Math.random() * (0.01 + waveNorm * 0.018 + PerformancePadState.drift * 0.018);
-  const chromeHymn = clampValue(gradient.chrome * 0.28 + gradient.haze * 0.18 + depth.tail * 0.18 + observerNorm * 0.12 + family.voiceDust * 0.1 + chain * 0.08 + ReferenceMorphState.chrome * 0.06, 0, 1);
-  const brokenLogic = clampValue(gradient.micro * 0.26 + genre.idm * 0.18 + family.drumSkin * 0.12 + family.acidBiyon * 0.12 + BpmCrossfadeState.refrain * 0.1 + PerformancePadState.repeat * 0.12 + ReferenceMorphState.broken * 0.07 + RdjGrowthState.edit * 0.08 + RdjGrowthState.wrong * 0.06, 0, 1);
-  const ghostBody = clampValue(gradient.ghost * 0.24 + depth.pulse * 0.18 + family.sub808 * 0.16 + genre.pressure * 0.12 + PerformancePadState.punch * 0.12 - lowGuard * 0.16, 0, 1);
-  const coldPulse = clampValue(genre.techno * 0.18 + genre.idm * 0.12 + gradient.micro * 0.12 + depth.gesture * 0.12 + family.chain * 0.1 + acidAmount * 0.12 + albumArcFamilyBias("chain") * 0.1 + ReferenceMorphState.pulse * 0.07 + RdjGrowthState.rubber * 0.06 - genre.ambient * 0.08, 0, 1);
-  const earthBuzz = clampValue(family.reedBuzz * 0.34 + (inner.reedBuzz || 0) * 0.18 + gradient.ghost * 0.16 + depth.bed * 0.14 + ReferenceMorphState.organic * 0.05 + (droneThin ? 0.1 : 0) - lowGuard * 0.18 - acidOn * 0.06, 0, 1);
+  const chromeHymn = clampValue(gradient.chrome * 0.28 + gradient.haze * 0.18 + depth.tail * 0.18 + observerNorm * 0.12 + family.voiceDust * 0.1 + chain * 0.08 + ReferenceMorphState.chrome * 0.06 + kits.ambientKit * 0.035 + kits.spaceKit * 0.045, 0, 1);
+  const brokenLogic = clampValue(gradient.micro * 0.26 + genre.idm * 0.18 + family.drumSkin * 0.12 + family.acidBiyon * 0.12 + BpmCrossfadeState.refrain * 0.1 + PerformancePadState.repeat * 0.12 + ReferenceMorphState.broken * 0.07 + RdjGrowthState.edit * 0.08 + RdjGrowthState.wrong * 0.06 + kits.idmKit * 0.08 + kits.technoKit * 0.045, 0, 1);
+  const ghostBody = clampValue(gradient.ghost * 0.24 + depth.pulse * 0.18 + family.sub808 * 0.16 + genre.pressure * 0.12 + PerformancePadState.punch * 0.12 + kits.pressureKit * 0.08 - kits.spaceKit * 0.04 - lowGuard * 0.16, 0, 1);
+  const coldPulse = clampValue(genre.techno * 0.18 + genre.idm * 0.12 + gradient.micro * 0.12 + depth.gesture * 0.12 + family.chain * 0.1 + acidAmount * 0.12 + albumArcFamilyBias("chain") * 0.1 + ReferenceMorphState.pulse * 0.07 + RdjGrowthState.rubber * 0.06 + kits.technoKit * 0.1 + kits.idmKit * 0.035 - genre.ambient * 0.08 - kits.spaceKit * 0.035, 0, 1);
+  const earthBuzz = clampValue(family.reedBuzz * 0.34 + (inner.reedBuzz || 0) * 0.18 + gradient.ghost * 0.16 + depth.bed * 0.14 + ReferenceMorphState.organic * 0.05 + kits.ambientKit * 0.03 + kits.spaceKit * 0.035 + (droneThin ? 0.1 : 0) - kits.technoKit * 0.03 - lowGuard * 0.18 - acidOn * 0.06, 0, 1);
 
   if (pianoMemory && (step % 16 === 4 || step % 16 === 10 || (PerformancePadState.drift && step % 4 === 1) || (chain > 0.52 && step % 8 === 5))) {
-    const pianoChance = chance(0.014 + family.pianoMemory * 0.15 + chain * 0.04 + ReferenceMorphState.organic * 0.014 + RdjGrowthState.toy * 0.02 + RdjGrowthState.tender * 0.015 + PerformancePadState.drift * 0.055 - RdjGrowthState.restraint * 0.01 - eventLoad * 0.04);
+    const pianoChance = chance(0.014 + family.pianoMemory * 0.15 + chain * 0.04 + ReferenceMorphState.organic * 0.014 + kits.idmKit * 0.025 + kits.ambientKit * 0.012 + RdjGrowthState.toy * 0.02 + RdjGrowthState.tender * 0.015 + PerformancePadState.drift * 0.055 - kits.technoKit * 0.025 - RdjGrowthState.restraint * 0.01 - eventLoad * 0.04);
     if (rand(pianoChance)) {
       const root = tonalRhymeMid(step, phaseOffset + 1);
       const reply = tonalRhymeHigh(step, phaseOffset + 3);
@@ -7785,7 +7939,7 @@ function triggerTimbreFamilyResponse(step, time, context) {
   }
 
   if (voiceDust && (step % 16 === 2 || step % 16 === 7 || step % 16 === 13 || (PerformancePadState.void && step % 8 === 5))) {
-    const voiceChance = chance(0.012 + family.voiceDust * 0.13 + depth.tail * 0.035 + PerformancePadState.void * 0.05 + (HazamaBridgeState.active ? 0.022 : 0) - genre.pressure * 0.02);
+    const voiceChance = chance(0.012 + family.voiceDust * 0.13 + depth.tail * 0.035 + kits.spaceKit * 0.028 + kits.ambientKit * 0.018 + PerformancePadState.void * 0.05 + (HazamaBridgeState.active ? 0.022 : 0) - kits.pressureKit * 0.018 - genre.pressure * 0.02);
     if (rand(voiceChance)) {
       const root = tonalRhymeHigh(step, phaseOffset + 2);
       const reply = tonalRhymeHigh(step, phaseOffset + 6);
@@ -7813,7 +7967,7 @@ function triggerTimbreFamilyResponse(step, time, context) {
   }
 
   if (drumSkin && !PerformancePadState.void && (offPulse || isAccentStep)) {
-    const drumChance = chance((0.01 + family.drumSkin * 0.16 + genre.techno * 0.035 + PerformancePadState.repeat * 0.05 + (acidOn ? 0.035 : 0) - eventLoad * 0.035) * (droneThin ? 0.3 : 1));
+    const drumChance = chance((0.01 + family.drumSkin * 0.16 + genre.techno * 0.035 + kits.technoKit * 0.05 + kits.idmKit * 0.026 + kits.pressureKit * 0.02 + PerformancePadState.repeat * 0.05 + (acidOn ? 0.035 : 0) - kits.ambientKit * 0.02 - eventLoad * 0.035) * (droneThin ? 0.3 : 1));
     if (rand(drumChance)) {
       try {
         drumSkin.triggerAttackRelease("64n", time + 0.008 + Math.random() * 0.012, clampValue(0.014 + family.drumSkin * 0.066 + creationNorm * 0.016 + (acidOn ? 0.024 : 0), 0.01, droneThin ? 0.072 : 0.13));
@@ -7835,7 +7989,7 @@ function triggerTimbreFamilyResponse(step, time, context) {
   }
 
   if (subImpact && !PerformancePadState.void && (phraseTurn || (acidOn && step % 8 === 4) || (PerformancePadState.punch && step % 4 === 0))) {
-    const subChance = chance((0.018 + family.sub808 * 0.14 + family.acidBiyon * 0.08 + PerformancePadState.punch * 0.08 - lowGuard * 0.14) * (droneThin && !acidOn ? 0.56 : 1));
+    const subChance = chance((0.018 + family.sub808 * 0.14 + family.acidBiyon * 0.08 + kits.pressureKit * 0.028 + PerformancePadState.punch * 0.08 - kits.spaceKit * 0.025 - lowGuard * 0.14) * (droneThin && !acidOn ? 0.56 : 1));
     if (rand(subChance)) {
       const note = tonalRhymeSub(step, phaseOffset + (phraseTurn ? 0 : 2));
       const dur = acidOn || PerformancePadState.punch ? "16n" : "8n";
@@ -7884,7 +8038,7 @@ function triggerTimbreFamilyResponse(step, time, context) {
   }
 
   if (bass && acidOn && !PerformancePadState.void && (offPulse || step % 16 === 1 || step % 16 === 9 || isAccentStep)) {
-    const acidChance = chance(0.12 + family.acidBiyon * 0.34 + resourceNorm * 0.05 + ReferenceMorphState.pulse * 0.028 + RdjGrowthState.rubber * 0.04 + PerformancePadState.repeat * 0.05 - RdjGrowthState.restraint * 0.02 - lowGuard * 0.12);
+    const acidChance = chance(0.12 + family.acidBiyon * 0.34 + resourceNorm * 0.05 + kits.technoKit * 0.045 + ReferenceMorphState.pulse * 0.028 + RdjGrowthState.rubber * 0.04 + PerformancePadState.repeat * 0.05 - kits.spaceKit * 0.04 - RdjGrowthState.restraint * 0.02 - lowGuard * 0.12);
     if (rand(acidChance)) {
       const acidTime = time + 0.014 + Math.random() * (0.012 + waveNorm * 0.012);
       const note = tonalRhymeLow(step, phaseOffset + 1);
@@ -7917,7 +8071,7 @@ function triggerTimbreFamilyResponse(step, time, context) {
   }
 
   if (glass && coldPulse > 0.28 && !PerformancePadState.void && (step % 16 === 5 || step % 16 === 12 || (isAccentStep && step % 2 === 1))) {
-    const pulseChance = chance(0.012 + coldPulse * 0.12 + brokenLogic * 0.04 - eventLoad * 0.04);
+    const pulseChance = chance(0.012 + coldPulse * 0.12 + brokenLogic * 0.04 + kits.technoKit * 0.025 - eventLoad * 0.04);
     if (rand(pulseChance)) {
       const root = tonalRhymeMid(step, phaseOffset + 6);
       const reply = tonalRhymeHigh(step, phaseOffset + 1);
@@ -8556,16 +8710,22 @@ function triggerPadHoldMinimums(step, time, context) {
   } = context;
   const gradient = GradientState;
   const genre = GenreBlendState;
+  const kits = GenreTimbreKitState;
+  const lowGuard = MixGovernorState.lowGuard || 0;
 
   if (PerformancePadState.drift && (step % 8 === 1 || step % 8 === 5)) {
     const note = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle) % TRANSPARENT_AIR_FRAGMENTS.length];
     const liftNote = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 3) % TRANSPARENT_AIR_FRAGMENTS.length];
     const pluckNote = ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + 5) % ORGANIC_PLUCK_FRAGMENTS.length];
     try {
-      glass.triggerAttackRelease(note, genre.techno > 0.34 ? "64n" : "32n", time + 0.018 + waveNorm * 0.02, clampValue(0.034 + observerNorm * 0.038 + creationNorm * 0.016 + genre.idm * 0.012 + gradient.chrome * 0.006, 0.028, 0.106));
-      glass.triggerAttackRelease(liftNote, "64n", time + 0.058 + waveNorm * 0.018 + genre.ambient * 0.012, clampValue(0.02 + observerNorm * 0.026 + genre.idm * 0.01 + gradient.memory * 0.006, 0.018, 0.074));
-      glass.triggerAttackRelease(pluckNote, "64n", time + 0.118 + waveNorm * 0.014, clampValue(0.018 + observerNorm * 0.024 + gradient.haze * 0.004, 0.016, 0.062));
-      texture.triggerAttackRelease("64n", time + 0.026, clampValue(0.026 + waveNorm * 0.034, 0.022, 0.074));
+      const driftDur = kits.technoKit > 0.42 || kits.idmKit > 0.5 ? "64n" : "32n";
+      glass.triggerAttackRelease(note, driftDur, time + 0.018 + waveNorm * (0.014 + kits.ambientKit * 0.014), clampValue(0.03 + observerNorm * 0.034 + creationNorm * 0.014 + kits.idmKit * 0.014 + kits.spaceKit * 0.008 + gradient.chrome * 0.006, 0.024, 0.1));
+      glass.triggerAttackRelease(liftNote, kits.ambientKit > kits.technoKit ? "32n" : "64n", time + 0.058 + waveNorm * 0.016 + kits.ambientKit * 0.018, clampValue(0.018 + observerNorm * 0.024 + kits.ambientKit * 0.012 + kits.idmKit * 0.008 + gradient.memory * 0.006, 0.016, 0.072));
+      if (kits.idmKit > 0.3 || kits.ambientKit > 0.34) glass.triggerAttackRelease(pluckNote, "64n", time + 0.118 + waveNorm * 0.014, clampValue(0.016 + observerNorm * 0.022 + kits.idmKit * 0.01 + gradient.haze * 0.004, 0.014, 0.06));
+      texture.triggerAttackRelease("64n", time + 0.026, clampValue(0.02 + waveNorm * 0.028 + kits.idmKit * 0.014 + kits.technoKit * 0.012, 0.018, 0.078));
+      if (pad && kits.ambientKit > 0.5 && step % 8 === 5 && rand(0.2 + kits.ambientKit * 0.22)) {
+        pad.triggerAttackRelease(randomHazeChord(), "1n", time + 0.045, clampValue(0.018 + kits.ambientKit * 0.03 + observerNorm * 0.012, 0.016, 0.058));
+      }
     } catch (error) {
       console.warn("[Music] drift hold failed:", error);
     }
@@ -8575,13 +8735,13 @@ function triggerPadHoldMinimums(step, time, context) {
     const note = GLASS_NOTES[(step + GrooveState.cycle) % GLASS_NOTES.length];
     const chipNote = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 1) % TRANSPARENT_AIR_FRAGMENTS.length];
     try {
-      glass.triggerAttackRelease(note, "64n", time + 0.012, clampValue(0.044 + energyNorm * 0.036 + genre.idm * 0.018 + genre.techno * 0.014 + gradient.micro * 0.008, 0.038, 0.112));
-      glass.triggerAttackRelease(note, "64n", time + 0.048, clampValue(0.032 + energyNorm * 0.028 + genre.techno * 0.012 + gradient.micro * 0.006, 0.026, 0.086));
-      glass.triggerAttackRelease(chipNote, "64n", time + 0.082, clampValue(0.018 + observerNorm * 0.024 + genre.idm * 0.008 + gradient.organic * 0.006, 0.016, 0.068));
-      if (genre.techno > 0.35 && rand(0.28 + genre.techno * 0.22)) {
-        glass.triggerAttackRelease(note, "64n", time + 0.116, clampValue(0.016 + genre.techno * 0.034, 0.014, 0.058));
+      glass.triggerAttackRelease(note, "64n", time + 0.012, clampValue(0.038 + energyNorm * 0.032 + kits.idmKit * 0.022 + kits.technoKit * 0.018 + gradient.micro * 0.008, 0.032, 0.106));
+      glass.triggerAttackRelease(note, "64n", time + 0.046 - kits.technoKit * 0.008, clampValue(0.026 + energyNorm * 0.024 + kits.technoKit * 0.018 + gradient.micro * 0.006, 0.022, 0.082));
+      if (kits.ambientKit < 0.58) glass.triggerAttackRelease(chipNote, "64n", time + 0.082, clampValue(0.016 + observerNorm * 0.02 + kits.idmKit * 0.012 + gradient.organic * 0.006, 0.014, 0.064));
+      if (kits.technoKit > 0.34 && rand(0.22 + kits.technoKit * 0.32)) {
+        glass.triggerAttackRelease(note, "64n", time + 0.112, clampValue(0.014 + kits.technoKit * 0.04, 0.012, 0.06));
       }
-      if (step % 8 === 6) hat.triggerAttackRelease("64n", time + 0.034, clampValue(0.042 + energyNorm * 0.038 + genre.techno * 0.026, 0.034, 0.116));
+      if (step % 8 === 6) hat.triggerAttackRelease("64n", time + 0.034, clampValue(0.036 + energyNorm * 0.034 + kits.technoKit * 0.036 + kits.idmKit * 0.018, 0.03, 0.118));
     } catch (error) {
       console.warn("[Music] repeat hold failed:", error);
     }
@@ -8589,12 +8749,13 @@ function triggerPadHoldMinimums(step, time, context) {
 
   if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep)) {
     try {
-      kick.triggerAttackRelease(tonalRhymeLow(step, -1), "16n", time + 0.006, clampValue(0.2 + energyNorm * 0.08 + genre.pressure * 0.032, 0.16, 0.36));
-      if (step % 8 === 0) {
-        bass.triggerAttackRelease(tonalRhymeSub(step, 1), "32n", time + 0.028, clampValue(0.07 + energyNorm * 0.045, 0.06, 0.14));
+      const bodySnap = clampValue(kits.pressureKit + kits.technoKit * 0.4 + kits.idmKit * 0.22 - kits.spaceKit * 0.24, 0, 1);
+      kick.triggerAttackRelease(tonalRhymeLow(step, -1), kits.ambientKit > 0.5 ? "32n" : "16n", time + 0.006, clampValue(0.14 + energyNorm * 0.058 + bodySnap * 0.074 - lowGuard * 0.05, 0.11, 0.31));
+      if (step % 8 === 0 && lowGuard < 0.64 && kits.spaceKit < 0.58) {
+        bass.triggerAttackRelease(tonalRhymeSub(step, 1), "32n", time + 0.028, clampValue(0.052 + energyNorm * 0.034 + kits.pressureKit * 0.018 - lowGuard * 0.028, 0.045, 0.125));
       }
       glass.triggerAttackRelease(ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + 2) % ORGANIC_PLUCK_FRAGMENTS.length], "64n", time + 0.036, clampValue(0.032 + creationNorm * 0.03 + gradient.organic * 0.008, 0.026, 0.088));
-      texture.triggerAttackRelease("64n", time + 0.018, clampValue(0.062 + creationNorm * 0.044 + genre.pressure * 0.024 + genre.techno * 0.012 + gradient.ghost * 0.01, 0.05, 0.136));
+      texture.triggerAttackRelease("64n", time + 0.018, clampValue(0.046 + creationNorm * 0.04 + kits.pressureKit * 0.034 + kits.technoKit * 0.018 + gradient.ghost * 0.01, 0.04, 0.126));
     } catch (error) {
       console.warn("[Music] punch hold failed:", error);
     }
@@ -8604,10 +8765,13 @@ function triggerPadHoldMinimums(step, time, context) {
     const note = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 2) % TRANSPARENT_AIR_FRAGMENTS.length];
     const tailNote = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 5) % TRANSPARENT_AIR_FRAGMENTS.length];
     try {
-      glass.triggerAttackRelease(note, "16n", time + 0.022, clampValue(0.034 + observerNorm * 0.042 + genre.techno * 0.01 + gradient.chrome * 0.008, 0.03, 0.104));
-      glass.triggerAttackRelease(tailNote, "32n", time + 0.112, clampValue(0.022 + observerNorm * 0.032 + gradient.haze * 0.006, 0.02, 0.074));
+      glass.triggerAttackRelease(note, kits.spaceKit > 0.5 ? "8n" : "16n", time + 0.022, clampValue(0.028 + observerNorm * 0.038 + kits.spaceKit * 0.018 + gradient.chrome * 0.008, 0.024, 0.1));
+      glass.triggerAttackRelease(tailNote, kits.technoKit > 0.44 ? "64n" : "32n", time + 0.112, clampValue(0.018 + observerNorm * 0.03 + kits.spaceKit * 0.014 + gradient.haze * 0.006, 0.016, 0.074));
+      if (kits.technoKit > 0.42 && texture && rand(0.18 + kits.technoKit * 0.18)) {
+        texture.triggerAttackRelease("64n", time + 0.052, clampValue(0.012 + kits.technoKit * 0.032, 0.01, 0.052));
+      }
       if (step % 8 === 4) {
-        pad.triggerAttackRelease(randomHazeChord(), "2n", time + 0.04, clampValue(0.03 + observerNorm * 0.026 + gradient.haze * 0.006, 0.026, 0.07));
+        pad.triggerAttackRelease(randomHazeChord(), kits.spaceKit > 0.52 ? "2n" : "1n", time + 0.04, clampValue(0.024 + observerNorm * 0.024 + kits.spaceKit * 0.018 + gradient.haze * 0.006, 0.02, 0.068));
       }
     } catch (error) {
       console.warn("[Music] void hold failed:", error);
@@ -8680,6 +8844,7 @@ function scheduleStep(time) {
   const circleNorm = clampValue(UCM_CUR.circle / 100, 0, 1);
   const isAccentStep = step === GrooveState.accentStep || (GrooveState.fillActive && (step % 4 === 3 || step % 8 === 6));
   const chaos = organicChaosAmount();
+  const preKit = GenreTimbreKitState;
   const humanShape = (role) => {
     const governor = typeof window !== "undefined" ? window.HumanGrooveGovernor : null;
     if (!governor || typeof governor.shapeStep !== "function") {
@@ -8700,7 +8865,7 @@ function scheduleStep(time) {
     }) || { timeOffsetSec: 0, probabilityScale: 1, velocityScale: 1, restLift: 0, densityScale: 1, grainScale: 1 };
   };
   const restShape = humanShape("rest");
-  const isRest = rand(clampValue(EngineParams.restProb + restShape.restLift + genre.ambient * 0.045 - genre.techno * 0.05 - genre.pressure * 0.025 + PerformancePadState.void * 0.18 - PerformancePadState.punch * 0.06, 0.018, PerformancePadState.void ? 0.64 : 0.5));
+  const isRest = rand(clampValue(EngineParams.restProb + restShape.restLift + genre.ambient * 0.045 + preKit.ambientKit * 0.03 + preKit.spaceKit * 0.035 - genre.techno * 0.05 - preKit.technoKit * 0.045 - preKit.idmKit * 0.024 - genre.pressure * 0.025 + PerformancePadState.void * 0.18 - PerformancePadState.punch * 0.06, 0.018, PerformancePadState.void ? 0.64 : 0.5));
   const grooveJitter = (step % 2 === 1 ? mapValue(waveNorm, 0, 1, 0, 0.014 + PerformancePadState.drift * 0.026 + chaos * 0.012) * GrooveState.microJitterScale : 0);
   const fillBoost = GrooveState.fillActive ? 0.14 : 0;
   const t = time + grooveJitter;
@@ -8708,7 +8873,9 @@ function scheduleStep(time) {
   const gradientParts = currentGradientParts();
   const gradient = updateReferenceGradient(gradientParts);
   updateReferenceDepth(gradientParts, gradient);
+  updateGenreTimbreKits(gradientParts, gradient, DepthState, genre);
   updateTimbreFamilyBlend(gradientParts, gradient, DepthState, genre);
+  const kits = GenreTimbreKitState;
   const lowGuard = MixGovernorState.lowGuard;
   const clarity = MixGovernorState.clarity;
   const voiceMicro = voiceGeneBias("micro");
@@ -8747,16 +8914,16 @@ function scheduleStep(time) {
 
   if (!isRest) {
     const arcDrumThin = albumArcDrumThin();
-    const droneDrumThin = EngineParams.bpm < 84 || energyNorm < 0.3 || genre.ambient > 0.44 || arcDrumThin > 0.42;
-    const droneDrumScale = droneDrumThin ? clampValue(0.12 + (energyNorm * 0.56) + genre.techno * 0.28 - arcDrumThin * 0.18, 0.06, 0.5) : 1;
+    const droneDrumThin = EngineParams.bpm < 84 || energyNorm < 0.3 || genre.ambient > 0.44 || kits.ambientKit > 0.58 || kits.spaceKit > 0.62 || arcDrumThin > 0.42;
+    const droneDrumScale = droneDrumThin ? clampValue(0.12 + (energyNorm * 0.54) + kits.technoKit * 0.34 + kits.idmKit * 0.12 - kits.spaceKit * 0.14 - arcDrumThin * 0.18, 0.06, 0.54) : 1;
     const kickShape = humanShape("kick");
     const hatShape = humanShape("hat");
     const bassShape = humanShape("bass");
     // Kick
-    const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + genre.pressure * 0.024 + PerformancePadState.punch * 0.055 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.14) * droneDrumScale * kickShape.probabilityScale);
+    const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + kits.pressureKit * 0.024 + PerformancePadState.punch * 0.052 - kits.spaceKit * 0.045 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16) * droneDrumScale * kickShape.probabilityScale);
     if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
       const kickTime = t + kickShape.timeOffsetSec;
-      kick.triggerAttackRelease(tonalRhymeLow(step, -1), droneDrumThin ? "32n" : "16n", kickTime + 0.004, clampValue((0.18 + energyNorm * 0.074 + genre.pressure * 0.02 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.026 - lowGuard * 0.045) * kickShape.velocityScale, 0.09, droneDrumThin ? 0.24 : 0.5));
+      kick.triggerAttackRelease(tonalRhymeLow(step, -1), droneDrumThin ? "32n" : "16n", kickTime + 0.004, clampValue((0.16 + energyNorm * 0.068 + kits.pressureKit * 0.024 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.024 - kits.spaceKit * 0.018 - lowGuard * 0.05) * kickShape.velocityScale, 0.08, droneDrumThin ? 0.22 : 0.44));
       if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep) && rand(0.46)) {
         try {
           texture.triggerAttackRelease("64n", kickTime + 0.012, clampValue((0.05 + energyNorm * 0.064) * kickShape.velocityScale, 0.038, 0.118));
@@ -8767,33 +8934,33 @@ function scheduleStep(time) {
     }
 
     // Hat
-    const hatChance = chance((EngineParams.hatProb + fillBoost + genre.techno * 0.12 + genre.idm * 0.045 + (isAccentStep ? 0.08 : 0) - genre.ambient * 0.045 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.34 : 1) * hatShape.probabilityScale);
+    const hatChance = chance((EngineParams.hatProb + fillBoost + kits.technoKit * 0.14 + kits.idmKit * 0.068 + (isAccentStep ? 0.08 : 0) - kits.ambientKit * 0.06 - kits.spaceKit * 0.05 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.34 : 1) * hatShape.probabilityScale);
     if ((patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2)) && rand(hatChance)) {
-      hat.triggerAttackRelease("32n", t + hatShape.timeOffsetSec, clampValue((0.086 + energyNorm * 0.108 + genre.techno * 0.038 + (isAccentStep ? 0.04 : 0)) * hatShape.velocityScale, 0.054, 0.23));
+      hat.triggerAttackRelease(kits.technoKit > 0.44 ? "64n" : "32n", t + hatShape.timeOffsetSec, clampValue((0.074 + energyNorm * 0.098 + kits.technoKit * 0.05 + kits.idmKit * 0.018 + (isAccentStep ? 0.04 : 0)) * hatShape.velocityScale, 0.048, 0.2));
     }
-    if (genre.techno > 0.28 && !PerformancePadState.void && (step % 4 === 1 || step % 4 === 3) && rand((0.06 + genre.techno * 0.16 + genre.idm * 0.04) * hatShape.densityScale)) {
+    if (kits.technoKit > 0.26 && !PerformancePadState.void && (step % 4 === 1 || step % 4 === 3) && rand((0.045 + kits.technoKit * 0.2 + kits.idmKit * 0.05 - kits.spaceKit * 0.035) * hatShape.densityScale)) {
       try {
-        hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.012 + Math.random() * (0.012 * hatShape.grainScale), clampValue((0.034 + genre.techno * 0.058 + energyNorm * 0.028) * hatShape.velocityScale, 0.03, 0.12));
+        hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.01 + Math.random() * (0.01 * hatShape.grainScale), clampValue((0.028 + kits.technoKit * 0.07 + energyNorm * 0.024) * hatShape.velocityScale, 0.024, 0.118));
         markMixEvent(0.05);
       } catch (error) {
         console.warn("[Music] techno grid hat failed:", error);
       }
     }
-    if (PerformancePadState.repeat && (step % 4 === 2 || isAccentStep || step % 8 === 5) && rand(0.68 * hatShape.densityScale)) {
+    if (PerformancePadState.repeat && (step % 4 === 2 || isAccentStep || step % 8 === 5) && rand(clampValue(0.42 + kits.idmKit * 0.22 + kits.technoKit * 0.26 - kits.ambientKit * 0.12, 0.18, 0.72) * hatShape.densityScale)) {
       try {
-        hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.018, clampValue((0.06 + energyNorm * 0.075) * hatShape.velocityScale, 0.045, 0.14));
-        if (rand(0.38 * hatShape.grainScale)) hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.036, clampValue((0.045 + energyNorm * 0.055) * hatShape.velocityScale, 0.035, 0.11));
+        hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.018, clampValue((0.05 + energyNorm * 0.064 + kits.technoKit * 0.024) * hatShape.velocityScale, 0.038, 0.132));
+        if (rand((0.28 + kits.technoKit * 0.16) * hatShape.grainScale)) hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.034, clampValue((0.036 + energyNorm * 0.048) * hatShape.velocityScale, 0.028, 0.102));
       } catch (error) {
         console.warn("[Music] repeat hat failed:", error);
       }
     }
 
     // Bass
-    const bassChance = chance((EngineParams.bassProb + genre.pressure * 0.018 + (GrooveState.fillActive && step % 8 === 6 ? 0.07 : 0) - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16) * (droneDrumThin ? 0.52 : 1) * bassShape.probabilityScale);
+    const bassChance = chance((EngineParams.bassProb + kits.pressureKit * 0.016 + (GrooveState.fillActive && step % 8 === 6 ? 0.055 : 0) - kits.spaceKit * 0.045 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.18) * (droneDrumThin ? 0.52 : 1) * bassShape.probabilityScale);
     if (patternAt(EngineParams.bassPattern, step) && rand(bassChance)) {
       const note = step % 8 === 0 ? bassRoot : bassNoteForStep(step);
       const bassTime = t + bassShape.timeOffsetSec;
-      bass.triggerAttackRelease(note, droneDrumThin ? "4n" : "8n", bassTime + 0.004, clampValue((0.14 + energyNorm * 0.092 + PerformancePadState.punch * 0.02 - lowGuard * 0.028) * bassShape.velocityScale, 0.085, droneDrumThin ? 0.2 : 0.33));
+      bass.triggerAttackRelease(note, droneDrumThin ? "4n" : "8n", bassTime + 0.004, clampValue((0.12 + energyNorm * 0.082 + kits.pressureKit * 0.018 + PerformancePadState.punch * 0.018 - kits.spaceKit * 0.018 - lowGuard * 0.034) * bassShape.velocityScale, 0.075, droneDrumThin ? 0.18 : 0.29));
       if (PerformancePadState.repeat && step % 8 === 0 && rand(0.1 * bassShape.densityScale)) {
         try {
           bass.triggerAttackRelease(note, "32n", bassTime + 0.04, clampValue((0.08 + energyNorm * 0.04) * bassShape.velocityScale, 0.06, 0.14));
@@ -8804,46 +8971,48 @@ function scheduleStep(time) {
     }
 
     // Pad（ゆっくり）
-    if (patternAt(EngineParams.padPattern, step) && rand(EngineParams.padProb)) {
-      const dur = EngineParams.mode === "ambient" || EngineParams.mode === "lofi" ? "2n" : "4n";
+    const padChance = chance(EngineParams.padProb + kits.ambientKit * 0.045 + kits.spaceKit * 0.035 - kits.technoKit * 0.07 - kits.pressureKit * 0.035);
+    if (patternAt(EngineParams.padPattern, step) && rand(padChance)) {
+      const dur = kits.technoKit > 0.44 ? "8n" : kits.idmKit > 0.48 ? "4n" : "2n";
       const chord = rand(0.38 + observerNorm * 0.22 + gradient.haze * 0.12 + gradient.chrome * 0.06 + PerformancePadState.void * 0.16) ? randomHazeChord() : randomChordForMode();
-      pad.triggerAttackRelease(chord, dur, t, clampValue(0.052 + circleNorm * 0.056 + observerNorm * 0.018 + gradient.haze * 0.006, 0.046, 0.132));
+      pad.triggerAttackRelease(chord, dur, t, clampValue(0.044 + circleNorm * 0.052 + observerNorm * 0.018 + kits.ambientKit * 0.014 + kits.spaceKit * 0.012 - kits.technoKit * 0.012 + gradient.haze * 0.006, 0.036, 0.122));
     }
   }
 
   const textureShape = humanShape("texture");
   const glassShape = humanShape("glass");
-  const textureProb = chance((mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + genre.techno * 0.042 + genre.idm * 0.018 + gradient.micro * 0.014 + gradient.ghost * 0.006 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceMicro * 0.01 + voicePulse * 0.006 + PerformancePadState.drift * 0.086 - genre.ambient * 0.018 - PerformancePadState.void * 0.01) * textureShape.probabilityScale);
+  const textureProb = chance((mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + kits.technoKit * 0.056 + kits.idmKit * 0.038 + kits.pressureKit * 0.02 + gradient.micro * 0.014 + gradient.ghost * 0.006 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceMicro * 0.01 + voicePulse * 0.006 + PerformancePadState.drift * 0.086 - kits.ambientKit * 0.028 - kits.spaceKit * 0.014 - PerformancePadState.void * 0.01) * textureShape.probabilityScale);
   if (rand(textureProb) && (step % 2 === 1 || isAccentStep)) {
     const textureTime = t + textureShape.timeOffsetSec + (isAccentStep ? 0.006 : 0.012);
-    texture.triggerAttackRelease("32n", textureTime, clampValue((0.028 + creationNorm * 0.088 + resourceNorm * 0.024 + gradient.micro * 0.006 + DepthState.gesture * 0.012 + PerformancePadState.punch * 0.014) * textureShape.velocityScale, 0.02, 0.13));
+    texture.triggerAttackRelease(kits.technoKit > 0.38 || kits.idmKit > 0.48 ? "64n" : "32n", textureTime, clampValue((0.024 + creationNorm * 0.078 + resourceNorm * 0.022 + kits.technoKit * 0.02 + kits.pressureKit * 0.018 + gradient.micro * 0.006 + DepthState.gesture * 0.012 + PerformancePadState.punch * 0.014) * textureShape.velocityScale, 0.018, 0.124));
   }
 
-  const particleProb = chance((0.03 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.022 + genre.idm * 0.034 + genre.techno * 0.018 + gradient.chrome * 0.014 + gradient.micro * 0.01 + DepthState.particle * 0.022 + clarity * 0.018 + voiceChrome * 0.011 + voiceOrganic * 0.008 + voiceRefrain * 0.006 + PerformancePadState.drift * 0.104 + PerformancePadState.repeat * 0.056 + PerformancePadState.void * 0.06 - genre.ambient * 0.012) * glassShape.probabilityScale);
+  const particleProb = chance((0.03 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.022 + kits.idmKit * 0.046 + kits.technoKit * 0.03 + kits.spaceKit * 0.018 + gradient.chrome * 0.014 + gradient.micro * 0.01 + DepthState.particle * 0.022 + clarity * 0.018 + voiceChrome * 0.011 + voiceOrganic * 0.008 + voiceRefrain * 0.006 + PerformancePadState.drift * 0.104 + PerformancePadState.repeat * 0.056 + PerformancePadState.void * 0.06 - kits.ambientKit * 0.016) * glassShape.probabilityScale);
   if (rand(particleProb) && (step % 4 === 1 || step % 8 === 5 || isAccentStep)) {
-    const note = voiceFragment(Math.floor(Math.random() * FIELD_MURK_FRAGMENTS.length), FIELD_MURK_FRAGMENTS);
+    const particlePool = kits.technoKit > 0.42 ? GLASS_NOTES : kits.spaceKit > 0.52 ? TRANSPARENT_AIR_FRAGMENTS : FIELD_MURK_FRAGMENTS;
+    const note = voiceFragment(Math.floor(Math.random() * particlePool.length), particlePool);
     try {
-      glass.triggerAttackRelease(note, "32n", t + glassShape.timeOffsetSec + 0.019 + Math.random() * (0.018 * glassShape.grainScale), clampValue((0.026 + creationNorm * 0.038 + gradient.micro * 0.008 + DepthState.particle * 0.008 + clarity * 0.008 + PerformancePadState.repeat * 0.038 + PerformancePadState.void * 0.018) * glassShape.velocityScale, 0.018, 0.112));
+      glass.triggerAttackRelease(note, kits.technoKit > 0.42 || kits.idmKit > 0.5 ? "64n" : "32n", t + glassShape.timeOffsetSec + 0.019 + Math.random() * (0.018 * glassShape.grainScale), clampValue((0.022 + creationNorm * 0.034 + kits.idmKit * 0.012 + kits.technoKit * 0.014 + kits.spaceKit * 0.008 + gradient.micro * 0.008 + DepthState.particle * 0.008 + clarity * 0.008 + PerformancePadState.repeat * 0.038 + PerformancePadState.void * 0.018) * glassShape.velocityScale, 0.016, 0.104));
     } catch (error) {
       console.warn("[Music] field particle failed:", error);
     }
   }
 
-  const airProb = chance(0.03 + observerNorm * 0.046 + circleNorm * 0.021 + gradient.chrome * 0.016 + gradient.haze * 0.009 + DepthState.tail * 0.026 + voiceChrome * 0.012 + voiceVoidTail * 0.016 + PerformancePadState.void * 0.14 + PerformancePadState.drift * 0.066 + PerformancePadState.repeat * 0.022);
+  const airProb = chance(0.03 + observerNorm * 0.046 + circleNorm * 0.021 + kits.spaceKit * 0.038 + kits.ambientKit * 0.024 + gradient.chrome * 0.016 + gradient.haze * 0.009 + DepthState.tail * 0.026 + voiceChrome * 0.012 + voiceVoidTail * 0.016 + PerformancePadState.void * 0.14 + PerformancePadState.drift * 0.066 + PerformancePadState.repeat * 0.022 - kits.pressureKit * 0.012);
   if (rand(airProb) && (step % 8 === 4 || step % 8 === 7)) {
     const note = voiceFragment(Math.floor(Math.random() * TRANSPARENT_AIR_FRAGMENTS.length), TRANSPARENT_AIR_FRAGMENTS);
     try {
-      glass.triggerAttackRelease(note, "32n", t + 0.024, clampValue(0.02 + observerNorm * 0.042 + gradient.chrome * 0.008 + DepthState.tail * 0.008 + PerformancePadState.void * 0.025 + PerformancePadState.repeat * 0.012, 0.014, 0.095));
+      glass.triggerAttackRelease(note, kits.spaceKit > 0.56 ? "16n" : "32n", t + 0.024, clampValue(0.018 + observerNorm * 0.04 + kits.spaceKit * 0.014 + gradient.chrome * 0.008 + DepthState.tail * 0.008 + PerformancePadState.void * 0.025 + PerformancePadState.repeat * 0.012, 0.012, 0.092));
     } catch (error) {
       console.warn("[Music] transparent air failed:", error);
     }
   }
 
-  const glassProb = chance((mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.022, 0.145) + GrooveState.glassLift + genre.idm * 0.028 + genre.techno * 0.014 + gradient.memory * 0.012 + gradient.chrome * 0.013 + gradient.micro * 0.009 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceChrome * 0.012 + voiceRefrain * 0.008 + PerformancePadState.drift * 0.088 + PerformancePadState.repeat * 0.068 + PerformancePadState.void * 0.038 - genre.ambient * 0.01) * glassShape.probabilityScale);
+  const glassProb = chance((mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.022, 0.145) + GrooveState.glassLift + kits.idmKit * 0.036 + kits.technoKit * 0.022 + kits.spaceKit * 0.018 + gradient.memory * 0.012 + gradient.chrome * 0.013 + gradient.micro * 0.009 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceChrome * 0.012 + voiceRefrain * 0.008 + PerformancePadState.drift * 0.088 + PerformancePadState.repeat * 0.068 + PerformancePadState.void * 0.038 - kits.ambientKit * 0.012) * glassShape.probabilityScale);
   if (rand(glassProb) && (isAccentStep || step % 8 === 3 || step % 16 === 11)) {
     const note = voiceFragment(Math.floor(Math.random() * GLASS_NOTES.length), GLASS_NOTES);
     const glassTime = t + glassShape.timeOffsetSec;
-    glass.triggerAttackRelease(note, "16n", glassTime + 0.015, clampValue((0.039 + energyNorm * 0.055 + observerNorm * 0.018 + PerformancePadState.void * 0.014) * glassShape.velocityScale, 0.028, 0.124));
+    glass.triggerAttackRelease(note, kits.technoKit > 0.48 ? "64n" : "16n", glassTime + 0.015, clampValue((0.034 + energyNorm * 0.046 + observerNorm * 0.018 + kits.idmKit * 0.012 + kits.spaceKit * 0.008 + PerformancePadState.void * 0.014) * glassShape.velocityScale, 0.024, 0.112));
     if (PerformancePadState.repeat && rand(0.72 * glassShape.grainScale)) {
       try {
         glass.triggerAttackRelease(note, "32n", glassTime + 0.024, clampValue((0.032 + energyNorm * 0.052) * glassShape.velocityScale, 0.024, 0.092));
