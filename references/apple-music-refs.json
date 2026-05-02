@@ -7,6 +7,37 @@
     "stores_metadata_only": true,
     "purpose": "production parameter translation, not copying"
   },
+  "production_axes": [
+    "timbre",
+    "rhythm",
+    "space",
+    "structure",
+    "gesture",
+    "wrongness",
+    "restraint"
+  ],
+  "runtime_translation": {
+    "style_morph_target": [
+      "haze",
+      "broken",
+      "pulse",
+      "void",
+      "chrome",
+      "organic"
+    ],
+    "rdj_growth_parameters": [
+      "toy",
+      "rubber",
+      "wrong",
+      "tender",
+      "edit",
+      "restraint"
+    ],
+    "notes": [
+      "artist/titleは分析メタデータであり、runtime symbolやpreset名へ直接使わない",
+      "referenceは既存のtimbre family、signature cells、human grooveへ翻訳する"
+    ]
+  },
   "references": [
     {
       "artist": "Aphex Twin",
@@ -199,6 +230,14 @@
         "gesture": [
           "“切る”より“ずらす”を優先",
           "連打ではなく流れるような変動"
+        ],
+        "wrongness": [
+          "崩しは拍の床ではなくtexture/glass側へ逃がす",
+          "均一な機械感を避け、短い編集痕として出す"
+        ],
+        "restraint": [
+          "局所崩しの後に休符を置く",
+          "eventLoadが高い場面では前景粒を抑える"
         ]
       },
       "implementation_notes": [
@@ -358,6 +397,14 @@
         "gesture": [
           "押した瞬間に分かる短い色変化",
           "ユーモラスだが過剰に派手にしない"
+        ],
+        "wrongness": [
+          "変な可愛さはtoy/rubberとして抽象化し、引用や再現にはしない",
+          "短いmicro editで少しだけ身体感を曲げる"
+        ],
+        "restraint": [
+          "明るい色は小節内の局所イベントに限定する",
+          "kick/bassの床と長いfield-murkを壊さない"
         ]
       },
       "implementation_notes": [
@@ -398,6 +445,14 @@
         "gesture": [
           "REPEAT padで短いtic/ticの存在感を出す",
           "DRIFT時はmicrotimingのズレとして翻訳する"
+        ],
+        "wrongness": [
+          "broken logicはmachine-gunではなく確率差と短い休止で作る",
+          "予測可能な骨格の周辺だけをずらす"
+        ],
+        "restraint": [
+          "局所的な異物感を出した後、shared cooldownで間を戻す",
+          "密度変化は低域ではなく中高域の粒に寄せる"
         ]
       },
       "implementation_notes": [

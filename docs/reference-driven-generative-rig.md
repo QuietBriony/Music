@@ -27,7 +27,7 @@ Music repoは「再生のための素材配布庫」ではなく、
 - `album`（確定できるもののみ）
 - `genre_hint`
 - `taste_notes`（主観）
-- `production_translation`（`timbre / rhythm / space / structure / gesture`）
+- `production_translation`（`timbre / rhythm / space / structure / gesture / wrongness / restraint`）
 - `implementation_notes`
 
 ### 保存しないもの
@@ -49,7 +49,7 @@ Music repoは「再生のための素材配布庫」ではなく、
 1. **reference intake**  
    参照曲を決め、`artist/title/album/taste`を簡易記録する。  
 2. **translate**  
-   `timbre / rhythm / space / structure / gesture` を要点だけ抽出する。  
+   `timbre / rhythm / space / structure / gesture / wrongness / restraint` を要点だけ抽出する。
 3. **preset idea**  
    抽出項目を `presets` または実験ノートへ落とし、最小差分で適用可能な形にする。  
 4. **m4a record**  
@@ -62,7 +62,7 @@ Music repoは「再生のための素材配布庫」ではなく、
 ## 5. Music / drum-floor / namima の関係
 
 - **Music**  
-  experimental IDM / field-murk / Aphex系の参照変換を継続する中核。  
+  experimental IDM / field-murk / playful wrongness 系の参照変換を継続する中核。
   ここは `runtime stability`, `master limiter`, `bassBus保護` を最優先にする。
 
 - **drum-floor**  
@@ -90,6 +90,7 @@ Music repoは「再生のための素材配布庫」ではなく、
   音響反映は別PRで行う。  
 - 録音レビューは実運用ループとして扱い、結果は `taste_notes` / `implementation_notes` に反映する。  
 - 参照が増えても、`Music` の既存再生安定性を崩さないことを優先。
+- Richard D. James / Autechre / Boards of Canada / Burial / OPN / FSOL 系の参照は、名前や曲想をruntimeへ移植せず、`toy`, `rubber`, `wrong`, `tender`, `edit`, `restraint` や `haze`, `broken`, `pulse`, `void`, `chrome`, `organic` へ抽象化して扱う。
 
 ## 8. 用語
 
