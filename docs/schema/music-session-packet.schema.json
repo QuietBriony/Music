@@ -1,0 +1,247 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://quietbriony.github.io/Music/docs/schema/music-session-packet.schema.json",
+  "title": "Music Session Packet",
+  "description": "Metadata-only conductor packet emitted by Music for orchestra routing.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "source_repo",
+    "created_at",
+    "session_id",
+    "mode",
+    "reference_gradient",
+    "ucm_state",
+    "output_state",
+    "performance_state",
+    "music_intent",
+    "routing",
+    "safety"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "source_repo": {
+      "const": "Music"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "minLength": 1,
+      "examples": [
+        "ambient",
+        "idm",
+        "techno",
+        "reference_gradient",
+        "self_running"
+      ]
+    },
+    "reference_gradient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["weights"],
+      "properties": {
+        "weights": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["haze", "memory", "micro", "ghost", "chrome", "organic"],
+          "properties": {
+            "haze": { "$ref": "#/definitions/unitInterval" },
+            "memory": { "$ref": "#/definitions/unitInterval" },
+            "micro": { "$ref": "#/definitions/unitInterval" },
+            "ghost": { "$ref": "#/definitions/unitInterval" },
+            "chrome": { "$ref": "#/definitions/unitInterval" },
+            "organic": { "$ref": "#/definitions/unitInterval" }
+          }
+        }
+      }
+    },
+    "ucm_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "energy",
+        "wave",
+        "mind",
+        "creation",
+        "void",
+        "circle",
+        "body",
+        "resource",
+        "observer"
+      ],
+      "properties": {
+        "energy": { "$ref": "#/definitions/percent100" },
+        "wave": { "$ref": "#/definitions/percent100" },
+        "mind": { "$ref": "#/definitions/percent100" },
+        "creation": { "$ref": "#/definitions/percent100" },
+        "void": { "$ref": "#/definitions/percent100" },
+        "circle": { "$ref": "#/definitions/percent100" },
+        "body": { "$ref": "#/definitions/percent100" },
+        "resource": { "$ref": "#/definitions/percent100" },
+        "observer": { "$ref": "#/definitions/percent100" }
+      }
+    },
+    "output_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["output_level", "recorder_duration"],
+      "properties": {
+        "output_level": { "$ref": "#/definitions/percent100" },
+        "recorder_duration": {
+          "type": "number",
+          "minimum": 0
+        },
+        "review_boost": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        }
+      }
+    },
+    "performance_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active_pad",
+        "recent_pads",
+        "manual_influence_active",
+        "automix_enabled"
+      ],
+      "properties": {
+        "active_pad": {
+          "type": ["string", "null"]
+        },
+        "recent_pads": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "manual_influence_active": {
+          "type": "boolean"
+        },
+        "automix_enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "music_intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timbre", "rhythm", "space", "structure", "gesture", "safety"],
+      "properties": {
+        "timbre": { "$ref": "#/definitions/intentValue" },
+        "rhythm": { "$ref": "#/definitions/intentValue" },
+        "space": { "$ref": "#/definitions/intentValue" },
+        "structure": { "$ref": "#/definitions/intentValue" },
+        "gesture": { "$ref": "#/definitions/intentValue" },
+        "safety": { "$ref": "#/definitions/intentValue" }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["drum_floor", "namima", "openclaw"],
+      "properties": {
+        "drum_floor": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["enabled", "groove_intent", "density", "pressure", "section"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "groove_intent": { "$ref": "#/definitions/intentValue" },
+            "density": { "$ref": "#/definitions/unitInterval" },
+            "pressure": { "$ref": "#/definitions/unitInterval" },
+            "section": { "type": "string" }
+          }
+        },
+        "namima": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "enabled",
+            "mood_intent",
+            "family_safe",
+            "water_motion",
+            "brightness"
+          ],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "mood_intent": { "$ref": "#/definitions/intentValue" },
+            "family_safe": { "type": "boolean" },
+            "water_motion": { "$ref": "#/definitions/unitInterval" },
+            "brightness": { "$ref": "#/definitions/unitInterval" }
+          }
+        },
+        "openclaw": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["enabled", "promotion_status", "human_review_required"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "promotion_status": {
+              "type": "string",
+              "examples": ["draft", "review", "approved", "rejected"]
+            },
+            "human_review_required": {
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stores_audio",
+        "stores_samples",
+        "stores_lyrics",
+        "metadata_only",
+        "human_review_required"
+      ],
+      "properties": {
+        "stores_audio": { "const": false },
+        "stores_samples": { "const": false },
+        "stores_lyrics": { "const": false },
+        "metadata_only": { "const": true },
+        "human_review_required": { "const": true }
+      }
+    }
+  },
+  "definitions": {
+    "unitInterval": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "percent100": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "intentValue": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number", "boolean", "null"]
+          }
+        }
+      ]
+    }
+  }
+}
