@@ -228,6 +228,34 @@
             },
             "human_review_required": {
               "const": true
+            },
+            "next_action": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "destination": {
+                  "type": "string",
+                  "examples": ["music", "chill", "drum_floor", "namima", "openclaw"]
+                },
+                "label": { "type": "string" },
+                "reason": { "type": "string" },
+                "action": { "type": "string" },
+                "confidence": { "$ref": "#/definitions/unitInterval" },
+                "manual_start_required": { "type": "boolean" },
+                "metadata_only": { "type": "boolean" }
+              }
+            },
+            "self_review": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "densityRisk": { "$ref": "#/definitions/unitInterval" },
+                "lowEndRisk": { "$ref": "#/definitions/unitInterval" },
+                "brightnessRisk": { "$ref": "#/definitions/unitInterval" },
+                "restraintScore": { "$ref": "#/definitions/unitInterval" },
+                "referenceFit": { "$ref": "#/definitions/unitInterval" },
+                "nextSuggestion": { "type": "string" }
+              }
             }
           }
         }
