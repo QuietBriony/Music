@@ -661,6 +661,7 @@ const ProducerHabitState = {
     beautifulRestraint: 0.5
   }
 };
+let selfReviewMeter = null;
 const SignatureCellState = {
   phrase: 0,
   phraseCycles: 6,
@@ -2719,12 +2720,14 @@ function producerHabitRiskSnapshot() {
   const signatureDebt = SignatureCellState.silenceDebt || 0;
   const eventLoad = MixGovernorState.eventLoad || 0;
   const lowGuard = MixGovernorState.lowGuard || 0;
+  const meter = selfReviewMeterNormalized();
   const density = clampValue(
     eventLoad * 0.38 +
       (human.density || 0) * 0.18 +
       (human.grain || 0) * 0.08 +
       (human.collapse || 0) * 0.13 +
-      signatureDebt * 0.17 -
+      signatureDebt * 0.17 +
+      meter * 0.05 -
       (human.repair || 0) * 0.12 -
       ReferenceMorphState.restraint * 0.05,
     0,
@@ -2735,7 +2738,8 @@ function producerHabitRiskSnapshot() {
       ReferenceMorphState.chrome * 0.2 +
       ReferenceMorphState.pulse * 0.18 +
       (DepthState.particle || 0) * 0.16 +
-      acidPerformanceAmount() * 0.08 -
+      acidPerformanceAmount() * 0.08 +
+      meter * 0.04 -
       GenreTimbreKitState.spaceKit * 0.08 -
       ReferenceMorphState.restraint * 0.06,
     0,
@@ -2746,7 +2750,8 @@ function producerHabitRiskSnapshot() {
       GenreTimbreKitState.pressureKit * 0.22 +
       (TimbreFamilyState.sub808 || 0) * 0.16 +
       (PerformancePadState.punch || 0) * 0.12 +
-      acidPerformanceAmount() * 0.08 -
+      acidPerformanceAmount() * 0.08 +
+      meter * 0.03 -
       GenreTimbreKitState.spaceKit * 0.12 -
       (DepthState.lowMidClean || 0) * 0.08,
     0,
@@ -2811,6 +2816,86 @@ function producerHabitsRuntimeState() {
     risk: ProducerHabitState.risk,
     riskSnapshot: { ...ProducerHabitState.riskSnapshot },
     habits: { ...ProducerHabitState.habits }
+  };
+}
+
+function selfReviewMeterNormalized() {
+  try {
+    if (!selfReviewMeter || typeof selfReviewMeter.getValue !== "function") return 0;
+    const value = Number(selfReviewMeter.getValue());
+    if (!Number.isFinite(value)) return 0;
+    if (value >= 0 && value <= 1.2) return clampValue(value, 0, 1);
+    return clampValue((value + 60) / 60, 0, 1);
+  } catch (error) {
+    return 0;
+  }
+}
+
+function selfReviewNumber(value, digits = 3) {
+  const safe = Number.isFinite(Number(value)) ? Number(value) : 0;
+  const factor = 10 ** digits;
+  return Math.round(clampValue(safe, 0, 1) * factor) / factor;
+}
+
+function musicSelfReviewRuntimeState() {
+  const risk = ProducerHabitState.riskSnapshot || producerHabitRiskSnapshot();
+  const habits = ProducerHabitState.habits || {};
+  const kits = genreTimbreKitRuntimeState();
+  const morph = referenceMorphRuntimeState();
+  const meter = selfReviewMeterNormalized();
+  const densityRisk = selfReviewNumber(Math.max(risk.density || 0, (MixGovernorState.eventLoad || 0) * 0.82 + meter * 0.08));
+  const lowEndRisk = selfReviewNumber(Math.max(risk.low || 0, (MixGovernorState.lowGuard || 0) * 0.72 + kits.pressureKit * 0.12));
+  const brightnessRisk = selfReviewNumber(Math.max(risk.bright || 0, morph.chrome * 0.24 + kits.technoKit * 0.18 + (MixGovernorState.clarity || 0) * 0.16));
+  const restraintScore = selfReviewNumber(
+    (ProducerHabitState.restraintBudget || 0) * 0.32 +
+      (habits.beautifulRestraint || 0) * 0.28 +
+      (RdjGrowthState.restraint || 0) * 0.2 +
+      (ReferenceMorphState.restraint || 0) * 0.2
+  );
+  const referenceFit = selfReviewNumber(
+    (GradientState.haze || 0) * 0.14 +
+      (GradientState.memory || 0) * 0.14 +
+      (GradientState.micro || 0) * 0.15 +
+      (GradientState.ghost || 0) * 0.13 +
+      (GradientState.chrome || 0) * 0.11 +
+      (GradientState.organic || 0) * 0.13 +
+      (RdjGrowthState.wrong || 0) * 0.08 +
+      (RdjGrowthState.tender || 0) * 0.06 +
+      restraintScore * 0.06
+  );
+
+  let nextSuggestion = "listen";
+  if (lowEndRisk > 0.72) nextSuggestion = "thin-low-end";
+  else if (densityRisk > 0.74) nextSuggestion = "add-space";
+  else if (brightnessRisk > 0.76) nextSuggestion = "soften-transients";
+  else if (referenceFit < 0.34 && ProducerHabitState.curiosity > 0.34) nextSuggestion = "let-reference-morph-speak";
+  else if (restraintScore > 0.72 && densityRisk < 0.46) nextSuggestion = "allow-one-signature";
+
+  return {
+    schema: "music.self-listening-review.v1",
+    densityRisk,
+    lowEndRisk,
+    brightnessRisk,
+    restraintScore,
+    referenceFit,
+    meter: selfReviewNumber(meter),
+    nextSuggestion,
+    referenceAxes: {
+      haze: selfReviewNumber(GradientState.haze || 0),
+      memory: selfReviewNumber(GradientState.memory || 0),
+      micro: selfReviewNumber(GradientState.micro || 0),
+      ghost: selfReviewNumber(GradientState.ghost || 0),
+      chrome: selfReviewNumber(GradientState.chrome || 0),
+      organic: selfReviewNumber(GradientState.organic || 0),
+      restraint: selfReviewNumber(restraintScore),
+      wrongness: selfReviewNumber(RdjGrowthState.wrong || 0),
+      space: selfReviewNumber(kits.spaceKit || 0)
+    },
+    safety: {
+      external_ai: false,
+      stores_audio: false,
+      metadata_only: true
+    }
   };
 }
 
@@ -3410,6 +3495,7 @@ function publishMusicRuntimeState() {
     referenceMorph: referenceMorphRuntimeState(),
     rdjGrowth: rdjGrowthRuntimeState(),
     producerHabits: producerHabitsRuntimeState(),
+    selfReview: musicSelfReviewRuntimeState(),
     humanGroove: typeof window.HumanGrooveGovernor?.getState === "function"
       ? window.HumanGrooveGovernor.getState()
       : (typeof window.HumanGrooveGovernor?.state === "object" ? { ...window.HumanGrooveGovernor.state } : null),
@@ -3674,6 +3760,60 @@ function buildMusicSessionPacket(options = {}) {
   };
 }
 
+const MUSIC_STACK_PACKET_STORAGE_KEY = "qb:music-stack:latest-packet:v1";
+const MUSIC_STACK_CHANNEL_NAME = "qb:music-stack:v1";
+
+function makeMusicStackPacketPayload(packet) {
+  return {
+    schema: "qb.music-stack.packet-sync.v1",
+    type: "music-session-packet",
+    source: "Music",
+    sent_at: new Date().toISOString(),
+    packet
+  };
+}
+
+function publishMusicStackPacketPayload(payload) {
+  if (typeof window === "undefined" || !payload?.packet) return { stored: false, broadcast: false };
+  let stored = false;
+  let broadcast = false;
+  try {
+    window.localStorage?.setItem(MUSIC_STACK_PACKET_STORAGE_KEY, JSON.stringify(payload));
+    stored = true;
+  } catch (error) {
+    console.warn("[Music] stack sync localStorage failed:", error);
+  }
+  try {
+    if (typeof window.BroadcastChannel === "function") {
+      const channel = new window.BroadcastChannel(MUSIC_STACK_CHANNEL_NAME);
+      channel.postMessage(payload);
+      channel.close();
+      broadcast = true;
+    }
+  } catch (error) {
+    console.warn("[Music] stack sync broadcast failed:", error);
+  }
+  try {
+    window.dispatchEvent(new CustomEvent("music-stack-packet-sync", { detail: payload }));
+  } catch (error) {}
+  return { stored, broadcast };
+}
+
+function syncMusicSessionPacket(options = {}) {
+  const packet = options.packet || buildMusicSessionPacket();
+  const payload = makeMusicStackPacketPayload(packet);
+  if (typeof window !== "undefined") {
+    window.MusicSessionPacket.last = packet;
+    window.MusicSessionPacket.lastSync = payload;
+  }
+  const result = publishMusicStackPacketPayload(payload);
+  setRecorderStatus(result.stored || result.broadcast ? "Packet synced to stack" : "Packet sync unavailable");
+  return {
+    ...result,
+    payload
+  };
+}
+
 function downloadMusicSessionPacket() {
   const packet = buildMusicSessionPacket();
   if (typeof window !== "undefined") {
@@ -3701,7 +3841,11 @@ function downloadMusicSessionPacket() {
 if (typeof window !== "undefined") {
   window.MusicSessionPacket = {
     build: buildMusicSessionPacket,
+    sync: syncMusicSessionPacket,
     download: downloadMusicSessionPacket,
+    storageKey: MUSIC_STACK_PACKET_STORAGE_KEY,
+    channelName: MUSIC_STACK_CHANNEL_NAME,
+    lastSync: null,
     last: null
   };
 }
@@ -5382,6 +5526,12 @@ try {
   masterLimiter.connect(backgroundPlaybackDestination);
 } catch (error) {
   console.warn("[Music] background playback tap unavailable:", error);
+}
+try {
+  selfReviewMeter = new Tone.Meter({ normalRange: true });
+  masterLimiter.connect(selfReviewMeter);
+} catch (error) {
+  console.warn("[Music] self-listening meter unavailable:", error);
 }
 
 // シンプルなリバーブ＆ディレイのみ
@@ -10013,7 +10163,9 @@ function attachUI() {
   }
 
   if (btnPacketJson) {
-    btnPacketJson.addEventListener("click", downloadMusicSessionPacket);
+    btnPacketJson.textContent = "SYNC";
+    btnPacketJson.title = "Sync metadata-only Music session packet to the stack";
+    btnPacketJson.addEventListener("click", syncMusicSessionPacket);
   }
 
   // Preset UI
