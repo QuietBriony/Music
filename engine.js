@@ -2899,6 +2899,86 @@ function musicSelfReviewRuntimeState() {
   };
 }
 
+const MUSIC_STACK_ROUTE_LABELS = Object.freeze({
+  music: "Musicで削る",
+  chill: "chillで聴く",
+  drum_floor: "drum-floorで押す",
+  namima: "namimaで空気に逃がす",
+  openclaw: "OpenClawで見る"
+});
+
+function musicStackRoutingRecommendation(input = {}) {
+  const review = input.selfReview || musicSelfReviewRuntimeState();
+  const parts = input.parts || currentGradientParts();
+  const gradient = input.gradient || {
+    haze: packetUnit(GradientState.haze),
+    memory: packetUnit(GradientState.memory),
+    micro: packetUnit(GradientState.micro),
+    ghost: packetUnit(GradientState.ghost),
+    chrome: packetUnit(GradientState.chrome),
+    organic: packetUnit(GradientState.organic)
+  };
+  const kits = input.kits || genreTimbreKitRuntimeState();
+  const activePads = input.activePads || activePerformancePadNames();
+  const density = packetUnit(input.density ?? (parts.energy * 0.3 + parts.resource * 0.28 + parts.creation * 0.18 + gradient.micro * 0.14 + kits.technoKit * 0.1));
+  const pressure = packetUnit(input.pressure ?? (parts.body * 0.26 + parts.energy * 0.24 + parts.resource * 0.16 + gradient.ghost * 0.16 + kits.pressureKit * 0.16 - parts.voidness * 0.12));
+  const namimaCalm = packetUnit(input.namimaCalm ?? (parts.circle * 0.3 + parts.observer * 0.28 + parts.voidness * 0.18 + gradient.haze * 0.14 + kits.spaceKit * 0.1));
+  const chillMemory = packetUnit(input.chillMemory ?? (gradient.memory * 0.28 + gradient.haze * 0.18 + parts.circle * 0.14 + parts.observer * 0.14 + kits.ambientKit * 0.12 + kits.spaceKit * 0.08));
+  const chillDrumSupport = packetUnit(input.chillDrumSupport ?? (density * 0.42 + gradient.ghost * 0.18 + kits.idmKit * 0.12 + kits.technoKit * 0.08 - parts.voidness * 0.18));
+
+  const scores = {
+    music: packetUnit(review.densityRisk * 0.34 + review.lowEndRisk * 0.28 + review.brightnessRisk * 0.22 + Math.max(0, 1 - review.restraintScore) * 0.08),
+    chill: packetUnit(chillMemory * 0.42 + gradient.memory * 0.18 + kits.ambientKit * 0.12 + parts.circle * 0.1 + Math.max(0, 1 - review.brightnessRisk) * 0.08),
+    drum_floor: packetUnit(density * 0.36 + chillDrumSupport * 0.16 + kits.technoKit * 0.16 + kits.idmKit * 0.12 + gradient.ghost * 0.1 - review.lowEndRisk * 0.16 - parts.voidness * 0.08),
+    namima: packetUnit(namimaCalm * 0.44 + parts.voidness * 0.16 + gradient.haze * 0.14 + kits.spaceKit * 0.16 + Math.max(0, 1 - review.densityRisk) * 0.05),
+    openclaw: packetUnit(Math.max(0, 1 - review.referenceFit) * 0.26 + (ProducerHabitState.curiosity || 0) * 0.12 + Math.max(review.densityRisk, review.lowEndRisk, review.brightnessRisk) * 0.08)
+  };
+
+  let destination = "chill";
+  let reason = "ピアノ/ベース/trioで質感を確認する段階。";
+  let action = "chill sessionを開いてSTART。DRUMSは必要な時だけ押す。";
+
+  if (review.lowEndRisk > 0.72 || review.densityRisk > 0.78 || review.brightnessRisk > 0.8) {
+    destination = "music";
+    reason = review.lowEndRisk > 0.72
+      ? "低域の圧が強いので、外へ流す前にMusic内で低域を削る。"
+      : review.densityRisk > 0.78
+        ? "密度が高いので、signature/cellより間を優先する。"
+        : "明るい粒が強いので、transientとchromeを柔らかくする。";
+    action = "Musicで聴き続け、VOID/DRIFTやOUTPUTを確認してからSYNCし直す。";
+  } else if (activePads.includes("void") || kits.spaceKit > 0.54 || scores.namima > Math.max(scores.chill, scores.drum_floor) + 0.05) {
+    destination = "namima";
+    reason = "空気、水面、透明な尾として受ける方が良い状態。";
+    action = "namimaを開いてTap to start。音は自動開始しない。";
+  } else if (scores.drum_floor > 0.48 && density > 0.3 && pressure < 0.72 && parts.voidness < 0.58) {
+    destination = "drum_floor";
+    reason = "中高域のrhythm cueをdrum-floorで確認できる状態。";
+    action = "drum-floorを開き、AI Live / 再生でpreviewする。";
+  } else if (scores.openclaw > 0.48 && review.referenceFit < 0.38) {
+    destination = "openclaw";
+    reason = "制作判断がまだ散っているので、OpenClawで見立てを確認する。";
+    action = "OpenClawを開き、Musicを磨く/各repoへ流すカードを見る。";
+  }
+
+  return {
+    schema: "music.stack-routing-review.v1",
+    destination,
+    label: MUSIC_STACK_ROUTE_LABELS[destination] || destination,
+    reason,
+    action,
+    confidence: selfReviewNumber(Math.max(scores[destination] || 0, 0.28), 2),
+    scores: {
+      music: selfReviewNumber(scores.music, 2),
+      chill: selfReviewNumber(scores.chill, 2),
+      drum_floor: selfReviewNumber(scores.drum_floor, 2),
+      namima: selfReviewNumber(scores.namima, 2),
+      openclaw: selfReviewNumber(scores.openclaw, 2)
+    },
+    manual_start_required: true,
+    metadata_only: true
+  };
+}
+
 function advanceReferenceMorph(context = {}) {
   if (ReferenceMorphState.lastCycle === GrooveState.cycle) return;
   ReferenceMorphState.lastCycle = GrooveState.cycle;
@@ -3496,6 +3576,7 @@ function publishMusicRuntimeState() {
     rdjGrowth: rdjGrowthRuntimeState(),
     producerHabits: producerHabitsRuntimeState(),
     selfReview: musicSelfReviewRuntimeState(),
+    stackRouting: musicStackRoutingRecommendation(),
     humanGroove: typeof window.HumanGrooveGovernor?.getState === "function"
       ? window.HumanGrooveGovernor.getState()
       : (typeof window.HumanGrooveGovernor?.state === "object" ? { ...window.HumanGrooveGovernor.state } : null),
@@ -3692,6 +3773,19 @@ function buildMusicSessionPacket(options = {}) {
     : gradient.chrome > 0.46 || activePads.includes("void")
       ? "rainy-lofi-room"
       : "piano-jazz-chill";
+  const selfReview = musicSelfReviewRuntimeState();
+  const stackRouting = musicStackRoutingRecommendation({
+    selfReview,
+    parts,
+    gradient,
+    kits,
+    activePads,
+    density,
+    pressure,
+    namimaCalm,
+    chillMemory,
+    chillDrumSupport
+  });
 
   return {
     version: 1,
@@ -3738,6 +3832,7 @@ function buildMusicSessionPacket(options = {}) {
         density,
         pressure,
         section,
+        review_reason: stackRouting.destination === "drum_floor" ? stackRouting.reason : "必要な時だけ手動previewするdrum候補。",
         review_only: true
       },
       namima: {
@@ -3751,6 +3846,7 @@ function buildMusicSessionPacket(options = {}) {
         family_safe: true,
         water_motion: packetUnit(parts.wave * 0.36 + parts.circle * 0.24 + gradient.organic * 0.2 + namimaCalm * 0.2),
         brightness: packetUnit(0.24 + gradient.chrome * 0.28 + parts.observer * 0.2 + (1 - pressure) * 0.14),
+        review_reason: stackRouting.destination === "namima" ? stackRouting.reason : "空気と水面に逃がせるsafe mood候補。",
         review_only: true
       },
       chill: {
@@ -3770,12 +3866,22 @@ function buildMusicSessionPacket(options = {}) {
         bass_activity: packetUnit(chillPhrase * 0.36 + chillTouch * 0.2 + (1 - chillRoom) * 0.14),
         drum_support: chillDrumSupport,
         section,
+        review_reason: stackRouting.destination === "chill" ? stackRouting.reason : "ピアノ/ベース/trioで聴けるsoft候補。",
         review_only: true
       },
       openclaw: {
         enabled: true,
         promotion_status: "draft",
         human_review_required: true,
+        next_action: stackRouting,
+        self_review: {
+          densityRisk: selfReview.densityRisk,
+          lowEndRisk: selfReview.lowEndRisk,
+          brightnessRisk: selfReview.brightnessRisk,
+          restraintScore: selfReview.restraintScore,
+          referenceFit: selfReview.referenceFit,
+          nextSuggestion: selfReview.nextSuggestion
+        },
         review_only: true
       }
     },
@@ -3836,7 +3942,11 @@ function syncMusicSessionPacket(options = {}) {
     window.MusicSessionPacket.lastSync = payload;
   }
   const result = publishMusicStackPacketPayload(payload);
-  setRecorderStatus(result.stored || result.broadcast ? "Packet synced to stack" : "Packet sync unavailable");
+  const route = packet.routing?.openclaw?.next_action;
+  const routeLabel = route?.label || route?.destination;
+  setRecorderStatus(result.stored || result.broadcast
+    ? `Packet synced${routeLabel ? ` -> ${routeLabel}` : " to stack"}`
+    : "Packet sync unavailable");
   return {
     ...result,
     payload
@@ -3872,6 +3982,7 @@ if (typeof window !== "undefined") {
     build: buildMusicSessionPacket,
     sync: syncMusicSessionPacket,
     download: downloadMusicSessionPacket,
+    recommend: musicStackRoutingRecommendation,
     storageKey: MUSIC_STACK_PACKET_STORAGE_KEY,
     channelName: MUSIC_STACK_CHANNEL_NAME,
     lastSync: null,
