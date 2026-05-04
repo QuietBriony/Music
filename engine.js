@@ -2907,6 +2907,14 @@ const MUSIC_STACK_ROUTE_LABELS = Object.freeze({
   openclaw: "OpenClawで見る"
 });
 
+const MUSIC_STACK_ROUTE_URLS = Object.freeze({
+  music: "https://quietbriony.github.io/Music/",
+  chill: "https://quietbriony.github.io/chill/session.html",
+  drum_floor: "https://quietbriony.github.io/drum-floor/",
+  namima: "https://quietbriony.github.io/namima/",
+  openclaw: "https://quietbriony.github.io/openclaw/"
+});
+
 function musicStackRoutingRecommendation(input = {}) {
   const review = input.selfReview || musicSelfReviewRuntimeState();
   const parts = input.parts || currentGradientParts();
@@ -3937,14 +3945,27 @@ function publishMusicStackPacketPayload(payload) {
 function updateMusicStackSyncHelp(route, result = {}) {
   if (typeof document === "undefined") return;
   const help = document.getElementById("sync_help");
-  if (!help) return;
+  const link = document.getElementById("sync_route_link");
+  const setRouteLink = (destination, label) => {
+    if (!link) return;
+    const key = String(destination || "openclaw").trim();
+    link.href = MUSIC_STACK_ROUTE_URLS[key] || MUSIC_STACK_ROUTE_URLS.openclaw;
+    link.textContent = label || "OPEN GUIDE";
+    link.removeAttribute("aria-disabled");
+  };
+  if (!help) {
+    setRouteLink(route?.destination, route?.label ? `OPEN ${route.label}` : "OPEN GUIDE");
+    return;
+  }
   if (!route) {
     help.textContent = "SYNCは音ではなく現在状態の共有。Musicが推奨行き先を添えて、drum-floor / namima / chill / OpenClawへ渡す。";
+    setRouteLink("openclaw", "OPEN GUIDE");
     return;
   }
   const delivered = result.stored || result.broadcast;
   const label = route.label || route.destination || "OpenClawで見る";
   const action = route.action || "OpenClawを開いて次の制作カードを見る。";
+  setRouteLink(route.destination, `OPEN ${label}`);
   help.textContent = delivered
     ? `次: ${label}。${action}`
     : `SYNCできませんでした。JSON fallbackかOpenClawでlatestを確認してください。`;
