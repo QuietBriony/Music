@@ -150,7 +150,7 @@
     "routing": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["drum_floor", "namima", "openclaw"],
+      "required": ["drum_floor", "namima", "chill", "openclaw"],
       "properties": {
         "drum_floor": {
           "type": "object",
@@ -180,6 +180,40 @@
             "family_safe": { "type": "boolean" },
             "water_motion": { "$ref": "#/definitions/unitInterval" },
             "brightness": { "$ref": "#/definitions/unitInterval" }
+          }
+        },
+        "chill": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "enabled",
+            "trio_intent",
+            "piano_memory",
+            "bass_activity",
+            "drum_support",
+            "section"
+          ],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "trio_intent": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "reference_id": { "type": "string" },
+                "touch": { "$ref": "#/definitions/unitInterval" },
+                "phrase": { "$ref": "#/definitions/unitInterval" },
+                "room": { "$ref": "#/definitions/unitInterval" },
+                "flow_on": { "type": "boolean" },
+                "bass_on": { "type": "boolean" },
+                "drums_suggested": { "type": "boolean" },
+                "pressure_target": { "type": "string" },
+                "review_only": { "type": "boolean" }
+              }
+            },
+            "piano_memory": { "$ref": "#/definitions/unitInterval" },
+            "bass_activity": { "$ref": "#/definitions/unitInterval" },
+            "drum_support": { "$ref": "#/definitions/unitInterval" },
+            "section": { "type": "string" }
           }
         },
         "openclaw": {
