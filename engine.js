@@ -3466,6 +3466,246 @@ function publishMusicRuntimeState() {
   maybeSendHazamaRuntimeFeedback(state);
 }
 
+function packetNumber(value, min = 0, max = 1, digits = 3) {
+  const numeric = Number(value);
+  const safe = Number.isFinite(numeric) ? numeric : min;
+  const factor = 10 ** digits;
+  return Math.round(clampValue(safe, min, max) * factor) / factor;
+}
+
+function packetPercent(value) {
+  return packetNumber(value, 0, 100, 1);
+}
+
+function packetUnit(value) {
+  return packetNumber(value, 0, 1, 3);
+}
+
+function dedupePacketLabels(labels) {
+  return Array.from(new Set(labels.filter(Boolean)));
+}
+
+function activePerformancePadNames() {
+  return ["drift", "repeat", "punch", "void"].filter((name) => PerformancePadState[name] > 0);
+}
+
+function isManualPerformanceInfluenceActive() {
+  const now = performanceNowMs();
+  const sliderActive = Object.keys(manualInfluenceUntil).some((key) => isManualInfluenceActive(key, now));
+  const padActive = now - (PerformancePadState.lastTouchAt || 0) < MANUAL_INFLUENCE_HOLD_MS;
+  return sliderActive || padActive;
+}
+
+function recorderDurationSeconds() {
+  if (RecorderState.recorder && RecorderState.recorder.state === "recording" && RecorderState.startedAt) {
+    return packetNumber((Date.now() - RecorderState.startedAt) / 1000, 0, 36000, 1);
+  }
+  return 0;
+}
+
+function dominantPacketKey(map, fallback = "ambient") {
+  const entries = Object.entries(map || {});
+  if (!entries.length) return fallback;
+  return entries.reduce((best, item) => (Number(item[1]) || 0) > (Number(best[1]) || 0) ? item : best, entries[0])[0] || fallback;
+}
+
+function packetSectionName(activePads) {
+  if (activePads.includes("void")) return "void";
+  if (activePads.includes("punch")) return "punch";
+  if (activePads.includes("repeat")) return "repeat";
+  if (activePads.includes("drift")) return "drift";
+  if (albumArcActive()) return String(currentAlbumArcChapter()?.name || "album_arc").toLowerCase();
+  return UCM.auto.enabled ? "self_running" : "manual";
+}
+
+function packetModeName() {
+  if (UCM.auto.enabled) return "self_running";
+  const morph = dominantReferenceMorphStyle();
+  if (morph && morph !== "haze") return "reference_gradient";
+  return EngineParams.mode || "ambient";
+}
+
+function packetIntentArrays(activePads, gradient, kits, parts) {
+  const dominantKit = dominantPacketKey(kits, "ambientKit");
+  const timbre = ["metadata-only"];
+  if (gradient.haze > 0.36 || kits.ambientKit > 0.44) timbre.push("haze-bed");
+  if (gradient.memory > 0.34) timbre.push("memory-point");
+  if (gradient.micro > 0.34 || kits.idmKit > 0.36) timbre.push("micro-particle");
+  if (gradient.ghost > 0.34 || kits.pressureKit > 0.34) timbre.push("ghost-pressure");
+  if (gradient.chrome > 0.36 || kits.spaceKit > 0.42) timbre.push("chrome-air");
+  if (gradient.organic > 0.34) timbre.push("organic-dust");
+
+  const rhythm = [];
+  if (kits.ambientKit > 0.48 || parts.energy < 0.3) rhythm.push("low-activity");
+  if (kits.idmKit > 0.34) rhythm.push("broken-repeat");
+  if (kits.technoKit > 0.34) rhythm.push("dry-grid");
+  if (kits.pressureKit > 0.34 || activePads.includes("punch")) rhythm.push("body-snap");
+  if (activePads.includes("repeat")) rhythm.push("manual-repeat");
+  if (!rhythm.length) rhythm.push("soft-pulse");
+
+  const space = [];
+  if (kits.spaceKit > 0.38 || activePads.includes("void")) space.push("transparent-tail");
+  if (gradient.haze > 0.4) space.push("wide-haze");
+  if (gradient.chrome > 0.38) space.push("clear-air");
+  if (parts.voidness > 0.52) space.push("void-room");
+  if (!space.length) space.push("room-safe");
+
+  const structure = [packetSectionName(activePads)];
+  if (UCM.auto.enabled) structure.push("automix");
+  if (albumArcActive()) structure.push("album-arc");
+  if (HazamaBridgeState.loaded) structure.push("hazama-follow");
+
+  const gesture = activePads.length ? activePads.map((name) => `pad-${name}`) : ["listen"];
+  if (dominantKit) gesture.push(`kit-${dominantKit.replace(/Kit$/, "")}`);
+
+  return {
+    timbre: dedupePacketLabels(timbre),
+    rhythm: dedupePacketLabels(rhythm),
+    space: dedupePacketLabels(space),
+    structure: dedupePacketLabels(structure),
+    gesture: dedupePacketLabels(gesture),
+    safety: ["metadata-only", "human-review-required", "no-audio", "no-samples", "no-lyrics"]
+  };
+}
+
+function makeMusicSessionId(date = new Date()) {
+  const stamp = date.toISOString().replace(/[-:.]/g, "").replace("T", "-").replace("Z", "");
+  const random = Math.random().toString(36).slice(2, 7);
+  return `music-${stamp}-${random}`;
+}
+
+function makeMusicSessionPacketFileName(sessionId) {
+  return `${sessionId || makeMusicSessionId()}.json`;
+}
+
+function buildMusicSessionPacket(options = {}) {
+  const createdAt = options.createdAt instanceof Date ? options.createdAt : new Date();
+  const parts = currentGradientParts();
+  const gradient = {
+    haze: packetUnit(GradientState.haze),
+    memory: packetUnit(GradientState.memory),
+    micro: packetUnit(GradientState.micro),
+    ghost: packetUnit(GradientState.ghost),
+    chrome: packetUnit(GradientState.chrome),
+    organic: packetUnit(GradientState.organic)
+  };
+  const kits = genreTimbreKitRuntimeState();
+  const activePads = activePerformancePadNames();
+  const activePad = activePads[0] || null;
+  const density = packetUnit(parts.energy * 0.3 + parts.resource * 0.28 + parts.creation * 0.18 + gradient.micro * 0.14 + kits.technoKit * 0.1);
+  const pressure = packetUnit(parts.body * 0.26 + parts.energy * 0.24 + parts.resource * 0.16 + gradient.ghost * 0.16 + kits.pressureKit * 0.16 - parts.voidness * 0.12);
+  const section = packetSectionName(activePads);
+  const namimaCalm = packetUnit(parts.circle * 0.3 + parts.observer * 0.28 + parts.voidness * 0.18 + gradient.haze * 0.14 + kits.spaceKit * 0.1);
+
+  return {
+    version: 1,
+    source_repo: "Music",
+    created_at: createdAt.toISOString(),
+    session_id: options.sessionId || makeMusicSessionId(createdAt),
+    mode: packetModeName(),
+    reference_gradient: {
+      weights: gradient
+    },
+    ucm_state: {
+      energy: packetPercent(UCM_CUR.energy),
+      wave: packetPercent(UCM_CUR.wave),
+      mind: packetPercent(UCM_CUR.mind),
+      creation: packetPercent(UCM_CUR.creation),
+      void: packetPercent(UCM_CUR.void),
+      circle: packetPercent(UCM_CUR.circle),
+      body: packetPercent(UCM_CUR.body),
+      resource: packetPercent(UCM_CUR.resource),
+      observer: packetPercent(UCM_CUR.observer)
+    },
+    output_state: {
+      output_level: packetPercent(OutputState.level),
+      recorder_duration: recorderDurationSeconds(),
+      review_boost: packetUnit((MixGovernorState.eventLoad || 0) * 0.65 + (ProducerHabitState.curiosity || 0) * 0.35)
+    },
+    performance_state: {
+      active_pad: activePad,
+      recent_pads: activePads,
+      manual_influence_active: isManualPerformanceInfluenceActive(),
+      automix_enabled: !!UCM.auto.enabled
+    },
+    music_intent: packetIntentArrays(activePads, gradient, kits, parts),
+    routing: {
+      drum_floor: {
+        enabled: density > 0.18 && !activePads.includes("void"),
+        groove_intent: {
+          style: kits.technoKit > 0.42 ? "dry_grid" : kits.idmKit > 0.34 ? "broken_organic" : kits.pressureKit > 0.34 ? "ghost_pressure" : "soft_pocket",
+          ghost_notes: gradient.ghost,
+          micro: gradient.micro,
+          articulation: activePads.includes("punch") ? "body_snap" : activePads.includes("repeat") ? "dry_repeat" : "human_pocket",
+          review_only: true
+        },
+        density,
+        pressure,
+        section,
+        review_only: true
+      },
+      namima: {
+        enabled: namimaCalm > 0.16,
+        mood_intent: {
+          mood: parts.voidness > 0.54 ? "transparent_void" : gradient.haze > 0.42 ? "garden_haze" : "calm_water",
+          safe_energy_cap: packetUnit(0.38 + (1 - parts.energy) * 0.24 + parts.observer * 0.14),
+          air: packetUnit(gradient.chrome * 0.36 + kits.spaceKit * 0.36 + parts.observer * 0.28),
+          review_only: true
+        },
+        family_safe: true,
+        water_motion: packetUnit(parts.wave * 0.36 + parts.circle * 0.24 + gradient.organic * 0.2 + namimaCalm * 0.2),
+        brightness: packetUnit(0.24 + gradient.chrome * 0.28 + parts.observer * 0.2 + (1 - pressure) * 0.14),
+        review_only: true
+      },
+      openclaw: {
+        enabled: true,
+        promotion_status: "draft",
+        human_review_required: true,
+        review_only: true
+      }
+    },
+    safety: {
+      stores_audio: false,
+      stores_samples: false,
+      stores_lyrics: false,
+      metadata_only: true,
+      human_review_required: true
+    }
+  };
+}
+
+function downloadMusicSessionPacket() {
+  const packet = buildMusicSessionPacket();
+  if (typeof window !== "undefined") {
+    window.MusicSessionPacket.last = packet;
+  }
+  if (typeof document === "undefined" || typeof Blob === "undefined" || typeof URL === "undefined") return packet;
+
+  const json = `${JSON.stringify(packet, null, 2)}\n`;
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = makeMusicSessionPacketFileName(packet.session_id);
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => {
+    try { URL.revokeObjectURL(url); } catch (error) {}
+  }, 60000);
+  setRecorderStatus("Packet JSON downloaded");
+  return packet;
+}
+
+if (typeof window !== "undefined") {
+  window.MusicSessionPacket = {
+    build: buildMusicSessionPacket,
+    download: downloadMusicSessionPacket,
+    last: null
+  };
+}
+
 function feedbackNumber(value, digits = 3) {
   const safe = Number.isFinite(value) ? value : 0;
   const factor = 10 ** digits;
@@ -9668,6 +9908,7 @@ function attachUI() {
   const statusText = document.getElementById("status-text");
   const modeLabel  = document.getElementById("mode-label");
   const btnRec = document.getElementById("btn_rec");
+  const btnPacketJson = document.getElementById("btn_packet_json");
 
   if (btnStart) {
     btnStart.onclick = () => {
@@ -9769,6 +10010,10 @@ function attachUI() {
 
   if (btnRec) {
     btnRec.addEventListener("click", toggleLocalRecorder);
+  }
+
+  if (btnPacketJson) {
+    btnPacketJson.addEventListener("click", downloadMusicSessionPacket);
   }
 
   // Preset UI

@@ -620,7 +620,8 @@ body[data-playing="true"][data-auto="true"] #auto-block {
 }
 
 .recorder-button,
-.recorder-link {
+.recorder-link,
+.packet-button {
   min-width: 0;
   border: 1px solid rgba(93, 211, 220, 0.34);
   border-radius: 4px;
@@ -634,9 +635,15 @@ body[data-playing="true"][data-auto="true"] #auto-block {
   text-transform: uppercase;
 }
 
-.recorder-button {
+.recorder-button,
+.packet-button {
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.packet-button {
+  border-color: rgba(170, 220, 255, 0.34);
+  color: rgba(225, 244, 255, 0.8);
 }
 
 body[data-recording="true"] .recorder-button {
