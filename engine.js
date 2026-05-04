@@ -3934,6 +3934,22 @@ function publishMusicStackPacketPayload(payload) {
   return { stored, broadcast };
 }
 
+function updateMusicStackSyncHelp(route, result = {}) {
+  if (typeof document === "undefined") return;
+  const help = document.getElementById("sync_help");
+  if (!help) return;
+  if (!route) {
+    help.textContent = "SYNCは音ではなく現在状態の共有。Musicが推奨行き先を添えて、drum-floor / namima / chill / OpenClawへ渡す。";
+    return;
+  }
+  const delivered = result.stored || result.broadcast;
+  const label = route.label || route.destination || "OpenClawで見る";
+  const action = route.action || "OpenClawを開いて次の制作カードを見る。";
+  help.textContent = delivered
+    ? `次: ${label}。${action}`
+    : `SYNCできませんでした。JSON fallbackかOpenClawでlatestを確認してください。`;
+}
+
 function syncMusicSessionPacket(options = {}) {
   const packet = options.packet || buildMusicSessionPacket();
   const payload = makeMusicStackPacketPayload(packet);
@@ -3947,6 +3963,7 @@ function syncMusicSessionPacket(options = {}) {
   setRecorderStatus(result.stored || result.broadcast
     ? `Packet synced${routeLabel ? ` -> ${routeLabel}` : " to stack"}`
     : "Packet sync unavailable");
+  updateMusicStackSyncHelp(route, result);
   return {
     ...result,
     payload
@@ -10304,7 +10321,7 @@ function attachUI() {
 
   if (btnPacketJson) {
     btnPacketJson.textContent = "SYNC";
-    btnPacketJson.title = "Sync metadata-only Music session packet to the stack";
+    btnPacketJson.title = "Musicの現在状態を共有し、次に開く場所を表示します";
     btnPacketJson.addEventListener("click", syncMusicSessionPacket);
   }
 
