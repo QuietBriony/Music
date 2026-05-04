@@ -3682,6 +3682,16 @@ function buildMusicSessionPacket(options = {}) {
   const pressure = packetUnit(parts.body * 0.26 + parts.energy * 0.24 + parts.resource * 0.16 + gradient.ghost * 0.16 + kits.pressureKit * 0.16 - parts.voidness * 0.12);
   const section = packetSectionName(activePads);
   const namimaCalm = packetUnit(parts.circle * 0.3 + parts.observer * 0.28 + parts.voidness * 0.18 + gradient.haze * 0.14 + kits.spaceKit * 0.1);
+  const chillMemory = packetUnit(gradient.memory * 0.28 + gradient.haze * 0.18 + parts.circle * 0.14 + parts.observer * 0.14 + kits.ambientKit * 0.12 + kits.spaceKit * 0.08);
+  const chillTouch = packetUnit(0.14 + parts.energy * 0.24 + gradient.micro * 0.12 + kits.idmKit * 0.08 + parts.wave * 0.06 - parts.voidness * 0.12);
+  const chillPhrase = packetUnit(0.12 + parts.creation * 0.24 + gradient.memory * 0.18 + gradient.ghost * 0.08 + RdjGrowthState.tender * 0.06);
+  const chillRoom = packetUnit(0.52 + parts.voidness * 0.18 + parts.observer * 0.14 + gradient.haze * 0.1 + kits.spaceKit * 0.1 - parts.energy * 0.12);
+  const chillDrumSupport = packetUnit(density * 0.42 + gradient.ghost * 0.18 + kits.idmKit * 0.12 + kits.technoKit * 0.08 - parts.voidness * 0.18);
+  const chillReference = gradient.memory > 0.5 || activePads.includes("drift")
+    ? "soft-solo-drift"
+    : gradient.chrome > 0.46 || activePads.includes("void")
+      ? "rainy-lofi-room"
+      : "piano-jazz-chill";
 
   return {
     version: 1,
@@ -3741,6 +3751,25 @@ function buildMusicSessionPacket(options = {}) {
         family_safe: true,
         water_motion: packetUnit(parts.wave * 0.36 + parts.circle * 0.24 + gradient.organic * 0.2 + namimaCalm * 0.2),
         brightness: packetUnit(0.24 + gradient.chrome * 0.28 + parts.observer * 0.2 + (1 - pressure) * 0.14),
+        review_only: true
+      },
+      chill: {
+        enabled: chillMemory > 0.14,
+        trio_intent: {
+          reference_id: chillReference,
+          touch: chillTouch,
+          phrase: chillPhrase,
+          room: chillRoom,
+          flow_on: true,
+          bass_on: true,
+          drums_suggested: chillDrumSupport > 0.32 && !activePads.includes("void"),
+          pressure_target: pressure > 0.58 || parts.energy > 0.62 ? "safe" : "warm",
+          review_only: true
+        },
+        piano_memory: chillMemory,
+        bass_activity: packetUnit(chillPhrase * 0.36 + chillTouch * 0.2 + (1 - chillRoom) * 0.14),
+        drum_support: chillDrumSupport,
+        section,
         review_only: true
       },
       openclaw: {
