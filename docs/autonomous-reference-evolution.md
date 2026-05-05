@@ -21,6 +21,7 @@
 - 直接発音は増やさない。
 - 既存の `genreTimbreKits`, `timbre family`, `signatureCells`, `rdjGrowth`, `referenceMorph`, `humanGroove` に小さな bias を渡す。
 - `window.MusicRuntimeState.producerHabits` で `mode`, `habits`, `restraintBudget`, `risk`, `lastMutation` を確認できる。
+- `selfReview.governor` は、密度/低域/明るさリスクが高い時に音数を増やさず `lowMidClean`, `tail`, `silenceDebt`, `spaceKit` へ小さく逃がす。
 
 ## Risk Model
 
