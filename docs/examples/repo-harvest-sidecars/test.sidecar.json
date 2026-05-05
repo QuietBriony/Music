@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "source": {
+    "repo_full_name": "QuietBriony/test",
+    "repo_url": "https://github.com/QuietBriony/test",
+    "owner": "QuietBriony",
+    "default_branch": "main",
+    "visibility": "public",
+    "internal_or_external": "internal",
+    "license": null,
+    "inspected_at": "2026-05-05T00:00:00Z"
+  },
+  "classification": {
+    "category": "archive-harvest",
+    "current_role": "archive-candidate",
+    "target_repos": [
+      "Music",
+      "drum-floor",
+      "OpenClaw"
+    ],
+    "risk_level": "medium"
+  },
+  "evaluation": {
+    "has_audio_files": false,
+    "has_samples": true,
+    "has_model_weights": false,
+    "has_external_dependencies": true,
+    "has_github_actions": false,
+    "demo_available": true,
+    "browser_compatible": true,
+    "dependency_weight": "light",
+    "maintenance_status": "unknown"
+  },
+  "harvest": {
+    "useful_ideas": [
+      "Style Blend fader across ambient, lo-fi, goa, and hard techno archetypes",
+      "Archetype interpolation",
+      "16-step pattern probability blending",
+      "BPM, swing, and distortion transition model"
+    ],
+    "do_not_copy": [
+      "Sample fallback references",
+      "Hard techno defaults as Music baseline",
+      "Direct runtime copy into Music",
+      "Reference melodies, chords, arrangements, or recordings"
+    ],
+    "production_translation": {
+      "music": [
+        "Translate Style Blend into preset morph and genre timbre matrix",
+        "Use archetype interpolation only as production-axis blending"
+      ],
+      "drum_floor": [
+        "Translate probability interpolation into groove profile blending",
+        "Use style changes as drum density and articulation hints"
+      ],
+      "openclaw": [
+        "Track as harvest-complete source unless a future preset-morph PR needs it"
+      ]
+    },
+    "recommended_next_pr": "feat later: add Music preset morph exporter using production-axis metadata"
+  },
+  "routing": {
+    "music": {
+      "enabled": true,
+      "intent": "preset morph and genre timbre matrix inspiration"
+    },
+    "drum_floor": {
+      "enabled": true,
+      "intent": "pattern probability and groove profile blending inspiration"
+    },
+    "namima": {
+      "enabled": false,
+      "intent": "no direct public ambient routing"
+    },
+    "chill": {
+      "enabled": false,
+      "intent": "no direct chill runtime routing"
+    },
+    "openclaw": {
+      "enabled": true,
+      "intent": "archive-harvest tracking and future PR routing"
+    }
+  },
+  "safety": {
+    "metadata_only": true,
+    "human_review_required": true,
+    "no_direct_code_copy": true,
+    "no_audio_import": true,
+    "no_sample_import": true,
+    "no_dependency_import": true,
+    "no_workflow_change": true
+  },
+  "promotion": {
+    "status": "review-only",
+    "reviewer_notes": "Valuable morph idea, but keep it as abstract production-axis translation.",
+    "rollback_plan": "Drop this sidecar or revert the future preset-morph PR that consumes it."
+  }
+}

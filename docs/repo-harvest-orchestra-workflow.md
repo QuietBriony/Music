@@ -122,6 +122,10 @@ Use a sidecar whenever a repo looks useful:
    promotion.
 9. `promote or reject`: update the sidecar status and keep a rollback plan.
 
+Concrete internal examples live in
+`docs/examples/repo-harvest-sidecars/`. They are review-only metadata examples,
+not implementation approval.
+
 ## 7. Internal Repo Harvest Examples
 
 - `chill` Energy / Creation / Nature:

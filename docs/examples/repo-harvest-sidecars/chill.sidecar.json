@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "source": {
+    "repo_full_name": "QuietBriony/chill",
+    "repo_url": "https://github.com/QuietBriony/chill",
+    "owner": "QuietBriony",
+    "default_branch": "main",
+    "visibility": "public",
+    "internal_or_external": "internal",
+    "license": null,
+    "inspected_at": "2026-05-05T00:00:00Z"
+  },
+  "classification": {
+    "category": "ambient-surface",
+    "current_role": "harvest-only",
+    "target_repos": [
+      "Music",
+      "namima",
+      "chill",
+      "OpenClaw"
+    ],
+    "risk_level": "medium"
+  },
+  "evaluation": {
+    "has_audio_files": false,
+    "has_samples": true,
+    "has_model_weights": false,
+    "has_external_dependencies": true,
+    "has_github_actions": false,
+    "demo_available": true,
+    "browser_compatible": true,
+    "dependency_weight": "light",
+    "maintenance_status": "active"
+  },
+  "harvest": {
+    "useful_ideas": [
+      "Energy / Creation / Nature as simple macro controls",
+      "ACID toggle as a performative color switch",
+      "Piano-like calm layer as memory and softness reference",
+      "Compact public browser UI",
+      "Cyber-Zen mood as a light surface direction"
+    ],
+    "do_not_copy": [
+      "External piano sample URLs",
+      "Sample-based instrument implementation",
+      "Direct audio assets",
+      "Direct runtime code into Music engine"
+    ],
+    "production_translation": {
+      "music": [
+        "Translate macro controls into performance-mode groupings",
+        "Treat ACID as pressure color rather than genre clone",
+        "Recreate piano-like memory with synth or pluck sources only"
+      ],
+      "namima": [
+        "Use simplified public controls for family-safe ambient",
+        "Translate calm piano softness into water/garden mood"
+      ],
+      "chill": [
+        "Keep as possible light surface and live trio host"
+      ],
+      "openclaw": [
+        "Track chill as observe-first surface rather than auto-controlled runtime"
+      ]
+    },
+    "recommended_next_pr": "docs: define chill light-surface continuation decision"
+  },
+  "routing": {
+    "music": {
+      "enabled": true,
+      "intent": "macro-control and soft-memory production translation"
+    },
+    "drum_floor": {
+      "enabled": false,
+      "intent": "no direct drum routing"
+    },
+    "namima": {
+      "enabled": true,
+      "intent": "public-friendly simplified controls and calm mood"
+    },
+    "chill": {
+      "enabled": true,
+      "intent": "possible light surface continuation"
+    },
+    "openclaw": {
+      "enabled": true,
+      "intent": "observe-only card and human-gated continuation decision"
+    }
+  },
+  "safety": {
+    "metadata_only": true,
+    "human_review_required": true,
+    "no_direct_code_copy": true,
+    "no_audio_import": true,
+    "no_sample_import": true,
+    "no_dependency_import": true,
+    "no_workflow_change": true
+  },
+  "promotion": {
+    "status": "review-only",
+    "reviewer_notes": "Keep useful surface ideas, but do not import external samples or sample URLs.",
+    "rollback_plan": "Drop this sidecar or revert the future docs/runtime PR that consumes it."
+  }
+}
