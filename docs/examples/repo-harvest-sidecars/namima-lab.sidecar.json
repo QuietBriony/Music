@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "source": {
+    "repo_full_name": "QuietBriony/namima-lab",
+    "repo_url": "https://github.com/QuietBriony/namima-lab",
+    "owner": "QuietBriony",
+    "default_branch": "main",
+    "visibility": "public",
+    "internal_or_external": "internal",
+    "license": null,
+    "inspected_at": "2026-05-05T00:00:00Z"
+  },
+  "classification": {
+    "category": "ambient-surface",
+    "current_role": "staging",
+    "target_repos": [
+      "Music",
+      "namima",
+      "OpenClaw"
+    ],
+    "risk_level": "medium"
+  },
+  "evaluation": {
+    "has_audio_files": false,
+    "has_samples": false,
+    "has_model_weights": false,
+    "has_external_dependencies": true,
+    "has_github_actions": false,
+    "demo_available": true,
+    "browser_compatible": true,
+    "dependency_weight": "medium",
+    "maintenance_status": "unknown"
+  },
+  "harvest": {
+    "useful_ideas": [
+      "Touch ripple to audio energy",
+      "X-position note selection",
+      "Particle field as modulation source",
+      "PluckSynth-like organic texture",
+      "Patch selector for lab variants",
+      "iOS-safe start overlay"
+    ],
+    "do_not_copy": [
+      "Direct p5 runtime into Music",
+      "Uncontrolled visual dependency migration",
+      "Direct runtime code without review",
+      "Raw pointer streams or private gesture traces"
+    ],
+    "production_translation": {
+      "music": [
+        "Use ripple and x-position as gesture-to-note inspiration",
+        "Translate organic pluck into synth-based texture, not imported code"
+      ],
+      "namima": [
+        "Promote ripple as public ambient interaction model",
+        "Use particle energy as coarse mood modulation only"
+      ],
+      "openclaw": [
+        "Track as staging source for namima interaction PRs"
+      ]
+    },
+    "recommended_next_pr": "namima: add ripple interaction design from namima-lab"
+  },
+  "routing": {
+    "music": {
+      "enabled": true,
+      "intent": "gesture-to-note and organic texture inspiration"
+    },
+    "drum_floor": {
+      "enabled": false,
+      "intent": "no direct groove routing"
+    },
+    "namima": {
+      "enabled": true,
+      "intent": "primary public ripple interaction model"
+    },
+    "chill": {
+      "enabled": false,
+      "intent": "no direct chill routing"
+    },
+    "openclaw": {
+      "enabled": true,
+      "intent": "staging harvest card for namima interaction work"
+    }
+  },
+  "safety": {
+    "metadata_only": true,
+    "human_review_required": true,
+    "no_direct_code_copy": true,
+    "no_audio_import": true,
+    "no_sample_import": true,
+    "no_dependency_import": true,
+    "no_workflow_change": true
+  },
+  "promotion": {
+    "status": "review-only",
+    "reviewer_notes": "Best used as interaction and texture design reference for namima first.",
+    "rollback_plan": "Drop this sidecar or revert the future namima interaction PR that consumes it."
+  }
+}
