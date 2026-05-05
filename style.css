@@ -646,6 +646,12 @@ body[data-playing="true"][data-auto="true"] #auto-block {
   color: rgba(225, 244, 255, 0.8);
 }
 
+.mic-button.is-active {
+  border-color: rgba(164, 255, 204, 0.72);
+  background: rgba(8, 38, 24, 0.88);
+  color: rgba(206, 255, 226, 0.95);
+}
+
 .sync-next-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

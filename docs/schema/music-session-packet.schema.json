@@ -131,6 +131,27 @@
         },
         "automix_enabled": {
           "type": "boolean"
+        },
+        "mic_follow": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "status": { "type": "string" },
+            "input_level": { "$ref": "#/definitions/unitInterval" },
+            "onset_rate": { "$ref": "#/definitions/unitInterval" },
+            "rough_tempo": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 240
+            },
+            "density": { "$ref": "#/definitions/unitInterval" },
+            "stability": { "$ref": "#/definitions/unitInterval" },
+            "silence": { "$ref": "#/definitions/unitInterval" },
+            "brightness": { "$ref": "#/definitions/unitInterval" },
+            "metadata_only": { "const": true },
+            "stores_audio": { "const": false }
+          }
         }
       }
     },
