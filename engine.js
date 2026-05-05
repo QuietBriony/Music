@@ -3950,22 +3950,22 @@ function updateMusicStackSyncHelp(route, result = {}) {
     if (!link) return;
     const key = String(destination || "openclaw").trim();
     link.href = MUSIC_STACK_ROUTE_URLS[key] || MUSIC_STACK_ROUTE_URLS.openclaw;
-    link.textContent = label || "OPEN GUIDE";
+    link.textContent = label || "使い方を見る";
     link.removeAttribute("aria-disabled");
   };
   if (!help) {
-    setRouteLink(route?.destination, route?.label ? `OPEN ${route.label}` : "OPEN GUIDE");
+    setRouteLink(route?.destination, route?.label ? `開く: ${route.label}` : "使い方を見る");
     return;
   }
   if (!route) {
     help.textContent = "SYNCは音ではなく現在状態の共有。Musicが推奨行き先を添えて、drum-floor / namima / chill / OpenClawへ渡す。";
-    setRouteLink("openclaw", "OPEN GUIDE");
+    setRouteLink("openclaw", "使い方を見る");
     return;
   }
   const delivered = result.stored || result.broadcast;
   const label = route.label || route.destination || "OpenClawで見る";
   const action = route.action || "OpenClawを開いて次の制作カードを見る。";
-  setRouteLink(route.destination, `OPEN ${label}`);
+  setRouteLink(route.destination, `開く: ${label}`);
   help.textContent = delivered
     ? `次: ${label}。${action}`
     : `SYNCできませんでした。JSON fallbackかOpenClawでlatestを確認してください。`;
@@ -3982,8 +3982,8 @@ function syncMusicSessionPacket(options = {}) {
   const route = packet.routing?.openclaw?.next_action;
   const routeLabel = route?.label || route?.destination;
   setRecorderStatus(result.stored || result.broadcast
-    ? `Packet synced${routeLabel ? ` -> ${routeLabel}` : " to stack"}`
-    : "Packet sync unavailable");
+    ? `SYNC完了${routeLabel ? ` -> ${routeLabel}` : ""}`
+    : "SYNCできませんでした");
   updateMusicStackSyncHelp(route, result);
   return {
     ...result,
