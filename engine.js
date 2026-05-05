@@ -3864,11 +3864,14 @@ function buildMusicSessionPacket(options = {}) {
   const chillPhrase = packetUnit(0.12 + parts.creation * 0.24 + gradient.memory * 0.18 + gradient.ghost * 0.08 + RdjGrowthState.tender * 0.06);
   const chillRoom = packetUnit(0.52 + parts.voidness * 0.18 + parts.observer * 0.14 + gradient.haze * 0.1 + kits.spaceKit * 0.1 - parts.energy * 0.12);
   const chillDrumSupport = packetUnit(density * 0.42 + gradient.ghost * 0.18 + kits.idmKit * 0.12 + kits.technoKit * 0.08 - parts.voidness * 0.18);
-  const chillReference = gradient.memory > 0.5 || activePads.includes("drift")
+  const chillSoftMelody = gradient.memory > 0.42 && parts.creation > 0.32 && parts.voidness < 0.58 && !activePads.includes("void");
+  const chillReference = activePads.includes("drift") || (gradient.memory > 0.58 && parts.creation < 0.34)
     ? "soft-solo-drift"
     : gradient.chrome > 0.46 || activePads.includes("void")
       ? "rainy-lofi-room"
-      : "piano-jazz-chill";
+      : chillSoftMelody
+        ? "soft-melody-piano"
+        : "piano-jazz-chill";
   const selfReview = musicSelfReviewRuntimeState();
   const stackRouting = musicStackRoutingRecommendation({
     selfReview,
