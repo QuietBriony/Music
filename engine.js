@@ -2983,22 +2983,25 @@ function updateMicFollowReadout(force = false) {
   const onset = clampValue(Number(f.onsetRate) || 0, 0, 1);
   const tempo = Math.round(clampValue(Number(f.roughTempo) || 0, 0, 240));
   const active = !!MicFollowState.enabled;
+  const response = clampValue(level * 0.56 + density * 0.28 + onset * 0.34, 0, 1);
+  const reacting = active && response > 0.06;
   const error = String(MicFollowState.status || "").startsWith("error") || String(MicFollowState.status || "").startsWith("permission");
 
   if (panel) {
     panel.classList.toggle("is-active", active);
+    panel.classList.toggle("is-reacting", reacting);
     panel.classList.toggle("is-error", error);
   }
   if (label) {
     if (MicFollowState.pending) label.textContent = "MIC requesting";
-    else if (active) label.textContent = `MIC ${Math.round(level * 100)}%`;
+    else if (active) label.textContent = reacting ? `MIC ${Math.round(response * 100)}%` : "MIC listening";
     else if (error) label.textContent = "MIC error";
     else label.textContent = "MIC off";
   }
-  if (bar) bar.style.width = `${Math.round(clampValue(level * 0.72 + density * 0.28, 0, 1) * 100)}%`;
+  if (bar) bar.style.width = `${Math.round(response * 100)}%`;
   if (detail) {
     detail.textContent = active
-      ? `onset ${Math.round(onset * 100)} / ${tempo || "--"} bpm`
+      ? `lvl ${Math.round(level * 100)} / dens ${Math.round(density * 100)} / onset ${Math.round(onset * 100)} / ${tempo || "--"} bpm`
       : "local features only";
   }
 }
