@@ -661,6 +661,14 @@ const ProducerHabitState = {
     beautifulRestraint: 0.5
   }
 };
+const SelfReviewGovernorState = {
+  lastCycle: -1,
+  densityBrake: 0,
+  lowCleanup: 0,
+  airTail: 0,
+  transientSoftener: 0,
+  lastSuggestion: "listen"
+};
 let selfReviewMeter = null;
 const SignatureCellState = {
   phrase: 0,
@@ -2600,6 +2608,15 @@ function resetProducerHabits() {
   ProducerHabitState.habits.beautifulRestraint = 0.5;
 }
 
+function resetSelfReviewGovernor() {
+  SelfReviewGovernorState.lastCycle = -1;
+  SelfReviewGovernorState.densityBrake = 0;
+  SelfReviewGovernorState.lowCleanup = 0;
+  SelfReviewGovernorState.airTail = 0;
+  SelfReviewGovernorState.transientSoftener = 0;
+  SelfReviewGovernorState.lastSuggestion = "listen";
+}
+
 function resetSignatureCells() {
   SignatureCellState.phrase = 0;
   SignatureCellState.phraseCycles = 6;
@@ -2895,8 +2912,79 @@ function musicSelfReviewRuntimeState() {
       external_ai: false,
       stores_audio: false,
       metadata_only: true
-    }
+    },
+    governor: selfReviewGovernorRuntimeState()
   };
+}
+
+function selfReviewGovernorRuntimeState() {
+  return {
+    densityBrake: selfReviewNumber(SelfReviewGovernorState.densityBrake),
+    lowCleanup: selfReviewNumber(SelfReviewGovernorState.lowCleanup),
+    airTail: selfReviewNumber(SelfReviewGovernorState.airTail),
+    transientSoftener: selfReviewNumber(SelfReviewGovernorState.transientSoftener),
+    lastSuggestion: SelfReviewGovernorState.lastSuggestion
+  };
+}
+
+function applySelfReviewRestraintGovernor() {
+  if (SelfReviewGovernorState.lastCycle === GrooveState.cycle) return SelfReviewGovernorState;
+  SelfReviewGovernorState.lastCycle = GrooveState.cycle;
+
+  const review = musicSelfReviewRuntimeState();
+  const densityBrakeTarget = clampValue(
+    (review.densityRisk - 0.58) * 1.45 + (MixGovernorState.eventLoad - 0.62) * 0.72,
+    0,
+    1
+  );
+  const lowCleanupTarget = clampValue(
+    (review.lowEndRisk - 0.52) * 1.55 + GenreTimbreKitState.pressureKit * 0.18,
+    0,
+    1
+  );
+  const airTailTarget = clampValue(
+    (review.densityRisk - 0.48) * 0.56 + GenreTimbreKitState.spaceKit * 0.38 + unitValue(UCM_CUR.void) * 0.28,
+    0,
+    1
+  );
+  const transientSoftenerTarget = clampValue(
+    (review.brightnessRisk - 0.54) * 1.42 + GenreTimbreKitState.technoKit * 0.16,
+    0,
+    1
+  );
+
+  SelfReviewGovernorState.densityBrake = approachValue(SelfReviewGovernorState.densityBrake, densityBrakeTarget, 0.11);
+  SelfReviewGovernorState.lowCleanup = approachValue(SelfReviewGovernorState.lowCleanup, lowCleanupTarget, 0.1);
+  SelfReviewGovernorState.airTail = approachValue(SelfReviewGovernorState.airTail, airTailTarget, 0.08);
+  SelfReviewGovernorState.transientSoftener = approachValue(SelfReviewGovernorState.transientSoftener, transientSoftenerTarget, 0.1);
+  SelfReviewGovernorState.lastSuggestion = review.nextSuggestion;
+
+  DepthState.lowMidClean = clampValue(
+    DepthState.lowMidClean + SelfReviewGovernorState.lowCleanup * 0.026 + SelfReviewGovernorState.densityBrake * 0.012,
+    0,
+    1
+  );
+  DepthState.tail = clampValue(
+    DepthState.tail + SelfReviewGovernorState.airTail * 0.022 + SelfReviewGovernorState.lowCleanup * 0.008,
+    0,
+    1
+  );
+  SignatureCellState.silenceDebt = clampValue(
+    SignatureCellState.silenceDebt + SelfReviewGovernorState.densityBrake * 0.035 + SelfReviewGovernorState.transientSoftener * 0.018,
+    0,
+    1
+  );
+  GenreTimbreKitState.spaceKit = approachValue(
+    GenreTimbreKitState.spaceKit,
+    clampValue(GenreTimbreKitState.spaceKit + SelfReviewGovernorState.airTail * 0.04 + SelfReviewGovernorState.lowCleanup * 0.026, 0, 1),
+    0.045
+  );
+  GenreTimbreKitState.pressureKit = approachValue(
+    GenreTimbreKitState.pressureKit,
+    clampValue(GenreTimbreKitState.pressureKit - SelfReviewGovernorState.lowCleanup * 0.035, 0, 1),
+    0.04
+  );
+  return SelfReviewGovernorState;
 }
 
 const MUSIC_STACK_ROUTE_LABELS = Object.freeze({
@@ -7671,6 +7759,7 @@ function resetRuntimeCounters() {
   resetReferenceMorph();
   resetRdjGrowth();
   resetProducerHabits();
+  resetSelfReviewGovernor();
   resetSignatureCells();
   resetAlbumArc();
   if (typeof window !== "undefined" && typeof window.HumanGrooveGovernor?.reset === "function") {
@@ -7725,6 +7814,7 @@ function advanceGrooveStructure() {
   advanceReferenceMorph({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceRdjGrowth({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceProducerHabits({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
+  applySelfReviewRestraintGovernor();
   advanceSignatureCells({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   updateGenerativeGenome(currentGradientParts());
 
