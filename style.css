@@ -2752,3 +2752,141 @@ body {
     font-size: 13px;
   }
 }
+
+/* MIC FOLLOW visibility + transport fit pass */
+#transport-dock {
+  gap: 7px;
+}
+
+#status-line {
+  min-height: 34px;
+  margin: 0;
+  padding: 5px 7px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(76, 202, 209, 0.16);
+  background: rgba(2, 8, 12, 0.52);
+  text-align: left;
+}
+
+#status-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#recorder-tools {
+  margin-left: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(42px, auto);
+  align-items: center;
+  gap: 5px;
+}
+
+.recorder-button,
+.recorder-link,
+.packet-button {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mic-follow-panel {
+  min-height: 28px;
+  padding: 5px 7px;
+  display: grid;
+  grid-template-columns: auto minmax(54px, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(118, 178, 184, 0.16);
+  border-radius: 4px;
+  background: rgba(0, 8, 10, 0.42);
+  color: rgba(210, 238, 242, 0.66);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mic-follow-panel.is-active {
+  border-color: rgba(164, 255, 204, 0.48);
+  color: rgba(219, 255, 233, 0.88);
+  background:
+    linear-gradient(90deg, rgba(43, 255, 141, 0.08), transparent 48%),
+    rgba(0, 12, 9, 0.54);
+}
+
+.mic-follow-panel.is-error {
+  border-color: rgba(255, 145, 118, 0.52);
+  color: rgba(255, 214, 201, 0.9);
+}
+
+.mic-follow-meter {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid rgba(121, 183, 190, 0.18);
+  background: rgba(0, 0, 0, 0.34);
+}
+
+#mic_follow_bar {
+  width: 0%;
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(134, 255, 200, 0.72), rgba(140, 218, 255, 0.86));
+  transition: width 0.12s linear;
+}
+
+#mic_follow_detail {
+  white-space: nowrap;
+}
+
+@media (min-width: 881px) {
+  #transport {
+    margin-top: 0;
+  }
+
+  #transport button {
+    min-height: 36px;
+  }
+}
+
+@media (max-width: 640px) {
+  #ui-shell {
+    padding-bottom: calc(138px + env(safe-area-inset-bottom));
+  }
+
+  #transport-dock {
+    gap: 6px;
+  }
+
+  #status-line {
+    min-height: 42px;
+    padding: 5px 6px;
+    gap: 6px;
+  }
+
+  #recorder-tools {
+    grid-auto-columns: minmax(48px, auto);
+  }
+
+  .recorder-button,
+  .recorder-link,
+  .packet-button {
+    min-height: 34px;
+    padding: 6px 7px;
+  }
+
+  .mic-follow-panel {
+    grid-template-columns: auto minmax(42px, 1fr);
+  }
+
+  #mic_follow_detail {
+    display: none;
+  }
+}

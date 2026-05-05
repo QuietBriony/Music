@@ -682,6 +682,7 @@ const MicFollowState = {
   lastLevel: 0,
   onsetTimes: [],
   targetBias: {},
+  lastUiAt: 0,
   features: {
     inputLevel: 0,
     onsetRate: 0,
@@ -2963,6 +2964,43 @@ function updateMicFollowButton() {
       : "マイク入力を録音せずローカルfeaturesだけ解析";
   }
   if (document.body) document.body.dataset.micFollow = MicFollowState.enabled ? "true" : "false";
+  updateMicFollowReadout(true);
+}
+
+function updateMicFollowReadout(force = false) {
+  if (typeof document === "undefined") return;
+  const now = performanceNowMs();
+  if (!force && now - (MicFollowState.lastUiAt || 0) < 120) return;
+  MicFollowState.lastUiAt = now;
+
+  const panel = document.getElementById("mic_follow_panel");
+  const label = document.getElementById("mic_follow_label");
+  const bar = document.getElementById("mic_follow_bar");
+  const detail = document.getElementById("mic_follow_detail");
+  const f = MicFollowState.features || {};
+  const level = clampValue(Number(f.inputLevel) || 0, 0, 1);
+  const density = clampValue(Number(f.density) || 0, 0, 1);
+  const onset = clampValue(Number(f.onsetRate) || 0, 0, 1);
+  const tempo = Math.round(clampValue(Number(f.roughTempo) || 0, 0, 240));
+  const active = !!MicFollowState.enabled;
+  const error = String(MicFollowState.status || "").startsWith("error") || String(MicFollowState.status || "").startsWith("permission");
+
+  if (panel) {
+    panel.classList.toggle("is-active", active);
+    panel.classList.toggle("is-error", error);
+  }
+  if (label) {
+    if (MicFollowState.pending) label.textContent = "MIC requesting";
+    else if (active) label.textContent = `MIC ${Math.round(level * 100)}%`;
+    else if (error) label.textContent = "MIC error";
+    else label.textContent = "MIC off";
+  }
+  if (bar) bar.style.width = `${Math.round(clampValue(level * 0.72 + density * 0.28, 0, 1) * 100)}%`;
+  if (detail) {
+    detail.textContent = active
+      ? `onset ${Math.round(onset * 100)} / ${tempo || "--"} bpm`
+      : "local features only";
+  }
 }
 
 function estimateMicFollowTempo() {
@@ -3022,6 +3060,7 @@ function updateMicFollowAnalysis() {
   };
   MicFollowState.updatedAt = Date.now();
   MicFollowState.status = "local features only";
+  updateMicFollowReadout();
   return MicFollowState.features;
 }
 
@@ -3088,6 +3127,15 @@ function micFollowKitBias() {
     pressure: clampValue(f.inputLevel * 0.055 + f.density * 0.028 - f.silence * 0.03, 0, 0.07),
     space: quietStable * 0.07
   };
+}
+
+function micFollowGrooveShape() {
+  if (!MicFollowState.enabled) return { pulse: 0, particle: 0, space: 0 };
+  const f = MicFollowState.features || {};
+  const pulse = clampValue((f.inputLevel || 0) * 0.3 + (f.density || 0) * 0.35 + (f.onsetRate || 0) * 0.35, 0, 1);
+  const particle = clampValue((f.onsetRate || 0) * 0.48 + (f.density || 0) * 0.28 + (f.brightness || 0) * 0.24, 0, 1);
+  const space = clampValue((f.silence || 0) * 0.5 + (f.stability || 0) * 0.25 + (1 - (f.density || 0)) * 0.25, 0, 1);
+  return { pulse, particle, space };
 }
 
 function micFollowTempoBias(rawTarget = EngineParams.bpm || 80) {
@@ -8138,6 +8186,7 @@ function advanceGrooveStructure() {
   const phraseStep = GrooveState.cycle % 4;
   const density = (energyNorm + creationNorm + resourceNorm) / 3;
   const fillChance = mapValue(density, 0, 1, 0.04, 0.30);
+  const micShape = micFollowGrooveShape();
   advanceLongformArcPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceOddLogicDirectorPhrase();
@@ -8181,12 +8230,25 @@ function advanceGrooveStructure() {
     EngineParams.bassProb = clampValue(EngineParams.bassProb * (0.96 + shaped.density * 0.08 - shaped.repair * 0.07), PerformancePadState.void ? 0.035 : 0.06, 0.5);
   }
 
+  if (MicFollowState.enabled) {
+    EngineParams.restProb = clampValue(
+      EngineParams.restProb + micShape.space * 0.035 - micShape.pulse * 0.018,
+      0.018,
+      PerformancePadState.void ? 0.66 : 0.55
+    );
+    EngineParams.hatProb = clampValue(
+      EngineParams.hatProb * (1 + micShape.particle * 0.11 - micShape.space * 0.045),
+      PerformancePadState.void ? 0.06 : 0.1,
+      0.86
+    );
+  }
+
   GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
-  GrooveState.textureLift = GrooveState.fillActive ? 0.10 + creationNorm * 0.12 : creationNorm * 0.035;
-  GrooveState.glassLift = (phraseStep === 1 || phraseStep === 3) ? 0.04 + creationNorm * 0.08 : 0.015;
+  GrooveState.textureLift = clampValue((GrooveState.fillActive ? 0.10 + creationNorm * 0.12 : creationNorm * 0.035) + micShape.particle * 0.055, 0, 0.32);
+  GrooveState.glassLift = clampValue(((phraseStep === 1 || phraseStep === 3) ? 0.04 + creationNorm * 0.08 : 0.015) + micShape.particle * 0.035 + micShape.space * 0.014, 0, 0.28);
   GrooveState.accentStep = GLASS_ACCENT_STEPS[(GrooveState.cycle + Math.floor(waveNorm * 6)) % GLASS_ACCENT_STEPS.length];
   GrooveState.bassOffset = (GrooveState.cycle + Math.floor(UCM_CUR.mind / 18)) % 4;
-  GrooveState.microJitterScale = GrooveState.fillActive ? 1.4 : 0.7 + waveNorm * 0.7;
+  GrooveState.microJitterScale = clampValue((GrooveState.fillActive ? 1.4 : 0.7 + waveNorm * 0.7) + micShape.particle * 0.18 - micShape.space * 0.08, 0.52, 1.62);
 }
 
 function bassNoteForStep(step) {
