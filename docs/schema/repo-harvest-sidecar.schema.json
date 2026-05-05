@@ -1,0 +1,365 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://quietbriony.github.io/Music/docs/schema/repo-harvest-sidecar.schema.json",
+  "title": "Repo Harvest Sidecar",
+  "description": "Review-only metadata sidecar for harvesting external and internal repo ideas into the Music Stack Orchestra.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "source",
+    "classification",
+    "evaluation",
+    "harvest",
+    "routing",
+    "safety",
+    "promotion"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo_full_name",
+        "repo_url",
+        "owner",
+        "default_branch",
+        "visibility",
+        "internal_or_external",
+        "inspected_at"
+      ],
+      "properties": {
+        "repo_full_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repo_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "default_branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "public",
+            "private",
+            "local",
+            "unknown"
+          ]
+        },
+        "internal_or_external": {
+          "type": "string",
+          "enum": [
+            "internal",
+            "external"
+          ]
+        },
+        "license": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inspected_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "current_role",
+        "target_repos",
+        "risk_level"
+      ],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "music-engine",
+            "groove",
+            "ambient-surface",
+            "visual-reference",
+            "live-coding",
+            "ml-music",
+            "ui-surface",
+            "archive-harvest",
+            "orchestration"
+          ]
+        },
+        "current_role": {
+          "type": "string",
+          "enum": [
+            "active",
+            "staging",
+            "harvest-only",
+            "reference-only",
+            "archive-candidate",
+            "archived",
+            "external-candidate"
+          ]
+        },
+        "target_repos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Music",
+              "drum-floor",
+              "namima",
+              "chill",
+              "hazama",
+              "OpenClaw",
+              "Umbrel"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "has_audio_files",
+        "has_samples",
+        "has_model_weights",
+        "has_external_dependencies",
+        "has_github_actions",
+        "demo_available",
+        "browser_compatible",
+        "dependency_weight",
+        "maintenance_status"
+      ],
+      "properties": {
+        "has_audio_files": {
+          "type": "boolean"
+        },
+        "has_samples": {
+          "type": "boolean"
+        },
+        "has_model_weights": {
+          "type": "boolean"
+        },
+        "has_external_dependencies": {
+          "type": "boolean"
+        },
+        "has_github_actions": {
+          "type": "boolean"
+        },
+        "demo_available": {
+          "type": "boolean"
+        },
+        "browser_compatible": {
+          "type": "boolean"
+        },
+        "dependency_weight": {
+          "type": "string",
+          "enum": [
+            "none",
+            "light",
+            "medium",
+            "heavy",
+            "unknown"
+          ]
+        },
+        "maintenance_status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "stale",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "harvest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "useful_ideas",
+        "do_not_copy",
+        "production_translation"
+      ],
+      "properties": {
+        "useful_ideas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "do_not_copy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "production_translation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "music": {
+              "$ref": "#/definitions/stringArray"
+            },
+            "drum_floor": {
+              "$ref": "#/definitions/stringArray"
+            },
+            "namima": {
+              "$ref": "#/definitions/stringArray"
+            },
+            "chill": {
+              "$ref": "#/definitions/stringArray"
+            },
+            "hazama": {
+              "$ref": "#/definitions/stringArray"
+            },
+            "openclaw": {
+              "$ref": "#/definitions/stringArray"
+            }
+          }
+        },
+        "recommended_next_pr": {
+          "type": "string"
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "music": {
+          "$ref": "#/definitions/routeIntent"
+        },
+        "drum_floor": {
+          "$ref": "#/definitions/routeIntent"
+        },
+        "namima": {
+          "$ref": "#/definitions/routeIntent"
+        },
+        "chill": {
+          "$ref": "#/definitions/routeIntent"
+        },
+        "openclaw": {
+          "$ref": "#/definitions/routeIntent"
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metadata_only",
+        "human_review_required",
+        "no_direct_code_copy",
+        "no_audio_import",
+        "no_sample_import",
+        "no_dependency_import",
+        "no_workflow_change"
+      ],
+      "properties": {
+        "metadata_only": {
+          "type": "boolean",
+          "const": true
+        },
+        "human_review_required": {
+          "type": "boolean",
+          "const": true
+        },
+        "no_direct_code_copy": {
+          "type": "boolean",
+          "const": true
+        },
+        "no_audio_import": {
+          "type": "boolean",
+          "const": true
+        },
+        "no_sample_import": {
+          "type": "boolean",
+          "const": true
+        },
+        "no_dependency_import": {
+          "type": "boolean",
+          "const": true
+        },
+        "no_workflow_change": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reviewer_notes",
+        "rollback_plan"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "not-reviewed",
+            "review-only",
+            "approved-for-docs",
+            "approved-for-runtime-pr",
+            "rejected",
+            "archived"
+          ]
+        },
+        "reviewer_notes": {
+          "type": "string"
+        },
+        "rollback_plan": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "routeIntent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "intent"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "intent": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
