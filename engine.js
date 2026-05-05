@@ -670,6 +670,30 @@ const SelfReviewGovernorState = {
   lastSuggestion: "listen"
 };
 let selfReviewMeter = null;
+const MicFollowState = {
+  enabled: false,
+  pending: false,
+  supported: true,
+  status: "off",
+  stream: null,
+  source: null,
+  analyser: null,
+  buffer: null,
+  lastLevel: 0,
+  onsetTimes: [],
+  targetBias: {},
+  features: {
+    inputLevel: 0,
+    onsetRate: 0,
+    roughTempo: 0,
+    density: 0,
+    stability: 0,
+    silence: 1,
+    brightness: 0,
+    lastOnsetAt: 0
+  },
+  updatedAt: 0
+};
 const SignatureCellState = {
   phrase: 0,
   phraseCycles: 6,
@@ -2094,6 +2118,7 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
   const spaceHabit = producerHabitBias("transparentVoid");
   const rubberHabit = producerHabitBias("rubberEdit");
   const restraintHabit = producerHabitBias("restraint");
+  const micBias = micFollowKitBias();
 
   const ambientTarget = clampValue(
     (1 - energy) * 0.22 +
@@ -2108,7 +2133,8 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
       tenderHabit * 0.026 +
       spaceHabit * 0.024 +
       restraintHabit * 0.014 -
-      genre.techno * 0.06,
+      genre.techno * 0.06 +
+      micBias.ambient,
     0,
     1
   );
@@ -2125,7 +2151,8 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
       tenderHabit * 0.018 +
       gridHabit * 0.014 +
       rubberHabit * 0.028 -
-      eventLoad * 0.04,
+      eventLoad * 0.04 +
+      micBias.idm,
     0,
     1
   );
@@ -2143,7 +2170,8 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
       spaceHabit * 0.026 -
       restraintHabit * 0.018 -
       genre.ambient * 0.08 -
-      eventLoad * 0.03,
+      eventLoad * 0.03 +
+      micBias.techno,
     0,
     1
   );
@@ -2158,7 +2186,8 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
       pressureHabit * 0.04 -
       restraintHabit * 0.018 -
       voidness * 0.12 -
-      lowGuard * 0.14,
+      lowGuard * 0.14 +
+      micBias.pressure,
     0,
     1
   );
@@ -2173,7 +2202,8 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
       spaceHabit * 0.05 +
       restraintHabit * 0.018 -
       resource * 0.05 -
-      lowGuard * 0.05,
+      lowGuard * 0.05 +
+      micBias.space,
     0,
     1
   );
@@ -2237,7 +2267,7 @@ function updateDJTempo(parts, options = {}) {
     cultureRhythmBias("drumThin") * 8;
   const contour = Math.sin((GrooveState.cycle * 0.045) + (LongformArcState.stageIndex * 0.9)) * (1.2 + longformArcShape() * 2.4);
   const pressureLift = clampValue((body * 0.22) + (resource * 0.18) + (creation * 0.12) - (observer * 0.08) - (voidness * 0.08), -0.12, 0.36) * 8;
-  const target = resolvePerformanceTempoTarget(rawBpm + longformTempoBias() + albumArcTempoBias() + genreBias + cultureTempoBias + oddLogicTempoBias() + pressureLift + contour);
+  const target = resolvePerformanceTempoTarget(rawBpm + longformTempoBias() + albumArcTempoBias() + genreBias + cultureTempoBias + oddLogicTempoBias() + micFollowTempoBias(rawBpm) + pressureLift + contour);
   const targetStep = force ? 96 : 0.55 + Math.abs(DJTempoState.targetBpm - target) * 0.018;
   const bpmStep = force ? 96 : 0.42 + wave * 0.18 + genre.techno * 0.16;
 
@@ -2852,6 +2882,298 @@ function selfReviewNumber(value, digits = 3) {
   const safe = Number.isFinite(Number(value)) ? Number(value) : 0;
   const factor = 10 ** digits;
   return Math.round(clampValue(safe, 0, 1) * factor) / factor;
+}
+
+function micFollowNumber(value, digits = 3, min = 0, max = 1) {
+  const safe = Number.isFinite(Number(value)) ? Number(value) : 0;
+  const factor = 10 ** digits;
+  return Math.round(clampValue(safe, min, max) * factor) / factor;
+}
+
+function resetMicFollowFeatures(status = "off") {
+  MicFollowState.features = {
+    inputLevel: 0,
+    onsetRate: 0,
+    roughTempo: 0,
+    density: 0,
+    stability: 0,
+    silence: 1,
+    brightness: 0,
+    lastOnsetAt: 0
+  };
+  MicFollowState.lastLevel = 0;
+  MicFollowState.onsetTimes = [];
+  MicFollowState.updatedAt = Date.now();
+  MicFollowState.status = status;
+}
+
+function micFollowRuntimeState() {
+  const f = MicFollowState.features || {};
+  return {
+    schema: "music.mic-follow.v1",
+    enabled: !!MicFollowState.enabled,
+    pending: !!MicFollowState.pending,
+    supported: !!MicFollowState.supported,
+    status: MicFollowState.status,
+    inputLevel: micFollowNumber(f.inputLevel),
+    onsetRate: micFollowNumber(f.onsetRate),
+    roughTempo: Math.round(clampValue(Number(f.roughTempo) || 0, 0, 240)),
+    density: micFollowNumber(f.density),
+    stability: micFollowNumber(f.stability),
+    silence: micFollowNumber(f.silence),
+    brightness: micFollowNumber(f.brightness),
+    lastOnsetAt: Math.round(Number(f.lastOnsetAt) || 0),
+    updatedAt: MicFollowState.updatedAt || 0,
+    safety: {
+      stores_audio: false,
+      stores_samples: false,
+      stores_lyrics: false,
+      uploads_audio: false,
+      metadata_only: true
+    }
+  };
+}
+
+function micFollowPacketState() {
+  const state = micFollowRuntimeState();
+  return {
+    enabled: state.enabled,
+    status: state.status,
+    input_level: state.inputLevel,
+    onset_rate: state.onsetRate,
+    rough_tempo: state.roughTempo,
+    density: state.density,
+    stability: state.stability,
+    silence: state.silence,
+    brightness: state.brightness,
+    metadata_only: true,
+    stores_audio: false
+  };
+}
+
+function updateMicFollowButton() {
+  if (typeof document === "undefined") return;
+  const btn = document.getElementById("btn_mic_follow");
+  if (btn) {
+    btn.textContent = MicFollowState.pending ? "MIC..." : MicFollowState.enabled ? "MIC ON" : MicFollowState.status.startsWith("error") || MicFollowState.status.startsWith("permission") ? "MIC ERR" : "MIC";
+    btn.classList.toggle("is-active", !!MicFollowState.enabled);
+    btn.setAttribute("aria-pressed", MicFollowState.enabled ? "true" : "false");
+    btn.title = MicFollowState.enabled
+      ? "MIC FOLLOW ON: 録音せずローカルfeaturesだけ解析しています"
+      : "マイク入力を録音せずローカルfeaturesだけ解析";
+  }
+  if (document.body) document.body.dataset.micFollow = MicFollowState.enabled ? "true" : "false";
+}
+
+function estimateMicFollowTempo() {
+  if (MicFollowState.onsetTimes.length < 3) return 0;
+  const intervals = MicFollowState.onsetTimes
+    .slice(1)
+    .map((time, index) => time - MicFollowState.onsetTimes[index])
+    .filter((ms) => ms > 220 && ms < 1400);
+  if (!intervals.length) return 0;
+  const average = intervals.reduce((sum, ms) => sum + ms, 0) / intervals.length;
+  return Math.round(clampValue(60000 / average, 54, 190));
+}
+
+function updateMicFollowAnalysis() {
+  if (!MicFollowState.enabled || !MicFollowState.analyser || !MicFollowState.buffer) return MicFollowState.features;
+
+  try {
+    MicFollowState.analyser.getFloatTimeDomainData(MicFollowState.buffer);
+  } catch (error) {
+    MicFollowState.status = "analysis error";
+    updateMicFollowButton();
+    return MicFollowState.features;
+  }
+
+  let sum = 0;
+  let zeroCrossings = 0;
+  for (let i = 0; i < MicFollowState.buffer.length; i += 1) {
+    const sample = MicFollowState.buffer[i];
+    sum += sample * sample;
+    if (i > 0 && Math.sign(sample) !== Math.sign(MicFollowState.buffer[i - 1])) zeroCrossings += 1;
+  }
+
+  const rms = Math.sqrt(sum / MicFollowState.buffer.length);
+  const level = clampValue(rms * 8, 0, 1);
+  const now = performanceNowMs();
+  const onset = level > 0.08 && level - MicFollowState.lastLevel > 0.09;
+  if (onset) MicFollowState.onsetTimes.push(now);
+  MicFollowState.onsetTimes = MicFollowState.onsetTimes.filter((time) => now - time < 4000);
+
+  const onsetRate = clampValue(MicFollowState.onsetTimes.length / 14, 0, 1);
+  const roughTempo = estimateMicFollowTempo();
+  const density = clampValue(level * 0.55 + onsetRate * 0.45, 0, 1);
+  const stability = clampValue(1 - Math.abs(level - MicFollowState.lastLevel) * 2.2, 0, 1);
+  const silence = clampValue(1 - level * 3.6 - onsetRate * 0.7, 0, 1);
+  const brightness = clampValue((zeroCrossings / MicFollowState.buffer.length) * 3.2, 0, 1);
+
+  MicFollowState.lastLevel = level;
+  MicFollowState.features = {
+    inputLevel: level,
+    onsetRate,
+    roughTempo,
+    density,
+    stability,
+    silence,
+    brightness,
+    lastOnsetAt: MicFollowState.onsetTimes[MicFollowState.onsetTimes.length - 1] || 0
+  };
+  MicFollowState.updatedAt = Date.now();
+  MicFollowState.status = "local features only";
+  return MicFollowState.features;
+}
+
+function applyMicFollowBiasKey(key, desiredBias, step) {
+  if (!Object.prototype.hasOwnProperty.call(UCM_TARGET, key)) return;
+  const previous = Number(MicFollowState.targetBias[key]) || 0;
+  const next = approachValue(previous, clampValue(desiredBias, -18, 18), step);
+  const delta = next - previous;
+  if (Math.abs(delta) > 0.0001) {
+    UCM_TARGET[key] = clampValue((Number(UCM_TARGET[key]) || 0) + delta, 0, 100);
+  }
+  MicFollowState.targetBias[key] = next;
+}
+
+function releaseMicFollowTargetBias(force = false) {
+  const step = force ? 64 : 0.18;
+  for (const key of UCM_KEYS) {
+    const previous = Number(MicFollowState.targetBias[key]) || 0;
+    if (!previous) continue;
+    const next = force ? 0 : approachValue(previous, 0, step);
+    UCM_TARGET[key] = clampValue((Number(UCM_TARGET[key]) || 0) + (next - previous), 0, 100);
+    MicFollowState.targetBias[key] = next;
+  }
+}
+
+function applyMicFollowTargetBias(dt = 0.016) {
+  if (!MicFollowState.enabled) {
+    releaseMicFollowTargetBias(false);
+    return;
+  }
+
+  const f = updateMicFollowAnalysis();
+  const loudDense = clampValue(f.inputLevel * 0.38 + f.density * 0.34 + f.onsetRate * 0.28, 0, 1);
+  const quietStable = clampValue(f.silence * 0.54 + f.stability * 0.28 + (1 - f.density) * 0.18, 0, 1);
+  const particle = clampValue(f.onsetRate * 0.48 + f.density * 0.24 + f.brightness * 0.18 + f.inputLevel * 0.1, 0, 1);
+  const followScale = clampValue((UCM.auto.enabled ? 0.34 : 0.58) * (0.7 + f.stability * 0.3), 0.18, 0.7);
+  const step = clampValue(dt * 3.2, 0.04, 0.22);
+
+  const desired = {
+    energy: (loudDense * 11 - quietStable * 4) * followScale,
+    wave: (particle * 8 + f.stability * 2 - quietStable * 2) * followScale,
+    mind: (particle * 4 + quietStable * 2) * followScale,
+    creation: (particle * 8 + loudDense * 3 - quietStable * 2) * followScale,
+    void: (quietStable * 11 - loudDense * 5) * followScale,
+    circle: (quietStable * 7 - particle * 1.5) * followScale,
+    body: (loudDense * 6 - quietStable * 2.5) * followScale,
+    resource: (loudDense * 8 + particle * 4 - quietStable * 2) * followScale,
+    observer: (quietStable * 6 + f.stability * 3 - loudDense * 1.5) * followScale
+  };
+
+  for (const key of UCM_KEYS) applyMicFollowBiasKey(key, desired[key] || 0, step);
+}
+
+function micFollowKitBias() {
+  if (!MicFollowState.enabled) return { ambient: 0, idm: 0, techno: 0, pressure: 0, space: 0 };
+  const f = MicFollowState.features || {};
+  const loudDense = clampValue(f.inputLevel * 0.38 + f.density * 0.34 + f.onsetRate * 0.28, 0, 1);
+  const quietStable = clampValue(f.silence * 0.54 + f.stability * 0.28 + (1 - f.density) * 0.18, 0, 1);
+  const particle = clampValue(f.onsetRate * 0.5 + f.density * 0.24 + f.brightness * 0.2, 0, 1);
+  return {
+    ambient: quietStable * 0.06,
+    idm: particle * 0.07,
+    techno: loudDense * 0.045 + particle * 0.026,
+    pressure: clampValue(f.inputLevel * 0.055 + f.density * 0.028 - f.silence * 0.03, 0, 0.07),
+    space: quietStable * 0.07
+  };
+}
+
+function micFollowTempoBias(rawTarget = EngineParams.bpm || 80) {
+  if (!MicFollowState.enabled) return 0;
+  const f = MicFollowState.features || {};
+  if (!f.roughTempo || f.stability < 0.42 || f.onsetRate < 0.12) return 0;
+  const influence = clampValue(f.stability * 0.08 + f.onsetRate * 0.08 + f.density * 0.04, 0, 0.16);
+  return clampValue((f.roughTempo - rawTarget) * influence, -5.5, 5.5);
+}
+
+async function startMicFollow() {
+  if (MicFollowState.enabled || MicFollowState.pending) return MicFollowState.enabled;
+  MicFollowState.supported = !!navigator.mediaDevices?.getUserMedia;
+  if (!MicFollowState.supported) {
+    resetMicFollowFeatures("getUserMedia unsupported");
+    setRecorderStatus("MIC unavailable");
+    updateMicFollowButton();
+    return false;
+  }
+
+  MicFollowState.pending = true;
+  MicFollowState.status = "requesting permission";
+  updateMicFollowButton();
+  try {
+    await resumeAudioContext("mic-follow");
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+      video: false
+    });
+    const context = getNativeAudioContext();
+    if (!context || typeof context.createMediaStreamSource !== "function") throw new Error("AudioContext unavailable");
+    const source = context.createMediaStreamSource(stream);
+    const analyser = context.createAnalyser();
+    analyser.fftSize = 1024;
+    analyser.smoothingTimeConstant = 0.42;
+    const buffer = new Float32Array(analyser.fftSize);
+    source.connect(analyser);
+
+    Object.assign(MicFollowState, {
+      enabled: true,
+      pending: false,
+      status: "local features only",
+      stream,
+      source,
+      analyser,
+      buffer,
+      onsetTimes: [],
+      lastLevel: 0,
+      updatedAt: Date.now()
+    });
+    updateMicFollowAnalysis();
+    setRecorderStatus("MIC ON / local features only");
+    updateMicFollowButton();
+    publishMusicRuntimeState();
+    return true;
+  } catch (error) {
+    console.warn("[Music] mic follow start failed:", error);
+    stopMicFollow({ silent: true, releaseBias: true });
+    MicFollowState.pending = false;
+    MicFollowState.status = error && error.name === "NotAllowedError" ? "permission denied" : `error: ${error.message || "mic failed"}`;
+    setRecorderStatus("MIC ERR");
+    updateMicFollowButton();
+    publishMusicRuntimeState();
+    return false;
+  }
+}
+
+function stopMicFollow(options = {}) {
+  try { MicFollowState.source?.disconnect?.(); } catch (error) {}
+  try { MicFollowState.analyser?.disconnect?.(); } catch (error) {}
+  try { MicFollowState.stream?.getTracks?.().forEach((track) => track.stop()); } catch (error) {}
+  MicFollowState.enabled = false;
+  MicFollowState.pending = false;
+  MicFollowState.stream = null;
+  MicFollowState.source = null;
+  MicFollowState.analyser = null;
+  MicFollowState.buffer = null;
+  resetMicFollowFeatures("off");
+  if (options.releaseBias !== false) releaseMicFollowTargetBias(true);
+  if (!options.silent) setRecorderStatus("MIC OFF");
+  updateMicFollowButton();
+  publishMusicRuntimeState();
+}
+
+function toggleMicFollow() {
+  return MicFollowState.enabled || MicFollowState.pending ? stopMicFollow() : startMicFollow();
 }
 
 function musicSelfReviewRuntimeState() {
@@ -3672,6 +3994,7 @@ function publishMusicRuntimeState() {
     rdjGrowth: rdjGrowthRuntimeState(),
     producerHabits: producerHabitsRuntimeState(),
     selfReview: musicSelfReviewRuntimeState(),
+    micFollow: micFollowRuntimeState(),
     stackRouting: musicStackRoutingRecommendation(),
     humanGroove: typeof window.HumanGrooveGovernor?.getState === "function"
       ? window.HumanGrooveGovernor.getState()
@@ -3915,7 +4238,8 @@ function buildMusicSessionPacket(options = {}) {
       active_pad: activePad,
       recent_pads: activePads,
       manual_influence_active: isManualPerformanceInfluenceActive(),
-      automix_enabled: !!UCM.auto.enabled
+      automix_enabled: !!UCM.auto.enabled,
+      mic_follow: micFollowPacketState()
     },
     music_intent: packetIntentArrays(activePads, gradient, kits, parts),
     routing: {
@@ -4116,6 +4440,12 @@ if (typeof window !== "undefined") {
     channelName: MUSIC_STACK_CHANNEL_NAME,
     lastSync: null,
     last: null
+  };
+  window.MusicMicFollow = {
+    start: startMicFollow,
+    stop: stopMicFollow,
+    toggle: toggleMicFollow,
+    getState: micFollowRuntimeState
   };
 }
 
@@ -10329,6 +10659,7 @@ function attachUI() {
   const statusText = document.getElementById("status-text");
   const modeLabel  = document.getElementById("mode-label");
   const btnRec = document.getElementById("btn_rec");
+  const btnMicFollow = document.getElementById("btn_mic_follow");
   const btnPacketJson = document.getElementById("btn_packet_json");
 
   if (btnStart) {
@@ -10433,6 +10764,13 @@ function attachUI() {
     btnRec.addEventListener("click", toggleLocalRecorder);
   }
 
+  if (btnMicFollow) {
+    btnMicFollow.textContent = "MIC";
+    btnMicFollow.title = "マイク入力を録音せずローカルfeaturesだけ解析";
+    btnMicFollow.addEventListener("click", toggleMicFollow);
+    updateMicFollowButton();
+  }
+
   if (btnPacketJson) {
     btnPacketJson.textContent = "SYNC";
     btnPacketJson.title = "Musicの現在状態を共有し、次に開く場所を表示します";
@@ -10500,6 +10838,8 @@ window.addEventListener("DOMContentLoaded", () => {
     dt = Math.max(0.001, Math.min(dt, SMOOTH_DT_MAX_SEC));
     const a = 1 - Math.exp(-dt / UCM_SMOOTH_SEC);
 
+    applyMicFollowTargetBias(dt);
+
     // Smooth all UCM dimensions (keep 60Hz for visual smoothness)
     for(const k of UCM_KEYS){
       UCM_CUR[k] = UCM_CUR[k] + (UCM_TARGET[k] - UCM_CUR[k]) * a;
@@ -10562,6 +10902,10 @@ document.addEventListener("visibilitychange", () => {
     setBackgroundStatus("hidden");
   }
   updateMediaSessionPlaybackState();
+});
+
+window.addEventListener("pagehide", () => {
+  if (MicFollowState.enabled || MicFollowState.pending) stopMicFollow({ silent: true, releaseBias: true });
 });
 
 if (navigator.mediaDevices && typeof navigator.mediaDevices.addEventListener === "function") {
