@@ -3363,7 +3363,7 @@ function applySelfReviewRestraintGovernor() {
 const MUSIC_STACK_ROUTE_LABELS = Object.freeze({
   music: "Musicで削る",
   chill: "chillで聴く",
-  drum_floor: "drum-floorで押す",
+  drum_floor: "drum-floorで再生",
   namima: "namimaで空気に逃がす",
   openclaw: "OpenClawで見る"
 });
@@ -3422,7 +3422,7 @@ function musicStackRoutingRecommendation(input = {}) {
   } else if (scores.drum_floor > 0.48 && density > 0.3 && pressure < 0.72 && parts.voidness < 0.58) {
     destination = "drum_floor";
     reason = "中高域のrhythm cueをdrum-floorで確認できる状態。";
-    action = "drum-floorを開き、AI Live / 再生でpreviewする。";
+    action = "drum-floorを開き、再生でpreviewする。";
   } else if (scores.openclaw > 0.48 && review.referenceFit < 0.38) {
     destination = "openclaw";
     reason = "制作判断がまだ散っているので、OpenClawで見立てを確認する。";
