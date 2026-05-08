@@ -1,0 +1,181 @@
+/* =========================================
+   Claude FM mode — minimal overrides
+   Layered on top of style.css
+========================================= */
+
+#fm-shell {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(20px, 5vh, 48px);
+  text-align: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#fm-shell > * {
+  pointer-events: auto;
+}
+
+#fm-shell h1 {
+  font-size: clamp(28px, 4.6vh, 44px);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  margin: 0 0 4px;
+  color: var(--text-main);
+  text-shadow: 0 0 24px rgba(125, 240, 212, 0.18);
+}
+
+#fm-shell .fm-tagline {
+  font-size: 12px;
+  letter-spacing: 0.32em;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  margin: 0 0 clamp(28px, 5vh, 48px);
+  opacity: 0.78;
+}
+
+#fm_play {
+  appearance: none;
+  background: rgba(8, 18, 35, 0.55);
+  border: 1.5px solid var(--panel-border);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 16px;
+  letter-spacing: 0.36em;
+  padding: 22px 56px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-width: 220px;
+  min-height: 64px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: border-color 0.4s, box-shadow 0.4s, background 0.4s, transform 0.15s;
+  box-shadow: var(--shadow-soft);
+}
+
+#fm_play:hover {
+  border-color: var(--accent-soft);
+  background: rgba(15, 35, 60, 0.7);
+}
+
+#fm_play:active {
+  transform: scale(0.98);
+}
+
+#fm_play[data-state="playing"] {
+  border-color: var(--accent-glass);
+  color: var(--accent-glass);
+}
+
+#fm-now {
+  margin-top: clamp(28px, 5vh, 44px);
+  font-size: 14px;
+  letter-spacing: 0.22em;
+  color: var(--text-main);
+  min-height: 1.4em;
+  max-width: min(90vw, 540px);
+  word-break: break-word;
+  text-transform: lowercase;
+}
+
+#fm-next {
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--text-sub);
+  opacity: 0.7;
+  min-height: 1.4em;
+  text-transform: lowercase;
+}
+
+#fm-resume {
+  margin-top: 16px;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--accent-soft);
+  opacity: 0.85;
+}
+
+#fm-energy {
+  margin-top: clamp(28px, 4vh, 40px);
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  padding: 4px;
+  background: rgba(8, 18, 35, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+#fm-energy button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  text-transform: uppercase;
+  min-width: 64px;
+  transition: background 0.25s, color 0.25s;
+}
+
+#fm-energy button[aria-pressed="true"] {
+  background: rgba(125, 240, 212, 0.18);
+  color: var(--accent-glass);
+}
+
+.fm-back {
+  margin-top: clamp(32px, 5vh, 56px);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: var(--text-sub);
+  text-decoration: none;
+  opacity: 0.55;
+  transition: opacity 0.3s;
+  text-transform: lowercase;
+}
+
+.fm-back:hover {
+  opacity: 0.95;
+}
+
+/* Hidden engine shim must stay invisible no matter what */
+#fm-engine-shim,
+#fm-engine-shim * {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  clip: rect(0 0 0 0) !important;
+  overflow: hidden !important;
+}
+
+/* Body data-page hook so existing style.css rules don't pull in mixer chrome */
+body[data-page="fm"] #ui-shell,
+body[data-page="fm"] #lang-switch,
+body[data-page="fm"] #header-runtime,
+body[data-page="fm"] header,
+body[data-page="fm"] main#control-panel {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  #fm_play {
+    padding: 18px 40px;
+    min-width: 180px;
+    font-size: 14px;
+  }
+  #fm-shell h1 {
+    font-size: 28px;
+  }
+}

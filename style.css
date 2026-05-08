@@ -3308,3 +3308,109 @@ body {
     display: none;
   }
 }
+
+/* Desktop centering / containment polish: keep the right rail inside the rig. */
+@media (min-width: 881px) {
+  #ui-shell {
+    justify-items: center;
+  }
+
+  #ui-header,
+  #control-panel {
+    width: min(1180px, calc(100vw - 48px));
+    max-width: 1180px;
+    margin-inline: auto;
+  }
+
+  #control-panel {
+    grid-template-columns: minmax(132px, 0.74fr) minmax(400px, 1.9fr) minmax(226px, 0.82fr);
+    overflow: hidden;
+  }
+
+  #right-column,
+  #right-column > *,
+  #auto-block,
+  #preset-block,
+  #performance-pads,
+  #transport-dock {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  #right-column {
+    overflow: hidden;
+  }
+
+  #auto-block,
+  #preset-block,
+  #transport-dock {
+    overflow: hidden;
+  }
+
+  .auto-body,
+  .route-body,
+  #output-body,
+  #audio-route-body,
+  #odd-logic-body,
+  #background-body {
+    min-width: 0;
+  }
+
+  #output-body {
+    display: grid;
+    grid-template-columns: minmax(46px, auto) minmax(0, 1fr) minmax(30px, auto);
+    align-items: center;
+  }
+
+  .route-body {
+    display: grid;
+    grid-template-columns: minmax(40px, auto) minmax(0, 1fr) minmax(38px, auto);
+    align-items: center;
+  }
+
+  #odd-logic-body {
+    grid-template-columns: minmax(40px, auto) minmax(0, 1fr) minmax(34px, auto) minmax(44px, auto);
+  }
+
+  #audio-route-body {
+    grid-template-columns: minmax(40px, auto) minmax(0, 1fr) minmax(34px, auto) minmax(44px, auto);
+  }
+
+  #background-body {
+    grid-template-columns: minmax(28px, auto) minmax(48px, auto) minmax(52px, auto) minmax(0, 1fr);
+  }
+
+  #auto-block select,
+  #preset-block select,
+  #audio_output_select,
+  #odd_logic_mode,
+  #culture_grammar_select,
+  #auto_arc_mode,
+  #preset_select,
+  .voice-control select,
+  .auto-body input[type="range"] {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .auto-body .label,
+  .auto-body .hint,
+  #preset-status,
+  .voice-readout,
+  .sync-route-copy,
+  #status-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #preset-status {
+    display: block;
+    max-width: 100%;
+  }
+
+  .sync-next-row {
+    grid-template-columns: minmax(0, 1fr) minmax(46px, auto);
+  }
+}

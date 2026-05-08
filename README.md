@@ -78,6 +78,11 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - 最大 50分のシームレスサイクル
 - 静⇄動の揺らぎモード
 
+## 📻 Claude FM mode
+START 一発で永遠に流れるフォーカス BGM ページ。`MusicRadioBrain` (5 番組: fieldStudy / glassCoding / dryGridWork / ghostPressure / voidRoom) を可視化、`engine.js` は無変更で再利用。
+- Local: `fm.html` をローカルサーバー経由で開く (例: `python -m http.server 8000` → `http://localhost:8000/fm.html`)
+- Pages: `https://quietbriony.github.io/Music/fm.html`
+
 ---
 
 ## 🎵 音響アルゴリズム

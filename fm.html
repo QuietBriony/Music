@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Claude FM — music for thinking and building</title>
+  <meta name="description" content="Generative focus radio powered by the UCM Mandala Engine — press start and listen for hours." />
+
+  <link rel="stylesheet" href="style.css?v=fm-1" />
+  <link rel="stylesheet" href="fm.css?v=fm-1" />
+
+  <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+  <script src="audio/namima-audio-adapter.js" defer></script>
+  <script src="audio/human-groove-governor.js" defer></script>
+  <script src="engine.js?v=fm-1" defer></script>
+  <script src="fm.js?v=fm-1" defer></script>
+</head>
+
+<body data-page="fm">
+
+  <!-- Mandala visual (engine.js mountMandalaLayers fills #mandala-layers automatically) -->
+  <div id="mandala-container">
+    <img src="assets/background.svg" id="mandala-bg" alt="" />
+    <div id="mandala-layers"></div>
+  </div>
+
+  <!-- Visible FM UI -->
+  <main id="fm-shell" aria-label="Claude FM player">
+    <h1>Claude FM</h1>
+    <p class="fm-tagline">music for thinking and building</p>
+
+    <button id="fm_play" type="button" aria-label="Start playback" data-state="idle">START</button>
+
+    <div id="fm-now" aria-live="polite">—</div>
+    <div id="fm-next">up next: —</div>
+    <div id="fm-resume" hidden></div>
+
+    <div id="fm-energy" role="group" aria-label="Energy">
+      <button type="button" data-energy="low" aria-pressed="false">low</button>
+      <button type="button" data-energy="mid" aria-pressed="true">mid</button>
+      <button type="button" data-energy="high" aria-pressed="false">high</button>
+    </div>
+
+    <a class="fm-back" href="index.html">full mixer →</a>
+  </main>
+
+  <!--
+    Engine DOM shim.
+    engine.js reads these IDs via getElementById without modifying the page layout.
+    Hidden via fm.css. Values are tuned for "Auto Radio" defaults so MusicRadioBrainState
+    drives program rotation without user intervention.
+  -->
+  <div id="fm-engine-shim" hidden aria-hidden="true">
+    <!-- 9 UCM faders (engine.js:40-50 SLIDER_BY_UCM) -->
+    <input type="range" id="fader_energy"   min="0" max="100" value="40" />
+    <input type="range" id="fader_wave"     min="0" max="100" value="40" />
+    <input type="range" id="fader_mind"     min="0" max="100" value="50" />
+    <input type="range" id="fader_creation" min="0" max="100" value="50" />
+    <input type="range" id="fader_void"     min="0" max="100" value="20" />
+    <input type="range" id="fader_circle"   min="0" max="100" value="60" />
+    <input type="range" id="fader_body"     min="0" max="100" value="50" />
+    <input type="range" id="fader_resource" min="0" max="100" value="60" />
+    <input type="range" id="fader_observer" min="0" max="100" value="50" />
+
+    <!-- Master output (driven by fm.js fade ramp) -->
+    <input type="range" id="output_level" min="0" max="100" value="0" />
+
+    <!-- Auto-cycle / Radio brain driver -->
+    <input type="range" id="auto_cycle" min="1" max="10" value="3" />
+    <input type="checkbox" id="auto_toggle" checked />
+    <select id="auto_arc_mode" aria-label="Auto arc mode">
+      <option value="live">LIVE</option>
+      <option value="arc36" selected>ARC.36</option>
+    </select>
+
+    <!-- Engine binds click handlers to these in attachUI (engine.js:11719-11756). -->
+    <button id="btn_start" type="button"></button>
+    <button id="btn_stop" type="button"></button>
+
+    <!-- Status / mode text — engine writes here (engine.js:11563, 11574). -->
+    <span id="status-text"></span>
+    <span id="mode-label"></span>
+    <span id="header_bpm"></span>
+    <span id="header_output"></span>
+    <span id="header_sync"></span>
+    <span id="auto_arc_status"></span>
+  </div>
+
+</body>
+</html>
