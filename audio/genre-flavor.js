@@ -158,23 +158,26 @@
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
     const room = new Tone.Reverb({ decay: 1.6, wet: 0.22 }).connect(gain);
 
-    // Felt brush — filtered noise burst, soft.
-    const brushHi = new Tone.Filter({ frequency: 4200, type: "lowpass" });
-    const brushLo = new Tone.Filter({ frequency: 800, type: "highpass" });
+    // Felt brush — filtered noise sweep. Slower attack + longer decay
+    // gives the felt-on-snare sweep feel; brighter band (1.2k–4.6k) reads
+    // as brush, not hat.
+    const brushHi = new Tone.Filter({ frequency: 4600, type: "lowpass" });
+    const brushLo = new Tone.Filter({ frequency: 1200, type: "highpass" });
     brushHi.connect(brushLo).connect(room);
     const brush = new Tone.NoiseSynth({
-      noise: { type: "white" },
-      envelope: { attack: 0.02, decay: 0.18, sustain: 0, release: 0.05 },
-      volume: -22
+      noise: { type: "pink" },
+      envelope: { attack: 0.07, decay: 0.32, sustain: 0, release: 0.12 },
+      volume: -19
     }).connect(brushHi);
 
-    // Walking bass — triangle, low, swung quarters.
+    // Walking bass — triangle with a touch of upright "thud" via filter env.
+    // Lower lowpass + longer release for natural body.
     const bass = new Tone.MonoSynth({
       oscillator: { type: "triangle" },
-      filter: { type: "lowpass", frequency: 850, Q: 0.7 },
-      envelope: { attack: 0.005, decay: 0.18, sustain: 0.55, release: 0.15 },
-      filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.4, release: 0.2, baseFrequency: 280, octaves: 2 },
-      volume: -14
+      filter: { type: "lowpass", frequency: 720, Q: 0.9 },
+      envelope: { attack: 0.005, decay: 0.22, sustain: 0.45, release: 0.28 },
+      filterEnvelope: { attack: 0.012, decay: 0.22, sustain: 0.32, release: 0.3, baseFrequency: 220, octaves: 2.4 },
+      volume: -12
     }).connect(room);
 
     // 8-step walking bass loop in D minor (typical 1-4-5 movement)
@@ -209,25 +212,26 @@
   function buildFunk() {
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
 
-    // Clavi — snappy sawtooth with quick decay, lowpass keeps it from biting.
-    const claviFilter = new Tone.Filter({ frequency: 1800, type: "lowpass", Q: 1.2 }).connect(gain);
+    // Clavi — staccato sawtooth stabs. Tight attack + very short decay/release
+    // gives the spring-loaded funk pluck; lowpass tames the saw bite.
+    const claviFilter = new Tone.Filter({ frequency: 2100, type: "lowpass", Q: 1.4 }).connect(gain);
     const clavi = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: "sawtooth" },
-      envelope: { attack: 0.002, decay: 0.18, sustain: 0.0, release: 0.08 },
-      volume: -16
+      envelope: { attack: 0.001, decay: 0.09, sustain: 0.0, release: 0.04 },
+      volume: -14
     }).connect(claviFilter);
     clavi.maxPolyphony = 6;
 
-    // Electric piano — FM, soft warm pad.
-    const epRoom = new Tone.Reverb({ decay: 1.2, wet: 0.18 }).connect(gain);
+    // Electric piano — FM, slightly more present, warmer modulation.
+    const epRoom = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).connect(gain);
     const ep = new Tone.PolySynth(Tone.FMSynth, {
-      harmonicity: 2,
-      modulationIndex: 4,
+      harmonicity: 3,
+      modulationIndex: 5,
       oscillator: { type: "sine" },
-      envelope: { attack: 0.02, decay: 0.6, sustain: 0.5, release: 1.2 },
+      envelope: { attack: 0.04, decay: 0.6, sustain: 0.6, release: 1.5 },
       modulation: { type: "sine" },
-      modulationEnvelope: { attack: 0.05, decay: 0.5, sustain: 0.3, release: 1 },
-      volume: -18
+      modulationEnvelope: { attack: 0.06, decay: 0.5, sustain: 0.32, release: 1.1 },
+      volume: -16
     }).connect(epRoom);
     ep.maxPolyphony = 6;
 
