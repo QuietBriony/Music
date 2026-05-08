@@ -3618,8 +3618,16 @@ function micJamRuntimeState() {
 function micJamPacketState() {
   const state = micJamRuntimeState();
   return {
+    active: state.active,
     gesture: state.gesture,
+    previous_gesture: state.previousGesture,
     drive: state.drive,
+    pulse: state.pulse,
+    phrase: state.phrase,
+    clap: state.clap,
+    hum: state.hum,
+    air: state.air,
+    noisy: state.noisy,
     bpm_lock: state.bpmLock,
     confidence: state.confidence,
     metadata_only: true,
@@ -3640,8 +3648,16 @@ function micFollowPacketState() {
     stability: state.stability,
     silence: state.silence,
     brightness: state.brightness,
+    active: jam.active,
     gesture: jam.gesture,
+    previous_gesture: jam.previous_gesture,
     drive: jam.drive,
+    pulse: jam.pulse,
+    phrase: jam.phrase,
+    clap: jam.clap,
+    hum: jam.hum,
+    air: jam.air,
+    noisy: jam.noisy,
     bpm_lock: jam.bpm_lock,
     confidence: jam.confidence,
     metadata_only: true,
@@ -3703,7 +3719,7 @@ function updateMicFollowReadout(force = false) {
   if (detail) {
     detail.textContent = active
       ? `drive ${Math.round((jam.drive || 0) * 100)} / conf ${Math.round((jam.confidence || 0) * 100)} / ${jam.bpmLock || tempo || "--"} bpm`
-      : "local features only";
+      : "任意: grooveだけ曲げる / local features only";
   }
   const btn = document.getElementById("btn_mic_follow");
   if (btn && active && !MicFollowState.pending) {
@@ -5161,6 +5177,7 @@ function updateMusicStackSyncHelp(route, result = {}) {
   const kicker = document.getElementById("sync_route_kicker");
   const title = document.getElementById("sync_route_title");
   const reason = document.getElementById("sync_route_reason");
+  const dock = document.getElementById("transport-dock");
   const setRouteLink = (destination, label) => {
     if (!link) return;
     const key = String(destination || "openclaw").trim();
@@ -5176,6 +5193,7 @@ function updateMusicStackSyncHelp(route, result = {}) {
     return;
   }
   if (!route) {
+    if (dock) dock.classList.remove("has-sync-route");
     setText(kicker, "まずSYNC");
     setText(title, "次の行き先");
     setText(help, "START任意 → SYNC → 開く");
@@ -5186,12 +5204,18 @@ function updateMusicStackSyncHelp(route, result = {}) {
   const delivered = result.stored || result.broadcast;
   const label = route.label || route.destination || "OpenClawで見る";
   const action = route.action || "OpenClawを開いて次の制作カードを見る。";
+  if (dock) dock.classList.toggle("has-sync-route", !!delivered);
   setText(kicker, delivered ? "次はここ" : "SYNC未完了");
   setText(title, delivered ? label : "JSON fallback");
   setText(help, delivered ? action : "OpenClawかJSON fallbackでlatestを確認。");
   setText(reason, delivered ? (route.reason || "Musicの現在状態から推奨しています。") : "音声・録音・サンプルは共有していません。");
-  setRouteLink(route.destination, delivered ? "開く" : "手順");
+  setRouteLink(delivered ? route.destination : "openclaw", delivered ? "開く" : "手順");
   if (link && delivered) link.setAttribute("aria-label", `${label}を開く`);
+  if (delivered) {
+    try {
+      window.dispatchEvent(new CustomEvent("music-stack-route-updated", { detail: { route } }));
+    } catch (error) {}
+  }
 }
 
 function syncMusicSessionPacket(options = {}) {
@@ -11605,6 +11629,12 @@ function setupTransportDockEscape() {
 
   toggle.addEventListener("click", () => {
     expanded = dock.classList.contains("is-collapsed");
+    apply();
+  });
+
+  window.addEventListener("music-stack-route-updated", () => {
+    if (!isMobile()) return;
+    expanded = true;
     apply();
   });
 

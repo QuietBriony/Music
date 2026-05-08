@@ -149,11 +149,22 @@
             "stability": { "$ref": "#/definitions/unitInterval" },
             "silence": { "$ref": "#/definitions/unitInterval" },
             "brightness": { "$ref": "#/definitions/unitInterval" },
+            "active": { "type": "boolean" },
             "gesture": {
               "type": "string",
               "enum": ["silent", "breath", "hum", "phrase", "clap", "pulse", "noisy"]
             },
+            "previous_gesture": {
+              "type": "string",
+              "enum": ["silent", "breath", "hum", "phrase", "clap", "pulse", "noisy"]
+            },
             "drive": { "$ref": "#/definitions/unitInterval" },
+            "pulse": { "$ref": "#/definitions/unitInterval" },
+            "phrase": { "$ref": "#/definitions/unitInterval" },
+            "clap": { "$ref": "#/definitions/unitInterval" },
+            "hum": { "$ref": "#/definitions/unitInterval" },
+            "air": { "$ref": "#/definitions/unitInterval" },
+            "noisy": { "$ref": "#/definitions/unitInterval" },
             "bpm_lock": {
               "type": "number",
               "minimum": 0,

@@ -36,6 +36,7 @@ dependency、workflow は取り込みません。実装する場合も、対象r
 
 - `localStorage` と `BroadcastChannel` に最新の Music session packet が保存されます。
 - 同じ `quietbriony.github.io` 上で開いた `drum-floor`、`namima`、`chill`、`OpenClaw` が最新packetを読みます。
+- `MIC` がONなら `performance_state.mic_follow` に `gesture / drive / pulse / hum / air / bpm_lock` などのmetadataだけが入り、各repoはそれを反応のヒントとして扱います。
 - packetには `Musicで削る`、`chillで聴く`、`drum-floorで押す`、`namimaで空気に逃がす`、`OpenClawで見る` の推奨行き先が入ります。
 - 受け側は preview controls や mood を合わせます。
 - 受け側は `START`、`再生`、`REC`、MIDI、Ableton、EP-133、merge を自動操作しません。

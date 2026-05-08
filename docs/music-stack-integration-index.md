@@ -29,8 +29,8 @@
   - `docs/groove-profile-schema.md`
   - `docs/input-output-example.md`
   - `profiles/groove-profiles.json`
-- **Runtime:** not implemented yet
-- **Next:** JSON Schema / validator docs / simple generator design later
+- **Runtime:** active browser preview / Music SYNC receiver / raw candidate CLI
+- **Next:** Music packet と MIC Jam metadata を groove intent として安全に翻訳する
 
 ### namima
 
@@ -41,13 +41,13 @@
   - `docs/mood-profile-schema.md`
   - `docs/input-output-example.md`
   - `profiles/mood-profiles.json`
-- **Runtime:** not implemented or not primary yet
-- **Next:** mood profile validation / simple ambient player design later
+- **Runtime:** active public ambient surface / Music SYNC receiver
+- **Next:** Music packet と MIC Jam metadata を family-safe mood へ翻訳する
 
 ### hazama / archive candidates
 
 - **hazama**: visual / conceptual reference only
-- **chill**: archive candidate
+- **chill**: active light piano/bass/trio surface and harvest source
 - **namima-lab**: namima staging or archive candidate
 - **test**: archive candidate unless reactivated intentionally
 
