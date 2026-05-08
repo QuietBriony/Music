@@ -613,6 +613,7 @@ const SIGNATURE_CELL_MOTIFS = ["call", "answer", "scar"];
 const SIGNATURE_CONDUCTOR_MODES = ["listen", "breathe", "scratch", "remember", "open"];
 const PRODUCER_HABIT_MODES = ["listen", "softWrongMemory", "dryGridScar", "ghostPressureBreath", "transparentVoidTail", "rubberMicroEdit"];
 const MODE_TIMBRE_PALETTE_KEYS = ["ambientHaze", "idmGlass", "technoDryGrid", "pressureGhost", "voidAir"];
+const MUSIC_RADIO_BRAIN_PROGRAMS = ["fieldStudy", "glassCoding", "dryGridWork", "ghostPressure", "voidRoom"];
 const ReferenceMorphState = {
   lastCycle: -1,
   phase: 0,
@@ -700,6 +701,43 @@ const ModeTimbrePaletteState = {
     brightnessDamp: 0,
     restraint: 0.48
   }
+};
+const MusicRadioBrainState = {
+  lastCycle: -1,
+  generation: 0,
+  phrase: 0,
+  phraseCycles: 24,
+  active: "fieldStudy",
+  next: "glassCoding",
+  blend: 0,
+  phase: 0,
+  lastDecision: "fieldStudy",
+  lastReason: "initial haze room",
+  weights: {
+    fieldStudy: 0.42,
+    glassCoding: 0.28,
+    dryGridWork: 0.12,
+    ghostPressure: 0.08,
+    voidRoom: 0.26
+  },
+  bias: {
+    haze: 0.36,
+    glass: 0.28,
+    grid: 0.12,
+    pressure: 0.08,
+    air: 0.3,
+    restraint: 0.48,
+    curiosity: 0.18
+  },
+  guard: {
+    density: 0,
+    low: 0,
+    bright: 0
+  },
+  cuePending: false,
+  cueProgram: "fieldStudy",
+  cueCycle: -99,
+  cueLastStep: -99
 };
 let selfReviewMeter = null;
 const MicFollowState = {
@@ -2029,6 +2067,38 @@ function resetModeTimbrePalettes() {
   ModeTimbrePaletteState.safety.restraint = 0.48;
 }
 
+function resetMusicRadioBrain() {
+  MusicRadioBrainState.lastCycle = -1;
+  MusicRadioBrainState.generation = 0;
+  MusicRadioBrainState.phrase = 0;
+  MusicRadioBrainState.phraseCycles = 24;
+  MusicRadioBrainState.active = "fieldStudy";
+  MusicRadioBrainState.next = "glassCoding";
+  MusicRadioBrainState.blend = 0;
+  MusicRadioBrainState.phase = 0;
+  MusicRadioBrainState.lastDecision = "fieldStudy";
+  MusicRadioBrainState.lastReason = "initial haze room";
+  MusicRadioBrainState.weights.fieldStudy = 0.42;
+  MusicRadioBrainState.weights.glassCoding = 0.28;
+  MusicRadioBrainState.weights.dryGridWork = 0.12;
+  MusicRadioBrainState.weights.ghostPressure = 0.08;
+  MusicRadioBrainState.weights.voidRoom = 0.26;
+  MusicRadioBrainState.bias.haze = 0.36;
+  MusicRadioBrainState.bias.glass = 0.28;
+  MusicRadioBrainState.bias.grid = 0.12;
+  MusicRadioBrainState.bias.pressure = 0.08;
+  MusicRadioBrainState.bias.air = 0.3;
+  MusicRadioBrainState.bias.restraint = 0.48;
+  MusicRadioBrainState.bias.curiosity = 0.18;
+  MusicRadioBrainState.guard.density = 0;
+  MusicRadioBrainState.guard.low = 0;
+  MusicRadioBrainState.guard.bright = 0;
+  MusicRadioBrainState.cuePending = false;
+  MusicRadioBrainState.cueProgram = "fieldStudy";
+  MusicRadioBrainState.cueCycle = -99;
+  MusicRadioBrainState.cueLastStep = -99;
+}
+
 function resetDJTempo() {
   const current = Number.isFinite(EngineParams.bpm) ? EngineParams.bpm : 80;
   DJTempoState.bpm = current;
@@ -2178,6 +2248,12 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
   const rubberHabit = producerHabitBias("rubberEdit");
   const restraintHabit = producerHabitBias("restraint");
   const micBias = micFollowKitBias();
+  const radioHaze = musicRadioBrainBias("haze");
+  const radioGlass = musicRadioBrainBias("glass");
+  const radioGrid = musicRadioBrainBias("grid");
+  const radioPressure = musicRadioBrainBias("pressure");
+  const radioAir = musicRadioBrainBias("air");
+  const radioRestraint = musicRadioBrainBias("restraint");
 
   const ambientTarget = clampValue(
     (1 - energy) * 0.22 +
@@ -2193,6 +2269,9 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
       spaceHabit * 0.024 +
       restraintHabit * 0.014 -
       genre.techno * 0.06 +
+      radioHaze * 0.035 +
+      radioAir * 0.012 +
+      radioRestraint * 0.012 +
       micBias.ambient,
     0,
     1
@@ -2211,6 +2290,8 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
       gridHabit * 0.014 +
       rubberHabit * 0.028 -
       eventLoad * 0.04 +
+      radioGlass * 0.04 -
+      radioRestraint * 0.01 +
       micBias.idm,
     0,
     1
@@ -2230,6 +2311,9 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
       restraintHabit * 0.018 -
       genre.ambient * 0.08 -
       eventLoad * 0.03 +
+      radioGrid * 0.046 -
+      radioAir * 0.018 -
+      radioRestraint * 0.014 +
       micBias.techno,
     0,
     1
@@ -2246,6 +2330,9 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
       restraintHabit * 0.018 -
       voidness * 0.12 -
       lowGuard * 0.14 +
+      radioPressure * 0.038 -
+      radioAir * 0.012 -
+      radioRestraint * 0.014 +
       micBias.pressure,
     0,
     1
@@ -2262,6 +2349,9 @@ function updateGenreTimbreKits(parts, gradient = GradientState, depth = DepthSta
       restraintHabit * 0.018 -
       resource * 0.05 -
       lowGuard * 0.05 +
+      radioAir * 0.048 +
+      radioHaze * 0.012 +
+      radioRestraint * 0.016 +
       micBias.space,
     0,
     1
@@ -3095,6 +3185,237 @@ function advanceModeTimbrePalettes(context = {}) {
   shape.transient = clampValue(weights.technoDryGrid * 0.32 + weights.pressureGhost * 0.28 + weights.idmGlass * 0.14 - weights.ambientHaze * 0.08 - weights.voidAir * 0.08 - brightnessDamp * 0.08, 0, 1);
   shape.lowClamp = clampValue(lowClamp * 0.58 + weights.voidAir * 0.18 + weights.pressureGhost * 0.08 + SelfReviewGovernorState.lowCleanup * 0.12, 0, 1);
   shape.restraint = restraint;
+}
+
+function musicRadioBrainBias(key) {
+  const bias = MusicRadioBrainState.bias;
+  if (key === "haze" || key === "ambient") return clampValue(bias.haze, 0, 1);
+  if (key === "glass" || key === "idm" || key === "memory") return clampValue(bias.glass, 0, 1);
+  if (key === "grid" || key === "techno" || key === "rhythm") return clampValue(bias.grid, 0, 1);
+  if (key === "pressure" || key === "ghost") return clampValue(bias.pressure, 0, 1);
+  if (key === "air" || key === "void" || key === "space") return clampValue(bias.air, 0, 1);
+  if (key === "restraint") return clampValue(bias.restraint, 0, 1);
+  if (key === "curiosity") return clampValue(bias.curiosity, 0, 1);
+  return 0;
+}
+
+function musicRadioBrainPhraseCycles(offset = 0) {
+  const phi = fractionalPart((GrooveState.cycle + MusicRadioBrainState.generation + offset + 1) * GOLDEN_RATIO_INVERSE);
+  return Math.round(18 + phi * 24);
+}
+
+function musicRadioBrainReason(program) {
+  if (program === "fieldStudy") return "haze/airを前にして長く聴ける作業部屋";
+  if (program === "glassCoding") return "短いglassとmemory点で集中を少し揺らす";
+  if (program === "dryGridWork") return "中高域のdry gridで速度感を出す";
+  if (program === "ghostPressure") return "低域を守りつつbody snapだけ出す";
+  if (program === "voidRoom") return "密度や明るさを逃がして透明なtailへ戻す";
+  return "listen first";
+}
+
+function chooseMusicRadioBrainProgram(offset = 0) {
+  const weights = MusicRadioBrainState.weights;
+  const guard = MusicRadioBrainState.guard;
+  if (guard.low > 0.72 || guard.bright > 0.76) return "voidRoom";
+  if (guard.density > 0.78) return weights.voidRoom > weights.fieldStudy ? "voidRoom" : "fieldStudy";
+
+  const phi = fractionalPart((GrooveState.cycle + MusicRadioBrainState.generation + offset + 1) * GOLDEN_RATIO_INVERSE);
+  const weighted = MUSIC_RADIO_BRAIN_PROGRAMS.map((program) => [program, weights[program] || 0]);
+  weighted.sort((a, b) => b[1] - a[1]);
+  if ((weighted[0]?.[1] || 0) < 0.18) return "fieldStudy";
+  if (phi < 0.62) return weighted[0][0];
+  if (phi < 0.86) return weighted[1]?.[0] || weighted[0][0];
+  return weighted[Math.min(weighted.length - 1, Math.floor(phi * weighted.length))]?.[0] || weighted[0][0] || "fieldStudy";
+}
+
+function musicRadioBrainRuntimeState() {
+  return {
+    generation: MusicRadioBrainState.generation,
+    phrase: MusicRadioBrainState.phrase,
+    phraseCycles: MusicRadioBrainState.phraseCycles,
+    active: MusicRadioBrainState.active,
+    next: MusicRadioBrainState.next,
+    blend: MusicRadioBrainState.blend,
+    phase: MusicRadioBrainState.phase,
+    weights: { ...MusicRadioBrainState.weights },
+    bias: { ...MusicRadioBrainState.bias },
+    guard: { ...MusicRadioBrainState.guard },
+    lastDecision: MusicRadioBrainState.lastDecision,
+    lastReason: MusicRadioBrainState.lastReason,
+    cuePending: MusicRadioBrainState.cuePending,
+    cueProgram: MusicRadioBrainState.cueProgram
+  };
+}
+
+function musicRadioBrainPacketState() {
+  return {
+    program: MusicRadioBrainState.active,
+    next_program: MusicRadioBrainState.next,
+    blend: packetUnit(MusicRadioBrainState.blend),
+    reason: MusicRadioBrainState.lastReason,
+    bias: {
+      haze: packetUnit(MusicRadioBrainState.bias.haze),
+      glass: packetUnit(MusicRadioBrainState.bias.glass),
+      grid: packetUnit(MusicRadioBrainState.bias.grid),
+      pressure: packetUnit(MusicRadioBrainState.bias.pressure),
+      air: packetUnit(MusicRadioBrainState.bias.air),
+      restraint: packetUnit(MusicRadioBrainState.bias.restraint),
+      curiosity: packetUnit(MusicRadioBrainState.bias.curiosity)
+    },
+    metadata_only: true
+  };
+}
+
+function advanceMusicRadioBrain(context = {}) {
+  if (MusicRadioBrainState.lastCycle === GrooveState.cycle) return;
+  MusicRadioBrainState.lastCycle = GrooveState.cycle;
+  MusicRadioBrainState.phrase += 1;
+  if (GrooveState.cycle % 29 === 0) MusicRadioBrainState.generation += 1;
+
+  const energy = clampValue(context.energyNorm ?? unitValue(UCM_CUR.energy), 0, 1);
+  const creation = clampValue(context.creationNorm ?? unitValue(UCM_CUR.creation), 0, 1);
+  const resource = clampValue(context.resourceNorm ?? unitValue(UCM_CUR.resource), 0, 1);
+  const wave = clampValue(context.waveNorm ?? unitValue(UCM_CUR.wave), 0, 1);
+  const observer = clampValue(context.observerNorm ?? unitValue(UCM_CUR.observer), 0, 1);
+  const circle = clampValue(context.circleNorm ?? unitValue(UCM_CUR.circle), 0, 1);
+  const voidness = clampValue(context.voidNorm ?? unitValue(UCM_CUR.void), 0, 1);
+  const body = clampValue(unitValue(UCM_CUR.body), 0, 1);
+  const bpmNorm = clampValue((EngineParams.bpm - 58) / 90, 0, 1);
+  const palettes = ModeTimbrePaletteState.weights;
+  const review = musicSelfReviewRuntimeState();
+  const risk = ProducerHabitState.riskSnapshot || producerHabitRiskSnapshot();
+  const densityGuard = clampValue(Math.max(review.densityRisk || 0, risk.density || 0, MixGovernorState.eventLoad || 0), 0, 1);
+  const lowGuard = clampValue(Math.max(review.lowEndRisk || 0, risk.low || 0, MixGovernorState.lowGuard || 0), 0, 1);
+  const brightGuard = clampValue(Math.max(review.brightnessRisk || 0, risk.bright || 0), 0, 1);
+  const guardMax = Math.max(densityGuard, lowGuard, brightGuard);
+  const weights = MusicRadioBrainState.weights;
+
+  MusicRadioBrainState.guard.density = densityGuard;
+  MusicRadioBrainState.guard.low = lowGuard;
+  MusicRadioBrainState.guard.bright = brightGuard;
+
+  const targets = {
+    fieldStudy: clampValue(
+      palettes.ambientHaze * 0.34 +
+        (1 - energy) * 0.16 +
+        observer * 0.14 +
+        circle * 0.1 +
+        ReferenceMorphState.haze * 0.1 +
+        MusicRadioBrainState.bias.restraint * 0.05 +
+        (1 - densityGuard) * 0.06,
+      0,
+      1
+    ),
+    glassCoding: clampValue(
+      palettes.idmGlass * 0.34 +
+        creation * 0.12 +
+        wave * 0.1 +
+        ReferenceMorphState.broken * 0.12 +
+        ReferenceMorphState.organic * 0.08 +
+        RdjGrowthState.toy * 0.06 +
+        RdjGrowthState.edit * 0.06 +
+        ProducerHabitState.curiosity * 0.08 -
+        densityGuard * 0.12,
+      0,
+      1
+    ),
+    dryGridWork: clampValue(
+      palettes.technoDryGrid * 0.34 +
+        bpmNorm * 0.12 +
+        energy * 0.1 +
+        resource * 0.12 +
+        ReferenceMorphState.pulse * 0.1 +
+        ProducerHabitState.habits.dryGrid * 0.08 +
+        PerformancePadState.repeat * 0.08 -
+        brightGuard * 0.16 -
+        voidness * 0.08,
+      0,
+      1
+    ),
+    ghostPressure: clampValue(
+      palettes.pressureGhost * 0.34 +
+        body * 0.14 +
+        energy * 0.08 +
+        (GradientState.ghost || 0) * 0.1 +
+        ProducerHabitState.habits.ghostPressure * 0.1 +
+        PerformancePadState.punch * 0.18 -
+        lowGuard * 0.2 -
+        voidness * 0.08,
+      0,
+      1
+    ),
+    voidRoom: clampValue(
+      palettes.voidAir * 0.34 +
+        voidness * 0.14 +
+        observer * 0.1 +
+        ReferenceMorphState.void * 0.14 +
+        ReferenceMorphState.chrome * 0.06 +
+        PerformancePadState.void * 0.16 +
+        guardMax * 0.24 +
+        SelfReviewGovernorState.airTail * 0.08,
+      0,
+      1
+    )
+  };
+
+  MUSIC_RADIO_BRAIN_PROGRAMS.forEach((program) => {
+    weights[program] = approachValue(weights[program], targets[program], 0.045);
+  });
+
+  if (MusicRadioBrainState.phrase >= MusicRadioBrainState.phraseCycles || guardMax > 0.82) {
+    const previousProgram = MusicRadioBrainState.active;
+    MusicRadioBrainState.active = guardMax > 0.82 ? chooseMusicRadioBrainProgram(13) : MusicRadioBrainState.next;
+    MusicRadioBrainState.next = chooseMusicRadioBrainProgram(7);
+    MusicRadioBrainState.phrase = 0;
+    MusicRadioBrainState.phraseCycles = musicRadioBrainPhraseCycles(11);
+    MusicRadioBrainState.lastDecision = MusicRadioBrainState.active;
+    MusicRadioBrainState.lastReason = musicRadioBrainReason(MusicRadioBrainState.active);
+    if (MusicRadioBrainState.active !== previousProgram) {
+      MusicRadioBrainState.cuePending = true;
+      MusicRadioBrainState.cueProgram = MusicRadioBrainState.active;
+      MusicRadioBrainState.cueCycle = GrooveState.cycle;
+    }
+  }
+
+  const progress = MusicRadioBrainState.phrase / Math.max(1, MusicRadioBrainState.phraseCycles);
+  MusicRadioBrainState.blend = smoothStep01(progress);
+  MusicRadioBrainState.phase = fractionalPart((GrooveState.cycle + MusicRadioBrainState.generation + 9) * GOLDEN_RATIO_INVERSE);
+
+  const current = MusicRadioBrainState.active;
+  const next = MusicRadioBrainState.next;
+  const mix = MusicRadioBrainState.blend * 0.42;
+  const programWeight = (program) => {
+    const base = current === program ? 1 - mix : 0;
+    const incoming = next === program ? mix : 0;
+    return clampValue(base + incoming + (weights[program] || 0) * 0.18, 0, 1);
+  };
+  const field = programWeight("fieldStudy");
+  const glass = programWeight("glassCoding");
+  const grid = programWeight("dryGridWork");
+  const pressure = programWeight("ghostPressure");
+  const room = programWeight("voidRoom");
+  const bias = MusicRadioBrainState.bias;
+
+  bias.haze = approachValue(bias.haze, clampValue(field * 0.42 + room * 0.12 + ReferenceMorphState.haze * 0.08, 0, 1), 0.055);
+  bias.glass = approachValue(bias.glass, clampValue(glass * 0.42 + field * 0.08 + RdjGrowthState.toy * 0.05 - densityGuard * 0.04, 0, 1), 0.06);
+  bias.grid = approachValue(bias.grid, clampValue(grid * 0.42 + glass * 0.08 + PerformancePadState.repeat * 0.06 - brightGuard * 0.08, 0, 1), 0.06);
+  bias.pressure = approachValue(bias.pressure, clampValue(pressure * 0.42 + grid * 0.06 + PerformancePadState.punch * 0.08 - lowGuard * 0.12, 0, 1), 0.055);
+  bias.air = approachValue(bias.air, clampValue(room * 0.46 + field * 0.14 + SelfReviewGovernorState.airTail * 0.08 + guardMax * 0.08, 0, 1), 0.052);
+  bias.restraint = approachValue(bias.restraint, clampValue(0.18 + field * 0.18 + room * 0.24 + guardMax * 0.32 + ReferenceMorphState.restraint * 0.14 - glass * 0.04, 0, 1), 0.05);
+  bias.curiosity = approachValue(bias.curiosity, clampValue(glass * 0.22 + grid * 0.12 + RdjGrowthState.wrong * 0.08 + ProducerHabitState.curiosity * 0.22 - guardMax * 0.16, 0, 1), 0.055);
+
+  ModeTimbrePaletteState.weights.ambientHaze = approachValue(ModeTimbrePaletteState.weights.ambientHaze, clampValue(ModeTimbrePaletteState.weights.ambientHaze + bias.haze * 0.035 + bias.restraint * 0.012, 0, 1), 0.04);
+  ModeTimbrePaletteState.weights.idmGlass = approachValue(ModeTimbrePaletteState.weights.idmGlass, clampValue(ModeTimbrePaletteState.weights.idmGlass + bias.glass * 0.032 + bias.curiosity * 0.01 - densityGuard * 0.016, 0, 1), 0.04);
+  ModeTimbrePaletteState.weights.technoDryGrid = approachValue(ModeTimbrePaletteState.weights.technoDryGrid, clampValue(ModeTimbrePaletteState.weights.technoDryGrid + bias.grid * 0.03 - brightGuard * 0.022, 0, 1), 0.04);
+  ModeTimbrePaletteState.weights.pressureGhost = approachValue(ModeTimbrePaletteState.weights.pressureGhost, clampValue(ModeTimbrePaletteState.weights.pressureGhost + bias.pressure * 0.026 - lowGuard * 0.028, 0, 1), 0.04);
+  ModeTimbrePaletteState.weights.voidAir = approachValue(ModeTimbrePaletteState.weights.voidAir, clampValue(ModeTimbrePaletteState.weights.voidAir + bias.air * 0.04 + guardMax * 0.022, 0, 1), 0.04);
+
+  ModeTimbrePaletteState.shape.haze = clampValue(ModeTimbrePaletteState.shape.haze + bias.haze * 0.018, 0, 1);
+  ModeTimbrePaletteState.shape.glass = clampValue(ModeTimbrePaletteState.shape.glass + bias.glass * 0.018, 0, 1);
+  ModeTimbrePaletteState.shape.rhythm = clampValue(ModeTimbrePaletteState.shape.rhythm + bias.grid * 0.016 - bias.air * 0.008, 0, 1);
+  ModeTimbrePaletteState.shape.transient = clampValue(ModeTimbrePaletteState.shape.transient + bias.pressure * 0.014 - lowGuard * 0.018, 0, 1);
+  ModeTimbrePaletteState.shape.air = clampValue(ModeTimbrePaletteState.shape.air + bias.air * 0.02, 0, 1);
+  ModeTimbrePaletteState.shape.restraint = clampValue(Math.max(ModeTimbrePaletteState.shape.restraint, bias.restraint * 0.9), 0, 1);
 }
 
 function selfReviewMeterNormalized() {
@@ -4272,6 +4593,7 @@ function publishMusicRuntimeState() {
     genre: { ...GenreBlendState },
     genreTimbreKits: genreTimbreKitRuntimeState(),
     timbrePalettes: modeTimbrePalettesRuntimeState(),
+    radioBrain: musicRadioBrainRuntimeState(),
     referenceMorph: referenceMorphRuntimeState(),
     rdjGrowth: rdjGrowthRuntimeState(),
     producerHabits: producerHabitsRuntimeState(),
@@ -4422,6 +4744,7 @@ function packetIntentArrays(activePads, gradient, kits, parts) {
   if (UCM.auto.enabled) structure.push("automix");
   if (albumArcActive()) structure.push("album-arc");
   if (HazamaBridgeState.loaded) structure.push("hazama-follow");
+  if (MusicRadioBrainState.active) structure.push(`radio-${MusicRadioBrainState.active}`);
 
   const gesture = activePads.length ? activePads.map((name) => `pad-${name}`) : ["listen"];
   if (dominantKit) gesture.push(`kit-${dominantKit.replace(/Kit$/, "")}`);
@@ -4478,6 +4801,7 @@ function buildMusicSessionPacket(options = {}) {
         ? "soft-melody-piano"
         : "piano-jazz-chill";
   const selfReview = musicSelfReviewRuntimeState();
+  const radioBrain = musicRadioBrainPacketState();
   const stackRouting = musicStackRoutingRecommendation({
     selfReview,
     parts,
@@ -4521,7 +4845,8 @@ function buildMusicSessionPacket(options = {}) {
       recent_pads: activePads,
       manual_influence_active: isManualPerformanceInfluenceActive(),
       automix_enabled: !!UCM.auto.enabled,
-      mic_follow: micFollowPacketState()
+      mic_follow: micFollowPacketState(),
+      radio_brain: radioBrain
     },
     music_intent: packetIntentArrays(activePads, gradient, kits, parts),
     routing: {
@@ -6619,6 +6944,75 @@ function triggerVoiceColorCue() {
   }
 }
 
+function triggerMusicRadioBrainIdent(step, time, context = {}) {
+  if (!MusicRadioBrainState.cuePending || !isPlaying || !initialized) return;
+  if (step !== 0 && step !== 8) return;
+  if (MusicRadioBrainState.cueLastStep >= 0 && stepIndex - MusicRadioBrainState.cueLastStep < 12) return;
+  if (GrooveState.cycle - MusicRadioBrainState.cueCycle > 2) {
+    MusicRadioBrainState.cuePending = false;
+    return;
+  }
+
+  const eventLoad = MixGovernorState.eventLoad || 0;
+  const lowGuard = MixGovernorState.lowGuard || 0;
+  const program = MusicRadioBrainState.cueProgram || MusicRadioBrainState.active;
+  const bias = MusicRadioBrainState.bias;
+  const gradient = GradientState;
+  const palette = ModeTimbrePaletteState.shape;
+  if (eventLoad > (program === "voidRoom" ? 0.88 : 0.78)) return;
+
+  const baseTime = time + 0.014 + Math.random() * 0.012;
+  const airNote = voiceFragment(2, TRANSPARENT_AIR_FRAGMENTS);
+  const glassNote = voiceFragment(1, GLASS_NOTES);
+  const memoryNote = voiceFragment(3, ORGANIC_PLUCK_FRAGMENTS);
+  const murkNote = voiceFragment(4, FIELD_MURK_FRAGMENTS);
+  const vel = clampValue(0.018 + bias.curiosity * 0.032 + palette.signature * 0.024 - eventLoad * 0.012, 0.012, 0.074);
+
+  try {
+    if (program === "fieldStudy") {
+      if (pad) pad.triggerAttackRelease(randomHazeChord(), "1n", baseTime + 0.012, clampValue(0.018 + bias.haze * 0.028 + bias.air * 0.012, 0.016, 0.06));
+      if (glass) glass.triggerAttackRelease(airNote, "16n", baseTime + 0.052, clampValue(vel + bias.air * 0.018, 0.016, 0.078));
+      if (voiceDust && rand(0.18 + bias.air * 0.22)) voiceDust.triggerAttackRelease(airNote, "8n", baseTime + 0.098, clampValue(0.01 + bias.haze * 0.022, 0.008, 0.044));
+      markMixEvent(0.04);
+    } else if (program === "glassCoding") {
+      if (glass) {
+        glass.triggerAttackRelease(glassNote, "64n", baseTime, clampValue(vel + bias.glass * 0.028, 0.018, 0.086));
+        glass.triggerAttackRelease(memoryNote, "64n", baseTime + 0.054 + Math.random() * 0.012, clampValue(vel * 0.62 + bias.glass * 0.012, 0.012, 0.056));
+      }
+      if (texture && rand(0.22 + bias.glass * 0.2)) texture.triggerAttackRelease("64n", baseTime + 0.022, clampValue(0.014 + bias.glass * 0.04, 0.012, 0.066));
+      rememberMotif(glassNote, { reply: memoryNote, shade: murkNote, strength: 0.02 + bias.glass * 0.04, air: bias.air * 0.05, source: "radio-glass-coding" });
+      markMixEvent(0.05);
+    } else if (program === "dryGridWork") {
+      if (hat) {
+        hat.triggerAttackRelease("64n", baseTime + 0.006, clampValue(0.032 + bias.grid * 0.052, 0.026, 0.112));
+        hat.triggerAttackRelease("64n", baseTime + 0.042, clampValue(0.022 + bias.grid * 0.036, 0.018, 0.082));
+      }
+      if (texture) texture.triggerAttackRelease("64n", baseTime + 0.018, clampValue(0.018 + bias.grid * 0.046, 0.014, 0.086));
+      if (glass && rand(0.18 + bias.glass * 0.14)) glass.triggerAttackRelease(glassNote, "64n", baseTime + 0.064, clampValue(vel * 0.58, 0.012, 0.05));
+      markMixEvent(0.055);
+    } else if (program === "ghostPressure") {
+      if (texture) texture.triggerAttackRelease("64n", baseTime + 0.004, clampValue(0.026 + bias.pressure * 0.058 - lowGuard * 0.018, 0.018, 0.092));
+      if (drumSkin && lowGuard < 0.7 && rand(0.22 + bias.pressure * 0.18)) drumSkin.triggerAttackRelease("64n", baseTime + 0.026, clampValue(0.018 + bias.pressure * 0.04 - lowGuard * 0.014, 0.012, 0.064));
+      if (glass) glass.triggerAttackRelease(murkNote, "32n", baseTime + 0.068, clampValue(vel + gradient.ghost * 0.01, 0.014, 0.062));
+      markMixEvent(0.052);
+    } else {
+      if (glass) {
+        glass.triggerAttackRelease(airNote, "16n", baseTime + 0.022, clampValue(0.018 + bias.air * 0.032, 0.014, 0.078));
+        glass.triggerAttackRelease(voiceFragment(5, TRANSPARENT_AIR_FRAGMENTS), "32n", baseTime + 0.118, clampValue(0.012 + bias.air * 0.024, 0.01, 0.056));
+      }
+      if (voiceDust && rand(0.2 + bias.air * 0.2)) voiceDust.triggerAttackRelease(airNote, "4n", baseTime + 0.052, clampValue(0.008 + bias.air * 0.026, 0.008, 0.044));
+      if (pad && rand(0.12 + bias.air * 0.18)) pad.triggerAttackRelease(randomHazeChord(), "2n", baseTime + 0.036, clampValue(0.014 + bias.air * 0.028, 0.012, 0.052));
+      markMixEvent(0.038);
+    }
+
+    MusicRadioBrainState.cuePending = false;
+    MusicRadioBrainState.cueLastStep = stepIndex;
+  } catch (error) {
+    MusicRadioBrainState.cuePending = false;
+    console.warn("[Music] radio brain ident failed:", error);
+  }
+}
+
 function triggerPadSignature(name) {
   if (!isPlaying || !initialized || typeof Tone === "undefined") return;
 
@@ -8380,6 +8774,7 @@ function resetRuntimeCounters() {
   resetGenreBlend();
   resetGenreTimbreKits();
   resetModeTimbrePalettes();
+  resetMusicRadioBrain();
   resetDJTempo();
   resetGenerativeGenome();
   resetAutoVoiceMorph();
@@ -8444,6 +8839,7 @@ function advanceGrooveStructure() {
   advanceProducerHabits({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   applySelfReviewRestraintGovernor();
   advanceModeTimbrePalettes({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
+  advanceMusicRadioBrain({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceSignatureCells({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   updateGenerativeGenome(currentGradientParts());
 
@@ -10646,6 +11042,7 @@ function scheduleStep(time) {
   triggerDroneResonanceBed(step, t, stepContext);
   triggerPerformanceColorDriftDetail(step, t, stepContext);
   triggerVoiceEmergenceDetail(step, t, stepContext);
+  triggerMusicRadioBrainIdent(step, t, stepContext);
   triggerGhostGlassSignatureCell(step, t, stepContext);
   triggerMemoryPluckSignatureCell(step, t, stepContext);
   triggerBrokenTextureSignatureCell(step, t, stepContext);

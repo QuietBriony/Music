@@ -152,6 +152,17 @@
             "metadata_only": { "const": true },
             "stores_audio": { "const": false }
           }
+        },
+        "radio_brain": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "program": { "type": "string" },
+            "next_program": { "type": "string" },
+            "blend": { "$ref": "#/definitions/unitInterval" },
+            "reason": { "type": "string" },
+            "metadata_only": { "const": true }
+          }
         }
       }
     },
