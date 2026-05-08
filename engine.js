@@ -5197,7 +5197,7 @@ function updateMusicStackSyncHelp(route, result = {}) {
     setText(kicker, "まずSYNC");
     setText(title, "次の行き先");
     setText(help, "START任意 → SYNC → 開く");
-    setText(reason, "MICは任意。音は行き先で手動再生。");
+    setText(reason, "MICは任意。歌/手拍子はgrooveだけ反応。");
     setRouteLink("openclaw", "手順");
     return;
   }
