@@ -6,7 +6,7 @@
     <title>Music Core Rig</title>
 
     <!-- Style -->
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=responsive-dock-1" />
 
     <!-- Tone.js -->
     <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
@@ -15,7 +15,7 @@
     <script src="audio/human-groove-governor.js" defer></script>
 
     <!-- Engine -->
-    <script src="engine.js?v=drum-route-copy" defer></script>
+    <script src="engine.js?v=responsive-dock-1" defer></script>
 </head>
 
 <body>
@@ -278,6 +278,7 @@
                 </div>
 
                 <div id="transport-dock">
+                    <button type="button" id="transport_dock_toggle" class="transport-dock-toggle" aria-expanded="true" aria-controls="transport-dock">畳む</button>
                     <!-- Transport -->
                     <div id="transport">
                         <button id="btn_start" class="primary">START</button>

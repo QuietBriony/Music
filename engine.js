@@ -11325,6 +11325,67 @@ function stopPlayback(options = {}) {
   requestHazamaRuntimeFeedback(feedbackKind);
 }
 
+function setupTransportDockEscape() {
+  const dock = document.getElementById("transport-dock");
+  const toggle = document.getElementById("transport_dock_toggle");
+  if (!dock || !toggle) return;
+
+  const mobileQuery = window.matchMedia ? window.matchMedia("(max-width: 640px)") : null;
+  let expanded = false;
+
+  const isMobile = () => !mobileQuery || mobileQuery.matches;
+  const apply = () => {
+    const mobile = isMobile();
+    const collapsed = mobile && !expanded;
+    dock.classList.toggle("is-collapsed", collapsed);
+    document.body.classList.toggle("transport-dock-expanded", mobile && expanded);
+    toggle.hidden = !mobile;
+    toggle.tabIndex = mobile ? 0 : -1;
+    toggle.setAttribute("aria-expanded", String(mobile && expanded));
+    toggle.textContent = collapsed ? "開く" : "畳む";
+  };
+
+  toggle.addEventListener("click", () => {
+    expanded = dock.classList.contains("is-collapsed");
+    apply();
+  });
+
+  if (mobileQuery) {
+    const onChange = () => {
+      expanded = false;
+      apply();
+    };
+    if (typeof mobileQuery.addEventListener === "function") {
+      mobileQuery.addEventListener("change", onChange);
+    } else if (typeof mobileQuery.addListener === "function") {
+      mobileQuery.addListener(onChange);
+    }
+  }
+
+  let lastScrollY = window.scrollY || 0;
+  window.addEventListener("scroll", () => {
+    if (!isMobile() || dock.classList.contains("is-collapsed")) return;
+    const nextY = window.scrollY || 0;
+    if (Math.abs(nextY - lastScrollY) > 18) {
+      expanded = false;
+      apply();
+    }
+    lastScrollY = nextY;
+  }, { passive: true });
+
+  ["btn_start", "btn_stop"].forEach((id) => {
+    const button = document.getElementById(id);
+    if (!button) return;
+    button.addEventListener("click", () => {
+      if (!isMobile()) return;
+      expanded = false;
+      apply();
+    });
+  });
+
+  apply();
+}
+
 function attachUI() {
   const ids = [
     "fader_energy",
@@ -11387,6 +11448,8 @@ function attachUI() {
   const btnRec = document.getElementById("btn_rec");
   const btnMicFollow = document.getElementById("btn_mic_follow");
   const btnPacketJson = document.getElementById("btn_packet_json");
+
+  setupTransportDockEscape();
 
   if (btnStart) {
     btnStart.onclick = () => {

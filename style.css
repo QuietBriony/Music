@@ -3007,3 +3007,243 @@ body {
     text-align: center;
   }
 }
+
+/* Final responsive fit pass: slimmer desktop right rail + mobile escape dock */
+.transport-dock-toggle {
+  display: none;
+}
+
+@media (min-width: 881px) {
+  #ui-header,
+  #control-panel {
+    width: min(1060px, calc(100vw - 28px));
+    max-width: 1060px;
+  }
+
+  #control-panel {
+    grid-template-columns: minmax(132px, 0.66fr) minmax(430px, 1.82fr) minmax(258px, 0.82fr);
+    gap: 10px;
+    padding: 10px 11px 11px;
+  }
+
+  #right-column {
+    gap: 6px;
+    padding-left: 4px;
+  }
+
+  #auto-block,
+  #preset-block {
+    margin-bottom: 0;
+    padding: 7px 8px;
+  }
+
+  .auto-header {
+    margin-bottom: 4px;
+  }
+
+  .auto-body {
+    min-height: 22px;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .route-body,
+  #output-body {
+    margin-top: 4px;
+  }
+
+  #audio_output_select,
+  #odd_logic_mode,
+  #culture_grammar_select,
+  #auto_arc_mode,
+  #preset_select,
+  .voice-control select {
+    height: 25px;
+    font-size: 9px;
+  }
+
+  .mini-action {
+    min-height: 25px;
+    padding: 5px 6px;
+  }
+
+  #performance-pads {
+    gap: 6px;
+  }
+
+  .performance-pad {
+    min-height: 44px;
+    padding: 7px 8px;
+  }
+
+  #transport-dock {
+    display: grid;
+    grid-template-columns: minmax(82px, 0.72fr) minmax(0, 1fr);
+    grid-template-areas:
+      "transport status"
+      "route route"
+      "mic mic";
+    gap: 6px;
+    padding: 7px;
+  }
+
+  #transport {
+    grid-area: transport;
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  #transport button {
+    min-height: 34px;
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+
+  #status-line {
+    grid-area: status;
+    min-height: 0;
+    padding: 5px;
+  }
+
+  #recorder-tools {
+    gap: 4px;
+  }
+
+  .recorder-button,
+  .recorder-link,
+  .packet-button {
+    min-height: 28px;
+    padding: 5px 5px;
+    font-size: 8px;
+  }
+
+  .sync-next-row {
+    grid-area: route;
+    min-height: 36px;
+    padding: 5px;
+  }
+
+  .packet-route-link {
+    min-height: 32px;
+  }
+
+  .mic-follow-panel {
+    grid-area: mic;
+    min-height: 28px;
+    padding: 5px 6px;
+  }
+
+  #mic_follow_detail {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  #ui-shell {
+    padding-bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+  }
+
+  body.transport-dock-expanded #ui-shell {
+    padding-bottom: calc(188px + env(safe-area-inset-bottom)) !important;
+  }
+
+  #transport-dock {
+    border-radius: 6px;
+    transition: width 0.18s ease, max-height 0.18s ease, transform 0.18s ease, opacity 0.18s ease;
+  }
+
+  #transport-dock:not(.is-collapsed) {
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: auto;
+    max-height: min(58dvh, 340px);
+    overflow-y: auto;
+    padding: 10px 8px 8px;
+  }
+
+  .transport-dock-toggle {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 28px;
+    border: 1px solid rgba(143, 255, 245, 0.34);
+    border-radius: 4px;
+    background: rgba(0, 8, 10, 0.86);
+    color: rgba(226, 250, 248, 0.92);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    touch-action: manipulation;
+  }
+
+  #transport-dock.is-collapsed {
+    left: auto;
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: min(330px, calc(100vw - 16px));
+    max-height: none;
+    gap: 5px;
+    overflow: visible;
+    padding: 7px 58px 7px 7px;
+  }
+
+  #transport-dock.is-collapsed #transport {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  #transport-dock.is-collapsed #transport button {
+    min-height: 40px;
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+
+  #transport-dock.is-collapsed #status-line {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    gap: 4px;
+  }
+
+  #transport-dock.is-collapsed #status-text {
+    font-size: 9px;
+    line-height: 1.2;
+    text-align: center;
+    color: rgba(210, 238, 242, 0.7);
+  }
+
+  #transport-dock.is-collapsed #recorder-tools {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  #transport-dock.is-collapsed .recorder-button,
+  #transport-dock.is-collapsed .recorder-link,
+  #transport-dock.is-collapsed .packet-button {
+    min-height: 32px;
+    padding: 5px 4px;
+    font-size: 8px;
+  }
+
+  #transport-dock.is-collapsed .sync-next-row,
+  #transport-dock.is-collapsed .mic-follow-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 430px) {
+  #transport-dock.is-collapsed {
+    width: min(300px, calc(100vw - 16px));
+    padding-right: 52px;
+  }
+
+  #transport-dock.is-collapsed #status-text {
+    display: none;
+  }
+}
