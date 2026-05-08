@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Claude FM — music for thinking and building</title>
-  <meta name="description" content="Generative focus radio powered by the UCM Mandala Engine — press start and listen for hours." />
+  <title>Hazama FM — music for thinking and building</title>
+  <meta name="description" content="Hazama FM — generative focus radio powered by the UCM Mandala Engine. Press start and listen for hours." />
 
   <link rel="stylesheet" href="style.css?v=fm-1" />
   <link rel="stylesheet" href="fm.css?v=fm-1" />
@@ -12,8 +12,9 @@
   <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
   <script src="audio/namima-audio-adapter.js" defer></script>
   <script src="audio/human-groove-governor.js" defer></script>
-  <script src="engine.js?v=fm-1" defer></script>
-  <script src="fm.js?v=fm-1" defer></script>
+  <script src="audio/genre-flavor.js?v=fm-2" defer></script>
+  <script src="engine.js?v=fm-2" defer></script>
+  <script src="fm.js?v=fm-2" defer></script>
 </head>
 
 <body data-page="fm">
@@ -25,8 +26,8 @@
   </div>
 
   <!-- Visible FM UI -->
-  <main id="fm-shell" aria-label="Claude FM player">
-    <h1>Claude FM</h1>
+  <main id="fm-shell" aria-label="Hazama FM player">
+    <h1>Hazama FM</h1>
     <p class="fm-tagline">music for thinking and building</p>
 
     <button id="fm_play" type="button" aria-label="Start playback" data-state="idle">START</button>
@@ -39,6 +40,15 @@
       <button type="button" data-energy="low" aria-pressed="false">low</button>
       <button type="button" data-energy="mid" aria-pressed="true">mid</button>
       <button type="button" data-energy="high" aria-pressed="false">high</button>
+    </div>
+
+    <div id="fm-genre" role="group" aria-label="Genre">
+      <button type="button" data-genre="any" aria-pressed="true">any</button>
+      <button type="button" data-genre="ambient" aria-pressed="false">ambient</button>
+      <button type="button" data-genre="techno" aria-pressed="false">techno</button>
+      <button type="button" data-genre="lofi" aria-pressed="false">lofi</button>
+      <button type="button" data-genre="jazz" aria-pressed="false">jazz</button>
+      <button type="button" data-genre="funk" aria-pressed="false">funk</button>
     </div>
 
     <a class="fm-back" href="index.html">full mixer →</a>
@@ -71,6 +81,18 @@
     <select id="auto_arc_mode" aria-label="Auto arc mode">
       <option value="live">LIVE</option>
       <option value="arc36" selected>ARC.36</option>
+    </select>
+
+    <!-- Culture grammar — driven by GENRE pill (engine.js:1342 updateCultureGrammarFromUI) -->
+    <select id="culture_grammar_select" aria-label="Culture grammar">
+      <option value="auto" selected>AUTO</option>
+      <option value="ambient_room">HAZE</option>
+      <option value="tape_memory">TAPE</option>
+      <option value="broken_machine">BROKEN</option>
+      <option value="ghost_dub">GHOST</option>
+      <option value="acid_core">ACID</option>
+      <option value="chrome_hymn">CHROME</option>
+      <option value="earth_reed">EARTH</option>
     </select>
 
     <!-- Engine binds click handlers to these in attachUI (engine.js:11719-11756). -->

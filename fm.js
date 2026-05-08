@@ -1,5 +1,5 @@
 /* =========================================================
-   Claude FM mode — single-button focus radio
+   Hazama FM mode — single-button focus radio
    Wraps engine.js without modifying it.
    - START / STOP with soft fade in / out
    - Live program label from MusicRuntimeState.radioBrain
@@ -16,6 +16,39 @@
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
   const TARGET_LEVEL = 80;
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };
+
+  // Genre profiles. Each profile sets all 9 UCM faders + the engine's culture
+  // grammar. The MusicRadioBrain still picks programs on its own — we just
+  // bias the underlying UCM state so the same brain produces a recognizably
+  // different palette per genre.
+  // Culture values match index.html option values (engine.js:1342 reads
+  // #culture_grammar_select directly).
+  const GENRE_PROFILES = {
+    any: {
+      culture: "auto",
+      faders: { energy: 40, wave: 40, mind: 50, creation: 50, void: 20, circle: 60, body: 50, resource: 60, observer: 50 }
+    },
+    ambient: {
+      culture: "ambient_room",
+      faders: { energy: 22, wave: 38, mind: 55, creation: 30, void: 65, circle: 72, body: 22, resource: 50, observer: 78 }
+    },
+    techno: {
+      culture: "acid_core",
+      faders: { energy: 78, wave: 50, mind: 28, creation: 38, void: 8, circle: 32, body: 82, resource: 70, observer: 32 }
+    },
+    lofi: {
+      culture: "tape_memory",
+      faders: { energy: 38, wave: 62, mind: 65, creation: 58, void: 28, circle: 64, body: 42, resource: 55, observer: 56 }
+    },
+    jazz: {
+      culture: "earth_reed",
+      faders: { energy: 36, wave: 70, mind: 72, creation: 76, void: 18, circle: 70, body: 50, resource: 64, observer: 60 }
+    },
+    funk: {
+      culture: "broken_machine",
+      faders: { energy: 64, wave: 56, mind: 44, creation: 70, void: 14, circle: 50, body: 76, resource: 68, observer: 44 }
+    }
+  };
 
   let started = false;
   let starting = false;
@@ -88,6 +121,51 @@
     dispatchInput(slider);
   }
 
+  function applyGenreProfile(name) {
+    const profile = GENRE_PROFILES[name];
+    if (!profile) return;
+
+    // For non-"any" genres, lock the genre identity by disabling AUTOMIX
+    // (engine.js's UCM.auto.enabled). Otherwise the engine's sine-wave
+    // modulation and director-scene bias overwrite our fader values every
+    // 240ms (syncAutoSlidersFromCurrent at engine.js:6870). Radio-brain
+    // program rotation is a separate system and keeps running.
+    const autoToggle = $("auto_toggle");
+    const wantsAuto = name === "any";
+    if (autoToggle && autoToggle.checked !== wantsAuto) {
+      autoToggle.checked = wantsAuto;
+      dispatchChange(autoToggle);
+    }
+
+    // Write all 9 UCM faders. Dispatch each input event with a small spread
+    // so the engine's 30 ms-throttled updateFromUI accepts each one and marks
+    // manual influence on every key (engine.js:11690, 983).
+    const keys = Object.keys(profile.faders);
+    keys.forEach((key, i) => {
+      const slider = $("fader_" + key);
+      if (!slider) return;
+      slider.value = String(profile.faders[key]);
+      // Spacing 35 ms > 30 ms throttle window.
+      setTimeout(() => dispatchInput(slider), i * 35);
+    });
+
+    // Re-apply ENERGY pill on top of the genre baseline so the user's energy
+    // choice still wins for the energy fader.
+    setTimeout(() => applyEnergyValue(getCurrentEnergy()), keys.length * 35 + 20);
+
+    // Switch culture grammar — engine.js:11780 listens for change events.
+    const cultureSelect = $("culture_grammar_select");
+    if (cultureSelect && cultureSelect.value !== profile.culture) {
+      cultureSelect.value = profile.culture;
+      dispatchChange(cultureSelect);
+    }
+
+    // Crossfade the genre flavor layer.
+    if (window.GenreFlavor) {
+      try { window.GenreFlavor.setGenre(name); } catch (e) {}
+    }
+  }
+
   // ---- localStorage --------------------------------------------
 
   function readSession() {
@@ -111,6 +189,7 @@
         next: rb.next || null,
         lastReason: rb.lastReason || null,
         energy: getCurrentEnergy(),
+        genre: getCurrentGenre(),
         savedAt: Date.now()
       }));
     } catch (e) {
@@ -133,6 +212,11 @@
   function getCurrentEnergy() {
     const pressed = document.querySelector('#fm-energy button[aria-pressed="true"]');
     return pressed ? pressed.dataset.energy : "mid";
+  }
+
+  function getCurrentGenre() {
+    const pressed = document.querySelector('#fm-genre button[aria-pressed="true"]');
+    return pressed ? pressed.dataset.genre : "any";
   }
 
   // ---- Runtime state subscription ------------------------------
@@ -177,8 +261,9 @@
         dispatchInput(out);
       }
 
-      // Apply current ENERGY pill so the radio brain bias matches user's choice.
-      applyEnergyValue(getCurrentEnergy());
+      // Apply current GENRE profile (sets all 9 faders + culture grammar),
+      // then ENERGY pill on top to honor the energy choice.
+      applyGenreProfile(getCurrentGenre());
 
       if (typeof window.startPlayback === "function") {
         await window.startPlayback({ source: "fm.start" });
@@ -194,6 +279,17 @@
       // Audible fade in.
       await rampOutputLevel(TARGET_LEVEL, FADE_IN_S);
 
+      // Boot the genre flavor layer (jazz brush+walking-bass, funk clavi+EP, etc.)
+      // Independent of engine — own master Gain, own Tone.Transport schedules.
+      if (window.GenreFlavor) {
+        try {
+          window.GenreFlavor.setGenre(getCurrentGenre());
+          window.GenreFlavor.start();
+        } catch (err) {
+          console.warn("[Hazama FM] GenreFlavor.start failed:", err);
+        }
+      }
+
       started = true;
       starting = false;
       setButtonState("playing");
@@ -203,7 +299,7 @@
         onRuntimeState({ detail: window.MusicRuntimeState });
       }
     } catch (err) {
-      console.warn("[Claude FM] start failed:", err);
+      console.warn("[Hazama FM] start failed:", err);
       starting = false;
       setButtonState("idle");
       const now = $("fm-now");
@@ -217,12 +313,16 @@
     setButtonState("stopping");
 
     try {
+      // Stop the genre flavor layer first so it fades alongside the engine.
+      if (window.GenreFlavor) {
+        try { window.GenreFlavor.stop(); } catch (e) {}
+      }
       await rampOutputLevel(0, FADE_OUT_S);
       if (typeof window.stopPlayback === "function") {
         window.stopPlayback({ source: "fm.stop" });
       }
     } catch (err) {
-      console.warn("[Claude FM] stop fade failed:", err);
+      console.warn("[Hazama FM] stop fade failed:", err);
     } finally {
       started = false;
       stopping = false;
@@ -252,6 +352,22 @@
     });
   }
 
+  function bindGenrePill() {
+    const group = $("fm-genre");
+    if (!group) return;
+    group.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-genre]");
+      if (!btn) return;
+      const name = btn.dataset.genre;
+      group.querySelectorAll("button").forEach((b) => {
+        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+      });
+      // Only apply live if engine is running. Otherwise just remember the
+      // selection — fmStart will apply it on START.
+      if (started) applyGenreProfile(name);
+    });
+  }
+
   // ---- Visibility / wake handling ------------------------------
 
   function bindVisibility() {
@@ -274,6 +390,7 @@
     if (playBtn) playBtn.addEventListener("click", togglePlay);
 
     bindEnergyPill();
+    bindGenrePill();
     bindVisibility();
 
     window.addEventListener("music-runtime-state", onRuntimeState);
@@ -281,12 +398,20 @@
     const resume = readSession();
     if (resume) {
       showResumeHint(resume);
-      // Restore last energy choice (visual only; applied on START).
+      // Restore last energy / genre choice (visual only; applied on START).
       if (resume.energy && ENERGY_VALUES[resume.energy]) {
         const group = $("fm-energy");
         if (group) {
           group.querySelectorAll("button").forEach((b) => {
             b.setAttribute("aria-pressed", b.dataset.energy === resume.energy ? "true" : "false");
+          });
+        }
+      }
+      if (resume.genre && GENRE_PROFILES[resume.genre]) {
+        const group = $("fm-genre");
+        if (group) {
+          group.querySelectorAll("button").forEach((b) => {
+            b.setAttribute("aria-pressed", b.dataset.genre === resume.genre ? "true" : "false");
           });
         }
       }

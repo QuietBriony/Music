@@ -84,6 +84,43 @@ body[data-playing="true"][data-auto="true"] {
 }
 
 /* ---------------------------
+   Hazama FM link button
+--------------------------- */
+
+#hazama-fm-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  margin-left: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  background: rgba(8, 18, 35, 0.6);
+  color: var(--accent-soft);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: border-color 0.25s, color 0.25s, background 0.25s;
+  align-self: center;
+}
+
+#hazama-fm-link:hover {
+  border-color: var(--accent-glass);
+  color: var(--accent-glass);
+  background: rgba(15, 35, 60, 0.7);
+}
+
+@media (max-width: 600px) {
+  #hazama-fm-link {
+    font-size: 10px;
+    padding: 5px 10px;
+    margin-left: 6px;
+  }
+}
+
+/* ---------------------------
    Mandala Visual
 --------------------------- */
 
