@@ -2865,6 +2865,30 @@ body {
   color: rgba(255, 242, 196, 0.96);
 }
 
+.mic-follow-panel[data-gesture="clap"],
+.mic-follow-panel[data-gesture="pulse"] {
+  border-color: rgba(255, 92, 70, 0.62);
+  background:
+    linear-gradient(90deg, rgba(255, 74, 61, 0.14), transparent 48%),
+    rgba(10, 6, 4, 0.62);
+}
+
+.mic-follow-panel[data-gesture="phrase"],
+.mic-follow-panel[data-gesture="hum"] {
+  border-color: rgba(143, 255, 245, 0.54);
+  background:
+    linear-gradient(90deg, rgba(143, 255, 245, 0.1), transparent 52%),
+    rgba(0, 10, 12, 0.56);
+}
+
+.mic-follow-panel[data-gesture="breath"],
+.mic-follow-panel[data-gesture="silent"] {
+  border-color: rgba(174, 202, 255, 0.34);
+  background:
+    linear-gradient(90deg, rgba(174, 202, 255, 0.08), transparent 56%),
+    rgba(0, 7, 12, 0.5);
+}
+
 .mic-follow-panel.is-error {
   border-color: rgba(255, 145, 118, 0.52);
   color: rgba(255, 214, 201, 0.9);

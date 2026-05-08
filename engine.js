@@ -765,6 +765,23 @@ const MicFollowState = {
   },
   updatedAt: 0
 };
+const MicJamState = {
+  gesture: "silent",
+  previousGesture: "silent",
+  drive: 0,
+  pulse: 0,
+  phrase: 0,
+  clap: 0,
+  hum: 0,
+  air: 1,
+  noisy: 0,
+  confidence: 0,
+  bpmLock: 0,
+  cooldownSteps: 0,
+  lastCueStep: -99,
+  lastGestureAt: 0,
+  updatedAt: 0
+};
 const SignatureCellState = {
   phrase: 0,
   phraseCycles: 6,
@@ -3069,6 +3086,7 @@ function advanceModeTimbrePalettes(context = {}) {
   const habits = ProducerHabitState.habits;
   const risk = ProducerHabitState.riskSnapshot || producerHabitRiskSnapshot();
   const review = musicSelfReviewRuntimeState();
+  const micJam = micJamShape();
   const densityBrake = clampValue(Math.max(SelfReviewGovernorState.densityBrake || 0, risk.density || 0, review.densityRisk || 0), 0, 1);
   const lowClamp = clampValue(Math.max(SelfReviewGovernorState.lowCleanup || 0, risk.low || 0, review.lowEndRisk || 0, MixGovernorState.lowGuard || 0), 0, 1);
   const brightnessDamp = clampValue(Math.max(SelfReviewGovernorState.transientSoftener || 0, risk.bright || 0, review.brightnessRisk || 0), 0, 1);
@@ -3094,6 +3112,9 @@ function advanceModeTimbrePalettes(context = {}) {
         circle * 0.09 +
         observer * 0.1 +
         habits.tenderMemory * 0.06 +
+        micJam.hum * 0.08 +
+        micJam.breath * 0.06 +
+        micJam.air * 0.04 +
         PerformancePadState.drift * 0.08 +
         safetyLift * 0.36 -
         kits.technoKit * 0.08,
@@ -3111,6 +3132,8 @@ function advanceModeTimbrePalettes(context = {}) {
         RdjGrowthState.edit * 0.06 +
         RdjGrowthState.rubber * 0.05 +
         habits.rubberEdit * 0.06 +
+        micJam.phrase * 0.12 +
+        micJam.pulse * 0.04 +
         PerformancePadState.repeat * 0.05 -
         densityBrake * 0.1 -
         brightnessDamp * 0.06,
@@ -3124,6 +3147,8 @@ function advanceModeTimbrePalettes(context = {}) {
         energy * 0.12 +
         resource * 0.1 +
         habits.dryGrid * 0.08 +
+        micJam.pulse * 0.12 +
+        micJam.clap * 0.08 +
         PerformancePadState.repeat * 0.07 -
         voidness * 0.08 -
         brightnessDamp * 0.12 -
@@ -3137,6 +3162,9 @@ function advanceModeTimbrePalettes(context = {}) {
         energy * 0.1 +
         morph.pulse * 0.1 +
         habits.ghostPressure * 0.1 +
+        micJam.clap * 0.05 +
+        micJam.drive * 0.04 -
+        micJam.noisy * 0.05 +
         PerformancePadState.punch * 0.16 +
         (GradientState.ghost || 0) * 0.06 -
         lowClamp * 0.18 -
@@ -3152,6 +3180,8 @@ function advanceModeTimbrePalettes(context = {}) {
         observer * 0.12 +
         circle * 0.06 +
         habits.transparentVoid * 0.1 +
+        micJam.air * 0.1 +
+        micJam.breath * 0.06 +
         PerformancePadState.void * 0.16 +
         safetyLift * 0.42 -
         resource * 0.04,
@@ -3175,11 +3205,11 @@ function advanceModeTimbrePalettes(context = {}) {
   ModeTimbrePaletteState.safety.restraint = restraint;
 
   const shape = ModeTimbrePaletteState.shape;
-  shape.rhythm = clampValue(weights.technoDryGrid * 0.42 + weights.idmGlass * 0.24 + weights.pressureGhost * 0.14 - weights.ambientHaze * 0.08 - weights.voidAir * 0.12 - restraint * 0.08, 0, 1);
-  shape.haze = clampValue(weights.ambientHaze * 0.48 + weights.voidAir * 0.16 + weights.idmGlass * 0.06 - weights.technoDryGrid * 0.12 + restraint * 0.05, 0, 1);
-  shape.glass = clampValue(weights.idmGlass * 0.34 + weights.ambientHaze * 0.15 + weights.voidAir * 0.14 + weights.technoDryGrid * 0.08 + RdjGrowthState.toy * 0.04 - densityBrake * 0.04, 0, 1);
-  shape.texture = clampValue(weights.technoDryGrid * 0.3 + weights.idmGlass * 0.26 + weights.pressureGhost * 0.12 + RdjGrowthState.edit * 0.04 - weights.ambientHaze * 0.06 - weights.voidAir * 0.06 - brightnessDamp * 0.06, 0, 1);
-  shape.air = clampValue(weights.voidAir * 0.44 + weights.ambientHaze * 0.2 + weights.idmGlass * 0.06 + SelfReviewGovernorState.airTail * 0.08 - weights.pressureGhost * 0.05, 0, 1);
+  shape.rhythm = clampValue(weights.technoDryGrid * 0.42 + weights.idmGlass * 0.24 + weights.pressureGhost * 0.14 + micJam.pulse * 0.06 + micJam.clap * 0.04 - weights.ambientHaze * 0.08 - weights.voidAir * 0.12 - restraint * 0.08, 0, 1);
+  shape.haze = clampValue(weights.ambientHaze * 0.48 + weights.voidAir * 0.16 + weights.idmGlass * 0.06 + micJam.hum * 0.04 + micJam.breath * 0.04 - weights.technoDryGrid * 0.12 + restraint * 0.05, 0, 1);
+  shape.glass = clampValue(weights.idmGlass * 0.34 + weights.ambientHaze * 0.15 + weights.voidAir * 0.14 + weights.technoDryGrid * 0.08 + RdjGrowthState.toy * 0.04 + micJam.phrase * 0.05 + micJam.hum * 0.02 - densityBrake * 0.04, 0, 1);
+  shape.texture = clampValue(weights.technoDryGrid * 0.3 + weights.idmGlass * 0.26 + weights.pressureGhost * 0.12 + RdjGrowthState.edit * 0.04 + micJam.pulse * 0.05 + micJam.clap * 0.04 - weights.ambientHaze * 0.06 - weights.voidAir * 0.06 - brightnessDamp * 0.06, 0, 1);
+  shape.air = clampValue(weights.voidAir * 0.44 + weights.ambientHaze * 0.2 + weights.idmGlass * 0.06 + SelfReviewGovernorState.airTail * 0.08 + micJam.air * 0.06 + micJam.breath * 0.03 - weights.pressureGhost * 0.05, 0, 1);
   shape.pad = clampValue(weights.ambientHaze * 0.42 + weights.voidAir * 0.24 + PerformancePadState.drift * 0.08 - weights.technoDryGrid * 0.12 - weights.pressureGhost * 0.04, 0, 1);
   shape.signature = clampValue(weights.idmGlass * 0.24 + weights.ambientHaze * 0.12 + weights.voidAir * 0.12 + weights.pressureGhost * 0.08 + ProducerHabitState.curiosity * 0.08 - densityBrake * 0.1 - restraint * 0.04, 0, 1);
   shape.transient = clampValue(weights.technoDryGrid * 0.32 + weights.pressureGhost * 0.28 + weights.idmGlass * 0.14 - weights.ambientHaze * 0.08 - weights.voidAir * 0.08 - brightnessDamp * 0.08, 0, 1);
@@ -3442,6 +3472,80 @@ function micFollowNumber(value, digits = 3, min = 0, max = 1) {
   return Math.round(clampValue(safe, min, max) * factor) / factor;
 }
 
+function resetMicJamState() {
+  MicJamState.gesture = "silent";
+  MicJamState.previousGesture = "silent";
+  MicJamState.drive = 0;
+  MicJamState.pulse = 0;
+  MicJamState.phrase = 0;
+  MicJamState.clap = 0;
+  MicJamState.hum = 0;
+  MicJamState.air = 1;
+  MicJamState.noisy = 0;
+  MicJamState.confidence = 0;
+  MicJamState.bpmLock = 0;
+  MicJamState.cooldownSteps = 0;
+  MicJamState.lastCueStep = -99;
+  MicJamState.lastGestureAt = 0;
+  MicJamState.updatedAt = Date.now();
+}
+
+function classifyMicJamGesture(f = {}) {
+  const level = clampValue(Number(f.inputLevel) || 0, 0, 1);
+  const onset = clampValue(Number(f.onsetRate) || 0, 0, 1);
+  const density = clampValue(Number(f.density) || 0, 0, 1);
+  const stability = clampValue(Number(f.stability) || 0, 0, 1);
+  const silence = clampValue(Number(f.silence) || 0, 0, 1);
+  const brightness = clampValue(Number(f.brightness) || 0, 0, 1);
+  const tempo = Number(f.roughTempo) || 0;
+
+  if (silence > 0.74 && level < 0.035 && onset < 0.08) return "silent";
+  if (level > 0.18 && onset > 0.32 && brightness > 0.14) return "clap";
+  if (tempo > 0 && onset > 0.16 && stability > 0.34) return "pulse";
+  if (level > 0.08 && stability > 0.64 && onset < 0.16 && brightness < 0.23) return "hum";
+  if (level > 0.035 && level < 0.16 && stability > 0.52 && onset < 0.14) return "breath";
+  if (level > 0.07 && density > 0.16 && onset < 0.38) return "phrase";
+  if (brightness > 0.42 && density > 0.28) return "noisy";
+  return level > 0.045 ? "phrase" : "silent";
+}
+
+function updateMicJamState(features = MicFollowState.features || {}) {
+  const gesture = MicFollowState.enabled ? classifyMicJamGesture(features) : "silent";
+  const level = clampValue(Number(features.inputLevel) || 0, 0, 1);
+  const onset = clampValue(Number(features.onsetRate) || 0, 0, 1);
+  const density = clampValue(Number(features.density) || 0, 0, 1);
+  const stability = clampValue(Number(features.stability) || 0, 0, 1);
+  const silence = clampValue(Number(features.silence) || 0, 0, 1);
+  const brightness = clampValue(Number(features.brightness) || 0, 0, 1);
+  const tempo = Number(features.roughTempo) || 0;
+  const noisy = gesture === "noisy" ? clampValue(brightness * 0.64 + density * 0.36, 0, 1) : 0;
+  const rawDrive = MicFollowState.enabled
+    ? clampValue(level * 0.34 + density * 0.26 + onset * 0.32 + brightness * 0.08 - silence * 0.1, 0, 1)
+    : 0;
+  const confidence = MicFollowState.enabled
+    ? clampValue(rawDrive * 0.52 + stability * 0.24 + onset * 0.18 + (tempo ? 0.12 : 0) - noisy * 0.28, 0, 1)
+    : 0;
+  const bpmLock = confidence > 0.28 && onset > 0.12 && stability > 0.32 && tempo ? tempo : 0;
+
+  if (gesture !== MicJamState.gesture) {
+    MicJamState.previousGesture = MicJamState.gesture;
+    MicJamState.gesture = gesture;
+    MicJamState.lastGestureAt = performanceNowMs();
+  }
+
+  MicJamState.drive = approachValue(MicJamState.drive, rawDrive, 0.28);
+  MicJamState.pulse = approachValue(MicJamState.pulse, gesture === "pulse" || gesture === "clap" ? clampValue(onset * 0.7 + density * 0.3, 0, 1) : 0, 0.24);
+  MicJamState.phrase = approachValue(MicJamState.phrase, gesture === "phrase" ? clampValue(density * 0.58 + level * 0.42, 0, 1) : 0, 0.22);
+  MicJamState.clap = approachValue(MicJamState.clap, gesture === "clap" ? clampValue(onset * 0.7 + brightness * 0.3, 0, 1) : 0, 0.3);
+  MicJamState.hum = approachValue(MicJamState.hum, gesture === "hum" ? clampValue(level * 0.46 + stability * 0.54, 0, 1) : 0, 0.18);
+  MicJamState.air = approachValue(MicJamState.air, gesture === "silent" || gesture === "breath" || gesture === "hum" ? clampValue(silence * 0.5 + stability * 0.3 + (1 - density) * 0.2, 0, 1) : 0, 0.18);
+  MicJamState.noisy = approachValue(MicJamState.noisy, noisy, 0.28);
+  MicJamState.confidence = approachValue(MicJamState.confidence, confidence, 0.24);
+  MicJamState.bpmLock = bpmLock;
+  MicJamState.updatedAt = Date.now();
+  return micJamRuntimeState();
+}
+
 function resetMicFollowFeatures(status = "off") {
   MicFollowState.features = {
     inputLevel: 0,
@@ -3457,6 +3561,7 @@ function resetMicFollowFeatures(status = "off") {
   MicFollowState.onsetTimes = [];
   MicFollowState.updatedAt = Date.now();
   MicFollowState.status = status;
+  resetMicJamState();
 }
 
 function micFollowRuntimeState() {
@@ -3486,8 +3591,45 @@ function micFollowRuntimeState() {
   };
 }
 
+function micJamRuntimeState() {
+  return {
+    schema: "music.mic-jam.v2",
+    active: !!MicFollowState.enabled && MicJamState.confidence > 0.04,
+    gesture: MicJamState.gesture,
+    previousGesture: MicJamState.previousGesture,
+    drive: micFollowNumber(MicJamState.drive),
+    pulse: micFollowNumber(MicJamState.pulse),
+    phrase: micFollowNumber(MicJamState.phrase),
+    clap: micFollowNumber(MicJamState.clap),
+    hum: micFollowNumber(MicJamState.hum),
+    air: micFollowNumber(MicJamState.air),
+    noisy: micFollowNumber(MicJamState.noisy),
+    confidence: micFollowNumber(MicJamState.confidence),
+    bpmLock: Math.round(clampValue(Number(MicJamState.bpmLock) || 0, 0, 240)),
+    updatedAt: MicJamState.updatedAt || 0,
+    safety: {
+      stores_audio: false,
+      uploads_audio: false,
+      metadata_only: true
+    }
+  };
+}
+
+function micJamPacketState() {
+  const state = micJamRuntimeState();
+  return {
+    gesture: state.gesture,
+    drive: state.drive,
+    bpm_lock: state.bpmLock,
+    confidence: state.confidence,
+    metadata_only: true,
+    stores_audio: false
+  };
+}
+
 function micFollowPacketState() {
   const state = micFollowRuntimeState();
+  const jam = micJamPacketState();
   return {
     enabled: state.enabled,
     status: state.status,
@@ -3498,6 +3640,10 @@ function micFollowPacketState() {
     stability: state.stability,
     silence: state.silence,
     brightness: state.brightness,
+    gesture: jam.gesture,
+    drive: jam.drive,
+    bpm_lock: jam.bpm_lock,
+    confidence: jam.confidence,
     metadata_only: true,
     stores_audio: false
   };
@@ -3507,7 +3653,9 @@ function updateMicFollowButton() {
   if (typeof document === "undefined") return;
   const btn = document.getElementById("btn_mic_follow");
   if (btn) {
-    btn.textContent = MicFollowState.pending ? "MIC..." : MicFollowState.enabled ? "MIC ON" : MicFollowState.status.startsWith("error") || MicFollowState.status.startsWith("permission") ? "MIC ERR" : "MIC";
+    const jam = micJamRuntimeState();
+    const drive = Math.round((jam.drive || 0) * 100);
+    btn.textContent = MicFollowState.pending ? "MIC..." : MicFollowState.enabled ? (drive > 5 ? `MIC ${drive}` : "MIC ON") : MicFollowState.status.startsWith("error") || MicFollowState.status.startsWith("permission") ? "MIC ERR" : "MIC";
     btn.classList.toggle("is-active", !!MicFollowState.enabled);
     btn.setAttribute("aria-pressed", MicFollowState.enabled ? "true" : "false");
     btn.title = MicFollowState.enabled
@@ -3529,12 +3677,13 @@ function updateMicFollowReadout(force = false) {
   const bar = document.getElementById("mic_follow_bar");
   const detail = document.getElementById("mic_follow_detail");
   const f = MicFollowState.features || {};
+  const jam = micJamRuntimeState();
   const level = clampValue(Number(f.inputLevel) || 0, 0, 1);
   const density = clampValue(Number(f.density) || 0, 0, 1);
   const onset = clampValue(Number(f.onsetRate) || 0, 0, 1);
   const tempo = Math.round(clampValue(Number(f.roughTempo) || 0, 0, 240));
   const active = !!MicFollowState.enabled;
-  const response = clampValue(level * 0.56 + density * 0.28 + onset * 0.34, 0, 1);
+  const response = clampValue(Math.max(jam.drive || 0, level * 0.52 + density * 0.22 + onset * 0.24), 0, 1);
   const reacting = active && response > 0.06;
   const error = String(MicFollowState.status || "").startsWith("error") || String(MicFollowState.status || "").startsWith("permission");
 
@@ -3542,18 +3691,24 @@ function updateMicFollowReadout(force = false) {
     panel.classList.toggle("is-active", active);
     panel.classList.toggle("is-reacting", reacting);
     panel.classList.toggle("is-error", error);
+    panel.dataset.gesture = active ? jam.gesture : "off";
   }
   if (label) {
     if (MicFollowState.pending) label.textContent = "MIC requesting";
-    else if (active) label.textContent = reacting ? `MIC ${Math.round(response * 100)}%` : "MIC listening";
+    else if (active) label.textContent = reacting ? `${String(jam.gesture || "mic").toUpperCase()} ${Math.round(response * 100)}%` : "MIC listening";
     else if (error) label.textContent = "MIC error";
     else label.textContent = "MIC off";
   }
   if (bar) bar.style.width = `${Math.round(response * 100)}%`;
   if (detail) {
     detail.textContent = active
-      ? `lvl ${Math.round(level * 100)} / dens ${Math.round(density * 100)} / onset ${Math.round(onset * 100)} / ${tempo || "--"} bpm`
+      ? `drive ${Math.round((jam.drive || 0) * 100)} / conf ${Math.round((jam.confidence || 0) * 100)} / ${jam.bpmLock || tempo || "--"} bpm`
       : "local features only";
+  }
+  const btn = document.getElementById("btn_mic_follow");
+  if (btn && active && !MicFollowState.pending) {
+    const drive = Math.round((jam.drive || 0) * 100);
+    btn.textContent = drive > 5 ? `MIC ${drive}` : "MIC ON";
   }
 }
 
@@ -3614,6 +3769,7 @@ function updateMicFollowAnalysis() {
   };
   MicFollowState.updatedAt = Date.now();
   MicFollowState.status = "local features only";
+  updateMicJamState(MicFollowState.features);
   updateMicFollowReadout();
   return MicFollowState.features;
 }
@@ -3671,33 +3827,66 @@ function applyMicFollowTargetBias(dt = 0.016) {
 function micFollowKitBias() {
   if (!MicFollowState.enabled) return { ambient: 0, idm: 0, techno: 0, pressure: 0, space: 0 };
   const f = MicFollowState.features || {};
+  const jam = micJamShape();
   const loudDense = clampValue(f.inputLevel * 0.38 + f.density * 0.34 + f.onsetRate * 0.28, 0, 1);
   const quietStable = clampValue(f.silence * 0.54 + f.stability * 0.28 + (1 - f.density) * 0.18, 0, 1);
   const particle = clampValue(f.onsetRate * 0.5 + f.density * 0.24 + f.brightness * 0.2, 0, 1);
   return {
-    ambient: quietStable * 0.06,
-    idm: particle * 0.07,
-    techno: loudDense * 0.045 + particle * 0.026,
-    pressure: clampValue(f.inputLevel * 0.055 + f.density * 0.028 - f.silence * 0.03, 0, 0.07),
-    space: quietStable * 0.07
+    ambient: quietStable * 0.06 + jam.hum * 0.035 + jam.breath * 0.03,
+    idm: particle * 0.07 + jam.phrase * 0.052 + jam.pulse * 0.028,
+    techno: loudDense * 0.045 + particle * 0.026 + jam.pulse * 0.052 + jam.clap * 0.042,
+    pressure: clampValue(f.inputLevel * 0.055 + f.density * 0.028 + jam.clap * 0.026 - f.silence * 0.03 - jam.noisy * 0.025, 0, 0.08),
+    space: quietStable * 0.07 + jam.air * 0.04 + jam.breath * 0.03
   };
 }
 
 function micFollowGrooveShape() {
   if (!MicFollowState.enabled) return { pulse: 0, particle: 0, space: 0 };
   const f = MicFollowState.features || {};
+  const jam = micJamShape();
   const pulse = clampValue((f.inputLevel || 0) * 0.3 + (f.density || 0) * 0.35 + (f.onsetRate || 0) * 0.35, 0, 1);
   const particle = clampValue((f.onsetRate || 0) * 0.48 + (f.density || 0) * 0.28 + (f.brightness || 0) * 0.24, 0, 1);
   const space = clampValue((f.silence || 0) * 0.5 + (f.stability || 0) * 0.25 + (1 - (f.density || 0)) * 0.25, 0, 1);
-  return { pulse, particle, space };
+  return {
+    pulse: clampValue(Math.max(pulse, jam.pulse * 0.92 + jam.clap * 0.5), 0, 1),
+    particle: clampValue(Math.max(particle, jam.phrase * 0.62 + jam.pulse * 0.28 + jam.clap * 0.34), 0, 1),
+    space: clampValue(Math.max(space, jam.air * 0.86 + jam.breath * 0.4), 0, 1)
+  };
+}
+
+function micJamShape() {
+  if (!MicFollowState.enabled) {
+    return { drive: 0, pulse: 0, phrase: 0, clap: 0, hum: 0, breath: 0, air: 0, noisy: 0, confidence: 0, bpmLock: 0 };
+  }
+  const gesture = MicJamState.gesture;
+  const confidence = clampValue(MicJamState.confidence || 0, 0, 1);
+  const safety = clampValue(1 - Math.max(SelfReviewGovernorState.densityBrake || 0, SelfReviewGovernorState.transientSoftener || 0, MixGovernorState.eventLoad || 0) * 0.34, 0.48, 1);
+  return {
+    drive: clampValue((MicJamState.drive || 0) * confidence * safety, 0, 1),
+    pulse: clampValue((MicJamState.pulse || 0) * confidence * safety, 0, 1),
+    phrase: clampValue((MicJamState.phrase || 0) * confidence * safety, 0, 1),
+    clap: clampValue((MicJamState.clap || 0) * confidence * safety, 0, 1),
+    hum: clampValue((MicJamState.hum || 0) * confidence, 0, 1),
+    breath: gesture === "breath" ? clampValue((MicJamState.air || 0) * confidence, 0, 1) : 0,
+    air: clampValue((MicJamState.air || 0) * (0.55 + confidence * 0.45), 0, 1),
+    noisy: clampValue(MicJamState.noisy || 0, 0, 1),
+    confidence,
+    bpmLock: MicJamState.bpmLock || 0
+  };
+}
+
+function decayMicJam() {
+  if (MicJamState.cooldownSteps > 0) MicJamState.cooldownSteps = Math.max(0, MicJamState.cooldownSteps - 1);
 }
 
 function micFollowTempoBias(rawTarget = EngineParams.bpm || 80) {
   if (!MicFollowState.enabled) return 0;
   const f = MicFollowState.features || {};
-  if (!f.roughTempo || f.stability < 0.42 || f.onsetRate < 0.12) return 0;
-  const influence = clampValue(f.stability * 0.08 + f.onsetRate * 0.08 + f.density * 0.04, 0, 0.16);
-  return clampValue((f.roughTempo - rawTarget) * influence, -5.5, 5.5);
+  const jam = micJamShape();
+  const tempo = jam.bpmLock || f.roughTempo;
+  if (!tempo || f.stability < 0.34 || f.onsetRate < 0.1 || jam.confidence < 0.24) return 0;
+  const influence = clampValue(f.stability * 0.08 + f.onsetRate * 0.08 + f.density * 0.04 + jam.pulse * 0.05 + jam.clap * 0.025, 0, 0.22);
+  return clampValue((tempo - rawTarget) * influence, -7.5, 7.5);
 }
 
 async function startMicFollow() {
@@ -4599,6 +4788,7 @@ function publishMusicRuntimeState() {
     producerHabits: producerHabitsRuntimeState(),
     selfReview: musicSelfReviewRuntimeState(),
     micFollow: micFollowRuntimeState(),
+    micJam: micJamRuntimeState(),
     stackRouting: musicStackRoutingRecommendation(),
     humanGroove: typeof window.HumanGrooveGovernor?.getState === "function"
       ? window.HumanGrooveGovernor.getState()
@@ -5063,7 +5253,8 @@ if (typeof window !== "undefined") {
     start: startMicFollow,
     stop: stopMicFollow,
     toggle: toggleMicFollow,
-    getState: micFollowRuntimeState
+    getState: micFollowRuntimeState,
+    getJamState: micJamRuntimeState
   };
 }
 
@@ -8828,6 +9019,7 @@ function advanceGrooveStructure() {
   const density = (energyNorm + creationNorm + resourceNorm) / 3;
   const fillChance = mapValue(density, 0, 1, 0.04, 0.30);
   const micShape = micFollowGrooveShape();
+  const micJam = micJamShape();
   advanceLongformArcPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceOddLogicDirectorPhrase();
@@ -8875,20 +9067,20 @@ function advanceGrooveStructure() {
 
   if (MicFollowState.enabled) {
     EngineParams.restProb = clampValue(
-      EngineParams.restProb + micShape.space * 0.035 - micShape.pulse * 0.018,
+      EngineParams.restProb + micShape.space * 0.035 + micJam.air * 0.018 - micShape.pulse * 0.018 - micJam.phrase * 0.012,
       0.018,
       PerformancePadState.void ? 0.66 : 0.55
     );
     EngineParams.hatProb = clampValue(
-      EngineParams.hatProb * (1 + micShape.particle * 0.11 - micShape.space * 0.045),
+      EngineParams.hatProb * (1 + micShape.particle * 0.11 + micJam.pulse * 0.08 + micJam.clap * 0.05 - micShape.space * 0.045),
       PerformancePadState.void ? 0.06 : 0.1,
       0.86
     );
   }
 
   GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
-  GrooveState.textureLift = clampValue((GrooveState.fillActive ? 0.10 + creationNorm * 0.12 : creationNorm * 0.035) + micShape.particle * 0.055, 0, 0.32);
-  GrooveState.glassLift = clampValue(((phraseStep === 1 || phraseStep === 3) ? 0.04 + creationNorm * 0.08 : 0.015) + micShape.particle * 0.035 + micShape.space * 0.014, 0, 0.28);
+  GrooveState.textureLift = clampValue((GrooveState.fillActive ? 0.10 + creationNorm * 0.12 : creationNorm * 0.035) + micShape.particle * 0.055 + micJam.pulse * 0.06 + micJam.clap * 0.04, 0, 0.34);
+  GrooveState.glassLift = clampValue(((phraseStep === 1 || phraseStep === 3) ? 0.04 + creationNorm * 0.08 : 0.015) + micShape.particle * 0.035 + micShape.space * 0.014 + micJam.phrase * 0.06 + micJam.hum * 0.028 + micJam.air * 0.018, 0, 0.3);
   GrooveState.accentStep = GLASS_ACCENT_STEPS[(GrooveState.cycle + Math.floor(waveNorm * 6)) % GLASS_ACCENT_STEPS.length];
   GrooveState.bassOffset = (GrooveState.cycle + Math.floor(UCM_CUR.mind / 18)) % 4;
   GrooveState.microJitterScale = clampValue((GrooveState.fillActive ? 1.4 : 0.7 + waveNorm * 0.7) + micShape.particle * 0.18 - micShape.space * 0.08, 0.52, 1.62);
@@ -10829,6 +11021,69 @@ function triggerReferenceTimbreResearch(step, time, context) {
   }
 }
 
+function triggerMicJamResponse(step, time, context = {}) {
+  if (!MicFollowState.enabled || MicJamState.cooldownSteps > 0 || MixGovernorState.eventLoad > 0.88) return;
+  const jam = micJamShape();
+  if (jam.confidence < 0.18 || jam.drive < 0.025) return;
+  const gesture = MicJamState.gesture;
+  const palette = context.palette || modeTimbrePaletteShape();
+  const energyNorm = clampValue(context.energyNorm || 0, 0, 1);
+  const observerNorm = clampValue(context.observerNorm || 0, 0, 1);
+  const stepMod = step % 16;
+  let chanceBoost = 0;
+  let cooldown = 4;
+
+  if (gesture === "clap" || gesture === "pulse") {
+    if (!(step % 2 === 1 || context.isAccentStep)) return;
+    chanceBoost = 0.22 + jam.pulse * 0.32 + jam.clap * 0.24;
+    cooldown = gesture === "clap" ? 2 : 3;
+  } else if (gesture === "phrase") {
+    if (!(stepMod === 3 || stepMod === 7 || stepMod === 11 || context.isAccentStep)) return;
+    chanceBoost = 0.16 + jam.phrase * 0.42;
+    cooldown = 4;
+  } else if (gesture === "hum" || gesture === "breath") {
+    if (!(stepMod === 4 || stepMod === 12)) return;
+    chanceBoost = 0.12 + jam.hum * 0.22 + jam.breath * 0.18 + jam.air * 0.14;
+    cooldown = 5;
+  } else if (gesture === "silent") {
+    if (stepMod !== 8 || rand(0.5)) return;
+    chanceBoost = 0.08 + jam.air * 0.12;
+    cooldown = 8;
+  } else {
+    return;
+  }
+
+  const safety = clampValue(1 - Math.max(MixGovernorState.eventLoad || 0, SelfReviewGovernorState.densityBrake || 0, SelfReviewGovernorState.transientSoftener || 0) * 0.42, 0.38, 1);
+  if (!rand(chanceBoost * safety)) return;
+
+  const vel = clampValue(0.018 + jam.drive * 0.075 + energyNorm * 0.014 + observerNorm * 0.012, 0.014, gesture === "clap" || gesture === "pulse" ? 0.11 : 0.086);
+  try {
+    if (gesture === "clap" || gesture === "pulse") {
+      if (texture) texture.triggerAttackRelease("64n", time + 0.01 + Math.random() * 0.008, clampValue(vel * (1.05 + palette.transient * 0.24), 0.016, 0.116));
+      if (hat && rand(0.28 + jam.pulse * 0.36)) hat.triggerAttackRelease("64n", time + 0.026 + Math.random() * 0.008, clampValue(vel * 0.78, 0.018, 0.092));
+      if (glass && rand(0.24 + jam.clap * 0.22)) glass.triggerAttackRelease(tonalRhymeHigh(step, 3), "64n", time + 0.046, clampValue(vel * 0.68, 0.012, 0.066));
+    } else if (gesture === "phrase") {
+      const first = ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle) % ORGANIC_PLUCK_FRAGMENTS.length];
+      const reply = GLASS_NOTES[(step + GrooveState.cycle + 5) % GLASS_NOTES.length];
+      if (glass) {
+        glass.triggerAttackRelease(first, "32n", time + 0.018, clampValue(vel * 0.86, 0.014, 0.082));
+        glass.triggerAttackRelease(reply, "64n", time + 0.07 + Math.random() * 0.016, clampValue(vel * 0.56, 0.012, 0.058));
+      }
+    } else {
+      const airNote = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + 2) % TRANSPARENT_AIR_FRAGMENTS.length];
+      if (voiceDust && (gesture === "hum" || gesture === "breath")) {
+        voiceDust.triggerAttackRelease(airNote, gesture === "hum" ? "4n" : "8n", time + 0.038, clampValue(vel * 0.54, 0.01, 0.046));
+      }
+      if (glass) glass.triggerAttackRelease(airNote, "16n", time + 0.072, clampValue(vel * (gesture === "silent" ? 0.36 : 0.48), 0.01, 0.052));
+    }
+    MicJamState.cooldownSteps = cooldown;
+    MicJamState.lastCueStep = stepIndex;
+    markMixEvent(0.025 + jam.drive * 0.045);
+  } catch (error) {
+    console.warn("[Music] mic jam response failed:", error);
+  }
+}
+
 function triggerPadHoldMinimums(step, time, context) {
   const {
     energyNorm,
@@ -10962,6 +11217,7 @@ function scheduleStep(time) {
   decaySignatureCells();
   decayVoiceMorph();
   decayOddLogicDirector();
+  decayMicJam();
 
   // 休符判定
   const genre = GenreBlendState;
@@ -11001,8 +11257,9 @@ function scheduleStep(time) {
   const habitRubber = producerHabitBias("rubberEdit");
   const habitRestraint = producerHabitBias("restraint");
   const palette = modeTimbrePaletteShape();
+  const micJam = micJamShape();
   const restShape = humanShape("rest");
-  const isRest = rand(clampValue(EngineParams.restProb + restShape.restLift + genre.ambient * 0.045 + preKit.ambientKit * 0.03 + preKit.spaceKit * 0.035 + habitSpace * 0.02 + habitRestraint * 0.04 + palette.air * 0.024 + palette.restraint * 0.026 - genre.techno * 0.05 - preKit.technoKit * 0.045 - preKit.idmKit * 0.024 - habitGrid * 0.02 - habitRubber * 0.012 - palette.rhythm * 0.036 - palette.glass * 0.016 - genre.pressure * 0.025 + PerformancePadState.void * 0.18 - PerformancePadState.punch * 0.06, 0.018, PerformancePadState.void ? 0.66 : 0.52));
+  const isRest = rand(clampValue(EngineParams.restProb + restShape.restLift + genre.ambient * 0.045 + preKit.ambientKit * 0.03 + preKit.spaceKit * 0.035 + habitSpace * 0.02 + habitRestraint * 0.04 + palette.air * 0.024 + palette.restraint * 0.026 + micJam.air * 0.018 - genre.techno * 0.05 - preKit.technoKit * 0.045 - preKit.idmKit * 0.024 - habitGrid * 0.02 - habitRubber * 0.012 - palette.rhythm * 0.036 - palette.glass * 0.016 - micJam.pulse * 0.035 - micJam.phrase * 0.018 - genre.pressure * 0.025 + PerformancePadState.void * 0.18 - PerformancePadState.punch * 0.06, 0.018, PerformancePadState.void ? 0.66 : 0.52));
   const grooveJitter = (step % 2 === 1 ? mapValue(waveNorm, 0, 1, 0, 0.014 + PerformancePadState.drift * 0.026 + chaos * 0.012) * GrooveState.microJitterScale : 0);
   const fillBoost = GrooveState.fillActive ? 0.14 : 0;
   const t = time + grooveJitter;
@@ -11030,6 +11287,7 @@ function scheduleStep(time) {
   triggerOrganicTexture(step, t, stepContext);
   triggerReferenceDepthDetails(step, t, stepContext);
   triggerReferenceTimbreResearch(step, t, stepContext);
+  triggerMicJamResponse(step, t, stepContext);
   triggerGranularDetail(step, t, stepContext);
   triggerClarityFilament(step, t, stepContext);
   triggerMotifAfterimage(step, t, stepContext);
@@ -11073,11 +11331,11 @@ function scheduleStep(time) {
     }
 
     // Hat
-    const hatChance = chance((EngineParams.hatProb + fillBoost + kits.technoKit * 0.14 + kits.idmKit * 0.068 + habitGrid * 0.05 + habitRubber * 0.014 + palette.rhythm * 0.088 + palette.texture * 0.026 + (isAccentStep ? 0.08 : 0) - kits.ambientKit * 0.06 - kits.spaceKit * 0.05 - habitSpace * 0.02 - habitRestraint * 0.018 - palette.haze * 0.034 - palette.air * 0.04 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.34 : 1) * hatShape.probabilityScale);
+    const hatChance = chance((EngineParams.hatProb + fillBoost + kits.technoKit * 0.14 + kits.idmKit * 0.068 + habitGrid * 0.05 + habitRubber * 0.014 + palette.rhythm * 0.088 + palette.texture * 0.026 + micJam.pulse * 0.12 + micJam.clap * 0.08 + (isAccentStep ? 0.08 : 0) - kits.ambientKit * 0.06 - kits.spaceKit * 0.05 - habitSpace * 0.02 - habitRestraint * 0.018 - palette.haze * 0.034 - palette.air * 0.04 - micJam.air * 0.025 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.34 : 1) * hatShape.probabilityScale);
     if ((patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2)) && rand(hatChance)) {
       hat.triggerAttackRelease(palette.rhythm > 0.5 || kits.technoKit > 0.44 ? "64n" : "32n", t + hatShape.timeOffsetSec, clampValue((0.074 + energyNorm * 0.098 + kits.technoKit * 0.05 + kits.idmKit * 0.018 + palette.transient * 0.026 + (isAccentStep ? 0.04 : 0) - palette.air * 0.012) * hatShape.velocityScale, 0.048, 0.2));
     }
-    if ((kits.technoKit > 0.26 || palette.rhythm > 0.34) && !PerformancePadState.void && (step % 4 === 1 || step % 4 === 3) && rand((0.045 + kits.technoKit * 0.2 + kits.idmKit * 0.05 + palette.rhythm * 0.13 + habitGrid * 0.08 + habitRubber * 0.018 - kits.spaceKit * 0.035 - palette.air * 0.03 - habitRestraint * 0.03) * hatShape.densityScale)) {
+    if ((kits.technoKit > 0.26 || palette.rhythm > 0.34 || micJam.pulse > 0.12) && !PerformancePadState.void && (step % 4 === 1 || step % 4 === 3) && rand((0.045 + kits.technoKit * 0.2 + kits.idmKit * 0.05 + palette.rhythm * 0.13 + micJam.pulse * 0.12 + micJam.clap * 0.06 + habitGrid * 0.08 + habitRubber * 0.018 - kits.spaceKit * 0.035 - palette.air * 0.03 - micJam.air * 0.02 - habitRestraint * 0.03) * hatShape.densityScale)) {
       try {
         hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.01 + Math.random() * (0.01 * hatShape.grainScale), clampValue((0.028 + kits.technoKit * 0.07 + energyNorm * 0.024 + palette.transient * 0.018) * hatShape.velocityScale, 0.024, 0.124));
         markMixEvent(0.05);
@@ -11120,13 +11378,13 @@ function scheduleStep(time) {
 
   const textureShape = humanShape("texture");
   const glassShape = humanShape("glass");
-  const textureProb = chance((mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + kits.technoKit * 0.056 + kits.idmKit * 0.038 + kits.pressureKit * 0.02 + palette.texture * 0.062 + palette.rhythm * 0.026 + palette.transient * 0.016 + habitGrid * 0.038 + habitRubber * 0.026 + habitPressure * 0.01 + gradient.micro * 0.014 + gradient.ghost * 0.006 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceMicro * 0.01 + voicePulse * 0.006 + PerformancePadState.drift * 0.086 - kits.ambientKit * 0.028 - kits.spaceKit * 0.014 - palette.haze * 0.018 - palette.air * 0.014 - habitRestraint * 0.018 - palette.restraint * 0.012 - PerformancePadState.void * 0.01) * textureShape.probabilityScale);
+  const textureProb = chance((mapValue(UCM_CUR.creation + UCM_CUR.resource, 0, 200, 0.024, 0.19) + GrooveState.textureLift + kits.technoKit * 0.056 + kits.idmKit * 0.038 + kits.pressureKit * 0.02 + palette.texture * 0.062 + palette.rhythm * 0.026 + palette.transient * 0.016 + micJam.pulse * 0.09 + micJam.clap * 0.065 + habitGrid * 0.038 + habitRubber * 0.026 + habitPressure * 0.01 + gradient.micro * 0.014 + gradient.ghost * 0.006 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceMicro * 0.01 + voicePulse * 0.006 + PerformancePadState.drift * 0.086 - kits.ambientKit * 0.028 - kits.spaceKit * 0.014 - palette.haze * 0.018 - palette.air * 0.014 - micJam.air * 0.016 - habitRestraint * 0.018 - palette.restraint * 0.012 - PerformancePadState.void * 0.01) * textureShape.probabilityScale);
   if (rand(textureProb) && (step % 2 === 1 || isAccentStep)) {
     const textureTime = t + textureShape.timeOffsetSec + (isAccentStep ? 0.006 : 0.012);
     texture.triggerAttackRelease(palette.rhythm > 0.42 || palette.texture > 0.46 || kits.technoKit > 0.38 || kits.idmKit > 0.48 ? "64n" : "32n", textureTime, clampValue((0.024 + creationNorm * 0.078 + resourceNorm * 0.022 + kits.technoKit * 0.02 + kits.pressureKit * 0.018 + palette.transient * 0.02 + gradient.micro * 0.006 + DepthState.gesture * 0.012 + PerformancePadState.punch * 0.014 - palette.restraint * 0.006) * textureShape.velocityScale, 0.018, 0.126));
   }
 
-  const particleProb = chance((0.03 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.022 + kits.idmKit * 0.046 + kits.technoKit * 0.03 + kits.spaceKit * 0.018 + palette.glass * 0.052 + palette.rhythm * 0.016 + palette.air * 0.012 + habitMemory * 0.022 + habitRubber * 0.022 + habitSpace * 0.012 + gradient.chrome * 0.014 + gradient.micro * 0.01 + DepthState.particle * 0.022 + clarity * 0.018 + voiceChrome * 0.011 + voiceOrganic * 0.008 + voiceRefrain * 0.006 + PerformancePadState.drift * 0.104 + PerformancePadState.repeat * 0.056 + PerformancePadState.void * 0.06 - kits.ambientKit * 0.016 - habitRestraint * 0.012 - palette.restraint * 0.01) * glassShape.probabilityScale);
+  const particleProb = chance((0.03 + creationNorm * 0.034 + waveNorm * 0.024 + observerNorm * 0.022 + kits.idmKit * 0.046 + kits.technoKit * 0.03 + kits.spaceKit * 0.018 + palette.glass * 0.052 + palette.rhythm * 0.016 + palette.air * 0.012 + micJam.phrase * 0.085 + micJam.hum * 0.026 + micJam.pulse * 0.02 + habitMemory * 0.022 + habitRubber * 0.022 + habitSpace * 0.012 + gradient.chrome * 0.014 + gradient.micro * 0.01 + DepthState.particle * 0.022 + clarity * 0.018 + voiceChrome * 0.011 + voiceOrganic * 0.008 + voiceRefrain * 0.006 + PerformancePadState.drift * 0.104 + PerformancePadState.repeat * 0.056 + PerformancePadState.void * 0.06 - kits.ambientKit * 0.016 - habitRestraint * 0.012 - palette.restraint * 0.01) * glassShape.probabilityScale);
   if (rand(particleProb) && (step % 4 === 1 || step % 8 === 5 || isAccentStep)) {
     const particlePool = palette.rhythm > 0.5 || kits.technoKit > 0.42 ? GLASS_NOTES : palette.air > 0.52 || kits.spaceKit > 0.52 ? TRANSPARENT_AIR_FRAGMENTS : FIELD_MURK_FRAGMENTS;
     const note = voiceFragment(Math.floor(Math.random() * particlePool.length), particlePool);
@@ -11137,7 +11395,7 @@ function scheduleStep(time) {
     }
   }
 
-  const airProb = chance(0.03 + observerNorm * 0.046 + circleNorm * 0.021 + kits.spaceKit * 0.038 + kits.ambientKit * 0.024 + palette.air * 0.068 + palette.haze * 0.022 + habitSpace * 0.038 + habitRestraint * 0.012 + gradient.chrome * 0.016 + gradient.haze * 0.009 + DepthState.tail * 0.026 + voiceChrome * 0.012 + voiceVoidTail * 0.016 + PerformancePadState.void * 0.14 + PerformancePadState.drift * 0.066 + PerformancePadState.repeat * 0.022 - kits.pressureKit * 0.012 - palette.transient * 0.018);
+  const airProb = chance(0.03 + observerNorm * 0.046 + circleNorm * 0.021 + kits.spaceKit * 0.038 + kits.ambientKit * 0.024 + palette.air * 0.068 + palette.haze * 0.022 + micJam.air * 0.07 + micJam.breath * 0.045 + micJam.hum * 0.025 + habitSpace * 0.038 + habitRestraint * 0.012 + gradient.chrome * 0.016 + gradient.haze * 0.009 + DepthState.tail * 0.026 + voiceChrome * 0.012 + voiceVoidTail * 0.016 + PerformancePadState.void * 0.14 + PerformancePadState.drift * 0.066 + PerformancePadState.repeat * 0.022 - kits.pressureKit * 0.012 - palette.transient * 0.018 - micJam.pulse * 0.02);
   if (rand(airProb) && (step % 8 === 4 || step % 8 === 7)) {
     const note = voiceFragment(Math.floor(Math.random() * TRANSPARENT_AIR_FRAGMENTS.length), TRANSPARENT_AIR_FRAGMENTS);
     try {
@@ -11147,7 +11405,7 @@ function scheduleStep(time) {
     }
   }
 
-  const glassProb = chance((mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.022, 0.145) + GrooveState.glassLift + kits.idmKit * 0.036 + kits.technoKit * 0.022 + kits.spaceKit * 0.018 + palette.glass * 0.064 + palette.rhythm * 0.018 + palette.air * 0.014 + habitMemory * 0.026 + habitRubber * 0.018 + habitSpace * 0.012 + gradient.memory * 0.012 + gradient.chrome * 0.013 + gradient.micro * 0.009 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceChrome * 0.012 + voiceRefrain * 0.008 + PerformancePadState.drift * 0.088 + PerformancePadState.repeat * 0.068 + PerformancePadState.void * 0.038 - kits.ambientKit * 0.012 - habitRestraint * 0.012 - palette.restraint * 0.008) * glassShape.probabilityScale);
+  const glassProb = chance((mapValue(UCM_CUR.mind + UCM_CUR.creation, 0, 200, 0.022, 0.145) + GrooveState.glassLift + kits.idmKit * 0.036 + kits.technoKit * 0.022 + kits.spaceKit * 0.018 + palette.glass * 0.064 + palette.rhythm * 0.018 + palette.air * 0.014 + micJam.phrase * 0.068 + micJam.hum * 0.026 + habitMemory * 0.026 + habitRubber * 0.018 + habitSpace * 0.012 + gradient.memory * 0.012 + gradient.chrome * 0.013 + gradient.micro * 0.009 + DepthState.particle * 0.016 + DepthState.gesture * 0.01 + voiceChrome * 0.012 + voiceRefrain * 0.008 + PerformancePadState.drift * 0.088 + PerformancePadState.repeat * 0.068 + PerformancePadState.void * 0.038 - kits.ambientKit * 0.012 - habitRestraint * 0.012 - palette.restraint * 0.008) * glassShape.probabilityScale);
   if (rand(glassProb) && (isAccentStep || step % 8 === 3 || step % 16 === 11)) {
     const note = voiceFragment(Math.floor(Math.random() * GLASS_NOTES.length), GLASS_NOTES);
     const glassTime = t + glassShape.timeOffsetSec;

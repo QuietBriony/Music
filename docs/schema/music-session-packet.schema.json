@@ -149,6 +149,17 @@
             "stability": { "$ref": "#/definitions/unitInterval" },
             "silence": { "$ref": "#/definitions/unitInterval" },
             "brightness": { "$ref": "#/definitions/unitInterval" },
+            "gesture": {
+              "type": "string",
+              "enum": ["silent", "breath", "hum", "phrase", "clap", "pulse", "noisy"]
+            },
+            "drive": { "$ref": "#/definitions/unitInterval" },
+            "bpm_lock": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 240
+            },
+            "confidence": { "$ref": "#/definitions/unitInterval" },
             "metadata_only": { "const": true },
             "stores_audio": { "const": false }
           }

@@ -57,6 +57,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Music stack integration index: [docs/music-stack-integration-index.md](docs/music-stack-integration-index.md)
 - Music Orchestra Protocol: [docs/music-orchestra-protocol.md](docs/music-orchestra-protocol.md)
 - Music Stack SYNC manual: [docs/music-stack-sync-manual.md](docs/music-stack-sync-manual.md)
+- MIC Jam / Groove Drive: [docs/mic-jam-groove-drive.md](docs/mic-jam-groove-drive.md)
 - Mode timbre palettes: [docs/mode-timbre-palettes.md](docs/mode-timbre-palettes.md)
 - Music Radio Brain: [docs/music-radio-brain.md](docs/music-radio-brain.md)
 - Codex Composer workflow: [docs/codex-composer-workflow.md](docs/codex-composer-workflow.md)
