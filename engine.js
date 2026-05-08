@@ -4412,29 +4412,40 @@ function updateMusicStackSyncHelp(route, result = {}) {
   if (typeof document === "undefined") return;
   const help = document.getElementById("sync_help");
   const link = document.getElementById("sync_route_link");
+  const kicker = document.getElementById("sync_route_kicker");
+  const title = document.getElementById("sync_route_title");
+  const reason = document.getElementById("sync_route_reason");
   const setRouteLink = (destination, label) => {
     if (!link) return;
     const key = String(destination || "openclaw").trim();
     link.href = MUSIC_STACK_ROUTE_URLS[key] || MUSIC_STACK_ROUTE_URLS.openclaw;
-    link.textContent = label || "使い方を見る";
+    link.textContent = label || "開く";
     link.removeAttribute("aria-disabled");
   };
+  const setText = (node, value) => {
+    if (node) node.textContent = value;
+  };
   if (!help) {
-    setRouteLink(route?.destination, route?.label ? `開く: ${route.label}` : "使い方を見る");
+    setRouteLink(route?.destination, "開く");
     return;
   }
   if (!route) {
-    help.textContent = "SYNCは音ではなく現在状態の共有。Musicが推奨行き先を添えて、drum-floor / namima / chill / OpenClawへ渡す。";
-    setRouteLink("openclaw", "使い方を見る");
+    setText(kicker, "まずSYNC");
+    setText(title, "次の行き先");
+    setText(help, "START任意 → SYNC → 開く");
+    setText(reason, "MICは任意。音は行き先で手動再生。");
+    setRouteLink("openclaw", "手順");
     return;
   }
   const delivered = result.stored || result.broadcast;
   const label = route.label || route.destination || "OpenClawで見る";
   const action = route.action || "OpenClawを開いて次の制作カードを見る。";
-  setRouteLink(route.destination, `開く: ${label}`);
-  help.textContent = delivered
-    ? `次: ${label}。${action}`
-    : `SYNCできませんでした。JSON fallbackかOpenClawでlatestを確認してください。`;
+  setText(kicker, delivered ? "次はここ" : "SYNC未完了");
+  setText(title, delivered ? label : "JSON fallback");
+  setText(help, delivered ? action : "OpenClawかJSON fallbackでlatestを確認。");
+  setText(reason, delivered ? (route.reason || "Musicの現在状態から推奨しています。") : "音声・録音・サンプルは共有していません。");
+  setRouteLink(route.destination, delivered ? "開く" : "手順");
+  if (link && delivered) link.setAttribute("aria-label", `${label}を開く`);
 }
 
 function syncMusicSessionPacket(options = {}) {

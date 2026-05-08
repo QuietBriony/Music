@@ -2836,8 +2836,8 @@ body {
 }
 
 .mic-follow-panel {
-  min-height: 40px;
-  padding: 6px 7px;
+  min-height: 32px;
+  padding: 5px 7px;
   display: grid;
   grid-template-columns: minmax(58px, auto) minmax(0, 1fr);
   align-items: center;
@@ -2871,7 +2871,7 @@ body {
 }
 
 .mic-follow-meter {
-  height: 10px;
+  height: 8px;
   overflow: hidden;
   border-radius: 999px;
   border: 1px solid rgba(121, 183, 190, 0.2);
@@ -2898,25 +2898,60 @@ body {
 
 .sync-next-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(48px, auto);
+  grid-template-columns: minmax(0, 1fr) minmax(58px, auto);
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  min-height: 48px;
+  padding: 6px;
+  border: 1px solid rgba(76, 202, 209, 0.16);
+  border-radius: 4px;
+  background: rgba(0, 8, 10, 0.42);
   text-align: left;
 }
 
-.sync-next-row .hint {
+.sync-route-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.sync-route-kicker {
+  color: rgba(143, 255, 245, 0.7);
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+#sync_route_title {
   min-width: 0;
   overflow: hidden;
-  font-size: 10px;
-  line-height: 1.35;
+  color: rgba(233, 244, 239, 0.94);
+  font-size: 11px;
+  line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+#sync_help,
+#sync_route_reason {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(194, 218, 213, 0.72);
+  font-size: 8px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#sync_route_reason {
+  color: rgba(194, 218, 213, 0.52);
+}
+
 .packet-route-link {
   width: 100%;
-  min-height: 28px;
+  min-height: 36px;
   justify-content: center;
+  font-size: 10px;
 }
 
 @media (max-width: 640px) {
@@ -2950,8 +2985,12 @@ body {
   }
 
   .mic-follow-panel {
-    min-height: 42px;
+    min-height: 40px;
     grid-template-columns: minmax(62px, auto) minmax(0, 1fr);
+  }
+
+  .packet-route-link {
+    min-height: 44px;
   }
 
   #mic_follow_detail {
@@ -2960,6 +2999,11 @@ body {
 
   .sync-next-row {
     grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    text-align: center;
+  }
+
+  .sync-route-copy {
     text-align: center;
   }
 }
