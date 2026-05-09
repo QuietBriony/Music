@@ -1,0 +1,193 @@
+# 📻 Hazama FM 使い方マニュアル
+
+24/7 流しっぱなし対応の生成型フォーカス BGM。**START 一発で永遠に聴ける** 設計。
+
+公開 URL: https://quietbriony.github.io/Music/fm.html
+
+---
+
+## はじめに
+
+### 何ができる？
+
+- ボタン 1 個で**作業用 BGM が永遠に流れる**
+- 9 つの番組 (fieldStudy / glassCoding / dryGridWork / ghostPressure / voidRoom / hardTechno / liveJazz / nightFunk / quietPiano) を AI が 60–90 秒ごとに rotate
+- 7 つのジャンル pill で気分を切替 (ambient / techno / lofi / jazz / funk / piano / any)
+- iPhone のロック画面に **Hazama FM** ロゴ + 現番組名が表示
+- iPhone のホーム画面に**アプリ風アイコン**としてインストール可能
+- 一度起動すれば**オフラインでも動く** (Service Worker キャッシュ)
+
+### こんな時に使う
+
+- 作業中 / 読書中 / 寝入りばなの BGM (ANY / piano)
+- 集中したいけど無音だと不安な時 (ambient / lofi)
+- 動きが欲しい時 (techno / funk)
+- 移動中・カフェ・電車内 (オフラインでも音は出続ける)
+
+---
+
+## ホーム画面に追加する (推奨)
+
+### iPhone (Safari)
+
+1. Safari で https://quietbriony.github.io/Music/fm.html を開く
+2. 下部の**共有ボタン** (□↑) をタップ
+3. **「ホーム画面に追加」** を選択
+4. 名前は「Hazama FM」のまま「追加」をタップ
+5. ホーム画面に **ミントの同心円リング** アイコンが現れる
+6. アイコンタップで Safari UI 無しのフルスクリーン起動
+
+### Android (Chrome / Edge)
+
+URL 欄の右側に「インストール」アイコンが出るのでタップ → ホーム画面に追加。
+
+### PC (Chrome / Edge / Firefox)
+
+URL 欄の右端のインストールアイコン or メニューから「アプリとしてインストール」。
+
+---
+
+## 基本操作
+
+### START / STOP
+
+画面中央の大きな丸ボタン:
+- **START**: タップで再生開始。約 4 秒かけてフェードイン
+- **STOP**: タップで停止。約 3 秒かけてフェードアウト
+
+iPhone は **サイレントスイッチ off** + メディア音量を上げてください
+(マナーモードでは音が出ません)。
+
+### ENERGY ピル (3 段)
+
+`LOW / MID / HIGH` の 3 つから選択:
+- **LOW**: 静かめ。深い集中向け
+- **MID** (default): バランス型
+- **HIGH**: 動きあり。手を動かす作業に
+
+ピル切替は engine 内部の ENERGY フェーダー値を 25 / 45 / 70 に変更します。
+
+### GENRE ピル (7 段)
+
+| pill | 雰囲気 | おすすめシーン |
+|---|---|---|
+| **ANY** | engine が自由揺らぎ | 飽きずに聴き続けたい時 (50 分アーク) |
+| **AMBIENT** | namima の水・庭の空気感 | 朝、瞑想、寝る前 |
+| **TECHNO** | 4-on-floor + 16th hat | 作業の手を動かす時 |
+| **LOFI** | レイジーな pocket + vinyl crackle | カフェで本を読む時 |
+| **JAZZ** | brush + walking bass + ride | 夜、文章を書く時 |
+| **FUNK** | clavi + EP + 跳ねる pocket | 元気を出したい時 |
+| **PIANO** | felt piano (chill) の和音 + 長い休符 | 静かな深い集中 |
+
+ピルをタップすると **約 1.5 秒のクロスフェード** で音色が切り替わります。
+ANY 以外を選ぶと engine の AUTO MIX が一時 OFF になり、その質感が安定。
+ANY に戻すと AUTO MIX 復帰。
+
+---
+
+## 画面で見えるもの
+
+### 番組ラベル (中央)
+
+```
+fieldstudy — initial haze room
+up next: glasscoding
+```
+
+- 上段: 現在の番組名 + その番組が選ばれた理由
+- 下段: 次に rotate 予定の番組
+
+番組は **60–90 秒で自動切替**。切替時に:
+- マンダラ背景が一瞬明るく光る (1.5 秒)
+- 番組ラベルがフェードアウト → 新番組へ
+
+### Progress bar (極細ライン)
+
+ラベル下の細いミントのライン。次の番組までの **進捗** が左→右に伸びます。
+バーが満杯になると番組が切り替わる合図。
+
+### Resume hint
+
+`STOP` 後 30 分以内に再起動すると `resume from {前の番組}` と表示されます。
+無視して START すれば普通に始まります。
+
+---
+
+## ロック画面・コントロールセンター
+
+iPhone をロック中・コントロールセンター・bluetooth ヘッドフォン:
+- **Hazama FM** の文字 + ミントアイコン + 現番組名 が表示される
+- 物理 Play/Pause キーで START / STOP できる
+- **次へ** / **戻る** で ENERGY を low → mid → high にサイクル
+
+これを Media Session API と呼ぶ標準仕組みで実装。
+
+---
+
+## 細かく触りたい時 (full mixer)
+
+画面下部の `full mixer →` リンクから **Music Core Rig** に遷移。
+9 フェーダー全部を直接いじって音を作れます。
+詳しくは [`USAGE-MUSIC-CORE-RIG.md`](USAGE-MUSIC-CORE-RIG.md) を参照。
+
+---
+
+## トラブルシューティング
+
+### 音が出ない (iPhone Safari)
+
+- **サイレントスイッチ** を off に
+- **メディア音量** (ボリュームボタン) を上げる
+- それでもダメなら STOP → START を再度タップ
+- **HOME 画面追加版** の方が安定する (Safari UI 経由より許可が緩い)
+
+### 画面ロック中に止まる
+
+- iOS の制約で、Web Audio はバックグラウンド再生が完璧ではない
+- **HOME 画面アプリ版** を使うと WakeLock が効きやすい
+- Bluetooth ヘッドフォン接続中の方が継続率高い (Media Session 効果)
+
+### ジャンルを変えたら音が消えた
+
+- クロスフェード中 (1.5 秒) は一時的に静かになります
+- それ以上経っても無音なら STOP → START
+
+### iPhone のホーム画面アプリで起動したら昔の版が出てくる
+
+- Service Worker のキャッシュが古い
+- アプリを長押し → 削除 → 再追加で最新版になります
+- (普通は HTML が network-first なので 1 タブ更新で勝手に最新化します)
+
+### 「engine unavailable」と表示
+
+- ネット接続を確認
+- ブラウザを別タブで開き直す
+- それでも続くなら https://quietbriony.github.io/Music/ (mixer) で動くか確認 → engine.js の問題か通信問題か切り分け
+
+---
+
+## デバッグ (開発者向け)
+
+ブラウザ DevTools のコンソールで:
+
+```js
+// 現在の番組
+window.MusicRuntimeState.radioBrain.active
+
+// 次に来る番組
+window.MusicRuntimeState.radioBrain.next
+
+// 各番組の重み (どの程度 rotate に選ばれやすいか)
+window.MusicRuntimeState.radioBrain.weights
+
+// flavor 層の動作確認
+window.GenreFlavor.state
+// → { started: true, genre: "piano", scheduled: 1, source: "chill-recipe:piano-jazz-chill" }
+
+// preset がちゃんとロードされたか
+window.HazamaPresets.available("chill-piano-recipe")
+window.HazamaPresets.get("drum-frames-jazz")
+```
+
+`source` 欄が `default` の時はハンドコード synth、`chill-recipe:*` /
+`drum-frames` / `namima-preset:*` の時は preset 駆動です。

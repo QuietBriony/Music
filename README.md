@@ -50,6 +50,11 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - 財観
 - 観察者
 
+### 使い方マニュアル (ユーザー向け)
+- 📻 **[Hazama FM 使い方](docs/USAGE-HAZAMA-FM.md)** — 24/7 流しっぱなしフォーカス BGM の操作方法
+- 🎚️ **[Music Core Rig 使い方](docs/USAGE-MUSIC-CORE-RIG.md)** — 9 fader mixer の操作方法
+- 🏛️ **[Hazama FM アーキテクチャ](docs/HAZAMA-FM-ARCHITECTURE.md)** — システム全体像 (開発者向け)
+
 ### 参考資料
 - Reference-Driven Generative Rig: [docs/reference-driven-generative-rig.md](docs/reference-driven-generative-rig.md)
 - Apple Music references: [references/apple-music-refs.json](references/apple-music-refs.json)
@@ -79,9 +84,15 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - 静⇄動の揺らぎモード
 
 ## 📻 Hazama FM mode
-START 一発で永遠に流れるフォーカス BGM ページ。`MusicRadioBrain` (5 番組: fieldStudy / glassCoding / dryGridWork / ghostPressure / voidRoom) を可視化、`engine.js` は無変更で再利用。
+START 一発で永遠に流れるフォーカス BGM ページ。`MusicRadioBrain` (9 番組: fieldStudy / glassCoding / dryGridWork / ghostPressure / voidRoom / hardTechno / liveJazz / nightFunk / quietPiano) を可視化、`engine.js` は無変更で再利用。
 - Local: `fm.html` をローカルサーバー経由で開く (例: `python -m http.server 8000` → `http://localhost:8000/fm.html`)
 - Pages: `https://quietbriony.github.io/Music/fm.html`
+- 詳しい使い方: [docs/USAGE-HAZAMA-FM.md](docs/USAGE-HAZAMA-FM.md)
+
+## 🎚️ Music Core Rig (full mixer)
+9 fader を直接動かして音作り・録音できる mixer モード。Hazama FM と同じ engine。
+- Pages: `https://quietbriony.github.io/Music/`
+- 詳しい使い方: [docs/USAGE-MUSIC-CORE-RIG.md](docs/USAGE-MUSIC-CORE-RIG.md)
 
 ---
 
