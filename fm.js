@@ -58,6 +58,9 @@
   let starting = false;
   let stopping = false;
   let rampHandle = null;
+  let previousRadioProgram = null;
+  let identTimer = null;
+  let programLabelTimer = null;
 
   // ---- Helpers --------------------------------------------------
 
@@ -223,6 +226,43 @@
     return pressed ? pressed.dataset.genre : "any";
   }
 
+  function formatProgramLabel(rb) {
+    const reason = rb.lastReason ? ` — ${rb.lastReason}` : "";
+    return `${rb.active || "—"}${reason}`;
+  }
+
+  function triggerStationIdent() {
+    const mandala = $("mandala-container");
+    if (!mandala) return;
+    if (identTimer) clearTimeout(identTimer);
+    mandala.classList.remove("ident-active");
+    // Force a reflow so back-to-back transitions restart the brightness pulse.
+    void mandala.offsetWidth;
+    mandala.classList.add("ident-active");
+    identTimer = setTimeout(() => {
+      mandala.classList.remove("ident-active");
+      identTimer = null;
+    }, 1500);
+  }
+
+  function renderProgramLabel(rb, transition) {
+    const now = $("fm-now");
+    if (!now) return;
+    const label = formatProgramLabel(rb);
+    if (!transition) {
+      if (!programLabelTimer) now.textContent = label;
+      return;
+    }
+
+    if (programLabelTimer) clearTimeout(programLabelTimer);
+    now.classList.add("transitioning");
+    programLabelTimer = setTimeout(() => {
+      now.textContent = label;
+      programLabelTimer = null;
+      now.classList.remove("transitioning");
+    }, 220);
+  }
+
   // ---- Runtime state subscription ------------------------------
 
   function onRuntimeState(event) {
@@ -230,12 +270,19 @@
     const rb = detail && detail.radioBrain;
     if (!rb) return;
 
-    const now = $("fm-now");
-    const next = $("fm-next");
-    if (now) {
-      const reason = rb.lastReason ? ` — ${rb.lastReason}` : "";
-      now.textContent = `${rb.active || "—"}${reason}`;
+    const activeProgram = rb.active || "";
+    const hasPreviousProgram = previousRadioProgram !== null;
+    const programChanged = !!activeProgram && hasPreviousProgram && activeProgram !== previousRadioProgram;
+
+    if (programChanged) {
+      triggerStationIdent();
+      renderProgramLabel(rb, true);
+    } else {
+      renderProgramLabel(rb, false);
     }
+    if (activeProgram) previousRadioProgram = activeProgram;
+
+    const next = $("fm-next");
     if (next) {
       next.textContent = `up next: ${rb.next || "—"}`;
     }

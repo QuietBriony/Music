@@ -71,6 +71,19 @@
   color: var(--accent-glass);
 }
 
+#mandala-container {
+  transition: filter 0.6s ease;
+}
+
+#mandala-container.ident-active {
+  filter: brightness(1.2) saturate(1.1);
+}
+
+#mandala-container.ident-active #mandala-layers img {
+  animation-play-state: running;
+  animation-duration: 50s !important;
+}
+
 #fm-now {
   margin-top: clamp(28px, 5vh, 44px);
   font-size: 14px;
@@ -80,6 +93,11 @@
   max-width: min(90vw, 540px);
   word-break: break-word;
   text-transform: lowercase;
+  transition: opacity 0.22s ease;
+}
+
+#fm-now.transitioning {
+  opacity: 0.18;
 }
 
 #fm-progress {
