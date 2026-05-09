@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v1";
+const VERSION = "hazama-fm-v2";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -15,6 +15,7 @@ const RUNTIME_CACHE = `${VERSION}-runtime`;
 // the whole point is offline focus listening.
 const PRECACHE_URLS = [
   "fm.html",
+  "index.html",
   "fm.css?v=fm-4",
   "fm.js?v=fm-4",
   "style.css?v=fm-4",
@@ -23,11 +24,17 @@ const PRECACHE_URLS = [
   "audio/human-groove-governor.js",
   "audio/genre-flavor.js?v=fm-4",
   "manifest.webmanifest",
+  "manifest-mixer.webmanifest",
   "icons/icon-96.png",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/icon-512-maskable.png",
   "icons/apple-touch-icon.png",
+  "icons/mixer-96.png",
+  "icons/mixer-192.png",
+  "icons/mixer-512.png",
+  "icons/mixer-512-maskable.png",
+  "icons/mixer-apple-touch-icon.png",
   "assets/background.svg",
   "assets/layer_01.svg",
   "assets/layer_02.svg",

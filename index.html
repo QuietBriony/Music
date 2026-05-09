@@ -8,15 +8,15 @@
     <!-- Style -->
     <link rel="stylesheet" href="style.css?v=pc-center-ui-1" />
 
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
+    <!-- PWA — independent app from Hazama FM -->
+    <link rel="manifest" href="manifest-mixer.webmanifest" />
+    <link rel="apple-touch-icon" href="icons/mixer-apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/mixer-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/mixer-512.png" />
     <meta name="theme-color" content="#040e18" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Hazama FM" />
+    <meta name="apple-mobile-web-app-title" content="Music Core Rig" />
     <meta name="mobile-web-app-capable" content="yes" />
 
     <!-- Tone.js -->
@@ -330,6 +330,17 @@
     </div>
 
     <!-- BPM表示はengine.js側(updateUIFromParams)の単一ソースで更新 -->
+
+    <!-- Service worker — offline + cache (shared with Hazama FM) -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("sw.js").catch((err) => {
+            console.warn("[Music Core Rig] sw register failed:", err);
+          });
+        });
+      }
+    </script>
 
 </body>
 </html>
