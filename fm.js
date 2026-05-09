@@ -240,7 +240,71 @@
       next.textContent = `up next: ${rb.next || "—"}`;
     }
 
+    // Phrase progress bar (0..1 within current program).
+    const progressFill = document.querySelector("#fm-progress > span");
+    if (progressFill) {
+      const cycles = Math.max(1, rb.phraseCycles || 24);
+      const progress = Math.min(1, Math.max(0, (rb.phrase || 0) / cycles));
+      progressFill.style.width = `${(progress * 100).toFixed(1)}%`;
+    }
+
+    // Mirror to Media Session so the OS lock screen / control center shows
+    // the current program and tags it as Hazama FM.
+    updateMediaSessionMetadata(rb);
+
     if (started) writeSession(rb);
+  }
+
+  // ---- Media Session API (lock screen / control center) ----------
+
+  function ensureMediaSession() {
+    if (!("mediaSession" in navigator)) return;
+    try {
+      navigator.mediaSession.setActionHandler("play", () => fmStart());
+      navigator.mediaSession.setActionHandler("pause", () => fmStop());
+      navigator.mediaSession.setActionHandler("stop", () => fmStop());
+      navigator.mediaSession.setActionHandler("nexttrack", () => cycleEnergy(1));
+      navigator.mediaSession.setActionHandler("previoustrack", () => cycleEnergy(-1));
+    } catch (e) {
+      // Some browsers reject unsupported actions — non-fatal.
+    }
+  }
+
+  function updateMediaSessionMetadata(rb) {
+    if (!("mediaSession" in navigator)) return;
+    if (!rb) return;
+    try {
+      const reason = rb.lastReason ? ` — ${rb.lastReason}` : "";
+      navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: `${rb.active || "Hazama FM"}${reason}`,
+        artist: "Hazama FM",
+        album: "music for thinking and building",
+        artwork: [
+          { src: "icons/icon-96.png", sizes: "96x96", type: "image/png" },
+          { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" }
+        ]
+      });
+    } catch (e) {
+      // MediaMetadata constructor may not exist on very old browsers.
+    }
+  }
+
+  function setMediaPlaybackState(state) {
+    if (!("mediaSession" in navigator)) return;
+    try {
+      navigator.mediaSession.playbackState = state; // "playing" | "paused" | "none"
+    } catch (e) {}
+  }
+
+  function cycleEnergy(direction) {
+    const order = ["low", "mid", "high"];
+    const current = getCurrentEnergy();
+    const idx = order.indexOf(current);
+    if (idx < 0) return;
+    const next = order[(idx + direction + order.length) % order.length];
+    const btn = document.querySelector(`#fm-energy button[data-energy="${next}"]`);
+    if (btn) btn.click();
   }
 
   // ---- START / STOP --------------------------------------------
@@ -297,6 +361,7 @@
       started = true;
       starting = false;
       setButtonState("playing");
+      setMediaPlaybackState("playing");
 
       // Try to render whatever runtime state is already published.
       if (window.MusicRuntimeState) {
@@ -331,6 +396,7 @@
       started = false;
       stopping = false;
       setButtonState("idle");
+      setMediaPlaybackState("paused");
     }
   }
 
@@ -396,6 +462,14 @@
     bindEnergyPill();
     bindGenrePill();
     bindVisibility();
+    ensureMediaSession();
+
+    // Kick off preset fetch in the background. Loader is graceful: missing
+    // files just resolve to null and the genre-flavor builders fall back
+    // to their hand-coded defaults.
+    if (window.HazamaPresets && typeof window.HazamaPresets.loadAll === "function") {
+      window.HazamaPresets.loadAll().catch(() => {});
+    }
 
     window.addEventListener("music-runtime-state", onRuntimeState);
 
