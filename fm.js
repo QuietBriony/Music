@@ -47,6 +47,10 @@
     funk: {
       culture: "broken_machine",
       faders: { energy: 64, wave: 56, mind: 44, creation: 70, void: 14, circle: 50, body: 76, resource: 68, observer: 44 }
+    },
+    piano: {
+      culture: "earth_reed",
+      faders: { energy: 28, wave: 50, mind: 60, creation: 64, void: 32, circle: 72, body: 30, resource: 54, observer: 70 }
     }
   };
 

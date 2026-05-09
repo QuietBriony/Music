@@ -613,7 +613,7 @@ const SIGNATURE_CELL_MOTIFS = ["call", "answer", "scar"];
 const SIGNATURE_CONDUCTOR_MODES = ["listen", "breathe", "scratch", "remember", "open"];
 const PRODUCER_HABIT_MODES = ["listen", "softWrongMemory", "dryGridScar", "ghostPressureBreath", "transparentVoidTail", "rubberMicroEdit"];
 const MODE_TIMBRE_PALETTE_KEYS = ["ambientHaze", "idmGlass", "technoDryGrid", "pressureGhost", "voidAir"];
-const MUSIC_RADIO_BRAIN_PROGRAMS = ["fieldStudy", "glassCoding", "dryGridWork", "ghostPressure", "voidRoom", "hardTechno", "liveJazz", "nightFunk"];
+const MUSIC_RADIO_BRAIN_PROGRAMS = ["fieldStudy", "glassCoding", "dryGridWork", "ghostPressure", "voidRoom", "hardTechno", "liveJazz", "nightFunk", "quietPiano"];
 const ReferenceMorphState = {
   lastCycle: -1,
   phase: 0,
@@ -721,7 +721,8 @@ const MusicRadioBrainState = {
     voidRoom: 0.26,
     hardTechno: 0.10,
     liveJazz: 0.12,
-    nightFunk: 0.10
+    nightFunk: 0.10,
+    quietPiano: 0.16
   },
   bias: {
     haze: 0.36,
@@ -2106,6 +2107,7 @@ function resetMusicRadioBrain() {
   MusicRadioBrainState.weights.hardTechno = 0.10;
   MusicRadioBrainState.weights.liveJazz = 0.12;
   MusicRadioBrainState.weights.nightFunk = 0.10;
+  MusicRadioBrainState.weights.quietPiano = 0.16;
   MusicRadioBrainState.bias.haze = 0.36;
   MusicRadioBrainState.bias.glass = 0.28;
   MusicRadioBrainState.bias.grid = 0.12;
@@ -3249,6 +3251,7 @@ function musicRadioBrainReason(program) {
   if (program === "hardTechno") return "高密度のpulseで4-on-the-floorを叩き続ける";
   if (program === "liveJazz") return "ウォーキングとブラシで生音感を残す部屋";
   if (program === "nightFunk") return "bodyとgrooveで黒いpocketを刻む";
+  if (program === "quietPiano") return "feltピアノの和音と長い休符だけで部屋を整える";
   return "listen first";
 }
 
@@ -3434,6 +3437,20 @@ function advanceMusicRadioBrain(context = {}) {
         voidness * 0.08,
       0,
       1
+    ),
+    quietPiano: clampValue(
+      palettes.ambientHaze * 0.18 +
+        creation * 0.14 +
+        observer * 0.12 +
+        circle * 0.1 +
+        ReferenceMorphState.organic * 0.16 +
+        ReferenceMorphState.haze * 0.08 +
+        MusicRadioBrainState.bias.restraint * 0.08 +
+        (1 - energy) * 0.08 -
+        densityGuard * 0.12 -
+        brightGuard * 0.08,
+      0,
+      1
     )
   };
 
@@ -3476,14 +3493,15 @@ function advanceMusicRadioBrain(context = {}) {
   const hardTechno = programWeight("hardTechno");
   const liveJazz = programWeight("liveJazz");
   const nightFunk = programWeight("nightFunk");
+  const quietPiano = programWeight("quietPiano");
   const bias = MusicRadioBrainState.bias;
 
-  bias.haze = approachValue(bias.haze, clampValue(field * 0.42 + room * 0.12 + liveJazz * 0.06 + ReferenceMorphState.haze * 0.08, 0, 1), 0.055);
-  bias.glass = approachValue(bias.glass, clampValue(glass * 0.42 + field * 0.08 + liveJazz * 0.12 + RdjGrowthState.toy * 0.05 - densityGuard * 0.04, 0, 1), 0.06);
+  bias.haze = approachValue(bias.haze, clampValue(field * 0.42 + room * 0.12 + liveJazz * 0.06 + quietPiano * 0.16 + ReferenceMorphState.haze * 0.08, 0, 1), 0.055);
+  bias.glass = approachValue(bias.glass, clampValue(glass * 0.42 + field * 0.08 + liveJazz * 0.12 + quietPiano * 0.06 + RdjGrowthState.toy * 0.05 - densityGuard * 0.04, 0, 1), 0.06);
   bias.grid = approachValue(bias.grid, clampValue(grid * 0.42 + glass * 0.08 + hardTechno * 0.34 + nightFunk * 0.1 + PerformancePadState.repeat * 0.06 - brightGuard * 0.08, 0, 1), 0.06);
   bias.pressure = approachValue(bias.pressure, clampValue(pressure * 0.42 + grid * 0.06 + hardTechno * 0.12 + nightFunk * 0.32 + PerformancePadState.punch * 0.08 - lowGuard * 0.12, 0, 1), 0.055);
-  bias.air = approachValue(bias.air, clampValue(room * 0.46 + field * 0.14 + liveJazz * 0.16 + SelfReviewGovernorState.airTail * 0.08 + guardMax * 0.08, 0, 1), 0.052);
-  bias.restraint = approachValue(bias.restraint, clampValue(0.18 + field * 0.18 + room * 0.24 + liveJazz * 0.08 + guardMax * 0.32 + ReferenceMorphState.restraint * 0.14 - glass * 0.04 - hardTechno * 0.06 - nightFunk * 0.04, 0, 1), 0.05);
+  bias.air = approachValue(bias.air, clampValue(room * 0.46 + field * 0.14 + liveJazz * 0.16 + quietPiano * 0.14 + SelfReviewGovernorState.airTail * 0.08 + guardMax * 0.08, 0, 1), 0.052);
+  bias.restraint = approachValue(bias.restraint, clampValue(0.18 + field * 0.18 + room * 0.24 + liveJazz * 0.08 + quietPiano * 0.18 + guardMax * 0.32 + ReferenceMorphState.restraint * 0.14 - glass * 0.04 - hardTechno * 0.06 - nightFunk * 0.04, 0, 1), 0.05);
   bias.curiosity = approachValue(bias.curiosity, clampValue(glass * 0.22 + grid * 0.12 + nightFunk * 0.08 + RdjGrowthState.wrong * 0.08 + ProducerHabitState.curiosity * 0.22 - guardMax * 0.16, 0, 1), 0.055);
 
   ModeTimbrePaletteState.weights.ambientHaze = approachValue(ModeTimbrePaletteState.weights.ambientHaze, clampValue(ModeTimbrePaletteState.weights.ambientHaze + bias.haze * 0.035 + bias.restraint * 0.012, 0, 1), 0.04);
@@ -7282,6 +7300,11 @@ function triggerMusicRadioBrainIdent(step, time, context = {}) {
       if (hat) hat.triggerAttackRelease("64n", baseTime + 0.082, clampValue(0.026 + bias.grid * 0.034, 0.022, 0.084));
       if (texture && rand(0.22 + bias.pressure * 0.16)) texture.triggerAttackRelease("64n", baseTime + 0.038, clampValue(0.018 + bias.pressure * 0.034, 0.014, 0.078));
       markMixEvent(0.05);
+    } else if (program === "quietPiano") {
+      if (pad) pad.triggerAttackRelease(randomHazeChord(), "1n", baseTime + 0.012, clampValue(0.022 + bias.haze * 0.026 + bias.air * 0.014, 0.016, 0.068));
+      if (glass) glass.triggerAttackRelease(memoryNote, "16n", baseTime + 0.082, clampValue(vel + bias.haze * 0.014, 0.014, 0.062));
+      if (voiceDust && rand(0.18 + bias.air * 0.16)) voiceDust.triggerAttackRelease(airNote, "8n", baseTime + 0.142, clampValue(0.01 + bias.air * 0.018, 0.008, 0.04));
+      markMixEvent(0.038);
     } else {
       if (glass) {
         glass.triggerAttackRelease(airNote, "16n", baseTime + 0.022, clampValue(0.018 + bias.air * 0.032, 0.014, 0.078));

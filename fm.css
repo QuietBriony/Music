@@ -155,12 +155,12 @@
   color: var(--text-sub);
   font-family: inherit;
   font-size: 11px;
-  letter-spacing: 0.2em;
-  padding: 8px 14px;
+  letter-spacing: 0.18em;
+  padding: 8px 12px;
   border-radius: 999px;
   cursor: pointer;
   text-transform: uppercase;
-  min-width: 60px;
+  min-width: 56px;
   transition: background 0.25s, color 0.25s;
 }
 

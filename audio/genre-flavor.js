@@ -266,13 +266,61 @@
     };
   }
 
+  function buildPiano() {
+    const gain = new Tone.Gain(0.0001).connect(ensureMaster());
+    // Generous room for the felt-piano feel; chill-style "quiet piano".
+    const room = new Tone.Reverb({ decay: 3.4, wet: 0.36 }).connect(gain);
+
+    // Felt piano — soft sine + filtered triangle layered. Slow attack
+    // simulates hammer felt; short-ish release lets chords breathe.
+    const lp = new Tone.Filter({ frequency: 2200, type: "lowpass", Q: 0.5 }).connect(room);
+    const piano = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.06, decay: 0.9, sustain: 0.35, release: 1.6 },
+      volume: -16
+    }).connect(lp);
+    piano.maxPolyphony = 8;
+
+    // Wider open voicings in D dorian, with one cell of suspension.
+    const VOICINGS = [
+      ["D3", "A3", "C4", "F4"],   // Dm9 (open)
+      ["G2", "F3", "A3", "C4", "E4"], // G13
+      ["C3", "G3", "Bb3", "E4"],  // Csus / Cmaj7add
+      ["A2", "E3", "G3", "C4", "D4"], // Am11
+      ["F2", "C3", "E3", "A3"]    // Fmaj7
+    ];
+
+    const ids = [];
+    let bar = 0;
+
+    // Chord every 2 bars, with rest on bar 4 of each 4-bar phrase.
+    ids.push(Tone.Transport.scheduleRepeat((time) => {
+      const idx = (bar % VOICINGS.length);
+      const voicing = VOICINGS[idx];
+      // Slight stagger for a "rolled" felt voicing.
+      voicing.forEach((note, i) => {
+        const delay = i * 0.022 + (Math.random() - 0.5) * 0.008;
+        const vel = 0.32 + Math.random() * 0.1;
+        piano.triggerAttackRelease(note, "2n", time + delay, vel);
+      });
+      bar++;
+    }, "2m"));
+
+    return {
+      gain,
+      synths: [piano, lp, room],
+      scheduledIds: ids
+    };
+  }
+
   const BUILDERS = {
     any: null,           // no flavor layer
     ambient: buildAmbient,
     techno: buildTechno,
     lofi: buildLofi,
     jazz: buildJazz,
-    funk: buildFunk
+    funk: buildFunk,
+    piano: buildPiano
   };
 
   // ---- Lifecycle ---------------------------------------------
