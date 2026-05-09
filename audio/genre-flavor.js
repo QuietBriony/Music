@@ -35,6 +35,8 @@
     piano: "chill-piano-recipe",
     funk: "drum-frames-funk",
     techno: "drum-frames-techno",
+    jazz: "drum-frames-jazz",
+    lofi: "drum-frames-lofi",
     ambient: "namima-shape-ambient"
   };
 
@@ -322,7 +324,39 @@
     };
   }
 
-  function buildLofi() { return buildLofiDefault(); }
+  // When drum-frames-lofi preset is present, render the lazy frame rhythm
+  // PLUS the vinyl crackle bed for the dusty character.
+  function buildLofiFromFrames(frames) {
+    const drums = buildDrumsFromFrames(frames);
+    if (!drums) return null;
+
+    const lp = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 0.6 }).connect(drums.gain);
+    const crackle = new Tone.Noise("pink");
+    const crackleAmp = new Tone.Gain(0.06).connect(lp);
+    crackle.connect(crackleAmp);
+    try { crackle.start(); } catch (e) {}
+
+    drums.synths.push(crackle, crackleAmp, lp);
+    const prevDispose = drums.dispose;
+    drums.dispose = () => {
+      try { crackle.stop(); } catch (e) {}
+      if (prevDispose) prevDispose();
+    };
+    drums.source = "drum-frames+vinyl-crackle";
+    return drums;
+  }
+
+  function buildLofi(frames) {
+    if (frames && frames.format === "drum-frames" && frames.genre === "lofi") {
+      try {
+        const layer = buildLofiFromFrames(frames);
+        if (layer) return layer;
+      } catch (e) {
+        console.warn("[GenreFlavor] lofi frames failed, fallback:", e);
+      }
+    }
+    return buildLofiDefault();
+  }
 
   // ---- JAZZ -----------------------------------------------------
 
@@ -369,7 +403,44 @@
     return { gain, synths: [brush, brushHi, brushLo, bass, room], scheduledIds: ids, source: "default" };
   }
 
-  function buildJazz() { return buildJazzDefault(); }
+  // When drum-frames-jazz preset is present, render the frame rhythm AND
+  // keep the walking bass for harmonic glue (brush is dropped to avoid
+  // clashing with frame hat events).
+  function buildJazzFromFrames(frames) {
+    const drums = buildDrumsFromFrames(frames);
+    if (!drums) return null;
+
+    const room = new Tone.Reverb({ decay: 1.6, wet: 0.22 }).connect(drums.gain);
+    const bass = new Tone.MonoSynth({
+      oscillator: { type: "triangle" },
+      filter: { type: "lowpass", frequency: 720, Q: 0.9 },
+      envelope: { attack: 0.005, decay: 0.22, sustain: 0.45, release: 0.28 },
+      filterEnvelope: { attack: 0.012, decay: 0.22, sustain: 0.32, release: 0.3, baseFrequency: 220, octaves: 2.4 },
+      volume: -14
+    }).connect(room);
+
+    const walk = ["D2", "F2", "G2", "A2", "C3", "A2", "G2", "F2"];
+    let walkIdx = 0;
+    drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      bass.triggerAttackRelease(walk[walkIdx % walk.length], "8n", time, 0.55);
+      walkIdx++;
+    }, "4n"));
+    drums.synths.push(bass, room);
+    drums.source = "drum-frames+walking-bass";
+    return drums;
+  }
+
+  function buildJazz(frames) {
+    if (frames && frames.format === "drum-frames" && frames.genre === "jazz") {
+      try {
+        const layer = buildJazzFromFrames(frames);
+        if (layer) return layer;
+      } catch (e) {
+        console.warn("[GenreFlavor] jazz frames failed, fallback:", e);
+      }
+    }
+    return buildJazzDefault();
+  }
 
   // ---- FUNK -----------------------------------------------------
 

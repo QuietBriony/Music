@@ -21,6 +21,8 @@
     "chill-piano-recipe": "presets/chill-piano-recipe.json",
     "drum-frames-funk": "presets/drum-frames-funk.json",
     "drum-frames-techno": "presets/drum-frames-techno.json",
+    "drum-frames-jazz": "presets/drum-frames-jazz.json",
+    "drum-frames-lofi": "presets/drum-frames-lofi.json",
     "namima-shape-ambient": "presets/namima-shape-ambient.json"
   };
 
@@ -28,6 +30,8 @@
     "chill-piano-recipe": "chill-piano-recipe",
     "drum-frames-funk": "drum-frames",
     "drum-frames-techno": "drum-frames",
+    "drum-frames-jazz": "drum-frames",
+    "drum-frames-lofi": "drum-frames",
     "namima-shape-ambient": "namima-ambient-tone-js"
   };
 
