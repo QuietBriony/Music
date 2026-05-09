@@ -6,8 +6,19 @@
   <title>Hazama FM — music for thinking and building</title>
   <meta name="description" content="Hazama FM — generative focus radio powered by the UCM Mandala Engine. Press start and listen for hours." />
 
-  <link rel="stylesheet" href="style.css?v=fm-1" />
-  <link rel="stylesheet" href="fm.css?v=fm-1" />
+  <link rel="stylesheet" href="style.css?v=fm-4" />
+  <link rel="stylesheet" href="fm.css?v=fm-4" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
+  <meta name="theme-color" content="#040e18" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Hazama FM" />
+  <meta name="mobile-web-app-capable" content="yes" />
 
   <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
   <script src="audio/namima-audio-adapter.js" defer></script>
@@ -108,6 +119,17 @@
     <span id="header_sync"></span>
     <span id="auto_arc_status"></span>
   </div>
+
+  <!-- Service worker — offline + cache -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch((err) => {
+          console.warn("[Hazama FM] sw register failed:", err);
+        });
+      });
+    }
+  </script>
 
 </body>
 </html>
