@@ -59,12 +59,12 @@
       "feedback_hint": "send piano/trio and listening-space hints toward chill",
       "engine_translation": {
         "profile": "piano",
-        "engine_gain": 0.32,
-        "pad_db": -26,
-        "glass_db": -28,
-        "piano_memory_db": -28,
-        "reverb_wet": 0.1,
-        "delay_wet": 0.06
+        "engine_gain": 0.24,
+        "pad_db": -38,
+        "glass_db": -42,
+        "piano_memory_db": -38,
+        "reverb_wet": 0.06,
+        "delay_wet": 0.035
       },
       "integration_mode": "metadata-only",
       "review_only": true

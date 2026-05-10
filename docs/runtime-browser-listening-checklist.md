@@ -106,13 +106,17 @@ Techno setup:
 Techno expected:
 
 - `window.GenreFlavor.state.source` is `drum-frames+machine-acid-brain`.
+- `Tone.Transport.bpm.value` settles near 132 BPM.
 - The drum frames still drive the rhythm, but the sound reads as stripped
   machine drum: deep four-on-floor kick, restrained offbeat hat, and short dry
   clap/snare.
 - A light acid pulse continues underneath the transient cue without turning on
   Core Rig `ACID.ON`.
+- The acid pulse is identifiable as a resonant byoing line, not only a bright
+  cue at the moment the pill changes.
 - The low floor is stronger than `any`, but not limiter-crushed or boomy.
-- The 16th-note hat grid does not become foreground shaka-shaka.
+- The 16th-note hat grid is mostly removed; hats read as sparse machine ticks,
+  not foreground shaka-shaka.
 - In high BPM sections, short 32nd/64th-feeling acid/click/texture ratchets
   create brain-dance motion without becoming a constant hat loop.
 
@@ -126,9 +130,11 @@ Piano expected:
 
 - `window.GenreFlavor.state.source` ends with `+foreground-piano`.
 - `window.GenreFlavor.state.scheduled` is greater than `1`.
+- `Tone.Transport.bpm.value` settles near 68 BPM after the profile lands.
 - Piano chord bed, memory reply, and soft melody are all designed to sound,
   while the surface still leaves long quiet spaces.
-- The piano layer is audible as the pill identity, not only as hidden metadata.
+- A dry hammer/attack foreground anchor makes the piano audible as the pill
+  identity, not only as hidden metadata.
 - The Music engine pad/glass/electronic-harp tail is suppressed enough that the
   flavor piano is the foreground object.
 

@@ -53,7 +53,7 @@
     },
     techno: {
       role: "machine rhythm plus acid pulse",
-      edge: "stripped four-on-floor body, restrained offbeat machine hat, stronger 303-adjacent motion, high-BPM brain ratchets",
+      edge: "stripped four-on-floor body, sparse machine hat, stronger 303-adjacent motion, high-BPM brain ratchets",
       feedback: "send groove density and acid-source hints toward drum-floor/Music review"
     },
     lofi: {
@@ -289,31 +289,33 @@
   }
 
   function makeMachineHat(gain) {
-    const hp = new Tone.Filter({ frequency: 6400, type: "highpass", Q: 0.9 }).connect(gain);
+    const tickBus = new Tone.Gain(0.7).connect(gain);
+    const hp = new Tone.Filter({ frequency: 7200, type: "bandpass", Q: 3.2 }).connect(tickBus);
     const body = new Tone.NoiseSynth({
       noise: { type: "white" },
-      envelope: { attack: 0.001, decay: 0.028, sustain: 0, release: 0.014 },
-      volume: -33
+      envelope: { attack: 0.001, decay: 0.018, sustain: 0, release: 0.008 },
+      volume: -42
     }).connect(hp);
     const tick = new Tone.MetalSynth({
-      frequency: 230,
-      envelope: { attack: 0.001, decay: 0.032, release: 0.012 },
-      harmonicity: 3.6,
-      modulationIndex: 7,
-      resonance: 2600,
-      octaves: 0.8,
-      volume: -34
-    }).connect(gain);
+      frequency: 240,
+      envelope: { attack: 0.001, decay: 0.022, release: 0.008 },
+      harmonicity: 4.2,
+      modulationIndex: 5.2,
+      resonance: 2100,
+      octaves: 0.55,
+      volume: -37
+    }).connect(tickBus);
     return {
       triggerAttackRelease(duration, time, velocity = 0.3) {
-        const v = clamp(velocity, 0.04, 0.55);
-        body.triggerAttackRelease("64n", time, v * 0.7);
-        tick.triggerAttackRelease("64n", time + 0.003, v * 0.38);
+        const v = clamp(velocity, 0.03, 0.44);
+        body.triggerAttackRelease("128n", time, v * 0.36);
+        tick.triggerAttackRelease("128n", time + 0.002, v * 0.42);
       },
       dispose() {
         try { body.dispose(); } catch (e) {}
         try { tick.dispose(); } catch (e) {}
         try { hp.dispose(); } catch (e) {}
+        try { tickBus.dispose(); } catch (e) {}
       }
     };
   }
@@ -414,11 +416,17 @@
                      + (evt.sub || 0) * subTime
                      + (evt.microMs || 0) / 1000;
         const vel = clamp(evt.velocity ?? 0.5, 0.05, 1);
+        let eventVel = vel;
+        if (options.minimalTechno) {
+          if (evt.instrument === "hat") eventVel = vel * 0.42;
+          else if (evt.instrument === "snare") eventVel = vel * 0.76;
+          else if (evt.instrument === "kick") eventVel = Math.min(1, vel * 1.06);
+        }
         try {
           if (evt.instrument === "kick") {
-            synth.triggerAttackRelease(options.kickNote || "C2", "16n", time + offset, vel);
+            synth.triggerAttackRelease(options.kickNote || "C2", "16n", time + offset, eventVel);
           } else {
-            synth.triggerAttackRelease("16n", time + offset, vel);
+            synth.triggerAttackRelease("16n", time + offset, eventVel);
           }
         } catch (e) {}
       });
@@ -436,24 +444,24 @@
     if (!layer) return null;
     const acid = new Tone.MonoSynth({
       oscillator: { type: "sawtooth" },
-      filter: { type: "lowpass", frequency: 520, Q: 8.5 },
-      envelope: { attack: 0.006, decay: 0.11, sustain: 0.18, release: 0.08 },
+      filter: { type: "lowpass", frequency: 520, Q: 11.5 },
+      envelope: { attack: 0.004, decay: 0.12, sustain: 0.12, release: 0.055 },
       filterEnvelope: {
         attack: 0.004,
-        decay: 0.18,
-        sustain: 0.12,
-        release: 0.08,
-        baseFrequency: 120,
-        octaves: 3.8
+        decay: 0.22,
+        sustain: 0.08,
+        release: 0.06,
+        baseFrequency: 90,
+        octaves: 4.6
       },
       portamento: 0.035,
-      volume: options.volume ?? -25
+      volume: options.volume ?? -20
     }).connect(layer.gain);
     const pattern = [
       "D2", null, "D2", "F2",
-      null, "D2", "A1", null,
+      null, "D2", "A1", "C2",
       "D2", "F2", null, "D2",
-      "C2", null, "D2", "A1"
+      "C2", "D2", null, "A1"
     ];
     let step = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
@@ -462,9 +470,9 @@
       const gate = note && Math.random() < (accent ? 0.78 : 0.46);
       if (gate) {
         try {
-          acid.filter.frequency.rampTo(accent ? 980 : 560, 0.035);
-          acid.triggerAttackRelease(note, accent ? "16n" : "32n", time + 0.014 + Math.random() * 0.012, accent ? 0.24 : 0.16);
-          acid.filter.frequency.rampTo(360, 0.16);
+          acid.filter.frequency.rampTo(accent ? 1520 : 740, 0.028);
+          acid.triggerAttackRelease(note, accent ? "16n" : "32n", time + 0.012 + Math.random() * 0.01, accent ? 0.34 : 0.23);
+          acid.filter.frequency.rampTo(300, 0.14);
         } catch (e) {}
       }
       step++;
@@ -538,7 +546,7 @@
       source: "drum-frames+machine-minimal"
     });
     return addBrainDanceRatchet(
-      addAcidPulse(drums, { source: "drum-frames+machine-acid-minimal", volume: -21 }),
+      addAcidPulse(drums, { source: "drum-frames+machine-acid-minimal", volume: -18 }),
       { source: "drum-frames+machine-acid-brain" }
     );
   }
@@ -915,24 +923,34 @@
 
   function buildRecipePianoLayer(gain, layer, role, layerIndex) {
     const { oscType, cutoff } = pianoLayerTone(layer);
-    const roleGain = role === "bed" ? 0.92 : role === "memory" ? 0.7 : 0.62;
+    const roleGain = role === "bed" ? 1.05 : role === "memory" ? 0.78 : 0.7;
     const layerGain = new Tone.Gain(roleGain).connect(gain);
-    const roomWet = role === "bed" ? 0.22 : role === "memory" ? 0.18 : 0.2;
-    const room = new Tone.Reverb({ decay: role === "bed" ? 2.1 : 1.8, wet: roomWet }).connect(layerGain);
+    const roomWet = role === "bed" ? 0.12 : role === "memory" ? 0.1 : 0.11;
+    const room = new Tone.Reverb({ decay: role === "bed" ? 1.45 : 1.15, wet: roomWet }).connect(layerGain);
     const lp = new Tone.Filter({
-      frequency: role === "memory" ? Math.min(cutoff, 1850) : cutoff,
+      frequency: role === "memory" ? Math.min(cutoff, 1950) : Math.min(cutoff + 260, 2600),
       type: "lowpass",
       Q: 0.48
     }).connect(room);
+    const hammerFilter = new Tone.Filter({
+      frequency: role === "bed" ? 2100 : 2400,
+      type: "bandpass",
+      Q: 2.6
+    }).connect(layerGain);
+    const hammer = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.001, decay: role === "bed" ? 0.018 : 0.014, sustain: 0, release: 0.006 },
+      volume: role === "bed" ? -29 : -33
+    }).connect(hammerFilter);
     const piano = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: oscType },
       envelope: {
-        attack: role === "memory" ? 0.018 : 0.026,
-        decay: role === "bed" ? 0.72 : 0.46,
-        sustain: role === "bed" ? 0.18 : 0.08,
-        release: role === "bed" ? 1.55 : 0.82
+        attack: role === "memory" ? 0.012 : 0.014,
+        decay: role === "bed" ? 0.42 : 0.34,
+        sustain: role === "bed" ? 0.07 : 0.035,
+        release: role === "bed" ? 0.82 : 0.52
       },
-      volume: role === "bed" ? -8 : role === "memory" ? -11 : -12
+      volume: role === "bed" ? -6.5 : role === "memory" ? -10 : -11
     }).connect(lp);
     piano.maxPolyphony = 8;
 
@@ -955,6 +973,9 @@
       if (trigger > 0 && Math.random() < probability) {
         const voicing = voicings[voicingIdx % voicings.length] || voicings[0];
         const jitter = (Math.random() - 0.5) * humanize + (layer.swingPush || 0);
+        try {
+          hammer.triggerAttackRelease("128n", time + jitter, clamp(baseVel * trigger * 0.28, 0.018, 0.13));
+        } catch (e) {}
         voicing.forEach((note, i) => {
           const delay = i * (role === "bed" ? 0.024 : 0.017);
           const vel = clamp(baseVel * trigger * (0.86 + Math.random() * 0.28), 0.025, 0.58);
@@ -965,7 +986,53 @@
       if (step % every === 0) voicingIdx++;
     }, "16n");
 
-    return { synths: [piano, lp, room, layerGain], scheduledId: id };
+    return { synths: [piano, hammer, lp, hammerFilter, room, layerGain], scheduledId: id };
+  }
+
+  function buildPianoAnchorLayer(gain, selectedLayers) {
+    const sourceLayer = selectedLayers.find((item) => item.role === "bed")?.layer
+      || selectedLayers[0]?.layer
+      || null;
+    const voicings = normalizePianoVoicings(sourceLayer);
+    const anchorGain = new Tone.Gain(0.9).connect(gain);
+    const room = new Tone.Reverb({ decay: 1.1, wet: 0.075 }).connect(anchorGain);
+    const lp = new Tone.Filter({ frequency: 2750, type: "lowpass", Q: 0.42 }).connect(room);
+    const hammerFilter = new Tone.Filter({ frequency: 2250, type: "bandpass", Q: 2.4 }).connect(anchorGain);
+    const hammer = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.001, decay: 0.016, sustain: 0, release: 0.006 },
+      volume: -28
+    }).connect(hammerFilter);
+    const piano = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.012, decay: 0.36, sustain: 0.045, release: 0.68 },
+      volume: -6.2
+    }).connect(lp);
+    piano.maxPolyphony = 8;
+
+    let bar = 0;
+    const id = Tone.Transport.scheduleRepeat((time) => {
+      const voicing = (voicings[bar % voicings.length] || voicings[0] || ["D3", "F3", "A3", "C4"]).slice(0, 4);
+      const reply = voicing.slice(-2);
+      try {
+        hammer.triggerAttackRelease("128n", time - 0.002, 0.095);
+      } catch (e) {}
+      voicing.forEach((note, i) => {
+        piano.triggerAttackRelease(note, i === 0 ? "2n" : "4n", time + i * 0.021, 0.34 - i * 0.025);
+      });
+      if (bar % 2 === 1) {
+        const replyTime = time + Tone.Time("2n").toSeconds() + 0.035;
+        try {
+          hammer.triggerAttackRelease("128n", replyTime - 0.002, 0.052);
+        } catch (e) {}
+        reply.forEach((note, i) => {
+          piano.triggerAttackRelease(note, "8n", replyTime + i * 0.017, 0.18 - i * 0.018);
+        });
+      }
+      bar++;
+    }, "1m");
+
+    return { synths: [piano, hammer, lp, hammerFilter, room, anchorGain], scheduledId: id };
   }
 
   function buildPianoFromRecipe(recipeContainer) {
@@ -982,13 +1049,16 @@
       synths.push(...built.synths);
       ids.push(built.scheduledId);
     });
+    const anchor = buildPianoAnchorLayer(gain, pianoLayers);
+    synths.push(...anchor.synths);
+    ids.push(anchor.scheduledId);
 
     return {
       gain,
       synths,
       scheduledIds: ids,
       source: "chill-recipe:" + (recipes[0]?.id || "?") + "+foreground-piano",
-      level: 1.9
+      level: 2.15
     };
   }
 

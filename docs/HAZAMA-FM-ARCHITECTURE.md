@@ -67,14 +67,16 @@ JSON parse error も全部 graceful 処理。
 | FUNK | high body+creation | `broken_machine` | `drum-frames-funk` | `drum-frames+ep+clavi` |
 | PIANO | high circle+observer | `earth_reed` | `chill-piano-recipe` | `chill-recipe:piano-jazz-chill+foreground-piano` |
 
-FM pill は Music 本体の UCM faders / culture だけでなく、本体側の bus mix も
-ジャンル別に翻訳する。`techno` と `piano` では `pad/glass/pianoMemory/voiceDust`
-を大きく下げ、FM flavor の machine / piano layer を主役にする。`ambient` だけは
-本体の air / pad を比較的残す。
+FM pill は Music 本体の UCM faders / culture / tempo だけでなく、本体側の bus mix も
+ジャンル別に翻訳する。`techno` は 132 BPM 付近の acid grid、`piano` は 68 BPM
+付近の quiet foreground piano に寄せる。`techno` と `piano` では
+`pad/glass/pianoMemory/voiceDust` を強く下げ、FM flavor の machine / dry
+foreground piano layer を主役にする。`ambient` だけは本体の air / pad を比較的残す。
 
 高BPMの `techno` / IDM 寄り文脈では、16分ハットを増やすのではなく、32分/64分
-相当の短い acid/click/texture ratchet を小さい burst として足す。狙いは
-foreground のシャカシャカではなく、脳内で踊る micro-grid。
+相当の短い acid/click/texture ratchet を小さい burst として足す。hat は
+offbeat の機械 tick に絞り、狙いは foreground のシャカシャカではなく、脳内で踊る
+micro-grid。
 
 非 ANY 選択時は engine の AUTOMIX (sine wave 変調) を OFF にして
 fader をロック。ANY 戻しで AUTOMIX 復帰。

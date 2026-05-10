@@ -7149,8 +7149,8 @@ const HAZAMA_FM_ENGINE_MIXES = {
   lofi: { engineGain: 0.56, padBus: 0.34, reverbWet: 0.2, delayWet: 0.14, padDb: -10, glassDb: -10, pianoMemoryDb: -9, voiceDustDb: -10, hatDb: -7 },
   jazz: { engineGain: 0.5, padBus: 0.22, reverbWet: 0.18, delayWet: 0.12, padDb: -13, glassDb: -13, pianoMemoryDb: -12, voiceDustDb: -13, textureDb: -5, hatDb: -6 },
   funk: { engineGain: 0.5, padBus: 0.16, reverbWet: 0.16, delayWet: 0.1, padDb: -15, glassDb: -14, pianoMemoryDb: -15, voiceDustDb: -15, textureDb: -4, hatDb: -5 },
-  techno: { engineGain: 0.38, drumBus: 0.28, padBus: 0.04, bassBus: 0.24, textureBus: 0.08, reverbWet: 0.08, delayWet: 0.06, padDb: -24, glassDb: -26, textureDb: -10, pianoMemoryDb: -28, voiceDustDb: -28, drumSkinDb: -10, reedBuzzDb: -24, hatDb: -24, kickDb: -10 },
-  piano: { engineGain: 0.32, drumBus: 0.08, padBus: 0.06, bassBus: 0.12, textureBus: 0.04, reverbWet: 0.1, delayWet: 0.06, padDb: -26, glassDb: -28, textureDb: -18, pianoMemoryDb: -28, voiceDustDb: -30, drumSkinDb: -18, subImpactDb: -12, reedBuzzDb: -28, hatDb: -24, kickDb: -18 }
+  techno: { engineGain: 0.3, drumBus: 0.2, padBus: 0.015, bassBus: 0.2, textureBus: 0.055, reverbWet: 0.055, delayWet: 0.04, padDb: -34, glassDb: -38, textureDb: -14, pianoMemoryDb: -38, voiceDustDb: -38, drumSkinDb: -14, reedBuzzDb: -34, hatDb: -36, kickDb: -12 },
+  piano: { engineGain: 0.24, drumBus: 0.04, padBus: 0.015, bassBus: 0.08, textureBus: 0.025, reverbWet: 0.06, delayWet: 0.035, padDb: -38, glassDb: -42, textureDb: -24, pianoMemoryDb: -38, voiceDustDb: -42, drumSkinDb: -26, subImpactDb: -18, reedBuzzDb: -38, hatDb: -36, kickDb: -26 }
 };
 
 function hazamaFmRuntimeGenre() {

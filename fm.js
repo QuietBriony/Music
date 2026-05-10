@@ -31,26 +31,32 @@
       faders: { energy: 40, wave: 40, mind: 50, creation: 50, void: 20, circle: 60, body: 50, resource: 60, observer: 50 }
     },
     ambient: {
+      bpm: 72,
       culture: "ambient_room",
       faders: { energy: 22, wave: 38, mind: 55, creation: 30, void: 65, circle: 72, body: 22, resource: 50, observer: 78 }
     },
     techno: {
+      bpm: 132,
       culture: "acid_core",
       faders: { energy: 78, wave: 50, mind: 28, creation: 38, void: 8, circle: 32, body: 82, resource: 70, observer: 32 }
     },
     lofi: {
+      bpm: 82,
       culture: "tape_memory",
       faders: { energy: 38, wave: 62, mind: 65, creation: 58, void: 28, circle: 64, body: 42, resource: 55, observer: 56 }
     },
     jazz: {
+      bpm: 96,
       culture: "earth_reed",
       faders: { energy: 36, wave: 70, mind: 72, creation: 76, void: 18, circle: 70, body: 50, resource: 64, observer: 60 }
     },
     funk: {
+      bpm: 108,
       culture: "broken_machine",
       faders: { energy: 64, wave: 56, mind: 44, creation: 70, void: 14, circle: 50, body: 76, resource: 68, observer: 44 }
     },
     piano: {
+      bpm: 68,
       culture: "earth_reed",
       faders: { energy: 28, wave: 50, mind: 60, creation: 64, void: 32, circle: 72, body: 30, resource: 54, observer: 70 }
     }
@@ -63,6 +69,7 @@
   let previousRadioProgram = null;
   let identTimer = null;
   let programLabelTimer = null;
+  let genreTempoTimer = null;
   let lastAcidCueAt = 0;
   let lastAcidCueKey = "";
 
@@ -164,6 +171,45 @@
     dispatchInput(slider);
   }
 
+  function applyGenreTempo(profile, name) {
+    if (!profile || typeof profile.bpm !== "number") return;
+    const bpm = profile.bpm;
+    try {
+      if (typeof EngineParams !== "undefined") EngineParams.bpm = Math.round(bpm);
+      if (typeof DJTempoState !== "undefined") {
+        DJTempoState.targetBpm = bpm;
+        DJTempoState.bpm = bpm;
+        DJTempoState.motion = 0;
+        DJTempoState.drift = 0;
+      }
+      if (typeof Tone !== "undefined" && Tone.Transport?.bpm) {
+        Tone.Transport.bpm.rampTo(bpm, name === "piano" ? 0.9 : 0.65);
+      }
+    } catch (err) {
+      console.warn("[Hazama FM] genre tempo apply failed:", err);
+    }
+  }
+
+  function stopGenreTempoLock() {
+    if (genreTempoTimer) {
+      clearInterval(genreTempoTimer);
+      genreTempoTimer = null;
+    }
+  }
+
+  function startGenreTempoLock(profile, name) {
+    stopGenreTempoLock();
+    if (!profile || typeof profile.bpm !== "number" || name === "any") return;
+    applyGenreTempo(profile, name);
+    genreTempoTimer = setInterval(() => {
+      if ((!started && !starting) || getCurrentGenre() !== name) {
+        stopGenreTempoLock();
+        return;
+      }
+      applyGenreTempo(profile, name);
+    }, 900);
+  }
+
   function applyGenreProfile(name) {
     const profile = GENRE_PROFILES[name];
     if (!profile) return;
@@ -195,6 +241,7 @@
     // Re-apply ENERGY pill on top of the genre baseline so the user's energy
     // choice still wins for the energy fader.
     setTimeout(() => applyEnergyValue(getCurrentEnergy()), keys.length * 35 + 20);
+    setTimeout(() => startGenreTempoLock(profile, name), keys.length * 35 + 60);
 
     // Switch culture grammar — engine.js:11780 listens for change events.
     const cultureSelect = $("culture_grammar_select");
@@ -486,6 +533,7 @@
     } finally {
       started = false;
       stopping = false;
+      stopGenreTempoLock();
       setButtonState("idle");
       setMediaPlaybackState("paused");
     }
