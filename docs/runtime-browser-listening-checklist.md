@@ -121,6 +121,8 @@ Techno expected:
   create brain-dance motion without becoming a constant hat loop.
 - After `SYNC`, `performance_state.hazama_fm.listening_trace` includes the
   techno dwell and any genre switches made during the listening pass.
+- The visible `SYNC` control reports a saved genre/dwell status without
+  interrupting playback.
 
 Piano setup:
 
@@ -141,6 +143,8 @@ Piano expected:
   flavor piano is the foreground object.
 - After `SYNC`, `performance_state.hazama_fm.listening_trace.current_genre`
   is `piano` and `dwell_ms_by_genre.piano` is greater than `0`.
+- The visible `SYNC` control can be pressed from the FM surface without opening
+  Core Rig.
 
 Other genre source sanity:
 
