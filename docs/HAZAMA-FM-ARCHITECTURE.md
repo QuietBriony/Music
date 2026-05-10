@@ -210,6 +210,10 @@ window.HazamaFmListeningTrace.snapshot()
 // SYNC packet 側にも metadata-only で入る。音声・sample・自動PRは入らない。
 window.MusicSessionPacket.build().performance_state.hazama_fm
 
+// FMで保存した聴感の次レビューcue。
+// 例: techno -> "techno balance"、piano -> "piano foreground"
+window.MusicSessionPacket.build().routing.openclaw.next_action.fm_review_cue
+
 // preset がロード済か
 window.HazamaPresets.available("chill-piano-recipe")
 window.HazamaPresets.get("drum-frames-jazz")

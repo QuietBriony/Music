@@ -92,10 +92,29 @@
         ],
         "storage_key": "music:fm:listening-trace:v1",
         "review_only": true
-      },
-      "integration_mode": "metadata-only",
-      "review_only": true
-    }
+        },
+        "review_cue": {
+          "schema": "hazama-fm-review-cue.v1",
+          "active_genre": "piano",
+          "dominant_genre": "piano",
+          "dwell_ms": 61000,
+          "dwell_seconds": 61,
+          "switch_count": 1,
+          "destination": "chill",
+          "target_repo": "chill",
+          "label": "chillで聴く",
+          "short_label": "piano foreground",
+          "next_task": "piano-foreground-chill-reference-listening-pass",
+          "reason": "FM piano was saved; check whether dry piano stays foreground and whether the quiet/trio direction belongs in chill.",
+          "action": "chill sessionのquiet piano/trio方向と比べ、Music側に残す成分とchillへ寄せる成分を分ける。",
+          "cluster_reference": "Music",
+          "confidence": 0.83,
+          "metadata_only": true,
+          "human_review_required": true
+        },
+        "integration_mode": "metadata-only",
+        "review_only": true
+      }
   },
   "music_intent": {
     "timbre": ["soft pluck memory", "low brightness", "no sample import"],
@@ -148,6 +167,25 @@
         "reason": "High memory and observer fit a quiet review surface.",
         "action": "manual-preview",
         "confidence": 0.72,
+        "fm_review_cue": {
+          "schema": "hazama-fm-review-cue.v1",
+          "active_genre": "piano",
+          "dominant_genre": "piano",
+          "dwell_ms": 61000,
+          "dwell_seconds": 61,
+          "switch_count": 1,
+          "destination": "chill",
+          "target_repo": "chill",
+          "label": "chillで聴く",
+          "short_label": "piano foreground",
+          "next_task": "piano-foreground-chill-reference-listening-pass",
+          "reason": "FM piano was saved; check whether dry piano stays foreground and whether the quiet/trio direction belongs in chill.",
+          "action": "chill sessionのquiet piano/trio方向と比べ、Music側に残す成分とchillへ寄せる成分を分ける。",
+          "cluster_reference": "Music",
+          "confidence": 0.83,
+          "metadata_only": true,
+          "human_review_required": true
+        },
         "manual_start_required": true,
         "metadata_only": true
       },
