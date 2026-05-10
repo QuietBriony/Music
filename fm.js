@@ -519,6 +519,53 @@
     if (started) writeSession(rb);
   }
 
+  // ---- Review / SYNC -------------------------------------------
+
+  function setSyncStatus(text) {
+    const status = $("fm-sync-status");
+    if (status) status.textContent = text || "";
+  }
+
+  function formatDwellSeconds(trace, genre) {
+    const dwell = trace?.dwell_ms_by_genre?.[genre];
+    const seconds = Math.round((Number(dwell) || 0) / 1000);
+    return seconds > 0 ? `${seconds}s` : "";
+  }
+
+  function syncReviewMoment() {
+    const btn = $("fm_sync");
+    if (!started) {
+      setSyncStatus("start first");
+      return;
+    }
+    const api = window.MusicSessionPacket;
+    if (!api || typeof api.sync !== "function") {
+      setSyncStatus("sync unavailable");
+      return;
+    }
+    if (btn) btn.disabled = true;
+    try {
+      const result = api.sync();
+      const packet = result?.payload?.packet || api.last || null;
+      const hazama = packet?.performance_state?.hazama_fm || null;
+      const trace = hazama?.listening_trace || null;
+      const genre = trace?.current_genre || hazama?.genre || getCurrentGenre();
+      const dwell = formatDwellSeconds(trace, genre);
+      const stored = result?.stored || result?.broadcast;
+      setSyncStatus(stored ? `saved ${genre}${dwell ? ` ${dwell}` : ""}` : "sync failed");
+    } catch (err) {
+      console.warn("[Hazama FM] review sync failed:", err);
+      setSyncStatus("sync failed");
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  function bindReviewSync() {
+    const btn = $("fm_sync");
+    if (btn) btn.addEventListener("click", syncReviewMoment);
+  }
+
   // ---- Media Session API (lock screen / control center) ----------
 
   function ensureMediaSession() {
@@ -731,6 +778,7 @@
 
     bindEnergyPill();
     bindGenrePill();
+    bindReviewSync();
     bindVisibility();
     ensureMediaSession();
 
