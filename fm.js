@@ -551,8 +551,10 @@
       const trace = hazama?.listening_trace || null;
       const genre = trace?.current_genre || hazama?.genre || getCurrentGenre();
       const dwell = formatDwellSeconds(trace, genre);
+      const cue = hazama?.review_cue || packet?.routing?.openclaw?.next_action?.fm_review_cue || null;
+      const cueLabel = cue?.short_label || cue?.target_repo || "";
       const stored = result?.stored || result?.broadcast;
-      setSyncStatus(stored ? `saved ${genre}${dwell ? ` ${dwell}` : ""}` : "sync failed");
+      setSyncStatus(stored ? `saved ${genre}${dwell ? ` ${dwell}` : ""}${cueLabel ? ` -> ${cueLabel}` : ""}` : "sync failed");
     } catch (err) {
       console.warn("[Hazama FM] review sync failed:", err);
       setSyncStatus("sync failed");

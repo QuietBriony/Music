@@ -123,6 +123,11 @@ Techno expected:
   techno dwell and any genre switches made during the listening pass.
 - The visible `SYNC` control reports a saved genre/dwell status without
   interrupting playback.
+- After `SYNC`, `performance_state.hazama_fm.review_cue.short_label` is
+  `techno balance`, and `routing.openclaw.next_action.fm_review_cue` carries
+  the same metadata-only cue.
+- The visible `SYNC` status includes the cue, for example
+  `saved techno 12s -> techno balance`.
 
 Piano setup:
 
@@ -143,6 +148,9 @@ Piano expected:
   flavor piano is the foreground object.
 - After `SYNC`, `performance_state.hazama_fm.listening_trace.current_genre`
   is `piano` and `dwell_ms_by_genre.piano` is greater than `0`.
+- After `SYNC`, `performance_state.hazama_fm.review_cue.short_label` is
+  `piano foreground`, and the next action points toward a chill comparison
+  rather than another blind Music-side sound patch.
 - The visible `SYNC` control can be pressed from the FM surface without opening
   Core Rig.
 
@@ -164,6 +172,9 @@ SYNC metadata sanity:
 - `performance_state.hazama_fm.integration_mode` is `metadata-only`.
 - `performance_state.hazama_fm.engine_translation.profile` matches the current
   FM pill when opened from `fm.html`.
+- `performance_state.hazama_fm.review_cue` and
+  `routing.openclaw.next_action.fm_review_cue` are metadata-only objects with
+  `human_review_required: true`.
 - The packet gives other stack repos a role/edge/feedback hint, but does not
   auto-start, record, import samples, open MIDI, or merge anything.
 

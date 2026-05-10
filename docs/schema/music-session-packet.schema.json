@@ -265,6 +265,7 @@
                 "review_only": { "const": true }
               }
             },
+            "review_cue": { "$ref": "#/definitions/hazamaFmReviewCue" },
             "integration_mode": { "const": "metadata-only" },
             "review_only": { "const": true }
           }
@@ -378,6 +379,7 @@
                 "reason": { "type": "string" },
                 "action": { "type": "string" },
                 "confidence": { "$ref": "#/definitions/unitInterval" },
+                "fm_review_cue": { "$ref": "#/definitions/hazamaFmReviewCue" },
                 "manual_start_required": { "type": "boolean" },
                 "metadata_only": { "type": "boolean" }
               }
@@ -418,6 +420,41 @@
     }
   },
   "definitions": {
+    "hazamaFmReviewCue": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": { "const": "hazama-fm-review-cue.v1" },
+        "active_genre": { "type": ["string", "null"] },
+        "dominant_genre": { "type": "string" },
+        "dwell_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "dwell_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "switch_count": {
+          "type": "number",
+          "minimum": 0
+        },
+        "destination": {
+          "type": "string",
+          "examples": ["music", "chill", "drum_floor", "namima", "openclaw"]
+        },
+        "target_repo": { "type": "string" },
+        "label": { "type": "string" },
+        "short_label": { "type": "string" },
+        "next_task": { "type": "string" },
+        "reason": { "type": "string" },
+        "action": { "type": "string" },
+        "cluster_reference": { "type": "string" },
+        "confidence": { "$ref": "#/definitions/unitInterval" },
+        "metadata_only": { "const": true },
+        "human_review_required": { "const": true }
+      }
+    },
     "unitInterval": {
       "type": "number",
       "minimum": 0,
