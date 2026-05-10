@@ -20,6 +20,8 @@ cross-repo merges.
   safety, and promotion policy.
 - `docs/music-stack-sync-manual.md`: user-facing SYNC behavior across Music,
   drum-floor, namima, chill, and OpenClaw.
+- `docs/cross-repo-listening-review-round.md`: human listening round for
+  choosing exactly one next repo-specific PR.
 - `docs/repo-harvest-orchestra-workflow.md`: repeatable harvest review workflow
   for internal and external sources.
 - `docs/archive-repo-harvest-audit.md`: current harvest shelf for chill, test,
@@ -131,6 +133,7 @@ Docs / schema / review-safe:
 
 - keep role docs aligned with `docs/integration-catalog.md`
 - improve packet / sidecar / trace explanations
+- run a cross-repo listening review round before choosing runtime tuning
 - update harvest notes when source repo identity changes
 - add examples that remain metadata-only
 - prepare runtime candidates only as review documents
@@ -161,7 +164,9 @@ Not in this queue:
 3. Music docs: use `docs/namima-lab-safe-ripple-lineage-decision.md` as the
    current docs-only boundary before any namima-lab revival or Music
    gesture-to-texture runtime work.
-4. Later runtime candidate: only after human review and listening/browser
+4. Music docs: use `docs/cross-repo-listening-review-round.md` before choosing
+   any next runtime candidate across namima, chill, or drum-floor.
+5. Later runtime candidate: only after human review and listening/browser
    review criteria are explicit.
 
 ## 8. Synthesis prompt seed
