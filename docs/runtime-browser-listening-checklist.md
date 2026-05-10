@@ -93,6 +93,83 @@ Fail signs:
 - The transient never decays, or behaves like the visible Core Rig `ACID` lock.
 - The acid cue overfills the mix or fights the long-form radio rotation.
 
+## Hazama FM Genre Source Check
+
+Run this when a PR changes `audio/genre-flavor.js` or genre preset rendering.
+
+Techno setup:
+
+1. Open `fm.html`.
+2. Select `techno`.
+3. Press `START`.
+
+Techno expected:
+
+- `window.GenreFlavor.state.source` is `drum-frames+machine-acid-brain`.
+- `Tone.Transport.bpm.value` settles near 132 BPM.
+- The drum frames still drive the rhythm, but the sound reads as stripped
+  machine drum: deep four-on-floor kick, restrained offbeat hat, and short dry
+  clap/snare.
+- A light acid pulse continues underneath the transient cue without turning on
+  Core Rig `ACID.ON`.
+- The acid pulse is identifiable as a resonant byoing line, not only a bright
+  cue at the moment the pill changes.
+- The low floor is stronger than `any`, but not limiter-crushed or boomy.
+- The 16th-note hat grid is mostly removed; hats read as sparse machine ticks,
+  not foreground shaka-shaka.
+- In high BPM sections, short 32nd/64th-feeling acid/click/texture ratchets
+  create brain-dance motion without becoming a constant hat loop.
+
+Piano setup:
+
+1. Open `fm.html`.
+2. Select `piano`.
+3. Press `START`.
+
+Piano expected:
+
+- `window.GenreFlavor.state.source` ends with `+foreground-piano`.
+- `window.GenreFlavor.state.scheduled` is greater than `1`.
+- `Tone.Transport.bpm.value` settles near 68 BPM after the profile lands.
+- Piano chord bed, memory reply, and soft melody are all designed to sound,
+  while the surface still leaves long quiet spaces.
+- A dry hammer/attack foreground anchor makes the piano audible as the pill
+  identity, not only as hidden metadata.
+- The Music engine pad/glass/electronic-harp tail is suppressed enough that the
+  flavor piano is the foreground object.
+
+Other genre source sanity:
+
+- `ambient`: `window.GenreFlavor.state.source` starts with `namima-preset:` and
+  stays calm/water-safe, not dark club ambience.
+- `lofi`: source is `drum-frames+vinyl-crackle`; the crackle reads as tape
+  memory, not loud foreground noise.
+- `jazz`: source is `drum-frames+walking-bass+brush`; walking bass and brush
+  motion make it feel human enough for writing-room jazz.
+- `funk`: source is `drum-frames+ep+clavi`; clavi adds clipped body motion
+  without turning the loop into a busy solo.
+
+SYNC metadata sanity:
+
+- `window.MusicSessionPacket.build().performance_state.hazama_fm.genre`
+  matches the current FM pill.
+- `performance_state.hazama_fm.integration_mode` is `metadata-only`.
+- `performance_state.hazama_fm.engine_translation.profile` matches the current
+  FM pill when opened from `fm.html`.
+- The packet gives other stack repos a role/edge/feedback hint, but does not
+  auto-start, record, import samples, open MIDI, or merge anything.
+
+Fail signs:
+
+- `techno` still reads as generic noise hats plus soft membrane kick.
+- `techno` has a constant foreground shaka-shaka hat grid.
+- High BPM techno/IDM has no extra micro-ratchet or mental dance motion.
+- Acid motion is only a one-shot cue and never appears as a light pulse.
+- `piano` uses the recipe but sounds effectively absent.
+- `piano` still has the same glassy/harp-like Music engine tail heard in other
+  genres.
+- `piano` becomes busy pop melody and loses the quiet chill identity.
+
 ## Reference Breadth / RDJ Edge Check
 
 Use this when reviewing whether Music is carrying the reference-driven spread,

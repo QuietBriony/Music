@@ -61,11 +61,22 @@ JSON parse error も全部 graceful 処理。
 |---|---|---|---|---|
 | ANY | automix sine wave | `auto` (engine 選択) | — | (no flavor layer) |
 | AMBIENT | low energy / high observer | `ambient_room` | `namima-shape-ambient` | `namima-preset:water_day` |
-| TECHNO | high body+energy / low void | `acid_core` | `drum-frames-techno` | `drum-frames` |
+| TECHNO | high body+energy / low void | `acid_core` | `drum-frames-techno` | `drum-frames+machine-acid-brain` |
 | LOFI | mid energy / high mind+wave | `tape_memory` | `drum-frames-lofi` | `drum-frames+vinyl-crackle` |
-| JAZZ | high wave+mind+creation | `earth_reed` | `drum-frames-jazz` | `drum-frames+walking-bass` |
-| FUNK | high body+creation | `broken_machine` | `drum-frames-funk` | `drum-frames+ep` |
-| PIANO | high circle+observer | `earth_reed` | `chill-piano-recipe` | `chill-recipe:piano-jazz-chill` |
+| JAZZ | high wave+mind+creation | `earth_reed` | `drum-frames-jazz` | `drum-frames+walking-bass+brush` |
+| FUNK | high body+creation | `broken_machine` | `drum-frames-funk` | `drum-frames+ep+clavi` |
+| PIANO | high circle+observer | `earth_reed` | `chill-piano-recipe` | `chill-recipe:piano-jazz-chill+foreground-piano` |
+
+FM pill は Music 本体の UCM faders / culture / tempo だけでなく、本体側の bus mix も
+ジャンル別に翻訳する。`techno` は 132 BPM 付近の acid grid、`piano` は 68 BPM
+付近の quiet foreground piano に寄せる。`techno` と `piano` では
+`pad/glass/pianoMemory/voiceDust` を強く下げ、FM flavor の machine / dry
+foreground piano layer を主役にする。`ambient` だけは本体の air / pad を比較的残す。
+
+高BPMの `techno` / IDM 寄り文脈では、16分ハットを増やすのではなく、32分/64分
+相当の短い acid/click/texture ratchet を小さい burst として足す。hat は
+offbeat の機械 tick に絞り、狙いは foreground のシャカシャカではなく、脳内で踊る
+micro-grid。
 
 非 ANY 選択時は engine の AUTOMIX (sine wave 変調) を OFF にして
 fader をロック。ANY 戻しで AUTOMIX 復帰。
@@ -190,7 +201,10 @@ window.MusicAcidCue.getState()
 
 // 現在の flavor 経路 (default vs preset)
 window.GenreFlavor.state
-// → { started: true, genre: "piano", scheduled: 1, source: "chill-recipe:piano-jazz-chill" }
+// → { started: true, genre: "piano", scheduled: 3, source: "chill-recipe:piano-jazz-chill+foreground-piano", role: "chill quiet piano memory", ... }
+
+// SYNC packet 側にも metadata-only で入る。音声・sample・自動PRは入らない。
+window.MusicSessionPacket.build().performance_state.hazama_fm
 
 // preset がロード済か
 window.HazamaPresets.available("chill-piano-recipe")

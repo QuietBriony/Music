@@ -5055,6 +5055,53 @@ function makeMusicSessionPacketFileName(sessionId) {
   return `${sessionId || makeMusicSessionId()}.json`;
 }
 
+function hazamaFmFlavorPacketState() {
+  if (typeof window === "undefined" || !window.GenreFlavor) return null;
+  let state = null;
+  try {
+    state = window.GenreFlavor.state;
+  } catch (error) {
+    return {
+      available: true,
+      active: false,
+      genre: null,
+      source: null,
+      scheduled: 0,
+      role: "state unavailable",
+      edge: "Hazama FM flavor layer could not be read",
+      feedback_hint: "retry after FM start",
+      integration_mode: "metadata-only",
+      review_only: true
+    };
+  }
+  if (!state || typeof state !== "object") return null;
+  const scheduled = Number(state.scheduled);
+  const engineMix = hazamaFmEngineMix();
+  return {
+    available: true,
+    active: !!state.started,
+    genre: typeof state.genre === "string" ? state.genre : null,
+    source: typeof state.source === "string" ? state.source : null,
+    scheduled: Number.isFinite(scheduled) ? scheduled : 0,
+    role: typeof state.role === "string" ? state.role : null,
+    edge: typeof state.edge === "string" ? state.edge : null,
+    feedback_hint: typeof state.feedback === "string" ? state.feedback : null,
+    engine_translation: engineMix.genre
+      ? {
+          profile: engineMix.genre,
+          engine_gain: engineMix.engineGain,
+          pad_db: engineMix.padDb,
+          glass_db: engineMix.glassDb,
+          piano_memory_db: engineMix.pianoMemoryDb,
+          reverb_wet: engineMix.reverbWet,
+          delay_wet: engineMix.delayWet
+        }
+      : null,
+    integration_mode: "metadata-only",
+    review_only: true
+  };
+}
+
 function buildMusicSessionPacket(options = {}) {
   const createdAt = options.createdAt instanceof Date ? options.createdAt : new Date();
   const parts = currentGradientParts();
@@ -5088,6 +5135,7 @@ function buildMusicSessionPacket(options = {}) {
         : "piano-jazz-chill";
   const selfReview = musicSelfReviewRuntimeState();
   const radioBrain = musicRadioBrainPacketState();
+  const hazamaFm = hazamaFmFlavorPacketState();
   const stackRouting = musicStackRoutingRecommendation({
     selfReview,
     parts,
@@ -5132,7 +5180,8 @@ function buildMusicSessionPacket(options = {}) {
       manual_influence_active: isManualPerformanceInfluenceActive(),
       automix_enabled: !!UCM.auto.enabled,
       mic_follow: micFollowPacketState(),
-      radio_brain: radioBrain
+      radio_brain: radioBrain,
+      hazama_fm: hazamaFm
     },
     music_intent: packetIntentArrays(activePads, gradient, kits, parts),
     routing: {
@@ -7074,6 +7123,59 @@ function chance(value) {
   return clampValue(value, 0, 1);
 }
 
+const HAZAMA_FM_ENGINE_MIX_DEFAULT = {
+  engineGain: 0.8,
+  drumBus: 0.8,
+  padBus: 0.84,
+  bassBus: 0.66,
+  textureBus: 0.19,
+  reverbWet: 0.31,
+  delayWet: 0.21,
+  padDb: 0,
+  glassDb: 0,
+  textureDb: 0,
+  pianoMemoryDb: 0,
+  voiceDustDb: 0,
+  drumSkinDb: 0,
+  subImpactDb: 0,
+  reedBuzzDb: 0,
+  kickDb: 0,
+  hatDb: 0
+};
+
+const HAZAMA_FM_ENGINE_MIXES = {
+  any: { engineGain: 0.72, padDb: -2, glassDb: -2, pianoMemoryDb: -2, voiceDustDb: -2 },
+  ambient: { engineGain: 0.68, padBus: 0.76, reverbWet: 0.34, delayWet: 0.18, textureDb: -4, hatDb: -8, kickDb: -6 },
+  lofi: { engineGain: 0.56, padBus: 0.34, reverbWet: 0.2, delayWet: 0.14, padDb: -10, glassDb: -10, pianoMemoryDb: -9, voiceDustDb: -10, hatDb: -7 },
+  jazz: { engineGain: 0.5, padBus: 0.22, reverbWet: 0.18, delayWet: 0.12, padDb: -13, glassDb: -13, pianoMemoryDb: -12, voiceDustDb: -13, textureDb: -5, hatDb: -6 },
+  funk: { engineGain: 0.5, padBus: 0.16, reverbWet: 0.16, delayWet: 0.1, padDb: -15, glassDb: -14, pianoMemoryDb: -15, voiceDustDb: -15, textureDb: -4, hatDb: -5 },
+  techno: { engineGain: 0.3, drumBus: 0.2, padBus: 0.015, bassBus: 0.2, textureBus: 0.055, reverbWet: 0.055, delayWet: 0.04, padDb: -34, glassDb: -38, textureDb: -14, pianoMemoryDb: -38, voiceDustDb: -38, drumSkinDb: -14, reedBuzzDb: -34, hatDb: -36, kickDb: -12 },
+  piano: { engineGain: 0.24, drumBus: 0.04, padBus: 0.015, bassBus: 0.08, textureBus: 0.025, reverbWet: 0.06, delayWet: 0.035, padDb: -38, glassDb: -42, textureDb: -24, pianoMemoryDb: -38, voiceDustDb: -42, drumSkinDb: -26, subImpactDb: -18, reedBuzzDb: -38, hatDb: -36, kickDb: -26 }
+};
+
+function hazamaFmRuntimeGenre() {
+  if (typeof document === "undefined" || document.body?.dataset?.page !== "fm") return null;
+  if (typeof window !== "undefined" && window.GenreFlavor) {
+    try {
+      const genre = window.GenreFlavor.state?.genre;
+      if (genre && HAZAMA_FM_ENGINE_MIXES[genre]) return genre;
+    } catch (error) {}
+  }
+  const active = document.querySelector?.("#fm-genre button[aria-pressed='true']");
+  const genre = active?.dataset?.genre;
+  return HAZAMA_FM_ENGINE_MIXES[genre] ? genre : null;
+}
+
+function hazamaFmEngineMix() {
+  const genre = hazamaFmRuntimeGenre();
+  if (!genre) return HAZAMA_FM_ENGINE_MIX_DEFAULT;
+  return {
+    ...HAZAMA_FM_ENGINE_MIX_DEFAULT,
+    ...HAZAMA_FM_ENGINE_MIXES[genre],
+    genre
+  };
+}
+
 function approachValue(current, target, maxStep) {
   const delta = target - current;
   if (Math.abs(delta) <= maxStep) return target;
@@ -8446,6 +8548,7 @@ function updateTimbreStateFromWorld(parts) {
   const voiceRefrain = voiceGeneBias("refrain");
   const voiceVoidTail = voiceGeneBias("voidTail");
   const voicePressure = voiceGeneBias("pressure");
+  const fmMix = hazamaFmEngineMix();
 
   TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + genre.ambient * 0.05 - genre.techno * 0.025 + cultureGradientBias("haze") * 0.03 + cultureGradientBias("chrome") * 0.02 + clarity * 0.028 + voiceHaze * 0.024 + voiceVoidTail * 0.026 + character.air, 0, 1);
   TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + genre.idm * 0.035 + cultureGradientBias("chrome") * 0.035 + cultureGradientBias("memory") * 0.018 + clarity * 0.035 + voiceChrome * 0.028 + voiceMicro * 0.014 + character.glass, 0, 1);
@@ -8467,18 +8570,28 @@ function updateTimbreStateFromWorld(parts) {
   const bassCutoff = 86 + (TimbreState.grit * 308) + (resource * 84) + (pressureColor * pressure * 24) - (TimbreState.warmth * 62) - (depth.lowMidClean * 64) - lowGuard * 46 - (PerformancePadState.void * 88) + (PerformancePadState.punch * 26);
   const bassBite = 0.46 + (TimbreState.grit * 3.1) + (TimbreState.warmth * 0.5) + (pressureColor * pressure * 0.16) - (depth.lowMidClean * 0.3) - lowGuard * 0.18 + (PerformancePadState.punch * 0.1);
 
-  safeToneRamp(pad?.volume, airyPad, 0.28);
-  safeToneRamp(glass?.volume, glassLevel, 0.22);
-  safeToneRamp(texture?.volume, textureLevel, 0.2);
+  safeToneRamp(masterGain?.gain, fmMix.engineGain, 0.55);
+  safeToneRamp(drumBus?.gain, fmMix.drumBus, 0.45);
+  safeToneRamp(padBus?.gain, fmMix.padBus, 0.45);
+  safeToneRamp(bassBus?.gain, fmMix.bassBus, 0.45);
+  safeToneRamp(textureBus?.gain, fmMix.textureBus, 0.45);
+  safeToneRamp(globalReverb?.wet, fmMix.reverbWet, 0.7);
+  safeToneRamp(globalDelay?.wet, fmMix.delayWet, 0.7);
+
+  safeToneRamp(pad?.volume, airyPad + fmMix.padDb, 0.28);
+  safeToneRamp(glass?.volume, glassLevel + fmMix.glassDb, 0.22);
+  safeToneRamp(texture?.volume, textureLevel + fmMix.textureDb, 0.2);
   safeToneRamp(bass?.filter?.frequency, bassCutoff, 0.18);
   safeToneRamp(bass?.filter?.Q, bassBite, 0.2);
   safeToneRamp(glass?.harmonicity, 1.0 + (TimbreState.glass * 0.95) + (TimbreState.harp * 0.72) + (organicColor * 0.12) + genre.idm * 0.08 + genre.techno * 0.06 + (PerformancePadState.void * 0.24), 0.24);
   safeToneRamp(glass?.modulationIndex, 0.58 + (TimbreState.fracture * 2.08) + (TimbreState.harp * 0.92) + (pressureColor * 0.1) + genre.techno * 0.16 - genre.ambient * 0.12 - (TimbreState.warmth * 0.5) - (PerformancePadState.void * 0.2), 0.2);
-  safeToneRamp(pianoMemory?.volume, -45.2 + family.pianoMemory * 8.2 + family.chain * 1.4 + clarity * 0.8 - genre.techno * 0.8, 0.3);
-  safeToneRamp(voiceDust?.volume, -48 + family.voiceDust * 9.4 + family.chain * 1.2 + PerformancePadState.void * 1.4 - genre.pressure * 0.7, 0.32);
-  safeToneRamp(drumSkin?.volume, -42 + family.drumSkin * 9.2 + family.acidBiyon * 1.8 - lowGuard * 2.6, 0.22);
-  safeToneRamp(subImpact?.volume, -39 + family.sub808 * 8.8 + family.acidBiyon * 2.4 - lowGuard * 4.4, 0.22);
-  safeToneRamp(reedBuzz?.volume, -52 + family.reedBuzz * 10.4 + (TimbreFamilyState.inner?.reedBuzz || 0) * 1.8 - lowGuard * 4.2 - genre.techno * 0.9, 0.36);
+  safeToneRamp(pianoMemory?.volume, -45.2 + family.pianoMemory * 8.2 + family.chain * 1.4 + clarity * 0.8 - genre.techno * 0.8 + fmMix.pianoMemoryDb, 0.3);
+  safeToneRamp(voiceDust?.volume, -48 + family.voiceDust * 9.4 + family.chain * 1.2 + PerformancePadState.void * 1.4 - genre.pressure * 0.7 + fmMix.voiceDustDb, 0.32);
+  safeToneRamp(drumSkin?.volume, -42 + family.drumSkin * 9.2 + family.acidBiyon * 1.8 - lowGuard * 2.6 + fmMix.drumSkinDb, 0.22);
+  safeToneRamp(subImpact?.volume, -39 + family.sub808 * 8.8 + family.acidBiyon * 2.4 - lowGuard * 4.4 + fmMix.subImpactDb, 0.22);
+  safeToneRamp(reedBuzz?.volume, -52 + family.reedBuzz * 10.4 + (TimbreFamilyState.inner?.reedBuzz || 0) * 1.8 - lowGuard * 4.2 - genre.techno * 0.9 + fmMix.reedBuzzDb, 0.36);
+  safeToneRamp(kick?.volume, fmMix.kickDb, 0.28);
+  safeToneRamp(hat?.volume, fmMix.hatDb, 0.28);
   safeToneRamp(pianoMemoryFilter?.frequency, 960 + family.pianoMemory * 1580 + gradient.chrome * 420 - genre.techno * 260, 0.32);
   safeToneRamp(voiceDustFilter?.frequency, 1180 + family.voiceDust * 1700 + gradient.chrome * 540 + PerformancePadState.void * 420, 0.32);
   safeToneRamp(subImpact?.filter?.frequency, 46 + family.sub808 * 94 + family.acidBiyon * 42 - lowGuard * 20, 0.18);
@@ -9430,6 +9543,71 @@ function triggerAcidTechnoTrace(step, time, context) {
     markMixEvent(0.12 + acid * 0.1 + (impactGate ? 0.05 : 0));
   } catch (error) {
     console.warn("[Music] acid trace failed:", error);
+  }
+}
+
+function triggerHighBpmIdmMicroDance(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    isAccentStep
+  } = context;
+  if (!texture || PerformancePadState.void > 0.55) return;
+
+  const genre = GenreBlendState;
+  const kits = GenreTimbreKitState;
+  const gradient = GradientState;
+  const bpmLift = clampValue((EngineParams.bpm - 122) / 34, 0, 1);
+  const amount = clampValue(
+    bpmLift * 0.34 +
+      genre.idm * 0.22 +
+      genre.techno * 0.2 +
+      kits.idmKit * 0.16 +
+      kits.technoKit * 0.12 +
+      (gradient.micro || 0) * 0.18 +
+      acidPerformanceAmount() * 0.14 +
+      PerformancePadState.repeat * 0.1 +
+      creationNorm * 0.05 +
+      resourceNorm * 0.04 -
+      genre.ambient * 0.16 -
+      (MixGovernorState.eventLoad || 0) * 0.12,
+    0,
+    1
+  );
+  if (amount < 0.2) return;
+
+  const gate = step % 4 === 1 || step % 4 === 3 || isAccentStep || (genre.idm > 0.26 && step % 8 === 5);
+  const gateChance = chance(0.022 + amount * 0.15 + Math.max(0, bpmLift - 0.42) * 0.08);
+  if (!gate || !rand(gateChance)) return;
+
+  const fmGenre = hazamaFmRuntimeGenre();
+  const allowGlass = fmGenre !== "techno" && fmGenre !== "piano";
+  const burstCount = bpmLift > 0.62 && rand(0.36 + amount * 0.18) ? 3 : 2;
+  const gap = 0.018 + (1 - bpmLift) * 0.006;
+  const burstTime = time + 0.012 + Math.random() * (0.006 + waveNorm * 0.008);
+  const note = tonalRhymeLow(step, Math.floor((GenomeState.phase || 0) * 6) + 1);
+  const high = tonalRhymeHigh(step, Math.floor((GenomeState.phase || 0) * 8) + 3);
+  const vel = clampValue(0.024 + amount * 0.056 + energyNorm * 0.018, 0.018, 0.116);
+
+  try {
+    for (let i = 0; i < burstCount; i++) {
+      const t = burstTime + i * gap + Math.random() * 0.004;
+      texture.triggerAttackRelease("128n", t, clampValue(vel * (i === 0 ? 1 : 0.72), 0.014, 0.1));
+      if (bass && (acidPerformanceAmount() > 0.14 || genre.techno > 0.28) && rand(0.28 + amount * 0.22)) {
+        bass.triggerAttackRelease(note, "128n", t + 0.002, clampValue(0.045 + amount * 0.058, 0.036, 0.13));
+      }
+      if (allowGlass && glass && rand(0.16 + genre.idm * 0.18 + (gradient.micro || 0) * 0.12)) {
+        glass.triggerAttackRelease(high, "128n", t + 0.004, clampValue(0.012 + amount * 0.038, 0.01, 0.062));
+      }
+    }
+    if (drumSkin && rand(0.18 + amount * 0.16)) {
+      drumSkin.triggerAttackRelease("128n", burstTime + gap * 0.5, clampValue(0.012 + amount * 0.042, 0.01, 0.07));
+    }
+    markMixEvent(0.035 + amount * 0.05);
+  } catch (error) {
+    console.warn("[Music] high BPM IDM micro dance failed:", error);
   }
 }
 
@@ -11522,6 +11700,7 @@ function scheduleStep(time) {
   triggerLowMotion(step, t, stepContext);
   triggerLowBreathSignatureCell(step, t, stepContext);
   triggerAcidTechnoTrace(step, t, stepContext);
+  triggerHighBpmIdmMicroDance(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
   if (!isRest) {
