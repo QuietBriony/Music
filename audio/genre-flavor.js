@@ -53,7 +53,7 @@
     },
     techno: {
       role: "machine rhythm plus acid pulse",
-      edge: "stripped four-on-floor body, restrained offbeat machine hat, stronger 303-adjacent motion",
+      edge: "stripped four-on-floor body, restrained offbeat machine hat, stronger 303-adjacent motion, high-BPM brain ratchets",
       feedback: "send groove density and acid-source hints toward drum-floor/Music review"
     },
     lofi: {
@@ -474,6 +474,62 @@
     return layer;
   }
 
+  function addBrainDanceRatchet(layer, options = {}) {
+    if (!layer) return null;
+    const ratchet = new Tone.MonoSynth({
+      oscillator: { type: "square" },
+      filter: { type: "lowpass", frequency: 760, Q: 7.6 },
+      envelope: { attack: 0.002, decay: 0.035, sustain: 0, release: 0.018 },
+      filterEnvelope: {
+        attack: 0.001,
+        decay: 0.052,
+        sustain: 0,
+        release: 0.018,
+        baseFrequency: 180,
+        octaves: 3.2
+      },
+      portamento: 0.012,
+      volume: -28
+    }).connect(layer.gain);
+    const click = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.012, sustain: 0, release: 0.006 },
+      volume: -42
+    }).connect(layer.gain);
+    const notes = ["D2", "D2", "F2", "A1", "C2", "D2", "F2", "D2"];
+    let tick = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const bpm = Number(Tone.Transport?.bpm?.value) || 0;
+      const highBpm = clamp((bpm - 122) / 28, 0, 1);
+      if (highBpm < 0.08) {
+        tick++;
+        return;
+      }
+      const phraseGate = tick % 4 === 1 || tick % 8 === 6 || Math.random() < 0.18;
+      if (!phraseGate || Math.random() > 0.18 + highBpm * 0.34) {
+        tick++;
+        return;
+      }
+      const count = highBpm > 0.62 && Math.random() < 0.42 ? 3 : 2;
+      const gap = 0.018 + (1 - highBpm) * 0.006;
+      for (let i = 0; i < count; i++) {
+        const ratchetTime = time + 0.006 + i * gap + Math.random() * 0.004;
+        const note = notes[(tick + i * 2) % notes.length];
+        try {
+          ratchet.filter.frequency.rampTo(i === 0 ? 960 : 1320, 0.014);
+          ratchet.triggerAttackRelease(note, "128n", ratchetTime, 0.09 + highBpm * 0.08);
+          if (Math.random() < 0.38 + highBpm * 0.18) {
+            click.triggerAttackRelease("128n", ratchetTime + 0.002, 0.07 + highBpm * 0.06);
+          }
+        } catch (e) {}
+      }
+      tick++;
+    }, "8n", "16n"));
+    layer.synths.push(ratchet, click);
+    layer.source = options.source || `${layer.source || "drum-frames+machine-acid"}+brain`;
+    return layer;
+  }
+
   function buildTechnoMachineFromFrames(frames) {
     const drums = buildDrumsFromFrames(frames, {
       kit: "techno-machine",
@@ -481,7 +537,10 @@
       kickNote: "C1",
       source: "drum-frames+machine-minimal"
     });
-    return addAcidPulse(drums, { source: "drum-frames+machine-acid-minimal", volume: -21 });
+    return addBrainDanceRatchet(
+      addAcidPulse(drums, { source: "drum-frames+machine-acid-minimal", volume: -21 }),
+      { source: "drum-frames+machine-acid-brain" }
+    );
   }
 
   function buildTechno(frames) {

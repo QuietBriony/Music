@@ -105,7 +105,7 @@ Techno setup:
 
 Techno expected:
 
-- `window.GenreFlavor.state.source` is `drum-frames+machine-acid-minimal`.
+- `window.GenreFlavor.state.source` is `drum-frames+machine-acid-brain`.
 - The drum frames still drive the rhythm, but the sound reads as stripped
   machine drum: deep four-on-floor kick, restrained offbeat hat, and short dry
   clap/snare.
@@ -113,6 +113,8 @@ Techno expected:
   Core Rig `ACID.ON`.
 - The low floor is stronger than `any`, but not limiter-crushed or boomy.
 - The 16th-note hat grid does not become foreground shaka-shaka.
+- In high BPM sections, short 32nd/64th-feeling acid/click/texture ratchets
+  create brain-dance motion without becoming a constant hat loop.
 
 Piano setup:
 
@@ -155,6 +157,7 @@ Fail signs:
 
 - `techno` still reads as generic noise hats plus soft membrane kick.
 - `techno` has a constant foreground shaka-shaka hat grid.
+- High BPM techno/IDM has no extra micro-ratchet or mental dance motion.
 - Acid motion is only a one-shot cue and never appears as a light pulse.
 - `piano` uses the recipe but sounds effectively absent.
 - `piano` still has the same glassy/harp-like Music engine tail heard in other

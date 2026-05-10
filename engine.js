@@ -9546,6 +9546,71 @@ function triggerAcidTechnoTrace(step, time, context) {
   }
 }
 
+function triggerHighBpmIdmMicroDance(step, time, context) {
+  const {
+    energyNorm,
+    creationNorm,
+    resourceNorm,
+    waveNorm,
+    isAccentStep
+  } = context;
+  if (!texture || PerformancePadState.void > 0.55) return;
+
+  const genre = GenreBlendState;
+  const kits = GenreTimbreKitState;
+  const gradient = GradientState;
+  const bpmLift = clampValue((EngineParams.bpm - 122) / 34, 0, 1);
+  const amount = clampValue(
+    bpmLift * 0.34 +
+      genre.idm * 0.22 +
+      genre.techno * 0.2 +
+      kits.idmKit * 0.16 +
+      kits.technoKit * 0.12 +
+      (gradient.micro || 0) * 0.18 +
+      acidPerformanceAmount() * 0.14 +
+      PerformancePadState.repeat * 0.1 +
+      creationNorm * 0.05 +
+      resourceNorm * 0.04 -
+      genre.ambient * 0.16 -
+      (MixGovernorState.eventLoad || 0) * 0.12,
+    0,
+    1
+  );
+  if (amount < 0.2) return;
+
+  const gate = step % 4 === 1 || step % 4 === 3 || isAccentStep || (genre.idm > 0.26 && step % 8 === 5);
+  const gateChance = chance(0.022 + amount * 0.15 + Math.max(0, bpmLift - 0.42) * 0.08);
+  if (!gate || !rand(gateChance)) return;
+
+  const fmGenre = hazamaFmRuntimeGenre();
+  const allowGlass = fmGenre !== "techno" && fmGenre !== "piano";
+  const burstCount = bpmLift > 0.62 && rand(0.36 + amount * 0.18) ? 3 : 2;
+  const gap = 0.018 + (1 - bpmLift) * 0.006;
+  const burstTime = time + 0.012 + Math.random() * (0.006 + waveNorm * 0.008);
+  const note = tonalRhymeLow(step, Math.floor((GenomeState.phase || 0) * 6) + 1);
+  const high = tonalRhymeHigh(step, Math.floor((GenomeState.phase || 0) * 8) + 3);
+  const vel = clampValue(0.024 + amount * 0.056 + energyNorm * 0.018, 0.018, 0.116);
+
+  try {
+    for (let i = 0; i < burstCount; i++) {
+      const t = burstTime + i * gap + Math.random() * 0.004;
+      texture.triggerAttackRelease("128n", t, clampValue(vel * (i === 0 ? 1 : 0.72), 0.014, 0.1));
+      if (bass && (acidPerformanceAmount() > 0.14 || genre.techno > 0.28) && rand(0.28 + amount * 0.22)) {
+        bass.triggerAttackRelease(note, "128n", t + 0.002, clampValue(0.045 + amount * 0.058, 0.036, 0.13));
+      }
+      if (allowGlass && glass && rand(0.16 + genre.idm * 0.18 + (gradient.micro || 0) * 0.12)) {
+        glass.triggerAttackRelease(high, "128n", t + 0.004, clampValue(0.012 + amount * 0.038, 0.01, 0.062));
+      }
+    }
+    if (drumSkin && rand(0.18 + amount * 0.16)) {
+      drumSkin.triggerAttackRelease("128n", burstTime + gap * 0.5, clampValue(0.012 + amount * 0.042, 0.01, 0.07));
+    }
+    markMixEvent(0.035 + amount * 0.05);
+  } catch (error) {
+    console.warn("[Music] high BPM IDM micro dance failed:", error);
+  }
+}
+
 function triggerDroneResonanceBed(step, time, context) {
   const {
     energyNorm,
@@ -11635,6 +11700,7 @@ function scheduleStep(time) {
   triggerLowMotion(step, t, stepContext);
   triggerLowBreathSignatureCell(step, t, stepContext);
   triggerAcidTechnoTrace(step, t, stepContext);
+  triggerHighBpmIdmMicroDance(step, t, stepContext);
   triggerPadHoldMinimums(step, t, stepContext);
 
   if (!isRest) {
