@@ -52,11 +52,20 @@
       "available": true,
       "active": true,
       "genre": "piano",
-      "source": "chill-recipe:piano-jazz-chill+memory-layers",
+      "source": "chill-recipe:piano-jazz-chill+foreground-piano",
       "scheduled": 3,
       "role": "chill quiet piano memory",
-      "edge": "felt chord bed, memory reply, and soft melody with long space",
+      "edge": "foreground felt-piano strikes with memory reply and long space",
       "feedback_hint": "send piano/trio and listening-space hints toward chill",
+      "engine_translation": {
+        "profile": "piano",
+        "engine_gain": 0.32,
+        "pad_db": -26,
+        "glass_db": -28,
+        "piano_memory_db": -28,
+        "reverb_wet": 0.1,
+        "delay_wet": 0.06
+      },
       "integration_mode": "metadata-only",
       "review_only": true
     }

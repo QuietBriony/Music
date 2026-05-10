@@ -5076,6 +5076,7 @@ function hazamaFmFlavorPacketState() {
   }
   if (!state || typeof state !== "object") return null;
   const scheduled = Number(state.scheduled);
+  const engineMix = hazamaFmEngineMix();
   return {
     available: true,
     active: !!state.started,
@@ -5085,6 +5086,17 @@ function hazamaFmFlavorPacketState() {
     role: typeof state.role === "string" ? state.role : null,
     edge: typeof state.edge === "string" ? state.edge : null,
     feedback_hint: typeof state.feedback === "string" ? state.feedback : null,
+    engine_translation: engineMix.genre
+      ? {
+          profile: engineMix.genre,
+          engine_gain: engineMix.engineGain,
+          pad_db: engineMix.padDb,
+          glass_db: engineMix.glassDb,
+          piano_memory_db: engineMix.pianoMemoryDb,
+          reverb_wet: engineMix.reverbWet,
+          delay_wet: engineMix.delayWet
+        }
+      : null,
     integration_mode: "metadata-only",
     review_only: true
   };
@@ -7111,6 +7123,59 @@ function chance(value) {
   return clampValue(value, 0, 1);
 }
 
+const HAZAMA_FM_ENGINE_MIX_DEFAULT = {
+  engineGain: 0.8,
+  drumBus: 0.8,
+  padBus: 0.84,
+  bassBus: 0.66,
+  textureBus: 0.19,
+  reverbWet: 0.31,
+  delayWet: 0.21,
+  padDb: 0,
+  glassDb: 0,
+  textureDb: 0,
+  pianoMemoryDb: 0,
+  voiceDustDb: 0,
+  drumSkinDb: 0,
+  subImpactDb: 0,
+  reedBuzzDb: 0,
+  kickDb: 0,
+  hatDb: 0
+};
+
+const HAZAMA_FM_ENGINE_MIXES = {
+  any: { engineGain: 0.72, padDb: -2, glassDb: -2, pianoMemoryDb: -2, voiceDustDb: -2 },
+  ambient: { engineGain: 0.68, padBus: 0.76, reverbWet: 0.34, delayWet: 0.18, textureDb: -4, hatDb: -8, kickDb: -6 },
+  lofi: { engineGain: 0.56, padBus: 0.34, reverbWet: 0.2, delayWet: 0.14, padDb: -10, glassDb: -10, pianoMemoryDb: -9, voiceDustDb: -10, hatDb: -7 },
+  jazz: { engineGain: 0.5, padBus: 0.22, reverbWet: 0.18, delayWet: 0.12, padDb: -13, glassDb: -13, pianoMemoryDb: -12, voiceDustDb: -13, textureDb: -5, hatDb: -6 },
+  funk: { engineGain: 0.5, padBus: 0.16, reverbWet: 0.16, delayWet: 0.1, padDb: -15, glassDb: -14, pianoMemoryDb: -15, voiceDustDb: -15, textureDb: -4, hatDb: -5 },
+  techno: { engineGain: 0.38, drumBus: 0.28, padBus: 0.04, bassBus: 0.24, textureBus: 0.08, reverbWet: 0.08, delayWet: 0.06, padDb: -24, glassDb: -26, textureDb: -10, pianoMemoryDb: -28, voiceDustDb: -28, drumSkinDb: -10, reedBuzzDb: -24, hatDb: -24, kickDb: -10 },
+  piano: { engineGain: 0.32, drumBus: 0.08, padBus: 0.06, bassBus: 0.12, textureBus: 0.04, reverbWet: 0.1, delayWet: 0.06, padDb: -26, glassDb: -28, textureDb: -18, pianoMemoryDb: -28, voiceDustDb: -30, drumSkinDb: -18, subImpactDb: -12, reedBuzzDb: -28, hatDb: -24, kickDb: -18 }
+};
+
+function hazamaFmRuntimeGenre() {
+  if (typeof document === "undefined" || document.body?.dataset?.page !== "fm") return null;
+  if (typeof window !== "undefined" && window.GenreFlavor) {
+    try {
+      const genre = window.GenreFlavor.state?.genre;
+      if (genre && HAZAMA_FM_ENGINE_MIXES[genre]) return genre;
+    } catch (error) {}
+  }
+  const active = document.querySelector?.("#fm-genre button[aria-pressed='true']");
+  const genre = active?.dataset?.genre;
+  return HAZAMA_FM_ENGINE_MIXES[genre] ? genre : null;
+}
+
+function hazamaFmEngineMix() {
+  const genre = hazamaFmRuntimeGenre();
+  if (!genre) return HAZAMA_FM_ENGINE_MIX_DEFAULT;
+  return {
+    ...HAZAMA_FM_ENGINE_MIX_DEFAULT,
+    ...HAZAMA_FM_ENGINE_MIXES[genre],
+    genre
+  };
+}
+
 function approachValue(current, target, maxStep) {
   const delta = target - current;
   if (Math.abs(delta) <= maxStep) return target;
@@ -8483,6 +8548,7 @@ function updateTimbreStateFromWorld(parts) {
   const voiceRefrain = voiceGeneBias("refrain");
   const voiceVoidTail = voiceGeneBias("voidTail");
   const voicePressure = voiceGeneBias("pressure");
+  const fmMix = hazamaFmEngineMix();
 
   TimbreState.air = clampValue((ethereal * 0.56) + (observer * 0.2) + (voidness * 0.16) + ((1 - resource) * 0.08) + (gradient.haze * 0.055) + (gradient.chrome * 0.035) + (depth.tail * 0.04) + genre.ambient * 0.05 - genre.techno * 0.025 + cultureGradientBias("haze") * 0.03 + cultureGradientBias("chrome") * 0.02 + clarity * 0.028 + voiceHaze * 0.024 + voiceVoidTail * 0.026 + character.air, 0, 1);
   TimbreState.glass = clampValue((wave * 0.28) + (observer * 0.24) + (circle * 0.2) + (creation * 0.16) + (TimbreState.air * 0.12) + (gradient.chrome * 0.055) + (gradient.memory * 0.032) + (depth.particle * 0.038) + genre.idm * 0.035 + cultureGradientBias("chrome") * 0.035 + cultureGradientBias("memory") * 0.018 + clarity * 0.035 + voiceChrome * 0.028 + voiceMicro * 0.014 + character.glass, 0, 1);
@@ -8504,18 +8570,28 @@ function updateTimbreStateFromWorld(parts) {
   const bassCutoff = 86 + (TimbreState.grit * 308) + (resource * 84) + (pressureColor * pressure * 24) - (TimbreState.warmth * 62) - (depth.lowMidClean * 64) - lowGuard * 46 - (PerformancePadState.void * 88) + (PerformancePadState.punch * 26);
   const bassBite = 0.46 + (TimbreState.grit * 3.1) + (TimbreState.warmth * 0.5) + (pressureColor * pressure * 0.16) - (depth.lowMidClean * 0.3) - lowGuard * 0.18 + (PerformancePadState.punch * 0.1);
 
-  safeToneRamp(pad?.volume, airyPad, 0.28);
-  safeToneRamp(glass?.volume, glassLevel, 0.22);
-  safeToneRamp(texture?.volume, textureLevel, 0.2);
+  safeToneRamp(masterGain?.gain, fmMix.engineGain, 0.55);
+  safeToneRamp(drumBus?.gain, fmMix.drumBus, 0.45);
+  safeToneRamp(padBus?.gain, fmMix.padBus, 0.45);
+  safeToneRamp(bassBus?.gain, fmMix.bassBus, 0.45);
+  safeToneRamp(textureBus?.gain, fmMix.textureBus, 0.45);
+  safeToneRamp(globalReverb?.wet, fmMix.reverbWet, 0.7);
+  safeToneRamp(globalDelay?.wet, fmMix.delayWet, 0.7);
+
+  safeToneRamp(pad?.volume, airyPad + fmMix.padDb, 0.28);
+  safeToneRamp(glass?.volume, glassLevel + fmMix.glassDb, 0.22);
+  safeToneRamp(texture?.volume, textureLevel + fmMix.textureDb, 0.2);
   safeToneRamp(bass?.filter?.frequency, bassCutoff, 0.18);
   safeToneRamp(bass?.filter?.Q, bassBite, 0.2);
   safeToneRamp(glass?.harmonicity, 1.0 + (TimbreState.glass * 0.95) + (TimbreState.harp * 0.72) + (organicColor * 0.12) + genre.idm * 0.08 + genre.techno * 0.06 + (PerformancePadState.void * 0.24), 0.24);
   safeToneRamp(glass?.modulationIndex, 0.58 + (TimbreState.fracture * 2.08) + (TimbreState.harp * 0.92) + (pressureColor * 0.1) + genre.techno * 0.16 - genre.ambient * 0.12 - (TimbreState.warmth * 0.5) - (PerformancePadState.void * 0.2), 0.2);
-  safeToneRamp(pianoMemory?.volume, -45.2 + family.pianoMemory * 8.2 + family.chain * 1.4 + clarity * 0.8 - genre.techno * 0.8, 0.3);
-  safeToneRamp(voiceDust?.volume, -48 + family.voiceDust * 9.4 + family.chain * 1.2 + PerformancePadState.void * 1.4 - genre.pressure * 0.7, 0.32);
-  safeToneRamp(drumSkin?.volume, -42 + family.drumSkin * 9.2 + family.acidBiyon * 1.8 - lowGuard * 2.6, 0.22);
-  safeToneRamp(subImpact?.volume, -39 + family.sub808 * 8.8 + family.acidBiyon * 2.4 - lowGuard * 4.4, 0.22);
-  safeToneRamp(reedBuzz?.volume, -52 + family.reedBuzz * 10.4 + (TimbreFamilyState.inner?.reedBuzz || 0) * 1.8 - lowGuard * 4.2 - genre.techno * 0.9, 0.36);
+  safeToneRamp(pianoMemory?.volume, -45.2 + family.pianoMemory * 8.2 + family.chain * 1.4 + clarity * 0.8 - genre.techno * 0.8 + fmMix.pianoMemoryDb, 0.3);
+  safeToneRamp(voiceDust?.volume, -48 + family.voiceDust * 9.4 + family.chain * 1.2 + PerformancePadState.void * 1.4 - genre.pressure * 0.7 + fmMix.voiceDustDb, 0.32);
+  safeToneRamp(drumSkin?.volume, -42 + family.drumSkin * 9.2 + family.acidBiyon * 1.8 - lowGuard * 2.6 + fmMix.drumSkinDb, 0.22);
+  safeToneRamp(subImpact?.volume, -39 + family.sub808 * 8.8 + family.acidBiyon * 2.4 - lowGuard * 4.4 + fmMix.subImpactDb, 0.22);
+  safeToneRamp(reedBuzz?.volume, -52 + family.reedBuzz * 10.4 + (TimbreFamilyState.inner?.reedBuzz || 0) * 1.8 - lowGuard * 4.2 - genre.techno * 0.9 + fmMix.reedBuzzDb, 0.36);
+  safeToneRamp(kick?.volume, fmMix.kickDb, 0.28);
+  safeToneRamp(hat?.volume, fmMix.hatDb, 0.28);
   safeToneRamp(pianoMemoryFilter?.frequency, 960 + family.pianoMemory * 1580 + gradient.chrome * 420 - genre.techno * 260, 0.32);
   safeToneRamp(voiceDustFilter?.frequency, 1180 + family.voiceDust * 1700 + gradient.chrome * 540 + PerformancePadState.void * 420, 0.32);
   safeToneRamp(subImpact?.filter?.frequency, 46 + family.sub808 * 94 + family.acidBiyon * 42 - lowGuard * 20, 0.18);

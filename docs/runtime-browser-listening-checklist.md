@@ -105,12 +105,14 @@ Techno setup:
 
 Techno expected:
 
-- `window.GenreFlavor.state.source` is `drum-frames+machine-acid`.
-- The drum frames still drive the rhythm, but the sound reads as machine drum:
-  deep four-on-floor kick, hard hat grid, and short dry clap/snare.
+- `window.GenreFlavor.state.source` is `drum-frames+machine-acid-minimal`.
+- The drum frames still drive the rhythm, but the sound reads as stripped
+  machine drum: deep four-on-floor kick, restrained offbeat hat, and short dry
+  clap/snare.
 - A light acid pulse continues underneath the transient cue without turning on
   Core Rig `ACID.ON`.
 - The low floor is stronger than `any`, but not limiter-crushed or boomy.
+- The 16th-note hat grid does not become foreground shaka-shaka.
 
 Piano setup:
 
@@ -120,11 +122,13 @@ Piano setup:
 
 Piano expected:
 
-- `window.GenreFlavor.state.source` ends with `+memory-layers`.
+- `window.GenreFlavor.state.source` ends with `+foreground-piano`.
 - `window.GenreFlavor.state.scheduled` is greater than `1`.
 - Piano chord bed, memory reply, and soft melody are all designed to sound,
   while the surface still leaves long quiet spaces.
 - The piano layer is audible as the pill identity, not only as hidden metadata.
+- The Music engine pad/glass/electronic-harp tail is suppressed enough that the
+  flavor piano is the foreground object.
 
 Other genre source sanity:
 
@@ -142,14 +146,19 @@ SYNC metadata sanity:
 - `window.MusicSessionPacket.build().performance_state.hazama_fm.genre`
   matches the current FM pill.
 - `performance_state.hazama_fm.integration_mode` is `metadata-only`.
+- `performance_state.hazama_fm.engine_translation.profile` matches the current
+  FM pill when opened from `fm.html`.
 - The packet gives other stack repos a role/edge/feedback hint, but does not
   auto-start, record, import samples, open MIDI, or merge anything.
 
 Fail signs:
 
 - `techno` still reads as generic noise hats plus soft membrane kick.
+- `techno` has a constant foreground shaka-shaka hat grid.
 - Acid motion is only a one-shot cue and never appears as a light pulse.
 - `piano` uses the recipe but sounds effectively absent.
+- `piano` still has the same glassy/harp-like Music engine tail heard in other
+  genres.
 - `piano` becomes busy pop melody and loses the quiet chill identity.
 
 ## Reference Breadth / RDJ Edge Check

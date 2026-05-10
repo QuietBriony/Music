@@ -201,6 +201,19 @@
             "role": { "type": ["string", "null"] },
             "edge": { "type": ["string", "null"] },
             "feedback_hint": { "type": ["string", "null"] },
+            "engine_translation": {
+              "type": ["object", "null"],
+              "additionalProperties": false,
+              "properties": {
+                "profile": { "type": "string" },
+                "engine_gain": { "$ref": "#/definitions/unitInterval" },
+                "pad_db": { "type": "number" },
+                "glass_db": { "type": "number" },
+                "piano_memory_db": { "type": "number" },
+                "reverb_wet": { "$ref": "#/definitions/unitInterval" },
+                "delay_wet": { "$ref": "#/definitions/unitInterval" }
+              }
+            },
             "integration_mode": { "const": "metadata-only" },
             "review_only": { "const": true }
           }

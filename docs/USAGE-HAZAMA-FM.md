@@ -182,7 +182,7 @@ window.MusicRuntimeState.radioBrain.weights
 
 // flavor 層の動作確認
 window.GenreFlavor.state
-// → { started: true, genre: "piano", scheduled: 3, source: "chill-recipe:piano-jazz-chill+memory-layers", role: "chill quiet piano memory", ... }
+// → { started: true, genre: "piano", scheduled: 3, source: "chill-recipe:piano-jazz-chill+foreground-piano", role: "chill quiet piano memory", ... }
 
 // SYNC で他repoへ渡る metadata-only のFM文脈
 window.MusicSessionPacket.build().performance_state.hazama_fm
@@ -196,3 +196,6 @@ window.HazamaPresets.get("drum-frames-jazz")
 `drum-frames` / `namima-preset:*` の時は preset 駆動です。
 `role` / `edge` / `feedback` は、SYNC で Music stack 側へ渡すための
 metadata-only な聴感メモです。音源や録音を自動共有するものではありません。
+`performance_state.hazama_fm.engine_translation` は FM pill に合わせた Music 本体
+側の bus mix 抑制メモで、`piano` / `techno` では本体の pad / glass / memory 系を
+下げて flavor layer を主役にします。
