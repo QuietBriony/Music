@@ -181,30 +181,118 @@
 
   function buildTechnoDefault() {
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
-    const hat = new Tone.NoiseSynth({
-      noise: { type: "white" },
-      envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.02 },
-      volume: -20
-    }).connect(gain);
-    const sub = new Tone.MembraneSynth({
-      pitchDecay: 0.04, octaves: 2,
-      envelope: { attack: 0.001, decay: 0.18, sustain: 0, release: 0.1 },
-      volume: -18
-    }).connect(gain);
+    const kit = makeTechnoMachineKit(gain);
 
     const ids = [];
+    let hatStep = 0;
     ids.push(Tone.Transport.scheduleRepeat((time) => {
-      hat.triggerAttackRelease("16n", time, 0.5);
+      kit.kick.triggerAttackRelease("C1", "8n", time, 0.84);
+    }, "4n"));
+    ids.push(Tone.Transport.scheduleRepeat((time) => {
+      kit.hat.triggerAttackRelease("32n", time, hatStep % 2 === 0 ? 0.42 : 0.24);
+      hatStep++;
     }, "8n", "8n"));
     ids.push(Tone.Transport.scheduleRepeat((time) => {
-      sub.triggerAttackRelease("D1", "16n", time, 0.6);
-    }, "4n"));
+      kit.snare.triggerAttackRelease("16n", time, 0.46);
+    }, "2n", "4n"));
 
-    return { gain, synths: [hat, sub], scheduledIds: ids, source: "default" };
+    return addAcidPulse({
+      gain,
+      synths: Object.values(kit),
+      scheduledIds: ids,
+      source: "default-machine"
+    }, { source: "default-machine-acid" });
+  }
+
+  function makeMachineKick(gain) {
+    const body = new Tone.MembraneSynth({
+      pitchDecay: 0.085, octaves: 6,
+      envelope: { attack: 0.001, decay: 0.48, sustain: 0, release: 0.18 },
+      volume: -8
+    }).connect(gain);
+    const click = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.012, sustain: 0, release: 0.01 },
+      volume: -30
+    }).connect(gain);
+    return {
+      triggerAttackRelease(note, duration, time, velocity = 0.7) {
+        body.triggerAttackRelease("C1", "8n", time, clamp(velocity, 0.05, 1));
+        click.triggerAttackRelease("64n", time + 0.004, clamp(velocity * 0.28, 0.02, 0.28));
+      },
+      dispose() {
+        try { body.dispose(); } catch (e) {}
+        try { click.dispose(); } catch (e) {}
+      }
+    };
+  }
+
+  function makeMachineClap(gain) {
+    const body = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.075, sustain: 0, release: 0.035 },
+      volume: -15
+    }).connect(gain);
+    const slap = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.001, decay: 0.055, sustain: 0, release: 0.025 },
+      volume: -21
+    }).connect(gain);
+    return {
+      triggerAttackRelease(duration, time, velocity = 0.5) {
+        body.triggerAttackRelease("32n", time, clamp(velocity * 0.8, 0.04, 0.75));
+        slap.triggerAttackRelease("64n", time + 0.018, clamp(velocity * 0.58, 0.03, 0.52));
+      },
+      dispose() {
+        try { body.dispose(); } catch (e) {}
+        try { slap.dispose(); } catch (e) {}
+      }
+    };
+  }
+
+  function makeTechnoMachineKit(gain) {
+    const hat = new Tone.MetalSynth({
+      frequency: 320,
+      envelope: { attack: 0.001, decay: 0.045, release: 0.02 },
+      harmonicity: 5.4,
+      modulationIndex: 18,
+      resonance: 5200,
+      octaves: 1.4,
+      volume: -28
+    }).connect(gain);
+    const ghost = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.001, decay: 0.045, sustain: 0, release: 0.025 },
+      volume: -30
+    }).connect(gain);
+    const fill = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.07, sustain: 0, release: 0.035 },
+      volume: -20
+    }).connect(gain);
+    const crash = new Tone.MetalSynth({
+      frequency: 190,
+      envelope: { attack: 0.001, decay: 0.7, release: 0.28 },
+      harmonicity: 4.8,
+      modulationIndex: 20,
+      resonance: 3900,
+      octaves: 1.8,
+      volume: -27
+    }).connect(gain);
+    return {
+      kick: makeMachineKick(gain),
+      snare: makeMachineClap(gain),
+      hat,
+      ghost,
+      fill,
+      crash
+    };
   }
 
   // Shared drum kit for funk/techno frames builds.
-  function makeDrumKit(gain) {
+  function makeDrumKit(gain, options = {}) {
+    if (options.kit === "techno-machine") return makeTechnoMachineKit(gain);
+
     const kick = new Tone.MembraneSynth({
       pitchDecay: 0.04, octaves: 2,
       envelope: { attack: 0.001, decay: 0.2, sustain: 0, release: 0.12 },
@@ -240,12 +328,12 @@
 
   // Build drum-frame–driven layer. Bar-by-bar scheduler advances through
   // the frames array and triggers each event at (beat*4n + sub*16n + microMs).
-  function buildDrumsFromFrames(framesData) {
+  function buildDrumsFromFrames(framesData, options = {}) {
     const frames = (framesData && Array.isArray(framesData.frames)) ? framesData.frames : [];
     if (frames.length === 0) return null;
 
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
-    const kit = makeDrumKit(gain);
+    const kit = makeDrumKit(gain, options);
 
     const beatTime = Tone.Time("4n").toSeconds();
     const subTime = Tone.Time("16n").toSeconds();
@@ -265,7 +353,7 @@
         const vel = clamp(evt.velocity ?? 0.5, 0.05, 1);
         try {
           if (evt.instrument === "kick") {
-            synth.triggerAttackRelease("C2", "16n", time + offset, vel);
+            synth.triggerAttackRelease(options.kickNote || "C2", "16n", time + offset, vel);
           } else {
             synth.triggerAttackRelease("16n", time + offset, vel);
           }
@@ -277,14 +365,65 @@
       gain,
       synths: [kit.kick, kit.snare, kit.hat, kit.ghost, kit.fill, kit.crash],
       scheduledIds: ids,
-      source: "drum-frames"
+      source: options.source || "drum-frames"
     };
+  }
+
+  function addAcidPulse(layer, options = {}) {
+    if (!layer) return null;
+    const acid = new Tone.MonoSynth({
+      oscillator: { type: "sawtooth" },
+      filter: { type: "lowpass", frequency: 520, Q: 8.5 },
+      envelope: { attack: 0.006, decay: 0.11, sustain: 0.18, release: 0.08 },
+      filterEnvelope: {
+        attack: 0.004,
+        decay: 0.18,
+        sustain: 0.12,
+        release: 0.08,
+        baseFrequency: 120,
+        octaves: 3.8
+      },
+      portamento: 0.035,
+      volume: -25
+    }).connect(layer.gain);
+    const pattern = [
+      "D2", null, "D2", "F2",
+      null, "D2", "A1", null,
+      "D2", "F2", null, "D2",
+      "C2", null, "D2", "A1"
+    ];
+    let step = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const note = pattern[step % pattern.length];
+      const accent = step % 8 === 0 || step % 16 === 9;
+      const gate = note && Math.random() < (accent ? 0.78 : 0.46);
+      if (gate) {
+        try {
+          acid.filter.frequency.rampTo(accent ? 980 : 560, 0.035);
+          acid.triggerAttackRelease(note, accent ? "16n" : "32n", time + 0.014 + Math.random() * 0.012, accent ? 0.18 : 0.12);
+          acid.filter.frequency.rampTo(360, 0.16);
+        } catch (e) {}
+      }
+      step++;
+    }, "16n"));
+    layer.synths.push(acid);
+    layer.source = options.source || "drum-frames+machine-acid";
+    return layer;
+  }
+
+  function buildTechnoMachineFromFrames(frames) {
+    const drums = buildDrumsFromFrames(frames, {
+      kit: "techno-machine",
+      kickNote: "C1",
+      source: "drum-frames+machine"
+    });
+    return addAcidPulse(drums, { source: "drum-frames+machine-acid" });
   }
 
   function buildTechno(frames) {
     if (frames && frames.format === "drum-frames" && frames.genre === "techno") {
       try {
-        const layer = buildDrumsFromFrames(frames);
+        const layer = buildTechnoMachineFromFrames(frames);
         if (layer) return layer;
       } catch (e) {
         console.warn("[GenreFlavor] techno frames failed, fallback:", e);
@@ -560,74 +699,138 @@
     return { gain, synths: [piano, lp, room], scheduledIds: ids, source: "default" };
   }
 
-  // chill recipe → felt piano. Uses recipe.layers[type=piano].
-  // Drives a single recipe (the first); voicings rotate every `every` 16ths.
-  function buildPianoFromRecipe(recipeContainer) {
-    const recipes = (recipeContainer && Array.isArray(recipeContainer.recipes)) ? recipeContainer.recipes : [];
-    if (recipes.length === 0) return buildPianoDefault();
-    const recipe = recipes[0];
-    const pianoLayer = (recipe.layers || []).find((l) => l && l.type === "piano");
-    if (!pianoLayer) return buildPianoDefault();
+  // chill recipe -> felt piano. Uses several piano layers so the FM piano
+  // pill has a chord bed, memory replies, and a soft melody surface.
+  function normalizePianoVoicings(layer) {
+    let voicings = layer && layer.notes;
+    if (!Array.isArray(voicings) || voicings.length === 0) {
+      return [["D3", "F3", "A3", "C4"]];
+    }
+    if (!Array.isArray(voicings[0])) return [voicings];
+    return voicings;
+  }
 
-    const gain = new Tone.Gain(0.0001).connect(ensureMaster());
-    const reverbWet = clamp(pianoLayer.pedal ?? 0.5, 0.18, 0.6);
-    const room = new Tone.Reverb({ decay: 3.4, wet: reverbWet }).connect(gain);
+  function pianoLayerRole(layer) {
+    const id = String(layer?.id || "").toLowerCase();
+    if (id.includes("memory") || id.includes("reply") || id.includes("answer")) return "memory";
+    if (id.includes("melody") || id.includes("solo") || id.includes("dust")) return "melody";
+    return "bed";
+  }
 
-    // Tone hint controls timbre: felt = warm triangle, glass = bright sine,
-    // memory = darker sine.
+  function selectRecipePianoLayers(recipes) {
+    const primary = recipes[0] || {};
+    const primaryPianos = Array.isArray(primary.layers)
+      ? primary.layers.filter((l) => l && l.type === "piano")
+      : [];
+    const selected = [];
+    const pushLayer = (recipe, layer, role) => {
+      if (!layer || selected.some((item) => item.layer === layer)) return;
+      selected.push({ recipe, layer, role: role || pianoLayerRole(layer) });
+    };
+
+    pushLayer(primary, primaryPianos[0], "bed");
+    pushLayer(primary, primaryPianos.find((l) => pianoLayerRole(l) === "memory") || primaryPianos[1], "memory");
+
+    const melodyRecipe = recipes.find((r) => r && r.id === "soft-melody-piano") || recipes[1] || primary;
+    const melodyLayers = Array.isArray(melodyRecipe.layers)
+      ? melodyRecipe.layers.filter((l) => l && l.type === "piano")
+      : [];
+    pushLayer(melodyRecipe, melodyLayers.find((l) => pianoLayerRole(l) === "melody") || melodyLayers[0], "melody");
+
+    return selected.slice(0, 3);
+  }
+
+  function pianoLayerTone(layer) {
     let oscType = "triangle";
     let cutoff = 2200;
-    if (pianoLayer.tone === "glass") { oscType = "sine"; cutoff = 3200; }
-    else if (pianoLayer.tone === "memory") { oscType = "sine"; cutoff = 1600; }
+    if (layer.tone === "glass") { oscType = "sine"; cutoff = 3200; }
+    else if (layer.tone === "memory") { oscType = "sine"; cutoff = 1700; }
+    return { oscType, cutoff };
+  }
 
-    const lp = new Tone.Filter({ frequency: cutoff, type: "lowpass", Q: 0.5 }).connect(room);
+  function pianoLayerDuration(layer, role) {
+    if (Array.isArray(layer.duration) && layer.duration.length > 0) {
+      return role === "bed" ? (layer.duration[1] || layer.duration[0]) : (layer.duration[1] || layer.duration[0]);
+    }
+    if (typeof layer.duration === "string") return layer.duration;
+    return role === "bed" ? "2n" : "4n";
+  }
+
+  function buildRecipePianoLayer(gain, layer, role, layerIndex) {
+    const { oscType, cutoff } = pianoLayerTone(layer);
+    const roleGain = role === "bed" ? 0.92 : role === "memory" ? 0.7 : 0.62;
+    const layerGain = new Tone.Gain(roleGain).connect(gain);
+    const roomWet = clamp(layer.pedal ?? layer.room ?? 0.52, 0.2, 0.72);
+    const room = new Tone.Reverb({ decay: 3.2 + roomWet * 2.2, wet: roomWet }).connect(layerGain);
+    const lp = new Tone.Filter({
+      frequency: role === "memory" ? Math.min(cutoff, 1850) : cutoff,
+      type: "lowpass",
+      Q: 0.48
+    }).connect(room);
     const piano = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: oscType },
-      envelope: { attack: 0.06, decay: 0.9, sustain: 0.35, release: 1.6 },
-      volume: -16
+      envelope: {
+        attack: role === "memory" ? 0.038 : 0.055,
+        decay: 0.85,
+        sustain: role === "bed" ? 0.42 : 0.3,
+        release: role === "bed" ? 2.3 : 1.45
+      },
+      volume: role === "bed" ? -12 : role === "memory" ? -15 : -16
     }).connect(lp);
     piano.maxPolyphony = 8;
 
-    // notes: array of voicings (each voicing is an array of notes).
-    let voicings = pianoLayer.notes;
-    if (!Array.isArray(voicings) || voicings.length === 0) {
-      voicings = [["D3", "F3", "A3", "C4"]];
-    } else if (!Array.isArray(voicings[0])) {
-      // Some sources flatten — wrap into one voicing.
-      voicings = [voicings];
-    }
+    const voicings = normalizePianoVoicings(layer);
+    const pattern = (Array.isArray(layer.pattern) && layer.pattern.length > 0)
+      ? layer.pattern
+      : [0.9, 0, 0, 0, 0.28, 0, 0, 0];
+    const roleBoost = role === "bed" ? 1.35 : role === "memory" ? 1.7 : 1.45;
+    const baseVel = clamp((layer.velocity ?? 0.14) * roleBoost, 0.05, 0.42);
+    const probabilityBoost = role === "memory" ? 1.85 : role === "melody" ? 1.25 : 1;
+    const probability = clamp((layer.probability ?? 0.75) * probabilityBoost, 0, 1);
+    const humanize = clamp(layer.humanize ?? 0.026, 0, 0.15);
+    const every = Math.max(1, layer.every || pattern.length || 16);
+    const duration = pianoLayerDuration(layer, role);
 
-    const pattern = (Array.isArray(pianoLayer.pattern) && pianoLayer.pattern.length > 0)
-      ? pianoLayer.pattern
-      : [0.98, 0, 0, 0, 0.32, 0, 0, 0];
-    const baseVel = clamp(pianoLayer.velocity ?? 0.17, 0.04, 0.4);
-    const probability = clamp(pianoLayer.probability ?? 0.9, 0, 1);
-    const humanize = clamp(pianoLayer.humanize ?? 0.026, 0, 0.15);
-    const every = Math.max(1, pianoLayer.every || pattern.length || 16);
-
-    let step = 0;
+    let step = layerIndex * 2;
     let voicingIdx = 0;
-    const ids = [];
-    ids.push(Tone.Transport.scheduleRepeat((time) => {
+    const id = Tone.Transport.scheduleRepeat((time) => {
       const trigger = pattern[step % pattern.length];
       if (trigger > 0 && Math.random() < probability) {
         const voicing = voicings[voicingIdx % voicings.length] || voicings[0];
-        const jitter = (Math.random() - 0.5) * humanize;
+        const jitter = (Math.random() - 0.5) * humanize + (layer.swingPush || 0);
         voicing.forEach((note, i) => {
-          const delay = i * 0.022;
-          const vel = clamp(baseVel * trigger * (0.85 + Math.random() * 0.3), 0.02, 0.6);
-          piano.triggerAttackRelease(note, "2n", time + delay + jitter, vel);
+          const delay = i * (role === "bed" ? 0.024 : 0.017);
+          const vel = clamp(baseVel * trigger * (0.86 + Math.random() * 0.28), 0.025, 0.58);
+          piano.triggerAttackRelease(note, duration, time + delay + jitter, vel);
         });
       }
       step++;
       if (step % every === 0) voicingIdx++;
-    }, "16n"));
+    }, "16n");
+
+    return { synths: [piano, lp, room, layerGain], scheduledId: id };
+  }
+
+  function buildPianoFromRecipe(recipeContainer) {
+    const recipes = (recipeContainer && Array.isArray(recipeContainer.recipes)) ? recipeContainer.recipes : [];
+    if (recipes.length === 0) return buildPianoDefault();
+    const gain = new Tone.Gain(0.0001).connect(ensureMaster());
+    const pianoLayers = selectRecipePianoLayers(recipes);
+    if (pianoLayers.length === 0) return buildPianoDefault();
+
+    const synths = [];
+    const ids = [];
+    pianoLayers.forEach(({ layer, role }, i) => {
+      const built = buildRecipePianoLayer(gain, layer, role, i);
+      synths.push(...built.synths);
+      ids.push(built.scheduledId);
+    });
 
     return {
       gain,
-      synths: [piano, lp, room],
+      synths,
       scheduledIds: ids,
-      source: "chill-recipe:" + (recipe.id || "?")
+      source: "chill-recipe:" + (recipes[0]?.id || "?") + "+memory-layers"
     };
   }
 

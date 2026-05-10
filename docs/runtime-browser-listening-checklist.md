@@ -93,6 +93,46 @@ Fail signs:
 - The transient never decays, or behaves like the visible Core Rig `ACID` lock.
 - The acid cue overfills the mix or fights the long-form radio rotation.
 
+## Hazama FM Genre Source Check
+
+Run this when a PR changes `audio/genre-flavor.js` or genre preset rendering.
+
+Techno setup:
+
+1. Open `fm.html`.
+2. Select `techno`.
+3. Press `START`.
+
+Techno expected:
+
+- `window.GenreFlavor.state.source` is `drum-frames+machine-acid`.
+- The drum frames still drive the rhythm, but the sound reads as machine drum:
+  deep four-on-floor kick, hard hat grid, and short dry clap/snare.
+- A light acid pulse continues underneath the transient cue without turning on
+  Core Rig `ACID.ON`.
+- The low floor is stronger than `any`, but not limiter-crushed or boomy.
+
+Piano setup:
+
+1. Open `fm.html`.
+2. Select `piano`.
+3. Press `START`.
+
+Piano expected:
+
+- `window.GenreFlavor.state.source` ends with `+memory-layers`.
+- `window.GenreFlavor.state.scheduled` is greater than `1`.
+- Piano chord bed, memory reply, and soft melody are all designed to sound,
+  while the surface still leaves long quiet spaces.
+- The piano layer is audible as the pill identity, not only as hidden metadata.
+
+Fail signs:
+
+- `techno` still reads as generic noise hats plus soft membrane kick.
+- Acid motion is only a one-shot cue and never appears as a light pulse.
+- `piano` uses the recipe but sounds effectively absent.
+- `piano` becomes busy pop melody and loses the quiet chill identity.
+
 ## Reference Breadth / RDJ Edge Check
 
 Use this when reviewing whether Music is carrying the reference-driven spread,

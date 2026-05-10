@@ -61,11 +61,11 @@ JSON parse error も全部 graceful 処理。
 |---|---|---|---|---|
 | ANY | automix sine wave | `auto` (engine 選択) | — | (no flavor layer) |
 | AMBIENT | low energy / high observer | `ambient_room` | `namima-shape-ambient` | `namima-preset:water_day` |
-| TECHNO | high body+energy / low void | `acid_core` | `drum-frames-techno` | `drum-frames` |
+| TECHNO | high body+energy / low void | `acid_core` | `drum-frames-techno` | `drum-frames+machine-acid` |
 | LOFI | mid energy / high mind+wave | `tape_memory` | `drum-frames-lofi` | `drum-frames+vinyl-crackle` |
 | JAZZ | high wave+mind+creation | `earth_reed` | `drum-frames-jazz` | `drum-frames+walking-bass` |
 | FUNK | high body+creation | `broken_machine` | `drum-frames-funk` | `drum-frames+ep` |
-| PIANO | high circle+observer | `earth_reed` | `chill-piano-recipe` | `chill-recipe:piano-jazz-chill` |
+| PIANO | high circle+observer | `earth_reed` | `chill-piano-recipe` | `chill-recipe:piano-jazz-chill+memory-layers` |
 
 非 ANY 選択時は engine の AUTOMIX (sine wave 変調) を OFF にして
 fader をロック。ANY 戻しで AUTOMIX 復帰。
@@ -190,7 +190,7 @@ window.MusicAcidCue.getState()
 
 // 現在の flavor 経路 (default vs preset)
 window.GenreFlavor.state
-// → { started: true, genre: "piano", scheduled: 1, source: "chill-recipe:piano-jazz-chill" }
+// → { started: true, genre: "piano", scheduled: 3, source: "chill-recipe:piano-jazz-chill+memory-layers" }
 
 // preset がロード済か
 window.HazamaPresets.available("chill-piano-recipe")
