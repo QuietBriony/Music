@@ -564,7 +564,9 @@ const OddLogicDirectorState = {
 const AcidLockState = {
   enabled: false,
   intensity: 0,
-  indicator: 0
+  indicator: 0,
+  transient: 0,
+  transientSource: ""
 };
 const PerformanceColorDriftState = {
   lastCycle: -1,
@@ -1183,7 +1185,7 @@ function albumArcAcidDrive() {
 }
 
 function acidPerformanceAmount() {
-  return clampValue(Math.max(AcidLockState.intensity || 0, albumArcAcidDrive()), 0, 1);
+  return clampValue(Math.max(AcidLockState.intensity || 0, AcidLockState.transient || 0, albumArcAcidDrive()), 0, 1);
 }
 
 function advanceAlbumArcTransport(eighthNoteMs) {
@@ -2412,7 +2414,10 @@ function longformTempoBias() {
 
 function updateAcidLockIntensity(step = 0.02) {
   AcidLockState.intensity = approachValue(AcidLockState.intensity, AcidLockState.enabled ? 1 : 0, step);
-  AcidLockState.indicator = approachValue(AcidLockState.indicator || 0, AcidLockState.enabled ? 0.24 : 0, step * 1.5);
+  AcidLockState.transient = approachValue(AcidLockState.transient || 0, 0, step * 0.72);
+  if ((AcidLockState.transient || 0) <= 0.01) AcidLockState.transientSource = "";
+  const indicatorTarget = AcidLockState.enabled ? 0.24 : clampValue((AcidLockState.transient || 0) * 0.42, 0, 0.42);
+  AcidLockState.indicator = approachValue(AcidLockState.indicator || 0, indicatorTarget, step * 1.5);
   return AcidLockState.intensity;
 }
 
@@ -4862,6 +4867,8 @@ function publishMusicRuntimeState() {
       enabled: AcidLockState.enabled,
       intensity: AcidLockState.intensity,
       indicator: AcidLockState.indicator || 0,
+      transient: AcidLockState.transient || 0,
+      transientSource: AcidLockState.transientSource || "",
       performance: acidPerformanceAmount(),
       arcDrive: albumArcAcidDrive(),
       color: { ...PerformanceColorDriftState }
@@ -5353,6 +5360,17 @@ if (typeof window !== "undefined") {
     getState: micFollowRuntimeState,
     getJamState: micJamRuntimeState
   };
+  window.MusicAcidCue = {
+    trigger: triggerTransientAcidCue,
+    getState: () => ({
+      enabled: AcidLockState.enabled,
+      intensity: AcidLockState.intensity,
+      indicator: AcidLockState.indicator || 0,
+      transient: AcidLockState.transient || 0,
+      transientSource: AcidLockState.transientSource || "",
+      performance: acidPerformanceAmount()
+    })
+  };
 }
 
 function feedbackNumber(value, digits = 3) {
@@ -5454,6 +5472,9 @@ function buildHazamaRuntimeFeedbackPayload(kind = "heartbeat", state = window.Mu
       acid: {
         enabled: !!AcidLockState.enabled,
         performance: feedbackNumber(acidPerformanceAmount()),
+        indicator: feedbackNumber(AcidLockState.indicator || 0),
+        transient: feedbackNumber(AcidLockState.transient || 0),
+        transientSource: AcidLockState.transientSource || "",
         arcDrive: feedbackNumber(albumArcAcidDrive())
       },
       hazama: {
@@ -6362,9 +6383,10 @@ function setKeepAwakeEnabled(enabled) {
   }
 }
 
-function triggerAcidLockIndicator(time = Tone.now()) {
-  if (!AcidLockState.enabled || !isPlaying || !glass) return;
-  const amount = clampValue(0.42 + (AcidLockState.intensity || 0) * 0.28 + (AcidLockState.indicator || 0) * 0.3, 0, 1);
+function triggerAcidLockIndicator(time = Tone.now(), options = {}) {
+  const cueLevel = clampValue(options.amount ?? Math.max(AcidLockState.intensity || 0, AcidLockState.transient || 0, AcidLockState.indicator || 0), 0, 1);
+  if ((!AcidLockState.enabled && cueLevel < 0.08) || !isPlaying || !glass) return;
+  const amount = clampValue(0.42 + (AcidLockState.intensity || 0) * 0.28 + (AcidLockState.transient || 0) * 0.22 + (AcidLockState.indicator || 0) * 0.3, 0, 1);
   const step = stepIndex || 0;
   const tagTime = time + 0.018;
   const root = tonalRhymeHigh(step, 4);
@@ -6385,6 +6407,26 @@ function triggerAcidLockIndicator(time = Tone.now()) {
   } catch (error) {
     console.warn("[Music] acid lock indicator failed:", error);
   }
+}
+
+function triggerTransientAcidCue(options = {}) {
+  const amount = clampValue(Number(options.amount) || 0.52, 0.18, 0.86);
+  AcidLockState.transient = Math.max(AcidLockState.transient || 0, amount);
+  AcidLockState.indicator = Math.max(AcidLockState.indicator || 0, clampValue(amount + 0.22, 0, 1));
+  AcidLockState.transientSource = typeof options.source === "string" ? options.source.slice(0, 80) : "transient";
+  VoiceMorphState.transition = Math.max(VoiceMorphState.transition, 0.5 + amount * 0.22);
+  if (initialized) {
+    updateTimbreStateFromWorld(currentGradientParts());
+    applyUCMToParams({ force: options.force === true });
+    triggerAcidLockIndicator(Tone.now(), { amount });
+    publishMusicRuntimeState();
+  }
+  return {
+    amount,
+    transient: AcidLockState.transient,
+    indicator: AcidLockState.indicator,
+    source: AcidLockState.transientSource
+  };
 }
 
 function setAcidLockEnabled(enabled) {
