@@ -166,7 +166,7 @@ station ident audio cue + bias 接続の 6 箇所更新 (詳細は engine.js
 
 | 項目 | 方針 |
 |---|---|
-| **engine.js 改変** | 原則禁止。Hazama FM 用の追加は fm.js / fm.css / audio/genre-flavor.js で吸収 |
+| **engine.js 改変** | 原則禁止。Hazama FM 用の追加は fm.js / fm.css / audio/genre-flavor.js で吸収。例外は Core Rig と FM が共有する短い runtime cue API など、Music 全体の音響境界をそろえる最小変更のみ |
 | **cache buster** | `?v=fm-N` を fm.html / sw.js の precache list で揃える。version 変えるたびに sw.js の `VERSION` も bump (`hazama-fm-vN`) |
 | **sister repo の export** | sister repo 内で完結。Music は raw.githubusercontent.com から fetch のみ |
 | **preset の絶対パス** | `presets/foo.json` で root-relative。loader.js の `PRESET_FILES` で一元管理 |
@@ -182,6 +182,11 @@ window.MusicRuntimeState.radioBrain.active
 // 番組ローテ予定
 window.MusicRuntimeState.radioBrain.next
 window.MusicRuntimeState.radioBrain.weights
+
+// TECHNO / hardTechno の短い acid cue (Core Rig の ACID ロックとは別)
+window.MusicRuntimeState.acid.transient
+window.MusicRuntimeState.acid.transientSource
+window.MusicAcidCue.getState()
 
 // 現在の flavor 経路 (default vs preset)
 window.GenreFlavor.state

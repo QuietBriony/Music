@@ -16,6 +16,8 @@
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
   const TARGET_LEVEL = 80;
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };
+  const FM_ACID_CUE_MIN_MS = 6200;
+  const ACID_CUE_PROGRAMS = new Set(["hardTechno", "dryGridWork", "ghostPressure"]);
 
   // Genre profiles. Each profile sets all 9 UCM faders + the engine's culture
   // grammar. The MusicRadioBrain still picks programs on its own — we just
@@ -61,6 +63,8 @@
   let previousRadioProgram = null;
   let identTimer = null;
   let programLabelTimer = null;
+  let lastAcidCueAt = 0;
+  let lastAcidCueKey = "";
 
   // ---- Helpers --------------------------------------------------
 
@@ -71,6 +75,38 @@
   }
   function dispatchChange(el) {
     el.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function triggerHazamaFmAcidCue(reason, amount, options = {}) {
+    if (!options.force && (!started || starting || stopping)) return;
+    const now = performance.now();
+    const key = `${reason}:${getCurrentGenre()}`;
+    if (!options.force && key === lastAcidCueKey && now - lastAcidCueAt < FM_ACID_CUE_MIN_MS) return;
+    const api = window.MusicAcidCue;
+    if (!api || typeof api.trigger !== "function") return;
+    try {
+      api.trigger({
+        amount,
+        source: `hazama-fm.${reason}`,
+        force: options.force === true
+      });
+      lastAcidCueAt = now;
+      lastAcidCueKey = key;
+    } catch (err) {
+      console.warn("[Hazama FM] acid cue failed:", err);
+    }
+  }
+
+  function maybeTriggerProgramAcidCue(program) {
+    if (!program || !ACID_CUE_PROGRAMS.has(program)) return;
+    const genre = getCurrentGenre();
+    if (program === "hardTechno") {
+      triggerHazamaFmAcidCue(`program.${program}`, genre === "techno" ? 0.66 : 0.48);
+      return;
+    }
+    if (genre === "techno") {
+      triggerHazamaFmAcidCue(`program.${program}`, 0.52);
+    }
   }
 
   function setButtonState(state) {
@@ -170,6 +206,10 @@
     // Crossfade the genre flavor layer.
     if (window.GenreFlavor) {
       try { window.GenreFlavor.setGenre(name); } catch (e) {}
+    }
+
+    if (name === "techno") {
+      setTimeout(() => triggerHazamaFmAcidCue("genre.techno", 0.64), keys.length * 35 + 90);
     }
   }
 
@@ -277,6 +317,7 @@
     if (programChanged) {
       triggerStationIdent();
       renderProgramLabel(rb, true);
+      maybeTriggerProgramAcidCue(activeProgram);
     } else {
       renderProgramLabel(rb, false);
     }
@@ -409,6 +450,9 @@
       starting = false;
       setButtonState("playing");
       setMediaPlaybackState("playing");
+      if (getCurrentGenre() === "techno") {
+        triggerHazamaFmAcidCue("start.techno", 0.64, { force: true });
+      }
 
       // Try to render whatever runtime state is already published.
       if (window.MusicRuntimeState) {

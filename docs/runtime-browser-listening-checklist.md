@@ -64,6 +64,35 @@ Fail signs:
 - Low-end blooms continuously or clips.
 - The mix becomes bright EDM rather than dark acid/IDM pressure.
 
+## Hazama FM Acid Cue Check
+
+Run this when a PR touches `fm.js`, `engine.js`, service-worker cache busting,
+or the acid / groove path.
+
+Setup:
+
+1. Open `fm.html`.
+2. Select `techno`.
+3. Press `START`.
+4. Let it run for at least 90 seconds, then switch briefly to `any` and back to
+   `techno`.
+
+Expected:
+
+- `techno` starts with a short acid cue, not a permanent `ACID.ON` lock.
+- `window.MusicRuntimeState.acid.transient` rises briefly and decays.
+- `window.MusicRuntimeState.acid.transientSource` starts with `hazama-fm.`.
+- The FM surface remains one-button/simple; no extra acid control is exposed.
+- High-register acid replies are audible enough to identify the genre shift,
+  but do not make Hazama FM tiring as a focus radio.
+- Groove still feels slightly human/organic rather than rigidly quantized.
+
+Fail signs:
+
+- `techno` sounds identical to `any` except for louder drums.
+- The transient never decays, or behaves like the visible Core Rig `ACID` lock.
+- The acid cue overfills the mix or fights the long-form radio rotation.
+
 ## Reference Breadth / RDJ Edge Check
 
 Use this when reviewing whether Music is carrying the reference-driven spread,
