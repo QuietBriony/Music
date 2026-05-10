@@ -2,7 +2,7 @@
 
 Music の `SYNC` は音声ではなく、いま鳴っている Music の状態を
 metadata-only packet として同じブラウザ内の music stack へ共有するボタンです。
-録音、サンプル、歌詞、raw trace、API token は入りません。
+録音、サンプル、歌詞、raw audio trace、API token は入りません。
 
 ## いちばん簡単な使い方
 
@@ -37,7 +37,7 @@ dependency、workflow は取り込みません。実装する場合も、対象r
 - `localStorage` と `BroadcastChannel` に最新の Music session packet が保存されます。
 - 同じ `quietbriony.github.io` 上で開いた `drum-floor`、`namima`、`chill`、`OpenClaw` が最新packetを読みます。
 - `MIC` がONなら `performance_state.mic_follow` に `gesture / drive / pulse / hum / air / bpm_lock` などのmetadataだけが入り、各repoはそれを反応のヒントとして扱います。
-- Hazama FM から `SYNC` した場合は `performance_state.hazama_fm` に `genre / source / role / edge / feedback_hint / engine_translation` が入り、FMで聴こえているジャンル文脈と Music 本体側の bus mix 翻訳を他repoが解釈できます。
+- Hazama FM から `SYNC` した場合は `performance_state.hazama_fm` に `genre / source / role / edge / feedback_hint / engine_translation / listening_trace` が入り、FMで聴こえているジャンル文脈、Music 本体側の bus mix 翻訳、聴いていたジャンル滞在/切替履歴を他repoが解釈できます。
 - packetには `Musicで削る`、`chillで聴く`、`drum-floorで押す`、`namimaで空気に逃がす`、`OpenClawで見る` の推奨行き先が入ります。
 - 受け側は preview controls や mood を合わせます。
 - 受け側は `START`、`再生`、`REC`、MIDI、Ableton、EP-133、merge を自動操作しません。

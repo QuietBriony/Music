@@ -11,6 +11,8 @@
   "use strict";
 
   const STORAGE_KEY = "music:fm:v1";
+  const LISTENING_TRACE_STORAGE_KEY = "music:fm:listening-trace:v1";
+  const LISTENING_TRACE_MAX_TRANSITIONS = 24;
   const FADE_IN_S = 4;
   const FADE_OUT_S = 3;
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
@@ -72,6 +74,7 @@
   let genreTempoTimer = null;
   let lastAcidCueAt = 0;
   let lastAcidCueKey = "";
+  let listeningTrace = null;
 
   // ---- Helpers --------------------------------------------------
 
@@ -82,6 +85,131 @@
   }
   function dispatchChange(el) {
     el.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function roundedMs(value) {
+    return Math.max(0, Math.round(Number(value) || 0));
+  }
+
+  function traceTimestamp() {
+    return Date.now();
+  }
+
+  function traceIso(ms) {
+    try { return new Date(ms).toISOString(); } catch (e) { return new Date().toISOString(); }
+  }
+
+  function currentFlavorSource() {
+    try {
+      return window.GenreFlavor?.state?.source || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function currentBpmValue() {
+    try {
+      const bpm = Number(window.Tone?.Transport?.bpm?.value);
+      return Number.isFinite(bpm) ? Math.round(bpm * 10) / 10 : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function persistListeningTrace() {
+    if (!listeningTrace) return;
+    try {
+      localStorage.setItem(LISTENING_TRACE_STORAGE_KEY, JSON.stringify(listeningTrace));
+    } catch (e) {
+      // localStorage may be unavailable in private mode; trace is best-effort.
+    }
+  }
+
+  function startListeningTrace(genre) {
+    const now = traceTimestamp();
+    listeningTrace = {
+      version: 1,
+      startedAt: now,
+      lastChangedAt: now,
+      currentGenre: genre || getCurrentGenre(),
+      currentSource: currentFlavorSource(),
+      currentEnergy: getCurrentEnergy(),
+      dwellMsByGenre: {},
+      transitions: [],
+      switchCount: 0
+    };
+    persistListeningTrace();
+  }
+
+  function ensureListeningTrace() {
+    if (listeningTrace) return listeningTrace;
+    startListeningTrace(getCurrentGenre());
+    return listeningTrace;
+  }
+
+  function closeListeningTraceSegment(reason = "snapshot") {
+    const trace = ensureListeningTrace();
+    const now = traceTimestamp();
+    const genre = trace.currentGenre || getCurrentGenre();
+    const dwell = roundedMs(now - (trace.lastChangedAt || now));
+    if (dwell > 0) {
+      trace.dwellMsByGenre[genre] = roundedMs((trace.dwellMsByGenre[genre] || 0) + dwell);
+      trace.lastClosedReason = reason;
+      trace.lastChangedAt = now;
+    }
+    trace.currentSource = currentFlavorSource();
+    trace.currentEnergy = getCurrentEnergy();
+    persistListeningTrace();
+    return { trace, now };
+  }
+
+  function recordGenreTrace(nextGenre, reason = "genre") {
+    if (!nextGenre) return;
+    const trace = ensureListeningTrace();
+    const previous = trace.currentGenre || getCurrentGenre();
+    const now = traceTimestamp();
+    const dwell = roundedMs(now - (trace.lastChangedAt || now));
+    if (previous && dwell > 0) {
+      trace.dwellMsByGenre[previous] = roundedMs((trace.dwellMsByGenre[previous] || 0) + dwell);
+    }
+    if (previous !== nextGenre) {
+      trace.switchCount += 1;
+      trace.transitions.push({
+        at_ms: roundedMs(now - trace.startedAt),
+        from: previous || null,
+        to: nextGenre,
+        dwell_ms: dwell,
+        reason,
+        source: currentFlavorSource()
+      });
+      if (trace.transitions.length > LISTENING_TRACE_MAX_TRANSITIONS) {
+        trace.transitions = trace.transitions.slice(-LISTENING_TRACE_MAX_TRANSITIONS);
+      }
+    }
+    trace.currentGenre = nextGenre;
+    trace.currentSource = currentFlavorSource();
+    trace.currentEnergy = getCurrentEnergy();
+    trace.lastChangedAt = now;
+    persistListeningTrace();
+  }
+
+  function listeningTraceSnapshot() {
+    const { trace, now } = closeListeningTraceSegment("snapshot");
+    return {
+      version: trace.version,
+      active: started || starting,
+      started_at: traceIso(trace.startedAt),
+      elapsed_ms: roundedMs(now - trace.startedAt),
+      current_genre: trace.currentGenre || getCurrentGenre(),
+      current_source: currentFlavorSource() || trace.currentSource || null,
+      current_energy: getCurrentEnergy(),
+      bpm: currentBpmValue(),
+      dwell_ms_by_genre: { ...trace.dwellMsByGenre },
+      switch_count: trace.switchCount,
+      transitions: trace.transitions.slice(-LISTENING_TRACE_MAX_TRANSITIONS),
+      storage_key: LISTENING_TRACE_STORAGE_KEY,
+      review_only: true
+    };
   }
 
   function triggerHazamaFmAcidCue(reason, amount, options = {}) {
@@ -213,6 +341,7 @@
   function applyGenreProfile(name) {
     const profile = GENRE_PROFILES[name];
     if (!profile) return;
+    recordGenreTrace(name, "profile");
 
     // For non-"any" genres, lock the genre identity by disabling AUTOMIX
     // (engine.js's UCM.auto.enabled). Otherwise the engine's sine-wave
@@ -466,6 +595,7 @@
 
       // Apply current GENRE profile (sets all 9 faders + culture grammar),
       // then ENERGY pill on top to honor the energy choice.
+      startListeningTrace(getCurrentGenre());
       applyGenreProfile(getCurrentGenre());
 
       if (typeof window.startPlayback === "function") {
@@ -524,6 +654,7 @@
       if (window.GenreFlavor) {
         try { window.GenreFlavor.stop(); } catch (e) {}
       }
+      closeListeningTraceSegment("stop");
       await rampOutputLevel(0, FADE_OUT_S);
       if (typeof window.stopPlayback === "function") {
         window.stopPlayback({ source: "fm.stop" });
@@ -611,6 +742,10 @@
     }
 
     window.addEventListener("music-runtime-state", onRuntimeState);
+    window.HazamaFmListeningTrace = {
+      snapshot: listeningTraceSnapshot,
+      storageKey: LISTENING_TRACE_STORAGE_KEY
+    };
 
     const resume = readSession();
     if (resume) {

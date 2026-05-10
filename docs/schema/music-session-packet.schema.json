@@ -214,6 +214,57 @@
                 "delay_wet": { "$ref": "#/definitions/unitInterval" }
               }
             },
+            "listening_trace": {
+              "type": ["object", "null"],
+              "additionalProperties": false,
+              "properties": {
+                "version": { "type": "number" },
+                "active": { "type": "boolean" },
+                "started_at": { "type": "string" },
+                "elapsed_ms": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "current_genre": { "type": ["string", "null"] },
+                "current_source": { "type": ["string", "null"] },
+                "current_energy": { "type": ["string", "null"] },
+                "bpm": { "type": ["number", "null"] },
+                "dwell_ms_by_genre": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "switch_count": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "transitions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "at_ms": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "from": { "type": ["string", "null"] },
+                      "to": { "type": "string" },
+                      "dwell_ms": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "reason": { "type": "string" },
+                      "source": { "type": ["string", "null"] }
+                    }
+                  }
+                },
+                "storage_key": { "type": "string" },
+                "review_only": { "const": true }
+              }
+            },
             "integration_mode": { "const": "metadata-only" },
             "review_only": { "const": true }
           }

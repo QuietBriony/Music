@@ -53,7 +53,7 @@
       "active": true,
       "genre": "piano",
       "source": "chill-recipe:piano-jazz-chill+foreground-piano",
-      "scheduled": 3,
+      "scheduled": 4,
       "role": "chill quiet piano memory",
       "edge": "foreground felt-piano strikes with memory reply and long space",
       "feedback_hint": "send piano/trio and listening-space hints toward chill",
@@ -65,6 +65,33 @@
         "piano_memory_db": -38,
         "reverb_wet": 0.06,
         "delay_wet": 0.035
+      },
+      "listening_trace": {
+        "version": 1,
+        "active": true,
+        "started_at": "2026-05-10T17:50:00.000Z",
+        "elapsed_ms": 92000,
+        "current_genre": "piano",
+        "current_source": "chill-recipe:piano-jazz-chill+foreground-piano",
+        "current_energy": "mid",
+        "bpm": 68.6,
+        "dwell_ms_by_genre": {
+          "techno": 31000,
+          "piano": 61000
+        },
+        "switch_count": 1,
+        "transitions": [
+          {
+            "at_ms": 31000,
+            "from": "techno",
+            "to": "piano",
+            "dwell_ms": 31000,
+            "reason": "profile",
+            "source": "drum-frames+machine-acid-brain"
+          }
+        ],
+        "storage_key": "music:fm:listening-trace:v1",
+        "review_only": true
       },
       "integration_mode": "metadata-only",
       "review_only": true
