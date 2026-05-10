@@ -1,101 +1,150 @@
 # Music Integration Catalog
 
 ## 1) Purpose
-- ローカル棚卸しレポート（`_reports/music-stack-inventory-2026-04-24.md`）を実装判断向けに反映し、
-  Music統合の優先度・実装範囲・リスクを共通で持つ。
-- 変更は **実装統合やファイル移動を行わず**、判断材料を文書化する。
-- 対象は Music本体の拡張可能性を高めるため、他repoの既存資産を「どう使うか」を決める。
 
-## 2) Related repos
-- Music
-- namima
-- namima-lab
-- test
-- chill
-- drum-floor
-- hazama（reference only）
+This document is the current catalog for the local Music Stack roles and safe
+integration posture.
 
-## 3) Classification
-### keep
-- **Music**
-  - 中核リポジトリ。今回の統合先。
-- **namima**
-  - 音楽生成の実運用価値が高く、統合中核として維持。
-- **drum-floor**
-  - 音楽運用思想（ライブ/事故防止）を参照できる支援リポジトリ。
+It reflects the local inventory and the newer Music Stack docs without
+authorizing runtime migration, file moves, archive/delete actions, dependency
+changes, or cross-repo merges.
 
-### merge into Music
-- **namima-lab**
-  - a-min系の実験版資産は Music の実験レイヤー設計へ吸収可能。
+Use this document as a short entrypoint. For active contracts and workflows,
+defer to the authority docs below.
 
-### migration candidate
-- **test**
-  - 近接実装が存在するため、移植候補として比較検証。現時点は一括mergeせず段階移行。
-- **chill**
-  - UI/音色の軽量サンプル寄り。再利用観点はあるが、運用整合は慎重に検討。
+## 2) Authority docs
 
-### archive candidate
-- **test**（候補）
-  - Musicへの機能吸収後の重複縮小候補。
-- **chill**（候補）
-  - 同上。
+- `docs/music-stack-integration-index.md`: top-level integration entry, current
+  repo roles, shared rules, and work queues.
+- `docs/music-orchestra-protocol.md`: metadata-only conductor, packet, sidecar,
+  trace, and human-gated promotion boundary.
+- `docs/repo-harvest-orchestra-workflow.md`: harvest workflow and source repo
+  states such as active, staging, harvest-only, reference-only, and archive
+  candidate.
+- `docs/music-stack-sync-manual.md`: user-facing SYNC behavior across Music,
+  drum-floor, namima, chill, and OpenClaw.
+- `docs/chill-quiet-piano-trio-decision.md`: current docs-only boundary that
+  keeps `chill` as quiet piano / trio owner while Music keeps routing and
+  production-intent references.
+- `docs/test-style-blend-preset-morph-decision.md`: current docs-only boundary
+  that keeps `test` as archive-harvest source while Music may translate Style
+  Blend into preset morph / reference-gradient planning.
+- `docs/namima-lab-safe-ripple-lineage-decision.md`: current docs-only boundary
+  that keeps `namima-lab` as safe ripple lineage / harvest-only source, routed
+  primarily toward `namima`.
 
-### reference / hold
-- **hazama**
-  - 世界観・ゲーム・小説・総合開発側の参照repo。音楽統合対象外。
+Supporting / historical docs:
 
-## 4) Reusable assets
-- `Music`
-  - フェーダーUI設計、可視化付き音楽生成フロー
-  - 既存Tone.jsベースの起点
-- `namima`
-  - Web Audio 起動フローと UI との連動（START / interact）
-  - 軽量エネルギー制御の考え方
-- `namima-lab`
-  - a-min系の世代別アレンジ（音色設計の比較テスト素材）
-- `test`
-  - スタイルブレンド設計（Ambient〜HardTechno）
-- `chill`
-  - サイバ-禅的な描画/UIリズムとの接続設計
-- `drum-floor`
-  - 事故防止運用（ライブ運用の手順・ルール）
-- `hazama`
-  - 状態永続化、読み込み安定化、軽量チェック（スモーク）発想の参照
+- `docs/archive-repo-harvest-audit.md`: harvest idea shelf for chill, test, and
+  namima-lab.
+- `docs/integration-roadmap-music-stack.md`: older implementation-prep roadmap;
+  useful for safety criteria, but no longer the primary current role source.
 
-## 5) Risks
-### Actions
-- 現時点では `.github/workflows` が検出されず、Actions課金増大や失敗ノイズは低リスク。
-- 将来追加時は、実行対象・cron・artifacts出力を事前に最小化。
+## 3) Current repo roles
 
-### LFS
-- `.gitattributes` の LFS設定は未検出。
-- 追加する音源/動画素材で将来LFSが必要になる可能性あり。
+### Music
 
-### large files
-- 50MB超や音声本体ファイルは現時点未検出。
-- `git` 追跡対象での過大化は、現状低リスク。
+- Role: central integration target and conductor.
+- Edge: experimental / reference-driven generative rig with UCM, Hazama FM,
+  Music Core Rig, session packets, and broad ambient-to-club range.
+- Keep repo-specific: Music runtime, UCM faders, Hazama FM, Music Core Rig,
+  reference-driven production intent.
 
-### secrets
-- `.env` / `.pem` / `.key` / token / secret / credential 文字列を含むファイル名は未検出。
-- 今回は値そのものを閲覧していないため、値漏洩確認は未実施（必要時のみ最小権限で別途確認）。
+### namima
 
-## 6) Recommended integration order
-1. **namima-lab**
-   - 小変更で音色/コア挙動差分をMusicへ吸収可能か検証。
-2. **namima**
-   - コア実行思想を維持しつつ既存Music設計へ接続。
-3. **test / chill**
-   - 重複機能を移植単位で切り出し、Musicに吸収できるものだけ取り込む。
-4. **drum-floor / hazama**（reference）
-   - 実装は変更せず、運用ルール/UX思想をドキュメント参照として保持。
+- Role: active public-friendly ambient player and consistency reference.
+- Edge: water, garden, daytime, family-safe mood, safe start, no samples, and
+  metadata-only Music SYNC translation.
+- Do not dilute: do not import dark glitch, heavy bass, stage groove
+  assumptions, or copied namima-lab code.
 
-## 7) First small PR candidate
-- 新規 `docs/integration-catalog.md`（本ドキュメント）を Music に追加する。
-- 変更範囲がドキュメントのみのPRとして、影響を限定し、次工程の実装判断を共通化。
+### drum-floor
 
-## 8) Do not do yet
-- 実装統合（コード統合・構成変更）
-- ファイル移動・名前変更
-- archive/delete 実行
-- `install`/`build`/Actions実行
-- `.env` の値参照や他repoのファイル編集
+- Role: active rhythm / groove / VCV / stage-safety reference and Music SYNC
+  receiver.
+- Edge: pocket-aware groove grammar, stage operation, human-gated promotion,
+  browser preview, and raw candidate boundaries.
+- Do not dilute: Music SYNC must not auto-start playback, record, send MIDI,
+  arm Ableton, touch EP-133, or upload anything.
+
+### chill
+
+- Role: quiet piano / trio / long-form listening light surface and harvest
+  source.
+- Edge: synthetic felt-like piano, long rests, Flow Director, optional BASS /
+  DRUMS, quiet recovery, deterministic preview checks, and local listening
+  score.
+- Do not dilute: do not flatten chill into generic ambient, and do not make
+  PULSE or drums the main identity.
+
+### namima-lab
+
+- Role: lineage / staging / harvest-only source.
+- Edge: historical namima experiments, ripple interaction ideas, organic pluck
+  texture ideas, and lightweight reference notes.
+- Do not dilute: do not revive as the active runtime, merge directly into
+  Music, or use as a dependency-heavy experiment lane without separate approval.
+
+### test
+
+- Role: archive candidate and harvest-only source unless intentionally
+  reactivated.
+- Edge: small style blend and probability/interpolation ideas.
+- Do not dilute: do not treat as a primary runtime or add assets/dependencies.
+
+### hazama
+
+- Role: world / game / story / visual reference-only.
+- Edge: atmosphere, navigation, liminal world feel, and non-music operations
+  reference.
+- Do not dilute: do not pull hazama into Music runtime, dependency, or migration
+  work.
+
+## 4) Reusable material
+
+Allowed to harvest:
+
+- design patterns
+- production intent
+- interaction models
+- routing vocabulary
+- schema or packet ideas
+- review notes
+- human-gated promotion patterns
+
+Not allowed by default:
+
+- audio files
+- samples or sample URLs
+- lyrics
+- copyrighted melodies, motifs, arrangements, or recordings
+- blind runtime code copy
+- dependency additions
+- GitHub Actions or workflow automation
+- archive/delete/settings changes
+
+## 5) Recommended next docs work
+
+Next small Music-side docs work after this catalog:
+
+1. Keep `docs/music-stack-integration-index.md` as the top-level entry.
+2. Treat `docs/music-orchestra-protocol.md` and
+   `docs/music-stack-sync-manual.md` as the current metadata-only behavior
+   boundary.
+3. Update older roadmap / harvest docs only when they block a concrete small
+   PR.
+
+Do not create another catalog unless the current authority docs change enough
+to justify one.
+
+## 6) Non-goals
+
+- no runtime code changes
+- no `engine.js`, `index.html`, or `style.css` changes
+- no schema changes
+- no audio build or playback run
+- no audio assets or samples
+- no dependency installation
+- no cloned repo merge
+- no archive/delete action
+- no GitHub settings or workflow changes

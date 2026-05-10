@@ -20,12 +20,17 @@ state, review notes, routing hints, and human-gated promotion requests.
   pattern, phrase, articulation, fill, ghost note, and candidate metadata.
 - `namima`: public-friendly ambient player. It translates safe mood and ambient
   intent into family-safe water, garden, daytime, air, and ripple behavior.
-- `chill`: harvest and live trio source. It contributes macro controls,
-  piano-like softness, compact UI lessons, cyber-zen mood, and quiet recovery.
-- `namima-lab`: staging/archive source for ripple interaction, x-position note
-  mapping, PluckSynth texture, and patch selector ideas.
+- `chill`: quiet piano / trio harvest and light-surface source. It contributes
+  Flow Director pacing, Touch / Phrase / Room controls, synthetic felt-like
+  piano memory, quiet recovery, and a separate listening identity. Its boundary
+  follows `docs/chill-quiet-piano-trio-decision.md`.
+- `namima-lab`: lineage / staging / harvest-only source for safe ripple
+  interaction, gentle touch, organic pluck texture, and historical ambient
+  experiments. Its boundary follows
+  `docs/namima-lab-safe-ripple-lineage-decision.md`.
 - `test`: archive source for Style Blend, archetype interpolation, and pattern
-  probability blending.
+  probability blending. Its boundary follows
+  `docs/test-style-blend-preset-morph-decision.md`.
 - `OpenClaw` / Umbrel-like runtime: mission board, optimizer, promotion desk,
   and human-gated control plane. It should coordinate review, not replace the
   music repos as sound engines.
@@ -46,12 +51,15 @@ their own domain logic.
 Cross-repo flow should use three metadata surfaces:
 
 - `packet`: current session intent emitted by Music. Example:
-  `music-session-packet.schema.json`.
+  `docs/schema/music-session-packet.schema.json` and
+  `docs/examples/music-session-packet.example.json`.
 - `sidecar`: review-only interpretation from another repo or optimizer. It can
   suggest groove, mood, or promotion intent, but it must not overwrite runtime.
+  Example: `docs/examples/repo-harvest-sidecars/chill.sidecar.json`.
 - `trace`: local or reviewed session observations. It may include timestamps,
   state summaries, fingerprints, and human notes, but never audio or raw
-  private gesture streams.
+  private gesture streams. Example:
+  `docs/examples/music-session-trace.example.json`.
 
 Direct code copy is a last resort. The preferred path is translation through a
 packet or sidecar, followed by a small repo-specific PR.

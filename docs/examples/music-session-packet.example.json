@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "source_repo": "Music",
+  "created_at": "2026-05-10T06:30:00Z",
+  "session_id": "example-session-quiet-memory-001",
+  "mode": "reference_gradient",
+  "reference_gradient": {
+    "weights": {
+      "haze": 0.45,
+      "memory": 0.78,
+      "micro": 0.36,
+      "ghost": 0.52,
+      "chrome": 0.18,
+      "organic": 0.67
+    }
+  },
+  "ucm_state": {
+    "energy": 28,
+    "wave": 64,
+    "mind": 44,
+    "creation": 58,
+    "void": 34,
+    "circle": 72,
+    "body": 30,
+    "resource": 22,
+    "observer": 76
+  },
+  "output_state": {
+    "output_level": 54,
+    "recorder_duration": 0,
+    "review_boost": 1
+  },
+  "performance_state": {
+    "active_pad": null,
+    "recent_pads": [],
+    "manual_influence_active": false,
+    "automix_enabled": true,
+    "mic_follow": {
+      "enabled": false,
+      "status": "off",
+      "metadata_only": true,
+      "stores_audio": false
+    },
+    "radio_brain": {
+      "program": "quietPiano",
+      "next_program": "fieldStudy",
+      "blend": 0.24,
+      "reason": "Low energy, high observer, and high memory suggest quiet review.",
+      "metadata_only": true
+    }
+  },
+  "music_intent": {
+    "timbre": ["soft pluck memory", "low brightness", "no sample import"],
+    "rhythm": ["low-density pulse", "manual start only"],
+    "space": ["small room", "soft tail", "no harsh top-end"],
+    "structure": ["long-form drift", "decrescendo-friendly"],
+    "gesture": ["listen first", "human-gated routing"],
+    "safety": ["metadata-only", "no recording", "no auto-arm"]
+  },
+  "routing": {
+    "drum_floor": {
+      "enabled": true,
+      "groove_intent": ["soft pocket support", "manual preview only"],
+      "density": 0.22,
+      "pressure": 0.18,
+      "section": "review-soft-pocket"
+    },
+    "namima": {
+      "enabled": true,
+      "mood_intent": ["water_day", "family_safe", "soft air"],
+      "family_safe": true,
+      "water_motion": 0.38,
+      "brightness": 0.42
+    },
+    "chill": {
+      "enabled": true,
+      "trio_intent": {
+        "reference_id": "quiet-piano-memory",
+        "touch": 0.36,
+        "phrase": 0.42,
+        "room": 0.68,
+        "flow_on": true,
+        "bass_on": false,
+        "drums_suggested": false,
+        "pressure_target": "low",
+        "review_only": true
+      },
+      "piano_memory": 0.82,
+      "bass_activity": 0.12,
+      "drum_support": 0.1,
+      "section": "quiet-review"
+    },
+    "openclaw": {
+      "enabled": true,
+      "promotion_status": "review",
+      "human_review_required": true,
+      "next_action": {
+        "destination": "chill",
+        "label": "listen in quiet piano trio",
+        "reason": "High memory and observer fit a quiet review surface.",
+        "action": "manual-preview",
+        "confidence": 0.72,
+        "manual_start_required": true,
+        "metadata_only": true
+      },
+      "self_review": {
+        "densityRisk": 0.18,
+        "lowEndRisk": 0.16,
+        "brightnessRisk": 0.22,
+        "restraintScore": 0.81,
+        "referenceFit": 0.74,
+        "nextSuggestion": "Keep this as a review packet; do not promote runtime changes yet."
+      }
+    }
+  },
+  "safety": {
+    "stores_audio": false,
+    "stores_samples": false,
+    "stores_lyrics": false,
+    "metadata_only": true,
+    "human_review_required": true
+  }
+}

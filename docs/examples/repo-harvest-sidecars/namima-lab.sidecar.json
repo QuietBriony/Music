@@ -59,12 +59,12 @@
         "Track as staging source for namima interaction PRs"
       ]
     },
-    "recommended_next_pr": "namima: add ripple interaction design from namima-lab"
+    "recommended_next_pr": "docs: keep namima-lab safe ripple lineage boundary before runtime work"
   },
   "routing": {
     "music": {
       "enabled": true,
-      "intent": "gesture-to-note and organic texture inspiration"
+      "intent": "abstract gesture-to-texture and organic pluck inspiration only"
     },
     "drum_floor": {
       "enabled": false,
@@ -72,7 +72,7 @@
     },
     "namima": {
       "enabled": true,
-      "intent": "primary public ripple interaction model"
+      "intent": "primary public ripple interaction owner"
     },
     "chill": {
       "enabled": false,
@@ -94,7 +94,7 @@
   },
   "promotion": {
     "status": "review-only",
-    "reviewer_notes": "Best used as interaction and texture design reference for namima first.",
+    "reviewer_notes": "Keep namima-lab as lineage / harvest-only; route safe ripple ownership primarily to namima.",
     "rollback_plan": "Drop this sidecar or revert the future namima interaction PR that consumes it."
   }
 }

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "trace_type": "reviewed-session-observation",
+  "created_at": "2026-05-10T06:35:00Z",
+  "source_repo": "Music",
+  "source_session_id": "example-session-quiet-memory-001",
+  "metadata_only": true,
+  "stores_audio": false,
+  "stores_samples": false,
+  "stores_lyrics": false,
+  "stores_raw_microphone": false,
+  "human_review_required": true,
+  "observed_surfaces": [
+    "Music",
+    "chill"
+  ],
+  "state_summary": {
+    "music_mode": "reference_gradient",
+    "music_program": "quietPiano",
+    "routing_destination": "chill",
+    "manual_start_required": true,
+    "promotion_status": "review-only"
+  },
+  "review_notes": [
+    "Packet suggests quiet piano trio preview, but no target repo should start audio automatically.",
+    "The observed intent is useful for pacing and memory, not a runtime promotion by itself.",
+    "No audio, samples, lyrics, raw microphone input, or recordings are stored in this trace."
+  ],
+  "candidate_next_action": {
+    "target_repo": "Music",
+    "action": "docs-only review",
+    "label": "use chill quiet piano decision memo before any Music mode review",
+    "requires_human_gate": true
+  },
+  "do_not_do": [
+    "do not copy chill runtime code",
+    "do not add samples",
+    "do not auto-start chill",
+    "do not arm drum-floor",
+    "do not promote without listening review"
+  ]
+}
