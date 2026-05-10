@@ -2,52 +2,55 @@
 
 ## 1. Purpose
 
-This workflow defines how the Music Stack can harvest ideas from external
-GitHub repos and internal archive/reference repos without importing unsafe
-assets or flattening each repo into one runtime.
+This workflow defines how the Music Stack harvests ideas from internal
+archive/staging repos and external references without importing unsafe assets or
+flattening every repo into one runtime.
 
 The source repo is a harvest source, not a replacement target. The preferred
 flow is:
 
 1. Discover and inspect.
-2. Record a review-only sidecar.
+2. Record a review-only sidecar or harvest note.
 3. Translate the useful idea into production intent.
 4. Route it to the correct repo.
 5. Promote it only through human-gated, small PRs.
 
-This complements `docs/music-orchestra-protocol.md` and
-`docs/archive-repo-harvest-audit.md`. The protocol defines the metadata-only
-orchestra boundary. The audit records known internal archive ideas. This
-workflow is the repeatable review path for both internal and external sources.
+This complements:
 
-## 2. Active And Harvest Repo Roles
+- `docs/music-orchestra-protocol.md`
+- `docs/music-stack-sync-manual.md`
+- `docs/archive-repo-harvest-audit.md`
+- `docs/integration-catalog.md`
 
-- `Music`: active conductor. It owns reference-driven production intent,
-  self-running mix behavior, gesture direction, session packet shape, and final
-  experimental IDM/ambient runtime decisions.
-- `drum-floor`: active groove specialist. It owns groove grammar, drum phrase
-  flow, articulation, raw drum candidate export, and browser drum adapters.
-- `namima`: active public ambient surface. It owns family-safe mood, water,
-  garden, ripple, daytime, and public-friendly ambient translation.
-- `chill`: internal harvest repo and possible light surface. It is useful for
-  Energy / Creation / Nature macro controls, ACID as performative color,
-  piano-like calm layers as reference, compact public UI, and Cyber-Zen mood.
-  Do not copy external piano sample URLs, sample implementations, or audio
-  assets from it.
-- `namima-lab`: staging/archive harvest repo. It is useful for touch ripple to
-  audio energy, x-position note selection, particle-field modulation,
-  PluckSynth-like organic texture, patch selection, and iOS-safe start flows.
-- `test`: internal harvest repo. It is useful for Style Blend, archetype
-  interpolation, pattern probability blending, and style/BPM/swing transition
-  ideas.
-- `hazama`: visual and conceptual reference only. It can inform void,
-  boundary, cyber, Zen, and industrial atmosphere, but it is not a runtime
-  import source.
-- `OpenClaw` / Umbrel-like surfaces: orchestra mission board, review queue,
-  promotion plane, optimizer, and human-gated control plane. They coordinate
-  sidecars and PRs; they do not become the audio engine.
+## 2. Current repo roles
 
-## 3. External Search Categories
+- `Music`: active conductor and central integration target. It owns
+  reference-driven production intent, UCM faders, Hazama FM, Music Core Rig,
+  session packets, and final experimental runtime decisions.
+- `drum-floor`: active rhythm / groove / VCV / stage-safety reference. It owns
+  groove grammar, pocket frames, human-gated promotion, browser drum preview,
+  raw candidate boundaries, and Music SYNC receiver behavior.
+- `namima`: active public-friendly ambient player. It owns safe mood
+  translation, water/garden/daytime ambient behavior, user-gesture start, and
+  metadata-only Music SYNC translation.
+- `chill`: quiet piano / trio / long-form listening light surface and harvest
+  source. It is useful for synthetic felt-like piano, long rests, Flow Director,
+  Touch / Phrase / Room controls, quiet recovery, deterministic preview, and
+  local listening score habits.
+- `namima-lab`: lineage / staging / harvest-only source. It is useful for
+  safe ripple lineage, gentle touch ideas, organic pluck texture, iOS-safe start
+  posture, and lightweight reference notes.
+- `test`: archive candidate / harvest-only source. It is useful for style
+  blend, archetype interpolation, probability interpolation, and transition
+  vocabulary.
+- `hazama`: world / game / story / visual reference-only. It may inform
+  atmosphere, navigation, liminal world feel, and non-music operations language,
+  but it is not a runtime import source.
+- `OpenClaw` / Umbrel-like surfaces: mission board, review queue, promotion
+  plane, optimizer, and human-gated control plane. They coordinate sidecars and
+  PRs; they do not become the audio engine.
+
+## 3. External search categories
 
 External repo searches should be classified before any implementation is
 considered:
@@ -65,7 +68,7 @@ considered:
 Classification does not imply adoption. It only helps choose the correct
 translation target and risk level.
 
-## 4. Candidate Evaluation Checklist
+## 4. Candidate evaluation checklist
 
 For each candidate, record:
 
@@ -81,71 +84,81 @@ For each candidate, record:
 - direct code-copy risk?
 - intended target repo: `Music`, `drum-floor`, `namima`, `chill`, `hazama`,
   `OpenClaw`, or `Umbrel`
-- should the source remain harvest-only, become active, or become docs-only?
+- should the source remain active, staging, harvest-only, reference-only, or
+  archive candidate?
 
-If any answer suggests audio, samples, lyrics, model weights, copied motifs, or
-heavy dependencies, the default outcome is review-only until explicitly
-approved.
+If any answer suggests audio, samples, lyrics, model weights, copied motifs,
+heavy dependencies, or live automation, the default outcome is review-only until
+explicitly approved.
 
-## 5. Forbidden Imports
+## 5. Forbidden imports
 
 Do not import:
 
 - audio files
 - samples or sample URLs
 - lyrics
-- copyrighted melodic, harmonic, or arrangement motifs
+- copied melodies, motifs, arrangements, or recordings
 - model weights
-- blind code copies
+- blind runtime code copies
 - external dependencies without explicit approval
 - GitHub Actions or workflow automation
 - Apple Music audio, previews, or stored preview URLs
 - direct runtime code from `chill`, `test`, or `namima-lab` into `Music`
+- automatic playback, recording, MIDI send, DAW arming, device control, upload,
+  or merge behavior
 
 The allowed material is design pattern, production intent, interaction model,
-schema shape, review note, and repo-specific implementation idea.
+schema shape, review note, routing vocabulary, and repo-specific implementation
+idea.
 
-## 6. Harvest Sidecar Workflow
+## 6. Harvest sidecar workflow
 
-Use a sidecar whenever a repo looks useful:
+Use a sidecar or harvest note whenever a repo looks useful:
 
 1. `discover`: identify the repo or internal candidate.
 2. `inspect`: read only enough to understand license, assets, dependencies,
    runtime surface, and extractable ideas.
 3. `summarize`: record what it does without copying code.
-4. `classify`: choose category, current role, target repos, and risk level.
+4. `classify`: choose current role, target repo, and risk level.
 5. `translate`: convert the idea into production language for the target repo.
 6. `human review`: decide whether it stays review-only, becomes docs, or gets a
-   small runtime PR.
+   small runtime candidate.
 7. `small PR`: implement only the translated idea, not the source repo.
 8. `record/listen`: for audio-facing changes, listen and record notes before
    promotion.
-9. `promote or reject`: update the sidecar status and keep a rollback plan.
+9. `promote or reject`: update the sidecar or note status and keep rollback
+   clear.
 
 Concrete internal examples live in
 `docs/examples/repo-harvest-sidecars/`. They are review-only metadata examples,
 not implementation approval.
 
-## 7. Internal Repo Harvest Examples
+## 7. Internal repo harvest examples
 
-- `chill` Energy / Creation / Nature:
-  - `Music`: simplified macro grouping for performance mode.
-  - `namima`: public-friendly simplified controls.
-- `chill` ACID toggle:
-  - `Music`: performative pressure color, not a direct acid clone.
-- `chill` piano-like calm layer:
-  - `Music` / `namima`: synth or pluck memory, with no samples.
+- `chill` quiet piano / trio:
+  - `Music`: possible future quiet piano / memory / soft-focus mode, after
+    separate creative review.
+  - `namima`: safe pacing, quiet recovery, and simple controls, without making
+    namima a piano/lofi player.
+- `chill` Flow Director:
+  - `Music`: long-form radio pacing, decrescendo, and recovery.
+  - `chill`: stays owner of quiet trio flow and listening score.
 - `test` Style Blend:
-  - `Music`: preset morph and genre timbre matrix.
-  - `drum-floor`: pattern probability blending.
-- `namima-lab` ripple:
-  - `namima`: primary interaction model.
-  - `Music`: gesture-to-note and organic texture inspiration.
+  - `Music`: preset morph, reference-gradient translation, and genre timbre
+    matrix.
+  - `drum-floor`: probability interpolation as future groove grammar planning,
+    through docs/schema/review first.
+- `namima-lab` safe ripple lineage:
+  - `namima`: primary target for water / gentle touch / public-friendly ripple
+    interaction.
+  - `Music`: possible organic pluck or gesture-to-note texture idea only after
+    human review.
 - `hazama`:
-  - `Music`: industrial/void UI influence.
-  - `OpenClaw`: mission-board atmosphere and liminal review surface.
+  - `Music`: atmosphere, navigation, void/liminal UI language as reference.
+  - `OpenClaw`: mission-board atmosphere and review surface language.
 
-## 8. External Repo Translation Examples
+## 8. External repo translation examples
 
 - Tone.js scheduling idea -> `Music` timing helper or review doc.
 - Live coding pattern language -> `drum-floor` pattern grammar.
@@ -154,9 +167,9 @@ not implementation approval.
 - Visual synth UI -> `hazama` or `Music` UI inspiration only.
 
 The translated idea must not carry source melodies, samples, arrangements,
-lyrics, recordings, or private data.
+lyrics, recordings, model weights, or private data.
 
-## 9. OpenClaw Orchestra Mapping
+## 9. OpenClaw orchestra mapping
 
 Repo harvest maps naturally to the OpenClaw/Umbrel-style control plane:
 
@@ -170,7 +183,7 @@ OpenClaw may track what should happen next, but it must not auto-promote to
 runtime, auto-arm live systems, start recording, upload audio, rewrite OUTPUT,
 or merge without human approval.
 
-## 10. Repo Promotion States
+## 10. Repo promotion states
 
 - `active`: production repo with live runtime or active contract.
 - `staging`: experimental repo still being tested.
@@ -185,19 +198,24 @@ Current defaults:
 - `Music`: `active`
 - `drum-floor`: `active`
 - `namima`: `active`
-- `chill`: `harvest-only` / possible light surface
+- `chill`: `harvest-only` / possible quiet piano light surface
 - `namima-lab`: `staging` / `harvest-only`
 - `test`: `harvest-only` / `archive-candidate`
 - `hazama`: `reference-only`
 - `OpenClaw` / Umbrel-like surfaces: promotion plane / mission board
 
-## 11. Next Suggested PRs
+Changing a source from harvest-only or archive candidate to active runtime needs
+separate human approval.
 
-- `Music`: add a repo-harvest sidecar example for `chill`, `test`, and
-  `namima-lab`.
-- `Music`: add local `music-session-packet` exporter.
-- `drum-floor`: accept Music groove intent packet.
-- `namima`: accept Music mood intent packet.
-- `chill`: decide archive-only vs light-surface continuation.
-- `OpenClaw` / Umbrel-like runtime: add Music Stack Orchestra mission board
-  docs.
+## 11. Next suggested docs tasks
+
+- `Music`: refine packet / sidecar / trace examples without changing runtime.
+- `Music`: use `docs/chill-quiet-piano-trio-decision.md` as the current quiet
+  piano / trio boundary before any named Music mode review.
+- `Music`: use `docs/test-style-blend-preset-morph-decision.md` as the current
+  Style Blend boundary before any runtime preset morph work.
+- `Music`: use `docs/namima-lab-safe-ripple-lineage-decision.md` as the current
+  safe ripple lineage boundary before any namima-lab revival or Music
+  gesture-to-texture work.
+- `drum-floor`: keep probability and groove ideas in docs/schema/review before
+  generator work.

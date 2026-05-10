@@ -2,156 +2,210 @@
 
 ## 1. Purpose
 
-`chill` / `test` / `namima-lab` は archive / staging候補として整理済みだが、  
-実際に拾える設計は harvest して Music stack の将来実装に転記する。  
+`chill` / `test` / `namima-lab` are not primary Music runtimes.
 
-- 音源や sample は移植しない。  
-- 保存対象は design pattern / production idea / interaction model。  
-- runtime code は無検証のままコピーしない。
+They remain useful as harvest sources when their ideas are translated into the
+right target repo without copying runtime code, audio, samples, motifs, or
+dependencies.
 
-## 2. chill harvest
+This audit is a review shelf. It does not authorize implementation, archive
+actions, repo revival, dependency additions, or cross-repo merges.
 
-### 観測
+## 2. Harvest rules
 
-- Chill v2.3 / Cyber-Zen Pro  
-- Tone.js  
-- START / STOP / ACID / AUTO  
-- Energy / Creation / Nature faders  
-- piano sampler / pad / acid bass / kick / hat  
-- Cyber-Zen canvas rings  
+Allowed to harvest:
 
-### 拾うもの
+- design pattern
+- production intent
+- interaction model
+- safety / recovery habit
+- schema or packet shape
+- review checklist
+- human-gated promotion pattern
 
-- 3 macro fader model: Energy / Creation / Nature  
-- Acid toggle as performative state  
-- piano-like melodic layer as design reference  
-- Cyber-Zen visual mood  
-- simple public UI compactness  
+Do not harvest by default:
 
-### 拾わないもの
+- audio files
+- samples or sample URLs
+- lyrics
+- copied melodies, motifs, arrangements, or recordings
+- direct runtime code
+- dependency additions
+- GitHub Actions
+- archive/delete/settings actions
 
-- external piano sample URLs  
-- audio files  
-- sample-based implementation  
-- direct code copy into Music engine  
+## 3. chill harvest
 
-### Music への翻訳
+### Current observation
 
-- Nature macro could inform Wave / Circle / Observer interaction  
-- Acid toggle could inform future PUNCH / REPEAT mode  
-- Piano-like layer should be recreated with synth/pluck, not samples  
+- `chill` is no longer a primary runtime.
+- It now has a browser-only regrowth candidate for listening-first quiet piano
+  radio and quiet piano trio.
+- The current identity is synthetic felt-like piano, long rests, warm jazz
+  voicing, optional loose hip-hop pulse, and small mutation.
+- The main controls are `Touch`, `Phrase`, and `Room`.
+- `AUTO` is a deterministic Flow Director for settle / breathe / lift /
+  decrescendo / recover.
+- `PULSE`, `BASS`, and `DRUMS` are optional support layers, not the main
+  identity.
+- `chill/session.html` can receive Music SYNC metadata, but it does not start
+  audio until human `START`.
+- `window.chillTrioSession.snapshot()` and diagnostics are read-only review
+  surfaces.
 
-### namima への翻訳
+### Harvest
 
-- calm melodic ambient / simple controls / public-friendly UI  
+- quiet piano / trio listening shape
+- long-form background listening posture
+- deterministic preview mindset
+- quiet recovery rules
+- Touch / Phrase / Room as simplified expressive macro controls
+- Flow Director as low-drama phrase pressure control
+- local listening score habit
+- optional drum-floor soft pocket as a manually-started trio support
 
-## 3. test harvest
+### Do not harvest
 
-### 観測
+- sample-based piano
+- copied artist phrases, songs, grooves, or motifs
+- PULSE as the main identity
+- BASS as a lead instrument
+- automatic drum-floor arming or Tone transport takeover
+- direct chill runtime code into Music
 
-- UCM Mandala Engine – Style Blend  
-- Style fader: Ambient ⇄ Lo-Fi ⇄ Goa ⇄ HardTechno  
-- Energy / Creation / Void faders  
-- style archetype blending  
-- 16step probability pattern interpolation  
-- BPM / swing / distortion blending  
-- sample fallback pattern references  
+### Music translation
 
-### 拾うもの
+- `Music` may use chill as a reference for a future quiet piano / memory /
+  soft-focus mode.
+- If adopted, the piano idea should be recreated as production parameters or
+  synth/pluck behavior, not copied audio or sampled phrases.
+- Flow Director can inform long-form radio pacing, decrescendo, and recovery.
 
-- continuous style blend fader  
-- archetype interpolation  
-- pattern probability blending  
-- style label + BPM label  
-- Ambient → Lo-Fi → Goa → HardTechno as transition model  
+### namima translation
 
-### 拾わないもの
+- `namima` may borrow listening-safe pacing, quiet recovery, and simple controls.
+- Keep chill's piano/lofi/trio identity in chill unless a separate human review
+  chooses a named Music or namima mode.
 
-- sample references  
-- hard techno defaults as Music baseline  
-- direct runtime copy without review  
+## 4. test harvest
 
-### Music への翻訳
+### Current observation
 
-- future preset morph / reference morph system  
-- style blend could map reference profiles into engine targets  
-- candidate for preset translation schema implementation  
+- `test` is no longer an active music runtime.
+- It is an archive candidate unless a clear active purpose is intentionally
+  defined later.
+- It should not receive audio files, samples, dependencies, GitHub Actions, or
+  primary runtime work.
 
-### drum-floor への翻訳
+### Harvest
 
-- pattern probability blending can inform groove profile generator  
+- style blend idea
+- archetype interpolation
+- probability / pattern interpolation idea
+- style label and BPM label thinking
+- transition vocabulary across ambient / lofi / harder energy states
 
-## 4. namima-lab harvest
+### Do not harvest
 
-### 観測
+- sample references
+- hard techno defaults as Music baseline
+- direct runtime copy
+- new assets or dependencies
 
-- patch selector: A-min stable / v2 / v3 / v4  
-- p5.js particle field  
-- tap-to-start iOS safe overlay  
-- touch ripple -> particle source  
-- particle energy -> audio modulation  
-- PolySynth pad + PluckSynth  
-- noteFromX mapping  
-- filter/reverb/master/limiter  
+### Music translation
 
-### 拾うもの
+- style blend can inform preset morph or reference-gradient translation.
+- test remains archive candidate after useful ideas are captured.
 
-- patch selector / lab variants  
-- touch ripple -> audio energy  
-- x-position -> note selection  
-- PluckSynth organic texture  
-- particle field as modulation source  
-- iOS safe start overlay  
-- ambient interaction model  
+### drum-floor translation
 
-### 拾わないもの
+- probability interpolation can inform future groove grammar planning, only
+  through docs/schema/review first.
 
-- direct p5 dependency in Music  
-- uncontrolled visual runtime  
-- runtime code copy without review  
+## 5. namima-lab harvest
 
-### Music への翻訳
+### Current observation
 
-- organic pluck / acoustic illusion layer  
-- gesture-to-note mapping for future performance pad mode  
-- visual energy as non-audio control source  
+- `namima-lab` is no longer the primary active music runtime.
+- It is a possible staging/lab area for `namima`, or an archive candidate after
+  useful ideas are harvested.
+- Its README says not to use it for main Music runtime development, dark IDM /
+  glitch experiments, band groove generation, audio/sample storage,
+  dependency-heavy experiments, or GitHub Actions.
 
-### namima への翻訳
+### Harvest
 
-- primary candidate for public ambient interaction  
-- water/ripple UI metaphor  
-- gentle tap-to-sound interface  
+- safe ambient interaction lineage
+- touch / ripple / gentle gesture ideas
+- organic pluck / acoustic illusion as a texture idea
+- iOS-safe start posture
+- lightweight reference notes for namima-safe ambient experiments
 
-## 5. Priority
+### Do not harvest
 
-### High
+- direct p5 dependency
+- uncontrolled visual runtime
+- direct Music runtime code
+- dark IDM / glitch behavior
+- audio files or samples
+- dependency-heavy experiments
+- GitHub Actions
 
-- namima-lab touch ripple -> namima future runtime  
-- test style blend -> Music preset morph  
-- chill macro faders -> Music/namima simplified controls  
+### Music translation
 
-### Medium
+- organic pluck and gesture-to-note ideas may inform future Music performance
+  pad or texture design only after human review.
+- `namima-lab` should not be merged into Music directly.
 
-- chill acid toggle -> Music punch / repeat inspiration  
-- namima-lab PluckSynth -> Music organic texture layer  
-- test pattern interpolation -> drum-floor generator  
+### namima translation
 
-### Low / do not copy
+- `namima` is the preferred target for safe ripple / water / gentle touch
+  interaction ideas.
+- Any import must be translated into namima's public-friendly ambient structure.
 
-- external samples  
-- CDN sample instruments  
-- hard techno sample references  
-- direct visual dependency migration  
+## 6. Priority
 
-## 6. Archive rule
+High:
 
-- `chill` / `test` can remain archive candidates after harvest docs.  
-- `namima-lab` should remain staging/reference until namima interaction direction is decided.  
-- archive means *not primary runtime*, not “no value”.
+- chill quiet piano / trio identity -> current decision memo plus future named
+  Music mode taste review
+- namima-lab safe ripple lineage -> current safe ripple lineage decision memo
+  plus future namima interaction review
+- test style blend -> current preset morph / reference-gradient decision memo
+  plus future visible-control taste review
 
-## 7. Next suggested PRs
+Medium:
 
-- Music: docs: add preset morph design from test style blend  
-- namima: docs: add ripple interaction design from namima-lab  
-- Music: feat later with 5.5 high: pad signature + organic pluck layer  
-- drum-floor: docs/runtime design using pattern probability blending  
+- chill Flow Director -> Music radio pacing / recovery review
+- chill listening score -> Music review workflow
+- test probability interpolation -> drum-floor docs/schema review
+- namima-lab organic pluck -> Music texture review
+
+Low / do not copy:
+
+- sample-based instruments
+- external sample URLs
+- direct visual dependency migration
+- hard techno defaults as baseline
+- copied runtime code
+
+## 7. Archive / staging rule
+
+- `chill` can remain harvest-only / possible light surface.
+- `test` can remain archive candidate after useful ideas are captured.
+- `namima-lab` can remain staging / harvest-only for namima-safe lineage.
+- Archive means not primary runtime, not no value.
+- Changing a repo from harvest-only or archive candidate to active runtime needs
+  separate human approval.
+
+## 8. Next suggested docs tasks
+
+- Music: use `docs/chill-quiet-piano-trio-decision.md` as the current quiet
+  piano / trio boundary before any named Music mode review.
+- Music: use `docs/test-style-blend-preset-morph-decision.md` as the current
+  Style Blend boundary before any runtime preset morph work.
+- Music: use `docs/namima-lab-safe-ripple-lineage-decision.md` as the current
+  safe ripple lineage boundary before any namima-lab revival or Music
+  gesture-to-texture work.
+- drum-floor: keep probability and groove ideas in docs/schema/review before
+  generator work.

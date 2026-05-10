@@ -46,8 +46,8 @@
     ],
     "production_translation": {
       "music": [
-        "Translate Style Blend into preset morph and genre timbre matrix",
-        "Use archetype interpolation only as production-axis blending"
+        "Translate Style Blend into preset morph and reference-gradient planning",
+        "Use archetype interpolation only as metadata-level production-axis blending"
       ],
       "drum_floor": [
         "Translate probability interpolation into groove profile blending",
@@ -57,7 +57,7 @@
         "Track as harvest-complete source unless a future preset-morph PR needs it"
       ]
     },
-    "recommended_next_pr": "feat later: add Music preset morph exporter using production-axis metadata"
+    "recommended_next_pr": "docs: keep Style Blend as metadata-only preset morph boundary before runtime work"
   },
   "routing": {
     "music": {

@@ -8,7 +8,7 @@
 
 ## Reference Morph
 
-`ReferenceMorphState` は `test` の一本フェーダー的な style blend 思想を直コピーせず、Music 内部の色へ翻訳します。
+`ReferenceMorphState` は `test` の一本フェーダー的な style blend 思想を直コピーせず、Music 内部の色へ翻訳します。現在の境界は `docs/test-style-blend-preset-morph-decision.md` に従います。
 
 - `haze`: 霞んだ空間、field-murk、air floor。
 - `broken`: 局所的な崩し、texture scar、短い edit。

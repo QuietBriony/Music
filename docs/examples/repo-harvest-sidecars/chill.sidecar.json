@@ -8,7 +8,7 @@
     "visibility": "public",
     "internal_or_external": "internal",
     "license": null,
-    "inspected_at": "2026-05-05T00:00:00Z"
+    "inspected_at": "2026-05-10T00:00:00Z"
   },
   "classification": {
     "category": "ambient-surface",
@@ -23,7 +23,7 @@
   },
   "evaluation": {
     "has_audio_files": false,
-    "has_samples": true,
+    "has_samples": false,
     "has_model_weights": false,
     "has_external_dependencies": true,
     "has_github_actions": false,
@@ -34,53 +34,57 @@
   },
   "harvest": {
     "useful_ideas": [
-      "Energy / Creation / Nature as simple macro controls",
-      "ACID toggle as a performative color switch",
-      "Piano-like calm layer as memory and softness reference",
-      "Compact public browser UI",
-      "Cyber-Zen mood as a light surface direction"
+      "Quiet piano / trio listening surface",
+      "Synthetic felt-like piano with long rests",
+      "Touch / Phrase / Room as simple expressive controls",
+      "Flow Director for settle, breathe, lift, decrescendo, and recover",
+      "Quiet recovery rules and deterministic preview checks",
+      "Local listening score habit",
+      "Optional drum-floor soft pocket as manually-started trio support"
     ],
     "do_not_copy": [
-      "External piano sample URLs",
-      "Sample-based instrument implementation",
-      "Direct audio assets",
+      "Sample-based piano",
+      "Copied artist phrases, songs, grooves, or motifs",
+      "PULSE as the main identity",
+      "BASS as a lead instrument",
+      "Automatic drum-floor arming or Tone transport takeover",
       "Direct runtime code into Music engine"
     ],
     "production_translation": {
       "music": [
-        "Translate macro controls into performance-mode groupings",
-        "Treat ACID as pressure color rather than genre clone",
-        "Recreate piano-like memory with synth or pluck sources only"
+        "Use quiet piano / memory / soft-focus as a possible future named mode after creative review",
+        "Translate Flow Director into long-form radio pacing and decrescendo behavior",
+        "Recreate piano memory as production parameters or synth/pluck behavior, not samples"
       ],
       "namima": [
-        "Use simplified public controls for family-safe ambient",
-        "Translate calm piano softness into water/garden mood"
+        "Borrow listening-safe pacing, quiet recovery, and simple controls only",
+        "Keep chill piano/lofi/trio identity out of namima's default ambient lane"
       ],
       "chill": [
-        "Keep as possible light surface and live trio host"
+        "Keep as quiet piano / trio light surface and harvest source"
       ],
       "openclaw": [
-        "Track chill as observe-first surface rather than auto-controlled runtime"
+        "Track as observe-first surface and human-gated continuation decision"
       ]
     },
-    "recommended_next_pr": "docs: define chill light-surface continuation decision"
+    "recommended_next_pr": "docs: keep quiet piano / trio boundary current and request human taste review before any named Music mode"
   },
   "routing": {
     "music": {
       "enabled": true,
-      "intent": "macro-control and soft-memory production translation"
+      "intent": "quiet piano / memory / soft-focus production translation"
     },
     "drum_floor": {
       "enabled": false,
-      "intent": "no direct drum routing"
+      "intent": "no direct drum routing; optional soft pocket stays manually-started in chill"
     },
     "namima": {
       "enabled": true,
-      "intent": "public-friendly simplified controls and calm mood"
+      "intent": "safe pacing and quiet recovery only"
     },
     "chill": {
       "enabled": true,
-      "intent": "possible light surface continuation"
+      "intent": "quiet piano / trio light surface continuation"
     },
     "openclaw": {
       "enabled": true,
@@ -98,7 +102,7 @@
   },
   "promotion": {
     "status": "review-only",
-    "reviewer_notes": "Keep useful surface ideas, but do not import external samples or sample URLs.",
+    "reviewer_notes": "Keep chill's quiet piano / trio identity separate unless a future human-reviewed Music mode decision approves adoption.",
     "rollback_plan": "Drop this sidecar or revert the future docs/runtime PR that consumes it."
   }
 }
