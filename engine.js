@@ -5077,6 +5077,15 @@ function hazamaFmFlavorPacketState() {
   if (!state || typeof state !== "object") return null;
   const scheduled = Number(state.scheduled);
   const engineMix = hazamaFmEngineMix();
+  let listeningTrace = null;
+  try {
+    const traceApi = window.HazamaFmListeningTrace;
+    if (traceApi && typeof traceApi.snapshot === "function") {
+      listeningTrace = traceApi.snapshot();
+    }
+  } catch (error) {
+    listeningTrace = null;
+  }
   return {
     available: true,
     active: !!state.started,
@@ -5097,6 +5106,7 @@ function hazamaFmFlavorPacketState() {
           delay_wet: engineMix.delayWet
         }
       : null,
+    listening_trace: listeningTrace,
     integration_mode: "metadata-only",
     review_only: true
   };

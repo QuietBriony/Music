@@ -201,7 +201,11 @@ window.MusicAcidCue.getState()
 
 // 現在の flavor 経路 (default vs preset)
 window.GenreFlavor.state
-// → { started: true, genre: "piano", scheduled: 3, source: "chill-recipe:piano-jazz-chill+foreground-piano", role: "chill quiet piano memory", ... }
+// → { started: true, genre: "piano", scheduled: 4, source: "chill-recipe:piano-jazz-chill+foreground-piano", role: "chill quiet piano memory", ... }
+
+// FM 聴感レビュー用の metadata-only trace。
+// genre dwell / switch 履歴だけで、音声・raw trace・自動PRは入らない。
+window.HazamaFmListeningTrace.snapshot()
 
 // SYNC packet 側にも metadata-only で入る。音声・sample・自動PRは入らない。
 window.MusicSessionPacket.build().performance_state.hazama_fm

@@ -119,6 +119,8 @@ Techno expected:
   not foreground shaka-shaka.
 - In high BPM sections, short 32nd/64th-feeling acid/click/texture ratchets
   create brain-dance motion without becoming a constant hat loop.
+- After `SYNC`, `performance_state.hazama_fm.listening_trace` includes the
+  techno dwell and any genre switches made during the listening pass.
 
 Piano setup:
 
@@ -137,6 +139,8 @@ Piano expected:
   identity, not only as hidden metadata.
 - The Music engine pad/glass/electronic-harp tail is suppressed enough that the
   flavor piano is the foreground object.
+- After `SYNC`, `performance_state.hazama_fm.listening_trace.current_genre`
+  is `piano` and `dwell_ms_by_genre.piano` is greater than `0`.
 
 Other genre source sanity:
 
