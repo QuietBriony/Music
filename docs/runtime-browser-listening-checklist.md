@@ -58,6 +58,58 @@ Fail signs:
 - Low-end blooms continuously or clips.
 - The mix becomes bright EDM rather than dark acid/IDM pressure.
 
+## Reference Breadth / RDJ Edge Check
+
+Use this when reviewing whether Music is carrying the reference-driven spread,
+including the Xtal/Tha center and the Richard D. James-adjacent wrongness, as
+Music-specific behavior rather than quotation.
+
+Setup:
+
+1. Press `START`.
+2. Turn `AUTO MIX` on.
+3. Keep Console open.
+4. Run the three short states below for at least 60 seconds each.
+
+State passes:
+
+- `CULT=HAZE`, `IDEA=AUTO`: Xtal/Tha-like haze is the center. The bed feels
+  soft, long, and gently pulsing; drums remain thin and occasional.
+- `CULT=BROKEN`, `IDEA=WILD`: Autechre/RDJ-adjacent micro-events appear as
+  short local edits. They should bend the surface without turning into a busy
+  machine-gun loop.
+- `CULT=ACID`, `ACID.ON`: rubber/pulse behavior becomes clearer. The body can
+  move, but the floor should stay dark and controlled rather than becoming
+  bright EDM pressure.
+
+Console evidence:
+
+```js
+window.MusicRuntimeState.referenceMorph
+window.MusicRuntimeState.rdjGrowth
+window.MusicRuntimeState.signatureCells
+window.MusicRuntimeState.selfReview
+```
+
+Expected:
+
+- `referenceMorph` has visible `haze`, `broken`, `pulse`, `chrome`, and
+  `organic` values across the three states.
+- `rdjGrowth` exposes `toy`, `rubber`, `wrong`, `tender`, `edit`, and
+  `restraint` without making the runtime quote a reference track.
+- `signatureCells` brings back `memoryPluck`, `ghostGlass`, `brokenTexture`,
+  or `lowBreath` as small recurring colors.
+- `selfReview.referenceFit` is useful as a sanity signal, but it is not a
+  substitute for listening.
+
+Fail signs:
+
+- The reference spread only reads in docs or console and not in the sound.
+- Xtal/Tha turns into generic pad ambience with no fine particles or pulse.
+- RDJ-adjacent wrongness becomes novelty, harshness, or copied motif language.
+- Autechre-like edits erase the soft floor instead of adding local disruption.
+- ACID adds volume and brightness more than rubber motion or dark pulse.
+
 ## AUTO ARC Check
 
 Use `ARC.36` when reviewing album-length self-running behavior.
