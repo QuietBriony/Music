@@ -63,8 +63,8 @@ JSON parse error も全部 graceful 処理。
 | AMBIENT | low energy / high observer | `ambient_room` | `namima-shape-ambient` | `namima-preset:water_day` |
 | TECHNO | high body+energy / low void | `acid_core` | `drum-frames-techno` | `drum-frames+machine-acid` |
 | LOFI | mid energy / high mind+wave | `tape_memory` | `drum-frames-lofi` | `drum-frames+vinyl-crackle` |
-| JAZZ | high wave+mind+creation | `earth_reed` | `drum-frames-jazz` | `drum-frames+walking-bass` |
-| FUNK | high body+creation | `broken_machine` | `drum-frames-funk` | `drum-frames+ep` |
+| JAZZ | high wave+mind+creation | `earth_reed` | `drum-frames-jazz` | `drum-frames+walking-bass+brush` |
+| FUNK | high body+creation | `broken_machine` | `drum-frames-funk` | `drum-frames+ep+clavi` |
 | PIANO | high circle+observer | `earth_reed` | `chill-piano-recipe` | `chill-recipe:piano-jazz-chill+memory-layers` |
 
 非 ANY 選択時は engine の AUTOMIX (sine wave 変調) を OFF にして
@@ -190,7 +190,10 @@ window.MusicAcidCue.getState()
 
 // 現在の flavor 経路 (default vs preset)
 window.GenreFlavor.state
-// → { started: true, genre: "piano", scheduled: 3, source: "chill-recipe:piano-jazz-chill+memory-layers" }
+// → { started: true, genre: "piano", scheduled: 3, source: "chill-recipe:piano-jazz-chill+memory-layers", role: "chill quiet piano memory", ... }
+
+// SYNC packet 側にも metadata-only で入る。音声・sample・自動PRは入らない。
+window.MusicSessionPacket.build().performance_state.hazama_fm
 
 // preset がロード済か
 window.HazamaPresets.available("chill-piano-recipe")

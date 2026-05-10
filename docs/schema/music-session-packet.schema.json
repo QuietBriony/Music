@@ -185,6 +185,25 @@
             "reason": { "type": "string" },
             "metadata_only": { "const": true }
           }
+        },
+        "hazama_fm": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "available": { "type": "boolean" },
+            "active": { "type": "boolean" },
+            "genre": { "type": ["string", "null"] },
+            "source": { "type": ["string", "null"] },
+            "scheduled": {
+              "type": "number",
+              "minimum": 0
+            },
+            "role": { "type": ["string", "null"] },
+            "edge": { "type": ["string", "null"] },
+            "feedback_hint": { "type": ["string", "null"] },
+            "integration_mode": { "const": "metadata-only" },
+            "review_only": { "const": true }
+          }
         }
       }
     },

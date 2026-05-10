@@ -182,7 +182,10 @@ window.MusicRuntimeState.radioBrain.weights
 
 // flavor 層の動作確認
 window.GenreFlavor.state
-// → { started: true, genre: "piano", scheduled: 1, source: "chill-recipe:piano-jazz-chill" }
+// → { started: true, genre: "piano", scheduled: 3, source: "chill-recipe:piano-jazz-chill+memory-layers", role: "chill quiet piano memory", ... }
+
+// SYNC で他repoへ渡る metadata-only のFM文脈
+window.MusicSessionPacket.build().performance_state.hazama_fm
 
 // preset がちゃんとロードされたか
 window.HazamaPresets.available("chill-piano-recipe")
@@ -191,3 +194,5 @@ window.HazamaPresets.get("drum-frames-jazz")
 
 `source` 欄が `default` の時はハンドコード synth、`chill-recipe:*` /
 `drum-frames` / `namima-preset:*` の時は preset 駆動です。
+`role` / `edge` / `feedback` は、SYNC で Music stack 側へ渡すための
+metadata-only な聴感メモです。音源や録音を自動共有するものではありません。

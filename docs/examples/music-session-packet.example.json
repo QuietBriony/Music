@@ -47,6 +47,18 @@
       "blend": 0.24,
       "reason": "Low energy, high observer, and high memory suggest quiet review.",
       "metadata_only": true
+    },
+    "hazama_fm": {
+      "available": true,
+      "active": true,
+      "genre": "piano",
+      "source": "chill-recipe:piano-jazz-chill+memory-layers",
+      "scheduled": 3,
+      "role": "chill quiet piano memory",
+      "edge": "felt chord bed, memory reply, and soft melody with long space",
+      "feedback_hint": "send piano/trio and listening-space hints toward chill",
+      "integration_mode": "metadata-only",
+      "review_only": true
     }
   },
   "music_intent": {

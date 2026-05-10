@@ -5055,6 +5055,41 @@ function makeMusicSessionPacketFileName(sessionId) {
   return `${sessionId || makeMusicSessionId()}.json`;
 }
 
+function hazamaFmFlavorPacketState() {
+  if (typeof window === "undefined" || !window.GenreFlavor) return null;
+  let state = null;
+  try {
+    state = window.GenreFlavor.state;
+  } catch (error) {
+    return {
+      available: true,
+      active: false,
+      genre: null,
+      source: null,
+      scheduled: 0,
+      role: "state unavailable",
+      edge: "Hazama FM flavor layer could not be read",
+      feedback_hint: "retry after FM start",
+      integration_mode: "metadata-only",
+      review_only: true
+    };
+  }
+  if (!state || typeof state !== "object") return null;
+  const scheduled = Number(state.scheduled);
+  return {
+    available: true,
+    active: !!state.started,
+    genre: typeof state.genre === "string" ? state.genre : null,
+    source: typeof state.source === "string" ? state.source : null,
+    scheduled: Number.isFinite(scheduled) ? scheduled : 0,
+    role: typeof state.role === "string" ? state.role : null,
+    edge: typeof state.edge === "string" ? state.edge : null,
+    feedback_hint: typeof state.feedback === "string" ? state.feedback : null,
+    integration_mode: "metadata-only",
+    review_only: true
+  };
+}
+
 function buildMusicSessionPacket(options = {}) {
   const createdAt = options.createdAt instanceof Date ? options.createdAt : new Date();
   const parts = currentGradientParts();
@@ -5088,6 +5123,7 @@ function buildMusicSessionPacket(options = {}) {
         : "piano-jazz-chill";
   const selfReview = musicSelfReviewRuntimeState();
   const radioBrain = musicRadioBrainPacketState();
+  const hazamaFm = hazamaFmFlavorPacketState();
   const stackRouting = musicStackRoutingRecommendation({
     selfReview,
     parts,
@@ -5132,7 +5168,8 @@ function buildMusicSessionPacket(options = {}) {
       manual_influence_active: isManualPerformanceInfluenceActive(),
       automix_enabled: !!UCM.auto.enabled,
       mic_follow: micFollowPacketState(),
-      radio_brain: radioBrain
+      radio_brain: radioBrain,
+      hazama_fm: hazamaFm
     },
     music_intent: packetIntentArrays(activePads, gradient, kits, parts),
     routing: {

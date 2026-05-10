@@ -126,6 +126,25 @@ Piano expected:
   while the surface still leaves long quiet spaces.
 - The piano layer is audible as the pill identity, not only as hidden metadata.
 
+Other genre source sanity:
+
+- `ambient`: `window.GenreFlavor.state.source` starts with `namima-preset:` and
+  stays calm/water-safe, not dark club ambience.
+- `lofi`: source is `drum-frames+vinyl-crackle`; the crackle reads as tape
+  memory, not loud foreground noise.
+- `jazz`: source is `drum-frames+walking-bass+brush`; walking bass and brush
+  motion make it feel human enough for writing-room jazz.
+- `funk`: source is `drum-frames+ep+clavi`; clavi adds clipped body motion
+  without turning the loop into a busy solo.
+
+SYNC metadata sanity:
+
+- `window.MusicSessionPacket.build().performance_state.hazama_fm.genre`
+  matches the current FM pill.
+- `performance_state.hazama_fm.integration_mode` is `metadata-only`.
+- The packet gives other stack repos a role/edge/feedback hint, but does not
+  auto-start, record, import samples, open MIDI, or merge anything.
+
 Fail signs:
 
 - `techno` still reads as generic noise hats plus soft membrane kick.

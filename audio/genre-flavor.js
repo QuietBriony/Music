@@ -40,6 +40,44 @@
     ambient: "namima-shape-ambient"
   };
 
+  const FLAVOR_PROFILE_BY_GENRE = {
+    any: {
+      role: "Music radio brain only",
+      edge: "50-minute engine arc with no extra FM flavor layer",
+      feedback: "Core Rig faders and radio brain remain the source of truth"
+    },
+    ambient: {
+      role: "namima-safe ambient surface",
+      edge: "water/garden air, low pressure, public-friendly drift",
+      feedback: "send calm mood and air hints toward namima"
+    },
+    techno: {
+      role: "machine rhythm plus acid pulse",
+      edge: "harder four-on-floor body, metallic hats, short 303-adjacent motion",
+      feedback: "send groove density and acid-source hints toward drum-floor/Music review"
+    },
+    lofi: {
+      role: "dusty pocket memory",
+      edge: "lazy drum frames with vinyl crackle and softened top end",
+      feedback: "send tape-memory and restraint hints toward Music/chill review"
+    },
+    jazz: {
+      role: "walking-bass live writing room",
+      edge: "drum frames, brush motion, and upright-style walking glue",
+      feedback: "send human pocket and phrase-space hints toward chill/drum-floor review"
+    },
+    funk: {
+      role: "syncopated body pocket",
+      edge: "drum frames, EP color, and clipped clavi motion",
+      feedback: "send body-pocket and syncopation hints toward drum-floor review"
+    },
+    piano: {
+      role: "chill quiet piano memory",
+      edge: "felt chord bed, memory reply, and soft melody with long space",
+      feedback: "send piano/trio and listening-space hints toward chill"
+    }
+  };
+
   // Master bus for all flavor synths.
   let master = null;
   let started = false;
@@ -543,13 +581,21 @@
   }
 
   // When drum-frames-jazz preset is present, render the frame rhythm AND
-  // keep the walking bass for harmonic glue (brush is dropped to avoid
-  // clashing with frame hat events).
+  // keep the walking bass plus a low brush layer. The brush sits behind the
+  // frame hats so jazz reads as live pocket instead of just a drum preset.
   function buildJazzFromFrames(frames) {
     const drums = buildDrumsFromFrames(frames);
     if (!drums) return null;
 
     const room = new Tone.Reverb({ decay: 1.6, wet: 0.22 }).connect(drums.gain);
+    const brushHi = new Tone.Filter({ frequency: 5000, type: "lowpass" });
+    const brushLo = new Tone.Filter({ frequency: 1300, type: "highpass" });
+    brushHi.connect(brushLo).connect(room);
+    const brush = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.045, decay: 0.24, sustain: 0, release: 0.08 },
+      volume: -27
+    }).connect(brushHi);
     const bass = new Tone.MonoSynth({
       oscillator: { type: "triangle" },
       filter: { type: "lowpass", frequency: 720, Q: 0.9 },
@@ -564,8 +610,17 @@
       bass.triggerAttackRelease(walk[walkIdx % walk.length], "8n", time, 0.55);
       walkIdx++;
     }, "4n"));
-    drums.synths.push(bass, room);
-    drums.source = "drum-frames+walking-bass";
+    const brushPattern = [1, 0, 1, 0, 1, 0, 1, 1];
+    let brushIdx = 0;
+    drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      if (brushPattern[brushIdx % brushPattern.length]) {
+        const jitter = (Math.random() - 0.5) * 0.014;
+        brush.triggerAttackRelease("16n", time + jitter, 0.12 + Math.random() * 0.06);
+      }
+      brushIdx++;
+    }, "8n", "8n"));
+    drums.synths.push(brush, brushHi, brushLo, bass, room);
+    drums.source = "drum-frames+walking-bass+brush";
     return drums;
   }
 
@@ -624,12 +679,19 @@
   }
 
   // When drum frames are present, render the frame rhythm AND keep the EP
-  // chord layer for harmonic color (clavi is dropped to avoid clashing
-  // 16th-note timing with the live drum events).
+  // chord layer plus a quiet clavi. The clavi is sparse so it adds funk
+  // articulation without flattening the frame timing.
   function buildFunkFromFrames(frames) {
     const drums = buildDrumsFromFrames(frames);
     if (!drums) return null;
 
+    const claviFilter = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 1.5 }).connect(drums.gain);
+    const clavi = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "sawtooth" },
+      envelope: { attack: 0.001, decay: 0.07, sustain: 0, release: 0.035 },
+      volume: -21
+    }).connect(claviFilter);
+    clavi.maxPolyphony = 4;
     const epRoom = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).connect(drums.gain);
     const ep = new Tone.PolySynth(Tone.FMSynth, {
       harmonicity: 3, modulationIndex: 5,
@@ -642,13 +704,23 @@
     ep.maxPolyphony = 6;
 
     const dmin7 = ["D3", "F3", "A3", "C4"];
+    const claviPattern = [1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0];
+    let claviIdx = 3;
+    drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      if (claviPattern[claviIdx % claviPattern.length] && Math.random() > 0.2) {
+        const note = dmin7[(claviIdx + Math.floor(Math.random() * 2)) % dmin7.length];
+        const push = (Math.random() - 0.5) * 0.012;
+        clavi.triggerAttackRelease(note, "32n", time + push, 0.22 + Math.random() * 0.08);
+      }
+      claviIdx++;
+    }, "16n"));
     let epBar = 0;
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       if (epBar % 2 === 0) ep.triggerAttackRelease(dmin7, "1m", time, 0.32);
       epBar++;
     }, "1m"));
-    drums.synths.push(ep, epRoom);
-    drums.source = "drum-frames+ep";
+    drums.synths.push(clavi, claviFilter, ep, epRoom);
+    drums.source = "drum-frames+ep+clavi";
     return drums;
   }
 
@@ -934,11 +1006,16 @@
     setGenre,
     dispose,
     get state() {
+      const profile = FLAVOR_PROFILE_BY_GENRE[currentGenre] || null;
       return {
         started,
         genre: currentGenre,
         scheduled: activeLayer ? activeLayer.scheduledIds.length : 0,
-        source: activeLayer ? activeLayer.source : null
+        source: activeLayer ? activeLayer.source : null,
+        role: profile ? profile.role : null,
+        edge: profile ? profile.edge : null,
+        feedback: profile ? profile.feedback : null,
+        integrationMode: "fm-audio-plus-music-packet-metadata"
       };
     }
   };
