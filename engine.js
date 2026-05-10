@@ -563,7 +563,8 @@ const OddLogicDirectorState = {
 };
 const AcidLockState = {
   enabled: false,
-  intensity: 0
+  intensity: 0,
+  indicator: 0
 };
 const PerformanceColorDriftState = {
   lastCycle: -1,
@@ -2411,6 +2412,7 @@ function longformTempoBias() {
 
 function updateAcidLockIntensity(step = 0.02) {
   AcidLockState.intensity = approachValue(AcidLockState.intensity, AcidLockState.enabled ? 1 : 0, step);
+  AcidLockState.indicator = approachValue(AcidLockState.indicator || 0, AcidLockState.enabled ? 0.24 : 0, step * 1.5);
   return AcidLockState.intensity;
 }
 
@@ -4859,6 +4861,7 @@ function publishMusicRuntimeState() {
     acid: {
       enabled: AcidLockState.enabled,
       intensity: AcidLockState.intensity,
+      indicator: AcidLockState.indicator || 0,
       performance: acidPerformanceAmount(),
       arcDrive: albumArcAcidDrive(),
       color: { ...PerformanceColorDriftState }
@@ -6359,9 +6362,35 @@ function setKeepAwakeEnabled(enabled) {
   }
 }
 
+function triggerAcidLockIndicator(time = Tone.now()) {
+  if (!AcidLockState.enabled || !isPlaying || !glass) return;
+  const amount = clampValue(0.42 + (AcidLockState.intensity || 0) * 0.28 + (AcidLockState.indicator || 0) * 0.3, 0, 1);
+  const step = stepIndex || 0;
+  const tagTime = time + 0.018;
+  const root = tonalRhymeHigh(step, 4);
+  const reply = tonalRhymeHigh(step, 7);
+
+  try {
+    glass.triggerAttackRelease(root, "64n", tagTime, clampValue(0.05 + amount * 0.072, 0.04, 0.13));
+    glass.triggerAttackRelease(reply, "64n", tagTime + 0.072, clampValue(0.028 + amount * 0.052, 0.024, 0.096));
+    if (hat) {
+      hat.triggerAttackRelease("64n", tagTime + 0.012, clampValue(0.034 + amount * 0.05, 0.028, 0.092));
+    }
+    if (texture) {
+      texture.triggerAttackRelease("64n", tagTime + 0.024, clampValue(0.018 + amount * 0.042, 0.014, 0.074));
+    }
+    nudgeInnerSourceFamily("acidBiyon", 0.028 + amount * 0.026);
+    nudgeInnerSourceFamily("chain", 0.018 + amount * 0.016);
+    markMixEvent(0.06 + amount * 0.08);
+  } catch (error) {
+    console.warn("[Music] acid lock indicator failed:", error);
+  }
+}
+
 function setAcidLockEnabled(enabled) {
   AcidLockState.enabled = !!enabled;
-  AcidLockState.intensity = AcidLockState.enabled ? Math.max(AcidLockState.intensity, 0.58) : 0;
+  AcidLockState.intensity = AcidLockState.enabled ? Math.max(AcidLockState.intensity, 0.7) : 0;
+  AcidLockState.indicator = AcidLockState.enabled ? Math.max(AcidLockState.indicator || 0, 1) : 0;
   VoiceMorphState.transition = Math.max(VoiceMorphState.transition, AcidLockState.enabled ? 0.7 : 0.38);
   const button = document.getElementById("btn_acid_lock");
   if (button) {
@@ -6375,6 +6404,7 @@ function setAcidLockEnabled(enabled) {
   if (initialized) {
     updateTimbreStateFromWorld(currentGradientParts());
     applyUCMToParams({ force: true });
+    triggerAcidLockIndicator();
   }
   updateRuntimeUiState();
 }
@@ -8250,6 +8280,7 @@ function updateTimbreFamilyBlend(parts, gradient = GradientState, depth = DepthS
   const acidTarget = clampValue(
     acid * 0.66 +
       (AcidLockState.enabled ? 0.22 : 0) +
+      (AcidLockState.indicator || 0) * 0.16 +
       genre.techno * 0.13 +
       genre.pressure * 0.11 +
       gradient.micro * 0.09 +
@@ -9172,7 +9203,9 @@ function advanceGrooveStructure() {
       drift: PerformancePadState.drift || 0,
       repeat: PerformancePadState.repeat || 0,
       ambient: GenreBlendState.ambient || 0,
-      idm: GenreBlendState.idm || 0
+      idm: GenreBlendState.idm || 0,
+      acid: acidPerformanceAmount(),
+      organic: clampValue((GradientState.organic || 0) * 0.7 + (ReferenceMorphState.organic || 0) * 0.3, 0, 1)
     });
     EngineParams.restProb = clampValue(
       EngineParams.restProb + shaped.repair * 0.08 - shaped.naturalness * 0.012,
@@ -9277,6 +9310,9 @@ function triggerAcidTechnoTrace(step, time, context) {
   updateAcidLockIntensity(0.018);
   const acidIntensity = acidPerformanceAmount();
   if (acidIntensity < 0.08) return;
+  const acidIndicator = clampValue(AcidLockState.indicator || 0, 0, 1);
+  const acidShape = context.acidShape || { timeOffsetSec: 0, probabilityScale: 1, velocityScale: 1, densityScale: 1, grainScale: 1 };
+  const acidHighShape = context.acidHighShape || acidShape;
 
   const genre = GenreBlendState;
   const gradient = GradientState;
@@ -9291,6 +9327,7 @@ function triggerAcidTechnoTrace(step, time, context) {
       resourceNorm * 0.18 +
       gradient.micro * 0.1 +
       gradient.chrome * 0.04 +
+      acidIndicator * 0.1 +
       voiceGeneBias("pressure") * 0.14 +
       producerHabitBias("rubberEdit") * 0.08 -
       producerHabitBias("transparentVoid") * 0.05 -
@@ -9305,18 +9342,18 @@ function triggerAcidTechnoTrace(step, time, context) {
   const impactGate = step % 8 === 0 || (step % 16 === 8 && genre.pressure > 0.18);
   const gate = impactGate || step % 16 === 1 || step % 16 === 3 || step % 16 === 6 || step % 16 === 9 || step % 16 === 11 || step % 16 === 14 || (isAccentStep && step % 2 === 1);
   const gateChance = impactGate
-    ? 0.46 + acid * 0.32 + energyNorm * 0.08
-    : 0.075 + acid * 0.3 + PerformancePadState.repeat * 0.06;
+    ? (0.42 + acid * 0.28 + energyNorm * 0.07) * acidShape.probabilityScale
+    : (0.065 + acid * 0.25 + PerformancePadState.repeat * 0.05) * acidShape.probabilityScale;
   if (!gate || !rand(gateChance)) return;
 
   const acidPhase = Math.floor((GenomeState.phase || 0) * TONAL_RHYME_LOW.length);
   const note = tonalRhymeLow(step, acidPhase);
   const turnNote = tonalRhymeLow(step, acidPhase + 2);
   const reply = tonalRhymeHigh(step, acidPhase + 2);
-  const acidTime = time + 0.012 + Math.random() * (0.01 + waveNorm * 0.012);
-  const vel = clampValue(0.056 + acid * 0.122 - lowGuard * 0.038, 0.04, 0.166);
+  const acidTime = time + acidShape.timeOffsetSec + 0.012 + Math.random() * (0.01 + waveNorm * 0.012) * acidShape.grainScale;
+  const vel = clampValue((0.056 + acid * 0.122 - lowGuard * 0.038) * acidShape.velocityScale, 0.04, 0.18);
   const impactVel = clampValue(0.24 + acid * 0.2 + energyNorm * 0.045 - lowGuard * 0.095, 0.18, 0.48);
-  const jabVel = clampValue(0.085 + acid * 0.12 + resourceNorm * 0.018 - lowGuard * 0.04, 0.065, 0.22);
+  const jabVel = clampValue((0.085 + acid * 0.12 + resourceNorm * 0.018 - lowGuard * 0.04) * acidShape.velocityScale, 0.065, 0.23);
   const cutoff = clampValue(190 + acid * 860 + resourceNorm * 220 + waveNorm * 120 - lowGuard * 120, 130, 1260);
   const q = clampValue(2.4 + acid * 4.4 + creationNorm * 0.7 - lowGuard * 0.7, 1.6, 7.2);
 
@@ -9330,20 +9367,23 @@ function triggerAcidTechnoTrace(step, time, context) {
     if (impactGate && rand(0.58 + acid * 0.24 - lowGuard * 0.12)) {
       bass.triggerAttackRelease(tonalRhymeSub(step, step % 16 === 8 ? 1 : 0), "16n", acidTime + 0.018, jabVel);
     }
-    if (rand(0.34 + acid * 0.32)) {
+    if (rand((0.34 + acid * 0.32) * acidShape.densityScale)) {
       bass.triggerAttackRelease(note, "64n", acidTime + 0.046 + Math.random() * 0.012, vel * 0.52);
     }
-    if ((step % 8 === 3 || step % 8 === 6 || isAccentStep) && rand(0.18 + acid * 0.22)) {
+    if ((step % 8 === 3 || step % 8 === 6 || isAccentStep) && rand((0.18 + acid * 0.22) * acidShape.densityScale)) {
       bass.triggerAttackRelease(turnNote, "64n", acidTime + 0.074 + Math.random() * 0.014, vel * 0.42);
     }
-    if (glass && rand(0.32 + acid * 0.34)) {
-      glass.triggerAttackRelease(reply, "64n", acidTime + 0.022, clampValue(0.022 + acid * 0.06 + gradient.chrome * 0.01, 0.016, 0.096));
+    if (glass && rand((0.32 + acid * 0.3 + acidIndicator * 0.18) * acidHighShape.probabilityScale)) {
+      glass.triggerAttackRelease(reply, "64n", acidTime + acidHighShape.timeOffsetSec * 0.35 + 0.022, clampValue((0.026 + acid * 0.076 + gradient.chrome * 0.014 + acidIndicator * 0.026) * acidHighShape.velocityScale, 0.018, 0.13));
+      if ((isAccentStep || step % 16 === 1 || step % 16 === 9) && rand((0.12 + acidIndicator * 0.24) * acidHighShape.densityScale)) {
+        glass.triggerAttackRelease(tonalRhymeHigh(step, acidPhase + 5), "64n", acidTime + acidHighShape.timeOffsetSec * 0.45 + 0.078 + Math.random() * (0.012 * acidHighShape.grainScale), clampValue((0.018 + acid * 0.048 + acidIndicator * 0.024) * acidHighShape.velocityScale, 0.014, 0.096));
+      }
     }
-    if (hat && (step % 4 === 1 || step % 4 === 3 || isAccentStep) && rand(0.24 + acid * 0.32)) {
-      hat.triggerAttackRelease("64n", acidTime + 0.008, clampValue(0.04 + acid * 0.08 + energyNorm * 0.018, 0.032, 0.14));
+    if (hat && (step % 4 === 1 || step % 4 === 3 || isAccentStep) && rand((0.24 + acid * 0.32) * acidShape.densityScale)) {
+      hat.triggerAttackRelease("64n", acidTime + 0.008 + acidShape.timeOffsetSec * 0.2, clampValue((0.04 + acid * 0.08 + energyNorm * 0.018) * acidShape.velocityScale, 0.032, 0.14));
     }
-    if (texture && rand(0.26 + acid * 0.3)) {
-      texture.triggerAttackRelease("64n", acidTime + 0.016, clampValue(0.024 + acid * 0.07 + (impactGate ? 0.018 : 0), 0.016, 0.116));
+    if (texture && rand((0.26 + acid * 0.3) * acidShape.densityScale)) {
+      texture.triggerAttackRelease("64n", acidTime + 0.016 + acidShape.timeOffsetSec * 0.25, clampValue((0.024 + acid * 0.07 + (impactGate ? 0.018 : 0)) * acidShape.velocityScale, 0.016, 0.116));
     }
     markMixEvent(0.12 + acid * 0.1 + (impactGate ? 0.05 : 0));
   } catch (error) {
@@ -10478,24 +10518,35 @@ function triggerTimbreFamilyResponse(step, time, context) {
   }
 
   if (bass && acidOn && !PerformancePadState.void && (offPulse || step % 16 === 1 || step % 16 === 9 || isAccentStep)) {
-    const acidChance = chance(0.12 + family.acidBiyon * 0.34 + resourceNorm * 0.05 + kits.technoKit * 0.045 + ReferenceMorphState.pulse * 0.028 + RdjGrowthState.rubber * 0.04 + habitRubber * 0.04 + habitGrid * 0.015 + PerformancePadState.repeat * 0.05 - kits.spaceKit * 0.04 - habitSpace * 0.025 - RdjGrowthState.restraint * 0.02 - habitRestraint * 0.018 - lowGuard * 0.12);
+    const acidIndicator = clampValue(AcidLockState.indicator || 0, 0, 1);
+    const acidShape = context.acidShape || { timeOffsetSec: 0, probabilityScale: 1, velocityScale: 1, densityScale: 1, grainScale: 1 };
+    const acidHighShape = context.acidHighShape || acidShape;
+    const organicShape = context.organicShape || acidHighShape;
+    const acidChance = chance((0.11 + family.acidBiyon * 0.32 + acidIndicator * 0.08 + resourceNorm * 0.045 + kits.technoKit * 0.04 + ReferenceMorphState.pulse * 0.024 + RdjGrowthState.rubber * 0.035 + habitRubber * 0.035 + habitGrid * 0.012 + PerformancePadState.repeat * 0.042 - kits.spaceKit * 0.04 - habitSpace * 0.025 - RdjGrowthState.restraint * 0.024 - habitRestraint * 0.022 - lowGuard * 0.12) * acidShape.probabilityScale);
     if (rand(acidChance)) {
-      const acidTime = time + 0.014 + Math.random() * (0.012 + waveNorm * 0.012);
+      const acidTime = time + acidShape.timeOffsetSec + 0.014 + Math.random() * (0.012 + waveNorm * 0.012) * acidShape.grainScale;
       const note = tonalRhymeLow(step, phaseOffset + 1);
       const turn = tonalRhymeLow(step, phaseOffset + 3);
       const high = tonalRhymeHigh(step, phaseOffset + 2);
-      const vel = clampValue(0.06 + family.acidBiyon * 0.13 + energyNorm * 0.018 - lowGuard * 0.04, 0.045, 0.22);
+      const vel = clampValue((0.06 + family.acidBiyon * 0.13 + energyNorm * 0.018 - lowGuard * 0.04) * acidShape.velocityScale, 0.045, 0.22);
       const cutoff = clampValue(240 + family.acidBiyon * 980 + creationNorm * 260 + resourceNorm * 140 - lowGuard * 140, 140, 1450);
       const q = clampValue(2.2 + family.acidBiyon * 5.2 + creationNorm * 0.8 - lowGuard * 0.8, 1.6, 8.0);
       try {
         safeToneRamp(bass?.filter?.frequency, cutoff, 0.04);
         safeToneRamp(bass?.filter?.Q, q, 0.04);
         bass.triggerAttackRelease(note, "64n", acidTime, vel);
-        if (rand(0.42 + family.acidBiyon * 0.26)) {
+        if (rand((0.42 + family.acidBiyon * 0.26) * acidShape.densityScale)) {
           bass.triggerAttackRelease(turn, "64n", acidTime + 0.047 + Math.random() * 0.014, vel * 0.52);
         }
-        if (glass && rand(0.28 + family.acidBiyon * 0.22)) {
-          glass.triggerAttackRelease(high, "64n", acidTime + 0.026, clampValue(0.018 + family.acidBiyon * 0.056, 0.014, 0.086));
+        if (glass && rand((0.3 + family.acidBiyon * 0.22 + acidIndicator * 0.18) * acidHighShape.probabilityScale)) {
+          glass.triggerAttackRelease(high, "64n", acidTime + acidHighShape.timeOffsetSec * 0.35 + 0.026, clampValue((0.022 + family.acidBiyon * 0.068 + acidIndicator * 0.028) * acidHighShape.velocityScale, 0.016, 0.124));
+          if ((isAccentStep || step % 16 === 1 || step % 16 === 9) && rand((0.14 + acidIndicator * 0.26) * acidHighShape.densityScale)) {
+            glass.triggerAttackRelease(tonalRhymeHigh(step, phaseOffset + 5), "64n", acidTime + acidHighShape.timeOffsetSec * 0.45 + 0.072 + Math.random() * (0.012 * acidHighShape.grainScale), clampValue((0.016 + family.acidBiyon * 0.044 + acidIndicator * 0.024) * acidHighShape.velocityScale, 0.012, 0.086));
+          }
+        }
+        if (pianoMemory && rand((0.03 + ReferenceMorphState.organic * 0.06 + RdjGrowthState.tender * 0.03) * organicShape.probabilityScale)) {
+          pianoMemory.triggerAttackRelease(organicFragment(phaseOffset + 2), "64n", acidTime + organicShape.timeOffsetSec * 0.55 + 0.058 + Math.random() * (0.018 * organicShape.grainScale), clampValue((0.012 + ReferenceMorphState.organic * 0.032 + RdjGrowthState.toy * 0.012) * organicShape.velocityScale, 0.01, 0.06));
+          nudgeInnerSourceFamily("pianoMemory", 0.006 + ReferenceMorphState.organic * 0.006);
         }
         if (drumSkin && rand(0.18 + family.acidBiyon * 0.18)) {
           drumSkin.triggerAttackRelease("64n", acidTime + 0.016, clampValue(0.018 + family.acidBiyon * 0.05, 0.014, 0.09));
@@ -11383,6 +11434,9 @@ function scheduleStep(time) {
   const fillBoost = GrooveState.fillActive ? 0.14 : 0;
   const t = time + grooveJitter;
   const stepContext = { energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm, isRest, isAccentStep };
+  stepContext.acidShape = humanShape("acid");
+  stepContext.acidHighShape = humanShape("acidHigh");
+  stepContext.organicShape = humanShape("organic");
   const gradientParts = currentGradientParts();
   const gradient = updateReferenceGradient(gradientParts);
   updateReferenceDepth(gradientParts, gradient);

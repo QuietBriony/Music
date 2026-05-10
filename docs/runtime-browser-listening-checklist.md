@@ -47,6 +47,10 @@ Run for at least 60 seconds.
 Expected:
 
 - Tempo moves into a 120 BPM or higher dance pressure range.
+- Pressing `ACID` gives a clear short high-register acid indicator, not only a
+  low-end or tempo change.
+- ACID high replies keep a small human/organic groove feel instead of locking
+  to a rigid grid.
 - Acid motion is clear: short bouncy turns, filter movement, and small high replies.
 - `coldPulse`, `acidBiyon`, `sub808`, and `ghostBody` become more prominent.
 - 808/body pressure is present but does not crush the limiter.
@@ -55,6 +59,8 @@ Expected:
 Fail signs:
 
 - Acid ON still sounds like the ambient state.
+- Pressing `ACID` does not create a recognizable high acid sign.
+- ACID replies feel quantized, stiff, or machine-looped.
 - Low-end blooms continuously or clips.
 - The mix becomes bright EDM rather than dark acid/IDM pressure.
 
@@ -79,8 +85,9 @@ State passes:
   short local edits. They should bend the surface without turning into a busy
   machine-gun loop.
 - `CULT=ACID`, `ACID.ON`: rubber/pulse behavior becomes clearer. The body can
-  move, but the floor should stay dark and controlled rather than becoming
-  bright EDM pressure.
+  move, and a short high acid sign should be audible, but the floor should stay
+  dark and controlled rather than becoming bright EDM pressure. High replies
+  should keep a slightly human/organic pocket.
 
 Console evidence:
 
@@ -109,6 +116,8 @@ Fail signs:
 - RDJ-adjacent wrongness becomes novelty, harshness, or copied motif language.
 - Autechre-like edits erase the soft floor instead of adding local disruption.
 - ACID adds volume and brightness more than rubber motion or dark pulse.
+- ACID changes the low/body state but has no clear high-register indicator.
+- ACID high replies sound rigid rather than human, rubbery, or organic.
 
 ## AUTO ARC Check
 

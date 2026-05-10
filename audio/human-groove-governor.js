@@ -32,6 +32,9 @@
     hat: 0.43,
     texture: 0.59,
     glass: 0.71,
+    acid: 0.67,
+    acidHigh: 0.79,
+    organic: 0.89,
     detail: 0.83
   };
 
@@ -110,6 +113,8 @@
     const repeat = unit(context.repeat, 0);
     const ambient = unit(context.ambient, 0.4);
     const idm = unit(context.idm, 0.3);
+    const acid = unit(context.acid, 0);
+    const organic = unit(context.organic, 0.3);
 
     advanceShortLag(cycle);
 
@@ -130,6 +135,8 @@
         resource * 0.11 +
         micro * 0.15 +
         idm * 0.08 +
+        acid * 0.08 +
+        organic * 0.04 +
         drift * 0.08 +
         repeat * 0.05 -
         voidness * 0.08
@@ -143,13 +150,14 @@
         resource * 0.24 +
         creation * 0.18 +
         syncTarget * 0.12 +
+        acid * 0.04 +
         sweet * 0.08 -
         voidness * 0.18 -
         repair * 0.16
     );
-    const grain = clamp01(0.14 + creation * 0.26 + micro * 0.28 + wave * 0.14 + collapse * 0.18 - repair * 0.08);
-    const naturalness = clamp01(0.34 + sweet * 0.32 + ambient * 0.08 + observer * 0.1 + circle * 0.08 - repair * 0.22 - lowGuard * 0.08);
-    const jitterMs = clamp(3 + wave * 9 + grain * 8 + collapse * 10 + drift * 7 - repair * 5, 1.5, collapse > 0.68 ? 32 : 18);
+    const grain = clamp01(0.14 + creation * 0.26 + micro * 0.28 + wave * 0.14 + acid * 0.1 + organic * 0.06 + collapse * 0.18 - repair * 0.08);
+    const naturalness = clamp01(0.34 + sweet * 0.32 + ambient * 0.08 + organic * 0.08 + observer * 0.1 + circle * 0.08 - repair * 0.22 - lowGuard * 0.08);
+    const jitterMs = clamp(3 + wave * 9 + grain * 8 + collapse * 10 + drift * 7 + acid * 4 + organic * 3 - repair * 5, 1.5, collapse > 0.68 ? 32 : 18);
 
     state.cycle = cycle;
     state.collapse = approach(state.collapse, collapse, 0.42);
@@ -205,6 +213,24 @@
       velocityScale = clamp(0.86 + state.naturalness * 0.12 + sweet * 0.08 - state.repair * 0.16, 0.62, 1.1);
       densityScale = clamp(0.86 + state.density * 0.28 - tooComplex * 0.22, 0.58, 1.14);
       grainScale = clamp(0.9 + state.grain * 0.22 - state.repair * 0.14, 0.68, 1.16);
+    } else if (role === "acid") {
+      maxJitterMs = Math.min(state.collapse > 0.68 ? 24 : 14, Math.max(4, state.jitterMs * 0.86));
+      probabilityScale = clamp((0.82 + state.density * 0.14 + sweet * 0.1 - state.repair * 0.24) * offbeatLift, 0.52, 1.04);
+      velocityScale = clamp(0.84 + state.naturalness * 0.14 + state.grain * 0.05 - state.repair * 0.12, 0.62, 1.08);
+      densityScale = clamp(0.78 + state.density * 0.18 - tooComplex * 0.22, 0.54, 1.02);
+      grainScale = clamp(0.9 + state.grain * 0.24 - state.repair * 0.12, 0.66, 1.14);
+    } else if (role === "acidHigh") {
+      maxJitterMs = Math.min(state.collapse > 0.66 ? 28 : 16, Math.max(5, state.jitterMs * 1.02));
+      probabilityScale = clamp((0.76 + state.grain * 0.22 + sweet * 0.12 - state.repair * 0.28) * offbeatLift, 0.44, 1.08);
+      velocityScale = clamp(0.78 + state.naturalness * 0.18 + state.grain * 0.08 - state.repair * 0.16, 0.54, 1.1);
+      densityScale = clamp(0.7 + state.density * 0.18 - tooComplex * 0.3, 0.46, 1.02);
+      grainScale = clamp(0.9 + state.grain * 0.34 - state.repair * 0.14, 0.62, 1.18);
+    } else if (role === "organic") {
+      maxJitterMs = Math.min(state.collapse > 0.64 ? 30 : 18, Math.max(5, state.jitterMs * 1.06));
+      probabilityScale = clamp((0.72 + state.naturalness * 0.18 + state.grain * 0.12 - state.repair * 0.26) * offbeatLift, 0.4, 1.04);
+      velocityScale = clamp(0.76 + state.naturalness * 0.22 + sweet * 0.08 - state.repair * 0.14, 0.52, 1.08);
+      densityScale = clamp(0.68 + state.density * 0.16 - tooComplex * 0.28, 0.42, 0.98);
+      grainScale = clamp(0.92 + state.grain * 0.24 - state.repair * 0.12, 0.64, 1.16);
     } else {
       maxJitterMs = Math.min(state.collapse > 0.64 ? 32 : 18, Math.max(4, state.jitterMs * 1.08));
       probabilityScale = clamp((0.84 + state.grain * 0.28 + sweet * 0.14 + state.density * 0.08 - state.repair * 0.34) * offbeatLift, 0.44, 1.22);
