@@ -36,18 +36,16 @@
   // density (piano = 4–5 note chords vs ambient = 1-voice drone), so a
   // single WORKING_LEVEL across all genres makes some pills sound louder.
   // Tuned by ear so all GENRE pills land within ~2 dB of each other.
-  // v42 +0.06 across the board for overall loudness lift. Compressor was
-  // smashing peaks so layer levels could be raised without distortion.
-  // Piano stays comparatively lower because its 4-5 note voicings already
-  // pack density.
+  // v43 +0.04 more on top of v42 per user request "音量もっと欲しい".
+  // Combined with limiter relax this should still avoid clipping.
   const LEVEL_BY_GENRE = {
-    any: 0.74,
-    ambient: 0.70,
-    techno: 0.78,
-    lofi: 0.76,
-    jazz: 0.80,
-    funk: 0.78,
-    piano: 0.58
+    any: 0.78,
+    ambient: 0.74,
+    techno: 0.82,
+    lofi: 0.80,
+    jazz: 0.84,
+    funk: 0.82,
+    piano: 0.62
   };
 
   function workingLevelFor(name) {
@@ -551,14 +549,13 @@
   // Per-profile stereo panning. Drummer's perspective: hat slightly L,
   // ghost (ride/snare side hits) slightly R, kick + snare anchored center.
   // techno stays mostly mono for machine punch; lofi narrows the stage.
-  // v42: wider stereo for relief from "tsumari kan" (cluttered feel).
-  // Spread mid-range elements (hat / ghost / crash) further to L/R so
-  // bass + kick + snare anchor the center while accents breathe.
+  // v43: pushed wider per user request "ステレオ感、出していっていいね"
+  // Roughly ×1.4 from v42. Bass + kick + snare still anchor center.
   const KIT_PAN_LAYOUT = {
-    jazz:  { kick:  0.00, snare: -0.06, hat: -0.32, ghost:  0.18, fill:  0.10, crash: -0.24 },
-    funk:  { kick:  0.00, snare:  0.00, hat:  0.24, ghost: -0.18, fill:  0.16, crash:  0.32 },
-    lofi:  { kick:  0.00, snare:  0.00, hat:  0.14, ghost: -0.14, fill:  0.00, crash:  0.00 },
-    techno:{ kick:  0.00, snare:  0.00, hat:  0.00, ghost:  0.00, fill:  0.00, crash:  0.00 }
+    jazz:  { kick:  0.00, snare: -0.10, hat: -0.45, ghost:  0.26, fill:  0.16, crash: -0.34 },
+    funk:  { kick:  0.00, snare:  0.00, hat:  0.34, ghost: -0.26, fill:  0.22, crash:  0.45 },
+    lofi:  { kick:  0.00, snare:  0.00, hat:  0.20, ghost: -0.20, fill:  0.00, crash:  0.00 },
+    techno:{ kick:  0.00, snare:  0.00, hat:  0.10, ghost: -0.10, fill:  0.00, crash:  0.00 }
   };
 
   function makeLiveDrumKit(gain, profile = "funk") {
@@ -639,6 +636,84 @@
       volume: -22
     }).connect(gain);
     return { kick, snare, hat, ghost, fill, crash };
+  }
+
+  // ---- Narrative movement plan (v43) ----------------------------
+  //
+  // 96-bar long-form story arc (~3 min at 120 BPM):
+  //   intro    8 bars  — drums + bass enter, melodic layers silent
+  //   build   16 bars  — brush + comp join, density rising
+  //   peak    32 bars  — full ensemble, solo over lead voice rotations
+  //   break    4 bars  — drum-only quiet, all melodic silent
+  //   return  24 bars  — full back, often in new key (key shift active)
+  //   outro   12 bars  — voices drop one by one, fade
+  // Then loops. Pill switch restarts at intro (handled via barIdx reset).
+  const MOVEMENT_PLAN = [
+    { name: "intro",  bars: 8  },
+    { name: "build",  bars: 16 },
+    { name: "peak",   bars: 32 },
+    { name: "break",  bars: 4  },
+    { name: "return", bars: 24 },
+    { name: "outro",  bars: 12 }
+  ];
+  const TOTAL_MOVEMENT_BARS = MOVEMENT_PLAN.reduce((s, m) => s + m.bars, 0);
+
+  function computeMovement(barIdx) {
+    let cursor = 0;
+    const pos = ((barIdx % TOTAL_MOVEMENT_BARS) + TOTAL_MOVEMENT_BARS) % TOTAL_MOVEMENT_BARS;
+    for (const m of MOVEMENT_PLAN) {
+      if (pos < cursor + m.bars) {
+        return { name: m.name, bar: pos - cursor, total: m.bars };
+      }
+      cursor += m.bars;
+    }
+    return { name: "intro", bar: 0, total: 8 };
+  }
+
+  // Movement-aware layer gating. Returns true if the layer should play
+  // a note this bar based on its entry/exit choreography.
+  function layerActiveInMovement(layerName, movement) {
+    const { name, bar, total } = movement;
+    switch (layerName) {
+      case "bass":
+        if (name === "intro") return bar >= 4;     // enters mid-intro
+        if (name === "outro") return bar < total - 4;  // leaves before end
+        if (name === "break") return false;
+        return true;
+      case "brush":
+        if (name === "intro") return bar >= 6;     // enters near end of intro
+        if (name === "build") return true;
+        if (name === "outro") return bar < total - 6;
+        if (name === "break") return false;
+        return true;
+      case "comp":
+        if (name === "intro") return false;
+        if (name === "build") return bar >= 8;     // delayed entry mid-build
+        if (name === "outro") return bar < total - 4;
+        if (name === "break") return false;
+        return true;
+      case "ep":
+        if (name === "intro") return bar >= 6;
+        if (name === "outro") return bar < total - 8;
+        if (name === "break") return false;
+        return true;
+      case "clavi":
+        if (name === "intro") return false;
+        if (name === "build") return bar >= 4;
+        if (name === "outro") return bar < total - 6;
+        if (name === "break") return false;
+        return true;
+      case "solo":
+        // Solo only during peak + return movements + leadVoice gate
+        return name === "peak" || name === "return";
+      case "subbass":
+        if (name === "intro") return bar >= 4;
+        if (name === "outro") return bar < total - 4;
+        if (name === "break") return false;
+        return true;
+      default:
+        return true;
+    }
   }
 
   // Production aesthetic governor amounts per pill. Light wash that pulls
@@ -753,9 +828,17 @@
         flavor.leadVoice = leadCycle[Math.floor(barIdx / 4) % leadCycle.length];
 
         // Modal key shift: every 64 bars rotate D → G → A → D (semitone offsets).
-        // Bass / clavi / comp transpose their notes by this amount.
         const keyCycle = [0, 5, 7, 0];
         flavor.keyShift = keyCycle[Math.floor(barIdx / 64) % keyCycle.length];
+
+        // Narrative movement: 96-bar arc with 6 movements
+        const movement = computeMovement(barIdx);
+        flavor.movement = movement.name;
+        flavor.movementBar = movement.bar;
+        flavor.movementTotal = movement.total;
+        // Tension parameter 0-1 — continuously rising through movement,
+        // resetting between movements. Used by layers for filter brightness.
+        flavor.tension = movement.bar / Math.max(1, movement.total);
       }
 
       frame.events.forEach((evt, evtIdx) => {
@@ -1112,6 +1195,11 @@
       const isLead = flavor && flavor.leadVoice === "comp";
       const otherLead = flavor && (flavor.leadVoice === "bass" || flavor.leadVoice === "drums");
 
+      // v43 movement gate
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && !layerActiveInMovement("comp", movement)) { compBar++; return; }
+
       const bucket = COMP_VOICINGS[sr] || COMP_VOICINGS.default;
       if (bucket.length === 0) { compBar++; return; }
       if (flavor && flavor.dropBar) { compBar++; return; }
@@ -1189,6 +1277,14 @@
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
       const isLead = flavor && flavor.leadVoice === "bass";
 
+      // v43 movement gate
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && !layerActiveInMovement("bass", movement)) {
+        step = (step + 1) % 16;
+        return;
+      }
+
       // At step 0 (bar start), pick a new pattern based on current session_role
       if (step === 0) {
         const sr = flavor ? flavor.sessionRole : null;
@@ -1240,6 +1336,13 @@
     let subStep = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      // v43 movement gate
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && !layerActiveInMovement("subbass", movement)) {
+        subStep = (subStep + 1) % 16;
+        return;
+      }
       if (subStep === 0 && !(flavor && flavor.dropBar)) {
         // Use the first valid note from currentPattern as the sub root, -1 oct
         const rawNote = (currentPattern && currentPattern.find(n => !!n)) || "D2";
@@ -1627,6 +1730,10 @@
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const isLead = flavor && flavor.leadVoice === "lead";
+      // v43 movement gate — solo only speaks during peak and return movements
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && !layerActiveInMovement("solo", movement)) { lastWasLead = false; return; }
       // Only fire on the FIRST bar of a lead window (to avoid retriggering mid-phrase)
       if (!isLead) { lastWasLead = false; return; }
       if (lastWasLead) return;
@@ -1846,6 +1953,14 @@
       const isLead = flavor && flavor.leadVoice === "bass";
       const dropBar = flavor && flavor.dropBar;
       const keyShift = flavor && flavor.keyShift || 0;
+      // v43: movement-aware gating
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal }
+        : null;
+      if (movement && !layerActiveInMovement("bass", movement)) {
+        beatInBar = (beatInBar + 1) % 4;
+        return;
+      }
 
       if (beatInBar === 0 || !currentPattern) {
         currentPattern = pickWalkingBassPattern(sr || "default");
@@ -1928,11 +2043,14 @@
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const sr = flavor ? flavor.sessionRole : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      // v43 movement gate
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && !layerActiveInMovement("brush", movement)) { brushIdx++; return; }
       if (brushIdx % 8 === 0) brushPattern = pickBrushPattern(sr || "default");
-      // v42: density reduction on first half of 8-bar phrase + phrase silence
       const phrase8 = flavor && flavor.phrase8Bar;
       const inFirstHalf = phrase8 != null && phrase8 < 4;
-      const stepIn16 = (brushIdx % 8) * 2;  // 8n step → 16n equivalent
+      const stepIn16 = (brushIdx % 8) * 2;
       const isSilence = flavor && isPhraseSilence(flavor.phrase8Bar, stepIn16);
       const denseSkip = inFirstHalf ? Math.random() < 0.18 : false;
       if (brushPattern[brushIdx % brushPattern.length] && !isSilence && !denseSkip) {
@@ -1986,8 +2104,11 @@
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const sr = flavor ? flavor.sessionRole : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      // v43 movement gate
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && !layerActiveInMovement("brush", movement)) { brushIdx++; return; }
       if (brushIdx % 8 === 0) brushPattern = pickBrushPattern(sr || "default");
-      // v42 density + silence
       const phrase8 = flavor && flavor.phrase8Bar;
       const inFirstHalf = phrase8 != null && phrase8 < 4;
       const stepIn16 = (brushIdx % 8) * 2;
@@ -2125,6 +2246,10 @@
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
       const isLead = flavor && flavor.leadVoice === "comp";
+      // v43 movement gate
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && !layerActiveInMovement("clavi", movement)) { claviStep = (claviStep + 1) % 16; return; }
       if (claviStep === 0) {
         const sr = flavor ? flavor.sessionRole : null;
         currentClaviPattern = pickFunkClaviPattern(sr || "default");
@@ -2143,6 +2268,13 @@
     ids.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      // v43 movement gate
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && !layerActiveInMovement("ep", movement)) {
+        epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
+        return;
+      }
       if (epBarIdx === 0) {
         const sr = flavor ? flavor.sessionRole : null;
         currentEpProgression = pickFunkEpProgression(sr || "default");
@@ -2205,6 +2337,10 @@
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
       const isLead = flavor && flavor.leadVoice === "comp";
       const otherLead = flavor && (flavor.leadVoice === "bass" || flavor.leadVoice === "drums");
+      // v43 movement gate
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && !layerActiveInMovement("clavi", movement)) { claviStep = (claviStep + 1) % 16; return; }
       if (claviStep === 0) {
         const sr = flavor ? flavor.sessionRole : null;
         currentClaviPattern = pickFunkClaviPattern(sr || "default");
@@ -2225,6 +2361,13 @@
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      // v43 movement gate
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && !layerActiveInMovement("ep", movement)) {
+        epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
+        return;
+      }
       if (epBarIdx === 0) {
         const sr = flavor ? flavor.sessionRole : null;
         currentEpProgression = pickFunkEpProgression(sr || "default");

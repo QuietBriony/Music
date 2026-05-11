@@ -21,7 +21,7 @@
   const GENRE_MIX_RETURN_MS = 920;
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
   const TARGET_LEVEL = 100;            // engine OUTPUT max — limiter ceiling caps the peak
-  const DESTINATION_BOOST_DB = 6;      // v42: +2 dB more (compressor relaxed so no clipping)
+  const DESTINATION_BOOST_DB = 8;      // v43: +2 dB more — stereo width + headroom allows
   const SLEEP_FADE_AFTER_MS = 90 * 60 * 1000;  // 90 min: start auto fade-to-sleep
   const SLEEP_FADE_DURATION_S = 30 * 60;       // 30 min: ramp output to quiet
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };
@@ -1169,6 +1169,19 @@
       if (flavor.keyShift != null && flavor.keyShift !== 0) {
         const keyNames = { 0: "D dorian", 5: "G dorian", 7: "A dorian" };
         lines.push(`  key shift   +${flavor.keyShift} semi  (${keyNames[flavor.keyShift] || "?"})`);
+      }
+      // v43 narrative movement
+      if (flavor.movement) {
+        const tension = flavor.tension != null ? `${(flavor.tension * 100).toFixed(0)}%` : "?";
+        const movementJp = {
+          intro: "イントロ (静)",
+          build: "ビルド (上り)",
+          peak:  "ピーク (満)",
+          break: "ブレイク (休)",
+          return: "リターン (帰)",
+          outro: "アウトロ (引)"
+        }[flavor.movement] || flavor.movement;
+        lines.push(`  movement    ${movementJp}  bar ${flavor.movementBar}/${flavor.movementTotal}  tension ${tension}`);
       }
       // Live tempo (BPM drift visible)
       if (typeof window !== "undefined" && window.Tone && window.Tone.Transport) {
