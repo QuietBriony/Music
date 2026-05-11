@@ -118,7 +118,8 @@ Techno setup:
 
 Techno expected:
 
-- `window.GenreFlavor.state.source` is `drum-frames+machine-acid-brain`.
+- `window.GenreFlavor.state.source` is
+  `drum-frames+machine-acid-brain+chord-lift`.
 - `Tone.Transport.bpm.value` settles near 132 BPM.
 - The drum frames still drive the rhythm, but the sound reads as stripped
   machine drum: deep four-on-floor kick, restrained offbeat hat, and short dry
@@ -150,7 +151,8 @@ Piano setup:
 
 Piano expected:
 
-- `window.GenreFlavor.state.source` ends with `+foreground-piano`.
+- `window.GenreFlavor.state.source` ends with
+  `+foreground-piano+planing-reply`.
 - `window.GenreFlavor.state.scheduled` is greater than `1`.
 - `Tone.Transport.bpm.value` settles near 68 BPM after the profile lands.
 - Piano chord bed, memory reply, and soft melody are all designed to sound,
@@ -171,12 +173,16 @@ Other genre source sanity:
 
 - `ambient`: `window.GenreFlavor.state.source` starts with `namima-preset:` and
   stays calm/water-safe, not dark club ambience.
-- `lofi`: source is `drum-frames+vinyl-crackle`; the crackle reads as tape
-  memory, not loud foreground noise.
-- `jazz`: source is `drum-frames+walking-bass+brush`; walking bass and brush
-  motion make it feel human enough for writing-room jazz.
-- `funk`: source is `drum-frames+ep+clavi`; clavi adds clipped body motion
-  without turning the loop into a busy solo.
+- `lofi`: source is
+  `drum-frames+dusty-break-kit+vinyl-crackle+jazz-dust+session-breaks`;
+  the crackle and chords read as dusty memory, not loud foreground noise.
+- `jazz`: source is
+  `drum-frames+live-jazz-kit+walking-bass+brush+piano-comp+session-breaks`;
+  ride/brush motion, walking bass, and sparse comping make it feel like a
+  live writing-room session.
+- `funk`: source is
+  `drum-frames+live-funk-kit+ep+clavi+rubber-bass+session-breaks`; rubber
+  bass and pocket breaks add body without turning the loop into a busy solo.
 
 Shuffle audition sanity:
 

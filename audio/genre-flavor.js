@@ -53,27 +53,27 @@
     },
     techno: {
       role: "machine rhythm plus acid pulse",
-      edge: "stripped four-on-floor body, sparse machine hat, stronger 303-adjacent motion, high-BPM brain ratchets",
+      edge: "stripped four-on-floor body, sparse machine hat, resonant acid motion, high-BPM brain ratchets, and filtered chord lift",
       feedback: "send groove density and acid-source hints toward drum-floor/Music review"
     },
     lofi: {
-      role: "dusty pocket memory",
-      edge: "lazy drum frames with vinyl crackle and softened top end",
+      role: "dusty pocket memory and jazz-hop break surface",
+      edge: "lazy live-break kit, vinyl crackle, filtered jazz chords, and softened top end",
       feedback: "send tape-memory and restraint hints toward Music/chill review"
     },
     jazz: {
       role: "walking-bass live writing room",
-      edge: "drum frames, brush motion, and upright-style walking glue",
+      edge: "live jazz kit, ride/brush motion, walking glue, sparse piano comp, and small session breaks",
       feedback: "send human pocket and phrase-space hints toward chill/drum-floor review"
     },
     funk: {
       role: "syncopated body pocket",
-      edge: "drum frames, EP color, and clipped clavi motion",
+      edge: "live funk kit, behind-the-beat snare, rubber bass, EP color, clipped clavi, and pocket breaks",
       feedback: "send body-pocket and syncopation hints toward drum-floor review"
     },
     piano: {
       role: "chill quiet piano memory",
-      edge: "foreground felt-piano strikes with memory reply and long space",
+      edge: "foreground felt-piano strikes, planing color replies, memory answer, and long space",
       feedback: "send piano/trio and listening-space hints toward chill"
     }
   };
@@ -108,6 +108,12 @@
 
   function clamp(n, lo, hi) {
     return Math.min(hi, Math.max(lo, n));
+  }
+
+  function safeEventTime(time, leadSeconds = 0.006) {
+    const now = typeof Tone.now === "function" ? Tone.now() : 0;
+    const candidate = Number.isFinite(time) ? time : now;
+    return Math.max(candidate, now + leadSeconds);
   }
 
   // Cheap fifth lookup so namima's pad.baseNote can drive a P5 drone.
@@ -352,9 +358,148 @@
     };
   }
 
+  function makeLiveKick(gain, profile = "funk") {
+    const deep = profile === "funk";
+    const body = new Tone.MembraneSynth({
+      pitchDecay: deep ? 0.06 : 0.045,
+      octaves: deep ? 4.2 : 2.4,
+      envelope: { attack: 0.001, decay: deep ? 0.34 : 0.22, sustain: 0, release: deep ? 0.16 : 0.11 },
+      volume: deep ? -10 : -13
+    }).connect(gain);
+    const skin = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.001, decay: 0.018, sustain: 0, release: 0.01 },
+      volume: deep ? -34 : -38
+    }).connect(gain);
+    return {
+      triggerAttackRelease(note, duration, time, velocity = 0.6) {
+        const t = safeEventTime(time);
+        body.triggerAttackRelease(profile === "jazz" ? "A1" : "C1", deep ? "8n" : "16n", t, clamp(velocity, 0.04, 0.95));
+        skin.triggerAttackRelease("128n", t + 0.003, clamp(velocity * 0.18, 0.01, 0.2));
+      },
+      dispose() {
+        try { body.dispose(); } catch (e) {}
+        try { skin.dispose(); } catch (e) {}
+      }
+    };
+  }
+
+  function makeLiveSnare(gain, profile = "funk") {
+    const bus = new Tone.Gain(profile === "jazz" ? 0.62 : 0.82).connect(gain);
+    const hp = new Tone.Filter({ frequency: profile === "lofi" ? 850 : 1300, type: "highpass", Q: 0.8 }).connect(bus);
+    const body = new Tone.NoiseSynth({
+      noise: { type: profile === "lofi" ? "pink" : "white" },
+      envelope: {
+        attack: 0.001,
+        decay: profile === "jazz" ? 0.18 : profile === "lofi" ? 0.22 : 0.16,
+        sustain: 0,
+        release: profile === "lofi" ? 0.1 : 0.06
+      },
+      volume: profile === "jazz" ? -21 : profile === "lofi" ? -18 : -14
+    }).connect(hp);
+    const rim = new Tone.MetalSynth({
+      frequency: profile === "funk" ? 170 : 145,
+      envelope: { attack: 0.001, decay: 0.045, release: 0.018 },
+      harmonicity: 2.4,
+      modulationIndex: 5,
+      resonance: profile === "lofi" ? 900 : 1600,
+      octaves: 0.5,
+      volume: profile === "jazz" ? -36 : -32
+    }).connect(bus);
+    return {
+      triggerAttackRelease(duration, time, velocity = 0.5) {
+        const t = safeEventTime(time);
+        const v = clamp(velocity, 0.03, 0.9);
+        body.triggerAttackRelease(profile === "jazz" ? "16n" : "32n", t, v * (profile === "jazz" ? 0.82 : 0.96));
+        rim.triggerAttackRelease("128n", t + 0.006, v * (profile === "funk" ? 0.32 : 0.2));
+      },
+      dispose() {
+        try { body.dispose(); } catch (e) {}
+        try { rim.dispose(); } catch (e) {}
+        try { hp.dispose(); } catch (e) {}
+        try { bus.dispose(); } catch (e) {}
+      }
+    };
+  }
+
+  function makeLiveHat(gain, profile = "funk") {
+    const bus = new Tone.Gain(profile === "jazz" ? 0.72 : profile === "lofi" ? 0.46 : 0.58).connect(gain);
+    const bp = new Tone.Filter({
+      frequency: profile === "jazz" ? 5200 : profile === "lofi" ? 3600 : 6200,
+      type: "bandpass",
+      Q: profile === "jazz" ? 1.6 : 2.4
+    }).connect(bus);
+    const noise = new Tone.NoiseSynth({
+      noise: { type: profile === "jazz" ? "pink" : "white" },
+      envelope: {
+        attack: profile === "jazz" ? 0.006 : 0.001,
+        decay: profile === "jazz" ? 0.16 : profile === "lofi" ? 0.08 : 0.045,
+        sustain: 0,
+        release: profile === "jazz" ? 0.08 : 0.018
+      },
+      volume: profile === "jazz" ? -23 : profile === "lofi" ? -29 : -25
+    }).connect(bp);
+    const ping = new Tone.MetalSynth({
+      frequency: profile === "jazz" ? 260 : 210,
+      envelope: { attack: 0.001, decay: profile === "jazz" ? 0.24 : 0.055, release: 0.02 },
+      harmonicity: profile === "jazz" ? 3.6 : 4.8,
+      modulationIndex: profile === "jazz" ? 8 : 13,
+      resonance: profile === "jazz" ? 2300 : 3200,
+      octaves: profile === "jazz" ? 1.4 : 0.8,
+      volume: profile === "jazz" ? -30 : -42
+    }).connect(bus);
+    return {
+      triggerAttackRelease(duration, time, velocity = 0.28) {
+        const t = safeEventTime(time);
+        const v = clamp(velocity, 0.02, profile === "jazz" ? 0.68 : 0.48);
+        noise.triggerAttackRelease(profile === "jazz" ? "8n" : "64n", t, v);
+        if (profile === "jazz" || Math.random() < 0.32) ping.triggerAttackRelease("64n", t + 0.004, v * 0.38);
+      },
+      dispose() {
+        try { noise.dispose(); } catch (e) {}
+        try { ping.dispose(); } catch (e) {}
+        try { bp.dispose(); } catch (e) {}
+        try { bus.dispose(); } catch (e) {}
+      }
+    };
+  }
+
+  function makeLiveDrumKit(gain, profile = "funk") {
+    const ghost = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.004, decay: profile === "jazz" ? 0.18 : 0.095, sustain: 0, release: 0.045 },
+      volume: profile === "jazz" ? -30 : profile === "lofi" ? -32 : -27
+    }).connect(gain);
+    const fill = new Tone.NoiseSynth({
+      noise: { type: profile === "lofi" ? "pink" : "white" },
+      envelope: { attack: 0.001, decay: profile === "jazz" ? 0.16 : 0.11, sustain: 0, release: 0.045 },
+      volume: profile === "jazz" ? -24 : profile === "lofi" ? -24 : -19
+    }).connect(gain);
+    const crash = new Tone.MetalSynth({
+      frequency: profile === "jazz" ? 145 : 175,
+      envelope: { attack: 0.004, decay: profile === "jazz" ? 1.1 : 0.62, release: 0.3 },
+      harmonicity: 4.4,
+      modulationIndex: profile === "lofi" ? 10 : 18,
+      resonance: profile === "jazz" ? 2400 : 3600,
+      octaves: profile === "jazz" ? 2.1 : 1.3,
+      volume: profile === "jazz" ? -33 : -36
+    }).connect(gain);
+    return {
+      kick: makeLiveKick(gain, profile),
+      snare: makeLiveSnare(gain, profile),
+      hat: makeLiveHat(gain, profile),
+      ghost,
+      fill,
+      crash
+    };
+  }
+
   // Shared drum kit for funk/techno frames builds.
   function makeDrumKit(gain, options = {}) {
     if (options.kit === "techno-machine") return makeTechnoMachineKit(gain);
+    if (options.kit === "live-jazz") return makeLiveDrumKit(gain, "jazz");
+    if (options.kit === "live-funk") return makeLiveDrumKit(gain, "funk");
+    if (options.kit === "lofi-break") return makeLiveDrumKit(gain, "lofi");
 
     const kick = new Tone.MembraneSynth({
       pitchDecay: 0.04, octaves: 2,
@@ -425,10 +570,11 @@
           else if (evt.instrument === "kick") eventVel = Math.min(1, vel * 1.06);
         }
         try {
+          const eventTime = safeEventTime(time + offset);
           if (evt.instrument === "kick") {
-            synth.triggerAttackRelease(options.kickNote || "C2", "16n", time + offset, eventVel);
+            synth.triggerAttackRelease(options.kickNote || "C2", "16n", eventTime, eventVel);
           } else {
-            synth.triggerAttackRelease("16n", time + offset, eventVel);
+            synth.triggerAttackRelease("16n", eventTime, eventVel);
           }
         } catch (e) {}
       });
@@ -540,6 +686,169 @@
     return layer;
   }
 
+  function addTechnoChordLift(layer) {
+    if (!layer) return null;
+    const hp = new Tone.Filter({ frequency: 360, type: "highpass", Q: 0.7 }).connect(layer.gain);
+    const delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.18, wet: 0.18 }).connect(hp);
+    const stab = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "sawtooth" },
+      envelope: { attack: 0.006, decay: 0.18, sustain: 0, release: 0.12 },
+      volume: -24
+    }).connect(delay);
+    stab.maxPolyphony = 5;
+    const chords = [
+      ["D3", "F3", "A3", "C4"],
+      ["F3", "A3", "C4", "E4"],
+      ["C3", "E3", "G3", "Bb3"],
+      ["A2", "C3", "E3", "G3"]
+    ];
+    let bar = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      if (Math.random() < 0.34) {
+        const chord = chords[bar % chords.length];
+        try {
+          stab.triggerAttackRelease(chord, "16n", safeEventTime(time + 0.012), 0.18 + Math.random() * 0.08);
+        } catch (e) {}
+      }
+      bar++;
+    }, "2m", "1m"));
+    layer.synths.push(stab, delay, hp);
+    layer.source = `${layer.source || "drum-frames+machine-acid-brain"}+chord-lift`;
+    return layer;
+  }
+
+  function addSessionBreaks(layer, profile) {
+    if (!layer) return null;
+    const snare = new Tone.NoiseSynth({
+      noise: { type: profile === "lofi" ? "pink" : "white" },
+      envelope: { attack: 0.001, decay: profile === "jazz" ? 0.18 : 0.12, sustain: 0, release: 0.045 },
+      volume: profile === "jazz" ? -26 : profile === "lofi" ? -25 : -20
+    }).connect(layer.gain);
+    const tom = new Tone.MembraneSynth({
+      pitchDecay: 0.055,
+      octaves: profile === "funk" ? 3.2 : 2.4,
+      envelope: { attack: 0.001, decay: 0.18, sustain: 0, release: 0.1 },
+      volume: profile === "funk" ? -18 : -22
+    }).connect(layer.gain);
+    const hats = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.001, decay: profile === "jazz" ? 0.09 : 0.045, sustain: 0, release: 0.018 },
+      volume: profile === "lofi" ? -34 : -30
+    }).connect(layer.gain);
+    let phrase = profile === "funk" ? 1 : 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const active = profile === "jazz" ? phrase % 3 === 2 : profile === "lofi" ? phrase % 4 === 3 : phrase % 2 === 1;
+      if (!active) {
+        phrase++;
+        return;
+      }
+      const base = safeEventTime(time + Tone.Time("2n").toSeconds() + Tone.Time("4n").toSeconds());
+      const density = profile === "funk" ? 4 : profile === "jazz" ? 3 : 2;
+      for (let i = 0; i < density; i++) {
+        const dt = base + i * (profile === "funk" ? 0.075 : 0.105) + Math.random() * 0.012;
+        try {
+          if (profile === "funk" && i % 2 === 0) tom.triggerAttackRelease(i === 0 ? "G1" : "C2", "32n", dt, 0.28 + Math.random() * 0.08);
+          else snare.triggerAttackRelease("64n", dt, profile === "jazz" ? 0.16 + Math.random() * 0.07 : 0.2 + Math.random() * 0.1);
+          if (Math.random() < (profile === "jazz" ? 0.6 : 0.38)) hats.triggerAttackRelease("64n", dt + 0.018, 0.12 + Math.random() * 0.06);
+        } catch (e) {}
+      }
+      phrase++;
+    }, profile === "lofi" ? "4m" : "2m"));
+    layer.synths.push(snare, tom, hats);
+    layer.source = `${layer.source || "drum-frames"}+session-breaks`;
+    return layer;
+  }
+
+  function addJazzComping(layer) {
+    if (!layer) return null;
+    const room = new Tone.Reverb({ decay: 1.4, wet: 0.16 }).connect(layer.gain);
+    const piano = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.018, decay: 0.34, sustain: 0.08, release: 0.7 },
+      volume: -15
+    }).connect(room);
+    piano.maxPolyphony = 6;
+    const voicings = [
+      ["F3", "A3", "C4", "E4"],
+      ["E3", "G3", "B3", "D4"],
+      ["A2", "G3", "C4", "F4"],
+      ["D3", "F3", "A3", "C4"]
+    ];
+    let bar = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      if (Math.random() < 0.7) {
+        const chord = voicings[bar % voicings.length];
+        try {
+          piano.triggerAttackRelease(chord, "2n", safeEventTime(time + 0.035 + Math.random() * 0.035), 0.19 + Math.random() * 0.07);
+        } catch (e) {}
+      }
+      bar++;
+    }, "1m", "2n"));
+    layer.synths.push(piano, room);
+    layer.source = `${layer.source || "drum-frames+walking-bass+brush"}+piano-comp`;
+    return layer;
+  }
+
+  function addFunkRubberBass(layer) {
+    if (!layer) return null;
+    const bass = new Tone.MonoSynth({
+      oscillator: { type: "sawtooth" },
+      filter: { type: "lowpass", frequency: 540, Q: 2.8 },
+      envelope: { attack: 0.004, decay: 0.16, sustain: 0.18, release: 0.08 },
+      filterEnvelope: { attack: 0.002, decay: 0.12, sustain: 0.06, release: 0.06, baseFrequency: 95, octaves: 3.1 },
+      portamento: 0.035,
+      volume: -13
+    }).connect(layer.gain);
+    const pattern = ["D2", null, "D2", "F2", "G2", null, "A1", "C2", "D2", "F2", null, "C2", "A1", null, "C2", "D2"];
+    let step = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const note = pattern[step % pattern.length];
+      if (note && Math.random() < (step % 4 === 0 ? 0.86 : 0.58)) {
+        try {
+          bass.triggerAttackRelease(note, step % 2 === 0 ? "16n" : "32n", safeEventTime(time + 0.006 + Math.random() * 0.01), step % 4 === 0 ? 0.42 : 0.3);
+        } catch (e) {}
+      }
+      step++;
+    }, "16n"));
+    layer.synths.push(bass);
+    layer.source = `${layer.source || "drum-frames+ep+clavi"}+rubber-bass`;
+    return layer;
+  }
+
+  function addLofiJazzDust(layer) {
+    if (!layer) return null;
+    const room = new Tone.Reverb({ decay: 1.8, wet: 0.2 }).connect(layer.gain);
+    const lp = new Tone.Filter({ frequency: 1800, type: "lowpass", Q: 0.6 }).connect(room);
+    const keys = new Tone.PolySynth(Tone.FMSynth, {
+      harmonicity: 1.6,
+      modulationIndex: 2.4,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.035, decay: 0.28, sustain: 0.28, release: 0.9 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 0.02, decay: 0.16, sustain: 0.12, release: 0.5 },
+      volume: -19
+    }).connect(lp);
+    keys.maxPolyphony = 5;
+    const voicings = [
+      ["D3", "F3", "A3", "C4"],
+      ["G2", "F3", "A3", "C4"],
+      ["C3", "E3", "Bb3", "D4"],
+      ["A2", "G3", "C4", "E4"]
+    ];
+    let bar = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      if (Math.random() < 0.74) {
+        try {
+          keys.triggerAttackRelease(voicings[bar % voicings.length], "2n", safeEventTime(time + 0.055 + Math.random() * 0.035), 0.18 + Math.random() * 0.05);
+        } catch (e) {}
+      }
+      bar++;
+    }, "1m"));
+    layer.synths.push(keys, lp, room);
+    layer.source = `${layer.source || "drum-frames+vinyl-crackle"}+jazz-dust`;
+    return layer;
+  }
+
   function buildTechnoMachineFromFrames(frames) {
     const drums = buildDrumsFromFrames(frames, {
       kit: "techno-machine",
@@ -547,9 +856,11 @@
       kickNote: "C1",
       source: "drum-frames+machine-minimal"
     });
-    return addBrainDanceRatchet(
-      addAcidPulse(drums, { source: "drum-frames+machine-acid-minimal", volume: -18 }),
-      { source: "drum-frames+machine-acid-brain" }
+    return addTechnoChordLift(
+      addBrainDanceRatchet(
+        addAcidPulse(drums, { source: "drum-frames+machine-acid-minimal", volume: -18 }),
+        { source: "drum-frames+machine-acid-brain" }
+      )
     );
   }
 
@@ -599,7 +910,10 @@
   // When drum-frames-lofi preset is present, render the lazy frame rhythm
   // PLUS the vinyl crackle bed for the dusty character.
   function buildLofiFromFrames(frames) {
-    const drums = buildDrumsFromFrames(frames);
+    const drums = buildDrumsFromFrames(frames, {
+      kit: "lofi-break",
+      source: "drum-frames+dusty-break-kit"
+    });
     if (!drums) return null;
 
     const lp = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 0.6 }).connect(drums.gain);
@@ -614,8 +928,8 @@
       try { crackle.stop(); } catch (e) {}
       if (prevDispose) prevDispose();
     };
-    drums.source = "drum-frames+vinyl-crackle";
-    return drums;
+    drums.source = "drum-frames+dusty-break-kit+vinyl-crackle";
+    return addSessionBreaks(addLofiJazzDust(drums), "lofi");
   }
 
   function buildLofi(frames) {
@@ -679,7 +993,10 @@
   // keep the walking bass plus a low brush layer. The brush sits behind the
   // frame hats so jazz reads as live pocket instead of just a drum preset.
   function buildJazzFromFrames(frames) {
-    const drums = buildDrumsFromFrames(frames);
+    const drums = buildDrumsFromFrames(frames, {
+      kit: "live-jazz",
+      source: "drum-frames+live-jazz-kit"
+    });
     if (!drums) return null;
 
     const room = new Tone.Reverb({ decay: 1.6, wet: 0.22 }).connect(drums.gain);
@@ -715,8 +1032,8 @@
       brushIdx++;
     }, "8n", "8n"));
     drums.synths.push(brush, brushHi, brushLo, bass, room);
-    drums.source = "drum-frames+walking-bass+brush";
-    return drums;
+    drums.source = "drum-frames+live-jazz-kit+walking-bass+brush";
+    return addSessionBreaks(addJazzComping(drums), "jazz");
   }
 
   function buildJazz(frames) {
@@ -777,7 +1094,10 @@
   // chord layer plus a quiet clavi. The clavi is sparse so it adds funk
   // articulation without flattening the frame timing.
   function buildFunkFromFrames(frames) {
-    const drums = buildDrumsFromFrames(frames);
+    const drums = buildDrumsFromFrames(frames, {
+      kit: "live-funk",
+      source: "drum-frames+live-funk-kit"
+    });
     if (!drums) return null;
 
     const claviFilter = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 1.5 }).connect(drums.gain);
@@ -815,8 +1135,8 @@
       epBar++;
     }, "1m"));
     drums.synths.push(clavi, claviFilter, ep, epRoom);
-    drums.source = "drum-frames+ep+clavi";
-    return drums;
+    drums.source = "drum-frames+live-funk-kit+ep+clavi";
+    return addSessionBreaks(addFunkRubberBass(drums), "funk");
   }
 
   function buildFunk(frames) {
@@ -1037,6 +1357,38 @@
     return { synths: [piano, hammer, lp, hammerFilter, room, anchorGain], scheduledId: id };
   }
 
+  function buildPianoPlaningReplyLayer(gain) {
+    const layerGain = new Tone.Gain(0.72).connect(gain);
+    const room = new Tone.Reverb({ decay: 1.25, wet: 0.105 }).connect(layerGain);
+    const lp = new Tone.Filter({ frequency: 2450, type: "lowpass", Q: 0.42 }).connect(room);
+    const piano = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.018, decay: 0.38, sustain: 0.045, release: 0.72 },
+      volume: -10.5
+    }).connect(lp);
+    piano.maxPolyphony = 6;
+    const voicings = [
+      ["E3", "A3", "D4", "F4"],
+      ["F3", "Bb3", "Eb4", "G4"],
+      ["D3", "G3", "C4", "E4"],
+      ["C3", "F3", "Bb3", "D4"]
+    ];
+    let bar = 0;
+    const id = Tone.Transport.scheduleRepeat((time) => {
+      if (bar % 2 === 0 || Math.random() < 0.44) {
+        const chord = voicings[bar % voicings.length];
+        const t = safeEventTime(time + Tone.Time("2n").toSeconds() + 0.08 + Math.random() * 0.035);
+        try {
+          chord.forEach((note, i) => {
+            piano.triggerAttackRelease(note, i < 2 ? "4n" : "8n", t + i * 0.019, 0.18 - i * 0.012);
+          });
+        } catch (e) {}
+      }
+      bar++;
+    }, "1m");
+    return { synths: [piano, lp, room, layerGain], scheduledId: id };
+  }
+
   function buildPianoFromRecipe(recipeContainer) {
     const recipes = (recipeContainer && Array.isArray(recipeContainer.recipes)) ? recipeContainer.recipes : [];
     if (recipes.length === 0) return buildPianoDefault();
@@ -1054,12 +1406,15 @@
     const anchor = buildPianoAnchorLayer(gain, pianoLayers);
     synths.push(...anchor.synths);
     ids.push(anchor.scheduledId);
+    const planing = buildPianoPlaningReplyLayer(gain);
+    synths.push(...planing.synths);
+    ids.push(planing.scheduledId);
 
     return {
       gain,
       synths,
       scheduledIds: ids,
-      source: "chill-recipe:" + (recipes[0]?.id || "?") + "+foreground-piano",
+      source: "chill-recipe:" + (recipes[0]?.id || "?") + "+foreground-piano+planing-reply",
       level: 2.15
     };
   }
