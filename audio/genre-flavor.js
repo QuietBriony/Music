@@ -24,7 +24,7 @@
   const Tone = window.Tone;
 
   // Working volume (linear gain). Sits near the engine without becoming the master.
-  const WORKING_LEVEL = 0.42;
+  const WORKING_LEVEL = 0.5;
   const FADE_IN_S = 2.5;
   const FADE_OUT_S = 1.6;
   const CROSSFADE_S = 1.5;
@@ -87,7 +87,7 @@
 
   function ensureMaster() {
     if (master) return master;
-    masterLimiter = new Tone.Limiter(-1.2).toDestination();
+    masterLimiter = new Tone.Limiter({ threshold: -0.8 }).toDestination();
     master = new Tone.Gain(0).connect(masterLimiter);
     return master;
   }

@@ -360,7 +360,7 @@ Use this before creating or merging a runtime PR.
 Use this when browser output feels small compared with iPhone Apple Music or
 other normalized app playback.
 
-- Start from `OUTPUT` 88 to 92 in Hazama FM, or 75 to 85 in the full mixer.
+- Start from `OUTPUT` 94 to 96 in Hazama FM, or 80 to 90 in the full mixer.
 - Compare `fm.html` `any`, `techno`, and `piano` without changing OS volume.
 - Expected: browser playback should feel usable without maxing the OS volume,
   while the master limiter prevents harsh clipping.

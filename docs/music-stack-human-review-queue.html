@@ -179,7 +179,7 @@
             <td>1</td>
             <td>出音の大きさ</td>
             <td>Hazama FM / Music Core Rig</td>
-            <td>iPhone Apple Music の通常音量と比べて、小さすぎないか、大きすぎて潰れていないか。</td>
+            <td>iPhone Apple Music の通常音量と比べて、OS音量を上げ切らずに聴けるか。大きすぎて潰れていないか。</td>
           </tr>
           <tr>
             <td>2</td>
@@ -228,8 +228,8 @@
         <tbody>
           <tr>
             <td>Tone.js runtime error cleanup</td>
-            <td>ブラウザconsoleに残る Tone.js <code>time</code> error を整理する。</td>
-            <td>音色変更はしない。</td>
+            <td>ブラウザconsoleに残る Tone.js <code>time</code> error と polyphony warning を追う。</td>
+            <td>音量PRで消えない場合は、schedule系の別PRに分ける。</td>
           </tr>
           <tr>
             <td>Genre foreground balance</td>

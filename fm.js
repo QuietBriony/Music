@@ -20,7 +20,7 @@
   const GENRE_MIX_SWITCH_MS = 420;
   const GENRE_MIX_RETURN_MS = 920;
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
-  const TARGET_LEVEL = 92;
+  const TARGET_LEVEL = 96;
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };
   const SHUFFLE_AUDITION_INTERVAL_MS = 42000;
   const SHUFFLE_AUDITION_GENRES = ["ambient", "techno", "lofi", "jazz", "funk", "piano"];
