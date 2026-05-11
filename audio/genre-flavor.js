@@ -32,6 +32,24 @@
   const OUTPUT_FOLLOW_MIN = 0.34;
   const OUTPUT_FOLLOW_MAX = 1.28;
 
+  // Per-genre master level override. Each builder has its own synth-voice
+  // density (piano = 4–5 note chords vs ambient = 1-voice drone), so a
+  // single WORKING_LEVEL across all genres makes some pills sound louder.
+  // Tuned by ear so all GENRE pills land within ~2 dB of each other.
+  const LEVEL_BY_GENRE = {
+    any: 0.56,
+    ambient: 0.52,
+    techno: 0.60,
+    lofi: 0.58,
+    jazz: 0.62,
+    funk: 0.60,
+    piano: 0.40   // 4-5 note voicings → density high, drop ~2.9 dB
+  };
+
+  function workingLevelFor(name) {
+    return (LEVEL_BY_GENRE[name] != null) ? LEVEL_BY_GENRE[name] : WORKING_LEVEL;
+  }
+
   // Maps genre → preset name in HazamaPresets. Genres without a mapping
   // always use their default builder.
   const PRESET_BY_GENRE = {
@@ -1524,7 +1542,8 @@
       return null;
     }
     if (!layer) return null;
-    try { layer.gain.gain.rampTo(WORKING_LEVEL * (layer.level || 1), CROSSFADE_S); } catch (e) {}
+    const target = workingLevelFor(name) * (layer.level || 1);
+    try { layer.gain.gain.rampTo(target, CROSSFADE_S); } catch (e) {}
     return layer;
   }
 

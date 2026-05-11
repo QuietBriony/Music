@@ -171,6 +171,38 @@ the single source of truth.
 
 ---
 
+## 4. Legacy engine presets (NOT Hazama FM)
+
+`presets/` には Hazama FM 用 JSON とは別に **engine.js 直接消費の旧 preset** が残っている:
+
+```
+presets/ambient.json
+presets/dub.json
+presets/jazz.json
+presets/lofi.json
+presets/techno.json
+presets/trance.json
+```
+
+これらは Music Core Rig (mixer) で **「AIR / SRC」プリセット選択** から読み込まれ、
+engine.js の `applyPresetUCM(preset)` (engine.js:8417 付近) が `preset.ucm` を 9 fader
+にロードする用途。Hazama FM の preset 経路 (`window.HazamaPresets` / `genre-flavor.js`)
+とは **完全に別系統**。
+
+### 整理ポリシー
+
+- 削除しない (Music Core Rig が必要)
+- `loader.js` の `PRESET_FILES` には登録しない (上の 6 ファイル: chill / drum-frames × 4 / namima のみ)
+- `sw.js` の precache にも入れない (engine が必要時に fetch、stale-while-revalidate 対象外)
+- もし将来 Hazama FM 用と同名衝突しそうなら、`presets/legacy/` に移動を検討
+
+### 監査スクリプト
+
+`scripts/audit.py` で `loader.js` 登録漏れ / 古い preset の整合性をチェック可能。
+`python scripts/audit.py` で全件 OK / BAD 表示。
+
+---
+
 ## Loader contract (Hazama FM side)
 
 `presets/loader.js` exposes `window.HazamaPresets` with:
