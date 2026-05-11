@@ -927,7 +927,7 @@ const SOURCE_COLORS = {
   }
 };
 const OutputState = {
-  level: 75
+  level: 82
 };
 const PlaybackState = {
   outputDeviceId: "",
@@ -6282,12 +6282,12 @@ function outputGainFromLevel(level) {
   const safeLevel = clampValue(Number.isFinite(level) ? level : 75, 0, 100);
   if (safeLevel <= 0) return 0.0001;
   if (safeLevel <= 50) {
-    return mapValue(safeLevel, 0, 50, 0.0001, 0.92);
+    return mapValue(safeLevel, 0, 50, 0.0001, 0.96);
   }
   if (safeLevel <= 75) {
-    return mapValue(safeLevel, 50, 75, 0.92, 1.36);
+    return mapValue(safeLevel, 50, 75, 0.96, 1.48);
   }
-  return mapValue(safeLevel, 75, 100, 1.36, 1.82);
+  return mapValue(safeLevel, 75, 100, 1.48, 2.12);
 }
 
 function updateOutputLevelUi() {
@@ -6324,7 +6324,7 @@ function engineOutputGainTarget(level = OutputState.level) {
   } catch (error) {
     fmTrim = 1;
   }
-  return clampValue(outputGain * fmTrim, 0.0001, 2.05);
+  return clampValue(outputGain * fmTrim, 0.0001, 2.28);
 }
 
 function isAppleMobileDevice() {
@@ -7348,7 +7348,7 @@ function approachValue(current, target, maxStep) {
 ========================================================= */
 
 // マスター処理（少なめ）
-const masterLimiter = new Tone.Limiter(-1);
+const masterLimiter = new Tone.Limiter({ threshold: -0.8 });
 const hardwareOutput = new Tone.Gain(1).toDestination();
 const masterGain    = new Tone.Gain(0.8).connect(masterLimiter);
 const recorderDestination = Tone.context.createMediaStreamDestination();
