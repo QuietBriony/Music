@@ -20,7 +20,10 @@
   const GENRE_MIX_SWITCH_MS = 420;
   const GENRE_MIX_RETURN_MS = 920;
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
-  const TARGET_LEVEL = 96;
+  const TARGET_LEVEL = 100;            // engine OUTPUT max — limiter ceiling caps the peak
+  const DESTINATION_BOOST_DB = 4;      // final-stage post-limiter loudness lift
+  const SLEEP_FADE_AFTER_MS = 90 * 60 * 1000;  // 90 min: start auto fade-to-sleep
+  const SLEEP_FADE_DURATION_S = 30 * 60;       // 30 min: ramp output to quiet
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };
   const SHUFFLE_AUDITION_INTERVAL_MS = 42000;
   const SHUFFLE_AUDITION_GENRES = ["ambient", "techno", "lofi", "jazz", "funk", "piano"];
@@ -812,6 +815,15 @@
         await Tone.start();
       }
 
+      // Final-stage loudness lift. Tone.Destination.volume is the post-limiter
+      // master, so this safely boosts overall loudness without distorting —
+      // the engine's masterLimiter (-0.8 dBFS) still caps peaks upstream.
+      try {
+        if (Tone.getDestination) {
+          Tone.getDestination().volume.value = DESTINATION_BOOST_DB;
+        }
+      } catch (e) {}
+
       // Reset master to silent so engine's restoreMasterLevel snaps to 0,
       // then fm.js ramps it up audibly.
       const out = $("output_level");
@@ -857,6 +869,7 @@
       starting = false;
       setButtonState("playing");
       setMediaPlaybackState("playing");
+      startSleepTimer();
       if (shuffleAuditionEnabled) {
         startShuffleAuditionTimer();
       }
@@ -900,6 +913,7 @@
       clearGenreMixTimers();
       stopShuffleAuditionTimer();
       stopGenreTempoLock();
+      cancelSleepTimer("stop");
       setButtonState("idle");
       setMediaPlaybackState("paused");
     }
@@ -919,6 +933,7 @@
     group.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-energy]");
       if (!btn) return;
+      cancelSleepTimer("user-energy");
       setEnergySelection(btn.dataset.energy, { apply: true });
     });
   }
@@ -930,6 +945,7 @@
       const btn = e.target.closest("button[data-genre]");
       if (!btn) return;
       const name = btn.dataset.genre;
+      cancelSleepTimer("user-genre");
       if (shuffleAuditionEnabled) {
         setShuffleAudition(false);
       }
@@ -963,6 +979,88 @@
     });
   }
 
+  // ---- Fade-to-sleep ------------------------------------------
+
+  // 90 分連続再生したら、自動で 30 分かけて output_level を 100 → 25 まで
+  // 下げる。寝落ち想定。途中で genre/energy をユーザーが操作したらキャンセル。
+  let sleepStartedAt = null;
+  let sleepTimer = null;
+  let sleepRamping = false;
+
+  function startSleepTimer() {
+    if (sleepTimer || !started) return;
+    sleepStartedAt = Date.now();
+    sleepTimer = setTimeout(() => {
+      sleepTimer = null;
+      if (!started) return;
+      sleepRamping = true;
+      // 30 分 (1800 秒) かけて output_level を 100 → 25 まで降ろす。
+      // engine の masterGain がそれに追従して全体が静かになる。
+      rampOutputLevel(25, SLEEP_FADE_DURATION_S).then(() => {
+        sleepRamping = false;
+      }).catch(() => { sleepRamping = false; });
+    }, SLEEP_FADE_AFTER_MS);
+  }
+
+  function cancelSleepTimer(reason = "manual") {
+    if (sleepTimer) {
+      clearTimeout(sleepTimer);
+      sleepTimer = null;
+    }
+    sleepStartedAt = null;
+    // ramping 中にユーザー操作があったら、output_level を即 TARGET に戻す
+    if (sleepRamping) {
+      sleepRamping = false;
+      rampOutputLevel(TARGET_LEVEL, 6).catch(() => {});
+    }
+  }
+
+  // ---- PWA install prompt -------------------------------------
+
+  let deferredInstallPrompt = null;
+
+  function bindInstallPrompt() {
+    if (typeof window === "undefined") return;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      showInstallButton();
+    });
+    // 既にインストール済みなら何もしない
+    window.addEventListener("appinstalled", () => {
+      hideInstallButton();
+      deferredInstallPrompt = null;
+    });
+  }
+
+  function showInstallButton() {
+    let btn = $("fm-install");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.id = "fm-install";
+      btn.type = "button";
+      btn.className = "fm-install-btn";
+      btn.textContent = "📲 install as app";
+      btn.addEventListener("click", async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        try {
+          await deferredInstallPrompt.userChoice;
+        } catch (e) {}
+        deferredInstallPrompt = null;
+        hideInstallButton();
+      });
+      const shell = $("fm-shell");
+      if (shell) shell.appendChild(btn);
+    }
+    btn.hidden = false;
+  }
+
+  function hideInstallButton() {
+    const btn = $("fm-install");
+    if (btn) btn.hidden = true;
+  }
+
   // ---- Boot ----------------------------------------------------
 
   function boot() {
@@ -975,6 +1073,7 @@
     bindReviewSync();
     bindVisibility();
     ensureMediaSession();
+    bindInstallPrompt();
 
     // Kick off preset fetch in the background. Loader is graceful: missing
     // files just resolve to null and the genre-flavor builders fall back

@@ -237,6 +237,29 @@
   color: var(--accent-glass);
 }
 
+.fm-install-btn {
+  appearance: none;
+  margin-top: clamp(20px, 3vh, 32px);
+  border: 1px solid rgba(125, 240, 212, 0.35);
+  background: rgba(125, 240, 212, 0.06);
+  color: var(--accent-glass);
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  padding: 10px 22px;
+  cursor: pointer;
+  text-transform: lowercase;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.fm-install-btn:hover {
+  background: rgba(125, 240, 212, 0.12);
+  border-color: var(--accent-glass);
+}
+
+.fm-install-btn[hidden] { display: none; }
+
 #fm-shuffle-status {
   min-width: 118px;
   text-align: left;

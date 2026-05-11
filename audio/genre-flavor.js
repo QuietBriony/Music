@@ -37,13 +37,13 @@
   // single WORKING_LEVEL across all genres makes some pills sound louder.
   // Tuned by ear so all GENRE pills land within ~2 dB of each other.
   const LEVEL_BY_GENRE = {
-    any: 0.56,
-    ambient: 0.52,
-    techno: 0.60,
-    lofi: 0.58,
-    jazz: 0.62,
-    funk: 0.60,
-    piano: 0.40   // 4-5 note voicings → density high, drop ~2.9 dB
+    any: 0.66,
+    ambient: 0.62,
+    techno: 0.70,
+    lofi: 0.68,
+    jazz: 0.72,
+    funk: 0.70,
+    piano: 0.50   // 4-5 note voicings → density high, drop ~2.5 dB relative to others
   };
 
   function workingLevelFor(name) {
