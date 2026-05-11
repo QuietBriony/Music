@@ -323,3 +323,84 @@ window.HazamaPresets.get("drum-frames-jazz")
 - `docs/music-radio-brain.md` — engine.js 番組ロジックの設計メモ
 - `docs/ios-safari-background-playback-check.md` — iOS Safari 対応チェック
 - engine.js コメント — 12k 行 live runtime の各セクション説明
+
+## 10. Session feel & narrative (v36 → v43)
+
+genre-flavor.js の上に積んできた「人間的なセッション感」の層。順序は浅い
+表面 → 深い長尺構造。
+
+### v36 — production governor
+- **Richard D. James wrongness**: 1.2-3.5% 確率で velocity を 0.3x に dropout
+- **D Angelo behind-beat**: snare/ghost に +2-7 ms 後ろ揺れ (per-pill amount)
+- session_role (head/comp/break/recap/vamp) で break frames は末尾 25% velocity dip、recap は 1.12x lift
+
+### v37 — Nujabes flute lead (lofi)
+- FMSynth + 5.2 Hz vibrato LFO + breath noise sidechain + 8n. delay + hall reverb
+- 7 modal phrases、4-bar window で 34% 確率で吹く
+
+### v38 — mastering chain + UX
+- Master EQ3 (low +1.2 / mid -0.4 / high +0.8 dB)
+- Sidechain pump (techno 0.48 / funk 0.38 depth, kick-keyed duck)
+- D'Angelo tape saturation parallel-wet (funk 0.7 / lofi 0.45)
+- Per-pill flavor arc: warm-up 0-90s → peak 12min → cool-down
+- Screen Wake Lock, time-of-day auto pill (ANY モード)
+- Human review queue HTML が SYNC + listening trace を表示
+
+### v39 — jazz acoustic upright bass + variation pass
+- `makeAcousticBass()`: FMSynth body + brown noise thump + pink finger chiff + 50-cent pitch dive
+- `WALKING_BASS_PATTERNS` keyed by session_role (Sam Jones / Paul Chambers feel)
+- Jazz brush patterns 1→4 rotating
+- Jazz comping voicings 4→10、broken/recap で 5-voice voicings
+- Funk bass / clavi / EP も同じパターンで variation 化
+
+### v40 — groove lock + tempo drift
+- ドラマーの snare microMs 平均 → `groove.pushMs = pocket * 0.6` を全 melodic レイヤで共有
+- 4-bar phrase curve (settle/lift/push/turn) を `groove.intensity` に乗せる
+- Lead voice rotation: 4小節ごと bass→comp→drums→lead (call-and-response)
+- Tempo micro-drift: jazz/piano ±1.5 BPM, funk 1.2, lofi 1.0, techno/ambient 0 (lock)
+
+### v41 — per-genre kits + structure
+- KIT_PAN_LAYOUT per profile (jazz/funk/lofi/techno で異なる pan)
+- 8-bar phrase + 32-bar drop bar (Apple Music 的 quiet moment)
+- Modal key shifts 64-bar (D → G → A → D dorian)
+- Solo melodic layer (jazz sax / funk wah guitar / lofi muted trumpet)、leadVoice === "lead" 時のみ発話
+- Funk sub bass (-1 octave sine on downbeat)
+
+### v42 — mix polish (潰れ修正 + 人間的)
+- Compressor relax: threshold -18→-10 dB / ratio 2.8→2.0 (ダイナミクス保持)
+- Limiter -1.2→-0.8 dB ceiling
+- Destination boost 4→6 dB、LEVEL_BY_GENRE +0.06
+- `humanizeMs()` 非対称分布 70% slightly late / 25% on-grid / 5% pushed
+- `backbeatLag()` ビート 2/4 に +4-8 ms (jazz/funk pocket)
+- `peakShift()` 4小節最後の and-of-4 pickup で velocity ×1.18 + -3〜-6 ms (リズム跳ね)
+- `isPhraseSilence()` 8小節フレーズ末尾 16th 無音 (息継ぎ)
+
+### v43 — narrative drive (物語進行)
+- **96-bar movement plan**: intro 8 → build 16 → peak 32 → break 4 → return 24 → outro 12
+- 各 movement で `layerActiveInMovement()` がレイヤの入退場を制御:
+  - intro: drums only first 4 bars → bass mid-intro → brush near end
+  - build: brush full, clavi joins bar 4, comp joins bar 8 (delayed entry)
+  - peak: full ensemble + solo speaks
+  - break: all melodic silent — drum-only quiet
+  - return: 全員復帰 + key shift active
+  - outro: comp/ep/clavi first drop → brush → bass → 完
+- `flavor.tension` 0-1 連続値: movement 内で線形上昇、UI / 将来の filter brightness に使える
+- Stereo 更に広く (kit pan ×1.4): jazz hat -0.45 / funk clavi +0.45 など
+- Destination boost 6→8 dB、LEVEL +0.04 (jazz 0.84, funk 0.82)
+
+### Music Core Rig との同期状況
+
+| 層 | 共有 | 説明 |
+|---|---|---|
+| engine.js (Radio Brain / 9 programs / Longform Arc / UCM faders) | ✅ | Core Rig と FM が同じ engine.js を load |
+| presets/*.json | ✅ | 両アプリで利用可 |
+| genre-flavor.js (acoustic bass / kit pans / master EQ / groove lock / 物語進行) | ❌ | fm.html のみ load。Core Rig は素の engine 出力 |
+| GENRE pill UI | FM 専用 | Core Rig は UCM 9-fader manual |
+
+Core Rig に flavor を載せるなら:
+1. `index.html` で `<script src="audio/genre-flavor.js?v=fm-43" defer></script>` 追加
+2. オプション: 小さな flavor pill UI を追加 (ANY/JAZZ/FUNK/...) で `window.GenreFlavor.setGenre(name)` を呼ぶ
+3. Core Rig の UCM mix と flavor layer が並行で鳴る (mastering chain は別)
+
+判断: Core Rig は manual mix workflow なので flavor 同期は **opt-in feature** として残すのが
+無理ない。フェーダー触っている時に裏で flavor が勝手に変化すると操作感が混乱する。
