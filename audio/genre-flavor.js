@@ -1094,6 +1094,94 @@
     return layer;
   }
 
+  // Nujabes-style flute lead — sparse top-line phrases that sit above
+  // the memory dots / jazz dust. Sine-leaning FM with a breathy noise tail,
+  // soft attack, light vibrato. Modal D dorian / Am pentatonic phrases.
+  // Reference: Nujabes "Feather" (Modal Soul) sad-warm flute character.
+  // Volume -19 dB foreground but sparse — only 28-38% probability each
+  // 4-bar phrase window, with rests built into the phrase shapes.
+  function addNujabesFluteLead(layer) {
+    if (!layer) return null;
+    const hall = new Tone.Reverb({ decay: 3.6, preDelay: 0.03, wet: 0.34 }).connect(layer.gain);
+    const delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.18, wet: 0.16 }).connect(hall);
+    const lp = new Tone.Filter({ frequency: 4200, type: "lowpass", Q: 0.4 }).connect(delay);
+    const flute = new Tone.FMSynth({
+      harmonicity: 1.0,
+      modulationIndex: 1.6,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.085, decay: 0.32, sustain: 0.62, release: 0.7 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 0.06, decay: 0.22, sustain: 0.4, release: 0.5 },
+      volume: -19
+    }).connect(lp);
+
+    // Vibrato — 5 Hz pitch wobble for breath
+    const vibrato = new Tone.LFO({ frequency: 5.2, min: -7, max: 7 });
+    try {
+      vibrato.connect(flute.detune);
+      vibrato.start();
+    } catch (e) {}
+
+    // Breath noise sidechain — fires under each note attack
+    const breathFilter = new Tone.Filter({ frequency: 3800, type: "bandpass", Q: 1.2 }).connect(lp);
+    const breath = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.04, decay: 0.18, sustain: 0.05, release: 0.3 },
+      volume: -36
+    }).connect(breathFilter);
+
+    // Nujabes-style phrases — D dorian / A minor pentatonic with rests.
+    // dur in 4n (beats). 0-duration entries are explicit rests.
+    const phrases = [
+      // Aruarian Dance-ish ascending question
+      [{ note: "D4", dur: 1 }, { note: "F4", dur: 1 }, { note: "A4", dur: 2 }],
+      // Feather-ish descending answer
+      [{ note: "C5", dur: 1 }, { note: "A4", dur: 1 }, { note: "G4", dur: 1 }, { note: "F4", dur: 2 }],
+      // Half-step sigh with hold
+      [{ note: "D4", dur: 0.5 }, { note: "F4", dur: 0.5 }, { note: "G4", dur: 1 }, { note: "A4", dur: 2 }],
+      // Long sustain over chord change
+      [{ note: "F4", dur: 4 }],
+      // Modal phrase ascending then resting on 5
+      [{ note: "A4", dur: 1 }, { note: "G4", dur: 0.5 }, { note: "F4", dur: 0.5 }, { note: "D4", dur: 2 }],
+      // High pickup → low rest (sparse)
+      [{ note: "C5", dur: 0.5 }, { note: "A4", dur: 1.5 }],
+      // Open-fifth question
+      [{ note: "D4", dur: 1 }, { note: "A4", dur: 3 }]
+    ];
+
+    const beatSec = Tone.Time("4n").toSeconds();
+    let phraseIdx = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      // 4-bar phrase window; flute speaks on 30-38% of windows
+      if (Math.random() < 0.34) {
+        const phrase = phrases[phraseIdx % phrases.length];
+        let offset = 0.06 + Math.random() * 0.04; // light upbeat lag
+        phrase.forEach((step) => {
+          if (step.note) {
+            const t = safeEventTime(time + offset);
+            const dur = step.dur * beatSec;
+            const vel = 0.42 + Math.random() * 0.1;
+            try {
+              flute.triggerAttackRelease(step.note, dur * 0.9, t, vel);
+              breath.triggerAttackRelease(dur * 0.6, t, vel * 0.5);
+            } catch (e) {}
+          }
+          offset += step.dur * beatSec;
+        });
+      }
+      phraseIdx++;
+    }, "4m", "1m"));
+
+    layer.synths.push(flute, vibrato, breath, breathFilter, lp, delay, hall);
+    const prevDispose = layer.dispose;
+    layer.dispose = () => {
+      try { vibrato.stop(); } catch (e) {}
+      if (prevDispose) prevDispose();
+    };
+    layer.source = `${layer.source || "lofi"}+nujabes-flute`;
+    return layer;
+  }
+
   // When drum-frames-lofi preset is present, render the lazy frame rhythm
   // PLUS the vinyl crackle bed for the dusty character.
   function buildLofiFromFrames(frames) {
@@ -1119,7 +1207,17 @@
       if (prevDispose) prevDispose();
     };
     drums.source = "drum-frames+dusty-break-kit+vinyl-crackle";
-    return applyProductionGovernor(addSessionBreaks(addNujabesMemoryDots(addLofiJazzDust(drums)), "lofi"), "lofi");
+    return applyProductionGovernor(
+      addSessionBreaks(
+        addNujabesFluteLead(
+          addNujabesMemoryDots(
+            addLofiJazzDust(drums)
+          )
+        ),
+        "lofi"
+      ),
+      "lofi"
+    );
   }
 
   function buildLofi(frames) {
