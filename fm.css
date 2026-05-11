@@ -71,6 +71,18 @@
   color: var(--accent-glass);
 }
 
+#fm_play[data-state="starting"],
+#fm_play[data-state="stopping"] {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  animation: fm-play-warmup 1.6s ease-in-out infinite;
+}
+
+@keyframes fm-play-warmup {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
 #mandala-container {
   transition: filter 0.6s ease;
   --ident-hue: 0deg;
@@ -170,11 +182,12 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
   font-family: inherit;
   font-size: 11px;
   letter-spacing: 0.24em;
-  padding: 8px 16px;
+  padding: 12px 18px;
   border-radius: 999px;
   cursor: pointer;
   text-transform: uppercase;
-  min-width: 64px;
+  min-width: 72px;
+  min-height: 44px;
   transition: background 0.25s, color 0.25s;
 }
 
@@ -206,11 +219,12 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
   font-family: inherit;
   font-size: 11px;
   letter-spacing: 0.18em;
-  padding: 8px 12px;
+  padding: 11px 14px;
   border-radius: 999px;
   cursor: pointer;
   text-transform: uppercase;
-  min-width: 56px;
+  min-width: 64px;
+  min-height: 44px;
   transition: background 0.25s, color 0.25s;
 }
 

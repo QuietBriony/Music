@@ -275,11 +275,11 @@
       btn.textContent = "STOP";
       btn.setAttribute("aria-label", "Stop playback");
     } else if (state === "starting") {
-      btn.textContent = "…";
-      btn.setAttribute("aria-label", "Starting");
+      btn.textContent = "WARMING UP";
+      btn.setAttribute("aria-label", "Warming up audio engine");
     } else if (state === "stopping") {
-      btn.textContent = "…";
-      btn.setAttribute("aria-label", "Stopping");
+      btn.textContent = "FADING";
+      btn.setAttribute("aria-label", "Fading out");
     } else {
       btn.textContent = "START";
       btn.setAttribute("aria-label", "Start playback");
@@ -1129,6 +1129,16 @@
 
   function formatTraceSummary(snap) {
     const lines = [];
+    // Legend — what the session_role and lead voice values mean
+    lines.push("legend");
+    lines.push("  ためる  = break frame (drum-only, dynamic dip)");
+    lines.push("  解放    = recap frame (released, +12% velocity)");
+    lines.push("  ヘッド  = head statement (melody-led)");
+    lines.push("  コンプ  = comping (chord-led)");
+    lines.push("  ヴァンプ = vamp (loop pocket)");
+    lines.push("  lead    = which voice has the spotlight this 4-bar window");
+    lines.push("  drop    = 32-bar quiet moment (melodic layers silent)");
+    lines.push("");
     const elapsedMin = (snap.elapsed_ms / 60000).toFixed(1);
     lines.push(`status        ${snap.active ? "playing" : "idle"}`);
     lines.push(`elapsed       ${elapsedMin} min`);
@@ -1153,8 +1163,13 @@
         const g = flavor.groove;
         lines.push(`  groove      push ${(g.pushMs || 0).toFixed(1)}ms · intensity ${(g.intensity || 1).toFixed(2)}x`);
       }
-      if (flavor.phraseBar != null) lines.push(`  phrase bar  ${flavor.phraseBar} / 4`);
-      if (flavor.leadVoice) lines.push(`  lead voice  ${flavor.leadVoice}`);
+      if (flavor.phraseBar != null) lines.push(`  phrase bar  ${flavor.phraseBar} / 4  ·  8bar ${flavor.phrase8Bar != null ? flavor.phrase8Bar : "?"} / 8`);
+      if (flavor.leadVoice) lines.push(`  lead voice  ${flavor.leadVoice}${flavor.leadVoice === "lead" ? "  (solo)" : ""}`);
+      if (flavor.dropBar) lines.push(`  drop bar    YES (32-bar quiet moment)`);
+      if (flavor.keyShift != null && flavor.keyShift !== 0) {
+        const keyNames = { 0: "D dorian", 5: "G dorian", 7: "A dorian" };
+        lines.push(`  key shift   +${flavor.keyShift} semi  (${keyNames[flavor.keyShift] || "?"})`);
+      }
       // Live tempo (BPM drift visible)
       if (typeof window !== "undefined" && window.Tone && window.Tone.Transport) {
         const bpm = Math.round(Number(window.Tone.Transport.bpm.value) * 10) / 10;

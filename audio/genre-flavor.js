@@ -541,17 +541,37 @@
     };
   }
 
+  // Per-profile stereo panning. Drummer's perspective: hat slightly L,
+  // ghost (ride/snare side hits) slightly R, kick + snare anchored center.
+  // techno stays mostly mono for machine punch; lofi narrows the stage.
+  const KIT_PAN_LAYOUT = {
+    jazz:  { kick:  0.00, snare: -0.05, hat: -0.20, ghost:  0.10, fill:  0.05, crash: -0.15 },
+    funk:  { kick:  0.00, snare:  0.00, hat:  0.15, ghost: -0.10, fill:  0.10, crash:  0.20 },
+    lofi:  { kick:  0.00, snare:  0.00, hat:  0.08, ghost: -0.08, fill:  0.00, crash:  0.00 },
+    techno:{ kick:  0.00, snare:  0.00, hat:  0.00, ghost:  0.00, fill:  0.00, crash:  0.00 }
+  };
+
   function makeLiveDrumKit(gain, profile = "funk") {
+    const pan = KIT_PAN_LAYOUT[profile] || KIT_PAN_LAYOUT.funk;
+    // Per-drum panner bus. Each drum routes its audio through its own
+    // panner, panner connects to the layer gain.
+    const kickPan = new Tone.Panner(pan.kick).connect(gain);
+    const snarePan = new Tone.Panner(pan.snare).connect(gain);
+    const hatPan = new Tone.Panner(pan.hat).connect(gain);
+    const ghostPan = new Tone.Panner(pan.ghost).connect(gain);
+    const fillPan = new Tone.Panner(pan.fill).connect(gain);
+    const crashPan = new Tone.Panner(pan.crash).connect(gain);
+
     const ghost = new Tone.NoiseSynth({
       noise: { type: "pink" },
       envelope: { attack: 0.004, decay: profile === "jazz" ? 0.18 : 0.095, sustain: 0, release: 0.045 },
       volume: profile === "jazz" ? -30 : profile === "lofi" ? -32 : -27
-    }).connect(gain);
+    }).connect(ghostPan);
     const fill = new Tone.NoiseSynth({
       noise: { type: profile === "lofi" ? "pink" : "white" },
       envelope: { attack: 0.001, decay: profile === "jazz" ? 0.16 : 0.11, sustain: 0, release: 0.045 },
       volume: profile === "jazz" ? -24 : profile === "lofi" ? -24 : -19
-    }).connect(gain);
+    }).connect(fillPan);
     const crash = new Tone.MetalSynth({
       frequency: profile === "jazz" ? 145 : 175,
       envelope: { attack: 0.004, decay: profile === "jazz" ? 1.1 : 0.62, release: 0.3 },
@@ -560,11 +580,11 @@
       resonance: profile === "jazz" ? 2400 : 3600,
       octaves: profile === "jazz" ? 2.1 : 1.3,
       volume: profile === "jazz" ? -33 : -36
-    }).connect(gain);
+    }).connect(crashPan);
     return {
-      kick: makeLiveKick(gain, profile),
-      snare: makeLiveSnare(gain, profile),
-      hat: makeLiveHat(gain, profile),
+      kick: makeLiveKick(kickPan, profile),
+      snare: makeLiveSnare(snarePan, profile),
+      hat: makeLiveHat(hatPan, profile),
       ghost,
       fill,
       crash
@@ -698,20 +718,34 @@
         flavor.groove.pushMs = drummerPocketMs * 0.6;        // bass/comp lag
         flavor.groove.drummerPocketMs = drummerPocketMs;     // raw for trace
 
-        // 4-bar phrase curve: bar 0 settle, bar 1 lift, bar 2 push, bar 3 turn
-        flavor.phraseBar = (frameIdx - 1) % 4;
+        // 4-bar phrase curve + 8-bar long-form structure.
+        // 4-bar level: bar 0 settle, bar 1 lift, bar 2 push, bar 3 turn
+        // 8-bar level: bars 0-3 first half (subdued), bars 4-7 second half (released)
+        const barIdx = (frameIdx - 1);
+        flavor.phraseBar = barIdx % 4;
+        flavor.phrase8Bar = barIdx % 8;
         const phraseIntensity = [0.92, 1.0, 1.06, 1.02][flavor.phraseBar] || 1.0;
+        const longformLift = flavor.phrase8Bar >= 4 ? 1.04 : 1.0;
         const sessionMul = frame.session_role === "break" ? 0.78
                          : frame.session_role === "recap" ? 1.12
                          : frame.session_role === "head" ? 0.96
                          : 1.0;
-        flavor.groove.intensity = phraseIntensity * sessionMul;
+        flavor.groove.intensity = phraseIntensity * longformLift * sessionMul;
+
+        // 32-bar drop: every 32 bars (except bar 0), one bar where melodic
+        // layers go silent and drums attenuate. The "Apple Music quiet moment".
+        flavor.dropBar = (barIdx > 0) && (barIdx % 32 === 0);
 
         // Lead voice rotation: every 4 bars, hand the spotlight to a
         // different voice. Non-lead voices drop density to 70% so the
         // ensemble breathes instead of playing all-at-once forever.
         const leadCycle = ["bass", "comp", "drums", "lead"];
-        flavor.leadVoice = leadCycle[Math.floor((frameIdx - 1) / 4) % leadCycle.length];
+        flavor.leadVoice = leadCycle[Math.floor(barIdx / 4) % leadCycle.length];
+
+        // Modal key shift: every 64 bars rotate D → G → A → D (semitone offsets).
+        // Bass / clavi / comp transpose their notes by this amount.
+        const keyCycle = [0, 5, 7, 0];
+        flavor.keyShift = keyCycle[Math.floor(barIdx / 64) % keyCycle.length];
       }
 
       frame.events.forEach((evt, evtIdx) => {
@@ -752,6 +786,13 @@
         // RDJ wrongness: occasional per-event velocity dropout to 0.3x
         if (rdj > 0 && Math.random() < rdj) {
           eventVel *= 0.3;
+        }
+
+        // 32-bar drop: drums attenuate to 0.4x for that single bar (the
+        // "quiet moment"). The drums don't go silent — they just pull back
+        // so the listener feels the absence of melodic layers.
+        if (typeof window !== "undefined" && window.HazamaFlavorState && window.HazamaFlavorState.dropBar) {
+          eventVel *= 0.4;
         }
 
         try {
@@ -1062,19 +1103,19 @@
       const otherLead = flavor && (flavor.leadVoice === "bass" || flavor.leadVoice === "drums");
 
       const bucket = COMP_VOICINGS[sr] || COMP_VOICINGS.default;
-      if (bucket.length === 0) { compBar++; return; }  // break frames silent
+      if (bucket.length === 0) { compBar++; return; }
+      if (flavor && flavor.dropBar) { compBar++; return; }
 
-      // Skip behavior: more skips when comp is not the lead (yields space to
-      // bass/drums). When comp leads, only ~10% skip. When others lead, 50% skip.
       const skipProb = isLead ? 0.10 : otherLead ? 0.50 : 0.30;
       if (Math.random() < skipProb) { compBar++; return; }
 
-      const chord = bucket[compBar % bucket.length];
-      const grooveOffset = (groove.pushMs || 0) / 1000 * 0.8; // comp lags slightly behind drummer
+      const rawChord = bucket[compBar % bucket.length];
+      const keyShift = flavor && flavor.keyShift || 0;
+      const chord = transposeChord(rawChord, keyShift);
+      const grooveOffset = (groove.pushMs || 0) / 1000 * 0.8;
       const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
       const leadBoost = isLead ? 1.10 : 1.0;
       try {
-        // Slight roll: each note 8-22 ms apart for "rolled" comping
         chord.forEach((note, i) => {
           const delay = i * (0.008 + Math.random() * 0.014);
           const vel = (0.18 + Math.random() * 0.07) * intensity * leadBoost;
@@ -1145,10 +1186,12 @@
         currentPattern = bucket[funkBassBarCount % bucket.length];
         funkBassBarCount++;
       }
-      const note = currentPattern[step % currentPattern.length];
-      // Lead = denser hits; non-lead = same prob but lower velocity
+      const rawNote = currentPattern[step % currentPattern.length];
+      const keyShift = flavor && flavor.keyShift || 0;
+      const note = transposeNote(rawNote, keyShift);
+      const dropBar = flavor && flavor.dropBar;
       const hitProb = (step % 4 === 0 ? 0.86 : 0.58) * (isLead ? 1.0 : 0.85);
-      if (note && Math.random() < hitProb) {
+      if (note && !dropBar && Math.random() < hitProb) {
         try {
           const grooveOffset = (groove.pushMs || 0) / 1000;
           const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
@@ -1164,8 +1207,36 @@
       }
       step = (step + 1) % 16;
     }, "16n"));
-    layer.synths.push(bass);
-    layer.source = `${layer.source || "drum-frames+ep+clavi"}+rubber-bass-rotating-groove`;
+    // Sub-bass companion: -1 octave sine FMSynth that fires only on beat 0
+    // of each bar (downbeat). Adds low-end body without muddying the rubber
+    // bass's mid range. Volume -18 dB so it's felt more than heard on small
+    // speakers but adds real bottom on phones with EQ-shifted curves / iPad.
+    const sub = new Tone.FMSynth({
+      harmonicity: 1,
+      modulationIndex: 0.6,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.01, decay: 0.4, sustain: 0.55, release: 0.4 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 0.005, decay: 0.18, sustain: 0.2, release: 0.3 },
+      volume: -18
+    }).connect(layer.gain);
+    let subStep = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      if (subStep === 0 && !(flavor && flavor.dropBar)) {
+        // Use the first valid note from currentPattern as the sub root, -1 oct
+        const rawNote = (currentPattern && currentPattern.find(n => !!n)) || "D2";
+        try {
+          const lowerNote = Tone.Frequency(rawNote).transpose(-12 + (flavor && flavor.keyShift || 0)).toNote();
+          const groove = flavor && flavor.groove || { intensity: 1.0 };
+          const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
+          sub.triggerAttackRelease(lowerNote, "2n", safeEventTime(time + 0.005), 0.55 * intensity);
+        } catch (e) {}
+      }
+      subStep = (subStep + 1) % 16;
+    }, "16n"));
+    layer.synths.push(bass, sub);
+    layer.source = `${layer.source || "drum-frames+ep+clavi"}+rubber-bass-rotating-groove+sub`;
     return layer;
   }
 
@@ -1430,16 +1501,19 @@
     };
     drums.source = "drum-frames+dusty-break-kit+vinyl-crackle";
     return applyProductionGovernor(
-      addTapeSaturation(
-        addSessionBreaks(
-          addNujabesFluteLead(
-            addNujabesMemoryDots(
-              addLofiJazzDust(drums)
-            )
+      addSoloLayer(
+        addTapeSaturation(
+          addSessionBreaks(
+            addNujabesFluteLead(
+              addNujabesMemoryDots(
+                addLofiJazzDust(drums)
+              )
+            ),
+            "lofi"
           ),
-          "lofi"
+          0.45
         ),
-        0.45
+        "lofi"
       ),
       "lofi"
     );
@@ -1458,6 +1532,135 @@
   }
 
   // ---- JAZZ -----------------------------------------------------
+
+  // Solo melodic layer — only speaks when flavor.leadVoice === "lead"
+  // (every 16 bars in the rotation). One synth voice per genre archetype.
+  // jazz: tenor sax (FMSynth with breathy modulation + dynamic vibrato)
+  // funk: wah guitar (saw + filter sweep + envelope)
+  // lofi: muted trumpet (sine FM with pitch dive)
+  function addSoloLayer(layer, pill) {
+    if (!layer) return null;
+    const hall = new Tone.Reverb({ decay: pill === "jazz" ? 2.4 : 1.6, wet: 0.28 }).connect(layer.gain);
+    const lp = new Tone.Filter({ frequency: pill === "funk" ? 2400 : 3200, type: "lowpass", Q: 0.5 }).connect(hall);
+
+    let solo;
+    let vibrato = null;
+    if (pill === "jazz" || pill === "lofi") {
+      // Sax / muted trumpet — FMSynth with breath modulation
+      solo = new Tone.FMSynth({
+        harmonicity: pill === "jazz" ? 2.4 : 1.6,
+        modulationIndex: pill === "jazz" ? 4.5 : 2.2,
+        oscillator: { type: "sawtooth" },
+        envelope: { attack: 0.06, decay: 0.4, sustain: 0.65, release: 0.55 },
+        modulation: { type: "square" },
+        modulationEnvelope: { attack: 0.04, decay: 0.2, sustain: 0.4, release: 0.4 },
+        volume: pill === "jazz" ? -16 : -19
+      }).connect(lp);
+      vibrato = new Tone.LFO({ frequency: 5.5, min: -6, max: 6 });
+      try { vibrato.connect(solo.detune); vibrato.start(); } catch (e) {}
+    } else {
+      // Funk wah guitar — saw + filter sweep
+      const wahFilter = new Tone.Filter({ frequency: 800, type: "bandpass", Q: 6.5 }).connect(lp);
+      solo = new Tone.MonoSynth({
+        oscillator: { type: "sawtooth" },
+        filter: { type: "lowpass", frequency: 1800, Q: 1.2 },
+        envelope: { attack: 0.005, decay: 0.18, sustain: 0.4, release: 0.25 },
+        filterEnvelope: { attack: 0.003, decay: 0.15, sustain: 0.3, release: 0.2, baseFrequency: 280, octaves: 3.2 },
+        portamento: 0.02,
+        volume: -16
+      }).connect(wahFilter);
+      vibrato = wahFilter; // wah filter is "the vibrato" for funk
+    }
+
+    // Solo phrases — modal lines for jazz/lofi, funky riffs for funk
+    const SOLO_PHRASES = {
+      jazz: [
+        // Modal lines, D dorian / A minor pentatonic
+        [{n: "A3", d: 0.5}, {n: "C4", d: 0.5}, {n: "D4", d: 1}, {n: "F4", d: 2}],
+        [{n: "D4", d: 1}, {n: "F4", d: 0.5}, {n: "G4", d: 0.5}, {n: "A4", d: 2}],
+        [{n: "C4", d: 0.5}, {n: "Bb3", d: 0.5}, {n: "A3", d: 1}, {n: "G3", d: 2}],
+        [{n: "F4", d: 1}, {n: "E4", d: 1}, {n: "D4", d: 1}, {n: "C4", d: 1}],
+        [{n: "A3", d: 1}, {n: "D4", d: 1}, {n: "F4", d: 2}],
+        [{n: "G4", d: 0.5}, {n: "F4", d: 0.5}, {n: "D4", d: 1}, {n: "A3", d: 2}]
+      ],
+      lofi: [
+        [{n: "F4", d: 2}, {n: "D4", d: 2}],
+        [{n: "A3", d: 1}, {n: "C4", d: 1}, {n: "D4", d: 2}],
+        [{n: "G4", d: 0.5}, {n: "F4", d: 1.5}, {n: "D4", d: 2}],
+        [{n: "C4", d: 4}]   // long sustain
+      ],
+      funk: [
+        // Funky 16th-note licks, A minor pentatonic
+        [{n: "A3", d: 0.25}, {n: "C4", d: 0.25}, {n: "D4", d: 0.25}, {n: "E4", d: 0.25}, {n: "G4", d: 1}, {n: "A4", d: 2}],
+        [{n: "A4", d: 0.25}, {n: "G4", d: 0.25}, {n: "E4", d: 0.5}, {n: "D4", d: 0.5}, {n: "C4", d: 0.5}, {n: "A3", d: 2}],
+        [{n: "E4", d: 1}, {n: "D4", d: 0.25}, {n: "C4", d: 0.25}, {n: "D4", d: 0.5}, {n: "A3", d: 2}],
+        [{n: "C5", d: 0.5}, {n: "A4", d: 1.5}, {n: "G4", d: 1}, {n: "E4", d: 1}]
+      ],
+      piano: [],
+      ambient: [],
+      techno: []
+    };
+
+    const phrases = SOLO_PHRASES[pill] || SOLO_PHRASES.jazz;
+    if (phrases.length === 0) return layer; // no solo for this pill
+
+    const beatSec = Tone.Time("4n").toSeconds();
+    let phraseCount = 0;
+    let lastWasLead = false;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const isLead = flavor && flavor.leadVoice === "lead";
+      // Only fire on the FIRST bar of a lead window (to avoid retriggering mid-phrase)
+      if (!isLead) { lastWasLead = false; return; }
+      if (lastWasLead) return;
+      lastWasLead = true;
+      if (flavor && flavor.dropBar) return;
+
+      const phrase = phrases[phraseCount % phrases.length];
+      phraseCount++;
+      const keyShift = flavor && flavor.keyShift || 0;
+      let offset = 0.08 + Math.random() * 0.05;
+      phrase.forEach((step) => {
+        if (step.n) {
+          const t = safeEventTime(time + offset);
+          const dur = step.d * beatSec;
+          const vel = 0.4 + Math.random() * 0.12;
+          const note = transposeNote(step.n, keyShift);
+          try { solo.triggerAttackRelease(note, dur * 0.92, t, vel); } catch (e) {}
+        }
+        offset += step.d * beatSec;
+      });
+    }, "4m", "1m"));
+
+    // Reset lastWasLead at every bar boundary so next lead window can fire
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat(() => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      if (!flavor || flavor.leadVoice !== "lead") lastWasLead = false;
+    }, "1m"));
+
+    layer.synths.push(solo, lp, hall);
+    if (vibrato) layer.synths.push(vibrato);
+    const prevDispose = layer.dispose;
+    layer.dispose = () => {
+      if (vibrato && typeof vibrato.stop === "function") {
+        try { vibrato.stop(); } catch (e) {}
+      }
+      if (prevDispose) prevDispose();
+    };
+    layer.source = `${layer.source || "layer"}+solo(${pill})`;
+    return layer;
+  }
+
+  // Transpose a note name by semitones (for modal key shifts).
+  function transposeNote(note, semitones) {
+    if (!note || semitones === 0) return note;
+    try { return Tone.Frequency(note).transpose(semitones).toNote(); }
+    catch (e) { return note; }
+  }
+  function transposeChord(notes, semitones) {
+    if (semitones === 0 || !Array.isArray(notes)) return notes;
+    return notes.map((n) => transposeNote(n, semitones));
+  }
 
   // ---- Acoustic upright bass voice ------------------------------
   //
@@ -1592,21 +1795,21 @@
       const sr = flavor ? flavor.sessionRole : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
       const isLead = flavor && flavor.leadVoice === "bass";
+      const dropBar = flavor && flavor.dropBar;
+      const keyShift = flavor && flavor.keyShift || 0;
 
       if (beatInBar === 0 || !currentPattern) {
         currentPattern = pickWalkingBassPattern(sr || "default");
-        // Non-lead bars: 30% chance to skip the bar entirely (rest)
         if (!isLead && Math.random() < 0.18) {
           beatInBar = (beatInBar + 1) % 4;
           return;
         }
       }
-      const note = currentPattern[beatInBar % currentPattern.length];
+      const rawNote = currentPattern[beatInBar % currentPattern.length];
       beatInBar = (beatInBar + 1) % 4;
-      if (!note) return;
+      if (!rawNote || dropBar) return;
+      const note = transposeNote(rawNote, keyShift);
 
-      // Groove lock: pushMs is the band's shared "lag" relative to the kick.
-      // Bass sits in this pocket. Add tiny ±4ms personal jitter on top.
       const grooveOffset = (groove.pushMs || 0) / 1000;
       const jitter = (Math.random() - 0.5) * 0.008;
       const intensityScale = clamp(groove.intensity || 1.0, 0.7, 1.25);
@@ -1615,7 +1818,6 @@
 
       bassVoice.play(note, "8n", safeEventTime(time + grooveOffset + jitter), vel);
 
-      // Passing tone: 18% normally, 28% when bass is the lead voice
       const passingProb = isLead ? 0.28 : 0.18;
       if (Math.random() < passingProb && note) {
         try {
@@ -1733,7 +1935,7 @@
     }, "8n", "8n"));
     drums.synths.push(brush, brushHi, brushLo, ...bassVoice.voices, room);
     drums.source = "drum-frames+live-jazz-kit+acoustic-bass+brush-patterns";
-    return applyProductionGovernor(addSessionBreaks(addJazzComping(drums), "jazz"), "jazz");
+    return applyProductionGovernor(addSoloLayer(addSessionBreaks(addJazzComping(drums), "jazz"), "jazz"), "jazz");
   }
 
   function buildJazz(frames) {
@@ -1859,8 +2061,9 @@
         const sr = flavor ? flavor.sessionRole : null;
         currentClaviPattern = pickFunkClaviPattern(sr || "default");
       }
-      if (currentClaviPattern[claviStep]) {
-        const note = currentChordTones[Math.floor(Math.random() * currentChordTones.length)];
+      if (currentClaviPattern[claviStep] && !(flavor && flavor.dropBar)) {
+        const rawNote = currentChordTones[Math.floor(Math.random() * currentChordTones.length)];
+        const note = transposeNote(rawNote, flavor && flavor.keyShift || 0);
         const grooveOffset = (groove.pushMs || 0) / 1000 * 0.7;
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
         const leadBoost = isLead ? 1.08 : 1.0;
@@ -1876,16 +2079,19 @@
         const sr = flavor ? flavor.sessionRole : null;
         currentEpProgression = pickFunkEpProgression(sr || "default");
       }
-      const chord = currentEpProgression[epBarIdx % currentEpProgression.length];
-      if (chord) {
-        currentChordTones = chord;
-        const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
-        ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.35 * intensity);
+      const rawChord = currentEpProgression[epBarIdx % currentEpProgression.length];
+      if (rawChord) {
+        currentChordTones = rawChord;  // save un-transposed for clavi base
+        if (!(flavor && flavor.dropBar)) {
+          const chord = transposeChord(rawChord, flavor && flavor.keyShift || 0);
+          const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
+          ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.35 * intensity);
+        }
       }
       epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
     }, "1m"));
 
-    return { gain, synths: [clavi, claviFilter, ep, epRoom], scheduledIds: ids, source: "default+rotating-clavi+rotating-ep+groove-lock" };
+    return { gain, synths: [clavi, claviFilter, ep, epRoom], scheduledIds: ids, source: "default+rotating-clavi+rotating-ep+groove-lock+key-shift" };
   }
 
   // When drum frames are present, render the frame rhythm AND keep the EP
@@ -1935,10 +2141,10 @@
         const sr = flavor ? flavor.sessionRole : null;
         currentClaviPattern = pickFunkClaviPattern(sr || "default");
       }
-      // Non-lead bars: more skips so bass/drums get space
       const skipBoost = otherLead ? 0.45 : 0.2;
-      if (currentClaviPattern[claviStep] && Math.random() > skipBoost) {
-        const note = currentChordTones[(claviStep + Math.floor(Math.random() * 2)) % currentChordTones.length];
+      if (currentClaviPattern[claviStep] && Math.random() > skipBoost && !(flavor && flavor.dropBar)) {
+        const rawNote = currentChordTones[(claviStep + Math.floor(Math.random() * 2)) % currentChordTones.length];
+        const note = transposeNote(rawNote, flavor && flavor.keyShift || 0);
         const grooveOffset = (groove.pushMs || 0) / 1000 * 0.7;
         const push = (Math.random() - 0.5) * 0.012;
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
@@ -1955,9 +2161,11 @@
         const sr = flavor ? flavor.sessionRole : null;
         currentEpProgression = pickFunkEpProgression(sr || "default");
       }
-      const chord = currentEpProgression[epBarIdx % currentEpProgression.length];
-      if (chord) {
-        currentChordTones = chord;
+      const rawChord = currentEpProgression[epBarIdx % currentEpProgression.length];
+      if (rawChord) {
+        currentChordTones = rawChord;
+        if (flavor && flavor.dropBar) { epBarIdx = (epBarIdx + 1) % currentEpProgression.length; return; }
+        const chord = transposeChord(rawChord, flavor && flavor.keyShift || 0);
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
         ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.32 * intensity);
       }
@@ -1966,12 +2174,15 @@
     drums.synths.push(clavi, claviFilter, ep, epRoom);
     drums.source = "drum-frames+live-funk-kit+rotating-clavi+rotating-ep";
     return applyProductionGovernor(
-      addTapeSaturation(
-        addSidechainPump(
-          addSessionBreaks(addFunkRubberBass(drums), "funk"),
-          0.38
+      addSoloLayer(
+        addTapeSaturation(
+          addSidechainPump(
+            addSessionBreaks(addFunkRubberBass(drums), "funk"),
+            0.38
+          ),
+          0.7
         ),
-        0.7
+        "funk"
       ),
       "funk"
     );
