@@ -23,8 +23,8 @@
 
   const Tone = window.Tone;
 
-  // Working volume (linear gain). Kept low so layer sits under the engine.
-  const WORKING_LEVEL = 0.22;
+  // Working volume (linear gain). Sits near the engine without becoming the master.
+  const WORKING_LEVEL = 0.3;
   const FADE_IN_S = 2.5;
   const FADE_OUT_S = 1.6;
   const CROSSFADE_S = 1.5;
@@ -80,13 +80,15 @@
 
   // Master bus for all flavor synths.
   let master = null;
+  let masterLimiter = null;
   let started = false;
   let currentGenre = "any";
   let activeLayer = null; // { gain, synths[], scheduledIds[], dispose, source }
 
   function ensureMaster() {
     if (master) return master;
-    master = new Tone.Gain(0).toDestination();
+    masterLimiter = new Tone.Limiter(-1.2).toDestination();
+    master = new Tone.Gain(0).connect(masterLimiter);
     return master;
   }
 
@@ -1152,6 +1154,10 @@
       if (master) {
         try { master.dispose(); } catch (e) {}
         master = null;
+      }
+      if (masterLimiter) {
+        try { masterLimiter.dispose(); } catch (e) {}
+        masterLimiter = null;
       }
     }, (FADE_OUT_S + 0.2) * 1000);
   }
