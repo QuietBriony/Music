@@ -21,7 +21,13 @@
   const GENRE_MIX_RETURN_MS = 920;
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
   const TARGET_LEVEL = 100;            // engine OUTPUT max — limiter ceiling caps the peak
-  const DESTINATION_BOOST_DB = 8;      // v43: +2 dB more — stereo width + headroom allows
+  // v48: pulled back from 8 → 2 dB. The chain is: ...→ masterLimiter (ceiling)
+  // → Tone.Destination (+X dB) → speaker hardware (clips at 0 dBFS).
+  // With limiter -1.5 dB + dest +2 dB = -0.5 dB peak at speaker. Safe.
+  // Engine.js output bypasses our limiter so high boost was causing
+  // hardware clipping / audible distortion. Loudness recovered via
+  // masterMakeup gain bump in genre-flavor.js.
+  const DESTINATION_BOOST_DB = 2;
   const SLEEP_FADE_AFTER_MS = 90 * 60 * 1000;  // 90 min: start auto fade-to-sleep
   const SLEEP_FADE_DURATION_S = 30 * 60;       // 30 min: ramp output to quiet
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };

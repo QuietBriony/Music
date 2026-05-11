@@ -117,25 +117,26 @@
     // Master chain: gain → compressor → EQ3 polish → makeup → limiter → destination
     // EQ3 is the "Apple Music finishing" tilt: small low + air boost, slight
     // low-mid scoop to clear the chord layer's mid range.
-    // v42 gain staging: relax compressor (was -18 / 2.8:1 → squashing dynamics),
-    // give limiter more headroom, let macro boost in fm.js carry loudness.
+    // v48 gain staging fix: previous chain (limiter -0.8 + Destination +8)
+    // was clipping at hardware (+7.2 dB above 0 dBFS). Now: limiter has
+    // proper headroom (-1.5), more makeup to push RMS, smaller destination
+    // boost. Net loudness similar, no clipping.
     masterCompressor = new Tone.Compressor({
-      threshold: -10,
-      ratio: 2.0,
+      threshold: -12,
+      ratio: 2.2,
       attack: 0.012,
       release: 0.22,
       knee: 8
     });
     const masterEq = new Tone.EQ3({
-      low: 1.2,      // +1.2 dB @ 100 Hz — slightly more low warmth
-      mid: -0.4,     // -0.4 dB low-mid scoop (gentler than v41)
-      high: 0.8,     // +0.8 dB @ 2.5 kHz — more air
+      low: 1.2,
+      mid: -0.4,
+      high: 0.8,
       lowFrequency: 200,
       highFrequency: 5000
     });
-    masterMakeup = new Tone.Gain(1.06);
-    // -0.8 dB ceiling (was -1.2): more peak headroom, less squashing
-    masterLimiter = new Tone.Limiter({ threshold: -0.8 }).toDestination();
+    masterMakeup = new Tone.Gain(1.18);   // v48: 1.06 → 1.18 (+1.4 dB to compensate for dest reduction)
+    masterLimiter = new Tone.Limiter({ threshold: -1.5 }).toDestination();  // v48: -0.8 → -1.5 (headroom for dest +2)
     master = new Tone.Gain(0).connect(masterCompressor);
     masterCompressor.connect(masterEq);
     masterEq.connect(masterMakeup);
