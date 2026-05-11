@@ -165,6 +165,21 @@ Other genre source sanity:
 - `funk`: source is `drum-frames+ep+clavi`; clavi adds clipped body motion
   without turning the loop into a busy solo.
 
+Shuffle audition sanity:
+
+- Press `shuffle` before `START`. The visible genre should move away from
+  `any`, the energy pill should change, and first audio should start from that
+  selected genre rather than from the default `any` bed.
+- While playing, `window.HazamaFmShuffleAudition.state.enabled` is `true` and
+  `timerActive` is `true`.
+- `window.HazamaFmShuffleAudition.step("check")` switches to another concrete
+  genre and records the transition in
+  `window.HazamaFmListeningTrace.snapshot().transitions` with a
+  `shuffle.check` reason.
+- Shuffle audition is only a listening-test accelerator. It should not change
+  Music full mixer `AUTO MIX`, the genre source builders, or the hidden engine
+  shim.
+
 SYNC metadata sanity:
 
 - `window.MusicSessionPacket.build().performance_state.hazama_fm.genre`
