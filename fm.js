@@ -72,7 +72,7 @@
       ]
     }
   };
-  const DJ_TICK_INTERVAL_MS = 1500;     // refresh BPM 2× per sec; smooth ramp via Tone
+  const DJ_TICK_INTERVAL_MS = 1000;     // v45: 1s for smoother BPM curve + tighter segment boundaries
   const DJ_BPM_RAMP_S = 4;              // bpm.rampTo seconds — short = responsive
   const FM_ACID_CUE_MIN_MS = 6200;
   const ACID_CUE_PROGRAMS = new Set(["hardTechno", "dryGridWork", "ghostPressure"]);
@@ -1292,6 +1292,13 @@
         if (ctx && ctx.state === "suspended" && typeof ctx.resume === "function") {
           ctx.resume().catch(() => {});
         }
+      }
+      // v45: catch up DJ set state immediately when the window becomes
+      // visible again. setInterval is throttled when minimized (≥1s, worse
+      // for long backgrounds) — tickDjSet computes from Date.now() so
+      // running it on focus return resyncs the BPM + pill instantly.
+      if (isDjSetActive()) {
+        try { tickDjSet(); } catch (e) {}
       }
     });
   }
