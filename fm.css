@@ -73,16 +73,29 @@
 
 #mandala-container {
   transition: filter 0.6s ease;
+  --ident-hue: 0deg;
+  --ident-saturate: 1.1;
 }
 
 #mandala-container.ident-active {
-  filter: brightness(1.2) saturate(1.1);
+  filter: brightness(1.2) saturate(var(--ident-saturate)) hue-rotate(var(--ident-hue));
 }
 
 #mandala-container.ident-active #mandala-layers img {
   animation-play-state: running;
   animation-duration: 50s !important;
 }
+
+/* Per-genre station-ident tint. hue-rotate is cheap and works on the
+   existing mint mandala. Different genres get distinguishable color casts
+   while keeping the base aesthetic. */
+body[data-fm-genre="any"]     #mandala-container { --ident-hue:   0deg; --ident-saturate: 1.1; }
+body[data-fm-genre="ambient"] #mandala-container { --ident-hue: -40deg; --ident-saturate: 1.2; }  /* cool/water */
+body[data-fm-genre="techno"]  #mandala-container { --ident-hue: 200deg; --ident-saturate: 1.6; }  /* magenta/red shift */
+body[data-fm-genre="lofi"]    #mandala-container { --ident-hue:  60deg; --ident-saturate: 0.9; }  /* warm dusty */
+body[data-fm-genre="jazz"]    #mandala-container { --ident-hue: 100deg; --ident-saturate: 1.0; }  /* warm gold-green */
+body[data-fm-genre="funk"]    #mandala-container { --ident-hue: 150deg; --ident-saturate: 1.5; }  /* punchy orange */
+body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-saturate: 0.85; } /* soft blue-mint */
 
 #fm-now {
   margin-top: clamp(28px, 5vh, 44px);
@@ -259,6 +272,94 @@
 }
 
 .fm-install-btn[hidden] { display: none; }
+
+/* Listening trace debug overlay — tucked in the bottom-right corner. */
+#fm-trace-btn {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-border);
+  background: rgba(8, 18, 35, 0.6);
+  color: var(--text-sub);
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 30;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0.45;
+  transition: opacity 0.25s, border-color 0.25s, background 0.25s;
+}
+
+#fm-trace-btn:hover,
+#fm-trace-btn[aria-expanded="true"] {
+  opacity: 1;
+  border-color: var(--accent-glass);
+}
+
+#fm-trace-panel {
+  position: fixed;
+  right: 16px;
+  bottom: 64px;
+  width: min(92vw, 420px);
+  max-height: min(70vh, 560px);
+  background: rgba(8, 18, 35, 0.92);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  color: var(--text-main);
+  z-index: 31;
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+#fm-trace-panel[hidden] { display: none; }
+
+#fm-trace-panel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+#fm-trace-panel h2 {
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  margin: 0;
+}
+
+#fm-trace-close {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text-sub);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+#fm-trace-close:hover { color: var(--accent-glass); }
+
+#fm-trace-body {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: var(--accent-soft);
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-y: auto;
+  max-height: calc(70vh - 48px);
+}
 
 #fm-shuffle-status {
   min-width: 118px;

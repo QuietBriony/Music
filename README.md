@@ -55,6 +55,18 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - 🎚️ **[Music Core Rig 使い方](docs/USAGE-MUSIC-CORE-RIG.md)** — 9 fader mixer の操作方法
 - 🏛️ **[Hazama FM アーキテクチャ](docs/HAZAMA-FM-ARCHITECTURE.md)** — システム全体像 (開発者向け)
 
+### 整合性監査 (開発者向け)
+
+`scripts/audit.py` で全リソース (preset JSON / loader / sw precache /
+cache buster / engine 9 番組 / LEVEL_BY_GENRE) の整合性を一括チェック:
+
+```bash
+PYTHONIOENCODING=utf-8 python scripts/audit.py
+```
+
+`0 BAD, 0 WARN` で exit code 0 (CI 向け)。BAD があれば exit 1。
+詳細は `presets/SCHEMA.md` 参照。
+
 ### 参考資料
 - Reference-Driven Generative Rig: [docs/reference-driven-generative-rig.md](docs/reference-driven-generative-rig.md)
 - Apple Music references: [references/apple-music-refs.json](references/apple-music-refs.json)

@@ -538,6 +538,11 @@
     group.querySelectorAll("button[data-genre]").forEach((b) => {
       b.setAttribute("aria-pressed", b.dataset.genre === name ? "true" : "false");
     });
+    // body data attribute drives the per-genre station-ident hue + accent
+    // (CSS uses [data-fm-genre="<name>"] selectors in fm.css).
+    if (document.body) {
+      document.body.dataset.fmGenre = name;
+    }
     if (options.apply && (started || starting)) {
       applyGenreProfile(name, { reason: options.reason || "profile" });
     }
@@ -1015,6 +1020,51 @@
     }
   }
 
+  // ---- Listening trace debug overlay --------------------------
+
+  let traceRefreshTimer = null;
+
+  function refreshTracePanel() {
+    const body = $("fm-trace-body");
+    if (!body) return;
+    try {
+      const snap = listeningTraceSnapshot();
+      body.textContent = JSON.stringify(snap, null, 2);
+    } catch (e) {
+      body.textContent = "trace error: " + (e && e.message ? e.message : e);
+    }
+  }
+
+  function bindTracePanel() {
+    const btn = $("fm-trace-btn");
+    const panel = $("fm-trace-panel");
+    const closeBtn = $("fm-trace-close");
+    if (!btn || !panel) return;
+    btn.addEventListener("click", () => {
+      const open = panel.hidden;
+      panel.hidden = !open;
+      btn.setAttribute("aria-expanded", String(open));
+      if (open) {
+        refreshTracePanel();
+        // refresh every 2 s while open
+        traceRefreshTimer = setInterval(refreshTracePanel, 2000);
+      } else if (traceRefreshTimer) {
+        clearInterval(traceRefreshTimer);
+        traceRefreshTimer = null;
+      }
+    });
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        panel.hidden = true;
+        btn.setAttribute("aria-expanded", "false");
+        if (traceRefreshTimer) {
+          clearInterval(traceRefreshTimer);
+          traceRefreshTimer = null;
+        }
+      });
+    }
+  }
+
   // ---- PWA install prompt -------------------------------------
 
   let deferredInstallPrompt = null;
@@ -1074,6 +1124,7 @@
     bindVisibility();
     ensureMediaSession();
     bindInstallPrompt();
+    bindTracePanel();
 
     // Kick off preset fetch in the background. Loader is graceful: missing
     // files just resolve to null and the genre-flavor builders fall back
