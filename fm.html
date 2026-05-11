@@ -7,7 +7,7 @@
   <meta name="description" content="Hazama FM — generative focus radio powered by the UCM Mandala Engine. Press start and listen for hours." />
 
   <link rel="stylesheet" href="style.css?v=fm-18" />
-  <link rel="stylesheet" href="fm.css?v=fm-18" />
+  <link rel="stylesheet" href="fm.css?v=fm-20" />
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
@@ -26,7 +26,7 @@
   <script src="presets/loader.js?v=fm-18" defer></script>
   <script src="audio/genre-flavor.js?v=fm-18" defer></script>
   <script src="engine.js?v=fm-18" defer></script>
-  <script src="fm.js?v=fm-18" defer></script>
+  <script src="fm.js?v=fm-20" defer></script>
 </head>
 
 <body data-page="fm">
@@ -63,6 +63,11 @@
       <button type="button" data-genre="jazz" aria-pressed="false">jazz</button>
       <button type="button" data-genre="funk" aria-pressed="false">funk</button>
       <button type="button" data-genre="piano" aria-pressed="false">piano</button>
+    </div>
+
+    <div id="fm-audition" role="group" aria-label="Audition">
+      <button id="fm_shuffle" type="button" aria-pressed="false">shuffle</button>
+      <span id="fm-shuffle-status" aria-live="polite">manual</span>
     </div>
 
     <div id="fm-review" aria-label="Review">

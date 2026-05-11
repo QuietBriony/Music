@@ -18,6 +18,9 @@
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
   const TARGET_LEVEL = 80;
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };
+  const SHUFFLE_AUDITION_INTERVAL_MS = 42000;
+  const SHUFFLE_AUDITION_GENRES = ["ambient", "techno", "lofi", "jazz", "funk", "piano"];
+  const SHUFFLE_AUDITION_ENERGIES = ["low", "mid", "high"];
   const FM_ACID_CUE_MIN_MS = 6200;
   const ACID_CUE_PROGRAMS = new Set(["hardTechno", "dryGridWork", "ghostPressure"]);
 
@@ -72,6 +75,10 @@
   let identTimer = null;
   let programLabelTimer = null;
   let genreTempoTimer = null;
+  let shuffleAuditionEnabled = false;
+  let shuffleAuditionTimer = null;
+  let lastShuffleGenre = "";
+  let lastShuffleEnergy = "";
   let lastAcidCueAt = 0;
   let lastAcidCueKey = "";
   let listeningTrace = null;
@@ -85,6 +92,11 @@
   }
   function dispatchChange(el) {
     el.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function randomChoice(values) {
+    if (!Array.isArray(values) || !values.length) return null;
+    return values[Math.floor(Math.random() * values.length)];
   }
 
   function roundedMs(value) {
@@ -203,6 +215,7 @@
       current_genre: trace.currentGenre || getCurrentGenre(),
       current_source: currentFlavorSource() || trace.currentSource || null,
       current_energy: getCurrentEnergy(),
+      shuffle_audition: shuffleAuditionEnabled,
       bpm: currentBpmValue(),
       dwell_ms_by_genre: { ...trace.dwellMsByGenre },
       switch_count: trace.switchCount,
@@ -338,10 +351,10 @@
     }, 900);
   }
 
-  function applyGenreProfile(name) {
+  function applyGenreProfile(name, options = {}) {
     const profile = GENRE_PROFILES[name];
     if (!profile) return;
-    recordGenreTrace(name, "profile");
+    recordGenreTrace(name, options.reason || "profile");
 
     // For non-"any" genres, lock the genre identity by disabling AUTOMIX
     // (engine.js's UCM.auto.enabled). Otherwise the engine's sine-wave
@@ -413,6 +426,7 @@
         lastReason: rb.lastReason || null,
         energy: getCurrentEnergy(),
         genre: getCurrentGenre(),
+        shuffleAudition: shuffleAuditionEnabled,
         savedAt: Date.now()
       }));
     } catch (e) {
@@ -440,6 +454,109 @@
   function getCurrentGenre() {
     const pressed = document.querySelector('#fm-genre button[aria-pressed="true"]');
     return pressed ? pressed.dataset.genre : "any";
+  }
+
+  function setEnergySelection(name, options = {}) {
+    if (!ENERGY_VALUES[name]) return false;
+    const group = $("fm-energy");
+    if (!group) return false;
+    group.querySelectorAll("button[data-energy]").forEach((b) => {
+      b.setAttribute("aria-pressed", b.dataset.energy === name ? "true" : "false");
+    });
+    if (options.apply !== false) applyEnergyValue(name);
+    return true;
+  }
+
+  function setGenreSelection(name, options = {}) {
+    if (!GENRE_PROFILES[name]) return false;
+    const group = $("fm-genre");
+    if (!group) return false;
+    group.querySelectorAll("button[data-genre]").forEach((b) => {
+      b.setAttribute("aria-pressed", b.dataset.genre === name ? "true" : "false");
+    });
+    if (options.apply && (started || starting)) {
+      applyGenreProfile(name, { reason: options.reason || "profile" });
+    }
+    return true;
+  }
+
+  function setShuffleStatus(text) {
+    const status = $("fm-shuffle-status");
+    if (status) status.textContent = text || "manual";
+  }
+
+  function syncShuffleButtonState() {
+    const btn = $("fm_shuffle");
+    if (btn) {
+      btn.setAttribute("aria-pressed", shuffleAuditionEnabled ? "true" : "false");
+      btn.textContent = shuffleAuditionEnabled ? "shuffle on" : "shuffle";
+    }
+    if (!shuffleAuditionEnabled) {
+      setShuffleStatus("manual");
+    }
+  }
+
+  function pickShuffleGenre() {
+    const current = getCurrentGenre();
+    const avoid = new Set([lastShuffleGenre]);
+    if (current !== "any") avoid.add(current);
+    const pool = SHUFFLE_AUDITION_GENRES.filter((name) => !avoid.has(name));
+    return randomChoice(pool.length ? pool : SHUFFLE_AUDITION_GENRES);
+  }
+
+  function pickShuffleEnergy() {
+    const current = getCurrentEnergy();
+    const pool = SHUFFLE_AUDITION_ENERGIES.filter((name) => name !== current || SHUFFLE_AUDITION_ENERGIES.length === 1);
+    return randomChoice(pool.length ? pool : SHUFFLE_AUDITION_ENERGIES);
+  }
+
+  function runShuffleAuditionStep(reason = "step", options = {}) {
+    const genre = pickShuffleGenre();
+    const energy = pickShuffleEnergy();
+    if (!genre || !energy) return null;
+
+    lastShuffleGenre = genre;
+    lastShuffleEnergy = energy;
+    setEnergySelection(energy, { apply: true });
+    setGenreSelection(genre, { apply: false });
+    setShuffleStatus(`${genre}/${energy}`);
+
+    if (options.apply !== false && (started || starting)) {
+      applyGenreProfile(genre, { reason: `shuffle.${reason}` });
+    }
+    return { genre, energy, reason };
+  }
+
+  function stopShuffleAuditionTimer() {
+    if (shuffleAuditionTimer) {
+      clearInterval(shuffleAuditionTimer);
+      shuffleAuditionTimer = null;
+    }
+  }
+
+  function startShuffleAuditionTimer() {
+    stopShuffleAuditionTimer();
+    if (!shuffleAuditionEnabled || (!started && !starting)) return;
+    shuffleAuditionTimer = setInterval(() => {
+      if (!started || !shuffleAuditionEnabled) {
+        stopShuffleAuditionTimer();
+        return;
+      }
+      runShuffleAuditionStep("timer", { apply: true });
+    }, SHUFFLE_AUDITION_INTERVAL_MS);
+  }
+
+  function setShuffleAudition(enabled, options = {}) {
+    shuffleAuditionEnabled = enabled === true;
+    syncShuffleButtonState();
+    if (!shuffleAuditionEnabled) {
+      stopShuffleAuditionTimer();
+      return;
+    }
+    if (options.immediate !== false) {
+      runShuffleAuditionStep(options.reason || "manual", { apply: started || starting });
+    }
+    if (started || starting) startShuffleAuditionTimer();
   }
 
   function formatProgramLabel(rb) {
@@ -644,8 +761,11 @@
 
       // Apply current GENRE profile (sets all 9 faders + culture grammar),
       // then ENERGY pill on top to honor the energy choice.
+      if (shuffleAuditionEnabled && getCurrentGenre() === "any") {
+        runShuffleAuditionStep("start", { apply: false });
+      }
       startListeningTrace(getCurrentGenre());
-      applyGenreProfile(getCurrentGenre());
+      applyGenreProfile(getCurrentGenre(), { reason: shuffleAuditionEnabled ? "shuffle.start" : "profile.start" });
 
       if (typeof window.startPlayback === "function") {
         await window.startPlayback({ source: "fm.start" });
@@ -676,6 +796,9 @@
       starting = false;
       setButtonState("playing");
       setMediaPlaybackState("playing");
+      if (shuffleAuditionEnabled) {
+        startShuffleAuditionTimer();
+      }
       if (getCurrentGenre() === "techno") {
         triggerHazamaFmAcidCue("start.techno", 0.64, { force: true });
       }
@@ -713,6 +836,7 @@
     } finally {
       started = false;
       stopping = false;
+      stopShuffleAuditionTimer();
       stopGenreTempoLock();
       setButtonState("idle");
       setMediaPlaybackState("paused");
@@ -733,11 +857,7 @@
     group.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-energy]");
       if (!btn) return;
-      const name = btn.dataset.energy;
-      group.querySelectorAll("button").forEach((b) => {
-        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
-      });
-      applyEnergyValue(name);
+      setEnergySelection(btn.dataset.energy, { apply: true });
     });
   }
 
@@ -748,12 +868,21 @@
       const btn = e.target.closest("button[data-genre]");
       if (!btn) return;
       const name = btn.dataset.genre;
-      group.querySelectorAll("button").forEach((b) => {
-        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
-      });
+      if (shuffleAuditionEnabled) {
+        setShuffleAudition(false);
+      }
+      setGenreSelection(name, { apply: false });
       // Only apply live if engine is running. Otherwise just remember the
       // selection — fmStart will apply it on START.
-      if (started) applyGenreProfile(name);
+      if (started) applyGenreProfile(name, { reason: "manual" });
+    });
+  }
+
+  function bindShuffleAudition() {
+    const btn = $("fm_shuffle");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      setShuffleAudition(!shuffleAuditionEnabled, { reason: "button", immediate: true });
     });
   }
 
@@ -780,6 +909,7 @@
 
     bindEnergyPill();
     bindGenrePill();
+    bindShuffleAudition();
     bindReviewSync();
     bindVisibility();
     ensureMediaSession();
@@ -796,26 +926,36 @@
       snapshot: listeningTraceSnapshot,
       storageKey: LISTENING_TRACE_STORAGE_KEY
     };
+    window.HazamaFmShuffleAudition = {
+      setEnabled(value) {
+        setShuffleAudition(value === true, { reason: "api", immediate: true });
+      },
+      step(reason = "api") {
+        return runShuffleAuditionStep(reason, { apply: started || starting });
+      },
+      get state() {
+        return {
+          enabled: shuffleAuditionEnabled,
+          intervalMs: SHUFFLE_AUDITION_INTERVAL_MS,
+          timerActive: !!shuffleAuditionTimer,
+          currentGenre: getCurrentGenre(),
+          currentEnergy: getCurrentEnergy(),
+          lastGenre: lastShuffleGenre || null,
+          lastEnergy: lastShuffleEnergy || null
+        };
+      }
+    };
+    syncShuffleButtonState();
 
     const resume = readSession();
     if (resume) {
       showResumeHint(resume);
       // Restore last energy / genre choice (visual only; applied on START).
       if (resume.energy && ENERGY_VALUES[resume.energy]) {
-        const group = $("fm-energy");
-        if (group) {
-          group.querySelectorAll("button").forEach((b) => {
-            b.setAttribute("aria-pressed", b.dataset.energy === resume.energy ? "true" : "false");
-          });
-        }
+        setEnergySelection(resume.energy, { apply: false });
       }
       if (resume.genre && GENRE_PROFILES[resume.genre]) {
-        const group = $("fm-genre");
-        if (group) {
-          group.querySelectorAll("button").forEach((b) => {
-            b.setAttribute("aria-pressed", b.dataset.genre === resume.genre ? "true" : "false");
-          });
-        }
+        setGenreSelection(resume.genre, { apply: false });
       }
     }
   }

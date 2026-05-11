@@ -206,8 +206,49 @@
   color: var(--accent-soft);
 }
 
+#fm-audition {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 34px;
+}
+
+#fm_shuffle {
+  appearance: none;
+  border: 1px solid rgba(159, 179, 217, 0.26);
+  background: rgba(8, 18, 35, 0.42);
+  color: var(--text-sub);
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  min-width: 96px;
+  padding: 7px 14px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.25s, border-color 0.25s, color 0.25s;
+}
+
+#fm_shuffle[aria-pressed="true"] {
+  border-color: rgba(125, 240, 212, 0.4);
+  background: rgba(125, 240, 212, 0.14);
+  color: var(--accent-glass);
+}
+
+#fm-shuffle-status {
+  min-width: 118px;
+  text-align: left;
+  color: var(--text-sub);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
 #fm-review {
-  margin-top: 14px;
+  margin-top: 10px;
   min-height: 54px;
   display: flex;
   flex-direction: column;
