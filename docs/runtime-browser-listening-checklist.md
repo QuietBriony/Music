@@ -325,6 +325,22 @@ Use this before creating or merging a runtime PR.
 7. Run Hazama hash boot if the PR touches bridge/autonomy behavior.
 8. Confirm Console has no red errors.
 
+## Browser Loudness Check
+
+Use this when browser output feels small compared with iPhone Apple Music or
+other normalized app playback.
+
+- Start from `OUTPUT` 75 to 85.
+- Compare `fm.html` `any`, `techno`, and `piano` without changing OS volume.
+- Expected: browser playback should feel usable without maxing the OS volume,
+  while the master limiter prevents harsh clipping.
+- Expected: `techno` is louder through drum/body and acid pulse, not through
+  constant bright hiss.
+- Expected: `piano` is foreground piano with space, not a low hidden pad.
+- Fail sign: raising `OUTPUT` only makes the same thin layer louder.
+- Fail sign: limiter pumping, brittle hats, or bass splatter appears before
+  `OUTPUT` 85.
+
 ## Recording Fallback
 
 Record only when needed.
