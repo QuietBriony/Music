@@ -15,6 +15,10 @@
   const LISTENING_TRACE_MAX_TRANSITIONS = 24;
   const FADE_IN_S = 4;
   const FADE_OUT_S = 3;
+  const GENRE_MIX_DIP_S = 0.75;
+  const GENRE_MIX_RETURN_S = 2.1;
+  const GENRE_MIX_SWITCH_MS = 420;
+  const GENRE_MIX_RETURN_MS = 920;
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
   const TARGET_LEVEL = 92;
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };
@@ -75,6 +79,9 @@
   let identTimer = null;
   let programLabelTimer = null;
   let genreTempoTimer = null;
+  let genreMixTimer = null;
+  let genreMixReturnTimer = null;
+  let genreMixSeq = 0;
   let shuffleAuditionEnabled = false;
   let shuffleAuditionTimer = null;
   let lastShuffleGenre = "";
@@ -303,6 +310,52 @@
     });
   }
 
+  function currentOutputLevel() {
+    const slider = $("output_level");
+    const value = slider ? Number(slider.value) : TARGET_LEVEL;
+    return Number.isFinite(value) ? value : TARGET_LEVEL;
+  }
+
+  function clearGenreMixTimers() {
+    if (genreMixTimer) {
+      clearTimeout(genreMixTimer);
+      genreMixTimer = null;
+    }
+    if (genreMixReturnTimer) {
+      clearTimeout(genreMixReturnTimer);
+      genreMixReturnTimer = null;
+    }
+  }
+
+  function shouldDjMixGenre(options = {}) {
+    return options.mix !== false && started && !starting && !stopping;
+  }
+
+  function beginGenreDjMix(name, options = {}) {
+    const profile = GENRE_PROFILES[name];
+    if (!profile) return;
+
+    const seq = ++genreMixSeq;
+    clearGenreMixTimers();
+    const returnLevel = Math.max(62, currentOutputLevel());
+    const dipLevel = Math.max(48, Math.round(returnLevel * 0.68));
+    const reason = options.reason || "profile";
+
+    rampOutputLevel(dipLevel, GENRE_MIX_DIP_S).catch(() => {});
+
+    genreMixTimer = setTimeout(() => {
+      if (seq !== genreMixSeq) return;
+      genreMixTimer = null;
+      applyGenreProfileNow(name, { reason: `${reason}.djmix` });
+    }, GENRE_MIX_SWITCH_MS);
+
+    genreMixReturnTimer = setTimeout(() => {
+      if (seq !== genreMixSeq) return;
+      genreMixReturnTimer = null;
+      rampOutputLevel(returnLevel, GENRE_MIX_RETURN_S).catch(() => {});
+    }, GENRE_MIX_RETURN_MS);
+  }
+
   function applyEnergyValue(name) {
     const slider = $("fader_energy");
     if (!slider) return;
@@ -352,6 +405,14 @@
   }
 
   function applyGenreProfile(name, options = {}) {
+    if (shouldDjMixGenre(options)) {
+      beginGenreDjMix(name, options);
+      return;
+    }
+    applyGenreProfileNow(name, options);
+  }
+
+  function applyGenreProfileNow(name, options = {}) {
     const profile = GENRE_PROFILES[name];
     if (!profile) return;
     recordGenreTrace(name, options.reason || "profile");
@@ -836,6 +897,7 @@
     } finally {
       started = false;
       stopping = false;
+      clearGenreMixTimers();
       stopShuffleAuditionTimer();
       stopGenreTempoLock();
       setButtonState("idle");
