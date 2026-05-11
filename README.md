@@ -53,19 +53,16 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 ### 使い方マニュアル (ユーザー向け)
 - 📻 **[Hazama FM 使い方](docs/USAGE-HAZAMA-FM.md)** — 24/7 流しっぱなしフォーカス BGM の操作方法
 - 🎚️ **[Music Core Rig 使い方](docs/USAGE-MUSIC-CORE-RIG.md)** — 9 fader mixer の操作方法
-- 🏛️ **[Hazama FM アーキテクチャ](docs/HAZAMA-FM-ARCHITECTURE.md)** — システム全体像 (開発者向け)
 
-### 整合性監査 (開発者向け)
+### 開発者向け
 
-`scripts/audit.py` で全リソース (preset JSON / loader / sw precache /
-cache buster / engine 9 番組 / LEVEL_BY_GENRE) の整合性を一括チェック:
-
-```bash
-PYTHONIOENCODING=utf-8 python scripts/audit.py
-```
-
-`0 BAD, 0 WARN` で exit code 0 (CI 向け)。BAD があれば exit 1。
-詳細は `presets/SCHEMA.md` 参照。
+- 🤝 **[AGENTS.md](AGENTS.md)** — claude code / codex / 他 agent の最初に読む共通契約
+- 👯 **[並列開発プレイブック](docs/COLLAB-CLAUDE-AND-CODEX.md)** — claude と codex を並列で動かすガイド
+- 🏛️ **[Hazama FM アーキテクチャ](docs/HAZAMA-FM-ARCHITECTURE.md)** — システム全体像
+- 🔬 **整合性監査**: `PYTHONIOENCODING=utf-8 python scripts/audit.py [--quiet]`
+  - 全リソース (preset JSON / loader / sw precache / cache buster / engine 9 番組 / LEVEL_BY_GENRE) を 1 発でチェック
+  - `0 BAD, 0 WARN` で exit 0、BAD で exit 1 (CI 向け)
+  - `--quiet` でほぼ silent (CI / pre-commit hook 用)
 
 ### 参考資料
 - Reference-Driven Generative Rig: [docs/reference-driven-generative-rig.md](docs/reference-driven-generative-rig.md)

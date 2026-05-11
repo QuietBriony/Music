@@ -1,7 +1,10 @@
 """Hazama FM 整合性監査 script.
 
 Run from repo root:
-    python scripts/audit.py
+    python scripts/audit.py            # 通常出力
+    python scripts/audit.py --quiet    # BAD のときだけ出力 (CI 向き)
+
+Both modes exit 0 if 0 BAD, exit 1 otherwise.
 
 Checks:
     1. preset JSON files (format/version/array)
@@ -28,8 +31,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 
+QUIET = "--quiet" in sys.argv or "-q" in sys.argv
+
 bad = 0
 warn = 0
+bad_lines = []  # capture BAD lines so --quiet can still surface them
 
 
 def status(ok, msg):
@@ -37,21 +43,29 @@ def status(ok, msg):
     mark = "OK " if ok else "BAD"
     if not ok:
         bad += 1
-    print(f"  {mark} {msg}")
+        bad_lines.append(f"  {mark} {msg}")
+    if not QUIET or not ok:
+        print(f"  {mark} {msg}")
 
 
 def warn_msg(msg):
     global warn
     warn += 1
-    print(f"  -- WARN {msg}")
+    if not QUIET:
+        print(f"  -- WARN {msg}")
 
 
-print("=" * 60)
-print("HAZAMA FM Integrity Audit")
-print("=" * 60)
+def info(msg):
+    if not QUIET:
+        print(msg)
+
+
+info("=" * 60)
+info("HAZAMA FM Integrity Audit")
+info("=" * 60)
 
 # 1. Hazama FM preset JSON files
-print("\n[1] Hazama FM preset JSONs")
+info("\n[1] Hazama FM preset JSONs")
 expected = {
     "presets/chill-piano-recipe.json": ("chill-piano-recipe", "recipes"),
     "presets/drum-frames-funk.json": ("drum-frames", "frames"),
@@ -77,7 +91,7 @@ for path, (fmt, arr_key) in expected.items():
         status(False, f"{path}: {e}")
 
 # 2. loader.js PRESET_FILES vs FS
-print("\n[2] presets/loader.js vs filesystem")
+info("\n[2] presets/loader.js vs filesystem")
 loader_text = (ROOT / "presets/loader.js").read_text(encoding="utf-8")
 loader_files = set(s.strip('"') for s in re.findall(r'"presets/[^"]+\.json"', loader_text))
 actual = set(f"presets/{f}" for f in os.listdir("presets") if f.endswith(".json"))
@@ -100,7 +114,7 @@ if legacy:
         print(f"        {p}")
 
 # 3. PRESET_BY_GENRE vs loader keys
-print("\n[3] genre-flavor.js PRESET_BY_GENRE vs loader keys")
+info("\n[3] genre-flavor.js PRESET_BY_GENRE vs loader keys")
 flavor_text = (ROOT / "audio/genre-flavor.js").read_text(encoding="utf-8")
 genre_block = flavor_text[flavor_text.find("PRESET_BY_GENRE"):]
 genre_block = genre_block[: genre_block.find("};") + 1]
@@ -110,7 +124,7 @@ for genre, key in genre_map:
     status(key in loader_keys, f"PRESET_BY_GENRE[{genre}] -> {key}")
 
 # 4. sw.js precache list
-print("\n[4] sw.js precache list")
+info("\n[4] sw.js precache list")
 sw_text = (ROOT / "sw.js").read_text(encoding="utf-8")
 precached = set(s.strip('"') for s in re.findall(r'"presets/[^"]+\.json"', sw_text))
 missing_in_sw = hazama_fm_files - precached
@@ -119,22 +133,22 @@ if missing_in_sw:
     print(f"     missing in sw: {sorted(missing_in_sw)}")
 
 # 5. Cache buster sync (fm.html vs sw.js)
-print("\n[5] cache buster version sync")
+info("\n[5] cache buster version sync")
 html_text = (ROOT / "fm.html").read_text(encoding="utf-8")
 versions_html = set(re.findall(r'\?v=(fm-\w+)', html_text))
 versions_sw = set(re.findall(r'\?v=(fm-\w+)', sw_text))
 sw_version = re.search(r'const VERSION = "([^"]+)"', sw_text)
 status(versions_html == versions_sw, f"fm.html ↔ sw.js precache versions match")
-print(f"     html: {sorted(versions_html)}")
-print(f"     sw  : {sorted(versions_sw)}")
-print(f"     sw VERSION: {sw_version.group(1) if sw_version else '?'}")
+info(f"     html: {sorted(versions_html)}")
+info(f"     sw  : {sorted(versions_sw)}")
+info(f"     sw VERSION: {sw_version.group(1) if sw_version else '?'}")
 
 # 6. engine.js MUSIC_RADIO_BRAIN_PROGRAMS coverage
-print("\n[6] engine.js radio brain program coverage")
+info("\n[6] engine.js radio brain program coverage")
 eng = (ROOT / "engine.js").read_text(encoding="utf-8")
 m = re.search(r'MUSIC_RADIO_BRAIN_PROGRAMS\s*=\s*\[([^\]]+)\]', eng)
 programs = re.findall(r'"(\w+)"', m.group(1)) if m else []
-print(f"  array: {len(programs)} programs")
+info(f"  array: {len(programs)} programs")
 for p in programs:
     reset_ok = bool(re.search(rf'MusicRadioBrainState\.weights\.{p}\s*=', eng))
     reason_ok = bool(re.search(rf'program === "{p}"\s*\)\s*return', eng))
@@ -149,15 +163,15 @@ for p in programs:
                    f"ident={'else' if ident_default and not ident_specific else ident_specific} bias={bias_ok}")
 
 # 7. genre-flavor.js builder volumes + LEVEL_BY_GENRE coverage
-print("\n[7] genre-flavor.js per-builder volumes")
+info("\n[7] genre-flavor.js per-builder volumes")
 for name in ["Ambient", "Techno", "Lofi", "Jazz", "Funk", "Piano"]:
     func = re.search(rf'function build{name}Default\(\)\s*\{{(.*?)^\s*\}}',
                      flavor_text, re.DOTALL | re.MULTILINE)
     body = func.group(1) if func else ""
     volumes = re.findall(r'volume:\s*(-?\d+(?:\.\d+)?)', body)
-    print(f"  build{name}Default: synth volumes = {volumes} dB")
+    info(f"  build{name}Default: synth volumes = {volumes} dB")
 
-print("\n[8] LEVEL_BY_GENRE per-genre master overrides")
+info("\n[8] LEVEL_BY_GENRE per-genre master overrides")
 lvl_block = flavor_text[flavor_text.find("LEVEL_BY_GENRE"):]
 lvl_block = lvl_block[: lvl_block.find("};") + 1]
 levels = re.findall(r'^\s*(\w+):\s*([\d.]+)', lvl_block, re.MULTILINE)
@@ -170,8 +184,16 @@ if known - listed:
     print(f"     missing: {sorted(known - listed)}")
 
 # Summary
-print()
-print("=" * 60)
-print(f"Result: {bad} BAD, {warn} WARN")
-print("=" * 60)
+if QUIET:
+    # In --quiet mode print only the failure-bearing lines + summary if BAD.
+    if bad:
+        print("HAZAMA FM Integrity Audit — FAILED")
+        for line in bad_lines:
+            print(line)
+        print(f"Result: {bad} BAD, {warn} WARN")
+else:
+    print()
+    print("=" * 60)
+    print(f"Result: {bad} BAD, {warn} WARN")
+    print("=" * 60)
 sys.exit(1 if bad else 0)
