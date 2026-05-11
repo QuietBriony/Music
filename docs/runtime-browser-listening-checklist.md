@@ -100,6 +100,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Open `fm.html` from a local server, not a `file://` URL.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`.
+- Confirm `fm.html` requests `audio/genre-flavor.js?v=fm-28` and `sw.js`
+  contains `hazama-fm-v28`.
 - Confirm browser console has no service-worker registration or update errors.
 - Close and reopen the installed app after merge; if the old UI remains, open
   the normal browser tab once, reload, then reopen the installed app.
@@ -120,6 +122,8 @@ Techno expected:
 
 - `window.GenreFlavor.state.source` is
   `drum-frames+machine-acid-brain+chord-lift`.
+- `window.GenreFlavor.state.masterLevel` follows the visible `OUTPUT` slider
+  and remains below the internal limiter ceiling.
 - `Tone.Transport.bpm.value` settles near 132 BPM.
 - The drum frames still drive the rhythm, but the sound reads as stripped
   machine drum: deep four-on-floor kick, restrained offbeat hat, and short dry
@@ -369,13 +373,16 @@ other normalized app playback.
 - Start from `OUTPUT` 94 to 96 in Hazama FM, or 80 to 90 in the full mixer.
 - Compare `fm.html` `any`, `techno`, and `piano` without changing OS volume.
 - Expected: browser playback should feel usable without maxing the OS volume,
-  while the master limiter prevents harsh clipping.
+  while the GenreFlavor compressor / limiter prevents harsh clipping.
+- Expected: changing `OUTPUT` changes both the engine bed and GenreFlavor
+  foreground enough to feel like one browser app, not two unmatched outputs.
 - Expected: `techno` is louder through drum/body and acid pulse, not through
   constant bright hiss.
 - Expected: `piano` is foreground piano with space, not a low hidden pad.
 - Fail sign: raising `OUTPUT` only makes the same thin layer louder.
 - Fail sign: limiter pumping, brittle hats, or bass splatter appears at the
   Hazama FM default output.
+- Fail sign: the limiter audibly flattens jazz/funk breaks or piano attacks.
 
 ## Recording Fallback
 

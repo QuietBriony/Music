@@ -24,10 +24,13 @@
   const Tone = window.Tone;
 
   // Working volume (linear gain). Sits near the engine without becoming the master.
-  const WORKING_LEVEL = 0.5;
+  // The output follower below adds loudness gently, so keep per-layer headroom.
+  const WORKING_LEVEL = 0.56;
   const FADE_IN_S = 2.5;
   const FADE_OUT_S = 1.6;
   const CROSSFADE_S = 1.5;
+  const OUTPUT_FOLLOW_MIN = 0.34;
+  const OUTPUT_FOLLOW_MAX = 1.18;
 
   // Maps genre → preset name in HazamaPresets. Genres without a mapping
   // always use their default builder.
@@ -80,16 +83,56 @@
 
   // Master bus for all flavor synths.
   let master = null;
+  let masterCompressor = null;
+  let masterMakeup = null;
   let masterLimiter = null;
+  let outputLevelInput = null;
+  let outputLevelHandler = null;
   let started = false;
   let currentGenre = "any";
   let activeLayer = null; // { gain, synths[], scheduledIds[], dispose, source }
 
   function ensureMaster() {
     if (master) return master;
-    masterLimiter = new Tone.Limiter({ threshold: -0.8 }).toDestination();
-    master = new Tone.Gain(0).connect(masterLimiter);
+    masterCompressor = new Tone.Compressor({
+      threshold: -18,
+      ratio: 2.8,
+      attack: 0.008,
+      release: 0.18,
+      knee: 12
+    });
+    masterMakeup = new Tone.Gain(1.08);
+    masterLimiter = new Tone.Limiter({ threshold: -1.2 }).toDestination();
+    master = new Tone.Gain(0).connect(masterCompressor);
+    masterCompressor.connect(masterMakeup);
+    masterMakeup.connect(masterLimiter);
+    bindOutputLevelFollower();
     return master;
+  }
+
+  function outputLevelValue() {
+    const slider = typeof document !== "undefined" ? document.getElementById("output_level") : null;
+    const parsed = slider ? parseInt(slider.value, 10) : 96;
+    return clamp(Number.isFinite(parsed) ? parsed : 96, 0, 100);
+  }
+
+  function targetMasterLevel() {
+    const level = outputLevelValue() / 100;
+    return clamp(OUTPUT_FOLLOW_MIN + level * (OUTPUT_FOLLOW_MAX - OUTPUT_FOLLOW_MIN), 0.0001, OUTPUT_FOLLOW_MAX);
+  }
+
+  function syncMasterLevel(seconds = 0.24) {
+    if (!started || !master) return;
+    try { master.gain.rampTo(targetMasterLevel(), seconds); } catch (e) {}
+  }
+
+  function bindOutputLevelFollower() {
+    if (outputLevelInput || typeof document === "undefined") return;
+    outputLevelInput = document.getElementById("output_level");
+    if (!outputLevelInput) return;
+    outputLevelHandler = () => syncMasterLevel(0.18);
+    outputLevelInput.addEventListener("input", outputLevelHandler);
+    outputLevelInput.addEventListener("change", outputLevelHandler);
   }
 
   function clearSchedules(ids) {
@@ -139,8 +182,9 @@
 
     const ids = [];
     const droneTick = (time) => {
-      pad.triggerAttackRelease("D2", "16m", time, 0.5);
-      pad.triggerAttackRelease("A2", "16m", time + 0.3, 0.45);
+      const t = safeEventTime(time);
+      pad.triggerAttackRelease("D2", "16m", t, 0.5);
+      pad.triggerAttackRelease("A2", "16m", safeEventTime(t + 0.3), 0.45);
     };
     droneTick(Tone.Transport.now() + 0.1);
     ids.push(Tone.Transport.scheduleRepeat(droneTick, "16m"));
@@ -187,8 +231,9 @@
     const baseNote = padCfg.baseNote || "D2";
     const ids = [];
     const droneTick = (time) => {
-      pad.triggerAttackRelease(baseNote, "16m", time, 0.5);
-      pad.triggerAttackRelease(fifth(baseNote), "16m", time + 0.3, 0.45);
+      const t = safeEventTime(time);
+      pad.triggerAttackRelease(baseNote, "16m", t, 0.5);
+      pad.triggerAttackRelease(fifth(baseNote), "16m", safeEventTime(t + 0.3), 0.45);
     };
     droneTick(Tone.Transport.now() + 0.1);
     ids.push(Tone.Transport.scheduleRepeat(droneTick, "16m"));
@@ -232,14 +277,14 @@
     const ids = [];
     let hatStep = 0;
     ids.push(Tone.Transport.scheduleRepeat((time) => {
-      kit.kick.triggerAttackRelease("C1", "8n", time, 0.84);
+      kit.kick.triggerAttackRelease("C1", "8n", safeEventTime(time), 0.84);
     }, "4n"));
     ids.push(Tone.Transport.scheduleRepeat((time) => {
-      kit.hat.triggerAttackRelease("32n", time, hatStep % 2 === 0 ? 0.42 : 0.24);
+      kit.hat.triggerAttackRelease("32n", safeEventTime(time), hatStep % 2 === 0 ? 0.42 : 0.24);
       hatStep++;
     }, "8n", "8n"));
     ids.push(Tone.Transport.scheduleRepeat((time) => {
-      kit.snare.triggerAttackRelease("16n", time, 0.46);
+      kit.snare.triggerAttackRelease("16n", safeEventTime(time), 0.46);
     }, "2n", "4n"));
 
     return addAcidPulse({
@@ -263,8 +308,9 @@
     }).connect(gain);
     return {
       triggerAttackRelease(note, duration, time, velocity = 0.7) {
-        body.triggerAttackRelease("C1", "8n", time, clamp(velocity, 0.05, 1));
-        click.triggerAttackRelease("64n", time + 0.004, clamp(velocity * 0.28, 0.02, 0.28));
+        const t = safeEventTime(time);
+        body.triggerAttackRelease("C1", "8n", t, clamp(velocity, 0.05, 1));
+        click.triggerAttackRelease("64n", safeEventTime(t + 0.004), clamp(velocity * 0.28, 0.02, 0.28));
       },
       dispose() {
         try { body.dispose(); } catch (e) {}
@@ -286,8 +332,9 @@
     }).connect(gain);
     return {
       triggerAttackRelease(duration, time, velocity = 0.5) {
-        body.triggerAttackRelease("32n", time, clamp(velocity * 0.8, 0.04, 0.75));
-        slap.triggerAttackRelease("64n", time + 0.018, clamp(velocity * 0.58, 0.03, 0.52));
+        const t = safeEventTime(time);
+        body.triggerAttackRelease("32n", t, clamp(velocity * 0.8, 0.04, 0.75));
+        slap.triggerAttackRelease("64n", safeEventTime(t + 0.018), clamp(velocity * 0.58, 0.03, 0.52));
       },
       dispose() {
         try { body.dispose(); } catch (e) {}
@@ -316,8 +363,9 @@
     return {
       triggerAttackRelease(duration, time, velocity = 0.3) {
         const v = clamp(velocity, 0.03, 0.44);
-        body.triggerAttackRelease("128n", time, v * 0.36);
-        tick.triggerAttackRelease("128n", time + 0.002, v * 0.42);
+        const t = safeEventTime(time);
+        body.triggerAttackRelease("128n", t, v * 0.36);
+        tick.triggerAttackRelease("128n", safeEventTime(t + 0.002), v * 0.42);
       },
       dispose() {
         try { body.dispose(); } catch (e) {}
@@ -375,7 +423,7 @@
       triggerAttackRelease(note, duration, time, velocity = 0.6) {
         const t = safeEventTime(time);
         body.triggerAttackRelease(profile === "jazz" ? "A1" : "C1", deep ? "8n" : "16n", t, clamp(velocity, 0.04, 0.95));
-        skin.triggerAttackRelease("128n", t + 0.003, clamp(velocity * 0.18, 0.01, 0.2));
+        skin.triggerAttackRelease("128n", safeEventTime(t + 0.003), clamp(velocity * 0.18, 0.01, 0.2));
       },
       dispose() {
         try { body.dispose(); } catch (e) {}
@@ -411,7 +459,7 @@
         const t = safeEventTime(time);
         const v = clamp(velocity, 0.03, 0.9);
         body.triggerAttackRelease(profile === "jazz" ? "16n" : "32n", t, v * (profile === "jazz" ? 0.82 : 0.96));
-        rim.triggerAttackRelease("128n", t + 0.006, v * (profile === "funk" ? 0.32 : 0.2));
+        rim.triggerAttackRelease("128n", safeEventTime(t + 0.006), v * (profile === "funk" ? 0.32 : 0.2));
       },
       dispose() {
         try { body.dispose(); } catch (e) {}
@@ -453,7 +501,7 @@
         const t = safeEventTime(time);
         const v = clamp(velocity, 0.02, profile === "jazz" ? 0.68 : 0.48);
         noise.triggerAttackRelease(profile === "jazz" ? "8n" : "64n", t, v);
-        if (profile === "jazz" || Math.random() < 0.32) ping.triggerAttackRelease("64n", t + 0.004, v * 0.38);
+        if (profile === "jazz" || Math.random() < 0.32) ping.triggerAttackRelease("64n", safeEventTime(t + 0.004), v * 0.38);
       },
       dispose() {
         try { noise.dispose(); } catch (e) {}
@@ -618,8 +666,9 @@
       const gate = note && Math.random() < (accent ? 0.78 : 0.46);
       if (gate) {
         try {
+          const eventTime = safeEventTime(time + 0.012 + Math.random() * 0.01);
           acid.filter.frequency.rampTo(accent ? 1520 : 740, 0.028);
-          acid.triggerAttackRelease(note, accent ? "16n" : "32n", time + 0.012 + Math.random() * 0.01, accent ? 0.34 : 0.23);
+          acid.triggerAttackRelease(note, accent ? "16n" : "32n", eventTime, accent ? 0.34 : 0.23);
           acid.filter.frequency.rampTo(300, 0.14);
         } catch (e) {}
       }
@@ -669,13 +718,13 @@
       const count = highBpm > 0.62 && Math.random() < 0.42 ? 3 : 2;
       const gap = 0.018 + (1 - highBpm) * 0.006;
       for (let i = 0; i < count; i++) {
-        const ratchetTime = time + 0.006 + i * gap + Math.random() * 0.004;
+        const ratchetTime = safeEventTime(time + 0.006 + i * gap + Math.random() * 0.004);
         const note = notes[(tick + i * 2) % notes.length];
         try {
           ratchet.filter.frequency.rampTo(i === 0 ? 960 : 1320, 0.014);
           ratchet.triggerAttackRelease(note, "128n", ratchetTime, 0.09 + highBpm * 0.08);
           if (Math.random() < 0.38 + highBpm * 0.18) {
-            click.triggerAttackRelease("128n", ratchetTime + 0.002, 0.07 + highBpm * 0.06);
+            click.triggerAttackRelease("128n", safeEventTime(ratchetTime + 0.002), 0.07 + highBpm * 0.06);
           }
         } catch (e) {}
       }
@@ -745,11 +794,11 @@
       const base = safeEventTime(time + Tone.Time("2n").toSeconds() + Tone.Time("4n").toSeconds());
       const density = profile === "funk" ? 4 : profile === "jazz" ? 3 : 2;
       for (let i = 0; i < density; i++) {
-        const dt = base + i * (profile === "funk" ? 0.075 : 0.105) + Math.random() * 0.012;
+        const dt = safeEventTime(base + i * (profile === "funk" ? 0.075 : 0.105) + Math.random() * 0.012);
         try {
           if (profile === "funk" && i % 2 === 0) tom.triggerAttackRelease(i === 0 ? "G1" : "C2", "32n", dt, 0.28 + Math.random() * 0.08);
           else snare.triggerAttackRelease("64n", dt, profile === "jazz" ? 0.16 + Math.random() * 0.07 : 0.2 + Math.random() * 0.1);
-          if (Math.random() < (profile === "jazz" ? 0.6 : 0.38)) hats.triggerAttackRelease("64n", dt + 0.018, 0.12 + Math.random() * 0.06);
+          if (Math.random() < (profile === "jazz" ? 0.6 : 0.38)) hats.triggerAttackRelease("64n", safeEventTime(dt + 0.018), 0.12 + Math.random() * 0.06);
         } catch (e) {}
       }
       phrase++;
@@ -894,7 +943,7 @@
     const ids = [];
     ids.push(Tone.Transport.scheduleRepeat((time) => {
       if (Math.random() > 0.18) {
-        kick.triggerAttackRelease("C2", "8n", time, 0.55 + Math.random() * 0.15);
+        kick.triggerAttackRelease("C2", "8n", safeEventTime(time), 0.55 + Math.random() * 0.15);
       }
     }, "4n"));
 
@@ -971,7 +1020,7 @@
     let walkIdx = 0;
     const ids = [];
     ids.push(Tone.Transport.scheduleRepeat((time) => {
-      bass.triggerAttackRelease(walk[walkIdx % walk.length], "8n", time, 0.6);
+      bass.triggerAttackRelease(walk[walkIdx % walk.length], "8n", safeEventTime(time), 0.6);
       walkIdx++;
     }, "4n"));
 
@@ -981,7 +1030,7 @@
       if (brushPattern[brushIdx % brushPattern.length]) {
         const vel = 0.18 + Math.random() * 0.08;
         const jitter = (Math.random() - 0.5) * 0.012;
-        brush.triggerAttackRelease("16n", time + jitter, vel);
+        brush.triggerAttackRelease("16n", safeEventTime(time + jitter), vel);
       }
       brushIdx++;
     }, "8n"));
@@ -1019,7 +1068,7 @@
     const walk = ["D2", "F2", "G2", "A2", "C3", "A2", "G2", "F2"];
     let walkIdx = 0;
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      bass.triggerAttackRelease(walk[walkIdx % walk.length], "8n", time, 0.55);
+      bass.triggerAttackRelease(walk[walkIdx % walk.length], "8n", safeEventTime(time), 0.55);
       walkIdx++;
     }, "4n"));
     const brushPattern = [1, 0, 1, 0, 1, 0, 1, 1];
@@ -1027,7 +1076,7 @@
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       if (brushPattern[brushIdx % brushPattern.length]) {
         const jitter = (Math.random() - 0.5) * 0.014;
-        brush.triggerAttackRelease("16n", time + jitter, 0.12 + Math.random() * 0.06);
+        brush.triggerAttackRelease("16n", safeEventTime(time + jitter), 0.12 + Math.random() * 0.06);
       }
       brushIdx++;
     }, "8n", "8n"));
@@ -1077,13 +1126,13 @@
     ids.push(Tone.Transport.scheduleRepeat((time) => {
       if (claviPattern[claviIdx % claviPattern.length]) {
         const note = dmin7[Math.floor(Math.random() * dmin7.length)];
-        clavi.triggerAttackRelease(note, "32n", time, 0.45 + Math.random() * 0.15);
+        clavi.triggerAttackRelease(note, "32n", safeEventTime(time), 0.45 + Math.random() * 0.15);
       }
       claviIdx++;
     }, "16n"));
     let epBar = 0;
     ids.push(Tone.Transport.scheduleRepeat((time) => {
-      if (epBar % 2 === 0) ep.triggerAttackRelease(dmin7, "1m", time, 0.35);
+      if (epBar % 2 === 0) ep.triggerAttackRelease(dmin7, "1m", safeEventTime(time), 0.35);
       epBar++;
     }, "1m"));
 
@@ -1125,13 +1174,13 @@
       if (claviPattern[claviIdx % claviPattern.length] && Math.random() > 0.2) {
         const note = dmin7[(claviIdx + Math.floor(Math.random() * 2)) % dmin7.length];
         const push = (Math.random() - 0.5) * 0.012;
-        clavi.triggerAttackRelease(note, "32n", time + push, 0.22 + Math.random() * 0.08);
+        clavi.triggerAttackRelease(note, "32n", safeEventTime(time + push), 0.22 + Math.random() * 0.08);
       }
       claviIdx++;
     }, "16n"));
     let epBar = 0;
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      if (epBar % 2 === 0) ep.triggerAttackRelease(dmin7, "1m", time, 0.32);
+      if (epBar % 2 === 0) ep.triggerAttackRelease(dmin7, "1m", safeEventTime(time), 0.32);
       epBar++;
     }, "1m"));
     drums.synths.push(clavi, claviFilter, ep, epRoom);
@@ -1178,7 +1227,7 @@
       voicing.forEach((note, i) => {
         const delay = i * 0.022 + (Math.random() - 0.5) * 0.008;
         const vel = 0.32 + Math.random() * 0.1;
-        piano.triggerAttackRelease(note, "2n", time + delay, vel);
+        piano.triggerAttackRelease(note, "2n", safeEventTime(time + delay), vel);
       });
       bar++;
     }, "2m"));
@@ -1295,13 +1344,14 @@
       if (trigger > 0 && Math.random() < probability) {
         const voicing = voicings[voicingIdx % voicings.length] || voicings[0];
         const jitter = (Math.random() - 0.5) * humanize + (layer.swingPush || 0);
+        const chordTime = safeEventTime(time + jitter);
         try {
-          hammer.triggerAttackRelease("128n", time + jitter, clamp(baseVel * trigger * 0.28, 0.018, 0.13));
+          hammer.triggerAttackRelease("128n", chordTime, clamp(baseVel * trigger * 0.28, 0.018, 0.13));
         } catch (e) {}
         voicing.forEach((note, i) => {
           const delay = i * (role === "bed" ? 0.024 : 0.017);
           const vel = clamp(baseVel * trigger * (0.86 + Math.random() * 0.28), 0.025, 0.58);
-          piano.triggerAttackRelease(note, duration, time + delay + jitter, vel);
+          piano.triggerAttackRelease(note, duration, safeEventTime(chordTime + delay), vel);
         });
       }
       step++;
@@ -1334,21 +1384,22 @@
 
     let bar = 0;
     const id = Tone.Transport.scheduleRepeat((time) => {
+      const t = safeEventTime(time);
       const voicing = (voicings[bar % voicings.length] || voicings[0] || ["D3", "F3", "A3", "C4"]).slice(0, 4);
       const reply = voicing.slice(-2);
       try {
-        hammer.triggerAttackRelease("128n", time - 0.002, 0.095);
+        hammer.triggerAttackRelease("128n", t, 0.095);
       } catch (e) {}
       voicing.forEach((note, i) => {
-        piano.triggerAttackRelease(note, i === 0 ? "2n" : "4n", time + i * 0.021, 0.34 - i * 0.025);
+        piano.triggerAttackRelease(note, i === 0 ? "2n" : "4n", safeEventTime(t + i * 0.021), 0.34 - i * 0.025);
       });
       if (bar % 2 === 1) {
-        const replyTime = time + Tone.Time("2n").toSeconds() + 0.035;
+        const replyTime = safeEventTime(t + Tone.Time("2n").toSeconds() + 0.035);
         try {
-          hammer.triggerAttackRelease("128n", replyTime - 0.002, 0.052);
+          hammer.triggerAttackRelease("128n", replyTime, 0.052);
         } catch (e) {}
         reply.forEach((note, i) => {
-          piano.triggerAttackRelease(note, "8n", replyTime + i * 0.017, 0.18 - i * 0.018);
+          piano.triggerAttackRelease(note, "8n", safeEventTime(replyTime + i * 0.017), 0.18 - i * 0.018);
         });
       }
       bar++;
@@ -1380,7 +1431,7 @@
         const t = safeEventTime(time + Tone.Time("2n").toSeconds() + 0.08 + Math.random() * 0.035);
         try {
           chord.forEach((note, i) => {
-            piano.triggerAttackRelease(note, i < 2 ? "4n" : "8n", t + i * 0.019, 0.18 - i * 0.012);
+            piano.triggerAttackRelease(note, i < 2 ? "4n" : "8n", safeEventTime(t + i * 0.019), 0.18 - i * 0.012);
           });
         } catch (e) {}
       }
@@ -1491,8 +1542,8 @@
   function start() {
     if (started) return;
     ensureMaster();
-    try { master.gain.rampTo(1, FADE_IN_S); } catch (e) {}
     started = true;
+    syncMasterLevel(FADE_IN_S);
     activeLayer = spinUp(currentGenre);
   }
 
@@ -1510,10 +1561,26 @@
         try { master.dispose(); } catch (e) {}
         master = null;
       }
+      if (masterCompressor) {
+        try { masterCompressor.dispose(); } catch (e) {}
+        masterCompressor = null;
+      }
+      if (masterMakeup) {
+        try { masterMakeup.dispose(); } catch (e) {}
+        masterMakeup = null;
+      }
       if (masterLimiter) {
         try { masterLimiter.dispose(); } catch (e) {}
         masterLimiter = null;
       }
+      if (outputLevelInput && outputLevelHandler) {
+        try {
+          outputLevelInput.removeEventListener("input", outputLevelHandler);
+          outputLevelInput.removeEventListener("change", outputLevelHandler);
+        } catch (e) {}
+      }
+      outputLevelInput = null;
+      outputLevelHandler = null;
     }, (FADE_OUT_S + 0.2) * 1000);
   }
 
@@ -1529,6 +1596,8 @@
         genre: currentGenre,
         scheduled: activeLayer ? activeLayer.scheduledIds.length : 0,
         source: activeLayer ? activeLayer.source : null,
+        outputLevel: outputLevelValue(),
+        masterLevel: master ? Math.round(targetMasterLevel() * 1000) / 1000 : null,
         role: profile ? profile.role : null,
         edge: profile ? profile.edge : null,
         feedback: profile ? profile.feedback : null,
