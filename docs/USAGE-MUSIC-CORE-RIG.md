@@ -4,6 +4,8 @@
 
 公開 URL: https://quietbriony.github.io/Music/
 
+全体像: [Music Stack System Manual](MUSIC-STACK-SYSTEM-MANUAL.md)
+
 ---
 
 ## はじめに
