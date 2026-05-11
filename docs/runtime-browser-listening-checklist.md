@@ -93,6 +93,19 @@ Fail signs:
 - The transient never decays, or behaves like the visible Core Rig `ACID` lock.
 - The acid cue overfills the mix or fights the long-form radio rotation.
 
+## Hazama FM PWA Refresh Check
+
+Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
+
+- Open `fm.html` from a local server, not a `file://` URL.
+- Confirm the current FM surface appears, including recent controls such as
+  `shuffle`.
+- Confirm browser console has no service-worker registration or update errors.
+- Close and reopen the installed app after merge; if the old UI remains, open
+  the normal browser tab once, reload, then reopen the installed app.
+- Do not auto-reload while playback is active. Update reload should only happen
+  from the idle app surface.
+
 ## Hazama FM Genre Source Check
 
 Run this when a PR changes `audio/genre-flavor.js` or genre preset rendering.

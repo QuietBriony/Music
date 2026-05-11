@@ -135,8 +135,35 @@
   <!-- Service worker — offline + cache -->
   <script>
     if ("serviceWorker" in navigator) {
+      let hazamaFmRefreshPending = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        const play = document.getElementById("fm_play");
+        const isIdle = !play || play.dataset.state === "idle";
+        if (hazamaFmRefreshPending || !isIdle) return;
+        hazamaFmRefreshPending = true;
+        window.location.reload();
+      });
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js").catch((err) => {
+        navigator.serviceWorker.register("sw.js").then((registration) => {
+          const activateWaitingWorker = () => {
+            if (registration.waiting) {
+              registration.waiting.postMessage({ type: "SKIP_WAITING" });
+            }
+          };
+          activateWaitingWorker();
+          registration.addEventListener("updatefound", () => {
+            const worker = registration.installing;
+            if (!worker) return;
+            worker.addEventListener("statechange", () => {
+              if (worker.state === "installed") activateWaitingWorker();
+            });
+          });
+          if (typeof registration.update === "function") {
+            registration.update().catch((err) => {
+              console.warn("[Hazama FM] sw update check failed:", err);
+            });
+          }
+        }).catch((err) => {
           console.warn("[Hazama FM] sw register failed:", err);
         });
       });

@@ -334,8 +334,34 @@
     <!-- Service worker — offline + cache (shared with Hazama FM) -->
     <script>
       if ("serviceWorker" in navigator) {
+        let musicRefreshPending = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          const isIdle = document.body?.dataset?.playing !== "true";
+          if (musicRefreshPending || !isIdle) return;
+          musicRefreshPending = true;
+          window.location.reload();
+        });
         window.addEventListener("load", () => {
-          navigator.serviceWorker.register("sw.js").catch((err) => {
+          navigator.serviceWorker.register("sw.js").then((registration) => {
+            const activateWaitingWorker = () => {
+              if (registration.waiting) {
+                registration.waiting.postMessage({ type: "SKIP_WAITING" });
+              }
+            };
+            activateWaitingWorker();
+            registration.addEventListener("updatefound", () => {
+              const worker = registration.installing;
+              if (!worker) return;
+              worker.addEventListener("statechange", () => {
+                if (worker.state === "installed") activateWaitingWorker();
+              });
+            });
+            if (typeof registration.update === "function") {
+              registration.update().catch((err) => {
+                console.warn("[Music Core Rig] sw update check failed:", err);
+              });
+            }
+          }).catch((err) => {
             console.warn("[Music Core Rig] sw register failed:", err);
           });
         });
