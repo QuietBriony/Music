@@ -280,10 +280,10 @@
 
   function buildAmbient(shape) {
     if (shape && shape.format === "namima-ambient-tone-js") {
-      try { return buildAmbientFromShape(shape); }
+      try { return applyProductionGovernor(buildAmbientFromShape(shape), "ambient"); }
       catch (e) { console.warn("[GenreFlavor] ambient shape failed, fallback:", e); }
     }
-    return buildAmbientDefault();
+    return applyProductionGovernor(buildAmbientDefault(), "ambient");
   }
 
   // ---- TECHNO ---------------------------------------------------
@@ -600,8 +600,37 @@
     return { kick, snare, hat, ghost, fill, crash };
   }
 
+  // Production aesthetic governor amounts per pill. Light wash that pulls
+  // every genre toward a shared aesthetic — Aphex-style wrongness + D Angelo
+  // behind-beat pocket — without changing the genre's identity.
+  // See references/hazama-fm-pill-refs.json production_aesthetic_governors.
+  const GOVERNOR_BY_PILL = {
+    ambient: { rdj: 0.012, dangelo: 0.0 },
+    techno:  { rdj: 0.035, dangelo: 0.0 },
+    lofi:    { rdj: 0.030, dangelo: 0.5 },
+    jazz:    { rdj: 0.022, dangelo: 0.5 },
+    funk:    { rdj: 0.022, dangelo: 1.0 },
+    piano:   { rdj: 0.018, dangelo: 0.2 },
+    any:     { rdj: 0.025, dangelo: 0.0 }
+  };
+
+  function governorFor(pill) {
+    return GOVERNOR_BY_PILL[pill] || GOVERNOR_BY_PILL.any;
+  }
+
   // Build drum-frame–driven layer. Bar-by-bar scheduler advances through
   // the frames array and triggers each event at (beat*4n + sub*16n + microMs).
+  //
+  // Production governor (Aphex/D Angelo) is applied at the event level:
+  //   - rdj amount: per-event probability of velocity dropout to 0.3x
+  //     (creates the "1 hit missing" micro-wrongness)
+  //   - dangelo amount: extra 2-7 ms behind-beat shift on snare/ghost
+  //     (multiplied by amount; the per-frame microMs already encodes the
+  //     baseline behind-beat character, this is wash on top)
+  //
+  // Break/recap dynamics: when frame.session_role === "break", the trailing
+  // events are slightly attenuated (ためる), and when session_role === "recap"
+  // velocities are boosted 1.12x to release the held tension.
   function buildDrumsFromFrames(framesData, options = {}) {
     const frames = (framesData && Array.isArray(framesData.frames)) ? framesData.frames : [];
     if (frames.length === 0) return null;
@@ -612,29 +641,58 @@
     const beatTime = Tone.Time("4n").toSeconds();
     const subTime = Tone.Time("16n").toSeconds();
 
+    const rdj = clamp(options.governorRdj ?? 0, 0, 0.2);
+    const dangelo = clamp(options.governorDangelo ?? 0, 0, 1.5);
+
     let frameIdx = 0;
     const ids = [];
     ids.push(Tone.Transport.scheduleRepeat((time) => {
       const frame = frames[frameIdx % frames.length];
       frameIdx++;
       if (!frame || !Array.isArray(frame.events)) return;
-      frame.events.forEach((evt) => {
+      const isBreak = frame.session_role === "break";
+      const isRecap = frame.session_role === "recap";
+      const eventCount = frame.events.length;
+      frame.events.forEach((evt, evtIdx) => {
         if (options.minimalTechno) {
           if (evt.instrument === "ghost" || evt.instrument === "fill" || evt.instrument === "crash") return;
           if (evt.instrument === "hat" && evt.role !== "offbeat_tick" && evt.sub !== 2) return;
         }
         const synth = kit[evt.instrument];
         if (!synth) return;
+
+        // D Angelo behind-beat wash — extra ms on snare/ghost only.
+        let extraMs = 0;
+        if (dangelo > 0 && (evt.instrument === "snare" || evt.instrument === "ghost")) {
+          extraMs = (2 + Math.random() * 5) * dangelo;
+        }
+
         const offset = (evt.beat || 0) * beatTime
                      + (evt.sub || 0) * subTime
-                     + (evt.microMs || 0) / 1000;
+                     + ((evt.microMs || 0) + extraMs) / 1000;
         const vel = clamp(evt.velocity ?? 0.5, 0.05, 1);
         let eventVel = vel;
+
         if (options.minimalTechno) {
           if (evt.instrument === "hat") eventVel = vel * 0.42;
           else if (evt.instrument === "snare") eventVel = vel * 0.76;
           else if (evt.instrument === "kick") eventVel = Math.min(1, vel * 1.06);
         }
+
+        // ためる: tail dip on break frames (last ~25% of events fade to 0.55x)
+        if (isBreak && evtIdx > eventCount * 0.75) {
+          eventVel *= 0.55 + (eventCount - evtIdx) / eventCount * 0.3;
+        }
+        // 解放: recap frames lift 1.12x
+        if (isRecap) {
+          eventVel = Math.min(1, eventVel * 1.12);
+        }
+
+        // RDJ wrongness: occasional per-event velocity dropout to 0.3x
+        if (rdj > 0 && Math.random() < rdj) {
+          eventVel *= 0.3;
+        }
+
         try {
           const eventTime = safeEventTime(time + offset);
           if (evt.instrument === "kick") {
@@ -652,6 +710,18 @@
       scheduledIds: ids,
       source: options.source || "drum-frames"
     };
+  }
+
+  // Public surface for the production aesthetic governor.
+  // This is a labeling/no-op wrapper — the actual rdj/dangelo amounts are
+  // baked into buildDrumsFromFrames options at construction. We keep this
+  // function in the public path so the source string clearly indicates which
+  // pill the governor wash targeted.
+  function applyProductionGovernor(layer, pill) {
+    if (!layer) return null;
+    const gov = governorFor(pill);
+    layer.source = `${layer.source || "layer"}+gov(${pill}:rdj=${gov.rdj.toFixed(3)},da=${gov.dangelo.toFixed(2)})`;
+    return layer;
   }
 
   function addAcidPulse(layer, options = {}) {
@@ -917,17 +987,23 @@
   }
 
   function buildTechnoMachineFromFrames(frames) {
+    const technoGov = governorFor("techno");
     const drums = buildDrumsFromFrames(frames, {
       kit: "techno-machine",
       minimalTechno: true,
       kickNote: "C1",
+      governorRdj: technoGov.rdj,
+      governorDangelo: technoGov.dangelo,
       source: "drum-frames+machine-minimal"
     });
-    return addTechnoChordLift(
-      addBrainDanceRatchet(
-        addAcidPulse(drums, { source: "drum-frames+machine-acid-minimal", volume: -18 }),
-        { source: "drum-frames+machine-acid-brain" }
-      )
+    return applyProductionGovernor(
+      addTechnoChordLift(
+        addBrainDanceRatchet(
+          addAcidPulse(drums, { source: "drum-frames+machine-acid-minimal", volume: -18 }),
+          { source: "drum-frames+machine-acid-brain" }
+        )
+      ),
+      "techno"
     );
   }
 
@@ -1021,8 +1097,11 @@
   // When drum-frames-lofi preset is present, render the lazy frame rhythm
   // PLUS the vinyl crackle bed for the dusty character.
   function buildLofiFromFrames(frames) {
+    const lofiGov = governorFor("lofi");
     const drums = buildDrumsFromFrames(frames, {
       kit: "lofi-break",
+      governorRdj: lofiGov.rdj,
+      governorDangelo: lofiGov.dangelo,
       source: "drum-frames+dusty-break-kit"
     });
     if (!drums) return null;
@@ -1040,7 +1119,7 @@
       if (prevDispose) prevDispose();
     };
     drums.source = "drum-frames+dusty-break-kit+vinyl-crackle";
-    return addSessionBreaks(addNujabesMemoryDots(addLofiJazzDust(drums)), "lofi");
+    return applyProductionGovernor(addSessionBreaks(addNujabesMemoryDots(addLofiJazzDust(drums)), "lofi"), "lofi");
   }
 
   function buildLofi(frames) {
@@ -1104,8 +1183,11 @@
   // keep the walking bass plus a low brush layer. The brush sits behind the
   // frame hats so jazz reads as live pocket instead of just a drum preset.
   function buildJazzFromFrames(frames) {
+    const jazzGov = governorFor("jazz");
     const drums = buildDrumsFromFrames(frames, {
       kit: "live-jazz",
+      governorRdj: jazzGov.rdj,
+      governorDangelo: jazzGov.dangelo,
       source: "drum-frames+live-jazz-kit"
     });
     if (!drums) return null;
@@ -1144,7 +1226,7 @@
     }, "8n", "8n"));
     drums.synths.push(brush, brushHi, brushLo, bass, room);
     drums.source = "drum-frames+live-jazz-kit+walking-bass+brush";
-    return addSessionBreaks(addJazzComping(drums), "jazz");
+    return applyProductionGovernor(addSessionBreaks(addJazzComping(drums), "jazz"), "jazz");
   }
 
   function buildJazz(frames) {
@@ -1205,8 +1287,11 @@
   // chord layer plus a quiet clavi. The clavi is sparse so it adds funk
   // articulation without flattening the frame timing.
   function buildFunkFromFrames(frames) {
+    const funkGov = governorFor("funk");
     const drums = buildDrumsFromFrames(frames, {
       kit: "live-funk",
+      governorRdj: funkGov.rdj,
+      governorDangelo: funkGov.dangelo,
       source: "drum-frames+live-funk-kit"
     });
     if (!drums) return null;
@@ -1247,7 +1332,7 @@
     }, "1m"));
     drums.synths.push(clavi, claviFilter, ep, epRoom);
     drums.source = "drum-frames+live-funk-kit+ep+clavi";
-    return addSessionBreaks(addFunkRubberBass(drums), "funk");
+    return applyProductionGovernor(addSessionBreaks(addFunkRubberBass(drums), "funk"), "funk");
   }
 
   function buildFunk(frames) {
@@ -1502,6 +1587,54 @@
     return { synths: [piano, lp, room, layerGain], scheduledId: id };
   }
 
+  // Debussy whole-tone memory layer — sustained whole-tone voicings that
+  // peek through every 2-3 bars, with a long concert-hall reverb tail.
+  // Volume sits ~5 dB below anchor so it reads as "気配のあるメモリ".
+  // Reference: references/apple-music-refs.json (Debussy "Clair de Lune"
+  // production_translation: impressionist + whole-tone + concert hall).
+  function addDebussyMemoryDots(layer) {
+    if (!layer) return null;
+    const hall = new Tone.Reverb({ decay: 6.4, preDelay: 0.04, wet: 0.42 }).connect(layer.gain);
+    const lp = new Tone.Filter({ frequency: 2800, type: "lowpass", Q: 0.4 }).connect(hall);
+    const memory = new Tone.PolySynth(Tone.FMSynth, {
+      harmonicity: 1.4,
+      modulationIndex: 1.8,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.4, decay: 1.2, sustain: 0.5, release: 4.5 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 0.25, decay: 0.8, sustain: 0.3, release: 3.0 },
+      volume: -20
+    }).connect(lp);
+    memory.maxPolyphony = 6;
+    // Whole-tone (Debussy) voicings: Cwhole / Dwhole / open-fifth wash
+    const voicings = [
+      ["C3", "D3", "E3", "F#3", "G#3", "A#3"],   // C whole-tone span
+      ["D3", "E3", "F#3", "G#3", "A#3", "C4"],   // shifted whole-tone
+      ["G2", "A2", "B2", "C#3", "D#3", "F3"],    // dark whole-tone
+      ["C3", "G3", "D4"],                         // open-fifth wash
+      ["F3", "C4", "G4"],                         // pentatonic-ish answer
+      ["A2", "E3", "B3", "F#4"]                   // open quartal stack
+    ];
+    let phrase = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      // 3-bar phrase の最後に 28% で memory dot を入れる
+      if (Math.random() < 0.30) {
+        const voicing = voicings[phrase % voicings.length];
+        try {
+          // soft arpeggiation: each note 35-80ms apart for "rolled chord" feel
+          voicing.forEach((note, i) => {
+            const delay = i * (0.04 + Math.random() * 0.025);
+            memory.triggerAttackRelease(note, "1n", safeEventTime(time + 0.06 + delay), 0.18 + Math.random() * 0.04);
+          });
+        } catch (e) {}
+      }
+      phrase++;
+    }, "3m"));
+    layer.synths.push(memory, lp, hall);
+    layer.source = `${layer.source || "piano"}+debussy-memory`;
+    return layer;
+  }
+
   function buildPianoFromRecipe(recipeContainer) {
     const recipes = (recipeContainer && Array.isArray(recipeContainer.recipes)) ? recipeContainer.recipes : [];
     if (recipes.length === 0) return buildPianoDefault();
@@ -1523,13 +1656,14 @@
     synths.push(...planing.synths);
     ids.push(planing.scheduledId);
 
-    return {
+    const built = {
       gain,
       synths,
       scheduledIds: ids,
       source: "chill-recipe:" + (recipes[0]?.id || "?") + "+foreground-piano+planing-reply",
       level: 2.15
     };
+    return applyProductionGovernor(addDebussyMemoryDots(built), "piano");
   }
 
   function buildPiano(recipe) {
@@ -1537,7 +1671,7 @@
       try { return buildPianoFromRecipe(recipe); }
       catch (e) { console.warn("[GenreFlavor] piano recipe failed, fallback:", e); }
     }
-    return buildPianoDefault();
+    return applyProductionGovernor(addDebussyMemoryDots(buildPianoDefault()), "piano");
   }
 
   // ---- BUILDERS index -------------------------------------------

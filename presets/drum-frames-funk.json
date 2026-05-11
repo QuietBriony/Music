@@ -2,6 +2,7 @@
   "version": 1,
   "format": "drum-frames",
   "genre": "funk",
+  "session_signature": "P-Funk live band pocket + drum break",
   "frames": [
     {
       "id": "funk_pocket_bar_0",
@@ -9,6 +10,7 @@
       "swing": 0.08,
       "barLength": 4,
       "role": "settle",
+      "session_role": "section-A",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.72, "microMs": -4, "role": "anchor" },
         { "instrument": "kick", "beat": 2, "sub": 2, "velocity": 0.52, "microMs": -2, "role": "bass_answer" },
@@ -33,6 +35,7 @@
       "swing": 0.09,
       "barLength": 4,
       "role": "breathe",
+      "session_role": "section-A",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.70, "microMs": -5, "role": "anchor" },
         { "instrument": "kick", "beat": 1, "sub": 3, "velocity": 0.42, "microMs": -1, "role": "pocket_pickup" },
@@ -58,6 +61,7 @@
       "swing": 0.10,
       "barLength": 4,
       "role": "build",
+      "session_role": "section-B",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.74, "microMs": -4, "role": "anchor" },
         { "instrument": "kick", "beat": 1, "sub": 2, "velocity": 0.44, "microMs": -2, "role": "syncopated_push" },
@@ -85,6 +89,7 @@
       "swing": 0.08,
       "barLength": 4,
       "role": "turn",
+      "session_role": "section-B",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.76, "microMs": -3, "role": "anchor" },
         { "instrument": "kick", "beat": 0, "sub": 3, "velocity": 0.38, "microMs": -1, "role": "early_bass_reply" },
@@ -111,6 +116,7 @@
       "swing": 0.07,
       "barLength": 4,
       "role": "release",
+      "session_role": "vamp",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.78, "microMs": -4, "role": "anchor" },
         { "instrument": "kick", "beat": 2, "sub": 0, "velocity": 0.58, "microMs": -3, "role": "downbeat_answer" },
@@ -137,6 +143,7 @@
       "swing": 0.09,
       "barLength": 4,
       "role": "recover",
+      "session_role": "vamp",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.68, "microMs": -5, "role": "anchor" },
         { "instrument": "kick", "beat": 2, "sub": 2, "velocity": 0.46, "microMs": -2, "role": "bass_answer" },
@@ -152,6 +159,60 @@
         { "instrument": "hat", "beat": 3, "sub": 2, "velocity": 0.21, "microMs": 18, "role": "late_swing" },
         { "instrument": "ghost", "beat": 0, "sub": 3, "velocity": 0.12, "microMs": 14, "role": "soft_ghost_glue" },
         { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.14, "microMs": 18, "role": "recover_glue" }
+      ]
+    },
+    {
+      "id": "funk_pfunk_drum_break",
+      "bpm": 100,
+      "swing": 0.11,
+      "barLength": 4,
+      "role": "drum-break",
+      "session_role": "break",
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.82, "microMs": -4, "role": "break_kick_1" },
+        { "instrument": "kick", "beat": 1, "sub": 2, "velocity": 0.58, "microMs": -1, "role": "break_kick_2_5" },
+        { "instrument": "kick", "beat": 2, "sub": 2, "velocity": 0.62, "microMs": -2, "role": "break_kick_3_5" },
+        { "instrument": "kick", "beat": 3, "sub": 0, "velocity": 0.68, "microMs": -3, "role": "break_kick_4" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.84, "microMs": 18, "role": "break_snare_pop" },
+        { "instrument": "snare", "beat": 2, "sub": 3, "velocity": 0.52, "microMs": 22, "role": "drunk_snare_setup" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.86, "microMs": 20, "role": "break_snare_pop" },
+        { "instrument": "ghost", "beat": 0, "sub": 2, "velocity": 0.30, "microMs": 16, "role": "clap" },
+        { "instrument": "ghost", "beat": 0, "sub": 3, "velocity": 0.22, "microMs": 14, "role": "left_hand_buzz" },
+        { "instrument": "ghost", "beat": 1, "sub": 0, "velocity": 0.36, "microMs": 17, "role": "clap" },
+        { "instrument": "ghost", "beat": 1, "sub": 3, "velocity": 0.28, "microMs": 18, "role": "left_hand_buzz" },
+        { "instrument": "ghost", "beat": 2, "sub": 0, "velocity": 0.32, "microMs": 15, "role": "clap" },
+        { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.24, "microMs": 16, "role": "left_hand_buzz" },
+        { "instrument": "ghost", "beat": 3, "sub": 0, "velocity": 0.38, "microMs": 19, "role": "clap" },
+        { "instrument": "ghost", "beat": 3, "sub": 3, "velocity": 0.26, "microMs": 17, "role": "left_hand_buzz" }
+      ]
+    },
+    {
+      "id": "funk_pfunk_pocket_recap",
+      "bpm": 98,
+      "swing": 0.10,
+      "barLength": 4,
+      "role": "recap",
+      "session_role": "recap",
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.88, "microMs": -4, "role": "recap_kick_drive" },
+        { "instrument": "kick", "beat": 1, "sub": 3, "velocity": 0.50, "microMs": -1, "role": "recap_pickup" },
+        { "instrument": "kick", "beat": 2, "sub": 2, "velocity": 0.62, "microMs": -2, "role": "recap_bass_answer" },
+        { "instrument": "kick", "beat": 3, "sub": 3, "velocity": 0.44, "microMs": -1, "role": "recap_pre_one_pickup" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.78, "microMs": 18, "role": "recap_behind_backbeat" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.84, "microMs": 21, "role": "recap_behind_backbeat" },
+        { "instrument": "hat", "beat": 0, "sub": 0, "velocity": 0.42, "microMs": 0, "role": "swung_timekeeper" },
+        { "instrument": "hat", "beat": 0, "sub": 2, "velocity": 0.32, "microMs": 14, "role": "late_swing" },
+        { "instrument": "hat", "beat": 1, "sub": 0, "velocity": 0.38, "microMs": 1, "role": "swung_timekeeper" },
+        { "instrument": "hat", "beat": 1, "sub": 2, "velocity": 0.30, "microMs": 15, "role": "late_swing" },
+        { "instrument": "hat", "beat": 2, "sub": 0, "velocity": 0.40, "microMs": 0, "role": "swung_timekeeper" },
+        { "instrument": "hat", "beat": 2, "sub": 2, "velocity": 0.34, "microMs": 13, "role": "late_swing" },
+        { "instrument": "hat", "beat": 3, "sub": 0, "velocity": 0.39, "microMs": 2, "role": "swung_timekeeper" },
+        { "instrument": "hat", "beat": 3, "sub": 2, "velocity": 0.36, "microMs": 16, "role": "late_swing" },
+        { "instrument": "ghost", "beat": 0, "sub": 3, "velocity": 0.22, "microMs": 14, "role": "recap_glue" },
+        { "instrument": "ghost", "beat": 1, "sub": 0, "velocity": 0.30, "microMs": 18, "role": "clap_recap" },
+        { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.24, "microMs": 16, "role": "recap_glue" },
+        { "instrument": "ghost", "beat": 3, "sub": 0, "velocity": 0.30, "microMs": 19, "role": "clap_recap" },
+        { "instrument": "fill", "beat": 3, "sub": 3, "velocity": 0.52, "microMs": 12, "role": "small_tom_drop" }
       ]
     }
   ]

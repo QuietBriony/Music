@@ -80,7 +80,7 @@
         "restraint",
         "low-pressure"
       ],
-      "ui_caption": "Eno + BoC + Aphex"
+      "ui_caption": "haze drift"
     },
     "techno": {
       "label": "TECHNO",
@@ -107,7 +107,7 @@
         "long-form",
         "emotional"
       ],
-      "ui_caption": "Derrick May"
+      "ui_caption": "machine pulse"
     },
     "lofi": {
       "label": "LOFI",
@@ -140,7 +140,7 @@
         "jazz-hop",
         "restraint"
       ],
-      "ui_caption": "Nujabes dust"
+      "ui_caption": "dust memory"
     },
     "jazz": {
       "label": "JAZZ",
@@ -173,7 +173,7 @@
         "session-break",
         "drum-led"
       ],
-      "ui_caption": "Blakey + Evans"
+      "ui_caption": "session break"
     },
     "funk": {
       "label": "FUNK",
@@ -201,7 +201,7 @@
         "session-break",
         "horn-stab"
       ],
-      "ui_caption": "Funkadelic"
+      "ui_caption": "live pocket"
     },
     "piano": {
       "label": "PIANO",
@@ -227,13 +227,13 @@
         "rubato",
         "whole-tone"
       ],
-      "ui_caption": "Debussy + Evans"
+      "ui_caption": "felt rest"
     }
   },
   "notes": [
     "primary_references は production_translation あり (apple-music-refs.json と紐付け)。",
     "secondary_references は governor 役 or 雰囲気の補助参照。",
-    "ui_caption は UI 上で pill の下に表示する短い参照タグ (fm.js が読む)。",
+    "ui_caption は UI 上で pill の下に表示する短い feel タグ (fm.js が読む)。artist 名は直接出さず、雰囲気の略語にする。",
     "全 pill に Richard D. James と D Angelo が production_aesthetic_governors として薄く効く。",
     "実装は genre-flavor.js の各 builder と presets/*.json で翻訳する。",
     "artist/title は分析メタデータ、runtime symbol や preset 名へ直接使わない。"

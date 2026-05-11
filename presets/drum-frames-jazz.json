@@ -2,6 +2,7 @@
   "version": 1,
   "format": "drum-frames",
   "genre": "jazz",
+  "session_signature": "hard-bop session + trio breath",
   "frames": [
     {
       "id": "jazz_pocket_bar_0",
@@ -9,6 +10,7 @@
       "swing": 0.16,
       "barLength": 4,
       "role": "settle",
+      "session_role": "head",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.48, "microMs": 3, "role": "soft_anchor" },
         { "instrument": "kick", "beat": 2, "sub": 2, "velocity": 0.32, "microMs": 6, "role": "feathered_answer" },
@@ -32,6 +34,7 @@
       "swing": 0.18,
       "barLength": 4,
       "role": "breathe",
+      "session_role": "head",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.42, "microMs": 4, "role": "soft_anchor" },
         { "instrument": "kick", "beat": 3, "sub": 2, "velocity": 0.28, "microMs": 8, "role": "feathered_pickup" },
@@ -55,6 +58,7 @@
       "swing": 0.15,
       "barLength": 4,
       "role": "build",
+      "session_role": "comp",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.50, "microMs": 2, "role": "soft_anchor" },
         { "instrument": "kick", "beat": 1, "sub": 3, "velocity": 0.30, "microMs": 5, "role": "feathered_syncopation" },
@@ -81,6 +85,7 @@
       "swing": 0.14,
       "barLength": 4,
       "role": "turn",
+      "session_role": "comp",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.53, "microMs": 2, "role": "soft_anchor" },
         { "instrument": "kick", "beat": 2, "sub": 0, "velocity": 0.36, "microMs": 5, "role": "feathered_downbeat" },
@@ -106,6 +111,7 @@
       "swing": 0.16,
       "barLength": 4,
       "role": "release",
+      "session_role": "comp",
       "events": [
         { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.55, "microMs": 2, "role": "soft_anchor" },
         { "instrument": "kick", "beat": 2, "sub": 2, "velocity": 0.38, "microMs": 5, "role": "feathered_answer" },
@@ -122,6 +128,82 @@
         { "instrument": "ghost", "beat": 0, "sub": 3, "velocity": 0.17, "microMs": 12, "role": "brush_ghost_before_2" },
         { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.19, "microMs": 15, "role": "brush_ghost_before_4" },
         { "instrument": "crash", "beat": 0, "sub": 0, "velocity": 0.28, "microMs": 5, "role": "soft_ride_wash" }
+      ]
+    },
+    {
+      "id": "jazz_blakey_head_statement",
+      "bpm": 132,
+      "swing": 0.18,
+      "barLength": 4,
+      "role": "head-statement",
+      "session_role": "head",
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.66, "microMs": -2, "role": "anchor_drive" },
+        { "instrument": "kick", "beat": 2, "sub": 2, "velocity": 0.48, "microMs": 4, "role": "pushed_answer" },
+        { "instrument": "kick", "beat": 3, "sub": 3, "velocity": 0.34, "microMs": 6, "role": "pickup_to_next" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.62, "microMs": 8, "role": "snare_backbeat_2" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.68, "microMs": 10, "role": "snare_backbeat_4" },
+        { "instrument": "hat", "beat": 0, "sub": 0, "velocity": 0.58, "microMs": 0, "role": "ride_ding" },
+        { "instrument": "hat", "beat": 0, "sub": 2, "velocity": 0.42, "microMs": 18, "role": "ride_swung" },
+        { "instrument": "hat", "beat": 1, "sub": 0, "velocity": 0.54, "microMs": 1, "role": "ride_ding" },
+        { "instrument": "hat", "beat": 1, "sub": 2, "velocity": 0.40, "microMs": 19, "role": "ride_swung" },
+        { "instrument": "hat", "beat": 2, "sub": 0, "velocity": 0.58, "microMs": 0, "role": "ride_ding" },
+        { "instrument": "hat", "beat": 2, "sub": 2, "velocity": 0.44, "microMs": 17, "role": "ride_swung" },
+        { "instrument": "hat", "beat": 3, "sub": 0, "velocity": 0.55, "microMs": 2, "role": "ride_ding" },
+        { "instrument": "hat", "beat": 3, "sub": 2, "velocity": 0.46, "microMs": 20, "role": "ride_swung" },
+        { "instrument": "ghost", "beat": 1, "sub": 3, "velocity": 0.20, "microMs": 12, "role": "left_hand_chatter" },
+        { "instrument": "ghost", "beat": 2, "sub": 1, "velocity": 0.18, "microMs": 10, "role": "blakey_rim_press" },
+        { "instrument": "ghost", "beat": 3, "sub": 3, "velocity": 0.22, "microMs": 14, "role": "comp_lift" }
+      ]
+    },
+    {
+      "id": "jazz_blakey_drum_break",
+      "bpm": 138,
+      "swing": 0.20,
+      "barLength": 4,
+      "role": "drum-break",
+      "session_role": "break",
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.74, "microMs": -3, "role": "break_punch_1" },
+        { "instrument": "kick", "beat": 1, "sub": 2, "velocity": 0.46, "microMs": 2, "role": "break_kick_push" },
+        { "instrument": "kick", "beat": 2, "sub": 0, "velocity": 0.62, "microMs": -1, "role": "break_punch_3" },
+        { "instrument": "kick", "beat": 3, "sub": 2, "velocity": 0.50, "microMs": 3, "role": "break_kick_set" },
+        { "instrument": "snare", "beat": 0, "sub": 3, "velocity": 0.58, "microMs": 8, "role": "blakey_press_roll_in" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.78, "microMs": 6, "role": "snare_break_accent" },
+        { "instrument": "snare", "beat": 2, "sub": 2, "velocity": 0.54, "microMs": 9, "role": "snare_break_answer" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.82, "microMs": 7, "role": "snare_break_accent" },
+        { "instrument": "snare", "beat": 3, "sub": 3, "velocity": 0.40, "microMs": 11, "role": "tame_tail" },
+        { "instrument": "ghost", "beat": 0, "sub": 2, "velocity": 0.26, "microMs": 9, "role": "left_hand_buzz" },
+        { "instrument": "ghost", "beat": 1, "sub": 3, "velocity": 0.30, "microMs": 12, "role": "left_hand_buzz" },
+        { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.28, "microMs": 11, "role": "left_hand_buzz" },
+        { "instrument": "ghost", "beat": 3, "sub": 1, "velocity": 0.24, "microMs": 8, "role": "tame_setup" }
+      ]
+    },
+    {
+      "id": "jazz_blakey_fill_recap",
+      "bpm": 130,
+      "swing": 0.18,
+      "barLength": 4,
+      "role": "fill-recap",
+      "session_role": "recap",
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.78, "microMs": -2, "role": "recap_drive" },
+        { "instrument": "kick", "beat": 2, "sub": 2, "velocity": 0.56, "microMs": 4, "role": "recap_answer" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.74, "microMs": 7, "role": "recap_backbeat_2" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.80, "microMs": 9, "role": "recap_backbeat_4" },
+        { "instrument": "hat", "beat": 0, "sub": 0, "velocity": 0.64, "microMs": 0, "role": "ride_ding" },
+        { "instrument": "hat", "beat": 0, "sub": 2, "velocity": 0.50, "microMs": 17, "role": "ride_swung" },
+        { "instrument": "hat", "beat": 1, "sub": 0, "velocity": 0.60, "microMs": 1, "role": "ride_ding" },
+        { "instrument": "hat", "beat": 1, "sub": 2, "velocity": 0.48, "microMs": 18, "role": "ride_swung" },
+        { "instrument": "hat", "beat": 2, "sub": 0, "velocity": 0.64, "microMs": 0, "role": "ride_ding" },
+        { "instrument": "hat", "beat": 2, "sub": 2, "velocity": 0.52, "microMs": 16, "role": "ride_swung" },
+        { "instrument": "hat", "beat": 3, "sub": 0, "velocity": 0.62, "microMs": 2, "role": "ride_ding" },
+        { "instrument": "hat", "beat": 3, "sub": 2, "velocity": 0.54, "microMs": 19, "role": "ride_swung" },
+        { "instrument": "ghost", "beat": 0, "sub": 3, "velocity": 0.22, "microMs": 11, "role": "recap_left_hand" },
+        { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.24, "microMs": 13, "role": "recap_left_hand" },
+        { "instrument": "fill", "beat": 3, "sub": 1, "velocity": 0.46, "microMs": 8, "role": "small_tom_turn" },
+        { "instrument": "fill", "beat": 3, "sub": 3, "velocity": 0.42, "microMs": 10, "role": "small_tom_turn" },
+        { "instrument": "crash", "beat": 0, "sub": 0, "velocity": 0.36, "microMs": 3, "role": "session_lift" }
       ]
     }
   ]
