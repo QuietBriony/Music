@@ -164,6 +164,27 @@
     </p>
 
     <section>
+      <h2>SYNC snapshots (live)</h2>
+      <p style="margin: 0 0 12px; color: var(--sub); font-size: 13px;">
+        Hazama FM の <code>SYNC</code> ボタン押下時に保存された localStorage の文脈。
+        音声・歌詞は保存していません（metadata only）。
+        <button id="sync-copy" style="margin-left: 10px;">Copy JSON</button>
+        <button id="sync-clear" style="margin-left: 4px; color: #f0c27d;">Clear</button>
+      </p>
+      <div id="sync-list" style="font-size: 12px; color: var(--sub);">読み込み中…</div>
+    </section>
+
+    <section>
+      <h2>Listening trace (live)</h2>
+      <p style="margin: 0 0 12px; color: var(--sub); font-size: 13px;">
+        各ジャンルの滞在時間と遷移履歴。Hazama FM 起動中に自動で蓄積。
+        <button id="trace-copy" style="margin-left: 10px;">Copy JSON</button>
+        <button id="trace-clear" style="margin-left: 4px; color: #f0c27d;">Clear</button>
+      </p>
+      <div id="trace-list" style="font-size: 12px; color: var(--sub);">読み込み中…</div>
+    </section>
+
+    <section>
       <h2>今すぐ見る順番</h2>
       <table>
         <thead>
@@ -276,5 +297,122 @@
       </ul>
     </section>
   </main>
+
+  <script>
+  (function () {
+    "use strict";
+
+    const SYNC_KEYS = ["music:fm:sync:v1", "music:fm:sync"];
+    const TRACE_KEYS = ["music:fm:listening-trace:v1", "music:fm:trace"];
+
+    function readJsonFromKeys(keys) {
+      for (const k of keys) {
+        try {
+          const raw = localStorage.getItem(k);
+          if (raw) return { key: k, data: JSON.parse(raw) };
+        } catch (e) {}
+      }
+      return null;
+    }
+
+    function fmtTime(ts) {
+      try { return new Date(ts).toLocaleString("ja-JP", { hour12: false }); }
+      catch (e) { return String(ts); }
+    }
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[c]);
+    }
+
+    function renderSync() {
+      const el = document.getElementById("sync-list");
+      if (!el) return;
+      const result = readJsonFromKeys(SYNC_KEYS);
+      if (!result) {
+        el.innerHTML = "<em>（SYNC スナップショットなし — Hazama FM で SYNC ボタンを押すと貯まります）</em>";
+        return;
+      }
+      const list = Array.isArray(result.data) ? result.data
+                 : Array.isArray(result.data.snapshots) ? result.data.snapshots
+                 : [result.data];
+      if (list.length === 0) {
+        el.innerHTML = "<em>（SYNC スナップショットなし）</em>";
+        return;
+      }
+      el.innerHTML = list.slice().reverse().map((snap) => {
+        const when = snap.timestamp || snap.captured_at || snap.t || Date.now();
+        const summary = [snap.genre, snap.energy, snap.bpm ? `bpm ${snap.bpm}` : null]
+          .filter(Boolean).join(" · ") || "snapshot";
+        return `<div style="margin: 8px 0; padding: 10px 12px; background: rgba(125,240,212,0.04); border-left: 2px solid rgba(125,240,212,0.4); border-radius: 4px;">
+          <div style="font-size: 11px; opacity: 0.6;">${esc(fmtTime(when))}</div>
+          <div style="font-size: 13px; color: var(--text);">${esc(summary)}</div>
+          <pre style="margin: 6px 0 0; font-size: 11px; opacity: 0.65; white-space: pre-wrap; word-break: break-word; background: transparent; padding: 0; border: 0;">${esc(JSON.stringify(snap, null, 2))}</pre>
+        </div>`;
+      }).join("");
+    }
+
+    function renderTrace() {
+      const el = document.getElementById("trace-list");
+      if (!el) return;
+      const result = readJsonFromKeys(TRACE_KEYS);
+      if (!result) {
+        el.innerHTML = "<em>（リスニングトレース未収集 — Hazama FM を再生すると貯まります）</em>";
+        return;
+      }
+      const data = result.data || {};
+      const dwell = data.dwell_ms_by_genre || {};
+      const transitions = data.transitions || [];
+      const totalMs = Object.values(dwell).reduce((s, v) => s + (Number(v) || 0), 0) || 1;
+      const dwellRows = Object.entries(dwell)
+        .sort((a, b) => b[1] - a[1])
+        .map(([g, ms]) => {
+          const pct = ((ms / totalMs) * 100).toFixed(1);
+          const min = (ms / 60000).toFixed(1);
+          return `  ${g.padEnd(10, " ")} ${min.padStart(5, " ")}m  ${pct.padStart(5, " ")}%`;
+        }).join("\n");
+      const transRows = transitions.slice(-12).map((t) => {
+        const from = (t.from_genre || "—").padEnd(8, " ");
+        const to = (t.to_genre || "—").padEnd(8, " ");
+        const dwellSec = t.dwell_ms != null ? `${(t.dwell_ms / 1000).toFixed(0)}s` : "—";
+        return `  ${from} → ${to} (${dwellSec.padStart(5, " ")}) [${esc(t.reason || "")}]`;
+      }).join("\n");
+      el.innerHTML = `<pre style="font-size: 11px; color: var(--sub); background: rgba(0,0,0,0.18); padding: 12px 14px; border-radius: 6px; overflow-x: auto;">genre dwell
+${dwellRows || "  (empty)"}
+
+recent transitions (${transitions.length} total)
+${transRows || "  (empty)"}</pre>`;
+    }
+
+    async function copyJson(keys) {
+      const result = readJsonFromKeys(keys);
+      if (!result) { alert("data なし"); return; }
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(result.data, null, 2));
+        alert("JSON をクリップボードにコピーしました");
+      } catch (e) {
+        alert("コピー失敗: " + (e && e.message ? e.message : e));
+      }
+    }
+
+    function clearKeys(keys, label) {
+      if (!confirm(label + " を削除しますか？")) return;
+      for (const k of keys) {
+        try { localStorage.removeItem(k); } catch (e) {}
+      }
+      renderSync();
+      renderTrace();
+    }
+
+    document.getElementById("sync-copy")?.addEventListener("click", () => copyJson(SYNC_KEYS));
+    document.getElementById("sync-clear")?.addEventListener("click", () => clearKeys(SYNC_KEYS, "SYNC snapshots"));
+    document.getElementById("trace-copy")?.addEventListener("click", () => copyJson(TRACE_KEYS));
+    document.getElementById("trace-clear")?.addEventListener("click", () => clearKeys(TRACE_KEYS, "listening trace"));
+
+    renderSync();
+    renderTrace();
+  })();
+  </script>
 </body>
 </html>

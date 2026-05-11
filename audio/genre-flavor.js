@@ -112,6 +112,9 @@
 
   function ensureMaster() {
     if (master) return master;
+    // Master chain: gain → compressor → EQ3 polish → makeup → limiter → destination
+    // EQ3 is the "Apple Music finishing" tilt: small low + air boost, slight
+    // low-mid scoop to clear the chord layer's mid range.
     masterCompressor = new Tone.Compressor({
       threshold: -18,
       ratio: 2.8,
@@ -119,10 +122,18 @@
       release: 0.18,
       knee: 12
     });
+    const masterEq = new Tone.EQ3({
+      low: 1.0,      // +1.0 dB @ 100 Hz default
+      mid: -0.6,     // -0.6 dB low-mid scoop (clear chord/pad pocket)
+      high: 0.6,     // +0.6 dB @ 2.5 kHz default — "air"
+      lowFrequency: 200,
+      highFrequency: 5000
+    });
     masterMakeup = new Tone.Gain(1.08);
     masterLimiter = new Tone.Limiter({ threshold: -1.2 }).toDestination();
     master = new Tone.Gain(0).connect(masterCompressor);
-    masterCompressor.connect(masterMakeup);
+    masterCompressor.connect(masterEq);
+    masterEq.connect(masterMakeup);
     masterMakeup.connect(masterLimiter);
     bindOutputLevelFollower();
     return master;
@@ -635,7 +646,10 @@
     const frames = (framesData && Array.isArray(framesData.frames)) ? framesData.frames : [];
     if (frames.length === 0) return null;
 
-    const gain = new Tone.Gain(0.0001).connect(ensureMaster());
+    // Topology: pumpGain (sidechain duck target) → master fade gain → master bus.
+    // Non-sidechain genres leave pumpGain at 1.0; sidechained genres duck it on kick.
+    const pumpGain = new Tone.Gain(1).connect(ensureMaster());
+    const gain = new Tone.Gain(0.0001).connect(pumpGain);
     const kit = makeDrumKit(gain, options);
 
     const beatTime = Tone.Time("4n").toSeconds();
@@ -643,6 +657,10 @@
 
     const rdj = clamp(options.governorRdj ?? 0, 0, 0.2);
     const dangelo = clamp(options.governorDangelo ?? 0, 0, 1.5);
+    const pillName = options.pill || "any";
+
+    // Sidechain callbacks fire on every kick event. addSidechainPump pushes one.
+    const onKickFire = [];
 
     let frameIdx = 0;
     const ids = [];
@@ -653,6 +671,17 @@
       const isBreak = frame.session_role === "break";
       const isRecap = frame.session_role === "recap";
       const eventCount = frame.events.length;
+
+      // Expose current frame for Now Playing UI in fm.js
+      if (typeof window !== "undefined") {
+        window.HazamaFlavorState = window.HazamaFlavorState || {};
+        window.HazamaFlavorState.pill = pillName;
+        window.HazamaFlavorState.frameId = frame.id || "?";
+        window.HazamaFlavorState.sessionRole = frame.session_role || "?";
+        window.HazamaFlavorState.frameRole = frame.role || "?";
+        window.HazamaFlavorState.frameBpm = frame.bpm || null;
+      }
+
       frame.events.forEach((evt, evtIdx) => {
         if (options.minimalTechno) {
           if (evt.instrument === "ghost" || evt.instrument === "fill" || evt.instrument === "crash") return;
@@ -697,6 +726,10 @@
           const eventTime = safeEventTime(time + offset);
           if (evt.instrument === "kick") {
             synth.triggerAttackRelease(options.kickNote || "C2", "16n", eventTime, eventVel);
+            // Fire sidechain callbacks (duck chord/lead layers on kick)
+            for (const cb of onKickFire) {
+              try { cb(eventTime, eventVel); } catch (err) {}
+            }
           } else {
             synth.triggerAttackRelease("16n", eventTime, eventVel);
           }
@@ -706,10 +739,53 @@
 
     return {
       gain,
+      pumpGain,
+      onKickFire,
       synths: [kit.kick, kit.snare, kit.hat, kit.ghost, kit.fill, kit.crash],
       scheduledIds: ids,
       source: options.source || "drum-frames"
     };
+  }
+
+  // D'Angelo-style tape saturation — soft asymmetric distortion + low-shelf
+  // tilt, inserted parallel-wet to the layer.gain so it adds warmth without
+  // killing the drum transients. Used by funk + lofi.
+  function addTapeSaturation(layer, amount = 0.5) {
+    if (!layer || !layer.gain) return layer;
+    const sat = new Tone.Distortion({
+      distortion: clamp(0.04 + amount * 0.05, 0, 0.16),
+      wet: 1,
+      oversample: "2x"
+    });
+    const tilt = new Tone.Filter({ frequency: 320, type: "lowshelf", gain: 0.6 + amount * 0.4 });
+    const wet = new Tone.Gain(clamp(0.14 + amount * 0.12, 0, 0.35));
+    // Tap layer.gain output via a parallel pre-master send through sat → tilt → wet → master.
+    layer.gain.connect(sat);
+    sat.connect(tilt);
+    tilt.connect(wet);
+    wet.connect(ensureMaster());
+    layer.synths.push(sat, tilt, wet);
+    layer.source = `${layer.source || "layer"}+tape-sat(${amount.toFixed(2)})`;
+    return layer;
+  }
+
+  // Sidechain pump — duck pumpGain on each kick. Used by techno + funk.
+  // depth 0.45 = duck to 0.55x peak; attack 15 ms; release 100 ms.
+  function addSidechainPump(layer, depth = 0.42) {
+    if (!layer || !layer.pumpGain || !Array.isArray(layer.onKickFire)) return layer;
+    const cb = (time, vel) => {
+      const dipLevel = clamp(1 - depth * Math.min(1.05, vel * 1.25), 0.2, 1);
+      try {
+        const g = layer.pumpGain.gain;
+        g.cancelScheduledValues(time);
+        g.setValueAtTime(g.value ?? 1, time);
+        g.linearRampToValueAtTime(dipLevel, time + 0.015);
+        g.linearRampToValueAtTime(1, time + 0.115);
+      } catch (e) {}
+    };
+    layer.onKickFire.push(cb);
+    layer.source = `${layer.source || "drum-frames"}+sidechain(depth=${depth.toFixed(2)})`;
+    return layer;
   }
 
   // Public surface for the production aesthetic governor.
@@ -989,6 +1065,7 @@
   function buildTechnoMachineFromFrames(frames) {
     const technoGov = governorFor("techno");
     const drums = buildDrumsFromFrames(frames, {
+      pill: "techno",
       kit: "techno-machine",
       minimalTechno: true,
       kickNote: "C1",
@@ -997,11 +1074,14 @@
       source: "drum-frames+machine-minimal"
     });
     return applyProductionGovernor(
-      addTechnoChordLift(
-        addBrainDanceRatchet(
-          addAcidPulse(drums, { source: "drum-frames+machine-acid-minimal", volume: -18 }),
-          { source: "drum-frames+machine-acid-brain" }
-        )
+      addSidechainPump(
+        addTechnoChordLift(
+          addBrainDanceRatchet(
+            addAcidPulse(drums, { source: "drum-frames+machine-acid-minimal", volume: -18 }),
+            { source: "drum-frames+machine-acid-brain" }
+          )
+        ),
+        0.48
       ),
       "techno"
     );
@@ -1187,6 +1267,7 @@
   function buildLofiFromFrames(frames) {
     const lofiGov = governorFor("lofi");
     const drums = buildDrumsFromFrames(frames, {
+      pill: "lofi",
       kit: "lofi-break",
       governorRdj: lofiGov.rdj,
       governorDangelo: lofiGov.dangelo,
@@ -1208,13 +1289,16 @@
     };
     drums.source = "drum-frames+dusty-break-kit+vinyl-crackle";
     return applyProductionGovernor(
-      addSessionBreaks(
-        addNujabesFluteLead(
-          addNujabesMemoryDots(
-            addLofiJazzDust(drums)
-          )
+      addTapeSaturation(
+        addSessionBreaks(
+          addNujabesFluteLead(
+            addNujabesMemoryDots(
+              addLofiJazzDust(drums)
+            )
+          ),
+          "lofi"
         ),
-        "lofi"
+        0.45
       ),
       "lofi"
     );
@@ -1283,6 +1367,7 @@
   function buildJazzFromFrames(frames) {
     const jazzGov = governorFor("jazz");
     const drums = buildDrumsFromFrames(frames, {
+      pill: "jazz",
       kit: "live-jazz",
       governorRdj: jazzGov.rdj,
       governorDangelo: jazzGov.dangelo,
@@ -1387,6 +1472,7 @@
   function buildFunkFromFrames(frames) {
     const funkGov = governorFor("funk");
     const drums = buildDrumsFromFrames(frames, {
+      pill: "funk",
       kit: "live-funk",
       governorRdj: funkGov.rdj,
       governorDangelo: funkGov.dangelo,
@@ -1430,7 +1516,16 @@
     }, "1m"));
     drums.synths.push(clavi, claviFilter, ep, epRoom);
     drums.source = "drum-frames+live-funk-kit+ep+clavi";
-    return applyProductionGovernor(addSessionBreaks(addFunkRubberBass(drums), "funk"), "funk");
+    return applyProductionGovernor(
+      addTapeSaturation(
+        addSidechainPump(
+          addSessionBreaks(addFunkRubberBass(drums), "funk"),
+          0.38
+        ),
+        0.7
+      ),
+      "funk"
+    );
   }
 
   function buildFunk(frames) {
@@ -1806,6 +1901,48 @@
     return window.HazamaPresets.get(presetName);
   }
 
+  // Per-pill flavor arc stage. Returns a level scale 0.7-1.0 based on
+  // elapsed seconds since the pill was switched on:
+  //   0-90s     warm-up   0.72 → 1.00 (linear ramp)
+  //   90-720s   peak      1.00
+  //   720s+     cool-down 1.00 → 0.85 over the next 1800s, then floor 0.85
+  // This creates a session-like arc: gentle entry, sustained body, soft cool.
+  function flavorArcScale(elapsedSec) {
+    if (elapsedSec < 90) {
+      return 0.72 + (elapsedSec / 90) * 0.28;
+    }
+    if (elapsedSec < 720) {
+      return 1.0;
+    }
+    const cool = Math.min(1, (elapsedSec - 720) / 1800);
+    return 1.0 - cool * 0.15;
+  }
+
+  let arcIntervalId = null;
+  function startArcLoop() {
+    if (arcIntervalId != null) return;
+    arcIntervalId = setInterval(() => {
+      if (!started || !activeLayer || !activeLayer.startTime) return;
+      const elapsedSec = (Date.now() - activeLayer.startTime) / 1000;
+      const scale = flavorArcScale(elapsedSec);
+      const target = workingLevelFor(currentGenre) * (activeLayer.level || 1) * scale;
+      try { activeLayer.gain.gain.rampTo(target, 8); } catch (e) {}
+      if (typeof window !== "undefined") {
+        window.HazamaFlavorState = window.HazamaFlavorState || {};
+        window.HazamaFlavorState.arcStage = elapsedSec < 90 ? "warm-up"
+                                           : elapsedSec < 720 ? "peak" : "cool-down";
+        window.HazamaFlavorState.arcElapsedSec = Math.round(elapsedSec);
+        window.HazamaFlavorState.arcScale = Math.round(scale * 100) / 100;
+      }
+    }, 30000);
+  }
+  function stopArcLoop() {
+    if (arcIntervalId != null) {
+      clearInterval(arcIntervalId);
+      arcIntervalId = null;
+    }
+  }
+
   function spinUp(name) {
     const builder = BUILDERS[name];
     if (!builder) return null;
@@ -1818,7 +1955,9 @@
       return null;
     }
     if (!layer) return null;
-    const target = workingLevelFor(name) * (layer.level || 1);
+    layer.startTime = Date.now();
+    const initialScale = flavorArcScale(0); // 0.72 warm-up start
+    const target = workingLevelFor(name) * (layer.level || 1) * initialScale;
     try { layer.gain.gain.rampTo(target, CROSSFADE_S); } catch (e) {}
     return layer;
   }
@@ -1840,6 +1979,7 @@
     started = true;
     syncMasterLevel(FADE_IN_S);
     activeLayer = spinUp(currentGenre);
+    startArcLoop();
   }
 
   function stop() {
@@ -1847,6 +1987,7 @@
     try { master.gain.rampTo(0, FADE_OUT_S); } catch (e) {}
     teardownActive();
     started = false;
+    stopArcLoop();
   }
 
   function dispose() {

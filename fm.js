@@ -630,7 +630,17 @@
 
   function formatProgramLabel(rb) {
     const reason = rb.lastReason ? ` — ${rb.lastReason}` : "";
-    return `${rb.active || "—"}${reason}`;
+    const base = `${rb.active || "—"}${reason}`;
+    const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+    if (!flavor || !flavor.sessionRole || flavor.sessionRole === "?") return base;
+    const role = flavor.sessionRole === "break" ? "ためる"
+               : flavor.sessionRole === "recap" ? "解放"
+               : flavor.sessionRole === "head" ? "ヘッド"
+               : flavor.sessionRole === "comp" ? "コンプ"
+               : flavor.sessionRole === "vamp" ? "ヴァンプ"
+               : flavor.sessionRole.replace("section-", "セクション");
+    const arc = flavor.arcStage ? ` · ${flavor.arcStage}` : "";
+    return `${base} · ${role}${arc}`;
   }
 
   function triggerStationIdent() {
@@ -875,6 +885,8 @@
       setButtonState("playing");
       setMediaPlaybackState("playing");
       startSleepTimer();
+      requestWakeLock();
+      startTimeOfDayLoop();
       if (shuffleAuditionEnabled) {
         startShuffleAuditionTimer();
       }
@@ -919,9 +931,100 @@
       stopShuffleAuditionTimer();
       stopGenreTempoLock();
       cancelSleepTimer("stop");
+      releaseWakeLock();
+      stopTimeOfDayLoop();
       setButtonState("idle");
       setMediaPlaybackState("paused");
     }
+  }
+
+  // ---- Screen Wake Lock ----------------------------------------
+  // Prevent the screen from sleeping during playback so iOS Safari keeps
+  // Tone.Transport ticking. Re-acquired automatically on visibility return.
+
+  let wakeLock = null;
+  let wakeLockVisibilityBound = false;
+
+  async function requestWakeLock() {
+    if (!("wakeLock" in navigator)) return;
+    try {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener?.("release", () => { wakeLock = null; });
+      if (!wakeLockVisibilityBound) {
+        wakeLockVisibilityBound = true;
+        document.addEventListener("visibilitychange", async () => {
+          if (started && !wakeLock && document.visibilityState === "visible") {
+            try { wakeLock = await navigator.wakeLock.request("screen"); } catch (e) {}
+          }
+        });
+      }
+    } catch (err) {
+      console.warn("[Hazama FM] wake lock denied:", err && err.message);
+    }
+  }
+
+  function releaseWakeLock() {
+    if (!wakeLock) return;
+    try { wakeLock.release(); } catch (e) {}
+    wakeLock = null;
+  }
+
+  // ---- Time-of-day auto pill (ANY mode only) -------------------
+  // When the user has ANY selected, gently bias the underlying culture grammar
+  // toward a time-appropriate flavor: morning piano, midday lofi, afternoon
+  // jazz, evening funk/techno, late ambient. Doesn't override user pill picks.
+
+  const TIME_OF_DAY_BUCKETS = [
+    { hour: 6,  genre: "piano",   reason: "朝のpiano" },
+    { hour: 10, genre: "lofi",    reason: "昼のlofi" },
+    { hour: 15, genre: "jazz",    reason: "午後のjazz" },
+    { hour: 19, genre: "funk",    reason: "夕方のfunk" },
+    { hour: 22, genre: "techno",  reason: "夜のtechno" },
+    { hour: 0,  genre: "ambient", reason: "深夜のambient" }
+  ];
+  let timeOfDayIntervalId = null;
+  let timeOfDayLastApplied = null;
+
+  function pickTimeOfDayGenre() {
+    const h = new Date().getHours();
+    let chosen = TIME_OF_DAY_BUCKETS[TIME_OF_DAY_BUCKETS.length - 1];
+    for (const bucket of TIME_OF_DAY_BUCKETS) {
+      if (h >= bucket.hour) chosen = bucket;
+    }
+    if (h < TIME_OF_DAY_BUCKETS[0].hour) chosen = TIME_OF_DAY_BUCKETS[TIME_OF_DAY_BUCKETS.length - 1];
+    return chosen;
+  }
+
+  function applyTimeOfDayIfAny() {
+    if (!started || getCurrentGenre() !== "any") return;
+    const bucket = pickTimeOfDayGenre();
+    if (timeOfDayLastApplied === bucket.genre) return;
+    timeOfDayLastApplied = bucket.genre;
+    if (window.GenreFlavor && typeof window.GenreFlavor.setGenre === "function") {
+      try { window.GenreFlavor.setGenre(bucket.genre); } catch (e) {}
+    }
+    // Keep the visible ANY pill selected — this is a "background suggestion"
+    // not a switch. fm-now will reflect the engine program; the flavor layer
+    // brings in the time-appropriate color underneath.
+    const caption = $("fm-now");
+    if (caption && caption.dataset.timeOfDayReason !== bucket.reason) {
+      caption.dataset.timeOfDayReason = bucket.reason;
+    }
+  }
+
+  function startTimeOfDayLoop() {
+    if (timeOfDayIntervalId != null) return;
+    timeOfDayLastApplied = null;
+    applyTimeOfDayIfAny();
+    timeOfDayIntervalId = setInterval(applyTimeOfDayIfAny, 5 * 60 * 1000);
+  }
+
+  function stopTimeOfDayLoop() {
+    if (timeOfDayIntervalId != null) {
+      clearInterval(timeOfDayIntervalId);
+      timeOfDayIntervalId = null;
+    }
+    timeOfDayLastApplied = null;
   }
 
   function togglePlay() {
@@ -1035,6 +1138,36 @@
     lines.push(`shuffle       ${snap.shuffle_audition ? "on" : "off"}`);
     lines.push(`switch count  ${snap.switch_count}`);
     lines.push("");
+
+    // Active flavor state — current frame + arc + governor amounts
+    const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+    if (flavor && flavor.pill) {
+      lines.push("flavor state");
+      lines.push(`  pill        ${flavor.pill}`);
+      if (flavor.frameId) lines.push(`  frame       ${flavor.frameId}  (${flavor.sessionRole || "?"})`);
+      if (flavor.frameRole) lines.push(`  role        ${flavor.frameRole}`);
+      if (flavor.frameBpm) lines.push(`  frame-bpm   ${flavor.frameBpm}`);
+      if (flavor.arcStage) lines.push(`  arc         ${flavor.arcStage}  (${flavor.arcElapsedSec}s, ${flavor.arcScale}x)`);
+      // Governor amounts per pill (mirrors GENRE_GOVERNORS in genre-flavor.js)
+      const gov = {
+        ambient: { rdj: 0.012, dangelo: 0.0 },
+        techno:  { rdj: 0.035, dangelo: 0.0 },
+        lofi:    { rdj: 0.030, dangelo: 0.5 },
+        jazz:    { rdj: 0.022, dangelo: 0.5 },
+        funk:    { rdj: 0.022, dangelo: 1.0 },
+        piano:   { rdj: 0.018, dangelo: 0.2 },
+        any:     { rdj: 0.025, dangelo: 0.0 }
+      }[flavor.pill] || { rdj: 0.0, dangelo: 0.0 };
+      lines.push(`  governor    RDJ ${(gov.rdj * 100).toFixed(1)}%  ·  D'A ${gov.dangelo.toFixed(2)}`);
+      lines.push("");
+    }
+
+    // Wake lock state
+    if (typeof navigator !== "undefined" && "wakeLock" in navigator) {
+      lines.push(`wake lock     ${wakeLock ? "held" : "released"}`);
+      lines.push("");
+    }
+
     lines.push("genre dwell (ms)");
     const dwell = snap.dwell_ms_by_genre || {};
     const dwellEntries = Object.entries(dwell).sort((a, b) => b[1] - a[1]);
