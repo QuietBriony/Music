@@ -10,6 +10,19 @@ Artist refs: `Music/references/apple-music-refs.json` (Art Blakey / Bill
 Evans / Funkadelic 翻訳済) + `Music/references/hazama-fm-pill-refs.json`
 (production_aesthetic_governors: Richard D. James + D Angelo を薄く適用).
 
+## Parallel-track note (v36 update)
+
+**Music repo にも並行で local 実装済**: `Music/presets/drum-frames-jazz.json`
+(8 frames) と `drum-frames-funk.json` (8 frames) が既に session_role 付きで
+反映されている。Codex 側の drum-floor 実装は、これらを参考に or 上書きで OK。
+- 両方の version が出揃ったら、curl 反映 step で codex 版を上書きすれば
+  Music repo の audit.py が pass する限り問題なし。
+- どちらが musically 良いかは聴感で決める。
+- production governor (RDJ + D Angelo) は Music repo 側で
+  `audio/genre-flavor.js` の `buildDrumsFromFrames` に統合済 (event-level)。
+  Codex 側で JSON に governor 寄りの velocity / microMs 揺れを焼き込んでも、
+  二重適用にはならず、深まる方向。
+
 ---
 
 ```
