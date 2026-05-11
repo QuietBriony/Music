@@ -1152,6 +1152,33 @@
     if (btn) btn.hidden = true;
   }
 
+  // ---- GENRE pill captions (artist reference tags) ----------
+
+  // 各 pill の下に「Nujabes dust」「Blakey + Evans」のような短い参照タグを
+  // 動的に注入する。references/hazama-fm-pill-refs.json から ui_caption を
+  // 読む。fetch 失敗時は caption なし (graceful)。
+  async function applyGenrePillCaptions() {
+    let data = null;
+    try {
+      const res = await fetch("references/hazama-fm-pill-refs.json", { cache: "no-store" });
+      if (!res.ok) return;
+      data = await res.json();
+    } catch (e) {
+      return;
+    }
+    if (!data || !data.pills) return;
+    Object.entries(data.pills).forEach(([name, info]) => {
+      if (!info || !info.ui_caption) return;
+      const btn = document.querySelector(`#fm-genre button[data-genre="${name}"]`);
+      if (!btn || btn.querySelector(".fm-genre-caption")) return;
+      const caption = document.createElement("small");
+      caption.className = "fm-genre-caption";
+      caption.textContent = info.ui_caption;
+      btn.appendChild(caption);
+      btn.classList.add("fm-genre--captioned");
+    });
+  }
+
   // ---- Boot ----------------------------------------------------
 
   function boot() {
@@ -1166,6 +1193,7 @@
     ensureMediaSession();
     bindInstallPrompt();
     bindTracePanel();
+    applyGenrePillCaptions();
 
     // Kick off preset fetch in the background. Loader is graceful: missing
     // files just resolve to null and the genre-flavor builders fall back

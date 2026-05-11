@@ -790,6 +790,293 @@
         "buildLofi() で EP layer を追加するなら maj7/add9 voicing で",
         "chill の soft-melody-piano recipe と相性が良い"
       ]
+    },
+    {
+      "artist": "Art Blakey & The Jazz Messengers",
+      "title": "Moanin",
+      "album": "Moanin",
+      "genre_hint": [
+        "jazz",
+        "hard-bop",
+        "drum-led",
+        "live-session"
+      ],
+      "taste_notes": [
+        "drum リーダーの hard bop、live club のセッション感",
+        "swing + ためる break、kit solo の dynamic build",
+        "ホーンとリズム隊のコール&レスポンス"
+      ],
+      "production_translation": {
+        "timbre": [
+          "acoustic kit (ride / brush / kick) + upright bass + 暖かい brass",
+          "ride cymbal は連続スイング、snare はライト rim shot 多用",
+          "live room の warmth、close-mic + medium reverb"
+        ],
+        "rhythm": [
+          "4/4 swing、120-160 BPM が中心",
+          "kick on 1/3、snare lag 8-12 ms (behind beat)",
+          "ride cymbal continuous swing pattern、ghost note 多め"
+        ],
+        "space": [
+          "live club room、reverb 1.5-2s",
+          "tight kit、ホーンには short slap delay"
+        ],
+        "structure": [
+          "head -> solo -> drum break -> recap (典型 hard bop)",
+          "break で 2-4 bar の drum / hi-hat solo を入れる",
+          "ためる: solo の最後で dynamic を drop、再 entry で boost"
+        ],
+        "gesture": [
+          "crescendo / decrescendo の dynamic 波",
+          "snare の rim shot を accent に挟む",
+          "drummer がリードするので tempo は微妙に push/pull"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の jazz pill の drum-led 側 reference",
+        "drum-frames-jazz.json を 120-150 BPM に再生成、break frame を 1-2 個含める",
+        "ride pattern + brush は genre-flavor.js buildJazzFromFrames で強化",
+        "session 感: addJazzSessionBreak で 8 bar に 1 度 drum-only break"
+      ]
+    },
+    {
+      "artist": "Bill Evans Trio",
+      "title": "Peace Piece",
+      "album": "Everybody Digs Bill Evans",
+      "genre_hint": [
+        "jazz",
+        "piano-trio",
+        "modal",
+        "ballad"
+      ],
+      "taste_notes": [
+        "open voicing と modal harmony の代表",
+        "rubato + 静謐な phrasing、左手の walking bass",
+        "low-density、breathing space を主役にする"
+      ],
+      "production_translation": {
+        "timbre": [
+          "warm grand piano、felt 寄り、middle register 中心",
+          "voicing: maj7 / m9 / sus / 11 を多用 (Bb7sus13、Am11、Fmaj9)",
+          "close-mic、subtle plate reverb (0.8-1.2s)"
+        ],
+        "rhythm": [
+          "rubato 主体、固定 tempo は無いか緩い",
+          "ballad は 60-80 BPM の slow drift",
+          "swing でも shuffle は控えめ、straight 寄り"
+        ],
+        "space": [
+          "studio recording (Riverside / Verve era)、warm",
+          "long sustain + soft pedal、phrase 間に長い rest"
+        ],
+        "structure": [
+          "theme -> improvisation -> restatement、very fluid",
+          "phrase は予測不能、対話的 (interplay)",
+          "low-density: 1 bar に 4-6 音、間が主役"
+        ],
+        "gesture": [
+          "left-hand walking bass を独立に",
+          "voicing rotation で micro-color shift",
+          "micro-rubato でテンポは pulsate"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の jazz pill の voicing 側 reference (Art Blakey の drum-led と相互補完)",
+        "piano pill にも適用、buildPianoFromRecipe の voicing 拡張",
+        "chill repo の piano-jazz-chill recipe が既に近い、Bill Evans 側に少し寄せられる"
+      ]
+    },
+    {
+      "artist": "Funkadelic",
+      "title": "Maggot Brain",
+      "album": "Maggot Brain",
+      "genre_hint": [
+        "funk",
+        "p-funk",
+        "live-band",
+        "psychedelic-funk"
+      ],
+      "taste_notes": [
+        "live full band の sweat 感、wah-clavi と horn の交差",
+        "behind-the-beat の pocket、break で dynamic 落とす",
+        "section trade、call-response、ad-lib horn"
+      ],
+      "production_translation": {
+        "timbre": [
+          "live drum kit + slap bass + clavinet + Rhodes + horn section",
+          "wah-guitar + 暖かい tape compression",
+          "handclap、tambourine の擦り音"
+        ],
+        "rhythm": [
+          "90-105 BPM、behind-beat groove",
+          "kick は syncopated (1, 2.5, 3.5, 4)、snare はライト back beat",
+          "16th hi-hat は loose、たまに skip"
+        ],
+        "space": [
+          "live room、moderate reverb、warm tape sound",
+          "horn は forward (close-mic)、riff の sustain"
+        ],
+        "structure": [
+          "16-bar phrase、break で 2-4 bar drum-only or bass-only",
+          "section A: rhythm + chord、B: horn punch、break、recap",
+          "ためる: ベース solo の最後で全 instrument が drop"
+        ],
+        "gesture": [
+          "horn は ad-lib stab (1-2 拍だけ)",
+          "clavinet は 16th funky riff、wah で envelope",
+          "drummer の drunk timing で grid から外す (D Angelo 系譜)"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の funk pill のメイン reference",
+        "drum-frames-funk.json を再生成、break frame を含める",
+        "buildFunkFromFrames で clavi + EP + horn-style stab を layer",
+        "session 感: addFunkadelicBreak で 8 bar に 1 度 drum-only break"
+      ]
+    },
+    {
+      "artist": "Claude Debussy",
+      "title": "Clair de Lune (Suite Bergamasque)",
+      "album": "Suite Bergamasque / Preludes",
+      "genre_hint": [
+        "classical",
+        "impressionist",
+        "solo-piano",
+        "rubato"
+      ],
+      "taste_notes": [
+        "印象派の代表、non-functional harmony と whole-tone scale",
+        "rubato、long sustain、pedal の open use",
+        "wave-like phrase building、through-composed"
+      ],
+      "production_translation": {
+        "timbre": [
+          "solo grand piano、cold-warm tone、felt + open pedal",
+          "voicing: 9th / sus / quartal / whole-tone chord",
+          "concert hall recording、long decay (3-4s natural)"
+        ],
+        "rhythm": [
+          "rubato、固定 tempo 無し、free time",
+          "phrase の inside で tempo は push/pull",
+          "non-metric な perception"
+        ],
+        "space": [
+          "concert hall reverb 3-4s、natural ambience",
+          "dry but resonant、long sustain"
+        ],
+        "structure": [
+          "through-composed、A -> A' -> B -> A''",
+          "phrase building wave、climax は subtle で long-form",
+          "repeat は微妙 variation で"
+        ],
+        "gesture": [
+          "pp〜mf dynamic、subtle crescendo",
+          "ペダル multiple use (sostenuto + damper)",
+          "whole-tone と pentatonic を交互に navigation"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の piano pill のもう一軸 reference (Bill Evans の jazz 側と相互補完)",
+        "buildPianoFromRecipe で whole-tone voicing バリエーション追加",
+        "concert hall reverb chain (decay 3-4s) で空間感",
+        "addDebussyPedal で sustained note の overlap"
+      ]
+    },
+    {
+      "artist": "Derrick May",
+      "title": "Strings of Life",
+      "album": "Innovator",
+      "genre_hint": [
+        "techno",
+        "detroit-techno",
+        "emotional-techno",
+        "house"
+      ],
+      "taste_notes": [
+        "デトロイトテクノの emotional 側、四つ打ちと弦パッド",
+        "long-form build、stripping back -> re-introduction",
+        "machine drum + analog string pad の cold-warm 同居"
+      ],
+      "production_translation": {
+        "timbre": [
+          "TR-909 kick / hat、analog string pad、acid bassline",
+          "deep sub、metallic snare",
+          "cold-warm: machine 厳格 + 弦の emotion"
+        ],
+        "rhythm": [
+          "120-130 BPM、4/4 driving",
+          "kick on every beat (4-on-floor)、open hat on +",
+          "layered 16th hi-hat、ghost note も machine 精度"
+        ],
+        "space": [
+          "stadium-deep reverb、long tail (3-5s)",
+          "emotive air、wide stereo image",
+          "string pad に lush hall reverb"
+        ],
+        "structure": [
+          "long-form (32-64 bar phrase) build",
+          "section A: rhythm only、B: string entry、C: stripping back、D: full re-entry",
+          "build over 32 bars、climax は string + kick + acid"
+        ],
+        "gesture": [
+          "long filter sweep (8-16 bar)",
+          "string pad は legato sustained、phrase は emotional rise",
+          "kick は constant、stripping back の時だけ drop"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の techno pill のメイン reference",
+        "drum-frames-techno.json は既に 4-on-floor、Derrick May 寄りに string pad layer 追加",
+        "buildTechnoFromFrames に addDerrickMayStringPad helper を追加",
+        "long-form build は engine の ARC.36 と相性が良い"
+      ]
+    },
+    {
+      "artist": "D Angelo",
+      "title": "Untitled (How Does It Feel)",
+      "album": "Voodoo",
+      "genre_hint": [
+        "modern-soul",
+        "neo-soul",
+        "behind-beat",
+        "production-aesthetic-governor"
+      ],
+      "taste_notes": [
+        "意図的な drunk timing、everything behind the beat",
+        "warm tape preamp、analog console、modern soul の集大成",
+        "loose pocket、grid から意図的にずらす、organic warmth"
+      ],
+      "production_translation": {
+        "timbre": [
+          "warm tube preamp、live kit + Rhodes + clavi + electric bass",
+          "暖かい tape saturation、analog console (NEVE)",
+          "vocal は処理せず raw、楽器も close-mic"
+        ],
+        "rhythm": [
+          "85-95 BPM、deliberately drunk timing",
+          "snare は behind beat 15-25 ms (Nujabes より深い lag)",
+          "全 instrument が grid から外れる、ensemble looseness"
+        ],
+        "space": [
+          "warm room、tape compression",
+          "moderate reverb、room ambience が主役"
+        ],
+        "structure": [
+          "open verse、loose comping、jam-like development",
+          "意図的に develop しない (loop 寄り)、breath で変化"
+        ],
+        "gesture": [
+          "timing を意図的に grid から外す (production aesthetic governor)",
+          "warm imperfection、ヒューマンな揺らぎ",
+          "他ジャンルの strict grid を soft-ize する効果"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の **production aesthetic governor** 役 (funk pill だけでなく全 pill に薄く効く)",
+        "全 builder の snare / ghost note を 2-4 ms behind に shift する applyProductionGovernor helper",
+        "funk pill では強く (15-25 ms)、jazz/lofi/piano では弱く (2-8 ms)",
+        "ambient / piano では適用しない (rubato が自然な lag を提供)"
+      ]
     }
   ]
 }

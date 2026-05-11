@@ -1,11 +1,29 @@
 {
-  "version": 1,
+  "version": 2,
   "purpose": "Hazama FM GENRE pill ごとの音楽的参照を明示する。production parameter translation のみ、複製しない。",
   "policy": {
     "stores_audio": false,
     "stores_lyrics": false,
     "stores_samples": false,
     "stores_metadata_only": true
+  },
+  "production_aesthetic_governors": {
+    "description": "全 pill に薄く効く meta-reference。production aesthetic の統一感を与える。",
+    "governors": [
+      {
+        "artist": "Richard D. James (Aphex Twin)",
+        "role": "wrongness / IDM / cold-warm 同居 / glitch + emotional",
+        "where_applied": "全 pill (薄く)",
+        "translation": "16th 単位で 3-5% 確率の micro-shift、たまの dropout、cold-warm 同居"
+      },
+      {
+        "artist": "D Angelo (Voodoo)",
+        "role": "意図的 drunk timing / behind-beat / organic warmth",
+        "where_applied": "funk (強)、jazz/lofi (中)、piano (弱)、ambient/techno (適用なし)",
+        "translation": "snare / ghost note を 2-25 ms behind に shift、warm tape sat"
+      }
+    ],
+    "implementation_note": "audio/genre-flavor.js に applyProductionGovernor(layer, pill) helper を追加。各 builder の return 前で呼ぶ。"
   },
   "pills": {
     "any": {
@@ -16,95 +34,208 @@
         "Aphex Twin — Selected Ambient Works 85-92",
         "Brian Eno — Music for Airports"
       ],
-      "production_axis_hints": ["restraint", "long-form"]
+      "production_axis_hints": [
+        "restraint",
+        "long-form"
+      ],
+      "ui_caption": "engine drift"
     },
     "ambient": {
       "label": "AMBIENT",
       "description": "water/garden の安全な空気感。namima 系の mood snapshot を中心に。",
       "primary_references": [
-        { "artist": "Brian Eno", "title": "An Ending (Ascent)", "axis": "emotional air" },
-        { "artist": "Boards of Canada", "title": "Olson", "axis": "warm haze" },
-        { "artist": "Aphex Twin", "title": "Xtal", "axis": "cold space" }
+        {
+          "artist": "Brian Eno",
+          "title": "An Ending (Ascent)",
+          "axis": "emotional air"
+        },
+        {
+          "artist": "Boards of Canada",
+          "title": "Olson",
+          "axis": "warm haze"
+        },
+        {
+          "artist": "Aphex Twin",
+          "title": "Xtal",
+          "axis": "cold space"
+        }
       ],
       "secondary_references": [
-        { "artist": "Huerco S.", "title": "A Sea of Love" },
-        { "artist": "Global Communication", "title": "14:31" },
-        { "artist": "Biosphere", "title": "Novelty Waves" }
+        {
+          "artist": "Huerco S.",
+          "title": "A Sea of Love"
+        },
+        {
+          "artist": "Global Communication",
+          "title": "14:31"
+        },
+        {
+          "artist": "Biosphere",
+          "title": "Novelty Waves"
+        }
       ],
-      "production_axis_hints": ["space", "long-form", "restraint", "low-pressure"]
+      "production_axis_hints": [
+        "space",
+        "long-form",
+        "restraint",
+        "low-pressure"
+      ],
+      "ui_caption": "Eno + BoC + Aphex"
     },
     "techno": {
       "label": "TECHNO",
-      "description": "4-on-floor の machine drum と acid pulse。Music codex がすでに acid_core culture と組合せ済み。",
+      "description": "Derrick May 系デトロイトテクノ、四つ打ち + 弦パッド emotional build。",
       "primary_references": [
-        { "artist": "TODO", "title": "ユーザーから指定希望", "axis": "kick/acid/tempo の方向性" }
+        {
+          "artist": "Derrick May",
+          "title": "Strings of Life",
+          "axis": "4-on-floor + emotional string pad + long-form build"
+        }
       ],
-      "candidates_to_ask_user": [
-        "Carl Craig", "Jeff Mills", "Surgeon", "Robert Hood",
-        "Plastikman", "Stephan Bodzin", "DJ Stingray", "Drexciya"
+      "secondary_references": [
+        {
+          "artist": "Aphex Twin",
+          "title": "Donkey Rhubarb",
+          "axis": "IDM wrongness を governor として薄く"
+        }
       ],
-      "production_axis_hints": ["pulse", "grid", "body", "acid"]
+      "production_axis_hints": [
+        "pulse",
+        "grid",
+        "body",
+        "acid",
+        "long-form",
+        "emotional"
+      ],
+      "ui_caption": "Derrick May"
     },
     "lofi": {
       "label": "LOFI",
-      "description": "lazy pocket と vinyl crackle の jazz-hop / lofi-hiphop。Nujabes 系がメイン。",
+      "description": "Nujabes の jazz-hop。memory dot + vinyl crackle + lazy pocket。",
       "primary_references": [
-        { "artist": "Nujabes", "title": "Aruarian Dance", "album": "Modal Soul", "axis": "jazz-hop open voicing + memory chord" },
-        { "artist": "Nujabes", "title": "Feather", "album": "Modal Soul", "axis": "sad-warm flute + walking bass + brush ride" }
+        {
+          "artist": "Nujabes",
+          "title": "Aruarian Dance",
+          "album": "Modal Soul",
+          "axis": "jazz-hop open voicing + memory chord"
+        },
+        {
+          "artist": "Nujabes",
+          "title": "Feather",
+          "album": "Modal Soul",
+          "axis": "sad-warm flute + walking bass + brush ride"
+        }
       ],
       "secondary_references": [
-        { "artist": "TODO", "title": "他に追加したい場合", "axis": "(J Dilla / Knxwledge / DJ Krush / Cookin Soul など候補)" }
+        {
+          "artist": "D Angelo",
+          "title": "Voodoo",
+          "axis": "behind-beat governor を強めに"
+        }
       ],
-      "candidates_to_ask_user": [
-        "J Dilla", "Knxwledge", "Madlib", "DJ Krush",
-        "DJ Shadow", "Bonobo (early)", "Tycho (downtempo)", "Cinematic Orchestra"
+      "production_axis_hints": [
+        "dust",
+        "swing",
+        "tape-memory",
+        "jazz-hop",
+        "restraint"
       ],
-      "production_axis_hints": ["dust", "swing", "tape-memory", "jazz-hop", "restraint"]
+      "ui_caption": "Nujabes dust"
     },
     "jazz": {
       "label": "JAZZ",
-      "description": "brush + walking bass + ride。生音感、modal jazz の voicing。",
+      "description": "Art Blakey の hard bop drum session + Bill Evans の voicing。生音 + break + ためる。",
       "primary_references": [
-        { "artist": "TODO", "title": "ユーザーから指定希望", "axis": "voicing / tempo / mood の方向性" }
+        {
+          "artist": "Art Blakey & The Jazz Messengers",
+          "title": "Moanin",
+          "axis": "drum-led hard bop + break + dynamic build"
+        },
+        {
+          "artist": "Bill Evans Trio",
+          "title": "Peace Piece",
+          "axis": "open voicing + modal harmony + low-density"
+        }
       ],
-      "candidates_to_ask_user": [
-        "Bill Evans Trio", "Keith Jarrett (solo)", "Miles Davis (Kind of Blue)",
-        "Brad Mehldau", "Ahmad Jamal", "Esbjörn Svensson Trio (E.S.T.)"
+      "secondary_references": [
+        {
+          "artist": "D Angelo",
+          "title": "Voodoo",
+          "axis": "behind-beat governor を弱めに"
+        }
       ],
-      "production_axis_hints": ["voicing", "swing", "brush", "walking", "modal", "earth"]
+      "production_axis_hints": [
+        "voicing",
+        "swing",
+        "brush",
+        "walking",
+        "modal",
+        "session-break",
+        "drum-led"
+      ],
+      "ui_caption": "Blakey + Evans"
     },
     "funk": {
       "label": "FUNK",
-      "description": "clavi + EP + 跳ねる pocket。",
+      "description": "Funkadelic (P-Funk) の live band session + break + clavi/horn。",
       "primary_references": [
-        { "artist": "TODO", "title": "ユーザーから指定希望", "axis": "pocket / horn / bass の方向性" }
+        {
+          "artist": "Funkadelic",
+          "title": "Maggot Brain",
+          "axis": "live full band + behind-beat pocket + break"
+        }
       ],
-      "candidates_to_ask_user": [
-        "Sly & The Family Stone", "Parliament-Funkadelic", "James Brown",
-        "Prince", "D'Angelo (Voodoo)", "Roy Ayers", "The Meters"
+      "secondary_references": [
+        {
+          "artist": "D Angelo",
+          "title": "Voodoo",
+          "axis": "behind-beat governor を強めに (連続系譜)"
+        }
       ],
-      "production_axis_hints": ["pocket", "body", "rubber", "clavi", "ep"]
+      "production_axis_hints": [
+        "pocket",
+        "body",
+        "rubber",
+        "clavi",
+        "ep",
+        "session-break",
+        "horn-stab"
+      ],
+      "ui_caption": "Funkadelic"
     },
     "piano": {
       "label": "PIANO",
-      "description": "felt piano の和音 + 長い休符。chill の Quiet Piano が中心。",
+      "description": "Debussy の印象派 + Bill Evans の jazz voicing。felt + 長休符 + rubato。",
       "primary_references": [
-        { "artist": "TODO", "title": "ユーザーから指定希望", "axis": "felt / sustain / restraint の方向性" }
+        {
+          "artist": "Claude Debussy",
+          "title": "Clair de Lune",
+          "axis": "impressionist + rubato + concert hall + whole-tone"
+        },
+        {
+          "artist": "Bill Evans Trio",
+          "title": "Peace Piece",
+          "axis": "open voicing + modal harmony + low-density"
+        }
       ],
-      "candidates_to_ask_user": [
-        "Keith Jarrett (Köln Concert / Solo)", "Brad Mehldau (Live at Vanguard)",
-        "Bill Evans (Sunday at Village Vanguard)", "Nils Frahm (Felt)",
-        "Ryuichi Sakamoto (BTTB / async)", "Hauschka (felt preparation)"
+      "secondary_references": [],
+      "production_axis_hints": [
+        "felt",
+        "memory",
+        "restraint",
+        "long-rest",
+        "rubato",
+        "whole-tone"
       ],
-      "production_axis_hints": ["felt", "memory", "restraint", "long-rest", "tender"]
+      "ui_caption": "Debussy + Evans"
     }
   },
   "notes": [
-    "primary_references は production_translation のあるリファレンス (apple-music-refs.json と紐付け)。",
-    "secondary_references は雰囲気の補助参照、production_translation は無いケースもある。",
-    "candidates_to_ask_user は私 (claude code) からの提案、user がどれが好みか確認するための候補リスト。",
-    "TODO エントリはユーザーが好みのアーティストを指定したら primary_references に昇格させる。",
-    "実装側は genre-flavor.js の各 builder と presets/*.json でこれを翻訳する。",
-    "artist/title は分析メタデータ、runtime symbol や preset 名へ直接使わない (apple-music-refs.json と同じポリシー)。"
+    "primary_references は production_translation あり (apple-music-refs.json と紐付け)。",
+    "secondary_references は governor 役 or 雰囲気の補助参照。",
+    "ui_caption は UI 上で pill の下に表示する短い参照タグ (fm.js が読む)。",
+    "全 pill に Richard D. James と D Angelo が production_aesthetic_governors として薄く効く。",
+    "実装は genre-flavor.js の各 builder と presets/*.json で翻訳する。",
+    "artist/title は分析メタデータ、runtime symbol や preset 名へ直接使わない。"
   ]
 }
