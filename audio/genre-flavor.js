@@ -24,7 +24,7 @@
   const Tone = window.Tone;
 
   // Working volume (linear gain). Sits near the engine without becoming the master.
-  const WORKING_LEVEL = 0.3;
+  const WORKING_LEVEL = 0.42;
   const FADE_IN_S = 2.5;
   const FADE_OUT_S = 1.6;
   const CROSSFADE_S = 1.5;

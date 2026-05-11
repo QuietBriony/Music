@@ -16,7 +16,7 @@
   const FADE_IN_S = 4;
   const FADE_OUT_S = 3;
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
-  const TARGET_LEVEL = 80;
+  const TARGET_LEVEL = 92;
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };
   const SHUFFLE_AUDITION_INTERVAL_MS = 42000;
   const SHUFFLE_AUDITION_GENRES = ["ambient", "techno", "lofi", "jazz", "funk", "piano"];

@@ -358,7 +358,7 @@ Use this before creating or merging a runtime PR.
 Use this when browser output feels small compared with iPhone Apple Music or
 other normalized app playback.
 
-- Start from `OUTPUT` 75 to 85.
+- Start from `OUTPUT` 88 to 92 in Hazama FM, or 75 to 85 in the full mixer.
 - Compare `fm.html` `any`, `techno`, and `piano` without changing OS volume.
 - Expected: browser playback should feel usable without maxing the OS volume,
   while the master limiter prevents harsh clipping.
@@ -366,8 +366,8 @@ other normalized app playback.
   constant bright hiss.
 - Expected: `piano` is foreground piano with space, not a low hidden pad.
 - Fail sign: raising `OUTPUT` only makes the same thin layer louder.
-- Fail sign: limiter pumping, brittle hats, or bass splatter appears before
-  `OUTPUT` 85.
+- Fail sign: limiter pumping, brittle hats, or bass splatter appears at the
+  Hazama FM default output.
 
 ## Recording Fallback
 
