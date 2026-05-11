@@ -4198,7 +4198,7 @@ const MUSIC_STACK_ROUTE_LABELS = Object.freeze({
   chill: "chillで聴く",
   drum_floor: "drum-floorで再生",
   namima: "namimaで空気に逃がす",
-  openclaw: "OpenClawで見る"
+  openclaw: "Deskで見る"
 });
 
 const MUSIC_STACK_ROUTE_URLS = Object.freeze({
@@ -4383,8 +4383,8 @@ function musicStackRoutingRecommendation(input = {}) {
     action = "drum-floorを開き、再生でpreviewする。";
   } else if (scores.openclaw > 0.48 && review.referenceFit < 0.38) {
     destination = "openclaw";
-    reason = "制作判断がまだ散っているので、OpenClawで見立てを確認する。";
-    action = "OpenClawを開き、Musicを磨く/各repoへ流すカードを見る。";
+    reason = "制作判断がまだ散っているので、OpenClaw Desk (openclaw repo hub) で見立てを確認する。";
+    action = "OpenClaw Deskを開き、Musicを磨く/各repoへ流すカードを見る。";
   }
   if (fmCue && fmCue.confidence >= 0.46) {
     destination = fmCue.destination;
@@ -5474,18 +5474,18 @@ function updateMusicStackSyncHelp(route, result = {}) {
     setText(title, "次の行き先");
     setText(help, "START任意 → SYNC → 開く");
     setText(reason, "MICは任意。歌/手拍子はgrooveだけ反応。");
-    setRouteLink("openclaw", "手順");
+    setRouteLink("openclaw", "Desk");
     return;
   }
   const delivered = result.stored || result.broadcast;
-  const label = route.label || route.destination || "OpenClawで見る";
-  const action = route.action || "OpenClawを開いて次の制作カードを見る。";
+  const label = route.label || route.destination || "Deskで見る";
+  const action = route.action || "OpenClaw Desk (openclaw repo hub) を開いて次の制作カードを見る。";
   if (dock) dock.classList.toggle("has-sync-route", !!delivered);
   setText(kicker, delivered ? "次はここ" : "SYNC未完了");
   setText(title, delivered ? label : "JSON fallback");
-  setText(help, delivered ? action : "OpenClawかJSON fallbackでlatestを確認。");
+  setText(help, delivered ? action : "OpenClaw DeskかJSON fallbackでlatestを確認。");
   setText(reason, delivered ? (route.reason || "Musicの現在状態から推奨しています。") : "音声・録音・サンプルは共有していません。");
-  setRouteLink(delivered ? route.destination : "openclaw", delivered ? "開く" : "手順");
+  setRouteLink(delivered ? route.destination : "openclaw", delivered ? "開く" : "Desk");
   if (link && delivered) link.setAttribute("aria-label", `${label}を開く`);
   if (delivered) {
     try {
