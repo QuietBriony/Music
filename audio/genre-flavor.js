@@ -2865,6 +2865,9 @@
     tempoDriftBaseBpm = Number(Tone.Transport?.bpm?.value) || 120;
     tempoDriftIntervalId = setInterval(() => {
       if (!started) return;
+      // v46: skip drift when DJ set is driving BPM through a curve.
+      // Otherwise the captured tempoDriftBaseBpm fights the DJ's moving target.
+      if (typeof window !== "undefined" && window.HazamaFlavorState && window.HazamaFlavorState.djSet) return;
       const range = TEMPO_DRIFT_RANGE[currentGenre] || 0.6;
       if (range <= 0) return;
       // Bias drift by session_role: build/recap push faster, head/break settle slower

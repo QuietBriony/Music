@@ -493,7 +493,12 @@
     // Re-apply ENERGY pill on top of the genre baseline so the user's energy
     // choice still wins for the energy fader.
     setTimeout(() => applyEnergyValue(getCurrentEnergy()), keys.length * 35 + 20);
-    setTimeout(() => startGenreTempoLock(profile, name), keys.length * 35 + 60);
+    // v46: when DJ set is driving BPM through a curve, skip the static genre
+    // tempo lock (would snap to profile.bpm every 900ms and fight the DJ ramp).
+    // The DJ owns Tone.Transport.bpm exclusively while it's active.
+    if (!isDjSetActive()) {
+      setTimeout(() => startGenreTempoLock(profile, name), keys.length * 35 + 60);
+    }
 
     // Switch culture grammar — engine.js:11780 listens for change events.
     const cultureSelect = $("culture_grammar_select");
@@ -699,6 +704,7 @@
   }
 
   function stopDjSet(options = {}) {
+    const wasActive = djSetTimerId != null;
     if (djSetTimerId != null) {
       clearInterval(djSetTimerId);
       djSetTimerId = null;
@@ -712,6 +718,20 @@
     if (!options.silent) setDjSetStatus("manual");
     if (options.reason === "user-pill") {
       djSetUserCanceled = true;
+    }
+    // v46: restore tempo control to the current pill when DJ exits cleanly.
+    // - User clicking a pill: setGenreSelection already re-applies the new
+    //   pill's profile (which now re-engages tempo lock since DJ is gone).
+    // - Stop button / completion: re-engage tempo lock for the currently
+    //   selected pill so its BPM stabilizes instead of staying at DJ's last value.
+    if (wasActive && options.reason !== "user-pill" && options.reason !== "fm-stop" && options.reason !== "switch") {
+      if (started || starting) {
+        const currentPill = getCurrentGenre();
+        const profile = GENRE_PROFILES[currentPill];
+        if (profile && currentPill !== "any") {
+          try { startGenreTempoLock(profile, currentPill); } catch (e) {}
+        }
+      }
     }
   }
 
