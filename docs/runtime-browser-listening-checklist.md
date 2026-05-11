@@ -100,8 +100,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Open `fm.html` from a local server, not a `file://` URL.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`.
-- Confirm `fm.html` requests `audio/genre-flavor.js?v=fm-28` and `sw.js`
-  contains `hazama-fm-v28`.
+- Confirm `fm.html` requests `audio/genre-flavor.js?v=fm-29` and
+  `engine.js?v=fm-29`, and `sw.js` contains `hazama-fm-v29`.
 - Confirm browser console has no service-worker registration or update errors.
 - Close and reopen the installed app after merge; if the old UI remains, open
   the normal browser tab once, reload, then reopen the installed app.
@@ -370,12 +370,15 @@ Use this before creating or merging a runtime PR.
 Use this when browser output feels small compared with iPhone Apple Music or
 other normalized app playback.
 
-- Start from `OUTPUT` 94 to 96 in Hazama FM, or 80 to 90 in the full mixer.
+- Start from `OUTPUT` 90 to 94 in Hazama FM, then briefly check 96 to 100
+  if the device still feels quiet. Use 80 to 90 in the full mixer first.
 - Compare `fm.html` `any`, `techno`, and `piano` without changing OS volume.
 - Expected: browser playback should feel usable without maxing the OS volume,
   while the GenreFlavor compressor / limiter prevents harsh clipping.
 - Expected: changing `OUTPUT` changes both the engine bed and GenreFlavor
   foreground enough to feel like one browser app, not two unmatched outputs.
+- Expected: `OUTPUT` 100 is a hotter ceiling than before, but should still
+  sound like level, not distortion.
 - Expected: `techno` is louder through drum/body and acid pulse, not through
   constant bright hiss.
 - Expected: `piano` is foreground piano with space, not a low hidden pad.
