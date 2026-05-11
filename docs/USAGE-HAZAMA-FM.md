@@ -60,6 +60,8 @@ URL 欄の右端のインストールアイコン or メニューから「アプ
 iPhone は **サイレントスイッチ off** + メディア音量を上げてください
 (マナーモードでは音が出ません)。
 Hazama FM は起動時にブラウザ側の OUTPUT を高めにフェードインします。
+GenreFlavor 層も OUTPUT に追従しますが、専用 compressor / limiter を通すため、
+音量を上げてもピークは潰しすぎない設計です。
 
 ### ENERGY ピル (3 段)
 
@@ -204,7 +206,7 @@ window.MusicRuntimeState.radioBrain.weights
 
 // flavor 層の動作確認
 window.GenreFlavor.state
-// → { started: true, genre: "piano", scheduled: 5, source: "chill-recipe:piano-jazz-chill+foreground-piano+planing-reply", role: "chill quiet piano memory", ... }
+// → { started: true, genre: "piano", scheduled: 5, source: "chill-recipe:piano-jazz-chill+foreground-piano+planing-reply", outputLevel: 96, masterLevel: 1.146, role: "chill quiet piano memory", ... }
 
 // SYNC で他repoへ渡る metadata-only のFM文脈
 window.MusicSessionPacket.build().performance_state.hazama_fm
