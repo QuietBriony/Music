@@ -36,14 +36,18 @@
   // density (piano = 4–5 note chords vs ambient = 1-voice drone), so a
   // single WORKING_LEVEL across all genres makes some pills sound louder.
   // Tuned by ear so all GENRE pills land within ~2 dB of each other.
+  // v42 +0.06 across the board for overall loudness lift. Compressor was
+  // smashing peaks so layer levels could be raised without distortion.
+  // Piano stays comparatively lower because its 4-5 note voicings already
+  // pack density.
   const LEVEL_BY_GENRE = {
-    any: 0.66,
-    ambient: 0.62,
-    techno: 0.70,
-    lofi: 0.68,
-    jazz: 0.72,
-    funk: 0.70,
-    piano: 0.50   // 4-5 note voicings → density high, drop ~2.5 dB relative to others
+    any: 0.74,
+    ambient: 0.70,
+    techno: 0.78,
+    lofi: 0.76,
+    jazz: 0.80,
+    funk: 0.78,
+    piano: 0.58
   };
 
   function workingLevelFor(name) {
@@ -115,22 +119,25 @@
     // Master chain: gain → compressor → EQ3 polish → makeup → limiter → destination
     // EQ3 is the "Apple Music finishing" tilt: small low + air boost, slight
     // low-mid scoop to clear the chord layer's mid range.
+    // v42 gain staging: relax compressor (was -18 / 2.8:1 → squashing dynamics),
+    // give limiter more headroom, let macro boost in fm.js carry loudness.
     masterCompressor = new Tone.Compressor({
-      threshold: -18,
-      ratio: 2.8,
-      attack: 0.008,
-      release: 0.18,
-      knee: 12
+      threshold: -10,
+      ratio: 2.0,
+      attack: 0.012,
+      release: 0.22,
+      knee: 8
     });
     const masterEq = new Tone.EQ3({
-      low: 1.0,      // +1.0 dB @ 100 Hz default
-      mid: -0.6,     // -0.6 dB low-mid scoop (clear chord/pad pocket)
-      high: 0.6,     // +0.6 dB @ 2.5 kHz default — "air"
+      low: 1.2,      // +1.2 dB @ 100 Hz — slightly more low warmth
+      mid: -0.4,     // -0.4 dB low-mid scoop (gentler than v41)
+      high: 0.8,     // +0.8 dB @ 2.5 kHz — more air
       lowFrequency: 200,
       highFrequency: 5000
     });
-    masterMakeup = new Tone.Gain(1.08);
-    masterLimiter = new Tone.Limiter({ threshold: -1.2 }).toDestination();
+    masterMakeup = new Tone.Gain(1.06);
+    // -0.8 dB ceiling (was -1.2): more peak headroom, less squashing
+    masterLimiter = new Tone.Limiter({ threshold: -0.8 }).toDestination();
     master = new Tone.Gain(0).connect(masterCompressor);
     masterCompressor.connect(masterEq);
     masterEq.connect(masterMakeup);
@@ -544,10 +551,13 @@
   // Per-profile stereo panning. Drummer's perspective: hat slightly L,
   // ghost (ride/snare side hits) slightly R, kick + snare anchored center.
   // techno stays mostly mono for machine punch; lofi narrows the stage.
+  // v42: wider stereo for relief from "tsumari kan" (cluttered feel).
+  // Spread mid-range elements (hat / ghost / crash) further to L/R so
+  // bass + kick + snare anchor the center while accents breathe.
   const KIT_PAN_LAYOUT = {
-    jazz:  { kick:  0.00, snare: -0.05, hat: -0.20, ghost:  0.10, fill:  0.05, crash: -0.15 },
-    funk:  { kick:  0.00, snare:  0.00, hat:  0.15, ghost: -0.10, fill:  0.10, crash:  0.20 },
-    lofi:  { kick:  0.00, snare:  0.00, hat:  0.08, ghost: -0.08, fill:  0.00, crash:  0.00 },
+    jazz:  { kick:  0.00, snare: -0.06, hat: -0.32, ghost:  0.18, fill:  0.10, crash: -0.24 },
+    funk:  { kick:  0.00, snare:  0.00, hat:  0.24, ghost: -0.18, fill:  0.16, crash:  0.32 },
+    lofi:  { kick:  0.00, snare:  0.00, hat:  0.14, ghost: -0.14, fill:  0.00, crash:  0.00 },
     techno:{ kick:  0.00, snare:  0.00, hat:  0.00, ghost:  0.00, fill:  0.00, crash:  0.00 }
   };
 
@@ -1190,18 +1200,25 @@
       const keyShift = flavor && flavor.keyShift || 0;
       const note = transposeNote(rawNote, keyShift);
       const dropBar = flavor && flavor.dropBar;
+      const isSilence = flavor && isPhraseSilence(flavor.phrase8Bar, step);
       const hitProb = (step % 4 === 0 ? 0.86 : 0.58) * (isLead ? 1.0 : 0.85);
-      if (note && !dropBar && Math.random() < hitProb) {
+      if (note && !dropBar && !isSilence && Math.random() < hitProb) {
         try {
           const grooveOffset = (groove.pushMs || 0) / 1000;
           const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
           const leadBoost = isLead ? 1.08 : 1.0;
           const baseVel = step % 4 === 0 ? 0.42 : 0.3;
+          // v42 humanize + peak shift on last bar pickup (step 15 = bar end "and-of-4")
+          const humMs = humanizeMs();
+          const peak = (flavor && flavor.phraseBar === 3 && step === 14) ?
+            { velMul: 1.18, msOffset: -3 - Math.random() * 3 } : null;
+          const totalMs = humMs + (peak ? peak.msOffset : 0);
+          const peakBoost = peak ? peak.velMul : 1.0;
           bass.triggerAttackRelease(
             note,
             step % 2 === 0 ? "16n" : "32n",
-            safeEventTime(time + grooveOffset + 0.006 + Math.random() * 0.01),
-            baseVel * intensity * leadBoost
+            safeEventTime(time + grooveOffset + totalMs / 1000),
+            baseVel * intensity * leadBoost * peakBoost
           );
         } catch (e) {}
       }
@@ -1651,6 +1668,38 @@
     return layer;
   }
 
+  // ---- Humanization helpers (v42) -------------------------------
+  //
+  // Real session musicians don't randomly jitter around zero. Most hits
+  // sit slightly behind, occasional accents push forward. Backbeats lag
+  // more than downbeats. Peak shifts happen on phrase-end pickups.
+  //
+  // Returns ms offset. ~70% gentle late (-2 to +1 ms), ~25% on-grid
+  // (-1 to +1 ms), ~5% pushed forward (+1 to +5 ms) for accent variation.
+  function humanizeMs() {
+    const r = Math.random();
+    if (r < 0.70) return -2 + Math.random() * 3;
+    if (r < 0.95) return -1 + Math.random() * 2;
+    return 1 + Math.random() * 4;
+  }
+  // Backbeat lag — beats 2 and 4 (idx 1, 3) lag a bit extra in jazz/funk
+  function backbeatLag(beatIdx) {
+    return (beatIdx === 1 || beatIdx === 3) ? 4 + Math.random() * 4 : 0;
+  }
+  // Peak shift: on phrase last bar (phraseBar 3), beat 4 pickup gets a
+  // velocity bump + slight forward push (-3 to -6 ms). Returns
+  // { velMul, msOffset } or null if no shift.
+  function peakShift(phraseBar, beatInBar) {
+    if (phraseBar === 3 && beatInBar === 3) {
+      return { velMul: 1.18, msOffset: -3 - Math.random() * 3 };
+    }
+    return null;
+  }
+  // Phrase silence: every 8 bars, last 16th of bar 7 goes silent (息継ぎ).
+  function isPhraseSilence(barIdx, stepIdx16) {
+    return (barIdx % 8 === 7) && stepIdx16 >= 14;
+  }
+
   // Transpose a note name by semitones (for modal key shifts).
   function transposeNote(note, semitones) {
     if (!note || semitones === 0) return note;
@@ -1805,18 +1854,25 @@
           return;
         }
       }
+      const currentBeat = beatInBar;
       const rawNote = currentPattern[beatInBar % currentPattern.length];
       beatInBar = (beatInBar + 1) % 4;
       if (!rawNote || dropBar) return;
       const note = transposeNote(rawNote, keyShift);
 
       const grooveOffset = (groove.pushMs || 0) / 1000;
-      const jitter = (Math.random() - 0.5) * 0.008;
+      // v42: asymmetric humanize + backbeat lag + peak shift
+      const humMs = humanizeMs();
+      const backbeat = backbeatLag(currentBeat);
+      const phraseBar = flavor ? flavor.phraseBar : 0;
+      const peak = peakShift(phraseBar, currentBeat);
+      const totalMs = humMs + backbeat + (peak ? peak.msOffset : 0);
       const intensityScale = clamp(groove.intensity || 1.0, 0.7, 1.25);
       const leadBoost = isLead ? 1.08 : 1.0;
-      const vel = clamp((baseVelocity + (Math.random() - 0.5) * 0.10) * intensityScale * leadBoost, 0.25, 0.85);
+      const peakBoost = peak ? peak.velMul : 1.0;
+      const vel = clamp((baseVelocity + (Math.random() - 0.5) * 0.10) * intensityScale * leadBoost * peakBoost, 0.25, 0.92);
 
-      bassVoice.play(note, "8n", safeEventTime(time + grooveOffset + jitter), vel);
+      bassVoice.play(note, "8n", safeEventTime(time + grooveOffset + totalMs / 1000), vel);
 
       const passingProb = isLead ? 0.28 : 0.18;
       if (Math.random() < passingProb && note) {
@@ -1873,12 +1929,18 @@
       const sr = flavor ? flavor.sessionRole : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
       if (brushIdx % 8 === 0) brushPattern = pickBrushPattern(sr || "default");
-      if (brushPattern[brushIdx % brushPattern.length]) {
-        const grooveOffset = (groove.pushMs || 0) / 1000 * 0.5; // brush half-lags
+      // v42: density reduction on first half of 8-bar phrase + phrase silence
+      const phrase8 = flavor && flavor.phrase8Bar;
+      const inFirstHalf = phrase8 != null && phrase8 < 4;
+      const stepIn16 = (brushIdx % 8) * 2;  // 8n step → 16n equivalent
+      const isSilence = flavor && isPhraseSilence(flavor.phrase8Bar, stepIn16);
+      const denseSkip = inFirstHalf ? Math.random() < 0.18 : false;
+      if (brushPattern[brushIdx % brushPattern.length] && !isSilence && !denseSkip) {
+        const grooveOffset = (groove.pushMs || 0) / 1000 * 0.5;
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
         const vel = (0.18 + Math.random() * 0.08) * intensity;
-        const jitter = (Math.random() - 0.5) * 0.012;
-        brush.triggerAttackRelease("16n", safeEventTime(time + grooveOffset + jitter), vel);
+        const humMs = humanizeMs();
+        brush.triggerAttackRelease("16n", safeEventTime(time + grooveOffset + humMs / 1000), vel);
       }
       brushIdx++;
     }, "8n"));
@@ -1887,7 +1949,7 @@
       gain,
       synths: [brush, brushHi, brushLo, ...bassVoice.voices, room],
       scheduledIds: ids,
-      source: "default+acoustic-bass+brush-patterns+groove-lock"
+      source: "default+acoustic-bass+brush-patterns+groove-lock+humanize"
     };
   }
 
@@ -1925,11 +1987,17 @@
       const sr = flavor ? flavor.sessionRole : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
       if (brushIdx % 8 === 0) brushPattern = pickBrushPattern(sr || "default");
-      if (brushPattern[brushIdx % brushPattern.length]) {
+      // v42 density + silence
+      const phrase8 = flavor && flavor.phrase8Bar;
+      const inFirstHalf = phrase8 != null && phrase8 < 4;
+      const stepIn16 = (brushIdx % 8) * 2;
+      const isSilence = flavor && isPhraseSilence(flavor.phrase8Bar, stepIn16);
+      const denseSkip = inFirstHalf ? Math.random() < 0.18 : false;
+      if (brushPattern[brushIdx % brushPattern.length] && !isSilence && !denseSkip) {
         const grooveOffset = (groove.pushMs || 0) / 1000 * 0.5;
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
-        const jitter = (Math.random() - 0.5) * 0.014;
-        brush.triggerAttackRelease("16n", safeEventTime(time + grooveOffset + jitter), (0.12 + Math.random() * 0.06) * intensity);
+        const humMs = humanizeMs();
+        brush.triggerAttackRelease("16n", safeEventTime(time + grooveOffset + humMs / 1000), (0.12 + Math.random() * 0.06) * intensity);
       }
       brushIdx++;
     }, "8n", "8n"));
