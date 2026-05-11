@@ -6310,7 +6310,21 @@ function applyOutputLevel(options = {}) {
   const allowWhenStopped = options.allowWhenStopped === true;
   if (!isPlaying && !allowWhenStopped) return;
   const seconds = options.force === true ? 0.08 : 0.18;
-  rampParam("master-gain", masterGain.gain, outputGainFromLevel(OutputState.level), seconds, 0.003);
+  rampParam("master-gain", masterGain.gain, engineOutputGainTarget(), seconds, 0.003);
+}
+
+function engineOutputGainTarget(level = OutputState.level) {
+  const outputGain = outputGainFromLevel(level);
+  let fmTrim = 1;
+  try {
+    const fmMix = hazamaFmEngineMix();
+    if (fmMix?.genre && typeof fmMix.engineGain === "number") {
+      fmTrim = fmMix.engineGain;
+    }
+  } catch (error) {
+    fmTrim = 1;
+  }
+  return clampValue(outputGain * fmTrim, 0.0001, 2.05);
 }
 
 function isAppleMobileDevice() {
@@ -8717,7 +8731,7 @@ function updateTimbreStateFromWorld(parts) {
   const bassCutoff = 86 + (TimbreState.grit * 308) + (resource * 84) + (pressureColor * pressure * 24) - (TimbreState.warmth * 62) - (depth.lowMidClean * 64) - lowGuard * 46 - (PerformancePadState.void * 88) + (PerformancePadState.punch * 26);
   const bassBite = 0.46 + (TimbreState.grit * 3.1) + (TimbreState.warmth * 0.5) + (pressureColor * pressure * 0.16) - (depth.lowMidClean * 0.3) - lowGuard * 0.18 + (PerformancePadState.punch * 0.1);
 
-  safeToneRamp(masterGain?.gain, fmMix.engineGain, 0.55);
+  safeToneRamp(masterGain?.gain, engineOutputGainTarget(), 0.55);
   safeToneRamp(drumBus?.gain, fmMix.drumBus, 0.45);
   safeToneRamp(padBus?.gain, fmMix.padBus, 0.45);
   safeToneRamp(bassBus?.gain, fmMix.bassBus, 0.45);
