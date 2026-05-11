@@ -1148,6 +1148,18 @@
       if (flavor.frameRole) lines.push(`  role        ${flavor.frameRole}`);
       if (flavor.frameBpm) lines.push(`  frame-bpm   ${flavor.frameBpm}`);
       if (flavor.arcStage) lines.push(`  arc         ${flavor.arcStage}  (${flavor.arcElapsedSec}s, ${flavor.arcScale}x)`);
+      // Groove lock state
+      if (flavor.groove) {
+        const g = flavor.groove;
+        lines.push(`  groove      push ${(g.pushMs || 0).toFixed(1)}ms · intensity ${(g.intensity || 1).toFixed(2)}x`);
+      }
+      if (flavor.phraseBar != null) lines.push(`  phrase bar  ${flavor.phraseBar} / 4`);
+      if (flavor.leadVoice) lines.push(`  lead voice  ${flavor.leadVoice}`);
+      // Live tempo (BPM drift visible)
+      if (typeof window !== "undefined" && window.Tone && window.Tone.Transport) {
+        const bpm = Math.round(Number(window.Tone.Transport.bpm.value) * 10) / 10;
+        if (Number.isFinite(bpm)) lines.push(`  live bpm    ${bpm}`);
+      }
       // Governor amounts per pill (mirrors GENRE_GOVERNORS in genre-flavor.js)
       const gov = {
         ambient: { rdj: 0.012, dangelo: 0.0 },

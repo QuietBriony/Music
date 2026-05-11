@@ -672,14 +672,46 @@
       const isRecap = frame.session_role === "recap";
       const eventCount = frame.events.length;
 
-      // Expose current frame for Now Playing UI in fm.js
+      // Expose current frame for Now Playing UI in fm.js,
+      // plus groove lock (band-wide micro-timing + dynamics).
       if (typeof window !== "undefined") {
         window.HazamaFlavorState = window.HazamaFlavorState || {};
-        window.HazamaFlavorState.pill = pillName;
-        window.HazamaFlavorState.frameId = frame.id || "?";
-        window.HazamaFlavorState.sessionRole = frame.session_role || "?";
-        window.HazamaFlavorState.frameRole = frame.role || "?";
-        window.HazamaFlavorState.frameBpm = frame.bpm || null;
+        const flavor = window.HazamaFlavorState;
+        flavor.pill = pillName;
+        flavor.frameId = frame.id || "?";
+        flavor.sessionRole = frame.session_role || "?";
+        flavor.frameRole = frame.role || "?";
+        flavor.frameBpm = frame.bpm || null;
+
+        // Groove lock: average snare microMs * 0.6 = where the bass / comp
+        // should "sit" against the kick. Captures the drummer's pocket so
+        // melodic layers lock to it instead of playing math-perfect grid.
+        let snareMsSum = 0, snareCount = 0;
+        for (const evt of frame.events) {
+          if (evt.instrument === "snare") {
+            snareMsSum += (evt.microMs || 0);
+            snareCount++;
+          }
+        }
+        const drummerPocketMs = snareCount > 0 ? snareMsSum / snareCount : 0;
+        flavor.groove = flavor.groove || {};
+        flavor.groove.pushMs = drummerPocketMs * 0.6;        // bass/comp lag
+        flavor.groove.drummerPocketMs = drummerPocketMs;     // raw for trace
+
+        // 4-bar phrase curve: bar 0 settle, bar 1 lift, bar 2 push, bar 3 turn
+        flavor.phraseBar = (frameIdx - 1) % 4;
+        const phraseIntensity = [0.92, 1.0, 1.06, 1.02][flavor.phraseBar] || 1.0;
+        const sessionMul = frame.session_role === "break" ? 0.78
+                         : frame.session_role === "recap" ? 1.12
+                         : frame.session_role === "head" ? 0.96
+                         : 1.0;
+        flavor.groove.intensity = phraseIntensity * sessionMul;
+
+        // Lead voice rotation: every 4 bars, hand the spotlight to a
+        // different voice. Non-lead voices drop density to 70% so the
+        // ensemble breathes instead of playing all-at-once forever.
+        const leadCycle = ["bass", "comp", "drums", "lead"];
+        flavor.leadVoice = leadCycle[Math.floor((frameIdx - 1) / 4) % leadCycle.length];
       }
 
       frame.events.forEach((evt, evtIdx) => {
@@ -1023,18 +1055,30 @@
     };
     let compBar = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
-        ? window.HazamaFlavorState.sessionRole : null;
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const sr = flavor ? flavor.sessionRole : null;
+      const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const isLead = flavor && flavor.leadVoice === "comp";
+      const otherLead = flavor && (flavor.leadVoice === "bass" || flavor.leadVoice === "drums");
+
       const bucket = COMP_VOICINGS[sr] || COMP_VOICINGS.default;
       if (bucket.length === 0) { compBar++; return; }  // break frames silent
-      // Skip 30% of bars to give comping the "thinking" feel
-      if (Math.random() < 0.30) { compBar++; return; }
+
+      // Skip behavior: more skips when comp is not the lead (yields space to
+      // bass/drums). When comp leads, only ~10% skip. When others lead, 50% skip.
+      const skipProb = isLead ? 0.10 : otherLead ? 0.50 : 0.30;
+      if (Math.random() < skipProb) { compBar++; return; }
+
       const chord = bucket[compBar % bucket.length];
+      const grooveOffset = (groove.pushMs || 0) / 1000 * 0.8; // comp lags slightly behind drummer
+      const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
+      const leadBoost = isLead ? 1.10 : 1.0;
       try {
         // Slight roll: each note 8-22 ms apart for "rolled" comping
         chord.forEach((note, i) => {
           const delay = i * (0.008 + Math.random() * 0.014);
-          piano.triggerAttackRelease(note, "2n", safeEventTime(time + 0.035 + delay), 0.18 + Math.random() * 0.07);
+          const vel = (0.18 + Math.random() * 0.07) * intensity * leadBoost;
+          piano.triggerAttackRelease(note, "2n", safeEventTime(time + 0.035 + grooveOffset + delay), vel);
         });
       } catch (e) {}
       compBar++;
@@ -1090,24 +1134,38 @@
     let funkBassBarCount = 0;
     let step = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const isLead = flavor && flavor.leadVoice === "bass";
+
       // At step 0 (bar start), pick a new pattern based on current session_role
       if (step === 0) {
-        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
-          ? window.HazamaFlavorState.sessionRole : null;
+        const sr = flavor ? flavor.sessionRole : null;
         const bucket = FUNK_BASS_PATTERNS[sr] || FUNK_BASS_PATTERNS.default;
         currentPattern = bucket[funkBassBarCount % bucket.length];
         funkBassBarCount++;
       }
       const note = currentPattern[step % currentPattern.length];
-      if (note && Math.random() < (step % 4 === 0 ? 0.86 : 0.58)) {
+      // Lead = denser hits; non-lead = same prob but lower velocity
+      const hitProb = (step % 4 === 0 ? 0.86 : 0.58) * (isLead ? 1.0 : 0.85);
+      if (note && Math.random() < hitProb) {
         try {
-          bass.triggerAttackRelease(note, step % 2 === 0 ? "16n" : "32n", safeEventTime(time + 0.006 + Math.random() * 0.01), step % 4 === 0 ? 0.42 : 0.3);
+          const grooveOffset = (groove.pushMs || 0) / 1000;
+          const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
+          const leadBoost = isLead ? 1.08 : 1.0;
+          const baseVel = step % 4 === 0 ? 0.42 : 0.3;
+          bass.triggerAttackRelease(
+            note,
+            step % 2 === 0 ? "16n" : "32n",
+            safeEventTime(time + grooveOffset + 0.006 + Math.random() * 0.01),
+            baseVel * intensity * leadBoost
+          );
         } catch (e) {}
       }
       step = (step + 1) % 16;
     }, "16n"));
     layer.synths.push(bass);
-    layer.source = `${layer.source || "drum-frames+ep+clavi"}+rubber-bass-rotating`;
+    layer.source = `${layer.source || "drum-frames+ep+clavi"}+rubber-bass-rotating-groove`;
     return layer;
   }
 
@@ -1530,24 +1588,40 @@
     const beatTime = Tone.Time("4n").toSeconds();
     const halfBeat = beatTime / 2;
     return Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const sr = flavor ? flavor.sessionRole : null;
+      const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const isLead = flavor && flavor.leadVoice === "bass";
+
       if (beatInBar === 0 || !currentPattern) {
-        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
-          ? window.HazamaFlavorState.sessionRole : null;
         currentPattern = pickWalkingBassPattern(sr || "default");
+        // Non-lead bars: 30% chance to skip the bar entirely (rest)
+        if (!isLead && Math.random() < 0.18) {
+          beatInBar = (beatInBar + 1) % 4;
+          return;
+        }
       }
       const note = currentPattern[beatInBar % currentPattern.length];
       beatInBar = (beatInBar + 1) % 4;
       if (!note) return;
-      // Humanize
-      const jitter = (Math.random() - 0.5) * 0.012;
-      const vel = clamp(baseVelocity + (Math.random() - 0.5) * 0.12, 0.3, 0.8);
-      bassVoice.play(note, "8n", safeEventTime(time + jitter), vel);
-      // 18% chance: 8th-note chromatic passing tone between this and next beat
-      if (Math.random() < 0.18 && note) {
+
+      // Groove lock: pushMs is the band's shared "lag" relative to the kick.
+      // Bass sits in this pocket. Add tiny ±4ms personal jitter on top.
+      const grooveOffset = (groove.pushMs || 0) / 1000;
+      const jitter = (Math.random() - 0.5) * 0.008;
+      const intensityScale = clamp(groove.intensity || 1.0, 0.7, 1.25);
+      const leadBoost = isLead ? 1.08 : 1.0;
+      const vel = clamp((baseVelocity + (Math.random() - 0.5) * 0.10) * intensityScale * leadBoost, 0.25, 0.85);
+
+      bassVoice.play(note, "8n", safeEventTime(time + grooveOffset + jitter), vel);
+
+      // Passing tone: 18% normally, 28% when bass is the lead voice
+      const passingProb = isLead ? 0.28 : 0.18;
+      if (Math.random() < passingProb && note) {
         try {
           const noteFreq = Tone.Frequency(note).toFrequency();
-          const passingFreq = noteFreq * (Math.random() < 0.5 ? 1.0595 : 0.9439); // ±1 semitone
-          bassVoice.play(passingFreq, "16n", safeEventTime(time + halfBeat - 0.01), vel * 0.55);
+          const passingFreq = noteFreq * (Math.random() < 0.5 ? 1.0595 : 0.9439);
+          bassVoice.play(passingFreq, "16n", safeEventTime(time + grooveOffset + halfBeat - 0.01), vel * 0.55);
         } catch (e) {}
       }
     }, "4n");
@@ -1593,15 +1667,16 @@
     let brushPattern = JAZZ_BRUSH_PATTERNS.default[0];
     let brushIdx = 0;
     ids.push(Tone.Transport.scheduleRepeat((time) => {
-      if (brushIdx % 8 === 0) {
-        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
-          ? window.HazamaFlavorState.sessionRole : null;
-        brushPattern = pickBrushPattern(sr || "default");
-      }
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const sr = flavor ? flavor.sessionRole : null;
+      const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      if (brushIdx % 8 === 0) brushPattern = pickBrushPattern(sr || "default");
       if (brushPattern[brushIdx % brushPattern.length]) {
-        const vel = 0.18 + Math.random() * 0.08;
+        const grooveOffset = (groove.pushMs || 0) / 1000 * 0.5; // brush half-lags
+        const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
+        const vel = (0.18 + Math.random() * 0.08) * intensity;
         const jitter = (Math.random() - 0.5) * 0.012;
-        brush.triggerAttackRelease("16n", safeEventTime(time + jitter), vel);
+        brush.triggerAttackRelease("16n", safeEventTime(time + grooveOffset + jitter), vel);
       }
       brushIdx++;
     }, "8n"));
@@ -1610,7 +1685,7 @@
       gain,
       synths: [brush, brushHi, brushLo, ...bassVoice.voices, room],
       scheduledIds: ids,
-      source: "default+acoustic-bass+brush-patterns"
+      source: "default+acoustic-bass+brush-patterns+groove-lock"
     };
   }
 
@@ -1644,14 +1719,15 @@
     let brushPattern = JAZZ_BRUSH_PATTERNS.default[0];
     let brushIdx = 0;
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      if (brushIdx % 8 === 0) {
-        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
-          ? window.HazamaFlavorState.sessionRole : null;
-        brushPattern = pickBrushPattern(sr || "default");
-      }
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const sr = flavor ? flavor.sessionRole : null;
+      const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      if (brushIdx % 8 === 0) brushPattern = pickBrushPattern(sr || "default");
       if (brushPattern[brushIdx % brushPattern.length]) {
+        const grooveOffset = (groove.pushMs || 0) / 1000 * 0.5;
+        const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
         const jitter = (Math.random() - 0.5) * 0.014;
-        brush.triggerAttackRelease("16n", safeEventTime(time + jitter), 0.12 + Math.random() * 0.06);
+        brush.triggerAttackRelease("16n", safeEventTime(time + grooveOffset + jitter), (0.12 + Math.random() * 0.06) * intensity);
       }
       brushIdx++;
     }, "8n", "8n"));
@@ -1776,33 +1852,40 @@
     let currentChordTones = ["D3", "F3", "A3", "C4"];
 
     ids.push(Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const isLead = flavor && flavor.leadVoice === "comp";
       if (claviStep === 0) {
-        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
-          ? window.HazamaFlavorState.sessionRole : null;
+        const sr = flavor ? flavor.sessionRole : null;
         currentClaviPattern = pickFunkClaviPattern(sr || "default");
       }
       if (currentClaviPattern[claviStep]) {
         const note = currentChordTones[Math.floor(Math.random() * currentChordTones.length)];
-        clavi.triggerAttackRelease(note, "32n", safeEventTime(time), 0.45 + Math.random() * 0.15);
+        const grooveOffset = (groove.pushMs || 0) / 1000 * 0.7;
+        const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
+        const leadBoost = isLead ? 1.08 : 1.0;
+        clavi.triggerAttackRelease(note, "32n", safeEventTime(time + grooveOffset), (0.45 + Math.random() * 0.15) * intensity * leadBoost);
       }
       claviStep = (claviStep + 1) % 16;
     }, "16n"));
 
     ids.push(Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
       if (epBarIdx === 0) {
-        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
-          ? window.HazamaFlavorState.sessionRole : null;
+        const sr = flavor ? flavor.sessionRole : null;
         currentEpProgression = pickFunkEpProgression(sr || "default");
       }
       const chord = currentEpProgression[epBarIdx % currentEpProgression.length];
       if (chord) {
-        currentChordTones = chord;  // clavi follows EP chord
-        ep.triggerAttackRelease(chord, "1m", safeEventTime(time), 0.35);
+        currentChordTones = chord;
+        const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
+        ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.35 * intensity);
       }
       epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
     }, "1m"));
 
-    return { gain, synths: [clavi, claviFilter, ep, epRoom], scheduledIds: ids, source: "default+rotating-clavi+rotating-ep" };
+    return { gain, synths: [clavi, claviFilter, ep, epRoom], scheduledIds: ids, source: "default+rotating-clavi+rotating-ep+groove-lock" };
   }
 
   // When drum frames are present, render the frame rhythm AND keep the EP
@@ -1844,29 +1927,39 @@
     let currentChordTones = ["D3", "F3", "A3", "C4"];
 
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const isLead = flavor && flavor.leadVoice === "comp";
+      const otherLead = flavor && (flavor.leadVoice === "bass" || flavor.leadVoice === "drums");
       if (claviStep === 0) {
-        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
-          ? window.HazamaFlavorState.sessionRole : null;
+        const sr = flavor ? flavor.sessionRole : null;
         currentClaviPattern = pickFunkClaviPattern(sr || "default");
       }
-      if (currentClaviPattern[claviStep] && Math.random() > 0.2) {
+      // Non-lead bars: more skips so bass/drums get space
+      const skipBoost = otherLead ? 0.45 : 0.2;
+      if (currentClaviPattern[claviStep] && Math.random() > skipBoost) {
         const note = currentChordTones[(claviStep + Math.floor(Math.random() * 2)) % currentChordTones.length];
+        const grooveOffset = (groove.pushMs || 0) / 1000 * 0.7;
         const push = (Math.random() - 0.5) * 0.012;
-        clavi.triggerAttackRelease(note, "32n", safeEventTime(time + push), 0.22 + Math.random() * 0.08);
+        const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
+        const leadBoost = isLead ? 1.08 : 1.0;
+        clavi.triggerAttackRelease(note, "32n", safeEventTime(time + grooveOffset + push), (0.22 + Math.random() * 0.08) * intensity * leadBoost);
       }
       claviStep = (claviStep + 1) % 16;
     }, "16n"));
 
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
       if (epBarIdx === 0) {
-        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
-          ? window.HazamaFlavorState.sessionRole : null;
+        const sr = flavor ? flavor.sessionRole : null;
         currentEpProgression = pickFunkEpProgression(sr || "default");
       }
       const chord = currentEpProgression[epBarIdx % currentEpProgression.length];
       if (chord) {
         currentChordTones = chord;
-        ep.triggerAttackRelease(chord, "1m", safeEventTime(time), 0.32);
+        const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
+        ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.32 * intensity);
       }
       epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
     }, "1m"));
@@ -2329,6 +2422,53 @@
     activeLayer = spinUp(name);
   }
 
+  // ---- Organic tempo drift -------------------------------------
+  // Subtle BPM modulation for non-machine genres. Real session musicians
+  // breathe with the tempo — slightly faster on a build, slightly slower
+  // settling into a recap. We modulate Tone.Transport.bpm by ±1.5 BPM over
+  // 8-bar windows for jazz/funk/lofi/piano, leaving techno + ambient locked.
+  const TEMPO_DRIFT_RANGE = {
+    ambient: 0,
+    techno: 0,
+    lofi: 1.0,
+    jazz: 1.5,
+    funk: 1.2,
+    piano: 1.5,
+    any: 0.6
+  };
+  let tempoDriftIntervalId = null;
+  let tempoDriftBaseBpm = null;
+  function startTempoDrift() {
+    if (tempoDriftIntervalId != null) return;
+    tempoDriftBaseBpm = Number(Tone.Transport?.bpm?.value) || 120;
+    tempoDriftIntervalId = setInterval(() => {
+      if (!started) return;
+      const range = TEMPO_DRIFT_RANGE[currentGenre] || 0.6;
+      if (range <= 0) return;
+      // Bias drift by session_role: build/recap push faster, head/break settle slower
+      const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
+        ? window.HazamaFlavorState.sessionRole : null;
+      const bias = sr === "recap" || sr === "section-B" ? 0.6
+                 : sr === "break" || sr === "head" ? -0.4
+                 : 0;
+      const drift = (Math.random() - 0.5) * 2 * range + bias;
+      const targetBpm = tempoDriftBaseBpm + drift;
+      try {
+        Tone.Transport.bpm.rampTo(targetBpm, 6);
+      } catch (e) {}
+    }, 12000); // every 12 sec (~ 8 bars at 120 BPM)
+  }
+  function stopTempoDrift() {
+    if (tempoDriftIntervalId != null) {
+      clearInterval(tempoDriftIntervalId);
+      tempoDriftIntervalId = null;
+    }
+    // Return to base bpm to avoid drift accumulation across sessions
+    if (tempoDriftBaseBpm != null) {
+      try { Tone.Transport.bpm.rampTo(tempoDriftBaseBpm, 4); } catch (e) {}
+    }
+  }
+
   function start() {
     if (started) return;
     ensureMaster();
@@ -2336,6 +2476,7 @@
     syncMasterLevel(FADE_IN_S);
     activeLayer = spinUp(currentGenre);
     startArcLoop();
+    startTempoDrift();
   }
 
   function stop() {
@@ -2344,6 +2485,7 @@
     teardownActive();
     started = false;
     stopArcLoop();
+    stopTempoDrift();
   }
 
   function dispose() {
