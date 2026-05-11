@@ -660,14 +660,15 @@
       } catch (e) {}
     }
 
-    // Status display
+    // Status display — compact format (mobile-friendly)
     const nextSeg = djSetActive.segments[seg.index + 1];
     const remainingMin = djSetActive.duration_min - elapsedMin;
     const segRemaining = seg.to - elapsedMin;
+    const arrow = nextSeg ? ` → ${nextSeg.pill}` : "";
     setDjSetStatus(
-      `${djSetActive.name} · ${seg.pill}@${Math.round(targetBpm)}BPM · ` +
-      `seg ${seg.index + 1}/${djSetActive.segments.length} (${segRemaining.toFixed(1)}m left) · ` +
-      `next: ${nextSeg ? nextSeg.pill : "—"} · ${remainingMin.toFixed(1)}m total`
+      `${djSetActive.name} ${seg.pill}@${Math.round(targetBpm)}` +
+      ` · ${segRemaining.toFixed(1)}m${arrow}` +
+      ` · ${remainingMin.toFixed(1)}m total`
     );
 
     // Expose to flavor state for trace
