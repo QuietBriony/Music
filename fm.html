@@ -7,7 +7,7 @@
   <meta name="description" content="Hazama FM — generative focus radio powered by the UCM Mandala Engine. Press start and listen for hours." />
 
   <link rel="stylesheet" href="style.css?v=fm-25" />
-  <link rel="stylesheet" href="fm.css?v=fm-43" />
+  <link rel="stylesheet" href="fm.css?v=fm-44" />
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
@@ -24,9 +24,9 @@
   <script src="audio/namima-audio-adapter.js" defer></script>
   <script src="audio/human-groove-governor.js" defer></script>
   <script src="presets/loader.js?v=fm-18" defer></script>
-  <script src="audio/genre-flavor.js?v=fm-43" defer></script>
-  <script src="engine.js?v=fm-43" defer></script>
-  <script src="fm.js?v=fm-43" defer></script>
+  <script src="audio/genre-flavor.js?v=fm-44" defer></script>
+  <script src="engine.js?v=fm-44" defer></script>
+  <script src="fm.js?v=fm-44" defer></script>
 </head>
 
 <body data-page="fm">
@@ -82,6 +82,14 @@
       <button type="button" data-genre="jazz" aria-pressed="false">jazz</button>
       <button type="button" data-genre="funk" aria-pressed="false">funk</button>
       <button type="button" data-genre="piano" aria-pressed="false">piano</button>
+    </div>
+
+    <div id="fm-dj-set" role="group" aria-label="DJ set — 30 min cross-genre arcs">
+      <button type="button" data-djset="focus-30" aria-pressed="false" title="piano → lofi → jazz → ambient">FOCUS 30</button>
+      <button type="button" data-djset="drive-30" aria-pressed="false" title="lofi → jazz → funk → techno → ambient">DRIVE 30</button>
+      <button type="button" data-djset="night-30" aria-pressed="false" title="jazz → lofi → piano → ambient">NIGHT 30</button>
+      <button type="button" data-djset="stop" title="stop DJ set">stop</button>
+      <span id="fm-dj-status" aria-live="polite">manual</span>
     </div>
 
     <div id="fm-audition" role="group" aria-label="Audition">

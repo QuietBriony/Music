@@ -288,6 +288,58 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
   color: var(--accent-glass);
 }
 
+/* DJ set buttons (3 cross-genre arcs + stop) */
+#fm-dj-set {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: min(94vw, 580px);
+}
+
+#fm-dj-set button {
+  appearance: none;
+  border: 1px solid rgba(255, 184, 122, 0.28);
+  background: rgba(40, 22, 8, 0.4);
+  color: rgba(255, 219, 187, 0.78);
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  padding: 10px 16px;
+  min-height: 40px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.25s, border-color 0.25s, color 0.25s;
+}
+
+#fm-dj-set button[data-djset="stop"] {
+  border-color: rgba(159, 179, 217, 0.24);
+  background: rgba(8, 18, 35, 0.42);
+  color: var(--text-sub);
+  font-size: 10px;
+  letter-spacing: 0.20em;
+}
+
+#fm-dj-set button[aria-pressed="true"] {
+  border-color: rgba(255, 184, 122, 0.7);
+  background: rgba(255, 184, 122, 0.16);
+  color: rgba(255, 230, 200, 1);
+}
+
+#fm-dj-status {
+  flex-basis: 100%;
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-sub);
+  opacity: 0.8;
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+
 .fm-install-btn {
   appearance: none;
   margin-top: clamp(20px, 3vh, 32px);

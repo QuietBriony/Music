@@ -28,6 +28,52 @@
   const SHUFFLE_AUDITION_INTERVAL_MS = 42000;
   const SHUFFLE_AUDITION_GENRES = ["ambient", "techno", "lofi", "jazz", "funk", "piano"];
   const SHUFFLE_AUDITION_ENERGIES = ["low", "mid", "high"];
+
+  // DJ sets — auto-piloted 30-minute arcs that cross genres and ramp BPM.
+  // Each segment specifies pill + bpm range. Tick fires every 1 sec to
+  // interpolate BPM linearly within segment and switch pill at boundaries.
+  const DJ_SETS = {
+    "focus-30": {
+      name: "FOCUS",
+      label: "30-min focus arc",
+      description: "piano → lofi → jazz → lofi → ambient",
+      duration_min: 30,
+      segments: [
+        { from: 0,  to: 5,  pill: "piano",   energy: "low",  bpm: [62, 72] },
+        { from: 5,  to: 11, pill: "lofi",    energy: "mid",  bpm: [72, 86] },
+        { from: 11, to: 19, pill: "jazz",    energy: "mid",  bpm: [86, 108] },
+        { from: 19, to: 25, pill: "lofi",    energy: "mid",  bpm: [108, 88] },
+        { from: 25, to: 30, pill: "ambient", energy: "low",  bpm: [88, 70] }
+      ]
+    },
+    "drive-30": {
+      name: "DRIVE",
+      label: "30-min build arc",
+      description: "lofi → jazz → funk → techno → ambient",
+      duration_min: 30,
+      segments: [
+        { from: 0,  to: 4,  pill: "lofi",    energy: "mid",  bpm: [80, 92] },
+        { from: 4,  to: 12, pill: "jazz",    energy: "mid",  bpm: [92, 110] },
+        { from: 12, to: 22, pill: "funk",    energy: "high", bpm: [98, 108] },
+        { from: 22, to: 28, pill: "techno",  energy: "high", bpm: [120, 130] },
+        { from: 28, to: 30, pill: "ambient", energy: "low",  bpm: [110, 78] }
+      ]
+    },
+    "night-30": {
+      name: "NIGHT",
+      label: "30-min settle arc",
+      description: "jazz → lofi → piano → ambient",
+      duration_min: 30,
+      segments: [
+        { from: 0,  to: 6,  pill: "jazz",    energy: "mid", bpm: [102, 88] },
+        { from: 6,  to: 14, pill: "lofi",    energy: "mid", bpm: [88,  78] },
+        { from: 14, to: 22, pill: "piano",   energy: "low", bpm: [78,  64] },
+        { from: 22, to: 30, pill: "ambient", energy: "low", bpm: [64,  56] }
+      ]
+    }
+  };
+  const DJ_TICK_INTERVAL_MS = 1500;     // refresh BPM 2× per sec; smooth ramp via Tone
+  const DJ_BPM_RAMP_S = 4;              // bpm.rampTo seconds — short = responsive
   const FM_ACID_CUE_MIN_MS = 6200;
   const ACID_CUE_PROGRAMS = new Set(["hardTechno", "dryGridWork", "ghostPressure"]);
 
@@ -531,6 +577,164 @@
     return true;
   }
 
+  // ---- DJ set engine ------------------------------------------
+  // Plays a 30-min cross-genre arc, switching pill + ramping BPM at segment
+  // boundaries. User clicking a pill manually cancels the active set.
+
+  let djSetActive = null;            // current DJ_SETS entry or null
+  let djSetStartTime = 0;
+  let djSetCurrentSegmentIdx = -1;
+  let djSetTimerId = null;
+  let djSetUserCanceled = false;
+
+  function isDjSetActive() {
+    return djSetActive !== null && djSetTimerId !== null;
+  }
+
+  function setDjSetStatus(text) {
+    const status = $("fm-dj-status");
+    if (status) status.textContent = text || "manual";
+  }
+
+  function syncDjSetButtonState() {
+    const group = $("fm-dj-set");
+    if (!group) return;
+    const activeKey = djSetActive
+      ? Object.keys(DJ_SETS).find((k) => DJ_SETS[k] === djSetActive)
+      : null;
+    group.querySelectorAll("button[data-djset]").forEach((b) => {
+      b.setAttribute("aria-pressed", b.dataset.djset === activeKey ? "true" : "false");
+    });
+  }
+
+  function djSetCurrentSegment(elapsedMin) {
+    if (!djSetActive) return null;
+    for (let i = 0; i < djSetActive.segments.length; i++) {
+      const s = djSetActive.segments[i];
+      if (elapsedMin >= s.from && elapsedMin < s.to) {
+        return { ...s, index: i };
+      }
+    }
+    return null;
+  }
+
+  function tickDjSet() {
+    if (!djSetActive) return;
+    const elapsedMin = (Date.now() - djSetStartTime) / 60000;
+
+    // Set complete — auto-stop
+    if (elapsedMin >= djSetActive.duration_min) {
+      const name = djSetActive.name;
+      stopDjSet({ reason: "completed" });
+      setDjSetStatus(`${name} completed`);
+      return;
+    }
+
+    const seg = djSetCurrentSegment(elapsedMin);
+    if (!seg) return;
+
+    // Linear BPM interpolation within segment
+    const segProgress = (elapsedMin - seg.from) / (seg.to - seg.from);
+    const targetBpm = seg.bpm[0] + (seg.bpm[1] - seg.bpm[0]) * segProgress;
+    if (window.Tone && window.Tone.Transport && window.Tone.Transport.bpm) {
+      try { window.Tone.Transport.bpm.rampTo(targetBpm, DJ_BPM_RAMP_S); } catch (e) {}
+    }
+
+    // Switch pill + energy when entering a new segment
+    if (seg.index !== djSetCurrentSegmentIdx) {
+      djSetCurrentSegmentIdx = seg.index;
+      try {
+        setEnergySelection(seg.energy, { apply: started || starting });
+      } catch (e) {}
+      try {
+        setGenreSelection(seg.pill, {
+          apply: started || starting,
+          reason: `dj-set:${djSetActive.name}:seg${seg.index}`,
+          fromDjSet: true
+        });
+      } catch (e) {}
+    }
+
+    // Status display
+    const nextSeg = djSetActive.segments[seg.index + 1];
+    const remainingMin = djSetActive.duration_min - elapsedMin;
+    const segRemaining = seg.to - elapsedMin;
+    setDjSetStatus(
+      `${djSetActive.name} · ${seg.pill}@${Math.round(targetBpm)}BPM · ` +
+      `seg ${seg.index + 1}/${djSetActive.segments.length} (${segRemaining.toFixed(1)}m left) · ` +
+      `next: ${nextSeg ? nextSeg.pill : "—"} · ${remainingMin.toFixed(1)}m total`
+    );
+
+    // Expose to flavor state for trace
+    if (typeof window !== "undefined") {
+      window.HazamaFlavorState = window.HazamaFlavorState || {};
+      window.HazamaFlavorState.djSet = {
+        name: djSetActive.name,
+        segmentIdx: seg.index,
+        segmentTotal: djSetActive.segments.length,
+        currentPill: seg.pill,
+        nextPill: nextSeg ? nextSeg.pill : null,
+        elapsedMin: Math.round(elapsedMin * 10) / 10,
+        remainingMin: Math.round(remainingMin * 10) / 10,
+        targetBpm: Math.round(targetBpm * 10) / 10
+      };
+    }
+  }
+
+  function startDjSet(setKey) {
+    const set = DJ_SETS[setKey];
+    if (!set) return;
+    stopDjSet({ reason: "switch", silent: true });
+    djSetActive = set;
+    djSetStartTime = Date.now();
+    djSetCurrentSegmentIdx = -1;
+    djSetUserCanceled = false;
+    syncDjSetButtonState();
+    setDjSetStatus(`${set.name} starting…`);
+    // First tick immediately so pill switches right away
+    tickDjSet();
+    djSetTimerId = setInterval(tickDjSet, DJ_TICK_INTERVAL_MS);
+    // Cancel sleep timer if active — DJ set is the user's session intent
+    try { cancelSleepTimer("dj-set-start"); } catch (e) {}
+  }
+
+  function stopDjSet(options = {}) {
+    if (djSetTimerId != null) {
+      clearInterval(djSetTimerId);
+      djSetTimerId = null;
+    }
+    djSetActive = null;
+    djSetCurrentSegmentIdx = -1;
+    if (typeof window !== "undefined" && window.HazamaFlavorState) {
+      window.HazamaFlavorState.djSet = null;
+    }
+    syncDjSetButtonState();
+    if (!options.silent) setDjSetStatus("manual");
+    if (options.reason === "user-pill") {
+      djSetUserCanceled = true;
+    }
+  }
+
+  function bindDjSetButtons() {
+    const group = $("fm-dj-set");
+    if (!group) return;
+    group.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-djset]");
+      if (!btn) return;
+      const key = btn.dataset.djset;
+      if (key === "stop") {
+        stopDjSet({ reason: "user-stop" });
+        return;
+      }
+      if (djSetActive && Object.keys(DJ_SETS).find((k) => DJ_SETS[k] === djSetActive) === key) {
+        // Same set clicked again — toggle off
+        stopDjSet({ reason: "user-toggle" });
+        return;
+      }
+      startDjSet(key);
+    });
+  }
+
   function setGenreSelection(name, options = {}) {
     if (!GENRE_PROFILES[name]) return false;
     const group = $("fm-genre");
@@ -542,6 +746,10 @@
     // (CSS uses [data-fm-genre="<name>"] selectors in fm.css).
     if (document.body) {
       document.body.dataset.fmGenre = name;
+    }
+    // If user manually picked a pill (not driven by DJ set), cancel the set
+    if (isDjSetActive() && !options.fromDjSet) {
+      stopDjSet({ reason: "user-pill" });
     }
     if (options.apply && (started || starting)) {
       applyGenreProfile(name, { reason: options.reason || "profile" });
@@ -930,6 +1138,7 @@
       clearGenreMixTimers();
       stopShuffleAuditionTimer();
       stopGenreTempoLock();
+      stopDjSet({ reason: "fm-stop" });
       cancelSleepTimer("stop");
       releaseWakeLock();
       stopTimeOfDayLoop();
@@ -1183,6 +1392,12 @@
         }[flavor.movement] || flavor.movement;
         lines.push(`  movement    ${movementJp}  bar ${flavor.movementBar}/${flavor.movementTotal}  tension ${tension}`);
       }
+      // v44 DJ set
+      if (flavor.djSet) {
+        const dj = flavor.djSet;
+        lines.push(`  dj set      ${dj.name}  seg ${dj.segmentIdx + 1}/${dj.segmentTotal}  · ${dj.currentPill}@${dj.targetBpm}BPM`);
+        if (dj.nextPill) lines.push(`              next: ${dj.nextPill}  · remaining ${dj.remainingMin}m`);
+      }
       // Live tempo (BPM drift visible)
       if (typeof window !== "undefined" && window.Tone && window.Tone.Transport) {
         const bpm = Math.round(Number(window.Tone.Transport.bpm.value) * 10) / 10;
@@ -1360,6 +1575,7 @@
 
     bindEnergyPill();
     bindGenrePill();
+    bindDjSetButtons();
     bindShuffleAudition();
     bindReviewSync();
     bindVisibility();
