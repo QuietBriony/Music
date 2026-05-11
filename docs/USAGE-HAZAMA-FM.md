@@ -144,7 +144,89 @@ iPhone をロック中・コントロールセンター・bluetooth ヘッドフ
 
 画面下部の `full mixer →` リンクから **Music Core Rig** に遷移。
 9 フェーダー全部を直接いじって音を作れます。
-詳しくは [`USAGE-MUSIC-CORE-RIG.md`](USAGE-MUSIC-CORE-RIG.md) を参照。
+詳しくは [`USAGE-MUSIC-CORE-RIG.md`](USAGE-MUSIC-CORE-RIG.md) を参照.
+
+---
+
+## 追加機能 (v32 以降)
+
+### 📲 install ボタン
+
+Chrome / Edge / Android などで「インストール可能」と判定されたブラウザでは、
+画面下に **`📲 install as app`** ボタンが出ます。タップで OS のインストール
+ダイアログが開き、ホーム画面 / アプリ一覧にアプリ風アイコンとして追加。
+
+iOS Safari はこのイベントを発火しないため、共有ボタン経由のホーム画面追加
+を使ってください (上記)。
+
+### 🌙 90 分後の自動フェードトゥスリープ
+
+START から **90 分連続再生** すると、自動的に **30 分かけて output_level
+を 100 → 25 まで降ろします** (寝落ち想定)。聴こえなくなるほどではなく、
+気付かないほど静かに沈める設計。
+
+途中で **ENERGY / GENRE pill をタップする** か **STOP する** と
+即キャンセル。output 100 まで自動復帰。
+
+### 📊 listening trace パネル
+
+画面右下の **小さい 📊 ボタン** で、現在の再生状況の summary を表示:
+
+```
+status        playing
+elapsed       12.4 min
+bpm           96
+genre         jazz  (mid)
+source        drum-frames+walking-bass
+shuffle       off
+switch count  3
+
+genre dwell (ms)
+  jazz       8.2m   66.1%
+  ambient    2.1m   16.9%
+  any        2.1m   16.9%
+
+recent transitions (last 3 of 3):
+  any      → ambient  ( 125s) [profile.start]
+  ambient  → jazz     (  67s) [manual]
+  ...
+```
+
+2 秒ごとに自動更新。閉じるのは × ボタン or 再度 📊 タップ。
+音には影響なし、デバッグ / 振り返り用。
+
+### 🎨 ジャンル別 station ident 色
+
+番組が rotate する瞬間 (60-90 秒ごと) に背景マンダラが一瞬光りますが、
+**選択中ジャンルで色味が違います**:
+
+| pill | tint |
+|---|---|
+| any | mint (default) |
+| ambient | クールな水色 |
+| techno | マゼンタ寄り |
+| lofi | 暖かいダスト |
+| jazz | ゴールド-グリーン |
+| funk | パンチオレンジ |
+| piano | ソフト青-mint |
+
+「今のジャンルがどれか」が視覚的に即わかる。
+
+### 📱 Android ロングプレス・URL ショートカット
+
+Android で Hazama FM アプリアイコンを長押しすると、ジャンル直接起動の
+メニューが出ます (PWA manifest shortcuts):
+
+- 📻 Piano / Jazz / Lofi / Techno / Ambient
+
+URL でも直接ジャンル指定可能:
+
+```
+https://quietbriony.github.io/Music/fm.html?g=jazz
+```
+
+`?g=<genre>` で起動時にそのジャンルが選択された状態に。
+iOS Safari の長押しメニューは対応してないが、URL パラメータは効きます。
 
 ---
 

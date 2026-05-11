@@ -36,5 +36,42 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Piano",
+      "short_name": "Piano",
+      "description": "felt piano focus channel",
+      "url": "fm.html?g=piano",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Jazz",
+      "short_name": "Jazz",
+      "description": "brush + walking bass channel",
+      "url": "fm.html?g=jazz",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Lofi",
+      "short_name": "Lofi",
+      "description": "lazy pocket + vinyl crackle channel",
+      "url": "fm.html?g=lofi",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Techno",
+      "short_name": "Techno",
+      "description": "4-on-floor focus channel",
+      "url": "fm.html?g=techno",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Ambient",
+      "short_name": "Ambient",
+      "description": "water/garden ambient channel",
+      "url": "fm.html?g=ambient",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }

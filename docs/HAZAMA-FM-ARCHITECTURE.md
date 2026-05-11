@@ -114,6 +114,67 @@ station ident animation 駆動。
 iPhone ロック画面・コントロールセンター・BT ヘッドフォン・mac Touch Bar
 に「fieldStudy — initial haze room」等が表示される。
 
+### 音量設計 (v32 時点)
+
+```
+各 GENRE synth voice
+        ↓ Tone.PolySynth volume (per builder, -8〜-22 dB)
+flavor master Gain
+        ↓ × LEVEL_BY_GENRE[name] (0.50〜0.72)
+        ↓ × output follower (engine OUTPUT に追従、0.34〜1.28)
+        ↓
+        ┌─ engine 各 synth voice
+        ↓
+   engine masterGain
+        ↓ × outputGainFromLevel(96..100) ≈ 2.19〜2.32 linear
+   masterLimiter (-0.8 dBFS ceiling)
+        ↓
+   Tone.Destination.volume (+4 dB by fm.js at start)
+        ↓ AudioContext.destination → output device
+```
+
+- `LEVEL_BY_GENRE` (genre-flavor.js) でジャンル別音量バランス
+  (piano だけ 0.50 で控えめ、他は 0.62〜0.72 で揃え)
+- `Tone.Destination.volume = +4 dB` (fm.js fmStart) で post-limiter
+  loudness lift。limiter が peak をカットするので distortion なし
+- 全体で Apple Music の AAC 16 LUFS / -1 dBTP 規格に近い loudness
+
+### Per-genre station ident hue
+
+CSS `body[data-fm-genre="<name>"] #mandala-container` の `--ident-hue`
+と `--ident-saturate` を切替え。番組遷移の瞬間 (1.5s) にマンダラが
+ジャンル別の色味で光る。
+- any: mint (0°)
+- ambient: -40° (水色)
+- techno: +200° (マゼンタ)
+- lofi: +60° (warm dust)
+- jazz: +100° (gold-green)
+- funk: +150° (orange punch)
+- piano: -20° (soft blue-mint)
+
+### Fade-to-sleep (90 分)
+
+START から 90 分連続再生で sleepTimer 発動 → 30 分かけて output_level を
+100 → 25 に逓減。ENERGY/GENRE pill 操作 or STOP で即キャンセル。
+fm.js の `startSleepTimer` / `cancelSleepTimer` で管理。
+
+### PWA install prompt + manifest shortcuts
+
+- fm.js が `beforeinstallprompt` イベントをキャッチ → 標準バナーを
+  preventDefault → `#fm-install` ボタンを fm-shell 下部に表示
+- ユーザータップで `deferredPrompt.prompt()` 経由で OS のインストール
+  ダイアログが出る
+- `manifest.webmanifest` の `shortcuts` で Android ロングプレスメニューに
+  Piano / Jazz / Lofi / Techno / Ambient の直接起動 URL を登録
+- 各 shortcut は `fm.html?g=jazz` のような URL → fm.js boot で
+  URLSearchParams をパースして起動時 GENRE pill を pre-select
+
+### Listening trace overlay (debug)
+
+`#fm-trace-btn` → `#fm-trace-panel` で現在の再生 snapshot を表示。
+`listeningTraceSnapshot()` の戻り値を `formatTraceSummary()` で読みやすい
+table 形式に整形。2 秒ごと auto-refresh。音には影響なし。
+
 ## 4. PWA architecture
 
 ```

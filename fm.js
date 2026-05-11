@@ -1024,12 +1024,53 @@
 
   let traceRefreshTimer = null;
 
+  function formatTraceSummary(snap) {
+    const lines = [];
+    const elapsedMin = (snap.elapsed_ms / 60000).toFixed(1);
+    lines.push(`status        ${snap.active ? "playing" : "idle"}`);
+    lines.push(`elapsed       ${elapsedMin} min`);
+    lines.push(`bpm           ${snap.bpm ?? "—"}`);
+    lines.push(`genre         ${snap.current_genre ?? "—"}  (${snap.current_energy ?? "—"})`);
+    lines.push(`source        ${snap.current_source ?? "—"}`);
+    lines.push(`shuffle       ${snap.shuffle_audition ? "on" : "off"}`);
+    lines.push(`switch count  ${snap.switch_count}`);
+    lines.push("");
+    lines.push("genre dwell (ms)");
+    const dwell = snap.dwell_ms_by_genre || {};
+    const dwellEntries = Object.entries(dwell).sort((a, b) => b[1] - a[1]);
+    if (dwellEntries.length === 0) {
+      lines.push("  (no genre played yet)");
+    } else {
+      const totalMs = dwellEntries.reduce((s, [, ms]) => s + ms, 0) || 1;
+      for (const [g, ms] of dwellEntries) {
+        const pct = ((ms / totalMs) * 100).toFixed(1);
+        const min = (ms / 60000).toFixed(1);
+        lines.push(`  ${g.padEnd(10, " ")} ${min.padStart(5, " ")}m  ${pct.padStart(5, " ")}%`);
+      }
+    }
+    lines.push("");
+    const trans = snap.transitions || [];
+    lines.push(`recent transitions (last ${Math.min(trans.length, 6)} of ${trans.length}):`);
+    if (trans.length === 0) {
+      lines.push("  (none yet)");
+    } else {
+      for (const t of trans.slice(-6)) {
+        const from = (t.from_genre || "—").padEnd(8, " ");
+        const to = (t.to_genre || "—").padEnd(8, " ");
+        const reason = t.reason || "";
+        const dwell = t.dwell_ms != null ? `${(t.dwell_ms / 1000).toFixed(0)}s` : "—";
+        lines.push(`  ${from} → ${to} (${dwell.padStart(4, " ")}) [${reason}]`);
+      }
+    }
+    return lines.join("\n");
+  }
+
   function refreshTracePanel() {
     const body = $("fm-trace-body");
     if (!body) return;
     try {
       const snap = listeningTraceSnapshot();
-      body.textContent = JSON.stringify(snap, null, 2);
+      body.textContent = formatTraceSummary(snap);
     } catch (e) {
       body.textContent = "trace error: " + (e && e.message ? e.message : e);
     }
@@ -1170,6 +1211,17 @@
         setGenreSelection(resume.genre, { apply: false });
       }
     }
+
+    // URL query (?g=jazz) — used by manifest.shortcuts on Android long-press
+    // and by deep links. Overrides resume genre when present.
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const requested = params.get("g") || params.get("genre");
+      if (requested && GENRE_PROFILES[requested]) {
+        setGenreSelection(requested, { apply: false });
+        clearResumeHint();
+      }
+    } catch (e) { /* URL parse fail — non-fatal */ }
   }
 
   if (document.readyState === "loading") {
