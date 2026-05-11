@@ -980,27 +980,101 @@
       envelope: { attack: 0.018, decay: 0.34, sustain: 0.08, release: 0.7 },
       volume: -15
     }).connect(room);
-    piano.maxPolyphony = 6;
-    const voicings = [
-      ["F3", "A3", "C4", "E4"],
-      ["E3", "G3", "B3", "D4"],
-      ["A2", "G3", "C4", "F4"],
-      ["D3", "F3", "A3", "C4"]
-    ];
-    let bar = 0;
+    piano.maxPolyphony = 8;
+    // Expanded voicing set with Bill Evans-style quartal/quintal stacks.
+    // Per session_role: head/comp/section-A pick warm rooted voicings,
+    // recap reaches for taller/wider voicings, break stays silent.
+    const COMP_VOICINGS = {
+      head: [
+        ["F3", "A3", "C4", "E4"],          // Fmaj7
+        ["A2", "G3", "C4", "F4"],          // Am7sus
+        ["D3", "F3", "A3", "C4"],          // Dm7
+        ["E3", "G3", "B3", "D4"]           // Em7
+      ],
+      comp: [
+        ["G2", "F3", "B3", "D4"],          // G7
+        ["C3", "E3", "G3", "B3"],          // Cmaj7
+        ["A3", "C4", "E4", "G4"],          // Am7 (higher)
+        ["D3", "F3", "Bb3", "E4"],         // Dm7b5 / D7alt
+        ["F3", "Bb3", "Eb4", "G4"]         // Fm7
+      ],
+      "section-A": [
+        ["F3", "A3", "C4", "E4"],
+        ["D3", "F3", "A3", "C4"]
+      ],
+      "section-B": [
+        ["G3", "Bb3", "D4", "F4"],         // Gm7
+        ["C3", "E3", "G3", "Bb3"]          // C7
+      ],
+      vamp: [
+        ["D3", "F3", "A3", "C4"],
+        ["D3", "G3", "A3", "C4"]           // Dm7sus
+      ],
+      break: [],                            // silent during break
+      recap: [
+        ["D3", "F3", "A3", "C4", "E4"],    // 5-voice Dm9
+        ["F3", "A3", "C4", "E4", "G4"],    // Fmaj9
+        ["A2", "E3", "G3", "C4", "F4"]     // wide Am11
+      ],
+      default: [
+        ["F3", "A3", "C4", "E4"],
+        ["D3", "F3", "A3", "C4"]
+      ]
+    };
+    let compBar = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      if (Math.random() < 0.7) {
-        const chord = voicings[bar % voicings.length];
-        try {
-          piano.triggerAttackRelease(chord, "2n", safeEventTime(time + 0.035 + Math.random() * 0.035), 0.19 + Math.random() * 0.07);
-        } catch (e) {}
-      }
-      bar++;
+      const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
+        ? window.HazamaFlavorState.sessionRole : null;
+      const bucket = COMP_VOICINGS[sr] || COMP_VOICINGS.default;
+      if (bucket.length === 0) { compBar++; return; }  // break frames silent
+      // Skip 30% of bars to give comping the "thinking" feel
+      if (Math.random() < 0.30) { compBar++; return; }
+      const chord = bucket[compBar % bucket.length];
+      try {
+        // Slight roll: each note 8-22 ms apart for "rolled" comping
+        chord.forEach((note, i) => {
+          const delay = i * (0.008 + Math.random() * 0.014);
+          piano.triggerAttackRelease(note, "2n", safeEventTime(time + 0.035 + delay), 0.18 + Math.random() * 0.07);
+        });
+      } catch (e) {}
+      compBar++;
     }, "1m", "2n"));
     layer.synths.push(piano, room);
-    layer.source = `${layer.source || "drum-frames+walking-bass+brush"}+piano-comp`;
+    layer.source = `${layer.source || "drum-frames+acoustic-bass+brush"}+piano-comp-rotating`;
     return layer;
   }
+
+  // ---- Funk rubber bass with pattern rotation -------------------
+  // 16-step patterns keyed by session_role. Bootsy/P-Funk style: octave
+  // jumps, syncopated rests, slides up to root, occasional double-stops.
+  const FUNK_BASS_PATTERNS = {
+    "section-A": [
+      ["D2", null, "D2", "F2", "G2", null, "A1", "C2", "D2", "F2", null, "C2", "A1", null, "C2", "D2"],
+      ["D2", null, null, "D3", "F2", null, "D2", null, "A1", null, "D2", "F2", null, "C2", "D2", null]
+    ],
+    "section-B": [
+      ["D2", "D3", null, "F2", "G2", "G3", null, "A1", "C2", null, "D2", "F2", "A2", null, "C2", "D2"],
+      ["G2", null, "G2", null, "D2", "F2", null, "A1", "G2", null, "F2", "D2", null, "C2", null, "G2"]
+    ],
+    vamp: [
+      ["D2", "D2", null, "D2", "D2", null, "D2", "D3", "D2", null, "D2", "F2", "D2", null, "D2", "C2"],   // root vamp
+      ["D2", null, "D3", null, "D2", null, "A1", "D2", null, "F2", null, "D2", "G2", null, "F2", "D2"]
+    ],
+    break: [
+      [null, null, "D2", null, null, "D2", null, null, "A1", null, null, "D2", null, null, null, null],  // sparse
+      ["D2", null, null, null, null, null, null, "D3", null, null, "A1", null, null, null, "D2", null]
+    ],
+    recap: [
+      ["D2", "D3", "F2", "F3", "G2", "G3", "A2", "A3", "D2", "D3", "F2", "C3", "A1", "A2", "D2", "F2"],  // octave climb
+      ["D3", null, "D2", "F2", "A2", null, "G2", "F2", "D3", null, "D2", "C2", "A1", null, "D2", "F2"]
+    ],
+    head: [
+      ["D2", null, "D2", "F2", "G2", null, "A1", "C2", "D2", null, "F2", null, "A1", null, "C2", "D2"]
+    ],
+    default: [
+      ["D2", null, "D2", "F2", "G2", null, "A1", "C2", "D2", "F2", null, "C2", "A1", null, "C2", "D2"]
+    ]
+  };
 
   function addFunkRubberBass(layer) {
     if (!layer) return null;
@@ -1012,19 +1086,28 @@
       portamento: 0.035,
       volume: -13
     }).connect(layer.gain);
-    const pattern = ["D2", null, "D2", "F2", "G2", null, "A1", "C2", "D2", "F2", null, "C2", "A1", null, "C2", "D2"];
+    let currentPattern = FUNK_BASS_PATTERNS.default[0];
+    let funkBassBarCount = 0;
     let step = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      const note = pattern[step % pattern.length];
+      // At step 0 (bar start), pick a new pattern based on current session_role
+      if (step === 0) {
+        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
+          ? window.HazamaFlavorState.sessionRole : null;
+        const bucket = FUNK_BASS_PATTERNS[sr] || FUNK_BASS_PATTERNS.default;
+        currentPattern = bucket[funkBassBarCount % bucket.length];
+        funkBassBarCount++;
+      }
+      const note = currentPattern[step % currentPattern.length];
       if (note && Math.random() < (step % 4 === 0 ? 0.86 : 0.58)) {
         try {
           bass.triggerAttackRelease(note, step % 2 === 0 ? "16n" : "32n", safeEventTime(time + 0.006 + Math.random() * 0.01), step % 4 === 0 ? 0.42 : 0.3);
         } catch (e) {}
       }
-      step++;
+      step = (step + 1) % 16;
     }, "16n"));
     layer.synths.push(bass);
-    layer.source = `${layer.source || "drum-frames+ep+clavi"}+rubber-bass`;
+    layer.source = `${layer.source || "drum-frames+ep+clavi"}+rubber-bass-rotating`;
     return layer;
   }
 
@@ -1318,6 +1401,177 @@
 
   // ---- JAZZ -----------------------------------------------------
 
+  // ---- Acoustic upright bass voice ------------------------------
+  //
+  // Replaces the previous MonoSynth/triangle bass with a more woody acoustic
+  // bass: FMSynth body + brown-noise thump on attack + pink chiff transient,
+  // with a brief pitch dive on attack to mimic finger-pluck. Tonal range
+  // sits around 80-300 Hz (low LP at 850 Hz Q 1.2).
+  //
+  // Returns { play(note, duration, time, velocity), voices: [...] }
+  function makeAcousticBass(target, opts = {}) {
+    const body = new Tone.FMSynth({
+      harmonicity: 2.05,
+      modulationIndex: 1.5,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.008, decay: 0.35, sustain: 0.42, release: 0.55 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 0.004, decay: 0.14, sustain: 0.18, release: 0.32 },
+      volume: opts.volume ?? -11
+    });
+    const lp = new Tone.Filter({ frequency: 850, type: "lowpass", Q: 1.1 });
+    body.connect(lp);
+    lp.connect(target);
+
+    // Body thump — short brown-noise burst near 110 Hz on every attack
+    const thump = new Tone.NoiseSynth({
+      noise: { type: "brown" },
+      envelope: { attack: 0.001, decay: 0.045, sustain: 0, release: 0.025 },
+      volume: -22
+    });
+    const thumpBp = new Tone.Filter({ frequency: 110, type: "bandpass", Q: 2.6 });
+    thump.connect(thumpBp);
+    thumpBp.connect(target);
+
+    // Finger chiff — brief pink noise around 1.8 kHz, 60% chance
+    const chiff = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.001, decay: 0.022, sustain: 0, release: 0.018 },
+      volume: -34
+    });
+    const chiffBp = new Tone.Filter({ frequency: 1800, type: "bandpass", Q: 2.0 });
+    chiff.connect(chiffBp);
+    chiffBp.connect(target);
+
+    function play(note, duration, time, velocity) {
+      try {
+        // Pitch dive on attack (50 cents down, 50 ms recover)
+        body.detune.cancelScheduledValues(time);
+        body.detune.setValueAtTime(-55, time);
+        body.detune.linearRampToValueAtTime(0, time + 0.05);
+        body.triggerAttackRelease(note, duration, time, velocity);
+        thump.triggerAttackRelease("32n", time, clamp(velocity * 0.7, 0.05, 0.9));
+        if (Math.random() < 0.6) {
+          chiff.triggerAttackRelease("32n", safeEventTime(time + 0.003), clamp(velocity * 0.55, 0.04, 0.7));
+        }
+      } catch (e) {}
+    }
+
+    return {
+      play,
+      voices: [body, lp, thump, thumpBp, chiff, chiffBp]
+    };
+  }
+
+  // ---- Walking bass patterns ------------------------------------
+  //
+  // Per-bar 4-beat patterns keyed by session_role. Picker rotates within
+  // each bucket so consecutive bars don't repeat. nulls = rest (breath).
+  // Sam Jones / Paul Chambers / Ron Carter modal flavor.
+  const WALKING_BASS_PATTERNS = {
+    head: [
+      ["D2", "F2", "G2", "A2"],
+      ["D2", "A1", "F2", "G2"],
+      ["D2", "F2", "A2", "G2"],
+      ["F2", "A2", "G2", "F2"]
+    ],
+    comp: [
+      ["D2", "F2", "G2", "G#2"],   // chromatic to A
+      ["D2", "F2", "A2", "C3"],    // arpeggio up
+      ["C3", "A2", "G2", "F2"],    // descending
+      ["D2", "F2", "F#2", "G2"],   // chromatic passing
+      ["D2", "A2", "F2", "C3"],    // skip
+      ["G2", "F2", "E2", "D2"]     // descending walk
+    ],
+    "section-A": [
+      ["D2", "F2", "G2", "A2"],
+      ["F2", "G2", "A2", "C3"]
+    ],
+    "section-B": [
+      ["D2", "F2", "A2", "C3"],
+      ["G2", "Bb2", "C3", "D3"]
+    ],
+    vamp: [
+      ["D2", "D2", "F2", "A2"],    // root pedal
+      ["D2", "F2", "D2", "A2"]
+    ],
+    break: [
+      ["D2", null, null, null],    // sparse — let drums breathe
+      [null, null, "G2", null],
+      ["D2", null, "A1", null]
+    ],
+    recap: [
+      ["D2", "F2", "A2", "D3"],    // big arpeggio
+      ["D3", "C3", "A2", "F2"],    // big descending
+      ["D2", "G2", "C3", "F3"],    // climb
+      ["A1", "D2", "F2", "A2"]     // octave open
+    ],
+    default: [
+      ["D2", "F2", "G2", "A2"],
+      ["D2", "F2", "A2", "C3"]
+    ]
+  };
+
+  let walkingBarCount = 0;
+  function pickWalkingBassPattern(sessionRole) {
+    const bucket = WALKING_BASS_PATTERNS[sessionRole] || WALKING_BASS_PATTERNS.default;
+    const idx = walkingBarCount % bucket.length;
+    walkingBarCount++;
+    return bucket[idx];
+  }
+
+  // Schedule a walking-bass bar onto Tone.Transport. Returns the schedule id.
+  // Uses 4n loop; reads window.HazamaFlavorState.sessionRole at each bar 0
+  // to pick a new pattern. Adds: 15% 8th-note passing notes, slight
+  // humanization (±12 ms timing, ±0.08 velocity), occasional ghost notes.
+  function scheduleWalkingBass(bassVoice, baseVelocity = 0.55) {
+    let currentPattern = null;
+    let beatInBar = 0;
+    const beatTime = Tone.Time("4n").toSeconds();
+    const halfBeat = beatTime / 2;
+    return Tone.Transport.scheduleRepeat((time) => {
+      if (beatInBar === 0 || !currentPattern) {
+        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
+          ? window.HazamaFlavorState.sessionRole : null;
+        currentPattern = pickWalkingBassPattern(sr || "default");
+      }
+      const note = currentPattern[beatInBar % currentPattern.length];
+      beatInBar = (beatInBar + 1) % 4;
+      if (!note) return;
+      // Humanize
+      const jitter = (Math.random() - 0.5) * 0.012;
+      const vel = clamp(baseVelocity + (Math.random() - 0.5) * 0.12, 0.3, 0.8);
+      bassVoice.play(note, "8n", safeEventTime(time + jitter), vel);
+      // 18% chance: 8th-note chromatic passing tone between this and next beat
+      if (Math.random() < 0.18 && note) {
+        try {
+          const noteFreq = Tone.Frequency(note).toFrequency();
+          const passingFreq = noteFreq * (Math.random() < 0.5 ? 1.0595 : 0.9439); // ±1 semitone
+          bassVoice.play(passingFreq, "16n", safeEventTime(time + halfBeat - 0.01), vel * 0.55);
+        } catch (e) {}
+      }
+    }, "4n");
+  }
+
+  // ---- Jazz brush patterns --------------------------------------
+  const JAZZ_BRUSH_PATTERNS = {
+    head:    [[1, 0, 1, 0, 1, 0, 1, 1], [1, 0, 1, 1, 1, 0, 1, 0], [0, 1, 1, 0, 1, 0, 1, 1]],
+    comp:    [[1, 1, 1, 0, 1, 1, 1, 1], [1, 0, 1, 0, 1, 1, 0, 1]],
+    "section-A": [[1, 0, 1, 0, 1, 0, 1, 1]],
+    "section-B": [[1, 1, 1, 0, 1, 0, 1, 1]],
+    vamp:    [[1, 0, 1, 0, 1, 0, 1, 1]],
+    break:   [[0, 0, 0, 0, 0, 0, 0, 1], [0, 1, 0, 0, 0, 0, 0, 1]],
+    recap:   [[1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 0, 1, 1, 1, 1]],
+    default: [[1, 0, 1, 0, 1, 0, 1, 1]]
+  };
+  let brushPhraseCount = 0;
+  function pickBrushPattern(sessionRole) {
+    const bucket = JAZZ_BRUSH_PATTERNS[sessionRole] || JAZZ_BRUSH_PATTERNS.default;
+    const idx = brushPhraseCount % bucket.length;
+    brushPhraseCount++;
+    return bucket[idx];
+  }
+
   function buildJazzDefault() {
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
     const room = new Tone.Reverb({ decay: 1.6, wet: 0.22 }).connect(gain);
@@ -1331,25 +1585,19 @@
       volume: -19
     }).connect(brushHi);
 
-    const bass = new Tone.MonoSynth({
-      oscillator: { type: "triangle" },
-      filter: { type: "lowpass", frequency: 720, Q: 0.9 },
-      envelope: { attack: 0.005, decay: 0.22, sustain: 0.45, release: 0.28 },
-      filterEnvelope: { attack: 0.012, decay: 0.22, sustain: 0.32, release: 0.3, baseFrequency: 220, octaves: 2.4 },
-      volume: -12
-    }).connect(room);
+    const bassVoice = makeAcousticBass(room, { volume: -10 });
 
-    const walk = ["D2", "F2", "G2", "A2", "C3", "A2", "G2", "F2"];
-    let walkIdx = 0;
     const ids = [];
-    ids.push(Tone.Transport.scheduleRepeat((time) => {
-      bass.triggerAttackRelease(walk[walkIdx % walk.length], "8n", safeEventTime(time), 0.6);
-      walkIdx++;
-    }, "4n"));
+    ids.push(scheduleWalkingBass(bassVoice, 0.58));
 
-    const brushPattern = [1, 0, 1, 0, 1, 0, 1, 1];
+    let brushPattern = JAZZ_BRUSH_PATTERNS.default[0];
     let brushIdx = 0;
     ids.push(Tone.Transport.scheduleRepeat((time) => {
+      if (brushIdx % 8 === 0) {
+        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
+          ? window.HazamaFlavorState.sessionRole : null;
+        brushPattern = pickBrushPattern(sr || "default");
+      }
       if (brushPattern[brushIdx % brushPattern.length]) {
         const vel = 0.18 + Math.random() * 0.08;
         const jitter = (Math.random() - 0.5) * 0.012;
@@ -1358,7 +1606,12 @@
       brushIdx++;
     }, "8n"));
 
-    return { gain, synths: [brush, brushHi, brushLo, bass, room], scheduledIds: ids, source: "default" };
+    return {
+      gain,
+      synths: [brush, brushHi, brushLo, ...bassVoice.voices, room],
+      scheduledIds: ids,
+      source: "default+acoustic-bass+brush-patterns"
+    };
   }
 
   // When drum-frames-jazz preset is present, render the frame rhythm AND
@@ -1384,31 +1637,26 @@
       envelope: { attack: 0.045, decay: 0.24, sustain: 0, release: 0.08 },
       volume: -27
     }).connect(brushHi);
-    const bass = new Tone.MonoSynth({
-      oscillator: { type: "triangle" },
-      filter: { type: "lowpass", frequency: 720, Q: 0.9 },
-      envelope: { attack: 0.005, decay: 0.22, sustain: 0.45, release: 0.28 },
-      filterEnvelope: { attack: 0.012, decay: 0.22, sustain: 0.32, release: 0.3, baseFrequency: 220, octaves: 2.4 },
-      volume: -14
-    }).connect(room);
 
-    const walk = ["D2", "F2", "G2", "A2", "C3", "A2", "G2", "F2"];
-    let walkIdx = 0;
-    drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      bass.triggerAttackRelease(walk[walkIdx % walk.length], "8n", safeEventTime(time), 0.55);
-      walkIdx++;
-    }, "4n"));
-    const brushPattern = [1, 0, 1, 0, 1, 0, 1, 1];
+    const bassVoice = makeAcousticBass(room, { volume: -12 });
+    drums.scheduledIds.push(scheduleWalkingBass(bassVoice, 0.52));
+
+    let brushPattern = JAZZ_BRUSH_PATTERNS.default[0];
     let brushIdx = 0;
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      if (brushIdx % 8 === 0) {
+        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
+          ? window.HazamaFlavorState.sessionRole : null;
+        brushPattern = pickBrushPattern(sr || "default");
+      }
       if (brushPattern[brushIdx % brushPattern.length]) {
         const jitter = (Math.random() - 0.5) * 0.014;
         brush.triggerAttackRelease("16n", safeEventTime(time + jitter), 0.12 + Math.random() * 0.06);
       }
       brushIdx++;
     }, "8n", "8n"));
-    drums.synths.push(brush, brushHi, brushLo, bass, room);
-    drums.source = "drum-frames+live-jazz-kit+walking-bass+brush";
+    drums.synths.push(brush, brushHi, brushLo, ...bassVoice.voices, room);
+    drums.source = "drum-frames+live-jazz-kit+acoustic-bass+brush-patterns";
     return applyProductionGovernor(addSessionBreaks(addJazzComping(drums), "jazz"), "jazz");
   }
 
@@ -1425,6 +1673,80 @@
   }
 
   // ---- FUNK -----------------------------------------------------
+
+  // 16-step clavi patterns by session_role. P-Funk articulation: syncopated
+  // chops, "skip" bars, accent on offbeat 2-and / 4-and.
+  const FUNK_CLAVI_PATTERNS = {
+    "section-A": [
+      [1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0],
+      [1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1]
+    ],
+    "section-B": [
+      [0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1],
+      [1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1]
+    ],
+    vamp: [
+      [1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0]
+    ],
+    break: [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]  // mostly silent
+    ],
+    recap: [
+      [1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1],  // packed
+      [1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1]
+    ],
+    head: [
+      [1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0]
+    ],
+    default: [
+      [1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0]
+    ]
+  };
+
+  // EP chord progressions by session_role. Each entry is a list of chords,
+  // one chord per bar. Bar counter rotates through the list, looping at end.
+  const FUNK_EP_PROGRESSIONS = {
+    "section-A": [
+      [["D3", "F3", "A3", "C4"]],                                    // Dm7 vamp
+      [["D3", "F3", "A3", "C4"], ["G3", "Bb3", "D4", "F4"]]          // Dm7 - Gm7
+    ],
+    "section-B": [
+      [["D3", "F3", "A3", "C4"], ["G2", "F3", "B3", "D4"]],          // Dm7 - G7
+      [["F3", "Ab3", "C4", "Eb4"], ["Bb2", "Ab3", "D4", "F4"]]       // Fm7 - Bb7
+    ],
+    vamp: [
+      [["D3", "F3", "A3", "C4"]]                                     // hold Dm7
+    ],
+    break: [
+      [null]                                                          // silent
+    ],
+    recap: [
+      [["D3", "F3", "A3", "C4", "E4"], ["G2", "B3", "D4", "F4"]],    // Dm9 - G13
+      [["F3", "A3", "C4", "E4", "G4"]]                                // Fmaj9 lift
+    ],
+    head: [
+      [["D3", "F3", "A3", "C4"]]
+    ],
+    default: [
+      [["D3", "F3", "A3", "C4"]]
+    ]
+  };
+
+  let funkClaviBarCount = 0;
+  function pickFunkClaviPattern(sessionRole) {
+    const bucket = FUNK_CLAVI_PATTERNS[sessionRole] || FUNK_CLAVI_PATTERNS.default;
+    const idx = funkClaviBarCount % bucket.length;
+    funkClaviBarCount++;
+    return bucket[idx];
+  }
+
+  let funkEpProgressionCount = 0;
+  function pickFunkEpProgression(sessionRole) {
+    const bucket = FUNK_EP_PROGRESSIONS[sessionRole] || FUNK_EP_PROGRESSIONS.default;
+    const idx = funkEpProgressionCount % bucket.length;
+    funkEpProgressionCount++;
+    return bucket[idx];
+  }
 
   function buildFunkDefault() {
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
@@ -1446,24 +1768,41 @@
     }).connect(epRoom);
     ep.maxPolyphony = 6;
 
-    const dmin7 = ["D3", "F3", "A3", "C4"];
     const ids = [];
-    const claviPattern = [1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0];
-    let claviIdx = 0;
+    let currentClaviPattern = FUNK_CLAVI_PATTERNS.default[0];
+    let currentEpProgression = FUNK_EP_PROGRESSIONS.default[0];
+    let claviStep = 0;
+    let epBarIdx = 0;
+    let currentChordTones = ["D3", "F3", "A3", "C4"];
+
     ids.push(Tone.Transport.scheduleRepeat((time) => {
-      if (claviPattern[claviIdx % claviPattern.length]) {
-        const note = dmin7[Math.floor(Math.random() * dmin7.length)];
+      if (claviStep === 0) {
+        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
+          ? window.HazamaFlavorState.sessionRole : null;
+        currentClaviPattern = pickFunkClaviPattern(sr || "default");
+      }
+      if (currentClaviPattern[claviStep]) {
+        const note = currentChordTones[Math.floor(Math.random() * currentChordTones.length)];
         clavi.triggerAttackRelease(note, "32n", safeEventTime(time), 0.45 + Math.random() * 0.15);
       }
-      claviIdx++;
+      claviStep = (claviStep + 1) % 16;
     }, "16n"));
-    let epBar = 0;
+
     ids.push(Tone.Transport.scheduleRepeat((time) => {
-      if (epBar % 2 === 0) ep.triggerAttackRelease(dmin7, "1m", safeEventTime(time), 0.35);
-      epBar++;
+      if (epBarIdx === 0) {
+        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
+          ? window.HazamaFlavorState.sessionRole : null;
+        currentEpProgression = pickFunkEpProgression(sr || "default");
+      }
+      const chord = currentEpProgression[epBarIdx % currentEpProgression.length];
+      if (chord) {
+        currentChordTones = chord;  // clavi follows EP chord
+        ep.triggerAttackRelease(chord, "1m", safeEventTime(time), 0.35);
+      }
+      epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
     }, "1m"));
 
-    return { gain, synths: [clavi, claviFilter, ep, epRoom], scheduledIds: ids, source: "default" };
+    return { gain, synths: [clavi, claviFilter, ep, epRoom], scheduledIds: ids, source: "default+rotating-clavi+rotating-ep" };
   }
 
   // When drum frames are present, render the frame rhythm AND keep the EP
@@ -1498,24 +1837,41 @@
     }).connect(epRoom);
     ep.maxPolyphony = 6;
 
-    const dmin7 = ["D3", "F3", "A3", "C4"];
-    const claviPattern = [1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0];
-    let claviIdx = 3;
+    let currentClaviPattern = FUNK_CLAVI_PATTERNS.default[0];
+    let currentEpProgression = FUNK_EP_PROGRESSIONS.default[0];
+    let claviStep = 0;
+    let epBarIdx = 0;
+    let currentChordTones = ["D3", "F3", "A3", "C4"];
+
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      if (claviPattern[claviIdx % claviPattern.length] && Math.random() > 0.2) {
-        const note = dmin7[(claviIdx + Math.floor(Math.random() * 2)) % dmin7.length];
+      if (claviStep === 0) {
+        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
+          ? window.HazamaFlavorState.sessionRole : null;
+        currentClaviPattern = pickFunkClaviPattern(sr || "default");
+      }
+      if (currentClaviPattern[claviStep] && Math.random() > 0.2) {
+        const note = currentChordTones[(claviStep + Math.floor(Math.random() * 2)) % currentChordTones.length];
         const push = (Math.random() - 0.5) * 0.012;
         clavi.triggerAttackRelease(note, "32n", safeEventTime(time + push), 0.22 + Math.random() * 0.08);
       }
-      claviIdx++;
+      claviStep = (claviStep + 1) % 16;
     }, "16n"));
-    let epBar = 0;
+
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      if (epBar % 2 === 0) ep.triggerAttackRelease(dmin7, "1m", safeEventTime(time), 0.32);
-      epBar++;
+      if (epBarIdx === 0) {
+        const sr = (typeof window !== "undefined" && window.HazamaFlavorState)
+          ? window.HazamaFlavorState.sessionRole : null;
+        currentEpProgression = pickFunkEpProgression(sr || "default");
+      }
+      const chord = currentEpProgression[epBarIdx % currentEpProgression.length];
+      if (chord) {
+        currentChordTones = chord;
+        ep.triggerAttackRelease(chord, "1m", safeEventTime(time), 0.32);
+      }
+      epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
     }, "1m"));
     drums.synths.push(clavi, claviFilter, ep, epRoom);
-    drums.source = "drum-frames+live-funk-kit+ep+clavi";
+    drums.source = "drum-frames+live-funk-kit+rotating-clavi+rotating-ep";
     return applyProductionGovernor(
       addTapeSaturation(
         addSidechainPump(
