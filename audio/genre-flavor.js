@@ -30,7 +30,7 @@
   const FADE_OUT_S = 1.6;
   const CROSSFADE_S = 1.5;
   const OUTPUT_FOLLOW_MIN = 0.34;
-  const OUTPUT_FOLLOW_MAX = 1.18;
+  const OUTPUT_FOLLOW_MAX = 1.28;
 
   // Maps genre → preset name in HazamaPresets. Genres without a mapping
   // always use their default builder.

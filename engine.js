@@ -6287,7 +6287,7 @@ function outputGainFromLevel(level) {
   if (safeLevel <= 75) {
     return mapValue(safeLevel, 50, 75, 0.96, 1.48);
   }
-  return mapValue(safeLevel, 75, 100, 1.48, 2.12);
+  return mapValue(safeLevel, 75, 100, 1.48, 2.32);
 }
 
 function updateOutputLevelUi() {
@@ -6324,7 +6324,7 @@ function engineOutputGainTarget(level = OutputState.level) {
   } catch (error) {
     fmTrim = 1;
   }
-  return clampValue(outputGain * fmTrim, 0.0001, 2.28);
+  return clampValue(outputGain * fmTrim, 0.0001, 2.42);
 }
 
 function isAppleMobileDevice() {
