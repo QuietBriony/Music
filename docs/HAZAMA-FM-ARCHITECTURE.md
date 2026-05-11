@@ -175,6 +175,36 @@ fm.js の `startSleepTimer` / `cancelSleepTimer` で管理。
 `listeningTraceSnapshot()` の戻り値を `formatTraceSummary()` で読みやすい
 table 形式に整形。2 秒ごと auto-refresh。音には影響なし。
 
+### 音楽的参照 (references/)
+
+各 GENRE pill には**音楽的なリファレンス**を紐付けている。複製しない、
+production parameter translation のみ:
+
+- `references/apple-music-refs.json` — 全 18 アーティストの timbre / rhythm
+  / space / structure / gesture 翻訳 (Aphex Twin / Boards of Canada /
+  Burial / Brian Eno / Four Tet / Biosphere / Nujabes ...)
+- `references/hazama-fm-pill-refs.json` — pill ごとに primary / secondary
+  references を明示。**`lofi` pill は Nujabes (Aruarian Dance / Feather)
+  をメインに**、jazz/funk/techno/piano は user 確認待ちの candidates 列挙
+
+```
+pills:
+  ambient → Brian Eno + Boards of Canada + Aphex Twin + Huerco S.
+  lofi    → Nujabes (Aruarian Dance / Feather) [primary]
+  techno  → TODO (Carl Craig / Jeff Mills / 他 候補)
+  jazz    → TODO (Bill Evans / Keith Jarrett / 他 候補)
+  funk    → TODO (Sly Stone / D'Angelo / 他 候補)
+  piano   → TODO (Keith Jarrett / Brad Mehldau / Nils Frahm / 他 候補)
+```
+
+reference → builder への翻訳:
+- `audio/genre-flavor.js` の builder 内で voicing / tempo / synth params
+  に反映 (例: `addNujabesMemoryDots()` が Fmaj9 / Am11 / Dmaj9 / Bb7sus /
+  Cmaj7add / Gm9 の jazz-hop voicing を lofi pill 専用の volume -24
+  memory layer で peek させる)
+- presets/*.json も対応する taste で codex に depth 増量を依頼する
+  (例: drum-frames-lofi.json を 92 BPM / behind-beat snare で生成)
+
 ## 4. PWA architecture
 
 ```

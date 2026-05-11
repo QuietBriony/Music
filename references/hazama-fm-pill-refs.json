@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "purpose": "Hazama FM GENRE pill ごとの音楽的参照を明示する。production parameter translation のみ、複製しない。",
+  "policy": {
+    "stores_audio": false,
+    "stores_lyrics": false,
+    "stores_samples": false,
+    "stores_metadata_only": true
+  },
+  "pills": {
+    "any": {
+      "label": "ANY",
+      "description": "engine 自動揺らぎ。特定リファレンス無し、9 番組 rotate に任せる。",
+      "primary_references": [],
+      "secondary_references": [
+        "Aphex Twin — Selected Ambient Works 85-92",
+        "Brian Eno — Music for Airports"
+      ],
+      "production_axis_hints": ["restraint", "long-form"]
+    },
+    "ambient": {
+      "label": "AMBIENT",
+      "description": "water/garden の安全な空気感。namima 系の mood snapshot を中心に。",
+      "primary_references": [
+        { "artist": "Brian Eno", "title": "An Ending (Ascent)", "axis": "emotional air" },
+        { "artist": "Boards of Canada", "title": "Olson", "axis": "warm haze" },
+        { "artist": "Aphex Twin", "title": "Xtal", "axis": "cold space" }
+      ],
+      "secondary_references": [
+        { "artist": "Huerco S.", "title": "A Sea of Love" },
+        { "artist": "Global Communication", "title": "14:31" },
+        { "artist": "Biosphere", "title": "Novelty Waves" }
+      ],
+      "production_axis_hints": ["space", "long-form", "restraint", "low-pressure"]
+    },
+    "techno": {
+      "label": "TECHNO",
+      "description": "4-on-floor の machine drum と acid pulse。Music codex がすでに acid_core culture と組合せ済み。",
+      "primary_references": [
+        { "artist": "TODO", "title": "ユーザーから指定希望", "axis": "kick/acid/tempo の方向性" }
+      ],
+      "candidates_to_ask_user": [
+        "Carl Craig", "Jeff Mills", "Surgeon", "Robert Hood",
+        "Plastikman", "Stephan Bodzin", "DJ Stingray", "Drexciya"
+      ],
+      "production_axis_hints": ["pulse", "grid", "body", "acid"]
+    },
+    "lofi": {
+      "label": "LOFI",
+      "description": "lazy pocket と vinyl crackle の jazz-hop / lofi-hiphop。Nujabes 系がメイン。",
+      "primary_references": [
+        { "artist": "Nujabes", "title": "Aruarian Dance", "album": "Modal Soul", "axis": "jazz-hop open voicing + memory chord" },
+        { "artist": "Nujabes", "title": "Feather", "album": "Modal Soul", "axis": "sad-warm flute + walking bass + brush ride" }
+      ],
+      "secondary_references": [
+        { "artist": "TODO", "title": "他に追加したい場合", "axis": "(J Dilla / Knxwledge / DJ Krush / Cookin Soul など候補)" }
+      ],
+      "candidates_to_ask_user": [
+        "J Dilla", "Knxwledge", "Madlib", "DJ Krush",
+        "DJ Shadow", "Bonobo (early)", "Tycho (downtempo)", "Cinematic Orchestra"
+      ],
+      "production_axis_hints": ["dust", "swing", "tape-memory", "jazz-hop", "restraint"]
+    },
+    "jazz": {
+      "label": "JAZZ",
+      "description": "brush + walking bass + ride。生音感、modal jazz の voicing。",
+      "primary_references": [
+        { "artist": "TODO", "title": "ユーザーから指定希望", "axis": "voicing / tempo / mood の方向性" }
+      ],
+      "candidates_to_ask_user": [
+        "Bill Evans Trio", "Keith Jarrett (solo)", "Miles Davis (Kind of Blue)",
+        "Brad Mehldau", "Ahmad Jamal", "Esbjörn Svensson Trio (E.S.T.)"
+      ],
+      "production_axis_hints": ["voicing", "swing", "brush", "walking", "modal", "earth"]
+    },
+    "funk": {
+      "label": "FUNK",
+      "description": "clavi + EP + 跳ねる pocket。",
+      "primary_references": [
+        { "artist": "TODO", "title": "ユーザーから指定希望", "axis": "pocket / horn / bass の方向性" }
+      ],
+      "candidates_to_ask_user": [
+        "Sly & The Family Stone", "Parliament-Funkadelic", "James Brown",
+        "Prince", "D'Angelo (Voodoo)", "Roy Ayers", "The Meters"
+      ],
+      "production_axis_hints": ["pocket", "body", "rubber", "clavi", "ep"]
+    },
+    "piano": {
+      "label": "PIANO",
+      "description": "felt piano の和音 + 長い休符。chill の Quiet Piano が中心。",
+      "primary_references": [
+        { "artist": "TODO", "title": "ユーザーから指定希望", "axis": "felt / sustain / restraint の方向性" }
+      ],
+      "candidates_to_ask_user": [
+        "Keith Jarrett (Köln Concert / Solo)", "Brad Mehldau (Live at Vanguard)",
+        "Bill Evans (Sunday at Village Vanguard)", "Nils Frahm (Felt)",
+        "Ryuichi Sakamoto (BTTB / async)", "Hauschka (felt preparation)"
+      ],
+      "production_axis_hints": ["felt", "memory", "restraint", "long-rest", "tender"]
+    }
+  },
+  "notes": [
+    "primary_references は production_translation のあるリファレンス (apple-music-refs.json と紐付け)。",
+    "secondary_references は雰囲気の補助参照、production_translation は無いケースもある。",
+    "candidates_to_ask_user は私 (claude code) からの提案、user がどれが好みか確認するための候補リスト。",
+    "TODO エントリはユーザーが好みのアーティストを指定したら primary_references に昇格させる。",
+    "実装側は genre-flavor.js の各 builder と presets/*.json でこれを翻訳する。",
+    "artist/title は分析メタデータ、runtime symbol や preset 名へ直接使わない (apple-music-refs.json と同じポリシー)。"
+  ]
+}

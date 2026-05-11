@@ -699,6 +699,97 @@
         "dark but not dullの参照",
         "low-end safetyを守り、透明粒で変化を出す"
       ]
+    },
+    {
+      "artist": "Nujabes",
+      "title": "Aruarian Dance",
+      "album": "Modal Soul",
+      "genre_hint": [
+        "lofi",
+        "lofi-hiphop",
+        "jazz-hop",
+        "instrumental hip-hop"
+      ],
+      "taste_notes": [
+        "ジャズ的な open voicing と memory chord の漂い",
+        "ローファイ・ピアノとアコースティック・ベースの並列",
+        "humanized swing と懐かしさ"
+      ],
+      "production_translation": {
+        "timbre": [
+          "felt piano + warm Rhodes 系 EP の voicing",
+          "ベースは upright triangle + 低域 LPF で温かみ",
+          "ハイハットは brush 寄り、attack は遅め (0.05-0.08s)"
+        ],
+        "rhythm": [
+          "85-95 BPM、swing 14-18% (jazz-hop 標準)",
+          "kick は beat 1 / 3、snare は backbeat やや behind (12-18 ms lag)",
+          "16th hat は dragged、たまに skip で human swing"
+        ],
+        "space": [
+          "リバーブは medium room (1.5-2.2s decay) 控えめ wet",
+          "EP / piano にだけ短い tape delay でメモリ感",
+          "vinyl crackle を低レベルで常時敷く"
+        ],
+        "structure": [
+          "8-bar phrase で chord を変える、4 bar で fill 1 つ",
+          "drop は控えめ、density は constant に近い",
+          "main loop は memory cell として戻ってくる"
+        ],
+        "gesture": [
+          "DRIFT は dragged hat の微妙ずれで表現",
+          "Energy 高でも density は上げず velocity だけ少し上がる"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の lofi pill のメイン reference",
+        "buildLofi() builder で frames + vinyl crackle + piano memory layer 推奨",
+        "drum-frames-lofi.json と組み合わせて jazz-hop pocket を再現",
+        "chill repo の rainy-lofi-room recipe を tape-memory culture で重ねると深まる"
+      ]
+    },
+    {
+      "artist": "Nujabes",
+      "title": "Feather (feat. Cise Starr & Akin)",
+      "album": "Modal Soul",
+      "genre_hint": [
+        "lofi",
+        "lofi-hiphop",
+        "jazz-hop"
+      ],
+      "taste_notes": [
+        "sad-warm な flute / chord stack",
+        "dusty break + walking bass + brush ride",
+        "メロディとリズムが互いに譲り合う密度"
+      ],
+      "production_translation": {
+        "timbre": [
+          "flute or soft synth lead を low-mid に",
+          "EP の add9/maj7 voicing で warmth",
+          "brush ride + soft kick で空気感を保つ"
+        ],
+        "rhythm": [
+          "92 BPM 前後、swing は控えめだが backbeat は behind",
+          "fill は 4 bar に 1 度、ghost note を多めに"
+        ],
+        "space": [
+          "ロングテール delay (200ms 程度) を flute に",
+          "drum は room reverb 控えめ、tight"
+        ],
+        "structure": [
+          "intro pad -> main loop -> bridge -> outro pad の 4 段",
+          "main loop は 16 bar、bridge で chord 1 段変える"
+        ],
+        "gesture": [
+          "PHRASE pad を弱く乗せて memory 感",
+          "ghost note 密度で energy を表現"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の lofi pill の memory-warm 寄り側 reference",
+        "buildLofi() で EP layer を追加するなら maj7/add9 voicing で",
+        "chill の soft-melody-piano recipe と相性が良い"
+      ]
     }
   ]
 }

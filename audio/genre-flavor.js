@@ -974,6 +974,50 @@
     };
   }
 
+  // Nujabes-style memory dots — sustained maj9/add9 voicings that occasionally
+  // peek through the existing jazz dust. Volume -24 keeps it under the base
+  // jazz chord (-19), so it reads as "気配のあるメモリ" rather than a second
+  // chord layer. Reference: references/apple-music-refs.json (Nujabes /
+  // Aruarian Dance, Feather) and references/hazama-fm-pill-refs.json.
+  function addNujabesMemoryDots(layer) {
+    if (!layer) return null;
+    const room = new Tone.Reverb({ decay: 2.4, wet: 0.28 }).connect(layer.gain);
+    const lp = new Tone.Filter({ frequency: 1500, type: "lowpass", Q: 0.5 }).connect(room);
+    const memory = new Tone.PolySynth(Tone.FMSynth, {
+      harmonicity: 2.0,
+      modulationIndex: 2.6,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.08, decay: 0.4, sustain: 0.55, release: 1.8 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 0.05, decay: 0.3, sustain: 0.25, release: 1.2 },
+      volume: -24
+    }).connect(lp);
+    memory.maxPolyphony = 5;
+    // jazz-hop staples: Fmaj9 / Am11 / Dmaj13 / Bb7sus / Cmaj7add / Gm9
+    const voicings = [
+      ["F3", "A3", "C4", "E4", "G4"],   // Fmaj9
+      ["A2", "G3", "C4", "E4", "B4"],   // Am11
+      ["D3", "F#3", "A3", "C4", "E4"],  // Dmaj9 (color shift)
+      ["Bb2", "F3", "A3", "Eb4"],       // Bb7sus
+      ["C3", "G3", "B3", "D4", "F4"],   // Cmaj7add
+      ["G2", "F3", "A3", "C4", "D4"]    // Gm9
+    ];
+    let phrase = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      // 4-bar phrase の最後の 2 拍に 30% で memory dot を入れる
+      if (Math.random() < 0.32) {
+        const voicing = voicings[phrase % voicings.length];
+        try {
+          memory.triggerAttackRelease(voicing, "1n", safeEventTime(time + 0.08), 0.16 + Math.random() * 0.04);
+        } catch (e) {}
+      }
+      phrase++;
+    }, "2m"));
+    layer.synths.push(memory, lp, room);
+    layer.source = `${layer.source || "lofi"}+nujabes-memory`;
+    return layer;
+  }
+
   // When drum-frames-lofi preset is present, render the lazy frame rhythm
   // PLUS the vinyl crackle bed for the dusty character.
   function buildLofiFromFrames(frames) {
@@ -996,7 +1040,7 @@
       if (prevDispose) prevDispose();
     };
     drums.source = "drum-frames+dusty-break-kit+vinyl-crackle";
-    return addSessionBreaks(addLofiJazzDust(drums), "lofi");
+    return addSessionBreaks(addNujabesMemoryDots(addLofiJazzDust(drums)), "lofi");
   }
 
   function buildLofi(frames) {
