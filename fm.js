@@ -20,14 +20,15 @@
   const GENRE_MIX_SWITCH_MS = 420;
   const GENRE_MIX_RETURN_MS = 920;
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
-  const TARGET_LEVEL = 100;            // engine OUTPUT max — limiter ceiling caps the peak
-  // v48: pulled back from 8 → 2 dB. The chain is: ...→ masterLimiter (ceiling)
-  // → Tone.Destination (+X dB) → speaker hardware (clips at 0 dBFS).
-  // With limiter -1.5 dB + dest +2 dB = -0.5 dB peak at speaker. Safe.
-  // Engine.js output bypasses our limiter so high boost was causing
-  // hardware clipping / audible distortion. Loudness recovered via
-  // masterMakeup gain bump in genre-flavor.js.
-  const DESTINATION_BOOST_DB = 2;
+  // v49: engine.js bypasses our master limiter, so its peaks go raw to
+  // Tone.Destination → hardware. Engine outputGainFromLevel(100) ≈ 2.32x
+  // (+7.3 dB), which on top of internal mix peaks clips the speaker.
+  // Pull engine output to 75 (+4.2 dB) gives ~3 dB safety. Loudness for
+  // ANY-pill mode drops slightly but no longer clips.
+  const TARGET_LEVEL = 75;
+  // v49: Destination boost = 0 dB. Tight chain: limiter ceiling -0.5 dB →
+  // dest 0 → speaker -0.5 dB peak = safe. Loudness comes from masterMakeup.
+  const DESTINATION_BOOST_DB = 0;
   const SLEEP_FADE_AFTER_MS = 90 * 60 * 1000;  // 90 min: start auto fade-to-sleep
   const SLEEP_FADE_DURATION_S = 30 * 60;       // 30 min: ramp output to quiet
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };

@@ -36,16 +36,17 @@
   // density (piano = 4–5 note chords vs ambient = 1-voice drone), so a
   // single WORKING_LEVEL across all genres makes some pills sound louder.
   // Tuned by ear so all GENRE pills land within ~2 dB of each other.
-  // v43 +0.04 more on top of v42 per user request "音量もっと欲しい".
-  // Combined with limiter relax this should still avoid clipping.
+  // v49 +0.04 to compensate for the lower TARGET_LEVEL (engine now 75 vs 100).
+  // Since genre-flavor goes through compressor + limiter, raising the input
+  // level safely just packs more RMS into the same ceiling.
   const LEVEL_BY_GENRE = {
-    any: 0.78,
-    ambient: 0.74,
-    techno: 0.82,
-    lofi: 0.80,
-    jazz: 0.84,
-    funk: 0.82,
-    piano: 0.62
+    any: 0.82,
+    ambient: 0.78,
+    techno: 0.86,
+    lofi: 0.84,
+    jazz: 0.88,
+    funk: 0.86,
+    piano: 0.66
   };
 
   function workingLevelFor(name) {
@@ -117,16 +118,17 @@
     // Master chain: gain → compressor → EQ3 polish → makeup → limiter → destination
     // EQ3 is the "Apple Music finishing" tilt: small low + air boost, slight
     // low-mid scoop to clear the chord layer's mid range.
-    // v48 gain staging fix: previous chain (limiter -0.8 + Destination +8)
-    // was clipping at hardware (+7.2 dB above 0 dBFS). Now: limiter has
-    // proper headroom (-1.5), more makeup to push RMS, smaller destination
-    // boost. Net loudness similar, no clipping.
+    // v49 gain staging: paired with DESTINATION_BOOST_DB=0 + TARGET_LEVEL=75
+    // in fm.js. Engine output clips no longer reach hardware, and our
+    // limiter ceiling -0.5 dB is the final stop before destination (no
+    // amplification after). All loudness comes from masterMakeup pushing
+    // signal into the limiter — RMS-led, peak-safe.
     masterCompressor = new Tone.Compressor({
-      threshold: -12,
-      ratio: 2.2,
-      attack: 0.012,
-      release: 0.22,
-      knee: 8
+      threshold: -14,        // more compression for higher RMS
+      ratio: 2.5,
+      attack: 0.010,
+      release: 0.20,
+      knee: 6
     });
     const masterEq = new Tone.EQ3({
       low: 1.2,
@@ -135,8 +137,8 @@
       lowFrequency: 200,
       highFrequency: 5000
     });
-    masterMakeup = new Tone.Gain(1.18);   // v48: 1.06 → 1.18 (+1.4 dB to compensate for dest reduction)
-    masterLimiter = new Tone.Limiter({ threshold: -1.5 }).toDestination();  // v48: -0.8 → -1.5 (headroom for dest +2)
+    masterMakeup = new Tone.Gain(1.30);  // v49: 1.18 → 1.30 (+1.0 dB more push, capped by tighter limiter)
+    masterLimiter = new Tone.Limiter({ threshold: -0.5 }).toDestination();  // v49: -1.5 → -0.5 (tight ceiling = final stop)
     master = new Tone.Gain(0).connect(masterCompressor);
     masterCompressor.connect(masterEq);
     masterEq.connect(masterMakeup);
@@ -1147,7 +1149,7 @@
       envelope: { attack: 0.018, decay: 0.34, sustain: 0.08, release: 0.7 },
       volume: -15
     }).connect(room);
-    piano.maxPolyphony = 8;
+    piano.maxPolyphony = 6;
     // Expanded voicing set with Bill Evans-style quartal/quintal stacks.
     // Per session_role: head/comp/section-A pick warm rooted voicings,
     // recap reaches for taller/wider voicings, break stays silent.
@@ -1851,33 +1853,23 @@
     thump.connect(thumpBp);
     thumpBp.connect(target);
 
-    // Finger chiff — brief pink noise around 1.8 kHz, 60% chance
-    const chiff = new Tone.NoiseSynth({
-      noise: { type: "pink" },
-      envelope: { attack: 0.001, decay: 0.022, sustain: 0, release: 0.018 },
-      volume: -34
-    });
-    const chiffBp = new Tone.Filter({ frequency: 1800, type: "bandpass", Q: 2.0 });
-    chiff.connect(chiffBp);
-    chiffBp.connect(target);
+    // v49: chiff noise removed (CPU optimization). Pitch dive + thump
+    // already give enough finger-attack character.
 
     function play(note, duration, time, velocity) {
       try {
-        // Pitch dive on attack (50 cents down, 50 ms recover)
+        // Pitch dive on attack (55 cents down, 50 ms recover)
         body.detune.cancelScheduledValues(time);
         body.detune.setValueAtTime(-55, time);
         body.detune.linearRampToValueAtTime(0, time + 0.05);
         body.triggerAttackRelease(note, duration, time, velocity);
         thump.triggerAttackRelease("32n", time, clamp(velocity * 0.7, 0.05, 0.9));
-        if (Math.random() < 0.6) {
-          chiff.triggerAttackRelease("32n", safeEventTime(time + 0.003), clamp(velocity * 0.55, 0.04, 0.7));
-        }
       } catch (e) {}
     }
 
     return {
       play,
-      voices: [body, lp, thump, thumpBp, chiff, chiffBp]
+      voices: [body, lp, thump, thumpBp]
     };
   }
 
@@ -2423,7 +2415,7 @@
       envelope: { attack: 0.06, decay: 0.9, sustain: 0.35, release: 1.6 },
       volume: -16
     }).connect(lp);
-    piano.maxPolyphony = 8;
+    piano.maxPolyphony = 6;
 
     const VOICINGS = [
       ["D3", "A3", "C4", "F4"],
@@ -2535,7 +2527,7 @@
       },
       volume: role === "bed" ? -6.5 : role === "memory" ? -10 : -11
     }).connect(lp);
-    piano.maxPolyphony = 8;
+    piano.maxPolyphony = 6;
 
     const voicings = normalizePianoVoicings(layer);
     const pattern = (Array.isArray(layer.pattern) && layer.pattern.length > 0)
@@ -2592,7 +2584,7 @@
       envelope: { attack: 0.012, decay: 0.36, sustain: 0.045, release: 0.68 },
       volume: -6.2
     }).connect(lp);
-    piano.maxPolyphony = 8;
+    piano.maxPolyphony = 6;
 
     let bar = 0;
     const id = Tone.Transport.scheduleRepeat((time) => {
