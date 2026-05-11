@@ -185,10 +185,12 @@ Shuffle audition sanity:
   selected genre rather than from the default `any` bed.
 - While playing, `window.HazamaFmShuffleAudition.state.enabled` is `true` and
   `timerActive` is `true`.
+- While playing, shuffle/manual/`any` genre changes should feel like a short
+  DJ crossfade: slight output dip, genre source switch, then a smooth return.
 - `window.HazamaFmShuffleAudition.step("check")` switches to another concrete
   genre and records the transition in
   `window.HazamaFmListeningTrace.snapshot().transitions` with a
-  `shuffle.check` reason.
+  `shuffle.check.djmix` reason.
 - Shuffle audition is only a listening-test accelerator. It should not change
   Music full mixer `AUTO MIX`, the genre source builders, or the hidden engine
   shim.
