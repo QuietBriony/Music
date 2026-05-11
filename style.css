@@ -2605,6 +2605,7 @@ body {
 }
 
 #ui-header,
+#system-overview,
 #control-panel {
   width: min(980px, calc(100vw - 24px));
   max-width: 980px;
@@ -2724,6 +2725,7 @@ body {
   }
 
   #ui-header,
+  #system-overview,
   #control-panel {
     width: 100%;
     max-width: 720px;
@@ -3081,8 +3083,57 @@ body {
   display: none;
 }
 
+#system-overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+#system-overview a {
+  display: grid;
+  gap: 2px;
+  min-height: 42px;
+  padding: 7px 9px;
+  border: 1px solid rgba(159, 179, 217, 0.18);
+  border-radius: 6px;
+  background: rgba(5, 14, 24, 0.54);
+  color: var(--text-sub);
+  text-decoration: none;
+}
+
+#system-overview strong {
+  color: var(--accent-glass);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+#system-overview span {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 880px) {
+  #system-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  #system-overview {
+    grid-template-columns: 1fr;
+  }
+
+  #system-overview a {
+    min-height: 34px;
+    grid-template-columns: 88px minmax(0, 1fr);
+    align-items: center;
+  }
+}
+
 @media (min-width: 881px) {
   #ui-header,
+  #system-overview,
   #control-panel {
     width: min(1040px, calc(100vw - 28px));
     max-width: 1040px;

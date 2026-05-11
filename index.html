@@ -6,7 +6,7 @@
     <title>Music Core Rig</title>
 
     <!-- Style -->
-    <link rel="stylesheet" href="style.css?v=pc-center-ui-1" />
+    <link rel="stylesheet" href="style.css?v=fm-23" />
 
     <!-- PWA — independent app from Hazama FM -->
     <link rel="manifest" href="manifest-mixer.webmanifest" />
@@ -57,6 +57,25 @@
             </div>
             <a id="hazama-fm-link" href="fm.html" aria-label="Open Hazama FM mode">📻 Hazama FM</a>
         </header>
+
+        <nav id="system-overview" aria-label="Music Stack overview">
+            <a href="docs/MUSIC-STACK-SYSTEM-MANUAL.md">
+                <strong>Manual</strong>
+                <span>全体像 / ボタン意味</span>
+            </a>
+            <a href="docs/music-stack-sync-manual.md">
+                <strong>SYNC</strong>
+                <span>音ではなくmetadata地図</span>
+            </a>
+            <a href="https://quietbriony.github.io/openclaw/" target="_blank" rel="noopener">
+                <strong>OpenClaw</strong>
+                <span>次の行き先を見る</span>
+            </a>
+            <a href="docs/USAGE-MUSIC-CORE-RIG.md">
+                <strong>Core Rig</strong>
+                <span>9 fader / AUTO / REC</span>
+            </a>
+        </nav>
 
         <!-- コントロールエリア -->
         <main id="control-panel">
@@ -303,7 +322,7 @@
                         <span id="recorder-tools">
                             <button type="button" id="btn_rec" class="recorder-button">REC</button>
                             <button type="button" id="btn_mic_follow" class="packet-button mic-button" title="マイク入力を録音せずローカルfeaturesだけ解析">MIC</button>
-                            <button type="button" id="btn_packet_json" class="packet-button" title="Musicの現在状態をmetadata-onlyで共有">SYNC</button>
+                            <button type="button" id="btn_packet_json" class="packet-button" title="今のMusic状態を音声なしのmetadata地図として共有">SYNC</button>
                             <a id="rec_download" class="recorder-link" hidden download>save</a>
                         </span>
                     </div>

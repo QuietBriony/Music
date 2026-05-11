@@ -34,7 +34,7 @@
   letter-spacing: 0.32em;
   color: var(--text-sub);
   text-transform: uppercase;
-  margin: 0 0 clamp(28px, 5vh, 48px);
+  margin: 0 0 14px;
   opacity: 0.78;
 }
 
@@ -317,6 +317,69 @@
 
 .fm-back:hover {
   opacity: 0.95;
+}
+
+#fm-system-map {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  width: min(92vw, 560px);
+  margin: 0 0 clamp(18px, 3vh, 30px);
+}
+
+#fm-system-map a {
+  display: grid;
+  gap: 2px;
+  min-height: 44px;
+  padding: 7px 9px;
+  border: 1px solid rgba(159, 179, 217, 0.22);
+  border-radius: 6px;
+  background: rgba(6, 15, 27, 0.42);
+  color: var(--text-sub);
+  text-align: left;
+  text-decoration: none;
+}
+
+#fm-system-map strong {
+  color: var(--accent-glass);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+#fm-system-map span {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.fm-sync-caption {
+  max-width: min(84vw, 420px);
+  color: rgba(159, 179, 217, 0.78);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+}
+
+#fm-review {
+  min-height: 70px;
+}
+
+@media (max-width: 640px), (max-height: 720px) {
+  #fm-shell {
+    justify-content: flex-start;
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+
+  #fm-system-map {
+    grid-template-columns: 1fr;
+    margin-bottom: 14px;
+  }
+
+  #fm-system-map a {
+    min-height: 34px;
+    grid-template-columns: 86px minmax(0, 1fr);
+    align-items: center;
+  }
 }
 
 /* Hidden engine shim must stay invisible no matter what */
