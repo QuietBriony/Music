@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-6" />
+<link rel="stylesheet" href="band-room.css?v=br-7" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-6" defer></script>
+<script src="band-room.js?v=br-7" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -52,19 +52,22 @@
     </section>
 
     <section id="br-mode" aria-label="Playback mode">
+      <h3>モード</h3>
       <label class="br-radio">
         <input type="radio" name="br-mode" value="stems" checked />
-        <span>原音 stems (Demucs 分離)</span>
+        <span>📻 原音 stems</span>
+        <em>本物のライブ録音を 4 分割再生</em>
       </label>
       <label class="br-radio">
         <input type="radio" name="br-mode" value="synth" />
-        <span>AI 再現 (drum-floor 等)</span>
+        <span>🎛 AI 再現</span>
+        <em>drum-floor + synth で打ち込み再現</em>
       </label>
       <span id="br-stems-status" aria-live="polite"></span>
     </section>
 
-    <section id="br-stems" aria-label="Original stems (Demucs separated)">
-      <h3>原音 stems</h3>
+    <section id="br-stems" aria-label="Original stems (Demucs separated)" data-scope="stems">
+      <h3>📻 原音 stems — Demucs 分離トラック (各 mute/vol)</h3>
       <label class="br-toggle">
         <input type="checkbox" id="br-toggle-stem-vocals" checked />
         <span>vocals</span>
@@ -83,8 +86,24 @@
       </label>
     </section>
 
-    <section id="br-controls" aria-label="Synth layer toggles">
-      <h3>AI 再現 layers</h3>
+    <section id="br-vocal-fx" aria-label="Vocal FX (chorus/delay/reverb)" data-scope="stems">
+      <h3>🎤 vocal FX — 原音ボーカルだけに掛かる (ごまかし系)</h3>
+      <label>
+        <span>chorus</span>
+        <input type="range" id="br-vfx-chorus" min="0" max="100" value="30" />
+      </label>
+      <label>
+        <span>echo</span>
+        <input type="range" id="br-vfx-delay" min="0" max="100" value="18" />
+      </label>
+      <label>
+        <span>reverb</span>
+        <input type="range" id="br-vfx-reverb" min="0" max="100" value="28" />
+      </label>
+    </section>
+
+    <section id="br-controls" aria-label="Synth layer toggles" data-scope="synth">
+      <h3>🎛 AI 再現 layers — 打ち込み合成 (各 ON/OFF)</h3>
       <label class="br-toggle">
         <input type="checkbox" id="br-toggle-drums" />
         <span>drum-floor</span>
@@ -123,24 +142,28 @@
       </label>
     </section>
 
-    <section id="br-volume" aria-label="Volume sliders">
-      <h3>volumes</h3>
+    <section id="br-volume-stems" aria-label="Stem volumes" data-scope="stems">
+      <h3>📻 原音 stem volumes</h3>
       <label>
-        <span>v-stem</span>
+        <span>vocals</span>
         <input type="range" id="br-vol-stem-vocals" min="0" max="100" value="85" />
       </label>
       <label>
-        <span>d-stem</span>
+        <span>drums</span>
         <input type="range" id="br-vol-stem-drums" min="0" max="100" value="85" />
       </label>
       <label>
-        <span>b-stem</span>
+        <span>bass</span>
         <input type="range" id="br-vol-stem-bass" min="0" max="100" value="85" />
       </label>
       <label>
-        <span>o-stem</span>
+        <span>other</span>
         <input type="range" id="br-vol-stem-other" min="0" max="100" value="85" />
       </label>
+    </section>
+
+    <section id="br-volume" aria-label="Synth volume sliders" data-scope="synth">
+      <h3>🎛 AI 再現 volumes</h3>
       <label>
         <span>drums</span>
         <input type="range" id="br-vol-drums" min="0" max="100" value="75" />

@@ -65,6 +65,14 @@
   let stemPlayers = { vocals: null, drums: null, bass: null, other: null };
   let currentMode = "stems";  // "stems" | "synth"
 
+  // Vocal FX chain (applied to vocal stem only to disguise / polish)
+  let vocalChorus = null;
+  let vocalDelay = null;
+  let vocalDelayWet = null;
+  let vocalReverb = null;
+  let vocalReverbWet = null;
+  let vocalDryGain = null;
+
   // ---- Master setup -------------------------------------------
 
   function ensureMaster() {
@@ -100,10 +108,36 @@
     clickBus = new Tone.Gain(0.0).connect(masterGain);
 
     // Original-stem buses (Demucs outputs go through these → master remaster chain)
-    stemBus.vocals = new Tone.Gain(0.85).connect(masterGain);
     stemBus.drums  = new Tone.Gain(0.85).connect(masterGain);
     stemBus.bass   = new Tone.Gain(0.85).connect(masterGain);
     stemBus.other  = new Tone.Gain(0.85).connect(masterGain);
+
+    // Vocal stem has its own FX chain — disguise / polish the raw vocal
+    // before it reaches the master remaster.
+    //
+    // Chain: Tone.Player → [dry] + [chorus → delay → reverb (wet)] → vocalBus → masterGain
+    vocalChorus = new Tone.Chorus({ frequency: 1.4, delayTime: 4.0, depth: 0.42, wet: 0.30 }).start();
+    vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.32, wet: 1 });
+    vocalDelayWet = new Tone.Gain(0.18);  // delay send level
+    vocalReverb = new Tone.Reverb({ decay: 3.2, preDelay: 0.04, wet: 1 });
+    vocalReverbWet = new Tone.Gain(0.28);  // reverb send level (stronger than master's)
+    vocalDryGain = new Tone.Gain(0.78);
+
+    stemBus.vocals = new Tone.Gain(0.85);  // output of vocal FX chain to master
+
+    // Wire: vocalChorus is input. Chorus feeds three paths in parallel.
+    // dry → vocalDryGain → stemBus.vocals
+    // wet1 (delay) → vocalDelay → vocalDelayWet → stemBus.vocals
+    // wet2 (reverb) → vocalReverb → vocalReverbWet → stemBus.vocals
+    vocalChorus.connect(vocalDryGain);
+    vocalChorus.connect(vocalDelay);
+    vocalChorus.connect(vocalReverb);
+    vocalDelay.connect(vocalDelayWet);
+    vocalReverb.connect(vocalReverbWet);
+    vocalDryGain.connect(stemBus.vocals);
+    vocalDelayWet.connect(stemBus.vocals);
+    vocalReverbWet.connect(stemBus.vocals);
+    stemBus.vocals.connect(masterGain);
     return masterGain;
   }
 
@@ -303,7 +337,10 @@
       try {
         const head = await fetch(url, { method: "HEAD" });
         if (!head.ok) return null;
-        const player = new Tone.Player({ url, autostart: false, fadeIn: 0.005, fadeOut: 0.02 }).connect(stemBus[stem]);
+        // Vocals go through FX chain (chorus → split to delay + reverb wet + dry)
+        // Other stems go directly to their bus.
+        const target = (stem === "vocals" && vocalChorus) ? vocalChorus : stemBus[stem];
+        const player = new Tone.Player({ url, autostart: false, fadeIn: 0.005, fadeOut: 0.02 }).connect(target);
         await Tone.loaded();
         return { stem, player };
       } catch (e) {
@@ -942,6 +979,29 @@
         }
       });
     });
+
+    // Vocal FX sliders (chorus / delay / reverb — vocal stem only)
+    const vfxChorus = $("br-vfx-chorus");
+    if (vfxChorus) {
+      vfxChorus.addEventListener("input", () => {
+        ensureMaster();
+        if (vocalChorus) try { vocalChorus.wet.rampTo(Number(vfxChorus.value) / 100, 0.10); } catch (e) {}
+      });
+    }
+    const vfxDelay = $("br-vfx-delay");
+    if (vfxDelay) {
+      vfxDelay.addEventListener("input", () => {
+        ensureMaster();
+        if (vocalDelayWet) try { vocalDelayWet.gain.rampTo(Number(vfxDelay.value) / 100, 0.10); } catch (e) {}
+      });
+    }
+    const vfxReverb = $("br-vfx-reverb");
+    if (vfxReverb) {
+      vfxReverb.addEventListener("input", () => {
+        ensureMaster();
+        if (vocalReverbWet) try { vocalReverbWet.gain.rampTo(Number(vfxReverb.value) / 100, 0.10); } catch (e) {}
+      });
+    }
 
     // Space processing sliders (reverb amount, stereo width)
     const reverbEl = $("br-space-reverb");
