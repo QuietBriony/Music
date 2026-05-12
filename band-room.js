@@ -41,11 +41,13 @@
   let masterLimiter = null;
   let drumBus = null;
   let bassBus = null;
+  let guitarBus = null;
   let chordBus = null;
   let clickBus = null;
 
   let drumKit = null;        // { kick, snare, hat, ghost, fill, crash }
   let synthBass = null;
+  let guitarSynth = null;
   let chordSynth = null;
   let clickSynth = null;
 
@@ -63,6 +65,7 @@
 
     drumBus = new Tone.Gain(0.75).connect(masterGain);
     bassBus = new Tone.Gain(0.65).connect(masterGain);
+    guitarBus = new Tone.Gain(0.70).connect(masterGain);
     chordBus = new Tone.Gain(0.55).connect(masterGain);
     clickBus = new Tone.Gain(0.0).connect(masterGain);  // off by default
     return masterGain;
@@ -217,6 +220,39 @@
       volume: -10
     }).connect(target);
     return bass;
+  }
+
+  // ---- Distorted guitar (UNRIPE hardcore-postpunk drive) ------
+  // Power chord (root + 5th + octave), saw + distortion + LP shimmer.
+  // Section-aware picking: silent intro / palm-mute 8th verse / open
+  // prechorus / 16th chorus / sparse bridge / hit outro.
+  function makeGuitar(target) {
+    const dist = new Tone.Distortion({ distortion: 0.55, wet: 0.85, oversample: "2x" });
+    const lp = new Tone.Filter({ frequency: 4200, type: "lowpass", Q: 0.6 });
+    const verb = new Tone.Reverb({ decay: 1.0, wet: 0.14 });
+    const guitar = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "sawtooth" },
+      envelope: { attack: 0.003, decay: 0.10, sustain: 0.55, release: 0.16 },
+      volume: -12
+    });
+    guitar.maxPolyphony = 6;
+    guitar.connect(dist);
+    dist.connect(lp);
+    lp.connect(verb);
+    verb.connect(target);
+    return guitar;
+  }
+
+  function powerChordNotes(chord, octave = 3) {
+    // Power chord = root + 5th + root octave up. Major/minor agnostic.
+    const m = chord.match(/^([A-G][b#]?)/);
+    if (!m) return [];
+    const root = m[1];
+    const NOTE_SEMI = { C: 0, "C#": 1, Db: 1, D: 2, "D#": 3, Eb: 3, E: 4, F: 5, "F#": 6, Gb: 6, G: 7, "G#": 8, Ab: 8, A: 9, "A#": 10, Bb: 10, B: 11 };
+    const rootSemi = NOTE_SEMI[root];
+    if (rootSemi == null) return [];
+    const base = rootSemi + octave * 12;
+    return [semiToNote(base), semiToNote(base + 7), semiToNote(base + 12)];
   }
 
   // ---- Chord synth ---------------------------------------------
@@ -457,6 +493,62 @@
         }
       }
 
+      // Guitar — section-aware power-chord picking (UNRIPE drive)
+      // verse: palm-mute 8th low velocity / prechorus: open 8th / chorus:
+      // 16th furious / bridge: sparse stab / outro: 1 hit / intro: silent
+      if ($("br-toggle-guitar").checked && guitarSynth && chord && frame) {
+        const sectionName = (sec && sec.section) || "";
+        const sessionRole = frame.session_role || "";
+        let pattern = null;       // array of { sub, vel } where sub is 0..15 (16th-grid position in bar)
+        let octave = 3;
+        let dur = "16n";
+        if (sessionRole === "intro") {
+          pattern = null;
+        } else if (sessionRole === "outro") {
+          pattern = [{ sub: 0, vel: 0.85 }];
+          dur = "1n";
+        } else if (sessionRole === "break") {
+          // bridge — sparse, beat 0 + 2 stabs only, low velocity
+          pattern = [{ sub: 0, vel: 0.42 }, { sub: 8, vel: 0.40 }];
+          dur = "4n";
+        } else if (sessionRole === "verse") {
+          // palm-mute 8th: 8 hits per bar at 0,2,4,...,14, velocity low
+          pattern = [];
+          for (let i = 0; i < 8; i++) pattern.push({ sub: i * 2, vel: 0.40 + (i % 2 === 0 ? 0.06 : 0) });
+          dur = "8n";
+        } else if (sessionRole === "comp") {
+          // prechorus_build: 8th opening up
+          pattern = [];
+          for (let i = 0; i < 8; i++) pattern.push({ sub: i * 2, vel: 0.55 + (i % 2 === 0 ? 0.08 : 0.02) });
+          dur = "8n";
+        } else if (sessionRole === "recap") {
+          // chorus: 16th furious power-chord drive
+          pattern = [];
+          for (let i = 0; i < 16; i++) {
+            const accent = (i % 4 === 0);
+            pattern.push({ sub: i, vel: accent ? 0.78 : 0.58 });
+          }
+          dur = "16n";
+        } else {
+          // Fallback: 8th picking
+          pattern = [];
+          for (let i = 0; i < 8; i++) pattern.push({ sub: i * 2, vel: 0.48 });
+          dur = "8n";
+        }
+        if (pattern && pattern.length) {
+          try {
+            const notes = powerChordNotes(chord, octave);
+            if (notes.length) {
+              const sub16 = subTime;
+              pattern.forEach((step) => {
+                const t = time + step.sub * sub16;
+                guitarSynth.triggerAttackRelease(notes, dur, t, step.vel);
+              });
+            }
+          } catch (e) {}
+        }
+      }
+
       // Chord guide (one chord per bar's downbeat)
       if ($("br-toggle-chords").checked && chordSynth && chord) {
         try {
@@ -497,6 +589,7 @@
     ensureMaster();
     if (!drumKit) drumKit = makeDrumKit(drumBus);
     if (!synthBass) synthBass = makeSynthBass(bassBus);
+    if (!guitarSynth) guitarSynth = makeGuitar(guitarBus);
     if (!chordSynth) chordSynth = makeChordSynth(chordBus);
     if (!clickSynth) clickSynth = makeClick(clickBus);
 
@@ -569,13 +662,13 @@
       if (wasPlaying) await startPlayback();
     });
 
-    const volMap = { "br-vol-drums": "drumBus", "br-vol-bass": "bassBus", "br-vol-chords": "chordBus", "br-vol-click": "clickBus" };
+    const volMap = { "br-vol-drums": "drumBus", "br-vol-bass": "bassBus", "br-vol-guitar": "guitarBus", "br-vol-chords": "chordBus", "br-vol-click": "clickBus" };
     Object.entries(volMap).forEach(([id, busName]) => {
       const el = $(id);
       if (!el) return;
       el.addEventListener("input", () => {
         ensureMaster();
-        const bus = { drumBus, bassBus, chordBus, clickBus }[busName];
+        const bus = { drumBus, bassBus, guitarBus, chordBus, clickBus }[busName];
         if (bus) {
           try { bus.gain.rampTo(Number(el.value) / 100, 0.08); } catch (e) {}
         }
