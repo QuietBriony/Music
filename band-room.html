@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-3" />
+<link rel="stylesheet" href="band-room.css?v=br-4" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-3" defer></script>
+<script src="band-room.js?v=br-4" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -53,9 +53,42 @@
       </div>
     </section>
 
-    <section id="br-controls" aria-label="Layer toggles">
+    <section id="br-mode" aria-label="Playback mode">
+      <label class="br-radio">
+        <input type="radio" name="br-mode" value="stems" checked />
+        <span>原音 stems (Demucs 分離)</span>
+      </label>
+      <label class="br-radio">
+        <input type="radio" name="br-mode" value="synth" />
+        <span>AI 再現 (drum-floor 等)</span>
+      </label>
+      <span id="br-stems-status" aria-live="polite"></span>
+    </section>
+
+    <section id="br-stems" aria-label="Original stems (Demucs separated)">
+      <h3>原音 stems</h3>
       <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-drums" checked />
+        <input type="checkbox" id="br-toggle-stem-vocals" checked />
+        <span>vocals</span>
+      </label>
+      <label class="br-toggle">
+        <input type="checkbox" id="br-toggle-stem-drums" checked />
+        <span>drums</span>
+      </label>
+      <label class="br-toggle">
+        <input type="checkbox" id="br-toggle-stem-bass" checked />
+        <span>bass</span>
+      </label>
+      <label class="br-toggle">
+        <input type="checkbox" id="br-toggle-stem-other" checked />
+        <span>other (gtr/keys)</span>
+      </label>
+    </section>
+
+    <section id="br-controls" aria-label="Synth layer toggles">
+      <h3>AI 再現 layers</h3>
+      <label class="br-toggle">
+        <input type="checkbox" id="br-toggle-drums" />
         <span>drum-floor</span>
       </label>
       <label class="br-toggle">
@@ -63,11 +96,11 @@
         <span>click</span>
       </label>
       <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-bass" checked />
+        <input type="checkbox" id="br-toggle-bass" />
         <span>bass (synth)</span>
       </label>
       <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-guitar" checked />
+        <input type="checkbox" id="br-toggle-guitar" />
         <span>guitar (distorted)</span>
       </label>
       <label class="br-toggle">
@@ -81,6 +114,23 @@
     </section>
 
     <section id="br-volume" aria-label="Volume sliders">
+      <h3>volumes</h3>
+      <label>
+        <span>v-stem</span>
+        <input type="range" id="br-vol-stem-vocals" min="0" max="100" value="85" />
+      </label>
+      <label>
+        <span>d-stem</span>
+        <input type="range" id="br-vol-stem-drums" min="0" max="100" value="85" />
+      </label>
+      <label>
+        <span>b-stem</span>
+        <input type="range" id="br-vol-stem-bass" min="0" max="100" value="85" />
+      </label>
+      <label>
+        <span>o-stem</span>
+        <input type="range" id="br-vol-stem-other" min="0" max="100" value="85" />
+      </label>
       <label>
         <span>drums</span>
         <input type="range" id="br-vol-drums" min="0" max="100" value="75" />

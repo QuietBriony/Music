@@ -190,16 +190,65 @@ html, body {
   font-variant-numeric: tabular-nums;
 }
 
-#br-controls {
+#br-mode {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
+  align-items: center;
   justify-content: center;
-  padding: 12px;
+  padding: 12px 16px;
   border: 1px solid var(--panel-border);
   border-radius: 12px;
   background: var(--panel);
 }
+
+.br-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-sub);
+  letter-spacing: 0.04em;
+}
+
+.br-radio input[type="radio"] {
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+#br-stems-status {
+  font-size: 10px;
+  color: var(--text-sub);
+  opacity: 0.65;
+  flex-basis: 100%;
+  text-align: center;
+}
+
+#br-stems, #br-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  padding: 12px 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+#br-stems h3, #br-controls h3, #br-volume h3 {
+  flex-basis: 100%;
+  margin: 0 0 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.55;
+  font-weight: 500;
+}
+
+body[data-mode="synth"] #br-stems { opacity: 0.35; pointer-events: none; }
+body[data-mode="stems"] #br-controls { opacity: 0.6; }
+body[data-mode="stems"] #br-controls h3::after { content: " (overlay)"; opacity: 0.6; }
 
 .br-toggle {
   display: inline-flex;

@@ -46,12 +46,18 @@
   let chordBus = null;
   let clickBus = null;
 
-  let drumKit = null;        // { kick, snare, hat, ghost, fill, crash }
+  // Synth (AI 再現) layers
+  let drumKit = null;
   let synthBass = null;
   let guitarSynth = null;
   let voiceSynth = null;
   let chordSynth = null;
   let clickSynth = null;
+
+  // Original stem buses + Tone.Player instances (Demucs separated)
+  let stemBus = { vocals: null, drums: null, bass: null, other: null };
+  let stemPlayers = { vocals: null, drums: null, bass: null, other: null };
+  let currentMode = "stems";  // "stems" | "synth"
 
   // ---- Master setup -------------------------------------------
 
@@ -70,7 +76,13 @@
     guitarBus = new Tone.Gain(0.70).connect(masterGain);
     voiceBus = new Tone.Gain(0.40).connect(masterGain);
     chordBus = new Tone.Gain(0.55).connect(masterGain);
-    clickBus = new Tone.Gain(0.0).connect(masterGain);  // off by default
+    clickBus = new Tone.Gain(0.0).connect(masterGain);
+
+    // Original-stem buses (Demucs outputs go through these → master remaster chain)
+    stemBus.vocals = new Tone.Gain(0.85).connect(masterGain);
+    stemBus.drums  = new Tone.Gain(0.85).connect(masterGain);
+    stemBus.bass   = new Tone.Gain(0.85).connect(masterGain);
+    stemBus.other  = new Tone.Gain(0.85).connect(masterGain);
     return masterGain;
   }
 
@@ -223,6 +235,86 @@
       volume: -10
     }).connect(target);
     return bass;
+  }
+
+  // ---- Original-stem players (Demucs-separated playback) ------
+  // Loads 4 mp3 stems (vocals/drums/bass/other) for the current song.
+  // Each plays via Tone.Player → individual stem bus → masterGain
+  // (compressor + EQ3 + limiter applied = built-in remaster).
+  //
+  // All 4 start in sync via shared start time; section state machine
+  // keeps running in parallel for UI display (chord, lyric, section).
+
+  function setStemsStatus(text) {
+    const el = $("br-stems-status");
+    if (el) el.textContent = text || "";
+  }
+
+  function disposeStemPlayers() {
+    Object.keys(stemPlayers).forEach((k) => {
+      const p = stemPlayers[k];
+      if (p) {
+        try { p.stop(); } catch (e) {}
+        try { p.dispose(); } catch (e) {}
+      }
+      stemPlayers[k] = null;
+    });
+  }
+
+  async function loadStemsForSong(songId) {
+    if (!stemBus.vocals) ensureMaster();
+    disposeStemPlayers();
+    setStemsStatus("loading stems…");
+    const stems = ["vocals", "drums", "bass", "other"];
+    const promises = stems.map(async (stem) => {
+      const url = `presets/tabasco-stems/${songId}/${stem}.mp3`;
+      try {
+        const head = await fetch(url, { method: "HEAD" });
+        if (!head.ok) return null;
+        const player = new Tone.Player({ url, autostart: false, fadeIn: 0.005, fadeOut: 0.02 }).connect(stemBus[stem]);
+        await Tone.loaded();
+        return { stem, player };
+      } catch (e) {
+        return null;
+      }
+    });
+    const results = await Promise.all(promises);
+    let loaded = 0;
+    results.forEach((r) => {
+      if (r) { stemPlayers[r.stem] = r.player; loaded++; }
+    });
+    if (loaded === 0) {
+      setStemsStatus("(stems not available — switch to AI 再現 mode)");
+      return false;
+    }
+    setStemsStatus(`stems loaded (${loaded}/4)`);
+    return true;
+  }
+
+  function startStemPlayback() {
+    if (!stemPlayers.vocals && !stemPlayers.drums && !stemPlayers.bass && !stemPlayers.other) return false;
+    // Sync start: schedule all at the same Transport position
+    const startAt = "+0.15";  // small delay so all loaded buffers can fire together
+    Object.entries(stemPlayers).forEach(([stem, player]) => {
+      if (!player) return;
+      try {
+        const enabled = $("br-toggle-stem-" + stem)?.checked !== false;
+        const muteVal = !enabled;
+        player.mute = muteVal;
+        player.start(startAt);
+      } catch (e) {
+        console.warn("[Band Room] stem start failed:", stem, e);
+      }
+    });
+    return true;
+  }
+
+  function stopStemPlayback() {
+    Object.values(stemPlayers).forEach((player) => {
+      if (player) {
+        try { player.stop(); } catch (e) {}
+      }
+    });
   }
 
   // ---- Distorted guitar (UNRIPE hardcore-postpunk drive) ------
@@ -690,6 +782,9 @@
     if (!chordSynth) chordSynth = makeChordSynth(chordBus);
     if (!clickSynth) clickSynth = makeClick(clickBus);
 
+    // Load stems (if available for this song)
+    await loadStemsForSong(state.currentSongId);
+
     // Reset state
     state.barCount = 0;
     state.sectionIdx = 0;
@@ -703,6 +798,7 @@
 
     scheduleBar();
     Tone.Transport.start();
+    if (currentMode === "stems") startStemPlayback();
 
     state.started = true;
     state.starting = false;
@@ -716,6 +812,7 @@
     try { Tone.Transport.stop(); } catch (e) {}
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
     state.scheduledIds = [];
+    stopStemPlayback();
     state.started = false;
     setButtonState("idle");
   }
@@ -771,6 +868,41 @@
         }
       });
     });
+
+    // Stem volume sliders
+    ["vocals", "drums", "bass", "other"].forEach((stem) => {
+      const el = $("br-vol-stem-" + stem);
+      if (!el) return;
+      el.addEventListener("input", () => {
+        ensureMaster();
+        const bus = stemBus[stem];
+        if (bus) {
+          try { bus.gain.rampTo(Number(el.value) / 100, 0.08); } catch (e) {}
+        }
+      });
+    });
+
+    // Stem toggles (per-stem mute)
+    ["vocals", "drums", "bass", "other"].forEach((stem) => {
+      const el = $("br-toggle-stem-" + stem);
+      if (!el) return;
+      el.addEventListener("change", () => {
+        const player = stemPlayers[stem];
+        if (player) {
+          player.mute = !el.checked;
+        }
+      });
+    });
+
+    // Mode radio (stems vs synth)
+    document.querySelectorAll("input[name=br-mode]").forEach((radio) => {
+      radio.addEventListener("change", () => {
+        if (!radio.checked) return;
+        currentMode = radio.value;
+        if (document.body) document.body.dataset.mode = currentMode;
+      });
+    });
+    if (document.body) document.body.dataset.mode = currentMode;
   }
 
   // ---- Boot ---------------------------------------------------
