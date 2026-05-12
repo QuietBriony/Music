@@ -140,8 +140,7 @@ and no blind code copy.
 
 ## Near-Term Recommendation
 
-The next implementation move after this docs/schema pass should be one small
-Music runtime or metadata PR, not a multi-repo migration. The best candidate is
-`feat: export local music session packet`, because the stack cannot coordinate
-organically until Music can emit a stable packet that the other repos can read
-without copying Music runtime.
+The immediate metadata move is to expose `window.MusicOrchestraPacket` as a
+small wrapper around `window.MusicSessionPacket`. That keeps Music as the
+conductor while giving OpenClaw and sister repos a compact, metadata-only
+mission/routing packet to read without copying Music runtime.

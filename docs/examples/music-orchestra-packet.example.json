@@ -1,0 +1,100 @@
+{
+  "version": "music-orchestra-packet.v1",
+  "source_repo": "Music",
+  "session_id": "example-session-quiet-memory-001",
+  "created_at": "2026-05-12T11:40:00Z",
+  "music_state": {
+    "session_packet_version": 1,
+    "mode": "reference_gradient",
+    "ucm_state": {
+      "energy": 28,
+      "wave": 64,
+      "mind": 44,
+      "creation": 58,
+      "void": 34,
+      "circle": 72,
+      "body": 30,
+      "resource": 22,
+      "observer": 76
+    },
+    "music_intent": {
+      "timbre": ["soft pluck memory", "low brightness", "no sample import"],
+      "rhythm": ["low-density pulse", "manual start only"],
+      "space": ["small room", "soft tail", "no harsh top-end"],
+      "structure": ["long-form drift", "decrescendo-friendly"],
+      "gesture": ["listen first", "human-gated routing"],
+      "safety": ["metadata-only", "no recording", "no auto-arm"]
+    },
+    "performance_summary": {
+      "active_pad": null,
+      "recent_pads": [],
+      "automix_enabled": true,
+      "radio_program": "quietPiano",
+      "hazama_fm_genre": "piano"
+    }
+  },
+  "reference_gradient": {
+    "haze": 0.45,
+    "memory": 0.78,
+    "micro": 0.36,
+    "ghost": 0.52,
+    "chrome": 0.18,
+    "organic": 0.67
+  },
+  "mic_follow": {
+    "enabled": false,
+    "status": "off",
+    "metadata_only": true,
+    "stores_audio": false
+  },
+  "output": {
+    "output_level": 54,
+    "recorder_duration": 0,
+    "review_boost": 1
+  },
+  "routing": {
+    "drum_floor": {
+      "enabled": true,
+      "intent": "review groove density, pocket, articulation, and phrase hints",
+      "packet_type": "groove-request-packet",
+      "next_action": "manual preview only",
+      "human_review_required": true
+    },
+    "namima": {
+      "enabled": true,
+      "intent": "review safe ambient mood, ripple density, and public-friendly air",
+      "packet_type": "mood-request-packet",
+      "next_action": "manual Tap to start only",
+      "human_review_required": true
+    },
+    "chill": {
+      "enabled": true,
+      "intent": "FM piano was saved; compare Music foreground piano with chill quiet trio.",
+      "packet_type": "harvest-sidecar",
+      "next_action": "open chill manually and listen before any runtime promotion",
+      "human_review_required": true
+    },
+    "openclaw": {
+      "enabled": true,
+      "intent": "track mission, review, promotion status, and rollback notes",
+      "packet_type": "promotion-request",
+      "next_action": "create a human-reviewed mission card; do not auto-merge",
+      "human_review_required": true
+    }
+  },
+  "safety": {
+    "metadata_only": true,
+    "no_audio": true,
+    "no_samples": true,
+    "no_lyrics": true,
+    "no_workflows": true,
+    "human_review_required": true,
+    "notes": "Orchestra packet is a routing wrapper around MusicSessionPacket. It does not contain audio, samples, lyrics, raw mic buffers, or automatic promotion authority."
+  },
+  "promotion": {
+    "status": "draft",
+    "target_repo": "chill",
+    "reviewer_note": "Human listening required before deciding whether quiet piano belongs in Music or chill.",
+    "rollback": "Ignore this packet or create a new SYNC packet; no runtime state is automatically promoted."
+  }
+}

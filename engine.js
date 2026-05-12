@@ -5409,11 +5409,123 @@ function buildMusicSessionPacket(options = {}) {
 
 const MUSIC_STACK_PACKET_STORAGE_KEY = "qb:music-stack:latest-packet:v1";
 const MUSIC_STACK_CHANNEL_NAME = "qb:music-stack:v1";
+const MUSIC_ORCHESTRA_PACKET_STORAGE_KEY = "qb:music-stack:latest-orchestra-packet:v1";
+const MUSIC_ORCHESTRA_CHANNEL_NAME = "qb:music-stack:orchestra:v1";
 
 function makeMusicStackPacketPayload(packet) {
   return {
     schema: "qb.music-stack.packet-sync.v1",
     type: "music-session-packet",
+    source: "Music",
+    sent_at: new Date().toISOString(),
+    packet
+  };
+}
+
+function routeTargetFromSessionPacket(name, sessionPacket) {
+  const routing = sessionPacket?.routing || {};
+  const route = routing[name] || {};
+  const openclawAction = routing.openclaw?.next_action || {};
+  const targetDestination = openclawAction.destination || "";
+  const selected = targetDestination === name;
+  const packetType = {
+    drum_floor: "groove-request-packet",
+    namima: "mood-request-packet",
+    chill: "harvest-sidecar",
+    openclaw: "promotion-request"
+  }[name] || "review-result";
+  const fallbackIntent = {
+    drum_floor: "review groove density, pocket, articulation, and phrase hints",
+    namima: "review safe ambient mood, ripple density, and public-friendly air",
+    chill: "review quiet piano, trio pacing, room, and light-surface intent",
+    openclaw: "track mission, review, promotion status, and rollback notes"
+  }[name] || "review metadata";
+  const routeReason = route.review_reason || openclawAction.reason || fallbackIntent;
+  const nextAction = selected
+    ? (openclawAction.action || routeReason)
+    : routeReason;
+
+  return {
+    enabled: name === "openclaw" ? true : !!route.enabled,
+    intent: routeReason,
+    packet_type: packetType,
+    next_action: nextAction,
+    human_review_required: true
+  };
+}
+
+function promotionTargetFromDestination(destination) {
+  const map = {
+    music: "Music",
+    drum_floor: "drum-floor",
+    namima: "namima",
+    chill: "chill",
+    openclaw: "OpenClaw"
+  };
+  return map[destination] || "OpenClaw";
+}
+
+function buildMusicOrchestraPacket(options = {}) {
+  const sessionPacket = options.sessionPacket || buildMusicSessionPacket(options);
+  const nextAction = sessionPacket.routing?.openclaw?.next_action || {};
+  const allowedTargets = ["Music", "drum-floor", "namima", "chill", "OpenClaw"];
+  const targetRepo = allowedTargets.includes(nextAction.target_repo)
+    ? nextAction.target_repo
+    : promotionTargetFromDestination(nextAction.destination);
+  return {
+    version: "music-orchestra-packet.v1",
+    source_repo: "Music",
+    session_id: sessionPacket.session_id,
+    created_at: sessionPacket.created_at,
+    music_state: {
+      session_packet_version: sessionPacket.version,
+      mode: sessionPacket.mode,
+      ucm_state: sessionPacket.ucm_state,
+      music_intent: sessionPacket.music_intent,
+      performance_summary: {
+        active_pad: sessionPacket.performance_state?.active_pad || null,
+        recent_pads: sessionPacket.performance_state?.recent_pads || [],
+        automix_enabled: !!sessionPacket.performance_state?.automix_enabled,
+        radio_program: sessionPacket.performance_state?.radio_brain?.program || null,
+        hazama_fm_genre: sessionPacket.performance_state?.hazama_fm?.genre || null
+      }
+    },
+    reference_gradient: sessionPacket.reference_gradient?.weights || {},
+    mic_follow: sessionPacket.performance_state?.mic_follow || {
+      enabled: false,
+      status: "unavailable",
+      metadata_only: true,
+      stores_audio: false
+    },
+    output: sessionPacket.output_state || {},
+    routing: {
+      drum_floor: routeTargetFromSessionPacket("drum_floor", sessionPacket),
+      namima: routeTargetFromSessionPacket("namima", sessionPacket),
+      chill: routeTargetFromSessionPacket("chill", sessionPacket),
+      openclaw: routeTargetFromSessionPacket("openclaw", sessionPacket)
+    },
+    safety: {
+      metadata_only: true,
+      no_audio: true,
+      no_samples: true,
+      no_lyrics: true,
+      no_workflows: true,
+      human_review_required: true,
+      notes: "Orchestra packet is a routing/review wrapper around MusicSessionPacket; it does not contain audio, samples, lyrics, raw mic buffers, or automatic promotion authority."
+    },
+    promotion: {
+      status: "draft",
+      target_repo: targetRepo,
+      reviewer_note: nextAction.reason || "Human listening/review required before repo-specific promotion.",
+      rollback: "Ignore this packet or create a new SYNC packet; no runtime state is automatically promoted."
+    }
+  };
+}
+
+function makeMusicOrchestraPacketPayload(packet) {
+  return {
+    schema: "qb.music-stack.orchestra-packet-sync.v1",
+    type: "music-orchestra-packet",
     source: "Music",
     sent_at: new Date().toISOString(),
     packet
@@ -5442,6 +5554,32 @@ function publishMusicStackPacketPayload(payload) {
   }
   try {
     window.dispatchEvent(new CustomEvent("music-stack-packet-sync", { detail: payload }));
+  } catch (error) {}
+  return { stored, broadcast };
+}
+
+function publishMusicOrchestraPacketPayload(payload) {
+  if (typeof window === "undefined" || !payload?.packet) return { stored: false, broadcast: false };
+  let stored = false;
+  let broadcast = false;
+  try {
+    window.localStorage?.setItem(MUSIC_ORCHESTRA_PACKET_STORAGE_KEY, JSON.stringify(payload));
+    stored = true;
+  } catch (error) {
+    console.warn("[Music] orchestra packet localStorage failed:", error);
+  }
+  try {
+    if (typeof window.BroadcastChannel === "function") {
+      const channel = new window.BroadcastChannel(MUSIC_ORCHESTRA_CHANNEL_NAME);
+      channel.postMessage(payload);
+      channel.close();
+      broadcast = true;
+    }
+  } catch (error) {
+    console.warn("[Music] orchestra packet broadcast failed:", error);
+  }
+  try {
+    window.dispatchEvent(new CustomEvent("music-orchestra-packet-sync", { detail: payload }));
   } catch (error) {}
   return { stored, broadcast };
 }
@@ -5497,11 +5635,18 @@ function updateMusicStackSyncHelp(route, result = {}) {
 function syncMusicSessionPacket(options = {}) {
   const packet = options.packet || buildMusicSessionPacket();
   const payload = makeMusicStackPacketPayload(packet);
+  const orchestraPacket = buildMusicOrchestraPacket({ ...options, sessionPacket: packet });
+  const orchestraPayload = makeMusicOrchestraPacketPayload(orchestraPacket);
   if (typeof window !== "undefined") {
     window.MusicSessionPacket.last = packet;
     window.MusicSessionPacket.lastSync = payload;
+    if (window.MusicOrchestraPacket) {
+      window.MusicOrchestraPacket.last = orchestraPacket;
+      window.MusicOrchestraPacket.lastSync = orchestraPayload;
+    }
   }
   const result = publishMusicStackPacketPayload(payload);
+  publishMusicOrchestraPacketPayload(orchestraPayload);
   const route = packet.routing?.openclaw?.next_action;
   const routeLabel = route?.label || route?.destination;
   setRecorderStatus(result.stored || result.broadcast
@@ -5510,7 +5655,8 @@ function syncMusicSessionPacket(options = {}) {
   updateMusicStackSyncHelp(route, result);
   return {
     ...result,
-    payload
+    payload,
+    orchestraPayload
   };
 }
 
@@ -5538,6 +5684,44 @@ function downloadMusicSessionPacket() {
   return packet;
 }
 
+function downloadMusicOrchestraPacket() {
+  const packet = buildMusicOrchestraPacket();
+  if (typeof window !== "undefined" && window.MusicOrchestraPacket) {
+    window.MusicOrchestraPacket.last = packet;
+  }
+  if (typeof document === "undefined" || typeof Blob === "undefined" || typeof URL === "undefined") return packet;
+
+  const json = `${JSON.stringify(packet, null, 2)}\n`;
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = makeMusicSessionPacketFileName(`orchestra-${packet.session_id}`);
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => {
+    try { URL.revokeObjectURL(url); } catch (error) {}
+  }, 60000);
+  setRecorderStatus("Orchestra packet JSON downloaded");
+  return packet;
+}
+
+function syncMusicOrchestraPacket(options = {}) {
+  const packet = options.packet || buildMusicOrchestraPacket(options);
+  const payload = makeMusicOrchestraPacketPayload(packet);
+  if (typeof window !== "undefined" && window.MusicOrchestraPacket) {
+    window.MusicOrchestraPacket.last = packet;
+    window.MusicOrchestraPacket.lastSync = payload;
+  }
+  const result = publishMusicOrchestraPacketPayload(payload);
+  return {
+    ...result,
+    payload
+  };
+}
+
 if (typeof window !== "undefined") {
   window.MusicSessionPacket = {
     build: buildMusicSessionPacket,
@@ -5546,6 +5730,15 @@ if (typeof window !== "undefined") {
     recommend: musicStackRoutingRecommendation,
     storageKey: MUSIC_STACK_PACKET_STORAGE_KEY,
     channelName: MUSIC_STACK_CHANNEL_NAME,
+    lastSync: null,
+    last: null
+  };
+  window.MusicOrchestraPacket = {
+    build: buildMusicOrchestraPacket,
+    sync: syncMusicOrchestraPacket,
+    download: downloadMusicOrchestraPacket,
+    storageKey: MUSIC_ORCHESTRA_PACKET_STORAGE_KEY,
+    channelName: MUSIC_ORCHESTRA_CHANNEL_NAME,
     lastSync: null,
     last: null
   };
