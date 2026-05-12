@@ -42,12 +42,14 @@
   let drumBus = null;
   let bassBus = null;
   let guitarBus = null;
+  let voiceBus = null;
   let chordBus = null;
   let clickBus = null;
 
   let drumKit = null;        // { kick, snare, hat, ghost, fill, crash }
   let synthBass = null;
   let guitarSynth = null;
+  let voiceSynth = null;
   let chordSynth = null;
   let clickSynth = null;
 
@@ -66,6 +68,7 @@
     drumBus = new Tone.Gain(0.75).connect(masterGain);
     bassBus = new Tone.Gain(0.65).connect(masterGain);
     guitarBus = new Tone.Gain(0.70).connect(masterGain);
+    voiceBus = new Tone.Gain(0.40).connect(masterGain);
     chordBus = new Tone.Gain(0.55).connect(masterGain);
     clickBus = new Tone.Gain(0.0).connect(masterGain);  // off by default
     return masterGain;
@@ -254,6 +257,82 @@
     const base = rootSemi + octave * 12;
     return [semiToNote(base), semiToNote(base + 7), semiToNote(base + 12)];
   }
+
+  // ---- Vocal guide ("voice-box" formant synth) ----------------
+  // Not real AI-sung vocal — that needs Suno/Udio/Bark which can't run
+  // in browser. This is an "おーあー" 母音 melodic guide: AMSynth +
+  // dual formant band-pass filters approximating an "ah/oh" vowel, with
+  // light vibrato. User sings their own words on top.
+  //
+  // For full AI-synthesized vocal: generate via Suno externally, save
+  // mp3, drop into presets/vocals/{song-id}.mp3, then load via a
+  // future HTMLAudio layer.
+  function makeVoiceBox(target) {
+    const verb = new Tone.Reverb({ decay: 1.6, wet: 0.22 }).connect(target);
+    const hp = new Tone.Filter({ frequency: 200, type: "highpass", Q: 0.5 }).connect(verb);
+    // Two parallel formants — F1 around 700 Hz ("ah") + F2 around 1200 Hz
+    const mix = new Tone.Gain(0.9).connect(hp);
+    const formant1 = new Tone.Filter({ frequency: 700, type: "bandpass", Q: 5 }).connect(mix);
+    const formant2 = new Tone.Filter({ frequency: 1200, type: "bandpass", Q: 5 }).connect(mix);
+
+    const voice = new Tone.AMSynth({
+      harmonicity: 2.4,
+      oscillator: { type: "sawtooth" },
+      envelope: { attack: 0.06, decay: 0.32, sustain: 0.65, release: 0.45 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 0.04, decay: 0.2, sustain: 0.5, release: 0.4 },
+      volume: -10
+    });
+    voice.connect(formant1);
+    voice.connect(formant2);
+
+    // Vibrato (5 Hz, ±10 cents)
+    const vibrato = new Tone.LFO({ frequency: 5.0, min: -10, max: 10 });
+    try { vibrato.connect(voice.detune); vibrato.start(); } catch (e) {}
+
+    return voice;
+  }
+
+  // Human Fly chorus melody — hook line over G | D | Em | C 4-bar
+  // Repeats through 16-bar chorus. Notes are in G major.
+  // Encoded as: { sub16 (0-15 position in bar), note, dur (in 16th steps), syllable (hint only) }
+  const HUMAN_FLY_VOCAL_MELODY = {
+    // 4-bar chorus phrase, repeated 4x in 16-bar chorus
+    chorus: [
+      // bar 0: G chord — "Hu-man fly, hu-man fly"
+      [
+        { sub: 0,  note: "B4", dur: 2, syl: "Hu" },
+        { sub: 2,  note: "G4", dur: 2, syl: "man" },
+        { sub: 4,  note: "D5", dur: 4, syl: "fly" },
+        { sub: 10, note: "B4", dur: 2, syl: "hu" },
+        { sub: 12, note: "G4", dur: 2, syl: "man" },
+        { sub: 14, note: "D5", dur: 2, syl: "fly" }
+      ],
+      // bar 1: D chord — "Cut the rope, cut the wire"
+      [
+        { sub: 0,  note: "A4", dur: 2, syl: "Cut" },
+        { sub: 2,  note: "F#4",dur: 2, syl: "the" },
+        { sub: 4,  note: "D5", dur: 4, syl: "rope" },
+        { sub: 10, note: "B4", dur: 2, syl: "cut" },
+        { sub: 12, note: "A4", dur: 2, syl: "the" },
+        { sub: 14, note: "D5", dur: 2, syl: "wire" }
+      ],
+      // bar 2: Em chord — "ぶっ飛んで go away"
+      [
+        { sub: 0, note: "E5", dur: 2, syl: "bu" },
+        { sub: 2, note: "D5", dur: 2, syl: "tton" },
+        { sub: 4, note: "B4", dur: 2, syl: "de" },
+        { sub: 6, note: "G4", dur: 2, syl: "go" },
+        { sub: 8, note: "B4", dur: 8, syl: "way" }
+      ],
+      // bar 3: C chord — long hold "Human fly~"
+      [
+        { sub: 0,  note: "C5", dur: 4, syl: "Hu" },
+        { sub: 4,  note: "B4", dur: 4, syl: "man" },
+        { sub: 8,  note: "G4", dur: 8, syl: "fly" }
+      ]
+    ]
+  };
 
   // ---- Chord synth ---------------------------------------------
 
@@ -549,6 +628,23 @@
         }
       }
 
+      // Vocal guide (melody-only, 母音 "ah" voice-box).
+      // Only chorus has a melody encoded for Human Fly. 4-bar phrase
+      // repeats through 16-bar chorus; bar-within-section determines
+      // which phrase position to play.
+      if ($("br-toggle-voice").checked && voiceSynth && frame && frame.session_role === "recap") {
+        const barInSection = state.barCount - state.sectionBarStart;
+        const phraseBar = barInSection % 4;
+        const phrase = (HUMAN_FLY_VOCAL_MELODY.chorus || [])[phraseBar];
+        if (phrase) {
+          phrase.forEach((step) => {
+            const t = time + step.sub * subTime;
+            const durSec = step.dur * subTime;
+            try { voiceSynth.triggerAttackRelease(step.note, durSec * 0.95, t, 0.55); } catch (e) {}
+          });
+        }
+      }
+
       // Chord guide (one chord per bar's downbeat)
       if ($("br-toggle-chords").checked && chordSynth && chord) {
         try {
@@ -590,6 +686,7 @@
     if (!drumKit) drumKit = makeDrumKit(drumBus);
     if (!synthBass) synthBass = makeSynthBass(bassBus);
     if (!guitarSynth) guitarSynth = makeGuitar(guitarBus);
+    if (!voiceSynth) voiceSynth = makeVoiceBox(voiceBus);
     if (!chordSynth) chordSynth = makeChordSynth(chordBus);
     if (!clickSynth) clickSynth = makeClick(clickBus);
 
@@ -662,13 +759,13 @@
       if (wasPlaying) await startPlayback();
     });
 
-    const volMap = { "br-vol-drums": "drumBus", "br-vol-bass": "bassBus", "br-vol-guitar": "guitarBus", "br-vol-chords": "chordBus", "br-vol-click": "clickBus" };
+    const volMap = { "br-vol-drums": "drumBus", "br-vol-bass": "bassBus", "br-vol-guitar": "guitarBus", "br-vol-voice": "voiceBus", "br-vol-chords": "chordBus", "br-vol-click": "clickBus" };
     Object.entries(volMap).forEach(([id, busName]) => {
       const el = $(id);
       if (!el) return;
       el.addEventListener("input", () => {
         ensureMaster();
-        const bus = { drumBus, bassBus, guitarBus, chordBus, clickBus }[busName];
+        const bus = { drumBus, bassBus, guitarBus, voiceBus, chordBus, clickBus }[busName];
         if (bus) {
           try { bus.gain.rampTo(Number(el.value) / 100, 0.08); } catch (e) {}
         }
