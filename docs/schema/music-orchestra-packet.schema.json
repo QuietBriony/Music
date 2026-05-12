@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://quietbriony.github.io/Music/docs/schema/music-orchestra-packet.schema.json",
+  "title": "Music Orchestra Packet",
+  "description": "Metadata-only high-level wrapper for Music Stack Orchestra routing, review, and human-gated promotion.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "source_repo",
+    "session_id",
+    "created_at",
+    "music_state",
+    "routing",
+    "safety"
+  ],
+  "properties": {
+    "version": {
+      "const": "music-orchestra-packet.v1"
+    },
+    "source_repo": {
+      "const": "Music"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "music_state": {
+      "type": "object",
+      "description": "Current Music conductor state. Use music-session-packet for detailed runtime fields.",
+      "additionalProperties": true
+    },
+    "reference_gradient": {
+      "type": "object",
+      "description": "Reference-weight summary such as haze, memory, micro, ghost, chrome, and organic.",
+      "additionalProperties": true
+    },
+    "mic_follow": {
+      "type": "object",
+      "description": "Metadata-only MIC FOLLOW summary. Must not contain raw audio.",
+      "additionalProperties": true
+    },
+    "output": {
+      "type": "object",
+      "description": "Output, recorder, and listening-review summary.",
+      "additionalProperties": true
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["drum_floor", "namima", "chill", "openclaw"],
+      "properties": {
+        "drum_floor": { "$ref": "#/definitions/routeTarget" },
+        "namima": { "$ref": "#/definitions/routeTarget" },
+        "chill": { "$ref": "#/definitions/routeTarget" },
+        "openclaw": { "$ref": "#/definitions/routeTarget" }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metadata_only",
+        "no_audio",
+        "no_samples",
+        "human_review_required"
+      ],
+      "properties": {
+        "metadata_only": { "const": true },
+        "no_audio": { "const": true },
+        "no_samples": { "const": true },
+        "human_review_required": { "const": true },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["draft", "review_requested", "approved", "rejected", "held"]
+        },
+        "target_repo": {
+          "type": ["string", "null"],
+          "enum": ["Music", "drum-floor", "namima", "chill", "OpenClaw", null]
+        },
+        "reviewer_note": {
+          "type": "string"
+        },
+        "rollback": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "routeTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "intent", "human_review_required"],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "packet_type": {
+          "type": "string",
+          "examples": [
+            "groove-request-packet",
+            "mood-request-packet",
+            "harvest-sidecar",
+            "promotion-request",
+            "review-result"
+          ]
+        },
+        "next_action": {
+          "type": "string"
+        },
+        "human_review_required": {
+          "const": true
+        }
+      }
+    }
+  }
+}
