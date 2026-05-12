@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-12" />
+<link rel="stylesheet" href="band-room.css?v=br-13" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-12" defer></script>
+<script src="band-room.js?v=br-13" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -24,12 +24,25 @@
 
   <main id="br-main">
 
+    <!-- ===== CORE (always visible) ===== -->
+
     <section id="br-band-select" aria-label="Band selector">
-      <!-- populated by band-room.js from presets/bands.json -->
+      <!-- populated by band-room.js -->
     </section>
 
     <section id="br-track-select" aria-label="Track selector">
-      <!-- populated by band-room.js from selected band's songs[] -->
+      <!-- populated by band-room.js -->
+    </section>
+
+    <section id="br-mode" aria-label="Playback mode">
+      <label class="br-radio">
+        <input type="radio" name="br-mode" value="stems" checked />
+        <span>📻 原音</span>
+      </label>
+      <label class="br-radio">
+        <input type="radio" name="br-mode" value="synth" />
+        <span>🎛 AI 再現</span>
+      </label>
     </section>
 
     <section id="br-transport">
@@ -37,194 +50,35 @@
       <div id="br-meta" aria-live="polite">
         <span id="br-bpm">117</span> BPM · <span id="br-key">G major</span>
       </div>
-    </section>
-
-    <section id="br-section-display">
-      <div id="br-section-current">
-        <span class="br-label">now</span>
-        <span class="br-value" id="br-section-name">—</span>
-        <span class="br-progress" id="br-section-progress">0 / 0 bars</span>
-      </div>
-      <div id="br-section-next">
-        <span class="br-label">next</span>
-        <span class="br-value" id="br-section-next-name">—</span>
+      <div id="br-section-display">
+        <span class="br-mini" id="br-section-name">—</span>
+        <span class="br-mini br-sep">·</span>
+        <span class="br-mini" id="br-section-progress">0 / 0</span>
+        <span class="br-mini br-sep">→</span>
+        <span class="br-mini" id="br-section-next-name">—</span>
       </div>
     </section>
 
-    <section id="br-mode" aria-label="Playback mode">
-      <h3>モード</h3>
-      <label class="br-radio">
-        <input type="radio" name="br-mode" value="stems" checked />
-        <span>📻 原音 stems</span>
-        <em>本物のライブ録音を 4 分割再生</em>
-      </label>
-      <label class="br-radio">
-        <input type="radio" name="br-mode" value="synth" />
-        <span>🎛 AI 再現</span>
-        <em>drum-floor + synth で打ち込み再現</em>
-      </label>
+    <!-- ===== LAYER TOGGLES (mode-scoped) ===== -->
+
+    <section id="br-stems" aria-label="Original stems" data-scope="stems">
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-stem-vocals" checked /><span>vocals</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-stem-drums" checked /><span>drums</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-stem-bass" checked /><span>bass</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-stem-other" checked /><span>other</span></label>
       <span id="br-stems-status" aria-live="polite"></span>
     </section>
 
-    <section id="br-stems" aria-label="Original stems (Demucs separated)" data-scope="stems">
-      <h3>📻 原音 stems — Demucs 分離トラック (各 mute/vol)</h3>
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-stem-vocals" checked />
-        <span>vocals</span>
-      </label>
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-stem-drums" checked />
-        <span>drums</span>
-      </label>
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-stem-bass" checked />
-        <span>bass</span>
-      </label>
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-stem-other" checked />
-        <span>other (gtr/keys)</span>
-      </label>
+    <section id="br-controls" aria-label="Synth layers" data-scope="synth">
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-drums" /><span>drums</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-click" /><span>click</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-bass" /><span>bass</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-guitar" /><span>guitar</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-voice" /><span>vocal</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-chords" /><span>chords</span></label>
     </section>
 
-    <section id="br-external-vocal" aria-label="External vocal upload (Suno / re-recording)" data-scope="stems">
-      <h3>🎙 external vocal — 自分で歌い直し / Suno 生成 mp3 をここに</h3>
-      <input type="file" id="br-external-vocal-file" accept="audio/*" />
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-external-vocal" />
-        <span>play external vocal (replaces stem)</span>
-      </label>
-      <label>
-        <span>volume</span>
-        <input type="range" id="br-vol-external-vocal" min="0" max="100" value="85" />
-      </label>
-      <span id="br-external-vocal-status">no file loaded</span>
-    </section>
-
-    <section id="br-phrase-trigger" aria-label="Vocal phrase trigger" data-scope="stems">
-      <h3>🎵 vocal phrase trigger — 元音源から切り出した自分の声フレーズを SFX 発火</h3>
-      <p class="br-help">vocal stem からスライスした 20 個のフレーズ (RMS 上位)。クリックで発火、Tone.Player → vocal FX chain。手動 ad-lib / SFX 用。</p>
-      <div id="br-phrase-grid"></div>
-    </section>
-
-    <section id="br-vocal-fx" aria-label="Vocal FX (chorus/delay/reverb)" data-scope="stems">
-      <h3>🎤 vocal FX — 原音 + external + phrase trigger 全てに掛かる</h3>
-      <label>
-        <span>chorus</span>
-        <input type="range" id="br-vfx-chorus" min="0" max="100" value="30" />
-      </label>
-      <label>
-        <span>echo</span>
-        <input type="range" id="br-vfx-delay" min="0" max="100" value="18" />
-      </label>
-      <label>
-        <span>reverb</span>
-        <input type="range" id="br-vfx-reverb" min="0" max="100" value="28" />
-      </label>
-    </section>
-
-    <section id="br-kit-select" aria-label="Drum kit source" data-scope="synth">
-      <h3>🥁 drum kit source — drum-floor の音色を本物 sample に差し替え</h3>
-      <select id="br-kit-source-select">
-        <!-- populated by band-room.js from KIT_OPTIONS -->
-      </select>
-      <span id="br-kit-status" aria-live="polite"></span>
-    </section>
-
-    <section id="br-controls" aria-label="Synth layer toggles" data-scope="synth">
-      <h3>🎛 AI 再現 layers — 打ち込み合成 (各 ON/OFF)</h3>
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-drums" />
-        <span>drum-floor</span>
-      </label>
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-click" />
-        <span>click</span>
-      </label>
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-bass" />
-        <span>bass (synth)</span>
-      </label>
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-guitar" />
-        <span>guitar (distorted)</span>
-      </label>
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-voice" />
-        <span>vocal guide (melody)</span>
-      </label>
-      <label class="br-toggle">
-        <input type="checkbox" id="br-toggle-chords" />
-        <span>chord guide</span>
-      </label>
-    </section>
-
-    <section id="br-space" aria-label="Space + mastering">
-      <h3>space + mastering (master chain)</h3>
-      <label>
-        <span>reverb</span>
-        <input type="range" id="br-space-reverb" min="0" max="60" value="22" />
-      </label>
-      <label>
-        <span>width</span>
-        <input type="range" id="br-space-width" min="0" max="100" value="72" />
-      </label>
-      <label>
-        <span>tape warmth</span>
-        <input type="range" id="br-tape-warmth" min="0" max="40" value="10" />
-      </label>
-      <label>
-        <span>loudness</span>
-        <input type="range" id="br-loudness" min="-12" max="6" value="0" />
-      </label>
-    </section>
-
-    <section id="br-volume-stems" aria-label="Stem volumes" data-scope="stems">
-      <h3>📻 原音 stem volumes</h3>
-      <label>
-        <span>vocals</span>
-        <input type="range" id="br-vol-stem-vocals" min="0" max="100" value="85" />
-      </label>
-      <label>
-        <span>drums</span>
-        <input type="range" id="br-vol-stem-drums" min="0" max="100" value="85" />
-      </label>
-      <label>
-        <span>bass</span>
-        <input type="range" id="br-vol-stem-bass" min="0" max="100" value="85" />
-      </label>
-      <label>
-        <span>other</span>
-        <input type="range" id="br-vol-stem-other" min="0" max="100" value="85" />
-      </label>
-    </section>
-
-    <section id="br-volume" aria-label="Synth volume sliders" data-scope="synth">
-      <h3>🎛 AI 再現 volumes</h3>
-      <label>
-        <span>drums</span>
-        <input type="range" id="br-vol-drums" min="0" max="100" value="75" />
-      </label>
-      <label>
-        <span>bass</span>
-        <input type="range" id="br-vol-bass" min="0" max="100" value="65" />
-      </label>
-      <label>
-        <span>guitar</span>
-        <input type="range" id="br-vol-guitar" min="0" max="100" value="70" />
-      </label>
-      <label>
-        <span>vocal</span>
-        <input type="range" id="br-vol-voice" min="0" max="100" value="40" />
-      </label>
-      <label>
-        <span>chords</span>
-        <input type="range" id="br-vol-chords" min="0" max="100" value="55" />
-      </label>
-      <label>
-        <span>click</span>
-        <input type="range" id="br-vol-click" min="0" max="100" value="35" />
-      </label>
-    </section>
+    <!-- ===== LYRICS + CHORD (core) ===== -->
 
     <section id="br-lyrics" aria-label="Lyrics">
       <pre id="br-lyrics-body">loading…</pre>
@@ -235,12 +89,77 @@
       <span class="br-value" id="br-chord-current">—</span>
     </section>
 
+    <!-- ===== DETAILS (collapsed by default) ===== -->
+
+    <details class="br-details" data-scope="stems">
+      <summary>🎤 vocal FX</summary>
+      <section id="br-vocal-fx" aria-label="Vocal FX">
+        <label><span>chorus</span><input type="range" id="br-vfx-chorus" min="0" max="100" value="30" /></label>
+        <label><span>echo</span><input type="range" id="br-vfx-delay" min="0" max="100" value="18" /></label>
+        <label><span>reverb</span><input type="range" id="br-vfx-reverb" min="0" max="100" value="28" /></label>
+      </section>
+    </details>
+
+    <details class="br-details" data-scope="stems">
+      <summary>🎙 external vocal (Suno / 自分歌い直し)</summary>
+      <section id="br-external-vocal" aria-label="External vocal upload">
+        <input type="file" id="br-external-vocal-file" accept="audio/*" />
+        <label class="br-toggle"><input type="checkbox" id="br-toggle-external-vocal" /><span>use external vocal</span></label>
+        <label><span>volume</span><input type="range" id="br-vol-external-vocal" min="0" max="100" value="85" /></label>
+        <span id="br-external-vocal-status">no file loaded</span>
+      </section>
+    </details>
+
+    <details class="br-details" data-scope="stems">
+      <summary>🎵 vocal phrase trigger</summary>
+      <section id="br-phrase-trigger" aria-label="Vocal phrase trigger">
+        <p class="br-help">vocal stem から切り出した自分の声を SFX 発火 / ad-lib に。</p>
+        <div id="br-phrase-grid"></div>
+      </section>
+    </details>
+
+    <details class="br-details" data-scope="synth">
+      <summary>🥁 drum kit source</summary>
+      <section id="br-kit-select" aria-label="Drum kit source">
+        <select id="br-kit-source-select"></select>
+        <span id="br-kit-status" aria-live="polite"></span>
+      </section>
+    </details>
+
+    <details class="br-details">
+      <summary>🎚 volume mixer</summary>
+      <section id="br-volume-stems" aria-label="Stem volumes" data-scope="stems">
+        <label><span>vocals</span><input type="range" id="br-vol-stem-vocals" min="0" max="100" value="85" /></label>
+        <label><span>drums</span><input type="range" id="br-vol-stem-drums" min="0" max="100" value="85" /></label>
+        <label><span>bass</span><input type="range" id="br-vol-stem-bass" min="0" max="100" value="85" /></label>
+        <label><span>other</span><input type="range" id="br-vol-stem-other" min="0" max="100" value="85" /></label>
+      </section>
+      <section id="br-volume" aria-label="Synth volumes" data-scope="synth">
+        <label><span>drums</span><input type="range" id="br-vol-drums" min="0" max="100" value="75" /></label>
+        <label><span>bass</span><input type="range" id="br-vol-bass" min="0" max="100" value="65" /></label>
+        <label><span>guitar</span><input type="range" id="br-vol-guitar" min="0" max="100" value="70" /></label>
+        <label><span>vocal</span><input type="range" id="br-vol-voice" min="0" max="100" value="40" /></label>
+        <label><span>chords</span><input type="range" id="br-vol-chords" min="0" max="100" value="55" /></label>
+        <label><span>click</span><input type="range" id="br-vol-click" min="0" max="100" value="35" /></label>
+      </section>
+    </details>
+
+    <details class="br-details">
+      <summary>🌌 mastering (space / width / warmth / loudness)</summary>
+      <section id="br-space" aria-label="Mastering">
+        <label><span>reverb</span><input type="range" id="br-space-reverb" min="0" max="60" value="22" /></label>
+        <label><span>width</span><input type="range" id="br-space-width" min="0" max="100" value="72" /></label>
+        <label><span>warmth</span><input type="range" id="br-tape-warmth" min="0" max="40" value="10" /></label>
+        <label><span>loudness</span><input type="range" id="br-loudness" min="-12" max="6" value="0" /></label>
+      </section>
+    </details>
+
     <footer id="br-footer">
       <a href="fm.html">← Hazama FM</a>
       <span class="br-sep">·</span>
-      <a href="index.html">Music Core Rig</a>
+      <a href="index.html">Music Core</a>
       <span class="br-sep">·</span>
-      <a href="docs/tabasco-lyrics-draft.md">lyrics draft</a>
+      <a href="docs/tabasco-lyrics-draft.md">lyrics</a>
     </footer>
 
   </main>

@@ -198,42 +198,27 @@ html, body {
 
 #br-meta span { color: var(--accent-glass); font-weight: 600; }
 
+/* Section display — inline under START, no separate panel */
 #br-section-display {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px 20px;
-  border: 1px solid var(--panel-border);
-  border-radius: 12px;
-  background: var(--panel);
-}
-
-#br-section-current, #br-section-next {
-  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: baseline;
-  gap: 12px;
-}
-
-#br-section-display .br-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  opacity: 0.55;
-  letter-spacing: 0.18em;
-  min-width: 44px;
-}
-
-#br-section-display .br-value {
-  font-size: 18px;
-  color: var(--accent-glass);
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-#br-section-display .br-progress {
+  gap: 6px 10px;
   font-size: 11px;
   color: var(--text-sub);
-  margin-left: auto;
+  letter-spacing: 0.06em;
+  margin-top: -2px;
+}
+
+#br-section-display .br-mini {
   font-variant-numeric: tabular-nums;
+}
+
+#br-section-display #br-section-name,
+#br-section-display #br-section-next-name {
+  color: var(--accent-glass);
+  font-weight: 600;
 }
 
 #br-mode {
@@ -282,57 +267,28 @@ html, body {
   background: var(--panel);
 }
 
-#br-stems h3, #br-controls h3, #br-volume h3 {
-  flex-basis: 100%;
-  margin: 0 0 4px;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  opacity: 0.55;
-  font-weight: 500;
-}
+/* Mode-scope hiding: non-active mode is fully removed from the page */
+body[data-mode="synth"] [data-scope="stems"] { display: none !important; }
+body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
 
-/* Mode-scope dimming: inactive mode's controls visually recede */
-body[data-mode="synth"] [data-scope="stems"] {
-  opacity: 0.32;
-  filter: saturate(0.4);
-  pointer-events: none;
-}
-body[data-mode="stems"] [data-scope="synth"] {
-  opacity: 0.55;
-  filter: saturate(0.6);
-}
-body[data-mode="stems"] [data-scope="synth"] h3::after {
-  content: "  ※ stems モード中は overlay として被さる";
-  opacity: 0.5;
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0.02em;
-}
-
-#br-mode label.br-radio em {
-  display: block;
-  font-size: 9px;
-  opacity: 0.6;
-  font-style: normal;
-  letter-spacing: 0;
-  margin-top: 1px;
-  text-transform: none;
-}
-
+/* Mode pill: 2 buttons side-by-side, no descriptions */
 #br-mode label.br-radio {
-  flex-direction: column;
-  align-items: flex-start;
   border: 1px solid rgba(255, 184, 122, 0.20);
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
   background: rgba(255, 184, 122, 0.04);
   transition: background 0.2s, border-color 0.2s;
+  font-size: 13px;
 }
 
 #br-mode label.br-radio:has(input:checked) {
   border-color: var(--accent);
-  background: rgba(255, 136, 102, 0.16);
+  background: rgba(255, 136, 102, 0.18);
+  color: var(--accent-glass);
+}
+
+#br-mode label.br-radio input[type="radio"] {
+  display: none;
 }
 
 #br-phrase-trigger {
@@ -771,9 +727,82 @@ body[data-mode="stems"] [data-scope="synth"] h3::after {
 
 .br-sep { opacity: 0.4; margin: 0 2px; }
 
+/* ===========================================================
+   v67 simplified UI — collapsible <details>, tighter main gap
+   =========================================================== */
+
+#br-main { gap: 12px; }
+
+.br-details {
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  overflow: hidden;
+}
+
+.br-details > summary {
+  cursor: pointer;
+  padding: 10px 16px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--text-sub);
+  list-style: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.15s, color 0.15s;
+}
+
+.br-details > summary::-webkit-details-marker { display: none; }
+
+.br-details > summary::after {
+  content: "▾";
+  opacity: 0.5;
+  font-size: 10px;
+  transition: transform 0.2s;
+}
+
+.br-details[open] > summary::after { transform: rotate(180deg); }
+
+.br-details > summary:hover {
+  background: rgba(255, 184, 122, 0.05);
+  color: var(--accent-glass);
+}
+
+.br-details[open] > summary {
+  background: rgba(255, 184, 122, 0.04);
+  color: var(--accent-glass);
+  border-bottom: 1px solid rgba(255, 184, 122, 0.10);
+}
+
+/* Inner section inside <details> — flat, no double border */
+.br-details > section {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  margin: 0;
+}
+
+/* h3 inside collapsed sections is now redundant (summary acts as title) */
+.br-details > section > h3,
+#br-stems > h3,
+#br-controls > h3 {
+  display: none;
+}
+
+/* Tighter mode bar — minimal padding */
+#br-mode { padding: 8px 12px; gap: 8px; }
+
+/* Transport: no border on inner section-display */
+#br-transport {
+  padding: 18px 16px 14px;
+}
+
 @media (max-width: 540px) {
-  #br-main { padding: 8px 12px 60px; gap: 12px; }
+  #br-main { padding: 8px 12px 60px; gap: 10px; }
   #br-track-select button { font-size: 10px; padding: 7px 10px; }
-  #br-section-display .br-value { font-size: 15px; }
   #br-chord-display .br-value { font-size: 26px; }
+  .br-details > summary { padding: 9px 12px; font-size: 11px; }
+  #br-play { font-size: 14px; padding: 14px 36px; min-width: 160px; min-height: 50px; }
 }
