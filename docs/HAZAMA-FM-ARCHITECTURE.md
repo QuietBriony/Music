@@ -469,3 +469,77 @@ Core Rig に flavor を載せるなら:
 
 判断: Core Rig は manual mix workflow なので flavor 同期は **opt-in feature** として残すのが
 無理ない。フェーダー触っている時に裏で flavor が勝手に変化すると操作感が混乱する。
+
+## 11. Band Room (band-room.html) — Tabasco LIVE Revival
+
+Hazama FM とは別ページ。`band-room.html` は user 自身のバンド (Tabasco) の
+20 年前 LIVE 録音を、Demucs で 4-stem 分離 → ボーカル抜きで再生 +
+歌い直し + AI 再現できるプラットフォーム。
+
+### 機能まとめ
+
+| 機能 | 状態 |
+|---|---|
+| 4-stem 分離 (vocals/drums/bass/other) Demucs htdemucs | ✅ Tabasco 7 + UNRIPE 6 |
+| stem playback via Tone.Player + 個別 mute/vol | ✅ |
+| Master remaster chain (compressor + EQ3 + widener + reverb + limiter) | ✅ |
+| Vocal FX (chorus/echo/reverb) | ✅ stem + external + phrase 共通 |
+| 原音 / AI 再現 モード切替 (radio) | ✅ |
+| AI synth drum-floor (per song frames + chord progression + section) | ✅ 7 曲 |
+| Drum kit source 切替 (Tone.Player 化、6 UNRIPE kit) | ✅ v62 |
+| External vocal upload (Suno or 自録) | ✅ v63 |
+| Vocal phrase trigger (240 phrases click) | ✅ v64 |
+| 全 7 曲歌詞 (proper English v2.1) | ✅ |
+
+### ファイル構成
+
+```
+band-room.html / .css / .js                    # standalone (no engine.js / genre-flavor.js)
+presets/bands.json                             # band registry (UI に出すバンド一覧)
+presets/drum-frames-tabasco-{songid}.json      # 7 曲分 song-track (intro→verse→chorus→...)
+presets/tabasco-stems/{songid}/{stem}.mp3      # 28 ファイル, 96 kbps, 79 MB
+presets/unripe-stems/{songid}/{stem}.mp3       # 24 ファイル, 96 kbps, 78 MB
+presets/sample-kits/{src}/{song}/              # 抽出済サンプル
+  ├ {kick,snare,hat,crash}-NN.wav             # drum hits (8 each)
+  └ vocal-phrase-NN.wav                       # vocal phrases (top 20)
+docs/tabasco-lyrics-draft.md                   # 全 7 曲歌詞 v2.1
+docs/BAND-ROOM-USAGE.md                        # ユーザー向け使い方
+docs/VOCAL-REGENERATION-PATH.md                # Suno workflow
+docs/BAND-ROOM-ADD-BAND.md                     # 新バンド追加手順
+docs/STEM-REUSE-PATH.md                        # Phase B/C 流用設計
+scripts/_separate_band.py                      # Demucs 4-stem 切り出し
+scripts/_slice_drum_hits.py                    # drum sample 抽出
+scripts/_slice_vocal_phrases.py                # vocal phrase 抽出
+scripts/_recompress_stems.py                   # 192→96 kbps 再エンコ
+scripts/_copy_stems.py                         # raw Demucs → repo へ
+scripts/_gen_tabasco_songs.py                  # song-track JSON 生成
+```
+
+### 主要 commit 履歴
+
+- v50 band-room.html 新設 + Human Fly 動作
+- v51-52 UNRIPE 疾走感 + flute + 物語進行
+- v53-55 全 7 Tabasco 曲 song-track JSON + chord progression
+- v56 Demucs 4-stem 分離 + stem playback
+- v57 space 補正 (reverb + stereo widener)
+- v58 band-aware refactor (bands.json registry)
+- v59 vocal FX chain + UI scope 明示
+- v60-61 UNRIPE 取り込み + 96 kbps 再エンコでサイズ半減
+- v62 Sample Kit mode (drum-floor の音色を UNRIPE 本物 sample に差替)
+- v63 vocal phrase slicing + 歌詞 v2.1 + external vocal upload
+- v64 vocal phrase trigger UI + 使い方 doc
+
+### Band Room と Hazama FM の関係
+
+| 観点 | Hazama FM | Band Room |
+|---|---|---|
+| 性格 | 24/7 generative focus radio (Apple Music の Claude FM 的) | 特定の歌を再生 + 練習 + リバイバル |
+| 元データ | 9 番組 × 7 GENRE × 物語進行 | 7 曲 × 8 セクション × 4 stem × 240 vocal phrase |
+| エンジン | engine.js (12k 行) + genre-flavor.js (3k 行) | Tone.js のみ standalone |
+| 共有 | Tone.js, master mastering 思想 | engine.js も genre-flavor.js も使わない |
+| URL | `/Music/fm.html` | `/Music/band-room.html` |
+| PWA | manifest.webmanifest (Hazama FM) | (band-room PWA は未設定) |
+
+Band Room は engine.js / genre-flavor.js の重 monolith と分離した「軽い jam app」として
+独立進化させた。Hazama FM の mastering chain ノウハウ (compressor + EQ3 + limiter
+スペック) は band-room.js master 構築時に再利用。

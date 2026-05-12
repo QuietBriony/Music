@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-9" />
+<link rel="stylesheet" href="band-room.css?v=br-10" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-9" defer></script>
+<script src="band-room.js?v=br-10" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -100,8 +100,14 @@
       <span id="br-external-vocal-status">no file loaded</span>
     </section>
 
+    <section id="br-phrase-trigger" aria-label="Vocal phrase trigger" data-scope="stems">
+      <h3>🎵 vocal phrase trigger — 元音源から切り出した自分の声フレーズを SFX 発火</h3>
+      <p class="br-help">vocal stem からスライスした 20 個のフレーズ (RMS 上位)。クリックで発火、Tone.Player → vocal FX chain。手動 ad-lib / SFX 用。</p>
+      <div id="br-phrase-grid"></div>
+    </section>
+
     <section id="br-vocal-fx" aria-label="Vocal FX (chorus/delay/reverb)" data-scope="stems">
-      <h3>🎤 vocal FX — 原音 + external 両方に掛かる (ごまかし系)</h3>
+      <h3>🎤 vocal FX — 原音 + external + phrase trigger 全てに掛かる</h3>
       <label>
         <span>chorus</span>
         <input type="range" id="br-vfx-chorus" min="0" max="100" value="30" />

@@ -163,6 +163,68 @@
     return masterGain;
   }
 
+  // Vocal phrase trigger — fire one-shot Tone.Player on click
+  // Phrase samples are at presets/sample-kits/<source>/<song>/vocal-phrase-NN.wav
+  // (summary.json has the list). Each plays through the same vocalChorus FX chain.
+  const phrasePlayerPool = new Map();  // url → Tone.Player (cached)
+
+  async function renderPhraseTrigger() {
+    const grid = $("br-phrase-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    const band = state.currentBandId;
+    const song = state.currentSongId;
+    const url = `presets/sample-kits/${band}/${song}/summary.json`;
+
+    let summary = null;
+    try {
+      const res = await fetch(url + "?cb=" + Date.now());
+      if (res.ok) summary = await res.json();
+    } catch (e) {}
+
+    const phrases = summary && summary.vocal_phrases && summary.vocal_phrases.phrases;
+    if (!phrases || phrases.length === 0) {
+      const empty = document.createElement("span");
+      empty.className = "br-phrase-empty";
+      empty.textContent = "(no phrases extracted for this song)";
+      grid.appendChild(empty);
+      return;
+    }
+
+    phrases.forEach((p, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = `${(i + 1).toString().padStart(2, "0")}`;
+      btn.title = `${p.duration_s}s @ ${p.src_start_s}s (RMS ${p.rms})`;
+      btn.dataset.phraseUrl = `presets/sample-kits/${band}/${song}/${p.file}`;
+      grid.appendChild(btn);
+    });
+  }
+
+  function firePhrase(url) {
+    if (!vocalChorus) ensureMaster();
+    let player = phrasePlayerPool.get(url);
+    if (!player) {
+      player = new Tone.Player({
+        url, autostart: false, retrigger: true, fadeIn: 0.01, fadeOut: 0.02
+      }).connect(externalVocalBus || vocalChorus);
+      phrasePlayerPool.set(url, player);
+    }
+    try {
+      // If buffer not yet loaded, Tone.Player.start() throws — wait
+      if (!player.buffer || !player.buffer.loaded) {
+        Tone.loaded().then(() => {
+          try { player.start("+0.005"); } catch (e) {}
+        });
+      } else {
+        player.start("+0.005");
+      }
+    } catch (e) {
+      console.warn("[Band Room] phrase fire failed:", e);
+    }
+  }
+
   function loadExternalVocal(fileBlob) {
     if (externalVocalPlayer) {
       try { externalVocalPlayer.stop(); externalVocalPlayer.dispose(); } catch (e) {}
@@ -1068,7 +1130,15 @@
       const wasPlaying = state.started;
       if (wasPlaying) stopPlayback();
       await loadSong(btn.dataset.song);
+      renderPhraseTrigger();
       if (wasPlaying) await startPlayback();
+    });
+
+    // Phrase trigger grid — fire one-shot on click
+    document.getElementById("br-phrase-grid")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-phrase-url]");
+      if (!btn) return;
+      firePhrase(btn.dataset.phraseUrl);
     });
 
     const volMap = { "br-vol-drums": "drumBus", "br-vol-bass": "bassBus", "br-vol-guitar": "guitarBus", "br-vol-voice": "voiceBus", "br-vol-chords": "chordBus", "br-vol-click": "clickBus" };
@@ -1302,14 +1372,14 @@
     if (!band.songs || band.songs.length === 0) return;
     if (state.started) stopPlayback();
     state.currentBandId = bandId;
-    state.currentSongId = band.songs[0].id;  // first song of selected band
-    // Update UI
+    state.currentSongId = band.songs[0].id;
     document.querySelectorAll("#br-band-select button").forEach((b) => {
       b.setAttribute("aria-pressed", b.dataset.band === bandId ? "true" : "false");
     });
     renderTrackButtons();
     updateSubtitle();
     await loadSong(state.currentSongId);
+    renderPhraseTrigger();
   }
 
   function renderKitOptions() {
@@ -1346,6 +1416,7 @@
     await loadBandsRegistry();
     // Pre-load the default song meta (doesn't start audio)
     await loadSong(state.currentSongId);
+    renderPhraseTrigger();
   });
 
 })();
