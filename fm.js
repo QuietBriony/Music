@@ -20,14 +20,12 @@
   const GENRE_MIX_SWITCH_MS = 420;
   const GENRE_MIX_RETURN_MS = 920;
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
-  // v49: engine.js bypasses our master limiter, so its peaks go raw to
-  // Tone.Destination → hardware. Engine outputGainFromLevel(100) ≈ 2.32x
-  // (+7.3 dB), which on top of internal mix peaks clips the speaker.
-  // Pull engine output to 75 (+4.2 dB) gives ~3 dB safety. Loudness for
-  // ANY-pill mode drops slightly but no longer clips.
+  // FM runs the Music engine plus GenreFlavor as a parallel color layer.
+  // Keep engine output at 75 so Hazama FM has headroom on phones and the
+  // flavor path does not need to lean on its limiter for loudness.
   const TARGET_LEVEL = 75;
-  // v49: Destination boost = 0 dB. Tight chain: limiter ceiling -0.5 dB →
-  // dest 0 → speaker -0.5 dB peak = safe. Loudness comes from masterMakeup.
+  // Destination stays neutral. Do not post-boost both the engine and the
+  // parallel flavor layer into the hardware output.
   const DESTINATION_BOOST_DB = 0;
   const SLEEP_FADE_AFTER_MS = 90 * 60 * 1000;  // 90 min: start auto fade-to-sleep
   const SLEEP_FADE_DURATION_S = 30 * 60;       // 30 min: ramp output to quiet
@@ -1066,9 +1064,8 @@
         await Tone.start();
       }
 
-      // Final-stage loudness lift. Tone.Destination.volume is the post-limiter
-      // master, so this safely boosts overall loudness without distorting —
-      // the engine's masterLimiter (-0.8 dBFS) still caps peaks upstream.
+      // Keep the shared hardware destination neutral. Hazama FM loudness is
+      // managed by engine OUTPUT plus GenreFlavor's internal headroom.
       try {
         if (Tone.getDestination) {
           Tone.getDestination().volume.value = DESTINATION_BOOST_DB;
@@ -1333,7 +1330,7 @@
 
   // ---- Fade-to-sleep ------------------------------------------
 
-  // 90 分連続再生したら、自動で 30 分かけて output_level を 100 → 25 まで
+  // 90 分連続再生したら、自動で 30 分かけて現在の output_level → 25 まで
   // 下げる。寝落ち想定。途中で genre/energy をユーザーが操作したらキャンセル。
   let sleepStartedAt = null;
   let sleepTimer = null;
@@ -1346,7 +1343,7 @@
       sleepTimer = null;
       if (!started) return;
       sleepRamping = true;
-      // 30 分 (1800 秒) かけて output_level を 100 → 25 まで降ろす。
+      // 30 分 (1800 秒) かけて output_level を現在値 → 25 まで降ろす。
       // engine の masterGain がそれに追従して全体が静かになる。
       rampOutputLevel(25, SLEEP_FADE_DURATION_S).then(() => {
         sleepRamping = false;

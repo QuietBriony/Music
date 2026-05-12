@@ -114,30 +114,36 @@ station ident animation 駆動。
 iPhone ロック画面・コントロールセンター・BT ヘッドフォン・mac Touch Bar
 に「fieldStudy — initial haze room」等が表示される。
 
-### 音量設計 (v32 時点)
+### 音量設計 (current v53)
 
 ```
 各 GENRE synth voice
         ↓ Tone.PolySynth volume (per builder, -8〜-22 dB)
 flavor master Gain
-        ↓ × LEVEL_BY_GENRE[name] (0.50〜0.72)
-        ↓ × output follower (engine OUTPUT に追従、0.34〜1.28)
+        ↓ × LEVEL_BY_GENRE[name] (0.46〜0.66)
+        ↓ × output follower (engine OUTPUT に追従、0.34〜0.96)
+        ↓ compressor / EQ safety tilt / light makeup / limiter guardrail
+        ↓
+   Tone.Destination (0 dB; no post-limiter boost)
+
         ↓
         ┌─ engine 各 synth voice
         ↓
    engine masterGain
-        ↓ × outputGainFromLevel(96..100) ≈ 2.19〜2.32 linear
+        ↓ × outputGainFromLevel(FM target 75) ≈ 1.48 linear
    masterLimiter (-0.8 dBFS ceiling)
         ↓
-   Tone.Destination.volume (+4 dB by fm.js at start)
+   Tone.Destination (0 dB; shared hardware output)
         ↓ AudioContext.destination → output device
 ```
 
 - `LEVEL_BY_GENRE` (genre-flavor.js) でジャンル別音量バランス
-  (piano だけ 0.50 で控えめ、他は 0.62〜0.72 で揃え)
-- `Tone.Destination.volume = +4 dB` (fm.js fmStart) で post-limiter
-  loudness lift。limiter が peak をカットするので distortion なし
-- 全体で Apple Music の AAC 16 LUFS / -1 dBTP 規格に近い loudness
+  (piano は 0.46、techno は 0.66、他は 0.56〜0.62)
+- `GenreFlavor` は `fm.html` 専用の parallel color layer。Music full mix を
+  直列加工しない
+- `Tone.Destination.volume = 0 dB` (fm.js fmStart)。post-limiter boost なし
+- limiter は final stop ではなく guardrail。常時突っ込ませず、OUTPUT 75〜85
+  を通常の聴感レンジにする
 
 ### Per-genre station ident hue
 
@@ -155,7 +161,7 @@ CSS `body[data-fm-genre="<name>"] #mandala-container` の `--ident-hue`
 ### Fade-to-sleep (90 分)
 
 START から 90 分連続再生で sleepTimer 発動 → 30 分かけて output_level を
-100 → 25 に逓減。ENERGY/GENRE pill 操作 or STOP で即キャンセル。
+現在値 → 25 に逓減。ENERGY/GENRE pill 操作 or STOP で即キャンセル。
 fm.js の `startSleepTimer` / `cancelSleepTimer` で管理。
 
 ### PWA install prompt + manifest shortcuts
@@ -435,6 +441,17 @@ culture + genre-flavor crossfade のみ、BPM は触らない。
 `stopDjSet({reason})` で終了時の挙動分岐:
 - "user-pill" / "fm-stop" / "switch": tempo lock 再起動しない
 - "user-stop" / "completed" / "user-toggle": 現在の pill の tempo lock 再起動
+
+### v53 — Hazama FM parallel gain-staging repair
+
+- `GenreFlavor` を full-mix processor ではなく `fm.html` 専用の parallel
+  color layer として再固定
+- output follower を 0.34〜0.96 に抑え、`LEVEL_BY_GENRE` を 0.46〜0.66
+  に再調整
+- compressor / EQ / makeup / limiter を guardrail 目的に戻し、limiter 常時突入を避ける
+- piano の Debussy memory tail、jazz/funk/lofi solo、session breaks、
+  sidechain pump、tape saturation の積み上がりを薄くして、詰まりと潰れを減らす
+- `fm.js` は engine OUTPUT 75 / `Tone.Destination.volume = 0 dB` を維持
 
 ### Music Core Rig との同期状況
 

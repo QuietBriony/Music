@@ -23,30 +23,26 @@
 
   const Tone = window.Tone;
 
-  // Working volume (linear gain). Sits near the engine without becoming the master.
-  // The output follower below adds loudness gently, so keep per-layer headroom.
+  // Working volume (linear gain). This is a parallel color layer, not the
+  // full-mix loudness path, so keep real headroom before the limiter.
   const WORKING_LEVEL = 0.56;
   const FADE_IN_S = 2.5;
   const FADE_OUT_S = 1.6;
   const CROSSFADE_S = 1.5;
   const OUTPUT_FOLLOW_MIN = 0.34;
-  const OUTPUT_FOLLOW_MAX = 1.28;
+  const OUTPUT_FOLLOW_MAX = 0.96;
 
   // Per-genre master level override. Each builder has its own synth-voice
-  // density (piano = 4–5 note chords vs ambient = 1-voice drone), so a
-  // single WORKING_LEVEL across all genres makes some pills sound louder.
-  // Tuned by ear so all GENRE pills land within ~2 dB of each other.
-  // v49 +0.04 to compensate for the lower TARGET_LEVEL (engine now 75 vs 100).
-  // Since genre-flavor goes through compressor + limiter, raising the input
-  // level safely just packs more RMS into the same ceiling.
+  // density, but Hazama FM should read as a safe parallel flavor layer beside
+  // the engine bed. These values avoid using the limiter as a loudness engine.
   const LEVEL_BY_GENRE = {
-    any: 0.82,
-    ambient: 0.78,
-    techno: 0.86,
-    lofi: 0.84,
-    jazz: 0.88,
-    funk: 0.86,
-    piano: 0.66
+    any: 0.58,
+    ambient: 0.56,
+    techno: 0.66,
+    lofi: 0.60,
+    jazz: 0.62,
+    funk: 0.62,
+    piano: 0.46
   };
 
   function workingLevelFor(name) {
@@ -115,30 +111,25 @@
 
   function ensureMaster() {
     if (master) return master;
-    // Master chain: gain → compressor → EQ3 polish → makeup → limiter → destination
-    // EQ3 is the "Apple Music finishing" tilt: small low + air boost, slight
-    // low-mid scoop to clear the chord layer's mid range.
-    // v49 gain staging: paired with DESTINATION_BOOST_DB=0 + TARGET_LEVEL=75
-    // in fm.js. Engine output clips no longer reach hardware, and our
-    // limiter ceiling -0.5 dB is the final stop before destination (no
-    // amplification after). All loudness comes from masterMakeup pushing
-    // signal into the limiter — RMS-led, peak-safe.
+    // Master chain: gain → compressor → EQ3 safety tilt → makeup → limiter → destination.
+    // This is a parallel color path for fm.html. The limiter is a guardrail,
+    // not a constant loudness source, and Tone.Destination remains at 0 dB.
     masterCompressor = new Tone.Compressor({
-      threshold: -14,        // more compression for higher RMS
-      ratio: 2.5,
-      attack: 0.010,
-      release: 0.20,
-      knee: 6
+      threshold: -18,
+      ratio: 2.1,
+      attack: 0.012,
+      release: 0.24,
+      knee: 10
     });
     const masterEq = new Tone.EQ3({
-      low: 1.2,
-      mid: -0.4,
-      high: 0.8,
+      low: 0.2,
+      mid: -0.8,
+      high: -0.3,
       lowFrequency: 200,
       highFrequency: 5000
     });
-    masterMakeup = new Tone.Gain(1.30);  // v49: 1.18 → 1.30 (+1.0 dB more push, capped by tighter limiter)
-    masterLimiter = new Tone.Limiter({ threshold: -0.5 }).toDestination();  // v49: -1.5 → -0.5 (tight ceiling = final stop)
+    masterMakeup = new Tone.Gain(1.08);
+    masterLimiter = new Tone.Limiter({ threshold: -1.2 }).toDestination();
     master = new Tone.Gain(0).connect(masterCompressor);
     masterCompressor.connect(masterEq);
     masterEq.connect(masterMakeup);
@@ -927,7 +918,7 @@
       oversample: "2x"
     });
     const tilt = new Tone.Filter({ frequency: 320, type: "lowshelf", gain: 0.6 + amount * 0.4 });
-    const wet = new Tone.Gain(clamp(0.14 + amount * 0.12, 0, 0.35));
+    const wet = new Tone.Gain(clamp(0.08 + amount * 0.07, 0, 0.18));
     // Tap layer.gain output via a parallel pre-master send through sat → tilt → wet → master.
     layer.gain.connect(sat);
     sat.connect(tilt);
@@ -939,17 +930,17 @@
   }
 
   // Sidechain pump — duck pumpGain on each kick. Used by techno + funk.
-  // depth 0.45 = duck to 0.55x peak; attack 15 ms; release 100 ms.
-  function addSidechainPump(layer, depth = 0.42) {
+  // depth 0.30 = audible motion without limiter-pumping the whole layer.
+  function addSidechainPump(layer, depth = 0.30) {
     if (!layer || !layer.pumpGain || !Array.isArray(layer.onKickFire)) return layer;
     const cb = (time, vel) => {
-      const dipLevel = clamp(1 - depth * Math.min(1.05, vel * 1.25), 0.2, 1);
+      const dipLevel = clamp(1 - depth * Math.min(1.05, vel * 1.25), 0.45, 1);
       try {
         const g = layer.pumpGain.gain;
         g.cancelScheduledValues(time);
         g.setValueAtTime(g.value ?? 1, time);
         g.linearRampToValueAtTime(dipLevel, time + 0.015);
-        g.linearRampToValueAtTime(1, time + 0.115);
+        g.linearRampToValueAtTime(1, time + 0.16);
       } catch (e) {}
     };
     layer.onKickFire.push(cb);
@@ -1104,18 +1095,18 @@
     const snare = new Tone.NoiseSynth({
       noise: { type: profile === "lofi" ? "pink" : "white" },
       envelope: { attack: 0.001, decay: profile === "jazz" ? 0.18 : 0.12, sustain: 0, release: 0.045 },
-      volume: profile === "jazz" ? -26 : profile === "lofi" ? -25 : -20
+      volume: profile === "jazz" ? -29 : profile === "lofi" ? -28 : -23
     }).connect(layer.gain);
     const tom = new Tone.MembraneSynth({
       pitchDecay: 0.055,
       octaves: profile === "funk" ? 3.2 : 2.4,
       envelope: { attack: 0.001, decay: 0.18, sustain: 0, release: 0.1 },
-      volume: profile === "funk" ? -18 : -22
+      volume: profile === "funk" ? -21 : -25
     }).connect(layer.gain);
     const hats = new Tone.NoiseSynth({
       noise: { type: "pink" },
       envelope: { attack: 0.001, decay: profile === "jazz" ? 0.09 : 0.045, sustain: 0, release: 0.018 },
-      volume: profile === "lofi" ? -34 : -30
+      volume: profile === "lofi" ? -36 : -33
     }).connect(layer.gain);
     let phrase = profile === "funk" ? 1 : 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
@@ -1125,13 +1116,13 @@
         return;
       }
       const base = safeEventTime(time + Tone.Time("2n").toSeconds() + Tone.Time("4n").toSeconds());
-      const density = profile === "funk" ? 4 : profile === "jazz" ? 3 : 2;
+      const density = profile === "funk" ? 3 : profile === "jazz" ? 2 : 1;
       for (let i = 0; i < density; i++) {
         const dt = safeEventTime(base + i * (profile === "funk" ? 0.075 : 0.105) + Math.random() * 0.012);
         try {
-          if (profile === "funk" && i % 2 === 0) tom.triggerAttackRelease(i === 0 ? "G1" : "C2", "32n", dt, 0.28 + Math.random() * 0.08);
-          else snare.triggerAttackRelease("64n", dt, profile === "jazz" ? 0.16 + Math.random() * 0.07 : 0.2 + Math.random() * 0.1);
-          if (Math.random() < (profile === "jazz" ? 0.6 : 0.38)) hats.triggerAttackRelease("64n", safeEventTime(dt + 0.018), 0.12 + Math.random() * 0.06);
+          if (profile === "funk" && i % 2 === 0) tom.triggerAttackRelease(i === 0 ? "G1" : "C2", "32n", dt, 0.20 + Math.random() * 0.06);
+          else snare.triggerAttackRelease("64n", dt, profile === "jazz" ? 0.12 + Math.random() * 0.05 : 0.15 + Math.random() * 0.06);
+          if (Math.random() < (profile === "jazz" ? 0.42 : 0.28)) hats.triggerAttackRelease("64n", safeEventTime(dt + 0.018), 0.08 + Math.random() * 0.04);
         } catch (e) {}
       }
       phrase++;
@@ -1416,7 +1407,7 @@
             { source: "drum-frames+machine-acid-brain" }
           )
         ),
-        0.48
+        0.30
       ),
       "techno"
     );
@@ -1663,7 +1654,7 @@
   // lofi: muted trumpet (sine FM with pitch dive)
   function addSoloLayer(layer, pill) {
     if (!layer) return null;
-    const hall = new Tone.Reverb({ decay: pill === "jazz" ? 2.4 : 1.6, wet: 0.28 }).connect(layer.gain);
+    const hall = new Tone.Reverb({ decay: pill === "jazz" ? 2.0 : 1.4, wet: 0.18 }).connect(layer.gain);
     const lp = new Tone.Filter({ frequency: pill === "funk" ? 2400 : 3200, type: "lowpass", Q: 0.5 }).connect(hall);
 
     let solo;
@@ -1677,7 +1668,7 @@
         envelope: { attack: 0.06, decay: 0.4, sustain: 0.65, release: 0.55 },
         modulation: { type: "square" },
         modulationEnvelope: { attack: 0.04, decay: 0.2, sustain: 0.4, release: 0.4 },
-        volume: pill === "jazz" ? -16 : -19
+        volume: pill === "jazz" ? -20 : -22
       }).connect(lp);
       vibrato = new Tone.LFO({ frequency: 5.5, min: -6, max: 6 });
       try { vibrato.connect(solo.detune); vibrato.start(); } catch (e) {}
@@ -1690,7 +1681,7 @@
         envelope: { attack: 0.005, decay: 0.18, sustain: 0.4, release: 0.25 },
         filterEnvelope: { attack: 0.003, decay: 0.15, sustain: 0.3, release: 0.2, baseFrequency: 280, octaves: 3.2 },
         portamento: 0.02,
-        volume: -16
+        volume: -20
       }).connect(wahFilter);
       vibrato = wahFilter; // wah filter is "the vibrato" for funk
     }
@@ -1751,7 +1742,7 @@
         if (step.n) {
           const t = safeEventTime(time + offset);
           const dur = step.d * beatSec;
-          const vel = 0.4 + Math.random() * 0.12;
+          const vel = 0.28 + Math.random() * 0.08;
           const note = transposeNote(step.n, keyShift);
           try { solo.triggerAttackRelease(note, dur * 0.92, t, vel); } catch (e) {}
         }
@@ -2382,7 +2373,7 @@
         addTapeSaturation(
           addSidechainPump(
             addSessionBreaks(addFunkRubberBass(drums), "funk"),
-            0.38
+            0.26
           ),
           0.7
         ),
@@ -2645,24 +2636,24 @@
   }
 
   // Debussy whole-tone memory layer — sustained whole-tone voicings that
-  // peek through every 2-3 bars, with a long concert-hall reverb tail.
-  // Volume sits ~5 dB below anchor so it reads as "気配のあるメモリ".
+  // peek through every few bars without becoming the constant "far" wash.
+  // Volume sits behind the anchor so it reads as memory, not the instrument.
   // Reference: references/apple-music-refs.json (Debussy "Clair de Lune"
   // production_translation: impressionist + whole-tone + concert hall).
   function addDebussyMemoryDots(layer) {
     if (!layer) return null;
-    const hall = new Tone.Reverb({ decay: 6.4, preDelay: 0.04, wet: 0.42 }).connect(layer.gain);
-    const lp = new Tone.Filter({ frequency: 2800, type: "lowpass", Q: 0.4 }).connect(hall);
+    const hall = new Tone.Reverb({ decay: 4.2, preDelay: 0.035, wet: 0.24 }).connect(layer.gain);
+    const lp = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 0.4 }).connect(hall);
     const memory = new Tone.PolySynth(Tone.FMSynth, {
       harmonicity: 1.4,
       modulationIndex: 1.8,
       oscillator: { type: "sine" },
-      envelope: { attack: 0.4, decay: 1.2, sustain: 0.5, release: 4.5 },
+      envelope: { attack: 0.35, decay: 1.0, sustain: 0.42, release: 2.6 },
       modulation: { type: "sine" },
-      modulationEnvelope: { attack: 0.25, decay: 0.8, sustain: 0.3, release: 3.0 },
-      volume: -20
+      modulationEnvelope: { attack: 0.22, decay: 0.7, sustain: 0.25, release: 2.0 },
+      volume: -26
     }).connect(lp);
-    memory.maxPolyphony = 6;
+    memory.maxPolyphony = 3;
     // Whole-tone (Debussy) voicings: Cwhole / Dwhole / open-fifth wash
     const voicings = [
       ["C3", "D3", "E3", "F#3", "G#3", "A#3"],   // C whole-tone span
@@ -2674,14 +2665,14 @@
     ];
     let phrase = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      // 3-bar phrase の最後に 28% で memory dot を入れる
-      if (Math.random() < 0.30) {
+      // 3-bar phrase の最後に 18% で memory dot を入れる
+      if (Math.random() < 0.18) {
         const voicing = voicings[phrase % voicings.length];
         try {
           // soft arpeggiation: each note 35-80ms apart for "rolled chord" feel
-          voicing.forEach((note, i) => {
+          voicing.slice(0, 4).forEach((note, i) => {
             const delay = i * (0.04 + Math.random() * 0.025);
-            memory.triggerAttackRelease(note, "1n", safeEventTime(time + 0.06 + delay), 0.18 + Math.random() * 0.04);
+            memory.triggerAttackRelease(note, "2n", safeEventTime(time + 0.06 + delay), 0.12 + Math.random() * 0.025);
           });
         } catch (e) {}
       }
@@ -2718,7 +2709,7 @@
       synths,
       scheduledIds: ids,
       source: "chill-recipe:" + (recipes[0]?.id || "?") + "+foreground-piano+planing-reply",
-      level: 2.15
+      level: 1.35
     };
     return applyProductionGovernor(addDebussyMemoryDots(built), "piano");
   }
@@ -2765,21 +2756,21 @@
     return window.HazamaPresets.get(presetName);
   }
 
-  // Per-pill flavor arc stage. Returns a level scale 0.7-1.0 based on
+  // Per-pill flavor arc stage. Returns a level scale 0.64-0.92 based on
   // elapsed seconds since the pill was switched on:
-  //   0-90s     warm-up   0.72 → 1.00 (linear ramp)
-  //   90-720s   peak      1.00
-  //   720s+     cool-down 1.00 → 0.85 over the next 1800s, then floor 0.85
+  //   0-90s     warm-up   0.64 → 0.92 (linear ramp)
+  //   90-720s   peak      0.92
+  //   720s+     cool-down 0.92 → 0.78 over the next 1800s, then floor 0.78
   // This creates a session-like arc: gentle entry, sustained body, soft cool.
   function flavorArcScale(elapsedSec) {
     if (elapsedSec < 90) {
-      return 0.72 + (elapsedSec / 90) * 0.28;
+      return 0.64 + (elapsedSec / 90) * 0.28;
     }
     if (elapsedSec < 720) {
-      return 1.0;
+      return 0.92;
     }
     const cool = Math.min(1, (elapsedSec - 720) / 1800);
-    return 1.0 - cool * 0.15;
+    return 0.92 - cool * 0.14;
   }
 
   let arcIntervalId = null;
@@ -2820,7 +2811,7 @@
     }
     if (!layer) return null;
     layer.startTime = Date.now();
-    const initialScale = flavorArcScale(0); // 0.72 warm-up start
+    const initialScale = flavorArcScale(0); // 0.64 warm-up start
     const target = workingLevelFor(name) * (layer.level || 1) * initialScale;
     try { layer.gain.gain.rampTo(target, CROSSFADE_S); } catch (e) {}
     return layer;
