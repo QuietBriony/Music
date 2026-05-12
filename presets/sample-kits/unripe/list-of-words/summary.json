@@ -1,0 +1,619 @@
+{
+  "source": "unripe",
+  "song_id": "list-of-words",
+  "source_stem": "presets/unripe-stems/list-of-words/drums.mp3",
+  "sample_rate": 44100,
+  "clip_duration_s": 0.3,
+  "samples": {
+    "kick": [
+      {
+        "file": "kick-01.wav",
+        "src_time_s": 162.505,
+        "rms": 0.1298,
+        "confidence": 0.9,
+        "features": {
+          "rms": 0.1298,
+          "sub_e": 0.371,
+          "low_e": 0.133,
+          "mid_e": 0.204,
+          "snap_e": 0.149,
+          "high_e": 0.144,
+          "decay_ratio": 0.67
+        }
+      },
+      {
+        "file": "kick-02.wav",
+        "src_time_s": 9.567,
+        "rms": 0.1208,
+        "confidence": 0.9,
+        "features": {
+          "rms": 0.1208,
+          "sub_e": 0.484,
+          "low_e": 0.171,
+          "mid_e": 0.068,
+          "snap_e": 0.051,
+          "high_e": 0.226,
+          "decay_ratio": 0.676
+        }
+      },
+      {
+        "file": "kick-03.wav",
+        "src_time_s": 23.417,
+        "rms": 0.1195,
+        "confidence": 0.9,
+        "features": {
+          "rms": 0.1195,
+          "sub_e": 0.381,
+          "low_e": 0.162,
+          "mid_e": 0.103,
+          "snap_e": 0.098,
+          "high_e": 0.256,
+          "decay_ratio": 0.294
+        }
+      },
+      {
+        "file": "kick-04.wav",
+        "src_time_s": 26.947,
+        "rms": 0.107,
+        "confidence": 0.9,
+        "features": {
+          "rms": 0.107,
+          "sub_e": 0.418,
+          "low_e": 0.134,
+          "mid_e": 0.096,
+          "snap_e": 0.144,
+          "high_e": 0.208,
+          "decay_ratio": 0.398
+        }
+      },
+      {
+        "file": "kick-05.wav",
+        "src_time_s": 38.383,
+        "rms": 0.0969,
+        "confidence": 0.9,
+        "features": {
+          "rms": 0.0969,
+          "sub_e": 0.407,
+          "low_e": 0.182,
+          "mid_e": 0.123,
+          "snap_e": 0.151,
+          "high_e": 0.137,
+          "decay_ratio": 0.082
+        }
+      },
+      {
+        "file": "kick-06.wav",
+        "src_time_s": 116.274,
+        "rms": 0.0951,
+        "confidence": 0.9,
+        "features": {
+          "rms": 0.0951,
+          "sub_e": 0.385,
+          "low_e": 0.127,
+          "mid_e": 0.12,
+          "snap_e": 0.194,
+          "high_e": 0.173,
+          "decay_ratio": 0.834
+        }
+      },
+      {
+        "file": "kick-07.wav",
+        "src_time_s": 31.254,
+        "rms": 0.0928,
+        "confidence": 0.9,
+        "features": {
+          "rms": 0.0928,
+          "sub_e": 0.368,
+          "low_e": 0.149,
+          "mid_e": 0.129,
+          "snap_e": 0.139,
+          "high_e": 0.214,
+          "decay_ratio": 0.115
+        }
+      },
+      {
+        "file": "kick-08.wav",
+        "src_time_s": 175.821,
+        "rms": 0.0756,
+        "confidence": 0.9,
+        "features": {
+          "rms": 0.0756,
+          "sub_e": 0.428,
+          "low_e": 0.152,
+          "mid_e": 0.194,
+          "snap_e": 0.148,
+          "high_e": 0.079,
+          "decay_ratio": 0.098
+        }
+      }
+    ],
+    "snare": [
+      {
+        "file": "snare-01.wav",
+        "src_time_s": 138.612,
+        "rms": 0.1581,
+        "confidence": 0.8,
+        "features": {
+          "rms": 0.1581,
+          "sub_e": 0.008,
+          "low_e": 0.096,
+          "mid_e": 0.415,
+          "snap_e": 0.28,
+          "high_e": 0.201,
+          "decay_ratio": 1.188
+        }
+      },
+      {
+        "file": "snare-02.wav",
+        "src_time_s": 146.344,
+        "rms": 0.125,
+        "confidence": 0.8,
+        "features": {
+          "rms": 0.125,
+          "sub_e": 0.01,
+          "low_e": 0.16,
+          "mid_e": 0.316,
+          "snap_e": 0.284,
+          "high_e": 0.23,
+          "decay_ratio": 0.308
+        }
+      },
+      {
+        "file": "snare-03.wav",
+        "src_time_s": 129.451,
+        "rms": 0.1173,
+        "confidence": 0.8,
+        "features": {
+          "rms": 0.1173,
+          "sub_e": 0.013,
+          "low_e": 0.172,
+          "mid_e": 0.338,
+          "snap_e": 0.279,
+          "high_e": 0.198,
+          "decay_ratio": 0.291
+        }
+      },
+      {
+        "file": "snare-04.wav",
+        "src_time_s": 142.153,
+        "rms": 0.1154,
+        "confidence": 0.8,
+        "features": {
+          "rms": 0.1154,
+          "sub_e": 0.006,
+          "low_e": 0.151,
+          "mid_e": 0.321,
+          "snap_e": 0.295,
+          "high_e": 0.227,
+          "decay_ratio": 0.254
+        }
+      },
+      {
+        "file": "snare-05.wav",
+        "src_time_s": 126.63,
+        "rms": 0.1147,
+        "confidence": 0.8,
+        "features": {
+          "rms": 0.1147,
+          "sub_e": 0.034,
+          "low_e": 0.133,
+          "mid_e": 0.29,
+          "snap_e": 0.308,
+          "high_e": 0.236,
+          "decay_ratio": 0.266
+        }
+      },
+      {
+        "file": "snare-06.wav",
+        "src_time_s": 137.938,
+        "rms": 0.1144,
+        "confidence": 0.8,
+        "features": {
+          "rms": 0.1144,
+          "sub_e": 0.006,
+          "low_e": 0.156,
+          "mid_e": 0.33,
+          "snap_e": 0.281,
+          "high_e": 0.227,
+          "decay_ratio": 0.246
+        }
+      },
+      {
+        "file": "snare-07.wav",
+        "src_time_s": 139.343,
+        "rms": 0.1106,
+        "confidence": 0.8,
+        "features": {
+          "rms": 0.1106,
+          "sub_e": 0.005,
+          "low_e": 0.158,
+          "mid_e": 0.328,
+          "snap_e": 0.288,
+          "high_e": 0.22,
+          "decay_ratio": 0.279
+        }
+      },
+      {
+        "file": "snare-08.wav",
+        "src_time_s": 128.035,
+        "rms": 0.1103,
+        "confidence": 0.8,
+        "features": {
+          "rms": 0.1103,
+          "sub_e": 0.011,
+          "low_e": 0.151,
+          "mid_e": 0.316,
+          "snap_e": 0.293,
+          "high_e": 0.229,
+          "decay_ratio": 0.337
+        }
+      }
+    ],
+    "hat": [
+      {
+        "file": "hat-01.wav",
+        "src_time_s": 136.928,
+        "rms": 0.121,
+        "confidence": 0.85,
+        "features": {
+          "rms": 0.121,
+          "sub_e": 0.193,
+          "low_e": 0.064,
+          "mid_e": 0.127,
+          "snap_e": 0.159,
+          "high_e": 0.458,
+          "decay_ratio": 0.17
+        }
+      },
+      {
+        "file": "hat-02.wav",
+        "src_time_s": 138.344,
+        "rms": 0.1193,
+        "confidence": 0.85,
+        "features": {
+          "rms": 0.1193,
+          "sub_e": 0.157,
+          "low_e": 0.056,
+          "mid_e": 0.13,
+          "snap_e": 0.189,
+          "high_e": 0.468,
+          "decay_ratio": 0.166
+        }
+      },
+      {
+        "file": "hat-03.wav",
+        "src_time_s": 128.511,
+        "rms": 0.1185,
+        "confidence": 0.85,
+        "features": {
+          "rms": 0.1185,
+          "sub_e": 0.256,
+          "low_e": 0.072,
+          "mid_e": 0.079,
+          "snap_e": 0.135,
+          "high_e": 0.458,
+          "decay_ratio": 0.121
+        }
+      },
+      {
+        "file": "hat-04.wav",
+        "src_time_s": 138.925,
+        "rms": 0.1177,
+        "confidence": 0.85,
+        "features": {
+          "rms": 0.1177,
+          "sub_e": 0.156,
+          "low_e": 0.067,
+          "mid_e": 0.159,
+          "snap_e": 0.217,
+          "high_e": 0.402,
+          "decay_ratio": 0.213
+        }
+      },
+      {
+        "file": "hat-05.wav",
+        "src_time_s": 139.761,
+        "rms": 0.1161,
+        "confidence": 0.85,
+        "features": {
+          "rms": 0.1161,
+          "sub_e": 0.172,
+          "low_e": 0.064,
+          "mid_e": 0.132,
+          "snap_e": 0.176,
+          "high_e": 0.456,
+          "decay_ratio": 0.234
+        }
+      },
+      {
+        "file": "hat-06.wav",
+        "src_time_s": 61.475,
+        "rms": 0.1137,
+        "confidence": 0.85,
+        "features": {
+          "rms": 0.1137,
+          "sub_e": 0.085,
+          "low_e": 0.156,
+          "mid_e": 0.176,
+          "snap_e": 0.166,
+          "high_e": 0.417,
+          "decay_ratio": 0.24
+        }
+      },
+      {
+        "file": "hat-07.wav",
+        "src_time_s": 137.555,
+        "rms": 0.113,
+        "confidence": 0.85,
+        "features": {
+          "rms": 0.113,
+          "sub_e": 0.202,
+          "low_e": 0.076,
+          "mid_e": 0.158,
+          "snap_e": 0.171,
+          "high_e": 0.392,
+          "decay_ratio": 0.145
+        }
+      },
+      {
+        "file": "hat-08.wav",
+        "src_time_s": 143.151,
+        "rms": 0.1126,
+        "confidence": 0.85,
+        "features": {
+          "rms": 0.1126,
+          "sub_e": 0.177,
+          "low_e": 0.085,
+          "mid_e": 0.167,
+          "snap_e": 0.21,
+          "high_e": 0.36,
+          "decay_ratio": 0.193
+        }
+      }
+    ],
+    "crash": [
+      {
+        "file": "crash-01.wav",
+        "src_time_s": 10.646,
+        "rms": 0.2124,
+        "confidence": 0.75,
+        "features": {
+          "rms": 0.2124,
+          "sub_e": 0.011,
+          "low_e": 0.159,
+          "mid_e": 0.185,
+          "snap_e": 0.255,
+          "high_e": 0.389,
+          "decay_ratio": 1.133
+        }
+      },
+      {
+        "file": "crash-02.wav",
+        "src_time_s": 132.969,
+        "rms": 0.2106,
+        "confidence": 0.75,
+        "features": {
+          "rms": 0.2106,
+          "sub_e": 0.03,
+          "low_e": 0.275,
+          "mid_e": 0.176,
+          "snap_e": 0.242,
+          "high_e": 0.278,
+          "decay_ratio": 1.149
+        }
+      },
+      {
+        "file": "crash-03.wav",
+        "src_time_s": 144.254,
+        "rms": 0.2028,
+        "confidence": 0.75,
+        "features": {
+          "rms": 0.2028,
+          "sub_e": 0.042,
+          "low_e": 0.274,
+          "mid_e": 0.18,
+          "snap_e": 0.253,
+          "high_e": 0.25,
+          "decay_ratio": 0.953
+        }
+      },
+      {
+        "file": "crash-04.wav",
+        "src_time_s": 10.844,
+        "rms": 0.198,
+        "confidence": 0.75,
+        "features": {
+          "rms": 0.198,
+          "sub_e": 0.153,
+          "low_e": 0.204,
+          "mid_e": 0.082,
+          "snap_e": 0.207,
+          "high_e": 0.355,
+          "decay_ratio": 0.638
+        }
+      },
+      {
+        "file": "crash-05.wav",
+        "src_time_s": 146.913,
+        "rms": 0.1941,
+        "confidence": 0.75,
+        "features": {
+          "rms": 0.1941,
+          "sub_e": 0.011,
+          "low_e": 0.125,
+          "mid_e": 0.264,
+          "snap_e": 0.263,
+          "high_e": 0.338,
+          "decay_ratio": 0.777
+        }
+      },
+      {
+        "file": "crash-06.wav",
+        "src_time_s": 88.619,
+        "rms": 0.1871,
+        "confidence": 0.75,
+        "features": {
+          "rms": 0.1871,
+          "sub_e": 0.094,
+          "low_e": 0.091,
+          "mid_e": 0.237,
+          "snap_e": 0.276,
+          "high_e": 0.303,
+          "decay_ratio": 0.746
+        }
+      },
+      {
+        "file": "crash-07.wav",
+        "src_time_s": 135.779,
+        "rms": 0.1864,
+        "confidence": 0.75,
+        "features": {
+          "rms": 0.1864,
+          "sub_e": 0.03,
+          "low_e": 0.292,
+          "mid_e": 0.175,
+          "snap_e": 0.233,
+          "high_e": 0.27,
+          "decay_ratio": 0.982
+        }
+      },
+      {
+        "file": "crash-08.wav",
+        "src_time_s": 88.526,
+        "rms": 0.1858,
+        "confidence": 0.75,
+        "features": {
+          "rms": 0.1858,
+          "sub_e": 0.015,
+          "low_e": 0.109,
+          "mid_e": 0.237,
+          "snap_e": 0.28,
+          "high_e": 0.359,
+          "decay_ratio": 0.894
+        }
+      }
+    ],
+    "other": [
+      {
+        "file": "other-01.wav",
+        "src_time_s": 127.35,
+        "rms": 0.2208,
+        "confidence": 0.3,
+        "features": {
+          "rms": 0.2208,
+          "sub_e": 0.061,
+          "low_e": 0.351,
+          "mid_e": 0.186,
+          "snap_e": 0.163,
+          "high_e": 0.238,
+          "decay_ratio": 0.962
+        }
+      },
+      {
+        "file": "other-02.wav",
+        "src_time_s": 133.085,
+        "rms": 0.2135,
+        "confidence": 0.3,
+        "features": {
+          "rms": 0.2135,
+          "sub_e": 0.138,
+          "low_e": 0.284,
+          "mid_e": 0.161,
+          "snap_e": 0.219,
+          "high_e": 0.198,
+          "decay_ratio": 0.996
+        }
+      },
+      {
+        "file": "other-03.wav",
+        "src_time_s": 147.064,
+        "rms": 0.2127,
+        "confidence": 0.3,
+        "features": {
+          "rms": 0.2127,
+          "sub_e": 0.033,
+          "low_e": 0.288,
+          "mid_e": 0.245,
+          "snap_e": 0.231,
+          "high_e": 0.203,
+          "decay_ratio": 0.999
+        }
+      },
+      {
+        "file": "other-04.wav",
+        "src_time_s": 147.18,
+        "rms": 0.2053,
+        "confidence": 0.3,
+        "features": {
+          "rms": 0.2053,
+          "sub_e": 0.204,
+          "low_e": 0.267,
+          "mid_e": 0.125,
+          "snap_e": 0.246,
+          "high_e": 0.158,
+          "decay_ratio": 0.845
+        }
+      },
+      {
+        "file": "other-05.wav",
+        "src_time_s": 144.335,
+        "rms": 0.2036,
+        "confidence": 0.3,
+        "features": {
+          "rms": 0.2036,
+          "sub_e": 0.104,
+          "low_e": 0.288,
+          "mid_e": 0.15,
+          "snap_e": 0.265,
+          "high_e": 0.193,
+          "decay_ratio": 1.678
+        }
+      },
+      {
+        "file": "other-06.wav",
+        "src_time_s": 127.466,
+        "rms": 0.2035,
+        "confidence": 0.3,
+        "features": {
+          "rms": 0.2035,
+          "sub_e": 0.168,
+          "low_e": 0.295,
+          "mid_e": 0.132,
+          "snap_e": 0.256,
+          "high_e": 0.15,
+          "decay_ratio": 0.786
+        }
+      },
+      {
+        "file": "other-07.wav",
+        "src_time_s": 32.299,
+        "rms": 0.1725,
+        "confidence": 0.3,
+        "features": {
+          "rms": 0.1725,
+          "sub_e": 0.155,
+          "low_e": 0.261,
+          "mid_e": 0.127,
+          "snap_e": 0.205,
+          "high_e": 0.253,
+          "decay_ratio": 1.104
+        }
+      },
+      {
+        "file": "other-08.wav",
+        "src_time_s": 135.93,
+        "rms": 0.1725,
+        "confidence": 0.3,
+        "features": {
+          "rms": 0.1725,
+          "sub_e": 0.21,
+          "low_e": 0.286,
+          "mid_e": 0.153,
+          "snap_e": 0.196,
+          "high_e": 0.154,
+          "decay_ratio": 0.745
+        }
+      }
+    ]
+  }
+}

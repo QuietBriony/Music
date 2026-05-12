@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-7" />
+<link rel="stylesheet" href="band-room.css?v=br-8" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-7" defer></script>
+<script src="band-room.js?v=br-8" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -100,6 +100,14 @@
         <span>reverb</span>
         <input type="range" id="br-vfx-reverb" min="0" max="100" value="28" />
       </label>
+    </section>
+
+    <section id="br-kit-select" aria-label="Drum kit source" data-scope="synth">
+      <h3>🥁 drum kit source — drum-floor の音色を本物 sample に差し替え</h3>
+      <select id="br-kit-source-select">
+        <!-- populated by band-room.js from KIT_OPTIONS -->
+      </select>
+      <span id="br-kit-status" aria-live="polite"></span>
     </section>
 
     <section id="br-controls" aria-label="Synth layer toggles" data-scope="synth">

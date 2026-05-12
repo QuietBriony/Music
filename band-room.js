@@ -23,7 +23,7 @@
   // ---- State ---------------------------------------------------
 
   const state = {
-    bandsRegistry: null,   // loaded from presets/bands.json
+    bandsRegistry: null,
     currentBandId: "tabasco",
     currentSongId: "human-fly",
     songData: null,
@@ -34,7 +34,8 @@
     sectionBarStart: 0,
     chordIdx: 0,
     chordBarsRemaining: 0,
-    scheduledIds: []
+    scheduledIds: [],
+    kitSource: "synth"   // "synth" | "<source>/<song>" (e.g. "unripe/continuous")
   };
 
   // ---- Tone.js nodes -------------------------------------------
@@ -64,6 +65,17 @@
   let stemBus = { vocals: null, drums: null, bass: null, other: null };
   let stemPlayers = { vocals: null, drums: null, bass: null, other: null };
   let currentMode = "stems";  // "stems" | "synth"
+
+  // Drum kit source (synth default OR sampled from a reference song)
+  const KIT_OPTIONS = [
+    { value: "synth", label: "AI synth (default)" },
+    { value: "unripe/continuous",    label: "UNRIPE / Continuous (103 BPM)" },
+    { value: "unripe/list-of-words", label: "UNRIPE / List of Words (103)" },
+    { value: "unripe/definition",    label: "UNRIPE / Definition (144)" },
+    { value: "unripe/past-and-fate", label: "UNRIPE / Past and Fate (144)" },
+    { value: "unripe/end-falls",     label: "UNRIPE / End Falls (108)" },
+    { value: "unripe/erase",         label: "UNRIPE / Erase (136)" }
+  ];
 
   // Vocal FX chain (applied to vocal stem only to disguise / polish)
   let vocalChorus = null;
@@ -384,6 +396,68 @@
         try { player.stop(); } catch (e) {}
       }
     });
+  }
+
+  // ---- Sampled drum kit (Tone.Player per voice) ----------------
+  // Loads wav samples from presets/sample-kits/<source>/<song>/ and
+  // exposes the same interface as makeDrumKit (kick/snare/hat/ghost/
+  // fill/crash with triggerAttackRelease). Lets drum-floor frames play
+  // through actual recorded drum hits instead of Tone.MembraneSynth etc.
+  //
+  // Each voice = Tone.Player + Tone.Gain (velocity scaling).
+
+  function makeSampleVoice(target, url) {
+    const gain = new Tone.Gain(1).connect(target);
+    const player = new Tone.Player({ url, autostart: false, retrigger: true }).connect(gain);
+    return {
+      _player: player, _gain: gain, _url: url,
+      triggerAttackRelease(_note, _dur, time, vel) {
+        try {
+          gain.gain.cancelScheduledValues(time);
+          gain.gain.setValueAtTime(Math.max(0.05, Math.min(1.0, vel || 0.5)), time);
+          player.start(time);
+        } catch (e) {}
+      },
+      dispose() {
+        try { player.dispose(); } catch (e) {}
+        try { gain.dispose(); } catch (e) {}
+      }
+    };
+  }
+
+  async function buildKitForSource(source) {
+    if (!drumBus) ensureMaster();
+    if (drumKit && drumKit.dispose) {
+      try { drumKit.dispose(); } catch (e) {}
+    }
+    if (source === "synth" || !source) {
+      return makeDrumKit(drumBus);
+    }
+    const kitPath = `presets/sample-kits/${source}`;
+    const kit = makeSampledKit(drumBus, kitPath);
+    // Wait for samples to load (Tone.loaded() waits on ALL Tone buffers)
+    try { await Tone.loaded(); } catch (e) {}
+    return kit;
+  }
+
+  function makeSampledKit(target, kitPath) {
+    // kitPath e.g. "presets/sample-kits/unripe/continuous"
+    // Map drum-frames instrument names → sample files
+    const mapping = {
+      kick:  "kick-01.wav",
+      snare: "snare-01.wav",
+      hat:   "hat-01.wav",
+      ghost: "snare-03.wav",   // softer snare for ghost notes
+      fill:  "snare-02.wav",   // alternate snare as fill
+      crash: "crash-01.wav"
+    };
+    const voices = {};
+    Object.entries(mapping).forEach(([k, fname]) => {
+      voices[k] = makeSampleVoice(target, `${kitPath}/${fname}`);
+    });
+    voices._kitPath = kitPath;
+    voices.dispose = () => Object.values(voices).forEach((v) => v && v.dispose && v.dispose());
+    return voices;
   }
 
   // ---- Distorted guitar (UNRIPE hardcore-postpunk drive) ------
@@ -855,7 +929,7 @@
     }
 
     ensureMaster();
-    if (!drumKit) drumKit = makeDrumKit(drumBus);
+    if (!drumKit) drumKit = await buildKitForSource(state.kitSource);
     if (!synthBass) synthBass = makeSynthBass(bassBus);
     if (!guitarSynth) guitarSynth = makeGuitar(guitarBus);
     if (!voiceSynth) voiceSynth = makeVoiceBox(voiceBus);
@@ -1143,10 +1217,37 @@
     await loadSong(state.currentSongId);
   }
 
+  function renderKitOptions() {
+    const sel = $("br-kit-source-select");
+    if (!sel) return;
+    sel.innerHTML = "";
+    KIT_OPTIONS.forEach((opt) => {
+      const o = document.createElement("option");
+      o.value = opt.value;
+      o.textContent = opt.label;
+      if (opt.value === state.kitSource) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", async () => {
+      const newSource = sel.value;
+      const wasPlaying = state.started;
+      const status = $("br-kit-status");
+      if (status) status.textContent = "loading kit…";
+      state.kitSource = newSource;
+      try {
+        drumKit = await buildKitForSource(newSource);
+        if (status) status.textContent = newSource === "synth" ? "synth kit ready" : `sample kit: ${newSource}`;
+      } catch (e) {
+        if (status) status.textContent = "kit load failed: " + e.message;
+      }
+    });
+  }
+
   // ---- Boot ---------------------------------------------------
 
   window.addEventListener("DOMContentLoaded", async () => {
     bindUI();
+    renderKitOptions();
     await loadBandsRegistry();
     // Pre-load the default song meta (doesn't start audio)
     await loadSong(state.currentSongId);
