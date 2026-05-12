@@ -550,7 +550,11 @@
         //   - bus → master (drums/bass/other)
         //   - vocalChorus (vocals)
         const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
-        const player = new Tone.Player({ url, autostart: false, fadeIn: 0.005, fadeOut: 0.02 }).connect(target);
+        // v68: loop = true so practice/jam sessions don't go silent at song end.
+        // Tone.Player loop is sample-accurate at the buffer boundary.
+        const player = new Tone.Player({
+          url, autostart: false, fadeIn: 0.005, fadeOut: 0.02, loop: true
+        }).connect(target);
         await Tone.loaded();
         return { stem, player };
       } catch (e) {
@@ -951,19 +955,24 @@
   function scheduleBar() {
     // This fires once per bar. Reads current frame's events, schedules drums.
     state.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      const sec = currentSection();
+      let sec = currentSection();
       if (!sec) {
-        // End of song — stop
-        if (state.started) stopPlayback();
-        return;
+        // v68: loop to top of song instead of stopping (jam/practice mode)
+        state.sectionIdx = 0;
+        state.sectionBarStart = state.barCount;
+        sec = currentSection();
+        if (!sec) {
+          if (state.started) stopPlayback();
+          return;
+        }
       }
       // Did we cross into next section?
       if (state.barCount - state.sectionBarStart >= sec.bars) {
         state.sectionIdx++;
         state.sectionBarStart = state.barCount;
         if (state.sectionIdx >= state.songData.structure.length) {
-          stopPlayback();
-          return;
+          // v68: loop to top of structure — stems already loop via player.loop=true
+          state.sectionIdx = 0;
         }
       }
 
@@ -1532,6 +1541,19 @@
   }
 
   // ---- Boot ---------------------------------------------------
+
+  // v68: resume AudioContext when tab returns to foreground (mobile Safari
+  // and Chrome suspend the audio graph when the tab is backgrounded —
+  // this was the "途中で止まる" cause on mobile).
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && state.started) {
+      try {
+        if (Tone.context.state === "suspended") {
+          Tone.context.resume();
+        }
+      } catch (e) {}
+    }
+  });
 
   window.addEventListener("DOMContentLoaded", async () => {
     bindUI();
