@@ -5,7 +5,7 @@
   "song_title": "I got a feeling",
   "band": "air rock connect box",
   "original_album": "Tabasco. LIVE (2005-ish)",
-  "session_signature": "Nirvana quiet-loud rock + grunge pocket + extended jam",
+  "session_signature": "Nirvana quiet-loud rock + grunge pocket + extended jam · drum events extracted from real stem",
   "bpm": 117,
   "key": "B minor",
   "structure": [
@@ -90,100 +90,84 @@
       "barLength": 4,
       "events": [
         {
+          "instrument": "crash",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.35,
+          "microMs": 23,
+          "role": "extracted_crash"
+        },
+        {
+          "instrument": "crash",
+          "beat": 0,
+          "sub": 1,
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_crash"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 3,
+          "velocity": 0.35,
+          "microMs": 4,
+          "role": "extracted_hat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 1,
+          "velocity": 0.35,
+          "microMs": -8,
+          "role": "extracted_hat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 3,
+          "velocity": 0.36,
+          "microMs": -27,
+          "role": "extracted_hat"
+        },
+        {
+          "instrument": "crash",
+          "beat": 2,
+          "sub": 1,
+          "velocity": 0.35,
+          "microMs": 1,
+          "role": "extracted_crash"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 3,
+          "velocity": 0.35,
+          "microMs": -23,
+          "role": "extracted_hat"
+        },
+        {
           "instrument": "kick",
-          "beat": 0,
-          "sub": 0,
-          "velocity": 0.72,
-          "microMs": -2,
-          "role": "anchor"
-        },
-        {
-          "instrument": "hat",
-          "beat": 0,
-          "sub": 0,
-          "velocity": 0.41,
-          "microMs": 0,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "hat",
-          "beat": 0,
-          "sub": 2,
-          "velocity": 0.37,
-          "microMs": 1,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "snare",
-          "beat": 1,
-          "sub": 0,
-          "velocity": 0.58,
-          "microMs": 6,
-          "role": "soft_backbeat"
-        },
-        {
-          "instrument": "hat",
-          "beat": 1,
-          "sub": 0,
-          "velocity": 0.38,
-          "microMs": 0,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "hat",
-          "beat": 1,
-          "sub": 2,
-          "velocity": 0.34,
-          "microMs": 1,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "kick",
-          "beat": 2,
-          "sub": 0,
-          "velocity": 0.66,
-          "microMs": -1,
-          "role": "anchor"
-        },
-        {
-          "instrument": "hat",
-          "beat": 2,
-          "sub": 0,
-          "velocity": 0.38,
-          "microMs": 0,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "hat",
-          "beat": 2,
-          "sub": 2,
-          "velocity": 0.34,
-          "microMs": 1,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "snare",
           "beat": 3,
-          "sub": 0,
-          "velocity": 0.62,
-          "microMs": 7,
-          "role": "soft_backbeat"
+          "sub": 1,
+          "velocity": 0.35,
+          "microMs": 17,
+          "role": "extracted_kick"
         },
         {
           "instrument": "hat",
           "beat": 3,
-          "sub": 0,
-          "velocity": 0.38,
-          "microMs": 0,
-          "role": "closed_8th"
+          "sub": 1,
+          "velocity": 0.35,
+          "microMs": -18,
+          "role": "extracted_hat"
         },
         {
           "instrument": "hat",
           "beat": 3,
-          "sub": 2,
-          "velocity": 0.34,
-          "microMs": 1,
-          "role": "closed_8th"
+          "sub": 3,
+          "velocity": 0.4,
+          "microMs": -25,
+          "role": "extracted_hat"
         }
       ]
     },
@@ -193,124 +177,68 @@
       "barLength": 4,
       "events": [
         {
-          "instrument": "kick",
-          "beat": 0,
-          "sub": 0,
-          "velocity": 0.94,
-          "microMs": -2,
-          "role": "4-on-floor"
-        },
-        {
-          "instrument": "hat",
-          "beat": 0,
-          "sub": 0,
-          "velocity": 0.57,
-          "microMs": 0,
-          "role": "closed_8th"
-        },
-        {
           "instrument": "crash",
           "beat": 0,
           "sub": 0,
-          "velocity": 0.44,
-          "microMs": 3,
-          "role": "explode_in"
+          "velocity": 0.35,
+          "microMs": 23,
+          "role": "extracted_crash"
         },
         {
           "instrument": "hat",
           "beat": 0,
           "sub": 2,
-          "velocity": 0.53,
-          "microMs": 1,
-          "role": "closed_8th"
+          "velocity": 0.35,
+          "microMs": 28,
+          "role": "extracted_hat"
         },
         {
-          "instrument": "kick",
+          "instrument": "crash",
           "beat": 1,
           "sub": 0,
-          "velocity": 0.9,
-          "microMs": -2,
-          "role": "4-on-floor"
-        },
-        {
-          "instrument": "snare",
-          "beat": 1,
-          "sub": 0,
-          "velocity": 0.88,
-          "microMs": 3,
-          "role": "backbeat"
-        },
-        {
-          "instrument": "hat",
-          "beat": 1,
-          "sub": 0,
-          "velocity": 0.54,
-          "microMs": 0,
-          "role": "closed_8th"
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_crash"
         },
         {
           "instrument": "hat",
           "beat": 1,
           "sub": 2,
-          "velocity": 0.5,
-          "microMs": 1,
-          "role": "closed_8th"
+          "velocity": 0.35,
+          "microMs": -9,
+          "role": "extracted_hat"
         },
         {
-          "instrument": "kick",
+          "instrument": "ghost",
           "beat": 2,
           "sub": 0,
-          "velocity": 0.94,
-          "microMs": -2,
-          "role": "4-on-floor"
-        },
-        {
-          "instrument": "hat",
-          "beat": 2,
-          "sub": 0,
-          "velocity": 0.54,
-          "microMs": 0,
-          "role": "closed_8th"
+          "velocity": 0.35,
+          "microMs": -30,
+          "role": "extracted_ghost"
         },
         {
           "instrument": "hat",
           "beat": 2,
           "sub": 2,
-          "velocity": 0.5,
-          "microMs": 1,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "kick",
-          "beat": 3,
-          "sub": 0,
-          "velocity": 0.9,
-          "microMs": -2,
-          "role": "4-on-floor"
-        },
-        {
-          "instrument": "snare",
-          "beat": 3,
-          "sub": 0,
-          "velocity": 0.92,
-          "microMs": 4,
-          "role": "backbeat"
+          "velocity": 0.35,
+          "microMs": -11,
+          "role": "extracted_hat"
         },
         {
           "instrument": "hat",
           "beat": 3,
           "sub": 0,
-          "velocity": 0.54,
-          "microMs": 0,
-          "role": "closed_8th"
+          "velocity": 0.35,
+          "microMs": 6,
+          "role": "extracted_hat"
         },
         {
           "instrument": "hat",
           "beat": 3,
           "sub": 2,
-          "velocity": 0.5,
-          "microMs": 1,
-          "role": "closed_8th"
+          "velocity": 0.35,
+          "microMs": -30,
+          "role": "extracted_hat"
         }
       ]
     },
@@ -320,116 +248,76 @@
       "barLength": 4,
       "events": [
         {
-          "instrument": "kick",
+          "instrument": "ghost",
           "beat": 0,
-          "sub": 0,
-          "velocity": 0.76,
-          "microMs": -2,
-          "role": "anchor"
-        },
-        {
-          "instrument": "hat",
-          "beat": 0,
-          "sub": 0,
-          "velocity": 0.45,
-          "microMs": 0,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "hat",
-          "beat": 0,
-          "sub": 2,
-          "velocity": 0.41,
-          "microMs": 1,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "snare",
-          "beat": 1,
-          "sub": 0,
-          "velocity": 0.64,
-          "microMs": 8,
-          "role": "backbeat"
-        },
-        {
-          "instrument": "hat",
-          "beat": 1,
-          "sub": 0,
-          "velocity": 0.42,
-          "microMs": 0,
-          "role": "closed_8th"
+          "sub": 1,
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_ghost"
         },
         {
           "instrument": "ghost",
+          "beat": 0,
+          "sub": 2,
+          "velocity": 0.35,
+          "microMs": -30,
+          "role": "extracted_ghost"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 0,
+          "sub": 3,
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_ghost"
+        },
+        {
+          "instrument": "hat",
           "beat": 1,
           "sub": 1,
-          "velocity": 0.24,
-          "microMs": 12,
-          "role": "snare_ghost"
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_hat"
         },
         {
           "instrument": "hat",
           "beat": 1,
-          "sub": 2,
-          "velocity": 0.38,
-          "microMs": 1,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "kick",
-          "beat": 2,
-          "sub": 0,
-          "velocity": 0.7,
-          "microMs": -1,
-          "role": "anchor"
+          "sub": 3,
+          "velocity": 0.35,
+          "microMs": 20,
+          "role": "extracted_hat"
         },
         {
           "instrument": "hat",
           "beat": 2,
-          "sub": 0,
-          "velocity": 0.42,
-          "microMs": 0,
-          "role": "closed_8th"
+          "sub": 1,
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_hat"
         },
         {
           "instrument": "hat",
           "beat": 2,
-          "sub": 2,
-          "velocity": 0.38,
-          "microMs": 1,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "snare",
-          "beat": 3,
-          "sub": 0,
-          "velocity": 0.68,
-          "microMs": 9,
-          "role": "backbeat"
+          "sub": 3,
+          "velocity": 0.35,
+          "microMs": 29,
+          "role": "extracted_hat"
         },
         {
           "instrument": "hat",
           "beat": 3,
-          "sub": 0,
-          "velocity": 0.42,
-          "microMs": 0,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "hat",
-          "beat": 3,
-          "sub": 2,
-          "velocity": 0.38,
-          "microMs": 1,
-          "role": "closed_8th"
+          "sub": 1,
+          "velocity": 0.35,
+          "microMs": 23,
+          "role": "extracted_hat"
         },
         {
           "instrument": "ghost",
           "beat": 3,
           "sub": 3,
-          "velocity": 0.26,
-          "microMs": 13,
-          "role": "snare_ghost"
+          "velocity": 0.35,
+          "microMs": 22,
+          "role": "extracted_ghost"
         }
       ]
     },
@@ -439,140 +327,68 @@
       "barLength": 4,
       "events": [
         {
-          "instrument": "kick",
+          "instrument": "ghost",
           "beat": 0,
-          "sub": 0,
-          "velocity": 0.98,
-          "microMs": -2,
-          "role": "4-on-floor"
+          "sub": 2,
+          "velocity": 0.35,
+          "microMs": -18,
+          "role": "extracted_ghost"
         },
         {
-          "instrument": "hat",
-          "beat": 0,
+          "instrument": "ghost",
+          "beat": 1,
           "sub": 0,
-          "velocity": 0.61,
-          "microMs": 0,
-          "role": "closed_8th"
+          "velocity": 0.42,
+          "microMs": -30,
+          "role": "extracted_ghost"
         },
         {
           "instrument": "crash",
-          "beat": 0,
-          "sub": 0,
-          "velocity": 0.52,
-          "microMs": 3,
-          "role": "climax_lift"
-        },
-        {
-          "instrument": "hat",
-          "beat": 0,
-          "sub": 2,
-          "velocity": 0.57,
-          "microMs": 1,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "kick",
-          "beat": 1,
-          "sub": 0,
-          "velocity": 0.94,
-          "microMs": -2,
-          "role": "4-on-floor"
-        },
-        {
-          "instrument": "snare",
-          "beat": 1,
-          "sub": 0,
-          "velocity": 0.9,
-          "microMs": 3,
-          "role": "backbeat"
-        },
-        {
-          "instrument": "hat",
-          "beat": 1,
-          "sub": 0,
-          "velocity": 0.58,
-          "microMs": 0,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "hat",
           "beat": 1,
           "sub": 2,
-          "velocity": 0.54,
-          "microMs": 1,
-          "role": "closed_8th"
+          "velocity": 0.35,
+          "microMs": 9,
+          "role": "extracted_crash"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.35,
+          "microMs": -30,
+          "role": "extracted_ghost"
         },
         {
           "instrument": "kick",
           "beat": 2,
-          "sub": 0,
-          "velocity": 0.98,
-          "microMs": -2,
-          "role": "4-on-floor"
+          "sub": 1,
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_kick"
         },
         {
-          "instrument": "hat",
-          "beat": 2,
-          "sub": 0,
-          "velocity": 0.58,
-          "microMs": 0,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "hat",
-          "beat": 2,
-          "sub": 2,
-          "velocity": 0.54,
-          "microMs": 1,
-          "role": "closed_8th"
-        },
-        {
-          "instrument": "kick",
+          "instrument": "ghost",
           "beat": 3,
           "sub": 0,
-          "velocity": 0.94,
-          "microMs": -2,
-          "role": "4-on-floor"
-        },
-        {
-          "instrument": "snare",
-          "beat": 3,
-          "sub": 0,
-          "velocity": 0.94,
-          "microMs": 4,
-          "role": "backbeat"
-        },
-        {
-          "instrument": "hat",
-          "beat": 3,
-          "sub": 0,
-          "velocity": 0.58,
-          "microMs": 0,
-          "role": "closed_8th"
+          "velocity": 0.35,
+          "microMs": -30,
+          "role": "extracted_ghost"
         },
         {
           "instrument": "hat",
           "beat": 3,
           "sub": 2,
-          "velocity": 0.54,
-          "microMs": 1,
-          "role": "closed_8th"
+          "velocity": 0.35,
+          "microMs": -30,
+          "role": "extracted_hat"
         },
         {
-          "instrument": "fill",
-          "beat": 3,
-          "sub": 2,
-          "velocity": 0.56,
-          "microMs": 8,
-          "role": "tom_fill"
-        },
-        {
-          "instrument": "fill",
+          "instrument": "ghost",
           "beat": 3,
           "sub": 3,
-          "velocity": 0.62,
-          "microMs": 10,
-          "role": "tom_fill"
+          "velocity": 0.44,
+          "microMs": 30,
+          "role": "extracted_ghost"
         }
       ]
     },
@@ -582,28 +398,76 @@
       "barLength": 4,
       "events": [
         {
-          "instrument": "kick",
+          "instrument": "crash",
           "beat": 0,
           "sub": 0,
-          "velocity": 0.84,
-          "microMs": -2,
-          "role": "ring_anchor"
+          "velocity": 0.35,
+          "microMs": 23,
+          "role": "extracted_crash"
         },
         {
           "instrument": "crash",
           "beat": 0,
-          "sub": 0,
-          "velocity": 0.66,
-          "microMs": 3,
-          "role": "long_ring"
+          "sub": 2,
+          "velocity": 0.35,
+          "microMs": -30,
+          "role": "extracted_crash"
         },
         {
-          "instrument": "snare",
+          "instrument": "crash",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.35,
+          "microMs": -30,
+          "role": "extracted_crash"
+        },
+        {
+          "instrument": "crash",
+          "beat": 1,
+          "sub": 1,
+          "velocity": 0.47,
+          "microMs": 30,
+          "role": "extracted_crash"
+        },
+        {
+          "instrument": "crash",
           "beat": 2,
           "sub": 0,
-          "velocity": 0.78,
-          "microMs": 4,
-          "role": "ring_bb"
+          "velocity": 0.35,
+          "microMs": -27,
+          "role": "extracted_crash"
+        },
+        {
+          "instrument": "crash",
+          "beat": 2,
+          "sub": 1,
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_crash"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 2,
+          "sub": 3,
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_ghost"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 3,
+          "sub": 1,
+          "velocity": 0.49,
+          "microMs": 30,
+          "role": "extracted_ghost"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 3,
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_hat"
         }
       ]
     }
@@ -721,5 +585,7 @@
         8
       ]
     ]
-  }
+  },
+  "events_extracted_from": "presets/tabasco-stems/i-got-a-feeling/drums.mp3",
+  "events_extraction_method": "librosa.onset_detect + band-energy classify + 16th-quantize"
 }

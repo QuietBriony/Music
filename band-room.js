@@ -35,7 +35,8 @@
     chordIdx: 0,
     chordBarsRemaining: 0,
     scheduledIds: [],
-    kitSource: "synth"   // "synth" | "<source>/<song>" (e.g. "unripe/continuous")
+    kitSource: "auto-self"  // default: use the current song's own extracted drum samples
+                            // ("synth" = generic Tone.js voices, "<src>/<song>" = specific kit)
   };
 
   // ---- Tone.js nodes -------------------------------------------
@@ -69,13 +70,28 @@
   // Drum kit source (synth default OR sampled from a reference song)
   const KIT_OPTIONS = [
     { value: "synth", label: "AI synth (default)" },
-    { value: "unripe/continuous",    label: "UNRIPE / Continuous (103 BPM)" },
+    { value: "auto-self", label: "auto: 曲自身の drums (現在の曲)" },
+    { value: "tabasco/tabasco",         label: "Tabasco / TABASCO (136)" },
+    { value: "tabasco/hey",             label: "Tabasco / Hey (123)" },
+    { value: "tabasco/i-got-a-feeling", label: "Tabasco / I got a feeling (117)" },
+    { value: "tabasco/under-the-moon",  label: "Tabasco / Under the Moon (161)" },
+    { value: "tabasco/electric-sheep",  label: "Tabasco / Electric Sheep (129)" },
+    { value: "tabasco/human-fly",       label: "Tabasco / Human Fly (117)" },
+    { value: "tabasco/sister",          label: "Tabasco / Sister (117)" },
+    { value: "unripe/continuous",    label: "UNRIPE / Continuous (103)" },
     { value: "unripe/list-of-words", label: "UNRIPE / List of Words (103)" },
     { value: "unripe/definition",    label: "UNRIPE / Definition (144)" },
     { value: "unripe/past-and-fate", label: "UNRIPE / Past and Fate (144)" },
     { value: "unripe/end-falls",     label: "UNRIPE / End Falls (108)" },
     { value: "unripe/erase",         label: "UNRIPE / Erase (136)" }
   ];
+
+  function resolveKitSource(source) {
+    if (source === "auto-self") {
+      return `${state.currentBandId}/${state.currentSongId}`;
+    }
+    return source;
+  }
 
   // Vocal FX chain (applied to vocal stem + external vocal)
   let vocalChorus = null;
@@ -543,12 +559,12 @@
     if (drumKit && drumKit.dispose) {
       try { drumKit.dispose(); } catch (e) {}
     }
-    if (source === "synth" || !source) {
+    const resolved = resolveKitSource(source);
+    if (resolved === "synth" || !resolved) {
       return makeDrumKit(drumBus);
     }
-    const kitPath = `presets/sample-kits/${source}`;
+    const kitPath = `presets/sample-kits/${resolved}`;
     const kit = makeSampledKit(drumBus, kitPath);
-    // Wait for samples to load (Tone.loaded() waits on ALL Tone buffers)
     try { await Tone.loaded(); } catch (e) {}
     return kit;
   }
@@ -1131,6 +1147,11 @@
       if (wasPlaying) stopPlayback();
       await loadSong(btn.dataset.song);
       renderPhraseTrigger();
+      // If kit was auto-self, dispose so new song's kit loads on next start
+      if (state.kitSource === "auto-self" && drumKit && drumKit.dispose) {
+        try { drumKit.dispose(); } catch (e) {}
+        drumKit = null;
+      }
       if (wasPlaying) await startPlayback();
     });
 
