@@ -100,8 +100,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Open `fm.html` from a local server, not a `file://` URL.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`.
-- Confirm `fm.html` requests `audio/genre-flavor.js?v=fm-29` and
-  `engine.js?v=fm-29`, and `sw.js` contains `hazama-fm-v29`.
+- Confirm `fm.html` requests `audio/genre-flavor.js?v=fm-53`,
+  `fm.js?v=fm-53`, and `engine.js?v=fm-44`, and `sw.js` contains
+  `hazama-fm-v53`.
 - Confirm browser console has no service-worker registration or update errors.
 - Close and reopen the installed app after merge; if the old UI remains, open
   the normal browser tab once, reload, then reopen the installed app.
@@ -120,8 +121,9 @@ Techno setup:
 
 Techno expected:
 
-- `window.GenreFlavor.state.source` is
-  `drum-frames+machine-acid-brain+chord-lift`.
+- `window.GenreFlavor.state.source` starts with
+  `drum-frames+machine-acid-brain+chord-lift` and may include safety
+  suffixes such as sidechain depth and production governor metadata.
 - `window.GenreFlavor.state.masterLevel` follows the visible `OUTPUT` slider
   and remains below the internal limiter ceiling.
 - `Tone.Transport.bpm.value` settles near 132 BPM.
@@ -370,19 +372,21 @@ Use this before creating or merging a runtime PR.
 Use this when browser output feels small compared with iPhone Apple Music or
 other normalized app playback.
 
-- Start from `OUTPUT` 90 to 94 in Hazama FM, then briefly check 96 to 100
-  if the device still feels quiet. Use 80 to 90 in the full mixer first.
+- Start from `OUTPUT` 75 to 85 in Hazama FM. Briefly check 90+ only if the
+  device still feels quiet. Use 75 to 85 in the full mixer first.
 - Compare `fm.html` `any`, `techno`, and `piano` without changing OS volume.
 - Expected: browser playback should feel usable without maxing the OS volume,
   while the GenreFlavor compressor / limiter prevents harsh clipping.
 - Expected: changing `OUTPUT` changes both the engine bed and GenreFlavor
   foreground enough to feel like one browser app, not two unmatched outputs.
-- Expected: `OUTPUT` 100 is a hotter ceiling than before, but should still
-  sound like level, not distortion.
+- Expected: `OUTPUT` 90+ is an audition ceiling, not the default listening
+  range, and should still sound like level, not distortion.
 - Expected: `techno` is louder through drum/body and acid pulse, not through
   constant bright hiss.
 - Expected: `piano` is foreground piano with space, not a low hidden pad.
 - Fail sign: raising `OUTPUT` only makes the same thin layer louder.
+- Fail sign: Hazama FM feels louder only because the flavor limiter is pumping
+  or the same reverb tail becomes more constant.
 - Fail sign: limiter pumping, brittle hats, or bass splatter appears at the
   Hazama FM default output.
 - Fail sign: the limiter audibly flattens jazz/funk breaks or piano attacks.
