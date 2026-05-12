@@ -39,6 +39,10 @@
 
   let masterGain = null;
   let masterLimiter = null;
+  let masterReverb = null;        // v57: space补正 — room reverb in master chain
+  let masterWidener = null;       // v57: stereo width
+  let masterDryGain = null;       // dry path
+  let masterWetGain = null;       // wet (reverb) send level
   let drumBus = null;
   let bassBus = null;
   let guitarBus = null;
@@ -63,13 +67,28 @@
 
   function ensureMaster() {
     if (masterGain) return masterGain;
+    // v57: space補正
+    // Chain: masterGain → comp → eq → widener → [dry] + [wet via reverb] → limiter
+    // - Stereo widener gives wider image (Demucs stems tend to feel mono-narrow)
+    // - Reverb in parallel send (wet/dry mix) so dry signal stays intact
     masterLimiter = new Tone.Limiter({ threshold: -0.5 }).toDestination();
     const masterEq = new Tone.EQ3({ low: 1.2, mid: -0.2, high: 0.6, lowFrequency: 200, highFrequency: 5000 });
     const masterComp = new Tone.Compressor({ threshold: -14, ratio: 2.5, attack: 0.010, release: 0.20, knee: 6 });
+    masterWidener = new Tone.StereoWidener(0.72);  // 0=mono, 0.5=normal, 1=max wide; 0.72 = noticeably wider
+    masterReverb = new Tone.Reverb({ decay: 2.2, preDelay: 0.025, wet: 1 });
+    masterDryGain = new Tone.Gain(0.78);   // 78% dry
+    masterWetGain = new Tone.Gain(0.22);   // 22% wet (gentle space)
+
     masterGain = new Tone.Gain(0.9);
     masterGain.connect(masterComp);
     masterComp.connect(masterEq);
-    masterEq.connect(masterLimiter);
+    masterEq.connect(masterWidener);
+    // Parallel dry/wet split after widener
+    masterWidener.connect(masterDryGain);
+    masterWidener.connect(masterReverb);
+    masterReverb.connect(masterWetGain);
+    masterDryGain.connect(masterLimiter);
+    masterWetGain.connect(masterLimiter);
 
     drumBus = new Tone.Gain(0.75).connect(masterGain);
     bassBus = new Tone.Gain(0.65).connect(masterGain);
@@ -893,6 +912,34 @@
         }
       });
     });
+
+    // Space processing sliders (reverb amount, stereo width)
+    const reverbEl = $("br-space-reverb");
+    if (reverbEl) {
+      reverbEl.addEventListener("input", () => {
+        ensureMaster();
+        if (masterWetGain && masterDryGain) {
+          const wetVal = Number(reverbEl.value) / 100;
+          const dryVal = 1 - wetVal * 0.5;  // keep dry mostly intact (overlap is fine)
+          try {
+            masterWetGain.gain.rampTo(wetVal, 0.12);
+            masterDryGain.gain.rampTo(Math.max(0.6, dryVal), 0.12);
+          } catch (e) {}
+        }
+      });
+    }
+    const widthEl = $("br-space-width");
+    if (widthEl) {
+      widthEl.addEventListener("input", () => {
+        ensureMaster();
+        if (masterWidener) {
+          // Tone.StereoWidener.width: 0=mono 0.5=normal 1=max wide
+          // Map slider 0-100 → 0-1 (0=mono pull-in, 100=fully wide)
+          const w = Number(widthEl.value) / 100;
+          try { masterWidener.width.rampTo(w, 0.12); } catch (e) {}
+        }
+      });
+    }
 
     // Mode radio (stems vs synth)
     document.querySelectorAll("input[name=br-mode]").forEach((radio) => {

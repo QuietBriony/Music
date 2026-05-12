@@ -270,7 +270,8 @@ body[data-mode="stems"] #br-controls h3::after { content: " (overlay)"; opacity:
   accent-color: var(--accent);
 }
 
-#br-volume {
+#br-volume,
+#br-space {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -280,7 +281,8 @@ body[data-mode="stems"] #br-controls h3::after { content: " (overlay)"; opacity:
   background: var(--panel);
 }
 
-#br-volume label {
+#br-volume label,
+#br-space label {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -290,11 +292,13 @@ body[data-mode="stems"] #br-controls h3::after { content: " (overlay)"; opacity:
   color: var(--text-sub);
 }
 
-#br-volume label span {
+#br-volume label span,
+#br-space label span {
   min-width: 60px;
 }
 
-#br-volume input[type="range"] {
+#br-volume input[type="range"],
+#br-space input[type="range"] {
   flex: 1;
   appearance: none;
   height: 4px;
@@ -303,7 +307,8 @@ body[data-mode="stems"] #br-controls h3::after { content: " (overlay)"; opacity:
   outline: none;
 }
 
-#br-volume input[type="range"]::-webkit-slider-thumb {
+#br-volume input[type="range"]::-webkit-slider-thumb,
+#br-space input[type="range"]::-webkit-slider-thumb {
   appearance: none;
   width: 14px;
   height: 14px;
@@ -312,7 +317,8 @@ body[data-mode="stems"] #br-controls h3::after { content: " (overlay)"; opacity:
   cursor: pointer;
 }
 
-#br-volume input[type="range"]::-moz-range-thumb {
+#br-volume input[type="range"]::-moz-range-thumb,
+#br-space input[type="range"]::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
