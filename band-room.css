@@ -61,6 +61,51 @@ html, body {
   gap: 18px;
 }
 
+#br-band-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 8px 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: rgba(255, 200, 100, 0.04);
+}
+
+#br-band-select button {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255, 200, 100, 0.20);
+  color: rgba(255, 220, 180, 0.78);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.10em;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 36px;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+#br-band-select button:hover:not(:disabled) {
+  border-color: rgba(255, 220, 180, 0.5);
+  color: rgba(255, 240, 220, 1);
+}
+
+#br-band-select button:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+  font-style: italic;
+}
+
+#br-band-select button[aria-pressed="true"] {
+  background: rgba(255, 200, 100, 0.22);
+  border-color: rgba(255, 200, 100, 0.6);
+  color: rgba(255, 245, 220, 1);
+}
+
 #br-track-select {
   display: flex;
   flex-wrap: wrap;
@@ -70,6 +115,7 @@ html, body {
   border: 1px solid var(--panel-border);
   border-radius: 12px;
   background: var(--panel);
+  min-height: 50px;
 }
 
 #br-track-select button {

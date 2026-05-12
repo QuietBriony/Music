@@ -23,14 +23,16 @@
   // ---- State ---------------------------------------------------
 
   const state = {
+    bandsRegistry: null,   // loaded from presets/bands.json
+    currentBandId: "tabasco",
     currentSongId: "human-fly",
     songData: null,
     started: false,
     starting: false,
-    barCount: 0,           // global bar counter since play start
-    sectionIdx: 0,         // index into songData.structure
-    sectionBarStart: 0,    // bar at which the current section started
-    chordIdx: 0,           // index into current section's chord progression
+    barCount: 0,
+    sectionIdx: 0,
+    sectionBarStart: 0,
+    chordIdx: 0,
     chordBarsRemaining: 0,
     scheduledIds: []
   };
@@ -280,13 +282,24 @@
     });
   }
 
+  function currentBand() {
+    if (!state.bandsRegistry) return null;
+    return state.bandsRegistry.bands[state.currentBandId] || null;
+  }
+
   async function loadStemsForSong(songId) {
     if (!stemBus.vocals) ensureMaster();
     disposeStemPlayers();
+    const band = currentBand();
+    if (!band) {
+      setStemsStatus("(no band loaded)");
+      return false;
+    }
     setStemsStatus("loading stems…");
     const stems = ["vocals", "drums", "bass", "other"];
+    const stemsDir = band.stems_dir || "presets/tabasco-stems";
     const promises = stems.map(async (stem) => {
-      const url = `presets/tabasco-stems/${songId}/${stem}.mp3`;
+      const url = `${stemsDir}/${songId}/${stem}.mp3`;
       try {
         const head = await fetch(url, { method: "HEAD" });
         if (!head.ok) return null;
@@ -508,8 +521,14 @@
   // ---- Load song ----------------------------------------------
 
   async function loadSong(songId) {
+    const band = currentBand();
+    if (!band) {
+      $("br-lyrics-body").textContent = "(no band loaded)";
+      return null;
+    }
+    const pattern = band.drum_frames_pattern || "presets/drum-frames-tabasco-{songid}.json";
+    const url = pattern.replace("{songid}", songId) + `?cb=${Date.now()}`;
     try {
-      const url = `presets/drum-frames-tabasco-${songId}.json?cb=${Date.now()}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`fetch ${res.status}`);
       const data = await res.json();
@@ -517,16 +536,21 @@
       state.currentSongId = songId;
       $("br-bpm").textContent = data.bpm || "—";
       $("br-key").textContent = data.key || "—";
-      // Load lyrics from the draft md (extract the section for this song)
-      try {
-        const lyricsRes = await fetch("docs/tabasco-lyrics-draft.md?cb=" + Date.now());
-        if (lyricsRes.ok) {
-          const md = await lyricsRes.text();
-          const lyrics = extractLyricsForSong(md, data.song_title || songId);
-          $("br-lyrics-body").textContent = lyrics || "(lyrics todo — see docs/tabasco-lyrics-draft.md)";
+      // Load lyrics from the band's lyrics_doc if present
+      const lyricsDoc = band.lyrics_doc;
+      if (lyricsDoc) {
+        try {
+          const lyricsRes = await fetch(lyricsDoc + "?cb=" + Date.now());
+          if (lyricsRes.ok) {
+            const md = await lyricsRes.text();
+            const lyrics = extractLyricsForSong(md, data.song_title || songId);
+            $("br-lyrics-body").textContent = lyrics || `(lyrics todo — see ${lyricsDoc})`;
+          }
+        } catch (e) {
+          $("br-lyrics-body").textContent = "(lyrics file not available offline)";
         }
-      } catch (e) {
-        $("br-lyrics-body").textContent = "(lyrics file not available offline)";
+      } else {
+        $("br-lyrics-body").textContent = "(no lyrics doc for this band yet)";
       }
       return data;
     } catch (e) {
@@ -863,6 +887,12 @@
   function bindUI() {
     $("br-play")?.addEventListener("click", togglePlay);
 
+    document.getElementById("br-band-select")?.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-band]");
+      if (!btn || btn.disabled) return;
+      selectBand(btn.dataset.band);
+    });
+
     document.getElementById("br-track-select")?.addEventListener("click", async (e) => {
       const btn = e.target.closest("button[data-song]");
       if (!btn || btn.disabled) return;
@@ -952,12 +982,114 @@
     if (document.body) document.body.dataset.mode = currentMode;
   }
 
+  // ---- Band registry loader -----------------------------------
+
+  async function loadBandsRegistry() {
+    try {
+      const res = await fetch("presets/bands.json?cb=" + Date.now());
+      if (!res.ok) throw new Error("bands.json " + res.status);
+      const data = await res.json();
+      state.bandsRegistry = data;
+      renderBandSelector();
+      return data;
+    } catch (e) {
+      console.warn("[Band Room] bands registry load failed:", e);
+      // Fallback: hardcoded Tabasco
+      state.bandsRegistry = {
+        bands: {
+          tabasco: {
+            name: "Tabasco",
+            subtitle: "fallback (bands.json failed to load)",
+            stems_dir: "presets/tabasco-stems",
+            drum_frames_pattern: "presets/drum-frames-tabasco-{songid}.json",
+            lyrics_doc: "docs/tabasco-lyrics-draft.md",
+            songs: [
+              { id: "tabasco",         track: "01", title: "TABASCO" },
+              { id: "hey",             track: "02", title: "Hey" },
+              { id: "i-got-a-feeling", track: "03", title: "I got a feeling" },
+              { id: "under-the-moon",  track: "04", title: "Under the Moon" },
+              { id: "electric-sheep",  track: "05", title: "Electric Sheep" },
+              { id: "human-fly",       track: "06", title: "Human Fly" },
+              { id: "sister",          track: "07", title: "Sister" }
+            ]
+          }
+        }
+      };
+      renderBandSelector();
+      return state.bandsRegistry;
+    }
+  }
+
+  function renderBandSelector() {
+    const group = $("br-band-select");
+    if (!group || !state.bandsRegistry) return;
+    group.innerHTML = "";
+    const bandIds = Object.keys(state.bandsRegistry.bands);
+    bandIds.forEach((bid) => {
+      const band = state.bandsRegistry.bands[bid];
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.dataset.band = bid;
+      btn.textContent = band.name;
+      if (!band.songs || band.songs.length === 0) {
+        btn.disabled = true;
+        btn.title = band.intake_status || "no songs loaded";
+      }
+      btn.setAttribute("aria-pressed", bid === state.currentBandId ? "true" : "false");
+      group.appendChild(btn);
+    });
+    renderTrackButtons();
+    updateSubtitle();
+  }
+
+  function renderTrackButtons() {
+    const group = $("br-track-select");
+    if (!group) return;
+    group.innerHTML = "";
+    const band = currentBand();
+    if (!band || !band.songs) return;
+    band.songs.forEach((song) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.dataset.track = song.track;
+      btn.dataset.song = song.id;
+      btn.textContent = `${song.track} ${song.title}`;
+      btn.setAttribute("aria-pressed", song.id === state.currentSongId ? "true" : "false");
+      group.appendChild(btn);
+    });
+  }
+
+  function updateSubtitle() {
+    const band = currentBand();
+    const el = $("br-subtitle");
+    if (el && band) {
+      el.textContent = `${band.subtitle || band.name}`;
+    }
+  }
+
+  async function selectBand(bandId) {
+    if (!state.bandsRegistry || !state.bandsRegistry.bands[bandId]) return;
+    const band = state.bandsRegistry.bands[bandId];
+    if (!band.songs || band.songs.length === 0) return;
+    if (state.started) stopPlayback();
+    state.currentBandId = bandId;
+    state.currentSongId = band.songs[0].id;  // first song of selected band
+    // Update UI
+    document.querySelectorAll("#br-band-select button").forEach((b) => {
+      b.setAttribute("aria-pressed", b.dataset.band === bandId ? "true" : "false");
+    });
+    renderTrackButtons();
+    updateSubtitle();
+    await loadSong(state.currentSongId);
+  }
+
   // ---- Boot ---------------------------------------------------
 
-  window.addEventListener("DOMContentLoaded", () => {
+  window.addEventListener("DOMContentLoaded", async () => {
     bindUI();
+    await loadBandsRegistry();
     // Pre-load the default song meta (doesn't start audio)
-    loadSong(state.currentSongId);
+    await loadSong(state.currentSongId);
   });
 
 })();

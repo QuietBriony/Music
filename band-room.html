@@ -6,32 +6,30 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-5" />
+<link rel="stylesheet" href="band-room.css?v=br-6" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-5" defer></script>
+<script src="band-room.js?v=br-6" defer></script>
 </head>
 
 <body data-page="band-room">
 
   <header id="br-header">
     <h1>BAND ROOM</h1>
-    <p class="br-subtitle">air rock connect box · Tabasco. revival</p>
+    <p class="br-subtitle" id="br-subtitle">loading bands…</p>
   </header>
 
   <main id="br-main">
 
+    <section id="br-band-select" aria-label="Band selector">
+      <!-- populated by band-room.js from presets/bands.json -->
+    </section>
+
     <section id="br-track-select" aria-label="Track selector">
-      <button type="button" data-track="01" data-song="tabasco">01 TABASCO</button>
-      <button type="button" data-track="02" data-song="hey">02 Hey</button>
-      <button type="button" data-track="03" data-song="i-got-a-feeling">03 I got a feeling</button>
-      <button type="button" data-track="04" data-song="under-the-moon">04 Under the Moon</button>
-      <button type="button" data-track="05" data-song="electric-sheep">05 Electric Sheep</button>
-      <button type="button" data-track="06" data-song="human-fly" aria-pressed="true">06 Human Fly</button>
-      <button type="button" data-track="07" data-song="sister">07 Sister</button>
+      <!-- populated by band-room.js from selected band's songs[] -->
     </section>
 
     <section id="br-transport">
