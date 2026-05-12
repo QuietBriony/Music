@@ -73,7 +73,17 @@
           "duration_s": 281
         }
       ]
-    },
+    }
+  },
+  "add_new_band_workflow": {
+    "step_1": "Desktop/musicpl/{band-name}/ に m4a / wav 音源を配置",
+    "step_2": "scripts/_separate_band.py {band-id} を実行 (Demucs で 4-stem 分離)",
+    "step_3": "presets/drum-frames-{bandid}-{songid}.json を手書き or generator で作成",
+    "step_4": "presets/bands.json の bands.{bandid}.songs に entry 追加",
+    "step_5": "sw.js precache に該当 stems 追加 (オプション、large band は on-demand)",
+    "step_6": "band-room.html 再読込で band selector に新 band が出現"
+  },
+  "reference_libraries": {
     "unripe": {
       "name": "UNRIPE",
       "subtitle": "Okinawa hardcore postpunk · Definition of Hope",
@@ -133,15 +143,10 @@
         }
       ],
       "intake_status": "stems separated via Demucs htdemucs 4-stem, available for playback + sample reuse",
-      "album": "Definition of Hope"
+      "album": "Definition of Hope",
+      "purpose": "素材ライブラリ。band-room UI には出さず、Phase B (sampler) / Phase C (新曲生成) の参照源として使う。サンプル抜いたら削除予定。",
+      "ui_visible": false
     }
   },
-  "add_new_band_workflow": {
-    "step_1": "Desktop/musicpl/{band-name}/ に m4a / wav 音源を配置",
-    "step_2": "scripts/_separate_band.py {band-id} を実行 (Demucs で 4-stem 分離)",
-    "step_3": "presets/drum-frames-{bandid}-{songid}.json を手書き or generator で作成",
-    "step_4": "presets/bands.json の bands.{bandid}.songs に entry 追加",
-    "step_5": "sw.js precache に該当 stems 追加 (オプション、large band は on-demand)",
-    "step_6": "band-room.html 再読込で band selector に新 band が出現"
-  }
+  "reference_libraries_note": "band-room UI 非表示。stems は presets/<id>-stems/ にあるので scripts/_slice_drum_hits.py 等から素材として使える。"
 }
