@@ -195,12 +195,21 @@
     stemEQs.vocals = makeStemEQChain("vocals");
     stemEQs.other = makeStemEQChain("other");
 
-    drumBus = new Tone.Gain(0.75).connect(masterGain);
-    bassBus = new Tone.Gain(0.65).connect(masterGain);
-    guitarBus = new Tone.Gain(0.70).connect(masterGain);
-    voiceBus = new Tone.Gain(0.40).connect(masterGain);
-    chordBus = new Tone.Gain(0.55).connect(masterGain);
-    clickBus = new Tone.Gain(0.0).connect(masterGain);
+    // v69: insert Tone.Panner per bus for AI 再現 stereo placement.
+    // drums/bass/voice/click stay center (low end + lead = stable middle).
+    // guitar drifts slight L, chords drift slight R (classic rock spread).
+    const drumPan   = new Tone.Panner(0.00).connect(masterGain);
+    const bassPan   = new Tone.Panner(0.00).connect(masterGain);
+    const guitarPan = new Tone.Panner(-0.25).connect(masterGain);
+    const voicePan  = new Tone.Panner(0.00).connect(masterGain);
+    const chordPan  = new Tone.Panner(+0.20).connect(masterGain);
+    const clickPan  = new Tone.Panner(0.00).connect(masterGain);
+    drumBus = new Tone.Gain(0.75).connect(drumPan);
+    bassBus = new Tone.Gain(0.65).connect(bassPan);
+    guitarBus = new Tone.Gain(0.70).connect(guitarPan);
+    voiceBus = new Tone.Gain(0.40).connect(voicePan);
+    chordBus = new Tone.Gain(0.55).connect(chordPan);
+    clickBus = new Tone.Gain(0.0).connect(clickPan);
 
     // Original-stem buses → per-stem EQ → masterGain
     stemBus.drums  = new Tone.Gain(0.85).connect(masterGain);
@@ -644,21 +653,29 @@
 
   function makeSampledKit(target, kitPath) {
     // kitPath e.g. "presets/sample-kits/unripe/continuous"
-    // Map drum-frames instrument names → sample files
+    // Map drum-frames instrument names → sample files, with stereo pan
+    // (v69: same spatial layout as synth kit so sample mode is also wide)
     const mapping = {
-      kick:  "kick-01.wav",
-      snare: "snare-01.wav",
-      hat:   "hat-01.wav",
-      ghost: "snare-03.wav",   // softer snare for ghost notes
-      fill:  "snare-02.wav",   // alternate snare as fill
-      crash: "crash-01.wav"
+      kick:  { fname: "kick-01.wav",  pan:  0.00 },
+      snare: { fname: "snare-01.wav", pan: -0.06 },
+      hat:   { fname: "hat-01.wav",   pan: +0.22 },
+      ghost: { fname: "snare-03.wav", pan: -0.16 },
+      fill:  { fname: "snare-02.wav", pan: +0.12 },
+      crash: { fname: "crash-01.wav", pan: +0.20 }
     };
     const voices = {};
-    Object.entries(mapping).forEach(([k, fname]) => {
-      voices[k] = makeSampleVoice(target, `${kitPath}/${fname}`);
+    const panners = [];
+    Object.entries(mapping).forEach(([k, { fname, pan }]) => {
+      const panner = new Tone.Panner(pan).connect(target);
+      panners.push(panner);
+      voices[k] = makeSampleVoice(panner, `${kitPath}/${fname}`);
     });
     voices._kitPath = kitPath;
-    voices.dispose = () => Object.values(voices).forEach((v) => v && v.dispose && v.dispose());
+    voices._panners = panners;
+    voices.dispose = () => {
+      Object.values(voices).forEach((v) => v && v.dispose && v.dispose());
+      panners.forEach((p) => { try { p.dispose(); } catch (e) {} });
+    };
     return voices;
   }
 
