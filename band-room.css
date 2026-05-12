@@ -1,0 +1,345 @@
+/* =========================================================
+   Band Room — air rock connect box
+   Standalone page, no engine.js, no genre-flavor.js.
+   Pure Tone.js + drum-frames JSON for song playback.
+========================================================= */
+
+:root {
+  color-scheme: dark;
+  --bg: #1a0a14;
+  --bg-2: #2a1422;
+  --panel: rgba(255, 255, 255, 0.04);
+  --panel-border: rgba(255, 184, 122, 0.18);
+  --text: #efe6dc;
+  --text-sub: #c8b8a8;
+  --accent: #ff8866;
+  --accent-soft: #ffb39a;
+  --accent-glass: #ffd4a8;
+  --warn: #ff5566;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Hiragino Sans", "Yu Gothic", sans-serif;
+  background:
+    radial-gradient(ellipse at top, rgba(255,136,102,0.08), transparent 50%),
+    linear-gradient(180deg, var(--bg) 0%, #100612 100%);
+  color: var(--text);
+  min-height: 100vh;
+  overscroll-behavior: none;
+}
+
+#br-header {
+  text-align: center;
+  padding: 32px 20px 8px;
+}
+
+#br-header h1 {
+  font-size: clamp(26px, 5vw, 36px);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  margin: 0;
+  color: var(--accent-glass);
+}
+
+.br-subtitle {
+  margin: 6px 0 0;
+  font-size: 12px;
+  opacity: 0.7;
+  letter-spacing: 0.08em;
+}
+
+#br-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 12px 16px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+#br-track-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  padding: 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+#br-track-select button {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255, 184, 122, 0.16);
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 36px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+#br-track-select button:hover:not(:disabled) {
+  border-color: var(--accent-soft);
+  color: var(--accent-glass);
+}
+
+#br-track-select button:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}
+
+#br-track-select button[aria-pressed="true"] {
+  background: rgba(255, 136, 102, 0.18);
+  border-color: var(--accent);
+  color: var(--accent-glass);
+}
+
+#br-transport {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+#br-play {
+  appearance: none;
+  background: rgba(255, 136, 102, 0.08);
+  border: 1.5px solid var(--accent);
+  color: var(--accent-glass);
+  font-family: inherit;
+  font-size: 16px;
+  letter-spacing: 0.36em;
+  padding: 18px 48px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-width: 200px;
+  min-height: 60px;
+  transition: background 0.3s, color 0.3s, border-color 0.3s, transform 0.15s;
+}
+
+#br-play:hover {
+  background: rgba(255, 136, 102, 0.18);
+}
+
+#br-play:active {
+  transform: scale(0.98);
+}
+
+#br-play[data-state="playing"] {
+  background: rgba(255, 136, 102, 0.24);
+  border-color: var(--accent-soft);
+}
+
+#br-meta {
+  font-size: 11px;
+  color: var(--text-sub);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#br-meta span { color: var(--accent-glass); font-weight: 600; }
+
+#br-section-display {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+#br-section-current, #br-section-next {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+#br-section-display .br-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  opacity: 0.55;
+  letter-spacing: 0.18em;
+  min-width: 44px;
+}
+
+#br-section-display .br-value {
+  font-size: 18px;
+  color: var(--accent-glass);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+#br-section-display .br-progress {
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+#br-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  padding: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.br-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-sub);
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.br-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+#br-volume {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 20px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+#br-volume label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+}
+
+#br-volume label span {
+  min-width: 60px;
+}
+
+#br-volume input[type="range"] {
+  flex: 1;
+  appearance: none;
+  height: 4px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  outline: none;
+}
+
+#br-volume input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+#br-volume input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 0;
+}
+
+#br-lyrics {
+  padding: 16px 20px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: rgba(0,0,0,0.18);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+#br-lyrics-body {
+  margin: 0;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+#br-chord-display {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 20px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+#br-chord-display .br-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  opacity: 0.55;
+  letter-spacing: 0.18em;
+}
+
+#br-chord-display .br-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+#br-footer {
+  text-align: center;
+  padding: 20px 16px 40px;
+  font-size: 11px;
+  color: var(--text-sub);
+  letter-spacing: 0.08em;
+}
+
+#br-footer a {
+  color: var(--accent-soft);
+  text-decoration: none;
+  padding: 0 4px;
+}
+
+#br-footer a:hover {
+  color: var(--accent-glass);
+  text-decoration: underline;
+}
+
+.br-sep { opacity: 0.4; margin: 0 2px; }
+
+@media (max-width: 540px) {
+  #br-main { padding: 8px 12px 60px; gap: 12px; }
+  #br-track-select button { font-size: 10px; padding: 7px 10px; }
+  #br-section-display .br-value { font-size: 15px; }
+  #br-chord-display .br-value { font-size: 26px; }
+}

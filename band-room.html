@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Band Room — air rock connect box</title>
+<meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
+
+<link rel="stylesheet" href="band-room.css?v=br-1" />
+<meta name="theme-color" content="#1a0a14" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+<script src="band-room.js?v=br-1" defer></script>
+</head>
+
+<body data-page="band-room">
+
+  <header id="br-header">
+    <h1>BAND ROOM</h1>
+    <p class="br-subtitle">air rock connect box · Tabasco. revival</p>
+  </header>
+
+  <main id="br-main">
+
+    <section id="br-track-select" aria-label="Track selector">
+      <button type="button" data-track="01" data-song="tabasco" disabled>01 TABASCO</button>
+      <button type="button" data-track="02" data-song="hey" disabled>02 Hey</button>
+      <button type="button" data-track="03" data-song="i-got-a-feeling" disabled>03 I got a feeling</button>
+      <button type="button" data-track="04" data-song="under-the-moon" disabled>04 Under the Moon</button>
+      <button type="button" data-track="05" data-song="electric-sheep" disabled>05 Electric Sheep</button>
+      <button type="button" data-track="06" data-song="human-fly" aria-pressed="true">06 Human Fly</button>
+      <button type="button" data-track="07" data-song="sister" disabled>07 Sister</button>
+    </section>
+
+    <section id="br-transport">
+      <button id="br-play" type="button" aria-label="Start playback" data-state="idle">START</button>
+      <div id="br-meta" aria-live="polite">
+        <span id="br-bpm">117</span> BPM · <span id="br-key">G major</span>
+      </div>
+    </section>
+
+    <section id="br-section-display">
+      <div id="br-section-current">
+        <span class="br-label">now</span>
+        <span class="br-value" id="br-section-name">—</span>
+        <span class="br-progress" id="br-section-progress">0 / 0 bars</span>
+      </div>
+      <div id="br-section-next">
+        <span class="br-label">next</span>
+        <span class="br-value" id="br-section-next-name">—</span>
+      </div>
+    </section>
+
+    <section id="br-controls" aria-label="Layer toggles">
+      <label class="br-toggle">
+        <input type="checkbox" id="br-toggle-drums" checked />
+        <span>drum-floor</span>
+      </label>
+      <label class="br-toggle">
+        <input type="checkbox" id="br-toggle-click" />
+        <span>click</span>
+      </label>
+      <label class="br-toggle">
+        <input type="checkbox" id="br-toggle-bass" checked />
+        <span>bass (synth)</span>
+      </label>
+      <label class="br-toggle">
+        <input type="checkbox" id="br-toggle-chords" />
+        <span>chord guide</span>
+      </label>
+    </section>
+
+    <section id="br-volume" aria-label="Volume sliders">
+      <label>
+        <span>drums</span>
+        <input type="range" id="br-vol-drums" min="0" max="100" value="75" />
+      </label>
+      <label>
+        <span>bass</span>
+        <input type="range" id="br-vol-bass" min="0" max="100" value="65" />
+      </label>
+      <label>
+        <span>chords</span>
+        <input type="range" id="br-vol-chords" min="0" max="100" value="55" />
+      </label>
+      <label>
+        <span>click</span>
+        <input type="range" id="br-vol-click" min="0" max="100" value="35" />
+      </label>
+    </section>
+
+    <section id="br-lyrics" aria-label="Lyrics">
+      <pre id="br-lyrics-body">loading…</pre>
+    </section>
+
+    <section id="br-chord-display" aria-label="Current chord">
+      <span class="br-label">chord</span>
+      <span class="br-value" id="br-chord-current">—</span>
+    </section>
+
+    <footer id="br-footer">
+      <a href="fm.html">← Hazama FM</a>
+      <span class="br-sep">·</span>
+      <a href="index.html">Music Core Rig</a>
+      <span class="br-sep">·</span>
+      <a href="docs/tabasco-lyrics-draft.md">lyrics draft</a>
+    </footer>
+
+  </main>
+
+</body>
+</html>

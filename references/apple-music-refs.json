@@ -1077,6 +1077,215 @@
         "funk pill では強く (15-25 ms)、jazz/lofi/piano では弱く (2-8 ms)",
         "ambient / piano では適用しない (rubato が自然な lag を提供)"
       ]
+    },
+    {
+      "artist": "Backdrop Bomb",
+      "album": "Slug",
+      "title": "Slug",
+      "genre_hint": [
+        "mixture-rock",
+        "japanese-mixture",
+        "funk-metal",
+        "rap-rock"
+      ],
+      "production_translation": {
+        "timbre": [
+          "重いギタータップ + スラップベース + ハードキック",
+          "vocal は半叫び + ラップを行き来",
+          "scratch/SFX texture をたまに差す"
+        ],
+        "rhythm": [
+          "110-150 BPM mid-fast",
+          "kick on 1+3、snare 強 backbeat",
+          "groove は funk-rock の前のめり"
+        ],
+        "space": [
+          "live energy",
+          "room ambience 中程度、tape compression"
+        ],
+        "structure": [
+          "verse → 爆発 chorus、build はダイナミクス急変",
+          "scratch break、ストップ&ゴー"
+        ],
+        "gesture": [
+          "body-push、groove で前に進む",
+          "vocal の chant 反復"
+        ]
+      },
+      "implementation_notes": [
+        "tabasco-songs (air rock connect box) リバイバル軸",
+        "drum-floor preset でハード kick + tight snare + クラップ + scratch sfx",
+        "guitar/bass は human player 不在時はシンセで代替"
+      ],
+      "taste_notes": [
+        "20 年前の japanese mixture 軸",
+        "user のバンド (Tabasco) 原点",
+        "ぶっ飛び系のテンションを支える"
+      ]
+    },
+    {
+      "artist": "LCD Soundsystem",
+      "album": "Sound of Silver",
+      "title": "All My Friends",
+      "genre_hint": [
+        "dance-punk",
+        "post-punk",
+        "motorik",
+        "build-music"
+      ],
+      "production_translation": {
+        "timbre": [
+          "8 分音符ピアノアルペジオ反復、徐々に重ねる",
+          "drum machine + 生 drum hybrid、tight kick",
+          "vocal は James Murphy 喋り歌、emotional crescendo"
+        ],
+        "rhythm": [
+          "117-128 BPM 中速",
+          "4-on-floor kick、snare 2+4 backbeat",
+          "ハイハット 8 分継続"
+        ],
+        "space": [
+          "roomy reverb、cassette-warm compression",
+          "ピアノはアタック前のめり"
+        ],
+        "structure": [
+          "minimal start → 7 分かけて build → 解放、長尺 development",
+          "リピートの上に薄く新要素を積む"
+        ],
+        "gesture": [
+          "pulse 反復で前に進む、density で build",
+          "vocal は説明的、感情は楽器の build に乗せる"
+        ]
+      },
+      "implementation_notes": [
+        "tabasco-songs リバイバルの現代軸",
+        "Human Fly でも 4-on-floor 軸を借りる",
+        "drum machine 強化に直結"
+      ],
+      "taste_notes": [
+        "motorik drive、徐々の build",
+        "今 user が好む dance-rock 現代軸"
+      ]
+    },
+    {
+      "artist": "LCD Soundsystem",
+      "title": "Daft Punk Is Playing at My House",
+      "album": "LCD Soundsystem",
+      "genre_hint": [
+        "dance-punk",
+        "house-rock",
+        "cowbell-driven"
+      ],
+      "production_translation": {
+        "timbre": [
+          "cowbell + clap が前、syncopated kick",
+          "synth bass + 鋭い stab",
+          "vocal は shouting + chant"
+        ],
+        "rhythm": [
+          "125 BPM、4-on-floor + cowbell offbeat",
+          "snare on 3 (house feel)"
+        ],
+        "space": [
+          "dry punchy mix、reverb 短"
+        ],
+        "structure": [
+          "1 リフ反復 + chant、build は accumulation",
+          "drum break あり"
+        ],
+        "gesture": [
+          "body-push、dance directive"
+        ]
+      },
+      "implementation_notes": [
+        "cowbell + clap を drum kit に追加",
+        "house feel の応用"
+      ],
+      "taste_notes": [
+        "dance directive、即効ぶっ飛び系"
+      ]
+    },
+    {
+      "artist": "Nirvana",
+      "album": "Nevermind",
+      "title": "Smells Like Teen Spirit",
+      "genre_hint": [
+        "grunge",
+        "alt-rock",
+        "quiet-loud-dynamics"
+      ],
+      "production_translation": {
+        "timbre": [
+          "clean verse guitar + 爆音 distortion chorus",
+          "tight rock kit、Dave Grohl 突進",
+          "vocal は raw、breaking"
+        ],
+        "rhythm": [
+          "117 BPM、4/4 standard rock",
+          "snare on 2+4 powerful、tom fill 多用"
+        ],
+        "space": [
+          "roomy live、wet snare reverb",
+          "guitar は dry verse / wet chorus"
+        ],
+        "structure": [
+          "quiet verse → exploding chorus、極端 dynamics",
+          "intro riff → verse → pre → chorus → 繰り返し"
+        ],
+        "gesture": [
+          "restraint → release の極端な対比",
+          "vocal raw expression"
+        ]
+      },
+      "implementation_notes": [
+        "Human Fly の verse/chorus dynamics をこの対比で組む",
+        "drum frames で intro/verse は sparse、chorus は dense"
+      ],
+      "taste_notes": [
+        "20 年前 user バンドの世代の rock 軸",
+        "quiet-loud 対比の教科書"
+      ]
+    },
+    {
+      "artist": "Sadistic Mika Band",
+      "album": "黒船 (Kurofune)",
+      "title": "タイムマシンにおねがい",
+      "genre_hint": [
+        "japanese-glam-rock",
+        "psychedelic",
+        "art-rock",
+        "1970s-analog"
+      ],
+      "production_translation": {
+        "timbre": [
+          "温かい analog synth + 70 年代 fuzz guitar",
+          "loose 生 drum、tape-warm console",
+          "vocal はキャラ性高い narrative"
+        ],
+        "rhythm": [
+          "117-138 BPM mid-fast",
+          "snare backbeat、loose pocket"
+        ],
+        "space": [
+          "analog tape saturation、plate reverb",
+          "ステレオ大きく広げる panning"
+        ],
+        "structure": [
+          "AABA + bridge、ポップ歌謡的",
+          "verse-chorus 明快"
+        ],
+        "gesture": [
+          "glam swagger、narrative vocal"
+        ]
+      },
+      "implementation_notes": [
+        "analog warmth を tape sat で近似",
+        "stereo width 広めに、guitar/synth pan"
+      ],
+      "taste_notes": [
+        "日本ロック史の glam analog axis",
+        "user の歌詞ハイブリッド方針と相性"
+      ]
     }
   ]
 }

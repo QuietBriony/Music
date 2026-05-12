@@ -1,0 +1,118 @@
+{
+  "format": "tabasco-songs",
+  "version": 1,
+  "source": "C:\\Users\\平成造園\\Desktop\\musicpl\\Tabasco. LIVE",
+  "policy": {
+    "stores_audio": false,
+    "stores_lyrics_inline": false,
+    "metadata_only": true
+  },
+  "analysis_method": "librosa 0.11.0 — beat_track for BPM, Krumhansl-Schmuckler chroma correlation for key. Auto-detection ±10% possible — user can override.",
+  "songs": {
+    "01-tabasco": {
+      "track_no": 1,
+      "title": "TABASCO",
+      "duration_s": 44,
+      "bpm_detected": 136.0,
+      "bpm_confirmed": null,
+      "key_detected": "D minor",
+      "key_confirmed": null,
+      "groove_axis_suggestion": "punk / driving rock — straight 4-on-floor, kick on 1+3, snare on 2+4, busy 8th hat",
+      "energy": "high",
+      "structure_notes": "TBD — short opener (44s)?",
+      "lyrics_status": "todo",
+      "guitar_chords": null,
+      "bass_pattern_hint": null,
+      "vocal_register": null,
+      "drum_floor_preset": "drum-frames-tabasco-01.json (todo)"
+    },
+    "02-hey": {
+      "track_no": 2,
+      "title": "Hey",
+      "duration_s": 304,
+      "bpm_detected": 123.0,
+      "bpm_confirmed": null,
+      "key_detected": "G major",
+      "key_confirmed": null,
+      "groove_axis_suggestion": "mid-tempo pop-rock — kick 1+3, snare 2+4, half-open hi-hat, occasional fills",
+      "energy": "mid-high",
+      "structure_notes": "TBD",
+      "lyrics_status": "todo"
+    },
+    "03-i-got-a-feeling": {
+      "track_no": 3,
+      "title": "I got a feeling",
+      "duration_s": 368,
+      "bpm_detected": 117.5,
+      "bpm_confirmed": null,
+      "key_detected": "B minor",
+      "key_confirmed": null,
+      "groove_axis_suggestion": "rock pocket — laid-back snare, room reverb, deeper kick",
+      "energy": "mid",
+      "structure_notes": "TBD — long form (6 min)",
+      "lyrics_status": "todo"
+    },
+    "04-under-the-moon": {
+      "track_no": 4,
+      "title": "Under the Moon",
+      "duration_s": 313,
+      "bpm_detected": 161.5,
+      "bpm_confirmed": null,
+      "key_detected": "A# major (Bb major)",
+      "key_confirmed": null,
+      "groove_axis_suggestion": "fast — could be ska/punk (161 is double-time read of ~81 reggae feel) — need ear check on whether half-time or full-time",
+      "energy": "high",
+      "structure_notes": "TBD"
+    },
+    "05-electric-sheep": {
+      "track_no": 5,
+      "title": "Electric Sheep",
+      "duration_s": 150,
+      "bpm_detected": 129.2,
+      "bpm_confirmed": null,
+      "key_detected": "E minor",
+      "key_confirmed": null,
+      "groove_axis_suggestion": "punk / agro rock — high ZCR (0.21) suggests busy cymbal + distorted guitar, dense bright mix",
+      "energy": "high",
+      "structure_notes": "TBD — short (2:30)"
+    },
+    "06-human-fly": {
+      "track_no": 6,
+      "title": "Human Fly",
+      "duration_s": 239,
+      "bpm_detected": 117.5,
+      "bpm_confirmed": null,
+      "key_detected": "G major",
+      "key_confirmed": null,
+      "groove_axis_suggestion": "heavy rock / blues-rock — highest RMS (0.154), warmest centroid (2332), Cramps-ish?",
+      "energy": "high",
+      "structure_notes": "TBD"
+    },
+    "07-sister": {
+      "track_no": 7,
+      "title": "Sister",
+      "duration_s": 281,
+      "bpm_detected": 117.5,
+      "bpm_confirmed": null,
+      "key_detected": "F major",
+      "key_confirmed": null,
+      "groove_axis_suggestion": "ballad / slow groove — low ZCR (0.076) = sustained / legato, warmer centroid (1873)",
+      "energy": "low-mid",
+      "structure_notes": "TBD — closer track, contrast to set energy"
+    }
+  },
+  "set_summary": {
+    "total_runtime_min": 28.3,
+    "tempo_range": "117-161 BPM",
+    "majority_tempo": "117-130 BPM rock/punk",
+    "outliers": ["04 Under the Moon (161 fast)", "07 Sister (slow/sustained)"],
+    "set_arc": "TABASCO (short opener high) → Hey (mid-high) → I got a feeling (mid long) → Under the Moon (fast peak?) → Electric Sheep (high agro) → Human Fly (heavy) → Sister (ballad closer)"
+  },
+  "next_steps": [
+    "User listens to each track and confirms/corrects bpm + key + groove_axis",
+    "User transcribes lyrics + chord progressions (lyrics_status → done)",
+    "Generate drum-frames-tabasco-{NN}.json in drum-floor repo for each song",
+    "Build band-room.html: drum-floor playback + click + lyric display + optional original audio backing",
+    "Optional Phase 4: Demucs stem separation → drum replacement"
+  ]
+}
