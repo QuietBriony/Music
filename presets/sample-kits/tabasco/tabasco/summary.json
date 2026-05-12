@@ -1,0 +1,10 @@
+{
+  "vocal_phrases": {
+    "source": "tabasco",
+    "song_id": "tabasco",
+    "source_stem": "presets/tabasco-stems/tabasco/vocals.mp3",
+    "sample_rate": 44100,
+    "silence_top_db": 30,
+    "phrases": []
+  }
+}

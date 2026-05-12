@@ -77,13 +77,18 @@
     { value: "unripe/erase",         label: "UNRIPE / Erase (136)" }
   ];
 
-  // Vocal FX chain (applied to vocal stem only to disguise / polish)
+  // Vocal FX chain (applied to vocal stem + external vocal)
   let vocalChorus = null;
   let vocalDelay = null;
   let vocalDelayWet = null;
   let vocalReverb = null;
   let vocalReverbWet = null;
   let vocalDryGain = null;
+
+  // External vocal (Suno-generated or user re-recording, mp3/wav blob URL)
+  let externalVocalPlayer = null;
+  let externalVocalBus = null;
+  let externalVocalBlobUrl = null;
 
   // ---- Master setup -------------------------------------------
 
@@ -150,7 +155,53 @@
     vocalDelayWet.connect(stemBus.vocals);
     vocalReverbWet.connect(stemBus.vocals);
     stemBus.vocals.connect(masterGain);
+
+    // External vocal bus — feeds INTO vocalChorus (shares vocal FX chain
+    // with stem vocals so chorus/echo/reverb apply to both)
+    externalVocalBus = new Tone.Gain(0.85);
+    externalVocalBus.connect(vocalChorus);
     return masterGain;
+  }
+
+  function loadExternalVocal(fileBlob) {
+    if (externalVocalPlayer) {
+      try { externalVocalPlayer.stop(); externalVocalPlayer.dispose(); } catch (e) {}
+      externalVocalPlayer = null;
+    }
+    if (externalVocalBlobUrl) {
+      URL.revokeObjectURL(externalVocalBlobUrl);
+      externalVocalBlobUrl = null;
+    }
+    if (!fileBlob) return Promise.resolve(false);
+    if (!vocalChorus) ensureMaster();
+    externalVocalBlobUrl = URL.createObjectURL(fileBlob);
+    const status = $("br-external-vocal-status");
+    if (status) status.textContent = "loading…";
+    externalVocalPlayer = new Tone.Player({
+      url: externalVocalBlobUrl,
+      autostart: false,
+      fadeIn: 0.01,
+      fadeOut: 0.02
+    }).connect(externalVocalBus);   // → externalVocalBus → vocalChorus → FX chain
+    return Tone.loaded().then(() => {
+      if (status) status.textContent = `loaded: ${fileBlob.name} (${(fileBlob.size/1024/1024).toFixed(1)} MB)`;
+      return true;
+    });
+  }
+
+  function startExternalVocalIfEnabled() {
+    if (!externalVocalPlayer) return;
+    const enabled = $("br-toggle-external-vocal")?.checked;
+    if (!enabled) return;
+    try {
+      externalVocalPlayer.start("+0.15");
+    } catch (e) {
+      console.warn("[Band Room] external vocal start failed:", e);
+    }
+  }
+  function stopExternalVocal() {
+    if (!externalVocalPlayer) return;
+    try { externalVocalPlayer.stop(); } catch (e) {}
   }
 
   // ---- Drum kit (tabasco-rock profile: LCD + Backdrop Bomb) ----
@@ -952,7 +1003,10 @@
 
     scheduleBar();
     Tone.Transport.start();
-    if (currentMode === "stems") startStemPlayback();
+    if (currentMode === "stems") {
+      startStemPlayback();
+      startExternalVocalIfEnabled();
+    }
 
     state.started = true;
     state.starting = false;
@@ -967,6 +1021,7 @@
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
     state.scheduledIds = [];
     stopStemPlayback();
+    stopExternalVocal();
     state.started = false;
     setButtonState("idle");
   }
@@ -1101,6 +1156,46 @@
           // Map slider 0-100 → 0-1 (0=mono pull-in, 100=fully wide)
           const w = Number(widthEl.value) / 100;
           try { masterWidener.width.rampTo(w, 0.12); } catch (e) {}
+        }
+      });
+    }
+
+    // External vocal upload + toggle + volume
+    const extFile = $("br-external-vocal-file");
+    if (extFile) {
+      extFile.addEventListener("change", async (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (f) {
+          ensureMaster();
+          await loadExternalVocal(f);
+          // Auto-toggle on after upload
+          const tog = $("br-toggle-external-vocal");
+          if (tog && !tog.checked) {
+            tog.checked = true;
+            // If playing, mute stem vocals so external takes over
+            const stemTog = $("br-toggle-stem-vocals");
+            if (stemTog) {
+              stemTog.checked = false;
+              if (stemPlayers.vocals) stemPlayers.vocals.mute = true;
+            }
+            if (state.started) startExternalVocalIfEnabled();
+          }
+        }
+      });
+    }
+    const extToggle = $("br-toggle-external-vocal");
+    if (extToggle) {
+      extToggle.addEventListener("change", () => {
+        if (extToggle.checked && state.started) startExternalVocalIfEnabled();
+        else if (!extToggle.checked) stopExternalVocal();
+      });
+    }
+    const extVol = $("br-vol-external-vocal");
+    if (extVol) {
+      extVol.addEventListener("input", () => {
+        ensureMaster();
+        if (externalVocalBus) {
+          try { externalVocalBus.gain.rampTo(Number(extVol.value) / 100, 0.08); } catch (e) {}
         }
       });
     }

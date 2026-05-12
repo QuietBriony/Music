@@ -1,0 +1,151 @@
+{
+  "vocal_phrases": {
+    "source": "tabasco",
+    "song_id": "i-got-a-feeling",
+    "source_stem": "presets/tabasco-stems/i-got-a-feeling/vocals.mp3",
+    "sample_rate": 44100,
+    "silence_top_db": 30,
+    "phrases": [
+      {
+        "file": "vocal-phrase-01.wav",
+        "src_start_s": 170.458,
+        "src_end_s": 171.781,
+        "duration_s": 1.324,
+        "rms": 0.1624
+      },
+      {
+        "file": "vocal-phrase-02.wav",
+        "src_start_s": 110.527,
+        "src_end_s": 111.816,
+        "duration_s": 1.289,
+        "rms": 0.1565
+      },
+      {
+        "file": "vocal-phrase-03.wav",
+        "src_start_s": 316.082,
+        "src_end_s": 318.531,
+        "duration_s": 2.45,
+        "rms": 0.1546
+      },
+      {
+        "file": "vocal-phrase-04.wav",
+        "src_start_s": 313.98,
+        "src_end_s": 315.757,
+        "duration_s": 1.776,
+        "rms": 0.1526
+      },
+      {
+        "file": "vocal-phrase-05.wav",
+        "src_start_s": 321.945,
+        "src_end_s": 323.233,
+        "duration_s": 1.289,
+        "rms": 0.1514
+      },
+      {
+        "file": "vocal-phrase-06.wav",
+        "src_start_s": 347.696,
+        "src_end_s": 348.415,
+        "duration_s": 0.72,
+        "rms": 0.1513
+      },
+      {
+        "file": "vocal-phrase-07.wav",
+        "src_start_s": 186.642,
+        "src_end_s": 187.896,
+        "duration_s": 1.254,
+        "rms": 0.1509
+      },
+      {
+        "file": "vocal-phrase-08.wav",
+        "src_start_s": 339.766,
+        "src_end_s": 343.481,
+        "duration_s": 3.715,
+        "rms": 0.1503
+      },
+      {
+        "file": "vocal-phrase-09.wav",
+        "src_start_s": 330.037,
+        "src_end_s": 331.836,
+        "duration_s": 1.8,
+        "rms": 0.1485
+      },
+      {
+        "file": "vocal-phrase-10.wav",
+        "src_start_s": 178.643,
+        "src_end_s": 182.811,
+        "duration_s": 4.168,
+        "rms": 0.1455
+      },
+      {
+        "file": "vocal-phrase-11.wav",
+        "src_start_s": 305.667,
+        "src_end_s": 308.303,
+        "duration_s": 2.635,
+        "rms": 0.1449
+      },
+      {
+        "file": "vocal-phrase-12.wav",
+        "src_start_s": 328.063,
+        "src_end_s": 329.514,
+        "duration_s": 1.451,
+        "rms": 0.1444
+      },
+      {
+        "file": "vocal-phrase-13.wav",
+        "src_start_s": 327.041,
+        "src_end_s": 328.028,
+        "duration_s": 0.987,
+        "rms": 0.142
+      },
+      {
+        "file": "vocal-phrase-14.wav",
+        "src_start_s": 192.772,
+        "src_end_s": 194.328,
+        "duration_s": 1.556,
+        "rms": 0.1405
+      },
+      {
+        "file": "vocal-phrase-15.wav",
+        "src_start_s": 118.619,
+        "src_end_s": 123.101,
+        "duration_s": 4.481,
+        "rms": 0.1392
+      },
+      {
+        "file": "vocal-phrase-16.wav",
+        "src_start_s": 171.851,
+        "src_end_s": 172.838,
+        "duration_s": 0.987,
+        "rms": 0.1385
+      },
+      {
+        "file": "vocal-phrase-17.wav",
+        "src_start_s": 348.427,
+        "src_end_s": 350.993,
+        "duration_s": 2.566,
+        "rms": 0.1373
+      },
+      {
+        "file": "vocal-phrase-18.wav",
+        "src_start_s": 115.705,
+        "src_end_s": 118.178,
+        "duration_s": 2.473,
+        "rms": 0.1371
+      },
+      {
+        "file": "vocal-phrase-19.wav",
+        "src_start_s": 175.636,
+        "src_end_s": 176.135,
+        "duration_s": 0.499,
+        "rms": 0.136
+      },
+      {
+        "file": "vocal-phrase-20.wav",
+        "src_start_s": 172.849,
+        "src_end_s": 174.835,
+        "duration_s": 1.985,
+        "rms": 0.1359
+      }
+    ]
+  }
+}

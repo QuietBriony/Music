@@ -1,0 +1,151 @@
+{
+  "vocal_phrases": {
+    "source": "tabasco",
+    "song_id": "under-the-moon",
+    "source_stem": "presets/tabasco-stems/under-the-moon/vocals.mp3",
+    "sample_rate": 44100,
+    "silence_top_db": 30,
+    "phrases": [
+      {
+        "file": "vocal-phrase-01.wav",
+        "src_start_s": 167.66,
+        "src_end_s": 168.914,
+        "duration_s": 1.254,
+        "rms": 0.1177
+      },
+      {
+        "file": "vocal-phrase-02.wav",
+        "src_start_s": 72.516,
+        "src_end_s": 76.37,
+        "duration_s": 3.855,
+        "rms": 0.1153
+      },
+      {
+        "file": "vocal-phrase-03.wav",
+        "src_start_s": 164.595,
+        "src_end_s": 165.93,
+        "duration_s": 1.335,
+        "rms": 0.1144
+      },
+      {
+        "file": "vocal-phrase-04.wav",
+        "src_start_s": 146.53,
+        "src_end_s": 150.14,
+        "duration_s": 3.611,
+        "rms": 0.0973
+      },
+      {
+        "file": "vocal-phrase-05.wav",
+        "src_start_s": 69.474,
+        "src_end_s": 71.935,
+        "duration_s": 2.461,
+        "rms": 0.0932
+      },
+      {
+        "file": "vocal-phrase-06.wav",
+        "src_start_s": 269.769,
+        "src_end_s": 273.206,
+        "duration_s": 3.437,
+        "rms": 0.0914
+      },
+      {
+        "file": "vocal-phrase-07.wav",
+        "src_start_s": 14.536,
+        "src_end_s": 15.569,
+        "duration_s": 1.033,
+        "rms": 0.0901
+      },
+      {
+        "file": "vocal-phrase-08.wav",
+        "src_start_s": 160.473,
+        "src_end_s": 164.177,
+        "duration_s": 3.704,
+        "rms": 0.0897
+      },
+      {
+        "file": "vocal-phrase-09.wav",
+        "src_start_s": 137.996,
+        "src_end_s": 142.257,
+        "duration_s": 4.261,
+        "rms": 0.0883
+      },
+      {
+        "file": "vocal-phrase-10.wav",
+        "src_start_s": 265.892,
+        "src_end_s": 269.746,
+        "duration_s": 3.855,
+        "rms": 0.0883
+      },
+      {
+        "file": "vocal-phrase-11.wav",
+        "src_start_s": 64.064,
+        "src_end_s": 67.338,
+        "duration_s": 3.274,
+        "rms": 0.0869
+      },
+      {
+        "file": "vocal-phrase-12.wav",
+        "src_start_s": 150.547,
+        "src_end_s": 153.437,
+        "duration_s": 2.891,
+        "rms": 0.0844
+      },
+      {
+        "file": "vocal-phrase-13.wav",
+        "src_start_s": 58.677,
+        "src_end_s": 62.508,
+        "duration_s": 3.831,
+        "rms": 0.0833
+      },
+      {
+        "file": "vocal-phrase-14.wav",
+        "src_start_s": 273.299,
+        "src_end_s": 276.666,
+        "duration_s": 3.367,
+        "rms": 0.0833
+      },
+      {
+        "file": "vocal-phrase-15.wav",
+        "src_start_s": 132.76,
+        "src_end_s": 136.348,
+        "duration_s": 3.587,
+        "rms": 0.0785
+      },
+      {
+        "file": "vocal-phrase-16.wav",
+        "src_start_s": 281.356,
+        "src_end_s": 286.383,
+        "duration_s": 5.027,
+        "rms": 0.0785
+      },
+      {
+        "file": "vocal-phrase-17.wav",
+        "src_start_s": 154.006,
+        "src_end_s": 157.257,
+        "duration_s": 3.251,
+        "rms": 0.0784
+      },
+      {
+        "file": "vocal-phrase-18.wav",
+        "src_start_s": 67.512,
+        "src_end_s": 69.23,
+        "duration_s": 1.718,
+        "rms": 0.0783
+      },
+      {
+        "file": "vocal-phrase-19.wav",
+        "src_start_s": 143.395,
+        "src_end_s": 144.335,
+        "duration_s": 0.94,
+        "rms": 0.0783
+      },
+      {
+        "file": "vocal-phrase-20.wav",
+        "src_start_s": 113.186,
+        "src_end_s": 116.46,
+        "duration_s": 3.274,
+        "rms": 0.0781
+      }
+    ]
+  }
+}

@@ -615,5 +615,154 @@
         }
       }
     ]
+  },
+  "vocal_phrases": {
+    "source": "unripe",
+    "song_id": "past-and-fate",
+    "source_stem": "presets/unripe-stems/past-and-fate/vocals.mp3",
+    "sample_rate": 44100,
+    "silence_top_db": 30,
+    "phrases": [
+      {
+        "file": "vocal-phrase-01.wav",
+        "src_start_s": 106.928,
+        "src_end_s": 111.723,
+        "duration_s": 4.795,
+        "rms": 0.1556
+      },
+      {
+        "file": "vocal-phrase-02.wav",
+        "src_start_s": 15.766,
+        "src_end_s": 18.123,
+        "duration_s": 2.357,
+        "rms": 0.1512
+      },
+      {
+        "file": "vocal-phrase-03.wav",
+        "src_start_s": 1.045,
+        "src_end_s": 3.123,
+        "duration_s": 2.078,
+        "rms": 0.1509
+      },
+      {
+        "file": "vocal-phrase-04.wav",
+        "src_start_s": 113.905,
+        "src_end_s": 117.888,
+        "duration_s": 3.982,
+        "rms": 0.1455
+      },
+      {
+        "file": "vocal-phrase-05.wav",
+        "src_start_s": 45.952,
+        "src_end_s": 48.832,
+        "duration_s": 2.879,
+        "rms": 0.1442
+      },
+      {
+        "file": "vocal-phrase-06.wav",
+        "src_start_s": 13.27,
+        "src_end_s": 15.093,
+        "duration_s": 1.823,
+        "rms": 0.1432
+      },
+      {
+        "file": "vocal-phrase-07.wav",
+        "src_start_s": 50.097,
+        "src_end_s": 51.897,
+        "duration_s": 1.8,
+        "rms": 0.1423
+      },
+      {
+        "file": "vocal-phrase-08.wav",
+        "src_start_s": 3.46,
+        "src_end_s": 5.515,
+        "duration_s": 2.055,
+        "rms": 0.1417
+      },
+      {
+        "file": "vocal-phrase-09.wav",
+        "src_start_s": 10.867,
+        "src_end_s": 12.678,
+        "duration_s": 1.811,
+        "rms": 0.1399
+      },
+      {
+        "file": "vocal-phrase-10.wav",
+        "src_start_s": 176.959,
+        "src_end_s": 178.631,
+        "duration_s": 1.672,
+        "rms": 0.1378
+      },
+      {
+        "file": "vocal-phrase-11.wav",
+        "src_start_s": 165.849,
+        "src_end_s": 167.88,
+        "duration_s": 2.032,
+        "rms": 0.1374
+      },
+      {
+        "file": "vocal-phrase-12.wav",
+        "src_start_s": 178.654,
+        "src_end_s": 180.767,
+        "duration_s": 2.113,
+        "rms": 0.1373
+      },
+      {
+        "file": "vocal-phrase-13.wav",
+        "src_start_s": 8.394,
+        "src_end_s": 10.797,
+        "duration_s": 2.403,
+        "rms": 0.137
+      },
+      {
+        "file": "vocal-phrase-14.wav",
+        "src_start_s": 143.662,
+        "src_end_s": 146.112,
+        "duration_s": 2.45,
+        "rms": 0.1366
+      },
+      {
+        "file": "vocal-phrase-15.wav",
+        "src_start_s": 168.217,
+        "src_end_s": 171.7,
+        "duration_s": 3.483,
+        "rms": 0.1366
+      },
+      {
+        "file": "vocal-phrase-16.wav",
+        "src_start_s": 119.246,
+        "src_end_s": 124.877,
+        "duration_s": 5.631,
+        "rms": 0.1362
+      },
+      {
+        "file": "vocal-phrase-17.wav",
+        "src_start_s": 20.573,
+        "src_end_s": 24.149,
+        "duration_s": 3.576,
+        "rms": 0.1356
+      },
+      {
+        "file": "vocal-phrase-18.wav",
+        "src_start_s": 181.069,
+        "src_end_s": 185.713,
+        "duration_s": 4.644,
+        "rms": 0.1352
+      },
+      {
+        "file": "vocal-phrase-19.wav",
+        "src_start_s": 5.944,
+        "src_end_s": 7.883,
+        "duration_s": 1.939,
+        "rms": 0.1324
+      },
+      {
+        "file": "vocal-phrase-20.wav",
+        "src_start_s": 164.212,
+        "src_end_s": 165.814,
+        "duration_s": 1.602,
+        "rms": 0.1316
+      }
+    ]
   }
 }

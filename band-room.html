@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-8" />
+<link rel="stylesheet" href="band-room.css?v=br-9" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-8" defer></script>
+<script src="band-room.js?v=br-9" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -86,8 +86,22 @@
       </label>
     </section>
 
+    <section id="br-external-vocal" aria-label="External vocal upload (Suno / re-recording)" data-scope="stems">
+      <h3>🎙 external vocal — 自分で歌い直し / Suno 生成 mp3 をここに</h3>
+      <input type="file" id="br-external-vocal-file" accept="audio/*" />
+      <label class="br-toggle">
+        <input type="checkbox" id="br-toggle-external-vocal" />
+        <span>play external vocal (replaces stem)</span>
+      </label>
+      <label>
+        <span>volume</span>
+        <input type="range" id="br-vol-external-vocal" min="0" max="100" value="85" />
+      </label>
+      <span id="br-external-vocal-status">no file loaded</span>
+    </section>
+
     <section id="br-vocal-fx" aria-label="Vocal FX (chorus/delay/reverb)" data-scope="stems">
-      <h3>🎤 vocal FX — 原音ボーカルだけに掛かる (ごまかし系)</h3>
+      <h3>🎤 vocal FX — 原音 + external 両方に掛かる (ごまかし系)</h3>
       <label>
         <span>chorus</span>
         <input type="range" id="br-vfx-chorus" min="0" max="100" value="30" />

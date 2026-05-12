@@ -1,0 +1,151 @@
+{
+  "vocal_phrases": {
+    "source": "tabasco",
+    "song_id": "human-fly",
+    "source_stem": "presets/tabasco-stems/human-fly/vocals.mp3",
+    "sample_rate": 44100,
+    "silence_top_db": 30,
+    "phrases": [
+      {
+        "file": "vocal-phrase-01.wav",
+        "src_start_s": 63.402,
+        "src_end_s": 65.875,
+        "duration_s": 2.473,
+        "rms": 0.1536
+      },
+      {
+        "file": "vocal-phrase-02.wav",
+        "src_start_s": 177.354,
+        "src_end_s": 180.233,
+        "duration_s": 2.879,
+        "rms": 0.1443
+      },
+      {
+        "file": "vocal-phrase-03.wav",
+        "src_start_s": 66.142,
+        "src_end_s": 67.884,
+        "duration_s": 1.741,
+        "rms": 0.1416
+      },
+      {
+        "file": "vocal-phrase-04.wav",
+        "src_start_s": 67.918,
+        "src_end_s": 73.584,
+        "duration_s": 5.666,
+        "rms": 0.1408
+      },
+      {
+        "file": "vocal-phrase-05.wav",
+        "src_start_s": 137.183,
+        "src_end_s": 138.612,
+        "duration_s": 1.428,
+        "rms": 0.1361
+      },
+      {
+        "file": "vocal-phrase-06.wav",
+        "src_start_s": 25.89,
+        "src_end_s": 28.735,
+        "duration_s": 2.844,
+        "rms": 0.1351
+      },
+      {
+        "file": "vocal-phrase-07.wav",
+        "src_start_s": 86.727,
+        "src_end_s": 91.266,
+        "duration_s": 4.54,
+        "rms": 0.1322
+      },
+      {
+        "file": "vocal-phrase-08.wav",
+        "src_start_s": 29.942,
+        "src_end_s": 30.662,
+        "duration_s": 0.72,
+        "rms": 0.1304
+      },
+      {
+        "file": "vocal-phrase-09.wav",
+        "src_start_s": 221.565,
+        "src_end_s": 223.33,
+        "duration_s": 1.765,
+        "rms": 0.1285
+      },
+      {
+        "file": "vocal-phrase-10.wav",
+        "src_start_s": 96.514,
+        "src_end_s": 97.338,
+        "duration_s": 0.824,
+        "rms": 0.1284
+      },
+      {
+        "file": "vocal-phrase-11.wav",
+        "src_start_s": 145.113,
+        "src_end_s": 146.959,
+        "duration_s": 1.846,
+        "rms": 0.127
+      },
+      {
+        "file": "vocal-phrase-12.wav",
+        "src_start_s": 224.583,
+        "src_end_s": 226.464,
+        "duration_s": 1.881,
+        "rms": 0.1269
+      },
+      {
+        "file": "vocal-phrase-13.wav",
+        "src_start_s": 97.582,
+        "src_end_s": 98.278,
+        "duration_s": 0.697,
+        "rms": 0.126
+      },
+      {
+        "file": "vocal-phrase-14.wav",
+        "src_start_s": 226.673,
+        "src_end_s": 227.277,
+        "duration_s": 0.604,
+        "rms": 0.1236
+      },
+      {
+        "file": "vocal-phrase-15.wav",
+        "src_start_s": 84.172,
+        "src_end_s": 85.449,
+        "duration_s": 1.277,
+        "rms": 0.1208
+      },
+      {
+        "file": "vocal-phrase-16.wav",
+        "src_start_s": 51.304,
+        "src_end_s": 52.373,
+        "duration_s": 1.068,
+        "rms": 0.1197
+      },
+      {
+        "file": "vocal-phrase-17.wav",
+        "src_start_s": 219.788,
+        "src_end_s": 221.24,
+        "duration_s": 1.451,
+        "rms": 0.1191
+      },
+      {
+        "file": "vocal-phrase-18.wav",
+        "src_start_s": 196.499,
+        "src_end_s": 198.356,
+        "duration_s": 1.858,
+        "rms": 0.1189
+      },
+      {
+        "file": "vocal-phrase-19.wav",
+        "src_start_s": 138.635,
+        "src_end_s": 141.851,
+        "duration_s": 3.216,
+        "rms": 0.1184
+      },
+      {
+        "file": "vocal-phrase-20.wav",
+        "src_start_s": 85.507,
+        "src_end_s": 85.972,
+        "duration_s": 0.464,
+        "rms": 0.1178
+      }
+    ]
+  }
+}

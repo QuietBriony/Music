@@ -1,0 +1,151 @@
+{
+  "vocal_phrases": {
+    "source": "tabasco",
+    "song_id": "sister",
+    "source_stem": "presets/tabasco-stems/sister/vocals.mp3",
+    "sample_rate": 44100,
+    "silence_top_db": 30,
+    "phrases": [
+      {
+        "file": "vocal-phrase-01.wav",
+        "src_start_s": 86.285,
+        "src_end_s": 87.481,
+        "duration_s": 1.196,
+        "rms": 0.1636
+      },
+      {
+        "file": "vocal-phrase-02.wav",
+        "src_start_s": 164.455,
+        "src_end_s": 164.943,
+        "duration_s": 0.488,
+        "rms": 0.1619
+      },
+      {
+        "file": "vocal-phrase-03.wav",
+        "src_start_s": 249.754,
+        "src_end_s": 251.751,
+        "duration_s": 1.997,
+        "rms": 0.1425
+      },
+      {
+        "file": "vocal-phrase-04.wav",
+        "src_start_s": 87.493,
+        "src_end_s": 89.559,
+        "duration_s": 2.067,
+        "rms": 0.1389
+      },
+      {
+        "file": "vocal-phrase-05.wav",
+        "src_start_s": 82.083,
+        "src_end_s": 85.682,
+        "duration_s": 3.599,
+        "rms": 0.1368
+      },
+      {
+        "file": "vocal-phrase-06.wav",
+        "src_start_s": 256.836,
+        "src_end_s": 260.331,
+        "duration_s": 3.495,
+        "rms": 0.1362
+      },
+      {
+        "file": "vocal-phrase-07.wav",
+        "src_start_s": 137.381,
+        "src_end_s": 139.134,
+        "duration_s": 1.753,
+        "rms": 0.1356
+      },
+      {
+        "file": "vocal-phrase-08.wav",
+        "src_start_s": 260.667,
+        "src_end_s": 263.825,
+        "duration_s": 3.158,
+        "rms": 0.135
+      },
+      {
+        "file": "vocal-phrase-09.wav",
+        "src_start_s": 223.028,
+        "src_end_s": 224.63,
+        "duration_s": 1.602,
+        "rms": 0.1322
+      },
+      {
+        "file": "vocal-phrase-10.wav",
+        "src_start_s": 72.911,
+        "src_end_s": 77.764,
+        "duration_s": 4.853,
+        "rms": 0.1303
+      },
+      {
+        "file": "vocal-phrase-11.wav",
+        "src_start_s": 136.15,
+        "src_end_s": 137.358,
+        "duration_s": 1.207,
+        "rms": 0.1302
+      },
+      {
+        "file": "vocal-phrase-12.wav",
+        "src_start_s": 134.873,
+        "src_end_s": 135.419,
+        "duration_s": 0.546,
+        "rms": 0.1289
+      },
+      {
+        "file": "vocal-phrase-13.wav",
+        "src_start_s": 254.688,
+        "src_end_s": 255.965,
+        "duration_s": 1.277,
+        "rms": 0.1269
+      },
+      {
+        "file": "vocal-phrase-14.wav",
+        "src_start_s": 163.19,
+        "src_end_s": 164.351,
+        "duration_s": 1.161,
+        "rms": 0.1256
+      },
+      {
+        "file": "vocal-phrase-15.wav",
+        "src_start_s": 171.27,
+        "src_end_s": 173.163,
+        "duration_s": 1.892,
+        "rms": 0.1256
+      },
+      {
+        "file": "vocal-phrase-16.wav",
+        "src_start_s": 149.002,
+        "src_end_s": 152.427,
+        "duration_s": 3.425,
+        "rms": 0.1232
+      },
+      {
+        "file": "vocal-phrase-17.wav",
+        "src_start_s": 247.745,
+        "src_end_s": 249.266,
+        "duration_s": 1.521,
+        "rms": 0.123
+      },
+      {
+        "file": "vocal-phrase-18.wav",
+        "src_start_s": 146.553,
+        "src_end_s": 148.608,
+        "duration_s": 2.055,
+        "rms": 0.1229
+      },
+      {
+        "file": "vocal-phrase-19.wav",
+        "src_start_s": 252.331,
+        "src_end_s": 254.584,
+        "duration_s": 2.252,
+        "rms": 0.1211
+      },
+      {
+        "file": "vocal-phrase-20.wav",
+        "src_start_s": 152.811,
+        "src_end_s": 153.391,
+        "duration_s": 0.58,
+        "rms": 0.1199
+      }
+    ]
+  }
+}
