@@ -1,0 +1,58 @@
+{
+  "01 ": {
+    "title": "TABASCO",
+    "bpm": 136.0,
+    "key": "D min",
+    "rms": 0.1368,
+    "centroid": 2885,
+    "zcr": 0.156
+  },
+  "02 ": {
+    "title": "Hey",
+    "bpm": 123.0,
+    "key": "G maj",
+    "rms": 0.1125,
+    "centroid": 2747,
+    "zcr": 0.105
+  },
+  "03 ": {
+    "title": "I got a feeling",
+    "bpm": 117.5,
+    "key": "B min",
+    "rms": 0.122,
+    "centroid": 2590,
+    "zcr": 0.105
+  },
+  "04 ": {
+    "title": "Under the Moon",
+    "bpm": 161.5,
+    "key": "A# maj",
+    "rms": 0.1029,
+    "centroid": 3068,
+    "zcr": 0.138
+  },
+  "05 ": {
+    "title": "Electric Sheep",
+    "bpm": 129.2,
+    "key": "E min",
+    "rms": 0.1435,
+    "centroid": 3471,
+    "zcr": 0.214
+  },
+  "06 ": {
+    "title": "Human Fly",
+    "bpm": 117.5,
+    "key": "G maj",
+    "rms": 0.154,
+    "centroid": 2332,
+    "zcr": 0.102
+  },
+  "07 ": {
+    "title": "Sister",
+    "bpm": 117.5,
+    "key": "F maj",
+    "rms": 0.1139,
+    "centroid": 1872,
+    "zcr": 0.076
+  }
+}

@@ -1,0 +1,801 @@
+{
+  "version": 1,
+  "format": "song-track",
+  "song_id": "tabasco-electric-sheep",
+  "song_title": "Electric Sheep",
+  "band": "air rock connect box",
+  "original_album": "Tabasco. LIVE (2005-ish)",
+  "session_signature": "UNRIPE hardcore-postpunk full-throttle + busy cymbal",
+  "bpm": 129,
+  "key": "E minor",
+  "structure": [
+    {
+      "section": "intro",
+      "frame_id": "intro_burst",
+      "bars": 4
+    },
+    {
+      "section": "verse-1",
+      "frame_id": "verse_drive",
+      "bars": 16
+    },
+    {
+      "section": "chorus-1",
+      "frame_id": "chorus_agro",
+      "bars": 16
+    },
+    {
+      "section": "verse-2",
+      "frame_id": "verse_drive",
+      "bars": 12
+    },
+    {
+      "section": "chorus-2",
+      "frame_id": "chorus_agro",
+      "bars": 16
+    },
+    {
+      "section": "outro",
+      "frame_id": "outro_blast",
+      "bars": 4
+    }
+  ],
+  "total_bars": 68,
+  "estimated_duration_s": 126,
+  "frames": [
+    {
+      "id": "intro_burst",
+      "session_role": "intro",
+      "barLength": 4,
+      "events": [
+        {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.9,
+          "microMs": -2,
+          "role": "4-on-floor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.57,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 1,
+          "velocity": 0.53,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 2,
+          "velocity": 0.53,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 3,
+          "velocity": 0.53,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.86,
+          "microMs": -2,
+          "role": "4-on-floor"
+        },
+        {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.78,
+          "microMs": 2,
+          "role": "backbeat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.54,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 1,
+          "velocity": 0.5,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 2,
+          "velocity": 0.5,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 3,
+          "velocity": 0.5,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.9,
+          "microMs": -2,
+          "role": "4-on-floor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.54,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 1,
+          "velocity": 0.5,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 2,
+          "velocity": 0.5,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 3,
+          "velocity": 0.5,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.86,
+          "microMs": -2,
+          "role": "4-on-floor"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.82,
+          "microMs": 3,
+          "role": "backbeat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.54,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 1,
+          "velocity": 0.5,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 2,
+          "velocity": 0.5,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 3,
+          "velocity": 0.5,
+          "microMs": 1,
+          "role": "16th_fill"
+        }
+      ]
+    },
+    {
+      "id": "verse_drive",
+      "session_role": "verse",
+      "barLength": 4,
+      "events": [
+        {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.86,
+          "microMs": -2,
+          "role": "anchor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.55,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 1,
+          "velocity": 0.51,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 2,
+          "velocity": 0.51,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 3,
+          "velocity": 0.51,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.82,
+          "microMs": 2,
+          "role": "backbeat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.52,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 1,
+          "velocity": 0.48,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 2,
+          "velocity": 0.48,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 1,
+          "sub": 3,
+          "velocity": 0.5,
+          "microMs": 1,
+          "role": "syncopated"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 3,
+          "velocity": 0.48,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": -1,
+          "role": "anchor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.52,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 1,
+          "velocity": 0.48,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 2,
+          "velocity": 0.48,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 3,
+          "velocity": 0.48,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.86,
+          "microMs": 3,
+          "role": "backbeat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.52,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 1,
+          "velocity": 0.48,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 2,
+          "velocity": 0.48,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 3,
+          "sub": 3,
+          "velocity": 0.48,
+          "microMs": 1,
+          "role": "syncopated"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 3,
+          "velocity": 0.48,
+          "microMs": 1,
+          "role": "16th_fill"
+        }
+      ]
+    },
+    {
+      "id": "chorus_agro",
+      "session_role": "recap",
+      "barLength": 4,
+      "events": [
+        {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.98,
+          "microMs": -2,
+          "role": "4-on-floor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.63,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 1,
+          "velocity": 0.59,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 2,
+          "velocity": 0.59,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 3,
+          "velocity": 0.59,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.94,
+          "microMs": -2,
+          "role": "4-on-floor"
+        },
+        {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.9,
+          "microMs": 1,
+          "role": "backbeat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.6,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.56,
+          "microMs": 6,
+          "role": "clap_double"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 1,
+          "velocity": 0.56,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 2,
+          "velocity": 0.56,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 1,
+          "sub": 3,
+          "velocity": 0.6,
+          "microMs": 1,
+          "role": "double_bass"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 3,
+          "velocity": 0.56,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.98,
+          "microMs": -2,
+          "role": "4-on-floor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.6,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 1,
+          "velocity": 0.56,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 2,
+          "velocity": 0.56,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 3,
+          "velocity": 0.56,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.94,
+          "microMs": -2,
+          "role": "4-on-floor"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.94,
+          "microMs": 2,
+          "role": "backbeat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.6,
+          "microMs": 0,
+          "role": "16th_drive"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.6,
+          "microMs": 7,
+          "role": "clap_double"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 1,
+          "velocity": 0.56,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 2,
+          "velocity": 0.56,
+          "microMs": 1,
+          "role": "16th_fill"
+        },
+        {
+          "instrument": "kick",
+          "beat": 3,
+          "sub": 3,
+          "velocity": 0.58,
+          "microMs": 1,
+          "role": "double_bass"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 3,
+          "velocity": 0.56,
+          "microMs": 1,
+          "role": "16th_fill"
+        }
+      ]
+    },
+    {
+      "id": "outro_blast",
+      "session_role": "outro",
+      "barLength": 4,
+      "events": [
+        {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.96,
+          "microMs": -3,
+          "role": "final"
+        },
+        {
+          "instrument": "snare",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.94,
+          "microMs": 2,
+          "role": "final"
+        },
+        {
+          "instrument": "crash",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.82,
+          "microMs": 2,
+          "role": "final_crash"
+        },
+        {
+          "instrument": "fill",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.74,
+          "microMs": 4,
+          "role": "tom_blast"
+        },
+        {
+          "instrument": "fill",
+          "beat": 1,
+          "sub": 2,
+          "velocity": 0.78,
+          "microMs": 6,
+          "role": "tom_blast"
+        },
+        {
+          "instrument": "fill",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.82,
+          "microMs": 4,
+          "role": "tom_blast"
+        },
+        {
+          "instrument": "fill",
+          "beat": 2,
+          "sub": 2,
+          "velocity": 0.84,
+          "microMs": 6,
+          "role": "tom_blast"
+        },
+        {
+          "instrument": "kick",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.96,
+          "microMs": -3,
+          "role": "final_2"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.96,
+          "microMs": 2,
+          "role": "final_2"
+        },
+        {
+          "instrument": "crash",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.86,
+          "microMs": 3,
+          "role": "final_crash_2"
+        }
+      ]
+    }
+  ],
+  "chord_progression": {
+    "intro": [
+      [
+        "Em",
+        2
+      ]
+    ],
+    "verse-1": [
+      [
+        "Em",
+        2
+      ],
+      [
+        "G",
+        2
+      ],
+      [
+        "D",
+        2
+      ],
+      [
+        "A",
+        2
+      ]
+    ],
+    "verse-2": [
+      [
+        "Em",
+        2
+      ],
+      [
+        "G",
+        2
+      ],
+      [
+        "D",
+        2
+      ],
+      [
+        "A",
+        2
+      ]
+    ],
+    "chorus-1": [
+      [
+        "C",
+        2
+      ],
+      [
+        "G",
+        2
+      ],
+      [
+        "D",
+        2
+      ],
+      [
+        "Em",
+        2
+      ]
+    ],
+    "chorus-2": [
+      [
+        "C",
+        2
+      ],
+      [
+        "G",
+        2
+      ],
+      [
+        "D",
+        2
+      ],
+      [
+        "Em",
+        2
+      ]
+    ],
+    "outro": [
+      [
+        "Em",
+        4
+      ]
+    ]
+  }
+}

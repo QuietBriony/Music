@@ -629,10 +629,10 @@
       }
 
       // Vocal guide (melody-only, 母音 "ah" voice-box).
-      // Only chorus has a melody encoded for Human Fly. 4-bar phrase
-      // repeats through 16-bar chorus; bar-within-section determines
-      // which phrase position to play.
-      if ($("br-toggle-voice").checked && voiceSynth && frame && frame.session_role === "recap") {
+      // Human Fly has hardcoded melody; other songs no melody-guide yet.
+      // (Future: load song.melody_guide from JSON if present.)
+      if ($("br-toggle-voice").checked && voiceSynth && state.currentSongId === "human-fly"
+          && frame && frame.session_role === "recap") {
         const barInSection = state.barCount - state.sectionBarStart;
         const phraseBar = barInSection % 4;
         const phrase = (HUMAN_FLY_VOCAL_MELODY.chorus || [])[phraseBar];

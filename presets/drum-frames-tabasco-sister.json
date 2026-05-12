@@ -1,0 +1,613 @@
+{
+  "version": 1,
+  "format": "song-track",
+  "song_id": "tabasco-sister",
+  "song_title": "Sister",
+  "band": "air rock connect box",
+  "original_album": "Tabasco. LIVE (2005-ish)",
+  "session_signature": "Sadistic Mika Band warm ballad close + sustained vocal + brush drums",
+  "bpm": 117,
+  "key": "F major",
+  "structure": [
+    {
+      "section": "intro",
+      "frame_id": "intro_warm",
+      "bars": 8
+    },
+    {
+      "section": "verse-1",
+      "frame_id": "verse_brush",
+      "bars": 16
+    },
+    {
+      "section": "chorus-1",
+      "frame_id": "chorus_swell",
+      "bars": 16
+    },
+    {
+      "section": "verse-2",
+      "frame_id": "verse_brush",
+      "bars": 16
+    },
+    {
+      "section": "chorus-2",
+      "frame_id": "chorus_swell",
+      "bars": 16
+    },
+    {
+      "section": "bridge",
+      "frame_id": "bridge_hush",
+      "bars": 8
+    },
+    {
+      "section": "chorus-3",
+      "frame_id": "chorus_climax",
+      "bars": 16
+    },
+    {
+      "section": "outro",
+      "frame_id": "outro_fade",
+      "bars": 8
+    }
+  ],
+  "total_bars": 104,
+  "estimated_duration_s": 213,
+  "frames": [
+    {
+      "id": "intro_warm",
+      "session_role": "intro",
+      "barLength": 4,
+      "events": [
+        {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.5,
+          "microMs": -2,
+          "role": "soft_anchor"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 0,
+          "sub": 2,
+          "velocity": 0.18,
+          "microMs": 14,
+          "role": "brush_sweep"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 1,
+          "sub": 2,
+          "velocity": 0.16,
+          "microMs": 14,
+          "role": "brush_sweep"
+        },
+        {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.46,
+          "microMs": -1,
+          "role": "soft_anchor"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 2,
+          "sub": 2,
+          "velocity": 0.18,
+          "microMs": 14,
+          "role": "brush_sweep"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 3,
+          "sub": 2,
+          "velocity": 0.2,
+          "microMs": 14,
+          "role": "brush_sweep"
+        }
+      ]
+    },
+    {
+      "id": "verse_brush",
+      "session_role": "verse",
+      "barLength": 4,
+      "events": [
+        {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.64,
+          "microMs": -2,
+          "role": "anchor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.24,
+          "microMs": 0,
+          "role": "soft_hat"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 0,
+          "sub": 2,
+          "velocity": 0.14,
+          "microMs": 16,
+          "role": "brush_sweep"
+        },
+        {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.36,
+          "microMs": 12,
+          "role": "brush_backbeat"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 1,
+          "sub": 2,
+          "velocity": 0.14,
+          "microMs": 16,
+          "role": "brush_sweep"
+        },
+        {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.58,
+          "microMs": -1,
+          "role": "anchor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.24,
+          "microMs": 0,
+          "role": "soft_hat"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 2,
+          "sub": 2,
+          "velocity": 0.14,
+          "microMs": 16,
+          "role": "brush_sweep"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.38,
+          "microMs": 14,
+          "role": "brush_backbeat"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 3,
+          "sub": 2,
+          "velocity": 0.14,
+          "microMs": 16,
+          "role": "brush_sweep"
+        }
+      ]
+    },
+    {
+      "id": "chorus_swell",
+      "session_role": "recap",
+      "barLength": 4,
+      "events": [
+        {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.76,
+          "microMs": -2,
+          "role": "anchor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.39,
+          "microMs": 0,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "crash",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.32,
+          "microMs": 4,
+          "role": "soft_lift"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 2,
+          "velocity": 0.35,
+          "microMs": 1,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.68,
+          "microMs": 8,
+          "role": "backbeat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.36,
+          "microMs": 0,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 2,
+          "velocity": 0.32,
+          "microMs": 1,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.7,
+          "microMs": -1,
+          "role": "anchor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.36,
+          "microMs": 0,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 2,
+          "velocity": 0.32,
+          "microMs": 1,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.72,
+          "microMs": 9,
+          "role": "backbeat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.36,
+          "microMs": 0,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 2,
+          "velocity": 0.32,
+          "microMs": 1,
+          "role": "closed_8th"
+        }
+      ]
+    },
+    {
+      "id": "bridge_hush",
+      "session_role": "break",
+      "barLength": 4,
+      "events": [
+        {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.42,
+          "microMs": -2,
+          "role": "hush"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 1,
+          "sub": 2,
+          "velocity": 0.16,
+          "microMs": 18,
+          "role": "brush_sustain"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 3,
+          "sub": 2,
+          "velocity": 0.16,
+          "microMs": 18,
+          "role": "brush_sustain"
+        }
+      ]
+    },
+    {
+      "id": "chorus_climax",
+      "session_role": "recap",
+      "barLength": 4,
+      "events": [
+        {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.84,
+          "microMs": -2,
+          "role": "anchor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.47,
+          "microMs": 0,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "crash",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.46,
+          "microMs": 4,
+          "role": "swell_lift"
+        },
+        {
+          "instrument": "hat",
+          "beat": 0,
+          "sub": 2,
+          "velocity": 0.43,
+          "microMs": 1,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.78,
+          "microMs": 6,
+          "role": "backbeat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.44,
+          "microMs": 0,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "hat",
+          "beat": 1,
+          "sub": 2,
+          "velocity": 0.4,
+          "microMs": 1,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.78,
+          "microMs": -1,
+          "role": "anchor"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.44,
+          "microMs": 0,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "hat",
+          "beat": 2,
+          "sub": 2,
+          "velocity": 0.4,
+          "microMs": 1,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.82,
+          "microMs": 7,
+          "role": "backbeat"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.44,
+          "microMs": 0,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "hat",
+          "beat": 3,
+          "sub": 2,
+          "velocity": 0.4,
+          "microMs": 1,
+          "role": "closed_8th"
+        },
+        {
+          "instrument": "fill",
+          "beat": 3,
+          "sub": 2,
+          "velocity": 0.42,
+          "microMs": 10,
+          "role": "soft_tom"
+        }
+      ]
+    },
+    {
+      "id": "outro_fade",
+      "session_role": "outro",
+      "barLength": 4,
+      "events": [
+        {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.46,
+          "microMs": -2,
+          "role": "fade_anchor"
+        },
+        {
+          "instrument": "crash",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.36,
+          "microMs": 4,
+          "role": "long_ring"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 1,
+          "sub": 2,
+          "velocity": 0.12,
+          "microMs": 18,
+          "role": "final_brush"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 3,
+          "sub": 2,
+          "velocity": 0.1,
+          "microMs": 18,
+          "role": "final_brush"
+        }
+      ]
+    }
+  ],
+  "chord_progression": {
+    "intro": [
+      [
+        "F",
+        4
+      ]
+    ],
+    "verse-1": [
+      [
+        "F",
+        4
+      ],
+      [
+        "Dm",
+        4
+      ],
+      [
+        "Bb",
+        4
+      ],
+      [
+        "C",
+        4
+      ]
+    ],
+    "verse-2": [
+      [
+        "F",
+        4
+      ],
+      [
+        "Dm",
+        4
+      ],
+      [
+        "Bb",
+        4
+      ],
+      [
+        "C",
+        4
+      ]
+    ],
+    "chorus-1": [
+      [
+        "Bb",
+        2
+      ],
+      [
+        "C",
+        2
+      ],
+      [
+        "F",
+        2
+      ],
+      [
+        "Dm",
+        2
+      ]
+    ],
+    "chorus-2": [
+      [
+        "Bb",
+        2
+      ],
+      [
+        "C",
+        2
+      ],
+      [
+        "F",
+        2
+      ],
+      [
+        "Dm",
+        2
+      ]
+    ],
+    "chorus-3": [
+      [
+        "Bb",
+        2
+      ],
+      [
+        "C",
+        2
+      ],
+      [
+        "F",
+        2
+      ],
+      [
+        "Dm",
+        2
+      ]
+    ],
+    "bridge": [
+      [
+        "Gm",
+        4
+      ],
+      [
+        "C",
+        4
+      ]
+    ],
+    "outro": [
+      [
+        "F",
+        8
+      ]
+    ]
+  }
+}
