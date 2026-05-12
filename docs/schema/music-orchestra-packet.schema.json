@@ -67,12 +67,16 @@
         "metadata_only",
         "no_audio",
         "no_samples",
+        "no_lyrics",
+        "no_workflows",
         "human_review_required"
       ],
       "properties": {
         "metadata_only": { "const": true },
         "no_audio": { "const": true },
         "no_samples": { "const": true },
+        "no_lyrics": { "const": true },
+        "no_workflows": { "const": true },
         "human_review_required": { "const": true },
         "notes": {
           "type": "string"

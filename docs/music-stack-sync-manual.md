@@ -36,6 +36,9 @@ dependency、workflow は取り込みません。実装する場合も、対象r
 ## 何が自動で起きるか
 
 - `localStorage` と `BroadcastChannel` に最新の Music session packet が保存されます。
+- 同時に `MusicOrchestraPacket` 形式の上位routing packetも保存されます。これは
+  OpenClaw Desk や将来の mission board が読みやすいように、Music session packet
+  を `drum-floor / namima / chill / openclaw` の行き先へ要約したものです。
 - 同じ `quietbriony.github.io` 上で開いた `drum-floor`、`namima`、`chill`、`OpenClaw Desk` が最新packetを読みます。
 - `MIC` がONなら `performance_state.mic_follow` に `gesture / drive / pulse / hum / air / bpm_lock` などのmetadataだけが入り、各repoはそれを反応のヒントとして扱います。
 - Hazama FM から `SYNC` した場合は `performance_state.hazama_fm` に `genre / source / role / edge / feedback_hint / engine_translation / listening_trace / review_cue` が入り、FMで聴こえているジャンル文脈、Music 本体側の bus mix 翻訳、聴いていたジャンル滞在/切替履歴、次に聴くべき review cue を他repoが解釈できます。
@@ -55,6 +58,8 @@ dependency、workflow は取り込みません。実装する場合も、対象r
 GitHub Pages 本番では `SYNC` が基本です。
 ローカル開発で port が違う場合は自動共有できないことがあります。その時だけ
 `window.MusicSessionPacket.download()` か受け側の貼り付け欄を使います。
+OpenClaw / mission board 向けの上位要約が必要な時は
+`window.MusicOrchestraPacket.download()` を使います。
 
 ## 安全境界
 

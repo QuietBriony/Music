@@ -101,8 +101,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`.
 - Confirm `fm.html` requests `audio/genre-flavor.js?v=fm-53`,
-  `fm.js?v=fm-53`, and `engine.js?v=fm-44`, and `sw.js` contains
-  `hazama-fm-v53`.
+  `fm.js?v=fm-53`, and `engine.js?v=fm-54`, and `sw.js` contains
+  `hazama-fm-v54`.
 - Confirm browser console has no service-worker registration or update errors.
 - Close and reopen the installed app after merge; if the old UI remains, open
   the normal browser tab once, reload, then reopen the installed app.

@@ -3,6 +3,8 @@
 These examples are metadata-only review fixtures for the Music Stack.
 
 - `music-session-packet.example.json`: a conductor packet emitted by Music.
+- `music-orchestra-packet.example.json`: a high-level mission/routing wrapper
+  around a Music session packet.
 - `music-session-trace.example.json`: a reviewed observation trace; no audio,
   samples, lyrics, raw microphone buffers, or private gesture streams.
 - `repo-harvest-sidecars/`: review-only harvest examples for internal
