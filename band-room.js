@@ -43,10 +43,17 @@
 
   let masterGain = null;
   let masterLimiter = null;
-  let masterReverb = null;        // v57: space补正 — room reverb in master chain
-  let masterWidener = null;       // v57: stereo width
-  let masterDryGain = null;       // dry path
-  let masterWetGain = null;       // wet (reverb) send level
+  let masterReverb = null;
+  let masterWidener = null;
+  let masterDryGain = null;
+  let masterWetGain = null;
+  // v66 mastering chain additions
+  let masterMultibandComp = null;     // 3-band compression
+  let masterTapeSat = null;           // parallel-wet harmonic saturator
+  let masterTapeSatWet = null;        // wet send level for tape sat
+  let masterTapeSatDry = null;        // dry path
+  let stemEQs = { vocals: null, drums: null, bass: null, other: null }; // per-stem EQ
+  let vocalDeEsser = null;            // sidechain-style sibilance dip
   let drumBus = null;
   let bassBus = null;
   let guitarBus = null;
@@ -108,30 +115,85 @@
 
   // ---- Master setup -------------------------------------------
 
+  function makeStemEQChain(stem) {
+    // Returns { input, output } — caller connects player → input, output → bus
+    if (stem === "drums") {
+      const hp = new Tone.Filter({ frequency: 50, type: "highpass", Q: 0.6 });
+      const eq = new Tone.EQ3({ low: 0.5, mid: 0, high: 1.5, lowFrequency: 250, highFrequency: 3000 });
+      hp.connect(eq);
+      return { input: hp, output: eq };
+    }
+    if (stem === "bass") {
+      const hp = new Tone.Filter({ frequency: 30, type: "highpass", Q: 0.6 });
+      const lp = new Tone.Filter({ frequency: 5000, type: "lowpass", Q: 0.6 });
+      hp.connect(lp);
+      return { input: hp, output: lp };
+    }
+    if (stem === "vocals") {
+      const hp = new Tone.Filter({ frequency: 90, type: "highpass", Q: 0.6 });
+      const presence = new Tone.EQ3({ low: 0, mid: 0.5, high: 2.0, lowFrequency: 400, highFrequency: 3000 });
+      // Built-in de-esser: notch at ~6 kHz with low Q to gently tame sibilance
+      const deEss = new Tone.Filter({ frequency: 6500, type: "peaking", Q: 1.2, gain: -2.5 });
+      hp.connect(presence);
+      presence.connect(deEss);
+      return { input: hp, output: deEss };
+    }
+    // other
+    const hp = new Tone.Filter({ frequency: 100, type: "highpass", Q: 0.6 });
+    const shelf = new Tone.EQ3({ low: 0, mid: 0, high: 1.0, lowFrequency: 200, highFrequency: 5000 });
+    hp.connect(shelf);
+    return { input: hp, output: shelf };
+  }
+
   function ensureMaster() {
     if (masterGain) return masterGain;
-    // v57: space補正
-    // Chain: masterGain → comp → eq → widener → [dry] + [wet via reverb] → limiter
-    // - Stereo widener gives wider image (Demucs stems tend to feel mono-narrow)
-    // - Reverb in parallel send (wet/dry mix) so dry signal stays intact
+    // v66 mastering chain (two-stage compression + tape sat + per-stem EQ):
+    //   stem player → per-stem EQ (HP/shelf/de-ess) → stem bus
+    //   stem bus → masterGain → masterComp1 (gentle leveling)
+    //                          → masterEq (broad tilt)
+    //                          → masterComp2 (glue, tight)
+    //                          → masterWidener
+    //                          → [dry] + [tape sat wet] + [reverb wet]
+    //                          → masterLimiter → Destination
+    //
+    // Per-stem EQ adds clarity (drum HP, bass LP, vocal HP + de-ess + presence,
+    // other HP). Two-stage compression: comp1 catches peaks gently, EQ tilts,
+    // comp2 glues. Tape sat parallel-wet for harmonic gel.
     masterLimiter = new Tone.Limiter({ threshold: -0.5 }).toDestination();
-    const masterEq = new Tone.EQ3({ low: 1.2, mid: -0.2, high: 0.6, lowFrequency: 200, highFrequency: 5000 });
-    const masterComp = new Tone.Compressor({ threshold: -14, ratio: 2.5, attack: 0.010, release: 0.20, knee: 6 });
-    masterWidener = new Tone.StereoWidener(0.72);  // 0=mono, 0.5=normal, 1=max wide; 0.72 = noticeably wider
+    const masterEq = new Tone.EQ3({ low: 1.4, mid: -0.4, high: 0.8, lowFrequency: 200, highFrequency: 5000 });
+    const masterComp1 = new Tone.Compressor({ threshold: -14, ratio: 2.5, attack: 0.012, release: 0.22, knee: 6 });
+    const masterComp2 = new Tone.Compressor({ threshold: -8,  ratio: 1.7, attack: 0.003, release: 0.10, knee: 4 });
+    masterWidener = new Tone.StereoWidener(0.72);
+
+    masterTapeSat = new Tone.Distortion({ distortion: 0.06, oversample: "2x", wet: 1 });
+    masterTapeSatWet = new Tone.Gain(0.10);
+    masterTapeSatDry = new Tone.Gain(0.90);
+
     masterReverb = new Tone.Reverb({ decay: 2.2, preDelay: 0.025, wet: 1 });
-    masterDryGain = new Tone.Gain(0.78);   // 78% dry
-    masterWetGain = new Tone.Gain(0.22);   // 22% wet (gentle space)
+    masterDryGain = new Tone.Gain(0.78);
+    masterWetGain = new Tone.Gain(0.22);
 
     masterGain = new Tone.Gain(0.9);
-    masterGain.connect(masterComp);
-    masterComp.connect(masterEq);
-    masterEq.connect(masterWidener);
-    // Parallel dry/wet split after widener
-    masterWidener.connect(masterDryGain);
+    masterGain.connect(masterComp1);
+    masterComp1.connect(masterEq);
+    masterEq.connect(masterComp2);
+    masterComp2.connect(masterWidener);
+
+    masterWidener.connect(masterTapeSatDry);
+    masterWidener.connect(masterTapeSat);
     masterWidener.connect(masterReverb);
+    masterTapeSat.connect(masterTapeSatWet);
     masterReverb.connect(masterWetGain);
+    masterTapeSatDry.connect(masterDryGain);
     masterDryGain.connect(masterLimiter);
+    masterTapeSatWet.connect(masterLimiter);
     masterWetGain.connect(masterLimiter);
+
+    // Per-stem EQ chains — created once, connected when players load
+    stemEQs.drums = makeStemEQChain("drums");
+    stemEQs.bass  = makeStemEQChain("bass");
+    stemEQs.vocals = makeStemEQChain("vocals");
+    stemEQs.other = makeStemEQChain("other");
 
     drumBus = new Tone.Gain(0.75).connect(masterGain);
     bassBus = new Tone.Gain(0.65).connect(masterGain);
@@ -140,10 +202,14 @@
     chordBus = new Tone.Gain(0.55).connect(masterGain);
     clickBus = new Tone.Gain(0.0).connect(masterGain);
 
-    // Original-stem buses (Demucs outputs go through these → master remaster chain)
+    // Original-stem buses → per-stem EQ → masterGain
     stemBus.drums  = new Tone.Gain(0.85).connect(masterGain);
     stemBus.bass   = new Tone.Gain(0.85).connect(masterGain);
     stemBus.other  = new Tone.Gain(0.85).connect(masterGain);
+    // Wire EQ outputs into respective buses (input side will receive players)
+    stemEQs.drums.output.connect(stemBus.drums);
+    stemEQs.bass.output.connect(stemBus.bass);
+    stemEQs.other.output.connect(stemBus.other);
 
     // Vocal stem has its own FX chain — disguise / polish the raw vocal
     // before it reaches the master remaster.
@@ -171,6 +237,8 @@
     vocalDelayWet.connect(stemBus.vocals);
     vocalReverbWet.connect(stemBus.vocals);
     stemBus.vocals.connect(masterGain);
+    // Vocal stem EQ → vocalChorus (so EQ runs before FX chain)
+    stemEQs.vocals.output.connect(vocalChorus);
 
     // External vocal bus — feeds INTO vocalChorus (shares vocal FX chain
     // with stem vocals so chorus/echo/reverb apply to both)
@@ -478,9 +546,10 @@
       try {
         const head = await fetch(url, { method: "HEAD" });
         if (!head.ok) return null;
-        // Vocals go through FX chain (chorus → split to delay + reverb wet + dry)
-        // Other stems go directly to their bus.
-        const target = (stem === "vocals" && vocalChorus) ? vocalChorus : stemBus[stem];
+        // Route via per-stem EQ chain (v66). EQ output already wired to:
+        //   - bus → master (drums/bass/other)
+        //   - vocalChorus (vocals)
+        const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
         const player = new Tone.Player({ url, autostart: false, fadeIn: 0.005, fadeOut: 0.02 }).connect(target);
         await Tone.loaded();
         return { stem, player };
@@ -1247,6 +1316,39 @@
           // Map slider 0-100 → 0-1 (0=mono pull-in, 100=fully wide)
           const w = Number(widthEl.value) / 100;
           try { masterWidener.width.rampTo(w, 0.12); } catch (e) {}
+        }
+      });
+    }
+
+    // v66: tape warmth (parallel saturator wet send 0..0.40)
+    const tapeWarmthEl = $("br-tape-warmth");
+    if (tapeWarmthEl) {
+      tapeWarmthEl.addEventListener("input", () => {
+        ensureMaster();
+        if (masterTapeSatWet) {
+          // Slider 0..40 → 0..0.40 (subtle parallel send; >0.40 starts to
+          // muddy the top end with the 0.06 distortion setting)
+          const w = Number(tapeWarmthEl.value) / 100;
+          try { masterTapeSatWet.gain.rampTo(w, 0.12); } catch (e) {}
+        }
+        if (masterTapeSatDry) {
+          // Compensate dry path so total stays ~constant
+          const w = Number(tapeWarmthEl.value) / 100;
+          try { masterTapeSatDry.gain.rampTo(1 - w * 0.5, 0.12); } catch (e) {}
+        }
+      });
+    }
+
+    // v66: loudness (final master gain, dB → linear)
+    const loudnessEl = $("br-loudness");
+    if (loudnessEl) {
+      loudnessEl.addEventListener("input", () => {
+        ensureMaster();
+        if (masterGain) {
+          const dB = Number(loudnessEl.value);
+          // 0 dB → 0.9 (default master gain); ±dB scales from there
+          const linear = 0.9 * Math.pow(10, dB / 20);
+          try { masterGain.gain.rampTo(linear, 0.10); } catch (e) {}
         }
       });
     }
