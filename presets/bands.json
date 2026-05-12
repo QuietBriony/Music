@@ -16,25 +16,124 @@
       "drum_frames_pattern": "presets/drum-frames-tabasco-{songid}.json",
       "lyrics_doc": "docs/tabasco-lyrics-draft.md",
       "songs": [
-        { "id": "tabasco",          "track": "01", "title": "TABASCO",          "bpm": 136, "key": "D minor",  "duration_s": 44 },
-        { "id": "hey",              "track": "02", "title": "Hey",              "bpm": 123, "key": "G major",  "duration_s": 304 },
-        { "id": "i-got-a-feeling",  "track": "03", "title": "I got a feeling",  "bpm": 117, "key": "B minor",  "duration_s": 368 },
-        { "id": "under-the-moon",   "track": "04", "title": "Under the Moon",   "bpm": 161, "key": "Bb major", "duration_s": 313 },
-        { "id": "electric-sheep",   "track": "05", "title": "Electric Sheep",   "bpm": 129, "key": "E minor",  "duration_s": 150 },
-        { "id": "human-fly",        "track": "06", "title": "Human Fly",        "bpm": 117, "key": "G major",  "duration_s": 239 },
-        { "id": "sister",           "track": "07", "title": "Sister",           "bpm": 117, "key": "F major",  "duration_s": 281 }
+        {
+          "id": "tabasco",
+          "track": "01",
+          "title": "TABASCO",
+          "bpm": 136,
+          "key": "D minor",
+          "duration_s": 44
+        },
+        {
+          "id": "hey",
+          "track": "02",
+          "title": "Hey",
+          "bpm": 123,
+          "key": "G major",
+          "duration_s": 304
+        },
+        {
+          "id": "i-got-a-feeling",
+          "track": "03",
+          "title": "I got a feeling",
+          "bpm": 117,
+          "key": "B minor",
+          "duration_s": 368
+        },
+        {
+          "id": "under-the-moon",
+          "track": "04",
+          "title": "Under the Moon",
+          "bpm": 161,
+          "key": "Bb major",
+          "duration_s": 313
+        },
+        {
+          "id": "electric-sheep",
+          "track": "05",
+          "title": "Electric Sheep",
+          "bpm": 129,
+          "key": "E minor",
+          "duration_s": 150
+        },
+        {
+          "id": "human-fly",
+          "track": "06",
+          "title": "Human Fly",
+          "bpm": 117,
+          "key": "G major",
+          "duration_s": 239
+        },
+        {
+          "id": "sister",
+          "track": "07",
+          "title": "Sister",
+          "bpm": 117,
+          "key": "F major",
+          "duration_s": 281
+        }
       ]
     },
     "unripe": {
       "name": "UNRIPE",
-      "subtitle": "Okinawa hardcore postpunk (placeholder)",
+      "subtitle": "Okinawa hardcore postpunk · Definition of Hope",
       "vocalist": null,
       "scene": "hardcore postpunk · 130-160 BPM driving + agro",
       "stems_dir": "presets/unripe-stems",
       "drum_frames_pattern": "presets/drum-frames-unripe-{songid}.json",
       "lyrics_doc": null,
-      "songs": [],
-      "intake_status": "音源未投入。`C:/Users/平成造園/Desktop/musicpl/UNRIPE/` に m4a/wav を置いて、user が「UNRIPE 処理して」と言えば band-room に追加される。"
+      "songs": [
+        {
+          "id": "continuous",
+          "track": "01",
+          "title": "Continuous",
+          "bpm": 103.4,
+          "key": "C# minor",
+          "duration_s": 169
+        },
+        {
+          "id": "list-of-words",
+          "track": "02",
+          "title": "List of Words",
+          "bpm": 103.4,
+          "key": "G# major",
+          "duration_s": 207
+        },
+        {
+          "id": "definition",
+          "track": "03",
+          "title": "Definition",
+          "bpm": 143.6,
+          "key": "C# minor",
+          "duration_s": 401
+        },
+        {
+          "id": "past-and-fate",
+          "track": "04",
+          "title": "Past and Fate",
+          "bpm": 143.6,
+          "key": "A minor",
+          "duration_s": 215
+        },
+        {
+          "id": "end-falls",
+          "track": "05",
+          "title": "End Falls",
+          "bpm": 107.7,
+          "key": "E minor",
+          "duration_s": 195
+        },
+        {
+          "id": "erase",
+          "track": "06",
+          "title": "Erase",
+          "bpm": 136.0,
+          "key": "E major",
+          "duration_s": 506
+        }
+      ],
+      "intake_status": "stems separated via Demucs htdemucs 4-stem, available for playback + sample reuse",
+      "album": "Definition of Hope"
     }
   },
   "add_new_band_workflow": {
