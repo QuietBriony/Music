@@ -453,21 +453,60 @@ cat /tmp/transcribe_*.txt
 
 **B-3: Web UI 完全無料 path**
 
-ブラウザだけで終わらせるなら以下のサービスで vocal stem mp3 を drag-drop:
+ブラウザだけで終わらせる。**注意: `huggingface.co/spaces/openai/whisper` は古くて
+壊れがち** (drag-drop 動かない場合あり、サーバ落ちることも)。代わりに下記の
+新しい Space / サービスを推奨:
 
-| サービス | URL | 特徴 |
-|---------|-----|------|
-| **Hugging Face Whisper** | https://huggingface.co/spaces/openai/whisper | OpenAI 公式 demo、無料、結果コピペ |
-| **AssemblyAI Playground** | https://www.assemblyai.com/playground | universal model、歌唱でも精度高め |
-| **TurboScribe** | https://turboscribe.ai | 月 3 時間無料、AI 歌詞対応謳う |
-| **Otter.ai** | https://otter.ai | 月 600 分無料、会議向け (歌唱は弱め) |
+| サービス | URL | 特徴 | おすすめ度 |
+|---------|-----|------|---------|
+| **Xenova/whisper-web** | https://huggingface.co/spaces/Xenova/whisper-web | **ブラウザ内 wasm で動く Whisper**、ファイル選択 + URL 入力両対応、無料 | ⭐⭐⭐ 最強 |
+| **Sanchit Gandhi/whisper-large-v3** | https://huggingface.co/spaces/sanchit-gandhi/whisper-large-v3 | large-v3 model、最新精度、ファイル upload | ⭐⭐ |
+| **TurboScribe** | https://turboscribe.ai | 月 3 ファイル無料、要 signup | ⭐⭐ |
+| **AssemblyAI Playground** | https://www.assemblyai.com/playground | 無料 trial、universal model | ⭐⭐ |
+| **Notta** | https://www.notta.ai | 月 120 分無料、UI 親切 | ⭐ |
 
-手順:
-1. band-room から `presets/tabasco-stems/<song>/vocals.mp3` を download
-2. 上記サービスに mp3 upload
-3. 結果をコピー → v4 doc に貼り付け or 耳で修正
+### 一番確実な手順 — Xenova/whisper-web
 
-これが **ローカル不要、完全無料、最も簡単** path。
+1. https://huggingface.co/spaces/Xenova/whisper-web を開く
+2. 初回は **Whisper モデル (~150 MB) がブラウザ内ダウンロード** される (1-2 分待つ)
+   - これでブラウザだけで Whisper が動く = サーバに upload しなくていい
+3. **"Choose File"** ボタンクリック (drag-drop ではなくクリック)
+4. `presets/tabasco-stems/<song>/vocals.mp3` を選択
+5. **"Transcribe"** クリック → 30 秒〜 1 分で結果表示
+6. 結果テキストをコピー → v4 doc に貼り付け or 耳で修正
+
+### モデル選択 (Xenova/whisper-web 内)
+
+- **whisper-tiny.en** (75 MB): 速いが精度低い、歌唱は厳しい
+- **whisper-base.en** (140 MB): 標準、歌唱 50-60%
+- **whisper-small.en** (480 MB): 精度高い、歌唱 65-75% ← おすすめ
+- **whisper-medium.en** (1.5 GB): 重い、歌唱 70-80%
+
+歌唱なら **small.en** が時間とのバランスで一番良い。
+
+### ファイル準備
+
+vocal stem mp3 を取り出す方法:
+
+1. band-room.html を PC で開く
+2. 右クリックで "ページのソースを表示" は使えないが、F12 で DevTools 開く
+3. Network タブで band-room 再生中に `vocals.mp3` を fetch するので URL コピー
+4. ブラウザで URL 直接開いて mp3 download
+
+または PC 上に repo がある場合:
+
+```
+C:\workspace\github-inventory\music-stack\Music\presets\tabasco-stems\human-fly\vocals.mp3
+```
+
+これを直接 Whisper Web UI に upload。
+
+### iPhone でやる場合
+
+1. iPhone のボイスメモアプリで band-room を **画面録画** (内蔵マイク経由)
+   → ロスあるが手軽
+2. もしくは Files アプリで `vocals.mp3` を iCloud Drive 経由で取得 →
+   Notta / TurboScribe アプリに upload
 
 ### 「叩き台どこまで設定できるか」 — 4 levels
 
