@@ -188,6 +188,71 @@
 
 ---
 
+## 8.5. 歌詞をどう書き換えて、どこにアップするか
+
+歌詞 v4 (`docs/tabasco-lyrics-v4-syllabic.md`) に残り 5 曲を埋めたい時、
+3 つの場所に「そのまま貼る」だけで OK。
+
+### a) GitHub repo に push (band-room の正本にする)
+
+```bash
+cd C:/workspace/github-inventory/music-stack/Music
+# テキストエディタで docs/tabasco-lyrics-v4-syllabic.md を開いて編集
+# 「02-05, 07 の方針 (template)」セクションに各曲の lyrics を追加
+git add docs/tabasco-lyrics-v4-syllabic.md
+git commit -m "lyrics: v4 残り 5 曲埋め"
+git push
+```
+
+3-5 分待つと Pages が auto-deploy、band-room.html の footer の
+**v4 元音節** リンクから誰でも見える。Service Worker も自動更新。
+
+### b) Suno に貼る (AI 歌唱用)
+
+そのまま、加工なしでコピペ OK。Suno の Custom Mode の Lyrics 欄に貼り付け。
+**`[verse 1]` `[chorus]` 等の section tag を Suno が理解する** ので、
+v4 の section header はそのまま活きる。
+
+style prompt は [SUNO-WORKFLOW.md](./SUNO-WORKFLOW.md) のテンプレ参照。
+
+### c) SoundCloud / Bandcamp の lyrics 欄
+
+公開時の description / lyrics 欄にコピペ。**markdown は除去推奨**:
+- `[verse 1]` 等の section tag は残す
+- `---` 区切り線は除去
+- `>` 引用ブロックの `>` は外す
+- 太字 `**...**` は普通のテキストに
+
+エディタで find-and-replace すれば 5 分で plaintext 化できる。
+
+### v4 のどこに書くか具体例
+
+`docs/tabasco-lyrics-v4-syllabic.md` の「02-05, 07 の方針 (template)」
+セクションの後ろに、TABASCO / Human Fly と同じフォーマットで:
+
+```markdown
+## 02 Hey — calling across years (123 BPM, G major)
+
+**元音節骨格** (chorus を耳で拾うと):
+- ここに音節分析を書く
+
+### chorus
+
+(歌詞 4 行を 6 音節合わせて書く)
+
+### verse 1
+
+(verse 1 の歌詞)
+
+### verse 2
+
+(verse 2 の歌詞)
+```
+
+各曲 1.5 hr ペース、5 曲で 7-10 hr。週末 2 日もあれば全曲完成。
+
+---
+
 ## 9. 次に手を動かすなら
 
 最も具体的で時間配分も読める:

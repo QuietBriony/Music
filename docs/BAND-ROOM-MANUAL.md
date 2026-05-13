@@ -1,4 +1,4 @@
-# Band Room — 総合マニュアル (v102 時点)
+# Band Room — 総合マニュアル (v124 時点)
 
 > https://quietbriony.github.io/Music/band-room.html
 >
@@ -6,6 +6,53 @@
 > ブラウザ単体で完結、install 不要、PWA 対応。
 >
 > このページ = **入り口**。詳細は各サブ doc にリンクで飛ぶ。
+
+---
+
+## 🟢 現在地 (v124、最適度: ほぼ完成)
+
+### 機能側 (磨き完了 / 残り 5% 未満)
+
+- **音色**: 全 voice (drum / bass / chord / guitar / vocal) が CDN sampler 経由で実音色を選べる
+- **整合性**: 3 app (Band Room / Hazama FM / Music Core Rig) で lofi / jazz / ambient / dub が同じ catalog 経由の実 sample stack
+- **UX**: keyboard shortcuts / A/B compare / preview / persistence / drag-drop / mobile safety net (iOS 14 警告 + tap unlock retry + on-screen error)
+- **連携**: MediaRecorder live record / 4-stem pack export / WebMIDI / external upload per stem
+- **歌詞**: v2.1 plain / v3 Burroughs / v4 元音節 の 3 種類が並列 (v4 は 2 曲完成 + 5 曲 template)
+- **mastering**: per-stem EQ + 2-stage comp + StereoWidener + tape sat + reverb、master preset (lo-fi / club / rock / ambient) で 7 軸 linked 切替
+- **歌詞 sync**: section transition で自動ハイライト + smooth scroll
+- **integrity docs**: 全 doc が CROSS-APP-INTEGRITY hub から辿れる、5 doc 全部 v115 整合済
+
+### 残り (🟢 現スコープ内、優先度順)
+
+- multi-velocity sampler (Salamander v3 forte/mezzo/piano 3 layer) — 中規模、ROI 高い
+- AI 生成パターン (Magenta.js DrumsRNN を auto-fill に統合) — 中-大規模
+- Music Core Rig UI で catalog 選択露出 — 中規模
+- 残り 5 曲の v4 歌詞 (Hey / I got a feeling / Under the Moon / Electric Sheep / Sister) を user が書く — ユーザータスク
+
+### 作品側 (これから動くフェーズ)
+
+このタイミングで **「磨き → 作品制作」へ転換**するのが推奨。
+[PRODUCTION-PATH.md](./PRODUCTION-PATH.md) の 3 path から選ぶ:
+
+- **A) Tabasco album 制作** (~3 ヶ月) — 歌い直し or Suno で 7 曲、SoundCloud / Bandcamp
+- **B) Hazama FM lofi 30 min set** (月 1 ペース) — REC ボタン放置 → SoundCloud
+- **C) Music Core Rig × Tabasco ハイブリッド** — 同曲を 5 バージョン展開
+
+具体手順:
+- [SUNO-WORKFLOW.md](./SUNO-WORKFLOW.md) — AI 歌唱で album 化 ($10/mo の Pro plan)
+- [RECORDING-WORKFLOW.md](./RECORDING-WORKFLOW.md) — UR44 + マイク / bass / 電子ドラム / EP-133 で自分で録る
+- [PRODUCTION-PATH.md](./PRODUCTION-PATH.md) — 配信 platform 比較 / 月次 schedule
+
+### 「最適」の限界
+
+現状を超える磨きには **scope 拡張** が必要:
+- 🟡 WAM 2.0 host (Surge XT 等の native plugin をブラウザで動かす)
+- 🟡 Magenta MusicTransformer (full song AI 生成)
+- 🔴 Electron + Ableton Link (DAW と LAN sync)
+- 🔴 サーバ側 MusicGen / WebRTC jam (音楽 web app → 音楽サービス)
+
+実装規模が 5-10 倍になる別 domain。今は **scope 内では十分最適**、これ以上は
+**作品で出した方が ROI 高い** フェーズ。
 
 ---
 
