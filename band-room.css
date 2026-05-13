@@ -799,6 +799,24 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   padding: 18px 16px 14px;
 }
 
+/* v71: master RMS meter — thin horizontal bar under section display */
+#br-meter {
+  width: 80%;
+  max-width: 280px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+#br-meter-fill {
+  width: 0%;
+  height: 100%;
+  background: var(--accent);
+  transition: width 60ms linear, background 100ms linear;
+}
+
 @media (max-width: 540px) {
   #br-main { padding: 8px 12px 60px; gap: 10px; }
   #br-track-select button { font-size: 10px; padding: 7px 10px; }

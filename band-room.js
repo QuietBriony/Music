@@ -54,6 +54,8 @@
   let masterTapeSatDry = null;        // dry path
   let stemEQs = { vocals: null, drums: null, bass: null, other: null }; // per-stem EQ
   let vocalDeEsser = null;            // sidechain-style sibilance dip
+  let masterMeter = null;             // v71: master RMS meter for UI feedback
+  let masterMeterRaf = 0;             // requestAnimationFrame id
   let drumBus = null;
   let bassBus = null;
   let guitarBus = null;
@@ -160,6 +162,9 @@
     // other HP). Two-stage compression: comp1 catches peaks gently, EQ tilts,
     // comp2 glues. Tape sat parallel-wet for harmonic gel.
     masterLimiter = new Tone.Limiter({ threshold: -0.5 }).toDestination();
+    // v71: meter tap on the limiter input — measures the final pre-clip RMS
+    masterMeter = new Tone.Meter({ smoothing: 0.75 });
+    masterLimiter.connect(masterMeter);
     const masterEq = new Tone.EQ3({ low: 1.4, mid: -0.4, high: 0.8, lowFrequency: 200, highFrequency: 5000 });
     const masterComp1 = new Tone.Compressor({ threshold: -14, ratio: 2.5, attack: 0.012, release: 0.22, knee: 6 });
     const masterComp2 = new Tone.Compressor({ threshold: -8,  ratio: 1.7, attack: 0.003, release: 0.10, knee: 4 });
@@ -564,9 +569,9 @@
         //   - vocalChorus (vocals)
         const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
         // v68: loop = true so practice/jam sessions don't go silent at song end.
-        // Tone.Player loop is sample-accurate at the buffer boundary.
+        // v71: bump fadeIn/fadeOut so song-change crossfade is audible.
         const player = new Tone.Player({
-          url, autostart: false, fadeIn: 0.005, fadeOut: 0.02, loop: true
+          url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: true
         }).connect(target);
         await Tone.loaded();
         return { stem, player };
@@ -1199,6 +1204,33 @@
     setButtonState("playing");
     updateSectionDisplay();
     updateChordDisplay();
+    startMasterMeter();
+  }
+
+  // v71: master meter — animate #br-meter-fill width from Tone.Meter dB
+  function startMasterMeter() {
+    if (!masterMeter) return;
+    const fill = $("br-meter-fill");
+    if (!fill) return;
+    cancelAnimationFrame(masterMeterRaf);
+    const tick = () => {
+      if (!state.started) return;
+      const dB = masterMeter.getValue();
+      // Map -60..0 dB → 0..100%
+      const pct = Math.max(0, Math.min(100, (dB + 60) / 60 * 100));
+      fill.style.width = pct.toFixed(1) + "%";
+      // Color shift: red over -3 dB, accent below
+      fill.style.background = dB > -3 ? "#ff5566" : (dB > -12 ? "#ffb39a" : "#ff8866");
+      masterMeterRaf = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  function stopMasterMeter() {
+    cancelAnimationFrame(masterMeterRaf);
+    masterMeterRaf = 0;
+    const fill = $("br-meter-fill");
+    if (fill) fill.style.width = "0%";
   }
 
   function stopPlayback() {
@@ -1210,6 +1242,7 @@
     stopExternalVocal();
     state.started = false;
     setButtonState("idle");
+    stopMasterMeter();
   }
 
   function togglePlay() {
@@ -1252,7 +1285,16 @@
         b.setAttribute("aria-pressed", b === btn ? "true" : "false");
       });
       const wasPlaying = state.started;
-      if (wasPlaying) stopPlayback();
+      if (wasPlaying) {
+        // v71: graceful stem crossfade — start fadeOut on current stems,
+        // wait for it to land, then stopPlayback (which disposes players).
+        // The new song's stems fadeIn (0.15s) inside startPlayback.
+        Object.values(stemPlayers).forEach((p) => {
+          if (p) { try { p.stop(); } catch (e) {} }
+        });
+        await new Promise((r) => setTimeout(r, 320));
+        stopPlayback();
+      }
       await loadSong(btn.dataset.song);
       renderPhraseTrigger();
       // If kit was auto-self, dispose so new song's kit loads on next start
