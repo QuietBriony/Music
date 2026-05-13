@@ -1,9 +1,51 @@
-# Band Room — Changelog (v65 → v79)
+# Band Room — Changelog (v65 → v86)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 ---
+
+## v86 — quick help overlay
+
+- `?` button top-right and `?` key open a modal card with feature bullets + keyboard cheat sheet
+- Escape / backdrop click / 閉じる button dismiss
+
+## v85 — MediaSession (lock screen + media keys)
+
+- `navigator.mediaSession` metadata, artwork (PWA icons), playback state
+- Handlers: play / pause / stop / previoustrack / nexttrack mapped to band-room actions
+- Refresh on band/song change and on playback start/stop
+
+## v84 — SW registration + non-disruptive update banner
+
+- band-room.html now registers `sw.js` (it didn't before — PWA install was broken)
+- New version detected → fixed pill banner at bottom-center with "リロード" and "×"
+- Unlike fm.html (auto-reload) the banner waits for the user — mid-jam reload is rude
+
+## v83 — drag-drop external vocal
+
+- Drop mp3/wav onto the `#br-external-vocal` panel as an alternative to the file picker
+- `dragover` highlights the panel (dashed → solid border + brighter bg)
+- Non-audio files rejected with status message
+
+## v82 — phrase trigger qwerty keyboard mapping
+
+- First 20 phrase cells map to `q w e r t y u i o p` (row 1) and `a s d f g h j k l ;` (row 2)
+- Each cell shows the assigned key in a small corner chip
+- Keydown fires the cell's click handler + `kbd-flash` pulse animation
+
+## v81 — live recording (MediaRecorder → download)
+
+- `Tone.context.createMediaStreamDestination()` taps `masterLimiter`
+- `MediaRecorder` (audio/webm;codecs=opus preferred) collects chunks every 500ms
+- STOP REC produces a `band-room_{band}_{song}_{ISO}.webm` download link with file size
+- Recording does NOT stop playback
+
+## v80 — A-B section loop
+
+- Shift-click chip = set A; second shift-click = set B (auto-orders so A is earlier)
+- `state.loopA / loopB` + visual chip prefixes (`A·` / `·B`) + golden tint between
+- scheduleBar: at section transition, if `sectionIdx > loopB` → `jumpToSection(loopA)` (via RAF)
 
 ## v79 — keyboard shortcuts
 
@@ -97,14 +139,29 @@ The two are bumped together — sw VERSION matches the band-room generation it s
 
 ---
 
-## Keyboard cheat sheet (v79)
+## Keyboard cheat sheet (v86)
 
-| key       | action                                    |
-|-----------|-------------------------------------------|
-| `space`   | play / stop                                |
-| `[`       | previous section (jumps audio + lyrics)   |
-| `]`       | next section                              |
-| `1..9`    | jump to section index (1-based)           |
-| `m`       | toggle stems ↔ AI 再現 mode               |
+| key                | action                                          |
+|--------------------|-------------------------------------------------|
+| `space`            | play / stop                                     |
+| `[` / `]`          | previous / next section (audio + lyrics seek)   |
+| `1`..`9`           | jump to section index (1-based)                 |
+| `m`                | toggle stems ↔ AI 再現 mode                     |
+| `?`                | open quick help overlay                         |
+| `Escape`           | close overlay                                   |
+| `q`..`p`, `a`..`l`, `;` | fire phrase trigger 01..20                 |
+
+Shift-click on a section chip sets A→B loop range.
 
 Skipped when typing in form fields or holding Ctrl/Cmd/Alt.
+
+## Production deploy chain (v65 → v86)
+
+All commits push to `main`, GitHub Pages auto-deploys. Each new push
+cancels the previous in-flight build (rapid-fire commits during a
+session are normal — the final commit is the one that ships).
+
+Service Worker is `sw.js` with `VERSION = hazama-fm-v86`; matches
+`band-room.{html,js,css}?v=br-31`. SW caches all the stem mp3s in
+`presets/tabasco-stems/<song>/{vocals,drums,bass,other}.mp3` for
+offline use; mirror the same naming when adding new bands.
