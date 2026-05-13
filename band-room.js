@@ -1739,9 +1739,12 @@
       $("br-chord-current").textContent = "—";
       return;
     }
-    // Find section -> progression key
+    // v105 fix: chord_progression keys are sometimes "verse-1" / "verse-2"
+    // (Hey, Sister, Under the Moon), sometimes "verse" (early Tabasco JSON).
+    // Try the full section name first, then fall back to the base name.
+    const cp = state.songData.chord_progression;
     const baseSection = sec.section.split("-")[0]; // "verse-1" → "verse"
-    const prog = state.songData.chord_progression[baseSection];
+    const prog = cp[sec.section] || cp[baseSection];
     if (!prog) { $("br-chord-current").textContent = "—"; return; }
     const barInSection = state.barCount - state.sectionBarStart;
     // Sum chord durations until we find which chord this bar lands on
@@ -2359,6 +2362,36 @@
           try { externalVocalBus.gain.rampTo(Number(extVol.value) / 100, 0.08); } catch (e) {}
         }
       });
+    }
+
+    // v105: bulk toggle buttons (all on / all off / defaults / karaoke)
+    document.querySelectorAll(".br-toggle-all").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const action = btn.dataset.toggleAll;
+        if (action === "synth-on") {
+          ["drums", "bass", "guitar", "voice", "chords"].forEach((v) => setToggle("br-toggle-" + v, true));
+          setToggle("br-toggle-click", false); // click stays off
+        } else if (action === "synth-off") {
+          ["drums", "bass", "guitar", "voice", "chords", "click"].forEach((v) => setToggle("br-toggle-" + v, false));
+        } else if (action === "synth-default") {
+          ["drums", "bass", "guitar", "voice", "chords"].forEach((v) => setToggle("br-toggle-" + v, true));
+          setToggle("br-toggle-click", false);
+        } else if (action === "stems-on") {
+          ["vocals", "drums", "bass", "other"].forEach((s) => setToggle("br-toggle-stem-" + s, true));
+        } else if (action === "stems-off") {
+          ["vocals", "drums", "bass", "other"].forEach((s) => setToggle("br-toggle-stem-" + s, false));
+        } else if (action === "stems-karaoke") {
+          setToggle("br-toggle-stem-vocals", false);
+          ["drums", "bass", "other"].forEach((s) => setToggle("br-toggle-stem-" + s, true));
+        }
+      });
+    });
+    function setToggle(id, on) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.checked === on) return;
+      el.checked = on;
+      el.dispatchEvent(new Event("change"));
     }
 
     // v95: A/B compare snapshot buttons
