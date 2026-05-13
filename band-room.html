@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-20" />
+<link rel="stylesheet" href="band-room.css?v=br-21" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-20" defer></script>
+<script src="band-room.js?v=br-21" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -125,6 +125,18 @@
       <section id="br-kit-select" aria-label="Drum kit source">
         <select id="br-kit-source-select"></select>
         <span id="br-kit-status" aria-live="polite"></span>
+      </section>
+    </details>
+
+    <details class="br-details" data-scope="synth">
+      <summary>🐢 practice tempo (slow / fast)</summary>
+      <section id="br-tempo" aria-label="Practice tempo">
+        <label>
+          <span>tempo</span>
+          <input type="range" id="br-tempo-mult" min="50" max="120" value="100" step="1" />
+          <span id="br-tempo-mult-readout">100%</span>
+        </label>
+        <p class="br-help">原曲 BPM × mult。50% = ハーフテンポ練習、120% = リハ前の脳トレ。原音モードでは pitch も変わるので使わない方が無難。</p>
       </section>
     </details>
 

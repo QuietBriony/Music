@@ -656,12 +656,15 @@
     if (!stemPlayers.vocals && !stemPlayers.drums && !stemPlayers.bass && !stemPlayers.other) return false;
     // Sync start: schedule all at the same Transport position
     const startAt = "+0.15";  // small delay so all loaded buffers can fire together
+    // v76: apply current tempo slider to playbackRate at start
+    const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
     Object.entries(stemPlayers).forEach(([stem, player]) => {
       if (!player) return;
       try {
         const enabled = $("br-toggle-stem-" + stem)?.checked !== false;
         const muteVal = !enabled;
         player.mute = muteVal;
+        player.playbackRate = tempoMult;
         player.start(startAt);
       } catch (e) {
         console.warn("[Band Room] stem start failed:", stem, e);
@@ -1381,7 +1384,9 @@
     state.sectionIdx = 0;
     state.sectionBarStart = 0;
 
-    Tone.Transport.bpm.value = state.songData.bpm || 117;
+    // v76: respect the tempo slider when starting (so re-start at 80% stays at 80%)
+    const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
+    Tone.Transport.bpm.value = (state.songData.bpm || 117) * tempoMult;
 
     // Clear any old schedules
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
@@ -1596,6 +1601,25 @@
           const w = Number(widthEl.value) / 100;
           try { masterWidener.width.rampTo(w, 0.12); } catch (e) {}
         }
+      });
+    }
+
+    // v76: practice tempo — multiply base BPM (synth mode practice; in stems
+    // mode it shifts pitch which the help text warns about).
+    const tempoEl = $("br-tempo-mult");
+    const tempoRead = $("br-tempo-mult-readout");
+    if (tempoEl) {
+      tempoEl.addEventListener("input", () => {
+        const mult = Number(tempoEl.value) / 100;
+        if (tempoRead) tempoRead.textContent = tempoEl.value + "%";
+        const baseBpm = state.songData?.bpm || 117;
+        const targetBpm = baseBpm * mult;
+        try { Tone.Transport.bpm.rampTo(targetBpm, 0.4); } catch (e) {}
+        // Also adjust stem playback rate (acknowledged: pitch shifts)
+        Object.values(stemPlayers).forEach((p) => {
+          if (!p) return;
+          try { p.playbackRate = mult; } catch (e) {}
+        });
       });
     }
 
