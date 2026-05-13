@@ -1948,6 +1948,50 @@
 
   // ---- Boot ---------------------------------------------------
 
+  // v79: keyboard shortcuts. Skipped when focus is inside a text input,
+  // so typing in a file/textbox/select doesn't trigger transport actions.
+  document.addEventListener("keydown", (e) => {
+    const tag = (e.target?.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch (e.key) {
+      case " ":
+      case "Spacebar":
+        e.preventDefault();
+        togglePlay();
+        break;
+      case "[":
+        // previous section
+        e.preventDefault();
+        if (state.songData) jumpToSection(Math.max(0, state.sectionIdx - 1));
+        break;
+      case "]":
+        // next section
+        e.preventDefault();
+        if (state.songData) {
+          const max = (state.songData.structure?.length || 1) - 1;
+          jumpToSection(Math.min(max, state.sectionIdx + 1));
+        }
+        break;
+      case "m":
+      case "M": {
+        // toggle mode
+        const cur = currentMode === "stems" ? "synth" : "stems";
+        const radio = document.querySelector(`input[name=br-mode][value="${cur}"]`);
+        if (radio) { radio.checked = true; radio.dispatchEvent(new Event("change")); }
+        break;
+      }
+      case "1": case "2": case "3": case "4":
+      case "5": case "6": case "7": case "8":
+      case "9": {
+        // jump to section index (1-based)
+        const idx = Number(e.key) - 1;
+        if (state.songData?.structure?.[idx]) jumpToSection(idx);
+        break;
+      }
+    }
+  });
+
   // v68: resume AudioContext when tab returns to foreground (mobile Safari
   // and Chrome suspend the audio graph when the tab is backgrounded —
   // this was the "途中で止まる" cause on mobile).

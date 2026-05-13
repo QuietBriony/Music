@@ -869,6 +869,26 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
 
 .br-sep { opacity: 0.4; margin: 0 2px; }
 
+/* v79: keyboard shortcut hint in footer */
+#br-kbd-hint {
+  margin-top: 8px;
+  font-size: 9px;
+  opacity: 0.45;
+  letter-spacing: 0.04em;
+}
+
+#br-kbd-hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  margin: 0 1px;
+  font-family: ui-monospace, "SF Mono", "Menlo", monospace;
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 184, 122, 0.16);
+  border-radius: 3px;
+  color: var(--accent-soft);
+}
+
 /* ===========================================================
    v67 simplified UI — collapsible <details>, tighter main gap
    =========================================================== */
