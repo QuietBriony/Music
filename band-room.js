@@ -743,6 +743,58 @@
     "ambient":  { label: "ambient (washy)",      reverb: 55, width: 90, warmth: 22, loudness: -2 }
   };
 
+  // v95: A/B state compare — capture all slider/toggle/profile/mode/master
+  // preset into a snapshot. Two slots (A, B). Click A or B to recall.
+  // Useful for "this profile vs that profile" or "club vs lo-fi" A/B.
+  const abSnapshots = { A: null, B: null };
+
+  function captureSnapshot() {
+    const snap = {
+      mode: currentMode,
+      kitSource: state.kitSource,
+      kitProfile: state.kitProfile,
+      sliders: {},
+      toggles: {}
+    };
+    document.querySelectorAll('#br-main input[type="range"]').forEach((el) => {
+      if (el.id) snap.sliders[el.id] = el.value;
+    });
+    document.querySelectorAll('#br-main input[type="checkbox"]').forEach((el) => {
+      if (el.id) snap.toggles[el.id] = el.checked;
+    });
+    return snap;
+  }
+
+  function restoreSnapshot(snap) {
+    if (!snap) return;
+    Object.entries(snap.sliders || {}).forEach(([id, v]) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.value = v;
+        el.dispatchEvent(new Event("input"));
+      }
+    });
+    Object.entries(snap.toggles || {}).forEach(([id, v]) => {
+      const el = document.getElementById(id);
+      if (el && el.type === "checkbox") {
+        el.checked = !!v;
+        el.dispatchEvent(new Event("change"));
+      }
+    });
+    if (snap.mode) {
+      const r = document.querySelector(`input[name=br-mode][value="${snap.mode}"]`);
+      if (r) { r.checked = true; r.dispatchEvent(new Event("change")); }
+    }
+    if (snap.kitProfile) {
+      const psel = $("br-kit-profile-select");
+      if (psel) { psel.value = snap.kitProfile; psel.dispatchEvent(new Event("change")); }
+    }
+    if (snap.kitSource) {
+      const ksel = $("br-kit-source-select");
+      if (ksel) { ksel.value = snap.kitSource; ksel.dispatchEvent(new Event("change")); }
+    }
+  }
+
   function applyMasterPreset(name) {
     const p = MASTER_PRESETS[name];
     if (!p) return;
@@ -2143,6 +2195,28 @@
         }
       });
     }
+
+    // v95: A/B compare snapshot buttons
+    const abStatus = $("br-ab-status");
+    const setAbStatus = (s) => { if (abStatus) abStatus.textContent = s; };
+    ["A", "B"].forEach((slot) => {
+      const saveBtn = $(`br-ab-save-${slot.toLowerCase()}`);
+      const recallBtn = $(`br-ab-recall-${slot.toLowerCase()}`);
+      if (saveBtn) {
+        saveBtn.addEventListener("click", () => {
+          abSnapshots[slot] = captureSnapshot();
+          if (recallBtn) recallBtn.disabled = false;
+          setAbStatus(`${slot} 保存済 · ${abSnapshots.A ? "A" : "-"}/${abSnapshots.B ? "B" : "-"}`);
+        });
+      }
+      if (recallBtn) {
+        recallBtn.addEventListener("click", () => {
+          if (!abSnapshots[slot]) return;
+          restoreSnapshot(abSnapshots[slot]);
+          setAbStatus(`${slot} 呼び出し中`);
+        });
+      }
+    });
 
     // v93: master mix preset chips
     document.querySelectorAll(".br-master-preset").forEach((btn) => {

@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-38" />
+<link rel="stylesheet" href="band-room.css?v=br-39" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-38" defer></script>
+<script src="band-room.js?v=br-39" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -257,6 +257,22 @@
           in: note 36-55 (C2-G3) で phrase 01-20 発火、60-68 (C4-G#4) で section jump。<br>
           ブラウザ初回は権限ダイアログが出る。
         </p>
+      </section>
+    </details>
+
+    <details class="br-details">
+      <summary>🔀 A/B compare (2 snapshot 即切替)</summary>
+      <section id="br-ab" aria-label="A/B compare">
+        <div class="br-ab-row">
+          <button id="br-ab-save-a" type="button">📥 A 保存</button>
+          <button id="br-ab-recall-a" type="button" disabled>▶ A 呼び出し</button>
+        </div>
+        <div class="br-ab-row">
+          <button id="br-ab-save-b" type="button">📥 B 保存</button>
+          <button id="br-ab-recall-b" type="button" disabled>▶ B 呼び出し</button>
+        </div>
+        <span id="br-ab-status">snapshot 未保存</span>
+        <p class="br-help">"A 保存" で今の全 sliders / toggles / mode / profile / preset を A にキャプチャ。同じく B も。後で "A 呼び出し" / "B 呼び出し" でその状態に瞬時復元。profile A vs B、club vs lo-fi、original vs external 等の比較に。</p>
       </section>
     </details>
 
