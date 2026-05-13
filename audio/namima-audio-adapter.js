@@ -68,7 +68,7 @@
     if (STORAGE.started) return true;
     const engine = getAudioEngine();
     if (!engine) {
-      console.warn("[Music] Phase1 no-op: window.AudioEngine is not available.");
+      console.info("[Music] Phase1 no-op: window.AudioEngine is not available.");
       return false;
     }
 
@@ -78,7 +78,7 @@
     }
 
     if (typeof engine.start !== "function") {
-      console.warn("[Music] Phase1 no-op: window.AudioEngine.start is not available.");
+      console.info("[Music] Phase1 no-op: window.AudioEngine.start is not available.");
       return false;
     }
 

@@ -1003,6 +1003,61 @@ function performanceNowMs() {
   return typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
 }
 
+const ToneScheduleGuard = {
+  minGapSec: 0.003,
+  nowLeadSec: 0.004,
+  lastByVoice: new Map()
+};
+
+function resetToneScheduleGuard() {
+  ToneScheduleGuard.lastByVoice.clear();
+}
+
+function currentToneContextTime() {
+  if (typeof Tone === "undefined" || !Tone) return 0;
+  const toneContext = Tone.context || (typeof Tone.getContext === "function" ? Tone.getContext() : null);
+  const rawContext = toneContext?.rawContext || toneContext?._context || toneContext?.context || toneContext;
+  return Number.isFinite(rawContext?.currentTime) ? rawContext.currentTime : 0;
+}
+
+function estimateTriggeredNoteCount(noteArg) {
+  return Array.isArray(noteArg) ? Math.max(1, noteArg.length) : 1;
+}
+
+function safeToneScheduleTime(voiceKey, time) {
+  const toneNow = currentToneContextTime();
+  const requested = Number.isFinite(Number(time)) ? Number(time) : toneNow;
+  const last = ToneScheduleGuard.lastByVoice.get(voiceKey) || 0;
+  const safe = Math.max(requested, toneNow + ToneScheduleGuard.nowLeadSec, last + ToneScheduleGuard.minGapSec);
+  ToneScheduleGuard.lastByVoice.set(voiceKey, safe);
+  return safe;
+}
+
+function guardToneTriggerReleaseSchedule(voiceKey, source, timeArgIndex, options = {}) {
+  if (!source || source.__musicTriggerGuarded) return source;
+  const originalTriggerAttackRelease = source.triggerAttackRelease;
+  if (typeof originalTriggerAttackRelease === "function") {
+    source.triggerAttackRelease = function guardedTriggerAttackRelease(...args) {
+      if (args[timeArgIndex] == null || Number.isFinite(Number(args[timeArgIndex]))) {
+        args[timeArgIndex] = safeToneScheduleTime(`${voiceKey}:attackRelease`, args[timeArgIndex]);
+      }
+      if (
+        Number.isFinite(options.maxActiveVoices) &&
+        Number.isFinite(source.activeVoices) &&
+        source.activeVoices + estimateTriggeredNoteCount(args[0]) > options.maxActiveVoices
+      ) {
+        return source;
+      }
+      return originalTriggerAttackRelease.apply(this, args);
+    };
+  }
+  Object.defineProperty(source, "__musicTriggerGuarded", {
+    value: true,
+    configurable: true
+  });
+  return source;
+}
+
 function cancelAutoGesture(options = {}) {
   if (AutoGestureState.timer) {
     clearTimeout(AutoGestureState.timer);
@@ -6465,7 +6520,7 @@ function rampParam(cacheKey, param, value, seconds, minDelta = 0.001) {
 
   RAMP_CACHE[cacheKey] = value;
   try {
-    param.rampTo(value, seconds);
+    param.rampTo(value, seconds, currentToneContextTime());
   } catch (error) {
     console.warn("[Music] param ramp failed:", cacheKey, error);
   }
@@ -6786,7 +6841,7 @@ function setKeepAwakeEnabled(enabled) {
   }
 }
 
-function triggerAcidLockIndicator(time = Tone.now(), options = {}) {
+function triggerAcidLockIndicator(time = currentToneContextTime(), options = {}) {
   const cueLevel = clampValue(options.amount ?? Math.max(AcidLockState.intensity || 0, AcidLockState.transient || 0, AcidLockState.indicator || 0), 0, 1);
   if ((!AcidLockState.enabled && cueLevel < 0.08) || !isPlaying || !glass) return;
   const amount = clampValue(0.42 + (AcidLockState.intensity || 0) * 0.28 + (AcidLockState.transient || 0) * 0.22 + (AcidLockState.indicator || 0) * 0.3, 0, 1);
@@ -6821,7 +6876,7 @@ function triggerTransientAcidCue(options = {}) {
   if (initialized) {
     updateTimbreStateFromWorld(currentGradientParts());
     applyUCMToParams({ force: options.force === true });
-    triggerAcidLockIndicator(Tone.now(), { amount });
+    triggerAcidLockIndicator(currentToneContextTime(), { amount });
     publishMusicRuntimeState();
   }
   return {
@@ -7627,9 +7682,13 @@ const bass = new Tone.MonoSynth({
 
 // Pad（PolySynth だけ残す）
 const padFilter = new Tone.Filter(1000, "lowpass").connect(padBus);
-const pad = new Tone.PolySynth(Tone.Synth, {
-  oscillator: { type: "triangle" },
-  envelope: { attack: 1.2, decay: 0.7, sustain: 0.7, release: 3.5 }
+const pad = new Tone.PolySynth({
+  voice: Tone.Synth,
+  maxPolyphony: 64,
+  options: {
+    oscillator: { type: "triangle" },
+    envelope: { attack: 1.2, decay: 0.7, sustain: 0.7, release: 3.5 }
+  }
 }).connect(padFilter);
 
 // fm-56: lofi mode で synth pad の上に重ねる Salamander Grand Piano (CC-BY 3.0)
@@ -8099,9 +8158,13 @@ const glass = new Tone.FMSynth({
 }).connect(globalDelay);
 
 const pianoMemoryFilter = new Tone.Filter(1800, "lowpass").connect(globalDelay);
-const pianoMemory = new Tone.PolySynth(Tone.Synth, {
-  oscillator: { type: "triangle" },
-  envelope: { attack: 0.004, decay: 0.18, sustain: 0.045, release: 0.5 }
+const pianoMemory = new Tone.PolySynth({
+  voice: Tone.Synth,
+  maxPolyphony: 48,
+  options: {
+    oscillator: { type: "triangle" },
+    envelope: { attack: 0.004, decay: 0.18, sustain: 0.045, release: 0.5 }
+  }
 }).connect(pianoMemoryFilter);
 
 const voiceDustFilter = new Tone.Filter(2400, "bandpass").connect(globalReverb);
@@ -8154,6 +8217,18 @@ drumSkin.volume.value = -32;
 subImpact.volume.value = -30;
 reedBuzz.volume.value = -48;
 
+guardToneTriggerReleaseSchedule("kick", kick, 2);
+guardToneTriggerReleaseSchedule("hat", hat, 1);
+guardToneTriggerReleaseSchedule("bass", bass, 2);
+guardToneTriggerReleaseSchedule("pad", pad, 2, { maxActiveVoices: 52 });
+guardToneTriggerReleaseSchedule("texture", texture, 1);
+guardToneTriggerReleaseSchedule("glass", glass, 2);
+guardToneTriggerReleaseSchedule("pianoMemory", pianoMemory, 2, { maxActiveVoices: 40 });
+guardToneTriggerReleaseSchedule("voiceDust", voiceDust, 2);
+guardToneTriggerReleaseSchedule("drumSkin", drumSkin, 1);
+guardToneTriggerReleaseSchedule("subImpact", subImpact, 2);
+guardToneTriggerReleaseSchedule("reedBuzz", reedBuzz, 2);
+
 function organicFragment(offset = 0) {
   return ORGANIC_PLUCK_FRAGMENTS[tonalRhymeIndex(stepIndex, offset) % ORGANIC_PLUCK_FRAGMENTS.length];
 }
@@ -8182,10 +8257,10 @@ function voiceFragment(offset = 0, fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
   return pool[((index % pool.length) + pool.length) % pool.length];
 }
 
-function triggerVoiceColorCue() {
+function triggerVoiceColorCue(time) {
   if (!isPlaying || !initialized || typeof Tone === "undefined") return;
 
-  const now = Tone.now();
+  const now = Number.isFinite(time) ? time : currentToneContextTime();
   const atmosphereKey = effectiveVoiceAtmosphereKey();
   const sourceKey = effectiveVoiceSourceKey();
   const gradientParts = currentGradientParts();
@@ -8316,10 +8391,10 @@ function triggerMusicRadioBrainIdent(step, time, context = {}) {
   }
 }
 
-function triggerPadSignature(name) {
+function triggerPadSignature(name, time) {
   if (!isPlaying || !initialized || typeof Tone === "undefined") return;
 
-  const now = Tone.now();
+  const now = Number.isFinite(time) ? time : currentToneContextTime();
   const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
   const observerNorm = clampValue(UCM_CUR.observer / 100, 0, 1);
   const creationNorm = clampValue(UCM_CUR.creation / 100, 0, 1);
@@ -8761,11 +8836,12 @@ function safeToneRamp(param, value, seconds = 0.18) {
     target = clampValue(target, minValue, maxValue);
   }
   try {
+    const startTime = currentToneContextTime();
     if (typeof param.linearRampTo === "function") {
-      param.linearRampTo(target, seconds);
+      param.linearRampTo(target, seconds, startTime);
       return;
     }
-    param.rampTo(target, seconds);
+    param.rampTo(target, seconds, startTime);
   } catch (error) {
     console.warn("[Music] Timbre ramp failed:", error);
   }
@@ -12425,7 +12501,7 @@ function triggerPadHoldMinimums(step, time, context) {
 }
 
 function releaseAllVoices(time) {
-  const t = typeof time === "number" ? time : Tone.now();
+  const t = typeof time === "number" ? time : currentToneContextTime();
   try { pad.releaseAll(t); } catch(e) {}
   try { bass.triggerRelease(t); } catch(e) {}
   try { kick.triggerRelease(t); } catch(e) {}
@@ -12790,6 +12866,7 @@ async function startPlayback(options = {}) {
     updateFromUI({ apply: false });
     updateOutputLevel({ apply: false });
     updateVoiceColorFromUI({ apply: false });
+    resetToneScheduleGuard();
     releaseAllVoices();
     resetRuntimeCounters();
     restoreMasterLevel();
@@ -12833,6 +12910,7 @@ function stopPlayback(options = {}) {
   stopLocalRecorder();
   stopAutoCycle({ keepEnabled: true });
   try { Tone.Transport.stop(); } catch(e) {}
+  resetToneScheduleGuard();
   releaseAllVoices();
   resetRuntimeCounters();
   clearPerformancePads();
