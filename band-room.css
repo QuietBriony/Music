@@ -1000,6 +1000,29 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   color: var(--accent-glass);
 }
 
+/* v80: A-B loop visualization on section chips */
+#br-section-nav button.loop-a,
+#br-section-nav button.loop-b {
+  border-color: #ffd66e;
+  color: #fff3c8;
+  background: rgba(255, 214, 110, 0.15);
+}
+
+#br-section-nav button.loop-a::before { content: "A·"; opacity: 0.85; }
+#br-section-nav button.loop-b::after  { content: "·B"; opacity: 0.85; }
+
+#br-section-nav button.loop-in-range {
+  background: rgba(255, 214, 110, 0.08);
+  border-color: rgba(255, 214, 110, 0.40);
+}
+
+#br-section-nav button.active.loop-a,
+#br-section-nav button.active.loop-b,
+#br-section-nav button.active.loop-in-range {
+  background: rgba(255, 136, 102, 0.30);
+  border-color: var(--accent);
+}
+
 /* v71: master RMS meter — thin horizontal bar under section display */
 #br-meter {
   width: 80%;

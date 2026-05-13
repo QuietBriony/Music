@@ -35,8 +35,10 @@
     chordIdx: 0,
     chordBarsRemaining: 0,
     scheduledIds: [],
-    kitSource: "auto-self"  // default: use the current song's own extracted drum samples
+    kitSource: "auto-self", // default: use the current song's own extracted drum samples
                             // ("synth" = generic Tone.js voices, "<src>/<song>" = specific kit)
+    loopA: null,            // v80: A-B loop range (null = no loop)
+    loopB: null
   };
 
   // ---- Tone.js nodes -------------------------------------------
@@ -1100,6 +1102,8 @@
   // v75: render clickable section chips. Each chip jumps the playback
   // head to that section's start in both Transport time and stem buffer
   // offset (so stems re-seek and stay in sync with the visible section).
+  // v80: shift-click sets A-B loop range (first shift-click = A,
+  // second = B). Normal click clears the range and jumps.
   function renderSectionNav() {
     const nav = $("br-section-nav");
     if (!nav) return;
@@ -1110,10 +1114,58 @@
       btn.type = "button";
       btn.dataset.idx = String(idx);
       btn.textContent = sec.section;
-      btn.title = `${sec.bars} bars`;
+      btn.title = `${sec.bars} bars · shift-click で A→B ループ`;
       if (idx === state.sectionIdx) btn.classList.add("active");
-      btn.addEventListener("click", () => jumpToSection(idx));
+      btn.addEventListener("click", (e) => {
+        if (e.shiftKey) {
+          setLoopRange(idx);
+          refreshLoopVisuals();
+        } else {
+          clearLoopRange();
+          refreshLoopVisuals();
+          jumpToSection(idx);
+        }
+      });
       nav.appendChild(btn);
+    });
+    refreshLoopVisuals();
+  }
+
+  function setLoopRange(idx) {
+    if (state.loopA == null) {
+      state.loopA = idx;
+      state.loopB = null;
+    } else if (state.loopB == null) {
+      // Order them: A is earlier, B is later
+      if (idx < state.loopA) {
+        state.loopB = state.loopA;
+        state.loopA = idx;
+      } else if (idx === state.loopA) {
+        // Same idx clicked twice → single-section loop
+        state.loopB = idx;
+      } else {
+        state.loopB = idx;
+      }
+    } else {
+      // Both set → reset and start a fresh A
+      state.loopA = idx;
+      state.loopB = null;
+    }
+  }
+
+  function clearLoopRange() {
+    state.loopA = null;
+    state.loopB = null;
+  }
+
+  function refreshLoopVisuals() {
+    document.querySelectorAll("#br-section-nav button").forEach((b) => {
+      const i = Number(b.dataset.idx);
+      b.classList.toggle("loop-a", state.loopA != null && i === state.loopA);
+      b.classList.toggle("loop-b", state.loopB != null && i === state.loopB);
+      const inRange = state.loopA != null && state.loopB != null &&
+                      i > state.loopA && i < state.loopB;
+      b.classList.toggle("loop-in-range", inRange);
     });
   }
 
@@ -1205,6 +1257,14 @@
         if (state.sectionIdx >= state.songData.structure.length) {
           // v68: loop to top of structure — stems already loop via player.loop=true
           state.sectionIdx = 0;
+        }
+        // v80: A-B loop — if we just stepped past loopB, jump back to loopA.
+        // Defer the seek (which calls stop/start on stem players) to RAF so
+        // we don't touch them inside the audio callback.
+        if (state.loopA != null && state.loopB != null &&
+            state.sectionIdx > state.loopB) {
+          const targetA = state.loopA;
+          requestAnimationFrame(() => jumpToSection(targetA));
         }
         // v73: scroll lyrics to new section. Defer to RAF so the
         // DOM update happens outside the audio callback.
