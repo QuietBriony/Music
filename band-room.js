@@ -1931,6 +1931,15 @@
             synthBass.triggerAttackRelease(rootNote, "8n", t, accent ? 0.7 : 0.45);
           }
         }
+      } else if ($("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
+        // v108: chord null fallback — section has no chord progression
+        // (Human Fly intro/outro etc). Anchor bass to the song's key
+        // root, one whole-note hit per bar, low velocity. Keeps the
+        // section from feeling empty without imposing a melodic line.
+        const keyRoot = state.songData.key.split(" ")[0];
+        if (keyRoot) {
+          try { synthBass.triggerAttackRelease(keyRoot + "2", "1n", time, 0.36); } catch (e) {}
+        }
       }
 
       // Guitar — section-aware power-chord picking (UNRIPE drive)

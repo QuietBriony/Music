@@ -1,9 +1,49 @@
-# Band Room — Changelog (v65 → v95)
+# Band Room — Changelog (v65 → v108)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 ---
+
+## v108 — bass anchor for no-chord sections + SW doc precache
+
+- chord_progression が無い section (Human Fly intro/outro 等) で bass が
+  rest だったのを song key root の whole-note anchor に fallback
+- sw.js PRECACHE_URLS に v103+ で追加した docs (MANUAL / CATALOG-GUIDE /
+  DAW-INTEGRATION / FREE-SAMPLES-AND-SYNTHESIS / REPO-MANAGEMENT / burroughs lyrics)
+  を全部追加 → オフラインでもマニュアル開ける
+
+## v107 — index-aware lyric highlight + 4-bar drum fill
+
+- `updateLyricsHighlight` に index-aware fuzzy step を挿入 — verse-1 と verse-2 で
+  別の lyric block にハイライト (v3 Burroughs marker 対応)
+- 各 section の 4 bar 目 (intro/outro 除く) で tom/snare の fill — 16th × 4
+  rising velocity (0.42→0.72) で groove に呼吸を入れる
+
+## v106 — universal vocal + sparse drum reinforce + section crash
+
+- vocal guide が Human Fly chorus 限定だったのを全曲全 section (verse/recap/comp)
+  に展開 — chord 4-step walk (root/3rd/5th/3rd)、4 bar 目は root sustain
+- sparse frame (events < 6) の bar に kick/snare 基本 4-on-floor を低 velocity で
+  補強 — 既存 events を覆わず空きビートだけ埋める
+- section transition の chorus/bridge/outro/chant-b 頭で drumKit.crash 発火
+  (vel 0.62、2分音符) — lift 感
+
+## v105 — Hey verse-2 半端なドラム問題の root cause + bulk toggles
+
+- `chord_progression` キーの形式 mismatch ("verse-1" vs "verse"): 6/7 曲が
+  フル名キー、band-room.js は base 名で引いてた → bass/chord/guitar 全部 rest
+- Fix: `cp[sec.section] || cp[baseSection]` で full-first / base-fallback
+- AI 再現 + 原音 stems 両方に `all on / all off / defaults / karaoke` バルクトグル
+
+## v104 — AI mode usability + section nav clarity
+
+- AI synth toggles の default OFF → drums/bass/guitar/voice/chords を checked に
+  (click だけ OFF)
+- bus levels 再調整: drums 0.75→0.62, bass 0.65→0.72, voice 0.40→0.56, chord 0.55→0.68
+- chord PolySynth -16 → -12 dB、vocal AMSynth -10 → -14 dB
+- `jumpToSection` で停止中なら `startPlayback({ preservePosition: true })` 自動発火
+- help overlay に section nav の挙動を追記
 
 ## v95 — A/B state compare snapshots
 
