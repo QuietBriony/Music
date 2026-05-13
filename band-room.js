@@ -1036,6 +1036,7 @@
       $("br-bpm").textContent = data.bpm || "—";
       $("br-key").textContent = data.key || "—";
       renderSectionNav();  // v75: clickable section list
+      updateMediaSession(state.started ? "playing" : "paused");  // v85: refresh OS metadata
       // Load lyrics from the band's lyrics_doc if present
       const lyricsDoc = band.lyrics_doc;
       if (lyricsDoc) {
@@ -1554,6 +1555,8 @@
     // v73: highlight first section's lyric block
     const firstSec = currentSection();
     if (firstSec) updateLyricsHighlight(firstSec.section);
+    // v85: tell the OS we're playing audio
+    updateMediaSession("playing");
   }
 
   // v71: master meter — animate #br-meter-fill width from Tone.Meter dB
@@ -1614,6 +1617,7 @@
     state.started = false;
     setButtonState("idle");
     stopMasterMeter();
+    updateMediaSession("paused");
   }
 
   function togglePlay() {
@@ -2043,6 +2047,59 @@
         if (status) status.textContent = "kit load failed: " + e.message;
       }
     });
+  }
+
+  // ---- v85: MediaSession (lock screen / external media keys) -
+  // Exposes the current song to the OS so headphones / Apple Watch /
+  // Android notification controls work, and so the lock screen shows
+  // metadata while playing in the background.
+  let mediaSessionWired = false;
+  function ensureMediaSessionHandlers() {
+    if (mediaSessionWired || !("mediaSession" in navigator)) return;
+    try {
+      navigator.mediaSession.setActionHandler("play", () => {
+        if (!state.started) startPlayback();
+      });
+      navigator.mediaSession.setActionHandler("pause", () => {
+        if (state.started) stopPlayback();
+      });
+      navigator.mediaSession.setActionHandler("stop", () => {
+        if (state.started) stopPlayback();
+      });
+      navigator.mediaSession.setActionHandler("previoustrack", () => {
+        if (state.songData) jumpToSection(Math.max(0, state.sectionIdx - 1));
+      });
+      navigator.mediaSession.setActionHandler("nexttrack", () => {
+        if (state.songData) {
+          const max = (state.songData.structure?.length || 1) - 1;
+          jumpToSection(Math.min(max, state.sectionIdx + 1));
+        }
+      });
+      mediaSessionWired = true;
+    } catch (e) {
+      console.warn("[Band Room] mediaSession handlers failed:", e);
+    }
+  }
+
+  function updateMediaSession(playState) {
+    if (!("mediaSession" in navigator)) return;
+    ensureMediaSessionHandlers();
+    try {
+      const band = currentBand();
+      const title = state.songData?.song_title || state.currentSongId;
+      const artist = band?.name || state.currentBandId;
+      const album = "Band Room — air rock connect box";
+      if (window.MediaMetadata) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title, artist, album,
+          artwork: [
+            { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
+            { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" }
+          ]
+        });
+      }
+      navigator.mediaSession.playbackState = playState; // "playing" | "paused" | "none"
+    } catch (e) {}
   }
 
   // ---- v78: localStorage persistence -------------------------
