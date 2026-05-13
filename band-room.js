@@ -498,7 +498,11 @@
   // ---- Synth bass ----------------------------------------------
 
   function makeSynthBass(target) {
-    // LCD-style analog synth bass: sub-y, slight saw warmth
+    // LCD-style analog synth bass: sub-y, slight saw warmth.
+    // v70: gentle drive + post-filter for grit. Sub layer (sine -12) adds
+    // weight without muddying the mids.
+    const post = new Tone.Filter({ frequency: 1400, type: "lowpass", Q: 0.6 }).connect(target);
+    const drive = new Tone.Distortion({ distortion: 0.08, wet: 0.45, oversample: "2x" }).connect(post);
     const bass = new Tone.MonoSynth({
       oscillator: { type: "sawtooth" },
       filter: { type: "lowpass", frequency: 480, Q: 1.4 },
@@ -506,7 +510,7 @@
       filterEnvelope: { attack: 0.003, decay: 0.12, sustain: 0.5, release: 0.12, baseFrequency: 120, octaves: 2.6 },
       portamento: 0.018,
       volume: -10
-    }).connect(target);
+    }).connect(drive);
     return bass;
   }
 
@@ -684,6 +688,9 @@
   // Section-aware picking: silent intro / palm-mute 8th verse / open
   // prechorus / 16th chorus / sparse bridge / hit outro.
   function makeGuitar(target) {
+    // v70: insert Chorus between PolySynth and distortion so the saw body
+    // has stereo movement before being slammed by the distortion.
+    const chorus = new Tone.Chorus({ frequency: 0.9, delayTime: 3.2, depth: 0.38, wet: 0.34 }).start();
     const dist = new Tone.Distortion({ distortion: 0.55, wet: 0.85, oversample: "2x" });
     const lp = new Tone.Filter({ frequency: 4200, type: "lowpass", Q: 0.6 });
     const verb = new Tone.Reverb({ decay: 1.0, wet: 0.14 });
@@ -693,7 +700,8 @@
       volume: -12
     });
     guitar.maxPolyphony = 6;
-    guitar.connect(dist);
+    guitar.connect(chorus);
+    chorus.connect(dist);
     dist.connect(lp);
     lp.connect(verb);
     verb.connect(target);
@@ -791,12 +799,17 @@
   // ---- Chord synth ---------------------------------------------
 
   function makeChordSynth(target) {
+    // v70: AutoPanner (slow LFO) + light Chorus add subtle movement to the
+    // pad so it doesn't sit static in the mix.
     const verb = new Tone.Reverb({ decay: 1.6, wet: 0.20 }).connect(target);
+    const autoPan = new Tone.AutoPanner({ frequency: 0.18, depth: 0.32 }).connect(verb).start();
+    const chorus = new Tone.Chorus({ frequency: 0.6, delayTime: 4.5, depth: 0.45, wet: 0.40 }).start();
+    chorus.connect(autoPan);
     const chord = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: "triangle" },
       envelope: { attack: 0.018, decay: 0.32, sustain: 0.45, release: 0.5 },
       volume: -16
-    }).connect(verb);
+    }).connect(chorus);
     chord.maxPolyphony = 6;
     return chord;
   }
