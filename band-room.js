@@ -674,30 +674,62 @@
       kick:  { decay: 0.32, octaves: 4.0,  vol: -8,  clickVol: -32 },
       snare: { decay: 0.14, hpFreq: 1100,  vol: -12, rimVol: -28 },
       hat:   { decay: 0.04, bpFreq: 6800,  vol: -22 },
-      crash: { decay: 0.9,  vol: -18 }
+      crash: { decay: 0.9,  vol: -18 },
+      // v92: bass / chord / vocal profile params
+      bass:  { filterFreq: 480, filterQ: 1.4, drive: 0.08, driveWet: 0.45,
+               envRelease: 0.15, postLpFreq: 1400, portamento: 0.018 },
+      chord: { oscType: "triangle", attack: 0.018, decay: 0.32, release: 0.5,
+               chorusWet: 0.40, autoPanFreq: 0.18, autoPanDepth: 0.32, verbWet: 0.20 },
+      vocal: { harmonicity: 2.4, vibratoFreq: 5.0, vibratoCents: 10,
+               formant1: 700, formant2: 1200, hpFreq: 200, verbWet: 0.22 }
     },
     "sakanaction": {
       label: "Sakanaction (dance rock — tight kick / clicky hat)",
       kick:  { decay: 0.20, octaves: 5.0,  vol: -6,  clickVol: -22 },
       snare: { decay: 0.09, hpFreq: 1600,  vol: -10, rimVol: -24 },
       hat:   { decay: 0.028, bpFreq: 8200, vol: -20 },
-      crash: { decay: 1.1,  vol: -16 }
+      crash: { decay: 1.1,  vol: -16 },
+      // Bright synth bass with snappy filter env, glassy pad, clean vocal
+      bass:  { filterFreq: 720, filterQ: 2.2, drive: 0.04, driveWet: 0.35,
+               envRelease: 0.08, postLpFreq: 2400, portamento: 0.008 },
+      chord: { oscType: "sawtooth", attack: 0.008, decay: 0.20, release: 0.35,
+               chorusWet: 0.55, autoPanFreq: 0.35, autoPanDepth: 0.42, verbWet: 0.16 },
+      vocal: { harmonicity: 2.0, vibratoFreq: 4.0, vibratoCents: 6,
+               formant1: 850, formant2: 1500, hpFreq: 280, verbWet: 0.14 }
     },
     "lcd-motorik": {
       label: "LCD motorik (4-on-floor / cowbell / pad swell)",
       kick:  { decay: 0.38, octaves: 6.0,  vol: -5,  clickVol: -28 },
       snare: { decay: 0.18, hpFreq: 950,   vol: -8,  rimVol: -26 },
       hat:   { decay: 0.06, bpFreq: 5800,  vol: -19 },
-      crash: { decay: 1.3,  vol: -14 }
+      crash: { decay: 1.3,  vol: -14 },
+      // Sub-y bass with portamento, dreamy pad swell, breathy vocal
+      bass:  { filterFreq: 600, filterQ: 1.6, drive: 0.06, driveWet: 0.42,
+               envRelease: 0.22, postLpFreq: 1600, portamento: 0.04 },
+      chord: { oscType: "triangle", attack: 0.040, decay: 0.55, release: 0.85,
+               chorusWet: 0.48, autoPanFreq: 0.10, autoPanDepth: 0.28, verbWet: 0.34 },
+      vocal: { harmonicity: 2.6, vibratoFreq: 5.5, vibratoCents: 14,
+               formant1: 650, formant2: 1100, hpFreq: 180, verbWet: 0.32 }
     },
     "cramps-punk": {
       label: "Cramps punk (Human Fly / boomy / rockabilly slap)",
       kick:  { decay: 0.40, octaves: 5.5,  vol: -7,  clickVol: -36 },
       snare: { decay: 0.22, hpFreq: 800,   vol: -10, rimVol: -22 },
       hat:   { decay: 0.05, bpFreq: 5200,  vol: -24 },
-      crash: { decay: 1.6,  vol: -15 }
+      crash: { decay: 1.6,  vol: -15 },
+      // Distorted slap bass, square stab chord, snarled vocal
+      bass:  { filterFreq: 380, filterQ: 1.8, drive: 0.18, driveWet: 0.70,
+               envRelease: 0.10, postLpFreq: 1200, portamento: 0.02 },
+      chord: { oscType: "square", attack: 0.005, decay: 0.18, release: 0.25,
+               chorusWet: 0.22, autoPanFreq: 0.06, autoPanDepth: 0.18, verbWet: 0.12 },
+      vocal: { harmonicity: 3.0, vibratoFreq: 6.5, vibratoCents: 18,
+               formant1: 560, formant2: 1400, hpFreq: 260, verbWet: 0.18 }
     }
   };
+
+  function currentProfile() {
+    return KIT_PROFILES[state.kitProfile] || KIT_PROFILES["default"];
+  }
 
   function makeDrumKit(target, profileName) {
     const p = KIT_PROFILES[profileName] || KIT_PROFILES["default"];
@@ -837,17 +869,16 @@
   // ---- Synth bass ----------------------------------------------
 
   function makeSynthBass(target) {
-    // LCD-style analog synth bass: sub-y, slight saw warmth.
-    // v70: gentle drive + post-filter for grit. Sub layer (sine -12) adds
-    // weight without muddying the mids.
-    const post = new Tone.Filter({ frequency: 1400, type: "lowpass", Q: 0.6 }).connect(target);
-    const drive = new Tone.Distortion({ distortion: 0.08, wet: 0.45, oversample: "2x" }).connect(post);
+    // v92: profile-aware bass synth.
+    const b = currentProfile().bass;
+    const post = new Tone.Filter({ frequency: b.postLpFreq, type: "lowpass", Q: 0.6 }).connect(target);
+    const drive = new Tone.Distortion({ distortion: b.drive, wet: b.driveWet, oversample: "2x" }).connect(post);
     const bass = new Tone.MonoSynth({
       oscillator: { type: "sawtooth" },
-      filter: { type: "lowpass", frequency: 480, Q: 1.4 },
-      envelope: { attack: 0.005, decay: 0.18, sustain: 0.6, release: 0.15 },
+      filter: { type: "lowpass", frequency: b.filterFreq, Q: b.filterQ },
+      envelope: { attack: 0.005, decay: 0.18, sustain: 0.6, release: b.envRelease },
       filterEnvelope: { attack: 0.003, decay: 0.12, sustain: 0.5, release: 0.12, baseFrequency: 120, octaves: 2.6 },
-      portamento: 0.018,
+      portamento: b.portamento,
       volume: -10
     }).connect(drive);
     return bass;
@@ -1072,15 +1103,16 @@
   // mp3, drop into presets/vocals/{song-id}.mp3, then load via a
   // future HTMLAudio layer.
   function makeVoiceBox(target) {
-    const verb = new Tone.Reverb({ decay: 1.6, wet: 0.22 }).connect(target);
-    const hp = new Tone.Filter({ frequency: 200, type: "highpass", Q: 0.5 }).connect(verb);
-    // Two parallel formants — F1 around 700 Hz ("ah") + F2 around 1200 Hz
+    // v92: profile-aware vocal guide.
+    const v = currentProfile().vocal;
+    const verb = new Tone.Reverb({ decay: 1.6, wet: v.verbWet }).connect(target);
+    const hp = new Tone.Filter({ frequency: v.hpFreq, type: "highpass", Q: 0.5 }).connect(verb);
     const mix = new Tone.Gain(0.9).connect(hp);
-    const formant1 = new Tone.Filter({ frequency: 700, type: "bandpass", Q: 5 }).connect(mix);
-    const formant2 = new Tone.Filter({ frequency: 1200, type: "bandpass", Q: 5 }).connect(mix);
+    const formant1 = new Tone.Filter({ frequency: v.formant1, type: "bandpass", Q: 5 }).connect(mix);
+    const formant2 = new Tone.Filter({ frequency: v.formant2, type: "bandpass", Q: 5 }).connect(mix);
 
     const voice = new Tone.AMSynth({
-      harmonicity: 2.4,
+      harmonicity: v.harmonicity,
       oscillator: { type: "sawtooth" },
       envelope: { attack: 0.06, decay: 0.32, sustain: 0.65, release: 0.45 },
       modulation: { type: "sine" },
@@ -1090,8 +1122,7 @@
     voice.connect(formant1);
     voice.connect(formant2);
 
-    // Vibrato (5 Hz, ±10 cents)
-    const vibrato = new Tone.LFO({ frequency: 5.0, min: -10, max: 10 });
+    const vibrato = new Tone.LFO({ frequency: v.vibratoFreq, min: -v.vibratoCents, max: v.vibratoCents });
     try { vibrato.connect(voice.detune); vibrato.start(); } catch (e) {}
 
     return voice;
@@ -1141,15 +1172,15 @@
   // ---- Chord synth ---------------------------------------------
 
   function makeChordSynth(target) {
-    // v70: AutoPanner (slow LFO) + light Chorus add subtle movement to the
-    // pad so it doesn't sit static in the mix.
-    const verb = new Tone.Reverb({ decay: 1.6, wet: 0.20 }).connect(target);
-    const autoPan = new Tone.AutoPanner({ frequency: 0.18, depth: 0.32 }).connect(verb).start();
-    const chorus = new Tone.Chorus({ frequency: 0.6, delayTime: 4.5, depth: 0.45, wet: 0.40 }).start();
+    // v92: profile-aware chord synth.
+    const c = currentProfile().chord;
+    const verb = new Tone.Reverb({ decay: 1.6, wet: c.verbWet }).connect(target);
+    const autoPan = new Tone.AutoPanner({ frequency: c.autoPanFreq, depth: c.autoPanDepth }).connect(verb).start();
+    const chorus = new Tone.Chorus({ frequency: 0.6, delayTime: 4.5, depth: 0.45, wet: c.chorusWet }).start();
     chorus.connect(autoPan);
     const chord = new Tone.PolySynth(Tone.Synth, {
-      oscillator: { type: "triangle" },
-      envelope: { attack: 0.018, decay: 0.32, sustain: 0.45, release: 0.5 },
+      oscillator: { type: c.oscType },
+      envelope: { attack: c.attack, decay: c.decay, sustain: 0.45, release: c.release },
       volume: -16
     }).connect(chorus);
     chord.maxPolyphony = 6;
@@ -2345,25 +2376,32 @@
       }
     });
 
-    // v91: synth profile selector — hot-swap the synth voice profile
-    // (only effective when kitSource = "synth").
+    // v91/v92: synth profile selector — hot-swap the synth voice profile.
+    // v92: profile now affects bass/chord/vocal in addition to drums.
+    // Drum profile only applies when kitSource = "synth"; bass/chord/vocal
+    // are always synth so they always rebuild on profile change.
     const profileSel = $("br-kit-profile-select");
     if (profileSel) {
       profileSel.value = state.kitProfile || "default";
       profileSel.addEventListener("change", async () => {
         state.kitProfile = profileSel.value;
         const status = $("br-kit-status");
-        // Rebuild synth kit if currently on synth (no effect on sample kits).
-        if (state.kitSource === "synth") {
-          if (status) status.textContent = `applying profile: ${profileSel.value}…`;
-          try {
+        if (status) status.textContent = `applying profile: ${profileSel.value}…`;
+        try {
+          // Rebuild bass/chord/vocal — always synth, always affected
+          if (synthBass) { try { synthBass.dispose(); } catch (e) {} }
+          synthBass = makeSynthBass(bassBus);
+          if (chordSynth) { try { chordSynth.dispose(); } catch (e) {} }
+          chordSynth = makeChordSynth(chordBus);
+          if (voiceSynth) { try { voiceSynth.dispose(); } catch (e) {} }
+          voiceSynth = makeVoiceBox(voiceBus);
+          // Rebuild drum kit only if currently using synth source
+          if (state.kitSource === "synth") {
             drumKit = await buildKitForSource("synth");
-            if (status) status.textContent = `profile: ${profileSel.value}`;
-          } catch (e) {
-            if (status) status.textContent = "profile apply failed: " + e.message;
           }
-        } else if (status) {
-          status.textContent = `profile saved (effective when kit = synth)`;
+          if (status) status.textContent = `profile: ${profileSel.value}`;
+        } catch (e) {
+          if (status) status.textContent = "profile apply failed: " + e.message;
         }
       });
     }
