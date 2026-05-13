@@ -277,9 +277,12 @@
     clickBus = new Tone.Gain(0.0).connect(clickPan);
 
     // Original-stem buses → per-stem EQ → masterGain
-    stemBus.drums  = new Tone.Gain(0.85).connect(masterGain);
-    stemBus.bass   = new Tone.Gain(0.85).connect(masterGain);
-    stemBus.other  = new Tone.Gain(0.85).connect(masterGain);
+    // v131: drums/bass/other を slight boost (0.85 → 0.92) してカラオケ
+    // (vocals OFF) 時の "痩せ" 感を補強。vocals は逆に下げる (0.85 → 0.72)
+    // のを HTML slider default で対応。
+    stemBus.drums  = new Tone.Gain(0.92).connect(masterGain);
+    stemBus.bass   = new Tone.Gain(0.92).connect(masterGain);
+    stemBus.other  = new Tone.Gain(0.92).connect(masterGain);
     // Wire EQ outputs into respective buses (input side will receive players)
     stemEQs.drums.output.connect(stemBus.drums);
     stemEQs.bass.output.connect(stemBus.bass);
@@ -296,7 +299,7 @@
     vocalReverbWet = new Tone.Gain(0.28);  // reverb send level (stronger than master's)
     vocalDryGain = new Tone.Gain(0.78);
 
-    stemBus.vocals = new Tone.Gain(0.85);  // output of vocal FX chain to master
+    stemBus.vocals = new Tone.Gain(0.72);  // v131: 0.85 → 0.72 (デフォ控えめ)
 
     // Wire: vocalChorus is input. Chorus feeds three paths in parallel.
     // dry → vocalDryGain → stemBus.vocals
@@ -2083,7 +2086,7 @@
         // v106: crash hint on big section entry (chorus / bridge / outro).
         // Fires on beat 0 of the new section so the transition has lift.
         const newSec = state.songData.structure[state.sectionIdx];
-        if (newSec && drumKit && drumKit.crash && $("br-toggle-drums").checked) {
+        if (newSec && drumKit && drumKit.crash && (currentMode === "synth") && $("br-toggle-drums").checked) {
           const sn = newSec.section || "";
           const isLift = sn.startsWith("chorus") || sn === "bridge" ||
                          sn.startsWith("outro") || sn === "chant-b";
@@ -2116,8 +2119,14 @@
       const beatTime = Tone.Time("4n").toSeconds();
       const subTime = Tone.Time("16n").toSeconds();
 
-      // Drums (only if toggle on)
-      if ($("br-toggle-drums").checked && drumKit) {
+      // v131: AI 再現 mode のときだけ synth voice 発火する。stems mode のときは
+      // 全 synth (drum / click / bass / guitar / voice / chord) を skip。
+      // v104 で synth toggles のデフォを ON にした副作用で、stems mode でも
+      // synth が裏で鳴ってた問題を修正。
+      const isSynthMode = (currentMode === "synth");
+
+      // Drums (only if toggle on AND we're in synth mode)
+      if (isSynthMode && $("br-toggle-drums").checked && drumKit) {
         frame.events.forEach((evt) => {
           const inst = drumKit[evt.instrument];
           if (!inst) return;
@@ -2202,7 +2211,7 @@
       }
 
       // Click (4 quarter notes per bar)
-      if ($("br-toggle-click").checked && clickSynth) {
+      if (isSynthMode && $("br-toggle-click").checked && clickSynth) {
         for (let b = 0; b < 4; b++) {
           const t = time + b * beatTime;
           const accent = (b === 0);
@@ -2215,7 +2224,7 @@
       //   lo-fi / ambient (Salamander piano bass) → walking pattern: root,
       //     5th, octave, 5th — one note per beat, smoother for jazz/lofi
       const chord = updateChordDisplay();
-      if ($("br-toggle-bass").checked && synthBass && chord) {
+      if (isSynthMode && $("br-toggle-bass").checked && synthBass && chord) {
         const isJazzy = state.kitProfile === "lofi-nujabes" || state.bassInstrument === "salamander-bass";
         const rootNote = chordRoot(chord);
         if (isJazzy) {
@@ -2242,7 +2251,7 @@
             }
           }
         }
-      } else if ($("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
+      } else if (isSynthMode && $("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
         // v108: chord null fallback — section has no chord progression
         // (Human Fly intro/outro etc). Anchor bass to the song's key
         // root, one whole-note hit per bar, low velocity. Keeps the
@@ -2256,7 +2265,7 @@
       // Guitar — section-aware power-chord picking (UNRIPE drive)
       // verse: palm-mute 8th low velocity / prechorus: open 8th / chorus:
       // 16th furious / bridge: sparse stab / outro: 1 hit / intro: silent
-      if ($("br-toggle-guitar").checked && guitarSynth && chord && frame) {
+      if (isSynthMode && $("br-toggle-guitar").checked && guitarSynth && chord && frame) {
         const sectionName = (sec && sec.section) || "";
         const sessionRole = frame.session_role || "";
         let pattern = null;       // array of { sub, vel } where sub is 0..15 (16th-grid position in bar)
@@ -2312,7 +2321,7 @@
       // Vocal guide (melody-only, 母音 "ah" voice-box).
       // v106: Human Fly chorus は専用 melody。他の曲 / 他 section は
       // generic walk-up fallback (chord tones in 4-step pattern).
-      if ($("br-toggle-voice").checked && voiceSynth && chord && frame) {
+      if (isSynthMode && $("br-toggle-voice").checked && voiceSynth && chord && frame) {
         const role = frame.session_role || "";
         const isHumanFlyChorus = state.currentSongId === "human-fly" && role === "recap";
         if (isHumanFlyChorus) {
@@ -2358,7 +2367,7 @@
       //   default / rock / club  → simple triad on downbeat
       //   lo-fi / ambient (Salamander piano) → maj7/m7 voicing +
       //     anticipated comping (beat 0 + beat 2.5 instead of just 0)
-      if ($("br-toggle-chords").checked && chordSynth && chord) {
+      if (isSynthMode && $("br-toggle-chords").checked && chordSynth && chord) {
         try {
           const isJazzy = state.kitProfile === "lofi-nujabes" ||
                           state.chordInstrument === "salamander-piano";
