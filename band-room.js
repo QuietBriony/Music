@@ -1533,6 +1533,7 @@
         drumKit = null;
       }
       if (wasPlaying) await startPlayback();
+      schedulePrefsSave();  // v78: persist song pick
     });
 
     // Phrase trigger grid — fire one-shot on click
@@ -1833,6 +1834,7 @@
     updateSubtitle();
     await loadSong(state.currentSongId);
     renderPhraseTrigger();
+    schedulePrefsSave();  // v78: persist band/song switch
   }
 
   function renderKitOptions() {
@@ -1861,6 +1863,89 @@
     });
   }
 
+  // ---- v78: localStorage persistence -------------------------
+  // Remember the last band, song, mode, kit, volumes, slider values
+  // so the page restores its state on next visit.
+  const PREFS_KEY = "band-room.prefs.v1";
+
+  function loadPrefs() {
+    try {
+      const raw = localStorage.getItem(PREFS_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) { return null; }
+  }
+
+  function savePrefs() {
+    try {
+      const prefs = {
+        bandId: state.currentBandId,
+        songId: state.currentSongId,
+        mode: currentMode,
+        kitSource: state.kitSource,
+        sliders: {},
+        toggles: {}
+      };
+      // Capture all range inputs
+      document.querySelectorAll('#br-main input[type="range"]').forEach((el) => {
+        if (el.id) prefs.sliders[el.id] = el.value;
+      });
+      // Capture key checkbox toggles (mute states)
+      document.querySelectorAll('#br-main input[type="checkbox"]').forEach((el) => {
+        if (el.id) prefs.toggles[el.id] = el.checked;
+      });
+      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    } catch (e) {}
+  }
+
+  function applyPrefs(prefs) {
+    if (!prefs) return;
+    // Sliders + toggles — re-trigger 'input'/'change' so handlers run
+    if (prefs.sliders) {
+      Object.entries(prefs.sliders).forEach(([id, v]) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.value = v;
+          el.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    if (prefs.toggles) {
+      Object.entries(prefs.toggles).forEach(([id, v]) => {
+        const el = document.getElementById(id);
+        if (el && el.type === "checkbox") {
+          el.checked = !!v;
+          el.dispatchEvent(new Event("change"));
+        }
+      });
+    }
+    // Mode radio
+    if (prefs.mode) {
+      const radio = document.querySelector(`input[name=br-mode][value="${prefs.mode}"]`);
+      if (radio) {
+        radio.checked = true;
+        radio.dispatchEvent(new Event("change"));
+      }
+    }
+    // Kit source (select)
+    if (prefs.kitSource) {
+      const sel = $("br-kit-source-select");
+      if (sel) {
+        sel.value = prefs.kitSource;
+        state.kitSource = prefs.kitSource;
+        sel.dispatchEvent(new Event("change"));
+      }
+    }
+  }
+
+  // Save on any meaningful user change. Debounced so 100 slider drags
+  // don't write 100 times.
+  let savePrefsTimer = 0;
+  function schedulePrefsSave() {
+    clearTimeout(savePrefsTimer);
+    savePrefsTimer = setTimeout(savePrefs, 400);
+  }
+
   // ---- Boot ---------------------------------------------------
 
   // v68: resume AudioContext when tab returns to foreground (mobile Safari
@@ -1880,9 +1965,41 @@
     bindUI();
     renderKitOptions();
     await loadBandsRegistry();
+
+    // v78: restore session — pick last band/song before pre-loading
+    const prefs = loadPrefs();
+    if (prefs && prefs.bandId && state.bandsRegistry?.bands?.[prefs.bandId]) {
+      const band = state.bandsRegistry.bands[prefs.bandId];
+      if (band.songs?.some((s) => s.id === prefs.songId)) {
+        state.currentBandId = prefs.bandId;
+        state.currentSongId = prefs.songId;
+        // Repaint selectors to reflect this band/song
+        document.querySelectorAll("#br-band-select button").forEach((b) => {
+          b.setAttribute("aria-pressed", b.dataset.band === prefs.bandId ? "true" : "false");
+        });
+        renderTrackButtons();
+        document.querySelectorAll("#br-track-select button").forEach((b) => {
+          b.setAttribute("aria-pressed", b.dataset.song === prefs.songId ? "true" : "false");
+        });
+        updateSubtitle();
+      }
+    }
+
     // Pre-load the default song meta (doesn't start audio)
     await loadSong(state.currentSongId);
     renderPhraseTrigger();
+
+    // Apply slider/toggle/mode prefs AFTER UI is bound + selectors built
+    applyPrefs(prefs);
+
+    // Global save hook — any input/change anywhere in main triggers a
+    // debounced write. Doesn't fire for child elements of #br-lyrics
+    // (those don't have form inputs anyway).
+    const m = $("br-main");
+    if (m) {
+      m.addEventListener("input", schedulePrefsSave);
+      m.addEventListener("change", schedulePrefsSave);
+    }
   });
 
 })();
