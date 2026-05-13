@@ -1608,6 +1608,8 @@
     if (firstSec) updateLyricsHighlight(firstSec.section);
     // v85: tell the OS we're playing audio
     updateMediaSession("playing");
+    // v88: start MIDI Clock if a MIDI output is selected
+    if (midiOut) startMidiClock();
   }
 
   // v71: master meter — animate #br-meter-fill width from Tone.Meter dB
@@ -1670,6 +1672,7 @@
     setButtonState("idle");
     stopMasterMeter();
     updateMediaSession("paused");
+    stopMidiClock(); // v88
   }
 
   function togglePlay() {
@@ -1944,6 +1947,30 @@
       });
     }
 
+    // v88: MIDI panel
+    const midiEnable = $("br-midi-enable");
+    if (midiEnable) {
+      midiEnable.addEventListener("click", async () => {
+        const access = await initMidiAccess();
+        if (access) {
+          midiEnable.disabled = true;
+          midiEnable.textContent = "✓ MIDI enabled";
+        }
+      });
+    }
+    const midiOutSel = $("br-midi-out-select");
+    if (midiOutSel) {
+      midiOutSel.addEventListener("change", () => {
+        selectMidiOut(midiOutSel.value);
+        if (state.started && midiOut) startMidiClock();
+        else if (!midiOut) stopMidiClock();
+      });
+    }
+    const midiInSel = $("br-midi-in-select");
+    if (midiInSel) {
+      midiInSel.addEventListener("change", () => selectMidiIn(midiInSel.value));
+    }
+
     // v86: help overlay toggle
     const helpToggle = $("br-help-toggle");
     const helpOverlay = $("br-help-overlay");
@@ -2161,6 +2188,135 @@
         if (status) status.textContent = "kit load failed: " + e.message;
       }
     });
+  }
+
+  // ---- v88: WebMIDI in/out -----------------------------------
+  // Out: send MIDI Clock so DAW / drum machines sync to band-room's transport.
+  // In: listen for note-on events and map them to phrase trigger 01..20 + section nav.
+  // Both opt-in via the MIDI panel (you don't pay the perf cost unless enabled).
+  let midiAccess = null;
+  let midiOut = null;
+  let midiClockTimer = null;
+  let midiInListening = false;
+
+  async function initMidiAccess() {
+    if (midiAccess) return midiAccess;
+    if (!navigator.requestMIDIAccess) {
+      setMidiStatus("WebMIDI not supported in this browser");
+      return null;
+    }
+    try {
+      midiAccess = await navigator.requestMIDIAccess({ sysex: false });
+      renderMidiDevices();
+      midiAccess.onstatechange = renderMidiDevices;
+      return midiAccess;
+    } catch (e) {
+      setMidiStatus("MIDI access denied: " + (e.message || e));
+      return null;
+    }
+  }
+
+  function renderMidiDevices() {
+    if (!midiAccess) return;
+    const outSel = $("br-midi-out-select");
+    const inSel  = $("br-midi-in-select");
+    if (outSel) {
+      const prev = outSel.value;
+      outSel.innerHTML = '<option value="">(none)</option>';
+      midiAccess.outputs.forEach((out) => {
+        const opt = document.createElement("option");
+        opt.value = out.id;
+        opt.textContent = `${out.name} — ${out.manufacturer || "?"}`;
+        outSel.appendChild(opt);
+      });
+      if (prev && Array.from(outSel.options).some((o) => o.value === prev)) {
+        outSel.value = prev;
+      }
+    }
+    if (inSel) {
+      const prev = inSel.value;
+      inSel.innerHTML = '<option value="">(none)</option>';
+      midiAccess.inputs.forEach((inp) => {
+        const opt = document.createElement("option");
+        opt.value = inp.id;
+        opt.textContent = `${inp.name} — ${inp.manufacturer || "?"}`;
+        inSel.appendChild(opt);
+      });
+      if (prev && Array.from(inSel.options).some((o) => o.value === prev)) {
+        inSel.value = prev;
+      }
+    }
+  }
+
+  function setMidiStatus(s) {
+    const el = $("br-midi-status");
+    if (el) el.textContent = s || "";
+  }
+
+  function selectMidiOut(id) {
+    if (!midiAccess) return;
+    midiOut = id ? midiAccess.outputs.get(id) : null;
+    setMidiStatus(midiOut ? `out: ${midiOut.name}` : "out: (none)");
+  }
+
+  // MIDI Clock = 0xF8, sent 24 times per quarter note.
+  // At 120 BPM: 24 × 2 Hz = 48 Hz = 20.8 ms per tick.
+  function startMidiClock() {
+    stopMidiClock();
+    if (!midiOut) return;
+    try { midiOut.send([0xFA]); } catch (e) {} // start
+    const tick = () => {
+      if (!midiOut) return;
+      const bpm = Tone.Transport.bpm.value || 120;
+      const interval = (60 / bpm / 24) * 1000;
+      try { midiOut.send([0xF8]); } catch (e) {}
+      midiClockTimer = setTimeout(tick, interval);
+    };
+    tick();
+  }
+
+  function stopMidiClock() {
+    if (midiClockTimer) clearTimeout(midiClockTimer);
+    midiClockTimer = null;
+    if (midiOut) {
+      try { midiOut.send([0xFC]); } catch (e) {} // stop
+    }
+  }
+
+  function selectMidiIn(id) {
+    if (!midiAccess) return;
+    // Detach previous listeners
+    midiAccess.inputs.forEach((inp) => { inp.onmidimessage = null; });
+    midiInListening = false;
+    if (!id) {
+      setMidiStatus("in: (none)");
+      return;
+    }
+    const inp = midiAccess.inputs.get(id);
+    if (!inp) return;
+    inp.onmidimessage = handleMidiMessage;
+    midiInListening = true;
+    setMidiStatus(`in: ${inp.name}`);
+  }
+
+  // MIDI note → action mapping:
+  //   notes 36..55 (C2..G3, 20 keys) → phrase 01..20
+  //   notes 60..68 (C4..G#4)         → section index 0..8 (jumpToSection)
+  function handleMidiMessage(msg) {
+    const [status, data1, data2] = msg.data;
+    const kind = status & 0xF0;
+    if (kind !== 0x90 || data2 === 0) return; // only note-on with velocity
+    // Phrase trigger range
+    if (data1 >= 36 && data1 <= 55) {
+      const phraseIdx = data1 - 36; // 0..19
+      const btn = document.querySelectorAll("#br-phrase-grid .br-phrase-cells button")[phraseIdx];
+      if (btn) btn.click();
+    }
+    // Section jump range
+    else if (data1 >= 60 && data1 <= 68) {
+      const idx = data1 - 60;
+      if (state.songData?.structure?.[idx]) jumpToSection(idx);
+    }
   }
 
   // ---- v85: MediaSession (lock screen / external media keys) -

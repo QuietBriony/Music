@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-32" />
+<link rel="stylesheet" href="band-room.css?v=br-33" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-32" defer></script>
+<script src="band-room.js?v=br-33" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -216,6 +216,27 @@
         <label><span>width</span><input type="range" id="br-space-width" min="0" max="100" value="72" /></label>
         <label><span>warmth</span><input type="range" id="br-tape-warmth" min="0" max="40" value="10" /></label>
         <label><span>loudness</span><input type="range" id="br-loudness" min="-12" max="6" value="0" /></label>
+      </section>
+    </details>
+
+    <details class="br-details">
+      <summary>🎹 MIDI in/out (hardware sync)</summary>
+      <section id="br-midi" aria-label="WebMIDI">
+        <button id="br-midi-enable" type="button">⚡ enable MIDI</button>
+        <label>
+          <span>out (clock)</span>
+          <select id="br-midi-out-select"><option value="">(none)</option></select>
+        </label>
+        <label>
+          <span>in (notes)</span>
+          <select id="br-midi-in-select"><option value="">(none)</option></select>
+        </label>
+        <span id="br-midi-status">(not enabled)</span>
+        <p class="br-help">
+          out: 24 PPQ MIDI Clock を選択デバイスに送出 (DAW / drum machine 同期用)。<br>
+          in: note 36-55 (C2-G3) で phrase 01-20 発火、60-68 (C4-G#4) で section jump。<br>
+          ブラウザ初回は権限ダイアログが出る。
+        </p>
       </section>
     </details>
 
