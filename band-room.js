@@ -734,6 +734,27 @@
                chorusWet: 0.22, autoPanFreq: 0.06, autoPanDepth: 0.18, verbWet: 0.12 },
       vocal: { harmonicity: 3.0, vibratoFreq: 6.5, vibratoCents: 18,
                formant1: 560, formant2: 1400, hpFreq: 260, verbWet: 0.18 }
+    },
+    "lofi-nujabes": {
+      label: "Lofi Nujabes (jazzy boom-bap + warm piano)",
+      // v109: Nujabes 感を音色そのもので。dusty drum + walking sub bass +
+      // piano chord (Salamander 推奨, linked via master preset) + warm vocal.
+      // Drum: tight kick, body-rich snare (low HP), brushed hat, ride-friendly crash
+      kick:  { decay: 0.28, octaves: 4.5, vol: -7,  clickVol: -28 },
+      snare: { decay: 0.16, hpFreq: 900,  vol: -11, rimVol: -30 },
+      hat:   { decay: 0.05, bpFreq: 6200, vol: -23 },
+      crash: { decay: 1.2,  vol: -17 },
+      // Bass: warm upright-ish, slow filter env, soft portamento for walking feel
+      bass:  { filterFreq: 380, filterQ: 1.0, drive: 0.04, driveWet: 0.30,
+               envRelease: 0.30, postLpFreq: 1200, portamento: 0.06 },
+      // Chord: soft triangle pad with long release + verb (用 fallback when
+      // sampler not loaded; master preset auto-switches chord_instrument to
+      // salamander-piano which takes over via Tone.Sampler)
+      chord: { oscType: "triangle", attack: 0.030, decay: 0.45, release: 0.75,
+               chorusWet: 0.20, autoPanFreq: 0.08, autoPanDepth: 0.15, verbWet: 0.28 },
+      // Vocal: warm formants, gentle vibrato, healthy verb tail (jazzy)
+      vocal: { harmonicity: 2.2, vibratoFreq: 4.5, vibratoCents: 8,
+               formant1: 720, formant2: 1300, hpFreq: 220, verbWet: 0.34 }
     }
   };
 
@@ -746,11 +767,16 @@
   // These map to the existing slider IDs so the existing event handlers
   // re-fire and the values persist via v78 localStorage.
   const MASTER_PRESETS = {
-    "neutral":  { label: "neutral (現状)",      reverb: 22, width: 72, warmth: 10, loudness: 0  },
-    "lo-fi":    { label: "lo-fi (lofi hiphop)",  reverb: 38, width: 50, warmth: 32, loudness: -3 },
-    "club":     { label: "club (loud / wide)",   reverb: 12, width: 88, warmth: 18, loudness: +3 },
-    "rock":     { label: "rock (dry / punchy)",  reverb: 14, width: 65, warmth: 12, loudness: +1 },
-    "ambient":  { label: "ambient (washy)",      reverb: 55, width: 90, warmth: 22, loudness: -2 }
+    "neutral":  { reverb: 22, width: 72, warmth: 10, loudness: 0,
+                  synth_profile: "default",       chord_instrument: "" },
+    "lo-fi":    { reverb: 32, width: 64, warmth: 24, loudness: -2,
+                  synth_profile: "lofi-nujabes",  chord_instrument: "salamander-piano" },
+    "club":     { reverb: 12, width: 88, warmth: 18, loudness: +3,
+                  synth_profile: "sakanaction",   chord_instrument: "" },
+    "rock":     { reverb: 14, width: 65, warmth: 12, loudness: +1,
+                  synth_profile: "cramps-punk",   chord_instrument: "" },
+    "ambient":  { reverb: 55, width: 90, warmth: 22, loudness: -2,
+                  synth_profile: "lcd-motorik",   chord_instrument: "salamander-piano" }
   };
 
   // v95: A/B state compare — capture all slider/toggle/profile/mode/master
@@ -820,6 +846,22 @@
       el.value = String(v);
       el.dispatchEvent(new Event("input"));
     });
+    // v109: linked synth profile + chord instrument — Nujabes 感を
+    // master sliders ではなく音色の中身から出すための連動
+    if (p.synth_profile !== undefined) {
+      const psel = $("br-kit-profile-select");
+      if (psel && psel.value !== p.synth_profile) {
+        psel.value = p.synth_profile;
+        psel.dispatchEvent(new Event("change"));
+      }
+    }
+    if (p.chord_instrument !== undefined) {
+      const csel = $("br-chord-instrument-select");
+      if (csel && csel.value !== p.chord_instrument) {
+        csel.value = p.chord_instrument;
+        csel.dispatchEvent(new Event("change"));
+      }
+    }
   }
 
   function makeDrumKit(target, profileName) {
@@ -1728,17 +1770,19 @@
     if (state.started) {
       // Reseek Transport to this section's start
       try { Tone.Transport.seconds = targetSec; } catch (e) {}
-      // Reseek each stem player to the matching offset in the recording.
-      // Tone.Player.start(time, offset) seeks the buffer; loop=true wraps.
-      Object.entries(stemPlayers).forEach(([stem, p]) => {
-        if (!p) return;
-        try {
-          const enabled = $("br-toggle-stem-" + stem)?.checked !== false;
-          p.stop();
-          p.mute = !enabled;
-          p.start("+0.05", targetSec);
-        } catch (e) {}
-      });
+      // v109 fix: only seek/restart stem players in stems mode. In AI 再現
+      // mode the stems aren't running and shouldn't be triggered by jump.
+      if (currentMode === "stems") {
+        Object.entries(stemPlayers).forEach(([stem, p]) => {
+          if (!p) return;
+          try {
+            const enabled = $("br-toggle-stem-" + stem)?.checked !== false;
+            p.stop();
+            p.mute = !enabled;
+            p.start("+0.05", targetSec);
+          } catch (e) {}
+        });
+      }
     } else {
       // v104: 停止中なら、そのセクションから自動再生開始する
       startPlayback({ preservePosition: true });
@@ -2667,8 +2711,29 @@
     document.querySelectorAll("input[name=br-mode]").forEach((radio) => {
       radio.addEventListener("change", () => {
         if (!radio.checked) return;
-        currentMode = radio.value;
+        const newMode = radio.value;
+        const oldMode = currentMode;
+        currentMode = newMode;
         if (document.body) document.body.dataset.mode = currentMode;
+        // v109 fix: hot-swap audio when mode changes mid-playback.
+        // Without this, the previous mode's audio kept playing on top
+        // of the new mode → user heard both AI synth and original stems.
+        if (state.started && newMode !== oldMode) {
+          if (oldMode === "stems") {
+            // Switching to AI 再現 → stop all stem audio
+            stopStemPlayback();
+            stopExternalVocal();
+            ["drums", "bass", "other"].forEach((s) => stopExternalStem(s));
+          } else if (oldMode === "synth" && newMode === "stems") {
+            // Switching to 原音 → start stems from current bar position
+            const bpm = state.songData?.bpm || 117;
+            const barDur = 60 / bpm * 4;
+            const offsetSec = state.barCount * barDur;
+            startStemPlayback(offsetSec);
+            startExternalVocalIfEnabled();
+            ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s));
+          }
+        }
       });
     });
     if (document.body) document.body.dataset.mode = currentMode;
