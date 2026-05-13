@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-35" />
+<link rel="stylesheet" href="band-room.css?v=br-36" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-35" defer></script>
+<script src="band-room.js?v=br-36" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -172,10 +172,23 @@
     </details>
 
     <details class="br-details" data-scope="synth">
-      <summary>🥁 drum kit source</summary>
+      <summary>🥁 drum kit source + synth profile</summary>
       <section id="br-kit-select" aria-label="Drum kit source">
-        <select id="br-kit-source-select"></select>
+        <label>
+          <span>kit</span>
+          <select id="br-kit-source-select"></select>
+        </label>
+        <label>
+          <span>synth profile</span>
+          <select id="br-kit-profile-select">
+            <option value="default">default (LCD + Backdrop Bomb mix)</option>
+            <option value="sakanaction">Sakanaction (dance rock)</option>
+            <option value="lcd-motorik">LCD motorik (4-on-floor)</option>
+            <option value="cramps-punk">Cramps punk (Human Fly)</option>
+          </select>
+        </label>
         <span id="br-kit-status" aria-live="polite"></span>
+        <p class="br-help">profile は **kit = AI synth (default)** のときだけ効く。サンプル kit (auto-self / tabasco-* / unripe-*) のときは元音色のまま。</p>
       </section>
     </details>
 
@@ -281,6 +294,8 @@
       </span>
       <span class="br-sep">/</span>
       <a href="docs/DAW-INTEGRATION.md">DAW 連携</a>
+      <span class="br-sep">·</span>
+      <a href="docs/FREE-SAMPLES-AND-SYNTHESIS.md">音色設計</a>
       <div id="br-kbd-hint">
         <kbd>space</kbd> play/stop · <kbd>[</kbd> <kbd>]</kbd> sec · <kbd>1</kbd>..<kbd>9</kbd> jump · <kbd>m</kbd> mode · <kbd>shift</kbd>+click sec = A→B loop
       </div>

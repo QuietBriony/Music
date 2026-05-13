@@ -37,6 +37,7 @@
     scheduledIds: [],
     kitSource: "auto-self", // default: use the current song's own extracted drum samples
                             // ("synth" = generic Tone.js voices, "<src>/<song>" = specific kit)
+    kitProfile: "default",  // v91: synth voice profile (only applies when kitSource = "synth")
     loopA: null,            // v80: A-B loop range (null = no loop)
     loopB: null
   };
@@ -663,19 +664,55 @@
 
   // ---- Drum kit (tabasco-rock profile: LCD + Backdrop Bomb) ----
 
-  function makeDrumKit(target) {
+  // v91: kit synth profiles — preset DSP knob bundles that bend the
+  // synth drum sound toward different genre identities. Sample kits
+  // (auto-self / tabasco-* / unripe-*) are unaffected — only the
+  // synth fallback uses these.
+  const KIT_PROFILES = {
+    "default": {
+      label: "default (LCD + Backdrop Bomb mixture)",
+      kick:  { decay: 0.32, octaves: 4.0,  vol: -8,  clickVol: -32 },
+      snare: { decay: 0.14, hpFreq: 1100,  vol: -12, rimVol: -28 },
+      hat:   { decay: 0.04, bpFreq: 6800,  vol: -22 },
+      crash: { decay: 0.9,  vol: -18 }
+    },
+    "sakanaction": {
+      label: "Sakanaction (dance rock — tight kick / clicky hat)",
+      kick:  { decay: 0.20, octaves: 5.0,  vol: -6,  clickVol: -22 },
+      snare: { decay: 0.09, hpFreq: 1600,  vol: -10, rimVol: -24 },
+      hat:   { decay: 0.028, bpFreq: 8200, vol: -20 },
+      crash: { decay: 1.1,  vol: -16 }
+    },
+    "lcd-motorik": {
+      label: "LCD motorik (4-on-floor / cowbell / pad swell)",
+      kick:  { decay: 0.38, octaves: 6.0,  vol: -5,  clickVol: -28 },
+      snare: { decay: 0.18, hpFreq: 950,   vol: -8,  rimVol: -26 },
+      hat:   { decay: 0.06, bpFreq: 5800,  vol: -19 },
+      crash: { decay: 1.3,  vol: -14 }
+    },
+    "cramps-punk": {
+      label: "Cramps punk (Human Fly / boomy / rockabilly slap)",
+      kick:  { decay: 0.40, octaves: 5.5,  vol: -7,  clickVol: -36 },
+      snare: { decay: 0.22, hpFreq: 800,   vol: -10, rimVol: -22 },
+      hat:   { decay: 0.05, bpFreq: 5200,  vol: -24 },
+      crash: { decay: 1.6,  vol: -15 }
+    }
+  };
+
+  function makeDrumKit(target, profileName) {
+    const p = KIT_PROFILES[profileName] || KIT_PROFILES["default"];
     // Kick: punchy modern, deep & tight (LCD/dance + rock)
     const kickPan = new Tone.Panner(0).connect(target);
     const kickClick = new Tone.NoiseSynth({
       noise: { type: "pink" },
       envelope: { attack: 0.001, decay: 0.022, sustain: 0, release: 0.012 },
-      volume: -32
+      volume: p.kick.clickVol
     }).connect(kickPan);
     const kickBody = new Tone.MembraneSynth({
       pitchDecay: 0.05,
-      octaves: 4,
-      envelope: { attack: 0.001, decay: 0.32, sustain: 0, release: 0.15 },
-      volume: -8
+      octaves: p.kick.octaves,
+      envelope: { attack: 0.001, decay: p.kick.decay, sustain: 0, release: 0.15 },
+      volume: p.kick.vol
     }).connect(kickPan);
     const kick = {
       triggerAttackRelease(_note, _dur, time, vel) {
@@ -688,11 +725,11 @@
     // Snare: tight rock snare with crisp pop + body
     const snarePan = new Tone.Panner(-0.06).connect(target);
     const snareBus = new Tone.Gain(0.85).connect(snarePan);
-    const snareHp = new Tone.Filter({ frequency: 1100, type: "highpass", Q: 0.8 }).connect(snareBus);
+    const snareHp = new Tone.Filter({ frequency: p.snare.hpFreq, type: "highpass", Q: 0.8 }).connect(snareBus);
     const snareBody = new Tone.NoiseSynth({
       noise: { type: "white" },
-      envelope: { attack: 0.001, decay: 0.14, sustain: 0, release: 0.06 },
-      volume: -12
+      envelope: { attack: 0.001, decay: p.snare.decay, sustain: 0, release: 0.06 },
+      volume: p.snare.vol
     }).connect(snareHp);
     const snareRim = new Tone.MetalSynth({
       frequency: 165,
@@ -701,7 +738,7 @@
       modulationIndex: 5,
       resonance: 1800,
       octaves: 0.5,
-      volume: -28
+      volume: p.snare.rimVol
     }).connect(snareBus);
     const snare = {
       triggerAttackRelease(_d, time, vel) {
@@ -715,11 +752,11 @@
     // Hi-hat: bright, LCD-style 8th pulse
     const hatPan = new Tone.Panner(0.22).connect(target);
     const hatBus = new Tone.Gain(0.6).connect(hatPan);
-    const hatBp = new Tone.Filter({ frequency: 6800, type: "bandpass", Q: 2.4 }).connect(hatBus);
+    const hatBp = new Tone.Filter({ frequency: p.hat.bpFreq, type: "bandpass", Q: 2.4 }).connect(hatBus);
     const hatNoise = new Tone.NoiseSynth({
       noise: { type: "white" },
-      envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.018 },
-      volume: -22
+      envelope: { attack: 0.001, decay: p.hat.decay, sustain: 0, release: 0.018 },
+      volume: p.hat.vol
     }).connect(hatBp);
     const hat = {
       triggerAttackRelease(_d, time, vel) {
@@ -779,8 +816,8 @@
     const crashPan = new Tone.Panner(0.20).connect(target);
     const crash = new Tone.NoiseSynth({
       noise: { type: "white" },
-      envelope: { attack: 0.002, decay: 0.9, sustain: 0, release: 0.6 },
-      volume: -18
+      envelope: { attack: 0.002, decay: p.crash.decay, sustain: 0, release: 0.6 },
+      volume: p.crash.vol
     }).connect(crashPan);
     const crashFilter = new Tone.Filter({ frequency: 4200, type: "highpass", Q: 0.6 });
     // Re-route crash through filter for shimmer
@@ -952,7 +989,7 @@
     }
     const resolved = resolveKitSource(source);
     if (resolved === "synth" || !resolved) {
-      return makeDrumKit(drumBus);
+      return makeDrumKit(drumBus, state.kitProfile || "default");
     }
     const kitPath = `presets/sample-kits/${resolved}`;
     const kit = makeSampledKit(drumBus, kitPath);
@@ -2297,7 +2334,6 @@
     });
     sel.addEventListener("change", async () => {
       const newSource = sel.value;
-      const wasPlaying = state.started;
       const status = $("br-kit-status");
       if (status) status.textContent = "loading kit…";
       state.kitSource = newSource;
@@ -2308,6 +2344,29 @@
         if (status) status.textContent = "kit load failed: " + e.message;
       }
     });
+
+    // v91: synth profile selector — hot-swap the synth voice profile
+    // (only effective when kitSource = "synth").
+    const profileSel = $("br-kit-profile-select");
+    if (profileSel) {
+      profileSel.value = state.kitProfile || "default";
+      profileSel.addEventListener("change", async () => {
+        state.kitProfile = profileSel.value;
+        const status = $("br-kit-status");
+        // Rebuild synth kit if currently on synth (no effect on sample kits).
+        if (state.kitSource === "synth") {
+          if (status) status.textContent = `applying profile: ${profileSel.value}…`;
+          try {
+            drumKit = await buildKitForSource("synth");
+            if (status) status.textContent = `profile: ${profileSel.value}`;
+          } catch (e) {
+            if (status) status.textContent = "profile apply failed: " + e.message;
+          }
+        } else if (status) {
+          status.textContent = `profile saved (effective when kit = synth)`;
+        }
+      });
+    }
   }
 
   // ---- v88: WebMIDI in/out -----------------------------------
@@ -2512,6 +2571,7 @@
         songId: state.currentSongId,
         mode: currentMode,
         kitSource: state.kitSource,
+        kitProfile: state.kitProfile,
         sliders: {},
         toggles: {}
       };
@@ -2563,6 +2623,15 @@
         sel.value = prefs.kitSource;
         state.kitSource = prefs.kitSource;
         sel.dispatchEvent(new Event("change"));
+      }
+    }
+    // v91: synth kit profile
+    if (prefs.kitProfile) {
+      const psel = $("br-kit-profile-select");
+      if (psel) {
+        psel.value = prefs.kitProfile;
+        state.kitProfile = prefs.kitProfile;
+        psel.dispatchEvent(new Event("change"));
       }
     }
   }
