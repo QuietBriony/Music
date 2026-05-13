@@ -184,6 +184,130 @@
         "A1": "/A1.mp3", "C2": "/C2.mp3", "D#2": "/Ds2.mp3", "F#2": "/Fs2.mp3",
         "A2": "/A2.mp3", "C3": "/C3.mp3"
       }
+    },
+    {
+      "id": "guitar-electric",
+      "label": "Electric Guitar (nbrosowsky tonejs-instruments)",
+      "kind": "sampler",
+      "source": "nbrosowsky/tonejs-instruments",
+      "license": "MIT",
+      "base_url": "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/guitar-electric",
+      "notes": {
+        "E2": "/E2.mp3", "F#2": "/Fs2.mp3", "A2": "/A2.mp3",
+        "C#3": "/Cs3.mp3", "E3": "/E3.mp3", "F#3": "/Fs3.mp3", "A3": "/A3.mp3",
+        "C#4": "/Cs4.mp3", "E4": "/E4.mp3", "F#4": "/Fs4.mp3", "A4": "/A4.mp3",
+        "C#5": "/Cs5.mp3", "A5": "/A5.mp3"
+      }
+    },
+    {
+      "id": "guitar-acoustic",
+      "label": "Acoustic Guitar (nbrosowsky)",
+      "kind": "sampler",
+      "source": "nbrosowsky/tonejs-instruments",
+      "license": "MIT",
+      "base_url": "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/guitar-acoustic",
+      "notes": {
+        "E2": "/E2.mp3", "F#2": "/Fs2.mp3", "A2": "/A2.mp3",
+        "C#3": "/Cs3.mp3", "E3": "/E3.mp3", "F#3": "/Fs3.mp3", "A3": "/A3.mp3",
+        "C#4": "/Cs4.mp3", "E4": "/E4.mp3", "F#4": "/Fs4.mp3", "A4": "/A4.mp3"
+      }
+    },
+    {
+      "id": "guitar-nylon",
+      "label": "Nylon Guitar (nbrosowsky, jazz/bossa)",
+      "kind": "sampler",
+      "source": "nbrosowsky/tonejs-instruments",
+      "license": "MIT",
+      "base_url": "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/guitar-nylon",
+      "notes": {
+        "E2": "/E2.mp3", "F#2": "/Fs2.mp3", "A2": "/A2.mp3",
+        "C#3": "/Cs3.mp3", "E3": "/E3.mp3", "F#3": "/Fs3.mp3", "A3": "/A3.mp3",
+        "C#4": "/Cs4.mp3", "E4": "/E4.mp3", "F#4": "/Fs4.mp3", "A4": "/A4.mp3"
+      }
+    },
+    {
+      "id": "bass-electric",
+      "label": "Electric Bass (nbrosowsky)",
+      "kind": "sampler",
+      "source": "nbrosowsky/tonejs-instruments",
+      "license": "MIT",
+      "base_url": "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/bass-electric",
+      "notes": {
+        "E1": "/E1.mp3", "F#1": "/Fs1.mp3", "A1": "/A1.mp3",
+        "C#2": "/Cs2.mp3", "E2": "/E2.mp3", "F#2": "/Fs2.mp3", "A2": "/A2.mp3",
+        "C#3": "/Cs3.mp3", "E3": "/E3.mp3"
+      }
+    },
+    {
+      "id": "violin",
+      "label": "Violin (nbrosowsky, melody-lead)",
+      "kind": "sampler",
+      "source": "nbrosowsky/tonejs-instruments",
+      "license": "MIT",
+      "base_url": "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/violin",
+      "notes": {
+        "A3": "/A3.mp3", "C4": "/C4.mp3", "E4": "/E4.mp3", "G4": "/G4.mp3",
+        "A4": "/A4.mp3", "C5": "/C5.mp3", "E5": "/E5.mp3", "G5": "/G5.mp3",
+        "A5": "/A5.mp3", "C6": "/C6.mp3", "E6": "/E6.mp3", "G6": "/G6.mp3",
+        "A6": "/A6.mp3"
+      }
+    },
+    {
+      "id": "cello",
+      "label": "Cello (nbrosowsky, warm melody)",
+      "kind": "sampler",
+      "source": "nbrosowsky/tonejs-instruments",
+      "license": "MIT",
+      "base_url": "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/cello",
+      "notes": {
+        "C2": "/C2.mp3", "D2": "/D2.mp3", "E2": "/E2.mp3", "G2": "/G2.mp3",
+        "A2": "/A2.mp3", "C3": "/C3.mp3", "D3": "/D3.mp3", "E3": "/E3.mp3",
+        "G3": "/G3.mp3", "A3": "/A3.mp3", "B3": "/B3.mp3",
+        "C4": "/C4.mp3", "D4": "/D4.mp3", "E4": "/E4.mp3", "G4": "/G4.mp3"
+      }
+    },
+    {
+      "id": "flute",
+      "label": "Flute (nbrosowsky, Nujabes lead)",
+      "kind": "sampler",
+      "source": "nbrosowsky/tonejs-instruments",
+      "license": "MIT",
+      "base_url": "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/flute",
+      "notes": {
+        "C4": "/C4.mp3", "E4": "/E4.mp3", "G4": "/G4.mp3",
+        "A4": "/A4.mp3", "C5": "/C5.mp3", "E5": "/E5.mp3",
+        "G5": "/G5.mp3", "A5": "/A5.mp3", "C6": "/C6.mp3",
+        "E6": "/E6.mp3", "A6": "/A6.mp3"
+      }
+    },
+    {
+      "id": "organ",
+      "label": "Organ (nbrosowsky, vintage)",
+      "kind": "sampler",
+      "source": "nbrosowsky/tonejs-instruments",
+      "license": "MIT",
+      "base_url": "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/organ",
+      "notes": {
+        "C1": "/C1.mp3", "D#1": "/Ds1.mp3", "F#1": "/Fs1.mp3",
+        "A1": "/A1.mp3", "C2": "/C2.mp3", "D#2": "/Ds2.mp3", "F#2": "/Fs2.mp3",
+        "A2": "/A2.mp3", "C3": "/C3.mp3", "D#3": "/Ds3.mp3", "F#3": "/Fs3.mp3",
+        "A3": "/A3.mp3", "C4": "/C4.mp3", "A4": "/A4.mp3", "A5": "/A5.mp3"
+      }
+    },
+    {
+      "id": "harp",
+      "label": "Harp (nbrosowsky, ambient)",
+      "kind": "sampler",
+      "source": "nbrosowsky/tonejs-instruments",
+      "license": "MIT",
+      "base_url": "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/harp",
+      "notes": {
+        "C3": "/C3.mp3", "D3": "/D3.mp3", "E3": "/E3.mp3", "F3": "/F3.mp3",
+        "G3": "/G3.mp3", "A3": "/A3.mp3", "B3": "/B3.mp3",
+        "C4": "/C4.mp3", "D4": "/D4.mp3", "E4": "/E4.mp3", "F4": "/F4.mp3",
+        "G4": "/G4.mp3", "A4": "/A4.mp3", "B4": "/B4.mp3",
+        "C5": "/C5.mp3", "E5": "/E5.mp3", "A5": "/A5.mp3"
+      }
     }
   ]
 }

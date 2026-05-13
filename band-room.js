@@ -43,6 +43,8 @@
     voiceOverrides: { kick: null, snare: null, hat: null, ghost: null, fill: null, crash: null },
     chordInstrument: null,  // v101: catalog instrument id for chord (null = synth)
     bassInstrument: null,   // v110: catalog instrument id for bass (null = synth)
+    guitarInstrument: null, // v111: catalog instrument id for guitar (null = synth)
+    voiceInstrument: null,  // v111: catalog instrument id for vocal/melody lead (null = synth)
     loopA: null,            // v80: A-B loop range (null = no loop)
     loopB: null
   };
@@ -771,27 +773,36 @@
     "neutral":  { reverb: 22, width: 72, warmth: 10, loudness: 0,
                   synth_profile: "default",
                   chord_instrument: "", bass_instrument: "",
+                  guitar_instrument: "", voice_instrument: "",
                   kit_source: null, guitar_on: true },
     "lo-fi":    { reverb: 32, width: 64, warmth: 24, loudness: -2,
                   synth_profile: "lofi-nujabes",
                   chord_instrument: "salamander-piano",
                   bass_instrument: "salamander-bass",
+                  guitar_instrument: "guitar-nylon",
+                  voice_instrument: "flute",
                   kit_source: "online/tone-breakbeat",
                   guitar_on: false },
     "club":     { reverb: 12, width: 88, warmth: 18, loudness: +3,
                   synth_profile: "sakanaction",
                   chord_instrument: "", bass_instrument: "",
+                  guitar_instrument: "guitar-electric",
+                  voice_instrument: "",
                   kit_source: "online/dirt-808",
                   guitar_on: true },
     "rock":     { reverb: 14, width: 65, warmth: 12, loudness: +1,
                   synth_profile: "cramps-punk",
-                  chord_instrument: "", bass_instrument: "",
+                  chord_instrument: "", bass_instrument: "bass-electric",
+                  guitar_instrument: "guitar-electric",
+                  voice_instrument: "",
                   kit_source: "online/tone-acoustic",
                   guitar_on: true },
     "ambient":  { reverb: 55, width: 90, warmth: 22, loudness: -2,
                   synth_profile: "lcd-motorik",
                   chord_instrument: "salamander-piano",
                   bass_instrument: "salamander-bass",
+                  guitar_instrument: "guitar-nylon",
+                  voice_instrument: "cello",
                   kit_source: null,
                   guitar_on: false }
   };
@@ -884,6 +895,21 @@
       if (bsel && bsel.value !== p.bass_instrument) {
         bsel.value = p.bass_instrument;
         bsel.dispatchEvent(new Event("change"));
+      }
+    }
+    // v111: linked guitar + voice instruments
+    if (p.guitar_instrument !== undefined) {
+      const gsel = $("br-guitar-instrument-select");
+      if (gsel && gsel.value !== p.guitar_instrument) {
+        gsel.value = p.guitar_instrument;
+        gsel.dispatchEvent(new Event("change"));
+      }
+    }
+    if (p.voice_instrument !== undefined) {
+      const vsel = $("br-voice-instrument-select");
+      if (vsel && vsel.value !== p.voice_instrument) {
+        vsel.value = p.voice_instrument;
+        vsel.dispatchEvent(new Event("change"));
       }
     }
     if (p.kit_source !== undefined && p.kit_source !== null) {
@@ -1369,8 +1395,31 @@
   // Section-aware picking: silent intro / palm-mute 8th verse / open
   // prechorus / 16th chorus / sparse bridge / hit outro.
   function makeGuitar(target) {
-    // v70: insert Chorus between PolySynth and distortion so the saw body
-    // has stereo movement before being slammed by the distortion.
+    // v111: if guitarInstrument is set to a catalog sampler, use real samples.
+    // Less distortion + softer chain than synth fallback (real samples already
+    // have body and harmonic content).
+    if (state.guitarInstrument && state.onlineCatalog) {
+      const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.guitarInstrument);
+      if (instDef && instDef.kind === "sampler") {
+        const verb = new Tone.Reverb({ decay: 1.2, wet: 0.12 }).connect(target);
+        const lp = new Tone.Filter({ frequency: 6000, type: "lowpass", Q: 0.5 }).connect(verb);
+        // Light distortion only on electric variant
+        const isElectric = instDef.id.includes("electric");
+        let chainIn = lp;
+        if (isElectric) {
+          const dist = new Tone.Distortion({ distortion: 0.18, wet: 0.32, oversample: "2x" }).connect(lp);
+          chainIn = dist;
+        }
+        const urls = {};
+        Object.entries(instDef.notes).forEach(([note, p]) => {
+          urls[note] = instDef.base_url + p;
+        });
+        const sampler = new Tone.Sampler({ urls, release: 0.5, volume: -6 }).connect(chainIn);
+        return sampler;
+      }
+    }
+
+    // v70 synth fallback: PolySynth saw + heavy distortion
     const chorus = new Tone.Chorus({ frequency: 0.9, delayTime: 3.2, depth: 0.38, wet: 0.34 }).start();
     const dist = new Tone.Distortion({ distortion: 0.55, wet: 0.85, oversample: "2x" });
     const lp = new Tone.Filter({ frequency: 4200, type: "lowpass", Q: 0.6 });
@@ -1411,7 +1460,25 @@
   // mp3, drop into presets/vocals/{song-id}.mp3, then load via a
   // future HTMLAudio layer.
   function makeVoiceBox(target) {
-    // v92: profile-aware vocal guide.
+    // v111: if voiceInstrument is set to a catalog sampler, use it
+    // (typically violin / cello / flute for "lead melody as instrument").
+    // This bypasses the formant-vowel synth path entirely and gives the
+    // melody guide a real instrumental voice — Nujabes/J Dilla flute lead,
+    // RHRN cello, etc.
+    if (state.voiceInstrument && state.onlineCatalog) {
+      const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.voiceInstrument);
+      if (instDef && instDef.kind === "sampler") {
+        const verb = new Tone.Reverb({ decay: 1.8, wet: 0.28 }).connect(target);
+        const urls = {};
+        Object.entries(instDef.notes).forEach(([note, p]) => {
+          urls[note] = instDef.base_url + p;
+        });
+        const sampler = new Tone.Sampler({ urls, release: 0.8, volume: -6 }).connect(verb);
+        return sampler;
+      }
+    }
+
+    // v92 synth fallback: AMSynth + dual formant (vowel-ish "ah")
     const v = currentProfile().vocal;
     const verb = new Tone.Reverb({ decay: 1.6, wet: v.verbWet }).connect(target);
     const hp = new Tone.Filter({ frequency: v.hpFreq, type: "highpass", Q: 0.5 }).connect(verb);
@@ -3029,6 +3096,68 @@
     }
   }
 
+  // v111: guitar instrument selector
+  function renderGuitarInstrumentSelector() {
+    const sel = $("br-guitar-instrument-select");
+    if (!sel) return;
+    while (sel.options.length > 1) sel.remove(1);
+    const instruments = state.onlineCatalog?.instruments || [];
+    instruments.forEach((inst) => {
+      const o = document.createElement("option");
+      o.value = inst.id;
+      o.textContent = "🌐 " + inst.label;
+      if (inst.id === state.guitarInstrument) o.selected = true;
+      sel.appendChild(o);
+    });
+    if (!sel.dataset.bound) {
+      sel.addEventListener("change", async () => {
+        state.guitarInstrument = sel.value || null;
+        const status = $("br-kit-status");
+        if (status) status.textContent = `guitar: ${sel.value || "synth"} — rebuilding…`;
+        try {
+          if (guitarSynth) { try { guitarSynth.dispose(); } catch (e) {} }
+          guitarSynth = makeGuitar(guitarBus);
+          if (status) status.textContent = `guitar: ${sel.value || "synth"}`;
+        } catch (e) {
+          if (status) status.textContent = "guitar rebuild failed: " + e.message;
+        }
+        schedulePrefsSave();
+      });
+      sel.dataset.bound = "1";
+    }
+  }
+
+  // v111: voice (melody lead) instrument selector
+  function renderVoiceInstrumentSelector() {
+    const sel = $("br-voice-instrument-select");
+    if (!sel) return;
+    while (sel.options.length > 1) sel.remove(1);
+    const instruments = state.onlineCatalog?.instruments || [];
+    instruments.forEach((inst) => {
+      const o = document.createElement("option");
+      o.value = inst.id;
+      o.textContent = "🌐 " + inst.label;
+      if (inst.id === state.voiceInstrument) o.selected = true;
+      sel.appendChild(o);
+    });
+    if (!sel.dataset.bound) {
+      sel.addEventListener("change", async () => {
+        state.voiceInstrument = sel.value || null;
+        const status = $("br-kit-status");
+        if (status) status.textContent = `melody lead: ${sel.value || "synth"} — rebuilding…`;
+        try {
+          if (voiceSynth) { try { voiceSynth.dispose(); } catch (e) {} }
+          voiceSynth = makeVoiceBox(voiceBus);
+          if (status) status.textContent = `melody lead: ${sel.value || "synth"}`;
+        } catch (e) {
+          if (status) status.textContent = "voice rebuild failed: " + e.message;
+        }
+        schedulePrefsSave();
+      });
+      sel.dataset.bound = "1";
+    }
+  }
+
   function renderKitOptions() {
     const sel = $("br-kit-source-select");
     if (!sel) return;
@@ -3075,6 +3204,9 @@
     renderChordInstrumentSelector();
     // v110: populate bass instrument selector
     renderBassInstrumentSelector();
+    // v111: populate guitar + voice selectors
+    renderGuitarInstrumentSelector();
+    renderVoiceInstrumentSelector();
 
     // v102: custom kit URL add — user paste their own sample URLs and the
     // catalog gets a localStorage-backed kit entry that survives reload.
@@ -3415,6 +3547,8 @@
         voiceOverrides: state.voiceOverrides,
         chordInstrument: state.chordInstrument,
         bassInstrument: state.bassInstrument,
+        guitarInstrument: state.guitarInstrument,
+        voiceInstrument: state.voiceInstrument,
         sliders: {},
         toggles: {}
       };
@@ -3497,6 +3631,24 @@
       const sel = $("br-bass-instrument-select");
       if (sel) {
         sel.value = prefs.bassInstrument;
+        sel.dispatchEvent(new Event("change"));
+      }
+    }
+    // v111: guitar instrument
+    if (prefs.guitarInstrument) {
+      state.guitarInstrument = prefs.guitarInstrument;
+      const sel = $("br-guitar-instrument-select");
+      if (sel) {
+        sel.value = prefs.guitarInstrument;
+        sel.dispatchEvent(new Event("change"));
+      }
+    }
+    // v111: voice instrument
+    if (prefs.voiceInstrument) {
+      state.voiceInstrument = prefs.voiceInstrument;
+      const sel = $("br-voice-instrument-select");
+      if (sel) {
+        sel.value = prefs.voiceInstrument;
         sel.dispatchEvent(new Event("change"));
       }
     }
