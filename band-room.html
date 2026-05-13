@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-27" />
+<link rel="stylesheet" href="band-room.css?v=br-28" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-27" defer></script>
+<script src="band-room.js?v=br-28" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -107,6 +107,7 @@
       <summary>🎙 external vocal (Suno / 自分歌い直し)</summary>
       <section id="br-external-vocal" aria-label="External vocal upload">
         <input type="file" id="br-external-vocal-file" accept="audio/*" />
+        <p class="br-help">file picker か、この枠に mp3/wav を drag-drop。</p>
         <label class="br-toggle"><input type="checkbox" id="br-toggle-external-vocal" /><span>use external vocal</span></label>
         <label><span>volume</span><input type="range" id="br-vol-external-vocal" min="0" max="100" value="85" /></label>
         <span id="br-external-vocal-status">no file loaded</span>

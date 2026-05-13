@@ -487,6 +487,14 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   border: 1px dashed rgba(255, 184, 122, 0.32);
   border-radius: 12px;
   background: rgba(255, 184, 122, 0.05);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* v83: drag-drop highlight */
+#br-external-vocal.drag-over {
+  background: rgba(255, 184, 122, 0.18);
+  border-color: var(--accent);
+  border-style: solid;
 }
 
 #br-external-vocal h3 {

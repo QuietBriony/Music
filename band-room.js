@@ -1827,25 +1827,48 @@
 
     // External vocal upload + toggle + volume
     const extFile = $("br-external-vocal-file");
+    const acceptVocalFile = async (f) => {
+      if (!f) return;
+      ensureMaster();
+      await loadExternalVocal(f);
+      const tog = $("br-toggle-external-vocal");
+      if (tog && !tog.checked) {
+        tog.checked = true;
+        const stemTog = $("br-toggle-stem-vocals");
+        if (stemTog) {
+          stemTog.checked = false;
+          if (stemPlayers.vocals) stemPlayers.vocals.mute = true;
+        }
+        if (state.started) startExternalVocalIfEnabled();
+      }
+    };
     if (extFile) {
       extFile.addEventListener("change", async (e) => {
         const f = e.target.files && e.target.files[0];
-        if (f) {
-          ensureMaster();
-          await loadExternalVocal(f);
-          // Auto-toggle on after upload
-          const tog = $("br-toggle-external-vocal");
-          if (tog && !tog.checked) {
-            tog.checked = true;
-            // If playing, mute stem vocals so external takes over
-            const stemTog = $("br-toggle-stem-vocals");
-            if (stemTog) {
-              stemTog.checked = false;
-              if (stemPlayers.vocals) stemPlayers.vocals.mute = true;
-            }
-            if (state.started) startExternalVocalIfEnabled();
-          }
+        await acceptVocalFile(f);
+      });
+    }
+    // v83: drag-drop directly onto the external vocal section
+    const extSection = $("br-external-vocal");
+    if (extSection) {
+      extSection.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        extSection.classList.add("drag-over");
+      });
+      ["dragleave", "dragend"].forEach((ev) =>
+        extSection.addEventListener(ev, () => extSection.classList.remove("drag-over"))
+      );
+      extSection.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        extSection.classList.remove("drag-over");
+        const f = e.dataTransfer?.files?.[0];
+        if (!f) return;
+        if (!f.type.startsWith("audio/")) {
+          const status = $("br-external-vocal-status");
+          if (status) status.textContent = "(not an audio file)";
+          return;
         }
+        await acceptVocalFile(f);
       });
     }
     const extToggle = $("br-toggle-external-vocal");
