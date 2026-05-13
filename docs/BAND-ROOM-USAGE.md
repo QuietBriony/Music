@@ -6,42 +6,48 @@
 > 2 つのモードを切り替えながら、本物の音源と AI 合成を A/B したり、混ぜたり、
 > 自分で歌い直したり、Suno で生成した声を upload したりできる。
 
-## 画面構成 (上から)
+## 画面構成 (v79 — コア + 折り畳み詳細)
 
 ```
 ┌─────────────────────────────────┐
-│  BAND ROOM                       │  ← ヘッダ
-│  air rock connect box · ...      │
+│  BAND ROOM                       │
 ├─────────────────────────────────┤
-│  [Tabasco] [UNRIPE (--)]         │  ← バンド選択 (UNRIPE は素材源で非表示)
+│  [Tabasco]                       │  ← band 選択
 ├─────────────────────────────────┤
-│  [01 TABASCO] [02 Hey] [03 ...]  │  ← トラック選択
+│  [01] [02] [03] [04] [05] [06]   │  ← song 選択 (6 曲)
 ├─────────────────────────────────┤
-│  [ START ]                       │  ← 再生ボタン
+│  [ 📻 原音 ]  [ 🎛 AI 再現 ]      │  ← mode pill
+├─────────────────────────────────┤
+│  [ START ]                       │  ← 再生
 │  117 BPM · G major               │
+│  verse-1 · 4/16 → chorus-1       │  ← 現在 / 次セクション
+│  ▮▮▮▮▮▮▮▯▯▯▯ (RMS meter)      │
+│  ▆▅▄▆▇▅▃▂▁▁ (spectrum)         │
+│  [intro] [verse-1] [chorus-1]... │  ← section nav (click で jump)
 ├─────────────────────────────────┤
-│  now: chorus-1 · 4 / 16 bars     │  ← セクション/小節カウンタ
-│  next: verse-2                   │
+│  layer toggles (mode 別)         │
+│  📻 vocals · drums · bass · other │
+│  🎛 drums · click · bass · g · v · c │
 ├─────────────────────────────────┤
-│  モード:                         │
-│    📻 原音 stems                 │  ← どっちか選ぶ
-│    🎛 AI 再現                    │
+│  [ lyrics — current section が   │  ← 自動スクロール + ハイライト
+│    glow して、他は dim ]         │
 ├─────────────────────────────────┤
-│  [stems toggles + vol]           │  ← 原音モード時に効く
-│  [vocal phrase trigger]          │
-│  [external vocal upload]         │
-│  [vocal FX (chorus/echo/reverb)] │
+│  chord: G                        │
 ├─────────────────────────────────┤
-│  [synth toggles + vol]           │  ← AI モード時に効く
-│  [drum kit source select]        │
+│  ▾ 🎤 vocal FX                   │  ← 折り畳み (詳細)
+│  ▾ 🎙 external vocal             │
+│  ▾ 🎵 vocal phrase trigger       │     即発火 / 次小節 / ループ
+│  ▾ 🥁 drum kit source            │     (AI 再現時のみ)
+│  ▾ 🐢 practice tempo (50-120%)   │     (AI 再現時のみ)
+│  ▾ 🎚 volume mixer               │     mode 別
+│  ▾ 🌌 mastering                  │     reverb/width/warmth/loudness
 ├─────────────────────────────────┤
-│  [space (reverb / width)]        │  ← マスター効果 (両モード共通)
-├─────────────────────────────────┤
-│  [chord display: G]              │  ← 現在のコード
-├─────────────────────────────────┤
-│  [lyrics panel]                  │  ← 歌詞 (docs/tabasco-lyrics-draft.md)
+│  ← Hazama FM · Music Core · ...  │
+│  [space] play/stop · [[]] sec    │  ← keyboard hint
 └─────────────────────────────────┘
 ```
+
+詳細は [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) (v65-v79 履歴 + キーボード一覧)。
 
 ## 5 つの典型用途
 
