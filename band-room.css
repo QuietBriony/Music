@@ -891,6 +891,45 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   padding: 18px 16px 14px;
 }
 
+/* v75: section nav chips — click to jump (seeks Transport + stem buffers) */
+#br-section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 8px;
+  max-width: 100%;
+}
+
+#br-section-nav:empty { display: none; }
+
+#br-section-nav button {
+  appearance: none;
+  background: rgba(255, 184, 122, 0.04);
+  border: 1px solid rgba(255, 184, 122, 0.18);
+  color: var(--text-sub);
+  font-family: ui-monospace, "SF Mono", "Menlo", monospace;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  min-height: 24px;
+  text-transform: uppercase;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+#br-section-nav button:hover {
+  border-color: var(--accent-soft);
+  color: var(--accent-glass);
+}
+
+#br-section-nav button.active {
+  background: rgba(255, 136, 102, 0.22);
+  border-color: var(--accent);
+  color: var(--accent-glass);
+}
+
 /* v71: master RMS meter — thin horizontal bar under section display */
 #br-meter {
   width: 80%;

@@ -944,6 +944,7 @@
       state.currentSongId = songId;
       $("br-bpm").textContent = data.bpm || "—";
       $("br-key").textContent = data.key || "—";
+      renderSectionNav();  // v75: clickable section list
       // Load lyrics from the band's lyrics_doc if present
       const lyricsDoc = band.lyrics_doc;
       if (lyricsDoc) {
@@ -1082,6 +1083,62 @@
     $("br-section-progress").textContent = `${barInSection} / ${sec.bars} bars`;
     const nextSec = state.songData.structure[state.sectionIdx + 1];
     $("br-section-next-name").textContent = nextSec ? nextSec.section : "(end)";
+    // v75: refresh section nav chip active state
+    document.querySelectorAll("#br-section-nav button").forEach((b) => {
+      b.classList.toggle("active", Number(b.dataset.idx) === state.sectionIdx);
+    });
+  }
+
+  // v75: render clickable section chips. Each chip jumps the playback
+  // head to that section's start in both Transport time and stem buffer
+  // offset (so stems re-seek and stay in sync with the visible section).
+  function renderSectionNav() {
+    const nav = $("br-section-nav");
+    if (!nav) return;
+    nav.innerHTML = "";
+    if (!state.songData || !state.songData.structure) return;
+    state.songData.structure.forEach((sec, idx) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.dataset.idx = String(idx);
+      btn.textContent = sec.section;
+      btn.title = `${sec.bars} bars`;
+      if (idx === state.sectionIdx) btn.classList.add("active");
+      btn.addEventListener("click", () => jumpToSection(idx));
+      nav.appendChild(btn);
+    });
+  }
+
+  function jumpToSection(idx) {
+    if (!state.songData || !state.songData.structure) return;
+    if (idx < 0 || idx >= state.songData.structure.length) return;
+    // Compute cumulative bars to this section start
+    let cum = 0;
+    for (let i = 0; i < idx; i++) cum += state.songData.structure[i].bars;
+    const bpm = state.songData.bpm || 117;
+    const barDur = 60 / bpm * 4;
+    const targetSec = cum * barDur;
+    state.barCount = cum;
+    state.sectionIdx = idx;
+    state.sectionBarStart = cum;
+    if (state.started) {
+      // Reseek Transport to this section's start
+      try { Tone.Transport.seconds = targetSec; } catch (e) {}
+      // Reseek each stem player to the matching offset in the recording.
+      // Tone.Player.start(time, offset) seeks the buffer; loop=true wraps.
+      Object.entries(stemPlayers).forEach(([stem, p]) => {
+        if (!p) return;
+        try {
+          const enabled = $("br-toggle-stem-" + stem)?.checked !== false;
+          p.stop();
+          p.mute = !enabled;
+          p.start("+0.05", targetSec);
+        } catch (e) {}
+      });
+    }
+    updateSectionDisplay();
+    const sec = currentSection();
+    if (sec) updateLyricsHighlight(sec.section);
   }
 
   function updateChordDisplay() {
