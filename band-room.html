@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-25" />
+<link rel="stylesheet" href="band-room.css?v=br-26" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-25" defer></script>
+<script src="band-room.js?v=br-26" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -166,6 +166,15 @@
         <label><span>width</span><input type="range" id="br-space-width" min="0" max="100" value="72" /></label>
         <label><span>warmth</span><input type="range" id="br-tape-warmth" min="0" max="40" value="10" /></label>
         <label><span>loudness</span><input type="range" id="br-loudness" min="-12" max="6" value="0" /></label>
+      </section>
+    </details>
+
+    <details class="br-details">
+      <summary>⏺ live record (post-limiter capture)</summary>
+      <section id="br-rec" aria-label="Live recording">
+        <button id="br-rec-toggle" type="button">● REC</button>
+        <a id="br-rec-download" href="#" style="display:none">↓ download</a>
+        <p class="br-help">START 押してプレイ中に REC。STOP REC で webm/opus ファイルが download リンクに出る。STOP REC は再生は止めない。</p>
       </section>
     </details>
 

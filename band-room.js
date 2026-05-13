@@ -59,6 +59,9 @@
   let masterMeter = null;             // v71: master RMS meter for UI feedback
   let masterMeterRaf = 0;             // requestAnimationFrame id
   let masterFft = null;               // v77: spectrum analyzer FFT
+  let masterRecorderDest = null;      // v81: MediaStreamDestination for recording
+  let mediaRecorder = null;           // v81: MediaRecorder for live capture
+  let recorderChunks = [];            // v81: collected Blob parts
   let drumBus = null;
   let bassBus = null;
   let guitarBus = null;
@@ -172,6 +175,15 @@
     // 28-bar compact view; smoothing built into the FFT analyser node).
     masterFft = new Tone.FFT({ size: 64, smoothing: 0.65 });
     masterLimiter.connect(masterFft);
+    // v81: MediaStreamDestination so MediaRecorder can capture the
+    // final post-limiter mix to a file (webm/opus by default; some
+    // browsers can do audio/mp4).
+    try {
+      masterRecorderDest = Tone.context.createMediaStreamDestination();
+      masterLimiter.connect(masterRecorderDest);
+    } catch (e) {
+      console.warn("[Band Room] recorder destination unavailable:", e);
+    }
     const masterEq = new Tone.EQ3({ low: 1.4, mid: -0.4, high: 0.8, lowFrequency: 200, highFrequency: 5000 });
     const masterComp1 = new Tone.Compressor({ threshold: -14, ratio: 2.5, attack: 0.012, release: 0.22, knee: 6 });
     const masterComp2 = new Tone.Compressor({ threshold: -8,  ratio: 1.7, attack: 0.003, release: 0.10, knee: 4 });
@@ -382,6 +394,65 @@
       Tone.loaded().then(fire);
     } else {
       fire();
+    }
+  }
+
+  // v81: live recording — capture the post-limiter mix to a downloadable file
+  function startRecording() {
+    if (!masterRecorderDest) {
+      ensureMaster();
+      if (!masterRecorderDest) return false;
+    }
+    if (mediaRecorder && mediaRecorder.state === "recording") return false;
+    recorderChunks = [];
+    let mime = "audio/webm;codecs=opus";
+    if (!(window.MediaRecorder && MediaRecorder.isTypeSupported(mime))) {
+      mime = "audio/webm";
+      if (!MediaRecorder.isTypeSupported(mime)) mime = "";
+    }
+    try {
+      mediaRecorder = new MediaRecorder(masterRecorderDest.stream, mime ? { mimeType: mime } : undefined);
+    } catch (e) {
+      console.warn("[Band Room] MediaRecorder construct failed:", e);
+      return false;
+    }
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) recorderChunks.push(e.data);
+    };
+    mediaRecorder.start(500); // collect every 500ms
+    setRecorderUi("recording");
+    return true;
+  }
+
+  function stopRecording() {
+    if (!mediaRecorder || mediaRecorder.state !== "recording") return;
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recorderChunks, { type: mediaRecorder.mimeType || "audio/webm" });
+      recorderChunks = [];
+      const url = URL.createObjectURL(blob);
+      const a = $("br-rec-download");
+      if (a) {
+        const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+        const ext = (mediaRecorder.mimeType || "").includes("mp4") ? "m4a" : "webm";
+        a.href = url;
+        a.download = `band-room_${state.currentBandId}_${state.currentSongId}_${stamp}.${ext}`;
+        a.textContent = `↓ download (${(blob.size / 1024 / 1024).toFixed(1)} MB)`;
+        a.style.display = "inline";
+      }
+      setRecorderUi("ready");
+    };
+    mediaRecorder.stop();
+  }
+
+  function setRecorderUi(state) {
+    const btn = $("br-rec-toggle");
+    if (!btn) return;
+    if (state === "recording") {
+      btn.textContent = "■ STOP REC";
+      btn.classList.add("rec-active");
+    } else {
+      btn.textContent = "● REC";
+      btn.classList.remove("rec-active");
     }
   }
 
@@ -1780,6 +1851,24 @@
         ensureMaster();
         if (externalVocalBus) {
           try { externalVocalBus.gain.rampTo(Number(extVol.value) / 100, 0.08); } catch (e) {}
+        }
+      });
+    }
+
+    // v81: recorder toggle button
+    const recBtn = $("br-rec-toggle");
+    if (recBtn) {
+      recBtn.addEventListener("click", () => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          stopRecording();
+        } else {
+          ensureMaster();
+          if (!state.started) {
+            // Need playback to be active for there to be audio to record
+            startPlayback().then(() => startRecording());
+          } else {
+            startRecording();
+          }
         }
       });
     }

@@ -1041,6 +1041,54 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   transition: width 60ms linear, background 100ms linear;
 }
 
+/* v81: live recorder UI */
+#br-rec { display: flex; flex-direction: column; gap: 8px; }
+
+#br-rec-toggle {
+  appearance: none;
+  background: rgba(255, 85, 102, 0.10);
+  border: 1.5px solid var(--warn);
+  color: var(--accent-glass);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.10em;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 40px;
+  align-self: flex-start;
+  transition: background 0.2s, transform 0.1s;
+}
+
+#br-rec-toggle:hover { background: rgba(255, 85, 102, 0.22); }
+#br-rec-toggle:active { transform: scale(0.97); }
+
+#br-rec-toggle.rec-active {
+  background: rgba(255, 85, 102, 0.34);
+  animation: br-rec-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes br-rec-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 85, 102, 0.5); }
+  50%      { box-shadow: 0 0 0 6px rgba(255, 85, 102, 0.0); }
+}
+
+#br-rec-download {
+  color: var(--accent-soft);
+  text-decoration: none;
+  font-size: 11px;
+  padding: 6px 0;
+}
+
+#br-rec-download:hover { color: var(--accent-glass); text-decoration: underline; }
+
+#br-rec .br-help {
+  margin: 0;
+  font-size: 10px;
+  opacity: 0.6;
+  line-height: 1.4;
+}
+
 /* v77: spectrum analyzer canvas */
 #br-spectrum {
   width: 80%;
