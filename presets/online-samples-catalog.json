@@ -171,6 +171,19 @@
         "D2": "/D2.mp3", "D#2": "/Ds2.mp3",
         "E2": "/E2.mp3"
       }
+    },
+    {
+      "id": "salamander-bass",
+      "label": "Salamander Bass (piano left-hand register)",
+      "kind": "sampler",
+      "source": "tonejs.github.io",
+      "license": "CC-BY 3.0",
+      "base_url": "https://tonejs.github.io/audio/salamander",
+      "notes": {
+        "A0": "/A0.mp3", "C1": "/C1.mp3", "D#1": "/Ds1.mp3", "F#1": "/Fs1.mp3",
+        "A1": "/A1.mp3", "C2": "/C2.mp3", "D#2": "/Ds2.mp3", "F#2": "/Fs2.mp3",
+        "A2": "/A2.mp3", "C3": "/C3.mp3"
+      }
     }
   ]
 }

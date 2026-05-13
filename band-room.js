@@ -42,6 +42,7 @@
     // 1 voice 単位で別 kit からピックできる。null = base kit を使う、文字列 = その kit id
     voiceOverrides: { kick: null, snare: null, hat: null, ghost: null, fill: null, crash: null },
     chordInstrument: null,  // v101: catalog instrument id for chord (null = synth)
+    bassInstrument: null,   // v110: catalog instrument id for bass (null = synth)
     loopA: null,            // v80: A-B loop range (null = no loop)
     loopB: null
   };
@@ -768,15 +769,31 @@
   // re-fire and the values persist via v78 localStorage.
   const MASTER_PRESETS = {
     "neutral":  { reverb: 22, width: 72, warmth: 10, loudness: 0,
-                  synth_profile: "default",       chord_instrument: "" },
+                  synth_profile: "default",
+                  chord_instrument: "", bass_instrument: "",
+                  kit_source: null, guitar_on: true },
     "lo-fi":    { reverb: 32, width: 64, warmth: 24, loudness: -2,
-                  synth_profile: "lofi-nujabes",  chord_instrument: "salamander-piano" },
+                  synth_profile: "lofi-nujabes",
+                  chord_instrument: "salamander-piano",
+                  bass_instrument: "salamander-bass",
+                  kit_source: "online/tone-breakbeat",
+                  guitar_on: false },
     "club":     { reverb: 12, width: 88, warmth: 18, loudness: +3,
-                  synth_profile: "sakanaction",   chord_instrument: "" },
+                  synth_profile: "sakanaction",
+                  chord_instrument: "", bass_instrument: "",
+                  kit_source: "online/dirt-808",
+                  guitar_on: true },
     "rock":     { reverb: 14, width: 65, warmth: 12, loudness: +1,
-                  synth_profile: "cramps-punk",   chord_instrument: "" },
+                  synth_profile: "cramps-punk",
+                  chord_instrument: "", bass_instrument: "",
+                  kit_source: "online/tone-acoustic",
+                  guitar_on: true },
     "ambient":  { reverb: 55, width: 90, warmth: 22, loudness: -2,
-                  synth_profile: "lcd-motorik",   chord_instrument: "salamander-piano" }
+                  synth_profile: "lcd-motorik",
+                  chord_instrument: "salamander-piano",
+                  bass_instrument: "salamander-bass",
+                  kit_source: null,
+                  guitar_on: false }
   };
 
   // v95: A/B state compare — capture all slider/toggle/profile/mode/master
@@ -846,8 +863,8 @@
       el.value = String(v);
       el.dispatchEvent(new Event("input"));
     });
-    // v109: linked synth profile + chord instrument — Nujabes 感を
-    // master sliders ではなく音色の中身から出すための連動
+    // v109/v110: linked synth profile + bass/chord instrument + kit + guitar toggle
+    // 全部音色の中身を入れ替えるための連動
     if (p.synth_profile !== undefined) {
       const psel = $("br-kit-profile-select");
       if (psel && psel.value !== p.synth_profile) {
@@ -860,6 +877,27 @@
       if (csel && csel.value !== p.chord_instrument) {
         csel.value = p.chord_instrument;
         csel.dispatchEvent(new Event("change"));
+      }
+    }
+    if (p.bass_instrument !== undefined) {
+      const bsel = $("br-bass-instrument-select");
+      if (bsel && bsel.value !== p.bass_instrument) {
+        bsel.value = p.bass_instrument;
+        bsel.dispatchEvent(new Event("change"));
+      }
+    }
+    if (p.kit_source !== undefined && p.kit_source !== null) {
+      const ksel = $("br-kit-source-select");
+      if (ksel && ksel.value !== p.kit_source) {
+        ksel.value = p.kit_source;
+        ksel.dispatchEvent(new Event("change"));
+      }
+    }
+    if (p.guitar_on !== undefined) {
+      const g = $("br-toggle-guitar");
+      if (g && g.checked !== p.guitar_on) {
+        g.checked = p.guitar_on;
+        g.dispatchEvent(new Event("change"));
       }
     }
   }
@@ -1002,9 +1040,27 @@
   // ---- Synth bass ----------------------------------------------
 
   function makeSynthBass(target) {
-    // v92: profile-aware bass synth.
+    // v110: if bassInstrument is set to a sampler in catalog.instruments[],
+    // use real samples (e.g. salamander-bass = piano left-hand register).
+    // Falls back to profile-aware synth bass otherwise.
     const b = currentProfile().bass;
     const post = new Tone.Filter({ frequency: b.postLpFreq, type: "lowpass", Q: 0.6 }).connect(target);
+
+    if (state.bassInstrument && state.onlineCatalog) {
+      const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.bassInstrument);
+      if (instDef && instDef.kind === "sampler") {
+        const urls = {};
+        Object.entries(instDef.notes).forEach(([note, p]) => {
+          urls[note] = instDef.base_url + p;
+        });
+        const sampler = new Tone.Sampler({
+          urls, release: 0.4, volume: -4
+        }).connect(post);
+        return sampler;
+      }
+    }
+
+    // synth fallback
     const drive = new Tone.Distortion({ distortion: b.drive, wet: b.driveWet, oversample: "2x" }).connect(post);
     const bass = new Tone.MonoSynth({
       oscillator: { type: "sawtooth" },
@@ -2915,7 +2971,6 @@
   function renderChordInstrumentSelector() {
     const sel = $("br-chord-instrument-select");
     if (!sel) return;
-    // Clear all options except the first (synth)
     while (sel.options.length > 1) sel.remove(1);
     const instruments = state.onlineCatalog?.instruments || [];
     instruments.forEach((inst) => {
@@ -2936,6 +2991,37 @@
           if (status) status.textContent = `chord: ${sel.value || "synth"}`;
         } catch (e) {
           if (status) status.textContent = "chord rebuild failed: " + e.message;
+        }
+        schedulePrefsSave();
+      });
+      sel.dataset.bound = "1";
+    }
+  }
+
+  // v110: bass instrument selector — same pattern as chord
+  function renderBassInstrumentSelector() {
+    const sel = $("br-bass-instrument-select");
+    if (!sel) return;
+    while (sel.options.length > 1) sel.remove(1);
+    const instruments = state.onlineCatalog?.instruments || [];
+    instruments.forEach((inst) => {
+      const o = document.createElement("option");
+      o.value = inst.id;
+      o.textContent = "🌐 " + inst.label;
+      if (inst.id === state.bassInstrument) o.selected = true;
+      sel.appendChild(o);
+    });
+    if (!sel.dataset.bound) {
+      sel.addEventListener("change", async () => {
+        state.bassInstrument = sel.value || null;
+        const status = $("br-kit-status");
+        if (status) status.textContent = `bass: ${sel.value || "synth"} — rebuilding…`;
+        try {
+          if (synthBass) { try { synthBass.dispose(); } catch (e) {} }
+          synthBass = makeSynthBass(bassBus);
+          if (status) status.textContent = `bass: ${sel.value || "synth"}`;
+        } catch (e) {
+          if (status) status.textContent = "bass rebuild failed: " + e.message;
         }
         schedulePrefsSave();
       });
@@ -2987,6 +3073,8 @@
 
     // v101: populate chord instrument selector from catalog
     renderChordInstrumentSelector();
+    // v110: populate bass instrument selector
+    renderBassInstrumentSelector();
 
     // v102: custom kit URL add — user paste their own sample URLs and the
     // catalog gets a localStorage-backed kit entry that survives reload.
@@ -3326,6 +3414,7 @@
         kitProfile: state.kitProfile,
         voiceOverrides: state.voiceOverrides,
         chordInstrument: state.chordInstrument,
+        bassInstrument: state.bassInstrument,
         sliders: {},
         toggles: {}
       };
@@ -3399,6 +3488,15 @@
       const sel = $("br-chord-instrument-select");
       if (sel) {
         sel.value = prefs.chordInstrument;
+        sel.dispatchEvent(new Event("change"));
+      }
+    }
+    // v110: bass instrument
+    if (prefs.bassInstrument) {
+      state.bassInstrument = prefs.bassInstrument;
+      const sel = $("br-bass-instrument-select");
+      if (sel) {
+        sel.value = prefs.bassInstrument;
         sel.dispatchEvent(new Event("change"));
       }
     }
