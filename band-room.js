@@ -2601,6 +2601,21 @@
       });
     }
 
+    // v120: swing slider — 8 分音符の偶数を遅らせる shuffle 量
+    // Tone.Transport.swing は 0..1、UI は 0..50% (50 → swing=0.5、jazz 三連符寄り)
+    const swingEl = $("br-swing");
+    const swingRead = $("br-swing-readout");
+    if (swingEl) {
+      swingEl.addEventListener("input", () => {
+        const val = Number(swingEl.value);
+        if (swingRead) swingRead.textContent = val + "%";
+        try {
+          Tone.Transport.swing = val / 100;
+          Tone.Transport.swingSubdivision = "8n";
+        } catch (e) {}
+      });
+    }
+
     // v66: tape warmth (parallel saturator wet send 0..0.40)
     const tapeWarmthEl = $("br-tape-warmth");
     if (tapeWarmthEl) {

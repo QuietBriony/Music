@@ -7634,6 +7634,135 @@ const pad = new Tone.PolySynth(Tone.Synth, {
 
 // fm-56: lofi mode で synth pad の上に重ねる Salamander Grand Piano (CC-BY 3.0)
 // — band-room の lofi/Nujabes preset と整合させるための実音源 chord 担当
+// fm-60: catalog 経由化 — band-room と同じ presets/online-samples-catalog.json
+// を engine.js でも参照する。これにより jazz / ambient mode も catalog 経由
+// で実 sample 化できる (band-room v97-v111 と整合)。
+let hazamaFmCatalog = null;
+let hazamaFmCatalogPromise = null;
+function loadHazamaFmCatalog() {
+  if (hazamaFmCatalog) return Promise.resolve(hazamaFmCatalog);
+  if (hazamaFmCatalogPromise) return hazamaFmCatalogPromise;
+  hazamaFmCatalogPromise = fetch("presets/online-samples-catalog.json")
+    .then((r) => r.ok ? r.json() : null)
+    .then((data) => { hazamaFmCatalog = data; return data; })
+    .catch((err) => { console.warn("[Music] catalog fetch failed:", err); return null; });
+  return hazamaFmCatalogPromise;
+}
+function catalogInstrument(id) {
+  return hazamaFmCatalog?.instruments?.find((i) => i.id === id) || null;
+}
+function catalogKit(id) {
+  return hazamaFmCatalog?.kits?.find((k) => k.id === id) || null;
+}
+// fm-60: 触ってない mode は手付かず、jazz だけ catalog 経由で実楽器化試行
+const FM_MODE_BINDINGS = {
+  jazz: {
+    chord_instrument: "salamander-piano",      // Tone.js Salamander piano
+    lead_instrument: "guitar-nylon",           // nbrosowsky nylon guitar
+    drum_kit_id: "tone-acoustic"               // tonejs.github.io acoustic kit
+  }
+};
+
+// kick the catalog fetch as soon as engine boots
+loadHazamaFmCatalog();
+
+// fm-60: jazz mode 用の sampler + drum layer (lofi と並列構造で実装)
+let jazzPianoSampler = null;
+let jazzPianoSchedId = null;
+let jazzGuitarSampler = null;
+let jazzDrumSamples = null;
+let jazzDrumSchedId = null;
+
+function ensureJazzPiano() {
+  if (jazzPianoSampler) return jazzPianoSampler;
+  const inst = catalogInstrument("salamander-piano");
+  if (!inst) return null;
+  const urls = {};
+  Object.entries(inst.notes).forEach(([n, p]) => { urls[n] = inst.base_url + p; });
+  try {
+    jazzPianoSampler = new Tone.Sampler({ urls, release: 1.2, volume: -8 }).connect(padFilter);
+  } catch (e) {
+    console.warn("[Music] jazz piano init failed:", e);
+    jazzPianoSampler = null;
+  }
+  return jazzPianoSampler;
+}
+function ensureJazzGuitar() {
+  if (jazzGuitarSampler) return jazzGuitarSampler;
+  const inst = catalogInstrument("guitar-nylon");
+  if (!inst) return null;
+  const urls = {};
+  Object.entries(inst.notes).forEach(([n, p]) => { urls[n] = inst.base_url + p; });
+  try {
+    // jazz lead = soft nylon guitar through globalDelay (light echo for solo lines)
+    jazzGuitarSampler = new Tone.Sampler({ urls, release: 0.6, volume: -10 }).connect(globalDelay);
+  } catch (e) {
+    console.warn("[Music] jazz guitar init failed:", e);
+    jazzGuitarSampler = null;
+  }
+  return jazzGuitarSampler;
+}
+function ensureJazzDrumKit() {
+  if (jazzDrumSamples) return jazzDrumSamples;
+  const kit = catalogKit("tone-acoustic");
+  if (!kit) return null;
+  try {
+    jazzDrumSamples = {
+      kick:  new Tone.Player({ url: kit.base_url + kit.voices.kick,  autostart: false, volume: -6 }).connect(drumBus),
+      snare: new Tone.Player({ url: kit.base_url + kit.voices.snare, autostart: false, volume: -7 }).connect(drumBus),
+      hat:   new Tone.Player({ url: kit.base_url + kit.voices.hat,   autostart: false, volume: -16 }).connect(drumBus)
+    };
+  } catch (e) {
+    console.warn("[Music] jazz drum kit init failed:", e);
+    jazzDrumSamples = null;
+  }
+  return jazzDrumSamples;
+}
+function startJazzPianoLayer() {
+  stopJazzPianoLayer();
+  const sampler = ensureJazzPiano();
+  if (!sampler) return;
+  // Jazz comp: 2 小節ごとに chord + delayed accent (lofi より速いペース)
+  jazzPianoSchedId = Tone.Transport.scheduleRepeat((time) => {
+    try {
+      const ch = typeof randomHazeChord === "function" ? randomHazeChord() : ["C4","E4","G4"];
+      sampler.triggerAttackRelease(ch, "2n", time + 0.02, 0.40);
+      // anticipated comp
+      sampler.triggerAttackRelease(ch[0], "4n", time + 2.5 * Tone.Time("4n").toSeconds(), 0.28);
+    } catch (e) {}
+  }, "2m");
+}
+function stopJazzPianoLayer() {
+  if (jazzPianoSchedId != null) {
+    try { Tone.Transport.clear(jazzPianoSchedId); } catch (e) {}
+    jazzPianoSchedId = null;
+  }
+}
+function startJazzDrumLayer() {
+  stopJazzDrumLayer();
+  const samples = ensureJazzDrumKit();
+  if (!samples) return;
+  // Brushed jazz: kick on 1 (soft), snare brush on 2/4, hat 8th (lighter)
+  jazzDrumSchedId = Tone.Transport.scheduleRepeat((time) => {
+    try {
+      const bt = Tone.Time("4n").toSeconds();
+      const e8 = bt / 2;
+      samples.kick.start(time);
+      samples.snare.start(time + bt);
+      samples.snare.start(time + 3 * bt);
+      for (let h = 0; h < 8; h++) {
+        samples.hat.start(time + h * e8);
+      }
+    } catch (e) {}
+  }, "1m");
+}
+function stopJazzDrumLayer() {
+  if (jazzDrumSchedId != null) {
+    try { Tone.Transport.clear(jazzDrumSchedId); } catch (e) {}
+    jazzDrumSchedId = null;
+  }
+}
+
 let lofiPianoSampler = null;
 let lofiPianoSchedId = null;
 function ensureLofiPianoSampler() {
@@ -9468,6 +9597,12 @@ function updateSoundForMode(mode){
       stopLofiPianoLayer();
       stopLofiBassLayer();
       stopLofiDrumLayer();
+    }
+    if (mode !== "jazz") {
+      stopJazzPianoLayer();
+      stopJazzDrumLayer();
+    }
+    if (mode !== "lofi" && mode !== "jazz") {
       // synth pad / bass の音量を通常レベルに戻す
       try { pad.volume.rampTo(0, 1.0); } catch (e) {}
       try { bass.volume.rampTo(0, 1.0); } catch (e) {}
@@ -9510,12 +9645,19 @@ function updateSoundForMode(mode){
       globalDelay.wet.rampTo(0.32, 0.8);
       bass.set({ oscillator:{type:"square"}, filter:{Q:1.2}, filterEnvelope:{baseFrequency:65, octaves:2.6} });
     }else if(mode==="jazz"){
+      // fm-60: jazz mode も catalog 経由で実楽器化
+      //   piano (Salamander), drums (acoustic kit), guitar (nylon、lead 役)
+      // synth pad/bass は -22 dB に減衰 (二重発音回避)
       pad.set({ oscillator:{type:"triangle"}, envelope:{attack:0.55, decay:0.6, sustain:0.48, release:2.2} });
-      padFilter.frequency.rampTo(1600, 0.9);
-      globalReverb.decay = 4.8;
-      globalReverb.wet.rampTo(0.22, 0.9);
-      globalDelay.wet.rampTo(0.14, 0.9);
+      try { pad.volume.rampTo(-22, 1.0); } catch (e) {}
+      padFilter.frequency.rampTo(1800, 0.9);
+      globalReverb.decay = 4.2;
+      globalReverb.wet.rampTo(0.20, 0.9);
+      globalDelay.wet.rampTo(0.12, 0.9);
       bass.set({ oscillator:{type:"triangle"}, filterEnvelope:{baseFrequency:80, octaves:2.0} });
+      try { bass.volume.rampTo(-12, 1.0); } catch (e) {}  // bass は薄く synth で支える
+      startJazzPianoLayer();
+      startJazzDrumLayer();
     }else if(mode==="techno"){
       pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.35, decay:0.35, sustain:0.36, release:1.4} });
       padFilter.frequency.rampTo(2200, 0.7);

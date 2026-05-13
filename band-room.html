@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-52" />
+<link rel="stylesheet" href="band-room.css?v=br-53" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-52" defer></script>
+<script src="band-room.js?v=br-53" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -265,14 +265,19 @@
     </details>
 
     <details class="br-details" data-scope="synth">
-      <summary>🐢 practice tempo (slow / fast)</summary>
+      <summary>🐢 practice tempo + swing</summary>
       <section id="br-tempo" aria-label="Practice tempo">
         <label>
           <span>tempo</span>
           <input type="range" id="br-tempo-mult" min="50" max="120" value="100" step="1" />
           <span id="br-tempo-mult-readout">100%</span>
         </label>
-        <p class="br-help">原曲 BPM × mult。50% = ハーフテンポ練習、120% = リハ前の脳トレ。原音モードでは pitch も変わるので使わない方が無難。</p>
+        <label>
+          <span>swing</span>
+          <input type="range" id="br-swing" min="0" max="50" value="0" step="1" />
+          <span id="br-swing-readout">0%</span>
+        </label>
+        <p class="br-help">tempo: 原曲 BPM × mult。50% = ハーフテンポ、120% = 早回し。原音モードでは pitch も変わるので AI 再現モード推奨。<br>swing: 8 分音符の偶数を遅らせる shuffle 量。25% でジャズ三連符寄り、50% で完全 swing。lofi-nujabes profile なら 20-30% が気持ちいい。</p>
       </section>
     </details>
 
