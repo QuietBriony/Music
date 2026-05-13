@@ -895,6 +895,64 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
 
 .br-sep { opacity: 0.4; margin: 0 2px; }
 
+/* v84: SW update notification banner */
+#br-sw-update {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(20, 8, 14, 0.92);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  color: var(--accent-glass);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  animation: br-sw-slide-up 0.3s ease-out;
+}
+
+@keyframes br-sw-slide-up {
+  from { transform: translate(-50%, 30px); opacity: 0; }
+  to   { transform: translate(-50%, 0);    opacity: 1; }
+}
+
+#br-sw-reload {
+  appearance: none;
+  background: var(--accent);
+  border: 0;
+  color: #1a0a14;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#br-sw-reload:hover { background: var(--accent-soft); }
+
+#br-sw-dismiss {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text-sub);
+  font-size: 14px;
+  padding: 0 4px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+#br-sw-dismiss:hover { color: var(--accent-glass); }
+
 /* v79: keyboard shortcut hint in footer */
 #br-kbd-hint {
   margin-top: 8px;
