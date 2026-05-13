@@ -1629,6 +1629,16 @@
     return semiToNote(semi + 2 * 12); // C2 baseline
   }
 
+  // v112: return absolute semitone of chord root at bass register (octave 2)
+  function chordToSemi(chord) {
+    const m = chord.match(/^([A-G][b#]?)/);
+    if (!m) return null;
+    const NOTE_SEMI = { C: 0, "C#": 1, Db: 1, D: 2, "D#": 3, Eb: 3, E: 4, F: 5, "F#": 6, Gb: 6, G: 7, "G#": 8, Ab: 8, A: 9, "A#": 10, Bb: 10, B: 11 };
+    const s = NOTE_SEMI[m[1]];
+    if (s == null) return null;
+    return s + 2 * 12;  // C2 baseline
+  }
+
   // ---- Load song ----------------------------------------------
 
   async function loadSong(songId) {
@@ -2087,15 +2097,36 @@
         }
       }
 
-      // Bass (8th-note root pulse on current chord)
+      // Bass — v112: pattern varies by master preset + profile.
+      //   default / rock / club  → 8th-note root pulse (existing rock feel)
+      //   lo-fi / ambient (Salamander piano bass) → walking pattern: root,
+      //     5th, octave, 5th — one note per beat, smoother for jazz/lofi
       const chord = updateChordDisplay();
       if ($("br-toggle-bass").checked && synthBass && chord) {
+        const isJazzy = state.kitProfile === "lofi-nujabes" || state.bassInstrument === "salamander-bass";
         const rootNote = chordRoot(chord);
-        for (let b = 0; b < 4; b++) {
-          for (let s = 0; s < 2; s++) {
-            const t = time + b * beatTime + s * (beatTime / 2);
-            const accent = (s === 0);
-            synthBass.triggerAttackRelease(rootNote, "8n", t, accent ? 0.7 : 0.45);
+        if (isJazzy) {
+          // Walking bass: root, 5th, root+oct, 5th — one note per beat
+          const rootSemi = chordToSemi(chord);
+          const notes = rootSemi != null ? [
+            semiToNote(rootSemi),                    // beat 0: root
+            semiToNote(rootSemi + 7),                // beat 1: 5th up
+            semiToNote(rootSemi + 12),               // beat 2: octave
+            semiToNote(rootSemi + 7)                 // beat 3: 5th
+          ] : [rootNote, rootNote, rootNote, rootNote];
+          for (let b = 0; b < 4; b++) {
+            const t = time + b * beatTime;
+            const accent = (b === 0 || b === 2);
+            try { synthBass.triggerAttackRelease(notes[b], "4n", t, accent ? 0.62 : 0.50); } catch (e) {}
+          }
+        } else {
+          // Rock 8th-note pulse
+          for (let b = 0; b < 4; b++) {
+            for (let s = 0; s < 2; s++) {
+              const t = time + b * beatTime + s * (beatTime / 2);
+              const accent = (s === 0);
+              synthBass.triggerAttackRelease(rootNote, "8n", t, accent ? 0.7 : 0.45);
+            }
           }
         }
       } else if ($("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
@@ -2210,12 +2241,29 @@
         }
       }
 
-      // Chord guide (one chord per bar's downbeat)
+      // Chord guide — v112: jazzy voicing when piano sampler is loaded.
+      //   default / rock / club  → simple triad on downbeat
+      //   lo-fi / ambient (Salamander piano) → maj7/m7 voicing +
+      //     anticipated comping (beat 0 + beat 2.5 instead of just 0)
       if ($("br-toggle-chords").checked && chordSynth && chord) {
         try {
-          const notes = chordToNotes(chord, 4);
-          if (notes.length) {
-            chordSynth.triggerAttackRelease(notes, "2n", time + 0.005, 0.34);
+          const isJazzy = state.kitProfile === "lofi-nujabes" ||
+                          state.chordInstrument === "salamander-piano";
+          if (isJazzy) {
+            // 7th extension: append maj7 (if major chord) or m7 (if minor)
+            const ext = /m\b|min\b/.test(chord) ? "m7" : "maj7";
+            const extChord = chord.replace(/(m|maj7|7|m7)?$/, ext);
+            const notes = chordToNotes(extChord, 4);
+            if (notes.length >= 3) {
+              // Beat 0 stab + beat 2.5 anticipated comp
+              chordSynth.triggerAttackRelease(notes, "2n", time + 0.005, 0.30);
+              chordSynth.triggerAttackRelease(notes, "4n", time + 2.5 * beatTime, 0.22);
+            }
+          } else {
+            const notes = chordToNotes(chord, 4);
+            if (notes.length) {
+              chordSynth.triggerAttackRelease(notes, "2n", time + 0.005, 0.34);
+            }
           }
         } catch (e) {}
       }

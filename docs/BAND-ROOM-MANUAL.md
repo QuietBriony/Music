@@ -99,7 +99,8 @@
   - **chord instr** = synth or Salamander Grand Piano / Casio synth (Tone.Sampler 経由)
   - **+ custom kit URL** = 任意の wav URL を catalog に追加 (localStorage 永続)
   - **▶ preview** = kit / voice 単位で試聴
-- 詳細: [SAMPLE-CATALOG-GUIDE.md](./SAMPLE-CATALOG-GUIDE.md)
+- **音源追加の手順** (search クエリ集 + license フローチャート + nbrosowsky の note 一覧取得法 + NSynth 追加チュートリアル):
+  → [SAMPLE-CATALOG-GUIDE.md](./SAMPLE-CATALOG-GUIDE.md)
 
 ### マスタリング
 
