@@ -170,37 +170,45 @@
     <span id="auto_arc_status"></span>
   </div>
 
+  <!-- fm-60: SW update banner — band-room v84 と同じ非破壊パターンに揃える
+       (以前の auto-reload は集中作業中に勝手にリロードする可能性があったため) -->
+  <div id="fm-sw-update" role="status" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:10px;padding:10px 14px;background:rgba(4,14,24,0.92);border:1px solid rgba(143,255,245,0.6);border-radius:999px;color:rgba(218,250,255,0.95);font-size:12px;letter-spacing:0.06em;z-index:100;backdrop-filter:blur(12px);box-shadow:0 6px 20px rgba(0,0,0,0.4)">
+    <span>新バージョン利用可能</span>
+    <button id="fm-sw-reload" type="button" style="appearance:none;background:rgba(143,255,245,0.85);border:0;color:#04101a;font-family:inherit;font-size:11px;font-weight:600;letter-spacing:0.06em;padding:5px 12px;border-radius:999px;cursor:pointer">リロード</button>
+    <button id="fm-sw-dismiss" type="button" aria-label="dismiss" style="appearance:none;background:transparent;border:0;color:rgba(218,250,255,0.7);font-size:14px;padding:0 4px;cursor:pointer;line-height:1">×</button>
+  </div>
+
   <!-- Service worker — offline + cache -->
   <script>
     if ("serviceWorker" in navigator) {
-      let hazamaFmRefreshPending = false;
-      navigator.serviceWorker.addEventListener("controllerchange", () => {
-        const play = document.getElementById("fm_play");
-        const isIdle = !play || play.dataset.state === "idle";
-        if (hazamaFmRefreshPending || !isIdle) return;
-        hazamaFmRefreshPending = true;
-        window.location.reload();
-      });
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("sw.js").then((registration) => {
-          const activateWaitingWorker = () => {
-            if (registration.waiting) {
-              registration.waiting.postMessage({ type: "SKIP_WAITING" });
-            }
-          };
-          activateWaitingWorker();
+          const banner = document.getElementById("fm-sw-update");
+          const showUpdate = () => { if (banner) banner.style.display = "flex"; };
+          if (registration.waiting) showUpdate();
           registration.addEventListener("updatefound", () => {
             const worker = registration.installing;
             if (!worker) return;
             worker.addEventListener("statechange", () => {
-              if (worker.state === "installed") activateWaitingWorker();
+              if (worker.state === "installed" && navigator.serviceWorker.controller) {
+                showUpdate();
+              }
             });
           });
           if (typeof registration.update === "function") {
-            registration.update().catch((err) => {
-              console.warn("[Hazama FM] sw update check failed:", err);
-            });
+            registration.update().catch(() => {});
           }
+          const reloadBtn = document.getElementById("fm-sw-reload");
+          const dismissBtn = document.getElementById("fm-sw-dismiss");
+          if (reloadBtn) reloadBtn.addEventListener("click", () => {
+            if (registration.waiting) {
+              registration.waiting.postMessage({ type: "SKIP_WAITING" });
+            }
+            window.location.reload();
+          });
+          if (dismissBtn) dismissBtn.addEventListener("click", () => {
+            if (banner) banner.style.display = "none";
+          });
         }).catch((err) => {
           console.warn("[Hazama FM] sw register failed:", err);
         });

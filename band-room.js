@@ -2026,9 +2026,15 @@
         frame.events.forEach((evt) => {
           const inst = drumKit[evt.instrument];
           if (!inst) return;
-          const offset = (evt.beat || 0) * beatTime + (evt.sub || 0) * subTime + (evt.microMs || 0) / 1000;
-          const t = time + offset;
-          const vel = clamp(evt.velocity ?? 0.5, 0.05, 1);
+          const baseOffset = (evt.beat || 0) * beatTime + (evt.sub || 0) * subTime + (evt.microMs || 0) / 1000;
+          // v118: micro-timing humanize — ±3 ms random jitter per hit so
+          // 16-bar drum loops don't sound like a machine. Skip for kick
+          // (kick on the grid feels stronger).
+          const jitterMs = (evt.instrument === "kick") ? 0 : (Math.random() - 0.5) * 6;
+          const t = time + baseOffset + jitterMs / 1000;
+          const rawVel = clamp(evt.velocity ?? 0.5, 0.05, 1);
+          // v118: velocity humanize — ±4% perturb, accent-friendly
+          const vel = clamp(rawVel * (1 + (Math.random() - 0.5) * 0.08), 0.05, 1);
           if (evt.instrument === "kick") {
             inst.triggerAttackRelease("C1", "16n", t, vel);
           } else if (evt.instrument === "ghost") {
