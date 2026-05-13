@@ -121,7 +121,246 @@ Cut the wire × 2             ← v2 + v3 mix
 
 ---
 
-## 02-05, 07 の方針 (template)
+---
+
+## 02 Hey — calling across years (123 BPM, G major)
+
+**元音節骨格**:
+- 「**Hey** ...」反復が hook (1 音節アクセント、強拍)
+- verse は 8-10 音節 × 4 行の中尺、ゆったり
+
+### chorus (= 元 hook "Hey" 4 連、v3 から軸残し)
+
+```
+Hey — are you still alive in there?       ← v2 hook (8 音節)
+Hey — does the codename still mean a thing? ← v3 寄せ "codename"
+Hey, hey, hey — I'm calling from the next zone   ← v2 + Burroughs "next zone"
+Hey, hey, hey — and the operator's gone quiet    ← Burroughs "operator quiet"
+```
+
+### verse 1 (= v2.1 80% + Burroughs 20%)
+
+```
+Twenty-three to thirty-nine, the wires got crossed     ← v2.1 そのまま
+Second floor washroom — you turned and walked          ← v2 + Burroughs "washroom"
+I held the cup, I held the line, I held the door open  ← v2.1 そのまま
+But you were watching something past the window frame  ← v2 + Burroughs "window frame"
+```
+
+### verse 2
+
+```
+The bridge is closed, the river dry, the radio runs cold  ← v2.1 そのまま
+We were never that important, just extras in the script   ← v3 寄せ "extras"
+A photograph of all of us — three still answer            ← v2 + 短縮
+One of us won't call, the receiver still hums             ← v2 + Burroughs "receiver hums"
+```
+
+### bridge → chorus 2 (bigger)
+
+```
+The wire goes hot. The wire goes hot. The wire goes hot.   ← v3 そのまま
+Hey — answer the wire ―
+Hey — answer the goddamn wire ―
+```
+
+---
+
+## 03 I got a feeling — agency leak (117 BPM)
+
+**元音節骨格**:
+- chorus は「**Something is...**」反復、4 音節 × 4 行
+- verse は「**I got a feeling like...**」反復、10-12 音節
+
+### chorus (= 元 hook "Something is" 4 連)
+
+```
+Something is coming
+something is in the wall
+something is in the orange light
+something is in the bones
+```
+
+> v2.1 そのまま採用 — 元 hook 完璧、これ以上いじる必要なし。
+
+### verse 1
+
+```
+I got a feeling like a tape playing under the floor   ← v2.1 そのまま
+I got a feeling like the doctor's chart got switched  ← v2 短縮 + Burroughs "switched"
+I got a feeling like the elevator stopped between     ← v2.1 そのまま
+the lights went amber, the receiver started to hum    ← v2 + Burroughs "receiver hum"
+```
+
+### bridge (spoken, flat, no music)
+
+```
+The agents have been changing my name in the registry for years.
+I only noticed when my own teeth stopped recognizing me in the mirror.
+```
+
+> v3 そのまま — flat spoken delivery、夜中のラジオ風。
+
+### chorus 2 (driving — each line gets a tag)
+
+```
+something is coming  ―  the wire knows
+something is in the wall  ―  the meat knows
+something is in the orange light  ―  the eye knows
+something is in the bones  ―  the bone knows first
+```
+
+> v3 そのまま、bigger version。
+
+---
+
+## 04 Under the Moon — interzone nocturne (161 BPM, half-time feel)
+
+**元音節骨格**:
+- chorus は「**Under the moon** ―」反復、5 音節 + 8-12 音節
+- 一番長い曲、verse は呼吸ゆったり
+
+### chorus (= 元 hook "Under the moon" 4 連、v3 寄り長尺)
+
+```
+Under the moon — agents change faces           ← v3 寄せ
+under the moon — the wire goes quiet           ← v3 寄せ
+under the moon — I am still calling your old codename  ← v3 寄せ + Burroughs "codename"
+under the moon — and the moon doesn't answer    ← v3 寄せ
+```
+
+### verse 1 (half-time, breath)
+
+```
+The moon over the city is a broken speaker      ← v2 (Interzone は intro spoken に避けた)
+the static drifts down to the alley             ← v2.1 そのまま
+the cats reading their telegrams                ← v3 そのまま
+the dealers reading the cats                    ← v3 そのまま
+```
+
+### verse 2
+
+```
+A man on the corner with a typewriter and no paper   ← v3 そのまま
+he hammers anyway — the sound is the message        ← v3 そのまま
+his fingers black with the carbon of years           ← v3 そのまま
+the green light on the second floor went out          ← v3 寄せ + short
+```
+
+### bridge (spoken into reverb)
+
+```
+This is the dispatcher. There are no more dispatches.
+Continue without instructions. Continue under the moon.
+```
+
+> v3 そのまま — Burroughs broadcast tone。
+
+### chorus reprise → outro
+
+```
+Under the moon × 4 (fade)
+```
+
+---
+
+## 05 Electric Sheep — fold-in dream (129 BPM, quiet-loud)
+
+**元音節骨格**:
+- verse は静か (single guitar)、chorus 突然 full band
+- 「**Electric sheep**」hook、4 音節アクセント
+
+### chorus (= 元 hook "Electric sheep" 4 連)
+
+```
+Electric sheep — the flock is wireless
+Electric sheep — the shepherd is on a frequency you don't have
+Electric sheep — the wool comes off in numbers
+Electric sheep — the slaughterhouse is a software update
+```
+
+> v3 そのまま — Dick + Burroughs fold-in 完璧、いじる必要なし。
+
+### verse 1 (quiet, single guitar)
+
+```
+Do they dream — electric — the meat of the meat       ← v3 そのまま
+meat dreaming wire dreaming voltage dreaming dust     ← v3 そのまま
+do they dream — do they shed                           ← v3 そのまま
+do they dream — do they bleed in the format            ← v3 そのまま
+```
+
+### verse 2 (back to quiet)
+
+```
+The meat dreams of being meat again         ← v3 そのまま
+the wire dreams of a body to run through    ← v3 そのまま
+the dust dreams of settling                  ← v3 そのまま (短縮)
+nothing in the room knows what it is         ← v3 そのまま
+```
+
+---
+
+## 07 Sister — fold-in kin (117 BPM)
+
+**元音節骨格**:
+- chorus は「**Sister**」hook、2 音節アクセント
+- verse は「**Sister at / in / between**」反復 fold-in pattern
+
+### chorus (= 元 hook "Sister" 4 連)
+
+```
+Sister — the meat folds in
+sister — the wire folds out
+sister — the operator changes faces again
+sister — we are still the same agent
+```
+
+> v3 そのまま — fold-in と agent 概念がぴったり、いじらない。
+
+### verse 1
+
+```
+Sister at the receiver — sister in the wall              ← v3 そのまま
+sister in the orange light — sister in the bone          ← v3 そのまま
+the line between us hums — the line between us was always open  ← v3 そのまま
+the line between us — is meat folded into wire           ← v3 そのまま
+```
+
+### verse 2 (flat narration)
+
+```
+You wore my face in the second floor washroom        ← v3 そのまま
+I wore yours in the basement of the green light building  ← v3 そのまま
+The dispatcher said: continue without instructions    ← v3 そのまま
+we continued — we are still continuing               ← v3 そのまま
+```
+
+### outro (chant, fading)
+
+```
+sister — sister — sister — sister
+the wire is still warm — the wire is still warm
+```
+
+> v3 そのまま fade。
+
+---
+
+## まとめ — v4 完成版の特徴
+
+7 曲すべてで:
+- **chorus = 元 hook 100% 維持** (Tabasco / Hey / I got a feeling / Under the
+  moon / Electric sheep / Human Fly / Sister)
+- **verse = v2.1 plain + v3 Burroughs hybrid**、音節長を保つ
+- 「ぶっ飛んで」「ぶっ飛ばせ」等の JP 混入は Human Fly のみ (元 hook 由来)
+- spoken intro / bridge は v3 寄りで Burroughs 色濃く
+- outro は短い chant fade
+
+「気分が乗らない問題」= chorus が違うフレーズだったのを **全曲元 hook に戻した**
+ことで解消。verse は意味も歌いやすさも担保。
+
+## 02-05, 07 の方針 (template — 既に上で完成済)
 
 残り 5 曲 (Hey / I got a feeling / Under the Moon / Electric Sheep / Sister)
 について作詞ガイド:

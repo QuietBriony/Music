@@ -1063,6 +1063,48 @@
     return { kick, snare, hat, ghost, fill, crash: crashWrap };
   }
 
+  // ---- Velocity-sensitive sampler wrapper -----------------------
+  // v126: 真の multi-velocity (forte/mezzo/piano 別 wav) は CDN サンプル元が
+  // 1 layer しか持ってないので不可能。代わりに velocity に応じて
+  // LP filter cutoff を動かして "強く弾いたらブライト、弱く弾いたらダーク"
+  // を演出する fake multi-velocity。
+  //
+  // Use case: catalog 経由の Sampler を wrap して触感を上げる。
+  //   const s = makeVelocitySensitiveSampler({ urls, baseRelease: 0.8,
+  //                                            volume: -6, minCutoff: 1200,
+  //                                            maxCutoff: 8000 });
+  //   s.connect(target);
+  //   s.triggerAttackRelease(note, dur, time, vel);
+  function makeVelocitySensitiveSampler(opts) {
+    const minCutoff = opts.minCutoff ?? 1200;
+    const maxCutoff = opts.maxCutoff ?? 8000;
+    const filter = new Tone.Filter({ frequency: maxCutoff, type: "lowpass", Q: 0.6 });
+    const sampler = new Tone.Sampler({
+      urls: opts.urls,
+      release: opts.baseRelease ?? 0.6,
+      volume: opts.volume ?? -6
+    }).connect(filter);
+    return {
+      _filter: filter,
+      _sampler: sampler,
+      connect(target) { filter.connect(target); return this; },
+      triggerAttackRelease(note, dur, time, vel) {
+        // vel 0..1 → cutoff minCutoff..maxCutoff (linear interp)
+        const v = Math.max(0, Math.min(1, vel ?? 0.5));
+        const cutoff = minCutoff + v * (maxCutoff - minCutoff);
+        try {
+          // setValueAtTime 直前にセット (audio thread と sync)
+          filter.frequency.setValueAtTime(cutoff, Math.max(time - 0.001, Tone.now()));
+        } catch (e) {}
+        try { sampler.triggerAttackRelease(note, dur, time, vel); } catch (e) {}
+      },
+      dispose() {
+        try { sampler.dispose(); } catch (e) {}
+        try { filter.dispose(); } catch (e) {}
+      }
+    };
+  }
+
   // ---- Synth bass ----------------------------------------------
 
   function makeSynthBass(target) {
@@ -1079,9 +1121,12 @@
         Object.entries(instDef.notes).forEach(([note, p]) => {
           urls[note] = instDef.base_url + p;
         });
-        const sampler = new Tone.Sampler({
-          urls, release: 0.4, volume: -4
-        }).connect(post);
+        // v126: velocity-sensitive — 強く弾いたらブライト、弱く弾いたらダーク
+        const sampler = makeVelocitySensitiveSampler({
+          urls, baseRelease: 0.4, volume: -4,
+          minCutoff: 600, maxCutoff: 3200
+        });
+        sampler.connect(post);
         return sampler;
       }
     }
@@ -1414,7 +1459,13 @@
         Object.entries(instDef.notes).forEach(([note, p]) => {
           urls[note] = instDef.base_url + p;
         });
-        const sampler = new Tone.Sampler({ urls, release: 0.5, volume: -6 }).connect(chainIn);
+        // v126: velocity-sensitive — guitar は強く弾けばブライトに、弱く弾けば
+        // 柔らかく。electric guitar の muting / strumming nuance に対応
+        const sampler = makeVelocitySensitiveSampler({
+          urls, baseRelease: 0.5, volume: -6,
+          minCutoff: 1500, maxCutoff: 7000
+        });
+        sampler.connect(chainIn);
         return sampler;
       }
     }
@@ -1473,7 +1524,13 @@
         Object.entries(instDef.notes).forEach(([note, p]) => {
           urls[note] = instDef.base_url + p;
         });
-        const sampler = new Tone.Sampler({ urls, release: 0.8, volume: -6 }).connect(verb);
+        // v126: velocity-sensitive — melody lead (violin / cello / flute) は
+        // 強く吹けばブライト、弱く吹けば柔らかい音色変化
+        const sampler = makeVelocitySensitiveSampler({
+          urls, baseRelease: 0.8, volume: -6,
+          minCutoff: 1800, maxCutoff: 9000
+        });
+        sampler.connect(verb);
         return sampler;
       }
     }
@@ -1564,11 +1621,13 @@
         Object.entries(instDef.notes).forEach(([note, path]) => {
           urls[note] = instDef.base_url + path;
         });
-        const sampler = new Tone.Sampler({
-          urls,
-          release: 1.2,
-          volume: -8
-        }).connect(chorus);
+        // v126: velocity-sensitive — piano voicing で弱く弾いた chord は
+        // 柔らかく、強く弾いた chord はブライトに (jazz comping の表情)
+        const sampler = makeVelocitySensitiveSampler({
+          urls, baseRelease: 1.2, volume: -8,
+          minCutoff: 2000, maxCutoff: 9000
+        });
+        sampler.connect(chorus);
         return sampler;
       }
     }
