@@ -38,6 +38,10 @@
     kitSource: "auto-self", // default: use the current song's own extracted drum samples
                             // ("synth" = generic Tone.js voices, "<src>/<song>" = specific kit)
     kitProfile: "default",  // v91: synth voice profile (only applies when kitSource = "synth")
+    // v99: per-voice overrides — kick だけ 808, snare だけ acoustic みたいに
+    // 1 voice 単位で別 kit からピックできる。null = base kit を使う、文字列 = その kit id
+    voiceOverrides: { kick: null, snare: null, hat: null, ghost: null, fill: null, crash: null },
+    chordInstrument: null,  // v101: catalog instrument id for chord (null = synth)
     loopA: null,            // v80: A-B loop range (null = no loop)
     loopB: null
   };
@@ -1099,11 +1103,18 @@
     if (drumKit && drumKit.dispose) {
       try { drumKit.dispose(); } catch (e) {}
     }
+    // v99: build the base kit first, then layer per-voice overrides on top.
+    const baseKit = await buildBaseKit(source);
+    const overrideKit = await applyVoiceOverrides(baseKit);
+    return overrideKit;
+  }
+
+  // v99: build the underlying kit (synth or sample/online) without overrides
+  async function buildBaseKit(source) {
     const resolved = resolveKitSource(source);
     if (resolved === "synth" || !resolved) {
       return makeDrumKit(drumBus, state.kitProfile || "default");
     }
-    // v97: online/<id> resolves to a remote kit from online-samples-catalog
     if (resolved.startsWith("online/")) {
       const kitId = resolved.substring("online/".length);
       const catalog = state.onlineCatalog;
@@ -1124,6 +1135,72 @@
     const kit = makeSampledKit(drumBus, kitPath);
     try { await Tone.loaded(); } catch (e) {}
     return kit;
+  }
+
+  // v99: build a single voice (drum hit) from any kit id, return the
+  // voice object + the panner so callers can dispose later.
+  async function buildOneVoice(voice, kitId) {
+    if (!kitId || !drumBus) return null;
+    const PANS = { kick: 0.00, snare: -0.06, hat: 0.22, ghost: -0.16, fill: 0.12, crash: 0.20 };
+    const pan = PANS[voice] !== undefined ? PANS[voice] : 0;
+    if (kitId.startsWith("online/")) {
+      const id = kitId.substring("online/".length);
+      const kitDef = state.onlineCatalog?.kits?.find((k) => k.id === id);
+      if (!kitDef || !kitDef.voices[voice]) return null;
+      const panner = new Tone.Panner(pan).connect(drumBus);
+      const url = kitDef.base_url + kitDef.voices[voice];
+      const v = makeSampleVoice(panner, url);
+      try { await Tone.loaded(); } catch (e) {}
+      return { voice: v, panner };
+    }
+    // Local sample kit — read from presets/sample-kits/<kitId>/<voice>-NN.wav
+    const resolved = resolveKitSource(kitId);
+    if (resolved === "synth") return null;  // can't override one voice with synth alone
+    const fnameMap = { kick: "kick-01.wav", snare: "snare-01.wav", hat: "hat-01.wav",
+                       ghost: "snare-03.wav", fill: "snare-02.wav", crash: "crash-01.wav" };
+    const url = `presets/sample-kits/${resolved}/${fnameMap[voice]}`;
+    try {
+      const head = await fetch(url, { method: "HEAD" });
+      if (!head.ok) return null;
+    } catch (e) { return null; }
+    const panner = new Tone.Panner(pan).connect(drumBus);
+    const v = makeSampleVoice(panner, url);
+    try { await Tone.loaded(); } catch (e) {}
+    return { voice: v, panner };
+  }
+
+  // v99: layer per-voice overrides on top of a base kit. Returns a new
+  // kit object with the overridden voices swapped in; the original base
+  // voices for overridden slots are disposed.
+  async function applyVoiceOverrides(baseKit) {
+    if (!state.voiceOverrides) return baseKit;
+    const replacements = {};
+    const newPanners = [];
+    for (const [voice, kitId] of Object.entries(state.voiceOverrides)) {
+      if (!kitId) continue;
+      const result = await buildOneVoice(voice, kitId);
+      if (result) {
+        replacements[voice] = result.voice;
+        newPanners.push(result.panner);
+      }
+    }
+    if (Object.keys(replacements).length === 0) return baseKit;
+    // Compose: keep base voices for non-overridden, swap in replacements
+    const merged = Object.assign({}, baseKit);
+    Object.entries(replacements).forEach(([voice, v]) => {
+      // Dispose the base voice that's being overridden
+      if (baseKit[voice] && baseKit[voice].dispose) {
+        try { baseKit[voice].dispose(); } catch (e) {}
+      }
+      merged[voice] = v;
+    });
+    const originalDispose = baseKit.dispose;
+    merged.dispose = () => {
+      try { originalDispose && originalDispose(); } catch (e) {}
+      Object.values(replacements).forEach((v) => { try { v.dispose && v.dispose(); } catch (e) {} });
+      newPanners.forEach((p) => { try { p.dispose(); } catch (e) {} });
+    };
+    return merged;
   }
 
   // v97: remote drum kit — build a sample kit from a voice→URL map
@@ -1295,11 +1372,31 @@
 
   function makeChordSynth(target) {
     // v92: profile-aware chord synth.
+    // v101: if state.chordInstrument is set to an "instruments[]" catalog
+    //   entry id (e.g. "salamander-piano"), use Tone.Sampler with that
+    //   sample set instead of Tone.PolySynth.
     const c = currentProfile().chord;
     const verb = new Tone.Reverb({ decay: 1.6, wet: c.verbWet }).connect(target);
     const autoPan = new Tone.AutoPanner({ frequency: c.autoPanFreq, depth: c.autoPanDepth }).connect(verb).start();
     const chorus = new Tone.Chorus({ frequency: 0.6, delayTime: 4.5, depth: 0.45, wet: c.chorusWet }).start();
     chorus.connect(autoPan);
+
+    if (state.chordInstrument && state.onlineCatalog) {
+      const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.chordInstrument);
+      if (instDef && instDef.kind === "sampler") {
+        const urls = {};
+        Object.entries(instDef.notes).forEach(([note, path]) => {
+          urls[note] = instDef.base_url + path;
+        });
+        const sampler = new Tone.Sampler({
+          urls,
+          release: 1.2,
+          volume: -8
+        }).connect(chorus);
+        return sampler;
+      }
+    }
+
     const chord = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: c.oscType },
       envelope: { attack: c.attack, decay: c.decay, sustain: 0.45, release: c.release },
@@ -2507,6 +2604,108 @@
     schedulePrefsSave();  // v78: persist band/song switch
   }
 
+  // v99: render the per-voice override grid. 6 selects, each with the
+  // same kit options as the main kit-source selector, plus "(use base)"
+  // as the null option.
+  function renderVoiceOverridesGrid() {
+    const grid = $("br-voice-overrides-grid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    const voices = ["kick", "snare", "hat", "ghost", "fill", "crash"];
+    const allKits = [
+      { value: "", label: "(use base kit)" },
+      ...KIT_OPTIONS.filter((k) => k.value !== "synth" && k.value !== "auto-self"),
+      ...(state.onlineCatalog?.kits?.map((k) => ({
+        value: "online/" + k.id,
+        label: "🌐 " + k.label
+      })) || [])
+    ];
+    voices.forEach((voice) => {
+      const row = document.createElement("label");
+      row.className = "br-voice-row";
+      const lbl = document.createElement("span");
+      lbl.textContent = voice;
+      row.appendChild(lbl);
+      const sel = document.createElement("select");
+      sel.dataset.voice = voice;
+      allKits.forEach((opt) => {
+        const o = document.createElement("option");
+        o.value = opt.value;
+        o.textContent = opt.label;
+        if ((state.voiceOverrides[voice] || "") === opt.value) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener("change", async () => {
+        state.voiceOverrides[voice] = sel.value || null;
+        const status = $("br-kit-status");
+        if (status) status.textContent = `${voice} override: ${sel.value || "(base)"} — rebuilding…`;
+        try {
+          drumKit = await buildKitForSource(state.kitSource);
+          if (status) status.textContent = `${voice}: ${sel.value || "(base)"}`;
+        } catch (e) {
+          if (status) status.textContent = "rebuild failed: " + e.message;
+        }
+        schedulePrefsSave();
+      });
+      row.appendChild(sel);
+      const prev = document.createElement("button");
+      prev.type = "button";
+      prev.className = "br-voice-preview";
+      prev.dataset.voice = voice;
+      prev.textContent = "▶";
+      prev.title = `preview ${voice}`;
+      prev.addEventListener("click", async () => {
+        ensureMaster();
+        const kitId = state.voiceOverrides[voice] || state.kitSource;
+        const result = await buildOneVoice(voice, kitId);
+        if (!result) return;
+        try {
+          // Different notes for tonal vs noise voices
+          const note = voice === "kick" ? "C2" : "C4";
+          result.voice.triggerAttackRelease(note, "8n", Tone.now() + 0.02, 0.8);
+          setTimeout(() => {
+            try { result.voice.dispose(); } catch (e) {}
+            try { result.panner.dispose(); } catch (e) {}
+          }, 1500);
+        } catch (e) {}
+      });
+      row.appendChild(prev);
+      grid.appendChild(row);
+    });
+  }
+
+  // v101: chord instrument selector — populate from catalog.instruments[]
+  function renderChordInstrumentSelector() {
+    const sel = $("br-chord-instrument-select");
+    if (!sel) return;
+    // Clear all options except the first (synth)
+    while (sel.options.length > 1) sel.remove(1);
+    const instruments = state.onlineCatalog?.instruments || [];
+    instruments.forEach((inst) => {
+      const o = document.createElement("option");
+      o.value = inst.id;
+      o.textContent = "🌐 " + inst.label;
+      if (inst.id === state.chordInstrument) o.selected = true;
+      sel.appendChild(o);
+    });
+    if (!sel.dataset.bound) {
+      sel.addEventListener("change", async () => {
+        state.chordInstrument = sel.value || null;
+        const status = $("br-kit-status");
+        if (status) status.textContent = `chord: ${sel.value || "synth"} — rebuilding…`;
+        try {
+          if (chordSynth) { try { chordSynth.dispose(); } catch (e) {} }
+          chordSynth = makeChordSynth(chordBus);
+          if (status) status.textContent = `chord: ${sel.value || "synth"}`;
+        } catch (e) {
+          if (status) status.textContent = "chord rebuild failed: " + e.message;
+        }
+        schedulePrefsSave();
+      });
+      sel.dataset.bound = "1";
+    }
+  }
+
   function renderKitOptions() {
     const sel = $("br-kit-source-select");
     if (!sel) return;
@@ -2544,6 +2743,114 @@
       } catch (e) {
         if (status) status.textContent = "kit load failed: " + e.message;
       }
+    });
+
+    // v99: render the per-voice override grid (6 selects, one per voice)
+    renderVoiceOverridesGrid();
+
+    // v101: populate chord instrument selector from catalog
+    renderChordInstrumentSelector();
+
+    // v102: custom kit URL add — user paste their own sample URLs and the
+    // catalog gets a localStorage-backed kit entry that survives reload.
+    const customAddBtn = $("br-custom-kit-add");
+    if (customAddBtn) {
+      customAddBtn.addEventListener("click", () => {
+        const id = ($("br-custom-kit-id")?.value || "").trim();
+        if (!id || !/^[a-zA-Z0-9_-]+$/.test(id)) {
+          const s = $("br-custom-kit-status");
+          if (s) s.textContent = "id は英数字 / hyphen / underscore のみ";
+          return;
+        }
+        const kickUrl  = ($("br-custom-kit-kick")?.value || "").trim();
+        const snareUrl = ($("br-custom-kit-snare")?.value || "").trim();
+        const hatUrl   = ($("br-custom-kit-hat")?.value || "").trim();
+        if (!kickUrl && !snareUrl && !hatUrl) {
+          const s = $("br-custom-kit-status");
+          if (s) s.textContent = "URL を 1 つ以上入れて";
+          return;
+        }
+        const kit = {
+          id: "custom-" + id,
+          label: id + " (custom URL)",
+          source: "user",
+          license: "user-supplied",
+          base_url: "",
+          voices: {
+            kick:  kickUrl,
+            snare: snareUrl,
+            hat:   hatUrl,
+            ghost: snareUrl,  // reuse snare for ghost / fill if not supplied separately
+            fill:  snareUrl,
+            crash: hatUrl
+          }
+        };
+        if (!state.onlineCatalog) state.onlineCatalog = { kits: [], instruments: [] };
+        if (!state.onlineCatalog.kits) state.onlineCatalog.kits = [];
+        // Replace if same id exists
+        state.onlineCatalog.kits = state.onlineCatalog.kits.filter((k) => k.id !== kit.id);
+        state.onlineCatalog.kits.push(kit);
+        // Persist custom kits separately
+        try {
+          const customs = state.onlineCatalog.kits.filter((k) => k.id.startsWith("custom-"));
+          localStorage.setItem("band-room.custom-kits.v1", JSON.stringify(customs));
+        } catch (e) {}
+        renderKitOptions();
+        renderVoiceOverridesGrid();
+        const s = $("br-custom-kit-status");
+        if (s) s.textContent = `追加: online/${kit.id}`;
+      });
+    }
+
+    // v102: restore custom kits from localStorage
+    try {
+      const raw = localStorage.getItem("band-room.custom-kits.v1");
+      if (raw) {
+        const customs = JSON.parse(raw);
+        if (Array.isArray(customs) && customs.length > 0) {
+          if (!state.onlineCatalog) state.onlineCatalog = { kits: [], instruments: [] };
+          if (!state.onlineCatalog.kits) state.onlineCatalog.kits = [];
+          customs.forEach((k) => {
+            if (!state.onlineCatalog.kits.find((existing) => existing.id === k.id)) {
+              state.onlineCatalog.kits.push(k);
+            }
+          });
+          renderKitOptions();
+          renderVoiceOverridesGrid();
+        }
+      }
+    } catch (e) {}
+    const clearBtn = $("br-voice-overrides-clear");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", async () => {
+        Object.keys(state.voiceOverrides).forEach((v) => state.voiceOverrides[v] = null);
+        renderVoiceOverridesGrid();
+        const status = $("br-kit-status");
+        if (status) status.textContent = "overrides cleared, rebuilding…";
+        try {
+          drumKit = await buildKitForSource(state.kitSource);
+          if (status) status.textContent = "kit rebuilt (no overrides)";
+        } catch (e) {
+          if (status) status.textContent = "rebuild failed: " + e.message;
+        }
+      });
+    }
+
+    // v100: kit preview button — fetch kick from the currently-selected kit
+    // and play it once. Cheap UX for auditioning.
+    document.querySelectorAll(".br-kit-preview").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        ensureMaster();
+        const result = await buildOneVoice("kick", state.kitSource);
+        if (!result) return;
+        try {
+          result.voice.triggerAttackRelease("C2", "8n", Tone.now() + 0.02, 0.8);
+          setTimeout(() => {
+            try { result.voice.dispose(); } catch (e) {}
+            try { result.panner.dispose(); } catch (e) {}
+          }, 1500);
+        } catch (e) {}
+      });
     });
 
     // v91/v92: synth profile selector — hot-swap the synth voice profile.
@@ -2780,6 +3087,8 @@
         mode: currentMode,
         kitSource: state.kitSource,
         kitProfile: state.kitProfile,
+        voiceOverrides: state.voiceOverrides,
+        chordInstrument: state.chordInstrument,
         sliders: {},
         toggles: {}
       };
@@ -2840,6 +3149,20 @@
         psel.value = prefs.kitProfile;
         state.kitProfile = prefs.kitProfile;
         psel.dispatchEvent(new Event("change"));
+      }
+    }
+    // v99: per-voice overrides
+    if (prefs.voiceOverrides) {
+      Object.assign(state.voiceOverrides, prefs.voiceOverrides);
+      renderVoiceOverridesGrid();
+    }
+    // v101: chord instrument
+    if (prefs.chordInstrument) {
+      state.chordInstrument = prefs.chordInstrument;
+      const sel = $("br-chord-instrument-select");
+      if (sel) {
+        sel.value = prefs.chordInstrument;
+        sel.dispatchEvent(new Event("change"));
       }
     }
   }

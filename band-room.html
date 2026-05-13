@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-40" />
+<link rel="stylesheet" href="band-room.css?v=br-41" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-40" defer></script>
+<script src="band-room.js?v=br-41" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -177,6 +177,7 @@
         <label>
           <span>kit</span>
           <select id="br-kit-source-select"></select>
+          <button type="button" class="br-kit-preview" data-preview="kit" title="preview kick">▶</button>
         </label>
         <label>
           <span>synth profile</span>
@@ -187,8 +188,35 @@
             <option value="cramps-punk">Cramps punk (Human Fly)</option>
           </select>
         </label>
+
+        <details class="br-voice-overrides">
+          <summary>per-voice override (kick だけ別 kit 等)</summary>
+          <div id="br-voice-overrides-grid"></div>
+          <button type="button" id="br-voice-overrides-clear">全クリア</button>
+        </details>
+
+        <label>
+          <span>chord instr</span>
+          <select id="br-chord-instrument-select">
+            <option value="">(synth — profile に従う)</option>
+          </select>
+        </label>
+
+        <details class="br-custom-url">
+          <summary>+ custom kit URL を追加</summary>
+          <div id="br-custom-kit">
+            <label><span>kit id</span><input type="text" id="br-custom-kit-id" placeholder="my-kit" /></label>
+            <label><span>kick URL</span><input type="text" id="br-custom-kit-kick" placeholder="https://..." /></label>
+            <label><span>snare URL</span><input type="text" id="br-custom-kit-snare" placeholder="https://..." /></label>
+            <label><span>hat URL</span><input type="text" id="br-custom-kit-hat" placeholder="https://..." /></label>
+            <button type="button" id="br-custom-kit-add">catalog に追加</button>
+            <span id="br-custom-kit-status"></span>
+            <p class="br-help">URL を 1 つ以上入れて追加すると、kit selector の online セクション末尾に並ぶ。localStorage に保存されて次回も使える。snare URL のみ入れて kick/hat は空でも OK (空 voice は無音)。</p>
+          </div>
+        </details>
+
         <span id="br-kit-status" aria-live="polite"></span>
-        <p class="br-help">profile は **kit = AI synth (default)** のときだけ効く。サンプル kit (auto-self / tabasco-* / unripe-*) のときは元音色のまま。<br><strong>🌐 online kits</strong> は CDN (jsDelivr / tonejs.github.io) から fetch — repo に容量食わない代わりにオフライン時は使えない。</p>
+        <p class="br-help">profile は **kit = AI synth (default)** のときだけ効く。サンプル kit (auto-self / tabasco-* / unripe-*) のときは元音色のまま。<br><strong>🌐 online kits</strong> は CDN (jsDelivr / tonejs.github.io) から fetch — repo に容量食わない代わりにオフライン時は使えない。<br><strong>per-voice override</strong>: 各 voice (kick/snare/hat/...) を別 kit から個別に取れる。kick = 808 / snare = acoustic / hat = 909 みたいなミックス組める。</p>
       </section>
     </details>
 

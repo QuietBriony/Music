@@ -91,6 +91,86 @@
         "fill":  "/cp/HANDCLPP.WAV",
         "crash": "/808/CP.WAV"
       }
+    },
+    {
+      "id": "dirt-amen",
+      "label": "Amen Break hits (dirt-samples, CC-0)",
+      "source": "tidalcycles/dirt-samples",
+      "license": "CC-0 (Public Domain)",
+      "base_url": "https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@master",
+      "voices": {
+        "kick":  "/amencutup/000_amen_kick.wav",
+        "snare": "/amencutup/000_amen_snare.wav",
+        "hat":   "/amencutup/000_amen_hat.wav",
+        "ghost": "/amencutup/000_amen_ghost.wav",
+        "fill":  "/amencutup/000_amen_fill.wav",
+        "crash": "/amencutup/000_amen_crash.wav"
+      }
+    },
+    {
+      "id": "dirt-glitch",
+      "label": "Glitch / IDM hits (dirt-samples, CC-0)",
+      "source": "tidalcycles/dirt-samples",
+      "license": "CC-0 (Public Domain)",
+      "base_url": "https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@master",
+      "voices": {
+        "kick":  "/glitch/000_g0.wav",
+        "snare": "/glitch/000_g1.wav",
+        "hat":   "/glitch2/000_g2hat.wav",
+        "ghost": "/glitch/000_g2.wav",
+        "fill":  "/glitch/000_g3.wav",
+        "crash": "/glitch/000_g4.wav"
+      }
+    },
+    {
+      "id": "dirt-tabla",
+      "label": "Tabla (dirt-samples, CC-0)",
+      "source": "tidalcycles/dirt-samples",
+      "license": "CC-0 (Public Domain)",
+      "base_url": "https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@master",
+      "voices": {
+        "kick":  "/tabla/000_tabla.wav",
+        "snare": "/tabla/001_tabla.wav",
+        "hat":   "/tabla/002_tabla.wav",
+        "ghost": "/tabla/003_tabla.wav",
+        "fill":  "/tabla/004_tabla.wav",
+        "crash": "/tabla/005_tabla.wav"
+      }
+    }
+  ],
+  "instruments": [
+    {
+      "id": "salamander-piano",
+      "label": "Salamander Grand Piano (Tone.js demo)",
+      "kind": "sampler",
+      "source": "tonejs.github.io",
+      "license": "CC-BY 3.0",
+      "base_url": "https://tonejs.github.io/audio/salamander",
+      "notes": {
+        "A0": "/A0.mp3", "C1": "/C1.mp3", "D#1": "/Ds1.mp3", "F#1": "/Fs1.mp3",
+        "A1": "/A1.mp3", "C2": "/C2.mp3", "D#2": "/Ds2.mp3", "F#2": "/Fs2.mp3",
+        "A2": "/A2.mp3", "C3": "/C3.mp3", "D#3": "/Ds3.mp3", "F#3": "/Fs3.mp3",
+        "A3": "/A3.mp3", "C4": "/C4.mp3", "D#4": "/Ds4.mp3", "F#4": "/Fs4.mp3",
+        "A4": "/A4.mp3", "C5": "/C5.mp3", "D#5": "/Ds5.mp3", "F#5": "/Fs5.mp3",
+        "A5": "/A5.mp3", "C6": "/C6.mp3", "D#6": "/Ds6.mp3", "F#6": "/Fs6.mp3",
+        "A6": "/A6.mp3", "C7": "/C7.mp3", "D#7": "/Ds7.mp3", "F#7": "/Fs7.mp3",
+        "A7": "/A7.mp3", "C8": "/C8.mp3"
+      }
+    },
+    {
+      "id": "casio-synth",
+      "label": "Casio synth (Tone.js demo)",
+      "kind": "sampler",
+      "source": "tonejs.github.io",
+      "license": "MIT (Tone.js examples)",
+      "base_url": "https://tonejs.github.io/audio/casio",
+      "notes": {
+        "A1": "/A1.mp3", "A2": "/A2.mp3",
+        "A#1": "/As1.mp3", "B1": "/B1.mp3",
+        "C2": "/C2.mp3", "C#2": "/Cs2.mp3",
+        "D2": "/D2.mp3", "D#2": "/Ds2.mp3",
+        "E2": "/E2.mp3"
+      }
     }
   ]
 }
