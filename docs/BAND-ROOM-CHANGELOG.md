@@ -1,9 +1,56 @@
-# Band Room — Changelog (v65 → v108)
+# Band Room — Changelog (v65 → v113)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 ---
+
+## v113 — Hazama FM lofi 整合化 (cross-app)
+
+- `engine.js` の lofi mode で **Salamander Grand Piano (CC-BY)** sampler を
+  pad 役で起動するレイヤー追加 (fm-56)
+- 既存 synth pad は -22 dB に減衰、reverb/delay wet も穏当に (lofi = ノイズで
+  覆うじゃなく実音色で表現する band-room と同じ哲学に揃える)
+- `CROSS-APP-INTEGRITY.md` 新規 — 3 app + engine.js + catalog の境界 / 機能
+  対応表 / リソース共有マップ / 整合性チェック結果
+
+## v112 — catalog manual + jazzy bass/chord voicing
+
+- `SAMPLE-CATALOG-GUIDE.md` 大幅拡張: nbrosowsky 全 instrument リスト、search
+  クエリ集、NSynth strings 追加チュートリアル、license フローチャート、
+  validation script outline、既知 resource roundup
+- bass walking pattern (root/5th/oct/5th) — profile = lofi-nujabes or
+  bass_instrument = salamander-bass のとき
+- chord jazzy voicing (maj7/m7 + anticipated comping on beat 2.5) —
+  profile = lofi-nujabes or chord_instrument = salamander-piano のとき
+- `chordToSemi(chord)` helper 追加
+
+## v111 — AI 音色再現を sampler でやり切る
+
+- catalog に **9 新 instrument** 追加 (nbrosowsky/tonejs-instruments、MIT、
+  guitar-electric/acoustic/nylon, bass-electric, violin, cello, flute,
+  organ, harp)
+- `makeGuitar` / `makeVoiceBox` を sampler 分岐対応
+- UI: "guitar instr" + "melody lead" selector 追加
+- `state.guitarInstrument` / `state.voiceInstrument` 永続化
+- MASTER_PRESETS が 7 軸 linked (master 4 sliders + synth profile +
+  chord/bass/guitar/voice instrument + kit_source + guitar_on)
+
+## v110 — bass to real Salamander samples + master preset 全リグ駆動
+
+- catalog に salamander-bass (Salamander の低オク抜粋) 追加
+- `makeSynthBass` を sampler 分岐対応
+- UI: "bass instr" selector
+- MASTER_PRESETS に kit_source / bass_instrument / guitar_on linked
+
+## v109 — dual-audio バグ修正 + Nujabes synth profile + linked master presets
+
+- `jumpToSection` が mode 確認なしで stem を start してた問題修正
+- mode change handler に hot-swap 追加 (mode 変更で audio graph 切替)
+- KIT_PROFILES に `lofi-nujabes` 追加 (dusty drum + warm bass + soft pad +
+  warm vocal)
+- MASTER_PRESETS に synth_profile + chord_instrument linked 追加
+- lo-fi master sliders 穏当に (reverb 38→32, width 50→64, warmth 32→24)
 
 ## v108 — bass anchor for no-chord sections + SW doc precache
 

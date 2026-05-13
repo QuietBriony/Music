@@ -7628,6 +7628,57 @@ const pad = new Tone.PolySynth(Tone.Synth, {
   envelope: { attack: 1.2, decay: 0.7, sustain: 0.7, release: 3.5 }
 }).connect(padFilter);
 
+// fm-56: lofi mode で synth pad の上に重ねる Salamander Grand Piano (CC-BY 3.0)
+// — band-room の lofi/Nujabes preset と整合させるための実音源 chord 担当
+let lofiPianoSampler = null;
+let lofiPianoSchedId = null;
+function ensureLofiPianoSampler() {
+  if (lofiPianoSampler) return lofiPianoSampler;
+  const base = "https://tonejs.github.io/audio/salamander";
+  // Note: Tone.Sampler は note 名 "D#1" 形式を受け取る、URL は "Ds1.mp3" 形式
+  const noteMap = {
+    "A0":"A0","C1":"C1","D#1":"Ds1","F#1":"Fs1","A1":"A1",
+    "C2":"C2","D#2":"Ds2","F#2":"Fs2","A2":"A2",
+    "C3":"C3","D#3":"Ds3","F#3":"Fs3","A3":"A3",
+    "C4":"C4","D#4":"Ds4","F#4":"Fs4","A4":"A4",
+    "C5":"C5","D#5":"Ds5","F#5":"Fs5","A5":"A5",
+    "C6":"C6","D#6":"Ds6","F#6":"Fs6","A6":"A6",
+    "C7":"C7","D#7":"Ds7","F#7":"Fs7","A7":"A7","C8":"C8"
+  };
+  const urls = {};
+  Object.entries(noteMap).forEach(([note, file]) => {
+    urls[note] = `${base}/${file}.mp3`;
+  });
+  try {
+    lofiPianoSampler = new Tone.Sampler({
+      urls, release: 1.6, volume: -6
+    }).connect(padFilter); // routes through same filter/bus as the synth pad
+  } catch (e) {
+    console.warn("[Music] lofi piano sampler init failed:", e);
+    lofiPianoSampler = null;
+  }
+  return lofiPianoSampler;
+}
+function startLofiPianoLayer() {
+  stopLofiPianoLayer();
+  const sampler = ensureLofiPianoSampler();
+  if (!sampler) return;
+  // Same cadence as the existing pad — 1 bar per chord
+  lofiPianoSchedId = Tone.Transport.scheduleRepeat((time) => {
+    try {
+      // Use the same chord pool as the pad
+      const ch = typeof randomHazeChord === "function" ? randomHazeChord() : ["C4","E4","G4"];
+      sampler.triggerAttackRelease(ch, "1n", time + 0.02, 0.50);
+    } catch (e) {}
+  }, "1m");
+}
+function stopLofiPianoLayer() {
+  if (lofiPianoSchedId != null) {
+    try { Tone.Transport.clear(lofiPianoSchedId); } catch (e) {}
+    lofiPianoSchedId = null;
+  }
+}
+
 const texture = new Tone.NoiseSynth({
   noise: { type: "pink" },
   envelope: { attack: 0.002, decay: 0.064, sustain: 0, release: 0.036 }
@@ -9294,6 +9345,13 @@ let lastMode = null;
 function updateSoundForMode(mode){
   // Keep changes gentle; use .set and ramp where possible
   try{
+    // fm-56: lofi mode 以外では Salamander piano layer を必ず停止
+    // (mode が lofi → 別 mode へ遷移したときの取り残し防止)
+    if (mode !== "lofi") {
+      stopLofiPianoLayer();
+      // synth pad の音量を通常レベルに戻す (lofi で下げてた場合)
+      try { pad.volume.rampTo(0, 1.0); } catch (e) {}
+    }
     if(mode==="ambient"){
       pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.2, decay:0.8, sustain:0.62, release:3.2} });
       padFilter.frequency.rampTo(800, 1.2);
@@ -9302,12 +9360,17 @@ function updateSoundForMode(mode){
       globalDelay.wet.rampTo(0.10, 1.2);
       bass.set({ oscillator:{type:"triangle"}, envelope:{attack:0.02, decay:0.35, sustain:0.25, release:1.2} });
     }else if(mode==="lofi"){
+      // fm-56: Nujabes 寄り — synth pad を強く減衰させて、Salamander piano
+      // sampler が実音 chord を担当。「ノイズで lofi 風」を脱却して band-room の
+      // lo-fi master preset と音色感を揃える。
       pad.set({ oscillator:{type:"triangle"}, envelope:{attack:0.8, decay:0.7, sustain:0.58, release:2.8} });
-      padFilter.frequency.rampTo(1200, 1.0);
-      globalReverb.decay = 5.5;
-      globalReverb.wet.rampTo(0.28, 1.0);
-      globalDelay.wet.rampTo(0.18, 1.0);
-      bass.set({ oscillator:{type:"square"}, filterEnvelope:{baseFrequency:70, octaves:2.2} });
+      try { pad.volume.rampTo(-22, 1.2); } catch (e) {}
+      padFilter.frequency.rampTo(1800, 1.0);
+      globalReverb.decay = 4.2;
+      globalReverb.wet.rampTo(0.22, 1.0);
+      globalDelay.wet.rampTo(0.14, 1.0);
+      bass.set({ oscillator:{type:"triangle"}, filterEnvelope:{baseFrequency:80, octaves:2.0} });
+      startLofiPianoLayer();
     }else if(mode==="dub"){
       pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.65, decay:0.5, sustain:0.5, release:2.5} });
       padFilter.frequency.rampTo(1400, 0.9);
