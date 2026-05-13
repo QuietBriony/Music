@@ -264,7 +264,9 @@
   // Vocal phrase trigger — fire one-shot Tone.Player on click
   // Phrase samples are at presets/sample-kits/<source>/<song>/vocal-phrase-NN.wav
   // (summary.json has the list). Each plays through the same vocalChorus FX chain.
-  const phrasePlayerPool = new Map();  // url → Tone.Player (cached)
+  const phrasePlayerPool = new Map();  // url → Tone.Player (cached, one-shot)
+  const phraseLoopPool = new Map();    // v72: url → Tone.Player (active loops)
+  let phraseFireMode = "instant";       // v72: "instant" | "sync" | "loop"
 
   async function renderPhraseTrigger() {
     const grid = $("br-phrase-grid");
@@ -281,6 +283,30 @@
       if (res.ok) summary = await res.json();
     } catch (e) {}
 
+    // v72: mode chips above grid
+    const modes = [
+      { id: "instant", label: "⚡ 即発火" },
+      { id: "sync",    label: "⏱ 次小節" },
+      { id: "loop",    label: "🔁 ループ" }
+    ];
+    const modeRow = document.createElement("div");
+    modeRow.className = "br-phrase-modes";
+    modes.forEach((m) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "br-mode-chip" + (m.id === phraseFireMode ? " active" : "");
+      chip.dataset.mode = m.id;
+      chip.textContent = m.label;
+      chip.addEventListener("click", () => {
+        phraseFireMode = m.id;
+        modeRow.querySelectorAll(".br-mode-chip").forEach((c) => {
+          c.classList.toggle("active", c.dataset.mode === m.id);
+        });
+      });
+      modeRow.appendChild(chip);
+    });
+    grid.appendChild(modeRow);
+
     const phrases = summary && summary.vocal_phrases && summary.vocal_phrases.phrases;
     if (!phrases || phrases.length === 0) {
       const empty = document.createElement("span");
@@ -290,18 +316,48 @@
       return;
     }
 
+    const cellsWrap = document.createElement("div");
+    cellsWrap.className = "br-phrase-cells";
     phrases.forEach((p, i) => {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.textContent = `${(i + 1).toString().padStart(2, "0")}`;
       btn.title = `${p.duration_s}s @ ${p.src_start_s}s (RMS ${p.rms})`;
       btn.dataset.phraseUrl = `presets/sample-kits/${band}/${song}/${p.file}`;
-      grid.appendChild(btn);
+      cellsWrap.appendChild(btn);
     });
+    grid.appendChild(cellsWrap);
   }
 
   function firePhrase(url) {
     if (!vocalChorus) ensureMaster();
+
+    // v72: loop mode — toggle. If already looping this url, stop it.
+    if (phraseFireMode === "loop") {
+      const existing = phraseLoopPool.get(url);
+      if (existing) {
+        try { existing.stop("+0.05"); } catch (e) {}
+        try { existing.dispose(); } catch (e) {}
+        phraseLoopPool.delete(url);
+        updatePhraseLoopUI(url, false);
+        return;
+      }
+      const loopPlayer = new Tone.Player({
+        url, autostart: false, fadeIn: 0.04, fadeOut: 0.10, loop: true
+      }).connect(externalVocalBus || vocalChorus);
+      phraseLoopPool.set(url, loopPlayer);
+      Tone.loaded().then(() => {
+        try {
+          // Quantize to next bar so the loop locks to the groove
+          const next = state.started ? Tone.Transport.nextSubdivision("1m") : "+0.05";
+          loopPlayer.start(next);
+          updatePhraseLoopUI(url, true);
+        } catch (e) {}
+      });
+      return;
+    }
+
+    // instant / sync — one-shot via shared pool
     let player = phrasePlayerPool.get(url);
     if (!player) {
       player = new Tone.Player({
@@ -309,18 +365,22 @@
       }).connect(externalVocalBus || vocalChorus);
       phrasePlayerPool.set(url, player);
     }
-    try {
-      // If buffer not yet loaded, Tone.Player.start() throws — wait
-      if (!player.buffer || !player.buffer.loaded) {
-        Tone.loaded().then(() => {
-          try { player.start("+0.005"); } catch (e) {}
-        });
-      } else {
-        player.start("+0.005");
-      }
-    } catch (e) {
-      console.warn("[Band Room] phrase fire failed:", e);
+    const startWhen = (phraseFireMode === "sync" && state.started)
+      ? Tone.Transport.nextSubdivision("1m")
+      : "+0.005";
+    const fire = () => {
+      try { player.start(startWhen); } catch (e) {}
+    };
+    if (!player.buffer || !player.buffer.loaded) {
+      Tone.loaded().then(fire);
+    } else {
+      fire();
     }
+  }
+
+  function updatePhraseLoopUI(url, active) {
+    const btn = document.querySelector(`#br-phrase-grid button[data-phrase-url="${url}"]`);
+    if (btn) btn.classList.toggle("looping", active);
   }
 
   function loadExternalVocal(fileBlob) {
