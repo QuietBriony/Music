@@ -1,9 +1,40 @@
-# Band Room — Changelog (v65 → v113)
+# Band Room — Changelog (v65 → v115)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
+Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
+も bump する。
+
 ---
+
+## v115 — Hazama FM lofi 完全 piano trio + breakbeat 化
+
+- `engine.js fm-58`: Hazama FM lofi mode で bass / drum も sampler に置換
+- `lofiBassSampler`: Salamander Grand Piano 低オク (A0–C3)、walking pattern
+  (root/5th/oct/5th)、bassBus 経由、毎 1 小節
+- `lofiDrumSamples`: tone-breakbeat の kick/snare/hat 3 ショット、drumBus 経由、
+  boom-bap pattern (kick on 1 + sync 3.5、snare 2/4、hat 8th)
+- updateSoundForMode の lofi クリーンアップ拡張 (bass.volume も復元、新 layer
+  の stop 含む)
+- 既存 synth pad/bass は -28/-26 dB に減衰 (二重発音防止)
+- 3 app で「lofi = Salamander piano trio + breakbeat」が完全成立
+- USAGE-HAZAMA-FM / USAGE-MUSIC-CORE-RIG / FREE-SAMPLES-AND-SYNTHESIS doc 更新
+- CROSS-APP-INTEGRITY の lofi 整合表を v115 状態に更新
+
+## v114 — Hazama FM デフォルト最適音 + 全 mode mix profile polish
+
+- `engine.js fm-57`: HAZAMA_FM_ENGINE_MIXES を 6 mode 全て調整
+  - lofi: padBus 0.38 → 0.30、glassDb -8.5 → -16、voiceDustDb -8.5 → -16
+    (Salamander piano を前面に、装飾 noise 大幅減)
+  - ambient: padBus 0.8 → 0.65、textureDb -3.5 → -6、delayWet 0.18 → 0.16
+    (静か系で delay 不要)
+  - jazz / funk / techno / piano も同様にバランス調整
+- lofi mode の synth pad osc を triangle → sine (Salamander の支え役に)
+- lofi mode の synth bass を warm triangle + slow filter env (walking 寄り)
+- globalReverb decay 5.5 → 3.6 (short room reverb、piano に自前 decay)
+- Salamander piano sampler の volume -6 → -10、release 1.6 → 2.0
+- scheduling を 1m → 2m (chord stab + 0.5 拍遅れ accent note = anticipated comp)
 
 ## v113 — Hazama FM lofi 整合化 (cross-app)
 

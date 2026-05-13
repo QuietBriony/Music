@@ -149,3 +149,38 @@ Tabasco stem から抽出した kit 隣に並ぶ。
 
 実装したくなったタイミングで言ってください。GitHub の 1 GB 制限内、
 TidalCycles dirt-samples (CC0) なら問題なし。
+
+---
+
+## v109-v115 — 「合成 vs 実 sample」ハイブリッドが現実解になった
+
+v91 で synth profile を入れた時は「合成だけで genre 出す」方針だった。でも
+v109-v111 で **band-room の全 voice (drum / bass / chord / guitar / vocal lead)
+が CDN sampler 経由で実音色を選べる**ようになり、v113-v115 で **Hazama FM lofi
+も完全 sample 化**された。
+
+つまり現在の現実解は **「合成 fallback + 実 sample CDN 経由」のハイブリッド**:
+
+| voice | synth fallback (即時、Pages 容量 0) | 実 sample (CDN 経由、初回数秒ロード) |
+|-------|-----------------------------------|-----------------------------------|
+| drum | Tone.js NoiseSynth / MembraneSynth (KIT_PROFILES の 5 種) | 9 online kit (tonejs / dirt-samples) |
+| bass | Tone.MonoSynth + filter | salamander-bass / bass-electric |
+| chord | Tone.PolySynth (triangle/saw/square) | salamander-piano / casio-synth |
+| guitar | PolySynth saw + distortion | guitar-electric / -acoustic / -nylon |
+| voice/lead | AMSynth + dual formant | violin / cello / flute / organ / harp |
+
+選択は band-room の `🥁 drum kit + synth profile` panel で個別、または
+**master mix preset** (lo-fi / club / rock / ambient) で全 voice 一斉切替。
+
+Hazama FM 側は `engine.js > updateSoundForMode("lofi")` が hardcoded で
+piano trio + breakbeat sample に切替 (将来は catalog 経由化検討中)。
+
+### この方針の利点
+
+- **Pages 容量影響 ゼロ** (catalog json 1 ファイル定義のみ)
+- **ライセンス追跡が明確** (CC-0 / CC-BY / MIT を catalog の license フィールドで記述)
+- **オフライン fallback** (sample fetch 失敗時 synth で代替)
+- **拡張性無限** (catalog.json 編集だけで instrument 追加)
+
+詳細仕様: [SAMPLE-CATALOG-GUIDE.md](./SAMPLE-CATALOG-GUIDE.md)
+3 app 整合: [CROSS-APP-INTEGRITY.md](./CROSS-APP-INTEGRITY.md)

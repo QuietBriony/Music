@@ -5,6 +5,16 @@
 公開 URL: https://quietbriony.github.io/Music/
 
 全体像: [Music Stack System Manual](MUSIC-STACK-SYSTEM-MANUAL.md)
+3 app 整合: [CROSS-APP-INTEGRITY.md](./CROSS-APP-INTEGRITY.md)
+
+> **v113-v115 アップデート**: 共有エンジン `engine.js` の lofi mode が
+> Salamander Grand Piano + tone-breakbeat の **完全 piano trio + breakbeat**
+> 構成になりました (Hazama FM と同じ整合)。energy slider を 34-67 帯に置けば
+> lofi mode に入り、本物のピアノ chord + walking bass + boom-bap drum が鳴ります。
+>
+> REC ボタンで wav export → Band Room の **🥁🎸🎹 external stems slot** に
+> drag-drop で素材橋。lofi mode の録音は Nujabes 寄り素材として Band Room
+> の Tabasco に重ねられる。
 
 ---
 

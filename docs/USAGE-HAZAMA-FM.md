@@ -5,6 +5,20 @@
 公開 URL: https://quietbriony.github.io/Music/fm.html
 
 全体像: [Music Stack System Manual](MUSIC-STACK-SYSTEM-MANUAL.md)
+3 app 整合: [CROSS-APP-INTEGRITY.md](./CROSS-APP-INTEGRITY.md)
+
+> **v113-v115 アップデート**: lofi mode を「ノイズで lofi 風に装う」から
+> **Salamander Grand Piano (CC-BY) + tone-breakbeat (CDN sample) の Nujabes
+> piano trio** に置換しました。lofi 選ぶと:
+>
+> - chord/pad: 本物の Salamander Grand Piano sampler (左手フル range)
+> - bass: 同 Salamander 低オク walking (root/5th/octave/5th)
+> - drum: tone-breakbeat の boom-bap kick/snare + 8th hat
+> - synth pad/bass は -26~-28 dB に減衰、glass/voiceDust 系の装飾 noise も大幅減
+>
+> Band Room の lo-fi master preset と完全同一の音源スタック (3 app 整合)。
+> 初回再生時に CDN 経由でサンプルロード (数秒)、以降ブラウザキャッシュ。
+> 詳細: [CROSS-APP-INTEGRITY.md](./CROSS-APP-INTEGRITY.md)
 
 ---
 
