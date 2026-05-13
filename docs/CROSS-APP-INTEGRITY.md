@@ -27,11 +27,11 @@
 
 | app | "lofi" の所在 | データ source | 音色実装 |
 |-----|-------------|------------|---------|
-| **Hazama FM** | `engine.js` の `updateSoundForMode("lofi")` | `presets/drum-frames-lofi.json` + `chill-piano-recipe.json` | ⚡ v113 で **Salamander piano sampler** が pad 役 + synth pad は -22 dB 減衰 |
+| **Hazama FM** | `engine.js` の `updateSoundForMode("lofi")` | `presets/drum-frames-lofi.json` + `chill-piano-recipe.json` | ⚡ **v115 で完全 piano trio + breakbeat**:<br>• Salamander piano (chord, padBus)<br>• Salamander piano 低オク (walking bass, bassBus)<br>• tone-breakbeat (kick/snare/hat, drumBus)<br>• synth pad/bass はそれぞれ -28/-26 dB に減衰 |
 | **Music Core Rig** | 同 (engine.js 経由) | 同上 | 同上 |
-| **Band Room** | `band-room.js` の `MASTER_PRESETS["lo-fi"]` (v109) | カタログ参照 | **Salamander piano (chord) + Salamander bass + tone-breakbeat (kit) + flute (lead)** (v110-v111) |
+| **Band Room** | `band-room.js` の `MASTER_PRESETS["lo-fi"]` (v109) | カタログ参照 | **Salamander piano (chord) + Salamander bass + tone-breakbeat (kit) + flute (lead) + guitar OFF** (v110-v111) |
 
-**v113 の整合化ポイント**: Hazama FM の lofi も Salamander piano を使うようになって、両 app で **"lofi = Nujabes piano trio + breakbeat"** という同じ音色イメージが揃った。
+**v115 の整合化ポイント**: Hazama FM lofi と Band Room lo-fi preset で同じ CDN サンプル (tonejs.github.io/salamander + drum-samples/breakbeat13) を使う。 **3 app で "lofi = Salamander piano + breakbeat" の同一音源スタック**が成立。
 
 ---
 

@@ -7689,6 +7689,113 @@ function stopLofiPianoLayer() {
   }
 }
 
+// fm-58: lofi mode の bass を Salamander piano 低オクで担当
+// (band-room v110 "salamander-bass" と完全整合 = piano left-hand walking)
+let lofiBassSampler = null;
+let lofiBassSchedId = null;
+function ensureLofiBassSampler() {
+  if (lofiBassSampler) return lofiBassSampler;
+  const base = "https://tonejs.github.io/audio/salamander";
+  const lowNotes = {
+    "A0":"A0","C1":"C1","D#1":"Ds1","F#1":"Fs1","A1":"A1",
+    "C2":"C2","D#2":"Ds2","F#2":"Fs2","A2":"A2",
+    "C3":"C3"
+  };
+  const urls = {};
+  Object.entries(lowNotes).forEach(([n,f]) => { urls[n] = `${base}/${f}.mp3`; });
+  try {
+    lofiBassSampler = new Tone.Sampler({
+      urls, release: 0.8, volume: -8
+    }).connect(bassBus);
+  } catch (e) {
+    console.warn("[Music] lofi bass sampler init failed:", e);
+    lofiBassSampler = null;
+  }
+  return lofiBassSampler;
+}
+function startLofiBassLayer() {
+  stopLofiBassLayer();
+  const sampler = ensureLofiBassSampler();
+  if (!sampler) return;
+  // Walking bass: root, 5th, octave, 5th — one note per beat, every bar
+  lofiBassSchedId = Tone.Transport.scheduleRepeat((time) => {
+    try {
+      const bt = Tone.Time("4n").toSeconds();
+      // Use the same root pool as the synth bass — bassRoot drifts with key
+      const rootNote = (typeof bassRoot === "string" ? bassRoot : "D2");
+      // Extract semitone for root + 5th + octave math
+      const NOTE_SEMI = { C:0,"C#":1,Db:1,D:2,"D#":3,Eb:3,E:4,F:5,"F#":6,Gb:6,G:7,"G#":8,Ab:8,A:9,"A#":10,Bb:10,B:11 };
+      const m = rootNote.match(/^([A-G][b#]?)(\d)/);
+      const rootSemi = m ? NOTE_SEMI[m[1]] : 2;
+      const baseOct = m ? parseInt(m[2], 10) : 2;
+      const baseSemi = rootSemi + baseOct * 12;
+      const NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+      const noteAt = (semi) => NAMES[semi % 12] + Math.floor(semi / 12);
+      const walk = [
+        noteAt(baseSemi),         // beat 0: root
+        noteAt(baseSemi + 7),     // beat 1: 5th
+        noteAt(baseSemi + 12),    // beat 2: octave
+        noteAt(baseSemi + 7)      // beat 3: 5th
+      ];
+      for (let b = 0; b < 4; b++) {
+        const accent = (b === 0 || b === 2);
+        sampler.triggerAttackRelease(walk[b], "4n", time + b * bt, accent ? 0.55 : 0.42);
+      }
+    } catch (e) {}
+  }, "1m");
+}
+function stopLofiBassLayer() {
+  if (lofiBassSchedId != null) {
+    try { Tone.Transport.clear(lofiBassSchedId); } catch (e) {}
+    lofiBassSchedId = null;
+  }
+}
+
+// fm-58: lofi mode の drum を tone-breakbeat sample で boom-bap groove
+// (band-room v109 lo-fi preset の kit_source: online/tone-breakbeat と整合)
+let lofiDrumSamples = null;
+let lofiDrumSchedId = null;
+function ensureLofiDrumSamples() {
+  if (lofiDrumSamples) return lofiDrumSamples;
+  const base = "https://tonejs.github.io/audio/drum-samples/breakbeat13";
+  try {
+    lofiDrumSamples = {
+      kick:  new Tone.Player({ url: base + "/kick.mp3",  autostart: false, volume: -4 }).connect(drumBus),
+      snare: new Tone.Player({ url: base + "/snare.mp3", autostart: false, volume: -6 }).connect(drumBus),
+      hat:   new Tone.Player({ url: base + "/hihat.mp3", autostart: false, volume: -14 }).connect(drumBus)
+    };
+  } catch (e) {
+    console.warn("[Music] lofi drum samples init failed:", e);
+    lofiDrumSamples = null;
+  }
+  return lofiDrumSamples;
+}
+function startLofiDrumLayer() {
+  stopLofiDrumLayer();
+  const samples = ensureLofiDrumSamples();
+  if (!samples) return;
+  // Boom-bap pattern: kick on 1 + "and-of-3", snare on 2 + 4, hat 8th
+  lofiDrumSchedId = Tone.Transport.scheduleRepeat((time) => {
+    try {
+      const bt = Tone.Time("4n").toSeconds();
+      const e8 = bt / 2;
+      samples.kick.start(time);
+      samples.snare.start(time + bt);
+      samples.kick.start(time + 2 * bt + e8 * 0.5);  // syncopated kick
+      samples.snare.start(time + 3 * bt);
+      for (let h = 0; h < 8; h++) {
+        samples.hat.start(time + h * e8);
+      }
+    } catch (e) {}
+  }, "1m");
+}
+function stopLofiDrumLayer() {
+  if (lofiDrumSchedId != null) {
+    try { Tone.Transport.clear(lofiDrumSchedId); } catch (e) {}
+    lofiDrumSchedId = null;
+  }
+}
+
 const texture = new Tone.NoiseSynth({
   noise: { type: "pink" },
   envelope: { attack: 0.002, decay: 0.064, sustain: 0, release: 0.036 }
@@ -9355,12 +9462,15 @@ let lastMode = null;
 function updateSoundForMode(mode){
   // Keep changes gentle; use .set and ramp where possible
   try{
-    // fm-56: lofi mode 以外では Salamander piano layer を必ず停止
+    // fm-56/58: lofi mode 以外では全 lofi layer を必ず停止
     // (mode が lofi → 別 mode へ遷移したときの取り残し防止)
     if (mode !== "lofi") {
       stopLofiPianoLayer();
-      // synth pad の音量を通常レベルに戻す (lofi で下げてた場合)
+      stopLofiBassLayer();
+      stopLofiDrumLayer();
+      // synth pad / bass の音量を通常レベルに戻す
       try { pad.volume.rampTo(0, 1.0); } catch (e) {}
+      try { bass.volume.rampTo(0, 1.0); } catch (e) {}
     }
     if(mode==="ambient"){
       // fm-57: ambient = sine pad で柔らかく + long reverb tail。今までは
@@ -9372,16 +9482,15 @@ function updateSoundForMode(mode){
       globalDelay.wet.rampTo(0.08, 1.2);  // delay は最小限 (ambient で delay は要らない)
       bass.set({ oscillator:{type:"sine"}, envelope:{attack:0.03, decay:0.40, sustain:0.30, release:1.6} });
     }else if(mode==="lofi"){
-      // fm-57: 「ノイズで lofi 風」脱却 — synth pad は完全に裏に追いやって
-      // Salamander piano sampler が pad 役で chord 鳴らす + bass は warm
-      // triangle で walking 系。Nujabes piano trio の重心。
+      // fm-58: 完全 Nujabes piano trio + breakbeat — pad/bass/drum 全部
+      // 実 sample に。synth voices は裏に追いやって sampler が前面を取る。
       pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.2, decay:0.8, sustain:0.5, release:3.2} });
-      try { pad.volume.rampTo(-28, 1.2); } catch (e) {}  // synth pad はほぼ無音
+      try { pad.volume.rampTo(-28, 1.2); } catch (e) {}
+      try { bass.volume.rampTo(-26, 1.2); } catch (e) {}  // synth bass も裏へ
       padFilter.frequency.rampTo(2000, 1.0);
-      globalReverb.decay = 3.6;                          // 短めの room reverb
-      globalReverb.wet.rampTo(0.18, 1.0);                // wet 控えめ — piano 自身に decay あるから
-      globalDelay.wet.rampTo(0.10, 1.0);                 // delay 更に控えめ
-      // bass: warm triangle + slow filter (Nujabes 寄り walking)
+      globalReverb.decay = 3.6;
+      globalReverb.wet.rampTo(0.18, 1.0);
+      globalDelay.wet.rampTo(0.10, 1.0);
       bass.set({
         oscillator:{type:"triangle"},
         filter:{Q:0.8},
@@ -9389,6 +9498,8 @@ function updateSoundForMode(mode){
         envelope:{attack:0.02, decay:0.30, sustain:0.5, release:0.6}
       });
       startLofiPianoLayer();
+      startLofiBassLayer();
+      startLofiDrumLayer();
     }else if(mode==="dub"){
       pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.65, decay:0.5, sustain:0.5, release:2.5} });
       padFilter.frequency.rampTo(1400, 0.9);
