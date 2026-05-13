@@ -1,9 +1,43 @@
-# Band Room — Changelog (v65 → v86)
+# Band Room — Changelog (v65 → v90)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 ---
+
+## v90 — stems pack export (4-stem simultaneous → DAW)
+
+- 4 `Tone.context.createMediaStreamDestination()` tapped off each stemBus
+- 4 `MediaRecorder` started/stopped together; STOP emits 4 download links
+- Drums/bass/other tap post per-stem EQ pre-master FX (clean stems for DAW)
+- Vocals taps post-FX bus (chorus/delay/reverb baked in — that's the vocal sound)
+- New <details> "📦 stems pack export (4 stem 同時録音 → DAW へ)" with red rec button
+
+## v89 — Music ↔ Band Room bridge (separate apps, shared samples)
+
+- Design judgement: keep apps cleanly separated (different purposes) but
+  provide sample-level bridge for material flow
+- Music Core Rig REC now shows "→ Band Room へ" link next to save
+- Band Room external stems help text lists sources: DAW / Music Core Rig REC / Suno
+- Footer reorganized into "別 app: Hazama FM · Music Core" / "歌詞: v2 · v3" / "DAW 連携"
+- `style.css?v=fm-26`, fixed stale `engine.js?v=fm-54 → fm-55` in `index.html`
+
+## v88 — WebMIDI in/out (hardware sync)
+
+- OUT: 24 PPQ MIDI Clock from Tone.Transport.bpm → drum machine / DAW BPM sync
+- IN: note-on listener — C2-G3 (36-55) → phrase trigger 01-20, C4-G#4 (60-68) → section jump
+- "🎹 MIDI in/out" panel with `navigator.requestMIDIAccess` enable button
+- Out/In dropdowns auto-populate from `midiAccess` + hot-plug via `onstatechange`
+
+## v87 — per-stem external upload (drums / bass / other)
+
+- Generalized vocal external upload pattern to all 4 stems
+- `externalStemPlayers = { drums, bass, other }` routes to `stemEQs[stem].input`
+  so per-stem EQ (HP/shelf/de-ess) applies to user takes
+- New <details> "🥁🎸🎹 external stems" with one block per stem
+- Toggle external → original stem auto-mutes → user's take plays through master chain
+- + `docs/DAW-INTEGRATION.md` (roadmap: stem in/out paths, MIDI sync, sound quality options)
+- + `docs/tabasco-lyrics-burroughs.md` v3 cut-up / fold-in lyrics for all 7 songs
 
 ## v86 — quick help overlay
 
@@ -138,6 +172,27 @@ The two are bumped together — sw VERSION matches the band-room generation it s
 - New `auto-self` kit source = current song's own drums
 
 ---
+
+## DAW / hardware integration (v87-v90)
+
+| feature                  | version | how to use                                          |
+|--------------------------|---------|-----------------------------------------------------|
+| external stem upload     | v87     | drag mp3/wav onto 🥁🎸🎹 → original auto-mutes       |
+| external vocal upload    | v83     | same flow for vocals (Suno / 自分歌い直し)           |
+| MIDI Clock out           | v88     | enable MIDI → pick output → DAW/drum machine syncs   |
+| MIDI note in             | v88     | C2-G3 → phrase 01-20, C4-G#4 → section jump          |
+| 1-track master record    | v81     | ⏺ REC → webm download                                |
+| 4-stem pack export       | v90     | 📦 stems pack → 4 download links                    |
+| Music Core Rig bridge    | v89     | Music REC → drop wav into Band Room external slot    |
+
+See [DAW-INTEGRATION.md](./DAW-INTEGRATION.md) for the full roadmap.
+
+## Lyric versions
+
+- v2.1 plain English: `docs/tabasco-lyrics-draft.md`
+- v3 Burroughs cut-up: `docs/tabasco-lyrics-burroughs.md` (Naked Lunch grade)
+
+Same melody in both, pick by mood.
 
 ## Keyboard cheat sheet (v86)
 
