@@ -423,6 +423,80 @@ transcribe も可能、ただし重い (~100-200 MB ダウンロード)。 band-
 
 = path A よりは速く、path B 単独より精度高い。これがおすすめ。
 
+### path B 補足: ローカル不要 path
+
+**B-2: OpenAI Whisper API (推奨、ローカル不要)**
+
+```bash
+# API key を取得: https://platform.openai.com/api-keys (要登録、$5 trial credit あり)
+export OPENAI_API_KEY=sk-...
+
+# 各曲の vocal stem を transcribe (mp3 25MB 上限なので tabasco stem サイズで OK)
+for song in human-fly hey i-got-a-feeling under-the-moon electric-sheep sister tabasco; do
+  curl https://api.openai.com/v1/audio/transcriptions \
+    -H "Authorization: Bearer $OPENAI_API_KEY" \
+    -F file=@presets/tabasco-stems/$song/vocals.mp3 \
+    -F model=whisper-1 \
+    -F response_format=text \
+    -F language=en \
+    -F prompt="lyrics from a rock song with English vocals" \
+    > /tmp/transcribe_$song.txt
+done
+
+cat /tmp/transcribe_*.txt
+```
+
+- 7 曲合計 ~$0.05 (試用 credit で十分カバー)
+- model = whisper-1 (large-v3 相当)
+- prompt で「rock song English vocals」とヒント与えると精度上がる
+- 結果を見て v4 doc の chorus 部分を差し替え
+
+**B-3: Web UI 完全無料 path**
+
+ブラウザだけで終わらせるなら以下のサービスで vocal stem mp3 を drag-drop:
+
+| サービス | URL | 特徴 |
+|---------|-----|------|
+| **Hugging Face Whisper** | https://huggingface.co/spaces/openai/whisper | OpenAI 公式 demo、無料、結果コピペ |
+| **AssemblyAI Playground** | https://www.assemblyai.com/playground | universal model、歌唱でも精度高め |
+| **TurboScribe** | https://turboscribe.ai | 月 3 時間無料、AI 歌詞対応謳う |
+| **Otter.ai** | https://otter.ai | 月 600 分無料、会議向け (歌唱は弱め) |
+
+手順:
+1. band-room から `presets/tabasco-stems/<song>/vocals.mp3` を download
+2. 上記サービスに mp3 upload
+3. 結果をコピー → v4 doc に貼り付け or 耳で修正
+
+これが **ローカル不要、完全無料、最も簡単** path。
+
+### 「叩き台どこまで設定できるか」 — 4 levels
+
+ユーザーの「どこまで叩き台にできる？」に答える。**Claude 側で書ける範囲** は:
+
+| level | 内容 | Claude の関与 | user の作業 |
+|-------|------|-------------|------------|
+| **0. 何もしない** | v4 (推測ベース) のまま歌う | 100% (現状) | 歌うだけ、元音とズレるが歌詞は通る |
+| **1. transcribe スクリプト** | `scripts/_transcribe_vocals_openai.py` (作成済 v128) を書く、user が走らせる | 100% (script 完成) | `pip install requests`、API key、`python script.py` 走らせる、出力 txt を v4 に merge |
+| **2. transcribe → 自動 merge** | Whisper 結果を読んで v4 doc の section に自動挿入する別 script を書く | 100% (script 提供) | 走らせるだけ、出力歌詞が v4 になる |
+| **3. transcribe + 耳補正 + push** | transcribe 結果を user が耳で修正 + git push | (script は提供) | 1 曲 20 分 × 7 = 2 時間 1 セッション |
+
+**おすすめ = level 2 で叩き台、level 3 で仕上げ**:
+
+1. `scripts/_transcribe_vocals_openai.py` (script v128 で作成済) を user が走らせる
+   - 必要: OpenAI API key ($5 trial credit で無料カバー)、`pip install requests`
+   - 出力: `tmp_transcribe/*.txt` (7 曲)
+2. 出力を user が読んで、ピンと来る部分を v4 doc の chorus に流し込む
+3. 耳で違和感ある所だけ修正 (chorus 優先、verse は v4 のままで OK)
+4. git push → band-room 反映
+
+= **2 時間で 7 曲分の「元音由来歌詞 chorus」が v4 doc 統合**。それ以降は今夜
+歌う準備完了。
+
+完全自動 (level 2) でも書けるが、結果が **耳通さない歌詞** になるので、user 耳
+1 度だけ通す level 3 が現実的。
+
+---
+
 ---
 
 ## まとめ — v4 完成版の特徴
