@@ -1048,6 +1048,21 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   padding: 0 4px;
 }
 
+/* v89: footer groups — clarify Band Room is its own app */
+.br-footer-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.br-footer-label {
+  opacity: 0.55;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  margin-right: 2px;
+}
+
 #br-footer a:hover {
   color: var(--accent-glass);
   text-decoration: underline;

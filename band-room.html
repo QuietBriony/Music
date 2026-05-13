@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-33" />
+<link rel="stylesheet" href="band-room.css?v=br-34" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-33" defer></script>
+<script src="band-room.js?v=br-34" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -138,7 +138,7 @@
     <details class="br-details" data-scope="stems">
       <summary>🥁🎸🎹 external stems (drums / bass / other 差し替え)</summary>
       <section id="br-external-stems" aria-label="Per-stem external upload">
-        <p class="br-help">自分のパート以外を元 stem で残しつつ、自分の楽器パートだけ録り直して差し替え。元 stem は ON のまま上から external が鳴る形なので、original stem の方を toggle off するのを忘れない。</p>
+        <p class="br-help">自分のパート以外を元 stem で残しつつ、自分の楽器パートだけ録り直して差し替え。元 stem は ON のまま上から external が鳴る形なので、original stem の方を toggle off するのを忘れない。<br><strong>素材源:</strong> DAW で取り直し、<a href="index.html">Music Core Rig</a> の REC、Suno 等 AI 生成 — どれの wav/mp3 でも OK。</p>
 
         <div class="br-ext-stem" data-stem="drums">
           <strong>🥁 drums</strong>
@@ -256,13 +256,21 @@
     </div>
 
     <footer id="br-footer">
-      <a href="fm.html">← Hazama FM</a>
-      <span class="br-sep">·</span>
-      <a href="index.html">Music Core</a>
-      <span class="br-sep">·</span>
-      <a href="docs/tabasco-lyrics-draft.md">lyrics v2</a>
-      <span class="br-sep">·</span>
-      <a href="docs/tabasco-lyrics-burroughs.md">v3 burroughs</a>
+      <span class="br-footer-group">
+        <span class="br-footer-label">別 app:</span>
+        <a href="fm.html">Hazama FM</a>
+        <span class="br-sep">·</span>
+        <a href="index.html">Music Core</a>
+      </span>
+      <span class="br-sep">/</span>
+      <span class="br-footer-group">
+        <span class="br-footer-label">歌詞:</span>
+        <a href="docs/tabasco-lyrics-draft.md">v2 plain</a>
+        <span class="br-sep">·</span>
+        <a href="docs/tabasco-lyrics-burroughs.md">v3 burroughs</a>
+      </span>
+      <span class="br-sep">/</span>
+      <a href="docs/DAW-INTEGRATION.md">DAW 連携</a>
       <div id="br-kbd-hint">
         <kbd>space</kbd> play/stop · <kbd>[</kbd> <kbd>]</kbd> sec · <kbd>1</kbd>..<kbd>9</kbd> jump · <kbd>m</kbd> mode · <kbd>shift</kbd>+click sec = A→B loop
       </div>

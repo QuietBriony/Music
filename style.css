@@ -723,6 +723,26 @@ body[data-playing="true"][data-auto="true"] #auto-block {
   color: rgba(233, 244, 239, 0.96);
 }
 
+.recorder-bridge-link {
+  min-width: 0;
+  border: 1px solid rgba(255, 184, 122, 0.34);
+  border-radius: 4px;
+  background: rgba(26, 10, 20, 0.72);
+  color: rgba(255, 220, 200, 0.85);
+  font-size: 9px;
+  letter-spacing: 0.10em;
+  line-height: 1;
+  padding: 5px 7px;
+  text-decoration: none;
+  text-transform: uppercase;
+  margin-left: 4px;
+}
+
+.recorder-bridge-link:hover {
+  border-color: rgba(255, 184, 122, 0.62);
+  color: rgba(255, 240, 220, 1);
+}
+
 body[data-recording="true"] .recorder-button {
   border-color: rgba(246, 91, 86, 0.8);
   box-shadow: 0 0 12px rgba(246, 91, 86, 0.16);

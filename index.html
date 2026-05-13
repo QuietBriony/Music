@@ -6,7 +6,7 @@
     <title>Music Core Rig</title>
 
     <!-- Style -->
-    <link rel="stylesheet" href="style.css?v=fm-25" />
+    <link rel="stylesheet" href="style.css?v=fm-26" />
 
     <!-- PWA — independent app from Hazama FM -->
     <link rel="manifest" href="manifest-mixer.webmanifest" />
@@ -26,7 +26,7 @@
     <script src="audio/human-groove-governor.js" defer></script>
 
     <!-- Engine -->
-    <script src="engine.js?v=fm-54" defer></script>
+    <script src="engine.js?v=fm-55" defer></script>
 </head>
 
 <body>
@@ -328,6 +328,7 @@
                             <button type="button" id="btn_mic_follow" class="packet-button mic-button" title="マイク入力を録音せずローカルfeaturesだけ解析">MIC</button>
                             <button type="button" id="btn_packet_json" class="packet-button" title="今のMusic状態を音声なしのmetadata地図として共有">SYNC</button>
                             <a id="rec_download" class="recorder-link" hidden download>save</a>
+                            <a href="band-room.html" id="rec_bridge_link" class="recorder-bridge-link" title="REC した wav を Band Room の external stems に drag-drop して、Tabasco 曲に重ねられる">→ Band Room へ</a>
                         </span>
                     </div>
                     <div class="sync-next-row" aria-live="polite">
