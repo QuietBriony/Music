@@ -1778,20 +1778,56 @@
       curBlock = null;
       curBody = [];
     }
+    // v127: accept both `[chorus]` inline tags AND `### chorus` markdown
+    // H3 headers as section markers. ``` code fences are skipped (lyrics
+    // block content inside ``` is treated as plain body text).
+    let inFence = false;
     for (const ln of lines) {
-      const m = ln.match(/^\s*\[(.+?)\]\s*$/);
+      // Skip markdown code fence delimiters and don't parse markers inside
+      if (/^```/.test(ln)) {
+        inFence = !inFence;
+        continue;
+      }
+      if (inFence) {
+        if (!curBlock) {
+          curBlock = document.createElement("div");
+          curBlock.className = "br-lyric-block br-lyric-preamble";
+          curBlock.dataset.marker = "preamble";
+        }
+        curBody.push(ln);
+        continue;
+      }
+      // Section marker: [chorus] or ### chorus
+      const inline = ln.match(/^\s*\[(.+?)\]\s*$/);
+      const h3 = ln.match(/^###\s+(.+?)\s*$/);
+      const m = inline || h3;
       if (m) {
+        const raw = m[1].trim();
+        // Skip non-section H3 like "### まとめ" — only accept English section words
+        // (verse / chorus / bridge / intro / outro / pre-chorus / chant / break / interlude)
+        const looksLikeSection = inline ||
+          /^(verse|chorus|bridge|intro|outro|pre-chorus|prechorus|chant|break|interlude|hook)/i.test(raw);
+        if (!looksLikeSection) {
+          // Not a lyric section header — treat as body
+          if (!curBlock) {
+            curBlock = document.createElement("div");
+            curBlock.className = "br-lyric-block br-lyric-preamble";
+            curBlock.dataset.marker = "preamble";
+          }
+          curBody.push(ln);
+          continue;
+        }
         flush();
         curBlock = document.createElement("div");
         curBlock.className = "br-lyric-block";
-        curBlock.dataset.marker = m[1].toLowerCase().replace(/\s+/g, "-");
+        curBlock.dataset.marker = raw.toLowerCase().replace(/\s+/g, "-");
         const head = document.createElement("div");
         head.className = "br-lyric-marker";
-        head.textContent = "[" + m[1] + "]";
+        head.textContent = inline ? "[" + raw + "]" : raw;
         curBlock.appendChild(head);
       } else {
         if (!curBlock) {
-          // text before first [marker] — wrap in a preamble block
+          // text before first marker — wrap in a preamble block
           curBlock = document.createElement("div");
           curBlock.className = "br-lyric-block br-lyric-preamble";
           curBlock.dataset.marker = "preamble";
@@ -3022,7 +3058,7 @@
             subtitle: "fallback (bands.json failed to load)",
             stems_dir: "presets/tabasco-stems",
             drum_frames_pattern: "presets/drum-frames-tabasco-{songid}.json",
-            lyrics_doc: "docs/tabasco-lyrics-draft.md",
+            lyrics_doc: "docs/tabasco-lyrics-v4-syllabic.md",
             songs: [
               { id: "tabasco",         track: "01", title: "TABASCO" },
               { id: "hey",             track: "02", title: "Hey" },

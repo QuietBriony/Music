@@ -14,7 +14,7 @@
       "scene": "mixture rock (Backdrop Bomb / LCD Soundsystem hybrid)",
       "stems_dir": "presets/tabasco-stems",
       "drum_frames_pattern": "presets/drum-frames-tabasco-{songid}.json",
-      "lyrics_doc": "docs/tabasco-lyrics-draft.md",
+      "lyrics_doc": "docs/tabasco-lyrics-v4-syllabic.md",
       "songs": [
         {
           "id": "tabasco",
