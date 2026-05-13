@@ -197,6 +197,7 @@ Tabasco 以外のバンドを追加するなら別 doc:
 | [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) | v65-v102 履歴、各 wave 詳細 |
 | [BAND-ROOM-ADD-BAND.md](./BAND-ROOM-ADD-BAND.md) | 新バンド追加手順 |
 | [PRODUCTION-PATH.md](./PRODUCTION-PATH.md) | **「作品」として世に出す道筋** (album 制作 / 30 min lofi set / 配信 platform 比較) |
+| [RECORDING-WORKFLOW.md](./RECORDING-WORKFLOW.md) | UR44 + マイク / bass / 電子ドラム / EP-133 経由で band-room の external slot に流す具体手順 |
 | [DAW-INTEGRATION.md](./DAW-INTEGRATION.md) | Ableton / BandLab / Logic / ハードウェア連携 |
 | [FREE-SAMPLES-AND-SYNTHESIS.md](./FREE-SAMPLES-AND-SYNTHESIS.md) | 音色設計の哲学、synth profile 詳細 |
 | [SAMPLE-CATALOG-GUIDE.md](./SAMPLE-CATALOG-GUIDE.md) | online catalog json の編集 / 拡張 |

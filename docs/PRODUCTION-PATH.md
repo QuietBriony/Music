@@ -32,9 +32,9 @@
    - どちらか or ハイブリッド
 
 2. **vocal を 7 曲分用意**
-   - 自分で歌い直し: 練習用に band-room で原音モード再生しながら録音
+   - 自分で歌い直し (UR44 + マイクで具体的手順): [RECORDING-WORKFLOW.md](./RECORDING-WORKFLOW.md)
    - Suno で AI 生成: 各曲の歌詞 + style prompt を Suno に投げて mp3 受け取り
-   - 詳細: [VOCAL-REGENERATION-PATH.md](./VOCAL-REGENERATION-PATH.md)
+   - 詳細: [SUNO-WORKFLOW.md](./SUNO-WORKFLOW.md) / [VOCAL-REGENERATION-PATH.md](./VOCAL-REGENERATION-PATH.md)
 
 3. **band-room で組み立てて確認**
    - 各曲開いて `🎙 external vocal` に drop
