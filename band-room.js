@@ -121,6 +121,12 @@
   let externalVocalBus = null;
   let externalVocalBlobUrl = null;
 
+  // v87: per-stem external replacement (drums/bass/other).
+  // Lets you mute the original drums stem and feed in your own kit take, etc.
+  // Each routes via stemEQs[stem].input so the same EQ chain applies.
+  let externalStemPlayers = { drums: null, bass: null, other: null };
+  let externalStemBlobUrls = { drums: null, bass: null, other: null };
+
   // ---- Master setup -------------------------------------------
 
   function makeStemEQChain(stem) {
@@ -510,6 +516,49 @@
   function stopExternalVocal() {
     if (!externalVocalPlayer) return;
     try { externalVocalPlayer.stop(); } catch (e) {}
+  }
+
+  // v87: per-stem external upload (drums/bass/other).
+  function loadExternalStem(stem, fileBlob) {
+    if (!["drums", "bass", "other"].includes(stem)) return Promise.resolve(false);
+    if (externalStemPlayers[stem]) {
+      try { externalStemPlayers[stem].stop(); externalStemPlayers[stem].dispose(); } catch (e) {}
+      externalStemPlayers[stem] = null;
+    }
+    if (externalStemBlobUrls[stem]) {
+      URL.revokeObjectURL(externalStemBlobUrls[stem]);
+      externalStemBlobUrls[stem] = null;
+    }
+    if (!fileBlob) return Promise.resolve(false);
+    if (!stemEQs[stem]) ensureMaster();
+    externalStemBlobUrls[stem] = URL.createObjectURL(fileBlob);
+    const status = $(`br-external-${stem}-status`);
+    if (status) status.textContent = "loading…";
+    externalStemPlayers[stem] = new Tone.Player({
+      url: externalStemBlobUrls[stem],
+      autostart: false,
+      fadeIn: 0.10,
+      fadeOut: 0.20,
+      loop: true
+    }).connect(stemEQs[stem].input);
+    return Tone.loaded().then(() => {
+      if (status) status.textContent = `loaded: ${fileBlob.name} (${(fileBlob.size/1024/1024).toFixed(1)} MB)`;
+      return true;
+    });
+  }
+
+  function startExternalStemIfEnabled(stem) {
+    const p = externalStemPlayers[stem];
+    if (!p) return;
+    const enabled = $(`br-toggle-external-${stem}`)?.checked;
+    if (!enabled) return;
+    try { p.start("+0.15"); } catch (e) {}
+  }
+
+  function stopExternalStem(stem) {
+    const p = externalStemPlayers[stem];
+    if (!p) return;
+    try { p.stop(); } catch (e) {}
   }
 
   // ---- Drum kit (tabasco-rock profile: LCD + Backdrop Bomb) ----
@@ -1544,6 +1593,8 @@
     if (currentMode === "stems") {
       startStemPlayback();
       startExternalVocalIfEnabled();
+      // v87: per-stem external replacements
+      ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s));
     }
 
     state.started = true;
@@ -1614,6 +1665,7 @@
     state.scheduledIds = [];
     stopStemPlayback();
     stopExternalVocal();
+    ["drums", "bass", "other"].forEach((s) => stopExternalStem(s)); // v87
     state.started = false;
     setButtonState("idle");
     stopMasterMeter();
@@ -1905,6 +1957,54 @@
         if (e.target === helpOverlay) closeHelp();
       });
     }
+
+    // v87: per-stem external upload (drums / bass / other)
+    ["drums", "bass", "other"].forEach((stem) => {
+      const fileEl = $(`br-external-${stem}-file`);
+      const togEl = $(`br-toggle-external-${stem}`);
+      const accept = async (file) => {
+        if (!file || !file.type.startsWith("audio/")) return;
+        ensureMaster();
+        await loadExternalStem(stem, file);
+        if (togEl && !togEl.checked) {
+          togEl.checked = true;
+          // Mute the original stem so external takes over
+          const origTog = $(`br-toggle-stem-${stem}`);
+          if (origTog) {
+            origTog.checked = false;
+            if (stemPlayers[stem]) stemPlayers[stem].mute = true;
+          }
+          if (state.started) startExternalStemIfEnabled(stem);
+        }
+      };
+      if (fileEl) {
+        fileEl.addEventListener("change", async (e) => {
+          await accept(e.target.files?.[0]);
+        });
+      }
+      if (togEl) {
+        togEl.addEventListener("change", () => {
+          if (togEl.checked && state.started) startExternalStemIfEnabled(stem);
+          else if (!togEl.checked) stopExternalStem(stem);
+        });
+      }
+      // Drag-drop on the per-stem block
+      const block = document.querySelector(`.br-ext-stem[data-stem="${stem}"]`);
+      if (block) {
+        block.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          block.classList.add("drag-over");
+        });
+        ["dragleave", "dragend"].forEach((ev) =>
+          block.addEventListener(ev, () => block.classList.remove("drag-over"))
+        );
+        block.addEventListener("drop", async (e) => {
+          e.preventDefault();
+          block.classList.remove("drag-over");
+          await accept(e.dataTransfer?.files?.[0]);
+        });
+      }
+    });
 
     // v81: recorder toggle button
     const recBtn = $("br-rec-toggle");
