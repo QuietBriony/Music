@@ -998,6 +998,18 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   transition: width 60ms linear, background 100ms linear;
 }
 
+/* v77: spectrum analyzer canvas */
+#br-spectrum {
+  width: 80%;
+  max-width: 280px;
+  height: 36px;
+  margin-top: 6px;
+  display: block;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.20);
+  border: 1px solid rgba(255, 184, 122, 0.08);
+}
+
 @media (max-width: 540px) {
   #br-main { padding: 8px 12px 60px; gap: 10px; }
   #br-track-select button { font-size: 10px; padding: 7px 10px; }

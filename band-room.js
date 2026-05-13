@@ -56,6 +56,7 @@
   let vocalDeEsser = null;            // sidechain-style sibilance dip
   let masterMeter = null;             // v71: master RMS meter for UI feedback
   let masterMeterRaf = 0;             // requestAnimationFrame id
+  let masterFft = null;               // v77: spectrum analyzer FFT
   let drumBus = null;
   let bassBus = null;
   let guitarBus = null;
@@ -165,6 +166,10 @@
     // v71: meter tap on the limiter input — measures the final pre-clip RMS
     masterMeter = new Tone.Meter({ smoothing: 0.75 });
     masterLimiter.connect(masterMeter);
+    // v77: FFT tap for the spectrum analyzer (64 bins is plenty for a
+    // 28-bar compact view; smoothing built into the FFT analyser node).
+    masterFft = new Tone.FFT({ size: 64, smoothing: 0.65 });
+    masterLimiter.connect(masterFft);
     const masterEq = new Tone.EQ3({ low: 1.4, mid: -0.4, high: 0.8, lowFrequency: 200, highFrequency: 5000 });
     const masterComp1 = new Tone.Compressor({ threshold: -14, ratio: 2.5, attack: 0.012, release: 0.22, knee: 6 });
     const masterComp2 = new Tone.Compressor({ threshold: -8,  ratio: 1.7, attack: 0.003, release: 0.10, knee: 4 });
@@ -1411,19 +1416,36 @@
   }
 
   // v71: master meter — animate #br-meter-fill width from Tone.Meter dB
+  // v77: also drive the spectrum canvas off the same RAF.
   function startMasterMeter() {
     if (!masterMeter) return;
     const fill = $("br-meter-fill");
     if (!fill) return;
+    const canvas = $("br-spectrum");
+    const ctx = canvas ? canvas.getContext("2d") : null;
     cancelAnimationFrame(masterMeterRaf);
     const tick = () => {
       if (!state.started) return;
+      // --- RMS meter ---
       const dB = masterMeter.getValue();
-      // Map -60..0 dB → 0..100%
       const pct = Math.max(0, Math.min(100, (dB + 60) / 60 * 100));
       fill.style.width = pct.toFixed(1) + "%";
-      // Color shift: red over -3 dB, accent below
       fill.style.background = dB > -3 ? "#ff5566" : (dB > -12 ? "#ffb39a" : "#ff8866");
+      // --- Spectrum ---
+      if (ctx && masterFft) {
+        const w = canvas.width, h = canvas.height;
+        const vals = masterFft.getValue();  // Float32Array of dB values
+        ctx.clearRect(0, 0, w, h);
+        const bw = w / vals.length;
+        for (let i = 0; i < vals.length; i++) {
+          const v = vals[i];
+          // map -100..0 dB → 0..h
+          const bh = Math.max(0, Math.min(h, (v + 100) / 100 * h));
+          const hue = i < 8 ? 14 : (i < 24 ? 22 : 28);  // bass→mid→high tint
+          ctx.fillStyle = `hsla(${hue}, 80%, 65%, 0.72)`;
+          ctx.fillRect(i * bw, h - bh, bw - 0.5, bh);
+        }
+      }
       masterMeterRaf = requestAnimationFrame(tick);
     };
     tick();
@@ -1434,6 +1456,11 @@
     masterMeterRaf = 0;
     const fill = $("br-meter-fill");
     if (fill) fill.style.width = "0%";
+    const canvas = $("br-spectrum");
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
   }
 
   function stopPlayback() {
