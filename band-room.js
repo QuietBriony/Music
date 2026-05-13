@@ -1103,10 +1103,51 @@
     if (resolved === "synth" || !resolved) {
       return makeDrumKit(drumBus, state.kitProfile || "default");
     }
+    // v97: online/<id> resolves to a remote kit from online-samples-catalog
+    if (resolved.startsWith("online/")) {
+      const kitId = resolved.substring("online/".length);
+      const catalog = state.onlineCatalog;
+      const kitDef = catalog && catalog.kits ? catalog.kits.find((k) => k.id === kitId) : null;
+      if (!kitDef) {
+        console.warn("[Band Room] online kit not found:", kitId);
+        return makeDrumKit(drumBus, state.kitProfile || "default");
+      }
+      const voicesMap = {};
+      Object.entries(kitDef.voices).forEach(([voice, path]) => {
+        voicesMap[voice] = kitDef.base_url + path;
+      });
+      const kit = makeRemoteKit(drumBus, voicesMap, kitId);
+      try { await Tone.loaded(); } catch (e) {}
+      return kit;
+    }
     const kitPath = `presets/sample-kits/${resolved}`;
     const kit = makeSampledKit(drumBus, kitPath);
     try { await Tone.loaded(); } catch (e) {}
     return kit;
+  }
+
+  // v97: remote drum kit — build a sample kit from a voice→URL map
+  // (URLs typically point to public CDNs like jsDelivr or tonejs.github.io).
+  // Same Panner layout as makeSampledKit, but accepts arbitrary URLs
+  // instead of a local kitPath + standard filenames.
+  function makeRemoteKit(target, voicesMap, kitId) {
+    const PANS = { kick: 0.00, snare: -0.06, hat: 0.22, ghost: -0.16, fill: 0.12, crash: 0.20 };
+    const voices = {};
+    const panners = [];
+    Object.entries(voicesMap).forEach(([voice, url]) => {
+      if (!url) return;
+      const pan = PANS[voice] !== undefined ? PANS[voice] : 0;
+      const panner = new Tone.Panner(pan).connect(target);
+      panners.push(panner);
+      voices[voice] = makeSampleVoice(panner, url);
+    });
+    voices._kitPath = "online/" + kitId;
+    voices._panners = panners;
+    voices.dispose = () => {
+      Object.values(voices).forEach((v) => v && v.dispose && v.dispose());
+      panners.forEach((p) => { try { p.dispose(); } catch (e) {} });
+    };
+    return voices;
   }
 
   function makeSampledKit(target, kitPath) {
@@ -2470,6 +2511,7 @@
     const sel = $("br-kit-source-select");
     if (!sel) return;
     sel.innerHTML = "";
+    // Local kits first
     KIT_OPTIONS.forEach((opt) => {
       const o = document.createElement("option");
       o.value = opt.value;
@@ -2477,6 +2519,20 @@
       if (opt.value === state.kitSource) o.selected = true;
       sel.appendChild(o);
     });
+    // v97: append online catalog kits (CDN samples, no repo size impact)
+    if (state.onlineCatalog && state.onlineCatalog.kits) {
+      const sep = document.createElement("option");
+      sep.disabled = true;
+      sep.textContent = "─── online (CDN) ───";
+      sel.appendChild(sep);
+      state.onlineCatalog.kits.forEach((kit) => {
+        const o = document.createElement("option");
+        o.value = "online/" + kit.id;
+        o.textContent = "🌐 " + kit.label;
+        if (o.value === state.kitSource) o.selected = true;
+        sel.appendChild(o);
+      });
+    }
     sel.addEventListener("change", async () => {
       const newSource = sel.value;
       const status = $("br-kit-status");
@@ -2883,8 +2939,24 @@
     }
   });
 
+  // v97: load online-samples-catalog at boot so kit dropdown can include
+  // CDN kits (no repo size impact — sample fetch happens on demand).
+  async function loadOnlineCatalog() {
+    try {
+      const res = await fetch("presets/online-samples-catalog.json?cb=" + Date.now());
+      if (!res.ok) return null;
+      const data = await res.json();
+      state.onlineCatalog = data;
+      return data;
+    } catch (e) {
+      console.warn("[Band Room] online catalog load failed:", e);
+      return null;
+    }
+  }
+
   window.addEventListener("DOMContentLoaded", async () => {
     bindUI();
+    await loadOnlineCatalog();  // v97: before renderKitOptions so online kits appear
     renderKitOptions();
     await loadBandsRegistry();
 

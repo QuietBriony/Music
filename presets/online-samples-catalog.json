@@ -1,0 +1,96 @@
+{
+  "schema": "1.0",
+  "comment": "Online drum kit catalog. URLs point to public CDN samples (CC-0 / MIT). band-room.js fetches on demand — no repo size impact. Each kit maps the 6 band-room voices (kick/snare/hat/ghost/fill/crash) to a public URL.",
+  "kits": [
+    {
+      "id": "tone-cr78",
+      "label": "Tone.js CR-78 (Roland CR-78 demo set)",
+      "source": "tonejs.github.io",
+      "license": "MIT (Tone.js examples)",
+      "base_url": "https://tonejs.github.io/audio/drum-samples/CR78",
+      "voices": {
+        "kick":  "/kick.mp3",
+        "snare": "/snare.mp3",
+        "hat":   "/hihat.mp3",
+        "ghost": "/snare.mp3",
+        "fill":  "/snare.mp3",
+        "crash": "/hihat.mp3"
+      }
+    },
+    {
+      "id": "tone-breakbeat",
+      "label": "Tone.js breakbeat (drum break loop hits)",
+      "source": "tonejs.github.io",
+      "license": "MIT (Tone.js examples)",
+      "base_url": "https://tonejs.github.io/audio/drum-samples/breakbeat13",
+      "voices": {
+        "kick":  "/kick.mp3",
+        "snare": "/snare.mp3",
+        "hat":   "/hihat.mp3",
+        "ghost": "/snare.mp3",
+        "fill":  "/snare.mp3",
+        "crash": "/hihat.mp3"
+      }
+    },
+    {
+      "id": "tone-acoustic",
+      "label": "Tone.js Acoustic Kit (close-mic'd kit)",
+      "source": "tonejs.github.io",
+      "license": "MIT (Tone.js examples)",
+      "base_url": "https://tonejs.github.io/audio/drum-samples/acoustic-kit",
+      "voices": {
+        "kick":  "/kick.mp3",
+        "snare": "/snare.mp3",
+        "hat":   "/hihat.mp3",
+        "ghost": "/snare.mp3",
+        "fill":  "/snare.mp3",
+        "crash": "/hihat.mp3"
+      }
+    },
+    {
+      "id": "dirt-808",
+      "label": "TR-808 (TidalCycles dirt-samples, CC-0)",
+      "source": "tidalcycles/dirt-samples",
+      "license": "CC-0 (Public Domain)",
+      "base_url": "https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@master",
+      "voices": {
+        "kick":  "/808bd/BD0000.WAV",
+        "snare": "/808sd/SD0000.WAV",
+        "hat":   "/808hc/HC00.WAV",
+        "ghost": "/808sd/SD0025.WAV",
+        "fill":  "/808sd/SD0050.WAV",
+        "crash": "/808/CP.WAV"
+      }
+    },
+    {
+      "id": "dirt-909",
+      "label": "TR-909 (dirt-samples, CC-0)",
+      "source": "tidalcycles/dirt-samples",
+      "license": "CC-0 (Public Domain)",
+      "base_url": "https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@master",
+      "voices": {
+        "kick":  "/bd/BT0A0D0.WAV",
+        "snare": "/sd/SD0000.WAV",
+        "hat":   "/hh/000_hh3closedhh.wav",
+        "ghost": "/sd/SD0010.WAV",
+        "fill":  "/sd/SD0050.WAV",
+        "crash": "/cr/000_cr2_chorus.wav"
+      }
+    },
+    {
+      "id": "dirt-cp",
+      "label": "Clap pack (dirt-samples, CC-0)",
+      "source": "tidalcycles/dirt-samples",
+      "license": "CC-0 (Public Domain)",
+      "base_url": "https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@master",
+      "voices": {
+        "kick":  "/808bd/BD0050.WAV",
+        "snare": "/cp/HANDCLP0.WAV",
+        "hat":   "/808oh/OHC00.WAV",
+        "ghost": "/cp/HANDCLPN.WAV",
+        "fill":  "/cp/HANDCLPP.WAV",
+        "crash": "/808/CP.WAV"
+      }
+    }
+  ]
+}
