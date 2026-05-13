@@ -731,6 +731,35 @@
     return KIT_PROFILES[state.kitProfile] || KIT_PROFILES["default"];
   }
 
+  // v93: master mix presets — one click swaps the whole master chain
+  // (reverb / width / tape warmth / loudness sliders) to a genre vibe.
+  // These map to the existing slider IDs so the existing event handlers
+  // re-fire and the values persist via v78 localStorage.
+  const MASTER_PRESETS = {
+    "neutral":  { label: "neutral (現状)",      reverb: 22, width: 72, warmth: 10, loudness: 0  },
+    "lo-fi":    { label: "lo-fi (lofi hiphop)",  reverb: 38, width: 50, warmth: 32, loudness: -3 },
+    "club":     { label: "club (loud / wide)",   reverb: 12, width: 88, warmth: 18, loudness: +3 },
+    "rock":     { label: "rock (dry / punchy)",  reverb: 14, width: 65, warmth: 12, loudness: +1 },
+    "ambient":  { label: "ambient (washy)",      reverb: 55, width: 90, warmth: 22, loudness: -2 }
+  };
+
+  function applyMasterPreset(name) {
+    const p = MASTER_PRESETS[name];
+    if (!p) return;
+    const map = {
+      "br-space-reverb": p.reverb,
+      "br-space-width":  p.width,
+      "br-tape-warmth":  p.warmth,
+      "br-loudness":     p.loudness
+    };
+    Object.entries(map).forEach(([id, v]) => {
+      const el = $(id);
+      if (!el) return;
+      el.value = String(v);
+      el.dispatchEvent(new Event("input"));
+    });
+  }
+
   function makeDrumKit(target, profileName) {
     const p = KIT_PROFILES[profileName] || KIT_PROFILES["default"];
     // Kick: punchy modern, deep & tight (LCD/dance + rock)
@@ -2114,6 +2143,17 @@
         }
       });
     }
+
+    // v93: master mix preset chips
+    document.querySelectorAll(".br-master-preset").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const name = btn.dataset.preset;
+        applyMasterPreset(name);
+        document.querySelectorAll(".br-master-preset").forEach((b) => {
+          b.classList.toggle("active", b === btn);
+        });
+      });
+    });
 
     // v90: stems pack export toggle
     const stemsPackBtn = $("br-stems-pack-toggle");

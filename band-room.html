@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-37" />
+<link rel="stylesheet" href="band-room.css?v=br-38" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-37" defer></script>
+<script src="band-room.js?v=br-38" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -225,6 +225,13 @@
     <details class="br-details">
       <summary>🌌 mastering (space / width / warmth / loudness)</summary>
       <section id="br-space" aria-label="Mastering">
+        <div id="br-master-presets">
+          <button type="button" class="br-master-preset" data-preset="neutral">neutral</button>
+          <button type="button" class="br-master-preset" data-preset="lo-fi">lo-fi</button>
+          <button type="button" class="br-master-preset" data-preset="club">club</button>
+          <button type="button" class="br-master-preset" data-preset="rock">rock</button>
+          <button type="button" class="br-master-preset" data-preset="ambient">ambient</button>
+        </div>
         <label><span>reverb</span><input type="range" id="br-space-reverb" min="0" max="60" value="22" /></label>
         <label><span>width</span><input type="range" id="br-space-width" min="0" max="100" value="72" /></label>
         <label><span>warmth</span><input type="range" id="br-tape-warmth" min="0" max="40" value="10" /></label>

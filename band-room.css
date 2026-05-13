@@ -1280,6 +1280,40 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   color: var(--accent-glass);
 }
 
+/* v93: master mix preset chips */
+#br-master-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.br-master-preset {
+  appearance: none;
+  background: rgba(255, 184, 122, 0.05);
+  border: 1px solid rgba(255, 184, 122, 0.20);
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  text-transform: lowercase;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.br-master-preset:hover {
+  border-color: var(--accent-soft);
+  color: var(--accent-glass);
+}
+
+.br-master-preset.active {
+  background: rgba(255, 136, 102, 0.22);
+  border-color: var(--accent);
+  color: var(--accent-glass);
+}
+
 /* v80: A-B loop visualization on section chips */
 #br-section-nav button.loop-a,
 #br-section-nav button.loop-b {
