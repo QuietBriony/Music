@@ -1,5 +1,14 @@
 # Tabasco — Lyric v4 (元音節リズム保持版)
 
+> ⚠️ **正直な注意書き** (v127 時点):
+> この v4 は **元 vocals.mp3 を実際に聴いて音節を transcribe したものではない**。
+> v2.1 (過去の "適当英語" を整えた版) を base にして、音節数を維持しようとした
+> 推測版。実際の元 vocal で何と歌ってるかは耳のある人 (= user) が band-room で
+> stems mode → vocals only にして聴いて確認する必要がある。
+>
+> 元音に厳密に合わせたい場合は下記 **「実音節を聴き取って差し替える」** section
+> 参照。
+
 > ユーザー: 「元音から拾えそうな音声部分は入れながら、サビメロくらいは。
 > まるっきり変えるのは気分が乗らない」
 >
@@ -344,6 +353,75 @@ the wire is still warm — the wire is still warm
 ```
 
 > v3 そのまま fade。
+
+---
+
+## 実音節を聴き取って差し替える 3 path
+
+私 (Claude) は audio を直接聞けないので、ここから先は **user の耳**が必要。
+
+### path A: band-room で耳コピ (一番素直)
+
+1. band-room.html を開く
+2. 各曲選んで START
+3. **📻 原音 stems モード**、🥁 drum / 🎸 bass / 🎹 other を toggle OFF
+4. **vocals だけ鳴る** 状態で 1 通し聴く
+5. 紙 or ノートに「元 vocal が何と聞こえるか」を書き取る
+6. 不明な箇所は「??」のままで OK
+7. v4 doc の各曲の **chorus 部分から優先**に書き換える (chorus = hook 一番大事)
+8. `git add docs/tabasco-lyrics-v4-syllabic.md && git commit && git push`
+9. 3 分後 band-room の追っかけ歌詞も自動更新
+
+1 曲 30 分程度。7 曲で 3-4 時間 1 セッション。
+
+### path B: Whisper で自動 transcribe (補助、精度限定)
+
+OpenAI の Whisper を使うと、音楽の vocal stem からそれっぽい歌詞起こしが可能。
+ただし **歌唱の transcription は通常会話より精度低い** (Whisper は会話最適化)。
+
+#### B-1: ローカル Whisper
+
+```bash
+# Python 環境で
+pip install openai-whisper
+
+# 各 vocal stem を transcribe
+cd C:/workspace/github-inventory/music-stack/Music
+for song in human-fly hey i-got-a-feeling under-the-moon electric-sheep sister tabasco; do
+  whisper presets/tabasco-stems/$song/vocals.mp3 \
+    --model small.en \
+    --output_dir /tmp/transcribe \
+    --output_format txt
+done
+```
+
+出力された txt を読んで v4 と照合、差し替え。
+
+#### B-2: OpenAI API Whisper (有料、精度高い)
+
+```bash
+curl https://api.openai.com/v1/audio/transcriptions \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -F file=@presets/tabasco-stems/human-fly/vocals.mp3 \
+  -F model=whisper-1 \
+  -F response_format=text
+```
+
+1 曲 ~ $0.006 (5-6 分の vocal stem)。7 曲で $0.05 程度。
+
+#### B-3: ブラウザで動かす Whisper
+
+`whisper.cpp` の wasm 版や `transformers.js` の Whisper モデルでブラウザ内
+transcribe も可能、ただし重い (~100-200 MB ダウンロード)。 band-room 統合は
+別 wave で検討。
+
+### path C: ハイブリッド (現実的)
+
+1. path B で Whisper transcript を 1 曲分まず取る (~5 分)
+2. transcript を base に、user が耳でズレを修正 (~15 分)
+3. v4 doc に差し替え
+
+= path A よりは速く、path B 単独より精度高い。これがおすすめ。
 
 ---
 
