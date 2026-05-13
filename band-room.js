@@ -252,19 +252,25 @@
     stemEQs.other = makeStemEQChain("other");
 
     // v69: insert Tone.Panner per bus for AI 再現 stereo placement.
-    // drums/bass/voice/click stay center (low end + lead = stable middle).
-    // guitar drifts slight L, chords drift slight R (classic rock spread).
+    // v104: rebalance — bus levels were skewed with chord/voice too quiet
+    // and drums dominating. Adjust so the AI band sits balanced:
+    //   drums 0.75 → 0.62 (was dominating)
+    //   bass  0.65 → 0.72 (more presence)
+    //   guitar 0.70 → 0.62
+    //   voice 0.40 → 0.56 (guide should be audible)
+    //   chord 0.55 → 0.68 (pad anchor)
+    //   click 0.0 → 0.0 (default off; user enables via toggle + slider)
     const drumPan   = new Tone.Panner(0.00).connect(masterGain);
     const bassPan   = new Tone.Panner(0.00).connect(masterGain);
     const guitarPan = new Tone.Panner(-0.25).connect(masterGain);
     const voicePan  = new Tone.Panner(0.00).connect(masterGain);
     const chordPan  = new Tone.Panner(+0.20).connect(masterGain);
     const clickPan  = new Tone.Panner(0.00).connect(masterGain);
-    drumBus = new Tone.Gain(0.75).connect(drumPan);
-    bassBus = new Tone.Gain(0.65).connect(bassPan);
-    guitarBus = new Tone.Gain(0.70).connect(guitarPan);
-    voiceBus = new Tone.Gain(0.40).connect(voicePan);
-    chordBus = new Tone.Gain(0.55).connect(chordPan);
+    drumBus = new Tone.Gain(0.62).connect(drumPan);
+    bassBus = new Tone.Gain(0.72).connect(bassPan);
+    guitarBus = new Tone.Gain(0.62).connect(guitarPan);
+    voiceBus = new Tone.Gain(0.56).connect(voicePan);
+    chordBus = new Tone.Gain(0.68).connect(chordPan);
     clickBus = new Tone.Gain(0.0).connect(clickPan);
 
     // Original-stem buses → per-stem EQ → masterGain
@@ -1042,7 +1048,7 @@
     return true;
   }
 
-  function startStemPlayback() {
+  function startStemPlayback(offsetSec = 0) {
     if (!stemPlayers.vocals && !stemPlayers.drums && !stemPlayers.bass && !stemPlayers.other) return false;
     // Sync start: schedule all at the same Transport position
     const startAt = "+0.15";  // small delay so all loaded buffers can fire together
@@ -1055,7 +1061,12 @@
         const muteVal = !enabled;
         player.mute = muteVal;
         player.playbackRate = tempoMult;
-        player.start(startAt);
+        // v104: offsetSec lets us start mid-song (jumpToSection auto-start)
+        if (offsetSec > 0) {
+          player.start(startAt, offsetSec);
+        } else {
+          player.start(startAt);
+        }
       } catch (e) {
         console.warn("[Band Room] stem start failed:", stem, e);
       }
@@ -1316,7 +1327,7 @@
       envelope: { attack: 0.06, decay: 0.32, sustain: 0.65, release: 0.45 },
       modulation: { type: "sine" },
       modulationEnvelope: { attack: 0.04, decay: 0.2, sustain: 0.5, release: 0.4 },
-      volume: -10
+      volume: -14  // v104: was -10, lowered so vocal guide doesn't dominate
     });
     voice.connect(formant1);
     voice.connect(formant2);
@@ -1400,7 +1411,7 @@
     const chord = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: c.oscType },
       envelope: { attack: c.attack, decay: c.decay, sustain: 0.45, release: c.release },
-      volume: -16
+      volume: -12  // v104: was -16, raised so chord pad anchors the mix
     }).connect(chorus);
     chord.maxPolyphony = 6;
     return chord;
@@ -1713,6 +1724,9 @@
           p.start("+0.05", targetSec);
         } catch (e) {}
       });
+    } else {
+      // v104: 停止中なら、そのセクションから自動再生開始する
+      startPlayback({ preservePosition: true });
     }
     updateSectionDisplay();
     const sec = currentSection();
@@ -1931,7 +1945,7 @@
 
   // ---- Playback lifecycle -------------------------------------
 
-  async function startPlayback() {
+  async function startPlayback(opts = {}) {
     if (state.started || state.starting) return;
     state.starting = true;
     setButtonState("starting");
@@ -1962,14 +1976,24 @@
     // Load stems (if available for this song)
     await loadStemsForSong(state.currentSongId);
 
-    // Reset state
-    state.barCount = 0;
-    state.sectionIdx = 0;
-    state.sectionBarStart = 0;
+    // v104: reset state UNLESS the caller asked to preserve position
+    // (jumpToSection while stopped → auto-start from that section)
+    if (!opts.preservePosition) {
+      state.barCount = 0;
+      state.sectionIdx = 0;
+      state.sectionBarStart = 0;
+    }
 
     // v76: respect the tempo slider when starting (so re-start at 80% stays at 80%)
     const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
     Tone.Transport.bpm.value = (state.songData.bpm || 117) * tempoMult;
+
+    // v104: when starting from a non-zero section, seek Transport timeline
+    if (opts.preservePosition && state.barCount > 0) {
+      const bpm = state.songData.bpm || 117;
+      const barDur = 60 / bpm * 4;
+      try { Tone.Transport.seconds = state.barCount * barDur; } catch (e) {}
+    }
 
     // Clear any old schedules
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
@@ -1977,8 +2001,11 @@
 
     scheduleBar();
     Tone.Transport.start();
+    const stemOffsetSec = opts.preservePosition && state.barCount > 0
+      ? state.barCount * (60 / (state.songData.bpm || 117) * 4)
+      : 0;
     if (currentMode === "stems") {
-      startStemPlayback();
+      startStemPlayback(stemOffsetSec);
       startExternalVocalIfEnabled();
       // v87: per-stem external replacements
       ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s));

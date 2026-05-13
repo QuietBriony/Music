@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-42" />
+<link rel="stylesheet" href="band-room.css?v=br-43" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-42" defer></script>
+<script src="band-room.js?v=br-43" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -38,6 +38,13 @@
         <strong>キーボード:</strong>
         <kbd>space</kbd> play · <kbd>[</kbd> <kbd>]</kbd> sec · <kbd>1-9</kbd> jump ·
         <kbd>m</kbd> mode · <kbd>?</kbd> このパネル
+      </p>
+      <p>
+        <strong>section nav (intro / verse / chorus ボタン):</strong><br>
+        • <strong>click</strong> = そのセクションに jump (再生中なら audio もそこに seek、停止中なら **自動で再生開始**)<br>
+        • <strong>shift+click</strong> = A→B loop 範囲設定 (2 セクションシフトクリックで間を無限ループ)<br>
+        • 通常クリック = ループ範囲クリア + jump<br>
+        • 曲末尾まで来ると **structure の頭にループ** (v68)
       </p>
       <p>
         <strong>詳細マニュアル:</strong>
@@ -99,12 +106,12 @@
     </section>
 
     <section id="br-controls" aria-label="Synth layers" data-scope="synth">
-      <label class="br-toggle"><input type="checkbox" id="br-toggle-drums" /><span>drums</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-drums" checked /><span>drums</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-bass" checked /><span>bass</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-guitar" checked /><span>guitar</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-voice" checked /><span>vocal</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-chords" checked /><span>chords</span></label>
       <label class="br-toggle"><input type="checkbox" id="br-toggle-click" /><span>click</span></label>
-      <label class="br-toggle"><input type="checkbox" id="br-toggle-bass" /><span>bass</span></label>
-      <label class="br-toggle"><input type="checkbox" id="br-toggle-guitar" /><span>guitar</span></label>
-      <label class="br-toggle"><input type="checkbox" id="br-toggle-voice" /><span>vocal</span></label>
-      <label class="br-toggle"><input type="checkbox" id="br-toggle-chords" /><span>chords</span></label>
     </section>
 
     <!-- ===== LYRICS + CHORD (core) ===== -->
@@ -246,11 +253,11 @@
         <label><span>other</span><input type="range" id="br-vol-stem-other" min="0" max="100" value="85" /></label>
       </section>
       <section id="br-volume" aria-label="Synth volumes" data-scope="synth">
-        <label><span>drums</span><input type="range" id="br-vol-drums" min="0" max="100" value="75" /></label>
-        <label><span>bass</span><input type="range" id="br-vol-bass" min="0" max="100" value="65" /></label>
-        <label><span>guitar</span><input type="range" id="br-vol-guitar" min="0" max="100" value="70" /></label>
-        <label><span>vocal</span><input type="range" id="br-vol-voice" min="0" max="100" value="40" /></label>
-        <label><span>chords</span><input type="range" id="br-vol-chords" min="0" max="100" value="55" /></label>
+        <label><span>drums</span><input type="range" id="br-vol-drums" min="0" max="100" value="62" /></label>
+        <label><span>bass</span><input type="range" id="br-vol-bass" min="0" max="100" value="72" /></label>
+        <label><span>guitar</span><input type="range" id="br-vol-guitar" min="0" max="100" value="62" /></label>
+        <label><span>vocal</span><input type="range" id="br-vol-voice" min="0" max="100" value="56" /></label>
+        <label><span>chords</span><input type="range" id="br-vol-chords" min="0" max="100" value="68" /></label>
         <label><span>click</span><input type="range" id="br-vol-click" min="0" max="100" value="35" /></label>
       </section>
     </details>
