@@ -7499,12 +7499,16 @@ const HAZAMA_FM_ENGINE_MIX_DEFAULT = {
 
 const HAZAMA_FM_ENGINE_MIXES = {
   any: { engineGain: 0.78, padDb: -1.2, glassDb: -1.2, pianoMemoryDb: -1.2, voiceDustDb: -1.2 },
-  ambient: { engineGain: 0.74, padBus: 0.8, reverbWet: 0.34, delayWet: 0.18, textureDb: -3.5, hatDb: -7, kickDb: -5 },
-  lofi: { engineGain: 0.64, padBus: 0.38, reverbWet: 0.2, delayWet: 0.14, padDb: -8.5, glassDb: -8.5, pianoMemoryDb: -7.5, voiceDustDb: -8.5, hatDb: -6 },
-  jazz: { engineGain: 0.58, padBus: 0.25, reverbWet: 0.18, delayWet: 0.12, padDb: -11.5, glassDb: -11.5, pianoMemoryDb: -10.5, voiceDustDb: -11.5, textureDb: -4, hatDb: -5 },
-  funk: { engineGain: 0.58, padBus: 0.19, reverbWet: 0.16, delayWet: 0.1, padDb: -13, glassDb: -12.5, pianoMemoryDb: -13, voiceDustDb: -13, textureDb: -3.5, hatDb: -4.5 },
-  techno: { engineGain: 0.44, drumBus: 0.28, padBus: 0.012, bassBus: 0.26, textureBus: 0.07, reverbWet: 0.045, delayWet: 0.035, padDb: -38, glassDb: -42, textureDb: -12, pianoMemoryDb: -42, voiceDustDb: -42, drumSkinDb: -11, reedBuzzDb: -38, hatDb: -34, kickDb: -8 },
-  piano: { engineGain: 0.38, drumBus: 0.035, padBus: 0.01, bassBus: 0.075, textureBus: 0.022, reverbWet: 0.05, delayWet: 0.03, padDb: -42, glassDb: -46, textureDb: -26, pianoMemoryDb: -42, voiceDustDb: -46, drumSkinDb: -28, subImpactDb: -20, reedBuzzDb: -42, hatDb: -38, kickDb: -28 }
+  // fm-57: デフォルト = lofi (UCM energy 40) で最適音になるよう全 voice を磨く
+  // - glass / voiceDust / texture を更に下げて Salamander piano (v113) を前面に
+  // - pianoMemory はやや残す (Salamander の echo として効く)
+  // - ambient の texture も -3.5 → -6 にして noise 減らす
+  ambient: { engineGain: 0.74, padBus: 0.65, reverbWet: 0.32, delayWet: 0.16, glassDb: -10, voiceDustDb: -12, textureDb: -6, hatDb: -8, kickDb: -5 },
+  lofi: { engineGain: 0.66, padBus: 0.30, reverbWet: 0.22, delayWet: 0.14, padDb: -16, glassDb: -16, pianoMemoryDb: -10, voiceDustDb: -16, textureDb: -10, hatDb: -8 },
+  jazz: { engineGain: 0.60, padBus: 0.22, reverbWet: 0.20, delayWet: 0.12, padDb: -13, glassDb: -14, pianoMemoryDb: -9, voiceDustDb: -14, textureDb: -8, hatDb: -7 },
+  funk: { engineGain: 0.60, padBus: 0.18, reverbWet: 0.16, delayWet: 0.10, padDb: -14, glassDb: -14, pianoMemoryDb: -14, voiceDustDb: -14, textureDb: -7, hatDb: -6 },
+  techno: { engineGain: 0.48, drumBus: 0.30, padBus: 0.014, bassBus: 0.28, textureBus: 0.07, reverbWet: 0.05, delayWet: 0.04, padDb: -38, glassDb: -42, textureDb: -14, pianoMemoryDb: -42, voiceDustDb: -42, drumSkinDb: -11, reedBuzzDb: -38, hatDb: -32, kickDb: -7 },
+  piano: { engineGain: 0.42, drumBus: 0.04, padBus: 0.012, bassBus: 0.08, textureBus: 0.025, reverbWet: 0.06, delayWet: 0.04, padDb: -40, glassDb: -46, textureDb: -24, pianoMemoryDb: -38, voiceDustDb: -46, drumSkinDb: -28, subImpactDb: -20, reedBuzzDb: -42, hatDb: -36, kickDb: -26 }
 };
 
 function hazamaFmRuntimeGenre() {
@@ -7650,9 +7654,11 @@ function ensureLofiPianoSampler() {
     urls[note] = `${base}/${file}.mp3`;
   });
   try {
+    // fm-57: volume を -10 dB に下げて mix の中に納まるレベルに。
+    // release を 2.0 に延ばして lofi のレジトーンを長く
     lofiPianoSampler = new Tone.Sampler({
-      urls, release: 1.6, volume: -6
-    }).connect(padFilter); // routes through same filter/bus as the synth pad
+      urls, release: 2.0, volume: -10
+    }).connect(padFilter);
   } catch (e) {
     console.warn("[Music] lofi piano sampler init failed:", e);
     lofiPianoSampler = null;
@@ -7663,14 +7669,18 @@ function startLofiPianoLayer() {
   stopLofiPianoLayer();
   const sampler = ensureLofiPianoSampler();
   if (!sampler) return;
-  // Same cadence as the existing pad — 1 bar per chord
+  // fm-57: 1 小節 1 コードではなく、毎 2 小節に 1 コード stab + 1 拍遅れて 7th を
+  // ピアノっぽい comp。動きを少し作って "ノイズで覆う lofi" 卒業
   lofiPianoSchedId = Tone.Transport.scheduleRepeat((time) => {
     try {
-      // Use the same chord pool as the pad
       const ch = typeof randomHazeChord === "function" ? randomHazeChord() : ["C4","E4","G4"];
-      sampler.triggerAttackRelease(ch, "1n", time + 0.02, 0.50);
+      // 1 拍目: 全 chord notes
+      sampler.triggerAttackRelease(ch, "2n", time + 0.02, 0.45);
+      // 2.5 拍目に anticipated comp (chord tone のうち 1 つだけ)
+      const accentNote = ch[Math.floor(Math.random() * ch.length)];
+      sampler.triggerAttackRelease(accentNote, "4n", time + 2.5 * Tone.Time("4n").toSeconds(), 0.32);
     } catch (e) {}
-  }, "1m");
+  }, "2m"); // 2 小節ごと = lofi の落ち着いた呼吸
 }
 function stopLofiPianoLayer() {
   if (lofiPianoSchedId != null) {
@@ -9353,23 +9363,31 @@ function updateSoundForMode(mode){
       try { pad.volume.rampTo(0, 1.0); } catch (e) {}
     }
     if(mode==="ambient"){
-      pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.2, decay:0.8, sustain:0.62, release:3.2} });
-      padFilter.frequency.rampTo(800, 1.2);
-      globalReverb.decay = 5.8;
-      globalReverb.wet.rampTo(0.32, 1.2);
-      globalDelay.wet.rampTo(0.10, 1.2);
-      bass.set({ oscillator:{type:"triangle"}, envelope:{attack:0.02, decay:0.35, sustain:0.25, release:1.2} });
+      // fm-57: ambient = sine pad で柔らかく + long reverb tail。今までは
+      // attack 1.2 で立ち上がり遅め → 一拍ごとの呼吸感に
+      pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.5, decay:1.0, sustain:0.60, release:4.0} });
+      padFilter.frequency.rampTo(760, 1.2);
+      globalReverb.decay = 6.4;          // やや長めの hall
+      globalReverb.wet.rampTo(0.30, 1.2); // 32 → 30 (やや控えめ、混ざりすぎ防止)
+      globalDelay.wet.rampTo(0.08, 1.2);  // delay は最小限 (ambient で delay は要らない)
+      bass.set({ oscillator:{type:"sine"}, envelope:{attack:0.03, decay:0.40, sustain:0.30, release:1.6} });
     }else if(mode==="lofi"){
-      // fm-56: Nujabes 寄り — synth pad を強く減衰させて、Salamander piano
-      // sampler が実音 chord を担当。「ノイズで lofi 風」を脱却して band-room の
-      // lo-fi master preset と音色感を揃える。
-      pad.set({ oscillator:{type:"triangle"}, envelope:{attack:0.8, decay:0.7, sustain:0.58, release:2.8} });
-      try { pad.volume.rampTo(-22, 1.2); } catch (e) {}
-      padFilter.frequency.rampTo(1800, 1.0);
-      globalReverb.decay = 4.2;
-      globalReverb.wet.rampTo(0.22, 1.0);
-      globalDelay.wet.rampTo(0.14, 1.0);
-      bass.set({ oscillator:{type:"triangle"}, filterEnvelope:{baseFrequency:80, octaves:2.0} });
+      // fm-57: 「ノイズで lofi 風」脱却 — synth pad は完全に裏に追いやって
+      // Salamander piano sampler が pad 役で chord 鳴らす + bass は warm
+      // triangle で walking 系。Nujabes piano trio の重心。
+      pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.2, decay:0.8, sustain:0.5, release:3.2} });
+      try { pad.volume.rampTo(-28, 1.2); } catch (e) {}  // synth pad はほぼ無音
+      padFilter.frequency.rampTo(2000, 1.0);
+      globalReverb.decay = 3.6;                          // 短めの room reverb
+      globalReverb.wet.rampTo(0.18, 1.0);                // wet 控えめ — piano 自身に decay あるから
+      globalDelay.wet.rampTo(0.10, 1.0);                 // delay 更に控えめ
+      // bass: warm triangle + slow filter (Nujabes 寄り walking)
+      bass.set({
+        oscillator:{type:"triangle"},
+        filter:{Q:0.8},
+        filterEnvelope:{baseFrequency:75, octaves:1.8, attack:0.01, decay:0.20, sustain:0.4, release:0.4},
+        envelope:{attack:0.02, decay:0.30, sustain:0.5, release:0.6}
+      });
       startLofiPianoLayer();
     }else if(mode==="dub"){
       pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.65, decay:0.5, sustain:0.5, release:2.5} });
