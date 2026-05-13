@@ -717,8 +717,9 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   border: 1px solid var(--panel-border);
   border-radius: 12px;
   background: rgba(0,0,0,0.18);
-  max-height: 320px;
+  max-height: 360px;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 #br-lyrics-body {
@@ -727,9 +728,50 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   font-size: 14px;
   line-height: 1.7;
   color: var(--text);
+}
+
+/* v73: per-section lyric blocks with active-state highlight */
+.br-lyric-block {
+  margin: 0 0 14px;
+  padding: 8px 10px;
+  border-left: 2px solid transparent;
+  border-radius: 4px;
+  transition: background 0.3s, border-color 0.3s, opacity 0.3s;
+  opacity: 0.55;
+}
+
+.br-lyric-block.active {
+  background: rgba(255, 136, 102, 0.10);
+  border-left-color: var(--accent);
+  opacity: 1;
+}
+
+.br-lyric-marker {
+  font-size: 10px;
+  color: var(--accent-soft);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.br-lyric-block.active .br-lyric-marker {
+  opacity: 1;
+  color: var(--accent-glass);
+}
+
+.br-lyric-text {
+  margin: 0;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  color: inherit;
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.br-lyric-preamble .br-lyric-marker { display: none; }
 
 #br-chord-display {
   display: flex;

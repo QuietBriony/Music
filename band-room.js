@@ -952,13 +952,14 @@
           if (lyricsRes.ok) {
             const md = await lyricsRes.text();
             const lyrics = extractLyricsForSong(md, data.song_title || songId);
-            $("br-lyrics-body").textContent = lyrics || `(lyrics todo — see ${lyricsDoc})`;
+            // v73: render as section blocks for auto-highlight + scroll
+            renderLyricBlocks(lyrics || `(lyrics todo — see ${lyricsDoc})`);
           }
         } catch (e) {
-          $("br-lyrics-body").textContent = "(lyrics file not available offline)";
+          renderLyricBlocks("(lyrics file not available offline)");
         }
       } else {
-        $("br-lyrics-body").textContent = "(no lyrics doc for this band yet)";
+        renderLyricBlocks("(no lyrics doc for this band yet)");
       }
       return data;
     } catch (e) {
@@ -981,6 +982,77 @@
     return lines.slice(start, end).join("\n").trim();
   }
   function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+  // v73: render lyrics text as section blocks. Each line starting with
+  // [...] becomes a new block with data-marker set to the slug. Other
+  // lines accumulate into the previous block's body.
+  function renderLyricBlocks(text) {
+    const body = $("br-lyrics-body");
+    if (!body) return;
+    body.innerHTML = "";
+    if (!text) return;
+    const lines = text.split("\n");
+    let curBlock = null;
+    let curBody = [];
+    function flush() {
+      if (!curBlock) return;
+      const pre = document.createElement("pre");
+      pre.className = "br-lyric-text";
+      pre.textContent = curBody.join("\n").trimEnd();
+      curBlock.appendChild(pre);
+      body.appendChild(curBlock);
+      curBlock = null;
+      curBody = [];
+    }
+    for (const ln of lines) {
+      const m = ln.match(/^\s*\[(.+?)\]\s*$/);
+      if (m) {
+        flush();
+        curBlock = document.createElement("div");
+        curBlock.className = "br-lyric-block";
+        curBlock.dataset.marker = m[1].toLowerCase().replace(/\s+/g, "-");
+        const head = document.createElement("div");
+        head.className = "br-lyric-marker";
+        head.textContent = "[" + m[1] + "]";
+        curBlock.appendChild(head);
+      } else {
+        if (!curBlock) {
+          // text before first [marker] — wrap in a preamble block
+          curBlock = document.createElement("div");
+          curBlock.className = "br-lyric-block br-lyric-preamble";
+          curBlock.dataset.marker = "preamble";
+        }
+        curBody.push(ln);
+      }
+    }
+    flush();
+  }
+
+  // v73: highlight lyric block matching current section. Fuzzy: try
+  // exact section match first, then base name (chorus-2 → chorus).
+  function updateLyricsHighlight(sectionName) {
+    const body = $("br-lyrics-body");
+    if (!body || !sectionName) return;
+    const blocks = body.querySelectorAll(".br-lyric-block");
+    if (blocks.length === 0) return;
+    const sec = sectionName.toLowerCase();
+    const base = sec.split("-")[0];
+    // Try exact slug match first (e.g. "verse-1" → [verse 1] → "verse-1")
+    let match = null;
+    blocks.forEach((b) => {
+      if (b.dataset.marker === sec) match = b;
+    });
+    // Fallback: any block whose marker starts with the base name
+    if (!match) {
+      blocks.forEach((b) => {
+        if (!match && b.dataset.marker.startsWith(base)) match = b;
+      });
+    }
+    blocks.forEach((b) => b.classList.toggle("active", b === match));
+    if (match) {
+      try { match.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+    }
+  }
 
   // ---- Section state machine ----------------------------------
 
@@ -1068,6 +1140,12 @@
         if (state.sectionIdx >= state.songData.structure.length) {
           // v68: loop to top of structure — stems already loop via player.loop=true
           state.sectionIdx = 0;
+        }
+        // v73: scroll lyrics to new section. Defer to RAF so the
+        // DOM update happens outside the audio callback.
+        const nowSec = currentSection();
+        if (nowSec) {
+          requestAnimationFrame(() => updateLyricsHighlight(nowSec.section));
         }
       }
 
@@ -1265,6 +1343,9 @@
     updateSectionDisplay();
     updateChordDisplay();
     startMasterMeter();
+    // v73: highlight first section's lyric block
+    const firstSec = currentSection();
+    if (firstSec) updateLyricsHighlight(firstSec.section);
   }
 
   // v71: master meter — animate #br-meter-fill width from Tone.Meter dB
