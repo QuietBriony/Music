@@ -374,7 +374,25 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   cursor: pointer;
   min-width: 44px;
   min-height: 32px;
-  transition: background 0.15s, color 0.15s;
+  position: relative;
+  transition: background 0.15s, color 0.15s, transform 0.12s;
+}
+
+/* v82: phrase number + qwerty key chip overlay */
+#br-phrase-grid .br-phrase-num { display: block; font-weight: 600; }
+#br-phrase-grid .br-phrase-key {
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  font-size: 8px;
+  opacity: 0.55;
+  color: var(--accent-soft);
+  letter-spacing: 0;
+}
+
+#br-phrase-grid button.kbd-flash {
+  background: rgba(255, 184, 122, 0.45);
+  transform: scale(1.06);
 }
 
 #br-phrase-grid button:hover {

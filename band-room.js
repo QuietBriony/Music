@@ -337,12 +337,22 @@
 
     const cellsWrap = document.createElement("div");
     cellsWrap.className = "br-phrase-cells";
+    // v82: qwerty keyboard mapping. First 20 phrases get keys q-p on row
+    // 1 (10 keys) and a-l plus ; on row 2 (10 keys). Displayed as small
+    // letter in the button corner.
+    const KEYS = ["q","w","e","r","t","y","u","i","o","p",
+                  "a","s","d","f","g","h","j","k","l",";"];
     phrases.forEach((p, i) => {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.textContent = `${(i + 1).toString().padStart(2, "0")}`;
-      btn.title = `${p.duration_s}s @ ${p.src_start_s}s (RMS ${p.rms})`;
+      const num = (i + 1).toString().padStart(2, "0");
+      const key = KEYS[i];
+      btn.innerHTML = `<span class="br-phrase-num">${num}</span>` +
+                      (key ? `<span class="br-phrase-key">${key}</span>` : "");
+      btn.title = `${p.duration_s}s @ ${p.src_start_s}s (RMS ${p.rms})` +
+                  (key ? ` · key: ${key}` : "");
       btn.dataset.phraseUrl = `presets/sample-kits/${band}/${song}/${p.file}`;
+      if (key) btn.dataset.phraseKey = key;
       cellsWrap.appendChild(btn);
     });
     grid.appendChild(cellsWrap);
@@ -2137,6 +2147,19 @@
         const idx = Number(e.key) - 1;
         if (state.songData?.structure?.[idx]) jumpToSection(idx);
         break;
+      }
+      default: {
+        // v82: phrase keyboard mapping (q-p row 1, a-l + ; row 2)
+        const k = e.key.toLowerCase();
+        const phraseBtn = document.querySelector(
+          `#br-phrase-grid button[data-phrase-key="${k}"]`
+        );
+        if (phraseBtn) {
+          e.preventDefault();
+          phraseBtn.click();
+          phraseBtn.classList.add("kbd-flash");
+          setTimeout(() => phraseBtn.classList.remove("kbd-flash"), 180);
+        }
       }
     }
   });
