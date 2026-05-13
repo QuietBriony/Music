@@ -1577,12 +1577,27 @@
     if (blocks.length === 0) return;
     const sec = sectionName.toLowerCase();
     const base = sec.split("-")[0];
-    // Try exact slug match first (e.g. "verse-1" → [verse 1] → "verse-1")
+    const idxMatch = sec.match(/-(\d+)$/);
+    const secIdx = idxMatch ? idxMatch[1] : null;  // "verse-2" → "2"
+
     let match = null;
+    // 1. Exact slug match (rarely true for Burroughs lyrics which have
+    //    longer markers like "verse-1-—-flat-narration")
     blocks.forEach((b) => {
-      if (b.dataset.marker === sec) match = b;
+      if (!match && b.dataset.marker === sec) match = b;
     });
-    // Fallback: any block whose marker starts with the base name
+    // 2. v107: index-aware fuzzy — marker starts with "base-idx"
+    //    followed by either end of string or "-" (avoids "verse-12"
+    //    matching when secIdx=1). Distinguishes "verse 1" / "verse 2".
+    if (!match && secIdx) {
+      const prefix = base + "-" + secIdx;
+      blocks.forEach((b) => {
+        if (match) return;
+        const m = b.dataset.marker;
+        if (m === prefix || m.startsWith(prefix + "-")) match = b;
+      });
+    }
+    // 3. Generic fallback: first block whose marker starts with the base
     if (!match) {
       blocks.forEach((b) => {
         if (!match && b.dataset.marker.startsWith(base)) match = b;
@@ -1845,6 +1860,27 @@
             inst.triggerAttackRelease("16n", t, vel);
           }
         });
+
+        // v107: 4-bar fill — every 4th bar of a section gets a tom/snare
+        // roll on the last 16th to break the bar-loop sameness. Skip in
+        // intro (too noisy) and outro (already busy).
+        const barInSection = state.barCount - state.sectionBarStart;
+        const isFillBar = (barInSection + 1) % 4 === 0;
+        const role = frame.session_role || "";
+        if (isFillBar && role !== "intro" && role !== "outro") {
+          const fillInst = drumKit.fill || drumKit.snare;
+          if (fillInst) {
+            // 4 sixteenth hits on beat 3 with rising velocity
+            for (let s = 0; s < 4; s++) {
+              const t = time + 3 * beatTime + s * subTime;
+              const vel = 0.42 + s * 0.10;
+              try {
+                if (fillInst === drumKit.fill) fillInst.triggerAttackRelease("16n", t, vel);
+                else fillInst.triggerAttackRelease("16n", t, vel);
+              } catch (e) {}
+            }
+          }
+        }
 
         // v106: sparse frame reinforcement — if the extracted pattern is
         // too thin (< 6 events) fill in the missing beats of a basic
