@@ -1793,6 +1793,17 @@
           // v68: loop to top of structure — stems already loop via player.loop=true
           state.sectionIdx = 0;
         }
+        // v106: crash hint on big section entry (chorus / bridge / outro).
+        // Fires on beat 0 of the new section so the transition has lift.
+        const newSec = state.songData.structure[state.sectionIdx];
+        if (newSec && drumKit && drumKit.crash && $("br-toggle-drums").checked) {
+          const sn = newSec.section || "";
+          const isLift = sn.startsWith("chorus") || sn === "bridge" ||
+                         sn.startsWith("outro") || sn === "chant-b";
+          if (isLift) {
+            try { drumKit.crash.triggerAttackRelease("2n", time, 0.62); } catch (e) {}
+          }
+        }
         // v80: A-B loop — if we just stepped past loopB, jump back to loopA.
         // Defer the seek (which calls stop/start on stem players) to RAF so
         // we don't touch them inside the audio callback.
@@ -1834,6 +1845,34 @@
             inst.triggerAttackRelease("16n", t, vel);
           }
         });
+
+        // v106: sparse frame reinforcement — if the extracted pattern is
+        // too thin (< 6 events) fill in the missing beats of a basic
+        // kick-snare-kick-snare pattern at low velocity. Keeps the
+        // groove anchored when librosa onset detection missed hits.
+        if (frame.events.length < 6) {
+          const basicPattern = [
+            { inst: "kick",  beat: 0, vel: 0.50 },
+            { inst: "snare", beat: 1, vel: 0.55 },
+            { inst: "kick",  beat: 2, vel: 0.50 },
+            { inst: "snare", beat: 3, vel: 0.55 }
+          ];
+          basicPattern.forEach((hit) => {
+            // Skip if already covered by an extracted event at that beat
+            const exists = frame.events.some((e) =>
+              e.instrument === hit.inst && (e.beat || 0) === hit.beat && (e.sub || 0) === 0
+            );
+            if (exists) return;
+            const inst = drumKit[hit.inst];
+            if (!inst) return;
+            const t = time + hit.beat * beatTime;
+            if (hit.inst === "kick") {
+              inst.triggerAttackRelease("C1", "16n", t, hit.vel);
+            } else {
+              inst.triggerAttackRelease("16n", t, hit.vel);
+            }
+          });
+        }
       }
 
       // Click (4 quarter notes per bar)
@@ -1915,19 +1954,47 @@
       }
 
       // Vocal guide (melody-only, 母音 "ah" voice-box).
-      // Human Fly has hardcoded melody; other songs no melody-guide yet.
-      // (Future: load song.melody_guide from JSON if present.)
-      if ($("br-toggle-voice").checked && voiceSynth && state.currentSongId === "human-fly"
-          && frame && frame.session_role === "recap") {
-        const barInSection = state.barCount - state.sectionBarStart;
-        const phraseBar = barInSection % 4;
-        const phrase = (HUMAN_FLY_VOCAL_MELODY.chorus || [])[phraseBar];
-        if (phrase) {
-          phrase.forEach((step) => {
-            const t = time + step.sub * subTime;
-            const durSec = step.dur * subTime;
-            try { voiceSynth.triggerAttackRelease(step.note, durSec * 0.95, t, 0.55); } catch (e) {}
-          });
+      // v106: Human Fly chorus は専用 melody。他の曲 / 他 section は
+      // generic walk-up fallback (chord tones in 4-step pattern).
+      if ($("br-toggle-voice").checked && voiceSynth && chord && frame) {
+        const role = frame.session_role || "";
+        const isHumanFlyChorus = state.currentSongId === "human-fly" && role === "recap";
+        if (isHumanFlyChorus) {
+          // Hardcoded Human Fly melody
+          const barInSection = state.barCount - state.sectionBarStart;
+          const phraseBar = barInSection % 4;
+          const phrase = (HUMAN_FLY_VOCAL_MELODY.chorus || [])[phraseBar];
+          if (phrase) {
+            phrase.forEach((step) => {
+              const t = time + step.sub * subTime;
+              const durSec = step.dur * subTime;
+              try { voiceSynth.triggerAttackRelease(step.note, durSec * 0.95, t, 0.55); } catch (e) {}
+            });
+          }
+        } else if (role === "verse" || role === "recap" || role === "comp") {
+          // v106: Generic vocal walk — sing chord tones in 4-step pattern.
+          // Pattern: root, 3rd, 5th, 3rd → repeats each bar.
+          // Verse = softer (vel 0.45), chorus/recap = louder (vel 0.6).
+          try {
+            const notes = chordToNotes(chord, 4);
+            if (notes.length >= 3) {
+              const walk = [notes[0], notes[1], notes[2], notes[1]];
+              const baseVel = role === "recap" ? 0.60 : role === "comp" ? 0.52 : 0.45;
+              const barInSection = state.barCount - state.sectionBarStart;
+              // Every 4th bar = "ah" sustain to feel like a phrase ending
+              const isPhraseEnd = (barInSection + 1) % 4 === 0;
+              if (isPhraseEnd) {
+                // Long sustain on chord root
+                try { voiceSynth.triggerAttackRelease(notes[0], "1n", time + 0.005, baseVel); } catch (e) {}
+              } else {
+                walk.forEach((note, i) => {
+                  const t = time + i * beatTime;
+                  const v = baseVel + (i === 0 ? 0.06 : 0);
+                  try { voiceSynth.triggerAttackRelease(note, beatTime * 0.85, t, v); } catch (e) {}
+                });
+              }
+            }
+          } catch (e) {}
         }
       }
 
