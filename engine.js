@@ -7541,9 +7541,18 @@ function approachValue(current, target, maxStep) {
 ========================================================= */
 
 // マスター処理（少なめ）
+// fm-55: cross-app mastering polish — band-room の v66 と同じ系統で、
+// gentle compressor + StereoWidener を masterGain と masterLimiter の間に
+// 挿入。conservative settings (threshold -10 / ratio 2.0 / width 0.62) で
+// 既存ミックスバランスを大きく崩さず音圧感と横方向を底上げ。
 const masterLimiter = new Tone.Limiter({ threshold: -0.8 });
 const hardwareOutput = new Tone.Gain(1).toDestination();
-const masterGain    = new Tone.Gain(0.8).connect(masterLimiter);
+const masterComp = new Tone.Compressor({ threshold: -10, ratio: 2.0, attack: 0.012, release: 0.18, knee: 6 });
+const masterWidener = new Tone.StereoWidener(0.62);
+const masterGain    = new Tone.Gain(0.8);
+masterGain.connect(masterComp);
+masterComp.connect(masterWidener);
+masterWidener.connect(masterLimiter);
 const recorderDestination = Tone.context.createMediaStreamDestination();
 const backgroundPlaybackDestination = Tone.context.createMediaStreamDestination();
 masterLimiter.connect(hardwareOutput);
