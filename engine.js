@@ -7504,7 +7504,7 @@ const HAZAMA_FM_ENGINE_MIXES = {
   // - pianoMemory はやや残す (Salamander の echo として効く)
   // - ambient の texture も -3.5 → -6 にして noise 減らす
   ambient: { engineGain: 0.74, padBus: 0.65, reverbWet: 0.32, delayWet: 0.16, glassDb: -10, voiceDustDb: -12, textureDb: -6, hatDb: -8, kickDb: -5 },
-  lofi: { engineGain: 0.66, padBus: 0.30, reverbWet: 0.22, delayWet: 0.14, padDb: -16, glassDb: -16, pianoMemoryDb: -10, voiceDustDb: -16, textureDb: -10, hatDb: -8 },
+  lofi: { engineGain: 0.66, padBus: 0.30, reverbWet: 0.22, delayWet: 0.14, padDb: -16, glassDb: -16, pianoMemoryDb: -22, voiceDustDb: -16, textureDb: -10, hatDb: -8 },
   jazz: { engineGain: 0.60, padBus: 0.22, reverbWet: 0.20, delayWet: 0.12, padDb: -13, glassDb: -14, pianoMemoryDb: -9, voiceDustDb: -14, textureDb: -8, hatDb: -7 },
   funk: { engineGain: 0.60, padBus: 0.18, reverbWet: 0.16, delayWet: 0.10, padDb: -14, glassDb: -14, pianoMemoryDb: -14, voiceDustDb: -14, textureDb: -7, hatDb: -6 },
   techno: { engineGain: 0.48, drumBus: 0.30, padBus: 0.014, bassBus: 0.28, textureBus: 0.07, reverbWet: 0.05, delayWet: 0.04, padDb: -38, glassDb: -42, textureDb: -14, pianoMemoryDb: -42, voiceDustDb: -42, drumSkinDb: -11, reedBuzzDb: -38, hatDb: -32, kickDb: -7 },

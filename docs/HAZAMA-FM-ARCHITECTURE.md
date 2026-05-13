@@ -2,6 +2,18 @@
 
 > 24/7 generative focus radio。1 個の Music repo + 3 個の sister repo の
 > JSON エクスポートで動く、PWA 対応の web アプリ。
+>
+> 3 app 横断の整合性: [CROSS-APP-INTEGRITY.md](./CROSS-APP-INTEGRITY.md)
+> 音色設計の哲学: [FREE-SAMPLES-AND-SYNTHESIS.md](./FREE-SAMPLES-AND-SYNTHESIS.md)
+>
+> **v113-v115 アップデート (cross-app 音色整合)**:
+> - lofi mode の chord 担当を Salamander Grand Piano sampler (CC-BY 3.0、
+>   tonejs.github.io 経由) に置換 — 「ノイズで lofi 風」を脱却
+> - lofi mode の bass 担当を Salamander 低オク walking sampler に置換
+> - lofi mode の drum 担当を tone-breakbeat CDN sample に置換
+> - 既存 synth pad/bass は -26 ~ -28 dB に減衰 (二重発音防止)
+> - Band Room v109-v111 の lo-fi master preset と **同じ CDN サンプル URL**
+>   を使うので、3 app で「lofi = piano trio + breakbeat」音源スタック完全一致
 
 ## 1. リポ構成 (1 + 3 + 1)
 
