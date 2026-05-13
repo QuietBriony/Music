@@ -1892,6 +1892,20 @@
       });
     }
 
+    // v86: help overlay toggle
+    const helpToggle = $("br-help-toggle");
+    const helpOverlay = $("br-help-overlay");
+    const helpClose = $("br-help-close");
+    const openHelp = () => { if (helpOverlay) helpOverlay.hidden = false; };
+    const closeHelp = () => { if (helpOverlay) helpOverlay.hidden = true; };
+    if (helpToggle) helpToggle.addEventListener("click", openHelp);
+    if (helpClose) helpClose.addEventListener("click", closeHelp);
+    if (helpOverlay) {
+      helpOverlay.addEventListener("click", (e) => {
+        if (e.target === helpOverlay) closeHelp();
+      });
+    }
+
     // v81: recorder toggle button
     const recBtn = $("br-rec-toggle");
     if (recBtn) {
@@ -2194,6 +2208,21 @@
     if (tag === "input" || tag === "textarea" || tag === "select") return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
     switch (e.key) {
+      case "?": {
+        // v86: open quick help
+        e.preventDefault();
+        const ov = $("br-help-overlay");
+        if (ov) ov.hidden = false;
+        break;
+      }
+      case "Escape": {
+        const ov = $("br-help-overlay");
+        if (ov && !ov.hidden) {
+          e.preventDefault();
+          ov.hidden = true;
+        }
+        break;
+      }
       case " ":
       case "Spacebar":
         e.preventDefault();

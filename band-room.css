@@ -35,7 +35,111 @@ html, body {
 #br-header {
   text-align: center;
   padding: 32px 20px 8px;
+  position: relative;
 }
+
+/* v86: help button + overlay */
+#br-help-toggle {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 184, 122, 0.30);
+  background: rgba(255, 184, 122, 0.05);
+  color: var(--accent-soft);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+#br-help-toggle:hover {
+  background: rgba(255, 184, 122, 0.18);
+  color: var(--accent-glass);
+}
+
+#br-help-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 4, 10, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+#br-help-overlay[hidden] { display: none; }
+
+#br-help-card {
+  max-width: 480px;
+  width: 100%;
+  background: linear-gradient(180deg, #2a1422 0%, #1a0a14 100%);
+  border: 1px solid var(--accent-soft);
+  border-radius: 16px;
+  padding: 28px 30px;
+  color: var(--text);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+#br-help-card h2 {
+  margin: 0 0 18px;
+  font-size: 18px;
+  color: var(--accent-glass);
+  letter-spacing: 0.10em;
+  font-weight: 600;
+}
+
+#br-help-card ul {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+#br-help-card ul strong { color: var(--accent-soft); font-weight: 600; }
+
+#br-help-card p {
+  margin: 0 0 18px;
+  font-size: 12px;
+  color: var(--text-sub);
+  line-height: 1.7;
+}
+
+#br-help-card kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  margin: 0 1px;
+  font-family: ui-monospace, "SF Mono", "Menlo", monospace;
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 184, 122, 0.16);
+  border-radius: 3px;
+  color: var(--accent-soft);
+}
+
+#br-help-close {
+  appearance: none;
+  background: var(--accent);
+  border: 0;
+  color: #1a0a14;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#br-help-close:hover { background: var(--accent-soft); }
 
 #br-header h1 {
   font-size: clamp(26px, 5vw, 36px);

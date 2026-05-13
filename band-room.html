@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-30" />
+<link rel="stylesheet" href="band-room.css?v=br-31" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-30" defer></script>
+<script src="band-room.js?v=br-31" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -20,7 +20,28 @@
   <header id="br-header">
     <h1>BAND ROOM</h1>
     <p class="br-subtitle" id="br-subtitle">loading bands…</p>
+    <button id="br-help-toggle" type="button" aria-label="help">?</button>
   </header>
+
+  <div id="br-help-overlay" role="dialog" aria-modal="true" aria-labelledby="br-help-title" hidden>
+    <div id="br-help-card">
+      <h2 id="br-help-title">クイックガイド</h2>
+      <ul>
+        <li><strong>モード切替</strong> — 📻 原音 (4 stems) / 🎛 AI 再現 (打ち込み再現)</li>
+        <li><strong>section nav</strong> — チップで jump、shift-click で A→B ループ</li>
+        <li><strong>phrase trigger</strong> — q-p / a-l のキーで発火 (即発火 / 次小節 / ループ)</li>
+        <li><strong>external vocal</strong> — Suno mp3 を drag-drop で読み込み</li>
+        <li><strong>practice tempo</strong> — 50–120% 倍速 (synth モード推奨)</li>
+        <li><strong>recording</strong> — ⏺ で post-limiter mix を webm に</li>
+      </ul>
+      <p>
+        <strong>キーボード:</strong>
+        <kbd>space</kbd> play · <kbd>[</kbd> <kbd>]</kbd> sec · <kbd>1-9</kbd> jump ·
+        <kbd>m</kbd> mode · <kbd>?</kbd> このパネル
+      </p>
+      <button id="br-help-close" type="button">閉じる</button>
+    </div>
+  </div>
 
   <main id="br-main">
 
