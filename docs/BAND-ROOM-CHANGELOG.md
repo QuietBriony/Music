@@ -1,9 +1,44 @@
-# Band Room — Changelog (v65 → v90)
+# Band Room — Changelog (v65 → v95)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 ---
+
+## v95 — A/B state compare snapshots
+
+- `captureSnapshot()` / `restoreSnapshot()` round-trip all sliders, toggles,
+  mode, kitSource, kitProfile through dispatched input/change events
+- Two slots (A, B); recall buttons enable when slot is populated
+- New <details> "🔀 A/B compare (2 snapshot 即切替)"
+
+## v94 — free-808 scaffold (CC-0 dirt-samples drop-in slot)
+
+- `presets/sample-kits/free-808/README.md` with TidalCycles dirt-samples
+  source instructions, file naming contract, manifest.json template
+- ~600 KB once filled; not yet in KIT_OPTIONS (user adds after dropping in)
+
+## v93 — master mix preset chips (lo-fi / club / rock / ambient)
+
+- `MASTER_PRESETS` writes to 4 master sliders + dispatches input events
+- 5 one-click vibes: neutral / lo-fi / club / rock / ambient
+- Chip row in 🌌 mastering panel, .active highlight
+
+## v92 — voice profiles extended (bass / chord / vocal)
+
+- `KIT_PROFILES` each entry now has bass/chord/vocal dicts
+- `makeSynthBass / makeChordSynth / makeVoiceBox` consult `currentProfile()`
+- Profile change → dispose + rebuild all 4 synth voices (drum/bass/chord/vocal)
+- Sakanaction: bright snappy bass, saw stab chord, clean vocal
+- LCD motorik: sub-y bass with portamento, dreamy triangle pad, breathy vocal
+- Cramps punk: distorted slap bass (drive 0.18), square stab chord, snarled vocal
+
+## v91 — synth kit profiles (Sakanaction / LCD / Cramps punk)
+
+- `KIT_PROFILES` table: 4 presets (default / sakanaction / lcd-motorik / cramps-punk)
+- `makeDrumKit(target, profileName)` reads from profile dict for each voice
+- UI: "🥁 drum kit source + synth profile" with 2 selectors
+- Persisted via v78 prefs alongside kitSource
 
 ## v90 — stems pack export (4-stem simultaneous → DAW)
 
@@ -172,6 +207,25 @@ The two are bumped together — sw VERSION matches the band-room generation it s
 - New `auto-self` kit source = current song's own drums
 
 ---
+
+## Synth profile cheat sheet (v91-v92)
+
+| profile        | drum kick                     | bass                          | chord                    | vocal               |
+|----------------|------------------------------|-------------------------------|--------------------------|---------------------|
+| default        | decay 0.32, 4 oct             | filter 480, drive 0.08         | triangle, verb 0.20      | formants 700/1200   |
+| sakanaction    | decay 0.20, 5 oct, click -22  | filter 720, drive 0.04         | saw stab, chorus 0.55    | clean, verb 0.14    |
+| lcd-motorik    | decay 0.38, 6 oct             | filter 600, portamento 0.04    | dreamy triangle, verb 0.34 | breathy, verb 0.32 |
+| cramps-punk    | decay 0.40, click -36         | filter 380, drive 0.18, wet 0.70 | square stab, verb 0.12 | snarled, vibrato 18c |
+
+## Master mix preset cheat sheet (v93)
+
+| preset   | reverb | width | warmth | loudness | feel                          |
+|----------|--------|-------|--------|----------|-------------------------------|
+| neutral  | 22     | 72    | 10     |  0       | current default               |
+| lo-fi    | 38     | 50    | 32     | -3       | lofi hiphop, washy, narrow    |
+| club     | 12     | 88    | 18     | +3       | dry / ultra-wide / hot         |
+| rock     | 14     | 65    | 12     | +1       | punchy mid-room               |
+| ambient  | 55     | 90    | 22     | -2       | long verb / very wide          |
 
 ## DAW / hardware integration (v87-v90)
 
