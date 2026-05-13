@@ -62,6 +62,11 @@
   let masterRecorderDest = null;      // v81: MediaStreamDestination for recording
   let mediaRecorder = null;           // v81: MediaRecorder for live capture
   let recorderChunks = [];            // v81: collected Blob parts
+  // v90: per-stem MediaStreamDestination + recorders for stems pack export.
+  // Each stem bus is tapped separately so the user gets 4 wav-equivalents.
+  let stemRecorderDests = { vocals: null, drums: null, bass: null, other: null };
+  let stemRecorders    = { vocals: null, drums: null, bass: null, other: null };
+  let stemRecorderChunks = { vocals: [], drums: [], bass: [], other: [] };
   let drumBus = null;
   let bassBus = null;
   let guitarBus = null;
@@ -189,6 +194,22 @@
       masterLimiter.connect(masterRecorderDest);
     } catch (e) {
       console.warn("[Band Room] recorder destination unavailable:", e);
+    }
+    // v90: per-stem MediaStreamDestinations so each stem bus can be
+    // captured independently for stems pack export. Drums/bass/other
+    // tap their respective bus (post per-stem EQ, pre master FX) so
+    // the user gets clean per-stem tracks for DAW import. Vocals
+    // taps its post-FX bus (already FX'd; rarely useful to export
+    // dry-only since vocal FX is part of the vocal sound).
+    try {
+      ["vocals", "drums", "bass", "other"].forEach((stem) => {
+        if (!stemBus[stem]) return;
+        const dest = Tone.context.createMediaStreamDestination();
+        stemBus[stem].connect(dest);
+        stemRecorderDests[stem] = dest;
+      });
+    } catch (e) {
+      console.warn("[Band Room] per-stem recorder destinations unavailable:", e);
     }
     const masterEq = new Tone.EQ3({ low: 1.4, mid: -0.4, high: 0.8, lowFrequency: 200, highFrequency: 5000 });
     const masterComp1 = new Tone.Compressor({ threshold: -14, ratio: 2.5, attack: 0.012, release: 0.22, knee: 6 });
@@ -470,6 +491,85 @@
       btn.textContent = "● REC";
       btn.classList.remove("rec-active");
     }
+  }
+
+  // v90: stems pack export — start 4 MediaRecorders simultaneously,
+  // one per stem bus. STOP collects 4 blobs and emits 4 download links.
+  function startStemsPack() {
+    ensureMaster();
+    const stems = ["vocals", "drums", "bass", "other"];
+    let started = 0;
+    const mime = (window.MediaRecorder && MediaRecorder.isTypeSupported("audio/webm;codecs=opus"))
+      ? "audio/webm;codecs=opus" : "audio/webm";
+    stems.forEach((stem) => {
+      const dest = stemRecorderDests[stem];
+      if (!dest) return;
+      stemRecorderChunks[stem] = [];
+      try {
+        const rec = new MediaRecorder(dest.stream, { mimeType: mime });
+        rec.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) stemRecorderChunks[stem].push(e.data);
+        };
+        rec.start(500);
+        stemRecorders[stem] = rec;
+        started++;
+      } catch (e) {
+        console.warn(`[Band Room] stems pack ${stem} start failed:`, e);
+      }
+    });
+    setStemsPackUi("recording");
+    setStemsPackStatus(`recording ${started}/4 streams…`);
+    return started > 0;
+  }
+
+  function stopStemsPack() {
+    const stems = ["vocals", "drums", "bass", "other"];
+    const links = $("br-stems-pack-links");
+    if (links) links.innerHTML = "";
+    let pending = 0;
+    let done = 0;
+    stems.forEach((stem) => {
+      const rec = stemRecorders[stem];
+      if (!rec || rec.state !== "recording") return;
+      pending++;
+      rec.onstop = () => {
+        const blob = new Blob(stemRecorderChunks[stem], { type: rec.mimeType || "audio/webm" });
+        stemRecorderChunks[stem] = [];
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+        const ext = (rec.mimeType || "").includes("mp4") ? "m4a" : "webm";
+        a.href = url;
+        a.download = `band-room_${state.currentBandId}_${state.currentSongId}_${stem}_${stamp}.${ext}`;
+        a.textContent = `↓ ${stem} (${(blob.size / 1024 / 1024).toFixed(1)} MB)`;
+        a.className = "br-stems-pack-link";
+        if (links) links.appendChild(a);
+        stemRecorders[stem] = null;
+        done++;
+        if (done === pending) {
+          setStemsPackUi("ready");
+          setStemsPackStatus(`done — ${done} stems exported`);
+        }
+      };
+      rec.stop();
+    });
+  }
+
+  function setStemsPackUi(state) {
+    const btn = $("br-stems-pack-toggle");
+    if (!btn) return;
+    if (state === "recording") {
+      btn.textContent = "■ STOP";
+      btn.classList.add("rec-active");
+    } else {
+      btn.textContent = "● 4 stems";
+      btn.classList.remove("rec-active");
+    }
+  }
+
+  function setStemsPackStatus(s) {
+    const el = $("br-stems-pack-status");
+    if (el) el.textContent = s || "";
   }
 
   function updatePhraseLoopUI(url, active) {
@@ -1943,6 +2043,26 @@
         ensureMaster();
         if (externalVocalBus) {
           try { externalVocalBus.gain.rampTo(Number(extVol.value) / 100, 0.08); } catch (e) {}
+        }
+      });
+    }
+
+    // v90: stems pack export toggle
+    const stemsPackBtn = $("br-stems-pack-toggle");
+    if (stemsPackBtn) {
+      stemsPackBtn.addEventListener("click", () => {
+        const anyRecording = Object.values(stemRecorders).some(
+          (r) => r && r.state === "recording"
+        );
+        if (anyRecording) {
+          stopStemsPack();
+        } else {
+          ensureMaster();
+          if (!state.started) {
+            startPlayback().then(() => startStemsPack());
+          } else {
+            startStemsPack();
+          }
         }
       });
     }

@@ -6,13 +6,13 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-34" />
+<link rel="stylesheet" href="band-room.css?v=br-35" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="band-room.js?v=br-34" defer></script>
+<script src="band-room.js?v=br-35" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -246,6 +246,16 @@
         <button id="br-rec-toggle" type="button">● REC</button>
         <a id="br-rec-download" href="#" style="display:none">↓ download</a>
         <p class="br-help">START 押してプレイ中に REC。STOP REC で webm/opus ファイルが download リンクに出る。STOP REC は再生は止めない。</p>
+      </section>
+    </details>
+
+    <details class="br-details">
+      <summary>📦 stems pack export (4 stem 同時録音 → DAW へ)</summary>
+      <section id="br-stems-pack" aria-label="Per-stem export">
+        <button id="br-stems-pack-toggle" type="button">● 4 stems</button>
+        <span id="br-stems-pack-status">idle</span>
+        <div id="br-stems-pack-links"></div>
+        <p class="br-help">vocals / drums / bass / other を別々の webm として同時録音。STOP で 4 個の download リンクが出る。Ableton/Logic にトラック別ドロップで再構成可能。<br><strong>練習法:</strong> START → 一曲ループしてもらう → STOP で 4 stem 落として DAW に持ち込み、好きなパートを取り直す。</p>
       </section>
     </details>
 
