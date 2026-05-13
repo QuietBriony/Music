@@ -206,6 +206,8 @@ Tabasco 以外のバンドを追加するなら別 doc:
 | [HAZAMA-FM-ARCHITECTURE.md](./HAZAMA-FM-ARCHITECTURE.md) | Music スタック全体のアーキテクチャ |
 | [tabasco-lyrics-draft.md](./tabasco-lyrics-draft.md) | 歌詞 v2.1 (proper English) |
 | [tabasco-lyrics-burroughs.md](./tabasco-lyrics-burroughs.md) | 歌詞 v3 (Burroughs cut-up) |
+| [tabasco-lyrics-v4-syllabic.md](./tabasco-lyrics-v4-syllabic.md) | 歌詞 v4 (元音節リズム保持版、Human Fly + TABASCO 完成、残 5 曲は template) |
+| [SUNO-WORKFLOW.md](./SUNO-WORKFLOW.md) | Suno で AI 歌唱生成する手順 (プラン比較 / Cover Mode / Persona / Voice Clone) |
 
 ---
 
