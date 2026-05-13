@@ -2034,7 +2034,19 @@
           const t = time + baseOffset + jitterMs / 1000;
           const rawVel = clamp(evt.velocity ?? 0.5, 0.05, 1);
           // v118: velocity humanize — ±4% perturb, accent-friendly
-          const vel = clamp(rawVel * (1 + (Math.random() - 0.5) * 0.08), 0.05, 1);
+          let vel = clamp(rawVel * (1 + (Math.random() - 0.5) * 0.08), 0.05, 1);
+          // v122: ghost-note variation — 16th hat の弱拍を時々もっと弱く、
+          // 強拍を時々もっと強く。一様な hat 刻みの "machine" 感を消す
+          if (evt.instrument === "hat") {
+            const onBeat = ((evt.sub || 0) === 0);
+            if (onBeat) {
+              // 拍頭の hat: 1/3 確率で +20% accent
+              if (Math.random() < 0.33) vel = clamp(vel * 1.20, 0.05, 1);
+            } else {
+              // 弱拍の hat: 1/4 確率で -30% ghost (とても薄い)
+              if (Math.random() < 0.25) vel = clamp(vel * 0.70, 0.04, 1);
+            }
+          }
           if (evt.instrument === "kick") {
             inst.triggerAttackRelease("C1", "16n", t, vel);
           } else if (evt.instrument === "ghost") {

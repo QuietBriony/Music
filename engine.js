@@ -7660,6 +7660,16 @@ const FM_MODE_BINDINGS = {
     chord_instrument: "salamander-piano",      // Tone.js Salamander piano
     lead_instrument: "guitar-nylon",           // nbrosowsky nylon guitar
     drum_kit_id: "tone-acoustic"               // tonejs.github.io acoustic kit
+  },
+  ambient: {
+    // ambient = harp texture + cello sustained lead, drum 無し
+    texture_instrument: "harp",
+    lead_instrument: "cello"
+  },
+  dub: {
+    // dub = electric bass の deep echo + organ の sustained chord
+    bass_instrument: "bass-electric",
+    chord_instrument: "organ"
   }
 };
 
@@ -7760,6 +7770,155 @@ function stopJazzDrumLayer() {
   if (jazzDrumSchedId != null) {
     try { Tone.Transport.clear(jazzDrumSchedId); } catch (e) {}
     jazzDrumSchedId = null;
+  }
+}
+
+// fm-61: ambient mode 用の harp texture + cello lead
+let ambientHarpSampler = null;
+let ambientHarpSchedId = null;
+let ambientCelloSampler = null;
+let ambientCelloSchedId = null;
+function ensureAmbientHarp() {
+  if (ambientHarpSampler) return ambientHarpSampler;
+  const inst = catalogInstrument("harp");
+  if (!inst) return null;
+  const urls = {};
+  Object.entries(inst.notes).forEach(([n, p]) => { urls[n] = inst.base_url + p; });
+  try {
+    ambientHarpSampler = new Tone.Sampler({ urls, release: 3.0, volume: -14 }).connect(padBus);
+  } catch (e) {
+    console.warn("[Music] ambient harp init failed:", e);
+    ambientHarpSampler = null;
+  }
+  return ambientHarpSampler;
+}
+function ensureAmbientCello() {
+  if (ambientCelloSampler) return ambientCelloSampler;
+  const inst = catalogInstrument("cello");
+  if (!inst) return null;
+  const urls = {};
+  Object.entries(inst.notes).forEach(([n, p]) => { urls[n] = inst.base_url + p; });
+  try {
+    ambientCelloSampler = new Tone.Sampler({ urls, release: 2.4, volume: -12 }).connect(padBus);
+  } catch (e) {
+    console.warn("[Music] ambient cello init failed:", e);
+    ambientCelloSampler = null;
+  }
+  return ambientCelloSampler;
+}
+function startAmbientHarpLayer() {
+  stopAmbientHarpLayer();
+  const sampler = ensureAmbientHarp();
+  if (!sampler) return;
+  // 4 小節ごとに 1 つの note を gentle に — harp は texture でいいので疎に
+  ambientHarpSchedId = Tone.Transport.scheduleRepeat((time) => {
+    try {
+      const ch = typeof randomHazeChord === "function" ? randomHazeChord() : ["C4","E4","G4"];
+      const note = ch[Math.floor(Math.random() * ch.length)];
+      sampler.triggerAttackRelease(note, "1n", time + Math.random() * 0.4, 0.30);
+    } catch (e) {}
+  }, "4m");
+}
+function stopAmbientHarpLayer() {
+  if (ambientHarpSchedId != null) {
+    try { Tone.Transport.clear(ambientHarpSchedId); } catch (e) {}
+    ambientHarpSchedId = null;
+  }
+}
+function startAmbientCelloLayer() {
+  stopAmbientCelloLayer();
+  const sampler = ensureAmbientCello();
+  if (!sampler) return;
+  // 2 小節ごとに sustained chord (cello で長い uhng)
+  ambientCelloSchedId = Tone.Transport.scheduleRepeat((time) => {
+    try {
+      const ch = typeof randomHazeChord === "function" ? randomHazeChord() : ["C3","E3","G3"];
+      // root + 5th only for cello (low register fat sound)
+      const notes = [ch[0], ch[Math.min(2, ch.length - 1)]];
+      sampler.triggerAttackRelease(notes, "2m", time + 0.05, 0.40);
+    } catch (e) {}
+  }, "2m");
+}
+function stopAmbientCelloLayer() {
+  if (ambientCelloSchedId != null) {
+    try { Tone.Transport.clear(ambientCelloSchedId); } catch (e) {}
+    ambientCelloSchedId = null;
+  }
+}
+
+// fm-61: dub mode 用の electric bass deep echo + organ sustained chord
+let dubBassSampler = null;
+let dubBassSchedId = null;
+let dubOrganSampler = null;
+let dubOrganSchedId = null;
+function ensureDubBass() {
+  if (dubBassSampler) return dubBassSampler;
+  const inst = catalogInstrument("bass-electric");
+  if (!inst) return null;
+  const urls = {};
+  Object.entries(inst.notes).forEach(([n, p]) => { urls[n] = inst.base_url + p; });
+  try {
+    // dub bass は heavy delay 経由 (globalDelay で echo 強調)
+    dubBassSampler = new Tone.Sampler({ urls, release: 0.6, volume: -4 }).connect(bassBus);
+  } catch (e) {
+    console.warn("[Music] dub bass init failed:", e);
+    dubBassSampler = null;
+  }
+  return dubBassSampler;
+}
+function ensureDubOrgan() {
+  if (dubOrganSampler) return dubOrganSampler;
+  const inst = catalogInstrument("organ");
+  if (!inst) return null;
+  const urls = {};
+  Object.entries(inst.notes).forEach(([n, p]) => { urls[n] = inst.base_url + p; });
+  try {
+    dubOrganSampler = new Tone.Sampler({ urls, release: 1.5, volume: -14 }).connect(padFilter);
+  } catch (e) {
+    console.warn("[Music] dub organ init failed:", e);
+    dubOrganSampler = null;
+  }
+  return dubOrganSampler;
+}
+function startDubBassLayer() {
+  stopDubBassLayer();
+  const sampler = ensureDubBass();
+  if (!sampler) return;
+  // dub bass = 拍頭 root + 3 拍目に octave skip
+  dubBassSchedId = Tone.Transport.scheduleRepeat((time) => {
+    try {
+      const bt = Tone.Time("4n").toSeconds();
+      const root = (typeof bassRoot === "string" ? bassRoot : "D2");
+      const m = root.match(/^([A-G][b#]?)(\d)/);
+      const oct = m ? parseInt(m[2], 10) : 2;
+      const rootHi = m ? (m[1] + (oct + 1)) : "D3";
+      sampler.triggerAttackRelease(root, "2n", time, 0.65);
+      sampler.triggerAttackRelease(rootHi, "4n", time + 2 * bt, 0.50);
+    } catch (e) {}
+  }, "1m");
+}
+function stopDubBassLayer() {
+  if (dubBassSchedId != null) {
+    try { Tone.Transport.clear(dubBassSchedId); } catch (e) {}
+    dubBassSchedId = null;
+  }
+}
+function startDubOrganLayer() {
+  stopDubOrganLayer();
+  const sampler = ensureDubOrgan();
+  if (!sampler) return;
+  // 4 小節ごとに sustained organ chord (dub の anchor)
+  dubOrganSchedId = Tone.Transport.scheduleRepeat((time) => {
+    try {
+      const ch = typeof randomHazeChord === "function" ? randomHazeChord() : ["C3","E3","G3"];
+      sampler.triggerAttackRelease(ch, "4m", time + 0.05, 0.30);
+    } catch (e) {}
+  }, "4m");
+}
+function stopDubOrganLayer() {
+  if (dubOrganSchedId != null) {
+    try { Tone.Transport.clear(dubOrganSchedId); } catch (e) {}
+    dubOrganSchedId = null;
   }
 }
 
@@ -9591,8 +9750,7 @@ let lastMode = null;
 function updateSoundForMode(mode){
   // Keep changes gentle; use .set and ramp where possible
   try{
-    // fm-56/58: lofi mode 以外では全 lofi layer を必ず停止
-    // (mode が lofi → 別 mode へ遷移したときの取り残し防止)
+    // fm-56/58/61: lofi / jazz / ambient / dub mode 以外では全 sample layer 停止
     if (mode !== "lofi") {
       stopLofiPianoLayer();
       stopLofiBassLayer();
@@ -9602,20 +9760,29 @@ function updateSoundForMode(mode){
       stopJazzPianoLayer();
       stopJazzDrumLayer();
     }
-    if (mode !== "lofi" && mode !== "jazz") {
-      // synth pad / bass の音量を通常レベルに戻す
+    if (mode !== "ambient") {
+      stopAmbientHarpLayer();
+      stopAmbientCelloLayer();
+    }
+    if (mode !== "dub") {
+      stopDubBassLayer();
+      stopDubOrganLayer();
+    }
+    if (mode !== "lofi" && mode !== "jazz" && mode !== "ambient" && mode !== "dub") {
       try { pad.volume.rampTo(0, 1.0); } catch (e) {}
       try { bass.volume.rampTo(0, 1.0); } catch (e) {}
     }
     if(mode==="ambient"){
-      // fm-57: ambient = sine pad で柔らかく + long reverb tail。今までは
-      // attack 1.2 で立ち上がり遅め → 一拍ごとの呼吸感に
+      // fm-57: ambient = sine pad で柔らかく + long reverb tail
+      // fm-61: + harp texture (4 小節 1 note) + cello sustained lead (2 小節 1 chord)
       pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.5, decay:1.0, sustain:0.60, release:4.0} });
       padFilter.frequency.rampTo(760, 1.2);
-      globalReverb.decay = 6.4;          // やや長めの hall
-      globalReverb.wet.rampTo(0.30, 1.2); // 32 → 30 (やや控えめ、混ざりすぎ防止)
-      globalDelay.wet.rampTo(0.08, 1.2);  // delay は最小限 (ambient で delay は要らない)
+      globalReverb.decay = 6.4;
+      globalReverb.wet.rampTo(0.30, 1.2);
+      globalDelay.wet.rampTo(0.08, 1.2);
       bass.set({ oscillator:{type:"sine"}, envelope:{attack:0.03, decay:0.40, sustain:0.30, release:1.6} });
+      startAmbientHarpLayer();
+      startAmbientCelloLayer();
     }else if(mode==="lofi"){
       // fm-58: 完全 Nujabes piano trio + breakbeat — pad/bass/drum 全部
       // 実 sample に。synth voices は裏に追いやって sampler が前面を取る。
@@ -9636,7 +9803,11 @@ function updateSoundForMode(mode){
       startLofiBassLayer();
       startLofiDrumLayer();
     }else if(mode==="dub"){
+      // fm-61: dub = electric bass の deep echo + organ の sustained chord
+      // synth pad は半分まで減衰、bass synth はほぼ無音 (実 bass が前面)
       pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.65, decay:0.5, sustain:0.5, release:2.5} });
+      try { pad.volume.rampTo(-14, 1.0); } catch (e) {}
+      try { bass.volume.rampTo(-22, 1.0); } catch (e) {}
       padFilter.frequency.rampTo(1400, 0.9);
       globalReverb.decay = 6.2;
       globalReverb.wet.rampTo(0.34, 0.9);
@@ -9644,6 +9815,8 @@ function updateSoundForMode(mode){
       globalDelay.feedback.rampTo(0.55, 0.8);
       globalDelay.wet.rampTo(0.32, 0.8);
       bass.set({ oscillator:{type:"square"}, filter:{Q:1.2}, filterEnvelope:{baseFrequency:65, octaves:2.6} });
+      startDubBassLayer();
+      startDubOrganLayer();
     }else if(mode==="jazz"){
       // fm-60: jazz mode も catalog 経由で実楽器化
       //   piano (Salamander), drums (acoustic kit), guitar (nylon、lead 役)
