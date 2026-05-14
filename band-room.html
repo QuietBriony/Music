@@ -6,14 +6,18 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-60" />
+<link rel="stylesheet" href="band-room.css?v=br-61" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="audio/audio-safety.js?v=br-60" defer></script>
-<script src="band-room.js?v=br-60" defer></script>
+<script src="audio/audio-safety.js?v=br-61" defer></script>
+<!-- v134: Magenta.js DrumsRNN for AI fill / continue. Loads lazily via defer,
+     ~2 MB total, browser-cached after first visit -->
+<script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/es6/core.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/es6/music_rnn.js" defer></script>
+<script src="band-room.js?v=br-61" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -262,6 +266,25 @@
 
         <span id="br-kit-status" aria-live="polite"></span>
         <p class="br-help">profile は **kit = AI synth (default)** のときだけ効く。サンプル kit (auto-self / tabasco-* / unripe-*) のときは元音色のまま。<br><strong>🌐 online kits</strong> は CDN (jsDelivr / tonejs.github.io) から fetch — repo に容量食わない代わりにオフライン時は使えない。<br><strong>per-voice override</strong>: 各 voice (kick/snare/hat/...) を別 kit から個別に取れる。kick = 808 / snare = acoustic / hat = 909 みたいなミックス組める。</p>
+      </section>
+    </details>
+
+    <details class="br-details" data-scope="synth">
+      <summary>🎲 AI fill (Magenta DrumsRNN)</summary>
+      <section id="br-ai-fill" aria-label="AI drum fill">
+        <button id="br-ai-fill-load" type="button">⚡ load AI model (~2 MB)</button>
+        <button id="br-ai-fill-go" type="button" disabled>🎲 continue current bar (AI fill)</button>
+        <button id="br-ai-fill-reset" type="button" disabled>↺ reset to original frame</button>
+        <span id="br-ai-fill-status" aria-live="polite">model not loaded</span>
+        <label>
+          <span>temperature</span>
+          <input type="range" id="br-ai-fill-temp" min="50" max="200" value="100" step="5" />
+          <span id="br-ai-fill-temp-readout">1.0</span>
+        </label>
+        <p class="br-help">現在の bar の drum events を seed として AI (Magenta
+          DrumsRNN) が **続編の 32 step (2 bar 分) を生成**して、現 frame に
+          inject。temperature 0.5 = 規則的、1.0 = 標準、2.0 = カオス。
+          🎛 AI 再現モードで kit = AI synth (default) のとき効く。</p>
       </section>
     </details>
 

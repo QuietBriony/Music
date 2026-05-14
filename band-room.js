@@ -2932,6 +2932,29 @@
       });
     }
 
+    // v134: AI fill (Magenta DrumsRNN)
+    const aiLoadBtn = $("br-ai-fill-load");
+    if (aiLoadBtn) {
+      aiLoadBtn.addEventListener("click", async () => {
+        aiLoadBtn.disabled = true;
+        aiLoadBtn.textContent = "loading…";
+        await loadDrumsRnn();
+        aiLoadBtn.textContent = aiDrumRnnReady ? "✓ AI model loaded" : "⚡ load AI model (~2 MB)";
+        if (!aiDrumRnnReady) aiLoadBtn.disabled = false;
+      });
+    }
+    const aiGoBtn = $("br-ai-fill-go");
+    if (aiGoBtn) aiGoBtn.addEventListener("click", () => aiFillContinueCurrentFrame());
+    const aiResetBtn = $("br-ai-fill-reset");
+    if (aiResetBtn) aiResetBtn.addEventListener("click", () => aiFillReset());
+    const aiTempEl = $("br-ai-fill-temp");
+    const aiTempRead = $("br-ai-fill-temp-readout");
+    if (aiTempEl) {
+      aiTempEl.addEventListener("input", () => {
+        if (aiTempRead) aiTempRead.textContent = (Number(aiTempEl.value) / 100).toFixed(2);
+      });
+    }
+
     // v88: MIDI panel
     const midiEnable = $("br-midi-enable");
     if (midiEnable) {
@@ -3866,6 +3889,159 @@
   function schedulePrefsSave() {
     clearTimeout(savePrefsTimer);
     savePrefsTimer = setTimeout(savePrefs, 400);
+  }
+
+  // ---- v134: Magenta DrumsRNN AI fill -----------------------
+  // 現在の bar の drum events を seed として AI に続編 32 step (2 bar 分) を
+  // 生成させて、現 frame に inject。Magenta drumkit は 9 class:
+  //   0=kick(36), 1=snare(38), 2=closedHat(42), 3=openHat(46),
+  //   4=lowTom(43), 5=midTom(47), 6=hiTom(50), 7=crash(49), 8=ride(51)
+  // band-room の drum-frames instrument 名にマッピングして events に変換。
+  let aiDrumRnn = null;
+  let aiDrumRnnReady = false;
+  let aiFillBackupEvents = null;  // 元 frame events を保存して reset 可能に
+  let aiFillTargetFrameId = null;
+
+  const MAGENTA_PITCH_TO_INST = {
+    36: "kick",   38: "snare",  42: "hat",   46: "hat",     // closed/open both → hat
+    43: "fill",   47: "fill",   50: "fill",                  // toms → fill (band-room voice)
+    49: "crash",  51: "crash"                                 // crash/ride
+  };
+  const INST_TO_MAGENTA_PITCH = {
+    kick: 36, snare: 38, hat: 42, ghost: 38, fill: 47, crash: 49
+  };
+
+  async function loadDrumsRnn() {
+    if (aiDrumRnnReady) return aiDrumRnn;
+    if (typeof mm === "undefined") {
+      setAiFillStatus("error: @magenta/music not loaded (offline?)");
+      return null;
+    }
+    setAiFillStatus("loading Magenta DrumsRNN model…");
+    try {
+      aiDrumRnn = new mm.MusicRNN(
+        "https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/drum_kit_rnn"
+      );
+      await aiDrumRnn.initialize();
+      aiDrumRnnReady = true;
+      setAiFillStatus("✓ DrumsRNN ready");
+      const goBtn = $("br-ai-fill-go");
+      if (goBtn) goBtn.disabled = false;
+      return aiDrumRnn;
+    } catch (e) {
+      console.warn("[Band Room] DrumsRNN init failed:", e);
+      setAiFillStatus("init failed: " + (e.message || e));
+      return null;
+    }
+  }
+
+  function setAiFillStatus(s) {
+    const el = $("br-ai-fill-status");
+    if (el) el.textContent = s || "";
+  }
+
+  function eventsToSeedNoteSequence(events) {
+    // events: drum-frames format → mm.NoteSequence (quantized to 16 steps)
+    const notes = [];
+    events.forEach((evt) => {
+      const pitch = INST_TO_MAGENTA_PITCH[evt.instrument];
+      if (!pitch) return;
+      const stepIdx = (evt.beat || 0) * 4 + (evt.sub || 0);
+      if (stepIdx < 0 || stepIdx >= 16) return;
+      notes.push({
+        pitch,
+        quantizedStartStep: stepIdx,
+        quantizedEndStep: stepIdx + 1,
+        isDrum: true,
+        velocity: Math.round(clamp(evt.velocity ?? 0.5, 0, 1) * 127)
+      });
+    });
+    return new mm.NoteSequence({
+      notes,
+      totalQuantizedSteps: 16,
+      quantizationInfo: { stepsPerQuarter: 4 }
+    });
+  }
+
+  function noteSequenceToEvents(ns, stepOffset = 0) {
+    // mm.NoteSequence → drum-frames events format
+    const events = [];
+    (ns.notes || []).forEach((n) => {
+      const inst = MAGENTA_PITCH_TO_INST[n.pitch];
+      if (!inst) return;
+      const stepIdx = (n.quantizedStartStep || 0) + stepOffset;
+      // Wrap to first bar of frame events (band-room frames are 1 bar = 16 steps)
+      const wrappedStep = stepIdx % 16;
+      events.push({
+        instrument: inst,
+        beat: Math.floor(wrappedStep / 4),
+        sub: wrappedStep % 4,
+        velocity: clamp((n.velocity || 90) / 127, 0.05, 1),
+        microMs: 0,
+        role: "ai_continued"
+      });
+    });
+    return events;
+  }
+
+  async function aiFillContinueCurrentFrame() {
+    if (!aiDrumRnnReady || !aiDrumRnn) {
+      setAiFillStatus("model not ready, click load first");
+      return;
+    }
+    const sec = currentSection();
+    if (!sec || !state.songData) {
+      setAiFillStatus("no song loaded");
+      return;
+    }
+    const frame = currentFrame();
+    if (!frame || !Array.isArray(frame.events)) {
+      setAiFillStatus("no frame events to seed");
+      return;
+    }
+    setAiFillStatus("generating continuation…");
+    try {
+      // Backup so we can reset later
+      aiFillBackupEvents = JSON.parse(JSON.stringify(frame.events));
+      aiFillTargetFrameId = frame.id;
+
+      const seed = eventsToSeedNoteSequence(frame.events);
+      const tempEl = $("br-ai-fill-temp");
+      const temperature = tempEl ? Number(tempEl.value) / 100 : 1.0;
+      // Continue 32 steps = 2 bars worth
+      const continuation = await aiDrumRnn.continueSequence(seed, 32, temperature);
+      // Use the *second* half of continuation for variety (or full if you want
+      // total replacement). Here we take the first 16 steps as the new bar 1.
+      const newEvents = noteSequenceToEvents(continuation, 0).filter((e) => {
+        // Only keep events that fall in bar 1 (steps 0..15)
+        return (e.beat * 4 + e.sub) < 16;
+      });
+      if (newEvents.length === 0) {
+        setAiFillStatus("AI returned empty — try higher temperature");
+        return;
+      }
+      // Replace frame.events with AI continuation
+      frame.events = newEvents;
+      const resetBtn = $("br-ai-fill-reset");
+      if (resetBtn) resetBtn.disabled = false;
+      setAiFillStatus(`✓ frame '${frame.id}' continued (${newEvents.length} events, temp ${temperature.toFixed(2)})`);
+    } catch (e) {
+      console.warn("[Band Room] AI fill failed:", e);
+      setAiFillStatus("AI fill failed: " + (e.message || e));
+    }
+  }
+
+  function aiFillReset() {
+    if (!aiFillBackupEvents || !aiFillTargetFrameId || !state.songData) return;
+    const frame = state.songData.frames.find((f) => f.id === aiFillTargetFrameId);
+    if (frame) {
+      frame.events = aiFillBackupEvents;
+      setAiFillStatus(`reset '${frame.id}' to original events`);
+      aiFillBackupEvents = null;
+      aiFillTargetFrameId = null;
+      const resetBtn = $("br-ai-fill-reset");
+      if (resetBtn) resetBtn.disabled = true;
+    }
   }
 
   // ---- Boot ---------------------------------------------------
