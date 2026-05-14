@@ -2159,7 +2159,9 @@
           const t = time + baseOffset + jitterMs / 1000;
           const rawVel = clamp(evt.velocity ?? 0.5, 0.05, 1);
           // v118: velocity humanize — ±4% perturb, accent-friendly
-          let vel = clamp(rawVel * (1 + (Math.random() - 0.5) * 0.08), 0.05, 1);
+          // v137: mic follow scale — 演奏の音量で drum velocity を ±30% スケール
+          const micScale = micFollowVelocityScale();
+          let vel = clamp(rawVel * micScale * (1 + (Math.random() - 0.5) * 0.08), 0.05, 1);
           // v122: ghost-note variation — 16th hat の弱拍を時々もっと弱く、
           // 強拍を時々もっと強く。一様な hat 刻みの "machine" 感を消す
           if (evt.instrument === "hat") {
@@ -2952,6 +2954,19 @@
     if (aiTempEl) {
       aiTempEl.addEventListener("input", () => {
         if (aiTempRead) aiTempRead.textContent = (Number(aiTempEl.value) / 100).toFixed(2);
+      });
+    }
+
+    // v137: mic follow groove
+    const micEnableBtn = $("br-mic-follow-enable");
+    if (micEnableBtn) micEnableBtn.addEventListener("click", enableMicFollow);
+    const micDisableBtn = $("br-mic-follow-disable");
+    if (micDisableBtn) micDisableBtn.addEventListener("click", disableMicFollow);
+    const micAmountEl = $("br-mic-follow-amount");
+    const micAmountRead = $("br-mic-follow-amount-readout");
+    if (micAmountEl) {
+      micAmountEl.addEventListener("input", () => {
+        if (micAmountRead) micAmountRead.textContent = micAmountEl.value + "%";
       });
     }
 
@@ -4245,6 +4260,84 @@
       const resetBtn = $("br-midi-import-reset");
       if (resetBtn) resetBtn.disabled = true;
     }
+  }
+
+  // ---- v137: drum-floor mic follow ----------------------------
+  // Tone.UserMedia で mic を聞いて、現在の演奏 RMS energy に応じて
+  // scheduleBar の drum velocity を動的スケール。録音はしない、解析のみ。
+  let micFollowMedia = null;
+  let micFollowMeter = null;
+  let micFollowRaf = 0;
+  let micFollowEnergy = 0.5;  // 0..1 normalized (0.5 = neutral / no scale)
+
+  function setMicFollowStatus(s) {
+    const el = $("br-mic-follow-status");
+    if (el) el.textContent = s || "";
+  }
+
+  async function enableMicFollow() {
+    if (micFollowMedia) return;
+    setMicFollowStatus("requesting mic permission…");
+    try {
+      ensureMaster();
+      micFollowMedia = new Tone.UserMedia();
+      await micFollowMedia.open();
+      micFollowMeter = new Tone.Meter({ smoothing: 0.86 });
+      micFollowMedia.connect(micFollowMeter);
+      tickMicFollow();
+      setMicFollowStatus("✓ mic active — playing with the drum-floor");
+      $("br-mic-follow-enable").disabled = true;
+      $("br-mic-follow-disable").disabled = false;
+    } catch (e) {
+      console.warn("[Band Room] mic follow failed:", e);
+      setMicFollowStatus("permission denied or no mic: " + (e.message || e));
+      micFollowMedia = null;
+    }
+  }
+
+  function tickMicFollow() {
+    if (!micFollowMeter) return;
+    const dB = micFollowMeter.getValue();
+    const normalized = Math.max(0, Math.min(1, (dB + 60) / 60));
+    micFollowEnergy = normalized;
+    const bar = $("br-mic-follow-bar");
+    if (bar) {
+      const pct = (normalized * 100).toFixed(1);
+      bar.style.width = pct + "%";
+      // 色: 静→accent、 激→warn
+      bar.style.background = normalized > 0.7 ? "#ff5566" : (normalized > 0.4 ? "#ffb39a" : "#ff8866");
+    }
+    micFollowRaf = requestAnimationFrame(tickMicFollow);
+  }
+
+  function disableMicFollow() {
+    cancelAnimationFrame(micFollowRaf);
+    micFollowRaf = 0;
+    if (micFollowMedia) {
+      try { micFollowMedia.close(); } catch (e) {}
+      try { micFollowMedia.dispose(); } catch (e) {}
+      micFollowMedia = null;
+    }
+    if (micFollowMeter) {
+      try { micFollowMeter.dispose(); } catch (e) {}
+      micFollowMeter = null;
+    }
+    micFollowEnergy = 0.5;
+    const bar = $("br-mic-follow-bar");
+    if (bar) bar.style.width = "0%";
+    setMicFollowStatus("disabled");
+    $("br-mic-follow-enable").disabled = false;
+    $("br-mic-follow-disable").disabled = true;
+  }
+
+  // micFollow energy + amount slider → velocity scaler (0.7..1.3 range)
+  function micFollowVelocityScale() {
+    if (!micFollowMedia) return 1.0;  // not active = no effect
+    const amountEl = $("br-mic-follow-amount");
+    const amount = amountEl ? Number(amountEl.value) / 100 : 0.5;
+    // micFollowEnergy 0.5 = neutral、 1.0 = forte、 0.0 = pp
+    // amount で振幅をスケール、最大 ±0.3 (= 30%)
+    return 1.0 + (micFollowEnergy - 0.5) * 0.6 * amount;
   }
 
   // ---- v136: Genre pattern picker -----------------------------

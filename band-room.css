@@ -509,6 +509,101 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   transform: scale(0.96);
 }
 
+/* v137: drum-floor mic follow */
+#br-mic-follow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.br-mic-follow-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+#br-mic-follow-enable,
+#br-mic-follow-disable {
+  appearance: none;
+  background: rgba(255, 184, 122, 0.08);
+  border: 1px solid rgba(255, 184, 122, 0.30);
+  color: var(--accent-glass);
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#br-mic-follow-enable:hover:not(:disabled),
+#br-mic-follow-disable:hover:not(:disabled) {
+  background: rgba(255, 184, 122, 0.22);
+  border-color: var(--accent);
+}
+
+#br-mic-follow-enable:disabled,
+#br-mic-follow-disable:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#br-mic-follow-status {
+  font-size: 10px;
+  color: var(--text-sub);
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+#br-mic-follow-meter {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+#br-mic-follow-bar {
+  width: 0%;
+  height: 100%;
+  background: var(--accent);
+  transition: width 80ms linear, background 120ms linear;
+}
+
+#br-mic-follow label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-sub);
+}
+
+#br-mic-follow label > span:first-child { min-width: 60px; }
+
+#br-mic-follow-amount-readout {
+  min-width: 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-glass);
+}
+
+#br-mic-follow input[type="range"] {
+  flex: 1;
+  appearance: none;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  outline: none;
+}
+
+#br-mic-follow .br-help {
+  margin: 0;
+  font-size: 10px;
+  opacity: 0.6;
+  line-height: 1.5;
+}
+
 /* v136: Genre pattern picker */
 #br-genre-pick {
   display: flex;
