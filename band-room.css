@@ -590,6 +590,69 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   line-height: 1.5;
 }
 
+/* Tier1 #3: MIDI loop import (drum-frames に変換) */
+#br-midi-import {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#br-midi-import button {
+  appearance: none;
+  background: rgba(255, 184, 122, 0.06);
+  border: 1px solid rgba(255, 184, 122, 0.30);
+  color: var(--text-sub);
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+#br-midi-import button:hover:not(:disabled) {
+  background: rgba(255, 184, 122, 0.18);
+  border-color: var(--accent-soft);
+  color: var(--accent-glass);
+}
+
+#br-midi-import button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#br-midi-import-go {
+  background: rgba(255, 136, 102, 0.10) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-glass) !important;
+}
+
+#br-midi-import-status {
+  font-size: 10px;
+  color: var(--text-sub);
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+#br-midi-import input[type="file"] {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+#br-midi-import .br-help {
+  margin: 0;
+  font-size: 10px;
+  opacity: 0.6;
+  line-height: 1.5;
+}
+
+#br-midi-import.drag-over {
+  outline: 1px dashed var(--accent-soft);
+  outline-offset: 4px;
+}
+
 /* v76: practice tempo section */
 #br-tempo {
   display: flex;

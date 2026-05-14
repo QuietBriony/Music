@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "format": "drum-frames",
+  "genre": "boom-bap",
+  "session_signature": "Tier 1 #2 standard pattern, hand-authored, v135",
+  "structure": [
+    { "section": "intro",          "frame_id": "boombap_pocket_bar_0" },
+    { "section": "verse",          "frame_id": "boombap_pocket_bar_1" },
+    { "section": "chorus_climax",  "frame_id": "boombap_pocket_bar_2" }
+  ],
+  "frames": [
+    {
+      "id": "boombap_pocket_bar_0",
+      "bpm": 90,
+      "swing": 0.06,
+      "barLength": 4,
+      "role": "intro",
+      "session_role": "intro",
+      "events": [
+        { "instrument": "kick",  "beat": 0, "sub": 0, "velocity": 0.78, "microMs":  0,  "role": "anchor_one" },
+        { "instrument": "kick",  "beat": 2, "sub": 2, "velocity": 0.58, "microMs":  0,  "role": "and_of_three_syncopation" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.70, "microMs": 12,  "role": "dilla_drag_backbeat_2" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.72, "microMs": 12,  "role": "dilla_drag_backbeat_4" },
+        { "instrument": "hat",   "beat": 0, "sub": 0, "velocity": 0.42, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 0, "sub": 2, "velocity": 0.26, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "hat",   "beat": 1, "sub": 0, "velocity": 0.38, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 1, "sub": 2, "velocity": 0.24, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "hat",   "beat": 2, "sub": 0, "velocity": 0.40, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 2, "sub": 2, "velocity": 0.25, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "hat",   "beat": 3, "sub": 0, "velocity": 0.38, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 3, "sub": 2, "velocity": 0.24, "microMs": -3,  "role": "offbeat_soft" }
+      ]
+    },
+    {
+      "id": "boombap_pocket_bar_1",
+      "bpm": 90,
+      "swing": 0.07,
+      "barLength": 4,
+      "role": "verse",
+      "session_role": "verse",
+      "events": [
+        { "instrument": "kick",  "beat": 0, "sub": 0, "velocity": 0.82, "microMs":  0,  "role": "anchor_one" },
+        { "instrument": "kick",  "beat": 2, "sub": 2, "velocity": 0.62, "microMs":  0,  "role": "and_of_three_syncopation" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.74, "microMs": 12,  "role": "dilla_drag_backbeat_2" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.76, "microMs": 12,  "role": "dilla_drag_backbeat_4" },
+        { "instrument": "hat",   "beat": 0, "sub": 0, "velocity": 0.44, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 0, "sub": 2, "velocity": 0.28, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "hat",   "beat": 1, "sub": 0, "velocity": 0.40, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 1, "sub": 2, "velocity": 0.26, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "hat",   "beat": 2, "sub": 0, "velocity": 0.42, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 2, "sub": 2, "velocity": 0.27, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "hat",   "beat": 3, "sub": 0, "velocity": 0.40, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 3, "sub": 2, "velocity": 0.26, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.18, "microMs":  8,  "role": "snare_pickup_ghost" }
+      ]
+    },
+    {
+      "id": "boombap_pocket_bar_2",
+      "bpm": 90,
+      "swing": 0.07,
+      "barLength": 4,
+      "role": "chorus_climax",
+      "session_role": "chorus_climax",
+      "events": [
+        { "instrument": "kick",  "beat": 0, "sub": 0, "velocity": 0.88, "microMs":  0,  "role": "anchor_one" },
+        { "instrument": "kick",  "beat": 2, "sub": 2, "velocity": 0.66, "microMs":  0,  "role": "and_of_three_syncopation" },
+        { "instrument": "kick",  "beat": 3, "sub": 3, "velocity": 0.46, "microMs":  2,  "role": "pickup_to_one" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.82, "microMs": 12,  "role": "dilla_drag_backbeat_2" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.84, "microMs": 12,  "role": "dilla_drag_backbeat_4" },
+        { "instrument": "hat",   "beat": 0, "sub": 0, "velocity": 0.48, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 0, "sub": 2, "velocity": 0.30, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "hat",   "beat": 1, "sub": 0, "velocity": 0.44, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 1, "sub": 2, "velocity": 0.28, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "hat",   "beat": 2, "sub": 0, "velocity": 0.46, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 2, "sub": 2, "velocity": 0.30, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "hat",   "beat": 3, "sub": 0, "velocity": 0.44, "microMs":  0,  "role": "downbeat_accent" },
+        { "instrument": "hat",   "beat": 3, "sub": 2, "velocity": 0.28, "microMs": -3,  "role": "offbeat_soft" },
+        { "instrument": "ghost", "beat": 0, "sub": 3, "velocity": 0.20, "microMs":  8,  "role": "snare_pickup_ghost" },
+        { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.22, "microMs":  8,  "role": "snare_pickup_ghost" },
+        { "instrument": "fill",  "beat": 3, "sub": 3, "velocity": 0.42, "microMs":  4,  "role": "turn_to_one" }
+      ]
+    }
+  ]
+}

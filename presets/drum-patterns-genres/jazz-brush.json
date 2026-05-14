@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "format": "drum-frames",
+  "genre": "jazz-brush",
+  "session_signature": "Tier 1 #2 standard pattern, hand-authored, v135",
+  "structure": [
+    { "section": "head",   "frame_id": "jazzbrush_pocket_bar_0" },
+    { "section": "solo",   "frame_id": "jazzbrush_pocket_bar_1" },
+    { "section": "trade",  "frame_id": "jazzbrush_pocket_bar_2" }
+  ],
+  "frames": [
+    {
+      "id": "jazzbrush_pocket_bar_0",
+      "bpm": 90,
+      "swing": 0.18,
+      "barLength": 4,
+      "role": "head",
+      "session_role": "head",
+      "events": [
+        { "instrument": "kick",  "beat": 0, "sub": 0, "velocity": 0.30, "microMs":  4, "role": "feathered_anchor" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.34, "microMs":  6, "role": "brush_wash_2" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.36, "microMs":  8, "role": "brush_wash_4" },
+        { "instrument": "hat",   "beat": 0, "sub": 0, "velocity": 0.46, "microMs":  0, "role": "ride_spang_down_1" },
+        { "instrument": "hat",   "beat": 0, "sub": 2, "velocity": 0.34, "microMs": 18, "role": "ride_spang_skip_and_of_1" },
+        { "instrument": "hat",   "beat": 1, "sub": 0, "velocity": 0.42, "microMs":  2, "role": "ride_spang_down_2" },
+        { "instrument": "hat",   "beat": 2, "sub": 0, "velocity": 0.44, "microMs":  1, "role": "ride_spang_down_3" },
+        { "instrument": "hat",   "beat": 2, "sub": 2, "velocity": 0.36, "microMs": 18, "role": "ride_spang_skip_and_of_3" },
+        { "instrument": "hat",   "beat": 3, "sub": 0, "velocity": 0.42, "microMs":  3, "role": "ride_spang_down_4" },
+        { "instrument": "ghost", "beat": 0, "sub": 3, "velocity": 0.12, "microMs": 14, "role": "brush_ghost_glue" },
+        { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.13, "microMs": 16, "role": "brush_ghost_glue" }
+      ]
+    },
+    {
+      "id": "jazzbrush_pocket_bar_1",
+      "bpm": 90,
+      "swing": 0.20,
+      "barLength": 4,
+      "role": "solo",
+      "session_role": "solo",
+      "events": [
+        { "instrument": "kick",  "beat": 0, "sub": 0, "velocity": 0.30, "microMs":  5, "role": "feathered_anchor" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.38, "microMs":  8, "role": "brush_wash_2" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.40, "microMs": 10, "role": "brush_wash_4" },
+        { "instrument": "hat",   "beat": 0, "sub": 0, "velocity": 0.48, "microMs":  0, "role": "ride_spang_down_1" },
+        { "instrument": "hat",   "beat": 0, "sub": 2, "velocity": 0.36, "microMs": 18, "role": "ride_spang_skip_and_of_1" },
+        { "instrument": "hat",   "beat": 1, "sub": 0, "velocity": 0.44, "microMs":  2, "role": "ride_spang_down_2" },
+        { "instrument": "hat",   "beat": 2, "sub": 0, "velocity": 0.46, "microMs":  1, "role": "ride_spang_down_3" },
+        { "instrument": "hat",   "beat": 2, "sub": 2, "velocity": 0.38, "microMs": 18, "role": "ride_spang_skip_and_of_3" },
+        { "instrument": "hat",   "beat": 3, "sub": 0, "velocity": 0.44, "microMs":  3, "role": "ride_spang_down_4" },
+        { "instrument": "ghost", "beat": 0, "sub": 3, "velocity": 0.14, "microMs": 14, "role": "brush_ghost_glue" },
+        { "instrument": "ghost", "beat": 1, "sub": 3, "velocity": 0.12, "microMs": 16, "role": "brush_ghost_random" },
+        { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.15, "microMs": 16, "role": "brush_ghost_glue" },
+        { "instrument": "ghost", "beat": 3, "sub": 2, "velocity": 0.13, "microMs": 22, "role": "brush_ghost_random" }
+      ]
+    },
+    {
+      "id": "jazzbrush_pocket_bar_2",
+      "bpm": 90,
+      "swing": 0.19,
+      "barLength": 4,
+      "role": "trade",
+      "session_role": "trade",
+      "events": [
+        { "instrument": "kick",  "beat": 0, "sub": 0, "velocity": 0.32, "microMs":  4, "role": "feathered_anchor" },
+        { "instrument": "kick",  "beat": 3, "sub": 2, "velocity": 0.28, "microMs":  8, "role": "feathered_pickup" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.42, "microMs":  6, "role": "brush_wash_2" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.44, "microMs":  8, "role": "brush_wash_4" },
+        { "instrument": "hat",   "beat": 0, "sub": 0, "velocity": 0.50, "microMs":  0, "role": "ride_spang_down_1" },
+        { "instrument": "hat",   "beat": 0, "sub": 2, "velocity": 0.38, "microMs": 18, "role": "ride_spang_skip_and_of_1" },
+        { "instrument": "hat",   "beat": 1, "sub": 0, "velocity": 0.46, "microMs":  2, "role": "ride_spang_down_2" },
+        { "instrument": "hat",   "beat": 2, "sub": 0, "velocity": 0.48, "microMs":  1, "role": "ride_spang_down_3" },
+        { "instrument": "hat",   "beat": 2, "sub": 2, "velocity": 0.40, "microMs": 18, "role": "ride_spang_skip_and_of_3" },
+        { "instrument": "hat",   "beat": 3, "sub": 0, "velocity": 0.46, "microMs":  3, "role": "ride_spang_down_4" },
+        { "instrument": "ghost", "beat": 0, "sub": 3, "velocity": 0.16, "microMs": 14, "role": "brush_ghost_glue" },
+        { "instrument": "ghost", "beat": 2, "sub": 3, "velocity": 0.17, "microMs": 16, "role": "brush_ghost_glue" },
+        { "instrument": "fill",  "beat": 3, "sub": 3, "velocity": 0.30, "microMs":  6, "role": "brush_trade_turn" }
+      ]
+    }
+  ]
+}

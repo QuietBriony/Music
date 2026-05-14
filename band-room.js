@@ -2955,6 +2955,62 @@
       });
     }
 
+    // Tier1 #3: MIDI loop import (@tonejs/midi)
+    const midiImportFile = $("br-midi-import-file");
+    const acceptMidiImportFile = async (f) => {
+      if (!f) return;
+      setMidiImportStatus(`reading ${f.name}…`);
+      try {
+        const buf = await f.arrayBuffer();
+        const events = parseMidiFile(buf);
+        if (!events || events.length === 0) {
+          setMidiImportStatus("(no drum events found in bar 1)");
+          midiImportPendingEvents = null;
+          const goBtn = $("br-midi-import-go");
+          if (goBtn) goBtn.disabled = true;
+          return;
+        }
+        midiImportPendingEvents = events;
+        midiImportSourceName = f.name;
+        setMidiImportStatus(`✓ '${f.name}' parsed — ${events.length} events ready to inject`);
+        const goBtn = $("br-midi-import-go");
+        if (goBtn) goBtn.disabled = false;
+      } catch (e) {
+        console.warn("[Band Room] MIDI parse failed:", e);
+        setMidiImportStatus("parse failed: " + (e.message || e));
+        midiImportPendingEvents = null;
+        const goBtn = $("br-midi-import-go");
+        if (goBtn) goBtn.disabled = true;
+      }
+    };
+    if (midiImportFile) {
+      midiImportFile.addEventListener("change", async (e) => {
+        const f = e.target.files && e.target.files[0];
+        await acceptMidiImportFile(f);
+      });
+    }
+    const midiImportSection = $("br-midi-import");
+    if (midiImportSection) {
+      midiImportSection.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        midiImportSection.classList.add("drag-over");
+      });
+      ["dragleave", "dragend"].forEach((ev) =>
+        midiImportSection.addEventListener(ev, () => midiImportSection.classList.remove("drag-over"))
+      );
+      midiImportSection.addEventListener("drop", async (e) => {
+        e.preventDefault();
+        midiImportSection.classList.remove("drag-over");
+        const f = e.dataTransfer?.files?.[0];
+        if (!f) return;
+        await acceptMidiImportFile(f);
+      });
+    }
+    const midiImportGoBtn = $("br-midi-import-go");
+    if (midiImportGoBtn) midiImportGoBtn.addEventListener("click", () => midiImportInject());
+    const midiImportResetBtn = $("br-midi-import-reset");
+    if (midiImportResetBtn) midiImportResetBtn.addEventListener("click", () => midiImportReset());
+
     // v88: MIDI panel
     const midiEnable = $("br-midi-enable");
     if (midiEnable) {
@@ -4040,6 +4096,143 @@
       aiFillBackupEvents = null;
       aiFillTargetFrameId = null;
       const resetBtn = $("br-ai-fill-reset");
+      if (resetBtn) resetBtn.disabled = true;
+    }
+  }
+
+  // ---- Tier1 #3: MIDI loop import (@tonejs/midi) -----------------
+  // Parse .mid → drum-frames events 形式 (band-room の AI fill と同じ shape)。
+  // bar 1 (= ticks 0 〜 ppq*4) を抽出して現 frame.events に inject。
+  // MIDI pitch → instrument map (General MIDI Drum standard):
+  //   36=kick / 38=snare / 42=closed hat / 46=open hat /
+  //   47/50=tom→fill / 49=crash / 51=ride→crash
+  let midiImportPendingEvents = null;     // parse 結果のキャッシュ (inject 待ち)
+  let midiImportSourceName = null;
+  let midiImportBackupEvents = null;       // inject 前の元 events (reset 用)
+  let midiImportTargetFrameId = null;
+
+  const MIDI_PITCH_TO_INST = {
+    35: "kick",   36: "kick",            // acoustic / electric bass drum
+    38: "snare",  40: "snare",            // acoustic / electric snare
+    37: "ghost",                           // side stick → ghost
+    42: "hat",    44: "hat",   46: "hat",  // closed / pedal / open hat
+    41: "fill",   43: "fill",   45: "fill",  // low / hi-floor / low toms
+    47: "fill",   48: "fill",   50: "fill",  // low-mid / hi-mid / hi tom
+    49: "crash",  51: "crash",  52: "crash", 53: "crash",
+    55: "crash",  57: "crash",  59: "crash"
+  };
+
+  function setMidiImportStatus(s) {
+    const el = $("br-midi-import-status");
+    if (el) el.textContent = s || "";
+  }
+
+  function parseMidiFile(arrayBuffer) {
+    // @tonejs/midi global is `Midi` (also accessible as window.Midi)
+    const MidiCtor = (typeof Midi !== "undefined") ? Midi : (typeof window !== "undefined" ? window.Midi : null);
+    if (!MidiCtor) {
+      throw new Error("@tonejs/midi not loaded (offline?)");
+    }
+    const midi = new MidiCtor(arrayBuffer);
+    const ppq = midi.header.ppq || 480;
+    const barTicks = ppq * 4;        // 4/4 assumed (1 bar = 4 quarter notes)
+    const subTicks = ppq / 4;        // 16th-note grid
+
+    // Find drum track. Priority order:
+    // 1. Track with channel === 9 (MIDI channel 10, zero-indexed = drum channel)
+    // 2. Track name contains "drum"/"kit"/"perc" (case-insensitive)
+    // 3. Track with most notes mapping to known drum pitches in bar 1
+    let drumTrack = null;
+    let bestKnownCount = 0;
+    for (const tr of midi.tracks) {
+      if (!tr || !Array.isArray(tr.notes) || tr.notes.length === 0) continue;
+      // ch 9 (= MIDI ch 10) is the GM drum channel
+      const ch = (typeof tr.channel === "number") ? tr.channel : -1;
+      const nm = (tr.name || "").toLowerCase();
+      const isNamedDrum = /drum|kit|perc|beat/.test(nm);
+      if (ch === 9 || isNamedDrum) {
+        drumTrack = tr;
+        break;
+      }
+      // Fallback heuristic: count bar-1 notes that fall on known drum pitches
+      let knownCount = 0;
+      for (const n of tr.notes) {
+        if (n.ticks >= barTicks) break;
+        if (MIDI_PITCH_TO_INST[n.midi]) knownCount++;
+      }
+      if (knownCount > bestKnownCount) {
+        bestKnownCount = knownCount;
+        drumTrack = tr;
+      }
+    }
+    if (!drumTrack) return [];
+
+    const events = [];
+    for (const n of drumTrack.notes) {
+      if (n.ticks >= barTicks) continue;  // only bar 1
+      const inst = MIDI_PITCH_TO_INST[n.midi];
+      if (!inst) continue;
+      const beat = Math.floor(n.ticks / ppq);            // 0..3
+      const remainder = n.ticks - beat * ppq;            // tick remainder within beat
+      const sub = Math.floor(remainder / subTicks);      // 0..3 (16th grid)
+      const subRemainder = remainder - sub * subTicks;   // ticks off the 16th grid
+      // Convert off-grid ticks to micro-ms. We assume base BPM ~117 for the
+      // rendered ms (band-room re-times these via beatTime/subTime at play
+      // time, microMs is the residual jitter — same units as Dilla offsets).
+      // ms_per_tick at 120 BPM = 500 ms / ppq. Use 500 as a reasonable
+      // constant since microMs is treated as a sub-grid nudge anyway.
+      const microMs = Math.round((subRemainder / ppq) * 500);
+      // @tonejs/midi already normalizes velocity to 0..1
+      const velocity = clamp(typeof n.velocity === "number" ? n.velocity : 0.7, 0.05, 1);
+      events.push({
+        instrument: inst,
+        beat: clamp(beat, 0, 3),
+        sub: clamp(sub, 0, 3),
+        velocity,
+        microMs,
+        role: "midi_import"
+      });
+    }
+    // Sort by absolute step so they replay in order (cosmetic; replay engine
+    // doesn't strictly require order but it makes the data easier to inspect).
+    events.sort((a, b) => (a.beat * 4 + a.sub) - (b.beat * 4 + b.sub));
+    return events;
+  }
+
+  function midiImportInject() {
+    if (!midiImportPendingEvents || midiImportPendingEvents.length === 0) {
+      setMidiImportStatus("nothing to inject — load a .mid first");
+      return;
+    }
+    const sec = currentSection();
+    if (!sec || !state.songData) {
+      setMidiImportStatus("no song loaded");
+      return;
+    }
+    const frame = currentFrame();
+    if (!frame || !Array.isArray(frame.events)) {
+      setMidiImportStatus("no frame events to replace");
+      return;
+    }
+    // Backup so we can reset later
+    midiImportBackupEvents = JSON.parse(JSON.stringify(frame.events));
+    midiImportTargetFrameId = frame.id;
+    // Deep clone so future re-injects don't share references
+    frame.events = JSON.parse(JSON.stringify(midiImportPendingEvents));
+    const resetBtn = $("br-midi-import-reset");
+    if (resetBtn) resetBtn.disabled = false;
+    setMidiImportStatus(`✓ injected ${frame.events.length} events into '${frame.id}' (from ${midiImportSourceName || "midi"})`);
+  }
+
+  function midiImportReset() {
+    if (!midiImportBackupEvents || !midiImportTargetFrameId || !state.songData) return;
+    const frame = state.songData.frames.find((f) => f.id === midiImportTargetFrameId);
+    if (frame) {
+      frame.events = midiImportBackupEvents;
+      setMidiImportStatus(`reset '${frame.id}' to original events`);
+      midiImportBackupEvents = null;
+      midiImportTargetFrameId = null;
+      const resetBtn = $("br-midi-import-reset");
       if (resetBtn) resetBtn.disabled = true;
     }
   }
