@@ -59,6 +59,22 @@
       "barLength": 4,
       "events": [
         {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.85,
+          "microMs": 0,
+          "role": "downbeat"
+        },
+        {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
+        },
+        {
           "instrument": "hat",
           "beat": 1,
           "sub": 3,
@@ -67,12 +83,28 @@
           "role": "extracted_hat"
         },
         {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "downbeat"
+        },
+        {
           "instrument": "hat",
           "beat": 2,
           "sub": 3,
           "velocity": 0.35,
           "microMs": 30,
           "role": "extracted_hat"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
         },
         {
           "instrument": "hat",
@@ -90,6 +122,14 @@
       "barLength": 4,
       "events": [
         {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.85,
+          "microMs": 0,
+          "role": "downbeat"
+        },
+        {
           "instrument": "crash",
           "beat": 0,
           "sub": 0,
@@ -104,6 +144,14 @@
           "velocity": 0.35,
           "microMs": -29,
           "role": "extracted_hat"
+        },
+        {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
         },
         {
           "instrument": "ghost",
@@ -122,12 +170,28 @@
           "role": "extracted_hat"
         },
         {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "downbeat"
+        },
+        {
           "instrument": "crash",
           "beat": 2,
           "sub": 2,
           "velocity": 0.35,
           "microMs": -30,
           "role": "extracted_crash"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
         },
         {
           "instrument": "ghost",
@@ -153,6 +217,14 @@
       "barLength": 4,
       "events": [
         {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.85,
+          "microMs": 0,
+          "role": "downbeat"
+        },
+        {
           "instrument": "hat",
           "beat": 0,
           "sub": 0,
@@ -169,6 +241,14 @@
           "role": "extracted_ghost"
         },
         {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
+        },
+        {
           "instrument": "hat",
           "beat": 1,
           "sub": 0,
@@ -183,6 +263,14 @@
           "velocity": 0.35,
           "microMs": 30,
           "role": "extracted_hat"
+        },
+        {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "downbeat"
         },
         {
           "instrument": "hat",
@@ -199,6 +287,14 @@
           "velocity": 0.35,
           "microMs": 30,
           "role": "extracted_hat"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
         },
         {
           "instrument": "hat",
@@ -224,6 +320,14 @@
       "barLength": 4,
       "events": [
         {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.85,
+          "microMs": 0,
+          "role": "downbeat"
+        },
+        {
           "instrument": "crash",
           "beat": 0,
           "sub": 0,
@@ -240,12 +344,28 @@
           "role": "extracted_hat"
         },
         {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
+        },
+        {
           "instrument": "ghost",
           "beat": 1,
           "sub": 0,
           "velocity": 0.45,
           "microMs": -12,
           "role": "extracted_ghost"
+        },
+        {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "downbeat"
         },
         {
           "instrument": "hat",
@@ -262,6 +382,14 @@
           "velocity": 0.35,
           "microMs": 11,
           "role": "extracted_kick"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
         },
         {
           "instrument": "hat",
@@ -287,6 +415,14 @@
       "barLength": 4,
       "events": [
         {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.85,
+          "microMs": 0,
+          "role": "downbeat"
+        },
+        {
           "instrument": "ghost",
           "beat": 0,
           "sub": 0,
@@ -311,9 +447,25 @@
           "role": "extracted_crash"
         },
         {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
+        },
+        {
           "instrument": "ghost",
           "beat": 1,
           "sub": 0,
+          "velocity": 0.35,
+          "microMs": 30,
+          "role": "extracted_ghost"
+        },
+        {
+          "instrument": "ghost",
+          "beat": 1,
+          "sub": 2,
           "velocity": 0.35,
           "microMs": 30,
           "role": "extracted_ghost"
@@ -327,9 +479,17 @@
           "role": "extracted_crash"
         },
         {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "downbeat"
+        },
+        {
           "instrument": "ghost",
-          "beat": 1,
-          "sub": 2,
+          "beat": 2,
+          "sub": 0,
           "velocity": 0.35,
           "microMs": 30,
           "role": "extracted_ghost"
@@ -341,14 +501,6 @@
           "velocity": 0.35,
           "microMs": -30,
           "role": "extracted_crash"
-        },
-        {
-          "instrument": "ghost",
-          "beat": 2,
-          "sub": 0,
-          "velocity": 0.35,
-          "microMs": 30,
-          "role": "extracted_ghost"
         },
         {
           "instrument": "crash",
@@ -365,6 +517,14 @@
           "velocity": 0.35,
           "microMs": -30,
           "role": "extracted_ghost"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
         },
         {
           "instrument": "ghost",
@@ -390,6 +550,14 @@
       "barLength": 4,
       "events": [
         {
+          "instrument": "kick",
+          "beat": 0,
+          "sub": 0,
+          "velocity": 0.85,
+          "microMs": 0,
+          "role": "downbeat"
+        },
+        {
           "instrument": "crash",
           "beat": 0,
           "sub": 0,
@@ -404,6 +572,14 @@
           "velocity": 0.4,
           "microMs": 30,
           "role": "extracted_crash"
+        },
+        {
+          "instrument": "snare",
+          "beat": 1,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
         },
         {
           "instrument": "ghost",
@@ -422,12 +598,28 @@
           "role": "extracted_crash"
         },
         {
+          "instrument": "kick",
+          "beat": 2,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "downbeat"
+        },
+        {
           "instrument": "ghost",
           "beat": 2,
           "sub": 3,
           "velocity": 0.35,
           "microMs": -30,
           "role": "extracted_ghost"
+        },
+        {
+          "instrument": "snare",
+          "beat": 3,
+          "sub": 0,
+          "velocity": 0.8,
+          "microMs": 0,
+          "role": "backbeat"
         },
         {
           "instrument": "crash",

@@ -7816,11 +7816,17 @@ function startJazzDrumLayer() {
     try {
       const bt = Tone.Time("4n").toSeconds();
       const e8 = bt / 2;
+      // fm-69: Dilla per-step microOffsets (mode-fixed). jazz = light Dilla.
+      const dilla = FM_MODE_DILLA_OFFSETS[EngineParams.mode] || FM_DILLA_OFFSETS_ZERO;
+      const snareSec = (dilla.snareBack || 0) / 1000;
+      const hatOffSec = (dilla.hatOffPush || 0) / 1000;
       samples.kick.start(time);
-      samples.snare.start(time + bt);
-      samples.snare.start(time + 3 * bt);
+      samples.snare.start(time + bt + snareSec);       // backbeat 2 dragged back
+      samples.snare.start(time + 3 * bt + snareSec);   // backbeat 4 dragged back
       for (let h = 0; h < 8; h++) {
-        samples.hat.start(time + h * e8);
+        // odd h = offbeat (between quarter notes) → push by hatOffPush
+        const hOff = (h % 2 === 1) ? hatOffSec : 0;
+        samples.hat.start(time + h * e8 + hOff);
       }
     } catch (e) {}
   }, "1m");
@@ -8126,12 +8132,17 @@ function startLofiDrumLayer() {
     try {
       const bt = Tone.Time("4n").toSeconds();
       const e8 = bt / 2;
+      // fm-69: Dilla per-step microOffsets (mode-fixed). lofi = full Dilla.
+      const dilla = FM_MODE_DILLA_OFFSETS[EngineParams.mode] || FM_DILLA_OFFSETS_ZERO;
+      const snareSec = (dilla.snareBack || 0) / 1000;
+      const hatOffSec = (dilla.hatOffPush || 0) / 1000;
       samples.kick.start(time);
-      samples.snare.start(time + bt);
-      samples.kick.start(time + 2 * bt + e8 * 0.5);  // syncopated kick
-      samples.snare.start(time + 3 * bt);
+      samples.snare.start(time + bt + snareSec);                 // backbeat 2 dragged back
+      samples.kick.start(time + 2 * bt + e8 * 0.5);              // syncopated kick (no offset)
+      samples.snare.start(time + 3 * bt + snareSec);             // backbeat 4 dragged back
       for (let h = 0; h < 8; h++) {
-        samples.hat.start(time + h * e8);
+        const hOff = (h % 2 === 1) ? hatOffSec : 0;              // offbeat hat pushed
+        samples.hat.start(time + h * e8 + hOff);
       }
     } catch (e) {}
   }, "1m");
@@ -8461,6 +8472,44 @@ const EngineParams = {
   bassPattern: "x...x..x",
   padPattern:  "x...x..."
 };
+
+// fm-69: per-step Dilla microOffsets (band-room v133 port).
+// Drag backbeat snare back, push offbeat hat forward — the J Dilla / lofi
+// groove. Layered on top of genre-flavor.js microMs and humanGrooveGovernor
+// timeOffsetSec; mode-fixed (NOT UCM-driven) so the groove signature stays
+// consistent within a mode. Values in milliseconds; converted to seconds at
+// apply time in scheduleStep.
+const FM_MODE_DILLA_OFFSETS = {
+  ambient: { snareBack: 0,  hatOffPush: 0,  ghostBack: 0 },  // no Dilla
+  lofi:    { snareBack: 14, hatOffPush: -4, ghostBack: 8 },  // full Dilla
+  jazz:    { snareBack: 8,  hatOffPush: -2, ghostBack: 5 },  // light Dilla
+  techno:  { snareBack: 0,  hatOffPush: 0,  ghostBack: 0 },  // machine-tight
+  trance:  { snareBack: 0,  hatOffPush: 0,  ghostBack: 0 },  // machine-tight
+  dub:     { snareBack: 10, hatOffPush: -3, ghostBack: 6 },  // medium Dilla
+  funk:    { snareBack: 18, hatOffPush: -5, ghostBack: 10 }  // heaviest Dilla
+};
+const FM_DILLA_OFFSETS_ZERO = { snareBack: 0, hatOffPush: 0, ghostBack: 0 };
+
+// Compute Dilla per-step offset in seconds for a given drum role/step/velocity.
+// stepCount-aware: derives beat (0-3) and sub-in-beat from step.
+function dillaOffsetSec(role, step, velocity) {
+  const mode = (EngineParams && EngineParams.mode) || "ambient";
+  const dilla = FM_MODE_DILLA_OFFSETS[mode] || FM_DILLA_OFFSETS_ZERO;
+  const stepsPerBeat = Math.max(1, Math.round((EngineParams.stepCount || 16) / 4));
+  const beat = Math.floor(step / stepsPerBeat) % 4;
+  const sub = step % stepsPerBeat;
+  let ms = 0;
+  if (role === "snare" && (beat === 1 || beat === 3)) {
+    ms = dilla.snareBack;  // backbeat snare drags back
+  } else if (role === "hat" && sub !== 0) {
+    ms = dilla.hatOffPush;  // offbeat hat pushes forward (or back)
+  }
+  // ghost notes (low-velocity hits) get the ghostBack offset; treat velocity < 0.4 as ghost
+  if (typeof velocity === "number" && velocity < 0.4 && dilla.ghostBack) {
+    ms += dilla.ghostBack;
+  }
+  return ms / 1000;
+}
 
 let currentScale = ["D4", "F#4", "G4", "E4", "D5"];
 const MODE_CHORDS = {
@@ -12687,7 +12736,10 @@ function scheduleStep(time) {
     // Hat
     const hatChance = chance((EngineParams.hatProb + fillBoost + kits.technoKit * 0.14 + kits.idmKit * 0.068 + habitGrid * 0.05 + habitRubber * 0.014 + palette.rhythm * 0.088 + palette.texture * 0.026 + micJam.pulse * 0.12 + micJam.clap * 0.08 + (isAccentStep ? 0.08 : 0) - kits.ambientKit * 0.06 - kits.spaceKit * 0.05 - habitSpace * 0.02 - habitRestraint * 0.018 - palette.haze * 0.034 - palette.air * 0.04 - micJam.air * 0.025 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.34 : 1) * hatShape.probabilityScale);
     if ((patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2)) && rand(hatChance)) {
-      hat.triggerAttackRelease(palette.rhythm > 0.5 || kits.technoKit > 0.44 ? "64n" : "32n", t + hatShape.timeOffsetSec, clampValue((0.074 + energyNorm * 0.098 + kits.technoKit * 0.05 + kits.idmKit * 0.018 + palette.transient * 0.026 + (isAccentStep ? 0.04 : 0) - palette.air * 0.012) * hatShape.velocityScale, 0.048, 0.2));
+      // fm-69: Dilla offbeat-hat push (mode-fixed, layered on humanShape timeOffsetSec)
+      const hatVel = clampValue((0.074 + energyNorm * 0.098 + kits.technoKit * 0.05 + kits.idmKit * 0.018 + palette.transient * 0.026 + (isAccentStep ? 0.04 : 0) - palette.air * 0.012) * hatShape.velocityScale, 0.048, 0.2);
+      const hatDilla = dillaOffsetSec("hat", step, hatVel);
+      hat.triggerAttackRelease(palette.rhythm > 0.5 || kits.technoKit > 0.44 ? "64n" : "32n", t + hatShape.timeOffsetSec + hatDilla, hatVel);
     }
     if ((kits.technoKit > 0.26 || palette.rhythm > 0.34 || micJam.pulse > 0.12) && !PerformancePadState.void && (step % 4 === 1 || step % 4 === 3) && rand((0.045 + kits.technoKit * 0.2 + kits.idmKit * 0.05 + palette.rhythm * 0.13 + micJam.pulse * 0.12 + micJam.clap * 0.06 + habitGrid * 0.08 + habitRubber * 0.018 - kits.spaceKit * 0.035 - palette.air * 0.03 - micJam.air * 0.02 - habitRestraint * 0.03) * hatShape.densityScale)) {
       try {
