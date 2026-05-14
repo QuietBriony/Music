@@ -2955,6 +2955,16 @@
       });
     }
 
+    // v136: Genre pattern picker — 4 ジャンルボタン
+    document.querySelectorAll(".br-genre-pick-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const genre = btn.dataset.genre;
+        if (genre) loadGenrePattern(genre);
+      });
+    });
+    const genreResetBtn = $("br-genre-pick-reset");
+    if (genreResetBtn) genreResetBtn.addEventListener("click", () => genrePickReset());
+
     // Tier1 #3: MIDI loop import (@tonejs/midi)
     const midiImportFile = $("br-midi-import-file");
     const acceptMidiImportFile = async (f) => {
@@ -4233,6 +4243,65 @@
       midiImportBackupEvents = null;
       midiImportTargetFrameId = null;
       const resetBtn = $("br-midi-import-reset");
+      if (resetBtn) resetBtn.disabled = true;
+    }
+  }
+
+  // ---- v136: Genre pattern picker -----------------------------
+  // presets/drum-patterns-genres/{boom-bap,four-on-floor,jazz-brush,dnb}.json
+  // を 1 クリックで現 frame に inject。AI fill / MIDI import と同じ backup &
+  // reset 機構を流用。
+  let genrePickBackupEvents = null;
+  let genrePickTargetFrameId = null;
+
+  function setGenrePickStatus(s) {
+    const el = $("br-genre-pick-status");
+    if (el) el.textContent = s || "";
+  }
+
+  async function loadGenrePattern(genre) {
+    const frame = currentFrame();
+    if (!frame || !state.songData) {
+      setGenrePickStatus("no song loaded");
+      return;
+    }
+    setGenrePickStatus(`loading ${genre}…`);
+    try {
+      const url = `presets/drum-patterns-genres/${genre}.json`;
+      const res = await fetch(url + "?cb=" + Date.now());
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const sourceFrames = data.frames || [];
+      // Prefer a "verse"-role frame (= main groove), fall back to mid / first
+      const sourceFrame = sourceFrames.find((f) => (f.role === "verse" || f.session_role === "verse"))
+        || sourceFrames.find((f) => (f.role === "main" || f.session_role === "main"))
+        || sourceFrames[Math.floor(sourceFrames.length / 2)]
+        || sourceFrames[0];
+      if (!sourceFrame || !Array.isArray(sourceFrame.events)) {
+        setGenrePickStatus(`${genre}: no events in pattern`);
+        return;
+      }
+      genrePickBackupEvents = JSON.parse(JSON.stringify(frame.events));
+      genrePickTargetFrameId = frame.id;
+      frame.events = JSON.parse(JSON.stringify(sourceFrame.events));
+      const resetBtn = $("br-genre-pick-reset");
+      if (resetBtn) resetBtn.disabled = false;
+      setGenrePickStatus(`✓ ${genre} (${sourceFrame.events.length} events) → '${frame.id}'`);
+    } catch (e) {
+      console.warn("[Band Room] genre pattern load failed:", e);
+      setGenrePickStatus(`${genre} load failed: ${e.message || e}`);
+    }
+  }
+
+  function genrePickReset() {
+    if (!genrePickBackupEvents || !genrePickTargetFrameId || !state.songData) return;
+    const frame = state.songData.frames.find((f) => f.id === genrePickTargetFrameId);
+    if (frame) {
+      frame.events = genrePickBackupEvents;
+      setGenrePickStatus(`reset '${frame.id}' to original events`);
+      genrePickBackupEvents = null;
+      genrePickTargetFrameId = null;
+      const resetBtn = $("br-genre-pick-reset");
       if (resetBtn) resetBtn.disabled = true;
     }
   }

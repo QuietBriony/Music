@@ -6,20 +6,20 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-62" />
+<link rel="stylesheet" href="band-room.css?v=br-63" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
-<script src="audio/audio-safety.js?v=br-62" defer></script>
+<script src="audio/audio-safety.js?v=br-63" defer></script>
 <!-- v134: Magenta.js DrumsRNN for AI fill / continue. Loads lazily via defer,
      ~2 MB total, browser-cached after first visit -->
 <script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/es6/core.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/es6/music_rnn.js" defer></script>
 <!-- Tier1 #3: @tonejs/midi for MIDI loop import → drum-frames events conversion -->
 <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.min.js" defer></script>
-<script src="band-room.js?v=br-62" defer></script>
+<script src="band-room.js?v=br-63" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -287,6 +287,23 @@
           DrumsRNN) が **続編の 32 step (2 bar 分) を生成**して、現 frame に
           inject。temperature 0.5 = 規則的、1.0 = 標準、2.0 = カオス。
           🎛 AI 再現モードで kit = AI synth (default) のとき効く。</p>
+      </section>
+    </details>
+
+    <details class="br-details" data-scope="synth">
+      <summary>🎼 Genre pattern picker (Tier 1 #2 を 1 クリックで)</summary>
+      <section id="br-genre-pick" aria-label="Genre pattern picker">
+        <div id="br-genre-pick-buttons">
+          <button type="button" class="br-genre-pick-btn" data-genre="boom-bap">🎙 boom-bap (90 BPM)</button>
+          <button type="button" class="br-genre-pick-btn" data-genre="four-on-floor">💥 four-on-floor (128)</button>
+          <button type="button" class="br-genre-pick-btn" data-genre="jazz-brush">🎷 jazz brush (90)</button>
+          <button type="button" class="br-genre-pick-btn" data-genre="dnb">⚡ dnb / amen (170)</button>
+        </div>
+        <span id="br-genre-pick-status">no pattern injected</span>
+        <button id="br-genre-pick-reset" type="button" disabled>↺ reset to original</button>
+        <p class="br-help">`presets/drum-patterns-genres/*.json` の hand-authored
+          16-step pattern を現 frame events に inject。Magenta AI fill / MIDI
+          import と同じ機構で reset 可能。AI 再現モードで効く。</p>
       </section>
     </details>
 
