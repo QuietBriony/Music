@@ -5,7 +5,7 @@ Each file follows the existing `presets/drum-frames-*.json` schema
 (top-level `version / format / genre / frames[]`, plus a `structure[]`
 array describing intro → main → climax section ordering).
 
-`session_signature` on every file: `"Tier 1 #2 standard pattern, hand-authored, v135"`.
+`session_signature` on every file: `"Tier 1 #2 standard pattern, hand-authored, v135"` for the original 4 files, `"... v139"` for the cross-genre expansion (afro-cuban, reggaeton, breakbeat).
 
 ## Files
 
@@ -15,6 +15,9 @@ array describing intro → main → climax section ordering).
 | `four-on-floor.json`  | 128 | 3 (intro / main / peak_open_hat) | Kick on every beat, snare 2/4, closed 16th hats with offbeat accent, open hat on "and" of 1 / 3 in peak frame. Tight micro-timing (±2 ms). |
 | `jazz-brush.json`     |  90 | 3 (head / solo / trade)          | Feathered kick (vel 0.30), brushed snare wash on 2/4, ride spang-a-lang = 4 on-beat + "and" of 1/3 (6 hits/bar). Skip notes pushed +18 ms for triplet swing feel. |
 | `dnb.json`            | 170 | 3 (intro / drop / wash)          | Amen-break inspired: kick 1 + e-of-1 double + and-of-3, snare 2/4 + double-hits, 16th hat with humanized ±2-5 ms timing. Crash on drop. |
+| `afro-cuban.json`     | 100 | 3 (intro / verse / chorus_climax) | Tumbao kick (1 + and-of-2 + and-of-4), 3-2 son clave on ghost taps, light rim-ghost backbeat 2/4, shaker on every 16th. Wide micro-timing (−8 to +14 ms) for syncopated tumbao feel. swing 0.0. |
+| `reggaeton.json`      |  95 | 3 (verse / drop / break)          | Classic dembow: kick on 1 + and-of-2 + and-of-3, snare boom-ch-boom-chick (1 sub 2 + 3 + 3 sub 2), 8th-note hat. Crash on drop, ghost-snare break with fill turnaround. swing 0.0. |
+| `breakbeat.json`      | 140 | 3 (intro / verse / break_down)    | Amen-style chopped break: kick on 1 + and-of-3, snare on 2/4 with 2-3 ghost snares per bar (vel 0.3-0.4), 16th hat with velocity variation. break_down frame ends with tom roll fill into one. swing 0.06. |
 
 ## Schema reference
 

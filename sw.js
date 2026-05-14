@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v138";
+const VERSION = "hazama-fm-v139";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -48,10 +48,10 @@ const PRECACHE_URLS = [
   "docs/SUNO-WORKFLOW.md",
   "docs/RECORDING-WORKFLOW.md",
   "docs/RHYTHM-RESEARCH.md",
-  "fm.css?v=fm-44",
+  "fm.css?v=fm-45",
   "fm.js?v=fm-53",
   "style.css?v=fm-26",
-  "engine.js?v=fm-69",
+  "engine.js?v=fm-70",
   "docs/music-stack-human-review-queue.html",
   "audio/namima-audio-adapter.js?v=fm-66",
   "audio/audio-safety.js?v=fm-60",
@@ -69,6 +69,9 @@ const PRECACHE_URLS = [
   "presets/drum-patterns-genres/four-on-floor.json",
   "presets/drum-patterns-genres/jazz-brush.json",
   "presets/drum-patterns-genres/dnb.json",
+  "presets/drum-patterns-genres/afro-cuban.json",
+  "presets/drum-patterns-genres/reggaeton.json",
+  "presets/drum-patterns-genres/breakbeat.json",
   "presets/drum-patterns-genres/README.md",
   "references/hazama-fm-pill-refs.json",
   "references/apple-music-refs.json",

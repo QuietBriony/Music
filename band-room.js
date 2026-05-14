@@ -4340,8 +4340,9 @@
     return 1.0 + (micFollowEnergy - 0.5) * 0.6 * amount;
   }
 
-  // ---- v136: Genre pattern picker -----------------------------
-  // presets/drum-patterns-genres/{boom-bap,four-on-floor,jazz-brush,dnb}.json
+  // ---- v136 (+v139 expansion): Genre pattern picker ----------
+  // presets/drum-patterns-genres/{boom-bap,four-on-floor,jazz-brush,dnb,
+  //                               afro-cuban,reggaeton,breakbeat}.json
   // を 1 クリックで現 frame に inject。AI fill / MIDI import と同じ backup &
   // reset 機構を流用。
   let genrePickBackupEvents = null;

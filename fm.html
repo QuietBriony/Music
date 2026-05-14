@@ -7,7 +7,7 @@
   <meta name="description" content="Hazama FM — generative focus radio powered by the UCM Mandala Engine. Press start and listen for hours." />
 
   <link rel="stylesheet" href="style.css?v=fm-26" />
-  <link rel="stylesheet" href="fm.css?v=fm-44" />
+  <link rel="stylesheet" href="fm.css?v=fm-45" />
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
@@ -26,7 +26,7 @@
   <script src="audio/human-groove-governor.js" defer></script>
   <script src="presets/loader.js?v=fm-18" defer></script>
   <script src="audio/genre-flavor.js?v=fm-68" defer></script>
-  <script src="engine.js?v=fm-69" defer></script>
+  <script src="engine.js?v=fm-70" defer></script>
   <script src="fm.js?v=fm-53" defer></script>
 </head>
 
@@ -96,6 +96,24 @@
     <div id="fm-audition" role="group" aria-label="Audition">
       <button id="fm_shuffle" type="button" aria-pressed="false">shuffle</button>
       <span id="fm-shuffle-status" aria-live="polite">manual</span>
+    </div>
+
+    <!-- fm-70: mic follow drum-floor (ported from band-room v137).
+         Engine.js MicFollowState writes #mic_follow_label/bar via
+         updateMicFollowReadout(); FM-side adds amount slider + on/off pair. -->
+    <div id="mic_follow_panel" role="group" aria-label="Mic follow groove">
+      <div class="fm-mic-follow-row">
+        <button id="fm-mic-follow-enable" type="button" title="マイクを開いてドラムが演奏の強さに追従">⚡ mic</button>
+        <button id="fm-mic-follow-disable" type="button" disabled title="マイク追従を停止">stop</button>
+        <span id="mic_follow_label" aria-live="polite">MIC off</span>
+      </div>
+      <div id="mic_follow_meter"><div id="mic_follow_bar"></div></div>
+      <label class="fm-mic-follow-amount" title="演奏強度のスケール幅 (最大±30%)">
+        <span>follow</span>
+        <input type="range" id="fm-mic-follow-amount" min="0" max="100" value="50" />
+        <span id="fm-mic-follow-amount-readout">50%</span>
+      </label>
+      <p id="mic_follow_detail" class="fm-mic-follow-help">任意: grooveだけ曲げる / local features only</p>
     </div>
 
     <div id="fm-review" aria-label="Review">

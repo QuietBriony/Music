@@ -4115,6 +4115,38 @@ function toggleMicFollow() {
   return MicFollowState.enabled || MicFollowState.pending ? stopMicFollow() : startMicFollow();
 }
 
+// fm-70: Drum-floor follows the player. Port of band-room v137 mic follow
+// velocity scaler — reads existing MicFollowState (already running its own
+// AnalyserNode + RMS) and maps it onto kick/snare/hat velocity.
+//   energy ~0.5 (mid)  -> 1.0  (no change)
+//   energy = 0         -> 1.0 - 0.3 * amount  (softer)
+//   energy = 1         -> 1.0 + 0.3 * amount  (louder)
+// band-room uses Tone.Meter (dB normalized to 0..1 via (dB+60)/60).
+// engine.js uses rms * 8 (0..1), so the curve is roughly equivalent.
+// "amount" defaults to 50% from the FM slider; treat the slider as the
+// performer-facing sensitivity knob.
+function fmMicFollowVelocityScale() {
+  if (!MicFollowState.enabled) return 1.0;
+  const f = MicFollowState.features || {};
+  const energy = clampValue(Number(f.inputLevel) || 0, 0, 1);
+  let amount = 0.5;
+  if (typeof document !== "undefined") {
+    const el = document.getElementById("fm-mic-follow-amount");
+    if (el) amount = clampValue(Number(el.value) / 100, 0, 1);
+  }
+  // band-room v137 formula. ±30% maximum range at amount=1.
+  return clampValue(1.0 + (energy - 0.5) * 0.6 * amount, 0.55, 1.45);
+}
+
+// fm-70: dB nudge for sample-based drum layers (jazz/lofi) — Tone.Player
+// does not accept per-trigger velocity. ±2.4 dB at amount=1, neutral=0 dB.
+function fmMicFollowDbDelta() {
+  const scale = fmMicFollowVelocityScale();
+  if (scale <= 0) return 0;
+  // gain → dB; clamp safety
+  return clampValue(20 * Math.log10(scale), -6, 4);
+}
+
 function musicSelfReviewRuntimeState() {
   const risk = ProducerHabitState.riskSnapshot || producerHabitRiskSnapshot();
   const habits = ProducerHabitState.habits || {};
@@ -7812,6 +7844,11 @@ function startJazzDrumLayer() {
   const samples = ensureJazzDrumKit();
   if (!samples) return;
   // Brushed jazz: kick on 1 (soft), snare brush on 2/4, hat 8th (lighter)
+  // fm-70: jazz kick/snare base volumes captured here so mic-follow can
+  // modulate them per-bar without drifting.
+  const jazzBaseKickDb = samples.kick.volume.value;
+  const jazzBaseSnareDb = samples.snare.volume.value;
+  const jazzBaseHatDb = samples.hat.volume.value;
   jazzDrumSchedId = Tone.Transport.scheduleRepeat((time) => {
     try {
       const bt = Tone.Time("4n").toSeconds();
@@ -7820,6 +7857,14 @@ function startJazzDrumLayer() {
       const dilla = FM_MODE_DILLA_OFFSETS[EngineParams.mode] || FM_DILLA_OFFSETS_ZERO;
       const snareSec = (dilla.snareBack || 0) / 1000;
       const hatOffSec = (dilla.hatOffPush || 0) / 1000;
+      // fm-70: drum-floor follows the player. Bias jazz kit volume by the
+      // mic-follow dB delta sampled at bar start. Tone.Player.start() has no
+      // velocity arg so this is the cleanest way to "play harder" with the
+      // performer. Defaults to 0 dB when mic is off.
+      const micDb = fmMicFollowDbDelta();
+      samples.kick.volume.value = jazzBaseKickDb + micDb;
+      samples.snare.volume.value = jazzBaseSnareDb + micDb;
+      samples.hat.volume.value = jazzBaseHatDb + micDb * 0.7;  // hats follow lighter
       samples.kick.start(time);
       samples.snare.start(time + bt + snareSec);       // backbeat 2 dragged back
       samples.snare.start(time + 3 * bt + snareSec);   // backbeat 4 dragged back
@@ -8128,6 +8173,10 @@ function startLofiDrumLayer() {
   const samples = ensureLofiDrumSamples();
   if (!samples) return;
   // Boom-bap pattern: kick on 1 + "and-of-3", snare on 2 + 4, hat 8th
+  // fm-70: lofi kit base volumes for mic-follow modulation (see jazz layer).
+  const lofiBaseKickDb = samples.kick.volume.value;
+  const lofiBaseSnareDb = samples.snare.volume.value;
+  const lofiBaseHatDb = samples.hat.volume.value;
   lofiDrumSchedId = Tone.Transport.scheduleRepeat((time) => {
     try {
       const bt = Tone.Time("4n").toSeconds();
@@ -8136,6 +8185,11 @@ function startLofiDrumLayer() {
       const dilla = FM_MODE_DILLA_OFFSETS[EngineParams.mode] || FM_DILLA_OFFSETS_ZERO;
       const snareSec = (dilla.snareBack || 0) / 1000;
       const hatOffSec = (dilla.hatOffPush || 0) / 1000;
+      // fm-70: mic-follow dB nudge — drum-floor follows the player.
+      const micDb = fmMicFollowDbDelta();
+      samples.kick.volume.value = lofiBaseKickDb + micDb;
+      samples.snare.volume.value = lofiBaseSnareDb + micDb;
+      samples.hat.volume.value = lofiBaseHatDb + micDb * 0.7;
       samples.kick.start(time);
       samples.snare.start(time + bt + snareSec);                 // backbeat 2 dragged back
       samples.kick.start(time + 2 * bt + e8 * 0.5);              // syncopated kick (no offset)
@@ -12719,14 +12773,18 @@ function scheduleStep(time) {
     const kickShape = humanShape("kick");
     const hatShape = humanShape("hat");
     const bassShape = humanShape("bass");
+    // fm-70: mic-follow drum-floor follow — scale all drum velocities by the
+    // performer's RMS energy when MicFollowState is enabled. Defaults to 1.0
+    // when mic is off, so existing mixes are unchanged.
+    const micVelScale = fmMicFollowVelocityScale();
     // Kick
     const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + kits.pressureKit * 0.024 + habitPressure * 0.01 + palette.transient * 0.014 + PerformancePadState.punch * 0.052 - kits.spaceKit * 0.045 - habitSpace * 0.012 - habitRestraint * 0.008 - palette.air * 0.024 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16) * (1 - palette.lowClamp * 0.1) * droneDrumScale * kickShape.probabilityScale);
     if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
       const kickTime = t + kickShape.timeOffsetSec;
-      kick.triggerAttackRelease(tonalRhymeLow(step, -1), droneDrumThin ? "32n" : "16n", kickTime + 0.004, clampValue((0.16 + energyNorm * 0.068 + kits.pressureKit * 0.024 + palette.transient * 0.018 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.024 - kits.spaceKit * 0.018 - palette.lowClamp * 0.026 - lowGuard * 0.05) * kickShape.velocityScale, 0.08, droneDrumThin ? 0.22 : 0.44));
+      kick.triggerAttackRelease(tonalRhymeLow(step, -1), droneDrumThin ? "32n" : "16n", kickTime + 0.004, clampValue((0.16 + energyNorm * 0.068 + kits.pressureKit * 0.024 + palette.transient * 0.018 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.024 - kits.spaceKit * 0.018 - palette.lowClamp * 0.026 - lowGuard * 0.05) * kickShape.velocityScale * micVelScale, 0.08, droneDrumThin ? 0.22 : 0.44));
       if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep) && rand(0.46)) {
         try {
-          texture.triggerAttackRelease("64n", kickTime + 0.012, clampValue((0.05 + energyNorm * 0.064 + palette.transient * 0.024) * kickShape.velocityScale, 0.038, 0.126));
+          texture.triggerAttackRelease("64n", kickTime + 0.012, clampValue((0.05 + energyNorm * 0.064 + palette.transient * 0.024) * kickShape.velocityScale * micVelScale, 0.038, 0.126));
         } catch (error) {
           console.warn("[Music] punch transient failed:", error);
         }
@@ -12737,13 +12795,13 @@ function scheduleStep(time) {
     const hatChance = chance((EngineParams.hatProb + fillBoost + kits.technoKit * 0.14 + kits.idmKit * 0.068 + habitGrid * 0.05 + habitRubber * 0.014 + palette.rhythm * 0.088 + palette.texture * 0.026 + micJam.pulse * 0.12 + micJam.clap * 0.08 + (isAccentStep ? 0.08 : 0) - kits.ambientKit * 0.06 - kits.spaceKit * 0.05 - habitSpace * 0.02 - habitRestraint * 0.018 - palette.haze * 0.034 - palette.air * 0.04 - micJam.air * 0.025 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.34 : 1) * hatShape.probabilityScale);
     if ((patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2)) && rand(hatChance)) {
       // fm-69: Dilla offbeat-hat push (mode-fixed, layered on humanShape timeOffsetSec)
-      const hatVel = clampValue((0.074 + energyNorm * 0.098 + kits.technoKit * 0.05 + kits.idmKit * 0.018 + palette.transient * 0.026 + (isAccentStep ? 0.04 : 0) - palette.air * 0.012) * hatShape.velocityScale, 0.048, 0.2);
+      const hatVel = clampValue((0.074 + energyNorm * 0.098 + kits.technoKit * 0.05 + kits.idmKit * 0.018 + palette.transient * 0.026 + (isAccentStep ? 0.04 : 0) - palette.air * 0.012) * hatShape.velocityScale * micVelScale, 0.048, 0.2);
       const hatDilla = dillaOffsetSec("hat", step, hatVel);
       hat.triggerAttackRelease(palette.rhythm > 0.5 || kits.technoKit > 0.44 ? "64n" : "32n", t + hatShape.timeOffsetSec + hatDilla, hatVel);
     }
     if ((kits.technoKit > 0.26 || palette.rhythm > 0.34 || micJam.pulse > 0.12) && !PerformancePadState.void && (step % 4 === 1 || step % 4 === 3) && rand((0.045 + kits.technoKit * 0.2 + kits.idmKit * 0.05 + palette.rhythm * 0.13 + micJam.pulse * 0.12 + micJam.clap * 0.06 + habitGrid * 0.08 + habitRubber * 0.018 - kits.spaceKit * 0.035 - palette.air * 0.03 - micJam.air * 0.02 - habitRestraint * 0.03) * hatShape.densityScale)) {
       try {
-        hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.01 + Math.random() * (0.01 * hatShape.grainScale), clampValue((0.028 + kits.technoKit * 0.07 + energyNorm * 0.024 + palette.transient * 0.018) * hatShape.velocityScale, 0.024, 0.124));
+        hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.01 + Math.random() * (0.01 * hatShape.grainScale), clampValue((0.028 + kits.technoKit * 0.07 + energyNorm * 0.024 + palette.transient * 0.018) * hatShape.velocityScale * micVelScale, 0.024, 0.124));
         markMixEvent(0.05);
       } catch (error) {
         console.warn("[Music] techno grid hat failed:", error);
@@ -12751,8 +12809,8 @@ function scheduleStep(time) {
     }
     if (PerformancePadState.repeat && (step % 4 === 2 || isAccentStep || step % 8 === 5) && rand(clampValue(0.42 + kits.idmKit * 0.22 + kits.technoKit * 0.26 + palette.rhythm * 0.12 + palette.glass * 0.04 + habitGrid * 0.06 + habitRubber * 0.04 - kits.ambientKit * 0.12 - palette.haze * 0.04 - habitRestraint * 0.02, 0.18, 0.74) * hatShape.densityScale)) {
       try {
-        hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.018, clampValue((0.05 + energyNorm * 0.064 + kits.technoKit * 0.024 + palette.transient * 0.016) * hatShape.velocityScale, 0.038, 0.136));
-        if (rand((0.28 + kits.technoKit * 0.16) * hatShape.grainScale)) hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.034, clampValue((0.036 + energyNorm * 0.048) * hatShape.velocityScale, 0.028, 0.102));
+        hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.018, clampValue((0.05 + energyNorm * 0.064 + kits.technoKit * 0.024 + palette.transient * 0.016) * hatShape.velocityScale * micVelScale, 0.038, 0.136));
+        if (rand((0.28 + kits.technoKit * 0.16) * hatShape.grainScale)) hat.triggerAttackRelease("64n", t + hatShape.timeOffsetSec + 0.034, clampValue((0.036 + energyNorm * 0.048) * hatShape.velocityScale * micVelScale, 0.028, 0.102));
       } catch (error) {
         console.warn("[Music] repeat hat failed:", error);
       }
@@ -13231,6 +13289,47 @@ function attachUI() {
     btnMicFollow.addEventListener("click", toggleMicFollow);
     updateMicFollowButton();
   }
+
+  // fm-70: visible FM-side mic-follow controls. Mirror band-room v137 UX:
+  // one button to enable, one to disable, and a sensitivity slider that
+  // fmMicFollowVelocityScale() reads on every step. The bar + label use the
+  // mic_follow_panel / mic_follow_label / mic_follow_bar ids that
+  // updateMicFollowReadout() already writes to — no extra plumbing needed.
+  const fmMicEnableBtn = document.getElementById("fm-mic-follow-enable");
+  const fmMicDisableBtn = document.getElementById("fm-mic-follow-disable");
+  const fmMicAmountEl = document.getElementById("fm-mic-follow-amount");
+  const fmMicAmountReadout = document.getElementById("fm-mic-follow-amount-readout");
+  const syncFmMicButtons = () => {
+    const active = !!MicFollowState.enabled;
+    const pending = !!MicFollowState.pending;
+    if (fmMicEnableBtn) fmMicEnableBtn.disabled = active || pending;
+    if (fmMicDisableBtn) fmMicDisableBtn.disabled = !active;
+  };
+  if (fmMicEnableBtn) {
+    fmMicEnableBtn.addEventListener("click", async () => {
+      await startMicFollow();
+      syncFmMicButtons();
+    });
+  }
+  if (fmMicDisableBtn) {
+    fmMicDisableBtn.addEventListener("click", () => {
+      stopMicFollow();
+      syncFmMicButtons();
+    });
+  }
+  if (fmMicAmountEl) {
+    const refreshAmount = () => {
+      if (fmMicAmountReadout) fmMicAmountReadout.textContent = `${fmMicAmountEl.value}%`;
+    };
+    fmMicAmountEl.addEventListener("input", refreshAmount);
+    refreshAmount();
+  }
+  // Keep button states in sync when toggleMicFollow is used from elsewhere.
+  if (typeof window !== "undefined") {
+    window.addEventListener("music-runtime-state", syncFmMicButtons);
+    setInterval(syncFmMicButtons, 800);
+  }
+  syncFmMicButtons();
 
   if (btnPacketJson) {
     btnPacketJson.textContent = "SYNC";

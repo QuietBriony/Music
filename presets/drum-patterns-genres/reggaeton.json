@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "format": "drum-frames",
+  "genre": "reggaeton",
+  "session_signature": "Tier 1 #2 standard pattern, hand-authored, v139",
+  "structure": [
+    { "section": "verse", "frame_id": "reggaeton_dembow_bar_0" },
+    { "section": "drop",  "frame_id": "reggaeton_dembow_bar_1" },
+    { "section": "break", "frame_id": "reggaeton_dembow_bar_2" }
+  ],
+  "frames": [
+    {
+      "id": "reggaeton_dembow_bar_0",
+      "bpm": 95,
+      "swing": 0.0,
+      "barLength": 4,
+      "role": "verse",
+      "session_role": "verse",
+      "events": [
+        { "instrument": "kick",  "beat": 0, "sub": 0, "velocity": 0.88, "microMs":  0, "role": "dembow_kick_one" },
+        { "instrument": "kick",  "beat": 1, "sub": 2, "velocity": 0.78, "microMs":  2, "role": "dembow_kick_and_two" },
+        { "instrument": "kick",  "beat": 2, "sub": 2, "velocity": 0.80, "microMs":  2, "role": "dembow_kick_and_three" },
+        { "instrument": "snare", "beat": 0, "sub": 2, "velocity": 0.78, "microMs":  0, "role": "dembow_snare_ch_one" },
+        { "instrument": "snare", "beat": 2, "sub": 0, "velocity": 0.82, "microMs":  0, "role": "dembow_snare_three" },
+        { "instrument": "snare", "beat": 2, "sub": 2, "velocity": 0.74, "microMs":  0, "role": "dembow_snare_ch_three" },
+        { "instrument": "hat",   "beat": 0, "sub": 0, "velocity": 0.62, "microMs":  0, "role": "eighth_down" },
+        { "instrument": "hat",   "beat": 0, "sub": 2, "velocity": 0.50, "microMs":  0, "role": "eighth_and" },
+        { "instrument": "hat",   "beat": 1, "sub": 0, "velocity": 0.60, "microMs":  0, "role": "eighth_down" },
+        { "instrument": "hat",   "beat": 1, "sub": 2, "velocity": 0.50, "microMs":  0, "role": "eighth_and" },
+        { "instrument": "hat",   "beat": 2, "sub": 0, "velocity": 0.62, "microMs":  0, "role": "eighth_down" },
+        { "instrument": "hat",   "beat": 2, "sub": 2, "velocity": 0.50, "microMs":  0, "role": "eighth_and" },
+        { "instrument": "hat",   "beat": 3, "sub": 0, "velocity": 0.60, "microMs":  0, "role": "eighth_down" },
+        { "instrument": "hat",   "beat": 3, "sub": 2, "velocity": 0.50, "microMs":  0, "role": "eighth_and" },
+        { "instrument": "ghost", "beat": 3, "sub": 3, "velocity": 0.34, "microMs":  4, "role": "snare_pickup" }
+      ]
+    },
+    {
+      "id": "reggaeton_dembow_bar_1",
+      "bpm": 95,
+      "swing": 0.0,
+      "barLength": 4,
+      "role": "drop",
+      "session_role": "drop",
+      "events": [
+        { "instrument": "kick",  "beat": 0, "sub": 0, "velocity": 0.94, "microMs":  0, "role": "dembow_kick_one_drop" },
+        { "instrument": "kick",  "beat": 1, "sub": 2, "velocity": 0.84, "microMs":  2, "role": "dembow_kick_and_two" },
+        { "instrument": "kick",  "beat": 2, "sub": 2, "velocity": 0.86, "microMs":  2, "role": "dembow_kick_and_three" },
+        { "instrument": "kick",  "beat": 3, "sub": 3, "velocity": 0.62, "microMs":  4, "role": "pickup_to_one" },
+        { "instrument": "snare", "beat": 0, "sub": 2, "velocity": 0.84, "microMs":  0, "role": "dembow_snare_ch_one" },
+        { "instrument": "snare", "beat": 2, "sub": 0, "velocity": 0.90, "microMs":  0, "role": "dembow_snare_three" },
+        { "instrument": "snare", "beat": 2, "sub": 2, "velocity": 0.80, "microMs":  0, "role": "dembow_snare_ch_three" },
+        { "instrument": "hat",   "beat": 0, "sub": 0, "velocity": 0.68, "microMs":  0, "role": "eighth_down" },
+        { "instrument": "hat",   "beat": 0, "sub": 2, "velocity": 0.56, "microMs":  0, "role": "eighth_and" },
+        { "instrument": "hat",   "beat": 1, "sub": 0, "velocity": 0.66, "microMs":  0, "role": "eighth_down" },
+        { "instrument": "hat",   "beat": 1, "sub": 2, "velocity": 0.56, "microMs":  0, "role": "eighth_and" },
+        { "instrument": "hat",   "beat": 2, "sub": 0, "velocity": 0.68, "microMs":  0, "role": "eighth_down" },
+        { "instrument": "hat",   "beat": 2, "sub": 2, "velocity": 0.56, "microMs":  0, "role": "eighth_and" },
+        { "instrument": "hat",   "beat": 3, "sub": 0, "velocity": 0.66, "microMs":  0, "role": "eighth_down" },
+        { "instrument": "hat",   "beat": 3, "sub": 2, "velocity": 0.56, "microMs":  0, "role": "eighth_and" },
+        { "instrument": "ghost", "beat": 1, "sub": 3, "velocity": 0.36, "microMs":  4, "role": "snare_ghost_pickup" },
+        { "instrument": "ghost", "beat": 3, "sub": 3, "velocity": 0.38, "microMs":  4, "role": "snare_ghost_pickup" },
+        { "instrument": "crash", "beat": 0, "sub": 0, "velocity": 0.60, "microMs":  0, "role": "drop_marker" }
+      ]
+    },
+    {
+      "id": "reggaeton_dembow_bar_2",
+      "bpm": 95,
+      "swing": 0.0,
+      "barLength": 4,
+      "role": "break",
+      "session_role": "break",
+      "events": [
+        { "instrument": "kick",  "beat": 0, "sub": 0, "velocity": 0.80, "microMs":  0, "role": "dembow_kick_one" },
+        { "instrument": "kick",  "beat": 2, "sub": 2, "velocity": 0.72, "microMs":  2, "role": "dembow_kick_and_three" },
+        { "instrument": "snare", "beat": 2, "sub": 0, "velocity": 0.74, "microMs":  0, "role": "dembow_snare_three" },
+        { "instrument": "hat",   "beat": 0, "sub": 0, "velocity": 0.54, "microMs":  0, "role": "eighth_down_thinned" },
+        { "instrument": "hat",   "beat": 1, "sub": 0, "velocity": 0.52, "microMs":  0, "role": "eighth_down_thinned" },
+        { "instrument": "hat",   "beat": 2, "sub": 0, "velocity": 0.54, "microMs":  0, "role": "eighth_down_thinned" },
+        { "instrument": "hat",   "beat": 2, "sub": 2, "velocity": 0.42, "microMs":  0, "role": "eighth_and_thinned" },
+        { "instrument": "hat",   "beat": 3, "sub": 0, "velocity": 0.52, "microMs":  0, "role": "eighth_down_thinned" },
+        { "instrument": "hat",   "beat": 3, "sub": 2, "velocity": 0.42, "microMs":  0, "role": "eighth_and_thinned" },
+        { "instrument": "ghost", "beat": 0, "sub": 3, "velocity": 0.32, "microMs":  4, "role": "snare_ghost_break" },
+        { "instrument": "ghost", "beat": 1, "sub": 2, "velocity": 0.34, "microMs":  3, "role": "snare_ghost_break" },
+        { "instrument": "ghost", "beat": 3, "sub": 1, "velocity": 0.30, "microMs":  4, "role": "snare_ghost_break" },
+        { "instrument": "fill",  "beat": 3, "sub": 2, "velocity": 0.48, "microMs":  4, "role": "break_turnaround_a" },
+        { "instrument": "fill",  "beat": 3, "sub": 3, "velocity": 0.54, "microMs":  4, "role": "break_turnaround_b" }
+      ]
+    }
+  ]
+}
