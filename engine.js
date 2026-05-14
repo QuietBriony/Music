@@ -9963,8 +9963,22 @@ function applyUCMToParams(options = {}) {
   const observerNorm = clampValue(UCM_CUR.observer / 100, 0, 1);
   const currentParts = currentGradientParts();
 
-  const swing = mapValue(UCM_CUR.wave, 0, 100, 0.015, 0.105);
-  if (force || typeof RAMP_CACHE["transport-swing"] !== "number" || Math.abs(RAMP_CACHE["transport-swing"] - swing) > 0.008) {
+  // fm-67: Transport.swing を mode 別固定値に。以前は UCM.wave で常時動的変動
+  // させてたが、drum-frames JSON の microMs と D'Angelo extraMs と Transport.swing
+  // が三重に重なって「気持ち悪い遅延」を引き起こしてた (rhythm research v132
+  // 参照)。modulation を一旦切って、microMs に任せる方針へ転換。
+  const FM_MODE_SWING = {
+    ambient: 0.0,
+    lofi:    0.0,  // microMs で表現済、Transport.swing は不要
+    jazz:    0.0,  // 同上 (jazz JSON の microMs が既に swung)
+    techno:  0.0,
+    trance:  0.04, // trance のみ軽く 8n swing で揺らぎ感
+    dub:     0.0,
+    funk:    0.02  // funk は軽い後ろノリ
+  };
+  const modeForSwing = (EngineParams && EngineParams.mode) || "ambient";
+  const swing = (FM_MODE_SWING[modeForSwing] !== undefined) ? FM_MODE_SWING[modeForSwing] : 0;
+  if (force || typeof RAMP_CACHE["transport-swing"] !== "number" || Math.abs(RAMP_CACHE["transport-swing"] - swing) > 0.005) {
     Tone.Transport.swing = swing;
     Tone.Transport.swingSubdivision = "8n";
     RAMP_CACHE["transport-swing"] = swing;

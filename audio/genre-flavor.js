@@ -717,9 +717,13 @@
   const GOVERNOR_BY_PILL = {
     ambient: { rdj: 0.012, dangelo: 0.0 },
     techno:  { rdj: 0.035, dangelo: 0.0 },
-    lofi:    { rdj: 0.030, dangelo: 0.5 },
-    jazz:    { rdj: 0.022, dangelo: 0.5 },
-    funk:    { rdj: 0.022, dangelo: 1.0 },
+    // fm-67: lofi/jazz/funk の dangelo extraMs を大幅縮小。drum-frames JSON
+    // の microMs が既に「behind-beat 込み」で設計されてたため、ここで更に
+    // +2-7ms 上乗せすると三重遅延になり「気持ち悪い」原因の一つ。
+    // 完全 0 にせず、微小残してキャラ維持
+    lofi:    { rdj: 0.030, dangelo: 0.10 },
+    jazz:    { rdj: 0.022, dangelo: 0.15 },
+    funk:    { rdj: 0.022, dangelo: 0.25 },
     piano:   { rdj: 0.018, dangelo: 0.2 },
     any:     { rdj: 0.025, dangelo: 0.0 }
   };
