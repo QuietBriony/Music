@@ -2127,13 +2127,34 @@
 
       // Drums (only if toggle on AND we're in synth mode)
       if (isSynthMode && $("br-toggle-drums").checked && drumKit) {
+        // v133: per-step microOffsets (Dilla feel) — master preset / profile
+        // 別に固定の offset を加える。snare のバックビート (2/4 拍) を後ろに
+        // ドラッグ、hat の offbeat を前にプッシュ = J Dilla / lofi の groove
+        const profileName = state.kitProfile || "default";
+        const DILLA_OFFSETS_BY_PROFILE = {
+          "default":      { snareBack: 0,  hatOffPush: 0,  ghostBack: 0  },
+          "sakanaction":  { snareBack: 0,  hatOffPush: -2, ghostBack: 0  },
+          "lcd-motorik":  { snareBack: 4,  hatOffPush: 0,  ghostBack: 0  },
+          "cramps-punk":  { snareBack: 0,  hatOffPush: 0,  ghostBack: 0  },
+          "lofi-nujabes": { snareBack: 14, hatOffPush: -4, ghostBack: 8  }  // ★ Dilla feel
+        };
+        const dilla = DILLA_OFFSETS_BY_PROFILE[profileName] || DILLA_OFFSETS_BY_PROFILE["default"];
+
         frame.events.forEach((evt) => {
           const inst = drumKit[evt.instrument];
           if (!inst) return;
-          const baseOffset = (evt.beat || 0) * beatTime + (evt.sub || 0) * subTime + (evt.microMs || 0) / 1000;
-          // v118: micro-timing humanize — ±3 ms random jitter per hit so
-          // 16-bar drum loops don't sound like a machine. Skip for kick
-          // (kick on the grid feels stronger).
+          let baseOffset = (evt.beat || 0) * beatTime + (evt.sub || 0) * subTime + (evt.microMs || 0) / 1000;
+          // v133: Dilla offset per instrument + step
+          let dillaMs = 0;
+          if (evt.instrument === "snare" && (evt.beat === 1 || evt.beat === 3)) {
+            dillaMs = dilla.snareBack;  // backbeat snare drags back
+          } else if (evt.instrument === "hat" && (evt.sub || 0) !== 0) {
+            dillaMs = dilla.hatOffPush;  // offbeat hat pushes forward (or back)
+          } else if (evt.instrument === "ghost") {
+            dillaMs = dilla.ghostBack;
+          }
+          baseOffset += dillaMs / 1000;
+          // v118: random jitter on top (kick は除外、grid 上の方が強く感じる)
           const jitterMs = (evt.instrument === "kick") ? 0 : (Math.random() - 0.5) * 6;
           const t = time + baseOffset + jitterMs / 1000;
           const rawVel = clamp(evt.velocity ?? 0.5, 0.05, 1);
