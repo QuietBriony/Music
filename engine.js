@@ -7693,10 +7693,12 @@ const masterLimiter = new Tone.Limiter({ threshold: -0.8 });
 const hardwareOutput = new Tone.Gain(1).toDestination();
 const masterComp = new Tone.Compressor({ threshold: -10, ratio: 2.0, attack: 0.012, release: 0.18, knee: 6 });
 const masterWidener = new Tone.StereoWidener(0.62);
+const focusModGain = new Tone.Gain(1);
 const masterGain    = new Tone.Gain(0.8);
 masterGain.connect(masterComp);
 masterComp.connect(masterWidener);
-masterWidener.connect(masterLimiter);
+masterWidener.connect(focusModGain);
+focusModGain.connect(masterLimiter);
 const recorderDestination = Tone.context.createMediaStreamDestination();
 const backgroundPlaybackDestination = Tone.context.createMediaStreamDestination();
 masterLimiter.connect(hardwareOutput);
@@ -7715,6 +7717,175 @@ try {
   masterLimiter.connect(selfReviewMeter);
 } catch (error) {
   console.warn("[Music] self-listening meter unavailable:", error);
+}
+
+// fm-75: optional brain.fm-style 40 Hz focus AM.
+// Inserted before the limiter so the tiny modulation stays peak-protected and
+// the hardware/background/recording fan-out remains unchanged.
+const FocusModulationState = {
+  enabled: false,
+  frequencyHz: 40,
+  depth: 0.08,
+  currentDepth: 0,
+  targetDepth: 0,
+  lfo: null,
+  rampTimer: null,
+  monitorTimer: null,
+  suppressedByAiFill: false
+};
+
+function focusModulationNowMs() {
+  return (typeof performance !== "undefined" && typeof performance.now === "function")
+    ? performance.now()
+    : Date.now();
+}
+
+function focusModulationAiFillActive() {
+  try {
+    return !!(typeof window !== "undefined" && window.FmAiFill && window.FmAiFill.status.active);
+  } catch (error) {
+    return false;
+  }
+}
+
+function ensureFocusModulationLfo() {
+  if (FocusModulationState.lfo) return FocusModulationState.lfo;
+  try {
+    const lfo = new Tone.LFO(FocusModulationState.frequencyHz, 1, 1);
+    if (lfo.frequency && typeof lfo.frequency.value === "number") {
+      lfo.frequency.value = FocusModulationState.frequencyHz;
+    }
+    lfo.connect(focusModGain.gain);
+    lfo.start();
+    FocusModulationState.lfo = lfo;
+  } catch (error) {
+    console.warn("[Music] focus modulation unavailable:", error);
+  }
+  return FocusModulationState.lfo;
+}
+
+function applyFocusModulationDepth(depth) {
+  const safeDepth = clampValue(depth, 0, 0.12);
+  const lfo = ensureFocusModulationLfo();
+  if (!lfo) return;
+  try {
+    lfo.min = 1 - safeDepth;
+    lfo.max = 1;
+    FocusModulationState.currentDepth = safeDepth;
+  } catch (error) {
+    console.warn("[Music] focus modulation depth failed:", error);
+  }
+}
+
+function dispatchFocusModulationState() {
+  if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+  try {
+    window.dispatchEvent(new CustomEvent("music-focus-mode-state", {
+      detail: getFmFocusModeState()
+    }));
+  } catch (error) {
+    // best-effort UI sync only
+  }
+}
+
+function rampFocusModulationDepth(depth, seconds = 3) {
+  const numericDepth = Number(depth);
+  const targetDepth = clampValue(Number.isFinite(numericDepth) ? numericDepth : 0, 0, 0.12);
+  if (FocusModulationState.rampTimer) {
+    clearInterval(FocusModulationState.rampTimer);
+    FocusModulationState.rampTimer = null;
+  }
+  const fromDepth = FocusModulationState.currentDepth;
+  FocusModulationState.targetDepth = targetDepth;
+  if (Math.abs(fromDepth - targetDepth) < 0.001 || seconds <= 0) {
+    applyFocusModulationDepth(targetDepth);
+    dispatchFocusModulationState();
+    return;
+  }
+
+  const startedAt = focusModulationNowMs();
+  const durationMs = Math.max(80, seconds * 1000);
+  FocusModulationState.rampTimer = setInterval(() => {
+    const progress = clampValue((focusModulationNowMs() - startedAt) / durationMs, 0, 1);
+    const eased = progress * progress * (3 - (2 * progress));
+    applyFocusModulationDepth(fromDepth + ((targetDepth - fromDepth) * eased));
+    if (progress >= 1) {
+      clearInterval(FocusModulationState.rampTimer);
+      FocusModulationState.rampTimer = null;
+      applyFocusModulationDepth(targetDepth);
+      dispatchFocusModulationState();
+    }
+  }, 50);
+  dispatchFocusModulationState();
+}
+
+function focusModulationTargetDepth() {
+  const suppressed = focusModulationAiFillActive();
+  FocusModulationState.suppressedByAiFill = suppressed;
+  return FocusModulationState.enabled && isPlaying && !suppressed
+    ? FocusModulationState.depth
+    : 0;
+}
+
+function refreshFocusModulation(options = {}) {
+  const targetDepth = focusModulationTargetDepth();
+  const rampInSeconds = typeof options.rampInSeconds === "number" ? options.rampInSeconds : 3;
+  const rampOutSeconds = typeof options.rampOutSeconds === "number" ? options.rampOutSeconds : 0.45;
+  const seconds = options.force === true ? 0 : (targetDepth > FocusModulationState.currentDepth ? rampInSeconds : rampOutSeconds);
+  if (Math.abs(FocusModulationState.targetDepth - targetDepth) >= 0.001) {
+    rampFocusModulationDepth(targetDepth, seconds);
+  } else {
+    dispatchFocusModulationState();
+  }
+}
+
+function startFocusModulationMonitor() {
+  if (FocusModulationState.monitorTimer) return;
+  FocusModulationState.monitorTimer = setInterval(() => {
+    refreshFocusModulation({ rampInSeconds: 3, rampOutSeconds: 0.35 });
+  }, 500);
+}
+
+function stopFocusModulationMonitor() {
+  if (!FocusModulationState.monitorTimer) return;
+  clearInterval(FocusModulationState.monitorTimer);
+  FocusModulationState.monitorTimer = null;
+}
+
+function setFmFocusModeEnabled(enabled, options = {}) {
+  const nextEnabled = enabled === true;
+  if (typeof options.depth === "number" && Number.isFinite(options.depth)) {
+    FocusModulationState.depth = clampValue(options.depth, 0, 0.12);
+  }
+  if (FocusModulationState.enabled !== nextEnabled) {
+    console.log("[FocusMode]", nextEnabled ? "on" : "off", "40Hz depth:", FocusModulationState.depth);
+  }
+  FocusModulationState.enabled = nextEnabled;
+  if (nextEnabled) startFocusModulationMonitor();
+  else stopFocusModulationMonitor();
+  refreshFocusModulation({
+    force: options.force === true,
+    rampInSeconds: typeof options.rampInSeconds === "number" ? options.rampInSeconds : 3,
+    rampOutSeconds: typeof options.rampOutSeconds === "number" ? options.rampOutSeconds : 0.45
+  });
+  return getFmFocusModeState();
+}
+
+function getFmFocusModeState() {
+  return {
+    enabled: FocusModulationState.enabled,
+    active: FocusModulationState.currentDepth > 0.001,
+    suppressedByAiFill: FocusModulationState.suppressedByAiFill,
+    frequencyHz: FocusModulationState.frequencyHz,
+    depth: FocusModulationState.depth,
+    currentDepth: FocusModulationState.currentDepth,
+    targetDepth: FocusModulationState.targetDepth
+  };
+}
+
+if (typeof window !== "undefined") {
+  window.setFmFocusModeEnabled = setFmFocusModeEnabled;
+  window.getFmFocusModeState = getFmFocusModeState;
 }
 
 // シンプルなリバーブ＆ディレイのみ
@@ -13334,6 +13505,7 @@ async function startPlayback(options = {}) {
     releaseAllVoices();
     resetRuntimeCounters();
     restoreMasterLevel();
+    refreshFocusModulation({ rampInSeconds: 3, rampOutSeconds: 0.35 });
     applyPendingHazamaProfileOnStart();
     applyUCMToParams({ force: true });
 
@@ -13379,6 +13551,7 @@ function stopPlayback(options = {}) {
   resetRuntimeCounters();
   clearPerformancePads();
   quietMasterLevel();
+  refreshFocusModulation({ rampInSeconds: 3, rampOutSeconds: 0.25 });
   safeCallMusicAudioAdapter("stop");
   updateMediaSessionPlaybackState();
   releasePlaybackWakeLock();

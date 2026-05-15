@@ -7,7 +7,7 @@
   <meta name="description" content="Hazama FM — generative focus radio powered by the UCM Mandala Engine. Press start and listen for hours." />
 
   <link rel="stylesheet" href="style.css?v=fm-27" />
-  <link rel="stylesheet" href="fm.css?v=fm-46" />
+  <link rel="stylesheet" href="fm.css?v=fm-47" />
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
@@ -30,8 +30,8 @@
        the heavy CDN scripts + checkpoint (~5 MB) are fetched lazily on
        first click of #fm-ai-fill so page load stays light. -->
   <script src="audio/ai-fills.js?v=fm-71" defer></script>
-  <script src="engine.js?v=fm-74" defer></script>
-  <script src="fm.js?v=fm-56" defer></script>
+  <script src="engine.js?v=fm-75" defer></script>
+  <script src="fm.js?v=fm-57" defer></script>
 </head>
 
 <body data-page="fm">
@@ -95,6 +95,11 @@
       <button type="button" data-djset="night-30" aria-pressed="false" title="jazz → lofi → piano → ambient">NIGHT 30</button>
       <button type="button" data-djset="stop" title="stop DJ set">stop</button>
       <span id="fm-dj-status" aria-live="polite">manual</span>
+    </div>
+
+    <div id="fm-focus-group" role="group" aria-label="Focus modulation">
+      <button id="fm-focus-mode" type="button" aria-pressed="false" title="40 Hz focus modulation">40HZ</button>
+      <span id="fm-focus-status" aria-live="polite">off</span>
     </div>
 
     <!-- fm-71: Magenta DrumsRNN AI fill — fires a 4-bar burst of AI-generated

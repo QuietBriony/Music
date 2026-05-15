@@ -340,6 +340,53 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
   text-transform: lowercase;
 }
 
+#fm-focus-group {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 34px;
+}
+
+#fm-focus-mode {
+  appearance: none;
+  border: 1px solid rgba(125, 240, 212, 0.32);
+  background: rgba(9, 38, 44, 0.42);
+  color: rgba(196, 244, 235, 0.82);
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  padding: 8px 16px;
+  min-width: 84px;
+  min-height: 36px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.25s, border-color 0.25s, color 0.25s;
+}
+
+#fm-focus-mode:hover {
+  border-color: rgba(125, 240, 212, 0.56);
+  background: rgba(12, 56, 64, 0.5);
+  color: rgba(236, 255, 251, 1);
+}
+
+#fm-focus-mode[aria-pressed="true"] {
+  border-color: rgba(125, 240, 212, 0.68);
+  background: rgba(125, 240, 212, 0.14);
+  color: var(--accent-glass);
+}
+
+#fm-focus-status {
+  font-size: 10px;
+  color: var(--text-sub);
+  opacity: 0.8;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  min-width: 48px;
+}
+
 /* fm-71: AI fill (Magenta DrumsRNN) — sits below the DJ set group with
    the same pill aesthetic but tinted purple to read as "AI/experimental". */
 #fm-ai-fill-group {

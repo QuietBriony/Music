@@ -11,6 +11,7 @@
   "use strict";
 
   const STORAGE_KEY = "music:fm:v1";
+  const FOCUS_MODE_STORAGE_KEY = "music:fm:focus-mode:v1";
   const LISTENING_TRACE_STORAGE_KEY = "music:fm:listening-trace:v1";
   const LISTENING_TRACE_MAX_TRANSITIONS = 24;
   const FADE_IN_S = 4;
@@ -144,6 +145,7 @@
   let lastAcidCueAt = 0;
   let lastAcidCueKey = "";
   let listeningTrace = null;
+  let focusModeEnabled = false;
 
   // ---- Helpers --------------------------------------------------
 
@@ -564,6 +566,22 @@
       }));
     } catch (e) {
       // quota / private mode — non-fatal
+    }
+  }
+
+  function readFocusModePreference() {
+    try {
+      return localStorage.getItem(FOCUS_MODE_STORAGE_KEY) === "on";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function writeFocusModePreference(enabled) {
+    try {
+      localStorage.setItem(FOCUS_MODE_STORAGE_KEY, enabled ? "on" : "off");
+    } catch (e) {
+      // localStorage may be unavailable in private mode.
     }
   }
 
@@ -1163,6 +1181,7 @@
       started = true;
       starting = false;
       setButtonState("playing");
+      applyFocusModePreference();
       setMediaPlaybackState("playing");
       startSleepTimer();
       requestWakeLock();
@@ -1207,6 +1226,7 @@
     } finally {
       started = false;
       stopping = false;
+      applyFocusModePreference();
       clearGenreMixTimers();
       stopShuffleAuditionTimer();
       stopGenreTempoLock();
@@ -1353,6 +1373,68 @@
     });
   }
 
+  // ---- fm-75: 40 Hz focus mode --------------------------------
+
+  function readFocusEngineState(detail = null) {
+    if (detail) return detail;
+    if (typeof window.getFmFocusModeState === "function") {
+      try { return window.getFmFocusModeState(); } catch (e) {}
+    }
+    return null;
+  }
+
+  function syncFocusModeButtonState(detail = null) {
+    const btn = $("fm-focus-mode");
+    const status = $("fm-focus-status");
+    const engineState = readFocusEngineState(detail);
+    if (btn) {
+      btn.setAttribute("aria-pressed", String(focusModeEnabled));
+    }
+    if (!status) return;
+    if (!focusModeEnabled) {
+      status.textContent = "off";
+    } else if (!started && !starting) {
+      status.textContent = "ready";
+    } else if (engineState && engineState.suppressedByAiFill) {
+      status.textContent = "ai fill";
+    } else if (engineState && engineState.active) {
+      status.textContent = "40 hz";
+    } else {
+      status.textContent = "ramping";
+    }
+  }
+
+  function applyFocusModePreference(options = {}) {
+    const shouldRun = focusModeEnabled && (started || starting);
+    if (typeof window.setFmFocusModeEnabled === "function") {
+      try {
+        const state = window.setFmFocusModeEnabled(shouldRun, {
+          force: options.force === true,
+          rampInSeconds: 3,
+          rampOutSeconds: 0.45
+        });
+        syncFocusModeButtonState(state);
+        return;
+      } catch (e) {}
+    }
+    syncFocusModeButtonState();
+  }
+
+  function bindFocusModeButton() {
+    const btn = $("fm-focus-mode");
+    focusModeEnabled = readFocusModePreference();
+    syncFocusModeButtonState();
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      focusModeEnabled = !focusModeEnabled;
+      writeFocusModePreference(focusModeEnabled);
+      applyFocusModePreference();
+    });
+    window.addEventListener("music-focus-mode-state", (event) => {
+      syncFocusModeButtonState(event.detail);
+    });
+  }
+
   // ---- fm-71: AI fill button (Magenta DrumsRNN) ----------------
   // The CDN scripts + checkpoint (~5 MB) are fetched lazily on the
   // first click. While loading the button shows "loading…" and is
@@ -1418,6 +1500,7 @@
       if (isDjSetActive()) {
         try { tickDjSet(); } catch (e) {}
       }
+      applyFocusModePreference();
     });
   }
 
@@ -1702,6 +1785,7 @@
     bindGenrePill();
     bindDjSetButtons();
     bindShuffleAudition();
+    bindFocusModeButton();
     bindAiFillButton();
     bindReviewSync();
     bindVisibility();
