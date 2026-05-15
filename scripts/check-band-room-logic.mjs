@@ -113,6 +113,11 @@ assert.doesNotMatch(source, /stem_urls\s*:/, "Drum Floor handoff should not send
 assert.match(source, /function linkedGenreFromUrl\(\)/, "Band Room should read FM pattern query links");
 assert.match(source, /pattern"\) \|\| params\.get\("genrePattern"\) \|\| params\.get\("brPattern"\)/, "Band Room should accept explicit FM pattern query params");
 assert.match(source, /br-fm-suggestion-inject[\s\S]*loadGenrePattern\(genre\)/, "FM suggestion CTA should inject only on user action");
+assert.match(source, /function linkedSongFromUrl\(\)/, "Band Room should read Drum Floor return song links");
+assert.match(source, /params\.get\("from"\) !== "drum-floor"/, "Band Room song return should only apply from Drum Floor");
+assert.match(source, /params\.get\("song"\) \|\| params\.get\("songId"\)/, "Band Room should accept Drum Floor song query params");
+assert.match(source, /sourceSong\.band_id\) url\.searchParams\.set\("band"/, "Band Room should include band id in Drum Floor links");
+assert.match(source, /const linkedSong = linkedSongFromUrl\(\)/, "Band Room boot should apply Drum Floor return song links");
 
 const savePrefsBody = source.match(/function savePrefs\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
 assert.doesNotMatch(savePrefsBody, /songId\s*:/, "Saved prefs should not restore the last song");

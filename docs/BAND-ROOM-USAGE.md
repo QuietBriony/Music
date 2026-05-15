@@ -6,7 +6,7 @@
 > 2 つのモードを切り替えながら、本物の音源と AI 合成を A/B したり、混ぜたり、
 > 自分で歌い直したり、Suno で生成した声を upload したりできる。
 
-## 画面構成 (v156 — コア + 折り畳み詳細)
+## 画面構成 (v157 — コア + 折り畳み詳細)
 
 ```
 ┌─────────────────────────────────┐
@@ -71,6 +71,9 @@ footer の `Drum Floor` を押すと、現在の曲 / BPM / section / drum frame
 Music Stack の metadata-only packet として同じブラウザに保存してから
 drum-floor を開きます。drum-floor 側は kit / pocket / controls の候補だけを
 受け取り、音を出すには向こうで手動で `再生` を押します。
+
+drum-floor から `Band Room` へ戻る場合は `song` query を受け取り、通常 reload
+は 01 start のまま、その戻り操作だけ source song を開きます。
 
 ## Hazama FM から来た pattern
 

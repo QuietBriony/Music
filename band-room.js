@@ -2347,6 +2347,7 @@
     }
     const sourceSong = packet?.routing?.drum_floor?.source_song || {};
     url.searchParams.set("from", "band-room");
+    if (sourceSong.band_id) url.searchParams.set("band", sourceSong.band_id);
     if (sourceSong.song_id) url.searchParams.set("song", sourceSong.song_id);
     if (sourceSong.bpm) url.searchParams.set("bpm", String(sourceSong.bpm));
     if (sourceSong.source_section) url.searchParams.set("section", sourceSong.source_section);
@@ -5023,6 +5024,24 @@
     }
   }
 
+  function linkedSongFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("from") !== "drum-floor") return null;
+      const songId = params.get("song") || params.get("songId") || "";
+      if (!songId) return null;
+      const bandId = params.get("band") || params.get("bandId") || state.currentBandId;
+      const band = state.bandsRegistry?.bands?.[bandId] || currentBand();
+      const song = Array.isArray(band?.songs)
+        ? band.songs.find((item) => item.id === songId)
+        : null;
+      if (!song) return null;
+      return { bandId: bandId || state.currentBandId, songId };
+    } catch (e) {
+      return null;
+    }
+  }
+
   async function loadGenrePattern(genre) {
     const frame = currentFrame();
     if (!frame || !state.songData) {
@@ -5243,6 +5262,20 @@
         syncTrackButtons();
         updateSubtitle();
       }
+    }
+
+    // v157: normal reload still starts at track 01, but a return from
+    // drum-floor may deep-link the source Band Room song.
+    const linkedSong = linkedSongFromUrl();
+    if (linkedSong) {
+      state.currentBandId = linkedSong.bandId;
+      state.currentSongId = linkedSong.songId;
+      document.querySelectorAll("#br-band-select button").forEach((b) => {
+        b.setAttribute("aria-pressed", b.dataset.band === linkedSong.bandId ? "true" : "false");
+      });
+      renderTrackButtons();
+      syncTrackButtons();
+      updateSubtitle();
     }
 
     // Pre-load the default song meta (doesn't start audio)

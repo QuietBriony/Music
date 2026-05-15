@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v156 compact)
+# Band Room — Changelog (v65 → v157 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,15 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v157 compact — Drum Floor return song links
+
+- `band-room.js br-78`: `band-room.html?from=drum-floor&song=...&band=...`
+  を受け取り、通常 reload は 01 start のまま、Drum Floor から戻った時だけ
+  source song を開く。
+- `scripts/check-band-room-logic.mjs`: Drum Floor return query が `from=drum-floor`
+  に限定され、saved prefs が last song を復元しないことを静的検査。
+- drum-floor sister repo 側は PR で return links / query fallback を追加予定。
 
 ## v156 compact — visible FM / Band Room handoff
 
