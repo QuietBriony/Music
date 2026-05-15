@@ -71,6 +71,22 @@ assert.equal(normalizedDrumFloorSection("bridge"), "bridge");
 assert.equal(normalizedDrumFloorSection("outro"), "end");
 assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
+const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
+assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
+const migratedMixPrefs = migratePrefsForCurrentMix({
+  sliders: {
+    "br-vol-stem-drums": "92",
+    "br-vol-bass": "72",
+    "br-space-reverb": "22",
+    "br-space-width": "41"
+  }
+});
+assert.equal(migratedMixPrefs.sliders["br-vol-stem-drums"], "86", "Old default stem drums should migrate");
+assert.equal(migratedMixPrefs.sliders["br-vol-bass"], "66", "Old default AI bass should migrate");
+assert.equal(migratedMixPrefs.sliders["br-space-reverb"], "16", "Old default master reverb should migrate");
+assert.equal(migratedMixPrefs.sliders["br-space-width"], "41", "Custom slider values should not migrate");
+assert.equal(migratedMixPrefs.mixPrefsVersion, "v168-default-mix", "Migrated prefs should record current mix version");
+
 const firstSongIdForBand = windowMock.BandRoomTestHooks?.firstSongIdForBand;
 const adjacentSongIdInBand = windowMock.BandRoomTestHooks?.adjacentSongIdInBand;
 assert.equal(typeof firstSongIdForBand, "function", "firstSongIdForBand should be exposed");
@@ -118,19 +134,23 @@ assert.match(source, /function chordAgentPlan\(/, "Band Room should give chords 
 assert.match(source, /sourceAccentSteps\(ctx, \["kick", "snare", "crash", "ghost"\]/, "Guitar agent should react to original drum-frame accents");
 assert.match(source, /bassInstrument:\s*"bass-electric"/, "AI bass default tone should use electric bass sampler when available");
 assert.match(source, /guitarInstrument:\s*"guitar-electric"/, "AI guitar default tone should use electric guitar sampler when available");
-assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band Room master limiter should keep v167 headroom");
-assert.match(source, /let masterVolBase = 0\.84/, "Band Room master volume curve should match the v167 master gain");
+assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band Room master limiter should keep v168 headroom");
+assert.match(source, /let masterVolBase = 0\.84/, "Band Room master volume curve should match the v168 master gain");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default should leave headroom for source-derived accents");
-assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v167 mix");
+assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v168 mix");
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
 assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.68\)/, "Vocal stem default should sit forward without pinning the limiter");
-assert.match(html, /band-room\.js\?v=br-84/, "Band Room HTML should load the v167 script marker");
-assert.match(html, /id="br-vfx-chorus"[^>]*value="22"/, "Vocal chorus slider should match the v167 wet default");
-assert.match(html, /id="br-vfx-delay"[^>]*value="12"/, "Vocal delay slider should match the v167 send default");
-assert.match(html, /id="br-vfx-reverb"[^>]*value="20"/, "Vocal reverb slider should match the v167 send default");
-assert.match(html, /id="br-vol-external-vocal"[^>]*value="78"/, "External vocal slider should match the v167 bus default");
+assert.match(html, /band-room\.js\?v=br-85/, "Band Room HTML should load the v168 script marker");
+assert.match(html, /id="br-vfx-chorus"[^>]*value="22"/, "Vocal chorus slider should match the v168 wet default");
+assert.match(html, /id="br-vfx-delay"[^>]*value="12"/, "Vocal delay slider should match the v168 send default");
+assert.match(html, /id="br-vfx-reverb"[^>]*value="20"/, "Vocal reverb slider should match the v168 send default");
+assert.match(html, /id="br-vol-external-vocal"[^>]*value="78"/, "External vocal slider should match the v168 bus default");
 assert.match(source, /const dryVal = 1 - wetVal;/, "Master reverb dry path should not jump on first slider touch");
 assert.match(source, /1 - w \* 0\.85/, "Tape dry path should not jump on first warmth slider touch");
+assert.match(source, /const MIX_PREFS_VERSION = "v168-default-mix"/, "Band Room should version saved mix defaults");
+assert.match(source, /"br-vol-stem-drums": \{ old: "92", current: "86" \}/, "Saved old stem defaults should migrate to the v167/v168 mix");
+assert.match(source, /"br-space-reverb": \{ old: "22", current: "16" \}/, "Saved old master defaults should migrate to the v167/v168 mix");
+assert.match(source, /prefs = migratePrefsForCurrentMix\(prefs\);/, "Prefs restore should apply the current mix migration before dispatching sliders");
 assert.match(
   source,
   /externalVocalBus\.connect\(vocalChorus\);[\s\S]*stemRecorderDests\[stem\] = dest;[\s\S]*return masterGain;/,

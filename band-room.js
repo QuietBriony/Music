@@ -2120,6 +2120,7 @@
     window.BandRoomTestHooks = Object.assign(window.BandRoomTestHooks || {}, {
       chordRoot,
       normalizedDrumFloorSection,
+      migratePrefsForCurrentMix,
       firstSongIdForBand: (band) => firstSongForBand(band)?.id || null,
       adjacentSongIdInBand: (band, currentSongId, delta) => (
         adjacentSongInBand(band, currentSongId, delta)?.id || null
@@ -4934,6 +4935,26 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = "band-room.prefs.v1";
+  const MIX_PREFS_VERSION = "v168-default-mix";
+  const V167_DEFAULT_MIX_MIGRATION = {
+    "br-vol-stem-vocals": { old: "72", current: "68" },
+    "br-vol-stem-drums": { old: "92", current: "86" },
+    "br-vol-stem-bass": { old: "92", current: "86" },
+    "br-vol-stem-other": { old: "92", current: "84" },
+    "br-vol-drums": { old: "62", current: "58" },
+    "br-vol-bass": { old: "72", current: "66" },
+    "br-vol-guitar": { old: "62", current: "56" },
+    "br-vol-voice": { old: "56", current: "48" },
+    "br-vol-chords": { old: "68", current: "58" },
+    "br-vfx-chorus": { old: "30", current: "22" },
+    "br-vfx-delay": { old: "18", current: "12" },
+    "br-vfx-reverb": { old: "28", current: "20" },
+    "br-vol-external-vocal": { old: "85", current: "78" },
+    "br-space-reverb": { old: "22", current: "16" },
+    "br-space-width": { old: "72", current: "62" },
+    "br-tape-warmth": { old: "10", current: "7" },
+    "br-loudness": { old: "0", current: "-1" }
+  };
 
   function loadPrefs() {
     try {
@@ -4943,10 +4964,25 @@
     } catch (e) { return null; }
   }
 
+  function migratePrefsForCurrentMix(prefs) {
+    if (!prefs || prefs.mixPrefsVersion === MIX_PREFS_VERSION) return prefs;
+    const next = { ...prefs, sliders: { ...(prefs.sliders || {}) }, mixPrefsVersion: MIX_PREFS_VERSION };
+    let changed = prefs.mixPrefsVersion !== MIX_PREFS_VERSION;
+    Object.entries(V167_DEFAULT_MIX_MIGRATION).forEach(([id, rule]) => {
+      if (String(next.sliders[id]) === rule.old) {
+        next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
+    next.__mixMigrated = changed;
+    return next;
+  }
+
   function savePrefs() {
     try {
       const prefs = {
         bandId: state.currentBandId,
+        mixPrefsVersion: MIX_PREFS_VERSION,
         mode: currentMode,
         kitSource: state.kitSource,
         kitProfile: state.kitProfile,
@@ -4972,6 +5008,7 @@
 
   function applyPrefs(prefs) {
     if (!prefs) return;
+    prefs = migratePrefsForCurrentMix(prefs);
     // Sliders + toggles — re-trigger 'input'/'change' so handlers run
     if (prefs.sliders) {
       Object.entries(prefs.sliders).forEach(([id, v]) => {
@@ -5060,6 +5097,7 @@
         sel.dispatchEvent(new Event("change"));
       }
     }
+    if (prefs.__mixMigrated) schedulePrefsSave();
   }
 
   // Save on any meaningful user change. Debounced so 100 slider drags

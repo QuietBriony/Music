@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v167 compact)
+# Band Room — Changelog (v65 → v168 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,14 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v168 compact — saved mix migration + closeout
+
+- `band-room.js br-85`: v167 の default mix polish を既存ユーザーにも反映するため、
+  localStorage に残った v166 系の旧 default slider 値だけを新 default へ自動移行。
+- 手動で変えた slider 値は維持し、旧 default と完全一致する値だけ更新する。
+- 保存 prefs に `mixPrefsVersion` を持たせ、次回以降は同じ migration を繰り返さない。
+- `sw.js hazama-fm-v168`: Band Room の新 script marker を precache。
 
 ## v167 compact — default mix polish
 
