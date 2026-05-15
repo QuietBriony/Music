@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v159 compact)
+# Band Room — Changelog (v65 → v160 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,15 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v160 compact — FM route diagnostics + rearm
+
+- `engine.js fm-82`: hidden audio bridge の診断 state を `window.MusicBackgroundBridge`
+  に公開し、loss / failed / rearm attempt / output route を snapshot できるようにした。
+- `fm.html` / `fm.css fm-50` / `fm.js fm-64`: route badge を押すと診断 panel が開き、
+  current route / bridge event / output / AudioContext を確認しつつ `rearm` できる。
+- bridge loss 時は direct 出力へ戻したまま、iOS Safari 推奨環境では短い backoff で
+  hidden bridge を自動 rearm する。
 
 ## v159 compact — FM to Drum Floor handoff
 

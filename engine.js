@@ -985,6 +985,21 @@ const PlaybackState = {
   backgroundBridgeActive: false,
   backgroundAudio: null,
   backgroundBridgeHealthBound: false,
+  backgroundBridgeRearmTimer: 0,
+  backgroundBridgeDiagnostics: {
+    status: "off",
+    lastEvent: "init",
+    lastError: "",
+    lastChangedAt: 0,
+    lastAttemptAt: 0,
+    lastSuccessAt: 0,
+    lastLostAt: 0,
+    attemptCount: 0,
+    successCount: 0,
+    lostCount: 0,
+    rearmCount: 0,
+    lastRearmReason: ""
+  },
   iosSafariBridgePreferred: false
 };
 const HazamaBridgeState = {
@@ -6717,9 +6732,109 @@ function setAudioOutputStatus(message) {
   if (el) el.textContent = message;
 }
 
+function backgroundBridgeErrorMessage(error) {
+  if (!error) return "";
+  const name = error.name ? `${error.name}: ` : "";
+  const message = error.message || String(error);
+  return `${name}${message}`.slice(0, 180);
+}
+
+function updateBackgroundBridgeDiagnostics(patch = {}) {
+  const diagnostics = PlaybackState.backgroundBridgeDiagnostics;
+  if (!diagnostics) return;
+
+  const next = { ...patch };
+  if ("error" in next) {
+    if (next.error) next.lastError = backgroundBridgeErrorMessage(next.error);
+    delete next.error;
+  }
+  if (next.clearError) {
+    next.lastError = "";
+    delete next.clearError;
+  }
+
+  Object.assign(diagnostics, next, { lastChangedAt: Date.now() });
+}
+
+function normalizeBackgroundBridgeRoute(message) {
+  if (PlaybackState.backgroundBridgeActive) return "bridge";
+  const route = String(message || "").toLowerCase();
+  if (route.includes("failed") || route.includes("error") || route.includes("lost") || route.includes("stalled") || route.includes("abort")) return "failed";
+  if (route.includes("bridge") || route.includes("ios bg")) return "bridge";
+  if (route.includes("arm") || route.includes("ready") || route.includes("hidden") || route.includes("resume") || route.includes("keep")) return "ready";
+  if (route.includes("direct") || route.includes("system") || route.includes("blocked") || route.includes("n/a")) return "direct";
+  if (route.includes("off") || !route) return "off";
+  return "direct";
+}
+
+function getBackgroundBridgeSnapshot(extra = {}) {
+  const diagnostics = PlaybackState.backgroundBridgeDiagnostics || {};
+  const audio = PlaybackState.backgroundAudio;
+  let bridgeStreamReady = false;
+  try {
+    bridgeStreamReady = !!backgroundPlaybackDestination?.stream;
+  } catch (error) {
+    bridgeStreamReady = false;
+  }
+
+  let toneState = "";
+  try {
+    toneState = Tone?.context?.state || "";
+  } catch (error) {
+    toneState = "";
+  }
+
+  const status = diagnostics.status || "off";
+  return {
+    status,
+    route: normalizeBackgroundBridgeRoute(status),
+    active: !!PlaybackState.backgroundBridgeActive,
+    available: !!audio || bridgeStreamReady,
+    preferred: !!PlaybackState.iosSafariBridgePreferred,
+    audioReady: !!audio && !!audio.srcObject,
+    audioPaused: audio ? !!audio.paused : true,
+    audioEnded: audio ? !!audio.ended : false,
+    audioReadyState: audio ? audio.readyState || 0 : 0,
+    currentTime: audio ? Math.round((Number(audio.currentTime) || 0) * 1000) / 1000 : 0,
+    sinkId: audio?.sinkId || PlaybackState.outputDeviceId || "",
+    outputDeviceLabel: PlaybackState.outputDeviceLabel || "SYSTEM / BT",
+    wakeLockEnabled: !!PlaybackState.wakeLockEnabled,
+    lastEvent: diagnostics.lastEvent || "",
+    lastError: diagnostics.lastError || "",
+    lastChangedAt: diagnostics.lastChangedAt || 0,
+    lastAttemptAt: diagnostics.lastAttemptAt || 0,
+    lastSuccessAt: diagnostics.lastSuccessAt || 0,
+    lastLostAt: diagnostics.lastLostAt || 0,
+    attemptCount: diagnostics.attemptCount || 0,
+    successCount: diagnostics.successCount || 0,
+    lostCount: diagnostics.lostCount || 0,
+    rearmCount: diagnostics.rearmCount || 0,
+    lastRearmReason: diagnostics.lastRearmReason || "",
+    hardwareMuted: !!PlaybackState.backgroundBridgeActive,
+    canRearm: !!audio || bridgeStreamReady,
+    isPlaying: !!isPlaying,
+    toneState,
+    visibilityState: typeof document !== "undefined" ? document.visibilityState || "visible" : "",
+    ...extra
+  };
+}
+
+function publishBackgroundBridgeState(extra = {}) {
+  if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+  try {
+    window.dispatchEvent(new CustomEvent("music-background-bridge-state", {
+      detail: getBackgroundBridgeSnapshot(extra)
+    }));
+  } catch (error) {
+    // Diagnostic events are best effort only.
+  }
+}
+
 function setBackgroundStatus(message) {
   const el = document.getElementById("background_value");
   if (el) el.textContent = message;
+  updateBackgroundBridgeDiagnostics({ status: message || "off" });
+  publishBackgroundBridgeState();
 }
 
 function getNativeAudioContext() {
@@ -6907,7 +7022,7 @@ function updateMediaSessionPlaybackState() {
 
 async function requestPlaybackWakeLock() {
   if (!PlaybackState.wakeLockEnabled || !navigator.wakeLock?.request) {
-    setBackgroundStatus(navigator.wakeLock?.request ? "off" : "n/a");
+    setBackgroundStatus(isPlaying ? "direct" : (navigator.wakeLock?.request ? "off" : "n/a"));
     return false;
   }
   if (document.visibilityState && document.visibilityState !== "visible") {
@@ -7059,6 +7174,8 @@ function ensureBackgroundPlaybackElement() {
   const host = document.body || document.documentElement;
   host.appendChild(audio);
   PlaybackState.backgroundAudio = audio;
+  updateBackgroundBridgeDiagnostics({ lastEvent: "element" });
+  publishBackgroundBridgeState();
   bindBackgroundPlaybackHealth(audio);
   return audio;
 }
@@ -7073,28 +7190,91 @@ function bindBackgroundPlaybackHealth(audio) {
   PlaybackState.backgroundBridgeHealthBound = true;
   const markBridgeLost = (event) => {
     if (!PlaybackState.backgroundBridgeActive) return;
+    const eventType = event?.type || "lost";
     PlaybackState.backgroundBridgeActive = false;
+    updateBackgroundBridgeDiagnostics({
+      lastEvent: eventType,
+      lastLostAt: Date.now(),
+      lostCount: PlaybackState.backgroundBridgeDiagnostics.lostCount + 1,
+      error: eventType === "error" ? audio.error || new Error("background bridge error") : null
+    });
     routeHardwareOutputForBridge(false, true);
-    setBackgroundStatus(event?.type === "error" ? "failed" : "direct");
+    setBackgroundStatus(eventType === "error" ? "failed" : "lost");
+    scheduleBackgroundBridgeRearm(eventType);
   };
   ["pause", "ended", "error", "stalled", "emptied", "abort"].forEach((eventName) => {
     audio.addEventListener(eventName, markBridgeLost);
   });
 }
 
+function clearBackgroundBridgeRearmTimer() {
+  if (!PlaybackState.backgroundBridgeRearmTimer) return;
+  clearTimeout(PlaybackState.backgroundBridgeRearmTimer);
+  PlaybackState.backgroundBridgeRearmTimer = 0;
+}
+
+function scheduleBackgroundBridgeRearm(reason = "lost") {
+  clearBackgroundBridgeRearmTimer();
+  if (!isPlaying || !PlaybackState.iosSafariBridgePreferred) return;
+
+  updateBackgroundBridgeDiagnostics({ lastRearmReason: reason });
+  PlaybackState.backgroundBridgeRearmTimer = setTimeout(() => {
+    PlaybackState.backgroundBridgeRearmTimer = 0;
+    if (!isPlaying || PlaybackState.backgroundBridgeActive) return;
+    startBackgroundAudioBridge({ force: true, rearm: true, reason });
+  }, 1200);
+}
+
+function checkBackgroundBridgeHealth(reason = "watchdog") {
+  const audio = PlaybackState.backgroundAudio;
+  if (!isPlaying || !PlaybackState.backgroundBridgeActive) {
+    if (isPlaying && PlaybackState.iosSafariBridgePreferred && !PlaybackState.backgroundBridgeActive) {
+      scheduleBackgroundBridgeRearm(reason);
+    }
+    return getBackgroundBridgeSnapshot({ healthy: !isPlaying || !PlaybackState.backgroundBridgeActive });
+  }
+
+  const unhealthy = !audio || audio.paused || audio.ended || !audio.srcObject || audio.readyState === 0;
+  if (!unhealthy) return getBackgroundBridgeSnapshot({ healthy: true });
+
+  PlaybackState.backgroundBridgeActive = false;
+  updateBackgroundBridgeDiagnostics({
+    lastEvent: reason,
+    lastLostAt: Date.now(),
+    lostCount: PlaybackState.backgroundBridgeDiagnostics.lostCount + 1
+  });
+  routeHardwareOutputForBridge(false, true);
+  setBackgroundStatus("lost");
+  scheduleBackgroundBridgeRearm(reason);
+  return getBackgroundBridgeSnapshot({ healthy: false });
+}
+
 async function startBackgroundAudioBridge(options = {}) {
   const force = options.force === true;
   if (!force && !shouldPreferBackgroundAudioBridge()) {
     routeHardwareOutputForBridge(false);
+    setBackgroundStatus("direct");
     return false;
   }
 
   const audio = ensureBackgroundPlaybackElement();
   if (!audio) {
+    updateBackgroundBridgeDiagnostics({ lastEvent: "unavailable" });
     setBackgroundStatus("direct");
     routeHardwareOutputForBridge(false);
     return false;
   }
+
+  const isRearm = options.rearm === true;
+  updateBackgroundBridgeDiagnostics({
+    lastEvent: isRearm ? "rearm" : "arm",
+    lastAttemptAt: Date.now(),
+    attemptCount: PlaybackState.backgroundBridgeDiagnostics.attemptCount + 1,
+    rearmCount: isRearm ? PlaybackState.backgroundBridgeDiagnostics.rearmCount + 1 : PlaybackState.backgroundBridgeDiagnostics.rearmCount,
+    lastRearmReason: options.reason || PlaybackState.backgroundBridgeDiagnostics.lastRearmReason || "",
+    clearError: true
+  });
+  setBackgroundStatus(isRearm ? "rearming" : "arming");
 
   try {
     audio.muted = false;
@@ -7110,26 +7290,59 @@ async function startBackgroundAudioBridge(options = {}) {
     const result = audio.play();
     if (result && typeof result.then === "function") await result;
     PlaybackState.backgroundBridgeActive = true;
+    clearBackgroundBridgeRearmTimer();
+    updateBackgroundBridgeDiagnostics({
+      lastEvent: isRearm ? "rearmed" : "play",
+      lastSuccessAt: Date.now(),
+      successCount: PlaybackState.backgroundBridgeDiagnostics.successCount + 1,
+      clearError: true
+    });
     routeHardwareOutputForBridge(true, force);
     setBackgroundStatus(shouldPreferBackgroundAudioBridge() ? "ios bg" : "bridge");
     return true;
   } catch (error) {
     console.warn("[Music] background audio bridge failed:", error);
     PlaybackState.backgroundBridgeActive = false;
+    updateBackgroundBridgeDiagnostics({
+      lastEvent: isRearm ? "rearm-error" : "error",
+      lastLostAt: Date.now(),
+      error
+    });
     routeHardwareOutputForBridge(false, true);
-    setBackgroundStatus("direct");
+    setBackgroundStatus("failed");
     return false;
   }
 }
 
 function stopBackgroundAudioBridge() {
   const audio = PlaybackState.backgroundAudio;
+  clearBackgroundBridgeRearmTimer();
   PlaybackState.backgroundBridgeActive = false;
+  updateBackgroundBridgeDiagnostics({ lastEvent: "stop" });
   routeHardwareOutputForBridge(false, true);
   if (audio) {
     try { audio.pause(); } catch(e) {}
   }
-  setBackgroundStatus(PlaybackState.wakeLockEnabled ? "ready" : "off");
+  setBackgroundStatus(isPlaying ? "direct" : (PlaybackState.wakeLockEnabled ? "ready" : "off"));
+}
+
+async function rearmBackgroundAudioBridge(options = {}) {
+  clearBackgroundBridgeRearmTimer();
+  updateBackgroundBridgeDiagnostics({
+    lastEvent: "manual-rearm",
+    lastRearmReason: options.reason || options.source || "manual"
+  });
+  await resumeAudioContext("bridge-rearm");
+  const ok = await startBackgroundAudioBridge({ force: true, rearm: true, reason: options.reason || options.source || "manual" });
+  return getBackgroundBridgeSnapshot({ rearmed: ok });
+}
+
+if (typeof window !== "undefined") {
+  window.MusicBackgroundBridge = {
+    getState: getBackgroundBridgeSnapshot,
+    rearm: rearmBackgroundAudioBridge,
+    check: checkBackgroundBridgeHealth
+  };
 }
 
 function syncSliderValue(key, value) {
@@ -14156,6 +14369,7 @@ window.addEventListener("DOMContentLoaded", () => {
       } else {
         lastWatchdogTransportState = "";
       }
+      checkBackgroundBridgeHealth("watchdog");
     } catch(e){ /* swallow */ }
   }, 2000);
 
@@ -14173,7 +14387,9 @@ document.addEventListener("visibilitychange", () => {
         }
       } catch(e) {}
       if (PlaybackState.iosSafariBridgePreferred && !PlaybackState.backgroundBridgeActive) {
-        startBackgroundAudioBridge();
+        startBackgroundAudioBridge({ rearm: true, reason: "visible" });
+      } else {
+        checkBackgroundBridgeHealth("visible");
       }
       requestPlaybackWakeLock();
       if (HazamaBridgeState.loaded) requestHazamaRuntimeFeedback("focus");

@@ -156,6 +156,7 @@
   let playbackIntentSeq = 0;
   let profileApplySeq = 0;
   let profileApplyTimers = [];
+  let lastAudioRouteDetail = null;
 
   // ---- Helpers --------------------------------------------------
 
@@ -168,11 +169,22 @@
     el.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
-  function normalizeAudioRoute(value) {
+  function readAudioRouteDetail(detail = null) {
+    if (detail && typeof detail === "object") return detail;
+    try {
+      const bridge = window.MusicBackgroundBridge;
+      return bridge && typeof bridge.getState === "function" ? bridge.getState() : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function normalizeAudioRoute(value, detail = null) {
+    if (detail && typeof detail.route === "string") return detail.route;
     const route = String(value || "").toLowerCase();
-    if (route.includes("failed") || route.includes("error")) return "failed";
+    if (route.includes("failed") || route.includes("error") || route.includes("lost") || route.includes("stalled") || route.includes("abort")) return "failed";
     if (route.includes("bridge") || route.includes("ios bg")) return "bridge";
-    if (route.includes("ready") || route.includes("hidden")) return "ready";
+    if (route.includes("ready") || route.includes("hidden") || route.includes("arm") || route.includes("resume") || route.includes("keep")) return "ready";
     if (route.includes("direct") || route.includes("system")) return "direct";
     if (route.includes("off") || !route) return "off";
     return "direct";
@@ -186,25 +198,101 @@
     return "off";
   }
 
-  function refreshAudioRouteStatus(value = null) {
-    const raw = value != null ? value : $("background_value")?.textContent;
-    const route = normalizeAudioRoute(raw);
+  function setRouteDiagnosticText(id, value) {
+    const el = $(id);
+    if (el) el.textContent = value || "-";
+  }
+
+  function routeBridgeLabel(detail = null) {
+    if (!detail) return "idle";
+    if (detail.active) return "active";
+    if (detail.canRearm) return detail.preferred ? "ready" : "standby";
+    return "direct";
+  }
+
+  function routeContextLabel(detail = null) {
+    if (!detail) return "idle";
+    const audioState = detail.audioReady
+      ? (detail.audioPaused ? "paused" : "playing")
+      : "no-audio";
+    return [detail.toneState || "context", audioState].filter(Boolean).join(" / ");
+  }
+
+  function routeTitleFor(route, detail = null) {
+    const base = route === "bridge" ? "hidden media bridge active"
+      : route === "ready" ? "hidden media bridge ready"
+      : route === "failed" ? "hidden media bridge failed; direct output restored"
+      : route === "direct" ? "direct Web Audio output"
+      : "audio route off";
+    if (!detail) return base;
+    const event = detail.lastEvent ? `event: ${detail.lastEvent}` : "event: n/a";
+    const output = detail.outputDeviceLabel || "SYSTEM / BT";
+    return `${base} | ${event} | ${output}`;
+  }
+
+  function renderAudioRoutePanel(detail = null, route = "off") {
+    setRouteDiagnosticText("fm-route-diag-route", routeLabelFor(route));
+    setRouteDiagnosticText("fm-route-diag-bridge", routeBridgeLabel(detail));
+    setRouteDiagnosticText("fm-route-diag-event", detail?.lastEvent || "init");
+    setRouteDiagnosticText("fm-route-diag-output", detail?.outputDeviceLabel || "SYSTEM / BT");
+    setRouteDiagnosticText("fm-route-diag-context", routeContextLabel(detail));
+  }
+
+  function refreshAudioRouteStatus(value = null, detail = null) {
+    const bridgeDetail = readAudioRouteDetail(detail);
+    if (bridgeDetail) lastAudioRouteDetail = bridgeDetail;
+    const raw = value != null ? value : (bridgeDetail?.status || $("background_value")?.textContent);
+    const route = normalizeAudioRoute(raw, bridgeDetail);
     const panel = $("fm-route");
     const label = $("fm-route-status");
     if (panel) {
       panel.dataset.route = route;
-      panel.title = route === "bridge" ? "hidden media bridge active"
-        : route === "ready" ? "hidden media bridge ready"
-        : route === "failed" ? "hidden media bridge failed; direct output restored"
-        : route === "direct" ? "direct Web Audio output"
-        : "audio route off";
+      panel.title = routeTitleFor(route, bridgeDetail);
       panel.setAttribute("aria-label", panel.title);
     }
     if (label) label.textContent = routeLabelFor(route);
+    renderAudioRoutePanel(bridgeDetail, route);
   }
 
   function bindAudioRouteStatus() {
     refreshAudioRouteStatus();
+    const routeButton = $("fm-route");
+    const routePanel = $("fm-route-panel");
+    const closeButton = $("fm-route-close");
+    const rearmButton = $("fm-route-rearm");
+    const rearmStatus = $("fm-route-rearm-status");
+    const setPanelOpen = (open) => {
+      if (!routePanel) return;
+      routePanel.hidden = !open;
+      routeButton?.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) refreshAudioRouteStatus(null, lastAudioRouteDetail);
+    };
+
+    routeButton?.addEventListener("click", () => {
+      setPanelOpen(routePanel ? routePanel.hidden : false);
+    });
+    closeButton?.addEventListener("click", () => setPanelOpen(false));
+    rearmButton?.addEventListener("click", async () => {
+      const bridge = window.MusicBackgroundBridge;
+      if (!bridge || typeof bridge.rearm !== "function") {
+        if (rearmStatus) rearmStatus.textContent = "unavailable";
+        return;
+      }
+      rearmButton.disabled = true;
+      if (rearmStatus) rearmStatus.textContent = "arming";
+      try {
+        const detail = await bridge.rearm({ force: true, source: "fm-route-panel" });
+        refreshAudioRouteStatus(detail?.status, detail);
+        if (rearmStatus) rearmStatus.textContent = detail?.active ? "active" : (detail?.route || "direct");
+      } catch (error) {
+        if (rearmStatus) rearmStatus.textContent = "failed";
+      } finally {
+        rearmButton.disabled = false;
+      }
+    });
+    window.addEventListener("music-background-bridge-state", (event) => {
+      refreshAudioRouteStatus(event.detail?.status, event.detail);
+    });
     const source = $("background_value");
     if (!source || typeof MutationObserver !== "function") return;
     const observer = new MutationObserver(() => refreshAudioRouteStatus());

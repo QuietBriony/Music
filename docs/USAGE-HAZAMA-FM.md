@@ -167,6 +167,8 @@ iPhone をロック中・コントロールセンター・bluetooth ヘッドフ
 
 画面上の route badge は `off` / `direct` / `ready` / `bridge` / `failed` を表示します。
 車載 / Bluetooth で通常メディア音声として扱われているかを確認する目印です。
+badge を押すと診断 panel が開き、hidden audio bridge の event / output /
+AudioContext を確認しながら `rearm` できます。
 
 これを Media Session API と呼ぶ標準仕組みで実装。
 

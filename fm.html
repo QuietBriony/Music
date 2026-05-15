@@ -7,7 +7,7 @@
   <meta name="description" content="Hazama FM — generative focus radio powered by the UCM Mandala Engine. Press start and listen for hours." />
 
   <link rel="stylesheet" href="style.css?v=fm-27" />
-  <link rel="stylesheet" href="fm.css?v=fm-49" />
+  <link rel="stylesheet" href="fm.css?v=fm-50" />
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
@@ -30,8 +30,8 @@
        the heavy CDN scripts + checkpoint (~5 MB) are fetched lazily on
        first click of #fm-ai-fill so page load stays light. -->
   <script src="audio/ai-fills.js?v=fm-71" defer></script>
-  <script src="engine.js?v=fm-81" defer></script>
-  <script src="fm.js?v=fm-63" defer></script>
+  <script src="engine.js?v=fm-82" defer></script>
+  <script src="fm.js?v=fm-64" defer></script>
 </head>
 
 <body data-page="fm">
@@ -133,10 +133,27 @@
       <p id="mic_follow_detail" class="fm-mic-follow-help">任意: grooveだけ曲げる / local features only</p>
     </div>
 
-    <div id="fm-route" data-route="off" aria-label="Audio route">
+    <button id="fm-route" type="button" data-route="off" aria-label="Audio route" aria-expanded="false" aria-controls="fm-route-panel">
       <span class="fm-route-dot" aria-hidden="true"></span>
       <span id="fm-route-status" aria-live="polite">off</span>
-    </div>
+    </button>
+    <aside id="fm-route-panel" hidden aria-label="Audio route diagnostics">
+      <div class="fm-route-panel-head">
+        <strong>route</strong>
+        <button id="fm-route-close" type="button" title="close">x</button>
+      </div>
+      <dl class="fm-route-grid">
+        <dt>route</dt><dd id="fm-route-diag-route">off</dd>
+        <dt>bridge</dt><dd id="fm-route-diag-bridge">idle</dd>
+        <dt>event</dt><dd id="fm-route-diag-event">init</dd>
+        <dt>output</dt><dd id="fm-route-diag-output">SYSTEM / BT</dd>
+        <dt>context</dt><dd id="fm-route-diag-context">idle</dd>
+      </dl>
+      <div class="fm-route-actions">
+        <button id="fm-route-rearm" type="button">rearm</button>
+        <span id="fm-route-rearm-status" aria-live="polite"></span>
+      </div>
+    </aside>
 
     <div id="fm-review" aria-label="Review">
       <button id="fm_sync" type="button" title="今のFM文脈をmetadata-onlyで保存">SYNC</button>
