@@ -847,6 +847,27 @@ const BarCounter = {
   phraseLength: 16,
   pendingMode: null
 };
+const PatternVariation = {
+  bar: 0,
+  phraseLength: 16,
+  variationInterval: 4,
+  baseSignature: "",
+  basePattern: {
+    kick: "",
+    hat: "",
+    bass: "",
+    pad: "",
+    skin: ""
+  },
+  currentPattern: {
+    kick: "",
+    hat: "",
+    bass: "",
+    pad: "",
+    skin: ""
+  },
+  lastVariationBar: -1
+};
 const AUTO_SOURCE_MORPH_KEYS = ["xtal", "boc", "opn", "fsol", "autechre", "burial"];
 const AUTO_ATMOSPHERE_MORPH_KEYS = ["haze", "chrome", "void", "organic", "ghost"];
 const AutoVoiceMorphState = {
@@ -2192,6 +2213,12 @@ function resetBarCounter() {
   BarCounter.current = 0;
   BarCounter.lastModeChangeBar = -999;
   BarCounter.pendingMode = null;
+}
+
+function resetPatternVariation() {
+  PatternVariation.baseSignature = "";
+  PatternVariation.lastVariationBar = -1;
+  syncPatternVariationBase({ force: true });
 }
 
 function resetDJTempo() {
@@ -10094,6 +10121,7 @@ function applyModeChangeHooks(manual = false) {
   if (manual && PresetManager.presets[EngineParams.mode]) {
     applyPresetToEngineParams(PresetManager.presets[EngineParams.mode]);
   }
+  syncPatternVariationBase({ force: true });
   renderModeLabel();
 }
 
@@ -10120,6 +10148,7 @@ function advanceBarCounter() {
   ) {
     commitPhraseLockedMode(BarCounter.pendingMode, false);
   }
+  advancePatternVariationBar();
 }
 
 /* =========================================================
@@ -10293,6 +10322,7 @@ function applyUCMToParams(options = {}) {
 
   if (!manual) setPatternsByMode();
   applyHazamaProfileToEngineParams({ force });
+  syncPatternVariationBase();
   updateUIFromParams();
 
   syncMusicAudioAdapterFromUCM(force);
@@ -10414,6 +10444,7 @@ function resetRuntimeCounters() {
   resetModeTimbrePalettes();
   resetMusicRadioBrain();
   resetBarCounter();
+  resetPatternVariation();
   resetDJTempo();
   resetGenerativeGenome();
   resetAutoVoiceMorph();
@@ -10432,6 +10463,186 @@ function patternAt(pattern, step) {
   if (!pattern || pattern.length === 0) return false;
   const ch = pattern[step % pattern.length];
   return ch === "x" || ch === "o" || ch === "X";
+}
+
+function patternVariationSignature() {
+  return [
+    EngineParams.mode,
+    EngineParams.stepCount,
+    EngineParams.kickPattern,
+    EngineParams.hatPattern,
+    EngineParams.bassPattern,
+    EngineParams.padPattern
+  ].join("|");
+}
+
+function emptyPatternLike(pattern) {
+  const length = Math.max(1, (typeof pattern === "string" && pattern.length) || EngineParams.stepCount || 16);
+  return ".".repeat(length);
+}
+
+function patternVariationSnapshot() {
+  const skinBase = EngineParams.hatPattern || EngineParams.kickPattern || "";
+  return {
+    kick: typeof EngineParams.kickPattern === "string" ? EngineParams.kickPattern : "",
+    hat: typeof EngineParams.hatPattern === "string" ? EngineParams.hatPattern : "",
+    bass: typeof EngineParams.bassPattern === "string" ? EngineParams.bassPattern : "",
+    pad: typeof EngineParams.padPattern === "string" ? EngineParams.padPattern : "",
+    skin: emptyPatternLike(skinBase)
+  };
+}
+
+function syncPatternVariationBase(options = {}) {
+  const signature = patternVariationSignature();
+  if (!options.force && PatternVariation.baseSignature === signature) return;
+  PatternVariation.baseSignature = signature;
+  PatternVariation.basePattern = patternVariationSnapshot();
+  PatternVariation.currentPattern = { ...PatternVariation.basePattern };
+  PatternVariation.bar = BarCounter.current;
+  PatternVariation.lastVariationBar = -1;
+}
+
+function resetPatternVariationCurrent() {
+  PatternVariation.currentPattern = { ...PatternVariation.basePattern };
+  PatternVariation.bar = BarCounter.current;
+  PatternVariation.lastVariationBar = BarCounter.current;
+}
+
+function patternVariationForRole(role) {
+  if (!PatternVariation.baseSignature) syncPatternVariationBase({ force: true });
+  if (role === "skin") return PatternVariation.currentPattern.skin || "";
+  return PatternVariation.currentPattern[role] || EngineParams[`${role}Pattern`] || "";
+}
+
+function patternStepIsActive(chars, index) {
+  return chars[index] === "x" || chars[index] === "o" || chars[index] === "X";
+}
+
+function patternStepsPerBeat(length) {
+  return Math.max(1, Math.round(length / 4));
+}
+
+function patternIsBeatStart(index, length) {
+  return index % patternStepsPerBeat(length) === 0;
+}
+
+function patternIsSnareBackbone(index, length) {
+  const stepsPerBeat = patternStepsPerBeat(length);
+  const beat = Math.floor(index / stepsPerBeat);
+  return index % stepsPerBeat === 0 && (beat === 1 || beat === 3);
+}
+
+function randomPatternIndex(indices) {
+  if (!indices.length) return -1;
+  return indices[Math.floor(Math.random() * indices.length)];
+}
+
+function tryAddKickVariation(chars) {
+  const length = chars.length;
+  const candidates = [];
+  for (let i = 1; i < length; i++) {
+    if (!patternIsBeatStart(i, length) && !patternStepIsActive(chars, i)) candidates.push(i);
+  }
+  const index = randomPatternIndex(candidates);
+  if (index < 0) return false;
+  chars[index] = "o";
+  return true;
+}
+
+function tryShiftKickVariation(chars) {
+  const length = chars.length;
+  const candidates = [];
+  for (let i = 1; i < length; i++) {
+    if (patternStepIsActive(chars, i) && !patternIsBeatStart(i, length)) candidates.push(i);
+  }
+  while (candidates.length) {
+    const source = randomPatternIndex(candidates);
+    candidates.splice(candidates.indexOf(source), 1);
+    const direction = rand(0.5) ? -1 : 1;
+    const target = source + direction;
+    if (target <= 0 || target >= length) continue;
+    if (patternIsBeatStart(target, length) || patternStepIsActive(chars, target)) continue;
+    chars[source] = ".";
+    chars[target] = "o";
+    return true;
+  }
+  return tryAddKickVariation(chars);
+}
+
+function tryVaryHatPattern(chars) {
+  const length = chars.length;
+  const active = [];
+  const empty = [];
+  for (let i = 0; i < length; i++) {
+    if (patternIsBeatStart(i, length)) continue;
+    if (patternStepIsActive(chars, i)) active.push(i);
+    else empty.push(i);
+  }
+  if (active.length > Math.max(3, Math.floor(length / 4)) && rand(0.52)) {
+    const index = randomPatternIndex(active);
+    chars[index] = ".";
+    return true;
+  }
+  const index = randomPatternIndex(empty);
+  if (index < 0) return false;
+  chars[index] = "x";
+  return true;
+}
+
+function tryAddSkinGhost(chars) {
+  const length = chars.length;
+  const candidates = [];
+  for (let i = 1; i < length; i++) {
+    if (!patternIsBeatStart(i, length) && !patternIsSnareBackbone(i, length) && !patternStepIsActive(chars, i)) candidates.push(i);
+  }
+  const index = randomPatternIndex(candidates);
+  if (index < 0) return false;
+  chars[index] = "o";
+  return true;
+}
+
+function perturbPatternVariation() {
+  syncPatternVariationBase();
+  const kick = (PatternVariation.currentPattern.kick || "").split("");
+  const hat = (PatternVariation.currentPattern.hat || "").split("");
+  const skin = (PatternVariation.currentPattern.skin || "").split("");
+  const operations = rand(0.45) ? 2 : 1;
+
+  for (let i = 0; i < operations; i++) {
+    const pick = Math.random();
+    if (pick < 0.34) {
+      tryShiftKickVariation(kick);
+    } else if (pick < 0.74) {
+      tryVaryHatPattern(hat);
+    } else {
+      tryAddSkinGhost(skin);
+    }
+  }
+
+  PatternVariation.currentPattern = {
+    ...PatternVariation.currentPattern,
+    kick: kick.join(""),
+    hat: hat.join(""),
+    skin: skin.join("")
+  };
+  PatternVariation.lastVariationBar = BarCounter.current;
+  console.log("[PatternVariation]", BarCounter.current, "kick:", PatternVariation.currentPattern.kick, "hat:", PatternVariation.currentPattern.hat);
+}
+
+function advancePatternVariationBar() {
+  syncPatternVariationBase();
+  PatternVariation.bar = BarCounter.current;
+  if (BarCounter.current <= 0) return;
+  if (BarCounter.current % PatternVariation.phraseLength === 0) {
+    resetPatternVariationCurrent();
+    return;
+  }
+  if (
+    BarCounter.current % PatternVariation.variationInterval === 0 &&
+    PatternVariation.lastVariationBar !== BarCounter.current
+  ) {
+    perturbPatternVariation();
+  }
 }
 
 function randomNoteFromScale() {
@@ -12872,10 +13083,16 @@ function scheduleStep(time) {
     const aiFill = (typeof window !== "undefined" && window.FmAiFill) ? window.FmAiFill : null;
     const aiKick = aiFill ? aiFill.shouldFire("kick", step) : null;
     const aiHat  = aiFill ? aiFill.shouldFire("hat",  step) : null;
+    const aiFillActive = !!(aiKick || aiHat);
+    const kickPattern = patternVariationForRole("kick");
+    const hatPattern = patternVariationForRole("hat");
+    const bassPattern = patternVariationForRole("bass");
+    const padPattern = patternVariationForRole("pad");
+    const skinPattern = patternVariationForRole("skin");
 
     // Kick
     const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + kits.pressureKit * 0.024 + habitPressure * 0.01 + palette.transient * 0.014 + PerformancePadState.punch * 0.052 - kits.spaceKit * 0.045 - habitSpace * 0.012 - habitRestraint * 0.008 - palette.air * 0.024 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16) * (1 - palette.lowClamp * 0.1) * droneDrumScale * kickShape.probabilityScale);
-    const kickGate = aiKick ? aiKick.fire : patternAt(EngineParams.kickPattern, step);
+    const kickGate = aiKick ? aiKick.fire : patternAt(kickPattern, step);
     const kickRoll = aiKick ? true : rand(kickChance);
     const aiKickVel = (aiKick && aiKick.fire) ? aiKick.velocity : 1;
     if (kickGate && kickRoll) {
@@ -12892,7 +13109,7 @@ function scheduleStep(time) {
 
     // Hat
     const hatChance = chance((EngineParams.hatProb + fillBoost + kits.technoKit * 0.14 + kits.idmKit * 0.068 + habitGrid * 0.05 + habitRubber * 0.014 + palette.rhythm * 0.088 + palette.texture * 0.026 + micJam.pulse * 0.12 + micJam.clap * 0.08 + (isAccentStep ? 0.08 : 0) - kits.ambientKit * 0.06 - kits.spaceKit * 0.05 - habitSpace * 0.02 - habitRestraint * 0.018 - palette.haze * 0.034 - palette.air * 0.04 - micJam.air * 0.025 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.34 : 1) * hatShape.probabilityScale);
-    const hatGate = aiHat ? aiHat.fire : (patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2));
+    const hatGate = aiHat ? aiHat.fire : (patternAt(hatPattern, step) || (GrooveState.fillActive && step % 4 === 2));
     const hatRoll = aiHat ? true : rand(hatChance);
     const aiHatVel = (aiHat && aiHat.fire) ? aiHat.velocity : 1;
     if (hatGate && hatRoll) {
@@ -12900,6 +13117,14 @@ function scheduleStep(time) {
       const hatVel = clampValue((0.074 + energyNorm * 0.098 + kits.technoKit * 0.05 + kits.idmKit * 0.018 + palette.transient * 0.026 + (isAccentStep ? 0.04 : 0) - palette.air * 0.012) * hatShape.velocityScale * micVelScale * aiHatVel, 0.048, 0.2);
       const hatDilla = dillaOffsetSec("hat", step, hatVel);
       hat.triggerAttackRelease(palette.rhythm > 0.5 || kits.technoKit > 0.44 ? "64n" : "32n", t + hatShape.timeOffsetSec + hatDilla, hatVel);
+    }
+    if (!aiFillActive && drumSkin && patternAt(skinPattern, step) && lowGuard < 0.72) {
+      try {
+        const skinVel = clampValue(0.018 + kits.technoKit * 0.018 + kits.idmKit * 0.014 + palette.transient * 0.012 + micJam.clap * 0.018, 0.014, 0.07);
+        drumSkin.triggerAttackRelease("128n", t + hatShape.timeOffsetSec + 0.012, skinVel);
+      } catch (error) {
+        console.warn("[Music] pattern ghost skin failed:", error);
+      }
     }
     if ((kits.technoKit > 0.26 || palette.rhythm > 0.34 || micJam.pulse > 0.12) && !PerformancePadState.void && (step % 4 === 1 || step % 4 === 3) && rand((0.045 + kits.technoKit * 0.2 + kits.idmKit * 0.05 + palette.rhythm * 0.13 + micJam.pulse * 0.12 + micJam.clap * 0.06 + habitGrid * 0.08 + habitRubber * 0.018 - kits.spaceKit * 0.035 - palette.air * 0.03 - micJam.air * 0.02 - habitRestraint * 0.03) * hatShape.densityScale)) {
       try {
@@ -12920,7 +13145,7 @@ function scheduleStep(time) {
 
     // Bass
     const bassChance = chance((EngineParams.bassProb + kits.pressureKit * 0.016 + habitPressure * 0.008 + palette.transient * 0.008 + (GrooveState.fillActive && step % 8 === 6 ? 0.055 : 0) - kits.spaceKit * 0.045 - habitSpace * 0.014 - habitRestraint * 0.008 - palette.lowClamp * 0.026 - palette.air * 0.018 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.18) * (droneDrumThin ? 0.52 : 1) * bassShape.probabilityScale);
-    if (patternAt(EngineParams.bassPattern, step) && rand(bassChance)) {
+    if (patternAt(bassPattern, step) && rand(bassChance)) {
       const note = step % 8 === 0 ? bassRoot : bassNoteForStep(step);
       const bassTime = t + bassShape.timeOffsetSec;
       bass.triggerAttackRelease(note, droneDrumThin ? "4n" : "8n", bassTime + 0.004, clampValue((0.12 + energyNorm * 0.082 + kits.pressureKit * 0.018 + PerformancePadState.punch * 0.018 - kits.spaceKit * 0.018 - palette.lowClamp * 0.03 - lowGuard * 0.034) * bassShape.velocityScale, 0.075, droneDrumThin ? 0.18 : 0.29));
@@ -12935,7 +13160,7 @@ function scheduleStep(time) {
 
     // Pad（ゆっくり）
     const padChance = chance(EngineParams.padProb + kits.ambientKit * 0.045 + kits.spaceKit * 0.035 + palette.pad * 0.046 + palette.haze * 0.024 + palette.air * 0.022 + habitMemory * 0.026 + habitSpace * 0.026 + habitRestraint * 0.014 - kits.technoKit * 0.07 - kits.pressureKit * 0.035 - palette.rhythm * 0.04 - palette.transient * 0.016 - habitGrid * 0.024);
-    if (patternAt(EngineParams.padPattern, step) && rand(padChance)) {
+    if (patternAt(padPattern, step) && rand(padChance)) {
       const dur = palette.rhythm > 0.52 || kits.technoKit > 0.44 ? "8n" : palette.glass > 0.5 || kits.idmKit > 0.48 ? "4n" : "2n";
       const chord = rand(0.38 + observerNorm * 0.22 + gradient.haze * 0.12 + gradient.chrome * 0.06 + PerformancePadState.void * 0.16) ? randomHazeChord() : randomChordForMode();
       pad.triggerAttackRelease(chord, dur, t, clampValue(0.044 + circleNorm * 0.052 + observerNorm * 0.018 + kits.ambientKit * 0.014 + kits.spaceKit * 0.012 + palette.haze * 0.012 + palette.air * 0.01 - kits.technoKit * 0.012 - palette.rhythm * 0.008 + gradient.haze * 0.006, 0.034, 0.122));
