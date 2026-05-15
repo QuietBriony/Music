@@ -2207,7 +2207,6 @@
       : (bpm >= 118 && metrics.density > 0.5 ? "dry_grid" : "soft_pocket");
     const createdAt = new Date();
     const songId = state.currentSongId || data.song_id || "unknown-song";
-    const stemsDir = band?.stems_dir || "presets/tabasco-stems";
     const masterVol = Number($("br-master-vol")?.value || 80);
 
     return {
@@ -2290,11 +2289,6 @@
             key: data.key || "",
             source_section: sectionName,
             frame_id: frame?.id || section?.frame_id || "",
-            stem_urls: {
-              drums: `${stemsDir}/${songId}/drums.mp3`,
-              bass: `${stemsDir}/${songId}/bass.mp3`,
-              other: `${stemsDir}/${songId}/other.mp3`
-            },
             drum_events_preview: compactDrumFloorEvents(frame)
           },
           review_reason: "Band Room footer handoff: open drum-floor with the current song/frame as a manual preview candidate.",
@@ -3113,6 +3107,12 @@
       drumFloorLink.addEventListener("click", () => publishBandRoomDrumFloorHandoff());
       drumFloorLink.addEventListener("auxclick", () => publishBandRoomDrumFloorHandoff());
     }
+
+    $("br-fm-suggestion-ai")?.addEventListener("click", () => switchToSynthMode());
+    $("br-fm-suggestion-inject")?.addEventListener("click", () => {
+      const genre = $("br-fm-suggestion-inject")?.dataset.genre || linkedGenreFromUrl();
+      if (genre) loadGenrePattern(genre);
+    });
 
     document.getElementById("br-band-select")?.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-band]");
@@ -4944,9 +4944,83 @@
   const FM_LINKED_GENRE_AT_KEY = "band-room.fm-linked-genre-at";
   const FM_LINKED_GENRE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
+  function bandRoomPatternForFmGenre(genre) {
+    const map = {
+      lofi: "boom-bap",
+      jazz: "jazz-brush",
+      techno: "four-on-floor",
+      funk: "soul-funk",
+      dnb: "dnb",
+      breakbeat: "breakbeat",
+      trance: "dnb",
+      trap: "trap"
+    };
+    return map[genre] || "";
+  }
+
+  function fmGenreForBandRoomPattern(pattern) {
+    const map = {
+      "boom-bap": "lofi",
+      "jazz-brush": "jazz",
+      "four-on-floor": "techno",
+      "soul-funk": "funk",
+      dnb: "techno",
+      breakbeat: "lofi",
+      trap: "techno",
+      "afro-cuban": "funk",
+      reggaeton: "funk"
+    };
+    return map[pattern] || "";
+  }
+
   function setGenrePickStatus(s) {
     const el = $("br-genre-pick-status");
     if (el) el.textContent = s || "";
+  }
+
+  function refreshHazamaFmLinkForPattern(pattern = "") {
+    const link = $("br-open-fm");
+    if (!link) return;
+    const fmGenre = fmGenreForBandRoomPattern(pattern);
+    const params = new URLSearchParams();
+    params.set("from", "band-room");
+    if (fmGenre) params.set("g", fmGenre);
+    link.href = fmGenre ? `fm.html?${params.toString()}` : "fm.html";
+  }
+
+  function switchToSynthMode() {
+    const radio = document.querySelector('input[name=br-mode][value="synth"]');
+    if (!radio) return;
+    radio.checked = true;
+    radio.dispatchEvent(new Event("change"));
+  }
+
+  function setFmSuggestionCta(genre, reason = "fm") {
+    const panel = $("br-fm-suggestion");
+    const text = $("br-fm-suggestion-text");
+    const inject = $("br-fm-suggestion-inject");
+    if (!panel || !text || !inject) return;
+    if (!genre) {
+      panel.hidden = true;
+      inject.dataset.genre = "";
+      return;
+    }
+    panel.hidden = false;
+    inject.dataset.genre = genre;
+    text.textContent = `FM suggests ${genre} (${reason})`;
+  }
+
+  function linkedGenreFromUrl() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const explicit = params.get("pattern") || params.get("genrePattern") || params.get("brPattern");
+      if (explicit && linkedGenreButton(explicit)) return explicit;
+      const fmGenre = params.get("g") || params.get("genre") || "";
+      const mapped = bandRoomPatternForFmGenre(fmGenre);
+      return mapped && linkedGenreButton(mapped) ? mapped : "";
+    } catch (e) {
+      return "";
+    }
   }
 
   async function loadGenrePattern(genre) {
@@ -4976,6 +5050,7 @@
       frame.events = JSON.parse(JSON.stringify(sourceFrame.events));
       const resetBtn = $("br-genre-pick-reset");
       if (resetBtn) resetBtn.disabled = false;
+      refreshHazamaFmLinkForPattern(genre);
       setGenrePickStatus(`✓ ${genre} (${sourceFrame.events.length} events) → '${frame.id}'`);
     } catch (e) {
       console.warn("[Band Room] genre pattern load failed:", e);
@@ -4997,20 +5072,36 @@
   function maybeShowFmLinkedGenre(reason = "boot") {
     let genre = "";
     let at = 0;
+    const urlGenre = linkedGenreFromUrl();
     try {
-      genre = localStorage.getItem(FM_LINKED_GENRE_KEY) || "";
-      at = Number(localStorage.getItem(FM_LINKED_GENRE_AT_KEY) || 0);
+      if (urlGenre) {
+        genre = urlGenre;
+        at = Date.now();
+        localStorage.setItem(FM_LINKED_GENRE_KEY, genre);
+        localStorage.setItem(FM_LINKED_GENRE_AT_KEY, String(at));
+      } else {
+        genre = localStorage.getItem(FM_LINKED_GENRE_KEY) || "";
+        at = Number(localStorage.getItem(FM_LINKED_GENRE_AT_KEY) || 0);
+      }
     } catch (e) {
+      genre = urlGenre;
+      at = Date.now();
+    }
+    if (!genre) {
+      setFmSuggestionCta("", reason);
       return;
     }
     clearFmLinkedGenreSuggestion();
     const btn = linkedGenreButton(genre);
-    const stale = at && Date.now() - at > FM_LINKED_GENRE_MAX_AGE_MS;
+    const stale = !urlGenre && at && Date.now() - at > FM_LINKED_GENRE_MAX_AGE_MS;
     if (!genre || !btn || stale) {
       if (!genrePickBackupEvents) setGenrePickStatus("no FM genre suggestion");
+      setFmSuggestionCta("", reason);
       return;
     }
     setGenrePickStatus(`FM suggests ${genre} (${reason}) — tap its button to inject`);
+    setFmSuggestionCta(genre, reason);
+    refreshHazamaFmLinkForPattern(genre);
     btn.classList.add("is-suggested");
     btn.setAttribute("title", "Suggested by Hazama FM");
   }

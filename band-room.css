@@ -391,6 +391,45 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   color: var(--accent-glass);
 }
 
+#br-fm-suggestion {
+  width: min(92vw, 520px);
+  margin: 2px auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--text-sub);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+#br-fm-suggestion[hidden] {
+  display: none;
+}
+
+#br-fm-suggestion-text {
+  color: rgba(223, 254, 250, 0.88);
+}
+
+#br-fm-suggestion button {
+  appearance: none;
+  border: 1px solid rgba(143, 255, 245, 0.34);
+  background: rgba(143, 255, 245, 0.08);
+  color: #dffefa;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  border-radius: 999px;
+  padding: 6px 11px;
+  cursor: pointer;
+}
+
+#br-fm-suggestion button:hover {
+  border-color: rgba(143, 255, 245, 0.72);
+  background: rgba(143, 255, 245, 0.14);
+}
+
 #br-mode label.br-radio input[type="radio"] {
   display: none;
 }

@@ -6,7 +6,7 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-70" />
+<link rel="stylesheet" href="band-room.css?v=br-71" />
 <meta name="theme-color" content="#1a0a14" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -19,7 +19,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/es6/music_rnn.js" defer></script>
 <!-- Tier1 #3: @tonejs/midi for MIDI loop import → drum-frames events conversion -->
 <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.min.js" defer></script>
-<script src="band-room.js?v=br-75" defer></script>
+<script src="band-room.js?v=br-76" defer></script>
 </head>
 
 <body data-page="band-room">
@@ -95,6 +95,12 @@
         <input type="radio" name="br-mode" value="synth" />
         <span>🎛 AI 再現</span>
       </label>
+    </section>
+
+    <section id="br-fm-suggestion" hidden aria-live="polite">
+      <span id="br-fm-suggestion-text">FM suggests pattern</span>
+      <button id="br-fm-suggestion-ai" type="button">AI</button>
+      <button id="br-fm-suggestion-inject" type="button">inject</button>
     </section>
 
     <section id="br-transport">
@@ -179,7 +185,7 @@
     <details class="br-details" data-scope="stems">
       <summary>🥁🎸🎹 external stems (drums / bass / other 差し替え)</summary>
       <section id="br-external-stems" aria-label="Per-stem external upload">
-        <p class="br-help">自分のパート以外を元 stem で残しつつ、自分の楽器パートだけ録り直して差し替え。元 stem は ON のまま上から external が鳴る形なので、original stem の方を toggle off するのを忘れない。<br><strong>素材源:</strong> DAW で取り直し、<a href="index.html">Music Core Rig</a> の REC、Suno 等 AI 生成 — どれの wav/mp3 でも OK。</p>
+        <p class="br-help">自分のパート以外を元 stem で残しつつ、自分の楽器パートだけ録り直して差し替え。file を入れると external を有効化し、同じ original stem は自動で mute する。<br><strong>素材源:</strong> DAW で取り直し、<a href="index.html">Music Core Rig</a> の REC、Suno 等 AI 生成 — どれの wav/mp3 でも OK。</p>
 
         <div class="br-ext-stem" data-stem="drums">
           <strong>🥁 drums</strong>
@@ -463,7 +469,7 @@
         <button id="br-stems-pack-toggle" type="button">● 4 stems</button>
         <span id="br-stems-pack-status">idle</span>
         <div id="br-stems-pack-links"></div>
-        <p class="br-help">vocals / drums / bass / other を別々の webm として同時録音。STOP で 4 個の download リンクが出る。Ableton/Logic にトラック別ドロップで再構成可能。<br><strong>練習法:</strong> START → 一曲ループしてもらう → STOP で 4 stem 落として DAW に持ち込み、好きなパートを取り直す。</p>
+        <p class="br-help">vocals / drums / bass / other を別々の webm として同時録音。STOP で 4 個の download リンクが出る。Ableton/Logic にトラック別ドロップで再構成可能。<br><strong>練習法:</strong> START → 必要な範囲を録る → STOP で 4 stem 落として DAW に持ち込み、好きなパートを取り直す。</p>
       </section>
     </details>
 
@@ -476,7 +482,7 @@
     <footer id="br-footer">
       <span class="br-footer-group">
         <span class="br-footer-label">別 app:</span>
-        <a href="fm.html">Hazama FM</a>
+        <a id="br-open-fm" href="fm.html">Hazama FM</a>
         <span class="br-sep">·</span>
         <a href="index.html">Music Core</a>
         <span class="br-sep">·</span>

@@ -612,8 +612,16 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
   }
 }
 
-.fm-back {
+.fm-app-links {
   margin-top: clamp(18px, 3vh, 36px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.fm-app-link {
   font-size: 11px;
   letter-spacing: 0.24em;
   color: var(--text-sub);
@@ -623,7 +631,7 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
   text-transform: lowercase;
 }
 
-.fm-back:hover {
+.fm-app-link:hover {
   opacity: 0.95;
 }
 

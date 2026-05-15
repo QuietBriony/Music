@@ -1,4 +1,4 @@
-# Band Room — 総合マニュアル (v155 時点)
+# Band Room — 総合マニュアル (v156 時点)
 
 > https://quietbriony.github.io/Music/band-room.html
 >
@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 現在地 (v155、最適度: ほぼ完成)
+## 🟢 現在地 (v156、最適度: ほぼ完成)
 
 ### 機能側 (磨き完了 / 残り 5% 未満)
 
@@ -23,6 +23,7 @@
 - **歌詞**: v2.1 plain / v3 Burroughs / v4 元音節 の 3 種類が並列 (v4 は 2 曲完成 + 5 曲 template)
 - **mastering**: per-stem EQ + 2-stage comp + StereoWidener + tape sat + reverb、master preset (lo-fi / club / rock / ambient) で 7 軸 linked 切替
 - **genre pattern**: boom-bap / four-on-floor / jazz-brush / dnb / breakbeat / trap / soul-funk などを 1 click inject。Hazama FM の genre selection から suggestion 表示
+- **FM 往復**: Hazama FM の `band room →` は query で pattern suggestion を渡し、Band Room の Hazama FM link は近い genre query へ戻る
 - **歌詞 sync**: section transition で自動ハイライト + smooth scroll
 - **integrity docs**: 全 doc が CROSS-APP-INTEGRITY hub から辿れる、5 doc 全部 v115 整合済
 
@@ -72,7 +73,7 @@
 
 ---
 
-## 画面構成 (v155)
+## 画面構成 (v156)
 
 ```
 ┌─────────────────────────────────┐
@@ -178,7 +179,7 @@
 ### 状態保存
 
 - 全 slider, toggle, mode, kit, profile, voice overrides, chord instrument が **localStorage に自動保存** (v78 + v99 + v101)
-- reload しても次回同じ状態から再開
+- reload 後の曲は 01 `TABASCO` から開始。音量 / mixer / kit などの操作 prefs は復元
 - custom kits も別キー `band-room.custom-kits.v1` で保存
 
 ---

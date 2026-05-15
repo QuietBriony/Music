@@ -37,6 +37,7 @@
 | Album transport + bridge health | ✅ 完了 | v153 | Band Room Media Session track skip、手動曲変更中 bridge 維持、FM/Core bridge fallback |
 | Browser playback loudness | ✅ 完了 | v154 | Hazama FM target OUTPUT 88、engine curve / GenreFlavor uplift |
 | Band Room → drum-floor handoff | ✅ 完了 | v155 | 現曲 / BPM / section / drum frame を metadata-only SYNC で渡す |
+| FM ↔ Band Room visible handoff | ✅ 完了 | v156 | FM genre query → Band Room pattern suggestion、Band Room pattern → FM genre query |
 
 この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
 完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。

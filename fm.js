@@ -886,9 +886,25 @@
     return map[name] || "";
   }
 
-  function publishBandRoomGenreLink(name) {
+  function bandRoomHrefForGenre(name, slug = bandRoomGenreForFmGenre(name)) {
+    const params = new URLSearchParams();
+    params.set("from", "fm");
+    if (name && GENRE_PROFILES[name]) params.set("g", name);
+    if (slug) params.set("pattern", slug);
+    return `band-room.html?${params.toString()}`;
+  }
+
+  function refreshBandRoomLinkHref(name = getCurrentGenre(), slug = bandRoomGenreForFmGenre(name)) {
+    const link = $("fm-band-room-link");
+    if (!link) return;
+    link.href = bandRoomHrefForGenre(name, slug);
+    link.setAttribute("aria-label", slug ? `Open Band Room with ${slug} pattern suggestion` : "Open Band Room");
+  }
+
+  function publishBandRoomGenreLink(name, options = {}) {
     const slug = bandRoomGenreForFmGenre(name);
-    if (slug === lastBandRoomGenreLink) return;
+    refreshBandRoomLinkHref(name, slug);
+    if (slug === lastBandRoomGenreLink && !options.force) return;
     lastBandRoomGenreLink = slug;
     try {
       if (slug) {
@@ -1482,6 +1498,14 @@
     });
   }
 
+  function bindBandRoomLink() {
+    const link = $("fm-band-room-link");
+    if (!link) return;
+    link.addEventListener("pointerenter", () => publishBandRoomGenreLink(getCurrentGenre(), { force: false }));
+    link.addEventListener("focus", () => publishBandRoomGenreLink(getCurrentGenre(), { force: false }));
+    link.addEventListener("click", () => publishBandRoomGenreLink(getCurrentGenre(), { force: true }));
+  }
+
   // ---- fm-75: 40 Hz focus mode --------------------------------
 
   function readFocusEngineState(detail = null) {
@@ -1894,6 +1918,7 @@
     bindGenrePill();
     bindDjSetButtons();
     bindShuffleAudition();
+    bindBandRoomLink();
     bindFocusModeButton();
     bindAiFillButton();
     bindReviewSync();
@@ -1958,6 +1983,8 @@
         clearResumeHint();
       }
     } catch (e) { /* URL parse fail — non-fatal */ }
+
+    refreshBandRoomLinkHref(getCurrentGenre());
   }
 
   if (document.readyState === "loading") {

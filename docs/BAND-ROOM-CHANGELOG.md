@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v155 compact)
+# Band Room — Changelog (v65 → v156 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,17 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v156 compact — visible FM / Band Room handoff
+
+- `fm.html` / `fm.js fm-61` / `fm.css fm-48`: Hazama FM に `band room →`
+  導線を追加し、現在の FM genre を `band-room.html?from=fm&g=...&pattern=...`
+  に反映。クリック時は既存 localStorage suggestion も更新する。
+- `band-room.html` / `band-room.js br-76` / `band-room.css br-71`: FM deep link
+  の `pattern` query を localStorage suggestion より優先して読み、stems mode
+  初期表示でも小さな `FM suggests ...` CTA を出す。`inject` はユーザー操作時のみ。
+- Band Room footer の Hazama FM link も、inject 済み pattern から近い FM genre
+  (`lofi` / `jazz` / `techno` / `funk`) へ戻れる query link に更新。
 
 ## v155 compact — Band Room to Drum Floor handoff
 

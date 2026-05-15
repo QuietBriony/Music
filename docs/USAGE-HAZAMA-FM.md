@@ -172,6 +172,10 @@ iPhone をロック中・コントロールセンター・bluetooth ヘッドフ
 ## 細かく触りたい時 (full mixer)
 
 画面下部の `full mixer →` リンクから **Music Core Rig** に遷移。
+
+`band room →` は現在の genre を Band Room の pattern suggestion として渡します。
+例: `lofi` は `boom-bap`、`jazz` は `jazz-brush`、`techno` は
+`four-on-floor`。Band Room 側で `inject` を押すまで pattern は差し替わりません。
 9 フェーダー全部を直接いじって音を作れます。
 詳しくは [`USAGE-MUSIC-CORE-RIG.md`](USAGE-MUSIC-CORE-RIG.md) を参照.
 
