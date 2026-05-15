@@ -136,6 +136,7 @@
   let genreMixTimer = null;
   let genreMixReturnTimer = null;
   let genreMixSeq = 0;
+  let lastBandRoomGenreLink = null;
   let shuffleAuditionEnabled = false;
   let shuffleAuditionTimer = null;
   let lastShuffleGenre = "";
@@ -792,7 +793,39 @@
     if (options.apply && (started || starting)) {
       applyGenreProfile(name, { reason: options.reason || "profile" });
     }
+    publishBandRoomGenreLink(name);
     return true;
+  }
+
+  function bandRoomGenreForFmGenre(name) {
+    const map = {
+      lofi: "boom-bap",
+      jazz: "jazz-brush",
+      techno: "four-on-floor",
+      funk: "soul-funk",
+      dnb: "dnb",
+      breakbeat: "breakbeat",
+      trance: "dnb",
+      trap: "trap"
+    };
+    return map[name] || "";
+  }
+
+  function publishBandRoomGenreLink(name) {
+    const slug = bandRoomGenreForFmGenre(name);
+    if (slug === lastBandRoomGenreLink) return;
+    lastBandRoomGenreLink = slug;
+    try {
+      if (slug) {
+        localStorage.setItem("band-room.fm-linked-genre", slug);
+        localStorage.setItem("band-room.fm-linked-genre-at", String(Date.now()));
+      } else {
+        localStorage.removeItem("band-room.fm-linked-genre");
+        localStorage.removeItem("band-room.fm-linked-genre-at");
+      }
+    } catch (e) {
+      // localStorage can be unavailable in private mode.
+    }
   }
 
   function setShuffleStatus(text) {

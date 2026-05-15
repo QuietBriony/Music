@@ -637,6 +637,12 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   border-color: var(--accent);
 }
 
+.br-genre-pick-btn.is-suggested {
+  background: rgba(143, 255, 245, 0.12);
+  border-color: rgba(143, 255, 245, 0.72);
+  color: #dffefa;
+}
+
 .br-genre-pick-btn:active { transform: scale(0.98); }
 
 #br-genre-pick-status {

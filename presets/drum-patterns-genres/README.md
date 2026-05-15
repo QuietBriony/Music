@@ -5,7 +5,7 @@ Each file follows the existing `presets/drum-frames-*.json` schema
 (top-level `version / format / genre / frames[]`, plus a `structure[]`
 array describing intro → main → climax section ordering).
 
-`session_signature` on every file: `"Tier 1 #2 standard pattern, hand-authored, v135"` for the original 4 files, `"... v139"` for the cross-genre expansion (afro-cuban, reggaeton, breakbeat).
+`session_signature` on every file: `"Tier 1 #2 standard pattern, hand-authored, v135"` for the original 4 files, `"... v139"` for the cross-genre expansion (afro-cuban, reggaeton, breakbeat), and `"... v146"` for trap / soul-funk.
 
 ## Files
 
@@ -18,6 +18,8 @@ array describing intro → main → climax section ordering).
 | `afro-cuban.json`     | 100 | 3 (intro / verse / chorus_climax) | Tumbao kick (1 + and-of-2 + and-of-4), 3-2 son clave on ghost taps, light rim-ghost backbeat 2/4, shaker on every 16th. Wide micro-timing (−8 to +14 ms) for syncopated tumbao feel. swing 0.0. |
 | `reggaeton.json`      |  95 | 3 (verse / drop / break)          | Classic dembow: kick on 1 + and-of-2 + and-of-3, snare boom-ch-boom-chick (1 sub 2 + 3 + 3 sub 2), 8th-note hat. Crash on drop, ghost-snare break with fill turnaround. swing 0.0. |
 | `breakbeat.json`      | 140 | 3 (intro / verse / break_down)    | Amen-style chopped break: kick on 1 + and-of-3, snare on 2/4 with 2-3 ghost snares per bar (vel 0.3-0.4), 16th hat with velocity variation. break_down frame ends with tom roll fill into one. swing 0.06. |
+| `trap.json`           | 140 | 3 (intro / verse / drop)          | 808 sub kick pattern, half-time snare on beat 3, 16th-note hats with roll pickups and turnaround accents. swing 0.0. |
+| `soul-funk.json`      | 100 | 3 (intro / groove / break)        | James Brown-style pocket: kick on 1 + and-of-2, snare 2/4, busy 16th hats with soft ghost strokes and syncopated snare ghost notes. swing 0.04. |
 
 ## Schema reference
 
@@ -72,7 +74,7 @@ To wire these genre patterns in, two natural routes:
    reads `frames[]`.
 
 2. **New "Genre Pattern" menu.** Add a sibling menu next to KIT_OPTIONS
-   (e.g. `PATTERN_OPTIONS`) listing the 4 genre files. On change, set
+   (e.g. `PATTERN_OPTIONS`) listing the genre files. On change, set
    `state.songData.frames` from the chosen file's `frames[]` and rebuild
    the section mapping from `structure[]` (each section's `frame_id`
    resolves into the existing `state.songData.frames.find(f => f.id ===

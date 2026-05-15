@@ -4507,11 +4507,15 @@
 
   // ---- v136 (+v139 expansion): Genre pattern picker ----------
   // presets/drum-patterns-genres/{boom-bap,four-on-floor,jazz-brush,dnb,
-  //                               afro-cuban,reggaeton,breakbeat}.json
+  //                               afro-cuban,reggaeton,breakbeat,trap,
+  //                               soul-funk}.json
   // を 1 クリックで現 frame に inject。AI fill / MIDI import と同じ backup &
   // reset 機構を流用。
   let genrePickBackupEvents = null;
   let genrePickTargetFrameId = null;
+  const FM_LINKED_GENRE_KEY = "band-room.fm-linked-genre";
+  const FM_LINKED_GENRE_AT_KEY = "band-room.fm-linked-genre-at";
+  const FM_LINKED_GENRE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
   function setGenrePickStatus(s) {
     const el = $("br-genre-pick-status");
@@ -4550,6 +4554,35 @@
       console.warn("[Band Room] genre pattern load failed:", e);
       setGenrePickStatus(`${genre} load failed: ${e.message || e}`);
     }
+  }
+
+  function linkedGenreButton(genre) {
+    return document.querySelector(`.br-genre-pick-btn[data-genre="${genre}"]`);
+  }
+
+  function clearFmLinkedGenreSuggestion() {
+    document.querySelectorAll(".br-genre-pick-btn.is-suggested").forEach((btn) => {
+      btn.classList.remove("is-suggested");
+      if (btn.getAttribute("title") === "Suggested by Hazama FM") btn.removeAttribute("title");
+    });
+  }
+
+  function maybeShowFmLinkedGenre(reason = "boot") {
+    let genre = "";
+    let at = 0;
+    try {
+      genre = localStorage.getItem(FM_LINKED_GENRE_KEY) || "";
+      at = Number(localStorage.getItem(FM_LINKED_GENRE_AT_KEY) || 0);
+    } catch (e) {
+      return;
+    }
+    clearFmLinkedGenreSuggestion();
+    const btn = linkedGenreButton(genre);
+    if (!genre || !btn) return;
+    if (at && Date.now() - at > FM_LINKED_GENRE_MAX_AGE_MS) return;
+    setGenrePickStatus(`FM suggests ${genre} (${reason}) — tap its button to inject`);
+    btn.classList.add("is-suggested");
+    btn.setAttribute("title", "Suggested by Hazama FM");
   }
 
   function genrePickReset() {
@@ -4695,6 +4728,12 @@
     // Pre-load the default song meta (doesn't start audio)
     await loadSong(state.currentSongId);
     renderPhraseTrigger();
+    maybeShowFmLinkedGenre("fm-link");
+    window.addEventListener("storage", (event) => {
+      if (event.key === FM_LINKED_GENRE_KEY || event.key === FM_LINKED_GENRE_AT_KEY) {
+        maybeShowFmLinkedGenre("fm-live");
+      }
+    });
 
     // Apply slider/toggle/mode prefs AFTER UI is bound + selectors built
     applyPrefs(prefs);

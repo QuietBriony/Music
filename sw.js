@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v145";
+const VERSION = "hazama-fm-v146";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -17,8 +17,8 @@ const PRECACHE_URLS = [
   "fm.html",
   "index.html",
   "band-room.html",
-  "band-room.css?v=br-66",
-  "band-room.js?v=br-68",
+  "band-room.css?v=br-67",
+  "band-room.js?v=br-69",
   "presets/drum-frames-tabasco-human-fly.json",
   "presets/drum-frames-tabasco-tabasco.json",
   "presets/drum-frames-tabasco-hey.json",
@@ -51,7 +51,7 @@ const PRECACHE_URLS = [
   "docs/USER-NOTES-MEMO.md",
   "docs/CODEX-HANDOFF.md",
   "fm.css?v=fm-46",
-  "fm.js?v=fm-55",
+  "fm.js?v=fm-56",
   "style.css?v=fm-27",
   "engine.js?v=fm-74",
   "docs/music-stack-human-review-queue.html",
@@ -75,6 +75,8 @@ const PRECACHE_URLS = [
   "presets/drum-patterns-genres/afro-cuban.json",
   "presets/drum-patterns-genres/reggaeton.json",
   "presets/drum-patterns-genres/breakbeat.json",
+  "presets/drum-patterns-genres/trap.json",
+  "presets/drum-patterns-genres/soul-funk.json",
   "presets/drum-patterns-genres/README.md",
   "references/hazama-fm-pill-refs.json",
   "references/apple-music-refs.json",

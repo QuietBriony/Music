@@ -77,3 +77,4 @@
 - v141 (2026-05-15): メモファイル新設、master volume bar 追加、Codex 引き継ぎドキュメント整備
 - v144 (2026-05-15): Media Session seekbackward/seekforward をアプリ内音量 ±5 に割当 (Band Room / Music Core Rig / Hazama FM)
 - v145 (2026-05-15): Hazama FM の background audio bridge を Band Room に移植し、車載/BT のメディア音量認識に寄せる
+- v146 (2026-05-15): trap / soul-funk genre patterns 追加、Hazama FM genre から Band Room pattern suggestion へ連携
