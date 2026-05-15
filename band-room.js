@@ -2788,6 +2788,64 @@
       });
     }
 
+    // v141: master volume bar (car / Bluetooth touch-friendly control)
+    // 0-100 linear → masterGain.gain 0 → 1.4. Multiplied with br-loudness for
+    // independent fine-tune. Persisted via PREFS_KEY so it survives reload
+    // (important for in-car use where the page may unload).
+    const MASTER_VOL_KEY = "band-room.masterVol";
+    const masterVolEl = $("br-master-vol");
+    const masterVolReadout = $("br-master-vol-readout");
+    const masterVolDown = $("br-master-vol-down");
+    const masterVolUp = $("br-master-vol-up");
+    let masterVolBase = 0.9; // matches initial Tone.Gain(0.9) in ensureMaster()
+
+    function applyMasterVol(value) {
+      const v = Math.max(0, Math.min(100, Number(value) || 0));
+      if (masterVolEl) masterVolEl.value = String(v);
+      if (masterVolReadout) masterVolReadout.textContent = String(v);
+      // 0 → 0, 80 → 0.9 (default), 100 → 1.4
+      // Curve: v/80 * base for 0-80 range, then linear to 1.4 at 100
+      let gain;
+      if (v <= 80) {
+        gain = (v / 80) * masterVolBase;
+      } else {
+        gain = masterVolBase + ((v - 80) / 20) * (1.4 - masterVolBase);
+      }
+      ensureMaster();
+      if (masterGain) {
+        try { masterGain.gain.rampTo(gain, 0.08); } catch (e) {}
+      }
+      try { localStorage.setItem(MASTER_VOL_KEY, String(v)); } catch (e) {}
+    }
+
+    // Restore persisted volume on init (default 80)
+    let savedVol = 80;
+    try {
+      const raw = localStorage.getItem(MASTER_VOL_KEY);
+      if (raw !== null) savedVol = Math.max(0, Math.min(100, Number(raw) || 80));
+    } catch (e) {}
+    if (masterVolEl) {
+      masterVolEl.value = String(savedVol);
+      masterVolEl.addEventListener("input", (e) => applyMasterVol(e.target.value));
+    }
+    if (masterVolReadout) masterVolReadout.textContent = String(savedVol);
+    if (masterVolDown) {
+      masterVolDown.addEventListener("click", () => {
+        const cur = Number(masterVolEl?.value || savedVol);
+        applyMasterVol(Math.max(0, cur - 5));
+      });
+    }
+    if (masterVolUp) {
+      masterVolUp.addEventListener("click", () => {
+        const cur = Number(masterVolEl?.value || savedVol);
+        applyMasterVol(Math.min(100, cur + 5));
+      });
+    }
+    // Apply on first audio start (masterGain doesn't exist yet at this point)
+    // ensureMaster() creates it, so we re-apply after ensureMaster runs the first time.
+    // The applyMasterVol call below handles cases where masterGain is already ready.
+    applyMasterVol(savedVol);
+
     // External vocal upload + toggle + volume
     const extFile = $("br-external-vocal-file");
     const acceptVocalFile = async (f) => {
