@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v165 compact)
+# Band Room — Changelog (v65 → v166 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,20 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v166 compact — source-derived AI part agents
+
+- `band-room.js br-83`: AI 再現の bass / guitar / vocal guide / chords を
+  source-derived part agent 化。原曲 drum-frame の kick / snare / hat /
+  ghost / crash、section role、chord progression を読んで各パートが別々に
+  自律 pattern を組む。
+- bass は kick pattern に同期し、ghost / recap / comp で pickup を足す。
+  guitar は source accent と hat density で palm mute / 16th drive / bridge
+  stab を切り替える。vocal guide と chords は phrase end / ghost answer /
+  section pressure に応答する。
+- AI 再現の初期音色は `bass-electric` / `guitar-electric` sampler を優先し、
+  online catalog が使えない場合は既存 synth fallback に戻る。
+- `sw.js hazama-fm-v166`: Band Room の新 script marker を precache。
 
 ## v165 compact — ordinary song timeline / seek
 

@@ -3,7 +3,7 @@
 Run from repo root:
     python -X utf8 scripts/audit.py            # 通常出力
     python -X utf8 scripts/audit.py --quiet    # BAD のときだけ出力 (CI 向き)
-    python -X utf8 scripts/audit.py --expected-version hazama-fm-v165
+    python -X utf8 scripts/audit.py --expected-version hazama-fm-v166
 
 Both modes exit 0 if 0 BAD, exit 1 otherwise.
 

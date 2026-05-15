@@ -110,6 +110,14 @@ assert.match(source, /function playbackDurationSec\(\)/, "Band Room should compu
 assert.match(source, /function seekToPlaybackSecond\(/, "Band Room should seek to arbitrary song positions");
 assert.match(source, /function startTransportProgress\(/, "Band Room should keep elapsed time moving while playback runs");
 assert.match(source, /pendingSeekOffsetSec/, "Band Room should keep a stopped seek position for the next START");
+assert.match(source, /function makePartAgentContext\(/, "Band Room should build source-derived AI part agent context");
+assert.match(source, /function bassAgentPlan\(/, "Band Room should give bass its own source-derived agent");
+assert.match(source, /function guitarAgentPlan\(/, "Band Room should give guitar its own source-derived agent");
+assert.match(source, /function voiceAgentPlan\(/, "Band Room should give vocal guide its own source-derived agent");
+assert.match(source, /function chordAgentPlan\(/, "Band Room should give chords their own source-derived agent");
+assert.match(source, /sourceAccentSteps\(ctx, \["kick", "snare", "crash", "ghost"\]/, "Guitar agent should react to original drum-frame accents");
+assert.match(source, /bassInstrument:\s*"bass-electric"/, "AI bass default tone should use electric bass sampler when available");
+assert.match(source, /guitarInstrument:\s*"guitar-electric"/, "AI guitar default tone should use electric guitar sampler when available");
 assert.match(
   source,
   /stopPlayback\(\{\s*keepBackgroundBridge:\s*true,\s*updateMedia:\s*false\s*\}\)/,

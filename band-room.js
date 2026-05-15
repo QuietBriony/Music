@@ -52,8 +52,8 @@
     // 1 voice 単位で別 kit からピックできる。null = base kit を使う、文字列 = その kit id
     voiceOverrides: { kick: null, snare: null, hat: null, ghost: null, fill: null, crash: null },
     chordInstrument: null,  // v101: catalog instrument id for chord (null = synth)
-    bassInstrument: null,   // v110: catalog instrument id for bass (null = synth)
-    guitarInstrument: null, // v111: catalog instrument id for guitar (null = synth)
+    bassInstrument: "bass-electric",   // v166: default AI agent tone follows original-band electric bass
+    guitarInstrument: "guitar-electric", // v166: default AI agent tone follows original-band electric guitar
     voiceInstrument: null,  // v111: catalog instrument id for vocal/melody lead (null = synth)
     loopA: null,            // v80: A-B loop range (null = no loop)
     loopB: null
@@ -2855,6 +2855,243 @@
     return null;
   }
 
+  // ---- Source-derived AI part agents ---------------------------
+  // v166: Each synth part gets its own tiny "agent" that reads the current
+  // song's extracted drum-frame events plus chord/section state. This keeps
+  // AI 再現 tied to the original song instead of free-running generic loops.
+
+  function eventStep16(evt) {
+    const beat = Math.max(0, Math.min(3, Math.floor(Number(evt?.beat) || 0)));
+    const sub = Math.max(0, Math.min(3, Math.floor(Number(evt?.sub) || 0)));
+    return beat * 4 + sub;
+  }
+
+  function eventVelocity(evt, fallback = 0.5) {
+    const value = Number(evt?.velocity);
+    return clamp(Number.isFinite(value) ? value : fallback, 0.04, 1);
+  }
+
+  function roleForPartAgent(sec, frame) {
+    const raw = String(frame?.session_role || sec?.section || "").toLowerCase();
+    if (raw.includes("intro")) return "intro";
+    if (raw.includes("outro") || raw.includes("end")) return "outro";
+    if (raw.includes("break") || raw.includes("bridge")) return "break";
+    if (raw.includes("comp") || raw.includes("pre")) return "comp";
+    if (raw.includes("chorus") || raw.includes("chant") || raw.includes("recap") || raw.includes("hook")) return "recap";
+    return "verse";
+  }
+
+  function sourceAccentSteps(ctx, instruments, minVelocity = 0.28) {
+    const wanted = new Set(instruments);
+    const byStep = new Map();
+    ctx.events.forEach((evt) => {
+      if (!wanted.has(evt.instrument)) return;
+      const vel = eventVelocity(evt);
+      if (vel < minVelocity && evt.instrument !== "kick") return;
+      const step = eventStep16(evt);
+      const current = byStep.get(step);
+      const microMs = Number.isFinite(Number(evt.microMs)) ? Number(evt.microMs) : 0;
+      if (!current || vel > current.vel) {
+        byStep.set(step, { step, vel, microMs, role: String(evt.role || ""), instrument: evt.instrument });
+      }
+    });
+    return [...byStep.values()].sort((a, b) => a.step - b.step);
+  }
+
+  function dedupeAgentSteps(steps, limit = 12) {
+    const byStep = new Map();
+    steps.forEach((step) => {
+      if (!step) return;
+      const key = Math.max(0, Math.min(15, Math.floor(Number(step.sub) || 0)));
+      const current = byStep.get(key);
+      if (!current || (Number(step.vel) || 0) > (Number(current.vel) || 0)) {
+        byStep.set(key, Object.assign({}, step, { sub: key }));
+      }
+    });
+    return [...byStep.values()].sort((a, b) => a.sub - b.sub).slice(0, limit);
+  }
+
+  function makePartAgentContext(sec, frame, chord, beatTime, subTime) {
+    const events = Array.isArray(frame?.events) ? frame.events : [];
+    const metrics = drumFloorFrameMetrics(frame);
+    const role = roleForPartAgent(sec, frame);
+    const barInSection = Math.max(0, state.barCount - state.sectionBarStart);
+    const barsInSection = Math.max(1, Number(sec?.bars) || 1);
+    const isPhraseEnd = ((barInSection + 1) % 4 === 0) || barInSection >= barsInSection - 1;
+    const kick = sourceAccentSteps({ events }, ["kick"], 0.08);
+    const snare = sourceAccentSteps({ events }, ["snare"], 0.18);
+    const hat = sourceAccentSteps({ events }, ["hat"], 0.16);
+    const ghost = sourceAccentSteps({ events }, ["ghost"], 0.22);
+    const crash = sourceAccentSteps({ events }, ["crash"], 0.12);
+    return {
+      sec, frame, chord, events, metrics, role, barInSection, barsInSection,
+      isPhraseEnd, beatTime, subTime, kick, snare, hat, ghost, crash,
+      pressure: metrics.pressure,
+      density: metrics.density
+    };
+  }
+
+  function bassAgentPlan(ctx) {
+    if (!ctx.chord) return [];
+    const rootSemi = chordToSemi(ctx.chord);
+    const rootNote = chordRoot(ctx.chord);
+    if (rootSemi == null) return [{ sub: 0, note: rootNote, dur: "1n", vel: 0.36 }];
+    const isMinor = /m\b|min\b/.test(ctx.chord) && !/maj/.test(ctx.chord);
+    const root = rootSemi;
+    const fifth = rootSemi + 7;
+    const octave = rootSemi + 12;
+    const third = rootSemi + (isMinor ? 3 : 4);
+    const seventh = rootSemi + (isMinor ? 10 : 11);
+    const source = ctx.kick.length ? ctx.kick : [
+      { step: 0, vel: 0.58, microMs: 0 },
+      { step: ctx.role === "break" ? 8 : 6, vel: 0.42, microMs: 0 }
+    ];
+    const steps = source.map((hit, idx) => {
+      const tone = hit.step >= 12 ? seventh : hit.step >= 8 ? octave : hit.step >= 4 ? fifth : root;
+      return {
+        sub: hit.step,
+        note: semiToNote(tone),
+        dur: ctx.role === "recap" && ctx.density > 0.5 ? "16n" : "8n",
+        vel: clamp(0.30 + hit.vel * 0.58 + (idx === 0 ? 0.08 : 0), 0.30, 0.82),
+        microMs: hit.microMs || 0
+      };
+    });
+    if ((ctx.role === "recap" || ctx.role === "comp") && ctx.pressure > 0.52) {
+      steps.push({ sub: 14, note: semiToNote(third + 12), dur: "16n", vel: 0.42, microMs: -8 });
+    }
+    if (ctx.role === "verse" && ctx.ghost.some((hit) => hit.step >= 10)) {
+      steps.push({ sub: 11, note: semiToNote(fifth), dur: "16n", vel: 0.36, microMs: -6 });
+    }
+    return dedupeAgentSteps(steps, ctx.role === "recap" ? 10 : 7);
+  }
+
+  function guitarAgentPlan(ctx) {
+    if (!ctx.chord) return [];
+    if (ctx.role === "intro" && ctx.crash.length === 0 && ctx.pressure < 0.55) return [];
+    const accentSteps = sourceAccentSteps(ctx, ["kick", "snare", "crash", "ghost"], 0.24);
+    const accentMap = new Map(accentSteps.map((hit) => [hit.step, hit]));
+    const steps = [];
+    if (ctx.role === "outro") {
+      steps.push({ sub: 0, dur: "1n", vel: 0.82 });
+    } else if (ctx.role === "break") {
+      [0, 8].forEach((sub) => steps.push({ sub, dur: "4n", vel: 0.38 + ctx.pressure * 0.20 }));
+    } else if (ctx.role === "recap" || ctx.pressure > 0.66) {
+      for (let sub = 0; sub < 16; sub += 1) {
+        const sourceHit = accentMap.get(sub);
+        const hatHit = ctx.hat.find((hit) => hit.step === sub);
+        const isGridAccent = sub % 4 === 0;
+        steps.push({
+          sub,
+          dur: "16n",
+          vel: clamp((sourceHit ? 0.60 + sourceHit.vel * 0.28 : hatHit ? 0.48 + hatHit.vel * 0.18 : 0.42) + (isGridAccent ? 0.10 : 0), 0.34, 0.86),
+          microMs: sourceHit?.microMs || hatHit?.microMs || 0
+        });
+      }
+    } else {
+      const grid = ctx.role === "comp" ? [0, 2, 4, 6, 8, 10, 12, 14] : [0, 4, 6, 8, 12, 14];
+      grid.forEach((sub) => {
+        const sourceHit = accentMap.get(sub) || ctx.kick.find((hit) => Math.abs(hit.step - sub) <= 1);
+        steps.push({
+          sub,
+          dur: "8n",
+          vel: clamp((sourceHit ? 0.42 + sourceHit.vel * 0.25 : 0.36) + (sub % 8 === 0 ? 0.08 : 0), 0.30, 0.68),
+          microMs: sourceHit?.microMs || 0
+        });
+      });
+    }
+    return dedupeAgentSteps(steps, ctx.role === "recap" ? 16 : 8);
+  }
+
+  function humanFlyVoicePlan(ctx) {
+    const phraseBar = ctx.barInSection % 4;
+    return (HUMAN_FLY_VOCAL_MELODY.chorus || [])[phraseBar] || [];
+  }
+
+  function voiceAgentPlan(ctx) {
+    if (!ctx.chord) return [];
+    if (state.currentSongId === "human-fly" && ctx.role === "recap") {
+      return humanFlyVoicePlan(ctx).map((step) => ({
+        sub: step.sub,
+        note: step.note,
+        durSteps: step.dur,
+        vel: 0.56
+      }));
+    }
+    if (ctx.role === "intro" || ctx.role === "outro") return [];
+    const notes = chordToNotes(ctx.chord, 4);
+    if (notes.length < 3) return [];
+    const accents = sourceAccentSteps(ctx, ["snare", "ghost", "crash"], 0.30)
+      .filter((hit) => hit.step === 0 || hit.step >= 3);
+    if (ctx.isPhraseEnd) {
+      const hold = ctx.role === "break" ? notes[1] : notes[0];
+      return [{ sub: 0, note: hold, durSteps: 12, vel: ctx.role === "recap" ? 0.62 : 0.48 }];
+    }
+    const contour = ctx.role === "recap"
+      ? [notes[1], notes[2], notes[0], notes[2]]
+      : ctx.role === "comp"
+        ? [notes[0], notes[1], notes[2], notes[1]]
+        : [notes[0], notes[1], notes[2], notes[1]];
+    const source = accents.length ? accents.slice(0, 4) : [0, 4, 8, 12].map((step) => ({ step, vel: 0.42, microMs: 0 }));
+    return dedupeAgentSteps(source.map((hit, idx) => ({
+      sub: hit.step,
+      note: contour[idx % contour.length],
+      durSteps: ctx.role === "recap" ? 2 : 3,
+      vel: clamp((ctx.role === "recap" ? 0.42 : 0.34) + hit.vel * 0.28, 0.34, 0.66),
+      microMs: hit.microMs || 0
+    })), 4);
+  }
+
+  function chordAgentPlan(ctx) {
+    if (!ctx.chord) return [];
+    const isJazzy = state.kitProfile === "lofi-nujabes" ||
+                    state.chordInstrument === "salamander-piano";
+    const ext = /m\b|min\b/.test(ctx.chord) ? "m7" : "maj7";
+    const voicingChord = isJazzy ? ctx.chord.replace(/(m|maj7|7|m7)?$/, ext) : ctx.chord;
+    const notes = chordToNotes(voicingChord, isJazzy ? 4 : 4);
+    if (!notes.length) return [];
+    const steps = [{ sub: 0, notes, dur: ctx.role === "break" ? "4n" : isJazzy ? "2n" : "2n", vel: isJazzy ? 0.28 : 0.34 }];
+    if (ctx.role === "break") {
+      steps.push({ sub: 8, notes, dur: "4n", vel: 0.22 });
+    } else if (isJazzy || ctx.ghost.length > 1 || ctx.role === "comp") {
+      const ghostAnswer = ctx.ghost.find((hit) => hit.step >= 8)?.step;
+      steps.push({ sub: ghostAnswer != null ? ghostAnswer : 10, notes, dur: "4n", vel: clamp(0.18 + ctx.pressure * 0.12, 0.18, 0.32) });
+    } else if (ctx.role === "recap" && ctx.pressure > 0.58) {
+      steps.push({ sub: 8, notes, dur: "4n", vel: 0.24 });
+    }
+    return dedupeAgentSteps(steps, 3);
+  }
+
+  function triggerBassAgent(ctx, time) {
+    bassAgentPlan(ctx).forEach((step) => {
+      const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
+      try { synthBass.triggerAttackRelease(step.note, step.dur || "8n", t, step.vel); } catch (e) {}
+    });
+  }
+
+  function triggerGuitarAgent(ctx, time) {
+    const notes = powerChordNotes(ctx.chord, 3);
+    if (!notes.length) return;
+    guitarAgentPlan(ctx).forEach((step) => {
+      const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
+      try { guitarSynth.triggerAttackRelease(notes, step.dur || "16n", t, step.vel); } catch (e) {}
+    });
+  }
+
+  function triggerVoiceAgent(ctx, time) {
+    voiceAgentPlan(ctx).forEach((step) => {
+      const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
+      const durSec = Math.max(1, Number(step.durSteps) || 2) * ctx.subTime * 0.92;
+      try { voiceSynth.triggerAttackRelease(step.note, durSec, t, step.vel); } catch (e) {}
+    });
+  }
+
+  function triggerChordAgent(ctx, time) {
+    chordAgentPlan(ctx).forEach((step) => {
+      const t = time + step.sub * ctx.subTime;
+      try { chordSynth.triggerAttackRelease(step.notes, step.dur || "4n", t + 0.005, step.vel); } catch (e) {}
+    });
+  }
+
   // ---- Scheduler ----------------------------------------------
 
   function scheduleBar() {
@@ -3037,38 +3274,10 @@
         }
       }
 
-      // Bass — v112: pattern varies by master preset + profile.
-      //   default / rock / club  → 8th-note root pulse (existing rock feel)
-      //   lo-fi / ambient (Salamander piano bass) → walking pattern: root,
-      //     5th, octave, 5th — one note per beat, smoother for jazz/lofi
       const chord = updateChordDisplay();
+      const partAgentCtx = makePartAgentContext(sec, frame, chord, beatTime, subTime);
       if (isSynthMode && $("br-toggle-bass").checked && synthBass && chord) {
-        const isJazzy = state.kitProfile === "lofi-nujabes" || state.bassInstrument === "salamander-bass";
-        const rootNote = chordRoot(chord);
-        if (isJazzy) {
-          // Walking bass: root, 5th, root+oct, 5th — one note per beat
-          const rootSemi = chordToSemi(chord);
-          const notes = rootSemi != null ? [
-            semiToNote(rootSemi),                    // beat 0: root
-            semiToNote(rootSemi + 7),                // beat 1: 5th up
-            semiToNote(rootSemi + 12),               // beat 2: octave
-            semiToNote(rootSemi + 7)                 // beat 3: 5th
-          ] : [rootNote, rootNote, rootNote, rootNote];
-          for (let b = 0; b < 4; b++) {
-            const t = time + b * beatTime;
-            const accent = (b === 0 || b === 2);
-            try { synthBass.triggerAttackRelease(notes[b], "4n", t, accent ? 0.62 : 0.50); } catch (e) {}
-          }
-        } else {
-          // Rock 8th-note pulse
-          for (let b = 0; b < 4; b++) {
-            for (let s = 0; s < 2; s++) {
-              const t = time + b * beatTime + s * (beatTime / 2);
-              const accent = (s === 0);
-              synthBass.triggerAttackRelease(rootNote, "8n", t, accent ? 0.7 : 0.45);
-            }
-          }
-        }
+        triggerBassAgent(partAgentCtx, time);
       } else if (isSynthMode && $("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
         // v108: chord null fallback — section has no chord progression
         // (Human Fly intro/outro etc). Anchor bass to the song's key
@@ -3080,132 +3289,16 @@
         }
       }
 
-      // Guitar — section-aware power-chord picking (UNRIPE drive)
-      // verse: palm-mute 8th low velocity / prechorus: open 8th / chorus:
-      // 16th furious / bridge: sparse stab / outro: 1 hit / intro: silent
       if (isSynthMode && $("br-toggle-guitar").checked && guitarSynth && chord && frame) {
-        const sectionName = (sec && sec.section) || "";
-        const sessionRole = frame.session_role || "";
-        let pattern = null;       // array of { sub, vel } where sub is 0..15 (16th-grid position in bar)
-        let octave = 3;
-        let dur = "16n";
-        if (sessionRole === "intro") {
-          pattern = null;
-        } else if (sessionRole === "outro") {
-          pattern = [{ sub: 0, vel: 0.85 }];
-          dur = "1n";
-        } else if (sessionRole === "break") {
-          // bridge — sparse, beat 0 + 2 stabs only, low velocity
-          pattern = [{ sub: 0, vel: 0.42 }, { sub: 8, vel: 0.40 }];
-          dur = "4n";
-        } else if (sessionRole === "verse") {
-          // palm-mute 8th: 8 hits per bar at 0,2,4,...,14, velocity low
-          pattern = [];
-          for (let i = 0; i < 8; i++) pattern.push({ sub: i * 2, vel: 0.40 + (i % 2 === 0 ? 0.06 : 0) });
-          dur = "8n";
-        } else if (sessionRole === "comp") {
-          // prechorus_build: 8th opening up
-          pattern = [];
-          for (let i = 0; i < 8; i++) pattern.push({ sub: i * 2, vel: 0.55 + (i % 2 === 0 ? 0.08 : 0.02) });
-          dur = "8n";
-        } else if (sessionRole === "recap") {
-          // chorus: 16th furious power-chord drive
-          pattern = [];
-          for (let i = 0; i < 16; i++) {
-            const accent = (i % 4 === 0);
-            pattern.push({ sub: i, vel: accent ? 0.78 : 0.58 });
-          }
-          dur = "16n";
-        } else {
-          // Fallback: 8th picking
-          pattern = [];
-          for (let i = 0; i < 8; i++) pattern.push({ sub: i * 2, vel: 0.48 });
-          dur = "8n";
-        }
-        if (pattern && pattern.length) {
-          try {
-            const notes = powerChordNotes(chord, octave);
-            if (notes.length) {
-              const sub16 = subTime;
-              pattern.forEach((step) => {
-                const t = time + step.sub * sub16;
-                guitarSynth.triggerAttackRelease(notes, dur, t, step.vel);
-              });
-            }
-          } catch (e) {}
-        }
+        triggerGuitarAgent(partAgentCtx, time);
       }
 
-      // Vocal guide (melody-only, 母音 "ah" voice-box).
-      // v106: Human Fly chorus は専用 melody。他の曲 / 他 section は
-      // generic walk-up fallback (chord tones in 4-step pattern).
       if (isSynthMode && $("br-toggle-voice").checked && voiceSynth && chord && frame) {
-        const role = frame.session_role || "";
-        const isHumanFlyChorus = state.currentSongId === "human-fly" && role === "recap";
-        if (isHumanFlyChorus) {
-          // Hardcoded Human Fly melody
-          const barInSection = state.barCount - state.sectionBarStart;
-          const phraseBar = barInSection % 4;
-          const phrase = (HUMAN_FLY_VOCAL_MELODY.chorus || [])[phraseBar];
-          if (phrase) {
-            phrase.forEach((step) => {
-              const t = time + step.sub * subTime;
-              const durSec = step.dur * subTime;
-              try { voiceSynth.triggerAttackRelease(step.note, durSec * 0.95, t, 0.55); } catch (e) {}
-            });
-          }
-        } else if (role === "verse" || role === "recap" || role === "comp") {
-          // v106: Generic vocal walk — sing chord tones in 4-step pattern.
-          // Pattern: root, 3rd, 5th, 3rd → repeats each bar.
-          // Verse = softer (vel 0.45), chorus/recap = louder (vel 0.6).
-          try {
-            const notes = chordToNotes(chord, 4);
-            if (notes.length >= 3) {
-              const walk = [notes[0], notes[1], notes[2], notes[1]];
-              const baseVel = role === "recap" ? 0.60 : role === "comp" ? 0.52 : 0.45;
-              const barInSection = state.barCount - state.sectionBarStart;
-              // Every 4th bar = "ah" sustain to feel like a phrase ending
-              const isPhraseEnd = (barInSection + 1) % 4 === 0;
-              if (isPhraseEnd) {
-                // Long sustain on chord root
-                try { voiceSynth.triggerAttackRelease(notes[0], "1n", time + 0.005, baseVel); } catch (e) {}
-              } else {
-                walk.forEach((note, i) => {
-                  const t = time + i * beatTime;
-                  const v = baseVel + (i === 0 ? 0.06 : 0);
-                  try { voiceSynth.triggerAttackRelease(note, beatTime * 0.85, t, v); } catch (e) {}
-                });
-              }
-            }
-          } catch (e) {}
-        }
+        triggerVoiceAgent(partAgentCtx, time);
       }
 
-      // Chord guide — v112: jazzy voicing when piano sampler is loaded.
-      //   default / rock / club  → simple triad on downbeat
-      //   lo-fi / ambient (Salamander piano) → maj7/m7 voicing +
-      //     anticipated comping (beat 0 + beat 2.5 instead of just 0)
       if (isSynthMode && $("br-toggle-chords").checked && chordSynth && chord) {
-        try {
-          const isJazzy = state.kitProfile === "lofi-nujabes" ||
-                          state.chordInstrument === "salamander-piano";
-          if (isJazzy) {
-            // 7th extension: append maj7 (if major chord) or m7 (if minor)
-            const ext = /m\b|min\b/.test(chord) ? "m7" : "maj7";
-            const extChord = chord.replace(/(m|maj7|7|m7)?$/, ext);
-            const notes = chordToNotes(extChord, 4);
-            if (notes.length >= 3) {
-              // Beat 0 stab + beat 2.5 anticipated comp
-              chordSynth.triggerAttackRelease(notes, "2n", time + 0.005, 0.30);
-              chordSynth.triggerAttackRelease(notes, "4n", time + 2.5 * beatTime, 0.22);
-            }
-          } else {
-            const notes = chordToNotes(chord, 4);
-            if (notes.length) {
-              chordSynth.triggerAttackRelease(notes, "2n", time + 0.005, 0.34);
-            }
-          }
-        } catch (e) {}
+        triggerChordAgent(partAgentCtx, time);
       }
 
       updateSectionDisplay();
@@ -4937,39 +5030,41 @@
       Object.assign(state.voiceOverrides, prefs.voiceOverrides);
       renderVoiceOverridesGrid();
     }
-    // v101: chord instrument
-    if (prefs.chordInstrument) {
-      state.chordInstrument = prefs.chordInstrument;
+    // v101/v166: instrument prefs may intentionally be null/"" to use synth fallback.
+    // Check property presence so the new electric-agent defaults do not override a
+    // user's explicit "(synth)" selection from an older saved prefs object.
+    if (Object.prototype.hasOwnProperty.call(prefs, "chordInstrument")) {
+      state.chordInstrument = prefs.chordInstrument || null;
       const sel = $("br-chord-instrument-select");
       if (sel) {
-        sel.value = prefs.chordInstrument;
+        sel.value = state.chordInstrument || "";
         sel.dispatchEvent(new Event("change"));
       }
     }
     // v110: bass instrument
-    if (prefs.bassInstrument) {
-      state.bassInstrument = prefs.bassInstrument;
+    if (Object.prototype.hasOwnProperty.call(prefs, "bassInstrument")) {
+      state.bassInstrument = prefs.bassInstrument || null;
       const sel = $("br-bass-instrument-select");
       if (sel) {
-        sel.value = prefs.bassInstrument;
+        sel.value = state.bassInstrument || "";
         sel.dispatchEvent(new Event("change"));
       }
     }
     // v111: guitar instrument
-    if (prefs.guitarInstrument) {
-      state.guitarInstrument = prefs.guitarInstrument;
+    if (Object.prototype.hasOwnProperty.call(prefs, "guitarInstrument")) {
+      state.guitarInstrument = prefs.guitarInstrument || null;
       const sel = $("br-guitar-instrument-select");
       if (sel) {
-        sel.value = prefs.guitarInstrument;
+        sel.value = state.guitarInstrument || "";
         sel.dispatchEvent(new Event("change"));
       }
     }
     // v111: voice instrument
-    if (prefs.voiceInstrument) {
-      state.voiceInstrument = prefs.voiceInstrument;
+    if (Object.prototype.hasOwnProperty.call(prefs, "voiceInstrument")) {
+      state.voiceInstrument = prefs.voiceInstrument || null;
       const sel = $("br-voice-instrument-select");
       if (sel) {
-        sel.value = prefs.voiceInstrument;
+        sel.value = state.voiceInstrument || "";
         sel.dispatchEvent(new Event("change"));
       }
     }
