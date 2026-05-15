@@ -973,7 +973,7 @@ const SOURCE_COLORS = {
   }
 };
 const OutputState = {
-  level: 82
+  level: 88
 };
 const PlaybackState = {
   outputDeviceId: "",
@@ -6622,12 +6622,12 @@ function outputGainFromLevel(level) {
   const safeLevel = clampValue(Number.isFinite(level) ? level : 75, 0, 100);
   if (safeLevel <= 0) return 0.0001;
   if (safeLevel <= 50) {
-    return mapValue(safeLevel, 0, 50, 0.0001, 0.96);
+    return mapValue(safeLevel, 0, 50, 0.0001, 1.0);
   }
   if (safeLevel <= 75) {
-    return mapValue(safeLevel, 50, 75, 0.96, 1.48);
+    return mapValue(safeLevel, 50, 75, 1.0, 1.65);
   }
-  return mapValue(safeLevel, 75, 100, 1.48, 2.32);
+  return mapValue(safeLevel, 75, 100, 1.65, 2.65);
 }
 
 function updateOutputLevelUi() {
@@ -6675,7 +6675,7 @@ function engineOutputGainTarget(level = OutputState.level) {
   } catch (error) {
     fmTrim = 1;
   }
-  return clampValue(outputGain * fmTrim, 0.0001, 2.42);
+  return clampValue(outputGain * fmTrim, 0.0001, 2.72);
 }
 
 function isAppleMobileDevice() {

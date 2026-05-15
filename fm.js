@@ -22,9 +22,9 @@
   const GENRE_MIX_RETURN_MS = 920;
   const RESUME_WINDOW_MS = 30 * 60 * 1000;
   // FM runs the Music engine plus GenreFlavor as a parallel color layer.
-  // Keep engine output at 75 so Hazama FM has headroom on phones and the
-  // flavor path does not need to lean on its limiter for loudness.
-  const TARGET_LEVEL = 75;
+  // v154: browser playback was too quiet versus normalized music apps.
+  // 88 gives useful phone/car volume while keeping 90+ as manual headroom.
+  const TARGET_LEVEL = 88;
   // Destination stays neutral. Do not post-boost both the engine and the
   // parallel flavor layer into the hardware output.
   const DESTINATION_BOOST_DB = 0;

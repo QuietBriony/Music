@@ -163,7 +163,7 @@ flavor master Gain
 - `GenreFlavor` は `fm.html` 専用の parallel color layer。Music full mix を
   直列加工しない
 - `Tone.Destination.volume = 0 dB` (fm.js fmStart)。post-limiter boost なし
-- limiter は final stop ではなく guardrail。常時突っ込ませず、OUTPUT 75〜85
+- limiter は final stop ではなく guardrail。常時突っ込ませず、OUTPUT 80〜88
   を通常の聴感レンジにする
 - `40HZ` focus mode は limiter 前で 0.92〜1.00 の範囲だけを揺らすため、
   peak を持ち上げない。AI fill 中は depth 0% に自動退避
@@ -476,7 +476,7 @@ culture + genre-flavor crossfade のみ、BPM は触らない。
 - compressor / EQ / makeup / limiter を guardrail 目的に戻し、limiter 常時突入を避ける
 - piano の Debussy memory tail、jazz/funk/lofi solo、session breaks、
   sidechain pump、tape saturation の積み上がりを薄くして、詰まりと潰れを減らす
-- `fm.js` は engine OUTPUT 75 / `Tone.Destination.volume = 0 dB` を維持
+- `fm.js` は engine OUTPUT 88 / `Tone.Destination.volume = 0 dB` を維持
 
 ### Music Core Rig との同期状況
 

@@ -17,7 +17,7 @@ Use m4a recording only for milestone comparisons, CarPlay/output-level checks, o
 
 1. Open Music in a normal browser tab.
 2. Press `START` or `START.HZM` once to unlock audio.
-3. Set `OUTPUT` around 75 to 85.
+3. Set `OUTPUT` around 88 in Hazama FM, or 80 to 88 in the full mixer.
 4. Turn `AUTO MIX` on for self-running checks.
 5. Keep Console open on desktop checks and watch for red errors.
 
@@ -101,9 +101,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`, `AI fill`, DJ set buttons, mic follow, and `40HZ`.
 - Confirm cache markers match exactly across `fm.html`, `index.html`, and
-  `sw.js`. Current v153 markers: `engine.js?v=fm-79`,
-  `fm.css?v=fm-47`, `fm.js?v=fm-59`, `audio/genre-flavor.js?v=fm-68`,
-  `audio/ai-fills.js?v=fm-71`, and `hazama-fm-v153`.
+  `sw.js`. Current v154 markers: `engine.js?v=fm-80`,
+  `fm.css?v=fm-47`, `fm.js?v=fm-60`, `audio/genre-flavor.js?v=fm-69`,
+  `audio/ai-fills.js?v=fm-71`, and `hazama-fm-v154`.
 - If Band Room changed in the same PR, also confirm `band-room.css?v=br-70`,
   `band-room.js?v=br-74`, `audio/audio-safety.js?v=br-66`, and
   `band-room.html` references match `sw.js`.
@@ -300,7 +300,7 @@ Setup:
 1. Press `START` or `START.HZM`.
 2. Turn `AUTO MIX` on.
 3. Set `ARC` to `ARC.36`.
-4. Keep `OUTPUT` around 75 to 85.
+4. Keep `OUTPUT` around 88 in Hazama FM, or 80 to 88 in the full mixer.
 
 Expected long-form order:
 
@@ -377,15 +377,15 @@ Use this before creating or merging a runtime PR.
 Use this when browser output feels small compared with iPhone Apple Music or
 other normalized app playback.
 
-- Start from `OUTPUT` 75 to 85 in Hazama FM. Briefly check 90+ only if the
-  device still feels quiet. Use 75 to 85 in the full mixer first.
+- Start from `OUTPUT` 88 in Hazama FM. Briefly check 90+ only if the
+  device still feels quiet. Use 80 to 88 in the full mixer first.
 - Compare `fm.html` `any`, `techno`, and `piano` without changing OS volume.
 - Expected: browser playback should feel usable without maxing the OS volume,
   while the GenreFlavor compressor / limiter prevents harsh clipping.
 - Expected: changing `OUTPUT` changes both the engine bed and GenreFlavor
   foreground enough to feel like one browser app, not two unmatched outputs.
-- Expected: `OUTPUT` 90+ is an audition ceiling, not the default listening
-  range, and should still sound like level, not distortion.
+- Expected: `OUTPUT` 90+ is near the audition ceiling, not required for normal
+  listening, and should still sound like level, not distortion.
 - Expected: `techno` is louder through drum/body and acid pulse, not through
   constant bright hiss.
 - Expected: `piano` is foreground piano with space, not a low hidden pad.

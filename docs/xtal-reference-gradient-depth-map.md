@@ -176,7 +176,7 @@ Use these axes while listening and reviewing m4a recordings:
 
 Use iPhone or iPad Safari if possible.
 
-1. `START`, `AUTO MIX` on, `OUTPUT` 75 to 85.
+1. `START`, `AUTO MIX` on, `OUTPUT` 80 to 88.
 2. Listen for 30 seconds without touching.
 3. Switch apps for at least 60 seconds.
 4. Return to Safari.

@@ -25,24 +25,24 @@
 
   // Working volume (linear gain). This is a parallel color layer, not the
   // full-mix loudness path, so keep real headroom before the limiter.
-  const WORKING_LEVEL = 0.56;
+  const WORKING_LEVEL = 0.62;
   const FADE_IN_S = 2.5;
   const FADE_OUT_S = 1.6;
   const CROSSFADE_S = 1.5;
-  const OUTPUT_FOLLOW_MIN = 0.34;
-  const OUTPUT_FOLLOW_MAX = 0.96;
+  const OUTPUT_FOLLOW_MIN = 0.38;
+  const OUTPUT_FOLLOW_MAX = 1.12;
 
   // Per-genre master level override. Each builder has its own synth-voice
   // density, but Hazama FM should read as a safe parallel flavor layer beside
   // the engine bed. These values avoid using the limiter as a loudness engine.
   const LEVEL_BY_GENRE = {
-    any: 0.58,
-    ambient: 0.56,
-    techno: 0.66,
-    lofi: 0.60,
-    jazz: 0.62,
-    funk: 0.62,
-    piano: 0.46
+    any: 0.62,
+    ambient: 0.60,
+    techno: 0.72,
+    lofi: 0.66,
+    jazz: 0.68,
+    funk: 0.68,
+    piano: 0.54
   };
 
   function workingLevelFor(name) {

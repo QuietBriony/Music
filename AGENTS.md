@@ -23,7 +23,7 @@ Hazama FM と Music Core Rig を壊さずに磨くための最低契約事項。
 ## Integrity gate (commit 前に必ず通す)
 
 ```bash
-python -X utf8 scripts/audit.py --expected-version hazama-fm-v153
+python -X utf8 scripts/audit.py --expected-version hazama-fm-v154
 node scripts/check-js.mjs
 node scripts/check-band-room-logic.mjs
 ```
@@ -88,7 +88,7 @@ curl -sL https://raw.githubusercontent.com/QuietBriony/<repo>/main/exports/<file
      -o presets/<file>.json
 
 # audit で schema チェック
-python -X utf8 scripts/audit.py --expected-version hazama-fm-v153
+python -X utf8 scripts/audit.py --expected-version hazama-fm-v154
 
 # 必要なら cache bump (sw.js precache に追加が要る場合)
 # commit + push

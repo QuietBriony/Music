@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v153 compact)
+# Band Room — Changelog (v65 → v154 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,15 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v154 compact — louder browser playback
+
+- `fm.js fm-60`: Hazama FM の起動時 OUTPUT target を 75 → 88 に上げ、
+  ブラウザ/車載で OS 音量を最大付近まで上げなくても聴ける基準に変更。
+- `engine.js fm-80`: Music Core Rig / Hazama FM 共通の OUTPUT gain curve を
+  少しだけ前へ出し、default OUTPUT も 88 に更新。limiter は guardrail のまま。
+- `audio/genre-flavor.js fm-69`: FM の parallel flavor layer も OUTPUT に
+  追従して少し前へ。piano / ambient も隠れすぎないように調整。
 
 ## v153 compact — car/lock-screen album transport
 

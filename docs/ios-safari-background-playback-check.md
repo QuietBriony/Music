@@ -22,7 +22,7 @@ Use the normal Safari tab first.
 2. Press `START`.
 3. Confirm audible output.
 4. Turn `AUTO MIX` on.
-5. Set `OUTPUT` around 75 to 85.
+5. Set `OUTPUT` around 88 for Hazama FM, or 80 to 88 in the full mixer.
 6. Switch to another app.
 7. Wait at least 60 seconds.
 8. Return to Safari.

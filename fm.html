@@ -25,13 +25,13 @@
   <script src="audio/namima-audio-adapter.js?v=fm-66" defer></script>
   <script src="audio/human-groove-governor.js" defer></script>
   <script src="presets/loader.js?v=fm-18" defer></script>
-  <script src="audio/genre-flavor.js?v=fm-68" defer></script>
+  <script src="audio/genre-flavor.js?v=fm-69" defer></script>
   <!-- fm-71: Magenta DrumsRNN AI fill module. The module itself is small;
        the heavy CDN scripts + checkpoint (~5 MB) are fetched lazily on
        first click of #fm-ai-fill so page load stays light. -->
   <script src="audio/ai-fills.js?v=fm-71" defer></script>
-  <script src="engine.js?v=fm-79" defer></script>
-  <script src="fm.js?v=fm-59" defer></script>
+  <script src="engine.js?v=fm-80" defer></script>
+  <script src="fm.js?v=fm-60" defer></script>
 </head>
 
 <body data-page="fm">
@@ -171,7 +171,7 @@
     <input type="range" id="fader_observer" min="0" max="100" value="50" />
 
     <!-- Master output (driven by fm.js fade ramp) -->
-    <input type="range" id="output_level" min="0" max="100" value="0" />
+    <input type="range" id="output_level" min="0" max="100" value="88" />
 
     <!-- Auto-cycle / Radio brain driver -->
     <input type="range" id="auto_cycle" min="1" max="10" value="3" />

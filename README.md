@@ -62,7 +62,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - 🎵 **音楽的参照**:
   - [`references/apple-music-refs.json`](references/apple-music-refs.json) — 全 18 アーティスト x production translation
   - [`references/hazama-fm-pill-refs.json`](references/hazama-fm-pill-refs.json) — GENRE pill → reference 紐付け
-- 🔬 **整合性監査**: `python -X utf8 scripts/audit.py [--quiet] [--expected-version hazama-fm-v153]`
+- 🔬 **整合性監査**: `python -X utf8 scripts/audit.py [--quiet] [--expected-version hazama-fm-v154]`
   - 全リソース (preset JSON / loader / sw precache / cache buster / engine 9 番組 / LEVEL_BY_GENRE) を 1 発でチェック
   - `0 BAD, 0 WARN` で exit 0、BAD で exit 1 (CI 向け)
   - `--quiet` でほぼ silent (CI / pre-commit hook 用)
