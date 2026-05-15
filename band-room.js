@@ -53,6 +53,10 @@
 
   let masterGain = null;
   let masterLimiter = null;
+  let masterHardwareOutput = null;
+  let masterPlaybackDest = null;
+  let backgroundBridgeAudio = null;
+  let backgroundBridgeActive = false;
   let masterReverb = null;
   let masterWidener = null;
   let masterDryGain = null;
@@ -186,7 +190,9 @@
     // Per-stem EQ adds clarity (drum HP, bass LP, vocal HP + de-ess + presence,
     // other HP). Two-stage compression: comp1 catches peaks gently, EQ tilts,
     // comp2 glues. Tape sat parallel-wet for harmonic gel.
-    masterLimiter = new Tone.Limiter({ threshold: -0.5 }).toDestination();
+    masterLimiter = new Tone.Limiter({ threshold: -0.5 });
+    masterHardwareOutput = new Tone.Gain(1).toDestination();
+    masterLimiter.connect(masterHardwareOutput);
     // v71: meter tap on the limiter input — measures the final pre-clip RMS
     masterMeter = new Tone.Meter({ smoothing: 0.75 });
     masterLimiter.connect(masterMeter);
@@ -202,6 +208,12 @@
       masterLimiter.connect(masterRecorderDest);
     } catch (e) {
       console.warn("[Band Room] recorder destination unavailable:", e);
+    }
+    try {
+      masterPlaybackDest = Tone.context.createMediaStreamDestination();
+      masterLimiter.connect(masterPlaybackDest);
+    } catch (e) {
+      console.warn("[Band Room] playback bridge destination unavailable:", e);
     }
     // v90: per-stem MediaStreamDestinations so each stem bus can be
     // captured independently for stems pack export. Drums/bass/other
@@ -322,6 +334,93 @@
     externalVocalBus = new Tone.Gain(0.85);
     externalVocalBus.connect(vocalChorus);
     return masterGain;
+  }
+
+  function isAppleMobileDevice() {
+    const nav = typeof navigator !== "undefined" ? navigator : {};
+    const ua = nav.userAgent || "";
+    return /iPad|iPhone|iPod/.test(ua) || (nav.platform === "MacIntel" && nav.maxTouchPoints > 1);
+  }
+
+  function isSafariFamily() {
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent || "" : "";
+    return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  }
+
+  function shouldPreferBackgroundAudioBridge() {
+    return isAppleMobileDevice() && isSafariFamily();
+  }
+
+  function ensureBackgroundBridgeAudio() {
+    if (backgroundBridgeAudio) return backgroundBridgeAudio;
+    if (!masterPlaybackDest?.stream || typeof document === "undefined") return null;
+
+    const audio = document.createElement("audio");
+    audio.id = "br-background-audio";
+    audio.autoplay = false;
+    audio.controls = false;
+    audio.loop = false;
+    audio.muted = false;
+    audio.playsInline = true;
+    audio.srcObject = masterPlaybackDest.stream;
+    audio.setAttribute("aria-hidden", "true");
+    audio.setAttribute("playsinline", "");
+    audio.style.position = "fixed";
+    audio.style.width = "1px";
+    audio.style.height = "1px";
+    audio.style.opacity = "0";
+    audio.style.pointerEvents = "none";
+    audio.style.left = "-9999px";
+    audio.style.bottom = "0";
+
+    (document.body || document.documentElement).appendChild(audio);
+    backgroundBridgeAudio = audio;
+    return audio;
+  }
+
+  function routeHardwareOutputForBridge(active, force = false) {
+    if (!masterHardwareOutput) return;
+    const value = active ? 0.0001 : 1;
+    try { masterHardwareOutput.gain.rampTo(value, force ? 0.04 : 0.12); } catch (e) {}
+  }
+
+  async function startBackgroundAudioBridge(options = {}) {
+    const force = options.force === true;
+    if (!force && !shouldPreferBackgroundAudioBridge()) {
+      routeHardwareOutputForBridge(false);
+      return false;
+    }
+
+    const audio = ensureBackgroundBridgeAudio();
+    if (!audio) {
+      routeHardwareOutputForBridge(false);
+      return false;
+    }
+
+    try {
+      audio.muted = false;
+      audio.volume = 1;
+      const result = audio.play();
+      if (result && typeof result.then === "function") await result;
+      backgroundBridgeActive = true;
+      routeHardwareOutputForBridge(true, force);
+      document.body?.classList.toggle("br-bg-audio", true);
+      return true;
+    } catch (e) {
+      console.warn("[Band Room] background audio bridge failed:", e);
+      backgroundBridgeActive = false;
+      routeHardwareOutputForBridge(false, true);
+      return false;
+    }
+  }
+
+  function stopBackgroundAudioBridge() {
+    backgroundBridgeActive = false;
+    routeHardwareOutputForBridge(false, true);
+    document.body?.classList.toggle("br-bg-audio", false);
+    if (backgroundBridgeAudio) {
+      try { backgroundBridgeAudio.pause(); } catch (e) {}
+    }
   }
 
   // Vocal phrase trigger — fire one-shot Tone.Player on click
@@ -2447,6 +2546,7 @@
     if (!voiceSynth) voiceSynth = makeVoiceBox(voiceBus);
     if (!chordSynth) chordSynth = makeChordSynth(chordBus);
     if (!clickSynth) clickSynth = makeClick(clickBus);
+    await startBackgroundAudioBridge();
 
     // Load stems (if available for this song)
     await loadStemsForSong(state.currentSongId);
@@ -2560,6 +2660,7 @@
     state.started = false;
     setButtonState("idle");
     stopMasterMeter();
+    stopBackgroundAudioBridge();
     updateMediaSession("paused");
     stopMidiClock(); // v88
   }
