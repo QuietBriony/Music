@@ -35,6 +35,12 @@
     barCount: 0,
     sectionIdx: 0,
     sectionBarStart: 0,
+    playbackStartedAtMs: 0,
+    playbackStartedAtAudioSec: 0,
+    playbackStartOffsetSec: 0,
+    playbackRateAtStart: 1,
+    loadedStemDurationSec: 0,
+    lastStemResyncAtMs: 0,
     chordIdx: 0,
     chordBarsRemaining: 0,
     scheduledIds: [],
@@ -61,7 +67,10 @@
   let backgroundBridgeAudio = null;
   let backgroundBridgeActive = false;
   let backgroundBridgeHealthBound = false;
+  let backgroundBridgeRearmTimer = 0;
   let autoAdvanceInFlight = false;
+  let autoAdvanceTimer = 0;
+  let playbackHealthTimer = 0;
   let songSwitchSeq = 0;
   let masterReverb = null;
   let masterWidener = null;
@@ -354,7 +363,7 @@
   }
 
   function shouldPreferBackgroundAudioBridge() {
-    return isAppleMobileDevice() && isSafariFamily();
+    return isAppleMobileDevice();
   }
 
   function ensureBackgroundBridgeAudio() {
@@ -388,16 +397,52 @@
   function bindBackgroundBridgeHealth(audio) {
     if (!audio || backgroundBridgeHealthBound) return;
     backgroundBridgeHealthBound = true;
-    const markBridgeLost = () => {
+    const markBridgeLost = (event) => {
       if (!backgroundBridgeActive) return;
       backgroundBridgeActive = false;
       routeHardwareOutputForBridge(false, true);
       document.body?.classList.toggle("br-bg-audio", false);
-      setAudioRouteStatus("failed");
+      setAudioRouteStatus(event?.type === "error" ? "failed" : "direct");
+      scheduleBackgroundBridgeRearm(event?.type || "lost");
     };
     ["pause", "ended", "error", "stalled", "emptied", "abort"].forEach((eventName) => {
       audio.addEventListener(eventName, markBridgeLost);
     });
+  }
+
+  function clearBackgroundBridgeRearmTimer() {
+    if (!backgroundBridgeRearmTimer) return;
+    clearTimeout(backgroundBridgeRearmTimer);
+    backgroundBridgeRearmTimer = 0;
+  }
+
+  function scheduleBackgroundBridgeRearm(reason = "lost") {
+    clearBackgroundBridgeRearmTimer();
+    if (!state.started || !shouldPreferBackgroundAudioBridge()) return;
+    backgroundBridgeRearmTimer = setTimeout(() => {
+      backgroundBridgeRearmTimer = 0;
+      if (!state.started || backgroundBridgeActive) return;
+      startBackgroundAudioBridge({ force: true, rearm: true, reason });
+    }, 1200);
+  }
+
+  function checkBackgroundBridgeHealth(reason = "watchdog") {
+    if (!state.started) return true;
+    const audio = backgroundBridgeAudio;
+    if (!backgroundBridgeActive) {
+      if (shouldPreferBackgroundAudioBridge()) scheduleBackgroundBridgeRearm(reason);
+      return false;
+    }
+
+    const unhealthy = !audio || audio.paused || audio.ended || !audio.srcObject || audio.readyState === 0;
+    if (!unhealthy) return true;
+
+    backgroundBridgeActive = false;
+    routeHardwareOutputForBridge(false, true);
+    document.body?.classList.toggle("br-bg-audio", false);
+    setAudioRouteStatus("direct");
+    scheduleBackgroundBridgeRearm(reason);
+    return false;
   }
 
   function routeHardwareOutputForBridge(active, force = false) {
@@ -409,11 +454,11 @@
   function setAudioRouteStatus(label) {
     const status = $("br-audio-route-status");
     if (!status) return;
-    const route = ["bridge", "arming", "failed"].includes(label) ? label : "direct";
+    const route = ["bridge", "arming", "rearming", "failed"].includes(label) ? label : "direct";
     status.textContent = route;
     status.dataset.route = route;
     status.title = route === "bridge" ? "hidden media bridge active"
-                 : route === "arming" ? "hidden media bridge starting"
+                 : route === "arming" || route === "rearming" ? "hidden media bridge starting"
                  : route === "failed" ? "hidden media bridge failed; direct output restored"
                  : "direct Web Audio output";
     status.setAttribute("aria-label", status.title);
@@ -437,10 +482,11 @@
     try {
       audio.muted = false;
       audio.volume = 1;
-      setAudioRouteStatus("arming");
+      setAudioRouteStatus(options.rearm ? "rearming" : "arming");
       const result = audio.play();
       if (result && typeof result.then === "function") await result;
       backgroundBridgeActive = true;
+      clearBackgroundBridgeRearmTimer();
       routeHardwareOutputForBridge(true, force);
       document.body?.classList.toggle("br-bg-audio", true);
       setAudioRouteStatus("bridge");
@@ -456,6 +502,7 @@
   }
 
   function stopBackgroundAudioBridge() {
+    clearBackgroundBridgeRearmTimer();
     backgroundBridgeActive = false;
     routeHardwareOutputForBridge(false, true);
     document.body?.classList.toggle("br-bg-audio", false);
@@ -1310,11 +1357,97 @@
       }
       stemPlayers[k] = null;
     });
+    state.loadedStemDurationSec = 0;
   }
 
   function currentBand() {
     if (!state.bandsRegistry) return null;
     return state.bandsRegistry.bands[state.currentBandId] || null;
+  }
+
+  function currentBandSongMeta(songId = state.currentSongId) {
+    const band = currentBand();
+    if (!Array.isArray(band?.songs)) return null;
+    return band.songs.find((song) => song.id === songId) || null;
+  }
+
+  function songCatalogDurationSec(songId = state.currentSongId) {
+    const duration = Number(currentBandSongMeta(songId)?.duration_s);
+    return Number.isFinite(duration) && duration > 0 ? duration : 0;
+  }
+
+  function songStructureDurationSec() {
+    if (!state.songData || !Array.isArray(state.songData.structure)) return 0;
+    const bpm = Number(state.songData.bpm) || 117;
+    const totalBars = state.songData.structure.reduce((sum, section) => sum + (Number(section.bars) || 0), 0);
+    return totalBars > 0 ? totalBars * (60 / bpm * 4) : 0;
+  }
+
+  function playerDurationSeconds(player) {
+    const candidates = [
+      player?.buffer?.duration,
+      player?.buffer?._buffer?.duration,
+      player?.buffer?.get?.()?.duration
+    ];
+    const duration = candidates.find((value) => Number.isFinite(Number(value)) && Number(value) > 0);
+    return duration ? Number(duration) : 0;
+  }
+
+  function loadedStemDurationSec() {
+    return Object.values(stemPlayers).reduce((max, player) => {
+      return Math.max(max, playerDurationSeconds(player));
+    }, 0);
+  }
+
+  function fullSongDurationGuardSec() {
+    if (currentMode !== "stems") return 0;
+    const stemDuration = state.loadedStemDurationSec || loadedStemDurationSec();
+    const catalogDuration = songCatalogDurationSec();
+    return Math.max(stemDuration, catalogDuration);
+  }
+
+  function playbackRateMultiplier() {
+    const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
+    return Number.isFinite(tempoMult) && tempoMult > 0 ? tempoMult : 1;
+  }
+
+  function audioClockSeconds() {
+    try {
+      const raw = Tone.context?.rawContext || Tone.context?._context || Tone.context?.context || Tone.context;
+      const value = raw?.currentTime ?? Tone.now?.();
+      return Number.isFinite(Number(value)) ? Number(value) : 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  function playbackContentElapsedSec() {
+    if (!state.playbackStartedAtMs) return state.playbackStartOffsetSec || 0;
+    const audioNow = audioClockSeconds();
+    const audioStart = Number(state.playbackStartedAtAudioSec);
+    const audioElapsed = Number.isFinite(audioStart) ? Math.max(0, audioNow - audioStart) : 0;
+    const rate = Number(state.playbackRateAtStart) > 0 ? Number(state.playbackRateAtStart) : playbackRateMultiplier();
+    return (state.playbackStartOffsetSec || 0) + audioElapsed * rate;
+  }
+
+  function resetPlaybackClock(offsetSec = state.playbackStartOffsetSec || 0) {
+    state.playbackStartOffsetSec = Math.max(0, Number(offsetSec) || 0);
+    state.playbackStartedAtMs = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+    state.playbackStartedAtAudioSec = audioClockSeconds();
+    state.playbackRateAtStart = playbackRateMultiplier();
+  }
+
+  function autoAdvanceDelayMsForFullSong() {
+    const guardSec = fullSongDurationGuardSec();
+    if (!guardSec) return 0;
+    const elapsed = playbackContentElapsedSec();
+    const remainingContent = guardSec - elapsed;
+    if (remainingContent <= 0.75) return 0;
+    return Math.ceil((remainingContent / playbackRateMultiplier() + 0.35) * 1000);
+  }
+
+  function shouldDelayAutoAdvanceForFullSong() {
+    return autoAdvanceDelayMsForFullSong() > 0;
   }
 
   async function loadStemsForSong(songId) {
@@ -1353,6 +1486,7 @@
     results.forEach((r) => {
       if (r) { stemPlayers[r.stem] = r.player; loaded++; }
     });
+    state.loadedStemDurationSec = loadedStemDurationSec();
     if (loaded === 0) {
       setStemsStatus("(stems not available — switch to AI 再現 mode)");
       return false;
@@ -1940,16 +2074,33 @@
     const queuedSongId = state.currentSongId;
     autoAdvanceInFlight = true;
     const run = () => {
+      autoAdvanceTimer = 0;
       advanceToNextSong(queuedSongId).finally(() => {
         autoAdvanceInFlight = false;
       });
     };
-    if (typeof queueMicrotask === "function") queueMicrotask(run);
+    const delayMs = autoAdvanceDelayMsForFullSong();
+    if (delayMs > 0) {
+      autoAdvanceTimer = setTimeout(run, delayMs);
+    } else if (typeof queueMicrotask === "function") queueMicrotask(run);
     else setTimeout(run, 0);
+  }
+
+  function clearAutoAdvanceTimer() {
+    if (autoAdvanceTimer) {
+      clearTimeout(autoAdvanceTimer);
+      autoAdvanceTimer = 0;
+    }
+    autoAdvanceInFlight = false;
   }
 
   async function advanceToNextSong(queuedSongId) {
     if (!state.started || state.currentSongId !== queuedSongId) return;
+    if (shouldDelayAutoAdvanceForFullSong()) {
+      autoAdvanceInFlight = false;
+      queueAutoAdvanceToNextSong();
+      return;
+    }
     const nextSong = nextSongAfterCurrent();
     if (!nextSong) {
       stopPlayback();
@@ -1965,6 +2116,7 @@
       return true;
     }
 
+    clearAutoAdvanceTimer();
     const switchSeq = ++songSwitchSeq;
     const wasPlaying = state.started;
     const keepBridge = wasPlaying && options.keepBackgroundBridge === true;
@@ -2502,7 +2654,10 @@
     state.barCount = cum;
     state.sectionIdx = idx;
     state.sectionBarStart = cum;
+    clearAutoAdvanceTimer();
     if (state.started) {
+      resetPlaybackClock(targetSec);
+      state.lastStemResyncAtMs = 0;
       // Reseek Transport to this section's start
       try { Tone.Transport.seconds = targetSec; } catch (e) {}
       // v109 fix: only seek/restart stem players in stems mode. In AI 再現
@@ -2984,6 +3139,8 @@
     const stemOffsetSec = opts.preservePosition && state.barCount > 0
       ? state.barCount * (60 / (state.songData.bpm || 117) * 4)
       : 0;
+    resetPlaybackClock(stemOffsetSec);
+    state.lastStemResyncAtMs = 0;
     if (currentMode === "stems") {
       startStemPlayback(stemOffsetSec);
       startExternalVocalIfEnabled();
@@ -3004,6 +3161,7 @@
     updateMediaSession("playing");
     // v88: start MIDI Clock if a MIDI output is selected
     if (midiOut) startMidiClock();
+    startPlaybackHealthWatchdog();
   }
 
   // v71: master meter — animate #br-meter-fill width from Tone.Meter dB
@@ -3054,8 +3212,100 @@
     }
   }
 
+  function releaseSustainedSynths(reason = "panic") {
+    [synthBass, guitarSynth, voiceSynth, chordSynth, clickSynth].forEach((voice) => {
+      if (!voice) return;
+      try {
+        if (typeof voice.releaseAll === "function") voice.releaseAll(Tone.now());
+        else if (typeof voice.triggerRelease === "function") voice.triggerRelease(Tone.now());
+      } catch (e) {
+        console.warn("[Band Room] synth release failed:", reason, e);
+      }
+    });
+  }
+
+  function resyncStemPlaybackToClock(reason = "resync", force = false) {
+    if (!state.started || currentMode !== "stems") return false;
+    if (!stemPlayers.vocals && !stemPlayers.drums && !stemPlayers.bass && !stemPlayers.other) return false;
+    const now = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+    if (!force && now - state.lastStemResyncAtMs < 2200) return false;
+
+    const expectedOffset = playbackContentElapsedSec();
+    const guardDuration = fullSongDurationGuardSec();
+    if (guardDuration && expectedOffset >= guardDuration - 0.6) return false;
+
+    const startAt = "+0.05";
+    const tempoMult = playbackRateMultiplier();
+    Object.entries(stemPlayers).forEach(([stem, player]) => {
+      if (!player) return;
+      const playerDuration = playerDurationSeconds(player) || guardDuration;
+      if (playerDuration && expectedOffset >= playerDuration - 0.4) return;
+      try {
+        const enabled = $("br-toggle-stem-" + stem)?.checked !== false;
+        player.stop();
+        player.mute = !enabled;
+        player.playbackRate = tempoMult;
+        player.start(startAt, Math.max(0, expectedOffset));
+      } catch (e) {
+        console.warn("[Band Room] stem resync failed:", reason, stem, e);
+      }
+    });
+    state.lastStemResyncAtMs = now;
+    return true;
+  }
+
+  async function recoverPlaybackAfterSuspend(reason = "watchdog") {
+    if (!state.started) return;
+    let resumed = false;
+    try {
+      if (Tone.context?.state !== "running" && typeof Tone.context?.resume === "function") {
+        await Tone.context.resume();
+        resumed = true;
+      }
+    } catch (e) {
+      console.warn("[Band Room] AudioContext resume failed:", reason, e);
+    }
+
+    try {
+      if (Tone.Transport && Tone.Transport.state !== "started") {
+        Tone.Transport.start("+0.03");
+        resumed = true;
+      }
+    } catch (e) {
+      console.warn("[Band Room] Transport restart failed:", reason, e);
+    }
+
+    checkBackgroundBridgeHealth(reason);
+
+    if (resumed || reason === "visible" || reason === "pageshow") {
+      releaseSustainedSynths(reason);
+      resyncStemPlaybackToClock(reason, true);
+    }
+  }
+
+  function startPlaybackHealthWatchdog() {
+    if (playbackHealthTimer) return;
+    playbackHealthTimer = setInterval(() => {
+      if (!state.started) return;
+      const contextStopped = Tone.context && Tone.context.state !== "running";
+      const transportStopped = Tone.Transport && Tone.Transport.state !== "started";
+      if (contextStopped || transportStopped) {
+        recoverPlaybackAfterSuspend("watchdog");
+      }
+      checkBackgroundBridgeHealth("watchdog");
+    }, 2500);
+  }
+
+  function stopPlaybackHealthWatchdog() {
+    if (!playbackHealthTimer) return;
+    clearInterval(playbackHealthTimer);
+    playbackHealthTimer = 0;
+  }
+
   function stopPlayback(options = {}) {
+    clearAutoAdvanceTimer();
     if (!state.started) {
+      stopPlaybackHealthWatchdog();
       if (!options.keepBackgroundBridge) stopBackgroundAudioBridge();
       if (options.updateMedia !== false) updateMediaSession("paused");
       return;
@@ -3067,6 +3317,11 @@
     stopExternalVocal();
     ["drums", "bass", "other"].forEach((s) => stopExternalStem(s)); // v87
     state.started = false;
+    state.playbackStartedAtMs = 0;
+    state.playbackStartedAtAudioSec = 0;
+    state.playbackStartOffsetSec = 0;
+    state.playbackRateAtStart = 1;
+    stopPlaybackHealthWatchdog();
     setButtonState("idle");
     stopMasterMeter();
     if (!options.keepBackgroundBridge) stopBackgroundAudioBridge();
@@ -3234,6 +3489,11 @@
     if (tempoEl) {
       tempoEl.addEventListener("input", () => {
         const mult = Number(tempoEl.value) / 100;
+        if (state.started) {
+          resetPlaybackClock(playbackContentElapsedSec());
+          state.playbackRateAtStart = Number.isFinite(mult) && mult > 0 ? mult : 1;
+          clearAutoAdvanceTimer();
+        }
         if (tempoRead) tempoRead.textContent = tempoEl.value + "%";
         const baseBpm = state.songData?.bpm || 117;
         const targetBpm = baseBpm * mult;
@@ -5216,13 +5476,23 @@
   // and Chrome suspend the audio graph when the tab is backgrounded —
   // this was the "途中で止まる" cause on mobile).
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && state.started) {
-      try {
-        if (Tone.context.state === "suspended") {
-          Tone.context.resume();
-        }
-      } catch (e) {}
+    if (!state.started) return;
+    if (document.visibilityState === "visible") {
+      recoverPlaybackAfterSuspend("visible");
+    } else {
+      releaseSustainedSynths("hidden");
+      if (shouldPreferBackgroundAudioBridge() && !backgroundBridgeActive) {
+        startBackgroundAudioBridge({ force: true, rearm: true, reason: "hidden" });
+      }
     }
+  });
+
+  window.addEventListener("pageshow", () => {
+    if (state.started) recoverPlaybackAfterSuspend("pageshow");
+  });
+
+  window.addEventListener("pagehide", () => {
+    if (state.started) releaseSustainedSynths("pagehide");
   });
 
   // v97: load online-samples-catalog at boot so kit dropdown can include

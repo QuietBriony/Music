@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import vm from "node:vm";
 
 const source = readFileSync("band-room.js", "utf8");
+const bandsRegistry = JSON.parse(readFileSync("presets/bands.json", "utf8"));
 
 const inertElement = () => ({
   addEventListener() {},
@@ -95,11 +96,25 @@ assert.match(
   "Stem players should not loop the same song"
 );
 assert.match(source, /queueMicrotask/, "Auto-advance should not depend on requestAnimationFrame");
+assert.match(source, /function fullSongDurationGuardSec\(\)/, "Band Room should guard album advance with full song duration");
+assert.match(source, /function autoAdvanceDelayMsForFullSong\(\)/, "Band Room should delay auto-advance until the full stem/catalog duration has played");
+assert.match(source, /songCatalogDurationSec\(\)/, "Band Room should read catalog song durations for album playback");
+assert.match(source, /function audioClockSeconds\(\)/, "Band Room should use the AudioContext clock for playback elapsed");
+assert.match(source, /playbackStartedAtAudioSec/, "Band Room should not auto-advance from wall-clock time while iOS audio is suspended");
+assert.match(source, /if \(shouldDelayAutoAdvanceForFullSong\(\)\)/, "Band Room should re-check the full-song guard immediately before switching tracks");
+assert.match(source, /state\.loadedStemDurationSec\s*=\s*loadedStemDurationSec\(\)/, "Band Room should measure loaded stem duration");
 assert.match(
   source,
   /stopPlayback\(\{\s*keepBackgroundBridge:\s*true,\s*updateMedia:\s*false\s*\}\)/,
   "Auto-advance should keep the background media bridge alive"
 );
+assert.match(source, /function recoverPlaybackAfterSuspend\(/, "Band Room should recover playback after mobile suspend");
+assert.match(source, /function resyncStemPlaybackToClock\(/, "Band Room should resync stems after background resume");
+assert.match(source, /function scheduleBackgroundBridgeRearm\(/, "Band Room should rearm hidden audio bridge if it is lost");
+assert.match(source, /function checkBackgroundBridgeHealth\(/, "Band Room should detect stale hidden audio bridge state");
+assert.match(source, /audio\.paused \|\| audio\.ended \|\| !audio\.srcObject \|\| audio\.readyState === 0/, "Band Room bridge health should catch paused/ended/stale hidden audio");
+assert.match(source, /return isAppleMobileDevice\(\);/, "Band Room should prefer the hidden media bridge on all iPhone browsers");
+assert.match(source, /window\.addEventListener\("pageshow"/, "Band Room should recover playback on pageshow");
 assert.match(source, /setHandler\("nexttrack"[\s\S]*selectAdjacentSong\(1\)/, "Media nexttrack should follow album flow");
 assert.match(source, /setHandler\("previoustrack"[\s\S]*selectAdjacentSong\(-1\)/, "Media previoustrack should follow album flow");
 assert.match(source, /let songSwitchSeq = 0/, "Song switches should have a generation guard");
@@ -121,5 +136,28 @@ assert.match(source, /const linkedSong = linkedSongFromUrl\(\)/, "Band Room boot
 
 const savePrefsBody = source.match(/function savePrefs\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
 assert.doesNotMatch(savePrefsBody, /songId\s*:/, "Saved prefs should not restore the last song");
+
+const durationShortfalls = [];
+Object.values(bandsRegistry.bands || {}).forEach((band) => {
+  const pattern = band.drum_frames_pattern || "";
+  (band.songs || []).forEach((song) => {
+    const framePath = pattern.replace("{songid}", song.id);
+    if (!framePath || !existsSync(framePath)) return;
+    const frame = JSON.parse(readFileSync(framePath, "utf8"));
+    const bpm = Number(frame.bpm || song.bpm || 117);
+    const structureBars = (frame.structure || []).reduce((sum, section) => sum + (Number(section.bars) || 0), 0);
+    const structureDuration = structureBars > 0 && bpm > 0 ? structureBars * (60 / bpm * 4) : 0;
+    const catalogDuration = Number(song.duration_s) || 0;
+    if (catalogDuration > structureDuration + 8) {
+      durationShortfalls.push({
+        song: song.id,
+        catalogDuration,
+        structureDuration: Math.round(structureDuration)
+      });
+    }
+  });
+});
+assert.ok(durationShortfalls.length > 0, "Fixture should include songs whose structure is shorter than full audio");
+assert.ok(durationShortfalls.some((item) => item.song === "hey"), "HEY should be covered by the full-song guard regression");
 
 console.log("Band Room logic check passed");

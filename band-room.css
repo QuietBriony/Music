@@ -2267,7 +2267,8 @@ body.br-bg-audio #br-audio-route-status {
   border-color: rgba(143, 255, 245, 0.42);
   color: var(--accent-glass, #8ffff5);
 }
-#br-audio-route-status[data-route="arming"] {
+#br-audio-route-status[data-route="arming"],
+#br-audio-route-status[data-route="rearming"] {
   border-color: rgba(255, 214, 128, 0.36);
   color: #ffd680;
 }
@@ -2296,7 +2297,8 @@ body.br-bg-audio #br-audio-route-status {
     line-height: 1;
   }
   #br-audio-route-status[data-route="bridge"]::before { content: "B"; }
-  #br-audio-route-status[data-route="arming"]::before { content: "A"; }
+  #br-audio-route-status[data-route="arming"]::before,
+  #br-audio-route-status[data-route="rearming"]::before { content: "A"; }
   #br-audio-route-status[data-route="failed"]::before { content: "F"; }
 }
 

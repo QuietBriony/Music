@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v160 compact)
+# Band Room — Changelog (v65 → v161 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,16 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v161 compact — Band Room full-song playback + iPhone suspend recovery
+
+- `band-room.js br-79`: 原音モードの auto advance を、section structure 終端ではなく
+  loaded stem / catalog `duration_s` の full-song duration まで待つように修正。
+  `Hey` など structure JSON が実曲より短い曲でも途中で次曲へ進まない。
+- `band-room.js br-79`: iPhone / mobile Safari の background suspend から戻った時に
+  AudioContext / Transport / stem offset を復旧し、stuck single-note を release する
+  playback watchdog を追加。
+- `band-room.css br-72`: hidden media bridge の `rearming` state を route pill に反映。
 
 ## v160 compact — FM route diagnostics + rearm
 
