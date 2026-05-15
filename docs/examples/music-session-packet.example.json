@@ -134,7 +134,12 @@
     },
     "namima": {
       "enabled": true,
-      "mood_intent": ["water_day", "family_safe", "soft air"],
+      "mood_intent": {
+        "mood": "calm_water",
+        "safe_energy_cap": 0.54,
+        "air": 0.42,
+        "review_only": true
+      },
       "family_safe": true,
       "water_motion": 0.38,
       "brightness": 0.42

@@ -314,7 +314,16 @@
           ],
           "properties": {
             "enabled": { "type": "boolean" },
-            "mood_intent": { "$ref": "#/definitions/intentValue" },
+            "mood_intent": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "mood": { "type": "string" },
+                "safe_energy_cap": { "$ref": "#/definitions/unitInterval" },
+                "air": { "$ref": "#/definitions/unitInterval" },
+                "review_only": { "type": "boolean" }
+              }
+            },
             "family_safe": { "type": "boolean" },
             "water_motion": { "$ref": "#/definitions/unitInterval" },
             "brightness": { "$ref": "#/definitions/unitInterval" }
