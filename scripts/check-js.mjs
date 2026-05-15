@@ -13,7 +13,8 @@ const files = [
   "audio/human-groove-governor.js",
   "presets/loader.js",
   "scripts/check-js.mjs",
-  "scripts/check-band-room-logic.mjs"
+  "scripts/check-band-room-logic.mjs",
+  "scripts/check-fm-route-badge.mjs"
 ];
 
 let bad = 0;

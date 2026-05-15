@@ -555,6 +555,59 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
   opacity: 0.72;
 }
 
+#fm-route {
+  align-items: center;
+  background: rgba(8, 18, 35, 0.38);
+  border: 1px solid rgba(159, 179, 217, 0.22);
+  border-radius: 999px;
+  color: var(--text-sub);
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+  min-height: 32px;
+  padding: 0 12px;
+  text-transform: lowercase;
+}
+
+.fm-route-dot {
+  background: rgba(159, 179, 217, 0.48);
+  border-radius: 999px;
+  box-shadow: 0 0 0 rgba(159, 179, 217, 0);
+  height: 7px;
+  width: 7px;
+}
+
+#fm-route-status {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+}
+
+#fm-route[data-route="bridge"] {
+  border-color: rgba(125, 240, 212, 0.48);
+  color: var(--accent-glass);
+}
+
+#fm-route[data-route="bridge"] .fm-route-dot {
+  background: var(--accent-glass);
+  box-shadow: 0 0 14px rgba(125, 240, 212, 0.42);
+}
+
+#fm-route[data-route="direct"] .fm-route-dot,
+#fm-route[data-route="ready"] .fm-route-dot {
+  background: rgba(246, 206, 137, 0.72);
+}
+
+#fm-route[data-route="failed"] {
+  border-color: rgba(255, 137, 137, 0.5);
+  color: rgba(255, 186, 186, 0.95);
+}
+
+#fm-route[data-route="failed"] .fm-route-dot {
+  background: rgba(255, 137, 137, 0.9);
+  box-shadow: 0 0 14px rgba(255, 137, 137, 0.36);
+}
+
 #fm-review {
   margin-top: 10px;
   min-height: 54px;

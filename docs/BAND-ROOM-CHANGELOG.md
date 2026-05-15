@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v157 compact)
+# Band Room — Changelog (v65 → v158 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,15 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v158 compact — Hazama FM route badge
+
+- `fm.html` / `fm.css fm-49` / `fm.js fm-62`: Hazama FM に `off` /
+  `direct` / `ready` / `bridge` / `failed` の audio route badge を追加。
+  engine.js の hidden `background_value` を MutationObserver で読み、車載 /
+  Bluetooth 確認時に bridge 経由か direct 出力かを見える化する。
+- `scripts/check-fm-route-badge.mjs`: FM route badge の DOM / CSS /
+  `background_value` 同期ロジックを静的検査。`check-js.mjs` にも追加。
 
 ## v157 compact — Drum Floor return song links
 

@@ -165,6 +165,9 @@ iPhone をロック中・コントロールセンター・bluetooth ヘッドフ
 - 車載機が rewind / fast-forward 系の信号を送る場合は、アプリ内 OUTPUT を
   5 刻みで下げ上げする fallback として扱います
 
+画面上の route badge は `off` / `direct` / `ready` / `bridge` / `failed` を表示します。
+車載 / Bluetooth で通常メディア音声として扱われているかを確認する目印です。
+
 これを Media Session API と呼ぶ標準仕組みで実装。
 
 ---

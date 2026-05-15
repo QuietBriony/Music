@@ -7,7 +7,7 @@
   <meta name="description" content="Hazama FM — generative focus radio powered by the UCM Mandala Engine. Press start and listen for hours." />
 
   <link rel="stylesheet" href="style.css?v=fm-27" />
-  <link rel="stylesheet" href="fm.css?v=fm-48" />
+  <link rel="stylesheet" href="fm.css?v=fm-49" />
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
@@ -31,7 +31,7 @@
        first click of #fm-ai-fill so page load stays light. -->
   <script src="audio/ai-fills.js?v=fm-71" defer></script>
   <script src="engine.js?v=fm-80" defer></script>
-  <script src="fm.js?v=fm-61" defer></script>
+  <script src="fm.js?v=fm-62" defer></script>
 </head>
 
 <body data-page="fm">
@@ -133,6 +133,11 @@
       <p id="mic_follow_detail" class="fm-mic-follow-help">任意: grooveだけ曲げる / local features only</p>
     </div>
 
+    <div id="fm-route" data-route="off" aria-label="Audio route">
+      <span class="fm-route-dot" aria-hidden="true"></span>
+      <span id="fm-route-status" aria-live="polite">off</span>
+    </div>
+
     <div id="fm-review" aria-label="Review">
       <button id="fm_sync" type="button" title="今のFM文脈をmetadata-onlyで保存">SYNC</button>
       <div class="fm-sync-caption">音声ではなく、今の文脈と次の聴感タスクを保存</div>
@@ -207,6 +212,8 @@
     <span id="header_output"></span>
     <span id="header_sync"></span>
     <span id="auto_arc_status"></span>
+    <span id="background_value">off</span>
+    <span id="audio_output_status"></span>
   </div>
 
   <!-- fm-60: SW update banner — band-room v84 と同じ非破壊パターンに揃える

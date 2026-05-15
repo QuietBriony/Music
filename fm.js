@@ -167,6 +167,49 @@
     el.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
+  function normalizeAudioRoute(value) {
+    const route = String(value || "").toLowerCase();
+    if (route.includes("failed") || route.includes("error")) return "failed";
+    if (route.includes("bridge") || route.includes("ios bg")) return "bridge";
+    if (route.includes("ready") || route.includes("hidden")) return "ready";
+    if (route.includes("direct") || route.includes("system")) return "direct";
+    if (route.includes("off") || !route) return "off";
+    return "direct";
+  }
+
+  function routeLabelFor(route) {
+    if (route === "bridge") return "bridge";
+    if (route === "failed") return "failed";
+    if (route === "ready") return "ready";
+    if (route === "direct") return "direct";
+    return "off";
+  }
+
+  function refreshAudioRouteStatus(value = null) {
+    const raw = value != null ? value : $("background_value")?.textContent;
+    const route = normalizeAudioRoute(raw);
+    const panel = $("fm-route");
+    const label = $("fm-route-status");
+    if (panel) {
+      panel.dataset.route = route;
+      panel.title = route === "bridge" ? "hidden media bridge active"
+        : route === "ready" ? "hidden media bridge ready"
+        : route === "failed" ? "hidden media bridge failed; direct output restored"
+        : route === "direct" ? "direct Web Audio output"
+        : "audio route off";
+      panel.setAttribute("aria-label", panel.title);
+    }
+    if (label) label.textContent = routeLabelFor(route);
+  }
+
+  function bindAudioRouteStatus() {
+    refreshAudioRouteStatus();
+    const source = $("background_value");
+    if (!source || typeof MutationObserver !== "function") return;
+    const observer = new MutationObserver(() => refreshAudioRouteStatus());
+    observer.observe(source, { childList: true, characterData: true, subtree: true });
+  }
+
   function randomChoice(values) {
     if (!Array.isArray(values) || !values.length) return null;
     return values[Math.floor(Math.random() * values.length)];
@@ -1919,6 +1962,7 @@
     bindDjSetButtons();
     bindShuffleAudition();
     bindBandRoomLink();
+    bindAudioRouteStatus();
     bindFocusModeButton();
     bindAiFillButton();
     bindReviewSync();
