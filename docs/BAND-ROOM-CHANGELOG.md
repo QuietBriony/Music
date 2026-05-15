@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v154 compact)
+# Band Room — Changelog (v65 → v155 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,16 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v155 compact — Band Room to Drum Floor handoff
+
+- `band-room.html`: footer の別 app 導線に `Drum Floor` を追加。
+- `band-room.js br-75`: 現在の Band Room song / BPM / section / drum frame を
+  metadata-only の `qb:music-stack:latest-packet:v1` と `qb:music-stack:v1`
+  に publish してから drum-floor を開く。drum-floor 側の既存 Music SYNC
+  receiver が拾える形式で、音声・sample・lyrics は入れない。
+- `scripts/check-band-room-logic.mjs`: handoff が `drum_floor` 推奨、
+  manual start required、metadata-only のままかを静的検査。
 
 ## v154 compact — louder browser playback
 

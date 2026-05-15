@@ -19,6 +19,9 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
+  const DRUM_FLOOR_URL = "https://quietbriony.github.io/drum-floor/";
+  const MUSIC_STACK_PACKET_STORAGE_KEY = "qb:music-stack:latest-packet:v1";
+  const MUSIC_STACK_CHANNEL_NAME = "qb:music-stack:v1";
 
   // ---- State ---------------------------------------------------
 
@@ -1843,6 +1846,7 @@
   if (typeof window !== "undefined") {
     window.BandRoomTestHooks = Object.assign(window.BandRoomTestHooks || {}, {
       chordRoot,
+      normalizedDrumFloorSection,
       firstSongIdForBand: (band) => firstSongForBand(band)?.id || null,
       adjacentSongIdInBand: (band, currentSongId, delta) => (
         adjacentSongInBand(band, currentSongId, delta)?.id || null
@@ -1881,6 +1885,7 @@
       $("br-bpm").textContent = data.bpm || "—";
       $("br-key").textContent = data.key || "—";
       renderSectionNav();  // v75: clickable section list
+      refreshDrumFloorLink();
       updateMediaSession(state.started ? "playing" : "paused");  // v85: refresh OS metadata
       // Load lyrics from the band's lyrics_doc if present
       const lyricsDoc = band.lyrics_doc;
@@ -2152,12 +2157,260 @@
     return state.songData.frames.find((f) => f.id === sec.frame_id);
   }
 
+  function normalizedDrumFloorSection(section) {
+    const value = String(section || "").toLowerCase();
+    if (value.includes("chorus") || value.includes("chant") || value.includes("hook")) return "chorus";
+    if (value.includes("bridge") || value.includes("break") || value.includes("middle")) return "bridge";
+    if (value.includes("outro") || value.includes("end")) return "end";
+    return "verse";
+  }
+
+  function compactDrumFloorEvents(frame, limit = 64) {
+    const events = Array.isArray(frame?.events) ? frame.events : [];
+    return events.slice(0, limit).map((evt) => ({
+      instrument: String(evt.instrument || "hit"),
+      beat: Number(evt.beat) || 0,
+      sub: Number(evt.sub) || 0,
+      velocity: Number.isFinite(Number(evt.velocity)) ? Number(Number(evt.velocity).toFixed(3)) : 0.5,
+      microMs: Number.isFinite(Number(evt.microMs)) ? Math.round(Number(evt.microMs)) : 0,
+      role: evt.role ? String(evt.role) : ""
+    }));
+  }
+
+  function drumFloorFrameMetrics(frame) {
+    const events = Array.isArray(frame?.events) ? frame.events : [];
+    const count = events.length;
+    const velocities = events
+      .map((evt) => Number(evt.velocity))
+      .filter((value) => Number.isFinite(value));
+    const avgVelocity = velocities.length
+      ? velocities.reduce((sum, value) => sum + value, 0) / velocities.length
+      : 0.52;
+    const density = clamp(count / 36, 0.12, 0.92);
+    const pressure = clamp(avgVelocity * 0.72 + density * 0.22 + (events.some((evt) => evt.instrument === "crash") ? 0.06 : 0), 0.12, 0.94);
+    const ghost = clamp(events.filter((evt) => evt.instrument === "ghost").length / Math.max(count, 1), 0, 0.9);
+    const micro = clamp(events.reduce((sum, evt) => sum + Math.abs(Number(evt.microMs) || 0), 0) / Math.max(count, 1) / 42, 0, 1);
+    return { density, pressure, ghost, micro };
+  }
+
+  function buildBandRoomDrumFloorPacket() {
+    const band = currentBand();
+    const section = currentSection();
+    const frame = currentFrame();
+    const data = state.songData || {};
+    const metrics = drumFloorFrameMetrics(frame);
+    const bpm = Number(data.bpm) || 100;
+    const sectionName = section?.section || frame?.session_role || "verse";
+    const normalizedSection = normalizedDrumFloorSection(sectionName);
+    const style = metrics.pressure > 0.68
+      ? "ghost_pressure"
+      : (bpm >= 118 && metrics.density > 0.5 ? "dry_grid" : "soft_pocket");
+    const createdAt = new Date();
+    const songId = state.currentSongId || data.song_id || "unknown-song";
+    const stemsDir = band?.stems_dir || "presets/tabasco-stems";
+    const masterVol = Number($("br-master-vol")?.value || 80);
+
+    return {
+      version: 1,
+      source_repo: "Music",
+      created_at: createdAt.toISOString(),
+      session_id: `band-room-${state.currentBandId || "band"}-${songId}-${createdAt.getTime()}`,
+      mode: "band_room",
+      reference_gradient: {
+        weights: {
+          haze: 0.16,
+          memory: 0.48,
+          micro: Number(metrics.micro.toFixed(3)),
+          ghost: Number(metrics.ghost.toFixed(3)),
+          chrome: 0.12,
+          organic: 0.78
+        }
+      },
+      ucm_state: {
+        energy: Math.round(clamp(metrics.density * 74 + metrics.pressure * 26, 18, 96)),
+        wave: 34,
+        mind: 24,
+        creation: 56,
+        void: normalizedSection === "bridge" ? 32 : 12,
+        circle: normalizedSection === "chorus" ? 52 : 34,
+        body: Math.round(clamp(metrics.pressure * 100, 12, 94)),
+        resource: Math.round(clamp(metrics.density * 78 + metrics.ghost * 14, 18, 92)),
+        observer: 24
+      },
+      output_state: {
+        output_level: clamp(masterVol, 0, 100),
+        recorder_duration: 0,
+        review_boost: Number(clamp(metrics.pressure * 0.7 + metrics.density * 0.3, 0, 1).toFixed(3))
+      },
+      performance_state: {
+        active_pad: normalizedSection,
+        recent_pads: [normalizedSection, "band-room", currentMode],
+        manual_influence_active: true,
+        automix_enabled: false,
+        mic_follow: {
+          enabled: false,
+          status: "not-used",
+          metadata_only: true,
+          stores_audio: false
+        },
+        radio_brain: {
+          program: "band-room",
+          reason: "Band Room current song and drum frame handoff.",
+          metadata_only: true
+        },
+        hazama_fm: null
+      },
+      music_intent: {
+        timbre: ["band-room", currentMode, state.kitSource || "auto-self"],
+        rhythm: ["current-drum-frame", frame?.id || "unknown-frame", style],
+        space: ["manual-preview", "no-autostart"],
+        structure: [sectionName, normalizedSection, `${section?.bars || frame?.barLength || 4}-bars`],
+        gesture: ["practice-room", "human-gated"],
+        safety: ["metadata-only", "no-audio", "manual-start-required"]
+      },
+      routing: {
+        drum_floor: {
+          enabled: true,
+          groove_intent: {
+            style,
+            ghost_notes: Number(metrics.ghost.toFixed(3)),
+            micro: Number(metrics.micro.toFixed(3)),
+            articulation: "band_room_frame",
+            review_only: true
+          },
+          density: Number(metrics.density.toFixed(3)),
+          pressure: Number(metrics.pressure.toFixed(3)),
+          section: normalizedSection,
+          source_song: {
+            band_id: state.currentBandId,
+            band_name: band?.name || "",
+            song_id: songId,
+            song_title: data.song_title || songId,
+            bpm,
+            key: data.key || "",
+            source_section: sectionName,
+            frame_id: frame?.id || section?.frame_id || "",
+            stem_urls: {
+              drums: `${stemsDir}/${songId}/drums.mp3`,
+              bass: `${stemsDir}/${songId}/bass.mp3`,
+              other: `${stemsDir}/${songId}/other.mp3`
+            },
+            drum_events_preview: compactDrumFloorEvents(frame)
+          },
+          review_reason: "Band Room footer handoff: open drum-floor with the current song/frame as a manual preview candidate.",
+          review_only: true
+        },
+        namima: {
+          enabled: false,
+          mood_intent: { mood: "not-targeted", review_only: true },
+          family_safe: true,
+          water_motion: 0,
+          brightness: 0,
+          review_reason: "Band Room drum handoff targets drum-floor only.",
+          review_only: true
+        },
+        chill: {
+          enabled: false,
+          trio_intent: { reference_id: "band-room", flow_on: false, bass_on: false, drums_suggested: false, review_only: true },
+          piano_memory: 0,
+          bass_activity: 0,
+          drum_support: 0,
+          section: normalizedSection,
+          review_reason: "Band Room drum handoff targets drum-floor only.",
+          review_only: true
+        },
+        openclaw: {
+          enabled: true,
+          promotion_status: "draft",
+          human_review_required: true,
+          next_action: {
+            destination: "drum_floor",
+            label: "drum-floor",
+            reason: "Band Room current groove is ready for safe drum-floor preview.",
+            action: "Open drum-floor and press playback manually if the translated kit/pocket looks useful.",
+            confidence: 0.74,
+            manual_start_required: true,
+            metadata_only: true
+          }
+        }
+      },
+      safety: {
+        stores_audio: false,
+        stores_samples: false,
+        stores_lyrics: false,
+        metadata_only: true,
+        human_review_required: true
+      }
+    };
+  }
+
+  function drumFloorUrlForPacket(packet) {
+    let url;
+    try {
+      url = new URL(DRUM_FLOOR_URL, window.location?.href || DRUM_FLOOR_URL);
+    } catch (e) {
+      return DRUM_FLOOR_URL;
+    }
+    const sourceSong = packet?.routing?.drum_floor?.source_song || {};
+    url.searchParams.set("from", "band-room");
+    if (sourceSong.song_id) url.searchParams.set("song", sourceSong.song_id);
+    if (sourceSong.bpm) url.searchParams.set("bpm", String(sourceSong.bpm));
+    if (sourceSong.source_section) url.searchParams.set("section", sourceSong.source_section);
+    if (sourceSong.frame_id) url.searchParams.set("frame", sourceSong.frame_id);
+    return url.toString();
+  }
+
+  function refreshDrumFloorLink(packet = null) {
+    const link = $("br-open-drum-floor");
+    if (!link) return;
+    const nextPacket = packet || buildBandRoomDrumFloorPacket();
+    link.href = drumFloorUrlForPacket(nextPacket);
+    const sourceSong = nextPacket.routing?.drum_floor?.source_song || {};
+    link.setAttribute("aria-label", `Open Drum Floor for ${sourceSong.song_title || "current Band Room song"}`);
+  }
+
+  function publishBandRoomDrumFloorHandoff() {
+    const packet = buildBandRoomDrumFloorPacket();
+    const payload = {
+      schema: "qb.music-stack.packet-sync.v1",
+      type: "music-session-packet",
+      source: "Band Room",
+      sent_at: new Date().toISOString(),
+      packet
+    };
+    try {
+      window.localStorage?.setItem(MUSIC_STACK_PACKET_STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      console.warn("[Band Room] drum-floor handoff localStorage failed:", error);
+    }
+    try {
+      if (typeof window.BroadcastChannel === "function") {
+        const channel = new window.BroadcastChannel(MUSIC_STACK_CHANNEL_NAME);
+        channel.postMessage(payload);
+        channel.close();
+      }
+    } catch (error) {
+      console.warn("[Band Room] drum-floor handoff broadcast failed:", error);
+    }
+    try {
+      window.dispatchEvent(new CustomEvent("music-stack-packet-sync", { detail: payload }));
+    } catch (error) {}
+    refreshDrumFloorLink(packet);
+    console.info("[Band Room] drum-floor handoff", {
+      song: packet.routing.drum_floor.source_song.song_id,
+      frame: packet.routing.drum_floor.source_song.frame_id,
+      section: packet.routing.drum_floor.section
+    });
+    return payload;
+  }
+
   function updateSectionDisplay() {
     const sec = currentSection();
     if (!sec) {
       $("br-section-name").textContent = "—";
       $("br-section-progress").textContent = "—";
       $("br-section-next-name").textContent = "—";
+      refreshDrumFloorLink();
       return;
     }
     $("br-section-name").textContent = sec.section;
@@ -2169,6 +2422,7 @@
     document.querySelectorAll("#br-section-nav button").forEach((b) => {
       b.classList.toggle("active", Number(b.dataset.idx) === state.sectionIdx);
     });
+    refreshDrumFloorLink();
   }
 
   // v75: render clickable section chips. Each chip jumps the playback
@@ -2851,6 +3105,14 @@
 
   function bindUI() {
     $("br-play")?.addEventListener("click", togglePlay);
+
+    const drumFloorLink = $("br-open-drum-floor");
+    if (drumFloorLink) {
+      drumFloorLink.addEventListener("mouseenter", () => refreshDrumFloorLink());
+      drumFloorLink.addEventListener("focus", () => refreshDrumFloorLink());
+      drumFloorLink.addEventListener("click", () => publishBandRoomDrumFloorHandoff());
+      drumFloorLink.addEventListener("auxclick", () => publishBandRoomDrumFloorHandoff());
+    }
 
     document.getElementById("br-band-select")?.addEventListener("click", (e) => {
       const btn = e.target.closest("button[data-band]");
