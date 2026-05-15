@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v139";
+const VERSION = "hazama-fm-v140";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -48,15 +48,16 @@ const PRECACHE_URLS = [
   "docs/SUNO-WORKFLOW.md",
   "docs/RECORDING-WORKFLOW.md",
   "docs/RHYTHM-RESEARCH.md",
-  "fm.css?v=fm-45",
-  "fm.js?v=fm-53",
-  "style.css?v=fm-26",
-  "engine.js?v=fm-70",
+  "fm.css?v=fm-46",
+  "fm.js?v=fm-54",
+  "style.css?v=fm-27",
+  "engine.js?v=fm-71",
   "docs/music-stack-human-review-queue.html",
   "audio/namima-audio-adapter.js?v=fm-66",
   "audio/audio-safety.js?v=fm-60",
   "audio/human-groove-governor.js",
   "audio/genre-flavor.js?v=fm-68",
+  "audio/ai-fills.js?v=fm-71",
   "presets/loader.js?v=fm-18",
   "presets/SCHEMA.md",
   "presets/chill-piano-recipe.json",
@@ -142,6 +143,20 @@ function isToneCdn(url) {
   return url.hostname === "unpkg.com" && url.pathname.includes("/tone");
 }
 
+// fm-71: Magenta DrumsRNN runtime cache.
+//   - cdn.jsdelivr.net hosts @magenta/music core.js + music_rnn.js (~2 MB)
+//   - storage.googleapis.com/magentadata/.../drum_kit_rnn hosts the
+//     checkpoint shards (weights_manifest.json + group1-shard*.bin, ~3 MB)
+// Both are large, immutable per pinned version, and fetched only when
+// the user clicks 🎲 AI fill — so cache-first with opaque cache is
+// the right shape: first-click pays the cost, subsequent clicks are
+// instant + offline-capable.
+function isMagentaCdn(url) {
+  if (url.hostname === "cdn.jsdelivr.net" && url.pathname.includes("@magenta/music")) return true;
+  if (url.hostname === "storage.googleapis.com" && url.pathname.includes("magentadata")) return true;
+  return false;
+}
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
 
@@ -167,6 +182,21 @@ self.addEventListener("fetch", (event) => {
 
   // Tone.js CDN: cache-first, opaque cache acceptable.
   if (isToneCdn(url)) {
+    event.respondWith(
+      caches.match(request).then((cached) =>
+        cached ||
+        fetch(request).then((response) => {
+          const copy = response.clone();
+          caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+          return response;
+        })
+      )
+    );
+    return;
+  }
+
+  // fm-71: Magenta CDN + checkpoint shards — cache-first, opaque OK.
+  if (isMagentaCdn(url)) {
     event.respondWith(
       caches.match(request).then((cached) =>
         cached ||

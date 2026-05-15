@@ -6,7 +6,7 @@
     <title>Music Core Rig</title>
 
     <!-- Style -->
-    <link rel="stylesheet" href="style.css?v=fm-26" />
+    <link rel="stylesheet" href="style.css?v=fm-27" />
 
     <!-- PWA — independent app from Hazama FM -->
     <link rel="manifest" href="manifest-mixer.webmanifest" />
@@ -28,7 +28,7 @@
     <script src="audio/human-groove-governor.js" defer></script>
 
     <!-- Engine -->
-    <script src="engine.js?v=fm-69" defer></script>
+    <script src="engine.js?v=fm-71" defer></script>
 </head>
 
 <body>
@@ -313,6 +313,20 @@
                         <div class="hint" style="text-align:center;">/PRESETS</div>
                     </div>
                 </div>
+
+                <!-- fm-71: online sample catalog override (Music Core Rig only) -->
+                <section id="catalog-picker" aria-label="Sample catalog selection">
+                    <h3>サンプル音源カタログ</h3>
+                    <select id="catalog-select" aria-label="Catalog">
+                        <option value="auto">AUTO (band default)</option>
+                        <!-- dynamically filled from catalog JSON -->
+                    </select>
+                    <span id="catalog-info">—</span>
+                    <details>
+                        <summary>カタログ詳細</summary>
+                        <div id="catalog-detail-body">—</div>
+                    </details>
+                </section>
 
                 <div id="transport-dock">
                     <button type="button" id="transport_dock_toggle" class="transport-dock-toggle" aria-expanded="true" aria-controls="transport-dock">畳む</button>

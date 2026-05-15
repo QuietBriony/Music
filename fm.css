@@ -340,6 +340,53 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
   text-transform: lowercase;
 }
 
+/* fm-71: AI fill (Magenta DrumsRNN) — sits below the DJ set group with
+   the same pill aesthetic but tinted purple to read as "AI/experimental". */
+#fm-ai-fill-group {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 34px;
+}
+
+#fm-ai-fill {
+  appearance: none;
+  border: 1px solid rgba(196, 168, 255, 0.34);
+  background: rgba(30, 18, 56, 0.42);
+  color: rgba(228, 214, 255, 0.88);
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  padding: 8px 16px;
+  min-height: 36px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.25s, border-color 0.25s, color 0.25s, opacity 0.2s;
+}
+
+#fm-ai-fill:hover:not(:disabled) {
+  border-color: rgba(196, 168, 255, 0.6);
+  background: rgba(60, 38, 110, 0.5);
+  color: rgba(248, 240, 255, 1);
+}
+
+#fm-ai-fill:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+#fm-ai-fill-status {
+  font-size: 10px;
+  color: var(--text-sub);
+  opacity: 0.8;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  max-width: 200px;
+}
+
 .fm-install-btn {
   appearance: none;
   margin-top: clamp(20px, 3vh, 32px);

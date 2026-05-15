@@ -875,6 +875,81 @@ input[type="range"], button, select { touch-action: manipulation; }
   opacity: 0.5;
 }
 
+/* fm-71: catalog picker — sample / instrument override (Music Core Rig only) */
+#catalog-picker {
+  display: grid;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(140, 180, 255, 0.4);
+  background: radial-gradient(circle at top left,
+    rgba(120, 180, 255, 0.08),
+    rgba(3, 10, 24, 0.92));
+  margin-bottom: 10px;
+}
+
+#catalog-picker h3 {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-sub, rgba(218, 250, 255, 0.7));
+  font-weight: 600;
+}
+
+#catalog-select {
+  width: 100%;
+  background: rgba(5, 15, 32, 0.7);
+  border: 1px solid rgba(140, 180, 255, 0.45);
+  color: var(--text-main, rgba(218, 250, 255, 0.95));
+  border-radius: 10px;
+  padding: 7px 9px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+#catalog-info {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgba(218, 250, 255, 0.7);
+  padding: 2px 2px 0;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+#catalog-picker details {
+  font-size: 10px;
+  color: rgba(218, 250, 255, 0.65);
+}
+
+#catalog-picker summary {
+  cursor: pointer;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(143, 255, 245, 0.75);
+  padding: 2px 0;
+}
+
+#catalog-detail-body {
+  margin-top: 4px;
+  padding: 6px 8px;
+  background: rgba(1, 8, 10, 0.42);
+  border: 1px solid rgba(93, 211, 220, 0.18);
+  border-radius: 8px;
+  font-size: 10px;
+  line-height: 1.45;
+  color: rgba(218, 250, 255, 0.78);
+  word-break: break-word;
+}
+
+#catalog-detail-body code {
+  font-size: 9px;
+  color: rgba(143, 255, 245, 0.85);
+  word-break: break-all;
+}
+
 body[data-atmosphere="haze"] .voice-readout {
   border-color: rgba(158, 222, 203, 0.32);
   color: rgba(226, 255, 244, 0.86);

@@ -6,8 +6,8 @@
   <title>Hazama FM — music for thinking and building</title>
   <meta name="description" content="Hazama FM — generative focus radio powered by the UCM Mandala Engine. Press start and listen for hours." />
 
-  <link rel="stylesheet" href="style.css?v=fm-26" />
-  <link rel="stylesheet" href="fm.css?v=fm-45" />
+  <link rel="stylesheet" href="style.css?v=fm-27" />
+  <link rel="stylesheet" href="fm.css?v=fm-46" />
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
@@ -26,8 +26,12 @@
   <script src="audio/human-groove-governor.js" defer></script>
   <script src="presets/loader.js?v=fm-18" defer></script>
   <script src="audio/genre-flavor.js?v=fm-68" defer></script>
-  <script src="engine.js?v=fm-70" defer></script>
-  <script src="fm.js?v=fm-53" defer></script>
+  <!-- fm-71: Magenta DrumsRNN AI fill module. The module itself is small;
+       the heavy CDN scripts + checkpoint (~5 MB) are fetched lazily on
+       first click of #fm-ai-fill so page load stays light. -->
+  <script src="audio/ai-fills.js?v=fm-71" defer></script>
+  <script src="engine.js?v=fm-71" defer></script>
+  <script src="fm.js?v=fm-54" defer></script>
 </head>
 
 <body data-page="fm">
@@ -91,6 +95,14 @@
       <button type="button" data-djset="night-30" aria-pressed="false" title="jazz → lofi → piano → ambient">NIGHT 30</button>
       <button type="button" data-djset="stop" title="stop DJ set">stop</button>
       <span id="fm-dj-status" aria-live="polite">manual</span>
+    </div>
+
+    <!-- fm-71: Magenta DrumsRNN AI fill — fires a 4-bar burst of AI-generated
+         drum variations on top of the current mode's pattern. The model
+         + checkpoint (~5 MB) is fetched lazily on first click. -->
+    <div id="fm-ai-fill-group" role="group" aria-label="AI fill (Magenta DrumsRNN)">
+      <button id="fm-ai-fill" type="button" title="Magenta AI で次の 4 小節をフィルアップ">🎲 AI fill</button>
+      <span id="fm-ai-fill-status" aria-live="polite">ready</span>
     </div>
 
     <div id="fm-audition" role="group" aria-label="Audition">

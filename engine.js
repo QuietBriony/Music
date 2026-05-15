@@ -7739,10 +7739,27 @@ function loadHazamaFmCatalog() {
     .catch((err) => { console.warn("[Music] catalog fetch failed:", err); return null; });
   return hazamaFmCatalogPromise;
 }
+// fm-71: runtime catalog override — Music Core Rig (index.html) ships a
+// <select id="catalog-select"> that lets the user pick a specific kit or
+// instrument from online-samples-catalog.json. When set, every catalogKit() /
+// catalogInstrument() call returns the override instead of the requested id.
+// Default = null = AUTO (original band/mode bindings). Only one override at a
+// time, narrowed by kind so a "kit" override doesn't poison instrument lookups
+// (and vice versa).
+const CatalogOverride = { kind: null, id: null };
+
 function catalogInstrument(id) {
+  if (CatalogOverride.kind === "instrument" && CatalogOverride.id) {
+    const o = hazamaFmCatalog?.instruments?.find((i) => i.id === CatalogOverride.id);
+    if (o) return o;
+  }
   return hazamaFmCatalog?.instruments?.find((i) => i.id === id) || null;
 }
 function catalogKit(id) {
+  if (CatalogOverride.kind === "kit" && CatalogOverride.id) {
+    const o = hazamaFmCatalog?.kits?.find((k) => k.id === CatalogOverride.id);
+    if (o) return o;
+  }
   return hazamaFmCatalog?.kits?.find((k) => k.id === id) || null;
 }
 // fm-60: 触ってない mode は手付かず、jazz だけ catalog 経由で実楽器化試行
@@ -7851,6 +7868,10 @@ function startJazzDrumLayer() {
   const jazzBaseHatDb = samples.hat.volume.value;
   jazzDrumSchedId = Tone.Transport.scheduleRepeat((time) => {
     try {
+      // fm-71: while an AI fill burst is active, skip the canned jazz drum
+      // bar — the engine's kick/hat (driven by Magenta) carry the bar
+      // instead, so we don't double-trigger backbeat snares.
+      if (typeof window !== "undefined" && window.FmAiFill && window.FmAiFill.status.active) return;
       const bt = Tone.Time("4n").toSeconds();
       const e8 = bt / 2;
       // fm-69: Dilla per-step microOffsets (mode-fixed). jazz = light Dilla.
@@ -8179,6 +8200,10 @@ function startLofiDrumLayer() {
   const lofiBaseHatDb = samples.hat.volume.value;
   lofiDrumSchedId = Tone.Transport.scheduleRepeat((time) => {
     try {
+      // fm-71: skip canned lofi boom-bap while AI fill is firing (engine
+      // kick/hat blocks handle the AI sequence; doubling the backbeat
+      // snare here would wash out the Magenta continuation).
+      if (typeof window !== "undefined" && window.FmAiFill && window.FmAiFill.status.active) return;
       const bt = Tone.Time("4n").toSeconds();
       const e8 = bt / 2;
       // fm-69: Dilla per-step microOffsets (mode-fixed). lofi = full Dilla.
@@ -8526,6 +8551,11 @@ const EngineParams = {
   bassPattern: "x...x..x",
   padPattern:  "x...x..."
 };
+
+// fm-71: expose EngineParams so audio/ai-fills.js (Magenta DrumsRNN burst)
+// can read the current mode's kick/hat patterns when building a seed
+// NoteSequence. Read-only contract — the AI module never mutates these.
+if (typeof window !== "undefined") window.EngineParams = EngineParams;
 
 // fm-69: per-step Dilla microOffsets (band-room v133 port).
 // Drag backbeat snare back, push offbeat hat forward — the J Dilla / lofi
@@ -12777,11 +12807,23 @@ function scheduleStep(time) {
     // performer's RMS energy when MicFollowState is enabled. Defaults to 1.0
     // when mic is off, so existing mixes are unchanged.
     const micVelScale = fmMicFollowVelocityScale();
+
+    // fm-71: AI fill burst — Magenta DrumsRNN may temporarily override the
+    // mode's kick/hat patterns. shouldFire() returns null when no burst is
+    // running, otherwise { fire, velocity }. The kick query also ticks the
+    // burst countdown (so it advances exactly once per engine step).
+    const aiFill = (typeof window !== "undefined" && window.FmAiFill) ? window.FmAiFill : null;
+    const aiKick = aiFill ? aiFill.shouldFire("kick", step) : null;
+    const aiHat  = aiFill ? aiFill.shouldFire("hat",  step) : null;
+
     // Kick
     const kickChance = chance((EngineParams.kickProb + (isAccentStep ? 0.024 : 0) + kits.pressureKit * 0.024 + habitPressure * 0.01 + palette.transient * 0.014 + PerformancePadState.punch * 0.052 - kits.spaceKit * 0.045 - habitSpace * 0.012 - habitRestraint * 0.008 - palette.air * 0.024 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.16) * (1 - palette.lowClamp * 0.1) * droneDrumScale * kickShape.probabilityScale);
-    if (patternAt(EngineParams.kickPattern, step) && rand(kickChance)) {
+    const kickGate = aiKick ? aiKick.fire : patternAt(EngineParams.kickPattern, step);
+    const kickRoll = aiKick ? true : rand(kickChance);
+    const aiKickVel = (aiKick && aiKick.fire) ? aiKick.velocity : 1;
+    if (kickGate && kickRoll) {
       const kickTime = t + kickShape.timeOffsetSec;
-      kick.triggerAttackRelease(tonalRhymeLow(step, -1), droneDrumThin ? "32n" : "16n", kickTime + 0.004, clampValue((0.16 + energyNorm * 0.068 + kits.pressureKit * 0.024 + palette.transient * 0.018 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.024 - kits.spaceKit * 0.018 - palette.lowClamp * 0.026 - lowGuard * 0.05) * kickShape.velocityScale * micVelScale, 0.08, droneDrumThin ? 0.22 : 0.44));
+      kick.triggerAttackRelease(tonalRhymeLow(step, -1), droneDrumThin ? "32n" : "16n", kickTime + 0.004, clampValue((0.16 + energyNorm * 0.068 + kits.pressureKit * 0.024 + palette.transient * 0.018 + (isAccentStep ? 0.014 : 0) + PerformancePadState.punch * 0.024 - kits.spaceKit * 0.018 - palette.lowClamp * 0.026 - lowGuard * 0.05) * kickShape.velocityScale * micVelScale * aiKickVel, 0.08, droneDrumThin ? 0.22 : 0.44));
       if (PerformancePadState.punch && (step % 8 === 0 || isAccentStep) && rand(0.46)) {
         try {
           texture.triggerAttackRelease("64n", kickTime + 0.012, clampValue((0.05 + energyNorm * 0.064 + palette.transient * 0.024) * kickShape.velocityScale * micVelScale, 0.038, 0.126));
@@ -12793,9 +12835,12 @@ function scheduleStep(time) {
 
     // Hat
     const hatChance = chance((EngineParams.hatProb + fillBoost + kits.technoKit * 0.14 + kits.idmKit * 0.068 + habitGrid * 0.05 + habitRubber * 0.014 + palette.rhythm * 0.088 + palette.texture * 0.026 + micJam.pulse * 0.12 + micJam.clap * 0.08 + (isAccentStep ? 0.08 : 0) - kits.ambientKit * 0.06 - kits.spaceKit * 0.05 - habitSpace * 0.02 - habitRestraint * 0.018 - palette.haze * 0.034 - palette.air * 0.04 - micJam.air * 0.025 - PerformancePadState.void * 0.1) * (droneDrumThin ? 0.34 : 1) * hatShape.probabilityScale);
-    if ((patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2)) && rand(hatChance)) {
+    const hatGate = aiHat ? aiHat.fire : (patternAt(EngineParams.hatPattern, step) || (GrooveState.fillActive && step % 4 === 2));
+    const hatRoll = aiHat ? true : rand(hatChance);
+    const aiHatVel = (aiHat && aiHat.fire) ? aiHat.velocity : 1;
+    if (hatGate && hatRoll) {
       // fm-69: Dilla offbeat-hat push (mode-fixed, layered on humanShape timeOffsetSec)
-      const hatVel = clampValue((0.074 + energyNorm * 0.098 + kits.technoKit * 0.05 + kits.idmKit * 0.018 + palette.transient * 0.026 + (isAccentStep ? 0.04 : 0) - palette.air * 0.012) * hatShape.velocityScale * micVelScale, 0.048, 0.2);
+      const hatVel = clampValue((0.074 + energyNorm * 0.098 + kits.technoKit * 0.05 + kits.idmKit * 0.018 + palette.transient * 0.026 + (isAccentStep ? 0.04 : 0) - palette.air * 0.012) * hatShape.velocityScale * micVelScale * aiHatVel, 0.048, 0.2);
       const hatDilla = dillaOffsetSec("hat", step, hatVel);
       hat.triggerAttackRelease(palette.rhythm > 0.5 || kits.technoKit > 0.44 ? "64n" : "32n", t + hatShape.timeOffsetSec + hatDilla, hatVel);
     }
@@ -13361,6 +13406,104 @@ function attachUI() {
     });
   }
 
+  // fm-71: catalog picker (Music Core Rig only — element absent on fm.html)
+  setupCatalogPicker();
+}
+
+// fm-71: populate <select id="catalog-select"> with entries from
+// presets/online-samples-catalog.json and wire change → CatalogOverride.
+// Idempotent: safe to call before/after the catalog fetch resolves; re-runs
+// itself once the fetch completes. Gracefully no-ops when the element is
+// absent (e.g. fm.html, band-room.html).
+function setupCatalogPicker() {
+  const sel = document.getElementById("catalog-select");
+  if (!sel) return;
+  const info = document.getElementById("catalog-info");
+  const detail = document.getElementById("catalog-detail-body");
+
+  const renderInfo = () => {
+    if (CatalogOverride.kind === "kit" && CatalogOverride.id) {
+      const k = hazamaFmCatalog?.kits?.find((x) => x.id === CatalogOverride.id);
+      if (info) info.textContent = k ? `${k.label} · ${k.license}` : "—";
+      if (detail) detail.innerHTML = k
+        ? `<div><strong>${k.label}</strong></div>`
+          + `<div>kind: drum kit</div>`
+          + `<div>source: ${k.source || "?"}</div>`
+          + `<div>license: ${k.license || "?"}</div>`
+          + `<div>base_url: <code>${k.base_url || "?"}</code></div>`
+        : "—";
+      return;
+    }
+    if (CatalogOverride.kind === "instrument" && CatalogOverride.id) {
+      const i = hazamaFmCatalog?.instruments?.find((x) => x.id === CatalogOverride.id);
+      if (info) info.textContent = i ? `${i.label} · ${i.license}` : "—";
+      if (detail) detail.innerHTML = i
+        ? `<div><strong>${i.label}</strong></div>`
+          + `<div>kind: ${i.kind || "instrument"}</div>`
+          + `<div>source: ${i.source || "?"}</div>`
+          + `<div>license: ${i.license || "?"}</div>`
+          + `<div>base_url: <code>${i.base_url || "?"}</code></div>`
+        : "—";
+      return;
+    }
+    if (info) info.textContent = "AUTO — band/mode default";
+    if (detail) detail.textContent = "AUTO 時は band/mode のデフォルト割り当てを使用します。";
+  };
+
+  const populate = () => {
+    if (!hazamaFmCatalog) return;
+    const prev = sel.value;
+    sel.innerHTML = '<option value="auto">AUTO (band default)</option>';
+    const kits = hazamaFmCatalog.kits || [];
+    const instruments = hazamaFmCatalog.instruments || [];
+    if (kits.length) {
+      const og = document.createElement("optgroup");
+      og.label = "Drum kits";
+      kits.forEach((k) => {
+        const opt = document.createElement("option");
+        opt.value = `kit:${k.id}`;
+        opt.textContent = k.label || k.id;
+        og.appendChild(opt);
+      });
+      sel.appendChild(og);
+    }
+    if (instruments.length) {
+      const og = document.createElement("optgroup");
+      og.label = "Instruments";
+      instruments.forEach((i) => {
+        const opt = document.createElement("option");
+        opt.value = `inst:${i.id}`;
+        opt.textContent = i.label || i.id;
+        og.appendChild(opt);
+      });
+      sel.appendChild(og);
+    }
+    if (prev && [...sel.options].some((o) => o.value === prev)) sel.value = prev;
+    renderInfo();
+  };
+
+  sel.addEventListener("change", () => {
+    const v = sel.value;
+    if (!v || v === "auto") {
+      CatalogOverride.kind = null;
+      CatalogOverride.id = null;
+    } else if (v.startsWith("kit:")) {
+      CatalogOverride.kind = "kit";
+      CatalogOverride.id = v.slice(4);
+    } else if (v.startsWith("inst:")) {
+      CatalogOverride.kind = "instrument";
+      CatalogOverride.id = v.slice(5);
+    }
+    renderInfo();
+  });
+
+  if (hazamaFmCatalog) {
+    populate();
+  } else {
+    // fetch is already in flight (loadHazamaFmCatalog ran at module load);
+    // poll briefly and populate once available.
+    loadHazamaFmCatalog().then(() => populate()).catch(() => {});
+  }
 }
 
 /* =========================================================

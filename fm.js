@@ -1306,6 +1306,52 @@
     });
   }
 
+  // ---- fm-71: AI fill button (Magenta DrumsRNN) ----------------
+  // The CDN scripts + checkpoint (~5 MB) are fetched lazily on the
+  // first click. While loading the button shows "loading…" and is
+  // disabled to prevent stacked requests. After the model warms up
+  // the click fires a 4-bar burst on top of the current mode's
+  // pattern; the engine reverts automatically after the burst.
+
+  function bindAiFillButton() {
+    const btn = $("fm-ai-fill");
+    const status = $("fm-ai-fill-status");
+    if (!btn) return;
+    if (window.FmAiFill && status && typeof window.FmAiFill.bindStatusElement === "function") {
+      window.FmAiFill.bindStatusElement(status);
+    }
+    btn.addEventListener("click", async () => {
+      if (!window.FmAiFill) {
+        if (status) status.textContent = "AI module missing";
+        return;
+      }
+      // Engine not started yet → ask the user to press START first
+      // (Magenta would download but the burst couldn't fire anyway).
+      if (!started) {
+        if (status) status.textContent = "press START first";
+        return;
+      }
+      const originalLabel = btn.textContent;
+      btn.disabled = true;
+      if (!window.FmAiFill.status.ready) {
+        btn.textContent = "loading…";
+      } else {
+        btn.textContent = "firing…";
+      }
+      try {
+        const ok = await window.FmAiFill.startBurst(4);
+        if (!ok && status && !status.textContent) {
+          status.textContent = "AI fill aborted";
+        }
+      } catch (e) {
+        if (status) status.textContent = "AI fill error";
+      } finally {
+        btn.textContent = originalLabel;
+        btn.disabled = false;
+      }
+    });
+  }
+
   // ---- Visibility / wake handling ------------------------------
 
   function bindVisibility() {
@@ -1609,6 +1655,7 @@
     bindGenrePill();
     bindDjSetButtons();
     bindShuffleAudition();
+    bindAiFillButton();
     bindReviewSync();
     bindVisibility();
     ensureMediaSession();
