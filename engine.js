@@ -984,6 +984,7 @@ const PlaybackState = {
   mediaSessionSupported: typeof navigator !== "undefined" && !!navigator.mediaSession,
   backgroundBridgeActive: false,
   backgroundAudio: null,
+  backgroundBridgeHealthBound: false,
   iosSafariBridgePreferred: false
 };
 const HazamaBridgeState = {
@@ -7039,12 +7040,27 @@ function ensureBackgroundPlaybackElement() {
   const host = document.body || document.documentElement;
   host.appendChild(audio);
   PlaybackState.backgroundAudio = audio;
+  bindBackgroundPlaybackHealth(audio);
   return audio;
 }
 
 function routeHardwareOutputForBridge(active, force = false) {
   const value = active ? 0.0001 : 1;
   rampParam("hardware-output", hardwareOutput.gain, value, force ? 0.04 : 0.12, 0.003);
+}
+
+function bindBackgroundPlaybackHealth(audio) {
+  if (!audio || PlaybackState.backgroundBridgeHealthBound) return;
+  PlaybackState.backgroundBridgeHealthBound = true;
+  const markBridgeLost = (event) => {
+    if (!PlaybackState.backgroundBridgeActive) return;
+    PlaybackState.backgroundBridgeActive = false;
+    routeHardwareOutputForBridge(false, true);
+    setBackgroundStatus(event?.type === "error" ? "failed" : "direct");
+  };
+  ["pause", "ended", "error", "stalled", "emptied", "abort"].forEach((eventName) => {
+    audio.addEventListener(eventName, markBridgeLost);
+  });
 }
 
 async function startBackgroundAudioBridge(options = {}) {
@@ -7065,7 +7081,12 @@ async function startBackgroundAudioBridge(options = {}) {
     audio.muted = false;
     audio.volume = 1;
     if (PlaybackState.outputDeviceId && typeof audio.setSinkId === "function") {
-      await audio.setSinkId(PlaybackState.outputDeviceId);
+      try {
+        await audio.setSinkId(PlaybackState.outputDeviceId);
+      } catch (sinkError) {
+        console.warn("[Music] background bridge sink fallback:", sinkError);
+        setAudioOutputStatus("SYSTEM / BT");
+      }
     }
     const result = audio.play();
     if (result && typeof result.then === "function") await result;

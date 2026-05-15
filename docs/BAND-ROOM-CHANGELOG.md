@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v152 compact)
+# Band Room — Changelog (v65 → v153 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,20 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v153 compact — car/lock-screen album transport
+
+- `band-room.js br-74` / `band-room.css br-70`: Media Session `nexttrack` / `previoustrack` を
+  section 移動から song 移動へ変更。車載/ロック画面の曲送りが 01 → 02 →
+  03... の album flow と一致する。狭幅でも route badge を `B` / `D` / `F` で表示。
+- 手動 track click / band switch / 自動曲送り中は、再生中なら hidden media
+  bridge を維持してから曲を差し替える。車載/Bluetooth route が手動操作の
+  曲間でも落ちにくい。
+- `engine.js fm-79`: Hazama FM / Music Core Rig の hidden media bridge に
+  health fallback を追加。bridge が pause/error/ended した時は direct output を
+  復帰し、stale-silent を避ける。`setSinkId` 失敗時も default sink で継続。
+- Band Room logic check に first/adjacent song ordering と Media Session
+  album transport の静的検査を追加。
 
 ## v152 compact — album-flow default playback
 
