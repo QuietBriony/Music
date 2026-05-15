@@ -23,7 +23,7 @@ Hazama FM と Music Core Rig を壊さずに磨くための最低契約事項。
 ## Integrity gate (commit 前に必ず通す)
 
 ```bash
-PYTHONIOENCODING=utf-8 python scripts/audit.py
+python -X utf8 scripts/audit.py
 ```
 
 `0 BAD, 0 WARN` の状態でのみ commit する。BAD があれば commit せず原因解決。
@@ -55,7 +55,7 @@ UI 変更 (fm.html / fm.js / fm.css) は **必ず 3 箇所同期 bump**:
 # 例: v32 → v33
 sed -i 's/v=fm-32/v=fm-33/g' fm.html sw.js
 sed -i 's/hazama-fm-v32/hazama-fm-v33/g' sw.js
-python scripts/audit.py   # 0 BAD 確認
+python -X utf8 scripts/audit.py   # 0 BAD 確認
 git add -A && git commit -m "..." && git push
 ```
 
@@ -84,7 +84,7 @@ curl -sL https://raw.githubusercontent.com/QuietBriony/<repo>/main/exports/<file
      -o presets/<file>.json
 
 # audit で schema チェック
-python scripts/audit.py
+python -X utf8 scripts/audit.py
 
 # 必要なら cache bump (sw.js precache に追加が要る場合)
 # commit + push

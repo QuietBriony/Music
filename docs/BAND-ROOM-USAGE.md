@@ -110,6 +110,8 @@ Web Audio に届かない環境でも、画面上の `- / +` と slider で 0-10
 
 Band Room の最終 mix は hidden `<audio srcObject=MediaStream>` bridge にも流しており、
 iOS Safari / 車載 Bluetooth で通常メディア音声として扱われやすくしています。
+master volume bar の右側が `bridge` なら hidden media bridge 経由、`direct` なら通常の
+Web Audio 出力です。
 
 ## モード切替の意味
 

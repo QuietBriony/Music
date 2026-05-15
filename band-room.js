@@ -384,16 +384,27 @@
     try { masterHardwareOutput.gain.rampTo(value, force ? 0.04 : 0.12); } catch (e) {}
   }
 
+  function setAudioRouteStatus(label) {
+    const status = $("br-audio-route-status");
+    if (!status) return;
+    const route = label === "bridge" ? "bridge" : "direct";
+    status.textContent = route;
+    status.title = route === "bridge" ? "hidden media bridge active" : "direct Web Audio output";
+    status.setAttribute("aria-label", status.title);
+  }
+
   async function startBackgroundAudioBridge(options = {}) {
     const force = options.force === true;
     if (!force && !shouldPreferBackgroundAudioBridge()) {
       routeHardwareOutputForBridge(false);
+      setAudioRouteStatus("direct");
       return false;
     }
 
     const audio = ensureBackgroundBridgeAudio();
     if (!audio) {
       routeHardwareOutputForBridge(false);
+      setAudioRouteStatus("direct");
       return false;
     }
 
@@ -405,11 +416,14 @@
       backgroundBridgeActive = true;
       routeHardwareOutputForBridge(true, force);
       document.body?.classList.toggle("br-bg-audio", true);
+      setAudioRouteStatus("bridge");
       return true;
     } catch (e) {
       console.warn("[Band Room] background audio bridge failed:", e);
       backgroundBridgeActive = false;
       routeHardwareOutputForBridge(false, true);
+      document.body?.classList.toggle("br-bg-audio", false);
+      setAudioRouteStatus("direct");
       return false;
     }
   }
@@ -418,6 +432,7 @@
     backgroundBridgeActive = false;
     routeHardwareOutputForBridge(false, true);
     document.body?.classList.toggle("br-bg-audio", false);
+    setAudioRouteStatus("direct");
     if (backgroundBridgeAudio) {
       try { backgroundBridgeAudio.pause(); } catch (e) {}
     }
@@ -2927,7 +2942,10 @@
     let savedVol = 80;
     try {
       const raw = localStorage.getItem(MASTER_VOL_KEY);
-      if (raw !== null) savedVol = Math.max(0, Math.min(100, Number(raw) || 80));
+      if (raw !== null) {
+        const parsed = Number(raw);
+        if (Number.isFinite(parsed)) savedVol = Math.max(0, Math.min(100, parsed));
+      }
     } catch (e) {}
     masterVolValue = savedVol;
     if (masterVolEl) {
@@ -3951,35 +3969,38 @@
   let mediaSessionWired = false;
   function ensureMediaSessionHandlers() {
     if (mediaSessionWired || !("mediaSession" in navigator)) return;
-    try {
-      navigator.mediaSession.setActionHandler("play", () => {
-        if (!state.started) startPlayback();
-      });
-      navigator.mediaSession.setActionHandler("pause", () => {
-        if (state.started) stopPlayback();
-      });
-      navigator.mediaSession.setActionHandler("stop", () => {
-        if (state.started) stopPlayback();
-      });
-      navigator.mediaSession.setActionHandler("previoustrack", () => {
-        if (state.songData) jumpToSection(Math.max(0, state.sectionIdx - 1));
-      });
-      navigator.mediaSession.setActionHandler("nexttrack", () => {
-        if (state.songData) {
-          const max = (state.songData.structure?.length || 1) - 1;
-          jumpToSection(Math.min(max, state.sectionIdx + 1));
-        }
-      });
-      navigator.mediaSession.setActionHandler("seekbackward", () => {
-        $("br-master-vol-down")?.click();
-      });
-      navigator.mediaSession.setActionHandler("seekforward", () => {
-        $("br-master-vol-up")?.click();
-      });
-      mediaSessionWired = true;
-    } catch (e) {
-      console.warn("[Band Room] mediaSession handlers failed:", e);
-    }
+    const setHandler = (action, handler) => {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch (e) {
+        console.warn(`[Band Room] mediaSession ${action} handler failed:`, e);
+      }
+    };
+    setHandler("play", () => {
+      if (!state.started) startPlayback();
+    });
+    setHandler("pause", () => {
+      if (state.started) stopPlayback();
+    });
+    setHandler("stop", () => {
+      if (state.started) stopPlayback();
+    });
+    setHandler("previoustrack", () => {
+      if (state.songData) jumpToSection(Math.max(0, state.sectionIdx - 1));
+    });
+    setHandler("nexttrack", () => {
+      if (state.songData) {
+        const max = (state.songData.structure?.length || 1) - 1;
+        jumpToSection(Math.min(max, state.sectionIdx + 1));
+      }
+    });
+    setHandler("seekbackward", () => {
+      $("br-master-vol-down")?.click();
+    });
+    setHandler("seekforward", () => {
+      $("br-master-vol-up")?.click();
+    });
+    mediaSessionWired = true;
   }
 
   function updateMediaSession(playState) {

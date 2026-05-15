@@ -1,4 +1,4 @@
-# Cross-App Integrity — Music Stack 全体の整合性チェック (v149 時点)
+# Cross-App Integrity — Music Stack 全体の整合性チェック (v150 時点)
 
 > ユーザー指摘: 「全体のネタが先的にかみ合って、最適解になるように、整合性
 > チェックと磨き」
@@ -29,7 +29,7 @@ sample catalog、genre pattern JSON、CDN サンプル URL。
 
 | app | "lofi" の所在 | データ source | 音色実装 |
 |-----|-------------|------------|---------|
-| **Hazama FM** | `engine.js` の `updateSoundForMode("lofi")` | `presets/drum-frames-lofi.json` + `chill-piano-recipe.json` | ⚡ **v115 で完全 piano trio + breakbeat**:<br>• Salamander piano (chord, padBus)<br>• Salamander piano 低オク (walking bass, bassBus)<br>• tone-breakbeat (kick/snare/hat, drumBus)<br>• synth pad/bass はそれぞれ -28/-26 dB に減衰 |
+| **Hazama FM** | `engine.js` の `updateSoundForMode("lofi")` + FM GenreFlavor overlay | `presets/drum-frames-lofi.json` + `chill-piano-recipe.json` | ⚡ **v115 で piano trio + breakbeat 化**:<br>• Salamander piano (chord, padBus)<br>• Salamander piano 低オク (walking bass, bassBus)<br>• tone-breakbeat (kick/snare/hat, drumBus)<br>• GenreFlavor の crackle / jazz dust は薄い上澄み |
 | **Music Core Rig** | 同 (engine.js 経由) | 同上 | 同上 |
 | **Band Room** | `band-room.js` の `MASTER_PRESETS["lo-fi"]` (v109) | カタログ参照 | **Salamander piano (chord) + Salamander bass + tone-breakbeat (kit) + flute (lead) + guitar OFF** (v110-v111) |
 
@@ -41,7 +41,7 @@ sample catalog、genre pattern JSON、CDN サンプル URL。
 
 | asset | 使う app | 用途 |
 |-------|--------|------|
-| `presets/online-samples-catalog.json` | **Band Room + Music Core Rig** | CDN kit / instrument の URL 定義。Band Room は voice/kit selector、Core Rig は catalog override |
+| `presets/online-samples-catalog.json` | **全 app** | CDN kit / instrument の URL 定義。Band Room は voice/kit selector、Music Core Rig は catalog override、Hazama FM は `engine.js` loader 経由 |
 | `presets/tabasco-stems/*.mp3` | **Band Room only** | Demucs 抽出の Tabasco 4-stem |
 | `presets/sample-kits/<source>/<song>/*.wav` | **Band Room only** | Tabasco/UNRIPE 各曲のドラム / vocal phrase 1ショット |
 | `presets/drum-frames-*.json` | **Band Room** (`tabasco-*`) + **Hazama FM** (`lofi/funk/techno/jazz` 等) | 別ファミリ。Band Room は曲 frame、Hazama FM は genre flavor |
@@ -73,15 +73,19 @@ sample catalog、genre pattern JSON、CDN サンプル URL。
 | focus mode | 40 Hz / 8% AM, default OFF | 同 engine APIあり (UIはFM) | なし |
 
 **整合チェック**: master mastering chain は両 app で揃ってる (band-room の方が高度だが engine.js も v74 で揃え済)。 sampler 経路は今まで band-room only だったが、**v113 で Hazama FM lofi も Salamander piano に置換**して **lofi = 実 piano** の統一が完成。
-v142-v147 で、FM の phrase-lock / pattern variation / genre handoff / 40Hz focus と、Band Room の車載 audio bridge が追加済み。
+v142-v150 で、FM の phrase-lock / pattern variation / genre handoff / 40Hz focus / 長時間 event quieting と、Band Room の車載 audio bridge / route status が追加済み。
 
 ---
 
-## 5. 共通 catalog 化のロードマップ (将来)
+## 5. 共通 catalog 化の現在地
 
-現状: `online-samples-catalog.json` は band-room.js しか参照しない。
+現状: `online-samples-catalog.json` は Band Room と Music Core Rig だけでなく、
+`engine.js` からも参照される。Core Rig には `#catalog-select` があり、
+Band Room は voice / kit selector、Hazama FM は engine sampler / genre flavor 側の
+共有参照として使う。
 
-将来案: engine.js も同じ catalog を fetch して、Hazama FM の各 mode の voice 担当を catalog 経由で切替可能にする。
+次の改善余地は「採用済み catalog をどう固定・記憶・モード別 policy 化するか」。
+たとえば:
 
 ```
 mode "lofi"     → instruments[salamander-piano] for pad
@@ -90,7 +94,8 @@ mode "techno"  → kits[dirt-909] for drum + instruments[bass-electric]
 mode "ambient" → instruments[harp] for texture + instruments[cello] for sustained tone
 ```
 
-実装すれば、catalog 1 ファイル編集だけで 3 app 全部の音色が同期して変わる。
+catalog 1 ファイル編集だけで 3 app 全部の音色候補が同期する段階までは到達済み。
+今後は user preset 保存、offline fallback、mode ごとの優先順位を磨く。
 
 ---
 
@@ -100,8 +105,9 @@ mode "ambient" → instruments[harp] for texture + instruments[cello] for sustai
 
 - ❌ **ノイズで覆う** (vinyl crackle, tape hiss, narrow filter) ← v109 前の Hazama FM lofi、band-room v93 lofi はこれだった
 - ✅ **音色そのもので作る** (piano trio + breakbeat + flute lead) ← v109+ band-room、v113+ Hazama FM
+- ✅ **薄い overlay として足す** (crackle / jazz dust / session break) ← v150 時点の FM GenreFlavor
 
-両 app とも **音色そのもので** に統一済。今後 noise 系効果 (vinyl crackle 等) を加えるなら、音色の上の薄いレイヤーとして付ける(覆い隠さない)。
+両 app とも **音色そのものが主役** に統一済。noise 系効果 (vinyl crackle 等) は、音色の上の薄いレイヤーとして付ける(覆い隠さない)。
 
 ---
 
@@ -109,9 +115,9 @@ mode "ambient" → instruments[harp] for texture + instruments[cello] for sustai
 
 | app | latest cache marker | sw VERSION |
 |-----|---------------------|------------|
-| Band Room | `band-room.css?v=br-67` / `band-room.js?v=br-70` | hazama-fm-v149 |
-| Hazama FM | `engine.js?v=fm-76` / `fm.css?v=fm-47` / `fm.js?v=fm-57` | 同上 |
-| Music Core Rig | `engine.js?v=fm-76` / `style.css?v=fm-27` | 同上 |
+| Band Room | `band-room.css?v=br-68` / `band-room.js?v=br-71` | hazama-fm-v150 |
+| Hazama FM | `engine.js?v=fm-77` / `fm.css?v=fm-47` / `fm.js?v=fm-58` | 同上 |
+| Music Core Rig | `engine.js?v=fm-77` / `style.css?v=fm-27` | 同上 |
 
 `sw.js` の VERSION は **3 app 共通** で `hazama-fm-vNN`。ここを bump すると 3 app 全部のキャッシュが invalidate される。
 

@@ -2204,10 +2204,28 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   color: var(--accent-soft, #ffb87a);
   letter-spacing: 0.04em;
 }
+#br-audio-route-status {
+  flex: 0 0 auto;
+  min-width: 56px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 184, 122, 0.18);
+  color: var(--text-sub, #bba9a8);
+  font-size: 10px;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+body.br-bg-audio #br-audio-route-status {
+  border-color: rgba(143, 255, 245, 0.42);
+  color: var(--accent-glass, #8ffff5);
+}
 
 @media (max-width: 540px) {
   #br-master-vol-bar { padding: 8px 12px 10px; gap: 10px; }
   #br-master-vol-bar button { width: 40px; height: 40px; font-size: 20px; border-radius: 10px; }
   #br-master-vol-bar input[type="range"]::-webkit-slider-thumb { width: 26px; height: 26px; }
   #br-master-vol-readout { font-size: 13px; flex-basis: 32px; }
+  #br-audio-route-status { min-width: 50px; padding: 5px 6px; font-size: 9px; }
 }

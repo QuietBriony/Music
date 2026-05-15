@@ -53,7 +53,7 @@ Music repo を **claude code (Anthropic) と codex (OpenAI) の両方** で
 ```bash
 git fetch origin --quiet
 git pull --ff-only origin main
-python scripts/audit.py   # 現状 0 BAD 確認
+python -X utf8 scripts/audit.py   # 現状 0 BAD 確認
 ```
 
 直近 commit history を確認:
@@ -72,7 +72,7 @@ git log --oneline -10
 ### 作業後 (commit / push 前)
 
 ```bash
-python scripts/audit.py   # 0 BAD 必須
+python -X utf8 scripts/audit.py   # 0 BAD 必須
 git status                # 変更ファイル確認
 git pull --rebase origin main   # 他 agent の差分を取り込み
 # (衝突あれば手動解決)
@@ -86,7 +86,7 @@ git push origin main
 2. `fm.js` を開いて `<<<<<<<` マーカーで両方の意図を理解
 3. 両方の意図を残せるならマージ、難しいなら片方を採用 + 後で対話
 4. `git add fm.js && git rebase --continue`
-5. `python scripts/audit.py` で再検証
+5. `python -X utf8 scripts/audit.py` で再検証
 6. `git push origin main`
 
 ---
@@ -203,7 +203,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.x' }
       - run: pip install --quiet
-      - run: python scripts/audit.py
+      - run: python -X utf8 scripts/audit.py
 ```
 
 ---
@@ -222,7 +222,7 @@ jobs:
 
 | 課題 | 解決 |
 |---|---|
-| 両 agent が同じ整合性ガードを使う | `python scripts/audit.py` が 1 つの真実 |
+| 両 agent が同じ整合性ガードを使う | `python -X utf8 scripts/audit.py` が 1 つの真実 |
 | cache buster の同期忘れ | audit.py の Section 5 で検出 |
 | engine.js への意図せぬ改変 | AGENTS.md Hard rules + user 承認 |
 | 同時編集衝突 | git pull --rebase + 手動解決 |

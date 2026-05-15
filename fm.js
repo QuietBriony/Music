@@ -31,6 +31,7 @@
   const SLEEP_FADE_AFTER_MS = 90 * 60 * 1000;  // 90 min: start auto fade-to-sleep
   const SLEEP_FADE_DURATION_S = 30 * 60;       // 30 min: ramp output to quiet
   const ENERGY_VALUES = { low: 25, mid: 45, high: 70 };
+  const SESSION_WRITE_HEARTBEAT_MS = 10000;
   const SHUFFLE_AUDITION_INTERVAL_MS = 42000;
   const SHUFFLE_AUDITION_GENRES = ["ambient", "techno", "lofi", "jazz", "funk", "piano"];
   const SHUFFLE_AUDITION_ENERGIES = ["low", "mid", "high"];
@@ -130,6 +131,7 @@
   let starting = false;
   let stopping = false;
   let rampHandle = null;
+  let rampResolve = null;
   let previousRadioProgram = null;
   let identTimer = null;
   let programLabelTimer = null;
@@ -146,6 +148,10 @@
   let lastAcidCueKey = "";
   let listeningTrace = null;
   let focusModeEnabled = false;
+  let lastSessionWriteAt = 0;
+  let lastSessionWriteSignature = "";
+  let lastMediaMetadataSignature = "";
+  let mediaSessionWired = false;
 
   // ---- Helpers --------------------------------------------------
 
@@ -340,16 +346,29 @@
     }
   }
 
+  function settleOutputRamp() {
+    if (rampHandle) {
+      cancelAnimationFrame(rampHandle);
+      rampHandle = null;
+    }
+    if (rampResolve) {
+      const resolve = rampResolve;
+      rampResolve = null;
+      resolve();
+    }
+  }
+
   function rampOutputLevel(target, seconds) {
     const slider = $("output_level");
+    settleOutputRamp();
     if (!slider) return Promise.resolve();
-    if (rampHandle) cancelAnimationFrame(rampHandle);
 
     const start = Number(slider.value) || 0;
     const t0 = performance.now();
     const duration = Math.max(50, seconds * 1000);
 
     return new Promise((resolve) => {
+      rampResolve = resolve;
       function step(now) {
         const t = Math.min(1, (now - t0) / duration);
         const eased = t * (2 - t); // easeOutQuad — gentler at the top
@@ -360,6 +379,7 @@
           rampHandle = requestAnimationFrame(step);
         } else {
           rampHandle = null;
+          rampResolve = null;
           resolve();
         }
       }
@@ -376,10 +396,7 @@
   function adjustOutputLevel(delta) {
     const slider = $("output_level");
     if (!slider) return;
-    if (rampHandle) {
-      cancelAnimationFrame(rampHandle);
-      rampHandle = null;
-    }
+    settleOutputRamp();
     const next = Math.max(0, Math.min(100, Math.round(currentOutputLevel() + delta)));
     slider.value = String(next);
     dispatchInput(slider);
@@ -552,18 +569,38 @@
     }
   }
 
-  function writeSession(rb) {
+  function writeSession(rb, options = {}) {
     if (!rb) return;
+    const now = Date.now();
+    const energy = getCurrentEnergy();
+    const genre = getCurrentGenre();
+    const signature = [
+      rb.active || "",
+      rb.next || "",
+      rb.lastReason || "",
+      energy,
+      genre,
+      shuffleAuditionEnabled ? "shuffle" : "manual"
+    ].join("|");
+    if (
+      !options.force &&
+      signature === lastSessionWriteSignature &&
+      now - lastSessionWriteAt < SESSION_WRITE_HEARTBEAT_MS
+    ) {
+      return;
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         active: rb.active || null,
         next: rb.next || null,
         lastReason: rb.lastReason || null,
-        energy: getCurrentEnergy(),
-        genre: getCurrentGenre(),
+        energy,
+        genre,
         shuffleAudition: shuffleAuditionEnabled,
-        savedAt: Date.now()
+        savedAt: now
       }));
+      lastSessionWriteAt = now;
+      lastSessionWriteSignature = signature;
     } catch (e) {
       // quota / private mode — non-fatal
     }
@@ -1064,27 +1101,34 @@
   // ---- Media Session API (lock screen / control center) ----------
 
   function ensureMediaSession() {
-    if (!("mediaSession" in navigator)) return;
-    try {
-      navigator.mediaSession.setActionHandler("play", () => fmStart());
-      navigator.mediaSession.setActionHandler("pause", () => fmStop());
-      navigator.mediaSession.setActionHandler("stop", () => fmStop());
-      navigator.mediaSession.setActionHandler("nexttrack", () => cycleEnergy(1));
-      navigator.mediaSession.setActionHandler("previoustrack", () => cycleEnergy(-1));
-      navigator.mediaSession.setActionHandler("seekbackward", () => adjustOutputLevel(-5));
-      navigator.mediaSession.setActionHandler("seekforward", () => adjustOutputLevel(5));
-    } catch (e) {
-      // Some browsers reject unsupported actions — non-fatal.
-    }
+    if (mediaSessionWired || !("mediaSession" in navigator)) return;
+    const setHandler = (action, handler) => {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch (e) {
+        // Some browsers reject unsupported actions — non-fatal.
+      }
+    };
+    setHandler("play", () => fmStart());
+    setHandler("pause", () => fmStop());
+    setHandler("stop", () => fmStop());
+    setHandler("nexttrack", () => cycleEnergy(1));
+    setHandler("previoustrack", () => cycleEnergy(-1));
+    setHandler("seekbackward", () => adjustOutputLevel(-5));
+    setHandler("seekforward", () => adjustOutputLevel(5));
+    mediaSessionWired = true;
   }
 
   function updateMediaSessionMetadata(rb) {
     if (!("mediaSession" in navigator)) return;
     if (!rb) return;
+    const reason = rb.lastReason ? ` — ${rb.lastReason}` : "";
+    const title = `${rb.active || "Hazama FM"}${reason}`;
+    const signature = `${title}|${getCurrentGenre()}|${getCurrentEnergy()}`;
+    if (signature === lastMediaMetadataSignature) return;
     try {
-      const reason = rb.lastReason ? ` — ${rb.lastReason}` : "";
       navigator.mediaSession.metadata = new window.MediaMetadata({
-        title: `${rb.active || "Hazama FM"}${reason}`,
+        title,
         artist: "Hazama FM",
         album: "music for thinking and building",
         artwork: [
@@ -1093,6 +1137,7 @@
           { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" }
         ]
       });
+      lastMediaMetadataSignature = signature;
     } catch (e) {
       // MediaMetadata constructor may not exist on very old browsers.
     }

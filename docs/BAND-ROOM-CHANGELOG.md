@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v149 compact)
+# Band Room — Changelog (v65 → v150 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,18 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v150 compact — route status + focus event quieting
+
+- `band-room.css br-68` / `band-room.js br-71`: master volume bar に
+  `direct` / `bridge` の audio route status を追加。hidden media bridge が有効な時は
+  `bridge` と表示され、車載/Bluetooth 確認時に状態を見られる。
+- `engine.js fm-77`: 40Hz focus mode の UI event dispatch を状態変化時に限定。
+  focus monitor が 500ms ごとに同じ `music-focus-mode-state` を投げ続けない。
+- `fm.js fm-58`: 車載/BT の media key volume 操作が fade in/out promise を
+  詰まらせないようにし、Media Session metadata と session save の重複更新を抑制。
+- `band-room.js br-71`: master volume `0` の reload 復元と Media Session handler
+  登録の個別 fallback を修正。
 
 ## v149 compact — 車載/BT・genre handoff・runtime hygiene
 

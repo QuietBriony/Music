@@ -101,9 +101,12 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`, `AI fill`, DJ set buttons, mic follow, and `40HZ`.
 - Confirm cache markers match exactly across `fm.html`, `index.html`, and
-  `sw.js`. Current v149 markers: `engine.js?v=fm-76`,
-  `fm.css?v=fm-47`, `fm.js?v=fm-57`, `audio/genre-flavor.js?v=fm-68`,
-  `audio/ai-fills.js?v=fm-71`, and `hazama-fm-v149`.
+  `sw.js`. Current v150 markers: `engine.js?v=fm-77`,
+  `fm.css?v=fm-47`, `fm.js?v=fm-58`, `audio/genre-flavor.js?v=fm-68`,
+  `audio/ai-fills.js?v=fm-71`, and `hazama-fm-v150`.
+- If Band Room changed in the same PR, also confirm `band-room.css?v=br-68`,
+  `band-room.js?v=br-71`, `audio/audio-safety.js?v=br-66`, and
+  `band-room.html` references match `sw.js`.
 - Confirm browser console has no service-worker registration or update errors.
 - Close and reopen the installed app after merge; if the old UI remains, open
   the normal browser tab once, reload, then reopen the installed app.
@@ -182,7 +185,8 @@ Other genre source sanity:
   stays calm/water-safe, not dark club ambience.
 - `lofi`: source is
   `drum-frames+dusty-break-kit+vinyl-crackle+jazz-dust+session-breaks`;
-  the crackle and chords read as dusty memory, not loud foreground noise.
+  Salamander piano trio / breakbeat remains the body, and crackle / jazz dust
+  reads as a thin memory layer, not loud foreground noise.
 - `jazz`: source is
   `drum-frames+live-jazz-kit+walking-bass+brush+piano-comp+session-breaks`;
   ride/brush motion, walking bass, and sparse comping make it feel like a

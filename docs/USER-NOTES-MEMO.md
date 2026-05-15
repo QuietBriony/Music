@@ -25,6 +25,8 @@
 **残課題 (v142 以降の選択肢):**
 - ✅ v144: Media Session API の `setActionHandler("seekbackward"/"seekforward", ...)` を音量 down/up に remap。Band Room / Music Core Rig / Hazama FM で、対応車載機が rewind/forward 系 AVRCP を送る場合はアプリ内音量を ±5 で操作できる。実ボリュームキーをブラウザが直接捕まえるものではないため best-effort。
 - ✅ v145: Hazama FM で効いていた iOS Safari 向け hidden `<audio srcObject=MediaStream>` bridge を Band Room に移植。Band Room の WebAudio 最終 mix を HTMLAudioElement 経由にも流し、車側に通常メディア音声として扱われやすくする。
+- ✅ v149: master volume と `br-loudness` を乗算関係にし、車載用 0-100 volume と mastering loudness が互いに上書きしないよう修正。`audio/audio-safety.js?v=br-66` も precache。
+- ✅ v150: route pill (`bridge` / `direct`) を追加し、hidden media bridge が有効か UI で確認可能にした。master volume `0` の reload 復元も修正。
 - 保留: AudioContext を `latencyHint: "playback"` で再構築 (効果は環境依存、現状 bridge 優先)
 - 保留: HTMLAudioElement 経由の出力に全面切替 (大規模 refactor、Tone.js だと現実的でない)
 
@@ -48,7 +50,7 @@
 4. ✅ **focus mode** — v147 で default OFF の 40Hz / 8% AM を追加。AI fill burst 中は自動 suppression。
 
 **次に残すなら:**
-- 実車 / Bluetooth で v145 bridge が車側の volume button に認識されるか確認。
+- 実車 / Bluetooth で v145-v150 bridge が車側の volume button に認識されるか確認。実装は入っているので、残りは実機 validation。
 - Hazama FM の 40Hz focus mode は耳で違和感がないか A/B。強く感じる場合は depth を 5% へ落とす。
 
 ---
@@ -74,6 +76,10 @@
   - 並列が必要ならば: Claude シングル + Codex 1-2 本 が context 効率最良
   - Claude マルチ + Codex マルチ は爆速だが、Claude 側を 1-2 エージェントに留めればトークン破綻しない
 
+2026-05-15 v150 では、ユーザー指示に合わせて Claude 親 + read-only 監査
+subagent 3 本で棚卸しし、親が実装を統合した。編集 agent を並列に増やすより、
+監査並列 + 親実装の方が merge risk が低く、今回のような runtime cleanup には合っていた。
+
 ---
 
 ## Changelog
@@ -85,3 +91,6 @@
 - v145 (2026-05-15): Hazama FM の background audio bridge を Band Room に移植し、車載/BT のメディア音量認識に寄せる
 - v146 (2026-05-15): trap / soul-funk genre patterns 追加、Hazama FM genre から Band Room pattern suggestion へ連携
 - v147 (2026-05-15): Hazama FM に default OFF の 40Hz focus mode を追加 (8% AM、AI fill 中 suppression)
+- v148 (2026-05-15): Codex task status / cross-doc sync
+- v149 (2026-05-15): 長時間 session / 車載音量 cleanup。master volume × `br-loudness`、stale FM suggestion clear、debug log gating
+- v150 (2026-05-15): Band Room route status、FM fade promise / Media Session / session save quieting、focus event quieting

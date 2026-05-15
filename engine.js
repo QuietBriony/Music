@@ -7751,7 +7751,8 @@ const FocusModulationState = {
   lfo: null,
   rampTimer: null,
   monitorTimer: null,
-  suppressedByAiFill: false
+  suppressedByAiFill: false,
+  lastDispatchSignature: ""
 };
 
 function focusModulationNowMs() {
@@ -7811,11 +7812,25 @@ function applyFocusModulationDepth(depth) {
   }
 }
 
-function dispatchFocusModulationState() {
+function focusModulationStateSignature(state) {
+  return [
+    state.enabled ? "1" : "0",
+    state.active ? "1" : "0",
+    state.suppressedByAiFill ? "1" : "0",
+    state.currentDepth.toFixed(3),
+    state.targetDepth.toFixed(3)
+  ].join("|");
+}
+
+function dispatchFocusModulationState(options = {}) {
   if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+  const detail = getFmFocusModeState();
+  const signature = focusModulationStateSignature(detail);
+  if (options.force !== true && signature === FocusModulationState.lastDispatchSignature) return;
+  FocusModulationState.lastDispatchSignature = signature;
   try {
     window.dispatchEvent(new CustomEvent("music-focus-mode-state", {
-      detail: getFmFocusModeState()
+      detail
     }));
   } catch (error) {
     // best-effort UI sync only
@@ -7834,7 +7849,7 @@ function rampFocusModulationDepth(depth, seconds = 3) {
   if (Math.abs(fromDepth - targetDepth) < 0.001 || seconds <= 0) {
     applyFocusModulationDepth(targetDepth);
     if (targetDepth <= 0.001 && !FocusModulationState.enabled) disposeFocusModulationLfo();
-    dispatchFocusModulationState();
+    dispatchFocusModulationState({ force: true });
     return;
   }
 
@@ -7849,10 +7864,10 @@ function rampFocusModulationDepth(depth, seconds = 3) {
       FocusModulationState.rampTimer = null;
       applyFocusModulationDepth(targetDepth);
       if (targetDepth <= 0.001 && !FocusModulationState.enabled) disposeFocusModulationLfo();
-      dispatchFocusModulationState();
+      dispatchFocusModulationState({ force: true });
     }
   }, 50);
-  dispatchFocusModulationState();
+  dispatchFocusModulationState({ force: true });
 }
 
 function focusModulationTargetDepth() {

@@ -6,8 +6,8 @@
 ## 推奨ワークフロー
 
 1. `cd C:\workspace\github-inventory\music-stack\Music`
-2. `codex` (Codex CLI 起動、現在 v0.130.0)
-3. 下のタスクから 1 つ選んで該当プロンプトを貼る
+2. `codex` (Codex CLI 起動。CLI version は環境で変わるので固定前提にしない)
+3. 新規 TASK E 以降を作って該当プロンプトを貼る。下の TASK A-D は履歴。
 4. Codex が完了したら手動レビュー → `git diff` で確認 → 問題なければ `git add ... && git commit && git push`
 5. 親 Claude (この session) に「Codex で X 完了、次は?」と伝えれば締めとレビューする
 
@@ -28,8 +28,12 @@
 | TASK C — genre patterns expansion + cross-app linking | ✅ 完了 | `50f5e02` / v146 | trap / soul-funk JSON + Band Room suggestion |
 | TASK D — 40Hz AM focus modulation | ✅ 完了 | `5e21ce1` / v147 | default OFF、8%、AI fill 中は suppression |
 | Band Room car volume follow-up | ✅ 完了 | `0166961`, `458b604` / v144-v145 | Media Session fallback + Hazama background audio bridge 移植 |
+| Docs sync | ✅ 完了 | `41c6a37` / v148 | Codex task status / cross-doc 整理 |
+| Long-session + car audio cleanup | ✅ 完了 | `e1974c8` / v149 | master volume × loudness、stale suggestion clear、debug log gating |
+| Route status + runtime quieting | ✅ 完了 | v150 | bridge/direct 表示、focus/FM event churn 抑制 |
 
-この文書の下部にあるプロンプト群は履歴として残す。次に自走する場合は、新規 TASK E 以降として追加する。
+この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
+完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。
 
 ---
 
@@ -208,5 +212,5 @@ Codex から戻ってきた場合:
 
 - まずこのファイル全体 (`docs/USER-NOTES-MEMO.md` + `docs/CODEX-HANDOFF.md`) を読む
 - 次に最新の git log を確認 (`git log --oneline -15`)
-- 未着手 TASK を選んで、ユーザー確認なしで進めて OK (auto mode が継続している前提)
+- 完了済み TASK A-D は再実行しない。新規 request / notes から TASK E 以降を作る
 - 完了後にユーザー報告 + 次の TASK 候補を提示
