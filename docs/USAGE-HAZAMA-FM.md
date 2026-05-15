@@ -12,7 +12,7 @@
 > piano trio** に置換しました。lofi 選ぶと:
 >
 > - chord/pad: 本物の Salamander Grand Piano sampler (左手フル range)
-> - bass: 同 Salamander 低オク walking (root/5th/octave/5th)
+> - bass: 同 Salamander 低オク walking (v170 以降は phrase-aware な interval walk)
 > - drum: tone-breakbeat の boom-bap kick/snare + 8th hat
 > - synth pad/bass は -26~-28 dB に減衰、glass/voiceDust 系の装飾 noise も大幅減
 >
@@ -192,6 +192,14 @@ v169 以降は、FM の短い旋律断片も 8〜16 bar phrase ごとに key / c
 chord turn が動きます。長く聴いて「同じ旋律に張り付く」時は、まず 16 bar ほど
 待って `window.MusicRuntimeState.melodicDirector` の `key` / `contour` が変わるか
 確認します。
+
+### Bassline Director
+
+v170 以降は、FM と Music Core Rig の bassline も 4〜8 bar phrase ごとに
+pattern / interval walk / ghost push が動きます。lofi の Salamander walking bass
+と dub electric bass も同じ director を使うので、root / 5th / octave の固定巡回に
+張り付きにくくなります。確認時は `window.MusicRuntimeState.basslineDirector` の
+`pattern` / `gate` を見ます。
 
 ---
 

@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v169 compact)
+# Band Room — Changelog (v65 → v170 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,17 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v170 compact — Hazama FM / Music Core Rig bassline director
+
+- `engine.js fm-84`: shared engine に phrase-level bassline director を追加。
+  4〜8 bar ごとに bass gate / interval walk / ghost push を切り替え、main synth
+  bass が固定 root loop に張り付かないようにした。
+- lofi Salamander bass と dub electric bass も同じ director を共有し、
+  `root / 5th / octave / 5th` や `root + octave skip` の固定 bar を解消。
+- runtime diagnostics は `window.MusicRuntimeState.basslineDirector` に pattern /
+  gate / phraseBars を出す。
+- `sw.js hazama-fm-v170`: `engine.js?v=fm-84` を precache。
 
 ## v169 compact — Hazama FM melodic director
 

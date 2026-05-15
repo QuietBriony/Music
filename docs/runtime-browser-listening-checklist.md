@@ -101,12 +101,15 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`, `AI fill`, DJ set buttons, mic follow, and `40HZ`.
 - Confirm cache markers match exactly across `fm.html`, `index.html`, and
-  `sw.js`. Current v169 markers: `engine.js?v=fm-83`,
+  `sw.js`. Current v170 markers: `engine.js?v=fm-84`,
   `fm.css?v=fm-50`, `fm.js?v=fm-64`, `audio/genre-flavor.js?v=fm-69`,
-  `audio/ai-fills.js?v=fm-71`, `style.css?v=fm-28`, and `hazama-fm-v169`.
+  `audio/ai-fills.js?v=fm-71`, `style.css?v=fm-28`, and `hazama-fm-v170`.
 - For v169 Hazama FM melodic director, let FM run for at least 16 bars and
   confirm `window.MusicRuntimeState.melodicDirector` changes key/contour over
   phrases while playback stays smooth.
+- For v170 Hazama FM / Music Core Rig bassline director, confirm
+  `window.MusicRuntimeState.basslineDirector` exposes phrase pattern/gate and
+  lofi/dub/main synth bass do not stay on a fixed root/5th loop across phrases.
 - Confirm the Hazama FM route badge is visible near the controls. It should
   show `off` while idle, then `direct`, `ready`, `bridge`, or `failed`
   depending on the hidden media bridge state.

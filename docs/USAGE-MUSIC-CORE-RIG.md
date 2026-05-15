@@ -11,6 +11,8 @@
 > Salamander Grand Piano + tone-breakbeat の **完全 piano trio + breakbeat**
 > 構成になりました (Hazama FM と同じ整合)。energy slider を 34-67 帯に置けば
 > lofi mode に入り、本物のピアノ chord + walking bass + boom-bap drum が鳴ります。
+> v170 以降は bassline director も共有され、Core Rig 側でも walking bass の
+> gate / interval walk が phrase ごとに動きます。
 >
 > REC ボタンで wav export → Band Room の **🥁🎸🎹 external stems slot** に
 > drag-drop で素材橋。lofi mode の録音は Nujabes 寄り素材として Band Room

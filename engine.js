@@ -5200,6 +5200,7 @@ function publishMusicRuntimeState() {
     genreTimbreKits: genreTimbreKitRuntimeState(),
     timbrePalettes: modeTimbrePalettesRuntimeState(),
     melodicDirector: melodicDirectorRuntimeState(),
+    basslineDirector: basslineDirectorRuntimeState(),
     radioBrain: musicRadioBrainRuntimeState(),
     referenceMorph: referenceMorphRuntimeState(),
     rdjGrowth: rdjGrowthRuntimeState(),
@@ -8575,16 +8576,16 @@ function startDubBassLayer() {
   stopDubBassLayer();
   const sampler = ensureDubBass();
   if (!sampler) return;
-  // dub bass = 拍頭 root + 3 拍目に octave skip
+  // dub bass follows the shared bassline director instead of a fixed root/octave bar.
   dubBassSchedId = Tone.Transport.scheduleRepeat((time) => {
     try {
-      const bt = Tone.Time("4n").toSeconds();
-      const root = (typeof bassRoot === "string" ? bassRoot : "D2");
-      const m = root.match(/^([A-G][b#]?)(\d)/);
-      const oct = m ? parseInt(m[2], 10) : 2;
-      const rootHi = m ? (m[1] + (oct + 1)) : "D3";
-      sampler.triggerAttackRelease(root, "2n", time, 0.65);
-      sampler.triggerAttackRelease(rootHi, "4n", time + 2 * bt, 0.50);
+      triggerSamplerBasslineBar(sampler, time, {
+        baseVelocity: 0.66,
+        maxVelocity: 0.76,
+        maxEvents: 4,
+        register: "sub",
+        fallbackDuration: "4n"
+      });
     } catch (e) {}
   }, "1m");
 }
@@ -8696,30 +8697,17 @@ function startLofiBassLayer() {
   stopLofiBassLayer();
   const sampler = ensureLofiBassSampler();
   if (!sampler) return;
-  // Walking bass: root, 5th, octave, 5th — one note per beat, every bar
+  // Walking bass follows the shared bassline director, so the left hand turns
+  // phrases instead of repeating root/5th/octave/5th forever.
   lofiBassSchedId = Tone.Transport.scheduleRepeat((time) => {
     try {
-      const bt = Tone.Time("4n").toSeconds();
-      // Use the same root pool as the synth bass — bassRoot drifts with key
-      const rootNote = (typeof bassRoot === "string" ? bassRoot : "D2");
-      // Extract semitone for root + 5th + octave math
-      const NOTE_SEMI = { C:0,"C#":1,Db:1,D:2,"D#":3,Eb:3,E:4,F:5,"F#":6,Gb:6,G:7,"G#":8,Ab:8,A:9,"A#":10,Bb:10,B:11 };
-      const m = rootNote.match(/^([A-G][b#]?)(\d)/);
-      const rootSemi = m ? NOTE_SEMI[m[1]] : 2;
-      const baseOct = m ? parseInt(m[2], 10) : 2;
-      const baseSemi = rootSemi + baseOct * 12;
-      const NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-      const noteAt = (semi) => NAMES[semi % 12] + Math.floor(semi / 12);
-      const walk = [
-        noteAt(baseSemi),         // beat 0: root
-        noteAt(baseSemi + 7),     // beat 1: 5th
-        noteAt(baseSemi + 12),    // beat 2: octave
-        noteAt(baseSemi + 7)      // beat 3: 5th
-      ];
-      for (let b = 0; b < 4; b++) {
-        const accent = (b === 0 || b === 2);
-        sampler.triggerAttackRelease(walk[b], "4n", time + b * bt, accent ? 0.55 : 0.42);
-      }
+      triggerSamplerBasslineBar(sampler, time, {
+        baseVelocity: 0.58,
+        maxVelocity: 0.68,
+        maxEvents: 6,
+        register: "low",
+        fallbackDuration: "4n"
+      });
     } catch (e) {}
   }, "1m");
 }
@@ -9335,6 +9323,217 @@ function melodicDirectorRuntimeState() {
     contour: MelodicDirectorState.contour,
     contourDepth: MelodicDirectorState.contourDepth,
     lastTurnCycle: MelodicDirectorState.lastTurnCycle
+  };
+}
+
+const BASSLINE_DIRECTOR_PATTERNS = {
+  ambient: [
+    { id: "anchor", pattern: "x...............", intervals: [0], durations: ["2n"], velocities: [0.82] },
+    { id: "breath-fifth", pattern: "x.......o.......", intervals: [0, 7], durations: ["2n", "4n"], velocities: [0.78, 0.52] },
+    { id: "soft-turn", pattern: "x.........o...o.", intervals: [0, 5, 7], durations: ["2n", "8n", "8n"], velocities: [0.72, 0.42, 0.38] }
+  ],
+  lofi: [
+    { id: "dust-walk", pattern: "x...x...x...x...", intervals: [0, 7, 12, 7], durations: ["4n", "4n", "4n", "4n"], velocities: [0.9, 0.66, 0.76, 0.6] },
+    { id: "minor-turn", pattern: "x...x...x...x.o.", intervals: [0, 3, 7, 10, 11], durations: ["4n", "4n", "4n", "8n", "16n"], velocities: [0.86, 0.62, 0.72, 0.58, 0.38] },
+    { id: "side-pocket", pattern: "x...x.o.x...x...", intervals: [0, 4, 5, 7, 10], durations: ["4n", "8n", "16n", "4n", "8n"], velocities: [0.84, 0.56, 0.34, 0.68, 0.54] }
+  ],
+  dub: [
+    { id: "drop-root", pattern: "x.......x.......", intervals: [0, 12], durations: ["2n", "4n"], velocities: [0.95, 0.58] },
+    { id: "echo-fifth", pattern: "x...o.......x...", intervals: [0, 7, 5], durations: ["2n", "16n", "4n"], velocities: [0.9, 0.34, 0.54] },
+    { id: "skank-turn", pattern: "x.....o.x...o...", intervals: [0, 10, 12, 7], durations: ["2n", "16n", "4n", "16n"], velocities: [0.86, 0.34, 0.54, 0.32] }
+  ],
+  jazz: [
+    { id: "brush-walk", pattern: "x...x...x...x...", intervals: [0, 4, 7, 11], durations: ["4n", "4n", "4n", "4n"], velocities: [0.78, 0.58, 0.64, 0.56] },
+    { id: "blue-walk", pattern: "x...x...x...x.o.", intervals: [0, 3, 7, 10, 11], durations: ["4n", "4n", "4n", "8n", "16n"], velocities: [0.76, 0.58, 0.62, 0.54, 0.36] },
+    { id: "answer-walk", pattern: "x...x.o.x...x...", intervals: [0, 5, 6, 7, 9], durations: ["4n", "8n", "16n", "4n", "8n"], velocities: [0.76, 0.54, 0.32, 0.62, 0.48] }
+  ],
+  funk: [
+    { id: "rubber-pocket", pattern: "x..x..o.x...x.o.", intervals: [0, 0, 7, 10, 7, 12], durations: ["8n", "16n", "16n", "8n", "8n", "16n"], velocities: [0.88, 0.5, 0.34, 0.72, 0.62, 0.38] },
+    { id: "clavi-answer", pattern: "x...o.x...x.o...", intervals: [0, 5, 7, 10, 12], durations: ["8n", "16n", "16n", "8n", "16n"], velocities: [0.84, 0.42, 0.46, 0.7, 0.34] },
+    { id: "late-push", pattern: "x.....x.o..x..o.", intervals: [0, 7, 5, 10, 12], durations: ["8n", "8n", "16n", "8n", "16n"], velocities: [0.82, 0.58, 0.36, 0.66, 0.34] }
+  ],
+  techno: [
+    { id: "pulse-answer", pattern: "x.x...x.x...x...", intervals: [0, 0, 7, 0, 10], durations: ["8n", "16n", "8n", "16n", "8n"], velocities: [0.92, 0.48, 0.68, 0.42, 0.62] },
+    { id: "machine-turn", pattern: "x..x..x.x..x..x.", intervals: [0, 5, 7, 0, 10, 12], durations: ["8n", "16n", "16n", "8n", "16n", "16n"], velocities: [0.9, 0.44, 0.48, 0.72, 0.42, 0.38] },
+    { id: "acid-shadow", pattern: "x.x.x...x.x...o.", intervals: [0, 0, 3, 7, 0, 10, 12], durations: ["8n", "16n", "16n", "8n", "16n", "8n", "16n"], velocities: [0.9, 0.42, 0.36, 0.66, 0.42, 0.58, 0.34] }
+  ],
+  trance: [
+    { id: "lift-pulse", pattern: "x.x...x.x...x...", intervals: [0, 0, 7, 12, 7], durations: ["8n", "16n", "8n", "16n", "8n"], velocities: [0.88, 0.46, 0.66, 0.42, 0.62] },
+    { id: "sidechain-walk", pattern: "x..x..x.x..x..x.", intervals: [0, 2, 7, 0, 9, 12], durations: ["8n", "16n", "16n", "8n", "16n", "16n"], velocities: [0.86, 0.38, 0.48, 0.7, 0.4, 0.36] },
+    { id: "answer-rise", pattern: "x.x...o.x.x...o.", intervals: [0, 0, 5, 7, 7, 10, 12], durations: ["8n", "16n", "16n", "8n", "16n", "8n", "16n"], velocities: [0.86, 0.4, 0.34, 0.64, 0.38, 0.56, 0.32] }
+  ],
+  piano: [
+    { id: "felt-anchor", pattern: "x.......o.......", intervals: [0, 7], durations: ["2n", "4n"], velocities: [0.62, 0.38] },
+    { id: "left-hand", pattern: "x...o...x.....o.", intervals: [0, 5, 7, 10], durations: ["4n", "16n", "4n", "16n"], velocities: [0.62, 0.3, 0.5, 0.28] }
+  ],
+  default: [
+    { id: "default-turn", pattern: "x...x...x...x...", intervals: [0, 7, 12, 7], durations: ["4n", "4n", "4n", "4n"], velocities: [0.8, 0.58, 0.66, 0.52] }
+  ]
+};
+
+const BasslineDirectorState = {
+  phrase: 0,
+  phraseBars: 4,
+  lastTurnCycle: -1,
+  patternIndex: 0,
+  patternId: "anchor",
+  density: 0.4,
+  humanPush: 0,
+  turnSemis: 0
+};
+
+function basslineDirectorPhraseBars(mode = EngineParams.mode) {
+  if (mode === "ambient" || mode === "dub" || mode === "piano") return 8;
+  return 4;
+}
+
+function basslineDirectorPatternsForMode(mode = EngineParams.mode) {
+  return BASSLINE_DIRECTOR_PATTERNS[mode] || BASSLINE_DIRECTOR_PATTERNS.default;
+}
+
+function currentBasslineDirectorPattern() {
+  const patterns = basslineDirectorPatternsForMode();
+  return patterns[BasslineDirectorState.patternIndex % patterns.length] || patterns[0] || BASSLINE_DIRECTOR_PATTERNS.default[0];
+}
+
+function basslineDirectorActiveSteps(pattern = currentBasslineDirectorPattern()) {
+  const chars = String(pattern?.pattern || "").split("");
+  const steps = [];
+  chars.forEach((ch, index) => {
+    if (ch === "x" || ch === "o" || ch === "X") steps.push(index);
+  });
+  return steps.length ? steps : [0];
+}
+
+function basslineDirectorStepInfo(step = stepIndex) {
+  const pattern = currentBasslineDirectorPattern();
+  const steps = basslineDirectorActiveSteps(pattern);
+  const pos = ((step % 16) + 16) % 16;
+  let eventIndex = steps.indexOf(pos);
+  if (eventIndex < 0) {
+    let previous = 0;
+    for (let i = 0; i < steps.length; i++) {
+      if (steps[i] <= pos) previous = i;
+    }
+    eventIndex = previous;
+  }
+  const intervals = pattern.intervals || [0];
+  const durations = pattern.durations || [];
+  const velocities = pattern.velocities || [];
+  const ch = String(pattern.pattern || "")[pos] || "x";
+  return {
+    pattern,
+    steps,
+    pos,
+    eventIndex,
+    interval: intervals[eventIndex % intervals.length] || 0,
+    duration: durations[eventIndex % durations.length] || "8n",
+    velocityScale: velocities[eventIndex % velocities.length] ?? 1,
+    ghost: ch === "o"
+  };
+}
+
+function basslineDirectedPattern(basePattern = "") {
+  const pattern = currentBasslineDirectorPattern()?.pattern || basePattern;
+  if (!pattern) return basePattern;
+  const targetLength = Math.max(1, (basePattern && basePattern.length) || EngineParams.stepCount || pattern.length || 16);
+  if (pattern.length === targetLength) return pattern;
+  let expanded = "";
+  for (let i = 0; i < targetLength; i++) expanded += pattern[i % pattern.length] || ".";
+  return expanded;
+}
+
+function transposeBassNote(note, semis = 0, options = {}) {
+  const midi = noteNameToMidi(note);
+  if (midi == null) return note;
+  const minMidi = options.register === "sub" ? 12 : 16;
+  const maxMidi = options.register === "sub" ? 32 : 42;
+  let next = midi + Math.round(Number(semis) || 0);
+  while (next > maxMidi) next -= 12;
+  while (next < minMidi) next += 12;
+  return midiToNoteName(next);
+}
+
+function basslineDirectorNoteForStep(step = stepIndex, rootNote = bassRoot, options = {}) {
+  const info = basslineDirectorStepInfo(step);
+  const register = options.register || (info.pos % 8 === 0 ? "sub" : "low");
+  return transposeBassNote(rootNote || "D2", info.interval + BasslineDirectorState.turnSemis, { register });
+}
+
+function basslineDirectorDurationForStep(step = stepIndex, fallback = "8n") {
+  const info = basslineDirectorStepInfo(step);
+  if (fallback === "4n" && info.duration === "2n") return "4n";
+  return info.duration || fallback;
+}
+
+function basslineDirectorVelocityScale(step = stepIndex) {
+  const info = basslineDirectorStepInfo(step);
+  const ghostScale = info.ghost ? 0.58 : 1;
+  return clampValue((info.velocityScale || 1) * ghostScale * (0.92 + BasslineDirectorState.density * 0.16), 0.28, 1.14);
+}
+
+function triggerSamplerBasslineBar(sampler, time, options = {}) {
+  if (!sampler || typeof Tone === "undefined") return;
+  const steps = basslineDirectorActiveSteps().slice(0, Math.max(1, options.maxEvents || 6));
+  const sixteenth = Tone.Time("16n").toSeconds();
+  const rootNote = options.rootNote || bassRoot || "D2";
+  const baseVelocity = options.baseVelocity ?? 0.58;
+  for (const step of steps) {
+    const info = basslineDirectorStepInfo(step);
+    const note = basslineDirectorNoteForStep(step, rootNote, { register: options.register || (step % 8 === 0 ? "sub" : "low") });
+    const duration = info.duration || options.fallbackDuration || "4n";
+    const velocity = clampValue(baseVelocity * basslineDirectorVelocityScale(step), 0.16, options.maxVelocity || 0.72);
+    const offset = step * sixteenth + (info.ghost ? BasslineDirectorState.humanPush : 0);
+    sampler.triggerAttackRelease(note, duration, time + offset, velocity);
+  }
+}
+
+function resetBasslineDirector() {
+  BasslineDirectorState.phrase = 0;
+  BasslineDirectorState.phraseBars = basslineDirectorPhraseBars();
+  BasslineDirectorState.lastTurnCycle = -1;
+  BasslineDirectorState.patternIndex = 0;
+  BasslineDirectorState.patternId = currentBasslineDirectorPattern().id || "anchor";
+  BasslineDirectorState.density = 0.4;
+  BasslineDirectorState.humanPush = 0;
+  BasslineDirectorState.turnSemis = 0;
+}
+
+function advanceBasslineDirectorPhrase(context = {}) {
+  const phraseBars = basslineDirectorPhraseBars();
+  const phrase = Math.floor(GrooveState.cycle / Math.max(1, phraseBars));
+  if (phrase === BasslineDirectorState.phrase && BasslineDirectorState.lastTurnCycle >= 0) return;
+  const mode = EngineParams.mode || "ambient";
+  const patterns = basslineDirectorPatternsForMode(mode);
+  const energyNorm = context.energyNorm ?? clampValue(UCM_CUR.energy / 100, 0, 1);
+  const waveNorm = context.waveNorm ?? clampValue(UCM_CUR.wave / 100, 0, 1);
+  const creationNorm = context.creationNorm ?? clampValue(UCM_CUR.creation / 100, 0, 1);
+  const bodyNorm = clampValue(UCM_CUR.body / 100, 0, 1);
+  const observerNorm = context.observerNorm ?? clampValue(UCM_CUR.observer / 100, 0, 1);
+  const index = (phrase + Math.floor(energyNorm * 2) + Math.floor(waveNorm * 2) + Math.floor(creationNorm * 2) + MelodicDirectorState.chordTurn) % patterns.length;
+  const turnPool = [0, 0, 5, 7, -2, 2];
+  const turnSemis = turnPool[(phrase + MelodicDirectorState.keyIndex + Math.floor(observerNorm * 2)) % turnPool.length] || 0;
+  const pattern = patterns[index] || patterns[0] || BASSLINE_DIRECTOR_PATTERNS.default[0];
+  BasslineDirectorState.phrase = phrase;
+  BasslineDirectorState.phraseBars = phraseBars;
+  BasslineDirectorState.lastTurnCycle = GrooveState.cycle;
+  BasslineDirectorState.patternIndex = index;
+  BasslineDirectorState.patternId = pattern.id || "unknown";
+  BasslineDirectorState.density = clampValue(0.28 + energyNorm * 0.28 + bodyNorm * 0.22 + waveNorm * 0.16 + creationNorm * 0.08, 0.18, 0.9);
+  BasslineDirectorState.humanPush = clampValue(waveNorm * 0.012 + bodyNorm * 0.008, 0, 0.026);
+  BasslineDirectorState.turnSemis = mode === "ambient" || mode === "piano" ? 0 : turnSemis;
+}
+
+function basslineDirectorRuntimeState() {
+  const pattern = currentBasslineDirectorPattern();
+  return {
+    phrase: BasslineDirectorState.phrase,
+    phraseBars: BasslineDirectorState.phraseBars,
+    pattern: BasslineDirectorState.patternId,
+    gate: pattern.pattern,
+    density: BasslineDirectorState.density,
+    turnSemis: BasslineDirectorState.turnSemis,
+    lastTurnCycle: BasslineDirectorState.lastTurnCycle
   };
 }
 
@@ -10977,8 +11176,12 @@ function applyUCMToParams(options = {}) {
   switch (EngineParams.mode) {
     case "ambient": bassRoot = tonalRhymeSub(stepIndex, -1); break;
     case "lofi":    bassRoot = tonalRhymeSub(stepIndex, 0); break;
+    case "dub":     bassRoot = tonalRhymeSub(stepIndex, 1); break;
+    case "jazz":    bassRoot = tonalRhymeSub(stepIndex, 1); break;
+    case "funk":    bassRoot = tonalRhymeSub(stepIndex, 2); break;
     case "techno":  bassRoot = tonalRhymeSub(stepIndex, 1); break;
     case "trance":  bassRoot = tonalRhymeSub(stepIndex, 2); break;
+    case "piano":   bassRoot = tonalRhymeSub(stepIndex, -1); break;
   }
 
   if (!manual) setPatternsByMode();
@@ -11058,6 +11261,13 @@ function setPatternsByMode() {
       EngineParams.padPattern  = "x.......x...x...";
       break;
 
+    case "funk":
+      EngineParams.kickPattern = "x..x....x...x...";
+      EngineParams.hatPattern  = "..x.x.x...x.x.x.";
+      EngineParams.bassPattern = "x..x..o.x...x.o.";
+      EngineParams.padPattern  = "x...x...x...x...";
+      break;
+
     case "techno":
       EngineParams.kickPattern = "x...x...x...x...";
       EngineParams.hatPattern  = "..x...x...x...x.";
@@ -11069,6 +11279,13 @@ function setPatternsByMode() {
       EngineParams.kickPattern = "x...x...x...x...";
       EngineParams.hatPattern  = "..x.x.x...x.x.x.";
       EngineParams.bassPattern = "x.x...x.x...x...";
+      EngineParams.padPattern  = "x.......x.......";
+      break;
+
+    case "piano":
+      EngineParams.kickPattern = "................";
+      EngineParams.hatPattern  = "........x.......";
+      EngineParams.bassPattern = "x.......o.......";
       EngineParams.padPattern  = "x.......x.......";
       break;
 
@@ -11106,6 +11323,7 @@ function resetRuntimeCounters() {
   resetMusicRadioBrain();
   resetBarCounter();
   resetPatternVariation();
+  resetBasslineDirector();
   resetDJTempo();
   resetGenerativeGenome();
   resetAutoVoiceMorph();
@@ -11343,6 +11561,7 @@ function advanceGrooveStructure() {
   const micShape = micFollowGrooveShape();
   const micJam = micJamShape();
   advanceMelodicDirectorPhrase({ energyNorm, creationNorm, observerNorm, voidNorm });
+  advanceBasslineDirectorPhrase({ energyNorm, waveNorm, creationNorm, observerNorm, voidNorm });
   syncMelodicDirectorBassRoot();
   advanceLongformArcPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
@@ -11413,10 +11632,7 @@ function advanceGrooveStructure() {
 }
 
 function bassNoteForStep(step) {
-  const phraseIndex = Math.floor(step / 4) + GrooveState.bassOffset;
-  return step % 8 === 0
-    ? tonalRhymeSub(step, phraseIndex)
-    : tonalRhymeLow(step, phraseIndex);
+  return basslineDirectorNoteForStep(step, bassRoot, { register: step % 8 === 0 ? "sub" : "low" });
 }
 
 function triggerLowMotion(step, time, context) {
@@ -13751,7 +13967,7 @@ function scheduleStep(time) {
     const aiFillActive = !!(aiKick || aiHat);
     const kickPattern = patternVariationForRole("kick");
     const hatPattern = patternVariationForRole("hat");
-    const bassPattern = patternVariationForRole("bass");
+    const bassPattern = basslineDirectedPattern(patternVariationForRole("bass"));
     const padPattern = patternVariationForRole("pad");
     const skinPattern = patternVariationForRole("skin");
 
@@ -13811,9 +14027,11 @@ function scheduleStep(time) {
     // Bass
     const bassChance = chance((EngineParams.bassProb + kits.pressureKit * 0.016 + habitPressure * 0.008 + palette.transient * 0.008 + (GrooveState.fillActive && step % 8 === 6 ? 0.055 : 0) - kits.spaceKit * 0.045 - habitSpace * 0.014 - habitRestraint * 0.008 - palette.lowClamp * 0.026 - palette.air * 0.018 - PerformancePadState.void * 0.14) * (1 - lowGuard * 0.18) * (droneDrumThin ? 0.52 : 1) * bassShape.probabilityScale);
     if (patternAt(bassPattern, step) && rand(bassChance)) {
-      const note = step % 8 === 0 ? bassRoot : bassNoteForStep(step);
-      const bassTime = t + bassShape.timeOffsetSec;
-      bass.triggerAttackRelease(note, droneDrumThin ? "4n" : "8n", bassTime + 0.004, clampValue((0.12 + energyNorm * 0.082 + kits.pressureKit * 0.018 + PerformancePadState.punch * 0.018 - kits.spaceKit * 0.018 - palette.lowClamp * 0.03 - lowGuard * 0.034) * bassShape.velocityScale, 0.075, droneDrumThin ? 0.18 : 0.29));
+      const bassInfo = basslineDirectorStepInfo(step);
+      const note = bassNoteForStep(step);
+      const bassTime = t + bassShape.timeOffsetSec + (bassInfo.ghost ? BasslineDirectorState.humanPush : 0);
+      const bassDur = droneDrumThin ? "4n" : basslineDirectorDurationForStep(step, "8n");
+      bass.triggerAttackRelease(note, bassDur, bassTime + 0.004, clampValue((0.12 + energyNorm * 0.082 + kits.pressureKit * 0.018 + PerformancePadState.punch * 0.018 - kits.spaceKit * 0.018 - palette.lowClamp * 0.03 - lowGuard * 0.034) * bassShape.velocityScale * basslineDirectorVelocityScale(step), 0.05, droneDrumThin ? 0.16 : 0.27));
       if (PerformancePadState.repeat && step % 8 === 0 && rand(0.1 * bassShape.densityScale)) {
         try {
           bass.triggerAttackRelease(note, "32n", bassTime + 0.04, clampValue((0.08 + energyNorm * 0.04) * bassShape.velocityScale, 0.06, 0.14));

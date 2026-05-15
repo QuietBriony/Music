@@ -20,10 +20,19 @@ assert.match(source, /const idx = \(MelodicDirectorState\.phrase \+ MelodicDirec
 assert.match(source, /return melodicDirectorChord\(HAZE_CHORDS\[idx\], idx\)/, "Haze chords should be phrase-aware");
 assert.match(source, /\["A3", "E4", "G4", "C#5"\]/, "Haze chord pool should include a gentle dominant-side color");
 assert.match(source, /\["B2", "D3", "F#3", "A3"\]/, "Jazz chord pool should include an additional minor-color turn");
+assert.match(source, /const BASSLINE_DIRECTOR_PATTERNS = \{/, "Hazama FM should define phrase-level bassline patterns");
+assert.match(source, /function advanceBasslineDirectorPhrase\(/, "Bassline director should advance by phrase");
+assert.match(source, /basslineDirector: basslineDirectorRuntimeState\(\)/, "Runtime state should expose the bassline director");
+assert.match(source, /basslineDirectedPattern\(patternVariationForRole\("bass"\)\)/, "Main synth bass should use directed phrase gates");
+assert.match(source, /function triggerSamplerBasslineBar\(/, "Sampled bass layers should share directed phrase movement");
+assert.match(source, /triggerSamplerBasslineBar\(sampler, time,[\s\S]*register: "low"/, "Lofi bass should use directed low-register movement");
+assert.match(source, /triggerSamplerBasslineBar\(sampler, time,[\s\S]*register: "sub"/, "Dub bass should use directed sub-register movement");
+assert.match(source, /case "funk":[\s\S]*EngineParams\.bassPattern = "x\.\.x\.\.o\.x\.\.\.x\.o\."/, "Funk mode should have a directed 16-step bass pocket");
+assert.match(source, /case "piano":[\s\S]*EngineParams\.bassPattern = "x\.\.\.\.\.\.\.o\.\.\.\.\.\.\."/, "Piano mode should keep a sparse directed 16-step bass gate");
 
-assert.match(html, /engine\.js\?v=fm-83/, "FM page should load the v169 engine marker");
-assert.match(index, /engine\.js\?v=fm-83/, "Music Core should load the v169 engine marker");
-assert.match(sw, /const VERSION = "hazama-fm-v169"/, "Service worker should use v169 cache");
-assert.match(sw, /engine\.js\?v=fm-83/, "Service worker should precache the v169 engine marker");
+assert.match(html, /engine\.js\?v=fm-84/, "FM page should load the v170 engine marker");
+assert.match(index, /engine\.js\?v=fm-84/, "Music Core should load the v170 engine marker");
+assert.match(sw, /const VERSION = "hazama-fm-v170"/, "Service worker should use v170 cache");
+assert.match(sw, /engine\.js\?v=fm-84/, "Service worker should precache the v170 engine marker");
 
 console.log("Hazama FM melody check passed");
