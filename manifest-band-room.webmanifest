@@ -1,0 +1,49 @@
+{
+  "name": "Band Room",
+  "short_name": "Band Room",
+  "description": "Tabasco LIVE revival room with stems, lyrics, click, AI parts, and band practice tools.",
+  "start_url": "band-room.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#1a0a14",
+  "theme_color": "#1a0a14",
+  "lang": "ja",
+  "categories": ["music", "entertainment", "utilities"],
+  "icons": [
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Band Room",
+      "short_name": "Band Room",
+      "description": "Open the current band practice room",
+      "url": "band-room.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

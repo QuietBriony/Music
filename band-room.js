@@ -72,6 +72,7 @@
   let autoAdvanceInFlight = false;
   let autoAdvanceTimer = 0;
   let playbackHealthTimer = 0;
+  let suspendReleaseTimers = [];
   let songSwitchSeq = 0;
   let masterReverb = null;
   let masterWidener = null;
@@ -1282,6 +1283,14 @@
           filter.frequency.setValueAtTime(cutoff, Math.max(time - 0.001, Tone.now()));
         } catch (e) {}
         try { sampler.triggerAttackRelease(note, dur, time, vel); } catch (e) {}
+      },
+      triggerRelease(note, time = Tone.now()) {
+        try { sampler.triggerRelease(note, time); } catch (e) {}
+      },
+      releaseAll(time = Tone.now()) {
+        try {
+          if (typeof sampler.releaseAll === "function") sampler.releaseAll(time);
+        } catch (e) {}
       },
       dispose() {
         try { sampler.dispose(); } catch (e) {}
@@ -3437,6 +3446,41 @@
     });
   }
 
+  function clearSuspendReleaseTimers() {
+    suspendReleaseTimers.forEach((timer) => {
+      try { clearTimeout(timer); } catch (e) {}
+    });
+    suspendReleaseTimers = [];
+  }
+
+  function scheduleMobileSuspendRelease(reason = "suspend") {
+    if (!state.started) return;
+    clearSuspendReleaseTimers();
+    releaseSustainedSynths(reason);
+    // iOS can freeze between attack and scheduled release while the screen is
+    // locking. Fire a few close panic releases while timers are still allowed.
+    [80, 260, 720].forEach((delay) => {
+      suspendReleaseTimers.push(setTimeout(() => {
+        if (!state.started) return;
+        releaseSustainedSynths(`${reason}+${delay}`);
+      }, delay));
+    });
+  }
+
+  function handlePlaybackGoingBackground(reason = "hidden") {
+    if (!state.started) return;
+    scheduleMobileSuspendRelease(reason);
+    checkBackgroundBridgeHealth(reason);
+    if (shouldPreferBackgroundAudioBridge() && !backgroundBridgeActive) {
+      startBackgroundAudioBridge({ force: true, rearm: true, reason });
+    }
+  }
+
+  function handlePlaybackReturningForeground(reason = "visible") {
+    clearSuspendReleaseTimers();
+    if (state.started) recoverPlaybackAfterSuspend(reason);
+  }
+
   function resyncStemPlaybackToClock(reason = "resync", force = false) {
     if (!state.started || currentMode !== "stems") return false;
     if (!stemPlayers.vocals && !stemPlayers.drums && !stemPlayers.bass && !stemPlayers.other) return false;
@@ -3522,6 +3566,7 @@
       if (options.resetPosition) setTimelineStateForSecond(0);
       stopTransportProgress();
       stopPlaybackHealthWatchdog();
+      clearSuspendReleaseTimers();
       if (!options.keepBackgroundBridge) stopBackgroundAudioBridge();
       if (options.updateMedia !== false) updateMediaSession("paused");
       return;
@@ -3538,6 +3583,7 @@
     state.playbackRateAtStart = 1;
     setTimelineStateForSecond(retainedOffsetSec);
     stopPlaybackHealthWatchdog();
+    clearSuspendReleaseTimers();
     setButtonState("idle");
     stopMasterMeter();
     stopTransportProgress();
@@ -5761,21 +5807,34 @@
   document.addEventListener("visibilitychange", () => {
     if (!state.started) return;
     if (document.visibilityState === "visible") {
-      recoverPlaybackAfterSuspend("visible");
+      handlePlaybackReturningForeground("visible");
     } else {
-      releaseSustainedSynths("hidden");
-      if (shouldPreferBackgroundAudioBridge() && !backgroundBridgeActive) {
-        startBackgroundAudioBridge({ force: true, rearm: true, reason: "hidden" });
-      }
+      handlePlaybackGoingBackground("hidden");
     }
   });
 
   window.addEventListener("pageshow", () => {
-    if (state.started) recoverPlaybackAfterSuspend("pageshow");
+    handlePlaybackReturningForeground("pageshow");
   });
 
   window.addEventListener("pagehide", () => {
-    if (state.started) releaseSustainedSynths("pagehide");
+    handlePlaybackGoingBackground("pagehide");
+  });
+
+  window.addEventListener("focus", () => {
+    handlePlaybackReturningForeground("focus");
+  });
+
+  window.addEventListener("blur", () => {
+    handlePlaybackGoingBackground("blur");
+  });
+
+  document.addEventListener("freeze", () => {
+    handlePlaybackGoingBackground("freeze");
+  });
+
+  document.addEventListener("resume", () => {
+    handlePlaybackReturningForeground("resume");
   });
 
   // v97: load online-samples-catalog at boot so kit dropdown can include

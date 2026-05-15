@@ -26,6 +26,7 @@ QuietBriony/Music              ← 演奏ホール (このリポ)
 ├── presets/*.json             ← sister repo からの export (6 files)
 ├── manifest.webmanifest       ← Hazama FM PWA
 ├── manifest-mixer.webmanifest ← Music Core Rig PWA (別アプリ)
+├── manifest-band-room.webmanifest ← Band Room PWA (別アプリ)
 └── sw.js                      ← Service Worker (offline cache)
 
 QuietBriony/chill              ← Quiet Piano recipe 資産庫
@@ -257,6 +258,7 @@ reference → builder への翻訳:
 ```
 manifest.webmanifest         ← Hazama FM (start_url=fm.html、ミントアイコン)
 manifest-mixer.webmanifest   ← Music Core Rig (start_url=index.html、warm orange)
+manifest-band-room.webmanifest ← Band Room (start_url=band-room.html)
 sw.js                        ← 共通 Service Worker
   ├ HTML: network-first       (deploy 即反映)
   ├ static (CSS/JS/SVG/PNG): cache-first
@@ -579,7 +581,7 @@ scripts/_gen_tabasco_songs.py                  # song-track JSON 生成
 | エンジン | engine.js (12k 行) + genre-flavor.js (3k 行) | Tone.js のみ standalone |
 | 共有 | Tone.js, master mastering 思想 | engine.js も genre-flavor.js も使わない |
 | URL | `/Music/fm.html` | `/Music/band-room.html` |
-| PWA | manifest.webmanifest (Hazama FM) | (band-room PWA は未設定) |
+| PWA | manifest.webmanifest (Hazama FM) / manifest-mixer.webmanifest | manifest-band-room.webmanifest |
 
 Band Room は engine.js / genre-flavor.js の重 monolith と分離した「軽い jam app」として
 独立進化させた。Hazama FM の mastering chain ノウハウ (compressor + EQ3 + limiter

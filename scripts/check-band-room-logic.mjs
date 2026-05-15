@@ -140,7 +140,12 @@ assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default s
 assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v168 mix");
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
 assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.68\)/, "Vocal stem default should sit forward without pinning the limiter");
-assert.match(html, /band-room\.js\?v=br-85/, "Band Room HTML should load the v168 script marker");
+assert.match(html, /band-room\.js\?v=br-86/, "Band Room HTML should load the v171 script marker");
+assert.match(html, /rel="manifest" href="manifest-band-room\.webmanifest"/, "Band Room should expose its own PWA manifest");
+assert.match(source, /function scheduleMobileSuspendRelease\(/, "Band Room should run panic releases while mobile screen lock is happening");
+assert.match(source, /window\.addEventListener\("blur"/, "Band Room should treat mobile blur as a background transition");
+assert.match(source, /document\.addEventListener\("freeze"/, "Band Room should handle page lifecycle freeze");
+assert.match(source, /releaseAll\(time = Tone\.now\(\)\)/, "Velocity-sensitive samplers should expose releaseAll for suspend panic");
 assert.match(html, /id="br-vfx-chorus"[^>]*value="22"/, "Vocal chorus slider should match the v168 wet default");
 assert.match(html, /id="br-vfx-delay"[^>]*value="12"/, "Vocal delay slider should match the v168 send default");
 assert.match(html, /id="br-vfx-reverb"[^>]*value="20"/, "Vocal reverb slider should match the v168 send default");

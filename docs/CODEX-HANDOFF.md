@@ -52,6 +52,7 @@
 | Band Room saved mix migration | ✅ 完了 | v168 | 旧 localStorage default slider だけを新 mix へ移行し、既存ブラウザでも v167 の出音が反映されるようにする |
 | Hazama FM melodic director | ✅ 完了 | v169 | 8〜16 bar phrase ごとに key center / contour / chord turn を動かし、固定断片の旋律反復を減らす |
 | Hazama FM / Music Core Rig bassline director | ✅ 完了 | v170 | 4〜8 bar phrase ごとに bass gate / interval walk / human push を動かし、main synth / lofi / dub bass の固定 root loop を減らす |
+| Band Room PWA + screen-lock hardening | ✅ 完了 | v171 | 専用 manifest を追加し、screen lock / blur / freeze / pagehide で sampled instruments も含めて panic release |
 
 この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
 完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。

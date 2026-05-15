@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v170 compact)
+# Band Room — Changelog (v65 → v171 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,18 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v171 compact — Band Room PWA + mobile screen-lock hardening
+
+- `band-room.html`: Band Room 専用 `manifest-band-room.webmanifest` と
+  `apple-touch-icon` / app title を追加。ホーム画面 install 時の standalone
+  起動を Hazama FM / Music Core Rig と揃えた。
+- `band-room.js br-86`: iPhone / mobile browser の screen lock / blur / freeze /
+  pagehide で複数回の panic release を走らせる。画面を閉じる瞬間に attack 済みで
+  release が取り残される単音ループを減らす。
+- catalog sampler wrapper に `releaseAll()` / `triggerRelease()` を追加し、
+  electric bass / guitar / sampled chord 等も suspend panic の対象にした。
+- `sw.js hazama-fm-v171`: Band Room manifest と `band-room.js?v=br-86` を precache。
 
 ## v170 compact — Hazama FM / Music Core Rig bassline director
 

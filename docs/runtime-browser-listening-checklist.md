@@ -100,10 +100,12 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Open `fm.html` from a local server, not a `file://` URL.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`, `AI fill`, DJ set buttons, mic follow, and `40HZ`.
-- Confirm cache markers match exactly across `fm.html`, `index.html`, and
-  `sw.js`. Current v170 markers: `engine.js?v=fm-84`,
+- Confirm cache markers match exactly across `fm.html`, `index.html`,
+  `band-room.html`, and `sw.js`. Current v171 markers: `engine.js?v=fm-84`,
   `fm.css?v=fm-50`, `fm.js?v=fm-64`, `audio/genre-flavor.js?v=fm-69`,
-  `audio/ai-fills.js?v=fm-71`, `style.css?v=fm-28`, and `hazama-fm-v170`.
+  `audio/ai-fills.js?v=fm-71`, `style.css?v=fm-28`,
+  `band-room.js?v=br-86`, `manifest-band-room.webmanifest`, and
+  `hazama-fm-v171`.
 - For v169 Hazama FM melodic director, let FM run for at least 16 bars and
   confirm `window.MusicRuntimeState.melodicDirector` changes key/contour over
   phrases while playback stays smooth.
@@ -117,7 +119,7 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `output` / `context` update. During playback, tap `rearm`; failed rearm must
   return to direct output rather than leave playback silent.
 - If Band Room changed in the same PR, also confirm `band-room.css?v=br-73`,
-  `band-room.js?v=br-85`, `audio/audio-safety.js?v=br-66`, and
+  `band-room.js?v=br-86`, `audio/audio-safety.js?v=br-66`, and
   `band-room.html` references match `sw.js`.
 - For v168 Band Room saved mix migration, load with old v166 default slider
   values in `band-room.prefs.v1` and confirm only exact old defaults migrate to
