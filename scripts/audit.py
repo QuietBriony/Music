@@ -1,8 +1,9 @@
 """Hazama FM 整合性監査 script.
 
 Run from repo root:
-    python scripts/audit.py            # 通常出力
-    python scripts/audit.py --quiet    # BAD のときだけ出力 (CI 向き)
+    python -X utf8 scripts/audit.py            # 通常出力
+    python -X utf8 scripts/audit.py --quiet    # BAD のときだけ出力 (CI 向き)
+    python -X utf8 scripts/audit.py --expected-version hazama-fm-v151
 
 Both modes exit 0 if 0 BAD, exit 1 otherwise.
 
@@ -11,7 +12,7 @@ Checks:
     2. presets/loader.js PRESET_FILES vs filesystem
     3. genre-flavor.js PRESET_BY_GENRE vs loader keys
     4. sw.js precache list completeness
-    5. cache buster version sync (fm.html / band-room.html vs sw.js)
+    5. cache buster version sync (fm.html / index.html / band-room.html vs sw.js)
     6. engine.js MUSIC_RADIO_BRAIN_PROGRAMS coverage
        (reset / reason / target / station-ident / bias for each program)
     7. genre-flavor.js per-builder synth volume settings
@@ -19,7 +20,7 @@ Checks:
 
 Exits with non-zero status if any BAD item found (CI-friendly).
 
-Set PYTHONIOENCODING=utf-8 on Windows shells if you see encoding errors.
+Use `python -X utf8` on Windows shells to avoid console encoding errors.
 """
 
 import json
@@ -32,6 +33,32 @@ ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)
 
 QUIET = "--quiet" in sys.argv or "-q" in sys.argv
+
+
+def cli_value(*names):
+    for i, arg in enumerate(sys.argv):
+        for name in names:
+            if arg == name and i + 1 < len(sys.argv):
+                return sys.argv[i + 1]
+            if arg.startswith(f"{name}="):
+                return arg.split("=", 1)[1]
+    return None
+
+
+def normalize_sw_version(value):
+    if not value:
+        return None
+    value = value.strip()
+    if re.fullmatch(r"v\d+", value):
+        return f"hazama-fm-{value}"
+    if re.fullmatch(r"\d+", value):
+        return f"hazama-fm-v{value}"
+    return value
+
+
+EXPECTED_SW_VERSION = normalize_sw_version(
+    cli_value("--expected-version", "--expected-sw-version")
+)
 
 bad = 0
 warn = 0
@@ -58,6 +85,31 @@ def warn_msg(msg):
 def info(msg):
     if not QUIET:
         print(msg)
+
+
+def extract_precache_urls(text):
+    block = re.search(r"PRECACHE_URLS\s*=\s*\[([\s\S]*?)\];", text)
+    if not block:
+        return []
+    return re.findall(r'"([^"]+)"', block.group(1))
+
+
+def strip_query(url):
+    return url.split("?", 1)[0]
+
+
+def is_remote_url(url):
+    return bool(re.match(r"^(?:https?:)?//", url)) or url.startswith(("data:", "blob:"))
+
+
+def versioned_page_urls(text):
+    urls = re.findall(r'\b(?:href|src)="([^"]+\?v=(?:fm|br)-[^"]+)"', text)
+    return [u for u in urls if not is_remote_url(u)]
+
+
+def release_version_number(version):
+    m = re.search(r"hazama-fm-v(\d+)", version or "")
+    return int(m.group(1)) if m else -1
 
 
 info("=" * 60)
@@ -109,9 +161,9 @@ status(not extra_in_loader,
 if extra_in_loader:
     print(f"     dangling: {sorted(extra_in_loader)}")
 if legacy:
-    print(f"  -- {len(legacy)} legacy engine preset(s) present (NOT in loader by design):")
+    info(f"  -- {len(legacy)} legacy engine preset(s) present (NOT in loader by design):")
     for p in sorted(legacy):
-        print(f"        {p}")
+        info(f"        {p}")
 
 # 3. PRESET_BY_GENRE vs loader keys
 info("\n[3] genre-flavor.js PRESET_BY_GENRE vs loader keys")
@@ -126,28 +178,69 @@ for genre, key in genre_map:
 # 4. sw.js precache list
 info("\n[4] sw.js precache list")
 sw_text = (ROOT / "sw.js").read_text(encoding="utf-8")
+precache_urls = extract_precache_urls(sw_text)
+precache_url_set = set(precache_urls)
 precached = set(s.strip('"') for s in re.findall(r'"presets/[^"]+\.json"', sw_text))
 missing_in_sw = hazama_fm_files - precached
 status(not missing_in_sw, f"all Hazama FM presets precached ({len(precached & hazama_fm_files)}/{len(hazama_fm_files)})")
 if missing_in_sw:
     print(f"     missing in sw: {sorted(missing_in_sw)}")
+local_precache_urls = [u for u in precache_urls if not is_remote_url(u)]
+missing_local = sorted(
+    u for u in local_precache_urls
+    if not (ROOT / strip_query(u)).exists()
+)
+status(not missing_local, f"all local sw precache targets exist ({len(local_precache_urls) - len(missing_local)}/{len(local_precache_urls)})")
+if missing_local:
+    print(f"     missing local files: {missing_local}")
 
-# 5. Cache buster sync (fm.html / band-room.html vs sw.js)
+# 5. Cache buster sync (fm.html / index.html / band-room.html vs sw.js)
 info("\n[5] cache buster version sync")
 html_text = (ROOT / "fm.html").read_text(encoding="utf-8")
+index_html_text = (ROOT / "index.html").read_text(encoding="utf-8")
 band_room_html_text = (ROOT / "band-room.html").read_text(encoding="utf-8")
 versions_html = set(re.findall(r'\?v=(fm-\w+)', html_text))
+versions_index_html = set(re.findall(r'\?v=(fm-\w+)', index_html_text))
 versions_sw = set(re.findall(r'\?v=(fm-\w+)', sw_text))
 versions_br_html = set(re.findall(r'\?v=(br-\w+)', band_room_html_text))
 versions_br_sw = set(re.findall(r'\?v=(br-\w+)', sw_text))
 sw_version = re.search(r'const VERSION = "([^"]+)"', sw_text)
-status(versions_html == versions_sw, f"fm.html ↔ sw.js precache versions match")
+for page_name, page_text in [
+    ("fm.html", html_text),
+    ("index.html", index_html_text),
+    ("band-room.html", band_room_html_text),
+]:
+    refs = set(versioned_page_urls(page_text))
+    missing_refs = sorted(refs - precache_url_set)
+    status(not missing_refs, f"{page_name} versioned local assets are precached ({len(refs) - len(missing_refs)}/{len(refs)})")
+    if missing_refs:
+        print(f"     missing in sw: {missing_refs}")
+status(versions_html <= versions_sw, f"fm.html version markers present in sw.js")
 info(f"     html: {sorted(versions_html)}")
+status(versions_index_html <= versions_sw, f"index.html version markers present in sw.js")
+info(f"     index: {sorted(versions_index_html)}")
 info(f"     sw  : {sorted(versions_sw)}")
-status(versions_br_html == versions_br_sw, f"band-room.html ↔ sw.js precache versions match")
+status(versions_br_html <= versions_br_sw, f"band-room.html version markers present in sw.js")
 info(f"     band-room html: {sorted(versions_br_html)}")
 info(f"     band-room sw  : {sorted(versions_br_sw)}")
-info(f"     sw VERSION: {sw_version.group(1) if sw_version else '?'}")
+sw_version_value = sw_version.group(1) if sw_version else ""
+status(bool(re.fullmatch(r"hazama-fm-v\d+", sw_version_value)), f"sw.js VERSION is well formed ({sw_version_value or '?'})")
+if EXPECTED_SW_VERSION:
+    status(sw_version_value == EXPECTED_SW_VERSION, f"sw.js VERSION matches expected {EXPECTED_SW_VERSION}")
+release_doc_versions = []
+for release_doc in [
+    "docs/BAND-ROOM-CHANGELOG.md",
+    "docs/BAND-ROOM-MANUAL.md",
+    "docs/CROSS-APP-INTEGRITY.md",
+    "docs/runtime-browser-listening-checklist.md",
+    "docs/USER-NOTES-MEMO.md",
+]:
+    path = ROOT / release_doc
+    if path.exists():
+        release_doc_versions.extend(re.findall(r"hazama-fm-v\d+", path.read_text(encoding="utf-8")))
+if release_doc_versions:
+    latest_doc_version = max(release_doc_versions, key=release_version_number)
+    status(sw_version_value == latest_doc_version, f"sw.js VERSION matches latest release docs marker ({latest_doc_version})")
 
 # 6. engine.js MUSIC_RADIO_BRAIN_PROGRAMS coverage
 info("\n[6] engine.js radio brain program coverage")
@@ -184,7 +277,7 @@ levels = re.findall(r'^\s*(\w+):\s*([\d.]+)', lvl_block, re.MULTILINE)
 known = {"any", "ambient", "techno", "lofi", "jazz", "funk", "piano"}
 listed = set(g for g, _ in levels)
 for g, v in levels:
-    print(f"  {g:<8s} {v}")
+    info(f"  {g:<8s} {v}")
 status(known == listed, f"LEVEL_BY_GENRE covers all 7 pills")
 if known - listed:
     print(f"     missing: {sorted(known - listed)}")

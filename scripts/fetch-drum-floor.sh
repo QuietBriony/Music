@@ -11,7 +11,7 @@
 # Manual fallback (mirrors what this script does):
 #   curl -sL https://raw.githubusercontent.com/QuietBriony/drum-floor/main/exports/drum-frames-jazz.json -o presets/drum-frames-jazz.json
 #   curl -sL https://raw.githubusercontent.com/QuietBriony/drum-floor/main/exports/drum-frames-funk.json -o presets/drum-frames-funk.json
-#   python scripts/audit.py
+#   python -X utf8 scripts/audit.py
 #
 # This script never auto-commits or auto-pushes — those are human decisions.
 
@@ -89,7 +89,7 @@ done
 if $APPLY && [[ $UPDATES -gt 0 ]] && $RUN_AUDIT; then
   echo ""
   echo "[fetch-drum-floor] running scripts/audit.py..."
-  PYTHONIOENCODING=utf-8 python scripts/audit.py
+  python -X utf8 scripts/audit.py
 fi
 
 if [[ $UPDATES -gt 0 ]]; then

@@ -23,7 +23,9 @@ Hazama FM と Music Core Rig を壊さずに磨くための最低契約事項。
 ## Integrity gate (commit 前に必ず通す)
 
 ```bash
-python -X utf8 scripts/audit.py
+python -X utf8 scripts/audit.py --expected-version hazama-fm-v151
+node scripts/check-js.mjs
+node scripts/check-band-room-logic.mjs
 ```
 
 `0 BAD, 0 WARN` の状態でのみ commit する。BAD があれば commit せず原因解決。
@@ -34,8 +36,9 @@ python -X utf8 scripts/audit.py
 - preset JSON (Hazama FM 6 ファイル) の schema / version 整合
 - `loader.js` PRESET_FILES と FS の整合
 - `genre-flavor.js` PRESET_BY_GENRE と loader keys の対応
-- `sw.js` precache list (Hazama FM 6 ファイル + 必要 assets) の網羅
-- cache buster (`?v=fm-N`) が `fm.html` と `sw.js` precache list で一致
+- `sw.js` precache list (Hazama FM 6 ファイル + 必要 assets) の網羅と local file existence
+- cache buster (`?v=fm-N` / `?v=br-N`) が `fm.html` / `index.html` / `band-room.html` と `sw.js` precache list で path 単位一致
+- `sw.js VERSION` が expected version / release docs と一致
 - engine.js `MUSIC_RADIO_BRAIN_PROGRAMS` の各番組が reset / reason / target / station ident / bias を満たす
 - `LEVEL_BY_GENRE` が全 7 pill (any/ambient/techno/lofi/jazz/funk/piano) をカバー
 
@@ -55,7 +58,8 @@ UI 変更 (fm.html / fm.js / fm.css) は **必ず 3 箇所同期 bump**:
 # 例: v32 → v33
 sed -i 's/v=fm-32/v=fm-33/g' fm.html sw.js
 sed -i 's/hazama-fm-v32/hazama-fm-v33/g' sw.js
-python -X utf8 scripts/audit.py   # 0 BAD 確認
+python -X utf8 scripts/audit.py --expected-version hazama-fm-v33   # 0 BAD 確認
+node scripts/check-js.mjs
 git add -A && git commit -m "..." && git push
 ```
 
@@ -84,7 +88,7 @@ curl -sL https://raw.githubusercontent.com/QuietBriony/<repo>/main/exports/<file
      -o presets/<file>.json
 
 # audit で schema チェック
-python -X utf8 scripts/audit.py
+python -X utf8 scripts/audit.py --expected-version hazama-fm-v151
 
 # 必要なら cache bump (sw.js precache に追加が要る場合)
 # commit + push
@@ -114,7 +118,7 @@ python -X utf8 scripts/audit.py
 - 各 agent は **commit 前に `git pull --ff-only origin main`** で最新化
 - 他 agent が同じファイルを触ってたら、**今の作業ブランチに rebase** or **手動マージ**
 - 衝突しやすいファイル: `fm.js` (最頻出)、`fm.css`、`sw.js`、`audio/genre-flavor.js`
-- 衝突しにくいファイル: `presets/*.json` (各 sister repo 別)、`docs/*.md` (基本独立)、`scripts/audit.py` (両方が育てる)
+- 衝突しにくいファイル: `presets/*.json` (各 sister repo 別)、`docs/*.md` (基本独立)、`scripts/audit.py` / `scripts/check-*.mjs` (両方が育てる)
 
 ---
 

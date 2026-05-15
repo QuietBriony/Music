@@ -57,6 +57,7 @@
   let masterPlaybackDest = null;
   let backgroundBridgeAudio = null;
   let backgroundBridgeActive = false;
+  let backgroundBridgeHealthBound = false;
   let masterReverb = null;
   let masterWidener = null;
   let masterDryGain = null;
@@ -375,7 +376,23 @@
 
     (document.body || document.documentElement).appendChild(audio);
     backgroundBridgeAudio = audio;
+    bindBackgroundBridgeHealth(audio);
     return audio;
+  }
+
+  function bindBackgroundBridgeHealth(audio) {
+    if (!audio || backgroundBridgeHealthBound) return;
+    backgroundBridgeHealthBound = true;
+    const markBridgeLost = () => {
+      if (!backgroundBridgeActive) return;
+      backgroundBridgeActive = false;
+      routeHardwareOutputForBridge(false, true);
+      document.body?.classList.toggle("br-bg-audio", false);
+      setAudioRouteStatus("failed");
+    };
+    ["pause", "ended", "error", "stalled", "emptied", "abort"].forEach((eventName) => {
+      audio.addEventListener(eventName, markBridgeLost);
+    });
   }
 
   function routeHardwareOutputForBridge(active, force = false) {
@@ -387,9 +404,13 @@
   function setAudioRouteStatus(label) {
     const status = $("br-audio-route-status");
     if (!status) return;
-    const route = label === "bridge" ? "bridge" : "direct";
+    const route = ["bridge", "arming", "failed"].includes(label) ? label : "direct";
     status.textContent = route;
-    status.title = route === "bridge" ? "hidden media bridge active" : "direct Web Audio output";
+    status.dataset.route = route;
+    status.title = route === "bridge" ? "hidden media bridge active"
+                 : route === "arming" ? "hidden media bridge starting"
+                 : route === "failed" ? "hidden media bridge failed; direct output restored"
+                 : "direct Web Audio output";
     status.setAttribute("aria-label", status.title);
   }
 
@@ -411,6 +432,7 @@
     try {
       audio.muted = false;
       audio.volume = 1;
+      setAudioRouteStatus("arming");
       const result = audio.play();
       if (result && typeof result.then === "function") await result;
       backgroundBridgeActive = true;
@@ -423,7 +445,7 @@
       backgroundBridgeActive = false;
       routeHardwareOutputForBridge(false, true);
       document.body?.classList.toggle("br-bg-audio", false);
-      setAudioRouteStatus("direct");
+      setAudioRouteStatus("failed");
       return false;
     }
   }
@@ -1801,8 +1823,11 @@
     const m = chord.match(/^([A-G][b#]?)/);
     if (!m) return "G2";
     const NOTE_SEMI = { C: 0, "C#": 1, Db: 1, D: 2, "D#": 3, Eb: 3, E: 4, F: 5, "F#": 6, Gb: 6, G: 7, "G#": 8, Ab: 8, A: 9, "A#": 10, Bb: 10, B: 11 };
-    const semi = NOTE_SEMI[m[1]] || 7;
+    const semi = NOTE_SEMI[m[1]] ?? 7;
     return semiToNote(semi + 2 * 12); // C2 baseline
+  }
+  if (typeof window !== "undefined") {
+    window.BandRoomTestHooks = Object.assign(window.BandRoomTestHooks || {}, { chordRoot });
   }
 
   // v112: return absolute semitone of chord root at bass register (octave 2)
@@ -2555,13 +2580,14 @@
     }
 
     ensureMaster();
+    const backgroundBridgeStart = startBackgroundAudioBridge();
     if (!drumKit) drumKit = await buildKitForSource(state.kitSource);
     if (!synthBass) synthBass = makeSynthBass(bassBus);
     if (!guitarSynth) guitarSynth = makeGuitar(guitarBus);
     if (!voiceSynth) voiceSynth = makeVoiceBox(voiceBus);
     if (!chordSynth) chordSynth = makeChordSynth(chordBus);
     if (!clickSynth) clickSynth = makeClick(clickBus);
-    await startBackgroundAudioBridge();
+    await backgroundBridgeStart;
 
     // Load stems (if available for this song)
     await loadStemsForSong(state.currentSongId);

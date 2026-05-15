@@ -7772,6 +7772,7 @@ function focusModulationAiFillActive() {
 function ensureFocusModulationLfo() {
   if (FocusModulationState.lfo) return FocusModulationState.lfo;
   try {
+    try { focusModGain.gain.value = 0; } catch (error) {}
     const lfo = new Tone.LFO(FocusModulationState.frequencyHz, 1, 1);
     if (lfo.frequency && typeof lfo.frequency.value === "number") {
       lfo.frequency.value = FocusModulationState.frequencyHz;
@@ -7804,6 +7805,7 @@ function applyFocusModulationDepth(depth) {
   const lfo = ensureFocusModulationLfo();
   if (!lfo) return;
   try {
+    focusModGain.gain.value = 0;
     lfo.min = 1 - safeDepth;
     lfo.max = 1;
     FocusModulationState.currentDepth = safeDepth;

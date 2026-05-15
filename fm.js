@@ -152,6 +152,9 @@
   let lastSessionWriteSignature = "";
   let lastMediaMetadataSignature = "";
   let mediaSessionWired = false;
+  let playbackIntentSeq = 0;
+  let profileApplySeq = 0;
+  let profileApplyTimers = [];
 
   // ---- Helpers --------------------------------------------------
 
@@ -477,6 +480,21 @@
     }
   }
 
+  function clearProfileApplyTimers() {
+    profileApplySeq++;
+    profileApplyTimers.forEach((id) => clearTimeout(id));
+    profileApplyTimers = [];
+  }
+
+  function scheduleProfileApply(seq, fn, delayMs) {
+    const id = setTimeout(() => {
+      profileApplyTimers = profileApplyTimers.filter((timerId) => timerId !== id);
+      if (seq !== profileApplySeq) return;
+      fn();
+    }, delayMs);
+    profileApplyTimers.push(id);
+  }
+
   function startGenreTempoLock(profile, name) {
     stopGenreTempoLock();
     if (!profile || typeof profile.bpm !== "number" || name === "any") return;
@@ -501,6 +519,8 @@
   function applyGenreProfileNow(name, options = {}) {
     const profile = GENRE_PROFILES[name];
     if (!profile) return;
+    clearProfileApplyTimers();
+    const seq = profileApplySeq;
     recordGenreTrace(name, options.reason || "profile");
 
     // For non-"any" genres, lock the genre identity by disabling AUTOMIX
@@ -524,17 +544,17 @@
       if (!slider) return;
       slider.value = String(profile.faders[key]);
       // Spacing 35 ms > 30 ms throttle window.
-      setTimeout(() => dispatchInput(slider), i * 35);
+      scheduleProfileApply(seq, () => dispatchInput(slider), i * 35);
     });
 
     // Re-apply ENERGY pill on top of the genre baseline so the user's energy
     // choice still wins for the energy fader.
-    setTimeout(() => applyEnergyValue(getCurrentEnergy()), keys.length * 35 + 20);
+    scheduleProfileApply(seq, () => applyEnergyValue(getCurrentEnergy()), keys.length * 35 + 20);
     // v46: when DJ set is driving BPM through a curve, skip the static genre
     // tempo lock (would snap to profile.bpm every 900ms and fight the DJ ramp).
     // The DJ owns Tone.Transport.bpm exclusively while it's active.
     if (!isDjSetActive()) {
-      setTimeout(() => startGenreTempoLock(profile, name), keys.length * 35 + 60);
+      scheduleProfileApply(seq, () => startGenreTempoLock(profile, name), keys.length * 35 + 60);
     }
 
     // Switch culture grammar — engine.js:11780 listens for change events.
@@ -550,7 +570,7 @@
     }
 
     if (name === "techno") {
-      setTimeout(() => triggerHazamaFmAcidCue("genre.techno", 0.64), keys.length * 35 + 90);
+      scheduleProfileApply(seq, () => triggerHazamaFmAcidCue("genre.techno", 0.64), keys.length * 35 + 90);
     }
   }
 
@@ -1164,14 +1184,25 @@
 
   async function fmStart() {
     if (started || starting) return;
+    const intentSeq = ++playbackIntentSeq;
     starting = true;
     setButtonState("starting");
     clearResumeHint();
+
+    const startWasAborted = () => intentSeq !== playbackIntentSeq || !starting || stopping;
+    const cleanupAbortedStart = () => {
+      try { window.GenreFlavor?.stop?.(); } catch (e) {}
+      try { window.stopPlayback?.({ source: "fm.start-abort" }); } catch (e) {}
+    };
 
     try {
       // Gesture-tied AudioContext start (iOS Safari requirement).
       if (typeof Tone !== "undefined" && Tone.start) {
         await Tone.start();
+      }
+      if (startWasAborted()) {
+        cleanupAbortedStart();
+        return;
       }
 
       // Keep the shared hardware destination neutral. Hazama FM loudness is
@@ -1189,6 +1220,10 @@
         out.value = "1"; // not exactly 0 to avoid -Infinity dB / clicks
         dispatchInput(out);
       }
+      if (startWasAborted()) {
+        cleanupAbortedStart();
+        return;
+      }
 
       // Apply current GENRE profile (sets all 9 faders + culture grammar),
       // then ENERGY pill on top to honor the energy choice.
@@ -1197,9 +1232,16 @@
       }
       startListeningTrace(getCurrentGenre());
       applyGenreProfile(getCurrentGenre(), { reason: shuffleAuditionEnabled ? "shuffle.start" : "profile.start" });
+      if (startWasAborted()) {
+        cleanupAbortedStart();
+        return;
+      }
 
       if (typeof window.startPlayback === "function") {
-        await window.startPlayback({ source: "fm.start" });
+        const ok = await window.startPlayback({ source: "fm.start" });
+        if (ok === false) {
+          throw new Error("engine start returned false");
+        }
       } else {
         // engine.js failed to load — surface to user.
         const now = $("fm-now");
@@ -1208,9 +1250,17 @@
         setButtonState("idle");
         return;
       }
+      if (startWasAborted()) {
+        cleanupAbortedStart();
+        return;
+      }
 
       // Audible fade in.
       await rampOutputLevel(TARGET_LEVEL, FADE_IN_S);
+      if (startWasAborted()) {
+        cleanupAbortedStart();
+        return;
+      }
 
       // Boot the genre flavor layer (jazz brush+walking-bass, funk clavi+EP, etc.)
       // Independent of engine — own master Gain, own Tone.Transport schedules.
@@ -1221,6 +1271,10 @@
         } catch (err) {
           console.warn("[Hazama FM] GenreFlavor.start failed:", err);
         }
+      }
+      if (startWasAborted()) {
+        cleanupAbortedStart();
+        return;
       }
 
       started = true;
@@ -1244,16 +1298,24 @@
       }
     } catch (err) {
       console.warn("[Hazama FM] start failed:", err);
-      starting = false;
-      setButtonState("idle");
-      const now = $("fm-now");
-      if (now) now.textContent = "start failed";
+      cleanupAbortedStart();
+      if (intentSeq === playbackIntentSeq) {
+        started = false;
+        starting = false;
+        setButtonState("idle");
+        setMediaPlaybackState("paused");
+        const now = $("fm-now");
+        if (now) now.textContent = "start failed";
+      }
     }
   }
 
   async function fmStop() {
-    if (!started || stopping) return;
+    if ((!started && !starting) || stopping) return;
+    playbackIntentSeq++;
     stopping = true;
+    starting = false;
+    clearProfileApplyTimers();
     setButtonState("stopping");
 
     try {
@@ -1271,6 +1333,8 @@
     } finally {
       started = false;
       stopping = false;
+      starting = false;
+      clearProfileApplyTimers();
       applyFocusModePreference();
       clearGenreMixTimers();
       stopShuffleAuditionTimer();

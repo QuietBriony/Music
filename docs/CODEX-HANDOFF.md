@@ -14,8 +14,9 @@
 ## 並列運用の目安
 
 - **Claude 親 (この session) は 1 本のみ**: 設計 / レビュー / 軽量編集 / 引き継ぎ作成。コンテキスト効率優先
-- **Codex CLI は同時に 2-3 本起動可** (異なる terminal で): ただし**同じファイルを並列編集させない** (engine.js 系は 1 本ずつ)
-- 推奨並列度: Claude 1 + Codex 1-2 = 計 2-3 並列 (これ以上はレビュー / merge コストが線形に増える)
+- **並列は read-only 監査を基本**: runtime / docs / test gate など担当を分け、編集は親が統合する
+- **Codex CLI の並列実装は非推奨**: 使う場合も 1 active implementer のみ。同じファイルを複数 agent に触らせない
+- 推奨並列度: 親 1 + read-only audit 2-4 本。実装 worker を増やすのは、write scope が完全に分離できる時だけ
 
 ---
 
@@ -31,11 +32,17 @@
 | Docs sync | ✅ 完了 | `41c6a37` / v148 | Codex task status / cross-doc 整理 |
 | Long-session + car audio cleanup | ✅ 完了 | `e1974c8` / v149 | master volume × loudness、stale suggestion clear、debug log gating |
 | Route status + runtime quieting | ✅ 完了 | v150 | bridge/direct 表示、focus/FM event churn 抑制 |
+| Audit gate + bridge hardening | ✅ 完了 | v151 | index.html cache audit、bridge health、FM start/stop hardening |
 
 この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
 完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。
 
 ---
+
+## Archived Prompts — Do Not Execute
+
+TASK A-D は完了済み。以下は履歴参照のみで、コピペ実行しない。
+新規作業は必ず TASK E 以降として、最新 HEAD と user request から作る。
 
 ## TASK A — Hazama FM: phrase-locked mode transitions
 

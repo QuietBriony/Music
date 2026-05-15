@@ -199,7 +199,7 @@ engine.js の `applyPresetUCM(preset)` (engine.js:8417 付近) が `preset.ucm` 
 ### 監査スクリプト
 
 `scripts/audit.py` で `loader.js` 登録漏れ / 古い preset の整合性をチェック可能。
-`python -X utf8 scripts/audit.py` で全件 OK / BAD 表示。
+`python -X utf8 scripts/audit.py --expected-version hazama-fm-v151` で全件 OK / BAD 表示。
 
 ---
 

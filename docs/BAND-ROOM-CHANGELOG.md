@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v150 compact)
+# Band Room — Changelog (v65 → v151 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,20 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v151 compact — audit gate + car bridge hardening
+
+- `scripts/audit.py`: `index.html` も含め、HTML の versioned asset URL と
+  `sw.js` precache URL を path 単位で照合。precache local file existence と
+  `sw.js VERSION` の release-doc 同期も検査。
+- `band-room.js br-72` / `band-room.css br-69`: hidden media bridge を user gesture
+  window 内で先に開始し、bridge loss 時は direct output に復帰。master volume bar
+  は sticky 化し、narrow mobile の overflow を抑制。
+- `fm.js fm-59`: engine start failure を playing 扱いしない。warmup 中 STOP を許可し、
+  genre profile の遅延 fader writes に sequence guard を追加。
+- `engine.js fm-78`: 40Hz focus AM の gain param base を修正し、focus ON で
+  master gain が二重加算されないようにした。
+- `band-room.js br-72`: `chordRoot("C")` が `G2` に落ちる bass-root fallback を修正。
 
 ## v150 compact — route status + focus event quieting
 

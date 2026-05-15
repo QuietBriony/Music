@@ -137,7 +137,7 @@ Implementation:
   ```bash
   curl -sL https://raw.githubusercontent.com/QuietBriony/drum-floor/main/exports/drum-frames-jazz.json -o presets/drum-frames-jazz.json
   curl -sL https://raw.githubusercontent.com/QuietBriony/drum-floor/main/exports/drum-frames-funk.json -o presets/drum-frames-funk.json
-  python scripts/audit.py
+  python -X utf8 scripts/audit.py
   ```
 - `audio/genre-flavor.js` の `buildJazzFromFrames` / `buildFunkFromFrames`
   が新 frames を読む (既存 builder で OK、break frame は role 値で識別)

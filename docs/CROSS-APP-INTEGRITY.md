@@ -1,4 +1,4 @@
-# Cross-App Integrity — Music Stack 全体の整合性チェック (v150 時点)
+# Cross-App Integrity — Music Stack 全体の整合性チェック (v151 時点)
 
 > ユーザー指摘: 「全体のネタが先的にかみ合って、最適解になるように、整合性
 > チェックと磨き」
@@ -73,7 +73,7 @@ sample catalog、genre pattern JSON、CDN サンプル URL。
 | focus mode | 40 Hz / 8% AM, default OFF | 同 engine APIあり (UIはFM) | なし |
 
 **整合チェック**: master mastering chain は両 app で揃ってる (band-room の方が高度だが engine.js も v74 で揃え済)。 sampler 経路は今まで band-room only だったが、**v113 で Hazama FM lofi も Salamander piano に置換**して **lofi = 実 piano** の統一が完成。
-v142-v150 で、FM の phrase-lock / pattern variation / genre handoff / 40Hz focus / 長時間 event quieting と、Band Room の車載 audio bridge / route status が追加済み。
+v142-v151 で、FM の phrase-lock / pattern variation / genre handoff / 40Hz focus / 長時間 event quieting / start-stop hardening と、Band Room の車載 audio bridge / route status / bridge health fallback が追加済み。
 
 ---
 
@@ -115,9 +115,9 @@ catalog 1 ファイル編集だけで 3 app 全部の音色候補が同期する
 
 | app | latest cache marker | sw VERSION |
 |-----|---------------------|------------|
-| Band Room | `band-room.css?v=br-68` / `band-room.js?v=br-71` | hazama-fm-v150 |
-| Hazama FM | `engine.js?v=fm-77` / `fm.css?v=fm-47` / `fm.js?v=fm-58` | 同上 |
-| Music Core Rig | `engine.js?v=fm-77` / `style.css?v=fm-27` | 同上 |
+| Band Room | `band-room.css?v=br-69` / `band-room.js?v=br-72` | hazama-fm-v151 |
+| Hazama FM | `engine.js?v=fm-78` / `fm.css?v=fm-47` / `fm.js?v=fm-59` | 同上 |
+| Music Core Rig | `engine.js?v=fm-78` / `style.css?v=fm-27` | 同上 |
 
 `sw.js` の VERSION は **3 app 共通** で `hazama-fm-vNN`。ここを bump すると 3 app 全部のキャッシュが invalidate される。
 
