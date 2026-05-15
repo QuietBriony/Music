@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v163 compact)
+# Band Room — Changelog (v65 → v165 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,22 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v165 compact — ordinary song timeline / seek
+
+- `band-room.html` / `band-room.css br-73` / `band-room.js br-82`: START 下に
+  elapsed / duration の `m:ss` 表示と seek bar を追加。
+- 停止中に seek した位置を `pendingSeekOffsetSec` として保持し、次の START は
+  その地点から開始。STOP も現在位置を保持する。
+- 再生中の seek は Transport / section display / lyrics highlight / 原音 stems /
+  external stems を同じ offset に揃え直す。
+- `sw.js hazama-fm-v165`: Band Room の新 cache marker を precache。
+
+## v164 compact — Chill Session visible route
+
+- Music Core overview に `Chill` 入口を追加。
+- chill 側の session copy も metadata-only / human START 境界を明示し、
+  Music Stack 内の導線を整理。
 
 ## v163 compact — offline-safe lyrics and handoff copy
 

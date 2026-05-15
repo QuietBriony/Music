@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import vm from "node:vm";
 
 const source = readFileSync("band-room.js", "utf8");
+const html = readFileSync("band-room.html", "utf8");
 const bandsRegistry = JSON.parse(readFileSync("presets/bands.json", "utf8"));
 
 const inertElement = () => ({
@@ -103,6 +104,12 @@ assert.match(source, /function audioClockSeconds\(\)/, "Band Room should use the
 assert.match(source, /playbackStartedAtAudioSec/, "Band Room should not auto-advance from wall-clock time while iOS audio is suspended");
 assert.match(source, /if \(shouldDelayAutoAdvanceForFullSong\(\)\)/, "Band Room should re-check the full-song guard immediately before switching tracks");
 assert.match(source, /state\.loadedStemDurationSec\s*=\s*loadedStemDurationSec\(\)/, "Band Room should measure loaded stem duration");
+assert.match(html, /id="br-song-timeline"/, "Band Room should render an ordinary song timeline");
+assert.match(html, /id="br-song-seek"/, "Band Room should expose a seek bar");
+assert.match(source, /function playbackDurationSec\(\)/, "Band Room should compute one duration for visible timeline and album guard");
+assert.match(source, /function seekToPlaybackSecond\(/, "Band Room should seek to arbitrary song positions");
+assert.match(source, /function startTransportProgress\(/, "Band Room should keep elapsed time moving while playback runs");
+assert.match(source, /pendingSeekOffsetSec/, "Band Room should keep a stopped seek position for the next START");
 assert.match(
   source,
   /stopPlayback\(\{\s*keepBackgroundBridge:\s*true,\s*updateMedia:\s*false\s*\}\)/,

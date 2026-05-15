@@ -1,4 +1,4 @@
-# Band Room — 総合マニュアル (v163 時点)
+# Band Room — 総合マニュアル (v165 時点)
 
 > https://quietbriony.github.io/Music/band-room.html
 >
@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 現在地 (v163、最適度: ほぼ完成)
+## 🟢 現在地 (v165、最適度: ほぼ完成)
 
 ### 機能側 (磨き完了 / 残り 5% 未満)
 
@@ -19,6 +19,7 @@
 - **連携**: MediaRecorder live record / 4-stem pack export / WebMIDI / external upload per stem
 - **車載/BT**: sticky master volume bar + Media Session volume fallback + hidden audio bridge + `direct` / `bridge` / `failed` route status + lock-screen track skip
 - **album flow**: reload 後は 01 `TABASCO` から開始し、曲末は同じ曲を loop せず 02 以降へ自動で進む
+- **timeline**: START 下に `m:ss` の elapsed / duration と seek bar を表示。停止中に任意地点へ動かし、その位置から START できる
 - **drum-floor 連携**: footer の `Drum Floor preview` から、現曲 / BPM / section / drum frame を metadata-only SYNC で渡して手動 preview。戻り `song` query は source song だけ復元
 - **歌詞**: 候補を `tabasco-lyrics-final.md` の 1 本に統合。Band Room 本体も final singable だけ表示し、cache-busted fetch でも offline precache に戻れる
 - **mastering**: per-stem EQ + 2-stage comp + StereoWidener + tape sat + reverb、master preset (lo-fi / club / rock / ambient) で 7 軸 linked 切替
@@ -64,16 +65,17 @@
 ## まず触る
 
 1. https://quietbriony.github.io/Music/band-room.html を開く
-2. **`▶ START`** 押す → 1 曲目 (TABASCO) が原音 stems モードで鳴る
-3. 曲が終わると同じ曲に戻らず、02 `Hey` へそのまま進む
-4. **`📻 原音`** / **`🎛 AI 再現`** を切り替えてモード比較
-5. `📖 ?` ボタン (header 右上) で keyboard ショートカット一覧
+2. **`START`** 押す → 1 曲目 (TABASCO) が原音 stems モードで鳴る
+3. 分秒バーを動かす → 任意地点に seek。STOP 後もその位置から START できる
+4. 曲が終わると同じ曲に戻らず、02 `Hey` へそのまま進む
+5. **`📻 原音`** / **`🎛 AI 再現`** を切り替えてモード比較
+6. `📖 ?` ボタン (header 右上) で keyboard ショートカット一覧
 
 ここまで 1 分で全体像つかめる。
 
 ---
 
-## 画面構成 (v163)
+## 画面構成 (v165)
 
 ```
 ┌─────────────────────────────────┐
@@ -88,6 +90,7 @@
 │  [ 📻 原音 ]  [ 🎛 AI 再現 ]      │  ← mode pill
 ├─────────────────────────────────┤
 │  [ START ]                       │  ← 再生
+│  0:00 ━━━━━━━━━━━━━ 5:04          │  ← song timeline / seek
 │  117 BPM · G major               │
 │  verse-1 · 4/16 → chorus-1       │  ← セクションナビ
 │  ▮▮▮▮▮▮▮▯▯▯▯ (RMS meter)      │
@@ -238,7 +241,7 @@ Tabasco 以外のバンドを追加するなら別 doc:
 
 ## 履歴
 
-- [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) — v65 → v163 compact 履歴
+- [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) — v65 → v165 compact 履歴
 - 設計判断 / パラメータの数値 / 各機能の commit ハッシュもここに
 
 ---
@@ -248,7 +251,7 @@ Tabasco 以外のバンドを追加するなら別 doc:
 | doc | 用途 |
 |-----|------|
 | [BAND-ROOM-USAGE.md](./BAND-ROOM-USAGE.md) | 5 つの典型用途 (カラオケ / AI 再現 / 厚み出し / Suno / ad-lib) |
-| [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) | v65-v163 compact 履歴、各 wave 詳細 |
+| [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) | v65-v165 compact 履歴、各 wave 詳細 |
 | [BAND-ROOM-ADD-BAND.md](./BAND-ROOM-ADD-BAND.md) | 新バンド追加手順 |
 | [PRODUCTION-PATH.md](./PRODUCTION-PATH.md) | **「作品」として世に出す道筋** (album 制作 / 30 min lofi set / 配信 platform 比較) |
 | [RECORDING-WORKFLOW.md](./RECORDING-WORKFLOW.md) | UR44 + マイク / bass / 電子ドラム / EP-133 経由で band-room の external slot に流す具体手順 |

@@ -293,6 +293,84 @@ html, body {
   border-color: var(--accent-soft);
 }
 
+#br-song-timeline {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: min(100%, 520px);
+  color: var(--text-sub);
+  font-family: ui-monospace, "SF Mono", "Menlo", monospace;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+#br-song-elapsed,
+#br-song-duration {
+  min-width: 36px;
+  text-align: center;
+}
+
+#br-song-seek {
+  --br-seek-pct: 0%;
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  height: 24px;
+  background: transparent;
+  cursor: pointer;
+}
+
+#br-song-seek:disabled {
+  cursor: default;
+  opacity: 0.42;
+}
+
+#br-song-seek::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg,
+      rgba(255, 136, 102, 0.95) 0%,
+      rgba(255, 136, 102, 0.95) var(--br-seek-pct),
+      rgba(255, 255, 255, 0.12) var(--br-seek-pct),
+      rgba(255, 255, 255, 0.12) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 184, 122, 0.10);
+}
+
+#br-song-seek::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 230, 210, 0.98);
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(255, 136, 102, 0.14);
+}
+
+#br-song-seek::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 184, 122, 0.10);
+}
+
+#br-song-seek::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 136, 102, 0.95);
+}
+
+#br-song-seek::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 230, 210, 0.98);
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(255, 136, 102, 0.14);
+}
+
 #br-meta {
   font-size: 11px;
   color: var(--text-sub);
@@ -2159,6 +2237,7 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   #br-chord-display .br-value { font-size: 26px; }
   .br-details > summary { padding: 9px 12px; font-size: 11px; }
   #br-play { font-size: 14px; padding: 14px 36px; min-width: 160px; min-height: 50px; }
+  #br-song-timeline { grid-template-columns: auto minmax(120px, 1fr) auto; gap: 8px; }
 }
 
 /* v141: master volume bar — always-visible big touch target for car / Bluetooth use.

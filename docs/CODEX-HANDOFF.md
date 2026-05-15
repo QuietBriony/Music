@@ -46,6 +46,7 @@
 | Band Room final singable lyrics | ✅ 完了 | v162 | Tabasco 7 曲の歌詞候補を一本化し、Band Room 表示を `tabasco-lyrics-final.md` の final singable だけに整理 |
 | Band Room offline cache + route copy | ✅ 完了 | v163 | cache-busted lyrics / drum-frame fetch を offline-safe 化し、Band Room / Drum Floor 導線を手動previewとして表示 |
 | Chill Session visible route | ✅ 完了 | v164 | Music Core overview に Chill Session 入口を追加し、chill 側の metadata-only / human START 境界を画面で明示 |
+| Band Room song timeline / seek | ✅ 完了 | v165 | START 下に分秒バーを追加し、停止中 seek → 任意地点 START、再生中 seek → stems / section / lyrics 同期に対応 |
 
 この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
 完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。

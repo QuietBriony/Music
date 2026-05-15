@@ -38,6 +38,7 @@
     playbackStartedAtMs: 0,
     playbackStartedAtAudioSec: 0,
     playbackStartOffsetSec: 0,
+    pendingSeekOffsetSec: 0,
     playbackRateAtStart: 1,
     loadedStemDurationSec: 0,
     lastStemResyncAtMs: 0,
@@ -85,6 +86,8 @@
   let vocalDeEsser = null;            // sidechain-style sibilance dip
   let masterMeter = null;             // v71: master RMS meter for UI feedback
   let masterMeterRaf = 0;             // requestAnimationFrame id
+  let transportProgressRaf = 0;       // v165: ordinary song timeline RAF
+  let transportSeekActive = false;    // true while the user drags #br-song-seek
   let masterFft = null;               // v77: spectrum analyzer FFT
   let masterRecorderDest = null;      // v81: MediaStreamDestination for recording
   let mediaRecorder = null;           // v81: MediaRecorder for live capture
@@ -808,12 +811,12 @@
     });
   }
 
-  function startExternalVocalIfEnabled() {
+  function startExternalVocalIfEnabled(offsetSec = 0) {
     if (!externalVocalPlayer) return;
     const enabled = $("br-toggle-external-vocal")?.checked;
     if (!enabled) return;
     try {
-      externalVocalPlayer.start("+0.15");
+      externalVocalPlayer.start("+0.15", Math.max(0, Number(offsetSec) || 0));
     } catch (e) {
       console.warn("[Band Room] external vocal start failed:", e);
     }
@@ -852,12 +855,12 @@
     });
   }
 
-  function startExternalStemIfEnabled(stem) {
+  function startExternalStemIfEnabled(stem, offsetSec = 0) {
     const p = externalStemPlayers[stem];
     if (!p) return;
     const enabled = $(`br-toggle-external-${stem}`)?.checked;
     if (!enabled) return;
-    try { p.start("+0.15"); } catch (e) {}
+    try { p.start("+0.15", Math.max(0, Number(offsetSec) || 0)); } catch (e) {}
   }
 
   function stopExternalStem(stem) {
@@ -1399,6 +1402,13 @@
     }, 0);
   }
 
+  function playbackDurationSec() {
+    const catalogDuration = songCatalogDurationSec();
+    const stemDuration = state.loadedStemDurationSec || loadedStemDurationSec();
+    const structureDuration = songStructureDurationSec();
+    return Math.max(catalogDuration, stemDuration, structureDuration);
+  }
+
   function fullSongDurationGuardSec() {
     if (currentMode !== "stems") return 0;
     const stemDuration = state.loadedStemDurationSec || loadedStemDurationSec();
@@ -1435,6 +1445,143 @@
     state.playbackStartedAtMs = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
     state.playbackStartedAtAudioSec = audioClockSeconds();
     state.playbackRateAtStart = playbackRateMultiplier();
+  }
+
+  function formatPlaybackTime(seconds) {
+    const total = Math.max(0, Math.floor(Number(seconds) || 0));
+    const mins = Math.floor(total / 60);
+    const secs = total % 60;
+    return `${mins}:${String(secs).padStart(2, "0")}`;
+  }
+
+  function clampPlaybackSecond(seconds) {
+    const raw = Math.max(0, Number(seconds) || 0);
+    const duration = playbackDurationSec();
+    if (!duration) return raw;
+    return clamp(raw, 0, Math.max(0, duration - 0.05));
+  }
+
+  function timelineStateForSecond(seconds) {
+    const structure = state.songData?.structure;
+    if (!Array.isArray(structure) || structure.length === 0) {
+      return { barCount: 0, sectionIdx: 0, sectionBarStart: 0 };
+    }
+    const bpm = Number(state.songData?.bpm) || 117;
+    const barDur = 60 / bpm * 4;
+    const rawBar = Math.max(0, Math.floor((Number(seconds) || 0) / Math.max(0.001, barDur)));
+    let cursor = 0;
+    for (let idx = 0; idx < structure.length; idx++) {
+      const bars = Math.max(0, Number(structure[idx]?.bars) || 0);
+      const isLast = idx === structure.length - 1;
+      if (rawBar < cursor + bars || isLast) {
+        const lastBarInSection = Math.max(cursor, cursor + Math.max(1, bars) - 1);
+        return {
+          barCount: Math.min(rawBar, lastBarInSection),
+          sectionIdx: idx,
+          sectionBarStart: cursor
+        };
+      }
+      cursor += bars;
+    }
+    return { barCount: 0, sectionIdx: 0, sectionBarStart: 0 };
+  }
+
+  function setTimelineStateForSecond(seconds, options = {}) {
+    const targetSec = clampPlaybackSecond(seconds);
+    const mapped = timelineStateForSecond(targetSec);
+    state.barCount = mapped.barCount;
+    state.sectionIdx = mapped.sectionIdx;
+    state.sectionBarStart = mapped.sectionBarStart;
+    state.pendingSeekOffsetSec = targetSec;
+    state.playbackStartOffsetSec = targetSec;
+    if (options.syncTransport !== false) {
+      try { Tone.Transport.seconds = targetSec; } catch (e) {}
+    }
+    updateSectionDisplay();
+    updateChordDisplay();
+    const sec = currentSection();
+    if (sec && options.updateLyrics !== false) updateLyricsHighlight(sec.section);
+    return targetSec;
+  }
+
+  function restartCurrentAudioAt(offsetSec) {
+    const targetSec = clampPlaybackSecond(offsetSec);
+    releaseSustainedSynths("timeline-seek");
+    if (currentMode === "stems") {
+      stopStemPlayback();
+      stopExternalVocal();
+      ["drums", "bass", "other"].forEach((s) => stopExternalStem(s));
+      startStemPlayback(targetSec);
+      startExternalVocalIfEnabled(targetSec);
+      ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s, targetSec));
+    }
+    state.lastStemResyncAtMs = 0;
+    return targetSec;
+  }
+
+  function updateSongTimelineDisplay(previewSec = null) {
+    const seek = $("br-song-seek");
+    const elapsedEl = $("br-song-elapsed");
+    const durationEl = $("br-song-duration");
+    const duration = playbackDurationSec();
+    let elapsed = previewSec != null
+      ? Number(previewSec) || 0
+      : (state.started ? playbackContentElapsedSec() : (state.pendingSeekOffsetSec || state.playbackStartOffsetSec || 0));
+    if (transportSeekActive && previewSec == null && seek) elapsed = Number(seek.value) || elapsed;
+    const shown = duration ? clamp(elapsed, 0, duration) : Math.max(0, elapsed);
+
+    if (elapsedEl) elapsedEl.textContent = formatPlaybackTime(shown);
+    if (durationEl) durationEl.textContent = formatPlaybackTime(duration);
+    if (seek) {
+      seek.max = duration > 0 ? duration.toFixed(1) : "0";
+      seek.disabled = !state.songData || duration <= 0;
+      if (!transportSeekActive || previewSec != null) seek.value = duration ? shown.toFixed(1) : "0";
+      const pct = duration ? clamp((shown / duration) * 100, 0, 100) : 0;
+      seek.style.setProperty("--br-seek-pct", `${pct.toFixed(2)}%`);
+    }
+    try {
+      if (duration > 0 && "mediaSession" in navigator && typeof navigator.mediaSession.setPositionState === "function") {
+        navigator.mediaSession.setPositionState({
+          duration,
+          playbackRate: playbackRateMultiplier(),
+          position: clamp(shown, 0, duration)
+        });
+      }
+    } catch (e) {}
+  }
+
+  function startTransportProgress() {
+    cancelAnimationFrame(transportProgressRaf);
+    const tick = () => {
+      updateSongTimelineDisplay();
+      const duration = playbackDurationSec();
+      if (state.started && duration && playbackContentElapsedSec() >= duration - 0.15) {
+        queueAutoAdvanceToNextSong();
+      }
+      if (state.started) transportProgressRaf = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  function stopTransportProgress() {
+    cancelAnimationFrame(transportProgressRaf);
+    transportProgressRaf = 0;
+    updateSongTimelineDisplay();
+  }
+
+  function seekToPlaybackSecond(seconds, options = {}) {
+    if (!state.songData) return 0;
+    clearAutoAdvanceTimer();
+    const targetSec = setTimelineStateForSecond(seconds);
+    if (state.started) {
+      resetPlaybackClock(targetSec);
+      restartCurrentAudioAt(targetSec);
+      updateMediaSession("playing");
+    } else if (options.autoplay) {
+      startPlayback({ preservePosition: true });
+    }
+    updateSongTimelineDisplay(targetSec);
+    return targetSec;
   }
 
   function autoAdvanceDelayMsForFullSong() {
@@ -1487,6 +1634,7 @@
       if (r) { stemPlayers[r.stem] = r.player; loaded++; }
     });
     state.loadedStemDurationSec = loadedStemDurationSec();
+    updateSongTimelineDisplay();
     if (loaded === 0) {
       setStemsStatus("(stems not available — switch to AI 再現 mode)");
       return false;
@@ -2016,6 +2164,12 @@
       if (switchSeq != null && switchSeq !== songSwitchSeq) return null;
       state.songData = data;
       state.currentSongId = songId;
+      state.barCount = 0;
+      state.sectionIdx = 0;
+      state.sectionBarStart = 0;
+      state.pendingSeekOffsetSec = 0;
+      state.playbackStartOffsetSec = 0;
+      updateSongTimelineDisplay(0);
       $("br-bpm").textContent = data.bpm || "—";
       $("br-key").textContent = data.key || "—";
       renderSectionNav();  // v75: clickable section list
@@ -2103,7 +2257,7 @@
     }
     const nextSong = nextSongAfterCurrent();
     if (!nextSong) {
-      stopPlayback();
+      stopPlayback({ resetPosition: true });
       return;
     }
     await switchToSong(nextSong.id, { autoAdvance: true, keepBackgroundBridge: true });
@@ -2561,7 +2715,7 @@
       return;
     }
     $("br-section-name").textContent = sec.section;
-    const barInSection = state.barCount - state.sectionBarStart + 1;
+    const barInSection = clamp(state.barCount - state.sectionBarStart + 1, 1, Math.max(1, Number(sec.bars) || 1));
     $("br-section-progress").textContent = `${barInSection} / ${sec.bars} bars`;
     const nextSec = state.songData.structure[state.sectionIdx + 1];
     $("br-section-next-name").textContent = nextSec ? nextSec.section : "(end)";
@@ -2651,28 +2805,11 @@
     const bpm = state.songData.bpm || 117;
     const barDur = 60 / bpm * 4;
     const targetSec = cum * barDur;
-    state.barCount = cum;
-    state.sectionIdx = idx;
-    state.sectionBarStart = cum;
     clearAutoAdvanceTimer();
+    setTimelineStateForSecond(targetSec);
     if (state.started) {
       resetPlaybackClock(targetSec);
-      state.lastStemResyncAtMs = 0;
-      // Reseek Transport to this section's start
-      try { Tone.Transport.seconds = targetSec; } catch (e) {}
-      // v109 fix: only seek/restart stem players in stems mode. In AI 再現
-      // mode the stems aren't running and shouldn't be triggered by jump.
-      if (currentMode === "stems") {
-        Object.entries(stemPlayers).forEach(([stem, p]) => {
-          if (!p) return;
-          try {
-            const enabled = $("br-toggle-stem-" + stem)?.checked !== false;
-            p.stop();
-            p.mute = !enabled;
-            p.start("+0.05", targetSec);
-          } catch (e) {}
-        });
-      }
+      restartCurrentAudioAt(targetSec);
     } else {
       // v104: 停止中なら、そのセクションから自動再生開始する
       startPlayback({ preservePosition: true });
@@ -3111,24 +3248,17 @@
     // Load stems (if available for this song)
     await loadStemsForSong(state.currentSongId);
 
-    // v104: reset state UNLESS the caller asked to preserve position
-    // (jumpToSection while stopped → auto-start from that section)
-    if (!opts.preservePosition) {
-      state.barCount = 0;
-      state.sectionIdx = 0;
-      state.sectionBarStart = 0;
-    }
-
     // v76: respect the tempo slider when starting (so re-start at 80% stays at 80%)
     const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
     Tone.Transport.bpm.value = (state.songData.bpm || 117) * tempoMult;
 
-    // v104: when starting from a non-zero section, seek Transport timeline
-    if (opts.preservePosition && state.barCount > 0) {
-      const bpm = state.songData.bpm || 117;
-      const barDur = 60 / bpm * 4;
-      try { Tone.Transport.seconds = state.barCount * barDur; } catch (e) {}
-    }
+    const bpm = state.songData.bpm || 117;
+    const barDur = 60 / bpm * 4;
+    const barOffsetSec = state.barCount > 0 ? state.barCount * barDur : 0;
+    const requestedOffsetSec = opts.preservePosition
+      ? (state.pendingSeekOffsetSec || state.playbackStartOffsetSec || barOffsetSec)
+      : (state.pendingSeekOffsetSec || state.playbackStartOffsetSec || 0);
+    const stemOffsetSec = setTimelineStateForSecond(requestedOffsetSec);
 
     // Clear any old schedules
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
@@ -3136,16 +3266,13 @@
 
     scheduleBar();
     Tone.Transport.start();
-    const stemOffsetSec = opts.preservePosition && state.barCount > 0
-      ? state.barCount * (60 / (state.songData.bpm || 117) * 4)
-      : 0;
     resetPlaybackClock(stemOffsetSec);
     state.lastStemResyncAtMs = 0;
     if (currentMode === "stems") {
       startStemPlayback(stemOffsetSec);
-      startExternalVocalIfEnabled();
+      startExternalVocalIfEnabled(stemOffsetSec);
       // v87: per-stem external replacements
-      ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s));
+      ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s, stemOffsetSec));
     }
 
     state.started = true;
@@ -3154,6 +3281,7 @@
     updateSectionDisplay();
     updateChordDisplay();
     startMasterMeter();
+    startTransportProgress();
     // v73: highlight first section's lyric block
     const firstSec = currentSection();
     if (firstSec) updateLyricsHighlight(firstSec.section);
@@ -3304,7 +3432,10 @@
 
   function stopPlayback(options = {}) {
     clearAutoAdvanceTimer();
+    const retainedOffsetSec = options.resetPosition ? 0 : clampPlaybackSecond(playbackContentElapsedSec());
     if (!state.started) {
+      if (options.resetPosition) setTimelineStateForSecond(0);
+      stopTransportProgress();
       stopPlaybackHealthWatchdog();
       if (!options.keepBackgroundBridge) stopBackgroundAudioBridge();
       if (options.updateMedia !== false) updateMediaSession("paused");
@@ -3319,11 +3450,12 @@
     state.started = false;
     state.playbackStartedAtMs = 0;
     state.playbackStartedAtAudioSec = 0;
-    state.playbackStartOffsetSec = 0;
     state.playbackRateAtStart = 1;
+    setTimelineStateForSecond(retainedOffsetSec);
     stopPlaybackHealthWatchdog();
     setButtonState("idle");
     stopMasterMeter();
+    stopTransportProgress();
     if (!options.keepBackgroundBridge) stopBackgroundAudioBridge();
     if (options.updateMedia !== false) updateMediaSession("paused");
     stopMidiClock(); // v88
@@ -3355,6 +3487,29 @@
 
   function bindUI() {
     $("br-play")?.addEventListener("click", togglePlay);
+    const songSeek = $("br-song-seek");
+    if (songSeek) {
+      const previewSeek = () => updateSongTimelineDisplay(Number(songSeek.value) || 0);
+      const commitSeek = () => {
+        transportSeekActive = false;
+        seekToPlaybackSecond(Number(songSeek.value) || 0);
+      };
+      songSeek.addEventListener("pointerdown", () => {
+        transportSeekActive = true;
+      });
+      songSeek.addEventListener("pointerup", commitSeek);
+      songSeek.addEventListener("pointercancel", commitSeek);
+      songSeek.addEventListener("input", () => {
+        transportSeekActive = true;
+        previewSeek();
+      });
+      songSeek.addEventListener("change", commitSeek);
+      songSeek.addEventListener("keydown", () => {
+        transportSeekActive = true;
+        requestAnimationFrame(previewSeek);
+      });
+      songSeek.addEventListener("keyup", commitSeek);
+    }
 
     const drumFloorLink = $("br-open-drum-floor");
     if (drumFloorLink) {
@@ -3634,7 +3789,7 @@
           stemTog.checked = false;
           if (stemPlayers.vocals) stemPlayers.vocals.mute = true;
         }
-        if (state.started) startExternalVocalIfEnabled();
+        if (state.started) startExternalVocalIfEnabled(playbackContentElapsedSec());
       }
     };
     if (extFile) {
@@ -3669,7 +3824,7 @@
     const extToggle = $("br-toggle-external-vocal");
     if (extToggle) {
       extToggle.addEventListener("change", () => {
-        if (extToggle.checked && state.started) startExternalVocalIfEnabled();
+        if (extToggle.checked && state.started) startExternalVocalIfEnabled(playbackContentElapsedSec());
         else if (!extToggle.checked) stopExternalVocal();
       });
     }
@@ -3922,7 +4077,7 @@
             origTog.checked = false;
             if (stemPlayers[stem]) stemPlayers[stem].mute = true;
           }
-          if (state.started) startExternalStemIfEnabled(stem);
+          if (state.started) startExternalStemIfEnabled(stem, playbackContentElapsedSec());
         }
       };
       if (fileEl) {
@@ -3932,7 +4087,7 @@
       }
       if (togEl) {
         togEl.addEventListener("change", () => {
-          if (togEl.checked && state.started) startExternalStemIfEnabled(stem);
+          if (togEl.checked && state.started) startExternalStemIfEnabled(stem, playbackContentElapsedSec());
           else if (!togEl.checked) stopExternalStem(stem);
         });
       }
@@ -3990,13 +4145,11 @@
             stopExternalVocal();
             ["drums", "bass", "other"].forEach((s) => stopExternalStem(s));
           } else if (oldMode === "synth" && newMode === "stems") {
-            // Switching to 原音 → start stems from current bar position
-            const bpm = state.songData?.bpm || 117;
-            const barDur = 60 / bpm * 4;
-            const offsetSec = state.barCount * barDur;
+            // Switching to 原音 → start stems from the exact transport position.
+            const offsetSec = playbackContentElapsedSec();
             startStemPlayback(offsetSec);
-            startExternalVocalIfEnabled();
-            ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s));
+            startExternalVocalIfEnabled(offsetSec);
+            ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s, offsetSec));
           }
         }
       });
@@ -4657,11 +4810,16 @@
         console.warn("[Band Room] next track failed:", e);
       });
     });
-    setHandler("seekbackward", () => {
-      $("br-master-vol-down")?.click();
+    setHandler("seekbackward", (details = {}) => {
+      const amount = Number(details.seekOffset) || 10;
+      seekToPlaybackSecond(playbackContentElapsedSec() - amount);
     });
-    setHandler("seekforward", () => {
-      $("br-master-vol-up")?.click();
+    setHandler("seekforward", (details = {}) => {
+      const amount = Number(details.seekOffset) || 10;
+      seekToPlaybackSecond(playbackContentElapsedSec() + amount);
+    });
+    setHandler("seekto", (details = {}) => {
+      if (Number.isFinite(Number(details.seekTime))) seekToPlaybackSecond(Number(details.seekTime));
     });
     mediaSessionWired = true;
   }
