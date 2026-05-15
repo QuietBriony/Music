@@ -841,6 +841,12 @@ const VOICE_EMERGENCE_COLORS = {
     genes: { organic: 0.092, refrain: 0.04, micro: 0.026, haze: 0.018 }
   }
 };
+const BarCounter = {
+  current: 0,
+  lastModeChangeBar: -999,
+  phraseLength: 16,
+  pendingMode: null
+};
 const AUTO_SOURCE_MORPH_KEYS = ["xtal", "boc", "opn", "fsol", "autechre", "burial"];
 const AUTO_ATMOSPHERE_MORPH_KEYS = ["haze", "chrome", "void", "organic", "ghost"];
 const AutoVoiceMorphState = {
@@ -2180,6 +2186,12 @@ function resetMusicRadioBrain() {
   MusicRadioBrainState.cueProgram = "fieldStudy";
   MusicRadioBrainState.cueCycle = -99;
   MusicRadioBrainState.cueLastStep = -99;
+}
+
+function resetBarCounter() {
+  BarCounter.current = 0;
+  BarCounter.lastModeChangeBar = -999;
+  BarCounter.pendingMode = null;
 }
 
 function resetDJTempo() {
@@ -6277,6 +6289,7 @@ let initialized = false;
 let isPlaying   = false;
 let isStarting  = false;
 let transportEventId = null;
+let barCounterEventId = null;
 
 const RAMP_CACHE = {};
 const NAMIMA_ADAPTER_UPDATE_INTERVAL_MS = 180;
@@ -10074,6 +10087,41 @@ function updateSoundForMode(mode){
 }
 let bassRoot     = "D2";
 
+function applyModeChangeHooks(manual = false) {
+  lastMode = EngineParams.mode;
+  setPatternsByMode();
+  updateSoundForMode(EngineParams.mode);
+  if (manual && PresetManager.presets[EngineParams.mode]) {
+    applyPresetToEngineParams(PresetManager.presets[EngineParams.mode]);
+  }
+  renderModeLabel();
+}
+
+function commitPhraseLockedMode(newMode, manual = false) {
+  if (!newMode || EngineParams.mode === newMode) {
+    BarCounter.pendingMode = null;
+    return false;
+  }
+  EngineParams.mode = newMode;
+  BarCounter.lastModeChangeBar = BarCounter.current;
+  BarCounter.pendingMode = null;
+  console.log("[BarCounter]", BarCounter.current, "mode:", EngineParams.mode);
+  applyModeChangeHooks(manual);
+  return true;
+}
+
+function advanceBarCounter() {
+  BarCounter.current++;
+  const sinceLastChange = BarCounter.current - BarCounter.lastModeChangeBar;
+  if (
+    BarCounter.pendingMode &&
+    BarCounter.current % BarCounter.phraseLength === 0 &&
+    sinceLastChange >= BarCounter.phraseLength
+  ) {
+    commitPhraseLockedMode(BarCounter.pendingMode, false);
+  }
+}
+
 /* =========================================================
    4. UCM → パラメータ変換（簡略チューン）
 ========================================================= */
@@ -10119,21 +10167,22 @@ function applyUCMToParams(options = {}) {
 
   // モード
   const newMode = resolveMode();
-  if (EngineParams.mode !== newMode){
-    EngineParams.mode = newMode;
-  }
   const manual = PresetManager.selected && PresetManager.selected !== "__auto__";
+  if (EngineParams.mode !== newMode){
+    const initialModeChange = BarCounter.lastModeChangeBar < 0;
+    const canChange = manual || initialModeChange;
+    if (canChange) {
+      commitPhraseLockedMode(newMode, manual);
+    } else {
+      BarCounter.pendingMode = newMode;
+    }
+  } else if (BarCounter.pendingMode === newMode) {
+    BarCounter.pendingMode = null;
+  }
 
   // mode-change hooks (patterns + sound)
   if (lastMode !== EngineParams.mode){
-    lastMode = EngineParams.mode;
-    setPatternsByMode();
-    updateSoundForMode(EngineParams.mode);
-    if (manual && PresetManager.presets[EngineParams.mode]) {
-      applyPresetToEngineParams(PresetManager.presets[EngineParams.mode]);
-    }
-    const modeLabel = document.getElementById("mode-label");
-  renderModeLabel();
+    applyModeChangeHooks(manual);
   }
   updateWorldStateFromUCM();
   updateDJTempo(currentParts, { force });
@@ -10364,6 +10413,7 @@ function resetRuntimeCounters() {
   resetGenreTimbreKits();
   resetModeTimbrePalettes();
   resetMusicRadioBrain();
+  resetBarCounter();
   resetDJTempo();
   resetGenerativeGenome();
   resetAutoVoiceMorph();
@@ -12671,17 +12721,24 @@ function quietMasterLevel() {
 }
 
 function ensureTransportScheduled() {
-  if (transportEventId !== null) return;
+  if (transportEventId === null) {
+    transportEventId = Tone.Transport.scheduleRepeat((time) => {
+      if (!isPlaying) return;
+      try {
+        scheduleStep(time);
+      } catch (error) {
+        console.warn("[Music] scheduleStep failed:", error);
+        releaseAllVoices(time);
+      }
+    }, "8n");
+  }
 
-  transportEventId = Tone.Transport.scheduleRepeat((time) => {
-    if (!isPlaying) return;
-    try {
-      scheduleStep(time);
-    } catch (error) {
-      console.warn("[Music] scheduleStep failed:", error);
-      releaseAllVoices(time);
-    }
-  }, "8n");
+  if (barCounterEventId === null) {
+    barCounterEventId = Tone.Transport.scheduleRepeat(() => {
+      if (!isPlaying) return;
+      advanceBarCounter();
+    }, "1m", "1m");
+  }
 }
 
 function scheduleStep(time) {
