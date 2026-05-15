@@ -6626,6 +6626,17 @@ function updateOutputLevel(options = {}) {
   }
 }
 
+function adjustOutputLevel(delta, options = {}) {
+  const slider = document.getElementById("output_level");
+  const current = slider ? parseInt(slider.value, 10) : OutputState.level;
+  const nextLevel = clampValue((Number.isFinite(current) ? current : OutputState.level) + delta, 0, 100);
+  if (slider) slider.value = String(Math.round(nextLevel));
+  OutputState.level = nextLevel;
+  updateOutputLevelUi();
+  applyOutputLevel({ force: options.force === true, allowWhenStopped: options.allowWhenStopped === true });
+  return nextLevel;
+}
+
 function applyOutputLevel(options = {}) {
   const allowWhenStopped = options.allowWhenStopped === true;
   if (!isPlaying && !allowWhenStopped) return;
@@ -6831,7 +6842,9 @@ function setupMediaSessionControls() {
   const handlers = {
     play: () => document.getElementById("btn_start")?.click(),
     pause: () => document.getElementById("btn_stop")?.click(),
-    stop: () => document.getElementById("btn_stop")?.click()
+    stop: () => document.getElementById("btn_stop")?.click(),
+    seekbackward: () => adjustOutputLevel(-5, { force: true }),
+    seekforward: () => adjustOutputLevel(5, { force: true })
   };
 
   Object.entries(handlers).forEach(([action, handler]) => {

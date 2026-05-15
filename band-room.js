@@ -3864,6 +3864,12 @@
           jumpToSection(Math.min(max, state.sectionIdx + 1));
         }
       });
+      navigator.mediaSession.setActionHandler("seekbackward", () => {
+        $("br-master-vol-down")?.click();
+      });
+      navigator.mediaSession.setActionHandler("seekforward", () => {
+        $("br-master-vol-up")?.click();
+      });
       mediaSessionWired = true;
     } catch (e) {
       console.warn("[Band Room] mediaSession handlers failed:", e);

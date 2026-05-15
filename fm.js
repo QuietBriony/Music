@@ -370,6 +370,18 @@
     return Number.isFinite(value) ? value : TARGET_LEVEL;
   }
 
+  function adjustOutputLevel(delta) {
+    const slider = $("output_level");
+    if (!slider) return;
+    if (rampHandle) {
+      cancelAnimationFrame(rampHandle);
+      rampHandle = null;
+    }
+    const next = Math.max(0, Math.min(100, Math.round(currentOutputLevel() + delta)));
+    slider.value = String(next);
+    dispatchInput(slider);
+  }
+
   function clearGenreMixTimers() {
     if (genreMixTimer) {
       clearTimeout(genreMixTimer);
@@ -1008,6 +1020,8 @@
       navigator.mediaSession.setActionHandler("stop", () => fmStop());
       navigator.mediaSession.setActionHandler("nexttrack", () => cycleEnergy(1));
       navigator.mediaSession.setActionHandler("previoustrack", () => cycleEnergy(-1));
+      navigator.mediaSession.setActionHandler("seekbackward", () => adjustOutputLevel(-5));
+      navigator.mediaSession.setActionHandler("seekforward", () => adjustOutputLevel(5));
     } catch (e) {
       // Some browsers reject unsupported actions — non-fatal.
     }

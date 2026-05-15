@@ -23,7 +23,7 @@
 - 既存 `br-loudness` (-12〜+6 dB) は mastering 内に残置で fine-tune 用
 
 **残課題 (v142 以降の選択肢):**
-- Media Session API の `setActionHandler("seekbackward"/"seekforward", ...)` を音量 down/up に remap してハードウェアボタン経由でも触れるようにする (一部の車で AVRCP の rewind/ff を音量ボタンに割り当てている場合に効く、hack)
+- ✅ v144: Media Session API の `setActionHandler("seekbackward"/"seekforward", ...)` を音量 down/up に remap。Band Room / Music Core Rig / Hazama FM で、対応車載機が rewind/forward 系 AVRCP を送る場合はアプリ内音量を ±5 で操作できる。実ボリュームキーをブラウザが直接捕まえるものではないため best-effort。
 - AudioContext を `latencyHint: "playback"` で再構築 (Web Audio の category を "media" 寄りに)
 - HTMLAudioElement 経由の出力に切り替え (大規模 refactor、Tone.js だと現実的でない)
 
@@ -74,3 +74,4 @@
 ## Changelog
 
 - v141 (2026-05-15): メモファイル新設、master volume bar 追加、Codex 引き継ぎドキュメント整備
+- v144 (2026-05-15): Media Session seekbackward/seekforward をアプリ内音量 ±5 に割当 (Band Room / Music Core Rig / Hazama FM)
