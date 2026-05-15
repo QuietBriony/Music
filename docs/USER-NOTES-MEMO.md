@@ -25,8 +25,8 @@
 **残課題 (v142 以降の選択肢):**
 - ✅ v144: Media Session API の `setActionHandler("seekbackward"/"seekforward", ...)` を音量 down/up に remap。Band Room / Music Core Rig / Hazama FM で、対応車載機が rewind/forward 系 AVRCP を送る場合はアプリ内音量を ±5 で操作できる。実ボリュームキーをブラウザが直接捕まえるものではないため best-effort。
 - ✅ v145: Hazama FM で効いていた iOS Safari 向け hidden `<audio srcObject=MediaStream>` bridge を Band Room に移植。Band Room の WebAudio 最終 mix を HTMLAudioElement 経由にも流し、車側に通常メディア音声として扱われやすくする。
-- AudioContext を `latencyHint: "playback"` で再構築 (Web Audio の category を "media" 寄りに)
-- HTMLAudioElement 経由の出力に切り替え (大規模 refactor、Tone.js だと現実的でない)
+- 保留: AudioContext を `latencyHint: "playback"` で再構築 (効果は環境依存、現状 bridge 優先)
+- 保留: HTMLAudioElement 経由の出力に全面切替 (大規模 refactor、Tone.js だと現実的でない)
 
 ---
 
@@ -41,11 +41,15 @@
 - v139 (fm-70): mic follow groove で kick/hat 速度をリアルタイム動的化
 - v140 (fm-71): Magenta DrumsRNN AI fill burst で 4-8 小節の AI バリエーション生成可能に
 
-**まだ残ってる問題:**
-1. **リズムパターン単調** — kick/hat の基本パターンが mode 内で固定。4 小節毎の variation が無いので長時間聴くと飽きる
-2. **転調タイミング気持ち悪い** — `advanceMusicRadioBrain()` が UCM 値の閾値で mode 切替を発火する設計で、musical phrase 境界 (16/32 小節) を尊重していない。途中で「ガクッ」と変わる感覚
+**v142-v147 で対応済み:**
+1. ✅ **転調タイミング** — v142 で 16 bar phrase 境界 gate + pending mode を追加。manual preset は即時変更のまま。
+2. ✅ **リズム単調さ** — v143 で 4 bar ごとの小さな kick/hat/skin variation、16 bar reset を追加。
+3. ✅ **ジャンル連携** — v146 で trap / soul-funk pattern と Hazama FM → Band Room suggestion を追加。
+4. ✅ **focus mode** — v147 で default OFF の 40Hz / 8% AM を追加。AI fill burst 中は自動 suppression。
 
-**v141 では対応保留** — 単発 R&D タスクとして Codex CLI へ引き継ぎ (docs/CODEX-HANDOFF.md 参照)
+**次に残すなら:**
+- 実車 / Bluetooth で v145 bridge が車側の volume button に認識されるか確認。
+- Hazama FM の 40Hz focus mode は耳で違和感がないか A/B。強く感じる場合は depth を 5% へ落とす。
 
 ---
 
@@ -75,6 +79,9 @@
 ## Changelog
 
 - v141 (2026-05-15): メモファイル新設、master volume bar 追加、Codex 引き継ぎドキュメント整備
+- v142 (2026-05-15): Hazama FM mode change を 16 bar phrase 境界に lock
+- v143 (2026-05-15): Hazama FM drum pattern に 4 bar variation / 16 bar reset を追加
 - v144 (2026-05-15): Media Session seekbackward/seekforward をアプリ内音量 ±5 に割当 (Band Room / Music Core Rig / Hazama FM)
 - v145 (2026-05-15): Hazama FM の background audio bridge を Band Room に移植し、車載/BT のメディア音量認識に寄せる
 - v146 (2026-05-15): trap / soul-funk genre patterns 追加、Hazama FM genre から Band Room pattern suggestion へ連携
+- v147 (2026-05-15): Hazama FM に default OFF の 40Hz focus mode を追加 (8% AM、AI fill 中 suppression)

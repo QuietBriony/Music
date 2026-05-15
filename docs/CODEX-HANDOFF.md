@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-05-15 完了ステータス
+
+| Task | Status | Commit | Notes |
+| --- | --- | --- | --- |
+| TASK A — phrase-locked mode transitions | ✅ 完了 | `5c6396e` / v142 | 16 bar 境界 gate + pending mode |
+| TASK B — rhythm pattern variation | ✅ 完了 | `bfa9fab` / v143 | 4 bar perturb / 16 bar reset |
+| TASK C — genre patterns expansion + cross-app linking | ✅ 完了 | `50f5e02` / v146 | trap / soul-funk JSON + Band Room suggestion |
+| TASK D — 40Hz AM focus modulation | ✅ 完了 | `5e21ce1` / v147 | default OFF、8%、AI fill 中は suppression |
+| Band Room car volume follow-up | ✅ 完了 | `0166961`, `458b604` / v144-v145 | Media Session fallback + Hazama background audio bridge 移植 |
+
+この文書の下部にあるプロンプト群は履歴として残す。次に自走する場合は、新規 TASK E 以降として追加する。
+
+---
+
 ## TASK A — Hazama FM: phrase-locked mode transitions
 
 **問題:**
