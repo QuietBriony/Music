@@ -32,7 +32,7 @@ assert.match(source, /case "piano":[\s\S]*EngineParams\.bassPattern = "x\.\.\.\.
 
 assert.match(html, /engine\.js\?v=fm-84/, "FM page should load the v170 engine marker");
 assert.match(index, /engine\.js\?v=fm-84/, "Music Core should load the v170 engine marker");
-assert.match(sw, /const VERSION = "hazama-fm-v171"/, "Service worker should use v171 cache");
+assert.match(sw, /const VERSION = "hazama-fm-v172"/, "Service worker should use v172 cache");
 assert.match(sw, /engine\.js\?v=fm-84/, "Service worker should precache the v170 engine marker");
 
 console.log("Hazama FM melody check passed");

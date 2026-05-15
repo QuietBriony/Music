@@ -243,7 +243,7 @@ Tabasco 以外のバンドを追加するなら別 doc:
 
 ## 履歴
 
-- [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) — v65 → v171 compact 履歴
+- [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) — v65 → v172 compact 履歴
 - 設計判断 / パラメータの数値 / 各機能の commit ハッシュもここに
 
 ---
@@ -253,7 +253,7 @@ Tabasco 以外のバンドを追加するなら別 doc:
 | doc | 用途 |
 |-----|------|
 | [BAND-ROOM-USAGE.md](./BAND-ROOM-USAGE.md) | 5 つの典型用途 (カラオケ / AI 再現 / 厚み出し / Suno / ad-lib) |
-| [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) | v65-v171 compact 履歴、各 wave 詳細 |
+| [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) | v65-v172 compact 履歴、各 wave 詳細 |
 | [BAND-ROOM-ADD-BAND.md](./BAND-ROOM-ADD-BAND.md) | 新バンド追加手順 |
 | [PRODUCTION-PATH.md](./PRODUCTION-PATH.md) | **「作品」として世に出す道筋** (album 制作 / 30 min lofi set / 配信 platform 比較) |
 | [RECORDING-WORKFLOW.md](./RECORDING-WORKFLOW.md) | UR44 + マイク / bass / 電子ドラム / EP-133 経由で band-room の external slot に流す具体手順 |

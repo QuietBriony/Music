@@ -117,8 +117,8 @@ catalog 1 ファイル編集だけで 3 app 全部の音色候補が同期する
 
 | app | latest cache marker | sw VERSION |
 |-----|---------------------|------------|
-| Band Room | `band-room.css?v=br-73` / `band-room.js?v=br-86` | hazama-fm-v171 |
-| Hazama FM | `engine.js?v=fm-84` / `fm.css?v=fm-50` / `fm.js?v=fm-64` | 同上 |
+| Band Room | `band-room.css?v=br-73` / `band-room.js?v=br-86` | hazama-fm-v172 |
+| Hazama FM | `engine.js?v=fm-84` / `fm.css?v=fm-50` / `fm.js?v=fm-64` / `audio/genre-flavor.js?v=fm-70` | 同上 |
 | Music Core Rig | `engine.js?v=fm-84` / `style.css?v=fm-28` | 同上 |
 
 `sw.js` の VERSION は **3 app 共通** で `hazama-fm-vNN`。ここを bump すると 3 app 全部のキャッシュが invalidate される。
@@ -130,13 +130,13 @@ catalog 1 ファイル編集だけで 3 app 全部の音色候補が同期する
 | doc | カバー範囲 | 整合状態 |
 |-----|----------|--------|
 | `BAND-ROOM-MANUAL.md` | Band Room 入り口 | v168 saved mix migration / default mix polish / AI part agents / timeline 反映済 |
-| `BAND-ROOM-CHANGELOG.md` | v65-v171 compact | 近年履歴は compact 追記で同期 |
+| `BAND-ROOM-CHANGELOG.md` | v65-v172 compact | 近年履歴は compact 追記で同期 |
 | `SAMPLE-CATALOG-GUIDE.md` | online catalog 操作 | v112 で大幅拡張済 (search query / license tree / tutorial) |
 | `DAW-INTEGRATION.md` | DAW 連携 | v87-v90 まで反映 |
 | `FREE-SAMPLES-AND-SYNTHESIS.md` | 音色設計哲学 | v91 までだが v109+ Sampler 化を補追記が必要 |
 | `REPO-MANAGEMENT.md` | Pages 制限 | 静的、変更なし |
 | `HAZAMA-FM-ARCHITECTURE.md` | 全体アーキ | v170 の melodic + bassline director / phrase / focus / bridge 反映済 |
-| `CROSS-APP-INTEGRITY.md` | **このファイル** | 整合性 hub / v171 cache map |
+| `CROSS-APP-INTEGRITY.md` | **このファイル** | 整合性 hub / v172 cache map |
 | `tabasco-lyrics-final.md` | Band Room 表示用の歌える一本稿 | v163 primary |
 | `tabasco-lyrics-{draft,burroughs,v4-syllabic}.md` | 旧候補 / archive | runtime には表示しない |
 | `USAGE-HAZAMA-FM.md` | FM 使い方 | v149 主要 controls 反映済 |

@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v171 compact)
+# Band Room — Changelog (v65 → v172 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,19 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v172 compact — Hazama FM groove conversation
+
+- `audio/genre-flavor.js fm-70`: Hazama FM の parallel flavor layer に
+  `GrooveConversationState` を追加。8小節 cycle で `bass-call` /
+  `comp-answer` / `drum-comment` / `space` / `lead-call` /
+  `bass-answer` / `comp-lift` / `recap` を回し、ベース、コンピング、
+  ドラム、リードが同時に鳴り続けるのではなく呼応するようにした。
+- `window.HazamaFlavorState.conversation` に `{ version, bar, role, motif,
+  transform, densityBias, restGate }` を公開。既存の `sessionRole` /
+  `leadVoice` / `phraseBar` / `phrase8Bar` / `movement` / `dropBar` /
+  `keyShift` / `groove` は維持。
+- `sw.js hazama-fm-v172`: `audio/genre-flavor.js?v=fm-70` を precache。
 
 ## v171 compact — Band Room PWA + mobile screen-lock hardening
 

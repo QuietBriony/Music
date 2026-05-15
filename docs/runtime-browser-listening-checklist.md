@@ -101,11 +101,11 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`, `AI fill`, DJ set buttons, mic follow, and `40HZ`.
 - Confirm cache markers match exactly across `fm.html`, `index.html`,
-  `band-room.html`, and `sw.js`. Current v171 markers: `engine.js?v=fm-84`,
-  `fm.css?v=fm-50`, `fm.js?v=fm-64`, `audio/genre-flavor.js?v=fm-69`,
+  `band-room.html`, and `sw.js`. Current v172 markers: `engine.js?v=fm-84`,
+  `fm.css?v=fm-50`, `fm.js?v=fm-64`, `audio/genre-flavor.js?v=fm-70`,
   `audio/ai-fills.js?v=fm-71`, `style.css?v=fm-28`,
   `band-room.js?v=br-86`, `manifest-band-room.webmanifest`, and
-  `hazama-fm-v171`.
+  `hazama-fm-v172`.
 - For v169 Hazama FM melodic director, let FM run for at least 16 bars and
   confirm `window.MusicRuntimeState.melodicDirector` changes key/contour over
   phrases while playback stays smooth.

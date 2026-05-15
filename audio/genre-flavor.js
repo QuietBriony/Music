@@ -710,6 +710,97 @@
     }
   }
 
+  const GROOVE_CONVERSATION_ROLES = [
+    "bass-call",
+    "comp-answer",
+    "drum-comment",
+    "space",
+    "lead-call",
+    "bass-answer",
+    "comp-lift",
+    "recap"
+  ];
+  const GROOVE_CONVERSATION_MOTIFS = ["up-third", "fall-fourth", "neighbor", "octave-skip"];
+  const GROOVE_CONVERSATION_TRANSFORMS = {
+    "bass-call": "statement",
+    "comp-answer": "answer",
+    "drum-comment": "displacement",
+    space: "fragment",
+    "lead-call": "enlargement",
+    "bass-answer": "inversion",
+    "comp-lift": "sequence",
+    recap: "recap"
+  };
+  const GROOVE_CONVERSATION_BIAS = {
+    "bass-call": { density: 0.06, rest: 0.08 },
+    "comp-answer": { density: -0.02, rest: 0.14 },
+    "drum-comment": { density: 0.05, rest: 0.1 },
+    space: { density: -0.18, rest: 0.42 },
+    "lead-call": { density: 0.06, rest: 0.1 },
+    "bass-answer": { density: 0.04, rest: 0.12 },
+    "comp-lift": { density: 0.08, rest: 0.06 },
+    recap: { density: -0.03, rest: 0.2 }
+  };
+
+  function round2(value) {
+    return Math.round(value * 100) / 100;
+  }
+
+  function grooveConversationForBar(barIdx, sessionRole = "default") {
+    const bar = ((barIdx % 8) + 8) % 8;
+    const role = GROOVE_CONVERSATION_ROLES[bar];
+    const cycle = Math.floor(Math.max(0, barIdx) / 8);
+    const motif = GROOVE_CONVERSATION_MOTIFS[(cycle + bar) % GROOVE_CONVERSATION_MOTIFS.length];
+    const base = GROOVE_CONVERSATION_BIAS[role] || { density: 0, rest: 0.12 };
+    const sessionDensity = sessionRole === "break" ? -0.05 : sessionRole === "recap" ? 0.03 : 0;
+    const sessionRest = sessionRole === "break" ? 0.12 : sessionRole === "recap" ? -0.04 : 0;
+    return {
+      version: "v172",
+      bar,
+      role,
+      motif,
+      transform: GROOVE_CONVERSATION_TRANSFORMS[role] || "statement",
+      densityBias: round2(clamp(base.density + sessionDensity, -0.24, 0.16)),
+      restGate: round2(clamp(base.rest + sessionRest, 0.02, 0.56))
+    };
+  }
+
+  function currentGrooveConversation() {
+    if (typeof window === "undefined") return null;
+    return window.HazamaFlavorState?.conversation || null;
+  }
+
+  function isBassConversation(conversation) {
+    return conversation?.role === "bass-call" || conversation?.role === "bass-answer";
+  }
+
+  function isCompConversation(conversation) {
+    return conversation?.role === "comp-answer" || conversation?.role === "comp-lift";
+  }
+
+  function conversationRestRoll(conversation, scale = 1) {
+    if (!conversation) return false;
+    return Math.random() < clamp((conversation.restGate || 0) * scale, 0, 0.85);
+  }
+
+  function transformBassNoteForConversation(note, beatInBar, conversation) {
+    if (!note || !isBassConversation(conversation)) return note;
+    const motif = conversation.motif;
+    let semitones = 0;
+    if (motif === "up-third" && beatInBar === 1) semitones = 3;
+    else if (motif === "fall-fourth" && beatInBar === 2) semitones = -5;
+    else if (motif === "neighbor" && (beatInBar === 1 || beatInBar === 3)) semitones = beatInBar === 1 ? 1 : -1;
+    else if (motif === "octave-skip" && beatInBar === 1) semitones = 12;
+    return semitones ? transposeNote(note, semitones) : note;
+  }
+
+  const GrooveConversationState = Object.freeze({
+    version: "v172",
+    roles: GROOVE_CONVERSATION_ROLES,
+    motifs: GROOVE_CONVERSATION_MOTIFS,
+    forBar: grooveConversationForBar
+  });
+
   // Production aesthetic governor amounts per pill. Light wash that pulls
   // every genre toward a shared aesthetic — Aphex-style wrongness + D Angelo
   // behind-beat pocket — without changing the genre's identity.
@@ -774,6 +865,7 @@
       const isBreak = frame.session_role === "break";
       const isRecap = frame.session_role === "recap";
       const eventCount = frame.events.length;
+      let conversation = null;
 
       // Expose current frame for Now Playing UI in fm.js,
       // plus groove lock (band-wide micro-timing + dynamics).
@@ -837,6 +929,8 @@
         // Tension parameter 0-1 — continuously rising through movement,
         // resetting between movements. Used by layers for filter brightness.
         flavor.tension = movement.bar / Math.max(1, movement.total);
+        conversation = GrooveConversationState.forBar(barIdx, frame.session_role || "default");
+        flavor.conversation = conversation;
       }
 
       frame.events.forEach((evt, evtIdx) => {
@@ -853,11 +947,11 @@
           extraMs = (2 + Math.random() * 5) * dangelo;
         }
 
-        const offset = (evt.beat || 0) * beatTime
-                     + (evt.sub || 0) * subTime
-                     + ((evt.microMs || 0) + extraMs) / 1000;
+        const baseOffset = (evt.beat || 0) * beatTime + (evt.sub || 0) * subTime;
         const vel = clamp(evt.velocity ?? 0.5, 0.05, 1);
         let eventVel = vel;
+        const convo = conversation || currentGrooveConversation();
+        const convoRole = convo?.role || "";
 
         if (options.minimalTechno) {
           if (evt.instrument === "hat") eventVel = vel * 0.42;
@@ -874,6 +968,18 @@
           eventVel = Math.min(1, eventVel * 1.12);
         }
 
+        if (convoRole === "space" && evt.instrument !== "kick" && evt.instrument !== "hat") {
+          if (conversationRestRoll(convo, 0.32)) return;
+          eventVel *= 0.72;
+        } else if (convoRole === "drum-comment" && (evt.instrument === "ghost" || evt.instrument === "fill" || evt.instrument === "snare")) {
+          eventVel = Math.min(1, eventVel * 1.08);
+          if (evt.instrument === "ghost" || evt.instrument === "fill") extraMs -= 3 + Math.random() * 3;
+        } else if (convoRole === "recap" && evt.instrument !== "kick") {
+          eventVel *= 0.9;
+        } else if (convo && convo.densityBias < 0 && evt.instrument !== "kick") {
+          eventVel *= clamp(1 + convo.densityBias * 0.7, 0.82, 1);
+        }
+
         // RDJ wrongness: occasional per-event velocity dropout to 0.3x
         if (rdj > 0 && Math.random() < rdj) {
           eventVel *= 0.3;
@@ -887,6 +993,7 @@
         }
 
         try {
+          const offset = baseOffset + ((evt.microMs || 0) + extraMs) / 1000;
           const eventTime = safeEventTime(time + offset);
           if (evt.instrument === "kick") {
             synth.triggerAttackRelease(options.kickNote || "C2", "16n", eventTime, eventVel);
@@ -1190,6 +1297,7 @@
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const sr = flavor ? flavor.sessionRole : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const conversation = flavor?.conversation || null;
       const isLead = flavor && flavor.leadVoice === "comp";
       const otherLead = flavor && (flavor.leadVoice === "bass" || flavor.leadVoice === "drums");
 
@@ -1202,20 +1310,31 @@
       if (bucket.length === 0) { compBar++; return; }
       if (flavor && flavor.dropBar) { compBar++; return; }
 
-      const skipProb = isLead ? 0.10 : otherLead ? 0.50 : 0.30;
+      const skipProb = conversation?.role === "space" ? 0.74
+        : isBassConversation(conversation) ? 0.58
+        : isCompConversation(conversation) ? 0.08
+        : isLead ? 0.10
+        : otherLead ? 0.50
+        : 0.30;
       if (Math.random() < skipProb) { compBar++; return; }
 
       const rawChord = bucket[compBar % bucket.length];
       const keyShift = flavor && flavor.keyShift || 0;
-      const chord = transposeChord(rawChord, keyShift);
+      const chord = transposeChord(conversation?.role === "comp-answer" ? rawChord.slice(-3) : rawChord, keyShift);
       const grooveOffset = (groove.pushMs || 0) / 1000 * 0.8;
       const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
       const leadBoost = isLead ? 1.10 : 1.0;
+      const convoBoost = conversation?.role === "comp-lift" ? 1.1
+        : conversation?.role === "comp-answer" ? 1.04
+        : isBassConversation(conversation) ? 0.78
+        : 1;
+      const duration = conversation?.role === "comp-answer" ? "4n" : "2n";
+      const answerDelay = conversation?.role === "comp-answer" ? 0.18 : 0.035;
       try {
         chord.forEach((note, i) => {
           const delay = i * (0.008 + Math.random() * 0.014);
-          const vel = (0.18 + Math.random() * 0.07) * intensity * leadBoost;
-          piano.triggerAttackRelease(note, "2n", safeEventTime(time + 0.035 + grooveOffset + delay), vel);
+          const vel = (0.18 + Math.random() * 0.07) * intensity * leadBoost * convoBoost;
+          piano.triggerAttackRelease(note, duration, safeEventTime(time + answerDelay + grooveOffset + delay), vel);
         });
       } catch (e) {}
       compBar++;
@@ -1273,6 +1392,7 @@
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const conversation = flavor?.conversation || null;
       const isLead = flavor && flavor.leadVoice === "bass";
 
       // v43 movement gate
@@ -1292,10 +1412,15 @@
       }
       const rawNote = currentPattern[step % currentPattern.length];
       const keyShift = flavor && flavor.keyShift || 0;
-      const note = transposeNote(rawNote, keyShift);
+      const note = transposeNote(transformBassNoteForConversation(rawNote, Math.floor((step % 16) / 4), conversation), keyShift);
       const dropBar = flavor && flavor.dropBar;
       const isSilence = flavor && isPhraseSilence(flavor.phrase8Bar, step);
-      const hitProb = (step % 4 === 0 ? 0.86 : 0.58) * (isLead ? 1.0 : 0.85);
+      const convoScale = conversation?.role === "space" ? 0.52
+        : conversation?.role === "recap" ? 0.7
+        : isBassConversation(conversation) ? 1.12
+        : isCompConversation(conversation) ? 0.78
+        : 1;
+      const hitProb = clamp((step % 4 === 0 ? 0.86 : 0.58) * (isLead ? 1.0 : 0.85) * convoScale - (conversation?.restGate || 0) * 0.12, 0.12, 0.95);
       if (note && !dropBar && !isSilence && Math.random() < hitProb) {
         try {
           const grooveOffset = (groove.pushMs || 0) / 1000;
@@ -1308,11 +1433,12 @@
             { velMul: 1.18, msOffset: -3 - Math.random() * 3 } : null;
           const totalMs = humMs + (peak ? peak.msOffset : 0);
           const peakBoost = peak ? peak.velMul : 1.0;
+          const convoVel = isBassConversation(conversation) ? 1.06 : conversation?.role === "space" ? 0.78 : 1;
           bass.triggerAttackRelease(
             note,
             step % 2 === 0 ? "16n" : "32n",
             safeEventTime(time + grooveOffset + totalMs / 1000),
-            baseVel * intensity * leadBoost * peakBoost
+            baseVel * intensity * leadBoost * peakBoost * convoVel
           );
         } catch (e) {}
       }
@@ -1334,6 +1460,7 @@
     let subStep = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const conversation = flavor?.conversation || null;
       // v43 movement gate
       const movement = flavor && flavor.movement
         ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
@@ -1341,7 +1468,7 @@
         subStep = (subStep + 1) % 16;
         return;
       }
-      if (subStep === 0 && !(flavor && flavor.dropBar)) {
+      if (subStep === 0 && !(flavor && flavor.dropBar) && conversation?.role !== "space" && conversation?.role !== "recap") {
         // Use the first valid note from currentPattern as the sub root, -1 oct
         const rawNote = (currentPattern && currentPattern.find(n => !!n)) || "D2";
         try {
@@ -1380,9 +1507,19 @@
     ];
     let bar = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      if (Math.random() < 0.74) {
+      const conversation = currentGrooveConversation();
+      const chance = conversation?.role === "space" ? 0.28
+        : isBassConversation(conversation) ? 0.42
+        : isCompConversation(conversation) ? 0.82
+        : 0.74;
+      if (Math.random() < chance) {
         try {
-          keys.triggerAttackRelease(voicings[bar % voicings.length], "2n", safeEventTime(time + 0.055 + Math.random() * 0.035), 0.18 + Math.random() * 0.05);
+          const chord = conversation?.role === "comp-answer"
+            ? voicings[bar % voicings.length].slice(-3)
+            : voicings[bar % voicings.length];
+          const dur = conversation?.role === "comp-answer" ? "4n" : "2n";
+          const velScale = isBassConversation(conversation) ? 0.78 : conversation?.role === "comp-lift" ? 1.08 : 1;
+          keys.triggerAttackRelease(chord, dur, safeEventTime(time + 0.055 + Math.random() * 0.035), (0.18 + Math.random() * 0.05) * velScale);
         } catch (e) {}
       }
       bar++;
@@ -1562,15 +1699,20 @@
     const beatSec = Tone.Time("4n").toSeconds();
     let phraseIdx = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
-      // 4-bar phrase window; flute speaks on 30-38% of windows
-      if (Math.random() < 0.34) {
-        const phrase = phrases[phraseIdx % phrases.length];
+      const conversation = currentGrooveConversation();
+      if (conversation?.role === "space") { phraseIdx++; return; }
+      const isLeadCall = conversation?.role === "lead-call";
+      const isAnswer = conversation?.role === "bass-answer" || conversation?.role === "recap";
+      const speakChance = isLeadCall ? 0.48 : isAnswer ? 0.24 : 0.08;
+      if (Math.random() < speakChance) {
+        const sourcePhrase = phrases[phraseIdx % phrases.length];
+        const phrase = isLeadCall ? sourcePhrase : sourcePhrase.slice(-Math.min(2, sourcePhrase.length));
         let offset = 0.06 + Math.random() * 0.04; // light upbeat lag
         phrase.forEach((step) => {
           if (step.note) {
             const t = safeEventTime(time + offset);
-            const dur = step.dur * beatSec;
-            const vel = 0.42 + Math.random() * 0.1;
+            const dur = step.dur * beatSec * (isLeadCall ? 1 : 0.74);
+            const vel = (0.42 + Math.random() * 0.1) * (isLeadCall ? 1 : 0.72);
             try {
               flute.triggerAttackRelease(step.note, dur * 0.9, t, vel);
               breath.triggerAttackRelease(dur * 0.6, t, vel * 0.5);
@@ -1580,7 +1722,7 @@
         });
       }
       phraseIdx++;
-    }, "4m", "1m"));
+    }, "1m", "1m"));
 
     layer.synths.push(flute, vibrato, breath, breathFilter, lp, delay, hall);
     const prevDispose = layer.dispose;
@@ -1728,31 +1870,38 @@
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const isLead = flavor && flavor.leadVoice === "lead";
+      const conversation = flavor?.conversation || null;
+      const isLeadCall = conversation?.role === "lead-call";
+      const isAnswer = conversation?.role === "bass-answer";
       // v43 movement gate — solo only speaks during peak and return movements
       const movement = flavor && flavor.movement
         ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
       if (movement && !layerActiveInMovement("solo", movement)) { lastWasLead = false; return; }
-      // Only fire on the FIRST bar of a lead window (to avoid retriggering mid-phrase)
-      if (!isLead) { lastWasLead = false; return; }
-      if (lastWasLead) return;
-      lastWasLead = true;
+      if (!isLead || (!isLeadCall && !isAnswer)) {
+        if (!isLead) lastWasLead = false;
+        return;
+      }
+      if (isLeadCall && lastWasLead) return;
+      if (isLeadCall) lastWasLead = true;
+      if (isAnswer && !lastWasLead && Math.random() < 0.42) return;
       if (flavor && flavor.dropBar) return;
 
-      const phrase = phrases[phraseCount % phrases.length];
+      const sourcePhrase = phrases[phraseCount % phrases.length];
+      const phrase = isLeadCall ? sourcePhrase : sourcePhrase.slice(-Math.min(2, sourcePhrase.length));
       phraseCount++;
       const keyShift = flavor && flavor.keyShift || 0;
       let offset = 0.08 + Math.random() * 0.05;
       phrase.forEach((step) => {
         if (step.n) {
           const t = safeEventTime(time + offset);
-          const dur = step.d * beatSec;
-          const vel = 0.28 + Math.random() * 0.08;
+          const dur = step.d * beatSec * (isLeadCall ? 1 : 0.7);
+          const vel = (0.28 + Math.random() * 0.08) * (isLeadCall ? 1 : 0.72);
           const note = transposeNote(step.n, keyShift);
           try { solo.triggerAttackRelease(note, dur * 0.92, t, vel); } catch (e) {}
         }
         offset += step.d * beatSec;
       });
-    }, "4m", "1m"));
+    }, "1m", "1m"));
 
     // Reset lastWasLead at every bar boundary so next lead window can fire
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat(() => {
@@ -1931,6 +2080,7 @@
   // humanization (±12 ms timing, ±0.08 velocity), occasional ghost notes.
   function scheduleWalkingBass(bassVoice, baseVelocity = 0.55) {
     let currentPattern = null;
+    let lastBassNote = null;
     let beatInBar = 0;
     const beatTime = Tone.Time("4n").toSeconds();
     const halfBeat = beatTime / 2;
@@ -1938,6 +2088,7 @@
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const sr = flavor ? flavor.sessionRole : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const conversation = flavor?.conversation || null;
       const isLead = flavor && flavor.leadVoice === "bass";
       const dropBar = flavor && flavor.dropBar;
       const keyShift = flavor && flavor.keyShift || 0;
@@ -1952,7 +2103,11 @@
 
       if (beatInBar === 0 || !currentPattern) {
         currentPattern = pickWalkingBassPattern(sr || "default");
-        if (!isLead && Math.random() < 0.18) {
+        const openingRest = conversation?.role === "space" ? conversation.restGate * 0.6
+          : conversation?.role === "recap" ? conversation.restGate * 0.32
+          : isBassConversation(conversation) ? 0.04
+          : 0.18;
+        if (!isLead && Math.random() < openingRest) {
           beatInBar = (beatInBar + 1) % 4;
           return;
         }
@@ -1961,7 +2116,13 @@
       const rawNote = currentPattern[beatInBar % currentPattern.length];
       beatInBar = (beatInBar + 1) % 4;
       if (!rawNote || dropBar) return;
-      const note = transposeNote(rawNote, keyShift);
+      if ((conversation?.role === "space" || conversation?.role === "recap") && currentBeat !== 0 && conversationRestRoll(conversation, conversation.role === "space" ? 0.62 : 0.34)) return;
+      let note = transformBassNoteForConversation(rawNote, currentBeat, conversation);
+      note = transposeNote(note, keyShift);
+      if (isBassConversation(conversation) && note === lastBassNote) {
+        note = transposeNote(note, conversation.motif === "fall-fourth" ? -5 : 3);
+      }
+      lastBassNote = note;
 
       const grooveOffset = (groove.pushMs || 0) / 1000;
       // v42: asymmetric humanize + backbeat lag + peak shift
@@ -1973,15 +2134,16 @@
       const intensityScale = clamp(groove.intensity || 1.0, 0.7, 1.25);
       const leadBoost = isLead ? 1.08 : 1.0;
       const peakBoost = peak ? peak.velMul : 1.0;
-      const vel = clamp((baseVelocity + (Math.random() - 0.5) * 0.10) * intensityScale * leadBoost * peakBoost, 0.25, 0.92);
+      const convoLift = isBassConversation(conversation) ? 1.07 : conversation?.role === "space" ? 0.78 : conversation?.role === "recap" ? 0.88 : 1;
+      const vel = clamp((baseVelocity + (Math.random() - 0.5) * 0.10) * intensityScale * leadBoost * peakBoost * convoLift, 0.22, 0.92);
 
       bassVoice.play(note, "8n", safeEventTime(time + grooveOffset + totalMs / 1000), vel);
 
-      const passingProb = isLead ? 0.28 : 0.18;
+      const passingProb = clamp((isLead ? 0.28 : 0.18) + (isBassConversation(conversation) ? 0.16 : 0) - (conversation?.restGate || 0) * 0.12, 0.04, 0.48);
       if (Math.random() < passingProb && note) {
         try {
           const noteFreq = Tone.Frequency(note).toFrequency();
-          const passingFreq = noteFreq * (Math.random() < 0.5 ? 1.0595 : 0.9439);
+          const passingFreq = noteFreq * (conversation?.motif === "neighbor" ? (Math.random() < 0.5 ? 1.0595 : 0.9439) : 1.0595);
           bassVoice.play(passingFreq, "16n", safeEventTime(time + grooveOffset + halfBeat - 0.01), vel * 0.55);
         } catch (e) {}
       }
@@ -2031,6 +2193,7 @@
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const sr = flavor ? flavor.sessionRole : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const conversation = flavor?.conversation || null;
       // v43 movement gate
       const movement = flavor && flavor.movement
         ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
@@ -2040,11 +2203,14 @@
       const inFirstHalf = phrase8 != null && phrase8 < 4;
       const stepIn16 = (brushIdx % 8) * 2;
       const isSilence = flavor && isPhraseSilence(flavor.phrase8Bar, stepIn16);
-      const denseSkip = inFirstHalf ? Math.random() < 0.18 : false;
+      const denseSkip = conversation?.role === "space" ? conversationRestRoll(conversation, 0.55)
+        : conversation?.role === "drum-comment" ? false
+        : inFirstHalf ? Math.random() < 0.18
+        : false;
       if (brushPattern[brushIdx % brushPattern.length] && !isSilence && !denseSkip) {
         const grooveOffset = (groove.pushMs || 0) / 1000 * 0.5;
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
-        const vel = (0.18 + Math.random() * 0.08) * intensity;
+        const vel = (0.18 + Math.random() * 0.08) * intensity * (conversation?.role === "drum-comment" ? 1.08 : 1);
         const humMs = humanizeMs();
         brush.triggerAttackRelease("16n", safeEventTime(time + grooveOffset + humMs / 1000), vel);
       }
@@ -2092,6 +2258,7 @@
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const sr = flavor ? flavor.sessionRole : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const conversation = flavor?.conversation || null;
       // v43 movement gate
       const movement = flavor && flavor.movement
         ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
@@ -2101,12 +2268,15 @@
       const inFirstHalf = phrase8 != null && phrase8 < 4;
       const stepIn16 = (brushIdx % 8) * 2;
       const isSilence = flavor && isPhraseSilence(flavor.phrase8Bar, stepIn16);
-      const denseSkip = inFirstHalf ? Math.random() < 0.18 : false;
+      const denseSkip = conversation?.role === "space" ? conversationRestRoll(conversation, 0.55)
+        : conversation?.role === "drum-comment" ? false
+        : inFirstHalf ? Math.random() < 0.18
+        : false;
       if (brushPattern[brushIdx % brushPattern.length] && !isSilence && !denseSkip) {
         const grooveOffset = (groove.pushMs || 0) / 1000 * 0.5;
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
         const humMs = humanizeMs();
-        brush.triggerAttackRelease("16n", safeEventTime(time + grooveOffset + humMs / 1000), (0.12 + Math.random() * 0.06) * intensity);
+        brush.triggerAttackRelease("16n", safeEventTime(time + grooveOffset + humMs / 1000), (0.12 + Math.random() * 0.06) * intensity * (conversation?.role === "drum-comment" ? 1.08 : 1));
       }
       brushIdx++;
     }, "8n", "8n"));
@@ -2233,6 +2403,7 @@
     ids.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const conversation = flavor?.conversation || null;
       const isLead = flavor && flavor.leadVoice === "comp";
       // v43 movement gate
       const movement = flavor && flavor.movement
@@ -2242,13 +2413,21 @@
         const sr = flavor ? flavor.sessionRole : null;
         currentClaviPattern = pickFunkClaviPattern(sr || "default");
       }
-      if (currentClaviPattern[claviStep] && !(flavor && flavor.dropBar)) {
+      const skipBoost = conversation?.role === "space" ? 0.62
+        : isBassConversation(conversation) ? 0.46
+        : isCompConversation(conversation) ? 0.05
+        : 0.18;
+      if (currentClaviPattern[claviStep] && Math.random() > skipBoost && !(flavor && flavor.dropBar)) {
         const rawNote = currentChordTones[Math.floor(Math.random() * currentChordTones.length)];
         const note = transposeNote(rawNote, flavor && flavor.keyShift || 0);
         const grooveOffset = (groove.pushMs || 0) / 1000 * 0.7;
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
         const leadBoost = isLead ? 1.08 : 1.0;
-        clavi.triggerAttackRelease(note, "32n", safeEventTime(time + grooveOffset), (0.45 + Math.random() * 0.15) * intensity * leadBoost);
+        const convoBoost = conversation?.role === "comp-lift" ? 1.12
+          : conversation?.role === "comp-answer" ? 1.06
+          : isBassConversation(conversation) ? 0.76
+          : 1;
+        clavi.triggerAttackRelease(note, "32n", safeEventTime(time + grooveOffset), (0.45 + Math.random() * 0.15) * intensity * leadBoost * convoBoost);
       }
       claviStep = (claviStep + 1) % 16;
     }, "16n"));
@@ -2256,6 +2435,7 @@
     ids.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const conversation = flavor?.conversation || null;
       // v43 movement gate
       const movement = flavor && flavor.movement
         ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
@@ -2273,7 +2453,8 @@
         if (!(flavor && flavor.dropBar)) {
           const chord = transposeChord(rawChord, flavor && flavor.keyShift || 0);
           const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
-          ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.35 * intensity);
+          const convoBoost = isBassConversation(conversation) ? 0.76 : conversation?.role === "comp-lift" ? 1.08 : conversation?.role === "space" ? 0.62 : 1;
+          ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.35 * intensity * convoBoost);
         }
       }
       epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
@@ -2323,6 +2504,7 @@
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const conversation = flavor?.conversation || null;
       const isLead = flavor && flavor.leadVoice === "comp";
       const otherLead = flavor && (flavor.leadVoice === "bass" || flavor.leadVoice === "drums");
       // v43 movement gate
@@ -2333,7 +2515,11 @@
         const sr = flavor ? flavor.sessionRole : null;
         currentClaviPattern = pickFunkClaviPattern(sr || "default");
       }
-      const skipBoost = otherLead ? 0.45 : 0.2;
+      const skipBoost = conversation?.role === "space" ? 0.68
+        : isBassConversation(conversation) ? 0.52
+        : isCompConversation(conversation) ? 0.08
+        : otherLead ? 0.45
+        : 0.2;
       if (currentClaviPattern[claviStep] && Math.random() > skipBoost && !(flavor && flavor.dropBar)) {
         const rawNote = currentChordTones[(claviStep + Math.floor(Math.random() * 2)) % currentChordTones.length];
         const note = transposeNote(rawNote, flavor && flavor.keyShift || 0);
@@ -2341,7 +2527,11 @@
         const push = (Math.random() - 0.5) * 0.012;
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
         const leadBoost = isLead ? 1.08 : 1.0;
-        clavi.triggerAttackRelease(note, "32n", safeEventTime(time + grooveOffset + push), (0.22 + Math.random() * 0.08) * intensity * leadBoost);
+        const convoBoost = conversation?.role === "comp-lift" ? 1.12
+          : conversation?.role === "comp-answer" ? 1.06
+          : isBassConversation(conversation) ? 0.76
+          : 1;
+        clavi.triggerAttackRelease(note, "32n", safeEventTime(time + grooveOffset + push), (0.22 + Math.random() * 0.08) * intensity * leadBoost * convoBoost);
       }
       claviStep = (claviStep + 1) % 16;
     }, "16n"));
@@ -2349,6 +2539,7 @@
     drums.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
       const groove = flavor && flavor.groove || { pushMs: 0, intensity: 1.0 };
+      const conversation = flavor?.conversation || null;
       // v43 movement gate
       const movement = flavor && flavor.movement
         ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
@@ -2366,7 +2557,8 @@
         if (flavor && flavor.dropBar) { epBarIdx = (epBarIdx + 1) % currentEpProgression.length; return; }
         const chord = transposeChord(rawChord, flavor && flavor.keyShift || 0);
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
-        ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.32 * intensity);
+        const convoBoost = isBassConversation(conversation) ? 0.76 : conversation?.role === "comp-lift" ? 1.08 : conversation?.role === "space" ? 0.62 : 1;
+        ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.32 * intensity * convoBoost);
       }
       epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
     }, "1m"));
