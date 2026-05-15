@@ -5441,6 +5441,14 @@ function buildMusicSessionPacket(options = {}) {
     hazamaFmReviewCue: hazamaFmCue
   });
   if (hazamaFm && !hazamaFm.review_cue) hazamaFm.review_cue = hazamaFmCue;
+  const hazamaTrace = hazamaFm?.listening_trace || null;
+  const hazamaGenre = hazamaTrace?.current_genre || hazamaFm?.genre || "";
+  const hazamaEnergy = hazamaTrace?.current_energy || "";
+  const hazamaBpm = Number(hazamaTrace?.bpm);
+  const hazamaDwellMs = Number(hazamaTrace?.dwell_ms_by_genre?.[hazamaGenre]);
+  const hazamaDrumBpm = Number.isFinite(hazamaBpm)
+    ? Math.round(clampValue(hazamaBpm, 54, 190))
+    : null;
 
   return {
     version: 1,
@@ -5490,6 +5498,17 @@ function buildMusicSessionPacket(options = {}) {
         density,
         pressure,
         section,
+        bpm: hazamaDrumBpm,
+        hazama_fm: hazamaFm
+          ? {
+              genre: hazamaGenre || null,
+              energy: hazamaEnergy || null,
+              bpm: hazamaDrumBpm,
+              dwell_ms: Number.isFinite(hazamaDwellMs) ? Math.round(hazamaDwellMs) : 0,
+              review_cue: hazamaFmCue?.short_label || null,
+              metadata_only: true
+            }
+          : null,
         review_reason: stackRouting.destination === "drum_floor" ? stackRouting.reason : "必要な時だけ手動previewするdrum候補。",
         review_only: true
       },

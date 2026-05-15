@@ -40,6 +40,7 @@
 | FM ↔ Band Room visible handoff | ✅ 完了 | v156 | FM genre query → Band Room pattern suggestion、Band Room pattern → FM genre query |
 | Drum Floor return song link | ✅ 完了 | v157 | Drum Floor → Band Room `song` query、通常 reload 01 は維持 |
 | Hazama FM route badge | ✅ 完了 | v158 | `direct` / `bridge` / `failed` を車載/BT確認用に可視化 |
+| FM → Drum Floor handoff + all-merge closeout | ✅ 完了 | v159 | FM genre/BPM を metadata-only SYNC + query fallback で drum-floor preview へ渡し、検証済みPR/branchは残さず締める運用に更新 |
 
 この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
 完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。

@@ -13,6 +13,7 @@
   const STORAGE_KEY = "music:fm:v1";
   const FOCUS_MODE_STORAGE_KEY = "music:fm:focus-mode:v1";
   const LISTENING_TRACE_STORAGE_KEY = "music:fm:listening-trace:v1";
+  const DRUM_FLOOR_APP_URL = "https://quietbriony.github.io/drum-floor/";
   const LISTENING_TRACE_MAX_TRANSITIONS = 24;
   const FADE_IN_S = 4;
   const FADE_OUT_S = 3;
@@ -944,6 +945,50 @@
     link.setAttribute("aria-label", slug ? `Open Band Room with ${slug} pattern suggestion` : "Open Band Room");
   }
 
+  function drumFloorHrefForContext(name = getCurrentGenre()) {
+    const url = new URL(DRUM_FLOOR_APP_URL);
+    const bpm = currentBpmValue();
+    url.searchParams.set("from", "fm");
+    if (name && name !== "any") url.searchParams.set("g", name);
+    const energy = getCurrentEnergy();
+    if (energy) url.searchParams.set("energy", energy);
+    if (bpm) url.searchParams.set("bpm", String(Math.round(bpm)));
+    return url.toString();
+  }
+
+  function refreshDrumFloorLinkHref(name = getCurrentGenre()) {
+    const link = $("fm-drum-floor-link");
+    if (!link) return;
+    link.href = drumFloorHrefForContext(name);
+    link.setAttribute("aria-label", `Open Drum Floor from Hazama FM${name && name !== "any" ? ` ${name}` : ""}`);
+  }
+
+  function publishDrumFloorHandoff(options = {}) {
+    refreshDrumFloorLinkHref(getCurrentGenre());
+    if (!options.force) return false;
+    const api = window.MusicSessionPacket;
+    if (!api || typeof api.sync !== "function") {
+      if (options.status) setSyncStatus("drum-floor query fallback");
+      return false;
+    }
+    try {
+      const result = api.sync();
+      const delivered = !!(result?.stored || result?.broadcast);
+      if (options.status) {
+        const genre = getCurrentGenre();
+        const bpm = currentBpmValue();
+        setSyncStatus(delivered
+          ? `drum-floor sync ${genre}${bpm ? ` ${Math.round(bpm)}bpm` : ""}`
+          : "drum-floor query fallback");
+      }
+      return delivered;
+    } catch (err) {
+      console.warn("[Hazama FM] drum-floor handoff sync failed:", err);
+      if (options.status) setSyncStatus("drum-floor query fallback");
+      return false;
+    }
+  }
+
   function publishBandRoomGenreLink(name, options = {}) {
     const slug = bandRoomGenreForFmGenre(name);
     refreshBandRoomLinkHref(name, slug);
@@ -1549,6 +1594,14 @@
     link.addEventListener("click", () => publishBandRoomGenreLink(getCurrentGenre(), { force: true }));
   }
 
+  function bindDrumFloorLink() {
+    const link = $("fm-drum-floor-link");
+    if (!link) return;
+    link.addEventListener("pointerenter", () => refreshDrumFloorLinkHref(getCurrentGenre()));
+    link.addEventListener("focus", () => refreshDrumFloorLinkHref(getCurrentGenre()));
+    link.addEventListener("click", () => publishDrumFloorHandoff({ force: true, status: true }));
+  }
+
   // ---- fm-75: 40 Hz focus mode --------------------------------
 
   function readFocusEngineState(detail = null) {
@@ -1962,6 +2015,7 @@
     bindDjSetButtons();
     bindShuffleAudition();
     bindBandRoomLink();
+    bindDrumFloorLink();
     bindAudioRouteStatus();
     bindFocusModeButton();
     bindAiFillButton();
@@ -2029,6 +2083,7 @@
     } catch (e) { /* URL parse fail — non-fatal */ }
 
     refreshBandRoomLinkHref(getCurrentGenre());
+    refreshDrumFloorLinkHref(getCurrentGenre());
   }
 
   if (document.readyState === "loading") {

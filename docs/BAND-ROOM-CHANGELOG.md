@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v158 compact)
+# Band Room — Changelog (v65 → v159 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,19 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v159 compact — FM to Drum Floor handoff
+
+- `fm.html` / `fm.js fm-63`: Hazama FM に `drum floor →` を追加。
+  クリック時に shared Music session packet を metadata-only SYNC し、同時に
+  `from=fm&g=...&energy=...&bpm=...` query fallback を付けて drum-floor を開く。
+- `engine.js fm-81`: FM genre / energy / BPM / dwell / review cue を
+  `routing.drum_floor.hazama_fm` と `routing.drum_floor.bpm` に載せ、drum-floor
+  側が手動preview候補を作りやすくした。
+- drum-floor sister repo main: `from=fm` query fallback と stale packet guard を追加。
+  Band Room 由来 packet は song だけでなく section / BPM も見て古い SYNC を弾く。
+- 運用 docs: user が「全mergeで締めて」と指示した turn は、検証済み PR / branch
+  を main に merge・pushし、merged branch を削除してから final する。
 
 ## v158 compact — Hazama FM route badge
 
@@ -24,7 +37,7 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
   source song を開く。
 - `scripts/check-band-room-logic.mjs`: Drum Floor return query が `from=drum-floor`
   に限定され、saved prefs が last song を復元しないことを静的検査。
-- drum-floor sister repo 側は PR で return links / query fallback を追加予定。
+- drum-floor sister repo 側は PR #50 merge 済み。return links / query fallback は main に入っている。
 
 ## v156 compact — visible FM / Band Room handoff
 

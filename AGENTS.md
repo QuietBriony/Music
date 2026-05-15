@@ -13,7 +13,7 @@ Hazama FM と Music Core Rig を壊さずに磨くための最低契約事項。
    - Hazama FM 用の追加は `fm.js` / `fm.css` / `audio/genre-flavor.js` で吸収する
    - どうしても engine 内部を触る必要があるときは **必ず `MusicRadioBrainState` 周辺のような明確に境界が引ける箇所** に限定する
    - 例外: cache buster / VERSION の bump、Music Core Rig と Hazama FM が共有する短い runtime cue API のみ
-2. **PR auto-merge は禁止**。 sister repo (chill / drum-floor / namima) は強制、Music 内 PR も推奨。
+2. **無人の PR auto-merge は禁止**。ただし user が「全mergeで締めて」と明示した turn は、検証済み PR / branch を main へ merge・push し、merged branch を削除してから final する。
 3. **音源 / サンプル / 歌詞は repo に追加しない**。すべて Tone.js 合成。
 4. **GitHub Actions の新規追加は user 承認必須**。現状は `audit.py` をローカル / CI 任意手動実行。
 5. **`presets/*.json` (Hazama FM 用 6 ファイル) と `presets/<legacy>.json` (engine 用 6 ファイル) を混同しない**。詳細は `presets/SCHEMA.md` Section 4.
@@ -23,9 +23,10 @@ Hazama FM と Music Core Rig を壊さずに磨くための最低契約事項。
 ## Integrity gate (commit 前に必ず通す)
 
 ```bash
-python -X utf8 scripts/audit.py --expected-version hazama-fm-v158
+python -X utf8 scripts/audit.py --expected-version hazama-fm-v159
 node scripts/check-js.mjs
 node scripts/check-band-room-logic.mjs
+node scripts/check-fm-route-badge.mjs
 ```
 
 `0 BAD, 0 WARN` の状態でのみ commit する。BAD があれば commit せず原因解決。
@@ -88,7 +89,7 @@ curl -sL https://raw.githubusercontent.com/QuietBriony/<repo>/main/exports/<file
      -o presets/<file>.json
 
 # audit で schema チェック
-python -X utf8 scripts/audit.py --expected-version hazama-fm-v158
+python -X utf8 scripts/audit.py --expected-version hazama-fm-v159
 
 # 必要なら cache bump (sw.js precache に追加が要る場合)
 # commit + push

@@ -101,9 +101,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`, `AI fill`, DJ set buttons, mic follow, and `40HZ`.
 - Confirm cache markers match exactly across `fm.html`, `index.html`, and
-  `sw.js`. Current v158 markers: `engine.js?v=fm-80`,
-  `fm.css?v=fm-49`, `fm.js?v=fm-62`, `audio/genre-flavor.js?v=fm-69`,
-  `audio/ai-fills.js?v=fm-71`, and `hazama-fm-v158`.
+  `sw.js`. Current v159 markers: `engine.js?v=fm-81`,
+  `fm.css?v=fm-49`, `fm.js?v=fm-63`, `audio/genre-flavor.js?v=fm-69`,
+  `audio/ai-fills.js?v=fm-71`, and `hazama-fm-v159`.
 - Confirm the Hazama FM route badge is visible near the controls. It should
   show `off` while idle, then `direct`, `ready`, `bridge`, or `failed`
   depending on the hidden media bridge state.
@@ -113,6 +113,10 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - For v157+ Band Room/Drum Floor roundtrip, open
   `band-room.html?from=drum-floor&band=tabasco&song=hey` and confirm it loads
   02 `HEY`, while plain `band-room.html` still reloads to 01 `TABASCO`.
+- For v159+ FM/Drum Floor direct handoff, open FM, select a genre, and confirm
+  `drum floor →` points to `drum-floor/?from=fm&g=...&energy=...&bpm=...`.
+  In drum-floor, playback must remain manual; stale Band Room packet should not
+  override a mismatched `from=fm` query.
 - Confirm browser console has no service-worker registration or update errors.
 - Close and reopen the installed app after merge; if the old UI remains, open
   the normal browser tab once, reload, then reopen the installed app.
