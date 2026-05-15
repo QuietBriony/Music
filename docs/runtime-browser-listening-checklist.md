@@ -101,9 +101,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`, `AI fill`, DJ set buttons, mic follow, and `40HZ`.
 - Confirm cache markers match exactly across `fm.html`, `index.html`, and
-  `sw.js`. Current v162 markers: `engine.js?v=fm-82`,
+  `sw.js`. Current v163 markers: `engine.js?v=fm-82`,
   `fm.css?v=fm-50`, `fm.js?v=fm-64`, `audio/genre-flavor.js?v=fm-69`,
-  `audio/ai-fills.js?v=fm-71`, and `hazama-fm-v162`.
+  `audio/ai-fills.js?v=fm-71`, and `hazama-fm-v163`.
 - Confirm the Hazama FM route badge is visible near the controls. It should
   show `off` while idle, then `direct`, `ready`, `bridge`, or `failed`
   depending on the hidden media bridge state.
@@ -111,10 +111,14 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `output` / `context` update. During playback, tap `rearm`; failed rearm must
   return to direct output rather than leave playback silent.
 - If Band Room changed in the same PR, also confirm `band-room.css?v=br-72`,
-  `band-room.js?v=br-80`, `audio/audio-safety.js?v=br-66`, and
+  `band-room.js?v=br-81`, `audio/audio-safety.js?v=br-66`, and
   `band-room.html` references match `sw.js`.
-- For v162 Band Room lyrics, confirm the footer shows only
+- For v163 Band Room lyrics, confirm the footer shows only
   `final singable` and the lyrics panel loads `docs/tabasco-lyrics-final.md`.
+- In offline mode, reload Band Room and confirm
+  `docs/tabasco-lyrics-final.md?cb=...` plus
+  `presets/drum-frames-tabasco-*.json?cb=...` resolve from the precache rather
+  than showing `(lyrics file not available offline)` or `[Band Room] loadSong failed`.
 - For v161+ Band Room album flow, let 02 `HEY` play past its structure end and
   confirm it does not auto-advance before the stem/catalog duration completes.
   On iPhone Safari, lock/unlock once during playback and confirm it recovers

@@ -1,4 +1,4 @@
-# Band Room — 総合マニュアル (v162 時点)
+# Band Room — 総合マニュアル (v163 時点)
 
 > https://quietbriony.github.io/Music/band-room.html
 >
@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 現在地 (v162、最適度: ほぼ完成)
+## 🟢 現在地 (v163、最適度: ほぼ完成)
 
 ### 機能側 (磨き完了 / 残り 5% 未満)
 
@@ -19,8 +19,8 @@
 - **連携**: MediaRecorder live record / 4-stem pack export / WebMIDI / external upload per stem
 - **車載/BT**: sticky master volume bar + Media Session volume fallback + hidden audio bridge + `direct` / `bridge` / `failed` route status + lock-screen track skip
 - **album flow**: reload 後は 01 `TABASCO` から開始し、曲末は同じ曲を loop せず 02 以降へ自動で進む
-- **drum-floor 連携**: footer の `Drum Floor` から、現曲 / BPM / section / drum frame を metadata-only SYNC で渡して手動 preview。戻り `song` query は source song だけ復元
-- **歌詞**: 候補を `tabasco-lyrics-final.md` の 1 本に統合。Band Room 本体も final singable だけ表示
+- **drum-floor 連携**: footer の `Drum Floor preview` から、現曲 / BPM / section / drum frame を metadata-only SYNC で渡して手動 preview。戻り `song` query は source song だけ復元
+- **歌詞**: 候補を `tabasco-lyrics-final.md` の 1 本に統合。Band Room 本体も final singable だけ表示し、cache-busted fetch でも offline precache に戻れる
 - **mastering**: per-stem EQ + 2-stage comp + StereoWidener + tape sat + reverb、master preset (lo-fi / club / rock / ambient) で 7 軸 linked 切替
 - **genre pattern**: boom-bap / four-on-floor / jazz-brush / dnb / breakbeat / trap / soul-funk などを 1 click inject。Hazama FM の genre selection から suggestion 表示
 - **FM 往復**: Hazama FM の `band room →` は query で pattern suggestion を渡し、Band Room の Hazama FM link は近い genre query へ戻る
@@ -73,7 +73,7 @@
 
 ---
 
-## 画面構成 (v162)
+## 画面構成 (v163)
 
 ```
 ┌─────────────────────────────────┐
@@ -238,7 +238,7 @@ Tabasco 以外のバンドを追加するなら別 doc:
 
 ## 履歴
 
-- [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) — v65 → v102 全履歴
+- [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) — v65 → v163 compact 履歴
 - 設計判断 / パラメータの数値 / 各機能の commit ハッシュもここに
 
 ---
@@ -248,7 +248,7 @@ Tabasco 以外のバンドを追加するなら別 doc:
 | doc | 用途 |
 |-----|------|
 | [BAND-ROOM-USAGE.md](./BAND-ROOM-USAGE.md) | 5 つの典型用途 (カラオケ / AI 再現 / 厚み出し / Suno / ad-lib) |
-| [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) | v65-v102 履歴、各 wave 詳細 |
+| [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) | v65-v163 compact 履歴、各 wave 詳細 |
 | [BAND-ROOM-ADD-BAND.md](./BAND-ROOM-ADD-BAND.md) | 新バンド追加手順 |
 | [PRODUCTION-PATH.md](./PRODUCTION-PATH.md) | **「作品」として世に出す道筋** (album 制作 / 30 min lofi set / 配信 platform 比較) |
 | [RECORDING-WORKFLOW.md](./RECORDING-WORKFLOW.md) | UR44 + マイク / bass / 電子ドラム / EP-133 経由で band-room の external slot に流す具体手順 |
@@ -269,5 +269,6 @@ Tabasco 以外のバンドを追加するなら別 doc:
 
 - **Hazama FM** (`fm.html`) — 集中作業 BGM ジェネレーター
 - **Music Core Rig** (`index.html`) — 同じ engine.js を共有する mixer / 環境音作り
-- 両者は **隔離されたアプリ** (catalog / 操作モデル別)、band-room と素材レベルで
+- **Drum Floor** (`https://quietbriony.github.io/drum-floor/`) — 現曲 / BPM / section / frame を metadata-only で受ける手動ドラム preview
+- これらは **隔離されたアプリ** (catalog / 操作モデル別)、band-room と素材レベルで
   橋渡し可 ([DAW-INTEGRATION.md](./DAW-INTEGRATION.md) 参照)

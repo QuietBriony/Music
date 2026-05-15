@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v162";
+const VERSION = "hazama-fm-v163";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -18,7 +18,7 @@ const PRECACHE_URLS = [
   "index.html",
   "band-room.html",
   "band-room.css?v=br-72",
-  "band-room.js?v=br-80",
+  "band-room.js?v=br-81",
   "presets/drum-frames-tabasco-human-fly.json",
   "presets/drum-frames-tabasco-tabasco.json",
   "presets/drum-frames-tabasco-hey.json",
@@ -145,6 +145,19 @@ function isPresetRequest(url) {
   return url.pathname.includes("/presets/") && url.pathname.endsWith(".json");
 }
 
+function isDocRequest(url) {
+  return url.origin === self.location.origin &&
+         url.pathname.includes("/docs/") &&
+         /\.(?:md|json|html)$/.test(url.pathname);
+}
+
+function matchCachedRequest(request, options = {}) {
+  return caches.match(request).then((cached) => {
+    if (cached || !options.ignoreSearch) return cached;
+    return caches.match(request, { ignoreSearch: true });
+  });
+}
+
 function isToneCdn(url) {
   return url.hostname === "unpkg.com" && url.pathname.includes("/tone");
 }
@@ -219,7 +232,7 @@ self.addEventListener("fetch", (event) => {
   // Presets: stale-while-revalidate.
   if (isPresetRequest(url)) {
     event.respondWith(
-      caches.match(request).then((cached) => {
+      matchCachedRequest(request, { ignoreSearch: true }).then((cached) => {
         const fresh = fetch(request)
           .then((response) => {
             const copy = response.clone();
@@ -236,7 +249,7 @@ self.addEventListener("fetch", (event) => {
   // Same-origin static assets: cache-first with background fill.
   if (url.origin === self.location.origin) {
     event.respondWith(
-      caches.match(request).then((cached) => {
+      matchCachedRequest(request, { ignoreSearch: isDocRequest(url) }).then((cached) => {
         if (cached) return cached;
         return fetch(request).then((response) => {
           if (response.ok) {

@@ -181,6 +181,8 @@ AudioContext を確認しながら `rearm` できます。
 `band room →` は現在の genre を Band Room の pattern suggestion として渡します。
 例: `lofi` は `boom-bap`、`jazz` は `jazz-brush`、`techno` は
 `four-on-floor`。Band Room 側で `inject` を押すまで pattern は差し替わりません。
+`drum floor →` は genre / energy / BPM だけを metadata-only で渡す手動 preview 入口です。
+Drum Floor 側で `再生` を押すまで音は始まりません。
 9 フェーダー全部を直接いじって音を作れます。
 詳しくは [`USAGE-MUSIC-CORE-RIG.md`](USAGE-MUSIC-CORE-RIG.md) を参照.
 

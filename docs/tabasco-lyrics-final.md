@@ -324,8 +324,8 @@ wants a little more
 
 ### verse-1
 
-Twenty-three to thirty-nine, the wires got crossed
-I was counting all the names we lost
+Low red room and the wires got crossed
+I was counting every name we lost
 I held the cup, I held the line
 waiting for a signal that was never mine
 
@@ -345,12 +345,12 @@ eyes on the sky
 
 Human fly, human fly
 Cut the rope, cut the wire
-ぶっ飛んで, go away
+Kick the glass and fly away
 Human fly, human fly
 
 ### verse-2
 
-The bridge is closed, the river dry
+The roof is hot, the stair is dry
 Radio cold and the wire gone high
 We were never that important
 but we heard something moving in the current
@@ -371,7 +371,7 @@ heart off the track
 
 Human fly, human fly
 Cut the rope, cut the wire
-ぶっ飛んで, go away
+Kick the glass and fly away
 Human fly, human fly
 
 ### bridge
@@ -385,12 +385,12 @@ when the room became a bird.
 
 Human fly, human fly
 Cut the rope, cut the wire
-ぶっ飛んで, go away
+Kick the glass and fly away
 Human fly, human fly
 
 Human fly, human fly
 Cut the rope, cut the wire
-ぶっ飛んで, go away
+Kick the glass and fly away
 Human fly, human fly
 
 ### outro

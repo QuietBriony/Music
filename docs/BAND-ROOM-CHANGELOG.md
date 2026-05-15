@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v162 compact)
+# Band Room — Changelog (v65 → v163 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,22 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v163 compact — offline-safe lyrics and handoff copy
+
+- `sw.js hazama-fm-v163`: cache-busted `presets/*.json` and `docs/*.md`
+  requests now fall back to the precached bare URL with `ignoreSearch`, so
+  Band Room can load drum frames and `docs/tabasco-lyrics-final.md` offline
+  even when runtime fetches include `?cb=...`.
+- `band-room.html` / `band-room.js br-81`: Band Room ships a fresh script
+  cache marker and labels the Drum Floor link as manual preview / metadata-only
+  handoff.
+- `docs/tabasco-lyrics-final.md`: tightened `Human Fly` so it keeps the same
+  meaning as the one final sheet while avoiding duplicate `Hey` imagery and
+  mixed-language chorus copy.
+- Music Core overview, SYNC docs, and Drum Floor return copy now expose the
+  Band Room / Drum Floor route as human-started preview rather than automatic
+  playback.
 
 ## v162 compact — final singable lyrics
 
