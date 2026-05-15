@@ -101,9 +101,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`, `AI fill`, DJ set buttons, mic follow, and `40HZ`.
 - Confirm cache markers match exactly across `fm.html`, `index.html`, and
-  `sw.js`. Current v166 markers: `engine.js?v=fm-82`,
+  `sw.js`. Current v167 markers: `engine.js?v=fm-82`,
   `fm.css?v=fm-50`, `fm.js?v=fm-64`, `audio/genre-flavor.js?v=fm-69`,
-  `audio/ai-fills.js?v=fm-71`, `style.css?v=fm-28`, and `hazama-fm-v166`.
+  `audio/ai-fills.js?v=fm-71`, `style.css?v=fm-28`, and `hazama-fm-v167`.
 - Confirm the Hazama FM route badge is visible near the controls. It should
   show `off` while idle, then `direct`, `ready`, `bridge`, or `failed`
   depending on the hidden media bridge state.
@@ -111,8 +111,12 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `output` / `context` update. During playback, tap `rearm`; failed rearm must
   return to direct output rather than leave playback silent.
 - If Band Room changed in the same PR, also confirm `band-room.css?v=br-73`,
-  `band-room.js?v=br-83`, `audio/audio-safety.js?v=br-66`, and
+  `band-room.js?v=br-84`, `audio/audio-safety.js?v=br-66`, and
   `band-room.html` references match `sw.js`.
+- For v167 Band Room default mix polish, play both 原音 and AI 再現 at the
+  default slider values and confirm the master limiter is not audibly pinned,
+  vocals sit forward without harsh sibilance, and AI bass/guitar/chords leave
+  headroom for the source-derived drum accents.
 - For v166 Band Room AI part agents, switch to AI 再現 and confirm bass /
   guitar / vocal / chords respond to the current source song's section changes.
 - For v165 Band Room timeline, confirm the seek bar shows elapsed/duration

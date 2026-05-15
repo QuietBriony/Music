@@ -118,6 +118,24 @@ assert.match(source, /function chordAgentPlan\(/, "Band Room should give chords 
 assert.match(source, /sourceAccentSteps\(ctx, \["kick", "snare", "crash", "ghost"\]/, "Guitar agent should react to original drum-frame accents");
 assert.match(source, /bassInstrument:\s*"bass-electric"/, "AI bass default tone should use electric bass sampler when available");
 assert.match(source, /guitarInstrument:\s*"guitar-electric"/, "AI guitar default tone should use electric guitar sampler when available");
+assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band Room master limiter should keep v167 headroom");
+assert.match(source, /let masterVolBase = 0\.84/, "Band Room master volume curve should match the v167 master gain");
+assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default should leave headroom for source-derived accents");
+assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v167 mix");
+assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
+assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.68\)/, "Vocal stem default should sit forward without pinning the limiter");
+assert.match(html, /band-room\.js\?v=br-84/, "Band Room HTML should load the v167 script marker");
+assert.match(html, /id="br-vfx-chorus"[^>]*value="22"/, "Vocal chorus slider should match the v167 wet default");
+assert.match(html, /id="br-vfx-delay"[^>]*value="12"/, "Vocal delay slider should match the v167 send default");
+assert.match(html, /id="br-vfx-reverb"[^>]*value="20"/, "Vocal reverb slider should match the v167 send default");
+assert.match(html, /id="br-vol-external-vocal"[^>]*value="78"/, "External vocal slider should match the v167 bus default");
+assert.match(source, /const dryVal = 1 - wetVal;/, "Master reverb dry path should not jump on first slider touch");
+assert.match(source, /1 - w \* 0\.85/, "Tape dry path should not jump on first warmth slider touch");
+assert.match(
+  source,
+  /externalVocalBus\.connect\(vocalChorus\);[\s\S]*stemRecorderDests\[stem\] = dest;[\s\S]*return masterGain;/,
+  "Stems-pack recorder taps should be wired after all stem buses exist"
+);
 assert.match(
   source,
   /stopPlayback\(\{\s*keepBackgroundBridge:\s*true,\s*updateMedia:\s*false\s*\}\)/,

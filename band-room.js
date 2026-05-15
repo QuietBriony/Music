@@ -167,29 +167,29 @@
   function makeStemEQChain(stem) {
     // Returns { input, output } — caller connects player → input, output → bus
     if (stem === "drums") {
-      const hp = new Tone.Filter({ frequency: 50, type: "highpass", Q: 0.6 });
-      const eq = new Tone.EQ3({ low: 0.5, mid: 0, high: 1.5, lowFrequency: 250, highFrequency: 3000 });
+      const hp = new Tone.Filter({ frequency: 45, type: "highpass", Q: 0.55 });
+      const eq = new Tone.EQ3({ low: 0.2, mid: -0.2, high: 0.7, lowFrequency: 220, highFrequency: 4200 });
       hp.connect(eq);
       return { input: hp, output: eq };
     }
     if (stem === "bass") {
-      const hp = new Tone.Filter({ frequency: 30, type: "highpass", Q: 0.6 });
-      const lp = new Tone.Filter({ frequency: 5000, type: "lowpass", Q: 0.6 });
+      const hp = new Tone.Filter({ frequency: 34, type: "highpass", Q: 0.55 });
+      const lp = new Tone.Filter({ frequency: 3600, type: "lowpass", Q: 0.55 });
       hp.connect(lp);
       return { input: hp, output: lp };
     }
     if (stem === "vocals") {
-      const hp = new Tone.Filter({ frequency: 90, type: "highpass", Q: 0.6 });
-      const presence = new Tone.EQ3({ low: 0, mid: 0.5, high: 2.0, lowFrequency: 400, highFrequency: 3000 });
+      const hp = new Tone.Filter({ frequency: 115, type: "highpass", Q: 0.55 });
+      const presence = new Tone.EQ3({ low: -0.2, mid: 0.5, high: 0.6, lowFrequency: 420, highFrequency: 3600 });
       // Built-in de-esser: notch at ~6 kHz with low Q to gently tame sibilance
-      const deEss = new Tone.Filter({ frequency: 6500, type: "peaking", Q: 1.2, gain: -2.5 });
+      const deEss = new Tone.Filter({ frequency: 6200, type: "peaking", Q: 1.1, gain: -3.5 });
       hp.connect(presence);
       presence.connect(deEss);
       return { input: hp, output: deEss };
     }
     // other
-    const hp = new Tone.Filter({ frequency: 100, type: "highpass", Q: 0.6 });
-    const shelf = new Tone.EQ3({ low: 0, mid: 0, high: 1.0, lowFrequency: 200, highFrequency: 5000 });
+    const hp = new Tone.Filter({ frequency: 120, type: "highpass", Q: 0.55 });
+    const shelf = new Tone.EQ3({ low: -0.2, mid: 0, high: 0.3, lowFrequency: 220, highFrequency: 5200 });
     hp.connect(shelf);
     return { input: hp, output: shelf };
   }
@@ -208,7 +208,7 @@
     // Per-stem EQ adds clarity (drum HP, bass LP, vocal HP + de-ess + presence,
     // other HP). Two-stage compression: comp1 catches peaks gently, EQ tilts,
     // comp2 glues. Tape sat parallel-wet for harmonic gel.
-    masterLimiter = new Tone.Limiter({ threshold: -0.5 });
+    masterLimiter = new Tone.Limiter({ threshold: -1.0 });
     masterHardwareOutput = new Tone.Gain(1).toDestination();
     masterLimiter.connect(masterHardwareOutput);
     // v71: meter tap on the limiter input — measures the final pre-clip RMS
@@ -233,36 +233,20 @@
     } catch (e) {
       console.warn("[Band Room] playback bridge destination unavailable:", e);
     }
-    // v90: per-stem MediaStreamDestinations so each stem bus can be
-    // captured independently for stems pack export. Drums/bass/other
-    // tap their respective bus (post per-stem EQ, pre master FX) so
-    // the user gets clean per-stem tracks for DAW import. Vocals
-    // taps its post-FX bus (already FX'd; rarely useful to export
-    // dry-only since vocal FX is part of the vocal sound).
-    try {
-      ["vocals", "drums", "bass", "other"].forEach((stem) => {
-        if (!stemBus[stem]) return;
-        const dest = Tone.context.createMediaStreamDestination();
-        stemBus[stem].connect(dest);
-        stemRecorderDests[stem] = dest;
-      });
-    } catch (e) {
-      console.warn("[Band Room] per-stem recorder destinations unavailable:", e);
-    }
-    const masterEq = new Tone.EQ3({ low: 1.4, mid: -0.4, high: 0.8, lowFrequency: 200, highFrequency: 5000 });
-    const masterComp1 = new Tone.Compressor({ threshold: -14, ratio: 2.5, attack: 0.012, release: 0.22, knee: 6 });
-    const masterComp2 = new Tone.Compressor({ threshold: -8,  ratio: 1.7, attack: 0.003, release: 0.10, knee: 4 });
-    masterWidener = new Tone.StereoWidener(0.72);
+    const masterEq = new Tone.EQ3({ low: 0.7, mid: -0.2, high: 0.2, lowFrequency: 180, highFrequency: 5600 });
+    const masterComp1 = new Tone.Compressor({ threshold: -16, ratio: 2.0, attack: 0.018, release: 0.26, knee: 8 });
+    const masterComp2 = new Tone.Compressor({ threshold: -7,  ratio: 1.45, attack: 0.006, release: 0.14, knee: 5 });
+    masterWidener = new Tone.StereoWidener(0.62);
 
-    masterTapeSat = new Tone.Distortion({ distortion: 0.06, oversample: "2x", wet: 1 });
-    masterTapeSatWet = new Tone.Gain(0.10);
-    masterTapeSatDry = new Tone.Gain(0.90);
+    masterTapeSat = new Tone.Distortion({ distortion: 0.045, oversample: "2x", wet: 1 });
+    masterTapeSatWet = new Tone.Gain(0.07);
+    masterTapeSatDry = new Tone.Gain(0.94);
 
-    masterReverb = new Tone.Reverb({ decay: 2.2, preDelay: 0.025, wet: 1 });
-    masterDryGain = new Tone.Gain(0.78);
-    masterWetGain = new Tone.Gain(0.22);
+    masterReverb = new Tone.Reverb({ decay: 1.9, preDelay: 0.025, wet: 1 });
+    masterDryGain = new Tone.Gain(0.84);
+    masterWetGain = new Tone.Gain(0.16);
 
-    masterGain = new Tone.Gain(0.9);
+    masterGain = new Tone.Gain(0.84);
     masterGain.connect(masterComp1);
     masterComp1.connect(masterEq);
     masterEq.connect(masterComp2);
@@ -284,35 +268,28 @@
     stemEQs.vocals = makeStemEQChain("vocals");
     stemEQs.other = makeStemEQChain("other");
 
-    // v69: insert Tone.Panner per bus for AI 再現 stereo placement.
-    // v104: rebalance — bus levels were skewed with chord/voice too quiet
-    // and drums dominating. Adjust so the AI band sits balanced:
-    //   drums 0.75 → 0.62 (was dominating)
-    //   bass  0.65 → 0.72 (more presence)
-    //   guitar 0.70 → 0.62
-    //   voice 0.40 → 0.56 (guide should be audible)
-    //   chord 0.55 → 0.68 (pad anchor)
-    //   click 0.0 → 0.0 (default off; user enables via toggle + slider)
+    // v167: "good by default" rebalance after source-derived AI agents.
+    // Keep the band cohesive: less top-end glare, more master headroom, and
+    // enough bass/guitar presence without crowding the vocal stem.
     const drumPan   = new Tone.Panner(0.00).connect(masterGain);
     const bassPan   = new Tone.Panner(0.00).connect(masterGain);
-    const guitarPan = new Tone.Panner(-0.25).connect(masterGain);
+    const guitarPan = new Tone.Panner(-0.18).connect(masterGain);
     const voicePan  = new Tone.Panner(0.00).connect(masterGain);
-    const chordPan  = new Tone.Panner(+0.20).connect(masterGain);
+    const chordPan  = new Tone.Panner(+0.16).connect(masterGain);
     const clickPan  = new Tone.Panner(0.00).connect(masterGain);
-    drumBus = new Tone.Gain(0.62).connect(drumPan);
-    bassBus = new Tone.Gain(0.72).connect(bassPan);
-    guitarBus = new Tone.Gain(0.62).connect(guitarPan);
-    voiceBus = new Tone.Gain(0.56).connect(voicePan);
-    chordBus = new Tone.Gain(0.68).connect(chordPan);
-    clickBus = new Tone.Gain(0.0).connect(clickPan);
+    drumBus = new Tone.Gain(0.58).connect(drumPan);
+    bassBus = new Tone.Gain(0.66).connect(bassPan);
+    guitarBus = new Tone.Gain(0.56).connect(guitarPan);
+    voiceBus = new Tone.Gain(0.48).connect(voicePan);
+    chordBus = new Tone.Gain(0.58).connect(chordPan);
+    clickBus = new Tone.Gain(0.35).connect(clickPan);
 
     // Original-stem buses → per-stem EQ → masterGain
-    // v131: drums/bass/other を slight boost (0.85 → 0.92) してカラオケ
-    // (vocals OFF) 時の "痩せ" 感を補強。vocals は逆に下げる (0.85 → 0.72)
-    // のを HTML slider default で対応。
-    stemBus.drums  = new Tone.Gain(0.92).connect(masterGain);
-    stemBus.bass   = new Tone.Gain(0.92).connect(masterGain);
-    stemBus.other  = new Tone.Gain(0.92).connect(masterGain);
+    // v167: slightly lower full-stem defaults so the remaster chain glues
+    // instead of constantly living on the limiter.
+    stemBus.drums  = new Tone.Gain(0.86).connect(masterGain);
+    stemBus.bass   = new Tone.Gain(0.86).connect(masterGain);
+    stemBus.other  = new Tone.Gain(0.84).connect(masterGain);
     // Wire EQ outputs into respective buses (input side will receive players)
     stemEQs.drums.output.connect(stemBus.drums);
     stemEQs.bass.output.connect(stemBus.bass);
@@ -322,14 +299,14 @@
     // before it reaches the master remaster.
     //
     // Chain: Tone.Player → [dry] + [chorus → delay → reverb (wet)] → vocalBus → masterGain
-    vocalChorus = new Tone.Chorus({ frequency: 1.4, delayTime: 4.0, depth: 0.42, wet: 0.30 }).start();
-    vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.32, wet: 1 });
-    vocalDelayWet = new Tone.Gain(0.18);  // delay send level
-    vocalReverb = new Tone.Reverb({ decay: 3.2, preDelay: 0.04, wet: 1 });
-    vocalReverbWet = new Tone.Gain(0.28);  // reverb send level (stronger than master's)
-    vocalDryGain = new Tone.Gain(0.78);
+    vocalChorus = new Tone.Chorus({ frequency: 1.25, delayTime: 3.6, depth: 0.34, wet: 0.22 }).start();
+    vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.26, wet: 1 });
+    vocalDelayWet = new Tone.Gain(0.12);  // delay send level
+    vocalReverb = new Tone.Reverb({ decay: 2.6, preDelay: 0.035, wet: 1 });
+    vocalReverbWet = new Tone.Gain(0.20);  // reverb send level
+    vocalDryGain = new Tone.Gain(0.82);
 
-    stemBus.vocals = new Tone.Gain(0.72);  // v131: 0.85 → 0.72 (デフォ控えめ)
+    stemBus.vocals = new Tone.Gain(0.68);
 
     // Wire: vocalChorus is input. Chorus feeds three paths in parallel.
     // dry → vocalDryGain → stemBus.vocals
@@ -349,8 +326,22 @@
 
     // External vocal bus — feeds INTO vocalChorus (shares vocal FX chain
     // with stem vocals so chorus/echo/reverb apply to both)
-    externalVocalBus = new Tone.Gain(0.85);
+    externalVocalBus = new Tone.Gain(0.78);
     externalVocalBus.connect(vocalChorus);
+
+    // v90/v167: per-stem MediaStreamDestinations so each stem bus can be
+    // captured independently for stems pack export. This must happen after
+    // stemBus.* exists; otherwise the export starts with 0/4 streams.
+    try {
+      ["vocals", "drums", "bass", "other"].forEach((stem) => {
+        if (!stemBus[stem]) return;
+        const dest = Tone.context.createMediaStreamDestination();
+        stemBus[stem].connect(dest);
+        stemRecorderDests[stem] = dest;
+      });
+    } catch (e) {
+      console.warn("[Band Room] per-stem recorder destinations unavailable:", e);
+    }
     return masterGain;
   }
 
@@ -964,12 +955,12 @@
   // These map to the existing slider IDs so the existing event handlers
   // re-fire and the values persist via v78 localStorage.
   const MASTER_PRESETS = {
-    "neutral":  { reverb: 22, width: 72, warmth: 10, loudness: 0,
+    "neutral":  { reverb: 16, width: 62, warmth: 7, loudness: -1,
                   synth_profile: "default",
                   chord_instrument: "", bass_instrument: "",
                   guitar_instrument: "", voice_instrument: "",
                   kit_source: null, guitar_on: true },
-    "lo-fi":    { reverb: 32, width: 64, warmth: 24, loudness: -2,
+    "lo-fi":    { reverb: 24, width: 58, warmth: 18, loudness: -2,
                   synth_profile: "lofi-nujabes",
                   chord_instrument: "salamander-piano",
                   bass_instrument: "salamander-bass",
@@ -977,21 +968,21 @@
                   voice_instrument: "flute",
                   kit_source: "online/tone-breakbeat",
                   guitar_on: false },
-    "club":     { reverb: 12, width: 88, warmth: 18, loudness: +3,
+    "club":     { reverb: 8, width: 74, warmth: 12, loudness: +1,
                   synth_profile: "sakanaction",
                   chord_instrument: "", bass_instrument: "",
                   guitar_instrument: "guitar-electric",
                   voice_instrument: "",
                   kit_source: "online/dirt-808",
                   guitar_on: true },
-    "rock":     { reverb: 14, width: 65, warmth: 12, loudness: +1,
+    "rock":     { reverb: 10, width: 58, warmth: 9, loudness: 0,
                   synth_profile: "cramps-punk",
                   chord_instrument: "", bass_instrument: "bass-electric",
                   guitar_instrument: "guitar-electric",
                   voice_instrument: "",
                   kit_source: "online/tone-acoustic",
                   guitar_on: true },
-    "ambient":  { reverb: 55, width: 90, warmth: 22, loudness: -2,
+    "ambient":  { reverb: 44, width: 78, warmth: 16, loudness: -3,
                   synth_profile: "lcd-motorik",
                   chord_instrument: "salamander-piano",
                   bass_instrument: "salamander-bass",
@@ -3709,7 +3700,7 @@
         ensureMaster();
         if (masterWetGain && masterDryGain) {
           const wetVal = Number(reverbEl.value) / 100;
-          const dryVal = 1 - wetVal * 0.5;  // keep dry mostly intact (overlap is fine)
+          const dryVal = 1 - wetVal;
           try {
             masterWetGain.gain.rampTo(wetVal, 0.12);
             masterDryGain.gain.rampTo(Math.max(0.6, dryVal), 0.12);
@@ -3781,9 +3772,10 @@
           try { masterTapeSatWet.gain.rampTo(w, 0.12); } catch (e) {}
         }
         if (masterTapeSatDry) {
-          // Compensate dry path so total stays ~constant
+          // Compensate dry path so the default warmth value does not jump
+          // on first touch, while higher values still trim some dry level.
           const w = Number(tapeWarmthEl.value) / 100;
-          try { masterTapeSatDry.gain.rampTo(1 - w * 0.5, 0.12); } catch (e) {}
+          try { masterTapeSatDry.gain.rampTo(1 - w * 0.85, 0.12); } catch (e) {}
         }
       });
     }
@@ -3799,8 +3791,8 @@
       });
     }
 
-    // v141: master volume bar (car / Bluetooth touch-friendly control)
-    // 0-100 linear → masterGain.gain 0 → 1.4. Multiplied with br-loudness for
+    // v141/v167: master volume bar (car / Bluetooth touch-friendly control)
+    // 0-100 linear → masterGain.gain 0 → 1.25. Multiplied with br-loudness for
     // independent fine-tune. Persisted via PREFS_KEY so it survives reload
     // (important for in-car use where the page may unload).
     const MASTER_VOL_KEY = "band-room.masterVol";
@@ -3808,14 +3800,14 @@
     const masterVolReadout = $("br-master-vol-readout");
     const masterVolDown = $("br-master-vol-down");
     const masterVolUp = $("br-master-vol-up");
-    let masterVolBase = 0.9; // matches initial Tone.Gain(0.9) in ensureMaster()
+    let masterVolBase = 0.84; // matches initial Tone.Gain(0.84) in ensureMaster()
 
     function masterVolGainFromValue(value) {
-      // 0 → 0, 80 → 0.9 (default), 100 → 1.4
-      // Curve: v/80 * base for 0-80 range, then linear to 1.4 at 100
+      // 0 → 0, 80 → 0.84 (default), 100 → 1.25
+      // Curve: v/80 * base for 0-80 range, then linear to 1.25 at 100
       const v = Math.max(0, Math.min(100, Number(value) || 0));
       if (v <= 80) return (v / 80) * masterVolBase;
-      return masterVolBase + ((v - 80) / 20) * (1.4 - masterVolBase);
+      return masterVolBase + ((v - 80) / 20) * (1.25 - masterVolBase);
     }
 
     function applyMasterOutputGain(seconds = 0.08) {

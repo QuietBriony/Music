@@ -34,6 +34,7 @@
   狭幅でも route badge を 1 文字表示で残す。
 - 保留: AudioContext を `latencyHint: "playback"` で再構築 (効果は環境依存、現状 bridge 優先)
 - 保留: HTMLAudioElement 経由の出力に全面切替 (大規模 refactor、Tone.js だと現実的でない)
+- v167: Band Room の default mix を整理。master headroom を広げ、原音 stems / AI 再現 bus / vocal FX / master presets を少し控えめにして、車載/BT でも limiter に張り付きにくい標準出音へ寄せた。
 
 ---
 

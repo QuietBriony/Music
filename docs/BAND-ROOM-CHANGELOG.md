@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v166 compact)
+# Band Room — Changelog (v65 → v167 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,22 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v167 compact — default mix polish
+
+- `band-room.js br-84`: master headroom を広げ、limiter threshold / 2 段 comp /
+  broad EQ / stereo width / tape send / room reverb を控えめに再調整。
+- stem EQ は低域の濁りと高域の刺さりを抑え、vocal de-ess と vocal FX send も
+  少し乾いた位置へ。原音 stems は limiter に張り付きにくい default gain に変更。
+- AI 再現は source-derived agents の密度に合わせて drums / bass / guitar /
+  vocal guide / chords の bus default を下げ、前後感と長時間 listening を優先。
+- vocal FX / external vocal / click / master dry path は HTML slider と実 bus の
+  初期値を揃え、初回操作で音量や空間が跳ねないようにした。
+- 4-stem pack recorder tap は stem bus 構築後に接続し、export が `0/4 streams`
+  にならないようにした。
+- master presets も neutral / lo-fi / club / rock / ambient を全体に控えめな
+  loudness / width / warmth へ再調整。
+- `sw.js hazama-fm-v167`: Band Room の新 script marker を precache。
 
 ## v166 compact — source-derived AI part agents
 

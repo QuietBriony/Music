@@ -6,7 +6,7 @@
 > 2 つのモードを切り替えながら、本物の音源と AI 合成を A/B したり、混ぜたり、
 > 自分で歌い直したり、Suno で生成した声を upload したりできる。
 
-## 画面構成 (v166 — コア + 折り畳み詳細)
+## 画面構成 (v167 — コア + 折り畳み詳細)
 
 ```
 ┌─────────────────────────────────┐
@@ -73,6 +73,10 @@ START はその位置から始まります。再生中に動かすと原音 stem
 AI 再現モードでは、各パートが原曲 drum-frame を読む part agent として動きます。
 bass は kick と ghost の位置にロックし、guitar は snare / crash / hat 密度で刻みを
 変え、vocal guide と chords は section role と accent へ応答します。
+
+v167 以降の default mix は少し余裕を持たせています。master は limiter に張り付き
+にくく、stem vocal FX は控えめ、AI 再現は bass / guitar / chords が前に出すぎない
+バランスです。大きくしたい時は master volume を上げるのが一番安全です。
 
 ## Drum Floor へ渡す
 

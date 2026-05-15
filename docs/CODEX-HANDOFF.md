@@ -48,6 +48,7 @@
 | Chill Session visible route | ✅ 完了 | v164 | Music Core overview に Chill Session 入口を追加し、chill 側の metadata-only / human START 境界を画面で明示 |
 | Band Room song timeline / seek | ✅ 完了 | v165 | START 下に分秒バーを追加し、停止中 seek → 任意地点 START、再生中 seek → stems / section / lyrics 同期に対応 |
 | Band Room source-derived AI part agents | ✅ 完了 | v166 | AI 再現の bass / guitar / vocal / chords が原曲 drum-frame と chord/section から自律 pattern を組み、bass/guitar 初期音色を electric sampler に寄せる |
+| Band Room default mix polish | ✅ 完了 | v167 | master headroom / stem EQ / vocal FX / AI bus default / presets を控えめに再調整し、標準状態で長く聴ける出音へ寄せる |
 
 この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
 完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。

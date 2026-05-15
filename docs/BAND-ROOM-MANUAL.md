@@ -1,4 +1,4 @@
-# Band Room — 総合マニュアル (v166 時点)
+# Band Room — 総合マニュアル (v167 時点)
 
 > https://quietbriony.github.io/Music/band-room.html
 >
@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 現在地 (v166、最適度: ほぼ完成)
+## 🟢 現在地 (v167、最適度: ほぼ完成)
 
 ### 機能側 (磨き完了 / 残り 5% 未満)
 
@@ -21,6 +21,7 @@
 - **album flow**: reload 後は 01 `TABASCO` から開始し、曲末は同じ曲を loop せず 02 以降へ自動で進む
 - **timeline**: START 下に `m:ss` の elapsed / duration と seek bar を表示。停止中に任意地点へ動かし、その位置から START できる
 - **AI part agents**: AI 再現の bass / guitar / vocal guide / chords が、原曲 drum-frame の kick / snare / ghost / hat / section role から自律的に pattern を組み、bass/guitar は electric sampler を初期音色にする
+- **出音**: v167 で master headroom / stem EQ / vocal FX / AI bus balance を整理。default は派手すぎず、長く聴ける glue と前後感を優先
 - **drum-floor 連携**: footer の `Drum Floor preview` から、現曲 / BPM / section / drum frame を metadata-only SYNC で渡して手動 preview。戻り `song` query は source song だけ復元
 - **歌詞**: 候補を `tabasco-lyrics-final.md` の 1 本に統合。Band Room 本体も final singable だけ表示し、cache-busted fetch でも offline precache に戻れる
 - **mastering**: per-stem EQ + 2-stage comp + StereoWidener + tape sat + reverb、master preset (lo-fi / club / rock / ambient) で 7 軸 linked 切替
@@ -76,7 +77,7 @@
 
 ---
 
-## 画面構成 (v166)
+## 画面構成 (v167)
 
 ```
 ┌─────────────────────────────────┐
@@ -242,7 +243,7 @@ Tabasco 以外のバンドを追加するなら別 doc:
 
 ## 履歴
 
-- [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) — v65 → v166 compact 履歴
+- [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) — v65 → v167 compact 履歴
 - 設計判断 / パラメータの数値 / 各機能の commit ハッシュもここに
 
 ---
@@ -252,7 +253,7 @@ Tabasco 以外のバンドを追加するなら別 doc:
 | doc | 用途 |
 |-----|------|
 | [BAND-ROOM-USAGE.md](./BAND-ROOM-USAGE.md) | 5 つの典型用途 (カラオケ / AI 再現 / 厚み出し / Suno / ad-lib) |
-| [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) | v65-v166 compact 履歴、各 wave 詳細 |
+| [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) | v65-v167 compact 履歴、各 wave 詳細 |
 | [BAND-ROOM-ADD-BAND.md](./BAND-ROOM-ADD-BAND.md) | 新バンド追加手順 |
 | [PRODUCTION-PATH.md](./PRODUCTION-PATH.md) | **「作品」として世に出す道筋** (album 制作 / 30 min lofi set / 配信 platform 比較) |
 | [RECORDING-WORKFLOW.md](./RECORDING-WORKFLOW.md) | UR44 + マイク / bass / 電子ドラム / EP-133 経由で band-room の external slot に流す具体手順 |
