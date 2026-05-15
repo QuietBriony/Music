@@ -1,4 +1,4 @@
-# Cross-App Integrity — Music Stack 全体の整合性チェック (v163 時点)
+# Cross-App Integrity — Music Stack 全体の整合性チェック (v164 時点)
 
 > ユーザー指摘: 「全体のネタが先的にかみ合って、最適解になるように、整合性
 > チェックと磨き」
@@ -74,7 +74,7 @@ sample catalog、genre pattern JSON、CDN サンプル URL。
 | focus mode | 40 Hz / 8% AM, default OFF | 同 engine APIあり (UIはFM) | なし |
 
 **整合チェック**: master mastering chain は両 app で揃ってる (band-room の方が高度だが engine.js も v74 で揃え済)。 sampler 経路は今まで band-room only だったが、**v113 で Hazama FM lofi も Salamander piano に置換**して **lofi = 実 piano** の統一が完成。
-v142-v163 で、FM の phrase-lock / pattern variation / visible Band Room handoff / 40Hz focus / 長時間 event quieting / start-stop hardening / bridge health fallback / browser loudness uplift / route badge / route diagnostics + rearm / Drum Floor direct handoff と、Band Room の車載 audio bridge / route status / bridge health fallback / album-flow default playback / full-song auto advance guard / iPhone suspend recovery / lock-screen album transport / FM query suggestion / drum-floor metadata handoff / Drum Floor return song link / final singable lyrics / offline-safe cache-busted lyrics+drum-frame load が追加済み。
+v142-v164 で、FM の phrase-lock / pattern variation / visible Band Room handoff / 40Hz focus / 長時間 event quieting / start-stop hardening / bridge health fallback / browser loudness uplift / route badge / route diagnostics + rearm / Drum Floor direct handoff と、Band Room の車載 audio bridge / route status / bridge health fallback / album-flow default playback / full-song auto advance guard / iPhone suspend recovery / lock-screen album transport / FM query suggestion / drum-floor metadata handoff / Drum Floor return song link / final singable lyrics / offline-safe cache-busted lyrics+drum-frame load、Music Core overview からの Chill Session 入口が追加済み。
 
 ---
 
@@ -116,9 +116,9 @@ catalog 1 ファイル編集だけで 3 app 全部の音色候補が同期する
 
 | app | latest cache marker | sw VERSION |
 |-----|---------------------|------------|
-| Band Room | `band-room.css?v=br-72` / `band-room.js?v=br-81` | hazama-fm-v163 |
+| Band Room | `band-room.css?v=br-72` / `band-room.js?v=br-81` | hazama-fm-v164 |
 | Hazama FM | `engine.js?v=fm-82` / `fm.css?v=fm-50` / `fm.js?v=fm-64` | 同上 |
-| Music Core Rig | `engine.js?v=fm-82` / `style.css?v=fm-27` | 同上 |
+| Music Core Rig | `engine.js?v=fm-82` / `style.css?v=fm-28` | 同上 |
 
 `sw.js` の VERSION は **3 app 共通** で `hazama-fm-vNN`。ここを bump すると 3 app 全部のキャッシュが invalidate される。
 
@@ -135,7 +135,7 @@ catalog 1 ファイル編集だけで 3 app 全部の音色候補が同期する
 | `FREE-SAMPLES-AND-SYNTHESIS.md` | 音色設計哲学 | v91 までだが v109+ Sampler 化を補追記が必要 |
 | `REPO-MANAGEMENT.md` | Pages 制限 | 静的、変更なし |
 | `HAZAMA-FM-ARCHITECTURE.md` | 全体アーキ | v149 の phrase / focus / bridge 反映済 |
-| `CROSS-APP-INTEGRITY.md` | **このファイル** | 整合性 hub / v163 cache map |
+| `CROSS-APP-INTEGRITY.md` | **このファイル** | 整合性 hub / v164 cache map |
 | `tabasco-lyrics-final.md` | Band Room 表示用の歌える一本稿 | v163 primary |
 | `tabasco-lyrics-{draft,burroughs,v4-syllabic}.md` | 旧候補 / archive | runtime には表示しない |
 | `USAGE-HAZAMA-FM.md` | FM 使い方 | v149 主要 controls 反映済 |

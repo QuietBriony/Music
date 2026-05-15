@@ -45,6 +45,7 @@
 | Band Room full-song playback + iPhone suspend recovery | ✅ 完了 | v161 | 原音 mode の auto advance を full-song duration に合わせ、iPhone sleep 復帰時に AudioContext / Transport / stems を再同期 |
 | Band Room final singable lyrics | ✅ 完了 | v162 | Tabasco 7 曲の歌詞候補を一本化し、Band Room 表示を `tabasco-lyrics-final.md` の final singable だけに整理 |
 | Band Room offline cache + route copy | ✅ 完了 | v163 | cache-busted lyrics / drum-frame fetch を offline-safe 化し、Band Room / Drum Floor 導線を手動previewとして表示 |
+| Chill Session visible route | ✅ 完了 | v164 | Music Core overview に Chill Session 入口を追加し、chill 側の metadata-only / human START 境界を画面で明示 |
 
 この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
 完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。

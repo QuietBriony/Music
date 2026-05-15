@@ -101,9 +101,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Confirm the current FM surface appears, including recent controls such as
   `shuffle`, `AI fill`, DJ set buttons, mic follow, and `40HZ`.
 - Confirm cache markers match exactly across `fm.html`, `index.html`, and
-  `sw.js`. Current v163 markers: `engine.js?v=fm-82`,
+  `sw.js`. Current v164 markers: `engine.js?v=fm-82`,
   `fm.css?v=fm-50`, `fm.js?v=fm-64`, `audio/genre-flavor.js?v=fm-69`,
-  `audio/ai-fills.js?v=fm-71`, and `hazama-fm-v163`.
+  `audio/ai-fills.js?v=fm-71`, `style.css?v=fm-28`, and `hazama-fm-v164`.
 - Confirm the Hazama FM route badge is visible near the controls. It should
   show `off` while idle, then `direct`, `ready`, `bridge`, or `failed`
   depending on the hidden media bridge state.
@@ -130,6 +130,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `drum floor →` points to `drum-floor/?from=fm&g=...&energy=...&bpm=...`.
   In drum-floor, playback must remain manual; stale Band Room packet should not
   override a mismatched `from=fm` query.
+- For v164 Chill routing, confirm Music Core overview exposes `Chill`, opens
+  `chill/session.html`, and the chill session remains silent until a human
+  presses `START`.
 - Confirm browser console has no service-worker registration or update errors.
 - Close and reopen the installed app after merge; if the old UI remains, open
   the normal browser tab once, reload, then reopen the installed app.
