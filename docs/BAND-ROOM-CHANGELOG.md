@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v161 compact)
+# Band Room — Changelog (v65 → v162 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,15 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v162 compact — final singable lyrics
+
+- `docs/tabasco-lyrics-final.md`: Tabasco 7 曲の候補歌詞を一本化し、
+  Band Room にそのまま表示できる歌える final sheet として整えた。
+- `presets/bands.json` / fallback registry: `lyrics_doc` を final sheet に変更。
+  Band Room 本体は draft / cut-up / syllabic 候補を並べず、一本だけ表示する。
+- `band-room.html` / `band-room.js br-80` / `sw.js hazama-fm-v162`:
+  footer の歌詞リンクも `final singable` に絞り、cache を更新。
 
 ## v161 compact — Band Room full-song playback + iPhone suspend recovery
 

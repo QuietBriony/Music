@@ -8,7 +8,7 @@ Tabasco LIVE の "適当英語" ボーカル → 意味の通る proper English 
 **ステップ:**
 1. band-room.html で `🎤 vocal stem` を OFF (元音源ボーカル消す)
 2. `band-room.css` の `📻 原音 stems` モードで drums/bass/other 鳴らす
-3. user 自身が `docs/tabasco-lyrics-draft.md` を見ながら歌う
+3. user 自身が `docs/tabasco-lyrics-final.md` を見ながら歌う
 4. (オプション) スマホ等で録音 → mp3 化 → 経路 3 の upload slot へ
 
 **長所:**
@@ -42,7 +42,7 @@ shouted-melodic chorus. Dry mix, modern indie production.
 (verse 1)
 Standing in the middle of the city, gravity pinning me down
 Wearing a face I don't recognize, in a crowd of half-familiar sounds
-... (full lyrics from docs/tabasco-lyrics-draft.md)
+... (full lyrics from docs/tabasco-lyrics-final.md)
 ```
 
 3. Generate → 2-3 take 試す → 一番気に入ったやつ mp3 ダウンロード

@@ -527,7 +527,7 @@ presets/unripe-stems/{songid}/{stem}.mp3       # 24 ファイル, 96 kbps, 78 MB
 presets/sample-kits/{src}/{song}/              # 抽出済サンプル
   ├ {kick,snare,hat,crash}-NN.wav             # drum hits (8 each)
   └ vocal-phrase-NN.wav                       # vocal phrases (top 20)
-docs/tabasco-lyrics-draft.md                   # 全 7 曲歌詞 v2.1
+docs/tabasco-lyrics-final.md                   # 全 7 曲歌詞 final singable
 docs/BAND-ROOM-USAGE.md                        # ユーザー向け使い方
 docs/VOCAL-REGENERATION-PATH.md                # Suno workflow
 docs/BAND-ROOM-ADD-BAND.md                     # 新バンド追加手順

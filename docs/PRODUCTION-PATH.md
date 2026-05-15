@@ -27,9 +27,8 @@
 ### ステップ
 
 1. **歌詞を選ぶ**
-   - v2.1 proper English: `docs/tabasco-lyrics-draft.md`
-   - v3 William Burroughs cut-up: `docs/tabasco-lyrics-burroughs.md`
-   - どちらか or ハイブリッド
+   - primary: `docs/tabasco-lyrics-final.md`
+   - Band Room 本体もこの 1 本を表示する
 
 2. **vocal を 7 曲分用意**
    - 自分で歌い直し (UR44 + マイクで具体的手順): [RECORDING-WORKFLOW.md](./RECORDING-WORKFLOW.md)
@@ -190,28 +189,27 @@
 
 ## 8.5. 歌詞をどう書き換えて、どこにアップするか
 
-歌詞 v4 (`docs/tabasco-lyrics-v4-syllabic.md`) に残り 5 曲を埋めたい時、
-3 つの場所に「そのまま貼る」だけで OK。
+現在の正本は `docs/tabasco-lyrics-final.md`。Band Room 本体もこの 1 本だけ表示する。
+歌ってみて息継ぎや syllable が重い箇所を直す時は、この final sheet を編集する。
 
 ### a) GitHub repo に push (band-room の正本にする)
 
 ```bash
 cd C:/workspace/github-inventory/music-stack/Music
-# テキストエディタで docs/tabasco-lyrics-v4-syllabic.md を開いて編集
-# 「02-05, 07 の方針 (template)」セクションに各曲の lyrics を追加
-git add docs/tabasco-lyrics-v4-syllabic.md
-git commit -m "lyrics: v4 残り 5 曲埋め"
+# テキストエディタで docs/tabasco-lyrics-final.md を開いて編集
+git add docs/tabasco-lyrics-final.md
+git commit -m "lyrics: polish Tabasco final sheet"
 git push
 ```
 
 3-5 分待つと Pages が auto-deploy、band-room.html の footer の
-**v4 元音節** リンクから誰でも見える。Service Worker も自動更新。
+**final singable** リンクから誰でも見える。Service Worker も自動更新。
 
 ### b) Suno に貼る (AI 歌唱用)
 
 そのまま、加工なしでコピペ OK。Suno の Custom Mode の Lyrics 欄に貼り付け。
 **`[verse 1]` `[chorus]` 等の section tag を Suno が理解する** ので、
-v4 の section header はそのまま活きる。
+final sheet の section header はそのまま活きる。
 
 style prompt は [SUNO-WORKFLOW.md](./SUNO-WORKFLOW.md) のテンプレ参照。
 
@@ -225,31 +223,28 @@ style prompt は [SUNO-WORKFLOW.md](./SUNO-WORKFLOW.md) のテンプレ参照。
 
 エディタで find-and-replace すれば 5 分で plaintext 化できる。
 
-### v4 のどこに書くか具体例
+### final sheet のどこに書くか具体例
 
-`docs/tabasco-lyrics-v4-syllabic.md` の「02-05, 07 の方針 (template)」
-セクションの後ろに、TABASCO / Human Fly と同じフォーマットで:
+`docs/tabasco-lyrics-final.md` の該当曲 section を直接磨く:
 
 ```markdown
-## 02 Hey — calling across years (123 BPM, G major)
+## 02 Hey - calling across years
 
-**元音節骨格** (chorus を耳で拾うと):
-- ここに音節分析を書く
+### chorus-1
 
-### chorus
+Hey, are you still alive in there?
+Hey, did you find another name?
 
-(歌詞 4 行を 6 音節合わせて書く)
+### verse-1
 
-### verse 1
+(verse 1 の歌詞を磨く)
 
-(verse 1 の歌詞)
+### verse-2
 
-### verse 2
-
-(verse 2 の歌詞)
+(verse 2 の歌詞を磨く)
 ```
 
-各曲 1.5 hr ペース、5 曲で 7-10 hr。週末 2 日もあれば全曲完成。
+各曲 20-40 分ペースで歌って直す。週末 1 回で全曲の息継ぎ確認まで行ける。
 
 ---
 

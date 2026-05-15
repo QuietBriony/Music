@@ -43,6 +43,7 @@
 | FM → Drum Floor handoff + all-merge closeout | ✅ 完了 | v159 | FM genre/BPM を metadata-only SYNC + query fallback で drum-floor preview へ渡し、検証済みPR/branchは残さず締める運用に更新 |
 | FM route diagnostics + bridge rearm | ✅ 完了 | v160 | route badge panel から hidden audio bridge の event/output/context を確認し、手動 rearm と loss 時 backoff rearm を実行 |
 | Band Room full-song playback + iPhone suspend recovery | ✅ 完了 | v161 | 原音 mode の auto advance を full-song duration に合わせ、iPhone sleep 復帰時に AudioContext / Transport / stems を再同期 |
+| Band Room final singable lyrics | ✅ 完了 | v162 | Tabasco 7 曲の歌詞候補を一本化し、Band Room 表示を `tabasco-lyrics-final.md` の final singable だけに整理 |
 
 この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
 完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。

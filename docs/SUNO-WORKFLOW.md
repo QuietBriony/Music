@@ -225,8 +225,8 @@ harmony, intimate close-mic'd quality, gentle but driven
 ## 7. 推奨ワークフロー (まとめ)
 
 ```
-1. v4 歌詞作成 (1-2 hr/曲、7曲で 7-10 hr)
-   → docs/tabasco-lyrics-v4-syllabic.md
+1. final 歌詞を歌って微修正
+   → docs/tabasco-lyrics-final.md
 2. Suno Pro 加入 $10
 3. day 1: Persona 作成 (Human Fly 1 曲試す)
 4. day 2: 残り 6 曲生成

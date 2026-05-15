@@ -6,7 +6,7 @@
 > 2 つのモードを切り替えながら、本物の音源と AI 合成を A/B したり、混ぜたり、
 > 自分で歌い直したり、Suno で生成した声を upload したりできる。
 
-## 画面構成 (v161 — コア + 折り畳み詳細)
+## 画面構成 (v162 — コア + 折り畳み詳細)
 
 ```
 ┌─────────────────────────────────┐
@@ -105,9 +105,9 @@ Hazama FM の `band room →` から開くと、FM の genre に近い Band Room
 3. 🥁 drum kit source = UNRIPE Continuous (元音源 drums の隣に本物 UNRIPE drums)
 4. → 倍音増えて密度上がる
 
-### 4. 歌詞 v2 を Suno に投げて生成
+### 4. Final 歌詞を Suno に投げて生成
 
-1. `docs/tabasco-lyrics-draft.md` で歌う曲の英語歌詞 + style prompt 取得
+1. `docs/tabasco-lyrics-final.md` で歌う曲の英語歌詞を取得
 2. https://suno.com/ で Custom Mode → prompt 貼って generate
 3. mp3 ダウンロード → band-room の 🎙 external vocal で upload
 4. 自動で stem vocal mute → external が鳴る
@@ -189,7 +189,7 @@ presets/
     vocal-phrase-NN.wav                        # vocal phrases (top 20)
     summary.json                               # manifest
 docs/
-  tabasco-lyrics-draft.md                      # 全 7 曲歌詞 (v2.1 proper English)
+  tabasco-lyrics-final.md                      # 全 7 曲歌詞 (final singable)
   VOCAL-REGENERATION-PATH.md                   # Suno workflow
   BAND-ROOM-ADD-BAND.md                        # 新バンド追加手順
   BAND-ROOM-USAGE.md                           # この doc

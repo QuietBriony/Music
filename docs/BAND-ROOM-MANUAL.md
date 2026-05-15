@@ -1,4 +1,4 @@
-# Band Room — 総合マニュアル (v161 時点)
+# Band Room — 総合マニュアル (v162 時点)
 
 > https://quietbriony.github.io/Music/band-room.html
 >
@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 現在地 (v161、最適度: ほぼ完成)
+## 🟢 現在地 (v162、最適度: ほぼ完成)
 
 ### 機能側 (磨き完了 / 残り 5% 未満)
 
@@ -20,7 +20,7 @@
 - **車載/BT**: sticky master volume bar + Media Session volume fallback + hidden audio bridge + `direct` / `bridge` / `failed` route status + lock-screen track skip
 - **album flow**: reload 後は 01 `TABASCO` から開始し、曲末は同じ曲を loop せず 02 以降へ自動で進む
 - **drum-floor 連携**: footer の `Drum Floor` から、現曲 / BPM / section / drum frame を metadata-only SYNC で渡して手動 preview。戻り `song` query は source song だけ復元
-- **歌詞**: v2.1 plain / v3 Burroughs / v4 元音節 の 3 種類が並列 (v4 は 2 曲完成 + 5 曲 template)
+- **歌詞**: 候補を `tabasco-lyrics-final.md` の 1 本に統合。Band Room 本体も final singable だけ表示
 - **mastering**: per-stem EQ + 2-stage comp + StereoWidener + tape sat + reverb、master preset (lo-fi / club / rock / ambient) で 7 軸 linked 切替
 - **genre pattern**: boom-bap / four-on-floor / jazz-brush / dnb / breakbeat / trap / soul-funk などを 1 click inject。Hazama FM の genre selection から suggestion 表示
 - **FM 往復**: Hazama FM の `band room →` は query で pattern suggestion を渡し、Band Room の Hazama FM link は近い genre query へ戻る
@@ -32,7 +32,7 @@
 - multi-velocity sampler (Salamander v3 forte/mezzo/piano 3 layer) — 中規模、ROI 高い
 - AI 生成パターン (Magenta.js DrumsRNN を auto-fill に統合) — 中-大規模
 - Music Core Rig UI で catalog 選択露出 — 中規模
-- 残り 5 曲の v4 歌詞 (Hey / I got a feeling / Under the Moon / Electric Sheep / Sister) を user が書く — ユーザータスク
+- final 歌詞を実際に歌い、息継ぎ / syllable が重い箇所だけ耳で微修正する — ユーザータスク
 
 ### 作品側 (これから動くフェーズ)
 
@@ -73,7 +73,7 @@
 
 ---
 
-## 画面構成 (v161)
+## 画面構成 (v162)
 
 ```
 ┌─────────────────────────────────┐
@@ -204,9 +204,8 @@
 
 ## 歌詞
 
-- **v2.1 proper English** — [tabasco-lyrics-draft.md](./tabasco-lyrics-draft.md)
-- **v3 William Burroughs cut-up** — [tabasco-lyrics-burroughs.md](./tabasco-lyrics-burroughs.md)
-- 同じメロディ / 同じ構造で歌詞だけ別、どっちでも歌える
+- **final singable** — [tabasco-lyrics-final.md](./tabasco-lyrics-final.md)
+- Band Room 本体はこの 1 本だけ表示する。旧 draft / cut-up / syllabic は archive 扱い。
 
 歌詞 panel は section の bar 進行に合わせて自動でハイライト + scroll する
 (v73)。歌わせたい行が大きく見える。
@@ -260,9 +259,8 @@ Tabasco 以外のバンドを追加するなら別 doc:
 | [STEM-REUSE-PATH.md](./STEM-REUSE-PATH.md) | stem 抽出 / 再利用ワークフロー |
 | [REPO-MANAGEMENT.md](./REPO-MANAGEMENT.md) | Pages 制限 / repo サイズ管理 |
 | [HAZAMA-FM-ARCHITECTURE.md](./HAZAMA-FM-ARCHITECTURE.md) | Music スタック全体のアーキテクチャ |
-| [tabasco-lyrics-draft.md](./tabasco-lyrics-draft.md) | 歌詞 v2.1 (proper English) |
-| [tabasco-lyrics-burroughs.md](./tabasco-lyrics-burroughs.md) | 歌詞 v3 (Burroughs cut-up) |
-| [tabasco-lyrics-v4-syllabic.md](./tabasco-lyrics-v4-syllabic.md) | 歌詞 v4 (元音節リズム保持版、Human Fly + TABASCO 完成、残 5 曲は template) |
+| [tabasco-lyrics-final.md](./tabasco-lyrics-final.md) | Band Room 表示用の一本化済み歌詞 |
+| [tabasco-lyrics-draft.md](./tabasco-lyrics-draft.md) / [tabasco-lyrics-burroughs.md](./tabasco-lyrics-burroughs.md) / [tabasco-lyrics-v4-syllabic.md](./tabasco-lyrics-v4-syllabic.md) | 旧候補 archive |
 | [SUNO-WORKFLOW.md](./SUNO-WORKFLOW.md) | Suno で AI 歌唱生成する手順 (プラン比較 / Cover Mode / Persona / Voice Clone) |
 
 ---

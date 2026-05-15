@@ -4024,7 +4024,7 @@
             subtitle: "fallback (bands.json failed to load)",
             stems_dir: "presets/tabasco-stems",
             drum_frames_pattern: "presets/drum-frames-tabasco-{songid}.json",
-            lyrics_doc: "docs/tabasco-lyrics-v4-syllabic.md",
+            lyrics_doc: "docs/tabasco-lyrics-final.md",
             songs: [
               { id: "tabasco",         track: "01", title: "TABASCO" },
               { id: "hey",             track: "02", title: "Hey" },
