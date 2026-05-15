@@ -62,4 +62,20 @@ assert.equal(chordRoot("Bbmaj7"), "A#2");
 assert.equal(chordRoot("F#m7"), "F#2");
 assert.equal(chordRoot("not-a-chord"), "G2");
 
+assert.match(source, /currentSongId:\s*"tabasco"/, "Band Room should reload to track 01");
+assert.match(
+  source,
+  /new Tone\.Player\(\{\s*url,\s*autostart:\s*false,\s*fadeIn:\s*0\.15,\s*fadeOut:\s*0\.30,\s*loop:\s*false/,
+  "Stem players should not loop the same song"
+);
+assert.match(source, /queueMicrotask/, "Auto-advance should not depend on requestAnimationFrame");
+assert.match(
+  source,
+  /stopPlayback\(\{\s*keepBackgroundBridge:\s*true,\s*updateMedia:\s*false\s*\}\)/,
+  "Auto-advance should keep the background media bridge alive"
+);
+
+const savePrefsBody = source.match(/function savePrefs\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
+assert.doesNotMatch(savePrefsBody, /songId\s*:/, "Saved prefs should not restore the last song");
+
 console.log("Band Room logic check passed");

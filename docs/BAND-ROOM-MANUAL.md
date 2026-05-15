@@ -1,4 +1,4 @@
-# Band Room — 総合マニュアル (v151 時点)
+# Band Room — 総合マニュアル (v152 時点)
 
 > https://quietbriony.github.io/Music/band-room.html
 >
@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 現在地 (v151、最適度: ほぼ完成)
+## 🟢 現在地 (v152、最適度: ほぼ完成)
 
 ### 機能側 (磨き完了 / 残り 5% 未満)
 
@@ -18,6 +18,7 @@
 - **UX**: keyboard shortcuts / A/B compare / preview / persistence / drag-drop / mobile safety net (iOS 14 警告 + tap unlock retry + on-screen error)
 - **連携**: MediaRecorder live record / 4-stem pack export / WebMIDI / external upload per stem
 - **車載/BT**: sticky master volume bar + Media Session volume fallback + hidden audio bridge + `direct` / `bridge` / `failed` route status
+- **album flow**: reload 後は 01 `TABASCO` から開始し、曲末は同じ曲を loop せず 02 以降へ自動で進む
 - **歌詞**: v2.1 plain / v3 Burroughs / v4 元音節 の 3 種類が並列 (v4 は 2 曲完成 + 5 曲 template)
 - **mastering**: per-stem EQ + 2-stage comp + StereoWidener + tape sat + reverb、master preset (lo-fi / club / rock / ambient) で 7 軸 linked 切替
 - **genre pattern**: boom-bap / four-on-floor / jazz-brush / dnb / breakbeat / trap / soul-funk などを 1 click inject。Hazama FM の genre selection から suggestion 表示
@@ -61,15 +62,16 @@
 ## まず触る
 
 1. https://quietbriony.github.io/Music/band-room.html を開く
-2. **`▶ START`** 押す → 1 曲目 (Human Fly) が原音 stems モードで鳴る
-3. **`📻 原音`** / **`🎛 AI 再現`** を切り替えてモード比較
-4. `📖 ?` ボタン (header 右上) で keyboard ショートカット一覧
+2. **`▶ START`** 押す → 1 曲目 (TABASCO) が原音 stems モードで鳴る
+3. 曲が終わると同じ曲に戻らず、02 `Hey` へそのまま進む
+4. **`📻 原音`** / **`🎛 AI 再現`** を切り替えてモード比較
+5. `📖 ?` ボタン (header 右上) で keyboard ショートカット一覧
 
 ここまで 1 分で全体像つかめる。
 
 ---
 
-## 画面構成 (v151)
+## 画面構成 (v152)
 
 ```
 ┌─────────────────────────────────┐

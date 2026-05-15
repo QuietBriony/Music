@@ -25,7 +25,7 @@
   const state = {
     bandsRegistry: null,
     currentBandId: "tabasco",
-    currentSongId: "human-fly",
+    currentSongId: "tabasco",
     songData: null,
     started: false,
     starting: false,
@@ -58,6 +58,7 @@
   let backgroundBridgeAudio = null;
   let backgroundBridgeActive = false;
   let backgroundBridgeHealthBound = false;
+  let autoAdvanceInFlight = false;
   let masterReverb = null;
   let masterWidener = null;
   let masterDryGain = null;
@@ -1332,10 +1333,10 @@
         //   - bus → master (drums/bass/other)
         //   - vocalChorus (vocals)
         const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
-        // v68: loop = true so practice/jam sessions don't go silent at song end.
-        // v71: bump fadeIn/fadeOut so song-change crossfade is audible.
+        // v152: album-flow playback advances to the next track at song end.
+        // Keep stems non-looping so the audio does not wrap underneath.
         const player = new Tone.Player({
-          url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: true
+          url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: false
         }).connect(target);
         await Tone.loaded();
         return { stem, player };
@@ -1885,6 +1886,62 @@
     }
   }
 
+  function syncTrackButtons() {
+    document.querySelectorAll("#br-track-select button").forEach((b) => {
+      b.setAttribute("aria-pressed", b.dataset.song === state.currentSongId ? "true" : "false");
+    });
+  }
+
+  function disposeAutoSelfKitForSongChange() {
+    if (state.kitSource === "auto-self" && drumKit && drumKit.dispose) {
+      try { drumKit.dispose(); } catch (e) {}
+      drumKit = null;
+    }
+  }
+
+  function nextSongAfterCurrent() {
+    const band = currentBand();
+    const songs = band?.songs || [];
+    const idx = songs.findIndex((song) => song.id === state.currentSongId);
+    if (idx < 0) return null;
+    return songs[idx + 1] || null;
+  }
+
+  function queueAutoAdvanceToNextSong() {
+    if (autoAdvanceInFlight) return;
+    if (!state.started) return;
+    const queuedSongId = state.currentSongId;
+    autoAdvanceInFlight = true;
+    const run = () => {
+      advanceToNextSong(queuedSongId).finally(() => {
+        autoAdvanceInFlight = false;
+      });
+    };
+    if (typeof queueMicrotask === "function") queueMicrotask(run);
+    else setTimeout(run, 0);
+  }
+
+  async function advanceToNextSong(queuedSongId) {
+    if (!state.started || state.currentSongId !== queuedSongId) return;
+    const nextSong = nextSongAfterCurrent();
+    if (!nextSong) {
+      stopPlayback();
+      return;
+    }
+    if (state.started) {
+      stopPlayback({ keepBackgroundBridge: true, updateMedia: false });
+    }
+    const loaded = await loadSong(nextSong.id);
+    if (!loaded) {
+      stopPlayback();
+      return;
+    }
+    syncTrackButtons();
+    renderPhraseTrigger();
+    disposeAutoSelfKitForSongChange();
+    await startPlayback({ autoAdvance: true });
+  }
+
   function extractLyricsForSong(md, songTitle) {
     // Match "## NN <Title>" headings
     const lines = md.split("\n");
@@ -2205,22 +2262,21 @@
     state.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
       let sec = currentSection();
       if (!sec) {
-        // v68: loop to top of song instead of stopping (jam/practice mode)
-        state.sectionIdx = 0;
-        state.sectionBarStart = state.barCount;
-        sec = currentSection();
-        if (!sec) {
-          if (state.started) stopPlayback();
-          return;
-        }
+        queueAutoAdvanceToNextSong();
+        return;
       }
       // Did we cross into next section?
       if (state.barCount - state.sectionBarStart >= sec.bars) {
         state.sectionIdx++;
         state.sectionBarStart = state.barCount;
         if (state.sectionIdx >= state.songData.structure.length) {
-          // v68: loop to top of structure — stems already loop via player.loop=true
-          state.sectionIdx = 0;
+          if (state.loopA != null && state.loopB != null) {
+            const targetA = state.loopA;
+            requestAnimationFrame(() => jumpToSection(targetA));
+          } else {
+            queueAutoAdvanceToNextSong();
+          }
+          return;
         }
         // v106: crash hint on big section entry (chorus / bridge / outro).
         // Fires on beat 0 of the new section so the transition has lift.
@@ -2690,7 +2746,7 @@
     }
   }
 
-  function stopPlayback() {
+  function stopPlayback(options = {}) {
     if (!state.started) return;
     try { Tone.Transport.stop(); } catch (e) {}
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
@@ -2701,8 +2757,8 @@
     state.started = false;
     setButtonState("idle");
     stopMasterMeter();
-    stopBackgroundAudioBridge();
-    updateMediaSession("paused");
+    if (!options.keepBackgroundBridge) stopBackgroundAudioBridge();
+    if (options.updateMedia !== false) updateMediaSession("paused");
     stopMidiClock(); // v88
   }
 
@@ -4051,8 +4107,8 @@
   }
 
   // ---- v78: localStorage persistence -------------------------
-  // Remember the last band, song, mode, kit, volumes, slider values
-  // so the page restores its state on next visit.
+  // Remember sound/editing prefs. Song position intentionally resets to track 01
+  // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = "band-room.prefs.v1";
 
   function loadPrefs() {
@@ -4067,7 +4123,6 @@
     try {
       const prefs = {
         bandId: state.currentBandId,
-        songId: state.currentSongId,
         mode: currentMode,
         kitSource: state.kitSource,
         kitProfile: state.kitProfile,
@@ -4761,21 +4816,19 @@
     renderKitOptions();
     await loadBandsRegistry();
 
-    // v78: restore session — pick last band/song before pre-loading
+    // Restore band-level prefs only. Track always starts at 01 on reload.
     const prefs = loadPrefs();
     if (prefs && prefs.bandId && state.bandsRegistry?.bands?.[prefs.bandId]) {
       const band = state.bandsRegistry.bands[prefs.bandId];
-      if (band.songs?.some((s) => s.id === prefs.songId)) {
+      if (band.songs?.length) {
         state.currentBandId = prefs.bandId;
-        state.currentSongId = prefs.songId;
+        state.currentSongId = band.songs[0].id;
         // Repaint selectors to reflect this band/song
         document.querySelectorAll("#br-band-select button").forEach((b) => {
           b.setAttribute("aria-pressed", b.dataset.band === prefs.bandId ? "true" : "false");
         });
         renderTrackButtons();
-        document.querySelectorAll("#br-track-select button").forEach((b) => {
-          b.setAttribute("aria-pressed", b.dataset.song === prefs.songId ? "true" : "false");
-        });
+        syncTrackButtons();
         updateSubtitle();
       }
     }

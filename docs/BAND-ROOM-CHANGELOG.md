@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v151 compact)
+# Band Room — Changelog (v65 → v152 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,15 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v152 compact — album-flow default playback
+
+- `band-room.js br-73`: reload 後の default track を 01 `TABASCO` に戻し、
+  localStorage の前回 song 復元は廃止。sound/editing prefs は引き続き保持。
+- 曲末は同じ曲の structure / stems loop ではなく、次 track へ auto advance。
+  01 終了後は 02 `Hey`、以降 set list 順に進む。最後の曲だけ停止。
+- 自動曲送り中は hidden media bridge を維持して、車載/Bluetooth の route が
+  曲間で落ちにくいようにした。
 
 ## v151 compact — audit gate + car bridge hardening
 
