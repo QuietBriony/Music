@@ -1,4 +1,4 @@
-# Band Room — 総合マニュアル (v124 時点)
+# Band Room — 総合マニュアル (v149 時点)
 
 > https://quietbriony.github.io/Music/band-room.html
 >
@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 現在地 (v124、最適度: ほぼ完成)
+## 🟢 現在地 (v149、最適度: ほぼ完成)
 
 ### 機能側 (磨き完了 / 残り 5% 未満)
 
@@ -17,8 +17,10 @@
 - **整合性**: 3 app (Band Room / Hazama FM / Music Core Rig) で lofi / jazz / ambient / dub が同じ catalog 経由の実 sample stack
 - **UX**: keyboard shortcuts / A/B compare / preview / persistence / drag-drop / mobile safety net (iOS 14 警告 + tap unlock retry + on-screen error)
 - **連携**: MediaRecorder live record / 4-stem pack export / WebMIDI / external upload per stem
+- **車載/BT**: 常時表示 master volume bar + Media Session volume fallback + hidden audio bridge
 - **歌詞**: v2.1 plain / v3 Burroughs / v4 元音節 の 3 種類が並列 (v4 は 2 曲完成 + 5 曲 template)
 - **mastering**: per-stem EQ + 2-stage comp + StereoWidener + tape sat + reverb、master preset (lo-fi / club / rock / ambient) で 7 軸 linked 切替
+- **genre pattern**: boom-bap / four-on-floor / jazz-brush / dnb / breakbeat / trap / soul-funk などを 1 click inject。Hazama FM の genre selection から suggestion 表示
 - **歌詞 sync**: section transition で自動ハイライト + smooth scroll
 - **integrity docs**: 全 doc が CROSS-APP-INTEGRITY hub から辿れる、5 doc 全部 v115 整合済
 
@@ -67,11 +69,13 @@
 
 ---
 
-## 画面構成 (v102)
+## 画面構成 (v149)
 
 ```
 ┌─────────────────────────────────┐
 │  BAND ROOM                 [?]   │  ← ヘッダ + help button
+├─────────────────────────────────┤
+│  [-] master volume [====] 80 [+] │  ← 車 / touch 向け常時音量
 ├─────────────────────────────────┤
 │  [Tabasco]                       │  ← band 選択
 ├─────────────────────────────────┤

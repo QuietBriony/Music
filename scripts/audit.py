@@ -11,7 +11,7 @@ Checks:
     2. presets/loader.js PRESET_FILES vs filesystem
     3. genre-flavor.js PRESET_BY_GENRE vs loader keys
     4. sw.js precache list completeness
-    5. cache buster version sync (fm.html vs sw.js)
+    5. cache buster version sync (fm.html / band-room.html vs sw.js)
     6. engine.js MUSIC_RADIO_BRAIN_PROGRAMS coverage
        (reset / reason / target / station-ident / bias for each program)
     7. genre-flavor.js per-builder synth volume settings
@@ -132,15 +132,21 @@ status(not missing_in_sw, f"all Hazama FM presets precached ({len(precached & ha
 if missing_in_sw:
     print(f"     missing in sw: {sorted(missing_in_sw)}")
 
-# 5. Cache buster sync (fm.html vs sw.js)
+# 5. Cache buster sync (fm.html / band-room.html vs sw.js)
 info("\n[5] cache buster version sync")
 html_text = (ROOT / "fm.html").read_text(encoding="utf-8")
+band_room_html_text = (ROOT / "band-room.html").read_text(encoding="utf-8")
 versions_html = set(re.findall(r'\?v=(fm-\w+)', html_text))
 versions_sw = set(re.findall(r'\?v=(fm-\w+)', sw_text))
+versions_br_html = set(re.findall(r'\?v=(br-\w+)', band_room_html_text))
+versions_br_sw = set(re.findall(r'\?v=(br-\w+)', sw_text))
 sw_version = re.search(r'const VERSION = "([^"]+)"', sw_text)
 status(versions_html == versions_sw, f"fm.html ↔ sw.js precache versions match")
 info(f"     html: {sorted(versions_html)}")
 info(f"     sw  : {sorted(versions_sw)}")
+status(versions_br_html == versions_br_sw, f"band-room.html ↔ sw.js precache versions match")
+info(f"     band-room html: {sorted(versions_br_html)}")
+info(f"     band-room sw  : {sorted(versions_br_sw)}")
 info(f"     sw VERSION: {sw_version.group(1) if sw_version else '?'}")
 
 # 6. engine.js MUSIC_RADIO_BRAIN_PROGRAMS coverage

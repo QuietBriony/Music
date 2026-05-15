@@ -123,7 +123,7 @@ groove 崩壊。
 
 | # | 内容 | sources |
 |---|------|--------|
-| **5** | **brain.fm 風 40Hz AM 変調** — `Tone.LFO 40Hz → Tone.Gain` を master bus にオーバーレイ、focus mode で A/B | https://www.brain.fm/science |
+| **5** | ✅ **brain.fm 風 40Hz AM 変調** — v147 で `Tone.LFO 40Hz → Tone.Gain` を limiter 前に追加。default OFF / 8% / AI fill 中 suppression | https://www.brain.fm/science |
 | **6** | **HR 連動 BPM (Endel 風)** — Web Bluetooth で心拍計接続、BPM = HR + 12 みたいなマッピング | https://endel.io/science |
 | **7** | **Suno semantic-marker UX** — `[beat drop]` `[breakdown]` のような cue point を tracks に持たせて操作 | https://www.latent.space/p/suno |
 
@@ -140,13 +140,9 @@ groove 崩壊。
 ## 6. 推奨優先順位
 
 ```
-v132 (今): A + B 修正 + research doc          ← 完了
-   ↓ 試聴して効果検証
-v133: C (drum-frames microMs 調整) or
-      Tier 1 #4 (per-step microOffsets) or
-      Tier 1 #2 (genre standard pattern templates)
-v134-135: Tier 1 #1 (Magenta DrumsRNN 統合)
-v136+: Tier 2 (brain.fm AM / Endel HR)
+v132-v143: swing整理、microOffsets、phrase lock、pattern variation  ← 完了
+v140-v147: Magenta AI fill、genre pattern expansion、40Hz focus mode   ← 完了
+next: 実車/Bluetooth確認、focus depth A/B、HR連動 BPM は必要なら実験
 v200+: Tier 3 (WAM / MusicTransformer 別 architecture)
 ```
 

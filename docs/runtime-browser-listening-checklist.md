@@ -99,10 +99,11 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 
 - Open `fm.html` from a local server, not a `file://` URL.
 - Confirm the current FM surface appears, including recent controls such as
-  `shuffle`.
-- Confirm `fm.html` requests `audio/genre-flavor.js?v=fm-53`,
-  `fm.js?v=fm-53`, and `engine.js?v=fm-54`, and `sw.js` contains
-  `hazama-fm-v54`.
+  `shuffle`, `AI fill`, DJ set buttons, mic follow, and `40HZ`.
+- Confirm cache markers match exactly across `fm.html`, `index.html`, and
+  `sw.js`. Current v149 markers: `engine.js?v=fm-76`,
+  `fm.css?v=fm-47`, `fm.js?v=fm-57`, `audio/genre-flavor.js?v=fm-68`,
+  `audio/ai-fills.js?v=fm-71`, and `hazama-fm-v149`.
 - Confirm browser console has no service-worker registration or update errors.
 - Close and reopen the installed app after merge; if the old UI remains, open
   the normal browser tab once, reload, then reopen the installed app.

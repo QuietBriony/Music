@@ -104,6 +104,13 @@ fieldStudy / glassCoding / dryGridWork / ghostPressure / voidRoom
 `window.MusicRuntimeState.radioBrain.{active, next, lastReason, phrase, phraseCycles}`
 を 4860 行目で `music-runtime-state` CustomEvent として publish。
 
+v142 以降、mode change は `BarCounter` で 16 bar phrase 境界に gate される。
+UCM 閾値が途中で別 mode を要求した場合は `pendingMode` に保持し、次の phrase
+境界で commit。manual preset は即時反映。
+
+v143 以降、drum pattern は 4 bar ごとに小さく perturb し、16 bar で base pattern
+へ戻す。beat-1 kick / 2・4 snare backbone は崩さず、長時間再生の単調さだけを減らす。
+
 fm.js が listener で受け取り、UI 更新 + Media Session metadata 同期 +
 station ident animation 駆動。
 
@@ -126,7 +133,7 @@ station ident animation 駆動。
 iPhone ロック画面・コントロールセンター・BT ヘッドフォン・mac Touch Bar
 に「fieldStudy — initial haze room」等が表示される。
 
-### 音量設計 (current v53)
+### 音量設計 (current v149)
 
 ```
 各 GENRE synth voice
@@ -143,10 +150,12 @@ flavor master Gain
         ↓
    engine masterGain
         ↓ × outputGainFromLevel(FM target 75) ≈ 1.48 linear
+   focusModGain (optional 40 Hz / 8% AM, default OFF)
+        ↓
    masterLimiter (-0.8 dBFS ceiling)
         ↓
-   Tone.Destination (0 dB; shared hardware output)
-        ↓ AudioContext.destination → output device
+   hardwareOutput + recorder/background bridge taps
+        ↓ AudioContext.destination / hidden MediaStream audio bridge
 ```
 
 - `LEVEL_BY_GENRE` (genre-flavor.js) でジャンル別音量バランス
@@ -156,6 +165,10 @@ flavor master Gain
 - `Tone.Destination.volume = 0 dB` (fm.js fmStart)。post-limiter boost なし
 - limiter は final stop ではなく guardrail。常時突っ込ませず、OUTPUT 75〜85
   を通常の聴感レンジにする
+- `40HZ` focus mode は limiter 前で 0.92〜1.00 の範囲だけを揺らすため、
+  peak を持ち上げない。AI fill 中は depth 0% に自動退避
+- iOS Safari / 車載 Bluetooth 向けに、最終 mix は hidden `<audio srcObject>`
+  bridge にも流す。Web Audio が車側で通常メディアとして扱われにくい環境への fallback
 
 ### Per-genre station ident hue
 

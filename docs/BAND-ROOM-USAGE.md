@@ -6,15 +6,17 @@
 > 2 つのモードを切り替えながら、本物の音源と AI 合成を A/B したり、混ぜたり、
 > 自分で歌い直したり、Suno で生成した声を upload したりできる。
 
-## 画面構成 (v79 — コア + 折り畳み詳細)
+## 画面構成 (v149 — コア + 折り畳み詳細)
 
 ```
 ┌─────────────────────────────────┐
 │  BAND ROOM                       │
 ├─────────────────────────────────┤
+│  [-] master volume [====] 80 [+] │  ← 車 / touch 向け常時音量
+├─────────────────────────────────┤
 │  [Tabasco]                       │  ← band 選択
 ├─────────────────────────────────┤
-│  [01] [02] [03] [04] [05] [06]   │  ← song 選択 (6 曲)
+│  [01] [02] [03] [04] [05] [06] [07] │  ← song 選択 (7 曲)
 ├─────────────────────────────────┤
 │  [ 📻 原音 ]  [ 🎛 AI 再現 ]      │  ← mode pill
 ├─────────────────────────────────┤
@@ -38,6 +40,7 @@
 │  ▾ 🎙 external vocal             │
 │  ▾ 🎵 vocal phrase trigger       │     即発火 / 次小節 / ループ
 │  ▾ 🥁 drum kit source            │     (AI 再現時のみ)
+│  ▾ 🎼 genre pattern picker       │     Hazama FM suggestion 対応
 │  ▾ 🐢 practice tempo (50-120%)   │     (AI 再現時のみ)
 │  ▾ 🎚 volume mixer               │     mode 別
 │  ▾ 🌌 mastering                  │     reverb/width/warmth/loudness
@@ -87,6 +90,26 @@
 2. 🎵 vocal phrase trigger に 01-20 の番号ボタン
 3. クリックで自分の声フレーズが発火 (元音源から切り出した RMS 上位 20 個)
 4. 元の歌の上に重ねて adlib / textural 使用
+
+### 6. Hazama FM から groove 候補を受ける
+
+1. Hazama FM で lofi / jazz / funk / techno などの genre pill を選ぶ
+2. Band Room を開くと、対応する genre pattern button が suggestion 表示される
+3. ボタンをタップすると現在 frame に pattern inject
+4. `reset to original` で元 frame に戻せる
+
+自動 inject はしません。現在 frame の drum events を置き換える操作なので、
+必ず Band Room 側でタップしてから適用します。
+
+## 車 / Bluetooth 音量
+
+header 直下の master volume bar は常時表示です。車の物理音量ボタンが
+Web Audio に届かない環境でも、画面上の `- / +` と slider で 0-100 を操作できます。
+対応する車載機が rewind / fast-forward 系の Media Session 信号を送る場合は、
+それも master volume の 5 刻み上下に割り当てます。
+
+Band Room の最終 mix は hidden `<audio srcObject=MediaStream>` bridge にも流しており、
+iOS Safari / 車載 Bluetooth で通常メディア音声として扱われやすくしています。
 
 ## モード切替の意味
 

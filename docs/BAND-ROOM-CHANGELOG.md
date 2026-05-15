@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v115)
+# Band Room — Changelog (v65 → v149 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,30 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v149 compact — 車載/BT・genre handoff・runtime hygiene
+
+- `band-room.js br-70`: master volume bar と `br-loudness` を乗算関係に修正。
+  車用の 0-100 音量と mastering loudness が互いに上書きしない。
+- `band-room.js br-70`: Hazama FM が suggestion を clear した時、Band Room の
+  genre picker status も stale 表示を消す。
+- `sw.js hazama-fm-v149`: Band Room の `audio/audio-safety.js?v=br-66` を
+  precache に追加。
+
+## v145-v146 compact — Band Room car audio bridge + FM genre suggestion
+
+- v145: Hazama FM で効いていた hidden `<audio srcObject=MediaStream>` bridge を
+  Band Room に移植。WebAudio final mix を HTMLAudioElement 経由にも流し、
+  iOS Safari / 車載 Bluetooth で通常メディア音声として扱われやすくした。
+- v146: trap / soul-funk genre pattern を追加。Hazama FM の genre pill から
+  Band Room の genre picker へ suggestion を渡す。自動 inject はせず、
+  ユーザーが Band Room 側でタップして適用する。
+
+## v141-v144 compact — car volume controls
+
+- v141: header 直下に master volume bar を常時表示。`- / +` は 5 刻み。
+- v144: Media Session の `seekbackward` / `seekforward` を master volume の
+  down/up fallback として扱う。
 
 ## v115 — Hazama FM lofi 完全 piano trio + breakbeat 化
 

@@ -2877,15 +2877,12 @@
 
     // v66: loudness (final master gain, dB → linear)
     const loudnessEl = $("br-loudness");
+    let masterVolValue = 80;
+    let masterLoudnessDb = Number(loudnessEl?.value || 0);
     if (loudnessEl) {
       loudnessEl.addEventListener("input", () => {
-        ensureMaster();
-        if (masterGain) {
-          const dB = Number(loudnessEl.value);
-          // 0 dB → 0.9 (default master gain); ±dB scales from there
-          const linear = 0.9 * Math.pow(10, dB / 20);
-          try { masterGain.gain.rampTo(linear, 0.10); } catch (e) {}
-        }
+        masterLoudnessDb = Number(loudnessEl.value) || 0;
+        applyMasterOutputGain(0.10);
       });
     }
 
@@ -2900,22 +2897,29 @@
     const masterVolUp = $("br-master-vol-up");
     let masterVolBase = 0.9; // matches initial Tone.Gain(0.9) in ensureMaster()
 
-    function applyMasterVol(value) {
-      const v = Math.max(0, Math.min(100, Number(value) || 0));
-      if (masterVolEl) masterVolEl.value = String(v);
-      if (masterVolReadout) masterVolReadout.textContent = String(v);
+    function masterVolGainFromValue(value) {
       // 0 → 0, 80 → 0.9 (default), 100 → 1.4
       // Curve: v/80 * base for 0-80 range, then linear to 1.4 at 100
-      let gain;
-      if (v <= 80) {
-        gain = (v / 80) * masterVolBase;
-      } else {
-        gain = masterVolBase + ((v - 80) / 20) * (1.4 - masterVolBase);
-      }
+      const v = Math.max(0, Math.min(100, Number(value) || 0));
+      if (v <= 80) return (v / 80) * masterVolBase;
+      return masterVolBase + ((v - 80) / 20) * (1.4 - masterVolBase);
+    }
+
+    function applyMasterOutputGain(seconds = 0.08) {
+      const loudnessGain = Math.pow(10, masterLoudnessDb / 20);
+      const gain = masterVolGainFromValue(masterVolValue) * loudnessGain;
       ensureMaster();
       if (masterGain) {
-        try { masterGain.gain.rampTo(gain, 0.08); } catch (e) {}
+        try { masterGain.gain.rampTo(gain, seconds); } catch (e) {}
       }
+    }
+
+    function applyMasterVol(value) {
+      const v = Math.max(0, Math.min(100, Number(value) || 0));
+      masterVolValue = v;
+      if (masterVolEl) masterVolEl.value = String(v);
+      if (masterVolReadout) masterVolReadout.textContent = String(v);
+      applyMasterOutputGain(0.08);
       try { localStorage.setItem(MASTER_VOL_KEY, String(v)); } catch (e) {}
     }
 
@@ -2925,6 +2929,7 @@
       const raw = localStorage.getItem(MASTER_VOL_KEY);
       if (raw !== null) savedVol = Math.max(0, Math.min(100, Number(raw) || 80));
     } catch (e) {}
+    masterVolValue = savedVol;
     if (masterVolEl) {
       masterVolEl.value = String(savedVol);
       masterVolEl.addEventListener("input", (e) => applyMasterVol(e.target.value));
@@ -4578,8 +4583,11 @@
     }
     clearFmLinkedGenreSuggestion();
     const btn = linkedGenreButton(genre);
-    if (!genre || !btn) return;
-    if (at && Date.now() - at > FM_LINKED_GENRE_MAX_AGE_MS) return;
+    const stale = at && Date.now() - at > FM_LINKED_GENRE_MAX_AGE_MS;
+    if (!genre || !btn || stale) {
+      if (!genrePickBackupEvents) setGenrePickStatus("no FM genre suggestion");
+      return;
+    }
     setGenrePickStatus(`FM suggests ${genre} (${reason}) — tap its button to inject`);
     btn.classList.add("is-suggested");
     btn.setAttribute("title", "Suggested by Hazama FM");

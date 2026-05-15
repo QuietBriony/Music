@@ -868,6 +868,25 @@ const PatternVariation = {
   },
   lastVariationBar: -1
 };
+
+function musicRuntimeDebugEnabled(channel = "") {
+  try {
+    if (typeof window === "undefined") return false;
+    const runtimeDebug = window.MusicRuntimeDebug;
+    if (runtimeDebug === true) return true;
+    if (runtimeDebug && typeof runtimeDebug === "object" && runtimeDebug[channel] === true) return true;
+    const storage = window.localStorage;
+    if (!storage) return false;
+    if (storage.getItem("music.debug") === "1") return true;
+    return !!channel && storage.getItem(`music.debug.${channel}`) === "1";
+  } catch (error) {
+    return false;
+  }
+}
+
+function musicRuntimeDebugLog(channel, ...args) {
+  if (musicRuntimeDebugEnabled(channel)) console.log(...args);
+}
 const AUTO_SOURCE_MORPH_KEYS = ["xtal", "boc", "opn", "fsol", "autechre", "burial"];
 const AUTO_ATMOSPHERE_MORPH_KEYS = ["haze", "chrome", "void", "organic", "ghost"];
 const AutoVoiceMorphState = {
@@ -6828,6 +6847,7 @@ async function resumeAudioContext(reason = "resume") {
 
 function setupMediaSessionControls() {
   if (!navigator.mediaSession) return;
+  if (document.body?.dataset?.page === "fm") return;
 
   try {
     navigator.mediaSession.metadata = new MediaMetadata({
@@ -7764,6 +7784,20 @@ function ensureFocusModulationLfo() {
   return FocusModulationState.lfo;
 }
 
+function disposeFocusModulationLfo() {
+  const lfo = FocusModulationState.lfo;
+  if (!lfo) return;
+  try { lfo.disconnect(focusModGain.gain); } catch (error) {
+    try { lfo.disconnect(); } catch (innerError) {}
+  }
+  try { lfo.stop(); } catch (error) {}
+  try { lfo.dispose?.(); } catch (error) {}
+  FocusModulationState.lfo = null;
+  FocusModulationState.currentDepth = 0;
+  FocusModulationState.targetDepth = 0;
+  try { focusModGain.gain.value = 1; } catch (error) {}
+}
+
 function applyFocusModulationDepth(depth) {
   const safeDepth = clampValue(depth, 0, 0.12);
   const lfo = ensureFocusModulationLfo();
@@ -7799,6 +7833,7 @@ function rampFocusModulationDepth(depth, seconds = 3) {
   FocusModulationState.targetDepth = targetDepth;
   if (Math.abs(fromDepth - targetDepth) < 0.001 || seconds <= 0) {
     applyFocusModulationDepth(targetDepth);
+    if (targetDepth <= 0.001 && !FocusModulationState.enabled) disposeFocusModulationLfo();
     dispatchFocusModulationState();
     return;
   }
@@ -7813,6 +7848,7 @@ function rampFocusModulationDepth(depth, seconds = 3) {
       clearInterval(FocusModulationState.rampTimer);
       FocusModulationState.rampTimer = null;
       applyFocusModulationDepth(targetDepth);
+      if (targetDepth <= 0.001 && !FocusModulationState.enabled) disposeFocusModulationLfo();
       dispatchFocusModulationState();
     }
   }, 50);
@@ -10317,7 +10353,7 @@ function commitPhraseLockedMode(newMode, manual = false) {
   EngineParams.mode = newMode;
   BarCounter.lastModeChangeBar = BarCounter.current;
   BarCounter.pendingMode = null;
-  console.log("[BarCounter]", BarCounter.current, "mode:", EngineParams.mode);
+  musicRuntimeDebugLog("barCounter", "[BarCounter]", BarCounter.current, "mode:", EngineParams.mode);
   applyModeChangeHooks(manual);
   return true;
 }
@@ -10810,7 +10846,7 @@ function perturbPatternVariation() {
     skin: skin.join("")
   };
   PatternVariation.lastVariationBar = BarCounter.current;
-  console.log("[PatternVariation]", BarCounter.current, "kick:", PatternVariation.currentPattern.kick, "hat:", PatternVariation.currentPattern.hat);
+  musicRuntimeDebugLog("patternVariation", "[PatternVariation]", BarCounter.current, "kick:", PatternVariation.currentPattern.kick, "hat:", PatternVariation.currentPattern.hat);
 }
 
 function advancePatternVariationBar() {
@@ -14035,16 +14071,33 @@ window.addEventListener("DOMContentLoaded", () => {
   // AudioContext watchdog: browsers (especially Chrome/Safari on idle tabs or mobile)
   // can auto-suspend the AudioContext while Tone.Transport appears to keep running,
   // producing "suddenly no sound". Check every 2s and resume if needed.
+  let lastWatchdogAudioState = "";
+  let lastWatchdogTransportState = "";
+  let lastWatchdogWarnAt = 0;
   setInterval(() => {
     try {
       if (isPlaying && typeof Tone !== "undefined" && Tone && Tone.context && Tone.context.state !== "running") {
-        console.warn("[Music] AudioContext not running:", Tone.context.state, "-> resume");
+        const now = Date.now();
+        if (Tone.context.state !== lastWatchdogAudioState || now - lastWatchdogWarnAt > 15000) {
+          console.warn("[Music] AudioContext not running:", Tone.context.state, "-> resume");
+          lastWatchdogWarnAt = now;
+          lastWatchdogAudioState = Tone.context.state;
+        }
         resumeAudioContext("watchdog");
+      } else {
+        lastWatchdogAudioState = "";
       }
       if (isPlaying && Tone && Tone.Transport && Tone.Transport.state !== "started") {
-        console.warn("[Music] Transport not started:", Tone.Transport.state, "-> start");
+        const now = Date.now();
+        if (Tone.Transport.state !== lastWatchdogTransportState || now - lastWatchdogWarnAt > 15000) {
+          console.warn("[Music] Transport not started:", Tone.Transport.state, "-> start");
+          lastWatchdogWarnAt = now;
+          lastWatchdogTransportState = Tone.Transport.state;
+        }
         ensureTransportScheduled();
         Tone.Transport.start("+0.03");
+      } else {
+        lastWatchdogTransportState = "";
       }
     } catch(e){ /* swallow */ }
   }, 2000);
