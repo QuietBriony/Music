@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v168 compact)
+# Band Room — Changelog (v65 → v169 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,18 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v169 compact — Hazama FM melodic director
+
+- `engine.js fm-83`: Hazama FM に phrase-level melodic director を追加。
+  8〜16 bar ごとに key center / contour / chord turn を変え、固定的な
+  `D / F# / G / E` 断片の反復感を減らす。
+- `tonalRhymeIndex()` は pool length を受け取り、6/10 音 pool も偏らず使う。
+  `voiceFragment()` / `randomHazeChord()` / `randomChordForMode()` / bass root は
+  director 経由で phrase-aware に変化。
+- runtime diagnostics は `window.MusicRuntimeState.melodicDirector` に key /
+  contour / phraseBars を出す。
+- `sw.js hazama-fm-v169`: `engine.js?v=fm-83` を precache。
 
 ## v168 compact — saved mix migration + closeout
 

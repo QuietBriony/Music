@@ -1943,32 +1943,61 @@ function organicChaosAmount() {
   );
 }
 
-function tonalRhymeIndex(step = stepIndex, offset = 0) {
-  const phaseOffset = Math.floor((GenomeState.phase || 0) * 8);
+function tonalRhymeIndex(step = stepIndex, offset = 0, span = 8) {
+  const safeSpan = Math.max(1, Math.round(Number(span) || 8));
+  const phaseOffset = Math.floor((GenomeState.phase || 0) * safeSpan);
   const refrainOffset = Math.floor((MotifMemoryState.strength || 0) * 5);
   const voiceOffset = Math.floor((VoiceEmergenceState?.refrain || 0) * 4);
   const index = GrooveState.cycle + step + phaseOffset + refrainOffset + voiceOffset + TonalRhymeState.stepOffset + offset;
-  return ((index % 8) + 8) % 8;
+  return ((index % safeSpan) + safeSpan) % safeSpan;
 }
 
-function tonalRhymeNote(pool, step = stepIndex, offset = 0) {
-  return pool[tonalRhymeIndex(step, offset) % pool.length];
+function syncMelodicDirectorBassRoot() {
+  switch (EngineParams.mode) {
+    case "ambient":
+      bassRoot = tonalRhymeSub(stepIndex, -1);
+      break;
+    case "lofi":
+    case "jazz":
+      bassRoot = tonalRhymeSub(stepIndex, 0);
+      break;
+    case "dub":
+      bassRoot = tonalRhymeSub(stepIndex, 1);
+      break;
+    case "funk":
+      bassRoot = tonalRhymeSub(stepIndex, 2);
+      break;
+    case "techno":
+      bassRoot = tonalRhymeSub(stepIndex, 1);
+      break;
+    case "trance":
+      bassRoot = tonalRhymeSub(stepIndex, 2);
+      break;
+    default:
+      bassRoot = tonalRhymeSub(stepIndex, 0);
+      break;
+  }
+}
+
+function tonalRhymeNote(pool, step = stepIndex, offset = 0, options = {}) {
+  const note = pool[tonalRhymeIndex(step, offset, pool.length) % pool.length];
+  return melodicDirectorNote(note, step, offset, options);
 }
 
 function tonalRhymeSub(step = stepIndex, offset = 0) {
-  return tonalRhymeNote(TONAL_RHYME_SUB, step, TonalRhymeState.lowOffset + offset);
+  return tonalRhymeNote(TONAL_RHYME_SUB, step, TonalRhymeState.lowOffset + offset, { role: "low", contour: false });
 }
 
 function tonalRhymeLow(step = stepIndex, offset = 0) {
-  return tonalRhymeNote(TONAL_RHYME_LOW, step, TonalRhymeState.lowOffset + offset);
+  return tonalRhymeNote(TONAL_RHYME_LOW, step, TonalRhymeState.lowOffset + offset, { role: "low", contour: false });
 }
 
 function tonalRhymeMid(step = stepIndex, offset = 0) {
-  return tonalRhymeNote(TONAL_RHYME_MID, step, offset);
+  return tonalRhymeNote(TONAL_RHYME_MID, step, offset, { role: "mid" });
 }
 
 function tonalRhymeHigh(step = stepIndex, offset = 0) {
-  return tonalRhymeNote(TONAL_RHYME_HIGH, step, offset);
+  return tonalRhymeNote(TONAL_RHYME_HIGH, step, offset, { role: "voice" });
 }
 
 function advanceTonalRhymePhrase() {
@@ -5170,6 +5199,7 @@ function publishMusicRuntimeState() {
     genre: { ...GenreBlendState },
     genreTimbreKits: genreTimbreKitRuntimeState(),
     timbrePalettes: modeTimbrePalettesRuntimeState(),
+    melodicDirector: melodicDirectorRuntimeState(),
     radioBrain: musicRadioBrainRuntimeState(),
     referenceMorph: referenceMorphRuntimeState(),
     rdjGrowth: rdjGrowthRuntimeState(),
@@ -8850,11 +8880,11 @@ guardToneTriggerReleaseSchedule("subImpact", subImpact, 2);
 guardToneTriggerReleaseSchedule("reedBuzz", reedBuzz, 2);
 
 function organicFragment(offset = 0) {
-  return ORGANIC_PLUCK_FRAGMENTS[tonalRhymeIndex(stepIndex, offset) % ORGANIC_PLUCK_FRAGMENTS.length];
+  return tonalRhymeNote(ORGANIC_PLUCK_FRAGMENTS, stepIndex, offset, { role: "mid" });
 }
 
 function transparentFragment(offset = 0) {
-  return TRANSPARENT_AIR_FRAGMENTS[tonalRhymeIndex(stepIndex, offset) % TRANSPARENT_AIR_FRAGMENTS.length];
+  return tonalRhymeNote(TRANSPARENT_AIR_FRAGMENTS, stepIndex, offset, { role: "voice" });
 }
 
 function voiceNotePool(fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
@@ -8873,8 +8903,9 @@ function voiceNotePool(fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
 function voiceFragment(offset = 0, fallbackPool = TRANSPARENT_AIR_FRAGMENTS) {
   const pool = voiceNotePool(fallbackPool);
   const phaseOffset = Math.floor((GenomeState.phase || 0) * pool.length);
-  const index = tonalRhymeIndex(stepIndex, GenomeState.generation + phaseOffset + offset);
-  return pool[((index % pool.length) + pool.length) % pool.length];
+  const index = tonalRhymeIndex(stepIndex, GenomeState.generation + phaseOffset + offset, pool.length);
+  const note = pool[((index % pool.length) + pool.length) % pool.length];
+  return melodicDirectorNote(note, stepIndex, offset, { role: "voice" });
 }
 
 function triggerVoiceColorCue(time) {
@@ -9135,7 +9166,8 @@ const MODE_CHORDS = {
   lofi: [
     ["D3", "F#3", "A3", "E4"],
     ["G3", "D4", "F#4", "E4"],
-    ["E3", "G3", "B3"]
+    ["E3", "G3", "B3"],
+    ["A2", "E3", "G3", "C#4"]
   ],
   dub: [
     ["D3", "A3", "E4"],
@@ -9143,7 +9175,9 @@ const MODE_CHORDS = {
   ],
   jazz: [
     ["D3", "F#3", "A3", "E4"],
-    ["G3", "B3", "D4", "F#4"]
+    ["G3", "B3", "D4", "F#4"],
+    ["B2", "D3", "F#3", "A3"],
+    ["A2", "C#3", "G3", "B3"]
   ],
   techno: [
     ["D3", "F#3"],
@@ -9152,7 +9186,8 @@ const MODE_CHORDS = {
   ],
   trance: [
     ["D3", "F#3", "A3"],
-    ["E3", "G3", "B3"]
+    ["E3", "G3", "B3"],
+    ["A2", "E3", "B3"]
   ]
 };
 const GLASS_NOTES = ["D5", "F#5", "G5", "E5", "D6", "F#6", "G6", "E6"];
@@ -9163,9 +9198,145 @@ const HAZE_CHORDS = [
   ["D4", "F#4", "E5"],
   ["G4", "D5", "F#5"],
   ["E4", "G4", "D5"],
-  ["F#4", "E5", "G5"]
+  ["F#4", "E5", "G5"],
+  ["A3", "E4", "G4", "C#5"],
+  ["B3", "D4", "F#4", "A4"]
 ];
 const GLASS_ACCENT_STEPS = [3, 5, 7, 10, 11, 14];
+
+const NOTE_NAME_TO_SEMITONE = { C: 0, "C#": 1, Db: 1, D: 2, "D#": 3, Eb: 3, E: 4, F: 5, "F#": 6, Gb: 6, G: 7, "G#": 8, Ab: 8, A: 9, "A#": 10, Bb: 10, B: 11 };
+const SEMITONE_TO_NOTE_NAME = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+const MELODIC_DIRECTOR_KEYS = [
+  { id: "home-d", shift: 0, label: "D home" },
+  { id: "fourth-g", shift: 5, label: "G lift" },
+  { id: "fifth-a", shift: 7, label: "A answer" },
+  { id: "side-e", shift: 2, label: "E side" },
+  { id: "shadow-c", shift: -2, label: "C shadow" }
+];
+const MELODIC_DIRECTOR_KEY_ORDER = {
+  ambient: [0, 4, 1, 0, 2, 4],
+  lofi: [0, 3, 1, 0, 2, 3],
+  jazz: [0, 1, 2, 3, 1, 0],
+  funk: [0, 2, 3, 1, 2, 0],
+  dub: [0, 4, 0, 1, 4, 2],
+  techno: [0, 2, 0, 3, 2, 4],
+  trance: [0, 2, 3, 2, 1, 0]
+};
+const MELODIC_DIRECTOR_CONTOURS = [
+  { id: "call", shape: [0, 2, 0, 5, 3, 2, 0, -2] },
+  { id: "answer", shape: [4, 2, 0, -2, 0, 2, 5, 4] },
+  { id: "lift", shape: [0, 2, 3, 5, 7, 5, 3, 2] },
+  { id: "turn", shape: [0, -2, 0, 3, 2, -2, 0, 5] },
+  { id: "settle", shape: [2, 0, -2, 0, 2, 0, -3, 0] }
+];
+const MelodicDirectorState = {
+  phrase: 0,
+  phraseBars: 8,
+  lastTurnCycle: -1,
+  keyIndex: 0,
+  keyShift: 0,
+  keyLabel: "D home",
+  contourIndex: 0,
+  contour: "call",
+  contourDepth: 0.5,
+  chordTurn: 0
+};
+
+function noteNameToMidi(note) {
+  const match = String(note || "").match(/^([A-G][b#]?)(-?\d+)$/);
+  if (!match) return null;
+  const semi = NOTE_NAME_TO_SEMITONE[match[1]];
+  const octave = Number(match[2]);
+  if (semi == null || !Number.isFinite(octave)) return null;
+  return semi + octave * 12;
+}
+
+function midiToNoteName(midi) {
+  const safe = Math.round(Number(midi) || 0);
+  const semi = ((safe % 12) + 12) % 12;
+  return SEMITONE_TO_NOTE_NAME[semi] + Math.floor(safe / 12);
+}
+
+function transposeNoteName(note, semis = 0) {
+  const midi = noteNameToMidi(note);
+  if (midi == null) return note;
+  return midiToNoteName(midi + Math.round(Number(semis) || 0));
+}
+
+function melodicDirectorPhraseBars(mode = EngineParams.mode) {
+  if (mode === "ambient" || mode === "dub") return 16;
+  if (mode === "techno" || mode === "trance") return 8;
+  return 8;
+}
+
+function melodicDirectorContourSemis(step = stepIndex, offset = 0, note = "", options = {}) {
+  if (options.contour === false) return 0;
+  const contour = MELODIC_DIRECTOR_CONTOURS[MelodicDirectorState.contourIndex] || MELODIC_DIRECTOR_CONTOURS[0];
+  const shape = contour.shape || [0];
+  const shapeIndex = ((GrooveState.cycle + step + offset + MelodicDirectorState.phrase) % shape.length + shape.length) % shape.length;
+  const octave = Math.floor((noteNameToMidi(note) ?? 60) / 12);
+  const roleScale = options.role === "chord" ? 0 : octave <= 2 ? 0.32 : octave <= 3 ? 0.55 : 1;
+  return Math.round((shape[shapeIndex] || 0) * MelodicDirectorState.contourDepth * roleScale);
+}
+
+function melodicDirectorNote(note, step = stepIndex, offset = 0, options = {}) {
+  const midi = noteNameToMidi(note);
+  if (midi == null) return note;
+  const shift = MelodicDirectorState.keyShift + melodicDirectorContourSemis(step, offset, note, options);
+  return midiToNoteName(midi + shift);
+}
+
+function melodicDirectorChord(chord, offset = 0) {
+  if (!Array.isArray(chord)) return chord;
+  return chord.map((note) => melodicDirectorNote(note, stepIndex, offset, { role: "chord", contour: false }));
+}
+
+function advanceMelodicDirectorPhrase(context = {}) {
+  const phraseBars = melodicDirectorPhraseBars();
+  const phrase = Math.floor(GrooveState.cycle / Math.max(1, phraseBars));
+  if (phrase === MelodicDirectorState.phrase && MelodicDirectorState.lastTurnCycle >= 0) return;
+  const mode = EngineParams.mode || "ambient";
+  const order = MELODIC_DIRECTOR_KEY_ORDER[mode] || MELODIC_DIRECTOR_KEY_ORDER.ambient;
+  const energyNorm = context.energyNorm ?? clampValue(UCM_CUR.energy / 100, 0, 1);
+  const creationNorm = context.creationNorm ?? clampValue(UCM_CUR.creation / 100, 0, 1);
+  const observerNorm = context.observerNorm ?? clampValue(UCM_CUR.observer / 100, 0, 1);
+  const voidNorm = context.voidNorm ?? clampValue(UCM_CUR.void / 100, 0, 1);
+  const arcTurn = typeof LongformArcState !== "undefined" ? Math.floor((LongformArcState.turn || 0) * 2) : 0;
+  const keyIndex = order[(phrase + arcTurn + Math.floor(observerNorm * 2)) % order.length] || 0;
+  const contourIndex = (phrase + Math.floor(energyNorm * 3) + Math.floor(creationNorm * 2) + (voidNorm > 0.58 ? 4 : 0)) % MELODIC_DIRECTOR_CONTOURS.length;
+  const key = MELODIC_DIRECTOR_KEYS[keyIndex] || MELODIC_DIRECTOR_KEYS[0];
+  const contour = MELODIC_DIRECTOR_CONTOURS[contourIndex] || MELODIC_DIRECTOR_CONTOURS[0];
+  MelodicDirectorState.phrase = phrase;
+  MelodicDirectorState.phraseBars = phraseBars;
+  MelodicDirectorState.lastTurnCycle = GrooveState.cycle;
+  MelodicDirectorState.keyIndex = keyIndex;
+  MelodicDirectorState.keyShift = key.shift || 0;
+  MelodicDirectorState.keyLabel = key.label || key.id;
+  MelodicDirectorState.contourIndex = contourIndex;
+  MelodicDirectorState.contour = contour.id;
+  MelodicDirectorState.contourDepth = clampValue(0.32 + creationNorm * 0.28 + observerNorm * 0.18 + energyNorm * 0.1 - voidNorm * 0.12, 0.2, 0.82);
+  MelodicDirectorState.chordTurn = (phrase + keyIndex + contourIndex) % 4;
+  rememberMotif(melodicDirectorNote("D5", stepIndex, 0, { role: "voice" }), {
+    reply: melodicDirectorNote("F#5", stepIndex, 2, { role: "voice" }),
+    shade: melodicDirectorNote("D4", stepIndex, 1, { role: "voice" }),
+    strength: 0.08 + MelodicDirectorState.contourDepth * 0.08,
+    air: mode === "ambient" || mode === "dub" ? 0.12 : 0.05,
+    source: `melody:${key.id}:${contour.id}`
+  });
+}
+
+function melodicDirectorRuntimeState() {
+  return {
+    phrase: MelodicDirectorState.phrase,
+    phraseBars: MelodicDirectorState.phraseBars,
+    key: MelodicDirectorState.keyLabel,
+    keyShift: MelodicDirectorState.keyShift,
+    contour: MelodicDirectorState.contour,
+    contourDepth: MelodicDirectorState.contourDepth,
+    lastTurnCycle: MelodicDirectorState.lastTurnCycle
+  };
+}
 
 const GrooveState = {
   cycle: 0,
@@ -11137,16 +11308,18 @@ function advancePatternVariationBar() {
 
 function randomNoteFromScale() {
   const idx = Math.floor(Math.random() * currentScale.length);
-  return currentScale[idx];
+  return melodicDirectorNote(currentScale[idx], stepIndex, idx, { role: "scale" });
 }
 
 function randomChordForMode() {
   const chords = MODE_CHORDS[EngineParams.mode] || MODE_CHORDS.ambient;
-  return chords[Math.floor(Math.random() * chords.length)];
+  const idx = (MelodicDirectorState.phrase + MelodicDirectorState.chordTurn + Math.floor(Math.random() * chords.length)) % chords.length;
+  return melodicDirectorChord(chords[idx], idx);
 }
 
 function randomHazeChord() {
-  return HAZE_CHORDS[tonalRhymeIndex(stepIndex, Math.floor(Math.random() * HAZE_CHORDS.length)) % HAZE_CHORDS.length];
+  const idx = tonalRhymeIndex(stepIndex, MelodicDirectorState.chordTurn + Math.floor(Math.random() * HAZE_CHORDS.length), HAZE_CHORDS.length) % HAZE_CHORDS.length;
+  return melodicDirectorChord(HAZE_CHORDS[idx], idx);
 }
 
 function advanceGrooveStructure() {
@@ -11169,6 +11342,8 @@ function advanceGrooveStructure() {
   const fillChance = mapValue(density, 0, 1, 0.04, 0.30);
   const micShape = micFollowGrooveShape();
   const micJam = micJamShape();
+  advanceMelodicDirectorPhrase({ energyNorm, creationNorm, observerNorm, voidNorm });
+  syncMelodicDirectorBassRoot();
   advanceLongformArcPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceOrganicEcosystemPhrase({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceOddLogicDirectorPhrase();

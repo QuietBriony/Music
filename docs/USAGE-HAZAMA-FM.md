@@ -186,6 +186,13 @@ Drum Floor 側で `再生` を押すまで音は始まりません。
 9 フェーダー全部を直接いじって音を作れます。
 詳しくは [`USAGE-MUSIC-CORE-RIG.md`](USAGE-MUSIC-CORE-RIG.md) を参照.
 
+### Melodic Director
+
+v169 以降は、FM の短い旋律断片も 8〜16 bar phrase ごとに key / contour /
+chord turn が動きます。長く聴いて「同じ旋律に張り付く」時は、まず 16 bar ほど
+待って `window.MusicRuntimeState.melodicDirector` の `key` / `contour` が変わるか
+確認します。
+
 ---
 
 ## 追加機能 (v32 以降)

@@ -14,6 +14,7 @@ const files = [
   "presets/loader.js",
   "scripts/check-js.mjs",
   "scripts/check-band-room-logic.mjs",
+  "scripts/check-hazama-melody.mjs",
   "scripts/check-fm-route-badge.mjs"
 ];
 

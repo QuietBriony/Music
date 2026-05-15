@@ -50,6 +50,7 @@
 | Band Room source-derived AI part agents | ✅ 完了 | v166 | AI 再現の bass / guitar / vocal / chords が原曲 drum-frame と chord/section から自律 pattern を組み、bass/guitar 初期音色を electric sampler に寄せる |
 | Band Room default mix polish | ✅ 完了 | v167 | master headroom / stem EQ / vocal FX / AI bus default / presets を控えめに再調整し、標準状態で長く聴ける出音へ寄せる |
 | Band Room saved mix migration | ✅ 完了 | v168 | 旧 localStorage default slider だけを新 mix へ移行し、既存ブラウザでも v167 の出音が反映されるようにする |
+| Hazama FM melodic director | ✅ 完了 | v169 | 8〜16 bar phrase ごとに key center / contour / chord turn を動かし、固定断片の旋律反復を減らす |
 
 この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
 完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。
