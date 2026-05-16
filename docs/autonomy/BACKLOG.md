@@ -95,6 +95,17 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   `engine.js` の runtime recipe には未昇格。harvest / 試聴レビューで採否を決める
   taste 判断。`docs/cross-repo-listening-review-round.md` の枠で扱う。
 
+### BL-015 — check-hazama-melody.mjs の version hardcode を解消
+- priority : P2
+- repo     : Music
+- scope    : non-engine-code
+- agent    : either
+- human-gate: no
+- source   : v176 cycle で判明（2026-05-16）
+- detail   : `scripts/check-hazama-melody.mjs` が sw.js の VERSION を literal で assert
+  しており、cache bump 毎に check script の追従編集が要る。BL-011 で openclaw に施した
+  pattern 検出方式へ置換する。
+
 ## Icebox
 
 ### BL-008 — engine.js の部分モジュール化
@@ -150,3 +161,19 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - `integration-catalog.md` と `music-stack-integration-index.md` §3 を STACK-INDEX と整合。
   active repo の `openclaw` が両 catalog から欠落していたのを追加、`hazama` を music-stack
   repo ではなく external reference-only と明示、`namima-lab` / `test` を archived 明記。
+
+### BL-013 — drum-floor の出音改善（生音バリエーション + キック） ✅ 2026-05-16
+- repo: drum-floor / scope: runtime（要・試聴確認）
+- `src/audio-engine.js`: hit ごとの jitter PRNG（pitch ±2-3 cent / decay ±5-9% / level ±5%）
+  と velocity → 音色マッピングを追加し「生音差がない」を解消。kick（tight_band）は
+  peak level 0.86x・sub tail 短縮（decay 1.35→1.05x, 0.7x）・transient 後の sweeping
+  lowpass で「ポンポン / うるさい」を抑制。cache drum-floor-pwa-v3。
+- 出音の良否は試聴で人間が判定。ユーザー指摘ベースの改善。
+
+### BL-014 — Hazama FM の出音改善（funk voice timbres） ✅ 2026-05-16 (v176)
+- repo: Music / scope: runtime（要・試聴確認）
+- `audio/genre-flavor.js`: funk EP (Rhodes) の和音を flat block → per-note ロール
+  （8-22ms）+ voice ごと velocity ばらつきへ。funk clavi フィルタを velocity 追従に
+  （静的 cutoff で全ノート同一音色だったのを解消）。`buildFunkDefault` /
+  `buildFunkFromFrames` の両経路。engine.js 凍結のため genre-flavor.js で実装。
+  cache hazama-fm-v176 / `?v=fm-71`。出音の良否は試聴で人間が判定。

@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-05-16 — BL-013 / BL-014 出音改善（マルチエージェント並列）
+- agent     : Claude Code (Opus 4.7) — 親 1 + 並列サブエージェント 2
+- goal      : ユーザー指摘の出音課題を改善（drum-floor / Hazama FM）
+- repos     : drum-floor / Music
+- shipped   :
+  - drum-floor `src/audio-engine.js` — hit ごとの jitter（pitch / decay / level）+
+    velocity → 音色マッピングで「生音差がない」を解消、kick の boom / level を抑制
+    （cache drum-floor-pwa-v3）
+  - Music `audio/genre-flavor.js`（v176）— Hazama FM funk EP を per-note ロール +
+    voice ごと velocity ばらつきへ、funk clavi フィルタを velocity 追従に
+    （engine.js 凍結のため genre-flavor.js で実装）
+- stack-check: 15 PASS / 0 FAIL / 0 SKIP（audit.py 含め 0 BAD）
+- backlog   : BL-013 / BL-014 → Done。cycle 中に BL-015 を追記
+- next      : 出音の良否は要・試聴（人間）。BL-015、残りの human-gate 項目
+- blockers  : なし。出音は subjective — ユーザー試聴で「悪化」判定なら revert / 再調整
+- 備考      : sound 変更は stack-check では良否を判定できない。最終判断はユーザーの耳
+
 ## 2026-05-16 — BL-009 / BL-010 / BL-005 消化（マルチエージェント並列）
 - agent     : Claude Code (Opus 4.7) — 親 1 + 並列サブエージェント 3
 - goal      : BACKLOG の自律可能 item を 3 並列で消化（drum-floor / namima / Music docs）
