@@ -52,6 +52,18 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   残るは実車・BT 環境で車側 volume / track button にメディア音声として認識されるかの
   実機 validation。自律ランでは検証できない（人間が実機で確認）。
 
+### BL-016 — Band Room の実ドラム sample-kits を発見可能化（休眠の生音）
+- priority : P1
+- repo     : Music
+- scope    : non-engine-code
+- agent    : either
+- human-gate: yes
+- source   : dormant-asset 監査（2026-05-16）
+- detail   : `presets/sample-kits/{tabasco,unripe}/` に約 64MB の実スライス・ドラム音
+  （kick/snare/hat 等、曲別 6-8 variant）が commit 済みで `band-room.js` から load 可能
+  なのに、UI 既定が synth で発見導線が無く事実上休眠。ユーザーの「ちゃんとした生音ドラム」
+  要望に直結。既定化 or 明示的な kit 切替導線を付ける。どれを既定にするかは試聴 taste。
+
 ## P2
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
@@ -106,6 +118,44 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   しており、cache bump 毎に check script の追従編集が要る。BL-011 で openclaw に施した
   pattern 検出方式へ置換する。
 
+### BL-017 — 休眠 engine.js サブシステムを reactivate か削除か判定
+- priority : P2
+- repo     : Music
+- scope    : engine
+- agent    : codex
+- human-gate: yes
+- source   : dormant-asset 監査（2026-05-16）
+- detail   : engine.js に `enabled` 固定 false で起動経路の無いサブシステムが複数 —
+  `FocusModulationState`（40Hz AM、8062-8167行。BL-004 の 40Hz focus mode の実体で
+  「default OFF」でなく有効化 UI/ロジックが存在しない）、`AcidLockState`（564-570行）、
+  `MicFollowState`（750-767行。mic-follow groove は v139 で稼働、現在 off）。各々
+  「有効化経路を足して活用」か「デッドコード削除」かを判断。engine 凍結域・要承認・codex 向き。
+  BL-004 はこの item に統合。
+
+### BL-018 — 未配線の preset / reference JSON を wire か削除で整理
+- priority : P2
+- repo     : Music
+- scope    : non-engine-code
+- agent    : either
+- human-gate: no
+- source   : dormant-asset 監査（2026-05-16）
+- detail   : `presets/{ambient,dub,jazz,lofi,techno,trance}.json`（`loader.js` 未登録・
+  runtime 参照なし）、`presets/tabasco-analysis.json` / `unripe-analysis.json`（参照ゼロ）、
+  `references/apple-music-refs.json`（コメント参照のみ・runtime 未パース）。各々 wire して
+  活用するか、混乱の元として削除するか整理する。
+
+### BL-019 — archive repo (namima-lab / test) の harvest 素材を翻訳取り込み
+- priority : P2
+- repo     : namima, Music
+- scope    : cross-repo
+- agent    : either
+- human-gate: yes
+- source   : dormant-asset 監査（2026-05-16）
+- detail   : integration docs が harvest 指定しているのに未着手の素材 — namima-lab の
+  organic-pluck audio recipe（a-min v1-v3 の filter/reverb/pluck パラメータ）、test の
+  style archetype + interpolation math（Ambient/Lo-Fi/Goa/HardTechno の確率補間）。
+  blind copy せず 1 PR = 1 idea で target repo の言葉へ翻訳（repo-strategy Phase 3 準拠）。
+
 ## Icebox
 
 ### BL-008 — engine.js の部分モジュール化
@@ -118,6 +168,17 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - detail   : `AGENTS.md` hard rule で engine.js は原則凍結。実施するなら codex が
   明確な境界（`MusicRadioBrainState` 周辺など）で PR を立て、user 別承認必須。
   自律ランの対象外。長期の保守性課題として記録のみ。
+
+### BL-020 — 雑多な dormant の cleanup
+- priority : icebox
+- repo     : Music, drum-floor, namima
+- scope    : non-engine-code
+- agent    : either
+- human-gate: no
+- source   : dormant-asset 監査（2026-05-16）
+- detail   : 小粒の未活用物 — `engine.js` の `randomNoteFromScale()`（11563行・未呼び出し）、
+  drum-floor の空 `patches/` ディレクトリ（.gitkeep のみ）、namima `sketch.js` の v3/v4
+  "lab" variant（active 導線なし）。活用予定が無ければ削除、有るなら個別 BL 化。
 
 ---
 

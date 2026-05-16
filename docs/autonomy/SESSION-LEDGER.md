@@ -19,6 +19,22 @@
 
 ---
 
+## 2026-05-16 — dormant-asset 監査（マルチエージェント）
+- agent     : Claude Code (Opus 4.7) — 親 1 + 並列 Explore 3
+- goal      : 「存在するのに使われていない capability」を棚卸しし BACKLOG 化
+- repos     : Music / chill / drum-floor / namima / openclaw（+ archive 監査）
+- shipped   :
+  - dormant-asset 監査を 3 並列（Music runtime / sample 基盤 / sister+archive）
+  - 発見を BL-016〜BL-020 として BACKLOG 起票（優先度付き）
+  - 主要発見: `presets/sample-kits/` に 64MB の実ドラム音が休眠（BL-016 P1）、
+    engine.js に未起動サブシステム複数（FocusModulation / AcidLock / MicFollow、BL-017）、
+    未配線 preset/reference JSON（BL-018）、archive harvest 未着手（BL-019）
+- backlog   : BL-016〜BL-020 を追記。BL-004 は BL-017 に統合
+- next      : BL-016（実ドラム sample-kit 発見可能化）が P1
+- blockers  : なし
+- 別件      : v177 Hazama FM melody（和声 + humanize）は PR #130 open。engine.js 変更の
+  ため無人 merge せず、ユーザーの試聴レビュー待ち
+
 ## 2026-05-16 — BL-013 / BL-014 出音改善（マルチエージェント並列）
 - agent     : Claude Code (Opus 4.7) — 親 1 + 並列サブエージェント 2
 - goal      : ユーザー指摘の出音課題を改善（drum-floor / Hazama FM）
