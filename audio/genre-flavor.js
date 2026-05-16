@@ -2427,7 +2427,17 @@
           : conversation?.role === "comp-answer" ? 1.06
           : isBassConversation(conversation) ? 0.76
           : 1;
-        clavi.triggerAttackRelease(note, "32n", safeEventTime(time + grooveOffset), (0.45 + Math.random() * 0.15) * intensity * leadBoost * convoBoost);
+        const claviVel = (0.45 + Math.random() * 0.15) * intensity * leadBoost * convoBoost;
+        const claviTime = safeEventTime(time + grooveOffset);
+        // v71: clavi filter tracks velocity — hard hits bite brighter,
+        // soft hits stay round. Static cutoff made every note identical.
+        try {
+          const open = 1700 + clamp(claviVel, 0.05, 1) * 1500;
+          claviFilter.frequency.cancelScheduledValues(claviTime);
+          claviFilter.frequency.setValueAtTime(open, claviTime);
+          claviFilter.frequency.linearRampToValueAtTime(2100, claviTime + 0.09);
+        } catch (e) {}
+        clavi.triggerAttackRelease(note, "32n", claviTime, claviVel);
       }
       claviStep = (claviStep + 1) % 16;
     }, "16n"));
@@ -2454,13 +2464,21 @@
           const chord = transposeChord(rawChord, flavor && flavor.keyShift || 0);
           const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
           const convoBoost = isBassConversation(conversation) ? 0.76 : conversation?.role === "comp-lift" ? 1.08 : conversation?.role === "space" ? 0.62 : 1;
-          ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.35 * intensity * convoBoost);
+          // v71: roll the EP chord per-note (8-22 ms apart) and vary each
+          // voice's velocity, so the Rhodes lands like a played chord
+          // instead of a flat block. Matches the jazz comp / piano voices.
+          const baseVel = 0.33 * intensity * convoBoost;
+          chord.forEach((note, i) => {
+            const roll = i * (0.008 + Math.random() * 0.014);
+            const vel = clamp(baseVel * (0.88 + Math.random() * 0.24), 0.04, 0.7);
+            ep.triggerAttackRelease(note, "1m", safeEventTime(time + 0.012 + roll), vel);
+          });
         }
       }
       epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
     }, "1m"));
 
-    return { gain, synths: [clavi, claviFilter, ep, epRoom], scheduledIds: ids, source: "default+rotating-clavi+rotating-ep+groove-lock+key-shift" };
+    return { gain, synths: [clavi, claviFilter, ep, epRoom], scheduledIds: ids, source: "default+rotating-clavi+rolled-ep+groove-lock+key-shift" };
   }
 
   // When drum frames are present, render the frame rhythm AND keep the EP
@@ -2531,7 +2549,17 @@
           : conversation?.role === "comp-answer" ? 1.06
           : isBassConversation(conversation) ? 0.76
           : 1;
-        clavi.triggerAttackRelease(note, "32n", safeEventTime(time + grooveOffset + push), (0.22 + Math.random() * 0.08) * intensity * leadBoost * convoBoost);
+        const claviVel = (0.22 + Math.random() * 0.08) * intensity * leadBoost * convoBoost;
+        const claviTime = safeEventTime(time + grooveOffset + push);
+        // v71: velocity-tracked clavi filter — articulation follows touch
+        // instead of every note sharing one static cutoff.
+        try {
+          const open = 1950 + clamp(claviVel, 0.05, 1) * 1700;
+          claviFilter.frequency.cancelScheduledValues(claviTime);
+          claviFilter.frequency.setValueAtTime(open, claviTime);
+          claviFilter.frequency.linearRampToValueAtTime(2400, claviTime + 0.08);
+        } catch (e) {}
+        clavi.triggerAttackRelease(note, "32n", claviTime, claviVel);
       }
       claviStep = (claviStep + 1) % 16;
     }, "16n"));
@@ -2558,12 +2586,20 @@
         const chord = transposeChord(rawChord, flavor && flavor.keyShift || 0);
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
         const convoBoost = isBassConversation(conversation) ? 0.76 : conversation?.role === "comp-lift" ? 1.08 : conversation?.role === "space" ? 0.62 : 1;
-        ep.triggerAttackRelease(chord, "1m", safeEventTime(time + 0.012), 0.32 * intensity * convoBoost);
+        // v71: roll the EP chord per-note + per-voice velocity spread, so
+        // the Rhodes reads as a played chord against the live kit rather
+        // than a flat simultaneous block.
+        const baseVel = 0.30 * intensity * convoBoost;
+        chord.forEach((note, i) => {
+          const roll = i * (0.008 + Math.random() * 0.014);
+          const vel = clamp(baseVel * (0.88 + Math.random() * 0.24), 0.04, 0.7);
+          ep.triggerAttackRelease(note, "1m", safeEventTime(time + 0.012 + roll), vel);
+        });
       }
       epBarIdx = (epBarIdx + 1) % currentEpProgression.length;
     }, "1m"));
     drums.synths.push(clavi, claviFilter, ep, epRoom);
-    drums.source = "drum-frames+live-funk-kit+rotating-clavi+rotating-ep";
+    drums.source = "drum-frames+live-funk-kit+rotating-clavi+rolled-ep";
     return applyProductionGovernor(
       addSoloLayer(
         addTapeSaturation(

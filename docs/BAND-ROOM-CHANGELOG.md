@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v173 compact)
+# Band Room — Changelog (v65 → v176 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,19 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v176 compact — Hazama FM funk voice timbres enriched
+
+- `audio/genre-flavor.js fm-71`: Hazama FM の funk EP (Rhodes) を、和音を
+  一括同時発音する flat block から **per-note ロール (8-22ms ずらし) +
+  voice ごとの velocity ばらつき** に変更。jazz comp / piano voice と
+  同じ「弾いた和音」の質感に揃えた。`buildFunkDefault` と
+  `buildFunkFromFrames` の両経路。
+- funk clavi のフィルターを **velocity 追従** に変更。強打で bite が
+  明るく開き、弱打は丸く残る。これまでは静的 cutoff で全ノート同一音色
+  だった。全体音量は据え置き。
+- `fm.html` / `sw.js`: `audio/genre-flavor.js?v=fm-71` に cache bump。
+- `sw.js hazama-fm-v176`: `audio/genre-flavor.js?v=fm-71` を precache。
 
 ## v173 compact — Hazama FM conversation SYNC metadata
 
