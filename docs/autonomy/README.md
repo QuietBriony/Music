@@ -49,3 +49,6 @@
 
 `AUTONOMOUS-RUN.md` を開き、手順に従う（コピペ用プロンプトあり）。
 1 session = 「BACKLOG から取る → やる → stack-check → 記録 → 人間レビューへ」。
+
+Claude と Codex は同じプレイブックで回す。並走するときは `BACKLOG.md` の
+claim ルールに従う（item を取ったら `status: wip` 行を即 commit）。

@@ -19,6 +19,22 @@
 
 ---
 
+## 2026-05-16 — エンジンを Codex 共同開発対応に (v175)
+- agent     : Claude Code (Opus 4.7)
+- goal      : Codex CLI も同じエンジンで Claude と共同開発できるようにする
+- repos     : Music（docs のみ）
+- shipped   :
+  - `AUTONOMOUS-RUN.md`: 「Codex CLI で回す場合」on-ramp と
+    「共同開発（Claude + Codex 並走）」セクションを追加
+  - `BACKLOG.md`: `status` フィールドと「共同開発の claim ルール」を追加
+    （item の取り合い・shared file 衝突を防ぐ）
+  - `CODEX-HANDOFF.md`: 推奨ワークフローを engine 連動（AUTONOMOUS-RUN 準拠）へ更新
+  - `README.md`: claim ルールへの言及を追加
+- stack-check: 11 PASS / 0 FAIL / 0 SKIP（docs のみ・runtime 変化なし）
+- backlog   : 消化・追記なし（運用ルールの整備）
+- next      : Claude と Codex で repo を割って並走可能。BL-002 / BL-009〜011 など
+- blockers  : なし
+
 ## 2026-05-16 — Autonomous Development Engine 構築 (v174)
 - agent     : Claude Code (Opus 4.7) — 親 1 + Phase B 並列サブエージェント 4
 - goal      : music-stack を長期自律開発できる土台を作り、初回マルチエージェントラウンドで実証

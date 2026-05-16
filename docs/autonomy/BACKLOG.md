@@ -10,6 +10,19 @@
 - **追記**: 作業中に見つけた新タスクは末尾の優先度節に `BL-xxx` で追加。
 - **閉じる**: 完了したら item を `## Done` へ移し、`SESSION-LEDGER.md` に記録。
 
+## 共同開発の claim ルール（Claude / Codex 並走時）
+
+Claude と Codex が同時に回す前提。item の取り合いと shared file 衝突を防ぐ:
+
+1. **claim**: item を取ったら `status: wip — <agent> <date>` 行を item に足し、
+   その 1 行だけを即 commit + push（例: `docs(music): claim BL-009`）。
+2. 他エージェントは `git pull --ff-only` で claim を見てから別 item を取る。
+3. `status` 行が無い item は open。完了したら item を `## Done` へ move。
+4. 同じ repo / 同じファイルを 2 エージェントで触らない。repo 単位で割れば
+   並列で衝突しない（詳細は `docs/COLLAB-CLAUDE-AND-CODEX.md`）。
+5. このファイルと `SESSION-LEDGER.md` は作業前後に `git pull --ff-only`。
+   衝突したら両者の意図を残して rebase 解決。
+
 ## item スキーマ
 
 ```
@@ -19,6 +32,7 @@
 - scope    : docs | non-engine-code | runtime | engine | cross-repo | verify
 - agent    : claude | codex | either | human
 - human-gate: yes | no
+- status   : open | wip — <agent> <date> | done  （省略時は open）
 - source   : 出所
 - detail   : 説明（完了条件を含む）
 ```

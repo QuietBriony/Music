@@ -79,8 +79,29 @@ music-stack の自律ランを 1 回回して。起点は C:\workspace\github-in
 重い R&D は Codex に投げてよい（docs/CODEX-HANDOFF.md）。
 ```
 
-## Codex に投げる場合
+## Codex CLI で回す場合
 
-重い実装 R&D は `docs/CODEX-HANDOFF.md` 経由で Codex CLI へ。
-BACKLOG の `agent: codex` / `agent: either` item が候補。Codex も本プレイブックの
-2→6 を踏む。次タスクの正本は CODEX-HANDOFF ではなく **BACKLOG.md**。
+このプレイブックは Claude / Codex どちらでも同じ手順。Codex CLI の場合:
+
+1. `cd C:\workspace\github-inventory\music-stack\Music`
+2. `codex` を起動
+3. 上の「コピペ用プロンプト」をそのまま貼る（Codex もこの 1〜6 を踏む）
+4. claim ルール（下記）に従い BACKLOG の `agent: codex` / `agent: either` item を 1 つ取る
+5. 目安: 重い実装 R&D は Codex、UI/UX・統合・docs は Claude が得意
+
+Codex 固有の入口と並列開発の詳細は `docs/CODEX-HANDOFF.md` と
+`docs/COLLAB-CLAUDE-AND-CODEX.md`。次タスクの正本は **BACKLOG.md**。
+
+## 共同開発（Claude + Codex 並走）
+
+複数エージェントが同時に回す前提のルール:
+
+- **claim してから着手** — BACKLOG item に `status: wip — <agent> <date>` を足し、
+  その 1 行を即 commit + push。他エージェントは `git pull --ff-only` で見てから
+  別 item を取る（詳細は `BACKLOG.md` の claim ルール）。
+- **repo 単位で割る** — 同じ repo / 同じファイルを 2 エージェントで触らない。
+  write scope を分ければ並列で衝突しない。
+- **shared file** — `BACKLOG.md` / `SESSION-LEDGER.md` / `STACK-INDEX.md` は
+  作業前後に `git pull --ff-only`。衝突したら両者の意図を残して rebase 解決。
+- **engine bookkeeping は Music 起点で** — BACKLOG / LEDGER の更新は Music repo を
+  起点にしたセッションで行う（sister repo だけ開いた Codex は実装に専念）。

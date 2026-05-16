@@ -6,10 +6,13 @@
 ## 推奨ワークフロー
 
 1. `cd C:\workspace\github-inventory\music-stack\Music`
-2. `codex` (Codex CLI 起動。CLI version は環境で変わるので固定前提にしない)
-3. 新規 TASK E 以降を作って該当プロンプトを貼る。下の TASK A-D は履歴。
-4. Codex が完了したら手動レビュー → `git diff` で確認 → 問題なければ `git add ... && git commit && git push`
-5. 親 Claude (この session) に「Codex で X 完了、次は?」と伝えれば締めとレビューする
+2. `codex`（Codex CLI 起動。CLI version は環境で変わるので固定前提にしない）
+3. **`docs/autonomy/AUTONOMOUS-RUN.md` のプレイブックに従う** — STACK-INDEX /
+   SESSION-LEDGER / BACKLOG を読み、`agent: codex` / `agent: either` の item を 1 つ
+   claim（`status: wip` を即 commit）して回す。下の TASK A-D は履歴で再実行しない。
+4. 完了したら手動レビュー → `git diff` → `node scripts/stack-check.mjs` で 0 BAD → commit
+5. `BACKLOG.md`（item を Done へ）と `SESSION-LEDGER.md`（追記）を更新。親 Claude に
+   「Codex で X 完了、次は?」と伝えれば締めとレビューする
 
 ## 並列運用の目安
 
@@ -54,6 +57,7 @@
 | Hazama FM / Music Core Rig bassline director | ✅ 完了 | v170 | 4〜8 bar phrase ごとに bass gate / interval walk / human push を動かし、main synth / lofi / dub bass の固定 root loop を減らす |
 | Band Room PWA + screen-lock hardening | ✅ 完了 | v171 | 専用 manifest を追加し、screen lock / blur / freeze / pagehide で sampled instruments も含めて panic release |
 | music-stack 自律開発エンジン | ✅ 完了 | v174 | `docs/autonomy/` 5 文書 + `scripts/stack-check.mjs` + sister repo AGENTS.md ×4。次タスクの正本を `docs/autonomy/BACKLOG.md` へ集約 |
+| 自律開発エンジンを Codex 共同開発対応に | ✅ 完了 | v175 | AUTONOMOUS-RUN に Codex on-ramp + 共同開発セクション、BACKLOG に claim ルール / status フィールド、本 doc の workflow を engine 連動へ更新 |
 
 この文書の下部にあるプロンプト群は **archive** として残す。
 
