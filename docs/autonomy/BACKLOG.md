@@ -41,17 +41,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 
 ## P1
 
-### BL-002 — sister repo の logic 検証カバレッジを drum-floor 並みへ
-- priority : P1
-- repo     : chill, namima, openclaw
-- scope    : non-engine-code
-- agent    : either
-- human-gate: no
-- source   : stack-check 棚卸し（2026-05-16）
-- detail   : chill / namima / openclaw は現状 `check-pwa-static.mjs`（PWA shell の
-  静的検査）と adapter check のみで、ドメインロジックの自動検証が薄い。drum-floor の
-  `tests/` 相当の logic チェックを各 repo に 1〜数本足す。feature branch + PR。
-
 ### BL-003 — 実車 / Bluetooth で hidden audio bridge を実機検証
 - priority : P1
 - repo     : Music
@@ -168,3 +157,11 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   正規表現での pattern 検出（`${CACHE_PREFIX}-v<N>` 形）＋ 任意の `--expected-version`
   引数へ置換。cache bump 毎の check script lockstep 編集が不要に。
 - AUTONOMOUS-RUN.md プレイブックの初実走で消化（詳細は SESSION-LEDGER）。
+
+### BL-002 — sister repo の domain-logic 検証カバレッジ ✅ 2026-05-16
+- repo: chill, namima, openclaw / scope: non-engine-code
+- 3 並列エージェントで各 repo に domain-logic check を追加: chill `check-chill-logic.mjs`
+  （deterministic-preview 契約 / 公開 adapter / piano-recipe schema）、namima
+  `check-mood-profiles.mjs`（mood-profiles schema / family-safe 制約 / 翻訳 logic）、
+  openclaw `check-session-manifest.mjs`（session-manifest schema / 例 manifest / connector registry）。
+- stack-check は 11 → 14 check に拡張、0 BAD。

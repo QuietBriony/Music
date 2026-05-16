@@ -34,14 +34,19 @@
 
 ## 自律ランの安全上限
 
-人が逐一見ていない自律 session が、自分の判断で変更してよい範囲:
+自律 session が、自分の判断で変更してよい範囲:
 
-- ✅ docs / BACKLOG / SESSION-LEDGER の整備 — main 直 push 可
-- ✅ 非 engine コード（`fm.js` / `fm.css` / `presets` / 各 sister repo の runtime 以外）
-  — **feature branch + PR まで**。merge は人間
+- ✅ docs / BACKLOG / SESSION-LEDGER / 検証 script（`check-*` 等）— main 直 push
+- ✅ 非 engine の app コード（`fm.js` / `fm.css` / `presets` / 各 sister repo runtime）
+  — 実装し、**`stack-check` 0 BAD を確認のうえ merge・本番デプロイ（main push）まで自律実行**
 - ❌ `engine.js` / `index.html` / `style.css` — 対象外（要・人間 + 別 PR）
-- ❌ 無人 merge、GitHub Actions 追加、archive/delete/settings、dependency 追加、
+- ❌ GitHub Actions 追加、archive/delete/settings、dependency 追加、
   音源 / サンプル / 歌詞の追加
+- ⚠ `human-gate: yes` の item（実機 / 試聴が要る）はコードは出してよいが、
+  実環境での最終確認は人間
+
+> merge + 本番デプロイのデフォルト ON はプロジェクトオーナーの標準指示（2026-05-16〜）。
+> v174 初期設定の「merge は人間」を更新。`stack-check` 0 BAD が常に前提。
 
 詳細は各 repo の `AGENTS.md` と `AUTONOMOUS-RUN.md`。
 

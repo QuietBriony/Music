@@ -40,10 +40,11 @@ BACKLOG から、**この session で完了でき、`human-gate=no` または ga
 
 ## 4. 実行
 
-- docs / BACKLOG 整備 → main 直 push 可
-- 非 engine コード → `feature/<topic>` branch で作業し PR を立てる。**無人 merge しない**
+- docs / BACKLOG / 検証 script → main 直 push
+- 非 engine の app コード → 実装 → `stack-check` 0 BAD → merge・本番デプロイまで自律実行
+  （プロジェクトオーナー指示でデフォルト ON。2026-05-16〜）
 - cache buster を伴う UI 変更は、その repo の `AGENTS.md` の同期 bump 手順に従う
-- engine.js / index.html / style.css は触らない
+- engine.js / index.html / style.css は触らない（要・人間）
 
 ## 5. 検証
 
@@ -58,7 +59,7 @@ node scripts/stack-check.mjs            # → "0 BAD"
 - `BACKLOG.md`: 消化した item を `## Done` へ、発見した新タスクを追記
 - `SESSION-LEDGER.md`: 新エントリを先頭に追記（形式は同ファイル参照）
 - Music の runtime を変えたら version を bump（`AGENTS.md` の cache buster discipline）
-- commit（1 機能 1 commit、既存 message スタイル）→ docs は push / コードは PR
+- commit（1 機能 1 commit、既存 message スタイル）→ `stack-check` 0 BAD を確認して push（本番デプロイ）
 - 人間へ: 何を出したか + 次の推奨 BACKLOG item を簡潔報告
 
 ## コピペ用プロンプト
@@ -72,7 +73,7 @@ music-stack の自律ランを 1 回回して。起点は C:\workspace\github-in
 1. STACK-INDEX / SESSION-LEDGER 最新 / BACKLOG / 対象 repo の AGENTS.md を読む
 2. node scripts/stack-check.mjs で 0 BAD を確認
 3. BACKLOG 最上位で、この session で完了できる human-gate=no の item を選ぶ
-4. 安全上限内で実行（engine.js 不可 / 無人 merge 不可 / 非 engine は branch+PR）
+4. 安全上限内で実行（engine.js 不可 / 非 engine は stack-check 0 BAD 後 merge・本番デプロイまで）
 5. stack-check で 0 BAD を再確認
 6. BACKLOG と SESSION-LEDGER を更新、commit、人間へ報告
 

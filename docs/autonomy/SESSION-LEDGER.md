@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-05-16 — BL-002 消化: sister repo domain-logic check（マルチエージェント）
+- agent     : Claude Code (Opus 4.7) — 親 1 + 並列サブエージェント 3
+- goal      : chill / namima / openclaw に domain-logic 検証を追加（BL-002）
+- repos     : chill / namima / openclaw（各 check script）/ Music（BACKLOG・LEDGER・autonomy policy）
+- shipped   :
+  - chill `scripts/check-chill-logic.mjs` — deterministic-preview 契約 / 公開 adapter /
+    piano-recipe schema（~30 assertion）
+  - namima `scripts/check-mood-profiles.mjs` — mood-profiles schema / family-safe 制約 /
+    翻訳 round-trip（181 assertion）
+  - openclaw `scripts/check-session-manifest.mjs` — session-manifest schema / 例 manifest /
+    connector registry（446 assertion）
+  - autonomy 安全上限を更新: merge + 本番デプロイをデフォルト ON（owner 標準指示）
+- stack-check: 14 PASS / 0 FAIL / 0 SKIP（11 → 14 check に拡張）
+- backlog   : BL-002 消化 → Done
+- next      : BL-009（drum-floor JS check）/ BL-010（namima cache 二重管理）/ BL-005
+- blockers  : なし
+
 ## 2026-05-16 — AUTONOMOUS-RUN 初実走: BL-011 消化
 - agent     : Claude Code (Opus 4.7) — AUTONOMOUS-RUN.md プレイブックの実走デモ
 - goal      : 自律ランプレイブックを 1 サイクル実走し、エンジンの動作を実証
