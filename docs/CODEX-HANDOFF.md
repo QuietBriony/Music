@@ -53,9 +53,13 @@
 | Hazama FM melodic director | ✅ 完了 | v169 | 8〜16 bar phrase ごとに key center / contour / chord turn を動かし、固定断片の旋律反復を減らす |
 | Hazama FM / Music Core Rig bassline director | ✅ 完了 | v170 | 4〜8 bar phrase ごとに bass gate / interval walk / human push を動かし、main synth / lofi / dub bass の固定 root loop を減らす |
 | Band Room PWA + screen-lock hardening | ✅ 完了 | v171 | 専用 manifest を追加し、screen lock / blur / freeze / pagehide で sampled instruments も含めて panic release |
+| music-stack 自律開発エンジン | ✅ 完了 | v174 | `docs/autonomy/` 5 文書 + `scripts/stack-check.mjs` + sister repo AGENTS.md ×4。次タスクの正本を `docs/autonomy/BACKLOG.md` へ集約 |
 
-この文書の下部にあるプロンプト群は **archive** として残す。次に自走する場合は、
-完了済み TASK A-D を再実行せず、新規 TASK E 以降として追加する。
+この文書の下部にあるプロンプト群は **archive** として残す。
+
+**次タスクの正本は `docs/autonomy/BACKLOG.md`**（2026-05-16 v174 で集約）。
+Codex も `docs/autonomy/AUTONOMOUS-RUN.md` のプレイブックに従い、BACKLOG の
+`agent: codex` / `agent: either` item を取る。完了済み TASK A-D は再実行しない。
 
 ---
 

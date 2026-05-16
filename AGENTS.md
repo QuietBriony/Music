@@ -7,6 +7,19 @@ Hazama FM と Music Core Rig を壊さずに磨くための最低契約事項。
 
 ---
 
+## Autonomous development engine
+
+music-stack 全体の自走開発は `docs/autonomy/` のエンジンで運用する。
+新しい session は **まず [docs/autonomy/STACK-INDEX.md](docs/autonomy/STACK-INDEX.md)** を読む。
+
+- 作業フロー: [docs/autonomy/AUTONOMOUS-RUN.md](docs/autonomy/AUTONOMOUS-RUN.md)
+- 作業待ち行列（次にやること）: [docs/autonomy/BACKLOG.md](docs/autonomy/BACKLOG.md)
+- セッション記録: [docs/autonomy/SESSION-LEDGER.md](docs/autonomy/SESSION-LEDGER.md)
+- 5 repo 一括検証: `node scripts/stack-check.mjs` — 各 repo の既存チェックを集約。
+  **`0 BAD` が commit の前提**（下記 Integrity gate の単一入口）。
+
+---
+
 ## Hard rules (絶対守る)
 
 1. **`engine.js` は原則改変禁止**。12k 行のライブランタイム。

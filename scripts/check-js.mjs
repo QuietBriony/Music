@@ -15,7 +15,8 @@ const files = [
   "scripts/check-js.mjs",
   "scripts/check-band-room-logic.mjs",
   "scripts/check-hazama-melody.mjs",
-  "scripts/check-fm-route-badge.mjs"
+  "scripts/check-fm-route-badge.mjs",
+  "scripts/stack-check.mjs"
 ];
 
 let bad = 0;
