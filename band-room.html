@@ -23,9 +23,16 @@
 <!-- Tier1 #3: @tonejs/midi for MIDI loop import → drum-frames events conversion -->
 <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.min.js" defer></script>
 <script src="band-room.js?v=br-86" defer></script>
+<style>
+  .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(255,210,210,.28);border-radius:999px;background:rgba(26,10,20,.48);color:rgba(255,236,238,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
+  .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
+  .share-link-status{position:fixed;top:calc(94px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;max-width:min(320px,calc(100vw - 20px));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid rgba(255,210,210,.18);border-radius:999px;background:rgba(26,10,20,.68);color:rgba(255,236,238,.72);font:10px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;padding:7px 9px;backdrop-filter:blur(8px)}
+</style>
 </head>
 
 <body data-page="band-room">
+  <button class="share-link-button" type="button" data-share-link aria-label="Share or copy this page URL">URL</button>
+  <span class="share-link-status" data-share-link-status hidden></span>
 
   <header id="br-header">
     <h1>BAND ROOM</h1>
@@ -520,6 +527,45 @@
     </footer>
 
   </main>
+
+  <script>
+    (() => {
+      const button = document.querySelector("[data-share-link]");
+      const status = document.querySelector("[data-share-link-status]");
+      if (!button) return;
+      const label = button.textContent;
+      const showUrl = (url) => {
+        button.title = url;
+        if (status) {
+          status.hidden = false;
+          status.textContent = url;
+        }
+      };
+      const copyUrl = async (url) => {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(url);
+          return true;
+        }
+        return false;
+      };
+      button.addEventListener("click", async () => {
+        const url = window.location.href;
+        showUrl(url);
+        try {
+          if (navigator.share) await navigator.share({ title: document.title || "Band Room", url });
+          else if (!(await copyUrl(url))) window.prompt("Copy URL", url);
+          button.textContent = "copied";
+        } catch (error) {
+          if (error?.name !== "AbortError") window.prompt("Copy URL", url);
+        }
+        window.clearTimeout(button._shareLinkTimer);
+        button._shareLinkTimer = window.setTimeout(() => {
+          button.textContent = label;
+          if (status) status.hidden = true;
+        }, 4200);
+      });
+    })();
+  </script>
 
   <script>
     // v84: Service Worker registration with non-disruptive update banner.
