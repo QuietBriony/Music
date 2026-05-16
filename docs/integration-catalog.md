@@ -77,7 +77,16 @@ Supporting / historical docs:
 - Do not dilute: do not flatten chill into generic ambient, and do not make
   PULSE or drums the main identity.
 
-### namima-lab
+### openclaw
+
+- Role: active music-stack control desk / session planner and mission-board /
+  review-queue surface.
+- Edge: repo harvest desk, recommended-destination hub, promotion tracking, and
+  metadata-only review surface for Music session packets.
+- Do not dilute: OpenClaw tracks what should happen next, but must not
+  auto-promote, auto-merge, or auto-start any sister repo runtime.
+
+### namima-lab (archived)
 
 - Role: lineage / staging / harvest-only source.
 - Edge: historical namima experiments, ripple interaction ideas, organic pluck
@@ -85,16 +94,17 @@ Supporting / historical docs:
 - Do not dilute: do not revive as the active runtime, merge directly into
   Music, or use as a dependency-heavy experiment lane without separate approval.
 
-### test
+### test (archived)
 
 - Role: archive candidate and harvest-only source unless intentionally
   reactivated.
 - Edge: small style blend and probability/interpolation ideas.
 - Do not dilute: do not treat as a primary runtime or add assets/dependencies.
 
-### hazama
+### hazama (external reference, not a music-stack repo)
 
-- Role: world / game / story / visual reference-only.
+- Role: world / game / story / visual reference-only; outside the music-stack
+  repo cluster.
 - Edge: atmosphere, navigation, liminal world feel, and non-music operations
   reference.
 - Do not dilute: do not pull hazama into Music runtime, dependency, or migration

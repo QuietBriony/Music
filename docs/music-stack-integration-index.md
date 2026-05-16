@@ -83,7 +83,15 @@ Supporting strategy docs:
 - **Boundary:** do not flatten into generic ambient, make PULSE the main
   identity, or let Music SYNC auto-start playback.
 
-### namima-lab
+### openclaw
+
+- **Role:** active music-stack control desk / session planner.
+- **Direction:** repo harvest desk, recommended-destination hub, mission-board
+  and review-queue surface for Music session packets.
+- **Boundary:** track next steps as metadata only; do not auto-promote,
+  auto-merge, or auto-start any sister repo runtime.
+
+### namima-lab (archived)
 
 - **Role:** lineage / staging / harvest-only source.
 - **Direction:** historical namima experiments, ripple interaction, organic
@@ -91,15 +99,16 @@ Supporting strategy docs:
 - **Boundary:** do not revive as active runtime or merge directly into Music
   without separate approval.
 
-### test
+### test (archived)
 
 - **Role:** archive candidate / harvest-only source.
 - **Direction:** style blend, probability / interpolation ideas.
 - **Boundary:** do not treat as primary runtime or add assets/dependencies.
 
-### hazama
+### hazama (external reference, not a music-stack repo)
 
-- **Role:** world / game / story / visual reference-only.
+- **Role:** world / game / story / visual reference-only; outside the
+  music-stack repo cluster.
 - **Direction:** atmosphere, navigation, liminal world feel.
 - **Boundary:** do not make it a Music runtime, dependency, or migration target.
 
