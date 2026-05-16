@@ -19,6 +19,21 @@
 
 ---
 
+## 2026-05-16 — AUTONOMOUS-RUN 初実走: BL-011 消化
+- agent     : Claude Code (Opus 4.7) — AUTONOMOUS-RUN.md プレイブックの実走デモ
+- goal      : 自律ランプレイブックを 1 サイクル実走し、エンジンの動作を実証
+- repos     : openclaw（check script）/ Music（BACKLOG・LEDGER）
+- shipped   :
+  - openclaw `scripts/check-pwa-static.mjs`: sw.js VERSION のハードコード assert
+    （`v3` 固定）を正規表現での pattern 検出 + 任意 `--expected-version` 引数へ置換。
+    cache bump 毎の check script lockstep 編集が不要に
+- stack-check: 11 PASS / 0 FAIL / 0 SKIP
+- backlog   : BL-011 消化 → Done。BL-002（P1, sister repo logic check ×3）は
+  複数 repo 並列タスクのため次サイクルへ送り
+- next      : BL-002 を Claude + Codex 並列で / BL-009・BL-010
+- blockers  : なし。check script は verification 基盤のため main 直扱い
+  （runtime / app コードは従来どおり branch + PR）
+
 ## 2026-05-16 — エンジンを Codex 共同開発対応に (v175)
 - agent     : Claude Code (Opus 4.7)
 - goal      : Codex CLI も同じエンジンで Claude と共同開発できるようにする

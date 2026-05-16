@@ -127,17 +127,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   2 系統を別々に bump する必要があり drift しやすい。単一化、または両者の整合を
   `check-pwa-static.mjs` で assert する。
 
-### BL-011 — openclaw check-pwa-static.mjs の expected version を引数化
-- priority : P2
-- repo     : openclaw
-- scope    : non-engine-code
-- agent    : either
-- human-gate: no
-- source   : Phase B sister-repo 棚卸し（2026-05-16）
-- detail   : openclaw の `check-pwa-static.mjs` は sw.js の `VERSION` を literal で
-  pin assert しており、cache bump の度に check script 側の編集が要る。Music の
-  `audit.py --expected-version` 方式に寄せ、CLI 引数 or env で受ける。
-
 ### BL-012 — chill の harvest reference を runtime recipe へ昇格検討
 - priority : P2
 - repo     : chill
@@ -172,3 +161,10 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   drum-floor は pytest が collection error（`drum_floor` 未 import）だったため
   `conftest.py` で repo root を sys.path へ追加し修復。stack-check 0 BAD 達成。
 - 詳細は `SESSION-LEDGER.md` 2026-05-16 エントリ。
+
+### BL-011 — openclaw check-pwa-static.mjs の version 引数化 ✅ 2026-05-16
+- repo: openclaw / scope: non-engine-code
+- `check-pwa-static.mjs` の sw.js VERSION ハードコード assert（`v3` 固定）を、
+  正規表現での pattern 検出（`${CACHE_PREFIX}-v<N>` 形）＋ 任意の `--expected-version`
+  引数へ置換。cache bump 毎の check script lockstep 編集が不要に。
+- AUTONOMOUS-RUN.md プレイブックの初実走で消化（詳細は SESSION-LEDGER）。
