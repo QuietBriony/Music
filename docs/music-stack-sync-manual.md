@@ -41,7 +41,7 @@ dependency、workflow は取り込みません。実装する場合も、対象r
   を `drum-floor / namima / chill / openclaw` の行き先へ要約したものです。
 - 同じ `quietbriony.github.io` 上で開いた `drum-floor`、`namima`、`chill`、`OpenClaw Desk` が最新packetを読みます。
 - `MIC` がONなら `performance_state.mic_follow` に `gesture / drive / pulse / hum / air / bpm_lock` などのmetadataだけが入り、各repoはそれを反応のヒントとして扱います。
-- Hazama FM から `SYNC` した場合は `performance_state.hazama_fm` に `genre / source / role / edge / feedback_hint / engine_translation / listening_trace / review_cue` が入り、FMで聴こえているジャンル文脈、Music 本体側の bus mix 翻訳、聴いていたジャンル滞在/切替履歴、次に聴くべき review cue を他repoが解釈できます。
+- Hazama FM から `SYNC` した場合は `performance_state.hazama_fm` に `genre / source / role / edge / feedback_hint / engine_translation / listening_trace / conversation / review_cue` が入り、FMで聴こえているジャンル文脈、Music 本体側の bus mix 翻訳、聴いていたジャンル滞在/切替履歴、v172の8小節会話役割、次に聴くべき review cue を他repoが解釈できます。
 - Hazama FM の `review_cue` は `routing.openclaw.next_action.fm_review_cue` にも入り、`techno balance`、`piano foreground`、`safe ambient` などの短い次タスク名として残ります。これは metadata-only の人間レビュー用ヒントで、自動PRや自動mergeではありません。
 - packetには `Musicで削る`、`chillで聴く`、`drum-floorで押す`、`namimaで空気に逃がす`、`Deskで見る` の推奨行き先が入ります。
 - 受け側は preview controls や mood を合わせます。

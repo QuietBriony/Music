@@ -93,6 +93,17 @@
         "storage_key": "music:fm:listening-trace:v1",
         "review_only": true
         },
+        "conversation": {
+          "version": 1,
+          "bar": 5,
+          "role": "lead-call",
+          "motif": "neighbor",
+          "transform": "expand",
+          "densityBias": 0.66,
+          "restGate": 0.18,
+          "metadata_only": true,
+          "review_only": true
+        },
         "review_cue": {
           "schema": "hazama-fm-review-cue.v1",
           "active_genre": "piano",

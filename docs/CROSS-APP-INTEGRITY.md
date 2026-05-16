@@ -117,9 +117,9 @@ catalog 1 ファイル編集だけで 3 app 全部の音色候補が同期する
 
 | app | latest cache marker | sw VERSION |
 |-----|---------------------|------------|
-| Band Room | `band-room.css?v=br-73` / `band-room.js?v=br-86` | hazama-fm-v172 |
-| Hazama FM | `engine.js?v=fm-84` / `fm.css?v=fm-50` / `fm.js?v=fm-64` / `audio/genre-flavor.js?v=fm-70` | 同上 |
-| Music Core Rig | `engine.js?v=fm-84` / `style.css?v=fm-28` | 同上 |
+| Band Room | `band-room.css?v=br-73` / `band-room.js?v=br-86` | hazama-fm-v173 |
+| Hazama FM | `engine.js?v=fm-85` / `fm.css?v=fm-50` / `fm.js?v=fm-64` / `audio/genre-flavor.js?v=fm-70` | 同上 |
+| Music Core Rig | `engine.js?v=fm-85` / `style.css?v=fm-28` | 同上 |
 
 `sw.js` の VERSION は **3 app 共通** で `hazama-fm-vNN`。ここを bump すると 3 app 全部のキャッシュが invalidate される。
 

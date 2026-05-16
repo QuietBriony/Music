@@ -5409,6 +5409,12 @@ function hazamaFmFlavorPacketState() {
   } catch (error) {
     listeningTrace = null;
   }
+  let conversation = null;
+  try {
+    conversation = hazamaFmConversationPacketState(window.HazamaFlavorState?.conversation);
+  } catch (error) {
+    conversation = null;
+  }
   const draftState = {
     available: true,
     active: !!state.started,
@@ -5427,14 +5433,44 @@ function hazamaFmFlavorPacketState() {
           piano_memory_db: engineMix.pianoMemoryDb,
           reverb_wet: engineMix.reverbWet,
           delay_wet: engineMix.delayWet
-        }
+      }
       : null,
     listening_trace: listeningTrace,
+    conversation,
     integration_mode: "metadata-only",
     review_only: true
   };
   draftState.review_cue = hazamaFmReviewCue(draftState);
   return draftState;
+}
+
+function hazamaFmConversationPacketState(conversation) {
+  if (!conversation || typeof conversation !== "object") return null;
+  const role = String(conversation.role || "");
+  const motif = String(conversation.motif || "");
+  const allowedRoles = new Set([
+    "bass-call",
+    "comp-answer",
+    "drum-comment",
+    "space",
+    "lead-call",
+    "bass-answer",
+    "comp-lift",
+    "recap"
+  ]);
+  const allowedMotifs = new Set(["up-third", "fall-fourth", "neighbor", "octave-skip"]);
+  if (!allowedRoles.has(role)) return null;
+  return {
+    version: Number(conversation.version) || 1,
+    bar: Math.max(0, Math.round(Number(conversation.bar) || 0)),
+    role,
+    motif: allowedMotifs.has(motif) ? motif : "neighbor",
+    transform: String(conversation.transform || "as-is").slice(0, 32),
+    densityBias: packetUnit(conversation.densityBias),
+    restGate: packetUnit(conversation.restGate),
+    metadata_only: true,
+    review_only: true
+  };
 }
 
 function buildMusicSessionPacket(options = {}) {

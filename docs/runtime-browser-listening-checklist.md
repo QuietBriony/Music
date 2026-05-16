@@ -195,6 +195,9 @@ Techno expected:
 - After `SYNC`, `performance_state.hazama_fm.review_cue.short_label` is
   `techno balance`, and `routing.openclaw.next_action.fm_review_cue` carries
   the same metadata-only cue.
+- After `SYNC`, `performance_state.hazama_fm.conversation.role` is one of
+  `bass-call`, `comp-answer`, `drum-comment`, `space`, `lead-call`,
+  `bass-answer`, `comp-lift`, or `recap`.
 - The visible `SYNC` status includes the cue, for example
   `saved techno 12s -> techno balance`.
 
@@ -267,6 +270,9 @@ SYNC metadata sanity:
 - `performance_state.hazama_fm.review_cue` and
   `routing.openclaw.next_action.fm_review_cue` are metadata-only objects with
   `human_review_required: true`.
+- `performance_state.hazama_fm.conversation` is metadata-only and contains only
+  abstract role/motif/rest/density data, not a melody, chord progression, or
+  audio reference.
 - The packet gives other stack repos a role/edge/feedback hint, but does not
   auto-start, record, import samples, open MIDI, or merge anything.
 

@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v172 compact)
+# Band Room — Changelog (v65 → v173 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,16 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v173 compact — Hazama FM conversation SYNC metadata
+
+- `engine.js fm-85`: Hazama FM v172 の
+  `window.HazamaFlavorState.conversation` を
+  `performance_state.hazama_fm.conversation` に metadata-only で載せる。
+  内容は 8小節会話の `role` / `motif` / `transform` / `densityBias` /
+  `restGate` だけで、旋律、コード進行、音声、サンプルは含めない。
+- `docs/schema/music-session-packet.schema.json` と example packet を同期。
+- `sw.js hazama-fm-v173`: `engine.js?v=fm-85` を precache。
 
 ## v172 compact — Hazama FM groove conversation
 

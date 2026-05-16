@@ -265,6 +265,39 @@
                 "review_only": { "const": true }
               }
             },
+            "conversation": {
+              "type": ["object", "null"],
+              "additionalProperties": false,
+              "properties": {
+                "version": { "type": "number" },
+                "bar": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "bass-call",
+                    "comp-answer",
+                    "drum-comment",
+                    "space",
+                    "lead-call",
+                    "bass-answer",
+                    "comp-lift",
+                    "recap"
+                  ]
+                },
+                "motif": {
+                  "type": "string",
+                  "enum": ["up-third", "fall-fourth", "neighbor", "octave-skip"]
+                },
+                "transform": { "type": "string" },
+                "densityBias": { "$ref": "#/definitions/unitInterval" },
+                "restGate": { "$ref": "#/definitions/unitInterval" },
+                "metadata_only": { "const": true },
+                "review_only": { "const": true }
+              }
+            },
             "review_cue": { "$ref": "#/definitions/hazamaFmReviewCue" },
             "integration_mode": { "const": "metadata-only" },
             "review_only": { "const": true }
