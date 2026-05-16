@@ -64,16 +64,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - detail   : 40Hz focus mode（default OFF / 8% AM）が耳で違和感を出すか A/B。
   強く感じる場合は depth を 8%→5% に落とす。実装は自律ラン可、最終判断は試聴。
 
-### BL-005 — integration-index §7 の docs-only boundary PR 群を消化
-- priority : P2
-- repo     : Music
-- scope    : docs
-- agent    : either
-- human-gate: no
-- source   : docs/music-stack-integration-index.md §7
-- detail   : chill / test / namima-lab の現行境界 docs（quiet-piano-trio /
-  style-blend / safe-ripple-lineage decision）を catalog と整合させる docs-only PR。
-
 ### BL-006 — cross-repo listening review round
 - priority : P2
 - repo     : stack
@@ -93,28 +83,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - source   : 本エンジン構築（2026-05-16）
 - detail   : `scripts/stack-check.mjs` に、pytest 未導入時の WARN 集計や
   GitHub Pages deploy 後の 200 応答チェックを足すか検討。過剰にしない。
-
-### BL-009 — drum-floor に JS-side の静的 contract check を追加
-- priority : P2
-- repo     : drum-floor
-- scope    : non-engine-code
-- agent    : either
-- human-gate: no
-- source   : Phase B sister-repo 棚卸し（2026-05-16）
-- detail   : drum-floor の commit gate は `python -m pytest tests/` のみで、JS web UI
-  （`app.js` / `src/*.js` / `sw.js` cache 同期）は `test_pwa_static_contract.py` 1 本でしか
-  見ていない。chill/namima/openclaw 同様の `node scripts/check-*.mjs` を 1 本足す。
-
-### BL-010 — namima sw.js の cache version 二重管理を解消
-- priority : P2
-- repo     : namima
-- scope    : non-engine-code
-- agent    : either
-- human-gate: no
-- source   : Phase B sister-repo 棚卸し（2026-05-16）
-- detail   : namima/sw.js は `VERSION`（`namima-pwa-v3`）と asset query `?v=stack-3` の
-  2 系統を別々に bump する必要があり drift しやすい。単一化、または両者の整合を
-  `check-pwa-static.mjs` で assert する。
 
 ### BL-012 — chill の harvest reference を runtime recipe へ昇格検討
 - priority : P2
@@ -165,3 +133,20 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   `check-mood-profiles.mjs`（mood-profiles schema / family-safe 制約 / 翻訳 logic）、
   openclaw `check-session-manifest.mjs`（session-manifest schema / 例 manifest / connector registry）。
 - stack-check は 11 → 14 check に拡張、0 BAD。
+
+### BL-009 — drum-floor JS-side domain-logic check ✅ 2026-05-16
+- repo: drum-floor / scope: non-engine-code
+- `scripts/check-music-sync-safety.mjs` を追加（~55 assertion）。SYNC 安全不変条件
+  （auto-start / arm / MIDI を絶対にしない）、translation contract の clamp / 既知 id、
+  groove-engine の決定性（同 seed → byte-identical bar）、`sanitizeControls` の boolean 強制を検証。
+
+### BL-010 — namima sw.js cache version 二重管理を解消 ✅ 2026-05-16
+- repo: namima / scope: non-engine-code
+- `check-pwa-static.mjs` に sw.js の `VERSION`（`namima-pwa-vN`）と asset cache-buster
+  （`?v=stack-M`）の数値一致 assert を追加。drift を gate で検出（sw.js は無改変）。
+
+### BL-005 — integration 境界 docs の整合 ✅ 2026-05-16
+- repo: Music / scope: docs
+- `integration-catalog.md` と `music-stack-integration-index.md` §3 を STACK-INDEX と整合。
+  active repo の `openclaw` が両 catalog から欠落していたのを追加、`hazama` を music-stack
+  repo ではなく external reference-only と明示、`namima-lab` / `test` を archived 明記。

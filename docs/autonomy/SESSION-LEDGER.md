@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-05-16 — BL-009 / BL-010 / BL-005 消化（マルチエージェント並列）
+- agent     : Claude Code (Opus 4.7) — 親 1 + 並列サブエージェント 3
+- goal      : BACKLOG の自律可能 item を 3 並列で消化（drum-floor / namima / Music docs）
+- repos     : drum-floor / namima / Music
+- shipped   :
+  - drum-floor `scripts/check-music-sync-safety.mjs` — JS-side domain-logic check
+    （SYNC 安全不変条件 / translation clamp / groove-engine 決定性、~55 assertion）
+  - namima `scripts/check-pwa-static.mjs` — sw.js の `VERSION` と `?v=stack-N` の
+    数値一致 assert を追加（cache 二重管理 drift を gate で検出）
+  - Music `integration-catalog.md` / `music-stack-integration-index.md` — 境界 docs を
+    STACK-INDEX と整合（openclaw 欠落を追加、hazama を external 明示）
+- stack-check: 15 PASS / 0 FAIL / 0 SKIP（14 → 15 check に拡張）
+- backlog   : BL-009 / BL-010 / BL-005 消化 → Done
+- next      : 自律可能な P2 は概ね消化。残りは human-gate（BL-003 実機 / BL-004 試聴 /
+  BL-006 listening review / BL-012 chill harvest）、BL-007（検討）、BL-008（icebox）
+- blockers  : なし
+
 ## 2026-05-16 — BL-002 消化: sister repo domain-logic check（マルチエージェント）
 - agent     : Claude Code (Opus 4.7) — 親 1 + 並列サブエージェント 3
 - goal      : chill / namima / openclaw に domain-logic 検証を追加（BL-002）
