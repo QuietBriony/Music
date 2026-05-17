@@ -11372,11 +11372,6 @@ function advancePatternVariationBar() {
   }
 }
 
-function randomNoteFromScale() {
-  const idx = Math.floor(Math.random() * currentScale.length);
-  return melodicDirectorNote(currentScale[idx], stepIndex, idx, { role: "scale" });
-}
-
 function randomChordForMode() {
   const chords = MODE_CHORDS[EngineParams.mode] || MODE_CHORDS.ambient;
   const idx = (MelodicDirectorState.phrase + MelodicDirectorState.chordTurn + Math.floor(Math.random() * chords.length)) % chords.length;

@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v180 compact)
+# Band Room — Changelog (v65 → v181 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,17 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v181 compact — engine dormant audit cleanup
+
+- `engine.js fm-89`: BL-017 audit pass。`randomNoteFromScale()` は未参照の
+  legacy helper と確認できたため削除。既存 melodic director / chord path には影響なし。
+- BL-017 前提訂正: `FocusModulationState` は FM の `40HZ` button + engine API、
+  `AcidLockState` は `btn_acid_lock`、`MicFollowState` は Core/FM mic controls として
+  現役。削除/復活対象ではなく、残る判断は BL-004 の 40Hz depth A/B。
+- `fm.html` / `index.html` / `sw.js`: `engine.js?v=fm-89` と
+  `audio/music-stack-routing.js?v=fm-89` に cache bump。
+- `sw.js hazama-fm-v181`: fm-89 assets を precache。
 
 ## v180 compact — Band Room kit source labels
 

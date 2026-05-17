@@ -85,22 +85,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   `engine.js` の runtime recipe には未昇格。harvest / 試聴レビューで採否を決める
   taste 判断。`docs/cross-repo-listening-review-round.md` の枠で扱う。
 
-### BL-017 — 休眠 engine.js サブシステムを reactivate か削除か判定
-- priority : P2
-- repo     : Music
-- scope    : engine
-- agent    : codex
-- human-gate: yes
-- status   : wip — Codex 2026-05-17
-- source   : dormant-asset 監査（2026-05-16）
-- detail   : engine.js に `enabled` 固定 false で起動経路の無いサブシステムが複数 —
-  `FocusModulationState`（40Hz AM、8062-8167行。BL-004 の 40Hz focus mode の実体で
-  「default OFF」でなく有効化 UI/ロジックが存在しない）、`AcidLockState`（564-570行）、
-  `MicFollowState`（750-767行。mic-follow groove は v139 で稼働、現在 off）。各々
-  「有効化経路を足して活用」か「デッドコード削除」かを判断。engine 凍結域・要承認・codex 向き。
-  BL-004 はこの item に統合。`randomNoteFromScale()`（engine.js 11563行・未呼び出しの
-  デッドヘルパ）も旧 BL-020 から統合し、削除可否をここで判断。
-
 ### BL-019 — archive repo (namima-lab / test) の harvest 素材を翻訳取り込み
 - priority : P2
 - repo     : namima, Music
@@ -129,6 +113,19 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 ---
 
 ## Done
+
+### BL-017 — 休眠 engine.js サブシステムを reactivate か削除か判定 ✅ 2026-05-17
+- repo: Music / scope: engine
+- dormant-asset 監査の前提を訂正。`FocusModulationState` は FM `40HZ` button
+  (`fm.html` / `fm.js`) と `window.setFmFocusModeEnabled` / `getFmFocusModeState`
+  で現役。`AcidLockState` は `btn_acid_lock` と runtime packet/feedback に露出。
+  `MicFollowState` は Core の `btn_mic_follow` と FM の mic follow controls から起動し、
+  runtime packet / drum velocity scale / groove bias に現役で効く。
+- 実際に未参照だった `randomNoteFromScale()` だけを削除。`randomChordForMode` /
+  `randomHazeChord` / melodic director path には影響なし。
+- `engine.js?v=fm-89` / `sw.js hazama-fm-v181` に cache bump。
+- `node scripts/stack-check.mjs`: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。
+- 残る taste 判断は BL-004（40Hz focus depth A/B）として維持。
 
 ### BL-016 — Band Room kit セレクタのラベル明確化 ✅ 2026-05-17
 - repo: Music / scope: non-engine-code
