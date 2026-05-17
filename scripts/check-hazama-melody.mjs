@@ -8,6 +8,31 @@ const html = readFileSync("fm.html", "utf8");
 const index = readFileSync("index.html", "utf8");
 const sw = readFileSync("sw.js", "utf8");
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function cacheMarkerFor(text, assetPath, label) {
+  const match = text.match(new RegExp(`${escapeRegex(assetPath)}\\?v=(fm-\\d+)`));
+  assert.ok(match, `${label} should include ${assetPath}?v=fm-N`);
+  return match[1];
+}
+
+function assertSameMarkers(label, markers) {
+  const entries = Object.entries(markers);
+  const [, expected] = entries[0];
+  for (const [sourceName, marker] of entries) {
+    assert.equal(marker, expected, `${label} cache marker should match in ${sourceName}`);
+  }
+}
+
+function serviceWorkerVersion(text) {
+  const match = text.match(/const VERSION = "([^"]+)"/);
+  assert.ok(match, "Service worker should define VERSION");
+  assert.match(match[1], /^hazama-fm-v\d+$/, "Service worker VERSION should be hazama-fm-vN");
+  return match[1];
+}
+
 assert.match(source, /const MELODIC_DIRECTOR_KEYS = \[/, "Hazama FM should define phrase-level melodic keys");
 assert.match(source, /const MELODIC_DIRECTOR_CONTOURS = \[/, "Hazama FM should define melodic call/answer contours");
 assert.match(source, /function advanceMelodicDirectorPhrase\(/, "Hazama FM should advance a melodic director by phrase");
@@ -34,13 +59,23 @@ assert.match(source, /case "piano":[\s\S]*EngineParams\.bassPattern = "x\.\.\.\.
 
 assert.match(source, /function hazamaFmConversationPacketState\(/, "Hazama FM packet should expose groove conversation metadata");
 assert.match(source, /conversation,\s*\n\s*integration_mode: "metadata-only"/, "Hazama FM conversation should stay metadata-only in the packet");
-assert.match(html, /audio\/music-stack-routing\.js\?v=fm-88/, "FM page should load the expected routing cache marker");
-assert.match(html, /engine\.js\?v=fm-88/, "FM page should load the expected engine cache marker");
-assert.match(index, /audio\/music-stack-routing\.js\?v=fm-88/, "Music Core should load the expected routing cache marker");
-assert.match(index, /engine\.js\?v=fm-88/, "Music Core should load the expected engine cache marker");
-assert.match(sw, /const VERSION = "hazama-fm-v179"/, "Service worker should use the expected cache VERSION");
-assert.match(sw, /audio\/music-stack-routing\.js\?v=fm-88/, "Service worker should precache the expected routing cache marker");
-assert.match(sw, /engine\.js\?v=fm-88/, "Service worker should precache the expected engine cache marker");
+
+const swCacheVersion = serviceWorkerVersion(sw);
+const routingMarkers = {
+  fm: cacheMarkerFor(html, "audio/music-stack-routing.js", "FM page"),
+  core: cacheMarkerFor(index, "audio/music-stack-routing.js", "Music Core"),
+  sw: cacheMarkerFor(sw, "audio/music-stack-routing.js", "Service worker")
+};
+const engineMarkers = {
+  fm: cacheMarkerFor(html, "engine.js", "FM page"),
+  core: cacheMarkerFor(index, "engine.js", "Music Core"),
+  sw: cacheMarkerFor(sw, "engine.js", "Service worker")
+};
+assertSameMarkers("Routing module", routingMarkers);
+assertSameMarkers("Engine", engineMarkers);
+assert.equal(routingMarkers.fm, engineMarkers.fm, "FM page should load routing and engine with the same fm cache marker");
+assert.equal(routingMarkers.core, engineMarkers.core, "Music Core should load routing and engine with the same fm cache marker");
+assert.equal(routingMarkers.sw, engineMarkers.sw, "Service worker should precache routing and engine with the same fm cache marker");
 
 const routingSandbox = { window: {} };
 vm.runInNewContext(routingSource, routingSandbox);
@@ -58,4 +93,4 @@ assert.equal(routeRecommendation.schema, "music.stack-routing-review.v1", "Routi
 assert.equal(routeRecommendation.destination, "namima", "Routing recommendation should preserve void-pad namima routing");
 assert.equal(routeRecommendation.metadata_only, true, "Routing recommendation should remain metadata-only");
 
-console.log("Hazama FM melody check passed");
+console.log(`Hazama FM melody check passed (${swCacheVersion}, ${engineMarkers.fm})`);

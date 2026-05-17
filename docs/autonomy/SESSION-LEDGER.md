@@ -19,6 +19,19 @@
 
 ---
 
+## 2026-05-17 — BL-015 cache marker hardcode 解消
+- agent     : Codex
+- goal      : `check-hazama-melody.mjs` の cache/version literal 追従を不要にする
+- repos     : Music
+- shipped   : `fm-88` / `hazama-fm-v179` の固定 assert を削除し、HTML と `sw.js` から
+  `engine.js` / `audio/music-stack-routing.js` の `fm-N` marker と `sw.js VERSION` を抽出。
+  形式・3箇所同期・engine/routing 同期を検証する pattern check に変更
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）
+- backlog   : BL-015 を Done へ移動
+- next      : human-gate なしで進めるなら BL-007（stack-check health 拡張の小さな検討）。
+  engine.js 系は BL-017 / BL-008 として引き続き人間承認・差分レビュー前提
+- blockers  : なし
+
 ## 2026-05-17 — dormant-asset cleanup（BL-018/020 前提訂正）
 - agent     : Claude Code (Opus 4.7) — 親 1 + Explore 1
 - goal      : BL-018/020（未活用 asset の wire/削除整理）を消化

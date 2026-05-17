@@ -95,18 +95,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   `engine.js` の runtime recipe には未昇格。harvest / 試聴レビューで採否を決める
   taste 判断。`docs/cross-repo-listening-review-round.md` の枠で扱う。
 
-### BL-015 — check-hazama-melody.mjs の version hardcode を解消
-- priority : P2
-- repo     : Music
-- scope    : non-engine-code
-- agent    : either
-- human-gate: no
-- status   : wip — Codex 2026-05-17
-- source   : v176 cycle で判明（2026-05-16）
-- detail   : `scripts/check-hazama-melody.mjs` が sw.js の VERSION を literal で assert
-  しており、cache bump 毎に check script の追従編集が要る。BL-011 で openclaw に施した
-  pattern 検出方式へ置換する。
-
 ### BL-017 — 休眠 engine.js サブシステムを reactivate か削除か判定
 - priority : P2
 - repo     : Music
@@ -163,6 +151,15 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 ---
 
 ## Done
+
+### BL-015 — check-hazama-melody.mjs の version hardcode を解消 ✅ 2026-05-17
+- repo: Music / scope: non-engine-code
+- `scripts/check-hazama-melody.mjs` の `fm-N` / `hazama-fm-vN` literal assert を解消。
+  `fm.html` / `index.html` / `sw.js` から `engine.js` と `audio/music-stack-routing.js`
+  の cache marker を抽出し、`fm-N` 形式・3箇所同期・engine/routing 同期を検証する
+  pattern check へ置換。`sw.js VERSION` も `hazama-fm-vN` 形式だけを見るため、
+  今後の cache bump で check script 追従編集が不要になった。
+- `node scripts/stack-check.mjs`: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。
 
 ### BL-001 — sister repo agent-readiness ✅ 2026-05-16
 - repo: chill, drum-floor, namima, openclaw / scope: docs
