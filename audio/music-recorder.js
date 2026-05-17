@@ -188,7 +188,10 @@
       state: RecorderState,
       toggle: toggleLocalRecorder,
       start: startLocalRecorder,
-      stop: stopLocalRecorder
+      stop: stopLocalRecorder,
+      // setRecorderStatus writes the shared #status-text line; mic + packet
+      // code outside this module rely on it, so expose it too.
+      setStatus: setRecorderStatus
     };
   }
 })();

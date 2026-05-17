@@ -6,6 +6,7 @@ const source = readFileSync("engine.js", "utf8");
 const routingSource = readFileSync("audio/music-stack-routing.js", "utf8");
 const focusModulationSource = readFileSync("audio/music-focus-modulation.js", "utf8");
 const recorderSource = readFileSync("audio/music-recorder.js", "utf8");
+const packetSource = readFileSync("audio/music-packet.js", "utf8");
 const html = readFileSync("fm.html", "utf8");
 const index = readFileSync("index.html", "utf8");
 const sw = readFileSync("sw.js", "utf8");
@@ -59,8 +60,8 @@ assert.match(source, /triggerSamplerBasslineBar\(sampler, time,[\s\S]*register: 
 assert.match(source, /case "funk":[\s\S]*EngineParams\.bassPattern = "x\.\.x\.\.o\.x\.\.\.x\.o\."/, "Funk mode should have a directed 16-step bass pocket");
 assert.match(source, /case "piano":[\s\S]*EngineParams\.bassPattern = "x\.\.\.\.\.\.\.o\.\.\.\.\.\.\."/, "Piano mode should keep a sparse directed 16-step bass gate");
 
-assert.match(source, /function hazamaFmConversationPacketState\(/, "Hazama FM packet should expose groove conversation metadata");
-assert.match(source, /conversation,\s*\n\s*integration_mode: "metadata-only"/, "Hazama FM conversation should stay metadata-only in the packet");
+assert.match(packetSource, /function hazamaFmConversationPacketState\(/, "Hazama FM packet should expose groove conversation metadata");
+assert.match(packetSource, /conversation,\s*\n\s*integration_mode: "metadata-only"/, "Hazama FM conversation should stay metadata-only in the packet");
 
 const swCacheVersion = serviceWorkerVersion(sw);
 const routingMarkers = {
@@ -83,10 +84,16 @@ const recorderMarkers = {
   core: cacheMarkerFor(index, "audio/music-recorder.js", "Music Core"),
   sw: cacheMarkerFor(sw, "audio/music-recorder.js", "Service worker")
 };
+const packetMarkers = {
+  fm: cacheMarkerFor(html, "audio/music-packet.js", "FM page"),
+  core: cacheMarkerFor(index, "audio/music-packet.js", "Music Core"),
+  sw: cacheMarkerFor(sw, "audio/music-packet.js", "Service worker")
+};
 assertSameMarkers("Routing module", routingMarkers);
 assertSameMarkers("Engine", engineMarkers);
 assertSameMarkers("Focus modulation module", focusModulationMarkers);
 assertSameMarkers("Recorder module", recorderMarkers);
+assertSameMarkers("Packet module", packetMarkers);
 assert.equal(routingMarkers.fm, engineMarkers.fm, "FM page should load routing and engine with the same fm cache marker");
 assert.equal(routingMarkers.core, engineMarkers.core, "Music Core should load routing and engine with the same fm cache marker");
 assert.equal(routingMarkers.sw, engineMarkers.sw, "Service worker should precache routing and engine with the same fm cache marker");
@@ -96,6 +103,9 @@ assert.equal(focusModulationMarkers.sw, engineMarkers.sw, "Service worker should
 assert.equal(recorderMarkers.fm, engineMarkers.fm, "FM page should load recorder and engine with the same fm cache marker");
 assert.equal(recorderMarkers.core, engineMarkers.core, "Music Core should load recorder and engine with the same fm cache marker");
 assert.equal(recorderMarkers.sw, engineMarkers.sw, "Service worker should precache recorder and engine with the same fm cache marker");
+assert.equal(packetMarkers.fm, engineMarkers.fm, "FM page should load packet module and engine with the same fm cache marker");
+assert.equal(packetMarkers.core, engineMarkers.core, "Music Core should load packet module and engine with the same fm cache marker");
+assert.equal(packetMarkers.sw, engineMarkers.sw, "Service worker should precache packet module and engine with the same fm cache marker");
 
 const routingSandbox = { window: {} };
 vm.runInNewContext(routingSource, routingSandbox);
@@ -126,5 +136,13 @@ assert.equal(typeof recorderSandbox.window.MusicRecorder.start, "function", "Rec
 assert.equal(typeof recorderSandbox.window.MusicRecorder.stop, "function", "Recorder module should expose stop");
 assert.equal(typeof recorderSandbox.window.MusicRecorder.state, "object", "Recorder module should expose state");
 assert.ok(recorderSandbox.window.MusicRecorder.state, "Recorder module state should be non-null");
+
+const packetSandbox = { window: {} };
+vm.runInNewContext(packetSource, packetSandbox);
+assert.equal(typeof packetSandbox.window.MusicPacketKit.buildMusicSessionPacket, "function", "Packet module should expose session packet builder");
+assert.equal(typeof packetSandbox.window.MusicPacketKit.syncMusicSessionPacket, "function", "Packet module should expose session packet sync");
+assert.equal(typeof packetSandbox.window.MusicPacketKit.packetUnit, "function", "Packet module should expose packetUnit");
+assert.equal(typeof packetSandbox.window.MusicPacketKit.MUSIC_STACK_PACKET_STORAGE_KEY, "string", "Packet module should expose stack packet storage key");
+assert.ok(packetSandbox.window.MusicPacketKit.MUSIC_STACK_PACKET_STORAGE_KEY, "Packet module stack packet storage key should be non-empty");
 
 console.log(`Hazama FM melody check passed (${swCacheVersion}, ${engineMarkers.fm})`);
