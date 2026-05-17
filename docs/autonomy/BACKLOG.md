@@ -118,19 +118,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   「default OFF」でなく有効化 UI/ロジックが存在しない）、`AcidLockState`（564-570行）、
   `MicFollowState`（750-767行。mic-follow groove は v139 で稼働、現在 off）。各々
   「有効化経路を足して活用」か「デッドコード削除」かを判断。engine 凍結域・要承認・codex 向き。
-  BL-004 はこの item に統合。
-
-### BL-018 — 未配線の preset / reference JSON を wire か削除で整理
-- priority : P2
-- repo     : Music
-- scope    : non-engine-code
-- agent    : either
-- human-gate: no
-- source   : dormant-asset 監査（2026-05-16）
-- detail   : `presets/{ambient,dub,jazz,lofi,techno,trance}.json`（`loader.js` 未登録・
-  runtime 参照なし）、`presets/tabasco-analysis.json` / `unripe-analysis.json`（参照ゼロ）、
-  `references/apple-music-refs.json`（コメント参照のみ・runtime 未パース）。各々 wire して
-  活用するか、混乱の元として削除するか整理する。
+  BL-004 はこの item に統合。`randomNoteFromScale()`（engine.js 11563行・未呼び出しの
+  デッドヘルパ）も旧 BL-020 から統合し、削除可否をここで判断。
 
 ### BL-019 — archive repo (namima-lab / test) の harvest 素材を翻訳取り込み
 - priority : P2
@@ -156,17 +145,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - detail   : `AGENTS.md` hard rule で engine.js は原則凍結。実施するなら codex が
   明確な境界（`MusicRadioBrainState` 周辺など）で PR を立て、user 別承認必須。
   自律ランの対象外。長期の保守性課題として記録のみ。
-
-### BL-020 — 雑多な dormant の cleanup
-- priority : icebox
-- repo     : Music, drum-floor, namima
-- scope    : non-engine-code
-- agent    : either
-- human-gate: no
-- source   : dormant-asset 監査（2026-05-16）
-- detail   : 小粒の未活用物 — `engine.js` の `randomNoteFromScale()`（11563行・未呼び出し）、
-  drum-floor の空 `patches/` ディレクトリ（.gitkeep のみ）、namima `sketch.js` の v3/v4
-  "lab" variant（active 導線なし）。活用予定が無ければ削除、有るなら個別 BL 化。
 
 ### BL-016 — Band Room kit セレクタのラベル明確化（minor / 前提訂正済み）
 - priority : icebox
@@ -246,4 +224,22 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   移動後、旧パス文字列を 18 ファイル（Music docs 9 + `scripts/_*.py` 6 + openclaw docs 2 +
   namima docs 1）で `github-inventory/music-stack`→`music-stack` に置換。
   `cross-repo-listening-review-round.md` の単独 `github-inventory` 参照も文脈修正。機能影響なし。
+- 詳細は `SESSION-LEDGER.md` 2026-05-17 エントリ。
+
+### BL-018 — 未配線の preset / reference JSON を wire か削除で整理 ✅ 2026-05-17
+- repo: Music / scope: non-engine-code
+- dormant-asset 監査の前提を一部訂正。`presets/{ambient,dub,jazz,lofi,techno,trance}.json`
+  は engine.js PresetManager（Music Core Rig の preset selector）が直接消費する active な
+  「engine 用 6 ファイル」で dormant ではない（AGENTS.md Hard Rule 5・SCHEMA.md §4 が
+  Hazama FM の loader.js 6 ファイルと別物と明記）。`references/apple-music-refs.json` は
+  sw.js precache 登録済み＋設計リファレンスのため keep。実際に未参照だったのは
+  `presets/tabasco-analysis.json` / `unripe-analysis.json` の 2 つのみ — 削除した。
+- 詳細は `SESSION-LEDGER.md` 2026-05-17 エントリ。
+
+### BL-020 — 雑多な dormant の cleanup ✅ 2026-05-17
+- repo: Music, drum-floor, namima / scope: non-engine-code
+- dormant-asset 監査の前提を訂正（2026-05-17 検証）。namima `sketch.js` の v3/v4 "lab"
+  variant は存在しない（全コード active）。drum-floor `patches/` は README が将来の
+  VCV `.vcv` patch 置き場と明記する意図的プレースホルダで junk ではない。残る
+  `engine.js` の `randomNoteFromScale()`（未呼び出し）は engine.js 凍結域のため BL-017 へ統合。
 - 詳細は `SESSION-LEDGER.md` 2026-05-17 エントリ。

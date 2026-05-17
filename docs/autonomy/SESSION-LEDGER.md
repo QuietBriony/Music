@@ -19,6 +19,21 @@
 
 ---
 
+## 2026-05-17 — dormant-asset cleanup（BL-018/020 前提訂正）
+- agent     : Claude Code (Opus 4.7) — 親 1 + Explore 1
+- goal      : BL-018/020（未活用 asset の wire/削除整理）を消化
+- repos     : Music
+- shipped   : 参照調査で監査の前提ズレを訂正。実際に未参照だった
+  `presets/tabasco-analysis.json` / `unripe-analysis.json` の 2 ファイルのみ削除（git rm）
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）
+- backlog   : BL-018・BL-020 を Done（前提訂正付き）へ。`randomNoteFromScale` は BL-017 へ統合
+- next      : 安全な dormant cleanup は枯れた。残る最適化レバーは engine.js（BL-008 モジュール化
+  / BL-017 休眠サブシステム）— 凍結域・要承認・codex 向き
+- blockers  : なし
+- 別件      : 2026-05-16 の dormant-asset 監査（BL-016〜020）は楽観的すぎた。BL-016 に続き
+  BL-018/020 も前提誤り（genre JSON 6 つは engine.js 現役、namima lab variant 不在、
+  drum-floor `patches/` は意図的プレースホルダ）。「削除より検証」で過剰削除を回避
+
 ## 2026-05-17 — BL-021 旧パスクリーンアップ（music-stack 移動後）
 - agent     : Claude Code (Opus 4.7) — 親 1 + Explore 1
 - goal      : BL-021（github-inventory→workspace 直下 移行後のパス文字列クリーンアップ）を消化
