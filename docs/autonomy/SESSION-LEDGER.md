@@ -19,6 +19,29 @@
 
 ---
 
+## 2026-05-17 — engine hazama feedback module + chain leak audit (v185)
+- agent     : Claude Code (Opus 4.7) ＋ Codex（抽出実行）
+- goal      : BL-008 chain を継続し、抽出済みモジュールの health も監査
+- repos     : Music
+- shipped   : PR #137 — Hazama runtime feedback telemetry cluster（9関数・約180行）
+  を `audio/music-hazama-feedback.js` へ抽出（v185・`window.MusicHazamaFeedback`）。
+  interleaved な Hazama-bridge helper 4 個は engine.js に残置。verbatim を `diff -w`
+  で確認、再インデントして siblings と統一。squash-merge 済み。engine.js 13,712 → 13,537 行
+- audit     : 抽出済み 4 モジュール（routing/focus-mod/recorder/packet）の
+  cross-module leak を grep 監査 → routing 内部関数の漏れなし、v183 の
+  `setRecorderStatus` 以外に leak なしと確認
+- scouting  : mic-follow は `MicFollowState` が 151 箇所・audio loop に毎 tick
+  織り込みで satellite 不可。sampler layers も audio 密結合。→ 疎結合 cluster の
+  自律抽出はここで一区切りと判断
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。ブラウザ実機で
+  `HazamaBridgeState.loaded` を強制 true にし feedback payload 全経路を exercise、
+  console エラー 0
+- backlog   : BL-008 進捗（feedback 抽出完了）。BL-008 entry に v185 と現況
+  （satellite 抽出は概ね完了・残りは human-gate）を追記
+- next      : engine.js の低リスク自律抽出は完了。さらなる縮小は mic-follow/sampler の
+  別アプローチ（実機試聴 human-gate）が要る。実装レーンは試聴系の human-gate へ
+- blockers  : なし
+
 ## 2026-05-17 — engine packet module + v183 regression fix (v184)
 - agent     : Claude Code (Opus 4.7) ＋ Codex（抽出実行）
 - goal      : BL-008 chain を継続し packet builder cluster を engine.js から分離
