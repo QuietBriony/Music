@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-05-16 — BL-016 調査 → 前提を訂正
+- agent     : Claude Code (Opus 4.7) — 親 1 + Explore 1
+- goal      : BL-016（P1: 実ドラム sample-kit を発見可能化）を実装
+- repos     : Music（BACKLOG 訂正のみ）
+- 調査結果  : Band Room の drum-kit システムを精査 → BL-016 の前提が誤りと判明。
+  既定 `kitSource` は `auto-self`（曲自身の抽出実ドラム）で、実録音ドラムは既に既定。
+  dormant ではない。dormant-asset 監査 Agent B の「synth 既定の裏に休眠」は不正確だった。
+- shipped   : BL-016 を P1 → icebox に降格し、detail を実態（残るは kit セレクタの
+  ラベル明確化という軽微な点のみ）へ訂正。盲目実装でなく前提訂正＝自律ループの正常動作。
+- backlog   : BL-016 訂正・降格
+- next      : 自律可能な backlog は枯れ気味。高価値の次手はユーザー依存 — PR #130
+  （v177 melody）の試聴 merge、deploy 済み drum-floor kick 修正の試聴
+- blockers  : BL-015 は PR #130 と `check-hazama-melody.mjs` で競合 → PR merge 待ち
+
 ## 2026-05-16 — dormant-asset 監査（マルチエージェント）
 - agent     : Claude Code (Opus 4.7) — 親 1 + 並列 Explore 3
 - goal      : 「存在するのに使われていない capability」を棚卸しし BACKLOG 化

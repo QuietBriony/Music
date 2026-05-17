@@ -52,18 +52,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   残るは実車・BT 環境で車側 volume / track button にメディア音声として認識されるかの
   実機 validation。自律ランでは検証できない（人間が実機で確認）。
 
-### BL-016 — Band Room の実ドラム sample-kits を発見可能化（休眠の生音）
-- priority : P1
-- repo     : Music
-- scope    : non-engine-code
-- agent    : either
-- human-gate: yes
-- source   : dormant-asset 監査（2026-05-16）
-- detail   : `presets/sample-kits/{tabasco,unripe}/` に約 64MB の実スライス・ドラム音
-  （kick/snare/hat 等、曲別 6-8 variant）が commit 済みで `band-room.js` から load 可能
-  なのに、UI 既定が synth で発見導線が無く事実上休眠。ユーザーの「ちゃんとした生音ドラム」
-  要望に直結。既定化 or 明示的な kit 切替導線を付ける。どれを既定にするかは試聴 taste。
-
 ## P2
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
@@ -179,6 +167,19 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - detail   : 小粒の未活用物 — `engine.js` の `randomNoteFromScale()`（11563行・未呼び出し）、
   drum-floor の空 `patches/` ディレクトリ（.gitkeep のみ）、namima `sketch.js` の v3/v4
   "lab" variant（active 導線なし）。活用予定が無ければ削除、有るなら個別 BL 化。
+
+### BL-016 — Band Room kit セレクタのラベル明確化（minor / 前提訂正済み）
+- priority : icebox
+- repo     : Music
+- scope    : non-engine-code
+- agent    : either
+- human-gate: no
+- source   : dormant-asset 監査（2026-05-16）→ 同日の調査で前提を訂正
+- detail   : 当初 P1「実ドラムが synth 既定の裏に休眠」としたが、調査で **前提が誤りと判明** —
+  Band Room の既定 `kitSource` は `auto-self`（曲自身の抽出実ドラム）で実録音ドラムは
+  既に既定、dormant ではない。残る軽微な点のみ: kit セレクタ（`KIT_OPTIONS`、band-room.js
+  122-138）のラベルが synth と実 sample を視覚的に区別せず、セレクタが折り畳み `<details>`
+  内。やるならラベルに 🎹/🥁 等の区別を足すだけ（zero-risk・低価値）。
 
 ---
 
