@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v178 compact)
+# Band Room — Changelog (v65 → v179 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,18 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v179 compact — music-stack route recommendation module
+
+- `audio/music-stack-routing.js fm-88`: BL-008 Step B。`musicStackRoutingRecommendation`
+  の scoring / destination decision を engine.js から純関数 `routingRecommendation`
+  として移動。Tone.js / DOM / engine state 依存なし。
+- `engine.js fm-88`: runtime defaults（selfReview / parts / gradient / kits /
+  activePads / Hazama FM cue / producer habit curiosity）を集めて module に渡す
+  thin adapter に縮小。挙動は保存。
+- `fm.html` / `index.html` / `sw.js`: `engine.js?v=fm-88` と
+  `audio/music-stack-routing.js?v=fm-88` に cache bump。
+- `sw.js hazama-fm-v179`: fm-88 assets を precache。
 
 ## v178 compact — engine.js modularization step 1 (music-stack routing)
 
