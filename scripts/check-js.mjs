@@ -12,6 +12,7 @@ const files = [
   "audio/namima-audio-adapter.js",
   "audio/human-groove-governor.js",
   "audio/music-stack-routing.js",
+  "audio/music-focus-modulation.js",
   "presets/loader.js",
   "scripts/check-js.mjs",
   "scripts/check-band-room-logic.mjs",

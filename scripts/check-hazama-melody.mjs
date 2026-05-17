@@ -4,6 +4,7 @@ import vm from "node:vm";
 
 const source = readFileSync("engine.js", "utf8");
 const routingSource = readFileSync("audio/music-stack-routing.js", "utf8");
+const focusModulationSource = readFileSync("audio/music-focus-modulation.js", "utf8");
 const html = readFileSync("fm.html", "utf8");
 const index = readFileSync("index.html", "utf8");
 const sw = readFileSync("sw.js", "utf8");
@@ -71,11 +72,20 @@ const engineMarkers = {
   core: cacheMarkerFor(index, "engine.js", "Music Core"),
   sw: cacheMarkerFor(sw, "engine.js", "Service worker")
 };
+const focusModulationMarkers = {
+  fm: cacheMarkerFor(html, "audio/music-focus-modulation.js", "FM page"),
+  core: cacheMarkerFor(index, "audio/music-focus-modulation.js", "Music Core"),
+  sw: cacheMarkerFor(sw, "audio/music-focus-modulation.js", "Service worker")
+};
 assertSameMarkers("Routing module", routingMarkers);
 assertSameMarkers("Engine", engineMarkers);
+assertSameMarkers("Focus modulation module", focusModulationMarkers);
 assert.equal(routingMarkers.fm, engineMarkers.fm, "FM page should load routing and engine with the same fm cache marker");
 assert.equal(routingMarkers.core, engineMarkers.core, "Music Core should load routing and engine with the same fm cache marker");
 assert.equal(routingMarkers.sw, engineMarkers.sw, "Service worker should precache routing and engine with the same fm cache marker");
+assert.equal(focusModulationMarkers.fm, engineMarkers.fm, "FM page should load focus modulation and engine with the same fm cache marker");
+assert.equal(focusModulationMarkers.core, engineMarkers.core, "Music Core should load focus modulation and engine with the same fm cache marker");
+assert.equal(focusModulationMarkers.sw, engineMarkers.sw, "Service worker should precache focus modulation and engine with the same fm cache marker");
 
 const routingSandbox = { window: {} };
 vm.runInNewContext(routingSource, routingSandbox);
@@ -92,5 +102,11 @@ const routeRecommendation = routingSandbox.window.MusicStackRoutes.routingRecomm
 assert.equal(routeRecommendation.schema, "music.stack-routing-review.v1", "Routing recommendation should keep its schema");
 assert.equal(routeRecommendation.destination, "namima", "Routing recommendation should preserve void-pad namima routing");
 assert.equal(routeRecommendation.metadata_only, true, "Routing recommendation should remain metadata-only");
+
+const focusModulationSandbox = { window: {} };
+vm.runInNewContext(focusModulationSource, focusModulationSandbox);
+assert.equal(typeof focusModulationSandbox.window.MusicFocusModulation.refresh, "function", "Focus modulation module should expose refresh");
+assert.equal(typeof focusModulationSandbox.window.MusicFocusModulation.setEnabled, "function", "Focus modulation module should expose setEnabled");
+assert.equal(typeof focusModulationSandbox.window.MusicFocusModulation.getState, "function", "Focus modulation module should expose getState");
 
 console.log(`Hazama FM melody check passed (${swCacheVersion}, ${engineMarkers.fm})`);
