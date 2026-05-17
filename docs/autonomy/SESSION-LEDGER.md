@@ -19,6 +19,19 @@
 
 ---
 
+## 2026-05-17 — BL-017 dormant engine audit cleanup (v181)
+- agent     : Codex
+- goal      : BL-017 の休眠 engine サブシステム前提を検証し、削除できる dead helper だけ処理
+- repos     : Music
+- shipped   : Focus 40HZ / AcidLock / MicFollow は UI/API/packet 経路が現役と確認。
+  未参照だった `randomNoteFromScale()` のみ削除し、`engine.js?v=fm-89` /
+  `sw.js hazama-fm-v181` に cache bump
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）
+- backlog   : BL-017 を Done へ移動。40Hz の耳判断は BL-004 として残す
+- next      : human-gate なしは枯れ。次は BL-004 の 40Hz depth A/B、BL-006/012 の試聴、
+  もしくは BL-019 の archive harvest を人間レビュー前提で小PR化
+- blockers  : 残タスクは実機・試聴・taste 判断あり
+
 ## 2026-05-17 — BL-016 Band Room kit label cleanup
 - agent     : Codex
 - goal      : Band Room kit selector の synth/sample 区別を低リスクに明確化
