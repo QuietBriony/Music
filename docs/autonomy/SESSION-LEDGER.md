@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-05-17 — engine.js modularization chain (v182–v183)
+- agent     : Claude Code (Opus 4.7) ＋ Codex（抽出実行）
+- goal      : BL-008 satellite-script 抽出を継続し engine.js モノリスを縮小
+- repos     : Music
+- shipped   : PR #134 — 40Hz focus modulation を `audio/music-focus-modulation.js`
+  へ抽出（v182・`window.MusicFocusModulation`）。PR #135 — local recorder を
+  `audio/music-recorder.js` へ抽出（v183・`window.MusicRecorder`）。両 PR とも
+  挙動保存・squash-merge 済み。engine.js は 14,324 行（recorder 抽出で約180行減）
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）
+- backlog   : BL-008 進捗のみ（消化はせず継続）。BL-008 entry を抽出 3 件へ同期
+- next      : BL-008 次クラスタは packet builders（約720行・metadata-only）。
+  残 backlog は human-gate（試聴 BL-004・006・012 / harvest BL-019 / 実機 BL-003）
+- blockers  : なし（実装レーンは継続可能、人間ゲートは試聴系のみ）
+
 ## 2026-05-17 — 引き継ぎ後の docs グルーミング
 - agent     : Claude Code (Opus 4.7)
 - goal      : Codex 引き継ぎ後の整合性確認と human-review 待ち行列の整備

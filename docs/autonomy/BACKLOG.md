@@ -108,11 +108,13 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - source   : code health 棚卸し（engine.js 約14.8k行のモノリス）
 - detail   : `AGENTS.md` hard rule で engine.js は原則凍結。実施するなら明確な境界で
   PR を立て、user 別承認必須。**進捗（2026-05-17）**: satellite-script パターン
-  （IIFE + `window.<Name>` 公開、ビルドステップ無し構成向け）を確立し、cross-repo
-  routing 推薦まわり（route labels/URLs・review cue・recommendation 関数）を
-  `audio/music-stack-routing.js` へ抽出済み（約280行を engine.js から分離、挙動保存）。
-  以降の抽出候補は packet builders / recorder / focus modulation 等。engine.js は
-  依然 14k 行台のため長期課題として継続。
+  （IIFE + `window.<Name>` 公開、ビルドステップ無し構成向け）を確立。抽出済み:
+  cross-repo routing 推薦 → `audio/music-stack-routing.js`（約280行）、
+  40Hz focus modulation → `audio/music-focus-modulation.js`（v182・約175行）、
+  local recorder → `audio/music-recorder.js`（v183・約180行）。いずれも挙動保存・
+  stack-check 0 BAD で squash-merge 済み（PR #131 / #134 / #135）。以降の抽出候補は
+  packet builders（約720行・metadata-only）/ sampler layers 等。engine.js は
+  14.3k 行台に縮小したが依然モノリスのため長期課題として継続。
 
 ---
 
