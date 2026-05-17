@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v176 compact)
+# Band Room — Changelog (v65 → v177 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,19 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v177 compact — Hazama FM melody harmony + humanize
+
+- `engine.js fm-86`: Hazama FM の primary メロディ voice（memory pluck signature
+  cell `triggerMemoryPluckSignatureCell`）に和声と humanize を追加。
+  - **和声**: 単音だった lead の下に `MODE_CHORDS` の chord tone を 2 声、phrase
+    ごと（`MelodicDirectorState.chordTurn`）に回しつつ soft に重ねる。「弾いた
+    和音」の厚みを付与。
+  - **humanize**: accent 音は長め（"8n"/"16n"）に鳴らして breathe、lead velocity に
+    per-hit jitter を追加。固定 "32n" の機械感を緩和。
+  - engine.js 凍結ルールに対し、1 関数に境界限定 + feature branch + PR で実施。
+- `fm.html` / `index.html` / `sw.js`: `engine.js?v=fm-86` に cache bump。
+- `sw.js hazama-fm-v177`: `engine.js?v=fm-86` を precache。
 
 ## v176 compact — Hazama FM funk voice timbres enriched
 

@@ -12410,9 +12410,29 @@ function triggerMemoryPluckSignatureCell(step, time, context) {
 
   try {
     if (pianoMemory) {
-      pianoMemory.triggerAttackRelease(root, "32n", pluckTime, vel);
+      // v177 humanize: accent notes ring longer so the line breathes instead of
+      // every pluck being an identical 32nd; per-hit velocity jitter de-robotizes.
+      const leadDur = isAccentStep ? "8n" : step16 === 4 ? "16n" : "32n";
+      const leadVel = clampValue(vel * (0.86 + Math.random() * 0.3), 0.01, 0.084);
+      pianoMemory.triggerAttackRelease(root, leadDur, pluckTime, leadVel);
+      // v177 harmony: the memory pluck used to be a bare single note. Voice two
+      // soft tones from the mode's chord (rotated per phrase by chordTurn) under
+      // the lead so it lands as a played chord. MODE_CHORDS is base-key like the
+      // ORGANIC_PLUCK_FRAGMENTS lead, so no director key-shift is applied here.
+      const chordPool = MODE_CHORDS[EngineParams.mode] || MODE_CHORDS.lofi;
+      const voicing = chordPool[(MelodicDirectorState.chordTurn || 0) % chordPool.length] || [];
+      if (voicing.length && rand(0.66 + MotifMemoryState.strength * 0.18)) {
+        voicing.slice(0, 2).forEach((note, i) => {
+          pianoMemory.triggerAttackRelease(
+            note,
+            "8n",
+            pluckTime + 0.006 + i * (0.007 + Math.random() * 0.012),
+            clampValue(leadVel * (0.32 - i * 0.07), 0.006, 0.044)
+          );
+        });
+      }
       if (rand(0.2 + RdjGrowthState.toy * 0.18 + MotifMemoryState.strength * 0.12)) {
-        pianoMemory.triggerAttackRelease(shade, "64n", pluckTime + 0.072 + Math.random() * 0.02, clampValue(vel * 0.45, 0.008, 0.036));
+        pianoMemory.triggerAttackRelease(shade, "64n", pluckTime + 0.072 + Math.random() * 0.02, clampValue(leadVel * 0.45, 0.008, 0.036));
       }
     }
     if (glass && rand(0.2 + RdjGrowthState.tender * 0.18 + (gradient.chrome || 0) * 0.1)) {
