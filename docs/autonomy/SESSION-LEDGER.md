@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-05-17 — 引き継ぎ後の docs グルーミング
+- agent     : Claude Code (Opus 4.7)
+- goal      : Codex 引き継ぎ後の整合性確認と human-review 待ち行列の整備
+- repos     : Music
+- shipped   : BL-008 の backlog entry を modularization 進捗で更新（satellite-script
+  パターン確立・routing まわりを `audio/music-stack-routing.js` へ抽出済み）。
+  `docs/music-stack-human-review-queue.html` に現行 human-gate backlog
+  （BL-003/004/006/012/019）の待ち行列セクションを追加
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）
+- backlog   : 消化なし（docs グルーミング）。BL-008 entry を現況へ同期
+- next      : 残 backlog は全て human-gate（実機 BL-003 / 試聴 BL-004・006・012 /
+  harvest taste BL-019）。実装レーンは枯れ
+- blockers  : 残タスクは人間の耳・手・taste 判断待ち
+
 ## 2026-05-17 — BL-017 dormant engine audit cleanup (v181)
 - agent     : Codex
 - goal      : BL-017 の休眠 engine サブシステム前提を検証し、削除できる dead helper だけ処理

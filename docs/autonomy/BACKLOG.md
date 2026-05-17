@@ -106,9 +106,13 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - agent    : codex
 - human-gate: yes
 - source   : code health 棚卸し（engine.js 約14.8k行のモノリス）
-- detail   : `AGENTS.md` hard rule で engine.js は原則凍結。実施するなら codex が
-  明確な境界（`MusicRadioBrainState` 周辺など）で PR を立て、user 別承認必須。
-  自律ランの対象外。長期の保守性課題として記録のみ。
+- detail   : `AGENTS.md` hard rule で engine.js は原則凍結。実施するなら明確な境界で
+  PR を立て、user 別承認必須。**進捗（2026-05-17）**: satellite-script パターン
+  （IIFE + `window.<Name>` 公開、ビルドステップ無し構成向け）を確立し、cross-repo
+  routing 推薦まわり（route labels/URLs・review cue・recommendation 関数）を
+  `audio/music-stack-routing.js` へ抽出済み（約280行を engine.js から分離、挙動保存）。
+  以降の抽出候補は packet builders / recorder / focus modulation 等。engine.js は
+  依然 14k 行台のため長期課題として継続。
 
 ---
 

@@ -164,6 +164,56 @@
     </p>
 
     <section>
+      <h2>Human-gate backlog（待ち行列）</h2>
+      <p style="margin: 0 0 12px; color: var(--sub); font-size: 13px;">
+        自律実装で進められる作業は枯れました。残る backlog はすべて人間の耳・手・taste 判断待ちです。
+        正本は <code>docs/autonomy/BACKLOG.md</code>。
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>BL</th>
+            <th>内容</th>
+            <th>どこで / 手順</th>
+            <th>あなたが決めること</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>BL-003<br />P1</td>
+            <td>hidden audio bridge の実機検証</td>
+            <td>実車 + Bluetooth 環境で Hazama FM / Band Room を再生</td>
+            <td>車側の volume / track ボタンがメディア音声として効くか。NG なら bridge 調整 PR を起票。</td>
+          </tr>
+          <tr>
+            <td>BL-004<br />P2</td>
+            <td>Hazama FM 40Hz focus depth A/B</td>
+            <td><code>fm.html</code> で <code>40HZ</code> を ON。8% と 5% を聴き比べ（depth 切替は実装が要るので先に依頼）</td>
+            <td>8% AM が耳に違和感を出すか。出るなら 5% へ落とす。</td>
+          </tr>
+          <tr>
+            <td>BL-006<br />P2</td>
+            <td>cross-repo listening review round</td>
+            <td><code>docs/cross-repo-listening-review-round.md</code> の手順で namima / chill / drum-floor を聴き比べ</td>
+            <td>次の tuning PR を 1 本だけ選ぶ。multi-repo 同時 tuning はしない。</td>
+          </tr>
+          <tr>
+            <td>BL-012<br />P2・眠ってる資源</td>
+            <td>chill の harvest reference を runtime recipe へ昇格検討</td>
+            <td>BL-006 の枠内。chill export の <code>midnight-whisper</code> / <code>morning-light</code> 参照を試聴</td>
+            <td>runtime recipe へ昇格させるか否かの taste 判断。</td>
+          </tr>
+          <tr>
+            <td>BL-019<br />P2・眠ってる資源</td>
+            <td>archive repo (namima-lab / test) の harvest 素材を翻訳取り込み</td>
+            <td>namima-lab の organic-pluck recipe、test の style-interpolation math。1 PR = 1 idea で翻訳（agent が小PR化可）</td>
+            <td>どの素材を target repo の言葉に翻訳して採るか。blind copy しない。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
       <h2>SYNC snapshots (live)</h2>
       <p style="margin: 0 0 12px; color: var(--sub); font-size: 13px;">
         Hazama FM の <code>SYNC</code> ボタン押下時に保存された localStorage の文脈。
