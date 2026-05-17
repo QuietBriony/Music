@@ -131,6 +131,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code
 - agent    : either
 - human-gate: no
+- status   : wip — Codex 2026-05-17
 - source   : dormant-asset 監査（2026-05-16）→ 同日の調査で前提を訂正
 - detail   : 当初 P1「実ドラムが synth 既定の裏に休眠」としたが、調査で **前提が誤りと判明** —
   Band Room の既定 `kitSource` は `auto-self`（曲自身の抽出実ドラム）で実録音ドラムは
