@@ -80,6 +80,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code
 - agent    : either
 - human-gate: no
+- status   : wip — Codex 2026-05-17
 - source   : 本エンジン構築（2026-05-16）
 - detail   : `scripts/stack-check.mjs` に、pytest 未導入時の WARN 集計や
   GitHub Pages deploy 後の 200 応答チェックを足すか検討。過剰にしない。
