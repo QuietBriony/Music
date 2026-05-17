@@ -91,6 +91,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : engine
 - agent    : codex
 - human-gate: yes
+- status   : wip — Codex 2026-05-17
 - source   : dormant-asset 監査（2026-05-16）
 - detail   : engine.js に `enabled` 固定 false で起動経路の無いサブシステムが複数 —
   `FocusModulationState`（40Hz AM、8062-8167行。BL-004 の 40Hz focus mode の実体で
