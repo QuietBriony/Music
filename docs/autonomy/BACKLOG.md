@@ -52,21 +52,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   残るは実車・BT 環境で車側 volume / track button にメディア音声として認識されるかの
   実機 validation。自律ランでは検証できない（人間が実機で確認）。
 
-### BL-021 — github-inventory→workspace 直下 移行後のパス文字列クリーンアップ
-- priority : P1
-- repo     : Music, openclaw, namima
-- scope    : docs
-- agent    : either
-- human-gate: no
-- source   : ユーザー指示（music-stack を C:\workspace\music-stack へ移動、2026-05-16）
-- detail   : music-stack を `C:\workspace\github-inventory\music-stack` から
-  `C:\workspace\music-stack` へ移動した後に実施。ハードコードされた旧パス文字列を更新する。
-  対象 18 ファイル（`grep github-inventory`）— Music docs 9（`docs/autonomy/AUTONOMOUS-RUN.md`
-  のコピペ用プロンプトと `STACK-INDEX.md` を含む — agent 向けなので優先）、`scripts/_*.py` 6、
-  openclaw docs 2、namima docs 1。`github-inventory/music-stack`・`github-inventory\music-stack`
-  を `music-stack` へ置換。**移動後**のセッション（新パス `C:\workspace\music-stack\Music` 起点）
-  で実施し、各 repo へ commit/push。機能影響はないが docs / 自律プレイブック整合のため。
-
 ## P2
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
@@ -254,3 +239,11 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   （静的 cutoff で全ノート同一音色だったのを解消）。`buildFunkDefault` /
   `buildFunkFromFrames` の両経路。engine.js 凍結のため genre-flavor.js で実装。
   cache hazama-fm-v176 / `?v=fm-71`。出音の良否は試聴で人間が判定。
+
+### BL-021 — github-inventory→workspace 直下 移行後のパス文字列クリーンアップ ✅ 2026-05-17
+- repo: Music, openclaw, namima / scope: docs
+- music-stack を `C:\workspace\github-inventory\music-stack` → `C:\workspace\music-stack` へ
+  移動後、旧パス文字列を 18 ファイル（Music docs 9 + `scripts/_*.py` 6 + openclaw docs 2 +
+  namima docs 1）で `github-inventory/music-stack`→`music-stack` に置換。
+  `cross-repo-listening-review-round.md` の単独 `github-inventory` 参照も文脈修正。機能影響なし。
+- 詳細は `SESSION-LEDGER.md` 2026-05-17 エントリ。

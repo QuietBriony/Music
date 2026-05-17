@@ -155,7 +155,7 @@ and Return Packet blocks for high-risk tasks.
 
 ```text
 target repo: QuietBriony/Music
-local path: C:\workspace\github-inventory\music-stack\Music
+local path: C:\workspace\music-stack\Music
 model: GPT-5.5 high / Codex high
 branch: feat/music-<short-audio-change>
 PR title: feat(music): <short audio change>
@@ -172,7 +172,7 @@ Cost safety, Known risks, Rollback, Next recording
 
 ```text
 target repo: QuietBriony/Music
-local path: C:\workspace\github-inventory\music-stack\Music
+local path: C:\workspace\music-stack\Music
 model: GPT-5.3 or GPT-5.5 high for architecture docs
 branch: docs/<topic>
 PR title: docs: <topic>
@@ -188,7 +188,7 @@ Policy checks, Validation, Known risks, Rollback, Next suggested PR
 
 ```text
 target repo: QuietBriony/drum-floor
-local path: C:\workspace\github-inventory\music-stack\drum-floor
+local path: C:\workspace\music-stack\drum-floor
 model: GPT-5.5 high for runtime/groove; GPT-5.3 for docs/schema
 branch: feat/<groove-change>
 PR title: feat: <groove change>
@@ -204,7 +204,7 @@ Safety, Validation, Known risks, Rollback, Next PR
 
 ```text
 target repo: QuietBriony/namima
-local path: C:\workspace\github-inventory\music-stack\namima
+local path: C:\workspace\music-stack\namima
 model: GPT-5.5 high for runtime mood bridge; GPT-5.3 for docs/schema
 branch: feat/<ambient-change>
 PR title: feat: <ambient change>
@@ -220,7 +220,7 @@ Safety, Validation, Known risks, Rollback, Next PR
 
 ```text
 target repo: QuietBriony/Music
-local path: C:\workspace\github-inventory\music-stack\Music
+local path: C:\workspace\music-stack\Music
 model: GPT-5.3 for deterministic docs; GPT-5.5 high for synthesis
 branch: docs/<harvest-topic>
 PR title: docs: <harvest topic>
@@ -235,7 +235,7 @@ Policy checks, Validation, Known risks, Rollback, Next suggested PR
 
 ```text
 target repo: QuietBriony/openclaw
-local path: C:\workspace\github-inventory\music-stack\openclaw
+local path: C:\workspace\music-stack\openclaw
 model: GPT-5.5 high for cross-repo workflow
 branch: docs/<orchestra-topic>
 PR title: docs: <orchestra topic>

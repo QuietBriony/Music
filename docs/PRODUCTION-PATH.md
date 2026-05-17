@@ -195,7 +195,7 @@
 ### a) GitHub repo に push (band-room の正本にする)
 
 ```bash
-cd C:/workspace/github-inventory/music-stack/Music
+cd C:/workspace/music-stack/Music
 # テキストエディタで docs/tabasco-lyrics-final.md を開いて編集
 git add docs/tabasco-lyrics-final.md
 git commit -m "lyrics: polish Tabasco final sheet"

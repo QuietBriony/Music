@@ -8,7 +8,7 @@ music-stack を触るエージェントが **最初に読む構造マップ**。
 
 ## Active repos (5)
 
-ローカル配置: `C:\workspace\github-inventory\music-stack\<repo>`
+ローカル配置: `C:\workspace\music-stack\<repo>`
 deploy はすべて GitHub Pages（`<remote>` の main ブランチ）。
 
 | repo | 役割（1行） | deploy | remote | AGENTS.md | check コマンド（repo root から） |
@@ -42,6 +42,6 @@ archive 操作・復活・削除は別承認が必要。本エンジンの対象
 
 ## 注記
 
-- music-stack 直下（`C:\workspace\github-inventory\music-stack`）は git 管理外。
+- music-stack 直下（`C:\workspace\music-stack`）は git 管理外。
   エンジンの正本はすべて git 管理下の `Music/docs/autonomy/` に置く。
 - 各 repo の commit 前チェックは、その repo の `AGENTS.md` 冒頭にも明記。

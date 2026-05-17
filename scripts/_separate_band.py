@@ -44,7 +44,7 @@ print(f"Source: {SRC_DIR}")
 
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 OUTPUT_DIR = r"C:\Users\平成造園\Desktop\stems_out"
-MUSIC_REPO = r"C:\workspace\github-inventory\music-stack\Music"
+MUSIC_REPO = r"C:\workspace\music-stack\Music"
 STEM_TARGET = os.path.join(MUSIC_REPO, "presets", f"{BAND_ID}-stems")
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)

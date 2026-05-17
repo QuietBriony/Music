@@ -2,7 +2,7 @@
 import os, shutil
 
 SRC = r"C:\Users\平成造園\Desktop\stems_out\htdemucs"
-DST = r"C:\workspace\github-inventory\music-stack\Music\presets\tabasco-stems"
+DST = r"C:\workspace\music-stack\Music\presets\tabasco-stems"
 
 NAME_TO_ID = {
     "01 TABASCO": "tabasco",

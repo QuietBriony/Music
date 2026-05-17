@@ -10,10 +10,10 @@ next PR is selected from human notes, not from inventory momentum.
 
 ## Local review server
 
-When reviewing the local `github-inventory` workspace, serve the cluster root:
+When reviewing the local `music-stack` workspace, serve the cluster root:
 
 ```text
-C:\workspace\github-inventory\music-stack
+C:\workspace\music-stack
 ```
 
 Preferred local URL:

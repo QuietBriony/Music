@@ -13,7 +13,7 @@ import imageio_ffmpeg
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 INPUT_DIR = r"C:\Users\平成造園\Desktop\musicpl\Tabasco. LIVE"
 OUTPUT_DIR = r"C:\Users\平成造園\Desktop\stems_out"
-MUSIC_REPO = r"C:\workspace\github-inventory\music-stack\Music"
+MUSIC_REPO = r"C:\workspace\music-stack\Music"
 STEM_TARGET = os.path.join(MUSIC_REPO, "presets", "tabasco-stems")
 
 # Map filename → song-id (matches band-room.html data-song values + presets/drum-frames-tabasco-{id}.json)

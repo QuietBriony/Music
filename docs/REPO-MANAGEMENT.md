@@ -56,7 +56,7 @@ Music も tree-doctor-test もそれぞれ 1 GB 制限の **半分以下**。安
 ## Music repo の内訳 (なぜ 521 MB か)
 
 ```bash
-cd ~/workspace/github-inventory/music-stack/Music
+cd ~/workspace/music-stack/Music
 du -sh presets/ icons/ assets/ docs/ *.js *.html *.css 2>/dev/null | sort -h
 ```
 

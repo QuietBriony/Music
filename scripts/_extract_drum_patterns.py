@@ -17,7 +17,7 @@ import numpy as np
 import librosa
 
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
-MUSIC_REPO = r"C:\workspace\github-inventory\music-stack\Music"
+MUSIC_REPO = r"C:\workspace\music-stack\Music"
 NAME_MAP = {"tabasco": "tabasco", "unripe": "unripe"}
 
 def load_stem(mp3, sr=44100):

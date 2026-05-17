@@ -31,7 +31,7 @@ import librosa
 import soundfile as sf
 
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
-MUSIC_REPO = r"C:\workspace\github-inventory\music-stack\Music"
+MUSIC_REPO = r"C:\workspace\music-stack\Music"
 
 def load_stem_as_wav(mp3_path, sr=44100):
     """Convert mp3 to wav buffer via ffmpeg, return mono float32 array + sr."""

@@ -5,7 +5,7 @@
 
 ## 推奨ワークフロー
 
-1. `cd C:\workspace\github-inventory\music-stack\Music`
+1. `cd C:\workspace\music-stack\Music`
 2. `codex`（Codex CLI 起動。CLI version は環境で変わるので固定前提にしない）
 3. **`docs/autonomy/AUTONOMOUS-RUN.md` のプレイブックに従う** — STACK-INDEX /
    SESSION-LEDGER / BACKLOG を読み、`agent: codex` / `agent: either` の item を 1 つ

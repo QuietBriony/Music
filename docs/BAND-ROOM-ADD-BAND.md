@@ -18,7 +18,7 @@ m4a / wav / mp3 / flac / aac 対応。ファイル名は「番号 タイトル.m
 ## 2. Stem 分離スクリプト実行
 
 ```bash
-cd C:/workspace/github-inventory/music-stack/Music
+cd C:/workspace/music-stack/Music
 python scripts/_separate_band.py <band-id>
 ```
 

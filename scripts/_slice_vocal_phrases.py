@@ -20,7 +20,7 @@ import librosa
 import soundfile as sf
 
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
-MUSIC_REPO = r"C:\workspace\github-inventory\music-stack\Music"
+MUSIC_REPO = r"C:\workspace\music-stack\Music"
 
 # Tuning: top_db = how much quieter than peak counts as silence
 TOP_DB = 30

@@ -19,6 +19,17 @@
 
 ---
 
+## 2026-05-17 — BL-021 旧パスクリーンアップ（music-stack 移動後）
+- agent     : Claude Code (Opus 4.7) — 親 1 + Explore 1
+- goal      : BL-021（github-inventory→workspace 直下 移行後のパス文字列クリーンアップ）を消化
+- repos     : Music / openclaw / namima
+- shipped   : 旧パス `C:\workspace\github-inventory\music-stack` を参照する 18 ファイルを
+  `C:\workspace\music-stack` へ更新（docs 12 + `scripts/_*.py` 6）。3 repo に commit/push
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）
+- backlog   : BL-021 消化（→ Done）
+- next      : 自律可能な backlog は枯れ気味。高価値の次手は PR #130（v177 melody）の試聴 merge
+- blockers  : PR #130 は engine.js 変更で無人 merge 不可・ユーザー試聴待ち（フォルダ移動とは無関係）
+
 ## 2026-05-16 — BL-016 調査 → 前提を訂正
 - agent     : Claude Code (Opus 4.7) — 親 1 + Explore 1
 - goal      : BL-016（P1: 実ドラム sample-kit を発見可能化）を実装
