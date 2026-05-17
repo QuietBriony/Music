@@ -4402,69 +4402,16 @@ function musicStackRoutingRecommendation(input = {}) {
   const kits = input.kits || genreTimbreKitRuntimeState();
   const activePads = input.activePads || activePerformancePadNames();
   const fmCue = input.hazamaFmReviewCue || hazamaFmReviewCue(input.hazamaFm);
-  const density = packetUnit(input.density ?? (parts.energy * 0.3 + parts.resource * 0.28 + parts.creation * 0.18 + gradient.micro * 0.14 + kits.technoKit * 0.1));
-  const pressure = packetUnit(input.pressure ?? (parts.body * 0.26 + parts.energy * 0.24 + parts.resource * 0.16 + gradient.ghost * 0.16 + kits.pressureKit * 0.16 - parts.voidness * 0.12));
-  const namimaCalm = packetUnit(input.namimaCalm ?? (parts.circle * 0.3 + parts.observer * 0.28 + parts.voidness * 0.18 + gradient.haze * 0.14 + kits.spaceKit * 0.1));
-  const chillMemory = packetUnit(input.chillMemory ?? (gradient.memory * 0.28 + gradient.haze * 0.18 + parts.circle * 0.14 + parts.observer * 0.14 + kits.ambientKit * 0.12 + kits.spaceKit * 0.08));
-  const chillDrumSupport = packetUnit(input.chillDrumSupport ?? (density * 0.42 + gradient.ghost * 0.18 + kits.idmKit * 0.12 + kits.technoKit * 0.08 - parts.voidness * 0.18));
-
-  const scores = {
-    music: packetUnit(review.densityRisk * 0.34 + review.lowEndRisk * 0.28 + review.brightnessRisk * 0.22 + Math.max(0, 1 - review.restraintScore) * 0.08),
-    chill: packetUnit(chillMemory * 0.42 + gradient.memory * 0.18 + kits.ambientKit * 0.12 + parts.circle * 0.1 + Math.max(0, 1 - review.brightnessRisk) * 0.08),
-    drum_floor: packetUnit(density * 0.36 + chillDrumSupport * 0.16 + kits.technoKit * 0.16 + kits.idmKit * 0.12 + gradient.ghost * 0.1 - review.lowEndRisk * 0.16 - parts.voidness * 0.08),
-    namima: packetUnit(namimaCalm * 0.44 + parts.voidness * 0.16 + gradient.haze * 0.14 + kits.spaceKit * 0.16 + Math.max(0, 1 - review.densityRisk) * 0.05),
-    openclaw: packetUnit(Math.max(0, 1 - review.referenceFit) * 0.26 + (ProducerHabitState.curiosity || 0) * 0.12 + Math.max(review.densityRisk, review.lowEndRisk, review.brightnessRisk) * 0.08)
-  };
-
-  let destination = "chill";
-  let reason = "ピアノ/ベース/trioで質感を確認する段階。";
-  let action = "chill sessionを開いてSTART。DRUMSは必要な時だけ押す。";
-
-  if (review.lowEndRisk > 0.72 || review.densityRisk > 0.78 || review.brightnessRisk > 0.8) {
-    destination = "music";
-    reason = review.lowEndRisk > 0.72
-      ? "低域の圧が強いので、外へ流す前にMusic内で低域を削る。"
-      : review.densityRisk > 0.78
-        ? "密度が高いので、signature/cellより間を優先する。"
-        : "明るい粒が強いので、transientとchromeを柔らかくする。";
-    action = "Musicで聴き続け、VOID/DRIFTやOUTPUTを確認してからSYNCし直す。";
-  } else if (activePads.includes("void") || kits.spaceKit > 0.54 || scores.namima > Math.max(scores.chill, scores.drum_floor) + 0.05) {
-    destination = "namima";
-    reason = "空気、水面、透明な尾として受ける方が良い状態。";
-    action = "namimaを開いてTap to start。音は自動開始しない。";
-  } else if (scores.drum_floor > 0.48 && density > 0.3 && pressure < 0.72 && parts.voidness < 0.58) {
-    destination = "drum_floor";
-    reason = "中高域のrhythm cueをdrum-floorで確認できる状態。";
-    action = "drum-floorを開き、再生でpreviewする。";
-  } else if (scores.openclaw > 0.48 && review.referenceFit < 0.38) {
-    destination = "openclaw";
-    reason = "制作判断がまだ散っているので、OpenClaw Desk (openclaw repo hub) で見立てを確認する。";
-    action = "OpenClaw Deskを開き、Musicを磨く/各repoへ流すカードを見る。";
-  }
-  if (fmCue && fmCue.confidence >= 0.46) {
-    destination = fmCue.destination;
-    reason = fmCue.reason;
-    action = fmCue.action;
-  }
-
-  return {
-    schema: "music.stack-routing-review.v1",
-    destination,
-    label: MUSIC_STACK_ROUTE_LABELS[destination] || destination,
-    reason,
-    action,
-    confidence: selfReviewNumber(Math.max(scores[destination] || 0, 0.28), 2),
-    scores: {
-      music: selfReviewNumber(scores.music, 2),
-      chill: selfReviewNumber(scores.chill, 2),
-      drum_floor: selfReviewNumber(scores.drum_floor, 2),
-      namima: selfReviewNumber(scores.namima, 2),
-      openclaw: selfReviewNumber(scores.openclaw, 2)
-    },
-    fm_review_cue: fmCue,
-    manual_start_required: true,
-    metadata_only: true
-  };
+  return window.MusicStackRoutes.routingRecommendation({
+    ...input,
+    selfReview: review,
+    parts,
+    gradient,
+    kits,
+    activePads,
+    hazamaFmReviewCue: fmCue,
+    producerHabitCuriosity: input.producerHabitCuriosity ?? (ProducerHabitState.curiosity || 0)
+  });
 }
 
 function advanceReferenceMorph(context = {}) {
