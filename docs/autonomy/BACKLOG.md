@@ -52,6 +52,23 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   残るは実車・BT 環境で車側 volume / track button にメディア音声として認識されるかの
   実機 validation。自律ランでは検証できない（人間が実機で確認）。
 
+### BL-022 — Hazama FM ブラウザ再生の音詰まり（同時起動音での負荷スパイク）
+- priority : P1
+- repo     : Music
+- scope    : engine
+- agent    : codex | claude
+- human-gate: yes（修正 PR 後に試聴で体感確認）
+- source   : user 観察（2026-05-18・Hazama FM ブラウザ再生が「重い・たまに詰まる」）
+- detail   : 複数音が同時起動するタイミングで音が詰まる体感。engine.js 調査では
+  pad `PolySynth` が `maxPolyphony: 64`、`pianoMemory` が `48` と過大で、
+  `randomHazeChord()` の `1n`/`2n` 長尺コードを 20+ 経路から鳴らすため、トリガが
+  重なると発音数が積み上がり CPU スパイクになりうる。候補対策: (1) `maxPolyphony`
+  を妥当値（pad / pianoMemory とも ~24 目安）へ下げ発音数の天井を作る（超過時は
+  最古 voice steal・持続 pad ではほぼ不可聴）、(2) AudioContext `latencyHint:
+  "playback"`（ラジオ用途で低レイテンシ不要・バッファ拡大でグリッチ耐性向上）。
+  完了条件: 小 PR で出し、user が Pages の同時起動音シーンを試聴して詰まり減を確認。
+  voice steal が可聴なら cap 値を上げ再調整。
+
 ## P2
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
@@ -73,17 +90,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - source   : docs/cross-repo-listening-review-round.md
 - detail   : namima / chill / drum-floor を聴き比べ、次の tuning PR を 1 本だけ選ぶ
   人間レビュー。multi-repo 同時 tuning はしない。
-
-### BL-012 — chill の harvest reference を runtime recipe へ昇格検討
-- priority : P2
-- repo     : chill
-- scope    : runtime
-- agent    : human
-- human-gate: yes
-- source   : Phase B sister-repo 棚卸し（2026-05-16）
-- detail   : chill の export に `midnight-whisper` / `morning-light` の参照があるが
-  `engine.js` の runtime recipe には未昇格。harvest / 試聴レビューで採否を決める
-  taste 判断。`docs/cross-repo-listening-review-round.md` の枠で扱う。
 
 ### BL-019 — archive repo (namima-lab / test) の harvest 素材を翻訳取り込み
 - priority : P2
@@ -128,6 +134,14 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 ---
 
 ## Done
+
+### BL-012 — chill の harvest reference を runtime recipe へ昇格 ✅ 2026-05-18
+- repo: chill / scope: runtime
+- `midnight-whisper` / `morning-light` を runtime recipe へ昇格（chill PR #35）。
+  `CHILL_RECIPES` 入り・`index.html` / `session.html` セレクタ 6 件・
+  `SESSION_BASS_ROUTES`（`morning-light` は A-D-G-E 専用ルート、フォールバックの
+  和声ズレを解消）・export pipeline（旧 `SUPPLEMENTAL_RECIPES` 撤去）・README 整備。
+  挙動保存・chill checks PASS・実機試聴で 6 recipe 選択と bass route を確認。
 
 ### BL-017 — 休眠 engine.js サブシステムを reactivate か削除か判定 ✅ 2026-05-17
 - repo: Music / scope: engine

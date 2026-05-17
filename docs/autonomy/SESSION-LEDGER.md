@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-05-18 — cross-stack 全体最適パス + Hazama FM 音詰まり起票
+- agent     : Claude Code (Opus 4.7)
+- goal      : engine.js モジュール化後、stack 全体の最適化機会を監査・消化
+- repos     : openclaw, chill, drum-floor, namima, Music
+- shipped   : openclaw PR #27（`_translate_chill` がブラウザ版と乖離するバグ修正 —
+  `soft-melody-piano` allowlist 漏れ + `reference_label` 欠落）。chill PR #35
+  （`midnight-whisper` / `morning-light` の昇格完遂 — bass route / selector /
+  export pipeline / docs）。chill・drum-floor・namima の AGENTS.md stale
+  cache-version を docs 直 push で訂正
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。各 repo の個別 checks も PASS
+- backlog   : BL-012 を Done（chill recipe 昇格完了）。BL-022 を P1 起票
+  （Hazama FM ブラウザ再生の音詰まり — pad/pianoMemory の `maxPolyphony` 過大が
+  CPU スパイク候補）
+- next      : BL-022 修正（`maxPolyphony` 引き下げ + `latencyHint`）は user 試聴待ち。
+  namima 休眠 mood / drum-floor `riff_shout_floor` は creative / 設計判断で保留
+- blockers  : 残りは人間の試聴・creative 判断
+
 ## 2026-05-17 — engine hazama feedback module + chain leak audit (v185)
 - agent     : Claude Code (Opus 4.7) ＋ Codex（抽出実行）
 - goal      : BL-008 chain を継続し、抽出済みモジュールの health も監査
