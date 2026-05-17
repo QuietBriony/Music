@@ -101,6 +101,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code
 - agent    : either
 - human-gate: no
+- status   : wip — Codex 2026-05-17
 - source   : v176 cycle で判明（2026-05-16）
 - detail   : `scripts/check-hazama-melody.mjs` が sw.js の VERSION を literal で assert
   しており、cache bump 毎に check script の追従編集が要る。BL-011 で openclaw に施した
