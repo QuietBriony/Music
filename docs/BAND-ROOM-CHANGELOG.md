@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v182 compact)
+# Band Room — Changelog (v65 → v183 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,18 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v183 compact — engine recorder module
+
+- `audio/music-recorder.js fm-91`: BL-008 next extraction。FM `REC`
+  button の `RecorderState` + `MediaRecorder` capture cluster を engine.js から
+  IIFE module へ移動。`window.MusicRecorder` を公開。
+- `engine.js fm-91`: local recorder cluster を module alias に置換し、
+  既存の REC button / teardown の `toggleLocalRecorder` / `stopLocalRecorder` flow は維持。
+- `fm.html` / `index.html` / `sw.js`: `engine.js?v=fm-91`、
+  `audio/music-stack-routing.js?v=fm-91`、`audio/music-focus-modulation.js?v=fm-91`、
+  `audio/music-recorder.js?v=fm-91` に cache bump。
+- `sw.js hazama-fm-v183`: fm-91 assets を precache。
 
 ## v182 compact — engine focus modulation module
 
