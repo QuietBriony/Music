@@ -19,6 +19,19 @@
 
 ---
 
+## 2026-05-17 — BL-007 stack-check deploy health
+- agent     : Codex
+- goal      : `stack-check` の health 拡張を過剰にせず実装する
+- repos     : Music
+- shipped   : `node scripts/stack-check.mjs --deploy-health` を追加。通常 gate はローカル
+  15 check のまま、任意指定時だけ active 5 repo の GitHub Pages URL に `deploy 200`
+  check を追加する
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。`--deploy-health` は PASS 20 / FAIL 0 / SKIP 0
+- backlog   : BL-007 を Done へ移動
+- next      : 自律で進められる軽作業はかなり薄い。残る高価値は BL-017 / BL-008（engine・要レビュー）
+  または BL-019（harvest・human-gate yes）
+- blockers  : なし
+
 ## 2026-05-17 — BL-015 cache marker hardcode 解消
 - agent     : Codex
 - goal      : `check-hazama-melody.mjs` の cache/version literal 追従を不要にする

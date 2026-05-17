@@ -13,6 +13,9 @@
 //   - tests/test_*.py            → python -m pytest tests/ -q
 //
 // 1 つでも FAIL があれば exit 1。pytest 未導入などは SKIP 扱い (BAD ではない)。
+//
+// Optional:
+//   --deploy-health         GitHub Pages の公開 URL が 200 を返すかも確認する
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
@@ -22,6 +25,14 @@ import { fileURLToPath } from "node:url";
 const SELF_DIR = dirname(fileURLToPath(import.meta.url));
 const STACK_ROOT = resolve(SELF_DIR, "..", "..");
 const ACTIVE_REPOS = ["Music", "chill", "drum-floor", "namima", "openclaw"];
+const CHECK_DEPLOY_HEALTH = process.argv.includes("--deploy-health");
+const DEPLOY_TARGETS = {
+  Music: "https://quietbriony.github.io/Music/",
+  chill: "https://quietbriony.github.io/chill/",
+  "drum-floor": "https://quietbriony.github.io/drum-floor/",
+  namima: "https://quietbriony.github.io/namima/",
+  openclaw: "https://quietbriony.github.io/openclaw/"
+};
 
 function run(cmd, args, cwd) {
   return spawnSync(cmd, args, { cwd, encoding: "utf8" });
@@ -56,6 +67,28 @@ function discoverChecks(repoDir) {
   return checks;
 }
 
+async function deployHealthResult(repo) {
+  const url = DEPLOY_TARGETS[repo];
+  if (!url) return { repo, check: "deploy 200", status: "SKIP", detail: "deploy URL not configured" };
+  if (typeof fetch !== "function" || typeof AbortController !== "function") {
+    return { repo, check: "deploy 200", status: "SKIP", detail: "fetch unavailable in this Node runtime" };
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+  try {
+    const response = await fetch(url, { cache: "no-store", signal: controller.signal });
+    if (response.status === 200) {
+      return { repo, check: "deploy 200", status: "PASS", detail: url };
+    }
+    return { repo, check: "deploy 200", status: "FAIL", detail: `${url} HTTP ${response.status}` };
+  } catch (error) {
+    const name = error?.name || "FetchError";
+    return { repo, check: "deploy 200", status: "FAIL", detail: `${url} ${name}` };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 const results = [];
 
 for (const repo of ACTIVE_REPOS) {
@@ -83,6 +116,9 @@ for (const repo of ACTIVE_REPOS) {
       const tail = `${r.stdout || ""}${r.stderr || ""}`.trim().split(/\r?\n/).slice(-3).join(" / ");
       results.push({ repo, check: c.name, status: "FAIL", detail: tail.slice(0, 240) });
     }
+  }
+  if (CHECK_DEPLOY_HEALTH) {
+    results.push(await deployHealthResult(repo));
   }
 }
 

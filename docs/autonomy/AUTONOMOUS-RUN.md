@@ -52,6 +52,12 @@ BACKLOG から、**この session で完了でき、`human-gate=no` または ga
 node scripts/stack-check.mjs            # → "0 BAD"
 ```
 
+GitHub Pages 反映後の疎通だけ確認したい時は任意で:
+
+```
+node scripts/stack-check.mjs --deploy-health
+```
+
 音を変えた場合は `docs/runtime-browser-listening-checklist.md` の該当項目も。
 
 ## 6. 締め（記録）

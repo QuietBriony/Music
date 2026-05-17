@@ -22,6 +22,8 @@ deploy はすべて GitHub Pages（`<remote>` の main ブランチ）。
 > **5 repo まとめての検証** は Music repo root で `node scripts/stack-check.mjs`。
 > 各 repo の `scripts/audit.py` / `scripts/check-*.mjs` / `tests/test_*.py` を
 > 自動発見して集約実行し、統一 PASS/FAIL を出す。`0 BAD` が commit の前提。
+> 公開後の軽い疎通確認が必要な時だけ `node scripts/stack-check.mjs --deploy-health` を使う。
+> active 5 repo の GitHub Pages URL が HTTP 200 を返すかを追加で見る（通常 gate には混ぜない）。
 
 ## Archived repos（触らない）
 

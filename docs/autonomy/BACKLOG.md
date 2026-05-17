@@ -74,17 +74,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - detail   : namima / chill / drum-floor を聴き比べ、次の tuning PR を 1 本だけ選ぶ
   人間レビュー。multi-repo 同時 tuning はしない。
 
-### BL-007 — stack-check の health 拡張を検討
-- priority : P2
-- repo     : stack
-- scope    : non-engine-code
-- agent    : either
-- human-gate: no
-- status   : wip — Codex 2026-05-17
-- source   : 本エンジン構築（2026-05-16）
-- detail   : `scripts/stack-check.mjs` に、pytest 未導入時の WARN 集計や
-  GitHub Pages deploy 後の 200 応答チェックを足すか検討。過剰にしない。
-
 ### BL-012 — chill の harvest reference を runtime recipe へ昇格検討
 - priority : P2
 - repo     : chill
@@ -152,6 +141,16 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 ---
 
 ## Done
+
+### BL-007 — stack-check の health 拡張を検討 ✅ 2026-05-17
+- repo: stack / scope: non-engine-code
+- 通常の `node scripts/stack-check.mjs` はローカル gate のまま維持し、任意フラグ
+  `--deploy-health` を追加。指定時のみ active 5 repo の GitHub Pages URL
+  （Music / chill / drum-floor / namima / openclaw）が HTTP 200 を返すかを
+  `deploy 200` check として表に加える。ネットワーク依存を通常 gate に混ぜないため、
+  過剰な重さや不安定化は避けた。
+- `node scripts/stack-check.mjs`: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。
+- `node scripts/stack-check.mjs --deploy-health`: PASS 20 / FAIL 0 / SKIP 0（0 BAD）。
 
 ### BL-015 — check-hazama-melody.mjs の version hardcode を解消 ✅ 2026-05-17
 - repo: Music / scope: non-engine-code
