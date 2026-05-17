@@ -14,6 +14,7 @@ const files = [
   "audio/music-stack-routing.js",
   "audio/music-focus-modulation.js",
   "audio/music-recorder.js",
+  "audio/music-packet.js",
   "presets/loader.js",
   "scripts/check-js.mjs",
   "scripts/check-band-room-logic.mjs",

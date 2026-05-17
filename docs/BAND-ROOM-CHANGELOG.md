@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v183 compact)
+# Band Room — Changelog (v65 → v184 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,24 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v184 compact — engine packet module
+
+- `audio/music-packet.js fm-92`: BL-008 next extraction。metadata-only の
+  Music session / orchestra packet builder cluster（約700行）を engine.js から
+  IIFE module へ移動。`window.MusicPacketKit` を公開。
+- `engine.js fm-92`: packet builder cluster を module alias に置換し、
+  既存の `window.MusicSessionPacket` / `window.MusicOrchestraPacket`
+  publication は engine.js 側に維持。
+- `audio/music-recorder.js` / `engine.js`: v183 回帰修正。共有 `#status-text`
+  writer の `setRecorderStatus` は recorder だけでなく mic・packet code からも
+  呼ばれるが、v183 の recorder 抽出で IIFE に閉じ込めてしまっていた
+  （mic toggle と packet sync が `ReferenceError` になる）。
+  `window.MusicRecorder.setStatus` として公開し直し、engine.js 側に alias を追加。
+- `fm.html` / `index.html` / `sw.js`: `engine.js?v=fm-92`、
+  `audio/music-stack-routing.js?v=fm-92`、`audio/music-focus-modulation.js?v=fm-92`、
+  `audio/music-recorder.js?v=fm-92`、`audio/music-packet.js?v=fm-92` に cache bump。
+- `sw.js hazama-fm-v184`: fm-92 assets を precache。
 
 ## v183 compact — engine recorder module
 
