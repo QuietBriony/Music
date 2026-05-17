@@ -19,6 +19,26 @@
 
 ---
 
+## 2026-05-17 — engine packet module + v183 regression fix (v184)
+- agent     : Claude Code (Opus 4.7) ＋ Codex（抽出実行）
+- goal      : BL-008 chain を継続し packet builder cluster を engine.js から分離
+- repos     : Music
+- shipped   : PR #136 — metadata-only の Music session/orchestra packet builder
+  cluster（約700行）を `audio/music-packet.js` へ抽出（v184・`window.MusicPacketKit`）。
+  cluster 内に挟まっていた非 packet helper 5 個（activePerformancePadNames /
+  isManualPerformanceInfluenceActive / makeMusicSessionId /
+  promotionTargetFromDestination / updateMusicStackSyncHelp）は engine.js に残置。
+  squash-merge 済み。engine.js は 14,324 → 13,712 行
+- regression: 検証中に v183 回帰を発見。`setRecorderStatus`（共有 #status-text
+  writer）が recorder IIFE に閉じ込められ mic toggle / packet sync が
+  ReferenceError。`window.MusicRecorder.setStatus` 公開＋engine.js alias で同 PR 内修正
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。ブラウザ実機で build/sync/
+  recommend/orchestra を SW cache クリア後に exercise、console エラー 0
+- backlog   : BL-008 進捗（packet 抽出完了）。BL-008 entry に v184 と回帰の教訓を追記
+- next      : BL-008 残候補は sampler layers / mic-follow。抽出時は cluster 外から
+  呼ばれる helper を grep で確認する手順を徹底
+- blockers  : なし
+
 ## 2026-05-17 — engine.js modularization chain (v182–v183)
 - agent     : Claude Code (Opus 4.7) ＋ Codex（抽出実行）
 - goal      : BL-008 satellite-script 抽出を継続し engine.js モノリスを縮小

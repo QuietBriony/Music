@@ -111,10 +111,14 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   （IIFE + `window.<Name>` 公開、ビルドステップ無し構成向け）を確立。抽出済み:
   cross-repo routing 推薦 → `audio/music-stack-routing.js`（約280行）、
   40Hz focus modulation → `audio/music-focus-modulation.js`（v182・約175行）、
-  local recorder → `audio/music-recorder.js`（v183・約180行）。いずれも挙動保存・
-  stack-check 0 BAD で squash-merge 済み（PR #131 / #134 / #135）。以降の抽出候補は
-  packet builders（約720行・metadata-only）/ sampler layers 等。engine.js は
-  14.3k 行台に縮小したが依然モノリスのため長期課題として継続。
+  local recorder → `audio/music-recorder.js`（v183・約180行）、
+  packet builders → `audio/music-packet.js`（v184・約700行・metadata-only）。
+  いずれも挙動保存・stack-check 0 BAD で squash-merge 済み
+  （PR #131 / #134 / #135 / #136）。engine.js は 14.8k → 13.7k 行に縮小。
+  以降の抽出候補は sampler layers / mic-follow 等。依然モノリスのため長期課題として継続。
+  **教訓**: v183 で `setRecorderStatus`（共有 status writer）を recorder IIFE に
+  閉じ込めてしまい mic/packet が ReferenceError（v184 検証で発覚・同 PR で修正）。
+  抽出時は「cluster 外から呼ばれる helper はないか」を grep で必ず確認すること。
 
 ---
 
