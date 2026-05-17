@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v184 compact)
+# Band Room — Changelog (v65 → v185 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,21 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v185 compact — engine hazama feedback module
+
+- `audio/music-hazama-feedback.js fm-93`: BL-008 next extraction。Hazama runtime
+  feedback telemetry cluster（9 functions / 約180行）を engine.js から
+  IIFE module へ移動。`music-runtime-feedback` payload を build して
+  opener / parent window へ postMessage し、`window.MusicHazamaFeedback` を公開。
+- `engine.js fm-93`: feedback cluster を module alias に置換。4 つの
+  interleaved Hazama-bridge helpers（`hazamaAutoFollowActive` 等）は
+  engine.js 側に維持。
+- `fm.html` / `index.html` / `sw.js`: `engine.js?v=fm-93`、
+  `audio/music-stack-routing.js?v=fm-93`、`audio/music-focus-modulation.js?v=fm-93`、
+  `audio/music-recorder.js?v=fm-93`、`audio/music-packet.js?v=fm-93`、
+  `audio/music-hazama-feedback.js?v=fm-93` に cache bump。
+- `sw.js hazama-fm-v185`: fm-93 assets を precache。
 
 ## v184 compact — engine packet module
 

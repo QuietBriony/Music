@@ -7,6 +7,7 @@ const routingSource = readFileSync("audio/music-stack-routing.js", "utf8");
 const focusModulationSource = readFileSync("audio/music-focus-modulation.js", "utf8");
 const recorderSource = readFileSync("audio/music-recorder.js", "utf8");
 const packetSource = readFileSync("audio/music-packet.js", "utf8");
+const feedbackSource = readFileSync("audio/music-hazama-feedback.js", "utf8");
 const html = readFileSync("fm.html", "utf8");
 const index = readFileSync("index.html", "utf8");
 const sw = readFileSync("sw.js", "utf8");
@@ -89,11 +90,17 @@ const packetMarkers = {
   core: cacheMarkerFor(index, "audio/music-packet.js", "Music Core"),
   sw: cacheMarkerFor(sw, "audio/music-packet.js", "Service worker")
 };
+const feedbackMarkers = {
+  fm: cacheMarkerFor(html, "audio/music-hazama-feedback.js", "FM page"),
+  core: cacheMarkerFor(index, "audio/music-hazama-feedback.js", "Music Core"),
+  sw: cacheMarkerFor(sw, "audio/music-hazama-feedback.js", "Service worker")
+};
 assertSameMarkers("Routing module", routingMarkers);
 assertSameMarkers("Engine", engineMarkers);
 assertSameMarkers("Focus modulation module", focusModulationMarkers);
 assertSameMarkers("Recorder module", recorderMarkers);
 assertSameMarkers("Packet module", packetMarkers);
+assertSameMarkers("Hazama feedback module", feedbackMarkers);
 assert.equal(routingMarkers.fm, engineMarkers.fm, "FM page should load routing and engine with the same fm cache marker");
 assert.equal(routingMarkers.core, engineMarkers.core, "Music Core should load routing and engine with the same fm cache marker");
 assert.equal(routingMarkers.sw, engineMarkers.sw, "Service worker should precache routing and engine with the same fm cache marker");
@@ -106,6 +113,9 @@ assert.equal(recorderMarkers.sw, engineMarkers.sw, "Service worker should precac
 assert.equal(packetMarkers.fm, engineMarkers.fm, "FM page should load packet module and engine with the same fm cache marker");
 assert.equal(packetMarkers.core, engineMarkers.core, "Music Core should load packet module and engine with the same fm cache marker");
 assert.equal(packetMarkers.sw, engineMarkers.sw, "Service worker should precache packet module and engine with the same fm cache marker");
+assert.equal(feedbackMarkers.fm, engineMarkers.fm, "FM page should load Hazama feedback module and engine with the same fm cache marker");
+assert.equal(feedbackMarkers.core, engineMarkers.core, "Music Core should load Hazama feedback module and engine with the same fm cache marker");
+assert.equal(feedbackMarkers.sw, engineMarkers.sw, "Service worker should precache Hazama feedback module and engine with the same fm cache marker");
 
 const routingSandbox = { window: {} };
 vm.runInNewContext(routingSource, routingSandbox);
@@ -144,5 +154,10 @@ assert.equal(typeof packetSandbox.window.MusicPacketKit.syncMusicSessionPacket, 
 assert.equal(typeof packetSandbox.window.MusicPacketKit.packetUnit, "function", "Packet module should expose packetUnit");
 assert.equal(typeof packetSandbox.window.MusicPacketKit.MUSIC_STACK_PACKET_STORAGE_KEY, "string", "Packet module should expose stack packet storage key");
 assert.ok(packetSandbox.window.MusicPacketKit.MUSIC_STACK_PACKET_STORAGE_KEY, "Packet module stack packet storage key should be non-empty");
+
+const feedbackSandbox = { window: {} };
+vm.runInNewContext(feedbackSource, feedbackSandbox);
+assert.equal(typeof feedbackSandbox.window.MusicHazamaFeedback.maybeSend, "function", "Hazama feedback module should expose maybeSend");
+assert.equal(typeof feedbackSandbox.window.MusicHazamaFeedback.request, "function", "Hazama feedback module should expose request");
 
 console.log(`Hazama FM melody check passed (${swCacheVersion}, ${engineMarkers.fm})`);
