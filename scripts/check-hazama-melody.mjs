@@ -32,9 +32,9 @@ assert.match(source, /case "piano":[\s\S]*EngineParams\.bassPattern = "x\.\.\.\.
 
 assert.match(source, /function hazamaFmConversationPacketState\(/, "Hazama FM packet should expose groove conversation metadata");
 assert.match(source, /conversation,\s*\n\s*integration_mode: "metadata-only"/, "Hazama FM conversation should stay metadata-only in the packet");
-assert.match(html, /engine\.js\?v=fm-86/, "FM page should load the v173 engine marker");
-assert.match(index, /engine\.js\?v=fm-86/, "Music Core should load the v173 engine marker");
-assert.match(sw, /const VERSION = "hazama-fm-v177"/, "Service worker should use v176 cache");
-assert.match(sw, /engine\.js\?v=fm-86/, "Service worker should precache the v173 engine marker");
+assert.match(html, /engine\.js\?v=fm-87/, "FM page should load the v173 engine marker");
+assert.match(index, /engine\.js\?v=fm-87/, "Music Core should load the v173 engine marker");
+assert.match(sw, /const VERSION = "hazama-fm-v178"/, "Service worker should use v176 cache");
+assert.match(sw, /engine\.js\?v=fm-87/, "Service worker should precache the v173 engine marker");
 
 console.log("Hazama FM melody check passed");

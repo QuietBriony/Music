@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v177 compact)
+# Band Room — Changelog (v65 → v178 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,17 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v178 compact — engine.js modularization step 1 (music-stack routing)
+
+- `engine.js fm-87`: engine.js モノリス（約14.8k行）の部分モジュール化 第1歩（BL-008）。
+  cross-repo ルーティング推薦クラスタ（`MUSIC_STACK_ROUTE_*` / `hazamaFmReviewCue`、
+  純データ + 純関数 約140行）を engine.js から新規 `audio/music-stack-routing.js` へ抽出。
+  engine.js 側は `window.MusicStackRoutes` への 3 行エイリアスに置換。挙動は完全保存。
+- `audio/music-stack-routing.js`: 新規モジュール（IIFE、`window.MusicStackRoutes` を公開）。
+  既存 helper（`audio/human-groove-governor.js` 等）と同じ satellite-script パターン。
+- `fm.html` / `index.html` / `sw.js`: `engine.js?v=fm-87` に cache bump、新モジュールを追加。
+- `sw.js hazama-fm-v178`: `engine.js?v=fm-87` と `audio/music-stack-routing.js?v=fm-87` を precache。
 
 ## v177 compact — Hazama FM melody harmony + humanize
 

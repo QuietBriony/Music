@@ -11,6 +11,7 @@ const files = [
   "audio/ai-fills.js",
   "audio/namima-audio-adapter.js",
   "audio/human-groove-governor.js",
+  "audio/music-stack-routing.js",
   "presets/loader.js",
   "scripts/check-js.mjs",
   "scripts/check-band-room-logic.mjs",
