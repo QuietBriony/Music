@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-05-17 — BL-016 Band Room kit label cleanup
+- agent     : Codex
+- goal      : Band Room kit selector の synth/sample 区別を低リスクに明確化
+- repos     : Music
+- shipped   : `KIT_OPTIONS` の表示 label に `synth:` / `sample:` prefix を追加。
+  `band-room.js?v=br-87` / `sw.js hazama-fm-v180` に cache bumpし、
+  `check-band-room-logic.mjs` で HTML/SW script marker 同期と label guard を追加
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）
+- browser   : `http://127.0.0.1:4174/band-room.html` で `br-87` と label 表示を確認。
+  console error なし
+- backlog   : BL-016 を Done へ移動
+- next      : human-gate なしの backlog は枯れ。残る実作業は実機/試聴/engine 判断待ち
+- blockers  : BL-003 / BL-004 / BL-006 / BL-012 / BL-017 / BL-019 は human-gate yes
+
 ## 2026-05-17 — BL-007 stack-check deploy health
 - agent     : Codex
 - goal      : `stack-check` の health 拡張を過剰にせず実装する

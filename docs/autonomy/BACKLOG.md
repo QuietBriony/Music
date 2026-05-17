@@ -125,23 +125,21 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   明確な境界（`MusicRadioBrainState` 周辺など）で PR を立て、user 別承認必須。
   自律ランの対象外。長期の保守性課題として記録のみ。
 
-### BL-016 — Band Room kit セレクタのラベル明確化（minor / 前提訂正済み）
-- priority : icebox
-- repo     : Music
-- scope    : non-engine-code
-- agent    : either
-- human-gate: no
-- status   : wip — Codex 2026-05-17
-- source   : dormant-asset 監査（2026-05-16）→ 同日の調査で前提を訂正
-- detail   : 当初 P1「実ドラムが synth 既定の裏に休眠」としたが、調査で **前提が誤りと判明** —
-  Band Room の既定 `kitSource` は `auto-self`（曲自身の抽出実ドラム）で実録音ドラムは
-  既に既定、dormant ではない。残る軽微な点のみ: kit セレクタ（`KIT_OPTIONS`、band-room.js
-  122-138）のラベルが synth と実 sample を視覚的に区別せず、セレクタが折り畳み `<details>`
-  内。やるならラベルに 🎹/🥁 等の区別を足すだけ（zero-risk・低価値）。
-
 ---
 
 ## Done
+
+### BL-016 — Band Room kit セレクタのラベル明確化 ✅ 2026-05-17
+- repo: Music / scope: non-engine-code
+- 前提訂正済みの minor item を消化。Band Room の `KIT_OPTIONS` label を
+  `synth:` と `sample:` prefix で揃え、AI synth kit と曲自身/catalog sample kit が
+  セレクタ上で区別できるようにした。既定 `auto-self` behavior は変更なし。
+- `band-room.js?v=br-87` / `sw.js hazama-fm-v180` に cache bump。
+- `check-band-room-logic.mjs` は Band Room script marker を literal ではなく
+  HTML/SW 同期で検証し、kit label guard も追加。
+- `node scripts/stack-check.mjs`: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。
+- Browser: `http://127.0.0.1:4174/band-room.html` で `br-87` と label 表示を確認、
+  console error なし。
 
 ### BL-007 — stack-check の health 拡張を検討 ✅ 2026-05-17
 - repo: stack / scope: non-engine-code

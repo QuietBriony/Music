@@ -4,6 +4,7 @@ import vm from "node:vm";
 
 const source = readFileSync("band-room.js", "utf8");
 const html = readFileSync("band-room.html", "utf8");
+const sw = readFileSync("sw.js", "utf8");
 const bandsRegistry = JSON.parse(readFileSync("presets/bands.json", "utf8"));
 
 const inertElement = () => ({
@@ -140,7 +141,6 @@ assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default s
 assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v168 mix");
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
 assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.68\)/, "Vocal stem default should sit forward without pinning the limiter");
-assert.match(html, /band-room\.js\?v=br-86/, "Band Room HTML should load the v171 script marker");
 assert.match(html, /rel="manifest" href="manifest-band-room\.webmanifest"/, "Band Room should expose its own PWA manifest");
 assert.match(source, /function scheduleMobileSuspendRelease\(/, "Band Room should run panic releases while mobile screen lock is happening");
 assert.match(source, /window\.addEventListener\("blur"/, "Band Room should treat mobile blur as a background transition");
@@ -204,6 +204,17 @@ assert.doesNotMatch(finalLyrics, /v2\.1|v3|draft|cut-up|候補|template/i, "Fina
 
 const savePrefsBody = source.match(/function savePrefs\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
 assert.doesNotMatch(savePrefsBody, /songId\s*:/, "Saved prefs should not restore the last song");
+
+const bandRoomScriptMarker = html.match(/band-room\.js\?v=(br-\d+)/);
+assert.ok(bandRoomScriptMarker, "Band Room HTML should load a cache-busted script marker");
+assert.match(
+  sw,
+  new RegExp(`band-room\\.js\\?v=${bandRoomScriptMarker[1]}`),
+  "Service worker should precache the same Band Room script marker"
+);
+assert.match(source, /label: "synth: AI drums \(default\)"/, "Kit selector should identify the synth kit");
+assert.match(source, /label: "sample: 曲自身の drums \(現在の曲\)"/, "Kit selector should identify the auto-self sample kit");
+assert.match(source, /label: "sample: Tabasco \/ TABASCO \(136\)"/, "Kit selector should identify catalog sample kits");
 
 const durationShortfalls = [];
 Object.values(bandsRegistry.bands || {}).forEach((band) => {

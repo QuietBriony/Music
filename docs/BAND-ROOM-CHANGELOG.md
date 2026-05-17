@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v179 compact)
+# Band Room — Changelog (v65 → v180 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,16 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v180 compact — Band Room kit source labels
+
+- `band-room.js br-87`: kit selector labels now distinguish `synth:` from
+  `sample:` sources, making the AI drum synth vs current-song/catalog sample kits
+  scannable without changing the default `auto-self` behavior.
+- `band-room.html` / `sw.js`: `band-room.js?v=br-87` cache bump。
+- `sw.js hazama-fm-v180`: Band Room script markerをprecache。
+- `check-band-room-logic.mjs`: Band Room script markerを literal ではなく
+  HTML/SW の同期で検証し、kit label の区別も guard。
 
 ## v179 compact — music-stack route recommendation module
 
