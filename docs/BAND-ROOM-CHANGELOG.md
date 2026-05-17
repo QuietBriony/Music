@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v181 compact)
+# Band Room — Changelog (v65 → v182 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -7,6 +7,18 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v182 compact — engine focus modulation module
+
+- `audio/music-focus-modulation.js fm-90`: BL-008 next extraction。FM `40HZ`
+  button の 40 Hz focus AM state / LFO / ramp / UI event dispatch cluster を
+  engine.js から IIFE module へ移動。`window.MusicFocusModulation` を公開。
+- `engine.js fm-90`: focus modulation cluster を module alias に置換し、
+  既存の `window.setFmFocusModeEnabled` / `window.getFmFocusModeState` API は維持。
+- `fm.html` / `index.html` / `sw.js`: `engine.js?v=fm-90`、
+  `audio/music-stack-routing.js?v=fm-90`、
+  `audio/music-focus-modulation.js?v=fm-90` に cache bump。
+- `sw.js hazama-fm-v182`: fm-90 assets を precache。
 
 ## v181 compact — engine dormant audit cleanup
 
