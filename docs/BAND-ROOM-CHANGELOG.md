@@ -1,10 +1,38 @@
-# Band Room — Changelog (v65 → v189 compact)
+# Band Room — Changelog (v65 → v190 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v190 compact — 音のフロー / キックのノイズ対策（先読みスケジューリング）
+
+- `engine.js fm-97`: 「音が自然につながらない」「キックがたまにノイズ」報告
+  への対策。スケジューリングの安全余裕を 3 点で拡げた:
+  1. **先読みヘッドルーム拡大** — `ToneScheduleGuard.nowLeadSec` を 4ms→30ms。
+     遅延した Transport step や raw `currentTime` 基準のジェスチャは要求時刻が
+     "ほぼ過去" になることがあり、4ms では描画クォンタム＋メインスレッド
+     ジッタの内側に入って attack が切れて鳴る（＝クリック）。30ms 確保で
+     オーディオスレッドが余裕を持って発音でき、Tone の 100ms lookAhead 内
+     なので定刻ノートは不変。
+  2. **キックのリトリガー debounce** — `kick`（monophonic MembraneSynth）は
+     punch パッド / acid trace / ambient ghost-pulse の複数経路から鳴り、
+     同じ step で ~10-30ms 差で衝突すると 2 発目が transient 途中で synth を
+     再起動 → ピッチ/振幅エンベロープの不連続がクリックになる。
+     `toneVoiceRetriggerTooSoon()` を追加し、前回発音から 60ms 以内に重なる
+     キックは時刻シフトせず drop（クリーンな 1 発を残す）。
+  3. **パッドジェスチャの先読み** — `triggerPadSignature()` はパッド押下時に
+     `now+0.002 … now+0.176` の多層オンセットを raw `currentTime` 基準で
+     組んでいたため前半が先読み窓に入りきらなかった。基準を
+     `currentTime + 50ms` にずらし、ジェスチャの形を保ったまま窓内に収めた。
+- `fm.html` / `index.html` / `sw.js`: `fm-97`、`hazama-fm-v190`。
+- `check-hazama-melody.mjs`: nowLeadSec ヘッドルーム / kick debounce /
+  パッドジェスチャ先読みを assert。
+- 出音の譜面・音色・コード進行は不変（スケジューリングの安全余裕のみ）。
+  BL-022 entry が予告した「次レバー = lookahead」の的を絞った適用。
 
 ---
 

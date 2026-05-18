@@ -1066,8 +1066,17 @@ function performanceNowMs() {
 }
 
 const ToneScheduleGuard = {
+  // Minimum separation between two triggers on the same voice — de-collides
+  // notes that would otherwise land on the exact same instant.
   minGapSec: 0.003,
-  nowLeadSec: 0.004,
+  // Scheduling headroom ("ちょい先読み"). A note whose requested time is in the
+  // near-past — a Transport step that fired late, or a gesture scheduled off
+  // raw currentTime — gets floored this far ahead of the audio clock. At 4ms
+  // the floor sat inside the render quantum + main-thread jitter, so floored
+  // notes still rendered late with a truncated attack: an audible click. ~30ms
+  // clears the quantum and lets the audio thread land the note cleanly. Still
+  // well within Tone's 100ms lookAhead, so on-time notes are never touched.
+  nowLeadSec: 0.03,
   lastByVoice: new Map()
 };
 
@@ -1095,13 +1104,38 @@ function safeToneScheduleTime(voiceKey, time) {
   return safe;
 }
 
+// Retrigger debounce for monophonic percussion (the kick). The kick is fired
+// from several uncoordinated paths (punch-pad signature, punch hold, acid
+// trace, ambient ghost-pulse); when two land within a few tens of ms they
+// don't read as two hits — the second restarts the MembraneSynth mid-transient
+// and the pitch/amp envelope discontinuity is heard as a click. This peeks at
+// the last *scheduled* time for the voice (without mutating it) so the wrapper
+// can drop the straggler. Compares absolute times both ways: a real collision
+// is two requests close together regardless of which was queued first, while a
+// kick a full beat away (or a Transport hit queued ~100ms ahead) is far enough
+// to fall outside the window and is left alone.
+function toneVoiceRetriggerTooSoon(scheduleKey, time, minRetriggerSec) {
+  if (!Number.isFinite(minRetriggerSec) || minRetriggerSec <= 0) return false;
+  const last = ToneScheduleGuard.lastByVoice.get(scheduleKey);
+  if (!Number.isFinite(last)) return false;
+  const requested = Number.isFinite(Number(time)) ? Number(time) : currentToneContextTime();
+  return Math.abs(requested - last) < minRetriggerSec;
+}
+
 function guardToneTriggerReleaseSchedule(voiceKey, source, timeArgIndex, options = {}) {
   if (!source || source.__musicTriggerGuarded) return source;
+  const scheduleKey = `${voiceKey}:attackRelease`;
   const originalTriggerAttackRelease = source.triggerAttackRelease;
   if (typeof originalTriggerAttackRelease === "function") {
     source.triggerAttackRelease = function guardedTriggerAttackRelease(...args) {
+      // Monophonic percussion: drop a retrigger that lands within
+      // minRetriggerSec of the previous hit rather than restarting the synth
+      // mid-transient (the source of the occasional kick click).
+      if (toneVoiceRetriggerTooSoon(scheduleKey, args[timeArgIndex], options.minRetriggerSec)) {
+        return source;
+      }
       if (args[timeArgIndex] == null || Number.isFinite(Number(args[timeArgIndex]))) {
-        args[timeArgIndex] = safeToneScheduleTime(`${voiceKey}:attackRelease`, args[timeArgIndex]);
+        args[timeArgIndex] = safeToneScheduleTime(scheduleKey, args[timeArgIndex]);
       }
       if (
         Number.isFinite(options.maxActiveVoices) &&
@@ -7556,7 +7590,11 @@ drumSkin.volume.value = -32;
 subImpact.volume.value = -30;
 reedBuzz.volume.value = -48;
 
-guardToneTriggerReleaseSchedule("kick", kick, 2);
+// kick: drop retriggers landing within 60ms of the last hit (see
+// toneVoiceRetriggerTooSoon). The punch-pad, acid-trace and ambient
+// ghost-pulse paths can all fire the kick on the same step — without this
+// they collide ~10-30ms apart and the MembraneSynth clicks on the restart.
+guardToneTriggerReleaseSchedule("kick", kick, 2, { minRetriggerSec: 0.06 });
 guardToneTriggerReleaseSchedule("hat", hat, 1);
 guardToneTriggerReleaseSchedule("bass", bass, 2);
 guardToneTriggerReleaseSchedule("pad", pad, 2, { maxActiveVoices: 52 });
@@ -7734,7 +7772,13 @@ function triggerMusicRadioBrainIdent(step, time, context = {}) {
 function triggerPadSignature(name, time) {
   if (!isPlaying || !initialized || typeof Tone === "undefined") return;
 
-  const now = Number.isFinite(time) ? time : currentToneContextTime();
+  // The gesture below layers onsets off `now` (now+0.002 … now+0.176). Fired
+  // from a pad press there's no Transport time, so base it a short lead ahead
+  // of the audio clock — otherwise the early onsets fall in the near-past, the
+  // scheduler floors each one separately, and the gesture's front collapses
+  // into a click. 50ms preserves the gesture shape, clears the nowLead floor,
+  // and stays snappy enough that the pad still feels immediate.
+  const now = Number.isFinite(time) ? time : currentToneContextTime() + 0.05;
   const energyNorm = clampValue(UCM_CUR.energy / 100, 0, 1);
   const observerNorm = clampValue(UCM_CUR.observer / 100, 0, 1);
   const creationNorm = clampValue(UCM_CUR.creation / 100, 0, 1);
