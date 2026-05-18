@@ -1,10 +1,40 @@
-# Band Room — Changelog (v65 → v191 compact)
+# Band Room — Changelog (v65 → v192 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v192 compact — 単調対策: セクション構造（塊・節・世界）
+
+- `engine.js fm-99`: ユーザー報告「まだ単調・ランダム感が気持ち悪い・節ごとに
+  世界がある感じが欲しい」への対策。**根本原因**: engine の 9 マクロ
+  パラメータ（energy / wave / … / observer）は約3分周期の sine で**常時
+  連続 morph** しており、一度も値を「保持」しない。だから音楽は永遠に
+  移ろい続け、どこにも定着せず、節・塊として知覚できなかった（散発的な
+  ランダム感の正体）。
+- **修正 = セクション構造の導入**。`SECTION_PROFILES` — 固定シーケンスの
+  「世界」6 つ（submerge 静かな立ち上がり → sprout 芽生え → flow グルーヴ →
+  surge 高揚ピーク → hollow 空白のブレイク → return 帰結）。各セクションは
+  マクロ params を自分の plateau に**引き寄せて 14〜18 小節 保持**し、
+  境界で次の世界へ step する。`SectionState` が小節ごとのクロック
+  （`advanceSection()` を `advanceGrooveStructure` から駆動）。
+  `updateAutoMixTargets` で各 param の `desired` をセクション plateau へ
+  再センタリングし、sine の振れ幅を `SECTION_LIFE_FACTOR`(0.2) まで縮小
+  ＝「保持されつつ少し息づく」。plateau の step は既存の `UCM_TARGET →
+  UCM_CUR` スムージングで数秒のグライドになる。
+- 結果: 連続モーフ → **離散したセクションの連なり**。density・dynamics・
+  tempo・音色は各セクションの plateau から導出されるので、世界ごとに
+  はっきり表情が変わる。約 4〜5 分で 1 周する曲のような構成。
+- `fm.html` / `index.html` / `sw.js`: `fm-99`、`hazama-fm-v192`。
+- `check-hazama-melody.mjs`: `SECTION_PROFILES` / `advanceSection` /
+  plateau hold を assert。
+- 楽器ごとのハード on/off ゲートや境界フィルは未実装（plateau の contrast
+  で density は十分振れる）。試聴して「ブレイクで完全にドラムを落としたい」
+  等あれば次弾で voice gate を追加。
 
 ---
 
