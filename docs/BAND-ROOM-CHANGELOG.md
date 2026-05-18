@@ -1,10 +1,37 @@
-# Band Room — Changelog (v65 → v190 compact)
+# Band Room — Changelog (v65 → v191 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v191 compact — もっさり対策 第1弾（pad の発音 + リバーブ + groove timing）
+
+- `engine.js fm-98`: ユーザー報告「音がもっさり・流れない」への対策 第1弾。
+  発音のキレ（articulation）に絞った修正:
+  1. **pad エンベロープ** — haze chord を鳴らす pad は `updateSoundForMode`
+     でモード別に attack/release が設定される。ambient は attack 1.5s /
+     release 4.0s で、1.5s かけて立ち上がり 4.0s 尾を引くため、小節ごとに
+     変わるコードが全部 wash に溶けて輪郭が出ていなかった（v189 で入れた
+     コード進行も埋もれていた）。全モードで attack/release を短縮:
+     ambient 1.5/4.0→0.6/2.4、lofi 1.2/3.2→0.5/2.0、dub 0.65/2.5→0.4/1.9、
+     jazz 0.55/2.2→0.34/1.7、techno 0.35/1.4→0.18/1.0、trance 0.45/1.8→
+     0.24/1.3、fallback（funk/piano）1.2/3.5→0.4/2.0。各モードの性格は維持
+     （ambient は最も柔らかく、techno は最もタイト）。
+  2. **リバーブの尾** — `globalReverb.decay` が長い 3 モードを短縮:
+     ambient 6.4→4.5s、dub 6.2→4.6s、trance 6.8→4.6s。まだ広い空間だが、
+     小節間隔のコード変化で尾が消えきらず濁る状態を解消。
+- `audio/human-groove-governor.js`: groove の micro-timing を片側遅れ
+  （`(sign+1)*0.5` で 0〜maxJitter の常時 late）から **拍中心**（`sign*0.5`）
+  へ。全ノートが必ず後ろにずれる一方向ドラッグが「もっさり」の一因だった。
+  スプレッド幅は同じまま、拍の前後へ均等に揺れるよう中心化。
+- `fm.html` / `index.html` / `sw.js`: `fm-98`、`hazama-fm-v191`。
+- 出音の譜面・コード進行・音色キャラクターは不変（発音の速さと残響長のみ）。
+- **これは第1弾（もっさり/キレ）**。次弾は「単調・展開不足」対策
+  （dynamics レンジ拡大・arc 強化）を試聴フィードバック後に予定。
 
 ---
 

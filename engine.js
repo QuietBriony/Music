@@ -7006,14 +7006,18 @@ const bass = new Tone.MonoSynth({
 const padFilter = new Tone.Filter(1000, "lowpass").connect(padBus);
 const pad = new Tone.PolySynth({
   voice: Tone.Synth,
-  // BL-022: capped from 64. The pad fires 1n/2n haze chords with a 3.5s
-  // release from ~20 trigger paths; an over-generous ceiling let voices
-  // pile up and spike CPU on simultaneous onsets. 24 bounds the load —
-  // an overflow steals the oldest (deep-decay, inaudible) voice.
+  // BL-022: capped from 64. The pad fires 1n/2n haze chords with a
+  // multi-second release from ~20 trigger paths; an over-generous ceiling
+  // let voices pile up and spike CPU on simultaneous onsets. 24 bounds the
+  // load — an overflow steals the oldest (deep-decay, inaudible) voice.
   maxPolyphony: 24,
   options: {
     oscillator: { type: "triangle" },
-    envelope: { attack: 1.2, decay: 0.7, sustain: 0.7, release: 3.5 }
+    // v191: fallback envelope for modes without a updateSoundForMode branch
+    // (funk / piano). Shortened from attack 1.2 / release 3.5 — a 1.2s swell
+    // plus 3.5s tail smeared every chord into formless wash ("もっさり").
+    // 0.4 / 2.0 lets each chord articulate while staying soft.
+    envelope: { attack: 0.4, decay: 0.7, sustain: 0.7, release: 2.0 }
   }
 }).connect(padFilter);
 
@@ -9642,9 +9646,13 @@ function updateSoundForMode(mode){
     if(mode==="ambient"){
       // fm-57: ambient = sine pad で柔らかく + long reverb tail
       // fm-61: + harp texture (4 小節 1 note) + cello sustained lead (2 小節 1 chord)
-      pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.5, decay:1.0, sustain:0.60, release:4.0} });
+      // v191: attack 1.5→0.6, release 4.0→2.4 — the chord still swells in
+      // softly but actually establishes instead of being a formless drift.
+      // Reverb decay 6.4→4.5 — still a wide hall, no longer a tail that
+      // never clears between bar-spaced chord changes.
+      pad.set({ oscillator:{type:"sine"}, envelope:{attack:0.6, decay:1.0, sustain:0.60, release:2.4} });
       padFilter.frequency.rampTo(760, 1.2);
-      globalReverb.decay = 6.4;
+      globalReverb.decay = 4.5;
       globalReverb.wet.rampTo(0.30, 1.2);
       globalDelay.wet.rampTo(0.08, 1.2);
       bass.set({ oscillator:{type:"sine"}, envelope:{attack:0.03, decay:0.40, sustain:0.30, release:1.6} });
@@ -9653,7 +9661,8 @@ function updateSoundForMode(mode){
     }else if(mode==="lofi"){
       // fm-58: 完全 Nujabes piano trio + breakbeat — pad/bass/drum 全部
       // 実 sample に。synth voices は裏に追いやって sampler が前面を取る。
-      pad.set({ oscillator:{type:"sine"}, envelope:{attack:1.2, decay:0.8, sustain:0.5, release:3.2} });
+      // v191: attack 1.2→0.5, release 3.2→2.0 — articulation pass.
+      pad.set({ oscillator:{type:"sine"}, envelope:{attack:0.5, decay:0.8, sustain:0.5, release:2.0} });
       try { pad.volume.rampTo(-28, 1.2); } catch (e) {}
       try { bass.volume.rampTo(-26, 1.2); } catch (e) {}  // synth bass も裏へ
       padFilter.frequency.rampTo(2000, 1.0);
@@ -9672,11 +9681,12 @@ function updateSoundForMode(mode){
     }else if(mode==="dub"){
       // fm-61: dub = electric bass の deep echo + organ の sustained chord
       // synth pad は半分まで減衰、bass synth はほぼ無音 (実 bass が前面)
-      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.65, decay:0.5, sustain:0.5, release:2.5} });
+      // v191: attack 0.65→0.4, release 2.5→1.9 — articulation pass.
+      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.4, decay:0.5, sustain:0.5, release:1.9} });
       try { pad.volume.rampTo(-14, 1.0); } catch (e) {}
       try { bass.volume.rampTo(-22, 1.0); } catch (e) {}
       padFilter.frequency.rampTo(1400, 0.9);
-      globalReverb.decay = 6.2;
+      globalReverb.decay = 4.6;   // v191: 6.2→4.6 — shorter tail
       globalReverb.wet.rampTo(0.34, 0.9);
       globalDelay.delayTime = "4n.";
       globalDelay.feedback.rampTo(0.55, 0.8);
@@ -9688,7 +9698,8 @@ function updateSoundForMode(mode){
       // fm-60: jazz mode も catalog 経由で実楽器化
       //   piano (Salamander), drums (acoustic kit), guitar (nylon、lead 役)
       // synth pad/bass は -22 dB に減衰 (二重発音回避)
-      pad.set({ oscillator:{type:"triangle"}, envelope:{attack:0.55, decay:0.6, sustain:0.48, release:2.2} });
+      // v191: attack 0.55→0.34, release 2.2→1.7 — articulation pass.
+      pad.set({ oscillator:{type:"triangle"}, envelope:{attack:0.34, decay:0.6, sustain:0.48, release:1.7} });
       try { pad.volume.rampTo(-22, 1.0); } catch (e) {}
       padFilter.frequency.rampTo(1800, 0.9);
       globalReverb.decay = 4.2;
@@ -9699,7 +9710,8 @@ function updateSoundForMode(mode){
       startJazzPianoLayer();
       startJazzDrumLayer();
     }else if(mode==="techno"){
-      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.35, decay:0.35, sustain:0.36, release:1.4} });
+      // v191: attack 0.35→0.18, release 1.4→1.0 — articulation pass.
+      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.18, decay:0.35, sustain:0.36, release:1.0} });
       padFilter.frequency.rampTo(2200, 0.7);
       globalReverb.decay = 4.2;
       globalReverb.wet.rampTo(0.18, 0.7);
@@ -9708,9 +9720,10 @@ function updateSoundForMode(mode){
       globalDelay.wet.rampTo(0.16, 0.7);
       bass.set({ oscillator:{type:"sawtooth"}, filter:{Q:2.2}, filterEnvelope:{baseFrequency:55, octaves:3.3}, envelope:{attack:0.005, decay:0.18, sustain:0.2, release:0.25} });
     }else if(mode==="trance"){
-      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.45, decay:0.45, sustain:0.45, release:1.8} });
+      // v191: attack 0.45→0.24, release 1.8→1.3 — articulation pass.
+      pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.24, decay:0.45, sustain:0.45, release:1.3} });
       padFilter.frequency.rampTo(2600, 0.9);
-      globalReverb.decay = 6.8;
+      globalReverb.decay = 4.6;   // v191: 6.8→4.6 — shorter tail
       globalReverb.wet.rampTo(0.30, 0.9);
       globalDelay.delayTime = "8n.";
       globalDelay.feedback.rampTo(0.34, 0.9);
