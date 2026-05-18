@@ -239,7 +239,12 @@
       grainScale = clamp(0.88 + state.grain * 0.3 - state.repair * 0.16, 0.58, 1.2);
     }
 
-    const offsetMs = ((sign + 1) * 0.5) * maxJitterMs;
+    // v191: centred micro-timing. ((sign+1)*0.5) mapped sign∈[-1,1] onto
+    // [0,1], so every note was pushed 0…maxJitter *late* — a one-sided drag
+    // that reads as sluggish ("もっさり"). sign*0.5 keeps the same spread but
+    // centres it on the beat: the organic wander now lands both slightly
+    // ahead of and behind the pulse instead of always behind it.
+    const offsetMs = sign * 0.5 * maxJitterMs;
 
     return {
       role,
