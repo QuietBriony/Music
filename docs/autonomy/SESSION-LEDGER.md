@@ -19,6 +19,31 @@
 
 ---
 
+## 2026-05-18 — Hazama FM 単調対策: セクション構造 (v192)
+- agent     : Claude Code (Opus 4.7) ＋ background research agent ×2
+  （development/dynamics アーキ、section/randomness 系のマップ）
+- goal      : ユーザー報告「まだ単調・ランダム感が気持ち悪い・節ごとに世界が
+  ある感じが欲しい（塊で）」への対策
+- repos     : Music
+- shipped   : PR #144（v192）— セクション構造の導入。research agent のマップで
+  根本原因を特定 — engine の 9 マクロ params が約3分周期 sine で常時連続
+  morph し一度も保持しない＝節として知覚不能だった。修正: `SECTION_PROFILES`
+  （固定 6 セクション submerge→sprout→flow→surge→hollow→return）+
+  `SectionState` + `advanceSection()`（小節クロック）。`updateAutoMixTargets`
+  で各 param の desired をセクション plateau へ再センタリング、sine を
+  `SECTION_LIFE_FACTOR` 0.2 まで縮小＝保持されつつ少し息づく。連続モーフ →
+  離散セクションの連なり（約 4〜5 分周期）。`window.SectionState` を debug 用公開
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody v192/fm-99
+- backlog   : BL なし（ユーザー直接フィードバック対応・もっさり→単調 第3弾）
+- next      : 試聴フィードバック待ち。次弾候補（試聴次第）— (a) 楽器ごとの
+  ハード voice gate（ブレイクで完全にドラムを落とす等、世界の差をさらに明確に）、
+  (b) セクション境界の fill / transition cue（塊のエッジを立てる）、
+  (c) セクション内パターン反復の強化（ランダム感をさらに抑える）、
+  (d) UI にセクション名表示（fm.js）
+- blockers  : 試聴フィードバック待ち（v190→v191→v192 は連続した出音改善の流れ）
+
+---
+
 ## 2026-05-18 — Hazama FM もっさり対策 第1弾: articulation pass (v191)
 - agent     : Claude Code (Opus 4.7) ＋ background research agent（engine.js
   development/dynamics アーキテクチャのマップ）
