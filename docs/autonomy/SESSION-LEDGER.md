@@ -19,6 +19,26 @@
 
 ---
 
+## 2026-05-18 — Hazama FM 音のフロー / キックのノイズ修正 (v190)
+- agent     : Claude Code (Opus 4.7)
+- goal      : ユーザー報告「音が自然につながらない / キックがたまにノイズ」を修正
+- repos     : Music
+- shipped   : PR #142（v190）— スケジューリングの安全余裕を 3 点拡張。
+  (1) `ToneScheduleGuard.nowLeadSec` 4ms→30ms — near-past に落ちたノートが
+  描画クォンタム内に floor され attack 欠け（＝クリック）していた先読み不足を解消。
+  (2) kick リトリガー debounce — `toneVoiceRetriggerTooSoon()` 追加、複数経路
+  （punch / acid / ghost-pulse）が同 step で ~10-30ms 衝突したとき 2 発目を
+  drop し monophonic MembraneSynth の transient 途中再起動クリックを止めた。
+  (3) `triggerPadSignature()` のジェスチャ基準を `currentTime+50ms` に先読み。
+  譜面・音色・コード進行は不変
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody は v190/fm-97
+- backlog   : BL なし（session 内で報告→修正完結）。BL-022 の音詰まりとは別系統
+  — あちらは polyphony 負荷、今回は scheduling headroom
+- next      : 試聴 — `fm.html` をジャンル横断で再生し、キックの重なりクリックが
+  消えたか / 流れが出たか / pad 押下の反応（~50-80ms 想定）を確認。既存の
+  human 待ち（BL-022 / BL-004 / v189 / モバイル実機）は据え置き
+- blockers  : 人間の耳での確認待ち
+
 ## 2026-05-18 — BL-004 + openclaw hub 統合 + コード進行 (v188–v189)
 - agent     : Claude Code (Opus 4.7) ＋ Codex（hub 統合・UI 簡素化の移植）
 - goal      : 試聴ゲート整備、hub 一本化、pad のコード進行整備
