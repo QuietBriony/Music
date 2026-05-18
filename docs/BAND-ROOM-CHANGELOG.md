@@ -1,10 +1,24 @@
-# Band Room — Changelog (v65 → v186 compact)
+# Band Room — Changelog (v65 → v187 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v187 compact — BL-022: PolySynth maxPolyphony cap（音詰まり対策）
+
+- `engine.js fm-94`: Hazama FM ブラウザ再生の音詰まり（同時起動音での負荷
+  スパイク）対策。`pad` PolySynth の `maxPolyphony` を 64→24、`pianoMemory` を
+  48→24 に下げ、発音数に天井を設けた。`pad` は 3.5s release の `1n`/`2n`
+  haze chord を 20+ 経路から鳴らすため上限過大だと voice が積み上がり CPU
+  スパイクになっていた。超過時は最古（深い減衰中＝ほぼ不可聴）の voice を
+  steal。`pianoMemory` は短尺 note なので 24 で十分な余裕。
+- `fm.html` / `index.html` / `sw.js`: `engine.js?v=fm-94`、`sw.js hazama-fm-v187`。
+- 出音ロジック・コード進行・音色は不変（polyphony 上限のみ）。次レバーが要れば
+  `Tone.context.lookAhead` / `latencyHint: "playback"`（BL-022 entry 参照）。
 
 ---
 

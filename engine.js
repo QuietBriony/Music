@@ -6972,7 +6972,11 @@ const bass = new Tone.MonoSynth({
 const padFilter = new Tone.Filter(1000, "lowpass").connect(padBus);
 const pad = new Tone.PolySynth({
   voice: Tone.Synth,
-  maxPolyphony: 64,
+  // BL-022: capped from 64. The pad fires 1n/2n haze chords with a 3.5s
+  // release from ~20 trigger paths; an over-generous ceiling let voices
+  // pile up and spike CPU on simultaneous onsets. 24 bounds the load —
+  // an overflow steals the oldest (deep-decay, inaudible) voice.
+  maxPolyphony: 24,
   options: {
     oscillator: { type: "triangle" },
     envelope: { attack: 1.2, decay: 0.7, sustain: 0.7, release: 3.5 }
@@ -7493,7 +7497,9 @@ const glass = new Tone.FMSynth({
 const pianoMemoryFilter = new Tone.Filter(1800, "lowpass").connect(globalDelay);
 const pianoMemory = new Tone.PolySynth({
   voice: Tone.Synth,
-  maxPolyphony: 48,
+  // BL-022: capped from 48. Short 16n/32n/64n notes free voices fast,
+  // so 24 is ample headroom while bounding the simultaneous-onset load.
+  maxPolyphony: 24,
   options: {
     oscillator: { type: "triangle" },
     envelope: { attack: 0.004, decay: 0.18, sustain: 0.045, release: 0.5 }
