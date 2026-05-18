@@ -164,6 +164,49 @@
     </p>
 
     <section>
+      <h2>直近の出荷（試聴 / 実機で確認）</h2>
+      <p style="margin: 0 0 12px; color: var(--sub); font-size: 13px;">
+        今セッション（〜v188）で出した変更。ship-then-verify — Pages で聴いて / 実機で触って確認する。
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>変更</th>
+            <th>version</th>
+            <th>確認すること</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>音詰まり対策（BL-022）</td>
+            <td>v187</td>
+            <td><code>fm.html</code> を再生し、同時起動音（genre 切替・dense ambient・techno+acid）で詰まりが減ったか</td>
+          </tr>
+          <tr>
+            <td>40Hz depth A/B（BL-004）</td>
+            <td>v188</td>
+            <td><code>fm.html</code>（8%）↔ <code>fm.html?focusDepth=5</code>（5%）で <code>40HZ</code> を聴き比べ、default を決める</td>
+          </tr>
+          <tr>
+            <td>モバイル / PWA レイアウト</td>
+            <td>FM v186 / namima</td>
+            <td>実機スマホの PWA で、上下の見切れ解消・下部の操作子（<code>40HZ</code> 等）に到達できるか</td>
+          </tr>
+          <tr>
+            <td>engine.js モジュール化</td>
+            <td>v182–185</td>
+            <td>FM が従来どおり鳴るか通し試聴（挙動保存のはず・回帰確認）。mic / SYNC も動くか</td>
+          </tr>
+          <tr>
+            <td>chill 新 recipe ×2</td>
+            <td>chill #35</td>
+            <td>chill radio で <code>Midnight Whisper</code> / <code>Morning Light</code> を選んで試聴</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
       <h2>Human-gate backlog（待ち行列）</h2>
       <p style="margin: 0 0 12px; color: var(--sub); font-size: 13px;">
         自律実装で進められる作業は枯れました。残る backlog はすべて人間の耳・手・taste 判断待ちです。
@@ -186,10 +229,10 @@
             <td>車側の volume / track ボタンがメディア音声として効くか。NG なら bridge 調整 PR を起票。</td>
           </tr>
           <tr>
-            <td>BL-004<br />P2</td>
+            <td>BL-004<br />P2・v188 機構出荷済</td>
             <td>Hazama FM 40Hz focus depth A/B</td>
-            <td><code>fm.html</code> で <code>40HZ</code> を ON。8% と 5% を聴き比べ（depth 切替は実装が要るので先に依頼）</td>
-            <td>8% AM が耳に違和感を出すか。出るなら 5% へ落とす。</td>
+            <td><code>fm.html</code>（8%）と <code>fm.html?focusDepth=5</code>（5%）を <code>40HZ</code> ON で聴き比べ。status に現 depth を表示</td>
+            <td>8% AM が耳に違和感を出すか。出るなら default を 5% に。</td>
           </tr>
           <tr>
             <td>BL-006<br />P2</td>
