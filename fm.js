@@ -1225,6 +1225,19 @@
 
   function onRuntimeState(event) {
     const detail = event.detail || (typeof window !== "undefined" ? window.MusicRuntimeState : null);
+
+    // v194: section-name readout. SectionState is the engine's per-bar
+    // sectional-form clock (window.SectionState) — show which "world" is
+    // playing. Updated before the radio-brain block so it shows even on the
+    // first tick / when radioBrain is briefly absent.
+    const sectionEl = $("fm-section");
+    if (sectionEl) {
+      const sec = typeof window !== "undefined" ? window.SectionState : null;
+      sectionEl.textContent = sec && sec.started && sec.name
+        ? `section · ${sec.name}`
+        : "section · —";
+    }
+
     const rb = detail && detail.radioBrain;
     if (!rb) return;
 

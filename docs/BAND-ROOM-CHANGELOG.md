@@ -1,10 +1,36 @@
-# Band Room — Changelog (v65 → v193 compact)
+# Band Room — Changelog (v65 → v194 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v194 compact — セクション仕上げ2: 音詰まり修正 + 強弱拡大 + セクション名表示
+
+- `engine.js fm-101`: 試聴フィードバック対応。
+  1. **音詰まり修正** — 「たまにウっと詰まる」の原因を特定。`globalReverb
+     .decay` を `updateSoundForMode` がモード毎に再代入していた。Tone.Reverb の
+     `decay` は setter で、代入のたびにインパルス応答を OfflineAudioContext で
+     再レンダする ＝ 同期 CPU スパイク。radio brain が約 60〜90 秒でモードを
+     回すたびにこれが走り、音が詰まっていた。`decay` を構築時の固定値（4.3）に
+     し、6 個の per-mode 再代入を削除。モード別のリバーブ感は `wet` で付ける。
+  2. **セクションの強弱を拡大** — 「のっぺり・打ち込み的な聞かせどころが欲しい」
+     対応。各 `SECTION_PROFILES` に `space`（休符確率の倍率）を追加。surge は
+     `drive 1.55 / space 0.40` ＝ 詰まった高密度の「打ち込み」見せ場、hollow は
+     `drive 0 / space 1.95` ＝ ドラムの無い空白のブレイク、と振り幅を拡大。
+     surge は energy 90（≈ アップテンポ）、hollow は energy 15。
+  3. **セクション名を `SectionState.name` に保持**（UI 表示用）。
+- `fm.js fm-66` / `fm.html` / `fm.css fm-52`: FM 画面に現在のセクション名を表示
+  （`#fm-section`「section · surge」等、`#fm-next` の下）。`window.SectionState`
+  から `onRuntimeState` で更新。
+- `fm.html` / `index.html` / `sw.js`: `fm-101` / `fm.js fm-66` / `fm.css fm-52`、
+  `hazama-fm-v194`。
+- `check-hazama-melody.mjs`: `space` と「`globalReverb.decay` 再代入なし」を assert。
+- 注: セクション機能は今のところ ANY ピル（AUTOMIX ON）専用。個別ジャンルで
+  効かせるのは次弾。
 
 ---
 

@@ -88,9 +88,11 @@ assert.match(source, /const SECTION_PROFILES = \[/, "Engine should define sectio
 assert.match(source, /function advanceSection\(/, "Engine should define a per-bar section clock");
 assert.match(source, /\n  advanceSection\(\);/, "advanceGrooveStructure should drive the section clock once per bar");
 assert.match(source, /const sectionTarget = sectionMacroTarget\(key\)/, "Auto-mix targets should be held on the active section plateau");
-// v193: section drum gate + boundary fill cue.
-assert.match(source, /drive: [\d.]+, targets:/, "Section profiles should carry a per-section drum-gate drive");
+// v193/v194: section drum gate + rest-density `space` + boundary fill cue.
+assert.match(source, /drive: [\d.]+, space: [\d.]+, targets:/, "Section profiles should carry drum-gate `drive` and rest-density `space`");
 assert.match(source, /SectionState\.fillCue/, "Section boundaries should cue a fill into the next world");
+// v194: the reverb IR must not be re-rendered at runtime (the audio-choke fix).
+assert.doesNotMatch(source, /globalReverb\.decay\s*=/, "globalReverb.decay must not be reassigned at runtime — it re-renders the reverb IR and chokes the audio");
 
 assert.match(packetSource, /function hazamaFmConversationPacketState\(/, "Hazama FM packet should expose groove conversation metadata");
 assert.match(packetSource, /conversation,\s*\n\s*integration_mode: "metadata-only"/, "Hazama FM conversation should stay metadata-only in the packet");
