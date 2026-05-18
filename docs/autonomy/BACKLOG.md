@@ -83,9 +83,13 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : runtime
 - agent    : claude（実装）+ human（試聴判断）
 - human-gate: yes
+- status   : wip — A/B 機構を出荷済み（PR #140 / v188, 2026-05-18）。試聴判断待ち
 - source   : docs/USER-NOTES-MEMO.md
 - detail   : 40Hz focus mode（default OFF / 8% AM）が耳で違和感を出すか A/B。
   強く感じる場合は depth を 8%→5% に落とす。実装は自律ラン可、最終判断は試聴。
+  **進捗（v188）**: A/B 機構を実装 — `fm.html?focusDepth=5`（5%）と `fm.html`
+  （8%）を聴き比べ可能。focus status に現 depth を併記。`MusicFocusModulation
+  .setDepth()` でも切替可。残るは試聴して 8%/5% を決め、default を確定すること。
 
 ### BL-006 — cross-repo listening review round
 - priority : P2
