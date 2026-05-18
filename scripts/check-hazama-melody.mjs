@@ -63,6 +63,25 @@ assert.match(source, /triggerSamplerBasslineBar\(sampler, time,[\s\S]*register: 
 assert.match(source, /case "funk":[\s\S]*EngineParams\.bassPattern = "x\.\.x\.\.o\.x\.\.\.x\.o\."/, "Funk mode should have a directed 16-step bass pocket");
 assert.match(source, /case "piano":[\s\S]*EngineParams\.bassPattern = "x\.\.\.\.\.\.\.o\.\.\.\.\.\.\."/, "Piano mode should keep a sparse directed 16-step bass gate");
 
+// v190: scheduling-flow guard — look-ahead headroom + kick retrigger debounce.
+const nowLeadMatch = source.match(/nowLeadSec:\s*([\d.]+)/);
+assert.ok(nowLeadMatch, "Tone schedule guard should define nowLeadSec");
+assert.ok(
+  Number(nowLeadMatch[1]) >= 0.02,
+  "Tone schedule guard nowLeadSec should keep look-ahead headroom (>=20ms) so near-past notes do not render late with a clicked attack"
+);
+assert.match(source, /function toneVoiceRetriggerTooSoon\(/, "Engine should debounce monophonic percussion retriggers");
+assert.match(
+  source,
+  /guardToneTriggerReleaseSchedule\("kick", kick, 2, \{ minRetriggerSec: [\d.]+ \}\)/,
+  "Kick guard should drop too-soon retriggers instead of restarting the synth mid-transient"
+);
+assert.match(
+  source,
+  /Number\.isFinite\(time\) \? time : currentToneContextTime\(\) \+ 0\.0\d+/,
+  "Pad signature gestures should schedule a lead ahead of the audio clock"
+);
+
 assert.match(packetSource, /function hazamaFmConversationPacketState\(/, "Hazama FM packet should expose groove conversation metadata");
 assert.match(packetSource, /conversation,\s*\n\s*integration_mode: "metadata-only"/, "Hazama FM conversation should stay metadata-only in the packet");
 
