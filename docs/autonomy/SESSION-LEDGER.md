@@ -19,6 +19,24 @@
 
 ---
 
+## 2026-05-18 — BL-004 + openclaw hub 統合 + コード進行 (v188–v189)
+- agent     : Claude Code (Opus 4.7) ＋ Codex（hub 統合・UI 簡素化の移植）
+- goal      : 試聴ゲート整備、hub 一本化、pad のコード進行整備
+- repos     : Music, openclaw
+- shipped   : PR #140（v188）— BL-004: 40Hz focus depth の `?focusDepth=` A/B 機構
+  ＋ `setDepth()`。openclaw PR #28 — Music の human-review dashboard を OpenClaw
+  Desk の `#human-review` に統合（旧 `Music/docs/...html` は redirect stub 化）。
+  PR #29 — `#human-review` に本番 URL ボード追加。PR #30 — `#human-review` を
+  progressive disclosure（`desk-details` 折りたたみ）＋重複（触らないもの↔Guardrails）
+  削除で簡素化。Music PR #141（v189）— pad の haze 和声を `HAZE_CHORD_PROGRESSION`
+  でジャンル別の意図的進行へ（小節ごと前進、director のキー転調はその上に維持）
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。各 repo checks も PASS
+- backlog   : BL-004 を wip（機構出荷済・試聴判断待ち）に更新
+- next      : 残りは全て human — 試聴（BL-022 / BL-004 / v189 chord / モジュール化
+  回帰 / モバイル実機）、BL-003 実車、創作判断（namima 休眠 mood / drum-floor
+  riff_shout_floor）。低リスクな自律実装レーンは枯れた
+- blockers  : 人間の耳・実機・taste 判断待ち
+
 ## 2026-05-18 — mobile/PWA layout + BL-022 音詰まり修正 (v186–v187)
 - agent     : Claude Code (Opus 4.7)
 - goal      : スマホ/PWA の UI 不具合と BL-022 音詰まりを修正
