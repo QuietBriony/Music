@@ -1,10 +1,34 @@
-# Band Room — Changelog (v65 → v194 compact)
+# Band Room — Changelog (v65 → v195 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v195 compact — モード遷移の DJ クロスフェード
+
+- `engine.js fm-102`: ユーザー報告「モードが変わるとき**急に始まって急に止まる**」
+  対策。原因 — radio brain がモードを回すたび、`updateSoundForMode` が古い
+  モードの sample layer（harp / cello / piano / bass / drum / organ の
+  sampler）を**即停止**し、新モードのを full volume で**即開始**していた
+  （ハードカット）。
+- **修正 ＝ レイヤーのクロスフェード**。これらの sampler は永続で `.volume`
+  が ramp 可能なので、モード変更時に古いモードの sampler を約 2 小節かけて
+  フェードアウト（フェード後にループを `clear`）し、新モードのを無音から
+  フェードイン。`MODE_LAYERS` マップ + `crossfadeOutOtherModes()` /
+  `fadeInModeLayers()` を追加し、`updateSoundForMode(mode, transitionSec)` に
+  遷移秒数を渡す。`commitPhraseLockedMode` がモード変更時に約 2 小節分を渡す。
+  trigger 関数や 18 個の `start*/stop*Layer` 関数は無改変 —
+  `updateSoundForMode` とヘルパーのみ。
+- BPM について: 調査の結果、BPM はすでに DJ 的に滑らか（`energy` 由来・二重
+  スムージング ＋ 1.6s ramp、モード変更で snap しない）。詰まって聞こえたのは
+  layer のハードカットが原因 — それを直せば BPM も滑らかに繋がって聞こえる。
+- `fm.html` / `index.html` / `sw.js`: `fm-102`、`hazama-fm-v195`。
+- `check-hazama-melody.mjs`: クロスフェード関数を assert。
+- 音色・譜面・セクション構造は不変（遷移の繋ぎ方のみ）。
 
 ---
 
