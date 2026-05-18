@@ -19,6 +19,28 @@
 
 ---
 
+## 2026-05-18 — Hazama FM セクション仕上げ: ドラムゲート + 境界フィル (v193)
+- agent     : Claude Code (Opus 4.7)
+- goal      : v192 セクション構造への「進めて」指示 — 各セクションの輪郭を強める
+- repos     : Music
+- shipped   : PR #145（v193）— (1) セクション・ドラムゲート: 各
+  `SECTION_PROFILES` に `drive`（submerge/hollow 0 ＝ ドラムほぼ消える
+  ブレイク、flow 1.0、surge 1.3 ＝ 高密度ピーク）。`advanceGrooveStructure`
+  で groove governor / mic-follow の後に `kick/hat/bassProb` を `drive` で
+  再スケール（governor の prob scaling と同じ場所・同じ手法）。
+  (2) 境界フィル: `SectionState.fillCue` — セクション境界の 1 小節手前で
+  `GrooveState.fillActive` を強制 ON、塊のエッジを立てる。trigger 関数は
+  無改変、既存 prob / fill フラグ経路のみ
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody v193/fm-100
+- backlog   : BL なし（v190→v193 連続の出音改善・ユーザー直接フィードバック）
+- next      : v192 / v193 の試聴フィードバック待ち。残候補 — セクション内の
+  パターン反復強化、UI へのセクション名表示（fm.js）、profile 数値の試聴
+  チューニング。さらに強い voice gate が要れば trigger 単位の surgical gate
+  （ambient ghost-pulse 等）も可能
+- blockers  : 試聴フィードバック待ち
+
+---
+
 ## 2026-05-18 — Hazama FM 単調対策: セクション構造 (v192)
 - agent     : Claude Code (Opus 4.7) ＋ background research agent ×2
   （development/dynamics アーキ、section/randomness 系のマップ）
