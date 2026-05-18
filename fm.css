@@ -160,6 +160,18 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
   text-transform: lowercase;
 }
 
+/* v194: current sectional-form "world" readout — a touch brighter than
+   #fm-next so the section the listener is in is easy to spot. */
+#fm-section {
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  color: var(--accent-soft);
+  opacity: 0.82;
+  min-height: 1.4em;
+  text-transform: lowercase;
+}
+
 #fm-resume {
   margin-top: 16px;
   font-size: 11px;

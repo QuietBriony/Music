@@ -67,16 +67,18 @@ const AUTOMIX_PROFILE = {
 // `bars` bars, then it steps to the next. The order is a deliberate arc —
 // quiet emergence → groove → intense peak → empty breakdown → return groove —
 // so the piece has perceptible chunks (塊 / 節), each its own world.
-// `targets` are absolute UCM values 0-100; `drive` (v193) scales the drum
-// probability so a world can fall to a near-silent breakdown or push to a
-// dense peak. Tune freely by ear.
+// `targets` are absolute UCM values 0-100. `drive` scales drum probability
+// and `space` scales rest probability — together they give each world a
+// distinct density: a packed, tight "打ち込み" peak (high drive / low space)
+// vs an airy breakdown (zero drive / high space). v194 widened the contrast
+// so surge is a real showcase and hollow a real rest. Tune freely by ear.
 const SECTION_PROFILES = [
-  { name: "submerge", bars: 16, drive: 0.0, targets: { energy: 22, wave: 40, mind: 46, creation: 28, void: 80, circle: 74, body: 18, resource: 26, observer: 80 } },
-  { name: "sprout",   bars: 14, drive: 0.5, targets: { energy: 42, wave: 52, mind: 50, creation: 46, void: 48, circle: 60, body: 40, resource: 46, observer: 62 } },
-  { name: "flow",     bars: 18, drive: 1.0, targets: { energy: 60, wave: 60, mind: 52, creation: 56, void: 24, circle: 46, body: 62, resource: 64, observer: 46 } },
-  { name: "surge",    bars: 14, drive: 1.3, targets: { energy: 80, wave: 74, mind: 54, creation: 70, void: 12, circle: 30, body: 82, resource: 78, observer: 34 } },
-  { name: "hollow",   bars: 14, drive: 0.0, targets: { energy: 26, wave: 44, mind: 56, creation: 32, void: 84, circle: 70, body: 16, resource: 28, observer: 78 } },
-  { name: "return",   bars: 16, drive: 0.9, targets: { energy: 56, wave: 56, mind: 52, creation: 52, void: 30, circle: 48, body: 56, resource: 58, observer: 48 } }
+  { name: "submerge", bars: 16, drive: 0.00, space: 1.55, targets: { energy: 20, wave: 40, mind: 46, creation: 28, void: 84, circle: 74, body: 14, resource: 24, observer: 80 } },
+  { name: "sprout",   bars: 14, drive: 0.55, space: 1.15, targets: { energy: 42, wave: 52, mind: 50, creation: 46, void: 48, circle: 60, body: 40, resource: 46, observer: 62 } },
+  { name: "flow",     bars: 18, drive: 1.00, space: 0.95, targets: { energy: 60, wave: 60, mind: 52, creation: 56, void: 24, circle: 46, body: 62, resource: 64, observer: 46 } },
+  { name: "surge",    bars: 16, drive: 1.55, space: 0.40, targets: { energy: 90, wave: 84, mind: 56, creation: 78, void: 8,  circle: 24, body: 90, resource: 88, observer: 28 } },
+  { name: "hollow",   bars: 14, drive: 0.00, space: 1.95, targets: { energy: 15, wave: 38, mind: 54, creation: 26, void: 92, circle: 74, body: 8,  resource: 16, observer: 84 } },
+  { name: "return",   bars: 16, drive: 0.90, space: 1.00, targets: { energy: 54, wave: 56, mind: 52, creation: 52, void: 30, circle: 48, body: 56, resource: 58, observer: 48 } }
 ];
 // How much of the old continuous sweep survives inside a held section — a
 // little keeps the world breathing rather than frozen. 0 = dead still,
@@ -514,7 +516,8 @@ const SectionState = {
   index: 0,
   barsLeft: 0,
   barsInto: 0,
-  fillCue: false
+  fillCue: false,
+  name: ""
 };
 if (typeof window !== "undefined") window.SectionState = SectionState;
 const DJTempoState = {
@@ -1267,6 +1270,8 @@ function resetSection() {
   SectionState.index = 0;
   SectionState.barsLeft = 0;
   SectionState.barsInto = 0;
+  SectionState.fillCue = false;
+  SectionState.name = "";
 }
 
 function advanceSection() {
@@ -1276,6 +1281,7 @@ function advanceSection() {
     SectionState.index = 0;
     SectionState.barsLeft = currentSectionProfile().bars;
     SectionState.barsInto = 0;
+    SectionState.name = currentSectionProfile().name;
     return;
   }
   SectionState.barsLeft -= 1;
@@ -1287,6 +1293,7 @@ function advanceSection() {
     SectionState.index = (SectionState.index + 1) % SECTION_PROFILES.length;
     SectionState.barsLeft = currentSectionProfile().bars;
     SectionState.barsInto = 0;
+    SectionState.name = currentSectionProfile().name;
   }
 }
 
@@ -7030,8 +7037,13 @@ if (typeof window !== "undefined") {
 }
 
 // シンプルなリバーブ＆ディレイのみ
+// v194: decay is FIXED here, never reassigned per mode. updateSoundForMode
+// used to set globalReverb.decay every mode change — and Tone.Reverb.decay is
+// a setter that re-renders the impulse response through an OfflineAudioContext,
+// a synchronous CPU spike that choked the audio (~every 60-90s as the radio
+// brain rotates modes). Per-mode reverb character now comes from `wet` alone.
 const globalReverb = new Tone.Reverb({
-  decay: 5.6,
+  decay: 4.3,
   wet: 0.31,
 }).connect(masterGain);
 
@@ -9723,11 +9735,8 @@ function updateSoundForMode(mode){
       // fm-61: + harp texture (4 小節 1 note) + cello sustained lead (2 小節 1 chord)
       // v191: attack 1.5→0.6, release 4.0→2.4 — the chord still swells in
       // softly but actually establishes instead of being a formless drift.
-      // Reverb decay 6.4→4.5 — still a wide hall, no longer a tail that
-      // never clears between bar-spaced chord changes.
       pad.set({ oscillator:{type:"sine"}, envelope:{attack:0.6, decay:1.0, sustain:0.60, release:2.4} });
       padFilter.frequency.rampTo(760, 1.2);
-      globalReverb.decay = 4.5;
       globalReverb.wet.rampTo(0.30, 1.2);
       globalDelay.wet.rampTo(0.08, 1.2);
       bass.set({ oscillator:{type:"sine"}, envelope:{attack:0.03, decay:0.40, sustain:0.30, release:1.6} });
@@ -9741,7 +9750,6 @@ function updateSoundForMode(mode){
       try { pad.volume.rampTo(-28, 1.2); } catch (e) {}
       try { bass.volume.rampTo(-26, 1.2); } catch (e) {}  // synth bass も裏へ
       padFilter.frequency.rampTo(2000, 1.0);
-      globalReverb.decay = 3.6;
       globalReverb.wet.rampTo(0.18, 1.0);
       globalDelay.wet.rampTo(0.10, 1.0);
       bass.set({
@@ -9761,7 +9769,6 @@ function updateSoundForMode(mode){
       try { pad.volume.rampTo(-14, 1.0); } catch (e) {}
       try { bass.volume.rampTo(-22, 1.0); } catch (e) {}
       padFilter.frequency.rampTo(1400, 0.9);
-      globalReverb.decay = 4.6;   // v191: 6.2→4.6 — shorter tail
       globalReverb.wet.rampTo(0.34, 0.9);
       globalDelay.delayTime = "4n.";
       globalDelay.feedback.rampTo(0.55, 0.8);
@@ -9777,7 +9784,6 @@ function updateSoundForMode(mode){
       pad.set({ oscillator:{type:"triangle"}, envelope:{attack:0.34, decay:0.6, sustain:0.48, release:1.7} });
       try { pad.volume.rampTo(-22, 1.0); } catch (e) {}
       padFilter.frequency.rampTo(1800, 0.9);
-      globalReverb.decay = 4.2;
       globalReverb.wet.rampTo(0.20, 0.9);
       globalDelay.wet.rampTo(0.12, 0.9);
       bass.set({ oscillator:{type:"triangle"}, filterEnvelope:{baseFrequency:80, octaves:2.0} });
@@ -9788,7 +9794,6 @@ function updateSoundForMode(mode){
       // v191: attack 0.35→0.18, release 1.4→1.0 — articulation pass.
       pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.18, decay:0.35, sustain:0.36, release:1.0} });
       padFilter.frequency.rampTo(2200, 0.7);
-      globalReverb.decay = 4.2;
       globalReverb.wet.rampTo(0.18, 0.7);
       globalDelay.delayTime = "8n";
       globalDelay.feedback.rampTo(0.28, 0.7);
@@ -9798,7 +9803,6 @@ function updateSoundForMode(mode){
       // v191: attack 0.45→0.24, release 1.8→1.3 — articulation pass.
       pad.set({ oscillator:{type:"sawtooth"}, envelope:{attack:0.24, decay:0.45, sustain:0.45, release:1.3} });
       padFilter.frequency.rampTo(2600, 0.9);
-      globalReverb.decay = 4.6;   // v191: 6.8→4.6 — shorter tail
       globalReverb.wet.rampTo(0.30, 0.9);
       globalDelay.delayTime = "8n.";
       globalDelay.feedback.rampTo(0.34, 0.9);
@@ -10469,16 +10473,20 @@ function advanceGrooveStructure() {
     );
   }
 
-  // v193: section drum gate — currentSectionProfile().drive scales the drum
-  // probabilities so a world can fall to a near-silent breakdown (drive 0) or
-  // push to a dense peak (drive > 1). Applied after the groove governor and
-  // mic-follow so the section profile has the final say on drum density.
+  // v193/v194: section drum gate + density shaping. `drive` scales the drum
+  // probabilities (near-silent breakdown ↔ dense peak); `space` scales the
+  // rest probability (a packed, tight "打ち込み" world ↔ an airy one). Applied
+  // after the groove governor and mic-follow so the section has the final say.
   if (SectionState.started) {
-    const sectionDrive = currentSectionProfile().drive;
-    if (typeof sectionDrive === "number") {
-      EngineParams.kickProb = clampValue(EngineParams.kickProb * sectionDrive, 0.004, 0.74);
-      EngineParams.hatProb = clampValue(EngineParams.hatProb * sectionDrive, 0.006, 0.86);
-      EngineParams.bassProb = clampValue(EngineParams.bassProb * (0.5 + sectionDrive * 0.5), 0.02, 0.52);
+    const sectionProfile = currentSectionProfile();
+    if (typeof sectionProfile.drive === "number") {
+      const d = sectionProfile.drive;
+      EngineParams.kickProb = clampValue(EngineParams.kickProb * d, 0.004, 0.74);
+      EngineParams.hatProb = clampValue(EngineParams.hatProb * d, 0.006, 0.86);
+      EngineParams.bassProb = clampValue(EngineParams.bassProb * (0.5 + d * 0.5), 0.02, 0.52);
+    }
+    if (typeof sectionProfile.space === "number") {
+      EngineParams.restProb = clampValue(EngineParams.restProb * sectionProfile.space, 0.01, 0.72);
     }
   }
 
