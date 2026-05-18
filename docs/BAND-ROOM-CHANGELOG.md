@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v185 compact)
+# Band Room — Changelog (v65 → v186 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -8,7 +8,18 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 
 ---
 
-## v185 compact — engine hazama feedback module
+## v186 compact — Hazama FM mobile layout fix (BL-022 隣接)
+
+- `fm.css fm-51`: スマホ／PWA standalone で `#fm-shell` が `position: fixed;
+  inset: 0` の非スクロール容器だったため、コントロール群が viewport より
+  約 410px 高くなると下部（`40HZ` ボタン等）に届かず、上部も `black-translucent`
+  status bar に潜っていた。`overflow-y: auto`（+ `-webkit-overflow-scrolling`）で
+  スクロール可能化、`pointer-events` をシェル自身が受けるよう変更、`padding` を
+  `env(safe-area-inset-*)` 対応にし、`justify-content` を `safe center` 化。
+- `fm.html` / `sw.js`: `fm.css?v=fm-51`、`sw.js hazama-fm-v186`。
+- 出音・engine ロジックは不変（CSS のみ）。
+
+
 
 - `audio/music-hazama-feedback.js fm-93`: BL-008 next extraction。Hazama runtime
   feedback telemetry cluster（9 functions / 約180行）を engine.js から
