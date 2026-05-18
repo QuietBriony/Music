@@ -7912,6 +7912,19 @@ const MELODIC_DIRECTOR_KEY_ORDER = {
   techno: [0, 2, 0, 3, 2, 4],
   trance: [0, 2, 3, 2, 1, 0]
 };
+// Per-genre chord progression — a deliberate index order through HAZE_CHORDS
+// (a D-major diatonic set: 0=I 1=IV 2=ii 3=iii 4=V 5=vi). The pad advances one
+// chord per bar, so the haze layer forms a real progression instead of a
+// random pool pick. Index arrays — tunable by ear.
+const HAZE_CHORD_PROGRESSION = {
+  ambient: [0, 5, 1, 0],
+  lofi: [0, 5, 2, 4],
+  jazz: [2, 4, 0, 5],
+  funk: [0, 4, 5, 1],
+  dub: [0, 1, 0, 4],
+  techno: [0, 0, 5, 4],
+  trance: [5, 1, 0, 4]
+};
 const MELODIC_DIRECTOR_CONTOURS = [
   { id: "call", shape: [0, 2, 0, 5, 3, 2, 0, -2] },
   { id: "answer", shape: [4, 2, 0, -2, 0, 2, 5, 4] },
@@ -10232,7 +10245,11 @@ function randomChordForMode() {
 }
 
 function randomHazeChord() {
-  const idx = tonalRhymeIndex(stepIndex, MelodicDirectorState.chordTurn + Math.floor(Math.random() * HAZE_CHORDS.length), HAZE_CHORDS.length) % HAZE_CHORDS.length;
+  // Progression-based despite the legacy name: the pad advances through the
+  // genre's HAZE_CHORD_PROGRESSION one chord per bar (GrooveState.cycle), and
+  // chordTurn rotates the phrase start. Key transposition stays layered on top.
+  const progression = HAZE_CHORD_PROGRESSION[EngineParams.mode] || HAZE_CHORD_PROGRESSION.ambient;
+  const idx = progression[(GrooveState.cycle + MelodicDirectorState.chordTurn) % progression.length];
   return melodicDirectorChord(HAZE_CHORDS[idx], idx);
 }
 
