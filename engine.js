@@ -59,6 +59,27 @@ const AUTOMIX_PROFILE = {
   resource: { base: 62, depth: 28, phase: 0.91, step: 4.0 },
   observer: { base: 52, depth: 22, phase: 0.38, step: 3.0 }
 };
+// v192: Sectional form. Pre-v192 the 9 macro params above were swept by a
+// continuous ~3-minute sine that never held a value — the music perpetually
+// morphed and never settled into a recognisable section, which read as
+// monotonous and aimlessly random. SECTION_PROFILES is a fixed sequence of
+// "worlds": each is a plateau the macro params are pulled onto and HELD for
+// `bars` bars, then it steps to the next. The order is a deliberate arc —
+// quiet emergence → groove → intense peak → empty breakdown → return groove —
+// so the piece has perceptible chunks (塊 / 節), each its own world.
+// `targets` are absolute UCM values 0-100; tune freely by ear.
+const SECTION_PROFILES = [
+  { name: "submerge", bars: 16, targets: { energy: 22, wave: 40, mind: 46, creation: 28, void: 80, circle: 74, body: 18, resource: 26, observer: 80 } },
+  { name: "sprout",   bars: 14, targets: { energy: 42, wave: 52, mind: 50, creation: 46, void: 48, circle: 60, body: 40, resource: 46, observer: 62 } },
+  { name: "flow",     bars: 18, targets: { energy: 60, wave: 60, mind: 52, creation: 56, void: 24, circle: 46, body: 62, resource: 64, observer: 46 } },
+  { name: "surge",    bars: 14, targets: { energy: 80, wave: 74, mind: 54, creation: 70, void: 12, circle: 30, body: 82, resource: 78, observer: 34 } },
+  { name: "hollow",   bars: 14, targets: { energy: 26, wave: 44, mind: 56, creation: 32, void: 84, circle: 70, body: 16, resource: 28, observer: 78 } },
+  { name: "return",   bars: 16, targets: { energy: 56, wave: 56, mind: 52, creation: 52, void: 30, circle: 48, body: 56, resource: 58, observer: 48 } }
+];
+// How much of the old continuous sweep survives inside a held section — a
+// little keeps the world breathing rather than frozen. 0 = dead still,
+// 1 = the pre-v192 continuous morph.
+const SECTION_LIFE_FACTOR = 0.2;
 const AUTO_MOTION_TICK_MS = 3500;
 const AUTO_SLIDER_SYNC_INTERVAL_MS = 240;
 const AUTO_GESTURE_MIN_GAP_MS = 4200;
@@ -484,6 +505,15 @@ const AlbumArcState = {
   chapterTurn: 0,
   lastChapter: "SUBMERGE"
 };
+// v192: sectional-form clock — see SECTION_PROFILES. Advanced once per bar by
+// advanceSection() from advanceGrooveStructure.
+const SectionState = {
+  started: false,
+  index: 0,
+  barsLeft: 0,
+  barsInto: 0
+};
+if (typeof window !== "undefined") window.SectionState = SectionState;
 const DJTempoState = {
   bpm: 80,
   targetBpm: 80,
@@ -1219,6 +1249,44 @@ function currentAutoDirectorScene() {
 
 function currentLongformArcStage() {
   return LONGFORM_ARC_STAGES[LongformArcState.stageIndex % LONGFORM_ARC_STAGES.length] || LONGFORM_ARC_STAGES[0];
+}
+
+// v192: sectional form — see SECTION_PROFILES / SectionState. advanceSection()
+// is the per-bar clock; sectionMacroTarget() feeds updateAutoMixTargets() so
+// the macro params hold on the current section's plateau instead of sweeping
+// continuously. resetSection() restarts the sequence on a fresh auto cycle.
+function currentSectionProfile() {
+  return SECTION_PROFILES[SectionState.index % SECTION_PROFILES.length] || SECTION_PROFILES[0];
+}
+
+function resetSection() {
+  SectionState.started = false;
+  SectionState.index = 0;
+  SectionState.barsLeft = 0;
+  SectionState.barsInto = 0;
+}
+
+function advanceSection() {
+  if (!SectionState.started) {
+    SectionState.started = true;
+    SectionState.index = 0;
+    SectionState.barsLeft = currentSectionProfile().bars;
+    SectionState.barsInto = 0;
+    return;
+  }
+  SectionState.barsLeft -= 1;
+  SectionState.barsInto += 1;
+  if (SectionState.barsLeft <= 0) {
+    SectionState.index = (SectionState.index + 1) % SECTION_PROFILES.length;
+    SectionState.barsLeft = currentSectionProfile().bars;
+    SectionState.barsInto = 0;
+  }
+}
+
+function sectionMacroTarget(key) {
+  if (!SectionState.started) return null;
+  const target = currentSectionProfile().targets[key];
+  return typeof target === "number" ? target : null;
 }
 
 function longformArcActive() {
@@ -10313,6 +10381,7 @@ function randomHazeChord() {
 function advanceGrooveStructure() {
   GrooveState.cycle++;
   advanceAutoDirectorPhrase();
+  advanceSection();
   advanceHazamaAutonomy();
   syncHazamaTransportControls(0);
   advanceTonalRhymePhrase();
@@ -12906,6 +12975,7 @@ function startAutoCycle() {
   resetAutoDirector();
   resetLongformArc();
   resetAlbumArc();
+  resetSection();
   updateRuntimeUiState();
   updateAutoMixTargets(cycleMs, { phaseDelta: 0, syncUi: true });
 }
@@ -12931,7 +13001,16 @@ function updateAutoMixTargets(cycleMs, options = {}) {
     const directorBias = autoDirectorSceneBias(key);
     const arcBias = longformArcBias(key);
     const albumBias = albumArcBias(key);
-    const desired = clampValue(profile.base + directorBias + arcBias + albumBias + profile.depth * (wave + ripple), 4, 96);
+    let desired = profile.base + directorBias + arcBias + albumBias + profile.depth * (wave + ripple);
+    const sectionTarget = sectionMacroTarget(key);
+    if (sectionTarget != null) {
+      // v192: hold the param on the current section's plateau, keeping only a
+      // little residual sweep (SECTION_LIFE_FACTOR) for life. The plateau
+      // steps at section boundaries; the approachValue() below turns that
+      // step into a smooth ~few-second glide into the next world.
+      desired = sectionTarget + (desired - profile.base) * SECTION_LIFE_FACTOR;
+    }
+    desired = clampValue(desired, 4, 96);
     const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : profile.base;
     const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
     if (isManualInfluenceActive(key, now)) {

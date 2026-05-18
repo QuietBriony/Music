@@ -82,6 +82,13 @@ assert.match(
   "Pad signature gestures should schedule a lead ahead of the audio clock"
 );
 
+// v192: sectional form — macro params hold on section plateaus instead of
+// continuously morphing through the idle sine.
+assert.match(source, /const SECTION_PROFILES = \[/, "Engine should define sectional-form profiles");
+assert.match(source, /function advanceSection\(/, "Engine should define a per-bar section clock");
+assert.match(source, /\n  advanceSection\(\);/, "advanceGrooveStructure should drive the section clock once per bar");
+assert.match(source, /const sectionTarget = sectionMacroTarget\(key\)/, "Auto-mix targets should be held on the active section plateau");
+
 assert.match(packetSource, /function hazamaFmConversationPacketState\(/, "Hazama FM packet should expose groove conversation metadata");
 assert.match(packetSource, /conversation,\s*\n\s*integration_mode: "metadata-only"/, "Hazama FM conversation should stay metadata-only in the packet");
 
