@@ -17,6 +17,22 @@
     lastDispatchSignature: ""
   };
 
+  // BL-004: optional 40 Hz depth override for A/B listening.
+  // ?focusDepth=5 -> 0.05, ?focusDepth=8 -> 0.08 (a bare fraction like 0.05
+  // also works). Runs at module load — before engine.js — so it inlines the
+  // clamp instead of using the engine's clampValue.
+  (function applyFocusDepthOverride() {
+    try {
+      if (typeof window === "undefined" || !window.location) return;
+      const raw = new URLSearchParams(window.location.search || "").get("focusDepth");
+      if (raw == null || raw === "") return;
+      let value = Number(raw);
+      if (!Number.isFinite(value)) return;
+      if (value > 1) value /= 100;
+      FocusModulationState.depth = Math.min(0.12, Math.max(0, value));
+    } catch (error) {}
+  })();
+
   function focusModulationNowMs() {
     return (typeof performance !== "undefined" && typeof performance.now === "function")
       ? performance.now()
@@ -198,10 +214,20 @@
     };
   }
 
+  function setFmFocusModeDepth(depth) {
+    const numeric = Number(depth);
+    if (Number.isFinite(numeric)) {
+      FocusModulationState.depth = clampValue(numeric > 1 ? numeric / 100 : numeric, 0, 0.12);
+    }
+    refreshFocusModulation({ force: false });
+    return getFmFocusModeState();
+  }
+
   if (typeof window !== "undefined") {
     window.MusicFocusModulation = {
       refresh: refreshFocusModulation,
       setEnabled: setFmFocusModeEnabled,
+      setDepth: setFmFocusModeDepth,
       getState: getFmFocusModeState
     };
   }

@@ -1715,7 +1715,8 @@
     } else if (engineState && engineState.suppressedByAiFill) {
       status.textContent = "ai fill";
     } else if (engineState && engineState.active) {
-      status.textContent = "40 hz";
+      const depthPct = Math.round((engineState.depth || 0.08) * 100);
+      status.textContent = `40 hz ${depthPct}%`;
     } else {
       status.textContent = "ramping";
     }
