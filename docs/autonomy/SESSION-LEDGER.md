@@ -19,6 +19,31 @@
 
 ---
 
+## 2026-05-18 — Hazama FM もっさり対策 第1弾: articulation pass (v191)
+- agent     : Claude Code (Opus 4.7) ＋ background research agent（engine.js
+  development/dynamics アーキテクチャのマップ）
+- goal      : ユーザー報告「もっさり・流れない・単調・展開不足」のうち第1弾
+  として「もっさり/発音のキレ」を修正
+- repos     : Music
+- shipped   : PR #143（v191）— articulation pass。research agent のマップで
+  もっさりの主因は「遅い pad エンベロープ → 長いリバーブ尾 ＝ 恒常 wash」と
+  判明。修正: (1) pad attack/release を全モード短縮（ambient 1.5/4.0→0.6/2.4
+  ほか、`updateSoundForMode` 6 ブランチ + funk/piano fallback init）。
+  (2) `globalReverb.decay` を長い 3 モードで短縮（ambient 6.4→4.5 /
+  dub 6.2→4.6 / trance 6.8→4.6）。(3) `human-groove-governor.js` の
+  micro-timing を片側 late ドラッグ（`(sign+1)*0.5`）から拍中心（`sign*0.5`）
+  へ。譜面・コード進行・音色キャラは不変
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody は v191/fm-98
+- backlog   : BL なし（ユーザー直接フィードバック対応）
+- next      : **第2弾 = 単調/展開不足 対策**。research agent が特定済みの未着手点
+  — velocity clamp が狭く（pad 0.034-0.122 等）強弱が出ない、`LongformArcState
+  .contrast` が `[0.06,0.62]` クランプ、directed arc の bias が idle AUTOMIX
+  sine に負けて journey が出ない、section（intro/build/drop）概念が無く
+  crossfade のみ。pass 1 を試聴してから dynamics レンジ拡大 + arc 強化を
+  pass 2 で。fmMix の `reverbWet` 動的系も pass 2 で整理（pass 1 は decay のみ、
+  wet は保留）
+- blockers  : pass 1 の試聴フィードバック待ち（pass 2 の強度は pass 1 の聴感で調整）
+
 ## 2026-05-18 — Hazama FM 音のフロー / キックのノイズ修正 (v190)
 - agent     : Claude Code (Opus 4.7)
 - goal      : ユーザー報告「音が自然につながらない / キックがたまにノイズ」を修正
