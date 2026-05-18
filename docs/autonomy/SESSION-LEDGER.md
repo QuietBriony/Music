@@ -19,6 +19,30 @@
 
 ---
 
+## 2026-05-18 — Hazama FM セクション仕上げ2: 音詰まり修正 + 強弱 + 名前表示 (v194)
+- agent     : Claude Code (Opus 4.7) ＋ background research agent（音詰まり診断）
+- goal      : v192/v193 の試聴フィードバック対応 — 音詰まり / のっぺり / 見せ場・
+  ブレイク / セクション名表示
+- repos     : Music
+- shipped   : PR #146（v194）— (1) **音詰まり修正**: research agent が原因特定 —
+  `globalReverb.decay` の per-mode 再代入が Tone.Reverb の IR を
+  OfflineAudioContext で再レンダする＝同期 CPU スパイク（radio brain のモード
+  回転 60〜90 秒毎に発火）。`decay` を構築時固定（4.3）にし 6 個の per-mode
+  再代入を削除。(2) **セクション強弱拡大**: `space`（休符確率倍率）を追加。
+  surge ＝ drive 1.55 / space 0.40（打ち込み的な高密度の見せ場・energy 90）、
+  hollow ＝ drive 0 / space 1.95（ドラム無しの空白ブレイク・energy 15）。
+  (3) **セクション名 UI**: `#fm-section`「section · surge」を FM 画面に表示
+  （`window.SectionState` から `onRuntimeState` で更新）
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody v194/fm-101
+- backlog   : BL なし（連続フィードバック対応 v190→v194）
+- next      : **(E) 個別ジャンルでもセクションを効かせる** — 現状 ANY 専用
+  （genre pill は automix OFF にするため section が `updateAutoMixTargets`
+  経由で効かない）。ほか — セクション内パターン反復の強化、profile 数値の
+  試聴チューニング
+- blockers  : 試聴フィードバック待ち
+
+---
+
 ## 2026-05-18 — Hazama FM セクション仕上げ: ドラムゲート + 境界フィル (v193)
 - agent     : Claude Code (Opus 4.7)
 - goal      : v192 セクション構造への「進めて」指示 — 各セクションの輪郭を強める
