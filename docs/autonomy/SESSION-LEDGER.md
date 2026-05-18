@@ -19,6 +19,25 @@
 
 ---
 
+## 2026-05-18 — mobile/PWA layout + BL-022 音詰まり修正 (v186–v187)
+- agent     : Claude Code (Opus 4.7)
+- goal      : スマホ/PWA の UI 不具合と BL-022 音詰まりを修正
+- repos     : Music, namima
+- shipped   : PR #138（v186）— Hazama FM の `#fm-shell` が `position:fixed` 非
+  スクロール容器でコントロールが viewport より約410px はみ出し下部（40HZ 等）
+  到達不能 → `overflow-y:auto` + `env(safe-area-inset-*)` + `safe center` で修正。
+  namima PR #30 — 固定 `#controlBar`/`#hint`/`#packetPanel` を safe-area 対応。
+  PR #139（v187）— BL-022: pad/pianoMemory の `maxPolyphony` を 64/48→24 に
+  capping し同時起動音の CPU スパイクを抑制
+- audit     : 全 7 app をモバイル幅 375×812 で点検 — Core / Band Room / chill
+  (radio・session) / drum-floor / openclaw はスクロール到達可で OK、FM と namima
+  のみ不具合 → 両方修正
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。ブラウザ実機点検も実施
+- backlog   : BL-022 は fix 1（maxPolyphony cap）出荷済み・試聴確認待ち（status: wip）
+- next      : BL-022 の試聴確認（詰まり減ったか）。残れば cap 再調整 / lookAhead /
+  latencyHint。safe-area 系は実機 PWA でのみ最終確認可
+- blockers  : 実機試聴待ち
+
 ## 2026-05-18 — cross-stack 全体最適パス + Hazama FM 音詰まり起票
 - agent     : Claude Code (Opus 4.7)
 - goal      : engine.js モジュール化後、stack 全体の最適化機会を監査・消化

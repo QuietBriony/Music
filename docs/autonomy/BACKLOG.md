@@ -58,8 +58,14 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : engine
 - agent    : codex | claude
 - human-gate: yes（修正 PR 後に試聴で体感確認）
+- status   : wip — fix 1 出荷済み（PR #139 / v187, 2026-05-18）。試聴確認待ち
 - source   : user 観察（2026-05-18・Hazama FM ブラウザ再生が「重い・たまに詰まる」）
-- detail   : 複数音が同時起動するタイミングで音が詰まる体感。engine.js 調査では
+- detail   : **進捗（v187）**: 候補対策 (1) を実施 — pad `maxPolyphony` 64→24、
+  `pianoMemory` 48→24 に capping（engine.js fm-94）。user が Pages で同時起動音
+  シーンを試聴し、詰まり減を確認できれば done。まだ残る・voice steal が可聴なら
+  cap 再調整か候補 (2) `Tone.context.lookAhead` 拡大 / `latencyHint: "playback"`。
+  以下、当初調査メモ:
+  複数音が同時起動するタイミングで音が詰まる体感。engine.js 調査では
   pad `PolySynth` が `maxPolyphony: 64`、`pianoMemory` が `48` と過大で、
   `randomHazeChord()` の `1n`/`2n` 長尺コードを 20+ 経路から鳴らすため、トリガが
   重なると発音数が積み上がり CPU スパイクになりうる。候補対策: (1) `maxPolyphony`

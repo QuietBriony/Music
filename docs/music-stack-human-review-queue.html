@@ -198,10 +198,10 @@
             <td>次の tuning PR を 1 本だけ選ぶ。multi-repo 同時 tuning はしない。</td>
           </tr>
           <tr>
-            <td>BL-022<br />P1</td>
+            <td>BL-022<br />P1・v187 fix 出荷済</td>
             <td>Hazama FM 再生の音詰まり（同時起動音での負荷スパイク）</td>
-            <td><code>fm.html</code> を再生し、複数音が重なる場面（genre 切替・dense ambient・techno+acid 等）で詰まりが出るか</td>
-            <td>どの場面で詰まるか特性を掴む。修正 PR（<code>maxPolyphony</code> 引き下げ等）後に改善したか試聴判定。</td>
+            <td><code>fm.html</code>（v187）を再生し、複数音が重なる場面（genre 切替・dense ambient・techno+acid 等）を聴く</td>
+            <td>v187 で <code>maxPolyphony</code> を 64/48→24 に capping 済み。詰まりが減ったか試聴判定。まだ残れば cap 再調整か <code>lookAhead</code>/<code>latencyHint</code>。</td>
           </tr>
           <tr>
             <td>BL-019<br />P2・眠ってる資源</td>
