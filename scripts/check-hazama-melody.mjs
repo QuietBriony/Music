@@ -49,6 +49,8 @@ assert.match(source, /advanceMelodicDirectorPhrase\(\{ energyNorm, creationNorm,
 assert.match(source, /melodicDirector: melodicDirectorRuntimeState\(\)/, "Runtime state should expose the melodic director for browser diagnostics");
 assert.match(source, /const idx = \(MelodicDirectorState\.phrase \+ MelodicDirectorState\.chordTurn/, "Mode chords should be phrase-aware");
 assert.match(source, /return melodicDirectorChord\(HAZE_CHORDS\[idx\], idx\)/, "Haze chords should be phrase-aware");
+assert.match(source, /const HAZE_CHORD_PROGRESSION = \{/, "Hazama FM should define per-genre haze chord progressions");
+assert.match(source, /const progression = HAZE_CHORD_PROGRESSION\[EngineParams\.mode\]/, "Haze pad should follow the deliberate progression, not a random pool pick");
 assert.match(source, /\["A3", "E4", "G4", "C#5"\]/, "Haze chord pool should include a gentle dominant-side color");
 assert.match(source, /\["B2", "D3", "F#3", "A3"\]/, "Jazz chord pool should include an additional minor-color turn");
 assert.match(source, /const BASSLINE_DIRECTOR_PATTERNS = \{/, "Hazama FM should define phrase-level bassline patterns");

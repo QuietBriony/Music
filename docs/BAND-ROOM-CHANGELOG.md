@@ -1,10 +1,26 @@
-# Band Room — Changelog (v65 → v188 compact)
+# Band Room — Changelog (v65 → v189 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v189 compact — pad の意図的コード進行
+
+- `engine.js fm-96`: haze pad の和声を「ランダム pool 拾い」から**意図した
+  コード進行**へ。pad の `randomHazeChord()` は `chordTurn + ランダム(0–5)` で
+  キー内のコードを毎回ランダム選択していた（機能進行なし）。`HAZE_CHORDS` は
+  D メジャーのダイアトニック一式（0=I 1=IV 2=ii 3=iii 4=V 5=vi）なので、
+  `HAZE_CHORD_PROGRESSION` をジャンル別に定義（ambient=I-vi-IV-I / jazz=ii-V-I-vi /
+  trance=vi-IV-I-V 等、既存 `MELODIC_DIRECTOR_KEY_ORDER` の性格に対応）。pad は
+  小節ごと（`GrooveState.cycle`）に進行を1歩進め、phrase 単位のキー転調は
+  既存 director がその上に乗ったまま。新コードの作曲ではなく既存 voicing の
+  並び替え。進行は index 配列なので試聴で調整可。
+- `fm.html` / `index.html` / `sw.js`: `fm-96`、`hazama-fm-v189`。
+- `check-hazama-melody.mjs`: `HAZE_CHORD_PROGRESSION` の定義と pad 経由を assert。
 
 ---
 
