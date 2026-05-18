@@ -9,11 +9,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: clamp(20px, 5vh, 48px);
+  justify-content: safe center;
+  padding: max(clamp(20px, 5vh, 48px), env(safe-area-inset-top, 0px))
+           max(clamp(20px, 5vh, 48px), env(safe-area-inset-right, 0px))
+           max(clamp(20px, 5vh, 48px), env(safe-area-inset-bottom, 0px))
+           max(clamp(20px, 5vh, 48px), env(safe-area-inset-left, 0px));
   text-align: center;
   z-index: 10;
-  pointer-events: none;
+  /* The shell is the scroll surface: on a phone the stacked controls are
+     taller than the viewport, so it must scroll and capture touch. */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 #fm-shell > * {
@@ -847,6 +853,7 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
   #fm-shell {
     justify-content: flex-start;
     padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
 
   #fm-system-map {
