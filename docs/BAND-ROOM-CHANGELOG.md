@@ -1,10 +1,24 @@
-# Band Room — Changelog (v65 → v187 compact)
+# Band Room — Changelog (v65 → v188 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v188 compact — BL-004: 40Hz focus depth A/B 切替
+
+- `audio/music-focus-modulation.js fm-95`: 40Hz focus depth を A/B 試聴できる
+  ように。`?focusDepth=` URL パラメータで起動時 depth を上書き（`?focusDepth=5`
+  →5%、`?focusDepth=8`→8%、bare fraction も可）。`window.MusicFocusModulation
+  .setDepth()` も追加（console から再読込なしで切替可）。default は 8% のまま。
+- `fm.js fm-65`: focus mode の status 表示に現 depth を併記（`40 hz 8%` /
+  `40 hz 5%`）— A/B 中にどちらを聴いているか分かる。
+- `fm.html` / `index.html` / `sw.js`: `fm-95` / `fm.js fm-65`、`hazama-fm-v188`。
+- 用途: BL-004 — `fm.html`（8%）と `fm.html?focusDepth=5`（5%）を聴き比べ、
+  8% AM が耳に違和感を出すか判定。決まった値を default にする。
 
 ---
 
