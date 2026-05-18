@@ -1,10 +1,33 @@
-# Band Room — Changelog (v65 → v192 compact)
+# Band Room — Changelog (v65 → v193 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v193 compact — セクション仕上げ: ドラムゲート + 境界フィル
+
+- `engine.js fm-100`: v192 のセクション構造に、世界の差をはっきりさせる 2 点を
+  追加。
+  1. **セクション・ドラムゲート** — 各 `SECTION_PROFILES` に `drive`（ドラム
+     確率の倍率）を追加。submerge / hollow = `drive 0`（ブレイク＝ドラムほぼ
+     消える）、flow = `1.0`、surge = `1.3`（高密度ピーク）等。
+     `advanceGrooveStructure` で groove governor / mic-follow の後に
+     `kickProb` / `hatProb` / `bassProb` を `drive` で再スケール（governor の
+     prob スケーリングと同じ場所・同じ手法）。これでセクションごとに「ドラムが
+     居る世界／居ない世界」がはっきり分かれる。
+  2. **境界フィル** — `SectionState.fillCue` を追加。セクション境界の 1 小節
+     手前で `advanceSection()` が cue を立て、`GrooveState.fillActive` を強制
+     ON。次の世界へ入る変わり目に必ずフィルが入り、塊のエッジが立つ。
+- v192 の連続→離散化に対し、v193 は各セクションの**輪郭**を強める仕上げ。
+  楽器の trigger 関数には触れず、既存の prob / fill フラグ経路のみ
+  （governor の precedent に倣う）。
+- `fm.html` / `index.html` / `sw.js`: `fm-100`、`hazama-fm-v193`。
+- `check-hazama-melody.mjs`: `drive` と `fillCue` を assert。
+- 譜面・コード進行・音色は不変。
 
 ---
 

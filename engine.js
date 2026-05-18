@@ -67,14 +67,16 @@ const AUTOMIX_PROFILE = {
 // `bars` bars, then it steps to the next. The order is a deliberate arc —
 // quiet emergence → groove → intense peak → empty breakdown → return groove —
 // so the piece has perceptible chunks (塊 / 節), each its own world.
-// `targets` are absolute UCM values 0-100; tune freely by ear.
+// `targets` are absolute UCM values 0-100; `drive` (v193) scales the drum
+// probability so a world can fall to a near-silent breakdown or push to a
+// dense peak. Tune freely by ear.
 const SECTION_PROFILES = [
-  { name: "submerge", bars: 16, targets: { energy: 22, wave: 40, mind: 46, creation: 28, void: 80, circle: 74, body: 18, resource: 26, observer: 80 } },
-  { name: "sprout",   bars: 14, targets: { energy: 42, wave: 52, mind: 50, creation: 46, void: 48, circle: 60, body: 40, resource: 46, observer: 62 } },
-  { name: "flow",     bars: 18, targets: { energy: 60, wave: 60, mind: 52, creation: 56, void: 24, circle: 46, body: 62, resource: 64, observer: 46 } },
-  { name: "surge",    bars: 14, targets: { energy: 80, wave: 74, mind: 54, creation: 70, void: 12, circle: 30, body: 82, resource: 78, observer: 34 } },
-  { name: "hollow",   bars: 14, targets: { energy: 26, wave: 44, mind: 56, creation: 32, void: 84, circle: 70, body: 16, resource: 28, observer: 78 } },
-  { name: "return",   bars: 16, targets: { energy: 56, wave: 56, mind: 52, creation: 52, void: 30, circle: 48, body: 56, resource: 58, observer: 48 } }
+  { name: "submerge", bars: 16, drive: 0.0, targets: { energy: 22, wave: 40, mind: 46, creation: 28, void: 80, circle: 74, body: 18, resource: 26, observer: 80 } },
+  { name: "sprout",   bars: 14, drive: 0.5, targets: { energy: 42, wave: 52, mind: 50, creation: 46, void: 48, circle: 60, body: 40, resource: 46, observer: 62 } },
+  { name: "flow",     bars: 18, drive: 1.0, targets: { energy: 60, wave: 60, mind: 52, creation: 56, void: 24, circle: 46, body: 62, resource: 64, observer: 46 } },
+  { name: "surge",    bars: 14, drive: 1.3, targets: { energy: 80, wave: 74, mind: 54, creation: 70, void: 12, circle: 30, body: 82, resource: 78, observer: 34 } },
+  { name: "hollow",   bars: 14, drive: 0.0, targets: { energy: 26, wave: 44, mind: 56, creation: 32, void: 84, circle: 70, body: 16, resource: 28, observer: 78 } },
+  { name: "return",   bars: 16, drive: 0.9, targets: { energy: 56, wave: 56, mind: 52, creation: 52, void: 30, circle: 48, body: 56, resource: 58, observer: 48 } }
 ];
 // How much of the old continuous sweep survives inside a held section — a
 // little keeps the world breathing rather than frozen. 0 = dead still,
@@ -511,7 +513,8 @@ const SectionState = {
   started: false,
   index: 0,
   barsLeft: 0,
-  barsInto: 0
+  barsInto: 0,
+  fillCue: false
 };
 if (typeof window !== "undefined") window.SectionState = SectionState;
 const DJTempoState = {
@@ -1267,6 +1270,7 @@ function resetSection() {
 }
 
 function advanceSection() {
+  SectionState.fillCue = false;
   if (!SectionState.started) {
     SectionState.started = true;
     SectionState.index = 0;
@@ -1276,6 +1280,9 @@ function advanceSection() {
   }
   SectionState.barsLeft -= 1;
   SectionState.barsInto += 1;
+  // v193: cue a fill on the bar just before a section boundary, so the change
+  // into the next world is heard as a clear edge (the "塊" the listener wants).
+  if (SectionState.barsLeft === 1) SectionState.fillCue = true;
   if (SectionState.barsLeft <= 0) {
     SectionState.index = (SectionState.index + 1) % SECTION_PROFILES.length;
     SectionState.barsLeft = currentSectionProfile().bars;
@@ -10462,7 +10469,22 @@ function advanceGrooveStructure() {
     );
   }
 
-  GrooveState.fillActive = phraseStep === 3 && rand(fillChance);
+  // v193: section drum gate — currentSectionProfile().drive scales the drum
+  // probabilities so a world can fall to a near-silent breakdown (drive 0) or
+  // push to a dense peak (drive > 1). Applied after the groove governor and
+  // mic-follow so the section profile has the final say on drum density.
+  if (SectionState.started) {
+    const sectionDrive = currentSectionProfile().drive;
+    if (typeof sectionDrive === "number") {
+      EngineParams.kickProb = clampValue(EngineParams.kickProb * sectionDrive, 0.004, 0.74);
+      EngineParams.hatProb = clampValue(EngineParams.hatProb * sectionDrive, 0.006, 0.86);
+      EngineParams.bassProb = clampValue(EngineParams.bassProb * (0.5 + sectionDrive * 0.5), 0.02, 0.52);
+    }
+  }
+
+  // v193: a section boundary forces a fill (SectionState.fillCue) so the move
+  // into the next world lands as a deliberate edge, not a silent crossfade.
+  GrooveState.fillActive = (phraseStep === 3 && rand(fillChance)) || SectionState.fillCue;
   GrooveState.textureLift = clampValue((GrooveState.fillActive ? 0.10 + creationNorm * 0.12 : creationNorm * 0.035) + micShape.particle * 0.055 + micJam.pulse * 0.06 + micJam.clap * 0.04, 0, 0.34);
   GrooveState.glassLift = clampValue(((phraseStep === 1 || phraseStep === 3) ? 0.04 + creationNorm * 0.08 : 0.015) + micShape.particle * 0.035 + micShape.space * 0.014 + micJam.phrase * 0.06 + micJam.hum * 0.028 + micJam.air * 0.018, 0, 0.3);
   GrooveState.accentStep = GLASS_ACCENT_STEPS[(GrooveState.cycle + Math.floor(waveNorm * 6)) % GLASS_ACCENT_STEPS.length];
