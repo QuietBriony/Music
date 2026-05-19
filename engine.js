@@ -9704,28 +9704,90 @@ function resolveMode(){
 
 let lastMode = null;
 
+// v195: mode cross-fade. The per-mode sample layers (harp / cello / piano /
+// bass / drum / organ samplers) used to hard-cut on a mode change — the old
+// mode's loops were cleared instantly and the new mode's started at full
+// volume, so a radio-brain rotation sounded like "急に始まって急に止まる".
+// These samplers are persistent with a live, rampable .volume, so a mode
+// change now fades the outgoing mode's samplers down (then clears their
+// loops) while the incoming mode's fade up — a gradual, DJ-style blend.
+const MODE_LAYERS = {
+  ambient: {
+    samplers: () => [ambientHarpSampler, ambientCelloSampler],
+    stop: () => { stopAmbientHarpLayer(); stopAmbientCelloLayer(); }
+  },
+  lofi: {
+    samplers: () => [lofiPianoSampler, lofiBassSampler, lofiDrumSampler],
+    stop: () => { stopLofiPianoLayer(); stopLofiBassLayer(); stopLofiDrumLayer(); }
+  },
+  jazz: {
+    samplers: () => [jazzPianoSampler, jazzDrumSampler],
+    stop: () => { stopJazzPianoLayer(); stopJazzDrumLayer(); }
+  },
+  dub: {
+    samplers: () => [dubBassSampler, dubOrganSampler],
+    stop: () => { stopDubBassLayer(); stopDubOrganLayer(); }
+  }
+};
+
+// ~2 bars of cross-fade — long enough to read as a blend, short enough that a
+// drum layer's overlap with the next mode never turns muddy.
+function modeTransitionSeconds() {
+  try {
+    const sec = Tone.Time("2m").toSeconds();
+    return Number.isFinite(sec) && sec > 0 ? sec : 5;
+  } catch (e) {
+    return 5;
+  }
+}
+
+// Fade the incoming mode's layers up from silence (or set them straight to
+// base when transitionSec is 0). __baseDb is captured once — the first call
+// lands right after the sampler is created at its base volume.
+function fadeInModeLayers(mode, transitionSec) {
+  const layer = MODE_LAYERS[mode];
+  if (!layer) return;
+  for (const s of layer.samplers()) {
+    if (!s || !s.volume) continue;
+    if (s.__baseDb == null) s.__baseDb = s.volume.value;
+    try {
+      if (transitionSec > 0) {
+        s.volume.value = -60;
+        s.volume.rampTo(s.__baseDb, transitionSec);
+      } else {
+        s.volume.value = s.__baseDb;
+      }
+    } catch (e) {}
+  }
+}
+
+// Fade every other mode's layers down, then clear their loops once the fade
+// has finished. transitionSec 0 keeps the old instant-stop behaviour.
+function crossfadeOutOtherModes(keepMode, transitionSec) {
+  for (const mode of Object.keys(MODE_LAYERS)) {
+    if (mode === keepMode) continue;
+    const layer = MODE_LAYERS[mode];
+    if (transitionSec > 0) {
+      for (const s of layer.samplers()) {
+        if (s && s.volume) { try { s.volume.rampTo(-60, transitionSec); } catch (e) {} }
+      }
+      Tone.Transport.scheduleOnce(() => {
+        try { layer.stop(); } catch (e) {}
+      }, `+${transitionSec + 0.3}`);
+    } else {
+      try { layer.stop(); } catch (e) {}
+    }
+  }
+}
+
 // Mode-specific sound personality (v1.3)
-function updateSoundForMode(mode){
+function updateSoundForMode(mode, transitionSec = 0){
   // Keep changes gentle; use .set and ramp where possible
   try{
-    // fm-56/58/61: lofi / jazz / ambient / dub mode 以外では全 sample layer 停止
-    if (mode !== "lofi") {
-      stopLofiPianoLayer();
-      stopLofiBassLayer();
-      stopLofiDrumLayer();
-    }
-    if (mode !== "jazz") {
-      stopJazzPianoLayer();
-      stopJazzDrumLayer();
-    }
-    if (mode !== "ambient") {
-      stopAmbientHarpLayer();
-      stopAmbientCelloLayer();
-    }
-    if (mode !== "dub") {
-      stopDubBassLayer();
-      stopDubOrganLayer();
-    }
+    // v195: cross-fade the outgoing mode's sample layers out (then clear their
+    // loops) instead of the old instant hard-cut. Stops the layers of every
+    // mode that is not `mode`, exactly like the old per-mode stop block.
+    crossfadeOutOtherModes(mode, transitionSec);
     if (mode !== "lofi" && mode !== "jazz" && mode !== "ambient" && mode !== "dub") {
       try { pad.volume.rampTo(0, 1.0); } catch (e) {}
       try { bass.volume.rampTo(0, 1.0); } catch (e) {}
@@ -9818,16 +9880,18 @@ function updateSoundForMode(mode){
       globalReverb.wet.rampTo(0.26, 1.0);
       globalDelay.wet.rampTo(0.18, 1.0);
     }
+    // v195: fade the incoming mode's sample layers up from silence.
+    fadeInModeLayers(mode, transitionSec);
   }catch(e){
     console.warn("updateSoundForMode failed", e);
   }
 }
 let bassRoot     = "D2";
 
-function applyModeChangeHooks(manual = false) {
+function applyModeChangeHooks(manual = false, transitionSec = 0) {
   lastMode = EngineParams.mode;
   setPatternsByMode();
-  updateSoundForMode(EngineParams.mode);
+  updateSoundForMode(EngineParams.mode, transitionSec);
   if (manual && PresetManager.presets[EngineParams.mode]) {
     applyPresetToEngineParams(PresetManager.presets[EngineParams.mode]);
   }
@@ -9844,7 +9908,7 @@ function commitPhraseLockedMode(newMode, manual = false) {
   BarCounter.lastModeChangeBar = BarCounter.current;
   BarCounter.pendingMode = null;
   musicRuntimeDebugLog("barCounter", "[BarCounter]", BarCounter.current, "mode:", EngineParams.mode);
-  applyModeChangeHooks(manual);
+  applyModeChangeHooks(manual, modeTransitionSeconds());
   return true;
 }
 
