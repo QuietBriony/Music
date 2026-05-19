@@ -1,10 +1,36 @@
-# Band Room — Changelog (v65 → v195 compact)
+# Band Room — Changelog (v65 → v196 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v196 compact — ボーカルを空間に + 艶/低音/音圧を全体に
+
+- ユーザー要望: ①ボーカルを空間に馴染ませる（ふわっと上から降りてくる、
+  歌詞より音感寄り）②艶を全体に ③低音を自然にブースト・Nirvana 級の音圧を
+  全体に。
+- **ボーカル（`band-room.js br-89`）** — 溶け込ませる方向へ再ボイシング:
+  - vocal stem EQ: 言葉/子音帯（420–4200Hz）の presence を mid −1.4 へ下げ、
+    言葉感より音感寄りに。high-air shelf を +1.3 に上げて「上から降りてくる」
+    浮遊感。de-ess を −4.5 に深め（air 増で目立つ歯擦音を抑制）。
+  - vocal FX: reverb decay 2.6→4.0 / preDelay 0.035→0.055、chorus を深く
+    ゆっくり（depth 0.46）。dry path 0.82→0.66 でボーカルを一歩奥へ。
+  - `makeVoiceBox`（AI 再現の声）も reverb decay 拡大（synth 1.6→2.5 /
+    catalog 1.8→2.7、catalog wet 0.28→0.36）— モードを問わず声が空間に浮く。
+- **マスター（全体的に）** — `band-room.js br-89`:
+  - 艶: tape saturation の distortion を 0.045→0.09（同じ warmth 設定でも
+    倍音リッチに）＋ master EQ high shelf を 0.2→0.7（シーン/つや）。
+  - 低音: master EQ low shelf を 0.7→1.5（@185Hz、自然な広いシェルフ）。
+  - 音圧: comp2 を threshold −10 / ratio 1.7 に詰めて密度を上げ、masterVolBase
+    を 0.84→0.90 へ。limiter は −1.0 のまま（天井維持）。
+- スライダー既定値（chorus/echo/reverb/warmth 等）は不変 — 構造側のみ再調整、
+  mix-prefs migration は不要。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-89`、`hazama-fm-v196`。
+- `check-band-room-logic.mjs`: masterVolBase の assert を 0.90 に更新。
 
 ---
 
