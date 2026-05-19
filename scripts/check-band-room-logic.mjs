@@ -243,4 +243,6 @@ Object.values(bandsRegistry.bands || {}).forEach((band) => {
 assert.ok(durationShortfalls.length > 0, "Fixture should include songs whose structure is shorter than full audio");
 assert.ok(durationShortfalls.some((item) => item.song === "hey"), "HEY should be covered by the full-song guard regression");
 
+assert.doesNotMatch(source, /scrollIntoView/, "Lyrics auto-follow must scroll the #br-lyrics panel only — never the page (no scrollIntoView)");
+
 console.log("Band Room logic check passed");

@@ -2486,7 +2486,19 @@
     }
     blocks.forEach((b) => b.classList.toggle("active", b === match));
     if (match) {
-      try { match.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+      // v201: scroll within the lyrics panel only. The old auto-follow
+      // scrolled the page/window too (a nested DOM scroll-into-view call),
+      // which hijacked the user's manual scroll on every section change.
+      // Move #br-lyrics' own scrollTop so the panel follows, page stays put.
+      const panel = document.getElementById("br-lyrics");
+      if (panel) {
+        const mRect = match.getBoundingClientRect();
+        const pRect = panel.getBoundingClientRect();
+        const target = (mRect.top - pRect.top) + panel.scrollTop
+                      - (panel.clientHeight - mRect.height) / 2;
+        try { panel.scrollTo({ top: Math.max(0, target), behavior: "smooth" }); }
+        catch (e) { panel.scrollTop = Math.max(0, target); }
+      }
     }
   }
 
