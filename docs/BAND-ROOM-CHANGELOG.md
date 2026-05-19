@@ -1,10 +1,28 @@
-# Band Room — Changelog (v65 → v201 compact)
+# Band Room — Changelog (v65 → v202 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v202 compact — band-room: 出音をシステム上限まで底上げ
+
+ユーザー報告「他アプリと比べて出音が小さい。ミックスではなくシステム音として
+マックスに」。band-room はマスターリミッターが −1 dBFS（ピークはほぼ上限）だが、
+マスター音量の既定が控えめだった。
+
+- マスター音量カーブを底上げ: `masterVolBase` 0.90→1.2、スライダー100地点の
+  ゲインを 1.25→1.8（−1 dBFS リミッターをより強く駆動 ＝ 体感ラウドネス↑）。
+- 既定スライダー位置を 80→100（最大）に。`masterGain` 初期値も 1.2 に追従。
+- `MASTER_VOL_KEY` を `.v2` に更新 — 過去に保存された控えめな音量値を無視し、
+  全員が新しい最大既定で起動する。
+- リミッター閾値 −1.0 は不変（クリップ防止の天井は維持）。譜面・音色・ミックス
+  バランスは不変、出力ゲインのみ。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-92`、`hazama-fm-v202`。
+- `check-band-room-logic.mjs`: `masterVolBase` の assert を 1.2 に更新。
 
 ---
 
