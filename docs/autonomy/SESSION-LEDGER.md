@@ -19,6 +19,38 @@
 
 ---
 
+## 2026-05-18 — Music PWA インストール推奨バナー (v206)
+- agent     : Claude Code (Opus 4.7)
+- goal      : ユーザー要望「Music-stack 各システムを PWA 化推奨でページ表示」の
+  パイロット
+- repos     : Music
+- shipped   : PR #158（v206）— Hazama FM（`fm.html` / `fm.css fm-53` /
+  `fm.js fm-68`）と Music Core Rig（`index.html`、inline style + script）に
+  `#install-hint` バナー追加。standalone でない時のみ表示、「手順」で iOS /
+  Android / PC のインストール手順を展開、× で localStorage に永続 dismiss。
+  Chrome の `beforeinstallprompt` と統合、1 タップインストール対応。旧
+  floating `#fm-install` の生成は退役（役割はバナーの「インストール」ボタンに集約）
+- 並走衝突   : 本作業中に「behind 5」を検知 — Band Room 別チャットが v198〜v205
+  を push 済み。stash + `git pull --ff-only` で v205 ベースに合流、stash pop は
+  衝突なし。fm.js / fm.css は Band Room 触らず → 私の fm-67→fm-68 / fm-52→fm-53
+  そのまま通る。VERSION は v205 → v206
+- 学び       : v195 の `MODE_LAYERS` が存在しない drum sampler 変数
+  （`lofiDrumSampler` / `jazzDrumSampler`）を参照していたバグを Band Room
+  チャットが v199 で修正（engine.js fm-105）。`crossfadeOutOtherModes` が
+  毎モード変更で throw → `updateSoundForMode` の try/catch が握りつぶし → 残りの
+  mode セットアップ全部スキップという深刻な silent fail だった。**教訓: 変数
+  参照する前に grep 戻り値ゼロのケースも明示確認**
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody v206/fm-105
+- next      : Band Room BG-pitch 件は別チャット域 — 原因（ブラウザ BG throttling
+  ＋ Player の `playbackRate` 計算ズレ）と PWA 化が緩和する旨は v206 changelog
+  に記載、user report でも flag。sister repo（namima / chill / drum-floor /
+  openclaw）への banner 展開は試聴後
+- blockers  : PWA バナーの表示確認待ち（ブラウザで開いて見え方確認）
+- 注意      : 並走チャットとの共有 `sw.js` / `BAND-ROOM-CHANGELOG.md` は commit
+  前に必ず `git pull --ff-only` — 今回 stash 経由でクリーン合流できた
+
+---
+
 ## 2026-05-18 — Hazama FM セクション内息づき + 境界 ident (v197)
 - agent     : Claude Code (Opus 4.7)
 - goal      : AskUserQuestion 候補のうちユーザーが「全部 OK」とした残り 2 項目
