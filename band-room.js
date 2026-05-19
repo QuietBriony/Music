@@ -282,7 +282,7 @@
     masterDryGain = new Tone.Gain(0.84);
     masterWetGain = new Tone.Gain(0.16);
 
-    masterGain = new Tone.Gain(0.90);
+    masterGain = new Tone.Gain(1.2);
     masterGain.connect(masterComp1);
     masterComp1.connect(masterEq);
     masterEq.connect(masterComp2);
@@ -3885,7 +3885,7 @@
 
     // v66: loudness (final master gain, dB → linear)
     const loudnessEl = $("br-loudness");
-    let masterVolValue = 80;
+    let masterVolValue = 100;
     let masterLoudnessDb = Number(loudnessEl?.value || 0);
     if (loudnessEl) {
       loudnessEl.addEventListener("input", () => {
@@ -3898,19 +3898,20 @@
     // 0-100 linear → masterGain.gain 0 → 1.25. Multiplied with br-loudness for
     // independent fine-tune. Persisted via PREFS_KEY so it survives reload
     // (important for in-car use where the page may unload).
-    const MASTER_VOL_KEY = "band-room.masterVol";
+    const MASTER_VOL_KEY = "band-room.masterVol.v2";
     const masterVolEl = $("br-master-vol");
     const masterVolReadout = $("br-master-vol-readout");
     const masterVolDown = $("br-master-vol-down");
     const masterVolUp = $("br-master-vol-up");
-    let masterVolBase = 0.90; // matches initial Tone.Gain(0.90) in ensureMaster()
+    let masterVolBase = 1.2; // matches initial Tone.Gain(1.2) in ensureMaster()
 
     function masterVolGainFromValue(value) {
-      // 0 → 0, 80 → 0.90 (default), 100 → 1.25
-      // Curve: v/80 * base for 0-80 range, then linear to 1.25 at 100
+      // v202: louder system output — was 80→0.90 / 100→1.25.
+      // 0 → 0, 80 → 1.2, 100 → 1.8 — drives the −1 dBFS limiter harder so
+      // band-room sits closer to other apps' loudness.
       const v = Math.max(0, Math.min(100, Number(value) || 0));
       if (v <= 80) return (v / 80) * masterVolBase;
-      return masterVolBase + ((v - 80) / 20) * (1.25 - masterVolBase);
+      return masterVolBase + ((v - 80) / 20) * (1.8 - masterVolBase);
     }
 
     function applyMasterOutputGain(seconds = 0.08) {
@@ -3931,8 +3932,9 @@
       try { localStorage.setItem(MASTER_VOL_KEY, String(v)); } catch (e) {}
     }
 
-    // Restore persisted volume on init (default 80)
-    let savedVol = 80;
+    // Restore persisted volume on init (v202: default 100 — max by default;
+    // MASTER_VOL_KEY bumped to .v2 so stale low values don't keep it quiet)
+    let savedVol = 100;
     try {
       const raw = localStorage.getItem(MASTER_VOL_KEY);
       if (raw !== null) {
