@@ -99,6 +99,9 @@ assert.match(source, /function fadeInModeLayers\(/, "Mode changes should fade th
 // v196: genre-locked modes get gentle section development around the baseline.
 assert.match(source, /function syncGenreModeSectionControls\(/, "Genre-locked modes should run section development");
 assert.match(source, /window\.setMusicGenreSectionBaseline = setGenreSectionBaseline/, "Engine should expose the genre-section baseline API for fm.js");
+// v197: intra-section breath + section-boundary ident cue.
+assert.match(source, /const INTRA_SECTION_BREATH = \{/, "Sections should carry an intra-section breath");
+assert.match(source, /function cueSectionIdent\(/, "Section boundaries should cue the radio-brain ident");
 
 assert.match(packetSource, /function hazamaFmConversationPacketState\(/, "Hazama FM packet should expose groove conversation metadata");
 assert.match(packetSource, /conversation,\s*\n\s*integration_mode: "metadata-only"/, "Hazama FM conversation should stay metadata-only in the packet");
