@@ -19,6 +19,28 @@
 
 ---
 
+## 2026-05-18 — Hazama FM セクション内息づき + 境界 ident (v197)
+- agent     : Claude Code (Opus 4.7)
+- goal      : AskUserQuestion 候補のうちユーザーが「全部 OK」とした残り 2 項目
+  （静かな節を生かす / つなぎの有機的強化）を消化
+- repos     : Music
+- shipped   : PR #149（v197）— (2) `INTRA_SECTION_BREATH`: 節の進行に sin の弧で
+  wave/creation/resource を中盤微増・void 微減（節頭尾 0）。`sectionMacroTarget()`
+  に織り込み ANY・ジャンル固定の両経路に効く。長い静かな節も節内で息づく。
+  (3) `cueSectionIdent()`: 番組変更時のみだった radio-brain ident をセクション
+  境界でも鳴らす。v193 フィル（リズム）＋ ident（和声）で塊エッジが有機的に
+  立つ。番組 cue 保留中は重ねない
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody v197/fm-104
+- backlog   : BL なし。AskUserQuestion の 3 候補すべて消化済み（v196 + v197）
+- next      : 試聴フィードバック待ち。残るは数値の試聴チューニング
+  （`GENRE_SECTION_SCALE` / `INTRA_SECTION_BREATH` 深さ / クロスフェード長 /
+  section profile 数値）
+- blockers  : 試聴フィードバック待ち
+- 注意      : Band Room 別チャット並行中 — `sw.js` / `BAND-ROOM-CHANGELOG.md`
+  共有、commit 前に `git pull --ff-only`
+
+---
+
 ## 2026-05-18 — Hazama FM ジャンル固定モードのセクション展開 (v196)
 - agent     : Claude Code (Opus 4.7)
 - goal      : ユーザー選択「ジャンル固定時の展開」— 個別ジャンルでもセクション
