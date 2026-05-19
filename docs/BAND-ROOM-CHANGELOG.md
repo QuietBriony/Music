@@ -1,10 +1,39 @@
-# Band Room — Changelog (v65 → v206 compact)
+# Band Room — Changelog (v65 → v207 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v207 compact — band-room: BG 再生の音程ブレ修正 + PWA バナー流用
+
+FM 側から共有された案件 1（バックグラウンド再生中、たまに音程が下ブレる）の
+修正と、案件 2（PWA インストール推奨バナー）の流用。
+
+- **音程ブレの原因:** `playbackHealthTimer`（2.5s `setInterval`）が BG で
+  throttle される間に AudioContext が一瞬 suspend → `recoverPlaybackAfterSuspend`
+  が `resyncStemPlaybackToClock(force:true)` を呼び、全 stem を `stop` →
+  `start` で再起動していた。この hard cycle が音切れ＋クリックとして
+  「ところどころ音程が下ブレる」に聞こえていた（FM 側の `playbackRate`
+  throttling 説は近接領域、実体は forced resync 側）。
+- **修正:** `recoverPlaybackAfterSuspend` の force resync を
+  **`document.hidden` のときスキップ**するように変更。BG 中は context だけ
+  resume して stem は再生位置を維持。可視復帰（`reason === "visible"`）で
+  再入したときに resync が走り、ドリフトを掃除。
+- **PWA バナー:** `index.html` / `fm.html` と同じ install hint を
+  band-room.html にも追加（案件 2 / FM 側 v206 の提案そのまま流用）。
+  `musicStackInstallHintDismissed` キーは origin 共有なので dismiss 状態は
+  3ページで同期。PWA standalone での BG 安定性向上が狙い。
+- 案件 1 のうち Wake Lock / playbackRate 更新の Page Visibility ガードは
+  今回見送り（band-room の playbackRate は周期更新していないため見送り、
+  Wake Lock は次ラウンドに分離）。残症状が出れば v208 で追加。
+- `check-band-room-logic.mjs`: PWA install hint の存在を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-96`、`hazama-fm-v207`。
+- 譜面・音色・ミックスは不変、UI も既存配置に影響なし（バナーは
+  position:fixed、standalone/dismiss で非表示）。
 
 ---
 

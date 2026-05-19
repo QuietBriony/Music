@@ -146,6 +146,7 @@ assert.match(source, /const instrumentBus = makeInstrumentPolishBus\(masterGain\
 assert.match(source, /drumPan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(instrumentBus\)/, "Drums should route through the instrument polish bus");
 assert.match(source, /voicePan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(masterGain\)/, "Vocal lead should bypass the instrument polish bus");
 assert.match(html, /rel="manifest" href="manifest-band-room\.webmanifest"/, "Band Room should expose its own PWA manifest");
+assert.match(html, /id="install-hint"/, "Band Room should expose the PWA install hint banner for BG-playback stability");
 assert.match(source, /function scheduleMobileSuspendRelease\(/, "Band Room should run panic releases while mobile screen lock is happening");
 assert.match(source, /window\.addEventListener\("blur"/, "Band Room should treat mobile blur as a background transition");
 assert.match(source, /document\.addEventListener\("freeze"/, "Band Room should handle page lifecycle freeze");
