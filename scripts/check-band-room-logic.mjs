@@ -208,6 +208,7 @@ assert.doesNotMatch(finalLyrics, /v2\.1|v3|draft|cut-up|候補|template/i, "Fina
 
 const savePrefsBody = source.match(/function savePrefs\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
 assert.doesNotMatch(savePrefsBody, /songId\s*:/, "Saved prefs should not restore the last song");
+assert.doesNotMatch(savePrefsBody, /\bmode\s*:/, "Saved prefs must not persist playback mode — band-room always opens 原音 (AI 再現 is WIP)");
 
 const bandRoomScriptMarker = html.match(/band-room\.js\?v=(br-\d+)/);
 assert.ok(bandRoomScriptMarker, "Band Room HTML should load a cache-busted script marker");

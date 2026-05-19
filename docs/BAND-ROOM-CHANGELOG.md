@@ -1,10 +1,27 @@
-# Band Room — Changelog (v65 → v204 compact)
+# Band Room — Changelog (v65 → v205 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v205 compact — band-room: 起動時は必ず原音モードに
+
+ユーザー報告「band-room を開くと AI 再現になっていた。AI 再現は未整備なので
+デフォルトは原音に」。
+
+- 原因: `savePrefs` がプレイバックモード（`mode: currentMode`）を保存し、
+  `applyPrefs` が起動時に復元していた → 一度 AI 再現に切り替えると以後その
+  状態で起動していた。
+- 修正: モードを永続化しないようにした。`savePrefs` から `mode` を削除、
+  `applyPrefs` のモード復元ブロックを削除。band-room は常に 原音 (stems) で
+  起動する。モード切替はセッション内のみ（AI 再現 が整備できたら復活を検討）。
+- A/B スナップショット復元は従来どおり（明示操作なので維持）。
+- `check-band-room-logic.mjs`: `savePrefs` が `mode` を保存しないことを assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-95`、`hazama-fm-v205`。
 
 ---
 
