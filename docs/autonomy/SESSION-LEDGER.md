@@ -19,6 +19,79 @@
 
 ---
 
+## 2026-05-18 — Hazama FM セクション内息づき + 境界 ident (v197)
+- agent     : Claude Code (Opus 4.7)
+- goal      : AskUserQuestion 候補のうちユーザーが「全部 OK」とした残り 2 項目
+  （静かな節を生かす / つなぎの有機的強化）を消化
+- repos     : Music
+- shipped   : PR #149（v197）— (2) `INTRA_SECTION_BREATH`: 節の進行に sin の弧で
+  wave/creation/resource を中盤微増・void 微減（節頭尾 0）。`sectionMacroTarget()`
+  に織り込み ANY・ジャンル固定の両経路に効く。長い静かな節も節内で息づく。
+  (3) `cueSectionIdent()`: 番組変更時のみだった radio-brain ident をセクション
+  境界でも鳴らす。v193 フィル（リズム）＋ ident（和声）で塊エッジが有機的に
+  立つ。番組 cue 保留中は重ねない
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody v197/fm-104
+- backlog   : BL なし。AskUserQuestion の 3 候補すべて消化済み（v196 + v197）
+- next      : 試聴フィードバック待ち。残るは数値の試聴チューニング
+  （`GENRE_SECTION_SCALE` / `INTRA_SECTION_BREATH` 深さ / クロスフェード長 /
+  section profile 数値）
+- blockers  : 試聴フィードバック待ち
+- 注意      : Band Room 別チャット並行中 — `sw.js` / `BAND-ROOM-CHANGELOG.md`
+  共有、commit 前に `git pull --ff-only`
+
+---
+
+## 2026-05-18 — Hazama FM ジャンル固定モードのセクション展開 (v196)
+- agent     : Claude Code (Opus 4.7)
+- goal      : ユーザー選択「ジャンル固定時の展開」— 個別ジャンルでもセクション
+  展開を効かせる（既出 (E) の消化）
+- repos     : Music
+- shipped   : PR #148（v196）— ジャンルピル選択時は automix OFF ＋ 9 マクロ
+  params 固定 → セクション展開（`updateAutoMixTargets` 経由）が ANY 専用
+  だった。修正: ジャンル適用時 fm.js が engine へ baseline（9 fader 値）を
+  `window.setMusicGenreSectionBaseline()` で渡す。engine 側
+  `syncGenreModeSectionControls()`（automix OFF 時 `scheduleStep` 駆動）が
+  `UCM_TARGET = baseline + ゆるい section delta`（`GENRE_SECTION_SCALE` 0.32、
+  `SECTION_FORM_CENTER` 基準の zero-mean）。`energy` は固定 — `chooseMode()`
+  の energy 帯 ＝ mode/tempo を守るため。残り 8 params が節ごとに変調し
+  密度・空白感・低域・複雑さが展開。手動 fader 操作中の key はスキップ
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody v196/fm-103
+- backlog   : BL なし（(E) 消化済み）
+- next      : 試聴 — ANY・個別ジャンル双方でセクション展開を確認。
+  `GENRE_SECTION_SCALE` / クロスフェード長 / section profile 数値は試聴チューニング。
+  未着手の任意項目: 静かな節の内部展開、未使用 `triggerMusicRadioBrainIdent` の活用
+- blockers  : 試聴フィードバック待ち
+- 注意      : Band Room は別チャットで並行進行中。共有ファイル（`sw.js` /
+  `docs/BAND-ROOM-CHANGELOG.md`）は両チャットで衝突しうる — commit 前に
+  `git pull --ff-only`、衝突時は版番号の大きい方を採用
+
+---
+
+## 2026-05-18 — Hazama FM モード遷移の DJ クロスフェード (v195)
+- agent     : Claude Code (Opus 4.7) ＋ background research agent（遷移機構マップ）
+- goal      : ユーザー報告「モード変更が急に始まって急に止まる、DJ 的に徐々に
+  繋いでほしい」対策
+- repos     : Music
+- shipped   : PR #147（v195）— モード遷移のクロスフェード。research agent が
+  原因特定 — `updateSoundForMode` が古いモードの sample layer を即停止・新モード
+  を full volume で即開始 ＝ ハードカット（synth pad/bass は ramp 済だが
+  前面の sampler layer がカットされていた）。修正: sampler は永続で `.volume`
+  が ramp 可能 → `MODE_LAYERS` マップ + `crossfadeOutOtherModes()` /
+  `fadeInModeLayers()` を追加。モード変更時に旧モードの sampler を約 2 小節
+  フェードアウト（後にループ clear）、新モードを無音からフェードイン。
+  `updateSoundForMode` に `transitionSec` 追加、`commitPhraseLockedMode` が
+  約 2 小節分を渡す。18 個の `start*/stop*Layer`・trigger 関数は無改変。
+  BPM はすでに DJ 的に滑らか（`energy` 由来・二重スムージング + 1.6s ramp、
+  mode 変更で snap せず）と調査で確認し未改変
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody v195/fm-102
+- backlog   : BL なし（連続フィードバック対応 v190→v195）
+- next      : (E) 個別ジャンルでもセクションを効かせる（現状 ANY 専用のまま）。
+  ほか試聴次第 — クロスフェード長の調整、セクション profile チューニング、
+  agent が挙げた未使用 `triggerMusicRadioBrainIdent`（遷移マーカー）の活用
+- blockers  : 試聴フィードバック待ち
+
+---
+
 ## 2026-05-18 — Hazama FM セクション仕上げ2: 音詰まり修正 + 強弱 + 名前表示 (v194)
 - agent     : Claude Code (Opus 4.7) ＋ background research agent（音詰まり診断）
 - goal      : v192/v193 の試聴フィードバック対応 — 音詰まり / のっぺり / 見せ場・

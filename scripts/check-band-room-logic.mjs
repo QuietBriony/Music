@@ -136,7 +136,7 @@ assert.match(source, /sourceAccentSteps\(ctx, \["kick", "snare", "crash", "ghost
 assert.match(source, /bassInstrument:\s*"bass-electric"/, "AI bass default tone should use electric bass sampler when available");
 assert.match(source, /guitarInstrument:\s*"guitar-electric"/, "AI guitar default tone should use electric guitar sampler when available");
 assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band Room master limiter should keep v168 headroom");
-assert.match(source, /let masterVolBase = 0\.90/, "Band Room master volume base should match the v196 loudness lift");
+assert.match(source, /let masterVolBase = 0\.90/, "Band Room master volume base should match the v198 loudness lift");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default should leave headroom for source-derived accents");
 assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v168 mix");
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");

@@ -1,4 +1,4 @@
-# Band Room — Changelog (v65 → v196 compact)
+# Band Room — Changelog (v65 → v198 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -8,53 +8,100 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 
 ---
 
-## v196 compact — ボーカルを空間に + 艶/低音/音圧を全体に
+## v198 compact — band-room: 非ボーカル磨きバス + ボーカルを空間に + 艶/低音/音圧
 
-- ユーザー要望: ①ボーカルを空間に馴染ませる（ふわっと上から降りてくる、
-  歌詞より音感寄り）②艶を全体に ③低音を自然にブースト・Nirvana 級の音圧を
-  全体に。
-- **ボーカル（`band-room.js br-89`）** — 溶け込ませる方向へ再ボイシング:
-  - vocal stem EQ: 言葉/子音帯（420–4200Hz）の presence を mid −1.4 へ下げ、
-    言葉感より音感寄りに。high-air shelf を +1.3 に上げて「上から降りてくる」
-    浮遊感。de-ess を −4.5 に深め（air 増で目立つ歯擦音を抑制）。
+band-room.js 専用の音質改善。元 v195/v196 として開発したが、並行セッションが
+先に v196/v197 を出したため v198 に採番・統合。
+
+- **非ボーカル磨きバス（`makeInstrumentPolishBus`）** — drums/bass/guitar/chords
+  の 4 パンを masterGain 直結から専用バスへ集約し、その手前で磨く。voice
+  （ボーカル/メロディリード）と click は対象外（masterGain 直結のまま）。
+  - `EQ3 tilt → glue comp → [dry]+[parallel saturation] → StereoWidener →
+    makeup → masterGain`。hi-fi = EQ で低中域の濁りを削りプレゼンス〜エアを
+    上げ、Widener 0.58 で楽器を広げセンターのボーカルと分離。音圧 = glue
+    comp（-20/2.2、attack 12ms でアタック維持）＋ Distortion 0.12 を 16%
+    パラレル、makeup +0.7dB。
+- **ボーカルを空間に** — 溶け込ませる方向へ再ボイシング:
+  - vocal stem EQ: 語/子音帯（420–4200Hz）の presence を mid −1.4 に下げて
+    音感寄りに、high-air shelf +1.3 で「上から降りてくる」浮遊感、de-ess −4.5。
   - vocal FX: reverb decay 2.6→4.0 / preDelay 0.035→0.055、chorus を深く
-    ゆっくり（depth 0.46）。dry path 0.82→0.66 でボーカルを一歩奥へ。
-  - `makeVoiceBox`（AI 再現の声）も reverb decay 拡大（synth 1.6→2.5 /
-    catalog 1.8→2.7、catalog wet 0.28→0.36）— モードを問わず声が空間に浮く。
-- **マスター（全体的に）** — `band-room.js br-89`:
-  - 艶: tape saturation の distortion を 0.045→0.09（同じ warmth 設定でも
-    倍音リッチに）＋ master EQ high shelf を 0.2→0.7（シーン/つや）。
-  - 低音: master EQ low shelf を 0.7→1.5（@185Hz、自然な広いシェルフ）。
-  - 音圧: comp2 を threshold −10 / ratio 1.7 に詰めて密度を上げ、masterVolBase
-    を 0.84→0.90 へ。limiter は −1.0 のまま（天井維持）。
-- スライダー既定値（chorus/echo/reverb/warmth 等）は不変 — 構造側のみ再調整、
-  mix-prefs migration は不要。
-- `band-room.html` / `sw.js`: `band-room.js?v=br-89`、`hazama-fm-v196`。
-- `check-band-room-logic.mjs`: masterVolBase の assert を 0.90 に更新。
+    ゆっくり、dry 0.82→0.66 で一歩奥へ。`makeVoiceBox` のリバーブも拡大。
+- **マスター（全体的に）**: tape saturation 0.045→0.09 ＋ EQ high +0.7（艶）、
+  EQ low shelf 0.7→1.5 @185Hz（自然な低音ブースト）、comp2 を −10/1.7 に
+  詰め masterVolBase 0.84→0.90（Nirvana 寄りの密度・音圧）。limiter −1.0 維持。
+- スライダー既定値は不変（構造側のみ調整、mix-prefs migration 不要）。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-89`、`hazama-fm-v198`。
+- `check-band-room-logic.mjs`: `makeInstrumentPolishBus` の存在・非ボーカル
+  経由/ボーカル直結・masterVolBase 0.90 を assert。
+- 譜面・コード進行・各楽器の素の音色は不変。
 
 ---
 
-## v195 compact — 非ボーカル磨きバス（音圧 + hi-fi）
+## v197 compact — セクション内の息づき + 境界の番組ID合図
 
-- `band-room.js br-88`: ユーザー要望「ボーカル以外の音を磨きたい、音圧も
-  hi-fi 的な艶も欲しい」対応。**非ボーカル専用の磨きバス**を新設。
-- `makeInstrumentPolishBus()` — drums / bass / guitar / chords の 4 パンを
-  `masterGain` 直結から専用バスに集約。voice（ボーカル / メロディリード）と
-  click（メトロノーム）は従来どおり `masterGain` 直結で磨きの対象外。
-- チェーン: `EQ3 tilt → glue compressor → [dry] + [parallel saturation]
-  → StereoWidener → makeup → masterGain`。
-  - **hi-fi 磨き** = EQ で低中域の重なり濁りを削り（low -0.8 / mid -0.6）、
-    プレゼンス〜エアを上げる（high +1.4、4.2kHz 上の shelf）。Widener 0.58 で
-    楽器を左右に広げ、センターのボーカルから分離。
-  - **音圧** = glue comp（threshold -20 / ratio 2.2）で密度を上げつつ、
-    attack 12ms でドラムのアタックは残す。Distortion 0.12 を 16% パラレル
-    ブレンドして倍音を付与、makeup +0.7dB。
-- マスターチェーン（v66 の 2 段コンプ + tape sat + limiter -1.0）は不変。
-  磨きバスはその手前のサブミックス段として挿入。
-- `band-room.html` / `sw.js`: `band-room.js?v=br-88`、`hazama-fm-v195`。
-- `check-band-room-logic.mjs`: `makeInstrumentPolishBus` の存在と、非ボーカルが
-  バス経由・ボーカルが直結であることを assert。
-- 譜面・コード進行・各楽器の音色そのものは不変。マスター手前の質感のみ調整。
+- `engine.js fm-104`: 候補項目 2・3 の消化（ユーザー「候補は全部 OK」）。
+- **(2) 静かな節を生かす** — セクションは macro params をプラトーで保持するが、
+  14-18 小節ずっと平坦だと静かな節（submerge / hollow）が静止して聞こえうる。
+  `INTRA_SECTION_BREATH` を追加 — 節の進行（`barsInto / bars`）に対し `sin` の
+  弧で wave / creation / resource を中盤に向け微増・void を微減（節頭と節尾は
+  0）。`sectionMacroTarget()` に織り込んだので ANY・ジャンル固定の両経路に
+  効く。節の中で「ひと息」分の展開が出る。
+- **(3) つなぎの有機的強化** — 未使用気味だった radio-brain ident（番組変更時
+  だけ鳴る控えめな和声ジェスチャ）を、セクション境界でも鳴らすよう接続
+  （`cueSectionIdent()`）。v193 のフィル（リズムの区切り）＋ ident（和声の
+  区切り）で塊のエッジが有機的に立つ。番組変更 cue が既に保留中なら重ねない。
+- `fm.html` / `index.html` / `sw.js`: `fm-104`、`hazama-fm-v197`。
+- `check-hazama-melody.mjs`: `INTRA_SECTION_BREATH` / `cueSectionIdent` を assert。
+- 譜面・音色は不変（節内の緩やかな揺らぎと境界の控えめな合図の追加のみ）。
+
+---
+
+## v196 compact — ジャンル固定モードのセクション展開
+
+- `engine.js fm-103` / `fm.js fm-67`: ユーザー要望「個別ジャンル選択時も展開を
+  効かせたい」。原因 — ジャンルピル（ambient / techno 等）を選ぶと automix が
+  OFF になり 9 マクロ params が固定 → セクション展開（`updateAutoMixTargets`
+  経由）が genre モードに届かなかった（ANY 専用だった）。
+- 修正: ジャンル適用時、fm.js が engine へそのジャンルの UCM ベースライン
+  （9 fader 値）を `window.setMusicGenreSectionBaseline()` で渡す。engine 側は
+  `syncGenreModeSectionControls()`（automix OFF 時に `scheduleStep` から駆動）
+  で、セクションの形に沿って params をベースライン周りで「ゆるく」変調
+  （`GENRE_SECTION_SCALE` 0.32）。
+- `energy` だけは固定 — `chooseMode()` は energy 帯でモードを決めるため、
+  energy を動かすとジャンル/モード/テンポが変わってしまう。残り 8 params
+  （wave / creation / void / body / resource / circle / observer / mind）が
+  動くので、密度・空白感・低域・複雑さが節ごとに展開する。
+- 変調は `SECTION_FORM_CENTER`（全 6 セクション target の平均）基準の
+  zero-mean ＝ ジャンルから乖離せず息づく。手動 fader 操作中の key は
+  manual-influence 期間スキップ。
+- `fm.html` / `index.html` / `sw.js`: `fm-103` / `fm.js fm-67`、`hazama-fm-v196`。
+- `check-hazama-melody.mjs`: genre-section 関数を assert。
+- これで ANY・個別ジャンル双方でセクション展開が効く。`drive`/`space`
+  （v193/194）は元々 genre モードでも効いており、今回の 8-param 変調と合わさる。
+
+---
+
+## v195 compact — モード遷移の DJ クロスフェード
+
+- `engine.js fm-102`: ユーザー報告「モードが変わるとき**急に始まって急に止まる**」
+  対策。原因 — radio brain がモードを回すたび、`updateSoundForMode` が古い
+  モードの sample layer（harp / cello / piano / bass / drum / organ の
+  sampler）を**即停止**し、新モードのを full volume で**即開始**していた
+  （ハードカット）。
+- **修正 ＝ レイヤーのクロスフェード**。これらの sampler は永続で `.volume`
+  が ramp 可能なので、モード変更時に古いモードの sampler を約 2 小節かけて
+  フェードアウト（フェード後にループを `clear`）し、新モードのを無音から
+  フェードイン。`MODE_LAYERS` マップ + `crossfadeOutOtherModes()` /
+  `fadeInModeLayers()` を追加し、`updateSoundForMode(mode, transitionSec)` に
+  遷移秒数を渡す。`commitPhraseLockedMode` がモード変更時に約 2 小節分を渡す。
+  trigger 関数や 18 個の `start*/stop*Layer` 関数は無改変 —
+  `updateSoundForMode` とヘルパーのみ。
+- BPM について: 調査の結果、BPM はすでに DJ 的に滑らか（`energy` 由来・二重
+  スムージング ＋ 1.6s ramp、モード変更で snap しない）。詰まって聞こえたのは
+  layer のハードカットが原因 — それを直せば BPM も滑らかに繋がって聞こえる。
+- `fm.html` / `index.html` / `sw.js`: `fm-102`、`hazama-fm-v195`。
+- `check-hazama-melody.mjs`: クロスフェード関数を assert。
+- 音色・譜面・セクション構造は不変（遷移の繋ぎ方のみ）。
 
 ---
 

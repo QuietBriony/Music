@@ -93,6 +93,15 @@ assert.match(source, /drive: [\d.]+, space: [\d.]+, targets:/, "Section profiles
 assert.match(source, /SectionState\.fillCue/, "Section boundaries should cue a fill into the next world");
 // v194: the reverb IR must not be re-rendered at runtime (the audio-choke fix).
 assert.doesNotMatch(source, /globalReverb\.decay\s*=/, "globalReverb.decay must not be reassigned at runtime — it re-renders the reverb IR and chokes the audio");
+// v195: mode changes cross-fade the sample layers instead of hard-cutting.
+assert.match(source, /function crossfadeOutOtherModes\(/, "Mode changes should cross-fade the outgoing sample layers");
+assert.match(source, /function fadeInModeLayers\(/, "Mode changes should fade the incoming sample layers in");
+// v196: genre-locked modes get gentle section development around the baseline.
+assert.match(source, /function syncGenreModeSectionControls\(/, "Genre-locked modes should run section development");
+assert.match(source, /window\.setMusicGenreSectionBaseline = setGenreSectionBaseline/, "Engine should expose the genre-section baseline API for fm.js");
+// v197: intra-section breath + section-boundary ident cue.
+assert.match(source, /const INTRA_SECTION_BREATH = \{/, "Sections should carry an intra-section breath");
+assert.match(source, /function cueSectionIdent\(/, "Section boundaries should cue the radio-brain ident");
 
 assert.match(packetSource, /function hazamaFmConversationPacketState\(/, "Hazama FM packet should expose groove conversation metadata");
 assert.match(packetSource, /conversation,\s*\n\s*integration_mode: "metadata-only"/, "Hazama FM conversation should stay metadata-only in the packet");

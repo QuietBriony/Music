@@ -84,6 +84,26 @@ const SECTION_PROFILES = [
 // little keeps the world breathing rather than frozen. 0 = dead still,
 // 1 = the pre-v192 continuous morph.
 const SECTION_LIFE_FACTOR = 0.2;
+// v196: average of every section's target per key — the "neutral" the section
+// deltas are measured from, so a genre-mode modulation is zero-mean over the
+// form (it breathes around the genre baseline without drifting off it).
+const SECTION_FORM_CENTER = (() => {
+  const center = {};
+  for (const key of Object.keys(SECTION_PROFILES[0].targets)) {
+    let sum = 0;
+    for (const p of SECTION_PROFILES) sum += p.targets[key];
+    center[key] = sum / SECTION_PROFILES.length;
+  }
+  return center;
+})();
+// How strongly the section modulates the macro params when a genre pill has
+// locked AUTOMIX off — gentle ("ゆるく"), to keep each genre's identity.
+const GENRE_SECTION_SCALE = 0.32;
+// v197: intra-section "breath" — a gentle sin arc over each section's progress
+// lifts these params toward mid-section, so even a long, calm section keeps
+// developing instead of holding a flat plateau for 14-18 bars. Absolute UCM
+// offsets at the peak of the arc; 0 at the section's start and end.
+const INTRA_SECTION_BREATH = { wave: 8, creation: 8, resource: 7, void: -7 };
 const AUTO_MOTION_TICK_MS = 3500;
 const AUTO_SLIDER_SYNC_INTERVAL_MS = 240;
 const AUTO_GESTURE_MIN_GAP_MS = 4200;
@@ -520,6 +540,12 @@ const SectionState = {
   name: ""
 };
 if (typeof window !== "undefined") window.SectionState = SectionState;
+// v196: when a genre pill locks AUTOMIX off, fm.js hands the engine that
+// genre's UCM baseline here so the section system can still develop the macro
+// params gently around it. null = ANY (AUTOMIX itself drives the sections).
+const GenreSectionState = {
+  baseline: null
+};
 const DJTempoState = {
   bpm: 80,
   targetBpm: 80,
@@ -1274,6 +1300,17 @@ function resetSection() {
   SectionState.name = "";
 }
 
+// v197: mark a section boundary with the radio-brain ident — a subtle
+// harmonic gesture (otherwise only fired on a program change) that announces
+// the new world. Skipped when a program-change cue is already pending so the
+// two transition markers don't stack.
+function cueSectionIdent() {
+  if (!isPlaying || !MusicRadioBrainState || MusicRadioBrainState.cuePending) return;
+  MusicRadioBrainState.cuePending = true;
+  MusicRadioBrainState.cueProgram = MusicRadioBrainState.active;
+  MusicRadioBrainState.cueCycle = GrooveState.cycle;
+}
+
 function advanceSection() {
   SectionState.fillCue = false;
   if (!SectionState.started) {
@@ -1294,13 +1331,21 @@ function advanceSection() {
     SectionState.barsLeft = currentSectionProfile().bars;
     SectionState.barsInto = 0;
     SectionState.name = currentSectionProfile().name;
+    cueSectionIdent();
   }
 }
 
 function sectionMacroTarget(key) {
   if (!SectionState.started) return null;
-  const target = currentSectionProfile().targets[key];
-  return typeof target === "number" ? target : null;
+  const profile = currentSectionProfile();
+  const target = profile.targets[key];
+  if (typeof target !== "number") return null;
+  // v197: add the intra-section breath — a gentle sin arc over the section's
+  // progress so a held section still develops within itself.
+  const lift = INTRA_SECTION_BREATH[key];
+  if (typeof lift !== "number") return target;
+  const progress = clampValue(SectionState.barsInto / Math.max(1, profile.bars), 0, 1);
+  return target + Math.sin(progress * Math.PI) * lift;
 }
 
 function longformArcActive() {
@@ -6825,6 +6870,52 @@ function syncAutoMixTransportControls(step) {
   syncTransportControlValues(step, step === 0 ? 2.1 : 1.05, "AutoMix");
 }
 
+// v196: section development for genre-locked modes. A genre pill turns AUTOMIX
+// off and freezes the 9 UCM params, so the section system (which rides the
+// AUTOMIX path) never reached genre modes. fm.js hands the engine the genre's
+// UCM baseline; here the section gently breathes the macro params around it.
+// `energy` is held exactly at the baseline so chooseMode()'s energy band — and
+// thus the genre/mode/tempo identity — never shifts; the other 8 params move
+// by GENRE_SECTION_SCALE across the section form.
+function syncGenreModeSectionControls(step) {
+  if (step % TRANSPORT_CONTROL_SYNC_STEPS !== 0) return;
+  if (UCM.auto.enabled || !isPlaying || HazamaBridgeState.active) return;
+  const baseline = GenreSectionState.baseline;
+  if (!baseline || !SectionState.started) return;
+  const now = performanceNowMs();
+  for (const key of AUTOMIX_MOTION_KEYS) {
+    const base = baseline[key];
+    if (typeof base !== "number") continue;
+    if (isManualInfluenceActive(key, now)) continue;
+    let delta = 0;
+    if (key !== "energy") {
+      const sectionTarget = sectionMacroTarget(key);
+      const center = SECTION_FORM_CENTER[key];
+      if (sectionTarget != null && typeof center === "number") {
+        delta = (sectionTarget - center) * GENRE_SECTION_SCALE;
+      }
+    }
+    UCM_TARGET[key] = clampValue(base + delta, 4, 96);
+  }
+  syncTransportControlValues(step, step === 0 ? 1.4 : 0.85, "GenreSection");
+}
+
+// v196: fm.js calls this when a genre pill is applied — `faders` is the
+// genre's UCM profile (the locked baseline), or null for ANY.
+function setGenreSectionBaseline(faders) {
+  if (!faders || typeof faders !== "object") {
+    GenreSectionState.baseline = null;
+    return;
+  }
+  const snap = {};
+  for (const key of AUTOMIX_MOTION_KEYS) {
+    const v = Number(faders[key]);
+    if (Number.isFinite(v)) snap[key] = clampValue(v, 0, 100);
+  }
+  GenreSectionState.baseline = Object.keys(snap).length === AUTOMIX_MOTION_KEYS.length ? snap : null;
+}
+if (typeof window !== "undefined") window.setMusicGenreSectionBaseline = setGenreSectionBaseline;
+
 function syncTransportControlValues(step, maxStep, label) {
   if (step % TRANSPORT_CONTROL_SYNC_STEPS !== 0) return;
 
@@ -9704,28 +9795,90 @@ function resolveMode(){
 
 let lastMode = null;
 
+// v195: mode cross-fade. The per-mode sample layers (harp / cello / piano /
+// bass / drum / organ samplers) used to hard-cut on a mode change — the old
+// mode's loops were cleared instantly and the new mode's started at full
+// volume, so a radio-brain rotation sounded like "急に始まって急に止まる".
+// These samplers are persistent with a live, rampable .volume, so a mode
+// change now fades the outgoing mode's samplers down (then clears their
+// loops) while the incoming mode's fade up — a gradual, DJ-style blend.
+const MODE_LAYERS = {
+  ambient: {
+    samplers: () => [ambientHarpSampler, ambientCelloSampler],
+    stop: () => { stopAmbientHarpLayer(); stopAmbientCelloLayer(); }
+  },
+  lofi: {
+    samplers: () => [lofiPianoSampler, lofiBassSampler, lofiDrumSampler],
+    stop: () => { stopLofiPianoLayer(); stopLofiBassLayer(); stopLofiDrumLayer(); }
+  },
+  jazz: {
+    samplers: () => [jazzPianoSampler, jazzDrumSampler],
+    stop: () => { stopJazzPianoLayer(); stopJazzDrumLayer(); }
+  },
+  dub: {
+    samplers: () => [dubBassSampler, dubOrganSampler],
+    stop: () => { stopDubBassLayer(); stopDubOrganLayer(); }
+  }
+};
+
+// ~2 bars of cross-fade — long enough to read as a blend, short enough that a
+// drum layer's overlap with the next mode never turns muddy.
+function modeTransitionSeconds() {
+  try {
+    const sec = Tone.Time("2m").toSeconds();
+    return Number.isFinite(sec) && sec > 0 ? sec : 5;
+  } catch (e) {
+    return 5;
+  }
+}
+
+// Fade the incoming mode's layers up from silence (or set them straight to
+// base when transitionSec is 0). __baseDb is captured once — the first call
+// lands right after the sampler is created at its base volume.
+function fadeInModeLayers(mode, transitionSec) {
+  const layer = MODE_LAYERS[mode];
+  if (!layer) return;
+  for (const s of layer.samplers()) {
+    if (!s || !s.volume) continue;
+    if (s.__baseDb == null) s.__baseDb = s.volume.value;
+    try {
+      if (transitionSec > 0) {
+        s.volume.value = -60;
+        s.volume.rampTo(s.__baseDb, transitionSec);
+      } else {
+        s.volume.value = s.__baseDb;
+      }
+    } catch (e) {}
+  }
+}
+
+// Fade every other mode's layers down, then clear their loops once the fade
+// has finished. transitionSec 0 keeps the old instant-stop behaviour.
+function crossfadeOutOtherModes(keepMode, transitionSec) {
+  for (const mode of Object.keys(MODE_LAYERS)) {
+    if (mode === keepMode) continue;
+    const layer = MODE_LAYERS[mode];
+    if (transitionSec > 0) {
+      for (const s of layer.samplers()) {
+        if (s && s.volume) { try { s.volume.rampTo(-60, transitionSec); } catch (e) {} }
+      }
+      Tone.Transport.scheduleOnce(() => {
+        try { layer.stop(); } catch (e) {}
+      }, `+${transitionSec + 0.3}`);
+    } else {
+      try { layer.stop(); } catch (e) {}
+    }
+  }
+}
+
 // Mode-specific sound personality (v1.3)
-function updateSoundForMode(mode){
+function updateSoundForMode(mode, transitionSec = 0){
   // Keep changes gentle; use .set and ramp where possible
   try{
-    // fm-56/58/61: lofi / jazz / ambient / dub mode 以外では全 sample layer 停止
-    if (mode !== "lofi") {
-      stopLofiPianoLayer();
-      stopLofiBassLayer();
-      stopLofiDrumLayer();
-    }
-    if (mode !== "jazz") {
-      stopJazzPianoLayer();
-      stopJazzDrumLayer();
-    }
-    if (mode !== "ambient") {
-      stopAmbientHarpLayer();
-      stopAmbientCelloLayer();
-    }
-    if (mode !== "dub") {
-      stopDubBassLayer();
-      stopDubOrganLayer();
-    }
+    // v195: cross-fade the outgoing mode's sample layers out (then clear their
+    // loops) instead of the old instant hard-cut. Stops the layers of every
+    // mode that is not `mode`, exactly like the old per-mode stop block.
+    crossfadeOutOtherModes(mode, transitionSec);
     if (mode !== "lofi" && mode !== "jazz" && mode !== "ambient" && mode !== "dub") {
       try { pad.volume.rampTo(0, 1.0); } catch (e) {}
       try { bass.volume.rampTo(0, 1.0); } catch (e) {}
@@ -9818,16 +9971,18 @@ function updateSoundForMode(mode){
       globalReverb.wet.rampTo(0.26, 1.0);
       globalDelay.wet.rampTo(0.18, 1.0);
     }
+    // v195: fade the incoming mode's sample layers up from silence.
+    fadeInModeLayers(mode, transitionSec);
   }catch(e){
     console.warn("updateSoundForMode failed", e);
   }
 }
 let bassRoot     = "D2";
 
-function applyModeChangeHooks(manual = false) {
+function applyModeChangeHooks(manual = false, transitionSec = 0) {
   lastMode = EngineParams.mode;
   setPatternsByMode();
-  updateSoundForMode(EngineParams.mode);
+  updateSoundForMode(EngineParams.mode, transitionSec);
   if (manual && PresetManager.presets[EngineParams.mode]) {
     applyPresetToEngineParams(PresetManager.presets[EngineParams.mode]);
   }
@@ -9844,7 +9999,7 @@ function commitPhraseLockedMode(newMode, manual = false) {
   BarCounter.lastModeChangeBar = BarCounter.current;
   BarCounter.pendingMode = null;
   musicRuntimeDebugLog("barCounter", "[BarCounter]", BarCounter.current, "mode:", EngineParams.mode);
-  applyModeChangeHooks(manual);
+  applyModeChangeHooks(manual, modeTransitionSeconds());
   return true;
 }
 
@@ -12728,6 +12883,7 @@ function scheduleStep(time) {
   if (step === 0) advanceGrooveStructure();
   else syncHazamaTransportControls(step);
   advanceAutoMixTransport(step);
+  syncGenreModeSectionControls(step);
   decayOrganicChaos();
   decayMotifMemory();
   decayBpmCrossfadeMemory();

@@ -180,7 +180,7 @@
       return { input: hp, output: lp };
     }
     if (stem === "vocals") {
-      // v196: voice the vocal to settle into the mix — pull the word/consonant
+      // v198: voice the vocal to settle into the mix — pull the word/consonant
       // band (420–4200 Hz) down so it reads by tone not diction (音感寄り), and
       // lift a high-air shelf so it floats in from above. de-ess deepened since
       // the extra air would otherwise expose sibilance.
@@ -198,7 +198,7 @@
     return { input: hp, output: shelf };
   }
 
-  // v195: non-vocal "band polish" bus. drums/bass/guitar/chords sum here
+  // v198: non-vocal "band polish" bus. drums/bass/guitar/chords sum here
   // before the master remaster; the vocal/melody lead and the metronome
   // click bypass it and route straight to masterGain.
   //   instrumentBus → EQ tilt → glue comp → [dry] + [parallel saturation]
@@ -267,7 +267,7 @@
     } catch (e) {
       console.warn("[Band Room] playback bridge destination unavailable:", e);
     }
-    // v196: master voiced "全体的に" — a natural low-shelf lift for weight, a
+    // v198: master voiced "全体的に" — a natural low-shelf lift for weight, a
     // high shelf for sheen (艶), and tighter comp2 glue for Nirvana-ish density.
     const masterEq = new Tone.EQ3({ low: 1.5, mid: -0.2, high: 0.7, lowFrequency: 185, highFrequency: 5600 });
     const masterComp1 = new Tone.Compressor({ threshold: -16, ratio: 2.0, attack: 0.018, release: 0.26, knee: 8 });
@@ -307,7 +307,7 @@
     // v167: "good by default" rebalance after source-derived AI agents.
     // Keep the band cohesive: less top-end glare, more master headroom, and
     // enough bass/guitar presence without crowding the vocal stem.
-    // v195: drums/bass/guitar/chords route through the non-vocal polish bus;
+    // v198: drums/bass/guitar/chords route through the non-vocal polish bus;
     // the voice (vocal/melody lead) and click bypass it straight to masterGain.
     const instrumentBus = makeInstrumentPolishBus(masterGain);
     const drumPan   = new Tone.Panner(0.00).connect(instrumentBus);
@@ -338,7 +338,7 @@
     // before it reaches the master remaster.
     //
     // Chain: Tone.Player → [dry] + [chorus → delay → reverb (wet)] → vocalBus → masterGain
-    // v196: deeper/slower chorus + a longer, more pre-delayed reverb, with the
+    // v198: deeper/slower chorus + a longer, more pre-delayed reverb, with the
     // dry path pulled back so the vocal dissolves into the space (ふわっと上から)
     // rather than sitting in front of the band.
     vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.46, wet: 0.22 }).start();
