@@ -267,18 +267,21 @@
     } catch (e) {
       console.warn("[Band Room] playback bridge destination unavailable:", e);
     }
-    // v198: master voiced "全体的に" — a natural low-shelf lift for weight, a
-    // high shelf for sheen (艶), and tighter comp2 glue for Nirvana-ish density.
-    const masterEq = new Tone.EQ3({ low: 1.5, mid: -0.2, high: 0.7, lowFrequency: 185, highFrequency: 5600 });
+    // v198: low-shelf weight + high shelf for 艶 + tighter comp2 glue.
+    // v204: punch & air pass — presence/air shelf lifted (high 0.7→1.4, from
+    // 4.8 kHz) for バキバキ crispness, a touch more low-mid scoop (mid −0.5)
+    // for 抜け clarity, and comp2 attack slowed (8→16 ms) so transients punch
+    // through before the glue clamps.
+    const masterEq = new Tone.EQ3({ low: 1.5, mid: -0.5, high: 1.4, lowFrequency: 185, highFrequency: 4800 });
     const masterComp1 = new Tone.Compressor({ threshold: -16, ratio: 2.0, attack: 0.018, release: 0.26, knee: 8 });
-    const masterComp2 = new Tone.Compressor({ threshold: -10, ratio: 1.7, attack: 0.008, release: 0.16, knee: 5 });
+    const masterComp2 = new Tone.Compressor({ threshold: -10, ratio: 1.7, attack: 0.016, release: 0.16, knee: 5 });
     masterWidener = new Tone.StereoWidener(0.62);
 
-    masterTapeSat = new Tone.Distortion({ distortion: 0.09, oversample: "2x", wet: 1 });
+    masterTapeSat = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });  // v204: a touch more harmonic edge
     masterTapeSatWet = new Tone.Gain(0.07);
     masterTapeSatDry = new Tone.Gain(0.94);
 
-    masterReverb = new Tone.Reverb({ decay: 1.9, preDelay: 0.025, wet: 1 });
+    masterReverb = new Tone.Reverb({ decay: 2.4, preDelay: 0.025, wet: 1 });  // v204: bigger room for 空間の抜け感
     masterDryGain = new Tone.Gain(0.84);
     masterWetGain = new Tone.Gain(0.16);
 

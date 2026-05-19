@@ -1,10 +1,26 @@
-# Band Room — Changelog (v65 → v203 compact)
+# Band Room — Changelog (v65 → v204 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v204 compact — band-room: 原音マスタリング — バキバキ感 + 空間の抜け感
+
+ユーザー要望「原音マスタリングとして、もっと音のバキバキ感と、空間に広がる
+抜け感がほしい」。マスターチェーンを調整（構造値のみ、スライダー既定は不変）:
+
+- **バキバキ感（パンチ/粒立ち）:** masterComp2 の attack を 8→16ms に遅らせ、
+  トランジェントが glue に潰される前に前へ出るように。master EQ の high shelf
+  を 0.7→1.4・クロスオーバーを 5600→4800Hz に下げてプレゼンス〜エアを広く
+  持ち上げ輪郭をくっきり。tape saturation も 0.09→0.12 で倍音のエッジを少し。
+- **空間の抜け感:** master EQ の mid を −0.2→−0.5 に下げて低中域を整理（抜け・
+  クリアさ）、master reverb の decay を 1.9→2.4 に広げて空間を出す。
+- リミッター −1.0 / 音量カーブ / 譜面・音色は不変。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-94`、`hazama-fm-v204`。
 
 ---
 
