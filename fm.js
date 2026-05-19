@@ -667,6 +667,13 @@
       dispatchChange(autoToggle);
     }
 
+    // v196: hand the engine this genre's locked UCM baseline so the section
+    // system can gently develop the macro params around it even with AUTOMIX
+    // off (null for "any" — AUTOMIX itself drives the sections there).
+    if (typeof window.setMusicGenreSectionBaseline === "function") {
+      window.setMusicGenreSectionBaseline(wantsAuto ? null : profile.faders);
+    }
+
     // Write all 9 UCM faders. Dispatch each input event with a small spread
     // so the engine's 30 ms-throttled updateFromUI accepts each one and marks
     // manual influence on every key (engine.js:11690, 983).

@@ -96,6 +96,9 @@ assert.doesNotMatch(source, /globalReverb\.decay\s*=/, "globalReverb.decay must 
 // v195: mode changes cross-fade the sample layers instead of hard-cutting.
 assert.match(source, /function crossfadeOutOtherModes\(/, "Mode changes should cross-fade the outgoing sample layers");
 assert.match(source, /function fadeInModeLayers\(/, "Mode changes should fade the incoming sample layers in");
+// v196: genre-locked modes get gentle section development around the baseline.
+assert.match(source, /function syncGenreModeSectionControls\(/, "Genre-locked modes should run section development");
+assert.match(source, /window\.setMusicGenreSectionBaseline = setGenreSectionBaseline/, "Engine should expose the genre-section baseline API for fm.js");
 
 assert.match(packetSource, /function hazamaFmConversationPacketState\(/, "Hazama FM packet should expose groove conversation metadata");
 assert.match(packetSource, /conversation,\s*\n\s*integration_mode: "metadata-only"/, "Hazama FM conversation should stay metadata-only in the packet");

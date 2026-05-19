@@ -1,10 +1,35 @@
-# Band Room — Changelog (v65 → v195 compact)
+# Band Room — Changelog (v65 → v196 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v196 compact — ジャンル固定モードのセクション展開
+
+- `engine.js fm-103` / `fm.js fm-67`: ユーザー要望「個別ジャンル選択時も展開を
+  効かせたい」。原因 — ジャンルピル（ambient / techno 等）を選ぶと automix が
+  OFF になり 9 マクロ params が固定 → セクション展開（`updateAutoMixTargets`
+  経由）が genre モードに届かなかった（ANY 専用だった）。
+- 修正: ジャンル適用時、fm.js が engine へそのジャンルの UCM ベースライン
+  （9 fader 値）を `window.setMusicGenreSectionBaseline()` で渡す。engine 側は
+  `syncGenreModeSectionControls()`（automix OFF 時に `scheduleStep` から駆動）
+  で、セクションの形に沿って params をベースライン周りで「ゆるく」変調
+  （`GENRE_SECTION_SCALE` 0.32）。
+- `energy` だけは固定 — `chooseMode()` は energy 帯でモードを決めるため、
+  energy を動かすとジャンル/モード/テンポが変わってしまう。残り 8 params
+  （wave / creation / void / body / resource / circle / observer / mind）が
+  動くので、密度・空白感・低域・複雑さが節ごとに展開する。
+- 変調は `SECTION_FORM_CENTER`（全 6 セクション target の平均）基準の
+  zero-mean ＝ ジャンルから乖離せず息づく。手動 fader 操作中の key は
+  manual-influence 期間スキップ。
+- `fm.html` / `index.html` / `sw.js`: `fm-103` / `fm.js fm-67`、`hazama-fm-v196`。
+- `check-hazama-melody.mjs`: genre-section 関数を assert。
+- これで ANY・個別ジャンル双方でセクション展開が効く。`drive`/`space`
+  （v193/194）は元々 genre モードでも効いており、今回の 8-param 変調と合わさる。
 
 ---
 
