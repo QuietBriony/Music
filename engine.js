@@ -99,6 +99,11 @@ const SECTION_FORM_CENTER = (() => {
 // How strongly the section modulates the macro params when a genre pill has
 // locked AUTOMIX off — gentle ("ゆるく"), to keep each genre's identity.
 const GENRE_SECTION_SCALE = 0.32;
+// v197: intra-section "breath" — a gentle sin arc over each section's progress
+// lifts these params toward mid-section, so even a long, calm section keeps
+// developing instead of holding a flat plateau for 14-18 bars. Absolute UCM
+// offsets at the peak of the arc; 0 at the section's start and end.
+const INTRA_SECTION_BREATH = { wave: 8, creation: 8, resource: 7, void: -7 };
 const AUTO_MOTION_TICK_MS = 3500;
 const AUTO_SLIDER_SYNC_INTERVAL_MS = 240;
 const AUTO_GESTURE_MIN_GAP_MS = 4200;
@@ -1295,6 +1300,17 @@ function resetSection() {
   SectionState.name = "";
 }
 
+// v197: mark a section boundary with the radio-brain ident — a subtle
+// harmonic gesture (otherwise only fired on a program change) that announces
+// the new world. Skipped when a program-change cue is already pending so the
+// two transition markers don't stack.
+function cueSectionIdent() {
+  if (!isPlaying || !MusicRadioBrainState || MusicRadioBrainState.cuePending) return;
+  MusicRadioBrainState.cuePending = true;
+  MusicRadioBrainState.cueProgram = MusicRadioBrainState.active;
+  MusicRadioBrainState.cueCycle = GrooveState.cycle;
+}
+
 function advanceSection() {
   SectionState.fillCue = false;
   if (!SectionState.started) {
@@ -1315,13 +1331,21 @@ function advanceSection() {
     SectionState.barsLeft = currentSectionProfile().bars;
     SectionState.barsInto = 0;
     SectionState.name = currentSectionProfile().name;
+    cueSectionIdent();
   }
 }
 
 function sectionMacroTarget(key) {
   if (!SectionState.started) return null;
-  const target = currentSectionProfile().targets[key];
-  return typeof target === "number" ? target : null;
+  const profile = currentSectionProfile();
+  const target = profile.targets[key];
+  if (typeof target !== "number") return null;
+  // v197: add the intra-section breath — a gentle sin arc over the section's
+  // progress so a held section still develops within itself.
+  const lift = INTRA_SECTION_BREATH[key];
+  if (typeof lift !== "number") return target;
+  const progress = clampValue(SectionState.barsInto / Math.max(1, profile.bars), 0, 1);
+  return target + Math.sin(progress * Math.PI) * lift;
 }
 
 function longformArcActive() {

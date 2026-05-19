@@ -1,10 +1,29 @@
-# Band Room — Changelog (v65 → v196 compact)
+# Band Room — Changelog (v65 → v197 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v197 compact — セクション内の息づき + 境界の番組ID合図
+
+- `engine.js fm-104`: 候補項目 2・3 の消化（ユーザー「候補は全部 OK」）。
+- **(2) 静かな節を生かす** — セクションは macro params をプラトーで保持するが、
+  14-18 小節ずっと平坦だと静かな節（submerge / hollow）が静止して聞こえうる。
+  `INTRA_SECTION_BREATH` を追加 — 節の進行（`barsInto / bars`）に対し `sin` の
+  弧で wave / creation / resource を中盤に向け微増・void を微減（節頭と節尾は
+  0）。`sectionMacroTarget()` に織り込んだので ANY・ジャンル固定の両経路に
+  効く。節の中で「ひと息」分の展開が出る。
+- **(3) つなぎの有機的強化** — 未使用気味だった radio-brain ident（番組変更時
+  だけ鳴る控えめな和声ジェスチャ）を、セクション境界でも鳴らすよう接続
+  （`cueSectionIdent()`）。v193 のフィル（リズムの区切り）＋ ident（和声の
+  区切り）で塊のエッジが有機的に立つ。番組変更 cue が既に保留中なら重ねない。
+- `fm.html` / `index.html` / `sw.js`: `fm-104`、`hazama-fm-v197`。
+- `check-hazama-melody.mjs`: `INTRA_SECTION_BREATH` / `cueSectionIdent` を assert。
+- 譜面・音色は不変（節内の緩やかな揺らぎと境界の控えめな合図の追加のみ）。
 
 ---
 
