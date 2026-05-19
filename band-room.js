@@ -195,6 +195,36 @@
     return { input: hp, output: shelf };
   }
 
+  // v195: non-vocal "band polish" bus. drums/bass/guitar/chords sum here
+  // before the master remaster; the vocal/melody lead and the metronome
+  // click bypass it and route straight to masterGain.
+  //   instrumentBus → EQ tilt → glue comp → [dry] + [parallel saturation]
+  //                 → stereo lift → makeup → masterGain
+  // EQ trims low-mid stacking mud and lifts presence/air (hi-fi clarity);
+  // the glue compressor + parallel harmonic saturation add density (音圧)
+  // without flattening drum transients (12 ms attack, 16% parallel wet).
+  function makeInstrumentPolishBus(dest) {
+    const input  = new Tone.Gain(1);
+    const eq     = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 1.4, lowFrequency: 160, highFrequency: 4200 });
+    const comp   = new Tone.Compressor({ threshold: -20, ratio: 2.2, attack: 0.012, release: 0.18, knee: 6 });
+    const sat    = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });
+    const satWet = new Tone.Gain(0.16);   // parallel saturated blend
+    const satDry = new Tone.Gain(0.92);   // parallel clean path
+    const widen  = new Tone.StereoWidener(0.58);
+    const makeup = new Tone.Gain(1.08);   // restore level lost to glue comp
+
+    input.connect(eq);
+    eq.connect(comp);
+    comp.connect(satDry);
+    comp.connect(sat);
+    sat.connect(satWet);
+    satDry.connect(widen);
+    satWet.connect(widen);
+    widen.connect(makeup);
+    makeup.connect(dest);
+    return input;
+  }
+
   function ensureMaster() {
     if (masterGain) return masterGain;
     // v66 mastering chain (two-stage compression + tape sat + per-stem EQ):
@@ -272,11 +302,14 @@
     // v167: "good by default" rebalance after source-derived AI agents.
     // Keep the band cohesive: less top-end glare, more master headroom, and
     // enough bass/guitar presence without crowding the vocal stem.
-    const drumPan   = new Tone.Panner(0.00).connect(masterGain);
-    const bassPan   = new Tone.Panner(0.00).connect(masterGain);
-    const guitarPan = new Tone.Panner(-0.18).connect(masterGain);
+    // v195: drums/bass/guitar/chords route through the non-vocal polish bus;
+    // the voice (vocal/melody lead) and click bypass it straight to masterGain.
+    const instrumentBus = makeInstrumentPolishBus(masterGain);
+    const drumPan   = new Tone.Panner(0.00).connect(instrumentBus);
+    const bassPan   = new Tone.Panner(0.00).connect(instrumentBus);
+    const guitarPan = new Tone.Panner(-0.18).connect(instrumentBus);
     const voicePan  = new Tone.Panner(0.00).connect(masterGain);
-    const chordPan  = new Tone.Panner(+0.16).connect(masterGain);
+    const chordPan  = new Tone.Panner(+0.16).connect(instrumentBus);
     const clickPan  = new Tone.Panner(0.00).connect(masterGain);
     drumBus = new Tone.Gain(0.58).connect(drumPan);
     bassBus = new Tone.Gain(0.66).connect(bassPan);

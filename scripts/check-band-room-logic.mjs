@@ -141,6 +141,10 @@ assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default s
 assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v168 mix");
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
 assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.68\)/, "Vocal stem default should sit forward without pinning the limiter");
+assert.match(source, /function makeInstrumentPolishBus\(/, "Band Room should sum the non-vocal band into a polish bus");
+assert.match(source, /const instrumentBus = makeInstrumentPolishBus\(masterGain\)/, "Non-vocal instruments should feed the polish bus");
+assert.match(source, /drumPan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(instrumentBus\)/, "Drums should route through the instrument polish bus");
+assert.match(source, /voicePan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(masterGain\)/, "Vocal lead should bypass the instrument polish bus");
 assert.match(html, /rel="manifest" href="manifest-band-room\.webmanifest"/, "Band Room should expose its own PWA manifest");
 assert.match(source, /function scheduleMobileSuspendRelease\(/, "Band Room should run panic releases while mobile screen lock is happening");
 assert.match(source, /window\.addEventListener\("blur"/, "Band Room should treat mobile blur as a background transition");

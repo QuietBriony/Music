@@ -1,10 +1,34 @@
-# Band Room — Changelog (v65 → v194 compact)
+# Band Room — Changelog (v65 → v195 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v195 compact — 非ボーカル磨きバス（音圧 + hi-fi）
+
+- `band-room.js br-88`: ユーザー要望「ボーカル以外の音を磨きたい、音圧も
+  hi-fi 的な艶も欲しい」対応。**非ボーカル専用の磨きバス**を新設。
+- `makeInstrumentPolishBus()` — drums / bass / guitar / chords の 4 パンを
+  `masterGain` 直結から専用バスに集約。voice（ボーカル / メロディリード）と
+  click（メトロノーム）は従来どおり `masterGain` 直結で磨きの対象外。
+- チェーン: `EQ3 tilt → glue compressor → [dry] + [parallel saturation]
+  → StereoWidener → makeup → masterGain`。
+  - **hi-fi 磨き** = EQ で低中域の重なり濁りを削り（low -0.8 / mid -0.6）、
+    プレゼンス〜エアを上げる（high +1.4、4.2kHz 上の shelf）。Widener 0.58 で
+    楽器を左右に広げ、センターのボーカルから分離。
+  - **音圧** = glue comp（threshold -20 / ratio 2.2）で密度を上げつつ、
+    attack 12ms でドラムのアタックは残す。Distortion 0.12 を 16% パラレル
+    ブレンドして倍音を付与、makeup +0.7dB。
+- マスターチェーン（v66 の 2 段コンプ + tape sat + limiter -1.0）は不変。
+  磨きバスはその手前のサブミックス段として挿入。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-88`、`hazama-fm-v195`。
+- `check-band-room-logic.mjs`: `makeInstrumentPolishBus` の存在と、非ボーカルが
+  バス経由・ボーカルが直結であることを assert。
+- 譜面・コード進行・各楽器の音色そのものは不変。マスター手前の質感のみ調整。
 
 ---
 
