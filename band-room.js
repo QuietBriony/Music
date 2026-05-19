@@ -180,10 +180,13 @@
       return { input: hp, output: lp };
     }
     if (stem === "vocals") {
-      const hp = new Tone.Filter({ frequency: 115, type: "highpass", Q: 0.55 });
-      const presence = new Tone.EQ3({ low: -0.2, mid: 0.5, high: 0.6, lowFrequency: 420, highFrequency: 3600 });
-      // Built-in de-esser: notch at ~6 kHz with low Q to gently tame sibilance
-      const deEss = new Tone.Filter({ frequency: 6200, type: "peaking", Q: 1.1, gain: -3.5 });
+      // v198: voice the vocal to settle into the mix — pull the word/consonant
+      // band (420–4200 Hz) down so it reads by tone not diction (音感寄り), and
+      // lift a high-air shelf so it floats in from above. de-ess deepened since
+      // the extra air would otherwise expose sibilance.
+      const hp = new Tone.Filter({ frequency: 120, type: "highpass", Q: 0.55 });
+      const presence = new Tone.EQ3({ low: -0.5, mid: -1.4, high: 1.3, lowFrequency: 420, highFrequency: 4200 });
+      const deEss = new Tone.Filter({ frequency: 6200, type: "peaking", Q: 1.0, gain: -4.5 });
       hp.connect(presence);
       presence.connect(deEss);
       return { input: hp, output: deEss };
@@ -193,6 +196,36 @@
     const shelf = new Tone.EQ3({ low: -0.2, mid: 0, high: 0.3, lowFrequency: 220, highFrequency: 5200 });
     hp.connect(shelf);
     return { input: hp, output: shelf };
+  }
+
+  // v198: non-vocal "band polish" bus. drums/bass/guitar/chords sum here
+  // before the master remaster; the vocal/melody lead and the metronome
+  // click bypass it and route straight to masterGain.
+  //   instrumentBus → EQ tilt → glue comp → [dry] + [parallel saturation]
+  //                 → stereo lift → makeup → masterGain
+  // EQ trims low-mid stacking mud and lifts presence/air (hi-fi clarity);
+  // the glue compressor + parallel harmonic saturation add density (音圧)
+  // without flattening drum transients (12 ms attack, 16% parallel wet).
+  function makeInstrumentPolishBus(dest) {
+    const input  = new Tone.Gain(1);
+    const eq     = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 1.4, lowFrequency: 160, highFrequency: 4200 });
+    const comp   = new Tone.Compressor({ threshold: -20, ratio: 2.2, attack: 0.012, release: 0.18, knee: 6 });
+    const sat    = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });
+    const satWet = new Tone.Gain(0.16);   // parallel saturated blend
+    const satDry = new Tone.Gain(0.92);   // parallel clean path
+    const widen  = new Tone.StereoWidener(0.58);
+    const makeup = new Tone.Gain(1.08);   // restore level lost to glue comp
+
+    input.connect(eq);
+    eq.connect(comp);
+    comp.connect(satDry);
+    comp.connect(sat);
+    sat.connect(satWet);
+    satDry.connect(widen);
+    satWet.connect(widen);
+    widen.connect(makeup);
+    makeup.connect(dest);
+    return input;
   }
 
   function ensureMaster() {
@@ -234,12 +267,14 @@
     } catch (e) {
       console.warn("[Band Room] playback bridge destination unavailable:", e);
     }
-    const masterEq = new Tone.EQ3({ low: 0.7, mid: -0.2, high: 0.2, lowFrequency: 180, highFrequency: 5600 });
+    // v198: master voiced "全体的に" — a natural low-shelf lift for weight, a
+    // high shelf for sheen (艶), and tighter comp2 glue for Nirvana-ish density.
+    const masterEq = new Tone.EQ3({ low: 1.5, mid: -0.2, high: 0.7, lowFrequency: 185, highFrequency: 5600 });
     const masterComp1 = new Tone.Compressor({ threshold: -16, ratio: 2.0, attack: 0.018, release: 0.26, knee: 8 });
-    const masterComp2 = new Tone.Compressor({ threshold: -7,  ratio: 1.45, attack: 0.006, release: 0.14, knee: 5 });
+    const masterComp2 = new Tone.Compressor({ threshold: -10, ratio: 1.7, attack: 0.008, release: 0.16, knee: 5 });
     masterWidener = new Tone.StereoWidener(0.62);
 
-    masterTapeSat = new Tone.Distortion({ distortion: 0.045, oversample: "2x", wet: 1 });
+    masterTapeSat = new Tone.Distortion({ distortion: 0.09, oversample: "2x", wet: 1 });
     masterTapeSatWet = new Tone.Gain(0.07);
     masterTapeSatDry = new Tone.Gain(0.94);
 
@@ -247,7 +282,7 @@
     masterDryGain = new Tone.Gain(0.84);
     masterWetGain = new Tone.Gain(0.16);
 
-    masterGain = new Tone.Gain(0.84);
+    masterGain = new Tone.Gain(0.90);
     masterGain.connect(masterComp1);
     masterComp1.connect(masterEq);
     masterEq.connect(masterComp2);
@@ -272,11 +307,14 @@
     // v167: "good by default" rebalance after source-derived AI agents.
     // Keep the band cohesive: less top-end glare, more master headroom, and
     // enough bass/guitar presence without crowding the vocal stem.
-    const drumPan   = new Tone.Panner(0.00).connect(masterGain);
-    const bassPan   = new Tone.Panner(0.00).connect(masterGain);
-    const guitarPan = new Tone.Panner(-0.18).connect(masterGain);
+    // v198: drums/bass/guitar/chords route through the non-vocal polish bus;
+    // the voice (vocal/melody lead) and click bypass it straight to masterGain.
+    const instrumentBus = makeInstrumentPolishBus(masterGain);
+    const drumPan   = new Tone.Panner(0.00).connect(instrumentBus);
+    const bassPan   = new Tone.Panner(0.00).connect(instrumentBus);
+    const guitarPan = new Tone.Panner(-0.18).connect(instrumentBus);
     const voicePan  = new Tone.Panner(0.00).connect(masterGain);
-    const chordPan  = new Tone.Panner(+0.16).connect(masterGain);
+    const chordPan  = new Tone.Panner(+0.16).connect(instrumentBus);
     const clickPan  = new Tone.Panner(0.00).connect(masterGain);
     drumBus = new Tone.Gain(0.58).connect(drumPan);
     bassBus = new Tone.Gain(0.66).connect(bassPan);
@@ -300,12 +338,15 @@
     // before it reaches the master remaster.
     //
     // Chain: Tone.Player → [dry] + [chorus → delay → reverb (wet)] → vocalBus → masterGain
-    vocalChorus = new Tone.Chorus({ frequency: 1.25, delayTime: 3.6, depth: 0.34, wet: 0.22 }).start();
-    vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.26, wet: 1 });
+    // v198: deeper/slower chorus + a longer, more pre-delayed reverb, with the
+    // dry path pulled back so the vocal dissolves into the space (ふわっと上から)
+    // rather than sitting in front of the band.
+    vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.46, wet: 0.22 }).start();
+    vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.30, wet: 1 });
     vocalDelayWet = new Tone.Gain(0.12);  // delay send level
-    vocalReverb = new Tone.Reverb({ decay: 2.6, preDelay: 0.035, wet: 1 });
+    vocalReverb = new Tone.Reverb({ decay: 4.0, preDelay: 0.055, wet: 1 });
     vocalReverbWet = new Tone.Gain(0.20);  // reverb send level
-    vocalDryGain = new Tone.Gain(0.82);
+    vocalDryGain = new Tone.Gain(0.66);
 
     stemBus.vocals = new Tone.Gain(0.68);
 
@@ -1945,7 +1986,7 @@
     if (state.voiceInstrument && state.onlineCatalog) {
       const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.voiceInstrument);
       if (instDef && instDef.kind === "sampler") {
-        const verb = new Tone.Reverb({ decay: 1.8, wet: 0.28 }).connect(target);
+        const verb = new Tone.Reverb({ decay: 2.7, wet: 0.36 }).connect(target);
         const urls = {};
         Object.entries(instDef.notes).forEach(([note, p]) => {
           urls[note] = instDef.base_url + p;
@@ -1963,7 +2004,7 @@
 
     // v92 synth fallback: AMSynth + dual formant (vowel-ish "ah")
     const v = currentProfile().vocal;
-    const verb = new Tone.Reverb({ decay: 1.6, wet: v.verbWet }).connect(target);
+    const verb = new Tone.Reverb({ decay: 2.5, wet: v.verbWet }).connect(target);
     const hp = new Tone.Filter({ frequency: v.hpFreq, type: "highpass", Q: 0.5 }).connect(verb);
     const mix = new Tone.Gain(0.9).connect(hp);
     const formant1 = new Tone.Filter({ frequency: v.formant1, type: "bandpass", Q: 5 }).connect(mix);
@@ -3814,7 +3855,7 @@
         ensureMaster();
         if (masterTapeSatWet) {
           // Slider 0..40 → 0..0.40 (subtle parallel send; >0.40 starts to
-          // muddy the top end with the 0.06 distortion setting)
+          // muddy the top end with the 0.09 distortion setting)
           const w = Number(tapeWarmthEl.value) / 100;
           try { masterTapeSatWet.gain.rampTo(w, 0.12); } catch (e) {}
         }
@@ -3847,10 +3888,10 @@
     const masterVolReadout = $("br-master-vol-readout");
     const masterVolDown = $("br-master-vol-down");
     const masterVolUp = $("br-master-vol-up");
-    let masterVolBase = 0.84; // matches initial Tone.Gain(0.84) in ensureMaster()
+    let masterVolBase = 0.90; // matches initial Tone.Gain(0.90) in ensureMaster()
 
     function masterVolGainFromValue(value) {
-      // 0 → 0, 80 → 0.84 (default), 100 → 1.25
+      // 0 → 0, 80 → 0.90 (default), 100 → 1.25
       // Curve: v/80 * base for 0-80 range, then linear to 1.25 at 100
       const v = Math.max(0, Math.min(100, Number(value) || 0));
       if (v <= 80) return (v / 80) * masterVolBase;
