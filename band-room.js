@@ -3614,7 +3614,15 @@
 
     if (resumed || reason === "visible" || reason === "pageshow") {
       releaseSustainedSynths(reason);
-      resyncStemPlaybackToClock(reason, true);
+      // v207: while the tab is still hidden, skip the forced stem resync.
+      // The watchdog runs every 2.5s and any brief BG context-suspend would
+      // otherwise stop/restart every stem here — that hard cycle was audible
+      // as occasional "音程が下ブレる" in background playback. On visibility
+      // return we re-enter with reason="visible" / document.hidden=false, so
+      // resync runs then to clean up any drift.
+      if (!document.hidden) {
+        resyncStemPlaybackToClock(reason, true);
+      }
     }
   }
 
