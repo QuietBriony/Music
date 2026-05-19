@@ -19,6 +19,32 @@
 
 ---
 
+## 2026-05-18 — Hazama FM ジャンル固定モードのセクション展開 (v196)
+- agent     : Claude Code (Opus 4.7)
+- goal      : ユーザー選択「ジャンル固定時の展開」— 個別ジャンルでもセクション
+  展開を効かせる（既出 (E) の消化）
+- repos     : Music
+- shipped   : PR #148（v196）— ジャンルピル選択時は automix OFF ＋ 9 マクロ
+  params 固定 → セクション展開（`updateAutoMixTargets` 経由）が ANY 専用
+  だった。修正: ジャンル適用時 fm.js が engine へ baseline（9 fader 値）を
+  `window.setMusicGenreSectionBaseline()` で渡す。engine 側
+  `syncGenreModeSectionControls()`（automix OFF 時 `scheduleStep` 駆動）が
+  `UCM_TARGET = baseline + ゆるい section delta`（`GENRE_SECTION_SCALE` 0.32、
+  `SECTION_FORM_CENTER` 基準の zero-mean）。`energy` は固定 — `chooseMode()`
+  の energy 帯 ＝ mode/tempo を守るため。残り 8 params が節ごとに変調し
+  密度・空白感・低域・複雑さが展開。手動 fader 操作中の key はスキップ
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody v196/fm-103
+- backlog   : BL なし（(E) 消化済み）
+- next      : 試聴 — ANY・個別ジャンル双方でセクション展開を確認。
+  `GENRE_SECTION_SCALE` / クロスフェード長 / section profile 数値は試聴チューニング。
+  未着手の任意項目: 静かな節の内部展開、未使用 `triggerMusicRadioBrainIdent` の活用
+- blockers  : 試聴フィードバック待ち
+- 注意      : Band Room は別チャットで並行進行中。共有ファイル（`sw.js` /
+  `docs/BAND-ROOM-CHANGELOG.md`）は両チャットで衝突しうる — commit 前に
+  `git pull --ff-only`、衝突時は版番号の大きい方を採用
+
+---
+
 ## 2026-05-18 — Hazama FM モード遷移の DJ クロスフェード (v195)
 - agent     : Claude Code (Opus 4.7) ＋ background research agent（遷移機構マップ）
 - goal      : ユーザー報告「モード変更が急に始まって急に止まる、DJ 的に徐々に
