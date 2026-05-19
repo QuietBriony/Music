@@ -84,6 +84,21 @@ const SECTION_PROFILES = [
 // little keeps the world breathing rather than frozen. 0 = dead still,
 // 1 = the pre-v192 continuous morph.
 const SECTION_LIFE_FACTOR = 0.2;
+// v196: average of every section's target per key — the "neutral" the section
+// deltas are measured from, so a genre-mode modulation is zero-mean over the
+// form (it breathes around the genre baseline without drifting off it).
+const SECTION_FORM_CENTER = (() => {
+  const center = {};
+  for (const key of Object.keys(SECTION_PROFILES[0].targets)) {
+    let sum = 0;
+    for (const p of SECTION_PROFILES) sum += p.targets[key];
+    center[key] = sum / SECTION_PROFILES.length;
+  }
+  return center;
+})();
+// How strongly the section modulates the macro params when a genre pill has
+// locked AUTOMIX off — gentle ("ゆるく"), to keep each genre's identity.
+const GENRE_SECTION_SCALE = 0.32;
 const AUTO_MOTION_TICK_MS = 3500;
 const AUTO_SLIDER_SYNC_INTERVAL_MS = 240;
 const AUTO_GESTURE_MIN_GAP_MS = 4200;
@@ -520,6 +535,12 @@ const SectionState = {
   name: ""
 };
 if (typeof window !== "undefined") window.SectionState = SectionState;
+// v196: when a genre pill locks AUTOMIX off, fm.js hands the engine that
+// genre's UCM baseline here so the section system can still develop the macro
+// params gently around it. null = ANY (AUTOMIX itself drives the sections).
+const GenreSectionState = {
+  baseline: null
+};
 const DJTempoState = {
   bpm: 80,
   targetBpm: 80,
@@ -6825,6 +6846,52 @@ function syncAutoMixTransportControls(step) {
   syncTransportControlValues(step, step === 0 ? 2.1 : 1.05, "AutoMix");
 }
 
+// v196: section development for genre-locked modes. A genre pill turns AUTOMIX
+// off and freezes the 9 UCM params, so the section system (which rides the
+// AUTOMIX path) never reached genre modes. fm.js hands the engine the genre's
+// UCM baseline; here the section gently breathes the macro params around it.
+// `energy` is held exactly at the baseline so chooseMode()'s energy band — and
+// thus the genre/mode/tempo identity — never shifts; the other 8 params move
+// by GENRE_SECTION_SCALE across the section form.
+function syncGenreModeSectionControls(step) {
+  if (step % TRANSPORT_CONTROL_SYNC_STEPS !== 0) return;
+  if (UCM.auto.enabled || !isPlaying || HazamaBridgeState.active) return;
+  const baseline = GenreSectionState.baseline;
+  if (!baseline || !SectionState.started) return;
+  const now = performanceNowMs();
+  for (const key of AUTOMIX_MOTION_KEYS) {
+    const base = baseline[key];
+    if (typeof base !== "number") continue;
+    if (isManualInfluenceActive(key, now)) continue;
+    let delta = 0;
+    if (key !== "energy") {
+      const sectionTarget = sectionMacroTarget(key);
+      const center = SECTION_FORM_CENTER[key];
+      if (sectionTarget != null && typeof center === "number") {
+        delta = (sectionTarget - center) * GENRE_SECTION_SCALE;
+      }
+    }
+    UCM_TARGET[key] = clampValue(base + delta, 4, 96);
+  }
+  syncTransportControlValues(step, step === 0 ? 1.4 : 0.85, "GenreSection");
+}
+
+// v196: fm.js calls this when a genre pill is applied — `faders` is the
+// genre's UCM profile (the locked baseline), or null for ANY.
+function setGenreSectionBaseline(faders) {
+  if (!faders || typeof faders !== "object") {
+    GenreSectionState.baseline = null;
+    return;
+  }
+  const snap = {};
+  for (const key of AUTOMIX_MOTION_KEYS) {
+    const v = Number(faders[key]);
+    if (Number.isFinite(v)) snap[key] = clampValue(v, 0, 100);
+  }
+  GenreSectionState.baseline = Object.keys(snap).length === AUTOMIX_MOTION_KEYS.length ? snap : null;
+}
+if (typeof window !== "undefined") window.setMusicGenreSectionBaseline = setGenreSectionBaseline;
+
 function syncTransportControlValues(step, maxStep, label) {
   if (step % TRANSPORT_CONTROL_SYNC_STEPS !== 0) return;
 
@@ -12792,6 +12859,7 @@ function scheduleStep(time) {
   if (step === 0) advanceGrooveStructure();
   else syncHazamaTransportControls(step);
   advanceAutoMixTransport(step);
+  syncGenreModeSectionControls(step);
   decayOrganicChaos();
   decayMotifMemory();
   decayBpmCrossfadeMemory();
