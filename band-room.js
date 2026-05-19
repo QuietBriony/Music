@@ -1947,7 +1947,7 @@
       envelope: { attack: 0.003, decay: 0.10, sustain: 0.55, release: 0.16 },
       volume: -12
     });
-    guitar.maxPolyphony = 6;
+    guitar.maxPolyphony = 10;  // v200: was 6 — too low for strummed power chords
     guitar.connect(chorus);
     chorus.connect(dist);
     dist.connect(lp);
@@ -2104,7 +2104,7 @@
       envelope: { attack: c.attack, decay: c.decay, sustain: 0.45, release: c.release },
       volume: -12  // v104: was -16, raised so chord pad anchors the mix
     }).connect(chorus);
-    chord.maxPolyphony = 6;
+    chord.maxPolyphony = 10;  // v200: was 6 — too low for overlapping 4-note pads
     return chord;
   }
 
@@ -3018,7 +3018,10 @@
     } else if (ctx.role === "break") {
       [0, 8].forEach((sub) => steps.push({ sub, dur: "4n", vel: 0.38 + ctx.pressure * 0.20 }));
     } else if (ctx.role === "recap" || ctx.pressure > 0.66) {
-      for (let sub = 0; sub < 16; sub += 1) {
+      // v200: 8th-note strum (was 16th). 16 power-chord triggers per bar
+      // (×3 notes each) overran the guitar PolySynth — halving the strum
+      // density keeps the part audible instead of mostly dropped.
+      for (let sub = 0; sub < 16; sub += 2) {
         const sourceHit = accentMap.get(sub);
         const hatHit = ctx.hat.find((hit) => hit.step === sub);
         const isGridAccent = sub % 4 === 0;
@@ -3041,7 +3044,7 @@
         });
       });
     }
-    return dedupeAgentSteps(steps, ctx.role === "recap" ? 16 : 8);
+    return dedupeAgentSteps(steps, 8);
   }
 
   function humanFlyVoicePlan(ctx) {

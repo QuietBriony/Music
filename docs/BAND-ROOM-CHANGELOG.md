@@ -1,10 +1,31 @@
-# Band Room — Changelog (v65 → v199 compact)
+# Band Room — Changelog (v65 → v200 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v200 compact — band-room AI 再現モード: ポリフォニー溢れ修正（partial fix）
+
+ユーザー報告「AI 再現モードは音が全然ない」の調査・第一弾修正。**部分修正**で、
+synth モードのハードハングは未解決（次ラウンドで本格調査）。
+
+- **確証のある修正:** AI 再現モードで PolySynth のポリフォニー溢れを特定。
+  `guitarAgentPlan` の recap（サビ）分岐が 16分音符ストラム（16ステップ ×
+  3音パワーコード ＝ 48ノート/小節）を発火し、ギター/コード PolySynth の
+  `maxPolyphony = 6` を大幅超過 → `Max polyphony exceeded. Note dropped.` が
+  大量発生し、和音・ギターが落とされて消えていた。
+  - guitar recap ストラム: 16分 → 8分音符（密度半減）。
+  - guitar / chord の `maxPolyphony`: 6 → 10（v187 の stutter 対策の範囲内）。
+- **未解決:** synth モードで再生開始後にメインスレッドがハードハングする現象は
+  これだけでは直らない。agent ループ／スケジューラ／リバーブ decay 再代入／
+  小節ごとの synth 再生成は調査済みで除外。原因は非自明、次ラウンドで
+  プロファイリング前提の本格調査が必要。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-90`、`hazama-fm-v200`。
+- 譜面・コード進行・音色は不変。
 
 ---
 
