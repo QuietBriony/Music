@@ -1,10 +1,42 @@
-# Band Room — Changelog (v65 → v205 compact)
+# Band Room — Changelog (v65 → v206 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v206 compact — PWA インストール推奨バナー（Music の 2 ページ）
+
+- ユーザー要望「Music-stack 各システムを PWA 化したほうが安定？それなら
+  ページに推奨表示と手順を載せたい」への対応 第 1 弾。**Hazama FM (fm.html)
+  と Music Core Rig (index.html)** にインストール推奨バナー（`#install-hint`）
+  を追加。
+- 動作: ページ起動時、`standalone` 表示モードでなく、かつユーザーが過去に
+  dismiss していなければ、画面上部に小さい半透明バナーを表示。「📲 PWA推奨：
+  バックグラウンド再生が安定」+「手順」ボタン（iOS / Android / PC の各
+  インストール手順を展開）+「×」（localStorage に dismiss を記録、再表示
+  しない）。Chrome の `beforeinstallprompt` が来たときは「インストール」
+  ボタンで 1 タップ実行（iOS Safari は手順表示のみで OS の制約に従う）。
+- 背景 — ユーザー報告: Band Room をバックグラウンド再生中にときどき音程が
+  下ブレる。原因はほぼ確実にブラウザのバックグラウンド throttling — JS
+  イベントループが遅延し、Tone.js のスケジューリングや Player の `playbackRate`
+  計算がズレることで sample 再生のピッチがブレる。PWA standalone はこの
+  throttling を緩めるため、Band Room を含む全体の安定性が上がる（Band Room の
+  audio コード自体でも軽減できるが、本 PR は別チャット管理域には触れない）。
+- `fm.html` / `fm.css fm-53` / `fm.js fm-68`: Hazama FM 側はバナー＋既存の
+  `beforeinstallprompt` ロジックを統合（旧 floating `#fm-install` ボタンの
+  生成は退役、その役目はバナー内の「インストール」ボタンが担う）。
+- `index.html`: Music Core Rig には inline `<style>` ＋ inline `<script>` で
+  同じバナーを実装（fm.js を読まないため）。dismiss は同じ localStorage キー
+  `musicStackInstallHintDismissed` で同一オリジン共有。
+- `sw.js`: `hazama-fm-v206`、precache の fm.js / fm.css バージョン更新。
+- Band Room (`band-room.html`) は別チャット管理域のため**本 PR では未着手**。
+  バナーを載せる場合は同パターン（inline style/script）で 1 ファイル変更。
+- sister repo（namima / chill / drum-floor / openclaw）への展開は、本パイロット
+  の試用後に。
 
 ---
 

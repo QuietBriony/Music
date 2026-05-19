@@ -475,6 +475,60 @@ body[data-fm-genre="piano"]   #mandala-container { --ident-hue: -20deg; --ident-
 
 .fm-install-btn[hidden] { display: none; }
 
+/* v198: PWA install hint — a small dismissable banner at the top of the page.
+   Shown only when the page is not running standalone and not previously
+   dismissed (per-origin localStorage). Subtle to fit the focus aesthetic. */
+.install-hint {
+  position: fixed;
+  top: max(8px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  max-width: min(92vw, 540px);
+  padding: 4px 6px 4px 10px;
+  background: rgba(8, 18, 28, 0.78);
+  border: 1px solid rgba(180, 200, 230, 0.22);
+  border-radius: 999px;
+  color: rgba(230, 240, 250, 0.92);
+  font: 11px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.install-hint[hidden] { display: none; }
+.install-hint__toggle,
+.install-hint__action,
+.install-hint__dismiss {
+  background: transparent;
+  border: 1px solid rgba(180, 200, 230, 0.28);
+  border-radius: 999px;
+  color: inherit;
+  font: inherit;
+  padding: 3px 9px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.install-hint__toggle { border: none; padding: 3px 4px; }
+.install-hint__action { background: rgba(120, 200, 220, 0.16); }
+.install-hint__dismiss { padding: 2px 8px; font-size: 13px; line-height: 1; }
+.install-hint__details {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  padding: 8px 14px;
+  background: rgba(8, 18, 28, 0.92);
+  border: 1px solid rgba(180, 200, 230, 0.22);
+  border-radius: 8px;
+  font: 11px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(8px);
+}
+.install-hint__details[hidden] { display: none; }
+.install-hint__details p { margin: 2px 0; }
+
 /* Listening trace debug overlay — tucked in the bottom-right corner. */
 #fm-trace-btn {
   position: fixed;

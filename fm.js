@@ -2049,41 +2049,64 @@
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       deferredInstallPrompt = e;
-      showInstallButton();
+      // Reveal the one-tap install button inside the hint banner (Chrome /
+      // Android only — iOS Safari never fires this event, so the manual
+      // instructions in the banner cover that case).
+      const action = $("install-hint-action");
+      if (action) action.hidden = false;
     });
-    // 既にインストール済みなら何もしない
     window.addEventListener("appinstalled", () => {
-      hideInstallButton();
       deferredInstallPrompt = null;
+      hideInstallHint();
     });
   }
 
-  function showInstallButton() {
-    let btn = $("fm-install");
-    if (!btn) {
-      btn = document.createElement("button");
-      btn.id = "fm-install";
-      btn.type = "button";
-      btn.className = "fm-install-btn";
-      btn.textContent = "📲 install as app";
-      btn.addEventListener("click", async () => {
+  // v198: PWA install hint banner. Shown unless the page is already running
+  // standalone (already installed) or the user has dismissed it. PWA install
+  // matters because browser background throttling on a regular tab causes
+  // timing drift that can wobble sample-based playback pitch — installed
+  // PWAs get noticeably less throttling.
+  function setupInstallHint() {
+    const hint = $("install-hint");
+    if (!hint) return;
+    const inStandalone = (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)
+      || window.navigator.standalone === true;
+    if (inStandalone) { hint.hidden = true; return; }
+    try {
+      if (localStorage.getItem("musicStackInstallHintDismissed") === "1") { hint.hidden = true; return; }
+    } catch (e) { /* private mode etc. — show anyway */ }
+    hint.hidden = false;
+    const toggle = $("install-hint-toggle");
+    const details = $("install-hint-details");
+    if (toggle && details) {
+      toggle.addEventListener("click", () => {
+        const willShow = details.hidden;
+        details.hidden = !willShow;
+        toggle.setAttribute("aria-expanded", String(willShow));
+      });
+    }
+    const action = $("install-hint-action");
+    if (action) {
+      action.addEventListener("click", async () => {
         if (!deferredInstallPrompt) return;
         deferredInstallPrompt.prompt();
-        try {
-          await deferredInstallPrompt.userChoice;
-        } catch (e) {}
+        try { await deferredInstallPrompt.userChoice; } catch (e) {}
         deferredInstallPrompt = null;
-        hideInstallButton();
+        hideInstallHint();
       });
-      const shell = $("fm-shell");
-      if (shell) shell.appendChild(btn);
     }
-    btn.hidden = false;
+    const dismiss = $("install-hint-dismiss");
+    if (dismiss) {
+      dismiss.addEventListener("click", () => {
+        try { localStorage.setItem("musicStackInstallHintDismissed", "1"); } catch (e) {}
+        hideInstallHint();
+      });
+    }
   }
 
-  function hideInstallButton() {
-    const btn = $("fm-install");
-    if (btn) btn.hidden = true;
+  function hideInstallHint() {
+    const hint = $("install-hint");
+    if (hint) hint.hidden = true;
   }
 
   // ---- GENRE pill captions (artist reference tags) ----------
@@ -2132,6 +2155,7 @@
     bindVisibility();
     ensureMediaSession();
     bindInstallPrompt();
+    setupInstallHint();
     bindTracePanel();
     applyGenrePillCaptions();
 
