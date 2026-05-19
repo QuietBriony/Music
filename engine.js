@@ -9795,24 +9795,27 @@ function resolveMode(){
 
 let lastMode = null;
 
-// v195: mode cross-fade. The per-mode sample layers (harp / cello / piano /
-// bass / drum / organ samplers) used to hard-cut on a mode change — the old
-// mode's loops were cleared instantly and the new mode's started at full
-// volume, so a radio-brain rotation sounded like "急に始まって急に止まる".
-// These samplers are persistent with a live, rampable .volume, so a mode
-// change now fades the outgoing mode's samplers down (then clears their
+// v195: mode cross-fade. The per-mode sample layers used to hard-cut on a
+// mode change — the old mode's loops were cleared instantly and the new
+// mode's started at full volume, so a radio-brain rotation sounded like
+// "急に始まって急に止まる". The melodic layers (harp / cello / piano /
+// bass / organ) are persistent samplers with a live, rampable .volume, so
+// a mode change now fades the outgoing mode's down (then clears their
 // loops) while the incoming mode's fade up — a gradual, DJ-style blend.
+// v199: drum layers are kits of Tone.Players (no single rampable .volume —
+// each voice's volume is re-set every bar by mic-follow), so they stay
+// hard-cut via stop() and are not listed in samplers().
 const MODE_LAYERS = {
   ambient: {
     samplers: () => [ambientHarpSampler, ambientCelloSampler],
     stop: () => { stopAmbientHarpLayer(); stopAmbientCelloLayer(); }
   },
   lofi: {
-    samplers: () => [lofiPianoSampler, lofiBassSampler, lofiDrumSampler],
+    samplers: () => [lofiPianoSampler, lofiBassSampler],
     stop: () => { stopLofiPianoLayer(); stopLofiBassLayer(); stopLofiDrumLayer(); }
   },
   jazz: {
-    samplers: () => [jazzPianoSampler, jazzDrumSampler],
+    samplers: () => [jazzPianoSampler],
     stop: () => { stopJazzPianoLayer(); stopJazzDrumLayer(); }
   },
   dub: {
