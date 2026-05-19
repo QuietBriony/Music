@@ -1,10 +1,26 @@
-# Band Room — Changelog (v65 → v200 compact)
+# Band Room — Changelog (v65 → v201 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v201 compact — band-room: 歌詞オートスクロールのページ乗っ取り修正
+
+ユーザー報告「AI 再現の画面で歌詞部分に張り付き、正常なスクロールができない」。
+
+- 原因: `updateLyricsHighlight` がセクション変化のたびに `match.scrollIntoView
+  ({ block: "center" })` を呼び、これがスクロール可能な祖先を全て——`#br-lyrics`
+  パネルだけでなくページ/window まで——スクロールさせ、ユーザーの手動スクロールを
+  毎回奪っていた。
+- 修正: `#br-lyrics`（`max-height:360px; overflow-y:auto` の独立スクロール枠）の
+  `scrollTop` を直接計算して動かすよう変更。歌詞パネルは現セクションを追従するが、
+  ページ本体はもう動かない。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-91`、`hazama-fm-v201`。
+- `check-band-room-logic.mjs`: `scrollIntoView` を使わないことを assert。
 
 ---
 
