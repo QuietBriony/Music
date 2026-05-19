@@ -19,6 +19,31 @@
 
 ---
 
+## 2026-05-18 — Hazama FM モード遷移の DJ クロスフェード (v195)
+- agent     : Claude Code (Opus 4.7) ＋ background research agent（遷移機構マップ）
+- goal      : ユーザー報告「モード変更が急に始まって急に止まる、DJ 的に徐々に
+  繋いでほしい」対策
+- repos     : Music
+- shipped   : PR #147（v195）— モード遷移のクロスフェード。research agent が
+  原因特定 — `updateSoundForMode` が古いモードの sample layer を即停止・新モード
+  を full volume で即開始 ＝ ハードカット（synth pad/bass は ramp 済だが
+  前面の sampler layer がカットされていた）。修正: sampler は永続で `.volume`
+  が ramp 可能 → `MODE_LAYERS` マップ + `crossfadeOutOtherModes()` /
+  `fadeInModeLayers()` を追加。モード変更時に旧モードの sampler を約 2 小節
+  フェードアウト（後にループ clear）、新モードを無音からフェードイン。
+  `updateSoundForMode` に `transitionSec` 追加、`commitPhraseLockedMode` が
+  約 2 小節分を渡す。18 個の `start*/stop*Layer`・trigger 関数は無改変。
+  BPM はすでに DJ 的に滑らか（`energy` 由来・二重スムージング + 1.6s ramp、
+  mode 変更で snap せず）と調査で確認し未改変
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）。check-hazama-melody v195/fm-102
+- backlog   : BL なし（連続フィードバック対応 v190→v195）
+- next      : (E) 個別ジャンルでもセクションを効かせる（現状 ANY 専用のまま）。
+  ほか試聴次第 — クロスフェード長の調整、セクション profile チューニング、
+  agent が挙げた未使用 `triggerMusicRadioBrainIdent`（遷移マーカー）の活用
+- blockers  : 試聴フィードバック待ち
+
+---
+
 ## 2026-05-18 — Hazama FM セクション仕上げ2: 音詰まり修正 + 強弱 + 名前表示 (v194)
 - agent     : Claude Code (Opus 4.7) ＋ background research agent（音詰まり診断）
 - goal      : v192/v193 の試聴フィードバック対応 — 音詰まり / のっぺり / 見せ場・
