@@ -1,10 +1,36 @@
-# Band Room — Changelog (v65 → v198 compact)
+# Band Room — Changelog (v65 → v199 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v199 compact — モードクロスフェードの ReferenceError 修正（jazz / lofi ドラム参照）
+
+`engine.js fm-105`: ユーザー報告「`updateSoundForMode failed` がクロスフェード中に
+繰り返し出る（`ReferenceError: jazzDrumSampler is not defined`）」の修正。
+
+- 原因 — v195 の `MODE_LAYERS` で `lofi` / `jazz` の `samplers()` が、宣言されて
+  いない変数 `lofiDrumSampler` / `jazzDrumSampler` を参照していた。drum レイヤーの
+  実体は `lofiDrumSamples` / `jazzDrumSamples`（`{kick, snare, hat}` の `Tone.Player`
+  kit）で、`.volume` を持つ単一 sampler ではない。v195 のクロスフェード設計が
+  「drum も `.volume` で ramp できる sampler」と想定したが、その変数は最初から
+  存在しなかった。
+- 影響 — クロスフェード（`transitionSec > 0`）のたびに `crossfadeOutOtherModes`
+  が throw し、`updateSoundForMode` の try/catch が握りつぶしていた。コンソール
+  エラーだけでなく、**遷移時の mode 固有の音作り（pad/filter/reverb 設定、
+  `start*Layer` 呼び出し、残りモードの layer 停止）が丸ごとスキップ** されていた。
+- 修正 — `MODE_LAYERS.lofi` / `.jazz` の `samplers()` から存在しない drum 変数を
+  除去。drum kit は `.volume` を持たず（各 voice の volume は mic-follow が毎小節
+  再設定する）クロスフェード対象外なので、`stop()` の `stopLofiDrumLayer()` /
+  `stopJazzDrumLayer()` でこれまで通りハードカット。これで melodic layer
+  （piano / bass / harp / cello / organ）のフェードが実際に効くようになる。
+- `fm.html` / `index.html` / `sw.js`: `fm-105`、`hazama-fm-v199`.
+- 譜面・音色・セクション構造・モードの音作り内容は不変（壊れていた遷移処理の
+  復旧のみ）。
 
 ---
 
