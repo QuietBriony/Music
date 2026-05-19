@@ -5109,7 +5109,8 @@
       const prefs = {
         bandId: state.currentBandId,
         mixPrefsVersion: MIX_PREFS_VERSION,
-        mode: currentMode,
+        // v205: mode intentionally NOT persisted — band-room always opens in
+        // 原音 (stems); AI 再現 is still WIP, don't land users in it.
         kitSource: state.kitSource,
         kitProfile: state.kitProfile,
         voiceOverrides: state.voiceOverrides,
@@ -5154,14 +5155,8 @@
         }
       });
     }
-    // Mode radio
-    if (prefs.mode) {
-      const radio = document.querySelector(`input[name=br-mode][value="${prefs.mode}"]`);
-      if (radio) {
-        radio.checked = true;
-        radio.dispatchEvent(new Event("change"));
-      }
-    }
+    // v205: mode is NOT restored — band-room always opens in 原音 (stems).
+    // AI 再現 is still WIP; landing users in the unfinished mode confuses.
     // Kit source (select)
     if (prefs.kitSource) {
       const sel = $("br-kit-source-select");
