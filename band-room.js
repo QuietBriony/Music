@@ -2376,14 +2376,30 @@
     if (!body) return;
     body.innerHTML = "";
     if (!text) return;
-    const lines = text.split("\n");
+    const lines = text.split(/\r?\n/);  // v203: tolerate CRLF line endings
     let curBlock = null;
     let curBody = [];
     function flush() {
       if (!curBlock) return;
+      // v203: tidy the body — drop leading/trailing blank lines and collapse
+      // runs of blank lines so blocks render compact.
+      const cleaned = [];
+      for (const line of curBody) {
+        const isBlank = line.trim() === "";
+        if (isBlank && (cleaned.length === 0 || cleaned[cleaned.length - 1] === "")) continue;
+        cleaned.push(isBlank ? "" : line);
+      }
+      while (cleaned.length && cleaned[cleaned.length - 1] === "") cleaned.pop();
+      // v203: skip an empty preamble (left over once the song-title heading
+      // is stripped); keep empty section blocks so their marker still anchors.
+      if (cleaned.length === 0 && curBlock.classList.contains("br-lyric-preamble")) {
+        curBlock = null;
+        curBody = [];
+        return;
+      }
       const pre = document.createElement("pre");
       pre.className = "br-lyric-text";
-      pre.textContent = curBody.join("\n").trimEnd();
+      pre.textContent = cleaned.join("\n");
       curBlock.appendChild(pre);
       body.appendChild(curBlock);
       curBlock = null;
@@ -2408,6 +2424,9 @@
         curBody.push(ln);
         continue;
       }
+      // v203: skip markdown noise — H1/H2 headings (song title etc.) and
+      // --- rules are doc structure, not lyrics. ### H3 stays a marker.
+      if (/^#{1,2}\s/.test(ln) || /^\s*-{3,}\s*$/.test(ln)) continue;
       // Section marker: [chorus] or ### chorus
       const inline = ln.match(/^\s*\[(.+?)\]\s*$/);
       const h3 = ln.match(/^###\s+(.+?)\s*$/);

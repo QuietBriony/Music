@@ -1,10 +1,26 @@
-# Band Room — Changelog (v65 → v202 compact)
+# Band Room — Changelog (v65 → v203 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v203 compact — band-room: 歌詞表示の小掃除（マークダウンノイズ除去）
+
+ユーザー依頼「歌詞の中身を最適化」。`renderLyricBlocks` を整理:
+
+- `#` / `##` 見出し行（曲タイトル等）と `---` 罫線を歌詞ブロックから除外。
+  生マークダウンの `## 01 TABASCO …` プリアンブル小ブロックが消える。
+- 各ブロック本文の先頭/末尾の空行を除去、連続空行を1つに圧縮（連の区切りは保持）。
+- CRLF (`\r\n`) を正規化 — `<pre>` に紛れていた `\r` を除去。
+- 見出し除去で空になったプリアンブルブロックは生成しない。
+- 注: 「歌詞ブロック巨大化」は実バグではなかった（プレビュー幅0での計測ミス、
+  通常ビューポートでは元から正常）。今回は中身の整形のみ。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-93`、`hazama-fm-v203`。
+- 譜面・セクション構造・音は不変。
 
 ---
 
