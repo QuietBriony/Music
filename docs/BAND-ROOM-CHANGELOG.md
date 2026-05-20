@@ -1,10 +1,51 @@
-# Band Room — Changelog (v65 → v222 compact)
+# Band Room — Changelog (v65 → v223 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v223 compact — voice agent: jazz mode に triplet-swing feel
+
+drum scheduler は v133 以来 profile 別 Dilla offsets を持っていて
+（lofi-nujabes は snareBack 14ms / hatOffPush -4ms / ghostBack 8ms）、
+ドラムは jazz mode で swing する。**でも voice agent は profile に関係
+なく straight タイミング**で、メロディが drum の swing と噛み合って
+なかった。jazz combo を作るなら voice もスウィングするのが筋。
+
+- **修正:** `voiceAgentPlan` の `source.map(...)` ループ内で:
+  - `isJazzySwing = state.kitProfile === "lofi-nujabes" ||
+    state.chordInstrument === "salamander-piano"` を判定
+  - `isOffBeat8th = (hit.step % 4) === 2`（sub 2 / 6 / 10 / 14、
+    つまり 8th note の off-beat 位置）
+  - jazzy && off-beat のとき `microMs: (hit.microMs || 0) + 35`
+- **35ms の根拠:**
+  - 120 BPM で 8th note = 250ms、triplet feel の 8th = 250 × 2/3 ≈ 167ms
+  - off-beat を grid 上の 125ms から 167ms 付近まで遅らせる = +42ms
+  - 35ms は「ややスウィング寄り、強くない」設定 (60% swing 程度)
+  - 強すぎると "シャッフル" に寄って原曲の感じから離れる。35ms はジャズ
+    の中庸
+- **on-beat は grid 維持:** sub 0 / 4 / 8 / 12 は chord stab と同期しないと
+  違和感が出る（chord と voice が別タイミングで鳴ってる感）。on-beat は
+  swing しない、off-beat だけ後ろにドラッグするのが正解。
+- **Human Fly recap の hardcoded melody は無関係:**
+  `state.currentSongId === "human-fly" && ctx.role === "recap"` は
+  早期 return で別経路、jazz swing は適用されない。Human Fly が jazzy
+  profile で鳴ることは現実的に少ないし、固定 melody は曲の identity。
+- **これで jazz combo 同期完成:**
+  - drum: lofi-nujabes Dilla offsets（v133）
+  - bass: walking quarter notes + chromatic lookahead（v221 + v222）
+  - chord: voice leading + sustained pad（v218 + v219）
+  - **voice: triplet-swing on off-beats（v223 新規）**
+  - guitar: 既存の accent reaction
+  jazz mode 全パートが互いに swing と voice leading で同期する。
+- 非 jazzy mode（default / sakanaction / lcd-motorik / cramps-punk）の
+  voice agent は完全不変。straight タイミング維持。
+- `check-band-room-logic.mjs`: `isJazzySwing` 判定と +35ms 適用条件を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-112`、`hazama-fm-v223`。
 
 ---
 

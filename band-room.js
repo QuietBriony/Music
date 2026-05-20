@@ -3340,13 +3340,24 @@
     const phrasePos = (ctx.barInSection || 0) % 4;
     const contour = (ctx.role === "recap" ? PHRASE_CONTOURS_RECAP : PHRASE_CONTOURS_DEFAULT)[phrasePos];
     const source = accents.length ? accents.slice(0, 4) : [0, 4, 8, 12].map((step) => ({ step, vel: 0.42, microMs: 0 }));
-    return dedupeAgentSteps(source.map((hit, idx) => ({
-      sub: hit.step,
-      note: contour[idx % contour.length],
-      durSteps: ctx.role === "recap" ? 2 : 3,
-      vel: clamp((ctx.role === "recap" ? 0.42 : 0.34) + hit.vel * 0.28, 0.34, 0.66),
-      microMs: hit.microMs || 0
-    })), 4);
+    // v223: jazzy mode swing — off-beat 8th positions (sub 2/6/10/14) lay
+    // back by ~35ms for triplet-swing feel. Matches drum scheduler's
+    // profile-aware Dilla offsets (snareBack 14ms / hatOffPush -4ms /
+    // ghostBack 8ms for lofi-nujabes). Voice on-beats (sub 0/4/8/12) stay
+    // grid-locked so the chord-tone contour still hits with the chord stab.
+    const isJazzySwing = state.kitProfile === "lofi-nujabes" ||
+                         state.chordInstrument === "salamander-piano";
+    return dedupeAgentSteps(source.map((hit, idx) => {
+      const isOffBeat8th = (hit.step % 4) === 2;
+      const swingMs = isJazzySwing && isOffBeat8th ? 35 : 0;
+      return {
+        sub: hit.step,
+        note: contour[idx % contour.length],
+        durSteps: ctx.role === "recap" ? 2 : 3,
+        vel: clamp((ctx.role === "recap" ? 0.42 : 0.34) + hit.vel * 0.28, 0.34, 0.66),
+        microMs: (hit.microMs || 0) + swingMs
+      };
+    }), 4);
   }
 
   function chordAgentPlan(ctx) {
