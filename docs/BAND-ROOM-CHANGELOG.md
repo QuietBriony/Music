@@ -1,10 +1,58 @@
-# Band Room — Changelog (v65 → v211 compact)
+# Band Room — Changelog (v65 → v212 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v212 compact — AI 再現 guitar agent に voicing rotation（chord と weave）
+
+v208 / v209 / v210 / v211 と AI 再現 全パートのフレーズ呼吸を整えてきた
+仕上げ。最後に flat だったのが guitar — `triggerGuitarAgent` が
+`powerChordNotes(ctx.chord, 3)` を bar の頭で 1 回だけ呼んで、その同じ
+`notes` を全 step に流し込んでいた。つまりギターは毎小節同じ voicing
+（root, fifth, root+oct）でストラム / バッキングしてた。
+
+- **修正 — power chord voicing rotation:** `GUITAR_INVERSION_BY_PHRASE =
+  [1, 0, 2, 0]` を `phrasePos = ctx.barInSection % 4` で引き、v210 で
+  追加した `chordInversion(baseNotes, inv)` を power chord notes に適用。
+  C パワーコード `[C3, G3, C4]` の場合:
+  - bar 0 (inv 1): `G3 C4 C4` → dedup `[G3, C4]`（mid voicing）
+  - bar 1 (inv 0): `[C3, G3, C4]`（low voicing、root position）
+  - bar 2 (inv 2): `C4 C4 G4` → dedup `[C4, G4]`（high voicing、register lift）
+  - bar 3 (inv 0): `[C3, G3, C4]`（low、phrase release）
+- **chord agent との weave:** chord は `INVERSION_BY_PHRASE = [0, 1, 2, 0]`
+  で top note を `5th → root → 3rd → 5th` の方向で動かす。guitar は
+  `[1, 0, 2, 0]` でズレた pattern にしたので、bar 0 では guitar 高め /
+  chord 低め、bar 2 では guitar 高 / chord 高（一緒に lift）、bar 3 では
+  両方 root に戻る、という相補的な動き。完全な parallel motion を避けつつ、
+  フレーズの climax（bar 2）では両方が上に行く設計。
+- **dedup:** power chord は root を 1 オクターブ上にもう一度持つので、
+  chordInversion で inv 1 / 2 を取ると重複ノートが出る。`new Set` で
+  dedup して PolySynth voices の無駄遣いを避ける。triad / seventh の
+  chord agent 経路は元から重複ナシなので影響なし。
+- **触らない部分:** `guitarAgentPlan` 本体（accent 反応、grid pattern、
+  role 別 strum 密度）は不変。drum / bass / chord / voice agent も不変。
+  `guitarInstrument` のサンプラー切替（electric-guitar 等）も同じ plan を
+  通る。
+- `check-band-room-logic.mjs`: `GUITAR_INVERSION_BY_PHRASE = [1, 0, 2, 0]`
+  と dedup の `new Set` を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-101`、`hazama-fm-v212`。
+- 原音 (stems) モードは不変。AI 再現 mode の guitar synth ラインだけ
+  4 小節ぶんの voicing 動きが入った。
+
+**AI 再現 v208 → v212 のラインナップまとめ:**
+- v208: drum kit 規定値 auto-self → synth（drum-floor groove）
+- v209: drum scheduler に varied fills + 4 小節 phrase velocity 抑揚
+- v210: chord agent に inversion rotation + phrase-aware rhythm
+- v211: voice agent に 4 小節 phrase contour（上昇 → ピーク → 下降 → 閉じ）
+- v212: guitar agent に power chord voicing rotation（chord と weave する pattern）
+
+drum / bass / chord / voice / guitar の 5 パート全部が、独立に flat だった
+状態から、4 小節フレーズで連動して呼吸する形になった。
 
 ---
 
