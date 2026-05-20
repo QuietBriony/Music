@@ -1,10 +1,62 @@
-# Band Room — Changelog (v65 → v221 compact)
+# Band Room — Changelog (v65 → v222 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v222 compact — next-chord lookahead で walking-bass を chord change に連動
+
+v221 で jazz mode bass を walking line（root → 5th → 3rd → 7th）に
+切り替えた。beat 4 が固定で 7th だったが、本物の walking bass は
+beat 4 で **次のコードへの chromatic approach note** を弾く。これで
+chord change のたびに「滑り込む」感が出る。
+
+- **追加 — chordAtBarInProgression(prog, bar) helper:** 既存の
+  `updateChordDisplay` 内のコード（chord 配列の bar 累積走査 + loop）を
+  抽出して関数化。今後の lookup ロジックを共有。
+- **追加 — nextChordLookahead() helper:**
+  - 現在のセクション + barInSection + 1 が同セクション内 → そのまま
+    `chordAtBarInProgression(prog, nextBar)` で次 bar のコードを返す
+  - セクション境界を跨ぐ場合（barInSection + 1 >= sec.bars）→
+    `state.songData.structure[state.sectionIdx + 1]` の最初のコードを返す
+  - 次セクションなし / progression なし → null
+- **ctx.nextChord に格納:** `makePartAgentContext` の return オブジェクトに
+  `nextChord: nextChordLookahead()` を追加。全エージェントから参照可能。
+- **bass agent v221 walking の beat 4 を更新:**
+  - `ctx.nextChord` が存在 かつ next root ≠ current root のとき
+    → beat 4 = `semiToNote(nextRootSemi - 1)`（next root の半音下、
+      leading-tone-from-below）
+  - 同じコードが続く or lookahead 失敗 → beat 4 = `semiToNote(seventh)`
+    （v221 既存挙動を fallback として維持）
+- **leading-tone-from-below を選んだ理由:**
+  - jazz の walking bass の最も一般的な beat 4 move
+  - V7 → I の dominant resolution（例 G7 → C: F# が C を半音下から approach）
+    と一致
+  - lookahead に key analysis を持ち込まずに（chromatic で）成立する
+  - 上から approach（nextRoot + 1）は marginal に少ないので採用見送り
+- **chord agent は無変更:** v218 の voice leading（直前 top note 最短距離）
+  はそのまま。chord と bass で参照する lookahead 方向が違う
+  （chord: 過去 / bass: 未来）ので、両方を別 fix で持たせて
+  互いに干渉しない。
+- 非 jazzy mode は完全不変。`isJazzy` 分岐の中だけ変更。
+- `check-band-room-logic.mjs`: nextChordLookahead 関数、ctx.nextChord、
+  bass の beat4Semi 分岐を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-111`、`hazama-fm-v222`。
+
+**実例 ii-V-I の動き（Dm7 → G7 → Cmaj7）:**
+- bar 1 (Dm7): D → A → F → **F#** (next G7 の半音下、v222 新規)
+  - v221 だと C（Dm7 の 7th）で終わってた、G への接続が遠い
+- bar 2 (G7): G → D → B → **B** (next Cmaj7 の半音下、v222 新規)
+  - v221 だと F（G7 の 7th）で終わってた、たまたま leading でこれは
+    どちらも正解だが、v222 だと意図的な動きとして読める
+- bar 3 (Cmaj7): C → G → E → B (next chord 同じ or 不明 → 7th 維持)
+
+ii-V-I のような common jazz changes が「ちゃんと walking として繋がる」
+ようになる。
 
 ---
 
