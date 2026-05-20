@@ -586,3 +586,31 @@ scripts/_gen_tabasco_songs.py                  # song-track JSON 生成
 Band Room は engine.js / genre-flavor.js の重 monolith と分離した「軽い jam app」として
 独立進化させた。Hazama FM の mastering chain ノウハウ (compressor + EQ3 + limiter
 スペック) は band-room.js master 構築時に再利用。
+
+## 12. Repo roles — Code-as-Agent-Harness lens
+
+Inspired by *Code as Agent Harness* (arXiv:2605.18747, 2026-05)。コードは
+単なる出力ではなく、AI エージェント（Claude / Codex / ChatGPT セッション）が
+推論・行動・検証する operational substrate でもある、という見方を
+music-stack の既存配置に重ねたもの。**現状の運用に名前を付けただけ**で、
+ランタイム挙動の変更は無い。
+
+- **Music** — primary harness. Reference-driven generative rig、UI、recorder、
+  MIC FOLLOW、session packet、mode-change hooks。多くの agent action が着地する場所。
+- **drum-floor** — groove specialist. Music の groove intent を phrase /
+  articulation / pattern に翻訳し、JSON で export。
+- **namima** — public ambient specialist. Music の mood intent を family-safe
+  ambient に翻訳し、JSON で export。
+- **chill** — quiet piano surface. piano-jazz-chill recipe を JSON で export。
+- **openclaw** — review hub / mission board. Human-gated promotion、cross-repo
+  review queue。自動 executor ではない。
+
+協調は **JSON sidecar による metadata-only**（`presets/SCHEMA.md`）。
+外部 / 内部 harvest は **AGENTS.md Hard Rule 6（非干渉）** に従う ——
+sidecar → adapter → feature-flagged runtime → 人の試聴/preview → 昇格、の順。
+
+なお `namima-lab` / `test` / `hazama` は archive（external reference / harvest
+candidate）であり、active runtime には含めない。並走する複数 chat（FM 担当 /
+Band Room 担当 等）は **multi-agent harness coordination** の最小例として動いて
+いる ── 共有ファイル（`sw.js` / `docs/BAND-ROOM-CHANGELOG.md`）は commit 前 pull、
+衝突は版番号の大きい方を採用。
