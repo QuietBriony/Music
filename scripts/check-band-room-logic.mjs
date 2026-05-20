@@ -223,6 +223,8 @@ assert.match(source, /label: "sample: 曲自身の drums \(現在の曲\)"/, "Ki
 assert.match(source, /label: "sample: Tabasco \/ TABASCO \(136\)"/, "Kit selector should identify catalog sample kits");
 assert.match(source, /kitSource:\s*"synth"/, "AI 再現 default drum kit should be the Tone.js synth — auto-self extracted samples sound raw / amateur (v208)");
 assert.match(source, /if \(prefs\.kitSource === "auto-self"\)\s*\{\s*prefs\.kitSource = "synth";/, "applyPrefs should silently retire saved 'auto-self' to 'synth' (v208 migration)");
+assert.match(source, /PHRASE_VEL_MULT\s*=\s*\[0\.95,\s*1\.00,\s*1\.04,\s*0\.98\]/, "Synth drums should breathe across the 4-bar phrase (v209)");
+assert.match(source, /const fillVariant\s*=\s*Math\.floor\(barInSection \/ 4\) % 4/, "4-bar fills should rotate through variants instead of repeating (v209)");
 
 const durationShortfalls = [];
 Object.values(bandsRegistry.bands || {}).forEach((band) => {

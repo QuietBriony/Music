@@ -1,10 +1,47 @@
-# Band Room — Changelog (v65 → v208 compact)
+# Band Room — Changelog (v65 → v209 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v209 compact — AI 再現ドラムの groove polish（フィル 4 変奏 + フレーズ抑揚）
+
+v208 で AI 再現のドラムがシンセに切り替わって音色は通用するように
+なったので、続けて groove 側のレビュー。ユーザー指示「グルーブ優先で、
+音として、成立してるか、見直してみて」に対する次の手。
+
+- **問題:** 4 bar に 1 回入るフィルが**毎回まったく同じ tom roll**
+  （v107 で入れた `drumKit.fill` の 4×16th 上昇 velocity）。16 bar の
+  verse を聴くと 4 回ぜんぶ同じパターンになり「機械が同じ場所で必ず
+  ロールする」感が出る。実ドラマーはフィルをバーごとに変える。
+- **修正 1 — フィル 4 変奏ローテーション:** `Math.floor(barInSection / 4) % 4`
+  で 4 種類を巡回:
+  - **V0:** 既存の 4×16th tom roll（v107 のクラシック）
+  - **V1:** 4×16th snare 上昇 build（パンクっぽい押し込み）
+  - **V2:** kick→snare→kick→snare の Bonham 系 forward march
+  - **V3:** 後半 2/16 だけの sparse tom-tom リードイン（隙間を残す）
+  4 種が代わりばんこに鳴るので、16 bar 内ですら全部違うフィルになる。
+  intro / outro はそのままフィル抑制。
+- **修正 2 — 4 bar フレーズ velocity 抑揚:** `phrasePos = barInSection % 4`
+  と `PHRASE_VEL_MULT = [0.95, 1.00, 1.04, 0.98]`。フレーズの 1 小節目
+  はゆるく入る、3 小節目で 4% 持ち上がってフィル小節へ繋ぐ、フィル
+  小節（4 小節目）は本体を 2% 下げてフィル自体に build を譲る。
+  ±6% の中の小さな上下で「打ち込みの flat な loop」感を消す。
+  既存の `micFollowVelocityScale()` と humanize jitter (±4%) と同じ
+  vel 計算行にチェーン掛けする。
+- **bass agent は触らない:** `bassAgentPlan(ctx)` が `ctx.kick`（drum-frames
+  の kick events）を読み込んで root/fifth/octave/seventh を音域配置する
+  ロジックは既に動いていて、kick との lock は取れている。今回の groove
+  改善は drum scheduler 側のみ。
+- `check-band-room-logic.mjs`: 4-bar phrase mult と fillVariant ローテーション
+  の存在を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-98`、`hazama-fm-v209`。
+- 副作用なし。stems mode / sample kit / chord / bass / guitar / voice agent
+  は不変。シンセドラム周りの groove だけ手を入れた。
 
 ---
 
