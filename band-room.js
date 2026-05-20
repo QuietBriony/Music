@@ -108,6 +108,11 @@
   let voiceBus = null;
   let chordBus = null;
   let clickBus = null;
+  // v220: instrumentBus (the non-vocal polish bus) hoisted to module scope so
+  // the scheduler can modulate its gain per section role. Stems mode is
+  // unaffected because stems route through stemBus.* → masterGain directly,
+  // bypassing instrumentBus.
+  let instrumentBus = null;
 
   // Synth (AI 再現) layers
   let drumKit = null;
@@ -236,6 +241,39 @@
     return input;
   }
 
+  // v220: section role → instrumentBus gain target. Real bands shape song
+  // dynamics across sections — verse settled, chorus lifted, intro/break
+  // pulled back. ±5% range stays inside the polish bus's glue comp's
+  // tolerance, so no pumping artifacts.
+  function sectionGainForRole(role) {
+    const ROLE_GAIN = {
+      intro:  0.85,
+      verse:  0.95,
+      comp:   1.00,
+      recap:  1.05,
+      break:  0.85,
+      outro:  0.92,
+      head:   1.00,
+      post:   0.96,
+      swell:  0.92
+    };
+    return ROLE_GAIN[role] || 1.00;
+  }
+
+  // v220: ramp the instrumentBus gain to the section's target over 0.5s.
+  // Fired on the first bar of each section. No-op if instrumentBus isn't
+  // built yet (early boot) or we're in stems mode (stems bypass this bus).
+  function rampInstrumentBusForSection(sec, time) {
+    if (!instrumentBus || !instrumentBus.gain) return;
+    if (currentMode !== "synth") return;
+    const role = sec?.session_role || sec?.role || "verse";
+    const target = sectionGainForRole(role);
+    try {
+      instrumentBus.gain.cancelScheduledValues(time);
+      instrumentBus.gain.linearRampToValueAtTime(target, time + 0.5);
+    } catch (e) {}
+  }
+
   function ensureMaster() {
     if (masterGain) return masterGain;
     // v66 mastering chain (two-stage compression + tape sat + per-stem EQ):
@@ -320,7 +358,9 @@
     // enough bass/guitar presence without crowding the vocal stem.
     // v198: drums/bass/guitar/chords route through the non-vocal polish bus;
     // the voice (vocal/melody lead) and click bypass it straight to masterGain.
-    const instrumentBus = makeInstrumentPolishBus(masterGain);
+    // v220: assigned to module-level `instrumentBus` so scheduleBar can
+    // modulate its gain per section role.
+    instrumentBus = makeInstrumentPolishBus(masterGain);
     const drumPan   = new Tone.Panner(0.00).connect(instrumentBus);
     const bassPan   = new Tone.Panner(0.00).connect(instrumentBus);
     const guitarPan = new Tone.Panner(-0.18).connect(instrumentBus);
@@ -3425,7 +3465,16 @@
         const nowSec = currentSection();
         if (nowSec) {
           requestAnimationFrame(() => updateLyricsHighlight(nowSec.section));
+          // v220: ramp instrumentBus gain to the new section's role target.
+          // Stems mode is a no-op (instrumentBus is bypassed).
+          rampInstrumentBusForSection(nowSec, time);
         }
+      }
+
+      // v220: also fire on the very first bar of the song so the intro
+      // starts at its role-appropriate level instead of the default 1.0.
+      if (state.barCount === 0) {
+        rampInstrumentBusForSection(sec, time);
       }
 
       const frame = currentFrame();
