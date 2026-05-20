@@ -3474,10 +3474,22 @@
         // interplay → sparse tom-tom, then repeats. Real drummers vary fills
         // bar to bar — a single repeating fill is what made the loop feel
         // "machine."
+        // v217: also force a fill on the LAST bar of the section, regardless
+        // of 4-bar alignment. Sections with bar counts not divisible by 4
+        // (e.g. 6-bar verse, 10-bar chorus) previously had no transition
+        // marker — the next section just started cold. The forced
+        // section-end fill uses V3 (sparse tom-tom lead-in) to feel
+        // transitional rather than busy. Skipped if the 4-bar fill is
+        // already going to fire (no double-fill).
+        const barsInSection = Math.max(1, Number(sec?.bars) || 1);
         const isFillBar = (barInSection + 1) % 4 === 0;
+        const isSectionEnd = (barInSection === barsInSection - 1);
+        const isForcedSectionEndFill = isSectionEnd && !isFillBar;
         const role = frame.session_role || "";
-        if (isFillBar && role !== "intro" && role !== "outro") {
-          const fillVariant = Math.floor(barInSection / 4) % 4;
+        if ((isFillBar || isForcedSectionEndFill) && role !== "intro" && role !== "outro") {
+          // Forced section-end fill always uses V3 (sparse tom-tom). The 4-bar
+          // rotating fill keeps its existing fillVariant cycle.
+          const fillVariant = isForcedSectionEndFill ? 3 : Math.floor(barInSection / 4) % 4;
           const tom   = drumKit.fill;
           const snare = drumKit.snare;
           const kick  = drumKit.kick;

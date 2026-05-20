@@ -1,10 +1,54 @@
-# Band Room — Changelog (v65 → v216 compact)
+# Band Room — Changelog (v65 → v217 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v217 compact — AI 再現 section transition: 最終小節フィル強制
+
+v208-v216 で 5 エージェントの「4 小節フレーズ内」呼吸を整えた。次は
+section 境界の処理。現状 4-bar フィルは `(barInSection + 1) % 4 === 0`
+で 4 小節周期だけ。section の bar 数が 4 で割り切れない（6 小節 verse、
+10 小節 chorus、など）と、section の最後の小節がフィルなしで次セクションに
+急に飛び込む状態だった。実バンドは section 切替直前に必ず何かしらフィル /
+ピックアップを入れる。
+
+- **修正:** `isSectionEnd = (barInSection === barsInSection - 1)` を計算し、
+  - 既存の 4-bar フィル条件（`isFillBar`）に加えて
+  - `isFillBar` が立たない section 最終小節（`isForcedSectionEndFill`）も
+    フィル発火するように。
+  - 強制フィルは **V3（sparse tom-tom リードイン）固定**: 既存の 4-bar
+    ローテーション（V0 tom roll / V1 snare build / V2 kick-snare / V3 sparse）
+    の中で、最も「次のセクションへ繋ぐ」感じが出るのが V3 だから。busy な
+    V0-V2 だと「終わりに向かって暴れる」になっちゃう、V3 は隙間を残しつつ
+    上昇する tom-tom リードインなので transition pickup として機能する。
+  - 4-bar fill と section-end fill が同じ小節に重ねて発火することはない
+    （`isFillBar || isForcedSectionEndFill` の or 条件、かつ
+    `isForcedSectionEndFill = isSectionEnd && !isFillBar`）。
+- **既存の section-change crash と組み合わせて:** band-room.js には元々
+  「新しい section に入る downbeat に crash を 1 発鳴らす」処理がある
+  （`if (newSec && drumKit.crash && currentMode === "synth")` 経路）。
+  これと v217 の section-end fill が重なって、こうなる:
+  - section の最後の小節: V3 sparse tom-tom リードイン（last quarter）
+  - 次 section の最初の小節 downbeat: crash 1 発
+  → 「ピックアップ + crash で section 切り替え」のクラシックなドラマー move
+    が実現。
+- **intro / outro はそのままスキップ:** 既存条件 `role !== "intro" && role
+  !== "outro"` を維持。intro の終わりは「無音から立ち上がる」演出のために
+  あえてフィルしない、outro はもう既に賑やか、というデザインを温存。
+- bass / chord / voice / guitar agent は不変。drum scheduler のフィル発火
+  条件だけ変更。
+- `check-band-room-logic.mjs`: `isForcedSectionEndFill` と
+  `barsInSection - 1` の参照、強制フィルが V3 固定であることを assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-106`、`hazama-fm-v217`。
+
+これで section 構造が 4 の倍数でない曲（Tabasco の多くがそう）でも、AI
+再現 mode が section 切替で「ピタッと止まって急に次へ」じゃなく「フィル
+で繋ぐ」流れになる。
 
 ---
 
