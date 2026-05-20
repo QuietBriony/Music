@@ -1,10 +1,49 @@
-# Band Room — Changelog (v65 → v213 compact)
+# Band Room — Changelog (v65 → v214 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v214 compact — Tabasco 残り曲に kit_profile 仮置き（A/B 起点）
+
+v213 で作った band/song レベルの自動マッピング機構を活用し、Tabasco の
+残りの曲にも初期推奨 profile を BPM / genre cue ベースで仮置き。
+ユーザー試聴で違和感があれば dropdown で上書きできる前提の出発点。
+
+- **追加マッピング:**
+  - `tabasco / hey` (123 BPM, G major): `"sakanaction"`
+    - dance rock 寄りの曲調、`sakanaction` profile は「タイト kick /
+      クリッキー hat / ブライト synth bass」で合いそう
+  - `tabasco / electric-sheep` (129 BPM, E minor): `"lcd-motorik"`
+    - 曲名通り electric 系、`lcd-motorik` の「4-on-floor / cowbell /
+      pad swell / sub-y bass / dreamy pad」と相性◎
+  - `tabasco / under-the-moon` (161 BPM, Bb major): `"lcd-motorik"`
+    - 高速 4 つ打ち feel と krautrock 寄りの motorik profile
+- **そのまま band default を継承（"default"）:**
+  - tabasco (title track, 136 BPM)
+  - i-got-a-feeling (117 BPM)
+  - sister (117 BPM)
+  - これらは「mixture rock」のド真ん中なので LCD + Backdrop Bomb の
+    `default` profile がベース。
+- **すでに割当済み（v213）:**
+  - tabasco / human-fly: `"cramps-punk"` (The Cramps "Human Fly" カバー)
+- **UX 規約は v213 と同じ:** `state.kitProfile === "default"` のときだけ
+  自動適用。ユーザーが手動で別の profile を選んだら、その選択は曲
+  切替で上書きされない。
+- **コード変更なし** — bands.json のみ。`applyRecommendedKitProfile()`
+  は v213 で既に実装済みで、新しい `kit_profile` フィールドを自動で
+  拾う。
+- `check-band-room-logic.mjs`: 新規 3 曲の `kit_profile` 値を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-103`、`hazama-fm-v214`
+  (band-room.js 本体は変更なしだが、PWA / cache buster 整合のため bump)。
+
+これで Tabasco album を流すと曲ごとに synth voice の timbre が
+変わる体験になる: `default` → `sakanaction` → `default` → `lcd-motorik` →
+`lcd-motorik` → `cramps-punk` → `default` の順で巡る。
 
 ---
 
