@@ -224,7 +224,7 @@ assert.match(source, /label: "sample: Tabasco \/ TABASCO \(136\)"/, "Kit selecto
 assert.match(source, /kitSource:\s*"synth"/, "AI 再現 default drum kit should be the Tone.js synth — auto-self extracted samples sound raw / amateur (v208)");
 assert.match(source, /if \(prefs\.kitSource === "auto-self"\)\s*\{\s*prefs\.kitSource = "synth";/, "applyPrefs should silently retire saved 'auto-self' to 'synth' (v208 migration)");
 assert.match(source, /PHRASE_VEL_MULT\s*=\s*\[0\.95,\s*1\.00,\s*1\.04,\s*0\.98\]/, "Synth drums should breathe across the 4-bar phrase (v209)");
-assert.match(source, /const fillVariant\s*=\s*Math\.floor\(barInSection \/ 4\) % 4/, "4-bar fills should rotate through variants instead of repeating (v209)");
+assert.match(source, /Math\.floor\(barInSection \/ 4\) % 4/, "4-bar fills should rotate through variants instead of repeating (v209)");
 assert.match(source, /function chordInversion\(notes, inv\)/, "Chord agent should have an inversion helper (v210)");
 assert.match(source, /INVERSION_BY_PHRASE\s*=\s*\[0,\s*1,\s*2,\s*0\]/, "Chord voicings should rotate inversions across the 4-bar phrase (v210)");
 assert.match(source, /PHRASE_CONTOURS_DEFAULT\s*=\s*\[/, "Voice agent should rotate melody contour across the 4-bar phrase (v211)");
@@ -238,6 +238,9 @@ assert.match(source, /state\.__kitProfileAutoApplying\s*=\s*true;/, "v215: apply
 assert.match(source, /if \(!state\.__kitProfileAutoApplying\)\s*\{\s*state\.kitProfileExplicitlyChosen\s*=\s*\(profileSel\.value !== "default"\);/, "v215: profileSel change handler must mark explicit pick only when not auto-applying, and reset on 'default'");
 assert.match(source, /PHRASE_VEL_MULT_BASS\s*=\s*\[0\.96,\s*1\.00,\s*1\.06,\s*0\.98\]/, "v216: bass agent should breathe across the 4-bar phrase");
 assert.match(source, /const liftBar2Downbeat\s*=\s*phrasePos === 2/, "v216: bass downbeat should lift an octave on bar 2 (phrase peak before fill)");
+assert.match(source, /const isSectionEnd\s*=\s*\(barInSection === barsInSection - 1\)/, "v217: drum scheduler must detect the section's last bar for forced transition fill");
+assert.match(source, /const isForcedSectionEndFill\s*=\s*isSectionEnd && !isFillBar/, "v217: forced section-end fill must not double-fire with the 4-bar rotating fill");
+assert.match(source, /isForcedSectionEndFill \? 3 : Math\.floor\(barInSection \/ 4\) % 4/, "v217: forced section-end fill must use V3 (sparse) for a transitional feel");
 const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
 assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");
