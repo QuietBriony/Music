@@ -233,6 +233,9 @@ assert.match(source, /GUITAR_INVERSION_BY_PHRASE\s*=\s*\[1,\s*0,\s*2,\s*0\]/, "G
 assert.match(source, /\[\.\.\.new Set\(chordInversion\(baseNotes,/, "Guitar agent should dedup duplicated power-chord notes after inversion (v212)");
 assert.match(source, /function applyRecommendedKitProfile\(\)/, "v213: should expose a helper that maps band/song to a kit profile recommendation");
 assert.match(source, /applyRecommendedKitProfile\(\);/, "v213: loadSong should call the kit profile auto-mapping after song data is set");
+assert.match(source, /if \(state\.kitProfileExplicitlyChosen\) return;/, "v215: auto-mapping must gate on the explicit-pick flag, not on kitProfile === 'default' (otherwise only the first song auto-applies)");
+assert.match(source, /state\.__kitProfileAutoApplying\s*=\s*true;/, "v215: applyRecommendedKitProfile must set the auto-applying guard before dispatching change");
+assert.match(source, /if \(!state\.__kitProfileAutoApplying\)\s*\{\s*state\.kitProfileExplicitlyChosen\s*=\s*\(profileSel\.value !== "default"\);/, "v215: profileSel change handler must mark explicit pick only when not auto-applying, and reset on 'default'");
 const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
 assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");

@@ -1420,13 +1420,17 @@
   // specify `kit_profile_default` on the band (e.g. UNRIPE → "cramps-punk")
   // and `kit_profile` on individual songs (e.g. Tabasco / Human Fly →
   // "cramps-punk"). loadSong calls this after song data is set.
-  // Behavior: apply the recommended profile only when the user is on
-  // "default" — treat "default" as "let the song decide." Any explicit
-  // user pick (sakanaction / lcd-motorik / cramps-punk / lofi-nujabes)
-  // is preserved across song / band switches. Click "default" in the
-  // dropdown to re-enable auto-mapping.
+  //
+  // v215: gate on `state.kitProfileExplicitlyChosen` (set by the profileSel
+  // change handler when the user manually picks a non-default profile)
+  // instead of `state.kitProfile === "default"`. The old condition broke
+  // album-listen-through: the first auto-apply made state non-default,
+  // which locked out auto-mapping for every subsequent song. Now auto-
+  // apply continues until the user explicitly picks something from the
+  // dropdown; picking "default" treats it as "auto-pick mode" and resets
+  // the flag.
   function applyRecommendedKitProfile() {
-    if (state.kitProfile && state.kitProfile !== "default") return;
+    if (state.kitProfileExplicitlyChosen) return;
     const band = currentBand();
     const songMeta = currentBandSongMeta();
     const recommended = songMeta?.kit_profile || band?.kit_profile_default;
@@ -1435,9 +1439,15 @@
     if (!psel) return;
     psel.value = recommended;
     state.kitProfile = recommended;
-    // Dispatching change runs the existing rebuild logic (synthBass / chordSynth /
-    // voiceSynth always rebuild; drum kit rebuilds when kitSource = "synth").
-    psel.dispatchEvent(new Event("change"));
+    // v215: guard so the change-event handler doesn't mark this as an
+    // explicit user pick. The handler resets state.kitProfileExplicitlyChosen
+    // only when the dispatch was NOT triggered by us.
+    state.__kitProfileAutoApplying = true;
+    try {
+      psel.dispatchEvent(new Event("change"));
+    } finally {
+      state.__kitProfileAutoApplying = false;
+    }
   }
 
   function currentBandSongMeta(songId = state.currentSongId) {
@@ -5028,6 +5038,14 @@
     if (profileSel) {
       profileSel.value = state.kitProfile || "default";
       profileSel.addEventListener("change", async () => {
+        // v215: distinguish manual user pick from applyRecommendedKitProfile's
+        // programmatic change. Without this, the first auto-apply would set
+        // state.kitProfile to e.g. "sakanaction" and look like an explicit
+        // user pick — locking out auto-mapping for subsequent songs.
+        // Picking "default" manually means "auto-pick mode" → reset the flag.
+        if (!state.__kitProfileAutoApplying) {
+          state.kitProfileExplicitlyChosen = (profileSel.value !== "default");
+        }
         state.kitProfile = profileSel.value;
         const status = $("br-kit-status");
         if (status) status.textContent = `applying profile: ${profileSel.value}…`;
