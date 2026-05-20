@@ -2154,6 +2154,35 @@
     return NAMES[semi % 12] + oct;
   }
 
+  // v210: round-trip helper — parse a "C4" / "F#3" / "Bb5" note name back
+  // to absolute semi so we can transpose voicings. Mirrors semiToNote's
+  // octave convention (Math.floor(semi/12)).
+  function noteNameToSemi(noteName) {
+    const m = String(noteName).match(/^([A-G][#b]?)(-?\d+)$/);
+    if (!m) return 48;  // fallback to "C4" baseline
+    const NOTE_SEMI = { C: 0, "C#": 1, Db: 1, D: 2, "D#": 3, Eb: 3, E: 4, F: 5, "F#": 6, Gb: 6, G: 7, "G#": 8, Ab: 8, A: 9, "A#": 10, Bb: 10, B: 11 };
+    return (NOTE_SEMI[m[1]] ?? 0) + Number(m[2]) * 12;
+  }
+
+  // v210: chord inversion — take the lowest `inv` notes and bump them up
+  // an octave each so the top note weaves with phrase position. For a
+  // C-major triad ["C4","E4","G4"]:
+  //   inv 0 (root)        → C4 E4 G4   (top G)
+  //   inv 1 (1st)         → E4 G4 C5   (top C)
+  //   inv 2 (2nd)         → G4 C5 E5   (top E)
+  //   inv 3 (root + oct)  → C5 E5 G5   (whole voicing up an octave; bright)
+  // dedupeAgentSteps + the chordSynth's PolySynth handle the extra range.
+  function chordInversion(notes, inv) {
+    if (!Array.isArray(notes) || notes.length === 0) return notes || [];
+    const n = ((inv % 4) + 4) % 4;
+    if (n === 0) return notes;
+    const semis = notes.map(noteNameToSemi).sort((a, b) => a - b);
+    const lift = Math.min(n, semis.length);
+    for (let i = 0; i < lift; i++) semis[i] += 12;
+    semis.sort((a, b) => a - b);
+    return semis.map(semiToNote);
+  }
+
   function chordRoot(chord) {
     const m = chord.match(/^([A-G][b#]?)/);
     if (!m) return "G2";
@@ -3130,16 +3159,52 @@
                     state.chordInstrument === "salamander-piano";
     const ext = /m\b|min\b/.test(ctx.chord) ? "m7" : "maj7";
     const voicingChord = isJazzy ? ctx.chord.replace(/(m|maj7|7|m7)?$/, ext) : ctx.chord;
-    const notes = chordToNotes(voicingChord, isJazzy ? 4 : 4);
-    if (!notes.length) return [];
-    const steps = [{ sub: 0, notes, dur: ctx.role === "break" ? "4n" : isJazzy ? "2n" : "2n", vel: isJazzy ? 0.28 : 0.34 }];
+    const baseNotes = chordToNotes(voicingChord, isJazzy ? 4 : 4);
+    if (!baseNotes.length) return [];
+
+    // v210: inversion rotation per phrase position. Real chord players don't
+    // hammer root-position every bar — the top note weaves across the 4-bar
+    // phrase. inv = root → 1st → 2nd → root+oct creates a melodic contour
+    // in the chord voicing itself without changing the underlying harmony.
+    const phrasePos = (ctx.barInSection || 0) % 4;
+    const INVERSION_BY_PHRASE = [0, 1, 2, 0];  // bar 4 returns to root for phrase closure
+    const notes = chordInversion(baseNotes, INVERSION_BY_PHRASE[phrasePos]);
+
+    // v210: phrase-aware rhythm. Old behavior was 1-2 stabs per bar with the
+    // same shape, regardless of where in the phrase you were. Now non-break
+    // / non-comp roles get a 4-bar rhythm shape:
+    //   bar 0: long pad on downbeat (settle into the phrase)
+    //   bar 1: downbeat + mid-bar stab (push the phrase mid)
+    //   bar 2: downbeat + anticipation into bar 3 (lead into fill bar)
+    //   bar 3: long pad (release; drums do the fill build)
+    // break / comp / jazzy paths keep their existing reactive logic but
+    // also get the inversion rotation.
+    const downbeatDur = ctx.role === "break" ? "4n" : "2n";
+    const downbeatVel = isJazzy ? 0.28 : 0.34;
+    const steps = [{ sub: 0, notes, dur: downbeatDur, vel: downbeatVel }];
+
     if (ctx.role === "break") {
       steps.push({ sub: 8, notes, dur: "4n", vel: 0.22 });
     } else if (isJazzy || ctx.ghost.length > 1 || ctx.role === "comp") {
+      // Jazzy / comp / busy ghost — answer on the ghost-step or sub 10
       const ghostAnswer = ctx.ghost.find((hit) => hit.step >= 8)?.step;
-      steps.push({ sub: ghostAnswer != null ? ghostAnswer : 10, notes, dur: "4n", vel: clamp(0.18 + ctx.pressure * 0.12, 0.18, 0.32) });
+      steps.push({
+        sub: ghostAnswer != null ? ghostAnswer : 10,
+        notes,
+        dur: "4n",
+        vel: clamp(0.18 + ctx.pressure * 0.12, 0.18, 0.32)
+      });
     } else if (ctx.role === "recap" && ctx.pressure > 0.58) {
       steps.push({ sub: 8, notes, dur: "4n", vel: 0.24 });
+    } else if (ctx.role !== "intro" && ctx.role !== "outro") {
+      // v210: default phrase rhythm — bar 1 mid-stab, bar 2 anticipation,
+      // bar 0 / bar 3 stay as just the downbeat (let the pad breathe).
+      if (phrasePos === 1) {
+        steps.push({ sub: 8, notes, dur: "4n", vel: clamp(downbeatVel * 0.72, 0.18, 0.32) });
+      } else if (phrasePos === 2) {
+        // anticipation into bar 3 — the "and" of beat 4 (sub 14), 8n short
+        steps.push({ sub: 14, notes, dur: "8n", vel: clamp(downbeatVel * 0.78, 0.18, 0.32) });
+      }
     }
     return dedupeAgentSteps(steps, 3);
   }
