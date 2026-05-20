@@ -221,6 +221,8 @@ assert.match(
 assert.match(source, /label: "synth: AI drums \(default\)"/, "Kit selector should identify the synth kit");
 assert.match(source, /label: "sample: 曲自身の drums \(現在の曲\)"/, "Kit selector should identify the auto-self sample kit");
 assert.match(source, /label: "sample: Tabasco \/ TABASCO \(136\)"/, "Kit selector should identify catalog sample kits");
+assert.match(source, /kitSource:\s*"synth"/, "AI 再現 default drum kit should be the Tone.js synth — auto-self extracted samples sound raw / amateur (v208)");
+assert.match(source, /if \(prefs\.kitSource === "auto-self"\)\s*\{\s*prefs\.kitSource = "synth";/, "applyPrefs should silently retire saved 'auto-self' to 'synth' (v208 migration)");
 
 const durationShortfalls = [];
 Object.values(bandsRegistry.bands || {}).forEach((band) => {

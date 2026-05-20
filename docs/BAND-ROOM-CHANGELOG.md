@@ -1,10 +1,63 @@
-# Band Room — Changelog (v65 → v207 compact)
+# Band Room — Changelog (v65 → v208 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v208 compact — AI 再現のドラム規定値を synth に切り替え（drum-floor groove 主軸）
+
+ユーザー報告: 「AI 音源の、ドラムが壊滅的。unripe のなんか生音？ちょっと
+とったの？普通に drumfloor と連令してやってください。そのほうが伸ばし
+ようあるでしょ？グルーブ優先で、音として成立してるか見直してみて」。
+
+- **原因:** `state.kitSource` の規定値が `"auto-self"` だった。これは
+  `resolveKitSource()` で `${bandId}/${songId}` に展開されるので、たとえば
+  TABASCO / Human Fly を AI 再現で鳴らすと `presets/sample-kits/tabasco/
+  human-fly/{kick,snare,hat,…}-01.wav` を `Tone.Player` で叩く運用に
+  なっていた。中身は Demucs 分離後の drum stem から librosa 系で抽出した
+  単発 wav なので、他楽器の bleed と onset アーティファクトが残った
+  「生録音みたいでデモっぽい」音になっていた。ユーザーが「unripe の生音」と
+  呼んだのはまさに `unripe/continuous/kick-01.wav` 系のあの音。
+- **修正:** 規定値を `"synth"` に変更。AI 再現 mode のドラムは
+  `makeDrumKit(drumBus, state.kitProfile)` が生成する Tone.js シンセ
+  ヴォイス（kick=MembraneSynth＋NoiseSynth click、snare=NoiseSynth＋
+  MetalSynth rim、hat/ghost/fill/crash も同様）で鳴る。グルーブ側は既存の
+  drum-frames events（バンドごとに `drum_frames_pattern` で指定、tabasco は
+  `presets/drum-frames-tabasco-{songid}.json`）が駆動するので、Dilla feel /
+  velocity jitter / ghost-note vamp / 4-bar fill / sparse pattern reinforcement
+  といった groove 補強はそのまま効く。timbre は profile（default /
+  sakanaction / lcd-motorik / cramps-punk / lofi-nujabes）で差し替えできる
+  ので、サカナクション調 / LCD 調にスワップしていく方向性に素直に拡張できる。
+- **既存ユーザーのマイグレーション:** `applyPrefs()` で
+  `prefs.kitSource === "auto-self"` を読み込んだ場合は `"synth"` に
+  silent fallback。localStorage に "auto-self" が残っていても起動時に
+  synth へ寄せる。ユーザーが意図的にサンプルキットを使いたい場合は
+  「synth / sample 切替」ドロップダウンから auto-self や tabasco/* /
+  unripe/* を選び直せる（オプションは退役しない）。
+- **音として成立してるかのレビュー:** drumBus 経路は `drumBus →
+  drumPan → instrumentBus (makeInstrumentPolishBus) → masterGain` に
+  既に乗っていて、polish bus は EQ tilt（low/mid -0.8 dB、high +1.4 dB）
+  + glue comp（threshold -20 dB / ratio 2.2 / attack 12 ms / release 180 ms）
+  + parallel saturation（distortion 0.12、wet 0.16） + StereoWidener 0.58
+  + makeup +1.08 で composite を組んでいる。シンセ単発のドライさを
+  polish bus が補正するので、原音から離れた timbre でも mix としては
+  まとまる（v204 で `バキバキ感` + `抜け感` を狙って組んだチェーンが
+  そのまま効く）。
+- **AI 再現 mode 自体は依然 WIP** （v205 で stems mode をデフォルト化済み、
+  v207 でも mode は localStorage に保存しない方針）。本変更は AI モードに
+  入ったときの初手の聞こえを「ベース音色として通用するライン」に揃える
+  もの。chord/bass/guitar/voice の synth voice チューニングや、kitProfile の
+  自動マッピング（band/song の場面に応じた sakanaction / lcd-motorik 寄せ）は
+  次ラウンド以降。
+- `check-band-room-logic.mjs`: `kitSource: "synth"` を default で
+  保持していることを assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-97`、`hazama-fm-v208`。
+- 原音（stems）モードと sampled kit 系（auto-self / tabasco/* / unripe/*）
+  の挙動は不変。AI 再現 mode のドラム初期音色のみ変わる。
 
 ---
 

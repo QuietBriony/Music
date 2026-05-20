@@ -45,8 +45,12 @@
     chordIdx: 0,
     chordBarsRemaining: 0,
     scheduledIds: [],
-    kitSource: "auto-self", // default: use the current song's own extracted drum samples
-                            // ("synth" = generic Tone.js voices, "<src>/<song>" = specific kit)
+    kitSource: "synth",     // v208: default to Tone.js synth voices (drum-floor / drum-frames groove
+                            // through makeDrumKit). Old default "auto-self" played the song-extracted
+                            // wavs (e.g. unripe/continuous/kick-01.wav) — those sound raw / amateur
+                            // because Demucs separation leaves bleed + artifacts. "synth" is the
+                            // foundation the user wants to grow (sakanaction / LCD timbre swaps etc.).
+                            // ("auto-self" = song-self samples, "<src>/<song>" = specific sample kit)
     kitProfile: "default",  // v91: synth voice profile (only applies when kitSource = "synth")
     // v99: per-voice overrides — kick だけ 808, snare だけ acoustic みたいに
     // 1 voice 単位で別 kit からピックできる。null = base kit を使う、文字列 = その kit id
@@ -5166,6 +5170,15 @@
     // v205: mode is NOT restored — band-room always opens in 原音 (stems).
     // AI 再現 is still WIP; landing users in the unfinished mode confuses.
     // Kit source (select)
+    // v208: silently retire saved "auto-self" — the song-extracted sample
+    // kits sound raw / amateur (Demucs bleed + onset artifacts) and that's
+    // exactly what made AI 再現 drums sound 壊滅的. Synth kit drives the
+    // same drum-frames groove with cleaner Tone.js voices and is the
+    // foundation we're building from. User can still pick auto-self from
+    // the dropdown if they want it back.
+    if (prefs.kitSource === "auto-self") {
+      prefs.kitSource = "synth";
+    }
     if (prefs.kitSource) {
       const sel = $("br-kit-source-select");
       if (sel) {
