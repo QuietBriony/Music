@@ -3241,8 +3241,20 @@
   }
 
   function triggerGuitarAgent(ctx, time) {
-    const notes = powerChordNotes(ctx.chord, 3);
-    if (!notes.length) return;
+    const baseNotes = powerChordNotes(ctx.chord, 3);
+    if (!baseNotes.length) return;
+    // v212: power chord voicing rotates per phrase position. Pattern offset
+    // from the chord agent's [0, 1, 2, 0] so guitar and chord don't double
+    // their top-note motion in parallel — guitar's [1, 0, 2, 0] gives
+    //   bar 0: 1st (mid)  bar 1: root (low / chord 1st inv top)
+    //   bar 2: 2nd (high) bar 3: root (low / phrase close)
+    // The two parts now weave: guitar low at chord peak (bar 2), guitar
+    // high at chord settle (bar 0). chordInversion handles the lift; we
+    // dedup because power-chord root doubling creates duplicate notes at
+    // inv 1 / 2 which waste PolySynth voices.
+    const phrasePos = (ctx.barInSection || 0) % 4;
+    const GUITAR_INVERSION_BY_PHRASE = [1, 0, 2, 0];
+    const notes = [...new Set(chordInversion(baseNotes, GUITAR_INVERSION_BY_PHRASE[phrasePos]))];
     guitarAgentPlan(ctx).forEach((step) => {
       const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
       try { guitarSynth.triggerAttackRelease(notes, step.dur || "16n", t, step.vel); } catch (e) {}
