@@ -1,10 +1,51 @@
-# Band Room — Changelog (v65 → v218 compact)
+# Band Room — Changelog (v65 → v219 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v219 compact — chord agent: intro/outro に sustained pad（1n で雰囲気作り）
+
+v218 で jazz mode の voice leading を入れた流れで、次は **intro/outro の
+雰囲気作り**。現状の chord agent は intro/outro でも downbeat の dur が
+`"2n"`（半小節）。1 小節 = 4 拍のうち 2 拍だけコードが鳴って残り 2 拍は
+release tail（~0.5s）と静寂、というのを毎小節繰り返してた。intro として
+は「pad で雰囲気作り」より「ぶつ切りスタブ」感が強かった。
+
+- **修正:** `chordAgentPlan` の `downbeatDur` を:
+  - `break`: `"4n"`（変更なし）
+  - `intro` / `outro`: `"1n"`（**全小節 hold**、新規）
+  - その他: `"2n"`（変更なし）
+- **効果:** intro / outro でコードが 1 bar まるまる鳴って、release tail
+  が次 bar の attack に overlap する。これで:
+  - intro = pad swell 的な atmospheric build
+  - outro = 余韻のある winding down
+  どちらも実バンドの曲の始まり / 終わりっぽい質感に寄る。
+- **既存 agent との整合:**
+  - voice agent: `intro`/`outro` で早期 return（空配列）→ メロディが
+    競合しない。pad だけが鳴る、というクリーンな構図。
+  - guitar agent: `outro` で既に `"1n"`（v200 以前から）。intro は
+    pressure 低くて crash なしなら早期 return、それ以外は通常 strum。
+    今回の chord 1n と意図が揃う。
+  - drum: intro/outro はフィル抑制（v107 以来）、drum-frames events
+    のみ。
+- **release tail と overlap:** chord synth profile の release は default
+  0.5s、lcd-motorik 0.85s、cramps-punk 0.25s など profile 依存。120 BPM
+  なら 1 bar = 2 秒なので、release が 0.5s でも overlap は 25% bar 分。
+  swell として読める範囲。
+- bass / kit_profile / voice leading は不変。chord agent の downbeat dur
+  だけ調整。
+- `check-band-room-logic.mjs`: intro/outro 時 1n、それ以外 2n の三項分岐
+  を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-108`、`hazama-fm-v219`。
+
+これで Tabasco album の TABASCO（intro 4 bar）や Sister（outro 8 bar）
+など intro/outro が長めの曲で、AI 再現 mode の入りと終わりに「band の
+呼吸」が出る。
 
 ---
 
