@@ -1,10 +1,56 @@
-# Band Room — Changelog (v65 → v214 compact)
+# Band Room — Changelog (v65 → v215 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v215 compact — kit_profile 自動マッピングの「最初の 1 曲しか効かない」バグ修正
+
+ユーザー監査要望「なり方に、エラーとか、重複とか、バグとかないよね？」に
+対する runtime 検証で発覚した機能バグの修正。
+
+- **症状:** v214 で謳った「Tabasco album を頭から流すと曲ごとに synth voice
+  の timbre が変わる」が、**実際は最初の 1 曲だけしか auto-apply されない**。
+  以降は最初の auto-apply の profile に固定される。
+  - 再現: dropdown で "default" を選んでから Hey → `sakanaction` に自動切替
+    （✓ 期待通り）→ そのまま Electric Sheep に進むと `sakanaction` のまま
+    （✗ `lcd-motorik` になるはず）
+- **原因:** v213 で `applyRecommendedKitProfile()` の判定を
+  `state.kitProfile === "default"` で書いていた。最初の auto-apply で
+  state が "sakanaction" になると、次の曲では `state !== "default"` で
+  auto-skip されてしまう。実装が**「ユーザー手動 pick」と「自動適用結果」
+  を区別できていない**のが根因。
+- **修正:** `state.kitProfileExplicitlyChosen` フラグを導入。
+  - profileSel の change handler は **dispatch の出所**を区別:
+    `state.__kitProfileAutoApplying === true` のときは自動適用なので
+    flag を変更しない。それ以外は手動 click と判断。
+    - 手動で "default" 以外を選ぶ → `kitProfileExplicitlyChosen = true`
+    - 手動で "default" を選ぶ → `kitProfileExplicitlyChosen = false`
+      （「auto-pick mode 再開」の意味）
+  - `applyRecommendedKitProfile()` の判定は `state.kitProfileExplicitlyChosen`
+    だけを見るように変更。dispatch の前後で `state.__kitProfileAutoApplying`
+    を立てて try / finally で確実に降ろす。
+- **動作確認:** preview 上で再テスト予定。期待される flow:
+  - Boot → kitProfile = "default"、explicit = false
+  - Hey load → applyRecommended で sakanaction、explicit = false（auto）
+  - Electric Sheep load → applyRecommended で lcd-motorik、explicit = false
+  - Human Fly load → applyRecommended で cramps-punk、explicit = false
+  - ユーザーが手動で "lofi-nujabes" 選択 → explicit = true、以降の曲では
+    auto-skip。dropdown で "default" を選び直せば auto resume。
+- **v213/v214 のドキュメントを実態に合わせる:** v213 / v214 entry の「
+  state.kitProfile === 'default' のときだけ auto-apply」という説明は
+  v215 で **「ユーザーが明示的に pick していないときだけ auto-apply」**に
+  変わる。「default = auto-pick mode」という UX 約束は同じ。
+- `check-band-room-logic.mjs`: `kitProfileExplicitlyChosen` と
+  `__kitProfileAutoApplying` の存在、判定が flag ベースになっていることを
+  assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-104`、`hazama-fm-v215`。
+
+これで v214 で配った per-song timbre が album を通して効くようになる。
 
 ---
 
