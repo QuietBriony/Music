@@ -1,10 +1,57 @@
-# Band Room — Changelog (v65 → v220 compact)
+# Band Room — Changelog (v65 → v221 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v221 compact — bass agent: jazzy walking-bass（chord と対の動き）
+
+v218 で chord agent に jazz mode voice leading を入れたとき、bass は
+そのまま kick-locked のままだった。実ジャズでは **ベースが drummer の
+キックに乗らずに独立した 4 つ打ち walking line を弾く**のが基本。
+bass まで kick lock していると、AI 再現 mode を lofi-nujabes 寄せして
+ピアノ voicing を滑らかにしても、ベースだけ「ロックのままじゃん」と
+浮いていた。
+
+- **修正:** `bassAgentPlan` に jazz mode 分岐を追加。
+  `isJazzy = state.kitProfile === "lofi-nujabes" || state.chordInstrument
+  === "salamander-piano"` の判定（chord agent の v218 と同じ）。
+  jazz mode のとき:
+  - kick-locked source を完全スキップ
+  - 4 quarter notes per bar の固定 walking pattern:
+    - beat 1 (sub 0): **root** (vel 0.50)
+    - beat 2 (sub 4): **5th** (vel 0.42)
+    - beat 3 (sub 8): **3rd** (vel 0.42)
+    - beat 4 (sub 12): **7th** (vel 0.46)
+  - 各 step に PHRASE_VEL_MULT_BASS を掛ける（フレーズ呼吸は維持）
+  - bar 2 オクターブリフトは **適用しない**（jazz dynamics は subtle で
+    walking line を維持する方が正解）
+  - 既存 role embellishment（recap/comp + pressure>0.52 で sub 14 に
+    3rd+12 の 16n）は jazzy mode でも適用（コーラスで extra punch）
+  - `break` role は除外（break で walking 続行は不自然）
+- **なぜ root → 5th → 3rd → 7th:**
+  - root: 拍頭でコードを宣言
+  - 5th: 半カデンツ的安定音
+  - 3rd: 長/短調を示す色彩音
+  - 7th: 次のコードへの leading tone になりやすい（G7 の 7th = F →
+    Cmaj7 の root C へ半音下行）。lookahead なしでも progression の
+    多くで自然に繋がる音選び。
+- **chord agent との分業:** v218 で chord は voice leading（top note 最短
+  距離の inversion）、v221 で bass は walking（chord tone を 4 拍に
+  並べる）。jazz の chord-bass コンビが分業して動く形が成立。
+- **非 jazzy mode は完全不変:** kick-locked + phrase shape + bar 2
+  octave lift（v216）はそのまま。rock/dance の bass はそれが正解。
+- `check-band-room-logic.mjs`: jazz walking 分岐の判定と walk pattern
+  （root → fifth → third → seventh、sub 0 / 4 / 8 / 12）を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-110`、`hazama-fm-v221`。
+
+これで Tabasco / I got a feeling や Hey を lofi-nujabes profile + voice
+leading + walking-bass の組み合わせで聴くと、「ピアノ + 立っているベース」
+の jazz combo っぽい質感に寄る。
 
 ---
 

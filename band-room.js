@@ -3137,10 +3137,6 @@
     const octave = rootSemi + 12;
     const third = rootSemi + (isMinor ? 3 : 4);
     const seventh = rootSemi + (isMinor ? 10 : 11);
-    const source = ctx.kick.length ? ctx.kick : [
-      { step: 0, vel: 0.58, microMs: 0 },
-      { step: ctx.role === "break" ? 8 : 6, vel: 0.42, microMs: 0 }
-    ];
     // v216: 4-bar phrase shape — the last flat agent gets the same breathing
     // pattern the other 4 already have (drum v209, chord v210, voice v211,
     // guitar v212). Velocity multiplier is slightly bigger than drum's
@@ -3149,6 +3145,36 @@
     const phrasePos = (ctx.barInSection || 0) % 4;
     const PHRASE_VEL_MULT_BASS = [0.96, 1.00, 1.06, 0.98];
     const phraseMult = PHRASE_VEL_MULT_BASS[phrasePos];
+
+    // v221: jazzy walking-bass mode — for lofi-nujabes profile or
+    // salamander-piano chord sampler, ditch the kick-locked source and play
+    // 4 independent quarter notes per bar walking through chord tones
+    // (root → 5th → 3rd → 7th). Real jazz bassists walk on the beat grid,
+    // not on the drummer's kick. 7th on beat 4 sets up a half-step lead
+    // into many common chord changes (e.g. G7 7th = F → C of Cmaj7).
+    //
+    // Skip the bar 2 octave lift in jazz (too dramatic for walking line —
+    // jazz dynamics stay subtle). Role embellishments (recap +pressure
+    // extra) still apply on top so chorus sections have extra punch.
+    const isJazzy = state.kitProfile === "lofi-nujabes" ||
+                    state.chordInstrument === "salamander-piano";
+    if (isJazzy && ctx.role !== "break") {
+      const walkSteps = [
+        { sub: 0,  note: semiToNote(root),    dur: "4n", vel: clamp(0.50 * phraseMult, 0.30, 0.82), microMs: 0 },
+        { sub: 4,  note: semiToNote(fifth),   dur: "4n", vel: clamp(0.42 * phraseMult, 0.30, 0.82), microMs: 0 },
+        { sub: 8,  note: semiToNote(third),   dur: "4n", vel: clamp(0.42 * phraseMult, 0.30, 0.82), microMs: 0 },
+        { sub: 12, note: semiToNote(seventh), dur: "4n", vel: clamp(0.46 * phraseMult, 0.30, 0.82), microMs: 0 }
+      ];
+      if ((ctx.role === "recap" || ctx.role === "comp") && ctx.pressure > 0.52) {
+        walkSteps.push({ sub: 14, note: semiToNote(third + 12), dur: "16n", vel: clamp(0.42 * phraseMult, 0.30, 0.82), microMs: -8 });
+      }
+      return dedupeAgentSteps(walkSteps, 10);
+    }
+
+    const source = ctx.kick.length ? ctx.kick : [
+      { step: 0, vel: 0.58, microMs: 0 },
+      { step: ctx.role === "break" ? 8 : 6, vel: 0.42, microMs: 0 }
+    ];
     // Bar 2 downbeat octave lift — phrase peak. Real bassists often jump
     // an octave on the bar before a fill for excitement. Only applies to
     // the downbeat (hit.step === 0), only on bar 2, and only on roles

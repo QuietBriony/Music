@@ -251,6 +251,8 @@ assert.match(source, /function sectionGainForRole\(role\)/, "v220: section dynam
 assert.match(source, /function rampInstrumentBusForSection\(sec, time\)/, "v220: section dynamics need a ramp helper that gates on synth mode");
 assert.match(source, /rampInstrumentBusForSection\(nowSec, time\);/, "v220: scheduleBar must ramp instrumentBus on section change");
 assert.match(source, /intro:\s*0\.85[\s\S]{0,120}recap:\s*1\.05/, "v220: role gain map must lift recap and pull intro back (within polish bus comp tolerance)");
+assert.match(source, /if \(isJazzy && ctx\.role !== "break"\)/, "v221: bass agent must branch to walking mode in jazzy roles (excluding break)");
+assert.match(source, /sub:\s*0,\s*note:\s*semiToNote\(root\)[\s\S]{0,600}sub:\s*12,\s*note:\s*semiToNote\(seventh\)/, "v221: jazzy walking bass should walk root → 5th → 3rd → 7th across the bar");
 const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
 assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");
