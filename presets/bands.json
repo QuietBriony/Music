@@ -31,7 +31,8 @@
           "title": "Hey",
           "bpm": 123,
           "key": "G major",
-          "duration_s": 304
+          "duration_s": 304,
+          "kit_profile": "sakanaction"
         },
         {
           "id": "i-got-a-feeling",
@@ -47,7 +48,8 @@
           "title": "Under the Moon",
           "bpm": 161,
           "key": "Bb major",
-          "duration_s": 313
+          "duration_s": 313,
+          "kit_profile": "lcd-motorik"
         },
         {
           "id": "electric-sheep",
@@ -55,7 +57,8 @@
           "title": "Electric Sheep",
           "bpm": 129,
           "key": "E minor",
-          "duration_s": 150
+          "duration_s": 150,
+          "kit_profile": "lcd-motorik"
         },
         {
           "id": "human-fly",

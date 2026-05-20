@@ -237,6 +237,12 @@ const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "huma
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
 assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");
 assert.equal(bandsRegistry.reference_libraries?.unripe?.kit_profile_default, "cramps-punk", "v213: UNRIPE (hardcore postpunk) should recommend cramps-punk");
+const tabascoHey = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "hey");
+const tabascoElectricSheep = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "electric-sheep");
+const tabascoUnderTheMoon = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "under-the-moon");
+assert.equal(tabascoHey?.kit_profile, "sakanaction", "v214: Tabasco / Hey should recommend the sakanaction kit profile");
+assert.equal(tabascoElectricSheep?.kit_profile, "lcd-motorik", "v214: Tabasco / Electric Sheep should recommend the lcd-motorik kit profile");
+assert.equal(tabascoUnderTheMoon?.kit_profile, "lcd-motorik", "v214: Tabasco / Under the Moon should recommend the lcd-motorik kit profile");
 
 const durationShortfalls = [];
 Object.values(bandsRegistry.bands || {}).forEach((band) => {
