@@ -236,6 +236,8 @@ assert.match(source, /applyRecommendedKitProfile\(\);/, "v213: loadSong should c
 assert.match(source, /if \(state\.kitProfileExplicitlyChosen\) return;/, "v215: auto-mapping must gate on the explicit-pick flag, not on kitProfile === 'default' (otherwise only the first song auto-applies)");
 assert.match(source, /state\.__kitProfileAutoApplying\s*=\s*true;/, "v215: applyRecommendedKitProfile must set the auto-applying guard before dispatching change");
 assert.match(source, /if \(!state\.__kitProfileAutoApplying\)\s*\{\s*state\.kitProfileExplicitlyChosen\s*=\s*\(profileSel\.value !== "default"\);/, "v215: profileSel change handler must mark explicit pick only when not auto-applying, and reset on 'default'");
+assert.match(source, /PHRASE_VEL_MULT_BASS\s*=\s*\[0\.96,\s*1\.00,\s*1\.06,\s*0\.98\]/, "v216: bass agent should breathe across the 4-bar phrase");
+assert.match(source, /const liftBar2Downbeat\s*=\s*phrasePos === 2/, "v216: bass downbeat should lift an octave on bar 2 (phrase peak before fill)");
 const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
 assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");
