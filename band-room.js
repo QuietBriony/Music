@@ -3028,26 +3028,58 @@
     const prog = cp[sec.section] || cp[baseSection];
     if (!prog) { $("br-chord-current").textContent = "—"; return; }
     const barInSection = state.barCount - state.sectionBarStart;
-    // Sum chord durations until we find which chord this bar lands on
+    const chord = chordAtBarInProgression(prog, barInSection);
+    if (chord) {
+      $("br-chord-current").textContent = chord;
+      return chord;
+    }
+    $("br-chord-current").textContent = "—";
+    return null;
+  }
+
+  // v222: shared chord lookup logic — given a progression (array of
+  // [chord, bars] tuples) and a bar index, return the chord at that bar.
+  // Loops the progression once if bar exceeds the sum. Returns null on
+  // empty / invalid prog.
+  function chordAtBarInProgression(prog, bar) {
+    if (!Array.isArray(prog) || prog.length === 0) return null;
     let cursor = 0;
     for (const [chord, bars] of prog) {
-      if (barInSection < cursor + bars) {
-        $("br-chord-current").textContent = chord;
-        return chord;
-      }
+      if (bar < cursor + bars) return chord;
       cursor += bars;
     }
-    // Loop the progression
-    const loopedBar = barInSection % cursor;
+    if (cursor === 0) return null;
+    const looped = bar % cursor;
     cursor = 0;
     for (const [chord, bars] of prog) {
-      if (loopedBar < cursor + bars) {
-        $("br-chord-current").textContent = chord;
-        return chord;
-      }
+      if (looped < cursor + bars) return chord;
       cursor += bars;
     }
     return null;
+  }
+
+  // v222: next-chord lookahead. Returns the chord at (barInSection + 1),
+  // crossing into the next section if needed. Used by walking-bass beat 4
+  // to play a chromatic approach toward the next root. Returns null if
+  // no chord progression / next section is unavailable.
+  function nextChordLookahead() {
+    if (!state.songData || !state.songData.chord_progression) return null;
+    const sec = currentSection();
+    if (!sec) return null;
+    const cp = state.songData.chord_progression;
+    const baseSection = sec.section.split("-")[0];
+    const prog = cp[sec.section] || cp[baseSection];
+    const barInSection = state.barCount - state.sectionBarStart;
+    const nextBar = barInSection + 1;
+    const barsInSection = Math.max(1, Number(sec.bars) || 1);
+    if (nextBar < barsInSection) {
+      return chordAtBarInProgression(prog, nextBar);
+    }
+    // Crosses into next section — peek at its first chord.
+    const nextSec = state.songData.structure?.[state.sectionIdx + 1];
+    if (!nextSec) return null;
+    const nextProg = cp[nextSec.section] || cp[nextSec.section.split("-")[0]];
+    return chordAtBarInProgression(nextProg, 0);
   }
 
   // ---- Source-derived AI part agents ---------------------------
@@ -3121,6 +3153,8 @@
     return {
       sec, frame, chord, events, metrics, role, barInSection, barsInSection,
       isPhraseEnd, beatTime, subTime, kick, snare, hat, ghost, crash,
+      // v222: next-bar chord for walking-bass chromatic approach (jazz mode)
+      nextChord: nextChordLookahead(),
       pressure: metrics.pressure,
       density: metrics.density
     };
@@ -3159,11 +3193,20 @@
     const isJazzy = state.kitProfile === "lofi-nujabes" ||
                     state.chordInstrument === "salamander-piano";
     if (isJazzy && ctx.role !== "break") {
+      // v222: beat 4 chromatic approach to next chord's root when next != current.
+      // Leading-tone-from-below (nextRoot - 1) is the most common jazz move;
+      // works for the majority of progressions without lookahead-aware key
+      // analysis. If next chord is the same or unknown, fall back to 7th
+      // (the v221 default — also a natural lead for V7 → I changes).
+      const nextRootSemi = ctx.nextChord ? chordToSemi(ctx.nextChord) : null;
+      const beat4Semi = (nextRootSemi != null && nextRootSemi !== root)
+        ? nextRootSemi - 1
+        : seventh;
       const walkSteps = [
-        { sub: 0,  note: semiToNote(root),    dur: "4n", vel: clamp(0.50 * phraseMult, 0.30, 0.82), microMs: 0 },
-        { sub: 4,  note: semiToNote(fifth),   dur: "4n", vel: clamp(0.42 * phraseMult, 0.30, 0.82), microMs: 0 },
-        { sub: 8,  note: semiToNote(third),   dur: "4n", vel: clamp(0.42 * phraseMult, 0.30, 0.82), microMs: 0 },
-        { sub: 12, note: semiToNote(seventh), dur: "4n", vel: clamp(0.46 * phraseMult, 0.30, 0.82), microMs: 0 }
+        { sub: 0,  note: semiToNote(root),       dur: "4n", vel: clamp(0.50 * phraseMult, 0.30, 0.82), microMs: 0 },
+        { sub: 4,  note: semiToNote(fifth),      dur: "4n", vel: clamp(0.42 * phraseMult, 0.30, 0.82), microMs: 0 },
+        { sub: 8,  note: semiToNote(third),      dur: "4n", vel: clamp(0.42 * phraseMult, 0.30, 0.82), microMs: 0 },
+        { sub: 12, note: semiToNote(beat4Semi),  dur: "4n", vel: clamp(0.46 * phraseMult, 0.30, 0.82), microMs: 0 }
       ];
       if ((ctx.role === "recap" || ctx.role === "comp") && ctx.pressure > 0.52) {
         walkSteps.push({ sub: 14, note: semiToNote(third + 12), dur: "16n", vel: clamp(0.42 * phraseMult, 0.30, 0.82), microMs: -8 });

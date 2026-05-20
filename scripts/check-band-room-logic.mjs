@@ -252,7 +252,10 @@ assert.match(source, /function rampInstrumentBusForSection\(sec, time\)/, "v220:
 assert.match(source, /rampInstrumentBusForSection\(nowSec, time\);/, "v220: scheduleBar must ramp instrumentBus on section change");
 assert.match(source, /intro:\s*0\.85[\s\S]{0,120}recap:\s*1\.05/, "v220: role gain map must lift recap and pull intro back (within polish bus comp tolerance)");
 assert.match(source, /if \(isJazzy && ctx\.role !== "break"\)/, "v221: bass agent must branch to walking mode in jazzy roles (excluding break)");
-assert.match(source, /sub:\s*0,\s*note:\s*semiToNote\(root\)[\s\S]{0,600}sub:\s*12,\s*note:\s*semiToNote\(seventh\)/, "v221: jazzy walking bass should walk root → 5th → 3rd → 7th across the bar");
+assert.match(source, /sub:\s*0,\s*note:\s*semiToNote\(root\)[\s\S]{0,800}sub:\s*12,\s*note:\s*semiToNote\((?:seventh|beat4Semi)\)/, "v221: jazzy walking bass should walk root → 5th → 3rd → 7th (v222 may replace 7th with beat4Semi for lookahead)");
+assert.match(source, /function nextChordLookahead\(\)/, "v222: need a next-chord lookahead helper for walking-bass chromatic approach");
+assert.match(source, /nextChord:\s*nextChordLookahead\(\)/, "v222: makePartAgentContext should expose ctx.nextChord to agents");
+assert.match(source, /const beat4Semi\s*=\s*\(nextRootSemi != null && nextRootSemi !== root\)\s*\?\s*nextRootSemi - 1\s*:\s*seventh/, "v222: walking bass beat 4 must use chromatic approach (nextRoot - 1) when next chord differs");
 const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
 assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");
