@@ -1416,6 +1416,30 @@
     return state.bandsRegistry.bands[state.currentBandId] || null;
   }
 
+  // v213: per-band / per-song kit profile auto-mapping. bands.json may
+  // specify `kit_profile_default` on the band (e.g. UNRIPE → "cramps-punk")
+  // and `kit_profile` on individual songs (e.g. Tabasco / Human Fly →
+  // "cramps-punk"). loadSong calls this after song data is set.
+  // Behavior: apply the recommended profile only when the user is on
+  // "default" — treat "default" as "let the song decide." Any explicit
+  // user pick (sakanaction / lcd-motorik / cramps-punk / lofi-nujabes)
+  // is preserved across song / band switches. Click "default" in the
+  // dropdown to re-enable auto-mapping.
+  function applyRecommendedKitProfile() {
+    if (state.kitProfile && state.kitProfile !== "default") return;
+    const band = currentBand();
+    const songMeta = currentBandSongMeta();
+    const recommended = songMeta?.kit_profile || band?.kit_profile_default;
+    if (!recommended || recommended === state.kitProfile) return;
+    const psel = $("br-kit-profile-select");
+    if (!psel) return;
+    psel.value = recommended;
+    state.kitProfile = recommended;
+    // Dispatching change runs the existing rebuild logic (synthBass / chordSynth /
+    // voiceSynth always rebuild; drum kit rebuilds when kitSource = "synth").
+    psel.dispatchEvent(new Event("change"));
+  }
+
   function currentBandSongMeta(songId = state.currentSongId) {
     const band = currentBand();
     if (!Array.isArray(band?.songs)) return null;
@@ -2250,6 +2274,10 @@
       updateSongTimelineDisplay(0);
       $("br-bpm").textContent = data.bpm || "—";
       $("br-key").textContent = data.key || "—";
+      // v213: auto-pick kit profile from band/song recommendation (UNRIPE →
+      // cramps-punk, Human Fly → cramps-punk, etc.). No-op if user has
+      // explicitly chosen a non-default profile.
+      applyRecommendedKitProfile();
       renderSectionNav();  // v75: clickable section list
       refreshDrumFloorLink();
       updateMediaSession(state.started ? "playing" : "paused");  // v85: refresh OS metadata

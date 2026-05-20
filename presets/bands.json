@@ -15,6 +15,7 @@
       "stems_dir": "presets/tabasco-stems",
       "drum_frames_pattern": "presets/drum-frames-tabasco-{songid}.json",
       "lyrics_doc": "docs/tabasco-lyrics-final.md",
+      "kit_profile_default": "default",
       "songs": [
         {
           "id": "tabasco",
@@ -62,7 +63,8 @@
           "title": "Human Fly",
           "bpm": 117,
           "key": "G major",
-          "duration_s": 239
+          "duration_s": 239,
+          "kit_profile": "cramps-punk"
         },
         {
           "id": "sister",
@@ -92,6 +94,7 @@
       "stems_dir": "presets/unripe-stems",
       "drum_frames_pattern": "presets/drum-frames-unripe-{songid}.json",
       "lyrics_doc": null,
+      "kit_profile_default": "cramps-punk",
       "songs": [
         {
           "id": "continuous",

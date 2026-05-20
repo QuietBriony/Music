@@ -231,6 +231,12 @@ assert.match(source, /PHRASE_CONTOURS_DEFAULT\s*=\s*\[/, "Voice agent should rot
 assert.match(source, /PHRASE_CONTOURS_RECAP\s*=\s*\[/, "Voice agent recap path should also rotate contour (v211)");
 assert.match(source, /GUITAR_INVERSION_BY_PHRASE\s*=\s*\[1,\s*0,\s*2,\s*0\]/, "Guitar agent should rotate power chord voicings (v212)");
 assert.match(source, /\[\.\.\.new Set\(chordInversion\(baseNotes,/, "Guitar agent should dedup duplicated power-chord notes after inversion (v212)");
+assert.match(source, /function applyRecommendedKitProfile\(\)/, "v213: should expose a helper that maps band/song to a kit profile recommendation");
+assert.match(source, /applyRecommendedKitProfile\(\);/, "v213: loadSong should call the kit profile auto-mapping after song data is set");
+const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
+assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
+assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");
+assert.equal(bandsRegistry.reference_libraries?.unripe?.kit_profile_default, "cramps-punk", "v213: UNRIPE (hardcore postpunk) should recommend cramps-punk");
 
 const durationShortfalls = [];
 Object.values(bandsRegistry.bands || {}).forEach((band) => {

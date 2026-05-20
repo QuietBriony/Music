@@ -1,10 +1,53 @@
-# Band Room — Changelog (v65 → v212 compact)
+# Band Room — Changelog (v65 → v213 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v213 compact — kitProfile 自動マッピング（band/song 推奨を bands.json で）
+
+v208-v212 の AI 再現 5 パート polish が一段落。次はサンプル swap の
+入り口として、**band / 曲ごとに synth voice の timbre 推奨を持つ**仕組み。
+ユーザー要望「サカナクション / LCD 調にできたら楽しい」「メンバーの感覚や
+出音再現」への布石。
+
+- **bands.json に推奨フィールド追加:**
+  - band level: `kit_profile_default`
+    - tabasco: `"default"` (LCD + Backdrop Bomb mixture、明示)
+    - unripe: `"cramps-punk"` (Okinawa hardcore postpunk)
+  - song level: `kit_profile`（band default を上書き）
+    - tabasco / human-fly: `"cramps-punk"` (これは The Cramps の "Human Fly"
+      カバーで、cramps-punk profile はまさにこの曲のために命名されている)
+- **`applyRecommendedKitProfile()` を追加:** `loadSong` の data set 直後に
+  呼ぶ。
+  - `state.kitProfile` が `"default"` のときだけ自動適用する設計。
+    "default" = "曲に決めさせる" の意味として扱う。
+  - 推奨は `songMeta.kit_profile || band.kit_profile_default` の順で解決。
+  - 解決後、`br-kit-profile-select` の value を更新して `change` を dispatch
+    すれば既存の rebuild 経路（synthBass / chordSynth / voiceSynth / drumKit
+    の再生成）にそのまま乗る。
+- **明示ユーザー pick は尊重:** sakanaction / lcd-motorik / cramps-punk /
+  lofi-nujabes を手動で選んだ後は band/song を切り替えても上書きされない。
+  再度自動に戻したければ dropdown で "default" を選ぶ。これは「お気に入りの
+  音色で全曲ぶん通したい」UX と「曲ごとの推奨音色」UX の両立を狙った
+  シンプルな規約。
+- **localStorage prefs との整合:** 既存の `applyPrefs(prefs)` は
+  `prefs.kitProfile` を boot 時に復元する。保存値が "default" なら今回の
+  自動マッピングが効き、保存値が他の何かなら自動マッピングはスキップされる。
+  v213 以前から触ってないユーザーは保存値が "default" のままなので、初回
+  v213 起動時に **UNRIPE = cramps-punk / Human Fly = cramps-punk** が
+  自動適用されて聞こえ方が変わる体験になる。
+- **bands.json 自体は precache 済み** (sw.js の PRECACHE_URLS に既に含まれて
+  いる)。今回はフィールド追加のみで file path は変えてないので sw 側は
+  cache buster の bump だけで済む。
+- `check-band-room-logic.mjs`: `applyRecommendedKitProfile` 関数の存在と、
+  bands.json の `tabasco/human-fly.kit_profile === "cramps-punk"` と
+  `unripe.kit_profile_default === "cramps-punk"` を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-102`、`hazama-fm-v213`。
 
 ---
 
