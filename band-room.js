@@ -3138,11 +3138,35 @@
       const hold = ctx.role === "break" ? notes[1] : notes[0];
       return [{ sub: 0, note: hold, durSteps: 12, vel: ctx.role === "recap" ? 0.62 : 0.48 }];
     }
-    const contour = ctx.role === "recap"
-      ? [notes[1], notes[2], notes[0], notes[2]]
-      : ctx.role === "comp"
-        ? [notes[0], notes[1], notes[2], notes[1]]
-        : [notes[0], notes[1], notes[2], notes[1]];
+    // v211: phrase-shaped contour rotation. The old flat [root, 3rd, 5th, 3rd]
+    // every bar made the AI vocal line read as a stuck arpeggio. Real vocals
+    // arc through a 4-bar phrase — rise into it, sit near the top, descend,
+    // close back. The new contour table gives each bar of the phrase its
+    // own shape, so 4 bars compose one melodic gesture.
+    //
+    // r = notes[0] (root), m = notes[1] (3rd), h = notes[2] (5th)
+    // Default path (verse / comp / non-recap):
+    //   bar 0 ascending  : r → m → h → m   (settle entrance)
+    //   bar 1 weaving    : m → h → m → h   (sit near top)
+    //   bar 2 descending : h → m → r → m   (lead into fill bar)
+    //   bar 3 closing    : r → h → m → r   (prep for next phrase entrance)
+    // Recap path (chorus-style intensity already): top-centered variants
+    // so the existing [3rd, 5th, root, 5th] gesture becomes phrase 1 of 4.
+    const r = notes[0], m = notes[1], h = notes[2];
+    const PHRASE_CONTOURS_DEFAULT = [
+      [r, m, h, m],   // bar 0
+      [m, h, m, h],   // bar 1
+      [h, m, r, m],   // bar 2
+      [r, h, m, r]    // bar 3
+    ];
+    const PHRASE_CONTOURS_RECAP = [
+      [m, h, r, h],   // bar 0 — original recap shape
+      [h, h, m, h],   // bar 1 — peak weaving
+      [m, r, m, h],   // bar 2 — descend-bounce
+      [h, m, h, r]    // bar 3 — closing
+    ];
+    const phrasePos = (ctx.barInSection || 0) % 4;
+    const contour = (ctx.role === "recap" ? PHRASE_CONTOURS_RECAP : PHRASE_CONTOURS_DEFAULT)[phrasePos];
     const source = accents.length ? accents.slice(0, 4) : [0, 4, 8, 12].map((step) => ({ step, vel: 0.42, microMs: 0 }));
     return dedupeAgentSteps(source.map((hit, idx) => ({
       sub: hit.step,

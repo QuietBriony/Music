@@ -1,10 +1,47 @@
-# Band Room — Changelog (v65 → v210 compact)
+# Band Room — Changelog (v65 → v211 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v211 compact — AI 再現 voice agent にフレーズアーチを持たせる
+
+v208 / v209 / v210 と続けてきた AI 再現 polish の続き。次の monotony は
+voice（メロディ / 歌唱ガイド）。`voiceAgentPlan(ctx)` の contour が長らく
+非 recap 経路で `[root, 3rd, 5th, 3rd]` の同じアルペジオを毎小節
+繰り返していて、4 小節フレーズの melodic shape が flat だった。
+実際のボーカルはフレーズに「上昇 → ピーク → 下降 → 閉じ」のアーチが
+あるので、それを 4 小節ぶん仕込む。
+
+- **修正 — 4 小節フレーズ contour ローテーション:** `r = notes[0]`、
+  `m = notes[1]`、`h = notes[2]` として、デフォルト経路 (verse / comp /
+  非 recap) に 4 小節ぶんの contour テーブル:
+  - bar 0 ascending  : `r → m → h → m`（フレーズ entrance、root から上昇）
+  - bar 1 weaving    : `m → h → m → h`（top 付近で揺れる）
+  - bar 2 descending : `h → m → r → m`（fill 小節へ下降）
+  - bar 3 closing    : `r → h → m → r`（次フレーズの entrance へ繋ぐ）
+  recap 経路（コーラス相当）は元の `[3rd, 5th, root, 5th]` を bar 0 に
+  保ったまま、bar 1 / 2 / 3 に top-centered な variant を載せて 4 小節
+  ぶんのアーチに。
+- **触らない部分:**
+  - Human Fly recap の `HUMAN_FLY_VOCAL_MELODY` 固定旋律はそのまま
+    （これは曲の identity なので contour 自動変動の対象外）
+  - intro / outro は無音継続
+  - isPhraseEnd の hold note も維持（フレーズの息継ぎ位置）
+  - `sourceAccentSteps` の snare/ghost/crash 反応も同じ — contour は
+    accent 位置に sub だけマッピングする
+- **副作用なし:** voice 以外のエージェント（drum / bass / chord / guitar）
+  は `ctx` を変更せず読むだけなので不変。
+- `check-band-room-logic.mjs`: `PHRASE_CONTOURS_DEFAULT` と
+  `PHRASE_CONTOURS_RECAP` の存在を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-100`、`hazama-fm-v211`。
+- 原音 (stems) モード / 外部ボーカル経路 / `voiceInstrument` のサンプラー
+  切替は不変。AI 再現 mode の synth voice ライン（voiceAgent → voiceSynth）
+  だけ呼吸が増えた。
 
 ---
 

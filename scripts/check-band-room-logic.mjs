@@ -227,6 +227,8 @@ assert.match(source, /PHRASE_VEL_MULT\s*=\s*\[0\.95,\s*1\.00,\s*1\.04,\s*0\.98\]
 assert.match(source, /const fillVariant\s*=\s*Math\.floor\(barInSection \/ 4\) % 4/, "4-bar fills should rotate through variants instead of repeating (v209)");
 assert.match(source, /function chordInversion\(notes, inv\)/, "Chord agent should have an inversion helper (v210)");
 assert.match(source, /INVERSION_BY_PHRASE\s*=\s*\[0,\s*1,\s*2,\s*0\]/, "Chord voicings should rotate inversions across the 4-bar phrase (v210)");
+assert.match(source, /PHRASE_CONTOURS_DEFAULT\s*=\s*\[/, "Voice agent should rotate melody contour across the 4-bar phrase (v211)");
+assert.match(source, /PHRASE_CONTOURS_RECAP\s*=\s*\[/, "Voice agent recap path should also rotate contour (v211)");
 
 const durationShortfalls = [];
 Object.values(bandsRegistry.bands || {}).forEach((band) => {
