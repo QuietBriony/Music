@@ -1,10 +1,63 @@
-# Band Room — Changelog (v65 → v215 compact)
+# Band Room — Changelog (v65 → v216 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v216 compact — AI 再現 bass agent に phrase 呼吸（5 エージェント polish 完結）
+
+v208 から続けてきた AI 再現 polish シリーズで、最後に flat だった
+**bass agent** に phrase shape を追加。これで drum / chord / voice / guitar /
+**bass** の 5 エージェント全部が 4 小節フレーズで連動して呼吸する。
+
+- **現状の bass:** `ctx.kick` を読んで root/fifth/octave/seventh を音域配置する
+  ロジックは元から動いていて、kick との lock は取れている（v208 以降不変）。
+  だが velocity も音域も毎小節同じパターン。他 4 エージェントが phrase shape
+  を獲得した中で bass だけが flat だった。
+- **修正 1 — phrase velocity shape:** `PHRASE_VEL_MULT_BASS = [0.96, 1.00,
+  1.06, 0.98]` を `phrasePos = ctx.barInSection % 4` で引いて全 vel 計算に
+  掛ける。drum (`[0.95, 1.00, 1.04, 0.98]`) よりわずかに大きい振れ幅（±6%）
+  にしたのは、bass はノートが長く鳴るのでわずかな velocity 差でも phrase
+  lift がはっきり読めるから。
+- **修正 2 — bar 2 ダウンビートのオクターブリフト:** phrasePos === 2 のとき
+  だけ、downbeat（hit.step === 0）の音だけを 1 オクターブ上げる。実バンドの
+  ベーシストもフィル小節の前の小節で「ちょっと上に飛ぶ」のはよくある move。
+  break / intro / outro では適用しない（section が静かに作られている部分は
+  そのままに）。
+- **既存の追加 step（recap/comp pressure>0.52、verse ghost）にも phraseMult を
+  掛ける**：bass の音量はどの step も同じ phrase 抑揚を受ける。
+- **5 エージェント連動の効果:** bar 2 では:
+  - drum: phrase mult 1.04 で peak
+  - chord: sub 14 anticipation 8n でフィル小節へリードイン
+  - voice: contour descending（h → m → r → m）で settling
+  - guitar: inv 2 で register lift（high voicing）
+  - bass: 1.06 vel + downbeat オクターブ↑ で peak
+  全パートが「フィル小節へ向かう climax」として同期する。
+- `check-band-room-logic.mjs`: `PHRASE_VEL_MULT_BASS = [0.96, 1.00, 1.06,
+  0.98]` と `liftBar2Downbeat` の存在を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-105`、`hazama-fm-v216`。
+- bass agent 以外は無変更。stems モード / chord_progression / sampler 切替は
+  すべて不変。
+
+**AI 再現 v208 → v216 シリーズ 完結ラインナップ:**
+| ver | エージェント / 領域 | 中身 |
+|-----|-----|-----|
+| v208 | drum kit | 規定値 `auto-self` → `synth`（drum-floor groove） |
+| v209 | drum scheduler | 4 種フィルローテーション + phrase velocity 抑揚 |
+| v210 | chord agent | inversion rotation + phrase-aware rhythm |
+| v211 | voice agent | 4 小節 phrase contour（上昇 → ピーク → 下降 → 閉じ） |
+| v212 | guitar agent | power chord voicing rotation（chord と weave） |
+| v213 | kit profile | band/song ごとの timbre 自動マッピング基盤 |
+| v214 | kit profile | Tabasco 残り曲に kit_profile 仮置き |
+| v215 | kit profile | auto-apply が 1 曲しか効かないバグ修正 |
+| **v216** | **bass agent** | **phrase velocity shape + bar 2 オクターブリフト** |
+
+5 エージェント phrase 呼吸完結。次は synth voice 細部チューニング、UNRIPE
+drum-frames 生成、master polish bus の AI モード A/B、など。
 
 ---
 

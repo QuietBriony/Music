@@ -3093,21 +3093,38 @@
       { step: 0, vel: 0.58, microMs: 0 },
       { step: ctx.role === "break" ? 8 : 6, vel: 0.42, microMs: 0 }
     ];
+    // v216: 4-bar phrase shape — the last flat agent gets the same breathing
+    // pattern the other 4 already have (drum v209, chord v210, voice v211,
+    // guitar v212). Velocity multiplier is slightly bigger than drum's
+    // (±6% vs ±5%) since bass notes ring through their full duration —
+    // even a small velocity bump reads as a real lift.
+    const phrasePos = (ctx.barInSection || 0) % 4;
+    const PHRASE_VEL_MULT_BASS = [0.96, 1.00, 1.06, 0.98];
+    const phraseMult = PHRASE_VEL_MULT_BASS[phrasePos];
+    // Bar 2 downbeat octave lift — phrase peak. Real bassists often jump
+    // an octave on the bar before a fill for excitement. Only applies to
+    // the downbeat (hit.step === 0), only on bar 2, and only on roles
+    // where it makes musical sense (skip break / intro / outro where
+    // the section is quiet by design).
+    const liftBar2Downbeat = phrasePos === 2 &&
+      ctx.role !== "break" && ctx.role !== "intro" && ctx.role !== "outro";
+
     const steps = source.map((hit, idx) => {
-      const tone = hit.step >= 12 ? seventh : hit.step >= 8 ? octave : hit.step >= 4 ? fifth : root;
+      let tone = hit.step >= 12 ? seventh : hit.step >= 8 ? octave : hit.step >= 4 ? fifth : root;
+      if (liftBar2Downbeat && hit.step === 0) tone += 12;
       return {
         sub: hit.step,
         note: semiToNote(tone),
         dur: ctx.role === "recap" && ctx.density > 0.5 ? "16n" : "8n",
-        vel: clamp(0.30 + hit.vel * 0.58 + (idx === 0 ? 0.08 : 0), 0.30, 0.82),
+        vel: clamp((0.30 + hit.vel * 0.58 + (idx === 0 ? 0.08 : 0)) * phraseMult, 0.30, 0.82),
         microMs: hit.microMs || 0
       };
     });
     if ((ctx.role === "recap" || ctx.role === "comp") && ctx.pressure > 0.52) {
-      steps.push({ sub: 14, note: semiToNote(third + 12), dur: "16n", vel: 0.42, microMs: -8 });
+      steps.push({ sub: 14, note: semiToNote(third + 12), dur: "16n", vel: clamp(0.42 * phraseMult, 0.30, 0.82), microMs: -8 });
     }
     if (ctx.role === "verse" && ctx.ghost.some((hit) => hit.step >= 10)) {
-      steps.push({ sub: 11, note: semiToNote(fifth), dur: "16n", vel: 0.36, microMs: -6 });
+      steps.push({ sub: 11, note: semiToNote(fifth), dur: "16n", vel: clamp(0.36 * phraseMult, 0.30, 0.82), microMs: -6 });
     }
     return dedupeAgentSteps(steps, ctx.role === "recap" ? 10 : 7);
   }
