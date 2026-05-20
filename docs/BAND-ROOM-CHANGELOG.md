@@ -1,10 +1,54 @@
-# Band Room — Changelog (v65 → v219 compact)
+# Band Room — Changelog (v65 → v220 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v220 compact — section-aware global dynamics（instrumentBus gain ±5%）
+
+v208-v219 で各エージェントの「演奏者単位の dynamics」（phrase / voicing /
+fill）を整えた。次の層は **section 単位の global dynamics** — 実バンドの
+曲は verse 控えめ / chorus で持ち上げ / intro/break で引く、という section
+ごとの大きな抑揚があるが、AI 再現 は今まで section が変わっても全体音量が
+同じだった。
+
+- **修正:** `instrumentBus`（non-vocal polish bus）を module-level に hoist。
+  scheduleBar の section 切替検出ブロックと、第 1 bar（`barCount === 0`）の
+  両方で `rampInstrumentBusForSection(sec, time)` を呼ぶ。0.5s 線形 ramp で
+  pump artifact なし。
+- **role → gain マッピング:**
+  - `intro` / `break`: **0.85** （控えめ、雰囲気作り）
+  - `verse`: **0.95** （settled、後ろに引いて voice を立てる）
+  - `comp` / `head`: **1.00** （ニュートラル）
+  - `outro` / `swell`: **0.92** （静かに winding down）
+  - `recap` / chorus 相当: **1.05** （持ち上げ、曲の頂点）
+  - `post`: **0.96** （recap 後の落ち着き）
+  - その他: 1.00 fallback
+- **±5% の幅** は polish bus の glue comp（ratio 2.2、attack 12ms、release
+  180ms）の許容範囲。これ以上振ると comp pumping artifact が出る。逆に
+  小さすぎると section ごとの差がほぼ聞こえない。0.5s ramp で transition
+  自体も自然。
+- **stems mode は no-op:** stems は `stemBus.* → masterGain` 直結で
+  instrumentBus をバイパスする経路。`rampInstrumentBusForSection` 内で
+  `currentMode !== "synth"` の early return も入れてる。stems mode の
+  音量は不変。
+- **drum scheduler の section change crash と組み合わせ:**
+  - section 最後の小節: V3 forced fill（v217）
+  - 次 section bar 0 downbeat: crash 1 発（v106、リフト section のみ）
+  - 同 bar 0: **instrumentBus.gain を新 role の target へ 0.5s ramp（v220）**
+  → 「pickup + crash + gain lift」の section transition フル装備。
+- 既存 5 agent / kit_profile / voice leading / sustained pad は不変。
+- `check-band-room-logic.mjs`: `sectionGainForRole` / `rampInstrumentBusForSection`
+  / module-level `instrumentBus` 宣言の存在を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-109`、`hazama-fm-v220`。
+
+これで曲全体が「録音 / produced された band」っぽく聞こえる方向にもう一段
+寄る。Tabasco / Hey の verse → chorus → verse などで「サビが少し前に出る」
+感がはっきり読める範囲の差。
 
 ---
 

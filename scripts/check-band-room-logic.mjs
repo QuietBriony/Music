@@ -142,7 +142,7 @@ assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default s
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
 assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.68\)/, "Vocal stem default should sit forward without pinning the limiter");
 assert.match(source, /function makeInstrumentPolishBus\(/, "Band Room should sum the non-vocal band into a polish bus");
-assert.match(source, /const instrumentBus = makeInstrumentPolishBus\(masterGain\)/, "Non-vocal instruments should feed the polish bus");
+assert.match(source, /instrumentBus = makeInstrumentPolishBus\(masterGain\)/, "Non-vocal instruments should feed the polish bus");
 assert.match(source, /drumPan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(instrumentBus\)/, "Drums should route through the instrument polish bus");
 assert.match(source, /voicePan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(masterGain\)/, "Vocal lead should bypass the instrument polish bus");
 assert.match(html, /rel="manifest" href="manifest-band-room\.webmanifest"/, "Band Room should expose its own PWA manifest");
@@ -246,6 +246,11 @@ assert.match(source, /if \(isJazzy && lastChordTopNote != null\)/, "v218: chordA
 assert.match(source, /lastChordTopNote = noteNameToSemi\(notes\[notes\.length - 1\]\)/, "v218: chordAgentPlan must update lastChordTopNote for next bar's voice leading");
 assert.match(source, /v218: reset jazzy voice-leading history at song boundary[\s\S]{0,200}lastChordTopNote = null;/, "v218: loadSong must reset lastChordTopNote on song change");
 assert.match(source, /\(ctx\.role === "intro" \|\| ctx\.role === "outro"\)\s*\?\s*"1n"\s*:\s*"2n"/, "v219: intro/outro chord downbeat should ring full bar (1n) for atmospheric pad swell");
+assert.match(source, /let instrumentBus = null;/, "v220: instrumentBus must be hoisted to module scope for section dynamics");
+assert.match(source, /function sectionGainForRole\(role\)/, "v220: section dynamics need a role → gain mapping helper");
+assert.match(source, /function rampInstrumentBusForSection\(sec, time\)/, "v220: section dynamics need a ramp helper that gates on synth mode");
+assert.match(source, /rampInstrumentBusForSection\(nowSec, time\);/, "v220: scheduleBar must ramp instrumentBus on section change");
+assert.match(source, /intro:\s*0\.85[\s\S]{0,120}recap:\s*1\.05/, "v220: role gain map must lift recap and pull intro back (within polish bus comp tolerance)");
 const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
 assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");
