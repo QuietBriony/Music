@@ -112,6 +112,10 @@
   // Synth (AI 再現) layers
   let drumKit = null;
   let synthBass = null;
+  // v218: last chord-voicing top semi for jazzy voice leading (chordAgentPlan
+  // uses this to pick the next bar's inversion that minimizes top-note jump).
+  // Reset on song change in loadSong.
+  let lastChordTopNote = null;
   let guitarSynth = null;
   let voiceSynth = null;
   let chordSynth = null;
@@ -2281,6 +2285,10 @@
       state.sectionBarStart = 0;
       state.pendingSeekOffsetSec = 0;
       state.playbackStartOffsetSec = 0;
+      // v218: reset jazzy voice-leading history at song boundary so the new
+      // song starts from its first chord's natural root-position voicing
+      // instead of inheriting the previous song's top-note context.
+      lastChordTopNote = null;
       updateSongTimelineDisplay(0);
       $("br-bpm").textContent = data.bpm || "—";
       $("br-key").textContent = data.key || "—";
@@ -3245,9 +3253,38 @@
     // hammer root-position every bar — the top note weaves across the 4-bar
     // phrase. inv = root → 1st → 2nd → root+oct creates a melodic contour
     // in the chord voicing itself without changing the underlying harmony.
+    //
+    // v218: jazzy mode (lofi-nujabes profile or salamander-piano chord
+    // sampler) overrides this with **voice leading** — pick the inversion
+    // whose top note is closest to the previous bar's top note. This is
+    // what a real jazz pianist does instead of mechanical rotation:
+    // smooth, stepwise top-note motion across chord changes. The phrase
+    // rotation is musically right for rock / dance, but jazz wants the
+    // chords to weave like a melodic line.
     const phrasePos = (ctx.barInSection || 0) % 4;
-    const INVERSION_BY_PHRASE = [0, 1, 2, 0];  // bar 4 returns to root for phrase closure
-    const notes = chordInversion(baseNotes, INVERSION_BY_PHRASE[phrasePos]);
+    let notes;
+    if (isJazzy && lastChordTopNote != null) {
+      let bestInv = 0;
+      let bestDistance = Infinity;
+      for (let inv = 0; inv < 4; inv++) {
+        const inverted = chordInversion(baseNotes, inv);
+        if (!inverted.length) continue;
+        const topSemi = noteNameToSemi(inverted[inverted.length - 1]);
+        const distance = Math.abs(topSemi - lastChordTopNote);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestInv = inv;
+        }
+      }
+      notes = chordInversion(baseNotes, bestInv);
+    } else {
+      const INVERSION_BY_PHRASE = [0, 1, 2, 0];  // bar 4 returns to root for phrase closure
+      notes = chordInversion(baseNotes, INVERSION_BY_PHRASE[phrasePos]);
+    }
+    // v218: store top note for next bar's voice-leading decision.
+    if (notes.length) {
+      lastChordTopNote = noteNameToSemi(notes[notes.length - 1]);
+    }
 
     // v210: phrase-aware rhythm. Old behavior was 1-2 stabs per bar with the
     // same shape, regardless of where in the phrase you were. Now non-break
