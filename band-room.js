@@ -3295,7 +3295,17 @@
     //   bar 3: long pad (release; drums do the fill build)
     // break / comp / jazzy paths keep their existing reactive logic but
     // also get the inversion rotation.
-    const downbeatDur = ctx.role === "break" ? "4n" : "2n";
+    //
+    // v219: intro / outro use "1n" so the chord rings the full bar and the
+    // release tail overlaps into the next bar — atmospheric pad swell.
+    // Matches guitar agent's existing outro "1n" treatment. Voice agent
+    // already returns [] for intro/outro, so the chord pad isn't competing
+    // with a melody line.
+    const downbeatDur = ctx.role === "break"
+      ? "4n"
+      : (ctx.role === "intro" || ctx.role === "outro")
+        ? "1n"
+        : "2n";
     const downbeatVel = isJazzy ? 0.28 : 0.34;
     const steps = [{ sub: 0, notes, dur: downbeatDur, vel: downbeatVel }];
 
