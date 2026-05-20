@@ -3255,6 +3255,16 @@
         };
         const dilla = DILLA_OFFSETS_BY_PROFILE[profileName] || DILLA_OFFSETS_BY_PROFILE["default"];
 
+        // v209: 4-bar phrase velocity shape. Real drummers breathe across
+        // phrase boundaries — slightly softer entrance into a 4-bar block,
+        // peak on bar 3 to lead into the fill, ease back on bar 4 (the fill
+        // does the build itself). Subtle (±6%) so it doesn't feel artificial,
+        // but enough to kill the "looped" monotony of identical bars.
+        const barInSection = state.barCount - state.sectionBarStart;
+        const phrasePos = barInSection % 4;
+        const PHRASE_VEL_MULT = [0.95, 1.00, 1.04, 0.98];
+        const phraseMult = PHRASE_VEL_MULT[phrasePos];
+
         frame.events.forEach((evt) => {
           const inst = drumKit[evt.instrument];
           if (!inst) return;
@@ -3275,8 +3285,9 @@
           const rawVel = clamp(evt.velocity ?? 0.5, 0.05, 1);
           // v118: velocity humanize — ±4% perturb, accent-friendly
           // v137: mic follow scale — 演奏の音量で drum velocity を ±30% スケール
+          // v209: phraseMult layers the 4-bar phrase shape on top (±6%)
           const micScale = micFollowVelocityScale();
-          let vel = clamp(rawVel * micScale * (1 + (Math.random() - 0.5) * 0.08), 0.05, 1);
+          let vel = clamp(rawVel * micScale * phraseMult * (1 + (Math.random() - 0.5) * 0.08), 0.05, 1);
           // v122: ghost-note variation — 16th hat の弱拍を時々もっと弱く、
           // 強拍を時々もっと強く。一様な hat 刻みの "machine" 感を消す
           if (evt.instrument === "hat") {
@@ -3298,25 +3309,64 @@
           }
         });
 
-        // v107: 4-bar fill — every 4th bar of a section gets a tom/snare
-        // roll on the last 16th to break the bar-loop sameness. Skip in
+        // v107: 4-bar fill — every 4th bar of a section gets a fill on the
+        // last quarter ("4" beat) to break the bar-loop sameness. Skip in
         // intro (too noisy) and outro (already busy).
-        const barInSection = state.barCount - state.sectionBarStart;
+        // v209: rotate through 4 fill patterns instead of always the same
+        // tom roll. fillVariant cycles per 4-bar block within a section so
+        // a 16-bar verse hears tom roll → snare build → kick-snare
+        // interplay → sparse tom-tom, then repeats. Real drummers vary fills
+        // bar to bar — a single repeating fill is what made the loop feel
+        // "machine."
         const isFillBar = (barInSection + 1) % 4 === 0;
         const role = frame.session_role || "";
         if (isFillBar && role !== "intro" && role !== "outro") {
-          const fillInst = drumKit.fill || drumKit.snare;
-          if (fillInst) {
-            // 4 sixteenth hits on beat 3 with rising velocity
-            for (let s = 0; s < 4; s++) {
-              const t = time + 3 * beatTime + s * subTime;
-              const vel = 0.42 + s * 0.10;
-              try {
-                if (fillInst === drumKit.fill) fillInst.triggerAttackRelease("16n", t, vel);
-                else fillInst.triggerAttackRelease("16n", t, vel);
-              } catch (e) {}
+          const fillVariant = Math.floor(barInSection / 4) % 4;
+          const tom   = drumKit.fill;
+          const snare = drumKit.snare;
+          const kick  = drumKit.kick;
+          try {
+            if (fillVariant === 0 && tom) {
+              // V0: classic 4×16th tom roll on beat 4 (the v107 original).
+              for (let s = 0; s < 4; s++) {
+                const t = time + 3 * beatTime + s * subTime;
+                tom.triggerAttackRelease("16n", t, 0.42 + s * 0.10);
+              }
+            } else if (fillVariant === 1 && snare) {
+              // V1: snare 16th build on beat 4 — rising velocity, capping
+              // on the last 16th. Punchy / driving feel.
+              for (let s = 0; s < 4; s++) {
+                const t = time + 3 * beatTime + s * subTime;
+                snare.triggerAttackRelease("16n", t, 0.40 + s * 0.13);
+              }
+            } else if (fillVariant === 2 && kick && snare) {
+              // V2: kick-snare alternation on beat 4 — Bonham-ish forward
+              // march into the next bar's downbeat.
+              [
+                { i: "kick",  s: 0, vel: 0.56 },
+                { i: "snare", s: 1, vel: 0.48 },
+                { i: "kick",  s: 2, vel: 0.56 },
+                { i: "snare", s: 3, vel: 0.68 }
+              ].forEach((hit) => {
+                const t = time + 3 * beatTime + hit.s * subTime;
+                if (hit.i === "kick") kick.triggerAttackRelease("C1", "16n", t, hit.vel);
+                else snare.triggerAttackRelease("16n", t, hit.vel);
+              });
+            } else if (fillVariant === 3 && tom) {
+              // V3: sparse — 2 tom hits in the last half of beat 4. Leaves
+              // space; counter-balances the busier V0–V2 with a tom-tom
+              // lead-in feel.
+              tom.triggerAttackRelease("16n", time + 3 * beatTime + 2 * subTime, 0.58);
+              tom.triggerAttackRelease("16n", time + 3 * beatTime + 3 * subTime, 0.76);
+            } else if (tom || snare) {
+              // Fallback (kit missing voices): default to V0 with whichever exists.
+              const inst = tom || snare;
+              for (let s = 0; s < 4; s++) {
+                const t = time + 3 * beatTime + s * subTime;
+                inst.triggerAttackRelease("16n", t, 0.42 + s * 0.10);
+              }
             }
-          }
+          } catch (e) {}
         }
 
         // v106: sparse frame reinforcement — if the extracted pattern is
