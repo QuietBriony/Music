@@ -225,6 +225,8 @@ assert.match(source, /kitSource:\s*"synth"/, "AI 再現 default drum kit should 
 assert.match(source, /if \(prefs\.kitSource === "auto-self"\)\s*\{\s*prefs\.kitSource = "synth";/, "applyPrefs should silently retire saved 'auto-self' to 'synth' (v208 migration)");
 assert.match(source, /PHRASE_VEL_MULT\s*=\s*\[0\.95,\s*1\.00,\s*1\.04,\s*0\.98\]/, "Synth drums should breathe across the 4-bar phrase (v209)");
 assert.match(source, /const fillVariant\s*=\s*Math\.floor\(barInSection \/ 4\) % 4/, "4-bar fills should rotate through variants instead of repeating (v209)");
+assert.match(source, /function chordInversion\(notes, inv\)/, "Chord agent should have an inversion helper (v210)");
+assert.match(source, /INVERSION_BY_PHRASE\s*=\s*\[0,\s*1,\s*2,\s*0\]/, "Chord voicings should rotate inversions across the 4-bar phrase (v210)");
 
 const durationShortfalls = [];
 Object.values(bandsRegistry.bands || {}).forEach((band) => {

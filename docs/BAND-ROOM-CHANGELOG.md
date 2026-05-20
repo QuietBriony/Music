@@ -1,10 +1,49 @@
-# Band Room — Changelog (v65 → v209 compact)
+# Band Room — Changelog (v65 → v210 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v210 compact — AI 再現 chord agent に生気（inversion 回し + フレーズ rhythm）
+
+v208 / v209 のドラム整備の続き。次の monotony は**コード周り**だった。
+`chordAgentPlan(ctx)` が長らく「sub 0 で 2n の同じ voicing をスタブ、
+たまに sub 8 か 10 でフォロー」という骨組みのまま、毎小節同じ rhythm /
+同じ inversion でループしていて、verse が長くなるほど「pad が貼り付き
+っぱなし」感が出ていた。
+
+- **修正 1 — inversion rotation:** `chordInversion(notes, inv)` を追加。
+  `noteNameToSemi()` で名前を semi に戻し、下から `inv` 本ぶん 1 オクターブ
+  上げ、再ソートして名前に戻す。`INVERSION_BY_PHRASE = [0, 1, 2, 0]` で
+  4 小節フレーズの 1→2→3 小節で inv を回し、4 小節目は root に戻して
+  フレーズ閉じ。例: C-major triad `["C4","E4","G4"]` は phrasePos に応じ
+  `C4 E4 G4` → `E4 G4 C5` → `G4 C5 E5` → `C4 E4 G4` と top note が
+  G → C → E → G に weave する。コード自体は変わらない（C maj は C maj）
+  けど voicing の top が動くので、コード stab が「ふた口の固いもの」から
+  「メロディの一部」に寄る。
+- **修正 2 — phrase-aware rhythm:** non-break / non-comp / 非 jazzy の
+  デフォルト経路に rhythm 4 変奏:
+  - phrasePos 0: downbeat のみ（フレーズ entrance、pad を呼吸させる）
+  - phrasePos 1: downbeat + sub 8 stab（フレーズ mid push）
+  - phrasePos 2: downbeat + sub 14 anticipation 8n（fill 小節 への lead-in）
+  - phrasePos 3: downbeat のみ（drums の fill build に空間を譲る）
+  break / comp / jazzy / recap-pressure>0.58 の経路は既存ロジック維持
+  （これらは元から rhythm 反応してた）、その上に inversion rotation だけ
+  乗る。intro / outro は何も追加せず、downbeat だけで静か。
+- **`chordInversion` の安全網:** `((inv % 4) + 4) % 4` で負数 / 4以上にも
+  耐え、空配列はそのまま返す。`baseNotes` を破壊しない（semis のコピー
+  で操作）。
+- bass agent / drum scheduler / guitar agent / voice agent は不変。
+  ctx.barInSection を読むだけなので side effect なし。
+- `check-band-room-logic.mjs`: `chordInversion` 関数の存在 と
+  `INVERSION_BY_PHRASE = [0, 1, 2, 0]` を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-99`、`hazama-fm-v210`。
+- 原音（stems）モード / sample kit / chord_instrument のサンプラー切替
+  は不変。AI 再現 mode の chord 周りだけ呼吸が増えた。
 
 ---
 
