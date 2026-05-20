@@ -241,6 +241,10 @@ assert.match(source, /const liftBar2Downbeat\s*=\s*phrasePos === 2/, "v216: bass
 assert.match(source, /const isSectionEnd\s*=\s*\(barInSection === barsInSection - 1\)/, "v217: drum scheduler must detect the section's last bar for forced transition fill");
 assert.match(source, /const isForcedSectionEndFill\s*=\s*isSectionEnd && !isFillBar/, "v217: forced section-end fill must not double-fire with the 4-bar rotating fill");
 assert.match(source, /isForcedSectionEndFill \? 3 : Math\.floor\(barInSection \/ 4\) % 4/, "v217: forced section-end fill must use V3 (sparse) for a transitional feel");
+assert.match(source, /let lastChordTopNote = null;/, "v218: should declare lastChordTopNote module-level state for jazz voice leading");
+assert.match(source, /if \(isJazzy && lastChordTopNote != null\)/, "v218: chordAgentPlan must use voice leading instead of phrase rotation in jazzy mode");
+assert.match(source, /lastChordTopNote = noteNameToSemi\(notes\[notes\.length - 1\]\)/, "v218: chordAgentPlan must update lastChordTopNote for next bar's voice leading");
+assert.match(source, /v218: reset jazzy voice-leading history at song boundary[\s\S]{0,200}lastChordTopNote = null;/, "v218: loadSong must reset lastChordTopNote on song change");
 const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
 assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");

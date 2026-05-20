@@ -1,10 +1,52 @@
-# Band Room — Changelog (v65 → v217 compact)
+# Band Room — Changelog (v65 → v218 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v218 compact — chord agent: jazzy mode 用 voice leading（実ジャズピアニスト的）
+
+v210 で入れた `INVERSION_BY_PHRASE = [0, 1, 2, 0]` のフレーズ rotation は
+rock / dance には合うけど、jazz / lofi では「機械的すぎる」。実ジャズ
+ピアニストはコード変更時に**次のコードまで最短距離の voicing**を選ぶ
+（voice leading）。bar ごとに inv を強制ローテーションするのは可動部品が
+多すぎる。
+
+- **修正:** `kitProfile === "lofi-nujabes"` または `chord_instrument ===
+  "salamander-piano"` のとき（isJazzy = true）、phrase rotation の代わりに
+  **voice leading 探索**を実行:
+  - 4 つの inversion（root / 1st / 2nd / root+oct）すべての top note を
+    計算
+  - 直前 bar の top note (`lastChordTopNote`、semi 値) との距離を計算
+  - 距離最小の inversion を採用
+  - 採用した inversion の top note を `lastChordTopNote` に格納（次 bar
+    用）
+- **非 jazzy mode は無変更:** default / sakanaction / lcd-motorik /
+  cramps-punk profile は引き続き phrase rotation。rock の chord stab は
+  「機械的でいい」 — むしろグリッドにロックしてる方が rock feel。
+- **`lastChordTopNote` リセットタイミング:**
+  - song 切替: `loadSong` 冒頭で `null` にリセット → 新曲は最初のコードの
+    自然な root-position voicing から始まる
+  - section 切替: リセットしない → section をまたいでも voice leading が
+    流れる（real ピアニストの感覚）
+  - 初回（`lastChordTopNote === null`）: phrase rotation にフォールバック
+    → 最初の bar は意味のある voicing 起点を決められない
+- **計算コスト:** 4 inversion × `chordInversion()` (≈ chord 3-4 音 sort) =
+  bar 毎 ≈ 60-80 演算。1m スケジューラの中なのでまったく問題なし。
+- bass / drum / voice / guitar / kit_profile auto-map は不変。
+- `check-band-room-logic.mjs`: `lastChordTopNote` の存在、voice leading
+  探索ループ、loadSong でのリセットを assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-107`、`hazama-fm-v218`。
+
+**効果:** Tabasco / I got a feeling や Hey を lofi-nujabes / salamander-piano
+の組み合わせで聴くと、コード stab が「ピアノが滑らかに動く」感じに寄る。
+Em7 → Am7 → Dmaj7 → G7 のような progression で、top note が
+B → C → C# → B みたいに半音単位で動くようになる（root-position だけ
+なら B → E → F# → D で大ジャンプ）。
 
 ---
 
