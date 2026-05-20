@@ -19,6 +19,25 @@
 
 ---
 
+## 2026-05-18 — AGENTS.md Hard Rule 6: 非干渉 harvest 原則
+- agent     : Claude Code (Opus 4.7)
+- goal      : 外部 / sister repo からの harvest が engine 直結や default 挙動
+  変更を起こさないよう、既に暗黙だった非干渉原則を AGENTS.md に成文化
+- repos     : Music
+- shipped   : PR #160 — AGENTS.md に Hard Rule 6 を追加（sidecar → adapter →
+  feature flag → human review → promotion の順、default 再生 / OUTPUT /
+  recorder / AutoMix / pads は変えない）。ChatGPT 壁打ちで出た
+  「Non-Interference Feature Intake Workflow」提案の slim 版 — 重い
+  intake-stage doc + JSON Schema は実需に応じて後付け
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）
+- next      : 実際に外部 harvest が始まったタイミングで、必要に応じて
+  intake stage / schema / Return Packet 等の詳細 doc を足す
+- 関連      : Band Room チャットが v207（PR #159）で BG 再生の音程ブレ修正＋
+  band-room.html への PWA install banner 追加を実施（私が出した paste-ready
+  指示が機能した）
+
+---
+
 ## 2026-05-18 — Music PWA インストール推奨バナー (v206)
 - agent     : Claude Code (Opus 4.7)
 - goal      : ユーザー要望「Music-stack 各システムを PWA 化推奨でページ表示」の
