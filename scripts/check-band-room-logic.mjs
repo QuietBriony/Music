@@ -133,8 +133,15 @@ assert.match(source, /function guitarAgentPlan\(/, "Band Room should give guitar
 assert.match(source, /function voiceAgentPlan\(/, "Band Room should give vocal guide its own source-derived agent");
 assert.match(source, /function chordAgentPlan\(/, "Band Room should give chords their own source-derived agent");
 assert.match(source, /sourceAccentSteps\(ctx, \["kick", "snare", "crash", "ghost"\]/, "Guitar agent should react to original drum-frame accents");
-assert.match(source, /bassInstrument:\s*"bass-electric"/, "AI bass default tone should use electric bass sampler when available");
-assert.match(source, /guitarInstrument:\s*"guitar-electric"/, "AI guitar default tone should use electric guitar sampler when available");
+// v231: AI bass + guitar default to the internal synth. They used to
+// default to the "bass-electric" / "guitar-electric" catalog samplers, but
+// those stream from jsDelivr's mirror of nbrosowsky/tonejs-instruments —
+// a repo that exceeds jsDelivr's 50 MB limit, so jsDelivr 403s a flaky
+// half of the files. A Tone.Sampler never reaches loaded=true if ANY file
+// fails, so the AI band's guitar + bass were permanently silent. null =
+// internal synth, which always works offline.
+assert.match(source, /bassInstrument:\s*null/, "v231: AI bass must default to the internal synth (electric-bass CDN samples are unservable)");
+assert.match(source, /guitarInstrument:\s*null/, "v231: AI guitar must default to the internal synth (electric-guitar CDN samples are unservable)");
 assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band Room master limiter should keep v168 headroom");
 // v228: the guitar / chord PolySynth maxPolyphony must stay LOW. Each
 // PolySynth voice is a continuously-running oscillator; v227 raised the
@@ -161,6 +168,22 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
   assert.match(source, /function withChainDispose\(/, "v229: withChainDispose helper must exist to tear down full synth FX chains");
   assert.match(source, /return withChainDispose\(\s*\{ kick, snare, hat, ghost, fill, crash: crashWrap \}/,
     "v229: makeDrumKit must return via withChainDispose so synth kits dispose cleanly (song-switch freeze fix)");
+}
+// v231: AI 再現 is now an all-synth band (guitar + bass switched to the
+// internal synth). Guitar and chord are PolySynths with maxPolyphony 10;
+// the bar scheduler fires a whole bar of notes at once and PolySynth
+// reserves a voice per note on the call, so the agents' per-bar note
+// density must stay within the cap or notes flood + drop. Guitar scales
+// notes-per-strum to the strum count; chord drops 7th voicings to a shell.
+{
+  assert.match(source, /notesPerStrum\s*=\s*clamp\(Math\.floor\(9\s*\/\s*Math\.max\(1,\s*plan\.length\)\)/,
+    "v231: triggerGuitarAgent must scale notes-per-strum to strum count so the guitar PolySynth stays within maxPolyphony");
+  assert.match(source, /if \(baseNotes\.length >= 4\) baseNotes = \[baseNotes\[0\], baseNotes\[1\], baseNotes\[3\]\]/,
+    "v231: chordAgentPlan must drop 7th voicings to a 3-note shell so the chord PolySynth stays within maxPolyphony");
+  assert.match(source, /if \(state\.guitarInstrument === "guitar-electric"\) state\.guitarInstrument = null/,
+    "v231: a saved guitar-electric pref must migrate to null so the dead CDN sampler can't override the synth default");
+  assert.match(source, /if \(state\.bassInstrument === "bass-electric"\) state\.bassInstrument = null/,
+    "v231: a saved bass-electric pref must migrate to null so the dead CDN sampler can't override the synth default");
 }
 assert.match(source, /let masterVolBase = 1\.2/, "Band Room master volume base should match the v202 louder default output");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default should leave headroom for source-derived accents");
