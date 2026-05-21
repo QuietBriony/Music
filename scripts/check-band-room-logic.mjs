@@ -185,6 +185,21 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
   assert.match(source, /if \(state\.bassInstrument === "bass-electric"\) state\.bassInstrument = null/,
     "v231: a saved bass-electric pref must migrate to null so the dead CDN sampler can't override the synth default");
 }
+// v232: frequency-lane design (foundation step A). The 5 AI synth parts
+// were piling into the mid range — voice/melody played the same chord
+// tones in the same octave (4) as the chord pad, so it doubled the pad
+// instead of reading as a 5th part. Each pitched part now gets its own
+// octave lane (bass 2 / guitar 3 / chord 4 / voice 5) and the guitar +
+// chord get high-pass filters so their lower lanes don't bleed down into
+// the bass.
+{
+  assert.match(source, /const notes = chordToNotes\(ctx\.chord, 5\)/,
+    "v232: voiceAgentPlan must voice the melody at octave 5 — above the octave-4 chord pad — so it reads as a separate part");
+  assert.match(source, /hpG = new Tone\.Filter\(\{ frequency: 130, type: "highpass"/,
+    "v232: the synth guitar must high-pass at 130 Hz so its low-mid stays out of the bass lane");
+  assert.match(source, /hpC = new Tone\.Filter\(\{ frequency: 190, type: "highpass"/,
+    "v232: the chord pad must high-pass at 190 Hz so it sits in its mid lane and doesn't muddy the low end");
+}
 assert.match(source, /let masterVolBase = 1\.2/, "Band Room master volume base should match the v202 louder default output");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default should leave headroom for source-derived accents");
 assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v168 mix");
