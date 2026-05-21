@@ -19,6 +19,34 @@
 
 ---
 
+## 2026-05-18 — PWA インストール推奨バナー sister repo 横展開
+- agent     : Claude Code (Opus 4.7)
+- goal      : Music v206 のバナーパイロットを active sister 4 repo に横展開
+- repos     : namima / drum-floor / openclaw / chill
+- shipped   :
+  - namima PR #31 — `index.html` バナー + sw VERSION v3→v4 + 資産 stack-3→stack-4 +
+    check-pwa-static の VERSION 主張を pattern 化（BL-011 踏襲）
+  - drum-floor PR #51 — `index.html` バナー + sw VERSION v4→v5 + 資産 pwa-4→pwa-5
+    （`app.js` / `src/session-adapter.js` import path も含む）+ pytest 契約を
+    pattern 化
+  - openclaw PR #31 — `index.html` バナー + sw VERSION v3→v4。check は既に
+    BL-011 で柔軟だったので追加修正なし
+  - chill PR #36 — `index.html` + `session.html` 両方にバナー + sw VERSION
+    v4→v5 + 資産 pwa-4→pwa-5 + check-pwa-static を pattern 化
+- 共通       : 全 4 repo で同じ `#install-hint` パターン（inline `<style>` +
+  `<script>`、standalone 検知 + dismiss localStorage `musicStackInstallHintDismissed`、
+  beforeinstallprompt 統合）。dismiss は同一オリジン共有 ＝ Music で × したら
+  sister 全てでも非表示
+- 学び       : 4 repo 中 3 repo（namima / drum-floor / chill）の PWA 契約 test が
+  ハードコード版番号で「version bump → test 修正」依存を強いていた。同時に
+  BL-011 の pattern 化を適用して将来の bump tax を解消
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD、全 4 repo マージ後の最終確認）
+- next      : 試聴 / 表示確認待ち — 各 repo のページを開いて、バナー表示 / 手順展開 /
+  dismiss / standalone 起動時の自動非表示を確認
+- 注意      : Band Room 別チャットの並走続行中。今回も clean に共存できた
+
+---
+
 ## 2026-05-18 — HAZAMA-FM-ARCHITECTURE Section 12 追加: harness lens
 - agent     : Claude Code (Opus 4.7)
 - goal      : ChatGPT 壁打ちで出た "Code as Agent Harness"（arXiv:2605.18747,
