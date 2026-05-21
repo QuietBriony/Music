@@ -136,16 +136,17 @@ assert.match(source, /sourceAccentSteps\(ctx, \["kick", "snare", "crash", "ghost
 assert.match(source, /bassInstrument:\s*"bass-electric"/, "AI bass default tone should use electric bass sampler when available");
 assert.match(source, /guitarInstrument:\s*"guitar-electric"/, "AI guitar default tone should use electric guitar sampler when available");
 assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band Room master limiter should keep v168 headroom");
-// v227: the guitar / chord PolySynths must hold a whole bar's worth of
-// scheduled notes — Tone.PolySynth reserves a voice at schedule time, and
-// the bar scheduler schedules a full bar in one callback (guitar recap =
-// 8 strums × 3 = 24). maxPolyphony 10 (the v200 value) dropped 14 notes
-// per bar — that was the "AI 再現 doesn't play" flood. Lock in the floor.
+// v228: the guitar / chord PolySynth maxPolyphony must stay LOW. Each
+// PolySynth voice is a continuously-running oscillator; v227 raised the
+// caps to 64/32 and that let the synth-heavy AI mode spawn ~96 oscillators,
+// pegging mobile CPUs and freezing the device. The cap is CPU protection —
+// it must NOT be raised again. The real fix for dropped notes is cutting
+// the agents' note density (step 2), not raising the cap. Ceiling 16.
 {
   const guitarPoly = Number((source.match(/guitar\.maxPolyphony\s*=\s*(\d+)/) || [])[1]);
   const chordPoly = Number((source.match(/chord\.maxPolyphony\s*=\s*(\d+)/) || [])[1]);
-  assert.ok(guitarPoly >= 48, `v227: guitar maxPolyphony must be >= 48 to hold a bar's strum burst (found ${guitarPoly})`);
-  assert.ok(chordPoly >= 24, `v227: chord maxPolyphony must be >= 24 to hold a bar's chord stabs (found ${chordPoly})`);
+  assert.ok(guitarPoly > 0 && guitarPoly <= 16, `v228: guitar maxPolyphony must stay low (<=16) for CPU safety — raising it froze devices (found ${guitarPoly})`);
+  assert.ok(chordPoly > 0 && chordPoly <= 16, `v228: chord maxPolyphony must stay low (<=16) for CPU safety (found ${chordPoly})`);
 }
 assert.match(source, /let masterVolBase = 1\.2/, "Band Room master volume base should match the v202 louder default output");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default should leave headroom for source-derived accents");

@@ -1,10 +1,56 @@
-# Band Room — Changelog (v65 → v227 compact)
+# Band Room — Changelog (v65 → v228 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v228 compact — v227 を revert（device freeze の緊急安全化 / step 1）
+
+ユーザー報告: v227 デプロイ後、AI 再現 を押すと**実機の画面が固まる**。
+v227 の修正が freeze を悪化させた。即・安全化。
+
+### v227 が何を間違えたか
+
+v227 は「polyphony flood（音ドロップ）を直す」つもりで `maxPolyphony` を
+guitar 10→64 / chord 10→32 に上げた。だが **polyphony cap は実は CPU
+保護**だった。`Tone.PolySynth` の voice = 鳴りっぱなしのオシレータ。
+上限を 64 にした → synth-heavy な AI モードが guitar ~64 + chord ~32 =
+**~96 個のオシレータ**を同時に走らせ、+ ドラムの MetalSynth + 重い FX
+（distortion の 2x oversample 等）でモバイル CPU が振り切れ、デバイスが
+freeze した。
+
+v227 以前の「Max polyphony exceeded で音を捨てる」flood は耳障りだったが、
+voice 数を 10 で頭打ちにすることで**CPU を守る雑なブレーキ**として機能して
+いた。v227 はそのブレーキを外し、「音が欠ける」を「デバイスが固まる」に
+悪化させた。
+
+### v228 の修正（step 1: 安全化のみ）
+
+- `guitar.maxPolyphony` 64 → **10**（v200-v226 の known-survivable 値に
+  revert）
+- `chord.maxPolyphony` 32 → **10**（同上）
+- これで「固まる」→「鳴る（音は欠けるけど）」に戻り、デバイスが死ぬのを
+  止める。v226 と同じ挙動。
+
+### これは step 1 にすぎない
+
+根本問題は変わっていない: **AI agent がブラウザ合成の限界を超える音数を
+出している**（guitar 1 小節 24 音 = 8 strum × 3 音）。cap を下げれば音が
+欠け、上げれば固まる — どちらも対症療法。
+
+step 2（別ラウンド）で agent の音数自体を激減させ、低い cap でも音が
+欠けない密度に設計し直す。実サンプル catalog（`online-samples-catalog.json`
+/ `makeRemoteKit` / catalog sampler）の活用もそこで検討。
+
+- `check-band-room-logic.mjs`: maxPolyphony の assertion を「>=48/24」
+  （v227 の誤り）から「<=16」（CPU 保護の上限）に反転。二度と 64 に
+  上げられないように。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-122`、`hazama-fm-v228`。
+- agent ロジック・原音モード・他は一切不変。maxPolyphony 2 行のみ。
 
 ---
 
