@@ -1,10 +1,62 @@
-# Band Room — Changelog (v65 → v223 compact)
+# Band Room — Changelog (v65 → v224 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v224 compact — guitar agent: jazz mode に shell voicing（power chord 退役）
+
+jazz mode の同期を v218-v223 で進めてきたが、guitar だけが
+`powerChordNotes(ctx.chord, 3)`（root + 5th + octave）の power chord の
+ままだった。**power chord は jazz combo の中で完全に浮く** — ロック /
+パンクの音。jazz ギターは shell voicing（root + 3rd + 7th、5th を抜く=
+Freddie Green スタイル）でコンピングする。
+
+- **修正:** `triggerGuitarAgent` に jazz mode 分岐を追加。
+  `isJazzy = state.kitProfile === "lofi-nujabes" || state.chordInstrument
+  === "salamander-piano"`（他エージェントの v218/v221/v223 と同じ判定）。
+  jazz mode のとき:
+  - chord agent の v218 と同じ 7th 拡張を適用（`m\b|min\b` なら m7、
+    それ以外 maj7）
+  - `chordToNotes(voicingChord, 3)` で `[root, 3rd, 5th, 7th]` を生成
+  - **shell voicing にする = `[full[0], full[1], full[3]]`（root, 3rd, 7th、
+    5th = index 2 をドロップ）**
+- **なぜ shell voicing（5th を抜く）:**
+  - 3rd がメジャー / マイナーの色を担う
+  - 7th がコードの jazz テンションを担う
+  - 5th は和声的に冗長 — 抜くと voicing がすっきりして、bass の
+    walking（v221）や chord pad（v218）と帯域が被らない
+  - Freddie Green（Count Basie Orchestra のギタリスト）の comping が
+    まさにこれ。jazz ギターコンピングの教科書的アプローチ
+- **既存の voicing rotation はそのまま効く:** v212 の
+  `GUITAR_INVERSION_BY_PHRASE = [1, 0, 2, 0]` による phrase 別 inversion
+  回しは shell voicing にもかかる。shell には重複音がないので
+  `new Set` dedup は no-op（power chord のときだけ意味があった）。
+- **octave 配置:** guitar の shell は octave 3、chord agent の pad は
+  octave 4。guitar が chord pad の下でコンピングする標準的なアレンジ
+  配置。bass walking はさらに下（chordToSemi の C2 baseline）。
+- 非 jazzy mode（default / sakanaction / lcd-motorik / cramps-punk）は
+  完全不変 — power chord 維持。ロック / ダンスでは power chord が正解。
+- `guitarAgentPlan` の strum パターン（accent reaction / role 別 grid /
+  strum 密度）は今回不変。voicing だけ差し替え。jazz 用の sparse comping
+  rhythm への切替は次ラウンド候補。
+- `check-band-room-logic.mjs`: jazz 分岐の判定と shell voicing 生成
+  （`[full[0], full[1], full[3]]`）を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-113`、`hazama-fm-v224`。
+
+**jazz mode 5 エージェント同期 — voicing / timing 完備:**
+- drum: lofi-nujabes Dilla offsets（v133）
+- bass: walking + chromatic lookahead（v221 + v222）
+- chord: voice leading + 7th 拡張 + sustained pad（v218 + v219）
+- voice: triplet-swing + phrase contour（v211 + v223）
+- **guitar: 7th shell voicing + inversion rotation（v212 + v224）**
+
+power chord が消えて、jazz combo として帯域 / 和声 / タイミングすべてが
+噛み合う状態。
 
 ---
 
