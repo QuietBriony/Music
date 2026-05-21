@@ -1,10 +1,49 @@
-# Band Room — Changelog (v65 → v229 compact)
+# Band Room — Changelog (v65 → v230 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v230 compact — AI 再現の実サンプル（guitar / bass）をオフラインキャッシュ
+
+「音がしょぼい」の診断 step 2。AI 再現の楽器ルーティングを調べたら、想定と
+違った:
+
+- guitar = `guitar-electric`、bass = `bass-electric` → **実サンプル sampler**
+  （`online-samples-catalog.json` 経由、jsDelivr の nbrosowsky/tonejs-
+  instruments CDN から取得）
+- chord = synth（PolySynth）、voice = synth（AMSynth）、drum = synth
+
+つまり AI バンドのギターとベースは**本物のサンプル音源**。だが `sw.js` は
+これらのサンプル CDN を一切キャッシュしていなかった（runtime cache の対象
+は Tone.js 本体 CDN と Magenta だけ）。結果:
+
+- **オフラインだと guitar / bass のサンプルが取得できず無音** → synth の
+  chord + voice + drum だけが残り「しょぼい / ビープ」に聞こえる
+- このアプリの存在理由は「オフライン focus listening」（`sw.js` 冒頭コメント）
+  なのに、AI バンドの主要 2 パートがオフラインで死んでいた
+
+### v230 の修正
+
+- `sw.js`: `isSampleCdn()` を追加し、サンプル CDN 3 系統を runtime cache 対象に:
+  - `tonejs.github.io/audio`（Salamander piano / Casio / Tone デモドラム）
+  - `cdn.jsdelivr.net/gh/tidalcycles/dirt-samples`（dirt ドラムキット）
+  - `cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments`（guitar / bass /
+    strings / flute samplers — AI 再現の既定 guitar/bass を含む）
+- cache-first + opaque cache。既存の Tone / Magenta CDN 分岐と同じ形。
+  **一度オンラインで再生すれば、以降はオフラインでも実 guitar / bass が鳴る。**
+- `sw.js` のみ変更。band-room.{js,html,css} は不変なので `band-room.js?v=br-123`
+  据え置き。`hazama-fm-v230`。
+
+### まだ確認が要ること
+
+オンライン状態でも「しょぼい」なら原因は別系統（`startPlayback` が sampler の
+サンプルロード完了を待たないため、最初の数小節 guitar / bass が無音 → 後から
+pop-in する等）。ユーザーの実機での online / offline 状況の報告待ち。
 
 ---
 

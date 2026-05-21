@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v229";
+const VERSION = "hazama-fm-v230";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -182,6 +182,27 @@ function isMagentaCdn(url) {
   return false;
 }
 
+// v230: online sample CDNs for AI 再現's real instruments + drum kits.
+//   - tonejs.github.io/audio hosts the Tone.js demo drum samples + the
+//     Salamander piano / Casio sample sets
+//   - cdn.jsdelivr.net/gh/tidalcycles/dirt-samples hosts the dirt drum kits
+//   - cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments hosts the guitar /
+//     bass / strings / flute samplers — including AI 再現's DEFAULT guitar
+//     (guitar-electric) and bass (bass-electric)
+// These are pulled from online-samples-catalog.json on demand. Before v230
+// the SW never cached them, so the AI band's real guitar + bass were dead
+// offline — even though the app's whole point is offline focus listening.
+// Cache-first with opaque cache (same shape as Tone/Magenta above): the
+// first online play pays the download, every later play — including
+// offline — is instant.
+function isSampleCdn(url) {
+  if (url.hostname === "tonejs.github.io" && url.pathname.includes("/audio/")) return true;
+  if (url.hostname === "cdn.jsdelivr.net" &&
+      (url.pathname.includes("/tidalcycles/dirt-samples") ||
+       url.pathname.includes("/nbrosowsky/tonejs-instruments"))) return true;
+  return false;
+}
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
 
@@ -222,6 +243,22 @@ self.addEventListener("fetch", (event) => {
 
   // fm-71: Magenta CDN + checkpoint shards — cache-first, opaque OK.
   if (isMagentaCdn(url)) {
+    event.respondWith(
+      caches.match(request).then((cached) =>
+        cached ||
+        fetch(request).then((response) => {
+          const copy = response.clone();
+          caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
+          return response;
+        })
+      )
+    );
+    return;
+  }
+
+  // v230: online sample CDNs (AI 再現 real instruments + drum kits) —
+  // cache-first so the AI band survives offline after one online play.
+  if (isSampleCdn(url)) {
     event.respondWith(
       caches.match(request).then((cached) =>
         cached ||
