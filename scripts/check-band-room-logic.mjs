@@ -259,6 +259,7 @@ assert.match(source, /const beat4Semi\s*=\s*\(nextRootSemi != null && nextRootSe
 assert.match(source, /const isJazzySwing\s*=\s*state\.kitProfile === "lofi-nujabes"/, "v223: voice agent must detect jazzy mode for swing offset");
 assert.match(source, /const swingMs\s*=\s*isJazzySwing && isOffBeat8th \? 35 : 0/, "v223: voice agent must lay off-beat 8ths back by 35ms in jazzy mode");
 assert.match(source, /baseNotes = full\.length >= 4 \? \[full\[0\], full\[1\], full\[3\]\] : full/, "v224: jazz guitar must use shell voicings (root + 3rd + 7th, drop the 5th)");
+assert.match(source, /const jazzGrid\s*=\s*ctx\.role === "recap" \? \[0, 6, 10\] : \[0, 6\]/, "v225: jazz guitar comp must be sparse / syncopated (Charleston [0,6], recap adds sub 10)");
 const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
 assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");

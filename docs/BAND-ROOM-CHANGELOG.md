@@ -1,10 +1,50 @@
-# Band Room — Changelog (v65 → v224 compact)
+# Band Room — Changelog (v65 → v225 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v225 compact — guitar agent: jazz-sparse comping rhythm（Charleston + swing）
+
+v224 で jazz mode の guitar voicing を power chord → shell voicing に
+直した。次は strum の **rhythm**。`guitarAgentPlan` の既存パターンは
+8th-note 連打（recap）や [0,4,6,8,12,14] grid（default）で、jazz combo
+には密すぎる。jazz ギターは「空間を残す」 — 疎でシンコペーション。
+
+- **修正:** `guitarAgentPlan` の冒頭に jazz comp 分岐を追加。
+  `isJazzy` 判定（他エージェント v218-v224 と同じ）。
+  `outro` / `break` / `intro` 以外の jazz mode のとき:
+  - **jazzGrid** = `recap` なら `[0, 6, 10]`、それ以外 `[0, 6]`
+  - `[0, 6]` = Charleston リズム（beat 1 + "and of 2"）。jazz / スウィングの
+    最も象徴的なギターコンピングパターン
+  - `recap` は "and of 3"（sub 10）を足してエネルギー up
+  - off-beat 8th 位置（sub 6 / 10）は `microMs += 35` で swing。v223 の
+    voice swing と同じ値。これで comp が Dilla ドラム + swing メロディと
+    揃って swing する
+  - accent map にヒットがあれば velocity を少し持ち上げ（drum-frames
+    との connection 維持）、beat 1 (sub 0) は +0.08 accent
+- **疎にする狙い:** dense strum は chord pad（v218）+ walking bass
+  （v221）と帯域 / リズムで喧嘩する。Charleston の 2 ヒットなら、
+  ピアノ・ベース・ドラムの隙間に「コードのアクセント」を置くだけになり、
+  jazz combo の各楽器が呼吸できる。
+- **outro / break / intro はそのまま:** outro は 1n ロングコード、break
+  は 2 スタブ、intro は pressure 低なら無音 — それぞれ既存の意図を
+  温存。jazz comp 分岐はこの 3 role を除外。
+- 非 jazzy mode（default / sakanaction / lcd-motorik / cramps-punk）は
+  完全不変。8th 連打 / grid strum 維持。
+- `check-band-room-logic.mjs`: jazz comp 分岐の判定と jazzGrid
+  （`[0, 6, 10]` / `[0, 6]`）、off-beat swing を assert。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-114`、`hazama-fm-v225`。
+
+**jazz mode guitar 完成（v224 voicing + v225 rhythm）:**
+- voicing: 7th shell（root + 3rd + 7th）+ phrase inversion rotation
+- rhythm: Charleston comp（sparse + syncopated）+ off-beat swing
+power chord 8th 連打のロックギターから、shell voicing で Charleston を
+弾く jazz コンピングギターに完全に置き換わった。
 
 ---
 
