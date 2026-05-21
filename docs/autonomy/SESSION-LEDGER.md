@@ -19,6 +19,30 @@
 
 ---
 
+## 2026-05-18 — HAZAMA-FM-ARCHITECTURE Section 12 追加: harness lens
+- agent     : Claude Code (Opus 4.7)
+- goal      : ChatGPT 壁打ちで出た "Code as Agent Harness"（arXiv:2605.18747,
+  2026-05）の framing を、新規 doc を作らず既存アーキ doc に 1 section 追記
+  だけで取り込む（前回の slim 化判断の踏襲）
+- repos     : Music
+- shipped   : PR #177 — `docs/HAZAMA-FM-ARCHITECTURE.md` に Section 12
+  "Repo roles — Code-as-Agent-Harness lens" を 28 行追加。各 repo の役割を
+  harness 語彙で整理（Music = primary、drum-floor = groove specialist、namima
+  = ambient specialist、chill = quiet piano surface、openclaw = review hub /
+  mission board）。協調は JSON sidecar、harvest は AGENTS.md Hard Rule 6 を
+  参照。**ランタイム挙動の変更は無し**
+- 進化可能性: 中〜高（40-60%）— マルチ chat 協調（本チャット ＋ Band Room
+  チャットの並走で v195 バグを v199 が拾った例、v207 への paste-ready 指示等）
+  は既に harness coordination の最小例として動いている。論文語彙の standard 化
+  も今後見込まれるため、先に repo に語彙があれば新 session の認識合わせが速い
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）
+- next      : 実需が増えたら（外部 harvest / 新 specialist repo 追加 等）、
+  ChatGPT 提案の full doc + JSON schema を段階的に足す検討
+- 注意      : Band Room 別チャットが v207→v223 を push（16 版！）。clean に
+  pull できた
+
+---
+
 ## 2026-05-18 — AGENTS.md Hard Rule 6: 非干渉 harvest 原則
 - agent     : Claude Code (Opus 4.7)
 - goal      : 外部 / sister repo からの harvest が engine 直結や default 挙動
