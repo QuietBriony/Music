@@ -3463,7 +3463,24 @@
   }
 
   function triggerGuitarAgent(ctx, time) {
-    const baseNotes = powerChordNotes(ctx.chord, 3);
+    // v224: jazzy mode uses 7th-extended shell voicings instead of power
+    // chords. Power chords (root + 5th + octave) sound wrong against a jazz
+    // combo — jazz guitar comps with shell voicings (root + 3rd + 7th, the
+    // 5th dropped) à la Freddie Green. The 3rd carries major/minor colour,
+    // the 7th carries the chord's jazz extension; the 5th is harmonically
+    // redundant and just adds mud. Non-jazzy stays on power chords (the
+    // right sound for rock / dance).
+    const isJazzy = state.kitProfile === "lofi-nujabes" ||
+                    state.chordInstrument === "salamander-piano";
+    let baseNotes;
+    if (isJazzy) {
+      const ext = /m\b|min\b/.test(ctx.chord) ? "m7" : "maj7";
+      const voicingChord = ctx.chord.replace(/(m|maj7|7|m7)?$/, ext);
+      const full = chordToNotes(voicingChord, 3);  // [root, 3rd, 5th, 7th]
+      baseNotes = full.length >= 4 ? [full[0], full[1], full[3]] : full;
+    } else {
+      baseNotes = powerChordNotes(ctx.chord, 3);
+    }
     if (!baseNotes.length) return;
     // v212: power chord voicing rotates per phrase position. Pattern offset
     // from the chord agent's [0, 1, 2, 0] so guitar and chord don't double
@@ -3473,7 +3490,8 @@
     // The two parts now weave: guitar low at chord peak (bar 2), guitar
     // high at chord settle (bar 0). chordInversion handles the lift; we
     // dedup because power-chord root doubling creates duplicate notes at
-    // inv 1 / 2 which waste PolySynth voices.
+    // inv 1 / 2 which waste PolySynth voices. (Shell voicings have no
+    // duplicates so the Set dedup is a harmless no-op for jazz mode.)
     const phrasePos = (ctx.barInSection || 0) % 4;
     const GUITAR_INVERSION_BY_PHRASE = [1, 0, 2, 0];
     const notes = [...new Set(chordInversion(baseNotes, GUITAR_INVERSION_BY_PHRASE[phrasePos]))];
