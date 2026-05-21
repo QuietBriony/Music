@@ -1,10 +1,62 @@
-# Band Room — Changelog (v65 → v230 compact)
+# Band Room — Changelog (v65 → v231 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v231 compact — AI 再現を全 synth バンドに（実サンプル CDN が配信不能）
+
+「しょぼい」の診断 step 4 — 計測で根本原因まで到達した。
+
+### 確定した根本原因
+
+AI 再現の guitar (`guitar-electric`) と bass (`bass-electric`) は実サンプル
+音源で、jsDelivr 経由で GitHub リポジトリ `nbrosowsky/tonejs-instruments`
+から mp3 を引いていた。**だがこのリポジトリは jsDelivr の 50MB 上限を超過**
+している（jsDelivr API が明言: `"Package size exceeded the configured
+limit of 50 MB"`）。jsDelivr はファイルの約半分を 403 で拒否し、しかも
+不安定（同じファイルが成功・失敗を行き来する）。
+
+`Tone.Sampler` は**全ファイルが揃って初めて鳴る**ので、guitar と bass は
+オンラインでも**ずっと無音**だった。鳴っていたのは synth ドラム + synth
+コードだけ = ユーザーの「一瞬ドラムちぎれてビープ」の正体。
+
+計測で実証: 再生中の `Sampler loaded=false`、CDN 直叩きで 403、jsDelivr
+API の 50MB 超過メッセージ、`Tone.Sampler` 実テストで "could not load url"。
+v229（フリーズ）/ v230（オフラインキャッシュ）は関連修正だが、しょぼい の
+本体はこれ。
+
+### v231 の修正 — 確実に鳴る全 synth バンド
+
+ユーザー判断で「内蔵 synth で確実に鳴らす」を選択。
+
+- `guitarInstrument` / `bassInstrument` のデフォルトを `"guitar-electric"`
+  / `"bass-electric"` → **`null`**（= 内蔵 synth）。CDN 不要・オフライン可・
+  確実。guitar = ディストーション PolySynth、bass = MonoSynth。
+- **既存ユーザー対策**: localStorage には旧デフォルト（`"guitar-electric"` /
+  `"bass-electric"`）が保存済みで、これが新デフォルトを上書きしてしまう。
+  prefs 復元時に壊れた値 → `null` へ migrate する処理を追加（これが無いと
+  既存ユーザーは直らない）。
+- guitar が PolySynth になったので polyphony flood 対策:
+  - `triggerGuitarAgent`: 1 strum あたりの音数を strum 数でスケール
+    （`floor(9 / strum数)`）。密な刻みは単音チャグ（パンクの実テクスチャ）、
+    疎な刻みはフルパワーコード。1 小節 ≤9 音 → cap 10 に収まる。
+  - `chordAgentPlan`: 7th コード（4 音）を 3 音シェル（root+3rd+7th）に。
+    3 stab × 3 音 = 9 → cap 10 に収まる。
+- maxPolyphony は 10 のまま（v228 方針どおり「cap は上げず密度を下げる」）。
+- `check-band-room-logic.mjs`: assertion を更新（デフォルト null）＋ v231 追加。
+- `band-room.js?v=br-124`、`hazama-fm-v231`。
+
+### これで初めてフルバンドが鳴る
+
+guitar / bass は今まで無音だった。v231 で初めて 5 パート（drums / bass /
+guitar / chord / voice）すべてが鳴る。音色は合成だが、確実・オフライン可。
+実楽器サンプルは配信元が壊れている以上、まともな CDN が見つかればそのとき
+差し替える。
 
 ---
 

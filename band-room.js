@@ -56,8 +56,8 @@
     // 1 voice 単位で別 kit からピックできる。null = base kit を使う、文字列 = その kit id
     voiceOverrides: { kick: null, snare: null, hat: null, ghost: null, fill: null, crash: null },
     chordInstrument: null,  // v101: catalog instrument id for chord (null = synth)
-    bassInstrument: "bass-electric",   // v166: default AI agent tone follows original-band electric bass
-    guitarInstrument: "guitar-electric", // v166: default AI agent tone follows original-band electric guitar
+    bassInstrument: null,   // v231: was "bass-electric" — those CDN samples are unservable (jsDelivr 50MB limit); use the internal synth bass
+    guitarInstrument: null, // v231: was "guitar-electric" — those CDN samples are unservable (jsDelivr 50MB limit); use the internal synth guitar
     voiceInstrument: null,  // v111: catalog instrument id for vocal/melody lead (null = synth)
     loopA: null,            // v80: A-B loop range (null = no loop)
     loopB: null
@@ -3458,8 +3458,14 @@
     const isJazzy = isJazzyMode();
     const ext = /m\b|min\b/.test(ctx.chord) ? "m7" : "maj7";
     const voicingChord = isJazzy ? ctx.chord.replace(/(m|maj7|7|m7)?$/, ext) : ctx.chord;
-    const baseNotes = chordToNotes(voicingChord, isJazzy ? 4 : 4);
+    let baseNotes = chordToNotes(voicingChord, isJazzy ? 4 : 4);
     if (!baseNotes.length) return [];
+    // v231: chord is a PolySynth (maxPolyphony 10). A 7th voicing (4 notes)
+    // × up to 3 stabs/bar = 12 → polyphony flood + dropped notes. Drop a
+    // 7th chord to a 3-note shell (root + 3rd + 7th — the 5th is the most
+    // omittable tone) so 3 stabs × 3 = 9 fits the cap. Plain triads are
+    // already 3 notes and pass through untouched.
+    if (baseNotes.length >= 4) baseNotes = [baseNotes[0], baseNotes[1], baseNotes[3]];
 
     // v210: inversion rotation per phrase position. Real chord players don't
     // hammer root-position every bar — the top note weaves across the 4-bar
@@ -3586,9 +3592,20 @@
     const phrasePos = (ctx.barInSection || 0) % 4;
     const GUITAR_INVERSION_BY_PHRASE = [1, 0, 2, 0];
     const notes = [...new Set(chordInversion(baseNotes, GUITAR_INVERSION_BY_PHRASE[phrasePos]))];
-    guitarAgentPlan(ctx).forEach((step) => {
+    // v231: guitar is now a PolySynth (the electric-guitar CDN samples are
+    // unservable — jsDelivr 50MB limit). The bar scheduler fires a whole
+    // bar of strums at once and PolySynth reserves a voice per note on the
+    // call, so 8 strums × a 3-note power chord = 24 voices >> maxPolyphony
+    // 10 → flood + dropped notes. Scale notes-per-strum to the strum count
+    // so the bar's total stays within the cap: dense strumming collapses to
+    // a single-note chug (a real palm-muted punk-guitar texture), sparse
+    // strumming keeps the full power chord.
+    const plan = guitarAgentPlan(ctx);
+    const notesPerStrum = clamp(Math.floor(9 / Math.max(1, plan.length)), 1, notes.length);
+    const voicing = notes.slice(0, notesPerStrum);
+    plan.forEach((step) => {
       const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
-      try { guitarSynth.triggerAttackRelease(notes, step.dur || "16n", t, step.vel); } catch (e) {}
+      try { guitarSynth.triggerAttackRelease(voicing, step.dur || "16n", t, step.vel); } catch (e) {}
     });
   }
 
@@ -5726,6 +5743,12 @@
     // v110: bass instrument
     if (Object.prototype.hasOwnProperty.call(prefs, "bassInstrument")) {
       state.bassInstrument = prefs.bassInstrument || null;
+      // v231: migrate the dead "bass-electric" sampler pref → null (synth).
+      // Its CDN mirror exceeds jsDelivr's 50 MB limit and 403s half its
+      // files, so the sampler never reaches loaded=true → silent bass.
+      // Existing users have "bass-electric" saved from the old default;
+      // force them onto the working internal synth.
+      if (state.bassInstrument === "bass-electric") state.bassInstrument = null;
       const sel = $("br-bass-instrument-select");
       if (sel) {
         sel.value = state.bassInstrument || "";
@@ -5735,6 +5758,9 @@
     // v111: guitar instrument
     if (Object.prototype.hasOwnProperty.call(prefs, "guitarInstrument")) {
       state.guitarInstrument = prefs.guitarInstrument || null;
+      // v231: migrate the dead "guitar-electric" sampler pref → null
+      // (synth) — same jsDelivr 50 MB / 403 problem as bass-electric.
+      if (state.guitarInstrument === "guitar-electric") state.guitarInstrument = null;
       const sel = $("br-guitar-instrument-select");
       if (sel) {
         sel.value = state.guitarInstrument || "";
