@@ -1,10 +1,79 @@
-# Band Room — Changelog (v65 → v225 compact)
+# Band Room — Changelog (v65 → v226 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v226 compact — システム整合チェック: swing 矛盾の修正 + isJazzyMode 抽出
+
+ユーザー指摘「今、矛盾はない？システム自体の」を受けて v208-v225 の
+17 ラウンドぶんを点検。**矛盾を 1 件発見、修正。** + 潜在リスクを 1 件
+予防。
+
+### 発見した矛盾: lofi-nujabes profile の swing 方向不一致
+
+`lofi-nujabes` profile に 2 つの相反する timing 美学が乗っていた:
+- **drum scheduler (v133):** `DILLA_OFFSETS_BY_PROFILE["lofi-nujabes"]` =
+  `{ snareBack: 14, hatOffPush: -4, ghostBack: 8 }`。J Dilla の MPC feel —
+  snare が 14ms 後ろにドラッグ、off-beat hat は **-4ms（前ノリ / ほぼ
+  grid）**、ghost 8ms 後ろ。小さい offset（4-14ms）。
+- **voice (v223) / guitar (v225):** off-beat 8th を **+35ms 後ろ**へ。
+  これは bebop / swing-jazz の triplet feel — drum の hat offset とは
+  **符号が逆、桁が 10 倍違う**。
+
+→ 同じ off-beat（拍の「ウラ」）で、drum hat は 4ms 前、voice/guitar は
+35ms 後ろ。**39ms のズレ**。combo が swing として揃わない。
+さらに v223/v225 のコメントは「Dilla offsets と一致（matches）」と
+書いていたが**事実と異なる**（-4 ≠ +35）。
+
+profile 名が「lofi-nujabes」（Nujabes = 日本の lo-fi hip hop、J Dilla
+隣接）なので、本来の美学は **Dilla の subtle な wonk**であって、
+**一様な bebop triplet swing ではない**。v223/v225 で +35ms triplet を
+乗せたのが設計ミスだった。
+
+- **修正:** voice / guitar の off-beat swing を **+35ms → +12ms**。
+  12ms は drum の `snareBack 14` / `ghostBack 8` と同じ小さいレンジ。
+  これで melodic な laid-back が drum の Dilla feel と coherent になる
+  （triplet swing を押し付けるのではなく、lo-fi の loose feel に揃える）。
+  on-beat（sub 0/4/8/12）は grid-locked のまま — chord stab と同期。
+- **コメント修正:** v223/v225 の「triplet-swing」「matches Dilla offsets」
+  という不正確な記述を「lo-fi laid-back micro-timing」に訂正。
+
+### 予防した潜在リスク: isJazzy ブール値の 5 重コピー
+
+`state.kitProfile === "lofi-nujabes" || state.chordInstrument ===
+"salamander-piano"` という jazz mode 判定が、bass / chord / voice /
+guitar×2 の 5 箇所に**手書きコピー**されていた。今は 5 つとも byte 一致
+なので動作上の矛盾はないが、1 箇所だけ直して他を直し忘れると agent 間が
+silent に desync する **drift リスク**。
+
+- **修正:** `isJazzyMode()` ヘルパー関数を 1 つ定義、5 箇所をすべて
+  `isJazzyMode()` 呼び出しに置換。single source of truth 化。
+
+### 点検して矛盾なしと確認した箇所
+
+- bass agent: v221 walking の早期 return が v216 octave-lift コードより
+  前 → jazzy mode で v216 コードは到達せず（dead code なし、v221 の
+  「skip bar 2 octave lift in jazz」コメント通り）
+- v217 section-end fill / v106 section crash / v220 gain ramp → それぞれ
+  「旧 section 最終 bar」「新 section bar 0」「新 section bar 0」で発火、
+  タイミング衝突なし、相補的
+- v209 drum phrase mult / v216 bass phrase mult / v220 section gain →
+  別レイヤーの dynamics として意図的に積算（矛盾ではない）
+- v218 voice leading（過去参照）/ v222 walking-bass lookahead（未来参照）
+  → chord と bass で別方向を見るが互いに干渉しない
+- version 番号 v208→v226 / cache buster br-96→br-115 → 連番、欠番なし
+
+- `check-band-room-logic.mjs`: `isJazzyMode` ヘルパーの存在、swing が
+  12ms であることを assert（旧 35ms / 旧 isJazzySwing 宣言の assert を更新）。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-115`、`hazama-fm-v226`。
+
+機能変更は voice/guitar の swing 量のみ（35→12ms）。それ以外は
+リファクタ（isJazzyMode 抽出）とコメント訂正で、出音の他の部分は不変。
 
 ---
 

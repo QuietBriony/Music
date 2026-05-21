@@ -3160,6 +3160,15 @@
     };
   }
 
+  // v226: single source of truth for "are we in jazz mode". Was hand-copied
+  // as an inline boolean in 5 places (bass / chord / voice / 2× guitar) —
+  // identical each time, but a drift risk: editing one and missing another
+  // would silently desync the agents. One helper, one definition.
+  function isJazzyMode() {
+    return state.kitProfile === "lofi-nujabes" ||
+           state.chordInstrument === "salamander-piano";
+  }
+
   function bassAgentPlan(ctx) {
     if (!ctx.chord) return [];
     const rootSemi = chordToSemi(ctx.chord);
@@ -3190,8 +3199,7 @@
     // Skip the bar 2 octave lift in jazz (too dramatic for walking line —
     // jazz dynamics stay subtle). Role embellishments (recap +pressure
     // extra) still apply on top so chorus sections have extra punch.
-    const isJazzy = state.kitProfile === "lofi-nujabes" ||
-                    state.chordInstrument === "salamander-piano";
+    const isJazzy = isJazzyMode();
     if (isJazzy && ctx.role !== "break") {
       // v222: beat 4 chromatic approach to next chord's root when next != current.
       // Leading-tone-from-below (nextRoot - 1) is the most common jazz move;
@@ -3253,15 +3261,15 @@
     const accentMap = new Map(accentSteps.map((hit) => [hit.step, hit]));
     const steps = [];
 
-    // v225: jazz comping rhythm — sparse + syncopated. A dense 8th/16th
+    // v225 / v226: jazz comping rhythm — sparse + syncopated. A dense 8th/16th
     // strum is wrong for a jazz combo: jazz guitar leaves space. The base
     // pattern is the Charleston rhythm — beat 1 + "and of 2" (sub 0 +
     // sub 6); recap adds the "and of 3" (sub 10). Off-beat hits (sub 6/10)
-    // lay back 35ms — same triplet-swing the voice agent got in v223 — so
-    // the comp swings with the Dilla drums and the swung melody.
+    // lay back 12ms — same lo-fi laid-back micro-timing the voice agent uses
+    // (v226 corrected this from a 35ms bebop triplet to a 12ms lo-fi wonk so
+    // it stays coherent with the lofi-nujabes drum Dilla offsets).
     // Skips outro / break / intro (those have their own treatment below).
-    const isJazzy = state.kitProfile === "lofi-nujabes" ||
-                    state.chordInstrument === "salamander-piano";
+    const isJazzy = isJazzyMode();
     if (isJazzy && ctx.role !== "outro" && ctx.role !== "break" && ctx.role !== "intro") {
       const jazzGrid = ctx.role === "recap" ? [0, 6, 10] : [0, 6];
       jazzGrid.forEach((sub) => {
@@ -3271,7 +3279,7 @@
           sub,
           dur: "8n",
           vel: clamp(0.40 + (sourceHit ? sourceHit.vel * 0.22 : 0) + (sub === 0 ? 0.08 : 0), 0.32, 0.68),
-          microMs: (sourceHit?.microMs || 0) + (isOffBeat8th ? 35 : 0)
+          microMs: (sourceHit?.microMs || 0) + (isOffBeat8th ? 12 : 0)
         });
       });
       return dedupeAgentSteps(steps, 4);
@@ -3365,16 +3373,20 @@
     const phrasePos = (ctx.barInSection || 0) % 4;
     const contour = (ctx.role === "recap" ? PHRASE_CONTOURS_RECAP : PHRASE_CONTOURS_DEFAULT)[phrasePos];
     const source = accents.length ? accents.slice(0, 4) : [0, 4, 8, 12].map((step) => ({ step, vel: 0.42, microMs: 0 }));
-    // v223: jazzy mode swing — off-beat 8th positions (sub 2/6/10/14) lay
-    // back by ~35ms for triplet-swing feel. Matches drum scheduler's
-    // profile-aware Dilla offsets (snareBack 14ms / hatOffPush -4ms /
-    // ghostBack 8ms for lofi-nujabes). Voice on-beats (sub 0/4/8/12) stay
-    // grid-locked so the chord-tone contour still hits with the chord stab.
-    const isJazzySwing = state.kitProfile === "lofi-nujabes" ||
-                         state.chordInstrument === "salamander-piano";
+    // v223 / v226: jazzy mode laid-back micro-timing — off-beat 8th positions
+    // (sub 2/6/10/14) lay back slightly. v226 fix: this was +35ms (a bebop
+    // triplet swing), which contradicted the lofi-nujabes profile's actual
+    // aesthetic — that profile is named for Nujabes / J Dilla lo-fi, whose
+    // feel is SUBTLE wonk, not a uniform triplet. The drum scheduler's Dilla
+    // offsets for this profile are small (snareBack 14ms / ghostBack 8ms /
+    // hatOffPush -4ms). +12ms sits in that same small range, so the melody's
+    // lay-back is coherent with the drum feel instead of fighting it.
+    // On-beats (sub 0/4/8/12) stay grid-locked so the contour hits with the
+    // chord stab.
+    const isJazzySwing = isJazzyMode();
     return dedupeAgentSteps(source.map((hit, idx) => {
       const isOffBeat8th = (hit.step % 4) === 2;
-      const swingMs = isJazzySwing && isOffBeat8th ? 35 : 0;
+      const swingMs = isJazzySwing && isOffBeat8th ? 12 : 0;
       return {
         sub: hit.step,
         note: contour[idx % contour.length],
@@ -3387,8 +3399,7 @@
 
   function chordAgentPlan(ctx) {
     if (!ctx.chord) return [];
-    const isJazzy = state.kitProfile === "lofi-nujabes" ||
-                    state.chordInstrument === "salamander-piano";
+    const isJazzy = isJazzyMode();
     const ext = /m\b|min\b/.test(ctx.chord) ? "m7" : "maj7";
     const voicingChord = isJazzy ? ctx.chord.replace(/(m|maj7|7|m7)?$/, ext) : ctx.chord;
     const baseNotes = chordToNotes(voicingChord, isJazzy ? 4 : 4);
@@ -3495,8 +3506,7 @@
     // the 7th carries the chord's jazz extension; the 5th is harmonically
     // redundant and just adds mud. Non-jazzy stays on power chords (the
     // right sound for rock / dance).
-    const isJazzy = state.kitProfile === "lofi-nujabes" ||
-                    state.chordInstrument === "salamander-piano";
+    const isJazzy = isJazzyMode();
     let baseNotes;
     if (isJazzy) {
       const ext = /m\b|min\b/.test(ctx.chord) ? "m7" : "maj7";

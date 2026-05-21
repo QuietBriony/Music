@@ -256,8 +256,16 @@ assert.match(source, /sub:\s*0,\s*note:\s*semiToNote\(root\)[\s\S]{0,800}sub:\s*
 assert.match(source, /function nextChordLookahead\(\)/, "v222: need a next-chord lookahead helper for walking-bass chromatic approach");
 assert.match(source, /nextChord:\s*nextChordLookahead\(\)/, "v222: makePartAgentContext should expose ctx.nextChord to agents");
 assert.match(source, /const beat4Semi\s*=\s*\(nextRootSemi != null && nextRootSemi !== root\)\s*\?\s*nextRootSemi - 1\s*:\s*seventh/, "v222: walking bass beat 4 must use chromatic approach (nextRoot - 1) when next chord differs");
-assert.match(source, /const isJazzySwing\s*=\s*state\.kitProfile === "lofi-nujabes"/, "v223: voice agent must detect jazzy mode for swing offset");
-assert.match(source, /const swingMs\s*=\s*isJazzySwing && isOffBeat8th \? 35 : 0/, "v223: voice agent must lay off-beat 8ths back by 35ms in jazzy mode");
+assert.match(source, /function isJazzyMode\(\)/, "v226: jazz-mode detection must be a single shared helper (no hand-copied booleans)");
+assert.match(source, /const isJazzySwing = isJazzyMode\(\)/, "v223/v226: voice agent must detect jazzy mode via the shared helper");
+assert.match(source, /const swingMs\s*=\s*isJazzySwing && isOffBeat8th \? 12 : 0/, "v226: voice off-beat swing must be 12ms (lo-fi laid-back), not a 35ms bebop triplet");
+// v226: the jazz-mode boolean must be defined exactly once (in isJazzyMode);
+// every agent calls the helper. Count the raw expression — should be 1.
+{
+  const rawJazzExpr = /state\.kitProfile === "lofi-nujabes"/g;
+  const rawCount = (source.match(rawJazzExpr) || []).length;
+  assert.equal(rawCount, 1, `v226: the jazz-mode check must live only in isJazzyMode() — found ${rawCount} raw copies (expected 1)`);
+}
 assert.match(source, /baseNotes = full\.length >= 4 \? \[full\[0\], full\[1\], full\[3\]\] : full/, "v224: jazz guitar must use shell voicings (root + 3rd + 7th, drop the 5th)");
 assert.match(source, /const jazzGrid\s*=\s*ctx\.role === "recap" \? \[0, 6, 10\] : \[0, 6\]/, "v225: jazz guitar comp must be sparse / syncopated (Charleston [0,6], recap adds sub 10)");
 const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
