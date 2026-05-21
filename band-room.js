@@ -3252,6 +3252,31 @@
     const accentSteps = sourceAccentSteps(ctx, ["kick", "snare", "crash", "ghost"], 0.24);
     const accentMap = new Map(accentSteps.map((hit) => [hit.step, hit]));
     const steps = [];
+
+    // v225: jazz comping rhythm — sparse + syncopated. A dense 8th/16th
+    // strum is wrong for a jazz combo: jazz guitar leaves space. The base
+    // pattern is the Charleston rhythm — beat 1 + "and of 2" (sub 0 +
+    // sub 6); recap adds the "and of 3" (sub 10). Off-beat hits (sub 6/10)
+    // lay back 35ms — same triplet-swing the voice agent got in v223 — so
+    // the comp swings with the Dilla drums and the swung melody.
+    // Skips outro / break / intro (those have their own treatment below).
+    const isJazzy = state.kitProfile === "lofi-nujabes" ||
+                    state.chordInstrument === "salamander-piano";
+    if (isJazzy && ctx.role !== "outro" && ctx.role !== "break" && ctx.role !== "intro") {
+      const jazzGrid = ctx.role === "recap" ? [0, 6, 10] : [0, 6];
+      jazzGrid.forEach((sub) => {
+        const sourceHit = accentMap.get(sub);
+        const isOffBeat8th = (sub % 4) === 2;
+        steps.push({
+          sub,
+          dur: "8n",
+          vel: clamp(0.40 + (sourceHit ? sourceHit.vel * 0.22 : 0) + (sub === 0 ? 0.08 : 0), 0.32, 0.68),
+          microMs: (sourceHit?.microMs || 0) + (isOffBeat8th ? 35 : 0)
+        });
+      });
+      return dedupeAgentSteps(steps, 4);
+    }
+
     if (ctx.role === "outro") {
       steps.push({ sub: 0, dur: "1n", vel: 0.82 });
     } else if (ctx.role === "break") {
