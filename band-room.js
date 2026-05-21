@@ -1206,6 +1206,32 @@
     }
   }
 
+  // v229: synth-lifecycle leak fix. The make* factories each build an FX
+  // chain (filters / reverb / chorus / running LFOs) around a head synth,
+  // but historically returned only the head synth — so disposing it
+  // orphaned the whole chain. makeDrumKit was worse: it returned a plain
+  // { kick, snare, ... } object with NO dispose at all, so buildKitForSource's
+  // `if (drumKit && drumKit.dispose)` guard silently short-circuited and
+  // never disposed the synth kit — leaking ~9 continuously-running
+  // noise/oscillator generators on every kit-profile change. Since
+  // applyRecommendedKitProfile fires that rebuild on every song switch, a
+  // few switches in AI 再現 mode piled up dozens of orphaned oscillators +
+  // LFOs that saturated the audio thread and froze the device. This wraps
+  // a factory's returned object so its dispose() tears down the ENTIRE
+  // chain — not just the head node. orig may be absent (makeDrumKit).
+  function withChainDispose(node, extraNodes) {
+    if (!node) return node;
+    const orig = typeof node.dispose === "function" ? node.dispose.bind(node) : null;
+    node.dispose = function () {
+      if (orig) { try { orig(); } catch (e) {} }
+      (extraNodes || []).forEach((n) => {
+        try { if (n && typeof n.dispose === "function") n.dispose(); } catch (e) {}
+      });
+      return node;
+    };
+    return node;
+  }
+
   function makeDrumKit(target, profileName) {
     const p = KIT_PROFILES[profileName] || KIT_PROFILES["default"];
     // Kick: punchy modern, deep & tight (LCD/dance + rock)
@@ -1338,7 +1364,20 @@
       }
     };
 
-    return { kick, snare, hat, ghost, fill, crash: crashWrap };
+    // v229: was `return { kick, ... }` with no dispose — buildKitForSource
+    // could never tear this down, so every synth-kit rebuild leaked all 22
+    // nodes below (~9 of them continuously-running generators).
+    return withChainDispose(
+      { kick, snare, hat, ghost, fill, crash: crashWrap },
+      [
+        kickPan, kickClick, kickBody,
+        snarePan, snareBus, snareHp, snareBody, snareRim,
+        hatPan, hatBus, hatBp, hatNoise,
+        ghostPan, clapBus, clapBp, clapBody, cowbell,
+        fillPan, tom,
+        crashPan, crash, crashFilter
+      ]
+    );
   }
 
   // ---- Velocity-sensitive sampler wrapper -----------------------
@@ -1413,7 +1452,7 @@
           minCutoff: 600, maxCutoff: 3200
         });
         sampler.connect(post);
-        return sampler;
+        return withChainDispose(sampler, [post]);  // v229: also tear down post filter
       }
     }
 
@@ -1427,7 +1466,7 @@
       portamento: b.portamento,
       volume: -10
     }).connect(drive);
-    return bass;
+    return withChainDispose(bass, [post, drive]);  // v229: tear down post + drive
   }
 
   // ---- Original-stem players (Demucs-separated playback) ------
@@ -2003,8 +2042,9 @@
         // Light distortion only on electric variant
         const isElectric = instDef.id.includes("electric");
         let chainIn = lp;
+        let dist = null;  // v229: hoisted so dispose can reach it
         if (isElectric) {
-          const dist = new Tone.Distortion({ distortion: 0.18, wet: 0.32, oversample: "2x" }).connect(lp);
+          dist = new Tone.Distortion({ distortion: 0.18, wet: 0.32, oversample: "2x" }).connect(lp);
           chainIn = dist;
         }
         const urls = {};
@@ -2018,7 +2058,7 @@
           minCutoff: 1500, maxCutoff: 7000
         });
         sampler.connect(chainIn);
-        return sampler;
+        return withChainDispose(sampler, [verb, lp, dist]);  // v229: tear down FX chain
       }
     }
 
@@ -2047,7 +2087,8 @@
     dist.connect(lp);
     lp.connect(verb);
     verb.connect(target);
-    return guitar;
+    // v229: chorus is a started LFO — leaking it left an LFO running forever.
+    return withChainDispose(guitar, [chorus, dist, lp, verb]);
   }
 
   function powerChordNotes(chord, octave = 3) {
@@ -2092,7 +2133,7 @@
           minCutoff: 1800, maxCutoff: 9000
         });
         sampler.connect(verb);
-        return sampler;
+        return withChainDispose(sampler, [verb]);  // v229: tear down reverb
       }
     }
 
@@ -2118,7 +2159,8 @@
     const vibrato = new Tone.LFO({ frequency: v.vibratoFreq, min: -v.vibratoCents, max: v.vibratoCents });
     try { vibrato.connect(voice.detune); vibrato.start(); } catch (e) {}
 
-    return voice;
+    // v229: vibrato is a started LFO — leaking it left an LFO running forever.
+    return withChainDispose(voice, [verb, hp, mix, formant1, formant2, vibrato]);
   }
 
   // Human Fly chorus melody — hook line over G | D | Em | C 4-bar
@@ -2189,7 +2231,8 @@
           minCutoff: 2000, maxCutoff: 9000
         });
         sampler.connect(chorus);
-        return sampler;
+        // v229: autoPan + chorus are started LFOs — tear the whole chain down.
+        return withChainDispose(sampler, [verb, autoPan, chorus]);
       }
     }
 
@@ -2202,7 +2245,8 @@
     // reasoning as the guitar revert above. The cap stays low; step 2 cuts
     // the chord agent's note density so a low cap suffices.
     chord.maxPolyphony = 10;
-    return chord;
+    // v229: autoPan + chorus are started LFOs — tear the whole chain down.
+    return withChainDispose(chord, [verb, autoPan, chorus]);
   }
 
   // ---- Click ---------------------------------------------------

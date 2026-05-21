@@ -148,6 +148,20 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
   assert.ok(guitarPoly > 0 && guitarPoly <= 16, `v228: guitar maxPolyphony must stay low (<=16) for CPU safety — raising it froze devices (found ${guitarPoly})`);
   assert.ok(chordPoly > 0 && chordPoly <= 16, `v228: chord maxPolyphony must stay low (<=16) for CPU safety (found ${chordPoly})`);
 }
+// v229: synth-lifecycle leak guard. makeDrumKit historically returned a
+// plain { kick, snare, ... } object with NO dispose method, so
+// buildKitForSource's `if (drumKit && drumKit.dispose)` guard silently
+// short-circuited and leaked the WHOLE synth kit (~9 continuously-running
+// noise/oscillator generators) on every kit-profile change. Because
+// applyRecommendedKitProfile fires that rebuild on every song switch, a
+// few switches in AI 再現 mode piled up orphaned oscillators and froze the
+// device. The synth kit MUST return through withChainDispose so its full
+// node chain is torn down — this is the song-switch freeze fix.
+{
+  assert.match(source, /function withChainDispose\(/, "v229: withChainDispose helper must exist to tear down full synth FX chains");
+  assert.match(source, /return withChainDispose\(\s*\{ kick, snare, hat, ghost, fill, crash: crashWrap \}/,
+    "v229: makeDrumKit must return via withChainDispose so synth kits dispose cleanly (song-switch freeze fix)");
+}
 assert.match(source, /let masterVolBase = 1\.2/, "Band Room master volume base should match the v202 louder default output");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default should leave headroom for source-derived accents");
 assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v168 mix");

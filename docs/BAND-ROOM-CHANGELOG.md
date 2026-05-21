@@ -1,10 +1,59 @@
-# Band Room — Changelog (v65 → v228 compact)
+# Band Room — Changelog (v65 → v229 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v229 compact — AI 再現の曲切り替えフリーズ修正（synth lifecycle leak）
+
+ユーザー報告: v228 後、AI 再現は単音は鳴るが、**別の曲を選ぶと固まる**。
+「重いのかねえ」。診断したら、重さではなく **synth の後始末漏れ（leak）**
+だった。ブラウザ合成が無理なのではない — hazama FM / drum-floor が固まら
+ないのは合成が軽いからではなく **dispose（後始末）が正しいから**。AI 再現
+はそこが壊れていただけ。直せる種類のバグ。
+
+### 根本原因 — makeDrumKit に dispose が無かった
+
+AI 再現の `make*` factory はヘッド synth の周りに FX chain（filter /
+reverb / chorus / 走りっぱなしの LFO）を組むが、歴史的に **ヘッド synth
+しか return していなかった** ので、それを dispose しても chain は孤児と
+して audio graph に残り続けた。
+
+`makeDrumKit` はさらにひどく、`{ kick, snare, ... }` という **dispose
+メソッドの無いただのオブジェクト**を return していた。`buildKitForSource`
+は `if (drumKit && drumKit.dispose)` で守っていたので、synth kit では
+この guard が黙って空振りし、**古い synth kit が一度も dispose されない**。
+鳴りっぱなしのノイズ / オシレータ生成器を約 9 個ずつ漏らしていた。
+
+`applyRecommendedKitProfile` は曲切り替えのたび（kit_profile が違えば）
+この rebuild を走らせる。→ 数曲切り替えるだけで孤児のオシレータと LFO が
+数十個に積み上がり、オーディオスレッドが振り切れて実機が固まった。
+ユーザーの「ガチャガチャして詰まってる」はまさにこれ。
+
+### v229 の修正
+
+- `withChainDispose(node, extraNodes)` helper を追加。factory の戻り値の
+  `dispose()` を、ヘッドだけでなく **chain 全体**を畳むようにラップする。
+- `makeDrumKit`: 22 ノード全部を畳む dispose を付与（最重要 — drumKit は
+  kit_profile 変更ごとに必ず rebuild される）。
+- `makeChordSynth` / `makeVoiceBox`: reverb・filter に加え、**走りっぱなしの
+  LFO**（autoPan / chorus / vibrato）も畳む。両者とも曲切り替えごとに rebuild。
+- `makeSynthBass` / `makeGuitar`: FX chain（filter / distortion / chorus /
+  reverb）を畳む。
+- `check-band-room-logic.mjs`: v229 assertion を追加。makeDrumKit が
+  withChainDispose 経由で return することを固定（leak の再発防止）。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-123`、`hazama-fm-v229`。
+- agent ロジック・音数・maxPolyphony・原音モードは一切不変。
+
+### まだ残ること
+
+「音がしょぼい / 単音で鳴る」（maxPolyphony 10 で音がドロップする薄さ）は
+別問題。v229 は freeze 修正であって音質修正ではない。次ラウンドで agent の
+音数を減らす / 実サンプル catalog に寄せる（step 2）。
 
 ---
 
