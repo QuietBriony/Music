@@ -2067,6 +2067,11 @@
     const dist = new Tone.Distortion({ distortion: 0.55, wet: 0.85, oversample: "2x" });
     const lp = new Tone.Filter({ frequency: 4200, type: "lowpass", Q: 0.6 });
     const verb = new Tone.Reverb({ decay: 1.0, wet: 0.14 });
+    // v232: high-pass the synth guitar at 130 Hz. Its distorted low-mid
+    // otherwise crowds the bass lane (octave 2); the guitar's lane is the
+    // low-mid (octave 3 power chords), so everything below ~130 Hz belongs
+    // to the bass.
+    const hpG = new Tone.Filter({ frequency: 130, type: "highpass", Q: 0.6 });
     const guitar = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: "sawtooth" },
       envelope: { attack: 0.003, decay: 0.10, sustain: 0.55, release: 0.16 },
@@ -2082,13 +2087,14 @@
     // not to raise the cap. Until then, 10 keeps the device alive (drops
     // some notes, but plays — the v200–v226 known-survivable value).
     guitar.maxPolyphony = 10;
-    guitar.connect(chorus);
+    guitar.connect(hpG);
+    hpG.connect(chorus);
     chorus.connect(dist);
     dist.connect(lp);
     lp.connect(verb);
     verb.connect(target);
     // v229: chorus is a started LFO — leaking it left an LFO running forever.
-    return withChainDispose(guitar, [chorus, dist, lp, verb]);
+    return withChainDispose(guitar, [chorus, dist, lp, verb, hpG]);
   }
 
   function powerChordNotes(chord, octave = 3) {
@@ -2236,17 +2242,22 @@
       }
     }
 
+    // v232: high-pass the chord pad at 190 Hz so it sits in its mid lane
+    // (octave 4) and stops muddying the bass + guitar low-mid beneath it.
+    const hpC = new Tone.Filter({ frequency: 190, type: "highpass", Q: 0.6 });
     const chord = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: c.oscType },
       envelope: { attack: c.attack, decay: c.decay, sustain: 0.45, release: c.release },
       volume: -12  // v104: was -16, raised so chord pad anchors the mix
-    }).connect(chorus);
+    });
     // v228: maxPolyphony 10 (reverted from v227's 32) — same CPU-protection
     // reasoning as the guitar revert above. The cap stays low; step 2 cuts
     // the chord agent's note density so a low cap suffices.
     chord.maxPolyphony = 10;
+    chord.connect(hpC);
+    hpC.connect(chorus);
     // v229: autoPan + chorus are started LFOs — tear the whole chain down.
-    return withChainDispose(chord, [verb, autoPan, chorus]);
+    return withChainDispose(chord, [verb, autoPan, chorus, hpC]);
   }
 
   // ---- Click ---------------------------------------------------
@@ -3391,7 +3402,12 @@
       }));
     }
     if (ctx.role === "intro" || ctx.role === "outro") return [];
-    const notes = chordToNotes(ctx.chord, 4);
+    // v232: voice/melody octave 4 → 5. At octave 4 it played the exact same
+    // chord tones as the chord pad (also octave 4), so it doubled the chord
+    // instead of reading as a separate 5th part. Octave 5 puts the melody
+    // clearly above the pad — its own frequency lane (bass 2 / guitar 3 /
+    // chord 4 / voice 5).
+    const notes = chordToNotes(ctx.chord, 5);
     if (notes.length < 3) return [];
     const accents = sourceAccentSteps(ctx, ["snare", "ghost", "crash"], 0.30)
       .filter((hit) => hit.step === 0 || hit.step >= 3);

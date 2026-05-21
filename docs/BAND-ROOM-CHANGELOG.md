@@ -1,10 +1,53 @@
-# Band Room — Changelog (v65 → v231 compact)
+# Band Room — Changelog (v65 → v232 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v232 compact — AI 再現の周波数レーン設計（土台 step A）
+
+「5パート全部が鳴る感じがしない」— git 履歴・設計ドキュメント・ミックス
+工学のリサーチを経た、AI 再現の土台再建 step A。
+
+### 問題（リサーチで確定）
+
+5つの synth パートが**周波数的に分離していない** → 「バンド」でなく「シンセ
+の塊」。決定的なのは: voice（メロディ）が octave 4、chord pad も octave 4 —
+**同じオクターブの同じコード構成音**。voice は chord をダブリングしている
+だけで、独立した5パート目として聞こえない。
+
+ミックス工学リサーチ: 「複数楽器が同じオクターブ域で同時に鳴ると、どんな
+EQ でもクリアにできない。各パートに周波数の居場所を与えれば mix はほぼ
+自動で整う」。
+
+### v232 の修正 — 4オクターブのレーン梯子
+
+各ピッチパートに専用オクターブを与える:
+
+| パート | レーン |
+|--------|--------|
+| bass   | octave 2（既存・低域） |
+| guitar | octave 3（低中域・パワーコード、既存） |
+| chord  | octave 4（中域パッド、既存） |
+| voice  | octave 4 → **5**（メロディを pad の上へ） |
+
+- `voiceAgentPlan`: `chordToNotes(ctx.chord, 4 → 5)`。メロディが chord pad の
+  1 オクターブ上に出て、独立したラインとして聞こえる。
+- guitar synth: 130Hz ハイパス追加 — 歪んだ低中域が bass レーンを侵さない。
+- chord synth: 190Hz ハイパス追加 — pad が bass/guitar の低域を濁さない。
+- 新フィルタは withChainDispose に登録（v229 のリーク対策を維持）。
+- agent ロジック・音数・maxPolyphony は不変。
+- `band-room.js?v=br-125`、`hazama-fm-v232`。
+
+### 次（土台 step B 以降）
+
+B: 音色キャラ分け（saw 一辺倒をやめ各パートに別の音色）。C: EQ carving。
+D: レベル再設計（メロを聞こえる位置へ）。E: rolled chord（同時発音をやめ
+8-22ms ロール）。F: per-part profile（v91 ロードマップ完成）。
 
 ---
 
