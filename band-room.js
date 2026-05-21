@@ -2032,7 +2032,18 @@
       envelope: { attack: 0.003, decay: 0.10, sustain: 0.55, release: 0.16 },
       volume: -12
     });
-    guitar.maxPolyphony = 10;  // v200: was 6 — too low for strummed power chords
+    // v227: maxPolyphony 64. THE actual fix for the AI 再現 "Max polyphony
+    // exceeded. Note dropped." flood. Tone.PolySynth reserves a voice the
+    // moment triggerAttackRelease is called — including notes scheduled in
+    // the future. The bar scheduler synchronously schedules a WHOLE bar of
+    // notes in one callback: guitar recap = 8 strums × 3-note power chord =
+    // 24 voice reservations at once. v200's bump 6→10 was never enough — 10
+    // can't hold even one bar's burst, so 14 notes/bar were silently dropped
+    // every bar (that's the "AI doesn't play properly" the user heard, and
+    // the console-warn flood that froze the renderer). 64 covers a full
+    // bar's 24-note burst plus release-tail overlap with 2× headroom.
+    // Tone.Synth voices are cheap (one oscillator each).
+    guitar.maxPolyphony = 64;
     guitar.connect(chorus);
     chorus.connect(dist);
     dist.connect(lp);
@@ -2189,7 +2200,13 @@
       envelope: { attack: c.attack, decay: c.decay, sustain: 0.45, release: c.release },
       volume: -12  // v104: was -16, raised so chord pad anchors the mix
     }).connect(chorus);
-    chord.maxPolyphony = 10;  // v200: was 6 — too low for overlapping 4-note pads
+    // v227: maxPolyphony 32 (was 10). Same root cause as the guitar fix —
+    // the bar scheduler schedules a whole bar of chord stabs in one
+    // synchronous callback and PolySynth reserves voices at schedule time.
+    // Worst case: 3 stabs × 4-note 7th chord = 12, plus v219's 1n intro/
+    // outro pads ringing across a bar boundary, plus release tails. 32
+    // gives comfortable headroom.
+    chord.maxPolyphony = 32;
     return chord;
   }
 

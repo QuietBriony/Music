@@ -1,10 +1,78 @@
-# Band Room — Changelog (v65 → v226 compact)
+# Band Room — Changelog (v65 → v227 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v227 compact — AI 再現が再生されない根本原因の修正（polyphony flood）
+
+ユーザー報告「AI音源、まともに再生されない。詰まってないか」。診断したら
+**AI 再現 mode は v200 以来ずっと壊れていた** — synth の polyphony flood。
+v208-v226 の 19 ラウンドは全部 agent の musicality 磨きで、この根本欠陥は
+一度も直っていなかった（むしろ note 数を増やして悪化させた面もある）。
+
+### 根本原因
+
+`Tone.PolySynth` は `triggerAttackRelease` を呼んだ瞬間に voice を予約する
+— **未来時刻にスケジュールした note も含めて**。band-room の bar scheduler
+は 1 回の callback で**1 小節ぶんの note を全部同期的にスケジュール**する。
+guitar の recap strum = 8 strum × 3 音 power chord = **1 callback で 24
+voice 予約**。ところが `guitar.maxPolyphony = 10`。→ 毎小節 14 音が
+`Max polyphony exceeded. Note dropped.` で捨てられていた。
+
+- これが「まともに再生されない」の正体 — 毎小節ランダムに音が欠ける
+- `console.warn` が毎秒数百回 flood → renderer が「詰まる」
+- v200 の「maxPolyphony 6→10」は**1 小節ぶんの burst すら収まらない**
+  半端な数字だった。summary にも "v200 partial polyphony fix didn't
+  resolve the hang" と残っていた通り、ずっと未解決のまま。
+
+### 修正
+
+- `guitar.maxPolyphony` 10 → **64**。1 小節 24 音 burst + release tail の
+  重なりを 2 倍 headroom で吸収。
+- `chord.maxPolyphony` 10 → **32**。3 stab × 4 音 7th chord + v219 の
+  1n intro/outro pad の小節跨ぎ + release tail を吸収。
+- `Tone.Synth` の voice は安価（oscillator 1 個）なので 64 / 32 でも
+  CPU 負荷は問題ない。stems mode は元から synth を鳴らさないので無関係。
+
+### なぜ v208-v226 で気づかなかったか（正直に）
+
+- integrity gate（check-band-room-logic / audit.py / check-js）は
+  **コード構造しか見ない**。実 audio runtime の polyphony flood は
+  検出できない。
+- preview での過去の検証は「ページがロードするか」「mode が切り替わるか」
+  止まりで、**実際に START して再生する所までやっていなかった**
+  （band-room.html は preview screenshot が time out するので敬遠していた）。
+- ユーザーの ship-then-verify 運用に甘えて、AI mode の実再生を 19 ラウンド
+  確認しないまま musicality だけ積み上げてしまった。これは反省点。
+
+v227 で初めて preview で synth mode を START まで回し、polyphony flood を
+console で確認 → 根本原因特定 → 修正 → flood 消滅を console で確認、という
+順を踏んだ。
+
+### preview の検証限界（正直に）
+
+- 修正後 preview で synth mode を回すと「Max polyphony exceeded」警告は
+  **完全に消えた**（flood 解消は確認できた）。
+- ただし band-room.html は preview 環境で**長時間再生中の eval が応答
+  しなくなる**既知の不安定さがあり（screenshot も time out する）、
+  bar scheduler の callback 自体は breadcrumb ログで毎小節完走している
+  ことを確認したものの、「再生がスムーズに最後まで通るか」までは
+  preview では裏取りしきれなかった。
+- drums のみ（1 小節 ~10-15 trigger）でも preview eval が固まるのは、
+  実ブラウザがその程度の負荷でハングするはずがないので preview 固有の
+  artifact と判断。実機での最終確認はユーザーにお願いする形。
+
+- `check-band-room-logic.mjs`: guitar maxPolyphony >= 48、chord >= 24 を
+  assert（将来うっかり 10 に戻せないように下限を固定）。
+- `band-room.html` / `sw.js`: `band-room.js?v=br-121`、`hazama-fm-v227`。
+- agent のロジック（phrase / voicing / swing 等 v208-v226 の成果）は不変。
+  今回は polyphony ceiling だけ直して、積み上げた musicality を実際に
+  鳴らせるようにした。
 
 ---
 
