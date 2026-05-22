@@ -1,10 +1,36 @@
-# Band Room — Changelog (v65 → v242 compact)
+# Band Room — Changelog (v65 → v243 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v243 compact — AI 再現の音量を原音マスター基準に引き上げ
+
+「AI 再現がげきしょぼ」— ユーザーの見立て通り、原因は**マスターの共用
+ではなく入力レベルのミスマッチ**だった。
+
+原音（stems）と AI 再現（synth）は同じマスターチェーン（2段コンプ＋
+テープサット＋リバーブ＋リミッター）を通る。マスターは原音の音圧に
+合わせて調整されている。一方 AI 再現の synth バンドは各パートのバス値
+が低めで、マスターに**原音より ~10dB 小さく**届く → マスターのコンプ
+／リミッターの効くレベルより下に沈み、原音が受ける「音圧のグルー」を
+AI 再現だけ受けられない → 痩せて聞こえる。
+
+### v243 の修正
+
+- `instrumentBus` の makeup gain 1.08 → 3.0（drums/bass/guitar/chord ＝
+  AI 再現の4パートを ~+9dB）。
+- `voiceBus` 0.48 → 1.33（voice は instrumentBus を通らないので個別に
+  同じ ~+9dB）。
+- これで AI 再現の synth バンドが原音と同等レベルでマスターに入り、
+  同じ音圧処理を受ける。**原音（stems）はこのバスを通らないので一切
+  不変** — マスター共用のままで両方が正しく鳴る。
+- 持ち上げ量は推定。実機の耳で「もっと／控えめ」を微調整できる。
+- `band-room.js?v=br-135`、`hazama-fm-v243`。
 
 ---
 
