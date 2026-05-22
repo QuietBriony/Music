@@ -1,10 +1,34 @@
-# Band Room — Changelog (v65 → v241 compact)
+# Band Room — Changelog (v65 → v242 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v242 compact — Hazama FM 低音打ち込みの入場遅延を解消
+
+ユーザー報告: Hazama FM の低音（キック＋ベースの土台）が「入るのを
+ためすぎて、乗れない」。engine.js のみの修正で Band Room には不変。
+
+原因: section system は再生のたび必ず最初の `submerge` セクションから
+始まり、その `drive` が `0.00` だった。section drum gate
+（`applyUCMToParams`）が `drive` でドラム確率を掛けるため、submerge では
+**キックが確率 0.004 にクランプされ実質無音、ベースも ×0.5** に絞られ、
+これが 16 小節（約 30-46 秒）続いて低音の土台が立ち上がらなかった。
+
+### v242 の変更（`SECTION_PROFILES`、engine.js）
+
+- `submerge`: `drive 0.00 → 0.60` — 1 小節目から軽い低音グルーヴが鳴る。
+  キックは無音クランプを脱し、ベースは ×0.5 → ×0.80。
+- `submerge`: `bars 16 → 12`・`space 1.55 → 1.30` — 開始セクションを
+  短く・休符を減らし、sprout/flow への登りを早める。
+- `sprout`: `drive 0.55 → 0.72` — submerge との段差を保ちつつ flow への
+  build を一段はっきりさせる。
+- `hollow` は `drive 0.00` のまま — 唯一の本物のブレイクダウンとして維持。
+- `engine.js?v=fm-106`（+ `audio/music-*.js` 5 モジュール）、`hazama-fm-v242`。
 
 ---
 
