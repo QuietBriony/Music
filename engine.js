@@ -72,9 +72,14 @@ const AUTOMIX_PROFILE = {
 // distinct density: a packed, tight "打ち込み" peak (high drive / low space)
 // vs an airy breakdown (zero drive / high space). v194 widened the contrast
 // so surge is a real showcase and hollow a real rest. Tune freely by ear.
+// v242: submerge now carries a light low-end groove (drive 0.60) instead of
+// drive 0 — the cold-start section used to clamp the kick to silence and
+// halve the bass for its first ~16 bars (~30-46 s), so the low-end "打ち込み"
+// foundation felt held back ("ためすぎ"). bars 16→12 also tightens the climb
+// into sprout/flow. hollow stays the one true zero-drive breakdown.
 const SECTION_PROFILES = [
-  { name: "submerge", bars: 16, drive: 0.00, space: 1.55, targets: { energy: 20, wave: 40, mind: 46, creation: 28, void: 84, circle: 74, body: 14, resource: 24, observer: 80 } },
-  { name: "sprout",   bars: 14, drive: 0.55, space: 1.15, targets: { energy: 42, wave: 52, mind: 50, creation: 46, void: 48, circle: 60, body: 40, resource: 46, observer: 62 } },
+  { name: "submerge", bars: 12, drive: 0.60, space: 1.30, targets: { energy: 20, wave: 40, mind: 46, creation: 28, void: 84, circle: 74, body: 14, resource: 24, observer: 80 } },
+  { name: "sprout",   bars: 14, drive: 0.72, space: 1.15, targets: { energy: 42, wave: 52, mind: 50, creation: 46, void: 48, circle: 60, body: 40, resource: 46, observer: 62 } },
   { name: "flow",     bars: 18, drive: 1.00, space: 0.95, targets: { energy: 60, wave: 60, mind: 52, creation: 56, void: 24, circle: 46, body: 62, resource: 64, observer: 46 } },
   { name: "surge",    bars: 16, drive: 1.55, space: 0.40, targets: { energy: 90, wave: 84, mind: 56, creation: 78, void: 8,  circle: 24, body: 90, resource: 88, observer: 28 } },
   { name: "hollow",   bars: 14, drive: 0.00, space: 1.95, targets: { energy: 15, wave: 38, mind: 54, creation: 26, void: 92, circle: 74, body: 8,  resource: 16, observer: 84 } },
