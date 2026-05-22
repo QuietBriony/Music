@@ -11401,7 +11401,10 @@ function triggerMemoryPluckSignatureCell(step, time, context) {
   const root = ORGANIC_PLUCK_FRAGMENTS[(step + GrooveState.cycle + phaseOffset + 1) % ORGANIC_PLUCK_FRAGMENTS.length];
   const reply = TRANSPARENT_AIR_FRAGMENTS[(step + GrooveState.cycle + phaseOffset + 4) % TRANSPARENT_AIR_FRAGMENTS.length];
   const shade = tonalRhymeMid(step, phaseOffset + 2);
-  const pluckTime = time + 0.018 + Math.random() * (0.018 + waveNorm * 0.018);
+  // pianoMemory is a low comp voice — keep its onset tight in the pocket.
+  // The old hard +18ms drag (plus random spread) left it 15-50ms behind the
+  // kick/bass, so the low piano "変に遅く入る" and the groove would not lock.
+  const pluckTime = time + Math.random() * 0.012;
   const vel = clampValue(0.012 + intensity * 0.05 + creationNorm * 0.008 + observerNorm * 0.006, 0.01, 0.074);
 
   try {
@@ -11890,7 +11893,9 @@ function triggerTimbreFamilyResponse(step, time, context) {
   const acidOn = acidAmount > 0.18 && family.acidBiyon > 0.18 && PerformancePadState.void < 0.5;
   const phraseTurn = step % 16 === 0 || step % 16 === 8;
   const offPulse = step % 16 === 3 || step % 16 === 6 || step % 16 === 11 || step % 16 === 14;
-  const driftedTime = time + Math.random() * (0.01 + waveNorm * 0.018 + PerformancePadState.drift * 0.018);
+  // tight onset — the pianoMemory lead should lock to the beat, not drag
+  // behind the rhythm section (old random push was up to ~46ms late).
+  const driftedTime = time + Math.random() * 0.012;
   const chromeHymn = clampValue(gradient.chrome * 0.28 + gradient.haze * 0.18 + depth.tail * 0.18 + observerNorm * 0.12 + family.voiceDust * 0.1 + chain * 0.08 + ReferenceMorphState.chrome * 0.06 + kits.ambientKit * 0.035 + kits.spaceKit * 0.045 + habitSpace * 0.04 + habitMemory * 0.02 + habitRestraint * 0.01, 0, 1);
   const brokenLogic = clampValue(gradient.micro * 0.26 + genre.idm * 0.18 + family.drumSkin * 0.12 + family.acidBiyon * 0.12 + BpmCrossfadeState.refrain * 0.1 + PerformancePadState.repeat * 0.12 + ReferenceMorphState.broken * 0.07 + RdjGrowthState.edit * 0.08 + RdjGrowthState.wrong * 0.06 + kits.idmKit * 0.08 + kits.technoKit * 0.045 + habitGrid * 0.06 + habitRubber * 0.05 - habitRestraint * 0.02, 0, 1);
   const ghostBody = clampValue(gradient.ghost * 0.24 + depth.pulse * 0.18 + family.sub808 * 0.16 + genre.pressure * 0.12 + PerformancePadState.punch * 0.12 + kits.pressureKit * 0.08 + habitPressure * 0.04 - kits.spaceKit * 0.04 - habitSpace * 0.02 - lowGuard * 0.16, 0, 1);

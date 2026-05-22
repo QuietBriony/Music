@@ -1,10 +1,33 @@
-# Band Room — Changelog (v65 → v243 compact)
+# Band Room — Changelog (v65 → v244 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v244 compact — Hazama FM 低音ピアノの「変に遅く入る」を解消
+
+ユーザー報告: 低めのピアノが「変に遅く入る」＝ groove に乗れない原因音。
+v242(セクションのドラムゲート)では未解決の別レイヤーだった。engine.js のみ、
+Band Room は不変。
+
+原因: `pianoMemory`(低音域のコンプ声部、triangle + 1800Hz lowpass)の trigger
+時刻が、キック/ベース(±数ms)に対し大きく後ろにずれていた。
+- memory-pluck `pluckTime` = `time + 0.018 + random(0..0.036)` ＝ 常に最低
+  +18ms・最大 +54ms 後ろ。
+- piano-memory `driftedTime` のランダム押し出しが最大 ~46ms。
+→ 低音ピアノだけ rhythm section から 15-50ms 遅れて「変に遅く入る」。
+
+### v244 の修正(engine.js)
+
+- `pluckTime`: ハード +18ms を除去、ジッタを 0-12ms に。
+- `driftedTime`: ランダム押し出しを 0-46ms → 0-12ms に。
+- 低音ピアノの onset がキック/ベースのポケットに収まる。装飾の reply/shade
+  テールは従来どおり後ろに残し feel を維持。
+- `engine.js?v=fm-107`(+ `audio/music-*.js` 5モジュール)、`hazama-fm-v244`。
 
 ---
 
