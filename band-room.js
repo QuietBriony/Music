@@ -228,7 +228,7 @@
     const satWet = new Tone.Gain(0.16);   // parallel saturated blend
     const satDry = new Tone.Gain(0.92);   // parallel clean path
     const widen  = new Tone.StereoWidener(0.58);
-    const makeup = new Tone.Gain(1.08);   // restore level lost to glue comp
+    const makeup = new Tone.Gain(3.0);    // v243: glue-comp makeup + AI 再現 level lift (~+9 dB). The synth band reached the shared, stems-tuned master ~10 dB below the stems → it sat under the master comp/limiter thresholds and never got the loudness glue → thin ("げきしょぼ"). This lifts drums/bass/guitar/chord to stems-comparable level. Stems-only (原音) never touch this bus, so they are unaffected.
 
     input.connect(eq);
     eq.connect(comp);
@@ -371,7 +371,7 @@
     drumBus = new Tone.Gain(0.58).connect(drumPan);
     bassBus = new Tone.Gain(0.66).connect(bassPan);
     guitarBus = new Tone.Gain(0.56).connect(guitarPan);
-    voiceBus = new Tone.Gain(0.48).connect(voicePan);
+    voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
     chordBus = new Tone.Gain(0.58).connect(chordPan);
     clickBus = new Tone.Gain(0.35).connect(clickPan);
 
