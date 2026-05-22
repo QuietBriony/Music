@@ -1,10 +1,55 @@
-# Band Room — Changelog (v65 → v236 compact)
+# Band Room — Changelog (v65 → v237 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v237 compact — AI 再現の暴走を根治: ドラムをバッファ再生に作り直し
+
+「AI 再現でドラムがちょっと鳴る → だんだん無音 → ブラウザ処理落ち」—
+preview を判定器（固まる/固まらない）にして決定的に切り分けた:
+
+- 原音モード → 固まらない（バッファ再生は安定）
+- AI 再現 synth 最小コア（ドラム+ベース+ボイス、PolySynth 撤去）→ 固まる
+- AI 再現 **ドラムのみ** → それでも固まる
+- ドラム ~2発/小節 → 生存。フル密度・basic beat (~8発) → 固まる
+
+→ 暴走の正体は **synth ドラムをライブ合成で毎小節大量に叩くこと**。
+PolySynth でもベース/ボイスでもなかった（v227/v233 の前提を訂正）。
+1トリガごとに Web Audio コストが積み上がる。
+
+### v237 の修正 — ドラムをバッファ再生に＋他パートは保留
+
+`makeDrumKit` を作り直し:
+
+- 起動時に各ドラム音（kick/snare/hat/clap/cowbell/tom/crash）を
+  `Tone.Offline` で短いバッファに**一度だけ**焼く（音色は従来の合成音
+  そのまま）。
+- 1発ごとは、その焼いたバッファを**使い捨ての一発 buffer source** で
+  再生（`playDrumHit`）。原音/stems と同じバッファ再生で、preview でも
+  実機でも一度も固まらない技術。ライブ再合成をやめた。
+- ベロシティはゲインで付与。Dilla オフセット・ゴースト・フィル・各
+  エージェントのリズムロジックは一切不変 — feel は完全維持。
+- `makeDrumKit` は async 化（offline レンダリングのため）。
+
+**bass / guitar / voice / chord は保留**（`SYNTH_REBUILD_PARTS` で build
+を gate）。これらは旧ドラムと同じくライブ合成で、5パート全部だとフル
+AI 再現はまだ固まる。各パートをバッファ方式に作り直し検証でき次第、
+1つずつ戻す。**v237 の AI 再現はバッファドラムのグルーヴが鳴る**（最小
+コア — ユーザーが選んだ「最小構成から積み直す」方針の第一段）。
+
+`band-room.js?v=br-130`、`hazama-fm-v237`。
+
+### 検証
+
+preview 判定器で、バッファドラム（他パート保留）が renderer を固まらせず
+**曲をまたいで（auto-advance 含む）連続再生**することを確認 — ~130 秒
+時点でも応答あり。旧ライブ合成ドラムは ~16 秒で固まっていた。
+bass / guitar / voice / chord の復帰は次ラウンド以降。
 
 ---
 

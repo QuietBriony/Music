@@ -1233,151 +1233,169 @@
     return node;
   }
 
-  function makeDrumKit(target, profileName) {
+  // v237: buffer-based drum kit. The old kit re-synthesised every hit LIVE —
+  // machine-gunning Tone synths ~30×/bar piled up Web Audio cost until the
+  // browser choked (preview oracle: full density freezes ~16s, ~2 hits/bar
+  // survives; PolySynth / bass / voice ruled out — it was the synth drums).
+  // 原音 (stem) playback — buffered AudioBufferSource playback — never chokes.
+  // Fix: render each drum voice's synth sound to a short buffer ONCE at
+  // kit-build time, then play hits as cheap one-shot buffer sources. Same
+  // sound, same Dilla / ghost / fill rhythm logic — only the playback engine
+  // changes (live re-synthesis → buffer playback).
+  function playDrumHit(buffer, panNode, time, vel) {
+    if (!buffer) return;
+    const t = Math.max(Number(time) || 0, Tone.now() + 0.003);
+    let src, g;
+    try {
+      g = new Tone.Gain(clamp(Number(vel) || 0.5, 0.001, 1)).connect(panNode);
+      src = new Tone.ToneBufferSource({
+        url: buffer,
+        onended() {
+          try { src.dispose(); } catch (e) {}
+          try { g.dispose(); } catch (e) {}
+        }
+      }).connect(g);
+      src.start(t);
+    } catch (e) {
+      try { if (src) src.dispose(); } catch (e2) {}
+      try { if (g) g.dispose(); } catch (e2) {}
+    }
+  }
+
+  async function makeDrumKit(target, profileName) {
     const p = KIT_PROFILES[profileName] || KIT_PROFILES["default"];
-    // Kick: punchy modern, deep & tight (LCD/dance + rock)
-    const kickPan = new Tone.Panner(0).connect(target);
-    const kickClick = new Tone.NoiseSynth({
-      noise: { type: "pink" },
-      envelope: { attack: 0.001, decay: 0.022, sustain: 0, release: 0.012 },
-      volume: p.kick.clickVol
-    }).connect(kickPan);
-    const kickBody = new Tone.MembraneSynth({
-      pitchDecay: 0.05,
-      octaves: p.kick.octaves,
-      envelope: { attack: 0.001, decay: p.kick.decay, sustain: 0, release: 0.15 },
-      volume: p.kick.vol
-    }).connect(kickPan);
+
+    // Render each voice's synth sound to a buffer once (offline). Sequential
+    // awaits — the kit is built once per playback start, a few ms each.
+    const kickBuf = await Tone.Offline(() => {
+      const click = new Tone.NoiseSynth({
+        noise: { type: "pink" },
+        envelope: { attack: 0.001, decay: 0.022, sustain: 0, release: 0.012 },
+        volume: p.kick.clickVol
+      }).toDestination();
+      const body = new Tone.MembraneSynth({
+        pitchDecay: 0.05, octaves: p.kick.octaves,
+        envelope: { attack: 0.001, decay: p.kick.decay, sustain: 0, release: 0.15 },
+        volume: p.kick.vol
+      }).toDestination();
+      body.triggerAttackRelease("C1", "8n", 0, 0.92);
+      click.triggerAttackRelease("128n", 0, 0.16);
+    }, 0.7);
+
+    const snareBuf = await Tone.Offline(() => {
+      const bus = new Tone.Gain(0.85).toDestination();
+      const hp = new Tone.Filter({ frequency: p.snare.hpFreq, type: "highpass", Q: 0.8 }).connect(bus);
+      const body = new Tone.NoiseSynth({
+        noise: { type: "white" },
+        envelope: { attack: 0.001, decay: p.snare.decay, sustain: 0, release: 0.06 },
+        volume: p.snare.vol
+      }).connect(hp);
+      const rim = new Tone.MetalSynth({
+        frequency: 165, envelope: { attack: 0.001, decay: 0.04, release: 0.02 },
+        harmonicity: 2.4, modulationIndex: 5, resonance: 1800, octaves: 0.5,
+        volume: p.snare.rimVol
+      }).connect(bus);
+      body.triggerAttackRelease("16n", 0, 0.9);
+      rim.triggerAttackRelease("64n", 0.005, 0.36);
+    }, 0.5);
+
+    const hatBuf = await Tone.Offline(() => {
+      const bus = new Tone.Gain(0.6).toDestination();
+      const bp = new Tone.Filter({ frequency: p.hat.bpFreq, type: "bandpass", Q: 2.4 }).connect(bus);
+      const n = new Tone.NoiseSynth({
+        noise: { type: "white" },
+        envelope: { attack: 0.001, decay: p.hat.decay, sustain: 0, release: 0.018 },
+        volume: p.hat.vol
+      }).connect(bp);
+      n.triggerAttackRelease("64n", 0, 0.5);
+    }, 0.32);
+
+    const clapBuf = await Tone.Offline(() => {
+      const bus = new Tone.Gain(0.7).toDestination();
+      const bp = new Tone.Filter({ frequency: 1200, type: "bandpass", Q: 1.5 }).connect(bus);
+      const body = new Tone.NoiseSynth({
+        noise: { type: "pink" },
+        envelope: { attack: 0.002, decay: 0.09, sustain: 0, release: 0.04 },
+        volume: -18
+      }).connect(bp);
+      body.triggerAttackRelease("32n", 0, 0.7);
+    }, 0.5);
+
+    const cowbellBuf = await Tone.Offline(() => {
+      const cb = new Tone.MetalSynth({
+        frequency: 540, envelope: { attack: 0.001, decay: 0.18, release: 0.04 },
+        harmonicity: 3.2, modulationIndex: 8, resonance: 2400, octaves: 1.2,
+        volume: -22
+      }).toDestination();
+      cb.triggerAttackRelease("16n", 0, 0.85);
+    }, 0.5);
+
+    const tomBuf = await Tone.Offline(() => {
+      const t = new Tone.MembraneSynth({
+        pitchDecay: 0.06, octaves: 2.4,
+        envelope: { attack: 0.001, decay: 0.22, sustain: 0, release: 0.12 },
+        volume: -14
+      }).toDestination();
+      t.triggerAttackRelease("E2", "16n", 0, 0.9);
+    }, 0.6);
+
+    const crashBuf = await Tone.Offline(() => {
+      const hp = new Tone.Filter({ frequency: 4200, type: "highpass", Q: 0.6 }).toDestination();
+      const c = new Tone.NoiseSynth({
+        noise: { type: "white" },
+        envelope: { attack: 0.002, decay: p.crash.decay, sustain: 0, release: 0.6 },
+        volume: p.crash.vol
+      }).connect(hp);
+      c.triggerAttackRelease("2n", 0, 0.85);
+    }, 2.6);
+
+    // Playable kit: one persistent panner per voice; hits are one-shot buffers.
+    const kickPan  = new Tone.Panner(0).connect(target);
+    const snarePan = new Tone.Panner(-0.06).connect(target);
+    const hatPan   = new Tone.Panner(0.22).connect(target);
+    const ghostPan = new Tone.Panner(-0.16).connect(target);
+    const fillPan  = new Tone.Panner(0.12).connect(target);
+    const crashPan = new Tone.Panner(0.20).connect(target);
+
     const kick = {
       triggerAttackRelease(_note, _dur, time, vel) {
-        const t = Math.max(time, Tone.now() + 0.005);
-        kickBody.triggerAttackRelease("C1", "8n", t, clamp(vel, 0.04, 0.98));
-        kickClick.triggerAttackRelease("128n", t, clamp(vel * 0.18, 0.01, 0.2));
+        playDrumHit(kickBuf, kickPan, time, clamp(vel, 0.04, 0.98));
       }
     };
-
-    // Snare: tight rock snare with crisp pop + body
-    const snarePan = new Tone.Panner(-0.06).connect(target);
-    const snareBus = new Tone.Gain(0.85).connect(snarePan);
-    const snareHp = new Tone.Filter({ frequency: p.snare.hpFreq, type: "highpass", Q: 0.8 }).connect(snareBus);
-    const snareBody = new Tone.NoiseSynth({
-      noise: { type: "white" },
-      envelope: { attack: 0.001, decay: p.snare.decay, sustain: 0, release: 0.06 },
-      volume: p.snare.vol
-    }).connect(snareHp);
-    const snareRim = new Tone.MetalSynth({
-      frequency: 165,
-      envelope: { attack: 0.001, decay: 0.04, release: 0.02 },
-      harmonicity: 2.4,
-      modulationIndex: 5,
-      resonance: 1800,
-      octaves: 0.5,
-      volume: p.snare.rimVol
-    }).connect(snareBus);
     const snare = {
       triggerAttackRelease(_d, time, vel) {
-        const t = Math.max(time, Tone.now() + 0.005);
-        const v = clamp(vel, 0.05, 0.95);
-        snareBody.triggerAttackRelease("16n", t, v);
-        snareRim.triggerAttackRelease("64n", t + 0.005, v * 0.4);
+        playDrumHit(snareBuf, snarePan, time, clamp(vel, 0.05, 0.95));
       }
     };
-
-    // Hi-hat: bright, LCD-style 8th pulse
-    const hatPan = new Tone.Panner(0.22).connect(target);
-    const hatBus = new Tone.Gain(0.6).connect(hatPan);
-    const hatBp = new Tone.Filter({ frequency: p.hat.bpFreq, type: "bandpass", Q: 2.4 }).connect(hatBus);
-    const hatNoise = new Tone.NoiseSynth({
-      noise: { type: "white" },
-      envelope: { attack: 0.001, decay: p.hat.decay, sustain: 0, release: 0.018 },
-      volume: p.hat.vol
-    }).connect(hatBp);
     const hat = {
       triggerAttackRelease(_d, time, vel) {
-        const t = Math.max(time, Tone.now() + 0.003);
-        hatNoise.triggerAttackRelease("64n", t, clamp(vel, 0.02, 0.55));
+        playDrumHit(hatBuf, hatPan, time, clamp(vel, 0.02, 0.55));
       }
     };
-
-    // Ghost: serves as clap + cowbell + general percussion (event role decides)
-    // For tabasco-rock, mostly clap + cowbell
-    const ghostPan = new Tone.Panner(-0.16).connect(target);
-    const clapBus = new Tone.Gain(0.7).connect(ghostPan);
-    const clapBp = new Tone.Filter({ frequency: 1200, type: "bandpass", Q: 1.5 }).connect(clapBus);
-    const clapBody = new Tone.NoiseSynth({
-      noise: { type: "pink" },
-      envelope: { attack: 0.002, decay: 0.09, sustain: 0, release: 0.04 },
-      volume: -18
-    }).connect(clapBp);
-    const cowbell = new Tone.MetalSynth({
-      frequency: 540,
-      envelope: { attack: 0.001, decay: 0.18, release: 0.04 },
-      harmonicity: 3.2,
-      modulationIndex: 8,
-      resonance: 2400,
-      octaves: 1.2,
-      volume: -22
-    }).connect(ghostPan);
     const ghost = {
       triggerAttackRelease(_d, time, vel, role) {
-        const t = Math.max(time, Tone.now() + 0.004);
         const v = clamp(vel, 0.04, 0.7);
-        if (role && role.indexOf("cowbell") >= 0) {
-          cowbell.triggerAttackRelease("16n", t, v * 0.9);
-        } else {
-          // clap / generic ghost
-          clapBody.triggerAttackRelease("32n", t, v);
-        }
+        if (role && role.indexOf("cowbell") >= 0) playDrumHit(cowbellBuf, ghostPan, time, v * 0.9);
+        else playDrumHit(clapBuf, ghostPan, time, v);
       }
     };
-
-    // Fill: tom for fills
-    const fillPan = new Tone.Panner(0.12).connect(target);
-    const tom = new Tone.MembraneSynth({
-      pitchDecay: 0.06,
-      octaves: 2.4,
-      envelope: { attack: 0.001, decay: 0.22, sustain: 0, release: 0.12 },
-      volume: -14
-    }).connect(fillPan);
     const fill = {
       triggerAttackRelease(_d, time, vel) {
-        const t = Math.max(time, Tone.now() + 0.004);
-        tom.triggerAttackRelease("E2", "16n", t, clamp(vel, 0.05, 0.9));
+        playDrumHit(tomBuf, fillPan, time, clamp(vel, 0.05, 0.9));
       }
     };
-
-    // Crash
-    const crashPan = new Tone.Panner(0.20).connect(target);
-    const crash = new Tone.NoiseSynth({
-      noise: { type: "white" },
-      envelope: { attack: 0.002, decay: p.crash.decay, sustain: 0, release: 0.6 },
-      volume: p.crash.vol
-    }).connect(crashPan);
-    const crashFilter = new Tone.Filter({ frequency: 4200, type: "highpass", Q: 0.6 });
-    // Re-route crash through filter for shimmer
-    crash.disconnect();
-    crash.connect(crashFilter);
-    crashFilter.connect(crashPan);
-    const crashWrap = {
+    const crash = {
       triggerAttackRelease(_d, time, vel) {
-        const t = Math.max(time, Tone.now() + 0.005);
-        crash.triggerAttackRelease("2n", t, clamp(vel, 0.06, 0.85));
+        playDrumHit(crashBuf, crashPan, time, clamp(vel, 0.06, 0.85));
       }
     };
 
-    // v229: was `return { kick, ... }` with no dispose — buildKitForSource
-    // could never tear this down, so every synth-kit rebuild leaked all 22
-    // nodes below (~9 of them continuously-running generators).
+    // v229/v237: dispose tears down the persistent panners. The rendered
+    // buffers and one-shot sources GC on their own (sources self-dispose on
+    // onended) — no continuously-running generators left to leak.
     return withChainDispose(
-      { kick, snare, hat, ghost, fill, crash: crashWrap },
-      [
-        kickPan, kickClick, kickBody,
-        snarePan, snareBus, snareHp, snareBody, snareRim,
-        hatPan, hatBus, hatBp, hatNoise,
-        ghostPan, clapBus, clapBp, clapBody, cowbell,
-        fillPan, tom,
-        crashPan, crash, crashFilter
-      ]
+      { kick, snare, hat, ghost, fill, crash },
+      [kickPan, snarePan, hatPan, ghostPan, fillPan, crashPan]
     );
   }
 
@@ -1432,6 +1450,15 @@
   }
 
   // ---- Synth bass ----------------------------------------------
+
+  // v237: AI 再現 rebuild. Drums are now buffer-based & stable; bass / guitar
+  // / voice / chord still re-synthesise live (same browser-choking runaway).
+  // They are built normally but the bar scheduler does NOT trigger them —
+  // parked until each is rebuilt buffer-based & verified, one at a time. AI
+  // 再現 currently plays the buffer drum groove (Dilla/ghost/fill logic
+  // intact). Park by not-triggering, not by not-building: returning null from
+  // the makers hung startPlayback (a null synth broke a later step).
+  const SYNTH_REBUILD_PARTS = { bass: false, guitar: false, voice: false, chord: false };
 
   function makeSynthBass(target) {
     // v110: if bassInstrument is set to a sampler in catalog.instruments[],
@@ -3896,9 +3923,9 @@
 
       const chord = updateChordDisplay();
       const partAgentCtx = makePartAgentContext(sec, frame, chord, beatTime, subTime);
-      if (isSynthMode && $("br-toggle-bass").checked && synthBass && chord) {
+      if (isSynthMode && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && chord) {
         triggerBassAgent(partAgentCtx, time);
-      } else if (isSynthMode && $("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
+      } else if (isSynthMode && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
         // v108: chord null fallback — section has no chord progression
         // (Human Fly intro/outro etc). Anchor bass to the song's key
         // root, one whole-note hit per bar, low velocity. Keeps the
@@ -3909,15 +3936,15 @@
         }
       }
 
-      if (isSynthMode && $("br-toggle-guitar").checked && guitarSynth && chord && frame) {
+      if (isSynthMode && SYNTH_REBUILD_PARTS.guitar && $("br-toggle-guitar").checked && guitarSynth && chord && frame) {
         triggerGuitarAgent(partAgentCtx, time);
       }
 
-      if (isSynthMode && $("br-toggle-voice").checked && voiceSynth && chord && frame) {
+      if (isSynthMode && SYNTH_REBUILD_PARTS.voice && $("br-toggle-voice").checked && voiceSynth && chord && frame) {
         triggerVoiceAgent(partAgentCtx, time);
       }
 
-      if (isSynthMode && $("br-toggle-chords").checked && chordSynth && chord) {
+      if (isSynthMode && SYNTH_REBUILD_PARTS.chord && $("br-toggle-chords").checked && chordSynth && chord) {
         triggerChordAgent(partAgentCtx, time);
       }
 
