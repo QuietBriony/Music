@@ -1,10 +1,37 @@
-# Band Room — Changelog (v65 → v237 compact)
+# Band Room — Changelog (v65 → v238 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v238 compact — AI 再現の最小コアに bass を復帰
+
+v237 でドラムをバッファ再生に作り直し、AI 再現の暴走（ブラウザ処理落ち）
+を根治。「最小構成から積み直す」方針の第2段として bass を戻す。
+
+### 検証で分かったこと
+
+bass（`Tone.MonoSynth`）は **monophonic・毎小節 ~4-8発** のトリガで、
+暴走を起こした旧ドラムの ~30発/小節とは桁が違う。preview 判定器で
+**バッファドラム＋bass** を再生 — 曲をまたいで（auto-advance 含む）
+~130秒経っても renderer 応答あり、固まらない。
+
+→ bass はバッファ方式に作り直す必要なし。`SYNTH_REBUILD_PARTS.bass`
+を `true` にして bar スケジューラのトリガを解禁するだけ。
+
+### v238 の変更
+
+- `SYNTH_REBUILD_PARTS = { bass: true, guitar: false, voice: false, chord: false }`
+  — bass を un-park。AI 再現は **バッファドラム＋ベース** で鳴る。
+- guitar / voice / chord は引き続き保留（ライブ合成のまま）。guitar /
+  chord は PolySynth で最も慎重に扱う必要があるため後回し。
+- `band-room.js?v=br-131`、`hazama-fm-v238`。
+
+次ラウンド以降: voice → chord → guitar と1パートずつ検証して戻す。
 
 ---
 

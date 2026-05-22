@@ -1451,14 +1451,16 @@
 
   // ---- Synth bass ----------------------------------------------
 
-  // v237: AI 再現 rebuild. Drums are now buffer-based & stable; bass / guitar
-  // / voice / chord still re-synthesise live (same browser-choking runaway).
-  // They are built normally but the bar scheduler does NOT trigger them —
-  // parked until each is rebuilt buffer-based & verified, one at a time. AI
-  // 再現 currently plays the buffer drum groove (Dilla/ghost/fill logic
-  // intact). Park by not-triggering, not by not-building: returning null from
+  // v237/v238: AI 再現 rebuild, part by part. Drums are buffer-based & stable
+  // (v237). bass is re-enabled (v238) — it's a monophonic Tone.MonoSynth at
+  // ~4-8 triggers/bar, far lighter than the ~30/bar drum machine-gun that
+  // caused the runaway, and the preview oracle confirmed drums+bass plays
+  // across songs with no freeze. guitar / voice / chord still re-synthesise
+  // live and stay PARKED (built, but the bar scheduler does NOT trigger them)
+  // until each is verified — guitar / chord are PolySynths and need the most
+  // care. Park by not-triggering, not by not-building: returning null from
   // the makers hung startPlayback (a null synth broke a later step).
-  const SYNTH_REBUILD_PARTS = { bass: false, guitar: false, voice: false, chord: false };
+  const SYNTH_REBUILD_PARTS = { bass: true, guitar: false, voice: false, chord: false };
 
   function makeSynthBass(target) {
     // v110: if bassInstrument is set to a sampler in catalog.instruments[],
