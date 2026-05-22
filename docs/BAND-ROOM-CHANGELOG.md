@@ -1,10 +1,38 @@
-# Band Room — Changelog (v65 → v233 compact)
+# Band Room — Changelog (v65 → v234 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v234 compact — v233 の JIT スケジューリングを revert
+
+v233（JIT note scheduling）を実機で確認したところ「ドラムが薄くたまに
+しか鳴らない／シンセ（ビープ音）がかすれ途切れてほぼ鳴らない」と悪化。
+preview 環境は band-room の音を再生させると renderer が固まり JIT を
+検証できないまま ship していた — 検証不能な変更が実機で悪化したので
+revert する（ship-then-verify: 悪ければ戻す）。
+
+### revert 内容
+
+- `jitTrigger()` / `clearJitEvents()` / `jitEventIds` を削除。
+- guitar / chord agent は PolySynth を**直接** `triggerAttackRelease`
+  で叩く v232 の挙動に戻す。
+- `startPlayback` / `stopPlayback` の `clearJitEvents()` 呼び出しも削除。
+- maxPolyphony は 10 のまま、v232 の周波数レーン設計は維持。
+
+### 次の調査方針
+
+v233 が狙った polyphony（ボイスプール）の懸念は未解決 — ただしこれ
+以上 preview で検証できない変更を盲目的に ship しない。次は実機で
+レベルメーター（`#br-meter-fill`）の振れ方をユーザーに確認してもらい、
+「信号は出ているが聞こえない（出力/xrun 系）」のか「信号自体が死んで
+いる（スケジューラ/ルーティング系）」のかを切り分けてから動く。
+
+`band-room.js?v=br-127`、`hazama-fm-v234`。
 
 ---
 

@@ -200,21 +200,20 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
   assert.match(source, /hpC = new Tone\.Filter\(\{ frequency: 190, type: "highpass"/,
     "v232: the chord pad must high-pass at 190 Hz so it sits in its mid lane and doesn't muddy the low end");
 }
-// v233: polyphony flood fix. Handing a whole bar of notes to a PolySynth
-// synchronously leaks voices (onsilence never fires for far-future notes,
-// _activeVoices climbs, the pool pegs → "Max polyphony exceeded" → dropped
-// notes). jitTrigger defers each guitar/chord note's triggerAttackRelease
-// call to ~0.15s before the note via Tone.Transport.scheduleOnce, so the
-// PolySynth only holds ~3-4 notes and recycles voices normally.
+// v234: v233's JIT note scheduling reverted. v233 added jitTrigger() to
+// defer guitar/chord PolySynth triggers via Tone.Transport.scheduleOnce.
+// It could not be verified (the preview freezes the renderer on band-room
+// audio) and on-device it made playback worse, so it was reverted — the
+// guitar/chord agents trigger their PolySynths directly again (v232
+// behaviour). The underlying voice-pool concern is being re-investigated
+// from the user's on-device observations rather than another blind ship.
 {
-  assert.match(source, /function jitTrigger\(/,
-    "v233: jitTrigger helper must exist to just-in-time schedule PolySynth notes");
-  assert.match(source, /Tone\.Transport\.scheduleOnce\(/,
-    "v233: jitTrigger must use Tone.Transport.scheduleOnce (Web-Worker clock — BG-safe)");
-  assert.match(source, /jitTrigger\(guitarSynth,/,
-    "v233: triggerGuitarAgent must route the guitar PolySynth through jitTrigger");
-  assert.match(source, /jitTrigger\(chordSynth,/,
-    "v233: triggerChordAgent must route the chord PolySynth through jitTrigger");
+  assert.doesNotMatch(source, /function jitTrigger\(/,
+    "v234: the v233 jitTrigger helper must be removed (JIT scheduling reverted)");
+  assert.match(source, /guitarSynth\.triggerAttackRelease\(voicing,/,
+    "v234: triggerGuitarAgent must trigger the guitar PolySynth directly");
+  assert.match(source, /chordSynth\.triggerAttackRelease\(step\.notes,/,
+    "v234: triggerChordAgent must trigger the chord PolySynth directly");
 }
 assert.match(source, /let masterVolBase = 1\.2/, "Band Room master volume base should match the v202 louder default output");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default should leave headroom for source-derived accents");
