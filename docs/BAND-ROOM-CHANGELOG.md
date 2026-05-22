@@ -1,10 +1,38 @@
-# Band Room — Changelog (v65 → v235 compact)
+# Band Room — Changelog (v65 → v236 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v236 compact — 原音モードの画面ロック遷移グリッチを緩和
+
+v235（画面 Wake Lock）で原音の iOS バックグラウンド再生は安定し、
+キーのブレも解消した。残るのは**画面をロックする“その瞬間”**の短い
+「ボぼぼぼ」というループ音 — iOS が visibility 遷移の一瞬だけ
+AudioContext を throttle し、bridge が再安定するまでの隙間で音声
+バッファが引き伸ばし／繰り返しになる。bridge が復帰すればすぐ直る
+（v235 で確認済み）が、その継ぎ目が耳に残る。
+
+### v236 の修正 — 遷移を duck でマスク
+
+`duckThroughBackgroundTransition()` を追加。`handlePlaybackGoingBackground`
+（visibilitychange→hidden 等）で、master gain を遷移の一瞬だけ
+near-silence に落としてから戻す:
+
+- 0.05s で素早く down → 0.60s まで hold → 0.92s で滑らかに復帰。
+- エンベロープ全体を**音声クロックに一括スケジュール**するので、
+  ページが hidden で JS が凍っても自走完了する — 必ず元の音量に
+  戻り、無音で固着しない設計。
+- iOS のみ（他 OS はこの throttle が無い）、visibilitychange /
+  blur / pagehide の連発は 2.5s デバウンスで1回に集約。
+- グリッチが duck の無音区間に隠れる → 継ぎ目が目立たなくなる。
+
+ベストエフォートのマスク（throttle の長さは端末・状況で変わるため
+タイミングは推定）。`band-room.js?v=br-129`、`hazama-fm-v236`。
 
 ---
 

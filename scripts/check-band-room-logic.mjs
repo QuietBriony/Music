@@ -228,6 +228,17 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
   assert.match(source, /releaseScreenWakeLock\(\);/,
     "v235: stopPlayback must release the screen Wake Lock");
 }
+// v236: iOS background-transition duck. Locking the screen briefly throttles
+// the AudioContext at the visibility transition (a "bo-bo-bo" buffer-repeat
+// before the bridge re-settles). band-room ducks the master gain across the
+// transition window with a one-shot audio-clock envelope that always ends
+// back at the captured volume — masks the seam with no stuck-silent risk.
+{
+  assert.match(source, /function duckThroughBackgroundTransition\(/,
+    "v236: duckThroughBackgroundTransition helper must exist (masks the iOS lock-transition glitch)");
+  assert.match(source, /duckThroughBackgroundTransition\(\);/,
+    "v236: handlePlaybackGoingBackground must duck through the background transition");
+}
 assert.match(source, /let masterVolBase = 1\.2/, "Band Room master volume base should match the v202 louder default output");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default should leave headroom for source-derived accents");
 assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v168 mix");
