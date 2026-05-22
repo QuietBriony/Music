@@ -166,8 +166,23 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
 // node chain is torn down — this is the song-switch freeze fix.
 {
   assert.match(source, /function withChainDispose\(/, "v229: withChainDispose helper must exist to tear down full synth FX chains");
-  assert.match(source, /return withChainDispose\(\s*\{ kick, snare, hat, ghost, fill, crash: crashWrap \}/,
-    "v229: makeDrumKit must return via withChainDispose so synth kits dispose cleanly (song-switch freeze fix)");
+  assert.match(source, /return withChainDispose\(\s*\{ kick, snare, hat, ghost, fill, crash \}/,
+    "v229/v237: makeDrumKit must return via withChainDispose so synth kits dispose cleanly (song-switch freeze fix)");
+}
+// v237: buffer-based drum kit. The synth drum kit was re-synthesised LIVE on
+// every hit — machine-gunning Tone synths ~30×/bar piled up Web Audio cost
+// until the browser choked (preview oracle: full density freezes ~16s, ~2
+// hits/bar survives — PolySynth / bass / voice were ruled out). makeDrumKit
+// now renders each voice to a buffer once (Tone.Offline) and plays hits as
+// cheap one-shot buffer sources — the same engine as 原音 stem playback,
+// which never chokes.
+{
+  assert.match(source, /async function makeDrumKit\(/,
+    "v237: makeDrumKit must be async (it offline-renders each drum voice to a buffer)");
+  assert.match(source, /function playDrumHit\(/,
+    "v237: playDrumHit helper must exist (one-shot buffer playback per drum hit)");
+  assert.match(source, /Tone\.Offline\(/,
+    "v237: makeDrumKit must render drum voices via Tone.Offline");
 }
 // v231: AI 再現 is now an all-synth band (guitar + bass switched to the
 // internal synth). Guitar and chord are PolySynths with maxPolyphony 10;
