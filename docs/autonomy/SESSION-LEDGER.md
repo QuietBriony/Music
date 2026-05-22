@@ -19,6 +19,28 @@
 
 ---
 
+## 2026-05-23 — Hazama FM 低音打ち込みの入場遅延を解消 (v242)
+- agent     : Claude Code (Opus 4.7 / 1M context)
+- goal      : ユーザー報告「低音(キック＋ベース)の打ち込みが入るのをためすぎて乗れない」を
+  engine.js で解消
+- repos     : Music
+- shipped   : PR #196 (squash merge 747f92a) — engine.js `SECTION_PROFILES`: submerge
+  `drive 0.00→0.60`・`bars 16→12`・`space 1.55→1.30`、sprout `drive 0.55→0.72`。
+  cache `engine.js?v=fm-106`(+ audio/music-* 5モジュール)、`sw.js hazama-fm-v242`
+- 原因      : section system は再生毎に必ず submerge から開始。submerge の `drive 0.00`
+  で section drum gate がキックを確率 0.004(実質無音)にクランプ・ベースを ×0.5 に絞り、
+  ~16小節(約30-46秒)低音の土台が立たなかった
+- stack-check: PASS 15 / FAIL 0 / SKIP 0（0 BAD）
+- backlog   : なし（直接のユーザー依頼）
+- 並走      : Band Room 別チャットが同セッション中に v239/v240/v241 を push。番号衝突の
+  たび rebase で繰り上げ最終 v242。sw.js / BAND-ROOM-CHANGELOG.md の衝突は「高い番号を
+  採用」ルールで解消。band-room.* は一切不変
+- next      : 試聴待ち（ship-then-verify）。低音の土台が1小節目から鳴るか / submerge→
+  sprout→flow の build / hollow のブレイク残存をユーザーが耳で判定
+- blockers  : なし
+
+---
+
 ## 2026-05-18 — PWA インストール推奨バナー sister repo 横展開
 - agent     : Claude Code (Opus 4.7)
 - goal      : Music v206 のバナーパイロットを active sister 4 repo に横展開
