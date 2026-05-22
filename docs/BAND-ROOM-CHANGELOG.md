@@ -1,10 +1,30 @@
-# Band Room — Changelog (v65 → v238 compact)
+# Band Room — Changelog (v65 → v239 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v239 compact — AI 再現に voice（メロディ）を復帰
+
+「最小構成から積み直す」第3段。v237 ドラム（バッファ再生）/ v238 ベース
+に続き、voice（メロディガイド）を戻す。
+
+voice（`makeVoiceBox` の formant 合成）も bass 同様 **monophonic・毎小節
+~4発**で軽い。preview 判定器で **バッファドラム＋bass＋voice** を再生 →
+曲をまたいで（auto-advance 含む）~96秒経っても固まらず応答あり。
+→ バッファ方式への作り直しは不要、un-park のみ。
+
+### v239 の変更
+
+- `SYNTH_REBUILD_PARTS.voice` を `true` に。AI 再現は **ドラム＋ベース＋
+  メロディ** で鳴る。
+- guitar / chord は引き続き保留 — PolySynth なので次ラウンド以降、最も
+  慎重に扱う。
+- `band-room.js?v=br-132`、`hazama-fm-v239`。
 
 ---
 
