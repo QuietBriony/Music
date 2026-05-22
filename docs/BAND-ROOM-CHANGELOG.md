@@ -1,10 +1,33 @@
-# Band Room — Changelog (v65 → v239 compact)
+# Band Room — Changelog (v65 → v240 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v240 compact — AI 再現に chord（コード）を復帰
+
+「最小構成から積み直す」第4段。v237 ドラム / v238 ベース / v239 メロディ
+に続き chord を戻す。
+
+chord は PolySynth（bass/voice の monophonic より重い）だが、chord agent
+のトリガは **毎小節 ~1-2 stab** のみ — machine-gun ではない。preview
+判定器で **バッファドラム＋bass＋voice＋chord** を再生 → 曲をまたいで
+（auto-advance 含む）~98秒、固まらず応答あり。→ 作り直し不要、un-park のみ。
+
+これで「フル AI 再現が固まる」の犯人は chord ではなく **guitar** と判明
+（guitar だけ未投入のこの4パート構成は固まらない）。
+
+### v240 の変更
+
+- `SYNTH_REBUILD_PARTS.chord` を `true` に。AI 再現は **ドラム＋ベース＋
+  メロディ＋コード** の4パートで鳴る。
+- guitar のみ保留 — PolySynth を毎小節 ~8 strum 叩く、残る暴走候補。次
+  ラウンドで検証／作り直し。
+- `band-room.js?v=br-133`、`hazama-fm-v240`。
 
 ---
 
