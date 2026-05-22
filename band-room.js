@@ -3569,39 +3569,6 @@
     return dedupeAgentSteps(steps, 3);
   }
 
-  // v233: just-in-time note scheduling for the PolySynth parts (guitar +
-  // chord). Handing a whole bar of notes to a Tone.PolySynth synchronously
-  // makes its voices leak — onsilence (the callback that returns a voice to
-  // the pool) doesn't fire for far-future-scheduled notes, so _activeVoices
-  // climbs and the pool pegs ("Max polyphony exceeded" flood; dropped notes
-  // = the thin sound — confirmed by instrumenting the voice pool). jitTrigger
-  // defers each note's triggerAttackRelease CALL to ~0.15s before the note
-  // via Tone.Transport.scheduleOnce (Web-Worker clock, so it stays accurate
-  // with the screen off). The PolySynth then only ever sees ~3-4 notes in
-  // flight and recycles voices normally. The note still plays at its exact
-  // audio time — only the call is deferred, so timing is intact.
-  let jitEventIds = [];
-  function jitTrigger(synth, note, dur, noteAudioTime, vel) {
-    if (!synth) return;
-    const offset = noteAudioTime - 0.15 - Tone.now();
-    if (offset <= 0.01) {
-      // Note is imminent / past — trigger directly (the bar downbeat).
-      try { synth.triggerAttackRelease(note, dur, Math.max(noteAudioTime, Tone.now() + 0.02), vel); } catch (e) {}
-      return;
-    }
-    try {
-      jitEventIds.push(Tone.Transport.scheduleOnce(() => {
-        try { synth.triggerAttackRelease(note, dur, noteAudioTime, vel); } catch (e) {}
-      }, "+" + offset));
-    } catch (e) {
-      try { synth.triggerAttackRelease(note, dur, noteAudioTime, vel); } catch (e2) {}
-    }
-  }
-  function clearJitEvents() {
-    jitEventIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
-    jitEventIds = [];
-  }
-
   function triggerBassAgent(ctx, time) {
     bassAgentPlan(ctx).forEach((step) => {
       const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
@@ -3654,7 +3621,7 @@
     const voicing = notes.slice(0, notesPerStrum);
     plan.forEach((step) => {
       const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
-      jitTrigger(guitarSynth, voicing, step.dur || "16n", t, step.vel);  // v233: JIT — see jitTrigger
+      try { guitarSynth.triggerAttackRelease(voicing, step.dur || "16n", t, step.vel); } catch (e) {}
     });
   }
 
@@ -3669,7 +3636,7 @@
   function triggerChordAgent(ctx, time) {
     chordAgentPlan(ctx).forEach((step) => {
       const t = time + step.sub * ctx.subTime;
-      jitTrigger(chordSynth, step.notes, step.dur || "4n", t + 0.005, step.vel);  // v233: JIT — see jitTrigger
+      try { chordSynth.triggerAttackRelease(step.notes, step.dur || "4n", t + 0.005, step.vel); } catch (e) {}
     });
   }
 
@@ -4008,7 +3975,6 @@
     // Clear any old schedules
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
     state.scheduledIds = [];
-    clearJitEvents();  // v233: drop any stale just-in-time note events
 
     scheduleBar();
     Tone.Transport.start();
@@ -4234,7 +4200,6 @@
     try { Tone.Transport.stop(); } catch (e) {}
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
     state.scheduledIds = [];
-    clearJitEvents();  // v233: cancel pending just-in-time note events
     stopStemPlayback();
     stopExternalVocal();
     ["drums", "bass", "other"].forEach((s) => stopExternalStem(s)); // v87
