@@ -1451,16 +1451,13 @@
 
   // ---- Synth bass ----------------------------------------------
 
-  // v237-v240: AI 再現 rebuild, part by part. Drums are buffer-based & stable
-  // (v237). bass (v238), voice (v239) and chord (v240) are re-enabled — bass
-  // & voice are monophonic; chord is a PolySynth but the chord agent only
-  // fires ~1-2 stabs/bar, light enough. The preview oracle confirmed
-  // drums+bass+voice+chord plays across songs with no freeze. Only guitar
-  // stays PARKED (built, but the bar scheduler does NOT trigger it) — it is a
-  // PolySynth machine-gunned ~8 strums/bar and is the remaining freeze
-  // suspect; verified / rebuilt next. Park by not-triggering, not by
-  // not-building: returning null from the makers hung startPlayback.
-  const SYNTH_REBUILD_PARTS = { bass: true, guitar: false, voice: true, chord: true };
+  // v237-v241: AI 再現 rebuild COMPLETE — all 5 parts restored, the
+  // browser-choke runaway fixed. Drums are buffer-based (v237). bass (v238),
+  // voice (v239), chord (v240), guitar (v241) re-enabled. guitar uses a
+  // sparse-strum cap (guitarSparseStrums — ~8 strums/bar → ~2) so its
+  // PolySynth is not machine-gunned. SYNTH_REBUILD_PARTS stays as a per-part
+  // kill-switch: flip any part to false to silence it if it ever regresses.
+  const SYNTH_REBUILD_PARTS = { bass: true, guitar: true, voice: true, chord: true };
 
   function makeSynthBass(target) {
     // v110: if bassInstrument is set to a sampler in catalog.instruments[],
@@ -3606,6 +3603,20 @@
     });
   }
 
+  // v241: guitar sparse-strum cap. The guitar agent can return ~8 strums/bar;
+  // machine-gunning the PolySynth that fast was the last AI 再現 freeze cause
+  // (drums/bass/voice/chord were all verified clear). A guitar comping at
+  // ~2 strums/bar sits in the same safe zone as the chord (~1-2 stabs/bar).
+  // Keep the earliest strum (downbeat) + one mid-bar strum, full power-chord
+  // voicing on each — sparse rhythm, full chords: a real rhythm-guitar comp.
+  function guitarSparseStrums(plan) {
+    if (!Array.isArray(plan) || plan.length <= 2) return plan || [];
+    const sorted = plan.slice().sort((a, b) => (Number(a.sub) || 0) - (Number(b.sub) || 0));
+    const first = sorted[0];
+    const mid = sorted.find((s) => (Number(s.sub) || 0) >= 8) || sorted[sorted.length - 1];
+    return mid && mid !== first ? [first, mid] : [first];
+  }
+
   function triggerGuitarAgent(ctx, time) {
     // v224: jazzy mode uses 7th-extended shell voicings instead of power
     // chords. Power chords (root + 5th + octave) sound wrong against a jazz
@@ -3646,7 +3657,7 @@
     // so the bar's total stays within the cap: dense strumming collapses to
     // a single-note chug (a real palm-muted punk-guitar texture), sparse
     // strumming keeps the full power chord.
-    const plan = guitarAgentPlan(ctx);
+    const plan = guitarSparseStrums(guitarAgentPlan(ctx));  // v241: ~8 strums/bar → ~2 (sparse comp)
     const notesPerStrum = clamp(Math.floor(9 / Math.max(1, plan.length)), 1, notes.length);
     const voicing = notes.slice(0, notesPerStrum);
     plan.forEach((step) => {

@@ -1,10 +1,46 @@
-# Band Room — Changelog (v65 → v240 compact)
+# Band Room — Changelog (v65 → v241 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v241 compact — AI 再現に guitar を復帰（5パート再建 完了）
+
+「最小構成から積み直す」最終段。guitar を戻し、AI 再現の5パート
+（ドラム／ベース／メロディ／コード／ギター）が全部そろった。
+
+guitar が PolySynth を毎小節 ~8 strum 叩く machine-gun が「フル AI 再現が
+固まる」最後の犯人だった。`guitarSparseStrums()` を追加し strum を
+**~2/小節**に絞る（chord の ~1-2 stab/小節と同じ安全域）。各 strum は
+フルのパワーコード — 疎なリズム＋フルコードの、リズムギターのコンプ。
+
+preview 判定器で **5パート全部**（ドラム＋ベース＋メロディ＋コード＋
+ギター）を再生 → 曲をまたいで ~111秒、固まらず応答あり。フル strum の
+旧 guitar は ~22秒で固まっていた。
+
+### v241 の変更
+
+- `guitarSparseStrums()` を追加 — `triggerGuitarAgent` が strum を ~2/小節
+  に絞る。
+- `SYNTH_REBUILD_PARTS.guitar` を `true` に — 全パート on。
+- `band-room.js?v=br-134`、`hazama-fm-v241`。
+
+### AI 再現 再建のまとめ（v237–v241）
+
+| 版 | パート | 方式 |
+|----|--------|------|
+| v237 | drums | ライブ合成 → **バッファ再生**（暴走根治） |
+| v238 | bass | 復帰（monophonic・軽い） |
+| v239 | voice | 復帰（monophonic・軽い） |
+| v240 | chord | 復帰（PolySynth・~1-2 stab/小節で軽い） |
+| v241 | guitar | 復帰（PolySynth・**疎な strum** ~2/小節に制限） |
+
+25版以上ブラウザを固めていた AI 再現が、5パートのバンドとして安定して
+鳴る状態に到達。Dilla / ghost / fill 等のリズムロジックは全工程で不変。
 
 ---
 
