@@ -73,6 +73,7 @@
   let backgroundBridgeActive = false;
   let backgroundBridgeHealthBound = false;
   let backgroundBridgeRearmTimer = 0;
+  let screenWakeLock = null;  // v235: screen Wake Lock sentinel (iOS focus-listening stability)
   let autoAdvanceInFlight = false;
   let autoAdvanceTimer = 0;
   let playbackHealthTimer = 0;
@@ -4002,6 +4003,7 @@
     // v88: start MIDI Clock if a MIDI output is selected
     if (midiOut) startMidiClock();
     startPlaybackHealthWatchdog();
+    requestScreenWakeLock();  // v235: keep the screen awake for stable focus listening
   }
 
   // v71: master meter — animate #br-meter-fill width from Tone.Meter dB
@@ -4094,9 +4096,46 @@
     }
   }
 
+  // v235: screen Wake Lock. iOS throttles / suspends Web Audio hard once the
+  // screen sleeps — the MediaStream background-bridge fights it but can't
+  // fully win (audible as pitch wobble / stutter / single-note loop in 原音
+  // mode). hazamaFM dodges this with a "KEEP" wake lock; band-room never had
+  // one. Hold a screen wake lock for the whole playback session so the screen
+  // doesn't auto-sleep — focus listening stays in the foreground where Web
+  // Audio is stable. The browser auto-releases the lock when the page is
+  // hidden, so re-acquire it on every foreground return.
+  async function requestScreenWakeLock() {
+    if (typeof navigator === "undefined" || !navigator.wakeLock ||
+        typeof navigator.wakeLock.request !== "function") return;
+    if (screenWakeLock) return;
+    if (typeof document !== "undefined" &&
+        document.visibilityState && document.visibilityState !== "visible") return;
+    try {
+      const lock = await navigator.wakeLock.request("screen");
+      screenWakeLock = lock;
+      lock.addEventListener?.("release", () => {
+        if (screenWakeLock === lock) screenWakeLock = null;
+      });
+    } catch (e) {
+      // NotAllowedError when the page isn't visible / user-activated — harmless.
+      screenWakeLock = null;
+    }
+  }
+
+  function releaseScreenWakeLock() {
+    const lock = screenWakeLock;
+    screenWakeLock = null;
+    if (lock) {
+      try { lock.release(); } catch (e) {}
+    }
+  }
+
   function handlePlaybackReturningForeground(reason = "visible") {
     clearSuspendReleaseTimers();
-    if (state.started) recoverPlaybackAfterSuspend(reason);
+    if (state.started) {
+      recoverPlaybackAfterSuspend(reason);
+      requestScreenWakeLock();  // v235: re-acquire — the lock auto-released while hidden
+    }
   }
 
   function resyncStemPlaybackToClock(reason = "resync", force = false) {
@@ -4216,6 +4255,7 @@
     if (!options.keepBackgroundBridge) stopBackgroundAudioBridge();
     if (options.updateMedia !== false) updateMediaSession("paused");
     stopMidiClock(); // v88
+    releaseScreenWakeLock();  // v235: drop the screen wake lock
   }
 
   function togglePlay() {

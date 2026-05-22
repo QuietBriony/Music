@@ -1,10 +1,46 @@
-# Band Room — Changelog (v65 → v234 compact)
+# Band Room — Changelog (v65 → v235 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v235 compact — 原音モードの iOS バックグラウンド安定化（画面 Wake Lock）
+
+「原音 PWA を iPhone で画面ロックすると、キーがブレブレ／止まり／単音
+ループになる」— iOS の OS 制約で、画面が消えると Web Audio が
+throttle/suspend され、隠し `<audio>`＋MediaStream の background-bridge
+だけでは支えきれない（音声スレッドが間に合わず、古いバッファを引き伸ばす
+／繰り返す音）。
+
+### リサーチ — hazamaFM との比較
+
+`engine.js`（hazamaFM）と band-room の background 処理を読み比べた。
+bridge（隠し `<audio>`＋MediaStream）は**ほぼ同一コード**。決定的な
+違いは、hazamaFM には `navigator.wakeLock`（「KEEP」）があり band-room
+には無いこと。hazamaFM は画面 Wake Lock で画面を消さない＝そもそも
+background にしないことで iOS の難所を回避していた。
+
+### v235 の修正 — 画面 Wake Lock を自動取得
+
+- `requestScreenWakeLock()` / `releaseScreenWakeLock()` を追加
+  （`navigator.wakeLock.request("screen")`）。
+- `startPlayback` で自動取得、`stopPlayback` で解放。
+- Wake Lock はページが hidden になると OS が自動解放するので、前面
+  復帰（`handlePlaybackReturningForeground`）で再取得。
+- ボタン無しの自動方式 — 再生中は画面が消えず、安定した前面に留まる。
+  Wake Lock 非対応環境では graceful に no-op。
+- JS のみ（HTML/CSS の構造変更なし）。`band-room.js?v=br-128`、
+  `hazama-fm-v235`。
+
+### 限界
+
+これは「画面を点けたまま」の集中再生を安定させるもの。物理的に画面を
+オフ（ポケット等）にした完全 background 再生は iOS の別次元の課題で、
+bridge の地道な改善が必要 — 今回の対象外。
 
 ---
 
