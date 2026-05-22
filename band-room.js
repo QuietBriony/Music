@@ -4087,8 +4087,40 @@
     });
   }
 
+  // v236: iOS background-transition duck. Locking the iPhone screen briefly
+  // throttles the AudioContext during the visibility transition — audible as
+  // a short "bo-bo-bo" buffer-repeat before the background bridge re-settles
+  // playback (v235 stabilised the steady state; this smooths the seam).
+  // Mask it: duck the master gain to near-silence across the transition
+  // window and ramp back. The whole envelope is scheduled on the audio clock
+  // in one shot, so it self-completes even if JS freezes while the page is
+  // hidden — it always ends back at the captured volume and so can never get
+  // stuck silent. iOS-only (only iOS throttles like this) and debounced (the
+  // visibilitychange / blur / pagehide burst all routes through here).
+  let bgTransitionDuckAtMs = 0;
+  function duckThroughBackgroundTransition() {
+    if (!state.started || !masterGain || !masterGain.gain) return;
+    if (!shouldPreferBackgroundAudioBridge()) return;
+    if (typeof document !== "undefined" && !document.hidden) return;
+    const nowMs = (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+    if (nowMs - bgTransitionDuckAtMs < 2500) return;
+    bgTransitionDuckAtMs = nowMs;
+    try {
+      const g = masterGain.gain;
+      const restore = g.value;
+      if (!(restore > 0.02)) return;  // master already silent — nothing to mask
+      const t0 = Tone.context.currentTime;
+      g.cancelScheduledValues(t0);
+      g.setValueAtTime(restore, t0);
+      g.linearRampToValueAtTime(0.0001, t0 + 0.05);   // fast duck under the glitch
+      g.setValueAtTime(0.0001, t0 + 0.60);            // hold through the throttle window
+      g.linearRampToValueAtTime(restore, t0 + 0.92);  // smooth restore
+    } catch (e) {}
+  }
+
   function handlePlaybackGoingBackground(reason = "hidden") {
     if (!state.started) return;
+    duckThroughBackgroundTransition();  // v236: mask the iOS lock-transition glitch
     scheduleMobileSuspendRelease(reason);
     checkBackgroundBridgeHealth(reason);
     if (shouldPreferBackgroundAudioBridge() && !backgroundBridgeActive) {
