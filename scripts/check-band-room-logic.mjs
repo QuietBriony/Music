@@ -215,6 +215,19 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
   assert.match(source, /chordSynth\.triggerAttackRelease\(step\.notes,/,
     "v234: triggerChordAgent must trigger the chord PolySynth directly");
 }
+// v235: screen Wake Lock. iOS suspends/throttles Web Audio when the screen
+// sleeps; the MediaStream background-bridge alone can't keep 原音 playback
+// stable (pitch wobble / single-note loop). band-room now holds a screen
+// wake lock for the playback session (mirrors hazamaFM's "KEEP"), so the
+// screen stays awake and focus listening stays in the stable foreground.
+{
+  assert.match(source, /async function requestScreenWakeLock\(/,
+    "v235: requestScreenWakeLock helper must exist (screen stays awake during playback)");
+  assert.match(source, /navigator\.wakeLock\.request\("screen"\)/,
+    "v235: must use the Wake Lock API to request a screen lock");
+  assert.match(source, /releaseScreenWakeLock\(\);/,
+    "v235: stopPlayback must release the screen Wake Lock");
+}
 assert.match(source, /let masterVolBase = 1\.2/, "Band Room master volume base should match the v202 louder default output");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.58\)/, "AI drum bus default should leave headroom for source-derived accents");
 assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v168 mix");
