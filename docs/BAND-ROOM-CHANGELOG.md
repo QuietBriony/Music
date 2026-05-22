@@ -1,10 +1,51 @@
-# Band Room — Changelog (v65 → v232 compact)
+# Band Room — Changelog (v65 → v233 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v233 compact — AI 再現の polyphony 洪水を JIT スケジューリングで根治
+
+v232 検証中に見つけた `Max polyphony exceeded`（音ドロップ）の洪水を、
+PolySynth の voice pool を計測して追い込んだ。
+
+### 根本原因 — ボイスリーク
+
+`_voices` / `_availableVoices` / `_activeVoices` を instrument して観測:
+`_activeVoices` が単調増加し `_availableVoices` はずっと 0 — ボイスがプール
+に戻ってこない。bar スケジューラが1小節分の音を**一括同期で** PolySynth に
+渡すと、遠い未来スケジュールの音について `onsilence`（ボイスをプールへ返す
+コールバック）が発火せず、ボイスが溜まって maxPolyphony で洪水。
+**cap を上げても `releaseAll` でも止まらなかった**（両案とも検証で却下）。
+Tone.js の CDN ソースでボイス確保/解放機構も確認。
+
+### v233 の修正 — JIT（just-in-time）スケジューリング
+
+`jitTrigger()` を追加。guitar / chord（PolySynth の2パート）の各音の
+`triggerAttackRelease` **呼び出し**を、発音の約 0.15s 前まで
+`Tone.Transport.scheduleOnce` で遅延させる:
+
+- PolySynth が同時に抱える音が ~3-4個になり、ボイスが正常に再利用される
+  （遠い未来スケジュールをやめたので `onsilence` も正常発火）。
+- `Tone.Transport`（Web Worker クロック）なので**画面オフでも正確**。
+- 発音時刻は厳密に維持 — 遅延するのは「呼び出し」だけで timing は不変。
+  **low-risk**: 何を/いつ鳴らすかは変えない。最悪でも v232 と同等。
+- `startPlayback` / `stopPlayback` で保留中の JIT イベントを clear。
+- maxPolyphony は 10 のまま（JIT でリークが消えるので cap 据え置き）。
+- bass / voice は monophonic でリークしないので JIT 対象外。
+- `band-room.js?v=br-126`、`hazama-fm-v233`。
+
+### 検証 — 実機での確認をお願いします
+
+preview 環境は band-room の音を再生させると renderer が固まる（既知の制約 —
+band-room の audio をフル検証できない）。preview 計測ではボイスが溜まらない
+兆候は見えたが、完全な確認は preview では不可能。**実機での確認待ち** —
+AI 再現の「音切れ・薄さ」が減ったか。low-risk な変更なので、悪化する場合は
+revert 容易。
 
 ---
 
