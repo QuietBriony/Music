@@ -7715,11 +7715,20 @@ const glass = new Tone.FMSynth({
   modulationEnvelope: { attack: 0.004, decay: 0.085, sustain: 0, release: 0.13 }
 }).connect(globalDelay);
 
-// v246: pianoMemory used to route through globalDelay (8n PingPong, wet 0.21).
-// On a sustained low chord the stereo 8n echo overlapped the still-ringing
-// original = temporal smear that fought groove lock ("乗れない"). Route dry to
-// masterGain; bass + texture still use the delay for their own rhythmic feel.
+// v248: pianoMemory gets a dedicated echo for character. v246 went fully dry
+// to silence a perceived smear, but stripping the "memory" echo entirely felt
+// 退屈 — the wash was the layer's signature. Restore character via a separate
+// PingPongDelay (shorter feedback 0.20 vs globalDelay's 0.32) at a controlled
+// 0.32 send level: dry direct → clean v244-tight on-beat attack; wet send →
+// soft 8n tail (~-10 dB relative to dry, fast decay) for the missing wash.
+const pianoMemoryEcho = new Tone.PingPongDelay({
+  delayTime: "8n",
+  feedback: 0.20,
+  wet: 1,
+}).connect(masterGain);
+const pianoMemorySend = new Tone.Gain(0.32).connect(pianoMemoryEcho);
 const pianoMemoryFilter = new Tone.Filter(1800, "lowpass").connect(masterGain);
+pianoMemoryFilter.connect(pianoMemorySend);
 const pianoMemory = new Tone.PolySynth({
   voice: Tone.Synth,
   // BL-022: capped from 48. Short 16n/32n/64n notes free voices fast,
