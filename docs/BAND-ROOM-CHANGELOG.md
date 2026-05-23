@@ -1,10 +1,45 @@
-# Band Room — Changelog (v65 → v246 compact)
+# Band Room — Changelog (v65 → v247 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v247 compact — AI 再現のドラムにバックビート pocket を入れる
+
+ユーザー報告: v245 で音色は整ったが「音はなってるけど、グルーブはないね」。
+
+原因: per-song の `drum-frames-*.json` は librosa onset 検出から自動生成
+されており、**velocity が全部 ~0.35 で平坦** ＋ 一部の verse（Human Fly
+など）は **kick も snare も拍頭・バックビートに無く ghost＋crash＋hat
+だけ**。データそのものがグルーブを持っていないので、`±4%` humanize や
+4-bar phrase shape では救えない（弱拍を弱くしても、強拍がそもそも
+立っていない）。
+
+### v247 の修正（band-room.js）
+
+ランタイム側からバックビートを保証する2段の救済。
+
+1. **バックビート velocity フロア**（既存イベントの救済）
+   - kick が beat 0/2 の拍頭にあれば velocity を **0.82** に下限。
+   - snare が beat 1/3 の拍頭にあれば velocity を **0.86** に下限。
+   - フロアは「上げるだけ」なので、データ側に dynamics があれば残る。
+2. **疎フレーム補強の発火条件拡張**（無いイベントの追加）
+   - v106 の `events.length < 6` 条件に加えて、`!hasStrongHit`（強拍に
+     kick/snare が一つも無い）でも補強。
+   - 補強の velocity を **0.50/0.55 → 0.82/0.86** に引き上げ。前のままだと
+     "ささやき pulse" でグルーブが立たなかった。
+   - intro/outro は `session_role` で除外（雰囲気優先のセクションを
+     壊さない）。
+
+`cramps-punk`（Tabasco）など rock 系プロファイル前提だが、4/4 popular
+music の backbeat は普遍なので jazz / hip-hop / lofi でも安全。原音
+（stems）はこの系統を通らないので不変。velocity は推定、耳で微調整可。
+
+- `band-room.js?v=br-138`、`hazama-fm-v247`。
 
 ---
 

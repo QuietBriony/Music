@@ -3811,7 +3811,19 @@
           // v118: random jitter on top (kick は除外、grid 上の方が強く感じる)
           const jitterMs = (evt.instrument === "kick") ? 0 : (Math.random() - 0.5) * 6;
           const t = time + baseOffset + jitterMs / 1000;
-          const rawVel = clamp(evt.velocity ?? 0.5, 0.05, 1);
+          let rawVel = clamp(evt.velocity ?? 0.5, 0.05, 1);
+          // v247: backbeat groove floor — extracted drum frames have flat
+          // ~0.35 velocities across the board (librosa onset detection
+          // doesn't recover dynamics), which reads as "no groove" even
+          // when hits land on the right beats. Rock/punk groove needs the
+          // kick to slam on the downbeats (0, 2) and the snare to crack
+          // on the backbeat (1, 3). Floor only — preserves dynamics where
+          // the data already has them.
+          if (evt.instrument === "kick" && (evt.beat === 0 || evt.beat === 2) && (evt.sub || 0) === 0) {
+            rawVel = Math.max(rawVel, 0.82);
+          } else if (evt.instrument === "snare" && (evt.beat === 1 || evt.beat === 3) && (evt.sub || 0) === 0) {
+            rawVel = Math.max(rawVel, 0.86);
+          }
           // v118: velocity humanize — ±4% perturb, accent-friendly
           // v137: mic follow scale — 演奏の音量で drum velocity を ±30% スケール
           // v209: phraseMult layers the 4-bar phrase shape on top (±6%)
@@ -3910,16 +3922,27 @@
           } catch (e) {}
         }
 
-        // v106: sparse frame reinforcement — if the extracted pattern is
-        // too thin (< 6 events) fill in the missing beats of a basic
-        // kick-snare-kick-snare pattern at low velocity. Keeps the
-        // groove anchored when librosa onset detection missed hits.
-        if (frame.events.length < 6) {
+        // v106 / v247: sparse-frame reinforcement.
+        // v106 fired only when fewer than 6 events existed. v247 also
+        // fires when the frame has events but NONE on the strong beats
+        // (e.g. Human Fly verse is just ghost+crash+hat — 8+ events, no
+        // kick or snare anywhere → felt like atmospheric noise rather
+        // than drumming). Intro / outro stay atmospheric on purpose.
+        // Velocities bumped from 0.50/0.55 to 0.82/0.86 so the rescue
+        // beat actually grooves (was previously a whisper-pulse).
+        const hasStrongHit = frame.events.some((e) => {
+          if (e.instrument === "kick"  && (e.beat === 0 || e.beat === 2) && (e.sub || 0) === 0) return true;
+          if (e.instrument === "snare" && (e.beat === 1 || e.beat === 3) && (e.sub || 0) === 0) return true;
+          return false;
+        });
+        const sectionRole = frame.session_role || "";
+        const isAtmosphericSection = (sectionRole === "intro" || sectionRole === "outro");
+        if (!isAtmosphericSection && (frame.events.length < 6 || !hasStrongHit)) {
           const basicPattern = [
-            { inst: "kick",  beat: 0, vel: 0.50 },
-            { inst: "snare", beat: 1, vel: 0.55 },
-            { inst: "kick",  beat: 2, vel: 0.50 },
-            { inst: "snare", beat: 3, vel: 0.55 }
+            { inst: "kick",  beat: 0, vel: 0.82 },
+            { inst: "snare", beat: 1, vel: 0.86 },
+            { inst: "kick",  beat: 2, vel: 0.82 },
+            { inst: "snare", beat: 3, vel: 0.86 }
           ];
           basicPattern.forEach((hit) => {
             // Skip if already covered by an extracted event at that beat
