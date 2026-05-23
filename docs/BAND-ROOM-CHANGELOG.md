@@ -1,10 +1,36 @@
-# Band Room — Changelog (v65 → v249 compact)
+# Band Room — Changelog (v65 → v250 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v250 compact — AI 再現の guitar も kick に lock（リズム隊3声を統合）
+
+v249 で bass を kick に lock し「リズム隊2声」が pocket に揃った。次は
+**guitar の strum も同じ pocket に入れる**。cramps-punk の rhythm guitar
+は基本 kick と一緒に stab する（1拍3拍が骨）→ guitar が kick から
+ずれていると、drums+bass はロックしているのに guitar だけ別レイヤーに
+聞こえてバンド感が halve する。
+
+### v250 の修正（`triggerGuitarAgent`）
+
+v249 と同じ ±50ms ポケットウィンドウで snap:
+
+1. `ctx.events` から kick 時刻リスト生成（無ければ beat 0/2 を補完）。
+2. 各 strum step について最寄り kick との差が **±50ms** なら snap、
+   それ以外はグリッドに残す（intended syncopation 保護）。
+3. ロジックは v249 bass-lock と完全同形（インライン重複）。3つ目の
+   agent が同じパターンを要れば共通ヘルパに抽出予定。
+
+これで drums + bass + guitar の3声が同じ pocket に揃う = リズム隊の
+「同じ部屋で弾いている」音。原音は別経路で不変。CPU 影響なし
+（スケジューリング計算のみ、新規オシレータ／FX 無し）。
+
+- `band-room.js?v=br-140`、`hazama-fm-v250`。
 
 ---
 
