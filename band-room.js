@@ -1486,7 +1486,11 @@
     // synth fallback
     const drive = new Tone.Distortion({ distortion: b.drive, wet: b.driveWet, oversample: "2x" }).connect(post);
     const bass = new Tone.MonoSynth({
-      oscillator: { type: "sawtooth" },
+      // v244: fat (detuned-unison) oscillator — 3 voices, 20-cent spread.
+      // A lone sawtooth reads as a static "beep"; the slight detune gives
+      // the bass analog width + body. The lowpass below tames the extra
+      // harmonics so it stays solid, not wobbly.
+      oscillator: { type: "fatsawtooth", count: 3, spread: 20 },
       filter: { type: "lowpass", frequency: b.filterFreq, Q: b.filterQ },
       envelope: { attack: 0.005, decay: 0.18, sustain: 0.6, release: b.envRelease },
       filterEnvelope: { attack: 0.003, decay: 0.12, sustain: 0.5, release: 0.12, baseFrequency: 120, octaves: 2.6 },
@@ -2100,6 +2104,10 @@
     // to the bass.
     const hpG = new Tone.Filter({ frequency: 130, type: "highpass", Q: 0.6 });
     const guitar = new Tone.PolySynth(Tone.Synth, {
+      // v245 attempted fat oscillators here (count 2, spread 18) but the
+      // PolySynth cap-10 × 2-osc combined with chord PolySynth's fat budget
+      // choked the renderer in <30s on the freeze-oracle. Reverted to plain
+      // sawtooth — fat is kept only on the cheap mono synths (bass + voice).
       oscillator: { type: "sawtooth" },
       envelope: { attack: 0.003, decay: 0.10, sustain: 0.55, release: 0.16 },
       volume: -12
@@ -2180,7 +2188,9 @@
 
     const voice = new Tone.AMSynth({
       harmonicity: v.harmonicity,
-      oscillator: { type: "sawtooth" },
+      // v244: gently fat carrier (2 voices, small 12-cent spread) — adds
+      // body without fighting the vibrato LFO already on voice.detune.
+      oscillator: { type: "fatsawtooth", count: 2, spread: 12 },
       envelope: { attack: 0.06, decay: 0.32, sustain: 0.65, release: 0.45 },
       modulation: { type: "sine" },
       modulationEnvelope: { attack: 0.04, decay: 0.2, sustain: 0.5, release: 0.4 },
@@ -2273,6 +2283,10 @@
     // (octave 4) and stops muddying the bass + guitar low-mid beneath it.
     const hpC = new Tone.Filter({ frequency: 190, type: "highpass", Q: 0.6 });
     const chord = new Tone.PolySynth(Tone.Synth, {
+      // v245 attempted fat oscillators here (count 2, spread 14) but combined
+      // with guitar PolySynth fat the renderer choked. Reverted to single-osc;
+      // the chord chain's existing Chorus + the FX chain provide pad width
+      // without per-voice CPU multiplier.
       oscillator: { type: c.oscType },
       envelope: { attack: c.attack, decay: c.decay, sustain: 0.45, release: c.release },
       volume: -12  // v104: was -16, raised so chord pad anchors the mix
