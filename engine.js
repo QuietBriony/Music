@@ -7718,15 +7718,19 @@ const glass = new Tone.FMSynth({
 // v248: pianoMemory gets a dedicated echo for character. v246 went fully dry
 // to silence a perceived smear, but stripping the "memory" echo entirely felt
 // 退屈 — the wash was the layer's signature. Restore character via a separate
-// PingPongDelay (shorter feedback 0.20 vs globalDelay's 0.32) at a controlled
-// 0.32 send level: dry direct → clean v244-tight on-beat attack; wet send →
-// soft 8n tail (~-10 dB relative to dry, fast decay) for the missing wash.
+// PingPongDelay (shorter feedback than globalDelay's 0.32) at a controlled
+// send level: dry direct → clean v244-tight on-beat attack; wet send →
+// soft 8n tail for the missing wash.
+// v251: v248's first pass still felt subtle — bumped feedback 0.20→0.24
+// (slightly longer tail, still well under globalDelay's 0.32 so it decays
+// before the next chord) and send 0.32→0.42 (first echo ~-7.5 dB vs -10 dB)
+// for a more audible "memory" character without re-introducing v245's smear.
 const pianoMemoryEcho = new Tone.PingPongDelay({
   delayTime: "8n",
-  feedback: 0.20,
+  feedback: 0.24,
   wet: 1,
 }).connect(masterGain);
-const pianoMemorySend = new Tone.Gain(0.32).connect(pianoMemoryEcho);
+const pianoMemorySend = new Tone.Gain(0.42).connect(pianoMemoryEcho);
 const pianoMemoryFilter = new Tone.Filter(1800, "lowpass").connect(masterGain);
 pianoMemoryFilter.connect(pianoMemorySend);
 const pianoMemory = new Tone.PolySynth({

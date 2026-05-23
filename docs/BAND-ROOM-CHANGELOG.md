@@ -1,10 +1,29 @@
-# Band Room — Changelog (v65 → v250 compact)
+# Band Room — Changelog (v65 → v251 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v251 compact — Hazama FM pianoMemory echo を強める(feedback 0.24・send 0.42)
+
+v248 で `pianoMemoryEcho` を新設したが「退屈」感が残っていそう(ユーザー
+「進めて」継続)。専用 echo の 2 ツマミを上げて wash character を強める。
+
+### v251 の修正(engine.js)
+
+- `pianoMemoryEcho.feedback`: `0.20 → 0.24` — tail を少しだけ延ばす
+  (`globalDelay` の 0.32 よりまだ短いので next chord 前に decay 完了は維持)。
+- `pianoMemorySend` Gain: `0.32 → 0.42` — 第1エコーが ≈ -10 dB → -7.5 dB に。
+  低音 chord に対し echo が明確に乗る。
+- on-beat attack は引き続き dry 直結なので v244 の groove lock は不変。
+- `engine.js?v=fm-110`(+ `audio/music-*.js` 5モジュール)、`hazama-fm-v251`。
+
+これでも「退屈」が残れば次は onset jitter を 0-12ms 単側 → ±8ms 中央寄せで
+humanize を強める、または volume +2dB で presence を上げる。
 
 ---
 
