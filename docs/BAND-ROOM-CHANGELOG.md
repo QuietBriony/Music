@@ -1,10 +1,54 @@
-# Band Room — Changelog (v65 → v248 compact)
+# Band Room — Changelog (v65 → v249 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v249 compact — AI 再現の bass を kick に lock（±50ms ポケット）
+
+v247 でバックビートの velocity フロアを入れ kick/snare は立つようになった
+が、ユーザーの「グルーブない」の次のレイヤー: **bass と drums が別々に
+鳴っているように聞こえる**。バンド感の核は「リズム隊が同じ pocket に
+入る」こと — bass の onset が kick と同居して初めて「2人が一緒に
+弾いている」音になる。
+
+### 現状（v249 前）
+
+- `triggerBassAgent` は `step.sub * subTime + microMs` で 16分グリッドに
+  そのままスケジュール。
+- `playDrumHit` で鳴る kick は frame の `microMs` で僅かにずれることがある
+  （`cramps-punk` プロファイルは 0 だが、librosa 元データの microMs は
+  非ゼロのことがある）。
+- 結果: bass がグリッドに固定、kick が源データ準拠 → 同拍でも数ms ずれ
+  ＝ "tight" になりきらない。
+
+### v249 の修正（band-room.js）
+
+`triggerBassAgent` 内で **bass note を最寄り kick に snap**:
+
+1. `ctx.events` から kick の絶対時刻（秒）リストを生成。
+2. 各 bass step について、最寄り kick との差が **±50ms 以内**なら kick の
+   時刻に snap。50ms を越える bass note は意図的な syncopation と判断し
+   グリッドに残す（funk の anticipation 等を保護）。
+3. frame に kick が一つも無い場合は、v106 / v247 の補強が beat 0 + beat 2
+   に kick を補うので、ロック target もそれを mirror（`[0, 2*beatTime]`）。
+
+これでドラム＋ベースが1つのリズム声部として鳴る。原音（stems）は別
+経路なので不変。CPU 影響なし（純粋なスケジューリング計算）。
+
+### 次の groove レバー候補
+
+実機 AB でまだ足りなければ:
+- 小さなデフォルト swing（cramps-punk は 0 維持、lofi / jazz / hip-hop は
+  自動 swing オン）
+- velocity humanize を ±4% → ±10%（ドラムの呼吸感を増やす）
+- fill バリエーション増（4小節周期感を消す）
+
+- `band-room.js?v=br-139`、`hazama-fm-v249`。
 
 ---
 
