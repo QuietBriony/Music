@@ -1,10 +1,37 @@
-# Band Room — Changelog (v65 → v251 compact)
+# Band Room — Changelog (v65 → v252 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v252 compact — AI 再現ドラム humanize 拡幅（±4% → ±10%）
+
+v247 でバックビート velocity フロア（kick 0.82 / snare 0.86）を入れたら、
+強拍は確かに立つようになったが、上に乗っていた `±4%` のランダム
+humanize が**相対的に狭すぎ**て「機械が大きく叩いている」音に近かった。
+リアル drummer は ±10% 程度の dynamic スイングをポケット内で見せる
+（kick が常に同じ強さで叩かれることは無い）。
+
+### v252 の修正（band-room.js）
+
+ドラムトリガーの velocity humanize 係数:
+`(Math.random() - 0.5) * 0.08`（±4%） → `* 0.20`（±10%）
+
+これで:
+- kick 0.82 ベース → 0.74-0.90 のスイング
+- snare 0.86 ベース → 0.77-0.95 のスイング
+- hat / ghost も比例して広がる（既存の ghost-note variation は temporal、
+  別レイヤなのでぶつからない）
+
+ポケット（v249/v250 の bass+guitar→kick lock）はそのまま維持される。
+タイミング jitter（v118 の ±3ms、kick 除外）は今回はそのまま — 拡幅は
+別 round で。原音は不変。
+
+- `band-room.js?v=br-141`、`hazama-fm-v252`。
 
 ---
 

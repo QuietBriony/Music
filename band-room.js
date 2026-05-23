@@ -3878,8 +3878,14 @@
           // v118: velocity humanize — ±4% perturb, accent-friendly
           // v137: mic follow scale — 演奏の音量で drum velocity を ±30% スケール
           // v209: phraseMult layers the 4-bar phrase shape on top (±6%)
+          // v252: humanize widened ±4% → ±10%. v247 added backbeat velocity
+          // floors (kick 0.82, snare 0.86) so the strong hits are now loud
+          // and steady — the ±4% breath was too tight on top of that, the
+          // drum line read as "machine-loud" rather than a human player.
+          // ±10% lets the kick swing 0.74-0.90 and the snare 0.77-0.95 —
+          // a real drummer's pocket dynamic without sacrificing the pocket.
           const micScale = micFollowVelocityScale();
-          let vel = clamp(rawVel * micScale * phraseMult * (1 + (Math.random() - 0.5) * 0.08), 0.05, 1);
+          let vel = clamp(rawVel * micScale * phraseMult * (1 + (Math.random() - 0.5) * 0.20), 0.05, 1);
           // v122: ghost-note variation — 16th hat の弱拍を時々もっと弱く、
           // 強拍を時々もっと強く。一様な hat 刻みの "machine" 感を消す
           if (evt.instrument === "hat") {
