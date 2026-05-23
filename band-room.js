@@ -3701,8 +3701,32 @@
     const plan = guitarSparseStrums(guitarAgentPlan(ctx));  // v241: ~8 strums/bar → ~2 (sparse comp)
     const notesPerStrum = clamp(Math.floor(9 / Math.max(1, plan.length)), 1, notes.length);
     const voicing = notes.slice(0, notesPerStrum);
+    // v250: guitar → kick onset lock (same ±50ms pocket as v249 bass).
+    // Rock/punk rhythm guitar stabs typically land with the kick (1/3 in
+    // cramps-punk); locking the guitar strums to the kick brings the
+    // third rhythm-section voice into the same pocket as bass + drums.
+    // Strums more than 50ms from any kick are intended syncopation —
+    // left on grid. (Inline duplicate of v249's bass-lock math; will
+    // extract a helper if a third agent needs the same logic.)
+    const kickTimes = (ctx.events || [])
+      .filter((e) => e.instrument === "kick")
+      .map((e) => (e.beat || 0) * ctx.beatTime + (e.sub || 0) * ctx.subTime + (e.microMs || 0) / 1000);
+    if (kickTimes.length === 0) {
+      kickTimes.push(0, 2 * ctx.beatTime);
+    }
+    const SNAP_WINDOW_SEC = 0.050;
     plan.forEach((step) => {
-      const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
+      let baseOffset = step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
+      let nearestDelta = Infinity;
+      let nearestKick = null;
+      for (const kt of kickTimes) {
+        const d = Math.abs(kt - baseOffset);
+        if (d < nearestDelta) { nearestDelta = d; nearestKick = kt; }
+      }
+      if (nearestKick !== null && nearestDelta <= SNAP_WINDOW_SEC) {
+        baseOffset = nearestKick;
+      }
+      const t = time + baseOffset;
       try { guitarSynth.triggerAttackRelease(voicing, step.dur || "16n", t, step.vel); } catch (e) {}
     });
   }
