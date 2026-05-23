@@ -5823,7 +5823,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = "band-room.prefs.v1";
-  const MIX_PREFS_VERSION = "v168-default-mix";
+  const MIX_PREFS_VERSION = "v254-default-parts";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -5843,6 +5843,17 @@
     "br-tape-warmth": { old: "10", current: "7" },
     "br-loudness": { old: "0", current: "-1" }
   };
+  // v254: AI 再現 default-parts migration. The procedural voice agent
+  // synthesises a chord-tone melody that doesn't sound like a real vocal
+  // line — with all 5 parts on, the AI 再現 reads as a wall of texture
+  // rather than music. Defaulting voice OFF makes the baseline a 4-piece
+  // instrumental (drums + bass + guitar + chord pad), which sits more
+  // naturally as music. Users who want to hear the synth lead can enable
+  // it in the UI; the toggle stays. Only flips users who had the old
+  // default (true) — customised values (already false) are left alone.
+  const V254_DEFAULT_TOGGLES_MIGRATION = {
+    "br-toggle-voice": { old: true, current: false }
+  };
 
   function loadPrefs() {
     try {
@@ -5854,11 +5865,24 @@
 
   function migratePrefsForCurrentMix(prefs) {
     if (!prefs || prefs.mixPrefsVersion === MIX_PREFS_VERSION) return prefs;
-    const next = { ...prefs, sliders: { ...(prefs.sliders || {}) }, mixPrefsVersion: MIX_PREFS_VERSION };
+    const next = {
+      ...prefs,
+      sliders: { ...(prefs.sliders || {}) },
+      toggles: { ...(prefs.toggles || {}) },
+      mixPrefsVersion: MIX_PREFS_VERSION
+    };
     let changed = prefs.mixPrefsVersion !== MIX_PREFS_VERSION;
     Object.entries(V167_DEFAULT_MIX_MIGRATION).forEach(([id, rule]) => {
       if (String(next.sliders[id]) === rule.old) {
         next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
+    // v254: toggle defaults migration. Only flips toggles whose saved value
+    // matches the OLD default — if the user already customised, leave alone.
+    Object.entries(V254_DEFAULT_TOGGLES_MIGRATION).forEach(([id, rule]) => {
+      if (next.toggles[id] === rule.old) {
+        next.toggles[id] = rule.current;
         changed = true;
       }
     });
