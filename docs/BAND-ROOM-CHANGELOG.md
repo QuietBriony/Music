@@ -1,10 +1,46 @@
-# Band Room — Changelog (v65 → v244 compact)
+# Band Room — Changelog (v65 → v245 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v245 compact — AI 再現の音色磨き（モノ系2パートのみ fat オシレータ）
+
+ユーザー報告: AI 再現は鳴るが「音楽になってない」。音が**ビープっぽい**
+— ユーザー自身の見立てで「synth のまま音色を磨く」方針。
+
+原因: AI 再現の音程パート4種（ベース／ギター／ボイス／コード）はすべて
+**単発のオシレータ1基**で鳴っていた。1基の sawtooth は倍音は豊かでも
+位相が固定 → 幅・揺らぎがなく、静的な「ビープ」に聞こえる。
+
+### v245 の試行と確定（band-room.js）
+
+- 4パートすべてを **fat（デチューン・ユニゾン）** に切り替える試行
+  （bass count 3 / guitar 2 / voice 2 / chord 2）をプレビューでフリーズ
+  オラクルにかけたところ、**ギター＋コードの PolySynth × fat 2基/音 で
+  オシレータ数が倍増（最大 22 → 46 基）→ レンダラが 30 秒以内に停止**。
+  Tone PolySynth は1音=1FatOscillator（内部 N 基）なので polyphony cap
+  10 は維持されるが、定常 CPU が伸びて choke した。
+- 確定方針: **mono 系の cheap な2パートだけ fat に残し、PolySynth 2基は
+  従来の単発オシレータに戻す**。CPU 余裕を保ちつつ低音と歌の「ビープ
+  解消」を達成する最小構成。
+  - ベース `makeSynthBass`: `fatsawtooth` 3基・spread 20（MonoSynth →
+    定常 3 基、安全）。下の lowpass が余分な倍音を抑えるので「太いが
+    揺れない」。
+  - ボイス `makeVoiceBox`: `fatsawtooth` 2基・spread 12（AMSynth →
+    carrier 2 基、控えめ）。既存の vibrato LFO（voice.detune）と
+    喧嘩しない量。
+  - ギター `makeGuitar`: `sawtooth`（単発）に**復旧**。再試行は別 round。
+  - コード `makeChordSynth`: `c.oscType`（単発）に**復旧**。既存の
+    Chorus と高域 FX が幅出しを担う。
+- 原音（stems）はこの系統を通らないので不変。
+- 定常オシレータ数 ≦ 旧 22 + 4 ＝ 約 26 基。choke 域から十分外。
+- デチューン量は推定。実機の耳で微調整できる。
+- `band-room.js?v=br-137`、`hazama-fm-v245`。
 
 ---
 
