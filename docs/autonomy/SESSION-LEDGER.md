@@ -19,6 +19,33 @@
 
 ---
 
+## 2026-05-23 — Hazama FM 低音ピアノの「変に遅く入る」を解消 (v244)
+- agent     : Claude Code (Opus 4.7 / 1M context)
+- goal      : v242 試聴でユーザー再報告「低めのピアノが変に遅く入る ＝ 乗れない原因音、
+  まだ解消してない」を、本当の原因(`pianoMemory` の onset drag)に当てて修正
+- repos     : Music
+- shipped   : PR #199 (squash merge 38e258c) — engine.js: memory-pluck `pluckTime` の
+  ハード +18ms＋ランダム最大 +54ms を除去、piano-memory `driftedTime` のランダム
+  押し出し 0-46ms → どちらも `time + random·0.012` (0-12ms) に圧縮。
+  cache `engine.js?v=fm-107`(+ audio/music-* 5モジュール)、`sw.js hazama-fm-v244`
+- 原因      : `pianoMemory`(triangle + 1800Hz lowpass の低音域コンプ声部)が、キック
+  /ベース(HumanGrooveGovernor で ±数ms)に対し +18〜54ms 後ろにスケジュールされて
+  いた。低音ピアノだけ 15-50ms ドラッグ → 「変に遅く入る」「乗れない」
+- v242 学び : v242(submerge `drive 0→0.60`)は section drum gate の冷スタート無音化を
+  直したが、ユーザー報告の groove 問題とは別レイヤーだった。「低音」という共通語で
+  ドラム/ベースのゲートと混同したが、本丸は pianoMemory の trigger timing。
+  一段詳しく(「低めのピアノかな」)聞き直して再投入できたのが教訓
+- stack-check: PASS 15 / FAIL 0 / SKIP 0 (0 BAD)
+- backlog   : なし(直接のユーザー依頼)
+- 並走      : Band Room 別チャットが同セッション中に v239〜v243 を push(5版)。v244 は
+  origin/main v243 にプル後ブランチを切ったのでマージ衝突なし一発通過
+- next      : 試聴待ち。低音ピアノがキック/ベースのポケットに入って groove に乗れるか。
+  まだモタつきが残れば次は (a) `globalDelay` の 8n PingPong echo を pianoMemory だけ
+  短く/切る、(b) 装飾 reply/shade テールを詰める
+- blockers  : なし
+
+---
+
 ## 2026-05-23 — Hazama FM 低音打ち込みの入場遅延を解消 (v242)
 - agent     : Claude Code (Opus 4.7 / 1M context)
 - goal      : ユーザー報告「低音(キック＋ベース)の打ち込みが入るのをためすぎて乗れない」を
