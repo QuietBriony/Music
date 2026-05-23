@@ -3611,8 +3611,35 @@
   }
 
   function triggerBassAgent(ctx, time) {
+    // v249: bass → kick onset lock. The bass agent's note times are
+    // grid-quantized; the drum kicks have micro-offsets from the source
+    // (or stay on grid for cramps-punk). Snapping bass onsets to the
+    // nearest kick within a tight ±50ms pocket window locks the
+    // bass-and-drums pair into one rhythm-section voice — the single
+    // biggest "band" groove move. Bass notes more than 50ms from any
+    // kick are left on grid: those are intended syncopation, not pocket.
+    const kickTimes = (ctx.events || [])
+      .filter((e) => e.instrument === "kick")
+      .map((e) => (e.beat || 0) * ctx.beatTime + (e.sub || 0) * ctx.subTime + (e.microMs || 0) / 1000);
+    // When the frame has no kicks at all, v106 / v247 sparse-frame
+    // reinforcement adds them at beat 0 + beat 2 (sub 0). Mirror those
+    // here so the bass still has lock targets in rescue sections.
+    if (kickTimes.length === 0) {
+      kickTimes.push(0, 2 * ctx.beatTime);
+    }
+    const SNAP_WINDOW_SEC = 0.050;
     bassAgentPlan(ctx).forEach((step) => {
-      const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
+      let baseOffset = step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
+      let nearestDelta = Infinity;
+      let nearestKick = null;
+      for (const kt of kickTimes) {
+        const d = Math.abs(kt - baseOffset);
+        if (d < nearestDelta) { nearestDelta = d; nearestKick = kt; }
+      }
+      if (nearestKick !== null && nearestDelta <= SNAP_WINDOW_SEC) {
+        baseOffset = nearestKick;
+      }
+      const t = time + baseOffset;
       try { synthBass.triggerAttackRelease(step.note, step.dur || "8n", t, step.vel); } catch (e) {}
     });
   }
