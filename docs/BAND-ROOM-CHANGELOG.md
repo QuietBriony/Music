@@ -1,10 +1,55 @@
-# Band Room — Changelog (v65 → v253 compact)
+# Band Room — Changelog (v65 → v254 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v254 compact — AI 再現の voice をデフォルト OFF（4-piece instrumental が baseline）
+
+ユーザー報告: v247-v252 で kick/snare ポケット＋bass/guitar lock＋humanize
+拡幅を入れたが「音はちゃんと出るが、音楽として成立してない」。
+
+診断: AI 再現が 5 パート全部ナッシング聞こえる状態だと、procedural な
+voice agent が chord-tone のアルペジオ（root → 3rd → 5th → 3rd を 4 小節
+contour で回す）を毎拍鳴らす → **リアルな歌のラインに聞こえない**ので、
+他 4 パートが揃っていても「機械が変な歌をつけてる」音になる。procedural
+melody は実曲の vocal line を再現できない（chord と tempo の枠だけ
+合わせても vocal は別物）。
+
+### v254 の修正
+
+1. **`band-room.html`**: `br-toggle-voice` から `checked` を削除 →
+   新規ユーザは voice OFF で起動。drums + bass + guitar + chord pad の
+   4-piece instrumental が baseline。
+2. **`band-room.js`**: `MIX_PREFS_VERSION` を `v168-default-mix` →
+   `v254-default-parts` に bump、`V254_DEFAULT_TOGGLES_MIGRATION` を新設。
+   - 既存ユーザの localStorage に `br-toggle-voice: true`（旧デフォルト）
+     があれば `false` に migrate（カスタマイズで `false` にしていた人は
+     そのまま残る → 二重 OFF にはならない）。
+   - 既存の slider migration（v167→v168 mix balance）は新しいバージョン
+     文字列でも引き続き適用。
+3. **`scripts/check-band-room-logic.mjs`**: migration assertion を新
+   バージョン文字列に追随。
+
+voice が欲しいユーザは UI のトグルで都度オンに戻せる。停止スコープは
+voice agent のみ — drums/bass/guitar/chord 各 agent の挙動は v245-v252
+の蓄積を維持。原音（stems）はこの経路を通らず不変。
+
+### 「音楽として成立」改善の次の候補（実機 AB で）
+
+- voice OFF で「だいぶマシ」 → 同方向: chord pad 音量を 20-30% 下げて
+  bass+guitar+drums の三声バランスを際立たせる
+- voice OFF でも「まだダメ」 → texture でなく**構成**の問題 →
+  section dynamics（verse 静か→chorus 大きい）、agent の section-aware
+  enable/disable
+- voice OFF で「歌が無くてさみしい」 → voice agent を sustained pad
+  （chord root 1音を 2 小節 hold）に簡素化、procedural melody 廃止
+
+- `band-room.js?v=br-142`、`hazama-fm-v254`。
 
 ---
 
