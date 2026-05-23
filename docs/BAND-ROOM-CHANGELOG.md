@@ -1,10 +1,34 @@
-# Band Room — Changelog (v65 → v247 compact)
+# Band Room — Changelog (v65 → v248 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v248 compact — Hazama FM 低音ピアノの "memory" echo を専用 delay で復活
+
+ユーザー報告: v244+v246 で groove は乗れるようになったが「退屈な音」。
+v246(`pianoMemory` を `globalDelay` から完全に dry に解除)で over-correct
+— smear を消すために "memory" たる echo character を全部剥がしてしまった。
+
+### v248 の修正(engine.js)
+
+- `pianoMemoryEcho` という専用 `PingPongDelay` を新設(`delayTime "8n"`、
+  `feedback 0.20`、`wet 1` 純 wet)+ `pianoMemorySend` という `Gain(0.32)` の
+  send。dry は `masterGain` 直結のまま。
+- 結果: v244-tight の on-beat attack は維持しつつ、8n のソフトな echo tail
+  (≈ -10 dB 相対、feedback 0.20 で速い decay) で wash character を復活。
+- `globalDelay` の feedback 0.32 より短い feedback ＝ echo は次の chord 前に
+  decay し切る → wash は戻るが smear は最小限。bass / texture は引き続き
+  `globalDelay` を共有(独自 rhythmic 装飾はそのまま)。
+- `engine.js?v=fm-109`(+ `audio/music-*.js` 5モジュール)、`hazama-fm-v248`。
+
+これでも「退屈」が残れば次は (a) `pianoMemory` の onset jitter を 0-12ms 単側
+から ±6ms 中央寄せに戻して humanize を強める、(b) volume を ~+3dB 上げて
+presence を上げる、のどちらか。
 
 ---
 
