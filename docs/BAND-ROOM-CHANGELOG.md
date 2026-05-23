@@ -1,10 +1,33 @@
-# Band Room — Changelog (v65 → v252 compact)
+# Band Room — Changelog (v65 → v253 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v253 compact — Hazama FM pianoMemory を humanize & 前に出す
+
+v248〜v251 で echo character を段階的に復活させたが、wash だけでは
+character の幅が限られる。今度は onset を humanize ＋ volume +2dB で
+**presence と人間味**を両方持ち上げる。
+
+### v253 の修正(engine.js)
+
+- `pluckTime` (memory-pluck): `time + Math.random()*0.012` (0-12ms 単側) →
+  `time + (Math.random()-0.5)*0.016` (**±8ms 中央寄せ**)。kick の
+  HumanGrooveGovernor と同じ centered-jitter スタイルで humanize。
+  notes can land slightly early or late — robotic 感が抜ける。
+- `driftedTime` (piano-memory): 同じく **±8ms 中央寄せ**。
+- `pianoMemory.volume.value`: `-41` → `-39` (**+2dB**)。layer の presence を
+  控えめに上げる(押し付けがましくならない量)。
+- v244 の groove lock は維持(jitter 範囲は同じ 16ms 幅、中心だけ 0 へ移動)。
+- `engine.js?v=fm-111`(+ `audio/music-*.js` 5モジュール)、`hazama-fm-v253`。
+
+これでも「退屈」が残れば次は `pianoMemory` の発火 gate を広げる(現在は
+step%16===4 と 10 が中心 ＝ 2 トリガ/小節)。
 
 ---
 
