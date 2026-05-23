@@ -7715,7 +7715,11 @@ const glass = new Tone.FMSynth({
   modulationEnvelope: { attack: 0.004, decay: 0.085, sustain: 0, release: 0.13 }
 }).connect(globalDelay);
 
-const pianoMemoryFilter = new Tone.Filter(1800, "lowpass").connect(globalDelay);
+// v246: pianoMemory used to route through globalDelay (8n PingPong, wet 0.21).
+// On a sustained low chord the stereo 8n echo overlapped the still-ringing
+// original = temporal smear that fought groove lock ("乗れない"). Route dry to
+// masterGain; bass + texture still use the delay for their own rhythmic feel.
+const pianoMemoryFilter = new Tone.Filter(1800, "lowpass").connect(masterGain);
 const pianoMemory = new Tone.PolySynth({
   voice: Tone.Synth,
   // BL-022: capped from 48. Short 16n/32n/64n notes free voices fast,
