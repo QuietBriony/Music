@@ -1,10 +1,32 @@
-# Band Room — Changelog (v65 → v245 compact)
+# Band Room — Changelog (v65 → v246 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v246 compact — Hazama FM 低音ピアノを dry 経路へ(globalDelay 経由を解除)
+
+v244 で `pianoMemory` の onset drag(memory-pluck の +18ms ハードオフセット等)を
+解消したが、`pianoMemory` は今も `globalDelay`(8n PingPong、wet 0.21)経由で
+出ていた。sustained な低音コードにステレオ 8n echo が重なり、元の chord が
+鳴り終わる前に echo が乗って **時間的にスメア**(「いつ chord が始まったか」が
+曖昧になる) → groove と戦う。
+
+bass / texture は短い percussive 信号なので 8n echo はリズムの装飾になる。
+**sustained な低音コードだけ delay と相性が悪い**。
+
+### v246 の修正(engine.js)
+
+- `pianoMemoryFilter` を `globalDelay` → `masterGain` に付け替え。pianoMemory は
+  100% dry になり、kick/bass のポケットに乗った clean な低音コードとして鳴る。
+- bass / texture / jazz guitar sampler / 他の delay 経由レイヤーは不変。
+- `engine.js?v=fm-108`(+ `audio/music-*.js` 5モジュール)、`hazama-fm-v246`。
+
+これでもまだ「変に遅く入る」感が残れば、次は装飾の reply/shade テールを詰める。
 
 ---
 
