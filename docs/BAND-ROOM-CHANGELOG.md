@@ -1,10 +1,47 @@
-# Band Room — Changelog (v65 → v255 compact)
+# Band Room — Changelog (v65 → v256 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v256 compact — Hazama FM 「magic moment」機構の強化(境界フィル ＋ 節内息づき)
+
+ユーザー: 「たまにふっと、いい流れと出会える ＝ 音楽。そういう仕組み入れてる？
+それを伸ばすか強化して」。要望は新規追加ではなく **既存の magic-moment
+機構を強化** すること。
+
+調査(agent map)で確認された既存機構:
+- SECTION surge (peak section、drive 1.55)
+- `SectionState.fillCue` (境界フィル、1小節)
+- `cueSectionIdent` (境界の ident cue)
+- `INTRA_SECTION_BREATH` (節内の sin 弧 ±7-8 UCM)
+- SignatureCell × 4 (memoryPluck / ghostGlass / lowBreath / brokenTexture)
+- MotifMemory afterimage、BPM-zone refrain、9 ラジオ番組、Album arc ACID
+  chapter (arc36 モード時のみ、最強の事前計画ピーク)
+
+→ いずれも 「弱い・控えめ」設定で knob 上の調整余地が大きい。v256 では
+**節境界と節内アーク** の 3 つを意味的に強化:
+
+### v256 の修正(engine.js)
+
+- `INTRA_SECTION_BREATH`: `{ wave: 8, creation: 8, resource: 7, void: -7 }` →
+  **`{ wave: 18, creation: 18, resource: 14, void: -14 }`** — 節中盤の UCM
+  アークが ±7-8 → ±14-18 で明確に知覚可能なレベルに。**節の中で「ふっと
+  上がる/下がる」モーメントが立ちやすい**。
+- `fillBoost` (`scheduleStep`): `0.14 → 0.32` — 境界フィル1小節のハット密度
+  ブーストを 2.3 倍に。**節境界が「何か起きてる」フィルとして明確に聞こえる**。
+- `GrooveState.microJitterScale` (フィル時): `1.4 → 1.9` — フィルバーの
+  micro-timing variance を上げて groove flex を強化。境界の「うねり」が出る。
+- `engine.js?v=fm-112`(+ `audio/music-*.js` 5モジュール)、`hazama-fm-v256`。
+
+これでも magic moment が薄ければ、次は SignatureCell の velocity cap 引き上げ、
+cueSectionIdent の velocity 倍化、または surge 入り口の drop 追加(新規機構)を検討。
+
+Band Room は不変。
 
 ---
 
