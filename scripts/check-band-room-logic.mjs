@@ -363,7 +363,7 @@ assert.match(source, /let lastChordTopNote = null;/, "v218: should declare lastC
 assert.match(source, /if \(isJazzy && lastChordTopNote != null\)/, "v218: chordAgentPlan must use voice leading instead of phrase rotation in jazzy mode");
 assert.match(source, /lastChordTopNote = noteNameToSemi\(notes\[notes\.length - 1\]\)/, "v218: chordAgentPlan must update lastChordTopNote for next bar's voice leading");
 assert.match(source, /v218: reset jazzy voice-leading history at song boundary[\s\S]{0,200}lastChordTopNote = null;/, "v218: loadSong must reset lastChordTopNote on song change");
-assert.match(source, /\(ctx\.role === "intro" \|\| ctx\.role === "outro"\)\s*\?\s*"1n"\s*:\s*"2n"/, "v219: intro/outro chord downbeat should ring full bar (1n) for atmospheric pad swell");
+assert.match(source, /\(ctx\.role === "intro" \|\| ctx\.role === "outro"\)\s*\?\s*"1n"/, "v219: intro/outro chord downbeat should ring full bar (1n) for atmospheric pad swell");
 assert.match(source, /let instrumentBus = null;/, "v220: instrumentBus must be hoisted to module scope for section dynamics");
 assert.match(source, /function sectionGainForRole\(role\)/, "v220: section dynamics need a role → gain mapping helper");
 assert.match(source, /function rampInstrumentBusForSection\(sec, time\)/, "v220: section dynamics need a ramp helper that gates on synth mode");

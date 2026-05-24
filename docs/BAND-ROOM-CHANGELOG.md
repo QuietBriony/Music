@@ -1,10 +1,48 @@
-# Band Room — Changelog (v65 → v256 compact)
+# Band Room — Changelog (v65 → v257 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v257 compact — AI 再現 chord pad を non-jazzy 系で whole-note sustain に簡素化
+
+「音楽として成立してない」の **structure 側のレバー**。texture/mix は
+v247-v255 で詰めた、次は agent の**やってる事**を絞る。
+
+v210 で入れた chord agent の phrase rhythm（bar 1 mid-stab・bar 2
+anticipation）は、chord pad に rhythmic events を発生させる設計だった。
+ロック/パンクでは chord pad は背景の harmonic colour であるべきで、
+drums + bass + guitar の rhythm-section foreground の上に**追加の
+リズム情報**が乗っていると整理がつかない。v255 で chord vol を 40 に
+下げてもまだ「ぐじゃつき」が残るのはこれ。
+
+### v257 の修正（`chordAgentPlan`）
+
+非-jazzy かつ非-special-role（break / comp / intro / outro / 高 pressure
+recap 以外）= **rock pad case** に対して:
+
+1. downbeat duration を `"2n"`（半音符）→ **`"1n"`（全音符）** に。
+   chord は1小節フルで鳴り続ける = pad そのもの。
+2. v210 の **phrasePos === 1 mid-stab を削除**。
+3. v210 の **phrasePos === 2 anticipation を削除**。
+4. 結果: 1 onset / 小節、`"1n"` sustain. chord agent は他声部の
+   邪魔をしない pure pad に。
+
+維持するもの:
+- jazzy mode: 既存 comping そのまま（jazz は chord rhythm が音楽の核）
+- break: call-and-response stab そのまま
+- comp: ghost-answer の reactive stab そのまま
+- intro / outro: 既に `"1n"` pad swell（v219）
+- recap with high pressure: chorus 強度の追加 stab そのまま
+
+polyphony 安全: 3 notes × ~1.5 小節 sustain ＝ ~5 voices、cap 10 以内。
+原音不変。CPU 影響ゼロ（onset 数が減るだけ）。
+
+- `band-room.js?v=br-144`、`hazama-fm-v257`。
 
 ---
 

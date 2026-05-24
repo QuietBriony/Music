@@ -3576,11 +3576,34 @@
     // Matches guitar agent's existing outro "1n" treatment. Voice agent
     // already returns [] for intro/outro, so the chord pad isn't competing
     // with a melody line.
+    // v257: chord pad simplification for non-jazzy modes.
+    // The v210 default phrase rhythm (mid-bar stab on bar 1, anticipation
+    // on bar 2) was adding rhythmic events from a part that for rock/punk
+    // should be a sustained background pad. With v254 (voice off) +
+    // v255 (chord vol 40), the chord is already a background colour; the
+    // stabs were extra info competing with drums/bass/guitar rhythm.
+    //
+    // Non-jazzy non-special: 1 onset/bar at "1n" — the chord rings the
+    // full bar as a pad. Polyphony is fine (3 notes × ~1.5 bars sustain =
+    // ~5 voices, well under cap 10).
+    //
+    // jazzy / break / comp / recap-pressure / intro / outro: unchanged —
+    // those modes have their own structural reason to stab (jazz comping
+    // rhythm, break call-response, intro/outro pad swell).
+    const isRockPad = !isJazzy
+      && ctx.role !== "break"
+      && ctx.role !== "comp"
+      && ctx.role !== "intro"
+      && ctx.role !== "outro"
+      && !(ctx.role === "recap" && ctx.pressure > 0.58)
+      && ctx.ghost.length <= 1;
     const downbeatDur = ctx.role === "break"
       ? "4n"
       : (ctx.role === "intro" || ctx.role === "outro")
         ? "1n"
-        : "2n";
+        : isRockPad
+          ? "1n"  // v257: hold the full bar as a pad
+          : "2n";
     const downbeatVel = isJazzy ? 0.28 : 0.34;
     const steps = [{ sub: 0, notes, dur: downbeatDur, vel: downbeatVel }];
 
@@ -3597,16 +3620,10 @@
       });
     } else if (ctx.role === "recap" && ctx.pressure > 0.58) {
       steps.push({ sub: 8, notes, dur: "4n", vel: 0.24 });
-    } else if (ctx.role !== "intro" && ctx.role !== "outro") {
-      // v210: default phrase rhythm — bar 1 mid-stab, bar 2 anticipation,
-      // bar 0 / bar 3 stay as just the downbeat (let the pad breathe).
-      if (phrasePos === 1) {
-        steps.push({ sub: 8, notes, dur: "4n", vel: clamp(downbeatVel * 0.72, 0.18, 0.32) });
-      } else if (phrasePos === 2) {
-        // anticipation into bar 3 — the "and" of beat 4 (sub 14), 8n short
-        steps.push({ sub: 14, notes, dur: "8n", vel: clamp(downbeatVel * 0.78, 0.18, 0.32) });
-      }
     }
+    // v257: non-jazzy non-special path (the rock pad case) emits ONLY the
+    // downbeat — the v210 phrase-rhythm stabs are removed. drums + bass +
+    // guitar carry the rhythm; chord just holds.
     return dedupeAgentSteps(steps, 3);
   }
 
