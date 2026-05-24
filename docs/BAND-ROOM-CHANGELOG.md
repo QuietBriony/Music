@@ -1,10 +1,66 @@
-# Band Room — Changelog (v65 → v264 compact)
+# Band Room — Changelog (v65 → v265 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v265 compact — AI 再現 guitar をデフォルト acoustic CDN サンプルに（v231 再監査）
+
+ユーザー指示「進めて」+ v262 で残課題に挙げた「bass-acoustic / guitar-
+acoustic CDN 検証」。2026 再監査の結果、**v231 の "unservable" 判定が
+guitar 側は古い**ことが判明:
+
+| 候補 | 2026 再監査結果 | 判定 |
+|---|---|---|
+| `guitar-acoustic` | **11/11 ノート HTTP 200** | ✅ 安全にデフォルト化 |
+| `guitar-nylon` | 11/11 OK | ✅ 選択肢として有効 |
+| `guitar-electric` | 8/13 OK（midrange C#3/E3/C#4/E4/C#5 が 403）| ⚠️ Sampler 補間で動く、デフォルト不適 |
+| `bass-electric` | 5/9 OK（**bass core range の F#1/A1/F#2/A2 が 403**）| ❌ v231 判定維持、synth bass 継続 |
+
+### v265 の修正（band-room.js）
+
+1. `state.guitarInstrument`: `null` → `"guitar-acoustic"`
+2. `state.bassInstrument`: そのまま `null`（bass-electric の gap は補間
+   困難な bass core range なので synth を維持）
+3. v231 の `guitarInstrument === "guitar-electric"` 強制 null 化を**削除**。
+   8/13 servable + Sampler 補間で実用可能、ユーザがドロップダウンで
+   guitar-electric 選んだら永続するように。bass の v231 強制 null 化は
+   そのまま（bass-electric は依然 broken）。
+4. `MIX_PREFS_VERSION`: `v262-piano-chord` → `v265-guitar-acoustic`
+5. `V265_GUITAR_INSTRUMENT_MIGRATION`: 保存済み null/"" → "guitar-acoustic"。
+   v262 chord migration と同パターン。
+6. `scripts/check-band-room-logic.mjs`: v231 assertion を更新（acoustic
+   デフォルト + v231 強制 null 化削除を assert）。
+
+### AI 再現 baseline 最終形（v245-v265 累積）
+
+| パート | 音源 | 経緯 |
+|---|---|---|
+| drums | 🌐 acoustic CDN kit | v259 |
+| bass | synth fat saw | v245 (bass-electric は依然 broken) |
+| **guitar** | 🌐 **acoustic CDN** | **v265 ← 今 PR**、v231 deprecation を再監査で訂正 |
+| chord | 🌐 Salamander Grand Piano | v262 |
+| voice | OFF | v254 |
+
+→ **5パート中4パートが生音サンプル**、synth は bass のみ（CDN 物理的に
+不可なので合成で対応）。「生音方面に持っていけない？」のユーザ要望
+ほぼ達成。
+
+### 影響
+
+- CPU: Tone.Sampler 1 つ追加。chord (Sampler) + drums (online kit) は
+  既存、guitar も Sampler 化で系統一致、追加負荷は限定的。
+- ネットワーク: 初回オンライン再生で guitar-acoustic 11 ファイル fetch
+  (~2.8 MB)、SW キャッシュ後はオフライン instant。
+- 既存ユーザの guitar 設定: v231 で強制 null されてた人は v265 で
+  acoustic に migrate。v265 後にドロップダウンで guitar-electric を
+  選んだら永続。
+
+- `band-room.js?v=br-150`、`hazama-fm-v265`。
 
 ---
 

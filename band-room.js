@@ -67,8 +67,15 @@
                                           // sustain (chord rings out the bar instead of pad-flat). null
                                           // = synth fallback if user explicitly picks it from the
                                           // chord instrument dropdown.
-    bassInstrument: null,   // v231: was "bass-electric" — those CDN samples are unservable (jsDelivr 50MB limit); use the internal synth bass
-    guitarInstrument: null, // v231: was "guitar-electric" — those CDN samples are unservable (jsDelivr 50MB limit); use the internal synth guitar
+    bassInstrument: null,   // v231: was "bass-electric" — CDN samples partial-servable (5/9 notes OK; F#1/A1/F#2/A2 = bass core range still 403). Internal synth bass remains the default. Re-audited v265.
+    guitarInstrument: "guitar-acoustic",  // v265: was null (v231 synth fallback). 2026 re-audit (HEAD-checked all CDN samples) shows:
+                                          //   guitar-acoustic: 11/11 notes OK ✓
+                                          //   guitar-nylon:    11/11 notes OK ✓
+                                          //   guitar-electric:  8/13 notes OK (midrange C#3/E3/C#4/E4/C#5 = 403 Forbidden)
+                                          // Switching to acoustic for full-servability + "生音" continuation of v259 (drums)
+                                          // + v262 (chord piano). cramps-punk users can re-select guitar-electric from
+                                          // the dropdown if they want the gritty electric tone (Tone.Sampler interpolates
+                                          // the missing notes). null = synth fallback if explicitly chosen.
     voiceInstrument: null,  // v111: catalog instrument id for vocal/melody lead (null = synth)
     loopA: null,            // v80: A-B loop range (null = no loop)
     loopB: null
@@ -5902,7 +5909,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = "band-room.prefs.v1";
-  const MIX_PREFS_VERSION = "v262-piano-chord";
+  const MIX_PREFS_VERSION = "v265-guitar-acoustic";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -5969,6 +5976,17 @@
     olds: [null, ""],
     current: "salamander-piano"
   };
+  // v265: guitarInstrument null/"" → "guitar-acoustic". 2026 re-audit
+  // showed the CDN samples are fully servable now (11/11 notes); v231
+  // had blanket-deprecated them. Same conditional pattern as v262: only
+  // flips the null/"" defaults; users who chose another instrument keep
+  // theirs. bassInstrument left at null because bass-electric still has
+  // gaps in the bass core range (F#1/A1/F#2/A2 = 403) — synth bass is
+  // safer for that part.
+  const V265_GUITAR_INSTRUMENT_MIGRATION = {
+    olds: [null, ""],
+    current: "guitar-acoustic"
+  };
 
   function loadPrefs() {
     try {
@@ -6023,6 +6041,12 @@
     if (Object.prototype.hasOwnProperty.call(next, "chordInstrument")
         && V262_CHORD_INSTRUMENT_MIGRATION.olds.includes(next.chordInstrument)) {
       next.chordInstrument = V262_CHORD_INSTRUMENT_MIGRATION.current;
+      changed = true;
+    }
+    // v265: guitarInstrument migration — same shape as v262 above.
+    if (Object.prototype.hasOwnProperty.call(next, "guitarInstrument")
+        && V265_GUITAR_INSTRUMENT_MIGRATION.olds.includes(next.guitarInstrument)) {
+      next.guitarInstrument = V265_GUITAR_INSTRUMENT_MIGRATION.current;
       changed = true;
     }
     next.__mixMigrated = changed;
@@ -6145,9 +6169,13 @@
     // v111: guitar instrument
     if (Object.prototype.hasOwnProperty.call(prefs, "guitarInstrument")) {
       state.guitarInstrument = prefs.guitarInstrument || null;
-      // v231: migrate the dead "guitar-electric" sampler pref → null
-      // (synth) — same jsDelivr 50 MB / 403 problem as bass-electric.
-      if (state.guitarInstrument === "guitar-electric") state.guitarInstrument = null;
+      // v265: the v231 force-to-null for "guitar-electric" was removed.
+      // 2026 re-audit: 8/13 sample notes are servable (only midrange
+      // C#3/E3/C#4/E4/C#5 still 403); Tone.Sampler interpolates the gaps
+      // well enough that users who want the gritty electric tone can
+      // pick it from the dropdown and have it persist. bass-electric is
+      // NOT re-enabled — its 403s land squarely on the bass core range
+      // (F#1/A1/F#2/A2) which Sampler can't interpolate cleanly.
       const sel = $("br-guitar-instrument-select");
       if (sel) {
         sel.value = state.guitarInstrument || "";
