@@ -1,10 +1,65 @@
-# Band Room — Changelog (v65 → v258 compact)
+# Band Room — Changelog (v65 → v259 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v259 compact — AI 再現のドラムを**生音方面**に振る（acoustic CDN kit デフォルト化）
+
+ユーザー報告: 「音色は、生音方面には持っていけない？音楽として、リアル
+な感じならいいけど、ただなってる感なんだよね」。v247-v257 で procedural
+の rhythm / structure / mix を詰めたが、**ドラム source 自体が synth**
+（Tone.js MembraneSynth/NoiseSynth etc.）だから「機械が頑張ってる」音
+から逃げられない。
+
+### v259 の修正
+
+**`kitSource` のデフォルトを `synth` → `online/tone-acoustic`**。
+CDN-streamed の**実録 acoustic drum kit**（kick/snare/hat/ghost/fill/
+crash の wav サンプル）に切り替える。
+
+- インフラは v97 で既に存在（`presets/online-samples-catalog.json` に
+  9 種類の CDN kit、`buildKitForSource` が online/<id> パスを処理）。
+- ネットワーク: 初回オンライン再生で読み込み → v230 の SW キャッシュで
+  以降オフラインも OK。
+- bass / guitar の electric サンプルは v231 で unservable と判定済み
+  なので**ドラムだけ**切り替え。chord は引き続き synth pad。voice は
+  v254 で OFF。
+
+### Migration（band-room.js）
+
+- `state.kitSource` 初期値: `"synth"` → `"online/tone-acoustic"`
+- `MIX_PREFS_VERSION`: `v255-chord-tame` → `v259-acoustic-drums`
+- `V259_KIT_SOURCE_MIGRATION` 新設、`migratePrefsForCurrentMix` 内で
+  `kitSource === "synth"` を `"online/tone-acoustic"` に変更。
+- 別の online kit や song-extracted kit を選んでいたユーザはそのまま。
+- UI ドロップダウン（`br-kit-source-select`）に `🌐 acoustic kit` が
+  並ぶので戻したければそこから synth に再選択可能。
+- `scripts/check-band-room-logic.mjs` の version assertion 追随。
+
+### 影響
+
+- AI 再現の drum part が**実録音**に：kick の "thud"、snare の "crack"、
+  hat の "tick" がリアル。v247-v252 の groove pocket と humanize は
+  そのまま acoustic samples 上で発動する。
+- 原音（stems）はこの経路を通らないので不変。
+- 初回 online 再生で 1-2 MB ほどの drum sample 群を fetch。SW キャッシュ
+  後はオフラインも instant。
+
+### 次の「生音」候補
+
+drums が真っ先に決定打。残るは:
+1. **chord**: salamander-piano（CDN）に切り替え（既に MASTER_PRESETS
+   の "lo-fi" / "ambient" で使用例あり、catalog にも存在見込み）
+2. **guitar/bass**: v231 で unservable と判断、再検証してダメなら synth
+   のまま改善
+3. **per-song kit_source override** を実曲リスニング駆動で詰める
+
+- `band-room.js?v=br-145`、`hazama-fm-v259`。
 
 ---
 

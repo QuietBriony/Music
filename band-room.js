@@ -45,12 +45,17 @@
     chordIdx: 0,
     chordBarsRemaining: 0,
     scheduledIds: [],
-    kitSource: "synth",     // v208: default to Tone.js synth voices (drum-floor / drum-frames groove
-                            // through makeDrumKit). Old default "auto-self" played the song-extracted
-                            // wavs (e.g. unripe/continuous/kick-01.wav) — those sound raw / amateur
-                            // because Demucs separation leaves bleed + artifacts. "synth" is the
-                            // foundation the user wants to grow (sakanaction / LCD timbre swaps etc.).
-                            // ("auto-self" = song-self samples, "<src>/<song>" = specific sample kit)
+    kitSource: "online/tone-acoustic",  // v259: default to the Tone.js acoustic CDN kit (real
+                            // sampled drum sounds). After v247-v257 the procedural rhythm/structure
+                            // levers were exhausted but the user still heard "ただ鳴ってる感" — synth
+                            // drums were the largest "fake/electronic" element in the AI band's
+                            // texture. tone-acoustic gives real kick/snare/hat samples; the SW
+                            // caches them (v230) so offline still works after the first online play.
+                            // Old default "synth" (v208) — switchable back via the kit-source
+                            // dropdown. "auto-self" = song-extracted (still retired to synth on
+                            // load — Demucs bleed sounds amateur).
+                            // ("auto-self" = song-self samples, "<src>/<song>" = specific sample kit,
+                            //  "online/<id>" = CDN-streamed kit from online-samples-catalog.json)
     kitProfile: "default",  // v91: synth voice profile (only applies when kitSource = "synth")
     // v99: per-voice overrides — kick だけ 808, snare だけ acoustic みたいに
     // 1 voice 単位で別 kit からピックできる。null = base kit を使う、文字列 = その kit id
@@ -5840,7 +5845,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = "band-room.prefs.v1";
-  const MIX_PREFS_VERSION = "v255-chord-tame";
+  const MIX_PREFS_VERSION = "v259-acoustic-drums";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -5881,6 +5886,18 @@
   // v168 default 58 — anyone who customised away from 58 keeps theirs.
   const V255_CHORD_REDUCTION_MIGRATION = {
     "br-vol-chords": { old: "58", current: "40" }
+  };
+  // v259: synth-drums → acoustic-drums migration. The procedural rhythm
+  // & structure refinements (v247-v257) couldn't escape the "synth fake"
+  // perception because the drum SOURCE was synth. Switching the default
+  // to the CDN-streamed acoustic Tone.js kit gives real kick/snare/hat
+  // samples — the single biggest "生音" lift. Conditional: only users
+  // whose saved kitSource is still the old "synth" default flip; anyone
+  // who picked a specific kit (e.g. a song sample or another online kit)
+  // keeps theirs.
+  const V259_KIT_SOURCE_MIGRATION = {
+    old: "synth",
+    current: "online/tone-acoustic"
   };
 
   function loadPrefs() {
@@ -5923,6 +5940,12 @@
         changed = true;
       }
     });
+    // v259: kitSource migration — synth → online/tone-acoustic for "生音".
+    // kitSource lives at top-level of prefs (not in sliders/toggles).
+    if (next.kitSource === V259_KIT_SOURCE_MIGRATION.old) {
+      next.kitSource = V259_KIT_SOURCE_MIGRATION.current;
+      changed = true;
+    }
     next.__mixMigrated = changed;
     return next;
   }
@@ -5983,12 +6006,14 @@
     // Kit source (select)
     // v208: silently retire saved "auto-self" — the song-extracted sample
     // kits sound raw / amateur (Demucs bleed + onset artifacts) and that's
-    // exactly what made AI 再現 drums sound 壊滅的. Synth kit drives the
-    // same drum-frames groove with cleaner Tone.js voices and is the
-    // foundation we're building from. User can still pick auto-self from
-    // the dropdown if they want it back.
+    // exactly what made AI 再現 drums sound 壊滅的.
+    // v259: target updated synth → online/tone-acoustic. v259 also flipped
+    // saved "synth" users to the acoustic CDN kit (the "生音" default) via
+    // migratePrefsForCurrentMix; auto-self users skip that migration so
+    // they need their own bridge straight to the new default. Users can
+    // still pick auto-self / synth back from the dropdown.
     if (prefs.kitSource === "auto-self") {
-      prefs.kitSource = "synth";
+      prefs.kitSource = "online/tone-acoustic";
     }
     if (prefs.kitSource) {
       const sel = $("br-kit-source-select");
