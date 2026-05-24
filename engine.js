@@ -547,6 +547,11 @@ const SectionState = {
   // v258: one-shot peak-entry marker set by advanceSection only when entering
   // the surge section; consumed at step 0 by triggerSurgeDrop.
   dropCue: false,
+  // v263: build crescendo intensity 0-1 across the last 2 bars before surge
+  // (0.5 then 1.0). Drives triggerSurgeBuild's pad swell so the v258 drop is
+  // preceded by a clear "something is coming" buildup — completes the
+  // build → drop pair.
+  buildCue: 0,
   name: ""
 };
 if (typeof window !== "undefined") window.SectionState = SectionState;
@@ -1308,6 +1313,7 @@ function resetSection() {
   SectionState.barsInto = 0;
   SectionState.fillCue = false;
   SectionState.dropCue = false;
+  SectionState.buildCue = 0;
   SectionState.name = "";
 }
 
@@ -1337,6 +1343,15 @@ function advanceSection() {
   // v193: cue a fill on the bar just before a section boundary, so the change
   // into the next world is heard as a clear edge (the "塊" the listener wants).
   if (SectionState.barsLeft === 1) SectionState.fillCue = true;
+  // v263: build crescendo — the last 2 bars before surge (barsLeft 2 then 1)
+  // get buildCue 0.5 → 1.0 so triggerSurgeBuild fires a pad swell preceding
+  // the v258 drop. Only when the NEXT section is surge (peek index+1).
+  const nextSectionProfile = SECTION_PROFILES[(SectionState.index + 1) % SECTION_PROFILES.length];
+  if (nextSectionProfile && nextSectionProfile.name === "surge" && SectionState.barsLeft >= 1 && SectionState.barsLeft <= 2) {
+    SectionState.buildCue = (3 - SectionState.barsLeft) / 2;
+  } else {
+    SectionState.buildCue = 0;
+  }
   if (SectionState.barsLeft <= 0) {
     SectionState.index = (SectionState.index + 1) % SECTION_PROFILES.length;
     SectionState.barsLeft = currentSectionProfile().bars;
@@ -6218,6 +6233,33 @@ function triggerTransientAcidCue(options = {}) {
     indicator: AcidLockState.indicator,
     source: AcidLockState.transientSource
   };
+}
+
+// v263: pre-surge "build" — fires at step 0 of the last 2 bars before surge
+// (buildCue 0.5 → 1.0 via advanceSection). Plays a sustained pad chord (random
+// haze voicing) so the v258 drop has a build-up. Completes the build → drop
+// pair: flow bar -2 (buildCue 0.5) → flow bar -1 (buildCue 1.0 + v256 fill) →
+// surge bar 1 (v258 drop).
+function triggerSurgeBuild(step, time, context) {
+  if (step !== 0 || !isPlaying) return;
+  const intensity = SectionState.buildCue || 0;
+  if (intensity <= 0) return;
+  try {
+    if (pad) {
+      // 1-bar pad chord with rising velocity across the 2 build bars
+      // (intensity 0.5 → 1.0 maps to vel ~0.07 → ~0.10).
+      const padVel = clampValue(0.04 + intensity * 0.06, 0.04, 0.12);
+      pad.triggerAttackRelease(randomHazeChord(), "1n", time + 0.012, padVel);
+    }
+    // On the LAST build bar (intensity ~1.0, coincides with v256 fill), add a
+    // brief drumSkin sweep for a snare-roll-like edge into the drop.
+    if (intensity >= 0.95 && drumSkin) {
+      drumSkin.triggerAttackRelease("16n", time + 0.018, 0.10);
+    }
+    markMixEvent(0.04 + intensity * 0.06);
+  } catch (error) {
+    console.warn("[Music] surge build failed:", error);
+  }
 }
 
 // v258: surge "drop" — when entering the surge section, fire a single hard
@@ -13066,6 +13108,7 @@ function scheduleStep(time) {
   maybeTriggerAutoPerformanceGesture(step, stepContext);
   triggerOddLogicProposalCue(step, t, stepContext);
   triggerAutoDirectorCadence(step, t, stepContext);
+  triggerSurgeBuild(step, t, stepContext);
   triggerSurgeDrop(step, t, stepContext);
 
   triggerAudibleGrooveFloor(step, t, stepContext);
@@ -13410,8 +13453,9 @@ function stopPlayback(options = {}) {
   resetRuntimeCounters();
   // v260 audit polish (A): drop a queued surge dropCue so it can't fire on
   // the first step-0 of the next playback session — the per-section dropCue
-  // is otherwise persistent across stop/start.
+  // is otherwise persistent across stop/start. v262: same for buildCue.
   SectionState.dropCue = false;
+  SectionState.buildCue = 0;
   clearPerformancePads();
   quietMasterLevel();
   refreshFocusModulation({ rampInSeconds: 3, rampOutSeconds: 0.25 });

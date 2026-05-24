@@ -1,10 +1,54 @@
-# Band Room — Changelog (v65 → v262 compact)
+# Band Room — Changelog (v65 → v263 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v263 compact — Hazama FM 「pre-surge build」追加 (build → drop ペア完成)
+
+v258 で surge エントリに drop を入れたが、先立つ build (riser / crescendo)
+が無く DJ パターンの半分だけだった。v263 で build を追加 → flow セクション
+の最終 2 小節で pad swell crescendo が乗り、surge bar 1 の drop に向けて
+明確な「something is coming」モーメントを作る。
+
+### v263 の追加(engine.js、新規機構)
+
+- `SectionState.buildCue` フィールド新設 (0-1 の crescendo intensity)。
+- `advanceSection`: 次のセクションが surge かつ `barsLeft` が 2 または 1 のとき
+  `buildCue` を 0.5 → 1.0 に設定。それ以外は 0 にリセット。
+- `triggerSurgeBuild(step, time, context)` 新関数 (`triggerSurgeDrop` の隣):
+  - `step === 0 && buildCue > 0` で発火。
+  - **pad 1-bar swell** (random haze chord、vel 0.07→0.10 が intensity に応じて上昇)
+  - 最終 build bar (intensity ≈ 1.0、v256 fill と重なる) で追加の
+    **drumSkin sweep** (vel 0.10) ＝ snare-roll 風のエッジを足す
+  - `markMixEvent` で governor 通知
+- `scheduleStep` の trigger 列に `triggerSurgeBuild` を追加 (`triggerSurgeDrop` の直前)。
+- `stopPlayback` で `buildCue = 0` も reset (v260 の dropCue reset と同じ理由)。
+
+### サウンドシーケンス
+
+```
+flow の最終 4 小節:
+  bar -4: 通常 flow
+  bar -3: 通常 flow
+  bar -2 (barsLeft=2): buildCue=0.5 → pad swell (vel ~0.07)
+  bar -1 (barsLeft=1): buildCue=1.0 → pad swell (vel ~0.10) + v256 fill
+                      + drumSkin sweep + cueSectionIdent
+  --- セクション境界 ---
+surge bar 1: 【DROP!】 v258 — kick stab + sub808 + crash + acid cue
+```
+
+surge cycle は ~90 小節 ≈ 3.5 分に一度。**3 小節の dramatic sequence
+(build → fill → drop)** が cycle ごとに pre-planned anchor として立つ。
+「ふっと出会う」モーメントが engine 側で確実に提供される構造へ。
+
+- `engine.js?v=fm-115`(+ `audio/music-*.js` 5モジュール)、`hazama-fm-v263`。
+
+Band Room 不変。
 
 ---
 
