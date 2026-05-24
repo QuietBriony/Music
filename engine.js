@@ -544,6 +544,9 @@ const SectionState = {
   barsLeft: 0,
   barsInto: 0,
   fillCue: false,
+  // v258: one-shot peak-entry marker set by advanceSection only when entering
+  // the surge section; consumed at step 0 by triggerSurgeDrop.
+  dropCue: false,
   name: ""
 };
 if (typeof window !== "undefined") window.SectionState = SectionState;
@@ -1304,6 +1307,7 @@ function resetSection() {
   SectionState.barsLeft = 0;
   SectionState.barsInto = 0;
   SectionState.fillCue = false;
+  SectionState.dropCue = false;
   SectionState.name = "";
 }
 
@@ -1339,6 +1343,11 @@ function advanceSection() {
     SectionState.barsInto = 0;
     SectionState.name = currentSectionProfile().name;
     cueSectionIdent();
+    // v258: explicit "peak landed" cue when entering surge. The peak section
+    // used to fade in via approachValue smoothing (5-10s glide) — the listener
+    // had no instant where surge "arrived". dropCue triggers a one-shot punch
+    // on step 0 of surge bar 1 via triggerSurgeDrop in the per-step list.
+    if (SectionState.name === "surge") SectionState.dropCue = true;
   }
 }
 
@@ -6209,6 +6218,45 @@ function triggerTransientAcidCue(options = {}) {
     indicator: AcidLockState.indicator,
     source: AcidLockState.transientSource
   };
+}
+
+// v258: surge "drop" — when entering the surge section, fire a single hard
+// punch on bar 1 step 0 so the peak section LANDS as a moment rather than
+// gliding in invisibly. The dropCue is set in advanceSection only when the
+// new section is "surge"; this trigger consumes it at step === 0. Reuses
+// triggerTransientAcidCue so the AcidLockState indicator + voice-morph state
+// pump along with the punch (also fires a 4-note glass tag via
+// triggerAcidLockIndicator). The boundary-fill + ident from v256 still play
+// the bar BEFORE; this is the "drop" landing on top of the new bar 1.
+function triggerSurgeDrop(step, time, context) {
+  if (step !== 0 || !SectionState.dropCue || !isPlaying) return;
+  SectionState.dropCue = false;
+  try {
+    // Hard kick stab — unconditional peak-entry hit, bypassing the kickProb
+    // gate that would otherwise glide in over several seconds.
+    if (kick) {
+      kick.triggerAttackRelease(tonalRhymeLow(0, -1), "16n", time + 0.004, 0.44);
+    }
+    // Sub808 body thump for low-end weight.
+    if (subImpact) {
+      subImpact.triggerAttackRelease(tonalRhymeLow(0, -2), "8n", time + 0.006, 0.32);
+    }
+    // DrumSkin noise transient gives the moment a "crash" feel.
+    if (drumSkin) {
+      drumSkin.triggerAttackRelease("32n", time + 0.012, 0.18);
+    }
+    // Texture shimmer for top-end sparkle.
+    if (texture) {
+      texture.triggerAttackRelease("64n", time + 0.018, 0.08);
+    }
+    // Reuse the acid transient cue: pumps AcidLockState.transient + indicator,
+    // bumps VoiceMorphState.transition, and fires a glass-tag via
+    // triggerAcidLockIndicator — gives the drop a harmonic afterglow.
+    triggerTransientAcidCue({ amount: 0.78, source: "surge-drop" });
+    markMixEvent(0.22);
+  } catch (error) {
+    console.warn("[Music] surge drop failed:", error);
+  }
 }
 
 function setAcidLockEnabled(enabled) {
@@ -13000,6 +13048,7 @@ function scheduleStep(time) {
   maybeTriggerAutoPerformanceGesture(step, stepContext);
   triggerOddLogicProposalCue(step, t, stepContext);
   triggerAutoDirectorCadence(step, t, stepContext);
+  triggerSurgeDrop(step, t, stepContext);
 
   triggerAudibleGrooveFloor(step, t, stepContext);
   triggerOrganicTexture(step, t, stepContext);

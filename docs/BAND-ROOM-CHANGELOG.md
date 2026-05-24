@@ -1,10 +1,46 @@
-# Band Room — Changelog (v65 → v257 compact)
+# Band Room — Changelog (v65 → v258 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v258 compact — Hazama FM surge エントリに drop(ピーク landed モーメント)
+
+v256 で節境界フィル + 節内アークを強化したが、**surge** (ピーク section、
+drive 1.55 / energy 90) 自体は依然として approachValue のスムージング
+(5-10秒の glide-in) で「いつ peak に入ったか」が曖昧。listener にとって
+明確な「landed」モーメントが欠けていた(agent map の "GAP #2: no drop")。
+
+### v258 の追加(engine.js、新規機構)
+
+- `SectionState.dropCue` フィールド新設(`fillCue` と同様の one-shot 旗)。
+- `advanceSection`: 次のセクションが `surge` のときだけ `dropCue = true`。
+- `triggerSurgeDrop(step, time, context)` 新関数(`triggerTransientAcidCue` の
+  隣):
+  - `step === 0 && dropCue` でのみ発火、即 `dropCue` を消費。
+  - **kick stab** (vel 0.44、kickProb gate を無視した unconditional hit)
+  - **subImpact** (sub808 body thump、vel 0.32)
+  - **drumSkin** (noise transient、vel 0.18、"crash" 感)
+  - **texture** (top-end shimmer、vel 0.08)
+  - `triggerTransientAcidCue({ amount: 0.78, source: "surge-drop" })` で
+    AcidLockState + indicator + voice-morph state を pump(glass tag 付き)。
+  - `markMixEvent(0.22)` で governor に「moment 起きた」を通知。
+- `scheduleStep` の trigger 列に `triggerSurgeDrop(step, t, stepContext)` を追加
+  (`triggerAutoDirectorCadence` の直後)。
+
+これで section cycle が **submerge → sprout → flow → 【drop!】surge → hollow
+→ return** と、surge 入口で明確な punch が landing。境界の fill (v256) +
+ident (v197) は引き続きその前小節で鳴るので、**build (fill) → drop (surge
+bar 1)** の DJ 的シークエンスに。
+
+- `engine.js?v=fm-113`(+ `audio/music-*.js` 5モジュール)、`hazama-fm-v258`。
+
+surge cycle は ~96 小節ごと(3-4 分に一度)。ふっと出会う「これだ」モーメント
+が確実に来る pre-planned anchor point に。
 
 ---
 
