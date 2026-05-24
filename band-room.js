@@ -137,9 +137,14 @@
   let stemPlayers = { vocals: null, drums: null, bass: null, other: null };
   let currentMode = "stems";  // "stems" | "synth"
 
-  // Drum kit source (synth default OR sampled from a reference song)
+  // Drum kit source (acoustic CDN kit default since v259; synth + sampled songs
+  // remain selectable). v260: tone-acoustic listed first explicitly so the
+  // dropdown always surfaces the actual default; synth relabelled "legacy"
+  // since "(default)" no longer reflects reality. renderKitOptions dedupes
+  // tone-acoustic vs the online-catalog auto-append so it doesn't appear twice.
   const KIT_OPTIONS = [
-    { value: "synth", label: "synth: AI drums (default)" },
+    { value: "online/tone-acoustic", label: "🌐 acoustic kit (生音, default)" },
+    { value: "synth", label: "synth: AI drums (legacy)" },
     { value: "auto-self", label: "sample: 曲自身の drums (現在の曲)" },
     { value: "tabasco/tabasco",         label: "sample: Tabasco / TABASCO (136)" },
     { value: "tabasco/hey",             label: "sample: Tabasco / Hey (123)" },
@@ -1058,7 +1063,10 @@
                   synth_profile: "default",
                   chord_instrument: "", bass_instrument: "",
                   guitar_instrument: "", voice_instrument: "",
-                  kit_source: null, guitar_on: true },
+                  // v260: was null (= "don't touch") which silently reverted
+                  // users to synth when they applied the neutral preset, undoing
+                  // the v259 acoustic default. Aligned to the shipped default.
+                  kit_source: "online/tone-acoustic", guitar_on: true },
     "lo-fi":    { reverb: 24, width: 58, warmth: 18, loudness: -2,
                   synth_profile: "lofi-nujabes",
                   chord_instrument: "salamander-piano",
@@ -4546,6 +4554,21 @@
       });
     });
 
+    // v260: voice toggle off → disable voice volume slider so the UI doesn't
+    // look "set but does nothing." Mirrors the v254 voice-off default — without
+    // this, the slider stays draggable while the part is silent, which was
+    // confusing ("動かしてるのに鳴らない"). HTML `disabled` greys out the
+    // control natively, no CSS needed.
+    const voiceToggleEl = $("br-toggle-voice");
+    const voiceVolEl = $("br-vol-voice");
+    const syncVoiceVolEnabled = () => {
+      if (voiceVolEl && voiceToggleEl) voiceVolEl.disabled = !voiceToggleEl.checked;
+    };
+    if (voiceToggleEl) {
+      voiceToggleEl.addEventListener("change", syncVoiceVolEnabled);
+      syncVoiceVolEnabled();
+    }
+
     // Stem volume sliders
     ["vocals", "drums", "bass", "other"].forEach((stem) => {
       const el = $("br-vol-stem-" + stem);
@@ -5466,18 +5489,26 @@
       sel.appendChild(o);
     });
     // v97: append online catalog kits (CDN samples, no repo size impact)
+    // v260: dedupe — tone-acoustic is now in KIT_OPTIONS as the explicit default
+    // (so the dropdown surfaces it at the top with a clear "(default)" label).
+    // Skip catalog entries whose value matches a local KIT_OPTIONS entry to
+    // avoid showing the same kit twice.
     if (state.onlineCatalog && state.onlineCatalog.kits) {
-      const sep = document.createElement("option");
-      sep.disabled = true;
-      sep.textContent = "─── online (CDN) ───";
-      sel.appendChild(sep);
-      state.onlineCatalog.kits.forEach((kit) => {
-        const o = document.createElement("option");
-        o.value = "online/" + kit.id;
-        o.textContent = "🌐 " + kit.label;
-        if (o.value === state.kitSource) o.selected = true;
-        sel.appendChild(o);
-      });
+      const localKitValues = new Set(KIT_OPTIONS.map((k) => k.value));
+      const onlineExtras = state.onlineCatalog.kits.filter((kit) => !localKitValues.has("online/" + kit.id));
+      if (onlineExtras.length) {
+        const sep = document.createElement("option");
+        sep.disabled = true;
+        sep.textContent = "─── online (CDN) ───";
+        sel.appendChild(sep);
+        onlineExtras.forEach((kit) => {
+          const o = document.createElement("option");
+          o.value = "online/" + kit.id;
+          o.textContent = "🌐 " + kit.label;
+          if (o.value === state.kitSource) o.selected = true;
+          sel.appendChild(o);
+        });
+      }
     }
     sel.addEventListener("change", async () => {
       const newSource = sel.value;

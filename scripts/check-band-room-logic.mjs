@@ -336,7 +336,7 @@ assert.match(
   new RegExp(`band-room\\.js\\?v=${bandRoomScriptMarker[1]}`),
   "Service worker should precache the same Band Room script marker"
 );
-assert.match(source, /label: "synth: AI drums \(default\)"/, "Kit selector should identify the synth kit");
+assert.match(source, /label: "synth: AI drums \(legacy\)"/, "v260: synth kit label updated to (legacy) since v259 made tone-acoustic the default; the synth-as-default labelling was confusing UX");
 assert.match(source, /label: "sample: 曲自身の drums \(現在の曲\)"/, "Kit selector should identify the auto-self sample kit");
 assert.match(source, /label: "sample: Tabasco \/ TABASCO \(136\)"/, "Kit selector should identify catalog sample kits");
 assert.match(source, /kitSource:\s*"online\/tone-acoustic"/, "v259: AI 再現 default drum kit should be the acoustic CDN kit (生音 default; synth is selectable from the dropdown)");
@@ -388,7 +388,7 @@ assert.match(source, /baseNotes = full\.length >= 4 \? \[full\[0\], full\[1\], f
 assert.match(source, /const jazzGrid\s*=\s*ctx\.role === "recap" \? \[0, 6, 10\] : \[0, 6\]/, "v225: jazz guitar comp must be sparse / syncopated (Charleston [0,6], recap adds sub 10)");
 const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
-assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "default", "v213: Tabasco band should declare its default kit profile explicitly");
+assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "cramps-punk", "v260: Tabasco's default kit profile aligned to cramps-punk (matches the band's actual cramps-style punk character; was 'default' which was the generic non-rock fallback)");
 assert.equal(bandsRegistry.reference_libraries?.unripe?.kit_profile_default, "cramps-punk", "v213: UNRIPE (hardcore postpunk) should recommend cramps-punk");
 const tabascoHey = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "hey");
 const tabascoElectricSheep = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "electric-sheep");
