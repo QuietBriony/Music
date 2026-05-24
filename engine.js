@@ -104,11 +104,13 @@ const SECTION_FORM_CENTER = (() => {
 // How strongly the section modulates the macro params when a genre pill has
 // locked AUTOMIX off — gentle ("ゆるく"), to keep each genre's identity.
 const GENRE_SECTION_SCALE = 0.32;
-// v197: intra-section "breath" — a gentle sin arc over each section's progress
-// lifts these params toward mid-section, so even a long, calm section keeps
+// v197: intra-section "breath" — a sin arc over each section's progress lifts
+// these params toward mid-section, so even a long, calm section keeps
 // developing instead of holding a flat plateau for 14-18 bars. Absolute UCM
 // offsets at the peak of the arc; 0 at the section's start and end.
-const INTRA_SECTION_BREATH = { wave: 8, creation: 8, resource: 7, void: -7 };
+// v256: widened from gentle 7-8 to 14-18 so the mid-section arc is clearly
+// perceptible — supports more "ふっと出会う" magic-moment lifts inside sections.
+const INTRA_SECTION_BREATH = { wave: 18, creation: 18, resource: 14, void: -14 };
 const AUTO_MOTION_TICK_MS = 3500;
 const AUTO_SLIDER_SYNC_INTERVAL_MS = 240;
 const AUTO_GESTURE_MIN_GAP_MS = 4200;
@@ -10677,7 +10679,10 @@ function advanceGrooveStructure() {
   GrooveState.glassLift = clampValue(((phraseStep === 1 || phraseStep === 3) ? 0.04 + creationNorm * 0.08 : 0.015) + micShape.particle * 0.035 + micShape.space * 0.014 + micJam.phrase * 0.06 + micJam.hum * 0.028 + micJam.air * 0.018, 0, 0.3);
   GrooveState.accentStep = GLASS_ACCENT_STEPS[(GrooveState.cycle + Math.floor(waveNorm * 6)) % GLASS_ACCENT_STEPS.length];
   GrooveState.bassOffset = (GrooveState.cycle + Math.floor(UCM_CUR.mind / 18)) % 4;
-  GrooveState.microJitterScale = clampValue((GrooveState.fillActive ? 1.4 : 0.7 + waveNorm * 0.7) + micShape.particle * 0.18 - micShape.space * 0.08, 0.52, 1.62);
+  // v256: fill-state jitter widened 1.4→1.9 so section-boundary fills lift the
+  // micro-timing variance audibly (more groove flex = a clearer "something is
+  // happening" moment for the listener at section transitions).
+  GrooveState.microJitterScale = clampValue((GrooveState.fillActive ? 1.9 : 0.7 + waveNorm * 0.7) + micShape.particle * 0.18 - micShape.space * 0.08, 0.52, 1.62);
 }
 
 function bassNoteForStep(step) {
@@ -12969,7 +12974,9 @@ function scheduleStep(time) {
   const restShape = humanShape("rest");
   const isRest = rand(clampValue(EngineParams.restProb + restShape.restLift + genre.ambient * 0.045 + preKit.ambientKit * 0.03 + preKit.spaceKit * 0.035 + habitSpace * 0.02 + habitRestraint * 0.04 + palette.air * 0.024 + palette.restraint * 0.026 + micJam.air * 0.018 - genre.techno * 0.05 - preKit.technoKit * 0.045 - preKit.idmKit * 0.024 - habitGrid * 0.02 - habitRubber * 0.012 - palette.rhythm * 0.036 - palette.glass * 0.016 - micJam.pulse * 0.035 - micJam.phrase * 0.018 - genre.pressure * 0.025 + PerformancePadState.void * 0.18 - PerformancePadState.punch * 0.06, 0.018, PerformancePadState.void ? 0.66 : 0.52));
   const grooveJitter = (step % 2 === 1 ? mapValue(waveNorm, 0, 1, 0, 0.014 + PerformancePadState.drift * 0.026 + chaos * 0.012) * GrooveState.microJitterScale : 0);
-  const fillBoost = GrooveState.fillActive ? 0.14 : 0;
+  // v256: 0.14 → 0.32. Section-boundary fill bars now get a clearly dense hat
+  // pattern (was almost imperceptible) so the boundary registers as a moment.
+  const fillBoost = GrooveState.fillActive ? 0.32 : 0;
   const t = time + grooveJitter;
   const stepContext = { energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm, isRest, isAccentStep };
   stepContext.acidShape = humanShape("acid");
