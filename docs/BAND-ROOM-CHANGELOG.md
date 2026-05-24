@@ -1,10 +1,74 @@
-# Band Room — Changelog (v65 → v261 compact)
+# Band Room — Changelog (v65 → v262 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v262 compact — AI 再現の chord を生ピアノ（Salamander Grand）にデフォルト化
+
+ユーザー: 「進めて。既存の指示を整理しつつ、最適ゴールを目指して」。
+
+**整理した最適ゴール**: 新規ユーザが PWA を開いて即「生バンド感」で
+Tabasco を聴ける。原音は安全な baseline、AI 再現は生音方向の創造的再現。
+矛盾・無音バグなし。
+
+v259 で drums を acoustic CDN kit に、v261 で UX 整合性を取った。残る
+最大の「synth fake」要素は **chord pad の PolySynth**（4-piece の唯一の
+electronic 要素）。salamander-piano CDN サンプル（既に lo-fi / ambient
+master preset で実証済み、Tone.Sampler 経路）に切り替えれば、harmonic
+foundation も生音になる。
+
+### v262 の修正（band-room.js）
+
+1. **`state.chordInstrument` の初期値**: `null`（v101 synth fallback）→
+   `"salamander-piano"`。
+2. **`MIX_PREFS_VERSION`**: `v259-acoustic-drums` → `v262-piano-chord`。
+3. **`V262_CHORD_INSTRUMENT_MIGRATION`**: 既存ユーザの `chordInstrument`
+   が `null` or `""` なら `"salamander-piano"` に migrate。null/"" 以外
+   （他カタログ instrument を明示的に選択）はそのまま。
+4. **`scripts/check-band-room-logic.mjs`**: 新バージョン文字列に追随。
+
+### 経路の確認
+
+- `makeChordSynth` の v101 分岐（line 2276 area）が `state.chordInstrument`
+  + `state.onlineCatalog.instruments` を見て **Tone.Sampler with CDN
+  samples** を作る。既に lo-fi / ambient master preset で動作実証済み、
+  新規コード不要。
+- v257 の chord pad whole-note sustain と相性◎: piano は natural decay
+  arc を持つので "1n" trigger で chord が小節を rang out → 機械的 pad
+  flat から脱却。
+- v230 の SW キャッシュが Salamander サンプルを保持 → 初回 online 再生
+  後はオフラインも instant。
+- `makeVelocitySensitiveSampler` で velocity 感応（line 2285）— v252
+  humanize ±10% の breath が piano の dynamics に反映される。
+
+### 影響
+
+- AI 再現 baseline = **drums (acoustic) + bass (synth fat) + guitar
+  (synth power-chord) + chord (real piano)** + voice OFF。電子要素は
+  bass + guitar（v231 で electric サンプル unservable と確認済み）。
+- 原音不変。CPU: Tone.Sampler は per-note polyphony 動的、chord は
+  1 onset/bar + decay overlap なので軽量。
+- 初回 online 再生で Salamander 全鍵盤を fetch（~数 MB）、SW キャッシュ
+  後はオフライン instant。
+
+### 残課題（次 round 候補、順位順）
+
+1. **bass-acoustic / guitar-acoustic CDN サンプルの再検証** — v231 で
+   electric が unservable と判定したが、acoustic / nylon は catalog
+   登録あり、未検証。動けば bass + guitar も生音化可能 → AI 再現が
+   ほぼ完全に生バンド構成に。
+2. **voice FX スライダの disabled 化**（v261 で見送り）— chorus /
+   delay / reverb も voice 関連スライダ、voice OFF 時は disable。
+3. **online catalog 初回ロードレース** — Play まで未ロードだと silent
+   synth fallback。`buildBaseKit` に UI トースト追加。
+4. **mode toggle のラベル**「AI 再現」→ もっと直感的な日本語（要検討）。
+
+- `band-room.js?v=br-148`、`hazama-fm-v262`。
 
 ---
 

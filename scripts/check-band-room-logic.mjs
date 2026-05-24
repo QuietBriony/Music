@@ -86,7 +86,7 @@ assert.equal(migratedMixPrefs.sliders["br-vol-stem-drums"], "86", "Old default s
 assert.equal(migratedMixPrefs.sliders["br-vol-bass"], "66", "Old default AI bass should migrate");
 assert.equal(migratedMixPrefs.sliders["br-space-reverb"], "16", "Old default master reverb should migrate");
 assert.equal(migratedMixPrefs.sliders["br-space-width"], "41", "Custom slider values should not migrate");
-assert.equal(migratedMixPrefs.mixPrefsVersion, "v259-acoustic-drums", "Migrated prefs should record current mix version");
+assert.equal(migratedMixPrefs.mixPrefsVersion, "v262-piano-chord", "Migrated prefs should record current mix version");
 
 const firstSongIdForBand = windowMock.BandRoomTestHooks?.firstSongIdForBand;
 const adjacentSongIdInBand = windowMock.BandRoomTestHooks?.adjacentSongIdInBand;
@@ -275,7 +275,7 @@ assert.match(html, /id="br-vfx-reverb"[^>]*value="20"/, "Vocal reverb slider sho
 assert.match(html, /id="br-vol-external-vocal"[^>]*value="78"/, "External vocal slider should match the v168 bus default");
 assert.match(source, /const dryVal = 1 - wetVal;/, "Master reverb dry path should not jump on first slider touch");
 assert.match(source, /1 - w \* 0\.85/, "Tape dry path should not jump on first warmth slider touch");
-assert.match(source, /const MIX_PREFS_VERSION = "v259-acoustic-drums"/, "Band Room should version saved mix defaults");
+assert.match(source, /const MIX_PREFS_VERSION = "v262-piano-chord"/, "Band Room should version saved mix defaults");
 assert.match(source, /"br-vol-stem-drums": \{ old: "92", current: "86" \}/, "Saved old stem defaults should migrate to the v167/v168 mix");
 assert.match(source, /"br-space-reverb": \{ old: "22", current: "16" \}/, "Saved old master defaults should migrate to the v167/v168 mix");
 assert.match(source, /prefs = migratePrefsForCurrentMix\(prefs\);/, "Prefs restore should apply the current mix migration before dispatching sliders");
