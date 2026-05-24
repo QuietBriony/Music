@@ -1,10 +1,78 @@
-# Band Room — Changelog (v65 → v266 compact)
+# Band Room — Changelog (v65 → v267 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v267 compact — bass-electric を復活（catalog バグ修正で生音 5/5 達成）
+
+ユーザー指摘:「残 1 = CDN 物理破損で打てない、はクリアせんくていいの？」
+→ 真因を再追跡: **CDN 物理破損ではなく v97 catalog の note 名規約ずれ**
+だった。github API で nbrosowsky/tonejs-instruments の master 実ファイル
+リスト確認 → catalog の登録ノートと不一致発覚 → 補正で全 17 ファイル
+servable に。
+
+### v231「unservable」の真因
+
+| v97 catalog 登録 | 実在ファイル | HEAD 結果 |
+|---|---|---|
+| `bass-electric` `E1, F#1, A1, C#2, E2, F#2, A2, C#3, E3` (9) | `A#1-4, C#1-5, E1-4, G1-4` (17) | 9 中 5 のみ servable（残 4 が 403：F#1/A1/F#2/A2）|
+| `guitar-electric` `E2-A5` 13 ノート | `A2-A5, C3-C6, C#2, D#3-5, E2, F#2-5` (17) | 13 中 8 のみ servable（残 5 が 403：C#3-C#5, E3, E4）|
+
+→ jsDelivr が 403 を返してたのは upstream に**そのノート名のファイルが
+存在しない**から（raw.githubusercontent.com も 404、authoritative）。
+catalog が間違ってただけ。
+
+### v267 の修正
+
+1. **`presets/online-samples-catalog.json`**: bass-electric / guitar-
+   electric の `notes` ブロックを実在 17 ファイルに整合（A#/C#/E/G pattern
+   for bass、A/C/C#/D#/E/F# pattern for guitar）。HEAD 検証: 17/17 200。
+2. **`band-room.js`**:
+   - `state.bassInstrument`: `null` → `"bass-electric"`
+   - `applyPrefs` の v231 `bassInstrument === "bass-electric" → null`
+     強制を**削除**（v265 で guitar に対してやった処置と同形）
+   - `MIX_PREFS_VERSION`: `v265-guitar-acoustic` → `v267-bass-electric`
+   - `V267_BASS_INSTRUMENT_MIGRATION { null/"" → "bass-electric" }` 新設
+3. **`scripts/check-band-room-logic.mjs`**: v231 assertion を新方針に
+   追随（bassInstrument 既定 "bass-electric"、強制 null 化削除を assert）。
+
+### AI 再現 baseline 最終形（**生音 5/5 達成**）
+
+| パート | 音源 | 経緯 |
+|---|---|---|
+| drums | 🌐 acoustic CDN kit | v259 |
+| **bass** | 🌐 **electric bass CDN** | **v267 ← 今**、catalog 修正で復活 |
+| guitar | 🌐 acoustic CDN | v265 |
+| chord | 🌐 Salamander Grand Piano | v262 |
+| voice | OFF | v254 |
+
+→ **5 パート全てが実録音サンプル**（voice は明示的に OFF、必要なら
+ドロップダウンで synth ON 可能）。ユーザの「音色は、生音方面には持って
+いけない？」要望は完全達成。電子要素は AI 再現 デフォルトから消えた。
+
+### 教訓
+
+「CDN 物理破損で打てない」は**早すぎる結論**だった。v231 の audit が
+catalog の note 名 vs 実ファイルの整合を確認しなかったため、5 年近く
+synth bass で代用していた。実 HEAD-check + github API 照合の auto
+化（将来 audit ツール化候補）。
+
+### 影響
+
+- 初回 online 再生で bass-electric 17 ファイル fetch（~5 MB）、SW
+  キャッシュ後はオフライン instant。chord (Salamander) + drums (tone-
+  acoustic) + guitar (acoustic) と同じ Sampler 経路、新規 CPU 負荷なし。
+- 既存ユーザ:
+  - 元々 null (v231 強制 null) → v267 migration で "bass-electric" に
+  - 自分で別 instrument を選んでた人 → そのまま
+- 原音 (stems) 不変。
+
+- `band-room.js?v=br-152`、`hazama-fm-v267`。
 
 ---
 

@@ -67,7 +67,13 @@
                                           // sustain (chord rings out the bar instead of pad-flat). null
                                           // = synth fallback if user explicitly picks it from the
                                           // chord instrument dropdown.
-    bassInstrument: null,   // v231: was "bass-electric" — CDN samples partial-servable (5/9 notes OK; F#1/A1/F#2/A2 = bass core range still 403). Internal synth bass remains the default. Re-audited v265.
+    bassInstrument: "bass-electric",  // v267: was null (v231 synth fallback). Root cause was a catalog
+                                      // bug — v97 listed notes (F#/A in low octaves) that don't exist in
+                                      // the upstream repo. v267 corrected the catalog to the 17 actual
+                                      // github files (A#/C#/E/G in 4-5 octaves); all 17 servable now.
+                                      // This completes the 生音 5/5 AI 再現 baseline (drums + bass +
+                                      // guitar + chord all real samples; voice OFF). null = synth bass
+                                      // if explicitly chosen from the dropdown.
     guitarInstrument: "guitar-acoustic",  // v265: was null (v231 synth fallback). 2026 re-audit (HEAD-checked all CDN samples) shows:
                                           //   guitar-acoustic: 11/11 notes OK ✓
                                           //   guitar-nylon:    11/11 notes OK ✓
@@ -5929,7 +5935,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = "band-room.prefs.v1";
-  const MIX_PREFS_VERSION = "v265-guitar-acoustic";
+  const MIX_PREFS_VERSION = "v267-bass-electric";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -6000,12 +6006,19 @@
   // showed the CDN samples are fully servable now (11/11 notes); v231
   // had blanket-deprecated them. Same conditional pattern as v262: only
   // flips the null/"" defaults; users who chose another instrument keep
-  // theirs. bassInstrument left at null because bass-electric still has
-  // gaps in the bass core range (F#1/A1/F#2/A2 = 403) — synth bass is
-  // safer for that part.
+  // theirs.
   const V265_GUITAR_INSTRUMENT_MIGRATION = {
     olds: [null, ""],
     current: "guitar-acoustic"
+  };
+  // v267: bassInstrument null/"" → "bass-electric". Catalog was corrected
+  // (v97 had wrong note pattern; v267 aligned to the actual 17 github
+  // files). bass-electric is now fully servable. This closes the last
+  // synth-only part in the AI 再現 baseline — drums + bass + guitar +
+  // chord are all real samples (voice intentionally OFF).
+  const V267_BASS_INSTRUMENT_MIGRATION = {
+    olds: [null, ""],
+    current: "bass-electric"
   };
 
   function loadPrefs() {
@@ -6067,6 +6080,12 @@
     if (Object.prototype.hasOwnProperty.call(next, "guitarInstrument")
         && V265_GUITAR_INSTRUMENT_MIGRATION.olds.includes(next.guitarInstrument)) {
       next.guitarInstrument = V265_GUITAR_INSTRUMENT_MIGRATION.current;
+      changed = true;
+    }
+    // v267: bassInstrument migration — completes the 生音 5/5.
+    if (Object.prototype.hasOwnProperty.call(next, "bassInstrument")
+        && V267_BASS_INSTRUMENT_MIGRATION.olds.includes(next.bassInstrument)) {
+      next.bassInstrument = V267_BASS_INSTRUMENT_MIGRATION.current;
       changed = true;
     }
     next.__mixMigrated = changed;
@@ -6174,12 +6193,13 @@
     // v110: bass instrument
     if (Object.prototype.hasOwnProperty.call(prefs, "bassInstrument")) {
       state.bassInstrument = prefs.bassInstrument || null;
-      // v231: migrate the dead "bass-electric" sampler pref → null (synth).
-      // Its CDN mirror exceeds jsDelivr's 50 MB limit and 403s half its
-      // files, so the sampler never reaches loaded=true → silent bass.
-      // Existing users have "bass-electric" saved from the old default;
-      // force them onto the working internal synth.
-      if (state.bassInstrument === "bass-electric") state.bassInstrument = null;
+      // v267: the v231 force-to-null for "bass-electric" was removed.
+      // Root cause of the v231 "unservable" was a CATALOG note-name bug
+      // (v97 listed F#/A in low octaves that the upstream repo doesn't
+      // ship); the github files were always there, just under different
+      // pitch names (A#/C#/E/G). v267 corrected the catalog to 17 actual
+      // mp3s and made bass-electric the AI 再現 default. Saved user prefs
+      // that still read "bass-electric" (from pre-v231) now persist.
       const sel = $("br-bass-instrument-select");
       if (sel) {
         sel.value = state.bassInstrument || "";
