@@ -19,6 +19,64 @@
 
 ---
 
+## 2026-05-23 — Hazama FM 「乗れない/退屈」連投の消化と magic-moment 機構の完成 (v246–v263)
+- agent     : Claude Code (Opus 4.7 / 1M context)
+- goal      : v244 試聴後のユーザー反応(「低音ピアノがまだ smear」「いいっちゃいい
+  だけど退屈」「ふっと出会う仕組みを伸ばすか強化して」「全体監査・必要 polish」
+  「整理しつつ最適ゴール」)に逐次対応し、Hazama FM の magic-moment 機構を一通り
+  強化・完成させる
+- repos     : Music
+- shipped   :
+  - **groove + character シリーズ** (pianoMemory)
+    - PR #202 (v246): `pianoMemoryFilter` を `globalDelay` から外し fully dry に
+      — 過剰補正だった(echo character まで剥がれて「退屈」)
+    - PR #204 (v248): 専用 `pianoMemoryEcho` PingPongDelay 新設 + `pianoMemorySend`
+      Gain — dry 直結 + controlled wet で v244 の groove lock 維持 ＋ memory wash 復活
+    - PR #207 (v251): `pianoMemoryEcho` feedback 0.20→0.24、send 0.32→0.42
+    - PR #209 (v253): `pluckTime`/`driftedTime` の jitter を ±8ms 中央寄せ
+      (was 0-12ms 単側)、`pianoMemory.volume` -41→-39
+  - **magic-moment 機構強化シリーズ**
+    - PR #212 (v256): `INTRA_SECTION_BREATH` 8/8/7/-7→18/18/14/-14、`fillBoost`
+      0.14→0.32、`microJitterScale` フィル時 1.4→1.9 — agent map で「既存機構の
+      強化」だけを実施(新規追加なし)
+    - PR #214 (v258): `SectionState.dropCue` + `triggerSurgeDrop` 新設 ＝ surge
+      エントリで「peak landed」モーメント(kick stab + sub808 + crash + acid cue)
+    - PR #220 (v263): `SectionState.buildCue` + `triggerSurgeBuild` 新設 ＝ surge
+      直前 2 小節の pad swell crescendo。**build → fill → drop の 3 小節 dramatic
+      sequence が完成**(cycle ≈ 3.5 分ごと)
+  - **integrity sweep**
+    - PR #216 (v260): system-wide audit polish 7件 — v253/v256 のパラメータ bump
+      が clamp/dynamic ramp で無効化されていた問題を解消(B/C/G)、drop sub thump
+      の retrigger 保護(D)、stop/start 跨ぎ dropCue race fix(A)、ほか E/F
+- ストーリー : groove fix(v244) → 過剰補正で退屈化(v246) → echo 復活+調整(v248-v251)
+  → humanize + presence(v253) → 既存 magic-moment 機構強化(v256) → drop 新設(v258)
+  → audit polish(v260, ここで v253/v256 のサイレント無効化を発見) → build 完成(v263)
+- 学び       :
+  1. 「ためすぎ/乗れない」報告は同じ単語でも複数のレイヤーに対応する(section drum
+     gate / pianoMemory onset / pianoMemory delay-smear)。ユーザーに「どんな音か」
+     を聞き直し、特定レイヤーに照準を絞る
+  2. パラメータ bump が clamp や dynamic ramp で**サイレントに無効化されている
+     可能性**は常にチェック(v260 監査で 3 件発見、いずれも v253/v256 の bump が
+     実は効いていなかった)
+  3. 「magic moment」は確率を上げる infrastructure であって毎回 fire するもの
+     ではない(「ふっと出会う」= 生成エンジンの本質)。section system が既にその
+     インフラ、surge entry の build→fill→drop が pre-planned anchor
+  4. ユーザーの哲学的観察は時に**具体的な実装提案**を伴う(「ふっと出会える」コメント
+     を最初は感想と解釈→「そういう仕組み入れてる？」で実装指示と判明)
+- stack-check: PASS 15 / FAIL 0 / SKIP 0(0 BAD、毎 PR、計 9 回)
+- backlog   : なし(直接のユーザー依頼の連鎖)
+- 並走      : Band Room 別チャットが本セッション中に v239→v262 を push(24 版！)。
+  AI 再現の rebuild + 生音 CDN kit + drum pocket + chord pad piano 化等は全て独立。
+  共有ファイル(`sw.js` / `BAND-ROOM-CHANGELOG.md`)の版番号衝突は毎 PR ほぼ発生、
+  rebase で繰り上げ吸収。`band-room.*` は一切不変
+- next      : 試聴フィードバック待ち。build→fill→drop の DJ 的シークエンスが
+  3-4 分ごとの anchor として機能しているか、低音ピアノが humanize + presence で
+  「生きた」感じになっているか
+- blockers  : なし。v260 で integrity 0 BAD、v263 で build-drop ペア完成 ＝
+  セッション内の magic-moment 機構は一通り整った状態
+
+---
+
 ## 2026-05-23 — Hazama FM 低音ピアノの「変に遅く入る」を解消 (v244)
 - agent     : Claude Code (Opus 4.7 / 1M context)
 - goal      : v242 試聴でユーザー再報告「低めのピアノが変に遅く入る ＝ 乗れない原因音、
