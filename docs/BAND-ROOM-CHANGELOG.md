@@ -1,10 +1,61 @@
-# Band Room — Changelog (v65 → v263 compact)
+# Band Room — Changelog (v65 → v264 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v264 compact — AI 再現 bass lock に**実測根拠の push -10ms**（cramps-punk）
+
+`scripts/analyze-tabasco-stems.py`（前回追加）で 6 Tabasco 曲を計測した
+結果、**bass onset が kick より平均 7-16ms 早い**ことが定量化された
+（cramps-punk の「前のめり」feel）。v249 は snap を `delta=0`（kick
+ぴったり）にしていたので、ロックはしているが**push を再現できてなかった**。
+これを実測値で補正。
+
+### 計測結果（avg ms bass-from-kick、負=早い）
+
+| song | offset | lock % |
+|---|---|---|
+| hey | -16.4 | 58% |
+| i-got-a-feeling | -11.5 | 59% |
+| under-the-moon | -11.4 | 52% |
+| electric-sheep | -11.5 | 49% |
+| human-fly | -8.9 | 42% |
+| sister | -7.4 | 50% |
+| **mean** | **-11.2** | ~52% |
+
+メジアン -11.5ms、平均 -11.2ms、conservative 化して **-10ms** を採用。
+
+### v264 の修正（`triggerBassAgent`）
+
+profile-aware の `BASS_PUSH_BY_PROFILE`:
+- `cramps-punk`: **-0.010 sec**（実測根拠の Tabasco push）
+- `default` / `sakanaction` / `lcd-motorik` / `lofi-nujabes`: **0**（未計測、変更なし）
+
+snap path のみ適用:
+```js
+if (nearestKick !== null && nearestDelta <= SNAP_WINDOW_SEC) {
+  baseOffset = nearestKick + bassPushSec;  // ← was: nearestKick
+}
+```
+
+snap window 外（>50ms = 意図的 syncopation）はそのまま、push は付かない。
+guitar lock (v250) は未変更 — 計測データなし、保守的に保持。
+（バンド演奏的にも「bassist が前、guitarist が kick とジャスト」は妥当）
+
+### 設計思想の転換点
+
+v245-v262 は推測ベースの調整、v264 は**実曲計測根拠の調整**。これ以降の
+groove 改善は target-spec-tabasco.json の数値を見て判断 → 「グルーブない」
+を ms 単位で具体化できる。
+
+原音不変、CPU 影響なし（純粋なスケジューリング数値）。
+
+- `band-room.js?v=br-149`、`hazama-fm-v264`。
 
 ---
 
