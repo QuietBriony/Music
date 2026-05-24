@@ -60,7 +60,13 @@
     // v99: per-voice overrides — kick だけ 808, snare だけ acoustic みたいに
     // 1 voice 単位で別 kit からピックできる。null = base kit を使う、文字列 = その kit id
     voiceOverrides: { kick: null, snare: null, hat: null, ghost: null, fill: null, crash: null },
-    chordInstrument: null,  // v101: catalog instrument id for chord (null = synth)
+    chordInstrument: "salamander-piano",  // v262: default to real piano (CDN Salamander Grand). v259 made
+                                          // drums acoustic; chord pad is the next "生音" lever — synth pad
+                                          // was the last fake-electronic element in the AI 再現 baseline.
+                                          // Piano's natural decay arc complements the v257 whole-note
+                                          // sustain (chord rings out the bar instead of pad-flat). null
+                                          // = synth fallback if user explicitly picks it from the
+                                          // chord instrument dropdown.
     bassInstrument: null,   // v231: was "bass-electric" — those CDN samples are unservable (jsDelivr 50MB limit); use the internal synth bass
     guitarInstrument: null, // v231: was "guitar-electric" — those CDN samples are unservable (jsDelivr 50MB limit); use the internal synth guitar
     voiceInstrument: null,  // v111: catalog instrument id for vocal/melody lead (null = synth)
@@ -5876,7 +5882,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = "band-room.prefs.v1";
-  const MIX_PREFS_VERSION = "v259-acoustic-drums";
+  const MIX_PREFS_VERSION = "v262-piano-chord";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -5930,6 +5936,19 @@
     old: "synth",
     current: "online/tone-acoustic"
   };
+  // v262: chord pad → Salamander Grand Piano (CDN). Same "生音" thread —
+  // v259 took drums to real samples; chord pad was the last fake-electronic
+  // element in the 4-piece AI 再現 baseline. Piano's natural attack/decay
+  // arc complements the v257 whole-note sustain so the chord rings out
+  // the bar instead of pad-flat. Conditional: only users whose saved
+  // chordInstrument is null or "" (the v101 synth default or a master
+  // preset's explicit "use synth" override that landed at "") flip to
+  // salamander-piano; anyone who picked a specific catalog instrument
+  // (e.g. casio-synth, salamander-piano already, etc.) keeps theirs.
+  const V262_CHORD_INSTRUMENT_MIGRATION = {
+    olds: [null, ""],
+    current: "salamander-piano"
+  };
 
   function loadPrefs() {
     try {
@@ -5975,6 +5994,15 @@
     // kitSource lives at top-level of prefs (not in sliders/toggles).
     if (next.kitSource === V259_KIT_SOURCE_MIGRATION.old) {
       next.kitSource = V259_KIT_SOURCE_MIGRATION.current;
+      changed = true;
+    }
+    // v262: chordInstrument migration — null/"" → salamander-piano. Same
+    // top-level pref. The applyPrefs reader uses `prefs.chordInstrument || null`
+    // (treats "" as null), but here we explicitly cover both forms so the
+    // saved value becomes the new explicit default in localStorage.
+    if (Object.prototype.hasOwnProperty.call(next, "chordInstrument")
+        && V262_CHORD_INSTRUMENT_MIGRATION.olds.includes(next.chordInstrument)) {
+      next.chordInstrument = V262_CHORD_INSTRUMENT_MIGRATION.current;
       changed = true;
     }
     next.__mixMigrated = changed;
