@@ -3664,6 +3664,26 @@
       kickTimes.push(0, 2 * ctx.beatTime);
     }
     const SNAP_WINDOW_SEC = 0.050;
+    // v264: per-profile bass push offset. Measured from real Tabasco stems
+    // via scripts/analyze-tabasco-stems.py — across 6 of 7 Tabasco songs,
+    // bass onsets land 7-16 ms BEFORE the nearest kick (the cramps-punk
+    // "前のめり" feel: bassist anticipates, drummer lands). Snap to
+    // (kick + push) instead of kick exactly, so the cramps-punk profile
+    // re-creates the natural push. Other profiles keep delta=0 (no
+    // measured data → conservative).
+    //
+    //   measured avg per song (ms ahead of kick, negative = pushed):
+    //     hey -16.4 / igaf -11.5 / utm -11.4 / es -11.5 / hf -8.9 / sister -7.4
+    //     mean = -11.2 ms, median -11.5 — landed on -10 ms (clean number,
+    //     well within the measured range)
+    const BASS_PUSH_BY_PROFILE = {
+      "cramps-punk":  -0.010,
+      "default":       0.0,
+      "sakanaction":   0.0,
+      "lcd-motorik":   0.0,
+      "lofi-nujabes":  0.0
+    };
+    const bassPushSec = BASS_PUSH_BY_PROFILE[state.kitProfile || "default"] || 0;
     bassAgentPlan(ctx).forEach((step) => {
       let baseOffset = step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
       let nearestDelta = Infinity;
@@ -3673,7 +3693,7 @@
         if (d < nearestDelta) { nearestDelta = d; nearestKick = kt; }
       }
       if (nearestKick !== null && nearestDelta <= SNAP_WINDOW_SEC) {
-        baseOffset = nearestKick;
+        baseOffset = nearestKick + bassPushSec;
       }
       const t = time + baseOffset;
       try { synthBass.triggerAttackRelease(step.note, step.dur || "8n", t, step.vel); } catch (e) {}
