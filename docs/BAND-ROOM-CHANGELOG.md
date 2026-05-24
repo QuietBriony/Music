@@ -1,10 +1,36 @@
-# Band Room — Changelog (v65 → v259 compact)
+# Band Room — Changelog (v65 → v260 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v260 compact — Hazama FM v258 監査の polish 7 件(engine integrity sweep)
+
+ユーザー: 「全体で、再生のエラーや矛盾ないか、監査して、必要作業磨き進めて」。
+v258 までを system-wide audit (subagent map) → Critical/Medium/Low/clean に
+分類し、Medium 1 + Low 6 を本 PR で全件 fix(新規機構なし、純粋な polish)。
+
+### v260 の修正(engine.js)
+
+| # | 項目 | 修正 |
+|---|---|---|
+| A | `stopPlayback` で `dropCue` を消し忘れ → stop/start 跨ぎで surge drop が誤発火する余地 | `resetRuntimeCounters()` 直後に `SectionState.dropCue = false;` を追加 |
+| B | v256 の `INTRA_SECTION_BREATH` widening(±14-18)が UCM clamp `(4, 96)` で頭打ち → surge peak で sin 弧が flat | UCM clamp `(4, 96) → (4, 100)`(2 箇所、`applyUCMToParams` の UCM_TARGET と `sectionMacroTarget` の desired)|
+| C | v256 の `microJitterScale` 1.4→1.9 が clamp 上限 1.62 で頭打ち → 実効 +16% (documented +36%) | clamp 上限 `1.62 → 2.0` |
+| D | surge drop の subImpact("8n" sub thump)が同 step-0 の他 subImpact path で truncate される | `subImpact` guard に `{ minRetriggerSec: 0.12 }` を付与 → drop tail を 120ms 保護 |
+| E | v258 関数 header コメント「fill + ident from v256」が誤帰属(fill は v193 起源、v256 で増幅; ident は v197 起源)| 「fill (v193, amplified in v256) + ident (v197)」へ訂正 |
+| F | `pianoMemory` guard の `maxActiveVoices: 40` が dead code(synth 側 `maxPolyphony: 24` で先に cap)| `maxActiveVoices: 24` に整合 |
+| G | v253 で `pianoMemory.volume.value` を `-41→-39` (+2dB) にしたが dynamic ramp(base `-45.2`)が即上書き → 第一フレーム以外無効 | dynamic ramp base `-45.2 → -43.2` で +2dB 意図を steady-state にも適用 |
+
+stack-check 15 PASS / 0 BAD。
+
+- `engine.js?v=fm-114`(+ `audio/music-*.js` 5モジュール)、`hazama-fm-v260`。
+
+Band Room 不変。新規機構なし、v242-v258 シリーズの「掃除」。
 
 ---
 
