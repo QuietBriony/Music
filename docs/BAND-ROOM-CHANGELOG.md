@@ -1,10 +1,43 @@
-# Band Room — Changelog (v65 → v254 compact)
+# Band Room — Changelog (v65 → v255 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v255 compact — AI 再現 chord pad 音量を下げる（リズム隊3声を前に）
+
+v254 で voice OFF にし baseline を 4-piece instrumental（drums + bass +
+guitar + chord pad）にした。次の最有力素材: chord pad は **cramps-punk
+で最も非ジャンルな要素**（パンクには鍵盤パッドが無い）かつ procedural
+music で **mud-mask の主因**（持続 wash texture が低中域を覆う）。
+v249/v250 でせっかく lock した bass+guitar の pocket が pad に埋もれる。
+
+### v255 の修正
+
+- `band-room.html`: `br-vol-chords` のデフォルト値を **58 → 40**（~30%
+  reduction）。
+- `band-room.js`: `MIX_PREFS_VERSION` を `v254-default-parts` →
+  `v255-chord-tame`。`V255_CHORD_REDUCTION_MIGRATION` 新設、`58 → 40`
+  へ migrate。既存 V167 migration（68→58）と直列適用 → 旧 v167 ユーザの
+  68 は V167 で 58 に上がり、続けて V255 で 40 に下がる。58 から
+  カスタムで離れた人はそのまま残る。
+- `scripts/check-band-room-logic.mjs`: assertion 文字列追随。
+
+chord pad は背景の harmonic colour 担当に専念、bass+guitar+drums の
+locked rhythm-section foreground を前に出す。原音不変。
+
+### 「音楽として成立」次の手（実機 AB で）
+
+- chord 40 で「だいぶマシ」 → 同方向: chord 軽くプラックっぽくする
+  （sustain 0.45 → 0.30、release を短く）
+- まだダメ → texture じゃなく**構成** → section dynamics（verse 静か→
+  chorus 大きい）の差を強める
+
+- `band-room.js?v=br-143`、`hazama-fm-v255`。
 
 ---
 

@@ -5823,7 +5823,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = "band-room.prefs.v1";
-  const MIX_PREFS_VERSION = "v254-default-parts";
+  const MIX_PREFS_VERSION = "v255-chord-tame";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -5854,6 +5854,17 @@
   const V254_DEFAULT_TOGGLES_MIGRATION = {
     "br-toggle-voice": { old: true, current: false }
   };
+  // v255: chord pad volume reduction. With voice now OFF (v254), the
+  // 4-piece baseline is drums + bass + guitar + chord. The chord pad's
+  // sustained synth-wash texture is the LEAST authentic element for
+  // cramps-punk and tends to mud-mask the bass + guitar lock that v249
+  // and v250 built up. Drop the chord vol default 58 → 40 (~30% softer)
+  // so chord sits as background harmonic colour instead of competing
+  // with the rhythm-section foreground. Only flips users still at the
+  // v168 default 58 — anyone who customised away from 58 keeps theirs.
+  const V255_CHORD_REDUCTION_MIGRATION = {
+    "br-vol-chords": { old: "58", current: "40" }
+  };
 
   function loadPrefs() {
     try {
@@ -5883,6 +5894,15 @@
     Object.entries(V254_DEFAULT_TOGGLES_MIGRATION).forEach(([id, rule]) => {
       if (next.toggles[id] === rule.old) {
         next.toggles[id] = rule.current;
+        changed = true;
+      }
+    });
+    // v255: chord pad volume reduction. Runs AFTER V167 (which lifted
+    // chord 68 → 58); chains so a pre-v168 user at 58 (after V167 ran)
+    // continues to v255's 40 in the same migration pass.
+    Object.entries(V255_CHORD_REDUCTION_MIGRATION).forEach(([id, rule]) => {
+      if (String(next.sliders[id]) === rule.old) {
+        next.sliders[id] = rule.current;
         changed = true;
       }
     });
