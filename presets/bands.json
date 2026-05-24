@@ -15,7 +15,7 @@
       "stems_dir": "presets/tabasco-stems",
       "drum_frames_pattern": "presets/drum-frames-tabasco-{songid}.json",
       "lyrics_doc": "docs/tabasco-lyrics-final.md",
-      "kit_profile_default": "default",
+      "kit_profile_default": "cramps-punk",
       "songs": [
         {
           "id": "tabasco",

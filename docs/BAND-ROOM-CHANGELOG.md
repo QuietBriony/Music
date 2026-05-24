@@ -1,10 +1,65 @@
-# Band Room — Changelog (v65 → v260 compact)
+# Band Room — Changelog (v65 → v261 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v261 compact — AI 再現の**デフォルト整合性**と**動線**を整える（監査パス）
+
+ユーザー: 「デフォルトで、一番の推奨挙動なるようにしてね。あと、使いや
+すい、わかりやすい導線で。他、矛盾や音ならないエラーが結構きつかった
+ので、これまで。見直し、見返し、全体確認もよろしくね」。
+
+監査エージェントで band-room.js / .html / bands.json / changelog の整合性
+を全 sweep。発見した「v259 までの蓄積で生じた矛盾／UX 不整合」を v261
+で吸収。
+
+### v261 の修正（band-room.js / bands.json / scripts/check-band-room-logic.mjs）
+
+1. **kit dropdown のラベル整合**
+   - `KIT_OPTIONS` 先頭に `online/tone-acoustic` を `🌐 acoustic kit
+     (生音, default)` ラベルで追加。dropdown を開いたとき**実際の
+     デフォルトが明示**される（以前は state 初期値だけで、UI 上は
+     synth エントリの "(default)" 表示が嘘になっていた）。
+   - synth エントリのラベルを `(default)` → `(legacy)` に。v259 で
+     既定の座を譲ったので "(default)" 表記は事実誤認。
+   - `renderKitOptions` で local KIT_OPTIONS と online-catalog の
+     dedupe を追加 — tone-acoustic を両所から二重表示しない。
+2. **MASTER_PRESETS["neutral"] の罠を解消**
+   - `kit_source: null`（= "現在の値を維持"）だった → "neutral" preset
+     を適用すると v259 の acoustic デフォルトが**消える silent UX bug**。
+     `null` → `"online/tone-acoustic"` に変更し、neutral preset 適用後
+     も生音ドラムが続く。
+3. **bands.json: Tabasco の `kit_profile_default` を整合**
+   - `"default"`（無味の汎用 profile）→ `"cramps-punk"`（バンド名通り
+     cramps スタイル）。Human Fly track が既に cramps-punk に override
+     していたので（line 70）、バンド既定をそれに合わせる。synth モード
+     にした時のみ効くが、整合性向上。
+4. **voice トグル OFF 時に voice vol スライダを `disabled`**
+   - v254 で voice 既定 OFF にしたが、voice vol スライダは draggable
+     のまま「動かしても鳴らない」状態だった → `<input disabled>` で
+     ブラウザがネイティブにグレーアウト＋入力ブロック。CSS 追加なし。
+5. **gate assertion 追随**
+   - kit label / Tabasco profile の assertion を新値に更新。
+
+### 監査で見送った（影響小、別 round 候補）
+
+- voice synth と関連 FX スライダ（chorus/delay/reverb 等）のグレーアウト
+  までは未実装。voice vol の disabled だけで「動かない」最大原因は解消。
+- `online/tone-acoustic` の初回読み込みレース（catalog 未ロード時に
+  synth へ silent fallback）。`buildBaseKit` の console.warn は既出。
+  別 round で UI トースト化検討。
+- kit_profile は kitSource=synth のみ効くので、acoustic デフォルトの
+  ユーザには Tabasco profile change は不可視。整合性のみの修正。
+
+原音不変。CPU 影響なし。プレフ migration 追加なし（v261 は default 値の
+swap だけで saved state を触らない）。
+
+- `band-room.js?v=br-147`、`hazama-fm-v261`。
 
 ---
 
