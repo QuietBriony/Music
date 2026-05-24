@@ -86,7 +86,7 @@ assert.equal(migratedMixPrefs.sliders["br-vol-stem-drums"], "86", "Old default s
 assert.equal(migratedMixPrefs.sliders["br-vol-bass"], "66", "Old default AI bass should migrate");
 assert.equal(migratedMixPrefs.sliders["br-space-reverb"], "16", "Old default master reverb should migrate");
 assert.equal(migratedMixPrefs.sliders["br-space-width"], "41", "Custom slider values should not migrate");
-assert.equal(migratedMixPrefs.mixPrefsVersion, "v262-piano-chord", "Migrated prefs should record current mix version");
+assert.equal(migratedMixPrefs.mixPrefsVersion, "v265-guitar-acoustic", "Migrated prefs should record current mix version");
 
 const firstSongIdForBand = windowMock.BandRoomTestHooks?.firstSongIdForBand;
 const adjacentSongIdInBand = windowMock.BandRoomTestHooks?.adjacentSongIdInBand;
@@ -141,7 +141,7 @@ assert.match(source, /sourceAccentSteps\(ctx, \["kick", "snare", "crash", "ghost
 // fails, so the AI band's guitar + bass were permanently silent. null =
 // internal synth, which always works offline.
 assert.match(source, /bassInstrument:\s*null/, "v231: AI bass must default to the internal synth (electric-bass CDN samples are unservable)");
-assert.match(source, /guitarInstrument:\s*null/, "v231: AI guitar must default to the internal synth (electric-guitar CDN samples are unservable)");
+assert.match(source, /guitarInstrument:\s*"guitar-acoustic"/, "v265: AI guitar defaults to the CDN-streamed acoustic Sampler (2026 re-audit: 11/11 notes servable). bass stays synth (bass-electric still 403s the bass core range).");
 assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band Room master limiter should keep v168 headroom");
 // v228: the guitar / chord PolySynth maxPolyphony must stay LOW. Each
 // PolySynth voice is a continuously-running oscillator; v227 raised the
@@ -195,8 +195,8 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
     "v231: triggerGuitarAgent must scale notes-per-strum to strum count so the guitar PolySynth stays within maxPolyphony");
   assert.match(source, /if \(baseNotes\.length >= 4\) baseNotes = \[baseNotes\[0\], baseNotes\[1\], baseNotes\[3\]\]/,
     "v231: chordAgentPlan must drop 7th voicings to a 3-note shell so the chord PolySynth stays within maxPolyphony");
-  assert.match(source, /if \(state\.guitarInstrument === "guitar-electric"\) state\.guitarInstrument = null/,
-    "v231: a saved guitar-electric pref must migrate to null so the dead CDN sampler can't override the synth default");
+  assert.doesNotMatch(source, /if \(state\.guitarInstrument === "guitar-electric"\) state\.guitarInstrument = null/,
+    "v265: the v231 force-to-null for guitar-electric was removed (2026 re-audit found the CDN samples mostly servable). Users who pick guitar-electric from the dropdown should retain it across reloads.");
   assert.match(source, /if \(state\.bassInstrument === "bass-electric"\) state\.bassInstrument = null/,
     "v231: a saved bass-electric pref must migrate to null so the dead CDN sampler can't override the synth default");
 }
@@ -275,7 +275,7 @@ assert.match(html, /id="br-vfx-reverb"[^>]*value="20"/, "Vocal reverb slider sho
 assert.match(html, /id="br-vol-external-vocal"[^>]*value="78"/, "External vocal slider should match the v168 bus default");
 assert.match(source, /const dryVal = 1 - wetVal;/, "Master reverb dry path should not jump on first slider touch");
 assert.match(source, /1 - w \* 0\.85/, "Tape dry path should not jump on first warmth slider touch");
-assert.match(source, /const MIX_PREFS_VERSION = "v262-piano-chord"/, "Band Room should version saved mix defaults");
+assert.match(source, /const MIX_PREFS_VERSION = "v265-guitar-acoustic"/, "Band Room should version saved mix defaults");
 assert.match(source, /"br-vol-stem-drums": \{ old: "92", current: "86" \}/, "Saved old stem defaults should migrate to the v167/v168 mix");
 assert.match(source, /"br-space-reverb": \{ old: "22", current: "16" \}/, "Saved old master defaults should migrate to the v167/v168 mix");
 assert.match(source, /prefs = migratePrefsForCurrentMix\(prefs\);/, "Prefs restore should apply the current mix migration before dispatching sliders");
