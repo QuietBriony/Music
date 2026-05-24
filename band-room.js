@@ -4136,6 +4136,26 @@
       console.warn("[Band Room] Tone.start failed:", e);
     }
 
+    // v266: ensure the online-samples catalog is loaded before any kit /
+    // instrument is built. The catalog usually loads at boot via
+    // DOMContentLoaded → loadOnlineCatalog(), but if that fetch failed
+    // (network blip, 404, offline first visit) state.onlineCatalog stays
+    // null and EVERY CDN-default instrument silently falls back to synth:
+    //   drums  (v259 acoustic kit) → synth voices
+    //   chord  (v262 Salamander piano) → synth pad
+    //   guitar (v265 acoustic guitar) → synth power-chord
+    // …contradicting the "real samples by default" promise. Retry once
+    // on-demand; if it still fails show the user why so it isn't silent.
+    if (!state.onlineCatalog) {
+      try { await loadOnlineCatalog(); } catch (e) {}
+      if (!state.onlineCatalog) {
+        const kitStatus = $("br-kit-status");
+        const msg = "⚠️ online catalog unavailable — CDN instruments will fall back to synth";
+        if (kitStatus) kitStatus.textContent = msg;
+        console.warn("[Band Room] startPlayback:", msg);
+      }
+    }
+
     if (!state.songData) {
       await loadSong(state.currentSongId);
     }

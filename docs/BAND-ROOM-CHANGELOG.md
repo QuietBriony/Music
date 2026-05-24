@@ -1,10 +1,74 @@
-# Band Room — Changelog (v65 → v265 compact)
+# Band Room — Changelog (v65 → v266 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v266 compact — online catalog race を `startPlayback` で吸収（silent synth fallback 防止）
+
+v261 監査で deferred にしていた残課題:「`online/tone-acoustic` 初回ロード
+レース — catalog 未ロード時に synth へ silent fallback」。v259/v262/v265
+で defaults を CDN サンプル前提にしたので、この silent failure は**最
+重大の矛盾**になっていた。
+
+### 失敗シナリオ
+
+1. ページ起動 → `loadOnlineCatalog()` の fetch 開始（DOMContentLoaded
+   で await されている）
+2. fetch がネットワーク blip / 404 / オフライン初回で失敗 →
+   `state.onlineCatalog` は null のまま
+3. ユーザが Play クリック → `startPlayback` → `buildBaseKit("online/
+   tone-acoustic")` → catalog null → `kitDef` not found → silent fall
+   back to synth drums
+4. 同様に chord (Salamander piano) / guitar (acoustic) も synth へ
+5. ユーザは「v259 acoustic にしたはずなのに synth で鳴ってる」と
+   分からず混乱
+
+### v266 の修正（`band-room.js` `startPlayback` 直後）
+
+```js
+// v266: ensure the online-samples catalog is loaded before any kit /
+// instrument is built. ... retry once on-demand; if still failing,
+// surface the reason in the kit status so it isn't silent.
+if (!state.onlineCatalog) {
+  try { await loadOnlineCatalog(); } catch (e) {}
+  if (!state.onlineCatalog) {
+    const kitStatus = $("br-kit-status");
+    const msg = "⚠️ online catalog unavailable — CDN instruments will fall back to synth";
+    if (kitStatus) kitStatus.textContent = msg;
+    console.warn("[Band Room] startPlayback:", msg);
+  }
+}
+```
+
+### 効果
+
+- 通常パス（catalog 起動時に読めた）: no-op、性能影響なし
+- レース／blip 後の Play: 1 回 retry で大体救済（fetch 200ms ＋ Tone.start
+  が並行）→ acoustic drums で鳴る
+- 真にオフラインで catalog 完全不可: synth fallback だが**理由が UI に
+  出る**（`br-kit-status` ＝ "⚠️ online catalog unavailable..."）
+
+### 監査 deferred の整理
+
+v261 で挙げた 3 件:
+- ~~voice 関連 FX スライダ disabled 化~~ → 再確認したら `br-vfx-*` は
+  stems mode の **vocal stem 用 FX**（`data-scope="stems"`）で AI 再現
+  voice toggle とは無関係。v261 の解釈ミスだった、対応不要。
+- **online catalog race fallback** → v266 で対応 ✓
+- ~~kit_profile invisibility when kitSource is acoustic~~ → design intent
+  通り（kit_profile は synth モードのみ効くのは正しい）、対応不要。
+
+→ v261 audit findings は v266 で完全 clear。
+
+原音不変、CPU 影響なし（1 回の awaited fetch のみ、しかも 通常パスは
+no-op）。
+
+- `band-room.js?v=br-151`、`hazama-fm-v266`。
 
 ---
 
