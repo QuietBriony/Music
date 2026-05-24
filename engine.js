@@ -6226,8 +6226,9 @@ function triggerTransientAcidCue(options = {}) {
 // new section is "surge"; this trigger consumes it at step === 0. Reuses
 // triggerTransientAcidCue so the AcidLockState indicator + voice-morph state
 // pump along with the punch (also fires a 4-note glass tag via
-// triggerAcidLockIndicator). The boundary-fill + ident from v256 still play
-// the bar BEFORE; this is the "drop" landing on top of the new bar 1.
+// triggerAcidLockIndicator). The boundary-fill (v193, amplified in v256) +
+// ident (v197) still play the bar BEFORE; this is the "drop" landing on top
+// of the new bar 1.
 function triggerSurgeDrop(step, time, context) {
   if (step !== 0 || !SectionState.dropCue || !isPlaying) return;
   SectionState.dropCue = false;
@@ -6950,7 +6951,10 @@ function syncGenreModeSectionControls(step) {
         delta = (sectionTarget - center) * GENRE_SECTION_SCALE;
       }
     }
-    UCM_TARGET[key] = clampValue(base + delta, 4, 96);
+    // v260 audit polish (B): widen UCM ceiling from 96 to 100 so the v256
+    // INTRA_SECTION_BREATH arc doesn't saturate at surge peak (wave 84 + 18
+    // would have hit 102 → clamped to 96, flattening the arc top).
+    UCM_TARGET[key] = clampValue(base + delta, 4, 100);
   }
   syncTransportControlValues(step, step === 0 ? 1.4 : 0.85, "GenreSection");
 }
@@ -7854,10 +7858,17 @@ guardToneTriggerReleaseSchedule("bass", bass, 2);
 guardToneTriggerReleaseSchedule("pad", pad, 2, { maxActiveVoices: 52 });
 guardToneTriggerReleaseSchedule("texture", texture, 1);
 guardToneTriggerReleaseSchedule("glass", glass, 2);
-guardToneTriggerReleaseSchedule("pianoMemory", pianoMemory, 2, { maxActiveVoices: 40 });
+// v260 audit polish (F): align maxActiveVoices with pianoMemory's maxPolyphony 24
+// — the previous 40 was dead code because the PolySynth already caps at 24.
+guardToneTriggerReleaseSchedule("pianoMemory", pianoMemory, 2, { maxActiveVoices: 24 });
 guardToneTriggerReleaseSchedule("voiceDust", voiceDust, 2);
 guardToneTriggerReleaseSchedule("drumSkin", drumSkin, 1);
-guardToneTriggerReleaseSchedule("subImpact", subImpact, 2);
+// v260 audit polish (D): the surge drop fires subImpact with an "8n" tail
+// (~375ms). Other paths (triggerLowMotion etc.) can retrigger subImpact within
+// the same step-0 window and cut off the drop's sub thump. minRetriggerSec
+// 0.12 protects the drop tail while still allowing later sub events to
+// retrigger after a reasonable gap.
+guardToneTriggerReleaseSchedule("subImpact", subImpact, 2, { minRetriggerSec: 0.12 });
 guardToneTriggerReleaseSchedule("reedBuzz", reedBuzz, 2);
 
 function organicFragment(offset = 0) {
@@ -9525,7 +9536,11 @@ function updateTimbreStateFromWorld(parts) {
   safeToneRamp(bass?.filter?.Q, bassBite, 0.2);
   safeToneRamp(glass?.harmonicity, 1.0 + (TimbreState.glass * 0.95) + (TimbreState.harp * 0.72) + (organicColor * 0.12) + genre.idm * 0.08 + genre.techno * 0.06 + (PerformancePadState.void * 0.24), 0.24);
   safeToneRamp(glass?.modulationIndex, 0.58 + (TimbreState.fracture * 2.08) + (TimbreState.harp * 0.92) + (pressureColor * 0.1) + genre.techno * 0.16 - genre.ambient * 0.12 - (TimbreState.warmth * 0.5) - (PerformancePadState.void * 0.2), 0.2);
-  safeToneRamp(pianoMemory?.volume, -45.2 + family.pianoMemory * 8.2 + family.chain * 1.4 + clarity * 0.8 - genre.techno * 0.8 + fmMix.pianoMemoryDb, 0.3);
+  // v260 audit polish (G): v253 bumped the static pianoMemory.volume.value
+  // -41→-39 (+2dB) for presence, but the dynamic ramp here dominates after
+  // the first audio frame. Match the +2dB intent at the dynamic baseline so
+  // the layer actually sits +2dB louder in steady state.
+  safeToneRamp(pianoMemory?.volume, -43.2 + family.pianoMemory * 8.2 + family.chain * 1.4 + clarity * 0.8 - genre.techno * 0.8 + fmMix.pianoMemoryDb, 0.3);
   safeToneRamp(voiceDust?.volume, -48 + family.voiceDust * 9.4 + family.chain * 1.2 + PerformancePadState.void * 1.4 - genre.pressure * 0.7 + fmMix.voiceDustDb, 0.32);
   safeToneRamp(drumSkin?.volume, -42 + family.drumSkin * 9.2 + family.acidBiyon * 1.8 - lowGuard * 2.6 + fmMix.drumSkinDb, 0.22);
   safeToneRamp(subImpact?.volume, -39 + family.sub808 * 8.8 + family.acidBiyon * 2.4 - lowGuard * 4.4 + fmMix.subImpactDb, 0.22);
@@ -10730,7 +10745,10 @@ function advanceGrooveStructure() {
   // v256: fill-state jitter widened 1.4→1.9 so section-boundary fills lift the
   // micro-timing variance audibly (more groove flex = a clearer "something is
   // happening" moment for the listener at section transitions).
-  GrooveState.microJitterScale = clampValue((GrooveState.fillActive ? 1.9 : 0.7 + waveNorm * 0.7) + micShape.particle * 0.18 - micShape.space * 0.08, 0.52, 1.62);
+  // v260 audit polish (C): clamp ceiling 1.62 → 2.0 so v256's 1.4→1.9 fill
+  // jitter widening actually applies (previously got clamped back down to
+  // 1.62, so effective bump was only ~16% instead of the documented 36%).
+  GrooveState.microJitterScale = clampValue((GrooveState.fillActive ? 1.9 : 0.7 + waveNorm * 0.7) + micShape.particle * 0.18 - micShape.space * 0.08, 0.52, 2.0);
 }
 
 function bassNoteForStep(step) {
@@ -13283,7 +13301,7 @@ function updateAutoMixTargets(cycleMs, options = {}) {
       // step into a smooth ~few-second glide into the next world.
       desired = sectionTarget + (desired - profile.base) * SECTION_LIFE_FACTOR;
     }
-    desired = clampValue(desired, 4, 96);
+    desired = clampValue(desired, 4, 100);
     const current = typeof UCM_TARGET[key] === "number" ? UCM_TARGET[key] : profile.base;
     const now = typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
     if (isManualInfluenceActive(key, now)) {
@@ -13390,6 +13408,10 @@ function stopPlayback(options = {}) {
   resetToneScheduleGuard();
   releaseAllVoices();
   resetRuntimeCounters();
+  // v260 audit polish (A): drop a queued surge dropCue so it can't fire on
+  // the first step-0 of the next playback session — the per-section dropCue
+  // is otherwise persistent across stop/start.
+  SectionState.dropCue = false;
   clearPerformancePads();
   quietMasterLevel();
   refreshFocusModulation({ rampInSeconds: 3, rampOutSeconds: 0.25 });
