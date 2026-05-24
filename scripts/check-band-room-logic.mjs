@@ -86,7 +86,7 @@ assert.equal(migratedMixPrefs.sliders["br-vol-stem-drums"], "86", "Old default s
 assert.equal(migratedMixPrefs.sliders["br-vol-bass"], "66", "Old default AI bass should migrate");
 assert.equal(migratedMixPrefs.sliders["br-space-reverb"], "16", "Old default master reverb should migrate");
 assert.equal(migratedMixPrefs.sliders["br-space-width"], "41", "Custom slider values should not migrate");
-assert.equal(migratedMixPrefs.mixPrefsVersion, "v255-chord-tame", "Migrated prefs should record current mix version");
+assert.equal(migratedMixPrefs.mixPrefsVersion, "v259-acoustic-drums", "Migrated prefs should record current mix version");
 
 const firstSongIdForBand = windowMock.BandRoomTestHooks?.firstSongIdForBand;
 const adjacentSongIdInBand = windowMock.BandRoomTestHooks?.adjacentSongIdInBand;
@@ -275,7 +275,7 @@ assert.match(html, /id="br-vfx-reverb"[^>]*value="20"/, "Vocal reverb slider sho
 assert.match(html, /id="br-vol-external-vocal"[^>]*value="78"/, "External vocal slider should match the v168 bus default");
 assert.match(source, /const dryVal = 1 - wetVal;/, "Master reverb dry path should not jump on first slider touch");
 assert.match(source, /1 - w \* 0\.85/, "Tape dry path should not jump on first warmth slider touch");
-assert.match(source, /const MIX_PREFS_VERSION = "v255-chord-tame"/, "Band Room should version saved mix defaults");
+assert.match(source, /const MIX_PREFS_VERSION = "v259-acoustic-drums"/, "Band Room should version saved mix defaults");
 assert.match(source, /"br-vol-stem-drums": \{ old: "92", current: "86" \}/, "Saved old stem defaults should migrate to the v167/v168 mix");
 assert.match(source, /"br-space-reverb": \{ old: "22", current: "16" \}/, "Saved old master defaults should migrate to the v167/v168 mix");
 assert.match(source, /prefs = migratePrefsForCurrentMix\(prefs\);/, "Prefs restore should apply the current mix migration before dispatching sliders");
@@ -339,8 +339,8 @@ assert.match(
 assert.match(source, /label: "synth: AI drums \(default\)"/, "Kit selector should identify the synth kit");
 assert.match(source, /label: "sample: 曲自身の drums \(現在の曲\)"/, "Kit selector should identify the auto-self sample kit");
 assert.match(source, /label: "sample: Tabasco \/ TABASCO \(136\)"/, "Kit selector should identify catalog sample kits");
-assert.match(source, /kitSource:\s*"synth"/, "AI 再現 default drum kit should be the Tone.js synth — auto-self extracted samples sound raw / amateur (v208)");
-assert.match(source, /if \(prefs\.kitSource === "auto-self"\)\s*\{\s*prefs\.kitSource = "synth";/, "applyPrefs should silently retire saved 'auto-self' to 'synth' (v208 migration)");
+assert.match(source, /kitSource:\s*"online\/tone-acoustic"/, "v259: AI 再現 default drum kit should be the acoustic CDN kit (生音 default; synth is selectable from the dropdown)");
+assert.match(source, /if \(prefs\.kitSource === "auto-self"\)\s*\{\s*prefs\.kitSource = "online\/tone-acoustic";/, "applyPrefs should retire saved 'auto-self' directly to the v259 acoustic default (v208 migration target updated)");
 assert.match(source, /PHRASE_VEL_MULT\s*=\s*\[0\.95,\s*1\.00,\s*1\.04,\s*0\.98\]/, "Synth drums should breathe across the 4-bar phrase (v209)");
 assert.match(source, /Math\.floor\(barInSection \/ 4\) % 4/, "4-bar fills should rotate through variants instead of repeating (v209)");
 assert.match(source, /function chordInversion\(notes, inv\)/, "Chord agent should have an inversion helper (v210)");
