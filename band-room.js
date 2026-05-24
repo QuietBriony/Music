@@ -4181,6 +4181,20 @@
     if (!clickSynth) clickSynth = makeClick(clickBus);
     await backgroundBridgeStart;
 
+    // v268: wait for ALL Tone.Sampler-backed instruments (bass / guitar /
+    // chord / voice) to finish loading their CDN samples. buildKitForSource
+    // already awaits Tone.loaded() for the online drum kit, but the
+    // makeSynthBass / makeGuitar / makeVoiceBox / makeChordSynth functions
+    // return their Samplers synchronously without awaiting Tone.loaded() —
+    // so triggers fire before samples are decoded → SILENT bass/guitar/
+    // chord/voice. Surfaced as a regression after v267 made bass-electric
+    // the default (previously the synth-fallback path was used, which has
+    // no load step). One global await here covers every Sampler created
+    // above without rewriting the four maker functions to be async.
+    try { await Tone.loaded(); } catch (e) {
+      console.warn("[Band Room] Tone.loaded() rejected:", e);
+    }
+
     // Load stems (if available for this song)
     await loadStemsForSong(state.currentSongId);
 
