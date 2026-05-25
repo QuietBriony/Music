@@ -251,7 +251,12 @@
   // without flattening drum transients (12 ms attack, 16% parallel wet).
   function makeInstrumentPolishBus(dest) {
     const input  = new Tone.Gain(1);
-    const eq     = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 1.4, lowFrequency: 160, highFrequency: 4200 });
+    // v274: high boosted 1.4 → 3.0 dB (measurement-driven). Autonomous
+    // capture of AI 再現 vs target spec showed brightness 1528 Hz vs
+    // Tabasco's 4581 Hz — AI was 3000 Hz dimmer. Boost the >4.2 kHz
+    // shelf so the acoustic drum kit's hat sizzle reads. Stems mode
+    // bypasses this bus, so unaffected.
+    const eq     = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 3.0, lowFrequency: 160, highFrequency: 4200 });
     const comp   = new Tone.Compressor({ threshold: -20, ratio: 2.2, attack: 0.012, release: 0.18, knee: 6 });
     const sat    = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });
     const satWet = new Tone.Gain(0.16);   // parallel saturated blend
