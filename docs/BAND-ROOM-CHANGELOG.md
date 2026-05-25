@@ -1,10 +1,24 @@
-# Band Room — Changelog (v65 → v279 compact)
+# Band Room — Changelog (v65 → v280 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v280 compact — listening UI polish
+
+Small Band Room surface cleanup for production listening:
+
+- expose the `air rock connect box` identity in the header
+- move mastering above the advanced tool details
+- label the baseline preset as `neutral default`
+- give `neutral default` and `vertical room` distinct chip color cues
+- cache bump: `band-room.css?v=br-76`
+
+- `hazama-fm-v280`
 
 ---
 
