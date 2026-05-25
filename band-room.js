@@ -257,7 +257,15 @@
     // shelf so the acoustic drum kit's hat sizzle reads. Stems mode
     // bypasses this bus, so unaffected.
     const eq     = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 3.0, lowFrequency: 160, highFrequency: 4200 });
-    const comp   = new Tone.Compressor({ threshold: -20, ratio: 2.2, attack: 0.012, release: 0.18, knee: 6 });
+    // v275: comp loosened to preserve dynamic range (measurement-driven).
+    // Capture vs target showed DR 12.3 dB vs 33.6 dB (-21 dB gap). v271
+    // section dynamics (5 dB swing) addressed the section layer, but the
+    // glue comp was squashing per-bar transients flat. Threshold -20 → -14
+    // (6 dB more headroom before catching) + ratio 2.2 → 1.8 (gentler when
+    // it does catch). Net effect: louder peaks pass through, quiet bits
+    // stay quiet, "song breathing" returns. Still keeps SOME glue so the
+    // synth band doesn't read as wildly inconsistent.
+    const comp   = new Tone.Compressor({ threshold: -14, ratio: 1.8, attack: 0.012, release: 0.18, knee: 6 });
     const sat    = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });
     const satWet = new Tone.Gain(0.16);   // parallel saturated blend
     const satDry = new Tone.Gain(0.92);   // parallel clean path
