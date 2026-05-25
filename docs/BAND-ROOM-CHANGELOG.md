@@ -1,10 +1,53 @@
-# Band Room — Changelog (v65 → v276 compact)
+# Band Room — Changelog (v65 → v279 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v279 compact — vertical-room mastering preset
+
+Renames the A/B room preset to `vertical room` and gives it a more distinct
+mastering shape:
+
+- `reverb: 30`
+- `width: 60`
+- `warmth: 12`
+- `loudness: -1`
+- intent: less side spread than club/ambient, more top-down room and low-body lift
+- cache bump: `band-room.js?v=br-163`
+
+- `hazama-fm-v279`
+
+---
+
+## v278 compact — live-room vertical retune
+
+Retunes `live room` after listening feedback that v277 spread too far sideways:
+
+- `reverb: 22 → 28`
+- `width: 74 → 58`
+- `warmth: 8 → 11`
+- `loudness` stays `-1`
+- intent: less left/right width, more room depth and body pressure
+- cache bump: `band-room.js?v=br-162`
+
+- `hazama-fm-v278`
+
+---
+
+## v277 compact — Band Room live-room A/B mastering preset
+
+Adds a mastering-only `live room` A/B preset for 原音 listening:
+
+- `reverb: 22`, `width: 74`, `warmth: 8`, `loudness: -1`
+- no default migration, no instrument/profile changes, no recorder path change
+- cache bump: `band-room.js?v=br-161`
+
+- `hazama-fm-v277`
 
 ---
 

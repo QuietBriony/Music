@@ -75,7 +75,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-160-pwa-audio-safe-boot", "Band Room should expose the current audio-safe boot version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-163-vertical-room-mastering", "Band Room should expose the current audio-safe boot version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -90,6 +90,15 @@ assert.equal(migratedMixPrefs.sliders["br-vol-bass"], "66", "Old default AI bass
 assert.equal(migratedMixPrefs.sliders["br-space-reverb"], "16", "Old default master reverb should migrate");
 assert.equal(migratedMixPrefs.sliders["br-space-width"], "41", "Custom slider values should not migrate");
 assert.equal(migratedMixPrefs.mixPrefsVersion, "v267-bass-electric", "Migrated prefs should record current mix version");
+
+const verticalRoomPreset = source.match(/"vertical-room":\s*\{([^}]*)\}/)?.[1] || "";
+assert.ok(verticalRoomPreset, "Band Room should include a vertical-room A/B mastering preset");
+assert.match(verticalRoomPreset, /reverb:\s*30/, "vertical-room should push room depth without going ambient");
+assert.match(verticalRoomPreset, /width:\s*60/, "vertical-room should keep the center stronger than the wide presets");
+assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor/body pressure");
+assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
+assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
+assert.match(html, /data-preset="vertical-room">vertical room<\/button>/, "Band Room should expose the vertical-room preset button");
 
 const firstSongIdForBand = windowMock.BandRoomTestHooks?.firstSongIdForBand;
 const adjacentSongIdInBand = windowMock.BandRoomTestHooks?.adjacentSongIdInBand;
