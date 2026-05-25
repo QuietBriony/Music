@@ -75,7 +75,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-165-tiffany-box-ui", "Band Room should expose the current audio-safe boot version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-166-ai-lazy-safe", "Band Room should expose the current audio-safe boot version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -99,6 +99,26 @@ assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor
 assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">vertical room<\/button>/, "Band Room should expose the vertical-room preset button");
+assert.match(html, /band-room\.css\?v=br-80/, "Band Room HTML should reference the current CSS cache marker");
+assert.match(html, /band-room\.js\?v=br-166/, "Band Room HTML should reference the current JS cache marker");
+assert.match(sw, /hazama-fm-v283/, "Service worker should carry the current Band Room cache version");
+assert.match(sw, /band-room\.css\?v=br-80/, "Service worker should precache the current Band Room CSS marker");
+assert.match(sw, /band-room\.js\?v=br-166/, "Service worker should precache the current Band Room JS marker");
+assert.match(source, /bandIds\.length === 1[\s\S]*br-album-plaque/, "Single-band registry should render a non-button album plaque");
+assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/core\.js/, "Band Room should lazy-load Magenta only when AI fill is used");
+assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/music_rnn\.js/, "Band Room should lazy-load Magenta RNN only when AI fill is used");
+assert.doesNotMatch(html, /@tonejs\/midi@2\.0\.28\/build\/Midi\.min\.js/, "Band Room should lazy-load @tonejs/midi only when MIDI import is used");
+assert.match(source, /async function preparePlaybackAssetsForCurrentMode\(/, "START should delegate to mode-specific asset preparation");
+assert.match(source, /async function prepareSynthPlaybackAssets\(/, "AI playback assets should have a dedicated lazy prep path");
+assert.match(source, /async function prepareStemPlaybackAssets\(/, "Original stems should have a dedicated prep path");
+assert.match(source, /samplerAudioBufferCache/, "AI sampler preload should cache decoded buffers");
+assert.match(source, /samplerDecodeConcurrency\(/, "AI sampler preload should use bounded decode concurrency");
+assert.match(source, /Object\.keys\(preloaded\)\.length === 0\) return null;/, "Failed AI sampler fetches should fall back without blocking START");
+assert.doesNotMatch(
+  source,
+  /if \(!drumKit\) drumKit = await buildKitForSource\(state\.kitSource\);[\s\S]*await loadStemsForSong\(state\.currentSongId\);/,
+  "Original START should not build the broad AI sampler graph and then load stems"
+);
 
 const firstSongIdForBand = windowMock.BandRoomTestHooks?.firstSongIdForBand;
 const adjacentSongIdInBand = windowMock.BandRoomTestHooks?.adjacentSongIdInBand;
