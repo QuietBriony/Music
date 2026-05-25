@@ -36,6 +36,26 @@ gh auth login
 
 ## 2. Music-stack を clone
 
+### (推奨) ワンコマンドスクリプト
+
+Music repo だけ手で clone すれば、付属の `scripts/setup-new-pc.ps1` が
+残りを全部やってくれる(認証チェック → 残り 4 repo の clone → PC 名を
+git config に埋め込み → stack-check で 0 BAD 確認 → ブラウザでこの doc
+を開いてブートストラッププロンプトをコピペ準備):
+
+```powershell
+mkdir C:\workspace\music-stack
+cd C:\workspace\music-stack
+gh repo clone QuietBriony/Music
+cd Music
+.\scripts\setup-new-pc.ps1 -MachineName "studio"
+```
+
+`-MachineName` は任意の識別子(デフォルト `"studio"`)。命名は下記「PC 命名規約」
+セクション参照。スクリプトを使わない場合は下記の手動手順:
+
+### 手動セットアップ
+
 **primary PC と同じパス** (`C:\workspace\music-stack\<repo>`) にする。Claude の
 project memory がパスでキー付けされるため、同じパスにしておくと memory 移管が
 楽 (後述、任意)。
@@ -128,6 +148,10 @@ GitHub 経由のみで、PC↔PC の直接接続はありません。
    - cache-buster 規律: engine.js + audio/music-*.js (5 モジュール) は同じ
      ?v=fm-NN を共有、sw.js VERSION = hazama-fm-vNN。一緒に bump
    - ship-then-verify: user は merge 後に試聴で判定
+   - **PC 命名**: このPCの識別子は `git config --get music.machineName` で
+     取得 (setup script が設定済み、例: `studio`)。SESSION-LEDGER に追記する
+     時は `## YYYY-MM-DD [studio] — <一行サマリ>` 形式で prefix を付ける
+     (primary PC からの追記は無印 = `[primary]` 扱い)
 
 4. 作業サイクル:
    a. git pull --ff-only origin main で primary PC + Band Room の最新を取得
@@ -194,6 +218,63 @@ primary PC ──push─→ GitHub main ←─pull── 別 PC (UR44 PC)
   SESSION-LEDGER の v246-v263 エントリの「並走」項を参照。
 - **direct push to main が拒否される**: 仕様。docs でも feature branch + PR
   経由。`gh pr create` + `gh pr merge --squash --delete-branch` で。
+
+---
+
+## PC 命名規約
+
+両 PC で並列開発する時、SESSION-LEDGER で「どちらのPCで何をやったか」を
+追えるよう、PC に名前を付ける。
+
+### git config 設定
+
+setup script を使えば自動で設定される (`-MachineName` パラメータの値)。
+手動の場合:
+
+```powershell
+cd C:\workspace\music-stack\Music
+git config --local music.machineName "studio"
+```
+
+確認:
+
+```powershell
+git config --get music.machineName
+```
+
+### SESSION-LEDGER エントリ規約
+
+新 PC からの追記は、エントリヘッダに `[PC名]` prefix を付ける:
+
+```
+## 2026-05-30 [studio] — UR44 経由の試聴で X を確認、Y に微調整 (vNNN)
+- agent : ...
+- repos : ...
+- shipped : PR #NNN — ...
+```
+
+primary PC からの追記は無印 (= `[primary]` 扱い、既存のエントリは
+すべて primary)。これで `grep "\[studio\]" docs/autonomy/SESSION-LEDGER.md`
+で UR44 PC の作業履歴だけ抽出できる。
+
+### 推奨命名
+
+- **primary**: メインの開発機 (このリポジトリの大半をビルドした PC) ＝ 無印 or `[primary]`
+- **studio**: UR44 + DAW を繋いだ試聴 / レコーディング機 (デフォルト)
+- **mobile**: ノート PC で外出先で軽く触る用
+
+ホスト名そのままでも OK (`HOSTNAME` を識別子に使う)。
+
+### コミットメッセージ (任意)
+
+PC 識別を commit にも残したい場合は、Co-Authored-By trailer に PC 名を入れる:
+
+```
+Co-Authored-By: Claude Opus 4.7 (studio) <noreply@anthropic.com>
+```
+
+primary PC からは `(primary)` または無印。これは任意 — SESSION-LEDGER の
+prefix だけで十分追跡できる。
 
 ---
 
