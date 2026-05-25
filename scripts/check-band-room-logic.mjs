@@ -368,7 +368,7 @@ assert.match(source, /let instrumentBus = null;/, "v220: instrumentBus must be h
 assert.match(source, /function sectionGainForRole\(role\)/, "v220: section dynamics need a role → gain mapping helper");
 assert.match(source, /function rampInstrumentBusForSection\(sec, time\)/, "v220: section dynamics need a ramp helper that gates on synth mode");
 assert.match(source, /rampInstrumentBusForSection\(nowSec, time\);/, "v220: scheduleBar must ramp instrumentBus on section change");
-assert.match(source, /intro:\s*0\.85[\s\S]{0,120}recap:\s*1\.05/, "v220: role gain map must lift recap and pull intro back (within polish bus comp tolerance)");
+assert.match(source, /intro:\s*0\.62[\s\S]{0,200}recap:\s*1\.05/, "v220 / v271: role gain map widened — intro pulled to 0.62 (-4.2 dB) for atmospheric entrance, recap stays at 1.05 lifted. v271 expanded the v220 ±10% range to ±47% so the verse/chorus contrast is audible.");
 assert.match(source, /if \(isJazzy && ctx\.role !== "break"\)/, "v221: bass agent must branch to walking mode in jazzy roles (excluding break)");
 assert.match(source, /sub:\s*0,\s*note:\s*semiToNote\(root\)[\s\S]{0,800}sub:\s*12,\s*note:\s*semiToNote\((?:seventh|beat4Semi)\)/, "v221: jazzy walking bass should walk root → 5th → 3rd → 7th (v222 may replace 7th with beat4Semi for lookahead)");
 assert.match(source, /function nextChordLookahead\(\)/, "v222: need a next-chord lookahead helper for walking-bass chromatic approach");

@@ -1,10 +1,71 @@
-# Band Room — Changelog (v65 → v270 compact)
+# Band Room — Changelog (v65 → v271 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v271 compact — AI 再現 section dynamics 拡幅（v220 ±10% → ±47%、verse/chorus contrast を出す）
+
+v270 で生音 5/5 が成立した後、ユーザー実機 AB: 「vocal 以外なってる、
+とりあえず」+ 「やるべきこと進めて、よくする候補プランニングから」。
+プランニングで `[A] structure / arrangement` カテゴリを選択 → A-1
+（section dynamics 強化）を単独 ship。
+
+### 背景
+
+v245-v270 までで texture（音色）と groove（pocket）は詰めた。
+構成（structure）の不在が「procedural は止まらない loop」感覚の主因。
+v220 で section role → bus gain mapping は導入済だが、range が
+`0.85〜1.05` (±10%) と控えめで「dynamics があるはずだが目立たない」
+状態だった。
+
+### v271 の修正（`band-room.js`）
+
+`sectionGainForRole` の ROLE_GAIN テーブルを拡幅:
+
+| role | v220 | v271 | dB delta | 意図 |
+|---|---|---|---|---|
+| **intro** | 0.85 | **0.62** | -2.7 dB | 雰囲気的な entrance |
+| **verse** | 0.95 | **0.80** | -1.4 dB | settled, vocal/melody の余地 |
+| **comp** | 1.00 | 0.95 | -0.4 dB | 中庸 |
+| **recap** (chorus) | 1.05 | **1.05** | 0 dB | **lifted、ここは据え置き** |
+| **break** | 0.85 | **0.58** | -3.3 dB | dramatic dip、息継ぎ |
+| **outro** | 0.92 | 0.72 | -2.2 dB | winding down |
+| head/post/swell | 0.92-1.00 | 0.82-0.95 | -0.6〜-1.4 dB | 細かな彩り |
+
+新スプレッド: 0.58 〜 1.05 = **47%（≒5 dB swing）**、v220 の 20% (2 dB) から倍以上。
+
+### 設計思想：comp threshold を超えない方向に振る
+
+instrumentBus の glue comp は threshold -20 dB、ratio 2.2:1。**ループ
+量が下がる方向**は comp 域から外れるので perceived loudness drop が
+大きい（4-5 dB 落ちる）→ contrast を稼ぐ。**ループ量が上がる方向**は
+comp に飲まれて perceived は半減 → recap は +0.4 dB の小幅 lift のみ。
+
+これで pumping artifact なしに「verse 静か → chorus 立ち上がる」の
+体感を作る。
+
+### 影響範囲
+
+- 原音 (stems) 不変: instrumentBus は AI 再現 経路のみ通る
+- master チェーンへの影響なし: master limiter (-1 dB) は触らない、loud
+  section の peak は変わらない
+- 既存ユーザの slider 設定不変: instrumentBus は code-level、ユーザ
+  vol スライダはその下流
+- CPU 影響なし: 既存の linearRampToValueAtTime を使うのみ
+
+### 次の手（実機 AB 次第）
+
+- 「dynamics 効いてる、いい感じ」 → A-2 (part 入退場) へ
+- 「verse 静かすぎる」 → verse 0.80 → 0.85 に微調整
+- 「dramatic すぎる」 → 全体的に center 寄りに収束
+- 「他の感じ薄い」 → B (per-profile push 細分化) など別レイヤーへ
+
+- `band-room.js?v=br-156`、`hazama-fm-v271`。
 
 ---
 
