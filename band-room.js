@@ -1443,12 +1443,40 @@
   //                                            maxCutoff: 8000 });
   //   s.connect(target);
   //   s.triggerAttackRelease(note, dur, time, vel);
-  function makeVelocitySensitiveSampler(opts) {
+  // v270: pre-decode CDN samples manually before handing to Tone.Sampler.
+  // Tone.js v14.8.49's internal ToneAudioBuffer.load() fails on
+  // cdn.jsdelivr.net URLs ("could not load url:") even though fetch +
+  // AudioContext.decodeAudioData on the SAME URL works fine — verified by
+  // manual repro. salamander-piano on tonejs.github.io worked through Tone's
+  // loader, masking the bug until v265+v267 made bass-electric and guitar-
+  // acoustic (both jsDelivr-hosted) the AI 再現 defaults. Symptom: drums +
+  // chord audible, bass + guitar silent. Fix: fetch + decodeAudioData per
+  // note, wrap in Tone.ToneAudioBuffer, pass the buffer-map to Tone.Sampler
+  // (it accepts ToneAudioBuffer values in its urls option).
+  async function preloadSamplerUrls(urls) {
+    const preloaded = {};
+    await Promise.all(Object.entries(urls).map(async ([note, url]) => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const ab = await res.arrayBuffer();
+        const audio = await Tone.context.decodeAudioData(ab);
+        preloaded[note] = new Tone.ToneAudioBuffer(audio);
+      } catch (e) {
+        console.warn("[Band Room] sample preload failed for " + note + " (" + url + "):", e && e.message ? e.message : e);
+      }
+    }));
+    return preloaded;
+  }
+
+  async function makeVelocitySensitiveSampler(opts) {
     const minCutoff = opts.minCutoff ?? 1200;
     const maxCutoff = opts.maxCutoff ?? 8000;
     const filter = new Tone.Filter({ frequency: maxCutoff, type: "lowpass", Q: 0.6 });
+    // v270: pre-decode rather than passing raw URLs (see preloadSamplerUrls)
+    const preloaded = await preloadSamplerUrls(opts.urls);
     const sampler = new Tone.Sampler({
-      urls: opts.urls,
+      urls: preloaded,
       release: opts.baseRelease ?? 0.6,
       volume: opts.volume ?? -6
     }).connect(filter);
@@ -1491,7 +1519,7 @@
   // kill-switch: flip any part to false to silence it if it ever regresses.
   const SYNTH_REBUILD_PARTS = { bass: true, guitar: true, voice: true, chord: true };
 
-  function makeSynthBass(target) {
+  async function makeSynthBass(target) {  // v270: async — awaits the v270 sampler pre-decode
     // v110: if bassInstrument is set to a sampler in catalog.instruments[],
     // use real samples (e.g. salamander-bass = piano left-hand register).
     // Falls back to profile-aware synth bass otherwise.
@@ -1506,7 +1534,7 @@
           urls[note] = instDef.base_url + p;
         });
         // v126: velocity-sensitive — 強く弾いたらブライト、弱く弾いたらダーク
-        const sampler = makeVelocitySensitiveSampler({
+        const sampler = await makeVelocitySensitiveSampler({
           urls, baseRelease: 0.4, volume: -2,  // v269: +2 dB lift (was -4). After v267 made bass-electric the default, sample's natural decay envelope read quieter than the synth fat-saw fallback at v101 calibration — drums dominated. +2 dB rebalances toward drums without re-tuning the master or stems chains.
           minCutoff: 600, maxCutoff: 3200
         });
@@ -2093,7 +2121,7 @@
   // Power chord (root + 5th + octave), saw + distortion + LP shimmer.
   // Section-aware picking: silent intro / palm-mute 8th verse / open
   // prechorus / 16th chorus / sparse bridge / hit outro.
-  function makeGuitar(target) {
+  async function makeGuitar(target) {  // v270: async
     // v111: if guitarInstrument is set to a catalog sampler, use real samples.
     // Less distortion + softer chain than synth fallback (real samples already
     // have body and harmonic content).
@@ -2116,7 +2144,7 @@
         });
         // v126: velocity-sensitive — guitar は強く弾けばブライトに、弱く弾けば
         // 柔らかく。electric guitar の muting / strumming nuance に対応
-        const sampler = makeVelocitySensitiveSampler({
+        const sampler = await makeVelocitySensitiveSampler({
           urls, baseRelease: 0.5, volume: -4,  // v269: +2 dB lift (was -6). Same rebalance as bass — acoustic guitar samples sit quieter than the synth power-chord fallback.
           minCutoff: 1500, maxCutoff: 7000
         });
@@ -2185,7 +2213,7 @@
   // For full AI-synthesized vocal: generate via Suno externally, save
   // mp3, drop into presets/vocals/{song-id}.mp3, then load via a
   // future HTMLAudio layer.
-  function makeVoiceBox(target) {
+  async function makeVoiceBox(target) {  // v270: async
     // v111: if voiceInstrument is set to a catalog sampler, use it
     // (typically violin / cello / flute for "lead melody as instrument").
     // This bypasses the formant-vowel synth path entirely and gives the
@@ -2201,7 +2229,7 @@
         });
         // v126: velocity-sensitive — melody lead (violin / cello / flute) は
         // 強く吹けばブライト、弱く吹けば柔らかい音色変化
-        const sampler = makeVelocitySensitiveSampler({
+        const sampler = await makeVelocitySensitiveSampler({
           urls, baseRelease: 0.8, volume: -6,
           minCutoff: 1800, maxCutoff: 9000
         });
@@ -2281,7 +2309,7 @@
 
   // ---- Chord synth ---------------------------------------------
 
-  function makeChordSynth(target) {
+  async function makeChordSynth(target) {  // v270: async
     // v92: profile-aware chord synth.
     // v101: if state.chordInstrument is set to an "instruments[]" catalog
     //   entry id (e.g. "salamander-piano"), use Tone.Sampler with that
@@ -2301,7 +2329,7 @@
         });
         // v126: velocity-sensitive — piano voicing で弱く弾いた chord は
         // 柔らかく、強く弾いた chord はブライトに (jazz comping の表情)
-        const sampler = makeVelocitySensitiveSampler({
+        const sampler = await makeVelocitySensitiveSampler({
           urls, baseRelease: 1.2, volume: -5,  // v269: +3 dB lift (was -8). Piano's natural decay reads especially quiet vs the held synth-pad it replaced (v262), so chord needs the largest bump of the three Samplers — but still kept under the bass/guitar level so the pad stays a background colour (v255/v257 intent).
           minCutoff: 2000, maxCutoff: 9000
         });
@@ -4174,11 +4202,11 @@
     ensureMaster();
     const backgroundBridgeStart = startBackgroundAudioBridge();
     if (!drumKit) drumKit = await buildKitForSource(state.kitSource);
-    if (!synthBass) synthBass = makeSynthBass(bassBus);
-    if (!guitarSynth) guitarSynth = makeGuitar(guitarBus);
-    if (!voiceSynth) voiceSynth = makeVoiceBox(voiceBus);
-    if (!chordSynth) chordSynth = makeChordSynth(chordBus);
-    if (!clickSynth) clickSynth = makeClick(clickBus);
+    if (!synthBass) synthBass = await makeSynthBass(bassBus);      // v270: async (sample pre-decode)
+    if (!guitarSynth) guitarSynth = await makeGuitar(guitarBus);   // v270: async
+    if (!voiceSynth) voiceSynth = await makeVoiceBox(voiceBus);    // v270: async
+    if (!chordSynth) chordSynth = await makeChordSynth(chordBus);  // v270: async
+    if (!clickSynth) clickSynth = makeClick(clickBus);             // sync — synth-only, no samples
     await backgroundBridgeStart;
 
     // v268: wait for ALL Tone.Sampler-backed instruments (bass / guitar /
@@ -5445,7 +5473,7 @@
         if (status) status.textContent = `chord: ${sel.value || "synth"} — rebuilding…`;
         try {
           if (chordSynth) { try { chordSynth.dispose(); } catch (e) {} }
-          chordSynth = makeChordSynth(chordBus);
+          chordSynth = await makeChordSynth(chordBus);  // v270: async
           if (status) status.textContent = `chord: ${sel.value || "synth"}`;
         } catch (e) {
           if (status) status.textContent = "chord rebuild failed: " + e.message;
@@ -5476,7 +5504,7 @@
         if (status) status.textContent = `bass: ${sel.value || "synth"} — rebuilding…`;
         try {
           if (synthBass) { try { synthBass.dispose(); } catch (e) {} }
-          synthBass = makeSynthBass(bassBus);
+          synthBass = await makeSynthBass(bassBus);  // v270: async
           if (status) status.textContent = `bass: ${sel.value || "synth"}`;
         } catch (e) {
           if (status) status.textContent = "bass rebuild failed: " + e.message;
@@ -5507,7 +5535,7 @@
         if (status) status.textContent = `guitar: ${sel.value || "synth"} — rebuilding…`;
         try {
           if (guitarSynth) { try { guitarSynth.dispose(); } catch (e) {} }
-          guitarSynth = makeGuitar(guitarBus);
+          guitarSynth = await makeGuitar(guitarBus);  // v270: async
           if (status) status.textContent = `guitar: ${sel.value || "synth"}`;
         } catch (e) {
           if (status) status.textContent = "guitar rebuild failed: " + e.message;
@@ -5538,7 +5566,7 @@
         if (status) status.textContent = `melody lead: ${sel.value || "synth"} — rebuilding…`;
         try {
           if (voiceSynth) { try { voiceSynth.dispose(); } catch (e) {} }
-          voiceSynth = makeVoiceBox(voiceBus);
+          voiceSynth = await makeVoiceBox(voiceBus);  // v270: async
           if (status) status.textContent = `melody lead: ${sel.value || "synth"}`;
         } catch (e) {
           if (status) status.textContent = "voice rebuild failed: " + e.message;
@@ -5731,11 +5759,11 @@
         try {
           // Rebuild bass/chord/vocal — always synth, always affected
           if (synthBass) { try { synthBass.dispose(); } catch (e) {} }
-          synthBass = makeSynthBass(bassBus);
+          synthBass = await makeSynthBass(bassBus);  // v270: async
           if (chordSynth) { try { chordSynth.dispose(); } catch (e) {} }
-          chordSynth = makeChordSynth(chordBus);
+          chordSynth = await makeChordSynth(chordBus);  // v270: async
           if (voiceSynth) { try { voiceSynth.dispose(); } catch (e) {} }
-          voiceSynth = makeVoiceBox(voiceBus);
+          voiceSynth = await makeVoiceBox(voiceBus);  // v270: async
           // Rebuild drum kit only if currently using synth source
           if (state.kitSource === "synth") {
             drumKit = await buildKitForSource("synth");
