@@ -790,19 +790,81 @@
     return true;
   }
 
+  // v272: AudioBuffer → WAV (PCM 16-bit interleaved) encoder. Standard
+  // pattern (~50 lines). Lets the ● REC button output a .wav file that
+  // librosa/scripts/audacity/etc. can read DIRECTLY, no ffmpeg install
+  // required — completing the measurement loop (analyze-band-stems.py +
+  // compare-capture.py + docs/MEASUREMENT-LOOP.md) for any user with
+  // just Python.
+  function _writeWavString(view, offset, str) {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+  }
+  function audioBufferToWavBlob(audioBuffer) {
+    const numCh = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+    const samples = audioBuffer.length;
+    const dataBytes = samples * numCh * 2; // 16-bit PCM
+    const buffer = new ArrayBuffer(44 + dataBytes);
+    const view = new DataView(buffer);
+    // RIFF header
+    _writeWavString(view, 0, "RIFF");
+    view.setUint32(4, 36 + dataBytes, true);
+    _writeWavString(view, 8, "WAVE");
+    // fmt chunk (PCM)
+    _writeWavString(view, 12, "fmt ");
+    view.setUint32(16, 16, true);              // fmt chunk size
+    view.setUint16(20, 1, true);               // PCM format
+    view.setUint16(22, numCh, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * numCh * 2, true);  // byte rate
+    view.setUint16(32, numCh * 2, true);       // block align
+    view.setUint16(34, 16, true);              // bits per sample
+    // data chunk
+    _writeWavString(view, 36, "data");
+    view.setUint32(40, dataBytes, true);
+    // PCM samples (interleaved L/R/L/R/...)
+    let offset = 44;
+    const channels = [];
+    for (let ch = 0; ch < numCh; ch++) channels.push(audioBuffer.getChannelData(ch));
+    for (let i = 0; i < samples; i++) {
+      for (let ch = 0; ch < numCh; ch++) {
+        let s = channels[ch][i];
+        if (s > 1) s = 1; else if (s < -1) s = -1;
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        offset += 2;
+      }
+    }
+    return new Blob([buffer], { type: "audio/wav" });
+  }
+
   function stopRecording() {
     if (!mediaRecorder || mediaRecorder.state !== "recording") return;
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(recorderChunks, { type: mediaRecorder.mimeType || "audio/webm" });
+    mediaRecorder.onstop = async () => {
+      const webmBlob = new Blob(recorderChunks, { type: mediaRecorder.mimeType || "audio/webm" });
       recorderChunks = [];
-      const url = URL.createObjectURL(blob);
       const a = $("br-rec-download");
-      if (a) {
-        const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      if (!a) { setRecorderUi("ready"); return; }
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      const baseName = `band-room_${state.currentBandId}_${state.currentSongId}_${stamp}`;
+      // v272: decode the webm and re-encode as WAV so librosa et al. can
+      // read it directly. If decode fails (browser quirk, codec missing),
+      // fall back to the raw webm so the user at least gets SOMETHING.
+      try {
+        const arrayBuffer = await webmBlob.arrayBuffer();
+        const audioBuffer = await Tone.context.decodeAudioData(arrayBuffer);
+        const wavBlob = audioBufferToWavBlob(audioBuffer);
+        const url = URL.createObjectURL(wavBlob);
+        a.href = url;
+        a.download = baseName + ".wav";
+        a.textContent = `↓ download .wav (${(wavBlob.size / 1024 / 1024).toFixed(1)} MB)`;
+        a.style.display = "inline";
+      } catch (e) {
+        console.warn("[Band Room] WAV re-encode failed, falling back to webm:", e);
+        const url = URL.createObjectURL(webmBlob);
         const ext = (mediaRecorder.mimeType || "").includes("mp4") ? "m4a" : "webm";
         a.href = url;
-        a.download = `band-room_${state.currentBandId}_${state.currentSongId}_${stamp}.${ext}`;
-        a.textContent = `↓ download (${(blob.size / 1024 / 1024).toFixed(1)} MB)`;
+        a.download = baseName + "." + ext;
+        a.textContent = `↓ download .${ext} (${(webmBlob.size / 1024 / 1024).toFixed(1)} MB)`;
         a.style.display = "inline";
       }
       setRecorderUi("ready");

@@ -1,10 +1,76 @@
-# Band Room — Changelog (v65 → v271 compact)
+# Band Room — Changelog (v65 → v272 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v272 compact — ● REC を WAV 出力に変更（計測 loop が ffmpeg なしで完成）
+
+プランニング `[E] 計測 loop セットアップ` の最終ピース。ユーザ install
+を最小化する方向で実装:
+
+### 背景
+
+v224-v225 で計測 loop の道具一式（`scripts/analyze-band-stems.py`、
+`scripts/compare-capture.py`、`docs/MEASUREMENT-LOOP.md`、target-spec
+JSON）は揃った。band-room ● REC ボタンも v81 から存在。しかし**録音
+出力が `.webm`（opus codec）で librosa が ffmpeg なしには読めなかった**。
+
+選択肢は2つ:
+- A. ユーザに `winget install Gyan.FFmpeg` を実行してもらう
+- B. ブラウザ内で webm を WAV に変換して download する
+
+B を採用 — ユーザ install ゼロで loop 完成。
+
+### v272 の修正（band-room.js）
+
+1. **`audioBufferToWavBlob(audioBuffer)`** ヘルパ追加（~50 行の標準
+   WAV エンコーダ、PCM 16-bit interleaved、Web Audio AudioBuffer 入力）
+2. **`stopRecording()`** を async 化、`.webm` blob → `AudioContext.
+   decodeAudioData` → AudioBuffer → WAV blob → download
+3. ファイル名は `.webm` → **`.wav`** に変更（`band-room_<band>_
+   <song>_<timestamp>.wav`）
+4. **decode 失敗時のフォールバック**: webm そのままダウンロード
+   （古いブラウザや codec 問題時に救命）+ console.warn
+
+### 完成した計測 loop
+
+```
+[1] band-room.html で AI 再現 を選択 → 曲選択 → ● REC
+[2] 30秒+ 再生 → ■ STOP REC → ↓ download .wav
+[3] python -X utf8 scripts/compare-capture.py rec.wav tabasco/human-fly
+[4] 数値 diff 出力（BPM、kick pocket、locked %）
+```
+
+ffmpeg / mcp-music-analysis / その他外部 tool すべて不要。
+Python + librosa 入った PC さえあれば動く。
+
+### docs/MEASUREMENT-LOOP.md 更新
+
+「ffmpeg note」セクションを「Format note (v272)」に書き換え、wav
+直接 download の説明と decode 失敗時 fallback を追記。
+
+### 影響
+
+- 原音 (stems) 不変
+- AI 再現 再生 / 音色 / groove すべて不変
+- ● REC ボタンの挙動だけ変更（出力 format のみ）
+- WAV ファイルサイズは webm より 5-10 倍大きい（PCM 非圧縮）が、計測
+  目的なら数十秒だけ録ればよく問題なし
+
+### 次の手（計測 loop が動くようになった後）
+
+- 実機 PWA で ● REC → wav 取得 → `compare-capture.py` で**実数値検証**
+- v264 push -10ms の妥当性確認
+- v271 section dynamics の発火を verify（target spec に section role 別の
+  RMS データも追加できる）
+- mcp-music-analysis install すれば私が会話中に直接解析可能（任意）
+
+- `band-room.js?v=br-157`、`hazama-fm-v272`。
 
 ---
 
