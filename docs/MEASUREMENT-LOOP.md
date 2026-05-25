@@ -47,7 +47,8 @@ python -X utf8 scripts/analyze-band-stems.py tabasco/human-fly
 4. Click **● REC** in the recording panel.
 5. Let it play **≥ 30 s** (more = more stable measurement).
 6. Click **■ STOP REC**, then **↓ download** the auto-named file:
-   `band-room_<band>_<song>_<timestamp>.webm`.
+   `band-room_<band>_<song>_<timestamp>.wav` (v272 — was `.webm`, now
+   re-encoded to PCM 16-bit so librosa can read it directly).
 
 ---
 
@@ -87,18 +88,21 @@ If you want it closer, tweak v264's `BASS_PUSH_BY_PROFILE["cramps-punk"]`
 
 ---
 
-## ffmpeg note (Windows)
+## Format note (v272)
 
-Browser MediaRecorder writes `.webm`. librosa needs ffmpeg on PATH to
-decode webm:
+The ● REC button now downloads a **.wav** file directly (PCM 16-bit
+interleaved). librosa / Audacity / any standard audio tool reads it
+with no extra install — no ffmpeg needed.
 
-```powershell
-winget install Gyan.FFmpeg
-# Restart the shell so PATH picks it up
-```
+Pre-v272 the download was `.webm` (opus-encoded), which required
+ffmpeg on PATH to decode. v272 added a small in-browser
+`AudioBuffer → WAV` encoder so the user gets an analysis-ready file
+straight from the browser.
 
-Without ffmpeg, convert externally first (Audacity, online converter)
-or use a stem `.mp3` / `.wav` as a sanity check (works without ffmpeg).
+If WAV re-encode fails (very old browser or codec issue), the code
+falls back to the original `.webm` and logs a console warning. In
+that fallback, you'd still need ffmpeg or Audacity to convert
+externally.
 
 ---
 
