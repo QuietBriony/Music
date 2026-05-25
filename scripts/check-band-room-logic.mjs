@@ -75,7 +75,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-161-live-room-ab-mastering", "Band Room should expose the current audio-safe boot version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-162-vertical-live-room-mastering", "Band Room should expose the current audio-safe boot version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -93,9 +93,9 @@ assert.equal(migratedMixPrefs.mixPrefsVersion, "v267-bass-electric", "Migrated p
 
 const liveRoomPreset = source.match(/"live-room":\s*\{([^}]*)\}/)?.[1] || "";
 assert.ok(liveRoomPreset, "Band Room should include a live-room A/B mastering preset");
-assert.match(liveRoomPreset, /reverb:\s*22/, "live-room should add a conservative room send");
-assert.match(liveRoomPreset, /width:\s*74/, "live-room should widen from neutral without using ambient width");
-assert.match(liveRoomPreset, /warmth:\s*8/, "live-room should keep tape warmth near neutral");
+assert.match(liveRoomPreset, /reverb:\s*28/, "live-room should add more room depth without going ambient");
+assert.match(liveRoomPreset, /width:\s*58/, "live-room should avoid over-wide horizontal spread");
+assert.match(liveRoomPreset, /warmth:\s*11/, "live-room should add a little floor/body pressure");
 assert.match(liveRoomPreset, /loudness:\s*-1/, "live-room should not raise startup loudness");
 assert.doesNotMatch(liveRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "live-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="live-room">live room<\/button>/, "Band Room should expose the live-room preset button");

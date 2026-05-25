@@ -1,10 +1,25 @@
-# Band Room — Changelog (v65 → v277 compact)
+# Band Room — Changelog (v65 → v278 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v278 compact — live-room vertical retune
+
+Retunes `live room` after listening feedback that v277 spread too far sideways:
+
+- `reverb: 22 → 28`
+- `width: 74 → 58`
+- `warmth: 8 → 11`
+- `loudness` stays `-1`
+- intent: less left/right width, more room depth and body pressure
+- cache bump: `band-room.js?v=br-162`
+
+- `hazama-fm-v278`
 
 ---
 
