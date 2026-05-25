@@ -19,6 +19,43 @@
 
 ---
 
+## 2026-05-25 — BL-019 namima-lab → namima organic-pluck recipe 翻訳 (PR #32 namima)
+- agent      : Claude Code (chouta-surface, Opus 4.7 / 1M context)
+- goal       : 混雑で止まった session-start 復旧 + workspace-coordinated lane で
+  BL-019 の namima-lab → namima 半分を消化 (1 PR = 1 idea / 翻訳 only / docs-only)
+- repos      : namima (feature branch + PR)、Music (docs only)
+- shipped    :
+  - **namima PR #32** (`feature/organic-pluck-lab-recipe-translation`)
+    - `docs/organic-pluck-lab-recipe.md` 新設 (215 行)
+    - `namima-lab/a-min` (v1) / `a-min-v2` (v2) の PluckSynth / filter / reverb /
+      shimmer の **concrete values** を namima の `ambient-interaction-contract.md`
+      語彙 (`water_shimmer` / `air_lift` / `melody_fragment_probability` /
+      `soft_pulse_visibility` / `fade_back_time`) に翻訳
+    - Adopted / Deferred / Rejected matrix を §5 に整理 (v3 audio / Chebyshev sat /
+      low drone を rejected 確定、Pluck params / shimmer delay / air filter ramp を
+      deferred として recipe 化、air pad release / 5-note pentatonic / 初期 chord
+      velocity を adopted-concept 確認)
+    - runtime / schema / audio / sample / 依存を **一切変更しない** docs-only
+    - human-gate: 翻訳語彙の妥当性は 2026-05-25 Codex follow-up で user 進行承認後に通過、PR #32 は merge 済み
+  - Music: BACKLOG BL-019 status 更新 ("namima half shipped, test half open")
+  - Music: 本 SESSION-LEDGER エントリ
+- stack-check: PASS 15 / FAIL 0 / SKIP 0 (0 BAD、cross-repo 検証含む)
+- namima checks: check-music-session-adapter / check-mood-profiles (181 assertions) /
+  check-pwa-static 全 PASS
+- backlog    : BL-019 の namima 半分を消化 (PR #32 merged)。残り test half
+  (style archetype + Ambient/Lo-Fi/Goa/HardTechno 確率補間 → Music or drum-floor 翻訳) は open。
+- next       : (a) BL-019 残り test half 着手 (test/engine.js を読んで style blend / probability
+  interpolation を Music or drum-floor の docs に翻訳)、
+  (b) または P1 BL-022 (v187 同時起動音 cap 24) の試聴待ち / 次手 (lookAhead /
+  latencyHint) パッチ準備 — ただし試聴判定は studio-surface or human が担当
+- 並走       : studio-surface は UR44 接続待ちで本 PC では `band-room.*` 不変 (Band Room
+  別チャット担当)。chouta-surface と studio-surface が同日 2 セッションだが、本
+  session は 100% docs (namima docs + Music BACKLOG/LEDGER) で衝突なし。
+- blockers   : test half の翻訳先選択
+  (Music 'style blend' or drum-floor 'probability interpolation' — どちらが target)
+
+---
+
 ## 2026-05-25 [studio-surface] — studio-surface PC セットアップ完了 + 役割再確認
 - agent      : Claude Code (このPCの初回 instance、Opus 4.7 / 1M context)
 - goal       : 新規 Intel Surface (studio-surface) を music-stack に参加させる
