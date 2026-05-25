@@ -1,10 +1,22 @@
-# Band Room — Changelog (v65 → v276 compact)
+# Band Room — Changelog (v65 → v277 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v277 compact — Band Room live-room A/B mastering preset
+
+Adds a mastering-only `live room` A/B preset for 原音 listening:
+
+- `reverb: 22`, `width: 74`, `warmth: 8`, `loudness: -1`
+- no default migration, no instrument/profile changes, no recorder path change
+- cache bump: `band-room.js?v=br-161`
+
+- `hazama-fm-v277`
 
 ---
 

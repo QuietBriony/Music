@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-160-pwa-audio-safe-boot";
+  const BANDROOM_APP_VERSION = "br-161-live-room-ab-mastering";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -1200,6 +1200,7 @@
                   // users to synth when they applied the neutral preset, undoing
                   // the v259 acoustic default. Aligned to the shipped default.
                   kit_source: "online/tone-acoustic", guitar_on: true },
+    "live-room": { reverb: 22, width: 74, warmth: 8, loudness: -1 },
     "lo-fi":    { reverb: 24, width: 58, warmth: 18, loudness: -2,
                   synth_profile: "lofi-nujabes",
                   chord_instrument: "salamander-piano",

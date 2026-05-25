@@ -75,7 +75,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-160-pwa-audio-safe-boot", "Band Room should expose the current audio-safe boot version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-161-live-room-ab-mastering", "Band Room should expose the current audio-safe boot version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -90,6 +90,15 @@ assert.equal(migratedMixPrefs.sliders["br-vol-bass"], "66", "Old default AI bass
 assert.equal(migratedMixPrefs.sliders["br-space-reverb"], "16", "Old default master reverb should migrate");
 assert.equal(migratedMixPrefs.sliders["br-space-width"], "41", "Custom slider values should not migrate");
 assert.equal(migratedMixPrefs.mixPrefsVersion, "v267-bass-electric", "Migrated prefs should record current mix version");
+
+const liveRoomPreset = source.match(/"live-room":\s*\{([^}]*)\}/)?.[1] || "";
+assert.ok(liveRoomPreset, "Band Room should include a live-room A/B mastering preset");
+assert.match(liveRoomPreset, /reverb:\s*22/, "live-room should add a conservative room send");
+assert.match(liveRoomPreset, /width:\s*74/, "live-room should widen from neutral without using ambient width");
+assert.match(liveRoomPreset, /warmth:\s*8/, "live-room should keep tape warmth near neutral");
+assert.match(liveRoomPreset, /loudness:\s*-1/, "live-room should not raise startup loudness");
+assert.doesNotMatch(liveRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "live-room should be mastering-only and not alter AI instruments");
+assert.match(html, /data-preset="live-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 
 const firstSongIdForBand = windowMock.BandRoomTestHooks?.firstSongIdForBand;
 const adjacentSongIdInBand = windowMock.BandRoomTestHooks?.adjacentSongIdInBand;
