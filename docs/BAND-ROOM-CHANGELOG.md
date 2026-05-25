@@ -1,10 +1,85 @@
-# Band Room — Changelog (v65 → v267 compact)
+# Band Room — Changelog (v65 → v268 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v268 compact — Sampler 全部の Tone.loaded() 待ちを `startPlayback` で追加（v267 で表面化した silent-failure 修正）
+
+ユーザー実機 AB 報告: **「ドラムしか聞こえてこない」**。v267 で bass を
+bass-electric Sampler に切替えた瞬間に表面化した既存バグ。
+
+### Root cause
+
+`startPlayback` の流れ:
+
+```
+ensureMaster()
+drumKit = await buildKitForSource(...)  // ← drums は内部で await Tone.loaded()
+synthBass = makeSynthBass(bassBus)      // ← await なし
+guitarSynth = makeGuitar(guitarBus)     // ← await なし
+voiceSynth = makeVoiceBox(voiceBus)     // ← await なし
+chordSynth = makeChordSynth(chordBus)   // ← await なし
+clickSynth = makeClick(clickBus)
+await backgroundBridgeStart
+// → Transport.start() / bar callback 開始
+```
+
+`makeSynthBass` 等は Tone.Sampler を**同期返却**するだけで内部で
+Tone.loaded() を待ってない。bar callback が走り出した瞬間に
+`sampler.triggerAttackRelease(...)` が呼ばれる → 17 ノートの CDN
+サンプルがまだ未デコードなので**音が出ない**。
+
+- v265 以前: bass はそもそも synth fallback path（Sampler じゃない）
+  だったので load 待ちが要らず音が出ていた
+- v262 chord (Salamander piano) も同じバグだったが、chord 初回 onset
+  が遅い + Tone.Sampler の queue 機能でかろうじて間に合っていた可能性
+- v267 bass-electric デフォルト化で bass 初回 onset が bar 0 sub 0
+  (super early) に変わり、決定的に間に合わなくなった
+
+drums だけ鳴っていたのは `buildBaseKit` の `await Tone.loaded()` で
+ガード済だったから。
+
+### v268 の修正（`band-room.js` `startPlayback`）
+
+全インストルメント作成後に **1 回 global `await Tone.loaded()`** を
+追加。これで bass / guitar / chord / voice の Sampler 全部のサンプル
+ロード完了を保証してから bar callback 開始。
+
+```js
+if (!clickSynth) clickSynth = makeClick(clickBus);
+await backgroundBridgeStart;
+
+// v268: ...全 Sampler のロード待ち...
+try { await Tone.loaded(); } catch (e) {
+  console.warn("[Band Room] Tone.loaded() rejected:", e);
+}
+```
+
+`Tone.loaded()` は AudioContext 内の全 Buffer の load を待つので、
+maker 関数を async に書き換える必要なし。drums が既に同じパターンで
+動いてるので副作用なし。
+
+### 副次効果
+
+- v262 chord、v265 guitar 起動時の「初回 onset が薄い／silent」現象も
+  同じ理屈で解消するはず（実機で確認推奨）
+- 初回 Play で 5-10 秒の load 待ち時間が visible に出る可能性
+  （`WARMING UP` ボタン状態の延長）。SW キャッシュ済なら instant。
+
+### 教訓
+
+「Sampler 化したら鳴らなくなる」は Tone.js の典型的な落とし穴。drums
+が動いてるのに他が silent → load 待ちの有無を疑う、を audit リストに
+追加候補。
+
+原音 (stems) 不変。CPU 影響なし（1 回の Promise await のみ）。
+
+- `band-room.js?v=br-153`、`hazama-fm-v268`。
 
 ---
 
