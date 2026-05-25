@@ -1507,7 +1507,7 @@
         });
         // v126: velocity-sensitive — 強く弾いたらブライト、弱く弾いたらダーク
         const sampler = makeVelocitySensitiveSampler({
-          urls, baseRelease: 0.4, volume: -4,
+          urls, baseRelease: 0.4, volume: -2,  // v269: +2 dB lift (was -4). After v267 made bass-electric the default, sample's natural decay envelope read quieter than the synth fat-saw fallback at v101 calibration — drums dominated. +2 dB rebalances toward drums without re-tuning the master or stems chains.
           minCutoff: 600, maxCutoff: 3200
         });
         sampler.connect(post);
@@ -2117,7 +2117,7 @@
         // v126: velocity-sensitive — guitar は強く弾けばブライトに、弱く弾けば
         // 柔らかく。electric guitar の muting / strumming nuance に対応
         const sampler = makeVelocitySensitiveSampler({
-          urls, baseRelease: 0.5, volume: -6,
+          urls, baseRelease: 0.5, volume: -4,  // v269: +2 dB lift (was -6). Same rebalance as bass — acoustic guitar samples sit quieter than the synth power-chord fallback.
           minCutoff: 1500, maxCutoff: 7000
         });
         sampler.connect(chainIn);
@@ -2302,7 +2302,7 @@
         // v126: velocity-sensitive — piano voicing で弱く弾いた chord は
         // 柔らかく、強く弾いた chord はブライトに (jazz comping の表情)
         const sampler = makeVelocitySensitiveSampler({
-          urls, baseRelease: 1.2, volume: -8,
+          urls, baseRelease: 1.2, volume: -5,  // v269: +3 dB lift (was -8). Piano's natural decay reads especially quiet vs the held synth-pad it replaced (v262), so chord needs the largest bump of the three Samplers — but still kept under the bass/guitar level so the pad stays a background colour (v255/v257 intent).
           minCutoff: 2000, maxCutoff: 9000
         });
         sampler.connect(chorus);

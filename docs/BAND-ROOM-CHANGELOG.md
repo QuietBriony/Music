@@ -1,10 +1,51 @@
-# Band Room — Changelog (v65 → v268 compact)
+# Band Room — Changelog (v65 → v269 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v269 compact — AI 再現 Sampler 系の volume を +2〜3 dB 持ち上げ（drum dominance 解消）
+
+ユーザー実機 AB: **「drum 以外の音が小さすぎる。バランス悪い。原音は一応
+いい感じだから、そこまでパラメータ変更等で変にはしないように制御」**。
+
+### 原因
+
+v267 で bass-electric、v265 で guitar-acoustic、v262 で salamander-piano
+を AI 再現 デフォルトに切替えた結果、bass/guitar/chord の**音源が
+synth → Sampler に置換**された。各 Sampler の volume は v101/v126 期に
+synth fallback path とのバランスを取って計測されてたが、**実楽器の
+自然 decay envelope は synth の sustained 出力より perceived RMS が
+低い**ので、drum 比で薄く聞こえる。
+
+### v269 の修正（band-room.js — Sampler path の volume のみ）
+
+| Sampler | volume 旧 | volume 新 | lift | 理由 |
+|---|---|---|---|---|
+| bass (`makeSynthBass`) | -4 dB | -2 dB | +2 dB | electric bass の attack が短く drum 比で薄い |
+| guitar (`makeGuitar`) | -6 dB | -4 dB | +2 dB | acoustic guitar の decay が synth 比で短い |
+| chord (`makeChordSynth`) | -8 dB | -5 dB | +3 dB | Salamander piano は最も decay が早く、synth pad との差が大きい。ただし pad は依然 background （v255/v257 の意図維持） |
+
+### 影響範囲
+
+- **原音 (stems) は完全に不変**: Sampler path は AI 再現 mode の `state.<x>Instrument && state.onlineCatalog` 条件で初めて使われる経路。stems は stemBus 経由で master へ、Sampler を通らない。
+- synth fallback path も不変: 各 maker の末尾の synth instantiation の volume はそのまま。ユーザが dropdown で "synth" を選んだら従来通り。
+- master / limiter チェーンも不変。
+- ±3 dB 程度なので headroom 内に収まる（master limiter threshold -1 dBFS）。
+
+### 教訓
+
+「Sampler 化したら別の calibration が要る」も Tone.js のお決まり問題。
+v101/v126 期 calibration は synth との単独 A/B だったので、cross-source
+比較が想定外だった。
+
+CPU 影響なし（dB スケール変更のみ）。
+
+- `band-room.js?v=br-154`、`hazama-fm-v269`。
 
 ---
 
