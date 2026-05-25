@@ -1,10 +1,54 @@
-# Band Room — Changelog (v65 → v274 compact)
+# Band Room — Changelog (v65 → v275 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v275 compact — AI 再現 dynamic range 復旧（instrumentBus comp 緩和、measurement-driven）
+
+v274 post-ship 再計測で brightness +976 Hz 改善を実証。残ギャップで
+最大は DR -21 dB（実 12.3 vs target 33.6）。v275 = 次の measurement-
+driven 修正。
+
+### 修正（band-room.js — `makeInstrumentPolishBus`）
+
+```js
+// Before
+new Tone.Compressor({ threshold: -20, ratio: 2.2, ... });
+// After (v275)
+new Tone.Compressor({ threshold: -14, ratio: 1.8, ... });
+```
+
+- **threshold -20 → -14 dB**: 6 dB 高い → 弱めの音は comp 通過、強い音だけ catch
+- **ratio 2.2 → 1.8**: catch しても compression 弱い
+
+### 効果予測
+
+DR は **2 軸 + 1 軸**で拡張可能:
+- per-section: v271 で 5 dB swing 確保済
+- per-bar / per-transient: ←今 v275 で改善
+- master limiter: 触らない（stems と共用）
+
+v275 で per-bar transients が「潰れない」ようになる → kick の attack ピーク、snare の crack が前に出る → DR 増加が期待値。
+
+### scope
+
+- **instrumentBus は AI 再現 のみ**: stems 完全不変、ユーザ要望「原音いい感じだから変えないで」遵守
+- v243 の makeup gain 3.0 はそのまま — comp 緩和は makeup 持ち上げ前に効く
+- master comp は触らない
+
+### 次（実測検証 + 残課題）
+
+- v276 candidate: 同 autonomous capture で DR 再計測、12.3 → ?? dB
+- DR ターゲット 33.6 dB、+5 dB 以上の改善があれば成功判定
+- brightness は -2077 Hz 残、追加 +1〜2 dB lift も別ラウンドで検討
+- pocket / BPM の半分検出は **長い録音**が必要（短録音 artifact）
+
+- `band-room.js?v=br-159`、`hazama-fm-v275`。
 
 ---
 
