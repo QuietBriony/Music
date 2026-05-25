@@ -19,6 +19,31 @@
 
 ---
 
+## 2026-05-25 — BL-019 test half 完了 (Music PR #249 / drum-floor PR #52)
+- agent      : Codex desktop
+- goal       : BL-019 の残り test half を、runtime copy ではなく target repo の
+  言葉へ翻訳して閉じる。sub-task b は Music、sub-task c は drum-floor。
+- repos      : Music / drum-floor
+- shipped    :
+  - **Music PR #249**: `test/engine.js` の Ambient / Lo-Fi / Goa / HardTechno
+    style archetype を `references/style-archetype-from-test.json` と
+    `docs/test-style-archetype-translation.md` に翻訳。`sw.js` は
+    `hazama-fm-v276` へ cache bump、`docs/BAND-ROOM-CHANGELOG.md` に docs/reference
+    only の v276 marker を追加。
+  - **drum-floor PR #52**: 16-step probability vector の lerp 補間を
+    `docs/probability-interpolation-from-test.md` に翻訳。raw `Math.random() < prob`
+    は deterministic / seeded 境界を越えるため runtime 採用しないと明記。
+- stack-check: PASS 15 / FAIL 0 / SKIP 0 (Music root `node scripts/stack-check.mjs`)
+- drum-floor checks: `python -m pytest tests/ -q` 27 passed
+- backlog    : BL-019 を Done へ移動。namima PR #32 / Music PR #249 /
+  drum-floor PR #52 で a/b/c すべて shipped。
+- next       : BL-022 の試聴待ちを人間が返したら、その 1 件だけ tuning PR 化。
+  返答待ちの間は BL-023 UR44 ARM driver 調査または docs-only backlog 整理。
+- blockers   : ここで採用したのは reference / docs のみ。Music morph control や
+  drum-floor seeded probability runtime は別 PR + human review が必要。
+
+---
+
 ## 2026-05-25 — BL-019 namima-lab → namima organic-pluck recipe 翻訳 (PR #32 namima)
 - agent      : Claude Code (chouta-surface, Opus 4.7 / 1M context)
 - goal       : 混雑で止まった session-start 復旧 + workspace-coordinated lane で
