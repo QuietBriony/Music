@@ -19,9 +19,41 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
+  const BANDROOM_APP_VERSION = "br-160-pwa-audio-safe-boot";
+  const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
+  const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
+  const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
+  const BANDROOM_MASTER_VOL_KEY = "band-room.masterVol.v2";
+  const BANDROOM_AUDIO_STATE_KEYS = [BANDROOM_PREFS_KEY, BANDROOM_MASTER_VOL_KEY];
+  const BANDROOM_BOOT_MODE = detectBandRoomBootMode();
+  const BANDROOM_SAFE_BOOT = BANDROOM_BOOT_MODE === "safe";
   const DRUM_FLOOR_URL = "https://quietbriony.github.io/drum-floor/";
   const MUSIC_STACK_PACKET_STORAGE_KEY = "qb:music-stack:latest-packet:v1";
   const MUSIC_STACK_CHANNEL_NAME = "qb:music-stack:v1";
+
+  function hasSafeBootQuery() {
+    try {
+      const value = new URLSearchParams(window.location.search).get("safe");
+      return value === "1" || value === "true" || value === "audio";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isStandaloneDisplayMode() {
+    try {
+      return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+             window.navigator?.standalone === true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function detectBandRoomBootMode() {
+    if (hasSafeBootQuery()) return "safe";
+    if (isStandaloneDisplayMode()) return "standalone";
+    return "browser";
+  }
 
   // ---- State ---------------------------------------------------
 
@@ -2457,6 +2489,98 @@
   // ---- Utils --------------------------------------------------
 
   function clamp(n, lo, hi) { return Math.min(hi, Math.max(lo, n)); }
+
+  function clampNumber(value, fallback, lo, hi) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return fallback;
+    return clamp(n, lo, hi);
+  }
+
+  function safeLocalStorageGet(key) {
+    if (BANDROOM_SAFE_BOOT && BANDROOM_AUDIO_STATE_KEYS.includes(key)) return null;
+    try { return window.localStorage?.getItem(key) ?? null; } catch (e) { return null; }
+  }
+
+  function safeLocalStorageSet(key, value) {
+    try { window.localStorage?.setItem(key, value); return true; } catch (e) { return false; }
+  }
+
+  function safeLocalStorageRemove(key) {
+    try { window.localStorage?.removeItem(key); return true; } catch (e) { return false; }
+  }
+
+  function sanitizeRangeInputValue(id, value) {
+    const el = $(id);
+    if (!el || el.type !== "range") return null;
+    const min = Number.isFinite(Number(el.min)) ? Number(el.min) : 0;
+    const max = Number.isFinite(Number(el.max)) ? Number(el.max) : 100;
+    const fallback = clampNumber(el.defaultValue || el.value || min, min, min, max);
+    return String(clampNumber(value, fallback, min, max));
+  }
+
+  function sanitizeBooleanPref(value, fallback = false) {
+    if (typeof value === "boolean") return value;
+    if (value === "true" || value === "1" || value === 1) return true;
+    if (value === "false" || value === "0" || value === 0) return false;
+    return fallback;
+  }
+
+  function isSafeToken(value, maxLength = 96) {
+    return typeof value === "string" &&
+           value.length > 0 &&
+           value.length <= maxLength &&
+           /^[a-z0-9._/-]+$/i.test(value);
+  }
+
+  function sanitizeKitSource(value, fallback = "online/tone-acoustic") {
+    if (value == null || value === "") return fallback;
+    if (value === "synth" || value === "auto-self") return value;
+    if (!isSafeToken(value)) return fallback;
+    if (/^online\/[a-z0-9._-]+$/i.test(value)) return value;
+    if (/^[a-z0-9._-]+\/[a-z0-9._-]+$/i.test(value)) return value;
+    return fallback;
+  }
+
+  function sanitizeInstrumentId(value) {
+    if (value == null || value === "") return null;
+    return isSafeToken(value, 80) && !value.includes("/") ? value : null;
+  }
+
+  function sanitizePrefsForBoot(prefs) {
+    if (!prefs || typeof prefs !== "object" || Array.isArray(prefs)) return null;
+    const next = {
+      ...prefs,
+      storageSchemaVersion: BANDROOM_STORAGE_SCHEMA_VERSION,
+      sliders: {},
+      toggles: {}
+    };
+    Object.entries(prefs.sliders || {}).forEach(([id, value]) => {
+      const safeValue = sanitizeRangeInputValue(id, value);
+      if (safeValue !== null) next.sliders[id] = safeValue;
+    });
+    Object.entries(prefs.toggles || {}).forEach(([id, value]) => {
+      const el = $(id);
+      if (el && el.type === "checkbox") next.toggles[id] = sanitizeBooleanPref(value, el.defaultChecked);
+    });
+    next.kitSource = sanitizeKitSource(prefs.kitSource, state.kitSource);
+    if (prefs.kitProfile && Object.prototype.hasOwnProperty.call(KIT_PROFILES, prefs.kitProfile)) {
+      next.kitProfile = prefs.kitProfile;
+    } else {
+      next.kitProfile = state.kitProfile;
+    }
+    const voiceOverrides = {};
+    Object.keys(state.voiceOverrides).forEach((voice) => {
+      const value = prefs.voiceOverrides?.[voice];
+      voiceOverrides[voice] = value ? sanitizeKitSource(value, null) : null;
+    });
+    next.voiceOverrides = voiceOverrides;
+    next.chordInstrument = sanitizeInstrumentId(prefs.chordInstrument);
+    next.bassInstrument = sanitizeInstrumentId(prefs.bassInstrument);
+    next.guitarInstrument = sanitizeInstrumentId(prefs.guitarInstrument);
+    next.voiceInstrument = sanitizeInstrumentId(prefs.voiceInstrument);
+    if (typeof prefs.bandId !== "string" || prefs.bandId.length > 80) delete next.bandId;
+    return next;
+  }
   function $(id) { return document.getElementById(id); }
 
   function chordToNotes(chord, octave = 3) {
@@ -2532,9 +2656,14 @@
 
   if (typeof window !== "undefined") {
     window.BandRoomTestHooks = Object.assign(window.BandRoomTestHooks || {}, {
+      BANDROOM_APP_VERSION,
+      BANDROOM_STORAGE_SCHEMA_VERSION,
       chordRoot,
       normalizedDrumFloorSection,
       migratePrefsForCurrentMix,
+      sanitizeRangeInputValue,
+      sanitizePrefsForBoot,
+      resetBandRoomAudioState,
       firstSongIdForBand: (band) => firstSongForBand(band)?.id || null,
       adjacentSongIdInBand: (band, currentSongId, delta) => (
         adjacentSongInBand(band, currentSongId, delta)?.id || null
@@ -3125,7 +3254,7 @@
       packet
     };
     try {
-      window.localStorage?.setItem(MUSIC_STACK_PACKET_STORAGE_KEY, JSON.stringify(payload));
+      safeLocalStorageSet(MUSIC_STACK_PACKET_STORAGE_KEY, JSON.stringify(payload));
     } catch (error) {
       console.warn("[Band Room] drum-floor handoff localStorage failed:", error);
     }
@@ -4245,7 +4374,19 @@
     if (state.started || state.starting) return;
     state.starting = true;
     setButtonState("starting");
+    try {
+      await startPlaybackBoot(opts);
+    } catch (e) {
+      console.warn("[Band Room] startPlayback failed:", e);
+      stopPlayback({ resetPosition: false, keepBackgroundBridge: false, updateMedia: true });
+      releaseSustainedSynths("start-failed");
+      state.started = false;
+      state.starting = false;
+      setButtonState("idle");
+    }
+  }
 
+  async function startPlaybackBoot(opts = {}) {
     try {
       await Tone.start();
     } catch (e) {
@@ -4320,7 +4461,10 @@
       : (state.pendingSeekOffsetSec || state.playbackStartOffsetSec || 0);
     const stemOffsetSec = setTimelineStateForSecond(requestedOffsetSec);
 
-    // Clear any old schedules
+    // Clear any old schedules. Band Room is a standalone Tone surface, so
+    // cancelling the Transport here cannot touch Music Core Rig or Hazama FM.
+    try { Tone.Transport.stop(); } catch (e) {}
+    try { Tone.Transport.cancel(0); } catch (e) {}
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
     state.scheduledIds = [];
 
@@ -4411,6 +4555,22 @@
         console.warn("[Band Room] synth release failed:", reason, e);
       }
     });
+  }
+
+  function stopPhraseLoops(reason = "stop") {
+    phraseLoopPool.forEach((player, url) => {
+      try { player.stop("+0.02"); } catch (e) {}
+      try { player.dispose(); } catch (e) {}
+      updatePhraseLoopUI(url, false);
+    });
+    phraseLoopPool.clear();
+    if (reason === "reset") {
+      phrasePlayerPool.forEach((player) => {
+        try { player.stop(); } catch (e) {}
+        try { player.dispose(); } catch (e) {}
+      });
+      phrasePlayerPool.clear();
+    }
   }
 
   function clearSuspendReleaseTimers() {
@@ -4608,6 +4768,7 @@
     const retainedOffsetSec = options.resetPosition ? 0 : clampPlaybackSecond(playbackContentElapsedSec());
     if (!state.started) {
       if (options.resetPosition) setTimelineStateForSecond(0);
+      state.starting = false;
       stopTransportProgress();
       stopPlaybackHealthWatchdog();
       clearSuspendReleaseTimers();
@@ -4616,12 +4777,15 @@
       return;
     }
     try { Tone.Transport.stop(); } catch (e) {}
+    try { Tone.Transport.cancel(0); } catch (e) {}
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
     state.scheduledIds = [];
     stopStemPlayback();
     stopExternalVocal();
     ["drums", "bass", "other"].forEach((s) => stopExternalStem(s)); // v87
+    stopPhraseLoops("stop");
     state.started = false;
+    state.starting = false;
     state.playbackStartedAtMs = 0;
     state.playbackStartedAtAudioSec = 0;
     state.playbackRateAtStart = 1;
@@ -4659,10 +4823,46 @@
     }
   }
 
+  function removeBandRoomAudioState(reason = "reset") {
+    BANDROOM_AUDIO_STATE_KEYS.forEach((key) => safeLocalStorageRemove(key));
+    safeLocalStorageSet(BANDROOM_STORAGE_SCHEMA_KEY, String(BANDROOM_STORAGE_SCHEMA_VERSION));
+    console.info("[Band Room] local audio state cleared", { reason, keys: BANDROOM_AUDIO_STATE_KEYS });
+  }
+
+  function stopRecordersForReset() {
+    try {
+      if (mediaRecorder && mediaRecorder.state === "recording") mediaRecorder.stop();
+    } catch (e) {}
+    Object.values(stemRecorders).forEach((rec) => {
+      try {
+        if (rec && rec.state === "recording") rec.stop();
+      } catch (e) {}
+    });
+  }
+
+  function resetBandRoomAudioState(reason = "manual-reset") {
+    const btn = $("br-reset-audio");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "RESETTING";
+    }
+    stopRecordersForReset();
+    stopPlayback({ resetPosition: true, keepBackgroundBridge: false, updateMedia: true });
+    stopPhraseLoops("reset");
+    releaseSustainedSynths(reason);
+    disableMicFollow();
+    removeBandRoomAudioState(reason);
+    updateBootDiagnostics("audio-state-reset");
+    const url = new URL(window.location.href);
+    url.searchParams.set("safe", "1");
+    window.location.replace(url.toString());
+  }
+
   // ---- UI bindings --------------------------------------------
 
   function bindUI() {
     $("br-play")?.addEventListener("click", togglePlay);
+    $("br-reset-audio")?.addEventListener("click", () => resetBandRoomAudioState("manual-reset"));
     const songSeek = $("br-song-seek");
     if (songSeek) {
       const previewSeek = () => updateSongTimelineDisplay(Number(songSeek.value) || 0);
@@ -4902,7 +5102,7 @@
     // 0-100 linear → masterGain.gain 0 → 1.25. Multiplied with br-loudness for
     // independent fine-tune. Persisted via PREFS_KEY so it survives reload
     // (important for in-car use where the page may unload).
-    const MASTER_VOL_KEY = "band-room.masterVol.v2";
+    const MASTER_VOL_KEY = BANDROOM_MASTER_VOL_KEY;
     const masterVolEl = $("br-master-vol");
     const masterVolReadout = $("br-master-vol-readout");
     const masterVolDown = $("br-master-vol-down");
@@ -4933,14 +5133,14 @@
       if (masterVolEl) masterVolEl.value = String(v);
       if (masterVolReadout) masterVolReadout.textContent = String(v);
       applyMasterOutputGain(0.08);
-      try { localStorage.setItem(MASTER_VOL_KEY, String(v)); } catch (e) {}
+      safeLocalStorageSet(MASTER_VOL_KEY, String(v));
     }
 
     // Restore persisted volume on init (v202: default 100 — max by default;
     // MASTER_VOL_KEY bumped to .v2 so stale low values don't keep it quiet)
     let savedVol = 100;
     try {
-      const raw = localStorage.getItem(MASTER_VOL_KEY);
+      const raw = safeLocalStorageGet(MASTER_VOL_KEY);
       if (raw !== null) {
         const parsed = Number(raw);
         if (Number.isFinite(parsed)) savedVol = Math.max(0, Math.min(100, parsed));
@@ -5759,7 +5959,7 @@
         // Persist custom kits separately
         try {
           const customs = state.onlineCatalog.kits.filter((k) => k.id.startsWith("custom-"));
-          localStorage.setItem("band-room.custom-kits.v1", JSON.stringify(customs));
+          safeLocalStorageSet("band-room.custom-kits.v1", JSON.stringify(customs));
         } catch (e) {}
         renderKitOptions();
         renderVoiceOverridesGrid();
@@ -5770,7 +5970,7 @@
 
     // v102: restore custom kits from localStorage
     try {
-      const raw = localStorage.getItem("band-room.custom-kits.v1");
+      const raw = safeLocalStorageGet("band-room.custom-kits.v1");
       if (raw) {
         const customs = JSON.parse(raw);
         if (Array.isArray(customs) && customs.length > 0) {
@@ -6058,7 +6258,7 @@
   // ---- v78: localStorage persistence -------------------------
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
-  const PREFS_KEY = "band-room.prefs.v1";
+  const PREFS_KEY = BANDROOM_PREFS_KEY;
   const MIX_PREFS_VERSION = "v267-bass-electric";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
@@ -6145,12 +6345,41 @@
     current: "bass-electric"
   };
 
-  function loadPrefs() {
+  function readRawStoredPrefs() {
+    const raw = safeLocalStorageGet(PREFS_KEY);
+    if (!raw) return null;
     try {
-      const raw = localStorage.getItem(PREFS_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch (e) { return null; }
+      const prefs = JSON.parse(raw);
+      return prefs && typeof prefs === "object" && !Array.isArray(prefs) ? prefs : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function applyBandRoomStorageBootPolicy() {
+    let reason = "ok";
+    const rawPrefs = readRawStoredPrefs();
+    const storedSchema = Number(rawPrefs?.storageSchemaVersion || safeLocalStorageGet(BANDROOM_STORAGE_SCHEMA_KEY) || 0);
+    const schemaIsCurrent = storedSchema === BANDROOM_STORAGE_SCHEMA_VERSION;
+
+    if (BANDROOM_SAFE_BOOT) {
+      removeBandRoomAudioState("safe-query");
+      return "safe-query-reset";
+    }
+
+    if (BANDROOM_BOOT_MODE === "standalone" && !schemaIsCurrent) {
+      removeBandRoomAudioState(`standalone-schema-${storedSchema || "none"}`);
+      return "standalone-schema-reset";
+    }
+
+    if (!schemaIsCurrent) reason = "schema-upgraded";
+    safeLocalStorageSet(BANDROOM_STORAGE_SCHEMA_KEY, String(BANDROOM_STORAGE_SCHEMA_VERSION));
+    return reason;
+  }
+
+  function loadPrefs() {
+    const prefs = readRawStoredPrefs();
+    return sanitizePrefsForBoot(prefs);
   }
 
   function migratePrefsForCurrentMix(prefs) {
@@ -6159,6 +6388,7 @@
       ...prefs,
       sliders: { ...(prefs.sliders || {}) },
       toggles: { ...(prefs.toggles || {}) },
+      storageSchemaVersion: BANDROOM_STORAGE_SCHEMA_VERSION,
       mixPrefsVersion: MIX_PREFS_VERSION
     };
     let changed = prefs.mixPrefsVersion !== MIX_PREFS_VERSION;
@@ -6220,6 +6450,7 @@
     try {
       const prefs = {
         bandId: state.currentBandId,
+        storageSchemaVersion: BANDROOM_STORAGE_SCHEMA_VERSION,
         mixPrefsVersion: MIX_PREFS_VERSION,
         // v205: mode intentionally NOT persisted — band-room always opens in
         // 原音 (stems); AI 再現 is still WIP, don't land users in it.
@@ -6241,7 +6472,8 @@
       document.querySelectorAll('#br-main input[type="checkbox"]').forEach((el) => {
         if (el.id) prefs.toggles[el.id] = el.checked;
       });
-      localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+      safeLocalStorageSet(PREFS_KEY, JSON.stringify(prefs));
+      safeLocalStorageSet(BANDROOM_STORAGE_SCHEMA_KEY, String(BANDROOM_STORAGE_SCHEMA_VERSION));
     } catch (e) {}
   }
 
@@ -6897,11 +7129,11 @@
       if (urlGenre) {
         genre = urlGenre;
         at = Date.now();
-        localStorage.setItem(FM_LINKED_GENRE_KEY, genre);
-        localStorage.setItem(FM_LINKED_GENRE_AT_KEY, String(at));
+        safeLocalStorageSet(FM_LINKED_GENRE_KEY, genre);
+        safeLocalStorageSet(FM_LINKED_GENRE_AT_KEY, String(at));
       } else {
-        genre = localStorage.getItem(FM_LINKED_GENRE_KEY) || "";
-        at = Number(localStorage.getItem(FM_LINKED_GENRE_AT_KEY) || 0);
+        genre = safeLocalStorageGet(FM_LINKED_GENRE_KEY) || "";
+        at = Number(safeLocalStorageGet(FM_LINKED_GENRE_AT_KEY) || 0);
       }
     } catch (e) {
       genre = urlGenre;
@@ -7064,8 +7296,29 @@
     }
   }
 
+  function updateBootDiagnostics(storageStatus = "ok") {
+    const controlled = !!navigator.serviceWorker?.controller;
+    const label = `${BANDROOM_APP_VERSION} / ${BANDROOM_BOOT_MODE} / storage:${storageStatus}`;
+    const el = $("br-boot-status");
+    if (el) {
+      el.textContent = label;
+      el.title = `Band Room ${label}${controlled ? " / sw:controlled" : " / sw:uncontrolled"}`;
+    }
+    window.BandRoomBoot = {
+      appVersion: BANDROOM_APP_VERSION,
+      storageSchemaVersion: BANDROOM_STORAGE_SCHEMA_VERSION,
+      bootMode: BANDROOM_BOOT_MODE,
+      safeBoot: BANDROOM_SAFE_BOOT,
+      storageStatus,
+      serviceWorkerControlled: controlled
+    };
+    console.info("[Band Room] boot", window.BandRoomBoot);
+  }
+
   window.addEventListener("DOMContentLoaded", async () => {
+    const storageStatus = applyBandRoomStorageBootPolicy();
     bindUI();
+    updateBootDiagnostics(storageStatus);
     await loadOnlineCatalog();  // v97: before renderKitOptions so online kits appear
     renderKitOptions();
     await loadBandsRegistry();

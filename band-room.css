@@ -293,6 +293,34 @@ html, body {
   border-color: var(--accent-soft);
 }
 
+#br-reset-audio {
+  appearance: none;
+  background: rgba(143, 255, 245, 0.04);
+  border: 1px solid rgba(143, 255, 245, 0.28);
+  color: rgba(143, 255, 245, 0.82);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 7px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 32px;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+
+#br-reset-audio:hover:not(:disabled),
+#br-reset-audio:focus-visible {
+  background: rgba(143, 255, 245, 0.12);
+  border-color: rgba(143, 255, 245, 0.52);
+  color: var(--accent-glass);
+}
+
+#br-reset-audio:disabled {
+  opacity: 0.52;
+  cursor: wait;
+}
+
 #br-song-timeline {
   display: grid;
   grid-template-columns: auto minmax(180px, 1fr) auto;
@@ -1722,6 +1750,20 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   margin-right: 2px;
 }
 
+.br-boot-status {
+  display: inline-flex;
+  align-items: center;
+  max-width: min(72vw, 420px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  color: rgba(143, 255, 245, 0.70);
+  font-family: ui-monospace, "SF Mono", "Menlo", monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
 #br-footer a:hover {
   color: var(--accent-glass);
   text-decoration: underline;
@@ -2237,7 +2279,14 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   #br-chord-display .br-value { font-size: 26px; }
   .br-details > summary { padding: 9px 12px; font-size: 11px; }
   #br-play { font-size: 14px; padding: 14px 36px; min-width: 160px; min-height: 50px; }
+  #br-reset-audio { font-size: 9px; min-height: 30px; padding: 6px 10px; }
   #br-song-timeline { grid-template-columns: auto minmax(120px, 1fr) auto; gap: 8px; }
+  #br-footer { overflow-wrap: anywhere; }
+  .br-footer-group {
+    flex-wrap: wrap;
+    justify-content: center;
+    white-space: normal;
+  }
 }
 
 /* v141: master volume bar — always-visible big touch target for car / Bluetooth use.
