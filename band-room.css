@@ -15,6 +15,8 @@
   --accent: #ff8866;
   --accent-soft: #ffb39a;
   --accent-glass: #ffd4a8;
+  --air: #8fd7ff;
+  --air-soft: #cceeff;
   --warn: #ff5566;
 }
 
@@ -25,7 +27,8 @@ html, body {
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Hiragino Sans", "Yu Gothic", sans-serif;
   background:
-    radial-gradient(ellipse at top, rgba(255,136,102,0.08), transparent 50%),
+    radial-gradient(ellipse at 50% -10%, rgba(143, 215, 255, 0.13), transparent 48%),
+    radial-gradient(ellipse at top, rgba(255,136,102,0.06), transparent 52%),
     linear-gradient(180deg, var(--bg) 0%, #100612 100%);
   color: var(--text);
   min-height: 100vh;
@@ -34,7 +37,7 @@ html, body {
 
 #br-header {
   text-align: center;
-  padding: 32px 20px 8px;
+  padding: 38px 20px 12px;
   position: relative;
 }
 
@@ -150,39 +153,13 @@ html, body {
 }
 
 .br-brandline {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   padding: 0;
   font-size: 9px;
-  line-height: 1;
-  letter-spacing: 0.16em;
+  line-height: 1.4;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-}
-
-.br-brandline span {
-  padding: 5px 7px;
-  border: 1px solid rgba(255, 184, 122, 0.18);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.035);
-  color: rgba(239, 230, 220, 0.66);
-}
-
-.br-brandline span:nth-child(1) {
-  border-color: rgba(140, 210, 255, 0.30);
-  color: rgba(180, 225, 255, 0.82);
-}
-
-.br-brandline span:nth-child(2) {
-  border-color: rgba(255, 136, 102, 0.30);
-  color: rgba(255, 190, 166, 0.86);
-}
-
-.br-brandline span:nth-child(3) {
-  border-color: rgba(160, 220, 190, 0.28);
-  color: rgba(194, 238, 214, 0.76);
+  color: rgba(204, 238, 255, 0.68);
 }
 
 .br-subtitle {
@@ -198,7 +175,7 @@ html, body {
   padding: 12px 16px 80px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 20px;
 }
 
 #br-band-select {
