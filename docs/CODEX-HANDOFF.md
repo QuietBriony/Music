@@ -249,3 +249,117 @@ Codex から戻ってきた場合:
 - 次に最新の git log を確認 (`git log --oneline -15`)
 - 完了済み TASK A-D は再実行しない。新規 request / notes から TASK E 以降を作る
 - 完了後にユーザー報告 + 次の TASK 候補を提示
+
+---
+
+## 2026-05-25 AI 再現 + measurement-driven thread (v245-v276)
+
+長尺 thread が一段落。v265 で生音 5/5 達成、v272-v276 で measurement
+loop 完成 + 実 calibration 2 回。
+
+### 現在の AI 再現 baseline（v276 時点）
+
+| パート | 音源 | groove |
+|---|---|---|
+| drums | 🌐 tone-acoustic CDN kit (v259) | backbeat velocity floor (v247) + humanize ±10% (v252) |
+| bass | 🌐 bass-electric CDN Sampler (v267) | kick lock ±50ms + cramps push -10ms (v249, v264) |
+| guitar | 🌐 guitar-acoustic CDN Sampler (v265) | kick lock ±50ms (v250) |
+| chord | 🌐 Salamander Grand Piano (v262) | whole-note sustain (v257)、vol 40 (v255) |
+| voice | OFF (v254) | — |
+
+その他: v258 catalog race fallback、v261 UX coherence、v270 jsDelivr Sampler
+loader バグ workaround、v271 section dynamics ±47%、v274 instrumentBus EQ
+high +1.6 dB, v275 instrumentBus comp 緩和
+
+### Measurement loop (完成、ffmpeg 不要)
+
+1. `scripts/analyze-band-stems.py` — librosa で stems 解析 →
+   `docs/target-spec-bands.json` per-song spec
+   - drums section: bpm / kick onsets / pocket
+   - bass section: bass→kick lock %
+   - mix section (v276): full-mix の centroid / DR ← AI capture と fair 比較
+2. band-room ● REC → WAV 直 download (v272 で webm→wav 変換)
+3. `scripts/compare-capture.py <wav> <band>/<song>` → 数値 diff + verdict
+
+### 実 calibration の demonstration
+
+```
+v270 初 capture → brightness -2077 Hz/DR -21 dB ギャップ (drum-only ベース)
+v274 instrumentBus high +1.6 dB → brightness +976 Hz 改善（実測）
+v275 comp threshold -20→-14 dB → DR 拡張（実測未取得、preview render hang）
+v276 target を full-mix で再生成 → 過去解釈の偏りが判明
+  → 真の brightness ギャップ -364 Hz (small)
+  → 真の DR ギャップ AI 12.3 vs target 10.8 = AI overshoot → v275 不要だった可能性
+```
+
+normal science の小サイクル完走。
+
+### 未解決 / open options (推奨順)
+
+1. **autonomous re-capture で v275 効果を fair 比較で測定**
+   - preview MCP の制約: 13 MB WAV の base64 extract で renderer hang
+   - recipe: 短い録音（~10 秒）→ chunk 化なし単発で取れる
+   - 結果次第で v275 を一部巻き戻す（threshold -14 → -16 など）
+
+2. **brightness 残ギャップ -364 Hz の polish**
+   - instrumentBus.high: 3.0 → 3.5 dB or highFrequency: 4200 → 3500
+   - subtle、必須ではない
+
+3. **A-2: section-aware part 入退場**
+   - intro: drums only / verse: +bass / chorus: full / break: -guitar
+   - bar-callback で SYNTH_REBUILD_PARTS の per-section gate 追加
+   - 効果は大、リスク中（既存 agent ロジックと干渉注意）
+
+4. **D-1: kick → bass sidechain**
+   - kick 鳴る瞬間 bass を -3 dB ducking
+   - Tone.Compressor の sidechain。bassBus に挿入
+
+5. **F: v270 大改造後の regression sweep**
+   - iOS BG playback wake-lock (v235) が壊れてないか
+   - mid-song instrument-change の async 経路（v270）
+   - PWA オフライン first-visit (catalog race v266 で対処済)
+
+6. **計測の追加指標**
+   - spectral_rolloff (高域の "シャリ感")
+   - tempo_stability (BPM の jitter)
+   - section-wise RMS (v271 dynamics 発火を verify)
+
+### Codex に投げるなら？
+
+このスレッドの作業は中規模 (各 ship が 1 ファイル ~5-50 行)、versioning
+/ changelog / gate run が定型 → codex でほぼ全部できる。重い思考は計測
+解釈と diff の意味判断のみ。
+
+推奨 codex prompt:
+
+```
+# Context
+Read these files in order:
+1. docs/CODEX-HANDOFF.md (this doc) — esp. "2026-05-25 AI 再現" section
+2. docs/BAND-ROOM-CHANGELOG.md head (v245-v276 entries)
+3. docs/MEASUREMENT-LOOP.md
+4. docs/target-spec-bands.json (per-song target numbers)
+
+# Task
+Pick the highest-priority item from "未解決 / open options" above.
+If autonomous (no user action), execute it. Otherwise, prep a 1-line
+question for the user. Standard ship discipline:
+- branch feat/band-room-vNNN-<name> from origin/main
+- bump sw.js VERSION + band-room.js?v=br-NNN cache buster
+- update docs/BAND-ROOM-CHANGELOG.md with vNNN entry
+- run 4 gates: check-band-room-logic / check-js / audit.py --expected-version / check-fm-route-badge
+- commit via Conventional Commit form, PR, squash-merge
+- watch gh run + curl deploy verify
+- preview-validate if applicable (use the recipe from v270 capture)
+
+# Standing constraints (CRITICAL — user-set)
+- 原音 (stems mode) は触らない — instrumentBus が AI 専用、stems は
+  stemBus 経由で master 直結
+- 音源 / サンプル / 歌詞は repo に追加しない、Tone.js 合成 or CDN サンプルのみ
+- destructive git 禁止 (parallel session の WIP 保護)
+- 再生 test するなら必ず停止
+- FM チャットの領分: engine.js / fm.html / fm.css / fm.js — 触らない
+- sw.js / docs/BAND-ROOM-CHANGELOG.md は両チャット共有、commit 前に
+  必ず git fetch origin、衝突時は版番号大きい方
+- Anthropic 課金: 重い R&D は codex 推奨、ship discipline は claude 親
+```
