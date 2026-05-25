@@ -113,9 +113,22 @@ def analyse_capture(path: Path) -> dict:
     }
 
 
+def _pick_field(entry: dict, k: str):
+    """v276: tone + dynamics live under entry['mix'] (full-mix, fair vs AI
+    capture which is also full-mix). Pocket/onset measures live under
+    entry['drums'] (drum stem, more accurate kick detection). Falls back
+    to drums-only if mix isn't present (older spec files)."""
+    mix_keys = {"centroid_avg_hz", "rms_mean", "rms_peak_p95", "rms_dynamic_range_db"}
+    if k in mix_keys:
+        v = entry.get("mix", {}).get(k)
+        if v is not None:
+            return v
+    return entry.get("drums", {}).get(k)
+
+
 def resolve_target(spec: dict, key: str) -> dict | None:
-    """Resolve 'band' (average across songs) or 'band/song' to a target dict
-    with the same shape as analyse_capture output (drums-side fields only)."""
+    """Resolve 'band' (average across songs) or 'band/song' to a target dict.
+    Pocket/BPM from drums, tone/dynamics from mix (v276)."""
     keys_we_want = (
         "bpm",
         "kick_offset_from_beat_avg_ms",
@@ -130,10 +143,9 @@ def resolve_target(spec: dict, key: str) -> dict | None:
         entry = spec.get(band, {}).get(song)
         if not entry:
             return None
-        d = entry.get("drums", {})
         out = {"scope": f"{band}/{song}"}
         for k in keys_we_want:
-            out[k] = d.get(k)
+            out[k] = _pick_field(entry, k)
         return out
     band_data = spec.get(key)
     if not band_data:
@@ -142,9 +154,8 @@ def resolve_target(spec: dict, key: str) -> dict | None:
     for sid, entry in band_data.items():
         if sid.startswith("_"):
             continue
-        d = entry.get("drums", {})
         for k in keys_we_want:
-            v = d.get(k)
+            v = _pick_field(entry, k)
             if v is not None:
                 accum[k].append(v)
     if not accum["bpm"]:

@@ -47,6 +47,12 @@
         "locked_count": 103,
         "locked_pct": 0.502,
         "avg_offset_from_kick_ms": -0.9
+      },
+      "mix": {
+        "centroid_avg_hz": 3147.3,
+        "rms_mean": 0.0924,
+        "rms_peak_p95": 0.1486,
+        "rms_dynamic_range_db": 12.38
       }
     },
     "hey": {
@@ -90,6 +96,12 @@
         "locked_count": 421,
         "locked_pct": 0.579,
         "avg_offset_from_kick_ms": -16.4
+      },
+      "mix": {
+        "centroid_avg_hz": 2867.8,
+        "rms_mean": 0.0836,
+        "rms_peak_p95": 0.1361,
+        "rms_dynamic_range_db": 10.76
       }
     },
     "i-got-a-feeling": {
@@ -133,6 +145,12 @@
         "locked_count": 576,
         "locked_pct": 0.587,
         "avg_offset_from_kick_ms": -11.5
+      },
+      "mix": {
+        "centroid_avg_hz": 2747.9,
+        "rms_mean": 0.0799,
+        "rms_peak_p95": 0.1325,
+        "rms_dynamic_range_db": 13.93
       }
     },
     "under-the-moon": {
@@ -176,6 +194,12 @@
         "locked_count": 351,
         "locked_pct": 0.518,
         "avg_offset_from_kick_ms": -11.4
+      },
+      "mix": {
+        "centroid_avg_hz": 3052.2,
+        "rms_mean": 0.0766,
+        "rms_peak_p95": 0.1275,
+        "rms_dynamic_range_db": 12.4
       }
     },
     "electric-sheep": {
@@ -219,6 +243,12 @@
         "locked_count": 315,
         "locked_pct": 0.485,
         "avg_offset_from_kick_ms": -11.5
+      },
+      "mix": {
+        "centroid_avg_hz": 3589.6,
+        "rms_mean": 0.0957,
+        "rms_peak_p95": 0.1337,
+        "rms_dynamic_range_db": 7.06
       }
     },
     "human-fly": {
@@ -262,6 +292,12 @@
         "locked_count": 356,
         "locked_pct": 0.421,
         "avg_offset_from_kick_ms": -8.9
+      },
+      "mix": {
+        "centroid_avg_hz": 2402.3,
+        "rms_mean": 0.1103,
+        "rms_peak_p95": 0.1657,
+        "rms_dynamic_range_db": 8.73
       }
     },
     "sister": {
@@ -305,6 +341,12 @@
         "locked_count": 217,
         "locked_pct": 0.499,
         "avg_offset_from_kick_ms": -7.4
+      },
+      "mix": {
+        "centroid_avg_hz": 2002.1,
+        "rms_mean": 0.0873,
+        "rms_peak_p95": 0.1602,
+        "rms_dynamic_range_db": 18.22
       }
     }
   },
@@ -350,6 +392,12 @@
         "locked_count": 239,
         "locked_pct": 0.584,
         "avg_offset_from_kick_ms": -18.8
+      },
+      "mix": {
+        "centroid_avg_hz": 1875.7,
+        "rms_mean": 0.1792,
+        "rms_peak_p95": 0.2514,
+        "rms_dynamic_range_db": 15.83
       }
     },
     "list-of-words": {
@@ -393,6 +441,12 @@
         "locked_count": 216,
         "locked_pct": 0.461,
         "avg_offset_from_kick_ms": -7.8
+      },
+      "mix": {
+        "centroid_avg_hz": 2358.0,
+        "rms_mean": 0.2003,
+        "rms_peak_p95": 0.2616,
+        "rms_dynamic_range_db": 11.34
       }
     },
     "definition": {
@@ -436,6 +490,12 @@
         "locked_count": 302,
         "locked_pct": 0.373,
         "avg_offset_from_kick_ms": -19.7
+      },
+      "mix": {
+        "centroid_avg_hz": 1996.0,
+        "rms_mean": 0.2021,
+        "rms_peak_p95": 0.2484,
+        "rms_dynamic_range_db": 4.66
       }
     },
     "past-and-fate": {
@@ -479,6 +539,12 @@
         "locked_count": 234,
         "locked_pct": 0.451,
         "avg_offset_from_kick_ms": -15.6
+      },
+      "mix": {
+        "centroid_avg_hz": 2255.1,
+        "rms_mean": 0.2181,
+        "rms_peak_p95": 0.2583,
+        "rms_dynamic_range_db": 3.1
       }
     },
     "end-falls": {
@@ -522,6 +588,12 @@
         "locked_count": 151,
         "locked_pct": 0.505,
         "avg_offset_from_kick_ms": -13.2
+      },
+      "mix": {
+        "centroid_avg_hz": 2396.6,
+        "rms_mean": 0.2072,
+        "rms_peak_p95": 0.2522,
+        "rms_dynamic_range_db": 4.51
       }
     },
     "erase": {
@@ -565,6 +637,12 @@
         "locked_count": 269,
         "locked_pct": 0.488,
         "avg_offset_from_kick_ms": -14.2
+      },
+      "mix": {
+        "centroid_avg_hz": 1991.4,
+        "rms_mean": 0.1945,
+        "rms_peak_p95": 0.2451,
+        "rms_dynamic_range_db": 4.88
       }
     }
   }
