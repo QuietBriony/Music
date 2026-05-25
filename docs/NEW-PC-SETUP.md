@@ -9,6 +9,10 @@
 直接の PC ↔ PC リンクは不要 ＝ GitHub が唯一の同期メカニズム。primary PC で
 ship した PR は別 PC で `git pull` すれば即反映される。逆方向も同じ。
 
+**役割境界 + 競合管理 + PC 登記簿** は別 doc → `docs/PC-REGISTRY.md` を参照。
+新 PC を加える時はそちらも更新する。本 doc はあくまで「組み立て」フェーズ
+(clone + setup + 初回 Claude 起動)。
+
 ---
 
 ## 前提ツール (新 PC 側)
@@ -164,10 +168,18 @@ GitHub 経由のみで、PC↔PC の直接接続はありません。
 
 5. このPCの用途: UR44 経由の試聴 + 必要なら engine.js 修正 / 新規 polish。
 
+6. このPCの役割の把握:
+   - `git config --get music.machineName` で識別子を取得 (例: "studio")
+   - `docs/PC-REGISTRY.md` を読み、自分の行から **主担当 / しない / 強み** を
+     内在化。専有領域マトリクスで「触っていいファイル」「触らないファイル」も
+     確認 (Band Room の `band-room.*` は全 PC 触らない、等)
+   - 役割範囲外のタスクが user から来たら「これは <他PC名> でやる方が適切」
+     と提案する
+
 context 吸収と整合性ゲートが終わったら:
 - 現在の origin/main の最新版を伝える (git log --oneline -3)
 - docs/autonomy/BACKLOG.md の P1 / P2 を確認
-- このPC(UR44環境)で着手するのに適した項目があれば提案
+- 自分の役割範囲内で着手するのに適した項目があれば提案
 
 そのあと user の具体的な指示を待つ。
 ```
@@ -223,63 +235,27 @@ primary PC ──push─→ GitHub main ←─pull── 別 PC (UR44 PC)
 
 ## PC 命名規約
 
-両 PC で並列開発する時、SESSION-LEDGER で「どちらのPCで何をやったか」を
-追えるよう、PC に名前を付ける。
+詳細は `docs/PC-REGISTRY.md` 参照 — **PC 登録一覧、役割境界、専有領域
+マトリクス、競合管理、エラー対処、SESSION-LEDGER prefix 規約、PC 追加フロー**
+が全部 1 つの doc に集約されている。
 
-### git config 設定
+簡易版 (覚えとくべきこと):
 
-setup script を使えば自動で設定される (`-MachineName` パラメータの値)。
-手動の場合:
-
-```powershell
-cd C:\workspace\music-stack\Music
-git config --local music.machineName "studio"
-```
-
-確認:
-
-```powershell
-git config --get music.machineName
-```
-
-### SESSION-LEDGER エントリ規約
-
-新 PC からの追記は、エントリヘッダに `[PC名]` prefix を付ける:
-
-```
-## 2026-05-30 [studio] — UR44 経由の試聴で X を確認、Y に微調整 (vNNN)
-- agent : ...
-- repos : ...
-- shipped : PR #NNN — ...
-```
-
-primary PC からの追記は無印 (= `[primary]` 扱い、既存のエントリは
-すべて primary)。これで `grep "\[studio\]" docs/autonomy/SESSION-LEDGER.md`
-で UR44 PC の作業履歴だけ抽出できる。
-
-### 推奨命名
-
-- **primary**: メインの開発機 (このリポジトリの大半をビルドした PC) ＝ 無印 or `[primary]`
-- **studio**: UR44 + DAW を繋いだ試聴 / レコーディング機 (デフォルト)
-- **mobile**: ノート PC で外出先で軽く触る用
-
-ホスト名そのままでも OK (`HOSTNAME` を識別子に使う)。
-
-### コミットメッセージ (任意)
-
-PC 識別を commit にも残したい場合は、Co-Authored-By trailer に PC 名を入れる:
-
-```
-Co-Authored-By: Claude Opus 4.7 (studio) <noreply@anthropic.com>
-```
-
-primary PC からは `(primary)` または無印。これは任意 — SESSION-LEDGER の
-prefix だけで十分追跡できる。
+- `setup-new-pc.ps1 -MachineName "<名前>"` で git config に PC 識別子を埋め込む
+  (確認: `git config --get music.machineName`)
+- SESSION-LEDGER 追記時はヘッダに `[<PC名>]` prefix:
+  `## YYYY-MM-DD [studio] — <一行サマリ> (vNNN)`
+- primary PC は無印で OK (既存エントリも全て primary)
+- 推奨命名: `primary` (メイン開発機) / `studio` (UR44 + DAW) / `worker`
+  (重タスク、gaming note PC 等)
 
 ---
 
 ## 関連 docs
 
+- **`docs/PC-REGISTRY.md`** — PC 登録一覧、役割境界、専有領域マトリクス、競合
+  管理、エラー対処。本 doc(NEW-PC-SETUP) と対の関係: NEW-PC-SETUP は
+  「組み立て」、PC-REGISTRY は「組み立て後の住み分け + 運用」。
 - `AGENTS.md` — Hard Rule 集 + cache-buster 規律 + Branch/PR convention
 - `docs/HAZAMA-FM-ARCHITECTURE.md` — engine 全体像 + Section 12 (harness lens)
 - `docs/autonomy/SESSION-LEDGER.md` — autonomy 履歴 (このセッションも含む)
