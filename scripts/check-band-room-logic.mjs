@@ -5,6 +5,7 @@ import vm from "node:vm";
 const source = readFileSync("band-room.js", "utf8");
 const html = readFileSync("band-room.html", "utf8");
 const sw = readFileSync("sw.js", "utf8");
+const bandRoomManifest = JSON.parse(readFileSync("manifest-band-room.webmanifest", "utf8"));
 const bandsRegistry = JSON.parse(readFileSync("presets/bands.json", "utf8"));
 
 const inertElement = () => ({
@@ -265,7 +266,7 @@ assert.match(source, /function makeInstrumentPolishBus\(/, "Band Room should sum
 assert.match(source, /instrumentBus = makeInstrumentPolishBus\(masterGain\)/, "Non-vocal instruments should feed the polish bus");
 assert.match(source, /drumPan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(instrumentBus\)/, "Drums should route through the instrument polish bus");
 assert.match(source, /voicePan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(masterGain\)/, "Vocal lead should bypass the instrument polish bus");
-assert.match(html, /rel="manifest" href="manifest-band-room\.webmanifest"/, "Band Room should expose its own PWA manifest");
+assert.match(html, /rel="manifest" href="manifest-band-room\.webmanifest\?v=br-icon-1"/, "Band Room should expose its own versioned PWA manifest");
 assert.match(html, /id="install-hint"/, "Band Room should expose the PWA install hint banner for BG-playback stability");
 assert.match(html, /id="br-reset-audio"/, "Band Room should expose a visible Reset Audio control");
 assert.match(html, /id="br-boot-status"/, "Band Room should render boot/version diagnostics");
@@ -329,6 +330,34 @@ assert.match(source, /params\.get\("song"\) \|\| params\.get\("songId"\)/, "Band
 assert.match(source, /sourceSong\.band_id\) url\.searchParams\.set\("band"/, "Band Room should include band id in Drum Floor links");
 assert.match(source, /const linkedSong = linkedSongFromUrl\(\)/, "Band Room boot should apply Drum Floor return song links");
 assert.match(source, /lyrics_doc:\s*"docs\/tabasco-lyrics-final\.md"/, "Band Room fallback should use the final singable lyric sheet");
+
+const bandRoomIconPaths = [
+  "icons/band-room-96.png",
+  "icons/band-room-192.png",
+  "icons/band-room-512.png",
+  "icons/band-room-512-maskable.png"
+];
+const bandRoomManifestIcons = bandRoomManifest.icons.map((icon) => icon.src);
+for (const iconPath of bandRoomIconPaths) {
+  assert.ok(bandRoomManifestIcons.includes(iconPath), `Band Room manifest should use ${iconPath}`);
+  assert.ok(sw.includes(`"${iconPath}"`), `Service worker should precache ${iconPath}`);
+}
+assert.ok(sw.includes('"icons/band-room-apple-touch-icon.png"'), "Service worker should precache the Band Room iOS touch icon");
+assert.equal(
+  bandRoomManifest.shortcuts?.[0]?.icons?.[0]?.src,
+  "icons/band-room-192.png",
+  "Band Room shortcut should use the Band Room icon"
+);
+assert.doesNotMatch(
+  JSON.stringify(bandRoomManifest.icons),
+  /icons\/icon-/,
+  "Band Room manifest should not reuse the generic Music icon set"
+);
+assert.match(
+  html,
+  /rel="apple-touch-icon" href="icons\/band-room-apple-touch-icon\.png"/,
+  "Band Room should expose its own iOS touch icon"
+);
 
 const tabascoLyricsDoc = bandsRegistry.bands?.tabasco?.lyrics_doc;
 assert.equal(tabascoLyricsDoc, "docs/tabasco-lyrics-final.md", "Band Room should display one final Tabasco lyric sheet");

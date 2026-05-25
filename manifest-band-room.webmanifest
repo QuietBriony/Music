@@ -13,25 +13,25 @@
   "categories": ["music", "entertainment", "utilities"],
   "icons": [
     {
-      "src": "icons/icon-96.png",
+      "src": "icons/band-room-96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-192.png",
+      "src": "icons/band-room-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "icons/band-room-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-512-maskable.png",
+      "src": "icons/band-room-512-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -43,7 +43,7 @@
       "short_name": "Band Room",
       "description": "Open the current band practice room",
       "url": "band-room.html",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "icons": [{ "src": "icons/band-room-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }
