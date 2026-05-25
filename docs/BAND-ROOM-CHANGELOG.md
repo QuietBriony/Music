@@ -1,10 +1,64 @@
-# Band Room — Changelog (v65 → v272 compact)
+# Band Room — Changelog (v65 → v274 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v274 compact — AI 再現 brightness +1.6 dB（実測 -3054 Hz の dimness 是正、measurement-driven）
+
+v272+v273 で計測 loop 完成 → 同セッションで autonomous capture & compare
+を実行。**初の AI 再現 vs 原音 数値 diff** で発見:
+
+| 指標 | AI 再現 (実測) | 原音 target | delta |
+|---|---|---|---|
+| brightness (spectral centroid) | 1528 Hz | 4581 Hz | **-3054 Hz** |
+| dynamic range | 8.7 dB | 33.6 dB | -24.9 dB |
+| kick pocket avg | +82 ms | +47 ms | +35 ms |
+
+**最大ギャップは brightness** — AI が圧倒的に dull。drum acoustic kit
+(v259) の hat sizzle が高域で十分に出てない。
+
+### v274 の修正（band-room.js — `makeInstrumentPolishBus` EQ）
+
+```js
+// Before
+const eq = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 1.4, ... });
+// After (v274)
+const eq = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 3.0, ... });
+```
+
+`high` シェルフ `+1.4 dB` → `+3.0 dB`（**+1.6 dB 追加**）。highFrequency
+は 4200 Hz のまま。hat / cymbal / acoustic guitar の倍音帯を持ち上げる。
+
+### 設計判断
+
+- **instrumentBus EQ のみ変更**: stems 経路は別 (stemBus → master 直結)、
+  完全不変。ユーザ要望「原音いい感じだから変えないで」遵守。
+- **master EQ には触らない**: master は stems + AI 共用、ここを触ると
+  stems も変わる。NG。
+- **+1.6 dB は conservative**: -3054 Hz ギャップは EQ だけで埋まる差では
+  ないが、まず polish bus で改善し、足りなければ次ラウンドで追加検討。
+  EQ 過度なら hat が刺さるので段階的に。
+
+### 注意点（計測の限界）
+
+target spec は drum stem のみで生成、AI capture は **full mix** (drum +
+bass + guitar + chord pad)。full mix は bass + chord pad で centroid が
+naturally lower なので、-3054 Hz の一部は「比較の不公平」由来。次の
+tooling 改善（v275+: target を full-mix で再生成）で公平化予定。それでも
++1.6 dB の brightness 向上自体は perceptual に効くはず。
+
+### 次の手
+
+- **実機 AB**: 「ハイハット聞こえる」「シャリッとした」なら成功 / 「刺さる」なら +1.0 dB に下げる
+- 残ギャップ大: DR -24.9 dB → v275 candidate (section dynamics 更に拡大 or comp 緩和)
+- tooling: target spec を full-mix で再生成（v276?）して公平比較
+
+- `band-room.js?v=br-158`、`hazama-fm-v274`。
 
 ---
 
