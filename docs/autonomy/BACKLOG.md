@@ -124,6 +124,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : cross-repo
 - agent    : either
 - human-gate: yes
+- status   : wip — namima half shipped (namima PR #32, 2026-05-25 chouta-surface)。test → Music / drum-floor half (style archetype + interpolation math) は未着手で open
 - source   : dormant-asset 監査（2026-05-16）
 - detail   : integration docs が harvest 指定しているのに未着手の素材 — namima-lab の
   organic-pluck audio recipe（a-min v1-v3 の filter/reverb/pluck パラメータ）、test の
