@@ -56,6 +56,21 @@ new Tone.EQ3({ ..., high: 3.0, highFrequency: 3000 });
 
 ---
 
+## v283 compact — album plaque and AI lazy-safe boot
+
+Keeps the Band Room original-stem surface responsive on mobile/PWA while leaving
+the current mastering defaults unchanged:
+
+- render the single `TABASCO` collection as a non-clickable album plaque
+- split START asset prep by mode: original mode loads only current song stems, AI mode loads only enabled AI parts
+- bound CDN sampler predecode concurrency and yield between decodes for mobile/PWA
+- load Magenta DrumsRNN and `@tonejs/midi` only when their advanced tools are used
+- cache bump: `band-room.css?v=br-80`, `band-room.js?v=br-166`
+
+- `hazama-fm-v283`
+
+---
+
 ## v282 compact — Tiffany box identity
 
 Tunes the Band Room listening surface around the Air Rock Connect Box identity:

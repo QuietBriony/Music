@@ -17,7 +17,7 @@ const PRECACHE_URLS = [
   "fm.html",
   "index.html",
   "band-room.html",
-  "band-room.css?v=br-79",
+  "band-room.css?v=br-80",
   "band-room.js?v=br-166",
   "presets/drum-frames-tabasco-human-fly.json",
   "presets/drum-frames-tabasco-tabasco.json",
