@@ -1,0 +1,204 @@
+{
+  "version": 1,
+  "purpose": "Translate the archived test/engine.js style archetypes into Music reference-gradient language without copying runtime code.",
+  "source": {
+    "archive_repo": "test",
+    "source_file": "test/engine.js",
+    "source_symbols": [
+      "ARCH",
+      "computeStyleBlend",
+      "styleNameFromS"
+    ],
+    "source_posture": "external archive reference; concept and numeric metadata only"
+  },
+  "policy": {
+    "stores_audio": false,
+    "stores_lyrics": false,
+    "stores_samples": false,
+    "stores_runtime_code": false,
+    "stores_metadata_only": true,
+    "runtime_wiring": false,
+    "public_ui_change": false
+  },
+  "style_axis": {
+    "source_range": "State.style 0..100",
+    "normalized_range": "s 0..1",
+    "segments": [
+      {
+        "range": "0.00..0.33",
+        "from": "Ambient",
+        "to": "Lo-Fi",
+        "music_translation": "haze and dust increase while pressure stays low"
+      },
+      {
+        "range": "0.33..0.67",
+        "from": "Lo-Fi",
+        "to": "Goa",
+        "music_translation": "dust gives way to pulse and chrome"
+      },
+      {
+        "range": "0.67..1.00",
+        "from": "Goa",
+        "to": "HardTechno",
+        "music_translation": "pulse becomes harder pressure; reference-only for Music public pills"
+      }
+    ],
+    "source_labels": [
+      {
+        "condition": "s < 0.2",
+        "label": "Ambient"
+      },
+      {
+        "condition": "s < 0.5",
+        "label": "Lo-Fi"
+      },
+      {
+        "condition": "s < 0.8",
+        "label": "Goa-ish"
+      },
+      {
+        "condition": "otherwise",
+        "label": "HardTechno-ish"
+      }
+    ]
+  },
+  "archetypes": [
+    {
+      "name": "Ambient",
+      "status": "adopted_concept",
+      "music_pill_fit": "ambient",
+      "bpm": 86,
+      "swing": 0.0,
+      "distortion": 0.0,
+      "kick808_mix": 0.1,
+      "kick909_mix": 0.0,
+      "production_axis_hints": [
+        "haze",
+        "void",
+        "restraint",
+        "low-pressure"
+      ],
+      "probability_vectors": {
+        "pKick": [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+        "pSnare": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "pHat": [0, 0.2, 0, 0.1, 0, 0.2, 0, 0.1, 0, 0.2, 0, 0.1, 0, 0.2, 0, 0.1],
+        "pBass": [0.6, 0, 0, 0, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0]
+      },
+      "translation_note": "Useful as a sparse ambient reference; do not add a new visible fader."
+    },
+    {
+      "name": "Lo-Fi",
+      "status": "adopted_concept",
+      "music_pill_fit": "lofi",
+      "bpm": 80,
+      "swing": 0.3,
+      "distortion": 0.05,
+      "kick808_mix": 0.9,
+      "kick909_mix": 0.1,
+      "production_axis_hints": [
+        "dust",
+        "swing",
+        "organic",
+        "memory"
+      ],
+      "probability_vectors": {
+        "pKick": [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+        "pSnare": [0, 0, 0, 0.8, 0, 0, 0, 0, 0, 0, 0, 0.8, 0, 0, 0, 0],
+        "pHat": [0.9, 0, 0.5, 0, 0.8, 0, 0.5, 0, 0.9, 0, 0.5, 0, 0.8, 0, 0.5, 0],
+        "pBass": [0.8, 0, 0, 0, 0, 0, 0.6, 0, 0.7, 0, 0, 0, 0, 0.6, 0, 0]
+      },
+      "translation_note": "Fits the existing lofi pill as lazy pocket and dust; sample-specific kick mix is not adopted."
+    },
+    {
+      "name": "Goa",
+      "status": "deferred",
+      "music_pill_fit": "techno_partial",
+      "bpm": 148,
+      "swing": 0.02,
+      "distortion": 0.4,
+      "kick808_mix": 0.2,
+      "kick909_mix": 0.8,
+      "production_axis_hints": [
+        "pulse",
+        "chrome",
+        "grid",
+        "acid-adjacent"
+      ],
+      "probability_vectors": {
+        "pKick": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+        "pSnare": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        "pHat": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+        "pBass": [0.8, 0, 0.6, 0, 0.8, 0, 0.6, 0, 0.8, 0, 0.6, 0, 0.8, 0, 0.6, 0]
+      },
+      "translation_note": "Keep as a reference for pulse/chrome energy; current Hazama FM pills do not need a Goa public mode."
+    },
+    {
+      "name": "HardTechno",
+      "status": "rejected_public_baseline",
+      "music_pill_fit": "reference_only",
+      "bpm": 165,
+      "swing": 0.0,
+      "distortion": 0.85,
+      "kick808_mix": 0.0,
+      "kick909_mix": 1.0,
+      "production_axis_hints": [
+        "hard-pressure",
+        "chrome",
+        "grid",
+        "high-distortion"
+      ],
+      "probability_vectors": {
+        "pKick": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+        "pSnare": [0, 0, 0, 0.7, 0, 0, 0, 0, 0, 0, 0, 0.7, 0, 0, 0, 0],
+        "pHat": [1, 0.8, 1, 0.8, 1, 0.8, 1, 0.8, 1, 0.8, 1, 0.8, 1, 0.8, 1, 0.8],
+        "pBass": [0.9, 0, 0.8, 0, 0.9, 0, 0.8, 0, 0.9, 0, 0.8, 0, 0.9, 0, 0.8, 0]
+      },
+      "translation_note": "Too hard as a Music public-facing baseline; keep as a boundary marker."
+    }
+  ],
+  "adoption_matrix": [
+    {
+      "element": "Ambient archetype",
+      "status": "adopted_concept",
+      "reason": "Matches ambient pill restraint, haze, and low-pressure density."
+    },
+    {
+      "element": "Lo-Fi archetype",
+      "status": "adopted_concept",
+      "reason": "Matches lofi pill dust, swing, memory, and organic pocket."
+    },
+    {
+      "element": "Goa archetype",
+      "status": "deferred",
+      "reason": "Useful pulse/chrome reference, but not a current public pill."
+    },
+    {
+      "element": "HardTechno archetype",
+      "status": "rejected_public_baseline",
+      "reason": "Too high-pressure for current Music defaults; reference-only."
+    },
+    {
+      "element": "0..100 style fader UI",
+      "status": "rejected",
+      "reason": "Music keeps pill-based selection; no new visible fader from archive harvest."
+    },
+    {
+      "element": "16-step probability vectors",
+      "status": "deferred_to_drum_floor",
+      "reason": "The probability grammar belongs in BL-019c drum-floor documentation."
+    },
+    {
+      "element": "kick808 / kick909 sample mix",
+      "status": "rejected",
+      "reason": "Music stores no samples and keeps Tone.js synthesis; treat these only as pressure hints."
+    }
+  ],
+  "human_gate": {
+    "required_before_runtime_wiring": true,
+    "review_questions": [
+      "Are Ambient and Lo-Fi the right pill translations?",
+      "Should Goa remain deferred instead of becoming a techno sub-mode?",
+      "Is HardTechno correctly rejected as a public baseline?"
+    ]
+  }
+}
