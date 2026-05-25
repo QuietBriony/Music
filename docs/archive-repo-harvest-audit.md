@@ -122,6 +122,18 @@ Do not harvest by default:
 - probability interpolation can inform future groove grammar planning, only
   through docs/schema/review first.
 
+### Translation status (2026-05-25 BL-019b)
+
+- `test/engine.js` style archetypes are now translated for Music review in
+  `references/style-archetype-from-test.json`.
+- The Music-facing interpretation is documented in
+  `docs/test-style-archetype-translation.md`.
+- This translation adopts Ambient and Lo-Fi as concepts, defers Goa, and keeps
+  HardTechno as a rejected public baseline / reference-only boundary.
+- The 16-step probability interpolation remains deferred to drum-floor BL-019c.
+- No runtime code, samples, UI fader, dependency, or engine wiring is adopted by
+  this translation.
+
 ## 5. namima-lab harvest
 
 ### Current observation

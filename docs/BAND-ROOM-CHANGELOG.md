@@ -1,10 +1,26 @@
-# Band Room — Changelog (v65 → v275 compact)
+# Band Room — Changelog (v65 → v276 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v276 compact — reference archetype harvest cache bump (docs/reference only)
+
+BL-019b translates archived `test/engine.js` style archetypes into Music
+reference-gradient language:
+
+- new metadata shelf: `references/style-archetype-from-test.json`
+- new review note: `docs/test-style-archetype-translation.md`
+- no Band Room runtime, audio, sample, preset, or UI behavior change
+
+The service worker cache marker is bumped so the new reference JSON is
+available offline with the rest of the Music reference shelf.
+
+- `hazama-fm-v276`
 
 ---
 
