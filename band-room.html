@@ -6,7 +6,7 @@
 <title>Band Room — air rock connect box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-75" />
+<link rel="stylesheet" href="band-room.css?v=br-76" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#1a0a14" />
@@ -109,6 +109,9 @@
 
   <header id="br-header">
     <h1>BAND ROOM</h1>
+    <p class="br-brandline" aria-label="air rock connect box">
+      <span>air</span><span>rock</span><span>connect</span><span>box</span>
+    </p>
     <p class="br-subtitle" id="br-subtitle">loading bands…</p>
     <button id="br-help-toggle" type="button" aria-label="help">?</button>
   </header>
@@ -251,6 +254,24 @@
     </section>
 
     <!-- ===== DETAILS (collapsed by default) ===== -->
+
+    <details class="br-details">
+      <summary>🌌 mastering (space / width / warmth / loudness)</summary>
+      <section id="br-space" aria-label="Mastering">
+        <div id="br-master-presets">
+          <button type="button" class="br-master-preset" data-preset="neutral">neutral default</button>
+          <button type="button" class="br-master-preset" data-preset="vertical-room">vertical room</button>
+          <button type="button" class="br-master-preset" data-preset="lo-fi">lo-fi</button>
+          <button type="button" class="br-master-preset" data-preset="club">club</button>
+          <button type="button" class="br-master-preset" data-preset="rock">rock</button>
+          <button type="button" class="br-master-preset" data-preset="ambient">ambient</button>
+        </div>
+        <label><span>reverb</span><input type="range" id="br-space-reverb" min="0" max="60" value="16" /></label>
+        <label><span>width</span><input type="range" id="br-space-width" min="0" max="100" value="62" /></label>
+        <label><span>warmth</span><input type="range" id="br-tape-warmth" min="0" max="40" value="7" /></label>
+        <label><span>loudness</span><input type="range" id="br-loudness" min="-12" max="6" value="-1" /></label>
+      </section>
+    </details>
 
     <details class="br-details" data-scope="stems">
       <summary>🎤 vocal FX</summary>
@@ -487,24 +508,6 @@
         <label><span>vocal</span><input type="range" id="br-vol-voice" min="0" max="100" value="48" /></label>
         <label><span>chords</span><input type="range" id="br-vol-chords" min="0" max="100" value="40" /></label>
         <label><span>click</span><input type="range" id="br-vol-click" min="0" max="100" value="35" /></label>
-      </section>
-    </details>
-
-    <details class="br-details">
-      <summary>🌌 mastering (space / width / warmth / loudness)</summary>
-      <section id="br-space" aria-label="Mastering">
-        <div id="br-master-presets">
-          <button type="button" class="br-master-preset" data-preset="neutral">neutral</button>
-          <button type="button" class="br-master-preset" data-preset="vertical-room">vertical room</button>
-          <button type="button" class="br-master-preset" data-preset="lo-fi">lo-fi</button>
-          <button type="button" class="br-master-preset" data-preset="club">club</button>
-          <button type="button" class="br-master-preset" data-preset="rock">rock</button>
-          <button type="button" class="br-master-preset" data-preset="ambient">ambient</button>
-        </div>
-        <label><span>reverb</span><input type="range" id="br-space-reverb" min="0" max="60" value="16" /></label>
-        <label><span>width</span><input type="range" id="br-space-width" min="0" max="100" value="62" /></label>
-        <label><span>warmth</span><input type="range" id="br-tape-warmth" min="0" max="40" value="7" /></label>
-        <label><span>loudness</span><input type="range" id="br-loudness" min="-12" max="6" value="-1" /></label>
       </section>
     </details>
 
