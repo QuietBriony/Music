@@ -36,7 +36,11 @@
           5410.2,
           5479.9,
           5619.2
-        ]
+        ],
+        "centroid_avg_hz": 4156.7,
+        "rms_mean": 0.0729,
+        "rms_peak_p95": 0.1582,
+        "rms_dynamic_range_db": 40.45
       },
       "bass": {
         "bass_onset_count": 205,
@@ -75,7 +79,11 @@
           20572.9,
           20805.1,
           24589.9
-        ]
+        ],
+        "centroid_avg_hz": 4581.3,
+        "rms_mean": 0.0355,
+        "rms_peak_p95": 0.1062,
+        "rms_dynamic_range_db": 33.59
       },
       "bass": {
         "bass_onset_count": 727,
@@ -114,7 +122,11 @@
           32043.5,
           32600.8,
           32763.4
-        ]
+        ],
+        "centroid_avg_hz": 4399.1,
+        "rms_mean": 0.034,
+        "rms_peak_p95": 0.1019,
+        "rms_dynamic_range_db": 51.54
       },
       "bass": {
         "bass_onset_count": 981,
@@ -153,7 +165,11 @@
           17113.1,
           17879.4,
           18668.8
-        ]
+        ],
+        "centroid_avg_hz": 4659.2,
+        "rms_mean": 0.0299,
+        "rms_peak_p95": 0.082,
+        "rms_dynamic_range_db": 36.44
       },
       "bass": {
         "bass_onset_count": 677,
@@ -192,7 +208,11 @@
           1764.7,
           1904.0,
           2275.6
-        ]
+        ],
+        "centroid_avg_hz": 4867.4,
+        "rms_mean": 0.0635,
+        "rms_peak_p95": 0.1094,
+        "rms_dynamic_range_db": 12.39
       },
       "bass": {
         "bass_onset_count": 649,
@@ -231,7 +251,11 @@
           11888.6,
           12167.3,
           12422.7
-        ]
+        ],
+        "centroid_avg_hz": 4263.2,
+        "rms_mean": 0.0326,
+        "rms_peak_p95": 0.0853,
+        "rms_dynamic_range_db": 43.62
       },
       "bass": {
         "bass_onset_count": 845,
@@ -270,7 +294,11 @@
           63576.2,
           63971.0,
           64087.1
-        ]
+        ],
+        "centroid_avg_hz": 4026.6,
+        "rms_mean": 0.0245,
+        "rms_peak_p95": 0.0846,
+        "rms_dynamic_range_db": 50.08
       },
       "bass": {
         "bass_onset_count": 435,
@@ -311,7 +339,11 @@
           14721.5,
           15000.1,
           15325.2
-        ]
+        ],
+        "centroid_avg_hz": 3691.0,
+        "rms_mean": 0.0785,
+        "rms_peak_p95": 0.2009,
+        "rms_dynamic_range_db": 52.03
       },
       "bass": {
         "bass_onset_count": 409,
@@ -350,7 +382,11 @@
           1648.6,
           1950.5,
           2229.1
-        ]
+        ],
+        "centroid_avg_hz": 4267.8,
+        "rms_mean": 0.0781,
+        "rms_peak_p95": 0.1721,
+        "rms_dynamic_range_db": 50.01
       },
       "bass": {
         "bass_onset_count": 469,
@@ -389,7 +425,11 @@
           8544.9,
           9752.4,
           11610.0
-        ]
+        ],
+        "centroid_avg_hz": 4259.2,
+        "rms_mean": 0.0521,
+        "rms_peak_p95": 0.1584,
+        "rms_dynamic_range_db": 44.48
       },
       "bass": {
         "bass_onset_count": 810,
@@ -428,7 +468,11 @@
           9705.9,
           10541.9,
           12167.3
-        ]
+        ],
+        "centroid_avg_hz": 4289.1,
+        "rms_mean": 0.0708,
+        "rms_peak_p95": 0.1753,
+        "rms_dynamic_range_db": 32.86
       },
       "bass": {
         "bass_onset_count": 519,
@@ -467,7 +511,11 @@
           3622.3,
           4411.8,
           4945.9
-        ]
+        ],
+        "centroid_avg_hz": 4672.3,
+        "rms_mean": 0.0831,
+        "rms_peak_p95": 0.1804,
+        "rms_dynamic_range_db": 23.52
       },
       "bass": {
         "bass_onset_count": 299,
@@ -506,7 +554,11 @@
           8475.3,
           8591.4,
           8730.7
-        ]
+        ],
+        "centroid_avg_hz": 4316.4,
+        "rms_mean": 0.0513,
+        "rms_peak_p95": 0.1632,
+        "rms_dynamic_range_db": 40.79
       },
       "bass": {
         "bass_onset_count": 551,
