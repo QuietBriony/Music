@@ -24,7 +24,7 @@
 #   7) Print the next-step commands.
 
 param(
-  [string]$MachineName = "studio",
+  [string]$MachineName = "studio-surface",
   [string]$Workspace = "C:\workspace\music-stack"
 )
 
