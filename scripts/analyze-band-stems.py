@@ -67,6 +67,34 @@ def _band_onset_times(y: np.ndarray, sr: int, lo_hz: float, hi_hz: float) -> np.
     return librosa.frames_to_time(onset_frames, sr=sr)
 
 
+def analyse_full_mix(song_dir: Path) -> dict | None:
+    """v276: load all 4 stems (vocals/drums/bass/other), sum them as a
+    rough mixdown, run spectral_summary. The drum-stem-only target was
+    unfair to compare against AI 再現 full-mix capture — bass + chord pad
+    pull centroid down ~2 kHz, comp processing changes DR. This mix is
+    closer to what AI 再現 actually outputs.
+
+    Returns None if any stem file is missing."""
+    stems = ["vocals", "drums", "bass", "other"]
+    buffers = []
+    for name in stems:
+        p = song_dir / f"{name}.mp3"
+        if not p.exists():
+            return None
+        y, sr = librosa.load(str(p), sr=SR, mono=True)
+        buffers.append(y)
+    # Trim to shortest length, then sum
+    n = min(len(b) for b in buffers)
+    mix = np.zeros(n, dtype=np.float32)
+    for b in buffers:
+        mix += b[:n]
+    # Normalize to avoid clipping (target peak around -3 dB)
+    peak = np.abs(mix).max()
+    if peak > 0:
+        mix = mix * (0.707 / peak)  # -3 dB
+    return _spectral_summary(mix, SR)
+
+
 def _spectral_summary(y: np.ndarray, sr: int) -> dict:
     """v273: tone + dynamics summary — added for AI 再現 vs real diff.
     centroid_avg_hz characterises brightness (synth often dimmer or harsher
@@ -252,6 +280,11 @@ def main() -> int:
         entry = {"drums": drum_public}
         if bass:
             entry["bass"] = bass
+        # v276: full-mix tone + dynamics for fair AI vs target comparison
+        mix = analyse_full_mix(song_dir)
+        if mix:
+            entry["mix"] = mix
+            print(f"  full-mix      : centroid {mix['centroid_avg_hz']:.0f} Hz, DR {mix['rms_dynamic_range_db']:.1f} dB")
         out[band_id][song_id] = entry
 
     OUT_FILE.parent.mkdir(exist_ok=True)
