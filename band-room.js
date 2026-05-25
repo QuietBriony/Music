@@ -271,23 +271,30 @@
     return input;
   }
 
-  // v220: section role → instrumentBus gain target. Real bands shape song
-  // dynamics across sections — verse settled, chorus lifted, intro/break
-  // pulled back. ±5% range stays inside the polish bus's glue comp's
-  // tolerance, so no pumping artifacts.
+  // v220 / v271: section role → instrumentBus gain target. Real bands shape
+  // song dynamics across sections — verse settled, chorus lifted,
+  // intro / break dropped further for contrast.
+  //
+  // v271 widening (from v220 ±10% to ±47%): user reported AI 再現 was
+  // still "音楽として成立してない" after the texture/groove rounds —
+  // structure was the missing layer. Expanding the per-role gain spread
+  // makes the verse-vs-chorus contrast clearly audible and pulls intros/
+  // breaks back enough to feel dramatic without compromising the glue
+  // comp (we drop BELOW the comp threshold rather than push above it,
+  // so no pumping artifacts on the loud side).
   function sectionGainForRole(role) {
     const ROLE_GAIN = {
-      intro:  0.85,
-      verse:  0.95,
-      comp:   1.00,
-      recap:  1.05,
-      break:  0.85,
-      outro:  0.92,
-      head:   1.00,
-      post:   0.96,
-      swell:  0.92
+      intro:  0.62,  // -4.2 dB — atmospheric entrance
+      verse:  0.80,  // -1.9 dB — settled, makes room for vocal/melody
+      comp:   0.95,  // neutral comping
+      recap:  1.05,  // +0.4 dB chorus / lifted (small push above neutral; comp catches transients)
+      break:  0.58,  // -4.7 dB — dramatic dip, the "song breathing" moment
+      outro:  0.72,  // -2.9 dB — winding down
+      head:   0.95,  // neutral
+      post:   0.85,  // -1.4 dB — settling after a peak
+      swell:  0.82   // -1.7 dB — building anticipation
     };
-    return ROLE_GAIN[role] || 1.00;
+    return ROLE_GAIN[role] || 0.95;  // unknown role → mild quieter default
   }
 
   // v220: ramp the instrumentBus gain to the section's target over 0.5s.
