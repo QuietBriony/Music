@@ -1,5 +1,5 @@
 /* =========================================================
-   Band Room — air rock connect box
+   Band Room — Air Rock Connect Box
    Standalone playback engine for Tabasco. revival.
 
    Reads:
@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-163-vertical-room-mastering";
+  const BANDROOM_APP_VERSION = "br-165-tiffany-box-ui";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -5633,7 +5633,10 @@
     const band = currentBand();
     const el = $("br-subtitle");
     if (el && band) {
-      el.textContent = `${band.subtitle || band.name}`;
+      const rawSubtitle = `${band.subtitle || band.name || ""}`.trim();
+      const subtitle = rawSubtitle.replace(/^air rock connect box\s*[·-]\s*/i, "").trim();
+      el.textContent = subtitle;
+      el.hidden = subtitle.length === 0;
     }
   }
 
@@ -6242,7 +6245,7 @@
       const band = currentBand();
       const title = state.songData?.song_title || state.currentSongId;
       const artist = band?.name || state.currentBandId;
-      const album = "Band Room — air rock connect box";
+      const album = "Band Room — Air Rock Connect Box";
       if (window.MediaMetadata) {
         navigator.mediaSession.metadata = new MediaMetadata({
           title, artist, album,

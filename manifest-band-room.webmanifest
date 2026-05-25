@@ -7,8 +7,8 @@
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
-  "background_color": "#1a0a14",
-  "theme_color": "#1a0a14",
+  "background_color": "#05090b",
+  "theme_color": "#05090b",
   "lang": "ja",
   "categories": ["music", "entertainment", "utilities"],
   "icons": [

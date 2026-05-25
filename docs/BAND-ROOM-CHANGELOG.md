@@ -1,10 +1,25 @@
-# Band Room — Changelog (v65 → v281 compact)
+# Band Room — Changelog (v65 → v282 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v282 compact — Tiffany box identity
+
+Tunes the Band Room listening surface around the Air Rock Connect Box identity:
+
+- show `Air Rock Connect Box` once in the header and strip the repeated prefix from the subtitle
+- shift the dark UI toward Tiffany-blue air connecting into black-box panels
+- refresh the system font stack without adding font dependencies
+- align the Band Room manifest theme/background color with the black-box surface
+- update the Band Room boot diagnostic app version to `br-165-tiffany-box-ui`
+- cache bump: `band-room.css?v=br-79`, `band-room.js?v=br-165`
+
+- `hazama-fm-v282`
 
 ---
 

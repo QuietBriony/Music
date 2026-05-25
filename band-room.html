@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Band Room — air rock connect box</title>
+<title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-77" />
+<link rel="stylesheet" href="band-room.css?v=br-79" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
-<meta name="theme-color" content="#1a0a14" />
+<meta name="theme-color" content="#05090b" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Band Room" />
@@ -22,11 +22,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/es6/music_rnn.js" defer></script>
 <!-- Tier1 #3: @tonejs/midi for MIDI loop import → drum-frames events conversion -->
 <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.min.js" defer></script>
-<script src="band-room.js?v=br-163" defer></script>
+<script src="band-room.js?v=br-165" defer></script>
 <style>
-  .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(255,210,210,.28);border-radius:999px;background:rgba(26,10,20,.48);color:rgba(255,236,238,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
+  .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
-  .share-link-status{position:fixed;top:calc(94px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;max-width:min(320px,calc(100vw - 20px));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid rgba(255,210,210,.18);border-radius:999px;background:rgba(26,10,20,.68);color:rgba(255,236,238,.72);font:10px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;padding:7px 9px;backdrop-filter:blur(8px)}
+  .share-link-status{position:fixed;top:calc(94px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;max-width:min(320px,calc(100vw - 20px));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid rgba(143,247,241,.20);border-radius:999px;background:rgba(5,9,11,.72);color:rgba(223,254,250,.72);font:10px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;padding:7px 9px;backdrop-filter:blur(8px)}
 </style>
 </head>
 
@@ -39,13 +39,13 @@
          iOS). Hidden when standalone or after the user dismisses it
          (per-origin localStorage key shared cross-files). -->
     <style>
-      .install-hint { position: fixed; top: max(8px, env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 1100; max-width: min(92vw, 540px); padding: 4px 6px 4px 10px; background: rgba(8,18,28,0.78); border: 1px solid rgba(180,200,230,0.22); border-radius: 999px; color: rgba(230,240,250,0.92); font: 11px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing: 0.04em; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; }
+      .install-hint { position: fixed; top: max(8px, env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 1100; max-width: min(92vw, 540px); padding: 4px 6px 4px 10px; background: rgba(5,9,11,0.78); border: 1px solid rgba(143,247,241,0.24); border-radius: 999px; color: rgba(223,254,250,0.92); font: 11px/1.3 system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing: 0.04em; backdrop-filter: blur(8px); display: flex; align-items: center; gap: 6px; }
       .install-hint[hidden] { display: none; }
-      .install-hint__toggle, .install-hint__action, .install-hint__dismiss { background: transparent; border: 1px solid rgba(180,200,230,0.28); border-radius: 999px; color: inherit; font: inherit; padding: 3px 9px; cursor: pointer; white-space: nowrap; }
+      .install-hint__toggle, .install-hint__action, .install-hint__dismiss { background: transparent; border: 1px solid rgba(143,247,241,0.30); border-radius: 999px; color: inherit; font: inherit; padding: 3px 9px; cursor: pointer; white-space: nowrap; }
       .install-hint__toggle { border: none; padding: 3px 4px; }
-      .install-hint__action { background: rgba(120,200,220,0.16); }
+      .install-hint__action { background: rgba(10,186,181,0.18); }
       .install-hint__dismiss { padding: 2px 8px; font-size: 13px; line-height: 1; }
-      .install-hint__details { position: absolute; top: calc(100% + 6px); left: 0; right: 0; padding: 8px 14px; background: rgba(8,18,28,0.92); border: 1px solid rgba(180,200,230,0.22); border-radius: 8px; font: 11px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing: 0.04em; backdrop-filter: blur(8px); }
+      .install-hint__details { position: absolute; top: calc(100% + 6px); left: 0; right: 0; padding: 8px 14px; background: rgba(5,9,11,0.94); border: 1px solid rgba(143,247,241,0.24); border-radius: 8px; font: 11px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; letter-spacing: 0.04em; backdrop-filter: blur(8px); }
       .install-hint__details[hidden] { display: none; }
       .install-hint__details p { margin: 2px 0; }
     </style>
@@ -109,7 +109,7 @@
 
   <header id="br-header">
     <h1>BAND ROOM</h1>
-    <p class="br-brandline">air rock connect box</p>
+    <p class="br-brandline">Air Rock Connect Box</p>
     <p class="br-subtitle" id="br-subtitle">loading bands…</p>
     <button id="br-help-toggle" type="button" aria-label="help">?</button>
   </header>
