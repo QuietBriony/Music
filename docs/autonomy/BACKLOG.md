@@ -124,7 +124,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : cross-repo
 - agent    : either
 - human-gate: yes
-- status   : wip — namima half shipped (namima PR #32 merged, 2026-05-25 chouta-surface + Codex follow-up)。test → Music half (style archetype) は Music translation candidate 化、drum-floor half (interpolation math) は open
+- status   : wip — namima half shipped (namima PR #32 merged, 2026-05-25 chouta-surface + Codex follow-up)。test → Music half (style archetype) は Music PR #249 で translation 化、drum-floor half (interpolation math) は open
 - source   : dormant-asset 監査（2026-05-16）
 - detail   : integration docs が harvest 指定しているのに未着手の素材 — namima-lab の
   organic-pluck audio recipe（a-min v1-v3 の filter/reverb/pluck パラメータ）、test の
@@ -135,7 +135,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
     `namima/docs/organic-pluck-lab-recipe.md`, 2026-05-25)
   - **b. test → Music**: style archetype 4 点 (Ambient/Lo-Fi/Goa/HardTechno、
     `test/engine.js` L115-164 `ARCH` 定数) を Music の preset morph /
-    reference-gradient 言語に翻訳 — Music translation candidate 作成済み
+    reference-gradient 言語に翻訳 — Music PR #249 で translation 化済み
     (`references/style-archetype-from-test.json`,
     `docs/test-style-archetype-translation.md`)。`docs/archive-repo-harvest-audit.md`
     §4 "Music translation: style blend → preset morph / reference-gradient" 準拠
