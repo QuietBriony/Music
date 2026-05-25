@@ -74,6 +74,8 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-160-pwa-audio-safe-boot", "Band Room should expose the current audio-safe boot version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
     "br-vol-stem-drums": "92",
@@ -265,6 +267,9 @@ assert.match(source, /drumPan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(instrume
 assert.match(source, /voicePan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(masterGain\)/, "Vocal lead should bypass the instrument polish bus");
 assert.match(html, /rel="manifest" href="manifest-band-room\.webmanifest"/, "Band Room should expose its own PWA manifest");
 assert.match(html, /id="install-hint"/, "Band Room should expose the PWA install hint banner for BG-playback stability");
+assert.match(html, /id="br-reset-audio"/, "Band Room should expose a visible Reset Audio control");
+assert.match(html, /id="br-boot-status"/, "Band Room should render boot/version diagnostics");
+assert.match(html, /controllerchange/, "Band Room SW reload should wait for controllerchange before reloading");
 assert.match(source, /function scheduleMobileSuspendRelease\(/, "Band Room should run panic releases while mobile screen lock is happening");
 assert.match(source, /window\.addEventListener\("blur"/, "Band Room should treat mobile blur as a background transition");
 assert.match(source, /document\.addEventListener\("freeze"/, "Band Room should handle page lifecycle freeze");
@@ -276,6 +281,10 @@ assert.match(html, /id="br-vol-external-vocal"[^>]*value="78"/, "External vocal 
 assert.match(source, /const dryVal = 1 - wetVal;/, "Master reverb dry path should not jump on first slider touch");
 assert.match(source, /1 - w \* 0\.85/, "Tape dry path should not jump on first warmth slider touch");
 assert.match(source, /const MIX_PREFS_VERSION = "v267-bass-electric"/, "Band Room should version saved mix defaults");
+assert.match(source, /storageSchemaVersion:\s*BANDROOM_STORAGE_SCHEMA_VERSION/, "Saved prefs should carry the Band Room storage schema version");
+assert.match(source, /function sanitizePrefsForBoot\(/, "Band Room should sanitize persisted local audio prefs before applying them");
+assert.match(source, /function applyBandRoomStorageBootPolicy\(/, "Band Room should apply safe-boot storage policy before UI restore");
+assert.match(source, /BANDROOM_BOOT_MODE === "standalone" && !schemaIsCurrent/, "Standalone PWA boot should reset stale audio prefs schemas");
 assert.match(source, /"br-vol-stem-drums": \{ old: "92", current: "86" \}/, "Saved old stem defaults should migrate to the v167/v168 mix");
 assert.match(source, /"br-space-reverb": \{ old: "22", current: "16" \}/, "Saved old master defaults should migrate to the v167/v168 mix");
 assert.match(source, /prefs = migratePrefsForCurrentMix\(prefs\);/, "Prefs restore should apply the current mix migration before dispatching sliders");
@@ -294,6 +303,11 @@ assert.match(source, /function resyncStemPlaybackToClock\(/, "Band Room should r
 assert.match(source, /function scheduleBackgroundBridgeRearm\(/, "Band Room should rearm hidden audio bridge if it is lost");
 assert.match(source, /function checkBackgroundBridgeHealth\(/, "Band Room should detect stale hidden audio bridge state");
 assert.match(source, /audio\.paused \|\| audio\.ended \|\| !audio\.srcObject \|\| audio\.readyState === 0/, "Band Room bridge health should catch paused/ended/stale hidden audio");
+assert.match(source, /async function startPlaybackBoot\(/, "Band Room start boot should be wrapped so failed starts do not leave START stuck");
+assert.match(source, /Tone\.Transport\.cancel\(0\)/, "Band Room should cancel stale Transport schedules on start/stop");
+assert.match(source, /function stopPhraseLoops\(/, "Band Room Stop/Reset should stop phrase loops as part of panic handling");
+assert.match(source, /function resetBandRoomAudioState\(/, "Band Room should expose a local Reset Audio recovery path");
+assert.match(source, /url\.searchParams\.set\("safe", "1"\)/, "Reset Audio should relaunch with safe boot query");
 assert.match(source, /return isAppleMobileDevice\(\);/, "Band Room should prefer the hidden media bridge on all iPhone browsers");
 assert.match(source, /window\.addEventListener\("pageshow"/, "Band Room should recover playback on pageshow");
 assert.match(source, /setHandler\("nexttrack"[\s\S]*selectAdjacentSong\(1\)/, "Media nexttrack should follow album flow");
