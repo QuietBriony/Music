@@ -130,6 +130,21 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   organic-pluck audio recipe（a-min v1-v3 の filter/reverb/pluck パラメータ）、test の
   style archetype + interpolation math（Ambient/Lo-Fi/Goa/HardTechno の確率補間）。
   blind copy せず 1 PR = 1 idea で target repo の言葉へ翻訳（repo-strategy Phase 3 準拠）。
+  **Sub-split (2026-05-25 chouta-surface session で確定):**
+  - **a. namima-lab → namima**: organic-pluck recipe — ✅ shipped (namima PR #32,
+    `namima/docs/organic-pluck-lab-recipe.md`, 2026-05-25)
+  - **b. test → Music**: style archetype 4 点 (Ambient/Lo-Fi/Goa/HardTechno、
+    `test/engine.js` L115-164 `ARCH` 定数) を Music の preset morph /
+    reference-gradient 言語に翻訳 — 未着手。`docs/archive-repo-harvest-audit.md` §4
+    "Music translation: style blend → preset morph / reference-gradient" 準拠
+  - **c. test → drum-floor**: 16-step probability vector の lerp 補間 + per-step rand
+    gate (`test/engine.js` L93-95 `rand()`, L183-244 `computeStyleBlend()` の lerp
+    部分) を drum-floor の groove grammar / docs に翻訳 — 未着手。同 audit §4
+    "drum-floor translation: probability interpolation → groove grammar (docs/schema only)"
+    準拠
+  - codex 用 handoff prompt は `docs/autonomy/BL-019-test-half-handoff.md` を参照。
+    sub-task b と c は独立 PR (Music PR と drum-floor PR を別建て、両方とも docs-only)。
+    BL-019 全体が Done になるのは a/b/c 三本すべて shipped 後。
 
 ## Icebox
 
