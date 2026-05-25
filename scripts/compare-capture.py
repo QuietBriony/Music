@@ -51,11 +51,27 @@ def _band_onset_times(y: np.ndarray, sr: int, lo_hz: float, hi_hz: float) -> np.
     return librosa.frames_to_time(frames, sr=sr)
 
 
+def _spectral_summary(y: np.ndarray, sr: int) -> dict:
+    """v273: mirror of analyze-band-stems.py — tone + dynamics."""
+    centroid = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
+    rms = librosa.feature.rms(y=y)[0]
+    rms_p95 = float(np.percentile(rms, 95)) if len(rms) else 0.0
+    rms_p10 = float(np.percentile(rms, 10)) if len(rms) else 0.0
+    dr_db = 20 * np.log10(max(rms_p95, 1e-6) / max(rms_p10, 1e-6)) if rms_p10 > 1e-6 else 0.0
+    return {
+        "centroid_avg_hz": round(float(centroid.mean()) if len(centroid) else 0.0, 1),
+        "rms_mean": round(float(rms.mean()) if len(rms) else 0.0, 4),
+        "rms_peak_p95": round(rms_p95, 4),
+        "rms_dynamic_range_db": round(float(dr_db), 2),
+    }
+
+
 def analyse_capture(path: Path) -> dict:
     """Same metrics as scripts/analyze-band-stems.py drum-stem path —
     treats the full mix as if it were a drum stem. Kick band (40-180 Hz)
     is dominated by kick onsets even with bass interference because the
-    kick transient has more onset energy than bass note attacks."""
+    kick transient has more onset energy than bass note attacks.
+    v273 also returns spectral_summary fields (tone + dynamics)."""
     try:
         y, sr = librosa.load(str(path), sr=SR, mono=True)
     except Exception as e:
@@ -64,6 +80,7 @@ def analyse_capture(path: Path) -> dict:
             print("  webm needs ffmpeg on PATH. Try:", file=sys.stderr)
             print("    winget install Gyan.FFmpeg   (Windows)", file=sys.stderr)
             print("    then restart your shell.", file=sys.stderr)
+            print("  (v272+ band-room ● REC writes .wav directly — no ffmpeg needed.)", file=sys.stderr)
         sys.exit(2)
 
     duration_sec = len(y) / sr
@@ -81,52 +98,61 @@ def analyse_capture(path: Path) -> dict:
         kick_off_avg = 0.0
         kick_off_std = 0.0
 
+    spectral = _spectral_summary(y, sr)
     return {
         "duration_sec": round(duration_sec, 2),
         "bpm": round(bpm, 2),
         "kick_onset_count": int(len(kick_onsets)),
         "kick_offset_from_beat_avg_ms": round(kick_off_avg, 1),
         "kick_offset_from_beat_std_ms": round(kick_off_std, 1),
+        # v273 additions
+        "centroid_avg_hz": spectral["centroid_avg_hz"],
+        "rms_mean": spectral["rms_mean"],
+        "rms_peak_p95": spectral["rms_peak_p95"],
+        "rms_dynamic_range_db": spectral["rms_dynamic_range_db"],
     }
 
 
 def resolve_target(spec: dict, key: str) -> dict | None:
     """Resolve 'band' (average across songs) or 'band/song' to a target dict
     with the same shape as analyse_capture output (drums-side fields only)."""
+    keys_we_want = (
+        "bpm",
+        "kick_offset_from_beat_avg_ms",
+        "kick_offset_from_beat_std_ms",
+        "centroid_avg_hz",
+        "rms_mean",
+        "rms_peak_p95",
+        "rms_dynamic_range_db",
+    )
     if "/" in key:
         band, song = key.split("/", 1)
         entry = spec.get(band, {}).get(song)
         if not entry:
             return None
         d = entry.get("drums", {})
-        return {
-            "scope": f"{band}/{song}",
-            "bpm": d.get("bpm"),
-            "kick_offset_from_beat_avg_ms": d.get("kick_offset_from_beat_avg_ms"),
-            "kick_offset_from_beat_std_ms": d.get("kick_offset_from_beat_std_ms"),
-        }
+        out = {"scope": f"{band}/{song}"}
+        for k in keys_we_want:
+            out[k] = d.get(k)
+        return out
     band_data = spec.get(key)
     if not band_data:
         return None
-    bpms, offs, stds = [], [], []
+    accum: dict[str, list[float]] = {k: [] for k in keys_we_want}
     for sid, entry in band_data.items():
         if sid.startswith("_"):
             continue
         d = entry.get("drums", {})
-        if d.get("bpm") is not None:
-            bpms.append(d["bpm"])
-        if d.get("kick_offset_from_beat_avg_ms") is not None:
-            offs.append(d["kick_offset_from_beat_avg_ms"])
-        if d.get("kick_offset_from_beat_std_ms") is not None:
-            stds.append(d["kick_offset_from_beat_std_ms"])
-    if not bpms:
+        for k in keys_we_want:
+            v = d.get(k)
+            if v is not None:
+                accum[k].append(v)
+    if not accum["bpm"]:
         return None
-    return {
-        "scope": f"{key} (avg of {len(bpms)} songs)",
-        "bpm": round(float(np.mean(bpms)), 2),
-        "kick_offset_from_beat_avg_ms": round(float(np.mean(offs)), 1) if offs else None,
-        "kick_offset_from_beat_std_ms": round(float(np.mean(stds)), 1) if stds else None,
-    }
+    out = {"scope": f"{key} (avg of {len(accum['bpm'])} songs)"}
+    for k in keys_we_want:
+        out[k] = round(float(np.mean(accum[k])), 2) if accum[k] else None
+    return out
 
 
 def fmt_delta(ai: float, target: float, unit: str = "ms") -> str:
@@ -159,28 +185,46 @@ def main() -> int:
     print(f"  kick onsets    : {ai['kick_onset_count']}")
     print(f"  kick pocket avg: {ai['kick_offset_from_beat_avg_ms']:+.1f} ms "
           f"(std {ai['kick_offset_from_beat_std_ms']:.1f}ms)")
+    print(f"  brightness     : {ai['centroid_avg_hz']:.0f} Hz (spectral centroid)")
+    print(f"  loudness       : RMS mean {ai['rms_mean']:.3f}, peak {ai['rms_peak_p95']:.3f}")
+    print(f"  dynamic range  : {ai['rms_dynamic_range_db']:.1f} dB")
 
     target = resolve_target(spec, target_key)
     if not target:
         print(f"\ntarget key '{target_key}' not found in spec", file=sys.stderr)
         return 1
     print(f"\nTarget: {target['scope']}")
-    print(f"  bpm            : {target['bpm']}")
-    print(f"  kick pocket avg: {target['kick_offset_from_beat_avg_ms']:+.1f} ms "
-          f"(std {target['kick_offset_from_beat_std_ms']:.1f}ms)" if target['kick_offset_from_beat_avg_ms'] is not None else "")
+    print(f"  bpm            : {target.get('bpm')}")
+    if target.get('kick_offset_from_beat_avg_ms') is not None:
+        print(f"  kick pocket avg: {target['kick_offset_from_beat_avg_ms']:+.1f} ms "
+              f"(std {target.get('kick_offset_from_beat_std_ms', 0):.1f}ms)")
+    if target.get('centroid_avg_hz') is not None:
+        print(f"  brightness     : {target['centroid_avg_hz']:.0f} Hz")
+    if target.get('rms_dynamic_range_db') is not None:
+        print(f"  dynamic range  : {target['rms_dynamic_range_db']:.1f} dB")
 
     print(f"\nDiff (AI - target):")
-    print(f"  bpm            : {fmt_delta(ai['bpm'], target['bpm'], 'BPM')}")
-    print(f"  kick pocket avg: {fmt_delta(ai['kick_offset_from_beat_avg_ms'], target['kick_offset_from_beat_avg_ms'])}")
+    print(f"  bpm            : {fmt_delta(ai['bpm'], target.get('bpm'), 'BPM')}")
+    print(f"  kick pocket avg: {fmt_delta(ai['kick_offset_from_beat_avg_ms'], target.get('kick_offset_from_beat_avg_ms'))}")
+    print(f"  brightness     : {fmt_delta(ai['centroid_avg_hz'], target.get('centroid_avg_hz'), 'Hz')}")
+    print(f"  dynamic range  : {fmt_delta(ai['rms_dynamic_range_db'], target.get('rms_dynamic_range_db'), 'dB')}")
 
     # Quick verdict
-    bpm_match = abs(ai['bpm'] - target['bpm']) < 1
-    pocket_match = (target['kick_offset_from_beat_avg_ms'] is not None
-                    and abs(ai['kick_offset_from_beat_avg_ms']
-                            - target['kick_offset_from_beat_avg_ms']) < 15)
+    bpm_match = abs(ai['bpm'] - target.get('bpm', ai['bpm'])) < 1
+    pocket_target = target.get('kick_offset_from_beat_avg_ms')
+    pocket_match = (pocket_target is not None
+                    and abs(ai['kick_offset_from_beat_avg_ms'] - pocket_target) < 15)
+    centroid_target = target.get('centroid_avg_hz')
+    centroid_match = (centroid_target is not None
+                      and abs(ai['centroid_avg_hz'] - centroid_target) / max(centroid_target, 1) < 0.30)  # within 30%
+    dr_target = target.get('rms_dynamic_range_db')
+    dr_match = (dr_target is not None
+                and abs(ai['rms_dynamic_range_db'] - dr_target) < 5)  # within 5 dB
     print()
-    print(f"  BPM match     : {'OK' if bpm_match else 'OFF'}")
-    print(f"  Pocket within 15ms: {'OK' if pocket_match else 'OFF'}")
+    print(f"  BPM match              : {'OK' if bpm_match else 'OFF'}")
+    print(f"  Pocket within 15 ms    : {'OK' if pocket_match else 'OFF'}")
+    print(f"  Brightness within 30 %  : {'OK' if centroid_match else 'OFF'}")
+    print(f"  Dynamic range within 5dB: {'OK' if dr_match else 'OFF'}")
     return 0
 
 

@@ -67,6 +67,28 @@ def _band_onset_times(y: np.ndarray, sr: int, lo_hz: float, hi_hz: float) -> np.
     return librosa.frames_to_time(onset_frames, sr=sr)
 
 
+def _spectral_summary(y: np.ndarray, sr: int) -> dict:
+    """v273: tone + dynamics summary — added for AI 再現 vs real diff.
+    centroid_avg_hz characterises brightness (synth often dimmer or harsher
+    than real samples); rms_dynamic_range_db is the perceived-loudness
+    spread (procedural music is often flat — low DR — vs real songs which
+    breathe across sections)."""
+    centroid = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
+    rms = librosa.feature.rms(y=y)[0]
+    rms_max = float(rms.max()) if len(rms) else 0.0
+    rms_mean = float(rms.mean()) if len(rms) else 0.0
+    # Use 95th-percentile peak vs 10th-percentile quiet to avoid outliers
+    rms_p95 = float(np.percentile(rms, 95)) if len(rms) else rms_max
+    rms_p10 = float(np.percentile(rms, 10)) if len(rms) else rms_mean
+    dr_db = 20 * np.log10(max(rms_p95, 1e-6) / max(rms_p10, 1e-6)) if rms_p10 > 1e-6 else 0.0
+    return {
+        "centroid_avg_hz": round(float(centroid.mean()) if len(centroid) else 0.0, 1),
+        "rms_mean": round(rms_mean, 4),
+        "rms_peak_p95": round(rms_p95, 4),
+        "rms_dynamic_range_db": round(float(dr_db), 2),
+    }
+
+
 def analyse_drum_stem(path: Path) -> dict:
     y, sr = librosa.load(str(path), sr=SR, mono=True)
     duration_sec = len(y) / sr
@@ -79,6 +101,7 @@ def analyse_drum_stem(path: Path) -> dict:
     kick_onsets = _band_onset_times(y, sr, 40, 180)
     snare_onsets = _band_onset_times(y, sr, 180, 1200)
     hat_onsets = _band_onset_times(y, sr, 4000, 10000)
+    spectral = _spectral_summary(y, sr)
 
     if len(beat_times) > 0 and len(kick_onsets) > 0:
         offsets_ms = []
@@ -103,6 +126,11 @@ def analyse_drum_stem(path: Path) -> dict:
         "kick_offset_from_beat_std_ms": round(kick_offset_std, 1),
         "kick_onsets_first_8_ms": [round(float(t) * 1000, 1) for t in kick_onsets[:8]],
         "snare_onsets_first_8_ms": [round(float(t) * 1000, 1) for t in snare_onsets[:8]],
+        # v273: tone + dynamics (diagnoses AI vs real differences)
+        "centroid_avg_hz": spectral["centroid_avg_hz"],
+        "rms_mean": spectral["rms_mean"],
+        "rms_peak_p95": spectral["rms_peak_p95"],
+        "rms_dynamic_range_db": spectral["rms_dynamic_range_db"],
         # Private: full kick onsets for bass-lock calc (not written to JSON)
         "_kick_onsets_all_sec": kick_onsets.tolist(),
     }
