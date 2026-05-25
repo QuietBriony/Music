@@ -52,10 +52,10 @@ mkdir C:\workspace\music-stack
 cd C:\workspace\music-stack
 gh repo clone QuietBriony/Music
 cd Music
-.\scripts\setup-new-pc.ps1 -MachineName "studio"
+.\scripts\setup-new-pc.ps1 -MachineName "studio-surface"
 ```
 
-`-MachineName` は任意の識別子(デフォルト `"studio"`)。命名は下記「PC 命名規約」
+`-MachineName` は任意の識別子(デフォルト `"studio-surface"`)。命名は下記「PC 命名規約」
 セクション参照。スクリプトを使わない場合は下記の手動手順:
 
 ### 手動セットアップ
@@ -169,7 +169,7 @@ GitHub 経由のみで、PC↔PC の直接接続はありません。
 5. このPCの用途: UR44 経由の試聴 + 必要なら engine.js 修正 / 新規 polish。
 
 6. このPCの役割の把握:
-   - `git config --get music.machineName` で識別子を取得 (例: "studio")
+   - `git config --get music.machineName` で識別子を取得 (例: "studio-surface")
    - `docs/PC-REGISTRY.md` を読み、自分の行から **主担当 / しない / 強み** を
      内在化。専有領域マトリクスで「触っていいファイル」「触らないファイル」も
      確認 (Band Room の `band-room.*` は全 PC 触らない、等)
@@ -246,8 +246,8 @@ primary PC ──push─→ GitHub main ←─pull── 別 PC (UR44 PC)
 - SESSION-LEDGER 追記時はヘッダに `[<PC名>]` prefix:
   `## YYYY-MM-DD [studio] — <一行サマリ> (vNNN)`
 - primary PC は無印で OK (既存エントリも全て primary)
-- 推奨命名: `primary` (メイン開発機) / `studio` (UR44 + DAW) / `worker`
-  (重タスク、gaming note PC 等)
+- 推奨命名 (物理 PC 名 + 役割サフィックス): `chouta-surface` (メイン開発機) /
+  `studio-surface` (UR44 + DAW) / `worker-gaming` (重タスク、gaming note PC)
 
 ---
 

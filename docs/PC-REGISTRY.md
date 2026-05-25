@@ -11,28 +11,34 @@ NEW-PC-SETUP.md (clone + setup script) と対になる doc。NEW-PC-SETUP は
 
 ## 登録 PC 一覧
 
+命名規則は **物理 PC を識別する hostname-flavored 名** (`<役割>-<機種>`)。
+machineName は git config `music.machineName` に保存。
+
 | machineName | 役割 | 接続機材 | 主担当タスク | 状態 |
 |---|---|---|---|---|
-| `primary` | メイン開発機 | (汎用) | 全 engine.js 修正、agent autonomy session 主体、Hazama FM のロジック作業 | active |
-| `studio` | 試聴・録音機 | Steinberg UR44 (USB Audio) + monitor speaker/headphone | engine の音作り ear-verified 微調整、stems 録音 confirm、DAW (Cubase / Logic 等) 統合 | planned |
-| `worker` | 重タスク機 | GPU/CPU 高負荷向け note PC (gaming) | Magenta DrumsRNN fine-tune、大量 preset 自動生成、長時間 batch、audio rendering | future |
+| `chouta-surface` | メイン開発機 | (汎用) | 全 engine.js 修正、agent autonomy session 主体、Hazama FM のロジック作業 | active |
+| `studio-surface` | 試聴・録音機 | Steinberg UR44 (USB Audio) + monitor speaker/headphone | engine の音作り ear-verified 微調整、stems 録音 confirm、DAW (Cubase / Logic 等) 統合 | planned |
+| `worker-gaming` | 重タスク機 | GPU/CPU 高負荷向け gaming note PC | Magenta DrumsRNN fine-tune、大量 preset 自動生成、長時間 batch、audio rendering | future |
 
-`primary` は無印 (= machineName 未設定) も `primary` 扱い。既存のすべての
-SESSION-LEDGER エントリは primary 由来。
+`chouta-surface` は無印 (= machineName 未設定) も `chouta-surface` 扱い。
+既存のすべての SESSION-LEDGER エントリは chouta-surface 由来。
+
+`primary` / `studio` / `worker` といった抽象 role 名は使わず、物理名 +
+役割サフィックスで揃える ＝ 「どの物理機で動いているか」が一意に決まる。
 
 ---
 
 ## 各 PC の役割境界
 
-### `primary` (メイン)
+### `chouta-surface` (メイン)
 
 - **メイン担当**: engine.js / audio modules / docs の改修、agent autonomy
   session 主体、PR 主導、cross-app 整合性、Band Room チャットとの並走管理。
-- **しない**: UR44 試聴 (機材無し)、長時間 batch (重い処理は worker へ送る)。
+- **しない**: UR44 試聴 (機材無し)、長時間 batch (重い処理は worker-gaming へ送る)。
 - **強み**: 即応性、editor 慣れ、Claude project memory が一番充実、長文 doc
   生成。
 
-### `studio` (UR44 PC)
+### `studio-surface` (UR44 PC)
 
 - **メイン担当**: ear-verified iteration — engine の音作り (drop の強さ、
   build pad の vel、pianoMemory の echo wash 等) を実際のモニター環境で聞いて
@@ -46,14 +52,14 @@ SESSION-LEDGER エントリは primary 由来。
   channel routing を確認。ASIO ドライバは DAW 使用時のみ必要 (ブラウザ
   audio は WASAPI 経由)。
 
-### `worker` (将来、gaming note PC)
+### `worker-gaming` (将来、gaming note PC)
 
 - **メイン担当**: Magenta DrumsRNN の fine-tune (GPU が活きる)、大量 preset
   自動生成 (drum-frames-*.json を batch 生成)、audio rendering を batch で
   (offline render → S3 / GitHub Releases に置く)、長時間 stack-check 全 repo
   健全性監視 cron。
 - **しない**: ear-verified iteration (試聴環境が無いので)、ライブ engine 開発
-  (主担当は primary)。
+  (主担当は chouta-surface)。
 - **強み**: GPU、CPU 余裕、長時間プロセスを放置できる、ファン回ってても OK。
 - **追加のセットアップ**: GPU driver + CUDA (Magenta 用)。Python venv に
   TensorFlow.js Node or Magenta Python。
@@ -84,14 +90,14 @@ SESSION-LEDGER エントリは primary 由来。
 
 | ファイル / 領域 | 触る PC | 触らない PC |
 |---|---|---|
-| `engine.js` / `audio/music-*.js` | primary, studio | worker |
-| `fm.html` / `index.html` / `fm.js` / `fm.css` | primary, studio | worker |
+| `engine.js` / `audio/music-*.js` | chouta-surface, studio-surface | worker-gaming |
+| `fm.html` / `index.html` / `fm.js` / `fm.css` | chouta-surface, studio-surface | worker-gaming |
 | `band-room.html` / `band-room.js` / `band-room.css` | **全 PC 触らない** (Band Room チャット専用) | (全部) |
-| `presets/drum-frames-*.json` | worker (生成)、primary (review) | studio |
-| `references/*.json` | primary | worker, studio |
-| `docs/autonomy/*` | primary, studio (LEDGER 追記のみ) | worker (autonomy session せず) |
-| `docs/HAZAMA-FM-ARCHITECTURE.md` 等 design doc | primary | studio, worker |
-| DAW project files (将来 repo に入れるなら) | studio | primary, worker |
+| `presets/drum-frames-*.json` | worker-gaming (生成)、chouta-surface (review) | studio-surface |
+| `references/*.json` | chouta-surface | worker-gaming, studio-surface |
+| `docs/autonomy/*` | chouta-surface, studio-surface (LEDGER 追記のみ) | worker-gaming (autonomy session せず) |
+| `docs/HAZAMA-FM-ARCHITECTURE.md` 等 design doc | chouta-surface | studio-surface, worker-gaming |
+| DAW project files (将来 repo に入れるなら) | studio-surface | chouta-surface, worker-gaming |
 
 ### 強制ルール (全 PC 共通)
 
@@ -129,22 +135,23 @@ SESSION-LEDGER エントリは primary 由来。
 git config --get music.machineName
 ```
 
-primary では未設定でも OK (機能上は同じ、慣習的に `[primary]` 扱い)。
+chouta-surface (= 本セッションのこの PC) では未設定でも OK (機能上は同じ、
+慣習的に無印 = `[chouta-surface]` 扱い)。
 
 ### SESSION-LEDGER エントリヘッダ prefix
 
 ```
-## 2026-06-01 [studio] — engine.js surge drop 試聴 + drop 強度微調整 (vNNN)
-## 2026-06-05 [worker] — preset batch 生成 (drum-frames-newgenre × 6) (vNNN)
-## 2026-06-10 — 全体監査 + ledger consolidate    ← primary は無印で OK
+## 2026-06-01 [studio-surface] — engine.js surge drop 試聴 + drop 強度微調整 (vNNN)
+## 2026-06-05 [worker-gaming] — preset batch 生成 (drum-frames-newgenre × 6) (vNNN)
+## 2026-06-10 — 全体監査 + ledger consolidate    ← chouta-surface は無印で OK
 ```
 
 抽出:
 
 ```powershell
-grep "\[studio\]" docs/autonomy/SESSION-LEDGER.md      # studio の作業履歴
-grep "\[worker\]" docs/autonomy/SESSION-LEDGER.md      # worker の作業履歴
-grep -v "^## 2[0-9]\{3\}-[0-9]\{2\}-[0-9]\{2\} \[" docs/autonomy/SESSION-LEDGER.md  # primary (無印)
+grep "\[studio-surface\]" docs/autonomy/SESSION-LEDGER.md     # studio-surface 履歴
+grep "\[worker-gaming\]" docs/autonomy/SESSION-LEDGER.md      # worker-gaming 履歴
+grep -v "^## 2[0-9]\{3\}-[0-9]\{2\}-[0-9]\{2\} \[" docs/autonomy/SESSION-LEDGER.md  # chouta-surface (無印)
 ```
 
 ### コミットメッセージ (任意)
@@ -152,10 +159,37 @@ grep -v "^## 2[0-9]\{3\}-[0-9]\{2\}-[0-9]\{2\} \[" docs/autonomy/SESSION-LEDGER.
 PC 識別を commit にも残したい場合は Co-Authored-By trailer に PC 名:
 
 ```
-Co-Authored-By: Claude Opus 4.7 (studio) <noreply@anthropic.com>
+Co-Authored-By: Claude Opus 4.7 (studio-surface) <noreply@anthropic.com>
 ```
 
 任意 — SESSION-LEDGER の prefix だけで通常十分。
+
+---
+
+## Multi-stack 認知
+
+このリポ (music-stack) は user が運用している複数 stack の 1 つ。他に:
+
+- **zouen-stack**: 造園業務系 (経理 / 受発注 / 工程管理 等)。事務PC や共用PC
+  も関与。
+- (将来) 他 stack の追加可能性
+
+**PC は単一 stack 専用ではない** — 例: `chouta-surface` は music-stack の
+メイン開発機だが、zouen-stack の業務にも関与する(両方で操作される)可能性が
+ある。
+
+ただし本 PC-REGISTRY は **music-stack 視点での PC 役割のみ** 列挙。workspace
+全体 (cross-stack) の coordination は別のレイヤー:
+
+- workspace-level repo (TBD: `openclaw` を昇格させるか、新規 `workspace-meta` /
+  `open-claw-lab` 等を作るか) が cross-stack PC レジストリ + work 割り当て
+  ダッシュボードを持つべき。
+- そこは Claude と Codex が role-agnostic に参加できる orchestration ハブに。
+- music-stack 側の本 PC-REGISTRY は、その上位レイヤーから参照される
+  「sub-registry」の位置付け。
+
+新 PC を加える時は本 doc(music-stack の役割) と workspace-meta 側の cross-stack
+レジストリの**両方**を更新する想定。
 
 ---
 
