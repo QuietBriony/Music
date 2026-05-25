@@ -19,6 +19,48 @@
 
 ---
 
+## 2026-05-25 [studio-surface] — studio-surface PC セットアップ完了 + 役割再確認
+- agent      : Claude Code (このPCの初回 instance、Opus 4.7 / 1M context)
+- goal       : 新規 Intel Surface (studio-surface) を music-stack に参加させる
+  (zero → repo clone → stack-check 0 BAD → PC-REGISTRY 状態更新まで)
+- repos      : Music (docs only)
+- shipped    : (PR ではなく docs 直 push)
+  - PC-REGISTRY: `studio-surface` 行を `planned` → `active (2026-05-25 setup
+    完了、UR44 接続待ち)` に変更。Intel CPU = UR44 / 音響サブシステム安定の
+    背景を明記。役割に DAW (Ableton / Bandlab / Cubase) 統合を加筆。
+    engine.js の architectural 変更は chouta-surface 担当という境界も追記。
+  - BACKLOG: BL-023 を新設 (P2, ARM 版 chouta-surface の UR44 driver 安定化を
+    Claude で調査するアイデア)。
+  - SESSION-LEDGER: 本エントリ追加。
+- セットアップ詳細:
+  - 不足ツールを winget で導入 (Node.js 24.16.0 / Python 3.12.10 / GitHub CLI
+    2.92.0)。pytest を pip --user で追加し stack-check の 2 SKIP を解消。
+  - User PATH に `Python\Python312\Scripts` と Claude CLI dir を恒久追加
+    (versioned path の課題は別途 shim 化、本セッション内で対応)。
+  - gh auth login (web) で `QuietBriony` 認証完了 (git-protocol https)。
+  - global git config: user.name=`QuietBriony`、user.email=
+    `62104069+QuietBriony@users.noreply.github.com`、init.defaultBranch=main、
+    pull.ff=only。
+  - `setup-new-pc.ps1 -MachineName studio-surface` 実行成功。5 repo clone +
+    Music repo の `music.machineName` 設定済。
+  - Claude project memory に 5 file (user / project=studio-surface / 2×feedback
+    [music-stack discipline + band-room noedit] / reference) を保存。
+- stack-check: PASS 15 / FAIL 0 / SKIP 0 (0 BAD)
+- 役割境界 (改めて):
+  - **やる**: UR44 試聴 + ear-verified iteration / DAW (Ableton/Bandlab/Cubase)
+    連携 / engine の音作りパラメータ微調整 PR
+  - **やらない**: engine.js architectural refactor、長時間 batch、Magenta
+    training、`band-room.*` ファイル編集 (別チャット担当)
+- 並走      : Band Room 別チャットが v264 → v271 を進行中 (v270 で生音 5/5、
+  v271 で section dynamics 拡幅)。本 PC では `band-room.*` 不変。
+- next       : UR44 接続待ち。接続後は (a) v263 build→fill→drop 試聴、
+  (b) BL-022 (v187 同時起動音 cap 24 の試聴判定)、(c) BL-004 (40Hz focus
+  depth 8% vs 5% A/B) — ear-verified 三本柱
+- blockers   : UR44 物理接続 (本 PC は Intel 版で driver は安定なので接続のみ)。
+  ARM 版 chouta-surface の UR44 driver 不安定問題は BL-023 へ。
+
+---
+
 ## 2026-05-23 — Hazama FM 「乗れない/退屈」連投の消化と magic-moment 機構の完成 (v246–v263)
 - agent     : Claude Code (Opus 4.7 / 1M context)
 - goal      : v244 試聴後のユーザー反応(「低音ピアノがまだ smear」「いいっちゃいい

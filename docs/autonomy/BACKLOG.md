@@ -101,6 +101,23 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - detail   : namima / chill / drum-floor を聴き比べ、次の tuning PR を 1 本だけ選ぶ
   人間レビュー。multi-repo 同時 tuning はしない。
 
+### BL-023 — ARM 版 `chouta-surface` の UR44 ドライバ安定化を調査
+- priority : P2
+- repo     : (stack / 非コード)
+- scope    : verify (ハードウェア / ドライバ調査)
+- agent    : claude (調査) + human (実機テスト)
+- human-gate: yes
+- source   : studio-surface セットアップ session (2026-05-25)
+- detail   : chouta-surface (ARM 版 Surface) では UR44 のドライバ / コネクタ
+  挙動が不安定 → 音作り iteration は intel 版 `studio-surface` に集約する
+  運用に。将来的に Claude で ARM 版 Windows + UR44 の driver 構成 (Steinberg
+  公式 ARM ドライバの有無、汎用 USB Audio Class 2 fallback、ASIO4ALL / Generic
+  USB Audio Class driver の挙動差、Windows on ARM の USB スタック制約等) を
+  調査し、chouta-surface でも UR44 接続が再現できるか確認。
+  実機テストは chouta-surface で行う必要があるため human-gate。
+  ※ 急がない (intel 版で運用が回るため)。chouta-surface での試聴ニーズが
+  発生したタイミングで着手。
+
 ### BL-019 — archive repo (namima-lab / test) の harvest 素材を翻訳取り込み
 - priority : P2
 - repo     : namima, Music

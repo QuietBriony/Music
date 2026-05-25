@@ -17,7 +17,7 @@ machineName は git config `music.machineName` に保存。
 | machineName | 役割 | 接続機材 | 主担当タスク | 状態 |
 |---|---|---|---|---|
 | `chouta-surface` | メイン開発機 | (汎用) | 全 engine.js 修正、agent autonomy session 主体、Hazama FM のロジック作業 | active |
-| `studio-surface` | 試聴・録音機 | Steinberg UR44 (USB Audio) + monitor speaker/headphone | engine の音作り ear-verified 微調整、stems 録音 confirm、DAW (Cubase / Logic 等) 統合 | planned |
+| `studio-surface` | 試聴・録音/DAW 機 (Intel) | Steinberg UR44 (USB Audio) + monitor speaker/headphone、Ableton / Bandlab (予定) | engine の音作り ear-verified 微調整、stems 録音 confirm、DAW 統合 (Ableton / Bandlab / Cubase) | active (2026-05-25 setup 完了、UR44 接続待ち) |
 | `worker-gaming` | 重タスク機 | GPU/CPU 高負荷向け gaming note PC | Magenta DrumsRNN fine-tune、大量 preset 自動生成、長時間 batch、audio rendering | future |
 
 `chouta-surface` は無印 (= machineName 未設定) も `chouta-surface` 扱い。
@@ -38,16 +38,19 @@ machineName は git config `music.machineName` に保存。
 - **強み**: 即応性、editor 慣れ、Claude project memory が一番充実、長文 doc
   生成。
 
-### `studio-surface` (UR44 PC)
+### `studio-surface` (UR44 PC、Intel Surface)
 
 - **メイン担当**: ear-verified iteration — engine の音作り (drop の強さ、
   build pad の vel、pianoMemory の echo wash 等) を実際のモニター環境で聞いて
   microscope レベルで微調整し PR 化。stems / drum kit の録音 confirm。
-  DAW 上で stems と engine の mix 比較。
+  DAW (Ableton / Bandlab / Cubase) 上で stems と engine の mix 比較。
 - **しない**: 大量 batch 処理、autonomy session 主体 (短い iteration メイン)、
-  Magenta モデル training (CPU が足りない or 時間がかかる)。
+  Magenta モデル training (CPU が足りない or 時間がかかる)。engine.js の
+  大規模 refactor (architectural な変更は chouta-surface 担当)。
 - **強み**: 物理スピーカー / モニターヘッドホン (PHONES 1/2)、低遅延、UR44 の
-  チャンネル分け (mic/inst 用) でレコーディング併用可能。
+  チャンネル分け (mic/inst 用) でレコーディング併用可能。**Intel CPU** で
+  UR44 driver / オーディオサブシステムが安定 (ARM 版 chouta-surface では
+  UR44 ドライバ不安定のためこちらで音作りする運用)。
 - **設定の注意**: UR44 を Windows 既定の音声出力に設定。dspMixFx で
   channel routing を確認。ASIO ドライバは DAW 使用時のみ必要 (ブラウザ
   audio は WASAPI 経由)。
