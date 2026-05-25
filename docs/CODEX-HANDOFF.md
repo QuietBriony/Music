@@ -350,7 +350,9 @@ question for the user. Standard ship discipline:
 - run 4 gates: check-band-room-logic / check-js / audit.py --expected-version / check-fm-route-badge
 - commit via Conventional Commit form, PR, squash-merge
 - watch gh run + curl deploy verify
-- preview-validate if applicable (use the recipe from v270 capture)
+- preview-validate if applicable (Claude Code: recipe in
+  `docs/MEASUREMENT-LOOP.md` §4 autonomous capture. **codex は preview
+  MCP 無いので人 ● REC 待ち** — `docs/MEASUREMENT-LOOP.md` §2 通り)
 
 # Standing constraints (CRITICAL — user-set)
 - 原音 (stems mode) は触らない — instrumentBus が AI 専用、stems は
