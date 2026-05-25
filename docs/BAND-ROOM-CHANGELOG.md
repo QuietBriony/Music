@@ -1,10 +1,98 @@
-# Band Room — Changelog (v65 → v269 compact)
+# Band Room — Changelog (v65 → v270 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v270 compact — Tone.js v14.8.49 loader バグ回避（jsDelivr 由来 Sampler を手動 pre-decode）
+
+ユーザー実機 AB: 「drum 以外は chord だけ聞こえる。bass、guitar、vocal が
+聞こえない」。
+
+### 原因（preview で再現確定）
+
+Tone.js v14.8.49 の `ToneAudioBuffer.load(url)` が **cdn.jsdelivr.net 由来
+の mp3 URL で必ず失敗**。エラーログ:
+
+```
+[Band Room] Tone.loaded() rejected: Error: could not load url:
+  https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/.../E2.mp3
+```
+
+同じ URL を:
+- `fetch()` で読み込む → 200、260 KB 取得 OK
+- `XMLHttpRequest` (Tone も内部で使用) → 200、260 KB OK
+- `AudioContext.decodeAudioData(buffer)` → duration 10.87 s、デコード OK
+- `Tone.context.decodeAudioData(buffer)` → 同様 OK
+- `Tone.ToneAudioBuffer.load(url)` → ❌ "could not load url"
+
+→ Tone.js loader の特定の挙動（リトライ、タイムアウト、コーデック判定の
+どれか）が jsDelivr のレスポンスで NG。`tonejs.github.io/audio/...` 経由の
+salamander-piano は通るので chord は鳴っていた。bass-electric + guitar-
+acoustic（共に jsDelivr 経由）だけが silent → 表面化。
+
+### v270 の修正（band-room.js）
+
+`makeVelocitySensitiveSampler` を **async** に変更、内部で **Tone の loader
+を完全バイパス**:
+
+```js
+async function preloadSamplerUrls(urls) {
+  const preloaded = {};
+  await Promise.all(Object.entries(urls).map(async ([note, url]) => {
+    try {
+      const res = await fetch(url);
+      const ab = await res.arrayBuffer();
+      const audio = await Tone.context.decodeAudioData(ab);
+      preloaded[note] = new Tone.ToneAudioBuffer(audio);  // 既デコード状態で wrap
+    } catch (e) { console.warn(...); /* skip — Sampler interpolates */ }
+  }));
+  return preloaded;
+}
+async function makeVelocitySensitiveSampler(opts) {
+  const preloaded = await preloadSamplerUrls(opts.urls);
+  const sampler = new Tone.Sampler({ urls: preloaded, ... });  // pre-decoded を渡す
+  ...
+}
+```
+
+`Tone.Sampler` は `urls` map の値として URL 文字列 / AudioBuffer /
+ToneAudioBuffer どれでも受ける（バッファ渡しなら内部 loader はスキップ）。
+preview で再検証: salamander + nbrosowsky 両方とも load OK、bass/guitar
+の Sampler が triggerAttackRelease で音を出す。
+
+### 連鎖更新
+
+`makeVelocitySensitiveSampler` を async にしたので、これを呼ぶ 4 つの
+maker (`makeSynthBass`, `makeGuitar`, `makeVoiceBox`, `makeChordSynth`)
+を全部 async 化、`startPlayback` と instrument-selector / profile-apply
+ハンドラの計 11 箇所で `await` を付与。`makeClick` は sample 不要なので
+sync のまま。`buildKitForSource` (drums online kit) は既に await 済。
+
+### 影響
+
+- 初回再生で全 Sampler サンプルを **並列 fetch+decode**（17 + 11 + 30 =
+  ~58 ノート、合計 ~10 MB）。並列実行なので 5-10 秒で完了。SW キャッシュ
+  後はオフライン instant。
+- v268 の `await Tone.loaded()` はそのまま（drums の `buildBaseKit` 内部の
+  Tone.loaded() を待つのに必要）。
+- 原音 (stems) 不変、master 不変。
+- v245-v269 の全ての音色 / groove / volume 改善が effective に。
+
+### 教訓
+
+「Sampler が silent」を 3 段階で疑え:
+1. URL serv 可能？ (HEAD-check)
+2. fetch + decodeAudioData 通る？
+3. Tone.ToneAudioBuffer.load 通る？
+
+3 だけ落ちるなら Tone 側のローダ問題 → 手動 pre-decode で回避可能。
+
+- `band-room.js?v=br-155`、`hazama-fm-v270`。
 
 ---
 
