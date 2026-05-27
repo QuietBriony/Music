@@ -1,10 +1,58 @@
-# Band Room — Changelog (v65 → v282 compact)
+# Band Room — Changelog (v65 → v284 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v284 compact — AI 再現 brightness EQ shift（measurement-driven、rolloff metric）
+
+v283 で `rolloff_p85_hz` を新規追加（`scripts/compare-capture.py`、PR #257）。
+autonomous capture で AI 再現 (human-fly, br-167 系) を計測したところ:
+
+| 指標 | AI 実測 | target full-mix | delta |
+|---|---|---|---|
+| centroid_avg_hz | 1387 Hz | 2402 Hz | -1016 Hz |
+| **rolloff_p85_hz** | **2442 Hz** | **5264 Hz** | **-2822 Hz** |
+| rms_dynamic_range_db | 9.0 dB | 8.7 dB | +0.3 dB ✓ |
+
+`rolloff` は 85 % の spectral energy がどの周波数以下に収まるかを返す。AI
+は 2442 Hz 以下に 85 % が集中 → v274 で +3 dB 持ち上げてた 4200 Hz 以上
+の high-shelf は **信号がない帯域をブーストしてた**。
+
+### 修正（band-room.js — `makeInstrumentPolishBus` EQ）
+
+```js
+// Before (v274)
+new Tone.EQ3({ ..., high: 3.0, highFrequency: 4200 });
+// After (v284)
+new Tone.EQ3({ ..., high: 3.0, highFrequency: 3000 });
+```
+
+`high` boost 量は据え置き（+3 dB）、shelf corner を 4200 → 3000 Hz に移動
+だけ。同じ +3 dB が信号の実在する帯域に着くので、centroid / rolloff の
+両方が持ち上がる予想。
+
+### 設計判断
+
+- **+ amount は据え置き**: 3 dB を 4 dB に上げる選択肢もあったが、
+  shelf 位置の修正だけで効くはず（measurement-driven）。効かなければ
+  次ラウンドで boost 量も検討。
+- **stems mode 不変**: instrumentBus は AI 専用、stems は stemBus 経由で
+  master 直結（ユーザ要望「原音いい感じだから変えないで」遵守）。
+- **master EQ 不変**: stems と共用なので触らない。
+- **DR は v275 で実測 9.0 vs target 8.7 = ±5 dB 内 OK**、巻き戻しなし。
+
+### 次の検証
+
+- autonomous capture で v283 と同条件再計測 → rolloff が target 寄り
+  （4000-5000 Hz 帯）へ動けば成功
+- 動かなければ boost 量 +1 dB or 別 instrument レベル EQ で検討
+
+- `band-room.js?v=br-166`、`hazama-fm-v284`。
 
 ---
 
