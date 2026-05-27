@@ -25,7 +25,9 @@ cross-repo merges.
 - `docs/repo-harvest-orchestra-workflow.md`: repeatable harvest review workflow
   for internal and external sources.
 - `docs/archive-repo-harvest-audit.md`: current harvest shelf for chill, test,
-  and namima-lab.
+  and namima-lab. (As of 2026-05-25, `test` and `namima-lab` harvest cycles are
+  closed via BL-019 — see `docs/autonomy/BACKLOG.md` Done section. Chill harvest
+  to runtime recipe was closed earlier via BL-012.)
 - `docs/chill-quiet-piano-trio-decision.md`: current docs-only decision that
   `chill` keeps quiet piano / trio ownership while Music keeps routing and
   production-intent references.

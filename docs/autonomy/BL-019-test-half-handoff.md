@@ -1,5 +1,18 @@
 # BL-019 test half — codex 用 handoff doc
 
+> **⚠️ 2026-05-25 closure**: BL-019 は a/b/c 三本すべて shipped 済 (Done)。
+> 本 doc は **歴史記録** として保管 — どう codex に handoff を構成したか、
+> どの target repo にどう翻訳したかの設計記録。
+> 実際の deliverable は以下:
+> - sub-task a (namima-lab → namima): `namima/docs/organic-pluck-lab-recipe.md` (namima PR #32 merged)
+> - sub-task b (test → Music): `Music/references/style-archetype-from-test.json` + `Music/docs/test-style-archetype-translation.md` (Music PR #249 merged)
+> - sub-task c (test → drum-floor): `drum-floor/docs/probability-interpolation-from-test.md` (drum-floor PR #52 merged)
+>
+> 新規 harvest task が出たら本 doc の構造 (Adopted/Deferred/Rejected matrix +
+> codex 用 1-shot prompt + 完了条件) をテンプレとして再利用可能。
+
+---
+
 `BACKLOG.md` BL-019 のうち、namima-lab → namima 半分 (sub-task a) は
 2026-05-25 chouta-surface session で shipped (namima PR #32)。
 
