@@ -17,6 +17,9 @@ Checks:
        (reset / reason / target / station-ident / bias for each program)
     7. genre-flavor.js per-builder synth volume settings
     8. LEVEL_BY_GENRE coverage
+    9. references/ schema (hazama-fm-pill-refs.json + apple-music-refs.json)
+       (pills coverage, required fields per pill, sub_styles required when v>=3,
+        apple-music-refs.json references array required fields)
 
 Exits with non-zero status if any BAD item found (CI-friendly).
 
@@ -281,6 +284,111 @@ for g, v in levels:
 status(known == listed, f"LEVEL_BY_GENRE covers all 7 pills")
 if known - listed:
     print(f"     missing: {sorted(known - listed)}")
+
+# 9. references/ schema integrity
+# Conditional: hazama-fm-pill-refs.json sub_styles are required only when
+# version >= 3. This lets the gate land independently of the PR that
+# introduced sub_styles (v2 files pass with relaxed checks).
+info("\n[9] references/ schema integrity")
+PILL_REFS_PATH = ROOT / "references/hazama-fm-pill-refs.json"
+APPLE_REFS_PATH = ROOT / "references/apple-music-refs.json"
+KNOWN_PILLS_FOR_REFS = {"any", "ambient", "techno", "lofi", "jazz", "funk", "piano"}
+
+try:
+    with open(PILL_REFS_PATH, encoding="utf-8") as f:
+        pill_refs = json.load(f)
+    pill_refs_is_obj = isinstance(pill_refs, dict)
+    status(pill_refs_is_obj, "hazama-fm-pill-refs.json: valid JSON object")
+    if pill_refs_is_obj:
+        version = pill_refs.get("version", 0)
+        version_int = isinstance(version, int) and version >= 2
+        status(version_int, f"hazama-fm-pill-refs.json: version is int >= 2 (got {version!r})")
+        pills = pill_refs.get("pills")
+        pills_is_obj = isinstance(pills, dict)
+        status(pills_is_obj, "hazama-fm-pill-refs.json: pills is object")
+        if pills_is_obj:
+            listed = set(pills.keys())
+            status(
+                KNOWN_PILLS_FOR_REFS == listed,
+                f"hazama-fm-pill-refs.json: pills covers all 7 "
+                f"(extra={sorted(listed - KNOWN_PILLS_FOR_REFS)}, "
+                f"missing={sorted(KNOWN_PILLS_FOR_REFS - listed)})",
+            )
+            required = [
+                "label",
+                "description",
+                "primary_references",
+                "production_axis_hints",
+                "ui_caption",
+            ]
+            for pill_name in sorted(KNOWN_PILLS_FOR_REFS & listed):
+                pill_data = pills[pill_name]
+                missing = [f for f in required if f not in pill_data]
+                status(
+                    not missing,
+                    f"hazama-fm-pill-refs.json: pill '{pill_name}' required fields "
+                    f"(missing={missing})",
+                )
+            # sub_styles (v3+ enforcement) — non-'any' pills require non-empty array
+            if isinstance(version, int) and version >= 3:
+                sub_required = ["name", "anchor_reference", "axis_emphasis", "note"]
+                for pill_name in sorted((KNOWN_PILLS_FOR_REFS - {"any"}) & listed):
+                    sub_styles = pills[pill_name].get("sub_styles", [])
+                    sub_ok = isinstance(sub_styles, list) and len(sub_styles) >= 1
+                    status(
+                        sub_ok,
+                        f"hazama-fm-pill-refs.json: pill '{pill_name}' sub_styles "
+                        f"(v3+) count={len(sub_styles) if isinstance(sub_styles, list) else 'N/A'}",
+                    )
+                    if isinstance(sub_styles, list):
+                        for i, ss in enumerate(sub_styles):
+                            if isinstance(ss, dict):
+                                missing_ss = [f for f in sub_required if f not in ss]
+                                if missing_ss:
+                                    status(
+                                        False,
+                                        f"hazama-fm-pill-refs.json: pill '{pill_name}' "
+                                        f"sub_styles[{i}] missing {missing_ss}",
+                                    )
+            else:
+                info(
+                    f"     sub_styles enforcement skipped "
+                    f"(version {version} < 3; will engage when v>=3 ships)"
+                )
+except Exception as e:
+    status(False, f"hazama-fm-pill-refs.json: {e}")
+
+try:
+    with open(APPLE_REFS_PATH, encoding="utf-8") as f:
+        apple_refs = json.load(f)
+    apple_is_obj = isinstance(apple_refs, dict)
+    status(apple_is_obj, "apple-music-refs.json: valid JSON object")
+    if apple_is_obj:
+        refs = apple_refs.get("references")
+        refs_ok = isinstance(refs, list) and len(refs) > 0
+        status(
+            refs_ok,
+            f"apple-music-refs.json: references list non-empty "
+            f"(count={len(refs) if isinstance(refs, list) else 'N/A'})",
+        )
+        if isinstance(refs, list):
+            ref_required = ["artist", "title", "genre_hint", "production_translation"]
+            bad_refs = []
+            for i, r in enumerate(refs):
+                if isinstance(r, dict):
+                    missing = [f for f in ref_required if f not in r]
+                    if missing:
+                        bad_refs.append((i, r.get("title", "?"), missing))
+            status(
+                not bad_refs,
+                f"apple-music-refs.json: all refs have required fields "
+                f"({len(refs) - len(bad_refs)}/{len(refs)})",
+            )
+            if bad_refs:
+                for i, t, m in bad_refs[:5]:
+                    print(f"     [{i}] {t}: missing {m}")
+except Exception as e:
+    status(False, f"apple-music-refs.json: {e}")
 
 # Summary
 if QUIET:
