@@ -78,7 +78,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-168-ai-recreation-stems", "Band Room should expose the current AI recreation stems version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-169-brightness-eq-recenter", "Band Room should expose the current brightness EQ recenter version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -103,10 +103,10 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">vertical room<\/button>/, "Band Room should expose the vertical-room preset button");
 assert.match(html, /band-room\.css\?v=br-81/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-168/, "Band Room HTML should reference the current JS cache marker");
-assert.match(sw, /hazama-fm-v285/, "Service worker should carry the current Band Room cache version");
+assert.match(html, /band-room\.js\?v=br-169/, "Band Room HTML should reference the current JS cache marker");
+assert.match(sw, /hazama-fm-v286/, "Service worker should carry the current Band Room cache version");
 assert.match(sw, /band-room\.css\?v=br-81/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-168/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-169/, "Service worker should precache the current Band Room JS marker");
 assert.match(source, /bandIds\.length === 1[\s\S]*br-album-plaque/, "Single-band registry should render a non-button album plaque");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/core\.js/, "Band Room should lazy-load Magenta only when AI fill is used");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/music_rnn\.js/, "Band Room should lazy-load Magenta RNN only when AI fill is used");

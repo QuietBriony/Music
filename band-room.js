@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-168-ai-recreation-stems";
+  const BANDROOM_APP_VERSION = "br-169-brightness-eq-recenter";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -293,16 +293,19 @@
   // without flattening drum transients (12 ms attack, 16% parallel wet).
   function makeInstrumentPolishBus(dest) {
     const input  = new Tone.Gain(1);
-    // v274 → v284: high shelf retuned. v274 boosted +3 dB above 4.2 kHz
-    // — but v283's autonomous capture (with the new rolloff_p85_hz
-    // metric) showed AI's rolloff is 2442 Hz vs target 5264 Hz. 85 % of
-    // the AI's energy lives BELOW 2.5 kHz, so the +3 dB shelf above 4.2
-    // kHz was boosting near-silence. v284 shifts the shelf corner from
-    // 4200 → 3000 Hz so the same +3 dB lands on signal that actually
-    // exists, expecting both centroid and rolloff to lift. Keeps the
-    // boost amount conservative — no extra shelf gain, just better
-    // placement. Stems mode bypasses this bus, so unaffected.
-    const eq     = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 3.0, lowFrequency: 160, highFrequency: 3000 });
+    // v274 → v284 → v286: high shelf retuned twice.
+    //   v274: +3 dB above 4.2 kHz — too high, boosted near-silence.
+    //   v284: shelf 4200 → 3000 Hz — fixed v274 dark, but v285's offline
+    //         renderer measurement showed AI brightness +863 Hz and
+    //         rolloff +1359 Hz vs target (tabasco/human-fly). v284
+    //         over-corrected: the +3 dB shelf at 3 kHz now lifts content
+    //         that was already at reference brightness.
+    //   v286: shelf 3000 → 3600 Hz — meets the prior shelf at the
+    //         midpoint, expecting brightness/rolloff to come down ~half-
+    //         way toward target without re-darkening. Boost amount
+    //         unchanged at +3 dB (single-knob discipline). Stems mode
+    //         bypasses this bus, so 原音 unaffected.
+    const eq     = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 3.0, lowFrequency: 160, highFrequency: 3600 });
     // v275: comp loosened to preserve dynamic range (measurement-driven).
     // Capture vs target showed DR 12.3 dB vs 33.6 dB (-21 dB gap). v271
     // section dynamics (5 dB swing) addressed the section layer, but the

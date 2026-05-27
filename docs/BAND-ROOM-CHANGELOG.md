@@ -1,10 +1,44 @@
-# Band Room — Changelog (v65 → v285 compact)
+# Band Room — Changelog (v65 → v286 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v286 compact — AI 再現 brightness EQ recenter（measurement-driven、v284 over-correction の解除）
+
+v285 の offline renderer（PR #262）で初の browser-free AI 再現 capture を取得。
+`scripts/compare-capture.py` が `tabasco/human-fly` に対して出した diff:
+
+| 指標 | AI - target | 評価 |
+|---|---|---|
+| bpm | +0.0 BPM | ✅ 完全一致 |
+| kick pocket avg | -2.2 ms | ✅ ±15 ms 余裕 |
+| tempo stability | -2.2 %-pt | △ 微 over (許容) |
+| brightness (centroid) | **+863.3 Hz** | ❌ AI bright 過ぎ |
+| rolloff p85 | **+1359.3 Hz** | ❌ AI 高域多すぎ |
+| dynamic range | +5.4 dB | △ 微 over (許容) |
+
+→ v284 (EQ corner 4200 → 3000 Hz) が逆方向に行き過ぎていた。+3 dB shelf が
+3 kHz から効くと、リファレンスより上の信号にも boost が乗る。
+
+修正: `makeInstrumentPolishBus` の EQ3 を 3000 → **3600 Hz** に戻す。
+
+```js
+const eq = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 3.0,
+                          lowFrequency: 160, highFrequency: 3600 });
+```
+
+3600 は v274 (4200) と v284 (3000) の中点。boost 量 (+3 dB) は据置で
+single-knob attribution を保つ。次 round の offline render で
+brightness/rolloff diff が半分くらいに縮むことを期待。
+
+stems mode (原音) は instrumentBus を経由しないので無影響。
+
+- `band-room.css?v=br-81`、`band-room.js?v=br-169`、`hazama-fm-v286`。
 
 ---
 
@@ -18,7 +52,7 @@ Adds a browser-free offline render path for the Human Fly AI recreation loop:
 - generated audio remains under ignored `presets/ai-recreation-stems/`; original `presets/tabasco-stems/` files are untouched
 - v284's AI-only brightness EQ shift is baked into the offline renderer's instrument polish approximation
 
-- `band-room.css?v=br-81`, `band-room.js?v=br-168`、`hazama-fm-v285`。
+- `band-room.css?v=br-81`、`band-room.js?v=br-168`、`hazama-fm-v285`。
 
 ---
 
