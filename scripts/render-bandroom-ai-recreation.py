@@ -253,17 +253,25 @@ def normalize_stems(
 
 
 def frequency_tilt(audio: np.ndarray) -> np.ndarray:
-    """Approximate Band Room v284 instrumentBus EQ for deterministic offline render."""
+    """Approximate Band Room v286 instrumentBus EQ for deterministic offline render.
+
+    Mirrors makeInstrumentPolishBus's EQ3 in band-room.js:
+      low: -0.8 dB below 160 Hz
+      mid: -0.6 dB from 160 Hz to 3600 Hz (v286: was 3000 Hz in v284/v285)
+      high: +3.0 dB above 3600 Hz (v286 EQ recenter — see BAND-ROOM-CHANGELOG)
+    Keeping this in sync with band-room.js is what makes the offline
+    renderer measurement-faithful. Bump together when the EQ corner moves.
+    """
     audio = ensure_stereo(audio)
     spectrum = np.fft.rfft(audio, axis=0)
     freqs = np.fft.rfftfreq(len(audio), 1.0 / SR)
     gain_db = np.zeros_like(freqs, dtype=np.float32)
     gain_db[freqs < 160.0] += -0.8
-    gain_db[(freqs >= 160.0) & (freqs < 3000.0)] += -0.6
-    high = freqs >= 3000.0
+    gain_db[(freqs >= 160.0) & (freqs < 3600.0)] += -0.6
+    high = freqs >= 3600.0
     gain_db[high] += 3.0
-    transition = (freqs >= 2400.0) & (freqs < 3000.0)
-    gain_db[transition] += 3.0 * ((freqs[transition] - 2400.0) / 600.0)
+    transition = (freqs >= 3000.0) & (freqs < 3600.0)
+    gain_db[transition] += 3.0 * ((freqs[transition] - 3000.0) / 600.0)
     gain = np.power(10.0, gain_db / 20.0)[:, None]
     return np.asarray(np.fft.irfft(spectrum * gain, n=len(audio), axis=0), dtype=np.float32)
 
