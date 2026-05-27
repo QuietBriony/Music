@@ -3,7 +3,7 @@
   "format": "band-registry",
   "purpose": "band-room.html が読み込む band 一覧と各バンドの曲カタログ。新バンド追加はここに entry 追加 + 該当 stems / drum-frames を所定パスに配置するだけ。",
   "policy": {
-    "stores_audio": "stems_dir 配下のみ (Demucs 分離 mp3, metadata-only)",
+    "stores_audio": "stems_dir / optional stems_variants.stems_dir 配下のみ (Demucs 分離 mp3 or local generated preview mp3)",
     "stores_lyrics_inline": false
   },
   "bands": {
@@ -13,6 +13,19 @@
       "vocalist": "user",
       "scene": "mixture rock (Backdrop Bomb / LCD Soundsystem hybrid)",
       "stems_dir": "presets/tabasco-stems",
+      "stems_variants": {
+        "ai_recreation": {
+          "label": "AI recreation",
+          "stems_dir": "presets/ai-recreation-stems/tabasco",
+          "songs": ["human-fly"],
+          "fallback_to_original": true,
+          "stems": {
+            "drums": "drums.mp3",
+            "bass": "bass.mp3",
+            "other": "other.mp3"
+          }
+        }
+      },
       "drum_frames_pattern": "presets/drum-frames-tabasco-{songid}.json",
       "lyrics_doc": "docs/tabasco-lyrics-final.md",
       "kit_profile_default": "cramps-punk",

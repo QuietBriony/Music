@@ -1,10 +1,24 @@
-# Band Room — Changelog (v65 → v284 compact)
+# Band Room — Changelog (v65 → v285 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v285 compact — AI 再現 offline renderer + stem variants
+
+Adds a browser-free offline render path for the Human Fly AI recreation loop:
+
+- `scripts/render-bandroom-ai-recreation.py tabasco human-fly` renders deterministic AI recreation `drums/bass/other` stems plus `mix.wav`
+- `mix.wav` can be fed directly to `scripts/compare-capture.py` for stable measurement-loop numbers without preview renderer hangs
+- Band Room stems mode gets an optional per-song `AI recreation` stem variant, with original stems as fallback for missing parts
+- generated audio remains under ignored `presets/ai-recreation-stems/`; original `presets/tabasco-stems/` files are untouched
+- v284's AI-only brightness EQ shift is baked into the offline renderer's instrument polish approximation
+
+- `band-room.css?v=br-81`, `band-room.js?v=br-168`、`hazama-fm-v285`。
 
 ---
 
@@ -53,6 +67,21 @@ new Tone.EQ3({ ..., high: 3.0, highFrequency: 3000 });
 - 動かなければ boost 量 +1 dB or 別 instrument レベル EQ で検討
 
 - `band-room.js?v=br-166`、`hazama-fm-v284`。
+
+---
+
+## v283 compact — album plaque and AI lazy-safe boot
+
+Keeps the Band Room original-stem surface responsive on mobile/PWA while leaving
+the current mastering defaults unchanged:
+
+- render the single `TABASCO` collection as a non-clickable album plaque
+- split START asset prep by mode: original mode loads only current song stems, AI mode loads only enabled AI parts
+- bound CDN sampler predecode concurrency and yield between decodes for mobile/PWA
+- load Magenta DrumsRNN and `@tonejs/midi` only when their advanced tools are used
+- cache bump: `band-room.css?v=br-80`, `band-room.js?v=br-166`
+
+- `hazama-fm-v283`
 
 ---
 

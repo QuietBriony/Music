@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-166-brightness-eq-shift";
+  const BANDROOM_APP_VERSION = "br-168-ai-recreation-stems";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -30,6 +30,9 @@
   const DRUM_FLOOR_URL = "https://quietbriony.github.io/drum-floor/";
   const MUSIC_STACK_PACKET_STORAGE_KEY = "qb:music-stack:latest-packet:v1";
   const MUSIC_STACK_CHANNEL_NAME = "qb:music-stack:v1";
+  const MAGENTA_CORE_URL = "https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/es6/core.js";
+  const MAGENTA_RNN_URL = "https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/es6/music_rnn.js";
+  const TONE_MIDI_URL = "https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.min.js";
 
   function hasSafeBootQuery() {
     try {
@@ -73,6 +76,7 @@
     pendingSeekOffsetSec: 0,
     playbackRateAtStart: 1,
     loadedStemDurationSec: 0,
+    stemVariant: "original",
     lastStemResyncAtMs: 0,
     chordIdx: 0,
     chordBarsRemaining: 0,
@@ -135,6 +139,7 @@
   let playbackHealthTimer = 0;
   let suspendReleaseTimers = [];
   let songSwitchSeq = 0;
+  let modeSwitchSeq = 0;
   let masterReverb = null;
   let masterWidener = null;
   let masterDryGain = null;
@@ -186,7 +191,12 @@
   // Original stem buses + Tone.Player instances (Demucs separated)
   let stemBus = { vocals: null, drums: null, bass: null, other: null };
   let stemPlayers = { vocals: null, drums: null, bass: null, other: null };
+  let loadedStemsSongId = null;
+  let loadedStemsVariant = null;
   let currentMode = "stems";  // "stems" | "synth"
+  const STEM_NAMES = ["vocals", "drums", "bass", "other"];
+  const samplerAudioBufferCache = new Map();  // URL -> Promise<AudioBuffer|null>
+  const runtimeScriptPromises = new Map();    // URL -> Promise<void>
 
   // Drum kit source (acoustic CDN kit default since v259; synth + sampled songs
   // remain selectable). v260: tone-acoustic listed first explicitly so the
@@ -537,6 +547,65 @@
 
   function shouldPreferBackgroundAudioBridge() {
     return isAppleMobileDevice();
+  }
+
+  function isMobileOrStandaloneRuntime() {
+    const nav = typeof navigator !== "undefined" ? navigator : {};
+    return isStandaloneDisplayMode() ||
+           isAppleMobileDevice() ||
+           /Android|Mobile/i.test(nav.userAgent || "") ||
+           (Number(nav.hardwareConcurrency) > 0 && Number(nav.hardwareConcurrency) <= 4);
+  }
+
+  function samplerDecodeConcurrency() {
+    return isMobileOrStandaloneRuntime() ? 2 : 4;
+  }
+
+  function yieldToUi() {
+    const delayMs = isMobileOrStandaloneRuntime() ? 24 : 8;
+    return new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+
+  function loadScriptOnce(src, globalCheck) {
+    if (typeof globalCheck === "function" && globalCheck()) return Promise.resolve();
+    if (runtimeScriptPromises.has(src)) return runtimeScriptPromises.get(src);
+    const promise = new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      const done = () => {
+        if (!globalCheck || globalCheck()) resolve();
+        else reject(new Error("runtime did not expose expected global"));
+      };
+      if (existing) {
+        existing.addEventListener("load", done, { once: true });
+        existing.addEventListener("error", () => reject(new Error("script load failed: " + src)), { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      script.onload = done;
+      script.onerror = () => reject(new Error("script load failed: " + src));
+      document.head.appendChild(script);
+    }).catch((e) => {
+      runtimeScriptPromises.delete(src);
+      throw e;
+    });
+    runtimeScriptPromises.set(src, promise);
+    return promise;
+  }
+
+  async function ensureMagentaRuntime() {
+    if (typeof window.mm !== "undefined") return window.mm;
+    await loadScriptOnce(MAGENTA_CORE_URL, () => typeof window.mm !== "undefined");
+    await loadScriptOnce(MAGENTA_RNN_URL, () => typeof window.mm?.MusicRNN !== "undefined");
+    return window.mm;
+  }
+
+  async function ensureMidiRuntime() {
+    if (typeof Midi !== "undefined") return Midi;
+    if (typeof window.Midi !== "undefined") return window.Midi;
+    await loadScriptOnce(TONE_MIDI_URL, () => typeof Midi !== "undefined" || typeof window.Midi !== "undefined");
+    return (typeof Midi !== "undefined") ? Midi : window.Midi;
   }
 
   function ensureBackgroundBridgeAudio() {
@@ -1572,19 +1641,39 @@
   // chord audible, bass + guitar silent. Fix: fetch + decodeAudioData per
   // note, wrap in Tone.ToneAudioBuffer, pass the buffer-map to Tone.Sampler
   // (it accepts ToneAudioBuffer values in its urls option).
+  async function decodedSamplerBuffer(url) {
+    if (!samplerAudioBufferCache.has(url)) {
+      samplerAudioBufferCache.set(url, (async () => {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const ab = await res.arrayBuffer();
+          const audio = await Tone.context.decodeAudioData(ab);
+          await yieldToUi();
+          return audio;
+        } catch (e) {
+          console.warn("[Band Room] sample preload failed (" + url + "):", e && e.message ? e.message : e);
+          return null;
+        }
+      })());
+    }
+    return samplerAudioBufferCache.get(url);
+  }
+
   async function preloadSamplerUrls(urls) {
     const preloaded = {};
-    await Promise.all(Object.entries(urls).map(async ([note, url]) => {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const ab = await res.arrayBuffer();
-        const audio = await Tone.context.decodeAudioData(ab);
-        preloaded[note] = new Tone.ToneAudioBuffer(audio);
-      } catch (e) {
-        console.warn("[Band Room] sample preload failed for " + note + " (" + url + "):", e && e.message ? e.message : e);
+    const entries = Object.entries(urls || {});
+    const limit = Math.max(1, Math.min(samplerDecodeConcurrency(), entries.length || 1));
+    let cursor = 0;
+    async function worker() {
+      while (cursor < entries.length) {
+        const [note, url] = entries[cursor++];
+        const audio = await decodedSamplerBuffer(url);
+        if (audio) preloaded[note] = new Tone.ToneAudioBuffer(audio);
+        await yieldToUi();
       }
-    }));
+    }
+    await Promise.all(Array.from({ length: limit }, worker));
     return preloaded;
   }
 
@@ -1594,6 +1683,7 @@
     const filter = new Tone.Filter({ frequency: maxCutoff, type: "lowpass", Q: 0.6 });
     // v270: pre-decode rather than passing raw URLs (see preloadSamplerUrls)
     const preloaded = await preloadSamplerUrls(opts.urls);
+    if (Object.keys(preloaded).length === 0) return null;
     const sampler = new Tone.Sampler({
       urls: preloaded,
       release: opts.baseRelease ?? 0.6,
@@ -1657,8 +1747,10 @@
           urls, baseRelease: 0.4, volume: -2,  // v269: +2 dB lift (was -4). After v267 made bass-electric the default, sample's natural decay envelope read quieter than the synth fat-saw fallback at v101 calibration — drums dominated. +2 dB rebalances toward drums without re-tuning the master or stems chains.
           minCutoff: 600, maxCutoff: 3200
         });
-        sampler.connect(post);
-        return withChainDispose(sampler, [post]);  // v229: also tear down post filter
+        if (sampler) {
+          sampler.connect(post);
+          return withChainDispose(sampler, [post]);  // v229: also tear down post filter
+        }
       }
     }
 
@@ -1702,6 +1794,8 @@
       stemPlayers[k] = null;
     });
     state.loadedStemDurationSec = 0;
+    loadedStemsSongId = null;
+    loadedStemsVariant = null;
   }
 
   function currentBand() {
@@ -1747,6 +1841,89 @@
     const band = currentBand();
     if (!Array.isArray(band?.songs)) return null;
     return band.songs.find((song) => song.id === songId) || null;
+  }
+
+  function stemVariantEntriesForSong(songId = state.currentSongId) {
+    const band = currentBand();
+    const entries = [{ key: "original", label: "original", original: true }];
+    const variants = band?.stems_variants;
+    if (!variants || typeof variants !== "object" || Array.isArray(variants)) return entries;
+    Object.entries(variants).forEach(([key, raw]) => {
+      if (!key || !raw || typeof raw !== "object" || Array.isArray(raw)) return;
+      const songs = Array.isArray(raw.songs) ? raw.songs : [];
+      if (songs.length > 0 && !songs.includes(songId)) return;
+      entries.push({ key, ...raw, label: raw.label || key });
+    });
+    return entries;
+  }
+
+  function selectedStemVariant(songId = state.currentSongId) {
+    const entries = stemVariantEntriesForSong(songId);
+    return entries.find((entry) => entry.key === state.stemVariant) || entries[0];
+  }
+
+  function stemVariantLabel(variant) {
+    return variant?.label || variant?.key || "original";
+  }
+
+  function syncStemVariantSelect(songId = state.currentSongId) {
+    const sel = $("br-stems-variant-select");
+    if (!sel) return selectedStemVariant(songId);
+    const entries = stemVariantEntriesForSong(songId);
+    const selected = entries.find((entry) => entry.key === state.stemVariant) || entries[0];
+    sel.innerHTML = "";
+    entries.forEach((entry) => {
+      const option = document.createElement("option");
+      option.value = entry.key;
+      option.textContent = stemVariantLabel(entry);
+      sel.appendChild(option);
+    });
+    state.stemVariant = selected.key;
+    sel.value = selected.key;
+    sel.disabled = entries.length <= 1;
+    return selected;
+  }
+
+  function originalStemUrl(stem, songId) {
+    const band = currentBand();
+    const stemsDir = band?.stems_dir || "presets/tabasco-stems";
+    return `${stemsDir}/${songId}/${stem}.mp3`;
+  }
+
+  function variantStemUrl(stem, songId, variant) {
+    if (!variant || variant.original) return originalStemUrl(stem, songId);
+    const stemMap = variant.stems && typeof variant.stems === "object" ? variant.stems : {};
+    const rawName = stemMap[stem];
+    if (!rawName) return null;
+    const raw = String(rawName)
+      .replace(/\{songid\}/g, songId)
+      .replace(/\{stem\}/g, stem)
+      .replace(/^\/+/, "");
+    if (/^(https?:|blob:|data:)/i.test(raw)) return raw;
+    const base = String(variant.stems_dir || "").replace(/\/+$/, "");
+    return base ? `${base}/${songId}/${raw}` : raw;
+  }
+
+  function stemLoadCandidates(stem, songId, variant) {
+    const original = originalStemUrl(stem, songId);
+    if (!variant || variant.original) return [{ url: original, source: "original", fallback: false }];
+    const primary = variantStemUrl(stem, songId, variant);
+    const candidates = [];
+    if (primary) candidates.push({ url: primary, source: variant.key, fallback: false });
+    if (variant.fallback_to_original !== false) {
+      candidates.push({ url: original, source: "original", fallback: true });
+    }
+    return candidates;
+  }
+
+  async function stemUrlAvailable(url) {
+    if (!url) return false;
+    try {
+      const head = await fetch(url, { method: "HEAD" });
+      return head.ok;
+    } catch (e) {
+      return false;
+    }
   }
 
   function songCatalogDurationSec(songId = state.currentSongId) {
@@ -1980,33 +2157,41 @@
       setStemsStatus("(no band loaded)");
       return false;
     }
-    setStemsStatus("loading stems…");
-    const stems = ["vocals", "drums", "bass", "other"];
-    const stemsDir = band.stems_dir || "presets/tabasco-stems";
-    const promises = stems.map(async (stem) => {
-      const url = `${stemsDir}/${songId}/${stem}.mp3`;
-      try {
-        const head = await fetch(url, { method: "HEAD" });
-        if (!head.ok) return null;
-        // Route via per-stem EQ chain (v66). EQ output already wired to:
-        //   - bus → master (drums/bass/other)
-        //   - vocalChorus (vocals)
-        const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
-        // v152: album-flow playback advances to the next track at song end.
-        // Keep stems non-looping so the audio does not wrap underneath.
-        const player = new Tone.Player({
-          url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: false
-        }).connect(target);
-        await Tone.loaded();
-        return { stem, player };
-      } catch (e) {
-        return null;
+    const variant = syncStemVariantSelect(songId);
+    const variantLabel = stemVariantLabel(variant);
+    setStemsStatus(variant.original ? "loading stems…" : `loading ${variantLabel} stems…`);
+    const promises = STEM_NAMES.map(async (stem) => {
+      const candidates = stemLoadCandidates(stem, songId, variant);
+      for (const candidate of candidates) {
+        try {
+          if (!(await stemUrlAvailable(candidate.url))) continue;
+          // Route via per-stem EQ chain (v66). EQ output already wired to:
+          //   - bus → master (drums/bass/other)
+          //   - vocalChorus (vocals)
+          const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
+          // v152: album-flow playback advances to the next track at song end.
+          // Keep stems non-looping so the audio does not wrap underneath.
+          const player = new Tone.Player({
+            url: candidate.url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: false
+          }).connect(target);
+          await Tone.loaded();
+          return { stem, player, source: candidate.source, fallback: candidate.fallback };
+        } catch (e) {
+          console.warn("[Band Room] stem candidate failed:", stem, candidate.url, e);
+        }
       }
+      return null;
     });
     const results = await Promise.all(promises);
     let loaded = 0;
+    let variantLoaded = 0;
+    let fallbackLoaded = 0;
     results.forEach((r) => {
-      if (r) { stemPlayers[r.stem] = r.player; loaded++; }
+      if (!r) return;
+      stemPlayers[r.stem] = r.player;
+      loaded++;
+      if (!variant.original && r.source === variant.key) variantLoaded++;
+      if (!variant.original && r.fallback) fallbackLoaded++;
     });
     state.loadedStemDurationSec = loadedStemDurationSec();
     updateSongTimelineDisplay();
@@ -2014,7 +2199,16 @@
       setStemsStatus("(stems not available — switch to AI 再現 mode)");
       return false;
     }
-    setStemsStatus(`stems loaded (${loaded}/4)`);
+    loadedStemsSongId = songId;
+    loadedStemsVariant = variant.key;
+    if (variant.original) {
+      setStemsStatus(`stems loaded (${loaded}/4)`);
+    } else if (variantLoaded > 0) {
+      const fallbackNote = fallbackLoaded > 0 ? `, ${fallbackLoaded} fallback` : "";
+      setStemsStatus(`stems loaded (${loaded}/4 · ${variantLabel}${fallbackNote})`);
+    } else {
+      setStemsStatus(`stems loaded (${loaded}/4 · ${variantLabel} missing, original fallback)`);
+    }
     return true;
   }
 
@@ -2050,6 +2244,57 @@
         try { player.stop(); } catch (e) {}
       }
     });
+  }
+
+  function synthPartEnabled(toggleId) {
+    return $(toggleId)?.checked === true;
+  }
+
+  async function ensureOnlineCatalogForSynth() {
+    if (state.onlineCatalog) return true;
+    try { await loadOnlineCatalog(); } catch (e) {}
+    if (state.onlineCatalog) return true;
+    const kitStatus = $("br-kit-status");
+    const msg = "online catalog unavailable — CDN instruments will fall back to synth";
+    if (kitStatus) kitStatus.textContent = "warning: " + msg;
+    console.warn("[Band Room] synth prep:", msg);
+    return false;
+  }
+
+  async function prepareSynthPlaybackAssets(reason = "start") {
+    ensureMaster();
+    await ensureOnlineCatalogForSynth();
+    const kitStatus = $("br-kit-status");
+    if (kitStatus && reason !== "toggle") kitStatus.textContent = "preparing AI...";
+    try {
+      if (synthPartEnabled("br-toggle-drums") && !drumKit) drumKit = await buildKitForSource(state.kitSource);
+      if (SYNTH_REBUILD_PARTS.bass && synthPartEnabled("br-toggle-bass") && !synthBass) synthBass = await makeSynthBass(bassBus);
+      if (SYNTH_REBUILD_PARTS.guitar && synthPartEnabled("br-toggle-guitar") && !guitarSynth) guitarSynth = await makeGuitar(guitarBus);
+      if (SYNTH_REBUILD_PARTS.voice && synthPartEnabled("br-toggle-voice") && !voiceSynth) voiceSynth = await makeVoiceBox(voiceBus);
+      if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && !chordSynth) chordSynth = await makeChordSynth(chordBus);
+      if (synthPartEnabled("br-toggle-click") && !clickSynth) clickSynth = makeClick(clickBus);
+      if (kitStatus && reason !== "toggle") kitStatus.textContent = "AI ready";
+      return true;
+    } catch (e) {
+      if (kitStatus) kitStatus.textContent = "AI prep failed: " + (e.message || e);
+      console.warn("[Band Room] AI prep failed:", e);
+      return false;
+    }
+  }
+
+  async function prepareStemPlaybackAssets(songId = state.currentSongId) {
+    ensureMaster();
+    const variant = selectedStemVariant(songId);
+    if (loadedStemsSongId === songId && loadedStemsVariant === variant.key && Object.values(stemPlayers).some(Boolean)) {
+      updateSongTimelineDisplay();
+      return true;
+    }
+    return loadStemsForSong(songId);
+  }
+
+  async function preparePlaybackAssetsForCurrentMode(reason = "start") {
+    if (currentMode === "synth") return prepareSynthPlaybackAssets(reason);
+    return prepareStemPlaybackAssets(state.currentSongId);
   }
 
   // ---- Sampled drum kit (Tone.Player per voice) ----------------
@@ -2267,8 +2512,11 @@
           urls, baseRelease: 0.5, volume: -4,  // v269: +2 dB lift (was -6). Same rebalance as bass — acoustic guitar samples sit quieter than the synth power-chord fallback.
           minCutoff: 1500, maxCutoff: 7000
         });
-        sampler.connect(chainIn);
-        return withChainDispose(sampler, [verb, lp, dist]);  // v229: tear down FX chain
+        if (sampler) {
+          sampler.connect(chainIn);
+          return withChainDispose(sampler, [verb, lp, dist]);  // v229: tear down FX chain
+        }
+        [verb, lp, dist].forEach((node) => { try { node && node.dispose && node.dispose(); } catch (e) {} });
       }
     }
 
@@ -2352,8 +2600,11 @@
           urls, baseRelease: 0.8, volume: -6,
           minCutoff: 1800, maxCutoff: 9000
         });
-        sampler.connect(verb);
-        return withChainDispose(sampler, [verb]);  // v229: tear down reverb
+        if (sampler) {
+          sampler.connect(verb);
+          return withChainDispose(sampler, [verb]);  // v229: tear down reverb
+        }
+        try { verb.dispose(); } catch (e) {}
       }
     }
 
@@ -2452,9 +2703,11 @@
           urls, baseRelease: 1.2, volume: -5,  // v269: +3 dB lift (was -8). Piano's natural decay reads especially quiet vs the held synth-pad it replaced (v262), so chord needs the largest bump of the three Samplers — but still kept under the bass/guitar level so the pad stays a background colour (v255/v257 intent).
           minCutoff: 2000, maxCutoff: 9000
         });
-        sampler.connect(chorus);
-        // v229: autoPan + chorus are started LFOs — tear the whole chain down.
-        return withChainDispose(sampler, [verb, autoPan, chorus]);
+        if (sampler) {
+          sampler.connect(chorus);
+          // v229: autoPan + chorus are started LFOs — tear the whole chain down.
+          return withChainDispose(sampler, [verb, autoPan, chorus]);
+        }
       }
     }
 
@@ -2704,6 +2957,7 @@
       if (switchSeq != null && switchSeq !== songSwitchSeq) return null;
       state.songData = data;
       state.currentSongId = songId;
+      syncStemVariantSelect(songId);
       state.barCount = 0;
       state.sectionIdx = 0;
       state.sectionBarStart = 0;
@@ -2753,6 +3007,26 @@
     document.querySelectorAll("#br-track-select button").forEach((b) => {
       b.setAttribute("aria-pressed", b.dataset.song === state.currentSongId ? "true" : "false");
     });
+  }
+
+  function setTrackSelectorBusy(isBusy, text = "") {
+    const group = $("br-track-select");
+    if (!group) return;
+    group.setAttribute("aria-busy", isBusy ? "true" : "false");
+    group.querySelectorAll("button[data-song]").forEach((btn) => {
+      btn.disabled = !!isBusy;
+    });
+    let status = group.querySelector(".br-track-status");
+    if (isBusy || text) {
+      if (!status) {
+        status = document.createElement("span");
+        status.className = "br-track-status";
+        group.appendChild(status);
+      }
+      status.textContent = text || "loading...";
+    } else if (status) {
+      status.remove();
+    }
   }
 
   function disposeAutoSelfKitForSongChange() {
@@ -2822,33 +3096,38 @@
     const switchSeq = ++songSwitchSeq;
     const wasPlaying = state.started;
     const keepBridge = wasPlaying && options.keepBackgroundBridge === true;
-    if (wasPlaying) {
-      if (options.fadeStems) {
-        Object.values(stemPlayers).forEach((p) => {
-          if (p) { try { p.stop(); } catch (e) {} }
-        });
-        await new Promise((resolve) => setTimeout(resolve, 320));
+    setTrackSelectorBusy(true, "loading track...");
+    try {
+      if (wasPlaying) {
+        if (options.fadeStems) {
+          Object.values(stemPlayers).forEach((p) => {
+            if (p) { try { p.stop(); } catch (e) {} }
+          });
+          await new Promise((resolve) => setTimeout(resolve, 320));
+        }
+        stopPlayback({ keepBackgroundBridge: keepBridge, updateMedia: false });
       }
-      stopPlayback({ keepBackgroundBridge: keepBridge, updateMedia: false });
-    }
 
-    const loaded = await loadSong(songId, { switchSeq });
-    if (switchSeq !== songSwitchSeq) return false;
-    if (!loaded) {
+      const loaded = await loadSong(songId, { switchSeq });
+      if (switchSeq !== songSwitchSeq) return false;
+      if (!loaded) {
+        syncTrackButtons();
+        if (keepBridge) stopBackgroundAudioBridge();
+        updateMediaSession("paused");
+        return false;
+      }
+      clearLoopRange();
+      refreshLoopVisuals();
       syncTrackButtons();
-      if (keepBridge) stopBackgroundAudioBridge();
-      updateMediaSession("paused");
-      return false;
+      renderPhraseTrigger();
+      disposeAutoSelfKitForSongChange();
+      if (wasPlaying && options.restart !== false) {
+        await startPlayback({ autoAdvance: options.autoAdvance === true });
+      }
+      return true;
+    } finally {
+      if (switchSeq === songSwitchSeq) setTrackSelectorBusy(false);
     }
-    clearLoopRange();
-    refreshLoopVisuals();
-    syncTrackButtons();
-    renderPhraseTrigger();
-    disposeAutoSelfKitForSongChange();
-    if (wasPlaying && options.restart !== false) {
-      await startPlayback({ autoAdvance: options.autoAdvance === true });
-    }
-    return true;
   }
 
   async function selectAdjacentSong(delta) {
@@ -4398,26 +4677,6 @@
       console.warn("[Band Room] Tone.start failed:", e);
     }
 
-    // v266: ensure the online-samples catalog is loaded before any kit /
-    // instrument is built. The catalog usually loads at boot via
-    // DOMContentLoaded → loadOnlineCatalog(), but if that fetch failed
-    // (network blip, 404, offline first visit) state.onlineCatalog stays
-    // null and EVERY CDN-default instrument silently falls back to synth:
-    //   drums  (v259 acoustic kit) → synth voices
-    //   chord  (v262 Salamander piano) → synth pad
-    //   guitar (v265 acoustic guitar) → synth power-chord
-    // …contradicting the "real samples by default" promise. Retry once
-    // on-demand; if it still fails show the user why so it isn't silent.
-    if (!state.onlineCatalog) {
-      try { await loadOnlineCatalog(); } catch (e) {}
-      if (!state.onlineCatalog) {
-        const kitStatus = $("br-kit-status");
-        const msg = "⚠️ online catalog unavailable — CDN instruments will fall back to synth";
-        if (kitStatus) kitStatus.textContent = msg;
-        console.warn("[Band Room] startPlayback:", msg);
-      }
-    }
-
     if (!state.songData) {
       await loadSong(state.currentSongId);
     }
@@ -4429,30 +4688,9 @@
 
     ensureMaster();
     const backgroundBridgeStart = startBackgroundAudioBridge();
-    if (!drumKit) drumKit = await buildKitForSource(state.kitSource);
-    if (!synthBass) synthBass = await makeSynthBass(bassBus);      // v270: async (sample pre-decode)
-    if (!guitarSynth) guitarSynth = await makeGuitar(guitarBus);   // v270: async
-    if (!voiceSynth) voiceSynth = await makeVoiceBox(voiceBus);    // v270: async
-    if (!chordSynth) chordSynth = await makeChordSynth(chordBus);  // v270: async
-    if (!clickSynth) clickSynth = makeClick(clickBus);             // sync — synth-only, no samples
+    if (currentMode === "synth") setButtonState("preparing-ai");
+    await preparePlaybackAssetsForCurrentMode("start");
     await backgroundBridgeStart;
-
-    // v268: wait for ALL Tone.Sampler-backed instruments (bass / guitar /
-    // chord / voice) to finish loading their CDN samples. buildKitForSource
-    // already awaits Tone.loaded() for the online drum kit, but the
-    // makeSynthBass / makeGuitar / makeVoiceBox / makeChordSynth functions
-    // return their Samplers synchronously without awaiting Tone.loaded() —
-    // so triggers fire before samples are decoded → SILENT bass/guitar/
-    // chord/voice. Surfaced as a regression after v267 made bass-electric
-    // the default (previously the synth-fallback path was used, which has
-    // no load step). One global await here covers every Sampler created
-    // above without rewriting the four maker functions to be async.
-    try { await Tone.loaded(); } catch (e) {
-      console.warn("[Band Room] Tone.loaded() rejected:", e);
-    }
-
-    // Load stems (if available for this song)
-    await loadStemsForSong(state.currentSongId);
 
     // v76: respect the tempo slider when starting (so re-start at 80% stays at 80%)
     const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
@@ -4819,12 +5057,142 @@
     if (s === "playing") {
       btn.textContent = "STOP";
       btn.setAttribute("aria-label", "Stop playback");
+    } else if (s === "preparing-ai") {
+      btn.textContent = "PREPARING AI";
+      btn.setAttribute("aria-label", "Preparing AI playback");
     } else if (s === "starting") {
       btn.textContent = "WARMING UP";
       btn.setAttribute("aria-label", "Starting");
     } else {
       btn.textContent = "START";
       btn.setAttribute("aria-label", "Start playback");
+    }
+  }
+
+  function syncModeRadioSelection(mode = currentMode) {
+    const radio = document.querySelector(`input[name=br-mode][value="${mode}"]`);
+    if (radio) radio.checked = true;
+  }
+
+  function setBodyPlaybackMode(mode = currentMode) {
+    if (document.body) document.body.dataset.mode = mode;
+  }
+
+  function stopStemLayerPlayback() {
+    stopStemPlayback();
+    stopExternalVocal();
+    ["drums", "bass", "other"].forEach((s) => stopExternalStem(s));
+  }
+
+  function startStemLayerPlayback(offsetSec) {
+    startStemPlayback(offsetSec);
+    startExternalVocalIfEnabled(offsetSec);
+    ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s, offsetSec));
+  }
+
+  async function switchStemVariant(variantKey) {
+    const next = variantKey || "original";
+    state.stemVariant = next;
+    const selected = syncStemVariantSelect(state.currentSongId);
+    if (selected.key !== next) return true;
+    loadedStemsSongId = null;
+    loadedStemsVariant = null;
+    if (currentMode !== "stems") return true;
+    const wasPlaying = state.started;
+    const offsetSec = wasPlaying ? playbackContentElapsedSec() : (state.pendingSeekOffsetSec || state.playbackStartOffsetSec || 0);
+    if (wasPlaying) stopStemLayerPlayback();
+    const ready = await prepareStemPlaybackAssets(state.currentSongId);
+    if (wasPlaying && ready) {
+      resetPlaybackClock(offsetSec);
+      startStemLayerPlayback(offsetSec);
+      setButtonState("playing");
+    }
+    return ready;
+  }
+
+  async function switchPlaybackMode(newMode) {
+    if (newMode !== "stems" && newMode !== "synth") return false;
+    const oldMode = currentMode;
+    if (newMode === oldMode) {
+      syncModeRadioSelection(oldMode);
+      return true;
+    }
+    if (state.starting && !state.started) {
+      syncModeRadioSelection(oldMode);
+      return false;
+    }
+    const switchSeq = ++modeSwitchSeq;
+
+    if (!state.started) {
+      currentMode = newMode;
+      setBodyPlaybackMode(currentMode);
+      syncModeRadioSelection(currentMode);
+      return true;
+    }
+
+    const busyText = newMode === "synth" ? "preparing AI..." : "loading stems...";
+    setTrackSelectorBusy(true, busyText);
+    if (newMode === "synth") {
+      setButtonState("preparing-ai");
+      const kitStatus = $("br-kit-status");
+      if (kitStatus) kitStatus.textContent = "preparing AI...";
+    } else {
+      setStemsStatus("loading stems...");
+    }
+
+    try {
+      if (newMode === "synth") {
+        const ready = await prepareSynthPlaybackAssets("mode-switch");
+        if (switchSeq !== modeSwitchSeq) return false;
+        if (!state.started) {
+          currentMode = "synth";
+          setBodyPlaybackMode(currentMode);
+          syncModeRadioSelection(currentMode);
+          setButtonState("idle");
+          return true;
+        }
+        if (!ready) throw new Error("AI assets unavailable");
+        const offsetSec = playbackContentElapsedSec();
+        stopStemLayerPlayback();
+        currentMode = "synth";
+        setBodyPlaybackMode(currentMode);
+        resetPlaybackClock(offsetSec);
+      } else {
+        const ready = await prepareStemPlaybackAssets(state.currentSongId);
+        if (switchSeq !== modeSwitchSeq) return false;
+        if (!state.started) {
+          currentMode = "stems";
+          setBodyPlaybackMode(currentMode);
+          syncModeRadioSelection(currentMode);
+          setButtonState("idle");
+          return true;
+        }
+        if (!ready) throw new Error("stems unavailable");
+        const offsetSec = playbackContentElapsedSec();
+        releaseSustainedSynths("mode-switch-stems");
+        currentMode = "stems";
+        setBodyPlaybackMode(currentMode);
+        resetPlaybackClock(offsetSec);
+        startStemLayerPlayback(offsetSec);
+      }
+      syncModeRadioSelection(currentMode);
+      setButtonState("playing");
+      return true;
+    } catch (e) {
+      console.warn("[Band Room] mode switch failed:", e);
+      currentMode = oldMode;
+      setBodyPlaybackMode(currentMode);
+      syncModeRadioSelection(currentMode);
+      setButtonState(state.started ? "playing" : "idle");
+      if (newMode === "synth") {
+        const kitStatus = $("br-kit-status");
+        if (kitStatus) kitStatus.textContent = "AI prep failed: " + (e.message || e);
+      } else {
+        setStemsStatus("stem load failed: " + (e.message || e));
+      }
+      return false;
+    } finally {
+      if (switchSeq === modeSwitchSeq) setTrackSelectorBusy(false);
     }
   }
 
@@ -4956,6 +5324,14 @@
       voiceToggleEl.addEventListener("change", syncVoiceVolEnabled);
       syncVoiceVolEnabled();
     }
+    ["drums", "bass", "guitar", "voice", "chords", "click"].forEach((part) => {
+      const el = $("br-toggle-" + part);
+      if (!el) return;
+      el.addEventListener("change", async () => {
+        if (!el.checked || currentMode !== "synth" || !state.started) return;
+        await prepareSynthPlaybackAssets("toggle");
+      });
+    });
 
     // Stem volume sliders
     ["vocals", "drums", "bass", "other"].forEach((stem) => {
@@ -5372,6 +5748,7 @@
       if (!f) return;
       setMidiImportStatus(`reading ${f.name}…`);
       try {
+        await ensureMidiRuntime();
         const buf = await f.arrayBuffer();
         const events = parseMidiFile(buf);
         if (!events || events.length === 0) {
@@ -5526,34 +5903,27 @@
       });
     }
 
-    // Mode radio (stems vs synth)
-    document.querySelectorAll("input[name=br-mode]").forEach((radio) => {
-      radio.addEventListener("change", () => {
-        if (!radio.checked) return;
-        const newMode = radio.value;
-        const oldMode = currentMode;
-        currentMode = newMode;
-        if (document.body) document.body.dataset.mode = currentMode;
-        // v109 fix: hot-swap audio when mode changes mid-playback.
-        // Without this, the previous mode's audio kept playing on top
-        // of the new mode → user heard both AI synth and original stems.
-        if (state.started && newMode !== oldMode) {
-          if (oldMode === "stems") {
-            // Switching to AI 再現 → stop all stem audio
-            stopStemPlayback();
-            stopExternalVocal();
-            ["drums", "bass", "other"].forEach((s) => stopExternalStem(s));
-          } else if (oldMode === "synth" && newMode === "stems") {
-            // Switching to 原音 → start stems from the exact transport position.
-            const offsetSec = playbackContentElapsedSec();
-            startStemPlayback(offsetSec);
-            startExternalVocalIfEnabled(offsetSec);
-            ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s, offsetSec));
-          }
+    const stemVariantSel = $("br-stems-variant-select");
+    if (stemVariantSel) {
+      stemVariantSel.addEventListener("change", async () => {
+        stemVariantSel.disabled = true;
+        try {
+          await switchStemVariant(stemVariantSel.value);
+        } finally {
+          syncStemVariantSelect(state.currentSongId);
         }
       });
+    }
+    syncStemVariantSelect(state.currentSongId);
+
+    // Mode radio (stems vs synth)
+    document.querySelectorAll("input[name=br-mode]").forEach((radio) => {
+      radio.addEventListener("change", async () => {
+        if (!radio.checked) return;
+        await switchPlaybackMode(radio.value);
+      });
     });
-    if (document.body) document.body.dataset.mode = currentMode;
+    setBodyPlaybackMode(currentMode);
   }
 
   // ---- Band registry loader -----------------------------------
@@ -5599,6 +5969,26 @@
     if (!group || !state.bandsRegistry) return;
     group.innerHTML = "";
     const bandIds = Object.keys(state.bandsRegistry.bands);
+    if (bandIds.length === 1) {
+      const band = state.bandsRegistry.bands[bandIds[0]];
+      group.dataset.mode = "album";
+      const plaque = document.createElement("div");
+      plaque.className = "br-album-plaque";
+      plaque.setAttribute("aria-label", "Album");
+      const label = document.createElement("span");
+      label.className = "br-album-plaque__label";
+      label.textContent = "album";
+      const title = document.createElement("span");
+      title.className = "br-album-plaque__title";
+      title.textContent = band?.name || bandIds[0];
+      plaque.appendChild(label);
+      plaque.appendChild(title);
+      group.appendChild(plaque);
+      renderTrackButtons();
+      updateSubtitle();
+      return;
+    }
+    group.dataset.mode = "selector";
     bandIds.forEach((bid) => {
       const band = state.bandsRegistry.bands[bid];
       const btn = document.createElement("button");
@@ -6628,13 +7018,24 @@
 
   async function loadDrumsRnn() {
     if (aiDrumRnnReady) return aiDrumRnn;
-    if (typeof mm === "undefined") {
+    let magenta = typeof mm !== "undefined" ? mm : (typeof window !== "undefined" ? window.mm : null);
+    if (!magenta?.MusicRNN) {
+      setAiFillStatus("loading Magenta runtime...");
+      try {
+        magenta = await ensureMagentaRuntime();
+      } catch (e) {
+        console.warn("[Band Room] Magenta runtime load failed:", e);
+        setAiFillStatus("error: @magenta/music not loaded (offline?)");
+        return null;
+      }
+    }
+    if (!magenta?.MusicRNN) {
       setAiFillStatus("error: @magenta/music not loaded (offline?)");
       return null;
     }
     setAiFillStatus("loading Magenta DrumsRNN model…");
     try {
-      aiDrumRnn = new mm.MusicRNN(
+      aiDrumRnn = new magenta.MusicRNN(
         "https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/drum_kit_rnn"
       );
       await aiDrumRnn.initialize();
@@ -6671,7 +7072,8 @@
         velocity: Math.round(clamp(evt.velocity ?? 0.5, 0, 1) * 127)
       });
     });
-    return new mm.NoteSequence({
+    const magenta = typeof mm !== "undefined" ? mm : (typeof window !== "undefined" ? window.mm : null);
+    return new magenta.NoteSequence({
       notes,
       totalQuantizedSteps: 16,
       quantizationInfo: { stepsPerQuarter: 4 }

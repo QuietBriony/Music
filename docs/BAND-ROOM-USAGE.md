@@ -112,6 +112,13 @@ Hazama FM の `band room →` から開くと、FM の genre に近い Band Room
 3. (オプション) 🥁 drum kit source で UNRIPE/Definition 等の本物 sample に差し替え
 4. START → 全部合成で曲が走る
 
+Human Fly のように vocal OFF で原音 stem の伴奏が欠ける曲は、
+`docs/AI-RECREATION-EXPORT.md` の offline export で `drums/bass/other`
+を mp3 stem 化し、`mix.wav` を `scripts/compare-capture.py` で測れます。
+原音 stems モードの `stem source` から `AI recreation` として A/B できます。
+これは原音復旧ではなく、Band Room の AI 再現を独立 stem として検証する
+ルートです。
+
 ### 3. 厚み出し — 本物 + AI レイヤ
 
 1. 📻 原音 stems モード (主役)

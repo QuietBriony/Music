@@ -7,6 +7,9 @@ const html = readFileSync("band-room.html", "utf8");
 const sw = readFileSync("sw.js", "utf8");
 const bandRoomManifest = JSON.parse(readFileSync("manifest-band-room.webmanifest", "utf8"));
 const bandsRegistry = JSON.parse(readFileSync("presets/bands.json", "utf8"));
+const aiRecreationRenderer = readFileSync("scripts/render-bandroom-ai-recreation.py", "utf8");
+const aiRecreationDoc = readFileSync("docs/AI-RECREATION-EXPORT.md", "utf8");
+const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
 
 const inertElement = () => ({
   addEventListener() {},
@@ -75,7 +78,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-166-brightness-eq-shift", "Band Room should expose the current AI brightness EQ-shift version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-168-ai-recreation-stems", "Band Room should expose the current AI recreation stems version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -99,6 +102,26 @@ assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor
 assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">vertical room<\/button>/, "Band Room should expose the vertical-room preset button");
+assert.match(html, /band-room\.css\?v=br-81/, "Band Room HTML should reference the current CSS cache marker");
+assert.match(html, /band-room\.js\?v=br-168/, "Band Room HTML should reference the current JS cache marker");
+assert.match(sw, /hazama-fm-v285/, "Service worker should carry the current Band Room cache version");
+assert.match(sw, /band-room\.css\?v=br-81/, "Service worker should precache the current Band Room CSS marker");
+assert.match(sw, /band-room\.js\?v=br-168/, "Service worker should precache the current Band Room JS marker");
+assert.match(source, /bandIds\.length === 1[\s\S]*br-album-plaque/, "Single-band registry should render a non-button album plaque");
+assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/core\.js/, "Band Room should lazy-load Magenta only when AI fill is used");
+assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/music_rnn\.js/, "Band Room should lazy-load Magenta RNN only when AI fill is used");
+assert.doesNotMatch(html, /@tonejs\/midi@2\.0\.28\/build\/Midi\.min\.js/, "Band Room should lazy-load @tonejs/midi only when MIDI import is used");
+assert.match(source, /async function preparePlaybackAssetsForCurrentMode\(/, "START should delegate to mode-specific asset preparation");
+assert.match(source, /async function prepareSynthPlaybackAssets\(/, "AI playback assets should have a dedicated lazy prep path");
+assert.match(source, /async function prepareStemPlaybackAssets\(/, "Original stems should have a dedicated prep path");
+assert.match(source, /samplerAudioBufferCache/, "AI sampler preload should cache decoded buffers");
+assert.match(source, /samplerDecodeConcurrency\(/, "AI sampler preload should use bounded decode concurrency");
+assert.match(source, /Object\.keys\(preloaded\)\.length === 0\) return null;/, "Failed AI sampler fetches should fall back without blocking START");
+assert.doesNotMatch(
+  source,
+  /if \(!drumKit\) drumKit = await buildKitForSource\(state\.kitSource\);[\s\S]*await loadStemsForSong\(state\.currentSongId\);/,
+  "Original START should not build the broad AI sampler graph and then load stems"
+);
 
 const firstSongIdForBand = windowMock.BandRoomTestHooks?.firstSongIdForBand;
 const adjacentSongIdInBand = windowMock.BandRoomTestHooks?.adjacentSongIdInBand;
@@ -122,7 +145,7 @@ assert.equal(adjacentSongIdInBand(tabascoBand, "missing", 1), null);
 assert.match(source, /currentSongId:\s*"tabasco"/, "Band Room should reload to track 01");
 assert.match(
   source,
-  /new Tone\.Player\(\{\s*url,\s*autostart:\s*false,\s*fadeIn:\s*0\.15,\s*fadeOut:\s*0\.30,\s*loop:\s*false/,
+  /new Tone\.Player\(\{\s*url:\s*candidate\.url,\s*autostart:\s*false,\s*fadeIn:\s*0\.15,\s*fadeOut:\s*0\.30,\s*loop:\s*false/,
   "Stem players should not loop the same song"
 );
 assert.match(source, /queueMicrotask/, "Auto-advance should not depend on requestAnimationFrame");
@@ -145,6 +168,31 @@ assert.match(source, /function guitarAgentPlan\(/, "Band Room should give guitar
 assert.match(source, /function voiceAgentPlan\(/, "Band Room should give vocal guide its own source-derived agent");
 assert.match(source, /function chordAgentPlan\(/, "Band Room should give chords their own source-derived agent");
 assert.match(source, /sourceAccentSteps\(ctx, \["kick", "snare", "crash", "ghost"\]/, "Guitar agent should react to original drum-frame accents");
+assert.match(html, /id="br-stems-variant-select"/, "Band Room should expose a stem variant selector for production AI recreation packs");
+assert.match(source, /function stemVariantEntriesForSong\(/, "Band Room should resolve optional per-song stem variants");
+assert.match(source, /function stemLoadCandidates\(/, "Band Room should build original fallback candidates for missing variant stems");
+assert.match(source, /fallback_to_original !== false/, "Stem variants should fall back to original stems unless explicitly disabled");
+assert.match(source, /loadedStemsVariant === variant\.key/, "Stem player cache should be keyed by both song and stem variant");
+assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
+assert.equal(bandsRegistry.bands?.tabasco?.stems_variants?.ai_recreation?.stems_dir, "presets/ai-recreation-stems/tabasco", "Human Fly AI recreation stems should use the local generated-stems mount");
+assert.equal(bandsRegistry.bands?.tabasco?.stems_variants?.ai_recreation?.stems?.drums, "drums.mp3", "AI recreation variant should point at renderer output stem names");
+assert.deepEqual(
+  bandsRegistry.bands?.tabasco?.stems_variants?.ai_recreation?.songs,
+  ["human-fly"],
+  "AI recreation stem variant should stay scoped to the Human Fly pilot"
+);
+assert.equal(bandsRegistry.bands?.tabasco?.stems_variants?.ai_recreation?.fallback_to_original, true, "AI recreation stem variant should fallback to original missing stems");
+assert.match(aiRecreationRenderer, /route": "source-derived-ai-recreation"/, "Offline AI recreation export should identify the same source-derived route");
+assert.match(aiRecreationRenderer, /parser\.add_argument\("band_id"/, "Offline AI recreation export should accept positional band id");
+assert.match(aiRecreationRenderer, /def snapped_offset\(/, "Offline AI recreation export should preserve kick-snapped timing logic");
+assert.match(aiRecreationRenderer, /push_s=-0\.010/, "Offline AI recreation export should preserve the Human Fly/cramps-punk bass push used for lock-in");
+assert.match(aiRecreationRenderer, /"bass_notes": 0, "guitar_strums": 0, "chord_stabs": 0/, "Offline AI recreation export should report independent part event counts");
+assert.match(aiRecreationRenderer, /target_karaoke_rms:\s*float\s*=\s*0\.093/, "Offline AI recreation export should keep the current Human Fly pilot loudness target");
+assert.match(aiRecreationRenderer, /"mix\.wav": output_metric/, "Offline AI recreation export should produce a compare-capture-ready mix.wav");
+assert.match(aiRecreationRenderer, /def instrument_polish\(/, "Offline AI recreation export should bake the v284 synth-only instrument polish into generated stems");
+assert.match(aiRecreationDoc, /render-bandroom-ai-recreation\.py/, "AI recreation export docs should document the offline renderer command");
+assert.match(aiRecreationDoc, /mix\.wav.*compare-capture\.py/, "AI recreation export docs should document direct compare-capture use");
+assert.match(aiRecreationDoc, /生成 mp3\/wav は私的な試聴\/検証用で、repo には追加しません。/, "AI recreation export docs should keep generated audio out of the repo");
 // v231: AI bass + guitar default to the internal synth. They used to
 // default to the "bass-electric" / "guitar-electric" catalog samplers, but
 // those stream from jsDelivr's mirror of nbrosowsky/tonejs-instruments —
@@ -438,8 +486,6 @@ assert.match(source, /const swingMs\s*=\s*isJazzySwing && isOffBeat8th \? 12 : 0
 }
 assert.match(source, /baseNotes = full\.length >= 4 \? \[full\[0\], full\[1\], full\[3\]\] : full/, "v224: jazz guitar must use shell voicings (root + 3rd + 7th, drop the 5th)");
 assert.match(source, /const jazzGrid\s*=\s*ctx\.role === "recap" \? \[0, 6, 10\] : \[0, 6\]/, "v225: jazz guitar comp must be sparse / syncopated (Charleston [0,6], recap adds sub 10)");
-const humanFly = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "human-fly");
-assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
 assert.equal(bandsRegistry.bands?.tabasco?.kit_profile_default, "cramps-punk", "v260: Tabasco's default kit profile aligned to cramps-punk (matches the band's actual cramps-style punk character; was 'default' which was the generic non-rock fallback)");
 assert.equal(bandsRegistry.reference_libraries?.unripe?.kit_profile_default, "cramps-punk", "v213: UNRIPE (hardcore postpunk) should recommend cramps-punk");
 const tabascoHey = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "hey");
