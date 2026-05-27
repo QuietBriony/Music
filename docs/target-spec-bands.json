@@ -38,9 +38,11 @@
           5619.2
         ],
         "centroid_avg_hz": 4156.7,
+        "rolloff_p85_hz": 7747.0,
         "rms_mean": 0.0729,
         "rms_peak_p95": 0.1582,
-        "rms_dynamic_range_db": 40.45
+        "rms_dynamic_range_db": 40.45,
+        "tempo_stability_pct": 4.6
       },
       "bass": {
         "bass_onset_count": 205,
@@ -50,6 +52,7 @@
       },
       "mix": {
         "centroid_avg_hz": 3147.3,
+        "rolloff_p85_hz": 6648.8,
         "rms_mean": 0.0924,
         "rms_peak_p95": 0.1486,
         "rms_dynamic_range_db": 12.38
@@ -87,9 +90,11 @@
           24589.9
         ],
         "centroid_avg_hz": 4581.3,
+        "rolloff_p85_hz": 7844.7,
         "rms_mean": 0.0355,
         "rms_peak_p95": 0.1062,
-        "rms_dynamic_range_db": 33.59
+        "rms_dynamic_range_db": 33.59,
+        "tempo_stability_pct": 3.58
       },
       "bass": {
         "bass_onset_count": 727,
@@ -99,6 +104,7 @@
       },
       "mix": {
         "centroid_avg_hz": 2867.8,
+        "rolloff_p85_hz": 6311.3,
         "rms_mean": 0.0836,
         "rms_peak_p95": 0.1361,
         "rms_dynamic_range_db": 10.76
@@ -136,9 +142,11 @@
           32763.4
         ],
         "centroid_avg_hz": 4399.1,
+        "rolloff_p85_hz": 7604.5,
         "rms_mean": 0.034,
         "rms_peak_p95": 0.1019,
-        "rms_dynamic_range_db": 51.54
+        "rms_dynamic_range_db": 51.54,
+        "tempo_stability_pct": 4.06
       },
       "bass": {
         "bass_onset_count": 981,
@@ -148,6 +156,7 @@
       },
       "mix": {
         "centroid_avg_hz": 2747.9,
+        "rolloff_p85_hz": 5898.7,
         "rms_mean": 0.0799,
         "rms_peak_p95": 0.1325,
         "rms_dynamic_range_db": 13.93
@@ -185,9 +194,11 @@
           18668.8
         ],
         "centroid_avg_hz": 4659.2,
+        "rolloff_p85_hz": 7800.4,
         "rms_mean": 0.0299,
         "rms_peak_p95": 0.082,
-        "rms_dynamic_range_db": 36.44
+        "rms_dynamic_range_db": 36.44,
+        "tempo_stability_pct": 5.13
       },
       "bass": {
         "bass_onset_count": 677,
@@ -197,6 +208,7 @@
       },
       "mix": {
         "centroid_avg_hz": 3052.2,
+        "rolloff_p85_hz": 6430.6,
         "rms_mean": 0.0766,
         "rms_peak_p95": 0.1275,
         "rms_dynamic_range_db": 12.4
@@ -234,9 +246,11 @@
           2275.6
         ],
         "centroid_avg_hz": 4867.4,
+        "rolloff_p85_hz": 8290.8,
         "rms_mean": 0.0635,
         "rms_peak_p95": 0.1094,
-        "rms_dynamic_range_db": 12.39
+        "rms_dynamic_range_db": 12.39,
+        "tempo_stability_pct": 7.26
       },
       "bass": {
         "bass_onset_count": 649,
@@ -246,6 +260,7 @@
       },
       "mix": {
         "centroid_avg_hz": 3589.6,
+        "rolloff_p85_hz": 7139.1,
         "rms_mean": 0.0957,
         "rms_peak_p95": 0.1337,
         "rms_dynamic_range_db": 7.06
@@ -283,9 +298,11 @@
           12422.7
         ],
         "centroid_avg_hz": 4263.2,
+        "rolloff_p85_hz": 7611.6,
         "rms_mean": 0.0326,
         "rms_peak_p95": 0.0853,
-        "rms_dynamic_range_db": 43.62
+        "rms_dynamic_range_db": 43.62,
+        "tempo_stability_pct": 6.32
       },
       "bass": {
         "bass_onset_count": 845,
@@ -295,6 +312,7 @@
       },
       "mix": {
         "centroid_avg_hz": 2402.3,
+        "rolloff_p85_hz": 5263.7,
         "rms_mean": 0.1103,
         "rms_peak_p95": 0.1657,
         "rms_dynamic_range_db": 8.73
@@ -332,9 +350,11 @@
           64087.1
         ],
         "centroid_avg_hz": 4026.6,
+        "rolloff_p85_hz": 7098.0,
         "rms_mean": 0.0245,
         "rms_peak_p95": 0.0846,
-        "rms_dynamic_range_db": 50.08
+        "rms_dynamic_range_db": 50.08,
+        "tempo_stability_pct": 4.02
       },
       "bass": {
         "bass_onset_count": 435,
@@ -344,6 +364,7 @@
       },
       "mix": {
         "centroid_avg_hz": 2002.1,
+        "rolloff_p85_hz": 4343.2,
         "rms_mean": 0.0873,
         "rms_peak_p95": 0.1602,
         "rms_dynamic_range_db": 18.22
@@ -383,9 +404,11 @@
           15325.2
         ],
         "centroid_avg_hz": 3691.0,
+        "rolloff_p85_hz": 6760.8,
         "rms_mean": 0.0785,
         "rms_peak_p95": 0.2009,
-        "rms_dynamic_range_db": 52.03
+        "rms_dynamic_range_db": 52.03,
+        "tempo_stability_pct": 3.97
       },
       "bass": {
         "bass_onset_count": 409,
@@ -395,6 +418,7 @@
       },
       "mix": {
         "centroid_avg_hz": 1875.7,
+        "rolloff_p85_hz": 4198.8,
         "rms_mean": 0.1792,
         "rms_peak_p95": 0.2514,
         "rms_dynamic_range_db": 15.83
@@ -432,9 +456,11 @@
           2229.1
         ],
         "centroid_avg_hz": 4267.8,
+        "rolloff_p85_hz": 7602.9,
         "rms_mean": 0.0781,
         "rms_peak_p95": 0.1721,
-        "rms_dynamic_range_db": 50.01
+        "rms_dynamic_range_db": 50.01,
+        "tempo_stability_pct": 6.5
       },
       "bass": {
         "bass_onset_count": 469,
@@ -444,6 +470,7 @@
       },
       "mix": {
         "centroid_avg_hz": 2358.0,
+        "rolloff_p85_hz": 5091.9,
         "rms_mean": 0.2003,
         "rms_peak_p95": 0.2616,
         "rms_dynamic_range_db": 11.34
@@ -481,9 +508,11 @@
           11610.0
         ],
         "centroid_avg_hz": 4259.2,
+        "rolloff_p85_hz": 7398.4,
         "rms_mean": 0.0521,
         "rms_peak_p95": 0.1584,
-        "rms_dynamic_range_db": 44.48
+        "rms_dynamic_range_db": 44.48,
+        "tempo_stability_pct": 5.53
       },
       "bass": {
         "bass_onset_count": 810,
@@ -493,6 +522,7 @@
       },
       "mix": {
         "centroid_avg_hz": 1996.0,
+        "rolloff_p85_hz": 4191.1,
         "rms_mean": 0.2021,
         "rms_peak_p95": 0.2484,
         "rms_dynamic_range_db": 4.66
@@ -530,9 +560,11 @@
           12167.3
         ],
         "centroid_avg_hz": 4289.1,
+        "rolloff_p85_hz": 7399.4,
         "rms_mean": 0.0708,
         "rms_peak_p95": 0.1753,
-        "rms_dynamic_range_db": 32.86
+        "rms_dynamic_range_db": 32.86,
+        "tempo_stability_pct": 4.13
       },
       "bass": {
         "bass_onset_count": 519,
@@ -542,6 +574,7 @@
       },
       "mix": {
         "centroid_avg_hz": 2255.1,
+        "rolloff_p85_hz": 4833.3,
         "rms_mean": 0.2181,
         "rms_peak_p95": 0.2583,
         "rms_dynamic_range_db": 3.1
@@ -579,9 +612,11 @@
           4945.9
         ],
         "centroid_avg_hz": 4672.3,
+        "rolloff_p85_hz": 7905.5,
         "rms_mean": 0.0831,
         "rms_peak_p95": 0.1804,
-        "rms_dynamic_range_db": 23.52
+        "rms_dynamic_range_db": 23.52,
+        "tempo_stability_pct": 7.31
       },
       "bass": {
         "bass_onset_count": 299,
@@ -591,6 +626,7 @@
       },
       "mix": {
         "centroid_avg_hz": 2396.6,
+        "rolloff_p85_hz": 5152.5,
         "rms_mean": 0.2072,
         "rms_peak_p95": 0.2522,
         "rms_dynamic_range_db": 4.51
@@ -628,9 +664,11 @@
           8730.7
         ],
         "centroid_avg_hz": 4316.4,
+        "rolloff_p85_hz": 7481.6,
         "rms_mean": 0.0513,
         "rms_peak_p95": 0.1632,
-        "rms_dynamic_range_db": 40.79
+        "rms_dynamic_range_db": 40.79,
+        "tempo_stability_pct": 3.9
       },
       "bass": {
         "bass_onset_count": 551,
@@ -640,6 +678,7 @@
       },
       "mix": {
         "centroid_avg_hz": 1991.4,
+        "rolloff_p85_hz": 4281.7,
         "rms_mean": 0.1945,
         "rms_peak_p95": 0.2451,
         "rms_dynamic_range_db": 4.88

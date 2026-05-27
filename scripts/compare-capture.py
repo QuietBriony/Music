@@ -52,14 +52,16 @@ def _band_onset_times(y: np.ndarray, sr: int, lo_hz: float, hi_hz: float) -> np.
 
 
 def _spectral_summary(y: np.ndarray, sr: int) -> dict:
-    """v273: mirror of analyze-band-stems.py — tone + dynamics."""
+    """v273 + v283: mirror of analyze-band-stems.py — tone + dynamics."""
     centroid = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
+    rolloff = librosa.feature.spectral_rolloff(y=y, sr=sr, roll_percent=0.85)[0]
     rms = librosa.feature.rms(y=y)[0]
     rms_p95 = float(np.percentile(rms, 95)) if len(rms) else 0.0
     rms_p10 = float(np.percentile(rms, 10)) if len(rms) else 0.0
     dr_db = 20 * np.log10(max(rms_p95, 1e-6) / max(rms_p10, 1e-6)) if rms_p10 > 1e-6 else 0.0
     return {
         "centroid_avg_hz": round(float(centroid.mean()) if len(centroid) else 0.0, 1),
+        "rolloff_p85_hz": round(float(rolloff.mean()) if len(rolloff) else 0.0, 1),
         "rms_mean": round(float(rms.mean()) if len(rms) else 0.0, 4),
         "rms_peak_p95": round(rms_p95, 4),
         "rms_dynamic_range_db": round(float(dr_db), 2),
@@ -99,6 +101,15 @@ def analyse_capture(path: Path) -> dict:
         kick_off_std = 0.0
 
     spectral = _spectral_summary(y, sr)
+    # v283: tempo stability from inter-beat-interval CV. Robotic ≈ 0 %,
+    # human band 1-3 %. Same calc as analyze-band-stems.py drum-stem path.
+    if len(beat_times) >= 4:
+        ibi = np.diff(beat_times)
+        ibi_mean = float(np.mean(ibi))
+        ibi_std = float(np.std(ibi))
+        tempo_stability_pct = (ibi_std / ibi_mean * 100) if ibi_mean > 1e-6 else 0.0
+    else:
+        tempo_stability_pct = 0.0
     return {
         "duration_sec": round(duration_sec, 2),
         "bpm": round(bpm, 2),
@@ -110,15 +121,24 @@ def analyse_capture(path: Path) -> dict:
         "rms_mean": spectral["rms_mean"],
         "rms_peak_p95": spectral["rms_peak_p95"],
         "rms_dynamic_range_db": spectral["rms_dynamic_range_db"],
+        # v283 additions
+        "rolloff_p85_hz": spectral["rolloff_p85_hz"],
+        "tempo_stability_pct": round(float(tempo_stability_pct), 2),
     }
 
 
 def _pick_field(entry: dict, k: str):
-    """v276: tone + dynamics live under entry['mix'] (full-mix, fair vs AI
-    capture which is also full-mix). Pocket/onset measures live under
-    entry['drums'] (drum stem, more accurate kick detection). Falls back
-    to drums-only if mix isn't present (older spec files)."""
-    mix_keys = {"centroid_avg_hz", "rms_mean", "rms_peak_p95", "rms_dynamic_range_db"}
+    """v276 + v283: tone keys (centroid / rolloff / rms / DR) live under
+    entry['mix'] (full-mix, fair vs AI capture). Pocket / BPM / tempo-
+    stability live under entry['drums']. Falls back to drums-only if
+    mix isn't present (older spec files)."""
+    mix_keys = {
+        "centroid_avg_hz",
+        "rolloff_p85_hz",  # v283
+        "rms_mean",
+        "rms_peak_p95",
+        "rms_dynamic_range_db",
+    }
     if k in mix_keys:
         v = entry.get("mix", {}).get(k)
         if v is not None:
@@ -128,15 +148,17 @@ def _pick_field(entry: dict, k: str):
 
 def resolve_target(spec: dict, key: str) -> dict | None:
     """Resolve 'band' (average across songs) or 'band/song' to a target dict.
-    Pocket/BPM from drums, tone/dynamics from mix (v276)."""
+    Pocket/BPM/tempo-stability from drums, tone/dynamics from mix (v276+v283)."""
     keys_we_want = (
         "bpm",
         "kick_offset_from_beat_avg_ms",
         "kick_offset_from_beat_std_ms",
         "centroid_avg_hz",
+        "rolloff_p85_hz",  # v283
         "rms_mean",
         "rms_peak_p95",
         "rms_dynamic_range_db",
+        "tempo_stability_pct",  # v283
     )
     if "/" in key:
         band, song = key.split("/", 1)
@@ -196,7 +218,11 @@ def main() -> int:
     print(f"  kick onsets    : {ai['kick_onset_count']}")
     print(f"  kick pocket avg: {ai['kick_offset_from_beat_avg_ms']:+.1f} ms "
           f"(std {ai['kick_offset_from_beat_std_ms']:.1f}ms)")
+    print(f"  tempo stability: {ai['tempo_stability_pct']:.2f}% "
+          f"(IBI CV; 0 = robotic, 1-3 = human)")
     print(f"  brightness     : {ai['centroid_avg_hz']:.0f} Hz (spectral centroid)")
+    print(f"  rolloff (p85)  : {ai['rolloff_p85_hz']:.0f} Hz "
+          f"(top-end character / 'air')")
     print(f"  loudness       : RMS mean {ai['rms_mean']:.3f}, peak {ai['rms_peak_p95']:.3f}")
     print(f"  dynamic range  : {ai['rms_dynamic_range_db']:.1f} dB")
 
@@ -209,15 +235,21 @@ def main() -> int:
     if target.get('kick_offset_from_beat_avg_ms') is not None:
         print(f"  kick pocket avg: {target['kick_offset_from_beat_avg_ms']:+.1f} ms "
               f"(std {target.get('kick_offset_from_beat_std_ms', 0):.1f}ms)")
+    if target.get('tempo_stability_pct') is not None:
+        print(f"  tempo stability: {target['tempo_stability_pct']:.2f}%")
     if target.get('centroid_avg_hz') is not None:
         print(f"  brightness     : {target['centroid_avg_hz']:.0f} Hz")
+    if target.get('rolloff_p85_hz') is not None:
+        print(f"  rolloff (p85)  : {target['rolloff_p85_hz']:.0f} Hz")
     if target.get('rms_dynamic_range_db') is not None:
         print(f"  dynamic range  : {target['rms_dynamic_range_db']:.1f} dB")
 
     print(f"\nDiff (AI - target):")
     print(f"  bpm            : {fmt_delta(ai['bpm'], target.get('bpm'), 'BPM')}")
     print(f"  kick pocket avg: {fmt_delta(ai['kick_offset_from_beat_avg_ms'], target.get('kick_offset_from_beat_avg_ms'))}")
+    print(f"  tempo stability: {fmt_delta(ai['tempo_stability_pct'], target.get('tempo_stability_pct'), '%-pt')}")
     print(f"  brightness     : {fmt_delta(ai['centroid_avg_hz'], target.get('centroid_avg_hz'), 'Hz')}")
+    print(f"  rolloff (p85)  : {fmt_delta(ai['rolloff_p85_hz'], target.get('rolloff_p85_hz'), 'Hz')}")
     print(f"  dynamic range  : {fmt_delta(ai['rms_dynamic_range_db'], target.get('rms_dynamic_range_db'), 'dB')}")
 
     # Quick verdict
@@ -228,13 +260,24 @@ def main() -> int:
     centroid_target = target.get('centroid_avg_hz')
     centroid_match = (centroid_target is not None
                       and abs(ai['centroid_avg_hz'] - centroid_target) / max(centroid_target, 1) < 0.30)  # within 30%
+    rolloff_target = target.get('rolloff_p85_hz')
+    rolloff_match = (rolloff_target is not None
+                     and abs(ai['rolloff_p85_hz'] - rolloff_target) / max(rolloff_target, 1) < 0.30)  # within 30%
     dr_target = target.get('rms_dynamic_range_db')
     dr_match = (dr_target is not None
                 and abs(ai['rms_dynamic_range_db'] - dr_target) < 5)  # within 5 dB
+    tempo_stability_target = target.get('tempo_stability_pct')
+    # Within 2 percentage points of the band's IBI CV target. The
+    # absolute number matters less than being in the same ballpark —
+    # we just want to flag "way more robotic" or "way more drifty."
+    stability_match = (tempo_stability_target is not None
+                       and abs(ai['tempo_stability_pct'] - tempo_stability_target) < 2.0)
     print()
     print(f"  BPM match              : {'OK' if bpm_match else 'OFF'}")
     print(f"  Pocket within 15 ms    : {'OK' if pocket_match else 'OFF'}")
+    print(f"  Tempo stability ±2 %-pt: {'OK' if stability_match else 'OFF'}")
     print(f"  Brightness within 30 %  : {'OK' if centroid_match else 'OFF'}")
+    print(f"  Rolloff within 30 %     : {'OK' if rolloff_match else 'OFF'}")
     print(f"  Dynamic range within 5dB: {'OK' if dr_match else 'OFF'}")
     return 0
 

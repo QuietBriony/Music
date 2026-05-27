@@ -96,12 +96,14 @@ def analyse_full_mix(song_dir: Path) -> dict | None:
 
 
 def _spectral_summary(y: np.ndarray, sr: int) -> dict:
-    """v273: tone + dynamics summary — added for AI 再現 vs real diff.
-    centroid_avg_hz characterises brightness (synth often dimmer or harsher
-    than real samples); rms_dynamic_range_db is the perceived-loudness
-    spread (procedural music is often flat — low DR — vs real songs which
-    breathe across sections)."""
+    """v273 + v283: tone + dynamics summary — added for AI 再現 vs real diff.
+    - centroid_avg_hz: brightness center (synth often dimmer or harsher than real samples)
+    - rolloff_p85_hz (v283): freq below which 85 % of spectral energy lives —
+      catches "air" / top-end character that centroid misses
+    - rms_dynamic_range_db: perceived-loudness spread (procedural music is
+      often flat — low DR — vs real songs which breathe across sections)."""
     centroid = librosa.feature.spectral_centroid(y=y, sr=sr)[0]
+    rolloff = librosa.feature.spectral_rolloff(y=y, sr=sr, roll_percent=0.85)[0]
     rms = librosa.feature.rms(y=y)[0]
     rms_max = float(rms.max()) if len(rms) else 0.0
     rms_mean = float(rms.mean()) if len(rms) else 0.0
@@ -111,6 +113,7 @@ def _spectral_summary(y: np.ndarray, sr: int) -> dict:
     dr_db = 20 * np.log10(max(rms_p95, 1e-6) / max(rms_p10, 1e-6)) if rms_p10 > 1e-6 else 0.0
     return {
         "centroid_avg_hz": round(float(centroid.mean()) if len(centroid) else 0.0, 1),
+        "rolloff_p85_hz": round(float(rolloff.mean()) if len(rolloff) else 0.0, 1),
         "rms_mean": round(rms_mean, 4),
         "rms_peak_p95": round(rms_p95, 4),
         "rms_dynamic_range_db": round(float(dr_db), 2),
@@ -142,6 +145,18 @@ def analyse_drum_stem(path: Path) -> dict:
         kick_offset_avg = 0.0
         kick_offset_std = 0.0
 
+    # v283: tempo stability — inter-beat interval coefficient of variation.
+    # Real humans drift 1-3 %, a stiff drum machine ≈ 0.1 %, an AI scheduler
+    # with humanize ±10 % typically lands 2-5 %. Useful diagnostic for the
+    # "feels robotic" vs "feels alive" axis.
+    if len(beat_times) >= 4:
+        ibi = np.diff(beat_times)
+        ibi_mean = float(np.mean(ibi))
+        ibi_std = float(np.std(ibi))
+        tempo_stability_pct = (ibi_std / ibi_mean * 100) if ibi_mean > 1e-6 else 0.0
+    else:
+        tempo_stability_pct = 0.0
+
     return {
         "duration_sec": round(duration_sec, 2),
         "bpm": round(bpm, 2),
@@ -156,9 +171,11 @@ def analyse_drum_stem(path: Path) -> dict:
         "snare_onsets_first_8_ms": [round(float(t) * 1000, 1) for t in snare_onsets[:8]],
         # v273: tone + dynamics (diagnoses AI vs real differences)
         "centroid_avg_hz": spectral["centroid_avg_hz"],
+        "rolloff_p85_hz": spectral["rolloff_p85_hz"],  # v283
         "rms_mean": spectral["rms_mean"],
         "rms_peak_p95": spectral["rms_peak_p95"],
         "rms_dynamic_range_db": spectral["rms_dynamic_range_db"],
+        "tempo_stability_pct": round(float(tempo_stability_pct), 2),  # v283
         # Private: full kick onsets for bass-lock calc (not written to JSON)
         "_kick_onsets_all_sec": kick_onsets.tolist(),
     }
@@ -267,6 +284,8 @@ def main() -> int:
               f"(kick {drum['kick_onset_count']} / snare {drum['snare_onset_count']} / hat {drum['hat_onset_count']})")
         print(f"  kick pocket   : avg {drum['kick_offset_from_beat_avg_ms']:+.1f} ms "
               f"(std {drum['kick_offset_from_beat_std_ms']:.1f}ms)")
+        print(f"  tempo stability: {drum['tempo_stability_pct']:.2f}% "
+              f"(IBI CV, 0 = robotic / 1-3 = human / 5 + = loose)")
 
         bass = None
         if bass_path.exists():
@@ -284,7 +303,8 @@ def main() -> int:
         mix = analyse_full_mix(song_dir)
         if mix:
             entry["mix"] = mix
-            print(f"  full-mix      : centroid {mix['centroid_avg_hz']:.0f} Hz, DR {mix['rms_dynamic_range_db']:.1f} dB")
+            print(f"  full-mix      : centroid {mix['centroid_avg_hz']:.0f} Hz, "
+                  f"rolloff {mix['rolloff_p85_hz']:.0f} Hz, DR {mix['rms_dynamic_range_db']:.1f} dB")
         out[band_id][song_id] = entry
 
     OUT_FILE.parent.mkdir(exist_ok=True)
