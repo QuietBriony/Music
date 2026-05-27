@@ -121,91 +121,115 @@ If you want it closer, tweak v264's `BASS_PUSH_BY_PROFILE["cramps-punk"]`
 - `mcp__Claude_Preview__preview_eval` — page 内で JS 実行
 - `mcp__Claude_Preview__preview_inspect`（任意）— DOM 確認
 
-### 手順
+### 手順 (v286+ DOM, 2026-05-27 update)
 
 ```
-1. preview_start({ url: "https://quietbriony.github.io/Music/band-room.html" })
-   または local file://、または npx serve.
+1. preview_start({ name: "music-static" })  # .claude/launch.json の config 使う
+   その後 preview_eval で `window.location.href = 'http://localhost:8130/band-room.html'`。
 
-2. ~3-5 秒待って instruments load 完了。preview_eval で
-   `document.readyState` を確認するか、`window.Tone` の有無を見る。
-
-3. AI 再現 mode に切替（hidden 0×0 radio なので preview_click 不可）:
+2. SW cache が古い version を返すことがあるので、初回はクリア:
    preview_eval({
-     code: `document.querySelector('input[name="br-mode"][value="ai"]').click();`
+     expression: `(async () => {
+       if ('serviceWorker' in navigator) {
+         for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
+       }
+       if ('caches' in window) {
+         for (const n of await caches.keys()) await caches.delete(n);
+       }
+       return 'cleared';
+     })()`
    })
+   その後 `location.reload()` で fresh fetch。
 
-4. 曲を選択:
+3. ~5 秒待って instruments load 完了。preview_eval で確認:
    preview_eval({
-     code: `document.querySelector('#br-song-select').value = 'human-fly';
-            document.querySelector('#br-song-select').dispatchEvent(new Event('change'));`
+     expression: `({
+       ready: document.readyState,
+       version: window.BandRoomTestHooks?.BANDROOM_APP_VERSION,
+       hasTone: typeof window.Tone !== 'undefined'
+     })`
    })
+   期待する br-NN が返ってくれば OK。
+
+4. 曲選択 + AI 再現 mode 切替（mode radio は hidden 0×0、song は button）:
+   preview_eval({
+     expression: `(() => {
+       Array.from(document.querySelectorAll('button[data-song]'))
+         .find(b => b.dataset.song === 'human-fly')?.click();
+       document.querySelector('input[name="br-mode"][value="synth"]').click();
+       return {
+         mode: document.querySelector('input[name="br-mode"]:checked').value,
+         song: document.querySelector('button[data-song].active')?.dataset.song
+       };
+     })()`
+   })
+   ※ v286+ で mode value は "ai" → "synth"、song select は <select> → button[data-song] に変わってる。
 
 5. START（audio context unlock は同 task 内で発火させる）:
-   preview_eval({
-     code: `document.getElementById('br-start-stop').click();`
-   })
+   preview_eval({ expression: `document.getElementById('br-play').click(); 'started'` })
+   ※ v286+ で ID は br-start-stop → br-play。
 
-6. ~3 秒待って drum loop が安定したのを確認:
+6. ~3-4 秒待って drum loop が安定したのを確認:
    preview_eval({
-     code: `document.getElementById('br-meter-fill').style.width;`
+     expression: `({
+       meter: document.getElementById('br-meter-fill').style.width,
+       state: document.getElementById('br-play').dataset?.state,
+       text: document.getElementById('br-play').textContent.trim()
+     })`
    })
-   非 0 % が返れば音が鳴っている（feedback_bandroom-preview-testing 参照）。
+   meter が非 0% で state="playing", text="STOP" なら鳴ってる。
 
-7. ● REC:
-   preview_eval({
-     code: `document.getElementById('br-rec-start').click();`
-   })
+7. ● REC（toggle ボタン1つに統合された）:
+   preview_eval({ expression: `document.getElementById('br-rec-toggle').click(); 'rec-on'` })
+   ※ v286+ で br-rec-start / br-rec-stop は br-rec-toggle 一本に統合。
 
-8. 10 秒待つ。AI 再現 playback は main thread を重くするので
+8. 10-12 秒待つ。AI 再現 playback は main thread を重くするので
    preview_eval は 30 秒以上の sleep を返さない（timeout）。短い録音
    推奨。
    - 短くした分、後で複数 capture を平均すると良い
+   - 19.8 秒で 3.8 MB の WAV になった実績あり (v286 capture)
 
-9. ■ STOP REC（timeout する可能性あり、action は queue されるので OK）:
-   preview_eval({
-     code: `document.getElementById('br-rec-stop').click();`,
-     timeout: 5000
-   })
+9. ■ STOP REC（同じ toggle ボタン押すと止まる）:
+   preview_eval({ expression: `document.getElementById('br-rec-toggle').click(); 'rec-off'` })
 
 10. **再生を必ず止める**（user 制約）:
-    preview_eval({
-      code: `document.getElementById('br-start-stop').click();`
-    })
+    preview_eval({ expression: `document.getElementById('br-play').click(); 'stopped'` })
 
-11. WAV blob を base64 で抜く:
+11. WAV blob を base64 で抜く。download link は #br-rec-download に確定保持される:
     preview_eval({
-      code: `(async () => {
-        const a = document.querySelector('a[href^="blob:"][download$=".wav"]');
-        if (!a) return 'NO_BLOB';
+      expression: `(async () => {
+        const a = document.getElementById('br-rec-download');
+        if (!a?.href) return 'NO_BLOB';
         const r = await fetch(a.href);
         const buf = await r.arrayBuffer();
         const u8 = new Uint8Array(buf);
-        let s = ''; for (let i=0; i<u8.length; i++) s += String.fromCharCode(u8[i]);
-        return btoa(s);
-      })();`
+        let s = '';
+        for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]);
+        return { size: u8.length, b64: btoa(s) };
+      })()`
     })
 
 12. **size 制限**: preview_eval の return は ~5 MB 超で tool-result
     ファイルに自動保存される
     （`C:\Users\<user>\.claude\projects\...\tool-results\mcp-Claude_Preview-preview_eval-*.txt`）。
-    file は JSON-quoted string なので leading/trailing `"` を strip
-    してから Base64 decode する。
+    structured object を返すと file は JSON で書かれる (string でない)。
 
-13. Python で wav 復元:
+13. Python で wav 復元（return が object なら json.loads、string なら strip('"')）:
     ```python
-    import base64, pathlib
-    raw = pathlib.Path("tool-result.txt").read_text().strip().strip('"')
-    pathlib.Path("capture.wav").write_bytes(base64.b64decode(raw))
+    import base64, json, pathlib
+    src = pathlib.Path("tool-result.txt").read_text(encoding='utf-8')
+    data = json.loads(src) if src.lstrip().startswith('{') else src.strip().strip('"')
+    b64 = data['b64'] if isinstance(data, dict) else data
+    pathlib.Path("captures/capture.wav").write_bytes(base64.b64decode(b64))
     ```
 
 14. 解析:
     ```
-    python -X utf8 scripts/compare-capture.py capture.wav tabasco/human-fly
+    python -X utf8 scripts/compare-capture.py captures/capture.wav tabasco/human-fly
     ```
 
-15. preview_stop() で chromium 終了。次の hypothesis を立てて ship、
-    繰り返し。
+15. preview_stop({ serverId: ... }) で chromium 終了。次の hypothesis を
+    立てて ship、繰り返し。
 ```
 
 ### 既知の hazard
@@ -225,12 +249,70 @@ If you want it closer, tweak v264's `BASS_PUSH_BY_PROFILE["cramps-punk"]`
   calibration が回せる
 - v270 capture / v274 capture はこの recipe で取得（v275 は WAV size
   でハングして測れず、v276 は target 側を fair 化）
+- v286 capture は新 DOM ID で再 capture (19.8s, 3.8 MB, hang 無し)
 
 ### この recipe が無い時の fallback (codex も含む)
 
 - 人が実機で ● REC → wav を path で渡す（MEASUREMENT-LOOP §2）
 - もしくは "ship done. user に capture 依頼" で session を一旦切る
 - diff 解釈は codex でも普通にできる
+
+---
+
+## 5. v286 finding — EQ shelf は wrong knob (重要)
+
+v274 (br-167 系) で「AI 再現 が暗い (rolloff 2442 Hz vs target 5264 Hz)」と
+判定 → v274/v284/v286 と 3 回 makeInstrumentPolishBus の EQ3 high shelf
+を弄って brightness を改善しようとした。結果:
+
+| ship | EQ corner | webapp rolloff | target との差 |
+|---|---|---|---|
+| v274 (=v283 capture) | 4200 Hz | 2442 Hz | -2822 Hz |
+| v286 (PR #264 capture) | 3600 Hz | 2517 Hz | **-2747 Hz** |
+
+→ EQ corner を **600 Hz 動かしても rolloff は 75 Hz しか変化しない**。
+
+Offline renderer (v285 ship, PR #262) でも同じ結論:
+- v285 baked (3000 Hz shelf): brightness +863 Hz / rolloff +1359 Hz vs target
+- v286 baked (3600 Hz shelf): brightness +875 Hz / rolloff +1409 Hz vs target
+
+両方とも shelf を動かしても 10 Hz レベルの変化しか出ない。
+
+### Root cause
+
+`makeInstrumentPolishBus` の EQ3 high band は `highFrequency` 以上の帯域に
++3 dB shelf を掛ける構造。これは「上に signal がある」前提の処理。
+
+でも AI 再現 の synth output は **元々 1-3 kHz に dominant content**、
+3 kHz 以上には ほぼ signal が乗っていない。なので shelf を 4200→3000→3600
+と動かしても、boost 対象が near-silence のままなので brightness が動かない。
+
+### Implication
+
+v274/v284/v286 は **wrong knob を動かしていた**。AI 再現 を brighten する
+には EQ shelf ではなく、signal の **上流側** で高域を作る必要がある:
+
+1. **synth waveform 変更** — sine/triangle → saw/pulse で harmonics 増やす
+2. **modulation 追加** — FM/AM で sidebands を生成
+3. **drum sample 選び直し** — cymbal/hat 帯が薄い可能性、kit profile 見直し
+4. **exciter / harmonic enhancer** — 上流で倍音を生成する処理を post-chain
+5. **target spec を fair 化** — Tabasco original mix の高域は gritty
+   guitar / tape sat / vintage 由来、synth-only AI 再現 で match するのが
+   そもそも非現実的かもしれない。target rolloff を 5264 Hz → 3500-4000 Hz
+   に下げて「synth-fair target」にする選択肢
+
+### Open question
+
+webapp と offline renderer の brightness が乖離している:
+- webapp v286: centroid 1422 Hz / rolloff 2517 Hz (dark)
+- offline render v286: centroid 3277 Hz / rolloff 6673 Hz (bright)
+
+renderer は song-track JSON + drum sample から render、webapp は live
+Tone.js agent 出力 → 信号源そのものが違う。renderer の brightness は
+drum sample の sample 自身の高域特性に引きずられている可能性が高い。
+
+→ webapp で測る (preview MCP) と renderer で測る (offline) は別ものとして
+扱う。webapp に変化を起こしたいなら webapp 側で measure。
 
 ---
 
