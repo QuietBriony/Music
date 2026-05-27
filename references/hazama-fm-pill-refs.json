@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "purpose": "Hazama FM GENRE pill ごとの音楽的参照を明示する。production parameter translation のみ、複製しない。",
+  "version": 3,
+  "purpose": "Hazama FM GENRE pill ごとの音楽的参照を明示する。production parameter translation のみ、複製しない。各 pill に sub_styles を持たせて、同 pill 内の design 北極星を複数化する (v3, 2026-05-27)。",
   "policy": {
     "stores_audio": false,
     "stores_lyrics": false,
@@ -72,6 +72,36 @@
         {
           "artist": "Biosphere",
           "title": "Novelty Waves"
+        },
+        {
+          "artist": "Tim Hecker",
+          "title": "In the Fog III"
+        }
+      ],
+      "sub_styles": [
+        {
+          "name": "ambient-emotional-air",
+          "anchor_reference": "Brian Eno — An Ending (Ascent)",
+          "axis_emphasis": ["emotional", "air", "long-form", "low-pressure"],
+          "note": "Hazama FM ambient pill の current default 寄り、namima safe baseline と整合"
+        },
+        {
+          "name": "ambient-warm-haze",
+          "anchor_reference": "Boards of Canada — Olson / Roygbiv",
+          "axis_emphasis": ["warm", "haze", "tape-memory", "filtered"],
+          "note": "low-cut で温度感、tape sat 軽め、長 release"
+        },
+        {
+          "name": "ambient-cold-space",
+          "anchor_reference": "Aphex Twin — Xtal / Huerco S.",
+          "axis_emphasis": ["cold", "space", "wide-stereo", "high-end-restraint"],
+          "note": "centroid やや高、reverb 長 decay、低域は薄く"
+        },
+        {
+          "name": "ambient-modern-drone",
+          "anchor_reference": "Tim Hecker — In the Fog III",
+          "axis_emphasis": ["drone", "saturation", "cathedral", "no-meter"],
+          "note": "tape sat 強め、cathedral reverb、low centroid。namima には適用しない (heavy low-end pressure 違反)"
         }
       ],
       "production_axis_hints": [
@@ -97,6 +127,20 @@
           "artist": "Aphex Twin",
           "title": "Donkey Rhubarb",
           "axis": "IDM wrongness を governor として薄く"
+        }
+      ],
+      "sub_styles": [
+        {
+          "name": "techno-detroit-emotional",
+          "anchor_reference": "Derrick May — Strings of Life",
+          "axis_emphasis": ["4-on-floor", "string-pad", "emotional", "long-form-build"],
+          "note": "Hazama FM techno pill の current default、弦パッド + 四つ打ち + long-form build"
+        },
+        {
+          "name": "techno-idm-wash",
+          "anchor_reference": "Aphex Twin — Donkey Rhubarb",
+          "axis_emphasis": ["idm-wrongness", "micro-shift", "cold-warm", "broken-grid"],
+          "note": "RDJ governor を強めに、tight 4/4 に micro-dropout を混ぜる"
         }
       ],
       "production_axis_hints": [
@@ -131,6 +175,32 @@
           "artist": "D Angelo",
           "title": "Voodoo",
           "axis": "behind-beat governor を強めに"
+        },
+        {
+          "artist": "J Dilla",
+          "title": "Two Can Win",
+          "album": "Donuts",
+          "axis": "drunken pocket / off-grid sample-cell rotation"
+        }
+      ],
+      "sub_styles": [
+        {
+          "name": "lofi-jazz-hop",
+          "anchor_reference": "Nujabes — Aruarian Dance",
+          "axis_emphasis": ["jazz-hop", "open-voicing", "memory-chord", "swing"],
+          "note": "Hazama FM lofi pill の current default、整列した humanized swing"
+        },
+        {
+          "name": "lofi-memory-warm",
+          "anchor_reference": "Nujabes — Feather",
+          "axis_emphasis": ["sad-warm", "walking-bass", "brush-ride", "EP-add9"],
+          "note": "EP voicing maj7/add9、brush ride 強め、tape memory delay"
+        },
+        {
+          "name": "lofi-drunken-pocket",
+          "anchor_reference": "J Dilla — Two Can Win",
+          "axis_emphasis": ["drunken-pocket", "off-grid", "sample-crunch", "behind-beat-strong"],
+          "note": "D Angelo governor を 0.10 → 0.18 程度に拡大、quantize 解除、micro-shift 強"
         }
       ],
       "production_axis_hints": [
@@ -162,6 +232,32 @@
           "artist": "D Angelo",
           "title": "Voodoo",
           "axis": "behind-beat governor を弱めに"
+        },
+        {
+          "artist": "Miles Davis",
+          "title": "So What",
+          "album": "Kind of Blue",
+          "axis": "modal-sparse / phrase-rest / low-density"
+        }
+      ],
+      "sub_styles": [
+        {
+          "name": "jazz-hard-bop",
+          "anchor_reference": "Art Blakey — Moanin",
+          "axis_emphasis": ["drum-led", "hard-bop", "break", "dynamic-build"],
+          "note": "Hazama FM jazz pill の drum-led 系統、break + build で energy"
+        },
+        {
+          "name": "jazz-modal-sparse",
+          "anchor_reference": "Miles Davis — So What",
+          "axis_emphasis": ["modal", "sparse", "phrase-rest", "low-density", "ride-led"],
+          "note": "D-Dorian modal pedal、low-density default (kick 0.25-0.30、ride 主体、snare ghost)"
+        },
+        {
+          "name": "jazz-trio-space",
+          "anchor_reference": "Bill Evans Trio — Peace Piece",
+          "axis_emphasis": ["open-voicing", "low-density", "rubato", "trio"],
+          "note": "piano-led trio、modal voicing 4th-stack、rubato 強め"
         }
       ],
       "production_axis_hints": [
@@ -190,6 +286,32 @@
           "artist": "D Angelo",
           "title": "Voodoo",
           "axis": "behind-beat governor を強めに (連続系譜)"
+        },
+        {
+          "artist": "Stevie Wonder",
+          "title": "Higher Ground",
+          "album": "Innervisions",
+          "axis": "clavinet rubber pocket / wah envelope / TONTO synth bass"
+        }
+      ],
+      "sub_styles": [
+        {
+          "name": "funk-live-band",
+          "anchor_reference": "Funkadelic — Maggot Brain",
+          "axis_emphasis": ["live-full-band", "behind-beat", "session-break", "horn-stab"],
+          "note": "Hazama FM funk pill の current default、live full band の breath + break"
+        },
+        {
+          "name": "funk-rubber-clavi",
+          "anchor_reference": "Stevie Wonder — Higher Ground",
+          "axis_emphasis": ["clavinet", "wah-envelope", "rubber-pocket", "synth-bass", "tight-grid"],
+          "note": "Clavinet + wah、ARP/TONTO synth bass、tight 16th hat、BL-014 funk voice work と整合"
+        },
+        {
+          "name": "funk-behind-beat-soul",
+          "anchor_reference": "D Angelo — Voodoo",
+          "axis_emphasis": ["behind-beat-strong", "neo-soul", "warm-saturation", "ghost-note"],
+          "note": "behind-beat governor 0.25 max、warm tape sat、ghost note 多め"
         }
       ],
       "production_axis_hints": [
@@ -218,7 +340,34 @@
           "axis": "open voicing + modal harmony + low-density"
         }
       ],
-      "secondary_references": [],
+      "secondary_references": [
+        {
+          "artist": "Erik Satie",
+          "title": "Gymnopédie No.1",
+          "album": "Trois Gymnopédies",
+          "axis": "minimalist + static harmony + breath-rest"
+        }
+      ],
+      "sub_styles": [
+        {
+          "name": "piano-impressionist",
+          "anchor_reference": "Debussy — Clair de Lune",
+          "axis_emphasis": ["impressionist", "rubato", "whole-tone", "pedal-wash"],
+          "note": "Hazama FM piano pill の current default、印象派 + rubato + pedal sustain"
+        },
+        {
+          "name": "piano-minimalist",
+          "anchor_reference": "Erik Satie — Gymnopédie No.1",
+          "axis_emphasis": ["minimalist", "static-harmony", "breath-rest", "low-velocity"],
+          "note": "静的和声、long-rest + low velocity (cap 0.55)、pianoMemory release 5-7s、ambient pill との橋渡し"
+        },
+        {
+          "name": "piano-jazz-voicing",
+          "anchor_reference": "Bill Evans Trio — Peace Piece",
+          "axis_emphasis": ["modal-voicing", "open-4th-stack", "low-density", "trio"],
+          "note": "jazz voicing (4th stack maj7 add9)、低密度 comping、jazz pill と相互参照"
+        }
+      ],
       "production_axis_hints": [
         "felt",
         "memory",
@@ -233,6 +382,7 @@
   "notes": [
     "primary_references は production_translation あり (apple-music-refs.json と紐付け)。",
     "secondary_references は governor 役 or 雰囲気の補助参照。",
+    "sub_styles (v3 追加, 2026-05-27) は同 pill 内の design 北極星を複数提示する。runtime には現状読まれない (fm.js が読むのは ui_caption のみ)。将来 genre-flavor.js が sub-style を bias 軸に取り込む際の素材、または各 builder の variation を作る時の reference として参照する。pill 名 / engine 動作は不変。",
     "ui_caption は UI 上で pill の下に表示する短い feel タグ (fm.js が読む)。artist 名は直接出さず、雰囲気の略語にする。",
     "全 pill に Richard D. James と D Angelo が production_aesthetic_governors として薄く効く。",
     "実装は genre-flavor.js の各 builder と presets/*.json で翻訳する。",
