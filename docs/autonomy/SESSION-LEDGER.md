@@ -19,6 +19,53 @@
 
 ---
 
+## 2026-05-25 — BL-023 ARM UR44 driver Web research 完了
+- agent      : Claude Code (chouta-surface, Opus 4.7 / 1M context)
+- goal       : codex が BL-019 を a/b/c 三本まとめて Done 化してくれた後、
+  チームの次手として codex `next:` で示唆されていた BL-023 (急がないが
+  docs-only で進められる調査タスク) を消化する
+- repos      : Music (docs only、`feature/bl-023-arm-ur44-research` worktree)
+- 並走対応   : Band Room 別チャットが本 worktree `C:\workspace\music-stack\Music`
+  で `fix/band-room-ai-lazy-safe` 上に band-room.* + sw.js 等の WIP を保持中
+  だったため、`git worktree add C:\workspace\music-stack\Music-bl023 -b
+  feature/bl-023-arm-ur44-research origin/main` で別 path に隔離して作業
+  (sibling WIP 非破壊)
+- shipped    :
+  - `docs/arm-ur44-driver-investigation.md` 新設 (190+ 行)
+    - 2026-05 時点のドライバエコシステム整理:
+      - **Yamaha Steinberg USB Driver V2.1.9**: ARM64 native は IXO series のみ、
+        UR44 は非対応見込み (2014 年発売の旧モデル)
+      - **Microsoft 新 in-box USB Audio Class 2 driver (native ASIO 内蔵)**:
+        Qualcomm + Yamaha 共同開発、2026 中後半 Windows Insider Canary で preview
+        配布予定、ARM64 ターゲット、open source @ `aka.ms/asio`、UR44 は USB Audio
+        Class 2 compliant なので plug-and-play 動作見込み — **chouta-surface での
+        UR44 安定化の最も筋の良い path**
+      - **ASIO4ALL v2.20**: ARM64 native 無し、x64 emulation 経由、fallback 用途
+    - chouta-surface での試行順序 step 1-4 (Windows 標準 → Steinberg x64 emul →
+      Microsoft 新 driver Canary → ASIO4ALL fallback)
+    - 判定 matrix §4: 「急ぎ度 低、UR44 公式 ARM64 見込み薄、Microsoft 新 driver
+      が現実的 path、chouta-surface を直接 Canary 化するのは非推奨」
+    - human-gate test checklist §5 (user が実機で確認する項目チェックリスト)
+  - `docs/autonomy/BACKLOG.md` BL-023 status を `open` → `wip — Web research
+    完了、実機テスト step 1-2 待ち、step 3 は Microsoft 新 driver Canary 配布待ち`
+  - 本 SESSION-LEDGER エントリ
+- stack-check: PASS 15 / FAIL 0 / SKIP 0 (`node scripts/stack-check.mjs`)
+- backlog    : BL-023 を `wip — Web research 完了` に。実機テスト human-gate で
+  保留。Microsoft 新 driver Canary 配布が来たら step 3 を user が試して結果記録 →
+  BL-023 を `## Done` へ
+- next       : (a) BL-022 / BL-004 の試聴判定 (user) を待つ、待ち時間は docs 整理、
+  (b) 残る P2 / icebox の中で chouta-surface 適合・docs-only で進められる item を
+  探す (現状の active P2: BL-003 human-only / BL-006 human-only / BL-008 icebox)、
+  (c) 新規 task として「BL-022 PR #139 cap 24 がだめだった時の次手 (lookAhead /
+  latencyHint) パッチを別 branch で温める」case を検討
+- blockers   : 実機テスト human-gate (user が UR44 を chouta-surface に接続して
+  step 1-2 を試す必要)、Microsoft 新 driver の Canary 配布タイミング
+- 学び       : sibling Band Room session の WIP がメイン worktree に居る場合は
+  `git worktree add` で別 path に隔離するのが安全 (memory: feedback_parallel-sessions
+  「never run destructive git」と整合)
+
+---
+
 ## 2026-05-25 — BL-019 test half 完了 (Music PR #249 / drum-floor PR #52)
 - agent      : Codex desktop
 - goal       : BL-019 の残り test half を、runtime copy ではなく target repo の
