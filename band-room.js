@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-166-ai-lazy-safe";
+  const BANDROOM_APP_VERSION = "br-168-ai-recreation-stems";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -76,6 +76,7 @@
     pendingSeekOffsetSec: 0,
     playbackRateAtStart: 1,
     loadedStemDurationSec: 0,
+    stemVariant: "original",
     lastStemResyncAtMs: 0,
     chordIdx: 0,
     chordBarsRemaining: 0,
@@ -191,7 +192,9 @@
   let stemBus = { vocals: null, drums: null, bass: null, other: null };
   let stemPlayers = { vocals: null, drums: null, bass: null, other: null };
   let loadedStemsSongId = null;
+  let loadedStemsVariant = null;
   let currentMode = "stems";  // "stems" | "synth"
+  const STEM_NAMES = ["vocals", "drums", "bass", "other"];
   const samplerAudioBufferCache = new Map();  // URL -> Promise<AudioBuffer|null>
   const runtimeScriptPromises = new Map();    // URL -> Promise<void>
 
@@ -1792,6 +1795,7 @@
     });
     state.loadedStemDurationSec = 0;
     loadedStemsSongId = null;
+    loadedStemsVariant = null;
   }
 
   function currentBand() {
@@ -1837,6 +1841,89 @@
     const band = currentBand();
     if (!Array.isArray(band?.songs)) return null;
     return band.songs.find((song) => song.id === songId) || null;
+  }
+
+  function stemVariantEntriesForSong(songId = state.currentSongId) {
+    const band = currentBand();
+    const entries = [{ key: "original", label: "original", original: true }];
+    const variants = band?.stems_variants;
+    if (!variants || typeof variants !== "object" || Array.isArray(variants)) return entries;
+    Object.entries(variants).forEach(([key, raw]) => {
+      if (!key || !raw || typeof raw !== "object" || Array.isArray(raw)) return;
+      const songs = Array.isArray(raw.songs) ? raw.songs : [];
+      if (songs.length > 0 && !songs.includes(songId)) return;
+      entries.push({ key, ...raw, label: raw.label || key });
+    });
+    return entries;
+  }
+
+  function selectedStemVariant(songId = state.currentSongId) {
+    const entries = stemVariantEntriesForSong(songId);
+    return entries.find((entry) => entry.key === state.stemVariant) || entries[0];
+  }
+
+  function stemVariantLabel(variant) {
+    return variant?.label || variant?.key || "original";
+  }
+
+  function syncStemVariantSelect(songId = state.currentSongId) {
+    const sel = $("br-stems-variant-select");
+    if (!sel) return selectedStemVariant(songId);
+    const entries = stemVariantEntriesForSong(songId);
+    const selected = entries.find((entry) => entry.key === state.stemVariant) || entries[0];
+    sel.innerHTML = "";
+    entries.forEach((entry) => {
+      const option = document.createElement("option");
+      option.value = entry.key;
+      option.textContent = stemVariantLabel(entry);
+      sel.appendChild(option);
+    });
+    state.stemVariant = selected.key;
+    sel.value = selected.key;
+    sel.disabled = entries.length <= 1;
+    return selected;
+  }
+
+  function originalStemUrl(stem, songId) {
+    const band = currentBand();
+    const stemsDir = band?.stems_dir || "presets/tabasco-stems";
+    return `${stemsDir}/${songId}/${stem}.mp3`;
+  }
+
+  function variantStemUrl(stem, songId, variant) {
+    if (!variant || variant.original) return originalStemUrl(stem, songId);
+    const stemMap = variant.stems && typeof variant.stems === "object" ? variant.stems : {};
+    const rawName = stemMap[stem];
+    if (!rawName) return null;
+    const raw = String(rawName)
+      .replace(/\{songid\}/g, songId)
+      .replace(/\{stem\}/g, stem)
+      .replace(/^\/+/, "");
+    if (/^(https?:|blob:|data:)/i.test(raw)) return raw;
+    const base = String(variant.stems_dir || "").replace(/\/+$/, "");
+    return base ? `${base}/${songId}/${raw}` : raw;
+  }
+
+  function stemLoadCandidates(stem, songId, variant) {
+    const original = originalStemUrl(stem, songId);
+    if (!variant || variant.original) return [{ url: original, source: "original", fallback: false }];
+    const primary = variantStemUrl(stem, songId, variant);
+    const candidates = [];
+    if (primary) candidates.push({ url: primary, source: variant.key, fallback: false });
+    if (variant.fallback_to_original !== false) {
+      candidates.push({ url: original, source: "original", fallback: true });
+    }
+    return candidates;
+  }
+
+  async function stemUrlAvailable(url) {
+    if (!url) return false;
+    try {
+      const head = await fetch(url, { method: "HEAD" });
+      return head.ok;
+    } catch (e) {
+      return false;
+    }
   }
 
   function songCatalogDurationSec(songId = state.currentSongId) {
@@ -2070,33 +2157,41 @@
       setStemsStatus("(no band loaded)");
       return false;
     }
-    setStemsStatus("loading stems…");
-    const stems = ["vocals", "drums", "bass", "other"];
-    const stemsDir = band.stems_dir || "presets/tabasco-stems";
-    const promises = stems.map(async (stem) => {
-      const url = `${stemsDir}/${songId}/${stem}.mp3`;
-      try {
-        const head = await fetch(url, { method: "HEAD" });
-        if (!head.ok) return null;
-        // Route via per-stem EQ chain (v66). EQ output already wired to:
-        //   - bus → master (drums/bass/other)
-        //   - vocalChorus (vocals)
-        const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
-        // v152: album-flow playback advances to the next track at song end.
-        // Keep stems non-looping so the audio does not wrap underneath.
-        const player = new Tone.Player({
-          url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: false
-        }).connect(target);
-        await Tone.loaded();
-        return { stem, player };
-      } catch (e) {
-        return null;
+    const variant = syncStemVariantSelect(songId);
+    const variantLabel = stemVariantLabel(variant);
+    setStemsStatus(variant.original ? "loading stems…" : `loading ${variantLabel} stems…`);
+    const promises = STEM_NAMES.map(async (stem) => {
+      const candidates = stemLoadCandidates(stem, songId, variant);
+      for (const candidate of candidates) {
+        try {
+          if (!(await stemUrlAvailable(candidate.url))) continue;
+          // Route via per-stem EQ chain (v66). EQ output already wired to:
+          //   - bus → master (drums/bass/other)
+          //   - vocalChorus (vocals)
+          const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
+          // v152: album-flow playback advances to the next track at song end.
+          // Keep stems non-looping so the audio does not wrap underneath.
+          const player = new Tone.Player({
+            url: candidate.url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: false
+          }).connect(target);
+          await Tone.loaded();
+          return { stem, player, source: candidate.source, fallback: candidate.fallback };
+        } catch (e) {
+          console.warn("[Band Room] stem candidate failed:", stem, candidate.url, e);
+        }
       }
+      return null;
     });
     const results = await Promise.all(promises);
     let loaded = 0;
+    let variantLoaded = 0;
+    let fallbackLoaded = 0;
     results.forEach((r) => {
-      if (r) { stemPlayers[r.stem] = r.player; loaded++; }
+      if (!r) return;
+      stemPlayers[r.stem] = r.player;
+      loaded++;
+      if (!variant.original && r.source === variant.key) variantLoaded++;
+      if (!variant.original && r.fallback) fallbackLoaded++;
     });
     state.loadedStemDurationSec = loadedStemDurationSec();
     updateSongTimelineDisplay();
@@ -2105,7 +2200,15 @@
       return false;
     }
     loadedStemsSongId = songId;
-    setStemsStatus(`stems loaded (${loaded}/4)`);
+    loadedStemsVariant = variant.key;
+    if (variant.original) {
+      setStemsStatus(`stems loaded (${loaded}/4)`);
+    } else if (variantLoaded > 0) {
+      const fallbackNote = fallbackLoaded > 0 ? `, ${fallbackLoaded} fallback` : "";
+      setStemsStatus(`stems loaded (${loaded}/4 · ${variantLabel}${fallbackNote})`);
+    } else {
+      setStemsStatus(`stems loaded (${loaded}/4 · ${variantLabel} missing, original fallback)`);
+    }
     return true;
   }
 
@@ -2181,7 +2284,8 @@
 
   async function prepareStemPlaybackAssets(songId = state.currentSongId) {
     ensureMaster();
-    if (loadedStemsSongId === songId && Object.values(stemPlayers).some(Boolean)) {
+    const variant = selectedStemVariant(songId);
+    if (loadedStemsSongId === songId && loadedStemsVariant === variant.key && Object.values(stemPlayers).some(Boolean)) {
       updateSongTimelineDisplay();
       return true;
     }
@@ -2853,6 +2957,7 @@
       if (switchSeq != null && switchSeq !== songSwitchSeq) return null;
       state.songData = data;
       state.currentSongId = songId;
+      syncStemVariantSelect(songId);
       state.barCount = 0;
       state.sectionIdx = 0;
       state.sectionBarStart = 0;
@@ -4985,6 +5090,26 @@
     ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s, offsetSec));
   }
 
+  async function switchStemVariant(variantKey) {
+    const next = variantKey || "original";
+    state.stemVariant = next;
+    const selected = syncStemVariantSelect(state.currentSongId);
+    if (selected.key !== next) return true;
+    loadedStemsSongId = null;
+    loadedStemsVariant = null;
+    if (currentMode !== "stems") return true;
+    const wasPlaying = state.started;
+    const offsetSec = wasPlaying ? playbackContentElapsedSec() : (state.pendingSeekOffsetSec || state.playbackStartOffsetSec || 0);
+    if (wasPlaying) stopStemLayerPlayback();
+    const ready = await prepareStemPlaybackAssets(state.currentSongId);
+    if (wasPlaying && ready) {
+      resetPlaybackClock(offsetSec);
+      startStemLayerPlayback(offsetSec);
+      setButtonState("playing");
+    }
+    return ready;
+  }
+
   async function switchPlaybackMode(newMode) {
     if (newMode !== "stems" && newMode !== "synth") return false;
     const oldMode = currentMode;
@@ -5777,6 +5902,19 @@
         }
       });
     }
+
+    const stemVariantSel = $("br-stems-variant-select");
+    if (stemVariantSel) {
+      stemVariantSel.addEventListener("change", async () => {
+        stemVariantSel.disabled = true;
+        try {
+          await switchStemVariant(stemVariantSel.value);
+        } finally {
+          syncStemVariantSelect(state.currentSongId);
+        }
+      });
+    }
+    syncStemVariantSelect(state.currentSongId);
 
     // Mode radio (stems vs synth)
     document.querySelectorAll("input[name=br-mode]").forEach((radio) => {

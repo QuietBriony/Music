@@ -540,6 +540,26 @@ html, body {
   text-align: center;
 }
 
+.br-stem-variant {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-sub);
+  letter-spacing: 0.04em;
+}
+
+.br-stem-variant select {
+  min-width: 132px;
+  min-height: 30px;
+  border: 1px solid rgba(255, 184, 122, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 184, 122, 0.06);
+  color: var(--text-main);
+  font: inherit;
+  padding: 4px 8px;
+}
+
 #br-stems, #br-controls {
   display: flex;
   flex-wrap: wrap;

@@ -1,10 +1,24 @@
-# Band Room — Changelog (v65 → v284 compact)
+# Band Room — Changelog (v65 → v285 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v285 compact — AI 再現 offline renderer + stem variants
+
+Adds a browser-free offline render path for the Human Fly AI recreation loop:
+
+- `scripts/render-bandroom-ai-recreation.py tabasco human-fly` renders deterministic AI recreation `drums/bass/other` stems plus `mix.wav`
+- `mix.wav` can be fed directly to `scripts/compare-capture.py` for stable measurement-loop numbers without preview renderer hangs
+- Band Room stems mode gets an optional per-song `AI recreation` stem variant, with original stems as fallback for missing parts
+- generated audio remains under ignored `presets/ai-recreation-stems/`; original `presets/tabasco-stems/` files are untouched
+- v284's AI-only brightness EQ shift is baked into the offline renderer's instrument polish approximation
+
+- `band-room.css?v=br-81`, `band-room.js?v=br-168`、`hazama-fm-v285`。
 
 ---
 
