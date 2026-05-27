@@ -14,8 +14,21 @@
 //
 // 1 つでも FAIL があれば exit 1。pytest 未導入などは SKIP 扱い (BAD ではない)。
 //
+// Worktree-aware (2026-05-27〜):
+//   - 「Music」repo の check は **本スクリプトの親 dir** (= script が居る Music
+//     worktree) を見る。canonical `<STACK_ROOT>/Music` と同じパスなら従来と同
+//     じ挙動、`git worktree add Music-<topic>` で切った sibling worktree から
+//     起動した場合は **その worktree の Music** をチェックする。
+//   - sister repo (chill / drum-floor / namima / openclaw) は引き続き
+//     `<STACK_ROOT>/<name>` を見る。sister は worktree 並走を想定していない。
+//   - 並走 worktree (例: Band Room session の WIP) が canonical Music に居て
+//     audit drift していても、別 worktree の clean state からは false FAIL に
+//     ならない。
+//
 // Optional:
 //   --deploy-health         GitHub Pages の公開 URL が 200 を返すかも確認する
+//   --music-from <path>     Music repo のパスを明示指定 (worktree-aware の上書き、
+//                           絶対パスでも script の cwd 相対でも可)
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
@@ -23,9 +36,25 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const SELF_DIR = dirname(fileURLToPath(import.meta.url));
+const SCRIPT_PARENT = resolve(SELF_DIR, "..");
 const STACK_ROOT = resolve(SELF_DIR, "..", "..");
+
+// --music-from <path> を解釈 (canonical Music を明示指定したい時の override)
+const musicFromIdx = process.argv.indexOf("--music-from");
+const MUSIC_FROM_ARG = musicFromIdx >= 0 && musicFromIdx + 1 < process.argv.length
+  ? process.argv[musicFromIdx + 1]
+  : null;
+const MUSIC_DIR = MUSIC_FROM_ARG
+  ? resolve(process.cwd(), MUSIC_FROM_ARG)
+  : SCRIPT_PARENT;
+
 const ACTIVE_REPOS = ["Music", "chill", "drum-floor", "namima", "openclaw"];
 const CHECK_DEPLOY_HEALTH = process.argv.includes("--deploy-health");
+
+// Worktree 検出: SCRIPT_PARENT が canonical <STACK_ROOT>/Music と物理的に
+// 別パスなら sibling worktree から起動された (例: <STACK_ROOT>/Music-bl023)
+const CANONICAL_MUSIC = join(STACK_ROOT, "Music");
+const IS_SIBLING_WORKTREE = resolve(MUSIC_DIR) !== resolve(CANONICAL_MUSIC);
 const DEPLOY_TARGETS = {
   Music: "https://quietbriony.github.io/Music/",
   chill: "https://quietbriony.github.io/chill/",
@@ -92,7 +121,9 @@ async function deployHealthResult(repo) {
 const results = [];
 
 for (const repo of ACTIVE_REPOS) {
-  const repoDir = join(STACK_ROOT, repo);
+  // Music は worktree-aware (SCRIPT_PARENT または --music-from で指定された path)、
+  // sister 4 repo は <STACK_ROOT>/<name>。
+  const repoDir = repo === "Music" ? MUSIC_DIR : join(STACK_ROOT, repo);
   if (!existsSync(repoDir)) {
     results.push({ repo, check: "(repo)", status: "SKIP", detail: "directory not found" });
     continue;
@@ -129,6 +160,9 @@ let skip = 0;
 let currentRepo = "";
 
 console.log("\nmusic-stack — stack-check");
+if (IS_SIBLING_WORKTREE) {
+  console.log(`(worktree-aware: Music = ${MUSIC_DIR}, sister repos = ${STACK_ROOT})`);
+}
 console.log("=".repeat(68));
 for (const r of results) {
   if (r.repo !== currentRepo) {
