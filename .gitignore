@@ -1,2 +1,4 @@
 presets/ai-recreation-stems/
 captures/
+__pycache__/
+*.pyc
