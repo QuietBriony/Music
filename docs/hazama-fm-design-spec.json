@@ -1,0 +1,457 @@
+{
+  "generated_by": "scripts/hazama-fm-measure.mjs",
+  "phase": 1,
+  "pills": {
+    "lofi": {
+      "target_source": "apple-music-refs Nujabes 'Aruarian Dance' (85-95 BPM, swing 14-18%, snare 12-18ms behind); 'Feather' (~92 BPM); pill-refs lofi-jazz-hop / lofi-drunken-pocket",
+      "target": {
+        "source": "apple-music-refs Nujabes 'Aruarian Dance' (85-95 BPM, swing 14-18%, snare 12-18ms behind); 'Feather' (~92 BPM); pill-refs lofi-jazz-hop / lofi-drunken-pocket",
+        "bpm": [
+          85,
+          95
+        ],
+        "swing": [
+          0.14,
+          0.18
+        ],
+        "snare_behind_ms": [
+          12,
+          18
+        ],
+        "kick_behind_ms": [
+          0,
+          10
+        ],
+        "behind_beat_note": "jazz-hop integrated. Dilla drunken-pocket sub-style allows stronger (up to ~25ms)."
+      },
+      "measured": {
+        "frame_count": 5,
+        "bpm_avg": 82.4,
+        "bpm_range": [
+          72,
+          90
+        ],
+        "swing_avg": 0.1,
+        "swing_range": [
+          0.08,
+          0.12
+        ],
+        "events_per_bar_avg": 13,
+        "instruments": {
+          "kick": {
+            "count": 12,
+            "micro_ms_avg": 9.2,
+            "micro_ms_range": [
+              6,
+              12
+            ],
+            "vel_avg": 0.47
+          },
+          "snare": {
+            "count": 10,
+            "micro_ms_avg": 19.6,
+            "micro_ms_range": [
+              16,
+              24
+            ],
+            "vel_avg": 0.49
+          },
+          "hat": {
+            "count": 35,
+            "micro_ms_avg": 14.1,
+            "micro_ms_range": [
+              6,
+              25
+            ],
+            "vel_avg": 0.22
+          },
+          "ghost": {
+            "count": 6,
+            "micro_ms_avg": 23.7,
+            "micro_ms_range": [
+              22,
+              26
+            ],
+            "vel_avg": 0.12
+          },
+          "fill": {
+            "count": 2,
+            "micro_ms_avg": 22.5,
+            "micro_ms_range": [
+              21,
+              24
+            ],
+            "vel_avg": 0.27
+          }
+        }
+      },
+      "governor": {
+        "rdj": 0.03,
+        "dangelo": 0.1
+      },
+      "drift": [
+        {
+          "axis": "bpm",
+          "measured": 82.4,
+          "target": [
+            85,
+            95
+          ],
+          "direction": "LOW"
+        },
+        {
+          "axis": "swing",
+          "measured": 0.1,
+          "target": [
+            0.14,
+            0.18
+          ],
+          "direction": "LOW"
+        },
+        {
+          "axis": "snare_behind_ms",
+          "measured": 19.6,
+          "target": [
+            12,
+            18
+          ],
+          "direction": "HIGH",
+          "note": "+ governor dangelo wash 0.1"
+        }
+      ]
+    },
+    "jazz": {
+      "target_source": "apple-music-refs Art Blakey 'Moanin' (drum-led hard bop) + Miles 'So What' (132 BPM modal, swing 16-22%); pill-refs jazz-brush ~90 BPM",
+      "target": {
+        "source": "apple-music-refs Art Blakey 'Moanin' (drum-led hard bop) + Miles 'So What' (132 BPM modal, swing 16-22%); pill-refs jazz-brush ~90 BPM",
+        "bpm": [
+          88,
+          135
+        ],
+        "swing": [
+          0.16,
+          0.22
+        ],
+        "snare_behind_ms": [
+          4,
+          12
+        ],
+        "kick_behind_ms": [
+          3,
+          8
+        ],
+        "behind_beat_note": "drum-led hard-bop OR modal-sparse — wide BPM range by sub-style."
+      },
+      "measured": {
+        "frame_count": 8,
+        "bpm_avg": 113,
+        "bpm_range": [
+          88,
+          138
+        ],
+        "swing_avg": 0.169,
+        "swing_range": [
+          0.14,
+          0.2
+        ],
+        "events_per_bar_avg": 15.3,
+        "instruments": {
+          "kick": {
+            "count": 21,
+            "micro_ms_avg": 3.2,
+            "micro_ms_range": [
+              -3,
+              8
+            ],
+            "vel_avg": 0.47
+          },
+          "snare": {
+            "count": 19,
+            "micro_ms_avg": 9.6,
+            "micro_ms_range": [
+              6,
+              14
+            ],
+            "vel_avg": 0.56
+          },
+          "hat": {
+            "count": 56,
+            "micro_ms_avg": 11.5,
+            "micro_ms_range": [
+              0,
+              29
+            ],
+            "vel_avg": 0.41
+          },
+          "ghost": {
+            "count": 20,
+            "micro_ms_avg": 12.8,
+            "micro_ms_range": [
+              8,
+              18
+            ],
+            "vel_avg": 0.19
+          },
+          "fill": {
+            "count": 4,
+            "micro_ms_avg": 10.5,
+            "micro_ms_range": [
+              8,
+              13
+            ],
+            "vel_avg": 0.38
+          },
+          "crash": {
+            "count": 2,
+            "micro_ms_avg": 4,
+            "micro_ms_range": [
+              3,
+              5
+            ],
+            "vel_avg": 0.32
+          }
+        }
+      },
+      "governor": {
+        "rdj": 0.022,
+        "dangelo": 0.15
+      },
+      "drift": []
+    },
+    "funk": {
+      "target_source": "apple-music-refs Funkadelic 'Maggot Brain' (live full band pocket) + D Angelo governor (GOVERNOR_BY_PILL.funk.dangelo); Stevie 'Higher Ground' (95-100 BPM tight rubber)",
+      "target": {
+        "source": "apple-music-refs Funkadelic 'Maggot Brain' (live full band pocket) + D Angelo governor (GOVERNOR_BY_PILL.funk.dangelo); Stevie 'Higher Ground' (95-100 BPM tight rubber)",
+        "bpm": [
+          88,
+          105
+        ],
+        "swing": [
+          0,
+          0.08
+        ],
+        "snare_behind_ms": [
+          2,
+          18
+        ],
+        "kick_behind_ms": [
+          0,
+          6
+        ],
+        "behind_beat_note": "behind-beat pocket strong (governor dangelo wash on top of frame microMs)."
+      },
+      "measured": {
+        "frame_count": 8,
+        "bpm_avg": 98.8,
+        "bpm_range": [
+          92,
+          104
+        ],
+        "swing_avg": 0.09,
+        "swing_range": [
+          0.07,
+          0.11
+        ],
+        "events_per_bar_avg": 16.4,
+        "instruments": {
+          "kick": {
+            "count": 25,
+            "micro_ms_avg": -2.5,
+            "micro_ms_range": [
+              -5,
+              -1
+            ],
+            "vel_avg": 0.59
+          },
+          "snare": {
+            "count": 17,
+            "micro_ms_avg": 18.1,
+            "micro_ms_range": [
+              14,
+              22
+            ],
+            "vel_avg": 0.69
+          },
+          "hat": {
+            "count": 56,
+            "micro_ms_avg": 7.8,
+            "micro_ms_range": [
+              0,
+              18
+            ],
+            "vel_avg": 0.29
+          },
+          "ghost": {
+            "count": 29,
+            "micro_ms_avg": 15.7,
+            "micro_ms_range": [
+              12,
+              19
+            ],
+            "vel_avg": 0.21
+          },
+          "fill": {
+            "count": 3,
+            "micro_ms_avg": 13,
+            "micro_ms_range": [
+              12,
+              14
+            ],
+            "vel_avg": 0.45
+          },
+          "crash": {
+            "count": 1,
+            "micro_ms_avg": 5,
+            "micro_ms_range": [
+              5,
+              5
+            ],
+            "vel_avg": 0.36
+          }
+        }
+      },
+      "governor": {
+        "rdj": 0.022,
+        "dangelo": 0.25
+      },
+      "drift": [
+        {
+          "axis": "swing",
+          "measured": 0.09,
+          "target": [
+            0,
+            0.08
+          ],
+          "direction": "HIGH"
+        },
+        {
+          "axis": "snare_behind_ms",
+          "measured": 18.1,
+          "target": [
+            2,
+            18
+          ],
+          "direction": "HIGH",
+          "note": "+ governor dangelo wash 0.25"
+        },
+        {
+          "axis": "kick_behind_ms",
+          "measured": -2.5,
+          "target": [
+            0,
+            6
+          ],
+          "direction": "LOW"
+        }
+      ]
+    },
+    "techno": {
+      "target_source": "apple-music-refs Derrick May 'Strings of Life' (4-on-floor); pill-refs techno-detroit-emotional; four-on-floor.json tight +/-2ms",
+      "target": {
+        "source": "apple-music-refs Derrick May 'Strings of Life' (4-on-floor); pill-refs techno-detroit-emotional; four-on-floor.json tight +/-2ms",
+        "bpm": [
+          120,
+          135
+        ],
+        "swing": [
+          0,
+          0.03
+        ],
+        "snare_behind_ms": [
+          0,
+          4
+        ],
+        "kick_behind_ms": [
+          0,
+          3
+        ],
+        "behind_beat_note": "tight grid, minimal swing. IDM-wash sub-style adds micro-shift via governor rdj."
+      },
+      "measured": {
+        "frame_count": 6,
+        "bpm_avg": 126.7,
+        "bpm_range": [
+          120,
+          132
+        ],
+        "swing_avg": 0.012,
+        "swing_range": [
+          0,
+          0.03
+        ],
+        "events_per_bar_avg": 20.5,
+        "instruments": {
+          "kick": {
+            "count": 24,
+            "micro_ms_avg": -0.5,
+            "micro_ms_range": [
+              -1,
+              0
+            ],
+            "vel_avg": 0.84
+          },
+          "snare": {
+            "count": 12,
+            "micro_ms_avg": 1.1,
+            "micro_ms_range": [
+              0,
+              2
+            ],
+            "vel_avg": 0.56
+          },
+          "hat": {
+            "count": 84,
+            "micro_ms_avg": 0.2,
+            "micro_ms_range": [
+              0,
+              2
+            ],
+            "vel_avg": 0.32
+          },
+          "fill": {
+            "count": 1,
+            "micro_ms_avg": 2,
+            "micro_ms_range": [
+              2,
+              2
+            ],
+            "vel_avg": 0.44
+          },
+          "crash": {
+            "count": 1,
+            "micro_ms_avg": 1,
+            "micro_ms_range": [
+              1,
+              1
+            ],
+            "vel_avg": 0.48
+          },
+          "ghost": {
+            "count": 1,
+            "micro_ms_avg": 2,
+            "micro_ms_range": [
+              2,
+              2
+            ],
+            "vel_avg": 0.12
+          }
+        }
+      },
+      "governor": {
+        "rdj": 0.035,
+        "dangelo": 0
+      },
+      "drift": [
+        {
+          "axis": "kick_behind_ms",
+          "measured": -0.5,
+          "target": [
+            0,
+            3
+          ],
+          "direction": "LOW"
+        }
+      ]
+    }
+  }
+}
