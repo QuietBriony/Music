@@ -20,7 +20,7 @@ whole class of groove/timing tuning.
 |---|---|---|---|
 | **1. Drum design analyzer** | Read drum-frames JSON + genre-flavor.js governor, diff against numeric reference targets (funk/jazz/lofi/techno) | none | **shipped** |
 | **1.5. Envelope analyzer** | Parse genre-flavor.js builders (ambient/piano), report envelope/velocity/schedule vs qualitative axis hints | none | **shipped** |
-| **2. Live capture compare** | Record actual engine playback, analyze real timing/spectral, diff vs design spec | preview MCP | future |
+| **2. Live capture compare** | Analyze a recorded fm.html playback (librosa), diff real timing/tone vs design spec | recording only | **analyzer shipped** (`scripts/hazama-fm-compare-capture.py`); capture step pending |
 
 Phase 1 / 1.5 ground the *design* first (cheap, no audio, deterministic).
 6 of 7 pills now have a measured design profile (`any` is engine drift,
@@ -111,29 +111,52 @@ User: "lofi がなんか乗れない"
 
 ---
 
-## Phase 2 — live capture compare (future)
+## Phase 2 — live capture compare (analyzer shipped)
 
 Phase 1 measures the *design*. Phase 2 confirms the engine actually
 *plays* it (frame microMs can be overridden by engine clamps,
 HumanGrooveGovernor, dynamic ramps — see the v260 audit where
 v253/v256 parameter bumps were found silently neutralized).
 
-Planned shape (parallel to Band Room compare-capture.py):
+The **analyzer is shipped**: `scripts/hazama-fm-compare-capture.py`
+(parallel to Band Room's `compare-capture.py`, same band-onset / spectral
+vocabulary). Only the capture step is pending.
+
+### Run (once you have a recording)
+
+```powershell
+python -X utf8 scripts/hazama-fm-compare-capture.py CAPTURE_FILE PILL
+python -X utf8 scripts/hazama-fm-compare-capture.py rec.wav lofi
+```
+
+It loads the recording (librosa), measures real bpm / kick+snare offset
+from beat (avg + jitter std) / tempo stability / spectral centroid /
+dynamic range, then diffs against `docs/hazama-fm-design-spec.json` for
+that pill:
+- **bpm** vs design `bpm_avg` (octave-fold tolerant)
+- **snare-behind-kick pocket** preserved? (sign-flip = engine reshaped it)
+- drum pills get the timing diff; envelope pills (ambient/piano) get a
+  tone/dynamics baseline only (no clear onsets to diff)
+
+### Capture step (the one human/preview piece)
 
 1. Open `fm.html`, pick a pill, let it play ≥ 60 s
-2. Capture via Claude Code preview MCP (autonomous, no human ● REC) —
-   the preview MCP audio path is Claude Code-only; codex would need a
-   human to record. See Band Room MEASUREMENT-LOOP §4 for the precedent.
-3. Analyze the capture (librosa, like compare-capture.py): real
-   kick/snare onset times, swing, spectral centroid, dynamic range,
-   polyphony load over time
-4. Diff actual vs `docs/hazama-fm-design-spec.json` — flag where the
-   engine's actual output diverges from the design
+2. Click the FM ● REC button (`audio/music-recorder.js` MediaRecorder),
+   then stop. fm.html saves a capture file (`captures/` is gitignored).
+3. Convert to `.wav` if it came out `.webm` (or install ffmpeg for librosa).
 
-Phase 2 also enables the **BL-022 polyphony question** to be measured:
-capture the "同時起動音" scene and measure actual voice count / RMS
-spikes against the maxPolyphony 24 cap, instead of relying on the user
-to hear "詰まる".
+Capture can be done by a human, or autonomously by Claude Code via the
+preview MCP (eval to start playback + REC, extract the blob). The preview
+MCP audio path is Claude Code-only; codex would need a human to record.
+See Band Room MEASUREMENT-LOOP §4 for the precedent.
+
+### BL-022 polyphony question
+
+Phase 2 also lets the **BL-022 polyphony question** be measured: capture
+the "同時起動音" scene and read actual RMS spikes / dynamic range against
+the maxPolyphony 24 cap, instead of relying on the user to hear "詰まる".
+(Voice-count needs an in-page telemetry tap; RMS-spike is already in the
+analyzer's `rms_dynamic_range_db`.)
 
 ---
 
@@ -152,7 +175,8 @@ to hear "詰まる".
 ## Related
 
 - `docs/MEASUREMENT-LOOP.md` — Band Room's measurement loop (the model)
-- `scripts/hazama-fm-measure.mjs` — Phase 1 analyzer
+- `scripts/hazama-fm-measure.mjs` — Phase 1 / 1.5 design analyzer
+- `scripts/hazama-fm-compare-capture.py` — Phase 2 capture analyzer
 - `docs/hazama-fm-design-spec.json` — generated measured profile snapshot
 - `references/apple-music-refs.json` / `references/hazama-fm-pill-refs.json` — reference targets
 - `presets/drum-frames-{funk,jazz,lofi,techno}.json` — measured design inputs
