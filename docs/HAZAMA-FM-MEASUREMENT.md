@@ -111,7 +111,7 @@ User: "lofi がなんか乗れない"
 
 ---
 
-## Phase 2 — live capture compare (analyzer shipped)
+## Phase 2 — live capture compare (verified end-to-end)
 
 Phase 1 measures the *design*. Phase 2 confirms the engine actually
 *plays* it (frame microMs can be overridden by engine clamps,
@@ -120,7 +120,27 @@ v253/v256 parameter bumps were found silently neutralized).
 
 The **analyzer is shipped**: `scripts/hazama-fm-compare-capture.py`
 (parallel to Band Room's `compare-capture.py`, same band-onset / spectral
-vocabulary). Only the capture step is pending.
+vocabulary).
+
+### ✅ Verified end-to-end (2026-05-29, autonomous via preview MCP)
+
+The full loop ran with no human in the loop: Claude Code preview MCP
+served fm.html, started lofi playback, recorded 42 s off the Tone master,
+decoded webm→WAV in-page, POSTed the bytes to a local receiver, and ran
+the analyzer. First result (lofi):
+
+| metric | actual playback | design | reading |
+|---|---|---|---|
+| bpm | 83.35 | 82.4 | matches ✓ |
+| tempo_stability | 1.8 % | — | HumanGrooveGovernor active (human 1-3 %, not robotic 0 %) |
+| snare vs kick | snare −6.3 ms / kick −35.4 ms (snare later) | snare 19.6 > kick 9.2 (snare later) | **snare-behind-kick pocket preserved** ✓ |
+| RMS dynamic range | 27.2 dB | — | healthy, not over-compressed |
+
+→ **no major divergence — the engine plays the lofi design faithfully**, no
+silent clamp/ramp override (v260-class bug absent for lofi groove). This
+also settles the long "乗れない" question: the slower/straighter feel is
+the *design* (bpm 82 / swing 0.10 vs Nujabes 85-95 / 0.14-0.18), not an
+engine artifact.
 
 ### Run (once you have a recording)
 
@@ -138,17 +158,39 @@ that pill:
 - drum pills get the timing diff; envelope pills (ambient/piano) get a
   tone/dynamics baseline only (no clear onsets to diff)
 
-### Capture step (the one human/preview piece)
+### Capture — manual (human)
 
 1. Open `fm.html`, pick a pill, let it play ≥ 60 s
 2. Click the FM ● REC button (`audio/music-recorder.js` MediaRecorder),
    then stop. fm.html saves a capture file (`captures/` is gitignored).
-3. Convert to `.wav` if it came out `.webm` (or install ffmpeg for librosa).
+3. Convert to `.wav` if it came out `.webm` (needs ffmpeg for librosa) —
+   or use the autonomous path below, which decodes webm→WAV in-page and
+   needs no ffmpeg.
 
-Capture can be done by a human, or autonomously by Claude Code via the
-preview MCP (eval to start playback + REC, extract the blob). The preview
-MCP audio path is Claude Code-only; codex would need a human to record.
-See Band Room MEASUREMENT-LOOP §4 for the precedent.
+### Capture — autonomous (Claude Code preview MCP, no ffmpeg)
+
+Proven 2026-05-29. The trick: the browser decodes webm itself
+(`decodeAudioData`), so no ffmpeg is needed, and the bytes are POSTed to a
+local receiver so the audio never passes through the agent's context.
+
+1. `.claude/launch.json` → a static server for the repo, e.g.
+   `python -m http.server 4178 --directory <repo>`; `preview_start`.
+2. `preview_eval` → navigate to `/fm.html`, `Tone.start()`, click a genre
+   pill + `#fm_play`. Confirm `Tone.Transport.state === "started"` and
+   `HazamaFlavorState.frameId` is set (drums scheduling).
+3. `preview_eval` → tap `Tone.getDestination()` into a
+   `MediaStreamDestination`, record with `MediaRecorder` for ~20-40 s.
+4. `preview_eval` → on stop: `blob.arrayBuffer()` → `decodeAudioData` →
+   `OfflineAudioContext(1, …, 22050)` render (mono + resample) → build a
+   16-bit PCM WAV → base64 → stash on `window`.
+5. Run `scripts/hazama-fm-capture-receiver.py` (a tiny CORS POST receiver),
+   then `preview_eval` → `fetch('http://127.0.0.1:9099/save', {method:'POST',
+   body: window._capWavB64})`. The receiver base64-decodes and writes
+   `captures/fm-<pill>.wav`.
+6. `python -X utf8 scripts/hazama-fm-compare-capture.py captures/fm-<pill>.wav <pill>`
+
+The preview-MCP audio path is Claude Code-only; codex would need a human
+to record. See Band Room MEASUREMENT-LOOP §4 for the manual precedent.
 
 ### BL-022 polyphony question
 
@@ -177,6 +219,7 @@ analyzer's `rms_dynamic_range_db`.)
 - `docs/MEASUREMENT-LOOP.md` — Band Room's measurement loop (the model)
 - `scripts/hazama-fm-measure.mjs` — Phase 1 / 1.5 design analyzer
 - `scripts/hazama-fm-compare-capture.py` — Phase 2 capture analyzer
+- `scripts/hazama-fm-capture-receiver.py` — autonomous-capture POST receiver
 - `docs/hazama-fm-design-spec.json` — generated measured profile snapshot
 - `references/apple-music-refs.json` / `references/hazama-fm-pill-refs.json` — reference targets
 - `presets/drum-frames-{funk,jazz,lofi,techno}.json` — measured design inputs

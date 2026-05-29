@@ -133,20 +133,23 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code (Phase 2) / runtime (tuning, 別 PR)
 - agent    : claude (Phase 2 + tuning 実装) + human (audio capture + 試聴判断)
 - human-gate: yes
-- status   : wip — Phase 1 + 1.5 + 2-analyzer shipped。残るは (a) 実 capture と (b) measured tuning（共に試聴/録音 human-gate）
+- status   : wip — Phase 1 + 1.5 + 2 **end-to-end verified** (2026-05-29、preview MCP で
+  fm.html lofi を無人 capture → 解析、engine が design 通り再生と確認)。残るは (b) measured
+  tuning（taste 方向 user 指定 + 試聴 human-gate）と、任意で他 pill の capture 横展開
 - source   : 2026-05-29 measurement harness session
 - detail   : harness Phase 1/1.5 (静的 design 解析、6/7 pill, `scripts/hazama-fm-measure.mjs`)
   + Phase 2 analyzer (`scripts/hazama-fm-compare-capture.py`、librosa で録音を design-spec
   と diff) は出荷済。残り 2 段:
-  **(a) Phase 2 — live capture compare**: analyzer は出荷済
-  (`scripts/hazama-fm-compare-capture.py`、librosa で録音を読み bpm / kick+snare offset+jitter
-  / tempo stability / centroid / dynamic range を測定 → `docs/hazama-fm-design-spec.json`
-  と diff、snare-behind-kick pocket が playback で保たれてるか検証)。残るは **実 capture のみ**
-  — `fm.html` を ● REC (music-recorder.js) で録音 → .wav 化 → script に path 渡す。
-  capture は user 録音 or Claude Code preview MCP の eval 録音 (Claude Code 専用)。
-  engine clamp / dynamic ramp が drum-frame microMs を silently override してないか検証
-  (v260 audit で見つかった class)。BL-022 polyphony も「同時起動音」録音で RMS spike /
-  dynamic range を測定できる (voice-count は in-page telemetry tap 追加が必要)。
+  **(a) Phase 2 — live capture compare**: ✅ **end-to-end verified (2026-05-29)**。
+  analyzer (`scripts/hazama-fm-compare-capture.py`) + autonomous capture
+  (preview MCP で fm.html 再生 → in-page webm→WAV decode → POST receiver
+  `scripts/hazama-fm-capture-receiver.py` で disk、ffmpeg 不要) が無人で成立。
+  初回 lofi: bpm 83 vs design 82.4、tempo_stability 1.8% (governor 稼働)、
+  snare-behind-kick pocket 保持 → engine は design 通り再生、silent override 無し
+  (v260-class 不在)。手順は `docs/HAZAMA-FM-MEASUREMENT.md` §Phase 2。BL-022
+  polyphony も「同時起動音」録音で RMS spike / dynamic range を測定できる
+  (voice-count は in-page telemetry tap 追加が必要)。他 pill (funk/jazz/techno)
+  の capture 横展開は任意。
   **(b) measured tuning**: harness findings (lofi が Nujabes より遅く straight、
   funk の広い pocket 等) を埋めるかは taste 判断。閉じる場合は drum-frames-*.json /
   genre-flavor.js の PR + 試聴 human-gate (studio-surface or user)。harness で drift が
