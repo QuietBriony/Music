@@ -127,6 +127,31 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   Microsoft 新 driver (2026 中後半 Canary preview) が plug-and-play で動く path。
   chouta-surface を直接 Canary 化するのはメイン開発機リスクのため非推奨。
 
+### BL-024 — Hazama FM measurement harness Phase 2 + measured tuning
+- priority : P2
+- repo     : Music
+- scope    : non-engine-code (Phase 2) / runtime (tuning, 別 PR)
+- agent    : claude (Phase 2 + tuning 実装) + human (audio capture + 試聴判断)
+- human-gate: yes
+- status   : open（Phase 1 + 1.5 は shipped: Music PR #269 / `scripts/hazama-fm-measure.mjs`）
+- source   : 2026-05-29 measurement harness session
+- detail   : harness Phase 1/1.5 (静的 design 解析、6/7 pill) は出荷済。残り 2 段:
+  **(a) Phase 2 — live capture compare**: `fm.html` 再生を Claude Code preview MCP で
+  無人録音 → librosa で実 timing / spectral / dynamic / polyphony を測定 →
+  `docs/hazama-fm-design-spec.json` と diff。engine clamp / dynamic ramp が
+  drum-frame microMs を silently override してないか検証 (v260 audit で見つかった
+  class のバグ)。Band Room の `compare-capture.py` と対の構造。**audio capture path
+  が必要** — preview MCP の録音 (Claude Code 専用) か、user 環境で ● 録音 → path 受け渡し。
+  BL-022 polyphony 問題も「同時起動音」録音で voice count / RMS spike を maxPolyphony
+  24 cap と数値比較できる。
+  **(b) measured tuning**: harness findings (lofi が Nujabes より遅く straight、
+  funk の広い pocket 等) を埋めるかは taste 判断。閉じる場合は drum-frames-*.json /
+  genre-flavor.js の PR + 試聴 human-gate (studio-surface or user)。harness で drift が
+  閉じるのを数値証明してから試聴に出す。focus-listening として現 calmer 設計が正解の
+  可能性もあるので、tuning 方向は user 指定待ち。
+  完了条件: Phase 2 capture script が `docs/hazama-fm-design-spec.json` と実出力を
+  diff 出力 + stack-check 0 BAD。tuning は方向確定 → PR → 試聴確認ごとに 1 件ずつ。
+
 ## Icebox
 
 ### BL-008 — engine.js の部分モジュール化

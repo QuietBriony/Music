@@ -19,6 +19,61 @@
 
 ---
 
+## 2026-05-29 — infra + design-vocabulary + Hazama FM measurement harness (6 PR)
+- agent      : Claude Code (chouta-surface, Opus 4.7 / 1M context)
+- goal       : BL-019/BL-023 消化後、user の「stack 最適化 / 音楽性向上 / stack 改善」
+  連投に対し、試聴 gate 無しで進められる infra・docs・design-vocabulary・
+  measurement 基盤を逐次出荷し、最後にまとめて merge
+- repos      : Music (主)、namima-lab / test (sister README)
+- worktree   : 並走 Band Room session が canonical `Music` worktree に PR #255 WIP を
+  保持中だったため、全作業を `git worktree add C:\workspace\music-stack\Music-bl023`
+  の隔離 worktree で実施 (sibling WIP 非破壊。memory: feedback_parallel-sessions)
+- shipped (merge 済 6 PR):
+  - **Music #260**: `stack-check.mjs` worktree-aware 化。canonical `STACK_ROOT/Music`
+    固定 walk をやめ、sibling worktree からは自分の Music を見る。並走 Band Room WIP
+    drift で false FAIL が出る問題を根本解決。`--music-from` override 追加
+  - **Music #263**: `audit.py` section [9] = references schema gate。
+    hazama-fm-pill-refs.json (pills 7 網羅 / 必須 field / v>=3 で sub_styles 必須) +
+    apple-music-refs.json (references 必須 field) を検証。v3+ conditional で
+    #261 と merge 順序フリー
+  - **Music #261**: references 設計語彙拡張。hazama-fm-pill-refs.json v2→v3 (各 pill に
+    sub_styles)、apple-music-refs.json に 5 ref 追加 (J Dilla / Miles / Satie /
+    Stevie / Tim Hecker)。runtime 不触、engine の reference-gradient bias 選択肢を増やす
+  - **Music #259**: BL-019 closure tidy-up (STACK-INDEX archive 表に harvest 完了
+    マーカー列 / BL-019-test-half-handoff.md に closure header / integration-index §2 注記)
+  - **Music #256**: BL-023 ARM UR44 driver Web research (`docs/arm-ur44-driver-investigation.md`)
+  - **namima-lab #2 / test #2**: README に BL-019 harvest-complete マーカー
+  - **Hazama FM measurement harness (Music #269)** ← 本セッションの戦略的中心:
+    - `scripts/hazama-fm-measure.mjs` (analysis tool、gate ではない) +
+      `docs/HAZAMA-FM-MEASUREMENT.md` (Band Room MEASUREMENT-LOOP.md と対) +
+      `docs/hazama-fm-design-spec.json` (measured snapshot)
+    - Phase 1: drum-frames-{funk,jazz,lofi,techno}.json の BPM/swing/microMs/velocity +
+      GOVERNOR_BY_PILL を references の数値 target と diff
+    - Phase 1.5: genre-flavor.js builder (ambient/piano) の envelope/velocity/schedule を
+      axis hint と soft-fit。7 pill 中 6 pill を測定 (any は engine drift で対象外)
+    - **狙い**: Band Room が measurement loop で速く回せるのに対し Hazama FM は
+      「乗れない/退屈」の ear-gate で遅い、という非対称を解消。groove tuning から
+      user の耳ボトルネックを外す
+- 主要 findings (「乗れない」の数値化):
+  - lofi: BPM 82 vs Nujabes 85-95 (LOW)、swing 0.10 vs 0.14-0.18 (LOW)、snare 19.6ms
+    vs 12-18 (HIGH) — reference より遅く straight (focus-listening として意図的かは taste)
+  - funk: kick -2.5ms 前ノリ + snare 18.1ms 後ろ = 広い pocket
+  - piano: felt/long-rest は per-note release (1.6s) でなく低 velocity 0.32 + sparse
+    schedule 2m 由来と判明 (v244-263 piano 騒動の grounding)
+  - jazz / techno / ambient: target 内
+- stack-check: merged origin/main で PASS 15 / FAIL 0 / SKIP 0 (cross-PR 統合検証済)
+- backlog    : BL-024 (measurement harness Phase 2 + measured tuning) を新設。
+  BL-019 / BL-023 は前エントリで Done / wip。
+- next       : (a) harness findings を使った tuning は taste 方向が user から出てから
+  (試聴 gate / studio-surface)、(b) Phase 2 live capture は audio capture path 必要 =
+  user 環境録音 or genre-flavor.js telemetry PR、(c) 残 P1/P2 はほぼ試聴待ち
+- 学び       : 試聴 gate 無しで進める stack 改善は「測定基盤・設計語彙・infra・
+  cross-repo closure」に集約される。音そのものの tuning は必ず耳が要る → harness で
+  仮説を ground し、耳を「最終確認」に格下げするのが構造的な勝ち筋
+- blockers   : Phase 2 audio capture path、tuning の taste 方向は user 判断
+
+---
+
 ## 2026-05-25 — BL-023 ARM UR44 driver Web research 完了
 - agent      : Claude Code (chouta-surface, Opus 4.7 / 1M context)
 - goal       : codex が BL-019 を a/b/c 三本まとめて Done 化してくれた後、
