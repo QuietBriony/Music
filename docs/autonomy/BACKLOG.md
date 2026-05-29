@@ -133,17 +133,20 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code (Phase 2) / runtime (tuning, 別 PR)
 - agent    : claude (Phase 2 + tuning 実装) + human (audio capture + 試聴判断)
 - human-gate: yes
-- status   : open（Phase 1 + 1.5 は shipped: Music PR #269 / `scripts/hazama-fm-measure.mjs`）
+- status   : wip — Phase 1 + 1.5 + 2-analyzer shipped。残るは (a) 実 capture と (b) measured tuning（共に試聴/録音 human-gate）
 - source   : 2026-05-29 measurement harness session
-- detail   : harness Phase 1/1.5 (静的 design 解析、6/7 pill) は出荷済。残り 2 段:
-  **(a) Phase 2 — live capture compare**: `fm.html` 再生を Claude Code preview MCP で
-  無人録音 → librosa で実 timing / spectral / dynamic / polyphony を測定 →
-  `docs/hazama-fm-design-spec.json` と diff。engine clamp / dynamic ramp が
-  drum-frame microMs を silently override してないか検証 (v260 audit で見つかった
-  class のバグ)。Band Room の `compare-capture.py` と対の構造。**audio capture path
-  が必要** — preview MCP の録音 (Claude Code 専用) か、user 環境で ● 録音 → path 受け渡し。
-  BL-022 polyphony 問題も「同時起動音」録音で voice count / RMS spike を maxPolyphony
-  24 cap と数値比較できる。
+- detail   : harness Phase 1/1.5 (静的 design 解析、6/7 pill, `scripts/hazama-fm-measure.mjs`)
+  + Phase 2 analyzer (`scripts/hazama-fm-compare-capture.py`、librosa で録音を design-spec
+  と diff) は出荷済。残り 2 段:
+  **(a) Phase 2 — live capture compare**: analyzer は出荷済
+  (`scripts/hazama-fm-compare-capture.py`、librosa で録音を読み bpm / kick+snare offset+jitter
+  / tempo stability / centroid / dynamic range を測定 → `docs/hazama-fm-design-spec.json`
+  と diff、snare-behind-kick pocket が playback で保たれてるか検証)。残るは **実 capture のみ**
+  — `fm.html` を ● REC (music-recorder.js) で録音 → .wav 化 → script に path 渡す。
+  capture は user 録音 or Claude Code preview MCP の eval 録音 (Claude Code 専用)。
+  engine clamp / dynamic ramp が drum-frame microMs を silently override してないか検証
+  (v260 audit で見つかった class)。BL-022 polyphony も「同時起動音」録音で RMS spike /
+  dynamic range を測定できる (voice-count は in-page telemetry tap 追加が必要)。
   **(b) measured tuning**: harness findings (lofi が Nujabes より遅く straight、
   funk の広い pocket 等) を埋めるかは taste 判断。閉じる場合は drum-frames-*.json /
   genre-flavor.js の PR + 試聴 human-gate (studio-surface or user)。harness で drift が
