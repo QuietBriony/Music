@@ -107,6 +107,9 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : verify (ハードウェア / ドライバ調査)
 - agent    : claude (調査) + human (実機テスト)
 - human-gate: yes
+- status   : wip — Web research 完了 (`docs/arm-ur44-driver-investigation.md`、
+  2026-05-25 chouta-surface)。実機テスト step 1-2 待ち、step 3 は Microsoft 新
+  in-box USB Audio Class 2 driver の 2026 中後半 Canary 配布待ち
 - source   : studio-surface セットアップ session (2026-05-25)
 - detail   : chouta-surface (ARM 版 Surface) では UR44 のドライバ / コネクタ
   挙動が不安定 → 音作り iteration は intel 版 `studio-surface` に集約する
@@ -117,6 +120,12 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   実機テストは chouta-surface で行う必要があるため human-gate。
   ※ 急がない (intel 版で運用が回るため)。chouta-surface での試聴ニーズが
   発生したタイミングで着手。
+  **進捗 (2026-05-25)**: `docs/arm-ur44-driver-investigation.md` に 2026-05 時点
+  のドライバエコシステム整理 (Yamaha Steinberg USB V2.1.9 / Microsoft 新 in-box
+  USB Audio Class 2 driver / ASIO4ALL) + 推奨試行順序 (step 1-4) + human-gate
+  test checklist を完備。要点: UR44 公式 ARM64 native 見込み薄 (IXO series 限定)、
+  Microsoft 新 driver (2026 中後半 Canary preview) が plug-and-play で動く path。
+  chouta-surface を直接 Canary 化するのはメイン開発機リスクのため非推奨。
 
 ## Icebox
 
