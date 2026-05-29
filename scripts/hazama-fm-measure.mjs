@@ -94,6 +94,18 @@ const TARGET_SPEC = {
 
 const PILLS = Object.keys(TARGET_SPEC);
 
+// Pills without a drum-frames JSON: their groove comes from genre-flavor.js
+// builders directly (pad envelope / release / velocity / rubato), not from
+// a drum-frames file. Phase 1 (drum-frame static analysis) does not measure
+// them. Acknowledged here so the report is honest about coverage — a future
+// Phase 1.5 could parse the builder envelopes (buildAmbientDefault /
+// buildPianoDefault) to extract release / density / velocity profiles.
+const NON_DRUM_PILLS = {
+  any: "engine 9-program drift, no fixed pill groove (intentional)",
+  ambient: "groove from buildAmbient* (pad envelope / long release), no drum-frames",
+  piano: "groove from buildPiano* (rubato / long-rest / pianoMemory), no drum-frames",
+};
+
 // ----------------------------------------------------------------
 // Read GOVERNOR_BY_PILL from genre-flavor.js (rdj + dangelo per pill).
 // Regex-extract the object literal; no JS execution.
@@ -258,6 +270,12 @@ for (const genre of PILLS) {
   allFindings[genre] = findings;
 }
 
+// Record the non-drum pills so the spec covers all 7 pills, even though
+// Phase 1 does not measure their groove.
+for (const [pill, reason] of Object.entries(NON_DRUM_PILLS)) {
+  spec.pills[pill] = { not_measured_phase1: true, reason };
+}
+
 // Write machine-readable spec.
 const specPath = join(ROOT, "docs/hazama-fm-design-spec.json");
 writeFileSync(specPath, JSON.stringify(spec, null, 2) + "\n", "utf8");
@@ -306,9 +324,15 @@ for (const genre of PILLS) {
   console.log();
 }
 
+console.log("[non-drum pills — not measured in Phase 1]");
+for (const [pill, reason] of Object.entries(NON_DRUM_PILLS)) {
+  console.log(`  ${pad(pill, 8)} ${reason}`);
+}
+console.log();
+
 const totalDrift = Object.values(allFindings).reduce((n, f) => n + f.length, 0);
 console.log("=".repeat(72));
-console.log(`${totalDrift} drift finding(s) across ${PILLS.length} pills. Wrote docs/hazama-fm-design-spec.json`);
+console.log(`${totalDrift} drift finding(s) across ${PILLS.length} drum-frame pills (+ ${Object.keys(NON_DRUM_PILLS).length} non-drum pills noted). Wrote docs/hazama-fm-design-spec.json`);
 console.log("Drift = design diverges from reference target. Review whether intentional;");
 console.log("if a tuning is wanted, it is engine.js / genre-flavor.js work + 試聴 human-gate.");
 process.exit(0);

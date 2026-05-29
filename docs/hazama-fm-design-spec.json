@@ -452,6 +452,18 @@
           "direction": "LOW"
         }
       ]
+    },
+    "any": {
+      "not_measured_phase1": true,
+      "reason": "engine 9-program drift, no fixed pill groove (intentional)"
+    },
+    "ambient": {
+      "not_measured_phase1": true,
+      "reason": "groove from buildAmbient* (pad envelope / long release), no drum-frames"
+    },
+    "piano": {
+      "not_measured_phase1": true,
+      "reason": "groove from buildPiano* (rubato / long-rest / pianoMemory), no drum-frames"
     }
   }
 }
