@@ -1334,6 +1334,244 @@
         "ライブハウス桜坂セントラル 録音参照: 143.6 BPM A min, dense/dark/sustained",
         "user 好み: 疾走感 + ギター前"
       ]
+    },
+    {
+      "artist": "J Dilla",
+      "title": "Two Can Win",
+      "album": "Donuts",
+      "genre_hint": [
+        "lofi",
+        "lofi-hiphop",
+        "drunken-beat",
+        "mpc-hiphop"
+      ],
+      "taste_notes": [
+        "drunken pocket + intentionally off-grid drum timing",
+        "sample-cell rotation で memory loop が常に少しずれる",
+        "behind-beat governor の最強系譜 (D Angelo より更に push)"
+      ],
+      "production_translation": {
+        "timbre": [
+          "SP-1200 / MPC の crunch、低 bit-depth sample 質感",
+          "warm sub-bass、kick / snare は drum machine だが human shift",
+          "melody は pitched-up vocal fragment や老 jazz 抜粋を低 LPF で曇らせる"
+        ],
+        "rhythm": [
+          "85-95 BPM、swing flag は立てないが全 hit が個別に 15-50 ms shift",
+          "kick は 1 / 3 だが micro drift で staggered、snare は backbeat 強だが ms 単位で揺れる",
+          "16th hat は tight だが quantize 解除、たまに skip"
+        ],
+        "space": [
+          "drum は dry punch、slight tape sat",
+          "melody だけ wide reverb で記憶感",
+          "vinyl crackle 常時、低音域は dry"
+        ],
+        "structure": [
+          "32-bar loop でゆっくり morph、resolution せず fade out",
+          "drop / break 無し、density constant、micro variation で進行"
+        ],
+        "gesture": [
+          "melodic micro-shift で emotional pull",
+          "Energy 上がっても density 一定、shift 量だけ拡大"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の lofi pill drunken-pocket sub-style reference",
+        "buildLofi() で D Angelo governor 量を 0.10 → 0.18 程度に拡大した時の reference",
+        "drum-frames-lofi.json の microMs 値を 1.4-1.6x に再設計する場合の根拠",
+        "Nujabes (jazz-hop 整列) と並べて lofi pill 内の対極 sub-style を作る"
+      ]
+    },
+    {
+      "artist": "Miles Davis",
+      "title": "So What",
+      "album": "Kind of Blue",
+      "genre_hint": [
+        "jazz",
+        "modal-jazz",
+        "post-hard-bop"
+      ],
+      "taste_notes": [
+        "D-Dorian / Eb-Dorian modal の静的和声、密度を下げて空間で語る",
+        "muted trumpet の breath、phrase 末の rest を肯定的に使う",
+        "Bill Evans の piano comping が低密度で voicing を支える"
+      ],
+      "production_translation": {
+        "timbre": [
+          "muted trumpet の warm-mid、低域は upright bass walking",
+          "ride cymbal が時間の主役、brush / stick の中間",
+          "piano は modal voicing (4th stack)、低密度 comping"
+        ],
+        "rhythm": [
+          "132 BPM 前後、medium swing (16-22%)",
+          "walking bass は 4 分音符 / 八分混じり、kick は控えめ",
+          "snare は 2 & 4 ghost、accent は phrase 末で release"
+        ],
+        "space": [
+          "live room reverb (1.5-2.0s)、intimate mic 配置",
+          "全要素 dry 寄り、reverb は room 一発で統一"
+        ],
+        "structure": [
+          "AABA 32 bar、modal pedal で chord 変化最小",
+          "solo rotation で head theme を変奏",
+          "fill / drop 無し、density は solo 入退場で変化"
+        ],
+        "gesture": [
+          "phrase ending の breath / rest を必ず置く",
+          "Energy 上がっても density 上げず、solo の音域だけ広げる"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の jazz pill modal-sparse sub-style reference",
+        "buildJazz() の Blakey hard-bop 系統 (drum-led + break) と対の modal-pedal 系統",
+        "低密度 default を作るなら kick density 0.25-0.30、snare ghost のみ、ride 主体",
+        "piano modal voicing (4th stack) を pianoMemory layer の chord recipe に組み込む候補"
+      ]
+    },
+    {
+      "artist": "Erik Satie",
+      "title": "Gymnopédie No.1",
+      "album": "Trois Gymnopédies",
+      "genre_hint": [
+        "piano",
+        "classical-minimalist",
+        "impressionist-precursor"
+      ],
+      "taste_notes": [
+        "3/4 slow waltz、harmonic motion 最小",
+        "single melodic line、伴奏は pedal-sustained chord 2 つだけ",
+        "breath rest が和声と等価に置かれる、空白の音楽"
+      ],
+      "production_translation": {
+        "timbre": [
+          "solo piano、soft pedal 常時、felt 寄り",
+          "no orchestration、無音と pedal sustain だけが伴奏",
+          "low velocity (0.3-0.5) で warm, una corda 寄りの bright cut"
+        ],
+        "rhythm": [
+          "50-60 BPM lent、3/4 slow waltz",
+          "melody は 2-3 拍長の hold、伴奏は 1 拍頭のみ",
+          "swing / push 無し、metric は静的"
+        ],
+        "space": [
+          "warm wood-floor reverb (1.8-2.5s) を distant に",
+          "decay 長め、 pedal sustain で chord が重なる",
+          "stereo は narrow、solo recital を想起"
+        ],
+        "structure": [
+          "A-A'-A'' 3-section、theme variation 最小",
+          "resolution 全部省略可、suspended で fade",
+          "16-20 bar phrase が 2-3 回繰り返す"
+        ],
+        "gesture": [
+          "pedal sustain で phrase 間を繋ぐ",
+          "phrase 末で breath rest (2-4 beat 完全静止) を肯定的に置く",
+          "Energy 高でも tempo / density 上げず、velocity だけ 0.4 → 0.6"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の piano pill minimalist sub-style reference",
+        "Debussy 印象派 (Clair de Lune) と対の static-restraint 軸",
+        "buildPiano() の long-rest default を更に伸ばす場合の reference",
+        "pianoMemory layer の release を 5-7s、velocity cap 0.55 に絞る場合の根拠",
+        "Hazama FM piano pill の最も restrained 端、ambient pill との橋渡しにもなる"
+      ]
+    },
+    {
+      "artist": "Stevie Wonder",
+      "title": "Higher Ground",
+      "album": "Innervisions",
+      "genre_hint": [
+        "funk",
+        "soul",
+        "p-funk-precursor"
+      ],
+      "taste_notes": [
+        "clavinet rubber pocket + wah envelope、funk リズムギターの代替",
+        "TONTO / ARP synth bass の低域、live drum + Hohner Clavinet の同居",
+        "Funkadelic (live full band) より tight rubber、vocal は call-response"
+      ],
+      "production_translation": {
+        "timbre": [
+          "Hohner Clavinet D6 + wah pedal、envelope follower で attack 強調",
+          "ARP / TONTO synth bass、low-pass で warm、portamento は控えめ",
+          "live drum kit + drum machine 同居、kick は punchy、snare は rasp",
+          "vocal は double-tracked、raspy で chest forward"
+        ],
+        "rhythm": [
+          "95-100 BPM、16th hat (Clavinet と同期)、swing 5-8%",
+          "kick は syncopated push、snare backbeat 強、ghost 多め",
+          "bass は kick lock、guitar / clavi は 16th syncopated"
+        ],
+        "space": [
+          "dry punch、tape sat、slight slap delay on vocal",
+          "drum room reverb 短い (0.6-1.0s)、guitar / clavi は dry"
+        ],
+        "structure": [
+          "verse-chorus + breakdown、4-bar phrase 単位",
+          "breakdown で clavi solo、vocal call-response 増量"
+        ],
+        "gesture": [
+          "clavi hit accent で groove の grid を強調",
+          "vocal の rasp / push で energy、density は constant"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の funk pill rubber-clavi sub-style reference",
+        "Funkadelic (live full band + behind-beat) と対の tight-rubber-pocket 軸",
+        "buildFunk() の clavi voice velocity follow (BL-014) と整合、wah envelope を将来追加するなら根拠",
+        "drum-frames-funk.json の 16th hat density / kick syncopation 設計の参照",
+        "synth bass は genre-flavor.js の funk bass voicing を ARP/TONTO 系 saw に寄せる候補"
+      ]
+    },
+    {
+      "artist": "Tim Hecker",
+      "title": "In the Fog III",
+      "album": "Ravedeath, 1972",
+      "genre_hint": [
+        "ambient",
+        "drone",
+        "modern-classical-electronic"
+      ],
+      "taste_notes": [
+        "教会パイプオルガン録音 + tape distortion + 重 saturation",
+        "Eno 系の emotional air と対の dark-saturated drone",
+        "明確な拍子 / phrase 構造を持たない、texture の morph で時間を作る"
+      ],
+      "production_translation": {
+        "timbre": [
+          "pipe organ recording を tape sat + bit-crush で曇らせる",
+          "low centroid、上倍音は saturation で滲ませる",
+          "no clear pitch center、cluster chord として鳴る"
+        ],
+        "rhythm": [
+          "no meter、rubato (60-80 BPM equivalent 換算)",
+          "swell / decay の時間 scale で時間を作る、grid 無し",
+          "transient 無し、attack は 2-4s の swell"
+        ],
+        "space": [
+          "cathedral reverb (6-10s decay)、distant mic",
+          "bit-crush を texture の一部として使う (effect ではなく source の質感)",
+          "stereo は narrow、mono 寄りで wall-of-sound"
+        ],
+        "structure": [
+          "6-10 分 slow build + plateau + dissolve",
+          "section 区切り無し、continuous morph",
+          "resolution / cadence 全部省略"
+        ],
+        "gesture": [
+          "slow swell (10-30s 単位) を基本 gesture",
+          "micro saturation の揺らぎが density を表現",
+          "Energy 上がっても tempo 変化なし、saturation 深度だけ拡大"
+        ]
+      },
+      "implementation_notes": [
+        "Hazama FM の ambient pill modern-drone sub-style reference",
+        "Eno (emotional-air) / Boards of Canada (warm-haze) と対の dark-saturated 軸",
+        "buildAmbient() の pad release を 8-12s、low LPF + tape sat 強めにする場合の reference",
+        "Aphex Twin (cold-space) と並べて ambient pill の 3 sub-style を網羅できる",
+        "namima には rejected (heavy low-end pressure + dark saturation = public-friendly 違反)、Music の ambient pill 専用"
+      ]
     }
   ]
 }
