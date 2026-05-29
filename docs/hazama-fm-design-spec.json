@@ -453,17 +453,55 @@
         }
       ]
     },
-    "any": {
-      "not_measured_phase1": true,
-      "reason": "engine 9-program drift, no fixed pill groove (intentional)"
-    },
     "ambient": {
-      "not_measured_phase1": true,
-      "reason": "groove from buildAmbient* (pad envelope / long release), no drum-frames"
+      "measured_via": "builder-envelope",
+      "builder": "buildAmbientDefault",
+      "target_source": "hazama-fm-pill-refs ambient axis: space / long-form / restraint / low-pressure",
+      "measured": {
+        "envelope": {
+          "attack": 4,
+          "decay": 0.5,
+          "sustain": 0.85,
+          "release": 6
+        },
+        "volume_db": -8,
+        "reverb": {
+          "decay": 6,
+          "wet": 0.4
+        },
+        "schedule_interval": "16m",
+        "trigger_velocity_avg": 0.48,
+        "trigger_velocity_basis": "trigger-literal"
+      },
+      "note": "long attack + long release = the space / restraint character",
+      "drift": []
     },
     "piano": {
-      "not_measured_phase1": true,
-      "reason": "groove from buildPiano* (rubato / long-rest / pianoMemory), no drum-frames"
+      "measured_via": "builder-envelope",
+      "builder": "buildPianoDefault",
+      "target_source": "hazama-fm-pill-refs piano axis: felt / memory / restraint / long-rest / rubato",
+      "measured": {
+        "envelope": {
+          "attack": 0.06,
+          "decay": 0.9,
+          "sustain": 0.35,
+          "release": 1.6
+        },
+        "volume_db": -16,
+        "reverb": {
+          "decay": 3.4,
+          "wet": 0.36
+        },
+        "schedule_interval": "2m",
+        "trigger_velocity_avg": 0.32,
+        "trigger_velocity_basis": "base-assignment"
+      },
+      "note": "felt = low velocity. long-rest comes from the sparse schedule interval + pianoMemory layer, not per-note release.",
+      "drift": []
+    },
+    "any": {
+      "not_measured": true,
+      "reason": "engine 9-program drift, no fixed pill builder (intentional)"
     }
   }
 }

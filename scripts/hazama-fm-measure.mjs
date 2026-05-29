@@ -94,16 +94,30 @@ const TARGET_SPEC = {
 
 const PILLS = Object.keys(TARGET_SPEC);
 
-// Pills without a drum-frames JSON: their groove comes from genre-flavor.js
-// builders directly (pad envelope / release / velocity / rubato), not from
-// a drum-frames file. Phase 1 (drum-frame static analysis) does not measure
-// them. Acknowledged here so the report is honest about coverage — a future
-// Phase 1.5 could parse the builder envelopes (buildAmbientDefault /
-// buildPianoDefault) to extract release / density / velocity profiles.
-const NON_DRUM_PILLS = {
-  any: "engine 9-program drift, no fixed pill groove (intentional)",
-  ambient: "groove from buildAmbient* (pad envelope / long release), no drum-frames",
-  piano: "groove from buildPiano* (rubato / long-rest / pianoMemory), no drum-frames",
+// Pills without a drum-frames JSON. Two kinds:
+//  - ENVELOPE_PILLS: groove/character comes from a genre-flavor.js builder
+//    (buildAmbientDefault / buildPianoDefault). Phase 1.5 parses the builder
+//    envelope (attack/decay/sustain/release, volume, reverb, velocity,
+//    schedule interval) and reports it against the pill's qualitative axis
+//    hints. Comparison is soft (axis-alignment notes, not hard pass/fail) —
+//    the reference targets for these pills are qualitative prose, not numbers.
+//  - DRIFT_ONLY_PILLS: no fixed builder (engine 9-program drift). Not measured.
+const ENVELOPE_PILLS = {
+  ambient: {
+    builder: "buildAmbientDefault",
+    source: "hazama-fm-pill-refs ambient axis: space / long-form / restraint / low-pressure",
+    expect: { attack_min: 1.0, release_min: 4.0 },
+    note: "long attack + long release = the space / restraint character",
+  },
+  piano: {
+    builder: "buildPianoDefault",
+    source: "hazama-fm-pill-refs piano axis: felt / memory / restraint / long-rest / rubato",
+    expect: { velocity_max: 0.55 },
+    note: "felt = low velocity. long-rest comes from the sparse schedule interval + pianoMemory layer, not per-note release.",
+  },
+};
+const DRIFT_ONLY_PILLS = {
+  any: "engine 9-program drift, no fixed pill builder (intentional)",
 };
 
 // ----------------------------------------------------------------
@@ -125,6 +139,75 @@ function readGovernors() {
     governors[m[1]] = { rdj: parseFloat(m[2]), dangelo: parseFloat(m[3]) };
   }
   return governors;
+}
+
+// ----------------------------------------------------------------
+// Phase 1.5: parse a genre-flavor.js builder's first synth envelope +
+// reverb + schedule interval + trigger velocity. Regex over the builder
+// function body (no JS execution). Soft-compares against the pill's
+// qualitative axis expectations.
+// ----------------------------------------------------------------
+function measureBuilderEnvelope(builderName) {
+  const path = join(ROOT, "audio/genre-flavor.js");
+  if (!existsSync(path)) return { missing: true, reason: "genre-flavor.js not found" };
+  const text = readFileSync(path, "utf8");
+  const start = text.indexOf(`function ${builderName}(`);
+  if (start < 0) return { missing: true, reason: `${builderName} not found` };
+  // Window large enough for these compact builders (buildAmbientDefault /
+  // buildPianoDefault are < 70 lines); stop at the function's first return.
+  const retIdx = text.indexOf("return {", start);
+  const body = text.slice(start, retIdx > start ? retIdx : start + 1600);
+
+  const env = body.match(/envelope:\s*\{\s*attack:\s*([\d.]+),\s*decay:\s*([\d.]+),\s*sustain:\s*([\d.]+),\s*release:\s*([\d.]+)/);
+  const vol = body.match(/volume:\s*(-?[\d.]+)/);
+  const reverb = body.match(/Reverb\(\{\s*decay:\s*([\d.]+),\s*wet:\s*([\d.]+)/);
+  // Schedule interval: bare-identifier callback form (scheduleRepeat(fn, "16m"))
+  // or inline-arrow form whose close brace precedes the interval (}, "2m")).
+  const schedBare = body.match(/scheduleRepeat\(\s*\w+\s*,\s*"([^"]+)"\s*\)/);
+  const schedArrow = body.match(/\}\s*,\s*"(\d+[mn])"\s*\)\s*\)/);
+  const sched = schedBare || schedArrow;
+  // Trigger velocities: numeric last-args of triggerAttackRelease (catches
+  // ambient's literal 0.5 / 0.45). Fallback: a `vel = <num>` base assignment
+  // (catches piano's computed `const vel = 0.32 + Math.random()*0.1`).
+  const vels = [];
+  const velRe = /triggerAttackRelease\([^;]*?,\s*([01]?\.\d+)\s*\)/g;
+  let vm;
+  while ((vm = velRe.exec(body)) !== null) vels.push(parseFloat(vm[1]));
+  let velAvg = vels.length ? Math.round((vels.reduce((a, b) => a + b, 0) / vels.length) * 100) / 100 : null;
+  let velBasis = vels.length ? "trigger-literal" : null;
+  if (velAvg === null) {
+    const velAssign = body.match(/\bvel(?:ocity)?\s*=\s*([\d.]+)/);
+    if (velAssign) {
+      velAvg = parseFloat(velAssign[1]);
+      velBasis = "base-assignment";
+    }
+  }
+
+  return {
+    envelope: env ? { attack: +env[1], decay: +env[2], sustain: +env[3], release: +env[4] } : null,
+    volume_db: vol ? +vol[1] : null,
+    reverb: reverb ? { decay: +reverb[1], wet: +reverb[2] } : null,
+    schedule_interval: sched ? sched[1] : null,
+    trigger_velocity_avg: velAvg,
+    trigger_velocity_basis: velBasis,
+  };
+}
+
+function diffEnvelope(pillCfg, measured) {
+  const findings = [];
+  if (!measured || measured.missing) return findings;
+  const exp = pillCfg.expect || {};
+  const env = measured.envelope;
+  if (exp.attack_min != null && env && env.attack < exp.attack_min) {
+    findings.push({ axis: "attack", measured: env.attack, expect: `>= ${exp.attack_min}s`, direction: "SHORT" });
+  }
+  if (exp.release_min != null && env && env.release < exp.release_min) {
+    findings.push({ axis: "release", measured: env.release, expect: `>= ${exp.release_min}s`, direction: "SHORT" });
+  }
+  if (exp.velocity_max != null && measured.trigger_velocity_avg != null && measured.trigger_velocity_avg > exp.velocity_max) {
+    findings.push({ axis: "trigger_velocity", measured: measured.trigger_velocity_avg, expect: `<= ${exp.velocity_max}`, direction: "LOUD" });
+  }
+  return findings;
 }
 
 // ----------------------------------------------------------------
@@ -270,10 +353,25 @@ for (const genre of PILLS) {
   allFindings[genre] = findings;
 }
 
-// Record the non-drum pills so the spec covers all 7 pills, even though
-// Phase 1 does not measure their groove.
-for (const [pill, reason] of Object.entries(NON_DRUM_PILLS)) {
-  spec.pills[pill] = { not_measured_phase1: true, reason };
+// Phase 1.5: measure the envelope-driven pills (ambient / piano).
+const envFindings = {};
+for (const [pill, cfg] of Object.entries(ENVELOPE_PILLS)) {
+  const measured = measureBuilderEnvelope(cfg.builder);
+  const findings = diffEnvelope(cfg, measured);
+  spec.pills[pill] = {
+    measured_via: "builder-envelope",
+    builder: cfg.builder,
+    target_source: cfg.source,
+    measured,
+    note: cfg.note,
+    drift: findings,
+  };
+  envFindings[pill] = findings;
+}
+
+// Drift-only pills (no fixed builder): acknowledged, not measured.
+for (const [pill, reason] of Object.entries(DRIFT_ONLY_PILLS)) {
+  spec.pills[pill] = { not_measured: true, reason };
 }
 
 // Write machine-readable spec.
@@ -324,15 +422,37 @@ for (const genre of PILLS) {
   console.log();
 }
 
-console.log("[non-drum pills — not measured in Phase 1]");
-for (const [pill, reason] of Object.entries(NON_DRUM_PILLS)) {
+console.log("[envelope pills — measured from genre-flavor.js builder (Phase 1.5)]");
+for (const [pill, cfg] of Object.entries(ENVELOPE_PILLS)) {
+  const p = spec.pills[pill];
+  const m = p.measured;
+  if (m.missing) {
+    console.log(`  ${pad(pill.toUpperCase(), 8)} (${cfg.builder} ${m.reason})`);
+    continue;
+  }
+  const e = m.envelope;
+  const envStr = e ? `attack=${e.attack} decay=${e.decay} sustain=${e.sustain} release=${e.release}` : "(no envelope)";
+  console.log(`  ${pill.toUpperCase()} (${cfg.builder})`);
+  console.log(`    ${envStr}  vol=${m.volume_db}dB  vel~${m.trigger_velocity_avg}  schedule=${m.schedule_interval}  reverb=${m.reverb ? `decay ${m.reverb.decay} wet ${m.reverb.wet}` : "?"}`);
+  if (p.drift.length === 0) {
+    console.log(`    axis-fit: ok (${cfg.source.split(":").pop().trim()})`);
+  } else {
+    for (const f of p.drift) {
+      console.log(`    ${pad(f.axis, 16)} measured=${pad(f.measured, 6)} expect ${pad(f.expect, 9)} ${f.direction}`);
+    }
+  }
+}
+console.log();
+console.log("[drift-only pills — not measured]");
+for (const [pill, reason] of Object.entries(DRIFT_ONLY_PILLS)) {
   console.log(`  ${pad(pill, 8)} ${reason}`);
 }
 console.log();
 
 const totalDrift = Object.values(allFindings).reduce((n, f) => n + f.length, 0);
+const totalEnvDrift = Object.values(envFindings).reduce((n, f) => n + f.length, 0);
 console.log("=".repeat(72));
-console.log(`${totalDrift} drift finding(s) across ${PILLS.length} drum-frame pills (+ ${Object.keys(NON_DRUM_PILLS).length} non-drum pills noted). Wrote docs/hazama-fm-design-spec.json`);
+console.log(`${totalDrift} drum-frame drift + ${totalEnvDrift} envelope axis-fit note(s) across ${PILLS.length} drum pills + ${Object.keys(ENVELOPE_PILLS).length} envelope pills (+ ${Object.keys(DRIFT_ONLY_PILLS).length} drift-only). Wrote docs/hazama-fm-design-spec.json`);
 console.log("Drift = design diverges from reference target. Review whether intentional;");
 console.log("if a tuning is wanted, it is engine.js / genre-flavor.js work + 試聴 human-gate.");
 process.exit(0);

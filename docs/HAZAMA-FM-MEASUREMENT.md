@@ -14,17 +14,19 @@ whole class of groove/timing tuning.
 
 ---
 
-## Two phases
+## Phases
 
 | Phase | What | Audio capture | Status |
 |---|---|---|---|
-| **1. Design analyzer** | Read the *design* artifacts (drum-frames JSON + genre-flavor.js governor) and diff against reference targets | none | **shipped** (`scripts/hazama-fm-measure.mjs`) |
+| **1. Drum design analyzer** | Read drum-frames JSON + genre-flavor.js governor, diff against numeric reference targets (funk/jazz/lofi/techno) | none | **shipped** |
+| **1.5. Envelope analyzer** | Parse genre-flavor.js builders (ambient/piano), report envelope/velocity/schedule vs qualitative axis hints | none | **shipped** |
 | **2. Live capture compare** | Record actual engine playback, analyze real timing/spectral, diff vs design spec | preview MCP | future |
 
-Phase 1 grounds the *design* first (cheap, no audio, deterministic).
-Phase 2 confirms the design actually plays as designed (catches engine
-clamps / dynamic ramps that silently override frame values — the same
-class of bug found in the v260 audit).
+Phase 1 / 1.5 ground the *design* first (cheap, no audio, deterministic).
+6 of 7 pills now have a measured design profile (`any` is engine drift,
+no fixed builder). Phase 2 confirms the design actually plays as designed
+(catches engine clamps / dynamic ramps that silently override frame
+values — the same class of bug found in the v260 audit).
 
 ---
 
@@ -44,9 +46,12 @@ auto-run it as a gate — drift is informative, not pass/fail.
 ### What it reads
 
 - `presets/drum-frames-{funk,jazz,lofi,techno}.json` — per-frame BPM /
-  swing, per-event `microMs` (behind-beat) + `velocity`
+  swing, per-event `microMs` (behind-beat) + `velocity` (Phase 1)
 - `audio/genre-flavor.js` `GOVERNOR_BY_PILL` — `rdj` (Aphex wrongness
   dropout) + `dangelo` (D Angelo behind-beat wash) amounts per pill
+- `audio/genre-flavor.js` `buildAmbientDefault` / `buildPianoDefault` —
+  synth envelope (attack/decay/sustain/release), volume, reverb, trigger
+  velocity, schedule interval (Phase 1.5, ambient/piano)
 
 ### What it measures (per pill)
 
@@ -87,6 +92,8 @@ the live numbers; `docs/hazama-fm-design-spec.json` has the full data):
 | **jazz** | none | within Blakey hard-bop / Miles modal targets |
 | **funk** | swing 0.09 vs 0-0.08 (HIGH), kick -2.5ms vs 0-6 (LOW), snare 18.1ms top-of-range | kick **pushes ahead** (front of beat) while snare drags — wide pocket; swing slightly above straight-funk target |
 | **techno** | kick -0.5ms vs 0-3 (LOW) | essentially on-grid (marginal lead), as a 4-on-floor should be |
+| **ambient** (envelope) | axis-fit ok | attack 4s / release 6s / schedule 16m — long + slow = the space/restraint character ✓ |
+| **piano** (envelope) | axis-fit ok | attack 0.06 / release 1.6 / vel 0.32 (felt) / schedule 2m (sparse). felt+long-rest comes from low velocity + sparse schedule, not per-note release ✓ |
 
 These are **observations, not bugs**. The drift tells you where the
 design diverges from the reference; whether to close the gap is a taste
