@@ -27,12 +27,14 @@ deploy はすべて GitHub Pages（`<remote>` の main ブランチ）。
 
 ## Archived repos（触らない）
 
-| repo | 状態 |
-|---|---|
-| `namima-lab` | lineage / staging / harvest-only。active runtime として revive しない |
-| `test` | archive candidate / harvest-only。primary runtime にしない |
+| repo | 状態 | harvest 完了マーカー |
+|---|---|---|
+| `namima-lab` | lineage / staging / harvest-only。active runtime として revive しない | BL-019 ✅ 2026-05-25 — organic-pluck recipe → `namima/docs/organic-pluck-lab-recipe.md` (namima PR #32) |
+| `test` | archive candidate / harvest-only。primary runtime にしない | BL-019 ✅ 2026-05-25 — style archetype → `Music/references/style-archetype-from-test.json` + `Music/docs/test-style-archetype-translation.md` (Music PR #249) / probability interpolation → `drum-floor/docs/probability-interpolation-from-test.md` (drum-floor PR #52) |
 
 archive 操作・復活・削除は別承認が必要。本エンジンの対象外。
+両 archive 候補 repo は dormant-asset 監査 → 翻訳 harvest → archive のループが
+完了済 (BL-019)。formal GitHub archive toggle は user 判断保留。
 
 ## Cross-repo coordination
 
