@@ -5,8 +5,8 @@
   "frames": [
     {
       "id": "lofi_pocket_bar_0",
-      "bpm": 78,
-      "swing": 0.10,
+      "bpm": 84,
+      "swing": 0.15,
       "barLength": 4,
       "role": "settle",
       "events": [
@@ -27,8 +27,8 @@
     },
     {
       "id": "lofi_pocket_bar_1",
-      "bpm": 72,
-      "swing": 0.12,
+      "bpm": 80,
+      "swing": 0.16,
       "barLength": 4,
       "role": "breathe",
       "events": [
@@ -48,8 +48,8 @@
     },
     {
       "id": "lofi_pocket_bar_2",
-      "bpm": 84,
-      "swing": 0.09,
+      "bpm": 90,
+      "swing": 0.14,
       "barLength": 4,
       "role": "build",
       "events": [
@@ -72,8 +72,8 @@
     },
     {
       "id": "lofi_pocket_bar_3",
-      "bpm": 88,
-      "swing": 0.08,
+      "bpm": 92,
+      "swing": 0.14,
       "barLength": 4,
       "role": "turn",
       "events": [
@@ -95,8 +95,8 @@
     },
     {
       "id": "lofi_pocket_bar_4",
-      "bpm": 90,
-      "swing": 0.11,
+      "bpm": 94,
+      "swing": 0.15,
       "barLength": 4,
       "role": "recover",
       "events": [
