@@ -1,10 +1,46 @@
-# Band Room — Changelog (v65 → v288 compact)
+# Band Room — Changelog (v65 → v289 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v289 compact — AI 再現 mix rebalance（ユーザー耳フィードバック起点、harmonic presence 回復）
+
+ユーザー試聴(Human Fly, AI 再現):「最初ベースなって、あとは、ドラムくらいしか
+聞こえない」。offline renderer の stem 計測が裏付け:
+
+| stem | rms_db | vs drums |
+|---|---|---|
+| drums | -23.5 dB | 基準 |
+| bass | -29.2 dB | -5.7 dB |
+| other (guitar+chord) | **-33.9 dB** | **-10.5 dB** |
+
+event 数: crash **400発**(kick 334 超)/ guitar 228 / chord 116。
+
+**根本原因**: v255(chord を背景 40 に)+ v254(voice OFF)で「bass+guitar 前景」を
+**synth drums 前提**でチューニング → v259 で acoustic drums(よりパンチが強い)に
+変えて harmonic 前景が埋もれた。cramps-punk の guitar はスパースなので、stab の
+合間は drums+bass だけ → 「ドラムばっか」。
+
+**修正**: harmonic presence を戻す rebalance:
+- guitar **56 → 70**(bass の前景パートナーとして復帰)
+- chord **40 → 52**(背景 wash ではなく "存在する" harmonic bed。v259 で文脈が
+  変わったので v255 を部分的に戻す)
+- drums **58 → 52**(acoustic punch を一段下げる)
+- voice は OFF のまま(v254 の意図を尊重)
+
+`V289_MIX_REBALANCE_MIGRATION` + `MIX_PREFS_VERSION` を `v289-harmonic-presence`
+に bump。各パートの未変更デフォルトのみ移行、カスタム値は保持。bus init と
+HTML slider 既定も同期。stems mode は全 bypass、原音 無影響。
+
+注: webapp capture は AI 再現 再生で renderer が hang して計測不可なので、
+これは offline 計測 + ship-then-verify(実機試聴)。
+
+- `band-room.css?v=br-81`、`band-room.js?v=br-172`、`hazama-fm-v289`。
 
 ---
 
