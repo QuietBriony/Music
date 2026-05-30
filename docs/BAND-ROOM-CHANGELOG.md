@@ -1,10 +1,27 @@
-# Band Room — Changelog (v65 → v287 compact)
+# Band Room — Changelog (v65 → v288 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v288 compact — exciter oversample 4x → 2x（CPU / capture-hang 緩和）
+
+v287 の exciter は `Tone.Distortion` の waveshaper を AI bus 全体に **常時**
+掛ける（per-note transient ではない）。oversample "4x" はその分 standing な
+CPU コストになり、v287 の webapp capture 中に headless renderer を hard hang
+させた（`preview_eval` が `1+1` すら timeout）。弱い mobile 端末でも同じ risk。
+
+修正: oversample "4x" → "2x"。後段の 3.5 kHz high-pass + wet 0.10 があるので
+2x でも生成倍音の antialiasing は十分。**air は同じ、exciter CPU は約半分**。
+
+音の意図（brightness 生成）は不変、純粋な perf/安定化 ship。stems mode は
+polish bus を bypass、原音 無影響。
+
+- `band-room.css?v=br-81`、`band-room.js?v=br-171`、`hazama-fm-v288`。
 
 ---
 

@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-170-hf-exciter";
+  const BANDROOM_APP_VERSION = "br-171-exciter-2x";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -333,7 +333,14 @@
     // post-comp so excitation rides the glued, leveled signal. AI-only:
     // stems bypass this bus entirely, so 原音 is untouched.
     const exciteIn    = new Tone.Filter({ frequency: 1800, type: "highpass", Q: 0.4 });
-    const exciteShape = new Tone.Distortion({ distortion: 0.9, oversample: "4x", wet: 1 });
+    // v288: oversample 4x → 2x. The exciter's waveshaper runs continuously
+    // on the whole AI bus (not a per-note transient), so 4x oversampling
+    // was a standing CPU cost that pushed the headless capture renderer
+    // into a hard hang during v287 measurement and risks the same on weaker
+    // mobile devices. 2x still antialiases the generated harmonics well
+    // enough given the 3.5 kHz high-pass + 0.10 wet that follow. Same air,
+    // roughly half the exciter CPU.
+    const exciteShape = new Tone.Distortion({ distortion: 0.9, oversample: "2x", wet: 1 });
     const exciteOut   = new Tone.Filter({ frequency: 3500, type: "highpass", Q: 0.5 });
     const exciteWet   = new Tone.Gain(0.10);
 
