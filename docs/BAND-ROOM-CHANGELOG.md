@@ -1,10 +1,42 @@
-# Band Room — Changelog (v65 → v286 compact)
+# Band Room — Changelog (v65 → v287 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v287 compact — AI 再現 high-frequency exciter（EQ では動かせなかった "air" を生成）
+
+v274/v284/v286 と 3 round、`makeInstrumentPolishBus` の EQ high-shelf で
+brightness を上げようとして失敗。webapp capture の rolloff は 3 round 通して
+~2.5 kHz に張り付き（target 5.3 kHz）。原因（MEASUREMENT-LOOP §5）:
+
+> AI 再現 の音源（acoustic CDN kit + synth band）は元々 3 kHz 以上に
+> ほぼ energy が無い。空の帯域を shelf で持ち上げても何も起きない。
+
+修正: **exciter（倍音生成）** を polish bus に parallel 追加。EQ と違い、
+既存の 1.8-3 kHz の content を hard waveshaping して **新しい倍音を作り**、
+3.5 kHz で high-pass して生成された "air" だけを薄く（wet 0.10）blend する。
+3 round の EQ が触れなかった source-level の "正しい knob"。
+
+```js
+const exciteIn    = new Tone.Filter({ frequency: 1800, type: "highpass", Q: 0.4 });
+const exciteShape = new Tone.Distortion({ distortion: 0.9, oversample: "4x", wet: 1 });
+const exciteOut   = new Tone.Filter({ frequency: 3500, type: "highpass", Q: 0.5 });
+const exciteWet   = new Tone.Gain(0.10);
+// comp → exciteIn → exciteShape → exciteOut → exciteWet → widen（第3の parallel path）
+```
+
+comp の後ろから tap（glue 済みの leveled 信号に exciter を乗せる）。wet 0.10 は
+fizz/harsh を避ける conservative 値。次 round の webapp capture で rolloff/
+centroid の lift を測って wet を調整する想定。
+
+AI-only: stems mode は polish bus を bypass するので 原音 は無影響。
+
+- `band-room.css?v=br-81`、`band-room.js?v=br-170`、`hazama-fm-v287`。
 
 ---
 

@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-169-brightness-eq-recenter";
+  const BANDROOM_APP_VERSION = "br-170-hf-exciter";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -321,13 +321,34 @@
     const widen  = new Tone.StereoWidener(0.58);
     const makeup = new Tone.Gain(3.0);    // v243: glue-comp makeup + AI 再現 level lift (~+9 dB). The synth band reached the shared, stems-tuned master ~10 dB below the stems → it sat under the master comp/limiter thresholds and never got the loudness glue → thin ("げきしょぼ"). This lifts drums/bass/guitar/chord to stems-comparable level. Stems-only (原音) never touch this bus, so they are unaffected.
 
+    // v287: parallel high-frequency exciter. The v274/v284/v286 EQ high-
+    // shelf could not brighten the AI mix — the webapp source (acoustic
+    // CDN kit + synth band) has near-zero energy above ~3 kHz, so shelving
+    // an empty band left webapp rolloff stuck at ~2.5 kHz (target 5.3 kHz)
+    // across all three rounds (see MEASUREMENT-LOOP §5). An exciter instead
+    // GENERATES new harmonics from the existing 1.8-3 kHz content via hard
+    // waveshaping, then high-passes at 3.5 kHz so only the freshly-created
+    // "air" blends back in (wet 0.10 — subtle, avoids fizz/harshness). This
+    // is the source-level "right knob" the three EQ rounds missed. Tapped
+    // post-comp so excitation rides the glued, leveled signal. AI-only:
+    // stems bypass this bus entirely, so 原音 is untouched.
+    const exciteIn    = new Tone.Filter({ frequency: 1800, type: "highpass", Q: 0.4 });
+    const exciteShape = new Tone.Distortion({ distortion: 0.9, oversample: "4x", wet: 1 });
+    const exciteOut   = new Tone.Filter({ frequency: 3500, type: "highpass", Q: 0.5 });
+    const exciteWet   = new Tone.Gain(0.10);
+
     input.connect(eq);
     eq.connect(comp);
     comp.connect(satDry);
     comp.connect(sat);
     sat.connect(satWet);
+    comp.connect(exciteIn);
+    exciteIn.connect(exciteShape);
+    exciteShape.connect(exciteOut);
+    exciteOut.connect(exciteWet);
     satDry.connect(widen);
     satWet.connect(widen);
+    exciteWet.connect(widen);
     widen.connect(makeup);
     makeup.connect(dest);
     return input;
