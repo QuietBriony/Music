@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-171-exciter-2x";
+  const BANDROOM_APP_VERSION = "br-172-mix-rebalance";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -494,11 +494,22 @@
     const voicePan  = new Tone.Panner(0.00).connect(masterGain);
     const chordPan  = new Tone.Panner(+0.16).connect(instrumentBus);
     const clickPan  = new Tone.Panner(0.00).connect(masterGain);
-    drumBus = new Tone.Gain(0.58).connect(drumPan);
+    // v289 mix rebalance — user feedback (Human Fly AI 再現): "bass intro,
+    // then mostly only drums." Offline render confirmed guitar+chord sit
+    // ~10 dB under drums. v255 dropped chord to background + v254 voiced
+    // OFF for rhythm-section clarity, then v259's acoustic drums (hotter
+    // than the synth kit those levels were tuned against) overpowered the
+    // intended bass+guitar foreground. cramps-punk guitar is sparse, so
+    // between stabs only drums+bass remain. Restore harmonic presence:
+    // guitar 0.56→0.70 (foreground), chord 0.58→0.52 init (paired with the
+    // v289 slider/migration 40→52 so the pad is a present bed, not a wash),
+    // drums 0.58→0.52 (back off the v259 acoustic punch). Voice stays OFF
+    // (v254 intentional). Stems mode bypasses all of this — 原音 untouched.
+    drumBus = new Tone.Gain(0.52).connect(drumPan);
     bassBus = new Tone.Gain(0.66).connect(bassPan);
-    guitarBus = new Tone.Gain(0.56).connect(guitarPan);
+    guitarBus = new Tone.Gain(0.70).connect(guitarPan);
     voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
-    chordBus = new Tone.Gain(0.58).connect(chordPan);
+    chordBus = new Tone.Gain(0.52).connect(chordPan);
     clickBus = new Tone.Gain(0.35).connect(clickPan);
 
     // Original-stem buses → per-stem EQ → masterGain
@@ -6688,7 +6699,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
-  const MIX_PREFS_VERSION = "v267-bass-electric";
+  const MIX_PREFS_VERSION = "v289-harmonic-presence";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -6772,6 +6783,21 @@
   const V267_BASS_INSTRUMENT_MIGRATION = {
     olds: [null, ""],
     current: "bass-electric"
+  };
+  // v289: AI 再現 mix rebalance for harmonic presence. User feedback on
+  // Human Fly: "bass intro, then mostly only drums." Offline render showed
+  // guitar+chord ~10 dB under drums. v255 (chord → background 40) + v254
+  // (voice OFF) tuned a rhythm-section-forward balance against the SYNTH
+  // kit; v259 then swapped in punchier acoustic drums and the harmonic
+  // foreground got buried. Restore it: guitar 56 → 70 (the intended
+  // foreground partner of bass), chord 40 → 52 (present harmonic bed, not
+  // the v255 background wash — context changed), drums 58 → 52 (back off
+  // the acoustic punch). Voice stays OFF (v254). Only flips users still at
+  // each part's untouched current default; customised values are kept.
+  const V289_MIX_REBALANCE_MIGRATION = {
+    "br-vol-drums":  { old: "58", current: "52" },
+    "br-vol-guitar": { old: "56", current: "70" },
+    "br-vol-chords": { old: "40", current: "52" }
   };
 
   function readRawStoredPrefs() {
@@ -6871,6 +6897,15 @@
       next.bassInstrument = V267_BASS_INSTRUMENT_MIGRATION.current;
       changed = true;
     }
+    // v289: mix rebalance. Runs LAST so it chains off the values V167/V255
+    // already settled (drums/guitar at the V167 current, chord at V255's
+    // 40). Only untouched defaults move; customised sliders are preserved.
+    Object.entries(V289_MIX_REBALANCE_MIGRATION).forEach(([id, rule]) => {
+      if (String(next.sliders[id]) === rule.old) {
+        next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
     next.__mixMigrated = changed;
     return next;
   }
