@@ -78,7 +78,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-172-mix-rebalance", "Band Room should expose the current mix-rebalance version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-173-crash-thin", "Band Room should expose the current crash-thinning version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -117,10 +117,10 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">vertical room<\/button>/, "Band Room should expose the vertical-room preset button");
 assert.match(html, /band-room\.css\?v=br-81/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-172/, "Band Room HTML should reference the current JS cache marker");
-assert.match(sw, /hazama-fm-v289/, "Service worker should carry the current Band Room cache version");
+assert.match(html, /band-room\.js\?v=br-173/, "Band Room HTML should reference the current JS cache marker");
+assert.match(sw, /hazama-fm-v290/, "Service worker should carry the current Band Room cache version");
 assert.match(sw, /band-room\.css\?v=br-81/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-172/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-173/, "Service worker should precache the current Band Room JS marker");
 assert.match(source, /bandIds\.length === 1[\s\S]*br-album-plaque/, "Single-band registry should render a non-button album plaque");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/core\.js/, "Band Room should lazy-load Magenta only when AI fill is used");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/music_rnn\.js/, "Band Room should lazy-load Magenta RNN only when AI fill is used");
@@ -332,6 +332,8 @@ assert.match(source, /let masterVolBase = 1\.2/, "Band Room master volume base s
 assert.match(source, /drumBus = new Tone\.Gain\(0\.52\)/, "AI drum bus default should sit back (v289 rebalance) so guitar/chord read");
 assert.match(source, /guitarBus = new Tone\.Gain\(0\.70\)/, "AI guitar bus should be the v289 foreground partner of bass");
 assert.match(source, /chordBus = new Tone\.Gain\(0\.52\)/, "AI chord bus should be a present harmonic bed (v289)");
+assert.match(source, /crashAllowedThisBar/, "Band Room should gate crash density per bar (v290 thinning)");
+assert.match(source, /crashKeptKey/, "Band Room should keep only the most-downbeat crash per bar (v290)");
 assert.match(source, /bassBus = new Tone\.Gain\(0\.66\)/, "AI bass bus default should be balanced against the v168 mix");
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
 assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.68\)/, "Vocal stem default should sit forward without pinning the limiter");

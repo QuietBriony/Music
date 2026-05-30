@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-172-mix-rebalance";
+  const BANDROOM_APP_VERSION = "br-173-crash-thin";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -4479,9 +4479,45 @@
         const PHRASE_VEL_MULT = [0.95, 1.00, 1.04, 0.98];
         const phraseMult = PHRASE_VEL_MULT[phrasePos];
 
+        // v290: crash thinning. The extracted drum frames over-detect
+        // crashes — librosa's band-energy classifier tagged hat / ride /
+        // cymbal-bleed onsets as "crash", so each 4-bar frame carries 3-6
+        // crash events that re-fire EVERY bar on repeat (~400 over the
+        // song, more than the 334 kicks). That constant cymbal wall is the
+        // main reason the AI 再現 reads as "all drums" (user feedback) and a
+        // big source of harshness. Keep at most ONE crash per bar — the most
+        // downbeat one — and in low-energy sections (verse / intro / outro)
+        // only let it land on a phrase start (1 per 4 bars). Higher-energy
+        // sections keep 1/bar. Real drummers crash on accents, not every
+        // bar. The section-change crash (scheduleBar top) still marks
+        // transitions. Playback-side only — the extracted data is untouched.
+        const crashRole = String(frame.session_role || "").toLowerCase();
+        const crashLowEnergy = /verse|intro|outro|end/.test(crashRole);
+        const crashAllowedThisBar = !crashLowEnergy || phrasePos === 0;
+        let crashKeptKey = null;
+        if (crashAllowedThisBar) {
+          let bestRank = Infinity;
+          frame.events.forEach((e) => {
+            if (e.instrument !== "crash") return;
+            const rank = (Number(e.beat) || 0) * 4 + (Number(e.sub) || 0);
+            if (rank < bestRank) {
+              bestRank = rank;
+              crashKeptKey = `${Number(e.beat) || 0}:${Number(e.sub) || 0}`;
+            }
+          });
+        }
+        let crashFiredThisBar = false;
+
         frame.events.forEach((evt) => {
           const inst = drumKit[evt.instrument];
           if (!inst) return;
+          // v290: drop the over-detected extra crashes — at most one
+          // downbeat crash per bar, phrase-gated in low-energy sections.
+          if (evt.instrument === "crash") {
+            const key = `${Number(evt.beat) || 0}:${Number(evt.sub) || 0}`;
+            if (!crashAllowedThisBar || crashFiredThisBar || key !== crashKeptKey) return;
+            crashFiredThisBar = true;
+          }
           let baseOffset = (evt.beat || 0) * beatTime + (evt.sub || 0) * subTime + (evt.microMs || 0) / 1000;
           // v133: Dilla offset per instrument + step
           let dillaMs = 0;

@@ -1,10 +1,36 @@
-# Band Room — Changelog (v65 → v289 compact)
+# Band Room — Changelog (v65 → v290 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v290 compact — crash 間引き（シンバルの壁を除去、v289 の続き）
+
+v289 の offline 計測で判明: drum frames が crash を**過検出**している。
+`librosa onset_detect + band-energy classify` が hat / ride / cymbal bleed を
+"crash" に誤分類し、各 4小節 frame に 3-6 個の crash event。frame は section
+全体で**毎小節リピート**するので、verse は 3 crash × 毎小節、bridge は 6 ×
+毎小節 = 曲全体で **~400発**(kick 334 より多い)。この「シンバル鳴りっぱなし」が
+ユーザーの「ドラムばっか」と harshness の決定的主因。
+
+修正(**再生側のみ、抽出データは不変 = 私の領分**): `scheduleBar` の frame
+event ループで crash を間引く:
+- 1小節につき crash は **最大1発**(最も downbeat のもの)
+- verse / intro / outro は phrase 頭(4小節に1回)だけ
+- それ以外(prechorus / chorus / bridge)は 1小節1発
+- section 切替の crash(別経路)はそのまま
+
+~400発 → 推定 ~70-90発。verse はスパース、chorus は drive を維持。crash は
+明るく broadband なので、間引きは brightness の harshness も同時に下げる。
+
+stems mode は drum frame 再生を使わない経路 → 原音 無影響。webapp capture は
+hang するので offline 計測 + ship-then-verify(実機試聴)。
+
+- `band-room.css?v=br-81`、`band-room.js?v=br-173`、`hazama-fm-v290`。
 
 ---
 
