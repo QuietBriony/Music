@@ -7,6 +7,25 @@ Hazama FM と Music Core Rig を壊さずに磨くための最低契約事項。
 
 ---
 
+## Workspace map
+
+通常の作業ディレクトリは `C:\workspace\music-stack\Music`。
+`C:\workspace\music-stack` は workspace container であり、Music repo そのものではない。
+
+同じ workspace にある sibling repo:
+
+- `C:\workspace\music-stack\chill`
+- `C:\workspace\music-stack\drum-floor`
+- `C:\workspace\music-stack\namima`
+- `C:\workspace\music-stack\openclaw`
+
+sibling repo を触る場合は、その repo の `AGENTS.md` を先に読む。
+
+別 PC で workspace / Codex App 表示を再現する手順は
+[`docs/NEW-PC-SETUP.md`](docs/NEW-PC-SETUP.md) を参照。
+
+---
+
 ## Autonomous development engine
 
 music-stack 全体の自走開発は `docs/autonomy/` のエンジンで運用する。

@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-05-30 — Codex App project 表示と workspace map の再現手順を固定
+- agent     : Codex App (gamingpc)
+- goal      : 別 PC / 別 Codex セッションで `music-stack` の project 表示と作業前提を
+  すぐ再現できるように、会話履歴依存ではなく repo docs へ context を残す
+- repos     : Music (docs / AGENTS)、workspace container (local-only parent AGENTS)
+- shipped   : `AGENTS.md` に `Workspace map` を追加し、
+  `docs/NEW-PC-SETUP.md` に Codex App project 表示の再現手順と
+  parent `C:\workspace\music-stack\AGENTS.md` のローカル雛形を追記
+- stack-check: not run (docs / AGENTS only)
+- backlog   : なし
+- next      : 他 PC では `C:\workspace\music-stack\Music` を Codex App で開き、
+  `AGENTS.md` / `STACK-INDEX.md` / `SESSION-LEDGER.md` から context 復元
+- blockers  : なし
+
 ## 2026-05-29 — infra + design-vocabulary + Hazama FM measurement harness (6 PR)
 - agent      : Claude Code (chouta-surface, Opus 4.7 / 1M context)
 - goal       : BL-019/BL-023 消化後、user の「stack 最適化 / 音楽性向上 / stack 改善」
