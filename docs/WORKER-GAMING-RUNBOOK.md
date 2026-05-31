@@ -17,9 +17,10 @@ Observed on 2026-05-31:
 - GPU: NVIDIA GeForce RTX 2070 plus Intel UHD Graphics 630
 - CLI tools: Python 3.12.10, Node 24.16.0, ffmpeg 8.1.1
 - Installed apps: Ableton Live 12 Lite 12.3.2 plus legacy Live 10 Lite,
-  Native Access 1.14.1, Kontakt 6.8.0, Maschine 2.16.1, Reaktor 6.4.3,
-  Guitar Rig 6.3.0, VCV Rack 2 Free 2.6.6 plus Rack 1.1.6,
-  SuperCollider 3.9.3, Atom 1.59.0
+  Native Access 1.14.1, Kontakt 6.8.0, Kontakt 7 Player 7.6.1,
+  Maschine 2.16.1, Reaktor 6.4.3, Guitar Rig 6.3.0,
+  VCV Rack 2 Free 2.6.6 plus Rack 1.1.6, SuperCollider 3.9.3,
+  Atom 1.59.0
 - Worker venv: `C:\workspace\music-stack-worker\.venv`
 - Verified venv packages: PyTorch 2.11.0+cu128, torchaudio, Demucs, librosa,
   soundfile, imageio-ffmpeg, scipy, numpy
@@ -34,6 +35,13 @@ Run the local doctor:
 ```powershell
 cd C:\workspace\music-stack\Music
 C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-env
+```
+
+Run the DAW / Native Instruments doctor:
+
+```powershell
+cd C:\workspace\music-stack\Music
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-daw
 ```
 
 ## Output Layout
@@ -154,8 +162,14 @@ Current Ableton handoff baseline:
 - Scan VST3 from `C:\Program Files\Common Files\VST3`.
 - Scan NI VST2 from `C:\Program Files\Native Instruments\VSTPlugins 64 bit`
   only when a specific legacy plugin requires it.
-- NI plugins are installed, but Ableton's plugin database still needs a manual
-  Preferences rescan when the Preferences UI renders normally.
+- Kontakt 7 Player `7.6.1` is installed and `Kontakt 7.vst3` is present in
+  `C:\Program Files\Common Files\VST3`.
+- `Options.txt` contains `-DisableGraphicsHardwareAcceleration` to reduce the
+  chance of a blank Preferences window.
+- NI plugins are installed, but Ableton's plugin database still reported
+  `Plugin modules: 0` / `Plugins: 0` on 2026-05-31. Run `check-daw`; if it
+  still reports zero plugins, use the PC screen to open Preferences > Plug-Ins,
+  turn VST3 System Folders on, and rescan.
 - Keep Cakewalk by BandLab installed for legacy project compatibility, but do
   not make it the main worker path; update attempts currently require a GUI
   installer confirmation.

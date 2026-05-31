@@ -77,6 +77,11 @@ machineName は git config `music.machineName` に保存。
   DefaultLiveSet 起動まで確認済み。
 - **運用手順**: [`docs/WORKER-GAMING-RUNBOOK.md`](WORKER-GAMING-RUNBOOK.md) と
   `python -X utf8 scripts/worker-gaming-pipeline.py check-env` を入口にする。
+- **2026-05-31 DAW/NI follow-up**: Kontakt 7 Player `7.6.1` installed and
+  `Kontakt 7.vst3` is present. Use
+  `python -X utf8 scripts/worker-gaming-pipeline.py check-daw` to confirm
+  Kontakt / Ableton plugin readiness. As of the follow-up, Ableton's plugin DB
+  was still empty and needs a PC-screen Preferences > Plug-Ins rescan.
 
 ---
 
