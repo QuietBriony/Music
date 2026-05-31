@@ -7,7 +7,7 @@
 - Audit logs:
   - `C:\workspace\music-stack-worker\logs\env-audit-20260531-192652`
   - `C:\workspace\music-stack-worker\logs\env-audit-20260531-194803-post`
-- Primary DAW lane: Ableton Live 12 Lite
+- Primary DAW lanes: Ableton Live 12 Lite and Cakewalk Sonar
 - Worker Python lane: `C:\workspace\music-stack-worker\.venv`
 - Output policy: generated audio / DAW projects / plugin state stay outside Git
 
@@ -20,13 +20,23 @@
 - Native Instruments Controller Editor: `2.7.6` -> `2.8.2`.
 - Native Instruments Kontakt / Kontakt 6 Player: `6.7.1` -> `6.8.0`.
 - Native Instruments Kontakt 7 Player: installed `7.6.1`.
+- Cakewalk Product Center: installed `1.1.0.004` and logged in manually.
+- Cakewalk Sonar: installed `32.04.0.078` / `2026.04`.
+- Cakewalk add-ons from Product Center: Core Plugins, Studio Instruments Suite,
+  Sonar Drum Replacer, Session Drummer 3, TH-U, Help & Documentation,
+  Precision Suite, ProChannel Modules, and L-Phase/T-Phase plugin content.
+- BandLab Assistant: removed after Product Center became the current manager.
 - Worker script now resolves FFmpeg from PATH, winget portable install paths, or `imageio_ffmpeg`, in that order.
-- Worker script now includes `check-daw` for Ableton / Native Instruments readiness checks.
+- Worker script now includes `check-daw` for Ableton / Native Instruments /
+  Cakewalk readiness checks.
 
 ## Current Music App Baseline
 
 - Ableton Live 12 Lite: `12.3.2`
 - Ableton Live 10 Lite: legacy install remains under `C:\ProgramData\Ableton`
+- Cakewalk Product Center: `1.1.0.004`
+- Cakewalk Sonar: `32.04.0.078` (`Sonar.exe` product version `2026.04`)
+- Cakewalk by BandLab: legacy `29.09.0.125`; not the primary Cakewalk lane
 - Native Access: `1.14.1`
 - Kontakt: `6.8.0`
 - Kontakt 7 Player: `7.6.1`
@@ -45,6 +55,9 @@
   and user content.
 - Ableton Live 12 Lite starts to an untitled default set after crash recovery
   state was moved aside.
+- Cakewalk Sonar starts, completed first-run setup, and reported
+  `Version: 2026.04 (Build 078, 64 bit)` from Quick Start.
+- Product Center reports Sonar and the selected add-ons as installed.
 
 ## Deferred Manual Work
 
@@ -57,7 +70,9 @@
   as a blank white window under remote control. Enable and rescan plugins from
   Ableton Preferences when the UI renders normally on the PC screen.
 - Ableton Live point update: use Ableton account / in-app update manually.
-- Cakewalk by BandLab: winget downloaded the final `29.09.0.098` installer, but the installer was cancelled. Keep current install for legacy compatibility.
+- Cakewalk by BandLab: legacy `29.09.0.125` remains installed but is not the
+  main lane. Keep it only as a deprecated fallback until shared Cakewalk
+  components have been reviewed.
 - SuperCollider 3.14.1: winget downloaded the installer, but the installer was cancelled. Current `sclang 3.9.3` starts.
 - Visual C++ 2005 x64: update failed while uninstalling the old package with exit code `1603`; leave it unless a specific old plugin requires repair.
 
@@ -97,6 +112,15 @@
   - `Options.txt` now contains `-DisableGraphicsHardwareAcceleration`
   - Ableton plugin database still reports `Plugin modules: 0` and
     `Plugins: 0`; Kontakt has not been registered by Live yet
+- Cakewalk / BandLab
+  - Product Center `1.1.0.004` installed
+  - Sonar `32.04.0.078` installed; Quick Start reports `2026.04 (Build 078, 64 bit)`
+  - add-ons installed: Core Plugins `1.0.0.178`, Studio Instruments Suite
+    `1.0.0.70`, Sonar Drum Replacer `1.2.0.14`, Session Drummer 3 `1.0`,
+    TH-U `2.0.8`, Help & Documentation `1.0`, Precision Suite `1.1.0.123`,
+    ProChannel Modules `1.0`, and L-Phase/T-Phase plugin content
+  - BandLab Assistant is removed; Product Center is the current manager
+  - Cakewalk by BandLab remains only as a deprecated fallback
 - `C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-daw`
   - Kontakt 7 standalone OK
   - Kontakt 7 VST3 OK
@@ -104,6 +128,7 @@
   - Kontakt 7 content DB OK
   - Ableton Preferences / Options.txt OK
   - Ableton plugin DB present but empty
+  - Cakewalk Product Center / Sonar / add-on registry checks OK
 - `node scripts\stack-check.mjs`
   - `PASS 15 / FAIL 0 / SKIP 0`
 - Band Room preview server
@@ -111,12 +136,14 @@
 
 ## Next Operating Step
 
-Use the Human Fly AI recreation stems in Ableton Live 12 Lite:
+Use the Human Fly AI recreation stems in Ableton Live 12 Lite or Cakewalk Sonar:
 
 1. Import `drums.mp3`, `bass.mp3`, `other.mp3`, and `mix.wav` from `C:\workspace\music-stack-worker\ai-recreation\tabasco\human-fly`.
 2. Run `C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-daw`.
 3. If Ableton still reports `Plugin modules: 0`, open Ableton Preferences on
    the PC screen, go to Plug-Ins, turn `VST3 System Folders` on, and rescan.
 4. Scan NI VST2 from `C:\Program Files\Native Instruments\VSTPlugins 64 bit` only when needed.
-5. Export polished audio to `C:\workspace\music-stack-worker\daw-export\tabasco\human-fly`.
-6. Review in Band Room before promoting any metadata or candidates into Git.
+5. For the Cakewalk lane, use Sonar with the Product Center add-ons for stem
+   polish, guitar/amp processing, drum replacement, and quick mix bounces.
+6. Export polished audio to `C:\workspace\music-stack-worker\daw-export\tabasco\human-fly`.
+7. Review in Band Room before promoting any metadata or candidates into Git.
