@@ -19,6 +19,11 @@ import sys
 import tempfile
 from pathlib import Path
 
+try:
+    import winreg
+except ImportError:
+    winreg = None
+
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_WORKER_ROOT = Path(os.environ.get("MUSIC_STACK_WORKER_ROOT", r"C:\workspace\music-stack-worker"))
@@ -196,8 +201,105 @@ def _sqlite_rows(db_path: Path, query: str, limit: int = 8) -> list[tuple]:
         return []
 
 
+def _uninstall_registry_entries() -> list[dict[str, str]]:
+    if winreg is None:
+        return []
+
+    fields = ("DisplayName", "DisplayVersion", "Publisher", "InstallDate", "DisplayIcon", "InstallLocation")
+    roots = [
+        ("HKLM", winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
+        ("HKLM32", winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"),
+        ("HKCU", winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"),
+    ]
+    entries: list[dict[str, str]] = []
+    seen: set[tuple[str, str, str]] = set()
+
+    for hive_name, hive, root_path in roots:
+        try:
+            root_key = winreg.OpenKey(hive, root_path)
+        except OSError:
+            continue
+        with root_key:
+            subkey_count = winreg.QueryInfoKey(root_key)[0]
+            for index in range(subkey_count):
+                try:
+                    subkey_name = winreg.EnumKey(root_key, index)
+                    subkey = winreg.OpenKey(root_key, subkey_name)
+                except OSError:
+                    continue
+                with subkey:
+                    entry = {"RegistryKey": fr"{hive_name}\{root_path}\{subkey_name}"}
+                    for field in fields:
+                        try:
+                            value = winreg.QueryValueEx(subkey, field)[0]
+                        except OSError:
+                            continue
+                        if value is not None:
+                            entry[field] = str(value)
+                display_name = entry.get("DisplayName", "").strip()
+                if not display_name:
+                    continue
+                dedupe = (
+                    display_name.lower(),
+                    entry.get("DisplayVersion", "").lower(),
+                    entry.get("Publisher", "").lower(),
+                )
+                if dedupe in seen:
+                    continue
+                seen.add(dedupe)
+                entries.append(entry)
+    return entries
+
+
+def _match_uninstall_entry(entries: list[dict[str, str]], names: list[str]) -> dict[str, str] | None:
+    needles = [name.lower() for name in names]
+    for entry in entries:
+        display_name = entry.get("DisplayName", "").lower()
+        if any(display_name == needle for needle in needles):
+            return entry
+    for entry in entries:
+        display_name = entry.get("DisplayName", "").lower()
+        if any(needle in display_name for needle in needles):
+            return entry
+    return None
+
+
+def _entry_detail(entry: dict[str, str] | None) -> str:
+    if not entry:
+        return ""
+    parts = []
+    if entry.get("DisplayVersion"):
+        parts.append(f"version {entry['DisplayVersion']}")
+    if entry.get("InstallDate"):
+        parts.append(f"installed {entry['InstallDate']}")
+    if entry.get("Publisher"):
+        parts.append(entry["Publisher"])
+    return "; ".join(parts)
+
+
+def _print_registry_item(label: str, entry: dict[str, str] | None, path: Path | None = None) -> None:
+    path_exists = bool(path and path.exists())
+    status = "OK" if entry or path_exists else "missing"
+    details = []
+    entry_details = _entry_detail(entry)
+    if entry_details:
+        details.append(entry_details)
+    if path:
+        details.append(str(path))
+    print(f"  {label:<30} {status:<8} {' | '.join(details)}")
+
+
+def _child_dir_count(path: Path) -> int | None:
+    if not path.exists():
+        return None
+    try:
+        return sum(1 for child in path.iterdir() if child.is_dir())
+    except OSError:
+        return None
+
+
 def command_check_daw(args: argparse.Namespace) -> None:
-    """Inspect DAW and Native Instruments state without touching app settings."""
+    """Inspect DAW and plugin state without touching app settings."""
     init_dirs(args)
 
     kontakt7_exe = Path(r"C:\Program Files\Native Instruments\Kontakt 7\Kontakt 7.exe")
@@ -207,6 +309,13 @@ def command_check_daw(args: argparse.Namespace) -> None:
     kontakt7_db = Path(os.environ.get("LOCALAPPDATA", "")) / "Native Instruments" / "Kontakt 7" / "komplete.db3"
     ableton_prefs = _latest_ableton_preferences_dir()
     ableton_plugin_db = Path(os.environ.get("LOCALAPPDATA", "")) / "Ableton" / "Live Database" / "Live-plugins-1.db"
+    uninstall_entries = _uninstall_registry_entries()
+    product_center_exe = Path(r"C:\Program Files\Cakewalk\Product Center\ProductCenter.exe")
+    sonar_exe = Path(r"C:\Program Files\Cakewalk\Sonar\Sonar.exe")
+    cbb_exe = Path(r"C:\Program Files\Cakewalk\Cakewalk Core\Cakewalk.exe")
+    cakewalk_core_vst3 = Path(r"C:\Program Files\Common Files\VST3\Cakewalk\Core")
+    cakewalk_l_phase_vst3 = Path(r"C:\Program Files\Common Files\VST3\Cakewalk\L-Phase")
+    cakewalk_soundbanks = Path(r"C:\ProgramData\Cakewalk\Plugins\Core\BandLab VST Shell\Soundbanks")
 
     print("\nNative Instruments")
     for label, path in [
@@ -260,6 +369,40 @@ def command_check_daw(args: argparse.Namespace) -> None:
         "Kontakt" in " ".join(str(part or "") for part in row)
         for row in plugin_rows
     )
+
+    print("\nCakewalk / BandLab")
+    product_center = _match_uninstall_entry(uninstall_entries, ["Cakewalk Product Center"])
+    sonar = _match_uninstall_entry(uninstall_entries, ["Cakewalk Sonar"])
+    legacy_cbb = _match_uninstall_entry(uninstall_entries, ["Cakewalk by BandLab"])
+    bandlab_assistant = _match_uninstall_entry(uninstall_entries, ["BandLab Assistant"])
+    _print_registry_item("Cakewalk Product Center", product_center, product_center_exe)
+    _print_registry_item("Cakewalk Sonar", sonar, sonar_exe)
+    for label, names, path in [
+        ("Cakewalk Core Plugins", ["Cakewalk Core Plugins"], cakewalk_core_vst3),
+        ("Studio Instruments Suite", ["Cakewalk Studio Instruments Suite"], Path(r"C:\Program Files\Cakewalk\Studio Instruments")),
+        ("Sonar Drum Replacer", ["Sonar Drum Replacer"], Path(r"C:\Program Files\Cakewalk\Shared Utilities\Internal\Drum Replacer")),
+        ("Session Drummer 3", ["Session Drummer 3"], None),
+        ("TH-U", ["TH-U"], Path(r"C:\Program Files\Overloud\TH-U")),
+        ("Help & Documentation", ["Cakewalk Help & Documentation"], None),
+        ("Precision Suite", ["Cakewalk Precision Suite"], None),
+        ("ProChannel Modules", ["Sonar ProChannel Modules"], Path(r"C:\Program Files\Cakewalk\Shared Utilities\Internal")),
+        ("L-Phase / T-Phase plugins", ["L-Phase Plugins", "T-Phase Plugins"], cakewalk_l_phase_vst3),
+    ]:
+        _print_registry_item(label, _match_uninstall_entry(uninstall_entries, names), path)
+    soundbank_count = _child_dir_count(cakewalk_soundbanks)
+    soundbank_status = "OK" if soundbank_count else "missing"
+    soundbank_detail = (
+        f"{soundbank_count} folders | {cakewalk_soundbanks}"
+        if soundbank_count is not None
+        else str(cakewalk_soundbanks)
+    )
+    print(f"  {'BandLab soundbanks':<30} {soundbank_status:<8} {soundbank_detail}")
+    _print_registry_item("Cakewalk by BandLab legacy", legacy_cbb, cbb_exe)
+    if bandlab_assistant:
+        print(f"  {'BandLab Assistant':<30} installed {_entry_detail(bandlab_assistant)}")
+    else:
+        print(f"  {'BandLab Assistant':<30} removed  Product Center is the current Cakewalk manager.")
+
     print("\nNext action")
     if kontakt7_vst3.exists() and not kontakt_in_ableton:
         print("  Ableton has not registered Kontakt yet.")
@@ -268,6 +411,10 @@ def command_check_daw(args: argparse.Namespace) -> None:
         print("  If the Preferences window is blank, keep Options.txt in place and retry from the PC screen.")
     else:
         print("  Kontakt appears available to Ableton's plugin database.")
+    if sonar and sonar_exe.exists():
+        print("  Sonar is ready as the Cakewalk lane for Band Room stem polish and Cakewalk add-ons.")
+    if legacy_cbb:
+        print("  Keep Cakewalk by BandLab as a deprecated fallback until shared Cakewalk components are reviewed.")
 
 
 def load_band_registry() -> dict:
@@ -407,7 +554,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("check-env", help="inspect local worker dependencies")
     p.set_defaults(func=command_check_env)
 
-    p = sub.add_parser("check-daw", help="inspect Ableton and Native Instruments plugin readiness")
+    p = sub.add_parser("check-daw", help="inspect Ableton, Native Instruments, and Cakewalk plugin readiness")
     p.set_defaults(func=command_check_daw)
 
     p = sub.add_parser("separate", help="split source audio to 4 stems outside the repo via Demucs")

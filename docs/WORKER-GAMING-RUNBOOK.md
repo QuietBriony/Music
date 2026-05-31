@@ -12,15 +12,21 @@ live DAW/device control.
 
 ## Current Machine Snapshot
 
-Observed on 2026-05-31:
+Observed on 2026-05-31 and updated on 2026-06-01:
 
 - GPU: NVIDIA GeForce RTX 2070 plus Intel UHD Graphics 630
 - CLI tools: Python 3.12.10, Node 24.16.0, ffmpeg 8.1.1
 - Installed apps: Ableton Live 12 Lite 12.3.2 plus legacy Live 10 Lite,
+  Cakewalk Product Center 1.1.0.004, Cakewalk Sonar 32.04.0.078,
+  Cakewalk by BandLab 29.09.0.125 as a deprecated fallback,
   Native Access 1.14.1, Kontakt 6.8.0, Kontakt 7 Player 7.6.1,
   Maschine 2.16.1, Reaktor 6.4.3, Guitar Rig 6.3.0,
   VCV Rack 2 Free 2.6.6 plus Rack 1.1.6, SuperCollider 3.9.3,
   Atom 1.59.0
+- Installed Cakewalk add-ons: Core Plugins, Studio Instruments Suite, Sonar
+  Drum Replacer, Session Drummer 3, TH-U, Help & Documentation, Precision
+  Suite, ProChannel Modules, and L-Phase/T-Phase plugin content
+- Removed app: BandLab Assistant; Product Center is now the Cakewalk manager
 - Worker venv: `C:\workspace\music-stack-worker\.venv`
 - Verified venv packages: PyTorch 2.11.0+cu128, torchaudio, Demucs, librosa,
   soundfile, imageio-ffmpeg, scipy, numpy
@@ -139,23 +145,24 @@ Generate review-only drum-frame candidates without overwriting runtime JSON:
 python -X utf8 scripts/worker-gaming-pipeline.py extract-drum-candidate tabasco human-fly
 ```
 
-## Ableton / BandLab / Native Instruments
+## Ableton / Cakewalk / BandLab / Native Instruments
 
 Use DAWs and Native Instruments as render and polish tools:
 
 - Import stems from `C:\workspace\music-stack-worker\stems\...`.
-- Add Kontakt, Maschine, Reaktor, Guitar Rig, or Ableton effects.
+- Add Kontakt, Maschine, Reaktor, Guitar Rig, Ableton effects, or Sonar /
+  Cakewalk effects.
 - Bounce processed `drums.wav`, `bass.wav`, `other.wav`, or `mix.wav` to
   `C:\workspace\music-stack-worker\daw-export\...`.
 - Test in Band Room via external stems before proposing any repo change.
 
-Do not add Ableton project files, Kontakt libraries, generated audio, or plugin
-state dumps to the repo unless the user explicitly approves a separate asset
-policy.
+Do not add Ableton/Sonar project files, Kontakt libraries, generated audio, or
+plugin state dumps to the repo unless the user explicitly approves a separate
+asset policy.
 
 Current Ableton handoff baseline:
 
-- Use Ableton Live 12 Lite as the primary DAW lane.
+- Use Ableton Live 12 Lite and Cakewalk Sonar as the primary DAW lanes.
 - If Live asks to restore `codex1.als`, move recovery files aside instead of
   restoring them; the latest bypass backup is under
   `C:\workspace\music-stack-worker\logs\ableton-recovery-bypass-20260531-2013`.
@@ -170,9 +177,15 @@ Current Ableton handoff baseline:
   `Plugin modules: 0` / `Plugins: 0` on 2026-05-31. Run `check-daw`; if it
   still reports zero plugins, use the PC screen to open Preferences > Plug-Ins,
   turn VST3 System Folders on, and rescan.
-- Keep Cakewalk by BandLab installed for legacy project compatibility, but do
-  not make it the main worker path; update attempts currently require a GUI
-  installer confirmation.
+- Cakewalk Sonar `32.04.0.078` / `2026.04` is installed through Product
+  Center and is the current Cakewalk lane.
+- Product Center add-ons are available for the Sonar lane: Core Plugins, Studio
+  Instruments Suite, Sonar Drum Replacer, Session Drummer 3, TH-U, Help &
+  Documentation, Precision Suite, ProChannel Modules, and L-Phase/T-Phase
+  plugin content.
+- BandLab Assistant has been removed; use Product Center for Cakewalk updates.
+- Keep Cakewalk by BandLab `29.09.0.125` only as a deprecated fallback until
+  shared Cakewalk components are reviewed.
 
 ## VCV Rack / SuperCollider
 

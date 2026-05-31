@@ -18,7 +18,7 @@ machineName は git config `music.machineName` に保存。
 |---|---|---|---|---|
 | `chouta-surface` | メイン開発機 | (汎用) | 全 engine.js 修正、agent autonomy session 主体、Hazama FM のロジック作業 | active |
 | `studio-surface` | 試聴・録音/DAW 機 (Intel) | Steinberg UR44 (USB Audio) + monitor speaker/headphone、Ableton / Bandlab (予定) | engine の音作り ear-verified 微調整、stems 録音 confirm、DAW 統合 (Ableton / Bandlab / Cubase) | active (2026-05-25 setup 完了、UR44 接続待ち) |
-| `worker-gaming` | 重タスク機 | RTX 2070 gaming note PC + Ableton / Native Instruments / VCV / SuperCollider | Demucs stem 分離、Band Room AI 再現 batch、drum-frame candidate 生成、audio rendering | active (2026-05-31 worker venv ready / env maintenance partial) |
+| `worker-gaming` | 重タスク機 | RTX 2070 gaming note PC + Ableton / Cakewalk Sonar / Native Instruments / VCV / SuperCollider | Demucs stem 分離、Band Room AI 再現 batch、drum-frame candidate 生成、audio rendering | active (2026-06-01 worker venv ready / DAW maintenance current) |
 
 `chouta-surface` は無印 (= machineName 未設定) も `chouta-surface` 扱い。
 既存のすべての SESSION-LEDGER エントリは chouta-surface 由来。
@@ -82,6 +82,13 @@ machineName は git config `music.machineName` に保存。
   `python -X utf8 scripts/worker-gaming-pipeline.py check-daw` to confirm
   Kontakt / Ableton plugin readiness. As of the follow-up, Ableton's plugin DB
   was still empty and needs a PC-screen Preferences > Plug-Ins rescan.
+- **2026-06-01 Cakewalk/Sonar follow-up**: Cakewalk Product Center `1.1.0.004`
+  and Cakewalk Sonar `32.04.0.078` / `2026.04` are installed and logged in.
+  Product Center add-ons are installed: Core Plugins, Studio Instruments Suite,
+  Sonar Drum Replacer, Session Drummer 3, TH-U, Help & Documentation,
+  Precision Suite, ProChannel Modules, and L-Phase/T-Phase plugin content.
+  BandLab Assistant was removed. Cakewalk by BandLab `29.09.0.125` remains only
+  as a deprecated fallback while shared Cakewalk components are reviewed.
 
 ---
 
