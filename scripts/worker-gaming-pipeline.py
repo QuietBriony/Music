@@ -11,12 +11,14 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import platform
 import re
 import shutil
 import sqlite3
 import subprocess
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 try:
@@ -371,6 +373,146 @@ def _print_devices(label: str, devices: list[dict[str, str]]) -> None:
         print(f"  ... {len(devices) - 12} more matching devices")
 
 
+def _capture_command(cmd: list[str | Path], *, timeout: int = 30) -> dict[str, object]:
+    try:
+        result = subprocess.run(
+            [str(part) for part in cmd],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
+        return {"command": [str(part) for part in cmd], "returncode": 127, "output": str(exc)}
+    output = (result.stdout or result.stderr).strip()
+    return {"command": [str(part) for part in cmd], "returncode": result.returncode, "output": output}
+
+
+def _first_line(command_result: dict[str, object]) -> str:
+    output = str(command_result.get("output") or "")
+    return output.splitlines()[0] if output else ""
+
+
+def _important_uninstall_entries(entries: list[dict[str, str]]) -> list[dict[str, str]]:
+    keywords = [
+        "Ableton",
+        "BandLab",
+        "Cakewalk",
+        "Kontakt",
+        "Maschine",
+        "Native Access",
+        "Native Instruments",
+        "Reaktor",
+        "Guitar Rig",
+        "VCV Rack",
+        "SuperCollider",
+        "Atom",
+        "TH-U",
+        "Overloud",
+        "Yamaha Steinberg",
+        "Steinberg UR",
+    ]
+    safe_fields = ("DisplayName", "DisplayVersion", "Publisher", "InstallDate", "DisplayIcon")
+    matched = []
+    for entry in entries:
+        display_name = entry.get("DisplayName", "")
+        publisher = entry.get("Publisher", "")
+        haystack = f"{display_name} {publisher}".lower()
+        if not any(keyword.lower() in haystack for keyword in keywords):
+            continue
+        matched.append({field: entry[field] for field in safe_fields if field in entry})
+    return sorted(matched, key=lambda item: item.get("DisplayName", "").lower())
+
+
+def _path_snapshot(paths: dict[str, Path]) -> dict[str, dict[str, object]]:
+    snapshot = {}
+    for label, path in paths.items():
+        item = {"path": str(path), "exists": path.exists()}
+        try:
+            if path.exists() and path.is_file():
+                item["bytes"] = path.stat().st_size
+            elif path.exists() and path.is_dir():
+                item["child_dirs"] = _child_dir_count(path)
+        except OSError:
+            pass
+        snapshot[label] = item
+    return snapshot
+
+
+def _disk_snapshot() -> list[dict[str, str]]:
+    return _powershell_json(
+        "$ErrorActionPreference='SilentlyContinue'; "
+        "Get-PSDrive -PSProvider FileSystem | "
+        "Select-Object Name,Root,Free,Used"
+    )
+
+
+def _repo_snapshot() -> dict[str, object]:
+    branch = _capture_command(["git", "branch", "--show-current"])
+    sha = _capture_command(["git", "rev-parse", "HEAD"])
+    status = _capture_command(["git", "status", "--short", "--branch"])
+    return {
+        "branch": _first_line(branch),
+        "head": _first_line(sha),
+        "status": str(status.get("output") or ""),
+    }
+
+
+def _write_snapshot_markdown(snapshot: dict[str, object], md_path: Path) -> None:
+    apps = snapshot.get("installed_apps", [])
+    paths = snapshot.get("paths", {})
+    hardware = snapshot.get("hardware", {})
+    lines = [
+        "# Music PC Setup Snapshot",
+        "",
+        f"- Tag: `{snapshot.get('tag')}`",
+        f"- Captured: `{snapshot.get('captured_at')}`",
+        f"- Hostname: `{snapshot.get('hostname')}`",
+        f"- Repo head: `{snapshot.get('repo', {}).get('head')}`",
+        f"- Worker root: `{snapshot.get('worker_root')}`",
+        "",
+        "## Toolchain",
+        "",
+    ]
+    for name, detail in snapshot.get("toolchain", {}).items():
+        lines.append(f"- {name}: `{detail}`")
+
+    lines.extend(["", "## Installed Apps", ""])
+    for app in apps:
+        name = app.get("DisplayName", "<unknown>")
+        version = app.get("DisplayVersion", "")
+        publisher = app.get("Publisher", "")
+        install_date = app.get("InstallDate", "")
+        suffix = " / ".join(part for part in [version, publisher, install_date] if part)
+        lines.append(f"- {name}: {suffix}" if suffix else f"- {name}")
+
+    lines.extend(["", "## Key Paths", ""])
+    for label, item in paths.items():
+        status = "OK" if item.get("exists") else "missing"
+        lines.append(f"- {label}: {status} - `{item.get('path')}`")
+
+    lines.extend(["", "## Hardware Visibility", ""])
+    for label, devices in hardware.items():
+        lines.append(f"- {label}: {len(devices)} visible")
+        for device in devices[:6]:
+            name = device.get("FriendlyName") or device.get("Name") or "<unnamed>"
+            status = device.get("Status") or ""
+            lines.append(f"  - {name} {status}".rstrip())
+
+    lines.extend([
+        "",
+        "## Rebuild Notes",
+        "",
+        "1. Follow `docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md` for install order.",
+        "2. Run `check-env`, `check-daw`, and `check-hardware` after setup.",
+        "3. Keep generated audio, DAW projects, plugin caches, and snapshots outside Git unless explicitly approved.",
+        "",
+    ])
+    md_path.write_text("\n".join(lines), encoding="utf-8")
+
+
 def command_check_daw(args: argparse.Namespace) -> None:
     """Inspect DAW and plugin state without touching app settings."""
     init_dirs(args)
@@ -669,6 +811,105 @@ def command_check_hardware(args: argparse.Namespace) -> None:
     print("  Physical pads, knobs, cable moves, UAC, logins, and ear checks still need human confirmation.")
 
 
+def command_snapshot_setup(args: argparse.Namespace) -> None:
+    """Write a reproducible setup snapshot outside the repo."""
+    init_dirs(args)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    tag = re.sub(r"[^A-Za-z0-9_.-]+", "-", args.tag).strip("-") or "music-pc"
+    report_base = worker_path(args, "reports", f"{tag}-setup-snapshot-{timestamp}")
+    json_path = report_base.with_suffix(".json")
+    md_path = report_base.with_suffix(".md")
+
+    pnp_devices = _windows_pnp_devices()
+    sound_devices = _windows_sound_devices()
+    ep_keywords = ["EP-133", "EP133", "K.O.II", "KO II", "teenage engineering"]
+    ur44_keywords = ["UR44", "Yamaha Steinberg", "Steinberg UR"]
+    noisy_midi_keywords = [
+        "MIDI 2.0 Service Tests",
+        "MIDI 2.0 Virtual",
+        "MIDI 2.0 Loop",
+        "Service Test",
+        "MIDIU_DIAG",
+    ]
+    midi_devices = [
+        device
+        for device in pnp_devices
+        if _matches_device(device, ["MIDI", *ep_keywords, *ur44_keywords])
+        and not _matches_device(device, noisy_midi_keywords)
+    ]
+
+    ableton_prefs = _latest_ableton_preferences_dir()
+    key_paths = {
+        "Music repo": ROOT,
+        "worker root": Path(args.worker_root).resolve(),
+        "worker venv python": Path(args.worker_root).resolve() / ".venv" / "Scripts" / "python.exe",
+        "Ableton preferences": ableton_prefs or Path(""),
+        "Ableton plugin DB": Path(os.environ.get("LOCALAPPDATA", "")) / "Ableton" / "Live Database" / "Live-plugins-1.db",
+        "Cakewalk Product Center": Path(r"C:\Program Files\Cakewalk\Product Center\ProductCenter.exe"),
+        "Cakewalk Sonar": Path(r"C:\Program Files\Cakewalk\Sonar\Sonar.exe"),
+        "Kontakt 7 standalone": Path(r"C:\Program Files\Native Instruments\Kontakt 7\Kontakt 7.exe"),
+        "Kontakt 7 VST3": Path(r"C:\Program Files\Common Files\VST3\Kontakt 7.vst3"),
+        "VCV Rack 2 Free": Path(r"C:\Program Files\VCV\Rack2Free\Rack.exe"),
+        "SuperCollider sclang": Path(r"C:\Program Files\SuperCollider-3.9.3\sclang.exe"),
+        "EP-133 inbox": worker_path(args, "hardware-jam", "ep133-inbox"),
+        "hardware captures": worker_path(args, "hardware-jam", "captures"),
+        "DAW export": worker_path(args, "daw-export"),
+    }
+    if ableton_prefs is None:
+        key_paths.pop("Ableton preferences")
+
+    package_probe = """
+import importlib.util
+mods = ['torch', 'torchaudio', 'demucs', 'librosa', 'soundfile', 'imageio_ffmpeg', 'numpy', 'scipy']
+for mod in mods:
+    print(f"{mod}: {'OK' if importlib.util.find_spec(mod) else 'missing'}")
+try:
+    import torch
+    print(f"torch_version: {torch.__version__}")
+    print(f"cuda_available: {torch.cuda.is_available()}")
+    print(f"cuda_device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'none'}")
+except Exception as exc:
+    print(f"torch_error: {exc!r}")
+"""
+    _, package_output = python_probe(package_probe)
+
+    snapshot = {
+        "tag": tag,
+        "captured_at": datetime.now().isoformat(timespec="seconds"),
+        "hostname": platform.node(),
+        "platform": platform.platform(),
+        "repo": _repo_snapshot(),
+        "worker_root": str(Path(args.worker_root).resolve()),
+        "worker_dirs": {
+            name: str(worker_path(args, name)) for name in WORKER_DIRS if worker_path(args, name).exists()
+        },
+        "toolchain": {
+            "python": _first_line(_capture_command([sys.executable, "--version"])),
+            "node": _first_line(_capture_command(["node", "--version"])),
+            "ffmpeg": _first_line(_capture_command([resolve_ffmpeg(), "-version"])),
+            "packages": package_output,
+        },
+        "installed_apps": _important_uninstall_entries(_uninstall_registry_entries()),
+        "paths": _path_snapshot(key_paths),
+        "disk": _disk_snapshot(),
+        "hardware": {
+            "ep133": [device for device in pnp_devices if _matches_device(device, ep_keywords)],
+            "ur44": [device for device in pnp_devices + sound_devices if _matches_device(device, ur44_keywords)],
+            "midi": midi_devices,
+            "audio": [
+                device
+                for device in sound_devices
+                if _matches_device(device, ["Steinberg", "Yamaha", "UR44", "EP-133", "EP133"])
+            ],
+        },
+    }
+
+    json_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _write_snapshot_markdown(snapshot, md_path)
+    print(f"setup snapshot JSON: {json_path}")
+    print(f"setup snapshot Markdown: {md_path}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run worker-gaming music-stack jobs safely.")
     parser.add_argument("--worker-root", default=str(DEFAULT_WORKER_ROOT), help="repo-external output root")
@@ -685,6 +926,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("check-hardware", help="inspect attached EP-133, UR44, MIDI, and audio devices")
     p.set_defaults(func=command_check_hardware)
+
+    p = sub.add_parser("snapshot-setup", help="write a reproducible Music PC setup snapshot outside the repo")
+    p.add_argument("--tag", default="worker-gaming", help="snapshot file prefix")
+    p.set_defaults(func=command_snapshot_setup)
 
     p = sub.add_parser("separate", help="split source audio to 4 stems outside the repo via Demucs")
     p.add_argument("--source", required=True, help="audio file or folder")
