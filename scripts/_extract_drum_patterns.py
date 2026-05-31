@@ -10,8 +10,16 @@ of a generic 4-on-floor template.
 Usage:
   python scripts/_extract_drum_patterns.py <band-id> <song-id>
   python scripts/_extract_drum_patterns.py tabasco --all
+  python scripts/_extract_drum_patterns.py tabasco human-fly --out C:/workspace/music-stack-worker/reports/drum-frame-candidates
 """
-import os, sys, json, subprocess, tempfile
+import sys
+
+if len(sys.argv) < 2 or any(arg in ("-h", "--help") for arg in sys.argv[1:]):
+    print(__doc__.strip())
+    print("\nusage: python scripts/_extract_drum_patterns.py <band-id> <song-id|--all> [--out <json-or-dir>]")
+    sys.exit(0 if len(sys.argv) >= 2 else 1)
+
+import os, json, subprocess, tempfile
 import imageio_ffmpeg
 import numpy as np
 import librosa
@@ -138,7 +146,16 @@ def find_representative_bar(stem, sr, section_start_bar, section_bar_count, bar_
         return section_start_bar + median[0]
     return section_start_bar + bar_rms[-1][0]  # loudest
 
-def process_song(band_id, song_id):
+def resolve_output_path(out_arg, band_id, song_id):
+    if not out_arg:
+        return None
+    out_path = os.path.abspath(out_arg)
+    if out_path.lower().endswith(".json"):
+        return out_path
+    return os.path.join(out_path, f"drum-frames-{band_id}-{song_id}.candidate.json")
+
+
+def process_song(band_id, song_id, out_arg=None):
     drum_mp3 = os.path.join(MUSIC_REPO, "presets", f"{band_id}-stems", song_id, "drums.mp3")
     json_path = os.path.join(MUSIC_REPO, "presets", f"drum-frames-{band_id}-{song_id}.json")
     if not os.path.exists(drum_mp3):
@@ -184,27 +201,47 @@ def process_song(band_id, song_id):
             updated += 1
             print(f"    -> updated frame '{fid}' with {len(frame['events'])} extracted events")
 
-    if "session_signature" in data:
-        data["session_signature"] += " · drum events extracted from real stem"
+    signature = data.get("session_signature")
+    if isinstance(signature, str) and "drum events extracted" not in signature:
+        data["session_signature"] = signature + " - drum events extracted from real stem"
     data["events_extracted_from"] = f"presets/{band_id}-stems/{song_id}/drums.mp3"
     data["events_extraction_method"] = "librosa.onset_detect + band-energy classify + 16th-quantize"
+    data["events_extraction_updated_frames"] = updated
 
-    with open(json_path, "w", encoding="utf-8") as f:
+    save_path = resolve_output_path(out_arg, band_id, song_id) or json_path
+    if out_arg:
+        data["candidate_source_json"] = os.path.relpath(json_path, MUSIC_REPO).replace("\\", "/")
+        data["candidate_policy"] = "review-only; do not replace runtime drum frames without human listening review"
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    with open(save_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-    print(f"  saved: {json_path} ({updated} frames updated)")
+    print(f"  saved: {save_path} ({updated} frames updated)")
 
 if __name__ == "__main__":
     os.chdir(MUSIC_REPO)
     if len(sys.argv) < 2:
-        print("usage: python scripts/_extract_drum_patterns.py <band-id> <song-id|--all>")
+        print("usage: python scripts/_extract_drum_patterns.py <band-id> <song-id|--all> [--out <json-or-dir>]")
         sys.exit(1)
     band = sys.argv[1]
-    target = sys.argv[2] if len(sys.argv) > 2 else "--all"
+    target = sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith("--") else "--all"
+    out_arg = None
+    if "--out" in sys.argv:
+        out_idx = sys.argv.index("--out")
+        if out_idx + 1 >= len(sys.argv):
+            print("! --out requires a json file or output directory")
+            sys.exit(1)
+        out_arg = sys.argv[out_idx + 1]
+    elif "--candidate-root" in sys.argv:
+        out_idx = sys.argv.index("--candidate-root")
+        if out_idx + 1 >= len(sys.argv):
+            print("! --candidate-root requires an output directory")
+            sys.exit(1)
+        out_arg = sys.argv[out_idx + 1]
 
     if target == "--all":
         stems_root = os.path.join(MUSIC_REPO, "presets", f"{band}-stems")
         songs = sorted([d for d in os.listdir(stems_root) if os.path.isdir(os.path.join(stems_root, d))])
         for s in songs:
-            process_song(band, s)
+            process_song(band, s, out_arg)
     else:
-        process_song(band, target)
+        process_song(band, target, out_arg)
