@@ -13,6 +13,7 @@ import json
 import os
 import re
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -155,6 +156,120 @@ except Exception as exc:
     print("  setup: use the official PyTorch selector, then install demucs librosa soundfile imageio-ffmpeg scipy numpy in the worker venv.")
 
 
+def _latest_ableton_preferences_dir() -> Path | None:
+    root = Path(os.environ.get("APPDATA", "")) / "Ableton"
+    if not root.exists():
+        return None
+    candidates = [
+        path / "Preferences"
+        for path in root.glob("Live *")
+        if (path / "Preferences").exists()
+    ]
+    if not candidates:
+        return None
+
+    def version_key(path: Path) -> tuple[tuple[int, ...], float]:
+        match = re.search(r"Live\s+(\d+(?:\.\d+)*)", path.parent.name)
+        version = tuple(int(part) for part in match.group(1).split(".")) if match else (0,)
+        return version, path.stat().st_mtime
+
+    return max(candidates, key=version_key)
+
+
+def _sqlite_count(db_path: Path, table: str) -> int | None:
+    if not db_path.exists():
+        return None
+    try:
+        with sqlite3.connect(db_path) as con:
+            return int(con.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0])
+    except sqlite3.Error:
+        return None
+
+
+def _sqlite_rows(db_path: Path, query: str, limit: int = 8) -> list[tuple]:
+    if not db_path.exists():
+        return []
+    try:
+        with sqlite3.connect(db_path) as con:
+            return list(con.execute(query).fetchmany(limit))
+    except sqlite3.Error:
+        return []
+
+
+def command_check_daw(args: argparse.Namespace) -> None:
+    """Inspect DAW and Native Instruments state without touching app settings."""
+    init_dirs(args)
+
+    kontakt7_exe = Path(r"C:\Program Files\Native Instruments\Kontakt 7\Kontakt 7.exe")
+    kontakt7_vst3 = Path(r"C:\Program Files\Common Files\VST3\Kontakt 7.vst3")
+    kontakt6_vst3 = Path(r"C:\Program Files\Common Files\VST3\Kontakt.vst3")
+    kontakt6_vst2 = Path(r"C:\Program Files\Native Instruments\VSTPlugins 64 bit\Kontakt.dll")
+    kontakt7_db = Path(os.environ.get("LOCALAPPDATA", "")) / "Native Instruments" / "Kontakt 7" / "komplete.db3"
+    ableton_prefs = _latest_ableton_preferences_dir()
+    ableton_plugin_db = Path(os.environ.get("LOCALAPPDATA", "")) / "Ableton" / "Live Database" / "Live-plugins-1.db"
+
+    print("\nNative Instruments")
+    for label, path in [
+        ("Kontakt 7 standalone", kontakt7_exe),
+        ("Kontakt 7 VST3", kontakt7_vst3),
+        ("Kontakt 6 VST3", kontakt6_vst3),
+        ("Kontakt 6 VST2", kontakt6_vst2),
+    ]:
+        detail = path
+        if path.exists() and path.is_file() and path.stat().st_size:
+            detail = f"{path} ({path.stat().st_size:,} bytes)"
+        print(f"  {label:<22} {'OK' if path.exists() else 'missing':<8} {detail}")
+
+    content_paths = _sqlite_rows(
+        kontakt7_db,
+        "SELECT path, product_id FROM k_content_path ORDER BY path",
+        limit=20,
+    )
+    sound_count = _sqlite_count(kontakt7_db, "k_sound_info")
+    print(f"  {'Kontakt 7 content DB':<22} {'OK' if sound_count else 'missing':<8} {kontakt7_db}")
+    if sound_count is not None:
+        print(f"  {'Kontakt 7 sounds':<22} {sound_count}")
+    for path, product_id in content_paths:
+        print(f"    library: {path} [{product_id or 'user'}]")
+
+    print("\nAbleton Live")
+    print(f"  {'Preferences':<22} {'OK' if ableton_prefs else 'missing':<8} {ableton_prefs or ''}")
+    if ableton_prefs:
+        options = ableton_prefs / "Options.txt"
+        option_lines = options.read_text(encoding="utf-8", errors="replace").splitlines() if options.exists() else []
+        has_disable_gpu = "-DisableGraphicsHardwareAcceleration" in option_lines
+        print(f"  {'Options.txt':<22} {'OK' if options.exists() else 'missing':<8} {options}")
+        print(f"  {'Disable GPU option':<22} {'OK' if has_disable_gpu else 'missing':<8} -DisableGraphicsHardwareAcceleration")
+
+    module_count = _sqlite_count(ableton_plugin_db, "plugin_modules")
+    plugin_count = _sqlite_count(ableton_plugin_db, "plugins")
+    plugin_rows = _sqlite_rows(
+        ableton_plugin_db,
+        "SELECT pm.path, p.name, p.vendor, p.version "
+        "FROM plugin_modules pm LEFT JOIN plugins p ON p.module_id = pm.module_id "
+        "ORDER BY pm.path, p.name",
+        limit=20,
+    )
+    print(f"  {'Plugin DB':<22} {'OK' if ableton_plugin_db.exists() else 'missing':<8} {ableton_plugin_db}")
+    print(f"  {'Plugin modules':<22} {module_count if module_count is not None else 'unknown'}")
+    print(f"  {'Plugins':<22} {plugin_count if plugin_count is not None else 'unknown'}")
+    for path, name, vendor, version in plugin_rows:
+        print(f"    plugin: {name or '<module only>'} | {vendor or ''} | {version or ''} | {path}")
+
+    kontakt_in_ableton = any(
+        "Kontakt" in " ".join(str(part or "") for part in row)
+        for row in plugin_rows
+    )
+    print("\nNext action")
+    if kontakt7_vst3.exists() and not kontakt_in_ableton:
+        print("  Ableton has not registered Kontakt yet.")
+        print("  In Ableton: Settings/Preferences > Plug-Ins > turn VST3 System Folders On > Rescan.")
+        print(r"  Optional legacy VST2 folder: C:\Program Files\Native Instruments\VSTPlugins 64 bit")
+        print("  If the Preferences window is blank, keep Options.txt in place and retry from the PC screen.")
+    else:
+        print("  Kontakt appears available to Ableton's plugin database.")
+
+
 def load_band_registry() -> dict:
     registry_path = ROOT / "presets" / "bands.json"
     raw = json.loads(registry_path.read_text(encoding="utf-8"))
@@ -291,6 +406,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("check-env", help="inspect local worker dependencies")
     p.set_defaults(func=command_check_env)
+
+    p = sub.add_parser("check-daw", help="inspect Ableton and Native Instruments plugin readiness")
+    p.set_defaults(func=command_check_daw)
 
     p = sub.add_parser("separate", help="split source audio to 4 stems outside the repo via Demucs")
     p.add_argument("--source", required=True, help="audio file or folder")
