@@ -89,7 +89,9 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Worker Gaming runbook: [docs/WORKER-GAMING-RUNBOOK.md](docs/WORKER-GAMING-RUNBOOK.md)
 - Worker Gaming environment setup log: [docs/WORKER-GAMING-ENV-SETUP-2026-05-31.md](docs/WORKER-GAMING-ENV-SETUP-2026-05-31.md)
 - Music PC DAW parity runbook: [docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md](docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md)
+- Hardware jam routing: [docs/HARDWARE-JAM-ROUTING.md](docs/HARDWARE-JAM-ROUTING.md)
 - Worker Gaming DAW doctor: `python -X utf8 scripts/worker-gaming-pipeline.py check-daw`
+- Worker Gaming hardware doctor: `python -X utf8 scripts/worker-gaming-pipeline.py check-hardware`
 - Archive repo harvest audit: [docs/archive-repo-harvest-audit.md](docs/archive-repo-harvest-audit.md)
 - Xtal reference gradient: [docs/xtal-reference-gradient.md](docs/xtal-reference-gradient.md)
 - Xtal reference gradient depth map: [docs/xtal-reference-gradient-depth-map.md](docs/xtal-reference-gradient-depth-map.md)

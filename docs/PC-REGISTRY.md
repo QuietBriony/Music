@@ -94,6 +94,11 @@ machineName は git config `music.machineName` に保存。
   the studio PC as the UR44 and ear-verified DAW reference. Keep ARM Surface as
   repo/remote command surface. See
   [`docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md`](MUSIC-PC-DAW-PARITY-RUNBOOK.md).
+- **2026-06-01 hardware jam lane**: EP-133 K.O.II is the hand sampler / rhythm
+  sketch box. Route EP-133 analog audio into UR44, use USB-C for MIDI /
+  transport / sample transfer, and verify visible devices with
+  `python -X utf8 scripts/worker-gaming-pipeline.py check-hardware`. See
+  [`docs/HARDWARE-JAM-ROUTING.md`](HARDWARE-JAM-ROUTING.md).
 
 ---
 

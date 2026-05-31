@@ -54,6 +54,13 @@ Sound design:
 - SuperCollider.
 - Atom remains legacy only; use VS Code / repo-native tooling for new work.
 
+Hardware jam lane:
+
+- EP-133 K.O.II as the hand sampler / rhythm sketch box.
+- UR44 as the audio and MIDI interface on the Intel studio PC.
+- Hardware routing details:
+  [HARDWARE-JAM-ROUTING.md](HARDWARE-JAM-ROUTING.md).
+
 ## Default DAW Choice
 
 Default to Sonar for Windows music-stack production.
@@ -159,6 +166,7 @@ The preferred architecture is hybrid:
     ```powershell
     C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-env
     C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-daw
+    C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-hardware
     node scripts\stack-check.mjs
     ```
 
