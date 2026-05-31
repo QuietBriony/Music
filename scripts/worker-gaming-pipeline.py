@@ -12,6 +12,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -22,6 +23,33 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_WORKER_ROOT = Path(os.environ.get("MUSIC_STACK_WORKER_ROOT", r"C:\workspace\music-stack-worker"))
 WORKER_DIRS = ("inbox", "stems", "ai-recreation", "reports", "daw-export", "logs", "tmp")
 AUDIO_EXTS = {".m4a", ".mp3", ".wav", ".flac", ".aac", ".ogg", ".webm"}
+
+
+def resolve_ffmpeg() -> str:
+    """Find ffmpeg even when winget portable PATH updates have not propagated."""
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+
+    candidates = [
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Packages",
+        Path(os.environ.get("ProgramFiles", "")) / "WinGet" / "Packages",
+    ]
+    for root in candidates:
+        if not root.exists():
+            continue
+        for exe in root.glob("Gyan.FFmpeg_*/ffmpeg-*full_build/bin/ffmpeg.exe"):
+            if exe.exists():
+                return str(exe)
+    try:
+        import imageio_ffmpeg
+
+        imageio_path = imageio_ffmpeg.get_ffmpeg_exe()
+        if imageio_path and Path(imageio_path).exists():
+            return imageio_path
+    except Exception:
+        pass
+    return "ffmpeg"
 
 
 def run(cmd: list[str | Path], *, cwd: Path = ROOT, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -70,11 +98,14 @@ def command_check_env(args: argparse.Namespace) -> None:
     tools = {
         "python": [sys.executable, "--version"],
         "node": ["node", "--version"],
-        "ffmpeg": ["ffmpeg", "-version"],
+        "ffmpeg": [resolve_ffmpeg(), "-version"],
         "demucs": [sys.executable, "-m", "demucs", "--help"],
     }
     for name, cmd in tools.items():
-        result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        except FileNotFoundError as exc:
+            result = subprocess.CompletedProcess(cmd, 127, "", str(exc))
         first_line = (result.stdout or result.stderr).splitlines()[:1]
         status = "OK" if result.returncode == 0 else "missing"
         detail = first_line[0] if first_line else ""
@@ -166,7 +197,7 @@ def command_separate(args: argparse.Namespace) -> None:
         print(f"\n=== {src.name} -> {song_id} ===")
         with tempfile.TemporaryDirectory(dir=str(worker_path(args, "tmp"))) as tmp_dir:
             wav_path = Path(tmp_dir) / f"{song_id}.wav"
-            run(["ffmpeg", "-y", "-i", src, "-ac", "2", "-ar", "44100", "-vn", wav_path])
+            run([resolve_ffmpeg(), "-y", "-i", src, "-ac", "2", "-ar", "44100", "-vn", wav_path])
             run([
                 sys.executable,
                 "-m",

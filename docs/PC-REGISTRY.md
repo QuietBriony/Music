@@ -18,7 +18,7 @@ machineName は git config `music.machineName` に保存。
 |---|---|---|---|---|
 | `chouta-surface` | メイン開発機 | (汎用) | 全 engine.js 修正、agent autonomy session 主体、Hazama FM のロジック作業 | active |
 | `studio-surface` | 試聴・録音/DAW 機 (Intel) | Steinberg UR44 (USB Audio) + monitor speaker/headphone、Ableton / Bandlab (予定) | engine の音作り ear-verified 微調整、stems 録音 confirm、DAW 統合 (Ableton / Bandlab / Cubase) | active (2026-05-25 setup 完了、UR44 接続待ち) |
-| `worker-gaming` | 重タスク機 | RTX 2070 gaming note PC + Ableton / Native Instruments / VCV / SuperCollider | Demucs stem 分離、Band Room AI 再現 batch、drum-frame candidate 生成、audio rendering | active (2026-05-31 worker venv ready) |
+| `worker-gaming` | 重タスク機 | RTX 2070 gaming note PC + Ableton / Native Instruments / VCV / SuperCollider | Demucs stem 分離、Band Room AI 再現 batch、drum-frame candidate 生成、audio rendering | active (2026-05-31 worker venv ready / env maintenance partial) |
 
 `chouta-surface` は無印 (= machineName 未設定) も `chouta-surface` 扱い。
 既存のすべての SESSION-LEDGER エントリは chouta-surface 由来。
@@ -64,11 +64,15 @@ machineName は git config `music.machineName` に保存。
   (主担当は chouta-surface)、Band Room runtime 直編集、Ableton / MIDI / 外部機材の
   自動 arm / record / upload。
 - **強み**: GPU、CPU 余裕、長時間プロセスを放置できる、ファン回ってても OK。
-- **実機確認 (2026-05-31)**: RTX 2070、Python 3.12、Node 24、ffmpeg 8、
+- **実機確認 (2026-05-31)**: RTX 2070、Python 3.12、Node 24、ffmpeg 8.1.1、
   Ableton / Native Instruments / VCV / SuperCollider を確認済み。
   `C:\workspace\music-stack-worker\.venv` では PyTorch 2.11.0+cu128 /
   torchaudio / Demucs / librosa / imageio-ffmpeg が入り、`torch.cuda.is_available()`
   は `True`、device は `NVIDIA GeForce RTX 2070`。
+- **環境整備 (2026-05-31)**: FFmpeg 8.1.1、Visual C++ 2015-2022 x64/x86、
+  Visual C++ 2013 x86、Edge WebView2 Runtime を更新。Cakewalk by BandLab、
+  SuperCollider 3.14.1、Native Access 2、Ableton point update は GUI / 認証 /
+  手動確認に回す。
 - **運用手順**: [`docs/WORKER-GAMING-RUNBOOK.md`](WORKER-GAMING-RUNBOOK.md) と
   `python -X utf8 scripts/worker-gaming-pipeline.py check-env` を入口にする。
 
