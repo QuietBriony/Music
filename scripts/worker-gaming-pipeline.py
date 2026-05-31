@@ -27,7 +27,18 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_WORKER_ROOT = Path(os.environ.get("MUSIC_STACK_WORKER_ROOT", r"C:\workspace\music-stack-worker"))
-WORKER_DIRS = ("inbox", "stems", "ai-recreation", "reports", "daw-export", "logs", "tmp")
+WORKER_DIRS = (
+    "inbox",
+    "stems",
+    "ai-recreation",
+    "reports",
+    "daw-export",
+    "hardware-jam",
+    "hardware-jam/ep133-inbox",
+    "hardware-jam/captures",
+    "logs",
+    "tmp",
+)
 AUDIO_EXTS = {".m4a", ".mp3", ".wav", ".flac", ".aac", ".ogg", ".webm"}
 
 
@@ -298,6 +309,68 @@ def _child_dir_count(path: Path) -> int | None:
         return None
 
 
+def _powershell_json(command: str) -> list[dict[str, str]]:
+    exe = shutil.which("powershell") or shutil.which("pwsh")
+    if not exe:
+        return []
+    result = subprocess.run(
+        [exe, "-NoProfile", "-Command", f"{command} | ConvertTo-Json -Depth 4"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+    try:
+        data = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return []
+    if isinstance(data, dict):
+        return [data]
+    if isinstance(data, list):
+        return [item for item in data if isinstance(item, dict)]
+    return []
+
+
+def _windows_pnp_devices() -> list[dict[str, str]]:
+    return _powershell_json(
+        "$ErrorActionPreference='SilentlyContinue'; "
+        "Get-PnpDevice -PresentOnly | "
+        "Select-Object Class,FriendlyName,InstanceId,Status"
+    )
+
+
+def _windows_sound_devices() -> list[dict[str, str]]:
+    return _powershell_json(
+        "$ErrorActionPreference='SilentlyContinue'; "
+        "Get-CimInstance Win32_SoundDevice | "
+        "Select-Object Name,Manufacturer,Status,DeviceID"
+    )
+
+
+def _matches_device(device: dict[str, str], keywords: list[str]) -> bool:
+    haystack = " ".join(str(value or "") for value in device.values()).lower()
+    return any(keyword.lower() in haystack for keyword in keywords)
+
+
+def _print_devices(label: str, devices: list[dict[str, str]]) -> None:
+    print(f"\n{label}")
+    if not devices:
+        print("  missing  no matching Windows device is visible")
+        return
+    for device in devices[:12]:
+        name = device.get("FriendlyName") or device.get("Name") or "<unnamed>"
+        class_name = device.get("Class") or device.get("Manufacturer") or ""
+        status = device.get("Status") or ""
+        instance = device.get("InstanceId") or device.get("DeviceID") or ""
+        print(f"  OK       {name} | {class_name} | {status}")
+        if instance:
+            print(f"           {instance}")
+    if len(devices) > 12:
+        print(f"  ... {len(devices) - 12} more matching devices")
+
+
 def command_check_daw(args: argparse.Namespace) -> None:
     """Inspect DAW and plugin state without touching app settings."""
     init_dirs(args)
@@ -543,6 +616,59 @@ def command_stack_check(_: argparse.Namespace) -> None:
     run(["node", "scripts/stack-check.mjs"])
 
 
+def command_check_hardware(args: argparse.Namespace) -> None:
+    """Inspect attached music hardware that Windows can see."""
+    init_dirs(args)
+    pnp_devices = _windows_pnp_devices()
+    sound_devices = _windows_sound_devices()
+
+    ep_keywords = ["EP-133", "EP133", "K.O.II", "KO II", "teenage engineering"]
+    ur44_keywords = ["UR44", "Yamaha Steinberg", "Steinberg UR"]
+    midi_keywords = ["MIDI", *ep_keywords, *ur44_keywords]
+    noisy_midi_keywords = [
+        "MIDI 2.0 Service Tests",
+        "MIDI 2.0 Virtual",
+        "MIDI 2.0 Loop",
+        "Service Test",
+        "MIDIU_DIAG",
+    ]
+
+    ep_devices = [device for device in pnp_devices if _matches_device(device, ep_keywords)]
+    ur44_devices = [device for device in pnp_devices + sound_devices if _matches_device(device, ur44_keywords)]
+    midi_devices = [
+        device
+        for device in pnp_devices
+        if _matches_device(device, midi_keywords) and not _matches_device(device, noisy_midi_keywords)
+    ]
+    audio_devices = [
+        device
+        for device in sound_devices
+        if _matches_device(device, ["Steinberg", "Yamaha", "UR44", "EP-133", "EP133"])
+    ]
+
+    _print_devices("EP-133 K.O.II USB / MIDI", ep_devices)
+    _print_devices("UR44 / Yamaha Steinberg", ur44_devices)
+    _print_devices("MIDI-visible devices", midi_devices)
+    _print_devices("Audio device hints", audio_devices)
+
+    print("\nRouting baseline")
+    print("  EP-133 audio out -> 3.5 mm stereo TRS to dual 1/4 inch TS -> UR44 line inputs -> Sonar audio track.")
+    print("  EP-133 USB-C is for MIDI clock/transport and sample transfer, not the main audio capture path.")
+    print("  Use Sonar + Yamaha Steinberg ASIO on the Intel studio PC for UR44 recording.")
+    print("  Use Ableton when Session View, clips, or Link/sync experiments are the point.")
+
+    print("\nCodex control boundary")
+    if ep_devices:
+        print("  EP-133 is visible to Windows. Codex can inspect device presence and help with PC-side MIDI/sample/DAW routing.")
+    else:
+        print("  EP-133 is not visible. Connect it by USB-C, then rerun this command.")
+    if ur44_devices:
+        print("  UR44/Yamaha Steinberg is visible. Next check is Sonar ASIO input selection and a short recording test.")
+    else:
+        print("  UR44/Yamaha Steinberg is not visible here. On the studio PC, connect UR44 and install/verify the Yamaha Steinberg USB driver.")
+    print("  Physical pads, knobs, cable moves, UAC, logins, and ear checks still need human confirmation.")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run worker-gaming music-stack jobs safely.")
     parser.add_argument("--worker-root", default=str(DEFAULT_WORKER_ROOT), help="repo-external output root")
@@ -556,6 +682,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("check-daw", help="inspect Ableton, Native Instruments, and Cakewalk plugin readiness")
     p.set_defaults(func=command_check_daw)
+
+    p = sub.add_parser("check-hardware", help="inspect attached EP-133, UR44, MIDI, and audio devices")
+    p.set_defaults(func=command_check_hardware)
 
     p = sub.add_parser("separate", help="split source audio to 4 stems outside the repo via Demucs")
     p.add_argument("--source", required=True, help="audio file or folder")
