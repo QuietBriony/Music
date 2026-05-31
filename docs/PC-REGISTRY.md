@@ -89,6 +89,11 @@ machineName は git config `music.machineName` に保存。
   Precision Suite, ProChannel Modules, and L-Phase/T-Phase plugin content.
   BandLab Assistant was removed. Cakewalk by BandLab `29.09.0.125` remains only
   as a deprecated fallback while shared Cakewalk components are reviewed.
+- **2026-06-01 DAW parity policy**: reproduce the worker-gaming Sonar/Ableton/
+  Native Instruments/VCV/SuperCollider stack on the Intel studio PC, then use
+  the studio PC as the UR44 and ear-verified DAW reference. Keep ARM Surface as
+  repo/remote command surface. See
+  [`docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md`](MUSIC-PC-DAW-PARITY-RUNBOOK.md).
 
 ---
 

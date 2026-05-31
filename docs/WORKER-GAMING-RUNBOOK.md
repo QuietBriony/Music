@@ -35,6 +35,8 @@ Observed on 2026-05-31 and updated on 2026-06-01:
 - Global Python may still have CPU-only `torch`; run worker jobs through the
   venv Python.
 - Latest setup report: [WORKER-GAMING-ENV-SETUP-2026-05-31.md](WORKER-GAMING-ENV-SETUP-2026-05-31.md)
+- Studio/worker DAW parity plan:
+  [MUSIC-PC-DAW-PARITY-RUNBOOK.md](MUSIC-PC-DAW-PARITY-RUNBOOK.md)
 
 Run the local doctor:
 
