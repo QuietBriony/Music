@@ -1,10 +1,24 @@
-# Band Room — Changelog (v65 → v290 compact)
+# Band Room — Changelog (v65 → v291 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v291 compact - Hazama FM lofi pocket tuning
+
+Hazama FM side only. Band Room runtime is unchanged.
+
+`presets/drum-frames-lofi.json` was tuned from the measurement loop:
+lofi moves closer to its jazz-hop target by lifting average BPM and swing,
+while pulling the snare drag back into the intended behind-beat range.
+Kick anchors stay mostly unchanged, and hat/ghost offsets keep the dusty
+offbeat feel instead of snapping to a rigid grid.
+
+- `hazama-fm-v291`.
 
 ---
 
