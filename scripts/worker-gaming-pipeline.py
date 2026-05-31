@@ -513,6 +513,114 @@ def _write_snapshot_markdown(snapshot: dict[str, object], md_path: Path) -> None
     md_path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def _read_json(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+
+def _output_metric_line(name: str, metric: dict) -> str:
+    duration = metric.get("duration_s", "?")
+    rms_value = metric.get("rms", "?")
+    peak_value = metric.get("peak", "?")
+    centroid = metric.get("centroid_hz", "?")
+    dr = metric.get("dynamic_range_db", "?")
+    return f"- `{name}`: {duration}s, rms={rms_value}, peak={peak_value}, centroid={centroid}Hz, DR={dr}dB"
+
+
+def _target_mix_summary(target_analysis: dict, band: str, song: str) -> dict:
+    song_entry = target_analysis.get(band, {}).get(song, {})
+    return song_entry.get("mix", {}) if isinstance(song_entry, dict) else {}
+
+
+def _cycle_recommendations(render_report: dict, target_analysis: dict, band: str, song: str) -> list[str]:
+    recommendations = [
+        "Open the generated stems in Sonar first; keep Ableton for loop/session experiments after VST scan is fixed.",
+        "Bounce DAW-polished stems to the daw-export folder, then preview them in Band Room before promoting metadata.",
+        "Keep generated audio and DAW projects outside Git; only promote reviewed metadata, candidates, or docs.",
+    ]
+    ai_mix = render_report.get("outputs", {}).get("mix.wav", {})
+    target_mix = _target_mix_summary(target_analysis, band, song)
+    if ai_mix and target_mix:
+        ai_centroid = float(ai_mix.get("centroid_hz") or 0.0)
+        target_centroid = float(target_mix.get("centroid_avg_hz") or 0.0)
+        if ai_centroid and target_centroid:
+            delta = ai_centroid - target_centroid
+            if delta < -600:
+                recommendations.insert(0, "AI mix is darker than target; try Sonar high-shelf / L-Phase presence on other + drums.")
+            elif delta > 900:
+                recommendations.insert(0, "AI mix is brighter than target; tame cymbals/air before export.")
+        ai_dr = float(ai_mix.get("dynamic_range_db") or 0.0)
+        target_dr = float(target_mix.get("rms_dynamic_range_db") or 0.0)
+        if ai_dr and target_dr and ai_dr - target_dr < -4:
+            recommendations.insert(0, "AI mix is flatter than target; automate section energy or ease compression.")
+    if not render_report.get("pass_basic_audio_check", False):
+        recommendations.insert(0, "Basic audio check failed; inspect render logs before DAW polish.")
+    return recommendations
+
+
+def _write_recreation_cycle_markdown(report: dict, md_path: Path) -> None:
+    render_report = report.get("render_report", {})
+    target_mix = report.get("comparison", {}).get("target_mix", {})
+    ai_mix = report.get("comparison", {}).get("ai_mix", {})
+    lines = [
+        "# Band Room AI Recreation Cycle",
+        "",
+        f"- Band/song: `{report['band']}/{report['song']}`",
+        f"- Captured: `{report['created_at']}`",
+        f"- Report root: `{report['paths']['report_dir']}`",
+        "",
+        "## Generated Stems",
+        "",
+    ]
+    for name, metric in render_report.get("outputs", {}).items():
+        lines.append(_output_metric_line(name, metric))
+
+    lines.extend([
+        "",
+        "## Target Comparison",
+        "",
+    ])
+    if target_mix and ai_mix:
+        ai_centroid = float(ai_mix.get("centroid_hz") or 0.0)
+        target_centroid = float(target_mix.get("centroid_avg_hz") or 0.0)
+        ai_dr = float(ai_mix.get("dynamic_range_db") or 0.0)
+        target_dr = float(target_mix.get("rms_dynamic_range_db") or 0.0)
+        lines.append(f"- AI mix centroid: `{ai_centroid:.1f} Hz`; target full-mix centroid: `{target_centroid:.1f} Hz`")
+        lines.append(f"- AI mix DR: `{ai_dr:.2f} dB`; target full-mix DR: `{target_dr:.2f} dB`")
+    else:
+        lines.append("- Target full-mix analysis was not available for this cycle.")
+
+    lines.extend([
+        "",
+        "## Sonar Polish Pass",
+        "",
+        "- Import `drums.mp3`, `bass.mp3`, `other.mp3`, and `mix.wav` from the generated stem folder.",
+        "- Drums: try Sonar Drum Replacer / Session Drummer only where the source-derived kit feels thin.",
+        "- Bass: tighten low end with Cakewalk EQ/comp; avoid masking the kick.",
+        "- Other: use TH-U / Guitar Rig / L-Phase/T-Phase for guitar and presence color.",
+        "- Export polished `drums.wav`, `bass.wav`, `other.wav`, or `mix.wav` to the daw-export folder.",
+        "",
+        "## Next Actions",
+        "",
+    ])
+    for item in report.get("recommendations", []):
+        lines.append(f"- {item}")
+
+    lines.extend([
+        "",
+        "## Paths",
+        "",
+    ])
+    for label, value in report.get("paths", {}).items():
+        lines.append(f"- {label}: `{value}`")
+
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def command_check_daw(args: argparse.Namespace) -> None:
     """Inspect DAW and plugin state without touching app settings."""
     init_dirs(args)
@@ -732,6 +840,103 @@ def command_batch_ai_render(args: argparse.Namespace) -> None:
             ], check=not args.keep_going)
 
 
+def command_recreation_cycle(args: argparse.Namespace) -> None:
+    init_dirs(args)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    report_dir = worker_path(args, "reports", args.band, args.song, f"recreation-cycle-{timestamp}")
+    report_dir.mkdir(parents=True, exist_ok=True)
+    ai_root = worker_path(args, "ai-recreation")
+    ai_dir = ai_root / args.band / args.song
+    daw_export_dir = worker_path(args, "daw-export", args.band, args.song)
+    daw_export_dir.mkdir(parents=True, exist_ok=True)
+
+    commands: list[dict[str, object]] = []
+    render_cmd: list[str | Path] = [
+        sys.executable,
+        "-X",
+        "utf8",
+        "scripts/render-bandroom-ai-recreation.py",
+        args.band,
+        args.song,
+        "--output-root",
+        ai_root,
+    ]
+    if args.profile:
+        render_cmd.extend(["--profile", args.profile])
+    if args.force:
+        render_cmd.append("--force")
+    commands.append({"purpose": "ai-render", "command": [str(part) for part in render_cmd]})
+    run(render_cmd)
+
+    target_analysis: dict = {}
+    target_analysis_path = report_dir / "target-spec.json"
+    if args.with_analysis:
+        analyze_cmd: list[str | Path] = [
+            sys.executable,
+            "-X",
+            "utf8",
+            "scripts/analyze-band-stems.py",
+            f"{args.band}/{args.song}",
+            "--out",
+            target_analysis_path,
+        ]
+        commands.append({"purpose": "target-analysis", "command": [str(part) for part in analyze_cmd]})
+        run(analyze_cmd)
+        target_analysis = _read_json(target_analysis_path)
+
+    drum_candidate_path = report_dir / f"drum-frames-{args.band}-{args.song}.candidate.json"
+    if args.with_drum_candidate:
+        drum_cmd: list[str | Path] = [
+            sys.executable,
+            "-X",
+            "utf8",
+            "scripts/_extract_drum_patterns.py",
+            args.band,
+            args.song,
+            "--out",
+            drum_candidate_path,
+        ]
+        commands.append({"purpose": "drum-frame-candidate", "command": [str(part) for part in drum_cmd]})
+        run(drum_cmd)
+
+    render_report_path = ai_dir / "ai-recreation-report.json"
+    render_report = _read_json(render_report_path)
+    ai_mix = render_report.get("outputs", {}).get("mix.wav", {})
+    target_mix = _target_mix_summary(target_analysis, args.band, args.song)
+    cycle_report = {
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "band": args.band,
+        "song": args.song,
+        "commands": commands,
+        "paths": {
+            "ai_recreation_dir": str(ai_dir),
+            "daw_export_dir": str(daw_export_dir),
+            "report_dir": str(report_dir),
+            "render_report": str(render_report_path),
+            "target_analysis": str(target_analysis_path) if target_analysis_path.exists() else "",
+            "drum_candidate": str(drum_candidate_path) if drum_candidate_path.exists() else "",
+        },
+        "render_report": render_report,
+        "comparison": {
+            "ai_mix": ai_mix,
+            "target_mix": target_mix,
+        },
+        "recommendations": _cycle_recommendations(render_report, target_analysis, args.band, args.song),
+        "promotion_policy": (
+            "Generated audio, DAW projects, plugin state, and cycle reports stay outside Git. "
+            "Promote only reviewed metadata, candidate JSON, docs, or code intentionally."
+        ),
+    }
+    json_path = report_dir / "recreation-cycle-report.json"
+    md_path = report_dir / "recreation-cycle-report.md"
+    json_path.write_text(json.dumps(cycle_report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    _write_recreation_cycle_markdown(cycle_report, md_path)
+    print(f"recreation cycle JSON: {json_path}")
+    print(f"recreation cycle Markdown: {md_path}")
+    if args.open_report and sys.platform.startswith("win"):
+        os.startfile(md_path)  # type: ignore[attr-defined]
+
+
 def command_analyze(args: argparse.Namespace) -> None:
     init_dirs(args)
     out_file = Path(args.out).resolve() if args.out else worker_path(args, "reports", "target-spec-bands.json")
@@ -947,6 +1152,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--band")
     p.add_argument("--keep-going", action="store_true")
     p.set_defaults(func=command_batch_ai_render)
+
+    p = sub.add_parser("recreation-cycle", help="run one Band Room AI recreation growth cycle outside the repo")
+    p.add_argument("band")
+    p.add_argument("song")
+    p.add_argument("--profile", help="renderer profile override")
+    p.add_argument("--force", action="store_true", help="pass --force to the renderer")
+    p.add_argument("--with-analysis", action="store_true", help="write target-spec analysis beside the cycle report")
+    p.add_argument("--with-drum-candidate", action="store_true", help="write a review-only drum-frame candidate beside the cycle report")
+    p.add_argument("--open-report", action="store_true", help="open the Markdown report after writing it on Windows")
+    p.set_defaults(func=command_recreation_cycle)
 
     p = sub.add_parser("analyze", help="write stem target-spec report outside the repo")
     p.add_argument("targets", nargs="*", help="optional band or band/song filters")

@@ -149,6 +149,16 @@ Render a whole registered band:
 python -X utf8 scripts/worker-gaming-pipeline.py batch-ai-render --band tabasco --keep-going
 ```
 
+Run one Band Room AI recreation growth cycle:
+
+```powershell
+python -X utf8 scripts/worker-gaming-pipeline.py recreation-cycle tabasco human-fly --with-analysis --with-drum-candidate
+```
+
+Use the cycle report under `C:\workspace\music-stack-worker\reports\...` as the
+handoff into Sonar polish and Band Room review. Details:
+[BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md](BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md).
+
 Analyze target specs without rewriting tracked docs:
 
 ```powershell

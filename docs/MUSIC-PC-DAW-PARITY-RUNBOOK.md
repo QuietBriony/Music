@@ -115,6 +115,9 @@ The preferred architecture is hybrid:
 3. Band Room previews external stems.
 4. Only reviewed metadata, candidates, docs, or code are promoted into Git.
 
+For the current Band Room AI recreation loop, use
+[BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md](BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md).
+
 ## Rebuild Checklist
 
 0. On the reference PC, capture the current setup:
