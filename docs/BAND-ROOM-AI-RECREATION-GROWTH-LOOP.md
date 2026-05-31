@@ -69,6 +69,14 @@ Use these only after the basic AI recreation cycle is passing:
   `hardware-jam\ep133-inbox`, process by hand, and record captures back through
   Sonar/UR44 when the studio PC is ready.
 
+Prepare a transfer pack without writing to the device:
+
+```powershell
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-pack tabasco human-fly --include-ai-recreation --open-folder
+```
+
+Details: [EP133-KOII-BANDROOM-WORKFLOW.md](EP133-KOII-BANDROOM-WORKFLOW.md).
+
 Run hardware checks after connecting devices:
 
 ```powershell

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Music Hardware Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f4ef;
+      --panel: #ffffff;
+      --text: #151515;
+      --muted: #65615b;
+      --line: #d9d3c7;
+      --accent: #0b6f6a;
+      --accent-2: #b64031;
+      --code: #111827;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121211;
+        --panel: #1d1d1b;
+        --text: #f5f2e9;
+        --muted: #b9b3a7;
+        --line: #34322f;
+        --accent: #4fc3b7;
+        --accent-2: #ff8a73;
+        --code: #070707;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    header, main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    header {
+      display: grid;
+      gap: 10px;
+      padding-top: 32px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 19px;
+      letter-spacing: 0;
+    }
+    p { margin: 0; color: var(--muted); }
+    a { color: var(--accent); font-weight: 650; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 16px;
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      border-radius: 999px;
+      padding: 3px 10px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      background: color-mix(in srgb, var(--accent) 14%, transparent);
+      color: var(--accent);
+    }
+    .status.warn {
+      background: color-mix(in srgb, var(--accent-2) 14%, transparent);
+      color: var(--accent-2);
+    }
+    pre {
+      overflow: auto;
+      margin: 12px 0 0;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--code);
+      color: #f7f7f7;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+    li { margin: 4px 0; }
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .links a {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: var(--panel);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Music Hardware Dashboard</h1>
+    <p>worker-gaming / EP-133 / UR44 / Sonar / Band Room の非破壊ハンドオフ入口。</p>
+    <div class="links">
+      <a href="./EP133-KOII-BANDROOM-WORKFLOW.md">EP-133 workflow</a>
+      <a href="./HARDWARE-JAM-ROUTING.md">Hardware routing</a>
+      <a href="./BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md">AI recreation loop</a>
+      <a href="../band-room.html">Band Room</a>
+      <a href="https://teenage.engineering/apps/ep-sample-tool">EP sample tool</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid" aria-label="Hardware status">
+      <article class="card">
+        <span class="status">EP-133 visible on gaming PC</span>
+        <h2>USB-C Lane</h2>
+        <p>USB-C は MIDI / sample transfer / firmware / 給電。audio capture は analog output で扱う。</p>
+        <pre>python -X utf8 scripts\worker-gaming-pipeline.py check-hardware</pre>
+      </article>
+      <article class="card">
+        <span class="status warn">UR44 pending on studio PC</span>
+        <h2>Audio Capture Lane</h2>
+        <p>EP-133 3.5 mm output を UR44 line input に入れ、Sonar stereo track で録る。</p>
+        <pre>EP-133 out -> UR44 line in -> Sonar -> daw-export</pre>
+      </article>
+      <article class="card">
+        <span class="status">No default runtime changes</span>
+        <h2>Repo Safety</h2>
+        <p>pack、録音、cycle report は worker root に置く。Git には review 済み metadata / docs / code だけ。</p>
+      </article>
+    </section>
+
+    <section class="grid" aria-label="Main commands">
+      <article class="card">
+        <h2>Create EP-133 Pack</h2>
+        <p>Band Room source kit と AI recreation から転送用 WAV と pad map を作る。</p>
+        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-pack tabasco human-fly --include-ai-recreation --open-folder</pre>
+      </article>
+      <article class="card">
+        <h2>Recreation Cycle</h2>
+        <p>生成 stem、target analysis、drum-frame candidate、Sonar handoff report を作る。</p>
+        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py recreation-cycle tabasco human-fly --with-analysis --with-drum-candidate</pre>
+      </article>
+      <article class="card">
+        <h2>Studio PC Rebuild</h2>
+        <p>gaming PC の構成を Studio PC に再現する前に snapshot を取る。</p>
+        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py snapshot-setup --tag worker-gaming</pre>
+      </article>
+    </section>
+
+    <section class="card" aria-label="Operator checklist">
+      <h2>Operator Checklist</h2>
+      <ul>
+        <li>EP-133 に書く前に、必要なら EP sample tool で project backup を取る。</li>
+        <li>EP sample tool の device permission は人間が許可する。</li>
+        <li>Band Room external stems に戻すまでは、runtime preset を変更しない。</li>
+        <li>良い take だけ `hardware-jam\captures` / `daw-export` から review する。</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>
