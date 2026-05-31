@@ -42,6 +42,7 @@ WORKER_DIRS = (
     "tmp",
 )
 AUDIO_EXTS = {".m4a", ".mp3", ".wav", ".flac", ".aac", ".ogg", ".webm"}
+EP_SAMPLE_TOOL_URL = "https://teenage.engineering/apps/ep-sample-tool"
 
 
 def resolve_ffmpeg() -> str:
@@ -621,6 +622,66 @@ def _write_recreation_cycle_markdown(report: dict, md_path: Path) -> None:
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _ep133_convert_audio(src: Path, dest: Path, *, channels: int, seconds: float | None = None) -> None:
+    cmd: list[str | Path] = [resolve_ffmpeg(), "-hide_banner", "-loglevel", "error", "-y", "-i", src]
+    if seconds is not None:
+        cmd.extend(["-t", f"{seconds:.3f}"])
+    cmd.extend(["-ac", str(channels), "-ar", "46875", "-sample_fmt", "s16", dest])
+    run(cmd)
+
+
+def _write_ep133_pack_markdown(pack: dict[str, object], md_path: Path) -> None:
+    paths = pack.get("paths", {})
+    lines = [
+        "# EP-133 K.O.II Transfer Pack",
+        "",
+        f"- Band/song: `{pack['band']}/{pack['song']}`",
+        f"- Created: `{pack['created_at']}`",
+        f"- Transfer folder: `{paths.get('transfer_dir', '')}`",
+        f"- EP sample tool: {EP_SAMPLE_TOOL_URL}",
+        "",
+        "## Safety",
+        "",
+        "- This pack does not write to EP-133 by itself.",
+        "- It does not change Band Room defaults, repo presets, DAW projects, or device projects.",
+        "- Transfer and pad assignment still happen manually in the EP sample tool / EP-133.",
+        "",
+        "## Suggested Pad Map",
+        "",
+    ]
+    for entry in pack.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        lines.append(
+            f"- `{entry['slot']}` {entry['role']}: "
+            f"`{entry['file']}` ({entry['kind']}, {entry['channels']}ch)"
+        )
+
+    lines.extend([
+        "",
+        "## Transfer Steps",
+        "",
+        "1. Open the EP sample tool in a WebMIDI-capable browser.",
+        "2. Grant access to `EP-133` when the browser asks for MIDI/device permission.",
+        "3. Drag the files from the transfer folder into the sample tool.",
+        "4. Use the suggested pad map as the project layout; adjust on the device by ear.",
+        "5. Keep the original EP-133 project backed up before replacing important samples.",
+        "",
+        "## Return Path",
+        "",
+        "- USB-C is the MIDI/sample-transfer lane.",
+        "- Record audio from EP-133 through the 3.5 mm output into UR44/Sonar when the audio interface is available.",
+        "- Export takes to `hardware-jam/captures` or `daw-export`, then review in Band Room external stems.",
+        "",
+        "## Paths",
+        "",
+    ])
+    for label, value in paths.items():
+        lines.append(f"- {label}: `{value}`")
+
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def command_check_daw(args: argparse.Namespace) -> None:
     """Inspect DAW and plugin state without touching app settings."""
     init_dirs(args)
@@ -937,6 +998,129 @@ def command_recreation_cycle(args: argparse.Namespace) -> None:
         os.startfile(md_path)  # type: ignore[attr-defined]
 
 
+def command_ep133_pack(args: argparse.Namespace) -> None:
+    """Prepare a non-destructive EP-133 sample transfer pack outside the repo."""
+    init_dirs(args)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    pack_dir = worker_path(args, "hardware-jam", "ep133-inbox", args.band, args.song, f"ep133-pack-{timestamp}")
+    transfer_dir = pack_dir / "transfer"
+    transfer_dir.mkdir(parents=True, exist_ok=True)
+
+    source_kit_dir = ROOT / "presets" / "sample-kits" / args.band / args.song
+    if not source_kit_dir.exists():
+        raise SystemExit(f"sample kit not found: {source_kit_dir}")
+
+    ai_dir = worker_path(args, "ai-recreation", args.band, args.song)
+    if args.render_ai and not (ai_dir / "mix.wav").exists():
+        run([
+            sys.executable,
+            "-X",
+            "utf8",
+            "scripts/render-bandroom-ai-recreation.py",
+            args.band,
+            args.song,
+            "--output-root",
+            worker_path(args, "ai-recreation"),
+        ])
+
+    plan = [
+        ("A01", "kick", "kick-01.wav", "one-shot", 1, None),
+        ("A02", "snare", "snare-01.wav", "one-shot", 1, None),
+        ("A03", "closed-hat", "hat-01.wav", "one-shot", 1, None),
+        ("A04", "open-hat", "hat-02.wav", "one-shot", 1, None),
+        ("A05", "tom", "tom-01.wav", "one-shot", 1, None),
+        ("A06", "crash", "crash-01.wav", "one-shot", 1, None),
+        ("A07", "texture", "other-01.wav", "one-shot", 1, None),
+        ("A08", "texture-alt", "other-02.wav", "one-shot", 1, None),
+        ("A09", "vocal-phrase", "vocal-phrase-01.wav", "phrase", 1, None),
+        ("A10", "vocal-phrase-alt", "vocal-phrase-02.wav", "phrase", 1, None),
+    ]
+    entries: list[dict[str, object]] = []
+    for slot, role, filename, kind, channels, seconds in plan:
+        src = source_kit_dir / filename
+        if not src.exists():
+            continue
+        dest = transfer_dir / f"{slot}_{role}_{filename}"
+        _ep133_convert_audio(src, dest, channels=channels, seconds=seconds)
+        entries.append({
+            "slot": slot,
+            "role": role,
+            "kind": kind,
+            "channels": channels,
+            "file": dest.name,
+            "source": str(src),
+            "path": str(dest),
+        })
+
+    if args.include_ai_recreation:
+        loop_plan = [
+            ("B01", "drums-loop", "drums.mp3"),
+            ("B02", "bass-loop", "bass.mp3"),
+            ("B03", "other-loop", "other.mp3"),
+            ("B04", "rough-mix-loop", "mix.wav"),
+        ]
+        for slot, role, filename in loop_plan:
+            src = ai_dir / filename
+            if not src.exists():
+                print(f"skip missing AI recreation source: {src}")
+                continue
+            dest = transfer_dir / f"{slot}_{role}_{args.loop_seconds:.1f}s.wav"
+            _ep133_convert_audio(src, dest, channels=2, seconds=args.loop_seconds)
+            entries.append({
+                "slot": slot,
+                "role": role,
+                "kind": "loop",
+                "channels": 2,
+                "seconds": args.loop_seconds,
+                "file": dest.name,
+                "source": str(src),
+                "path": str(dest),
+            })
+
+    if not entries:
+        raise SystemExit("no EP-133 pack entries were created")
+
+    manifest = {
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "band": args.band,
+        "song": args.song,
+        "device_policy": (
+            "This command only prepares local transfer files outside Git. "
+            "It does not write to EP-133, alter Band Room defaults, or change DAW/plugin state."
+        ),
+        "format": {
+            "sample_rate_hz": 46875,
+            "sample_format": "16-bit PCM WAV",
+            "note": "EP sample tool can still convert on import; this pack is pre-normalized for a predictable handoff.",
+        },
+        "paths": {
+            "pack_dir": str(pack_dir),
+            "transfer_dir": str(transfer_dir),
+            "source_kit_dir": str(source_kit_dir),
+            "ai_recreation_dir": str(ai_dir),
+            "manifest": str(pack_dir / "ep133-transfer-manifest.json"),
+            "markdown": str(pack_dir / "ep133-transfer-pack.md"),
+        },
+        "official_refs": [
+            "https://teenage.engineering/guides/ep-133/hardware-overview",
+            EP_SAMPLE_TOOL_URL,
+            "https://teenage.engineering/guides/ep-133/system",
+        ],
+        "entries": entries,
+    }
+    json_path = pack_dir / "ep133-transfer-manifest.json"
+    md_path = pack_dir / "ep133-transfer-pack.md"
+    json_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _write_ep133_pack_markdown(manifest, md_path)
+    print(f"EP-133 transfer folder: {transfer_dir}")
+    print(f"EP-133 manifest: {json_path}")
+    print(f"EP-133 Markdown: {md_path}")
+    if args.open_folder and sys.platform.startswith("win"):
+        os.startfile(transfer_dir)  # type: ignore[attr-defined]
+    if args.open_sample_tool and sys.platform.startswith("win"):
+        os.startfile(EP_SAMPLE_TOOL_URL)  # type: ignore[attr-defined]
+
+
 def command_analyze(args: argparse.Namespace) -> None:
     init_dirs(args)
     out_file = Path(args.out).resolve() if args.out else worker_path(args, "reports", "target-spec-bands.json")
@@ -1162,6 +1346,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--with-drum-candidate", action="store_true", help="write a review-only drum-frame candidate beside the cycle report")
     p.add_argument("--open-report", action="store_true", help="open the Markdown report after writing it on Windows")
     p.set_defaults(func=command_recreation_cycle)
+
+    p = sub.add_parser("ep133-pack", help="prepare a non-destructive EP-133 sample transfer pack outside the repo")
+    p.add_argument("band")
+    p.add_argument("song")
+    p.add_argument("--include-ai-recreation", action="store_true", help="include short loops from ai-recreation output")
+    p.add_argument("--render-ai", action="store_true", help="render ai-recreation first if mix.wav is missing")
+    p.add_argument("--loop-seconds", type=float, default=8.0, help="seconds to trim each ai-recreation loop")
+    p.add_argument("--open-folder", action="store_true", help="open the transfer folder after writing it on Windows")
+    p.add_argument("--open-sample-tool", action="store_true", help="open the official EP sample tool after writing the pack")
+    p.set_defaults(func=command_ep133_pack)
 
     p = sub.add_parser("analyze", help="write stem target-spec report outside the repo")
     p.add_argument("targets", nargs="*", help="optional band or band/song filters")

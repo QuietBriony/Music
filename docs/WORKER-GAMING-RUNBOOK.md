@@ -159,6 +159,18 @@ Use the cycle report under `C:\workspace\music-stack-worker\reports\...` as the
 handoff into Sonar polish and Band Room review. Details:
 [BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md](BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md).
 
+Prepare a non-destructive EP-133 transfer pack:
+
+```powershell
+python -X utf8 scripts/worker-gaming-pipeline.py ep133-pack tabasco human-fly --include-ai-recreation --open-folder
+```
+
+This writes WAV files, a manifest, and a suggested pad map under
+`C:\workspace\music-stack-worker\hardware-jam\ep133-inbox\...`. It does not
+write to EP-133. Use the EP sample tool and the
+[EP133-KOII-BANDROOM-WORKFLOW.md](EP133-KOII-BANDROOM-WORKFLOW.md) manual for
+the transfer step.
+
 Analyze target specs without rewriting tracked docs:
 
 ```powershell

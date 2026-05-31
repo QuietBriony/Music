@@ -22,7 +22,7 @@
 | ベース guitar | 1/4" TS → UR44 **Hi-Z** ボタン押した ch | `🥁🎸🎹 external bass` |
 | エレキ guitar | 1/4" TS → UR44 Hi-Z ch、または **アンプ後 line out → UR44 line** | `🥁🎸🎹 external other` |
 | 電子ドラム (line out) | 1/4" TRS stereo → UR44 ch3/4 line | `🥁🎸🎹 external drums` |
-| **EP-133 K.O. II** | USB-C → PC (クラスコンプライアント audio) **または** 3.5mm line out → UR44 ch | sampler の出音は drums or other |
+| **EP-133 K.O. II** | USB-C → PC (MIDI / sample transfer) + 3.5mm line out → UR44 stereo line ch | sampler の出音は drums or other |
 
 UR44 は **4ch 同時録音可能** (Cubase / Cubasis 込みで来る、他 DAW でも動く)。
 
@@ -99,25 +99,26 @@ Steinberg UR44 = **Cubase AI / LE が bundle**。それ以外でも:
 
 ## 4. EP-133 K.O. II をどう使うか
 
-Teenage Engineering EP-133 = pocket sampler / sequencer。**USB-C で PC に挿すと
-audio interface としても認識される** (クラスコンプライアント、ドライバ不要)。
+Teenage Engineering EP-133 = pocket sampler / sequencer。USB-C は
+MIDI / clock / sample transfer / firmware / 給電の lane として使う。
+音声録音は 3.5mm stereo output から UR44 / Sonar に入れる。
 
-### path A: EP-133 → USB → PC
+### path A: EP-133 → USB-C → PC (sample / MIDI)
 
 1. EP-133 を USB-C で PC に接続
-2. DAW の input device 一覧に **"EP-133"** が現れる (Win/Mac 両方)
-3. EP-133 で sequence 走らせる
-4. DAW で EP-133 input を 1 つの stereo track に record
-5. wav export → band-room の drums or other slot に drop
+2. Windows / browser で **"EP-133"** が MIDI / USB device として見える
+3. EP sample tool で sample transfer / backup / restore を行う
+4. 必要なら DAW / Band Room から MIDI clock / transport を扱う
+5. 音声そのものは下の path B で録る
 
-これが一番素直。
+これは transfer / sync 用。USB-C だけでは Band Room に戻す録音 take は作らない。
 
 ### path B: EP-133 → 3.5mm line out → UR44
 
 1. EP-133 phones / line out (3.5mm TRS) を 1/4" 変換 → UR44 ch3 (L) + ch4 (R)
 2. UR44 経由で DAW に record
-3. 利点: UR44 で他楽器と同時 multi-track 録音可能
-4. 欠点: 一段ロスする
+3. 利点: UR44 で他楽器と同時 multi-track 録音可能、Sonar の monitoring / export に乗る
+4. 欠点: cable と input gain の人間確認が必要
 
 ### EP-133 の sequence を band-room の drum-frames に流用したい?
 

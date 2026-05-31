@@ -90,6 +90,8 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Worker Gaming environment setup log: [docs/WORKER-GAMING-ENV-SETUP-2026-05-31.md](docs/WORKER-GAMING-ENV-SETUP-2026-05-31.md)
 - Music PC DAW parity runbook: [docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md](docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md)
 - Hardware jam routing: [docs/HARDWARE-JAM-ROUTING.md](docs/HARDWARE-JAM-ROUTING.md)
+- Music hardware dashboard: [docs/music-hardware-dashboard.html](docs/music-hardware-dashboard.html)
+- EP-133 K.O.II / Band Room workflow: [docs/EP133-KOII-BANDROOM-WORKFLOW.md](docs/EP133-KOII-BANDROOM-WORKFLOW.md)
 - Band Room AI recreation growth loop: [docs/BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md](docs/BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md)
 - Worker Gaming DAW doctor: `python -X utf8 scripts/worker-gaming-pipeline.py check-daw`
 - Worker Gaming hardware doctor: `python -X utf8 scripts/worker-gaming-pipeline.py check-hardware`
