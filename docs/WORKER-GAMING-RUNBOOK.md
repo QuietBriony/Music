@@ -15,9 +15,11 @@ live DAW/device control.
 Observed on 2026-05-31:
 
 - GPU: NVIDIA GeForce RTX 2070 plus Intel UHD Graphics 630
-- CLI tools: Python 3.12.10, Node 24.16.0, ffmpeg 8.0.1
-- Installed apps: Ableton folder, Native Instruments, VCV Rack/Rack2,
-  SuperCollider 3.9.3, Atom
+- CLI tools: Python 3.12.10, Node 24.16.0, ffmpeg 8.1.1
+- Installed apps: Ableton Live 12 Lite 12.3.2 plus legacy Live 10 Lite,
+  Native Access 1.14.1, Kontakt 6.7.1, Maschine 2.16.1, Reaktor 6.4.3,
+  Guitar Rig 6.3.0, VCV Rack 2 Free 2.6.6 plus Rack 1.1.6,
+  SuperCollider 3.9.3, Atom 1.59.0
 - Worker venv: `C:\workspace\music-stack-worker\.venv`
 - Verified venv packages: PyTorch 2.11.0+cu128, torchaudio, Demucs, librosa,
   soundfile, imageio-ffmpeg, scipy, numpy
@@ -25,6 +27,7 @@ Observed on 2026-05-31:
   `NVIDIA GeForce RTX 2070`
 - Global Python may still have CPU-only `torch`; run worker jobs through the
   venv Python.
+- Latest setup report: [WORKER-GAMING-ENV-SETUP-2026-05-31.md](WORKER-GAMING-ENV-SETUP-2026-05-31.md)
 
 Run the local doctor:
 
@@ -142,6 +145,16 @@ Do not add Ableton project files, Kontakt libraries, generated audio, or plugin
 state dumps to the repo unless the user explicitly approves a separate asset
 policy.
 
+Current Ableton handoff baseline:
+
+- Use Ableton Live 12 Lite as the primary DAW lane.
+- Scan VST3 from `C:\Program Files\Common Files\VST3`.
+- Scan NI VST2 from `C:\Program Files\Native Instruments\VSTPlugins 64 bit`
+  only when a specific legacy plugin requires it.
+- Keep Cakewalk by BandLab installed for legacy project compatibility, but do
+  not make it the main worker path; update attempts currently require a GUI
+  installer confirmation.
+
 ## VCV Rack / SuperCollider
 
 Treat VCV Rack and SuperCollider as external sound design tools:
@@ -150,6 +163,15 @@ Treat VCV Rack and SuperCollider as external sound design tools:
   renders.
 - SuperCollider: short percussion, glitch, drone, and ambience experiments.
 - Export audio to the worker root, then review in Band Room or a DAW.
+
+Current app baseline:
+
+- VCV Rack 2 Free 2.6.6 starts and reports its version from CLI.
+- VCV Rack 1.1.6 remains installed only for old patch compatibility.
+- SuperCollider 3.9.3 `sclang` starts; 3.14.1 update currently needs manual
+  installer confirmation.
+- Atom is kept as a legacy editor only; prefer VS Code or repo-native tooling
+  for new work.
 
 No automatic browser playback, MIDI send, Ableton arm, EP-133 operation, upload,
 or cross-repo merge is part of worker-gaming.
