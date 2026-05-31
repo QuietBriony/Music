@@ -72,7 +72,9 @@ machineName は git config `music.machineName` に保存。
 - **環境整備 (2026-05-31)**: FFmpeg 8.1.1、Visual C++ 2015-2022 x64/x86、
   Visual C++ 2013 x86、Edge WebView2 Runtime を更新。Cakewalk by BandLab、
   SuperCollider 3.14.1、Native Access 2、Ableton point update は GUI / 認証 /
-  手動確認に回す。
+  手動確認に回す。Native Access 1 で Controller Editor 2.8.2 と Kontakt 6.8.0
+  は更新済み。Kontakt 単体起動確認済み、Ableton は crash recovery を退避して
+  DefaultLiveSet 起動まで確認済み。
 - **運用手順**: [`docs/WORKER-GAMING-RUNBOOK.md`](WORKER-GAMING-RUNBOOK.md) と
   `python -X utf8 scripts/worker-gaming-pipeline.py check-env` を入口にする。
 
