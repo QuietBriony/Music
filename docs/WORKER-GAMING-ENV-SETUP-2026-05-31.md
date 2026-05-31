@@ -17,6 +17,8 @@
 - Microsoft Edge WebView2 Runtime: installed as Cakewalk dependency.
 - Microsoft Visual C++ 2015-2022 Redistributable x64/x86: `14.51.36231.0`.
 - Microsoft Visual C++ 2013 Redistributable x86: `12.0.40664.0`.
+- Native Instruments Controller Editor: `2.7.6` -> `2.8.2`.
+- Native Instruments Kontakt / Kontakt 6 Player: `6.7.1` -> `6.8.0`.
 - Worker script now resolves FFmpeg from PATH, winget portable install paths, or `imageio_ffmpeg`, in that order.
 
 ## Current Music App Baseline
@@ -24,7 +26,7 @@
 - Ableton Live 12 Lite: `12.3.2`
 - Ableton Live 10 Lite: legacy install remains under `C:\ProgramData\Ableton`
 - Native Access: `1.14.1`
-- Kontakt: `6.7.1`
+- Kontakt: `6.8.0`
 - Maschine 2: `2.16.1`
 - Reaktor 6: `6.4.3`
 - Guitar Rig 6: `6.3.0`
@@ -32,11 +34,19 @@
 - VCV Rack 1: `1.1.6` legacy
 - SuperCollider: `3.9.3`
 - Atom: `1.59.0` legacy only
+- Kontakt standalone starts and shows installed libraries including Kinetic Treats,
+  Kontakt Factory Selection, Scarbee Mark I, and Play Series Selection.
+- Ableton Live 12 Lite starts to an untitled default set after crash recovery
+  state was moved aside.
 
 ## Deferred Manual Work
 
 - Native Access 2: winget package not found. Use the official NI installer and sign in manually.
-- NI product updates: apply only free point updates after Native Access 2 is ready. Do not buy Kontakt/Komplete major upgrades here.
+- Remaining NI product updates: apply only free point updates. Do not buy
+  Kontakt/Komplete major upgrades here.
+- Ableton plugin scan: NI VST3/VST2 files are present, but Ableton's plugin
+  database has not registered them yet. Enable and rescan plugins from Ableton
+  Preferences when the Preferences UI renders normally.
 - Ableton Live point update: use Ableton account / in-app update manually.
 - Cakewalk by BandLab: winget downloaded the final `29.09.0.098` installer, but the installer was cancelled. Keep current install for legacy compatibility.
 - SuperCollider 3.14.1: winget downloaded the installer, but the installer was cancelled. Current `sclang 3.9.3` starts.
@@ -56,6 +66,16 @@
   - `VCV Rack Free 2.6.6 Windows x64`
 - `C:\Program Files\SuperCollider-3.9.3\sclang.exe -v`
   - `sclang 3.9.3`
+- Native Access 1
+  - logged in manually
+  - Controller Editor `2.8.2` installed successfully
+  - Kontakt `6.8.0` installed successfully
+- Kontakt standalone
+  - starts and displays installed libraries
+- Ableton Live 12 Lite
+  - crash-recovery prompt was bypassed by moving recovery state to
+    `C:\workspace\music-stack-worker\logs\ableton-recovery-bypass-20260531-2013`
+  - Live loaded `DefaultLiveSet.als` and reached `Live App: End Init`
 - `node scripts\stack-check.mjs`
   - `PASS 15 / FAIL 0 / SKIP 0`
 - Band Room preview server

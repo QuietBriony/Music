@@ -17,7 +17,7 @@ Observed on 2026-05-31:
 - GPU: NVIDIA GeForce RTX 2070 plus Intel UHD Graphics 630
 - CLI tools: Python 3.12.10, Node 24.16.0, ffmpeg 8.1.1
 - Installed apps: Ableton Live 12 Lite 12.3.2 plus legacy Live 10 Lite,
-  Native Access 1.14.1, Kontakt 6.7.1, Maschine 2.16.1, Reaktor 6.4.3,
+  Native Access 1.14.1, Kontakt 6.8.0, Maschine 2.16.1, Reaktor 6.4.3,
   Guitar Rig 6.3.0, VCV Rack 2 Free 2.6.6 plus Rack 1.1.6,
   SuperCollider 3.9.3, Atom 1.59.0
 - Worker venv: `C:\workspace\music-stack-worker\.venv`
@@ -148,9 +148,14 @@ policy.
 Current Ableton handoff baseline:
 
 - Use Ableton Live 12 Lite as the primary DAW lane.
+- If Live asks to restore `codex1.als`, move recovery files aside instead of
+  restoring them; the latest bypass backup is under
+  `C:\workspace\music-stack-worker\logs\ableton-recovery-bypass-20260531-2013`.
 - Scan VST3 from `C:\Program Files\Common Files\VST3`.
 - Scan NI VST2 from `C:\Program Files\Native Instruments\VSTPlugins 64 bit`
   only when a specific legacy plugin requires it.
+- NI plugins are installed, but Ableton's plugin database still needs a manual
+  Preferences rescan when the Preferences UI renders normally.
 - Keep Cakewalk by BandLab installed for legacy project compatibility, but do
   not make it the main worker path; update attempts currently require a GUI
   installer confirmation.
