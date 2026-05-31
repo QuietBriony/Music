@@ -117,6 +117,18 @@ The preferred architecture is hybrid:
 
 ## Rebuild Checklist
 
+0. On the reference PC, capture the current setup:
+
+   ```powershell
+   cd C:\workspace\music-stack\Music
+   C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py snapshot-setup --tag worker-gaming-reference
+   ```
+
+   Keep the generated JSON/Markdown in
+   `C:\workspace\music-stack-worker\reports`. It records the app versions,
+   important paths, worker folders, visible MIDI/audio devices, and repo head
+   without putting local machine state into Git.
+
 1. Clone repo:
 
    ```powershell

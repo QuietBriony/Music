@@ -52,6 +52,17 @@ cd C:\workspace\music-stack\Music
 C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-daw
 ```
 
+Write a reproducible setup snapshot outside Git:
+
+```powershell
+cd C:\workspace\music-stack\Music
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py snapshot-setup --tag worker-gaming
+```
+
+This writes JSON and Markdown under
+`C:\workspace\music-stack-worker\reports\...setup-snapshot...`. Use the latest
+snapshot as the reference when rebuilding the same stack on the studio PC.
+
 ## Output Layout
 
 Default output root:
@@ -63,6 +74,9 @@ C:\workspace\music-stack-worker\
   ai-recreation\
   reports\
   daw-export\
+  hardware-jam\
+    ep133-inbox\
+    captures\
   logs\
   tmp\
 ```

@@ -99,6 +99,11 @@ machineName は git config `music.machineName` に保存。
   transport / sample transfer, and verify visible devices with
   `python -X utf8 scripts/worker-gaming-pipeline.py check-hardware`. See
   [`docs/HARDWARE-JAM-ROUTING.md`](HARDWARE-JAM-ROUTING.md).
+- **2026-06-01 reproducibility hook**: before rebuilding the same stack on
+  `studio-surface`, run
+  `python -X utf8 scripts/worker-gaming-pipeline.py snapshot-setup --tag worker-gaming-reference`
+  on `worker-gaming` and compare the generated reports with the new PC's
+  `check-env` / `check-daw` / `check-hardware` output.
 
 ---
 
