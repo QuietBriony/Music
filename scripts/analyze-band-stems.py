@@ -22,6 +22,9 @@ Usage:
   python -X utf8 scripts/analyze-band-stems.py tabasco/human-fly
     → restrict to a band or band/song
 
+  python -X utf8 scripts/analyze-band-stems.py tabasco/human-fly --out C:/workspace/music-stack-worker/reports/target-spec.json
+    -> write the JSON report outside the repo for worker-gaming batch runs
+
 Output:
   docs/target-spec-bands.json  — machine-readable nested spec
   Console summary — quick human read
@@ -38,6 +41,10 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+
+if any(arg in ("-h", "--help") for arg in sys.argv[1:]):
+    print(__doc__.strip())
+    raise SystemExit(0)
 
 import librosa
 import numpy as np
@@ -244,8 +251,37 @@ def _filter_targets(registry: dict, args: list[str]) -> list[tuple[str, str, Pat
     return targets
 
 
+def _parse_cli(argv: list[str]) -> tuple[list[str], Path]:
+    targets: list[str] = []
+    out_file = OUT_FILE
+    i = 0
+    while i < len(argv):
+        arg = argv[i]
+        if arg in ("--out", "--output"):
+            if i + 1 >= len(argv):
+                raise SystemExit(f"{arg} requires a path")
+            out_file = Path(argv[i + 1])
+            if not out_file.is_absolute():
+                out_file = ROOT / out_file
+            i += 2
+            continue
+        if arg in ("-h", "--help"):
+            print(__doc__.strip())
+            raise SystemExit(0)
+        targets.append(arg)
+        i += 1
+    return targets, out_file
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
 def main() -> int:
-    args = sys.argv[1:]
+    args, out_file = _parse_cli(sys.argv[1:])
     registry = _load_band_registry()
     targets = _filter_targets(registry, args)
     if not targets:
@@ -307,9 +343,9 @@ def main() -> int:
                   f"rolloff {mix['rolloff_p85_hz']:.0f} Hz, DR {mix['rms_dynamic_range_db']:.1f} dB")
         out[band_id][song_id] = entry
 
-    OUT_FILE.parent.mkdir(exist_ok=True)
-    OUT_FILE.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"\nwrote {OUT_FILE.relative_to(ROOT)}", flush=True)
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"\nwrote {_display_path(out_file)}", flush=True)
     return 0
 
 

@@ -26,6 +26,14 @@ sibling repo を触る場合は、その repo の `AGENTS.md` を先に読む。
 
 ---
 
+## Communication
+
+- user への報告・進捗共有・最終回答は、特に指定がない限り **日本語を基本**にする。
+- コマンド名、ファイルパス、API 名、エラー文、コード識別子は原文のまま書いてよい。
+- PR タイトルや commit message は既存履歴に合わせて英語 / 日本語を選ぶ。
+
+---
+
 ## Autonomous development engine
 
 music-stack 全体の自走開発は `docs/autonomy/` のエンジンで運用する。

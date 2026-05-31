@@ -1,4 +1,6 @@
 presets/ai-recreation-stems/
+presets/drum-frame-candidates/
+worker-output/
 captures/
 __pycache__/
 *.pyc
