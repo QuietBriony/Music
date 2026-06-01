@@ -46,6 +46,37 @@ DYNAMIC_GLUE_BY_SONG = {
         "max_gain_db": 9.0,
     },
 }
+GROOVE_FEEL_DEFAULT = {
+    "pocket_ms": 0.0,
+    "humanize_ms": 0.0,
+    "bar_drift_ms": 0.0,
+    "beat_drift_ms": 0.0,
+}
+GROOVE_FEEL_BY_SONG = {
+    # Compare-capture reads the full low band, so move the kick-locked low end
+    # together instead of only moving the rendered kick transient.
+    ("tabasco", "under-the-moon"): {
+        "pocket_ms": -180.0,
+        "humanize_ms": 0.0,
+    },
+    ("tabasco", "electric-sheep"): {
+        "pocket_ms": -45.0,
+        "humanize_ms": 0.0,
+        "bar_drift_ms": 20.0,
+    },
+    ("tabasco", "i-got-a-feeling"): {
+        "pocket_ms": -20.0,
+        "humanize_ms": 0.0,
+    },
+    ("tabasco", "hey"): {
+        "pocket_ms": 10.0,
+        "humanize_ms": 0.0,
+    },
+    ("tabasco", "human-fly"): {
+        "pocket_ms": 0.0,
+        "humanize_ms": 80.0,
+    },
+}
 NOTE_OFFSETS = {
     "C": 0,
     "C#": 1,
@@ -397,6 +428,87 @@ def dynamic_glue_settings(ctx: RenderContext) -> dict[str, float]:
     return settings
 
 
+def groove_feel_settings(ctx: RenderContext) -> dict[str, float]:
+    settings = dict(GROOVE_FEEL_DEFAULT)
+    settings.update(GROOVE_FEEL_BY_SONG.get((ctx.band_id, ctx.song_id), {}))
+    return settings
+
+
+def stable_song_phase(ctx: RenderContext) -> float:
+    seed = sum(ord(ch) for ch in f"{ctx.band_id}/{ctx.song_id}")
+    return (seed % 97) * 0.071
+
+
+def pocket_weight(instrument: str) -> float:
+    if instrument in ("kick", "bass"):
+        return 1.0
+    if instrument == "guitar":
+        return 0.72
+    if instrument == "chord":
+        return 0.45
+    return 0.0
+
+
+def humanize_weight(instrument: str) -> float:
+    return {
+        "kick": 1.0,
+        "bass": 0.9,
+        "snare": 0.78,
+        "tom": 0.72,
+        "guitar": 0.62,
+        "chord": 0.40,
+        "hat": 0.34,
+        "ghost": 0.55,
+        "fill": 0.68,
+        "crash": 0.45,
+    }.get(instrument, 0.45)
+
+
+def groove_timing_shift_s(
+    ctx: RenderContext,
+    global_bar: int,
+    step: int,
+    instrument: str,
+    role: str,
+) -> float:
+    settings = groove_feel_settings(ctx)
+    shift_ms = float(settings.get("pocket_ms") or 0.0) * pocket_weight(instrument)
+    phase = stable_song_phase(ctx)
+    role_scale = 0.78 if role in ("intro", "outro") else 1.08 if role == "recap" else 1.0
+
+    bar_drift_ms = float(settings.get("bar_drift_ms") or 0.0)
+    if bar_drift_ms > 0.0:
+        bar_breathe = (
+            0.72 * math.sin((global_bar + 1) * 0.47 + phase)
+            + 0.28 * math.sin((global_bar + 1) * 0.19 + phase * 1.7)
+        )
+        shift_ms += bar_drift_ms * role_scale * clamp(bar_breathe, -1.0, 1.0)
+
+    beat_drift_ms = float(settings.get("beat_drift_ms") or 0.0)
+    if beat_drift_ms > 0.0:
+        beat_pos = global_bar * 4.0 + step / 4.0
+        beat_breathe = math.sin(beat_pos * 0.86 + phase * 0.53)
+        shift_ms += beat_drift_ms * role_scale * clamp(beat_breathe, -1.0, 1.0)
+
+    humanize_ms = float(settings.get("humanize_ms") or 0.0)
+    if humanize_ms > 0.0:
+        beat_pos = global_bar * 4.0 + step / 4.0
+        bar_breathe = math.sin((global_bar + 1) * 0.73 + phase)
+        beat_breathe = math.sin(beat_pos * 1.37 + phase * 0.61)
+        phrase_breathe = math.sin(((global_bar % 8) + 1) * 0.49 + step * 0.19 + phase * 1.23)
+        downbeat_scale = 0.78 if step % 4 == 0 else 1.0
+        breathe = 0.52 * bar_breathe + 0.33 * beat_breathe + 0.15 * phrase_breathe
+        shift_ms += (
+            humanize_ms
+            * humanize_weight(instrument)
+            * role_scale
+            * downbeat_scale
+            * clamp(breathe, -1.0, 1.0)
+        )
+
+    return shift_ms / 1000.0
+
+
 def normalize_audio(audio: np.ndarray, *, target_rms: float = 0.093, limit: float = 0.92) -> np.ndarray:
     audio = ensure_stereo(audio)
     current_rms = max(rms(audio), 1e-12)
@@ -662,7 +774,8 @@ def render_drums(ctx: RenderContext) -> tuple[np.ndarray, dict[str, int]]:
                     velocity = max(velocity, 0.86)
                 step = event_step(event)
                 micro_s = float(event.get("microMs") or 0.0) / 1000.0
-                add_drum_hit(instrument, bar_start + step * sub_s + micro_s, velocity, phrase_mult, role_mult)
+                timing_s = groove_timing_shift_s(ctx, global_bar, step, instrument, role)
+                add_drum_hit(instrument, bar_start + step * sub_s + micro_s + timing_s, velocity, phrase_mult, role_mult)
 
             bars_in_section = max(1, bars)
             is_fill_bar = (local_bar + 1) % 4 == 0
@@ -673,10 +786,14 @@ def render_drums(ctx: RenderContext) -> tuple[np.ndarray, dict[str, int]]:
                 beat4 = bar_start + 3 * beat_s
                 if fill_variant == 0:
                     for s in range(4):
-                        add_drum_hit("tom", beat4 + s * sub_s, 0.42 + s * 0.10, phrase_mult, role_mult)
+                        step = 12 + s
+                        timing_s = groove_timing_shift_s(ctx, global_bar, step, "tom", role)
+                        add_drum_hit("tom", beat4 + s * sub_s + timing_s, 0.42 + s * 0.10, phrase_mult, role_mult)
                 elif fill_variant == 1:
                     for s in range(4):
-                        add_drum_hit("snare", beat4 + s * sub_s, 0.40 + s * 0.13, phrase_mult, role_mult)
+                        step = 12 + s
+                        timing_s = groove_timing_shift_s(ctx, global_bar, step, "snare", role)
+                        add_drum_hit("snare", beat4 + s * sub_s + timing_s, 0.40 + s * 0.13, phrase_mult, role_mult)
                 elif fill_variant == 2:
                     for instrument, s, velocity in (
                         ("kick", 0, 0.56),
@@ -684,10 +801,14 @@ def render_drums(ctx: RenderContext) -> tuple[np.ndarray, dict[str, int]]:
                         ("kick", 2, 0.56),
                         ("snare", 3, 0.68),
                     ):
-                        add_drum_hit(instrument, beat4 + s * sub_s, velocity, phrase_mult, role_mult)
+                        step = 12 + s
+                        timing_s = groove_timing_shift_s(ctx, global_bar, step, instrument, role)
+                        add_drum_hit(instrument, beat4 + s * sub_s + timing_s, velocity, phrase_mult, role_mult)
                 else:
-                    add_drum_hit("tom", beat4 + 2 * sub_s, 0.58, phrase_mult, role_mult)
-                    add_drum_hit("tom", beat4 + 3 * sub_s, 0.76, phrase_mult, role_mult)
+                    timing_s = groove_timing_shift_s(ctx, global_bar, 14, "tom", role)
+                    add_drum_hit("tom", beat4 + 2 * sub_s + timing_s, 0.58, phrase_mult, role_mult)
+                    timing_s = groove_timing_shift_s(ctx, global_bar, 15, "tom", role)
+                    add_drum_hit("tom", beat4 + 3 * sub_s + timing_s, 0.76, phrase_mult, role_mult)
 
             has_strong_hit = any(
                 (
@@ -716,7 +837,9 @@ def render_drums(ctx: RenderContext) -> tuple[np.ndarray, dict[str, int]]:
                         for event in events
                     )
                     if not exists:
-                        add_drum_hit(instrument, bar_start + beat * beat_s, velocity, phrase_mult, role_mult)
+                        step = beat * 4
+                        timing_s = groove_timing_shift_s(ctx, global_bar, step, instrument, role)
+                        add_drum_hit(instrument, bar_start + beat * beat_s + timing_s, velocity, phrase_mult, role_mult)
             global_bar += 1
     out = sos_filter(out, "highpass", 32.0, order=2)
     return out, counts
@@ -826,15 +949,18 @@ def render_bass_and_other(ctx: RenderContext) -> tuple[np.ndarray, np.ndarray, d
                 if phrase == 2 and step == 0 and role not in ("intro", "outro", "break"):
                     note += 12
                 offset = snapped_offset(step, float(hit.get("micro_ms") or 0.0), kick_hits, sub_s, push_s=-0.010)
+                offset += groove_timing_shift_s(ctx, global_bar, step, "bass", role)
                 dur = 0.26 if role == "recap" and metrics["density"] > 0.5 else 0.34
                 vel = max(0.30, min(0.90, (0.34 + float(hit.get("vel") or 0.4) * 0.62 + (0.08 if idx == 0 else 0.0)) * phrase_mult))
                 add_note(bass, bar_start + offset, dur, note, gain=0.145 * vel, pan=0.0, color="bass")
                 counts["bass_notes"] += 1
             if role == "verse" and any(hit["step"] >= 10 for hit in accent_steps(events, {"ghost"}, 0.18)):
-                add_note(bass, bar_start + 11 * sub_s - 0.006, 0.17, tones_bass["fifth"], gain=0.064, pan=0.0, color="bass")
+                timing_s = groove_timing_shift_s(ctx, global_bar, 11, "bass", role)
+                add_note(bass, bar_start + 11 * sub_s - 0.006 + timing_s, 0.17, tones_bass["fifth"], gain=0.064, pan=0.0, color="bass")
                 counts["bass_notes"] += 1
             if role in ("recap", "comp") and metrics["pressure"] > 0.52:
-                add_note(bass, bar_start + 14 * sub_s - 0.008, 0.14, tones_bass["third"] + 12, gain=0.064, pan=0.0, color="bass")
+                timing_s = groove_timing_shift_s(ctx, global_bar, 14, "bass", role)
+                add_note(bass, bar_start + 14 * sub_s - 0.008 + timing_s, 0.14, tones_bass["third"] + 12, gain=0.064, pan=0.0, color="bass")
                 counts["bass_notes"] += 1
 
             accent = accent_steps(events, {"kick", "snare", "crash", "ghost"}, 0.20)
@@ -860,6 +986,7 @@ def render_bass_and_other(ctx: RenderContext) -> tuple[np.ndarray, np.ndarray, d
                 hit = accent_map.get(step)
                 micro_ms = float(hit.get("micro_ms") or 0.0) if hit else 0.0
                 offset = snapped_offset(step, micro_ms, kick_hits, sub_s)
+                offset += groove_timing_shift_s(ctx, global_bar, step, "guitar", role)
                 vel = 0.50 + (float(hit.get("vel") or 0.35) * 0.20 if hit else 0.0)
                 vel += 0.10 if step == 0 else 0.0
                 for note in gtr_notes:
@@ -885,8 +1012,9 @@ def render_bass_and_other(ctx: RenderContext) -> tuple[np.ndarray, np.ndarray, d
             elif role == "recap" and metrics["pressure"] > 0.58:
                 chord_hits.append((8, beat_s * 1.25, 0.027))
             for step, dur, gain in chord_hits:
+                timing_s = groove_timing_shift_s(ctx, global_bar, step, "chord", role)
                 for note in chord_notes:
-                    add_note(other, bar_start + step * sub_s + 0.005, dur, note, gain=gain, pan=0.18, color="chord")
+                    add_note(other, bar_start + step * sub_s + 0.005 + timing_s, dur, note, gain=gain, pan=0.18, color="chord")
                 counts["chord_stabs"] += 1
             global_bar += 1
 
