@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-177-human-fly-body", "Band Room should expose the current Human Fly body version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-178-genon-master", "Band Room should expose the current 原音 master version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -118,13 +118,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">vertical room<\/button>/, "Band Room should expose the vertical-room preset button");
 assert.match(html, /band-room\.css\?v=br-81/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-177/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-178/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-81/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-177/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-178/, "Service worker should precache the current Band Room JS marker");
 assert.match(source, /bandIds\.length === 1[\s\S]*br-album-plaque/, "Single-band registry should render a non-button album plaque");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/core\.js/, "Band Room should lazy-load Magenta only when AI fill is used");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/music_rnn\.js/, "Band Room should lazy-load Magenta RNN only when AI fill is used");
@@ -348,7 +348,8 @@ assert.match(source, /crashKeptKey/, "Band Room should keep only the most-downbe
 assert.match(source, /drumBus = new Tone\.Gain\(0\.44\)/, "AI drum bus should step back for the v301 Human Fly body pass");
 assert.match(source, /bassBus = new Tone\.Gain\(0\.80\)/, "AI bass bus default should sit forward for the v301 Human Fly body pass");
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
-assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.68\)/, "Vocal stem default should sit forward without pinning the limiter");
+assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.58\)/, "Vocal stem should sit in the wall (v303 pulled it down from 0.68)");
+assert.match(source, /function makeStemMasterBus\(dest\)/, "原音 should have its own master/glue bus (v303)");
 assert.match(source, /function makeInstrumentPolishBus\(/, "Band Room should sum the non-vocal band into a polish bus");
 assert.match(source, /instrumentBus = makeInstrumentPolishBus\(masterGain\)/, "Non-vocal instruments should feed the polish bus");
 assert.match(source, /drumPan\s*=\s*new Tone\.Panner\([^)]*\)\.connect\(instrumentBus\)/, "Drums should route through the instrument polish bus");
@@ -552,8 +553,13 @@ Object.values(bandsRegistry.bands || {}).forEach((band) => {
     }
   });
 });
-assert.ok(durationShortfalls.length > 0, "Fixture should include songs whose structure is shorter than full audio");
-assert.ok(durationShortfalls.some((item) => item.song === "hey"), "HEY should be covered by the full-song guard regression");
+// v300/v302 extended every song's structure to cover its full audio, so this
+// guard inverted: it used to assert that short songs still existed (and that
+// HEY was one of them); now it asserts the opposite — no song's arrangement
+// should fall more than 8s short of its catalog duration. Catches any
+// regression back to a half-length arrangement / silent-tail render.
+assert.equal(durationShortfalls.length, 0,
+  `Every song's structure should now cover its full audio (v300/v302 arrangement pass); still short: ${JSON.stringify(durationShortfalls)}`);
 
 assert.doesNotMatch(source, /scrollIntoView/, "Lyrics auto-follow must scroll the #br-lyrics panel only — never the page (no scrollIntoView)");
 
