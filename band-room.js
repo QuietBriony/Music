@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-174-foreground-stop";
+  const BANDROOM_APP_VERSION = "br-175-human-fly-presence";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -342,9 +342,14 @@
     // mobile devices. 2x still antialiases the generated harmonics well
     // enough given the 3.5 kHz high-pass + 0.10 wet that follow. Same air,
     // roughly half the exciter CPU.
-    const exciteShape = new Tone.Distortion({ distortion: 0.9, oversample: "2x", wet: 1 });
+    const mobileAiDiet = isMobileOrStandaloneRuntime();
+    const exciteShape = new Tone.Distortion({
+      distortion: mobileAiDiet ? 0.55 : 0.9,
+      oversample: mobileAiDiet ? "none" : "2x",
+      wet: 1
+    });
     const exciteOut   = new Tone.Filter({ frequency: 3500, type: "highpass", Q: 0.5 });
-    const exciteWet   = new Tone.Gain(0.10);
+    const exciteWet   = new Tone.Gain(mobileAiDiet ? 0.04 : 0.10);
 
     input.connect(eq);
     eq.connect(comp);
@@ -507,11 +512,12 @@
     // v289 slider/migration 40→52 so the pad is a present bed, not a wash),
     // drums 0.58→0.52 (back off the v259 acoustic punch). Voice stays OFF
     // (v254 intentional). Stems mode bypasses all of this — 原音 untouched.
-    drumBus = new Tone.Gain(0.52).connect(drumPan);
-    bassBus = new Tone.Gain(0.66).connect(bassPan);
-    guitarBus = new Tone.Gain(0.70).connect(guitarPan);
+    // v298 phone pass: pull drums back and move the AI body parts forward.
+    drumBus = new Tone.Gain(0.48).connect(drumPan);
+    bassBus = new Tone.Gain(0.72).connect(bassPan);
+    guitarBus = new Tone.Gain(0.76).connect(guitarPan);
     voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
-    chordBus = new Tone.Gain(0.52).connect(chordPan);
+    chordBus = new Tone.Gain(0.56).connect(chordPan);
     clickBus = new Tone.Gain(0.35).connect(clickPan);
 
     // Original-stem buses → per-stem EQ → masterGain
@@ -1908,6 +1914,21 @@
     return band.songs.find((song) => song.id === songId) || null;
   }
 
+  function localPreviewVariantsAllowed() {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const value = params.get("localPreview") || params.get("previewStems");
+      if (value === "1" || value === "true") return true;
+      if (value === "0" || value === "false") return false;
+    } catch (e) {}
+    try {
+      const host = window.location.hostname || "";
+      return host === "localhost" || host === "127.0.0.1" || host === "";
+    } catch (e) {
+      return false;
+    }
+  }
+
   function stemVariantEntriesForSong(songId = state.currentSongId) {
     const band = currentBand();
     const entries = [{ key: "original", label: "original", original: true }];
@@ -1917,6 +1938,7 @@
       if (!key || !raw || typeof raw !== "object" || Array.isArray(raw)) return;
       const songs = Array.isArray(raw.songs) ? raw.songs : [];
       if (songs.length > 0 && !songs.includes(songId)) return;
+      if (raw.production_visible === false && !localPreviewVariantsAllowed()) return;
       entries.push({ key, ...raw, label: raw.label || key });
     });
     return entries;
@@ -6794,7 +6816,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
-  const MIX_PREFS_VERSION = "v289-harmonic-presence";
+  const MIX_PREFS_VERSION = "v298-human-fly-presence";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -6893,6 +6915,12 @@
     "br-vol-drums":  { old: "58", current: "52" },
     "br-vol-guitar": { old: "56", current: "70" },
     "br-vol-chords": { old: "40", current: "52" }
+  };
+  const V298_HUMAN_FLY_PRESENCE_MIGRATION = {
+    "br-vol-drums":  { old: "52", current: "48" },
+    "br-vol-bass":   { old: "66", current: "72" },
+    "br-vol-guitar": { old: "70", current: "76" },
+    "br-vol-chords": { old: "52", current: "56" }
   };
 
   function readRawStoredPrefs() {
@@ -6996,6 +7024,12 @@
     // already settled (drums/guitar at the V167 current, chord at V255's
     // 40). Only untouched defaults move; customised sliders are preserved.
     Object.entries(V289_MIX_REBALANCE_MIGRATION).forEach(([id, rule]) => {
+      if (String(next.sliders[id]) === rule.old) {
+        next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
+    Object.entries(V298_HUMAN_FLY_PRESENCE_MIGRATION).forEach(([id, rule]) => {
       if (String(next.sliders[id]) === rule.old) {
         next.sliders[id] = rule.current;
         changed = true;

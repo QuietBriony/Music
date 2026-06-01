@@ -16,6 +16,8 @@
       "stems_variants": {
         "ai_recreation": {
           "label": "AI recreation",
+          "production_visible": false,
+          "local_preview": true,
           "stems_dir": "presets/ai-recreation-stems/tabasco",
           "songs": ["human-fly"],
           "fallback_to_original": true,

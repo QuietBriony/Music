@@ -1,10 +1,25 @@
-# Band Room — Changelog (v65 → v297 compact)
+# Band Room — Changelog (v65 → v298 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v298 compact - Human Fly phone pass
+
+Band Room runtime / registry fix.
+
+Human Fly AI review now avoids two production pitfalls from the phone pass:
+the ignored `presets/ai-recreation-stems/` preview is no longer offered as a
+production stem source unless a local preview URL is used, and the AI mix
+defaults move one more step away from "mostly drums" by lowering drums while
+bringing bass, guitar, and chords forward. The AI polish exciter also uses a
+lighter mobile path so phone playback spends less CPU on generated air.
+
+- `band-room.js?v=br-175`, `hazama-fm-v298`.
 
 ---
 
