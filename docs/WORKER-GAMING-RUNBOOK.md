@@ -63,6 +63,20 @@ This writes JSON and Markdown under
 `C:\workspace\music-stack-worker\reports\...setup-snapshot...`. Use the latest
 snapshot as the reference when rebuilding the same stack on the studio PC.
 
+Run the full safe operator loop when the goal is Band Room AI -> Sonar/EP-133
+handoff -> local checklist:
+
+```powershell
+cd C:\workspace\music-stack\Music
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py operator-run tabasco human-fly --open-dashboard --open-folder
+```
+
+`operator-run` chains the safe checks and handoff generators, then writes one
+aggregate report under
+`C:\workspace\music-stack-worker\reports\<band>\<song>\operator-run-...`. It
+does not write to EP-133, change Sonar/Ableton projects, alter Band Room
+defaults, send MIDI, or record audio.
+
 ## Output Layout
 
 Default output root:
@@ -128,6 +142,16 @@ fallbacks, but the preferred path is the repo-external worker root above.
    ```
 
 ## Standard Jobs
+
+Recommended daily entry point:
+
+```powershell
+python -X utf8 scripts/worker-gaming-pipeline.py operator-run tabasco human-fly --open-dashboard --open-folder
+```
+
+Use `--dry-run` to preview the same sequence without executing commands or
+writing a report. Use `--force-recreation` only when a fresh AI render is
+intended; existing AI recreation stems are reused by default.
 
 Split a folder of source tracks into 4 stems outside the repo:
 

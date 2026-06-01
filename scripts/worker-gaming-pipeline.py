@@ -14,10 +14,14 @@ import os
 import platform
 import re
 import shutil
+import socket
 import sqlite3
 import subprocess
 import sys
 import tempfile
+import time
+import urllib.error
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 
@@ -691,6 +695,19 @@ def _latest_child_dir(root: Path, prefix: str) -> Path | None:
     return max(candidates, key=lambda path: path.stat().st_mtime)
 
 
+def _latest_child_file(root: Path, prefix: str, suffix: str) -> Path | None:
+    if not root.exists():
+        return None
+    candidates = [
+        path
+        for path in root.iterdir()
+        if path.is_file() and path.name.startswith(prefix) and path.name.endswith(suffix)
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda path: path.stat().st_mtime)
+
+
 def _role_filename(band: str, song: str, source: str, role: str, take: int = 1) -> str:
     clean_source = re.sub(r"[^A-Za-z0-9_-]+", "-", source).strip("-").lower()
     clean_role = re.sub(r"[^A-Za-z0-9_-]+", "-", role).strip("-").lower()
@@ -795,6 +812,227 @@ def _write_sonar_ep133_handoff_markdown(report: dict[str, object], md_path: Path
         lines.append(f"- {label}: `{value}`")
 
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _operator_self_command(args: argparse.Namespace, *subcommand: str | Path) -> list[str | Path]:
+    return [
+        sys.executable,
+        "-X",
+        "utf8",
+        "scripts/worker-gaming-pipeline.py",
+        "--worker-root",
+        Path(args.worker_root).resolve(),
+        *subcommand,
+    ]
+
+
+def _format_command(cmd: list[str | Path]) -> str:
+    return " ".join(str(part) for part in cmd)
+
+
+def _ai_recreation_required_files(args: argparse.Namespace) -> list[Path]:
+    ai_dir = worker_path(args, "ai-recreation", args.band, args.song)
+    return [
+        ai_dir / "drums.mp3",
+        ai_dir / "bass.mp3",
+        ai_dir / "other.mp3",
+        ai_dir / "mix.wav",
+        ai_dir / "ai-recreation-report.json",
+    ]
+
+
+def _operator_artifacts(args: argparse.Namespace) -> dict[str, str]:
+    reports_root = worker_path(args, "reports", args.band, args.song)
+    ep_root = worker_path(args, "hardware-jam", "ep133-inbox", args.band, args.song)
+    snapshot_prefix = f"{args.snapshot_tag}-setup-snapshot-"
+    latest_ep_pack = _latest_child_dir(ep_root, "ep133-pack-")
+    latest_handoff = _latest_child_dir(reports_root, "sonar-ep133-handoff-")
+    latest_cycle = _latest_child_dir(reports_root, "recreation-cycle-")
+    latest_snapshot_json = _latest_child_file(worker_path(args, "reports"), snapshot_prefix, ".json")
+    latest_snapshot_md = _latest_child_file(worker_path(args, "reports"), snapshot_prefix, ".md")
+    paths = {
+        "ai_recreation_dir": str(worker_path(args, "ai-recreation", args.band, args.song)),
+        "daw_export_dir": str(worker_path(args, "daw-export", args.band, args.song)),
+        "hardware_capture_dir": str(worker_path(args, "hardware-jam", "captures", args.band, args.song)),
+        "latest_recreation_cycle": str(latest_cycle or ""),
+        "latest_recreation_cycle_report": str(latest_cycle / "recreation-cycle-report.md") if latest_cycle else "",
+        "latest_ep133_pack": str(latest_ep_pack or ""),
+        "latest_ep133_transfer_dir": str(latest_ep_pack / "transfer") if latest_ep_pack else "",
+        "latest_ep133_manifest": str(latest_ep_pack / "ep133-transfer-manifest.json") if latest_ep_pack else "",
+        "latest_sonar_ep133_handoff": str(latest_handoff or ""),
+        "latest_sonar_ep133_handoff_report": str(latest_handoff / "sonar-ep133-handoff.md") if latest_handoff else "",
+        "latest_setup_snapshot_json": str(latest_snapshot_json or ""),
+        "latest_setup_snapshot_markdown": str(latest_snapshot_md or ""),
+    }
+    return paths
+
+
+def _operator_manual_gates() -> list[str]:
+    return [
+        "EP sample tool browser permission for `EP-133`",
+        "EP-133 project backup and any sample/project write",
+        "Sonar import, playback, save, and export confirmation",
+        "Band Room external-stem file selection and runtime A/B listening",
+        "UR44 cable/gain setup and final ear check",
+    ]
+
+
+def _operator_step(purpose: str, cmd: list[str | Path], *, timeout: int) -> dict[str, object]:
+    print(f"\n[{purpose}]")
+    print(f"+ {_format_command(cmd)}", flush=True)
+    started = time.monotonic()
+    result = _capture_command(cmd, timeout=timeout)
+    elapsed = round(time.monotonic() - started, 3)
+    output = str(result.get("output") or "")
+    if output:
+        print(output)
+    status = "OK" if result.get("returncode") == 0 else "FAILED"
+    print(f"[{purpose}] {status} ({elapsed}s)", flush=True)
+    return {
+        "purpose": purpose,
+        "command": result.get("command", [str(part) for part in cmd]),
+        "returncode": result.get("returncode"),
+        "duration_s": elapsed,
+        "output": output,
+    }
+
+
+def _dashboard_page_ready(url: str) -> bool:
+    try:
+        with urllib.request.urlopen(url, timeout=0.8) as response:
+            return 200 <= int(response.status) < 300
+    except (OSError, urllib.error.URLError, TimeoutError):
+        return False
+
+
+def _port_is_listening(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(0.2)
+        return sock.connect_ex(("127.0.0.1", port)) == 0
+
+
+def _start_or_reuse_dashboard(args: argparse.Namespace, report_dir: Path) -> dict[str, object]:
+    start_port = int(args.dashboard_port)
+    page = "docs/music-hardware-dashboard.html"
+    for port in range(start_port, start_port + 20):
+        url = f"http://127.0.0.1:{port}/{page}"
+        if _dashboard_page_ready(url):
+            return {"url": url, "port": port, "reused": True, "ready": True}
+
+    for port in range(start_port, start_port + 20):
+        if _port_is_listening(port):
+            continue
+        log_dir = worker_path(args, "logs")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / f"music-hardware-dashboard-{datetime.now().strftime('%Y%m%d-%H%M%S')}.log"
+        flags = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0
+        with log_path.open("ab") as log:
+            process = subprocess.Popen(
+                [sys.executable, "-m", "http.server", str(port), "--bind", "127.0.0.1"],
+                cwd=str(ROOT),
+                stdout=log,
+                stderr=subprocess.STDOUT,
+                creationflags=flags,
+            )
+        url = f"http://127.0.0.1:{port}/{page}"
+        for _ in range(10):
+            if _dashboard_page_ready(url):
+                break
+            time.sleep(0.2)
+        server_info = {
+            "url": url,
+            "port": port,
+            "pid": process.pid,
+            "reused": False,
+            "ready": _dashboard_page_ready(url),
+            "log": str(log_path),
+            "note": "Started by operator-run; stop it manually only if you no longer need the local dashboard.",
+        }
+        (report_dir / "dashboard-server.json").write_text(
+            json.dumps(server_info, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return server_info
+
+    return {
+        "url": "",
+        "port": "",
+        "reused": False,
+        "ready": False,
+        "error": f"no available dashboard port in {start_port}-{start_port + 19}",
+    }
+
+
+def _write_operator_run_markdown(report: dict[str, object], md_path: Path) -> None:
+    paths = report.get("paths", {})
+    dashboard = report.get("dashboard", {})
+    lines = [
+        "# Musicstack Operator Run",
+        "",
+        f"- Band/song: `{report.get('band')}/{report.get('song')}`",
+        f"- Created: `{report.get('created_at')}`",
+        f"- Report folder: `{paths.get('operator_run_dir', '')}`",
+        f"- Worker root: `{report.get('worker_root')}`",
+        "",
+        "## Status",
+        "",
+    ]
+    for item in report.get("commands", []):
+        if not isinstance(item, dict):
+            continue
+        returncode = item.get("returncode")
+        status = "OK" if returncode == 0 else f"FAILED ({returncode})"
+        lines.append(f"- {item.get('purpose')}: {status}; {item.get('duration_s')}s")
+
+    skipped = [item for item in report.get("skipped", []) if isinstance(item, dict)]
+    if skipped:
+        lines.extend(["", "## Skipped", ""])
+        for item in skipped:
+            lines.append(f"- {item.get('purpose')}: {item.get('reason')}")
+
+    if dashboard:
+        lines.extend([
+            "",
+            "## Dashboard",
+            "",
+            f"- URL: `{dashboard.get('url', '')}`",
+            f"- Ready: `{dashboard.get('ready')}`",
+            f"- Reused existing server: `{dashboard.get('reused')}`",
+        ])
+        if dashboard.get("pid"):
+            lines.append(f"- Server PID: `{dashboard.get('pid')}`")
+
+    lines.extend([
+        "",
+        "## Artifacts",
+        "",
+    ])
+    for label, value in paths.items():
+        lines.append(f"- {label}: `{value}`")
+
+    lines.extend([
+        "",
+        "## Manual Gates",
+        "",
+    ])
+    for item in report.get("manual_gates", []):
+        lines.append(f"- {item}")
+
+    lines.extend([
+        "",
+        "## Recommended Next Move",
+        "",
+        "1. Open the Sonar/EP-133 handoff Markdown and confirm the pad map.",
+        "2. Use the EP sample tool only after backing up the EP-133 project.",
+        "3. Import `drums.mp3`, `bass.mp3`, `other.mp3`, and `mix.wav` into Sonar for a light polish pass.",
+        "4. Return exported or recorded takes to Band Room external stems for A/B review.",
+        "",
+        "## Policy",
+        "",
+        str(report.get("policy", "")),
+        "",
+    ])
+    md_path.write_text("\n".join(lines), encoding="utf-8")
 
 
 def command_check_daw(args: argparse.Namespace) -> None:
@@ -1376,6 +1614,126 @@ def command_sonar_ep133_handoff(args: argparse.Namespace) -> None:
         os.startfile(md_path)  # type: ignore[attr-defined]
 
 
+def command_operator_run(args: argparse.Namespace) -> None:
+    """Run the safe worker-gaming music hardware loop and write one aggregate report."""
+    ai_missing = [path for path in _ai_recreation_required_files(args) if not path.exists()]
+    latest_cycle = _latest_child_dir(worker_path(args, "reports", args.band, args.song), "recreation-cycle-")
+    steps: list[tuple[str, list[str | Path], int]] = [
+        ("check-env", _operator_self_command(args, "check-env"), 180),
+        ("check-daw", _operator_self_command(args, "check-daw"), 180),
+        ("check-hardware", _operator_self_command(args, "check-hardware"), 180),
+    ]
+    skipped: list[dict[str, str]] = []
+
+    if args.force_recreation or ai_missing:
+        recreation_cmd = _operator_self_command(
+            args,
+            "recreation-cycle",
+            args.band,
+            args.song,
+            "--with-analysis",
+            "--with-drum-candidate",
+        )
+        if args.force_recreation:
+            recreation_cmd.append("--force")
+        steps.append(("recreation-cycle", recreation_cmd, 1800))
+    else:
+        reason = "AI recreation stems already exist; rerun with --force-recreation when a fresh render is needed."
+        if not latest_cycle:
+            reason += " No recreation-cycle report was found, but operator-run avoids rerendering existing audio by default."
+        skipped.append({"purpose": "recreation-cycle", "reason": reason})
+
+    if args.no_ep133_pack:
+        skipped.append({"purpose": "ep133-pack", "reason": "--no-ep133-pack was specified."})
+    else:
+        steps.append((
+            "ep133-pack",
+            _operator_self_command(args, "ep133-pack", args.band, args.song, "--include-ai-recreation"),
+            600,
+        ))
+
+    if args.no_handoff:
+        skipped.append({"purpose": "sonar-ep133-handoff", "reason": "--no-handoff was specified."})
+    else:
+        steps.append((
+            "sonar-ep133-handoff",
+            _operator_self_command(args, "sonar-ep133-handoff", args.band, args.song),
+            240,
+        ))
+
+    if args.no_snapshot:
+        skipped.append({"purpose": "snapshot-setup", "reason": "--no-snapshot was specified."})
+    else:
+        steps.append((
+            "snapshot-setup",
+            _operator_self_command(args, "snapshot-setup", "--tag", args.snapshot_tag),
+            240,
+        ))
+
+    if args.dry_run:
+        print(f"operator-run dry run: {args.band}/{args.song}")
+        print("No commands will be executed and no report will be written.")
+        if ai_missing:
+            print("Missing AI recreation files:")
+            for path in ai_missing:
+                print(f"  - {path}")
+        for purpose, cmd, _timeout in steps:
+            print(f"- {purpose}: {_format_command(cmd)}")
+        for item in skipped:
+            print(f"- skip {item['purpose']}: {item['reason']}")
+        return
+
+    init_dirs(args)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    report_dir = worker_path(args, "reports", args.band, args.song, f"operator-run-{timestamp}")
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    command_results = [_operator_step(purpose, cmd, timeout=timeout) for purpose, cmd, timeout in steps]
+    dashboard: dict[str, object] = {}
+    if args.open_dashboard:
+        dashboard = _start_or_reuse_dashboard(args, report_dir)
+        url = str(dashboard.get("url") or "")
+        if url and sys.platform.startswith("win"):
+            os.startfile(url)  # type: ignore[attr-defined]
+
+    paths = _operator_artifacts(args)
+    paths.update({
+        "operator_run_dir": str(report_dir),
+        "operator_run_json": str(report_dir / "operator-run.json"),
+        "operator_run_markdown": str(report_dir / "operator-run.md"),
+    })
+    report = {
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "band": args.band,
+        "song": args.song,
+        "worker_root": str(Path(args.worker_root).resolve()),
+        "commands": command_results,
+        "skipped": skipped,
+        "paths": paths,
+        "dashboard": dashboard,
+        "manual_gates": _operator_manual_gates(),
+        "policy": (
+            "operator-run only orchestrates repo/worker-safe steps. It does not write to EP-133, "
+            "alter Sonar or Ableton projects, change Band Room defaults, send MIDI, or record audio."
+        ),
+    }
+    json_path = report_dir / "operator-run.json"
+    md_path = report_dir / "operator-run.md"
+    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _write_operator_run_markdown(report, md_path)
+    print(f"\noperator-run JSON: {json_path}")
+    print(f"operator-run Markdown: {md_path}")
+
+    if args.open_folder and sys.platform.startswith("win"):
+        os.startfile(report_dir)  # type: ignore[attr-defined]
+    if args.open_sample_tool and sys.platform.startswith("win"):
+        os.startfile(EP_SAMPLE_TOOL_URL)  # type: ignore[attr-defined]
+
+    failed = [item for item in command_results if item.get("returncode") != 0]
+    if failed:
+        raise SystemExit(1)
+
+
 def command_analyze(args: argparse.Namespace) -> None:
     init_dirs(args)
     out_file = Path(args.out).resolve() if args.out else worker_path(args, "reports", "target-spec-bands.json")
@@ -1619,6 +1977,21 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--recreation-cycle", help="explicit recreation-cycle directory; defaults to the latest cycle for band/song")
     p.add_argument("--open-report", action="store_true", help="open the Markdown handoff report after writing it on Windows")
     p.set_defaults(func=command_sonar_ep133_handoff)
+
+    p = sub.add_parser("operator-run", help="run the safe Sonar/EP-133/Band Room worker loop and write one report")
+    p.add_argument("band", nargs="?", default="tabasco")
+    p.add_argument("song", nargs="?", default="human-fly")
+    p.add_argument("--force-recreation", action="store_true", help="rerun the AI recreation cycle even when outputs exist")
+    p.add_argument("--no-ep133-pack", action="store_true", help="skip EP-133 transfer pack generation")
+    p.add_argument("--no-handoff", action="store_true", help="skip the Sonar/EP-133 handoff checklist")
+    p.add_argument("--no-snapshot", action="store_true", help="skip setup snapshot capture")
+    p.add_argument("--snapshot-tag", default="worker-gaming", help="tag prefix for snapshot-setup")
+    p.add_argument("--dashboard-port", type=int, default=8765, help="first localhost port to try for the dashboard")
+    p.add_argument("--open-dashboard", action="store_true", help="start/reuse the local dashboard server and open the dashboard")
+    p.add_argument("--open-folder", action="store_true", help="open the operator-run report folder after writing it on Windows")
+    p.add_argument("--open-sample-tool", action="store_true", help="open the official EP sample tool after writing the report")
+    p.add_argument("--dry-run", action="store_true", help="print planned steps without running commands or writing a report")
+    p.set_defaults(func=command_operator_run)
 
     p = sub.add_parser("analyze", help="write stem target-spec report outside the repo")
     p.add_argument("targets", nargs="*", help="optional band or band/song filters")

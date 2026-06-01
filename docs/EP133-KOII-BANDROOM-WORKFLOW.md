@@ -68,6 +68,26 @@ C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-
 
 UR44 は Studio PC 側で `Yamaha Steinberg` / `UR44` として見える状態を目標にする。
 
+## Recommended Operator Run
+
+For the normal worker-gaming loop, start with the non-destructive operator
+command:
+
+```powershell
+cd C:\workspace\music-stack\Music
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py operator-run tabasco human-fly --open-dashboard --open-folder
+```
+
+This runs the environment, DAW, and hardware doctors, reuses existing AI
+recreation stems unless `--force-recreation` is specified, creates the latest
+EP-133 transfer pack, writes the Sonar/EP-133 handoff checklist, captures a
+setup snapshot, and leaves one aggregate report under
+`C:\workspace\music-stack-worker\reports\<band>\<song>\operator-run-...`.
+
+The command still stops at the correct manual gates: EP sample tool permission,
+EP-133 project backup/write, Sonar import/export, Band Room file selection,
+audio recording, and ear checks.
+
 ## First Transfer Pack
 
 Band Room / AI recreation から EP-133 に入れるための素材 pack を作る:

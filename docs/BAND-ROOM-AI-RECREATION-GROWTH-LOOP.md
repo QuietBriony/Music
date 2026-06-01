@@ -14,6 +14,19 @@ Start with `tabasco/human-fly`:
 
 ```powershell
 cd C:\workspace\music-stack\Music
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py operator-run tabasco human-fly --open-dashboard --open-folder
+```
+
+This is the preferred worker-gaming entry point. It runs the safe doctors,
+reuses existing AI recreation stems, creates the EP-133 transfer pack, writes
+the Sonar/EP-133 handoff checklist, captures a setup snapshot, and writes one
+aggregate operator report outside Git. Use `--force-recreation` only when the
+AI stems should be regenerated.
+
+Run only the recreation cycle when a fresh render/analysis pass is the point:
+
+```powershell
+cd C:\workspace\music-stack\Music
 C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py recreation-cycle tabasco human-fly --with-analysis --with-drum-candidate
 ```
 
