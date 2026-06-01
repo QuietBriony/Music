@@ -99,7 +99,8 @@ C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-
 ```
 
 This runs the environment, DAW, and hardware doctors, reuses existing AI
-recreation stems unless `--force-recreation` is specified, creates the latest
+recreation stems unless `--force-recreation` is specified, verifies the
+SendMIDI / ReceiveMIDI lane with a read-only EP-133 device-info SysEx probe, creates the latest
 EP-133 transfer pack, writes the Sonar/EP-133 handoff checklist, captures a
 setup snapshot, and leaves one aggregate report under
 `C:\workspace\music-stack-worker\reports\<band>\<song>\operator-run-...`.
@@ -107,6 +108,9 @@ setup snapshot, and leaves one aggregate report under
 The command still stops at the correct manual gates: EP sample tool permission,
 EP-133 project backup/write, Sonar import/export, Band Room file selection,
 audio recording, and ear checks.
+
+Use `--no-midi-probe` only when EP-133 is not connected and you still want the
+rest of the local handoff report.
 
 ## First Transfer Pack
 
