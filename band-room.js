@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-181-karaoke";
+  const BANDROOM_APP_VERSION = "br-182-karaoke-lead";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -3503,6 +3503,7 @@
   function renderLyricsView() {
     if (state.currentLyricMarkdown == null && !state.currentTimedLines) return;
     state.activeLyricLineIdx = -1;
+    state.focusLyricLineIdx = -1;
     const useKaraoke = currentMode === "stems"
       && Array.isArray(state.currentTimedLines) && state.currentTimedLines.length > 0;
     if (useKaraoke) {
@@ -3564,29 +3565,51 @@
     }
   }
 
-  // v306: karaoke line follow. In stems mode, light up the sung line for the
-  // current playback second and scroll the panel to keep it centered. Cheap to
-  // call every frame — it only touches the DOM when the active line changes.
+  // v306/v307: karaoke line follow. In stems mode, light up the line being sung
+  // at the current second; during intros and instrumental gaps, LEAD the eye to
+  // the upcoming line so the panel always shows where we are. (Vocal songs have
+  // 30–90s intros — without the lead the panel looks frozen until the first line
+  // and reads as "not following".) Cheap every frame — DOM only touched on change.
   const KARAOKE_LEAD_SEC = 0.20;  // light anticipation so the line reads in time
   function updateKaraokeHighlight(posSec) {
     if (currentMode !== "stems") return;
     const lines = state.currentTimedLines;
     if (!Array.isArray(lines) || lines.length === 0) return;
     const p = (Number(posSec) || 0) + KARAOKE_LEAD_SEC;
-    let lo = 0, hi = lines.length - 1, idx = -1;
+    // cur = last line whose time has arrived (the line being sung); -1 in the intro
+    let lo = 0, hi = lines.length - 1, cur = -1;
     while (lo <= hi) {
       const mid = (lo + hi) >> 1;
-      if ((Number(lines[mid].t) || 0) <= p) { idx = mid; lo = mid + 1; }
+      if ((Number(lines[mid].t) || 0) <= p) { cur = mid; lo = mid + 1; }
       else hi = mid - 1;
     }
-    if (idx === state.activeLyricLineIdx) return;
-    state.activeLyricLineIdx = idx;
+    // focus = line to keep in view. Intro → first line; in a gap, once we're past
+    // the midpoint between the sung line and the next, lead to the next line.
+    let focus = cur < 0 ? 0 : cur;
+    const nxt = cur + 1;
+    if (nxt < lines.length) {
+      const curT = cur >= 0 ? (Number(lines[cur].t) || 0) : -Infinity;
+      const nxtT = Number(lines[nxt].t) || 0;
+      if (cur < 0 || (p - curT) > (nxtT - p)) focus = nxt;
+    }
+    if (cur === state.activeLyricLineIdx && focus === state.focusLyricLineIdx) return;
+    state.activeLyricLineIdx = cur;
+    state.focusLyricLineIdx = focus;
     const body = $("br-lyrics-body");
     if (!body) return;
-    const els = body.querySelectorAll(".br-lyric-line");
-    if (!els.length) return;
-    els.forEach((el, i) => el.classList.toggle("active", i === idx));
-    if (idx >= 0 && els[idx]) scrollLyricElIntoPanel(els[idx]);
+    let els = body.querySelectorAll(".br-lyric-line");
+    if (!els.length) {
+      // data exists but the timed view isn't on screen (first-load / mode race) — heal it
+      renderTimedLyricLines(lines);
+      els = body.querySelectorAll(".br-lyric-line");
+      if (!els.length) return;
+    }
+    els.forEach((el, i) => {
+      el.classList.toggle("active", i === cur);
+      el.classList.toggle("upcoming", i === focus && i !== cur);
+    });
+    const focusEl = els[focus] || els[Math.max(0, cur)];
+    if (focusEl) scrollLyricElIntoPanel(focusEl);
   }
 
   // Scroll the lyrics panel (only — never the page; see v201) so el is centered.
