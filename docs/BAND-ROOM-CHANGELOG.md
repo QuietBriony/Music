@@ -1,6 +1,6 @@
-# Band Room — Changelog (v65 → v303 compact)
+# Band Room — Changelog (v65 → v304 compact)
 
-Current compact release: v303.
+Current compact release: v304.
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -9,6 +9,25 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v304 compact — 原音 vocal を present に（v303 試聴フィードバック）
+
+v303 ship 後のユーザー試聴(原音 / Human Fly):「ボーカルが早い」→ 切り分けで
+**「浮いて/離れて聞こえる」**と確定。stem 整合・player 同期はコード上 OK、vocal FX は
+全部後ろに付く処理なので timing 起因ではなく、v198 の「ふわっと上から / 空間に溶かす」
+wash が **v303 の Nirvana/LCD 指針(ボーカルは壁の中に present)と逆**でリバーブに
+浮いて先に耳へ届いていた。
+
+修正(vocal FX を締めて present に):
+- `vocalDryGain` 0.66 → **0.82**(dry/前に)
+- `vocalReverbWet` 0.20 → **0.10** + reverb decay 4.0 → **2.4**、preDelay 0.055 → 0.030
+- `vocalDelayWet` 0.12 → **0.06**、feedback 0.30 → 0.24
+- `vocalChorus` wet 0.22 → **0.12**、depth 0.46 → 0.30（swim 抑制）
+
+ボーカルが band の上に浮かず、in time で前に座る。AI 再現は無影響。webapp は計測 hang
+なので ship-then-verify(原音はデフォルト = 即 A/B)。締めすぎなら次 round で戻す。
+
+- `band-room.css?v=br-81`、`band-room.js?v=br-179`、`hazama-fm-v304`。
 
 ## v303 compact — 原音 (stems) master bus（Nirvana 音圧 + LCD balance）
 
