@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-179-vocal-present";
+  const BANDROOM_APP_VERSION = "br-180-vocal-space";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -598,12 +598,18 @@
     // level, half the reverb send + a shorter tail, half the delay echoes, and
     // a calmer chorus so the vocal stops swimming. It now sits forward and in
     // time with the band instead of hovering above it.
+    // v305: user asked the vocal to "軽く空間になじむ" — v304's de-wash sat it
+    // present but a touch dry. Add a little space back (a light blend, not the
+    // old v303 float): reverb send 0.10 → 0.14 with a slightly longer 2.8s
+    // tail, and dry 0.82 → 0.78 so a bit more of that space comes through.
+    // Still far drier than the pre-v304 wash — present, just settled into the
+    // room rather than bone-dry.
     vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.30, wet: 0.12 }).start();
     vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.24, wet: 1 });
-    vocalDelayWet = new Tone.Gain(0.06);  // delay send level (was 0.12)
-    vocalReverb = new Tone.Reverb({ decay: 2.4, preDelay: 0.030, wet: 1 });
-    vocalReverbWet = new Tone.Gain(0.10);  // reverb send level (was 0.20)
-    vocalDryGain = new Tone.Gain(0.82);   // dry/present (was 0.66)
+    vocalDelayWet = new Tone.Gain(0.06);  // delay send level
+    vocalReverb = new Tone.Reverb({ decay: 2.8, preDelay: 0.030, wet: 1 });
+    vocalReverbWet = new Tone.Gain(0.14);  // reverb send level (v304 0.10 → 0.14 light space)
+    vocalDryGain = new Tone.Gain(0.78);   // dry/present (v304 0.82 → 0.78)
 
     // v303: vocal pulled down (0.68 → 0.58). Measured raw vocal stem runs
     // ~5-7 dB hotter than drums/bass/other; the brief (Nirvana / LCD) wants
