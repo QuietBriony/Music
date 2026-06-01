@@ -1807,6 +1807,11 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   font-weight: 600;
   background: rgba(255, 136, 102, 0.12);
 }
+/* v307: the next line to be sung — previewed during intros/instrumental gaps
+   so the panel leads the eye instead of sitting frozen until the vocal enters. */
+.br-lyric-line.upcoming {
+  opacity: 0.72;
+}
 
 #br-chord-display {
   display: flex;

@@ -1,6 +1,25 @@
-# Band Room — Changelog (v65 → v306 compact)
+# Band Room — Changelog (v65 → v307 compact)
 
-Current compact release: v306.
+Current compact release: v307.
+
+---
+
+## v307 compact — 歌詞カラオケ追従を「最初から」効かせる (intro/gap リード)
+
+v306 の追従が「初回からちゃんといかない」報告。原因はボーカル曲の **長いイントロ**:
+最初に歌う行が hey 63.9s / i-got-a-feeling 90s / human-fly 60s と先にあり、それまで
+パネルが固まって見える(=追従していないように見える)。修正:
+- **イントロ/間奏では次に歌う行を先取り表示**(`.upcoming`)し、そこへスクロール。
+  t=0 から「次これ歌うよ」が見えてリードする。歌に入ると `.active`(背景ハイライト)に。
+- 間奏でも、前の行と次の行の中点を過ぎたら次の行へリード。
+- セルフヒール: stems＋timed データがあるのに `.br-lyric-line` が無ければ即再描画
+  (初回レンダリング競合の保険)。
+
+注: tabasco / electric-sheep は実ボーカル無し(チャント/インスト、ASR 不可)なので
+従来のセクション・ブロック表示＋セクション追従のまま。デフォルト曲(01 = tabasco)は
+これに該当するので、行追従を見るなら歌モノ(hey / under-the-moon 等)で。
+
+`band-room.js?v=br-182`、`band-room.css?v=br-83`、`hazama-fm-v307`。
 
 ---
 
