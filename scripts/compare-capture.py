@@ -85,6 +85,21 @@ def analyse_capture(path: Path) -> dict:
             print("  (v272+ band-room ● REC writes .wav directly — no ffmpeg needed.)", file=sys.stderr)
         sys.exit(2)
 
+    # Trim leading/trailing near-silence before measuring. The offline
+    # renderer sizes its buffer to the real stem length, so a song whose
+    # extracted arrangement is shorter than the real recording (e.g.
+    # electric-sheep: a 68-bar / ~126s arrangement in a 150s buffer) leaves
+    # ~24s of digital-silence tail. That silence drags rms_p10 to ~0 and
+    # explodes the dynamic-range metric (+56-70 dB observed), making
+    # multi-song DR unreadable. Trimming measures the musical content —
+    # which is what the looping webapp actually plays — not the renderer's
+    # pad. top_db=50 cuts only true silence (≈ peak-50 dB); quiet musical
+    # passages survive. Guard keeps ≥1s so a capture is never trimmed away.
+    if len(y) > sr:
+        trimmed, _ = librosa.effects.trim(y, top_db=50)
+        if len(trimmed) >= sr:
+            y = trimmed
+
     duration_sec = len(y) / sr
     tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
     beat_times = librosa.frames_to_time(beat_frames, sr=sr)
