@@ -1,0 +1,620 @@
+{
+ "version": 1,
+ "generated_from": "Whisper small word-timestamp ASR of vocal stems (lightly cleaned)",
+ "songs": {
+  "hey": [
+   {
+    "t": 63.88,
+    "x": "I know it's been something"
+   },
+   {
+    "t": 68.0,
+    "x": "What I'm talking about"
+   },
+   {
+    "t": 71.94,
+    "x": "Gonna talk about this song"
+   },
+   {
+    "t": 75.82,
+    "x": "I told you come here still, that you're me"
+   },
+   {
+    "t": 82.8,
+    "x": "Hey you, I've been monotone"
+   },
+   {
+    "t": 85.9,
+    "x": "I'ma start with this song"
+   },
+   {
+    "t": 87.98,
+    "x": "Hey catch a minute"
+   },
+   {
+    "t": 91.52,
+    "x": "Go out"
+   },
+   {
+    "t": 93.72,
+    "x": "Just like noise"
+   },
+   {
+    "t": 95.68,
+    "x": "Yeah just a fun"
+   },
+   {
+    "t": 98.42,
+    "x": "thing"
+   },
+   {
+    "t": 99.9,
+    "x": "I was a"
+   },
+   {
+    "t": 101.24,
+    "x": "Grimy as a play god"
+   },
+   {
+    "t": 102.84,
+    "x": "Yes, yeah"
+   },
+   {
+    "t": 105.9,
+    "x": "If I was"
+   },
+   {
+    "t": 106.92,
+    "x": "Yeah, yeah"
+   },
+   {
+    "t": 108.98,
+    "x": "Talking in a drunken way"
+   },
+   {
+    "t": 112.7,
+    "x": "You'll take so many just in life,"
+   },
+   {
+    "t": 117.44,
+    "x": "right in your screen."
+   },
+   {
+    "t": 120.7,
+    "x": "One second round, though."
+   },
+   {
+    "t": 123.4,
+    "x": "You're telling what you're so lucky to."
+   },
+   {
+    "t": 128.5,
+    "x": "I'll become the least if you make your lies."
+   },
+   {
+    "t": 133.18,
+    "x": "That's what friendship's through."
+   },
+   {
+    "t": 136.54,
+    "x": "You're my child like your life, also made your lies."
+   },
+   {
+    "t": 140.7,
+    "x": "I'm just saying this once, hey you"
+   },
+   {
+    "t": 147.7,
+    "x": "Hey you, I've been my little son for years now"
+   },
+   {
+    "t": 152.42,
+    "x": "Hey, touch your feet now"
+   },
+   {
+    "t": 156.7,
+    "x": "Girl, no you can't let go"
+   },
+   {
+    "t": 160.7,
+    "x": "Girl, barely feel all the time"
+   },
+   {
+    "t": 164.7,
+    "x": "She was the one that fucked your conscience"
+   },
+   {
+    "t": 257.8,
+    "x": "Check your face, oh no"
+   },
+   {
+    "t": 261.4,
+    "x": "But I'm not a solid diss on your clothes"
+   },
+   {
+    "t": 265.4,
+    "x": "Yeah, like a cyber-cycler"
+   },
+   {
+    "t": 269.4,
+    "x": "But I'll stop being here"
+   },
+   {
+    "t": 273.4,
+    "x": "Yeah, gonna take you out"
+   },
+   {
+    "t": 277.4,
+    "x": "But I'll show you my face a little later"
+   },
+   {
+    "t": 281.3,
+    "x": "Yeah, I'll show you inside, whoa"
+   },
+   {
+    "t": 284.86,
+    "x": "And so we're in the water there"
+   }
+  ],
+  "i-got-a-feeling": [
+   {
+    "t": 90.1,
+    "x": "Pain, but if I want it pain"
+   },
+   {
+    "t": 95.98,
+    "x": "But if I want it pain"
+   },
+   {
+    "t": 100.06,
+    "x": "But if I want it pain"
+   },
+   {
+    "t": 109.88,
+    "x": "So I shall turn the tone freedom"
+   },
+   {
+    "t": 144.0,
+    "x": "through Tokyo"
+   },
+   {
+    "t": 145.54,
+    "x": "and everyone was like crashing"
+   },
+   {
+    "t": 151.0,
+    "x": "as the freedom"
+   },
+   {
+    "t": 154.0,
+    "x": "fell"
+   },
+   {
+    "t": 156.0,
+    "x": "by the power of the pain"
+   },
+   {
+    "t": 160.0,
+    "x": "by the power of the pain"
+   },
+   {
+    "t": 163.56,
+    "x": "by the power of the pain"
+   },
+   {
+    "t": 169.68,
+    "x": "So why is your dinner talk freedom?"
+   },
+   {
+    "t": 175.6,
+    "x": "Everybody get away, cause I want some sun in show"
+   },
+   {
+    "t": 182.42,
+    "x": "I know it's just a while"
+   },
+   {
+    "t": 185.8,
+    "x": "So why is your dinner talk freedom?"
+   },
+   {
+    "t": 199.32,
+    "x": "I know it's just a lie"
+   },
+   {
+    "t": 204.46,
+    "x": "In the palm"
+   },
+   {
+    "t": 289.36,
+    "x": "But if I won't repay"
+   },
+   {
+    "t": 293.22,
+    "x": "But if I won't repay"
+   },
+   {
+    "t": 305.42,
+    "x": "So I shut down, don't be now"
+   },
+   {
+    "t": 310.42,
+    "x": "Everybody go away"
+   },
+   {
+    "t": 313.32,
+    "x": "Cause I don't want to have a son or a child"
+   },
+   {
+    "t": 318.66,
+    "x": "I don't want to just lie"
+   },
+   {
+    "t": 320.98,
+    "x": "So I shut down the door for you now"
+   },
+   {
+    "t": 326.72,
+    "x": "All of my go get away"
+   },
+   {
+    "t": 328.98,
+    "x": "Cause I don't want to have a son or a child"
+   },
+   {
+    "t": 334.42,
+    "x": "I don't want to just lie"
+   },
+   {
+    "t": 346.62,
+    "x": "I just can't do this shit哦"
+   },
+   {
+    "t": 350.5,
+    "x": "ApproachNo,"
+   },
+   {
+    "t": 351.64,
+    "x": "FOR НАТУafe politics!!"
+   }
+  ],
+  "under-the-moon": [
+   {
+    "t": 30.14,
+    "x": "Let's leave the wind is going away"
+   },
+   {
+    "t": 38.62,
+    "x": "Yeah, something's changing your way"
+   },
+   {
+    "t": 43.38,
+    "x": "You get me shillin'"
+   },
+   {
+    "t": 46.34,
+    "x": "I will always feel happy"
+   },
+   {
+    "t": 50.88,
+    "x": "But you're gonna fly out there"
+   },
+   {
+    "t": 54.88,
+    "x": "We've been fishing long but I now start balancing"
+   },
+   {
+    "t": 63.88,
+    "x": "We don't know what's our choice so"
+   },
+   {
+    "t": 68.88,
+    "x": "It's up your eyes"
+   },
+   {
+    "t": 71.84,
+    "x": "I can't tell how wrong"
+   },
+   {
+    "t": 75.86,
+    "x": "The season's wind"
+   },
+   {
+    "t": 139.1,
+    "x": "I can't hear you, love, oh"
+   },
+   {
+    "t": 142.96,
+    "x": "It's a whisper"
+   },
+   {
+    "t": 146.54,
+    "x": "But I say, love, love"
+   },
+   {
+    "t": 150.58,
+    "x": "But I say, my heart's too slow"
+   },
+   {
+    "t": 155.3,
+    "x": "To let fit, but I say"
+   },
+   {
+    "t": 160.5,
+    "x": "It's what I'm all"
+   },
+   {
+    "t": 176.48,
+    "x": "Lola Vel investors who are"
+   },
+   {
+    "t": 179.28,
+    "x": "moving 47 year-old"
+   },
+   {
+    "t": 192.2,
+    "x": "Worms Boris"
+   },
+   {
+    "t": 284.54,
+    "x": "Don't drink, babe, don't ever wish for"
+   },
+   {
+    "t": 288.74,
+    "x": "I'm just too lel alone"
+   },
+   {
+    "t": 292.44,
+    "x": "Let me go and spit all the"
+   },
+   {
+    "t": 297.58,
+    "x": "Tequila and the"
+   },
+   {
+    "t": 301.14,
+    "x": "Same world"
+   }
+  ],
+  "sister": [
+   {
+    "t": 28.58,
+    "x": "That's it."
+   },
+   {
+    "t": 29.98,
+    "x": "I'm not sad, it's so distant, it's so..."
+   },
+   {
+    "t": 37.44,
+    "x": "It's cause I'm not here, at the end of the universe,"
+   },
+   {
+    "t": 44.3,
+    "x": "guy, only what to do, only what's there."
+   },
+   {
+    "t": 61.98,
+    "x": "Yeah, I found myself again, found out that it's so soon you'll lost it, it's kind of the"
+   },
+   {
+    "t": 89.96,
+    "x": "Only one self"
+   },
+   {
+    "t": 93.96,
+    "x": "I shall win love"
+   },
+   {
+    "t": 96.2,
+    "x": "God's a missile"
+   },
+   {
+    "t": 98.96,
+    "x": "Think music kind of mess is not"
+   },
+   {
+    "t": 102.96,
+    "x": "Watch out 12"
+   },
+   {
+    "t": 104.46,
+    "x": "That's my mark, God's"
+   },
+   {
+    "t": 107.52,
+    "x": "And I shall win this again"
+   },
+   {
+    "t": 140.64,
+    "x": "I'm only worth the hard work"
+   },
+   {
+    "t": 144.1,
+    "x": "Now the sun came up"
+   },
+   {
+    "t": 146.14,
+    "x": "Fade on this song"
+   },
+   {
+    "t": 149.04,
+    "x": "No time for keeping things in your mouth"
+   },
+   {
+    "t": 152.84,
+    "x": "Take off the trigger on this song"
+   },
+   {
+    "t": 157.26,
+    "x": "It's a much more land than Sparrow"
+   },
+   {
+    "t": 160.98,
+    "x": "Now I feel touched by the heartbeat"
+   },
+   {
+    "t": 165.44,
+    "x": "It's my land and I'm lost in time"
+   },
+   {
+    "t": 198.38,
+    "x": "And I won't take your word"
+   },
+   {
+    "t": 202.46,
+    "x": "No, here"
+   },
+   {
+    "t": 205.38,
+    "x": "I find myself in your memory"
+   },
+   {
+    "t": 210.38,
+    "x": "The world's sound is bleak"
+   },
+   {
+    "t": 214.56,
+    "x": "I've just come to stop"
+   },
+   {
+    "t": 222.14,
+    "x": "Hey, you low-wit answerer"
+   },
+   {
+    "t": 227.3,
+    "x": "I can't take it, it's my God"
+   },
+   {
+    "t": 230.7,
+    "x": "Come and save, you and I'll stay"
+   },
+   {
+    "t": 235.06,
+    "x": "And I'm so beautiful, good"
+   },
+   {
+    "t": 239.46,
+    "x": "I'm trying to save, coming this way"
+   },
+   {
+    "t": 243.38,
+    "x": "But I'm chasing me, so boss"
+   },
+   {
+    "t": 247.08,
+    "x": "Ain't you right, feel with me"
+   },
+   {
+    "t": 251.08,
+    "x": "Oh beautiful, the bass"
+   },
+   {
+    "t": 257.76,
+    "x": "Cheers ..."
+   }
+  ],
+  "human-fly": [
+   {
+    "t": 60.38,
+    "x": "I'm just a constant, don't wanna wait, I change the, maybe I sell, hell"
+   },
+   {
+    "t": 68.6,
+    "x": "Can't explain it, don't wanna miss it, no way"
+   },
+   {
+    "t": 72.66,
+    "x": "All I'm doing, I'm all just fake, all just fake, but all beautiful"
+   },
+   {
+    "t": 81.22,
+    "x": "It's the Russian hours, but life may satisfy us"
+   },
+   {
+    "t": 86.66,
+    "x": "Now I can only what I swore"
+   },
+   {
+    "t": 91.22,
+    "x": "I should come and find some dust"
+   },
+   {
+    "t": 93.92,
+    "x": "Now I'm buzzing China with her"
+   },
+   {
+    "t": 97.44,
+    "x": "As a dissident"
+   },
+   {
+    "t": 102.96,
+    "x": "It's the way you do"
+   },
+   {
+    "t": 105.5,
+    "x": "I don't understand the peace of the Nutshell"
+   },
+   {
+    "t": 110.16,
+    "x": "But I'm just a selfish girl, that's the face I bother"
+   },
+   {
+    "t": 115.94,
+    "x": "To do so, take it go!"
+   },
+   {
+    "t": 120.14,
+    "x": "I'm a takin' valentine and takin' doll"
+   },
+   {
+    "t": 124.0,
+    "x": "Takin' a take on all justice, all respect"
+   },
+   {
+    "t": 130.16,
+    "x": "All justice, but all it's beautiful"
+   },
+   {
+    "t": 133.82,
+    "x": "Never gonna trust them just so"
+   },
+   {
+    "t": 136.78,
+    "x": "And I know I'm stuck, never saw"
+   },
+   {
+    "t": 141.78,
+    "x": "Fuckin' on a mark, I said that"
+   },
+   {
+    "t": 144.84,
+    "x": "And I shall fuck the misery"
+   },
+   {
+    "t": 147.42,
+    "x": "C'mon, I'm no star"
+   },
+   {
+    "t": 155.78,
+    "x": "You know life, my happiness"
+   },
+   {
+    "t": 159.78,
+    "x": "Is always here in tonight"
+   },
+   {
+    "t": 222.9,
+    "x": "and stop this buff!"
+   },
+   {
+    "t": 224.68,
+    "x": "This Nun is assball-"
+   },
+   {
+    "t": 228.82,
+    "x": "Before I got you"
+   }
+  ]
+ }
+}

@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-180-vocal-space";
+  const BANDROOM_APP_VERSION = "br-181-karaoke";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -604,17 +604,24 @@
     // tail, and dry 0.82 → 0.78 so a bit more of that space comes through.
     // Still far drier than the pre-v304 wash — present, just settled into the
     // room rather than bone-dry.
+    // v306: user asked the vocal to settle "もうちょい空間になじむ" — one gentle
+    // step past v305. More reverb send (0.14 → 0.18) and a slightly longer,
+    // sooner-blooming tail (decay 2.8 → 3.2, preDelay 0.030 → 0.022) so the
+    // voice melts into the room instead of sitting on a dry shelf. Delay stays
+    // low (0.06) so the added space reads as room, not echo/float.
     vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.30, wet: 0.12 }).start();
     vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.24, wet: 1 });
     vocalDelayWet = new Tone.Gain(0.06);  // delay send level
-    vocalReverb = new Tone.Reverb({ decay: 2.8, preDelay: 0.030, wet: 1 });
-    vocalReverbWet = new Tone.Gain(0.14);  // reverb send level (v304 0.10 → 0.14 light space)
-    vocalDryGain = new Tone.Gain(0.78);   // dry/present (v304 0.82 → 0.78)
+    vocalReverb = new Tone.Reverb({ decay: 3.2, preDelay: 0.022, wet: 1 });
+    vocalReverbWet = new Tone.Gain(0.18);  // reverb send level (v305 0.14 → 0.18 more space)
+    vocalDryGain = new Tone.Gain(0.78);   // dry/present (unchanged from v305)
 
     // v303: vocal pulled down (0.68 → 0.58). Measured raw vocal stem runs
     // ~5-7 dB hotter than drums/bass/other; the brief (Nirvana / LCD) wants
     // the vocal sitting IN the wall, not riding on top of it.
-    stemBus.vocals = new Tone.Gain(0.58);
+    // v306: eased back up to 0.60 — the v303 cut + de-wash had left it reading a
+    // touch quiet, so regain ~0.3 dB of presence so "blended" ≠ "buried".
+    stemBus.vocals = new Tone.Gain(0.60);
 
     // Wire: vocalChorus is input. Chorus feeds three paths in parallel.
     // dry → vocalDryGain → stemBus.vocals
@@ -2230,6 +2237,7 @@
     updateChordDisplay();
     const sec = currentSection();
     if (sec && options.updateLyrics !== false) updateLyricsHighlight(sec.section);
+    if (options.updateLyrics !== false) updateKaraokeHighlight(targetSec);
     return targetSec;
   }
 
@@ -2289,6 +2297,9 @@
         lastUiAtMs = nowMs;
         updateSongTimelineDisplay();
       }
+      // v306: karaoke line follow (stems mode). Guarded + idx-cached, so it's
+      // cheap to run every frame and stays tight to the audio clock.
+      if (currentMode === "stems") updateKaraokeHighlight(playbackContentElapsedSec());
       const duration = playbackDurationSec();
       if (state.started && duration && playbackContentElapsedSec() >= duration - 0.15) {
         queueAutoAdvanceToNextSong();
@@ -3161,24 +3172,33 @@
       renderSectionNav();  // v75: clickable section list
       refreshDrumFloorLink();
       updateMediaSession(state.started ? "playing" : "paused");  // v85: refresh OS metadata
-      // Load lyrics from the band's lyrics_doc if present
+      // Load lyrics from the band's lyrics_doc if present. v306: also pull this
+      // song's word-timestamp karaoke lines (stems mode follows them line by
+      // line); renderLyricsView() picks karaoke vs section-block rendering.
       const lyricsDoc = band.lyrics_doc;
+      state.currentTimedLines = null;
+      state.currentLyricMarkdown = null;
+      try { await ensureTimedLyricsLoaded(); } catch (e) {}
+      if (switchSeq != null && switchSeq !== songSwitchSeq) return null;
+      state.currentTimedLines = timedLinesForSong(songId);
       if (lyricsDoc) {
         try {
           const lyricsRes = await fetch(lyricsDoc + "?cb=" + Date.now());
           if (lyricsRes.ok) {
             const md = await lyricsRes.text();
             if (switchSeq != null && switchSeq !== songSwitchSeq) return null;
-            const lyrics = extractLyricsForSong(md, data.song_title || songId);
-            // v73: render as section blocks for auto-highlight + scroll
-            renderLyricBlocks(lyrics || `(lyrics todo — see ${lyricsDoc})`);
+            state.currentLyricMarkdown =
+              extractLyricsForSong(md, data.song_title || songId) || `(lyrics todo — see ${lyricsDoc})`;
+          } else {
+            state.currentLyricMarkdown = "(lyrics file not available offline)";
           }
         } catch (e) {
-          renderLyricBlocks("(lyrics file not available offline)");
+          state.currentLyricMarkdown = "(lyrics file not available offline)";
         }
       } else {
-        renderLyricBlocks("(no lyrics doc for this band yet)");
+        state.currentLyricMarkdown = "(no lyrics doc for this band yet)";
       }
+      renderLyricsView();
       return data;
     } catch (e) {
       console.warn("[Band Room] loadSong failed:", e);
@@ -3437,6 +3457,68 @@
     flush();
   }
 
+  // ---- Timed (karaoke) lyrics ---------------------------------
+  // v306: in 原音 (stems) mode the real vocals play at known times, so we can
+  // follow the actual sung LINE karaoke-style instead of just the section.
+  // Timing + text come from Whisper word-timestamp ASR of the vocal stems
+  // (docs/tabasco-lyrics-timed.json) — what's actually sung, lightly cleaned.
+  // Instrumentals / AI (synth) mode fall back to the section blocks above.
+  let timedLyricsData = null;
+  let timedLyricsPromise = null;
+  function ensureTimedLyricsLoaded() {
+    if (timedLyricsData) return Promise.resolve(timedLyricsData);
+    if (timedLyricsPromise) return timedLyricsPromise;
+    timedLyricsPromise = fetch("docs/tabasco-lyrics-timed.json?cb=" + Date.now())
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { timedLyricsData = (j && j.songs) ? j : { songs: {} }; return timedLyricsData; })
+      .catch(() => { timedLyricsData = { songs: {} }; return timedLyricsData; });
+    return timedLyricsPromise;
+  }
+  function timedLinesForSong(songId) {
+    const songs = timedLyricsData && timedLyricsData.songs;
+    const arr = songs && songs[songId];
+    return (Array.isArray(arr) && arr.length) ? arr : null;
+  }
+
+  function renderTimedLyricLines(lines) {
+    const body = $("br-lyrics-body");
+    if (!body) return;
+    body.innerHTML = "";
+    let prevT = null;
+    lines.forEach((ln) => {
+      const t = Number(ln.t) || 0;
+      const div = document.createElement("div");
+      div.className = "br-lyric-line";
+      // separate phrases visually when there's a long instrumental gap
+      if (prevT != null && t - prevT >= 3.5) div.classList.add("br-lyric-line--gap");
+      div.dataset.t = t.toFixed(2);
+      div.textContent = ln.x || "";
+      body.appendChild(div);
+      prevT = t;
+    });
+  }
+
+  // Pick karaoke (timed lines, stems mode) vs section blocks. Re-runnable on
+  // song load and mode switch; no-ops until a song's lyrics have been loaded.
+  function renderLyricsView() {
+    if (state.currentLyricMarkdown == null && !state.currentTimedLines) return;
+    state.activeLyricLineIdx = -1;
+    const useKaraoke = currentMode === "stems"
+      && Array.isArray(state.currentTimedLines) && state.currentTimedLines.length > 0;
+    if (useKaraoke) {
+      renderTimedLyricLines(state.currentTimedLines);
+      const pos = state.started
+        ? playbackContentElapsedSec()
+        : (state.pendingSeekOffsetSec || state.playbackStartOffsetSec || 0);
+      updateKaraokeHighlight(pos);
+    } else {
+      renderLyricBlocks(state.currentLyricMarkdown || "(lyrics todo)");
+      // keep the section highlight in sync right away (e.g. after a mode switch)
+      const sec = currentSection();
+      if (sec && sec.section) updateLyricsHighlight(sec.section);
+    }
+  }
+
   // v73: highlight lyric block matching current section. Fuzzy: try
   // exact section match first, then base name (chorus-2 → chorus).
   function updateLyricsHighlight(sectionName) {
@@ -3478,16 +3560,45 @@
       // scrolled the page/window too (a nested DOM scroll-into-view call),
       // which hijacked the user's manual scroll on every section change.
       // Move #br-lyrics' own scrollTop so the panel follows, page stays put.
-      const panel = document.getElementById("br-lyrics");
-      if (panel) {
-        const mRect = match.getBoundingClientRect();
-        const pRect = panel.getBoundingClientRect();
-        const target = (mRect.top - pRect.top) + panel.scrollTop
-                      - (panel.clientHeight - mRect.height) / 2;
-        try { panel.scrollTo({ top: Math.max(0, target), behavior: "smooth" }); }
-        catch (e) { panel.scrollTop = Math.max(0, target); }
-      }
+      scrollLyricElIntoPanel(match);
     }
+  }
+
+  // v306: karaoke line follow. In stems mode, light up the sung line for the
+  // current playback second and scroll the panel to keep it centered. Cheap to
+  // call every frame — it only touches the DOM when the active line changes.
+  const KARAOKE_LEAD_SEC = 0.20;  // light anticipation so the line reads in time
+  function updateKaraokeHighlight(posSec) {
+    if (currentMode !== "stems") return;
+    const lines = state.currentTimedLines;
+    if (!Array.isArray(lines) || lines.length === 0) return;
+    const p = (Number(posSec) || 0) + KARAOKE_LEAD_SEC;
+    let lo = 0, hi = lines.length - 1, idx = -1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      if ((Number(lines[mid].t) || 0) <= p) { idx = mid; lo = mid + 1; }
+      else hi = mid - 1;
+    }
+    if (idx === state.activeLyricLineIdx) return;
+    state.activeLyricLineIdx = idx;
+    const body = $("br-lyrics-body");
+    if (!body) return;
+    const els = body.querySelectorAll(".br-lyric-line");
+    if (!els.length) return;
+    els.forEach((el, i) => el.classList.toggle("active", i === idx));
+    if (idx >= 0 && els[idx]) scrollLyricElIntoPanel(els[idx]);
+  }
+
+  // Scroll the lyrics panel (only — never the page; see v201) so el is centered.
+  function scrollLyricElIntoPanel(el) {
+    const panel = document.getElementById("br-lyrics");
+    if (!panel || !el) return;
+    const mRect = el.getBoundingClientRect();
+    const pRect = panel.getBoundingClientRect();
+    const target = (mRect.top - pRect.top) + panel.scrollTop
+                  - (panel.clientHeight - mRect.height) / 2;
+    try { panel.scrollTo({ top: Math.max(0, target), behavior: "smooth" }); }
+    catch (e) { panel.scrollTop = Math.max(0, target); }
   }
 
   // ---- Section state machine ----------------------------------
@@ -5390,6 +5501,8 @@
 
   function setBodyPlaybackMode(mode = currentMode) {
     if (document.body) document.body.dataset.mode = mode;
+    // v306: karaoke (stems) vs section-block (synth) lyric view differs by mode
+    renderLyricsView();
   }
 
   function stopStemLayerPlayback() {

@@ -1,6 +1,28 @@
-# Band Room — Changelog (v65 → v305 compact)
+# Band Room — Changelog (v65 → v306 compact)
 
-Current compact release: v305.
+Current compact release: v306.
+
+---
+
+## v306 compact — 歌詞カラオケ追従 + 原音 vocal もう一段「空間になじむ」
+
+原音(stems)モードで、実ボーカルの歌唱タイミングに合わせて歌詞を **1行ずつ
+カラオケ追従**(ハイライト＋オートスクロール)。タイミングは Whisper の
+word-timestamp ASR を vocal stem にかけて取得、表示テキストは「実際に歌っている
+語」を軽く整えたもの(codex の創作歌詞ではなく中庸)。データは
+`docs/tabasco-lyrics-timed.json`、対象は実ボーカル5曲(hey / i-got-a-feeling /
+under-the-moon / sister / human-fly)。インスト(tabasco / electric-sheep)と
+AI(synth)モードは従来のセクション・ブロック表示にフォールバック。追従は
+`playbackContentElapsedSec()` を毎フレーム読む(stems=vocals.mp3 の時刻=ASR 時刻)、
+seek でも即追従。`updateLyricsHighlight` の querySelectorAll が空振りするので競合なし。
+
+vocal: 「もうちょい空間になじむ」要望で v305 から更に一段。reverb send 0.14 →
+0.18、tail 2.8 → 3.2s + preDelay 0.030 → 0.022(早く咲いて馴染む)、vocal bus
+0.58 → 0.60(v303 の削りで少し小さく聞こえる分の presence を ~0.3dB 戻す)。
+ユーザーの「前のほうが音出てた?」への回答も兼ねる(無加工には戻していない、FX を
+減らして整えた上での微増)。
+
+`band-room.js?v=br-181`、`band-room.css?v=br-82`、`hazama-fm-v306`。
 
 ---
 
