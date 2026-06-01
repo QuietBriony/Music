@@ -45,13 +45,53 @@
       "bars": 16
     },
     {
+      "section": "verse-3",
+      "frame_id": "verse_skank",
+      "bars": 16
+    },
+    {
+      "section": "chorus-4",
+      "frame_id": "chorus_drive",
+      "bars": 16
+    },
+    {
+      "section": "bridge-2",
+      "frame_id": "bridge_break",
+      "bars": 8
+    },
+    {
+      "section": "chorus-5",
+      "frame_id": "chorus_climax",
+      "bars": 16
+    },
+    {
+      "section": "verse-4",
+      "frame_id": "verse_skank",
+      "bars": 16
+    },
+    {
+      "section": "chorus-6",
+      "frame_id": "chorus_drive",
+      "bars": 16
+    },
+    {
+      "section": "chorus-7",
+      "frame_id": "chorus_climax",
+      "bars": 16
+    },
+    {
+      "section": "bridge-tag",
+      "frame_id": "bridge_break",
+      "bars": 8
+    },
+    {
       "section": "outro",
       "frame_id": "outro_hit",
-      "bars": 4
+      "bars": 2
     }
   ],
-  "total_bars": 100,
-  "estimated_duration_s": 149,
+  "total_bars": 210,
+  "estimated_duration_s": 313,
   "frames": [
     {
       "id": "intro_skank",
