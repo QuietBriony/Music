@@ -26,6 +26,15 @@ Usage:
   get a full timing diff; envelope pills (ambient/piano) get a tone/dynamics
   baseline only (no clear onsets to diff).
 
+  CAVEAT: the GENRE pill biases a rotating generative brain, it does NOT
+  hard-set EngineParams.mode. A capture measures the engine's live blend
+  (currently dominated by whatever it is rendering), not a pure-pill
+  isolation. Confirm EngineParams.mode === PILL + HazamaFlavorState.frameId
+  set + audible RMS BEFORE recording, or you capture silence / the wrong
+  pill. Phase 1 (hazama-fm-measure.mjs) is the per-pill isolated truth;
+  Phase 2 is the live-blend reality check. See docs/HAZAMA-FM-MEASUREMENT.md
+  "Capture caveat".
+
 Notes:
   - wav / mp3 / m4a load via librosa directly. webm needs ffmpeg on PATH.
   - Reuses the same band-onset / spectral analysis as Band Room's

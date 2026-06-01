@@ -140,7 +140,42 @@ the analyzer. First result (lofi):
 silent clamp/ramp override (v260-class bug absent for lofi groove). This
 also settles the long "乗れない" question: the slower/straighter feel is
 the *design* (bpm 82 / swing 0.10 vs Nujabes 85-95 / 0.14-0.18), not an
-engine artifact.
+engine artifact. (That capture predates the later lofi tuning to bpm 87.2 /
+swing 0.14; re-capture after a tuning to confirm the new values play.)
+
+### ⚠️ Capture caveat: the GENRE pill is a *bias*, not a hard mode switch
+
+Verified 2026-06-01 while attempting a funk capture. Clicking a GENRE pill
+sets `aria-pressed` on the button and biases the engine, but it does **not**
+force `EngineParams.mode`. Hazama FM is a generative radio: the
+`MUSIC_RADIO_BRAIN` rotates programs, and the pill nudges that rotation. In
+the funk attempt, the pill showed `funk` pressed yet `EngineParams.mode`
+stayed `lofi` and the master was near-silent (avg RMS ~0.0004) — even after
+a clean stop→funk→play sequence.
+
+Consequences for Phase 2:
+- A capture measures **whatever the engine is currently rendering**, which
+  the pill does not deterministically pin to one pill. The earlier lofi
+  capture succeeded because the engine was already rendering lofi (default /
+  restored), so it was a lofi-dominated render — not a guaranteed pure-pill
+  isolation. Treat Phase 2 numbers as "the engine's live blend, currently
+  dominated by pill X", not "pill X's drum-frames in isolation". Phase 1
+  is the per-pill isolated truth; Phase 2 is the live-blend reality check.
+- **Always gate the recording on an engagement check** before you record:
+
+  ```js
+  // in preview_eval, after selecting a pill + play, poll for ~2 s:
+  //   EngineParams.mode === <pill>      (engine actually switched)
+  //   HazamaFlavorState.frameId is set  (drums are scheduling)
+  //   avg RMS over ~15 samples > ~0.01  (audible, not a silent gap)
+  // Only start MediaRecorder once all three hold; otherwise you capture
+  // silence or the wrong pill.
+  ```
+
+- Forcing an arbitrary pill may need more than a click (engine state /
+  localStorage can pin the current mode). If a target pill won't engage,
+  capture is not yet meaningful for it — don't record noise. This is a known
+  limit, not a harness bug; Phase 1 still covers that pill's design.
 
 ### Run (once you have a recording)
 
