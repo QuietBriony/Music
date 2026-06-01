@@ -19,11 +19,12 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-173-crash-thin";
+  const BANDROOM_APP_VERSION = "br-174-foreground-stop";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
   const BANDROOM_MASTER_VOL_KEY = "band-room.masterVol.v2";
+  const BANDROOM_ALLOW_BACKGROUND_AUDIO_KEY = "band-room.allowBackgroundAudio.v1";
   const BANDROOM_AUDIO_STATE_KEYS = [BANDROOM_PREFS_KEY, BANDROOM_MASTER_VOL_KEY];
   const BANDROOM_BOOT_MODE = detectBandRoomBootMode();
   const BANDROOM_SAFE_BOOT = BANDROOM_BOOT_MODE === "safe";
@@ -133,6 +134,7 @@
   let backgroundBridgeActive = false;
   let backgroundBridgeHealthBound = false;
   let backgroundBridgeRearmTimer = 0;
+  let playbackLifecycleStopSeq = 0;
   let screenWakeLock = null;  // v235: screen Wake Lock sentinel (iOS focus-listening stability)
   let autoAdvanceInFlight = false;
   let autoAdvanceTimer = 0;
@@ -587,8 +589,29 @@
     return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
   }
 
+  function explicitBackgroundAudioAllowed() {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const value = params.get("bg") || params.get("backgroundAudio");
+      if (value === "1" || value === "true") return true;
+      if (value === "0" || value === "false") return false;
+    } catch (e) {}
+    try {
+      return safeLocalStorageGet(BANDROOM_ALLOW_BACKGROUND_AUDIO_KEY) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
   function shouldPreferBackgroundAudioBridge() {
-    return isAppleMobileDevice();
+    return explicitBackgroundAudioAllowed() && isAppleMobileDevice();
+  }
+
+  function shouldStopPlaybackForBackground(reason = "hidden") {
+    if (explicitBackgroundAudioAllowed()) return false;
+    if (reason === "pagehide" || reason === "freeze" || reason === "beforeunload") return true;
+    if (typeof document !== "undefined" && document.hidden && (reason === "hidden" || reason === "blur")) return true;
+    return false;
   }
 
   function isMobileOrStandaloneRuntime() {
@@ -4734,10 +4757,11 @@
 
   async function startPlayback(opts = {}) {
     if (state.started || state.starting) return;
+    const startSeq = playbackLifecycleStopSeq;
     state.starting = true;
     setButtonState("starting");
     try {
-      await startPlaybackBoot(opts);
+      await startPlaybackBoot(Object.assign({}, opts, { startSeq }));
     } catch (e) {
       console.warn("[Band Room] startPlayback failed:", e);
       stopPlayback({ resetPosition: false, keepBackgroundBridge: false, updateMedia: true });
@@ -4769,6 +4793,10 @@
     if (currentMode === "synth") setButtonState("preparing-ai");
     await preparePlaybackAssetsForCurrentMode("start");
     await backgroundBridgeStart;
+    if (!playbackStartStillAllowed(opts.startSeq)) {
+      abortPlaybackStart("lifecycle-stop");
+      return;
+    }
 
     // v76: respect the tempo slider when starting (so re-start at 80% stays at 80%)
     const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
@@ -4816,6 +4844,22 @@
     if (midiOut) startMidiClock();
     startPlaybackHealthWatchdog();
     requestScreenWakeLock();  // v235: keep the screen awake for stable focus listening
+  }
+
+  function playbackStartStillAllowed(startSeq) {
+    if (startSeq !== playbackLifecycleStopSeq) return false;
+    if (!explicitBackgroundAudioAllowed() && typeof document !== "undefined" && document.hidden) return false;
+    return true;
+  }
+
+  function abortPlaybackStart(reason = "abort") {
+    state.starting = false;
+    state.started = false;
+    setButtonState("idle");
+    stopBackgroundAudioBridge();
+    stopPlaybackHealthWatchdog();
+    clearSuspendReleaseTimers();
+    releaseSustainedSynths(reason);
   }
 
   // v71: master meter — animate #br-meter-fill width from Tone.Meter dB
@@ -4948,12 +4992,27 @@
 
   function handlePlaybackGoingBackground(reason = "hidden") {
     if (!state.started) return;
+    if (shouldStopPlaybackForBackground(reason)) {
+      stopPlaybackForPageLifecycle(reason);
+      return;
+    }
     duckThroughBackgroundTransition();  // v236: mask the iOS lock-transition glitch
     scheduleMobileSuspendRelease(reason);
     checkBackgroundBridgeHealth(reason);
     if (shouldPreferBackgroundAudioBridge() && !backgroundBridgeActive) {
       startBackgroundAudioBridge({ force: true, rearm: true, reason });
     }
+  }
+
+  function stopPlaybackForPageLifecycle(reason = "hidden") {
+    playbackLifecycleStopSeq++;
+    if (state.started || state.starting) {
+      stopPlayback({ resetPosition: false, keepBackgroundBridge: false, updateMedia: true });
+    } else {
+      stopBackgroundAudioBridge();
+      updateMediaSession("paused");
+    }
+    releaseSustainedSynths(reason);
   }
 
   // v235: screen Wake Lock. iOS throttles / suspends Web Audio hard once the
@@ -7775,6 +7834,10 @@
 
   window.addEventListener("pagehide", () => {
     handlePlaybackGoingBackground("pagehide");
+  });
+
+  window.addEventListener("beforeunload", () => {
+    stopPlaybackForPageLifecycle("beforeunload");
   });
 
   window.addEventListener("focus", () => {

@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-173-crash-thin", "Band Room should expose the current crash-thinning version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-174-foreground-stop", "Band Room should expose the current foreground-stop version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -118,13 +118,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">vertical room<\/button>/, "Band Room should expose the vertical-room preset button");
 assert.match(html, /band-room\.css\?v=br-81/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-173/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-174/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-81/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-173/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-174/, "Service worker should precache the current Band Room JS marker");
 assert.match(source, /bandIds\.length === 1[\s\S]*br-album-plaque/, "Single-band registry should render a non-button album plaque");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/core\.js/, "Band Room should lazy-load Magenta only when AI fill is used");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/music_rnn\.js/, "Band Room should lazy-load Magenta RNN only when AI fill is used");
@@ -388,7 +388,11 @@ assert.match(source, /Tone\.Transport\.cancel\(0\)/, "Band Room should cancel st
 assert.match(source, /function stopPhraseLoops\(/, "Band Room Stop/Reset should stop phrase loops as part of panic handling");
 assert.match(source, /function resetBandRoomAudioState\(/, "Band Room should expose a local Reset Audio recovery path");
 assert.match(source, /url\.searchParams\.set\("safe", "1"\)/, "Reset Audio should relaunch with safe boot query");
-assert.match(source, /return isAppleMobileDevice\(\);/, "Band Room should prefer the hidden media bridge on all iPhone browsers");
+assert.match(source, /function explicitBackgroundAudioAllowed\(/, "Band Room should gate hidden media bridge behind an explicit opt-in");
+assert.match(source, /return explicitBackgroundAudioAllowed\(\) && isAppleMobileDevice\(\);/, "Band Room should not default to hidden media bridge on iPhone browsers");
+assert.match(source, /function stopPlaybackForPageLifecycle\(/, "Band Room should have a lifecycle stop path for page close/background");
+assert.match(source, /window\.addEventListener\("beforeunload"[\s\S]*stopPlaybackForPageLifecycle\("beforeunload"\)/, "Band Room should stop playback on browser close/unload");
+assert.match(source, /if \(shouldStopPlaybackForBackground\(reason\)\)[\s\S]*stopPlaybackForPageLifecycle\(reason\)/, "Band Room should stop instead of rearming background audio by default");
 assert.match(source, /window\.addEventListener\("pageshow"/, "Band Room should recover playback on pageshow");
 assert.match(source, /setHandler\("nexttrack"[\s\S]*selectAdjacentSong\(1\)/, "Media nexttrack should follow album flow");
 assert.match(source, /setHandler\("previoustrack"[\s\S]*selectAdjacentSong\(-1\)/, "Media previoustrack should follow album flow");

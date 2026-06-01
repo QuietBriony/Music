@@ -1,10 +1,25 @@
-# Band Room — Changelog (v65 → v296 compact)
+# Band Room — Changelog (v65 → v297 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v297 compact - Band Room foreground stop
+
+Band Room runtime fix.
+
+Smartphone review now defaults to foreground-only playback: closing or hiding
+the Band Room page stops Tone.Transport, stems, external stems, phrase loops,
+Media Session state, wake lock, and the hidden audio bridge instead of keeping
+the Human Fly review running in the background. The old iPhone hidden-media
+bridge path remains available only when explicitly requested with `?bg=1` or
+`localStorage["band-room.allowBackgroundAudio.v1"] = "1"`.
+
+- `band-room.js?v=br-174`, `hazama-fm-v297`.
 
 ---
 
