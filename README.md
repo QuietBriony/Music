@@ -93,6 +93,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Music hardware dashboard: [docs/music-hardware-dashboard.html](docs/music-hardware-dashboard.html)
 - EP-133 K.O.II / Band Room workflow: [docs/EP133-KOII-BANDROOM-WORKFLOW.md](docs/EP133-KOII-BANDROOM-WORKFLOW.md)
 - Band Room AI recreation growth loop: [docs/BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md](docs/BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md)
+- Worker Gaming safe operator run: `python -X utf8 scripts/worker-gaming-pipeline.py operator-run tabasco human-fly --open-dashboard --open-folder`
 - Worker Gaming DAW doctor: `python -X utf8 scripts/worker-gaming-pipeline.py check-daw`
 - Worker Gaming hardware doctor: `python -X utf8 scripts/worker-gaming-pipeline.py check-hardware`
 - Sonar / EP-133 handoff checklist: `python -X utf8 scripts/worker-gaming-pipeline.py sonar-ep133-handoff tabasco human-fly`

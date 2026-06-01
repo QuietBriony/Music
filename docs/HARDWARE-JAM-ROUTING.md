@@ -12,6 +12,16 @@ Operator entry points:
 - [music-hardware-dashboard.html](music-hardware-dashboard.html)
 - [EP133-KOII-BANDROOM-WORKFLOW.md](EP133-KOII-BANDROOM-WORKFLOW.md)
 
+Default safe automation command:
+
+```powershell
+cd C:\workspace\music-stack\Music
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py operator-run tabasco human-fly --open-dashboard --open-folder
+```
+
+This prepares reports and transfer material only. It does not write to EP-133,
+change DAW projects, alter Band Room defaults, send MIDI, or record audio.
+
 ## First Patch
 
 Start with this simple wired routing:

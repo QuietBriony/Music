@@ -152,6 +152,11 @@
 
     <section class="grid" aria-label="Main commands">
       <article class="card">
+        <h2>Safe Operator Run</h2>
+        <p>通常入口。環境確認、DAW/Hardware doctor、EP-133 pack、Sonar handoff、snapshotをまとめて実行し、1つのlocal reportに束ねる。</p>
+        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py operator-run tabasco human-fly --open-dashboard --open-folder</pre>
+      </article>
+      <article class="card">
         <h2>Create EP-133 Pack</h2>
         <p>Band Room source kit と AI recreation から転送用 WAV と pad map を作る。</p>
         <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-pack tabasco human-fly --include-ai-recreation --open-folder</pre>
@@ -176,6 +181,7 @@
     <section class="card" aria-label="Operator checklist">
       <h2>Operator Checklist</h2>
       <ul>
+        <li>まず `operator-run` のMarkdownで最新pack、handoff、snapshot、manual gateを確認する。</li>
         <li>EP-133 に書く前に、必要なら EP sample tool で project backup を取る。</li>
         <li>EP sample tool の device permission は人間が許可する。</li>
         <li>`sonar-ep133-handoff` のMarkdownでpad mapとBand Room戻し名を確認する。</li>
