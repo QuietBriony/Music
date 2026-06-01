@@ -1,10 +1,24 @@
-# Band Room — Changelog (v65 → v295 compact)
+# Band Room — Changelog (v65 → v296 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v296 compact - Worker-gaming listening loop
+
+Music Stack side only. Audio engines are unchanged.
+
+`docs/listening-feedback-backlog.md` now records the 2026-06-01 worker-gaming
+`tabasco/human-fly` recreation cycle, including the local report/stem paths and
+the measured brightness/thinness issues to verify by ear. `listen.html` surfaces
+that run on the Band Room listening card so feedback can go directly from
+listening into either Sonar polish or reviewed metadata promotion.
+
+- `hazama-fm-v296`.
 
 ---
 

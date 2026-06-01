@@ -58,6 +58,34 @@ priority: high
 - Reference spread should be audible as Music-specific behavior, not just docs
   or console state.
 
+## Worker-Gaming Run Log
+
+### 2026-06-01 - tabasco/human-fly recreation-cycle
+
+Command:
+
+`C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py recreation-cycle tabasco human-fly --with-analysis --with-drum-candidate`
+
+Artifacts stay outside Git until human listening approves them:
+
+- Report: `C:\workspace\music-stack-worker\reports\tabasco\human-fly\recreation-cycle-20260601-111702\recreation-cycle-report.md`
+- AI recreation stems/mix: `C:\workspace\music-stack-worker\ai-recreation\tabasco\human-fly\`
+- Drum candidate: `C:\workspace\music-stack-worker\reports\tabasco\human-fly\recreation-cycle-20260601-111702\drum-frames-tabasco-human-fly.candidate.json`
+
+Findings to solve in the next Band Room pass:
+
+- AI mix passed basic audio generation, but it is brighter than target
+  (`3785 Hz` centroid vs `2402 Hz` target).
+- AI mix has much wider dynamics than the source (`16.49 dB` vs `8.73 dB`),
+  so it can read as less glued even before style judgement.
+- Bass and other stems are quiet against drums (`-29.1 dB` and `-34.0 dB`
+  RMS vs drums `-23.4 dB`), matching the "thin / mostly drums" note.
+- Drum-frame candidate has source-derived events for 8 sections; promote it
+  only after listening proves the extracted ghosts/crashes serve practice use.
+- Ableton on worker-gaming still needs VST3 rescan for Kontakt. Sonar is the
+  DAW path for this pass; EP-133 is visible, UR44 capture belongs on the Intel
+  studio PC with Yamaha Steinberg ASIO.
+
 ## Implementation Translation
 
 - "Melody is boring" -> add phrase-level call/answer, rests, register changes,
