@@ -343,9 +343,37 @@ def main() -> int:
                   f"rolloff {mix['rolloff_p85_hz']:.0f} Hz, DR {mix['rms_dynamic_range_db']:.1f} dB")
         out[band_id][song_id] = entry
 
+    # Merge into any existing spec so a SCOPED run (one band or band/song,
+    # as MEASUREMENT-LOOP §1 recommends) refreshes only those entries
+    # instead of overwriting the file with just the processed song(s) and
+    # wiping every other song's target. A full run still updates everything
+    # because `out` then contains every song. Without this, the documented
+    # `analyze-band-stems.py tabasco/human-fly` quietly destroyed the other
+    # 12 songs' targets.
+    final = out
+    if out_file.exists():
+        try:
+            prior = json.loads(out_file.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            prior = None
+        if isinstance(prior, dict):
+            merged = dict(prior)
+            merged["_meta"] = out["_meta"]
+            for band_id, songs in out.items():
+                if band_id == "_meta":
+                    continue
+                if isinstance(merged.get(band_id), dict) and isinstance(songs, dict):
+                    merged[band_id] = {**merged[band_id], **songs}
+                else:
+                    merged[band_id] = songs
+            final = merged
+
     out_file.parent.mkdir(parents=True, exist_ok=True)
-    out_file.write_text(json.dumps(out, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"\nwrote {_display_path(out_file)}", flush=True)
+    out_file.write_text(json.dumps(final, indent=2, ensure_ascii=False), encoding="utf-8")
+    scoped = bool(args)
+    print(f"\nwrote {_display_path(out_file)}"
+          f"{' (merged scoped update; other songs preserved)' if scoped else ''}",
+          flush=True)
     return 0
 
 
