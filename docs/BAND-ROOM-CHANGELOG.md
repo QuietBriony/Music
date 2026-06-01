@@ -1,6 +1,15 @@
-# Band Room — Changelog (v65 → v304 compact)
+# Band Room — Changelog (v65 → v305 compact)
 
-Current compact release: v304.
+Current compact release: v305.
+
+---
+
+## v305 compact — 原音 vocal「軽く空間になじむ」(v304 微調整)
+
+v304 で de-wash したら present だが少しドライ、とのユーザー要望「軽く空間に
+なじむ感じにしたい」。space を少しだけ戻す(v303 の float には戻さない):
+reverb send 0.10 → 0.14 + tail 2.4 → 2.8s、dry 0.82 → 0.78。v304 より僅かに
+潤むが、依然 present。`band-room.js?v=br-180`、`hazama-fm-v305`。
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
