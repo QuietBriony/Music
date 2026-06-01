@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-180-vocal-space", "Band Room should expose the current vocal-space version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-181-karaoke", "Band Room should expose the current karaoke version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -117,14 +117,14 @@ assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor
 assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">vertical room<\/button>/, "Band Room should expose the vertical-room preset button");
-assert.match(html, /band-room\.css\?v=br-81/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-180/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.css\?v=br-82/, "Band Room HTML should reference the current CSS cache marker");
+assert.match(html, /band-room\.js\?v=br-181/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
-assert.match(sw, /band-room\.css\?v=br-81/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-180/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.css\?v=br-82/, "Service worker should precache the current Band Room CSS marker");
+assert.match(sw, /band-room\.js\?v=br-181/, "Service worker should precache the current Band Room JS marker");
 assert.match(source, /bandIds\.length === 1[\s\S]*br-album-plaque/, "Single-band registry should render a non-button album plaque");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/core\.js/, "Band Room should lazy-load Magenta only when AI fill is used");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/music_rnn\.js/, "Band Room should lazy-load Magenta RNN only when AI fill is used");
@@ -348,7 +348,7 @@ assert.match(source, /crashKeptKey/, "Band Room should keep only the most-downbe
 assert.match(source, /drumBus = new Tone\.Gain\(0\.44\)/, "AI drum bus should step back for the v301 Human Fly body pass");
 assert.match(source, /bassBus = new Tone\.Gain\(0\.80\)/, "AI bass bus default should sit forward for the v301 Human Fly body pass");
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
-assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.58\)/, "Vocal stem should sit in the wall (v303 pulled it down from 0.68)");
+assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.60\)/, "Vocal stem should sit in the wall (v303 0.68→0.58, v306 eased to 0.60 for presence)");
 assert.match(source, /function makeStemMasterBus\(dest\)/, "原音 should have its own master/glue bus (v303)");
 assert.match(source, /function makeInstrumentPolishBus\(/, "Band Room should sum the non-vocal band into a polish bus");
 assert.match(source, /instrumentBus = makeInstrumentPolishBus\(masterGain\)/, "Non-vocal instruments should feed the polish bus");
@@ -462,6 +462,21 @@ const escapeLyricTitle = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   assert.match(finalLyrics, new RegExp(`^##\\s+\\d+\\s+${escapeLyricTitle(title)}`, "m"), `Final lyrics should include ${title}`);
 });
 assert.doesNotMatch(finalLyrics, /v2\.1|v3|draft|cut-up|候補|template/i, "Final lyrics should not surface draft/candidate language");
+
+// v306: karaoke timed-lyrics — line-level follow in 原音 (stems) mode.
+assert.ok(existsSync("docs/tabasco-lyrics-timed.json"), "Karaoke timed-lyrics data file should exist");
+const timedLyrics = JSON.parse(readFileSync("docs/tabasco-lyrics-timed.json", "utf8"));
+assert.ok(timedLyrics.songs && Object.keys(timedLyrics.songs).length >= 4, "Timed lyrics should cover the real-vocal songs (4+)");
+for (const [sid, lines] of Object.entries(timedLyrics.songs)) {
+  assert.ok(Array.isArray(lines) && lines.length >= 5, `Timed lyrics for ${sid} should carry several lines`);
+  assert.ok(lines.every((l) => typeof l.t === "number" && typeof l.x === "string" && l.x.trim()), `Timed lyrics for ${sid} should be non-empty {t,x} entries`);
+  for (let i = 1; i < lines.length; i++) {
+    assert.ok(lines[i].t >= lines[i - 1].t, `Timed lyrics for ${sid} must be time-ordered for the karaoke binary search`);
+  }
+}
+assert.match(source, /function updateKaraokeHighlight\(/, "Band Room should follow the sung line in stems mode (karaoke)");
+assert.match(source, /function renderLyricsView\(/, "Band Room should choose karaoke vs section-block lyric rendering");
+assert.match(source, /tabasco-lyrics-timed\.json/, "Band Room should load the karaoke timing data");
 
 const savePrefsBody = source.match(/function savePrefs\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
 assert.doesNotMatch(savePrefsBody, /songId\s*:/, "Saved prefs should not restore the last song");

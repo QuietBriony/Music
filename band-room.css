@@ -1790,6 +1790,24 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
 
 .br-lyric-preamble .br-lyric-marker { display: none; }
 
+/* v306: per-line karaoke lyric (原音/stems mode). Dim by default; the active
+   sung line lights up and the panel auto-follows it line by line. */
+.br-lyric-line {
+  margin: 0;
+  padding: 3px 8px;
+  line-height: 1.7;
+  color: var(--text);
+  opacity: 0.42;
+  border-radius: 4px;
+  transition: opacity 0.25s, background 0.25s, color 0.25s;
+}
+.br-lyric-line--gap { margin-top: 14px; }
+.br-lyric-line.active {
+  opacity: 1;
+  font-weight: 600;
+  background: rgba(255, 136, 102, 0.12);
+}
+
 #br-chord-display {
   display: flex;
   align-items: baseline;
