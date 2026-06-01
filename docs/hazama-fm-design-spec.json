@@ -218,28 +218,28 @@
           92,
           104
         ],
-        "swing_avg": 0.09,
+        "swing_avg": 0.079,
         "swing_range": [
           0.07,
-          0.11
+          0.08
         ],
         "events_per_bar_avg": 16.4,
         "instruments": {
           "kick": {
             "count": 25,
-            "micro_ms_avg": -2.5,
+            "micro_ms_avg": 0.6,
             "micro_ms_range": [
-              -5,
-              -1
+              0,
+              1
             ],
             "vel_avg": 0.59
           },
           "snare": {
             "count": 17,
-            "micro_ms_avg": 18.1,
+            "micro_ms_avg": 17.2,
             "micro_ms_range": [
               14,
-              22
+              18
             ],
             "vel_avg": 0.69
           },
@@ -285,36 +285,7 @@
         "rdj": 0.022,
         "dangelo": 0.25
       },
-      "drift": [
-        {
-          "axis": "swing",
-          "measured": 0.09,
-          "target": [
-            0,
-            0.08
-          ],
-          "direction": "HIGH"
-        },
-        {
-          "axis": "snare_behind_ms",
-          "measured": 18.1,
-          "target": [
-            2,
-            18
-          ],
-          "direction": "HIGH",
-          "note": "+ governor dangelo wash 0.25"
-        },
-        {
-          "axis": "kick_behind_ms",
-          "measured": -2.5,
-          "target": [
-            0,
-            6
-          ],
-          "direction": "LOW"
-        }
-      ]
+      "drift": []
     },
     "techno": {
       "target_source": "apple-music-refs Derrick May 'Strings of Life' (4-on-floor); pill-refs techno-detroit-emotional; four-on-floor.json tight +/-2ms",
@@ -354,9 +325,9 @@
         "instruments": {
           "kick": {
             "count": 24,
-            "micro_ms_avg": -0.5,
+            "micro_ms_avg": 0,
             "micro_ms_range": [
-              -1,
+              0,
               0
             ],
             "vel_avg": 0.84
@@ -412,17 +383,7 @@
         "rdj": 0.035,
         "dangelo": 0
       },
-      "drift": [
-        {
-          "axis": "kick_behind_ms",
-          "measured": -0.5,
-          "target": [
-            0,
-            3
-          ],
-          "direction": "LOW"
-        }
-      ]
+      "drift": []
     },
     "ambient": {
       "measured_via": "builder-envelope",

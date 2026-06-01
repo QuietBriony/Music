@@ -24,6 +24,7 @@ assert.match(js, /function publishDrumFloorHandoff\(/, "FM should publish a meta
 assert.match(js, /MusicSessionPacket[\s\S]*sync\(\)/, "FM Drum Floor handoff should use the shared Music session packet");
 assert.match(js, /bindDrumFloorLink\(\)/, "FM boot should wire the Drum Floor handoff link");
 assert.match(js, /lofi:\s*\{[\s\S]*?bpm:\s*88,/, "FM lofi profile should use the measured lofi pocket tempo");
+assert.match(js, /funk:\s*\{[\s\S]*?bpm:\s*100,/, "FM funk profile should use the measured funk pocket tempo");
 assert.match(js, /function drumFloorHandoffBpmValue\(/, "FM should derive handoff BPM without leaking idle Tone defaults");
 assert.match(js, /function drumFloorHrefForContext[\s\S]*drumFloorHandoffBpmValue\(name\)/, "FM Drum Floor links should use genre-aware handoff BPM");
 

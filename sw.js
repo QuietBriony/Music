@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v292";
+const VERSION = "hazama-fm-v293";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -53,7 +53,7 @@ const PRECACHE_URLS = [
   "docs/USER-NOTES-MEMO.md",
   "docs/CODEX-HANDOFF.md",
   "fm.css?v=fm-53",
-  "fm.js?v=fm-69",
+  "fm.js?v=fm-70",
   "style.css?v=fm-28",
   "audio/music-stack-routing.js?v=fm-115",
   "audio/music-focus-modulation.js?v=fm-115",

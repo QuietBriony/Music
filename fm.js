@@ -117,7 +117,7 @@
       faders: { energy: 36, wave: 70, mind: 72, creation: 76, void: 18, circle: 70, body: 50, resource: 64, observer: 60 }
     },
     funk: {
-      bpm: 108,
+      bpm: 100,
       culture: "broken_machine",
       faders: { energy: 64, wave: 56, mind: 44, creation: 70, void: 14, circle: 50, body: 76, resource: 68, observer: 44 }
     },

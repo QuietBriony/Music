@@ -1,10 +1,26 @@
-# Band Room — Changelog (v65 → v292 compact)
+# Band Room — Changelog (v65 → v293 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v293 compact - Hazama FM funk pocket tuning
+
+Hazama FM side only. Band Room runtime is unchanged.
+
+`presets/drum-frames-funk.json` now keeps the P-Funk pocket but reduces the
+measured drift: kick anchors sit just behind the grid, snares stay inside the
+behind-beat target window, and swing is capped to the tighter rubber-funk
+range. `fm.js` also starts the funk pill at the measured frame tempo so the
+direct FM and Drum Floor handoff feel consistent before playback starts.
+The techno frame kick anchors were also rounded to the grid, clearing the last
+static timing drift while keeping the hat/snare machine feel unchanged.
+
+- `fm.js?v=fm-70`, `hazama-fm-v293`.
 
 ---
 
