@@ -203,11 +203,13 @@ Prepare a non-destructive EP-133 transfer pack:
 
 ```powershell
 python -X utf8 scripts/worker-gaming-pipeline.py ep133-pack tabasco human-fly --include-ai-recreation --open-folder
+python -X utf8 scripts/worker-gaming-pipeline.py ep133-first-pass tabasco human-fly --open-folder
 ```
 
 This writes WAV files, a manifest, and a suggested pad map under
 `C:\workspace\music-stack-worker\hardware-jam\ep133-inbox\...`. It does not
-write to EP-133. Use the EP sample tool and the
+write to EP-133. `ep133-first-pass` stages only B01-B04 loops in a smaller
+folder for the first physical transfer. Use the EP sample tool and the
 [EP133-KOII-BANDROOM-WORKFLOW.md](EP133-KOII-BANDROOM-WORKFLOW.md) manual for
 the transfer step.
 
