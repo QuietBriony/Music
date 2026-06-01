@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Music Stack Listen</title>
-  <meta name="description" content="Music Stack listening entry points for Hazama FM, Core Rig, Band Room, and sister apps." />
+  <meta name="description" content="Music Stack listening entry points, listening cues, and unresolved review notes." />
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <meta name="theme-color" content="#061119" />
   <style>
@@ -129,7 +129,7 @@
     }
 
     .card {
-      min-height: 132px;
+      min-height: 184px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -163,6 +163,22 @@
       font-size: 0.8rem;
       line-height: 1.45;
     }
+
+    .listen-cue,
+    .known-issue {
+      display: block;
+      margin-top: 10px;
+      padding-top: 9px;
+      border-top: 1px solid rgba(214, 238, 246, 0.12);
+      color: rgba(225, 240, 244, 0.78);
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+
+    .listen-cue b,
+    .known-issue b { color: rgba(238, 249, 250, 0.92); }
+
+    .known-issue { color: rgba(241, 207, 190, 0.82); }
 
     .meta {
       display: flex;
@@ -200,6 +216,41 @@
       overflow: hidden;
     }
 
+    .review-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .review-panel {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(7, 17, 25, 0.76);
+    }
+
+    .review-panel h3 {
+      margin: 0 0 10px;
+      font-size: 0.9rem;
+      letter-spacing: 0;
+    }
+
+    .review-panel ul {
+      margin: 0;
+      padding-left: 18px;
+      color: rgba(225, 240, 244, 0.78);
+      font-size: 0.82rem;
+      line-height: 1.58;
+    }
+
+    .feedback-sample {
+      margin: 0;
+      white-space: pre-wrap;
+      color: rgba(232, 244, 247, 0.88);
+      font: 0.78rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+
     .visual-row p {
       margin: 0;
       color: rgba(225, 240, 244, 0.78);
@@ -228,6 +279,7 @@
 
     @media (max-width: 920px) {
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .review-grid { grid-template-columns: 1fr; }
       header { grid-template-columns: 1fr; align-items: start; }
       .top-actions { justify-content: flex-start; }
     }
@@ -249,7 +301,7 @@
     <header>
       <div>
         <h1>Music Stack Listen</h1>
-        <p class="subtitle">One screen for opening the current Music stack in a practical listening order.</p>
+        <p class="subtitle">聴く入口、聴きどころ、未解決の指摘を一画面にまとめた実聴用ページ。</p>
       </div>
       <nav class="top-actions" aria-label="Primary pages">
         <a href="fm.html">Hazama FM</a>
@@ -265,31 +317,66 @@
       </div>
       <div class="grid">
         <a class="card green" href="fm.html?g=any">
-          <div><strong>Any arc</strong><span>Long-form radio balance and automatic identity shifts.</span></div>
+          <div>
+            <strong>Any arc</strong>
+            <span>Long-form radio balance and automatic identity shifts.</span>
+            <span class="listen-cue"><b>Listen for:</b> 90秒で場面が動くか。同じ旋律断片に張り付かないか。</span>
+            <span class="known-issue"><b>Past note:</b> 長く聴くと単調、転調の入り方が気持ち悪い時がある。</span>
+          </div>
           <div class="meta"><b>FM</b><span>90 sec</span></div>
         </a>
         <a class="card amber" href="fm.html?g=lofi">
-          <div><strong>Lofi memory</strong><span>Tape pocket, restrained dust, and late snare feel.</span></div>
+          <div>
+            <strong>Lofi memory</strong>
+            <span>Tape pocket, restrained dust, and late snare feel.</span>
+            <span class="listen-cue"><b>Listen for:</b> pocket は自然か。dust/crackle が前に出すぎないか。</span>
+            <span class="known-issue"><b>Past note:</b> rhythm は改善済みでも、展開と休符が弱いと飽きる。</span>
+          </div>
           <div class="meta"><b>FM</b><span>60 sec</span></div>
         </a>
         <a class="card blue" href="fm.html?g=jazz">
-          <div><strong>Jazz pocket</strong><span>Brush motion, walking bass, and phrase space.</span></div>
+          <div>
+            <strong>Jazz pocket</strong>
+            <span>Brush motion, walking bass, and phrase space.</span>
+            <span class="listen-cue"><b>Listen for:</b> brush と walking bass が会話しているか。</span>
+            <span class="known-issue"><b>Past note:</b> human pocket は残しつつ、同じ backing loop 感を減らしたい。</span>
+          </div>
           <div class="meta"><b>FM</b><span>60 sec</span></div>
         </a>
         <a class="card rose" href="fm.html?g=funk">
-          <div><strong>Funk pocket</strong><span>Clavi/EP color and rubber syncopation after the v293 timing pass.</span></div>
+          <div>
+            <strong>Funk pocket</strong>
+            <span>Clavi/EP color and rubber syncopation after the v293 timing pass.</span>
+            <span class="listen-cue"><b>Listen for:</b> clavi/EP が返答しているか。body pocket は硬すぎないか。</span>
+            <span class="known-issue"><b>Past note:</b> timing drift は解消。次はフレーズの面白さを確認。</span>
+          </div>
           <div class="meta"><b>FM</b><span>60 sec</span></div>
         </a>
         <a class="card blue" href="fm.html?g=techno">
-          <div><strong>Techno pressure</strong><span>Grid kick, sparse hats, and acid cue without fatigue.</span></div>
+          <div>
+            <strong>Techno pressure</strong>
+            <span>Grid kick, sparse hats, and acid cue without fatigue.</span>
+            <span class="listen-cue"><b>Listen for:</b> acid cue が分かるか。hat と low が疲れないか。</span>
+            <span class="known-issue"><b>Past note:</b> generic noise hats や bright EDM 化は避けたい。</span>
+          </div>
           <div class="meta"><b>FM</b><span>90 sec</span></div>
         </a>
         <a class="card green" href="fm.html?g=ambient">
-          <div><strong>Ambient air</strong><span>Safe room tone, long release, and namima boundary.</span></div>
+          <div>
+            <strong>Ambient air</strong>
+            <span>Safe room tone, long release, and namima boundary.</span>
+            <span class="listen-cue"><b>Listen for:</b> safe air か、暗いだけの pad になっていないか。</span>
+            <span class="known-issue"><b>Past note:</b> namima に寄せる成分と Music に残す成分を分けたい。</span>
+          </div>
           <div class="meta"><b>FM</b><span>90 sec</span></div>
         </a>
         <a class="card amber" href="fm.html?g=piano">
-          <div><strong>Piano foreground</strong><span>Felt piano focus and chill handoff judgement.</span></div>
+          <div>
+            <strong>Piano foreground</strong>
+            <span>Felt piano focus and chill handoff judgement.</span>
+            <span class="listen-cue"><b>Listen for:</b> piano が前景にいるか。薄い metadata だけに聞こえないか。</span>
+            <span class="known-issue"><b>Past note:</b> chill に渡す quiet trio 成分と Music 側の音色を分けたい。</span>
+          </div>
           <div class="meta"><b>FM</b><span>60 sec</span></div>
         </a>
         <a class="card wide" href="docs/runtime-browser-listening-checklist.md">
@@ -306,17 +393,62 @@
       </div>
       <div class="grid">
         <a class="card blue wide" href="index.html">
-          <div><strong>Music Core Rig</strong><span>Full fader rig for density, output, recorder, and long-form radio-brain checks.</span></div>
+          <div>
+            <strong>Music Core Rig</strong>
+            <span>Full fader rig for density, output, recorder, and long-form radio-brain checks.</span>
+            <span class="listen-cue"><b>Listen for:</b> AUTO MIX が密度を上げすぎないか。低域と bright が荒れないか。</span>
+            <span class="known-issue"><b>Past note:</b> reference 感が docs だけでなく音として出るかを再確認。</span>
+          </div>
           <div class="meta"><b>Music</b><span>2 min</span></div>
         </a>
         <a class="card green wide" href="band-room.html">
-          <div><strong>Band Room</strong><span>Practice box, stems, route badge, master volume, and live-band recovery checks.</span></div>
+          <div>
+            <strong>Band Room</strong>
+            <span>Practice box, stems, route badge, master volume, and live-band recovery checks.</span>
+            <span class="listen-cue"><b>Listen for:</b> 原音 stems と AI 再現の差、練習用の安定感、車載/BT の音量。</span>
+            <span class="known-issue"><b>Past note:</b> AI 再現が薄い、ドラムだけ感、voice/melody stuck 感が残りやすい。</span>
+          </div>
           <div class="meta"><b>Music</b><span>30 sec</span></div>
         </a>
       </div>
       <div class="visual-row">
         <p>Keep this page open as the working PC or phone launcher. It is intentionally metadata-light: each target keeps its own sound engine and manual start.</p>
         <img src="assets/layer_04.svg" alt="" />
+      </div>
+    </section>
+
+    <section aria-labelledby="feedback-title">
+      <div class="section-head">
+        <h2 id="feedback-title">Feedback loop</h2>
+        <p class="section-note">短文で十分。ここから実装修正へ分解する。</p>
+      </div>
+      <div class="review-grid">
+        <div class="review-panel">
+          <h3>過去指摘として拾うもの</h3>
+          <ul>
+            <li>FM: melody が単調、短い断片を回しているだけに聞こえる。</li>
+            <li>FM: rhythm や転調の入り方が不自然で、気持ち悪い瞬間がある。</li>
+            <li>FM: bass/root/5th/octave の固定 loop 感が残る。</li>
+            <li>Band Room: AI 再現の音量差、薄さ、ドラムだけ感、melody/voice stuck 感。</li>
+            <li>Band Room: 車載/BT の音量 route は実機でまだ確認が必要。</li>
+          </ul>
+        </div>
+        <div class="review-panel">
+          <h3>返し方の例</h3>
+          <p class="feedback-sample">対象: FM funk / 60秒
+感想: ドラムは良いけどメロディが同じ
+残す: clavi の色と pocket
+直す: 返答フレーズ、休符、違う音域
+優先度: 高
+
+対象: Band Room AI / Human Fly
+感想: 音が薄い。ドラムだけ前に出る
+直す: bass/voice の芯、音量差、練習用の安定</p>
+        </div>
+      </div>
+      <div class="visual-row">
+        <p>管理ダッシュボードとは分ける。ここは聴く作業面、OpenClaw や review queue は判断と記録の置き場。</p>
+        <a class="mini-link" href="docs/listening-feedback-backlog.md">Listening backlog</a>
       </div>
     </section>
 

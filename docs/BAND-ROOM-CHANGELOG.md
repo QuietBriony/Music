@@ -1,10 +1,26 @@
-# Band Room — Changelog (v65 → v294 compact)
+# Band Room — Changelog (v65 → v295 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v295 compact - Listening feedback cues
+
+Music Stack side only. Audio engines are unchanged.
+
+`listen.html` now carries the listening loop itself: each Music/Hazama/Band Room
+entry has concrete things to listen for plus reopened notes from prior feedback
+such as FM melody repetition, awkward musical changes, and Band Room AI
+recreation thinness. `docs/listening-feedback-backlog.md` keeps the same
+feedback backlog in text form so short human listening notes can be translated
+into implementation tasks without mixing this surface into the broader
+dashboards.
+
+- `hazama-fm-v295`.
 
 ---
 
