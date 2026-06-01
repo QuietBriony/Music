@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 const html = readFileSync("fm.html", "utf8");
 const js = readFileSync("fm.js", "utf8");
 const css = readFileSync("fm.css", "utf8");
+const sw = readFileSync("sw.js", "utf8");
+const flavor = readFileSync("audio/genre-flavor.js", "utf8");
 
 assert.match(html, /id="fm-route"/, "FM should expose a visible audio route badge");
 assert.match(html, /id="fm-route-status"/, "FM route badge should have a live status label");
@@ -27,6 +29,11 @@ assert.match(js, /lofi:\s*\{[\s\S]*?bpm:\s*88,/, "FM lofi profile should use the
 assert.match(js, /funk:\s*\{[\s\S]*?bpm:\s*100,/, "FM funk profile should use the measured funk pocket tempo");
 assert.match(js, /function drumFloorHandoffBpmValue\(/, "FM should derive handoff BPM without leaking idle Tone defaults");
 assert.match(js, /function drumFloorHrefForContext[\s\S]*drumFloorHandoffBpmValue\(name\)/, "FM Drum Floor links should use genre-aware handoff BPM");
+assert.match(html, /audio\/genre-flavor\.js\?v=fm-72/, "FM should load the current funk-clearance genre flavor cache marker");
+assert.match(sw, /audio\/genre-flavor\.js\?v=fm-72/, "Service worker should precache the current genre flavor marker");
+assert.match(flavor, /funk:\s*0\.62/, "FM funk should keep more headroom after the crushed-phone note");
+assert.match(flavor, /addSidechainPump\([\s\S]*0\.18[\s\S]*\),[\s\S]*0\.35/, "FM funk should use the lighter v299 pump/saturation path");
+assert.match(flavor, /volume:\s*-15[\s\S]*volume:\s*-22[\s\S]*0\.40 \* intensity/, "FM funk rubber bass/sub should be pulled back for v299 clearance");
 
 assert.match(css, /#fm-route\b/, "FM route badge should be styled");
 assert.match(css, /#fm-route-panel\b/, "FM route diagnostics should be styled");

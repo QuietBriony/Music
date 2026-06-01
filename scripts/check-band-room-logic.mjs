@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-175-human-fly-presence", "Band Room should expose the current Human Fly phone-pass version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-176-ai-stability", "Band Room should expose the current AI stability version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -118,13 +118,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">vertical room<\/button>/, "Band Room should expose the vertical-room preset button");
 assert.match(html, /band-room\.css\?v=br-81/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-175/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-176/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-81/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-175/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-176/, "Service worker should precache the current Band Room JS marker");
 assert.match(source, /bandIds\.length === 1[\s\S]*br-album-plaque/, "Single-band registry should render a non-button album plaque");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/core\.js/, "Band Room should lazy-load Magenta only when AI fill is used");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/music_rnn\.js/, "Band Room should lazy-load Magenta RNN only when AI fill is used");
@@ -336,6 +336,12 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
 assert.match(source, /let masterVolBase = 1\.2/, "Band Room master volume base should match the v202 louder default output");
 assert.match(source, /const mobileAiDiet = isMobileOrStandaloneRuntime\(\);/, "AI polish bus should use a lighter phone path");
 assert.match(source, /oversample: mobileAiDiet \? "none" : "2x"/, "Mobile AI polish should avoid the standing oversampled exciter cost");
+assert.match(source, /function uiTelemetryIntervalMs\(/, "Band Room should throttle playback telemetry instead of updating UI every animation frame");
+assert.match(source, /uiTelemetryIntervalMs\("timeline"\)/, "Band Room timeline updates should use the telemetry throttle");
+assert.match(source, /uiTelemetryIntervalMs\("meter"\)/, "Band Room meter updates should use the telemetry throttle");
+assert.match(source, /isMobileOrStandaloneRuntime\(\) && isBandAiPlaybackMode\(\)/, "Mobile Band AI should skip expensive spectrum rendering");
+assert.match(source, /function checkSynthSchedulerHealth\(/, "Band Room should detect AI scheduler stalls during foreground playback");
+assert.match(source, /restartSynthTransportSchedule\(reason\)/, "Band Room should restart the AI scheduler if bar callbacks stop advancing");
 assert.match(source, /guitarBus = new Tone\.Gain\(0\.76\)/, "AI guitar bus should be the v298 foreground partner of bass");
 assert.match(source, /crashAllowedThisBar/, "Band Room should gate crash density per bar (v290 thinning)");
 assert.match(source, /crashKeptKey/, "Band Room should keep only the most-downbeat crash per bar (v290)");

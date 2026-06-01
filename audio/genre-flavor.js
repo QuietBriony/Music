@@ -41,7 +41,9 @@
     techno: 0.72,
     lofi: 0.66,
     jazz: 0.68,
-    funk: 0.68,
+    // fm-72: user ear check said funk felt packed/crushed. Give the funk
+    // flavor layer more headroom before the shared FM limiter.
+    funk: 0.62,
     piano: 0.54
   };
 
@@ -440,18 +442,18 @@
       pitchDecay: deep ? 0.06 : 0.045,
       octaves: deep ? 4.2 : 2.4,
       envelope: { attack: 0.001, decay: deep ? 0.34 : 0.22, sustain: 0, release: deep ? 0.16 : 0.11 },
-      volume: deep ? -10 : -13
+      volume: deep ? -12 : -13
     }).connect(gain);
     const skin = new Tone.NoiseSynth({
       noise: { type: "pink" },
       envelope: { attack: 0.001, decay: 0.018, sustain: 0, release: 0.01 },
-      volume: deep ? -34 : -38
+      volume: deep ? -36 : -38
     }).connect(gain);
     return {
       triggerAttackRelease(note, duration, time, velocity = 0.6) {
         const t = safeEventTime(time);
-        body.triggerAttackRelease(profile === "jazz" ? "A1" : "C1", deep ? "8n" : "16n", t, clamp(velocity, 0.04, 0.95));
-        skin.triggerAttackRelease("128n", safeEventTime(t + 0.003), clamp(velocity * 0.18, 0.01, 0.2));
+        body.triggerAttackRelease(profile === "jazz" ? "A1" : "C1", "16n", t, clamp(velocity, 0.04, deep ? 0.88 : 0.95));
+        skin.triggerAttackRelease("128n", safeEventTime(t + 0.003), clamp(velocity * (deep ? 0.14 : 0.18), 0.01, 0.2));
       },
       dispose() {
         try { body.dispose(); } catch (e) {}
@@ -461,7 +463,7 @@
   }
 
   function makeLiveSnare(gain, profile = "funk") {
-    const bus = new Tone.Gain(profile === "jazz" ? 0.62 : 0.82).connect(gain);
+    const bus = new Tone.Gain(profile === "jazz" ? 0.62 : profile === "funk" ? 0.72 : 0.82).connect(gain);
     const hp = new Tone.Filter({ frequency: profile === "lofi" ? 850 : 1300, type: "highpass", Q: 0.8 }).connect(bus);
     const body = new Tone.NoiseSynth({
       noise: { type: profile === "lofi" ? "pink" : "white" },
@@ -471,7 +473,7 @@
         sustain: 0,
         release: profile === "lofi" ? 0.1 : 0.06
       },
-      volume: profile === "jazz" ? -21 : profile === "lofi" ? -18 : -14
+      volume: profile === "jazz" ? -21 : profile === "lofi" ? -18 : profile === "funk" ? -16 : -14
     }).connect(hp);
     const rim = new Tone.MetalSynth({
       frequency: profile === "funk" ? 170 : 145,
@@ -480,14 +482,14 @@
       modulationIndex: 5,
       resonance: profile === "lofi" ? 900 : 1600,
       octaves: 0.5,
-      volume: profile === "jazz" ? -36 : -32
+      volume: profile === "jazz" ? -36 : profile === "funk" ? -34 : -32
     }).connect(bus);
     return {
       triggerAttackRelease(duration, time, velocity = 0.5) {
         const t = safeEventTime(time);
         const v = clamp(velocity, 0.03, 0.9);
-        body.triggerAttackRelease(profile === "jazz" ? "16n" : "32n", t, v * (profile === "jazz" ? 0.82 : 0.96));
-        rim.triggerAttackRelease("128n", safeEventTime(t + 0.006), v * (profile === "funk" ? 0.32 : 0.2));
+        body.triggerAttackRelease(profile === "jazz" ? "16n" : "32n", t, v * (profile === "jazz" ? 0.82 : profile === "funk" ? 0.82 : 0.96));
+        rim.triggerAttackRelease("128n", safeEventTime(t + 0.006), v * (profile === "funk" ? 0.24 : 0.2));
       },
       dispose() {
         try { body.dispose(); } catch (e) {}
@@ -571,7 +573,7 @@
     const fill = new Tone.NoiseSynth({
       noise: { type: profile === "lofi" ? "pink" : "white" },
       envelope: { attack: 0.001, decay: profile === "jazz" ? 0.16 : 0.11, sustain: 0, release: 0.045 },
-      volume: profile === "jazz" ? -24 : profile === "lofi" ? -24 : -19
+      volume: profile === "jazz" ? -24 : profile === "lofi" ? -24 : profile === "funk" ? -22 : -19
     }).connect(fillPan);
     const crash = new Tone.MetalSynth({
       frequency: profile === "jazz" ? 145 : 175,
@@ -1384,7 +1386,7 @@
       envelope: { attack: 0.004, decay: 0.16, sustain: 0.18, release: 0.08 },
       filterEnvelope: { attack: 0.002, decay: 0.12, sustain: 0.06, release: 0.06, baseFrequency: 95, octaves: 3.1 },
       portamento: 0.035,
-      volume: -13
+      volume: -15
     }).connect(layer.gain);
     let currentPattern = FUNK_BASS_PATTERNS.default[0];
     let funkBassBarCount = 0;
@@ -1455,7 +1457,7 @@
       envelope: { attack: 0.01, decay: 0.4, sustain: 0.55, release: 0.4 },
       modulation: { type: "sine" },
       modulationEnvelope: { attack: 0.005, decay: 0.18, sustain: 0.2, release: 0.3 },
-      volume: -18
+      volume: -22
     }).connect(layer.gain);
     let subStep = 0;
     layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
@@ -1475,7 +1477,7 @@
           const lowerNote = Tone.Frequency(rawNote).transpose(-12 + (flavor && flavor.keyShift || 0)).toNote();
           const groove = flavor && flavor.groove || { intensity: 1.0 };
           const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
-          sub.triggerAttackRelease(lowerNote, "2n", safeEventTime(time + 0.005), 0.55 * intensity);
+          sub.triggerAttackRelease(lowerNote, "2n", safeEventTime(time + 0.005), 0.40 * intensity);
         } catch (e) {}
       }
       subStep = (subStep + 1) % 16;
@@ -2379,7 +2381,7 @@
     const clavi = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: "sawtooth" },
       envelope: { attack: 0.001, decay: 0.09, sustain: 0.0, release: 0.04 },
-      volume: -14
+      volume: -16
     }).connect(claviFilter);
     clavi.maxPolyphony = 6;
     const epRoom = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).connect(gain);
@@ -2389,7 +2391,7 @@
       envelope: { attack: 0.04, decay: 0.6, sustain: 0.6, release: 1.5 },
       modulation: { type: "sine" },
       modulationEnvelope: { attack: 0.06, decay: 0.5, sustain: 0.32, release: 1.1 },
-      volume: -16
+      volume: -18
     }).connect(epRoom);
     ep.maxPolyphony = 6;
 
@@ -2427,15 +2429,15 @@
           : conversation?.role === "comp-answer" ? 1.06
           : isBassConversation(conversation) ? 0.76
           : 1;
-        const claviVel = (0.45 + Math.random() * 0.15) * intensity * leadBoost * convoBoost;
+        const claviVel = (0.38 + Math.random() * 0.12) * intensity * leadBoost * convoBoost;
         const claviTime = safeEventTime(time + grooveOffset);
         // v71: clavi filter tracks velocity — hard hits bite brighter,
         // soft hits stay round. Static cutoff made every note identical.
         try {
-          const open = 1700 + clamp(claviVel, 0.05, 1) * 1500;
+          const open = 1600 + clamp(claviVel, 0.05, 1) * 1300;
           claviFilter.frequency.cancelScheduledValues(claviTime);
           claviFilter.frequency.setValueAtTime(open, claviTime);
-          claviFilter.frequency.linearRampToValueAtTime(2100, claviTime + 0.09);
+          claviFilter.frequency.linearRampToValueAtTime(2000, claviTime + 0.09);
         } catch (e) {}
         clavi.triggerAttackRelease(note, "32n", claviTime, claviVel);
       }
@@ -2467,7 +2469,7 @@
           // v71: roll the EP chord per-note (8-22 ms apart) and vary each
           // voice's velocity, so the Rhodes lands like a played chord
           // instead of a flat block. Matches the jazz comp / piano voices.
-          const baseVel = 0.33 * intensity * convoBoost;
+          const baseVel = 0.28 * intensity * convoBoost;
           chord.forEach((note, i) => {
             const roll = i * (0.008 + Math.random() * 0.014);
             const vel = clamp(baseVel * (0.88 + Math.random() * 0.24), 0.04, 0.7);
@@ -2495,21 +2497,21 @@
     });
     if (!drums) return null;
 
-    const claviFilter = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 1.5 }).connect(drums.gain);
+    const claviFilter = new Tone.Filter({ frequency: 2200, type: "lowpass", Q: 1.1 }).connect(drums.gain);
     const clavi = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: "sawtooth" },
       envelope: { attack: 0.001, decay: 0.07, sustain: 0, release: 0.035 },
-      volume: -21
+      volume: -23
     }).connect(claviFilter);
     clavi.maxPolyphony = 4;
-    const epRoom = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).connect(drums.gain);
+    const epRoom = new Tone.Reverb({ decay: 1.1, wet: 0.16 }).connect(drums.gain);
     const ep = new Tone.PolySynth(Tone.FMSynth, {
       harmonicity: 3, modulationIndex: 5,
       oscillator: { type: "sine" },
       envelope: { attack: 0.04, decay: 0.6, sustain: 0.6, release: 1.5 },
       modulation: { type: "sine" },
       modulationEnvelope: { attack: 0.06, decay: 0.5, sustain: 0.32, release: 1.1 },
-      volume: -18
+      volume: -20
     }).connect(epRoom);
     ep.maxPolyphony = 6;
 
@@ -2549,15 +2551,15 @@
           : conversation?.role === "comp-answer" ? 1.06
           : isBassConversation(conversation) ? 0.76
           : 1;
-        const claviVel = (0.22 + Math.random() * 0.08) * intensity * leadBoost * convoBoost;
+        const claviVel = (0.18 + Math.random() * 0.06) * intensity * leadBoost * convoBoost;
         const claviTime = safeEventTime(time + grooveOffset + push);
         // v71: velocity-tracked clavi filter — articulation follows touch
         // instead of every note sharing one static cutoff.
         try {
-          const open = 1950 + clamp(claviVel, 0.05, 1) * 1700;
+          const open = 1800 + clamp(claviVel, 0.05, 1) * 1300;
           claviFilter.frequency.cancelScheduledValues(claviTime);
           claviFilter.frequency.setValueAtTime(open, claviTime);
-          claviFilter.frequency.linearRampToValueAtTime(2400, claviTime + 0.08);
+          claviFilter.frequency.linearRampToValueAtTime(2200, claviTime + 0.08);
         } catch (e) {}
         clavi.triggerAttackRelease(note, "32n", claviTime, claviVel);
       }
@@ -2589,7 +2591,7 @@
         // v71: roll the EP chord per-note + per-voice velocity spread, so
         // the Rhodes reads as a played chord against the live kit rather
         // than a flat simultaneous block.
-        const baseVel = 0.30 * intensity * convoBoost;
+        const baseVel = 0.24 * intensity * convoBoost;
         chord.forEach((note, i) => {
           const roll = i * (0.008 + Math.random() * 0.014);
           const vel = clamp(baseVel * (0.88 + Math.random() * 0.24), 0.04, 0.7);
@@ -2605,9 +2607,9 @@
         addTapeSaturation(
           addSidechainPump(
             addSessionBreaks(addFunkRubberBass(drums), "funk"),
-            0.26
+            0.18
           ),
-          0.7
+          0.35
         ),
         "funk"
       ),

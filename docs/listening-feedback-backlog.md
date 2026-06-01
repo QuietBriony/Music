@@ -23,6 +23,14 @@ priority: high
 
 ## Current Reopened Notes
 
+### 2026-06-01 phone notes
+
+- `FM funk`: sounded packed/crushed. v299 pass should be checked for more
+  headroom, less sub buildup, and less tape/limiter flattening.
+- `Band Room AI`: playback can solidify over time. v299 pass throttles UI
+  telemetry and adds foreground AI scheduler stall recovery; needs a real
+  phone/PWA listen to confirm.
+
 ### Hazama FM
 
 - Melody can still read as a short repeated fragment, even after the melodic

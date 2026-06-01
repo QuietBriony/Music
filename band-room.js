@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-175-human-fly-presence";
+  const BANDROOM_APP_VERSION = "br-176-ai-stability";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -82,6 +82,10 @@
     chordIdx: 0,
     chordBarsRemaining: 0,
     scheduledIds: [],
+    lastSchedulerBarAtMs: 0,
+    healthLastBarCount: 0,
+    healthLastTransportSec: 0,
+    healthStallTicks: 0,
     kitSource: "online/tone-acoustic",  // v259: default to the Tone.js acoustic CDN kit (real
                             // sampled drum sounds). After v247-v257 the procedural rhythm/structure
                             // levers were exhausted but the user still heard "ただ鳴ってる感" — synth
@@ -635,6 +639,27 @@
   function yieldToUi() {
     const delayMs = isMobileOrStandaloneRuntime() ? 24 : 8;
     return new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+
+  function bandRoomNowMs() {
+    return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+  }
+
+  function isBandAiPlaybackMode() {
+    return currentMode === "synth";
+  }
+
+  function uiTelemetryIntervalMs(kind = "timeline") {
+    if (isMobileOrStandaloneRuntime()) return kind === "meter" ? 250 : 500;
+    if (isBandAiPlaybackMode()) return kind === "meter" ? 160 : 300;
+    return kind === "meter" ? 100 : 250;
+  }
+
+  function resetPlaybackHealthState() {
+    state.lastSchedulerBarAtMs = bandRoomNowMs();
+    state.healthLastBarCount = state.barCount;
+    try { state.healthLastTransportSec = Number(Tone.Transport?.seconds) || 0; } catch (e) { state.healthLastTransportSec = 0; }
+    state.healthStallTicks = 0;
   }
 
   function loadScriptOnce(src, globalCheck) {
@@ -2191,14 +2216,21 @@
 
   function startTransportProgress() {
     cancelAnimationFrame(transportProgressRaf);
+    let lastUiAtMs = 0;
     const tick = () => {
-      updateSongTimelineDisplay();
+      const nowMs = bandRoomNowMs();
+      const interval = uiTelemetryIntervalMs("timeline");
+      if (nowMs - lastUiAtMs >= interval) {
+        lastUiAtMs = nowMs;
+        updateSongTimelineDisplay();
+      }
       const duration = playbackDurationSec();
       if (state.started && duration && playbackContentElapsedSec() >= duration - 0.15) {
         queueAutoAdvanceToNextSong();
       }
       if (state.started) transportProgressRaf = requestAnimationFrame(tick);
     };
+    updateSongTimelineDisplay();
     tick();
   }
 
@@ -4430,6 +4462,7 @@
   function scheduleBar() {
     // This fires once per bar. Reads current frame's events, schedules drums.
     state.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      state.lastSchedulerBarAtMs = bandRoomNowMs();
       let sec = currentSection();
       if (!sec) {
         queueAutoAdvanceToNextSong();
@@ -4839,6 +4872,7 @@
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
     state.scheduledIds = [];
 
+    resetPlaybackHealthState();
     scheduleBar();
     Tone.Transport.start();
     resetPlaybackClock(stemOffsetSec);
@@ -4893,15 +4927,23 @@
     const canvas = $("br-spectrum");
     const ctx = canvas ? canvas.getContext("2d") : null;
     cancelAnimationFrame(masterMeterRaf);
+    let lastDrawAtMs = 0;
     const tick = () => {
       if (!state.started) return;
+      const nowMs = bandRoomNowMs();
+      const interval = uiTelemetryIntervalMs("meter");
+      if (nowMs - lastDrawAtMs < interval) {
+        masterMeterRaf = requestAnimationFrame(tick);
+        return;
+      }
+      lastDrawAtMs = nowMs;
       // --- RMS meter ---
       const dB = masterMeter.getValue();
       const pct = Math.max(0, Math.min(100, (dB + 60) / 60 * 100));
       fill.style.width = pct.toFixed(1) + "%";
       fill.style.background = dB > -3 ? "#ff5566" : (dB > -12 ? "#ffb39a" : "#ff8866");
       // --- Spectrum ---
-      if (ctx && masterFft) {
+      if (ctx && masterFft && !(isMobileOrStandaloneRuntime() && isBandAiPlaybackMode())) {
         const w = canvas.width, h = canvas.height;
         const vals = masterFft.getValue();  // Float32Array of dB values
         ctx.clearRect(0, 0, w, h);
@@ -4914,6 +4956,8 @@
           ctx.fillStyle = `hsla(${hue}, 80%, 65%, 0.72)`;
           ctx.fillRect(i * bw, h - bh, bw - 0.5, bh);
         }
+      } else if (ctx && isMobileOrStandaloneRuntime() && isBandAiPlaybackMode()) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
       masterMeterRaf = requestAnimationFrame(tick);
     };
@@ -5146,6 +5190,47 @@
     }
   }
 
+  function synthSchedulerStallLimitMs() {
+    const bpm = Number(state.songData?.bpm) || 117;
+    const barMs = (60 / Math.max(1, bpm)) * 4 * 1000;
+    return Math.max(6200, barMs * 2.4);
+  }
+
+  function restartSynthTransportSchedule(reason = "ai-stall") {
+    if (!state.started || !isBandAiPlaybackMode()) return false;
+    const targetSec = clampPlaybackSecond(playbackContentElapsedSec());
+    try { releaseSustainedSynths(reason); } catch (e) {}
+    try { Tone.Transport.stop(); } catch (e) {}
+    try { Tone.Transport.cancel(0); } catch (e) {}
+    state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
+    state.scheduledIds = [];
+    setTimelineStateForSecond(targetSec);
+    resetPlaybackClock(targetSec);
+    resetPlaybackHealthState();
+    scheduleBar();
+    try { Tone.Transport.start("+0.03", targetSec); } catch (e) { try { Tone.Transport.start("+0.03"); } catch (err) {} }
+    console.warn("[Band Room] restarted AI scheduler after stall:", reason);
+    return true;
+  }
+
+  function checkSynthSchedulerHealth(reason = "watchdog") {
+    if (!state.started || !isBandAiPlaybackMode()) return;
+    if (typeof document !== "undefined" && document.hidden) return;
+    const duration = playbackDurationSec();
+    if (duration && playbackContentElapsedSec() >= duration - 1.0) return;
+    const nowMs = bandRoomNowMs();
+    if (!state.lastSchedulerBarAtMs) state.lastSchedulerBarAtMs = nowMs;
+    const staleMs = nowMs - state.lastSchedulerBarAtMs;
+    if (staleMs < synthSchedulerStallLimitMs()) {
+      state.healthStallTicks = 0;
+      return;
+    }
+    state.healthStallTicks++;
+    if (state.healthStallTicks < 2) return;
+    state.healthStallTicks = 0;
+    restartSynthTransportSchedule(reason);
+  }
+
   function startPlaybackHealthWatchdog() {
     if (playbackHealthTimer) return;
     playbackHealthTimer = setInterval(() => {
@@ -5156,6 +5241,7 @@
         recoverPlaybackAfterSuspend("watchdog");
       }
       checkBackgroundBridgeHealth("watchdog");
+      checkSynthSchedulerHealth("watchdog");
     }, 2500);
   }
 
@@ -5171,6 +5257,8 @@
     if (!state.started) {
       if (options.resetPosition) setTimelineStateForSecond(0);
       state.starting = false;
+      state.lastSchedulerBarAtMs = 0;
+      state.healthStallTicks = 0;
       stopTransportProgress();
       stopPlaybackHealthWatchdog();
       clearSuspendReleaseTimers();
@@ -5191,6 +5279,8 @@
     state.playbackStartedAtMs = 0;
     state.playbackStartedAtAudioSec = 0;
     state.playbackRateAtStart = 1;
+    state.lastSchedulerBarAtMs = 0;
+    state.healthStallTicks = 0;
     setTimelineStateForSecond(retainedOffsetSec);
     stopPlaybackHealthWatchdog();
     clearSuspendReleaseTimers();

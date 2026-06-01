@@ -1,10 +1,29 @@
 # Band Room — Changelog (v65 → v298 compact)
 
+Current compact release: v299.
+
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v299 compact - Funk clearance and Band AI stability
+
+Phone listening pass from user feedback.
+
+FM funk sounded packed/crushed, so `audio/genre-flavor.js` now gives the funk
+layer more headroom: lower funk level, lighter kick/snare/fill weight, reduced
+rubber sub, softer clavi/EP levels, and a lower tape-saturation/sidechain
+amount. Band Room AI also reduces foreground playback load by throttling meter
+/ timeline telemetry on mobile or AI playback, skipping the spectrum analyzer
+on mobile AI, and restarting the AI scheduler if bar callbacks stop advancing
+while the page is visible.
+
+- `audio/genre-flavor.js?v=fm-72`, `band-room.js?v=br-176`,
+  `hazama-fm-v299`.
 
 ---
 
