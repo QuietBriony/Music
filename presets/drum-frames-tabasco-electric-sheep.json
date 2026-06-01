@@ -35,13 +35,18 @@
       "bars": 16
     },
     {
+      "section": "chorus-tag",
+      "frame_id": "chorus_agro",
+      "bars": 13
+    },
+    {
       "section": "outro",
       "frame_id": "outro_blast",
       "bars": 4
     }
   ],
-  "total_bars": 68,
-  "estimated_duration_s": 126,
+  "total_bars": 81,
+  "estimated_duration_s": 150,
   "frames": [
     {
       "id": "intro_burst",

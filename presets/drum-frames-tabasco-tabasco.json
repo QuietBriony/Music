@@ -25,13 +25,18 @@
       "bars": 8
     },
     {
+      "section": "chant-tag",
+      "frame_id": "chant_release",
+      "bars": 4
+    },
+    {
       "section": "outro",
       "frame_id": "outro_punch",
       "bars": 2
     }
   ],
-  "total_bars": 22,
-  "estimated_duration_s": 38,
+  "total_bars": 26,
+  "estimated_duration_s": 45,
   "frames": [
     {
       "id": "intro_drive",
