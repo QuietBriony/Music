@@ -183,6 +183,20 @@ Use the cycle report under `C:\workspace\music-stack-worker\reports\...` as the
 handoff into Sonar polish and Band Room review. Details:
 [BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md](BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md).
 
+Prepare the MIDI CLI lane and confirm EP-133 read-only SysEx before transfer:
+
+```powershell
+python -X utf8 scripts/worker-gaming-pipeline.py setup-midi-cli
+python -X utf8 scripts/worker-gaming-pipeline.py ep133-sysex-probe
+```
+
+`setup-midi-cli` installs fixed SendMIDI / ReceiveMIDI builds under the
+repo-external worker tool cache with SHA256 checks. `ep133-sysex-probe` sends
+only the EP-133 device-info SysEx request and writes a local report under
+`C:\workspace\music-stack-worker\reports\ep133-sysex-probe-...`. It confirms
+the MIDI/SysEx lane without transferring samples, deleting sounds, or changing
+projects.
+
 Prepare a non-destructive EP-133 transfer pack:
 
 ```powershell

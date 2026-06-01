@@ -148,6 +148,13 @@
         <h2>Repo Safety</h2>
         <p>pack、録音、cycle report は worker root に置く。Git には review 済み metadata / docs / code だけ。</p>
       </article>
+      <article class="card">
+        <span class="status">Read-only SysEx OK</span>
+        <h2>EP-133 Probe</h2>
+        <p>SendMIDI / ReceiveMIDI で device-info だけ読む。sample / project / pad は書き換えない。</p>
+        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py setup-midi-cli
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-sysex-probe</pre>
+      </article>
     </section>
 
     <section class="grid" aria-label="Main commands">

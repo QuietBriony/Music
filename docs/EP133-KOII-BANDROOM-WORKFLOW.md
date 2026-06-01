@@ -68,6 +68,26 @@ C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-
 
 UR44 は Studio PC 側で `Yamaha Steinberg` / `UR44` として見える状態を目標にする。
 
+## Read-Only SysEx Probe
+
+EP sample tool が不安定なときでも、CLI で EP-133 の MIDI / SysEx 応答だけは自動確認できる:
+
+```powershell
+cd C:\workspace\music-stack\Music
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py setup-midi-cli
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-sysex-probe
+```
+
+`setup-midi-cli` は固定 version / SHA256 検証つきで `SendMIDI` / `ReceiveMIDI` を
+worker tool cache に用意する。`ep133-sysex-probe` はそれらを使い、EP-133 に device-info request だけを送る。
+成功すると `C:\workspace\music-stack-worker\reports\ep133-sysex-probe-...` に report を書く。
+
+安全境界:
+
+- sample、sound slot、project、pad assignment は書き換えない。
+- 取得した serial は report 上で redacted 表示にする。
+- 実際の sample transfer、project backup、restore は引き続き EP sample tool の人間確認で行う。
+
 ## Recommended Operator Run
 
 For the normal worker-gaming loop, start with the non-destructive operator
@@ -179,6 +199,7 @@ Band Room に戻すときは、音の役割で分ける:
 Codex が進められること:
 
 - `check-hardware` で EP-133 / UR44 / MIDI visibility を見る。
+- `ep133-sysex-probe` で EP-133 の read-only MIDI/SysEx 応答を確認する。
 - `ep133-pack` で転送用素材と pad map を作る。
 - EP sample tool を開く。
 - Sonar に取り込むための録音 folder / naming sheet を作る。

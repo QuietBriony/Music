@@ -9,6 +9,7 @@ install packages, write tracked audio, arm DAWs, or edit runtime files.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -22,6 +23,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+import zipfile
 from datetime import datetime
 from pathlib import Path
 
@@ -43,10 +45,27 @@ WORKER_DIRS = (
     "hardware-jam/ep133-inbox",
     "hardware-jam/captures",
     "logs",
+    "tools",
+    "tools/midi-cli",
     "tmp",
 )
 AUDIO_EXTS = {".m4a", ".mp3", ".wav", ".flac", ".aac", ".ogg", ".webm"}
 EP_SAMPLE_TOOL_URL = "https://teenage.engineering/apps/ep-sample-tool"
+EP133_DEVICE_INFO_REQUEST_SYX = bytes([0xF0, 0x00, 0x20, 0x76, 0x33, 0x40, 0x77, 0x14, 0x01, 0xF7])
+MIDI_CLI_TOOLS = {
+    "sendmidi": {
+        "version": "1.3.1",
+        "url": "https://github.com/gbevin/SendMIDI/releases/download/1.3.1/sendmidi-windows-1.3.1.zip",
+        "sha256": "9FA5904014E7E1243392AFFD525244A304E12F6399E1012E5AEE5739B8E4B0E3",
+        "exe": Path("sendmidi-windows-1.3.1") / "sendmidi.exe",
+    },
+    "receivemidi": {
+        "version": "1.4.4",
+        "url": "https://github.com/gbevin/ReceiveMIDI/releases/download/1.4.4/receivemidi-windows-1.4.4.zip",
+        "sha256": "931366C157062053A5401D1193A37B884787CC6BE606B9D44646749B6E125959",
+        "exe": Path("receivemidi-windows-1.4.4") / "receivemidi.exe",
+    },
+}
 
 
 def resolve_ffmpeg() -> str:
@@ -398,6 +417,104 @@ def _capture_command(cmd: list[str | Path], *, timeout: int = 30) -> dict[str, o
 def _first_line(command_result: dict[str, object]) -> str:
     output = str(command_result.get("output") or "")
     return output.splitlines()[0] if output else ""
+
+
+def _find_worker_tool(args: argparse.Namespace, exe_name: str, explicit: str | None = None) -> Path | None:
+    if explicit:
+        path = Path(explicit).expanduser()
+        return path.resolve() if path.exists() else None
+
+    found = shutil.which(exe_name)
+    if found:
+        return Path(found).resolve()
+
+    tools_root = worker_path(args, "tools", "midi-cli")
+    if tools_root.exists():
+        matches = sorted(tools_root.rglob(exe_name))
+        if matches:
+            return matches[-1].resolve()
+    return None
+
+
+def _parse_ep133_device_info_syx(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    data = path.read_bytes()
+    printable = bytes(byte for byte in data if byte not in (0x00, 0xF0, 0xF7) and 32 <= byte <= 126)
+    text = printable.decode("ascii", errors="ignore")
+    start = text.find("product:")
+    if start >= 0:
+        text = text[start:]
+    fields: dict[str, str] = {}
+    for part in text.split(";"):
+        if ":" not in part:
+            continue
+        key, value = part.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+        if key and value:
+            fields[key] = value
+    serial = fields.get("serial")
+    if serial:
+        fields["serial_redacted"] = f"{serial[:2]}...{serial[-4:]}" if len(serial) > 6 else "redacted"
+        fields.pop("serial", None)
+    return fields
+
+
+def _write_ep133_sysex_probe_markdown(report: dict[str, object], md_path: Path) -> None:
+    paths = report.get("paths", {})
+    device_info = report.get("device_info", {})
+    lines = [
+        "# EP-133 SysEx Probe",
+        "",
+        f"- Created: `{report.get('created_at')}`",
+        f"- Device name: `{report.get('device')}`",
+        f"- Status: `{report.get('status')}`",
+        f"- Worker root: `{report.get('worker_root')}`",
+        "",
+        "## Device Info",
+        "",
+    ]
+    if isinstance(device_info, dict) and device_info:
+        for key in ["product", "mode", "base_sku", "sku", "os_version", "sw_version", "bl_version", "serial_redacted"]:
+            if device_info.get(key):
+                lines.append(f"- {key}: `{device_info.get(key)}`")
+    else:
+        lines.append("- No device-info fields were parsed from the response.")
+
+    lines.extend([
+        "",
+        "## Artifacts",
+        "",
+    ])
+    if isinstance(paths, dict):
+        for label, value in paths.items():
+            lines.append(f"- {label}: `{value}`")
+
+    lines.extend([
+        "",
+        "## Safety Boundary",
+        "",
+        "- This probe sends only the EP-133 device-info request SysEx.",
+        "- It does not transfer samples, delete sounds, change projects, or alter Band Room defaults.",
+        "- Sample transfer and project backup remain manual gates in the official EP sample tool.",
+        "",
+        "## Next Manual Gate",
+        "",
+        "1. Use this probe when you need to confirm EP-133 MIDI/SysEx connectivity.",
+        "2. Use `ep133-pack` for local WAV preparation.",
+        "3. Before any real transfer, open the EP sample tool, select EP-133, and back up the current project.",
+        "",
+    ])
+    md_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest().upper()
 
 
 def _important_uninstall_entries(entries: list[dict[str, str]]) -> list[dict[str, str]]:
@@ -1760,6 +1877,202 @@ def command_stack_check(_: argparse.Namespace) -> None:
     run(["node", "scripts/stack-check.mjs"])
 
 
+def command_setup_midi_cli(args: argparse.Namespace) -> None:
+    """Install fixed SendMIDI/ReceiveMIDI builds into the repo-external worker tool cache."""
+    init_dirs(args)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    tools_root = worker_path(args, "tools", "midi-cli")
+    tools_root.mkdir(parents=True, exist_ok=True)
+    report_dir = worker_path(args, "reports", f"midi-cli-setup-{timestamp}")
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    items = []
+    for name, meta in MIDI_CLI_TOOLS.items():
+        version = str(meta["version"])
+        url = str(meta["url"])
+        expected_sha = str(meta["sha256"]).upper()
+        install_dir = tools_root / f"{name}-{version}"
+        zip_path = tools_root / f"{name}-windows-{version}.zip"
+        exe_path = install_dir / Path(meta["exe"])
+        status = "present"
+        if args.force or not exe_path.exists():
+            status = "downloaded"
+            print(f"download {name} {version}: {url}")
+            urllib.request.urlretrieve(url, zip_path)
+            actual_sha = _sha256_file(zip_path)
+            if actual_sha != expected_sha:
+                raise SystemExit(f"SHA256 mismatch for {zip_path}: {actual_sha} != {expected_sha}")
+            if install_dir.exists() and args.force:
+                shutil.rmtree(install_dir)
+            install_dir.mkdir(parents=True, exist_ok=True)
+            with zipfile.ZipFile(zip_path) as archive:
+                archive.extractall(install_dir)
+        elif zip_path.exists() and _sha256_file(zip_path) != expected_sha:
+            raise SystemExit(f"SHA256 mismatch for existing {zip_path}")
+
+        items.append({
+            "name": name,
+            "version": version,
+            "status": status,
+            "url": url,
+            "sha256": expected_sha,
+            "zip": str(zip_path),
+            "install_dir": str(install_dir),
+            "exe": str(exe_path),
+            "exe_exists": exe_path.exists(),
+        })
+
+    report = {
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "worker_root": str(Path(args.worker_root).resolve()),
+        "tools_root": str(tools_root),
+        "items": items,
+        "next_command": (
+            f"{sys.executable} -X utf8 scripts\\worker-gaming-pipeline.py "
+            "ep133-sysex-probe"
+        ),
+    }
+    json_path = report_dir / "midi-cli-setup.json"
+    md_path = report_dir / "midi-cli-setup.md"
+    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    lines = [
+        "# MIDI CLI Setup",
+        "",
+        f"- Created: `{report['created_at']}`",
+        f"- Tools root: `{tools_root}`",
+        "",
+        "## Tools",
+        "",
+    ]
+    for item in items:
+        lines.append(
+            f"- {item['name']} {item['version']}: {item['status']}; "
+            f"exists={item['exe_exists']}; `{item['exe']}`"
+        )
+    lines.extend([
+        "",
+        "## Next",
+        "",
+        "```powershell",
+        "python -X utf8 scripts\\worker-gaming-pipeline.py ep133-sysex-probe",
+        "```",
+        "",
+    ])
+    md_path.write_text("\n".join(lines), encoding="utf-8")
+    print(f"MIDI CLI setup JSON: {json_path}")
+    print(f"MIDI CLI setup Markdown: {md_path}")
+    for item in items:
+        print(f"{item['name']}: {item['status']} - {item['exe']}")
+
+
+def command_ep133_sysex_probe(args: argparse.Namespace) -> None:
+    """Run a read-only EP-133 SysEx connectivity probe through SendMIDI/ReceiveMIDI."""
+    init_dirs(args)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    report_dir = worker_path(args, "reports", f"ep133-sysex-probe-{timestamp}")
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    sendmidi = _find_worker_tool(args, "sendmidi.exe", args.sendmidi)
+    receivemidi = _find_worker_tool(args, "receivemidi.exe", args.receivemidi)
+    if not sendmidi or not receivemidi:
+        raise SystemExit(
+            "sendmidi.exe and receivemidi.exe are required. "
+            "Put them under worker-root\\tools\\midi-cli or pass --sendmidi/--receivemidi."
+        )
+
+    request_syx = report_dir / "ep133-device-info-request.syx"
+    response_syx = report_dir / "ep133-device-info-response.syx"
+    recv_stdout = report_dir / "receivemidi.stdout.txt"
+    recv_stderr = report_dir / "receivemidi.stderr.txt"
+    send_stdout = report_dir / "sendmidi.stdout.txt"
+    send_stderr = report_dir / "sendmidi.stderr.txt"
+    json_path = report_dir / "ep133-sysex-probe.json"
+    md_path = report_dir / "ep133-sysex-probe.md"
+    request_syx.write_bytes(EP133_DEVICE_INFO_REQUEST_SYX)
+
+    send_list = _capture_command([sendmidi, "list"])
+    receive_list = _capture_command([receivemidi, "list"])
+    (report_dir / "sendmidi-list.txt").write_text(str(send_list.get("output") or "") + "\n", encoding="utf-8")
+    (report_dir / "receivemidi-list.txt").write_text(str(receive_list.get("output") or "") + "\n", encoding="utf-8")
+
+    flags = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0
+    process = None
+    with recv_stdout.open("w", encoding="utf-8", errors="replace") as stdout, recv_stderr.open(
+        "w", encoding="utf-8", errors="replace"
+    ) as stderr:
+        try:
+            process = subprocess.Popen(
+                [str(receivemidi), "dev", args.device, "hex", "syx", "syf", str(response_syx)],
+                cwd=str(ROOT),
+                stdout=stdout,
+                stderr=stderr,
+                creationflags=flags,
+            )
+            time.sleep(max(0.1, args.warmup_seconds))
+            send_result = subprocess.run(
+                [str(sendmidi), "dev", args.device, "syf", str(request_syx)],
+                cwd=str(ROOT),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=max(5, int(args.send_timeout_seconds)),
+            )
+            send_stdout.write_text(send_result.stdout or "", encoding="utf-8")
+            send_stderr.write_text(send_result.stderr or "", encoding="utf-8")
+            time.sleep(max(0.1, args.capture_seconds))
+        finally:
+            if process and process.poll() is None:
+                process.terminate()
+                try:
+                    process.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    process.wait(timeout=2)
+
+    response_bytes = response_syx.stat().st_size if response_syx.exists() else 0
+    status = "OK" if response_bytes > 0 else "NO_RESPONSE"
+    report = {
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "status": status,
+        "device": args.device,
+        "worker_root": str(Path(args.worker_root).resolve()),
+        "tools": {
+            "sendmidi": str(sendmidi),
+            "receivemidi": str(receivemidi),
+        },
+        "device_lists": {
+            "sendmidi": send_list,
+            "receivemidi": receive_list,
+        },
+        "response_bytes": response_bytes,
+        "device_info": _parse_ep133_device_info_syx(response_syx),
+        "paths": {
+            "report_dir": str(report_dir),
+            "json": str(json_path),
+            "markdown": str(md_path),
+            "request_syx": str(request_syx),
+            "response_syx": str(response_syx),
+            "send_stdout": str(send_stdout),
+            "send_stderr": str(send_stderr),
+            "receive_stdout": str(recv_stdout),
+            "receive_stderr": str(recv_stderr),
+        },
+        "safety_policy": (
+            "Read-only probe. Sends only the EP-133 device-info SysEx request; "
+            "does not transfer samples, delete sounds, change projects, or alter Band Room defaults."
+        ),
+    }
+    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _write_ep133_sysex_probe_markdown(report, md_path)
+    print(f"EP-133 SysEx probe status: {status}")
+    print(f"EP-133 response bytes: {response_bytes}")
+    print(f"EP-133 SysEx probe JSON: {json_path}")
+    print(f"EP-133 SysEx probe Markdown: {md_path}")
+    if args.open_report and sys.platform.startswith("win"):
+        os.startfile(md_path)  # type: ignore[attr-defined]
+
+
 def command_check_hardware(args: argparse.Namespace) -> None:
     """Inspect attached music hardware that Windows can see."""
     init_dirs(args)
@@ -1928,6 +2241,20 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("check-hardware", help="inspect attached EP-133, UR44, MIDI, and audio devices")
     p.set_defaults(func=command_check_hardware)
+
+    p = sub.add_parser("setup-midi-cli", help="install fixed SendMIDI/ReceiveMIDI builds under the worker tool cache")
+    p.add_argument("--force", action="store_true", help="redownload and re-extract MIDI CLI tools")
+    p.set_defaults(func=command_setup_midi_cli)
+
+    p = sub.add_parser("ep133-sysex-probe", help="run a read-only EP-133 MIDI/SysEx connectivity probe")
+    p.add_argument("--device", default="EP-133", help="MIDI device name to match")
+    p.add_argument("--sendmidi", help="explicit path to sendmidi.exe")
+    p.add_argument("--receivemidi", help="explicit path to receivemidi.exe")
+    p.add_argument("--warmup-seconds", type=float, default=0.8, help="time to let ReceiveMIDI attach before sending")
+    p.add_argument("--capture-seconds", type=float, default=4.0, help="time to capture the EP-133 response after sending")
+    p.add_argument("--send-timeout-seconds", type=float, default=10.0, help="timeout for the SendMIDI request")
+    p.add_argument("--open-report", action="store_true", help="open the Markdown probe report after writing it on Windows")
+    p.set_defaults(func=command_ep133_sysex_probe)
 
     p = sub.add_parser("snapshot-setup", help="write a reproducible Music PC setup snapshot outside the repo")
     p.add_argument("--tag", default="worker-gaming", help="snapshot file prefix")
