@@ -397,6 +397,14 @@ def add_clip(target: np.ndarray, clip: np.ndarray, start: int, *, gain: float, p
     if start >= len(target):
         return
     clip = ensure_stereo(clip)
+    # v303: clamp a pre-roll start (< 0) to the buffer head. Notes/clips can
+    # be scheduled a few ms before t=0 by negative micro-timing or a bass
+    # push; without this the negative index wraps the slice and target/clip
+    # shapes mismatch — the renderer crashed on songs with such an event
+    # (e.g. tabasco/tabasco). The hit's attack simply lands at 0 instead of
+    # a few ms early, which is imperceptible.
+    if start < 0:
+        start = 0
     end = min(len(target), start + len(clip))
     if end <= start:
         return
@@ -692,6 +700,11 @@ def add_note(
     start = int(round(start_s * SR))
     if start >= len(target):
         return
+    # v303: clamp a pre-roll start (< 0, e.g. bass push before t=0) to the
+    # buffer head. A negative index here wraps the slice and crashes the
+    # add (shape mismatch) — hit on tabasco/tabasco. Sub-ms attack shift.
+    if start < 0:
+        start = 0
     n = max(1, int(round(dur_s * SR)))
     end = min(len(target), start + n)
     n = end - start
