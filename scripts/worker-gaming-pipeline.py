@@ -803,6 +803,61 @@ def _write_ep133_pack_markdown(pack: dict[str, object], md_path: Path) -> None:
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _write_ep133_first_pass_markdown(session: dict[str, object], md_path: Path) -> None:
+    paths = session.get("paths", {})
+    lines = [
+        "# EP-133 First Pass B Loops",
+        "",
+        f"- Band/song: `{session.get('band')}/{session.get('song')}`",
+        f"- Created: `{session.get('created_at')}`",
+        f"- Selected folder: `{paths.get('selected_dir', '')}`",
+        f"- Source pack: `{paths.get('ep133_pack_dir', '')}`",
+        "",
+        "## Purpose",
+        "",
+        "Use this smaller folder for the first physical transfer test. Load only the four AI recreation loops before moving on to the full one-shot pack.",
+        "",
+        "## Before Transfer",
+        "",
+        "- [ ] EP sample tool can see `EP-133`.",
+        "- [ ] Back up the current EP-133 project/sounds in the EP sample tool.",
+        "- [ ] Confirm the device project/group you are willing to use for this test.",
+        "",
+        "## Transfer Targets",
+        "",
+        "| Done | Suggested pad | Role | File |",
+        "|---|---|---|---|",
+    ]
+    for entry in session.get("entries", []):
+        if not isinstance(entry, dict):
+            continue
+        lines.append(
+            f"| [ ] | `{entry.get('slot')}` | {entry.get('role')} | `{entry.get('file')}` |"
+        )
+
+    lines.extend([
+        "",
+        "## After Transfer",
+        "",
+        "- [ ] Tap pads B01-B04 and confirm audio.",
+        "- [ ] Try punch-in FX lightly.",
+        "- [ ] Do not overwrite more sounds until the backup is confirmed.",
+        "- [ ] Record what actually went to each pad in the Sonar/EP-133 handoff report.",
+        "",
+        "## Safety",
+        "",
+        "- This command only copies local WAV files into a smaller staging folder.",
+        "- It does not write to EP-133, change projects, alter DAW state, or change Band Room defaults.",
+        "",
+        "## Paths",
+        "",
+    ])
+    for label, value in paths.items():
+        lines.append(f"- {label}: `{value}`")
+
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def _latest_child_dir(root: Path, prefix: str) -> Path | None:
     if not root.exists():
         return None
@@ -983,6 +1038,8 @@ def _operator_artifacts(args: argparse.Namespace) -> dict[str, str]:
         "latest_ep133_pack": str(latest_ep_pack or ""),
         "latest_ep133_transfer_dir": str(latest_ep_pack / "transfer") if latest_ep_pack else "",
         "latest_ep133_manifest": str(latest_ep_pack / "ep133-transfer-manifest.json") if latest_ep_pack else "",
+        "latest_ep133_first_pass_dir": str(latest_ep_pack / "first-pass-B-loops") if latest_ep_pack else "",
+        "latest_ep133_first_pass_report": str(latest_ep_pack / "first-pass-B-loops" / "EP133-first-pass-B-loops.md") if latest_ep_pack else "",
         "latest_sonar_ep133_handoff": str(latest_handoff or ""),
         "latest_sonar_ep133_handoff_report": str(latest_handoff / "sonar-ep133-handoff.md") if latest_handoff else "",
         "latest_setup_snapshot_json": str(latest_snapshot_json or ""),
@@ -1599,6 +1656,76 @@ def command_ep133_pack(args: argparse.Namespace) -> None:
         os.startfile(EP_SAMPLE_TOOL_URL)  # type: ignore[attr-defined]
 
 
+def command_ep133_first_pass(args: argparse.Namespace) -> None:
+    """Stage a small first-transfer folder from an existing EP-133 pack."""
+    init_dirs(args)
+    ep_root = worker_path(args, "hardware-jam", "ep133-inbox", args.band, args.song)
+    ep_pack_dir = Path(args.ep133_pack).resolve() if args.ep133_pack else _latest_child_dir(ep_root, "ep133-pack-")
+    if not ep_pack_dir:
+        raise SystemExit("no EP-133 pack found; run ep133-pack first")
+
+    manifest_path = ep_pack_dir / "ep133-transfer-manifest.json"
+    manifest = _read_json(manifest_path)
+    entries = manifest.get("entries", []) if isinstance(manifest, dict) else []
+    wanted_slots = {slot.upper() for slot in args.slots}
+    selected_entries = [
+        entry for entry in entries
+        if isinstance(entry, dict) and str(entry.get("slot", "")).upper() in wanted_slots
+    ]
+    if not selected_entries:
+        raise SystemExit(f"no matching slots found in {manifest_path}: {', '.join(args.slots)}")
+
+    transfer_dir = ep_pack_dir / "transfer"
+    selected_dir = ep_pack_dir / args.output_name
+    selected_dir.mkdir(parents=True, exist_ok=True)
+    copied_entries: list[dict[str, object]] = []
+    for entry in selected_entries:
+        filename = str(entry.get("file") or "")
+        src = transfer_dir / filename
+        if not src.exists():
+            print(f"skip missing transfer file: {src}")
+            continue
+        dest = selected_dir / filename
+        shutil.copy2(src, dest)
+        copied = dict(entry)
+        copied["path"] = str(dest)
+        copied_entries.append(copied)
+
+    if not copied_entries:
+        raise SystemExit("no EP-133 first-pass files were copied")
+
+    session = {
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "band": args.band,
+        "song": args.song,
+        "slots": args.slots,
+        "entries": copied_entries,
+        "paths": {
+            "ep133_pack_dir": str(ep_pack_dir),
+            "manifest": str(manifest_path),
+            "transfer_dir": str(transfer_dir),
+            "selected_dir": str(selected_dir),
+            "json": str(selected_dir / "EP133-first-pass-B-loops.json"),
+            "markdown": str(selected_dir / "EP133-first-pass-B-loops.md"),
+        },
+        "policy": (
+            "Local staging only. This command does not write to EP-133, change projects, "
+            "alter DAW state, or change Band Room defaults."
+        ),
+    }
+    json_path = selected_dir / "EP133-first-pass-B-loops.json"
+    md_path = selected_dir / "EP133-first-pass-B-loops.md"
+    json_path.write_text(json.dumps(session, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _write_ep133_first_pass_markdown(session, md_path)
+    print(f"EP-133 first-pass folder: {selected_dir}")
+    print(f"EP-133 first-pass JSON: {json_path}")
+    print(f"EP-133 first-pass Markdown: {md_path}")
+    if args.open_folder and sys.platform.startswith("win"):
+        os.startfile(selected_dir)  # type: ignore[attr-defined]
+    if args.open_sample_tool and sys.platform.startswith("win"):
+        os.startfile(EP_SAMPLE_TOOL_URL)  # type: ignore[attr-defined]
+
+
 def command_sonar_ep133_handoff(args: argparse.Namespace) -> None:
     """Write a local Sonar/EP-133/Band Room operator checklist outside Git."""
     init_dirs(args)
@@ -1784,6 +1911,14 @@ def command_operator_run(args: argparse.Namespace) -> None:
             _operator_self_command(args, "ep133-pack", args.band, args.song, "--include-ai-recreation"),
             600,
         ))
+        if args.no_ep133_first_pass:
+            skipped.append({"purpose": "ep133-first-pass", "reason": "--no-ep133-first-pass was specified."})
+        else:
+            steps.append((
+                "ep133-first-pass",
+                _operator_self_command(args, "ep133-first-pass", args.band, args.song),
+                120,
+            ))
 
     if args.no_handoff:
         skipped.append({"purpose": "sonar-ep133-handoff", "reason": "--no-handoff was specified."})
@@ -2314,6 +2449,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--open-sample-tool", action="store_true", help="open the official EP sample tool after writing the pack")
     p.set_defaults(func=command_ep133_pack)
 
+    p = sub.add_parser("ep133-first-pass", help="stage only selected EP-133 pack slots for a cautious first transfer")
+    p.add_argument("band")
+    p.add_argument("song")
+    p.add_argument("--ep133-pack", help="explicit ep133-pack directory; defaults to the latest pack for band/song")
+    p.add_argument("--slots", nargs="+", default=["B01", "B02", "B03", "B04"], help="pack slots to copy into the first-pass folder")
+    p.add_argument("--output-name", default="first-pass-B-loops", help="folder name created under the EP-133 pack")
+    p.add_argument("--open-folder", action="store_true", help="open the staged folder after writing it on Windows")
+    p.add_argument("--open-sample-tool", action="store_true", help="open the official EP sample tool after writing the staged folder")
+    p.set_defaults(func=command_ep133_first_pass)
+
     p = sub.add_parser("sonar-ep133-handoff", help="write a Sonar/EP-133/Band Room operator checklist outside Git")
     p.add_argument("band")
     p.add_argument("song")
@@ -2328,6 +2473,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--force-recreation", action="store_true", help="rerun the AI recreation cycle even when outputs exist")
     p.add_argument("--no-midi-probe", action="store_true", help="skip SendMIDI/ReceiveMIDI setup and EP-133 read-only SysEx probe")
     p.add_argument("--no-ep133-pack", action="store_true", help="skip EP-133 transfer pack generation")
+    p.add_argument("--no-ep133-first-pass", action="store_true", help="skip the reduced B01-B04 first-transfer staging folder")
     p.add_argument("--no-handoff", action="store_true", help="skip the Sonar/EP-133 handoff checklist")
     p.add_argument("--no-snapshot", action="store_true", help="skip setup snapshot capture")
     p.add_argument("--snapshot-tag", default="worker-gaming", help="tag prefix for snapshot-setup")
