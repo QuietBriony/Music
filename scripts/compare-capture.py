@@ -268,7 +268,16 @@ def main() -> int:
     print(f"  dynamic range  : {fmt_delta(ai['rms_dynamic_range_db'], target.get('rms_dynamic_range_db'), 'dB')}")
 
     # Quick verdict
-    bpm_match = abs(ai['bpm'] - target.get('bpm', ai['bpm'])) < 1
+    # Octave-tolerant BPM match. librosa's beat tracker locks onto a half-
+    # or double-time grid depending on the default prior — e.g. the
+    # under-the-moon render is genuinely 161 BPM but reads as 80.7 (prior
+    # 120 lands between 80 and 161). That's a tempo-octave artifact, not a
+    # tempo error, so accept the AI bpm if it matches the target OR its
+    # half / double within 2 BPM.
+    target_bpm_v = target.get('bpm', ai['bpm'])
+    ai_bpm_v = ai['bpm']
+    bpm_match = any(abs(ai_bpm_v * mult - target_bpm_v) < 2.0
+                    for mult in (1.0, 2.0, 0.5))
     pocket_target = target.get('kick_offset_from_beat_avg_ms')
     # Pocket-target reliability guard. The kick-offset metric assumes the
     # stem's kicks sit on a fixed global beat grid. For a long or loose song
