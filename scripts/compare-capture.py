@@ -270,7 +270,19 @@ def main() -> int:
     # Quick verdict
     bpm_match = abs(ai['bpm'] - target.get('bpm', ai['bpm'])) < 1
     pocket_target = target.get('kick_offset_from_beat_avg_ms')
-    pocket_match = (pocket_target is not None
+    # Pocket-target reliability guard. The kick-offset metric assumes the
+    # stem's kicks sit on a fixed global beat grid. For a long or loose song
+    # — or one with a long kick-less intro (sister: first kick at 62.8s,
+    # std 565ms vs a 511ms beat) — the kicks decouple from the grid and the
+    # "pocket" is just scatter. When the target's kick scatter exceeds ~40%
+    # of a beat, the pocket target carries no signal, so we report n/a
+    # instead of scoring the AI a false OFF against noise.
+    pocket_std = target.get('kick_offset_from_beat_std_ms')
+    target_bpm = target.get('bpm') or ai['bpm'] or 0
+    beat_ms = (60000.0 / target_bpm) if target_bpm else 0.0
+    pocket_reliable = (pocket_std is None or beat_ms <= 0
+                       or pocket_std <= 0.4 * beat_ms)
+    pocket_match = (pocket_reliable and pocket_target is not None
                     and abs(ai['kick_offset_from_beat_avg_ms'] - pocket_target) < 15)
     centroid_target = target.get('centroid_avg_hz')
     centroid_match = (centroid_target is not None
@@ -289,7 +301,11 @@ def main() -> int:
                        and abs(ai['tempo_stability_pct'] - tempo_stability_target) < 2.0)
     print()
     print(f"  BPM match              : {'OK' if bpm_match else 'OFF'}")
-    print(f"  Pocket within 15 ms    : {'OK' if pocket_match else 'OFF'}")
+    if not pocket_reliable:
+        print(f"  Pocket within 15 ms    : n/a (target kick scatter "
+              f"±{pocket_std:.0f}ms > 0.4 beat — pocket undefined for this stem)")
+    else:
+        print(f"  Pocket within 15 ms    : {'OK' if pocket_match else 'OFF'}")
     print(f"  Tempo stability ±2 %-pt: {'OK' if stability_match else 'OFF'}")
     print(f"  Brightness within 30 %  : {'OK' if centroid_match else 'OFF'}")
     print(f"  Rolloff within 30 %     : {'OK' if rolloff_match else 'OFF'}")
