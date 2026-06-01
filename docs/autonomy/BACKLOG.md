@@ -150,11 +150,18 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   polyphony も「同時起動音」録音で RMS spike / dynamic range を測定できる
   (voice-count は in-page telemetry tap 追加が必要)。他 pill (funk/jazz/techno)
   の capture 横展開は任意。
-  **(b) measured tuning**: harness findings (lofi が Nujabes より遅く straight、
-  funk の広い pocket 等) を埋めるかは taste 判断。閉じる場合は drum-frames-*.json /
-  genre-flavor.js の PR + 試聴 human-gate (studio-surface or user)。harness で drift が
-  閉じるのを数値証明してから試聴に出す。focus-listening として現 calmer 設計が正解の
-  可能性もあるので、tuning 方向は user 指定待ち。
+  **方法論的境界 (2026-06-01 検証)**: GENRE pill は generative brain への bias で
+  `EngineParams.mode` を hard-set しない (funk capture 試行で pill=funk pressed でも
+  mode=lofi のまま near-silent)。→ Phase 2 capture は engine の live blend を測るので
+  あって純 pill isolation ではない。lofi capture が成功したのは engine が既に lofi を
+  render していたため。録音前に mode===pill + frameId set + audible RMS の engagement
+  check が必須 (`docs/HAZAMA-FM-MEASUREMENT.md` §Capture caveat)。Phase 1 が per-pill
+  isolated truth、Phase 2 は live-blend reality check という役割分担。
+  **(b) measured tuning**: codex が lofi/funk/techno を tune 済 → harness 再測定で
+  全 drum pill **drift 0** (target 内) を確認 (2026-06-01)。残る tuning は taste 判断。
+  閉じる場合は drum-frames-*.json / genre-flavor.js の PR + 試聴 human-gate
+  (studio-surface or user)。focus-listening として現設計が正解の可能性もあるので、
+  さらなる tuning 方向は user 指定待ち。
   完了条件: Phase 2 capture script が `docs/hazama-fm-design-spec.json` と実出力を
   diff 出力 + stack-check 0 BAD。tuning は方向確定 → PR → 試聴確認ごとに 1 件ずつ。
 
