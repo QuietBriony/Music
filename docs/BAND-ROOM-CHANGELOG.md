@@ -1,12 +1,30 @@
-# Band Room — Changelog (v65 → v300 compact)
+# Band Room — Changelog (v65 → v301 compact)
 
-Current compact release: v300.
+Current compact release: v301.
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v301 compact - Human Fly AI body pass
+
+Band Room runtime / worker-gaming measurement pass.
+
+Human Fly AI recreation now targets the current listening complaint directly:
+the prior worker-gaming render was too bright, too separated, and still leaned
+toward "mostly drums." The AI-only instrument bus uses less high shelf/exciter
+air and a slightly firmer glue compressor, the cramps-punk cymbal layer is
+softer, and the default AI mix moves drums back while bass, guitar, and chords
+come forward. The offline AI recreation renderer is synced to the same balance
+so worker-gaming reports measure the sound we are actually tuning. The latest
+worker-gaming pass reports `mix.wav` at centroid `3044.9 Hz`, DR `11.79 dB`,
+peak `0.85065`, and `pass_basic_audio_check: true`.
+
+- `band-room.js?v=br-177`, `hazama-fm-v301`.
 
 ---
 

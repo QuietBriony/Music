@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-176-ai-stability";
+  const BANDROOM_APP_VERSION = "br-177-human-fly-body";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -299,7 +299,7 @@
   // without flattening drum transients (12 ms attack, 16% parallel wet).
   function makeInstrumentPolishBus(dest) {
     const input  = new Tone.Gain(1);
-    // v274 → v284 → v286: high shelf retuned twice.
+    // v274 → v284 → v286 → v301: high shelf retuned for Human Fly.
     //   v274: +3 dB above 4.2 kHz — too high, boosted near-silence.
     //   v284: shelf 4200 → 3000 Hz — fixed v274 dark, but v285's offline
     //         renderer measurement showed AI brightness +863 Hz and
@@ -308,19 +308,22 @@
     //         that was already at reference brightness.
     //   v286: shelf 3000 → 3600 Hz — meets the prior shelf at the
     //         midpoint, expecting brightness/rolloff to come down ~half-
-    //         way toward target without re-darkening. Boost amount
-    //         unchanged at +3 dB (single-knob discipline). Stems mode
-    //         bypasses this bus, so 原音 unaffected.
-    const eq     = new Tone.EQ3({ low: -0.8, mid: -0.6, high: 3.0, lowFrequency: 160, highFrequency: 3600 });
+    //         way toward target without re-darkening.
+    //   v301: Human Fly recreation-cycle measured too bright (3785 Hz vs
+    //         2402 Hz target) and too unglued (DR 16.49 dB vs 8.73 dB).
+    //         Reduce the AI-only shelf/exciter and restore a little glue
+    //         while leaving 原音 stems outside this bus.
+    const eq     = new Tone.EQ3({ low: -0.6, mid: -0.4, high: 1.5, lowFrequency: 160, highFrequency: 4200 });
     // v275: comp loosened to preserve dynamic range (measurement-driven).
     // Capture vs target showed DR 12.3 dB vs 33.6 dB (-21 dB gap). v271
     // section dynamics (5 dB swing) addressed the section layer, but the
     // glue comp was squashing per-bar transients flat. Threshold -20 → -14
     // (6 dB more headroom before catching) + ratio 2.2 → 1.8 (gentler when
     // it does catch). Net effect: louder peaks pass through, quiet bits
-    // stay quiet, "song breathing" returns. Still keeps SOME glue so the
-    // synth band doesn't read as wildly inconsistent.
-    const comp   = new Tone.Compressor({ threshold: -14, ratio: 1.8, attack: 0.012, release: 0.18, knee: 6 });
+    // stay quiet, "song breathing" returns. v301 nudges the glue back in
+    // for Human Fly so the AI band reads as one performance, not separate
+    // drum/bass/other layers.
+    const comp   = new Tone.Compressor({ threshold: -16, ratio: 2.05, attack: 0.014, release: 0.18, knee: 6 });
     const sat    = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });
     const satWet = new Tone.Gain(0.16);   // parallel saturated blend
     const satDry = new Tone.Gain(0.92);   // parallel clean path
@@ -353,7 +356,7 @@
       wet: 1
     });
     const exciteOut   = new Tone.Filter({ frequency: 3500, type: "highpass", Q: 0.5 });
-    const exciteWet   = new Tone.Gain(mobileAiDiet ? 0.04 : 0.10);
+    const exciteWet   = new Tone.Gain(mobileAiDiet ? 0.025 : 0.06);
 
     input.connect(eq);
     eq.connect(comp);
@@ -372,7 +375,7 @@
     return input;
   }
 
-  // v220 / v271: section role → instrumentBus gain target. Real bands shape
+  // v220 / v271 / v301: section role → instrumentBus gain target. Real bands shape
   // song dynamics across sections — verse settled, chorus lifted,
   // intro / break dropped further for contrast.
   //
@@ -381,21 +384,21 @@
   // structure was the missing layer. Expanding the per-role gain spread
   // makes the verse-vs-chorus contrast clearly audible and pulls intros/
   // breaks back enough to feel dramatic without compromising the glue
-  // comp (we drop BELOW the comp threshold rather than push above it,
-  // so no pumping artifacts on the loud side).
+  // comp. v301 narrows the deepest dips after the Human Fly render showed
+  // the AI band still reading too separated in quiet sections.
   function sectionGainForRole(role) {
     const ROLE_GAIN = {
-      intro:  0.62,  // -4.2 dB — atmospheric entrance
-      verse:  0.80,  // -1.9 dB — settled, makes room for vocal/melody
-      comp:   0.95,  // neutral comping
-      recap:  1.05,  // +0.4 dB chorus / lifted (small push above neutral; comp catches transients)
-      break:  0.58,  // -4.7 dB — dramatic dip, the "song breathing" moment
-      outro:  0.72,  // -2.9 dB — winding down
-      head:   0.95,  // neutral
-      post:   0.85,  // -1.4 dB — settling after a peak
-      swell:  0.82   // -1.7 dB — building anticipation
+      intro:  0.68,  // -3.3 dB — atmospheric entrance with body
+      verse:  0.84,  // -1.5 dB — settled, makes room for vocal/melody
+      comp:   0.96,  // near-neutral comping
+      recap:  1.02,  // +0.2 dB chorus / lifted without widening DR too far
+      break:  0.66,  // -3.6 dB — dramatic dip, but not a hole
+      outro:  0.76,  // -2.4 dB — winding down
+      head:   0.96,  // near-neutral
+      post:   0.88,  // -1.1 dB — settling after a peak
+      swell:  0.86   // -1.3 dB — building anticipation
     };
-    return ROLE_GAIN[role] || 0.95;  // unknown role → mild quieter default
+    return ROLE_GAIN[role] || 0.96;  // unknown role → near-neutral default
   }
 
   // v220: ramp the instrumentBus gain to the section's target over 0.5s.
@@ -517,11 +520,12 @@
     // drums 0.58→0.52 (back off the v259 acoustic punch). Voice stays OFF
     // (v254 intentional). Stems mode bypasses all of this — 原音 untouched.
     // v298 phone pass: pull drums back and move the AI body parts forward.
-    drumBus = new Tone.Gain(0.48).connect(drumPan);
-    bassBus = new Tone.Gain(0.72).connect(bassPan);
-    guitarBus = new Tone.Gain(0.76).connect(guitarPan);
+    // v301 Human Fly body pass: one more small move away from "mostly drums".
+    drumBus = new Tone.Gain(0.44).connect(drumPan);
+    bassBus = new Tone.Gain(0.80).connect(bassPan);
+    guitarBus = new Tone.Gain(0.82).connect(guitarPan);
     voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
-    chordBus = new Tone.Gain(0.56).connect(chordPan);
+    chordBus = new Tone.Gain(0.62).connect(chordPan);
     clickBus = new Tone.Gain(0.35).connect(clickPan);
 
     // Original-stem buses → per-stem EQ → masterGain
@@ -1319,8 +1323,8 @@
       label: "Cramps punk (Human Fly / boomy / rockabilly slap)",
       kick:  { decay: 0.40, octaves: 5.5,  vol: -7,  clickVol: -36 },
       snare: { decay: 0.22, hpFreq: 800,   vol: -10, rimVol: -22 },
-      hat:   { decay: 0.05, bpFreq: 5200,  vol: -24 },
-      crash: { decay: 1.6,  vol: -15 },
+      hat:   { decay: 0.05, bpFreq: 5000,  vol: -27 },
+      crash: { decay: 1.45, vol: -18 },
       // Distorted slap bass, square stab chord, snarled vocal
       bass:  { filterFreq: 380, filterQ: 1.8, drive: 0.18, driveWet: 0.70,
                envRelease: 0.10, postLpFreq: 1200, portamento: 0.02 },
@@ -6906,7 +6910,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
-  const MIX_PREFS_VERSION = "v298-human-fly-presence";
+  const MIX_PREFS_VERSION = "v301-human-fly-body";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -7011,6 +7015,12 @@
     "br-vol-bass":   { old: "66", current: "72" },
     "br-vol-guitar": { old: "70", current: "76" },
     "br-vol-chords": { old: "52", current: "56" }
+  };
+  const V301_HUMAN_FLY_BODY_MIGRATION = {
+    "br-vol-drums":  { old: "48", current: "44" },
+    "br-vol-bass":   { old: "72", current: "80" },
+    "br-vol-guitar": { old: "76", current: "82" },
+    "br-vol-chords": { old: "56", current: "62" }
   };
 
   function readRawStoredPrefs() {
@@ -7120,6 +7130,12 @@
       }
     });
     Object.entries(V298_HUMAN_FLY_PRESENCE_MIGRATION).forEach(([id, rule]) => {
+      if (String(next.sliders[id]) === rule.old) {
+        next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
+    Object.entries(V301_HUMAN_FLY_BODY_MIGRATION).forEach(([id, rule]) => {
       if (String(next.sliders[id]) === rule.old) {
         next.sliders[id] = rule.current;
         changed = true;

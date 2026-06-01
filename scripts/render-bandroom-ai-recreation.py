@@ -253,12 +253,12 @@ def normalize_stems(
 
 
 def frequency_tilt(audio: np.ndarray) -> np.ndarray:
-    """Approximate Band Room v286 instrumentBus EQ for deterministic offline render.
+    """Approximate Band Room v301 instrumentBus EQ for deterministic offline render.
 
     Mirrors makeInstrumentPolishBus's EQ3 in band-room.js:
-      low: -0.8 dB below 160 Hz
-      mid: -0.6 dB from 160 Hz to 3600 Hz (v286: was 3000 Hz in v284/v285)
-      high: +3.0 dB above 3600 Hz (v286 EQ recenter — see BAND-ROOM-CHANGELOG)
+      low: -0.6 dB below 160 Hz
+      mid: -0.4 dB from 160 Hz to 4200 Hz
+      high: +1.5 dB above 4200 Hz
     Keeping this in sync with band-room.js is what makes the offline
     renderer measurement-faithful. Bump together when the EQ corner moves.
     """
@@ -266,14 +266,108 @@ def frequency_tilt(audio: np.ndarray) -> np.ndarray:
     spectrum = np.fft.rfft(audio, axis=0)
     freqs = np.fft.rfftfreq(len(audio), 1.0 / SR)
     gain_db = np.zeros_like(freqs, dtype=np.float32)
-    gain_db[freqs < 160.0] += -0.8
-    gain_db[(freqs >= 160.0) & (freqs < 3600.0)] += -0.6
-    high = freqs >= 3600.0
-    gain_db[high] += 3.0
-    transition = (freqs >= 3000.0) & (freqs < 3600.0)
-    gain_db[transition] += 3.0 * ((freqs[transition] - 3000.0) / 600.0)
+    gain_db[freqs < 160.0] += -0.6
+    gain_db[(freqs >= 160.0) & (freqs < 4200.0)] += -0.4
+    high = freqs >= 4200.0
+    gain_db[high] += 1.5
+    transition = (freqs >= 3600.0) & (freqs < 4200.0)
+    gain_db[transition] += 1.5 * ((freqs[transition] - 3600.0) / 600.0)
     gain = np.power(10.0, gain_db / 20.0)[:, None]
     return np.asarray(np.fft.irfft(spectrum * gain, n=len(audio), axis=0), dtype=np.float32)
+
+
+def soft_glue_compress(
+    audio: np.ndarray,
+    *,
+    threshold_db: float = -18.0,
+    ratio: float = 2.05,
+    attack_s: float = 0.014,
+    release_s: float = 0.18,
+) -> np.ndarray:
+    """Frame-envelope compressor matching the v301 AI-bus glue direction."""
+    audio = ensure_stereo(audio)
+    if len(audio) == 0:
+        return audio
+    mono = np.sqrt(np.mean(np.square(audio), axis=1))
+    hop = 512
+    frame = 2048
+    frame_times: list[float] = []
+    levels: list[float] = []
+    for start in range(0, len(mono), hop):
+        segment = mono[start : min(len(mono), start + frame)]
+        levels.append(float(np.sqrt(np.mean(np.square(segment)))) if len(segment) else 0.0)
+        frame_times.append(min(len(mono) - 1, start + frame * 0.5))
+    if not levels:
+        return audio
+
+    frame_rate = SR / hop
+    attack_coeff = math.exp(-1.0 / max(1.0, attack_s * frame_rate))
+    release_coeff = math.exp(-1.0 / max(1.0, release_s * frame_rate))
+    env = 0.0
+    smoothed: list[float] = []
+    for level in levels:
+        coeff = attack_coeff if level > env else release_coeff
+        env = coeff * env + (1.0 - coeff) * level
+        smoothed.append(env)
+
+    env_db = 20.0 * np.log10(np.maximum(np.asarray(smoothed, dtype=np.float32), 1e-9))
+    over_db = np.maximum(env_db - threshold_db, 0.0)
+    gain_db = -over_db * (1.0 - (1.0 / ratio))
+    frame_gain = np.power(10.0, gain_db / 20.0)
+    sample_gain = np.interp(
+        np.arange(len(audio), dtype=np.float32),
+        np.asarray(frame_times, dtype=np.float32),
+        frame_gain,
+        left=float(frame_gain[0]),
+        right=float(frame_gain[-1]),
+    )
+    return np.asarray(audio * sample_gain[:, None], dtype=np.float32)
+
+
+def upward_body_glue(
+    audio: np.ndarray,
+    *,
+    floor_ratio: float = 0.70,
+    max_gain_db: float = 9.0,
+) -> np.ndarray:
+    """Lift low-level body/tails so the offline mix behaves like a glued take."""
+    audio = ensure_stereo(audio)
+    if len(audio) == 0:
+        return audio
+    mono = np.sqrt(np.mean(np.square(audio), axis=1))
+    hop = 512
+    frame = 2048
+    frame_times: list[float] = []
+    levels: list[float] = []
+    for start in range(0, len(mono), hop):
+        segment = mono[start : min(len(mono), start + frame)]
+        levels.append(float(np.sqrt(np.mean(np.square(segment)))) if len(segment) else 0.0)
+        frame_times.append(min(len(mono) - 1, start + frame * 0.5))
+    frame_levels = np.asarray(levels, dtype=np.float32)
+    active = frame_levels[frame_levels > 1e-5]
+    if len(active) == 0:
+        return audio
+    floor = float(np.percentile(active, 55)) * floor_ratio
+    gains = np.ones_like(frame_levels)
+    mask = (frame_levels > 1e-6) & (frame_levels < floor)
+    gains[mask] = floor / frame_levels[mask]
+    gains = np.minimum(gains, 10.0 ** (max_gain_db / 20.0))
+    sample_gain = np.interp(
+        np.arange(len(audio), dtype=np.float32),
+        np.asarray(frame_times, dtype=np.float32),
+        gains,
+        left=float(gains[0]),
+        right=float(gains[-1]),
+    )
+    return np.asarray(audio * sample_gain[:, None], dtype=np.float32)
+
+
+def normalize_audio(audio: np.ndarray, *, target_rms: float = 0.093, limit: float = 0.92) -> np.ndarray:
+    audio = ensure_stereo(audio)
+    current_rms = max(rms(audio), 1e-12)
+    current_peak = max(peak(audio), 1e-12)
+    scale = min(target_rms / current_rms, limit / current_peak)
+    return np.asarray(audio * scale, dtype=np.float32)
 
 
 def stereo_widen(audio: np.ndarray, amount: float = 0.58) -> np.ndarray:
@@ -286,8 +380,9 @@ def stereo_widen(audio: np.ndarray, amount: float = 0.58) -> np.ndarray:
 def instrument_polish(audio: np.ndarray) -> np.ndarray:
     """Bake the synth-only instrumentBus color into generated offline stems."""
     tilted = frequency_tilt(audio)
-    saturated = np.tanh(tilted * 1.25)
-    blended = tilted * 0.92 + saturated * 0.16
+    glued = soft_glue_compress(tilted)
+    saturated = np.tanh(glued * 1.20)
+    blended = glued * 0.94 + saturated * 0.14
     widened = stereo_widen(blended, 0.58)
     return np.asarray(widened * 3.0, dtype=np.float32)
 
@@ -468,8 +563,8 @@ def render_drums(ctx: RenderContext) -> tuple[np.ndarray, dict[str, int]]:
     gains = {
         "kick": 0.70,
         "snare": 0.62,
-        "hat": 0.25,
-        "crash": 0.33,
+        "hat": 0.18,
+        "crash": 0.24,
         "ghost": 0.27,
         "fill": 0.42,
         "tom": 0.36,
@@ -685,13 +780,13 @@ def render_bass_and_other(ctx: RenderContext) -> tuple[np.ndarray, np.ndarray, d
                 offset = snapped_offset(step, float(hit.get("micro_ms") or 0.0), kick_hits, sub_s, push_s=-0.010)
                 dur = 0.26 if role == "recap" and metrics["density"] > 0.5 else 0.34
                 vel = max(0.30, min(0.90, (0.34 + float(hit.get("vel") or 0.4) * 0.62 + (0.08 if idx == 0 else 0.0)) * phrase_mult))
-                add_note(bass, bar_start + offset, dur, note, gain=0.115 * vel, pan=0.0, color="bass")
+                add_note(bass, bar_start + offset, dur, note, gain=0.145 * vel, pan=0.0, color="bass")
                 counts["bass_notes"] += 1
             if role == "verse" and any(hit["step"] >= 10 for hit in accent_steps(events, {"ghost"}, 0.18)):
-                add_note(bass, bar_start + 11 * sub_s - 0.006, 0.17, tones_bass["fifth"], gain=0.050, pan=0.0, color="bass")
+                add_note(bass, bar_start + 11 * sub_s - 0.006, 0.17, tones_bass["fifth"], gain=0.064, pan=0.0, color="bass")
                 counts["bass_notes"] += 1
             if role in ("recap", "comp") and metrics["pressure"] > 0.52:
-                add_note(bass, bar_start + 14 * sub_s - 0.008, 0.14, tones_bass["third"] + 12, gain=0.050, pan=0.0, color="bass")
+                add_note(bass, bar_start + 14 * sub_s - 0.008, 0.14, tones_bass["third"] + 12, gain=0.064, pan=0.0, color="bass")
                 counts["bass_notes"] += 1
 
             accent = accent_steps(events, {"kick", "snare", "crash", "ghost"}, 0.20)
@@ -720,7 +815,7 @@ def render_bass_and_other(ctx: RenderContext) -> tuple[np.ndarray, np.ndarray, d
                 vel = 0.50 + (float(hit.get("vel") or 0.35) * 0.20 if hit else 0.0)
                 vel += 0.10 if step == 0 else 0.0
                 for note in gtr_notes:
-                    add_note(other, bar_start + offset, 0.18 if role == "recap" else 0.28, note, gain=0.040 * vel, pan=-0.14, color="guitar")
+                    add_note(other, bar_start + offset, 0.18 if role == "recap" else 0.28, note, gain=0.056 * vel, pan=-0.14, color="guitar")
                 counts["guitar_strums"] += 1
 
             chord_notes = [tones_chord["root"], tones_chord["third"], tones_chord["seventh"]]
@@ -733,14 +828,14 @@ def render_bass_and_other(ctx: RenderContext) -> tuple[np.ndarray, np.ndarray, d
                 and not (role == "recap" and metrics["pressure"] > 0.58)
                 and len(accent_steps(events, {"ghost"}, 0.18)) <= 1
             )
-            chord_hits = [(0, bar_s * (0.92 if is_rock_pad or role in ("intro", "outro") else 0.45), 0.030)]
+            chord_hits = [(0, bar_s * (0.92 if is_rock_pad or role in ("intro", "outro") else 0.45), 0.040)]
             if role == "break":
-                chord_hits.append((8, beat_s, 0.020))
+                chord_hits.append((8, beat_s, 0.027))
             elif role == "comp":
                 ghost_answer = next((hit["step"] for hit in accent_steps(events, {"ghost"}, 0.18) if hit["step"] >= 8), 10)
-                chord_hits.append((ghost_answer, beat_s, 0.018 + metrics["pressure"] * 0.010))
+                chord_hits.append((ghost_answer, beat_s, 0.024 + metrics["pressure"] * 0.012))
             elif role == "recap" and metrics["pressure"] > 0.58:
-                chord_hits.append((8, beat_s * 1.25, 0.020))
+                chord_hits.append((8, beat_s * 1.25, 0.027))
             for step, dur, gain in chord_hits:
                 for note in chord_notes:
                     add_note(other, bar_start + step * sub_s + 0.005, dur, note, gain=gain, pan=0.18, color="chord")
@@ -748,7 +843,7 @@ def render_bass_and_other(ctx: RenderContext) -> tuple[np.ndarray, np.ndarray, d
             global_bar += 1
 
     bass = sos_filter(bass, "lowpass", 1400.0, order=3)
-    other = sos_filter(other, "bandpass", (85.0, 6200.0), order=3)
+    other = sos_filter(other, "bandpass", (85.0, 5200.0), order=3)
     return bass, other, counts
 
 
@@ -863,11 +958,11 @@ def render(args: argparse.Namespace) -> dict[str, Any]:
     drums, drum_counts = render_drums(ctx)
     bass, other, part_counts = render_bass_and_other(ctx)
     stems = normalize_stems({
-        "drums": instrument_polish(drums),
-        "bass": instrument_polish(bass),
-        "other": instrument_polish(other),
+        "drums": instrument_polish(drums) * 0.84,
+        "bass": instrument_polish(bass) * 1.20,
+        "other": instrument_polish(other) * 1.45,
     })
-    mix = stems["drums"] + stems["bass"] + stems["other"]
+    mix = normalize_audio(upward_body_glue(stems["drums"] + stems["bass"] + stems["other"]))
 
     outputs = {
         "drums.mp3": stems["drums"],

@@ -68,6 +68,36 @@ priority: high
 
 ## Worker-Gaming Run Log
 
+### 2026-06-01 - tabasco/human-fly v301 recreation-cycle
+
+Command:
+
+`C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py --worker-root C:\workspace\music-stack-worker recreation-cycle tabasco human-fly --with-analysis --with-drum-candidate --force`
+
+Artifacts stay outside Git until human listening approves them:
+
+- Report: `C:\workspace\music-stack-worker\reports\tabasco\human-fly\recreation-cycle-20260601-132113\recreation-cycle-report.md`
+- AI recreation stems/mix: `C:\workspace\music-stack-worker\ai-recreation\tabasco\human-fly\`
+- Drum candidate: `C:\workspace\music-stack-worker\reports\tabasco\human-fly\recreation-cycle-20260601-132113\drum-frames-tabasco-human-fly.candidate.json`
+
+Measurement result:
+
+- `pass_basic_audio_check: true`.
+- `mix.wav`: duration `239.491s`, peak `0.85065`, centroid `3044.9 Hz`, DR `11.79 dB`.
+- This clears the v301 numeric gates: centroid moved down from `3785.0 Hz`
+  to under `3200 Hz`, and DR moved from `16.49 dB` into the `8-13 dB`
+  target window.
+- Bass is no longer buried against drums (`bass` RMS `0.05703` vs `drums`
+  `0.05595`). `other` is still quieter (`0.04197`) but now has a stronger
+  body bed for A/B listening.
+
+Next ear check:
+
+- Human Fly AI should sound less bright and less like drums-only.
+- Confirm the new glue does not make intro/break sections feel flat.
+- Confirm `other` is present as guitar/chord body, not only pad wash.
+- Keep the drum-frame candidate review-only until the groove is approved by ear.
+
 ### 2026-06-01 - tabasco/human-fly recreation-cycle
 
 Command:
