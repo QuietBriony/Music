@@ -21,6 +21,7 @@ const files = [
   "scripts/check-band-room-logic.mjs",
   "scripts/check-hazama-melody.mjs",
   "scripts/check-fm-route-badge.mjs",
+  "scripts/check-runtime-doc-markers.mjs",
   "scripts/stack-check.mjs"
 ];
 

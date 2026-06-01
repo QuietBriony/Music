@@ -1,12 +1,28 @@
-# Band Room — Changelog (v65 → v298 compact)
+# Band Room — Changelog (v65 → v300 compact)
 
-Current compact release: v299.
+Current compact release: v300.
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v300 compact - Runtime checklist marker guard
+
+Docs/test hardening.
+
+The browser listening checklist had stale v172-era cache markers, which could
+send a phone/PWA review down the wrong verification path even while the runtime
+itself was healthy. The checklist now lists the current repo markers and
+`scripts/check-runtime-doc-markers.mjs` verifies that the doc stays in sync with
+`fm.html`, `band-room.html`, and `sw.js`. `sw.js` is bumped so installed PWAs
+refresh the precached checklist; runtime script markers are unchanged from
+v299 (`audio/genre-flavor.js?v=fm-72`, `band-room.js?v=br-176`).
+
+- `hazama-fm-v300`.
 
 ---
 
