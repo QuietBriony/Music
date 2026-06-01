@@ -95,6 +95,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Band Room AI recreation growth loop: [docs/BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md](docs/BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md)
 - Worker Gaming DAW doctor: `python -X utf8 scripts/worker-gaming-pipeline.py check-daw`
 - Worker Gaming hardware doctor: `python -X utf8 scripts/worker-gaming-pipeline.py check-hardware`
+- Sonar / EP-133 handoff checklist: `python -X utf8 scripts/worker-gaming-pipeline.py sonar-ep133-handoff tabasco human-fly`
 - Music PC setup snapshot: `python -X utf8 scripts/worker-gaming-pipeline.py snapshot-setup`
 - Archive repo harvest audit: [docs/archive-repo-harvest-audit.md](docs/archive-repo-harvest-audit.md)
 - Xtal reference gradient: [docs/xtal-reference-gradient.md](docs/xtal-reference-gradient.md)

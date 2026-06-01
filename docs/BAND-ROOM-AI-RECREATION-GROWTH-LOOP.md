@@ -75,6 +75,12 @@ Prepare a transfer pack without writing to the device:
 C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-pack tabasco human-fly --include-ai-recreation --open-folder
 ```
 
+Write the operator handoff checklist:
+
+```powershell
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py sonar-ep133-handoff tabasco human-fly
+```
+
 Details: [EP133-KOII-BANDROOM-WORKFLOW.md](EP133-KOII-BANDROOM-WORKFLOW.md).
 
 Run hardware checks after connecting devices:
@@ -100,6 +106,7 @@ snapshot reports unless a separate asset policy is explicitly approved.
 ## Current Known Gaps
 
 - Ableton plugin DB still reports zero plugins; rescan VST3 from the PC screen.
-- EP-133 and UR44 are not currently visible on worker-gaming; connect by USB and
-  rerun `check-hardware`.
+- EP-133 is visible on worker-gaming over USB-C as MIDI / device media.
+- UR44 is not currently visible on worker-gaming; connect it on the studio PC
+  and rerun `check-hardware`.
 - Final ear checks belong on the future Intel studio PC with UR44 and monitors.

@@ -171,6 +171,17 @@ write to EP-133. Use the EP sample tool and the
 [EP133-KOII-BANDROOM-WORKFLOW.md](EP133-KOII-BANDROOM-WORKFLOW.md) manual for
 the transfer step.
 
+Write the Sonar / EP-133 / Band Room operator checklist:
+
+```powershell
+python -X utf8 scripts/worker-gaming-pipeline.py sonar-ep133-handoff tabasco human-fly
+```
+
+This creates a Markdown and JSON report under
+`C:\workspace\music-stack-worker\reports\<band>\<song>\sonar-ep133-handoff-...`.
+It is a non-destructive checklist: no MIDI send, no EP-133 write, no DAW project
+write, and no Band Room default change.
+
 Analyze target specs without rewriting tracked docs:
 
 ```powershell

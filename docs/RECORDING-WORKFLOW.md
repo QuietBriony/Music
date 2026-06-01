@@ -5,7 +5,7 @@
 >
 > 答え: **全部 OK**。UR44 経由で multi-track 録音 → DAW で stem 出し →
 > band-room の `🥁🎸🎹 external stems` slot にドロップ = 完全 self-cover。
-> EP-133 も USB クラスコンプライアントなので同じ流れに乗る。
+> EP-133 は USB-C で sample / MIDI、3.5mm out で音声録音という2レーンで同じ流れに乗る。
 >
 > 関連: [PRODUCTION-PATH.md](./PRODUCTION-PATH.md) /
 > [DAW-INTEGRATION.md](./DAW-INTEGRATION.md) /

@@ -93,6 +93,28 @@ C:\workspace\music-stack-worker\hardware-jam\ep133-inbox\<band>\<song>\ep133-pac
 この command は EP-133 に何も書かない。`transfer` folder に、EP sample tool へ
 drag しやすい 46.875 kHz / 16-bit WAV と suggested pad map を作るだけ。
 
+## Sonar / EP-133 Handoff Checklist
+
+最新の AI recreation cycle と EP-133 transfer pack を束ねて、Sonar 取り込み表、
+EP sample tool 作業チェック、Band Room に戻す録音名を1枚の local report にする:
+
+```powershell
+cd C:\workspace\music-stack\Music
+C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py sonar-ep133-handoff tabasco human-fly --open-report
+```
+
+出力先:
+
+```text
+C:\workspace\music-stack-worker\reports\<band>\<song>\sonar-ep133-handoff-YYYYMMDD-HHMMSS\
+  sonar-ep133-handoff.json
+  sonar-ep133-handoff.md
+```
+
+この checklist も EP-133 / Sonar / Band Room を自動操作しない。PC前の確認用に、
+どのファイルを Sonar に入れるか、どの sample を EP-133 に送るか、録った take を
+どの external slot に戻すかを固定する。
+
 ## EP Sample Tool Flow
 
 1. EP-133 を USB-C で PC へ直結する。

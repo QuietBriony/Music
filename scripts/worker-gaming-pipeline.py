@@ -682,6 +682,121 @@ def _write_ep133_pack_markdown(pack: dict[str, object], md_path: Path) -> None:
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _latest_child_dir(root: Path, prefix: str) -> Path | None:
+    if not root.exists():
+        return None
+    candidates = [path for path in root.iterdir() if path.is_dir() and path.name.startswith(prefix)]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda path: path.stat().st_mtime)
+
+
+def _role_filename(band: str, song: str, source: str, role: str, take: int = 1) -> str:
+    clean_source = re.sub(r"[^A-Za-z0-9_-]+", "-", source).strip("-").lower()
+    clean_role = re.sub(r"[^A-Za-z0-9_-]+", "-", role).strip("-").lower()
+    return f"{band}-{song}_{clean_source}_{clean_role}_take{take:02d}.wav"
+
+
+def _write_sonar_ep133_handoff_markdown(report: dict[str, object], md_path: Path) -> None:
+    paths = report.get("paths", {})
+    env = report.get("environment", {})
+    ep_entries = report.get("ep133_entries", [])
+    lines = [
+        "# Sonar / EP-133 / Band Room Handoff",
+        "",
+        f"- Band/song: `{report['band']}/{report['song']}`",
+        f"- Created: `{report['created_at']}`",
+        f"- Handoff folder: `{paths.get('handoff_dir', '')}`",
+        "",
+        "## Current State",
+        "",
+        f"- Sonar executable: `{env.get('sonar_exe', '')}`",
+        f"- Ableton plugin modules/plugins: `{env.get('ableton_plugin_modules')}` / `{env.get('ableton_plugins')}`",
+        f"- EP-133 visible devices: `{env.get('ep133_visible_count')}`",
+        f"- UR44 visible devices: `{env.get('ur44_visible_count')}`",
+        "",
+        "## Sonar Import Map",
+        "",
+        "| Track | Source | Treatment | Export target |",
+        "|---|---|---|---|",
+    ]
+    for item in report.get("sonar_tracks", []):
+        if not isinstance(item, dict):
+            continue
+        lines.append(
+            f"| {item['track']} | `{item['source']}` | {item['treatment']} | `{item['export_name']}` |"
+        )
+
+    cycle_recommendations = [
+        str(item)
+        for item in report.get("cycle_recommendations", [])
+        if isinstance(item, str)
+    ]
+    if cycle_recommendations:
+        lines.extend([
+            "",
+            "## Cycle Recommendations",
+            "",
+        ])
+        for item in cycle_recommendations:
+            lines.append(f"- {item}")
+
+    lines.extend([
+        "",
+        "## First Polish Pass",
+        "",
+        "- Keep `mix.wav` as the reference track and do not export it as a replacement unless the whole balance improves.",
+        "- Drums: tame air/cymbal harshness first; use Drum Replacer only where the source-derived kit feels thin.",
+        "- Bass: tighten the low end with light EQ/comp; keep kick transients readable.",
+        "- Other: use TH-U / Guitar Rig / L-Phase / T-Phase only as light color, not a full rewrite.",
+        f"- Export polished stems to `{paths.get('daw_export_dir', '')}`.",
+        "",
+        "## EP-133 Transfer Checklist",
+        "",
+        f"- Transfer folder: `{paths.get('ep133_transfer_dir', '')}`",
+        "- [ ] Open EP sample tool.",
+        "- [ ] Grant browser MIDI/device permission for `EP-133`.",
+        "- [ ] Back up the current EP-133 project before replacing important samples.",
+        "- [ ] Transfer only the files intentionally selected from the transfer folder.",
+        "- [ ] Confirm pad assignment on the device by ear.",
+        "",
+        "| Done | Slot | Role | File | Device pad / note |",
+        "|---|---|---|---|---|",
+    ])
+    for entry in ep_entries:
+        if not isinstance(entry, dict):
+            continue
+        lines.append(f"| [ ] | `{entry.get('slot')}` | {entry.get('role')} | `{entry.get('file')}` |  |")
+
+    lines.extend([
+        "",
+        "## Band Room Return Naming",
+        "",
+        "| Role | File name | Band Room slot |",
+        "|---|---|---|",
+    ])
+    for item in report.get("return_files", []):
+        if not isinstance(item, dict):
+            continue
+        lines.append(f"| {item['role']} | `{item['filename']}` | `{item['band_room_slot']}` |")
+
+    lines.extend([
+        "",
+        "## Manual Gates",
+        "",
+        "- EP-133 sample write, pad operation, project selection, cable moves, and ear checks need human confirmation.",
+        "- Current gaming PC has no UR44 visible; EP-133 audio recording waits for UR44 / studio PC unless another audio interface is connected.",
+        "- Ableton remains secondary until VST3 rescan registers plugins.",
+        "",
+        "## Paths",
+        "",
+    ])
+    for label, value in paths.items():
+        lines.append(f"- {label}: `{value}`")
+
+    md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def command_check_daw(args: argparse.Namespace) -> None:
     """Inspect DAW and plugin state without touching app settings."""
     init_dirs(args)
@@ -1121,6 +1236,146 @@ def command_ep133_pack(args: argparse.Namespace) -> None:
         os.startfile(EP_SAMPLE_TOOL_URL)  # type: ignore[attr-defined]
 
 
+def command_sonar_ep133_handoff(args: argparse.Namespace) -> None:
+    """Write a local Sonar/EP-133/Band Room operator checklist outside Git."""
+    init_dirs(args)
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    handoff_dir = worker_path(args, "reports", args.band, args.song, f"sonar-ep133-handoff-{timestamp}")
+    handoff_dir.mkdir(parents=True, exist_ok=True)
+
+    ai_dir = worker_path(args, "ai-recreation", args.band, args.song)
+    daw_export_dir = worker_path(args, "daw-export", args.band, args.song)
+    capture_dir = worker_path(args, "hardware-jam", "captures", args.band, args.song)
+    daw_export_dir.mkdir(parents=True, exist_ok=True)
+    capture_dir.mkdir(parents=True, exist_ok=True)
+
+    ep_root = worker_path(args, "hardware-jam", "ep133-inbox", args.band, args.song)
+    ep_pack_dir = Path(args.ep133_pack).resolve() if args.ep133_pack else _latest_child_dir(ep_root, "ep133-pack-")
+    ep_transfer_dir = ep_pack_dir / "transfer" if ep_pack_dir else Path("")
+    ep_manifest_path = ep_pack_dir / "ep133-transfer-manifest.json" if ep_pack_dir else Path("")
+    ep_manifest = _read_json(ep_manifest_path)
+    ep_entries = ep_manifest.get("entries", []) if isinstance(ep_manifest, dict) else []
+
+    latest_cycle_dir = (
+        Path(args.recreation_cycle).resolve()
+        if args.recreation_cycle
+        else _latest_child_dir(worker_path(args, "reports", args.band, args.song), "recreation-cycle-")
+    )
+    cycle_report_path = latest_cycle_dir / "recreation-cycle-report.json" if latest_cycle_dir else Path("")
+    cycle_report = _read_json(cycle_report_path)
+
+    sonar_tracks = [
+        {
+            "track": "01 reference mix",
+            "source": str(ai_dir / "mix.wav"),
+            "treatment": "reference only; keep low or muted during export",
+            "export_name": "mix-reference.wav",
+        },
+        {
+            "track": "02 drums",
+            "source": str(ai_dir / "drums.mp3"),
+            "treatment": "tame air/cymbals; light transient cleanup",
+            "export_name": "drums.wav",
+        },
+        {
+            "track": "03 bass",
+            "source": str(ai_dir / "bass.mp3"),
+            "treatment": "light EQ/comp; keep kick space",
+            "export_name": "bass.wav",
+        },
+        {
+            "track": "04 other",
+            "source": str(ai_dir / "other.mp3"),
+            "treatment": "light color with TH-U/Guitar Rig/L-Phase/T-Phase",
+            "export_name": "other.wav",
+        },
+    ]
+    return_files = [
+        {
+            "role": "EP-133 drums / beat",
+            "filename": _role_filename(args.band, args.song, "ep133", "drums"),
+            "band_room_slot": "external drums",
+        },
+        {
+            "role": "EP-133 bass-like loop",
+            "filename": _role_filename(args.band, args.song, "ep133", "bass"),
+            "band_room_slot": "external bass",
+        },
+        {
+            "role": "EP-133 guitar / noise / texture",
+            "filename": _role_filename(args.band, args.song, "ep133", "other"),
+            "band_room_slot": "external other",
+        },
+        {
+            "role": "EP-133 vocal phrase",
+            "filename": _role_filename(args.band, args.song, "ep133", "vocal"),
+            "band_room_slot": "external vocal",
+        },
+    ]
+
+    pnp_devices = _windows_pnp_devices()
+    sound_devices = _windows_sound_devices()
+    ep_keywords = ["EP-133", "EP133", "K.O.II", "KO II", "teenage engineering"]
+    ur44_keywords = ["UR44", "Yamaha Steinberg", "Steinberg UR"]
+    ableton_plugin_db = Path(os.environ.get("LOCALAPPDATA", "")) / "Ableton" / "Live Database" / "Live-plugins-1.db"
+    environment = {
+        "sonar_exe": str(Path(r"C:\Program Files\Cakewalk\Sonar\Sonar.exe")),
+        "sonar_exe_exists": Path(r"C:\Program Files\Cakewalk\Sonar\Sonar.exe").exists(),
+        "ableton_plugin_modules": _sqlite_count(ableton_plugin_db, "plugin_modules"),
+        "ableton_plugins": _sqlite_count(ableton_plugin_db, "plugins"),
+        "ep133_visible_count": len([device for device in pnp_devices if _matches_device(device, ep_keywords)]),
+        "ur44_visible_count": len([device for device in pnp_devices + sound_devices if _matches_device(device, ur44_keywords)]),
+    }
+
+    recommendations = []
+    if cycle_report:
+        recommendations = [
+            str(item)
+            for item in cycle_report.get("recommendations", [])
+            if isinstance(item, str)
+        ]
+
+    handoff = {
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "band": args.band,
+        "song": args.song,
+        "paths": {
+            "handoff_dir": str(handoff_dir),
+            "ai_recreation_dir": str(ai_dir),
+            "daw_export_dir": str(daw_export_dir),
+            "hardware_capture_dir": str(capture_dir),
+            "ep133_pack_dir": str(ep_pack_dir or ""),
+            "ep133_transfer_dir": str(ep_transfer_dir) if ep_pack_dir else "",
+            "ep133_manifest": str(ep_manifest_path) if ep_pack_dir else "",
+            "latest_recreation_cycle": str(latest_cycle_dir or ""),
+            "recreation_cycle_report": str(cycle_report_path) if latest_cycle_dir else "",
+            "json": str(handoff_dir / "sonar-ep133-handoff.json"),
+            "markdown": str(handoff_dir / "sonar-ep133-handoff.md"),
+        },
+        "environment": environment,
+        "sonar_tracks": sonar_tracks,
+        "ep133_entries": ep_entries,
+        "return_files": return_files,
+        "cycle_recommendations": recommendations,
+        "policy": (
+            "This report is an operator checklist only. It does not write to EP-133, "
+            "alter DAW projects, change Band Room defaults, send MIDI, or record audio."
+        ),
+    }
+    json_path = handoff_dir / "sonar-ep133-handoff.json"
+    md_path = handoff_dir / "sonar-ep133-handoff.md"
+    json_path.write_text(json.dumps(handoff, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _write_sonar_ep133_handoff_markdown(handoff, md_path)
+    print(f"Sonar/EP-133 handoff JSON: {json_path}")
+    print(f"Sonar/EP-133 handoff Markdown: {md_path}")
+    if not ep_pack_dir:
+        print("warning: no EP-133 pack found; run ep133-pack first.")
+    if not latest_cycle_dir:
+        print("warning: no recreation cycle found; run recreation-cycle first.")
+    if args.open_report and sys.platform.startswith("win"):
+        os.startfile(md_path)  # type: ignore[attr-defined]
+
+
 def command_analyze(args: argparse.Namespace) -> None:
     init_dirs(args)
     out_file = Path(args.out).resolve() if args.out else worker_path(args, "reports", "target-spec-bands.json")
@@ -1356,6 +1611,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--open-folder", action="store_true", help="open the transfer folder after writing it on Windows")
     p.add_argument("--open-sample-tool", action="store_true", help="open the official EP sample tool after writing the pack")
     p.set_defaults(func=command_ep133_pack)
+
+    p = sub.add_parser("sonar-ep133-handoff", help="write a Sonar/EP-133/Band Room operator checklist outside Git")
+    p.add_argument("band")
+    p.add_argument("song")
+    p.add_argument("--ep133-pack", help="explicit ep133-pack directory; defaults to the latest pack for band/song")
+    p.add_argument("--recreation-cycle", help="explicit recreation-cycle directory; defaults to the latest cycle for band/song")
+    p.add_argument("--open-report", action="store_true", help="open the Markdown handoff report after writing it on Windows")
+    p.set_defaults(func=command_sonar_ep133_handoff)
 
     p = sub.add_parser("analyze", help="write stem target-spec report outside the repo")
     p.add_argument("targets", nargs="*", help="optional band or band/song filters")

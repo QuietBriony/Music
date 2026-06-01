@@ -157,6 +157,11 @@
         <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-pack tabasco human-fly --include-ai-recreation --open-folder</pre>
       </article>
       <article class="card">
+        <h2>Write Handoff Checklist</h2>
+        <p>Sonar取り込み、EP sample tool転送、Band Room戻し名を1枚のlocal reportにする。</p>
+        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py sonar-ep133-handoff tabasco human-fly --open-report</pre>
+      </article>
+      <article class="card">
         <h2>Recreation Cycle</h2>
         <p>生成 stem、target analysis、drum-frame candidate、Sonar handoff report を作る。</p>
         <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py recreation-cycle tabasco human-fly --with-analysis --with-drum-candidate</pre>
@@ -173,6 +178,7 @@
       <ul>
         <li>EP-133 に書く前に、必要なら EP sample tool で project backup を取る。</li>
         <li>EP sample tool の device permission は人間が許可する。</li>
+        <li>`sonar-ep133-handoff` のMarkdownでpad mapとBand Room戻し名を確認する。</li>
         <li>Band Room external stems に戻すまでは、runtime preset を変更しない。</li>
         <li>良い take だけ `hardware-jam\captures` / `daw-export` から review する。</li>
       </ul>
