@@ -1,12 +1,40 @@
-# Band Room — Changelog (v65 → v302 compact)
+# Band Room — Changelog (v65 → v303 compact)
 
-Current compact release: v302.
+Current compact release: v303.
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v303 compact — 原音 (stems) master bus（Nirvana 音圧 + LCD balance）
+
+ユーザー判断で「原音は触らない」ルールを今回**明示的に解除**し、原音(実録音
+stems mode = アプリのデフォルト再生)を初めて改良。指針: **Nirvana 的な音圧/
+密度 + LCD Soundsystem 的なバランス**(タイト低域・パンチ・クリアだが耳に痛く
+ない)。
+
+実測(human-fly 生 stem)で vocals が drums/bass/other より **+5〜7dB ホット**と
+判明 → 指針(ボーカルは壁の中に沈める)とも一致。
+
+変更:
+- **`makeStemMasterBus`** を新設(AI 再現の makeInstrumentPolishBus の原音版)。
+  4 stem を sum して: EQ(低域 +0.8 でパンチ / 高域 -0.6 で耳当たり緩和、生
+  drums が既に 73% 高域 + 共有 master が高域 shelf を足すため)+ glue comp
+  (threshold -19, ratio 2.8 = Nirvana density)+ 軽い tape sat + makeup
+  +2.6dB(音圧)。`stemBus.* → stemMaster → masterGain`。
+- **vocal stem 0.68 → 0.58**(ホットなボーカルを band に沈める)。
+- AI 再現は instrumentBus 経由で**完全に別系統 = 無影響**。per-stem export tap
+  は stemBus 上(stemMaster 前)なので stems-pack export も無影響。
+
+webapp は再生で計測 renderer が hang するため、これは offline 設計 +
+**ship-then-verify(実機試聴)**。原音はデフォルトモードなので即 A/B 可能。
+保守的な初手 — もっと音圧/別バランスが欲しければ次 round で調整。
+
+- `band-room.css?v=br-81`、`band-room.js?v=br-178`、`hazama-fm-v303`。
 
 ---
 

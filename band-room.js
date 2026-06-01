@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-177-human-fly-body";
+  const BANDROOM_APP_VERSION = "br-178-genon-master";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -375,6 +375,45 @@
     return input;
   }
 
+  // v303: 原音 (stems) master bus — the real-recording counterpart to
+  // makeInstrumentPolishBus. The four real stems sum here before the shared
+  // master, voiced to the user's reference brief: Nirvana-style loudness /
+  // density + LCD Soundsystem-style balance (tight punchy low, present mids,
+  // controlled — not harsh — top). AI 再現 never touches this (it has its own
+  // polish bus), so 原音 is voiced independently. Stems still tap their own
+  // per-stem recorder destinations PRE this bus, so stems-pack export is
+  // unaffected.
+  //   stemBus.* → makeStemMasterBus → masterGain → shared remaster → limiter
+  function makeStemMasterBus(dest) {
+    const input  = new Tone.Gain(1);
+    // LCD balance: weight the low so kick+bass punch instead of boom, keep
+    // mids present, and pull the very top down a touch — the real drums are
+    // already cymbal-bright (~73 % of their energy is high) and the shared
+    // master adds a high shelf on top, so a small cut here tames harshness
+    // (耳当たり) without killing clarity.
+    const eq     = new Tone.EQ3({ low: 0.8, mid: 0.5, high: -0.6, lowFrequency: 120, highFrequency: 6500 });
+    // Nirvana density: a firm glue compressor so the band reads as one loud
+    // wall rather than four separate stems.
+    const comp   = new Tone.Compressor({ threshold: -19, ratio: 2.8, attack: 0.010, release: 0.18, knee: 6 });
+    // subtle parallel tape grit for analog warmth / glue.
+    const sat    = new Tone.Distortion({ distortion: 0.10, oversample: "2x", wet: 1 });
+    const satWet = new Tone.Gain(0.08);
+    const satDry = new Tone.Gain(1.0);
+    // loudness makeup — push the glued band harder into the shared limiter
+    // for 音圧 (conservative first pass; raise if the user wants more).
+    const makeup = new Tone.Gain(1.35);   // ~+2.6 dB
+
+    input.connect(eq);
+    eq.connect(comp);
+    comp.connect(satDry);
+    comp.connect(sat);
+    sat.connect(satWet);
+    satDry.connect(makeup);
+    satWet.connect(makeup);
+    makeup.connect(dest);
+    return input;
+  }
+
   // v220 / v271 / v301: section role → instrumentBus gain target. Real bands shape
   // song dynamics across sections — verse settled, chorus lifted,
   // intro / break dropped further for contrast.
@@ -528,12 +567,17 @@
     chordBus = new Tone.Gain(0.62).connect(chordPan);
     clickBus = new Tone.Gain(0.35).connect(clickPan);
 
-    // Original-stem buses → per-stem EQ → masterGain
+    // v303: 原音 master bus sits between the stem buses and masterGain so the
+    // real recording gets its own Nirvana-loud / LCD-balanced glue (the AI
+    // path has makeInstrumentPolishBus; 原音 had nothing). Stems summed here.
+    const stemMaster = makeStemMasterBus(masterGain);
+
+    // Original-stem buses → per-stem EQ → stemMaster → masterGain
     // v167: slightly lower full-stem defaults so the remaster chain glues
     // instead of constantly living on the limiter.
-    stemBus.drums  = new Tone.Gain(0.86).connect(masterGain);
-    stemBus.bass   = new Tone.Gain(0.86).connect(masterGain);
-    stemBus.other  = new Tone.Gain(0.84).connect(masterGain);
+    stemBus.drums  = new Tone.Gain(0.86).connect(stemMaster);
+    stemBus.bass   = new Tone.Gain(0.86).connect(stemMaster);
+    stemBus.other  = new Tone.Gain(0.84).connect(stemMaster);
     // Wire EQ outputs into respective buses (input side will receive players)
     stemEQs.drums.output.connect(stemBus.drums);
     stemEQs.bass.output.connect(stemBus.bass);
@@ -553,7 +597,10 @@
     vocalReverbWet = new Tone.Gain(0.20);  // reverb send level
     vocalDryGain = new Tone.Gain(0.66);
 
-    stemBus.vocals = new Tone.Gain(0.68);
+    // v303: vocal pulled down (0.68 → 0.58). Measured raw vocal stem runs
+    // ~5-7 dB hotter than drums/bass/other; the brief (Nirvana / LCD) wants
+    // the vocal sitting IN the wall, not riding on top of it.
+    stemBus.vocals = new Tone.Gain(0.58);
 
     // Wire: vocalChorus is input. Chorus feeds three paths in parallel.
     // dry → vocalDryGain → stemBus.vocals
@@ -567,7 +614,7 @@
     vocalDryGain.connect(stemBus.vocals);
     vocalDelayWet.connect(stemBus.vocals);
     vocalReverbWet.connect(stemBus.vocals);
-    stemBus.vocals.connect(masterGain);
+    stemBus.vocals.connect(stemMaster);
     // Vocal stem EQ → vocalChorus (so EQ runs before FX chain)
     stemEQs.vocals.output.connect(vocalChorus);
 
