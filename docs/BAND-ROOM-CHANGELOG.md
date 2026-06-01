@@ -1,6 +1,24 @@
-# Band Room — Changelog (v65 → v308 compact)
+# Band Room — Changelog (v65 → v309 compact)
 
-Current compact release: v308.
+Current compact release: v309.
+
+---
+
+## v309 compact — human-fly 歌詞カバレッジ補完(追従の穴を解消)
+
+ユーザー報告: human-fly で「最初 追従無し」「3分くらい以降 止まる」。原因は
+**ASR のカバレッジ欠け**(再生コードの不具合ではない):
+- 0–約60s は実質インスト・イントロ(明瞭なボーカル無し)→ v307 の先取りリードで
+  先頭行をプレビュー表示(これは仕様どおり)。
+- **2:40–3:43 に約 63 秒の穴**があり、その間 行が無く「止まって」見えていた。
+再録(`condition_on_previous_text=True` / `no_speech_threshold` 緩め / temperature
+フォールバック)で穴を埋め、`docs/tabasco-lyrics-timed.json` の human-fly を
+25→34 行に。最大ギャップ 63s→13s。誤認識の profanity 3 行を soften
+(例: "fucking out"→"freaking out")。`scripts/transcribe-timed-vocals.py` の
+設定も高カバレッジ版へ更新。
+
+データのみの更新(タイムド歌詞は `?cb=` で都度 fetch)。アプリ本体コードは不変
+(`band-room.js?v=br-183`、`band-room.css?v=br-83`)。SW 版のみ `hazama-fm-v309`。
 
 ---
 

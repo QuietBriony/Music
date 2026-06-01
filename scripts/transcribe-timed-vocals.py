@@ -39,9 +39,18 @@ for song in SONGS:
         y,
         language="en",
         word_timestamps=True,
-        fp16=False,                       # CPU
-        condition_on_previous_text=False,  # sparse vocals -> avoid loop hallucinations
-        no_speech_threshold=0.6,
+        fp16=False,                          # CPU
+        # v309: maximise coverage. The first recipe (condition_on_previous_text
+        # False + no_speech_threshold 0.6) silently SKIPPED long sung stretches
+        # — human-fly lost a 63s hole (2:40–3:43) and its whole back third. Keep
+        # continuity + a lenient speech gate + the temperature fallback so quiet
+        # / heavily-effected vocals still land. build-timed-lyrics.py's repeat
+        # cap + dedupe clean any loop hallucinations this lets through.
+        condition_on_previous_text=True,
+        no_speech_threshold=0.9,
+        logprob_threshold=-2.0,
+        compression_ratio_threshold=2.8,
+        temperature=(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
     )
     segs = []
     for seg in result["segments"]:
