@@ -960,17 +960,24 @@ def _ai_recreation_required_files(args: argparse.Namespace) -> list[Path]:
 
 def _operator_artifacts(args: argparse.Namespace) -> dict[str, str]:
     reports_root = worker_path(args, "reports", args.band, args.song)
+    worker_reports_root = worker_path(args, "reports")
     ep_root = worker_path(args, "hardware-jam", "ep133-inbox", args.band, args.song)
     snapshot_prefix = f"{args.snapshot_tag}-setup-snapshot-"
     latest_ep_pack = _latest_child_dir(ep_root, "ep133-pack-")
     latest_handoff = _latest_child_dir(reports_root, "sonar-ep133-handoff-")
     latest_cycle = _latest_child_dir(reports_root, "recreation-cycle-")
+    latest_midi_setup = _latest_child_dir(worker_reports_root, "midi-cli-setup-")
+    latest_sysex_probe = _latest_child_dir(worker_reports_root, "ep133-sysex-probe-")
     latest_snapshot_json = _latest_child_file(worker_path(args, "reports"), snapshot_prefix, ".json")
     latest_snapshot_md = _latest_child_file(worker_path(args, "reports"), snapshot_prefix, ".md")
     paths = {
         "ai_recreation_dir": str(worker_path(args, "ai-recreation", args.band, args.song)),
         "daw_export_dir": str(worker_path(args, "daw-export", args.band, args.song)),
         "hardware_capture_dir": str(worker_path(args, "hardware-jam", "captures", args.band, args.song)),
+        "latest_midi_cli_setup": str(latest_midi_setup or ""),
+        "latest_midi_cli_setup_report": str(latest_midi_setup / "midi-cli-setup.md") if latest_midi_setup else "",
+        "latest_ep133_sysex_probe": str(latest_sysex_probe or ""),
+        "latest_ep133_sysex_probe_report": str(latest_sysex_probe / "ep133-sysex-probe.md") if latest_sysex_probe else "",
         "latest_recreation_cycle": str(latest_cycle or ""),
         "latest_recreation_cycle_report": str(latest_cycle / "recreation-cycle-report.md") if latest_cycle else "",
         "latest_ep133_pack": str(latest_ep_pack or ""),
@@ -986,6 +993,7 @@ def _operator_artifacts(args: argparse.Namespace) -> dict[str, str]:
 
 def _operator_manual_gates() -> list[str]:
     return [
+        "EP-133 SysEx probe is read-only; any sample/project write remains manual",
         "EP sample tool browser permission for `EP-133`",
         "EP-133 project backup and any sample/project write",
         "Sonar import, playback, save, and export confirmation",
@@ -1760,6 +1768,14 @@ def command_operator_run(args: argparse.Namespace) -> None:
             reason += " No recreation-cycle report was found, but operator-run avoids rerendering existing audio by default."
         skipped.append({"purpose": "recreation-cycle", "reason": reason})
 
+    if args.no_midi_probe:
+        skipped.append({"purpose": "ep133-sysex-probe", "reason": "--no-midi-probe was specified."})
+    else:
+        steps.extend([
+            ("setup-midi-cli", _operator_self_command(args, "setup-midi-cli"), 240),
+            ("ep133-sysex-probe", _operator_self_command(args, "ep133-sysex-probe"), 60),
+        ])
+
     if args.no_ep133_pack:
         skipped.append({"purpose": "ep133-pack", "reason": "--no-ep133-pack was specified."})
     else:
@@ -1830,8 +1846,9 @@ def command_operator_run(args: argparse.Namespace) -> None:
         "dashboard": dashboard,
         "manual_gates": _operator_manual_gates(),
         "policy": (
-            "operator-run only orchestrates repo/worker-safe steps. It does not write to EP-133, "
-            "alter Sonar or Ableton projects, change Band Room defaults, send MIDI, or record audio."
+            "operator-run only orchestrates repo/worker-safe steps. It may send the read-only EP-133 "
+            "device-info SysEx probe, but it does not write to EP-133, alter Sonar or Ableton projects, "
+            "change Band Room defaults, send sample/project-write MIDI, or record audio."
         ),
     }
     json_path = report_dir / "operator-run.json"
@@ -2309,6 +2326,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("band", nargs="?", default="tabasco")
     p.add_argument("song", nargs="?", default="human-fly")
     p.add_argument("--force-recreation", action="store_true", help="rerun the AI recreation cycle even when outputs exist")
+    p.add_argument("--no-midi-probe", action="store_true", help="skip SendMIDI/ReceiveMIDI setup and EP-133 read-only SysEx probe")
     p.add_argument("--no-ep133-pack", action="store_true", help="skip EP-133 transfer pack generation")
     p.add_argument("--no-handoff", action="store_true", help="skip the Sonar/EP-133 handoff checklist")
     p.add_argument("--no-snapshot", action="store_true", help="skip setup snapshot capture")

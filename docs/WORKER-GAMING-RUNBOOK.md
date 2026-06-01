@@ -74,8 +74,10 @@ C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-
 `operator-run` chains the safe checks and handoff generators, then writes one
 aggregate report under
 `C:\workspace\music-stack-worker\reports\<band>\<song>\operator-run-...`. It
-does not write to EP-133, change Sonar/Ableton projects, alter Band Room
-defaults, send MIDI, or record audio.
+also installs/verifies the MIDI CLI tools and sends only the read-only EP-133
+device-info SysEx probe. It does not write to EP-133, change Sonar/Ableton
+projects, alter Band Room defaults, send sample/project-write MIDI, or record
+audio. Use `--no-midi-probe` when EP-133 is not connected.
 
 ## Output Layout
 
