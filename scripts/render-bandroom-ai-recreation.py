@@ -9,10 +9,10 @@ song-track JSON, extracted drum sample kit, and chord progression.
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import math
 import subprocess
-import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -28,6 +28,24 @@ from scipy.signal import butter, sosfiltfilt
 ROOT = Path(__file__).resolve().parent.parent
 SR = 44100
 SUBS_PER_BAR = 16
+DYNAMIC_GLUE_DEFAULT = {
+    "floor_ratio": 0.70,
+    "max_gain_db": 9.0,
+}
+DYNAMIC_GLUE_BY_SONG = {
+    # Long low-density opening: preserve contrast instead of lifting the intro
+    # into the same RMS floor as the full-band sections.
+    ("tabasco", "sister"): {
+        "floor_ratio": 0.40,
+        "max_gain_db": 9.0,
+    },
+    # Dense sustained synth/punk texture: a little more body glue keeps the
+    # measured range inside the target tolerance without touching other songs.
+    ("tabasco", "electric-sheep"): {
+        "floor_ratio": 0.80,
+        "max_gain_db": 9.0,
+    },
+}
 NOTE_OFFSETS = {
     "C": 0,
     "C#": 1,
@@ -105,53 +123,64 @@ def ensure_stereo(audio: np.ndarray) -> np.ndarray:
 
 
 def load_audio(path: Path, *, channels: int = 2) -> tuple[np.ndarray, int]:
-    if path.suffix.lower() == ".wav":
+    try:
         audio, file_sr = sf.read(str(path), always_2d=True, dtype="float32")
         audio = ensure_stereo(audio)
-        if file_sr == SR:
-            return audio[:, :channels], file_sr
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp = Path(tmp_dir) / "decoded.wav"
-        result = run([
-            ffmpeg(),
-            "-y",
-            "-i",
-            path,
-            "-ac",
-            str(channels),
-            "-ar",
-            str(SR),
-            "-vn",
-            tmp,
-        ])
+    except Exception:
+        result = subprocess.run(
+            [
+                ffmpeg(),
+                "-y",
+                "-i",
+                str(path),
+                "-ac",
+                str(channels),
+                "-ar",
+                str(SR),
+                "-vn",
+                "-f",
+                "wav",
+                "pipe:1",
+            ],
+            capture_output=True,
+        )
         if result.returncode != 0:
-            raise RuntimeError(f"decode failed for {path}: {result.stderr[-1000:]}")
-        audio, file_sr = sf.read(str(tmp), always_2d=True, dtype="float32")
-        return ensure_stereo(audio)[:, :channels], file_sr
+            stderr = result.stderr.decode("utf-8", errors="replace")
+            raise RuntimeError(f"decode failed for {path}: {stderr[-1000:]}")
+        audio, file_sr = sf.read(io.BytesIO(result.stdout), always_2d=True, dtype="float32")
+        audio = ensure_stereo(audio)
+
+    if file_sr != SR:
+        audio = librosa.resample(audio.T, orig_sr=file_sr, target_sr=SR).T.astype(np.float32)
+        file_sr = SR
+    return ensure_stereo(audio)[:, :channels], file_sr
 
 
 def write_mp3(audio: np.ndarray, out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     audio = np.nan_to_num(ensure_stereo(audio), nan=0.0, posinf=0.0, neginf=0.0)
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        wav_path = Path(tmp_dir) / "render.wav"
-        sf.write(str(wav_path), audio, SR, subtype="PCM_16")
-        result = run([
+    wav = io.BytesIO()
+    sf.write(wav, audio, SR, format="WAV", subtype="PCM_16")
+    result = subprocess.run(
+        [
             ffmpeg(),
             "-y",
             "-i",
-            wav_path,
+            "pipe:0",
             "-codec:a",
             "libmp3lame",
             "-b:a",
             "192k",
             "-ac",
             "2",
-            out_path,
-        ])
-        if result.returncode != 0:
-            raise RuntimeError(f"mp3 encode failed for {out_path}: {result.stderr[-1000:]}")
+            str(out_path),
+        ],
+        input=wav.getvalue(),
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        stderr = result.stderr.decode("utf-8", errors="replace")
+        raise RuntimeError(f"mp3 encode failed for {out_path}: {stderr[-1000:]}")
 
 
 def write_wav(audio: np.ndarray, out_path: Path) -> None:
@@ -360,6 +389,12 @@ def upward_body_glue(
         right=float(gains[-1]),
     )
     return np.asarray(audio * sample_gain[:, None], dtype=np.float32)
+
+
+def dynamic_glue_settings(ctx: RenderContext) -> dict[str, float]:
+    settings = dict(DYNAMIC_GLUE_DEFAULT)
+    settings.update(DYNAMIC_GLUE_BY_SONG.get((ctx.band_id, ctx.song_id), {}))
+    return settings
 
 
 def normalize_audio(audio: np.ndarray, *, target_rms: float = 0.093, limit: float = 0.92) -> np.ndarray:
@@ -975,7 +1010,10 @@ def render(args: argparse.Namespace) -> dict[str, Any]:
         "bass": instrument_polish(bass) * 1.20,
         "other": instrument_polish(other) * 1.45,
     })
-    mix = normalize_audio(upward_body_glue(stems["drums"] + stems["bass"] + stems["other"]))
+    mix = normalize_audio(upward_body_glue(
+        stems["drums"] + stems["bass"] + stems["other"],
+        **dynamic_glue_settings(ctx),
+    ))
 
     outputs = {
         "drums.mp3": stems["drums"],
