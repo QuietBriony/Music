@@ -1,12 +1,27 @@
-# Band Room — Changelog (v65 → v301 compact)
+# Band Room — Changelog (v65 → v302 compact)
 
-Current compact release: v301.
+Current compact release: v302.
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v302 compact - Production listening brief
+
+Listening-page / PWA cache pass.
+
+`listen.html` now starts with a concrete Human Fly pass: what to open first,
+what to compare, and what short feedback maps to which next implementation
+move. This is a listening-brief deploy only; the Human Fly audio path remains
+the v301 `band-room.js?v=br-177` body/glue pass. `sw.js` is bumped so installed
+PWA/browser caches fetch the updated listening index before the next phone
+review.
+
+- `band-room.js?v=br-177`, `hazama-fm-v302`.
 
 ---
 

@@ -216,6 +216,47 @@
       overflow: hidden;
     }
 
+    .pass-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .pass-panel {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--green);
+      border-radius: 8px;
+      background: rgba(7, 17, 25, 0.82);
+    }
+
+    .pass-panel h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      letter-spacing: 0;
+    }
+
+    .pass-panel ol,
+    .pass-panel ul {
+      margin: 0;
+      padding-left: 20px;
+      color: rgba(225, 240, 244, 0.82);
+      font-size: 0.82rem;
+      line-height: 1.58;
+    }
+
+    .pass-panel li + li { margin-top: 7px; }
+
+    .decision-text {
+      margin: 10px 0 0;
+      padding-top: 10px;
+      border-top: 1px solid rgba(214, 238, 246, 0.12);
+      color: rgba(232, 244, 247, 0.88);
+      font-size: 0.82rem;
+      line-height: 1.58;
+    }
+
     .review-grid {
       display: grid;
       grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
@@ -279,6 +320,7 @@
 
     @media (max-width: 920px) {
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .pass-grid { grid-template-columns: 1fr; }
       .review-grid { grid-template-columns: 1fr; }
       header { grid-template-columns: 1fr; align-items: start; }
       .top-actions { justify-content: flex-start; }
@@ -306,9 +348,38 @@
       <nav class="top-actions" aria-label="Primary pages">
         <a href="fm.html">Hazama FM</a>
         <a href="index.html">Core Rig</a>
-        <a href="band-room.html">Band Room</a>
+        <a href="band-room.html?from=drum-floor&band=tabasco&song=human-fly">Human Fly</a>
       </nav>
     </header>
+
+    <section aria-labelledby="today-pass-title">
+      <div class="section-head">
+        <h2 id="today-pass-title">Today&apos;s listening pass</h2>
+        <p class="section-note">まず Human Fly。短い感想で次の修正先が決まる。</p>
+      </div>
+      <div class="pass-grid">
+        <div class="pass-panel">
+          <h3>聴く順番</h3>
+          <ol>
+            <li><a class="mini-link" href="band-room.html?from=drum-floor&band=tabasco&song=human-fly">Human Fly</a> を開き、`AI 再現` にして 60-90 秒。ドラムだけ感、明るさ、bass/other の芯、固まりを確認。</li>
+            <li>同じ Human Fly を `原音 stems` に戻して 30 秒。AI が原音に対して薄いか、別物として成立しているかを比較。</li>
+            <li><a class="mini-link" href="fm.html?g=funk">FM Funk</a> を 60 秒。潰れが戻ってないか、逆にスカスカか、clavi/EP の返答があるかを見る。</li>
+          </ol>
+          <p class="decision-text">最初の返答は一行でいい。例: `Human Fly AI: bass は出たが other がまだ薄い。明るさはOK。展開は平坦。`</p>
+        </div>
+        <div class="pass-panel">
+          <h3>何を言えば何を直すか</h3>
+          <ul>
+            <li>`まだドラムだけ` → guitar/chord/other の密度と音量、section 別の出し方を上げる。</li>
+            <li>`明るい/シャリつく` → cymbal、exciter、high shelf をもう一段下げる。</li>
+            <li>`こもる/重い` → low-mid と bass sustain を整理する。</li>
+            <li>`平坦/展開がない` → intro/verse/chorus/break の section gain とフレーズ差を広げる。</li>
+            <li>`固まる/重い` → mobile AI 描画、scheduler、sampler preload をさらに軽くする。</li>
+            <li>`良くなった` → その要素を固定して、次は melody/voice stuck 感へ進む。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
 
     <section aria-labelledby="fm-audition-title">
       <div class="section-head">
