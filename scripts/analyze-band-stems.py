@@ -54,6 +54,11 @@ BANDS_FILE = ROOT / "presets" / "bands.json"
 OUT_FILE = ROOT / "docs" / "target-spec-bands.json"
 
 SR = 22050  # downsample for speed; onset precision still adequate
+TEMPO_SR = 44100  # beat tracking needs the full rate — at 22050 librosa
+                  # mis-read electric-sheep as 103 BPM vs its true 129
+                  # (confirmed by multi-prior + tempogram at 44.1 kHz),
+                  # which also corrupted the beat grid the kick-pocket
+                  # metric is measured against. Onset/spectral stay at SR.
 LOCK_WINDOW_SEC = 0.050  # matches v249 / v250 ±50 ms pocket window
 
 
@@ -131,8 +136,18 @@ def analyse_drum_stem(path: Path) -> dict:
     y, sr = librosa.load(str(path), sr=SR, mono=True)
     duration_sec = len(y) / sr
 
-    tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
+    # Pocket grid stays at SR so the kick-offset metric stays consistent
+    # with compare-capture (also SR=22050) and the tuned human-fly pocket
+    # target is unchanged.
+    _, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
     beat_times = librosa.frames_to_time(beat_frames, sr=sr)
+    # Tempo VALUE only is read at the full rate: 22050 mis-detects some
+    # songs' tempo (electric-sheep read 103 BPM vs its true 129, confirmed
+    # by multi-prior + tempogram), which made the AI look 25 BPM off when it
+    # was actually playing the right tempo. The pocket grid above is left at
+    # SR on purpose — only the reported bpm uses TEMPO_SR.
+    y_tempo, sr_tempo = librosa.load(str(path), sr=TEMPO_SR, mono=True)
+    tempo, _ = librosa.beat.beat_track(y=y_tempo, sr=sr_tempo)
     bpm = float(tempo) if not isinstance(tempo, np.ndarray) else float(tempo.flat[0])
 
     all_onsets = librosa.onset.onset_detect(y=y, sr=sr, units="time")
