@@ -1,10 +1,22 @@
-# Band Room — Changelog (v65 → v291 compact)
+# Band Room — Changelog (v65 → v292 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v292 compact - Hazama FM lofi tempo handoff
+
+Hazama FM side only. Band Room runtime is unchanged.
+
+`fm.js` now starts the lofi pill at the measured pocket tempo and uses
+genre-aware BPM for the direct drum-floor link before playback starts. This
+prevents the UI handoff from exporting Tone's idle 120 BPM default for lofi.
+
+- `fm.js?v=fm-69`, `hazama-fm-v292`.
 
 ---
 

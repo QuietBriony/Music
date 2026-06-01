@@ -107,7 +107,7 @@
       faders: { energy: 78, wave: 50, mind: 28, creation: 38, void: 8, circle: 32, body: 82, resource: 70, observer: 32 }
     },
     lofi: {
-      bpm: 82,
+      bpm: 88,
       culture: "tape_memory",
       faders: { energy: 38, wave: 62, mind: 65, creation: 58, void: 28, circle: 64, body: 42, resource: 55, observer: 56 }
     },
@@ -331,6 +331,19 @@
     } catch (e) {
       return null;
     }
+  }
+
+  function genreProfileBpmValue(name) {
+    const bpm = Number(GENRE_PROFILES[name]?.bpm);
+    return Number.isFinite(bpm) ? Math.round(bpm * 10) / 10 : null;
+  }
+
+  function drumFloorHandoffBpmValue(name = getCurrentGenre()) {
+    const liveBpm = currentBpmValue();
+    if (started || stopping) return liveBpm || genreProfileBpmValue(name);
+    if (starting) return genreProfileBpmValue(name) || liveBpm;
+    if (!name || name === "any") return null;
+    return genreProfileBpmValue(name) || liveBpm;
   }
 
   function persistListeningTrace() {
@@ -1042,7 +1055,7 @@
 
   function drumFloorHrefForContext(name = getCurrentGenre()) {
     const url = new URL(DRUM_FLOOR_APP_URL);
-    const bpm = currentBpmValue();
+    const bpm = drumFloorHandoffBpmValue(name);
     url.searchParams.set("from", "fm");
     if (name && name !== "any") url.searchParams.set("g", name);
     const energy = getCurrentEnergy();
@@ -1071,7 +1084,7 @@
       const delivered = !!(result?.stored || result?.broadcast);
       if (options.status) {
         const genre = getCurrentGenre();
-        const bpm = currentBpmValue();
+        const bpm = drumFloorHandoffBpmValue(genre);
         setSyncStatus(delivered
           ? `drum-floor sync ${genre}${bpm ? ` ${Math.round(bpm)}bpm` : ""}`
           : "drum-floor query fallback");
