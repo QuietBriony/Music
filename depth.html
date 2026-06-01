@@ -483,13 +483,6 @@
   const n01 = (v, f) => v == null ? f : clamp01(num(v, f));
   const pct01 = (v, f) => v == null ? f : clamp01(num(v, f) / 100);
 
-  // Hazama tempo: engine と同様 0..100 は BPM へ写像、>100 は実 BPM とみなす。
-  function tempoToPressure01(tempo) {
-    if (typeof tempo !== "number" || !isFinite(tempo)) return null;
-    const bpm = tempo <= 100 ? lerp(54, 142, tempo / 100) : tempo;
-    return clamp01((bpm - 50) / 90);
-  }
-
   // 受信 state を S へ反映。複数 schema (hazama-profile v1 / ucm-mandala-v1 / 直接 inject) を許容。
   function ingest(raw, sourceLabel) {
     if (!raw || typeof raw !== "object") return false;
@@ -500,38 +493,31 @@
     const audio = (p.audio && typeof p.audio === "object") ? p.audio : {};
     const ucm = (p.ucm && typeof p.ucm === "object") ? p.ucm : {};
 
-    // --- depth: brightness(暗)/bassWeight(重)/density(密)/space(無空間) から合成 ---
+    const stability = pct01(src.stability, S.stability);
+    const resonance = pct01(src.resonance, S.resonance);
+
+    // --- depth: 第一義は source.rank(0..28) = Hazama の沈下の真の深さ ---
+    // (audio.brightness は Hazama では resonance/gate で上がる=深さと逆相関なので depth 推定に使わない)
     let depth = p.depth != null ? n01(p.depth, null) : null;
-    const haveAudioDepth = ["brightness", "bassWeight", "density", "space"].some((k) => typeof audio[k] === "number");
-    if (depth == null && haveAudioDepth) {
-      depth = clamp01(
-        0.42 * (1 - n01(audio.brightness, 0.5)) +
-        0.30 * n01(audio.bassWeight, 0.3) +
-        0.16 * n01(audio.density, 0.3) +
-        0.12 * (1 - n01(audio.space, 0.5))
-      );
+    if (depth == null && typeof src.rank === "number" && isFinite(src.rank)) {
+      depth = clamp01(src.rank / 28);
     }
-    // depthId / stage 文字列からの補助 (末尾数値 or 既知ステージ語)
+    if (depth == null && (typeof audio.bassWeight === "number" || typeof audio.density === "number")) {
+      depth = clamp01(0.6 * n01(audio.bassWeight, 0.3) + 0.4 * n01(audio.density, 0.3));  // rank 欠落時の代替
+    }
     if (depth == null && typeof src.depthId === "string") {
       const m = src.depthId.match(/(\d+(\.\d+)?)/);
-      if (m) depth = clamp01(parseFloat(m[1]) / 10);  // "d7" → 0.7 想定
+      if (m) depth = clamp01(parseFloat(m[1]) / 28);
     }
     if (depth == null) depth = S.depth;
 
-    // --- pressure: resonance + 不安定 + tempo ---
-    const stability = pct01(src.stability, S.stability);
-    const resonance = pct01(src.resonance, S.resonance);
-    const tempoP = tempoToPressure01(audio.tempo);
+    // --- pressure: Hazama 内部式 (buildMusicProfile) を再現 ---
+    //   pressure = depthNorm*0.62 + resonanceNorm*0.32 + (1-stabilityNorm)*0.20
     let pressure = p.pressure != null ? n01(p.pressure, null) : null;
     if (pressure == null) {
-      pressure = clamp01(
-        0.46 * resonance + 0.30 * (1 - stability) +
-        (tempoP != null ? 0.24 * tempoP : 0.12 * depth)
-      );
+      pressure = clamp01(depth * 0.62 + resonance * 0.32 + (1 - stability) * 0.20);
     }
-    // UCM faders を軽く反映 (energy→圧, void→深度)
-    if (typeof ucm.energy === "number") pressure = clamp01(pressure * 0.8 + (ucm.energy / 100) * 0.2);
-    if (typeof ucm.void === "number") depth = clamp01(depth * 0.85 + (ucm.void / 100) * 0.15);
+    if (typeof ucm.energy === "number") pressure = clamp01(pressure * 0.85 + (ucm.energy / 100) * 0.15);
 
     S.depth = depth; S.pressure = pressure; S.stability = stability; S.resonance = resonance;
     S.brightness = typeof audio.brightness === "number" ? clamp01(audio.brightness) : S.brightness;
