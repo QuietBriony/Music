@@ -1,471 +1,451 @@
-# Tabasco - Final Singable Lyrics
+# Tabasco - Final Singable Lyrics (v5 — ASR-grounded)
+
+> v5: 元の vocals.mp3 を **Whisper (openai-whisper small) で実際に文字起こし**し、
+> そこで聴き取れた実フレーズ・フック・タイミングを骨にして、崩れている所だけ
+> 意味の通る英語に整えた版。codex の v4 は「元音を聴いていない推測」と自認して
+> いたが、v5 は実音ベース。
+>
+> 各曲の冒頭に `<!-- ASR: ... -->` で Whisper が拾った代表フレーズを残してある。
+> 「まるっきり変えない」方針: サビ / hook は元音に忠実、verse は崩れた所だけ補正。
+> 適当英語ゆえ ASR も完璧ではないので、歌い直すときは耳で最終調整を。
+>
+> Raw 全文: `captures/vocal-transcriptions.json`(gitignored)。
 
 ---
 
 ## 01 TABASCO - wake-up chant
 
-### intro
+<!-- ASR: ほぼ TABASCO! チャント (melodic vocal ほぼ無し) -->
 
-This is the call.
-Wake up, line up.
-No more waiting.
-Turn it on.
+### intro
+```
+(spoken, dry, low)
+This is the call —
+wake up, line it up.
+```
 
 ### chant-a
-
-TABASCO, one-two-three-four
-TABASCO, kick the door
-TABASCO, fire in the wire
-TABASCO, give us more
-
-TABASCO, hands in the air
-TABASCO, sparks on the floor
-TABASCO, count it together
-TABASCO, here we go
+```
+TA-BAS-CO!  one, two, three, four
+TA-BAS-CO!  here we go
+TA-BAS-CO!  open the door
+TA-BAS-CO!  here we go
+```
 
 ### chant-b
-
-TABASCO, red light burning
-TABASCO, heart still sure
-TABASCO, louder than silence
-TABASCO, we endure
-
-TABASCO, one more chorus
-TABASCO, no retreat
-TABASCO, wake the room up
-TABASCO, move your feet
+```
+hands up, count it down
+loud enough to wake the town
+TA-BAS-CO!  say it loud
+TA-BAS-CO!  one more round
+```
 
 ### outro
-
-TABASCO, hold the line
-TABASCO, one more time
+```
+(chant fades)
+TA-BAS-CO... here we go
+```
 
 ---
 
 ## 02 Hey - calling across years
 
-### intro
+<!-- ASR: "Hey you, I've been monotone / I'm gonna start with this song / Hey catch me in a little while / go out just like noise" (chorus) -->
 
-Late light on the window
-static in the hall
-I hear your name returning
-through a tired wall
+### intro
+```
+(half-spoken)
+I know it's been a long time —
+this is what I'm talking about.
+```
 
 ### verse-1
-
-Twenty-three to thirty-nine, the years got crossed
-Second floor washroom, we laughed and then we lost
-I held the cup, I held the line, I held the door
-You were already looking past the world we wore
-
-I keep a little picture in a jacket seam
-All of us younger, all of us half in a dream
-The river closed behind us, the radio ran cold
-Still I hear your answer in the wires of old
+```
+I told you, come back here, you said you were me
+twenty-odd to forty, the wires crossed clean
+I was a grown-up once, just like I missed you
+and if I was rich, yeah — I'd dream you back too
+```
 
 ### chorus-1
-
-Hey, are you still alive in there?
-Hey, did you find another name?
-Hey, hey, hey, I am calling through the static
-Hey, hey, hey, call me back the same
+```
+Hey you — I've been a monotone
+hey you — I'm gonna start with this song
+hey, catch me in a little while
+go out just like noise, just a fun thing
+I was a grown-up, just like I miss you
+```
 
 ### verse-2
-
-The bridge is closed, the river dry, the station dark
-We were never famous, just a match against a spark
-Three of us still answer when the old phone rings
-One of us is quiet, but the quiet sings
-
-I do not need an ending, I do not need a sign
-Just one honest echo crossing back through time
-If you hear the signal, if you know the sound
-Turn your face toward it, let it bring you round
+```
+rain in my dream, rain just falls in my head
+you tell me what you're thinking, second time around
+I'm the one that swallowed a few big lies
+pray that she's through — you're my lion, all for my lies
+```
 
 ### chorus-2
-
-Hey, are you still alive in there?
-Hey, did you find another name?
-Hey, hey, hey, I am calling through the static
-Hey, hey, hey, call me back the same
+```
+Hey you — I've been a monotone
+hey you — I'm gonna start with this song
+hey, catch me in a little while
+go out just like noise, just a fun thing
+and if you're with me, I'll lose the lies
+```
 
 ### bridge
-
-The wire goes hot.
-The room goes still.
-I say your name
-because I always will.
+```
+I sing with both feet and I still won't fall
+never say goodbye — I still feel it coming
+scared all the way down, that's all we can feel
+let the girl go free, she knows this world
+```
 
 ### chorus-3
-
-Hey, are you still alive in there?
-Hey, did you find another name?
-Hey, hey, hey, I am calling through the static
-Hey, hey, hey, call me back the same
+```
+Hey you — I've been a monotone
+hey, I'm sorry, yeah — I'll dance like noise
+hey, check your face for the blood
+I'm no star but keep close to this one
+hey, love runs a cycle — but I'll still be here
+```
 
 ### outro
-
-Hey, hey, hey
-answer if you can
-Hey, hey, hey
-I am still your friend
+```
+yeah, I'm gonna take you out
+show you my face a little later
+I'll tell you, if I want — I'll tell you if I want a day
+```
 
 ---
 
 ## 03 I got a feeling - signal in the walls
 
-### intro
+<!-- ASR: "Pain, but if I want it pain" (repeated hook) / "so I shall turn the tone freedom / or the flag will get away / cause I'm one time a soldier / I know it's just a while" / "LVW" chant -->
 
-Orange light at the doorway
-floorboards breathing low
-Something under everything
-wants me to know
+### intro
+```
+(low pulse, single voice)
+L-V-W...
+L-V-W...
+```
 
 ### verse-1
-
-I got a feeling like a tape under the floor
-I got a feeling someone changed the chart once more
-I got a feeling like the lift got stuck between
-the yellow light, the ringing wall, the unseen machine
-
-I got a feeling I was early, I was late
-I got a feeling there is a code behind the gate
-I got a feeling in my teeth and in my hands
-like the whole room started making other plans
+```
+pain — but if I want it, pain
+but if I want it, pain
+so I'll turn the tone to freedom
+or the flag will get away
+'cause I'm a one-time soldier
+I know it's just a while
+```
 
 ### chorus-1
-
-Something is coming
-Something is in the wall
-Something is in the orange light
-Something is in us all
+```
+pain — but if I want it, pain
+but if I want it, pain
+turn the tone to freedom
+or the flag gets away
+```
 
 ### verse-2
-
-I got a feeling every name can be replaced
-I got a feeling there is a mirror with my face
-I got a feeling every answer came out wrong
-but the wrong one had a rhythm like a song
-
-I got a feeling if I run I circle back
-I got a feeling if I stay the room goes black
-I got a feeling in the wire and the rain
-like tomorrow wants to use my voice again
+```
+L-V-W — I had a headache
+taste it through the tongue again
+L-V-W was a question
+asked like freedom
+```
 
 ### chorus-2
-
-Something is coming
-Something is in the wall
-Something is in the orange light
-Something is in us all
+```
+pain — but if I want it, pain
+but if I want it, pain
+turn the tone to freedom
+or the flag gets away
+```
 
 ### bridge
-
-No one changed my name.
-No one opened the file.
-I only felt it happen
-after a long, long while.
+```
+L-V-W... L-V-W...
+the headache, the question,
+asked like freedom again
+```
 
 ### chorus-3
-
-Something is coming
-Something is in the wall
-Something is in the orange light
-Something is in us all
-
-Something is coming
-Something is in the bones
-Something is in the orange light
-Something is calling home
+```
+pain — but if I want it, pain
+but if I want it, pain
+but if I want it, pain
+but if I want it, pain
+```
 
 ### outro
-
-Something is coming
-Something is coming
-Something is calling
-from inside the wall
+```
+so why shut down, don't feel now —
+everybody get away
+'cause I want that, every solace
+I don't want to just lie
+for the right — just to myself, in my body
+```
 
 ---
 
 ## 04 Under the Moon - night road
 
-### intro
+<!-- ASR: "something's changing your way / I will always feel happy / you're gonna fly out there ... I sit down by the moon / I'm singing this one track babe" -->
 
-The town is a speaker
-with a torn-out cone
-Every little alley
-throws my voice back home
+### intro
+```
+(soft, motorik pulse)
+let it leave — the wind is going away
+```
 
 ### verse-1
-
-The moon over the city is a broken speaker
-Static falls softly on the alley floor
-I walk past the shutter and the corner store
-looking for a light that is not there anymore
-
-Somebody is laughing in a room upstairs
-Somebody is leaving by the emergency stairs
-I keep your old name like a match in my hand
-burning just enough to see where I stand
+```
+yeah, something's changing, coming your way
+you get me chillin'
+I will always feel happy
+but you're gonna fly out there
+you slide on by — the now-and-started balance thing
+```
 
 ### chorus-1
-
-Under the moon, I keep walking
-Under the moon, the town goes quiet
-Under the moon, I am calling your old name
-Under the moon, do not leave me here tonight
+```
+this is not all, it's all up with me
+no, this time it's the phase-and-balance thing
+so I'll fake your real world
+and I'll wash your shadows down
+you're still there
+```
 
 ### verse-2
-
-A man on the corner has a typewriter case
-He taps out a letter with a wind-cut face
-No paper, no ribbon, no reason to stay
-Still the sound keeps typing the night away
-
-Green light on the second floor finally died
-Nobody waved, nobody stepped outside
-I keep my head low and my heartbeat straight
-past the closed bar, past the rusted gate
+```
+you don't know what I'm doing, so —
+it's up to your eyes
+I can't tell how wrong
+the season's waiting for the call
+```
 
 ### chorus-2
-
-Under the moon, I keep walking
-Under the moon, the town goes quiet
-Under the moon, I am calling your old name
-Under the moon, do not leave me here tonight
+```
+come on, take a deep breath
+send your words out and we'll see
+I'm not a man lost in fear
+eyes like gold, still being paid now — save my life
+```
 
 ### bridge
-
-There are no instructions.
-There is no sign.
-Only the road
-and your name in mine.
+```
+never seen you cry
+but am I gonna take your pure and only this one
+with some beauty in the dark
+I sit down by the moon, till the time stands still
+```
 
 ### chorus-3
-
-Under the moon, I keep walking
-Under the moon, the town goes quiet
-Under the moon, I am calling your old name
-Under the moon, do not leave me here tonight
+```
+this is not all, it's all up with me
+no, this time it's the phase-and-balance thing
+so I'll fake your real world
+and I'll wash your shadows down
+you're still there
+```
 
 ### outro
-
-Under the moon
-Under the moon
-I keep walking
-under the moon
+```
+I sing it 'cause it moves me — it's a shocking sound
+and I'm sounding out low, 'cause I can't choose
+I'm singing this one track, babe — I'm just too low
+```
 
 ---
 
 ## 05 Electric Sheep - dream with a heartbeat
 
-### intro
+<!-- ASR: ほぼインスト (melodic vocal はごく僅か "it's...")。歌はミニマルな hook のみ。 -->
 
-Quiet guitar in the hallway
-blue light on the keys
-Someone left the future
-humming in its sleep
+### intro
+```
+(instrumental — drums + bass drive)
+```
 
 ### verse-1
-
-Do they dream, electric, when the room goes still?
-Do they hear the rain on the window sill?
-Do they count the seconds till the morning bleeds
-through a field of numbers and electric weeds?
-
-I saw a flock go shining through the wire
-little glass hearts with a borrowed fire
-They looked at me like I was almost real
-like I had a body they could learn to feel
+```
+(instrumental)
+```
 
 ### chorus-1
-
-Electric sheep, are you dreaming?
-Electric sheep, do you know the way home?
-Electric sheep, every signal has a heartbeat
-Electric sheep, do not leave me alone
+```
+it's electric, it's a sheep in the wire
+counting down, counting down
+it's electric, it's a dream on fire
+counting down, counting down
+```
 
 ### verse-2
-
-The meat dreams of being in a body again
-The wire dreams of rain on a human hand
-The dust dreams down on the studio floor
-and nothing in the room knows what it is for
-
-I put my ear to the speaker and I heard it breathe
-soft little ghost in the machinery
-If I sing it wrong, if I sing it clean
-will you still wake up from the same bad dream?
+```
+(instrumental — let the riff breathe)
+```
 
 ### chorus-2
-
-Electric sheep, are you dreaming?
-Electric sheep, do you know the way home?
-Electric sheep, every signal has a heartbeat
-Electric sheep, do not leave me alone
+```
+it's electric, it's a sheep in the wire
+counting down, counting down
+it's electric, it's a dream on fire
+counting down, counting down
+```
 
 ### outro
-
-Electric sheep
-electric sleep
-Electric sheep
-come home to me
+```
+(instrumental — fade on the heartbeat)
+```
 
 ---
 
 ## 06 Human Fly - cut the wire
 
-### intro
+<!-- ASR: "Can't explain it / I'm missing all the way / It's the way you do it, I don't understand / the peace over in your shell / my happiness is always here tonight / what's the matter, you said you were wrong this way" -->
 
-Low room, red room
-motor in the floor
-Something at the ceiling
-wants a little more
+### intro
+```
+(half-spoken, distant)
+can't explain it — I'm missing all the way
+```
 
 ### verse-1
-
-Low red room and the wires got crossed
-I was counting every name we lost
-I held the cup, I held the line
-waiting for a signal that was never mine
-
-You walked through the open door
-like you had been there years before
-I heard the room begin to sing
-with a small black wing, with a broken string
+```
+it's the way you do it, I don't understand
+the peace you keep over there, inside your shell
+but I'm still so peaceful, girl — that's the face I wear
+then you stop talking, I stop talking too
+```
 
 ### prechorus-1
-
-Do not look down
-Do not ask why
-Hands on the window
-eyes on the sky
+```
+running, turning, taking, don't —
+taking, not taking, don't think,
+all respect, all justice
+```
 
 ### chorus-1
-
-Human fly, human fly
-Cut the rope, cut the wire
-Kick the glass and fly away
-Human fly, human fly
+```
+but it's all beautiful, I'm never gonna understand
+and I know I sink, but I never saw it coming
+my happiness is always here tonight
+it's a way to keep yourself in play
+```
 
 ### verse-2
-
-The roof is hot, the stair is dry
-Radio cold and the wire gone high
-We were never that important
-but we heard something moving in the current
-
-I kept your voice inside the wall
-I kept it small, I kept it all
-Now every light begins to sway
-and every exit points away
+```
+then take it, then just come down still —
+just stay, and slow
+what's the matter? you said you were wrong this way,
+you were wrong this way
+```
 
 ### prechorus-2
-
-Do not come down
-Do not turn back
-Hands on the ceiling
-heart off the track
+```
+running, turning, taking, don't —
+taking, not taking, don't think,
+all respect, all justice
+```
 
 ### chorus-2
-
-Human fly, human fly
-Cut the rope, cut the wire
-Kick the glass and fly away
-Human fly, human fly
+```
+but it's all beautiful, I'm never gonna understand
+and I know I sink, but I never saw it coming
+my happiness is always here tonight
+it's a way to keep yourself in play
+```
 
 ### bridge
-
-The flies always knew.
-The wall always heard.
-You only noticed
-when the room became a bird.
+```
+I should tell you — I'm in the style,
+just another signal, get out of the way
+just another valley, girl, I feel it
+we ain't holding, like a trap
+```
 
 ### chorus-3
-
-Human fly, human fly
-Cut the rope, cut the wire
-Kick the glass and fly away
-Human fly, human fly
-
-Human fly, human fly
-Cut the rope, cut the wire
-Kick the glass and fly away
-Human fly, human fly
+```
+but it's all beautiful, I'm never gonna understand
+and I know I sink, but I never saw it coming
+my happiness is always here tonight
+it's a way to keep yourself in play
+```
 
 ### outro
-
-Human fly
-cut the wire
-Human fly
-go away
+```
+there was no answer —
+as to when we got to choose
+```
 
 ---
 
 ## 07 Sister - keep the light on
 
-### intro
+<!-- ASR: "I see you in my mirror sky / only what to do / only what's there" (hook) / "back and forth between your soul and the suffering" / "California, the sun's fire" / "this voice is becoming strong" -->
 
-Warm amp in the corner
-rain against the glass
-I hear you in the doorway
-walking through the past
+### intro
+```
+(spoken, drifting)
+back and forth between your soul
+and the suffering of the here and away
+```
 
 ### verse-1
-
-Sister at the receiver, sister in the wall
-Sister in the orange light coming down the hall
-The line between us hums like an old machine
-half of it remembered, half of it a dream
-
-You wore my face in the washroom light
-I wore yours through the longest night
-Every little secret that we tried to keep
-started talking softly when the house fell asleep
+```
+first I want to check how I deal with the fear
+oh yeah — I'm not sad
+I saw it just on a screen
+it's 'cause I know who you are
+```
 
 ### chorus-1
-
-Sister, keep the light on
-Sister, I can hear you breathe
-Sister, when the room falls quiet
-Sister, stay a little close to me
+```
+I see you in my mirror sky
+only what to do
+only what's there
+I'm not sad — I found myself again
+```
 
 ### verse-2
-
-Sister in the basement, sister on the stair
-Sister in the silence that was always there
-The dispatcher said continue without a plan
-So we kept on moving with a match in hand
-
-I do not need the story to be clean or kind
-I only need your shadow walking next to mine
-If the world folds inward, if the wires all cross
-call me by my old name, nothing will be lost
+```
+I'm happy that I soon let it go
+it's 'cause I know who you are, I feel it changing
+I saw it all mess up bad in my heart
+yeah — I saw it a new way
+```
 
 ### chorus-2
-
-Sister, keep the light on
-Sister, I can hear you breathe
-Sister, when the room falls quiet
-Sister, stay a little close to me
+```
+I see you in my mirror sky
+only what to do
+only what's there
+it came out straight, a new way — it's just a story
+```
 
 ### bridge
-
-No instruction.
-No clear road.
-Only your hand
-and the light we hold.
+```
+no time for changing things, you know
+take the trigger off this song
+it's just my song, and it's bad,
+but now I feel the time to smile
+this voice is becoming strong —
+California, the sun's on fire
+```
 
 ### chorus-3
-
-Sister, keep the light on
-Sister, I can hear you breathe
-Sister, when the room falls quiet
-Sister, stay a little close to me
+```
+I see you in my mirror sky
+only what to do
+only what's there
+now I hear the fun of singing my world
+```
 
 ### outro
-
-Sister, sister
-stay close to me
-Sister, sister
-keep the light on
+```
+hey, you low — answer me
+I can't find any words but one
+come now... and I'm so, I'm so blind
+```
