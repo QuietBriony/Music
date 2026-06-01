@@ -1,10 +1,24 @@
-# Band Room — Changelog (v65 → v293 compact)
+# Band Room — Changelog (v65 → v294 compact)
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
 
 Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine.js?v=fm-NN`
 も bump する。
+
+---
+
+## v294 compact - Music Stack listening index
+
+Music Stack side only. Audio engines are unchanged.
+
+`listen.html` adds a phone-friendly listening index for opening Hazama FM
+genre checks, Music Core Rig, Band Room, and the sister app handoff targets
+from one screen. Music Core Rig and Hazama FM now link to that index, and the
+service-worker/audit path tracks the page so the review entry remains
+available after deploys and PWA refreshes.
+
+- `hazama-fm-v294`.
 
 ---
 

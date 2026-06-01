@@ -12,7 +12,7 @@ Checks:
     2. presets/loader.js PRESET_FILES vs filesystem
     3. genre-flavor.js PRESET_BY_GENRE vs loader keys
     4. sw.js precache list completeness
-    5. cache buster version sync (fm.html / index.html / band-room.html vs sw.js)
+    5. cache buster version sync (fm.html / index.html / listen.html / band-room.html vs sw.js)
     6. engine.js MUSIC_RADIO_BRAIN_PROGRAMS coverage
        (reset / reason / target / station-ident / bias for each program)
     7. genre-flavor.js per-builder synth volume settings
@@ -196,14 +196,17 @@ missing_local = sorted(
 status(not missing_local, f"all local sw precache targets exist ({len(local_precache_urls) - len(missing_local)}/{len(local_precache_urls)})")
 if missing_local:
     print(f"     missing local files: {missing_local}")
+status("listen.html" in precache_url_set, "listen.html is precached for the listening index")
 
-# 5. Cache buster sync (fm.html / index.html / band-room.html vs sw.js)
+# 5. Cache buster sync (fm.html / index.html / listen.html / band-room.html vs sw.js)
 info("\n[5] cache buster version sync")
 html_text = (ROOT / "fm.html").read_text(encoding="utf-8")
 index_html_text = (ROOT / "index.html").read_text(encoding="utf-8")
+listen_html_text = (ROOT / "listen.html").read_text(encoding="utf-8")
 band_room_html_text = (ROOT / "band-room.html").read_text(encoding="utf-8")
 versions_html = set(re.findall(r'\?v=(fm-\w+)', html_text))
 versions_index_html = set(re.findall(r'\?v=(fm-\w+)', index_html_text))
+versions_listen_html = set(re.findall(r'\?v=(fm-\w+)', listen_html_text))
 versions_sw = set(re.findall(r'\?v=(fm-\w+)', sw_text))
 versions_br_html = set(re.findall(r'\?v=(br-\w+)', band_room_html_text))
 versions_br_sw = set(re.findall(r'\?v=(br-\w+)', sw_text))
@@ -211,6 +214,7 @@ sw_version = re.search(r'const VERSION = "([^"]+)"', sw_text)
 for page_name, page_text in [
     ("fm.html", html_text),
     ("index.html", index_html_text),
+    ("listen.html", listen_html_text),
     ("band-room.html", band_room_html_text),
 ]:
     refs = set(versioned_page_urls(page_text))
@@ -222,6 +226,8 @@ status(versions_html <= versions_sw, f"fm.html version markers present in sw.js"
 info(f"     html: {sorted(versions_html)}")
 status(versions_index_html <= versions_sw, f"index.html version markers present in sw.js")
 info(f"     index: {sorted(versions_index_html)}")
+status(versions_listen_html <= versions_sw, f"listen.html version markers present in sw.js")
+info(f"     listen: {sorted(versions_listen_html)}")
 info(f"     sw  : {sorted(versions_sw)}")
 status(versions_br_html <= versions_br_sw, f"band-room.html version markers present in sw.js")
 info(f"     band-room html: {sorted(versions_br_html)}")

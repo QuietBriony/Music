@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Music Stack Listen</title>
+  <meta name="description" content="Music Stack listening entry points for Hazama FM, Core Rig, Band Room, and sister apps." />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <meta name="theme-color" content="#061119" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #061119;
+      --panel: rgba(8, 18, 27, 0.84);
+      --panel-strong: rgba(10, 25, 36, 0.94);
+      --line: rgba(214, 238, 246, 0.18);
+      --text: rgba(236, 247, 250, 0.94);
+      --muted: rgba(190, 211, 218, 0.68);
+      --cyan: #71d9d0;
+      --amber: #f0bf68;
+      --rose: #e58da6;
+      --green: #90d17d;
+      --blue: #7ab6e8;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: var(--bg);
+      background-image: url("assets/background.svg");
+      background-position: center top;
+      background-size: min(1400px, 190vw);
+      background-attachment: fixed;
+      color: var(--text);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: rgba(3, 8, 13, 0.76);
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: calc(18px + env(safe-area-inset-top, 0px)) 0 36px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 16px;
+      min-height: 104px;
+      padding: 8px 0 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 4.8rem);
+      line-height: 0.96;
+      letter-spacing: 0;
+      font-weight: 760;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 620px;
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .top-actions a,
+    .mini-link {
+      border: 1px solid var(--line);
+      background: rgba(9, 20, 29, 0.74);
+      min-height: 36px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: rgba(237, 250, 252, 0.86);
+    }
+
+    section { margin-top: 18px; }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 0.86rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(235, 247, 250, 0.78);
+    }
+
+    .section-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-align: right;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      min-height: 132px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--cyan);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
+    }
+
+    .card:hover,
+    .card:focus-visible {
+      outline: 2px solid rgba(113, 217, 208, 0.48);
+      outline-offset: 2px;
+      background: var(--panel-strong);
+    }
+
+    .card strong {
+      display: block;
+      font-size: 1.05rem;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .card span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: rgba(238, 249, 250, 0.76);
+      font-size: 0.75rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .meta b {
+      color: rgba(238, 249, 250, 0.92);
+      font-weight: 620;
+    }
+
+    .amber { border-top-color: var(--amber); }
+    .rose { border-top-color: var(--rose); }
+    .green { border-top-color: var(--green); }
+    .blue { border-top-color: var(--blue); }
+
+    .wide { grid-column: span 2; }
+
+    .visual-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      min-height: 92px;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(7, 17, 25, 0.72);
+      overflow: hidden;
+    }
+
+    .visual-row p {
+      margin: 0;
+      color: rgba(225, 240, 244, 0.78);
+      font-size: 0.86rem;
+      line-height: 1.55;
+    }
+
+    .visual-row img {
+      width: min(210px, 32vw);
+      height: 80px;
+      object-fit: contain;
+      opacity: 0.72;
+    }
+
+    footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    @media (max-width: 920px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      header { grid-template-columns: 1fr; align-items: start; }
+      .top-actions { justify-content: flex-start; }
+    }
+
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 18px, 1180px); }
+      .grid { grid-template-columns: 1fr; }
+      .wide { grid-column: span 1; }
+      .section-head { align-items: flex-start; flex-direction: column; }
+      .section-note { text-align: left; }
+      .card { min-height: 112px; }
+      .visual-row { grid-template-columns: 1fr; }
+      .visual-row img { width: 100%; height: 64px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>Music Stack Listen</h1>
+        <p class="subtitle">One screen for opening the current Music stack in a practical listening order.</p>
+      </div>
+      <nav class="top-actions" aria-label="Primary pages">
+        <a href="fm.html">Hazama FM</a>
+        <a href="index.html">Core Rig</a>
+        <a href="band-room.html">Band Room</a>
+      </nav>
+    </header>
+
+    <section aria-labelledby="fm-audition-title">
+      <div class="section-head">
+        <h2 id="fm-audition-title">FM quick audition</h2>
+        <p class="section-note">Open, press START, then listen before switching.</p>
+      </div>
+      <div class="grid">
+        <a class="card green" href="fm.html?g=any">
+          <div><strong>Any arc</strong><span>Long-form radio balance and automatic identity shifts.</span></div>
+          <div class="meta"><b>FM</b><span>90 sec</span></div>
+        </a>
+        <a class="card amber" href="fm.html?g=lofi">
+          <div><strong>Lofi memory</strong><span>Tape pocket, restrained dust, and late snare feel.</span></div>
+          <div class="meta"><b>FM</b><span>60 sec</span></div>
+        </a>
+        <a class="card blue" href="fm.html?g=jazz">
+          <div><strong>Jazz pocket</strong><span>Brush motion, walking bass, and phrase space.</span></div>
+          <div class="meta"><b>FM</b><span>60 sec</span></div>
+        </a>
+        <a class="card rose" href="fm.html?g=funk">
+          <div><strong>Funk pocket</strong><span>Clavi/EP color and rubber syncopation after the v293 timing pass.</span></div>
+          <div class="meta"><b>FM</b><span>60 sec</span></div>
+        </a>
+        <a class="card blue" href="fm.html?g=techno">
+          <div><strong>Techno pressure</strong><span>Grid kick, sparse hats, and acid cue without fatigue.</span></div>
+          <div class="meta"><b>FM</b><span>90 sec</span></div>
+        </a>
+        <a class="card green" href="fm.html?g=ambient">
+          <div><strong>Ambient air</strong><span>Safe room tone, long release, and namima boundary.</span></div>
+          <div class="meta"><b>FM</b><span>90 sec</span></div>
+        </a>
+        <a class="card amber" href="fm.html?g=piano">
+          <div><strong>Piano foreground</strong><span>Felt piano focus and chill handoff judgement.</span></div>
+          <div class="meta"><b>FM</b><span>60 sec</span></div>
+        </a>
+        <a class="card wide" href="docs/runtime-browser-listening-checklist.md">
+          <div><strong>Runtime checklist</strong><span>Detailed listening gates for browser, PWA, route, and handoff checks.</span></div>
+          <div class="meta"><b>Doc</b><span>review</span></div>
+        </a>
+      </div>
+    </section>
+
+    <section aria-labelledby="core-title">
+      <div class="section-head">
+        <h2 id="core-title">Core and band room</h2>
+        <p class="section-note">Use these after FM exposes a direction worth keeping.</p>
+      </div>
+      <div class="grid">
+        <a class="card blue wide" href="index.html">
+          <div><strong>Music Core Rig</strong><span>Full fader rig for density, output, recorder, and long-form radio-brain checks.</span></div>
+          <div class="meta"><b>Music</b><span>2 min</span></div>
+        </a>
+        <a class="card green wide" href="band-room.html">
+          <div><strong>Band Room</strong><span>Practice box, stems, route badge, master volume, and live-band recovery checks.</span></div>
+          <div class="meta"><b>Music</b><span>30 sec</span></div>
+        </a>
+      </div>
+      <div class="visual-row">
+        <p>Keep this page open as the working PC or phone launcher. It is intentionally metadata-light: each target keeps its own sound engine and manual start.</p>
+        <img src="assets/layer_04.svg" alt="" />
+      </div>
+    </section>
+
+    <section aria-labelledby="stack-title">
+      <div class="section-head">
+        <h2 id="stack-title">Stack handoff</h2>
+        <p class="section-note">Sister apps stay silent until manually started.</p>
+      </div>
+      <div class="grid">
+        <a class="card rose" href="https://quietbriony.github.io/drum-floor/" target="_blank" rel="noopener">
+          <div><strong>Drum Floor</strong><span>Rhythm grammar, body pocket, and groove preview.</span></div>
+          <div class="meta"><b>Stack</b><span>preview</span></div>
+        </a>
+        <a class="card amber" href="https://quietbriony.github.io/chill/session.html" target="_blank" rel="noopener">
+          <div><strong>Chill</strong><span>Quiet piano, trio surface, and long-form listening restraint.</span></div>
+          <div class="meta"><b>Stack</b><span>session</span></div>
+        </a>
+        <a class="card green" href="https://quietbriony.github.io/namima/" target="_blank" rel="noopener">
+          <div><strong>Namima</strong><span>Safe ambient air, ripple pacing, and public-friendly calm.</span></div>
+          <div class="meta"><b>Stack</b><span>air</span></div>
+        </a>
+        <a class="card blue" href="https://quietbriony.github.io/openclaw/" target="_blank" rel="noopener">
+          <div><strong>OpenClaw Desk</strong><span>Review cards, next actions, and repo-level judgement.</span></div>
+          <div class="meta"><b>Stack</b><span>desk</span></div>
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      <span>Music Stack listening index</span>
+      <span><a class="mini-link" href="docs/music-stack-human-review-queue.html">Human review queue</a></span>
+    </footer>
+  </div>
+</body>
+</html>
