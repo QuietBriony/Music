@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-182-karaoke-lead";
+  const BANDROOM_APP_VERSION = "br-183-bg-audio";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -671,7 +671,11 @@
     return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
   }
 
-  function explicitBackgroundAudioAllowed() {
+  // v308: background audio is ON by default now. The hidden media-stream bridge
+  // keeps playback alive when the screen locks / the app is backgrounded. It was
+  // previously opt-in AND Apple-only, which made it unreachable without a ?bg=1
+  // URL hack (the "codex phone" case). ?bg=0 or a persisted "0" still disables it.
+  function backgroundAudioEnabled() {
     try {
       const params = new URLSearchParams(window.location.search || "");
       const value = params.get("bg") || params.get("backgroundAudio");
@@ -679,18 +683,23 @@
       if (value === "0" || value === "false") return false;
     } catch (e) {}
     try {
-      return safeLocalStorageGet(BANDROOM_ALLOW_BACKGROUND_AUDIO_KEY) === "1";
+      return safeLocalStorageGet(BANDROOM_ALLOW_BACKGROUND_AUDIO_KEY) !== "0";
     } catch (e) {
-      return false;
+      return true;
     }
   }
 
   function shouldPreferBackgroundAudioBridge() {
-    return explicitBackgroundAudioAllowed() && isAppleMobileDevice();
+    if (!backgroundAudioEnabled()) return false;
+    // The media bridge matters wherever the OS suspends Web Audio in the
+    // background: iOS, Android, and installed (standalone) PWAs. Desktop keeps
+    // Web Audio running while hidden, so it doesn't need the bridge.
+    const nav = typeof navigator !== "undefined" ? navigator : {};
+    return isStandaloneDisplayMode() || isAppleMobileDevice() || /Android|Mobile/i.test(nav.userAgent || "");
   }
 
   function shouldStopPlaybackForBackground(reason = "hidden") {
-    if (explicitBackgroundAudioAllowed()) return false;
+    if (backgroundAudioEnabled()) return false;
     if (reason === "pagehide" || reason === "freeze" || reason === "beforeunload") return true;
     if (typeof document !== "undefined" && document.hidden && (reason === "hidden" || reason === "blur")) return true;
     return false;
@@ -5103,7 +5112,7 @@
 
   function playbackStartStillAllowed(startSeq) {
     if (startSeq !== playbackLifecycleStopSeq) return false;
-    if (!explicitBackgroundAudioAllowed() && typeof document !== "undefined" && document.hidden) return false;
+    if (!backgroundAudioEnabled() && typeof document !== "undefined" && document.hidden) return false;
     return true;
   }
 

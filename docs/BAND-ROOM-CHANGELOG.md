@@ -1,6 +1,25 @@
-# Band Room — Changelog (v65 → v307 compact)
+# Band Room — Changelog (v65 → v308 compact)
 
-Current compact release: v307.
+Current compact release: v308.
+
+---
+
+## v308 compact — バックグラウンド再生を「復活」(既定 ON + iOS/Android/PWA 対応)
+
+バックグラウンド再生(画面ロック/アプリ切替でも鳴り続ける)が事実上使えなかった
+原因: 隠し media-stream ブリッジが **opt-in かつ Apple モバイル限定**、しかも opt-in
+を立てる UI が無く `?bg=1` URL でしか有効化できなかった(= codex がスマホ＋URL で
+再生した時だけ効いていた)。修正:
+- ブリッジを **既定 ON**(`?bg=0` か保存フラグ "0" で無効化可)。
+- 対象を **iOS / Android / インストール済み PWA** に拡張(従来は Apple のみ)。
+  デスクトップは隠れても Web Audio が鳴り続けるのでブリッジ不要。
+- 仕組み自体は既存のまま: master → MediaStreamDestination → 非表示 `<audio>` を
+  再生、ハードウェア出力はミュート。失敗時は直出力にフォールバック。MediaSession の
+  メタデータ＋再生状態＋操作ハンドラ(再生/停止/曲送り/シーク)も従来通り。
+
+ルート状態は `br-audio-route-status`(bridge / direct)で確認可。
+
+`band-room.js?v=br-183`、`band-room.css?v=br-83`、`hazama-fm-v308`。
 
 ---
 
