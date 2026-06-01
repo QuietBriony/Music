@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Hazama Depth Engine — 深度リアクティブ生成音楽 (prototype)</title>
+  <meta name="description" content="Hazama の沈下の深度・圧に反応する生成音楽プロトタイプ。潜るほど低く・暗く・密に・乾いて。" />
+  <meta name="theme-color" content="#05090d" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <!-- Tone.js (band-room.html / fm.html と同じ CDN・版。samples は使わず全合成) -->
+  <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #05090d;
+      --panel: rgba(10, 16, 22, 0.82);
+      --line: rgba(150, 180, 195, 0.14);
+      --text: rgba(224, 236, 240, 0.92);
+      --muted: rgba(150, 172, 182, 0.62);
+      --cyan: #5fb7b0;
+      --amber: #d9a85a;
+      --rose: #c87a8e;
+      --deep: #2a4a5a;
+      font-family: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    #depth-canvas {
+      position: fixed; inset: 0; width: 100vw; height: 100vh;
+      display: block; z-index: 0;
+    }
+    .shell {
+      position: relative; z-index: 1;
+      max-width: 720px; margin: 0 auto; padding: 24px 18px 64px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    header h1 {
+      font-size: 16px; letter-spacing: 0.04em; margin: 0 0 4px;
+      font-weight: 600;
+    }
+    header p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .status {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; border: 1px solid var(--line); border-radius: 2px;
+      background: var(--panel); font-size: 12px; letter-spacing: 0.06em;
+      align-self: flex-start;
+    }
+    .status .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--muted); box-shadow: 0 0 8px currentColor;
+    }
+    .status.live .dot { background: var(--cyan); color: var(--cyan); }
+    .status.standalone .dot { background: var(--amber); color: var(--amber); }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    button {
+      font-family: inherit; font-size: 13px; letter-spacing: 0.08em;
+      background: var(--panel); color: var(--text);
+      border: 1px solid var(--line); border-radius: 2px;
+      padding: 12px 22px; cursor: pointer; transition: border-color .2s, background .2s;
+    }
+    button:hover { border-color: var(--cyan); }
+    button.primary { border-color: var(--cyan); color: var(--cyan); }
+    button[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
+    .panel {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 3px;
+      padding: 14px 16px;
+    }
+    .panel h2 {
+      font-size: 11px; letter-spacing: 0.12em; color: var(--muted);
+      margin: 0 0 12px; font-weight: 600; text-transform: uppercase;
+    }
+    .slider-row { display: grid; grid-template-columns: 86px 1fr 52px; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .slider-row:last-child { margin-bottom: 0; }
+    .slider-row label { font-size: 12px; color: var(--text); }
+    .slider-row output { font-size: 12px; color: var(--cyan); text-align: right; }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 3px;
+      background: var(--deep); border-radius: 2px; outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 14px; height: 14px;
+      border-radius: 50%; background: var(--cyan); cursor: pointer;
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 14px; height: 14px; border: none; border-radius: 50%; background: var(--cyan); cursor: pointer;
+    }
+    .readout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 18px; }
+    .readout .kv { display: flex; justify-content: space-between; font-size: 12px; border-bottom: 1px dotted var(--line); padding-bottom: 4px; }
+    .readout .kv span:first-child { color: var(--muted); }
+    .readout .kv span:last-child { color: var(--text); }
+    .hint { color: var(--muted); font-size: 11px; line-height: 1.6; }
+    code { color: var(--amber); background: rgba(217,168,90,0.08); padding: 1px 4px; border-radius: 2px; }
+    a { color: var(--cyan); }
+  </style>
+</head>
+<body>
+  <canvas id="depth-canvas"></canvas>
+  <div class="shell">
+    <header>
+      <h1>HAZAMA DEPTH ENGINE <span style="color:var(--muted);font-weight:400">/ prototype</span></h1>
+      <p>沈下の深度に反応する生成音楽。潜るほど <strong>低く・暗く・密に・乾いて</strong>、圧が上がるほど鼓動が速くなる。<br>
+         Hazama 接続時は受信 state で駆動。未接続でも下のスライダー / Auto-sink で単体デモ可。</p>
+    </header>
+
+    <div id="status" class="status standalone"><span class="dot"></span><span id="status-text">STANDALONE — Hazama 未接続</span></div>
+
+    <div class="controls">
+      <button id="start" class="primary">▶ START</button>
+      <button id="stop" disabled>■ STOP</button>
+      <button id="autosink" aria-pressed="false">◇ AUTO-SINK</button>
+    </div>
+
+    <div class="panel">
+      <h2>沈下 state (standalone 入力 / Hazama 受信を反映)</h2>
+      <div class="slider-row">
+        <label for="s-depth">DEPTH 深度</label>
+        <input type="range" id="s-depth" min="0" max="100" value="20" />
+        <output id="o-depth">0.20</output>
+      </div>
+      <div class="slider-row">
+        <label for="s-pressure">PRESSURE 圧</label>
+        <input type="range" id="s-pressure" min="0" max="100" value="30" />
+        <output id="o-pressure">0.30</output>
+      </div>
+      <div class="slider-row">
+        <label for="s-stability">STABILITY 安定</label>
+        <input type="range" id="s-stability" min="0" max="100" value="65" />
+        <output id="o-stability">0.65</output>
+      </div>
+      <div class="slider-row">
+        <label for="s-resonance">RESONANCE 共鳴</label>
+        <input type="range" id="s-resonance" min="0" max="100" value="30" />
+        <output id="o-resonance">0.30</output>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>生成中の音楽パラメータ (state → music mapping)</h2>
+      <div class="readout">
+        <div class="kv"><span>root</span><span id="r-root">—</span></div>
+        <div class="kv"><span>heartbeat</span><span id="r-bpm">—</span></div>
+        <div class="kv"><span>filter cutoff</span><span id="r-cutoff">—</span></div>
+        <div class="kv"><span>dissonance</span><span id="r-diss">—</span></div>
+        <div class="kv"><span>drone layers</span><span id="r-layers">—</span></div>
+        <div class="kv"><span>reverb (dryness)</span><span id="r-wet">—</span></div>
+        <div class="kv"><span>texture density</span><span id="r-density">—</span></div>
+        <div class="kv"><span>source</span><span id="r-source">standalone</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>接続方法</h2>
+      <p class="hint">
+        Hazama 側が別タブとしてこのページを開き、<code>#hazama=&lt;base64&gt;</code> 付き URL か、
+        <code>postMessage({provider:"music", type:"hazama-profile", version:1, profile:{…}})</code> を送ると自動で駆動する
+        (engine.js の Hazama bridge と同じ wire format)。<br>
+        テスト: <code>window.DepthEngine.inject({depth:0.8, pressure:0.6})</code> をコンソールで実行。
+      </p>
+    </div>
+  </div>
+
+  <script>
+  "use strict";
+  /* ============================================================================
+   * Hazama Depth Engine — depth-reactive generative music prototype
+   * --------------------------------------------------------------------------
+   * 既存 Music サイト (engine.js / fm.js / band-room.js) には一切触らない、
+   * 完全に独立した standalone ページ。全音色は Tone.js 合成 (sample/audio file なし)。
+   *
+   * 設計の核: Hazama の「沈下」を depth(0..1) と pressure(0..1) に正規化し、
+   *   depth     → 音域(下)/フィルタ(暗)/密度(密)/不協和(増)/残響(減=乾)
+   *   pressure  → 鼓動 BPM / texture の刺さり
+   *   stability → 不協和・揺れ・root の彷徨い (低安定=濁る・揺れる)
+   *   resonance → 圧と sub rumble の太さ
+   * Hazama の「硬く乾いた」美学に寄せ、深いほど reverb は減らし、dry/punchy に。
+   * ========================================================================== */
+
+  /* ---- 1. state ----------------------------------------------------------- */
+  // target* = 受信/UI が書き込む目標値。cur* = audio へ滑らかに追従する現在値。
+  const S = {
+    connected: false,
+    source: "standalone",
+    depthId: "",
+    stage: "",
+    // 0..1 normalized targets
+    depth: 0.20, pressure: 0.30, stability: 0.65, resonance: 0.30,
+    // optional richer hints from Hazama audio block (null = 未指定)
+    brightness: null, bassWeight: null, density: null, space: null,
+    lastMsgAt: 0,
+  };
+  // 滑らかに追従する現在値 (zipper noise / 急変による dropout を避ける)
+  const C = { depth: S.depth, pressure: S.pressure, stability: S.stability, resonance: S.resonance };
+
+  /* ---- 2. state → music param derivation ---------------------------------- */
+  const clamp01 = (v) => v < 0 ? 0 : v > 1 ? 1 : v;
+  const lerp = (a, b, t) => a + (b - a) * clamp01(t);
+  // 対数補間 (周波数向け)
+  const elerp = (a, b, t) => a * Math.pow(b / a, clamp01(t));
+
+  // 深いほど不協和: depth が主、低 stability が追い打ち。
+  function dissonance() { return clamp01(C.depth * 0.62 + (1 - C.stability) * 0.42); }
+
+  // root MIDI: 浅い=A2(45) 付近 → 深い=C1(24) 付近へ沈む。整数 semitone に量子化。
+  function rootMidi() { return Math.round(lerp(45, 24, C.depth)); }
+
+  // chord intervals: 不協和度で「開いた5度 → m7 → 半音/三全音クラスタ」へ morph。
+  function chordIntervals() {
+    const d = dissonance();
+    if (d < 0.34) return [0, 7, 12, 19];      // 中空の完全5度スタック (浅い・孤独)
+    if (d < 0.64) return [0, 3, 10, 14];      // m7(9) — 翳り
+    return [0, 1, 6, 11];                     // m2 / 三全音 / M7 の硬いクラスタ (深い圧)
+  }
+  // 深いほど drone の層を増やす (密度)。texture density も加味。
+  function droneLayers() { return Math.round(lerp(2, 5, C.depth * 0.7 + (S.density || 0) * 0.3)); }
+  // フィルタ cutoff: 浅い 2400Hz → 深い 150Hz。brightness 指定があれば少し持ち上げる。
+  function cutoffHz() {
+    const base = elerp(2400, 150, C.depth);
+    const bright = S.brightness == null ? 0 : (S.brightness - 0.5) * 600;
+    return Math.max(120, base + bright);
+  }
+  // 鼓動 BPM: 圧で速く。深さも少し効かせ、低 stability で僅かに上ぶれ(焦り)。
+  function heartbeatBpm() { return Math.round(lerp(42, 98, C.pressure * 0.82 + C.depth * 0.12 + (1 - C.stability) * 0.06)); }
+  // reverb wet: 浅い=やや空間(0.30) → 深い=乾く(0.04)。Hazama の乾いた美学。
+  function reverbWet() { return lerp(0.30, 0.04, C.depth); }
+  // detune cents (うなり): 不協和 × resonance。
+  function detuneCents() { return dissonance() * 22 + C.resonance * 8; }
+  // texture ping の発火確率/小節。
+  function pingProb() { return clamp01(0.10 + C.depth * 0.40 + (S.density || 0) * 0.35); }
+  // sub rumble level: 深さ + 共鳴。
+  function rumbleGainLin() { return clamp01(C.depth * 0.5 + C.resonance * 0.35) * 0.22; }
+
+  const NOTE = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+  function midiName(m) { return NOTE[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1); }
+  function midiToFreq(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+
+  /* ---- 3. audio graph (built lazily on START) ----------------------------- */
+  let A = null;          // audio nodes
+  let running = false;
+  let beatCount = 0;
+  let curRoot = rootMidi();
+  let beatFlash = 0;     // 0..1 visual pulse, decays
+
+  async function buildAudio() {
+    if (A) return;
+    await Tone.start();
+
+    // master: compressor → limiter (guardrail; 詰まり防止に緩め) → destination
+    const limiter = new Tone.Limiter(-1.5);
+    const comp = new Tone.Compressor({ threshold: -20, ratio: 3, attack: 0.01, release: 0.25 });
+    const master = new Tone.Gain(0.85);
+    master.connect(comp); comp.connect(limiter); limiter.toDestination();
+
+    // depth filter: 全 "wet" 系の暗さを司る lowpass
+    const depthFilter = new Tone.Filter({ type: "lowpass", frequency: cutoffHz(), rolloff: -24, Q: 0.7 });
+    const voiceBus = new Tone.Gain(1);
+    voiceBus.connect(depthFilter);
+
+    // reverb (浅いほど wet。深いと乾く)。並列 send。
+    const reverb = new Tone.Reverb({ decay: 3.4, preDelay: 0.02 });
+    const reverbReturn = new Tone.Gain(reverbWet());
+    depthFilter.connect(master);                 // dry path
+    depthFilter.connect(reverb); reverb.connect(reverbReturn); reverbReturn.connect(master);
+
+    // drone voices: 持続オシレータ群。chord/depth に応じて周波数・gain を ramp。
+    const DRONE_N = 5;
+    const drone = [];
+    for (let i = 0; i < DRONE_N; i++) {
+      const osc = new Tone.Oscillator({ frequency: 110, type: i % 2 ? "sawtooth" : "triangle" });
+      const g = new Tone.Gain(0);
+      osc.connect(g); g.connect(voiceBus); osc.start();
+      drone.push({ osc, g });
+    }
+
+    // sub rumble: brown noise → lowpass。深い圧の床鳴り。
+    const rumbleNoise = new Tone.Noise("brown");
+    const rumbleLp = new Tone.Filter({ type: "lowpass", frequency: 90, rolloff: -24 });
+    const rumbleGain = new Tone.Gain(0);
+    rumbleNoise.connect(rumbleLp); rumbleLp.connect(rumbleGain); rumbleGain.connect(voiceBus);
+    rumbleNoise.start();
+
+    // texture ping: 乾いた金属質の粒。voiceBus 経由で depth filter に暗くされる。
+    const ping = new Tone.FMSynth({
+      harmonicity: 3.2, modulationIndex: 9,
+      envelope: { attack: 0.002, decay: 0.18, sustain: 0, release: 0.12 },
+      modulationEnvelope: { attack: 0.002, decay: 0.1, sustain: 0, release: 0.1 },
+      volume: -16,
+    });
+    const pingGain = new Tone.Gain(0.5); ping.connect(pingGain); pingGain.connect(voiceBus);
+
+    // heartbeat: dry な低い鼓動 (filter/reverb を通さず punchy に master 直結)
+    const heart = new Tone.MembraneSynth({
+      pitchDecay: 0.06, octaves: 6,
+      envelope: { attack: 0.001, decay: 0.34, sustain: 0, release: 0.12 },
+    });
+    const heartGain = new Tone.Gain(0.9); heart.connect(heartGain); heartGain.connect(master);
+
+    await reverb.generate();
+
+    A = { limiter, comp, master, depthFilter, voiceBus, reverb, reverbReturn,
+          drone, rumbleNoise, rumbleLp, rumbleGain, ping, pingGain, heart, heartGain };
+
+    // --- transport-driven events ---
+    Tone.Transport.bpm.value = heartbeatBpm();
+
+    // 鼓動: 1 拍ごとに lub-dub。低 stability で2拍目に揺れ(grace)。
+    new Tone.Loop((time) => {
+      const r = curRoot;
+      const subFreq = midiToFreq(r - 24);
+      heart.triggerAttackRelease(subFreq, "8n", time, 0.9);
+      // lub-dub の "dub": 圧が高いほど近く・強く
+      const gap = lerp(0.16, 0.10, C.pressure);
+      heart.triggerAttackRelease(subFreq * 1.005, "16n", time + gap, lerp(0.18, 0.4, C.pressure));
+      // 不安定だと時々踏み外す(欠ける/二重)
+      if (C.stability < 0.4 && Math.random() < (0.4 - C.stability)) {
+        heart.triggerAttackRelease(subFreq, "16n", time + gap * 2.1, 0.22);
+      }
+      beatFlash = 1;
+      beatCount++;
+      if (beatCount % 8 === 0) advanceRoot();
+    }, "4n").start(0);
+
+    // texture: 16分グリッドで確率発火。chord 上の高めの粒。
+    new Tone.Loop((time) => {
+      if (Math.random() > pingProb()) return;
+      const ints = chordIntervals();
+      const iv = ints[(Math.random() * ints.length) | 0];
+      const oct = 12 * (1 + ((Math.random() * 2) | 0));   // root より 1-2 oct 上
+      ping.triggerAttackRelease(midiToFreq(curRoot + iv + oct), "32n", time, lerp(0.2, 0.5, C.depth));
+    }, "16n").start("0:0:2");
+
+    Tone.Transport.start();
+  }
+
+  // root を不安定さに応じて少し彷徨わせる (沈下の揺らぎ)。基準は depth から。
+  function advanceRoot() {
+    const base = rootMidi();
+    const wanderAmt = Math.round((1 - C.stability) * 2);   // 0..2 semitone
+    const wander = wanderAmt ? (Math.round((Math.random() * 2 - 1) * wanderAmt)) : 0;
+    curRoot = base + wander;
+  }
+
+  /* ---- 4. per-frame: ramp audio toward current params + draw -------------- */
+  function applyAudio() {
+    if (!A || !running) return;
+    const t = 0.6;  // ramp seconds (滑らかに)
+    // drone: 各 voice を chord interval に。activeLayers 未満は無音。
+    const ints = chordIntervals();
+    const layers = droneLayers();
+    const det = detuneCents();
+    const voiceLevel = lerp(0.12, 0.075, C.depth);  // 深いと層が増えるので 1 声はやや控えめ
+    A.drone.forEach((v, i) => {
+      const iv = ints[i % ints.length];
+      const octShift = i < ints.length ? 0 : 12;    // 余り voice は 1 oct 上で厚み
+      v.osc.frequency.rampTo(midiToFreq(curRoot + iv + octShift), t);
+      v.osc.detune.rampTo((i % 2 ? 1 : -1) * det, t);
+      v.g.gain.rampTo(i < layers ? voiceLevel : 0, t);
+    });
+    A.depthFilter.frequency.rampTo(cutoffHz(), t);
+    A.reverbReturn.gain.rampTo(reverbWet(), t);
+    A.rumbleGain.gain.rampTo(rumbleGainLin(), t);
+    A.rumbleLp.frequency.rampTo(lerp(70, 130, C.depth), t);
+    Tone.Transport.bpm.rampTo(heartbeatBpm(), 1.2);
+  }
+
+  /* ---- 5. smoothing + UI readout loop ------------------------------------- */
+  const $ = (id) => document.getElementById(id);
+  function updateReadout() {
+    $("r-root").textContent = midiName(curRoot) + " (" + curRoot + ")";
+    $("r-bpm").textContent = heartbeatBpm() + " bpm";
+    $("r-cutoff").textContent = Math.round(cutoffHz()) + " Hz";
+    $("r-diss").textContent = dissonance().toFixed(2);
+    $("r-layers").textContent = String(droneLayers());
+    $("r-wet").textContent = "wet " + reverbWet().toFixed(2) + (C.depth > 0.7 ? " (dry)" : "");
+    $("r-density").textContent = pingProb().toFixed(2);
+    $("r-source").textContent = S.source + (S.depthId ? " · " + S.depthId : "") + (S.stage ? " · " + S.stage : "");
+    $("o-depth").textContent = C.depth.toFixed(2);
+    $("o-pressure").textContent = C.pressure.toFixed(2);
+    $("o-stability").textContent = C.stability.toFixed(2);
+    $("o-resonance").textContent = C.resonance.toFixed(2);
+  }
+
+  let autoSink = false, autoPhase = 0;
+  // 音パラメータ更新は setInterval 駆動 (tab が hidden でも止まらない = background 再生対応)。
+  // requestAnimationFrame は canvas 描画専用 (hidden で止まってよい)。
+  const TICK_MS = 50;
+  function tick() {
+    // auto-sink: ゆっくり潜って浮上する自己デモ (state 未受信でも動く)
+    if (autoSink) {
+      autoPhase += 0.0048;
+      const d = 0.5 - 0.46 * Math.cos(autoPhase);     // 0.04..0.96 をゆっくり往復
+      S.depth = d;
+      S.pressure = clamp01(0.2 + d * 0.6 + 0.1 * Math.sin(autoPhase * 2.7));
+      S.stability = clamp01(0.8 - d * 0.5);
+      syncSlidersFromState();
+    }
+    // C を S へ ease (急変吸収)
+    const k = 0.15;
+    C.depth += (S.depth - C.depth) * k;
+    C.pressure += (S.pressure - C.pressure) * k;
+    C.stability += (S.stability - C.stability) * k;
+    C.resonance += (S.resonance - C.resonance) * k;
+    if (running) applyAudio();
+    updateReadout();
+  }
+  let lastDraw = 0;
+  function drawLoop(ts) {
+    requestAnimationFrame(drawLoop);
+    // ~30fps cap + hidden 時は描画しない (長時間再生での無駄な負荷を避ける)
+    if (document.hidden) return;
+    if (ts - lastDraw < 33) return;
+    lastDraw = ts;
+    draw();
+  }
+
+  /* ---- 6. canvas visualization (沈下ゲージ + 鼓動) ------------------------ */
+  const cv = $("depth-canvas");
+  const ctx = cv.getContext("2d");
+  function resize() { cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; }
+  addEventListener("resize", resize); resize();
+  function draw() {
+    const w = cv.width, h = cv.height, dp = devicePixelRatio;
+    // 深さで暗く沈む背景グラデ
+    const top = `hsl(200, 30%, ${Math.round(lerp(10, 2, C.depth))}%)`;
+    const bot = `hsl(205, 40%, ${Math.round(lerp(4, 0, C.depth))}%)`;
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, top); g.addColorStop(1, bot);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    // 地層線 (depth に応じて下に密集)
+    ctx.strokeStyle = "rgba(95,183,176,0.10)"; ctx.lineWidth = 1 * dp;
+    const strata = 7;
+    for (let i = 1; i <= strata; i++) {
+      const base = (i / (strata + 1));
+      const y = h * (base + C.depth * 0.18 * Math.sin(i + autoPhase));
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+    // 沈下マーカー: depth の位置に水平ライン + ラベル
+    const my = h * lerp(0.12, 0.9, C.depth);
+    ctx.strokeStyle = "rgba(217,168,90,0.55)"; ctx.lineWidth = 1.5 * dp;
+    ctx.beginPath(); ctx.moveTo(0, my); ctx.lineTo(w, my); ctx.stroke();
+    // 鼓動リング (中央)
+    beatFlash *= 0.90;
+    const cx = w / 2, cyy = my;
+    const baseR = 16 * dp, pr = baseR + beatFlash * 60 * dp * (0.5 + C.pressure);
+    ctx.strokeStyle = `rgba(200,122,142,${0.25 + beatFlash * 0.6})`;
+    ctx.lineWidth = 2 * dp;
+    ctx.beginPath(); ctx.arc(cx, cyy, pr, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = `rgba(200,122,142,${0.4 + beatFlash * 0.5})`;
+    ctx.beginPath(); ctx.arc(cx, cyy, baseR * 0.4, 0, Math.PI * 2); ctx.fill();
+  }
+
+  /* ---- 7. Hazama ingestion (postMessage + #hazama= hash) ------------------ */
+  // engine.js の Hazama bridge と同じ origin allowlist + wire format。
+  const ALLOWED_ORIGINS = new Set([
+    "https://quietbriony.github.io",
+    "http://127.0.0.1:8000", "http://localhost:8000",
+    "http://127.0.0.1:8095", "http://localhost:8095",
+  ]);
+  function originOk(origin) {
+    if (!origin || origin === "null") return true;            // same-doc / file://
+    if (ALLOWED_ORIGINS.has(origin)) return true;
+    return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);  // 任意ポートの local
+  }
+
+  function decodeBase64UrlJson(value) {
+    if (typeof value !== "string" || !value) return null;
+    try {
+      const b64 = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const json = new TextDecoder("utf-8").decode(bytes);
+      return JSON.parse(json);
+    } catch (e) { console.warn("[depth] invalid hazama payload:", e); return null; }
+  }
+
+  const num = (v, f) => (typeof v === "number" && isFinite(v)) ? v : f;
+  const n01 = (v, f) => v == null ? f : clamp01(num(v, f));
+  const pct01 = (v, f) => v == null ? f : clamp01(num(v, f) / 100);
+
+  // Hazama tempo: engine と同様 0..100 は BPM へ写像、>100 は実 BPM とみなす。
+  function tempoToPressure01(tempo) {
+    if (typeof tempo !== "number" || !isFinite(tempo)) return null;
+    const bpm = tempo <= 100 ? lerp(54, 142, tempo / 100) : tempo;
+    return clamp01((bpm - 50) / 90);
+  }
+
+  // 受信 state を S へ反映。複数 schema (hazama-profile v1 / ucm-mandala-v1 / 直接 inject) を許容。
+  function ingest(raw, sourceLabel) {
+    if (!raw || typeof raw !== "object") return false;
+    // hazama-profile v1 ラッパなら profile を取り出す
+    let p = raw;
+    if (raw.type === "hazama-profile" && raw.profile) p = raw.profile;
+    const src = (p.source && typeof p.source === "object") ? p.source : p;
+    const audio = (p.audio && typeof p.audio === "object") ? p.audio : {};
+    const ucm = (p.ucm && typeof p.ucm === "object") ? p.ucm : {};
+
+    // --- depth: brightness(暗)/bassWeight(重)/density(密)/space(無空間) から合成 ---
+    let depth = p.depth != null ? n01(p.depth, null) : null;
+    const haveAudioDepth = ["brightness", "bassWeight", "density", "space"].some((k) => typeof audio[k] === "number");
+    if (depth == null && haveAudioDepth) {
+      depth = clamp01(
+        0.42 * (1 - n01(audio.brightness, 0.5)) +
+        0.30 * n01(audio.bassWeight, 0.3) +
+        0.16 * n01(audio.density, 0.3) +
+        0.12 * (1 - n01(audio.space, 0.5))
+      );
+    }
+    // depthId / stage 文字列からの補助 (末尾数値 or 既知ステージ語)
+    if (depth == null && typeof src.depthId === "string") {
+      const m = src.depthId.match(/(\d+(\.\d+)?)/);
+      if (m) depth = clamp01(parseFloat(m[1]) / 10);  // "d7" → 0.7 想定
+    }
+    if (depth == null) depth = S.depth;
+
+    // --- pressure: resonance + 不安定 + tempo ---
+    const stability = pct01(src.stability, S.stability);
+    const resonance = pct01(src.resonance, S.resonance);
+    const tempoP = tempoToPressure01(audio.tempo);
+    let pressure = p.pressure != null ? n01(p.pressure, null) : null;
+    if (pressure == null) {
+      pressure = clamp01(
+        0.46 * resonance + 0.30 * (1 - stability) +
+        (tempoP != null ? 0.24 * tempoP : 0.12 * depth)
+      );
+    }
+    // UCM faders を軽く反映 (energy→圧, void→深度)
+    if (typeof ucm.energy === "number") pressure = clamp01(pressure * 0.8 + (ucm.energy / 100) * 0.2);
+    if (typeof ucm.void === "number") depth = clamp01(depth * 0.85 + (ucm.void / 100) * 0.15);
+
+    S.depth = depth; S.pressure = pressure; S.stability = stability; S.resonance = resonance;
+    S.brightness = typeof audio.brightness === "number" ? clamp01(audio.brightness) : S.brightness;
+    S.bassWeight = typeof audio.bassWeight === "number" ? clamp01(audio.bassWeight) : null;
+    S.density = typeof audio.density === "number" ? clamp01(audio.density) : S.density;
+    S.space = typeof audio.space === "number" ? clamp01(audio.space) : S.space;
+    S.depthId = typeof src.depthId === "string" ? src.depthId.slice(0, 24) : S.depthId;
+    S.stage = typeof src.stage === "string" ? src.stage.slice(0, 40) : S.stage;
+    S.connected = true;
+    S.source = sourceLabel || "hazama";
+    S.lastMsgAt = Date.now();
+    setStatus(true);
+    if (autoSink) toggleAutoSink(false);   // 受信が来たら自己デモは解除
+    syncSlidersFromState();
+    return true;
+  }
+
+  function importFromHash() {
+    if (!location.hash) return false;
+    const m = location.hash.match(/(?:^#|&)hazama=([^&]+)/);
+    if (!m) return false;
+    const payload = decodeBase64UrlJson(decodeURIComponent(m[1]));
+    return payload ? ingest(payload, "hazama:hash") : false;
+  }
+
+  addEventListener("message", (e) => {
+    if (!originOk(e.origin)) return;
+    const d = e.data;
+    if (!d || typeof d !== "object") return;
+    // hazama-profile (engine と同 schema) か ucm-mandala-v1 を受ける
+    const isProfile = d.provider === "music" && d.type === "hazama-profile";
+    const isMandala = d.schema === "ucm-mandala-v1" || (d.provider === "hazama");
+    if (isProfile || isMandala) ingest(d, "hazama:postMessage");
+  });
+  addEventListener("hashchange", importFromHash);
+
+  /* ---- 8. UI wiring -------------------------------------------------------- */
+  function setStatus(live) {
+    const el = $("status");
+    el.className = "status " + (live ? "live" : "standalone");
+    $("status-text").textContent = live
+      ? "HAZAMA LIVE — " + (S.depthId || "connected") + (S.stage ? " · " + S.stage : "")
+      : "STANDALONE — Hazama 未接続";
+  }
+  function syncSlidersFromState() {
+    $("s-depth").value = Math.round(S.depth * 100);
+    $("s-pressure").value = Math.round(S.pressure * 100);
+    $("s-stability").value = Math.round(S.stability * 100);
+    $("s-resonance").value = Math.round(S.resonance * 100);
+  }
+  // スライダー操作 = 手動上書き (Hazama 受信を上書きして standalone へ戻す)
+  function bindSlider(id, key) {
+    $(id).addEventListener("input", (e) => {
+      S[key] = e.target.value / 100;
+      if (autoSink && (key === "depth" || key === "pressure" || key === "stability")) toggleAutoSink(false);
+      if (S.connected) { S.connected = false; S.source = "standalone"; setStatus(false); }
+    });
+  }
+  bindSlider("s-depth", "depth");
+  bindSlider("s-pressure", "pressure");
+  bindSlider("s-stability", "stability");
+  bindSlider("s-resonance", "resonance");
+
+  function toggleAutoSink(force) {
+    autoSink = (typeof force === "boolean") ? force : !autoSink;
+    $("autosink").setAttribute("aria-pressed", String(autoSink));
+  }
+  $("autosink").addEventListener("click", () => toggleAutoSink());
+
+  $("start").addEventListener("click", async () => {
+    $("start").disabled = true;
+    try {
+      await buildAudio();
+      running = true;
+      $("stop").disabled = false;
+    } catch (e) {
+      console.error("[depth] start failed:", e);
+      $("start").disabled = false;
+    }
+  });
+  $("stop").addEventListener("click", () => {
+    running = false;
+    if (A) {
+      A.drone.forEach((v) => v.g.gain.rampTo(0, 0.4));
+      A.rumbleGain.gain.rampTo(0, 0.4);
+      Tone.Transport.pause();
+    }
+    $("stop").disabled = true; $("start").disabled = false;
+  });
+
+  /* ---- 9. test/integration hook ------------------------------------------- */
+  window.DepthEngine = {
+    inject: (state) => ingest(state, state && state.source ? state.source : "inject"),
+    getState: () => ({ ...S, cur: { ...C }, running,
+      music: { root: midiName(curRoot), bpm: heartbeatBpm(), cutoff: Math.round(cutoffHz()),
+               dissonance: +dissonance().toFixed(2), layers: droneLayers(), reverbWet: +reverbWet().toFixed(2) } }),
+  };
+
+  /* ---- boot --------------------------------------------------------------- */
+  syncSlidersFromState();
+  importFromHash();
+  setInterval(tick, TICK_MS);
+  requestAnimationFrame(drawLoop);
+  </script>
+</body>
+</html>
