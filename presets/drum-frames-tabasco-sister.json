@@ -45,13 +45,23 @@
       "bars": 16
     },
     {
+      "section": "verse-3",
+      "frame_id": "verse_brush",
+      "bars": 16
+    },
+    {
+      "section": "chorus-4",
+      "frame_id": "chorus_swell",
+      "bars": 16
+    },
+    {
       "section": "outro",
       "frame_id": "outro_fade",
-      "bars": 8
+      "bars": 9
     }
   ],
-  "total_bars": 104,
-  "estimated_duration_s": 213,
+  "total_bars": 137,
+  "estimated_duration_s": 281,
   "frames": [
     {
       "id": "intro_warm",

@@ -45,13 +45,33 @@
       "bars": 16
     },
     {
+      "section": "verse-3",
+      "frame_id": "verse_groove",
+      "bars": 16
+    },
+    {
+      "section": "chorus-4",
+      "frame_id": "chorus_hook",
+      "bars": 16
+    },
+    {
+      "section": "bridge-2",
+      "frame_id": "bridge_drop",
+      "bars": 8
+    },
+    {
+      "section": "chorus-5",
+      "frame_id": "chorus_climax",
+      "bars": 16
+    },
+    {
       "section": "outro",
       "frame_id": "outro_hit",
       "bars": 4
     }
   ],
-  "total_bars": 100,
-  "estimated_duration_s": 195,
+  "total_bars": 156,
+  "estimated_duration_s": 304,
   "frames": [
     {
       "id": "intro_pulse",
