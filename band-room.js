@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-185-spacious-vocal-air";
+  const BANDROOM_APP_VERSION = "br-186-band-forward-vocal-wide";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -388,17 +388,16 @@
     const input  = new Tone.Gain(1);
     // LCD balance: weight the low so kick+bass punch instead of boom, keep
     // mids present, and keep the top alive without letting cymbals turn harsh.
-    // v312 eases the v303 high cut (-0.6 → -0.2) so guitars/cymbals/room air
-    // survive the glue stage while the shared master still controls edge.
-    const eq     = new Tone.EQ3({ low: 0.8, mid: 0.45, high: -0.2, lowFrequency: 120, highFrequency: 6500 });
+    // v313 nudges mid/high forward so the band wall stands up around the vocal.
+    const eq     = new Tone.EQ3({ low: 0.9, mid: 0.65, high: 0.1, lowFrequency: 120, highFrequency: 6500 });
     // Nirvana density: a glue compressor so the band reads as one wall. v311:
     // eased from 2.8:1 / 10ms grab to 2.3:1 / 18ms attack + 0.22 release so it
     // stops pumping the whole band around the forward vocal (調和してない fix) —
     // transients punch through and the mix breathes instead of squashing flat.
     const comp   = new Tone.Compressor({ threshold: -19, ratio: 2.3, attack: 0.018, release: 0.22, knee: 6 });
     // subtle parallel tape grit for analog warmth / glue.
-    const sat    = new Tone.Distortion({ distortion: 0.10, oversample: "2x", wet: 1 });
-    const satWet = new Tone.Gain(0.08);
+    const sat    = new Tone.Distortion({ distortion: 0.11, oversample: "2x", wet: 1 });
+    const satWet = new Tone.Gain(0.10);
     const satDry = new Tone.Gain(1.0);
     // loudness makeup — push the glued band into the shared limiter for 音圧.
     // v311: 1.35 → 1.20 (~+1.6 dB) — less squash into the limiter so the mix
@@ -503,15 +502,15 @@
     const masterEq = new Tone.EQ3({ low: 1.5, mid: -0.5, high: 1.4, lowFrequency: 185, highFrequency: 4800 });
     const masterComp1 = new Tone.Compressor({ threshold: -16, ratio: 2.0, attack: 0.018, release: 0.26, knee: 8 });
     const masterComp2 = new Tone.Compressor({ threshold: -10, ratio: 1.7, attack: 0.016, release: 0.16, knee: 5 });
-    masterWidener = new Tone.StereoWidener(0.68);
+    masterWidener = new Tone.StereoWidener(0.72);
 
     masterTapeSat = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });  // v204: a touch more harmonic edge
     masterTapeSatWet = new Tone.Gain(0.07);
     masterTapeSatDry = new Tone.Gain(0.94);
 
-    masterReverb = new Tone.Reverb({ decay: 2.8, preDelay: 0.020, wet: 1 });  // v312: wider live room, still tight
-    masterDryGain = new Tone.Gain(0.82);
-    masterWetGain = new Tone.Gain(0.18);
+    masterReverb = new Tone.Reverb({ decay: 3.0, preDelay: 0.018, wet: 1 });  // v313: wider room without long echo smear
+    masterDryGain = new Tone.Gain(0.80);
+    masterWetGain = new Tone.Gain(0.20);
 
     masterGain = new Tone.Gain(1.2);
     masterGain.connect(masterComp1);
@@ -577,9 +576,9 @@
     // Original-stem buses → per-stem EQ → stemMaster → masterGain
     // v167: slightly lower full-stem defaults so the remaster chain glues
     // instead of constantly living on the limiter.
-    stemBus.drums  = new Tone.Gain(0.86).connect(stemMaster);
-    stemBus.bass   = new Tone.Gain(0.86).connect(stemMaster);
-    stemBus.other  = new Tone.Gain(0.84).connect(stemMaster);
+    stemBus.drums  = new Tone.Gain(0.88).connect(stemMaster);
+    stemBus.bass   = new Tone.Gain(0.88).connect(stemMaster);
+    stemBus.other  = new Tone.Gain(0.88).connect(stemMaster);
     // Wire EQ outputs into respective buses (input side will receive players)
     stemEQs.drums.output.connect(stemBus.drums);
     stemEQs.bass.output.connect(stemBus.bass);
@@ -610,23 +609,22 @@
     // the user again reads the vocal as early / detached and the whole mix as
     // not cohesive. The four stems are sample-aligned and start together
     // (verified), so this is the FX floating the vocal, not a timing bug.
-    // v311 pulled it firmly into the pocket. v312 keeps the delay killed, but
-    // lets the voice dissolve a little more into the room: slightly more chorus
-    // width, a short wider reverb, and a lower dry path. This adds space without
-    // returning to the detached / early-sounding wash.
-    vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.34, wet: 0.11 }).start();
+    // v311 pulled it firmly into the pocket. v312 added room back. v313 answers
+    // the "vocal still strong" pass by lowering the dry center and total vocal
+    // bus, then widening the FX path so the voice melts sideways into the band.
+    vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.42, wet: 0.16 }).start();
     vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.24, wet: 1 });
     vocalDelayWet = new Tone.Gain(0.0);    // echoes stay off — they smeared the timing
-    vocalReverb = new Tone.Reverb({ decay: 2.6, preDelay: 0.016, wet: 1 });
-    vocalReverbWet = new Tone.Gain(0.13);  // v312: more room than v311, far less wash than v306
-    vocalDryGain = new Tone.Gain(0.78);    // enough dry center, less "on top" than v311
+    vocalReverb = new Tone.Reverb({ decay: 2.9, preDelay: 0.012, wet: 1 });
+    vocalReverbWet = new Tone.Gain(0.16);  // v313: more shared room, less front-center vocal
+    vocalDryGain = new Tone.Gain(0.68);    // pull the dry vocal back into the wall
 
     // v303: vocal pulled down so it sits IN the wall, not on top of it.
     // v311: 0.60 → 0.58, back into the pocket with the band — the dry path is up,
     // so it stays present without riding ahead.
-    // v312: 0.59, paired with less dry + more room so the vocal stays legible
-    // while melting into the band bed.
-    stemBus.vocals = new Tone.Gain(0.59);
+    // v313: 0.52, paired with wider FX and louder band stems so the vocal
+    // dissolves into the room instead of sitting on top.
+    stemBus.vocals = new Tone.Gain(0.52);
 
     // Wire: vocalChorus is input. Chorus feeds three paths in parallel.
     // dry → vocalDryGain → stemBus.vocals
@@ -1447,7 +1445,7 @@
   // These map to the existing slider IDs so the existing event handlers
   // re-fire and the values persist via v78 localStorage.
   const MASTER_PRESETS = {
-    "neutral":  { reverb: 18, width: 68, warmth: 8, loudness: -1,
+    "neutral":  { reverb: 20, width: 72, warmth: 9, loudness: -1,
                   synth_profile: "default",
                   chord_instrument: "", bass_instrument: "",
                   guitar_instrument: "", voice_instrument: "",
@@ -1471,7 +1469,7 @@
                   voice_instrument: "",
                   kit_source: "online/dirt-808",
                   guitar_on: true },
-    "rock":     { reverb: 16, width: 64, warmth: 10, loudness: 0,
+    "rock":     { reverb: 18, width: 68, warmth: 11, loudness: 0,
                   synth_profile: "cramps-punk",
                   chord_instrument: "", bass_instrument: "bass-electric",
                   guitar_instrument: "guitar-electric",
@@ -7121,7 +7119,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
-  const MIX_PREFS_VERSION = "v312-spacious-vocal-air";
+  const MIX_PREFS_VERSION = "v313-band-forward-vocal-wide";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -7241,6 +7239,17 @@
     "br-space-reverb":    { old: "16", current: "18" },
     "br-space-width":     { old: "62", current: "68" },
     "br-tape-warmth":     { old: "7", current: "8" }
+  };
+  const V313_BAND_FORWARD_VOCAL_WIDE_MIGRATION = {
+    "br-vol-stem-vocals": { old: "59", current: "52" },
+    "br-vol-stem-drums":  { old: "86", current: "88" },
+    "br-vol-stem-bass":   { old: "86", current: "88" },
+    "br-vol-stem-other":  { old: "84", current: "88" },
+    "br-vfx-chorus":      { old: "11", current: "16" },
+    "br-vfx-reverb":      { old: "13", current: "16" },
+    "br-space-reverb":    { old: "18", current: "20" },
+    "br-space-width":     { old: "68", current: "72" },
+    "br-tape-warmth":     { old: "8", current: "9" }
   };
 
   function readRawStoredPrefs() {
@@ -7362,6 +7371,12 @@
       }
     });
     Object.entries(V312_SPACIOUS_VOCAL_AIR_MIGRATION).forEach(([id, rule]) => {
+      if (String(next.sliders[id]) === rule.old) {
+        next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
+    Object.entries(V313_BAND_FORWARD_VOCAL_WIDE_MIGRATION).forEach(([id, rule]) => {
       if (String(next.sliders[id]) === rule.old) {
         next.sliders[id] = rule.current;
         changed = true;

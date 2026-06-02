@@ -1,6 +1,22 @@
-# Band Room — Changelog (v65 → v312 compact)
+# Band Room — Changelog (v65 → v313 compact)
 
-Current compact release: v312.
+Current compact release: v313.
+
+---
+
+## v313 compact — band forward / vocal wide-dissolve
+
+v312 で空間を戻した後、試聴ではまだ vocal が前に強い。今回は vocal を単に小さくするだけではなく、
+band の wall を少し立てて、vocal は dry center を下げつつ chorus / short room へ広げる。
+
+- vocal: stem bus 0.59→0.52、dry 0.78→0.68。delay は off のまま。
+  chorus 0.11→0.16 / depth 0.42、reverb send 0.13→0.16、tail 2.9s / preDelay 0.012。
+  声を前面から少し引いて、左右と部屋へ溶かす。
+- band stems: drums / bass / other を 0.88 へ。stem master EQ は low 0.9 / mid 0.65 /
+  high 0.1、parallel grit も少し増やし、バンド音が vocal の奥で痩せないようにする。
+- shared master: width 0.72、room 0.20、tail 3.0s。default slider / migration も同期。
+
+`band-room.js?v=br-186`、`hazama-fm-v313`。
 
 ---
 
