@@ -1,7 +1,7 @@
 # setup-new-pc.ps1 — automate the music-stack setup on a fresh PC
 #
 # Usage (from PowerShell):
-#   .\setup-new-pc.ps1                        # default machine name = "studio"
+#   .\setup-new-pc.ps1                        # default machine name = "studioPC"
 #   .\setup-new-pc.ps1 -MachineName "ur44"    # custom name
 #
 # Assumptions:
@@ -17,14 +17,14 @@
 #   3) Create C:\workspace\music-stack\ and clone the 5 active repos:
 #      Music, chill, drum-floor, namima, openclaw.
 #   4) Tag the local git config with the machine name so future Session Ledger
-#      entries can be prefixed (e.g. "## YYYY-MM-DD [studio] — ...").
+#      entries can be prefixed (e.g. "## YYYY-MM-DD [studioPC] — ...").
 #   5) Run stack-check to confirm 0 BAD.
 #   6) Open the NEW-PC-SETUP.md doc in the browser (it contains the bootstrap
 #      prompt to paste into Claude Code's first turn).
 #   7) Print the next-step commands.
 
 param(
-  [string]$MachineName = "studio-surface",
+  [string]$MachineName = "studioPC",
   [string]$Workspace = "C:\workspace\music-stack"
 )
 

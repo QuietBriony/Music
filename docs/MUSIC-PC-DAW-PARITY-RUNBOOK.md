@@ -3,7 +3,7 @@
 ## Purpose
 
 `worker-gaming` で作った music-stack 音楽制作環境を、あとから
-`studio-surface` / studio PC に再現できるようにする標準構成表。
+`studioPC` / studio PC に再現できるようにする標準構成表。
 
 repo は source of truth、DAW は repo 外の render / polish / recording
 環境として扱う。DAW project、plugin cache、生成 audio は Git に入れない。
@@ -14,7 +14,7 @@ repo は source of truth、DAW は repo 外の render / polish / recording
 |---|---|---|---|
 | `chouta-surface` | command / repo editor | docs、軽い repo 編集、PR 確認、remote 操作 | UR44 主機、重い stem 分離、DAW 主機 |
 | `worker-gaming` | GPU worker / render bench | Demucs、Band Room AI recreation、Sonar/Ableton/NI render、VCV/SuperCollider texture | ear-critical final listen、runtime UI の直接編集 |
-| `studio-surface` / studio PC | listen / record / DAW reference | UR44、monitor/headphone、Sonar/Ableton stem polish、録音、最終試聴 | 長時間 GPU batch、ARM Surface での UR44 運用 |
+| `studioPC` / studio PC | listen / record / DAW reference | UR44、monitor/headphone、Sonar/Ableton stem polish、録音、最終試聴 | 長時間 GPU batch、ARM Surface での UR44 運用 |
 
 ARM Surface では UR44 driver / ASIO 周りが安定しにくいので、UR44 は
 Intel studio PC に寄せる。Surface は repo と remote control の司令塔として使う。
