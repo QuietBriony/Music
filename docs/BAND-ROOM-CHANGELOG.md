@@ -1,6 +1,25 @@
-# Band Room — Changelog (v65 → v311 compact)
+# Band Room — Changelog (v65 → v312 compact)
 
-Current compact release: v311.
+Current compact release: v312.
+
+---
+
+## v312 compact — 原音 vocal を空間へ少し溶かす + stereo / air を戻す
+
+v311 で timing smear / pumping を止めるため vocal FX と glue をかなり締めたが、
+今回の試聴方針は「もう少しボーカルを空間やバンド音に馴染ませる」「広がる感じ」
+「高音を含め全帯域が生きる」。v311 の delay off / 緩めた glue は維持しつつ、
+wash に戻らない範囲で空間と air を戻す。
+
+- vocal: delay は off のまま。chorus 0.08→0.11、reverb send 0.07→0.13、
+  tail 1.9→2.6s、dry 0.82→0.78、vocal bus 0.58→0.59。早く浮く echo ではなく、
+  短め room でバンド壁へ溶かす。
+- 原音 stem master: high cut -0.6→-0.2。耳に痛くしないまま、guitar / cymbal /
+  room air を殺しすぎない。
+- shared master: width 0.62→0.68、master room 0.16→0.18 + tail 2.8s。
+  デフォルト slider / migration も同じ値へ同期。
+
+`band-room.js?v=br-185`、`hazama-fm-v312`。
 
 ---
 

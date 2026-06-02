@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-184-vocal-pocket";
+  const BANDROOM_APP_VERSION = "br-185-spacious-vocal-air";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -387,11 +387,10 @@
   function makeStemMasterBus(dest) {
     const input  = new Tone.Gain(1);
     // LCD balance: weight the low so kick+bass punch instead of boom, keep
-    // mids present, and pull the very top down a touch — the real drums are
-    // already cymbal-bright (~73 % of their energy is high) and the shared
-    // master adds a high shelf on top, so a small cut here tames harshness
-    // (耳当たり) without killing clarity.
-    const eq     = new Tone.EQ3({ low: 0.8, mid: 0.5, high: -0.6, lowFrequency: 120, highFrequency: 6500 });
+    // mids present, and keep the top alive without letting cymbals turn harsh.
+    // v312 eases the v303 high cut (-0.6 → -0.2) so guitars/cymbals/room air
+    // survive the glue stage while the shared master still controls edge.
+    const eq     = new Tone.EQ3({ low: 0.8, mid: 0.45, high: -0.2, lowFrequency: 120, highFrequency: 6500 });
     // Nirvana density: a glue compressor so the band reads as one wall. v311:
     // eased from 2.8:1 / 10ms grab to 2.3:1 / 18ms attack + 0.22 release so it
     // stops pumping the whole band around the forward vocal (調和してない fix) —
@@ -504,15 +503,15 @@
     const masterEq = new Tone.EQ3({ low: 1.5, mid: -0.5, high: 1.4, lowFrequency: 185, highFrequency: 4800 });
     const masterComp1 = new Tone.Compressor({ threshold: -16, ratio: 2.0, attack: 0.018, release: 0.26, knee: 8 });
     const masterComp2 = new Tone.Compressor({ threshold: -10, ratio: 1.7, attack: 0.016, release: 0.16, knee: 5 });
-    masterWidener = new Tone.StereoWidener(0.62);
+    masterWidener = new Tone.StereoWidener(0.68);
 
     masterTapeSat = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });  // v204: a touch more harmonic edge
     masterTapeSatWet = new Tone.Gain(0.07);
     masterTapeSatDry = new Tone.Gain(0.94);
 
-    masterReverb = new Tone.Reverb({ decay: 2.4, preDelay: 0.025, wet: 1 });  // v204: bigger room for 空間の抜け感
-    masterDryGain = new Tone.Gain(0.84);
-    masterWetGain = new Tone.Gain(0.16);
+    masterReverb = new Tone.Reverb({ decay: 2.8, preDelay: 0.020, wet: 1 });  // v312: wider live room, still tight
+    masterDryGain = new Tone.Gain(0.82);
+    masterWetGain = new Tone.Gain(0.18);
 
     masterGain = new Tone.Gain(1.2);
     masterGain.connect(masterComp1);
@@ -611,19 +610,23 @@
     // the user again reads the vocal as early / detached and the whole mix as
     // not cohesive. The four stems are sample-aligned and start together
     // (verified), so this is the FX floating the vocal, not a timing bug.
-    // v311: pull it firmly into the pocket — dry + present + only a whisper of
-    // short room, and kill the 8th-note echo that was smearing its timing.
-    vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.30, wet: 0.08 }).start();
+    // v311 pulled it firmly into the pocket. v312 keeps the delay killed, but
+    // lets the voice dissolve a little more into the room: slightly more chorus
+    // width, a short wider reverb, and a lower dry path. This adds space without
+    // returning to the detached / early-sounding wash.
+    vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.34, wet: 0.11 }).start();
     vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.24, wet: 1 });
-    vocalDelayWet = new Tone.Gain(0.0);    // v311: echoes off — they smeared the timing (0.06 → 0)
-    vocalReverb = new Tone.Reverb({ decay: 1.9, preDelay: 0.014, wet: 1 });
-    vocalReverbWet = new Tone.Gain(0.07);  // v311: 0.18 → 0.07 — a hint of room, not a wash
-    vocalDryGain = new Tone.Gain(0.82);    // v311: 0.78 → 0.82 — keep the dry vocal present
+    vocalDelayWet = new Tone.Gain(0.0);    // echoes stay off — they smeared the timing
+    vocalReverb = new Tone.Reverb({ decay: 2.6, preDelay: 0.016, wet: 1 });
+    vocalReverbWet = new Tone.Gain(0.13);  // v312: more room than v311, far less wash than v306
+    vocalDryGain = new Tone.Gain(0.78);    // enough dry center, less "on top" than v311
 
     // v303: vocal pulled down so it sits IN the wall, not on top of it.
     // v311: 0.60 → 0.58, back into the pocket with the band — the dry path is up,
     // so it stays present without riding ahead.
-    stemBus.vocals = new Tone.Gain(0.58);
+    // v312: 0.59, paired with less dry + more room so the vocal stays legible
+    // while melting into the band bed.
+    stemBus.vocals = new Tone.Gain(0.59);
 
     // Wire: vocalChorus is input. Chorus feeds three paths in parallel.
     // dry → vocalDryGain → stemBus.vocals
@@ -1444,7 +1447,7 @@
   // These map to the existing slider IDs so the existing event handlers
   // re-fire and the values persist via v78 localStorage.
   const MASTER_PRESETS = {
-    "neutral":  { reverb: 16, width: 62, warmth: 7, loudness: -1,
+    "neutral":  { reverb: 18, width: 68, warmth: 8, loudness: -1,
                   synth_profile: "default",
                   chord_instrument: "", bass_instrument: "",
                   guitar_instrument: "", voice_instrument: "",
@@ -1468,7 +1471,7 @@
                   voice_instrument: "",
                   kit_source: "online/dirt-808",
                   guitar_on: true },
-    "rock":     { reverb: 10, width: 58, warmth: 9, loudness: 0,
+    "rock":     { reverb: 16, width: 64, warmth: 10, loudness: 0,
                   synth_profile: "cramps-punk",
                   chord_instrument: "", bass_instrument: "bass-electric",
                   guitar_instrument: "guitar-electric",
@@ -7118,7 +7121,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
-  const MIX_PREFS_VERSION = "v301-human-fly-body";
+  const MIX_PREFS_VERSION = "v312-spacious-vocal-air";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -7229,6 +7232,15 @@
     "br-vol-bass":   { old: "72", current: "80" },
     "br-vol-guitar": { old: "76", current: "82" },
     "br-vol-chords": { old: "56", current: "62" }
+  };
+  const V312_SPACIOUS_VOCAL_AIR_MIGRATION = {
+    "br-vol-stem-vocals": { old: "68", current: "59" },
+    "br-vfx-chorus":      { old: "22", current: "11" },
+    "br-vfx-delay":       { old: "12", current: "0" },
+    "br-vfx-reverb":      { old: "20", current: "13" },
+    "br-space-reverb":    { old: "16", current: "18" },
+    "br-space-width":     { old: "62", current: "68" },
+    "br-tape-warmth":     { old: "7", current: "8" }
   };
 
   function readRawStoredPrefs() {
@@ -7344,6 +7356,12 @@
       }
     });
     Object.entries(V301_HUMAN_FLY_BODY_MIGRATION).forEach(([id, rule]) => {
+      if (String(next.sliders[id]) === rule.old) {
+        next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
+    Object.entries(V312_SPACIOUS_VOCAL_AIR_MIGRATION).forEach(([id, rule]) => {
       if (String(next.sliders[id]) === rule.old) {
         next.sliders[id] = rule.current;
         changed = true;
