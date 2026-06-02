@@ -132,6 +132,7 @@
 
   window.addEventListener("unhandledrejection", (e) => {
     const reason = (e.reason && (e.reason.message || e.reason.toString())) || "?";
+    if (/failed to connect to metamask/i.test(reason)) return;
     logErr("promise", reason);
   });
 

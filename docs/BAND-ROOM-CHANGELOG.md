@@ -1,6 +1,18 @@
-# Band Room — Changelog (v65 → v309 compact)
+# Band Room — Changelog (v65 → v310 compact)
 
-Current compact release: v309.
+Current compact release: v310.
+
+---
+
+## v310 compact — MetaMask 拡張 promise noise を診断 overlay から除外
+
+Chrome の MetaMask 拡張が出す `Failed to connect to MetaMask` の
+unhandled promise rejection を、`audio/audio-safety.js` の画面下診断 overlay から
+除外。Hazama FM / Band Room 本体は wallet / web3 を使っていないため、音声エラーと
+誤認しないようにするための表示 cleanup。
+
+`audio/audio-safety.js?v=fm-61` / `audio/audio-safety.js?v=br-67`、
+`hazama-fm-v310`。音声生成ロジックは不変。
 
 ---
 
