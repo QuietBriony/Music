@@ -1729,6 +1729,64 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   border: 0;
 }
 
+#br-sound-mix {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 14px;
+}
+
+.br-sound-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.28fr) minmax(220px, 0.72fr);
+  gap: 10px;
+}
+
+#br-sound-mix #br-space,
+#br-sound-mix #br-vocal-fx,
+#br-sound-mix #br-volume-stems,
+#br-sound-mix #br-volume {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(2, 8, 10, 0.34);
+  border-color: rgba(143, 247, 241, 0.14);
+}
+
+#br-sound-mix #br-vocal-fx {
+  border-color: rgba(255, 184, 122, 0.18);
+  background: rgba(255, 184, 122, 0.035);
+}
+
+#br-sound-mix h3 {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-sub);
+  opacity: 0.78;
+}
+
+#br-sound-mix label span {
+  min-width: 54px;
+}
+
+#br-sound-mix #br-master-presets {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 720px) {
+  .br-sound-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #br-sound-mix {
+    padding: 10px 10px 12px;
+  }
+}
+
 #br-lyrics {
   padding: 16px 20px;
   border: 1px solid var(--panel-border);

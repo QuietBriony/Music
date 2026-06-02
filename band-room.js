@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-186-band-forward-vocal-wide";
+  const BANDROOM_APP_VERSION = "br-187-sound-mix-ui";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";

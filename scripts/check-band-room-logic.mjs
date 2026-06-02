@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-186-band-forward-vocal-wide", "Band Room should expose the current band-forward vocal-wide version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-187-sound-mix-ui", "Band Room should expose the current sound-mix UI version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -128,15 +128,19 @@ assert.match(verticalRoomPreset, /width:\s*60/, "vertical-room should keep the c
 assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor/body pressure");
 assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
-assert.match(html, /data-preset="vertical-room">vertical room<\/button>/, "Band Room should expose the vertical-room preset button");
-assert.match(html, /band-room\.css\?v=br-83/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-186/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
+assert.match(html, /band-room\.css\?v=br-84/, "Band Room HTML should reference the current CSS cache marker");
+assert.match(html, /band-room\.js\?v=br-187/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
-assert.match(sw, /band-room\.css\?v=br-83/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-186/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.css\?v=br-84/, "Service worker should precache the current Band Room CSS marker");
+assert.match(sw, /band-room\.js\?v=br-187/, "Service worker should precache the current Band Room JS marker");
+assert.match(html, /class="br-details br-sound-mix"/, "Sound controls should be consolidated into one sound mix details panel");
+assert.match(html, /id="br-sound-mix"/, "Band Room should expose the consolidated sound mix section");
+assert.doesNotMatch(html, /<summary>[^<]*vocal FX/i, "Vocal FX should not be a separate details panel");
+assert.doesNotMatch(html, /<summary>[^<]*volume mixer/i, "Volume mixer should not be a separate details panel");
 assert.match(source, /bandIds\.length === 1[\s\S]*br-album-plaque/, "Single-band registry should render a non-button album plaque");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/core\.js/, "Band Room should lazy-load Magenta only when AI fill is used");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/music_rnn\.js/, "Band Room should lazy-load Magenta RNN only when AI fill is used");
@@ -385,7 +389,8 @@ assert.match(source, /window\.addEventListener\("blur"/, "Band Room should treat
 assert.match(source, /document\.addEventListener\("freeze"/, "Band Room should handle page lifecycle freeze");
 assert.match(source, /releaseAll\(time = Tone\.now\(\)\)/, "Velocity-sensitive samplers should expose releaseAll for suspend panic");
 assert.match(html, /id="br-vfx-chorus"[^>]*value="16"/, "Vocal chorus slider should match the v313 wide-blend default");
-assert.match(html, /id="br-vfx-delay"[^>]*value="0"/, "Vocal delay slider should match the v313 no-echo default");
+assert.doesNotMatch(html, /id="br-vfx-delay"/, "Vocal echo should stay internally off instead of remaining as a front-line UI slider");
+assert.match(source, /vocalDelayWet = new Tone\.Gain\(0\.0\)/, "Vocal echo send should remain internally off for timing clarity");
 assert.match(html, /id="br-vfx-reverb"[^>]*value="16"/, "Vocal reverb slider should match the v313 short-room default");
 assert.match(html, /id="br-vol-external-vocal"[^>]*value="78"/, "External vocal slider should match the v168 bus default");
 assert.match(source, /const dryVal = 1 - wetVal;/, "Master reverb dry path should not jump on first slider touch");

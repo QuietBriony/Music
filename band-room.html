@@ -6,7 +6,7 @@
 <title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-83" />
+<link rel="stylesheet" href="band-room.css?v=br-84" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -17,7 +17,7 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
 <script src="audio/audio-safety.js?v=br-67" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-186" defer></script>
+<script src="band-room.js?v=br-187" defer></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -249,30 +249,50 @@
 
     <!-- ===== DETAILS (collapsed by default) ===== -->
 
-    <details class="br-details">
-      <summary>🌌 mastering (space / width / warmth / loudness)</summary>
-      <section id="br-space" aria-label="Mastering">
-        <div id="br-master-presets">
-          <button type="button" class="br-master-preset" data-preset="neutral">neutral default</button>
-          <button type="button" class="br-master-preset" data-preset="vertical-room">vertical room</button>
-          <button type="button" class="br-master-preset" data-preset="lo-fi">lo-fi</button>
-          <button type="button" class="br-master-preset" data-preset="club">club</button>
-          <button type="button" class="br-master-preset" data-preset="rock">rock</button>
-          <button type="button" class="br-master-preset" data-preset="ambient">ambient</button>
-        </div>
-        <label><span>reverb</span><input type="range" id="br-space-reverb" min="0" max="60" value="20" /></label>
-        <label><span>width</span><input type="range" id="br-space-width" min="0" max="100" value="72" /></label>
-        <label><span>warmth</span><input type="range" id="br-tape-warmth" min="0" max="40" value="9" /></label>
-        <label><span>loudness</span><input type="range" id="br-loudness" min="-12" max="6" value="-1" /></label>
-      </section>
-    </details>
+    <details class="br-details br-sound-mix">
+      <summary>sound mix</summary>
+      <section id="br-sound-mix" aria-label="Sound mix">
+        <div class="br-sound-grid">
+          <section id="br-space" aria-label="Mastering">
+            <h3>space</h3>
+            <div id="br-master-presets">
+              <button type="button" class="br-master-preset" data-preset="neutral">neutral</button>
+              <button type="button" class="br-master-preset" data-preset="vertical-room">live room</button>
+              <button type="button" class="br-master-preset" data-preset="rock">rock</button>
+              <button type="button" class="br-master-preset" data-preset="lo-fi">lo-fi</button>
+              <button type="button" class="br-master-preset" data-preset="club">club</button>
+              <button type="button" class="br-master-preset" data-preset="ambient">ambient</button>
+            </div>
+            <label><span>reverb</span><input type="range" id="br-space-reverb" min="0" max="60" value="20" /></label>
+            <label><span>width</span><input type="range" id="br-space-width" min="0" max="100" value="72" /></label>
+            <label><span>warmth</span><input type="range" id="br-tape-warmth" min="0" max="40" value="9" /></label>
+            <label><span>loudness</span><input type="range" id="br-loudness" min="-12" max="6" value="-1" /></label>
+          </section>
 
-    <details class="br-details" data-scope="stems">
-      <summary>🎤 vocal FX</summary>
-      <section id="br-vocal-fx" aria-label="Vocal FX">
-        <label><span>chorus</span><input type="range" id="br-vfx-chorus" min="0" max="100" value="16" /></label>
-        <label><span>echo</span><input type="range" id="br-vfx-delay" min="0" max="100" value="0" /></label>
-        <label><span>reverb</span><input type="range" id="br-vfx-reverb" min="0" max="100" value="16" /></label>
+          <section id="br-vocal-fx" aria-label="Vocal blend" data-scope="stems">
+            <h3>vocal blend</h3>
+            <label><span>spread</span><input type="range" id="br-vfx-chorus" min="0" max="100" value="16" /></label>
+            <label><span>room</span><input type="range" id="br-vfx-reverb" min="0" max="100" value="16" /></label>
+          </section>
+        </div>
+
+        <section id="br-volume-stems" aria-label="Stem volumes" data-scope="stems">
+          <h3>stems</h3>
+          <label><span>vocal</span><input type="range" id="br-vol-stem-vocals" min="0" max="100" value="52" /></label>
+          <label><span>drums</span><input type="range" id="br-vol-stem-drums" min="0" max="100" value="88" /></label>
+          <label><span>bass</span><input type="range" id="br-vol-stem-bass" min="0" max="100" value="88" /></label>
+          <label><span>band</span><input type="range" id="br-vol-stem-other" min="0" max="100" value="88" /></label>
+        </section>
+
+        <section id="br-volume" aria-label="Synth volumes" data-scope="synth">
+          <h3>AI parts</h3>
+          <label><span>drums</span><input type="range" id="br-vol-drums" min="0" max="100" value="48" /></label>
+          <label><span>bass</span><input type="range" id="br-vol-bass" min="0" max="100" value="72" /></label>
+          <label><span>guitar</span><input type="range" id="br-vol-guitar" min="0" max="100" value="76" /></label>
+          <label><span>vocal</span><input type="range" id="br-vol-voice" min="0" max="100" value="48" /></label>
+          <label><span>chords</span><input type="range" id="br-vol-chords" min="0" max="100" value="56" /></label>
+          <label><span>click</span><input type="range" id="br-vol-click" min="0" max="100" value="35" /></label>
+        </section>
       </section>
     </details>
 
@@ -484,24 +504,6 @@
           <span id="br-swing-readout">0%</span>
         </label>
         <p class="br-help">tempo: 原曲 BPM × mult。50% = ハーフテンポ、120% = 早回し。原音モードでは pitch も変わるので AI 再現モード推奨。<br>swing: 8 分音符の偶数を遅らせる shuffle 量。25% でジャズ三連符寄り、50% で完全 swing。lofi-nujabes profile なら 20-30% が気持ちいい。</p>
-      </section>
-    </details>
-
-    <details class="br-details">
-      <summary>🎚 volume mixer</summary>
-      <section id="br-volume-stems" aria-label="Stem volumes" data-scope="stems">
-        <label><span>vocals</span><input type="range" id="br-vol-stem-vocals" min="0" max="100" value="52" /></label>
-        <label><span>drums</span><input type="range" id="br-vol-stem-drums" min="0" max="100" value="88" /></label>
-        <label><span>bass</span><input type="range" id="br-vol-stem-bass" min="0" max="100" value="88" /></label>
-        <label><span>other</span><input type="range" id="br-vol-stem-other" min="0" max="100" value="88" /></label>
-      </section>
-      <section id="br-volume" aria-label="Synth volumes" data-scope="synth">
-        <label><span>drums</span><input type="range" id="br-vol-drums" min="0" max="100" value="48" /></label>
-        <label><span>bass</span><input type="range" id="br-vol-bass" min="0" max="100" value="72" /></label>
-        <label><span>guitar</span><input type="range" id="br-vol-guitar" min="0" max="100" value="76" /></label>
-        <label><span>vocal</span><input type="range" id="br-vol-voice" min="0" max="100" value="48" /></label>
-        <label><span>chords</span><input type="range" id="br-vol-chords" min="0" max="100" value="56" /></label>
-        <label><span>click</span><input type="range" id="br-vol-click" min="0" max="100" value="35" /></label>
       </section>
     </details>
 

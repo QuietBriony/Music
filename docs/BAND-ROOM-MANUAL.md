@@ -110,14 +110,12 @@
 ├─────────────────────────────────┤
 │  chord: G                        │
 ├─────────────────────────────────┤
-│  ▾ 🎤 vocal FX                   │
+│  ▾ sound mix                     │
 │  ▾ 🎙 external vocal              │
 │  ▾ 🥁🎸🎹 external stems          │
 │  ▾ 🎵 vocal phrase trigger        │
 │  ▾ 🥁 drum kit + synth profile    │   ← v91-v102 の中心
 │  ▾ 🐢 practice tempo (50-120%)    │
-│  ▾ 🎚 volume mixer                │
-│  ▾ 🌌 mastering + master preset   │
 │  ▾ 🔀 A/B compare                 │
 │  ▾ 🎹 MIDI in/out                 │
 │  ▾ ⏺ live record                  │
@@ -166,7 +164,7 @@
 
 ### マスタリング
 
-- **🌌 mastering** = reverb / width / warmth / loudness の 4 slider
+- **sound mix / space** = reverb / width / warmth / loudness の 4 slider
 - **master preset chips** = neutral / lo-fi / club / rock / ambient で 1 クリック切替
 - 内部: per-stem EQ + 2 段 master comp + StereoWidener + tape sat + reverb wet
 - 詳細: [FREE-SAMPLES-AND-SYNTHESIS.md](./FREE-SAMPLES-AND-SYNTHESIS.md)

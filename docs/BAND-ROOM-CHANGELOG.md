@@ -1,6 +1,20 @@
-# Band Room — Changelog (v65 → v313 compact)
+# Band Room — Changelog (v65 → v314 compact)
 
-Current compact release: v313.
+Current compact release: v314.
+
+---
+
+## v314 compact — sound controls を 1 パネルへ整理
+
+v313 の band-forward / vocal-wide 音作りは維持。UI は音設定が `mastering` /
+`vocal FX` / `volume mixer` に分かれていて、試聴時に触る場所が散りすぎていたため、
+1 つの `sound mix` パネルへ集約した。
+
+- `space`、`vocal blend`、`stems` / `AI parts` を同じパネル内に整理。
+- timing smear の原因として off 固定にしていた vocal `echo` slider は表の UI から外した。
+  内部 delay send は 0 のまま。
+- CSS cache を `band-room.css?v=br-84`、JS cache を `band-room.js?v=br-187`、
+  SW を `hazama-fm-v314` へ同期。
 
 ---
 

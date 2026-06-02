@@ -75,11 +75,11 @@ band-room.html に **external vocal mp3 upload slot** を追加した (v63)。
 1. 経路 1 (自分録音) または経路 2 (Suno 生成) で `<song-id>-vocal.mp3` を用意
 2. band-room の `🎤 external vocal` セクションで file picker からアップロード
 3. 元の vocal stem を OFF、external vocal の音量調整
-4. `vocal FX` (chorus/echo/reverb) スライダーで処理
+4. `sound mix` の vocal blend (spread / room) スライダーで処理
 
 UI 上:
 - `Choose file` → file:// blob URL を Tone.Player に渡す
-- 同じ vocal FX chain (chorus / delay / reverb) が掛かる
+- 同じ vocal blend chain (spread / room、delay send は内部 off) が掛かる
 - vocal stem と排他または重ね
 
 **保存はブラウザのメモリだけ** (リロードで消える) — 永続化はファイルを user 側 PC に保管。
