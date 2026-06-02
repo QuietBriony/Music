@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-183-bg-audio";
+  const BANDROOM_APP_VERSION = "br-184-vocal-pocket";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -392,16 +392,19 @@
     // master adds a high shelf on top, so a small cut here tames harshness
     // (耳当たり) without killing clarity.
     const eq     = new Tone.EQ3({ low: 0.8, mid: 0.5, high: -0.6, lowFrequency: 120, highFrequency: 6500 });
-    // Nirvana density: a firm glue compressor so the band reads as one loud
-    // wall rather than four separate stems.
-    const comp   = new Tone.Compressor({ threshold: -19, ratio: 2.8, attack: 0.010, release: 0.18, knee: 6 });
+    // Nirvana density: a glue compressor so the band reads as one wall. v311:
+    // eased from 2.8:1 / 10ms grab to 2.3:1 / 18ms attack + 0.22 release so it
+    // stops pumping the whole band around the forward vocal (調和してない fix) —
+    // transients punch through and the mix breathes instead of squashing flat.
+    const comp   = new Tone.Compressor({ threshold: -19, ratio: 2.3, attack: 0.018, release: 0.22, knee: 6 });
     // subtle parallel tape grit for analog warmth / glue.
     const sat    = new Tone.Distortion({ distortion: 0.10, oversample: "2x", wet: 1 });
     const satWet = new Tone.Gain(0.08);
     const satDry = new Tone.Gain(1.0);
-    // loudness makeup — push the glued band harder into the shared limiter
-    // for 音圧 (conservative first pass; raise if the user wants more).
-    const makeup = new Tone.Gain(1.35);   // ~+2.6 dB
+    // loudness makeup — push the glued band into the shared limiter for 音圧.
+    // v311: 1.35 → 1.20 (~+1.6 dB) — less squash into the limiter so the mix
+    // keeps its dynamics / cohesion instead of a flat pumping wall.
+    const makeup = new Tone.Gain(1.20);   // ~+1.6 dB
 
     input.connect(eq);
     eq.connect(comp);
@@ -604,24 +607,23 @@
     // tail, and dry 0.82 → 0.78 so a bit more of that space comes through.
     // Still far drier than the pre-v304 wash — present, just settled into the
     // room rather than bone-dry.
-    // v306: user asked the vocal to settle "もうちょい空間になじむ" — one gentle
-    // step past v305. More reverb send (0.14 → 0.18) and a slightly longer,
-    // sooner-blooming tail (decay 2.8 → 3.2, preDelay 0.030 → 0.022) so the
-    // voice melts into the room instead of sitting on a dry shelf. Delay stays
-    // low (0.06) so the added space reads as room, not echo/float.
-    vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.30, wet: 0.12 }).start();
+    // v306 grew the reverb back (0.18 send / 3.2s tail) for "空間になじむ" — but
+    // the user again reads the vocal as early / detached and the whole mix as
+    // not cohesive. The four stems are sample-aligned and start together
+    // (verified), so this is the FX floating the vocal, not a timing bug.
+    // v311: pull it firmly into the pocket — dry + present + only a whisper of
+    // short room, and kill the 8th-note echo that was smearing its timing.
+    vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.30, wet: 0.08 }).start();
     vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.24, wet: 1 });
-    vocalDelayWet = new Tone.Gain(0.06);  // delay send level
-    vocalReverb = new Tone.Reverb({ decay: 3.2, preDelay: 0.022, wet: 1 });
-    vocalReverbWet = new Tone.Gain(0.18);  // reverb send level (v305 0.14 → 0.18 more space)
-    vocalDryGain = new Tone.Gain(0.78);   // dry/present (unchanged from v305)
+    vocalDelayWet = new Tone.Gain(0.0);    // v311: echoes off — they smeared the timing (0.06 → 0)
+    vocalReverb = new Tone.Reverb({ decay: 1.9, preDelay: 0.014, wet: 1 });
+    vocalReverbWet = new Tone.Gain(0.07);  // v311: 0.18 → 0.07 — a hint of room, not a wash
+    vocalDryGain = new Tone.Gain(0.82);    // v311: 0.78 → 0.82 — keep the dry vocal present
 
-    // v303: vocal pulled down (0.68 → 0.58). Measured raw vocal stem runs
-    // ~5-7 dB hotter than drums/bass/other; the brief (Nirvana / LCD) wants
-    // the vocal sitting IN the wall, not riding on top of it.
-    // v306: eased back up to 0.60 — the v303 cut + de-wash had left it reading a
-    // touch quiet, so regain ~0.3 dB of presence so "blended" ≠ "buried".
-    stemBus.vocals = new Tone.Gain(0.60);
+    // v303: vocal pulled down so it sits IN the wall, not on top of it.
+    // v311: 0.60 → 0.58, back into the pocket with the band — the dry path is up,
+    // so it stays present without riding ahead.
+    stemBus.vocals = new Tone.Gain(0.58);
 
     // Wire: vocalChorus is input. Chorus feeds three paths in parallel.
     // dry → vocalDryGain → stemBus.vocals
