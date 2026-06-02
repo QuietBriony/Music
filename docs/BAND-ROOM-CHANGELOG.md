@@ -1,6 +1,27 @@
-# Band Room — Changelog (v65 → v310 compact)
+# Band Room — Changelog (v65 → v311 compact)
 
-Current compact release: v310.
+Current compact release: v311.
+
+---
+
+## v311 compact — 原音 vocal をポケットに戻す + glue を緩めて pumping 解消
+
+ユーザー報告: 原音が「全体的に音ズレ・調和してない」「ボーカルが早めにきてずれてる」。
+切り分け: 4 stems は **サンプル完全一致**(同 SR 44.1k / 同フレーム数 / 同尺、検証済み)
+で同時スタート → **物理的なズレは無い**。原因は FX 側:
+- v305/v306 で戻した reverb(send 0.18 / 3.2s tail)がボーカルを浮かせて前へ出し、
+  8 分音符ディレイがタイミングを滲ませていた → **早く/離れて**聞こえる。
+- stemMaster の firm glue comp(2.8:1 / 10ms)+ makeup 1.35 が、前に出たボーカルに
+  合わせて **バンド全体を pumping** → 「調和してない」。
+
+修正(v311):
+- vocal をポケットへ: reverb 0.18→0.07・tail 3.2→1.9s・preDelay 0.022→0.014、
+  **ディレイ off**(0.06→0)、chorus 0.12→0.08、dry 0.78→0.82、level 0.60→0.58。
+- glue 緩和: comp 2.8:1/10ms → 2.3:1/18ms attack + 0.22 release、makeup 1.35→1.20。
+  トランジェントが抜けてバンドが呼吸、squash した壁から自然な一体感へ。
+
+原音は 4 stems の合算(別途「元のフルミックス」ファイルは存在しない)。stems 自体は
+完全同期なので、これは音作りの調整。`band-room.js?v=br-184`、`hazama-fm-v311`。
 
 ---
 
