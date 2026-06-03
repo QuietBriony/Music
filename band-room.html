@@ -17,7 +17,7 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
 <script src="audio/audio-safety.js?v=br-67" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-189" defer></script>
+<script src="band-room.js?v=br-190" defer></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -279,14 +279,14 @@
         <section id="br-volume-stems" aria-label="Stem volumes" data-scope="stems">
           <h3>stems</h3>
           <label><span>vocal</span><input type="range" id="br-vol-stem-vocals" min="0" max="100" value="52" /></label>
-          <label><span>drums</span><input type="range" id="br-vol-stem-drums" min="0" max="100" value="88" /></label>
+          <label><span>drums</span><input type="range" id="br-vol-stem-drums" min="0" max="100" value="92" /></label>
           <label><span>bass</span><input type="range" id="br-vol-stem-bass" min="0" max="100" value="88" /></label>
           <label><span>band</span><input type="range" id="br-vol-stem-other" min="0" max="100" value="88" /></label>
         </section>
 
         <section id="br-volume" aria-label="Synth volumes" data-scope="synth">
           <h3>AI parts</h3>
-          <label><span>drums</span><input type="range" id="br-vol-drums" min="0" max="100" value="48" /></label>
+          <label><span>drums</span><input type="range" id="br-vol-drums" min="0" max="100" value="52" /></label>
           <label><span>bass</span><input type="range" id="br-vol-bass" min="0" max="100" value="72" /></label>
           <label><span>guitar</span><input type="range" id="br-vol-guitar" min="0" max="100" value="76" /></label>
           <label><span>vocal</span><input type="range" id="br-vol-voice" min="0" max="100" value="48" /></label>

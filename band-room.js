@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-189-ai-light-runtime";
+  const BANDROOM_APP_VERSION = "br-190-drum-pressure";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -573,7 +573,9 @@
     // (v254 intentional). Stems mode bypasses all of this — 原音 untouched.
     // v298 phone pass: pull drums back and move the AI body parts forward.
     // v301 Human Fly body pass: one more small move away from "mostly drums".
-    drumBus = new Tone.Gain(0.44).connect(drumPan);
+    // v317: restore a little drum pressure after the v316 light-runtime pass;
+    // keep bass/guitar/chord unchanged so the band stays balanced.
+    drumBus = new Tone.Gain(0.52).connect(drumPan);
     bassBus = new Tone.Gain(0.80).connect(bassPan);
     guitarBus = new Tone.Gain(0.82).connect(guitarPan);
     voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
@@ -588,7 +590,7 @@
     // Original-stem buses → per-stem EQ → stemMaster → masterGain
     // v167: slightly lower full-stem defaults so the remaster chain glues
     // instead of constantly living on the limiter.
-    stemBus.drums  = new Tone.Gain(0.88).connect(stemMaster);
+    stemBus.drums  = new Tone.Gain(0.92).connect(stemMaster);
     stemBus.bass   = new Tone.Gain(0.88).connect(stemMaster);
     stemBus.other  = new Tone.Gain(0.88).connect(stemMaster);
     // Wire EQ outputs into respective buses (input side will receive players)
@@ -7421,7 +7423,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
-  const MIX_PREFS_VERSION = "v313-band-forward-vocal-wide";
+  const MIX_PREFS_VERSION = "v317-drum-pressure";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -7553,6 +7555,10 @@
     "br-space-width":     { old: "68", current: "72" },
     "br-tape-warmth":     { old: "8", current: "9" }
   };
+  const V317_DRUM_PRESSURE_MIGRATION = {
+    "br-vol-stem-drums": { olds: ["88"], current: "92" },
+    "br-vol-drums":      { olds: ["44", "48"], current: "52" }
+  };
 
   function readRawStoredPrefs() {
     const raw = safeLocalStorageGet(PREFS_KEY);
@@ -7680,6 +7686,12 @@
     });
     Object.entries(V313_BAND_FORWARD_VOCAL_WIDE_MIGRATION).forEach(([id, rule]) => {
       if (String(next.sliders[id]) === rule.old) {
+        next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
+    Object.entries(V317_DRUM_PRESSURE_MIGRATION).forEach(([id, rule]) => {
+      if ((rule.olds || []).includes(String(next.sliders[id]))) {
         next.sliders[id] = rule.current;
         changed = true;
       }

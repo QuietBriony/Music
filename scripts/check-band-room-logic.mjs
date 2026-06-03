@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-189-ai-light-runtime", "Band Room should expose the current AI light runtime version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-190-drum-pressure", "Band Room should expose the current drum-pressure version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -87,6 +87,7 @@ const migratedMixPrefs = migratePrefsForCurrentMix({
     "br-vol-stem-vocals": "68",
     "br-vol-stem-bass": "92",
     "br-vol-stem-other": "92",
+    "br-vol-drums": "62",
     "br-vol-bass": "72",
     "br-space-reverb": "22",
     "br-space-width": "62",
@@ -95,28 +96,29 @@ const migratedMixPrefs = migratePrefsForCurrentMix({
     "br-vfx-reverb": "20"
   }
 });
-assert.equal(migratedMixPrefs.sliders["br-vol-stem-drums"], "88", "Old default stem drums should migrate to the v313 band-forward level");
+assert.equal(migratedMixPrefs.sliders["br-vol-stem-drums"], "92", "Old default stem drums should migrate to the v317 pressure level");
 assert.equal(migratedMixPrefs.sliders["br-vol-stem-vocals"], "52", "Old default stem vocals should migrate to the v313 dissolved level");
 assert.equal(migratedMixPrefs.sliders["br-vol-stem-bass"], "88", "Old default stem bass should migrate to the v313 band-forward level");
 assert.equal(migratedMixPrefs.sliders["br-vol-stem-other"], "88", "Old default stem other should migrate to the v313 band-forward level");
+assert.equal(migratedMixPrefs.sliders["br-vol-drums"], "52", "Old default AI drums should migrate to the v317 pressure level");
 assert.equal(migratedMixPrefs.sliders["br-vol-bass"], "80", "Old default AI bass should migrate through the v301 Human Fly body pass");
 assert.equal(migratedMixPrefs.sliders["br-space-reverb"], "20", "Old default master reverb should migrate to the v313 wider room");
 assert.equal(migratedMixPrefs.sliders["br-space-width"], "72", "Old default master width should migrate to the v313 wider image");
 assert.equal(migratedMixPrefs.sliders["br-vfx-chorus"], "16", "Old default vocal chorus should migrate to the v313 wide blend");
 assert.equal(migratedMixPrefs.sliders["br-vfx-delay"], "0", "Old default vocal echo should stay off for timing clarity");
 assert.equal(migratedMixPrefs.sliders["br-vfx-reverb"], "16", "Old default vocal reverb should migrate to the v313 short room");
-assert.equal(migratedMixPrefs.mixPrefsVersion, "v313-band-forward-vocal-wide", "Migrated prefs should record current mix version");
+assert.equal(migratedMixPrefs.mixPrefsVersion, "v317-drum-pressure", "Migrated prefs should record current mix version");
 
 // v289 mix rebalance migration: untouched part defaults move, custom stays.
 const v289Mix = migratePrefsForCurrentMix({
   sliders: {
-    "br-vol-drums": "58",   // v167 current default → 52
+    "br-vol-drums": "58",   // v167 current default → v317 final 52
     "br-vol-guitar": "56",  // v167 current default → 70
     "br-vol-chords": "40",  // v255 current default → 52
     "br-vol-bass": "33"     // custom — must NOT migrate
   }
 });
-assert.equal(v289Mix.sliders["br-vol-drums"], "44", "v301 should back off drums 58→44 through the chained migrations");
+assert.equal(v289Mix.sliders["br-vol-drums"], "52", "v317 should bring migrated AI drums back to the pressure level");
 assert.equal(v289Mix.sliders["br-vol-guitar"], "82", "v301 should bring guitar forward 56→82 through the chained migrations");
 assert.equal(v289Mix.sliders["br-vol-chords"], "62", "v301 should restore chord presence 40→62 through the chained migrations");
 assert.equal(v289Mix.sliders["br-vol-bass"], "33", "v289 should preserve a custom bass level");
@@ -130,13 +132,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-84/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-189/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-190/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-84/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-189/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-190/, "Service worker should precache the current Band Room JS marker");
 assert.match(html, /class="br-details br-sound-mix"/, "Sound controls should be consolidated into one sound mix details panel");
 assert.match(html, /id="br-sound-mix"/, "Band Room should expose the consolidated sound mix section");
 assert.doesNotMatch(html, /<summary>[^<]*vocal FX/i, "Vocal FX should not be a separate details panel");
@@ -383,12 +385,12 @@ assert.match(source, /restartSynthTransportSchedule\(reason\)/, "Band Room shoul
 assert.match(source, /guitarBus = new Tone\.Gain\(0\.82\)/, "AI guitar bus should be the v301 foreground partner of bass");
 assert.match(source, /crashAllowedThisBar/, "Band Room should gate crash density per bar (v290 thinning)");
 assert.match(source, /crashKeptKey/, "Band Room should keep only the most-downbeat crash per bar (v290)");
-assert.match(source, /drumBus = new Tone\.Gain\(0\.44\)/, "AI drum bus should step back for the v301 Human Fly body pass");
+assert.match(source, /drumBus = new Tone\.Gain\(0\.52\)/, "AI drum bus should add v317 pressure without changing bass/guitar/chord");
 assert.match(source, /bassBus = new Tone\.Gain\(0\.80\)/, "AI bass bus default should sit forward for the v301 Human Fly body pass");
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
 assert.match(source, /mid:\s*0\.65/, "Stem master should push band mids forward in v313");
 assert.match(source, /high:\s*0\.1/, "Stem master should keep high-band air alive in v313");
-assert.match(source, /stemBus\.drums\s*=\s*new Tone\.Gain\(0\.88\)/, "Drums stem should stand forward in v313");
+assert.match(source, /stemBus\.drums\s*=\s*new Tone\.Gain\(0\.92\)/, "Drums stem should stand forward with v317 pressure");
 assert.match(source, /stemBus\.bass\s*=\s*new Tone\.Gain\(0\.88\)/, "Bass stem should stand forward in v313");
 assert.match(source, /stemBus\.other\s*=\s*new Tone\.Gain\(0\.88\)/, "Other/guitar stem should stand forward in v313");
 assert.match(source, /masterWidener = new Tone\.StereoWidener\(0\.72\)/, "Shared master should widen the v313 default image");
@@ -418,10 +420,11 @@ assert.match(html, /id="br-vol-external-vocal"[^>]*value="78"/, "External vocal 
 assert.match(source, /const dryVal = 1 - wetVal;/, "Master reverb dry path should not jump on first slider touch");
 assert.match(source, /1 - w \* 0\.85/, "Tape dry path should not jump on first warmth slider touch");
 assert.match(source, /chordBus = new Tone\.Gain\(0\.62\)/, "AI chord bus should add harmonic bed for the v301 Human Fly body pass");
-assert.match(source, /const MIX_PREFS_VERSION = "v313-band-forward-vocal-wide"/, "Band Room should version saved mix defaults");
+assert.match(source, /const MIX_PREFS_VERSION = "v317-drum-pressure"/, "Band Room should version saved mix defaults");
 assert.match(source, /V301_HUMAN_FLY_BODY_MIGRATION/, "Saved AI defaults should migrate to the v301 Human Fly body balance");
 assert.match(source, /V312_SPACIOUS_VOCAL_AIR_MIGRATION/, "Saved stem/master defaults should migrate to the v312 spacious vocal-air balance");
 assert.match(source, /V313_BAND_FORWARD_VOCAL_WIDE_MIGRATION/, "Saved stem/master defaults should migrate to the v313 band-forward vocal-wide balance");
+assert.match(source, /V317_DRUM_PRESSURE_MIGRATION/, "Saved defaults should migrate to the v317 drum pressure balance");
 assert.match(source, /raw\.production_visible === false && !localPreviewVariantsAllowed\(\)/, "Local-only AI recreation variants should stay hidden on production");
 assert.match(source, /storageSchemaVersion:\s*BANDROOM_STORAGE_SCHEMA_VERSION/, "Saved prefs should carry the Band Room storage schema version");
 assert.match(source, /function sanitizePrefsForBoot\(/, "Band Room should sanitize persisted local audio prefs before applying them");

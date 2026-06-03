@@ -1,6 +1,20 @@
-# Band Room — Changelog (v65 → v316 compact)
+# Band Room — Changelog (v65 → v317 compact)
 
-Current compact release: v316.
+Current compact release: v317.
+
+---
+
+## v317 compact — drum pressure を少し前へ
+
+ユーザー試聴で「ドラムの音圧上げて。バランスいい感じで」とフィードバック。
+v316 の軽量化は維持しつつ、ドラムだけを小幅に前へ出して、バンド全体の壁は崩さない。
+
+- AI 再現: drum bus を `0.44 → 0.52`、既定 slider を `48 → 52`。
+- 原音 stems: drum stem bus / 既定 slider を `0.88 / 88 → 0.92 / 92`。
+- bass / guitar / chord / vocal / master は据え置き。ドラムの当たりだけを上げる。
+- 保存済み prefs は現行既定値だった `br-vol-drums` と `br-vol-stem-drums` だけ移行し、
+  カスタム値は保持。
+- JS cache を `band-room.js?v=br-190`、SW を `hazama-fm-v317` へ同期。
 
 ---
 
