@@ -1,6 +1,19 @@
-# Band Room — Changelog (v65 → v317 compact)
+# Band Room — Changelog (v65 → v318 compact)
 
-Current compact release: v317.
+Current compact release: v318.
+
+---
+
+## v318 compact — guitar spark / pressure を前へ
+
+ユーザーフィードバック「ギターの音粒のキラキラ感と抜け感、音圧増して」に対応。v317 のドラム圧は維持しつつ、ギターだけ上の粒立ちと前への押し出しを足す。
+
+- AI 再現: guitar bus を `0.82 → 0.88`、既定 slider を `88` へ。bass / chord / voice は据え置き。
+- sampled guitar: LPF を `6000 → 7800Hz`、velocity cutoff 上限を `7000 → 9200Hz`、sample volume を `-4 → -2.5dB`。pick attack と shimmer を残す。
+- synth fallback guitar: LPF を light/full で `5200 / 6200Hz` へ開き、volume を `-12 → -10.5dB`。軽量再生のまま抜けを改善。
+- 原音 stems: `other` bus を `0.88 → 0.91`、other EQ を low `-0.35` / mid `+0.2` / high `+0.85 @ 4600Hz` にして、band/guitar の air と presence を出す。
+- 保存済み prefs は旧既定値の `br-vol-guitar` と `br-vol-stem-other` だけ v318 へ移行。custom slider は保持。
+- JS cache を `band-room.js?v=br-191`、SW を `hazama-fm-v318` へ同期。
 
 ---
 

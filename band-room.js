@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-190-drum-pressure";
+  const BANDROOM_APP_VERSION = "br-191-guitar-spark-pressure";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -288,7 +288,7 @@
     }
     // other
     const hp = new Tone.Filter({ frequency: 120, type: "highpass", Q: 0.55 });
-    const shelf = new Tone.EQ3({ low: -0.2, mid: 0, high: 0.3, lowFrequency: 220, highFrequency: 5200 });
+    const shelf = new Tone.EQ3({ low: -0.35, mid: 0.2, high: 0.85, lowFrequency: 220, highFrequency: 4600 });
     hp.connect(shelf);
     return { input: hp, output: shelf };
   }
@@ -573,11 +573,11 @@
     // (v254 intentional). Stems mode bypasses all of this — 原音 untouched.
     // v298 phone pass: pull drums back and move the AI body parts forward.
     // v301 Human Fly body pass: one more small move away from "mostly drums".
-    // v317: restore a little drum pressure after the v316 light-runtime pass;
-    // keep bass/guitar/chord unchanged so the band stays balanced.
+    // v317: restore a little drum pressure after the v316 light-runtime pass.
+    // v318: lift guitar pressure/sparkle while keeping bass and chord steady.
     drumBus = new Tone.Gain(0.52).connect(drumPan);
     bassBus = new Tone.Gain(0.80).connect(bassPan);
-    guitarBus = new Tone.Gain(0.82).connect(guitarPan);
+    guitarBus = new Tone.Gain(0.88).connect(guitarPan);
     voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
     chordBus = new Tone.Gain(0.62).connect(chordPan);
     clickBus = new Tone.Gain(0.35).connect(clickPan);
@@ -592,7 +592,7 @@
     // instead of constantly living on the limiter.
     stemBus.drums  = new Tone.Gain(0.92).connect(stemMaster);
     stemBus.bass   = new Tone.Gain(0.88).connect(stemMaster);
-    stemBus.other  = new Tone.Gain(0.88).connect(stemMaster);
+    stemBus.other  = new Tone.Gain(0.91).connect(stemMaster);
     // Wire EQ outputs into respective buses (input side will receive players)
     stemEQs.drums.output.connect(stemBus.drums);
     stemEQs.bass.output.connect(stemBus.bass);
@@ -2985,8 +2985,8 @@
     if (!opts.forceSynth && state.guitarInstrument && state.onlineCatalog) {
       const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.guitarInstrument);
       if (instDef && instDef.kind === "sampler") {
-        const verb = new Tone.Reverb({ decay: 1.2, wet: 0.12 }).connect(target);
-        const lp = new Tone.Filter({ frequency: 6000, type: "lowpass", Q: 0.5 }).connect(verb);
+        const verb = new Tone.Reverb({ decay: 1.2, wet: 0.10 }).connect(target);
+        const lp = new Tone.Filter({ frequency: 7800, type: "lowpass", Q: 0.5 }).connect(verb);
         // Light distortion only on electric variant
         const isElectric = instDef.id.includes("electric");
         let chainIn = lp;
@@ -3006,8 +3006,8 @@
         // v126: velocity-sensitive — guitar は強く弾けばブライトに、弱く弾けば
         // 柔らかく。electric guitar の muting / strumming nuance に対応
         const sampler = await makeVelocitySensitiveSampler({
-          urls, baseRelease: 0.5, volume: -4,  // v269: +2 dB lift (was -6). Same rebalance as bass — acoustic guitar samples sit quieter than the synth power-chord fallback.
-          minCutoff: 1500, maxCutoff: 7000
+          urls, baseRelease: 0.5, volume: -2.5,  // v318: more pick attack and pressure; samples still stay below the synth fallback's raw edge.
+          minCutoff: 1800, maxCutoff: 9200
         });
         if (sampler) {
           sampler.connect(chainIn);
@@ -3024,7 +3024,7 @@
       wet: light ? 0.68 : 0.85,
       oversample: light ? "none" : "2x"
     });
-    const lp = new Tone.Filter({ frequency: 4200, type: "lowpass", Q: 0.6 });
+    const lp = new Tone.Filter({ frequency: light ? 5200 : 6200, type: "lowpass", Q: 0.6 });
     const verb = light ? null : new Tone.Reverb({ decay: 1.0, wet: 0.14 });
     // v232: high-pass the synth guitar at 130 Hz. Its distorted low-mid
     // otherwise crowds the bass lane (octave 2); the guitar's lane is the
@@ -3038,7 +3038,7 @@
       // sawtooth — fat is kept only on the cheap mono synths (bass + voice).
       oscillator: { type: "sawtooth" },
       envelope: { attack: 0.003, decay: 0.10, sustain: 0.55, release: 0.16 },
-      volume: -12
+      volume: -10.5
     });
     // v228: maxPolyphony 10 (reverted from v227's 64). v227 raised it to 64
     // thinking the polyphony cap was the bug — it was actually CPU
@@ -7423,7 +7423,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
-  const MIX_PREFS_VERSION = "v317-drum-pressure";
+  const MIX_PREFS_VERSION = "v318-guitar-spark-pressure";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -7559,6 +7559,10 @@
     "br-vol-stem-drums": { olds: ["88"], current: "92" },
     "br-vol-drums":      { olds: ["44", "48"], current: "52" }
   };
+  const V318_GUITAR_SPARK_PRESSURE_MIGRATION = {
+    "br-vol-stem-other": { olds: ["88"], current: "91" },
+    "br-vol-guitar":     { olds: ["76", "82"], current: "88" }
+  };
 
   function readRawStoredPrefs() {
     const raw = safeLocalStorageGet(PREFS_KEY);
@@ -7691,6 +7695,12 @@
       }
     });
     Object.entries(V317_DRUM_PRESSURE_MIGRATION).forEach(([id, rule]) => {
+      if ((rule.olds || []).includes(String(next.sliders[id]))) {
+        next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
+    Object.entries(V318_GUITAR_SPARK_PRESSURE_MIGRATION).forEach(([id, rule]) => {
       if ((rule.olds || []).includes(String(next.sliders[id]))) {
         next.sliders[id] = rule.current;
         changed = true;
