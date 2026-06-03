@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-188-ai-two-stage-start", "Band Room should expose the current AI two-stage start version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-189-ai-light-runtime", "Band Room should expose the current AI light runtime version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -130,13 +130,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-84/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-188/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-189/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-84/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-188/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-189/, "Service worker should precache the current Band Room JS marker");
 assert.match(html, /class="br-details br-sound-mix"/, "Sound controls should be consolidated into one sound mix details panel");
 assert.match(html, /id="br-sound-mix"/, "Band Room should expose the consolidated sound mix section");
 assert.doesNotMatch(html, /<summary>[^<]*vocal FX/i, "Vocal FX should not be a separate details panel");
@@ -153,9 +153,19 @@ assert.match(source, /samplerDecodeConcurrency\(/, "AI sampler preload should us
 assert.match(source, /Object\.keys\(preloaded\)\.length === 0\) return null;/, "Failed AI sampler fetches should fall back without blocking START");
 assert.match(source, /function shouldStageSynthPlaybackFirst\(reason\)/, "AI START should support quick synth-first staging");
 assert.match(source, /queueSynthSamplerUpgrade\(reason\)/, "AI START should queue a background sample upgrade after quick synth prep");
-assert.match(source, /makeSynthBass\(bassBus, \{ forceSynth: quickFirst \}\)/, "AI bass should use synth fallback during quick-first prep");
-assert.match(source, /makeGuitar\(guitarBus, \{ forceSynth: quickFirst \}\)/, "AI guitar should use synth fallback during quick-first prep");
-assert.match(source, /makeChordSynth\(chordBus, \{ forceSynth: quickFirst \}\)/, "AI chords should use synth fallback during quick-first prep");
+assert.match(source, /function aiLightRuntimeEnabled\(\)/, "AI playback should expose a light runtime gate");
+assert.match(source, /function aiSamplerUpgradeEnabled\(\)/, "AI sampler upgrade should be opt-in rather than automatic");
+assert.match(source, /if \(!shouldAutoUpgradeSynthSamples\(reason\)\)/, "AI sample upgrade queue should skip by default for light playback");
+assert.match(source, /needsQuickSynthLayer\(.*quickFirst/, "AI START should rebuild stale sampler layers back to quick synth when light");
+assert.match(source, /ensureMasterFft\(\)/, "Spectrum FFT should be lazy-created instead of always connected");
+assert.match(source, /ensureMasterRecorderDestination\(\)/, "Recording MediaStream tap should be lazy-created");
+assert.match(source, /ensureBackgroundPlaybackDestination\(\)/, "Background bridge MediaStream tap should be lazy-created");
+assert.match(source, /ensureStemRecorderDestinations\(\)/, "Stem recorder taps should be lazy-created");
+assert.match(source, /transportProgressTimer = setTimeout\(tick, interval\)/, "AI timeline UI should use low-cadence timers instead of RAF-only updates");
+assert.match(source, /masterMeterTimer = setTimeout\(tick, interval\)/, "AI meter UI should use low-cadence timers instead of RAF-only updates");
+assert.match(source, /makeSynthBass\(bassBus, \{ forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled\(\) \}\)/, "AI bass should use light synth fallback during quick-first prep");
+assert.match(source, /makeGuitar\(guitarBus, \{ forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled\(\) \}\)/, "AI guitar should use light synth fallback during quick-first prep");
+assert.match(source, /makeChordSynth\(chordBus, \{ forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled\(\) \}\)/, "AI chords should use light synth fallback during quick-first prep");
 assert.match(source, /synthSamplerUpgradeStillCurrent\(snapshot\)/, "AI sample upgrade should guard against stale song or instrument selections");
 assert.match(source, /buildKitForSource\(state\.kitSource, \{ disposeExisting: false \}\)/, "AI drum sample upgrade should not dispose the quick synth kit before the replacement is ready");
 assert.match(source, /isSamplerLayer\(nextLayer\)/, "AI sample upgrade should replace only successfully loaded sampler layers");
@@ -253,8 +263,12 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
 // it must NOT be raised again. The real fix for dropped notes is cutting
 // the agents' note density (step 2), not raising the cap. Ceiling 16.
 {
-  const guitarPoly = Number((source.match(/guitar\.maxPolyphony\s*=\s*(\d+)/) || [])[1]);
-  const chordPoly = Number((source.match(/chord\.maxPolyphony\s*=\s*(\d+)/) || [])[1]);
+  const guitarPolyExpr = (source.match(/guitar\.maxPolyphony\s*=\s*([^;\n]+)/) || [])[1] || "";
+  const chordPolyExpr = (source.match(/chord\.maxPolyphony\s*=\s*([^;\n]+)/) || [])[1] || "";
+  const guitarPolyNums = [...guitarPolyExpr.matchAll(/\d+/g)].map((m) => Number(m[0]));
+  const chordPolyNums = [...chordPolyExpr.matchAll(/\d+/g)].map((m) => Number(m[0]));
+  const guitarPoly = guitarPolyNums.length ? Math.max(...guitarPolyNums) : NaN;
+  const chordPoly = chordPolyNums.length ? Math.max(...chordPolyNums) : NaN;
   assert.ok(guitarPoly > 0 && guitarPoly <= 16, `v228: guitar maxPolyphony must stay low (<=16) for CPU safety — raising it froze devices (found ${guitarPoly})`);
   assert.ok(chordPoly > 0 && chordPoly <= 16, `v228: chord maxPolyphony must stay low (<=16) for CPU safety (found ${chordPoly})`);
 }
@@ -378,7 +392,7 @@ assert.match(source, /stemBus\.drums\s*=\s*new Tone\.Gain\(0\.88\)/, "Drums stem
 assert.match(source, /stemBus\.bass\s*=\s*new Tone\.Gain\(0\.88\)/, "Bass stem should stand forward in v313");
 assert.match(source, /stemBus\.other\s*=\s*new Tone\.Gain\(0\.88\)/, "Other/guitar stem should stand forward in v313");
 assert.match(source, /masterWidener = new Tone\.StereoWidener\(0\.72\)/, "Shared master should widen the v313 default image");
-assert.match(source, /masterWetGain = new Tone\.Gain\(0\.20\)/, "Shared master should add a little more room in v313");
+assert.match(source, /masterWetGain = new Tone\.Gain\(lightRuntime \? 0\.12 : 0\.20\)/, "Shared master should keep v313 room on normal runtime and reduce it only in v316 light runtime");
 assert.match(source, /vocalDryGain = new Tone\.Gain\(0\.68\)/, "Vocal dry center should pull back in v313");
 assert.match(source, /vocalReverbWet = new Tone\.Gain\(0\.16\)/, "Vocal should dissolve into a wider short room in v313");
 assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.52\)/, "Vocal stem should dissolve into the band while staying legible in v313");
@@ -418,8 +432,8 @@ assert.match(source, /"br-space-reverb": \{ old: "22", current: "16" \}/, "Saved
 assert.match(source, /prefs = migratePrefsForCurrentMix\(prefs\);/, "Prefs restore should apply the current mix migration before dispatching sliders");
 assert.match(
   source,
-  /externalVocalBus\.connect\(vocalChorus\);[\s\S]*stemRecorderDests\[stem\] = dest;[\s\S]*return masterGain;/,
-  "Stems-pack recorder taps should be wired after all stem buses exist"
+  /function ensureStemRecorderDestinations\(\)[\s\S]*STEM_NAMES\.forEach\(\(stem\) => \{[\s\S]*stemRecorderDests\[stem\] = dest;[\s\S]*return stemRecorderDests;/,
+  "Stems-pack recorder taps should be lazy-wired after all stem buses exist"
 );
 assert.match(
   source,

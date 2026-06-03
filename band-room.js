@@ -19,12 +19,13 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-188-ai-two-stage-start";
+  const BANDROOM_APP_VERSION = "br-189-ai-light-runtime";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
   const BANDROOM_MASTER_VOL_KEY = "band-room.masterVol.v2";
   const BANDROOM_ALLOW_BACKGROUND_AUDIO_KEY = "band-room.allowBackgroundAudio.v1";
+  const BANDROOM_AI_SAMPLER_UPGRADE_KEY = "band-room.aiSamplerUpgrade.v1";
   const BANDROOM_AUDIO_STATE_KEYS = [BANDROOM_PREFS_KEY, BANDROOM_MASTER_VOL_KEY];
   const BANDROOM_BOOT_MODE = detectBandRoomBootMode();
   const BANDROOM_SAFE_BOOT = BANDROOM_BOOT_MODE === "safe";
@@ -159,7 +160,9 @@
   let vocalDeEsser = null;            // sidechain-style sibilance dip
   let masterMeter = null;             // v71: master RMS meter for UI feedback
   let masterMeterRaf = 0;             // requestAnimationFrame id
+  let masterMeterTimer = 0;           // v316: low-cadence meter loop for AI/light runtime
   let transportProgressRaf = 0;       // v165: ordinary song timeline RAF
+  let transportProgressTimer = 0;     // v316: low-cadence timeline loop for AI/light runtime
   let transportSeekActive = false;    // true while the user drags #br-song-seek
   let masterFft = null;               // v77: spectrum analyzer FFT
   let masterRecorderDest = null;      // v81: MediaStreamDestination for recording
@@ -325,11 +328,25 @@
     // for Human Fly so the AI band reads as one performance, not separate
     // drum/bass/other layers.
     const comp   = new Tone.Compressor({ threshold: -16, ratio: 2.05, attack: 0.014, release: 0.18, knee: 6 });
+    const lightRuntime = aiLightRuntimeEnabled();
+    const widen  = new Tone.StereoWidener(lightRuntime ? 0.42 : 0.58);
+    const makeup = new Tone.Gain(3.0);    // v243: glue-comp makeup + AI 再現 level lift (~+9 dB). The synth band reached the shared, stems-tuned master ~10 dB below the stems → it sat under the master comp/limiter thresholds and never got the loudness glue → thin ("げきしょぼ"). This lifts drums/bass/guitar/chord to stems-comparable level. Stems-only (原音) never touch this bus, so they are unaffected.
+
+    if (lightRuntime) {
+      // v316: phone/PWA AI diet. The continuous parallel saturation + exciter
+      // path sounds good, but it runs for the whole AI bus even when no note is
+      // changing. Keep EQ + glue + width, drop the always-on waveshapers.
+      input.connect(eq);
+      eq.connect(comp);
+      comp.connect(widen);
+      widen.connect(makeup);
+      makeup.connect(dest);
+      return input;
+    }
+
     const sat    = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });
     const satWet = new Tone.Gain(0.16);   // parallel saturated blend
     const satDry = new Tone.Gain(0.92);   // parallel clean path
-    const widen  = new Tone.StereoWidener(0.58);
-    const makeup = new Tone.Gain(3.0);    // v243: glue-comp makeup + AI 再現 level lift (~+9 dB). The synth band reached the shared, stems-tuned master ~10 dB below the stems → it sat under the master comp/limiter thresholds and never got the loudness glue → thin ("げきしょぼ"). This lifts drums/bass/guitar/chord to stems-comparable level. Stems-only (原音) never touch this bus, so they are unaffected.
 
     // v287: parallel high-frequency exciter. The v274/v284/v286 EQ high-
     // shelf could not brighten the AI mix — the webapp source (acoustic
@@ -476,25 +493,10 @@
     // v71: meter tap on the limiter input — measures the final pre-clip RMS
     masterMeter = new Tone.Meter({ smoothing: 0.75 });
     masterLimiter.connect(masterMeter);
-    // v77: FFT tap for the spectrum analyzer (64 bins is plenty for a
-    // 28-bar compact view; smoothing built into the FFT analyser node).
-    masterFft = new Tone.FFT({ size: 64, smoothing: 0.65 });
-    masterLimiter.connect(masterFft);
-    // v81: MediaStreamDestination so MediaRecorder can capture the
-    // final post-limiter mix to a file (webm/opus by default; some
-    // browsers can do audio/mp4).
-    try {
-      masterRecorderDest = Tone.context.createMediaStreamDestination();
-      masterLimiter.connect(masterRecorderDest);
-    } catch (e) {
-      console.warn("[Band Room] recorder destination unavailable:", e);
-    }
-    try {
-      masterPlaybackDest = Tone.context.createMediaStreamDestination();
-      masterLimiter.connect(masterPlaybackDest);
-    } catch (e) {
-      console.warn("[Band Room] playback bridge destination unavailable:", e);
-    }
+    // v316: FFT + MediaStream taps are now lazy. Keeping analyser/recorder/
+    // background streams connected during AI playback costs CPU even when the
+    // user is only listening. They are created on first visual draw, REC, or
+    // background-bridge arming.
     // v198: low-shelf weight + high shelf for 艶 + tighter comp2 glue.
     // v204: punch & air pass — presence/air shelf lifted (high 0.7→1.4, from
     // 4.8 kHz) for バキバキ crispness, a touch more low-mid scoop (mid −0.5)
@@ -505,13 +507,22 @@
     const masterComp2 = new Tone.Compressor({ threshold: -10, ratio: 1.7, attack: 0.016, release: 0.16, knee: 5 });
     masterWidener = new Tone.StereoWidener(0.72);
 
-    masterTapeSat = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });  // v204: a touch more harmonic edge
-    masterTapeSatWet = new Tone.Gain(0.07);
+    const lightRuntime = currentMode === "synth" && aiLightRuntimeEnabled();
+    masterTapeSat = new Tone.Distortion({
+      distortion: lightRuntime ? 0.075 : 0.12,
+      oversample: lightRuntime ? "none" : "2x",
+      wet: 1
+    });  // v204/v316: a touch more harmonic edge, lighter on constrained runtimes
+    masterTapeSatWet = new Tone.Gain(lightRuntime ? 0.045 : 0.07);
     masterTapeSatDry = new Tone.Gain(0.94);
 
-    masterReverb = new Tone.Reverb({ decay: 3.0, preDelay: 0.018, wet: 1 });  // v313: wider room without long echo smear
+    masterReverb = new Tone.Reverb({
+      decay: lightRuntime ? 2.1 : 3.0,
+      preDelay: 0.018,
+      wet: 1
+    });  // v313/v316: wider room, shorter on light runtime
     masterDryGain = new Tone.Gain(0.80);
-    masterWetGain = new Tone.Gain(0.20);
+    masterWetGain = new Tone.Gain(lightRuntime ? 0.12 : 0.20);
 
     masterGain = new Tone.Gain(1.2);
     masterGain.connect(masterComp1);
@@ -648,12 +659,56 @@
     externalVocalBus = new Tone.Gain(0.78);
     externalVocalBus.connect(vocalChorus);
 
-    // v90/v167: per-stem MediaStreamDestinations so each stem bus can be
-    // captured independently for stems pack export. This must happen after
-    // stemBus.* exists; otherwise the export starts with 0/4 streams.
+    return masterGain;
+  }
+
+  function ensureMasterFft() {
+    if (masterFft) return masterFft;
+    ensureMaster();
+    if (!masterLimiter) return null;
     try {
-      ["vocals", "drums", "bass", "other"].forEach((stem) => {
-        if (!stemBus[stem]) return;
+      masterFft = new Tone.FFT({ size: 64, smoothing: 0.65 });
+      masterLimiter.connect(masterFft);
+    } catch (e) {
+      console.warn("[Band Room] spectrum analyzer unavailable:", e);
+      masterFft = null;
+    }
+    return masterFft;
+  }
+
+  function ensureMasterRecorderDestination() {
+    if (masterRecorderDest) return masterRecorderDest;
+    ensureMaster();
+    if (!masterLimiter) return null;
+    try {
+      masterRecorderDest = Tone.context.createMediaStreamDestination();
+      masterLimiter.connect(masterRecorderDest);
+    } catch (e) {
+      console.warn("[Band Room] recorder destination unavailable:", e);
+      masterRecorderDest = null;
+    }
+    return masterRecorderDest;
+  }
+
+  function ensureBackgroundPlaybackDestination() {
+    if (masterPlaybackDest) return masterPlaybackDest;
+    ensureMaster();
+    if (!masterLimiter) return null;
+    try {
+      masterPlaybackDest = Tone.context.createMediaStreamDestination();
+      masterLimiter.connect(masterPlaybackDest);
+    } catch (e) {
+      console.warn("[Band Room] playback bridge destination unavailable:", e);
+      masterPlaybackDest = null;
+    }
+    return masterPlaybackDest;
+  }
+
+  function ensureStemRecorderDestinations() {
+    ensureMaster();
+    try {
+      STEM_NAMES.forEach((stem) => {
+        if (stemRecorderDests[stem] || !stemBus[stem]) return;
         const dest = Tone.context.createMediaStreamDestination();
         stemBus[stem].connect(dest);
         stemRecorderDests[stem] = dest;
@@ -661,7 +716,7 @@
     } catch (e) {
       console.warn("[Band Room] per-stem recorder destinations unavailable:", e);
     }
-    return masterGain;
+    return stemRecorderDests;
   }
 
   function isAppleMobileDevice() {
@@ -717,12 +772,49 @@
            (Number(nav.hardwareConcurrency) > 0 && Number(nav.hardwareConcurrency) <= 4);
   }
 
+  function runtimeQueryFlag(name) {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const value = params.get(name);
+      if (value === "1" || value === "true" || value === "on") return true;
+      if (value === "0" || value === "false" || value === "off") return false;
+    } catch (e) {}
+    return null;
+  }
+
+  function aiLightRuntimeEnabled() {
+    const forced = runtimeQueryFlag("aiLight");
+    if (forced != null) return forced;
+    const nav = typeof navigator !== "undefined" ? navigator : {};
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection || null;
+    if (connection && connection.saveData) return true;
+    const cores = Number(nav.hardwareConcurrency) || 0;
+    const memory = Number(nav.deviceMemory) || 0;
+    return isMobileOrStandaloneRuntime() ||
+           (cores > 0 && cores <= 8) ||
+           (memory > 0 && memory <= 8);
+  }
+
+  function aiSamplerUpgradeEnabled() {
+    const forced = runtimeQueryFlag("aiSamples");
+    if (forced != null) return forced;
+    try {
+      return safeLocalStorageGet(BANDROOM_AI_SAMPLER_UPGRADE_KEY) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function shouldAutoUpgradeSynthSamples(reason = "start") {
+    return shouldStageSynthPlaybackFirst(reason) && aiSamplerUpgradeEnabled() && !BANDROOM_SAFE_BOOT;
+  }
+
   function samplerDecodeConcurrency() {
-    return isMobileOrStandaloneRuntime() ? 2 : 4;
+    return aiLightRuntimeEnabled() ? 1 : (isMobileOrStandaloneRuntime() ? 2 : 4);
   }
 
   function yieldToUi() {
-    const delayMs = isMobileOrStandaloneRuntime() ? 24 : 8;
+    const delayMs = aiLightRuntimeEnabled() ? 40 : (isMobileOrStandaloneRuntime() ? 24 : 8);
     return new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 
@@ -735,8 +827,9 @@
   }
 
   function uiTelemetryIntervalMs(kind = "timeline") {
-    if (isMobileOrStandaloneRuntime()) return kind === "meter" ? 250 : 500;
-    if (isBandAiPlaybackMode()) return kind === "meter" ? 160 : 300;
+    if (isBandAiPlaybackMode() && aiLightRuntimeEnabled()) return kind === "meter" ? 900 : 1000;
+    if (isMobileOrStandaloneRuntime()) return kind === "meter" ? 500 : 800;
+    if (isBandAiPlaybackMode()) return kind === "meter" ? 300 : 500;
     return kind === "meter" ? 100 : 250;
   }
 
@@ -791,7 +884,8 @@
 
   function ensureBackgroundBridgeAudio() {
     if (backgroundBridgeAudio) return backgroundBridgeAudio;
-    if (!masterPlaybackDest?.stream || typeof document === "undefined") return null;
+    const playbackDest = ensureBackgroundPlaybackDestination();
+    if (!playbackDest?.stream || typeof document === "undefined") return null;
 
     const audio = document.createElement("audio");
     audio.id = "br-background-audio";
@@ -800,7 +894,7 @@
     audio.loop = false;
     audio.muted = false;
     audio.playsInline = true;
-    audio.srcObject = masterPlaybackDest.stream;
+    audio.srcObject = playbackDest.stream;
     audio.setAttribute("aria-hidden", "true");
     audio.setAttribute("playsinline", "");
     audio.style.position = "fixed";
@@ -1065,7 +1159,7 @@
   // v81: live recording — capture the post-limiter mix to a downloadable file
   function startRecording() {
     if (!masterRecorderDest) {
-      ensureMaster();
+      ensureMasterRecorderDestination();
       if (!masterRecorderDest) return false;
     }
     if (mediaRecorder && mediaRecorder.state === "recording") return false;
@@ -1186,7 +1280,7 @@
   // v90: stems pack export — start 4 MediaRecorders simultaneously,
   // one per stem bus. STOP collects 4 blobs and emits 4 download links.
   function startStemsPack() {
-    ensureMaster();
+    ensureStemRecorderDestinations();
     const stems = ["vocals", "drums", "bass", "other"];
     let started = 0;
     const mime = (window.MediaRecorder && MediaRecorder.isTypeSupported("audio/webm;codecs=opus"))
@@ -1926,6 +2020,7 @@
     // use real samples (e.g. salamander-bass = piano left-hand register).
     // Falls back to profile-aware synth bass otherwise.
     const b = currentProfile().bass;
+    const light = opts.light === true || aiLightRuntimeEnabled();
     const post = new Tone.Filter({ frequency: b.postLpFreq, type: "lowpass", Q: 0.6 }).connect(target);
 
     if (!opts.forceSynth && state.bassInstrument && state.onlineCatalog) {
@@ -1948,13 +2043,17 @@
     }
 
     // synth fallback
-    const drive = new Tone.Distortion({ distortion: b.drive, wet: b.driveWet, oversample: "2x" }).connect(post);
+    const drive = new Tone.Distortion({
+      distortion: light ? Math.min(b.drive, 0.18) : b.drive,
+      wet: light ? Math.min(b.driveWet, 0.42) : b.driveWet,
+      oversample: light ? "none" : "2x"
+    }).connect(post);
     const bass = new Tone.MonoSynth({
       // v244: fat (detuned-unison) oscillator — 3 voices, 20-cent spread.
       // A lone sawtooth reads as a static "beep"; the slight detune gives
       // the bass analog width + body. The lowpass below tames the extra
       // harmonics so it stays solid, not wobbly.
-      oscillator: { type: "fatsawtooth", count: 3, spread: 20 },
+      oscillator: light ? { type: "sawtooth" } : { type: "fatsawtooth", count: 3, spread: 20 },
       filter: { type: "lowpass", frequency: b.filterFreq, Q: b.filterQ },
       envelope: { attack: 0.005, decay: 0.18, sustain: 0.6, release: b.envRelease },
       filterEnvelope: { attack: 0.003, decay: 0.12, sustain: 0.5, release: 0.12, baseFrequency: 120, octaves: 2.6 },
@@ -2314,6 +2413,7 @@
 
   function startTransportProgress() {
     cancelAnimationFrame(transportProgressRaf);
+    clearTimeout(transportProgressTimer);
     let lastUiAtMs = 0;
     const tick = () => {
       const nowMs = bandRoomNowMs();
@@ -2329,7 +2429,12 @@
       if (state.started && duration && playbackContentElapsedSec() >= duration - 0.15) {
         queueAutoAdvanceToNextSong();
       }
-      if (state.started) transportProgressRaf = requestAnimationFrame(tick);
+      if (!state.started) return;
+      if (currentMode === "stems") {
+        transportProgressRaf = requestAnimationFrame(tick);
+      } else {
+        transportProgressTimer = setTimeout(tick, interval);
+      }
     };
     updateSongTimelineDisplay();
     tick();
@@ -2337,7 +2442,9 @@
 
   function stopTransportProgress() {
     cancelAnimationFrame(transportProgressRaf);
+    clearTimeout(transportProgressTimer);
     transportProgressRaf = 0;
+    transportProgressTimer = 0;
     updateSongTimelineDisplay();
   }
 
@@ -2565,6 +2672,11 @@
   }
 
   function queueSynthSamplerUpgrade(reason = "start") {
+    if (!shouldAutoUpgradeSynthSamples(reason)) {
+      const kitStatus = $("br-kit-status");
+      if (kitStatus) kitStatus.textContent = "AI ready (light synth)";
+      return;
+    }
     const snapshot = synthSamplerUpgradeSnapshot(reason);
     const kitStatus = $("br-kit-status");
     const run = async () => {
@@ -2606,6 +2718,11 @@
     else setTimeout(run, 0);
   }
 
+  function needsQuickSynthLayer(layer, quickFirst) {
+    if (!layer) return true;
+    return quickFirst && aiLightRuntimeEnabled() && isSamplerLayer(layer);
+  }
+
   async function prepareSynthPlaybackAssets(reason = "start") {
     ensureMaster();
     const kitStatus = $("br-kit-status");
@@ -2615,13 +2732,34 @@
     try {
       const quickFirst = shouldStageSynthPlaybackFirst(reason);
       if (!quickFirst) await ensureOnlineCatalogForSynth();
-      if (synthPartEnabled("br-toggle-drums") && !drumKit) drumKit = await buildKitForSource(quickFirst ? "synth" : state.kitSource);
-      if (SYNTH_REBUILD_PARTS.bass && synthPartEnabled("br-toggle-bass") && !synthBass) synthBass = await makeSynthBass(bassBus, { forceSynth: quickFirst });
-      if (SYNTH_REBUILD_PARTS.guitar && synthPartEnabled("br-toggle-guitar") && !guitarSynth) guitarSynth = await makeGuitar(guitarBus, { forceSynth: quickFirst });
-      if (SYNTH_REBUILD_PARTS.voice && synthPartEnabled("br-toggle-voice") && !voiceSynth) voiceSynth = await makeVoiceBox(voiceBus, { forceSynth: quickFirst });
-      if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && !chordSynth) chordSynth = await makeChordSynth(chordBus, { forceSynth: quickFirst });
+      if (synthPartEnabled("br-toggle-drums") && needsQuickSynthLayer(drumKit, quickFirst)) {
+        drumKit = await buildKitForSource(quickFirst ? "synth" : state.kitSource);
+      }
+      if (SYNTH_REBUILD_PARTS.bass && synthPartEnabled("br-toggle-bass") && needsQuickSynthLayer(synthBass, quickFirst)) {
+        const old = synthBass;
+        synthBass = await makeSynthBass(bassBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
+        if (old && old !== synthBass) disposeSynthLayer(old);
+      }
+      if (SYNTH_REBUILD_PARTS.guitar && synthPartEnabled("br-toggle-guitar") && needsQuickSynthLayer(guitarSynth, quickFirst)) {
+        const old = guitarSynth;
+        guitarSynth = await makeGuitar(guitarBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
+        if (old && old !== guitarSynth) disposeSynthLayer(old);
+      }
+      if (SYNTH_REBUILD_PARTS.voice && synthPartEnabled("br-toggle-voice") && needsQuickSynthLayer(voiceSynth, quickFirst)) {
+        const old = voiceSynth;
+        voiceSynth = await makeVoiceBox(voiceBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
+        if (old && old !== voiceSynth) disposeSynthLayer(old);
+      }
+      if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && needsQuickSynthLayer(chordSynth, quickFirst)) {
+        const old = chordSynth;
+        chordSynth = await makeChordSynth(chordBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
+        if (old && old !== chordSynth) disposeSynthLayer(old);
+      }
       if (synthPartEnabled("br-toggle-click") && !clickSynth) clickSynth = makeClick(clickBus);
-      if (kitStatus && reason !== "toggle") kitStatus.textContent = quickFirst ? "AI ready (quick synth)" : "AI ready";
+      if (kitStatus && reason !== "toggle") {
+        kitStatus.textContent = quickFirst && !shouldAutoUpgradeSynthSamples(reason) ? "AI ready (light synth)" :
+          (quickFirst ? "AI ready (quick synth)" : "AI ready");
+      }
       if (quickFirst) queueSynthSamplerUpgrade(reason);
       return true;
     } catch (e) {
@@ -2838,6 +2976,7 @@
   // Section-aware picking: silent intro / palm-mute 8th verse / open
   // prechorus / 16th chorus / sparse bridge / hit outro.
   async function makeGuitar(target, opts = {}) {  // v270: async
+    const light = opts.light === true || aiLightRuntimeEnabled();
     // v111: if guitarInstrument is set to a catalog sampler, use real samples.
     // Less distortion + softer chain than synth fallback (real samples already
     // have body and harmonic content).
@@ -2851,7 +2990,11 @@
         let chainIn = lp;
         let dist = null;  // v229: hoisted so dispose can reach it
         if (isElectric) {
-          dist = new Tone.Distortion({ distortion: 0.18, wet: 0.32, oversample: "2x" }).connect(lp);
+          dist = new Tone.Distortion({
+            distortion: light ? 0.12 : 0.18,
+            wet: light ? 0.22 : 0.32,
+            oversample: light ? "none" : "2x"
+          }).connect(lp);
           chainIn = dist;
         }
         const urls = {};
@@ -2873,10 +3016,14 @@
     }
 
     // v70 synth fallback: PolySynth saw + heavy distortion
-    const chorus = new Tone.Chorus({ frequency: 0.9, delayTime: 3.2, depth: 0.38, wet: 0.34 }).start();
-    const dist = new Tone.Distortion({ distortion: 0.55, wet: 0.85, oversample: "2x" });
+    const chorus = light ? null : new Tone.Chorus({ frequency: 0.9, delayTime: 3.2, depth: 0.38, wet: 0.34 }).start();
+    const dist = new Tone.Distortion({
+      distortion: light ? 0.42 : 0.55,
+      wet: light ? 0.68 : 0.85,
+      oversample: light ? "none" : "2x"
+    });
     const lp = new Tone.Filter({ frequency: 4200, type: "lowpass", Q: 0.6 });
-    const verb = new Tone.Reverb({ decay: 1.0, wet: 0.14 });
+    const verb = light ? null : new Tone.Reverb({ decay: 1.0, wet: 0.14 });
     // v232: high-pass the synth guitar at 130 Hz. Its distorted low-mid
     // otherwise crowds the bass lane (octave 2); the guitar's lane is the
     // low-mid (octave 3 power chords), so everything below ~130 Hz belongs
@@ -2900,15 +3047,23 @@
     // is to cut the agents' note density so a low cap doesn't drop notes —
     // not to raise the cap. Until then, 10 keeps the device alive (drops
     // some notes, but plays — the v200–v226 known-survivable value).
-    guitar.maxPolyphony = 10;
+    guitar.maxPolyphony = light ? 6 : 10;
     guitar.connect(hpG);
-    hpG.connect(chorus);
-    chorus.connect(dist);
+    if (chorus) {
+      hpG.connect(chorus);
+      chorus.connect(dist);
+    } else {
+      hpG.connect(dist);
+    }
     dist.connect(lp);
-    lp.connect(verb);
-    verb.connect(target);
+    if (verb) {
+      lp.connect(verb);
+      verb.connect(target);
+    } else {
+      lp.connect(target);
+    }
     // v229: chorus is a started LFO — leaking it left an LFO running forever.
-    return withChainDispose(markLayerKind(guitar, "synth"), [chorus, dist, lp, verb, hpG]);
+    return withChainDispose(markLayerKind(guitar, "synth"), [chorus, dist, lp, verb, hpG].filter(Boolean));
   }
 
   function powerChordNotes(chord, octave = 3) {
@@ -2933,6 +3088,7 @@
   // mp3, drop into presets/vocals/{song-id}.mp3, then load via a
   // future HTMLAudio layer.
   async function makeVoiceBox(target, opts = {}) {  // v270: async
+    const light = opts.light === true || aiLightRuntimeEnabled();
     // v111: if voiceInstrument is set to a catalog sampler, use it
     // (typically violin / cello / flute for "lead melody as instrument").
     // This bypasses the formant-vowel synth path entirely and gives the
@@ -2949,7 +3105,7 @@
         // v126: velocity-sensitive — melody lead (violin / cello / flute) は
         // 強く吹けばブライト、弱く吹けば柔らかい音色変化
         const sampler = await makeVelocitySensitiveSampler({
-          urls, baseRelease: 0.8, volume: -6,
+          urls, baseRelease: light ? 0.45 : 0.8, volume: -6,
           minCutoff: 1800, maxCutoff: 9000
         });
         if (sampler) {
@@ -2962,7 +3118,7 @@
 
     // v92 synth fallback: AMSynth + dual formant (vowel-ish "ah")
     const v = currentProfile().vocal;
-    const verb = new Tone.Reverb({ decay: 2.5, wet: v.verbWet }).connect(target);
+    const verb = new Tone.Reverb({ decay: light ? 1.2 : 2.5, wet: light ? Math.min(v.verbWet, 0.10) : v.verbWet }).connect(target);
     const hp = new Tone.Filter({ frequency: v.hpFreq, type: "highpass", Q: 0.5 }).connect(verb);
     const mix = new Tone.Gain(0.9).connect(hp);
     const formant1 = new Tone.Filter({ frequency: v.formant1, type: "bandpass", Q: 5 }).connect(mix);
@@ -2972,7 +3128,7 @@
       harmonicity: v.harmonicity,
       // v244: gently fat carrier (2 voices, small 12-cent spread) — adds
       // body without fighting the vibrato LFO already on voice.detune.
-      oscillator: { type: "fatsawtooth", count: 2, spread: 12 },
+      oscillator: light ? { type: "sawtooth" } : { type: "fatsawtooth", count: 2, spread: 12 },
       envelope: { attack: 0.06, decay: 0.32, sustain: 0.65, release: 0.45 },
       modulation: { type: "sine" },
       modulationEnvelope: { attack: 0.04, decay: 0.2, sustain: 0.5, release: 0.4 },
@@ -2981,11 +3137,11 @@
     voice.connect(formant1);
     voice.connect(formant2);
 
-    const vibrato = new Tone.LFO({ frequency: v.vibratoFreq, min: -v.vibratoCents, max: v.vibratoCents });
-    try { vibrato.connect(voice.detune); vibrato.start(); } catch (e) {}
+    const vibrato = light ? null : new Tone.LFO({ frequency: v.vibratoFreq, min: -v.vibratoCents, max: v.vibratoCents });
+    try { if (vibrato) { vibrato.connect(voice.detune); vibrato.start(); } } catch (e) {}
 
     // v229: vibrato is a started LFO — leaking it left an LFO running forever.
-    return withChainDispose(markLayerKind(voice, "synth"), [verb, hp, mix, formant1, formant2, vibrato]);
+    return withChainDispose(markLayerKind(voice, "synth"), [verb, hp, mix, formant1, formant2, vibrato].filter(Boolean));
   }
 
   // Human Fly chorus melody — hook line over G | D | Em | C 4-bar
@@ -3032,15 +3188,17 @@
   // ---- Chord synth ---------------------------------------------
 
   async function makeChordSynth(target, opts = {}) {  // v270: async
+    const light = opts.light === true || aiLightRuntimeEnabled();
     // v92: profile-aware chord synth.
     // v101: if state.chordInstrument is set to an "instruments[]" catalog
     //   entry id (e.g. "salamander-piano"), use Tone.Sampler with that
     //   sample set instead of Tone.PolySynth.
     const c = currentProfile().chord;
-    const verb = new Tone.Reverb({ decay: 1.6, wet: c.verbWet }).connect(target);
-    const autoPan = new Tone.AutoPanner({ frequency: c.autoPanFreq, depth: c.autoPanDepth }).connect(verb).start();
-    const chorus = new Tone.Chorus({ frequency: 0.6, delayTime: 4.5, depth: 0.45, wet: c.chorusWet }).start();
-    chorus.connect(autoPan);
+    const verb = light ? null : new Tone.Reverb({ decay: 1.6, wet: c.verbWet }).connect(target);
+    const autoPan = light ? null : new Tone.AutoPanner({ frequency: c.autoPanFreq, depth: c.autoPanDepth }).connect(verb).start();
+    const chorus = light ? null : new Tone.Chorus({ frequency: 0.6, delayTime: 4.5, depth: 0.45, wet: c.chorusWet }).start();
+    if (chorus && autoPan) chorus.connect(autoPan);
+    const chordOutput = chorus || verb || target;
 
     if (!opts.forceSynth && state.chordInstrument && state.onlineCatalog) {
       const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.chordInstrument);
@@ -3056,9 +3214,9 @@
           minCutoff: 2000, maxCutoff: 9000
         });
         if (sampler) {
-          sampler.connect(chorus);
+          sampler.connect(chordOutput);
           // v229: autoPan + chorus are started LFOs — tear the whole chain down.
-          return withChainDispose(sampler, [verb, autoPan, chorus]);
+          return withChainDispose(sampler, [verb, autoPan, chorus].filter(Boolean));
         }
       }
     }
@@ -3078,11 +3236,11 @@
     // v228: maxPolyphony 10 (reverted from v227's 32) — same CPU-protection
     // reasoning as the guitar revert above. The cap stays low; step 2 cuts
     // the chord agent's note density so a low cap suffices.
-    chord.maxPolyphony = 10;
+    chord.maxPolyphony = light ? 5 : 10;
     chord.connect(hpC);
-    hpC.connect(chorus);
+    hpC.connect(chordOutput);
     // v229: autoPan + chorus are started LFOs — tear the whole chain down.
-    return withChainDispose(markLayerKind(chord, "synth"), [verb, autoPan, chorus, hpC]);
+    return withChainDispose(markLayerKind(chord, "synth"), [verb, autoPan, chorus, hpC].filter(Boolean));
   }
 
   // ---- Click ---------------------------------------------------
@@ -5283,25 +5441,22 @@
     const canvas = $("br-spectrum");
     const ctx = canvas ? canvas.getContext("2d") : null;
     cancelAnimationFrame(masterMeterRaf);
-    let lastDrawAtMs = 0;
+    clearTimeout(masterMeterTimer);
     const tick = () => {
       if (!state.started) return;
-      const nowMs = bandRoomNowMs();
       const interval = uiTelemetryIntervalMs("meter");
-      if (nowMs - lastDrawAtMs < interval) {
-        masterMeterRaf = requestAnimationFrame(tick);
-        return;
-      }
-      lastDrawAtMs = nowMs;
       // --- RMS meter ---
       const dB = masterMeter.getValue();
       const pct = Math.max(0, Math.min(100, (dB + 60) / 60 * 100));
       fill.style.width = pct.toFixed(1) + "%";
       fill.style.background = dB > -3 ? "#ff5566" : (dB > -12 ? "#ffb39a" : "#ff8866");
       // --- Spectrum ---
-      if (ctx && masterFft && !(isMobileOrStandaloneRuntime() && isBandAiPlaybackMode())) {
+      const drawSpectrum = ctx && !(aiLightRuntimeEnabled() && isBandAiPlaybackMode()) &&
+        !(isMobileOrStandaloneRuntime() && isBandAiPlaybackMode());
+      const fft = drawSpectrum ? ensureMasterFft() : null;
+      if (ctx && fft) {
         const w = canvas.width, h = canvas.height;
-        const vals = masterFft.getValue();  // Float32Array of dB values
+        const vals = fft.getValue();  // Float32Array of dB values
         ctx.clearRect(0, 0, w, h);
         const bw = w / vals.length;
         for (let i = 0; i < vals.length; i++) {
@@ -5312,17 +5467,19 @@
           ctx.fillStyle = `hsla(${hue}, 80%, 65%, 0.72)`;
           ctx.fillRect(i * bw, h - bh, bw - 0.5, bh);
         }
-      } else if (ctx && isMobileOrStandaloneRuntime() && isBandAiPlaybackMode()) {
+      } else if (ctx && isBandAiPlaybackMode()) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
-      masterMeterRaf = requestAnimationFrame(tick);
+      if (state.started) masterMeterTimer = setTimeout(tick, interval);
     };
     tick();
   }
 
   function stopMasterMeter() {
     cancelAnimationFrame(masterMeterRaf);
+    clearTimeout(masterMeterTimer);
     masterMeterRaf = 0;
+    masterMeterTimer = 0;
     const fill = $("br-meter-fill");
     if (fill) fill.style.width = "0%";
     const canvas = $("br-spectrum");

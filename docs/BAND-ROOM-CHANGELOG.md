@@ -1,6 +1,24 @@
-# Band Room — Changelog (v65 → v315 compact)
+# Band Room — Changelog (v65 → v316 compact)
 
-Current compact release: v315.
+Current compact release: v316.
+
+---
+
+## v316 compact — AI 再現を light runtime 優先に再調整
+
+v315 の quick synth → sampler upgrade は START の体感は改善したが、再生中の裏
+sampler fetch/decode と常時 UI/MediaStream tap が弱い端末ではまだ重かったため、
+AI 再現の既定をさらに軽量側へ倒した。
+
+- `START` / 再生中の AI mode 切替では quick synth を既定のまま維持し、CDN sampler
+  の自動 upgrade は `?aiSamples=1` または localStorage opt-in 時だけにした。
+- light runtime では既存 sampler layer が残っていても START 時に synth layer へ戻す。
+- AI 用 polish bus は低負荷端末で常時 saturation / exciter をバイパスし、bass / guitar /
+  chord / voice fallback も oversample / LFO / reverb を削った軽い構成にする。
+- meter / timeline は AI/light runtime 中に毎 frame で起こさず、低 cadence に変更。
+- spectrum FFT、recording MediaStream、background bridge MediaStream、stems recorder tap は
+  必要時まで作らない。
+- JS cache を `band-room.js?v=br-189`、SW を `hazama-fm-v316` へ同期。
 
 ---
 
