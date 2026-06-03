@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-187-sound-mix-ui", "Band Room should expose the current sound-mix UI version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-188-ai-two-stage-start", "Band Room should expose the current AI two-stage start version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -130,13 +130,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-84/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-187/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-188/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-84/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-187/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-188/, "Service worker should precache the current Band Room JS marker");
 assert.match(html, /class="br-details br-sound-mix"/, "Sound controls should be consolidated into one sound mix details panel");
 assert.match(html, /id="br-sound-mix"/, "Band Room should expose the consolidated sound mix section");
 assert.doesNotMatch(html, /<summary>[^<]*vocal FX/i, "Vocal FX should not be a separate details panel");
@@ -151,6 +151,14 @@ assert.match(source, /async function prepareStemPlaybackAssets\(/, "Original ste
 assert.match(source, /samplerAudioBufferCache/, "AI sampler preload should cache decoded buffers");
 assert.match(source, /samplerDecodeConcurrency\(/, "AI sampler preload should use bounded decode concurrency");
 assert.match(source, /Object\.keys\(preloaded\)\.length === 0\) return null;/, "Failed AI sampler fetches should fall back without blocking START");
+assert.match(source, /function shouldStageSynthPlaybackFirst\(reason\)/, "AI START should support quick synth-first staging");
+assert.match(source, /queueSynthSamplerUpgrade\(reason\)/, "AI START should queue a background sample upgrade after quick synth prep");
+assert.match(source, /makeSynthBass\(bassBus, \{ forceSynth: quickFirst \}\)/, "AI bass should use synth fallback during quick-first prep");
+assert.match(source, /makeGuitar\(guitarBus, \{ forceSynth: quickFirst \}\)/, "AI guitar should use synth fallback during quick-first prep");
+assert.match(source, /makeChordSynth\(chordBus, \{ forceSynth: quickFirst \}\)/, "AI chords should use synth fallback during quick-first prep");
+assert.match(source, /synthSamplerUpgradeStillCurrent\(snapshot\)/, "AI sample upgrade should guard against stale song or instrument selections");
+assert.match(source, /buildKitForSource\(state\.kitSource, \{ disposeExisting: false \}\)/, "AI drum sample upgrade should not dispose the quick synth kit before the replacement is ready");
+assert.match(source, /isSamplerLayer\(nextLayer\)/, "AI sample upgrade should replace only successfully loaded sampler layers");
 assert.doesNotMatch(
   source,
   /if \(!drumKit\) drumKit = await buildKitForSource\(state\.kitSource\);[\s\S]*await loadStemsForSong\(state\.currentSongId\);/,
@@ -261,7 +269,7 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
 // node chain is torn down — this is the song-switch freeze fix.
 {
   assert.match(source, /function withChainDispose\(/, "v229: withChainDispose helper must exist to tear down full synth FX chains");
-  assert.match(source, /return withChainDispose\(\s*\{ kick, snare, hat, ghost, fill, crash \}/,
+  assert.match(source, /return withChainDispose\(\s*markLayerKind\(\{ kick, snare, hat, ghost, fill, crash \}, "synth"\)/,
     "v229/v237: makeDrumKit must return via withChainDispose so synth kits dispose cleanly (song-switch freeze fix)");
 }
 // v237: buffer-based drum kit. The synth drum kit was re-synthesised LIVE on

@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-187-sound-mix-ui";
+  const BANDROOM_APP_VERSION = "br-188-ai-two-stage-start";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -193,6 +193,7 @@
   let voiceSynth = null;
   let chordSynth = null;
   let clickSynth = null;
+  let synthSamplerUpgradeSeq = 0;
 
   // Original stem buses + Tone.Player instances (Demucs separated)
   let stemBus = { vocals: null, drums: null, bass: null, other: null };
@@ -1633,6 +1634,17 @@
     return node;
   }
 
+  function markLayerKind(node, kind) {
+    if (node && typeof node === "object") {
+      try { node._brLayerKind = kind; } catch (e) {}
+    }
+    return node;
+  }
+
+  function isSamplerLayer(node) {
+    return !!(node && node._brLayerKind === "sampler");
+  }
+
   // v237: buffer-based drum kit. The old kit re-synthesised every hit LIVE —
   // machine-gunning Tone synths ~30×/bar piled up Web Audio cost until the
   // browser choked (preview oracle: full density freezes ~16s, ~2 hits/bar
@@ -1794,7 +1806,7 @@
     // buffers and one-shot sources GC on their own (sources self-dispose on
     // onended) — no continuously-running generators left to leak.
     return withChainDispose(
-      { kick, snare, hat, ghost, fill, crash },
+      markLayerKind({ kick, snare, hat, ghost, fill, crash }, "synth"),
       [kickPan, snarePan, hatPan, ghostPan, fillPan, crashPan]
     );
   }
@@ -1870,6 +1882,7 @@
       volume: opts.volume ?? -6
     }).connect(filter);
     return {
+      _brLayerKind: "sampler",
       _filter: filter,
       _sampler: sampler,
       connect(target) { filter.connect(target); return this; },
@@ -1908,14 +1921,14 @@
   // kill-switch: flip any part to false to silence it if it ever regresses.
   const SYNTH_REBUILD_PARTS = { bass: true, guitar: true, voice: true, chord: true };
 
-  async function makeSynthBass(target) {  // v270: async — awaits the v270 sampler pre-decode
+  async function makeSynthBass(target, opts = {}) {  // v270: async — awaits the v270 sampler pre-decode
     // v110: if bassInstrument is set to a sampler in catalog.instruments[],
     // use real samples (e.g. salamander-bass = piano left-hand register).
     // Falls back to profile-aware synth bass otherwise.
     const b = currentProfile().bass;
     const post = new Tone.Filter({ frequency: b.postLpFreq, type: "lowpass", Q: 0.6 }).connect(target);
 
-    if (state.bassInstrument && state.onlineCatalog) {
+    if (!opts.forceSynth && state.bassInstrument && state.onlineCatalog) {
       const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.bassInstrument);
       if (instDef && instDef.kind === "sampler") {
         const urls = {};
@@ -1948,7 +1961,7 @@
       portamento: b.portamento,
       volume: -10
     }).connect(drive);
-    return withChainDispose(bass, [post, drive]);  // v229: tear down post + drive
+    return withChainDispose(markLayerKind(bass, "synth"), [post, drive]);  // v229: tear down post + drive
   }
 
   // ---- Original-stem players (Demucs-separated playback) ------
@@ -2468,19 +2481,148 @@
     return false;
   }
 
+  function shouldStageSynthPlaybackFirst(reason) {
+    return reason === "start" || reason === "mode-switch";
+  }
+
+  function voiceOverridesSnapshotKey() {
+    try { return JSON.stringify(state.voiceOverrides || {}); } catch (e) { return ""; }
+  }
+
+  function synthSamplerUpgradeSnapshot(reason) {
+    return {
+      seq: ++synthSamplerUpgradeSeq,
+      reason,
+      stopSeq: playbackLifecycleStopSeq,
+      modeSeq: modeSwitchSeq,
+      songId: state.currentSongId,
+      kitSource: state.kitSource,
+      kitProfile: state.kitProfile,
+      voiceOverrides: voiceOverridesSnapshotKey(),
+      bassInstrument: state.bassInstrument,
+      guitarInstrument: state.guitarInstrument,
+      voiceInstrument: state.voiceInstrument,
+      chordInstrument: state.chordInstrument
+    };
+  }
+
+  function synthSamplerUpgradeStillCurrent(snapshot) {
+    return snapshot &&
+      snapshot.seq === synthSamplerUpgradeSeq &&
+      snapshot.stopSeq === playbackLifecycleStopSeq &&
+      snapshot.modeSeq === modeSwitchSeq &&
+      snapshot.songId === state.currentSongId &&
+      snapshot.kitSource === state.kitSource &&
+      snapshot.kitProfile === state.kitProfile &&
+      snapshot.voiceOverrides === voiceOverridesSnapshotKey() &&
+      snapshot.bassInstrument === state.bassInstrument &&
+      snapshot.guitarInstrument === state.guitarInstrument &&
+      snapshot.voiceInstrument === state.voiceInstrument &&
+      snapshot.chordInstrument === state.chordInstrument;
+  }
+
+  function disposeSynthLayer(layer) {
+    try { if (layer && typeof layer.dispose === "function") layer.dispose(); } catch (e) {}
+  }
+
+  function replaceSynthLayer(name, nextLayer, snapshot) {
+    if (!synthSamplerUpgradeStillCurrent(snapshot) || !isSamplerLayer(nextLayer)) {
+      disposeSynthLayer(nextLayer);
+      return false;
+    }
+    if (name === "drums") {
+      const old = drumKit;
+      drumKit = nextLayer;
+      disposeSynthLayer(old);
+      return true;
+    }
+    if (name === "bass") {
+      const old = synthBass;
+      synthBass = nextLayer;
+      disposeSynthLayer(old);
+      return true;
+    }
+    if (name === "guitar") {
+      const old = guitarSynth;
+      guitarSynth = nextLayer;
+      disposeSynthLayer(old);
+      return true;
+    }
+    if (name === "voice") {
+      const old = voiceSynth;
+      voiceSynth = nextLayer;
+      disposeSynthLayer(old);
+      return true;
+    }
+    if (name === "chord") {
+      const old = chordSynth;
+      chordSynth = nextLayer;
+      disposeSynthLayer(old);
+      return true;
+    }
+    disposeSynthLayer(nextLayer);
+    return false;
+  }
+
+  function queueSynthSamplerUpgrade(reason = "start") {
+    const snapshot = synthSamplerUpgradeSnapshot(reason);
+    const kitStatus = $("br-kit-status");
+    const run = async () => {
+      await yieldToUi();
+      if (!synthSamplerUpgradeStillCurrent(snapshot)) return;
+      await ensureOnlineCatalogForSynth();
+      if (!synthSamplerUpgradeStillCurrent(snapshot)) return;
+      let upgraded = 0;
+      try {
+        if (synthPartEnabled("br-toggle-drums") && state.kitSource !== "synth") {
+          const nextKit = await buildKitForSource(state.kitSource, { disposeExisting: false });
+          if (replaceSynthLayer("drums", nextKit, snapshot)) upgraded++;
+        }
+        if (SYNTH_REBUILD_PARTS.bass && synthPartEnabled("br-toggle-bass") && state.bassInstrument) {
+          const nextBass = await makeSynthBass(bassBus);
+          if (replaceSynthLayer("bass", nextBass, snapshot)) upgraded++;
+        }
+        if (SYNTH_REBUILD_PARTS.guitar && synthPartEnabled("br-toggle-guitar") && state.guitarInstrument) {
+          const nextGuitar = await makeGuitar(guitarBus);
+          if (replaceSynthLayer("guitar", nextGuitar, snapshot)) upgraded++;
+        }
+        if (SYNTH_REBUILD_PARTS.voice && synthPartEnabled("br-toggle-voice") && state.voiceInstrument) {
+          const nextVoice = await makeVoiceBox(voiceBus);
+          if (replaceSynthLayer("voice", nextVoice, snapshot)) upgraded++;
+        }
+        if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && state.chordInstrument) {
+          const nextChord = await makeChordSynth(chordBus);
+          if (replaceSynthLayer("chord", nextChord, snapshot)) upgraded++;
+        }
+        if (kitStatus && synthSamplerUpgradeStillCurrent(snapshot)) {
+          kitStatus.textContent = upgraded > 0 ? `AI samples upgraded (${upgraded})` : "AI ready (synth)";
+        }
+      } catch (e) {
+        if (kitStatus && synthSamplerUpgradeStillCurrent(snapshot)) kitStatus.textContent = "AI ready (sample upgrade skipped)";
+        console.warn("[Band Room] AI sample upgrade skipped:", e);
+      }
+    };
+    if (typeof queueMicrotask === "function") queueMicrotask(run);
+    else setTimeout(run, 0);
+  }
+
   async function prepareSynthPlaybackAssets(reason = "start") {
     ensureMaster();
-    await ensureOnlineCatalogForSynth();
     const kitStatus = $("br-kit-status");
-    if (kitStatus && reason !== "toggle") kitStatus.textContent = "preparing AI...";
+    if (kitStatus && reason !== "toggle") {
+      kitStatus.textContent = shouldStageSynthPlaybackFirst(reason) ? "preparing quick AI..." : "preparing AI...";
+    }
     try {
-      if (synthPartEnabled("br-toggle-drums") && !drumKit) drumKit = await buildKitForSource(state.kitSource);
-      if (SYNTH_REBUILD_PARTS.bass && synthPartEnabled("br-toggle-bass") && !synthBass) synthBass = await makeSynthBass(bassBus);
-      if (SYNTH_REBUILD_PARTS.guitar && synthPartEnabled("br-toggle-guitar") && !guitarSynth) guitarSynth = await makeGuitar(guitarBus);
-      if (SYNTH_REBUILD_PARTS.voice && synthPartEnabled("br-toggle-voice") && !voiceSynth) voiceSynth = await makeVoiceBox(voiceBus);
-      if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && !chordSynth) chordSynth = await makeChordSynth(chordBus);
+      const quickFirst = shouldStageSynthPlaybackFirst(reason);
+      if (!quickFirst) await ensureOnlineCatalogForSynth();
+      if (synthPartEnabled("br-toggle-drums") && !drumKit) drumKit = await buildKitForSource(quickFirst ? "synth" : state.kitSource);
+      if (SYNTH_REBUILD_PARTS.bass && synthPartEnabled("br-toggle-bass") && !synthBass) synthBass = await makeSynthBass(bassBus, { forceSynth: quickFirst });
+      if (SYNTH_REBUILD_PARTS.guitar && synthPartEnabled("br-toggle-guitar") && !guitarSynth) guitarSynth = await makeGuitar(guitarBus, { forceSynth: quickFirst });
+      if (SYNTH_REBUILD_PARTS.voice && synthPartEnabled("br-toggle-voice") && !voiceSynth) voiceSynth = await makeVoiceBox(voiceBus, { forceSynth: quickFirst });
+      if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && !chordSynth) chordSynth = await makeChordSynth(chordBus, { forceSynth: quickFirst });
       if (synthPartEnabled("br-toggle-click") && !clickSynth) clickSynth = makeClick(clickBus);
-      if (kitStatus && reason !== "toggle") kitStatus.textContent = "AI ready";
+      if (kitStatus && reason !== "toggle") kitStatus.textContent = quickFirst ? "AI ready (quick synth)" : "AI ready";
+      if (quickFirst) queueSynthSamplerUpgrade(reason);
       return true;
     } catch (e) {
       if (kitStatus) kitStatus.textContent = "AI prep failed: " + (e.message || e);
@@ -2531,9 +2673,9 @@
     };
   }
 
-  async function buildKitForSource(source) {
+  async function buildKitForSource(source, opts = {}) {
     if (!drumBus) ensureMaster();
-    if (drumKit && drumKit.dispose) {
+    if (opts.disposeExisting !== false && drumKit && drumKit.dispose) {
       try { drumKit.dispose(); } catch (e) {}
     }
     // v99: build the base kit first, then layer per-voice overrides on top.
@@ -2627,6 +2769,7 @@
       }
       merged[voice] = v;
     });
+    markLayerKind(merged, "sampler");
     const originalDispose = baseKit.dispose;
     merged.dispose = () => {
       try { originalDispose && originalDispose(); } catch (e) {}
@@ -2653,6 +2796,7 @@
     });
     voices._kitPath = "online/" + kitId;
     voices._panners = panners;
+    markLayerKind(voices, "sampler");
     voices.dispose = () => {
       Object.values(voices).forEach((v) => v && v.dispose && v.dispose());
       panners.forEach((p) => { try { p.dispose(); } catch (e) {} });
@@ -2681,6 +2825,7 @@
     });
     voices._kitPath = kitPath;
     voices._panners = panners;
+    markLayerKind(voices, "sampler");
     voices.dispose = () => {
       Object.values(voices).forEach((v) => v && v.dispose && v.dispose());
       panners.forEach((p) => { try { p.dispose(); } catch (e) {} });
@@ -2692,11 +2837,11 @@
   // Power chord (root + 5th + octave), saw + distortion + LP shimmer.
   // Section-aware picking: silent intro / palm-mute 8th verse / open
   // prechorus / 16th chorus / sparse bridge / hit outro.
-  async function makeGuitar(target) {  // v270: async
+  async function makeGuitar(target, opts = {}) {  // v270: async
     // v111: if guitarInstrument is set to a catalog sampler, use real samples.
     // Less distortion + softer chain than synth fallback (real samples already
     // have body and harmonic content).
-    if (state.guitarInstrument && state.onlineCatalog) {
+    if (!opts.forceSynth && state.guitarInstrument && state.onlineCatalog) {
       const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.guitarInstrument);
       if (instDef && instDef.kind === "sampler") {
         const verb = new Tone.Reverb({ decay: 1.2, wet: 0.12 }).connect(target);
@@ -2763,7 +2908,7 @@
     lp.connect(verb);
     verb.connect(target);
     // v229: chorus is a started LFO — leaking it left an LFO running forever.
-    return withChainDispose(guitar, [chorus, dist, lp, verb, hpG]);
+    return withChainDispose(markLayerKind(guitar, "synth"), [chorus, dist, lp, verb, hpG]);
   }
 
   function powerChordNotes(chord, octave = 3) {
@@ -2787,13 +2932,13 @@
   // For full AI-synthesized vocal: generate via Suno externally, save
   // mp3, drop into presets/vocals/{song-id}.mp3, then load via a
   // future HTMLAudio layer.
-  async function makeVoiceBox(target) {  // v270: async
+  async function makeVoiceBox(target, opts = {}) {  // v270: async
     // v111: if voiceInstrument is set to a catalog sampler, use it
     // (typically violin / cello / flute for "lead melody as instrument").
     // This bypasses the formant-vowel synth path entirely and gives the
     // melody guide a real instrumental voice — Nujabes/J Dilla flute lead,
     // RHRN cello, etc.
-    if (state.voiceInstrument && state.onlineCatalog) {
+    if (!opts.forceSynth && state.voiceInstrument && state.onlineCatalog) {
       const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.voiceInstrument);
       if (instDef && instDef.kind === "sampler") {
         const verb = new Tone.Reverb({ decay: 2.7, wet: 0.36 }).connect(target);
@@ -2840,7 +2985,7 @@
     try { vibrato.connect(voice.detune); vibrato.start(); } catch (e) {}
 
     // v229: vibrato is a started LFO — leaking it left an LFO running forever.
-    return withChainDispose(voice, [verb, hp, mix, formant1, formant2, vibrato]);
+    return withChainDispose(markLayerKind(voice, "synth"), [verb, hp, mix, formant1, formant2, vibrato]);
   }
 
   // Human Fly chorus melody — hook line over G | D | Em | C 4-bar
@@ -2886,7 +3031,7 @@
 
   // ---- Chord synth ---------------------------------------------
 
-  async function makeChordSynth(target) {  // v270: async
+  async function makeChordSynth(target, opts = {}) {  // v270: async
     // v92: profile-aware chord synth.
     // v101: if state.chordInstrument is set to an "instruments[]" catalog
     //   entry id (e.g. "salamander-piano"), use Tone.Sampler with that
@@ -2897,7 +3042,7 @@
     const chorus = new Tone.Chorus({ frequency: 0.6, delayTime: 4.5, depth: 0.45, wet: c.chorusWet }).start();
     chorus.connect(autoPan);
 
-    if (state.chordInstrument && state.onlineCatalog) {
+    if (!opts.forceSynth && state.chordInstrument && state.onlineCatalog) {
       const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.chordInstrument);
       if (instDef && instDef.kind === "sampler") {
         const urls = {};
@@ -2937,7 +3082,7 @@
     chord.connect(hpC);
     hpC.connect(chorus);
     // v229: autoPan + chorus are started LFOs — tear the whole chain down.
-    return withChainDispose(chord, [verb, autoPan, chorus, hpC]);
+    return withChainDispose(markLayerKind(chord, "synth"), [verb, autoPan, chorus, hpC]);
   }
 
   // ---- Click ---------------------------------------------------

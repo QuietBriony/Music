@@ -1,6 +1,20 @@
-# Band Room — Changelog (v65 → v314 compact)
+# Band Room — Changelog (v65 → v315 compact)
 
-Current compact release: v314.
+Current compact release: v315.
+
+---
+
+## v315 compact — AI 再現を quick synth → sample upgrade の二段構えに変更
+
+Plan mode の入力待ちで止まっていた「AI再現の改善」方針は、スマホ/PWAでもまず鳴る
+ことを優先しつつ、生音 sampler も後から活かす二段構えで実装した。
+
+- `START` / 再生中の AI mode 切替では、drums / bass / guitar / chord / voice をまず
+  軽量 synth fallback で作って即再生できるようにする。
+- CDN sampler はバックグラウンドで読み、song / mode / kit / instrument 選択が
+  変わっていない場合だけ、読み込み完了したパートを差し替える。
+- 直接の toggle / instrument selector 操作は従来どおり、選んだ音色を明示 rebuild する。
+- JS cache を `band-room.js?v=br-188`、SW を `hazama-fm-v315` へ同期。
 
 ---
 
