@@ -1,6 +1,18 @@
-# Band Room — Changelog (v65 → v318 compact)
+# Band Room — Changelog (v65 → v319 compact)
 
-Current compact release: v318.
+Current compact release: v319.
+
+---
+
+## v319 compact — bass / vocal pressure を少しだけ追加
+
+ユーザーフィードバック「ボーカル、ちょっとだけ、音圧足して。ベースも、同様に。」に対応。v318 の guitar sparkle と v317 の drum pressure は維持し、bass と vocal だけ小幅に押し出す。
+
+- 原音 vocal stem: bus / slider を `0.52 / 52 → 0.55 / 55`。dry center は戻さず、溶けたまま少しだけ密度を足す。
+- 原音 bass stem: bus / slider を `0.88 / 88 → 0.91 / 91`。drums / guitar wall と並ぶ低域の押し出しを追加。
+- AI bass: bus / slider を `0.80 / 80 → 0.84 / 84`。AI voice はデフォルトOFFかつ特殊なgain設計なので今回は据え置き。
+- 保存済み prefs は旧既定値の `br-vol-stem-vocals` / `br-vol-stem-bass` / `br-vol-bass` だけ v319 へ移行。custom slider は保持。
+- JS cache を `band-room.js?v=br-192`、SW を `hazama-fm-v319` へ同期。
 
 ---
 

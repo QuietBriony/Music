@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-191-guitar-spark-pressure";
+  const BANDROOM_APP_VERSION = "br-192-bass-vocal-pressure";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -575,8 +575,9 @@
     // v301 Human Fly body pass: one more small move away from "mostly drums".
     // v317: restore a little drum pressure after the v316 light-runtime pass.
     // v318: lift guitar pressure/sparkle while keeping bass and chord steady.
+    // v319: add a small bass pressure lift without moving the drum/guitar wall.
     drumBus = new Tone.Gain(0.52).connect(drumPan);
-    bassBus = new Tone.Gain(0.80).connect(bassPan);
+    bassBus = new Tone.Gain(0.84).connect(bassPan);
     guitarBus = new Tone.Gain(0.88).connect(guitarPan);
     voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
     chordBus = new Tone.Gain(0.62).connect(chordPan);
@@ -591,7 +592,7 @@
     // v167: slightly lower full-stem defaults so the remaster chain glues
     // instead of constantly living on the limiter.
     stemBus.drums  = new Tone.Gain(0.92).connect(stemMaster);
-    stemBus.bass   = new Tone.Gain(0.88).connect(stemMaster);
+    stemBus.bass   = new Tone.Gain(0.91).connect(stemMaster);
     stemBus.other  = new Tone.Gain(0.91).connect(stemMaster);
     // Wire EQ outputs into respective buses (input side will receive players)
     stemEQs.drums.output.connect(stemBus.drums);
@@ -638,7 +639,8 @@
     // so it stays present without riding ahead.
     // v313: 0.52, paired with wider FX and louder band stems so the vocal
     // dissolves into the room instead of sitting on top.
-    stemBus.vocals = new Tone.Gain(0.52);
+    // v319: 0.55, a small pressure lift without bringing the dry center back.
+    stemBus.vocals = new Tone.Gain(0.55);
 
     // Wire: vocalChorus is input. Chorus feeds three paths in parallel.
     // dry → vocalDryGain → stemBus.vocals
@@ -7423,7 +7425,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
-  const MIX_PREFS_VERSION = "v318-guitar-spark-pressure";
+  const MIX_PREFS_VERSION = "v319-bass-vocal-pressure";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -7563,6 +7565,11 @@
     "br-vol-stem-other": { olds: ["88"], current: "91" },
     "br-vol-guitar":     { olds: ["76", "82"], current: "88" }
   };
+  const V319_BASS_VOCAL_PRESSURE_MIGRATION = {
+    "br-vol-stem-vocals": { olds: ["52"], current: "55" },
+    "br-vol-stem-bass":   { olds: ["88"], current: "91" },
+    "br-vol-bass":        { olds: ["72", "80"], current: "84" }
+  };
 
   function readRawStoredPrefs() {
     const raw = safeLocalStorageGet(PREFS_KEY);
@@ -7701,6 +7708,12 @@
       }
     });
     Object.entries(V318_GUITAR_SPARK_PRESSURE_MIGRATION).forEach(([id, rule]) => {
+      if ((rule.olds || []).includes(String(next.sliders[id]))) {
+        next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
+    Object.entries(V319_BASS_VOCAL_PRESSURE_MIGRATION).forEach(([id, rule]) => {
       if ((rule.olds || []).includes(String(next.sliders[id]))) {
         next.sliders[id] = rule.current;
         changed = true;
