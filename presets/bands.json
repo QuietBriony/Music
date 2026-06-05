@@ -49,6 +49,7 @@
           "duration_s": 304,
           "kit_profile": "sakanaction",
           "stem_mastering": {
+            "vocals_db": 1.2,
             "drums_db": 2.3,
             "bass_db": 2.8,
             "other_db": 1.2
@@ -62,6 +63,7 @@
           "key": "B minor",
           "duration_s": 368,
           "stem_mastering": {
+            "vocals_db": 0.8,
             "drums_db": 2.3,
             "bass_db": 2.6,
             "other_db": 1.2
@@ -76,6 +78,7 @@
           "duration_s": 313,
           "kit_profile": "lcd-motorik",
           "stem_mastering": {
+            "vocals_db": 1.1,
             "drums_db": 2.4,
             "bass_db": 3.2,
             "other_db": 1.7
@@ -88,7 +91,10 @@
           "bpm": 129,
           "key": "E minor",
           "duration_s": 150,
-          "kit_profile": "lcd-motorik"
+          "kit_profile": "lcd-motorik",
+          "stem_mastering": {
+            "vocals_db": 1.4
+          }
         },
         {
           "id": "human-fly",
@@ -99,6 +105,7 @@
           "duration_s": 239,
           "kit_profile": "cramps-punk",
           "stem_mastering": {
+            "vocals_db": 0.6,
             "drums_db": 2.4,
             "bass_db": 2.0,
             "other_db": 1.6
@@ -112,6 +119,7 @@
           "key": "F major",
           "duration_s": 281,
           "stem_mastering": {
+            "vocals_db": 0.7,
             "drums_db": 2.5,
             "bass_db": 2.7,
             "other_db": 1.8

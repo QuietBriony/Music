@@ -1,6 +1,19 @@
-# Band Room — Changelog (v65 → v320 compact)
+# Band Room — Changelog (v65 → v321 compact)
 
-Current compact release: v320.
+Current compact release: v321.
+
+---
+
+## v321 compact — album vocal thickness を曲別に追加
+
+ユーザーフィードバック「ボーカル、それぞれ最適になるように、少しずつ上げて。厚み出す感じで。」に対応。v320 の曲別 stem mastering をそのまま使い、各曲の `vocals_db` だけ小幅に追加する。
+
+- Hey `+1.2dB`、I got a feeling `+0.8dB`、Under the Moon `+1.1dB`。
+- Electric Sheep は全体の音量感を崩さず vocal だけ `+1.4dB`。05 の良い大きさは維持。
+- Human Fly は既に vocal が前にいるため `+0.6dB` に抑え、band pressure の改善を邪魔しない。
+- Sister は `+0.7dB`。締め曲らしい自然さを残して少しだけ厚みを足す。
+- Tabasco intro は実質 vocal が薄いので補正なし。
+- JS cache を `band-room.js?v=br-194`、SW を `hazama-fm-v321` へ同期。
 
 ---
 
