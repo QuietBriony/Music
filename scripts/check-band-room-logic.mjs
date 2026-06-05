@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-192-bass-vocal-pressure", "Band Room should expose the current bass/vocal pressure version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-193-album-stem-mastering", "Band Room should expose the current album stem mastering version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -134,13 +134,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-84/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-192/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-193/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-84/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-192/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-193/, "Service worker should precache the current Band Room JS marker");
 assert.match(html, /class="br-details br-sound-mix"/, "Sound controls should be consolidated into one sound mix details panel");
 assert.match(html, /id="br-sound-mix"/, "Band Room should expose the consolidated sound mix section");
 assert.doesNotMatch(html, /<summary>[^<]*vocal FX/i, "Vocal FX should not be a separate details panel");
@@ -152,6 +152,9 @@ assert.doesNotMatch(html, /@tonejs\/midi@2\.0\.28\/build\/Midi\.min\.js/, "Band 
 assert.match(source, /async function preparePlaybackAssetsForCurrentMode\(/, "START should delegate to mode-specific asset preparation");
 assert.match(source, /async function prepareSynthPlaybackAssets\(/, "AI playback assets should have a dedicated lazy prep path");
 assert.match(source, /async function prepareStemPlaybackAssets\(/, "Original stems should have a dedicated prep path");
+assert.match(source, /function stemMasteringGainForSong\(songId, stem\)/, "Original stems should support per-song album mastering trims");
+assert.match(source, /new Tone\.Gain\(stemMasteringGainForSong\(songId, stem\)\)\.connect\(target\)/, "Stem players should route through the per-song mastering gain before EQ");
+assert.match(source, /stemPlayerGains/, "Per-song stem mastering gain nodes should be retained for disposal");
 assert.match(source, /samplerAudioBufferCache/, "AI sampler preload should cache decoded buffers");
 assert.match(source, /samplerDecodeConcurrency\(/, "AI sampler preload should use bounded decode concurrency");
 assert.match(source, /Object\.keys\(preloaded\)\.length === 0\) return null;/, "Failed AI sampler fetches should fall back without blocking START");
@@ -230,6 +233,9 @@ assert.match(source, /function stemLoadCandidates\(/, "Band Room should build or
 assert.match(source, /fallback_to_original !== false/, "Stem variants should fall back to original stems unless explicitly disabled");
 assert.match(source, /loadedStemsVariant === variant\.key/, "Stem player cache should be keyed by both song and stem variant");
 assert.equal(humanFly?.kit_profile, "cramps-punk", "v213: Tabasco / Human Fly should recommend the cramps-punk kit profile");
+assert.equal(humanFly?.stem_mastering?.drums_db, 2.4, "v320: Human Fly drums should receive album stem mastering pressure");
+assert.equal(humanFly?.stem_mastering?.bass_db, 2.0, "v320: Human Fly bass should receive album stem mastering pressure");
+assert.equal(humanFly?.stem_mastering?.other_db, 1.6, "v320: Human Fly band/other should receive album stem mastering pressure");
 assert.equal(bandsRegistry.bands?.tabasco?.stems_variants?.ai_recreation?.stems_dir, "presets/ai-recreation-stems/tabasco", "Human Fly AI recreation stems should use the local generated-stems mount");
 assert.equal(bandsRegistry.bands?.tabasco?.stems_variants?.ai_recreation?.production_visible, false, "Local AI recreation stems should not be advertised as a production stem source");
 assert.equal(bandsRegistry.bands?.tabasco?.stems_variants?.ai_recreation?.stems?.drums, "drums.mp3", "AI recreation variant should point at renderer output stem names");
@@ -611,9 +617,13 @@ assert.equal(bandsRegistry.reference_libraries?.unripe?.kit_profile_default, "cr
 const tabascoHey = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "hey");
 const tabascoElectricSheep = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "electric-sheep");
 const tabascoUnderTheMoon = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "under-the-moon");
+const tabascoSister = bandsRegistry.bands?.tabasco?.songs?.find((s) => s.id === "sister");
 assert.equal(tabascoHey?.kit_profile, "sakanaction", "v214: Tabasco / Hey should recommend the sakanaction kit profile");
 assert.equal(tabascoElectricSheep?.kit_profile, "lcd-motorik", "v214: Tabasco / Electric Sheep should recommend the lcd-motorik kit profile");
 assert.equal(tabascoUnderTheMoon?.kit_profile, "lcd-motorik", "v214: Tabasco / Under the Moon should recommend the lcd-motorik kit profile");
+assert.equal(tabascoHey?.stem_mastering?.bass_db, 2.8, "v320: Hey should receive album bass-pressure mastering");
+assert.equal(tabascoUnderTheMoon?.stem_mastering?.bass_db, 3.2, "v320: Under the Moon should receive the strongest album bass-pressure mastering");
+assert.equal(tabascoSister?.stem_mastering?.other_db, 1.8, "v320: Sister should receive album band/other pressure mastering");
 
 const durationShortfalls = [];
 Object.values(bandsRegistry.bands || {}).forEach((band) => {

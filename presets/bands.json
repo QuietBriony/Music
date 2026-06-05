@@ -47,7 +47,12 @@
           "bpm": 123,
           "key": "G major",
           "duration_s": 304,
-          "kit_profile": "sakanaction"
+          "kit_profile": "sakanaction",
+          "stem_mastering": {
+            "drums_db": 2.3,
+            "bass_db": 2.8,
+            "other_db": 1.2
+          }
         },
         {
           "id": "i-got-a-feeling",
@@ -55,7 +60,12 @@
           "title": "I got a feeling",
           "bpm": 117,
           "key": "B minor",
-          "duration_s": 368
+          "duration_s": 368,
+          "stem_mastering": {
+            "drums_db": 2.3,
+            "bass_db": 2.6,
+            "other_db": 1.2
+          }
         },
         {
           "id": "under-the-moon",
@@ -64,7 +74,12 @@
           "bpm": 161,
           "key": "Bb major",
           "duration_s": 313,
-          "kit_profile": "lcd-motorik"
+          "kit_profile": "lcd-motorik",
+          "stem_mastering": {
+            "drums_db": 2.4,
+            "bass_db": 3.2,
+            "other_db": 1.7
+          }
         },
         {
           "id": "electric-sheep",
@@ -82,7 +97,12 @@
           "bpm": 117,
           "key": "G major",
           "duration_s": 239,
-          "kit_profile": "cramps-punk"
+          "kit_profile": "cramps-punk",
+          "stem_mastering": {
+            "drums_db": 2.4,
+            "bass_db": 2.0,
+            "other_db": 1.6
+          }
         },
         {
           "id": "sister",
@@ -90,7 +110,12 @@
           "title": "Sister",
           "bpm": 117,
           "key": "F major",
-          "duration_s": 281
+          "duration_s": 281,
+          "stem_mastering": {
+            "drums_db": 2.5,
+            "bass_db": 2.7,
+            "other_db": 1.8
+          }
         }
       ]
     }

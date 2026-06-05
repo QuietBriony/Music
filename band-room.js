@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-192-bass-vocal-pressure";
+  const BANDROOM_APP_VERSION = "br-193-album-stem-mastering";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -201,6 +201,7 @@
   // Original stem buses + Tone.Player instances (Demucs separated)
   let stemBus = { vocals: null, drums: null, bass: null, other: null };
   let stemPlayers = { vocals: null, drums: null, bass: null, other: null };
+  let stemPlayerGains = { vocals: null, drums: null, bass: null, other: null };
   let loadedStemsSongId = null;
   let loadedStemsVariant = null;
   let currentMode = "stems";  // "stems" | "synth"
@@ -2087,7 +2088,12 @@
         try { p.stop(); } catch (e) {}
         try { p.dispose(); } catch (e) {}
       }
+      const gain = stemPlayerGains[k];
+      if (gain) {
+        try { gain.dispose(); } catch (e) {}
+      }
       stemPlayers[k] = null;
+      stemPlayerGains[k] = null;
     });
     state.loadedStemDurationSec = 0;
     loadedStemsSongId = null;
@@ -2137,6 +2143,18 @@
     const band = currentBand();
     if (!Array.isArray(band?.songs)) return null;
     return band.songs.find((song) => song.id === songId) || null;
+  }
+
+  function dbToGain(db) {
+    const value = Number(db);
+    if (!Number.isFinite(value) || value === 0) return 1;
+    return Math.pow(10, clamp(value, -12, 6) / 20);
+  }
+
+  function stemMasteringGainForSong(songId, stem) {
+    const mastering = currentBandSongMeta(songId)?.stem_mastering;
+    if (!mastering || typeof mastering !== "object") return 1;
+    return dbToGain(mastering[`${stem}_db`]);
   }
 
   function localPreviewVariantsAllowed() {
@@ -2500,13 +2518,17 @@
           //   - bus → master (drums/bass/other)
           //   - vocalChorus (vocals)
           const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
+          // v320: per-song album mastering. Some Tabasco stems land below
+          // Electric Sheep; trim each stem before the shared remaster so
+          // track-to-track band pressure stays consistent.
+          const trimGain = new Tone.Gain(stemMasteringGainForSong(songId, stem)).connect(target);
           // v152: album-flow playback advances to the next track at song end.
           // Keep stems non-looping so the audio does not wrap underneath.
           const player = new Tone.Player({
             url: candidate.url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: false
-          }).connect(target);
+          }).connect(trimGain);
           await Tone.loaded();
-          return { stem, player, source: candidate.source, fallback: candidate.fallback };
+          return { stem, player, trimGain, source: candidate.source, fallback: candidate.fallback };
         } catch (e) {
           console.warn("[Band Room] stem candidate failed:", stem, candidate.url, e);
         }
@@ -2520,6 +2542,7 @@
     results.forEach((r) => {
       if (!r) return;
       stemPlayers[r.stem] = r.player;
+      stemPlayerGains[r.stem] = r.trimGain;
       loaded++;
       if (!variant.original && r.source === variant.key) variantLoaded++;
       if (!variant.original && r.fallback) fallbackLoaded++;

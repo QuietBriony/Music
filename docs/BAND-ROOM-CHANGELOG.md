@@ -1,6 +1,18 @@
-# Band Room — Changelog (v65 → v319 compact)
+# Band Room — Changelog (v65 → v320 compact)
 
-Current compact release: v319.
+Current compact release: v320.
+
+---
+
+## v320 compact — album stem mastering で曲間のバンド音圧を統一
+
+ユーザーフィードバック「05 Electric Sheep の音の大きさいい感じ。06 Human Fly に移ると、バンドの音が小さい」「各曲毎の音量というか、バンドの音圧が同じになるように」に対応。
+
+- `presets/bands.json` の Tabasco 各曲に `stem_mastering` を追加。05 Electric Sheep を基準に、低く聴こえる曲の drums / bass / other だけ曲別に小幅ブーストする。
+- `band-room.js` の original stems load に `Tone.Player -> per-song Gain -> stem EQ -> stem bus` を追加。既存UIは増やさず、曲切替・stem variant・seek/resyncはそのまま。
+- 06 Human Fly は band 3stem が Electric Sheep より低かったため、drums `+2.4dB` / bass `+2.0dB` / other `+1.6dB`。ボーカルは上げず、バンドだけ前へ。
+- Hey / I got a feeling / Under the Moon / Sister も、リミッターへ過度に突っ込まない範囲で album pressure を近づける。
+- JS cache を `band-room.js?v=br-193`、SW を `hazama-fm-v320` へ同期。
 
 ---
 
