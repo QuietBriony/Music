@@ -152,14 +152,16 @@ def main() -> None:
         print(f"  bass vs chord root/5th agreement: {100.0 * hit / len(judged):.0f}% ({len(judged)} judged)")
 
     # ---- derive the REAL chord progression from the transcribed bass ----
-    # The catalog progression was an estimate; for human-fly the real bass
-    # plays G/F/D (mixolydian rock vamp) while the JSON said G-Em-C-D — the
-    # comping agents have been playing the wrong changes. Per bar: duration-
-    # weighted top pitch class of the bass; per section TYPE: modal root per
-    # bar position across instances; compress runs into the app's
-    # [chord, bars] looping format. Roots are written as plain major names —
-    # the guitar agent voices power chords (no 3rd) anyway.
+    # The catalog progression was an estimate (human-fly's said G-Em-C-D while
+    # the real bass plays a G/F/D mixolydian vamp — the comping agents were on
+    # the wrong changes). Per bar: duration-weighted top pitch class of the
+    # bass; per FULL section name (verse-1 and verse-2 can differ); compress
+    # runs into the app's [chord, bars] looping format. Roots are written as
+    # plain major names — the guitar agent voices power chords (no 3rd) anyway.
     NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+    key_root_pc = NOTE_PC.get((data.get("key") or "C").split(" ")[0].strip()[:2].rstrip("m"), None)
+    if key_root_pc is None:
+        key_root_pc = NOTE_PC.get((data.get("key") or "C")[0], 0)
     bar_pc_weight = {}
     for b, s, d, m, v in bass:
         bar_pc_weight.setdefault(b, {})
@@ -170,12 +172,12 @@ def main() -> None:
     cursor = 0
     for sec in structure:
         bars_n = int(sec.get("bars") or 0)
-        base = (sec.get("section") or "").split("-")[0]
-        sec_instances.setdefault(base, []).append((cursor, bars_n))
+        name = sec.get("section") or "section"
+        sec_instances.setdefault(name, []).append((cursor, bars_n))
         cursor += bars_n
 
     derived = {}
-    for base, instances in sec_instances.items():
+    for name, instances in sec_instances.items():
         max_bars = max(n for _, n in instances)
         roots = []
         prev = None
@@ -187,26 +189,36 @@ def main() -> None:
                     votes[pc] = votes.get(pc, 0) + 1
             pc = max(votes, key=votes.get) if votes else prev
             if pc is None:
-                pc = 7  # key-of-G fallback for silent leading bars
+                pc = key_root_pc  # song-key fallback for silent leading bars
             roots.append(pc)
             prev = pc
         prog = []
         for pc in roots:
-            name = NAMES[pc]
-            if prog and prog[-1][0] == name:
+            cname = NAMES[pc]
+            if prog and prog[-1][0] == cname:
                 prog[-1][1] += 1
             else:
-                prog.append([name, 1])
-        derived[base] = prog
-        print(f"  derived chords [{base}]: {prog}")
+                prog.append([cname, 1])
+        derived[name] = prog
+        print(f"  derived chords [{name}]: {prog}")
+
+    # quality gates: thin/garbage transcriptions are worse than the generative
+    # fallback, so only embed lines with real coverage. Chords are replaced
+    # only when the bass (their source) is trustworthy.
+    MIN_BASS, MIN_VOCAL = 30, 60
+    bass_ok = len(bass) >= MIN_BASS
+    vocal_ok = len(voc) >= MIN_VOCAL
+    print(f"embed: bass_line={'YES' if bass_ok else 'NO'} vocal_melody={'YES' if vocal_ok else 'NO'} chords={'YES' if bass_ok else 'NO'}")
 
     if WRITE:
-        data["bass_line"] = {"granularity": 16, "bpm_fit": round(bpm, 2),
-                             "source": "librosa.pyin on bass.mp3", "events": bass}
-        data["vocal_melody"] = {"granularity": 16, "bpm_fit": round(bpm, 2),
-                                "source": "librosa.pyin on vocals.mp3", "events": voc}
-        data["chord_progression_legacy"] = data.get("chord_progression")
-        data["chord_progression"] = derived
+        if bass_ok:
+            data["bass_line"] = {"granularity": 16, "bpm_fit": round(bpm, 2),
+                                 "source": "librosa.pyin on bass.mp3", "events": bass}
+            data["chord_progression_legacy"] = data.get("chord_progression")
+            data["chord_progression"] = derived
+        if vocal_ok:
+            data["vocal_melody"] = {"granularity": 16, "bpm_fit": round(bpm, 2),
+                                    "source": "librosa.pyin on vocals.mp3", "events": voc}
         SONG_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
         print(f"WROTE {SONG_JSON}")
 

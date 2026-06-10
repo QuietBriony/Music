@@ -1,6 +1,32 @@
-# Band Room — Changelog (v65 → v324 compact)
+# Band Room — Changelog (v65 → v325 compact)
 
-Current compact release: v324.
+Current compact release: v325.
+
+---
+
+## v325 compact — 転写を全曲展開(AI 再現が全曲「実曲」を弾く)
+
+v324 パイロット(human-fly)の全曲展開。`scripts/transcribe-stem-lines.py` を
+残り6曲に実行し、実 stem からの bass/vocal 転写 + ベース由来コード進行で置換
+(旧推定は全曲 `chord_progression_legacy` 保持)。スクリプト改良: セクションを
+フルネーム単位で導出(verse-1 と verse-2 を区別)、無音 fallback を曲のキーから、
+薄い転写は埋め込まない品質ゲート(bass ≥30 / vocal ≥60 音)を追加。
+
+| song | bass | vocal | BPM fit |
+|---|---|---|---|
+| tabasco | 70 | skip(チャント) | 136 → 132.5 |
+| hey | 748 | 887 | 123 → 120.2 |
+| i-got-a-feeling | 523 | 823 | 117 → 120.2 |
+| under-the-moon | 559 | 927 | 161 → 161.5 |
+| electric-sheep | 376 | 184 | 129 → 129.2 |
+| human-fly (v324) | 711 | 632 | 117 → 117.4 |
+| sister | 442 | 731 | 117 → 117.4 |
+
+旧カタログ進行との一致率は全曲 20-33% — 推定進行が全曲実態とズレていた裏付け。
+検証: Node simulation 全曲不正行 0・最大 12音/bar(polyphony 安全圏)・全セクションに
+コードあり。gate は全曲対応の汎用 assertion へ(形状・時刻順・legacy 保持・5/7 曲以上)。
+
+アプリコードは v324 のまま(データのみ)。`band-room.js?v=br-197`、`hazama-fm-v325`。
 
 ---
 
