@@ -1,6 +1,38 @@
-# Band Room — Changelog (v65 → v327 compact)
+# Band Room — Changelog (v65 → v328 compact)
 
-Current compact release: v327.
+Current compact release: v328.
+
+---
+
+## v328 compact — 転写ラインに「生感」(間・強弱・実音長)
+
+ユーザー要望「音質を生感出るよう磨いて　間とか　強弱とか」。v324/v325 の転写は
+16分グリッドに量子化・ベロシティ圧縮(0.30-0.95)・音長整数丸めで、実音は弾くが
+機械的だった。v328 で**演奏そのものを保存**する形式に:
+
+- **間(マイクロタイミング)**: step を小数化(量子化廃止)。プレイヤーの
+  突っ込み/後ノリがそのまま残る(全曲 87-99% の音が off-grid)。subTime 経由なので
+  テンポスライダーにも追従。
+- **強弱**: ベロシティを attack 窓(46ms)の実音量から **dB 基準で 0.16-1.0** に
+  マップ(旧 0.30-0.95 線形RMS の倍以上のレンジ)。
+- **実音長**: 整数丸め+固定ゲート(×0.95)廃止 → スタッカート/レガートの呼吸。
+- 品質ゲート強化: **中央値ベロシティ < 0.30 の vocal は embed しない**(tabasco /
+  electric-sheep のチャント stem はささやき/ブリード検出だった → 正しくスキップ)。
+- スクリプトの再実行バグ2件を先回り修正: step 15.996→16.0 丸め境界、再実行時に
+  legacy が導出済み進行で上書きされる件(オリジナル推定を main から全曲復元済み)。
+
+| song | bass | vocal |
+|---|---|---|
+| tabasco | 71 | skip(チャント) |
+| hey | 763 | 922 |
+| i-got-a-feeling | 539 | 852 |
+| under-the-moon | 566 | 934 |
+| electric-sheep | 379 | skip(インスト) |
+| human-fly | 728 | 654 |
+| sister | 455 | 757 |
+
+`playTranscribedBar` は小数 step/音長対応(min 50ms ガードのみ)。
+`band-room.js?v=br-198`、`hazama-fm-v328`。CSS は br-84 のまま。
 
 ---
 

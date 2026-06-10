@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-197-transcribed-lines";
+  const BANDROOM_APP_VERSION = "br-198-transcribed-feel";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -4890,8 +4890,12 @@
     const rows = transcribedNotesForBar(lineKey, state.barCount);
     if (!rows) return false;
     rows.forEach((row) => {
+      // v328 (生感): step and durSteps are FRACTIONAL — the data carries the
+      // player's real micro-timing (間/pocket) and real note lengths
+      // (staccato/legato breathing), both tempo-relative via subTime. No
+      // quantize clamp, no fixed gate — the performance IS the humanization.
       const t = time + (Number(row[1]) || 0) * ctx.subTime;
-      const durSec = Math.max(1, Number(row[2]) || 1) * ctx.subTime * 0.95;
+      const durSec = Math.max(0.05, (Number(row[2]) || 1) * ctx.subTime);
       const note = Tone.Frequency(Number(row[3]) || 36, "midi").toNote();
       try { synth.triggerAttackRelease(note, durSec, t, Number(row[4]) || 0.6); } catch (e) {}
     });
