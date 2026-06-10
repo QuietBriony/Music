@@ -1,6 +1,32 @@
-# Band Room — Changelog (v65 → v323 compact)
+# Band Room — Changelog (v65 → v324 compact)
 
-Current compact release: v323.
+Current compact release: v324.
+
+---
+
+## v324 compact — AI 再現 転写パイロット: human-fly が「実曲」を弾く
+
+ユーザー指摘「AI再現成立してるかい？そうは思えんが」→ データを開けて確認した
+結論: **成立してなかった**。曲 JSON には構造/コード/ドラム打点しか無く、音符レベルの
+実曲情報(リフ・メロディ・ベースライン)が**ゼロ** — AI は「同じ構造で別バンドが
+初見ジャム」していた。さらに実 bass の音名分布(G 44% / F 19% / D 14%)から、
+カタログのコード進行 G-Em-C-D が**実曲と別物**(C も Em もほぼ不在、実態は
+G ミクソリディアンの F=♭VII ロック)だったことも判明 — コンピングも間違っていた。
+
+v324 パイロット(human-fly):
+- `scripts/transcribe-stem-lines.py` 新設 — librosa.pyin で実 stem から転写。
+  BPM は drums stem から実測フィット(117 → 117.45、後半のグリッドずれ防止)。
+  bass_line **711音** / vocal_melody **632音**、bars 0-115 をカバー。
+- 曲 JSON に `bass_line` / `vocal_melody`(`[bar,step16,durSteps,midi,vel]` 行)を埋込。
+- **コード進行をベース由来で導出し直して置換**(旧版は `chord_progression_legacy` に
+  保持)。chorus はほぼ G + F、bridge は E♭-D — 実曲の響きに。guitar/chord agent は
+  この修正進行をコンピングする。
+- band-room.js: `playTranscribedBar()` — 転写データがある曲は bass/voice agent が
+  生成をスキップして**実ライン/実メロを演奏**。無い曲は従来の生成にフォールバック。
+  コード無しセクション(intro 等)でも転写があれば鳴るよう呼出条件を緩和。
+
+転写の有る/無しはデータ駆動なので、ear-verify OK なら同スクリプトを残り6曲に回すだけ。
+`band-room.js?v=br-197`、`hazama-fm-v324`。CSS は br-84 のまま。
 
 ---
 
