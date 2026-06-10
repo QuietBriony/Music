@@ -31,12 +31,17 @@
           82,
           92
         ],
+        "bpm_field_status": "metadata-only (display via flavor.frameBpm; does not drive Transport tempo)",
         "swing_avg": 0.14,
         "swing_range": [
           0.13,
           0.15
         ],
+        "swing_field_status": "metadata-only (consumed by nothing; Transport.swing comes from engine.js FM_MODE_SWING)",
         "events_per_bar_avg": 13,
+        "hat_on8_drag_ms": 7.8,
+        "hat_off8_drag_ms": 16.5,
+        "effective_swing_ms": 8.7,
         "instruments": {
           "kick": {
             "count": 12,
@@ -89,7 +94,22 @@
         "rdj": 0.03,
         "dangelo": 0.1
       },
-      "drift": []
+      "runtime": {
+        "fm_profile_bpm": 88,
+        "transport_swing": 0
+      },
+      "drift": [
+        {
+          "axis": "effective_swing_ms",
+          "measured": 8.7,
+          "target": [
+            48,
+            61
+          ],
+          "direction": "LOW",
+          "note": "ref 14-18% of an 8th at fm bpm 88; Transport.swing=0 (fm-67: swing lives in microMs)"
+        }
+      ]
     },
     "jazz": {
       "target_source": "apple-music-refs Art Blakey 'Moanin' (drum-led hard bop) + Miles 'So What' (132 BPM modal, swing 16-22%); pill-refs jazz-brush ~90 BPM",
@@ -120,12 +140,17 @@
           88,
           138
         ],
+        "bpm_field_status": "metadata-only (display via flavor.frameBpm; does not drive Transport tempo)",
         "swing_avg": 0.169,
         "swing_range": [
           0.14,
           0.2
         ],
+        "swing_field_status": "metadata-only (consumed by nothing; Transport.swing comes from engine.js FM_MODE_SWING)",
         "events_per_bar_avg": 15.3,
+        "hat_on8_drag_ms": 1.1,
+        "hat_off8_drag_ms": 21.9,
+        "effective_swing_ms": 20.8,
         "instruments": {
           "kick": {
             "count": 21,
@@ -187,7 +212,22 @@
         "rdj": 0.022,
         "dangelo": 0.15
       },
-      "drift": []
+      "runtime": {
+        "fm_profile_bpm": 96,
+        "transport_swing": 0
+      },
+      "drift": [
+        {
+          "axis": "effective_swing_ms",
+          "measured": 20.8,
+          "target": [
+            50,
+            69
+          ],
+          "direction": "LOW",
+          "note": "ref 16-22% of an 8th at fm bpm 96; Transport.swing=0 (fm-67: swing lives in microMs)"
+        }
+      ]
     },
     "funk": {
       "target_source": "apple-music-refs Funkadelic 'Maggot Brain' (live full band pocket) + D Angelo governor (GOVERNOR_BY_PILL.funk.dangelo); Stevie 'Higher Ground' (95-100 BPM tight rubber)",
@@ -218,12 +258,17 @@
           92,
           104
         ],
+        "bpm_field_status": "metadata-only (display via flavor.frameBpm; does not drive Transport tempo)",
         "swing_avg": 0.079,
         "swing_range": [
           0.07,
           0.08
         ],
+        "swing_field_status": "metadata-only (consumed by nothing; Transport.swing comes from engine.js FM_MODE_SWING)",
         "events_per_bar_avg": 16.4,
+        "hat_on8_drag_ms": 0.9,
+        "hat_off8_drag_ms": 14.6,
+        "effective_swing_ms": 13.8,
         "instruments": {
           "kick": {
             "count": 25,
@@ -285,6 +330,10 @@
         "rdj": 0.022,
         "dangelo": 0.25
       },
+      "runtime": {
+        "fm_profile_bpm": 100,
+        "transport_swing": 0.02
+      },
       "drift": []
     },
     "techno": {
@@ -316,12 +365,17 @@
           120,
           132
         ],
+        "bpm_field_status": "metadata-only (display via flavor.frameBpm; does not drive Transport tempo)",
         "swing_avg": 0.012,
         "swing_range": [
           0,
           0.03
         ],
+        "swing_field_status": "metadata-only (consumed by nothing; Transport.swing comes from engine.js FM_MODE_SWING)",
         "events_per_bar_avg": 20.5,
+        "hat_on8_drag_ms": 0,
+        "hat_off8_drag_ms": 0.7,
+        "effective_swing_ms": 0.7,
         "instruments": {
           "kick": {
             "count": 24,
@@ -382,6 +436,10 @@
       "governor": {
         "rdj": 0.035,
         "dangelo": 0
+      },
+      "runtime": {
+        "fm_profile_bpm": 132,
+        "transport_swing": 0
       },
       "drift": []
     },

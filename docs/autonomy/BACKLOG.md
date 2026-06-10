@@ -162,8 +162,39 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   閉じる場合は drum-frames-*.json / genre-flavor.js の PR + 試聴 human-gate
   (studio-surface or user)。focus-listening として現設計が正解の可能性もあるので、
   さらなる tuning 方向は user 指定待ち。
+  **訂正 (2026-06-01 fable review)**: 上記「drift 0」のうち bpm/swing 軸は
+  metadata field (frame.bpm=表示のみ / frame.swing=dead) を測っていた。consumed
+  authorities (fm.js GENRE_PROFILES bpm + engine FM_MODE_SWING + event microMs)
+  ベースに harness を再構築した結果、lofi/jazz の **実効 swing (off-8th hat drag)
+  が reference 換算の ~1/5** という新 finding。詳細 BL-025 と
+  `docs/HAZAMA-FM-MEASUREMENT.md` §Field consumption map。
   完了条件: Phase 2 capture script が `docs/hazama-fm-design-spec.json` と実出力を
   diff 出力 + stack-check 0 BAD。tuning は方向確定 → PR → 試聴確認ごとに 1 件ずつ。
+
+### BL-025 — drum-frames の bpm/swing フィールド: wire するか metadata 宣言するか
+- priority : P2
+- repo     : Music
+- scope    : docs (宣言) or runtime (wire、別 PR + 試聴)
+- agent    : claude or codex (実装) + human (方針 + 試聴)
+- human-gate: yes
+- source   : 2026-06-01 fable review (field consumption trace)
+- detail   : drum-frames JSON の `frame.bpm` は表示のみ (genre-flavor.js が
+  `flavor.frameBpm` に晒すだけ)、`frame.swing` は **どこからも読まれない dead field**
+  と判明。実 tempo は fm.js `GENRE_PROFILES[pill].bpm` → DJTempoState → engine
+  `rampParam("transport-bpm")`、実 swing は engine `FM_MODE_SWING` (lofi/jazz 0.0 —
+  fm-67 で「三重遅延が気持ち悪い → microMs に任せる」と意図的に決定済) + event
+  microMs。よって最近の bpm/swing field tuning は可聴効果ゼロだった (microMs/velocity
+  編集分のみ可聴)。選択肢:
+  (a) buildDrumsFromFrames に frame.bpm/swing を配線する — fm-67 の三重 stacking
+      問題の再来リスク、要・実機試聴 human-gate。bpm 配線は fm.js profile と二重
+      権威になるので非推奨。
+  (b) **推奨**: presets/SCHEMA.md (または drum-patterns-genres/README.md の schema 節)
+      に「bpm/swing は annotation metadata、playback は microMs/velocity +
+      fm.js/engine テーブルが駆動」と明記して公式宣言。docs-only。
+  (c) フィールド削除 — Band Room / drum-patterns-genres 側が同 schema を共有して
+      いる (band-room は pattern bpm を使う可能性) ため要・影響調査。
+  harness (`hazama-fm-measure.mjs`) は既に consumed-authorities ベースに更新済み
+  (2026-06-01)。残るは上記方針決定と SCHEMA 明記。
 
 ## Icebox
 

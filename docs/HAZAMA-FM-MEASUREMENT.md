@@ -43,10 +43,40 @@ Runs from the Music repo root or any Music worktree. No dependencies
 beyond Node. Not named `check-*.mjs`, so `stack-check.mjs` does **not**
 auto-run it as a gate — drift is informative, not pass/fail.
 
+### Field consumption map — measure what's consumed (verified 2026-06-01)
+
+Fable-perspective review traced every drum-frames field to its consumer.
+Two of the four "groove" fields turned out to be **metadata that does not
+drive playback**:
+
+| field | consumer | status |
+|---|---|---|
+| `events[].microMs` / `velocity` | `buildDrumsFromFrames` schedules each hit at `beat*4n + sub*16n + microMs` | **CONSUMED — the real groove levers** |
+| `frame.bpm` | `genre-flavor.js` → `flavor.frameBpm` (Now Playing UI 表示のみ) | **display-only** |
+| `frame.swing` | (no reader anywhere in the repo) | **dead field** |
+| actual tempo | `fm.js GENRE_PROFILES[pill].bpm` (ambient 72 / lofi 88 / jazz 96 / funk 100 / techno 132 / piano 68) → `DJTempoState` → `engine.js rampParam("transport-bpm", …)` + organic tempo drift ±0-1.5 | runtime authority |
+| actual swing | `engine.js FM_MODE_SWING` (lofi/jazz **0.0** — deliberate fm-67 decision: "microMs で表現済、Transport.swing は不要"; triple-stacking JSON microMs + D'Angelo extraMs + Transport.swing caused 気持ち悪い遅延, rhythm research v132) | runtime authority |
+
+Consequences (honest corrections of earlier claims):
+- The original Phase 1 bpm/swing drift findings — and the later tuning that
+  "closed" them by editing `frame.bpm`/`frame.swing` — concerned metadata
+  fields. The **audible** part of those tunes was the microMs/velocity edits
+  shipped alongside.
+- The first Phase 2 lofi capture's "bpm 83.35 matches design 82.4 ✓" was a
+  coincidence: tempo comes from fm.js/engine (lofi profile 88, engine default
+  80), not from frame.bpm. The match told us the engine tempo landed near the
+  frame metadata, not that frames drive tempo.
+- Whether to wire `frame.bpm`/`frame.swing` into playback, or officially
+  declare them annotation metadata, is BL-025 (human-gate — fm-67 already
+  decided *against* swing stacking once).
+
 ### What it reads
 
-- `presets/drum-frames-{funk,jazz,lofi,techno}.json` — per-frame BPM /
-  swing, per-event `microMs` (behind-beat) + `velocity` (Phase 1)
+- `presets/drum-frames-{funk,jazz,lofi,techno}.json` — per-event `microMs`
+  (behind-beat) + `velocity` (the consumed levers); `frame.bpm`/`swing`
+  reported as metadata (Phase 1)
+- `fm.js` `GENRE_PROFILES` — per-pill runtime bpm (the tempo authority)
+- `engine.js` `FM_MODE_SWING` — per-mode `Transport.swing`
 - `audio/genre-flavor.js` `GOVERNOR_BY_PILL` — `rdj` (Aphex wrongness
   dropout) + `dangelo` (D Angelo behind-beat wash) amounts per pill
 - `audio/genre-flavor.js` `buildAmbientDefault` / `buildPianoDefault` —
@@ -55,12 +85,15 @@ auto-run it as a gate — drift is informative, not pass/fail.
 
 ### What it measures (per pill)
 
-- BPM avg + range across frames
-- swing avg + range
+- runtime bpm (fm.js) + Transport.swing (engine) — diffed against targets
+- **effective swing in ms** — off-8th hat drag minus on-8th hat drag from
+  the events (per fm-67, swing lives in microMs); diffed against the
+  reference swing fraction converted to ms of an 8th at the runtime bpm
 - per-instrument (kick / snare / hat / ghost) `microMs` avg + range,
   velocity avg
 - events per bar (density)
 - governor rdj / dangelo amounts
+- frame `bpm`/`swing` fields — reported, labeled metadata, NOT diffed
 
 ### What it diffs against
 
@@ -83,31 +116,35 @@ its source reference so the number is reviewable. Qualitative prose
 
 ## Current findings (snapshot, regenerate to refresh)
 
-As of the harness landing (run `node scripts/hazama-fm-measure.mjs` for
-the live numbers; `docs/hazama-fm-design-spec.json` has the full data):
+Run `node scripts/hazama-fm-measure.mjs` for the live numbers;
+`docs/hazama-fm-design-spec.json` has the full data. After the 2026-06-01
+consumed-fields rework (runtime authorities + effective swing in ms):
 
 | pill | drift | reading |
 |---|---|---|
-| **lofi** | BPM 82 vs 85-95 (LOW), swing 0.10 vs 0.14-0.18 (LOW), snare 19.6ms vs 12-18 (HIGH) | designed **slower + straighter** than its Nujabes north-star, snare dragged past target (governor dangelo +0.10 adds more on top) |
-| **jazz** | none | within Blakey hard-bop / Miles modal targets |
-| **funk** | swing 0.09 vs 0-0.08 (HIGH), kick -2.5ms vs 0-6 (LOW), snare 18.1ms top-of-range | kick **pushes ahead** (front of beat) while snare drags — wide pocket; swing slightly above straight-funk target |
-| **techno** | kick -0.5ms vs 0-3 (LOW) | essentially on-grid (marginal lead), as a 4-on-floor should be |
+| **lofi** | effective_swing 8.7ms vs ref-equivalent 48-61ms (LOW) | runtime bpm 88 ✓ (fm.js), snare 16.6ms ✓ — but the **felt** swing (off-8th hat drag 16.5 − on-8th 7.8) is ~1/6 of the Nujabes 14-18% reference. The "straight" feel is real and lives in the events, not in the (dead) swing field |
+| **jazz** | effective_swing 20.8ms vs 50-69ms (LOW) | ride skip +18ms vs a 16-22% swing reference — much straighter than swung jazz; fm-67 deliberately keeps Transport.swing 0 |
+| **funk** | none | runtime bpm 100 ✓, kick 0.6ms ✓, snare 17.2ms ✓, effective 13.8ms within straight-funk 0-24ms ✓ |
+| **techno** | none | effective 0.7ms — on-grid as designed |
 | **ambient** (envelope) | axis-fit ok | attack 4s / release 6s / schedule 16m — long + slow = the space/restraint character ✓ |
 | **piano** (envelope) | axis-fit ok | attack 0.06 / release 1.6 / vel 0.32 (felt) / schedule 2m (sparse). felt+long-rest comes from low velocity + sparse schedule, not per-note release ✓ |
 
-These are **observations, not bugs**. The drift tells you where the
-design diverges from the reference; whether to close the gap is a taste
-call.
+These are **observations, not bugs**. The lofi/jazz effective-swing gap vs
+the reference conversion is large but fm-67 chose microMs-only swing
+deliberately (stacking caused 気持ち悪い遅延). Widening the off-8th drag is
+a microMs edit (the consumed lever) + 試聴 human-gate — and a taste call.
 
 ### Example use
 
 User: "lofi がなんか乗れない"
-→ Run the harness. lofi BPM 82 / swing 0.10 vs Nujabes 85-95 / 0.14-0.18.
-→ Hypothesis: the pill is designed slower + straighter than jazz-hop;
-   if more bounce is wanted, raise frame swing toward 0.15 and BPM toward 88.
-→ That tuning is `presets/drum-frames-lofi.json` + maybe genre-flavor.js;
-   ship as a PR and confirm by ear (studio-surface / user) — **the ear
-   is now final-confirm, not every-iteration discovery**.
+→ Run the harness. Runtime bpm 88 is already in the Nujabes range; the gap
+   is **effective swing 8.7ms vs ~48-61ms reference-equivalent**.
+→ Hypothesis: if more bounce is wanted, widen the off-8th hat `microMs`
+   drag in `presets/drum-frames-lofi.json` (the consumed lever) — NOT the
+   `swing` field (dead) and NOT `frame.bpm` (display-only). Step gently
+   (e.g. off-8th 16→24-30ms) — fm-67 warns full-reference stacking felt bad.
+→ Ship as a PR and confirm by ear (studio-surface / user) — **the ear is
+   final-confirm, not every-iteration discovery**.
 
 ---
 
