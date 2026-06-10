@@ -69,8 +69,14 @@ def extract_line(stem: str, fmin_note: str, fmax_note: str, midi_lo: int, midi_h
 
     step_sec = 60.0 / bpm / 4.0
     min_frames = max(2, int(min_ms / 1000.0 / (HOP / SR)))
+    rms_peak_db = 20.0 * np.log10(rms_peak + 1e-12)
 
-    # segment runs of identical midi
+    # segment runs of identical midi. v328 (生感 pass): keep the PERFORMANCE —
+    #  - fractional step positions (no 16th quantize): the player's push/drag
+    #    micro-timing survives, and stays tempo-relative in the app.
+    #  - fractional durations: real note lengths -> staccato/legato breathing.
+    #  - dB-relative velocity over a wide range (0.16-1.0): real 強弱 instead
+    #    of the old compressed 0.30-0.95 linear-RMS band.
     events = []
     i = 0
     n = len(midi)
@@ -84,21 +90,28 @@ def extract_line(stem: str, fmin_note: str, fmax_note: str, midi_lo: int, midi_h
         if j - i >= min_frames:
             start_t = times[i]
             dur_t = times[j - 1] - times[i] + HOP / SR
-            seg_rms = float(np.max(rms[i:j])) if j > i else 0.0
-            vel = float(np.clip(0.30 + 0.65 * (seg_rms / rms_peak), 0.30, 0.95))
-            step_abs = int(round(start_t / step_sec))
-            dur_steps = max(1, int(round(dur_t / step_sec)))
-            if 0 <= step_abs < total_steps:
-                events.append([step_abs // 16, step_abs % 16, dur_steps, int(midi[i]), round(vel, 2)])
+            # attack-window loudness (first ~46ms) in dB below the track peak
+            atk = rms[i:min(j, i + 4)]
+            seg_db = 20.0 * np.log10(float(np.max(atk)) + 1e-12)
+            depth = np.clip((rms_peak_db - seg_db) / 24.0, 0.0, 1.0)  # 0=peak, 1=-24dB
+            vel = float(np.clip(0.16 + 0.84 * (1.0 - depth), 0.16, 1.0))
+            step_pos = start_t / step_sec          # fractional global step
+            dur_steps = max(0.25, dur_t / step_sec)
+            if 0 <= step_pos < total_steps:
+                # min() guards the 2dp round: 15.996 would round to 16.0 and
+                # leak into the next bar / break the step<16 invariant.
+                events.append([int(step_pos // 16), min(15.99, round(step_pos % 16, 2)),
+                               round(dur_steps, 2), int(midi[i]), round(vel, 2)])
         i = j
 
-    # merge events landing on the same (bar,step): keep the stronger one
-    dedup = {}
-    for ev in events:
-        key = (ev[0], ev[1])
-        if key not in dedup or ev[4] > dedup[key][4]:
-            dedup[key] = ev
-    out = sorted(dedup.values(), key=lambda e: (e[0], e[1]))
+    # drop double-triggers: two notes within ~1/3 step keep only the stronger
+    out = []
+    for ev in sorted(events, key=lambda e: (e[0], e[1])):
+        if out and ev[0] == out[-1][0] and (ev[1] - out[-1][1]) < 0.35:
+            if ev[4] > out[-1][4]:
+                out[-1] = ev
+            continue
+        out.append(ev)
     return out
 
 
@@ -207,18 +220,30 @@ def main() -> None:
     # only when the bass (their source) is trustworthy.
     MIN_BASS, MIN_VOCAL = 30, 60
     bass_ok = len(bass) >= MIN_BASS
-    vocal_ok = len(voc) >= MIN_VOCAL
+    # v328: also require real loudness — a "melody" whose median velocity sits
+    # at the floor is bleed/whisper noise (tabasco/electric-sheep chant stems),
+    # and ghost notes through the voice synth are mud, not 生感.
+    voc_med_vel = float(np.median([e[4] for e in voc])) if voc else 0.0
+    vocal_ok = len(voc) >= MIN_VOCAL and voc_med_vel >= 0.30
     print(f"embed: bass_line={'YES' if bass_ok else 'NO'} vocal_melody={'YES' if vocal_ok else 'NO'} chords={'YES' if bass_ok else 'NO'}")
 
     if WRITE:
         if bass_ok:
             data["bass_line"] = {"granularity": 16, "bpm_fit": round(bpm, 2),
                                  "source": "librosa.pyin on bass.mp3", "events": bass}
-            data["chord_progression_legacy"] = data.get("chord_progression")
+            # keep the ORIGINAL catalog estimate on re-runs — without the
+            # guard a second --write would overwrite legacy with the previous
+            # derived progression and the rollback path would be gone.
+            if "chord_progression_legacy" not in data:
+                data["chord_progression_legacy"] = data.get("chord_progression")
             data["chord_progression"] = derived
         if vocal_ok:
             data["vocal_melody"] = {"granularity": 16, "bpm_fit": round(bpm, 2),
                                     "source": "librosa.pyin on vocals.mp3", "events": voc}
+        else:
+            data.pop("vocal_melody", None)
+        if not bass_ok:
+            data.pop("bass_line", None)
         SONG_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
         print(f"WROTE {SONG_JSON}")
 
