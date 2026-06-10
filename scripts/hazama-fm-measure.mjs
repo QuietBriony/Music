@@ -10,13 +10,32 @@
 // This is the Hazama FM analog, Phase 1: a STATIC design analyzer.
 // It does NOT capture audio. It reads the *design* artifacts that
 // determine Hazama FM's per-pill groove —
-//   - presets/drum-frames-{funk,jazz,lofi,techno}.json (frame BPM /
-//     swing / per-event microMs + velocity)
+//   - presets/drum-frames-{funk,jazz,lofi,techno}.json (per-event
+//     microMs + velocity — the audible levers)
 //   - audio/genre-flavor.js GOVERNOR_BY_PILL (rdj wrongness + D Angelo
 //     behind-beat wash amounts)
+//   - fm.js GENRE_PROFILES bpm (the actual playback-tempo authority)
+//   - engine.js FM_MODE_SWING (the actual Transport.swing per mode)
 // — computes a measured profile per pill, and diffs it against the
 // reference targets distilled from references/apple-music-refs.json +
 // references/hazama-fm-pill-refs.json.
+//
+// FIELD CONSUMPTION MAP (verified 2026-06-01 — measure what's consumed):
+//   frame.events[].microMs / velocity → CONSUMED by buildDrumsFromFrames
+//     (scheduled at beat*4n + sub*16n + microMs). The real groove levers.
+//   frame.bpm   → DISPLAY-ONLY (genre-flavor.js exposes flavor.frameBpm
+//     for the Now Playing UI; it does NOT drive Transport tempo).
+//   frame.swing → CONSUMED BY NOTHING (no reader anywhere).
+//   Actual tempo: fm.js GENRE_PROFILES[pill].bpm → DJTempoState →
+//     engine.js rampParam("transport-bpm", ...) (+ genre-flavor.js
+//     organic tempo drift ±0-1.5 BPM by genre).
+//   Actual swing: engine.js FM_MODE_SWING (lofi/jazz 0.0 — deliberate
+//     fm-67 decision: "microMs で表現済、Transport.swing は不要" after
+//     triple-stacking caused 気持ち悪い遅延; rhythm research v132).
+// So: bpm/swing comparisons here run against the RUNTIME authorities
+// (fm.js / engine.js tables); the JSON bpm/swing fields are reported as
+// metadata only. Swing-as-felt is measured from the events themselves
+// (off-8th hat drag in ms).
 //
 // Output:
 //   1. console: per-pill measured profile + drift report
@@ -142,6 +161,42 @@ function readGovernors() {
 }
 
 // ----------------------------------------------------------------
+// Runtime authorities (what ACTUALLY drives tempo + swing). Regex-extract,
+// no JS execution. See FIELD CONSUMPTION MAP in the header.
+// ----------------------------------------------------------------
+// fm.js GENRE_PROFILES[pill].bpm — applied on pill select via
+// applyGenreTempo(): EngineParams.bpm + DJTempoState + Transport.bpm.rampTo.
+function readFmProfileBpm() {
+  const path = join(ROOT, "fm.js");
+  if (!existsSync(path)) return {};
+  const text = readFileSync(path, "utf8");
+  const start = text.indexOf("GENRE_PROFILES");
+  if (start < 0) return {};
+  const block = text.slice(start, start + 2400);
+  const out = {};
+  // match e.g.  lofi: {\n  bpm: 88,
+  const re = /(\w+):\s*\{\s*bpm:\s*(\d+)/g;
+  let m;
+  while ((m = re.exec(block)) !== null) out[m[1]] = parseInt(m[2], 10);
+  return out;
+}
+
+// engine.js FM_MODE_SWING — the actual Transport.swing per mode.
+function readFmModeSwing() {
+  const path = join(ROOT, "engine.js");
+  if (!existsSync(path)) return {};
+  const text = readFileSync(path, "utf8");
+  const start = text.indexOf("FM_MODE_SWING");
+  if (start < 0) return {};
+  const block = text.slice(start, text.indexOf("};", start) + 1);
+  const out = {};
+  const re = /(\w+):\s*([\d.]+)/g;
+  let m;
+  while ((m = re.exec(block)) !== null) out[m[1]] = parseFloat(m[2]);
+  return out;
+}
+
+// ----------------------------------------------------------------
 // Phase 1.5: parse a genre-flavor.js builder's first synth envelope +
 // reverb + schedule interval + trigger velocity. Regex over the builder
 // function body (no JS execution). Soft-compares against the pill's
@@ -230,7 +285,12 @@ function measureFrames(genre) {
   const swings = frames.map((f) => f.swing).filter((s) => typeof s === "number");
 
   // Per-instrument microMs + velocity aggregation across all frames.
+  // Hats are additionally split by grid position: sub 0 = on-8th (downbeat
+  // side), sub 2 = off-8th. The off-8th drag minus the on-8th drag is the
+  // EFFECTIVE swing in ms — per the fm-67 decision, swing lives in microMs,
+  // not in Transport.swing or the (dead) frame.swing field.
   const byInst = {}; // inst -> { microMs: [], vel: [] }
+  const hatBySub = { on: [], off: [] };
   let totalEvents = 0;
   for (const f of frames) {
     const events = Array.isArray(f.events) ? f.events : [];
@@ -240,6 +300,10 @@ function measureFrames(genre) {
       if (!byInst[inst]) byInst[inst] = { microMs: [], vel: [] };
       if (typeof ev.microMs === "number") byInst[inst].microMs.push(ev.microMs);
       if (typeof ev.velocity === "number") byInst[inst].vel.push(ev.velocity);
+      if (inst === "hat" && typeof ev.microMs === "number") {
+        if (ev.sub === 0) hatBySub.on.push(ev.microMs);
+        else if (ev.sub === 2) hatBySub.off.push(ev.microMs);
+      }
     }
   }
 
@@ -258,21 +322,37 @@ function measureFrames(genre) {
     };
   }
 
+  const hatOn = avg(hatBySub.on);
+  const hatOff = avg(hatBySub.off);
+
   return {
     frame_count: frames.length,
+    // frame.bpm / frame.swing are METADATA — see FIELD CONSUMPTION MAP.
+    // Reported for completeness; runtime tempo/swing come from fm.js /
+    // engine.js (the `runtime` block on each pill).
     bpm_avg: round(avg(bpms)),
     bpm_range: [min(bpms), max(bpms)],
+    bpm_field_status: "metadata-only (display via flavor.frameBpm; does not drive Transport tempo)",
     swing_avg: round(avg(swings), 3),
     swing_range: [min(swings), max(swings)],
+    swing_field_status: "metadata-only (consumed by nothing; Transport.swing comes from engine.js FM_MODE_SWING)",
     events_per_bar_avg: round(totalEvents / frames.length),
+    // Effective swing, measured from the events themselves (fm-67: swing
+    // lives in microMs). off-8th hat drag minus on-8th hat drag, in ms.
+    hat_on8_drag_ms: round(hatOn),
+    hat_off8_drag_ms: round(hatOff),
+    effective_swing_ms: hatOn !== null && hatOff !== null ? round(hatOff - hatOn) : null,
     instruments: instStats,
   };
 }
 
 // ----------------------------------------------------------------
 // Diff measured vs target. Returns array of drift findings.
+// bpm + swing diff against RUNTIME authorities (fm.js GENRE_PROFILES bpm,
+// event-level effective swing) — NOT the metadata frame.bpm/frame.swing
+// fields. See FIELD CONSUMPTION MAP.
 // ----------------------------------------------------------------
-function diff(genre, measured, governor) {
+function diff(genre, measured, governor, runtime) {
   const target = TARGET_SPEC[genre];
   const findings = [];
   if (!target || measured.missing || measured.error) return findings;
@@ -280,25 +360,33 @@ function diff(genre, measured, governor) {
   const inRange = (v, [lo, hi]) => v !== null && v >= lo && v <= hi;
   const dir = (v, [lo, hi]) => (v < lo ? "LOW" : v > hi ? "HIGH" : "ok");
 
-  // BPM
-  if (target.bpm && measured.bpm_avg !== null) {
-    if (!inRange(measured.bpm_avg, target.bpm)) {
+  // BPM — the playback tempo authority is fm.js GENRE_PROFILES[pill].bpm
+  // (±organic tempo drift). frame.bpm is display metadata and not diffed.
+  const fmBpm = runtime?.fm_profile_bpm ?? null;
+  if (target.bpm && fmBpm !== null) {
+    if (!inRange(fmBpm, target.bpm)) {
       findings.push({
-        axis: "bpm",
-        measured: measured.bpm_avg,
+        axis: "bpm (fm.js runtime)",
+        measured: fmBpm,
         target: target.bpm,
-        direction: dir(measured.bpm_avg, target.bpm),
+        direction: dir(fmBpm, target.bpm),
       });
     }
   }
-  // Swing
-  if (target.swing && measured.swing_avg !== null) {
-    if (!inRange(measured.swing_avg, target.swing)) {
+  // Effective swing — fm-67 put swing into per-event microMs (Transport.swing
+  // is 0 for lofi/jazz by design; frame.swing is dead). Convert the reference
+  // swing fraction into ms of an 8th at the runtime bpm and compare the
+  // measured off-8th hat drag delta.
+  if (target.swing && measured.effective_swing_ms !== null && fmBpm) {
+    const eighthMs = 30000 / fmBpm;
+    const targetMs = [Math.round(target.swing[0] * eighthMs), Math.round(target.swing[1] * eighthMs)];
+    if (!inRange(measured.effective_swing_ms, targetMs)) {
       findings.push({
-        axis: "swing",
-        measured: measured.swing_avg,
-        target: target.swing,
-        direction: dir(measured.swing_avg, target.swing),
+        axis: "effective_swing_ms",
+        measured: measured.effective_swing_ms,
+        target: targetMs,
+        direction: dir(measured.effective_swing_ms, targetMs),
+        note: `ref ${Math.round(target.swing[0] * 100)}-${Math.round(target.swing[1] * 100)}% of an 8th at fm bpm ${fmBpm}; Transport.swing=${runtime?.transport_swing ?? "?"} (fm-67: swing lives in microMs)`,
       });
     }
   }
@@ -336,18 +424,25 @@ function diff(genre, measured, governor) {
 // Run
 // ----------------------------------------------------------------
 const governors = readGovernors();
+const fmProfileBpm = readFmProfileBpm();
+const fmModeSwing = readFmModeSwing();
 const spec = { generated_by: "scripts/hazama-fm-measure.mjs", phase: 1, pills: {} };
 const allFindings = {};
 
 for (const genre of PILLS) {
   const measured = measureFrames(genre);
   const governor = governors[genre] || null;
-  const findings = diff(genre, measured, governor);
+  const runtime = {
+    fm_profile_bpm: fmProfileBpm[genre] ?? null,
+    transport_swing: fmModeSwing[genre] ?? null,
+  };
+  const findings = diff(genre, measured, governor, runtime);
   spec.pills[genre] = {
     target_source: TARGET_SPEC[genre].source,
     target: TARGET_SPEC[genre],
     measured,
     governor,
+    runtime,
     drift: findings,
   };
   allFindings[genre] = findings;
@@ -403,7 +498,10 @@ for (const genre of PILLS) {
     console.log(`  (error: ${m.error})\n`);
     continue;
   }
-  console.log(`  frames=${m.frame_count}  bpm=${m.bpm_avg} ${JSON.stringify(m.bpm_range)}  swing=${m.swing_avg} ${JSON.stringify(m.swing_range)}  events/bar=${m.events_per_bar_avg}`);
+  const rt = p.runtime || {};
+  console.log(`  runtime : bpm=${rt.fm_profile_bpm ?? "?"} (fm.js GENRE_PROFILES)  Transport.swing=${rt.transport_swing ?? "?"} (engine FM_MODE_SWING)`);
+  console.log(`  frames=${m.frame_count}  events/bar=${m.events_per_bar_avg}  effective_swing=${m.effective_swing_ms}ms (off-8th hat ${m.hat_off8_drag_ms} − on-8th ${m.hat_on8_drag_ms})`);
+  console.log(`  metadata: frame bpm=${m.bpm_avg} ${JSON.stringify(m.bpm_range)} / frame swing=${m.swing_avg} — display-only fields, not consumed by playback`);
   const g = p.governor;
   console.log(`  governor: ${g ? `rdj=${g.rdj} dangelo=${g.dangelo}` : "(not found in genre-flavor.js)"}`);
   for (const inst of ["kick", "snare", "hat", "ghost"]) {

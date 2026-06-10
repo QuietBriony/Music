@@ -19,6 +19,46 @@
 
 ---
 
+## 2026-06-01 — fable review: harness を consumed fields ベースに再構築
+- agent      : Claude Code (chouta-surface, Fable 5 / 1M context)
+- goal       : model を Fable 5 に切替えての fresh-eyes review。measurement harness
+  の前提を疑い、drum-frames の各 field が実際に何に消費されるかを trace
+- repos      : Music (scripts 2 + docs 3、`Music-bl023` worktree)
+- 主要 finding (field consumption trace、receipts 付き):
+  - `frame.bpm` → **表示のみ** (genre-flavor.js が flavor.frameBpm に晒すだけ)
+  - `frame.swing` → **dead field** (どこからも読まれない)
+  - 実 tempo 権威: fm.js `GENRE_PROFILES[pill].bpm` (lofi 88 / funk 100 / techno 132
+    / jazz 96) → DJTempoState → engine `rampParam("transport-bpm")` ± organic drift
+  - 実 swing 権威: engine `FM_MODE_SWING` (lofi/jazz 0.0 — fm-67 で「三重遅延が
+    気持ち悪い → microMs に任せる」と意図的決定) + **event microMs (真の可聴レバー)**
+  - → 直近の bpm/swing field tuning (codex 分も自分の closed #273 も) は可聴効果ゼロ、
+    可聴だったのは並走の microMs/velocity 編集分。Phase 2 lofi capture の
+    「bpm 83.35 ≈ frame 82.4 一致」は偶然 (権威は fm.js 88 / default 80)
+- shipped (PR #299 想定 → merge):
+  - `scripts/hazama-fm-measure.mjs`: fm.js GENRE_PROFILES + engine FM_MODE_SWING を
+    抽出して runtime 権威ベースで diff。bpm/swing field は metadata 表示に降格。
+    新 metric **effective_swing_ms** (off-8th hat drag − on-8th hat drag) を events
+    から測定し、reference swing% を 8 分音符 ms に換算して比較
+  - 新 finding: lofi 実効 swing 8.7ms / jazz 20.8ms vs reference 換算 48-69ms =
+    **felt swing は reference の ~1/5** (fm-67 の意図的選択。広げるなら microMs 編集
+    + 試聴 human-gate)
+  - `scripts/hazama-fm-compare-capture.py`: onset 分解能 hop 512 (~23ms、測定対象の
+    10-20ms より粗い!) → hop 128 (~5.8ms)。合成 88bpm/snare+17ms トラックで
+    snare−kick gap の符号検出が改善 (旧 -4.4ms 誤符号 → 新 +9.1ms 正符号)。
+    bpm diff も runtime fm_profile_bpm ベースに
+  - `docs/HAZAMA-FM-MEASUREMENT.md`: §Field consumption map (受領書付き) + 過去
+    claim の訂正 + findings 表を consumed-basis に更新
+  - BACKLOG: **BL-025 新設** (bpm/swing field を wire するか metadata 宣言するか、
+    推奨 (b) SCHEMA 明記 docs-only) + BL-024 に訂正注記
+- stack-check: PASS 16 / FAIL 0 / SKIP 0、audit exit 0
+- 学び       : 「測定 harness が間違った field を測ると、tuning も検証も全部その
+  虚構の上に乗る」。fresh-eyes で前提 (consumption) を trace し直すのが最初に
+  やるべき磨きだった。設計 doc (fm-67 コメント) に答えが書いてあることも多い
+- blockers   : BL-025 の方針 (wire or declare) は human 判断。effective swing を
+  広げるかは taste + 試聴
+
+---
+
 ## 2026-05-30 — Codex App project 表示と workspace map の再現手順を固定
 - agent     : Codex App (gamingpc)
 - goal      : 別 PC / 別 Codex セッションで `music-stack` の project 表示と作業前提を

@@ -64,10 +64,20 @@ DRUM_PILLS = {"funk", "jazz", "lofi", "techno"}
 ENVELOPE_PILLS = {"ambient", "piano"}
 
 
+# Onset-time resolution: librosa's default hop of 512 @ 22050 Hz quantizes
+# onset times to ~23 ms — COARSER than the 10-20 ms pocket effects being
+# measured. hop 128 gives ~5.8 ms resolution, which makes ms-level pocket
+# comparison at least meaningful (still treat single-event numbers as noise;
+# only the averages over n≳30 onsets carry signal).
+HOP = 128
+
+
 def _band_onset_times(y: np.ndarray, sr: int, lo_hz: float, hi_hz: float) -> np.ndarray:
     """Onset times within a frequency band (kick low, snare mid, hat high).
-    Mirror of scripts/compare-capture.py for cross-stack consistency."""
-    S = np.abs(librosa.stft(y, n_fft=2048))
+    Mirror of scripts/compare-capture.py, but at HOP=128 (~5.8 ms) instead of
+    the default 512 (~23 ms) — the finer grid is required because Hazama FM's
+    design effects are 10-20 ms."""
+    S = np.abs(librosa.stft(y, n_fft=2048, hop_length=HOP))
     freqs = librosa.fft_frequencies(sr=sr, n_fft=2048)
     band = (freqs >= lo_hz) & (freqs <= hi_hz)
     if not band.any():
@@ -75,8 +85,8 @@ def _band_onset_times(y: np.ndarray, sr: int, lo_hz: float, hi_hz: float) -> np.
     energy = S[band, :].sum(axis=0)
     if energy.max() == 0:
         return np.array([])
-    frames = librosa.onset.onset_detect(onset_envelope=energy, sr=sr, units="frames")
-    return librosa.frames_to_time(frames, sr=sr)
+    frames = librosa.onset.onset_detect(onset_envelope=energy, sr=sr, hop_length=HOP, units="frames")
+    return librosa.frames_to_time(frames, sr=sr, hop_length=HOP)
 
 
 def _spectral_summary(y: np.ndarray, sr: int) -> dict:
@@ -158,13 +168,17 @@ def diff_drum(actual: dict, design: dict) -> list[dict]:
     insts = m.get("instruments", {})
     findings = []
 
-    design_bpm = m.get("bpm_avg")
+    # Tempo authority is fm.js GENRE_PROFILES (spec `runtime.fm_profile_bpm`),
+    # NOT the frame.bpm metadata field. Fall back to bpm_avg only for old specs.
+    runtime = design.get("runtime", {}) or {}
+    design_bpm = runtime.get("fm_profile_bpm") or m.get("bpm_avg")
+    bpm_basis = "fm.js runtime" if runtime.get("fm_profile_bpm") else "frame avg (legacy spec)"
     if design_bpm is not None:
         d = actual["bpm"] - design_bpm
         # Capture BPM detection can octave-fold (half/double); flag only clear gaps.
         if abs(d) > 5 and abs(actual["bpm"] - 2 * design_bpm) > 5 and abs(actual["bpm"] - design_bpm / 2) > 5:
-            findings.append({"axis": "bpm", "design": design_bpm, "actual": actual["bpm"],
-                             "delta": round(d, 1), "note": "engine tempo diverges from frame bpm (or beat-track octave error)"})
+            findings.append({"axis": "bpm", "design": f"{design_bpm} ({bpm_basis})", "actual": actual["bpm"],
+                             "delta": round(d, 1), "note": "engine tempo diverges from fm.js profile (or beat-track octave error)"})
 
     # Pocket ordering: design says snare drags more than kick (lofi 19.6 vs 9.2).
     dk = insts.get("kick", {}).get("micro_ms_avg")
@@ -207,8 +221,10 @@ def main() -> int:
 
     if pill in DRUM_PILLS:
         m = design.get("measured", {})
+        rt = design.get("runtime", {}) or {}
         print(f"\ndesign (hazama-fm-design-spec.json):")
-        print(f"  bpm_avg={m.get('bpm_avg')}  swing_avg={m.get('swing_avg')}")
+        print(f"  runtime bpm={rt.get('fm_profile_bpm')} (fm.js)  Transport.swing={rt.get('transport_swing')}  effective_swing={m.get('effective_swing_ms')}ms")
+        print(f"  (frame bpm_avg={m.get('bpm_avg')} / frame swing_avg={m.get('swing_avg')} are display-only metadata)")
         insts = m.get("instruments", {})
         for inst in ("kick", "snare"):
             s = insts.get(inst, {})
