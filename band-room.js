@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-195-nirvana-wall";
+  const BANDROOM_APP_VERSION = "br-196-ai-wall";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -318,7 +318,10 @@
     //         2402 Hz target) and too unglued (DR 16.49 dB vs 8.73 dB).
     //         Reduce the AI-only shelf/exciter and restore a little glue
     //         while leaving 原音 stems outside this bus.
-    const eq     = new Tone.EQ3({ low: -0.6, mid: -0.4, high: 1.5, lowFrequency: 160, highFrequency: 4200 });
+    // v323: AI wall — un-scoop the mids (the 原音 v322 brief applies here too:
+    // early-Nirvana wall lives in the mids) and give back a touch of body.
+    // High shelf stays 1.5/4200 — that axis was measurement-tuned (v301).
+    const eq     = new Tone.EQ3({ low: -0.4, mid: 0, high: 1.5, lowFrequency: 160, highFrequency: 4200 });
     // v275: comp loosened to preserve dynamic range (measurement-driven).
     // Capture vs target showed DR 12.3 dB vs 33.6 dB (-21 dB gap). v271
     // section dynamics (5 dB swing) addressed the section layer, but the
@@ -328,10 +331,12 @@
     // stay quiet, "song breathing" returns. v301 nudges the glue back in
     // for Human Fly so the AI band reads as one performance, not separate
     // drum/bass/other layers.
-    const comp   = new Tone.Compressor({ threshold: -16, ratio: 2.05, attack: 0.014, release: 0.18, knee: 6 });
+    // v323: one notch denser (2.05 → 2.2, release 0.17) — v301 measured AI DR
+    // still wider than target (16.5 vs 8.7 dB), so more glue is also on-target.
+    const comp   = new Tone.Compressor({ threshold: -16, ratio: 2.2, attack: 0.014, release: 0.17, knee: 6 });
     const lightRuntime = aiLightRuntimeEnabled();
     const widen  = new Tone.StereoWidener(lightRuntime ? 0.42 : 0.58);
-    const makeup = new Tone.Gain(3.0);    // v243: glue-comp makeup + AI 再現 level lift (~+9 dB). The synth band reached the shared, stems-tuned master ~10 dB below the stems → it sat under the master comp/limiter thresholds and never got the loudness glue → thin ("げきしょぼ"). This lifts drums/bass/guitar/chord to stems-comparable level. Stems-only (原音) never touch this bus, so they are unaffected.
+    const makeup = new Tone.Gain(3.2);    // v243: glue-comp makeup + AI 再現 level lift (~+9 dB) so the synth band reaches the stems-tuned master at comparable level. v323: 3.0 → 3.2 (~+0.6 dB) to track the 原音 v322 loudness lift. Stems-only (原音) never touch this bus.
 
     if (lightRuntime) {
       // v316: phone/PWA AI diet. The continuous parallel saturation + exciter
@@ -345,8 +350,10 @@
       return input;
     }
 
-    const sat    = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });
-    const satWet = new Tone.Gain(0.16);   // parallel saturated blend
+    // v323: grit up (0.12/0.16 → 0.15/0.20) toward the v322 wall density —
+    // kept shy of the 原音 settings because synth content tips into fizz sooner.
+    const sat    = new Tone.Distortion({ distortion: 0.15, oversample: "2x", wet: 1 });
+    const satWet = new Tone.Gain(0.20);   // parallel saturated blend
     const satDry = new Tone.Gain(0.92);   // parallel clean path
 
     // v287: parallel high-frequency exciter. The v274/v284/v286 EQ high-
