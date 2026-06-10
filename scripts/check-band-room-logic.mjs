@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-196-ai-wall", "Band Room should expose the current AI-wall version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-197-transcribed-lines", "Band Room should expose the current transcribed-lines version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -134,13 +134,28 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-84/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-196/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-197/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-84/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-196/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-197/, "Service worker should precache the current Band Room JS marker");
+// v324: transcribed-line playback (AI 再現 pilot — human-fly)
+assert.match(source, /function playTranscribedBar\(/, "AI agents should support transcribed-line playback (v324)");
+assert.match(source, /playTranscribedBar\(synthBass, "bass_line"/, "Bass agent should play the transcribed line when present");
+assert.match(source, /playTranscribedBar\(voiceSynth, "vocal_melody"/, "Voice agent should sing the transcribed melody when present");
+const humanFlyData = JSON.parse(readFileSync("presets/drum-frames-tabasco-human-fly.json", "utf8"));
+for (const key of ["bass_line", "vocal_melody"]) {
+  const line = humanFlyData[key];
+  assert.ok(line && Array.isArray(line.events) && line.events.length >= 100, `human-fly should carry a transcribed ${key} (v324 pilot)`);
+  assert.ok(line.events.every((ev) => Array.isArray(ev) && ev.length === 5 && ev[1] >= 0 && ev[1] < 16), `${key} events should be [bar,step16,durSteps,midi,vel] rows`);
+  for (let i = 1; i < line.events.length; i++) {
+    const a = line.events[i - 1], b = line.events[i];
+    assert.ok(b[0] > a[0] || (b[0] === a[0] && b[1] >= a[1]), `${key} events must be time-ordered for per-bar indexing`);
+  }
+}
+assert.ok(humanFlyData.chord_progression_legacy, "human-fly should keep the legacy chord progression for rollback (v324)");
 assert.match(html, /class="br-details br-sound-mix"/, "Sound controls should be consolidated into one sound mix details panel");
 assert.match(html, /id="br-sound-mix"/, "Band Room should expose the consolidated sound mix section");
 assert.doesNotMatch(html, /<summary>[^<]*vocal FX/i, "Vocal FX should not be a separate details panel");

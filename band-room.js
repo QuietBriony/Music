@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-196-ai-wall";
+  const BANDROOM_APP_VERSION = "br-197-transcribed-lines";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -4856,7 +4856,52 @@
     return dedupeAgentSteps(steps, 3);
   }
 
+  // v324: transcribed-line playback. Songs whose JSON carries real note data
+  // extracted from the stems (bass_line / vocal_melody via
+  // scripts/transcribe-stem-lines.py) get the ACTUAL line played back instead
+  // of a generated one — the difference between "a band jamming on the chart"
+  // and "the song". Events are compact [bar, step16, durSteps, midi, vel]
+  // rows; indexed per-bar on first use, re-built on song switch.
+  let transcribedLineCache = { songId: null, lines: {} };
+  function transcribedNotesForBar(lineKey, absBar) {
+    const line = state.songData?.[lineKey];
+    const events = line && Array.isArray(line.events) ? line.events : null;
+    if (!events || !events.length) return null;
+    if (transcribedLineCache.songId !== state.currentSongId) {
+      transcribedLineCache = { songId: state.currentSongId, lines: {} };
+    }
+    let byBar = transcribedLineCache.lines[lineKey];
+    if (!byBar) {
+      byBar = new Map();
+      for (const ev of events) {
+        const bar = Number(ev[0]) || 0;
+        if (!byBar.has(bar)) byBar.set(bar, []);
+        byBar.get(bar).push(ev);
+      }
+      transcribedLineCache.lines[lineKey] = byBar;
+    }
+    return byBar.get(absBar) || null;
+  }
+  function hasTranscribedLine(lineKey) {
+    const line = state.songData?.[lineKey];
+    return !!(line && Array.isArray(line.events) && line.events.length);
+  }
+  function playTranscribedBar(synth, lineKey, ctx, time) {
+    const rows = transcribedNotesForBar(lineKey, state.barCount);
+    if (!rows) return false;
+    rows.forEach((row) => {
+      const t = time + (Number(row[1]) || 0) * ctx.subTime;
+      const durSec = Math.max(1, Number(row[2]) || 1) * ctx.subTime * 0.95;
+      const note = Tone.Frequency(Number(row[3]) || 36, "midi").toNote();
+      try { synth.triggerAttackRelease(note, durSec, t, Number(row[4]) || 0.6); } catch (e) {}
+    });
+    return true;
+  }
+
   function triggerBassAgent(ctx, time) {
+    // v324: real line first — when this song has a transcribed bass line,
+    // play it and skip the generative plan entirely.
+    if (playTranscribedBar(synthBass, "bass_line", ctx, time)) return;
     // v249: bass → kick onset lock. The bass agent's note times are
     // grid-quantized; the drum kicks have micro-offsets from the source
     // (or stay on grid for cramps-punk). Snapping bass onsets to the
@@ -4998,6 +5043,9 @@
   }
 
   function triggerVoiceAgent(ctx, time) {
+    // v324: real melody first — when this song has a transcribed vocal line,
+    // sing it and skip the generative contour.
+    if (playTranscribedBar(voiceSynth, "vocal_melody", ctx, time)) return;
     voiceAgentPlan(ctx).forEach((step) => {
       const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
       const durSec = Math.max(1, Number(step.durSteps) || 2) * ctx.subTime * 0.92;
@@ -5333,7 +5381,7 @@
 
       const chord = updateChordDisplay();
       const partAgentCtx = makePartAgentContext(sec, frame, chord, beatTime, subTime);
-      if (isSynthMode && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && chord) {
+      if (isSynthMode && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && (chord || hasTranscribedLine("bass_line"))) {
         triggerBassAgent(partAgentCtx, time);
       } else if (isSynthMode && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
         // v108: chord null fallback — section has no chord progression
@@ -5350,7 +5398,7 @@
         triggerGuitarAgent(partAgentCtx, time);
       }
 
-      if (isSynthMode && SYNTH_REBUILD_PARTS.voice && $("br-toggle-voice").checked && voiceSynth && chord && frame) {
+      if (isSynthMode && SYNTH_REBUILD_PARTS.voice && $("br-toggle-voice").checked && voiceSynth && (chord || hasTranscribedLine("vocal_melody")) && frame) {
         triggerVoiceAgent(partAgentCtx, time);
       }
 
