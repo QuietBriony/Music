@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-194-album-vocal-thickness", "Band Room should expose the current album vocal thickness version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-195-nirvana-wall", "Band Room should expose the current nirvana-wall version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -134,13 +134,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-84/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-194/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-195/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-84/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-194/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-195/, "Service worker should precache the current Band Room JS marker");
 assert.match(html, /class="br-details br-sound-mix"/, "Sound controls should be consolidated into one sound mix details panel");
 assert.match(html, /id="br-sound-mix"/, "Band Room should expose the consolidated sound mix section");
 assert.doesNotMatch(html, /<summary>[^<]*vocal FX/i, "Vocal FX should not be a separate details panel");
@@ -397,11 +397,13 @@ assert.match(source, /crashKeptKey/, "Band Room should keep only the most-downbe
 assert.match(source, /drumBus = new Tone\.Gain\(0\.52\)/, "AI drum bus should add v317 pressure without changing bass/guitar/chord");
 assert.match(source, /bassBus = new Tone\.Gain\(0\.84\)/, "AI bass bus should add v319 pressure");
 assert.match(source, /clickBus = new Tone\.Gain\(0\.35\)/, "Click bus default should match the slider while the click toggle stays off");
-assert.match(source, /mid:\s*0\.65/, "Stem master should push band mids forward in v313");
-assert.match(source, /high:\s*0\.1/, "Stem master should keep high-band air alive in v313");
+assert.match(source, /mid:\s*0\.85/, "Stem master should push band mids forward (v313 → v322 wall)");
+assert.match(source, /high:\s*0\.3/, "Stem master should keep high-band bite alive (v322)");
+assert.match(source, /distortion: 0\.16, oversample: "2x"/, "Stem master parallel grit should carry the v322 wall density");
+assert.match(source, /const makeup = new Tone\.Gain\(1\.34\)/, "Stem master makeup should restore v322 loudness (しょぼい fix)");
 assert.match(source, /stemBus\.drums\s*=\s*new Tone\.Gain\(0\.92\)/, "Drums stem should stand forward with v317 pressure");
 assert.match(source, /stemBus\.bass\s*=\s*new Tone\.Gain\(0\.91\)/, "Bass stem should stand forward with v319 pressure");
-assert.match(source, /stemBus\.other\s*=\s*new Tone\.Gain\(0\.91\)/, "Other/guitar stem should stand forward with v318 pressure");
+assert.match(source, /stemBus\.other\s*=\s*new Tone\.Gain\(0\.96\)/, "Other/guitar stem should stand forward in the v322 Nirvana wall");
 assert.match(source, /const shelf = new Tone\.EQ3\(\{ low: -0\.35, mid: 0\.2, high: 0\.85, lowFrequency: 220, highFrequency: 4600 \}\)/, "Other/guitar stem EQ should open upper presence for v318");
 assert.match(source, /frequency: 7800, type: "lowpass"/, "Sampled guitar should keep more high-frequency pick attack in v318");
 assert.match(source, /volume: -2\.5/, "Sampled guitar should receive the v318 pressure lift");
