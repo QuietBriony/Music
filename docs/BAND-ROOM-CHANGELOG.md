@@ -1,6 +1,30 @@
-# Band Room — Changelog (v65 → v322 compact)
+# Band Room — Changelog (v65 → v323 compact)
 
-Current compact release: v322.
+Current compact release: v323.
+
+---
+
+## v323 compact — AI 再現も wall へ(v322 と同方向)
+
+ユーザー要望「AI音源も改善ヨロ」— 原音 v322(初期 Nirvana wall)と同じ方向へ
+AI 再現の polish bus(instrumentBus、AI 専用)を寄せた。
+
+両パス共通(スマホ軽量パスにも効く):
+- **EQ ミッドの scoop 解除**: mid -0.4 → 0、low -0.6 → -0.4。壁はミッドに住む。
+  high shelf 1.5/4200 は計測チューン済み(v301 brightness 軸)なので不変。
+- **glue 一段強め**: 2.05:1 → 2.2:1、release 0.18 → 0.17(attack 14ms 維持)。
+  v301 計測で AI の DR は target より広すぎ(16.5 vs 8.7 dB)だったので計測的にも順方向。
+- **音圧**: makeup 3.0 → 3.2(原音 v322 の持ち上げに追従)。
+
+フル(デスクトップ)パスのみ:
+- **parallel grit 強化**: distortion 0.12 → 0.15 / wet 0.16 → 0.20。synth 素材は
+  fizz に転びやすいので 原音(0.16/0.16)よりやや控えめ設定。
+
+v316 のスマホ AI diet(sat/exciter レス)は維持 — 軽量パスには waveshaper を
+足さず、EQ/glue/makeup の底上げで wall を作る。AI bus 個別レベル(drum 0.52 /
+bass 0.84 / guitar 0.88 / chord 0.62)は並行調整中のため不変。
+
+`band-room.js?v=br-196`、`hazama-fm-v323`。CSS は br-84 のまま。
 
 ---
 
