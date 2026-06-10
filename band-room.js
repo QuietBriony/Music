@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-194-album-vocal-thickness";
+  const BANDROOM_APP_VERSION = "br-195-nirvana-wall";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -408,20 +408,27 @@
     // LCD balance: weight the low so kick+bass punch instead of boom, keep
     // mids present, and keep the top alive without letting cymbals turn harsh.
     // v313 nudges mid/high forward so the band wall stands up around the vocal.
-    const eq     = new Tone.EQ3({ low: 0.9, mid: 0.65, high: 0.1, lowFrequency: 120, highFrequency: 6500 });
+    // v322: early-Nirvana (Bleach/Nevermind) wall, by measurement. The tabasco
+    // stems put 57% of their energy in 80–250 Hz with only ~5% above 6 kHz and
+    // guitar peaking ~6 dB under drums — dark + boomy reads as しょぼい. Tilt a
+    // touch off the boom and into mids/bite; the parallel grit below does the
+    // real thickening by converting that low energy into harmonics.
+    const eq     = new Tone.EQ3({ low: 0.8, mid: 0.85, high: 0.3, lowFrequency: 120, highFrequency: 6500 });
     // Nirvana density: a glue compressor so the band reads as one wall. v311:
     // eased from 2.8:1 / 10ms grab to 2.3:1 / 18ms attack + 0.22 release so it
     // stops pumping the whole band around the forward vocal (調和してない fix) —
     // transients punch through and the mix breathes instead of squashing flat.
-    const comp   = new Tone.Compressor({ threshold: -19, ratio: 2.3, attack: 0.018, release: 0.22, knee: 6 });
-    // subtle parallel tape grit for analog warmth / glue.
-    const sat    = new Tone.Distortion({ distortion: 0.11, oversample: "2x", wet: 1 });
-    const satWet = new Tone.Gain(0.10);
+    // v322: one notch denser (2.5:1, release 0.20) — keeps the 18ms punch window.
+    const comp   = new Tone.Compressor({ threshold: -19, ratio: 2.5, attack: 0.018, release: 0.20, knee: 6 });
+    // parallel tape/amp grit — the Bleach-era dirt. v322: 0.11/0.10 → 0.16/0.16
+    // so the blended crunch carries the wall's density without comp pumping.
+    const sat    = new Tone.Distortion({ distortion: 0.16, oversample: "2x", wet: 1 });
+    const satWet = new Tone.Gain(0.16);
     const satDry = new Tone.Gain(1.0);
     // loudness makeup — push the glued band into the shared limiter for 音圧.
-    // v311: 1.35 → 1.20 (~+1.6 dB) — less squash into the limiter so the mix
-    // keeps its dynamics / cohesion instead of a flat pumping wall.
-    const makeup = new Tone.Gain(1.20);   // ~+1.6 dB
+    // v311 dropped this to 1.20 to stop the pump; with the slower-attack glue
+    // holding, v322 brings the heat back (1.20 → 1.34, ~+1 dB) — しょぼい fix.
+    const makeup = new Tone.Gain(1.34);
 
     input.connect(eq);
     eq.connect(comp);
@@ -594,7 +601,7 @@
     // instead of constantly living on the limiter.
     stemBus.drums  = new Tone.Gain(0.92).connect(stemMaster);
     stemBus.bass   = new Tone.Gain(0.91).connect(stemMaster);
-    stemBus.other  = new Tone.Gain(0.91).connect(stemMaster);
+    stemBus.other  = new Tone.Gain(0.96).connect(stemMaster);  // v322: guitars forward (measured ~6 dB under drums) — the early-Nirvana wall wants them up
     // Wire EQ outputs into respective buses (input side will receive players)
     stemEQs.drums.output.connect(stemBus.drums);
     stemEQs.bass.output.connect(stemBus.bass);

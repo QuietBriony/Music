@@ -1,6 +1,27 @@
-# Band Room — Changelog (v65 → v321 compact)
+# Band Room — Changelog (v65 → v322 compact)
 
-Current compact release: v321.
+Current compact release: v322.
+
+---
+
+## v322 compact — 原音マスターを初期 Nirvana wall へ(しょぼい fix)
+
+ユーザー報告: 原音 tabasco(イントロ曲)が「音しょぼく感じる」、全体を「初期
+Nirvana アルバム的に」。tabasco stems を実測: エネルギーの **57% が 80–250 Hz**、
+6 kHz 以上は ~5%、guitar peak は drums より ~6 dB 低い — 暗い・ブーミー・ギター
+奥 = しょぼいの正体。加えて v311 で pumping 対策に makeup を 1.35→1.20 へ下げた
+分、単純にレベルも控えめだった。
+
+v322(stemMaster = 原音専用、AI 再現には影響なし):
+- **parallel grit を主役に**: distortion 0.11→0.16 / wet 0.10→0.16。低域エネルギー
+  を倍音へ変換して壁の密度を作る(Bleach 的ダート)。comp pumping なしで太くなる。
+- **glue 一段強め**: 2.3:1→2.5:1、release 0.22→0.20(attack 18ms は維持=パンチ温存)。
+- **makeup 復帰**: 1.20→1.34(v311 比 ほぼ復元)。しょぼい=音圧不足の直接対処。
+- **EQ tilt**: low 0.9→0.8 / mid 0.65→0.85 / high 0.1→0.3 — ブームから一歩離れ、
+  ミッドの壁とバイトへ。
+- **guitar 前へ**: stemBus.other 0.91→0.96(実測 -6 dB を詰める。Nirvana はギターが壁)。
+
+`band-room.js?v=br-195`、`hazama-fm-v322`。CSS は br-84 のまま。
 
 ---
 
