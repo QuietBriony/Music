@@ -29,8 +29,13 @@ assert.match(js, /lofi:\s*\{[\s\S]*?bpm:\s*88,/, "FM lofi profile should use the
 assert.match(js, /funk:\s*\{[\s\S]*?bpm:\s*100,/, "FM funk profile should use the measured funk pocket tempo");
 assert.match(js, /function drumFloorHandoffBpmValue\(/, "FM should derive handoff BPM without leaking idle Tone defaults");
 assert.match(js, /function drumFloorHrefForContext[\s\S]*drumFloorHandoffBpmValue\(name\)/, "FM Drum Floor links should use genre-aware handoff BPM");
-assert.match(html, /audio\/genre-flavor\.js\?v=fm-72/, "FM should load the current funk-clearance genre flavor cache marker");
-assert.match(sw, /audio\/genre-flavor\.js\?v=fm-72/, "Service worker should precache the current genre flavor marker");
+// BL-015 precedent: pattern-based marker check (no per-bump lockstep edit).
+// Cross-file equality is asserted here; precache completeness is audit.py's.
+const flavorMarkerHtml = html.match(/audio\/genre-flavor\.js\?v=(fm-\d+)/);
+const flavorMarkerSw = sw.match(/audio\/genre-flavor\.js\?v=(fm-\d+)/);
+assert.ok(flavorMarkerHtml, "FM should load a versioned genre flavor cache marker");
+assert.ok(flavorMarkerSw, "Service worker should precache a versioned genre flavor marker");
+assert.equal(flavorMarkerHtml[1], flavorMarkerSw[1], "fm.html and sw.js genre flavor markers should match");
 assert.match(flavor, /funk:\s*0\.62/, "FM funk should keep more headroom after the crushed-phone note");
 assert.match(flavor, /addSidechainPump\([\s\S]*0\.18[\s\S]*\),[\s\S]*0\.35/, "FM funk should use the lighter v299 pump/saturation path");
 assert.match(flavor, /volume:\s*-15[\s\S]*volume:\s*-22[\s\S]*0\.40 \* intensity/, "FM funk rubber bass/sub should be pulled back for v299 clearance");

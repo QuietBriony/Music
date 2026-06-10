@@ -2145,7 +2145,13 @@
       if (Math.random() < passingProb && note) {
         try {
           const noteFreq = Tone.Frequency(note).toFrequency();
-          const passingFreq = noteFreq * (conversation?.motif === "neighbor" ? (Math.random() < 0.5 ? 1.0595 : 0.9439) : 1.0595);
+          // v327: neighbor passing-tone DIRECTION is stable per phrase
+          // (derived from the motif cell's home slot) instead of a per-event
+          // coin flip — repeated approach from the same side reads as intent.
+          const neighborUp = (typeof MelodicCellState !== "undefined")
+            ? (MelodicCellState.cell[0] || 0) >= 0.5
+            : Math.random() < 0.5;
+          const passingFreq = noteFreq * (conversation?.motif === "neighbor" ? (neighborUp ? 1.0595 : 0.9439) : 1.0595);
           bassVoice.play(passingFreq, "16n", safeEventTime(time + grooveOffset + halfBeat - 0.01), vel * 0.55);
         } catch (e) {}
       }
@@ -2420,7 +2426,15 @@
         : isCompConversation(conversation) ? 0.05
         : 0.18;
       if (currentClaviPattern[claviStep] && Math.random() > skipBoost && !(flavor && flavor.dropBar)) {
-        const rawNote = currentChordTones[Math.floor(Math.random() * currentChordTones.length)];
+        // v327: chord-tone choice follows the engine's phrase motif cell
+        // (fm-116 MelodicCellState) instead of an independent dice roll per
+        // 16th — the clavi riffs a repeating figure that rhymes with the
+        // glass/harp accents. Falls back to random if engine isn't loaded.
+        const rawNote = currentChordTones[
+          (typeof melodicCellIndex === "function")
+            ? melodicCellIndex("funkClavi", currentChordTones.length)
+            : Math.floor(Math.random() * currentChordTones.length)
+        ];
         const note = transposeNote(rawNote, flavor && flavor.keyShift || 0);
         const grooveOffset = (groove.pushMs || 0) / 1000 * 0.7;
         const intensity = clamp(groove.intensity || 1.0, 0.7, 1.25);
@@ -2541,7 +2555,13 @@
         : otherLead ? 0.45
         : 0.2;
       if (currentClaviPattern[claviStep] && Math.random() > skipBoost && !(flavor && flavor.dropBar)) {
-        const rawNote = currentChordTones[(claviStep + Math.floor(Math.random() * 2)) % currentChordTones.length];
+        // v327: the ±1 wobble follows the phrase motif cell instead of a
+        // per-hit coin — the same figure recurs within a phrase (the frames
+        // path keeps its claviStep anchor). Random fallback if engine absent.
+        const wobble = (typeof melodicCellIndex === "function")
+          ? melodicCellIndex("funkClaviFrames", 2)
+          : Math.floor(Math.random() * 2);
+        const rawNote = currentChordTones[(claviStep + wobble) % currentChordTones.length];
         const note = transposeNote(rawNote, flavor && flavor.keyShift || 0);
         const grooveOffset = (groove.pushMs || 0) / 1000 * 0.7;
         const push = (Math.random() - 0.5) * 0.012;
