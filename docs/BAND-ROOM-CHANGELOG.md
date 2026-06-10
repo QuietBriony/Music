@@ -1,8 +1,27 @@
-# Band Room — Changelog (v65 → v326 compact)
+# Band Room — Changelog (v65 → v327 compact)
 
-Current compact release: v326.
+Current compact release: v327.
 
 ---
+
+## v327 compact — Melodic Cell 横断展開: funk clavi / walking bass も motif へ
+
+v326 (accent 4 層) の横断第二弾。genre-flavor.js の旋律面に残っていた
+per-event 乱数 pitch 選択を engine の phrase motif cell に接続:
+
+- **funk clavi (default 経路)**: chord-tone を 16 分ごとに独立サイコロ →
+  `melodicCellIndex("funkClavi", …)` — clavi が反復するリフを刻む。glass /
+  harp の動機と同じ cell を踏むので層間で韻が揃う
+- **funk clavi (FromFrames 経路)**: claviStep anchor + 乱数 ±1 wobble →
+  wobble を cell 駆動に (phrase 内で同じ figure が回る)
+- **walking bass の neighbor passing tone**: 接近方向 (上/下) が per-event
+  コイン → phrase ごとに固定 (cell home slot から導出) — 同じ側からの反復
+  接近は「意図」として聴こえる
+- engine 不変 (fm-116 のまま)。fallback 付き (engine 未ロード時は旧 random)。
+  密度 gate / velocity / timing humanize は全て不変
+- `audio/genre-flavor.js?v=fm-73`、`sw.js hazama-fm-v327`
+- 試聴ポイント: funk pill で clavi が「同じ短いリフを繰り返してから変える」
+  こと、bass の装飾音の入り方が phrase 内で一貫すること
 
 ## v326 compact — Melodic Cell: 旋律面の「ランダムが過ぎる」を motif 化
 
