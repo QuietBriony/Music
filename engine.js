@@ -7522,7 +7522,7 @@ function startAmbientHarpLayer() {
   ambientHarpSchedId = Tone.Transport.scheduleRepeat((time) => {
     try {
       const ch = typeof randomHazeChord === "function" ? randomHazeChord() : ["C4","E4","G4"];
-      const note = ch[Math.floor(Math.random() * ch.length)];
+      const note = ch[melodicCellIndex("ambientHarp", ch.length)];
       sampler.triggerAttackRelease(note, "1n", time + Math.random() * 0.4, 0.30);
     } catch (e) {}
   }, "4m");
@@ -7672,8 +7672,8 @@ function startLofiPianoLayer() {
       const ch = typeof randomHazeChord === "function" ? randomHazeChord() : ["C4","E4","G4"];
       // 1 拍目: 全 chord notes
       sampler.triggerAttackRelease(ch, "2n", time + 0.02, 0.45);
-      // 2.5 拍目に anticipated comp (chord tone のうち 1 つだけ)
-      const accentNote = ch[Math.floor(Math.random() * ch.length)];
+      // 2.5 拍目に anticipated comp (chord tone のうち 1 つ — phrase motif cell が選ぶ)
+      const accentNote = ch[melodicCellIndex("lofiComp", ch.length)];
       sampler.triggerAttackRelease(accentNote, "4n", time + 2.5 * Tone.Time("4n").toSeconds(), 0.32);
     } catch (e) {}
   }, "2m"); // 2 小節ごと = lofi の落ち着いた呼吸
@@ -8296,6 +8296,54 @@ const MelodicDirectorState = {
   chordTurn: 0
 };
 
+// fm-116: Melodic Cell — phrase-locked motif sequencer.
+// The melodic accent layers (glass / harp / ambient harp / lofi comp) used to
+// pick every note uniformly at random, so the melodic surface had no memory —
+// each event was independent noodling ("ランダムが過ぎる"). One short cell per
+// melodic-director phrase now drives all of them: each layer steps through the
+// same normalized contour (0..1, mapped onto its own note pool), so the layers
+// rhyme with each other and a motif actually repeats. Every second pass swaps
+// the cell tail for a home-resolving answer value — repetition with variation,
+// question → answer. Per-event Math.random is gone from note CHOICE; density
+// gates and micro-timing humanize stay untouched. Fresh material still arrives
+// at every phrase turn (8-16 bars) via regenerateMelodicCell.
+const MELODIC_CELL_LENGTH = 4;
+const MelodicCellState = {
+  phrase: -1,
+  cell: [0.12, 0.45, 0.72, 0.3],
+  answerTail: 0.06,
+  counters: {}
+};
+
+function regenerateMelodicCell(phrase) {
+  // One-time randomness per phrase — a small random walk from the home
+  // region with slight downward gravity, so the cell has a contour
+  // instead of uniform scatter.
+  let v = 0.08 + Math.random() * 0.3;
+  const cell = [];
+  for (let i = 0; i < MELODIC_CELL_LENGTH; i++) {
+    cell.push(clampValue(v, 0, 1));
+    v += (Math.random() - 0.42) * 0.55;
+  }
+  MelodicCellState.phrase = phrase;
+  MelodicCellState.cell = cell;
+  MelodicCellState.answerTail = clampValue(cell[0] * 0.5, 0, 1);
+  MelodicCellState.counters = {};
+}
+
+function melodicCellIndex(layer, poolLength) {
+  const len = Math.max(1, Math.floor(poolLength) || 1);
+  const st = MelodicCellState;
+  const count = st.counters[layer] || 0;
+  st.counters[layer] = count + 1;
+  const slot = count % MELODIC_CELL_LENGTH;
+  const pass = Math.floor(count / MELODIC_CELL_LENGTH);
+  const value = (slot === MELODIC_CELL_LENGTH - 1 && pass % 2 === 1)
+    ? st.answerTail
+    : st.cell[slot];
+  return Math.min(len - 1, Math.floor(value * len));
+}
+
 function noteNameToMidi(note) {
   const match = String(note || "").match(/^([A-G][b#]?)(-?\d+)$/);
   if (!match) return null;
@@ -8370,6 +8418,7 @@ function advanceMelodicDirectorPhrase(context = {}) {
   MelodicDirectorState.contour = contour.id;
   MelodicDirectorState.contourDepth = clampValue(0.32 + creationNorm * 0.28 + observerNorm * 0.18 + energyNorm * 0.1 - voidNorm * 0.12, 0.2, 0.82);
   MelodicDirectorState.chordTurn = (phrase + keyIndex + contourIndex) % 4;
+  regenerateMelodicCell(phrase);
   rememberMotif(melodicDirectorNote("D5", stepIndex, 0, { role: "voice" }), {
     reply: melodicDirectorNote("F#5", stepIndex, 2, { role: "voice" }),
     shade: melodicDirectorNote("D4", stepIndex, 1, { role: "voice" }),
@@ -9633,7 +9682,7 @@ function maybeTriggerWorldAccents(time) {
 
   if (glass && (isDownbeat || isTurnaround || Math.random() < (0.014 + (ethereal * 0.024) + (TimbreState.glass * 0.026) + genre.idm * 0.012 + genre.techno * 0.008 - genre.ambient * 0.006) * character.glassScale)) {
     const notes = spectrum > 0.72 ? ["D6", "F#6", "G6", "E6"] : ["D5", "F#5", "G5", "E5", "D6"];
-    const note = notes[Math.floor(Math.random() * notes.length)];
+    const note = notes[melodicCellIndex("glass", notes.length)];
     const offset = clampValue(WorldState.micro, 0, 1) * 0.018 * Math.random();
     const glassVel = clampValue(0.02 + (TimbreState.air * 0.038) + (TimbreState.glass * 0.042) + (spectrum * 0.015), 0.02, 0.095);
     try {
@@ -9645,8 +9694,10 @@ function maybeTriggerWorldAccents(time) {
 
   if (glass && harpGate && Math.random() < (0.04 + (TimbreState.harp * 0.16)) * character.glassScale * organicScale) {
     const notes = HARP_NOTE_POOLS[EngineParams.mode] || HARP_NOTE_POOLS.ambient;
-    const first = notes[Math.floor(Math.random() * notes.length)];
-    const second = notes[(notes.indexOf(first) + 2 + Math.floor(Math.random() * 2)) % notes.length];
+    // Two consecutive cell steps — a coherent pair from the phrase motif
+    // instead of two independent dice rolls.
+    const first = notes[melodicCellIndex("harp", notes.length)];
+    const second = notes[melodicCellIndex("harp", notes.length)];
     const delay = 0.018 + (WorldState.micro * 0.02) + (Math.random() * 0.018);
     const vel = clampValue(0.022 + (TimbreState.harp * 0.048) + (TimbreState.warmth * 0.018), 0.024, 0.082);
     try {
@@ -10662,8 +10713,12 @@ function advancePatternVariationBar() {
 }
 
 function randomChordForMode() {
+  // fm-116: progression-based despite the legacy name (same conversion the
+  // haze pad got). Advances one chord per bar via GrooveState.cycle with the
+  // phrase/chordTurn rotating the start — the performance pads now walk a
+  // progression instead of re-rolling a random pool pick on every trigger.
   const chords = MODE_CHORDS[EngineParams.mode] || MODE_CHORDS.ambient;
-  const idx = (MelodicDirectorState.phrase + MelodicDirectorState.chordTurn + Math.floor(Math.random() * chords.length)) % chords.length;
+  const idx = (MelodicDirectorState.phrase + MelodicDirectorState.chordTurn + GrooveState.cycle) % chords.length;
   return melodicDirectorChord(chords[idx], idx);
 }
 

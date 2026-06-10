@@ -1,6 +1,33 @@
-# Band Room — Changelog (v65 → v325 compact)
+# Band Room — Changelog (v65 → v326 compact)
 
-Current compact release: v325.
+Current compact release: v326.
+
+---
+
+## v326 compact — Melodic Cell: 旋律面の「ランダムが過ぎる」を motif 化
+
+ユーザー指摘「music rig も Hazama FM の自動も、ちゃんと面白い音楽に。ランダムが
+過ぎる」。診断: director (key 進行 / contour / haze コード進行) は構造化済みだが、
+**旋律 accent 層 (glass / harp / ambient harp / lofi comp) が毎 event 独立の
+uniform random で note を選んでいた** — 反復ゼロ = motif として知覚できない。
+
+- engine.js `MelodicCellState` 新設 (`?v=fm-116`、MelodicDirector 隣の bounded 追加):
+  phrase (8-16 小節) ごとに 1 つの短い cell (4 slot、home 域から下方重力つき
+  random walk で生成) を作り、全旋律 accent 層が**同じ cell を順に踏む**。
+  - 層ごとの counter で cell を周回 → 同じ動機が繰り返し聴こえる
+  - 2 周目ごとに tail が home へ解決する answer 値に置換 — 反復+変化 (問い→答え)
+  - 正規化 0..1 を各層の pool 長へ写像 → glass / harp / comp が**互いに韻を踏む**
+- per-event の Math.random は note **選択**から全廃。密度 gate / micro-timing
+  humanize / phrase 転換の新鮮さ (director) は不変。
+- `randomChordForMode` も haze pad と同じ progression 化 (裸の random pool pick →
+  GrooveState.cycle で 1 小節 1 進行 + phrase/chordTurn で開始回転) — performance
+  pad の和声が「進行」になった。
+- 対象: Music Core Rig と Hazama FM 両方 (engine 共有層)。drum-frames / Band Room
+  は不変。
+- `engine.js?v=fm-116` (+ audio/music-*.js 同期 bump)、`sw.js hazama-fm-v326`。
+- 試聴ポイント: 同じ phrase 内で glass/harp の短い動機が**繰り返す**こと、phrase
+  が変わると新しい動機に入れ替わること、lofi の 2.5 拍 comp が毎回違う音を
+  サイコロらず motif をなぞること。
 
 ---
 
@@ -27,6 +54,7 @@ v324 パイロット(human-fly)の全曲展開。`scripts/transcribe-stem-lines.
 コードあり。gate は全曲対応の汎用 assertion へ(形状・時刻順・legacy 保持・5/7 曲以上)。
 
 アプリコードは v324 のまま(データのみ)。`band-room.js?v=br-197`、`hazama-fm-v325`。
+
 
 ---
 
