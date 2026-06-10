@@ -141,21 +141,32 @@ assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-84/, "Service worker should precache the current Band Room CSS marker");
 assert.match(sw, /band-room\.js\?v=br-197/, "Service worker should precache the current Band Room JS marker");
-// v324: transcribed-line playback (AI 再現 pilot — human-fly)
+// v324/v325: transcribed-line playback (pilot human-fly → all songs)
 assert.match(source, /function playTranscribedBar\(/, "AI agents should support transcribed-line playback (v324)");
 assert.match(source, /playTranscribedBar\(synthBass, "bass_line"/, "Bass agent should play the transcribed line when present");
 assert.match(source, /playTranscribedBar\(voiceSynth, "vocal_melody"/, "Voice agent should sing the transcribed melody when present");
-const humanFlyData = JSON.parse(readFileSync("presets/drum-frames-tabasco-human-fly.json", "utf8"));
-for (const key of ["bass_line", "vocal_melody"]) {
-  const line = humanFlyData[key];
-  assert.ok(line && Array.isArray(line.events) && line.events.length >= 100, `human-fly should carry a transcribed ${key} (v324 pilot)`);
-  assert.ok(line.events.every((ev) => Array.isArray(ev) && ev.length === 5 && ev[1] >= 0 && ev[1] < 16), `${key} events should be [bar,step16,durSteps,midi,vel] rows`);
-  for (let i = 1; i < line.events.length; i++) {
-    const a = line.events[i - 1], b = line.events[i];
-    assert.ok(b[0] > a[0] || (b[0] === a[0] && b[1] >= a[1]), `${key} events must be time-ordered for per-bar indexing`);
+const TRANSCRIBED_SONGS = ["tabasco", "hey", "i-got-a-feeling", "under-the-moon", "electric-sheep", "human-fly", "sister"];
+let bassLineSongs = 0;
+for (const songId of TRANSCRIBED_SONGS) {
+  const songData = JSON.parse(readFileSync(`presets/drum-frames-tabasco-${songId}.json`, "utf8"));
+  for (const key of ["bass_line", "vocal_melody"]) {
+    const line = songData[key];
+    if (!line) continue;  // thin transcriptions are skipped by the quality gate
+    assert.ok(Array.isArray(line.events) && line.events.length >= 30, `${songId} ${key} should carry real coverage when embedded`);
+    assert.ok(line.events.every((ev) => Array.isArray(ev) && ev.length === 5 && ev[1] >= 0 && ev[1] < 16), `${songId} ${key} events should be [bar,step16,durSteps,midi,vel] rows`);
+    for (let i = 1; i < line.events.length; i++) {
+      const a = line.events[i - 1], b = line.events[i];
+      assert.ok(b[0] > a[0] || (b[0] === a[0] && b[1] >= a[1]), `${songId} ${key} events must be time-ordered for per-bar indexing`);
+    }
+  }
+  if (songData.bass_line) {
+    bassLineSongs++;
+    assert.ok(songData.chord_progression_legacy, `${songId} replaced chords from bass — must keep the legacy progression for rollback`);
   }
 }
-assert.ok(humanFlyData.chord_progression_legacy, "human-fly should keep the legacy chord progression for rollback (v324)");
+assert.ok(bassLineSongs >= 5, `most songs should carry a transcribed bass line (got ${bassLineSongs}/7)`);
+const humanFlyData = JSON.parse(readFileSync("presets/drum-frames-tabasco-human-fly.json", "utf8"));
+assert.ok(humanFlyData.bass_line.events.length >= 100 && humanFlyData.vocal_melody.events.length >= 100, "human-fly pilot quality pin (>=100 notes each)");
 assert.match(html, /class="br-details br-sound-mix"/, "Sound controls should be consolidated into one sound mix details panel");
 assert.match(html, /id="br-sound-mix"/, "Band Room should expose the consolidated sound mix section");
 assert.doesNotMatch(html, /<summary>[^<]*vocal FX/i, "Vocal FX should not be a separate details panel");
