@@ -236,8 +236,8 @@ def extract_guitar_line(bpm: float, total_steps: int, bar_root_pc):
 
     out = []
     for _bar, evs in sorted(by_bar.items()):
-        if len(evs) > 10:
-            keep = sorted(evs, key=lambda e: (e[4] * 1.4 + min(e[2], 4.0) * 0.08), reverse=True)[:10]
+        if len(evs) > 12:  # v335: cap 10 -> 12 (8th chug + accents fit)
+            keep = sorted(evs, key=lambda e: (e[4] * 1.4 + min(e[2], 4.0) * 0.08), reverse=True)[:12]
             evs = sorted(keep, key=lambda e: e[1])
         out.extend(evs)
     return out

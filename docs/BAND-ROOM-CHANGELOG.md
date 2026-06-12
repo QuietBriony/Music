@@ -1,6 +1,23 @@
-# Band Room — Changelog (v65 → v334 compact)
+# Band Room — Changelog (v65 → v335 compact)
 
-Current compact release: v334.
+Current compact release: v335.
+
+---
+
+## v335 compact — ギター磨き: ダウン/アップ・ストローク + 密度12 + ドライブ増
+
+v334 リズムギターの磨き(生バンド感の続き):
+- **ダウン/アップ・ストローク感**: 速い刻み(1.2 steps 未満間隔)では交互に
+  アップストローク扱い — 僅かに弱く(×0.88)・僅かに遅れ(+4ms)・**弦を逆順に
+  スイープ**(high→low)。機械的に均一だった刻みに右手の往復が宿る。
+  間隔が空いたら新規ダウンストロークでリセット。
+- **密度もう一段**: 抽出キャップ 10→12 strums/bar(8分チャグ+アクセントが
+  収まる)、light runtime の行キャップ 5→6。全曲再抽出。
+- **ドライブ増(full path のみ)**: electric の distortion 0.18→0.26 /
+  wet 0.32→0.42 — クリーンなデモ・サンプルから「歪んだロックギター」へ。
+  light は据え置き(スマホのスピーカーと CPU)。
+
+`band-room.js?v=br-202`、`hazama-fm-v335`。CSS は br-84 のまま。
 
 ---
 
