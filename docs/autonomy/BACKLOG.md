@@ -101,6 +101,24 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - detail   : namima / chill / drum-floor を聴き比べ、次の tuning PR を 1 本だけ選ぶ
   人間レビュー。multi-repo 同時 tuning はしない。
 
+### BL-026 — chill / namima musicality PR の試聴判定
+- priority : P2
+- repo     : stack
+- scope    : verify
+- agent    : human
+- human-gate: yes
+- source   : 2026-06-13 横断磨き session（Music v326/v333 の教訓を sibling へ翻訳）
+- detail   : 2 本の runtime PR を聴いて merge / 戻し / knob 調整を判定する。
+  - chill#37 — harmonic spine: 長さ4 notes プールを barIndex%4 ロック
+    （bed/answer/anchor/bass が毎小節同じ和音）+ depth/bloom echo を PingPong 化。
+    検証: VM probe 316/316 整合、実ブラウザ 140/140、determinism 維持。
+    注意点: morning-light のみ slot2/3 が転回形固定（PR コメント参照、1 行追修正可）。
+  - namima#33 — 潮 (tide): 音名プールが ~3.7 分周期で 2 集合を行き来
+    （TIDE_PERIOD_MS / TIDE_HOME_RATIO の 1 行ノブ）+ dyad の wrap 飛び解消
+    + tail PingPong。検証: 3 gate PASS、実ブラウザで潮の交代を実観測、
+    31 dyad 全部協和。
+  - 両 repo とも AGENTS 契約上 runtime/音は人間レビュー必須のため無人 merge せず。
+
 ### BL-023 — ARM 版 `chouta-surface` の UR44 ドライバ安定化を調査
 - priority : P2
 - repo     : (stack / 非コード)
