@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-204-drum-line";
+  const BANDROOM_APP_VERSION = "br-205-reconstruct";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -205,6 +205,10 @@
   let loadedStemsSongId = null;
   let loadedStemsVariant = null;
   let currentMode = "stems";  // "stems" | "synth"
+  // v339: AI 再構築 — rebuild the groove in a reference style while keeping
+  // the song's identity (real vocal melody, real bass pitches, corrected
+  // chords). Applies in synth mode only; session-only (not persisted).
+  let reconstructStyle = "off";  // "off" | "lcd" | "sakanaction"
   const STEM_NAMES = ["vocals", "drums", "bass", "other"];
   const samplerAudioBufferCache = new Map();  // URL -> Promise<AudioBuffer|null>
   const runtimeScriptPromises = new Map();    // URL -> Promise<void>
@@ -5093,6 +5097,108 @@
       .map((n) => Tone.Frequency(n, "midi").toNote());
   }
 
+  // ---- v339: AI 再構築 (style reconstruction) -------------------
+  // Rebuild the groove in a reference style while keeping the song's
+  // identity: the vocal sings the real melody, the bass keeps the real
+  // pitches (re-rhythmed), guitar/chords follow the corrected progression.
+  // Per-bar energy follows the real drum performance's density, so verses
+  // still sit lower than choruses. All deterministic — no dice.
+  function reconstructRootMidi(ctx) {
+    const rows = transcribedNotesForBar("bass_line", state.barCount);
+    if (rows && rows.length) {
+      const weight = {};
+      rows.forEach((r) => {
+        const m = Number(r[3]) || 36;
+        weight[m] = (weight[m] || 0) + (Number(r[2]) || 1) * (Number(r[4]) || 0.5);
+      });
+      return Number(Object.entries(weight).sort((a, b) => b[1] - a[1])[0][0]);
+    }
+    const semi = ctx && ctx.chord ? chordToSemi(ctx.chord) : null;
+    return semi != null ? semi + 12 : 38;
+  }
+
+  function reconstructEnergy() {
+    const rows = transcribedNotesForBar("drum_line", state.barCount);
+    if (!rows) return 0.85;
+    return clamp(rows.length / 14, 0.55, 1);
+  }
+
+  function reconstructDrumBar(time, subTime) {
+    if (!drumKit) return false;
+    const e = reconstructEnergy();
+    const hit = (cls, st, vel) => {
+      const inst = drumKit[cls];
+      if (!inst) return;
+      const t = time + st * subTime;
+      const v = clamp(vel * e, 0.05, 1);
+      try {
+        if (cls === "kick") inst.triggerAttackRelease("C1", "16n", t, v);
+        else if (cls === "crash") inst.triggerAttackRelease("2n", t, v);
+        else inst.triggerAttackRelease("16n", t, v);
+      } catch (err) {}
+    };
+    [0, 4, 8, 12].forEach((st) => hit("kick", st, 0.94));   // four on the floor
+    [4, 12].forEach((st) => hit("snare", st, 0.9));         // backbeat
+    if (reconstructStyle === "lcd") {
+      [2, 6, 10, 14].forEach((st) => hit("hat", st, 0.6));  // disco offbeat hat
+      hit("hat", 15, 0.3);                                  // pickup tick
+    } else {
+      for (let st = 0; st < 16; st += 2) hit("hat", st, st % 4 === 0 ? 0.5 : 0.34);  // straight 8th ride
+      hit("hat", 14, 0.62);                                 // open-ish lift
+    }
+    if (state.barCount % 8 === 0) hit("crash", 0, 0.5);
+    return true;
+  }
+
+  function reconstructBassBar(ctx, time) {
+    if (!synthBass) return false;
+    const root = reconstructRootMidi(ctx);
+    const e = reconstructEnergy();
+    const steps = reconstructStyle === "lcd"
+      ? [0, 2, 4, 6, 8, 10, 12, 14].map((st) => ({ st, m: (st === 6 || st === 14) ? root + 12 : root, v: st % 4 === 0 ? 0.9 : 0.62, d: 0.9 }))
+      : [0, 3, 4, 7, 8, 10, 12, 14].map((st, i) => ({ st, m: (st === 7 || st === 14) ? root + 12 : root, v: i % 2 === 0 ? 0.85 : 0.6, d: 0.8 }));
+    steps.forEach(({ st, m, v, d }) => {
+      const note = Tone.Frequency(m, "midi").toNote();
+      try { synthBass.triggerAttackRelease(note, d * ctx.subTime, time + st * ctx.subTime, clamp(v * e, 0.16, 1)); } catch (err) {}
+    });
+    return true;
+  }
+
+  function reconstructGuitarBar(ctx, time) {
+    if (!guitarSynth) return false;
+    let root = reconstructRootMidi(ctx);
+    while (root < 48) root += 12;
+    const e = reconstructEnergy();
+    const strums = reconstructStyle === "lcd"
+      ? [2, 6, 10, 14].map((st) => ({ st, v: 0.58, d: 0.55 }))  // disco skank
+      : [{ st: 0, v: 0.46, d: 3 }, { st: 6, v: 0.5, d: 0.6 }, { st: 8, v: 0.44, d: 3 }, { st: 14, v: 0.5, d: 0.6 }];
+    strums.forEach(({ st, v, d }) => {
+      const voicing = guitarVoicingFromMidi(root, ctx.chord, false, 3);
+      voicing.forEach((n, i) => {
+        try { guitarSynth.triggerAttackRelease(n, d * ctx.subTime, time + st * ctx.subTime + i * 0.006, clamp(v * e * (1 - i * 0.06), 0.16, 1)); } catch (err) {}
+      });
+    });
+    return true;
+  }
+
+  function reconstructChordBar(ctx, time) {
+    if (!chordSynth || !ctx.chord) return false;
+    const e = reconstructEnergy();
+    const tones = chordToNotes(ctx.chord, 4);
+    if (!tones.length) return false;
+    if (reconstructStyle === "lcd") {
+      [2, 10].forEach((st) => {  // house-ish stabs on the and-of-1 / and-of-3
+        try { chordSynth.triggerAttackRelease(tones, 0.75 * ctx.subTime, time + st * ctx.subTime + 0.004, clamp(0.5 * e, 0.16, 1)); } catch (err) {}
+      });
+    } else {
+      for (let st = 0; st < 16; st++) {  // sakanaction 16th synth arp
+        const n = tones[st % tones.length];
+        try { chordSynth.triggerAttackRelease(n, 0.9 * ctx.subTime, time + st * ctx.subTime, clamp((st % 4 === 0 ? 0.5 : 0.36) * e, 0.12, 1)); } catch (err) {}
+      }
+    }
+    return true;
+  }
+
   // v338: transcribed drum performance. Row format matches the other lines —
   // [bar, step(frac), durSteps, CLASS, vel] where CLASS indexes DRUM_CLASS
   // (not midi). The real recording carries its own fills, crash placement,
@@ -5102,6 +5208,8 @@
   const DRUM_CLASS = ["kick", "snare", "hat", "crash"];
   function playTranscribedDrumBar(time, subTime) {
     if (!drumKit) return false;
+    // v339: AI 再構築 takes over the kit entirely when a style is selected.
+    if (reconstructStyle !== "off") return reconstructDrumBar(time, subTime);
     const rows = rowsForLightTranscribedPlayback("drum_line", transcribedNotesForBar("drum_line", state.barCount));
     if (!rows.length) return false;
     const micScale = micFollowVelocityScale();
@@ -5121,6 +5229,8 @@
   }
 
   function playTranscribedGuitarBar(ctx, time) {
+    // v339: AI 再構築 replaces the strum performance with the style comp.
+    if (reconstructStyle !== "off") return reconstructGuitarBar(ctx, time);
     const rows = rowsForLightTranscribedPlayback("guitar_line", transcribedNotesForBar("guitar_line", state.barCount));
     if (!rows.length || !guitarSynth) return false;
     const isJazzy = isJazzyMode();
@@ -5166,6 +5276,8 @@
   }
 
   function triggerBassAgent(ctx, time) {
+    // v339: AI 再構築 re-rhythms the real pitches into the style's pulse.
+    if (reconstructStyle !== "off" && reconstructBassBar(ctx, time)) return;
     // v324: real line first — when this song has a transcribed bass line,
     // play it and skip the generative plan entirely.
     if (playTranscribedBar(synthBass, "bass_line", ctx, time)) return;
@@ -5323,6 +5435,8 @@
   }
 
   function triggerChordAgent(ctx, time) {
+    // v339: AI 再構築 swaps the pad for style comping (stabs / 16th arp).
+    if (reconstructStyle !== "off" && reconstructChordBar(ctx, time)) return;
     // v336: on transcribed songs the real guitar now plays the actual chords —
     // a full-level pad doubling the same voicings reads as mud. Duck the pad
     // to a supporting bed; songs without a transcribed guitar keep full level.
@@ -7599,6 +7713,26 @@
     // v92: profile now affects bass/chord/vocal in addition to drums.
     // Drum profile only applies when kitSource = "synth"; bass/chord/vocal
     // are always synth so they always rebuild on profile change.
+    // v339: AI 再構築 style selector. Synth-mode only (stems untouched);
+    // session-only by design — reload returns to the faithful AI 再現.
+    // Picking a style also pulls the matching kit profile so the drum
+    // voices match the groove (lcd → lcd-motorik, sakanaction → sakanaction).
+    const reconstructSel = $("br-reconstruct-style");
+    if (reconstructSel) {
+      reconstructSel.addEventListener("change", () => {
+        reconstructStyle = reconstructSel.value === "lcd" || reconstructSel.value === "sakanaction"
+          ? reconstructSel.value
+          : "off";
+        const profileByStyle = { lcd: "lcd-motorik", sakanaction: "sakanaction" };
+        const linked = profileByStyle[reconstructStyle];
+        const psel = $("br-kit-profile-select");
+        if (linked && psel && psel.value !== linked) {
+          psel.value = linked;
+          psel.dispatchEvent(new Event("change"));
+        }
+      });
+    }
+
     const profileSel = $("br-kit-profile-select");
     if (profileSel) {
       profileSel.value = state.kitProfile || "default";
