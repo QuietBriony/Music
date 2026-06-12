@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-203-double-track", "Band Room should expose the current double-track version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-204-drum-line", "Band Room should expose the current drum-line version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -134,13 +134,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-84/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-203/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-204/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-84/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-203/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-204/, "Service worker should precache the current Band Room JS marker");
 // v324/v325: transcribed-line playback (pilot human-fly → all songs)
 assert.match(source, /function playTranscribedBar\(/, "AI agents should support transcribed-line playback (v324)");
 assert.match(source, /playTranscribedBar\(synthBass, "bass_line"/, "Bass agent should play the transcribed line when present");
@@ -157,7 +157,7 @@ let guitarLineSongs = 0;
 let guitarEvents = [];
 for (const songId of TRANSCRIBED_SONGS) {
   const songData = JSON.parse(readFileSync(`presets/drum-frames-tabasco-${songId}.json`, "utf8"));
-  for (const key of ["bass_line", "vocal_melody", "guitar_line"]) {
+  for (const key of ["bass_line", "vocal_melody", "guitar_line", "drum_line"]) {
     const line = songData[key];
     if (!line) continue;  // thin transcriptions are skipped by the quality gate
     assert.ok(Array.isArray(line.events) && line.events.length >= 30, `${songId} ${key} should carry real coverage when embedded`);
@@ -443,6 +443,9 @@ assert.match(source, /restartSynthTransportSchedule\(reason\)/, "Band Room shoul
 assert.match(source, /guitarBus = new Tone\.Gain\(aiLightRuntimeEnabled\(\) \? 0\.88 : 0\.74\)/, "AI guitar bus should compensate the v336 double-track level (light keeps v318)");
 assert.match(source, /const guitarHaas = new Tone\.Delay\(0\.013\)/, "Full runtime should double-track the guitar via a Haas-delayed right take (v336)");
 assert.match(source, /padDuck = hasTranscribedLine\("guitar_line"\) \? 0\.62 : 1/, "Chord pad should duck on transcribed-guitar songs (v336)");
+assert.match(source, /function playTranscribedDrumBar\(/, "Drums should support transcribed-performance playback (v338)");
+assert.match(source, /!playTranscribedDrumBar\(time, subTime\)/, "Pattern/fill drum machinery should stay silent when the real performance plays (v338)");
+assert.match(source, /lineKey === "drum_line"\) return 10/, "AI light runtime should cap transcribed drum hits per bar (v338)");
 assert.match(source, /crashAllowedThisBar/, "Band Room should gate crash density per bar (v290 thinning)");
 assert.match(source, /crashKeptKey/, "Band Room should keep only the most-downbeat crash per bar (v290)");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.52\)/, "AI drum bus should add v317 pressure without changing bass/guitar/chord");
