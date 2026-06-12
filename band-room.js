@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-200-light-ai-playback";
+  const BANDROOM_APP_VERSION = "br-201-guitar-rhythm";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -5082,18 +5082,30 @@
     const rows = rowsForLightTranscribedPlayback("guitar_line", transcribedNotesForBar("guitar_line", state.barCount));
     if (!rows.length || !guitarSynth) return false;
     const isJazzy = isJazzyMode();
-    const notesPerStrum = aiLightRuntimeEnabled()
-      ? 1
-      : clamp(Math.floor(9 / Math.max(1, rows.length)), 1, isJazzy ? 3 : 3);
+    const light = aiLightRuntimeEnabled();
+    // v334: a power chord needs root+5th MINIMUM — the old floor(9/rows)
+    // collapsed dense bars to single notes, which is exactly the しょぼい
+    // thin-mono-guitar sound. Voices stay bounded because the v334 data caps
+    // durations at 2 steps (chug gates on the next strum, voices release fast).
+    const notesPerStrum = light ? 2 : 3;
     rows.forEach((row) => {
       const t = time + (Number(row[1]) || 0) * ctx.subTime;
-      const rawDurSteps = Math.max(0.5, Number(row[2]) || 1);
-      const durSteps = aiLightRuntimeEnabled() ? Math.min(rawDurSteps, 1.6) : rawDurSteps;
+      const rawDurSteps = Math.max(0.3, Number(row[2]) || 1);
+      const durSteps = light ? Math.min(rawDurSteps, 1.6) : rawDurSteps;
       const durSec = Math.max(0.045, durSteps * ctx.subTime * 0.96);
-      const vel = clamp((Number(row[4]) || 0.55) * 0.96 + 0.02, 0.22, 0.96);
+      const vel = clamp((Number(row[4]) || 0.55) * 0.96 + 0.02, 0.18, 0.98);
       const voicing = guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum);
       if (!voicing.length) return;
-      try { guitarSynth.triggerAttackRelease(voicing, durSec, t, vel); } catch (e) {}
+      // v334: strum stagger — a real downstroke hits low→high strings ~5-8ms
+      // apart; simultaneous PolySynth notes read as an organ stab. Light
+      // runtime keeps the single batched call (CPU).
+      if (light) {
+        try { guitarSynth.triggerAttackRelease(voicing, durSec, t, vel); } catch (e) {}
+      } else {
+        voicing.forEach((note, i) => {
+          try { guitarSynth.triggerAttackRelease(note, durSec, t + i * 0.007, vel * (1 - i * 0.06)); } catch (e) {}
+        });
+      }
     });
     return true;
   }
