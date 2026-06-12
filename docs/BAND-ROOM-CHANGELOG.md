@@ -1,6 +1,25 @@
-# Band Room — Changelog (v65 → v340 compact)
+# Band Room — Changelog (v65 → v341 compact)
 
-Current compact release: v340.
+Current compact release: v341.
+
+---
+
+## v341 compact — 再構築マトリックス: パート別×スタイル別
+
+ユーザー「マトリックスみたいに組み合わせて遊びたい」。v339 の全体スイッチを
+**パート別**に分解 — drums / bass / guitar / chords それぞれに
+忠実(=実演奏の転写) / LCD風 / サカナ風 を個別指定。**3^4 = 81 通り**の編成
+(「ドラムだけ LCD、ベースは本人、コードはサカナのアルペジオ」等)。
+
+- 内部: `reconstructStyle`(全体) → `reconstructParts` マップ +
+  `reconstructStyleFor(part)`。生成関数は style 引数化。各フックは自パートの
+  スタイルだけ参照(ボーカルメロは常に実転写=曲の顔)。
+- UI: sound-mix パネルに **「🧪 再構築マトリックス」**(4セレクトのグリッド)。
+  モード行の 🧪再構築 は**全パート一括**ショートカットとして継続(変更すると
+  4セレクトも同期)。kit profile は **drums パートのスタイル**に連動。
+- セッション内のみ(リロードで全パート忠実へ)。原音モードは無関係。
+
+`band-room.js?v=br-206`、`band-room.css?v=br-86`、`hazama-fm-v341`。
 
 ---
 
