@@ -1,6 +1,30 @@
-# Band Room — Changelog (v65 → v342 compact)
+# Band Room — Changelog (v65 → v343 compact)
 
-Current compact release: v342.
+Current compact release: v343.
+
+---
+
+## v343 compact — 再構築の「しばらくすると激重→無音」を修正
+
+ユーザー報告「AI再現再構築、しばらくなったら激重でならなくなる」。原因は
+**v241 で学んだ freeze 予算の再違反**(v241: ギター8ストローク/小節の
+PolySynth 連打が freeze の原因 → 2発に間引いた前例):
+- v339 再構築の LCD ギターが **個別スタガー発音で 12 トリガー/小節**
+- サカナ arp が **16 トリガー/小節**(chordSynth maxPolyphony **10** に対し
+  60% 超過 — Tone が毎回 voice drop 警告を吐き、コンソール洪水 + voice churn が
+  蓄積 → 数分で激重 → 無音)
+
+修正:
+- **ギター再構築をバッチ発音**: ストロークごとに 1 コール(和音配列で渡す)
+  — 12 → **4 コール/小節**。light は 2 音 voicing。
+- **サカナ arp を 8 分**(16 → **8 トリガー/小節**、gate 1.2 step)— budget 内で
+  キラキラは維持。
+- **防御機構**: 2.5 秒の playback health watchdog に `checkPolyVoicePressure`
+  を追加 — guitar/chord PolySynth の activeVoices が 16 を超えたら
+  `releaseAll` で強制掃除(再構築は全て短ゲートなので可聴影響なし)。
+  原因が他にあっても無音スパイラルには入らない保険。
+
+`band-room.js?v=br-208`、`hazama-fm-v343`。CSS は br-86 のまま。
 
 ---
 
