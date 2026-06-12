@@ -7253,6 +7253,42 @@ const NullZoneState = {
   }
 })();
 
+// fm-118: the Null Zone is a MUSICAL event, not just a mastering automation
+// ("すべてがつながって"). On window entry a deep sub swell rises in the
+// CURRENT melodic key (1.4s attack — the「ぶっとく立ち上がる」moment is
+// guaranteed even when the bass content happens to be sparse), and the
+// melodic accent layers step back (maybeTriggerWorldAccents thins by
+// NULL_ZONE_ACCENT_DUCK) so the low pressure owns the room.
+let nullZoneSub = null;
+try {
+  nullZoneSub = new Tone.Synth({
+    oscillator: { type: "sine" },
+    envelope: { attack: 1.4, decay: 0.6, sustain: 0.7, release: 3.5 },
+    volume: -10
+  });
+  nullZoneSub.connect(masterGain); // passes through the field's mono-low
+} catch (error) {
+  console.warn("[Music] null-zone sub unavailable:", error);
+}
+const NULL_ZONE_ACCENT_DUCK = 0.45;
+
+function nullZoneAccentScale() {
+  return NullZoneState.active ? NULL_ZONE_ACCENT_DUCK : 1;
+}
+
+function triggerNullZoneSwell() {
+  if (!nullZoneSub) return;
+  try {
+    // A1 (55Hz) transposed into the current melodic-director key — the
+    // swell belongs to the harmony instead of being a fixed drone.
+    let note = "A1";
+    if (typeof MelodicDirectorState !== "undefined" && typeof transposeNoteName === "function") {
+      note = transposeNoteName("A1", MelodicDirectorState.keyShift || 0);
+    }
+    nullZoneSub.triggerAttackRelease(note, 6, Tone.now() + 0.05, 0.5);
+  } catch (error) {}
+}
+
 function advanceNullZoneField() {
   if (!NullZoneState.supported || !NullZoneState.nodes) return;
   const cycle = GrooveState.cycle || 0;
@@ -7269,6 +7305,7 @@ function advanceNullZoneField() {
       n.midGain.gain.rampTo(0.87, 2.2);    // ≈ −1.2 dB
       n.highWide.width.rampTo(0.95, 2.6);
       n.midWide.width.rampTo(0.68, 2.6);
+      triggerNullZoneSwell();
     } else {
       n.lowGain.gain.rampTo(1.0, 3.2);
       n.midGain.gain.rampTo(1.0, 3.2);
@@ -9768,7 +9805,7 @@ function maybeTriggerWorldAccents(time) {
   const sparseGate = pulse % (genre.techno > 0.34 ? 4 : spectrum > 0.72 ? 6 : 8) === 0;
   const harpGate = pulse % (genre.techno > 0.34 ? 12 : spectrum > 0.72 ? 10 : 8) === 4;
 
-  if (texture && sparseGate && Math.random() < (0.026 + (spectrum * 0.035) + (TimbreState.grit * 0.035) + genre.techno * 0.018 + genre.idm * 0.01 - genre.ambient * 0.012) * character.textureScale * dustScale) {
+  if (texture && sparseGate && Math.random() < (0.026 + (spectrum * 0.035) + (TimbreState.grit * 0.035) + genre.techno * 0.018 + genre.idm * 0.01 - genre.ambient * 0.012) * character.textureScale * dustScale * nullZoneAccentScale()) {
     const textureVel = clampValue(0.018 + (spectrum * 0.04) + (TimbreState.fracture * 0.04) + ((dustScale - 1) * 0.012) + genre.techno * 0.012, 0.018, 0.098);
     try {
       texture.triggerAttackRelease("64n", time, textureVel);
@@ -9777,7 +9814,7 @@ function maybeTriggerWorldAccents(time) {
     }
   }
 
-  if (glass && (isDownbeat || isTurnaround || Math.random() < (0.014 + (ethereal * 0.024) + (TimbreState.glass * 0.026) + genre.idm * 0.012 + genre.techno * 0.008 - genre.ambient * 0.006) * character.glassScale)) {
+  if (glass && (isDownbeat || isTurnaround || Math.random() < (0.014 + (ethereal * 0.024) + (TimbreState.glass * 0.026) + genre.idm * 0.012 + genre.techno * 0.008 - genre.ambient * 0.006) * character.glassScale * nullZoneAccentScale())) {
     const notes = spectrum > 0.72 ? ["D6", "F#6", "G6", "E6"] : ["D5", "F#5", "G5", "E5", "D6"];
     const note = notes[melodicCellIndex("glass", notes.length)];
     const offset = clampValue(WorldState.micro, 0, 1) * 0.018 * Math.random();
@@ -9789,7 +9826,7 @@ function maybeTriggerWorldAccents(time) {
     }
   }
 
-  if (glass && harpGate && Math.random() < (0.04 + (TimbreState.harp * 0.16)) * character.glassScale * organicScale) {
+  if (glass && harpGate && Math.random() < (0.04 + (TimbreState.harp * 0.16)) * character.glassScale * organicScale * nullZoneAccentScale()) {
     const notes = HARP_NOTE_POOLS[EngineParams.mode] || HARP_NOTE_POOLS.ambient;
     // Two consecutive cell steps — a coherent pair from the phrase motif
     // instead of two independent dice rolls.
@@ -9807,7 +9844,7 @@ function maybeTriggerWorldAccents(time) {
     }
   }
 
-  if (hat && spectrum > 0.62 && (pulse % 8 === 6 || (genre.techno > 0.36 && pulse % 4 === 2)) && Math.random() < (0.052 + (TimbreState.fracture * 0.13) + genre.techno * 0.07) * (0.68 + pressureColor * 0.46)) {
+  if (hat && spectrum > 0.62 && (pulse % 8 === 6 || (genre.techno > 0.36 && pulse % 4 === 2)) && Math.random() < (0.052 + (TimbreState.fracture * 0.13) + genre.techno * 0.07) * (0.68 + pressureColor * 0.46) * nullZoneAccentScale()) {
     try {
       hat.triggerAttackRelease("64n", time + 0.032, clampValue(0.045 + (TimbreState.grit * 0.06), 0.035, 0.11));
     } catch (error) {

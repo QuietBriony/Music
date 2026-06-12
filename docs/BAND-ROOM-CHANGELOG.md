@@ -1,6 +1,25 @@
-# Band Room — Changelog (v65 → v336 compact)
+# Band Room — Changelog (v65 → v337 compact)
 
-Current compact release: v336.
+Current compact release: v337.
+
+---
+
+## v337 compact — Null Zone を「音楽的な出来事」に接続 (すべてがつながって)
+
+v333 の Null Zone 窓は master 自動化のみで、音楽の層が窓を知らなかった —
+疎な場面では窓が無音で通り過ぎることすらあった。「すべてがつながって」へ:
+
+- **窓の入口で sub swell** (`?v=fm-118`): 現在の melodic-director キーに移調した
+  A1 (55Hz) が 1.4s attack で立ち上がる — 「低音がぶっとく立ち上がる」瞬間を
+  bass content の有無に依らず保証。和声に属する音なのでドローンではなく
+  「その曲の出来事」として鳴る。release 3.5s で場に溶ける。専用 sine synth →
+  masterGain (field の mono-low を通る)。
+- **窓の間、accent 層が身を引く**: maybeTriggerWorldAccents の glass / harp /
+  texture / hat-fracture 確率を ×0.45 — 低音圧が主役の数小節を全員が空ける。
+  downbeat / turnaround の構造アンカーは維持。
+- `engine.js?v=fm-118` (+ audio/music-*.js 同期)、`sw.js hazama-fm-v337`。
+- 試聴ポイント: 窓の入りで深い一音が「立ち上がって」場を支配し、キラキラ系が
+  すっと引き、窓明けに戻ってくるか。swell の音程がその時のキーに合っているか。
 
 ---
 
