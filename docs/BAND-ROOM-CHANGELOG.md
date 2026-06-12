@@ -1,6 +1,22 @@
-# Band Room — Changelog (v65 → v335 compact)
+# Band Room — Changelog (v65 → v336 compact)
 
-Current compact release: v335.
+Current compact release: v336.
+
+---
+
+## v336 compact — ギターをダブルトラック(L/R の壁)+ コードパッド整理
+
+生バンド感の続き(v334 リズム転写 → v335 ストローク感 → v336 壁の左右):
+- **ダブルトラック**(full runtime のみ): 同一演奏を 2 テイクに —
+  ドライを左(pan -0.42)、**13ms Haas 遅延**コピーを右(+0.42)。第二サンプラー
+  無しでロックの L/R リズムギターの壁。倍化で約 +2.5dB 上がる分、guitarBus を
+  0.88 → 0.74 に補正(広がるが大きくならない)。light runtime は従来の
+  単発 -0.18 配置のまま(CPU・モノラルスピーカー)。
+- **コードパッドのダック**: 転写ギターが実コードを刻むようになったので、同じ
+  ボイシングを重ねるパッドは濁りの素 — `guitar_line` を持つ曲ではパッドの
+  velocity を ×0.62 に(支えのベッドへ後退)。転写の無い曲はフルレベル維持。
+
+`band-room.js?v=br-203`、`hazama-fm-v336`。CSS は br-84 のまま。
 
 ---
 
