@@ -1572,6 +1572,49 @@
         "Aphex Twin (cold-space) と並べて ambient pill の 3 sub-style を網羅できる",
         "namima には rejected (heavy low-end pressure + dark saturation = public-friendly 違反)、Music の ambient pill 専用"
       ]
+    },
+    {
+      "artist": "A Strange Wedding",
+      "title": "The Null Zone",
+      "album": "",
+      "genre_hint": [
+        "ambient",
+        "psy-dub",
+        "idm",
+        "drone-techno"
+      ],
+      "taste_notes": [
+        "低音がモノラルでぶっとく立ち上がり、良質な低音圧に『囲まれる』瞬間がある",
+        "中高域は音響的にひろーく開いて、いろいろなディテールが左右に住んでいる",
+        "全要素がつながって一つの場になる — Aphex Twin 的な包み感"
+      ],
+      "production_translation": {
+        "timbre": [
+          "低域 (<160Hz) はモノ収束で太く、センター圧として鳴らす",
+          "中高域は薄いレイヤーを複数、左右に分散させて配置する"
+        ],
+        "rhythm": [
+          "低音圧の窓は数小節単位の『時』として訪れる — 常時ではなく周期的",
+          "窓の立ち上がりは 2 秒前後のスウェルで、急峻にしない"
+        ],
+        "space": [
+          "low=mono / mid=従来幅 / high=最大幅 の帯域別ステレオ設計",
+          "包まれ感は残響よりも帯域の幅コントラスト (狭い低音 × 広い高域) で作る"
+        ],
+        "structure": [
+          "48 小節前後の周期で 6 小節程度の null-zone 窓 — 囲まれてから戻る",
+          "窓の間は mids を一歩引かせ、低音と空間のコントラストを立てる"
+        ],
+        "gesture": [
+          "立ち上がる低音は『出来事』として知覚させる (ランプで膨らむ)",
+          "戻りは長め (3 秒+) のフェードで、場が消えるのではなく引いていく"
+        ]
+      },
+      "implementation_notes": [
+        "engine.js master field (fm-117): MultibandSplit 160/2400 + low Tone.Mono + mid/high StereoWidener",
+        "NullZoneState: periodBars 48 / windowBars 6 / warmup 24、advanceGrooveStructure から駆動",
+        "Music Core Rig と Hazama FM の共有マスター層に実装 — pill 非依存の場の演出"
+      ]
     }
   ]
 }

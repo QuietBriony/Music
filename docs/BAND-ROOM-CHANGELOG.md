@@ -1,6 +1,34 @@
-# Band Room — Changelog (v65 → v332 compact)
+# Band Room — Changelog (v65 → v333 compact)
 
-Current compact release: v332.
+Current compact release: v333.
+
+---
+
+## v333 compact — Master Field: The Null Zone (低音モノ圧 × 中高域ワイド)
+
+ユーザー方向「A Strange Wedding 'The Null Zone' みたいに低音がモノでぶっとく
+立ち上がり良質な低音圧に囲まれる『時』が欲しい / 中高域はひろーく、いろいろ
+聞こえる / 全部つながって Aphex 的包み感」。
+
+診断: fm-55 の master StereoWidener(0.62) が**低域まで全帯域を広げていた** —
+低音のセンター圧が左右に滲む(ぶっとさの真逆)。
+
+- engine.js master FIELD 化 (`?v=fm-117`、fm-55 ブロックの進化):
+  - **low <160Hz → Tone.Mono** — 低音は常時モノで太く、圧として中央に
+  - mid 160-2400Hz → Widener 0.55 (従来並み)
+  - **high >2400Hz → Widener 0.85** — ひろーっく、ディテールが左右に住む
+- **NullZoneState** — 周期的な「囲まれる」窓: 48 小節周期で 6 小節、lows
+  +2dB スウェル (2.2s ramp) / mids −1.2dB / highs 幅 0.95 全開 → 3.2s で
+  ゆっくり戻る。warmup 24 小節は発動しない。advanceGrooveStructure の
+  HumanGrooveGovernor と同じ縫い目から 1 小節ごと駆動。
+- `window.NullZoneField.state` で診断可。Tone の帯域ノード不在環境では
+  fm-55 経路へフォールバック (無音化リスク無し)。
+- references/apple-music-refs.json に **A Strange Wedding — The Null Zone**
+  を北極星として追加 (mono-low / wide-high / 周期窓の翻訳付き、36 refs)。
+- 対象: Music Core Rig + Hazama FM 共有マスター。Band Room 不変。
+- `engine.js?v=fm-117` (+ audio/music-*.js 同期)、`sw.js hazama-fm-v333`。
+- 試聴ポイント: 低音が以前よりセンターに「密」か / シンセの高域が左右に
+  広いか / 数分聴くと低音に包まれる数小節の「時」が訪れ、ゆっくり引くか。
 
 ---
 
