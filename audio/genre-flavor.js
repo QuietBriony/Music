@@ -317,12 +317,12 @@
       kit.snare.triggerAttackRelease("16n", safeEventTime(time), 0.46);
     }, "2n", "4n"));
 
-    return addAcidPulse({
+    return applyProductionGovernor(addAcidPulse({
       gain,
       synths: Object.values(kit),
       scheduledIds: ids,
       source: "default-machine"
-    }, { source: "default-machine-acid" });
+    }, { source: "default-machine-acid" }), "techno");
   }
 
   function makeMachineKick(gain) {
@@ -1061,6 +1061,259 @@
     return layer;
   }
 
+  const MONO_LOW_PROFILES = {
+    ambient: { gain: 0.12, volume: -38, chance: 0.18, velocity: 0.22, cutoff: 105, drive: 0.010, driveWet: 0.10, duration: "1m", interval: "2m", roots: ["D1", "A0", "F1", "C1"] },
+    techno:  { gain: 0.42, volume: -28, chance: 0.88, velocity: 0.40, cutoff: 118, drive: 0.018, driveWet: 0.16, duration: "2n", interval: "1m", roots: ["D1", "A0", "C1", "F1"] },
+    lofi:    { gain: 0.24, volume: -34, chance: 0.38, velocity: 0.27, cutoff: 112, drive: 0.012, driveWet: 0.12, duration: "2n", interval: "1m", roots: ["D1", "A0", "G0", "C1"] },
+    jazz:    { gain: 0.18, volume: -36, chance: 0.30, velocity: 0.23, cutoff: 116, drive: 0.010, driveWet: 0.08, duration: "2n", interval: "1m", roots: ["D1", "F1", "A0", "C1"] },
+    funk:    { gain: 0.36, volume: -30, chance: 0.76, velocity: 0.36, cutoff: 122, drive: 0.018, driveWet: 0.15, duration: "2n", interval: "1m", roots: ["D1", "A0", "D1", "C1"] },
+    piano:   { gain: 0.10, volume: -40, chance: 0.14, velocity: 0.18, cutoff: 100, drive: 0.006, driveWet: 0.06, duration: "1m", interval: "2m", roots: ["D1", "A0", "F1", "C1"] }
+  };
+
+  const ORBITAL_AIR_PROFILES = {
+    ambient: { gain: 0.24, chance: 0.54, hp: 880,  width: 0.86, room: 4.8, roomWet: 0.42, delay: "4n.", feedback: 0.34, delayWet: 0.34, interval: "1m", glassVol: -31, metalVol: -42, airVol: -44, rateA: 0.035, rateB: 0.057, notes: ["A4", "C5", "D5", "F5", "G5"] },
+    techno:  { gain: 0.34, chance: 0.62, hp: 1180, width: 0.92, room: 2.6, roomWet: 0.30, delay: "8n.", feedback: 0.38, delayWet: 0.38, interval: "2n", glassVol: -28, metalVol: -38, airVol: -42, rateA: 0.085, rateB: 0.133, notes: ["D4", "F4", "A4", "C5", "E5", "G5"] },
+    lofi:    { gain: 0.22, chance: 0.42, hp: 940,  width: 0.74, room: 3.2, roomWet: 0.34, delay: "8n.", feedback: 0.28, delayWet: 0.30, interval: "1m", glassVol: -34, metalVol: -46, airVol: -45, rateA: 0.040, rateB: 0.071, notes: ["F4", "A4", "C5", "D5", "G5"] },
+    jazz:    { gain: 0.18, chance: 0.36, hp: 1020, width: 0.68, room: 2.8, roomWet: 0.30, delay: "4n.", feedback: 0.22, delayWet: 0.24, interval: "1m", glassVol: -36, metalVol: -48, airVol: -46, rateA: 0.032, rateB: 0.052, notes: ["F4", "A4", "C5", "E5", "G5"] },
+    funk:    { gain: 0.28, chance: 0.50, hp: 1080, width: 0.84, room: 2.4, roomWet: 0.28, delay: "8n.", feedback: 0.30, delayWet: 0.34, interval: "2n", glassVol: -31, metalVol: -43, airVol: -43, rateA: 0.065, rateB: 0.111, notes: ["D4", "F4", "A4", "C5", "D5", "F5"] },
+    piano:   { gain: 0.16, chance: 0.26, hp: 1040, width: 0.72, room: 4.2, roomWet: 0.38, delay: "4n.", feedback: 0.24, delayWet: 0.24, interval: "1m", glassVol: -38, metalVol: -50, airVol: -48, rateA: 0.025, rateB: 0.041, notes: ["A4", "C5", "E5", "G5", "B5"] }
+  };
+
+  const NULL_ZONE_PROFILES = {
+    ambient: { gain: 0.18, chance: 0.38, hp: 1250, width: 0.96, room: 5.4, roomWet: 0.42, delay: "4n.", feedback: 0.40, delayWet: 0.38, interval: "2n", notchLo: 900,  notchHi: 4200, q: 7.5, fold: 0.010, foldWet: 0.10, rateA: 0.071, rateB: 0.113, ratchet: 0.22, glassVol: -35, chirpVol: -43, dustVol: -48, notes: ["D5", "F5", "A5", "C6", "E6"] },
+    techno:  { gain: 0.32, chance: 0.58, hp: 1500, width: 0.98, room: 2.8, roomWet: 0.30, delay: "16n.", feedback: 0.46, delayWet: 0.42, interval: "8n", notchLo: 1100, notchHi: 5200, q: 9.0, fold: 0.020, foldWet: 0.16, rateA: 0.173, rateB: 0.277, ratchet: 0.46, glassVol: -31, chirpVol: -38, dustVol: -46, notes: ["D5", "F5", "G#5", "A5", "C6", "D6"] },
+    lofi:    { gain: 0.16, chance: 0.30, hp: 1320, width: 0.82, room: 3.6, roomWet: 0.34, delay: "8n.", feedback: 0.34, delayWet: 0.30, interval: "2n", notchLo: 850,  notchHi: 3600, q: 6.0, fold: 0.012, foldWet: 0.12, rateA: 0.052, rateB: 0.083, ratchet: 0.18, glassVol: -38, chirpVol: -47, dustVol: -47, notes: ["F5", "G5", "A5", "C6", "D6"] },
+    jazz:    { gain: 0.13, chance: 0.24, hp: 1400, width: 0.76, room: 2.8, roomWet: 0.28, delay: "8n.", feedback: 0.26, delayWet: 0.24, interval: "1m", notchLo: 950,  notchHi: 3400, q: 5.5, fold: 0.008, foldWet: 0.08, rateA: 0.041, rateB: 0.067, ratchet: 0.10, glassVol: -40, chirpVol: -50, dustVol: -49, notes: ["A4", "C5", "E5", "G5", "B5"] },
+    funk:    { gain: 0.24, chance: 0.42, hp: 1450, width: 0.92, room: 2.5, roomWet: 0.28, delay: "16n.", feedback: 0.36, delayWet: 0.36, interval: "8n", notchLo: 1000, notchHi: 4600, q: 8.0, fold: 0.016, foldWet: 0.14, rateA: 0.111, rateB: 0.181, ratchet: 0.34, glassVol: -34, chirpVol: -42, dustVol: -46, notes: ["D5", "F5", "A5", "C6", "D6"] },
+    piano:   { gain: 0.12, chance: 0.20, hp: 1350, width: 0.80, room: 4.6, roomWet: 0.36, delay: "4n.", feedback: 0.24, delayWet: 0.22, interval: "1m", notchLo: 900,  notchHi: 3200, q: 5.0, fold: 0.006, foldWet: 0.06, rateA: 0.027, rateB: 0.043, ratchet: 0.08, glassVol: -42, chirpVol: -52, dustVol: -51, notes: ["C5", "E5", "G5", "A5", "D6"] }
+  };
+
+  function addMonoLowAnchor(layer, pill) {
+    if (!layer || !layer.gain || !Array.isArray(layer.scheduledIds) || !Array.isArray(layer.synths)) return layer;
+    const p = MONO_LOW_PROFILES[pill];
+    if (!p) return layer;
+    const out = new Tone.Gain(p.gain).connect(layer.gain);
+    const center = new Tone.Panner(0).connect(out);
+    const lp = new Tone.Filter({ frequency: p.cutoff, type: "lowpass", Q: 0.7 }).connect(center);
+    const sat = new Tone.Distortion({ distortion: p.drive, wet: p.driveWet, oversample: "2x" }).connect(lp);
+    const sub = new Tone.FMSynth({
+      harmonicity: 1,
+      modulationIndex: 0.45,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.008, decay: 0.34, sustain: 0.62, release: 0.42 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 0.004, decay: 0.16, sustain: 0.18, release: 0.28 },
+      volume: p.volume
+    }).connect(sat);
+    let bar = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const conversation = flavor?.conversation || null;
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (flavor?.dropBar || (movement && !layerActiveInMovement("subbass", movement))) {
+        bar++;
+        return;
+      }
+      const forcePhraseRoot = bar % 4 === 0;
+      const gateScale = conversation?.role === "space" ? 0.36
+        : conversation?.role === "recap" ? 0.62
+        : isBassConversation(conversation) ? 1.18
+        : 1;
+      if (!forcePhraseRoot && Math.random() > clamp(p.chance * gateScale, 0.05, 0.96)) {
+        bar++;
+        return;
+      }
+      const roots = p.roots || ["D1"];
+      const rawRoot = roots[bar % roots.length] || "D1";
+      const keyShift = flavor && flavor.keyShift || 0;
+      const note = transposeNote(rawRoot, keyShift);
+      const intensity = clamp(flavor?.groove?.intensity || 1.0, 0.68, 1.24);
+      const vel = clamp(p.velocity * intensity * (forcePhraseRoot ? 1.12 : 1), 0.08, 0.68);
+      try {
+        sub.triggerAttackRelease(note, p.duration, safeEventTime(time + 0.006), vel);
+      } catch (e) {}
+      bar++;
+    }, p.interval || "1m"));
+    layer.synths.push(sub, sat, lp, center, out);
+    layer.source = `${layer.source || "layer"}+mono-low`;
+    return layer;
+  }
+
+  function addOrbitalAirField(layer, pill) {
+    if (!layer || !layer.gain || !Array.isArray(layer.scheduledIds) || !Array.isArray(layer.synths)) return layer;
+    const p = ORBITAL_AIR_PROFILES[pill];
+    if (!p) return layer;
+    const field = new Tone.Gain(p.gain).connect(layer.gain);
+    const wide = new Tone.StereoWidener(p.width).connect(field);
+    const room = new Tone.Reverb({ decay: p.room, preDelay: 0.035, wet: p.roomWet }).connect(wide);
+    const delay = new Tone.PingPongDelay({ delayTime: p.delay, feedback: p.feedback, wet: p.delayWet }).connect(room);
+    const hp = new Tone.Filter({ frequency: p.hp, type: "highpass", Q: 0.55 }).connect(delay);
+    const panA = new Tone.AutoPanner({ frequency: p.rateA, depth: 0.86, wet: 1 }).connect(hp).start();
+    const panB = new Tone.AutoPanner({ frequency: p.rateB, depth: 0.92, wet: 1 }).connect(hp).start();
+    const glass = new Tone.FMSynth({
+      harmonicity: 1.5,
+      modulationIndex: 4.4,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.006, decay: 0.22, sustain: 0.08, release: 0.52 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 0.002, decay: 0.12, sustain: 0.04, release: 0.28 },
+      volume: p.glassVol
+    }).connect(panA);
+    const metal = new Tone.MetalSynth({
+      frequency: 260,
+      envelope: { attack: 0.002, decay: 0.18, release: 0.08 },
+      harmonicity: 3.2,
+      modulationIndex: 10,
+      resonance: 2600,
+      octaves: 1.2,
+      volume: p.metalVol
+    }).connect(panB);
+    const airFilter = new Tone.Filter({ frequency: 5600, type: "bandpass", Q: 1.7 }).connect(hp);
+    const air = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.006, decay: 0.18, sustain: 0, release: 0.08 },
+      volume: p.airVol
+    }).connect(airFilter);
+    let step = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const conversation = flavor?.conversation || null;
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && movement.name === "intro" && movement.bar < 4) {
+        step++;
+        return;
+      }
+      const spaceLift = conversation?.role === "space" ? 1.45
+        : conversation?.role === "lead-call" ? 1.22
+        : conversation?.role === "recap" ? 1.10
+        : 1;
+      const chance = clamp(p.chance * spaceLift - (flavor?.dropBar ? 0.22 : 0), 0.08, 0.92);
+      if (Math.random() < chance) {
+        const notes = p.notes || ["D5", "F5", "A5"];
+        const keyShift = flavor && flavor.keyShift || 0;
+        const baseIdx = (typeof melodicCellIndex === "function")
+          ? melodicCellIndex(`orbital-${pill}`, notes.length)
+          : step % notes.length;
+        const note = transposeNote(notes[baseIdx % notes.length], keyShift);
+        const t = safeEventTime(time + 0.012 + Math.random() * 0.035);
+        const velocity = clamp((0.16 + Math.random() * 0.10) * spaceLift, 0.05, 0.42);
+        try {
+          glass.triggerAttackRelease(note, conversation?.role === "space" ? "2n" : "8n", t, velocity);
+          if (Math.random() < 0.34 + (conversation?.role === "space" ? 0.22 : 0)) {
+            const overtone = transposeNote(notes[(baseIdx + 2) % notes.length], keyShift + 12);
+            glass.triggerAttackRelease(overtone, "16n", safeEventTime(t + 0.08 + Math.random() * 0.12), velocity * 0.62);
+          }
+          if (Math.random() < 0.26) metal.triggerAttackRelease("64n", safeEventTime(t + 0.02), velocity * 0.42);
+          if (Math.random() < (conversation?.role === "space" ? 0.52 : 0.24)) air.triggerAttackRelease("32n", safeEventTime(t + 0.018), velocity * 0.36);
+        } catch (e) {}
+      }
+      step++;
+    }, p.interval || "1m", "8n"));
+    layer.synths.push(field, wide, room, delay, hp, panA, panB, glass, metal, airFilter, air);
+    layer.source = `${layer.source || "layer"}+orbital-air`;
+    return layer;
+  }
+
+  function addNullZoneRefractions(layer, pill) {
+    if (!layer || !layer.gain || !Array.isArray(layer.scheduledIds) || !Array.isArray(layer.synths)) return layer;
+    const p = NULL_ZONE_PROFILES[pill];
+    if (!p) return layer;
+    const zone = new Tone.Gain(p.gain).connect(layer.gain);
+    const wide = new Tone.StereoWidener(p.width).connect(zone);
+    const room = new Tone.Reverb({ decay: p.room, preDelay: 0.02, wet: p.roomWet }).connect(wide);
+    const delay = new Tone.PingPongDelay({ delayTime: p.delay, feedback: p.feedback, wet: p.delayWet }).connect(room);
+    const notch = new Tone.Filter({ frequency: p.notchLo, type: "notch", Q: p.q }).connect(delay);
+    const hp = new Tone.Filter({ frequency: p.hp, type: "highpass", Q: 0.72 }).connect(notch);
+    const fold = new Tone.Distortion({ distortion: p.fold, wet: p.foldWet, oversample: "2x" }).connect(hp);
+    const panA = new Tone.AutoPanner({ frequency: p.rateA, depth: 0.98, wet: 1 }).connect(fold).start();
+    const panB = new Tone.AutoPanner({ frequency: p.rateB, depth: 0.96, wet: 1 }).connect(fold).start();
+    const glass = new Tone.FMSynth({
+      harmonicity: 1.333,
+      modulationIndex: 6.2,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.002, decay: 0.12, sustain: 0.025, release: 0.22 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 0.001, decay: 0.08, sustain: 0.02, release: 0.12 },
+      volume: p.glassVol
+    }).connect(panA);
+    const chirp = new Tone.FMSynth({
+      harmonicity: 2.01,
+      modulationIndex: 9.5,
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.001, decay: 0.055, sustain: 0, release: 0.055 },
+      modulation: { type: "square" },
+      modulationEnvelope: { attack: 0.001, decay: 0.035, sustain: 0, release: 0.035 },
+      volume: p.chirpVol
+    }).connect(panB);
+    const dustFilter = new Tone.Filter({ frequency: 4200, type: "bandpass", Q: 2.2 }).connect(fold);
+    const dust = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.035, sustain: 0, release: 0.018 },
+      volume: p.dustVol
+    }).connect(dustFilter);
+    let step = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      const flavor = (typeof window !== "undefined") ? window.HazamaFlavorState : null;
+      const conversation = flavor?.conversation || null;
+      const movement = flavor && flavor.movement
+        ? { name: flavor.movement, bar: flavor.movementBar, total: flavor.movementTotal } : null;
+      if (movement && movement.name === "intro" && movement.bar < 6) {
+        step++;
+        return;
+      }
+      const nullLift = conversation?.role === "space" ? 1.75
+        : conversation?.role === "lead-call" ? 1.28
+        : conversation?.role === "drum-comment" ? 1.18
+        : conversation?.role === "recap" ? 0.86
+        : 1;
+      const phraseGate = step % 16 === 7 || step % 16 === 13;
+      const chance = clamp(p.chance * nullLift + (phraseGate ? 0.12 : 0), 0.04, 0.88);
+      if (Math.random() >= chance) {
+        step++;
+        return;
+      }
+      const notes = p.notes || ["D5", "F5", "A5"];
+      const keyShift = flavor && flavor.keyShift || 0;
+      const baseIdx = (typeof melodicCellIndex === "function")
+        ? melodicCellIndex(`null-zone-${pill}`, notes.length)
+        : step % notes.length;
+      const note = transposeNote(notes[baseIdx % notes.length], keyShift);
+      const t = safeEventTime(time + 0.006 + Math.random() * 0.022);
+      const sweepStart = p.notchLo + Math.random() * (p.notchHi - p.notchLo) * 0.55;
+      const sweepEnd = p.notchHi - Math.random() * (p.notchHi - p.notchLo) * 0.45;
+      try {
+        notch.frequency.cancelScheduledValues(t);
+        notch.frequency.setValueAtTime(sweepStart, t);
+        notch.frequency.linearRampToValueAtTime(sweepEnd, t + 0.18 + Math.random() * 0.16);
+        const count = Math.random() < p.ratchet ? 2 + Math.floor(Math.random() * 3) : 1;
+        const gap = 0.018 + Math.random() * 0.018;
+        for (let i = 0; i < count; i++) {
+          const bitTime = safeEventTime(t + i * gap);
+          const bitNote = transposeNote(notes[(baseIdx + i) % notes.length], keyShift + (i % 2 ? 12 : 0));
+          const vel = clamp((0.12 + Math.random() * 0.08) * nullLift * (i === 0 ? 1 : 0.68), 0.04, 0.34);
+          glass.triggerAttackRelease(bitNote, i === 0 ? "16n" : "64n", bitTime, vel);
+          if (i > 0 || Math.random() < 0.38) chirp.triggerAttackRelease(bitNote, "128n", safeEventTime(bitTime + 0.006), vel * 0.62);
+        }
+        if (Math.random() < 0.34 * nullLift) dust.triggerAttackRelease("128n", safeEventTime(t + 0.012), 0.10 + Math.random() * 0.08);
+      } catch (e) {}
+      step++;
+    }, p.interval || "2n", "16n"));
+    layer.synths.push(zone, wide, room, delay, notch, hp, fold, panA, panB, glass, chirp, dustFilter, dust);
+    layer.source = `${layer.source || "layer"}+null-zone`;
+    return layer;
+  }
+
+  function addAcousticFunField(layer, pill) {
+    if (!layer || layer.acousticFunField) return layer;
+    layer.acousticFunField = true;
+    addMonoLowAnchor(layer, pill);
+    addOrbitalAirField(layer, pill);
+    addNullZoneRefractions(layer, pill);
+    return layer;
+  }
+
   // Public surface for the production aesthetic governor.
   // This is a labeling/no-op wrapper — the actual rdj/dangelo amounts are
   // baked into buildDrumsFromFrames options at construction. We keep this
@@ -1070,7 +1323,7 @@
     if (!layer) return null;
     const gov = governorFor(pill);
     layer.source = `${layer.source || "layer"}+gov(${pill}:rdj=${gov.rdj.toFixed(3)},da=${gov.dangelo.toFixed(2)})`;
-    return layer;
+    return addAcousticFunField(layer, pill);
   }
 
   function addAcidPulse(layer, options = {}) {
@@ -1790,7 +2043,7 @@
         console.warn("[GenreFlavor] lofi frames failed, fallback:", e);
       }
     }
-    return buildLofiDefault();
+    return applyProductionGovernor(addNujabesMemoryDots(buildLofiDefault()), "lofi");
   }
 
   // ---- JAZZ -----------------------------------------------------
@@ -2302,7 +2555,13 @@
         console.warn("[GenreFlavor] jazz frames failed, fallback:", e);
       }
     }
-    return buildJazzDefault();
+    return applyProductionGovernor(
+      addSoloLayer(
+        addSessionBreaks(addJazzComping(buildJazzDefault()), "jazz"),
+        "jazz"
+      ),
+      "jazz"
+    );
   }
 
   // ---- FUNK -----------------------------------------------------
@@ -2646,7 +2905,16 @@
         console.warn("[GenreFlavor] funk frames failed, fallback:", e);
       }
     }
-    return buildFunkDefault();
+    return applyProductionGovernor(
+      addSoloLayer(
+        addTapeSaturation(
+          addSessionBreaks(addFunkRubberBass(buildFunkDefault()), "funk"),
+          0.35
+        ),
+        "funk"
+      ),
+      "funk"
+    );
   }
 
   // ---- PIANO ----------------------------------------------------

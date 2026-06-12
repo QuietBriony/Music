@@ -1,6 +1,52 @@
-# Band Room — Changelog (v65 → v328 compact)
+# Band Room — Changelog (v65 → v331 compact)
 
-Current compact release: v328.
+Current compact release: v331.
+
+---
+
+## v331 compact - Hazama FM Null Zone refractions
+
+Hazama FM's acoustic-fun field now has a `null-zone` layer inspired by
+spatially strange IDM / Aphex-style ear play:
+
+- Keeps sub and kick pressure mono-centered through `mono-low`.
+- Adds high-passed notch sweeps, micro-ratchet FM flecks, and ping-pong
+  refractions above the bass so the mid/high field feels like it is moving
+  through holes in the room.
+- Uses per-pill profiles so techno/funk get sharper wrong-footed motion while
+  ambient/piano stay wider and slower.
+
+`audio/genre-flavor.js?v=fm-75`, `hazama-fm-v331`.
+
+---
+
+## v330 compact - Band Room transcribed guitar line feel
+
+Band Room AI recreation now carries a real `guitar_line` for every Tabasco
+song. `scripts/transcribe-stem-lines.py --guitar-only` reads `other.mp3`
+onsets and embeds compact `[bar, step16, durSteps, midi, vel]` rows, so guitar
+strums keep source-derived microtiming, varied decay lengths, and velocity
+swells instead of fixed MIDI placement.
+
+Runtime guitar playback now prefers `guitar_line` and falls back to the
+generated guitar agent only when a song lacks the data. The guitar chain also
+opens the pick/top-end lane slightly while keeping the PolySynth voice cap low.
+
+`band-room.js?v=br-199`, `hazama-fm-v330`.
+
+---
+
+## v329 compact - Hazama FM acoustic fun field
+
+Hazama FM genre flavor now adds a shared acoustic-fun production layer:
+
+- `mono-low`: centered low-frequency anchor for the thick, mono bass rise.
+- `orbital-air`: high-passed FM/glass/noise accents through ping-pong delay,
+  stereo widening, and slow auto-pan so mids/highs move around the field.
+- Default techno / lofi / jazz / funk fallback paths now run through the same
+  governor so the sound design survives missing preset data.
+
+`audio/genre-flavor.js?v=fm-74`, `hazama-fm-v329`.
 
 ---
 

@@ -16,10 +16,12 @@ Method:
 Output (printed + embedded by --write):
   "bass_line":    {"granularity":16, "bpm_fit":117.xx, "events":[[bar,step,durSteps,midi,vel],...]}
   "vocal_melody": {...same...}
+  "guitar_line":  {...same timing format; midi is the voiced root for guitar voicing}
 
 Usage:
   python scripts/transcribe-stem-lines.py human-fly          # analyze + report
   python scripts/transcribe-stem-lines.py human-fly --write  # embed into the song JSON
+  python scripts/transcribe-stem-lines.py human-fly --guitar-only --write
 """
 import json
 import sys
@@ -30,11 +32,15 @@ import numpy as np
 
 SONG = sys.argv[1] if len(sys.argv) > 1 else "human-fly"
 WRITE = "--write" in sys.argv
+GUITAR_ONLY = "--guitar-only" in sys.argv
 STEM_DIR = Path("presets/tabasco-stems") / SONG
 SONG_JSON = Path(f"presets/drum-frames-tabasco-{SONG}.json")
 
 SR = 22050
 HOP = 256
+NOTE_PC = {"C": 0, "C#": 1, "Db": 1, "D": 2, "D#": 3, "Eb": 3, "E": 4, "F": 5,
+           "F#": 6, "Gb": 6, "G": 7, "G#": 8, "Ab": 8, "A": 9, "A#": 10, "Bb": 10, "B": 11}
+NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
 
 def fit_bpm(nominal: float) -> float:
@@ -115,11 +121,150 @@ def extract_line(stem: str, fmin_note: str, fmax_note: str, midi_lo: int, midi_h
     return out
 
 
+def root_pc_from_name(name):
+    if not name:
+        return None
+    root = str(name).strip()[:2]
+    return NOTE_PC.get(root if root in NOTE_PC else root[:1])
+
+
+def bar_roots_from_progression(progression, structure, fallback_pc):
+    bar_roots = {}
+    cursor = 0
+    for sec in structure:
+        bars_n = int(sec.get("bars") or 0)
+        name = sec.get("section") or "section"
+        base = name.split("-")[0]
+        chords = (progression or {}).get(name) or (progression or {}).get(base) or []
+        seq = []
+        for chord in chords:
+            if not isinstance(chord, (list, tuple)) or not chord:
+                continue
+            pc = root_pc_from_name(chord[0])
+            if pc is None:
+                continue
+            bars = 1
+            if len(chord) > 1:
+                try:
+                    bars = max(1, int(float(chord[1])))
+                except (TypeError, ValueError):
+                    bars = 1
+            seq += [pc] * bars
+        for b in range(bars_n):
+            bar_roots[cursor + b] = seq[b % len(seq)] if seq else fallback_pc
+        cursor += bars_n
+    return bar_roots
+
+
+def extract_guitar_line(bpm: float, total_steps: int, bar_root_pc):
+    """Extract guitar strum timing/length/velocity from the polyphonic other stem."""
+    path = STEM_DIR / "other.mp3"
+    if not path.exists():
+        return []
+    y, _ = librosa.load(str(path), sr=SR, mono=True)
+    if not np.any(y):
+        return []
+
+    n_fft = 2048
+    S = np.abs(librosa.stft(y, n_fft=n_fft, hop_length=HOP))
+    freqs = librosa.fft_frequencies(sr=SR, n_fft=n_fft)
+    body = (freqs >= 120) & (freqs <= 1800)
+    pick = (freqs >= 1800) & (freqs <= 6500)
+    body_energy = np.mean(S[body], axis=0) if np.any(body) else np.mean(S, axis=0)
+    pick_energy = np.mean(S[pick], axis=0) if np.any(pick) else np.zeros_like(body_energy)
+    band_energy = body_energy + pick_energy * 0.34
+    band_peak = float(np.percentile(band_energy[band_energy > 0], 98)) if np.any(band_energy > 0) else 1.0
+    band_peak_db = 20.0 * np.log10(band_peak + 1e-12)
+
+    onset_env = librosa.onset.onset_strength(y=y, sr=SR, hop_length=HOP, aggregate=np.median)
+    onsets = librosa.onset.onset_detect(
+        onset_envelope=onset_env, sr=SR, hop_length=HOP, units="frames",
+        backtrack=True, pre_max=3, post_max=4, pre_avg=12, post_avg=12,
+        delta=0.09, wait=2
+    )
+    if len(onsets) < 8:
+        return []
+
+    times = librosa.frames_to_time(np.arange(len(band_energy)), sr=SR, hop_length=HOP)
+    step_sec = 60.0 / bpm / 4.0
+    events = []
+    for idx, raw_frame in enumerate(onsets):
+        frame = int(np.clip(raw_frame, 0, len(band_energy) - 1))
+        start_t = float(times[frame])
+        step_pos = start_t / step_sec
+        if not (0 <= step_pos < total_steps):
+            continue
+
+        next_frame = int(onsets[idx + 1]) if idx + 1 < len(onsets) else min(
+            len(band_energy) - 1, frame + int(2.0 * step_sec / (HOP / SR))
+        )
+        next_frame = int(np.clip(next_frame, frame + 1, len(band_energy) - 1))
+        peak = float(np.max(band_energy[frame:min(len(band_energy), frame + 5)]) or band_energy[frame] or 1e-9)
+        max_end = min(next_frame, frame + int(8.0 * step_sec / (HOP / SR)), len(band_energy) - 1)
+        end = frame + 1
+        while end < max_end and band_energy[end] > peak * 0.34:
+            end += 1
+        end_t = float(times[max(end, frame + 1)])
+        dur_steps = float(np.clip((end_t - start_t) / step_sec, 0.30, 8.0))
+
+        attack = float(np.max(band_energy[frame:min(len(band_energy), frame + 4)]) or 0.0)
+        seg_db = 20.0 * np.log10(attack + 1e-12)
+        depth = np.clip((band_peak_db - seg_db) / 22.0, 0.0, 1.0)
+        vel = float(np.clip(0.20 + 0.80 * (1.0 - depth), 0.20, 1.0))
+        if vel < 0.24 and dur_steps < 0.75:
+            continue
+
+        bar = int(step_pos // 16)
+        pc = bar_root_pc.get(bar, bar_root_pc.get(max(bar_root_pc.keys()) if bar_root_pc else 0, 0))
+        root_midi = 48 + int(pc or 0)
+        events.append([bar, min(15.99, round(step_pos % 16, 2)),
+                       round(dur_steps, 2), root_midi, round(vel, 2)])
+
+    by_bar = {}
+    for ev in sorted(events, key=lambda e: (e[0], e[1])):
+        bucket = by_bar.setdefault(ev[0], [])
+        if bucket and (ev[1] - bucket[-1][1]) < 0.28:
+            if ev[4] > bucket[-1][4]:
+                bucket[-1] = ev
+            continue
+        bucket.append(ev)
+
+    out = []
+    for _bar, evs in sorted(by_bar.items()):
+        if len(evs) > 10:
+            keep = sorted(evs, key=lambda e: (e[4] * 1.4 + min(e[2], 4.0) * 0.08), reverse=True)[:10]
+            evs = sorted(keep, key=lambda e: e[1])
+        out.extend(evs)
+    return out
+
+
 def main() -> None:
     data = json.loads(SONG_JSON.read_text(encoding="utf-8"))
     nominal = float(data["bpm"])
     total_bars = int(data.get("total_bars") or 0) or 200
     total_steps = total_bars * 16
+
+    if GUITAR_ONLY:
+        fitted = (data.get("guitar_line") or data.get("bass_line") or data.get("vocal_melody") or {}).get("bpm_fit")
+        bpm = float(fitted or fit_bpm(nominal))
+        structure = data.get("structure") or []
+        key_root_pc = root_pc_from_name((data.get("key") or "C").split(" ")[0]) or 0
+        guitar_roots = bar_roots_from_progression(data.get("chord_progression") or {}, structure, key_root_pc)
+        guitar = extract_guitar_line(bpm, total_steps, guitar_roots)
+        guitar_med_vel = float(np.median([e[4] for e in guitar])) if guitar else 0.0
+        guitar_ok = len(guitar) >= 40 and guitar_med_vel >= 0.26
+        print(f"{SONG}: bpm {bpm:.2f}")
+        print(f"guitar_line: {len(guitar)} strums, median vel {guitar_med_vel:.2f}")
+        print(f"embed: guitar_line={'YES' if guitar_ok else 'NO'}")
+        if WRITE:
+            if guitar_ok:
+                data["guitar_line"] = {"granularity": 16, "bpm_fit": round(bpm, 2),
+                                       "source": "band-energy on other.mp3 + bass-derived chord roots", "events": guitar}
+            else:
+                data.pop("guitar_line", None)
+            SONG_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+            print(f"WROTE {SONG_JSON}")
+        return
 
     bpm = fit_bpm(nominal)
     print(f"{SONG}: nominal bpm {nominal} -> fitted {bpm:.2f}", flush=True)
@@ -215,17 +360,28 @@ def main() -> None:
         derived[name] = prog
         print(f"  derived chords [{name}]: {prog}")
 
+    guitar_roots = bar_roots_from_progression(derived, structure, key_root_pc)
+    guitar = extract_guitar_line(bpm, total_steps, guitar_roots)
+    print(f"guitar_line: {len(guitar)} strums", flush=True)
+    if guitar:
+        bars = sorted({e[0] for e in guitar})
+        midis = [e[3] for e in guitar]
+        print(f"  guitar: bars {bars[0]}..{bars[-1]} ({len(bars)} active), "
+              f"root midi {min(midis)}..{max(midis)}, median vel {np.median([e[4] for e in guitar]):.2f}")
+
     # quality gates: thin/garbage transcriptions are worse than the generative
     # fallback, so only embed lines with real coverage. Chords are replaced
     # only when the bass (their source) is trustworthy.
-    MIN_BASS, MIN_VOCAL = 30, 60
+    MIN_BASS, MIN_VOCAL, MIN_GUITAR = 30, 60, 40
     bass_ok = len(bass) >= MIN_BASS
     # v328: also require real loudness — a "melody" whose median velocity sits
     # at the floor is bleed/whisper noise (tabasco/electric-sheep chant stems),
     # and ghost notes through the voice synth are mud, not 生感.
     voc_med_vel = float(np.median([e[4] for e in voc])) if voc else 0.0
     vocal_ok = len(voc) >= MIN_VOCAL and voc_med_vel >= 0.30
-    print(f"embed: bass_line={'YES' if bass_ok else 'NO'} vocal_melody={'YES' if vocal_ok else 'NO'} chords={'YES' if bass_ok else 'NO'}")
+    guitar_med_vel = float(np.median([e[4] for e in guitar])) if guitar else 0.0
+    guitar_ok = len(guitar) >= MIN_GUITAR and guitar_med_vel >= 0.26
+    print(f"embed: bass_line={'YES' if bass_ok else 'NO'} vocal_melody={'YES' if vocal_ok else 'NO'} guitar_line={'YES' if guitar_ok else 'NO'} chords={'YES' if bass_ok else 'NO'}")
 
     if WRITE:
         if bass_ok:
@@ -242,6 +398,11 @@ def main() -> None:
                                     "source": "librosa.pyin on vocals.mp3", "events": voc}
         else:
             data.pop("vocal_melody", None)
+        if guitar_ok:
+            data["guitar_line"] = {"granularity": 16, "bpm_fit": round(bpm, 2),
+                                   "source": "band-energy on other.mp3 + bass-derived chord roots", "events": guitar}
+        else:
+            data.pop("guitar_line", None)
         if not bass_ok:
             data.pop("bass_line", None)
         SONG_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")

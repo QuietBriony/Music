@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-198-transcribed-feel", "Band Room should expose the current transcribed-feel version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-199-guitar-line-feel", "Band Room should expose the current guitar-line-feel version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -134,22 +134,30 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-84/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-198/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-199/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-84/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-198/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-199/, "Service worker should precache the current Band Room JS marker");
 // v324/v325: transcribed-line playback (pilot human-fly → all songs)
 assert.match(source, /function playTranscribedBar\(/, "AI agents should support transcribed-line playback (v324)");
 assert.match(source, /playTranscribedBar\(synthBass, "bass_line"/, "Bass agent should play the transcribed line when present");
 assert.match(source, /playTranscribedBar\(voiceSynth, "vocal_melody"/, "Voice agent should sing the transcribed melody when present");
+assert.match(source, /function playTranscribedGuitarBar\(ctx, time\)/, "Guitar agent should support transcribed strum playback");
+assert.match(source, /playTranscribedGuitarBar\(ctx, time\)/, "Guitar agent should prefer transcribed guitar rows before generated comping");
+assert.match(source, /hasTranscribedLine\("guitar_line"\)/, "Scheduler should run guitar when transcribed guitar rows exist");
+assert.match(source, /frequency:\s*8600/, "Sampler guitar should keep the brighter v330 lowpass");
+assert.match(source, /maxCutoff:\s*9800/, "Velocity sampler should open the guitar pick cutoff lane");
+assert.match(source, /frequency:\s*light \? 5600 : 6800/, "Synth guitar fallback should keep the brighter v330 lowpass");
 const TRANSCRIBED_SONGS = ["tabasco", "hey", "i-got-a-feeling", "under-the-moon", "electric-sheep", "human-fly", "sister"];
 let bassLineSongs = 0;
+let guitarLineSongs = 0;
+let guitarEvents = [];
 for (const songId of TRANSCRIBED_SONGS) {
   const songData = JSON.parse(readFileSync(`presets/drum-frames-tabasco-${songId}.json`, "utf8"));
-  for (const key of ["bass_line", "vocal_melody"]) {
+  for (const key of ["bass_line", "vocal_melody", "guitar_line"]) {
     const line = songData[key];
     if (!line) continue;  // thin transcriptions are skipped by the quality gate
     assert.ok(Array.isArray(line.events) && line.events.length >= 30, `${songId} ${key} should carry real coverage when embedded`);
@@ -163,10 +171,17 @@ for (const songId of TRANSCRIBED_SONGS) {
     bassLineSongs++;
     assert.ok(songData.chord_progression_legacy, `${songId} replaced chords from bass — must keep the legacy progression for rollback`);
   }
+  if (songData.guitar_line) {
+    guitarLineSongs++;
+    guitarEvents = guitarEvents.concat(songData.guitar_line.events);
+  }
 }
 assert.ok(bassLineSongs >= 5, `most songs should carry a transcribed bass line (got ${bassLineSongs}/7)`);
+assert.equal(guitarLineSongs, 7, `all Tabasco songs should carry a transcribed guitar line (got ${guitarLineSongs}/7)`);
+assert.ok(guitarEvents.some((ev) => !Number.isInteger(ev[1]) || !Number.isInteger(ev[2])), "guitar_line should preserve fractional timing/duration feel");
+assert.ok(new Set(guitarEvents.map((ev) => ev[4])).size >= 8, "guitar_line should preserve varied velocity instead of fixed MIDI hits");
 const humanFlyData = JSON.parse(readFileSync("presets/drum-frames-tabasco-human-fly.json", "utf8"));
-assert.ok(humanFlyData.bass_line.events.length >= 100 && humanFlyData.vocal_melody.events.length >= 100, "human-fly pilot quality pin (>=100 notes each)");
+assert.ok(humanFlyData.bass_line.events.length >= 100 && humanFlyData.vocal_melody.events.length >= 100 && humanFlyData.guitar_line.events.length >= 100, "human-fly pilot quality pin (>=100 notes/strums each)");
 assert.match(html, /class="br-details br-sound-mix"/, "Sound controls should be consolidated into one sound mix details panel");
 assert.match(html, /id="br-sound-mix"/, "Band Room should expose the consolidated sound mix section");
 assert.doesNotMatch(html, /<summary>[^<]*vocal FX/i, "Vocal FX should not be a separate details panel");
@@ -431,11 +446,11 @@ assert.match(source, /stemBus\.drums\s*=\s*new Tone\.Gain\(0\.92\)/, "Drums stem
 assert.match(source, /stemBus\.bass\s*=\s*new Tone\.Gain\(0\.91\)/, "Bass stem should stand forward with v319 pressure");
 assert.match(source, /stemBus\.other\s*=\s*new Tone\.Gain\(0\.96\)/, "Other/guitar stem should stand forward in the v322 Nirvana wall");
 assert.match(source, /const shelf = new Tone\.EQ3\(\{ low: -0\.35, mid: 0\.2, high: 0\.85, lowFrequency: 220, highFrequency: 4600 \}\)/, "Other/guitar stem EQ should open upper presence for v318");
-assert.match(source, /frequency: 7800, type: "lowpass"/, "Sampled guitar should keep more high-frequency pick attack in v318");
-assert.match(source, /volume: -2\.5/, "Sampled guitar should receive the v318 pressure lift");
-assert.match(source, /maxCutoff: 9200/, "Velocity-sensitive guitar should open the bright cutoff in v318");
-assert.match(source, /frequency: light \? 5200 : 6200, type: "lowpass"/, "Synth fallback guitar should open the lowpass in v318");
-assert.match(source, /volume: -10\.5/, "Synth fallback guitar should receive the v318 pressure lift");
+assert.match(source, /frequency: 8600, type: "lowpass"/, "Sampled guitar should keep the brighter v330 pick attack");
+assert.match(source, /volume: -2\.0/, "Sampled guitar should receive the v330 pressure lift");
+assert.match(source, /maxCutoff: 9800/, "Velocity-sensitive guitar should open the bright cutoff in v330");
+assert.match(source, /frequency: light \? 5600 : 6800, type: "lowpass"/, "Synth fallback guitar should open the lowpass in v330");
+assert.match(source, /volume: -10\.2/, "Synth fallback guitar should receive the v330 pressure lift");
 assert.match(source, /masterWidener = new Tone\.StereoWidener\(0\.72\)/, "Shared master should widen the v313 default image");
 assert.match(source, /masterWetGain = new Tone\.Gain\(lightRuntime \? 0\.12 : 0\.20\)/, "Shared master should keep v313 room on normal runtime and reduce it only in v316 light runtime");
 assert.match(source, /vocalDryGain = new Tone\.Gain\(0\.68\)/, "Vocal dry center should pull back in v313");

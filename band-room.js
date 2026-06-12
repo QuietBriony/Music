@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-198-transcribed-feel";
+  const BANDROOM_APP_VERSION = "br-199-guitar-line-feel";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -2618,6 +2618,14 @@
     return $(toggleId)?.checked === true;
   }
 
+  function shouldRebuildSynthControlNow() {
+    return currentMode === "synth" && state.started && !state.starting;
+  }
+
+  function markSynthControlDeferred(status, label, value) {
+    if (status) status.textContent = `${label}: ${value || "synth"} (applies on AI start)`;
+  }
+
   async function ensureOnlineCatalogForSynth() {
     if (state.onlineCatalog) return true;
     try { await loadOnlineCatalog(); } catch (e) {}
@@ -3024,8 +3032,8 @@
     if (!opts.forceSynth && state.guitarInstrument && state.onlineCatalog) {
       const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.guitarInstrument);
       if (instDef && instDef.kind === "sampler") {
-        const verb = new Tone.Reverb({ decay: 1.2, wet: 0.10 }).connect(target);
-        const lp = new Tone.Filter({ frequency: 7800, type: "lowpass", Q: 0.5 }).connect(verb);
+        const verb = new Tone.Reverb({ decay: 1.2, wet: 0.09 }).connect(target);
+        const lp = new Tone.Filter({ frequency: 8600, type: "lowpass", Q: 0.5 }).connect(verb);
         // Light distortion only on electric variant
         const isElectric = instDef.id.includes("electric");
         let chainIn = lp;
@@ -3045,8 +3053,8 @@
         // v126: velocity-sensitive — guitar は強く弾けばブライトに、弱く弾けば
         // 柔らかく。electric guitar の muting / strumming nuance に対応
         const sampler = await makeVelocitySensitiveSampler({
-          urls, baseRelease: 0.5, volume: -2.5,  // v318: more pick attack and pressure; samples still stay below the synth fallback's raw edge.
-          minCutoff: 1800, maxCutoff: 9200
+          urls, baseRelease: 0.5, volume: -2.0,  // v330: a little more pick pressure; still below the synth fallback's raw edge.
+          minCutoff: 1800, maxCutoff: 9800
         });
         if (sampler) {
           sampler.connect(chainIn);
@@ -3063,7 +3071,7 @@
       wet: light ? 0.68 : 0.85,
       oversample: light ? "none" : "2x"
     });
-    const lp = new Tone.Filter({ frequency: light ? 5200 : 6200, type: "lowpass", Q: 0.6 });
+    const lp = new Tone.Filter({ frequency: light ? 5600 : 6800, type: "lowpass", Q: 0.6 });
     const verb = light ? null : new Tone.Reverb({ decay: 1.0, wet: 0.14 });
     // v232: high-pass the synth guitar at 130 Hz. Its distorted low-mid
     // otherwise crowds the bass lane (octave 2); the guitar's lane is the
@@ -3077,7 +3085,7 @@
       // sawtooth — fat is kept only on the cheap mono synths (bass + voice).
       oscillator: { type: "sawtooth" },
       envelope: { attack: 0.003, decay: 0.10, sustain: 0.55, release: 0.16 },
-      volume: -10.5
+      volume: -10.2
     });
     // v228: maxPolyphony 10 (reverted from v227's 64). v227 raised it to 64
     // thinking the polyphony cap was the bug — it was actually CPU
@@ -4902,6 +4910,36 @@
     return true;
   }
 
+  function guitarVoicingFromMidi(rootMidi, chord, isJazzy, maxNotes) {
+    if (isJazzy && chord) {
+      const ext = /m\b|min\b/.test(chord) ? "m7" : "maj7";
+      const voicingChord = chord.replace(/(m|maj7|7|m7)?$/, ext);
+      const full = chordToNotes(voicingChord, 3);
+      const shell = full.length >= 4 ? [full[0], full[1], full[3]] : full;
+      return shell.slice(0, maxNotes);
+    }
+    const midi = Number(rootMidi) || 48;
+    return [midi, midi + 7, midi + 12]
+      .slice(0, maxNotes)
+      .map((n) => Tone.Frequency(n, "midi").toNote());
+  }
+
+  function playTranscribedGuitarBar(ctx, time) {
+    const rows = transcribedNotesForBar("guitar_line", state.barCount);
+    if (!rows || !guitarSynth) return false;
+    const isJazzy = isJazzyMode();
+    const notesPerStrum = clamp(Math.floor(9 / Math.max(1, rows.length)), 1, isJazzy ? 3 : 3);
+    rows.forEach((row) => {
+      const t = time + (Number(row[1]) || 0) * ctx.subTime;
+      const durSec = Math.max(0.045, (Number(row[2]) || 1) * ctx.subTime * 0.96);
+      const vel = clamp((Number(row[4]) || 0.55) * 0.96 + 0.02, 0.22, 0.96);
+      const voicing = guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum);
+      if (!voicing.length) return;
+      try { guitarSynth.triggerAttackRelease(voicing, durSec, t, vel); } catch (e) {}
+    });
+    return true;
+  }
+
   function triggerBassAgent(ctx, time) {
     // v324: real line first — when this song has a transcribed bass line,
     // play it and skip the generative plan entirely.
@@ -4974,6 +5012,8 @@
   }
 
   function triggerGuitarAgent(ctx, time) {
+    if (playTranscribedGuitarBar(ctx, time)) return;
+    if (!ctx.chord) return;
     // v224: jazzy mode uses 7th-extended shell voicings instead of power
     // chords. Power chords (root + 5th + octave) sound wrong against a jazz
     // combo — jazz guitar comps with shell voicings (root + 3rd + 7th, the
@@ -5398,7 +5438,7 @@
         }
       }
 
-      if (isSynthMode && SYNTH_REBUILD_PARTS.guitar && $("br-toggle-guitar").checked && guitarSynth && chord && frame) {
+      if (isSynthMode && SYNTH_REBUILD_PARTS.guitar && $("br-toggle-guitar").checked && guitarSynth && (chord || hasTranscribedLine("guitar_line")) && frame) {
         triggerGuitarAgent(partAgentCtx, time);
       }
 
@@ -6954,6 +6994,11 @@
       sel.addEventListener("change", async () => {
         state.voiceOverrides[voice] = sel.value || null;
         const status = $("br-kit-status");
+        if (!shouldRebuildSynthControlNow()) {
+          if (status) status.textContent = `${voice}: ${sel.value || "(base)"} (applies on AI start)`;
+          schedulePrefsSave();
+          return;
+        }
         if (status) status.textContent = `${voice} override: ${sel.value || "(base)"} — rebuilding…`;
         try {
           drumKit = await buildKitForSource(state.kitSource);
@@ -7007,6 +7052,11 @@
       sel.addEventListener("change", async () => {
         state.chordInstrument = sel.value || null;
         const status = $("br-kit-status");
+        if (!shouldRebuildSynthControlNow()) {
+          markSynthControlDeferred(status, "chord", sel.value);
+          schedulePrefsSave();
+          return;
+        }
         if (status) status.textContent = `chord: ${sel.value || "synth"} — rebuilding…`;
         try {
           if (chordSynth) { try { chordSynth.dispose(); } catch (e) {} }
@@ -7038,6 +7088,11 @@
       sel.addEventListener("change", async () => {
         state.bassInstrument = sel.value || null;
         const status = $("br-kit-status");
+        if (!shouldRebuildSynthControlNow()) {
+          markSynthControlDeferred(status, "bass", sel.value);
+          schedulePrefsSave();
+          return;
+        }
         if (status) status.textContent = `bass: ${sel.value || "synth"} — rebuilding…`;
         try {
           if (synthBass) { try { synthBass.dispose(); } catch (e) {} }
@@ -7069,6 +7124,11 @@
       sel.addEventListener("change", async () => {
         state.guitarInstrument = sel.value || null;
         const status = $("br-kit-status");
+        if (!shouldRebuildSynthControlNow()) {
+          markSynthControlDeferred(status, "guitar", sel.value);
+          schedulePrefsSave();
+          return;
+        }
         if (status) status.textContent = `guitar: ${sel.value || "synth"} — rebuilding…`;
         try {
           if (guitarSynth) { try { guitarSynth.dispose(); } catch (e) {} }
@@ -7100,6 +7160,11 @@
       sel.addEventListener("change", async () => {
         state.voiceInstrument = sel.value || null;
         const status = $("br-kit-status");
+        if (!shouldRebuildSynthControlNow()) {
+          markSynthControlDeferred(status, "melody lead", sel.value);
+          schedulePrefsSave();
+          return;
+        }
         if (status) status.textContent = `melody lead: ${sel.value || "synth"} — rebuilding…`;
         try {
           if (voiceSynth) { try { voiceSynth.dispose(); } catch (e) {} }
@@ -7151,8 +7216,13 @@
     sel.addEventListener("change", async () => {
       const newSource = sel.value;
       const status = $("br-kit-status");
-      if (status) status.textContent = "loading kit…";
       state.kitSource = newSource;
+      if (!shouldRebuildSynthControlNow()) {
+        if (status) status.textContent = `kit: ${newSource} (applies on AI start)`;
+        schedulePrefsSave();
+        return;
+      }
+      if (status) status.textContent = "loading kit…";
       try {
         drumKit = await buildKitForSource(newSource);
         if (status) status.textContent = newSource === "synth" ? "synth kit ready" : `sample kit: ${newSource}`;
@@ -7247,6 +7317,11 @@
         Object.keys(state.voiceOverrides).forEach((v) => state.voiceOverrides[v] = null);
         renderVoiceOverridesGrid();
         const status = $("br-kit-status");
+        if (!shouldRebuildSynthControlNow()) {
+          if (status) status.textContent = "overrides cleared (applies on AI start)";
+          schedulePrefsSave();
+          return;
+        }
         if (status) status.textContent = "overrides cleared, rebuilding…";
         try {
           drumKit = await buildKitForSource(state.kitSource);
