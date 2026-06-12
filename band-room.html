@@ -6,7 +6,7 @@
 <title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-85" />
+<link rel="stylesheet" href="band-room.css?v=br-86" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -17,7 +17,7 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
 <script src="audio/audio-safety.js?v=br-67" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-205" defer></script>
+<script src="band-room.js?v=br-206" defer></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -374,6 +374,41 @@
           <summary>per-voice override (kick だけ別 kit 等)</summary>
           <div id="br-voice-overrides-grid"></div>
           <button type="button" id="br-voice-overrides-clear">全クリア</button>
+        </details>
+
+        <details class="br-reconstruct-matrix" data-scope="synth">
+          <summary>🧪 再構築マトリックス (パート別スタイル)</summary>
+          <div class="br-reconstruct-grid">
+            <label><span>drums</span>
+              <select id="br-reconstruct-drums">
+                <option value="off">忠実</option>
+                <option value="lcd">LCD風</option>
+                <option value="sakanaction">サカナ風</option>
+              </select>
+            </label>
+            <label><span>bass</span>
+              <select id="br-reconstruct-bass">
+                <option value="off">忠実</option>
+                <option value="lcd">LCD風</option>
+                <option value="sakanaction">サカナ風</option>
+              </select>
+            </label>
+            <label><span>guitar</span>
+              <select id="br-reconstruct-guitar">
+                <option value="off">忠実</option>
+                <option value="lcd">LCD風</option>
+                <option value="sakanaction">サカナ風</option>
+              </select>
+            </label>
+            <label><span>chords</span>
+              <select id="br-reconstruct-chords">
+                <option value="off">忠実</option>
+                <option value="lcd">LCD風</option>
+                <option value="sakanaction">サカナ風</option>
+              </select>
+            </label>
+          </div>
+          <p class="br-reconstruct-note">忠実=実演奏の転写。モード行の 🧪再構築 は全パート一括。組み合わせはセッション内のみ。</p>
         </details>
 
         <label>

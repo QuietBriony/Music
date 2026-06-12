@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-205-reconstruct", "Band Room should expose the current reconstruct version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-206-reconstruct-matrix", "Band Room should expose the current reconstruct-matrix version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -133,21 +133,23 @@ assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor
 assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
-assert.match(html, /band-room\.css\?v=br-85/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-205/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.css\?v=br-86/, "Band Room HTML should reference the current CSS cache marker");
+assert.match(html, /band-room\.js\?v=br-206/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
-assert.match(sw, /band-room\.css\?v=br-85/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-205/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.css\?v=br-86/, "Service worker should precache the current Band Room CSS marker");
+assert.match(sw, /band-room\.js\?v=br-206/, "Service worker should precache the current Band Room JS marker");
 // v339: AI 再構築 (style reconstruction)
 assert.match(html, /id="br-reconstruct-style"/, "Band Room should expose the AI 再構築 style selector");
-assert.match(source, /let reconstructStyle = "off"/, "AI 再構築 should default OFF (faithful AI 再現)");
+assert.match(source, /const reconstructParts = \{ drums: "off", bass: "off", guitar: "off", chords: "off" \}/, "AI 再構築 matrix should default all parts to 忠実 (v340)");
+assert.match(html, /id="br-reconstruct-drums"/, "Matrix should expose a per-part drums style select (v340)");
+assert.match(html, /id="br-reconstruct-chords"/, "Matrix should expose a per-part chords style select (v340)");
 assert.match(source, /function reconstructDrumBar\(/, "AI 再構築 should generate the style drum groove");
 assert.match(source, /function reconstructBassBar\(/, "AI 再構築 should re-rhythm the real bass pitches");
 assert.match(source, /function reconstructChordBar\(/, "AI 再構築 should swap the pad for style comping");
-assert.match(source, /reconstructStyle !== "off"\) return reconstructDrumBar\(time, subTime\)/, "Style reconstruction should take over the transcribed kit");
+assert.match(source, /drumStyle !== "off"\) return reconstructDrumBar\(time, subTime, drumStyle\)/, "The drums part's style should take over the transcribed kit (v340 matrix)");
 // v324/v325: transcribed-line playback (pilot human-fly → all songs)
 assert.match(source, /function playTranscribedBar\(/, "AI agents should support transcribed-line playback (v324)");
 assert.match(source, /playTranscribedBar\(synthBass, "bass_line"/, "Bass agent should play the transcribed line when present");
