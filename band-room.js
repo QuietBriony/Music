@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-207-vocal-expression";
+  const BANDROOM_APP_VERSION = "br-208-reconstruct-stability";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -5178,11 +5178,15 @@
     const strums = style === "lcd"
       ? [2, 6, 10, 14].map((st) => ({ st, v: 0.58, d: 0.55 }))  // disco skank
       : [{ st: 0, v: 0.46, d: 3 }, { st: 6, v: 0.5, d: 0.6 }, { st: 8, v: 0.44, d: 3 }, { st: 14, v: 0.5, d: 0.6 }];
+    // v343: ONE batched PolySynth call per strum. The staggered per-note
+    // triggers tripled the call count (12/bar) — past the v241 freeze budget
+    // — and after minutes of play the voice churn ground playback to a halt
+    // (user: しばらくなったら激重でならなくなる). Batched = 4 calls/bar.
+    const notesPerStrum = aiLightRuntimeEnabled() ? 2 : 3;
+    const voicing = guitarVoicingFromMidi(root, ctx.chord, false, notesPerStrum);
+    if (!voicing.length) return false;
     strums.forEach(({ st, v, d }) => {
-      const voicing = guitarVoicingFromMidi(root, ctx.chord, false, 3);
-      voicing.forEach((n, i) => {
-        try { guitarSynth.triggerAttackRelease(n, d * ctx.subTime, time + st * ctx.subTime + i * 0.006, clamp(v * e * (1 - i * 0.06), 0.16, 1)); } catch (err) {}
-      });
+      try { guitarSynth.triggerAttackRelease(voicing, d * ctx.subTime, time + st * ctx.subTime, clamp(v * e, 0.16, 1)); } catch (err) {}
     });
     return true;
   }
@@ -5197,9 +5201,13 @@
         try { chordSynth.triggerAttackRelease(tones, 0.75 * ctx.subTime, time + st * ctx.subTime + 0.004, clamp(0.5 * e, 0.16, 1)); } catch (err) {}
       });
     } else {
-      for (let st = 0; st < 16; st++) {  // sakanaction 16th synth arp
-        const n = tones[st % tones.length];
-        try { chordSynth.triggerAttackRelease(n, 0.9 * ctx.subTime, time + st * ctx.subTime, clamp((st % 4 === 0 ? 0.5 : 0.36) * e, 0.12, 1)); } catch (err) {}
+      // v343: 8th-note arp (8 triggers/bar), was a 16th arp at 16/bar — 60%
+      // over the PolySynth's maxPolyphony 10, so Tone warned on EVERY dropped
+      // voice (console flood) and voice churn accumulated until playback
+      // seized (激重). 8ths keep the sakanaction sparkle inside the budget.
+      for (let st = 0; st < 16; st += 2) {
+        const n = tones[(st >> 1) % tones.length];
+        try { chordSynth.triggerAttackRelease(n, 1.2 * ctx.subTime, time + st * ctx.subTime, clamp((st % 4 === 0 ? 0.52 : 0.38) * e, 0.12, 1)); } catch (err) {}
       }
     }
     return true;
@@ -6287,7 +6295,23 @@
       }
       checkBackgroundBridgeHealth("watchdog");
       checkSynthSchedulerHealth("watchdog");
+      checkPolyVoicePressure("watchdog");
     }, 2500);
+  }
+
+  // v343: poly-voice pressure relief. If a PolySynth's active voice count
+  // climbs past any musical need (chords/strums are short-gated — sustained
+  // accumulation means churn, the 激重→無音 spiral), release everything and
+  // let the next bar re-trigger cleanly. Runs on the 2.5s health watchdog.
+  function checkPolyVoicePressure(reason = "watchdog") {
+    [guitarSynth, chordSynth].forEach((synth) => {
+      if (!synth) return;
+      const active = typeof synth.activeVoices === "number" ? synth.activeVoices : 0;
+      if (active > 16) {
+        console.warn("[Band Room] poly voice pressure relief:", reason, active);
+        try { synth.releaseAll(Tone.now()); } catch (e) {}
+      }
+    });
   }
 
   function stopPlaybackHealthWatchdog() {
