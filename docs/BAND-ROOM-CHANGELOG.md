@@ -1,6 +1,31 @@
-# Band Room — Changelog (v65 → v337 compact)
+# Band Room — Changelog (v65 → v338 compact)
 
-Current compact release: v337.
+Current compact release: v338.
+
+---
+
+## v338 compact — ドラムも実演奏へ(生バンド感・最後のピース)
+
+これまでドラムだけ「セクション代表パターン+生成フィル+生成クラッシュ」だった。
+v338 で drums.mp3 から**全打点を転写**し、他パートと同じ「転写ファースト+
+フォールバック」に — これで AI 再現は全パートが実演奏由来。
+
+- 抽出: onset 検出 + 帯域エネルギー分類(実測チューン: kick=低域83-93%優勢、
+  snare=中域58-71%、シンバル=noise+high合算で判定、crash/hat は減衰長で分岐 —
+  tail 窓は次打点の手前にクランプ、0.25s 固定だと16分間隔をまたいで誤判定する)。
+  実ベロシティ(dB 0.16-1.0)+小数 step 実タイミング。20打/小節キャップ。
+- 再生: `playTranscribedDrumBar` — 転写がある曲はパターン再生・生成フィル・
+  velocity floor・jitter・Dilla offset を**全部スキップ**(実演奏が全部持ってる)。
+  セクション頭のクラッシュ・ヒントは残す(実クラッシュと重なっても同瞬間なら無害、
+  遷移マーキングの保険)。light runtime は 10打/bar に間引き(vel スロット式 —
+  静かな hat から消え kick/snare/crash が残る)。
+- 品質ゲート: ≥200打 + kick≥50 + snare≥30。**6/7 曲 embed**
+  (hey 984 / i-got-a-feeling 1012 / human-fly 912 / sister 806 / under-the-moon 734 /
+  electric-sheep 568。tabasco はミニ曲で 194 → 正しくスキップ、従来パターンの
+  まま)。
+- 旧パターン経路は不変(tabasco と転写無し曲のフォールバック)。
+
+`band-room.js?v=br-204`、`hazama-fm-v338`。CSS は br-84 のまま。
 
 ---
 

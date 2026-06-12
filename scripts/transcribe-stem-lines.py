@@ -33,6 +33,7 @@ import numpy as np
 SONG = sys.argv[1] if len(sys.argv) > 1 else "human-fly"
 WRITE = "--write" in sys.argv
 GUITAR_ONLY = "--guitar-only" in sys.argv
+DRUMS_ONLY = "--drums-only" in sys.argv
 STEM_DIR = Path("presets/tabasco-stems") / SONG
 SONG_JSON = Path(f"presets/drum-frames-tabasco-{SONG}.json")
 
@@ -243,6 +244,98 @@ def extract_guitar_line(bpm: float, total_steps: int, bar_root_pc):
     return out
 
 
+def extract_drum_line(bpm: float, total_steps: int):
+    """Transcribe the full kit performance from drums.mp3.
+
+    v338 — the last 生バンド感 piece: every hit of the real performance with
+    class (0=kick 1=snare 2=hat 3=crash), real velocity (dB-mapped 0.16-1.0)
+    and fractional-step micro-timing. Classification is band-energy based:
+    kick = low dominant, hat/crash = high dominant split by decay length,
+    snare = mid/noise otherwise (toms fold into snare — nearest kit voice).
+    """
+    path = STEM_DIR / "drums.mp3"
+    if not path.exists():
+        return []
+    y, _ = librosa.load(str(path), sr=SR, mono=True)
+    if not np.any(y):
+        return []
+
+    n_fft = 2048
+    S = np.abs(librosa.stft(y, n_fft=n_fft, hop_length=HOP))
+    freqs = librosa.fft_frequencies(sr=SR, n_fft=n_fft)
+    low = (freqs >= 30) & (freqs <= 110)
+    mid = (freqs >= 140) & (freqs <= 800)
+    noise = (freqs >= 1500) & (freqs <= 5000)
+    high = (freqs >= 6000)
+    e_low = S[low].mean(axis=0)
+    e_mid = S[mid].mean(axis=0)
+    e_noise = S[noise].mean(axis=0)
+    e_high = S[high].mean(axis=0)
+    e_total = e_low + e_mid + e_noise + e_high
+    peak_db = 20.0 * np.log10(float(np.percentile(e_total[e_total > 0], 98)) + 1e-12)
+
+    onset_env = librosa.onset.onset_strength(y=y, sr=SR, hop_length=HOP)
+    onsets = librosa.onset.onset_detect(
+        onset_envelope=onset_env, sr=SR, hop_length=HOP, units="frames",
+        backtrack=False, pre_max=3, post_max=3, pre_avg=5, post_avg=5,
+        delta=0.05, wait=1
+    )
+    if len(onsets) < 32:
+        return []
+
+    times = librosa.frames_to_time(np.arange(S.shape[1]), sr=SR, hop_length=HOP)
+    step_sec = 60.0 / bpm / 4.0
+    frames_025s = max(1, int(0.25 / (HOP / SR)))
+    high_p95 = float(np.percentile(e_high[e_high > 0], 95)) if np.any(e_high > 0) else 1.0
+    events = []
+    for idx, raw in enumerate(onsets):
+        f = int(np.clip(raw, 0, S.shape[1] - 2))
+        w = slice(f, min(S.shape[1], f + 4))
+        a_low, a_mid = float(e_low[w].max()), float(e_mid[w].max())
+        a_noise, a_high = float(e_noise[w].max()), float(e_high[w].max())
+        a_total = a_low + a_mid + a_noise + a_high
+        if a_total <= 0:
+            continue
+        # classify — measured on the live kit (bleed-heavy): kicks read low
+        # 83-93%, snares mid 58-71%, cymbals show as ELEVATED noise+high
+        # (35-75% combined) rather than high-alone. Crash vs hat by tail
+        # sustain, with the tail clamped INSIDE the gap to the next onset
+        # (a 0.25s window at 117bpm spans past the next 16th and read the
+        # next hit's bleed as "sustain").
+        cym_share = (a_noise + a_high) / a_total
+        if a_low >= 0.40 * a_total and cym_share < 0.55:
+            cls = 0  # kick (kick+hat together stays kick — the audible center)
+        elif cym_share >= 0.45 or (a_high >= 0.25 * a_total and a_low < 0.30 * a_total):
+            next_f = int(onsets[idx + 1]) if idx + 1 < len(onsets) else S.shape[1] - 1
+            tail_f = min(S.shape[1] - 1, f + min(frames_025s, max(2, int((next_f - f) * 0.7))))
+            sustained = e_high[tail_f] > 0.5 * a_high
+            big = a_high >= 0.45 * high_p95
+            cls = 3 if (sustained and big) else 2  # crash vs hat
+        else:
+            cls = 1  # snare (incl. toms — nearest kit voice)
+        seg_db = 20.0 * np.log10(a_total + 1e-12)
+        depth = np.clip((peak_db - seg_db) / 24.0, 0.0, 1.0)
+        vel = float(np.clip(0.16 + 0.84 * (1.0 - depth), 0.16, 1.0))
+        step_pos = float(times[f]) / step_sec
+        if not (0 <= step_pos < total_steps):
+            continue
+        dur = 4.0 if cls == 3 else 1.0
+        events.append([int(step_pos // 16), min(15.99, round(step_pos % 16, 2)),
+                       dur, cls, round(vel, 2)])
+
+    # per-bar density cap: keep the strongest 20 (real kits rarely exceed)
+    by_bar = {}
+    for ev in sorted(events, key=lambda e: (e[0], e[1])):
+        by_bar.setdefault(ev[0], []).append(ev)
+    out = []
+    for _bar, evs in sorted(by_bar.items()):
+        if len(evs) > 20:
+            keep = sorted(evs, key=lambda e: e[4], reverse=True)[:20]
+            evs = sorted(keep, key=lambda e: e[1])
+        out.extend(evs)
+    return out
+
+
 def main() -> None:
     data = json.loads(SONG_JSON.read_text(encoding="utf-8"))
     nominal = float(data["bpm"])
@@ -267,6 +360,31 @@ def main() -> None:
                                        "source": "band-energy on other.mp3 + bass-derived chord roots", "events": guitar}
             else:
                 data.pop("guitar_line", None)
+            SONG_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+            print(f"WROTE {SONG_JSON}")
+        return
+
+    if DRUMS_ONLY:
+        fitted = (data.get("drum_line") or data.get("guitar_line") or data.get("bass_line") or {}).get("bpm_fit")
+        bpm = float(fitted or fit_bpm(nominal))
+        drums = extract_drum_line(bpm, total_steps)
+        counts = {}
+        for e in drums:
+            counts[e[3]] = counts.get(e[3], 0) + 1
+        names = {0: "kick", 1: "snare", 2: "hat", 3: "crash"}
+        per_class = {names[k]: v for k, v in sorted(counts.items())}
+        kick_n, snare_n = per_class.get("kick", 0), per_class.get("snare", 0)
+        drums_ok = len(drums) >= 200 and kick_n >= 50 and snare_n >= 30
+        print(f"{SONG}: bpm {bpm:.2f}")
+        print(f"drum_line: {len(drums)} hits {per_class}")
+        print(f"embed: drum_line={'YES' if drums_ok else 'NO'}")
+        if WRITE:
+            if drums_ok:
+                data["drum_line"] = {"granularity": 16, "bpm_fit": round(bpm, 2),
+                                     "classes": ["kick", "snare", "hat", "crash"],
+                                     "source": "onset + band-energy/decay classify on drums.mp3", "events": drums}
+            else:
+                data.pop("drum_line", None)
             SONG_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
             print(f"WROTE {SONG_JSON}")
         return

@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-203-double-track";
+  const BANDROOM_APP_VERSION = "br-204-drum-line";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -5030,6 +5030,7 @@
     if (!(currentMode === "synth" && aiLightRuntimeEnabled())) return Infinity;
     if (lineKey === "vocal_melody") return 4;
     if (lineKey === "guitar_line") return 6;  // v335: one more strum on phones — chug needs at least 8th-ish density
+    if (lineKey === "drum_line") return 10;   // v338: kit one-shots are cheap; vel-slot thinning drops quiet hats first, keeps kick/snare/crash
     if (lineKey === "bass_line") return 6;
     return 6;
   }
@@ -5090,6 +5091,33 @@
     return [midi, midi + 7, midi + 12]
       .slice(0, maxNotes)
       .map((n) => Tone.Frequency(n, "midi").toNote());
+  }
+
+  // v338: transcribed drum performance. Row format matches the other lines —
+  // [bar, step(frac), durSteps, CLASS, vel] where CLASS indexes DRUM_CLASS
+  // (not midi). The real recording carries its own fills, crash placement,
+  // dynamics and micro-timing, so none of the pattern path's compensation
+  // (velocity floors, jitter, Dilla offsets, phrase shaping, generated
+  // fills/crash hints) applies here — the performance IS the groove.
+  const DRUM_CLASS = ["kick", "snare", "hat", "crash"];
+  function playTranscribedDrumBar(time, subTime) {
+    if (!drumKit) return false;
+    const rows = rowsForLightTranscribedPlayback("drum_line", transcribedNotesForBar("drum_line", state.barCount));
+    if (!rows.length) return false;
+    const micScale = micFollowVelocityScale();
+    rows.forEach((row) => {
+      const cls = DRUM_CLASS[Number(row[3])] || "snare";
+      const inst = drumKit[cls];
+      if (!inst) return;
+      const t = time + (Number(row[1]) || 0) * subTime;
+      const vel = clamp((Number(row[4]) || 0.5) * micScale, 0.05, 1);
+      try {
+        if (cls === "kick") inst.triggerAttackRelease("C1", "16n", t, vel);
+        else if (cls === "crash") inst.triggerAttackRelease("2n", t, vel);
+        else inst.triggerAttackRelease("16n", t, vel);
+      } catch (e) {}
+    });
+    return true;
   }
 
   function playTranscribedGuitarBar(ctx, time) {
@@ -5383,7 +5411,12 @@
       const isSynthMode = (currentMode === "synth");
 
       // Drums (only if toggle on AND we're in synth mode)
-      if (isSynthMode && $("br-toggle-drums").checked && drumKit) {
+      // v338: transcribed performance first — when the song carries a real
+      // drum transcription, the actual kit performance (incl. its own fills,
+      // crashes and dynamics) plays and the pattern/fill/Dilla machinery
+      // below stays silent. Songs without data fall through unchanged.
+      if (isSynthMode && $("br-toggle-drums").checked && drumKit &&
+          !playTranscribedDrumBar(time, subTime)) {
         // v133: per-step microOffsets (Dilla feel) — master preset / profile
         // 別に固定の offset を加える。snare のバックビート (2/4 拍) を後ろに
         // ドラッグ、hat の offbeat を前にプッシュ = J Dilla / lofi の groove
