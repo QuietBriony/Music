@@ -58,9 +58,13 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : engine
 - agent    : codex | claude
 - human-gate: yes（修正 PR 後に試聴で体感確認）
-- status   : wip — fix 1 出荷済み（PR #139 / v187, 2026-05-18）。試聴確認待ち
+- status   : wip — fix 1 (v187) + fix 2 (v340) 出荷済み。試聴確認待ち
 - source   : user 観察（2026-05-18・Hazama FM ブラウザ再生が「重い・たまに詰まる」）
-- detail   : **進捗（v187）**: 候補対策 (1) を実施 — pad `maxPolyphony` 64→24、
+- detail   : **進捗（v340）**: 候補対策 (2) を実施 — fm.html 限定で AudioContext を
+  放送モード生成（`latencyHint: "playback"` + `lookAhead 0.3`、Tone 直後の inline
+  `Tone.setContext`）。engine.js 無改変・index.html (rig) は interactive のまま。
+  user が Pages で同時起動音シーンを試聴し詰まり減を確認できれば done。
+  **進捗（v187）**: 候補対策 (1) を実施 — pad `maxPolyphony` 64→24、
   `pianoMemory` 48→24 に capping（engine.js fm-94）。user が Pages で同時起動音
   シーンを試聴し、詰まり減を確認できれば done。まだ残る・voice steal が可聴なら
   cap 再調整か候補 (2) `Tone.context.lookAhead` 拡大 / `latencyHint: "playback"`。

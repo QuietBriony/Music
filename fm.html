@@ -21,6 +21,22 @@
   <meta name="mobile-web-app-capable" content="yes" />
 
   <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+  <script>
+    // BL-022 fix 2 — 放送モード context。fm.html はラジオ用途で低レイテンシ不要:
+    // latencyHint "playback" で出力バッファを広げ、lookAhead 0.3s で scheduler の
+    // 先読み余裕を増やし、同時起動音の CPU スパイク時の音詰まりに耐える。
+    // index.html (rig) はタップ楽器なので従来の interactive context のまま。
+    // engine.js より先 (defer 群より前) に走るので、全 Tone ノードがこの context 上に乗る。
+    (function () {
+      try {
+        if (typeof Tone === "undefined" || typeof Tone.setContext !== "function" || typeof Tone.Context !== "function") return;
+        Tone.setContext(new Tone.Context({ latencyHint: "playback", lookAhead: 0.3 }));
+        window.__HAZAMA_BROADCAST_CONTEXT = true;
+      } catch (error) {
+        console.warn("[HazamaFM] broadcast context unavailable, using default:", error);
+      }
+    })();
+  </script>
   <script src="audio/audio-safety.js?v=fm-61" defer></script>
   <script src="audio/namima-audio-adapter.js?v=fm-66" defer></script>
   <script src="audio/human-groove-governor.js" defer></script>

@@ -1,6 +1,31 @@
-# Band Room — Changelog (v65 → v339 compact)
+# Band Room — Changelog (v65 → v340 compact)
 
-Current compact release: v339.
+Current compact release: v340.
+
+---
+
+## v340 compact — BL-022 fix 2: Hazama FM を放送モード context に (音詰まり対策後半)
+
+fix 1 (v187: polyphony cap 64/48→24) に続く、同時起動音での音詰まり対策の後半。
+fm.html だけ AudioContext を「放送モード」で生成する:
+
+- **`latencyHint: "playback"`** — ラジオ用途は低レイテンシ不要。出力バッファが
+  広がり、CPU スパイク時のアンダーラン (= 詰まり・プチ) 耐性が上がる。
+- **`lookAhead: 0.3`** (既定 0.1) — scheduler の先読み余裕を 3 倍に。
+  同時多発トリガで main thread が一瞬詰まっても発音予定が崩れない。
+- 実装は fm.html の Tone 直後 inline script (`Tone.setContext`)。defer 群より
+  先に走るので全ノードが同一 context に乗る。**engine.js は無改変**、
+  index.html (rig) はタップ楽器なので従来の interactive context のまま。
+- 操作系への影響: pill 切替等の UI 反応が最大 ~0.3s 遅れて聞こえる場合がある
+  (ラジオとして許容範囲。DJ ランプは rampParam なので無関係)。
+- 診断: `window.__HAZAMA_BROADCAST_CONTEXT === true` / 失敗時は warn して既定
+  context へ fallback。
+- checklist の marker drift (v337 のまま放置されていた) を v340 へ同期吸収。
+
+試聴ポイント: 同時起動音が重なるシーン (accent + chord + fill が重なる瞬間) で
+詰まり/プチが減ったか。BL-022 の完了条件は user 試聴での体感確認。
+
+`hazama-fm-v340` (asset ?v は据え置き — engine/flavor 等は無変更)。
 
 ---
 
