@@ -1,6 +1,23 @@
-# Band Room — Changelog (v65 → v331 compact)
+# Band Room — Changelog (v65 → v332 compact)
 
-Current compact release: v331.
+Current compact release: v332.
+
+---
+
+## v332 compact - Band Room light AI playback
+
+Band Room AI recreation keeps the transcribed guitar/bass/vocal data, but
+light runtimes now play a representative per-bar subset instead of firing
+every extracted row at once. Guitar keeps source-derived timing/velocity while
+using a single-voice driven fallback in light mode, chords shorten long pads,
+and sampler voice/guitar paths use lightweight delay space instead of heavy
+reverb.
+
+The START path also keeps the quick synth-first behavior and avoids rebuilding
+samplers from stopped AI controls, so playback can start immediately and stay
+responsive on lower-power browser sessions.
+
+`band-room.js?v=br-200`, `hazama-fm-v332`.
 
 ---
 
