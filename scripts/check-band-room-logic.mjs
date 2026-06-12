@@ -204,6 +204,14 @@ assert.match(source, /queueSynthSamplerUpgrade\(reason\)/, "AI START should queu
 assert.match(source, /function aiLightRuntimeEnabled\(\)/, "AI playback should expose a light runtime gate");
 assert.match(source, /function aiSamplerUpgradeEnabled\(\)/, "AI sampler upgrade should be opt-in rather than automatic");
 assert.match(source, /if \(!shouldAutoUpgradeSynthSamples\(reason\)\)/, "AI sample upgrade queue should skip by default for light playback");
+assert.match(source, /function shouldRebuildSynthControlNow\(\)/, "AI instrument controls should not rebuild samplers while stopped");
+assert.match(source, /applies on AI start/, "Stopped AI instrument changes should be deferred until START");
+assert.match(source, /function makeLightDrumKit\(/, "AI light runtime should avoid Tone.Offline drum rendering during START");
+assert.match(source, /aiLightRuntimeEnabled\(\)\) return makeLightDrumKit/, "AI light runtime should use the lightweight generated drum buffers");
+assert.match(source, /function rowsForLightTranscribedPlayback\(/, "AI light runtime should thin transcribed lines without rewriting the source data");
+assert.match(source, /lineKey === "guitar_line"\) return 5/, "AI light runtime should cap transcribed guitar strums per bar");
+assert.match(source, /const lightGuitar = \{[\s\S]*triggerAttackRelease\(notes, dur, time, vel\)/, "AI light runtime should use a single-voice guitar wrapper");
+assert.match(source, /new Tone\.FeedbackDelay\(\{ delayTime: "16n", feedback: 0\.08, wet: 0\.10 \}\)/, "AI light sampler voice should avoid heavy reverb");
 assert.match(source, /needsQuickSynthLayer\(.*quickFirst/, "AI START should rebuild stale sampler layers back to quick synth when light");
 assert.match(source, /ensureMasterFft\(\)/, "Spectrum FFT should be lazy-created instead of always connected");
 assert.match(source, /ensureMasterRecorderDestination\(\)/, "Recording MediaStream tap should be lazy-created");
@@ -396,8 +404,8 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
     "v234: the v233 jitTrigger helper must be removed (JIT scheduling reverted)");
   assert.match(source, /guitarSynth\.triggerAttackRelease\(voicing,/,
     "v234: triggerGuitarAgent must trigger the guitar PolySynth directly");
-  assert.match(source, /chordSynth\.triggerAttackRelease\(step\.notes,/,
-    "v234: triggerChordAgent must trigger the chord PolySynth directly");
+  assert.match(source, /chordSynth\.triggerAttackRelease\((?:step\.notes|notes),/,
+    "v234/v330: triggerChordAgent must trigger the chord synth directly");
 }
 // v235: screen Wake Lock. iOS suspends/throttles Web Audio when the screen
 // sleeps; the MediaStream background-bridge alone can't keep 原音 playback

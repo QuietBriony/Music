@@ -531,11 +531,11 @@
     masterTapeSatWet = new Tone.Gain(lightRuntime ? 0.045 : 0.07);
     masterTapeSatDry = new Tone.Gain(0.94);
 
-    masterReverb = new Tone.Reverb({
-      decay: lightRuntime ? 2.1 : 3.0,
-      preDelay: 0.018,
-      wet: 1
-    });  // v313/v316: wider room, shorter on light runtime
+    masterReverb = lightRuntime
+      ? new Tone.FeedbackDelay({ delayTime: "16n.", feedback: 0.14, wet: 1 })
+      : new Tone.Reverb({ decay: 3.0, preDelay: 0.018, wet: 1 });
+    // v330: AI light runtime avoids Tone.Reverb's convolution buffer build
+    // during START; a short delay keeps width/space without the heavy boot cost.
     masterDryGain = new Tone.Gain(0.80);
     masterWetGain = new Tone.Gain(lightRuntime ? 0.12 : 0.20);
 
@@ -645,7 +645,9 @@
     vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.42, wet: 0.16 }).start();
     vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.24, wet: 1 });
     vocalDelayWet = new Tone.Gain(0.0);    // echoes stay off — they smeared the timing
-    vocalReverb = new Tone.Reverb({ decay: 2.9, preDelay: 0.012, wet: 1 });
+    vocalReverb = lightRuntime
+      ? new Tone.FeedbackDelay({ delayTime: "16n", feedback: 0.10, wet: 1 })
+      : new Tone.Reverb({ decay: 2.9, preDelay: 0.012, wet: 1 });
     vocalReverbWet = new Tone.Gain(0.16);  // v313: more shared room, less front-center vocal
     vocalDryGain = new Tone.Gain(0.68);    // pull the dry vocal back into the wall
 
@@ -1787,6 +1789,73 @@
     }
   }
 
+  function makeLightDrumBuffer(seconds, render) {
+    const raw = Tone.context?.rawContext || Tone.context?.context || Tone.context;
+    const sr = Math.max(8000, Math.floor(raw?.sampleRate || 44100));
+    const len = Math.max(1, Math.floor(seconds * sr));
+    const audioBuffer = raw.createBuffer(1, len, sr);
+    const data = audioBuffer.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      const t = i / sr;
+      data[i] = clamp(render(t, i, sr), -1, 1);
+    }
+    return typeof Tone.ToneAudioBuffer === "function" ? new Tone.ToneAudioBuffer(audioBuffer) : audioBuffer;
+  }
+
+  function makeLightDrumKit(target, profileName) {
+    const p = KIT_PROFILES[profileName] || KIT_PROFILES["default"];
+    const kickBuf = makeLightDrumBuffer(0.42, (t, i, sr) => {
+      const env = Math.exp(-t * 9.0);
+      const freq = 46 + 72 * Math.exp(-t * 18);
+      const body = Math.sin(2 * Math.PI * freq * t) * env * 0.95;
+      const click = i < sr * 0.012 ? (Math.random() * 2 - 1) * (1 - i / (sr * 0.012)) * 0.12 : 0;
+      return body + click;
+    });
+    const snareBuf = makeLightDrumBuffer(0.24, (t) => {
+      const env = Math.exp(-t * (18 / Math.max(0.06, p.snare.decay)));
+      const noise = (Math.random() * 2 - 1) * env * 0.55;
+      const body = Math.sin(2 * Math.PI * 185 * t) * Math.exp(-t * 24) * 0.14;
+      return noise + body;
+    });
+    const hatBuf = makeLightDrumBuffer(0.09, (t, i) => {
+      const env = Math.exp(-t * 72);
+      const noise = ((Math.random() * 2 - 1) - (i % 2 ? 0.22 : -0.22)) * env * 0.30;
+      return noise;
+    });
+    const clapBuf = makeLightDrumBuffer(0.18, (t) => (Math.random() * 2 - 1) * Math.exp(-t * 24) * 0.42);
+    const cowbellBuf = makeLightDrumBuffer(0.16, (t) => (
+      Math.sin(2 * Math.PI * 540 * t) + Math.sin(2 * Math.PI * 810 * t) * 0.55
+    ) * Math.exp(-t * 18) * 0.32);
+    const tomBuf = makeLightDrumBuffer(0.28, (t) => {
+      const freq = 96 + 44 * Math.exp(-t * 12);
+      return Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 10) * 0.55;
+    });
+    const crashBuf = makeLightDrumBuffer(0.72, (t, i) => {
+      const env = Math.exp(-t * 3.1);
+      return ((Math.random() * 2 - 1) - (i % 3 ? 0.12 : -0.12)) * env * 0.22;
+    });
+
+    const kickPan  = new Tone.Panner(0).connect(target);
+    const snarePan = new Tone.Panner(-0.06).connect(target);
+    const hatPan   = new Tone.Panner(0.22).connect(target);
+    const ghostPan = new Tone.Panner(-0.16).connect(target);
+    const fillPan  = new Tone.Panner(0.12).connect(target);
+    const crashPan = new Tone.Panner(0.20).connect(target);
+
+    const kit = {
+      kick:  { triggerAttackRelease(_note, _dur, time, vel) { playDrumHit(kickBuf, kickPan, time, clamp(vel, 0.04, 0.98)); } },
+      snare: { triggerAttackRelease(_d, time, vel) { playDrumHit(snareBuf, snarePan, time, clamp(vel, 0.05, 0.95)); } },
+      hat:   { triggerAttackRelease(_d, time, vel) { playDrumHit(hatBuf, hatPan, time, clamp(vel, 0.02, 0.55)); } },
+      ghost: { triggerAttackRelease(_d, time, vel, role) {
+        const v = clamp(vel, 0.04, 0.7);
+        playDrumHit(role && role.indexOf("cowbell") >= 0 ? cowbellBuf : clapBuf, ghostPan, time, v);
+      } },
+      fill:  { triggerAttackRelease(_d, time, vel) { playDrumHit(tomBuf, fillPan, time, clamp(vel, 0.05, 0.9)); } },
+      crash: { triggerAttackRelease(_d, time, vel) { playDrumHit(crashBuf, crashPan, time, clamp(vel, 0.06, 0.85)); } }
+    };
+    return withChainDispose(markLayerKind(kit, "synth"), [kickPan, snarePan, hatPan, ghostPan, fillPan, crashPan]);
+  }
+
   async function makeDrumKit(target, profileName) {
     const p = KIT_PROFILES[profileName] || KIT_PROFILES["default"];
 
@@ -2783,26 +2852,31 @@
       if (!quickFirst) await ensureOnlineCatalogForSynth();
       if (synthPartEnabled("br-toggle-drums") && needsQuickSynthLayer(drumKit, quickFirst)) {
         drumKit = await buildKitForSource(quickFirst ? "synth" : state.kitSource);
+        await yieldToUi();
       }
       if (SYNTH_REBUILD_PARTS.bass && synthPartEnabled("br-toggle-bass") && needsQuickSynthLayer(synthBass, quickFirst)) {
         const old = synthBass;
         synthBass = await makeSynthBass(bassBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
         if (old && old !== synthBass) disposeSynthLayer(old);
+        await yieldToUi();
       }
       if (SYNTH_REBUILD_PARTS.guitar && synthPartEnabled("br-toggle-guitar") && needsQuickSynthLayer(guitarSynth, quickFirst)) {
         const old = guitarSynth;
         guitarSynth = await makeGuitar(guitarBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
         if (old && old !== guitarSynth) disposeSynthLayer(old);
+        await yieldToUi();
       }
       if (SYNTH_REBUILD_PARTS.voice && synthPartEnabled("br-toggle-voice") && needsQuickSynthLayer(voiceSynth, quickFirst)) {
         const old = voiceSynth;
         voiceSynth = await makeVoiceBox(voiceBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
         if (old && old !== voiceSynth) disposeSynthLayer(old);
+        await yieldToUi();
       }
       if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && needsQuickSynthLayer(chordSynth, quickFirst)) {
         const old = chordSynth;
         chordSynth = await makeChordSynth(chordBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
         if (old && old !== chordSynth) disposeSynthLayer(old);
+        await yieldToUi();
       }
       if (synthPartEnabled("br-toggle-click") && !clickSynth) clickSynth = makeClick(clickBus);
       if (kitStatus && reason !== "toggle") {
@@ -2875,6 +2949,7 @@
   async function buildBaseKit(source) {
     const resolved = resolveKitSource(source);
     if (resolved === "synth" || !resolved) {
+      if (aiLightRuntimeEnabled()) return makeLightDrumKit(drumBus, state.kitProfile || "default");
       return makeDrumKit(drumBus, state.kitProfile || "default");
     }
     if (resolved.startsWith("online/")) {
@@ -3032,7 +3107,9 @@
     if (!opts.forceSynth && state.guitarInstrument && state.onlineCatalog) {
       const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.guitarInstrument);
       if (instDef && instDef.kind === "sampler") {
-        const verb = new Tone.Reverb({ decay: 1.2, wet: 0.09 }).connect(target);
+        const verb = light
+          ? new Tone.FeedbackDelay({ delayTime: "16n", feedback: 0.08, wet: 0.08 }).connect(target)
+          : new Tone.Reverb({ decay: 1.2, wet: 0.09 }).connect(target);
         const lp = new Tone.Filter({ frequency: 8600, type: "lowpass", Q: 0.5 }).connect(verb);
         // Light distortion only on electric variant
         const isElectric = instDef.id.includes("electric");
@@ -3078,6 +3155,34 @@
     // low-mid (octave 3 power chords), so everything below ~130 Hz belongs
     // to the bass.
     const hpG = new Tone.Filter({ frequency: 130, type: "highpass", Q: 0.6 });
+    if (light) {
+      const guitar = new Tone.Synth({
+        oscillator: { type: "sawtooth" },
+        envelope: { attack: 0.002, decay: 0.08, sustain: 0.52, release: 0.10 },
+        volume: -9.8
+      });
+      guitar.connect(hpG);
+      hpG.connect(dist);
+      dist.connect(lp);
+      lp.connect(target);
+      const lightGuitar = {
+        triggerAttackRelease(notes, dur, time, vel) {
+          const note = Array.isArray(notes) ? notes[0] : notes;
+          if (!note) return;
+          try { guitar.triggerAttackRelease(note, dur, time, vel); } catch (e) {}
+        },
+        triggerRelease(_note, time = Tone.now()) {
+          try { guitar.triggerRelease(time); } catch (e) {}
+        },
+        releaseAll(time = Tone.now()) {
+          try { guitar.triggerRelease(time); } catch (e) {}
+        },
+        dispose() {
+          try { guitar.dispose(); } catch (e) {}
+        }
+      };
+      return withChainDispose(markLayerKind(lightGuitar, "synth"), [dist, lp, hpG]);
+    }
     const guitar = new Tone.PolySynth(Tone.Synth, {
       // v245 attempted fat oscillators here (count 2, spread 18) but the
       // PolySynth cap-10 × 2-osc combined with chord PolySynth's fat budget
@@ -3146,7 +3251,9 @@
     if (!opts.forceSynth && state.voiceInstrument && state.onlineCatalog) {
       const instDef = state.onlineCatalog.instruments?.find((i) => i.id === state.voiceInstrument);
       if (instDef && instDef.kind === "sampler") {
-        const verb = new Tone.Reverb({ decay: 2.7, wet: 0.36 }).connect(target);
+        const verb = light
+          ? new Tone.FeedbackDelay({ delayTime: "16n", feedback: 0.08, wet: 0.10 }).connect(target)
+          : new Tone.Reverb({ decay: 2.7, wet: 0.36 }).connect(target);
         const urls = {};
         Object.entries(instDef.notes).forEach(([note, p]) => {
           urls[note] = instDef.base_url + p;
@@ -3167,8 +3274,18 @@
 
     // v92 synth fallback: AMSynth + dual formant (vowel-ish "ah")
     const v = currentProfile().vocal;
-    const verb = new Tone.Reverb({ decay: light ? 1.2 : 2.5, wet: light ? Math.min(v.verbWet, 0.10) : v.verbWet }).connect(target);
+    const verb = light
+      ? new Tone.FeedbackDelay({ delayTime: "16n", feedback: 0.08, wet: Math.min(v.verbWet, 0.08) }).connect(target)
+      : new Tone.Reverb({ decay: 2.5, wet: v.verbWet }).connect(target);
     const hp = new Tone.Filter({ frequency: v.hpFreq, type: "highpass", Q: 0.5 }).connect(verb);
+    if (light) {
+      const voice = new Tone.Synth({
+        oscillator: { type: "triangle" },
+        envelope: { attack: 0.035, decay: 0.18, sustain: 0.58, release: 0.22 },
+        volume: -13
+      }).connect(hp);
+      return withChainDispose(markLayerKind(voice, "synth"), [verb, hp]);
+    }
     const mix = new Tone.Gain(0.9).connect(hp);
     const formant1 = new Tone.Filter({ frequency: v.formant1, type: "bandpass", Q: 5 }).connect(mix);
     const formant2 = new Tone.Filter({ frequency: v.formant2, type: "bandpass", Q: 5 }).connect(mix);
@@ -4894,16 +5011,53 @@
     const line = state.songData?.[lineKey];
     return !!(line && Array.isArray(line.events) && line.events.length);
   }
+
+  function transcribedLightRowLimit(lineKey) {
+    if (!(currentMode === "synth" && aiLightRuntimeEnabled())) return Infinity;
+    if (lineKey === "vocal_melody") return 4;
+    if (lineKey === "guitar_line") return 5;
+    if (lineKey === "bass_line") return 6;
+    return 6;
+  }
+
+  function rowsForLightTranscribedPlayback(lineKey, rows) {
+    if (!Array.isArray(rows) || !rows.length) return [];
+    const limit = transcribedLightRowLimit(lineKey);
+    if (!Number.isFinite(limit) || rows.length <= limit) return rows;
+    const slots = Math.max(1, Math.floor(limit));
+    const bestBySlot = new Array(slots).fill(null);
+    rows.forEach((row) => {
+      const step = clamp(Number(row[1]) || 0, 0, 15.999);
+      const slot = clamp(Math.floor((step / 16) * slots), 0, slots - 1);
+      const prev = bestBySlot[slot];
+      const vel = Number(row[4]) || 0;
+      if (!prev || vel > (Number(prev[4]) || 0)) bestBySlot[slot] = row;
+    });
+    const picked = bestBySlot.filter(Boolean);
+    if (picked.length < slots) {
+      const byVelocity = rows.slice().sort((a, b) => (Number(b[4]) || 0) - (Number(a[4]) || 0));
+      for (const row of byVelocity) {
+        if (picked.length >= slots) break;
+        if (!picked.includes(row)) picked.push(row);
+      }
+    }
+    return picked.sort((a, b) => (Number(a[1]) || 0) - (Number(b[1]) || 0));
+  }
+
   function playTranscribedBar(synth, lineKey, ctx, time) {
-    const rows = transcribedNotesForBar(lineKey, state.barCount);
-    if (!rows) return false;
+    const rows = rowsForLightTranscribedPlayback(lineKey, transcribedNotesForBar(lineKey, state.barCount));
+    if (!rows.length) return false;
     rows.forEach((row) => {
       // v328 (生感): step and durSteps are FRACTIONAL — the data carries the
       // player's real micro-timing (間/pocket) and real note lengths
       // (staccato/legato breathing), both tempo-relative via subTime. No
       // quantize clamp, no fixed gate — the performance IS the humanization.
       const t = time + (Number(row[1]) || 0) * ctx.subTime;
-      const durSec = Math.max(0.05, (Number(row[2]) || 1) * ctx.subTime);
+      const rawDurSteps = Math.max(0.5, Number(row[2]) || 1);
+      const durSteps = aiLightRuntimeEnabled()
+        ? Math.min(rawDurSteps, lineKey === "bass_line" ? 2.8 : 3.0)
+        : rawDurSteps;
+      const durSec = Math.max(0.05, durSteps * ctx.subTime);
       const note = Tone.Frequency(Number(row[3]) || 36, "midi").toNote();
       try { synth.triggerAttackRelease(note, durSec, t, Number(row[4]) || 0.6); } catch (e) {}
     });
@@ -4925,13 +5079,17 @@
   }
 
   function playTranscribedGuitarBar(ctx, time) {
-    const rows = transcribedNotesForBar("guitar_line", state.barCount);
-    if (!rows || !guitarSynth) return false;
+    const rows = rowsForLightTranscribedPlayback("guitar_line", transcribedNotesForBar("guitar_line", state.barCount));
+    if (!rows.length || !guitarSynth) return false;
     const isJazzy = isJazzyMode();
-    const notesPerStrum = clamp(Math.floor(9 / Math.max(1, rows.length)), 1, isJazzy ? 3 : 3);
+    const notesPerStrum = aiLightRuntimeEnabled()
+      ? 1
+      : clamp(Math.floor(9 / Math.max(1, rows.length)), 1, isJazzy ? 3 : 3);
     rows.forEach((row) => {
       const t = time + (Number(row[1]) || 0) * ctx.subTime;
-      const durSec = Math.max(0.045, (Number(row[2]) || 1) * ctx.subTime * 0.96);
+      const rawDurSteps = Math.max(0.5, Number(row[2]) || 1);
+      const durSteps = aiLightRuntimeEnabled() ? Math.min(rawDurSteps, 1.6) : rawDurSteps;
+      const durSec = Math.max(0.045, durSteps * ctx.subTime * 0.96);
       const vel = clamp((Number(row[4]) || 0.55) * 0.96 + 0.02, 0.22, 0.96);
       const voicing = guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum);
       if (!voicing.length) return;
@@ -5100,7 +5258,9 @@
   function triggerChordAgent(ctx, time) {
     chordAgentPlan(ctx).forEach((step) => {
       const t = time + step.sub * ctx.subTime;
-      try { chordSynth.triggerAttackRelease(step.notes, step.dur || "4n", t + 0.005, step.vel); } catch (e) {}
+      const notes = aiLightRuntimeEnabled() && Array.isArray(step.notes) ? step.notes.slice(0, 2) : step.notes;
+      const dur = aiLightRuntimeEnabled() && step.dur === "1n" ? "2n" : (step.dur || "4n");
+      try { chordSynth.triggerAttackRelease(notes, dur, t + 0.005, step.vel); } catch (e) {}
     });
   }
 
@@ -5232,10 +5392,17 @@
           });
         }
         let crashFiredThisBar = false;
+        const lightDrumRuntime = aiLightRuntimeEnabled();
 
         frame.events.forEach((evt) => {
           const inst = drumKit[evt.instrument];
           if (!inst) return;
+          if (lightDrumRuntime) {
+            const beat = Number(evt.beat) || 0;
+            const sub = Number(evt.sub) || 0;
+            if (evt.instrument === "ghost" || evt.instrument === "fill") return;
+            if (evt.instrument === "hat" && !(sub === 0 && (beat === 0 || beat === 2))) return;
+          }
           // v290: drop the over-detected extra crashes — at most one
           // downbeat crash per bar, phrase-gated in low-energy sections.
           if (evt.instrument === "crash") {
@@ -5323,7 +5490,7 @@
         const isSectionEnd = (barInSection === barsInSection - 1);
         const isForcedSectionEndFill = isSectionEnd && !isFillBar;
         const role = frame.session_role || "";
-        if ((isFillBar || isForcedSectionEndFill) && role !== "intro" && role !== "outro") {
+        if (!lightDrumRuntime && (isFillBar || isForcedSectionEndFill) && role !== "intro" && role !== "outro") {
           // Forced section-end fill always uses V3 (sparse tom-tom). The 4-bar
           // rotating fill keeps its existing fillVariant cycle.
           const fillVariant = isForcedSectionEndFill ? 3 : Math.floor(barInSection / 4) % 4;
@@ -5463,6 +5630,7 @@
     state.starting = true;
     setButtonState("starting");
     try {
+      await yieldToUi();
       await startPlaybackBoot(Object.assign({}, opts, { startSeq }));
     } catch (e) {
       console.warn("[Band Room] startPlayback failed:", e);
@@ -5480,6 +5648,7 @@
     } catch (e) {
       console.warn("[Band Room] Tone.start failed:", e);
     }
+    await yieldToUi();
 
     if (!state.songData) {
       await loadSong(state.currentSongId);
@@ -5491,6 +5660,7 @@
     }
 
     ensureMaster();
+    await yieldToUi();
     const backgroundBridgeStart = startBackgroundAudioBridge();
     if (currentMode === "synth") setButtonState("preparing-ai");
     await preparePlaybackAssetsForCurrentMode("start");
@@ -7367,6 +7537,11 @@
         }
         state.kitProfile = profileSel.value;
         const status = $("br-kit-status");
+        if (!shouldRebuildSynthControlNow()) {
+          if (status) status.textContent = `profile: ${profileSel.value} (applies on AI start)`;
+          schedulePrefsSave();
+          return;
+        }
         if (status) status.textContent = `applying profile: ${profileSel.value}…`;
         try {
           // Rebuild bass/chord/vocal — always synth, always affected
