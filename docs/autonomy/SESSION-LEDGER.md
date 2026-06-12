@@ -19,6 +19,37 @@
 
 ---
 
+## 2026-06-13 — 横断磨き: Music の musicality 教訓を chill / namima へ翻訳
+- agent      : Claude Code (chouta-surface, Fable 5 / 1M context)
+- goal       : 「全体最適で磨き進めて。namima とかああいうやつらも」— Music で確立した
+  原則（pitch は構造・ランダムは density/timing へ、包み感は field で）を sibling へ
+- repos      : chill / namima（feature branch + PR）、Music（docs のみ）
+- 主要 diagnosis:
+  - chill: session bass は進行を barIndex%4 で歩くのに piano 層は同じ 4 和音プールを
+    毎 event 抽選 → **bass と piano が違う和音を弾く小節が構造的に発生**（v326 前の
+    Music と同病理）。全楽器モノセンターで広がりなし
+  - namima: 和声が固定 1 プールで永遠、dyad 相方が (x+0.17)%1 wrap で register 飛び
+    （短2度ペアも発生）、tail バス完全モノ
+  - drum-floor: groove の taste は evolution パイプラインが正式経路 → 触らず skip
+  - openclaw: 音エンジンなし → skip
+- shipped    :
+  - chill#37 — harmonic spine（長さ4プールを bar ロック + pulse-root を
+    SESSION_BASS_ROUTES 順に）+ depth/bloom echo PingPong 化。cache pwa-6
+  - namima#33 — 潮 tide（2 近縁ペンタを ~3.7 分周期で行き来）+ companion dyad
+    （scale 隣人化）+ tail PingPong + check-pwa-static の version パターン化
+    （BL-011/BL-015 前例、html⇔sw lockstep assert 追加）。cache stack-5 / sw v5
+  - 検証: chill VM probe 316/316 + 実ブラウザ 140/140 整合・determinism 維持・
+    6 秒走行 guard stable / namima 3 gate PASS + 実ブラウザで潮の交代を実観測・
+    31 dyad 全部協和・エラーゼロ
+- stack-check: 16 PASS / 0 BAD（feature branch 込み）
+- backlog    : BL-026 追記（chill#37 + namima#33 の試聴判定、human-gate）
+- next       : BL-026（人間試聴 → merge/戻し/knob）。chill morning-light の
+  転回形ペア（PR コメント参照）は聴いて気になれば roots 並べ替え 1 行
+- blockers   : 両 repo とも AGENTS 契約で runtime/音は人間レビュー必須 → 無人 merge
+  せず PR 待機。6/11 09:26 のクラッシュ残骸 index.lock を chill / namima / Music /
+  drum-floor / openclaw で除去（Music-transcribe worktree の同時刻 lock は codex
+  領分のため残置 — codex 側で除去要）
+
 ## 2026-06-01 — fable review: harness を consumed fields ベースに再構築
 - agent      : Claude Code (chouta-surface, Fable 5 / 1M context)
 - goal       : model を Fable 5 に切替えての fresh-eyes review。measurement harness
