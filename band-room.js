@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-201-guitar-rhythm";
+  const BANDROOM_APP_VERSION = "br-202-guitar-stroke-feel";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -3116,9 +3116,13 @@
         let chainIn = lp;
         let dist = null;  // v229: hoisted so dispose can reach it
         if (isElectric) {
+          // v335: more amp drive on the full path — the transcribed chug is in
+          // (v334); now it needs the crunch to read as a driven rock guitar
+          // instead of a clean demo sample. Light path keeps the gentler drive
+          // (phone speakers + CPU).
           dist = new Tone.Distortion({
-            distortion: light ? 0.12 : 0.18,
-            wet: light ? 0.22 : 0.32,
+            distortion: light ? 0.12 : 0.26,
+            wet: light ? 0.22 : 0.42,
             oversample: light ? "none" : "2x"
           }).connect(lp);
           chainIn = dist;
@@ -5015,7 +5019,7 @@
   function transcribedLightRowLimit(lineKey) {
     if (!(currentMode === "synth" && aiLightRuntimeEnabled())) return Infinity;
     if (lineKey === "vocal_melody") return 4;
-    if (lineKey === "guitar_line") return 5;
+    if (lineKey === "guitar_line") return 6;  // v335: one more strum on phones — chug needs at least 8th-ish density
     if (lineKey === "bass_line") return 6;
     return 6;
   }
@@ -5088,21 +5092,34 @@
     // thin-mono-guitar sound. Voices stay bounded because the v334 data caps
     // durations at 2 steps (chug gates on the next strum, voices release fast).
     const notesPerStrum = light ? 2 : 3;
+    // v335: down/up stroke feel. In a fast chug (strums < 1.2 steps apart) a
+    // real right hand alternates: downstrokes drive, upstrokes sit slightly
+    // softer and a hair late, and the pick crosses the strings in the
+    // OPPOSITE direction. Strokes separated by more than 1.2 steps are all
+    // treated as fresh downstrokes.
+    let prevStep = -Infinity;
+    let strokeIdx = 0;
     rows.forEach((row) => {
-      const t = time + (Number(row[1]) || 0) * ctx.subTime;
+      const step = Number(row[1]) || 0;
+      strokeIdx = (step - prevStep) < 1.2 ? strokeIdx + 1 : 0;
+      prevStep = step;
+      const isUpstroke = strokeIdx % 2 === 1;
+      const t = time + step * ctx.subTime + (isUpstroke ? 0.004 : 0);
       const rawDurSteps = Math.max(0.3, Number(row[2]) || 1);
       const durSteps = light ? Math.min(rawDurSteps, 1.6) : rawDurSteps;
       const durSec = Math.max(0.045, durSteps * ctx.subTime * 0.96);
-      const vel = clamp((Number(row[4]) || 0.55) * 0.96 + 0.02, 0.18, 0.98);
+      const vel = clamp(((Number(row[4]) || 0.55) * 0.96 + 0.02) * (isUpstroke ? 0.88 : 1), 0.16, 0.98);
       const voicing = guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum);
       if (!voicing.length) return;
       // v334: strum stagger — a real downstroke hits low→high strings ~5-8ms
       // apart; simultaneous PolySynth notes read as an organ stab. Light
-      // runtime keeps the single batched call (CPU).
+      // runtime keeps the single batched call (CPU). v335: upstrokes sweep
+      // high→low (reversed order).
       if (light) {
         try { guitarSynth.triggerAttackRelease(voicing, durSec, t, vel); } catch (e) {}
       } else {
-        voicing.forEach((note, i) => {
+        const sweep = isUpstroke ? voicing.slice().reverse() : voicing;
+        sweep.forEach((note, i) => {
           try { guitarSynth.triggerAttackRelease(note, durSec, t + i * 0.007, vel * (1 - i * 0.06)); } catch (e) {}
         });
       }
