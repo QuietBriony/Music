@@ -1,6 +1,31 @@
-# Band Room — Changelog (v65 → v338 compact)
+# Band Room — Changelog (v65 → v339 compact)
 
-Current compact release: v338.
+Current compact release: v339.
+
+---
+
+## v339 compact — AI 再構築: 実曲を LCD / sakanaction スタイルで組み替え
+
+原音(実録音)→ AI 再現(忠実なシンセ再現)に続く第3形態。曲の正体
+(**実ボーカルメロディ・実ベースの音程・ベース由来コード進行**)は保ったまま、
+グルーヴだけを参照スタイルへ組み替える:
+
+- **LCD風**(disco-punk): 4つ打ちキック + バックビート + オフビート・ハット、
+  ベースは実音程の executing 8分パルス(6/14 でオクターブ跳ね)、ギターは
+  オフビートのディスコ・スカンク、コードは and 拍のハウス・スタブ。
+- **サカナ風**(electro-rock): 4つ打ち + 8分ライド + 14 でオープン、ベースは
+  16分シンコペーション、ギターはクリーン長音+合いの手、コードは **16分シンセ・
+  アルペジオ**。
+- 全パターン deterministic(サイコロ無し)。**小節エネルギーは実ドラム演奏の
+  密度に追従**するので、verse は静かに chorus は上がる(曲の起伏が残る)。
+- UI: モード行の `🧪 再構築` セレクト(off / LCD風 / サカナ風)。AI 再現モード
+  でのみ有効、原音には無関係。スタイル選択で kit profile も連動
+  (lcd→lcd-motorik、sakanaction→sakanaction)。**セッション内のみ**
+  (リロードで off に戻る=既定は忠実な AI 再現)。
+- ボーカルメロディ転写は再構築でもそのまま歌う(曲の顔)。tabasco 等
+  転写の薄い曲もコードとキーから同じグルーヴで鳴る。
+
+`band-room.js?v=br-205`、`band-room.css?v=br-85`、`hazama-fm-v339`。
 
 ---
 

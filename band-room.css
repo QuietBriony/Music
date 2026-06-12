@@ -585,6 +585,28 @@ body[data-mode="stems"] [data-scope="synth"] { display: none !important; }
   font-size: 13px;
 }
 
+/* v339: AI 再構築 style selector — pill-styled to sit beside the mode radios.
+   Synth-mode only; greyed out in stems mode via the data-mode scope. */
+#br-mode label.br-reconstruct {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(143, 247, 241, 0.22);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(143, 247, 241, 0.05);
+  font-size: 12px;
+  color: var(--text-sub);
+}
+#br-mode label.br-reconstruct select {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
+
 #br-mode label.br-radio:has(input:checked) {
   border-color: var(--accent);
   background: rgba(255, 136, 102, 0.18);
