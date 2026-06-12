@@ -104,9 +104,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `band-room.html`, and `sw.js`. Current repo markers include
   `engine.js?v=fm-118`, `fm.css?v=fm-53`, `fm.js?v=fm-70`,
   `audio/genre-flavor.js?v=fm-75`, `audio/ai-fills.js?v=fm-71`,
-  `style.css?v=fm-28`, `band-room.css?v=br-85`,
-  `band-room.js?v=br-205`, `audio/audio-safety.js?v=br-67`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v340`.
+  `style.css?v=fm-28`, `band-room.css?v=br-86`,
+  `band-room.js?v=br-206`, `audio/audio-safety.js?v=br-67`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v341`.
 - For v169 Hazama FM melodic director, let FM run for at least 16 bars and
   confirm `window.MusicRuntimeState.melodicDirector` changes key/contour over
   phrases while playback stays smooth.
@@ -119,9 +119,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - Open the route badge panel and confirm `route` / `bridge` / `event` /
   `output` / `context` update. During playback, tap `rearm`; failed rearm must
   return to direct output rather than leave playback silent.
-- If Band Room changed in the same PR, also confirm `band-room.css?v=br-84`,
-  `band-room.js?v=br-203`, `audio/audio-safety.js?v=br-67`, and
-  `band-room.html` references match `sw.js`.
+- If Band Room changed in the same PR, also confirm the current `band-room.css`
+  / `band-room.js` / `audio/audio-safety.js` markers (see the marker list
+  above) and `band-room.html` references match `sw.js`.
 - For v168 Band Room saved mix migration, load with old v166 default slider
   values in `band-room.prefs.v1` and confirm only exact old defaults migrate to
   the v168 default mix while custom slider values remain untouched.
