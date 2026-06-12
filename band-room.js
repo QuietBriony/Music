@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-202-guitar-stroke-feel";
+  const BANDROOM_APP_VERSION = "br-203-double-track";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -571,7 +571,11 @@
     instrumentBus = makeInstrumentPolishBus(masterGain);
     const drumPan   = new Tone.Panner(0.00).connect(instrumentBus);
     const bassPan   = new Tone.Panner(0.00).connect(instrumentBus);
-    const guitarPan = new Tone.Panner(-0.18).connect(instrumentBus);
+    // v336: double-track illusion (full runtime). The same guitar performance
+    // feeds two takes: dry hard-left and a 13ms Haas-delayed copy hard-right —
+    // the classic L/R rhythm-guitar wall without a second sampler. Light
+    // runtime keeps the old single slightly-left placement.
+    const guitarPan = new Tone.Panner(aiLightRuntimeEnabled() ? -0.18 : -0.42).connect(instrumentBus);
     const voicePan  = new Tone.Panner(0.00).connect(masterGain);
     const chordPan  = new Tone.Panner(+0.16).connect(instrumentBus);
     const clickPan  = new Tone.Panner(0.00).connect(masterGain);
@@ -593,7 +597,13 @@
     // v319: add a small bass pressure lift without moving the drum/guitar wall.
     drumBus = new Tone.Gain(0.52).connect(drumPan);
     bassBus = new Tone.Gain(0.84).connect(bassPan);
-    guitarBus = new Tone.Gain(0.88).connect(guitarPan);
+    guitarBus = new Tone.Gain(aiLightRuntimeEnabled() ? 0.88 : 0.74).connect(guitarPan);  // v336: doubled path adds ~+2.5 dB — compensate so the wall widens without getting louder
+    if (!aiLightRuntimeEnabled()) {
+      const guitarHaas = new Tone.Delay(0.013);
+      const guitarPanB = new Tone.Panner(0.42).connect(instrumentBus);
+      guitarBus.connect(guitarHaas);
+      guitarHaas.connect(guitarPanB);
+    }
     voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
     chordBus = new Tone.Gain(0.62).connect(chordPan);
     clickBus = new Tone.Gain(0.35).connect(clickPan);
@@ -5285,11 +5295,15 @@
   }
 
   function triggerChordAgent(ctx, time) {
+    // v336: on transcribed songs the real guitar now plays the actual chords —
+    // a full-level pad doubling the same voicings reads as mud. Duck the pad
+    // to a supporting bed; songs without a transcribed guitar keep full level.
+    const padDuck = hasTranscribedLine("guitar_line") ? 0.62 : 1;
     chordAgentPlan(ctx).forEach((step) => {
       const t = time + step.sub * ctx.subTime;
       const notes = aiLightRuntimeEnabled() && Array.isArray(step.notes) ? step.notes.slice(0, 2) : step.notes;
       const dur = aiLightRuntimeEnabled() && step.dur === "1n" ? "2n" : (step.dur || "4n");
-      try { chordSynth.triggerAttackRelease(notes, dur, t + 0.005, step.vel); } catch (e) {}
+      try { chordSynth.triggerAttackRelease(notes, dur, t + 0.005, step.vel * padDuck); } catch (e) {}
     });
   }
 
