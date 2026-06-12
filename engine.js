@@ -7186,15 +7186,112 @@ function approachValue(current, target, maxStep) {
 // gentle compressor + StereoWidener を masterGain と masterLimiter の間に
 // 挿入。conservative settings (threshold -10 / ratio 2.0 / width 0.62) で
 // 既存ミックスバランスを大きく崩さず音圧感と横方向を底上げ。
+//
+// fm-117: master FIELD architecture — "The Null Zone" direction.
+// fm-55 の単一 StereoWidener は低域まで全帯域を広げていて、低音のセンター
+// 圧が左右に滲む(= ぶっとさの真逆)。3-band 分割に進化:
+//   low  (<160Hz)      → Tone.Mono       — 低音はモノで太く、圧として中央に
+//   mid  (160-2400Hz)  → Widener 0.55    — 従来並みの広がり
+//   high (>2400Hz)     → Widener 0.85    — ひろーっく、ディテールが左右に住む
+// さらに NullZoneState: 周期的な「囲まれる」窓 — lows が +dB で立ち上がり
+// mids が一歩引き、highs が最大幅まで開く 6 小節 (advanceGrooveStructure の
+// HumanGrooveGovernor と同じ縫い目から 1 小節ごとに駆動)。Aphex 的包み感の
+// インフラ。Tone の帯域ノードが無い環境では fm-55 経路にフォールバック。
 const masterLimiter = new Tone.Limiter({ threshold: -0.8 });
 const hardwareOutput = new Tone.Gain(1).toDestination();
 const masterComp = new Tone.Compressor({ threshold: -10, ratio: 2.0, attack: 0.012, release: 0.18, knee: 6 });
-const masterWidener = new Tone.StereoWidener(0.62);
 const focusModGain = new Tone.Gain(1);
 const masterGain    = new Tone.Gain(0.8);
 masterGain.connect(masterComp);
-masterComp.connect(masterWidener);
-masterWidener.connect(focusModGain);
+
+const NullZoneState = {
+  supported: false,
+  active: false,
+  periodBars: 48,   // この周期ごとに窓が来る
+  windowBars: 6,    // 窓の長さ
+  warmupBars: 24,   // 立ち上がり直後は発動しない
+  lastChange: -1,
+  nodes: null
+};
+
+(function buildMasterField() {
+  const hasBands = typeof Tone.MultibandSplit === "function" &&
+                   typeof Tone.Mono === "function" &&
+                   typeof Tone.StereoWidener === "function";
+  if (!hasBands) {
+    // fm-55 フォールバック (単一 widener)
+    const masterWidener = new Tone.StereoWidener(0.62);
+    masterComp.connect(masterWidener);
+    masterWidener.connect(focusModGain);
+    return;
+  }
+  try {
+    const split = new Tone.MultibandSplit({ lowFrequency: 160, highFrequency: 2400 });
+    const lowMono = new Tone.Mono();
+    const lowGain = new Tone.Gain(1.0);
+    const midWide = new Tone.StereoWidener(0.55);
+    const midGain = new Tone.Gain(1.0);
+    const highWide = new Tone.StereoWidener(0.85);
+    const highGain = new Tone.Gain(1.0);
+    masterComp.connect(split);
+    split.low.connect(lowMono);
+    lowMono.connect(lowGain);
+    lowGain.connect(focusModGain);
+    split.mid.connect(midWide);
+    midWide.connect(midGain);
+    midGain.connect(focusModGain);
+    split.high.connect(highWide);
+    highWide.connect(highGain);
+    highGain.connect(focusModGain);
+    NullZoneState.supported = true;
+    NullZoneState.nodes = { split, lowMono, lowGain, midWide, midGain, highWide, highGain };
+  } catch (error) {
+    console.warn("[Music] master field unavailable, fm-55 fallback:", error);
+    const masterWidener = new Tone.StereoWidener(0.62);
+    masterComp.connect(masterWidener);
+    masterWidener.connect(focusModGain);
+  }
+})();
+
+function advanceNullZoneField() {
+  if (!NullZoneState.supported || !NullZoneState.nodes) return;
+  const cycle = GrooveState.cycle || 0;
+  const inWindow = cycle >= NullZoneState.warmupBars &&
+                   (cycle % NullZoneState.periodBars) < NullZoneState.windowBars;
+  if (inWindow === NullZoneState.active) return;
+  NullZoneState.active = inWindow;
+  NullZoneState.lastChange = cycle;
+  const n = NullZoneState.nodes;
+  try {
+    if (inWindow) {
+      // 囲まれる窓: lows が立ち上がり、mids が一歩引き、highs が全開に
+      n.lowGain.gain.rampTo(1.26, 2.2);    // ≈ +2.0 dB
+      n.midGain.gain.rampTo(0.87, 2.2);    // ≈ −1.2 dB
+      n.highWide.width.rampTo(0.95, 2.6);
+      n.midWide.width.rampTo(0.68, 2.6);
+    } else {
+      n.lowGain.gain.rampTo(1.0, 3.2);
+      n.midGain.gain.rampTo(1.0, 3.2);
+      n.highWide.width.rampTo(0.85, 3.2);
+      n.midWide.width.rampTo(0.55, 3.2);
+    }
+  } catch (error) {}
+}
+
+if (typeof window !== "undefined") {
+  window.NullZoneField = {
+    get state() {
+      return {
+        supported: NullZoneState.supported,
+        active: NullZoneState.active,
+        periodBars: NullZoneState.periodBars,
+        windowBars: NullZoneState.windowBars,
+        lastChange: NullZoneState.lastChange
+      };
+    }
+  };
+}
+
 focusModGain.connect(masterLimiter);
 const recorderDestination = Tone.context.createMediaStreamDestination();
 const backgroundPlaybackDestination = Tone.context.createMediaStreamDestination();
@@ -10768,6 +10865,7 @@ function advanceGrooveStructure() {
   advanceModeTimbrePalettes({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceMusicRadioBrain({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
   advanceSignatureCells({ energyNorm, creationNorm, resourceNorm, waveNorm, observerNorm, voidNorm, circleNorm });
+  advanceNullZoneField();
   updateGenerativeGenome(currentGradientParts());
 
   const humanGroove = typeof window !== "undefined" ? window.HumanGrooveGovernor : null;
