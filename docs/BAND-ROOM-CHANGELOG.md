@@ -1,6 +1,31 @@
-# Band Room — Changelog (v65 → v333 compact)
+# Band Room — Changelog (v65 → v334 compact)
 
-Current compact release: v333.
+Current compact release: v334.
+
+---
+
+## v334 compact — ギター転写を「リズムギター」に作り直し(生バンド感)
+
+ユーザー報告「ギターしょぼい、codex に触らせたけどどうにもならん感。生バンド感
+マシマシで」。実測診断(human-fly):
+- 検出器は verse で **9.5 strums/bar** 拾えるのに最終データは **5/bar**(median
+  集約 + 広い移動平均 + delta 0.09 で、音圧の高い箇所のチャグ8分が埋もれていた)
+- 持続が **median 2.8 steps(73% が 2 steps 以上)** = 歪みサステインの減衰追跡が
+  走りすぎてドローン化、PolySynth の声も食い潰す
+- 再生側 `floor(9/rows)` で行数が多い小節ほど **1音に痩せる**(パワーコード崩壊)
+
+v334:
+- 抽出: mean envelope + タイトな移動平均(5)+ delta 0.05 + wait 1 →
+  実ストローク密度に追従(10/bar キャップは維持)。持続は**次のストロークまで**
+  (×0.92、上限 2.0 steps)= チャグのゲート感。ベロシティは v328 と同じ
+  dB 基準 0.16-1.0。
+- 再生: voicing を **常時 root+5th(+octave)**(light 2音 / full 3音)に固定。
+  **ストラム・スタガー**(7ms/弦、上弦ほど僅かに弱く)— オルガン刺しではなく
+  ダウンストロークに。light は従来どおり一括発音(CPU)。
+- 全曲再抽出: tabasco 85 / hey 973 / i-got-a-feeling 1201 / under-the-moon 882 /
+  electric-sheep 706 / human-fly 684 / sister 764 strums(median vel 0.75-0.83)。
+
+`band-room.js?v=br-201`、`hazama-fm-v334`。CSS は br-84 のまま。
 
 ---
 

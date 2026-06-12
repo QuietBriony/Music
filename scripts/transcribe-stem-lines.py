@@ -176,11 +176,16 @@ def extract_guitar_line(bpm: float, total_steps: int, bar_root_pc):
     band_peak = float(np.percentile(band_energy[band_energy > 0], 98)) if np.any(band_energy > 0) else 1.0
     band_peak_db = 20.0 * np.log10(band_peak + 1e-12)
 
-    onset_env = librosa.onset.onset_strength(y=y, sr=SR, hop_length=HOP, aggregate=np.median)
+    # v334: sharper detection. The median-aggregated envelope + wide pre/post
+    # averaging + delta 0.09 found ~9.5 strums/bar on the verse but the chain
+    # only kept ~5 — and dense loud sections raised the local average so chug
+    # 8ths fell under delta. Mean envelope + tight averaging + lower delta
+    # tracks the actual strum density (the 10/bar cap below still bounds it).
+    onset_env = librosa.onset.onset_strength(y=y, sr=SR, hop_length=HOP)
     onsets = librosa.onset.onset_detect(
         onset_envelope=onset_env, sr=SR, hop_length=HOP, units="frames",
-        backtrack=True, pre_max=3, post_max=4, pre_avg=12, post_avg=12,
-        delta=0.09, wait=2
+        backtrack=False, pre_max=3, post_max=3, pre_avg=5, post_avg=5,
+        delta=0.05, wait=1
     )
     if len(onsets) < 8:
         return []
@@ -199,19 +204,19 @@ def extract_guitar_line(bpm: float, total_steps: int, bar_root_pc):
             len(band_energy) - 1, frame + int(2.0 * step_sec / (HOP / SR))
         )
         next_frame = int(np.clip(next_frame, frame + 1, len(band_energy) - 1))
-        peak = float(np.max(band_energy[frame:min(len(band_energy), frame + 5)]) or band_energy[frame] or 1e-9)
-        max_end = min(next_frame, frame + int(8.0 * step_sec / (HOP / SR)), len(band_energy) - 1)
-        end = frame + 1
-        while end < max_end and band_energy[end] > peak * 0.34:
-            end += 1
-        end_t = float(times[max(end, frame + 1)])
-        dur_steps = float(np.clip((end_t - start_t) / step_sec, 0.30, 8.0))
+        # v334: chug durations. A distorted rhythm guitar gates on the NEXT
+        # strum — the 0.34-decay walk on compressed sustain ran to a median of
+        # 2.8 steps (73% >= 2 steps), i.e. drones that also exhausted PolySynth
+        # voices. Duration = gap to the next strum (slightly shortened), hard
+        # cap 2.0 steps.
+        gap_steps = (float(times[next_frame]) - start_t) / step_sec
+        dur_steps = float(np.clip(gap_steps * 0.92, 0.30, 2.0))
 
         attack = float(np.max(band_energy[frame:min(len(band_energy), frame + 4)]) or 0.0)
         seg_db = 20.0 * np.log10(attack + 1e-12)
-        depth = np.clip((band_peak_db - seg_db) / 22.0, 0.0, 1.0)
-        vel = float(np.clip(0.20 + 0.80 * (1.0 - depth), 0.20, 1.0))
-        if vel < 0.24 and dur_steps < 0.75:
+        depth = np.clip((band_peak_db - seg_db) / 24.0, 0.0, 1.0)
+        vel = float(np.clip(0.16 + 0.84 * (1.0 - depth), 0.16, 1.0))  # v328-consistent dynamics
+        if vel < 0.20 and dur_steps < 0.5:
             continue
 
         bar = int(step_pos // 16)
