@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-206-reconstruct-matrix";
+  const BANDROOM_APP_VERSION = "br-207-vocal-expression";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -3319,7 +3319,7 @@
       // v244: gently fat carrier (2 voices, small 12-cent spread) — adds
       // body without fighting the vibrato LFO already on voice.detune.
       oscillator: light ? { type: "sawtooth" } : { type: "fatsawtooth", count: 2, spread: 12 },
-      envelope: { attack: 0.06, decay: 0.32, sustain: 0.65, release: 0.45 },
+      envelope: { attack: 0.05, decay: 0.32, sustain: 0.65, release: 0.62 },  // v342: softer entry, longer tail — phrase ends breathe instead of clipping
       modulation: { type: "sine" },
       modulationEnvelope: { attack: 0.04, decay: 0.2, sustain: 0.5, release: 0.4 },
       volume: -14  // v104: was -10, lowered so vocal guide doesn't dominate
@@ -5432,10 +5432,39 @@
     });
   }
 
+  // v342: vocal expression — a singer CONNECTS notes. When the next note
+  // starts within a breath of the previous one's end and the interval is
+  // singable (≤5 semitones), glide into it (portamento = legato/しゃくり);
+  // bigger leaps and post-rest entries re-attack cleanly. Cross-bar
+  // continuity is tracked so phrases spanning a barline stay connected.
+  // The mono AMSynth/Synth voice glides from its current pitch; the
+  // sampler voice path ignores .portamento (instrument lead, no glide).
+  let lastVocalNote = { bar: -99, endStep: 0, midi: 0 };
+  function playTranscribedVocalBar(ctx, time) {
+    const rows = rowsForLightTranscribedPlayback("vocal_melody", transcribedNotesForBar("vocal_melody", state.barCount));
+    if (!rows.length || !voiceSynth) return false;
+    rows.forEach((row) => {
+      const step = Number(row[1]) || 0;
+      const durSteps = Math.max(0.5, Number(row[2]) || 1);
+      const midi = Number(row[3]) || 60;
+      const prevAbsEnd = lastVocalNote.bar * 16 + lastVocalNote.endStep;
+      const gap = (state.barCount * 16 + step) - prevAbsEnd;
+      const interval = Math.abs(midi - lastVocalNote.midi);
+      const legato = gap > -2 && gap < 0.9 && interval > 0 && interval <= 5;
+      try { voiceSynth.portamento = legato ? 0.055 : 0; } catch (e) {}
+      const t = time + step * ctx.subTime;
+      const durSec = Math.max(0.06, durSteps * ctx.subTime * 0.97);
+      const note = Tone.Frequency(midi, "midi").toNote();
+      try { voiceSynth.triggerAttackRelease(note, durSec, t, Number(row[4]) || 0.6); } catch (e) {}
+      lastVocalNote = { bar: state.barCount, endStep: step + durSteps, midi };
+    });
+    return true;
+  }
+
   function triggerVoiceAgent(ctx, time) {
-    // v324: real melody first — when this song has a transcribed vocal line,
-    // sing it and skip the generative contour.
-    if (playTranscribedBar(voiceSynth, "vocal_melody", ctx, time)) return;
+    // v324/v342: real melody first, sung with expression — when this song has
+    // a transcribed vocal line, sing it and skip the generative contour.
+    if (playTranscribedVocalBar(ctx, time)) return;
     voiceAgentPlan(ctx).forEach((step) => {
       const t = time + step.sub * ctx.subTime + (Number(step.microMs) || 0) / 1000;
       const durSec = Math.max(1, Number(step.durSteps) || 2) * ctx.subTime * 0.92;
@@ -8009,7 +8038,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
-  const MIX_PREFS_VERSION = "v319-bass-vocal-pressure";
+  const MIX_PREFS_VERSION = "v342-vocal-on";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -8038,7 +8067,11 @@
   // it in the UI; the toggle stays. Only flips users who had the old
   // default (true) — customised values (already false) are left alone.
   const V254_DEFAULT_TOGGLES_MIGRATION = {
-    "br-toggle-voice": { old: true, current: false }
+    // v254 turned the (then-generative, noisy) voice OFF. v342: the voice
+    // sings the real transcribed melody now — flip the v254-era OFF back ON.
+    // Same caveat as every default migration: only saved values matching the
+    // old default move; post-migration manual choices stick.
+    "br-toggle-voice": { old: false, current: true }
   };
   // v255: chord pad volume reduction. With voice now OFF (v254), the
   // 4-piece baseline is drums + bass + guitar + chord. The chord pad's

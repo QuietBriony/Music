@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-206-reconstruct-matrix", "Band Room should expose the current reconstruct-matrix version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-207-vocal-expression", "Band Room should expose the current vocal-expression version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -109,7 +109,7 @@ assert.equal(migratedMixPrefs.sliders["br-space-width"], "72", "Old default mast
 assert.equal(migratedMixPrefs.sliders["br-vfx-chorus"], "16", "Old default vocal chorus should migrate to the v313 wide blend");
 assert.equal(migratedMixPrefs.sliders["br-vfx-delay"], "0", "Old default vocal echo should stay off for timing clarity");
 assert.equal(migratedMixPrefs.sliders["br-vfx-reverb"], "16", "Old default vocal reverb should migrate to the v313 short room");
-assert.equal(migratedMixPrefs.mixPrefsVersion, "v319-bass-vocal-pressure", "Migrated prefs should record current mix version");
+assert.equal(migratedMixPrefs.mixPrefsVersion, "v342-vocal-on", "Migrated prefs should record current mix version");
 
 // v289 mix rebalance migration: untouched part defaults move, custom stays.
 const v289Mix = migratePrefsForCurrentMix({
@@ -134,13 +134,18 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-86/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-206/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-207/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-86/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-206/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-207/, "Service worker should precache the current Band Room JS marker");
+// v342: AI vocal — default ON + sung expression
+assert.match(html, /id="br-toggle-voice" checked/, "AI vocal should default ON now that it sings the real melody (v342)");
+assert.match(source, /"br-toggle-voice": \{ old: false, current: true \}/, "The v254 voice-OFF default should migrate back ON (v342)");
+assert.match(source, /function playTranscribedVocalBar\(/, "Vocal should sing with expression (legato portamento, v342)");
+assert.match(source, /voiceSynth\.portamento = legato \? 0\.055 : 0/, "Singable steps should glide; leaps and entries re-attack (v342)");
 // v339: AI 再構築 (style reconstruction)
 assert.match(html, /id="br-reconstruct-style"/, "Band Room should expose the AI 再構築 style selector");
 assert.match(source, /const reconstructParts = \{ drums: "off", bass: "off", guitar: "off", chords: "off" \}/, "AI 再構築 matrix should default all parts to 忠実 (v340)");
@@ -153,7 +158,7 @@ assert.match(source, /drumStyle !== "off"\) return reconstructDrumBar\(time, sub
 // v324/v325: transcribed-line playback (pilot human-fly → all songs)
 assert.match(source, /function playTranscribedBar\(/, "AI agents should support transcribed-line playback (v324)");
 assert.match(source, /playTranscribedBar\(synthBass, "bass_line"/, "Bass agent should play the transcribed line when present");
-assert.match(source, /playTranscribedBar\(voiceSynth, "vocal_melody"/, "Voice agent should sing the transcribed melody when present");
+assert.match(source, /if \(playTranscribedVocalBar\(ctx, time\)\) return;/, "Voice agent should sing the transcribed melody with expression (v342)");
 assert.match(source, /function playTranscribedGuitarBar\(ctx, time\)/, "Guitar agent should support transcribed strum playback");
 assert.match(source, /playTranscribedGuitarBar\(ctx, time\)/, "Guitar agent should prefer transcribed guitar rows before generated comping");
 assert.match(source, /hasTranscribedLine\("guitar_line"\)/, "Scheduler should run guitar when transcribed guitar rows exist");
@@ -503,7 +508,7 @@ assert.match(html, /id="br-vol-external-vocal"[^>]*value="78"/, "External vocal 
 assert.match(source, /const dryVal = 1 - wetVal;/, "Master reverb dry path should not jump on first slider touch");
 assert.match(source, /1 - w \* 0\.85/, "Tape dry path should not jump on first warmth slider touch");
 assert.match(source, /chordBus = new Tone\.Gain\(0\.62\)/, "AI chord bus should add harmonic bed for the v301 Human Fly body pass");
-assert.match(source, /const MIX_PREFS_VERSION = "v319-bass-vocal-pressure"/, "Band Room should version saved mix defaults");
+assert.match(source, /const MIX_PREFS_VERSION = "v342-vocal-on"/, "Band Room should version saved mix defaults");
 assert.match(source, /V301_HUMAN_FLY_BODY_MIGRATION/, "Saved AI defaults should migrate to the v301 Human Fly body balance");
 assert.match(source, /V312_SPACIOUS_VOCAL_AIR_MIGRATION/, "Saved stem/master defaults should migrate to the v312 spacious vocal-air balance");
 assert.match(source, /V313_BAND_FORWARD_VOCAL_WIDE_MIGRATION/, "Saved stem/master defaults should migrate to the v313 band-forward vocal-wide balance");

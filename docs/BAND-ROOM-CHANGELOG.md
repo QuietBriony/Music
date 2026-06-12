@@ -1,6 +1,28 @@
-# Band Room — Changelog (v65 → v341 compact)
+# Band Room — Changelog (v65 → v342 compact)
 
-Current compact release: v341.
+Current compact release: v342.
+
+---
+
+## v342 compact — AI ボーカル: デフォルト ON + 歌い回し(レガート/しゃくり)
+
+ユーザー「ボーカルAI磨けてる?」→ 調査結果: メロは磨いてあった(実転写 + v328
+生感)が、**そもそも voice toggle が v254 以来デフォルト OFF**(当時は生成メロが
+ノイズだったため)。実メロを歌う今は前提が逆転しているので:
+
+- **デフォルト ON**: `br-toggle-voice` を checked に。既存ユーザーの保存 prefs
+  にも**一回限りの移行**(`vocalOnMigratedV342` フラグ)で ON を適用 — 以後の
+  手動 OFF はそのまま尊重される。
+- **歌い回し**: `playTranscribedVocalBar` — 直前ノートの終わりから一息
+  (0.9 step 未満)以内に始まり、音程差が歌える幅(≤5半音)の音は
+  **ポルタメントで滑らかに繋ぐ**(レガート/しゃくり)。跳躍や休符明けは
+  クリーンに再アタック。小節をまたぐフレーズも連結を追跡。
+- **音色**: AMSynth エンベロープを attack 0.06→0.05 / release 0.45→0.62 —
+  フレーズ尻が切れずに息のように消える。
+- sampler ボイス(violin/cello/flute lead)は portamento 無視(楽器リードの
+  ままで正常)。
+
+`band-room.js?v=br-207`、`hazama-fm-v342`。CSS は br-86 のまま。
 
 ---
 
