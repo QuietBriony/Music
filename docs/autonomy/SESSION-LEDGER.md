@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-06-13 (cont.) — audio-overload 監査の決着 + FM 領分 hand-off 化
+- agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
+- goal       : Music repo 全体を 1 クラス（audio overload / dropout / 徐々に無音）で監査し、
+  修正可能分を出荷、FM 領分は REPORT のみ hand-off
+- repos      : Music（band-room 修正 + genre-flavor 修正 + docs hand-off）
+- shipped    :
+  - #353 / v354 — band-room: AI→原音 で synth band を破棄（常時 FX の原音波及を断つ）
+  - #355 / v356 — genre-flavor: `pumpGain` master leak 解消（drum-frames 切替ごとの
+    master 直結 Gain 漏れ。teardownActive に guarded dispose 追加・layer.gain と対称）
+  - sibling session が #352 / v353 で master light ゲートの mode 依存を独立に修正（同監査結論）
+  - 本コミット: FM 領分 hand-off を文書化（BL-028 + CODEX-HANDOFF.md 2026-06-13 節）
+- stack-check : N/A（docs/JS 検証は各 fix の PR gate で PASS 済。本コミットは docs のみ）
+- backlog    : 追記 BL-028（addAcousticFunField の常時 DSP 負荷 + light ゲート不在、FM 領分）
+- next       : FM workstream が BL-028 を実装（light/low-power ゲートで 2 常時 Reverb /
+  4 AutoPanner / 2 oversample を弱端末で軽量化）。user は全 fix の試聴判定（BL-022/BL-028）
+- blockers   : FM 領分（genre-flavor.js）は別 workstream 所有 — 監査 RULES により未修正
+
 ## 2026-06-13 (cont.) — opus/ultra: ambient stack の自走・長尺進化を仕上げ + BL-025 決着
 - agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
 - goal       : 「推奨やりきって」— 試聴 feedback (chillとまる / namima 鳴らない) に対応し、

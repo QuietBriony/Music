@@ -365,3 +365,68 @@ question for the user. Standard ship discipline:
   必ず git fetch origin、衝突時は版番号大きい方
 - Anthropic 課金: 重い R&D は codex 推奨、ship discipline は claude 親
 ```
+
+---
+
+## 2026-06-13 audio-overload 監査 — FM 領分 hand-off
+
+Music repo 全体を **1 クラス限定**（audio-thread overload / playback dropout /
+「ちゃんと鳴らない」/ 徐々に slowdown → silence）で監査した結果の引き継ぎ。
+band-room 側の**修正可能分は全て決着済**:
+
+| Finding | 状態 |
+|---|---|
+| band-room AI→原音 で synth band 残留（常時 FX が原音へ波及） | 修正済 #353 / v354 |
+| band-room master light ゲートの mode 依存 | 修正済 #352 / v353（sibling session）|
+| genre-flavor `pumpGain` master leak（drum-frames 切替ごとに master 直結 Gain が漏れる） | 修正済 #355 / v356 |
+| class 4（feedback/暴走）・class 5（rAF 枯渇） | clean（該当なし）|
+
+以下 2 件は **FM 領分**（genre-flavor.js は fm.html が読む FM genre flavor 層）。
+監査 RULES「FM territory は別 workstream 所有 — file:line で REPORT のみ、修正しない」
+に従い**未着手**。BACKLOG の **BL-028** で追跡。
+
+### F-1 — `addAcousticFunField` の常時 DSP 負荷（全 genre）
+
+- 定義: `audio/genre-flavor.js:1308` `function addAcousticFunField(layer, pill)`
+- 呼出: `applyProductionGovernor`（`:1322`）経由で**全 genre build 経路**から無条件:
+  `:295` `:298`（ambient）/ `:320`（acid）/ `:1798` `:2052` `:2918` `:2942`（drum-frames 各種）/
+  `:2080`（lofi）/ `:2580` `:2592`（jazz）/ `:3270` `:3278`（piano）
+- active genre ごとに常時稼働 DSP を 3 サブフィールド積む:
+  - `addMonoLowAnchor`（`:1091`）: `Tone.Distortion oversample:"2x"`（sat, `:1098`）+ FMSynth sub
+  - `addOrbitalAirField`（`:1143`）: 常時 `Tone.Reverb`（`:1149`）+ PingPongDelay +
+    `AutoPanner×2` `.start()`（`:1152-1153`、連続 LFO）+ FMSynth(glass) + MetalSynth + NoiseSynth(air)
+  - `addNullZoneRefractions`（`:1219`）: 常時 `Tone.Reverb`（`:1225`）+
+    `Tone.Distortion oversample:"2x"`（fold, `:1229`）+ `AutoPanner×2` `.start()`（`:1230-1231`）+
+    FMSynth×2(glass/chirp) + NoiseSynth(dust)
+- **正味コスト/active genre: +2 常時 Reverb、+4 起動済 AutoPanner、+2 oversample "2x" Distortion**
+  （加えて 2 PingPongDelay / 2 StereoWidener / ~5 FM・Metal synth / 2 NoiseSynth / 多数 Filter /
+  3 scheduleRepeat）。core-overload 原則: master 接続中は trigger 有無に関わらず全 quantum を処理。
+- **leak ではない**: 各 node は `layer.synths.push(...)`（`:1138` `:1214` `:1303`）済 →
+  genre 切替で `teardownActive` が dispose。蓄積ではなく active 中の steady-state CPU コスト。
+  （pumpGain leak #847 とは別物。あちらは累積、こちらは定常負荷。）
+
+### F-2 — device/light-runtime ゲートの不在
+
+- `applyProductionGovernor`→`addAcousticFunField` の gating は**音楽的なものだけ**:
+  movement intro skip（`:1184` `:1262`）/ 会話 role の chance scaling / dropBar 抑制。
+  これらは note **trigger** を減らすだけで、上記の常時 Reverb/LFO/oversample 構築は止めない。
+- genre-flavor.js に device-tier / light-runtime 概念が**皆無**
+  （`light|lowPower|deviceTier|isMobile|reduceFx|perfMode` grep clean。`:806` の "Light wash" は
+  美的 wash の意で端末ゲートではない）。弱端末でも full stack を構築・稼働する。
+- band-room の master が v353/#352 で獲得した「mode 依存 light ゲート」のような逃げ道が FM 側に無い。
+
+### 推奨アプローチ（FM workstream・未実行 / 出音キャラ判断を伴うので report-only）
+
+1. light/low-power ゲートを 1 本追加し、active 時は `addAcousticFunField` を skip するか
+   軽量変種を構築（2 Reverb → flavor 層共有の send 1 本 / oversample "2x" → 無し /
+   AutoPanner×4 `.start()` → 静的 `Panner`）。**最大の高価値は 2 常時 Reverb と oversampling**
+   （trigger と無関係に常時コスト）。
+2. light **OFF** 時は出音キャラを完全不変に保つ（原音/デフォルト挙動・master limiter -1.0 dB を変えない）。
+3. リスク: gating 端末で FM genre のキャラが変わる = 音楽的判断。FM workstream が所有。
+   出した PR は user 試聴（弱端末で詰まり減）で done 判定。
+
+### 監査の verify で REJECT した false positive（参考・修正不要）
+
+- drum-panner（`genre-flavor.js:561` 付近）の非 dispose は **GC churn であって audio コストではない**
+  と adversarial verify が判定 → finding から除外。overload クラスでは無視してよい。
+```

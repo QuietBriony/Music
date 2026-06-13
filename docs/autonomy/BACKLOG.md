@@ -79,6 +79,34 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   完了条件: 小 PR で出し、user が Pages の同時起動音シーンを試聴して詰まり減を確認。
   voice steal が可聴なら cap 値を上げ再調整。
 
+### BL-028 — Hazama FM `addAcousticFunField` の常時 DSP 負荷 + light ゲート不在（監査由来・FM 領分）
+- priority : P1
+- repo     : Music
+- scope    : engine（FM 領分: audio/genre-flavor.js — FM workstream 所有）
+- agent    : codex | claude（FM workstream）
+- human-gate: yes（出音キャラが変わるので試聴判定）
+- status   : open — 監査が REPORT のみ。BL-022 と同じ症状（FM 再生の負荷）に対する別根本原因
+- source   : 2026-06-13 audio-overload 監査（Music repo 全体・1 クラス限定）。
+  band-room 側の修正可能分は #353/v354・#352/v353・#355/v356（pumpGain leak）で決着済。
+  本 item は監査の FM 領分 hand-off。詳細は `docs/CODEX-HANDOFF.md` の同日節を参照。
+- detail   : `addAcousticFunField`（genre-flavor.js:1308）が `applyProductionGovernor`（:1322）
+  経由で**全 genre build 経路**（295/298/320/1798/2052/2080/2580/2592/2918/2942/3270/3278）から
+  無条件に呼ばれ、active genre ごとに常時稼働の DSP を 3 サブフィールド分積む:
+  - addMonoLowAnchor（:1091）: oversample "2x" Distortion（sat）+ FMSynth
+  - addOrbitalAirField（:1143）: 常時 Tone.Reverb + PingPongDelay + AutoPanner×2 `.start()` + FM/Metal/Noise
+  - addNullZoneRefractions（:1219）: 常時 Tone.Reverb + oversample "2x" Distortion（fold）+ AutoPanner×2 `.start()` + FMSynth×2 + Noise
+  正味 **+2 常時 Reverb / +4 起動済 AutoPanner（連続 LFO）/ +2 oversample "2x" Distortion**。
+  core-overload 原則上、これらは master 接続中は trigger 有無に関わらず全 quantum を処理する。
+  **leak ではない**（各 node は layer.synths に push 済 → genre 切替で teardownActive が dispose）。
+  あくまで active 中の steady-state CPU コスト。加えて genre-flavor.js には device-tier /
+  light-runtime ゲート概念が皆無（`light|lowPower|deviceTier|isMobile` grep clean）— gating は
+  movement/会話 role による trigger 確率調整のみで、弱端末でも full stack を構築・稼働する。
+  band-room の master が v353 で獲得した light ゲートのような逃げ道が FM 側に無い。
+  推奨（FM workstream・未実行）: light/low-power ゲートで addAcousticFunField を skip か軽量変種に
+  （2 Reverb → 共有 send 1 本、oversample → 無し、AutoPanner → 静的 Panner）。高価値は 2 常時
+  Reverb と oversampling。light OFF 時は出音キャラ不変を厳守（原音/デフォルト挙動は変えない）。
+  完了条件: FM workstream が light ゲートを実装 → user 試聴で弱端末の詰まり減を確認。
+
 ## P2
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
