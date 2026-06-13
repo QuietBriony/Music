@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-212-drum-room";
+  const BANDROOM_APP_VERSION = "br-213-drum-rr";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -1891,10 +1891,13 @@
     const fillPan  = new Tone.Panner(0.12).connect(target);
     const crashPan = new Tone.Panner(0.20).connect(target);
 
+    // v348: round-robin micro-detune on the light kit too (kick/snare/hat) — this
+    // is the path heard on every phone/PWA start. playbackRate only, no added energy.
+    let rr = 0;
     const kit = {
-      kick:  { triggerAttackRelease(_note, _dur, time, vel) { playDrumHit(kickBuf, kickPan, time, clamp(vel, 0.04, 0.98)); } },
-      snare: { triggerAttackRelease(_d, time, vel) { playDrumHit(snareBuf, snarePan, time, clamp(vel, 0.05, 0.95)); } },
-      hat:   { triggerAttackRelease(_d, time, vel) { playDrumHit(hatBuf, hatPan, time, clamp(vel, 0.02, 0.55)); } },
+      kick:  { triggerAttackRelease(_note, _dur, time, vel) { playDrumHit(kickBuf, kickPan, time, clamp(vel, 0.04, 0.98), 1 + ((rr++ & 1) ? 0.0012 : -0.0012)); } },
+      snare: { triggerAttackRelease(_d, time, vel) { playDrumHit(snareBuf, snarePan, time, clamp(vel, 0.05, 0.95), 1 + ((rr++ & 1) ? 0.0015 : -0.0015)); } },
+      hat:   { triggerAttackRelease(_d, time, vel) { playDrumHit(hatBuf, hatPan, time, clamp(vel, 0.02, 0.55), 1 + ((rr++ & 1) ? 0.0010 : -0.0010)); } },
       ghost: { triggerAttackRelease(_d, time, vel, role) {
         const v = clamp(vel, 0.04, 0.7);
         playDrumHit(role && role.indexOf("cowbell") >= 0 ? cowbellBuf : clapBuf, ghostPan, time, v);
@@ -2070,7 +2073,8 @@
     };
     const hat = {
       triggerAttackRelease(_d, time, vel) {
-        playDrumHit(hatBuf, hatPan, time, clamp(vel, 0.02, 0.55));
+        const rate = 1 + ((rr++ & 1) ? 0.0010 : -0.0010);   // v348: round-robin
+        playDrumHit(hatBuf, hatPan, time, clamp(vel, 0.02, 0.55), rate);
       }
     };
     const ghost = {
