@@ -292,10 +292,10 @@
 
   function buildAmbient(shape) {
     if (shape && shape.format === "namima-ambient-tone-js") {
-      try { return applyProductionGovernor(buildAmbientFromShape(shape), "ambient"); }
+      try { return applyProductionGovernor(addAmbientLead(buildAmbientFromShape(shape)), "ambient"); }
       catch (e) { console.warn("[GenreFlavor] ambient shape failed, fallback:", e); }
     }
-    return applyProductionGovernor(buildAmbientDefault(), "ambient");
+    return applyProductionGovernor(addAmbientLead(buildAmbientDefault()), "ambient");
   }
 
   // ---- TECHNO ---------------------------------------------------
@@ -1899,6 +1899,51 @@
   // Reference: Nujabes "Feather" (Modal Soul) sad-warm flute character.
   // Volume -19 dB foreground but sparse — only 28-38% probability each
   // 4-bar phrase window, with rests built into the phrase shapes.
+  // Ambient had only a D2+A2 drone + probabilistic glass pings — no melodic
+  // voice. Add ONE sparse held tone every ~2-4 bars (Eno "An Ending" style):
+  // above the glass dots, under the drone, key-tracked + motif-cell indexed so
+  // it follows the shipped phrase motif. A line, not more density.
+  function addAmbientLead(layer) {
+    if (!layer) return null;
+    const hall = new Tone.Reverb({ decay: 7, preDelay: 0.04, wet: 0.42 }).connect(layer.gain);
+    const delay = new Tone.FeedbackDelay({ delayTime: "4n.", feedback: 0.22, wet: 0.14 }).connect(hall);
+    const lp = new Tone.Filter({ frequency: 3200, type: "lowpass", Q: 0.3 }).connect(delay);
+    // PolySynth (low cap) so held tails ring/overlap into a slow line, not a cut-off mono.
+    const lead = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: "triangle" },
+      envelope: { attack: 0.9, decay: 0.4, sustain: 0.78, release: 4.5 },
+      volume: -24
+    }).connect(lp);
+    lead.maxPolyphony = 3;
+
+    // D-dorian-ish modal pool, an octave+ above the D2/A2 drone so it sings clear.
+    const POOL = ["D4", "E4", "F4", "A4", "C5"];
+    const beatSec = Tone.Time("4n").toSeconds();
+    let step = 0;
+    layer.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+      step++;
+      if (Math.random() < 0.34) return; // ~1 in 3 windows rests (breath)
+      const conversation = currentGrooveConversation && currentGrooveConversation();
+      if (conversation && conversation.role === "space") return; // honor a deliberate gap
+      let idx = step % POOL.length;
+      if (typeof melodicCellIndex === "function") {
+        try { idx = melodicCellIndex("ambient-lead", POOL.length); } catch (e) {}
+      }
+      let note = POOL[Math.min(POOL.length - 1, idx | 0)];
+      if (typeof transposeNoteName === "function" && typeof MelodicDirectorState !== "undefined") {
+        try { note = transposeNoteName(note, MelodicDirectorState.keyShift || 0); } catch (e) {}
+      }
+      const t = safeEventTime(time + 0.08 + Math.random() * 0.06);
+      const dur = beatSec * (4 + Math.random() * 4); // 4-8 beats, held + blooming
+      const vel = 0.34 + Math.random() * 0.08;
+      try { lead.triggerAttackRelease(note, dur, t, vel); } catch (e) {}
+    }, "2m", "1m"));
+
+    layer.synths.push(lead, lp, delay, hall);
+    layer.source = `${layer.source || "ambient"}+ambient-lead`;
+    return layer;
+  }
+
   function addNujabesFluteLead(layer) {
     if (!layer) return null;
     const hall = new Tone.Reverb({ decay: 3.6, preDelay: 0.03, wet: 0.34 }).connect(layer.gain);
