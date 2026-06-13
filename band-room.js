@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-215-master-gate";
+  const BANDROOM_APP_VERSION = "br-216-synth-dispose";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -2928,6 +2928,32 @@
     }
     disposeSynthLayer(nextLayer);
     return false;
+  }
+
+  // v354: AI→原音 must DISPOSE the synth band, not just release its notes.
+  // Otherwise its always-on chord/voice Tone.Reverbs + AutoPanner/Chorus/lpLfo
+  // LFOs + 2x-oversampled synthBass Distortion stay wired to masterGain and keep
+  // processing every audio quantum during 原音 (the v352 stack, only partially
+  // fixed). Deferred ~1.8s so release tails fade first (no click); guarded so a
+  // fast switch back to AI keeps the live band. Switch-back rebuilds lazily via
+  // prepareSynthPlaybackAssets (needsQuickSynthLayer(null) === true).
+  let synthBandTeardownTimer = null;
+  function scheduleSynthBandTeardown() {
+    if (synthBandTeardownTimer) clearTimeout(synthBandTeardownTimer);
+    const captured = { drumKit, synthBass, guitarSynth, voiceSynth, chordSynth, clickSynth };
+    synthBandTeardownTimer = setTimeout(() => {
+      synthBandTeardownTimer = null;
+      if (currentMode !== "stems") return; // switched back to AI — leave its band wired
+      Object.values(captured).forEach((layer) => { if (layer) disposeSynthLayer(layer); });
+      // Null only vars that still point at the disposed instances, so a
+      // concurrent rebuild is never clobbered (mirrors the prepareSynth pattern).
+      if (drumKit === captured.drumKit) drumKit = null;
+      if (synthBass === captured.synthBass) synthBass = null;
+      if (guitarSynth === captured.guitarSynth) guitarSynth = null;
+      if (voiceSynth === captured.voiceSynth) voiceSynth = null;
+      if (chordSynth === captured.chordSynth) chordSynth = null;
+      if (clickSynth === captured.clickSynth) clickSynth = null;
+    }, 1800);
   }
 
   function queueSynthSamplerUpgrade(reason = "start") {
@@ -6637,6 +6663,7 @@
         if (!ready) throw new Error("stems unavailable");
         const offsetSec = playbackContentElapsedSec();
         releaseSustainedSynths("mode-switch-stems");
+        scheduleSynthBandTeardown(); // v354: free the synth band's always-on FX so it stops costing during 原音
         currentMode = "stems";
         setBodyPlaybackMode(currentMode);
         resetPlaybackClock(offsetSec);

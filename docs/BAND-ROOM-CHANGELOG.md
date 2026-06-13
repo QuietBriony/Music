@@ -1,8 +1,27 @@
-# Band Room — Changelog (v65 → v353 compact)
+# Band Room — Changelog (v65 → v354 compact)
 
-Current compact release: v353.
+Current compact release: v354.
 
 （v349〜v351 は別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため番号が飛ぶ。）
+
+---
+
+## v354 compact — AI→原音 切替で synth band を破棄(常時 FX の原音への波及を断つ)
+
+v352/v353 後の監査(多エージェント)で残っていた v352 系の最後の穴を特定。AI→原音 の
+モード切替は `releaseSustainedSynths()` で**音符を release するだけ**で synth band 本体を
+破棄しておらず、chord/voice の常時 `Tone.Reverb` + AutoPanner/Chorus/lpLfo の LFO 群 +
+2x オーバーサンプル synthBass Distortion が masterGain に繋がったまま、原音中も全 audio
+quantum を処理し続けていた(v352 の stack の残り)。
+
+- **修正**: AI→原音 で `scheduleSynthBandTeardown()` を呼び、~1.8s 後(release tail が
+  消えてから=クリック無し)に synth band 6 レイヤ(drum/bass/guitar/voice/chord/click)を
+  dispose+null。`withChainDispose` 経由で各レイヤの reverb / LFO / distortion も全て破棄。
+  AI へ戻すと `prepareSynthPlaybackAssets` が lazy 再構築(`needsQuickSynthLayer(null)`=true)。
+- 高速な 原音→AI 復帰は guard で live band を維持(`currentMode === "stems"` の時だけ破棄)。
+- 原音 / stem path・master limiter(-1.0dB)・デスクトップ AI の音は不変。
+
+`band-room.js?v=br-216`、`hazama-fm-v354`。
 
 ---
 
