@@ -389,6 +389,27 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
   assert.match(source, /Tone\.Offline\(/,
     "v237: makeDrumKit must render drum voices via Tone.Offline");
 }
+
+// v359 (health-review G-4): dispose-coverage invariant. Every synth-band factory must
+// return its layer via withChainDispose(markLayerKind(...)) so the layer's always-on
+// nodes (reverbs/LFOs/filters) are torn down on AI→原音 mode switch (the v354 fix). A
+// factory that forgets this silently re-introduces the v352 "FX linger into 原音" leak.
+{
+  const SYNTH_FACTORIES = ["makeDrumKit", "makeLightDrumKit", "makeSynthBass", "makeGuitar", "makeVoiceBox", "makeChordSynth"];
+  for (const fn of SYNTH_FACTORIES) {
+    const start = source.indexOf(`function ${fn}(`);
+    assert.ok(start !== -1, `synth factory ${fn} should exist`);
+    // body = from this factory to the next factory definition (cheap scoping)
+    let bodyEnd = source.length;
+    for (const other of SYNTH_FACTORIES) {
+      const next = source.indexOf(`function ${other}(`, start + 1);
+      if (next > start && next < bodyEnd) bodyEnd = next;
+    }
+    const body = source.slice(start, bodyEnd);
+    assert.match(body, /withChainDispose\(\s*markLayerKind\(/,
+      `${fn} must return its layer via withChainDispose(markLayerKind(...)) so it disposes on mode switch (v354 teardown invariant)`);
+  }
+}
 // v231: AI 再現 is now an all-synth band (guitar + bass switched to the
 // internal synth). Guitar and chord are PolySynths with maxPolyphony 10;
 // the bar scheduler fires a whole bar of notes at once and PolySynth
