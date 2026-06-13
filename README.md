@@ -59,6 +59,8 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - 🤝 **[AGENTS.md](AGENTS.md)** — claude code / codex / 他 agent の最初に読む共通契約
 - 👯 **[並列開発プレイブック](docs/COLLAB-CLAUDE-AND-CODEX.md)** — claude と codex を並列で動かすガイド
 - 🏛️ **[Hazama FM アーキテクチャ](docs/HAZAMA-FM-ARCHITECTURE.md)** — システム全体像
+- 🎸 **[Band Room アーキテクチャ](docs/BAND-ROOM-ARCHITECTURE.md)** — 原音/AI 二系統・device ゲート・version 三系統・ゲート一覧・所有境界（1枚地図）
+- 🔊 **[Audio-Cost Invariants](docs/AUDIO-COST-INVARIANTS.md)** — 音切れ回帰を防ぐ MUST-NOT-REGRESS 4原則（`scripts/check-audio-cost-gates.mjs` が機械強制）
 - 🎵 **音楽的参照**:
   - [`references/apple-music-refs.json`](references/apple-music-refs.json) — 全 18 アーティスト x production translation
   - [`references/hazama-fm-pill-refs.json`](references/hazama-fm-pill-refs.json) — GENRE pill → reference 紐付け
