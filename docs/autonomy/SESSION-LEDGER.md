@@ -19,7 +19,33 @@
 
 ---
 
-## 2026-06-13 — 横断磨き: Music の musicality 教訓を chill / namima へ翻訳
+## 2026-06-13 (cont.) — opus/ultra: ambient stack の自走・長尺進化を仕上げ + BL-025 決着
+- agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
+- goal       : 「推奨やりきって」— 試聴 feedback (chillとまる / namima 鳴らない) に対応し、
+  ambient stack 全体の musicality を同じ品質基準へ揃える
+- repos      : chill / namima (runtime PR、user 指示で merge)、Music (docs)、drum-floor (監査)
+- shipped    :
+  - chill#38 — 「chillとまる」修正: lifecycle 停止が Transport 駆動 loop に復帰役を
+    任せ永久無音だった → visible/pageshow/focus で自動復帰 (手動 STOP は尊重)
+  - chill#39 — long-form weather: clear/veiled/deep の3楽章を ~72小節で一巡
+    (barIndex 駆動で決定論契約維持)。namima 潮の chill 版
+  - namima#35 — self-voice bloom: 起動後タップ無しでも潮プールで自走 (隣歩き小旋律 +
+    pluck「ピロ」+ recency gate)。「ならない」の本丸。「auto-start しない」契約厳守
+  - namima#36 — visual bloom: bloom 発火を sketch に通知し音高位置に淡いさざ波 (音画同期)
+  - BL-025 決着: presets/SCHEMA.md §2 に frame.bpm/swing = metadata-only を宣言
+    (wire せず、fm.js と二重権威回避)。Done へ
+  - 本番 (Pages) 配信を curl 確認: namima stack-6+/chill v7+/Music v341+ が live と実証
+    (「本番でデフォ？」への回答)
+- in-flight  : drum-floor musicality audit を多エージェント workflow で実行
+  (6 レンズ → 各 finding を adversarial verify → synth)。構造バグ (coplayer.js:22 の
+  phrase 長 8 ハードコード vs groove-engine の phraseLength 8/16/32 desync 疑い) を
+  検証中。結果に応じ構造 fix は PR (drum-floor runtime は human-gate のため無人 merge
+  せず flag)、taste は evolution suggestion JSON 起案
+- stack-check : (各 repo の integrity gate PASS、本 PR は docs)
+- backlog    : BL-025 Done。drum-floor audit 結果で新 BL を起こす可能性
+- next       : drum-floor audit synth → 構造 fix PR + suggestion。BL-026 含め live 試聴待ち
+- blockers   : checklist marker drift を再び吸収 (codex v341→v344 / br-206→209)。
+  drum-floor runtime は repo 契約で人間レビュー必須
 - agent      : Claude Code (chouta-surface, Fable 5 / 1M context)
 - goal       : 「全体最適で磨き進めて。namima とかああいうやつらも」— Music で確立した
   原則（pitch は構造・ランダムは density/timing へ、包み感は field で）を sibling へ

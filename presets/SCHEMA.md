@@ -114,6 +114,16 @@ the single source of truth.
 
 ### Field semantics
 - `frames[]` — 4–8 single-bar variations. Hazama FM picks one per bar.
+- `frames[].bpm` / `frames[].swing` — **annotation metadata only; NOT wired to
+  playback.** Real tempo comes from `fm.js GENRE_PROFILES[pill].bpm` → DJTempoState
+  → engine `rampParam("transport-bpm")`; real swing/feel comes from engine
+  `FM_MODE_SWING` (lofi/jazz deliberately `0.0` — see fm-67: triple-stacked delay
+  felt wrong, so feel is carried by `microMs`) plus per-event `microMs`. These two
+  frame-level fields document the bar's *intended* feel for humans and tools;
+  editing them does not change the sound. (Resolved BL-025, 2026-06-13 — declared
+  metadata rather than wired, to avoid a second tempo authority fighting `fm.js`.)
+- `frames[].barLength` — number of bars the frame represents (informational).
+- `frames[].role` — phrase role label (`settle` / `build` / etc.); informational.
 - `events[].instrument` — `kick` | `snare` | `hat` | `ghost` | `fill` | `crash`.
 - `events[].beat` — 0..3 (quarter), `sub` — 0..3 (16th within the beat).
 - `events[].microMs` — timing offset in ms (negative = early, positive = behind).
