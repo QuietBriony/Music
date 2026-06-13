@@ -22,6 +22,7 @@ const files = [
   "scripts/check-hazama-melody.mjs",
   "scripts/check-fm-route-badge.mjs",
   "scripts/check-runtime-doc-markers.mjs",
+  "scripts/check-audio-cost-gates.mjs",
   "scripts/stack-check.mjs"
 ];
 

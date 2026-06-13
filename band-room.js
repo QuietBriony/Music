@@ -363,7 +363,7 @@
 
     // v323: grit up (0.12/0.16 → 0.15/0.20) toward the v322 wall density —
     // kept shy of the 原音 settings because synth content tips into fizz sooner.
-    const sat    = new Tone.Distortion({ distortion: 0.18, oversample: "2x", wet: 1 });  // v344: 0.15->0.18 a touch more harmonic density
+    const sat    = new Tone.Distortion({ distortion: 0.18, oversample: "2x", wet: 1 });  // audio-cost-ok: desktop-only, behind the if(lightRuntime){...return} early-return at ~L351 (v344 grit 0.18)
     const satWet = new Tone.Gain(0.24);   // v344: 0.20->0.24 parallel saturated blend
     const satDry = new Tone.Gain(0.92);   // parallel clean path
     // v344: low-pass the saturated copy so its harmonics land as low-mid
@@ -783,11 +783,6 @@
     const nav = typeof navigator !== "undefined" ? navigator : {};
     const ua = nav.userAgent || "";
     return /iPad|iPhone|iPod/.test(ua) || (nav.platform === "MacIntel" && nav.maxTouchPoints > 1);
-  }
-
-  function isSafariFamily() {
-    const ua = typeof navigator !== "undefined" ? navigator.userAgent || "" : "";
-    return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
   }
 
   // v308: background audio is ON by default now. The hidden media-stream bridge
