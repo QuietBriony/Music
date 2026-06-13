@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-209-timbre-uplift";
+  const BANDROOM_APP_VERSION = "br-210-guitar-amp";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -1509,7 +1509,8 @@
       chord: { oscType: "triangle", attack: 0.018, decay: 0.32, release: 0.5, sustain: 0.5,
                chorusWet: 0.40, autoPanFreq: 0.18, autoPanDepth: 0.32, verbWet: 0.20 },
       vocal: { harmonicity: 2.4, vibratoFreq: 5.0, vibratoCents: 10,
-               formant1: 700, formant2: 1200, hpFreq: 200, verbWet: 0.22 }
+               formant1: 700, formant2: 1200, hpFreq: 200, verbWet: 0.22 },
+      guitar: { oscType: "sawtooth", driveAmt: 0.55, dryWet: 0.42, driveWet: 0.62, cabFreq: 2200, cabQ: 1.5, lpFreq: 4800, verbWet: 0.12 }
     },
     "sakanaction": {
       label: "Sakanaction (dance rock — tight kick / clicky hat)",
@@ -1524,7 +1525,8 @@
       chord: { oscType: "sawtooth", attack: 0.008, decay: 0.20, release: 0.35, sustain: 0.55,
                chorusWet: 0.55, autoPanFreq: 0.35, autoPanDepth: 0.42, verbWet: 0.16 },
       vocal: { harmonicity: 2.0, vibratoFreq: 4.0, vibratoCents: 6,
-               formant1: 850, formant2: 1500, hpFreq: 280, verbWet: 0.14 }
+               formant1: 850, formant2: 1500, hpFreq: 280, verbWet: 0.14 },
+      guitar: { oscType: "sawtooth", driveAmt: 0.40, dryWet: 0.50, driveWet: 0.52, cabFreq: 2600, cabQ: 1.3, lpFreq: 5200, verbWet: 0.10 }
     },
     "lcd-motorik": {
       label: "LCD motorik (4-on-floor / cowbell / pad swell)",
@@ -1539,7 +1541,8 @@
       chord: { oscType: "triangle", attack: 0.040, decay: 0.55, release: 0.85, sustain: 0.7,
                chorusWet: 0.48, autoPanFreq: 0.10, autoPanDepth: 0.28, verbWet: 0.34 },
       vocal: { harmonicity: 2.6, vibratoFreq: 5.5, vibratoCents: 14,
-               formant1: 650, formant2: 1100, hpFreq: 180, verbWet: 0.32 }
+               formant1: 650, formant2: 1100, hpFreq: 180, verbWet: 0.32 },
+      guitar: { oscType: "sawtooth", driveAmt: 0.50, dryWet: 0.45, driveWet: 0.58, cabFreq: 2000, cabQ: 1.4, lpFreq: 4600, verbWet: 0.16 }
     },
     "cramps-punk": {
       label: "Cramps punk (Human Fly / boomy / rockabilly slap)",
@@ -1554,7 +1557,8 @@
       chord: { oscType: "square", attack: 0.005, decay: 0.18, release: 0.25, sustain: 0.28,
                chorusWet: 0.22, autoPanFreq: 0.06, autoPanDepth: 0.18, verbWet: 0.12 },
       vocal: { harmonicity: 3.0, vibratoFreq: 6.5, vibratoCents: 18,
-               formant1: 560, formant2: 1400, hpFreq: 260, verbWet: 0.18 }
+               formant1: 560, formant2: 1400, hpFreq: 260, verbWet: 0.18 },
+      guitar: { oscType: "square", driveAmt: 0.72, dryWet: 0.34, driveWet: 0.74, cabFreq: 2400, cabQ: 1.8, lpFreq: 5000, verbWet: 0.08 }
     },
     "lofi-nujabes": {
       label: "Lofi Nujabes (jazzy boom-bap + warm piano)",
@@ -1576,7 +1580,8 @@
                chorusWet: 0.20, autoPanFreq: 0.08, autoPanDepth: 0.15, verbWet: 0.28 },
       // Vocal: warm formants, gentle vibrato, healthy verb tail (jazzy)
       vocal: { harmonicity: 2.2, vibratoFreq: 4.5, vibratoCents: 8,
-               formant1: 720, formant2: 1300, hpFreq: 220, verbWet: 0.34 }
+               formant1: 720, formant2: 1300, hpFreq: 220, verbWet: 0.34 },
+      guitar: { oscType: "sawtooth", driveAmt: 0.34, dryWet: 0.55, driveWet: 0.42, cabFreq: 1900, cabQ: 1.2, lpFreq: 4300, verbWet: 0.14 }
     }
   };
 
@@ -3210,29 +3215,28 @@
       }
     }
 
-    // v70 synth fallback: PolySynth saw + heavy distortion
-    const chorus = light ? null : new Tone.Chorus({ frequency: 0.9, delayTime: 3.2, depth: 0.38, wet: 0.34 }).start();
-    const dist = new Tone.Distortion({
-      distortion: light ? 0.42 : 0.55,
-      wet: light ? 0.68 : 0.85,
-      oversample: light ? "none" : "2x"
-    });
-    const lp = new Tone.Filter({ frequency: light ? 5600 : 6800, type: "lowpass", Q: 0.6 });
-    const verb = light ? null : new Tone.Reverb({ decay: 1.0, wet: 0.14 });
-    // v232: high-pass the synth guitar at 130 Hz. Its distorted low-mid
-    // otherwise crowds the bass lane (octave 2); the guitar's lane is the
-    // low-mid (octave 3 power chords), so everything below ~130 Hz belongs
-    // to the bass.
+    // v70 synth fallback -> v345 driven parallel-cab. Profile-driven amp/cab
+    // voicing; the || fallback covers older saved kitProfile state.
+    const g = currentProfile().guitar || { oscType: "sawtooth", driveAmt: 0.55, dryWet: 0.42, driveWet: 0.62, cabFreq: 2200, cabQ: 1.5, lpFreq: 4800, verbWet: 0.12 };
+    // v232: high-pass at 130 Hz so the distorted low-mid stays out of the bass
+    // lane (octave 2); the guitar's lane is octave-3 power chords.
     const hpG = new Tone.Filter({ frequency: 130, type: "highpass", Q: 0.6 });
     if (light) {
+      // v345: phone guitar = one driven distortion + a peaking cab bump + a
+      // profile lowpass -> a small driven amp, not a fizzy buzz. One extra
+      // filter only (light path stays cheap). Wrapper shape + volume unchanged.
+      const dist = new Tone.Distortion({ distortion: 0.42, wet: 0.68, oversample: "none" });
+      const cabL = new Tone.Filter({ frequency: g.cabFreq, type: "peaking", Q: 1.2, gain: 3.5 });
+      const lp = new Tone.Filter({ frequency: g.lpFreq, type: "lowpass", Q: 0.6 });
       const guitar = new Tone.Synth({
-        oscillator: { type: "sawtooth" },
-        envelope: { attack: 0.002, decay: 0.08, sustain: 0.52, release: 0.10 },
+        oscillator: { type: g.oscType },
+        envelope: { attack: 0.003, decay: 0.12, sustain: 0.38, release: 0.12 },  // v345: pick-attack droop
         volume: -9.8
       });
       guitar.connect(hpG);
       hpG.connect(dist);
-      dist.connect(lp);
+      dist.connect(cabL);
+      cabL.connect(lp);
       lp.connect(target);
       const lightGuitar = {
         triggerAttackRelease(notes, dur, time, vel) {
@@ -3250,43 +3254,45 @@
           try { guitar.dispose(); } catch (e) {}
         }
       };
-      return withChainDispose(markLayerKind(lightGuitar, "synth"), [dist, lp, hpG]);
+      return withChainDispose(markLayerKind(lightGuitar, "synth"), [dist, cabL, lp, hpG]);
     }
+    // v345 FULL path: parallel dry + driven cab. Clean and distorted copies sum
+    // (balance in the gains, distortion fully wet), a low-order Chebyshev adds
+    // amp warmth, a peaking cab + steep -24 dB/oct lowpass shape the speaker,
+    // then verb. No extra oscillators/voices — v245/v343 freeze-safe.
+    const chorus = new Tone.Chorus({ frequency: 0.9, delayTime: 3.2, depth: 0.38, wet: 0.34 }).start();
+    const dryG = new Tone.Gain(g.dryWet);
+    const dist = new Tone.Distortion({ distortion: g.driveAmt, wet: 1.0, oversample: "2x" });
+    const driveG = new Tone.Gain(g.driveWet);
+    const cheb = new Tone.Chebyshev({ order: 3, wet: 0.18 });
+    const cab = new Tone.Filter({ frequency: g.cabFreq, type: "peaking", Q: g.cabQ, gain: 4.5 });
+    const lp = new Tone.Filter({ frequency: g.lpFreq, type: "lowpass", Q: 0.7, rolloff: -24 });
+    const verb = new Tone.Reverb({ decay: 1.0, wet: g.verbWet });
     const guitar = new Tone.PolySynth(Tone.Synth, {
-      // v245 attempted fat oscillators here (count 2, spread 18) but the
-      // PolySynth cap-10 × 2-osc combined with chord PolySynth's fat budget
-      // choked the renderer in <30s on the freeze-oracle. Reverted to plain
-      // sawtooth — fat is kept only on the cheap mono synths (bass + voice).
-      oscillator: { type: "sawtooth" },
-      envelope: { attack: 0.003, decay: 0.10, sustain: 0.55, release: 0.16 },
+      // v345: oscType profile-driven (cramps square bite vs rock saw). Single
+      // non-fat oscillator — PolySynth voice cost unchanged (v245 fat attempt
+      // choked alongside chord fat; not repeated here).
+      oscillator: { type: g.oscType },
+      envelope: { attack: 0.004, decay: 0.16, sustain: 0.40, release: 0.18 },  // v345: pick-attack droop
       volume: -10.2
     });
-    // v228: maxPolyphony 10 (reverted from v227's 64). v227 raised it to 64
-    // thinking the polyphony cap was the bug — it was actually CPU
-    // protection. Tone.PolySynth voices are continuously-running
-    // oscillators; uncapping to 64 let the synth-heavy AI mode spawn ~64
-    // guitar + ~32 chord oscillators + heavy FX, which pegged mobile CPUs
-    // and FROZE the device. The cap MUST stay low. The real fix (step 2)
-    // is to cut the agents' note density so a low cap doesn't drop notes —
-    // not to raise the cap. Until then, 10 keeps the device alive (drops
-    // some notes, but plays — the v200–v226 known-survivable value).
-    guitar.maxPolyphony = light ? 6 : 10;
+    // v228: maxPolyphony cap stays low — PolySynth voices are continuous
+    // oscillators; uncapping froze devices. v343 note density keeps the low cap
+    // from dropping audible notes.
+    guitar.maxPolyphony = 10;
     guitar.connect(hpG);
-    if (chorus) {
-      hpG.connect(chorus);
-      chorus.connect(dist);
-    } else {
-      hpG.connect(dist);
-    }
-    dist.connect(lp);
-    if (verb) {
-      lp.connect(verb);
-      verb.connect(target);
-    } else {
-      lp.connect(target);
-    }
-    // v229: chorus is a started LFO — leaking it left an LFO running forever.
-    return withChainDispose(markLayerKind(guitar, "synth"), [chorus, dist, lp, verb, hpG].filter(Boolean));
+    hpG.connect(chorus);
+    chorus.connect(dryG);
+    chorus.connect(dist);
+    dist.connect(driveG);
+    dryG.connect(cheb);
+    driveG.connect(cheb);
+    cheb.connect(cab);
+    cab.connect(lp);
+    lp.connect(verb);
+    verb.connect(target);
+    // v229/v345: chorus is a started LFO — tear the whole chain down.
+    return withChainDispose(markLayerKind(guitar, "synth"), [chorus, dryG, dist, driveG, cheb, cab, lp, verb, hpG].filter(Boolean));
   }
 
   function powerChordNotes(chord, octave = 3) {
