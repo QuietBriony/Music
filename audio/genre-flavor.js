@@ -3302,6 +3302,10 @@
       if (typeof layer.dispose === "function") layer.dispose();
       disposeSynths(layer.synths);
       try { layer.gain.dispose(); } catch (e) {}
+      // v356: pumpGain (drum-frames sidechain target) is wired straight to the
+      // persistent master but is NOT in layer.synths — dispose it here too, or
+      // every drum-frames genre switch leaks one master-connected Gain.
+      try { if (layer.pumpGain) layer.pumpGain.dispose(); } catch (e) {}
     }, (CROSSFADE_S + 0.2) * 1000);
   }
 
