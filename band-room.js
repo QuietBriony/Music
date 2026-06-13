@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-217-genon-lean";
+  const BANDROOM_APP_VERSION = "br-218-ios-watchdog";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -80,6 +80,7 @@
     loadedStemDurationSec: 0,
     stemVariant: "original",
     lastStemResyncAtMs: 0,
+    watchdogRecoverTicks: 0,
     chordIdx: 0,
     chordBarsRemaining: 0,
     scheduledIds: [],
@@ -6473,7 +6474,22 @@
       const contextStopped = Tone.context && Tone.context.state !== "running";
       const transportStopped = Tone.Transport && Tone.Transport.state !== "started";
       if (contextStopped || transportStopped) {
-        recoverPlaybackAfterSuspend("watchdog");
+        // v357: debounce iOS transient non-running reads. iOS Safari intermittently
+        // reports the WebAudio context as not "running" while foreground + audible;
+        // one bad tick must NOT hard-restart the stems (that force-resync was the
+        // ~2.5s 原音 stutter on iPhone). A cheap resume() runs immediately every bad
+        // tick; the destructive recover (which force-resyncs all 4 stems) only fires
+        // after 2 consecutive bad ticks — a genuine sustained suspend still recovers.
+        try {
+          if (contextStopped && typeof Tone.context?.resume === "function") Tone.context.resume();
+        } catch (e) {}
+        state.watchdogRecoverTicks++;
+        if (state.watchdogRecoverTicks >= 2) {
+          state.watchdogRecoverTicks = 0;
+          recoverPlaybackAfterSuspend("watchdog");
+        }
+      } else {
+        state.watchdogRecoverTicks = 0;
       }
       checkBackgroundBridgeHealth("watchdog");
       checkSynthSchedulerHealth("watchdog");
