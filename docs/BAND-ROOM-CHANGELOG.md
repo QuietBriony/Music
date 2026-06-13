@@ -1,8 +1,25 @@
-# Band Room — Changelog (v65 → v357 compact)
+# Band Room — Changelog (v65 → v358 compact)
 
-Current compact release: v357.
+Current compact release: v358.
 
 （v349〜v351・v356 は別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため番号が飛ぶ。）
+
+---
+
+## v358 compact — iPhone 原音の「軽め盛り」: 重い畳み込みは戻さず空間とボーカル幅だけ足す
+
+v357 で iPhone の音切れが解消（実機確認済み）。v353/v355 で軽量化した iPhone 原音に、
+**畳み込みリバーブは戻さず**安いまま少し響き／広がりを足す調整。
+
+- **master の空間（light）**: FeedbackDelay の feedback 0.14→0.20 + wet 0.12→0.15。安い
+  ディレイ系のまま尾を少し伸ばして「部屋感」を補強（畳み込み Reverb は iPhone には重く、
+  watchdog の余裕を削るので戻さない）。
+- **ボーカル chorus**: light runtime でも復活（LFO+ディレイ2本の1ノードのみ＝畳み込みでは
+  ない）。v355 で外したボーカルの左右の広がりを戻す。
+
+オーバーサンプル/畳み込みは追加せず、デスクトップ・stem の音は不変。
+
+`band-room.js?v=br-219`、`hazama-fm-v358`。CSS は br-86 のまま。
 
 ---
 

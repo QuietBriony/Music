@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-218-ios-watchdog";
+  const BANDROOM_APP_VERSION = "br-219-genon-rich";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -556,12 +556,12 @@
     masterTapeSatDry = new Tone.Gain(0.94);
 
     masterReverb = lightRuntime
-      ? new Tone.FeedbackDelay({ delayTime: "16n.", feedback: 0.14, wet: 1 })
+      ? new Tone.FeedbackDelay({ delayTime: "16n.", feedback: 0.20, wet: 1 })   // v358: a bit more cheap room tail on light runtime
       : new Tone.Reverb({ decay: 3.0, preDelay: 0.018, wet: 1 });
     // v330: AI light runtime avoids Tone.Reverb's convolution buffer build
     // during START; a short delay keeps width/space without the heavy boot cost.
     masterDryGain = new Tone.Gain(0.80);
-    masterWetGain = new Tone.Gain(lightRuntime ? 0.12 : 0.20);
+    masterWetGain = new Tone.Gain(lightRuntime ? 0.15 : 0.20);
 
     masterGain = new Tone.Gain(1.2);
     masterGain.connect(masterComp1);
@@ -679,9 +679,9 @@
     // v354: the vocal chorus is a started LFO that runs always-on on the 原音
     // vocal path. On phones (light runtime) use a passthrough Gain instead so the
     // 原音 vocal chain has no standing modulator; desktop keeps the chorus width.
-    vocalChorus = lightRuntime
-      ? new Tone.Gain(1)
-      : new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.42, wet: 0.16 }).start();
+    // v358: chorus restored on light runtime too — it's one cheap node (LFO + 2
+    // delay lines), not the convolution reverb that the watchdog headroom needs off.
+    vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.42, wet: 0.16 }).start();
     vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.24, wet: 1 });
     vocalDelayWet = new Tone.Gain(0.0);    // echoes stay off — they smeared the timing
     vocalReverb = lightRuntime
