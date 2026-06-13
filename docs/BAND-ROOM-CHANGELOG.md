@@ -1,8 +1,20 @@
-# Band Room — Changelog (v65 → v355 compact)
+# Band Room — Changelog (v65 → v357 compact)
 
-Current compact release: v355.
+Current compact release: v357.
 
-（v349〜v351 は別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため番号が飛ぶ。）
+（v349〜v351・v356 は別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため番号が飛ぶ。）
+
+---
+
+## v357 compact — iPhone 原音の「数秒ごとに止まる」を解消: health watchdog を debounce
+
+iPhone で原音が ~2.5 秒ごとに止まる症状（v352〜v355 の負荷削減では直らなかった=周期的要因）の真因を特定・修正。workflow で確定（3レンズ敵対検証 pass）。
+
+- **真因**: 2500ms ごとの health watchdog（`startPlaybackHealthWatchdog`）が、`Tone.context.state !== "running"` または `Transport.state !== "started"` を見ると `recoverPlaybackAfterSuspend` → `resyncStemPlaybackToClock(force=true)` を呼び、**4 つの stem Player を `player.stop()`+`start()` で強制再起動**（可聴ギャップ）。**iOS Safari は前面・再生中でも AudioContext を断続的に "running" 以外と報告する**ため、これが ~2.5s ごとに発火していた（デスクトップは前面で常に running なので無症状）。
+- **修正**: watchdog を **debounce**。bad tick では安価な `context.resume()` のみ実行し、**2 連続 bad tick** で初めて破壊的 recover（stem 強制再同期）を呼ぶ。`state.watchdogRecoverTicks` を追加、clean tick でリセット。iOS の一過性ブリップは stem を止めず、本物の継続的 suspend からは従来どおり復帰する。
+- 原音 / stem の音そのものは不変。AI モード・モード切替・バックグラウンド復帰は維持。
+
+`band-room.js?v=br-218`、`hazama-fm-v357`。CSS は br-86 のまま。
 
 ---
 
