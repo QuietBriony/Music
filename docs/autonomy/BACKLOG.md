@@ -197,6 +197,28 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   完了条件: Phase 2 capture script が `docs/hazama-fm-design-spec.json` と実出力を
   diff 出力 + stack-check 0 BAD。tuning は方向確定 → PR → 試聴確認ごとに 1 件ずつ。
 
+### BL-027 — drum-floor groove の taste チューニング (監査由来・evolution パイプライン)
+- priority : P2
+- repo     : drum-floor
+- scope    : runtime (pocket_director / scoring 重み) — evolution パイプライン経由
+- agent    : human (listening-score) → claude/codex (suggest-evolution)
+- human-gate: yes
+- source   : 2026-06-13 drum-floor 多エージェント監査 (38 agents)。構造 fix は #54 で出荷済、
+  残りは taste なので正攻法 (listening-score → suggest-evolution → promotion) に乗せる
+- detail   : 監査が出した taste 候補 (いずれも pocket_director / scoring の重み調整で、
+  「良くなった」は人間の耳でしか判定できない):
+  - fillSlots の位置ボーナス (+0.4 末尾 / +0.22 lateTurn / +0.12 midTurn) が rng(0-1) に
+    埋もれ、フィルがフレーズ末に寄り切らない。#54 で phrase-stable にはしたが、末尾寄せ
+    にするには位置重みを上げる or rng 振幅を下げる (taste)。
+  - hat velocity がゼロ平均ノイズ (rng-0.5)*0.1 のみ → 16th 固定アクセント輪郭にすると
+    グルーヴが出る (groove-engine.js hat 層)。
+  - breakbeat step-6 の "break ghost response" が part:snare で常時発火 → 真のゴースト
+    (ghostScore ゲート + ゴースト voice) に re-voice。
+  - nerdy_jazzy_hiphop の soft-displacement kick が microMs +5 固定 → director の
+    kick_push_ms に追従させる。
+  完了条件: user が listening-score を付け → `suggest-evolution` で pocket_director
+  delta を生成 → PR → 試聴 → promotion。multi-repo 同時 tuning はしない (BL-006 方針)。
+
 ## Icebox
 
 ### BL-008 — engine.js の部分モジュール化

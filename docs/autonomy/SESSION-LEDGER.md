@@ -36,16 +36,20 @@
     (wire せず、fm.js と二重権威回避)。Done へ
   - 本番 (Pages) 配信を curl 確認: namima stack-6+/chill v7+/Music v341+ が live と実証
     (「本番でデフォ？」への回答)
-- in-flight  : drum-floor musicality audit を多エージェント workflow で実行
-  (6 レンズ → 各 finding を adversarial verify → synth)。構造バグ (coplayer.js:22 の
-  phrase 長 8 ハードコード vs groove-engine の phraseLength 8/16/32 desync 疑い) を
-  検証中。結果に応じ構造 fix は PR (drum-floor runtime は human-gate のため無人 merge
-  せず flag)、taste は evolution suggestion JSON 起案
-- stack-check : (各 repo の integrity gate PASS、本 PR は docs)
-- backlog    : BL-025 Done。drum-floor audit 結果で新 BL を起こす可能性
-- next       : drum-floor audit synth → 構造 fix PR + suggestion。BL-026 含め live 試聴待ち
+- drum-floor : 「使い方が導線でわからん」→ 看板用途 (mic フォロー co-player) が開発パネルの
+  奥に埋もれていたのを正面玄関へ。+ 多エージェント監査 (38 agents / 31 verified / 17 real)
+  → 構造 fix を出荷。user 指示「進めて磨いてマージして」で 2 本とも merge:
+  - drum-floor#53 — 「🎤 バンドを聴いて鳴らす」1 タップ (mic+follow+再生) + mic 不許可の
+    notice 明示。groove エンジン無改変・UI 導線のみ
+  - drum-floor#54 — phrase coherence: ① 二重フレーズクロック統一 (coplayer %8 → %phraseLength、
+    PL=8 は byte 不変・PL16/32 で explode がフレーズ末に揃う) ② per-bar 再抽選を phrase
+    固定 (fillSlots / kick figure / ghost 抑制を 1 小節 gap に / frame-fill 窓スケール /
+    sort NaN ガード)。probe で PL 不変性・決定論・phrase-stable を検証
+- stack-check : sync-safety + pytest 27 + pwa-static + node --check PASS (drum-floor)、本 docs PR は docs のみ
+- backlog    : BL-025 Done。BL-027 起票 (drum-floor 監査の taste 候補 → evolution パイプライン)
+- next       : BL-026 (chill/namima) + drum-floor#53/#54 の live 試聴。BL-027 は listening-score 起点
 - blockers   : checklist marker drift を再び吸収 (codex v341→v344 / br-206→209)。
-  drum-floor runtime は repo 契約で人間レビュー必須
+  drum-floor runtime は repo 契約で人間レビュー必須 → 今回は user の明示承認で merge
 - agent      : Claude Code (chouta-surface, Fable 5 / 1M context)
 - goal       : 「全体最適で磨き進めて。namima とかああいうやつらも」— Music で確立した
   原則（pitch は構造・ランダムは density/timing へ、包み感は field で）を sibling へ
