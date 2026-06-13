@@ -1,8 +1,27 @@
-# Band Room — Changelog (v65 → v354 compact)
+# Band Room — Changelog (v65 → v355 compact)
 
-Current compact release: v354.
+Current compact release: v355.
 
 （v349〜v351 は別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため番号が飛ぶ。）
+
+---
+
+## v355 compact — 原音をさらに軽量化（スマホ）: stem-master の 2x 歪み + ボーカル chorus を端末ゲート
+
+v353 後も原音が切れるとの報告。監査で挙がっていた**原音経路の残り2つの常時稼働ノード**を
+端末ゲート（v353 と同系統の続き）:
+
+- **stem-master の grit 歪み（line 446）**: `oversample: "2x"` が無条件で、原音再生中ずっと
+  2倍オーバーサンプルの波形整形が走っていた（監査 MSC-1）。`aiLightRuntimeEnabled() ? "none" : "2x"`
+  に。スマホは none（聴感ほぼ不変・CPU 減）、デスクトップは 2x のまま（v322 wall 維持）。
+- **原音ボーカルの chorus（line 674）**: `.start()` した常時稼働 LFO。スマホでは passthrough
+  Gain に差し替え（LFO 無し）。デスクトップは従来どおり chorus 幅を維持。
+
+stem EQ チェーンは全て安価なフィルタのみと確認（重いノード無し）。これでスマホの純・原音
+経路に残る常時稼働の重いノードは無くなる。デスクトップの原音音色は不変。AI バンドの mode
+切替後の非破棄は v354（並行セッション）で解消済み。
+
+`band-room.js?v=br-217`、`hazama-fm-v355`。CSS は br-86 のまま。
 
 ---
 

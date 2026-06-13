@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-216-synth-dispose";
+  const BANDROOM_APP_VERSION = "br-217-genon-lean";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -426,6 +426,10 @@
   //   stemBus.* → makeStemMasterBus → masterGain → shared remaster → limiter
   function makeStemMasterBus(dest) {
     const input  = new Tone.Gain(1);
+    // v354: the 原音 stem-master ran an always-on 2x-oversampled grit distortion
+    // in every mode — a standing CPU cost that helped choke 原音 on phones (audit
+    // MSC-1). Gate the oversampling to device; desktop keeps the v322 wall density.
+    const lightRuntime = aiLightRuntimeEnabled();
     // LCD balance: weight the low so kick+bass punch instead of boom, keep
     // mids present, and keep the top alive without letting cymbals turn harsh.
     // v313 nudges mid/high forward so the band wall stands up around the vocal.
@@ -443,7 +447,7 @@
     const comp   = new Tone.Compressor({ threshold: -19, ratio: 2.5, attack: 0.018, release: 0.20, knee: 6 });
     // parallel tape/amp grit — the Bleach-era dirt. v322: 0.11/0.10 → 0.16/0.16
     // so the blended crunch carries the wall's density without comp pumping.
-    const sat    = new Tone.Distortion({ distortion: 0.16, oversample: "2x", wet: 1 });
+    const sat    = new Tone.Distortion({ distortion: 0.16, oversample: lightRuntime ? "none" : "2x", wet: 1 });
     const satWet = new Tone.Gain(0.16);
     const satDry = new Tone.Gain(1.0);
     // loudness makeup — push the glued band into the shared limiter for 音圧.
@@ -671,7 +675,12 @@
     // v311 pulled it firmly into the pocket. v312 added room back. v313 answers
     // the "vocal still strong" pass by lowering the dry center and total vocal
     // bus, then widening the FX path so the voice melts sideways into the band.
-    vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.42, wet: 0.16 }).start();
+    // v354: the vocal chorus is a started LFO that runs always-on on the 原音
+    // vocal path. On phones (light runtime) use a passthrough Gain instead so the
+    // 原音 vocal chain has no standing modulator; desktop keeps the chorus width.
+    vocalChorus = lightRuntime
+      ? new Tone.Gain(1)
+      : new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.42, wet: 0.16 }).start();
     vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.24, wet: 1 });
     vocalDelayWet = new Tone.Gain(0.0);    // echoes stay off — they smeared the timing
     vocalReverb = lightRuntime
