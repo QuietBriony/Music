@@ -1,6 +1,18 @@
-# Band Room — Changelog (v65 → v347 compact)
+# Band Room — Changelog (v65 → v348 compact)
 
-Current compact release: v347.
+Current compact release: v348.
+
+---
+
+## v348 compact — ドラム round-robin を light パス＋FULL hat へ展開
+
+v347 の round-robin 微デチューンは FULL の kick/snare だけだった。**実際に最も鳴る
+light パス**（スマホ/PWA は毎回の開始でリビルド）の kick/snare/hat にも同じ
+round-robin を展開、FULL の hat（kick/snare のみだった）にも追加。1打ごとに
+約 ±1〜1.5 cent 交互デチューンで「機関銃（同一打点の連打）」感を解消。`playbackRate`
+のみ＝エネルギー増無し・新ノード無し・トリガー数/maxPolyphony 不変。原音/stem 不可侵。
+
+`band-room.js?v=br-213`、`hazama-fm-v348`。CSS は br-86 のまま。
 
 ---
 
