@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-209-timbre-uplift", "Band Room should expose the current timbre-uplift version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-210-guitar-amp", "Band Room should expose the current guitar-amp version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -134,13 +134,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-86/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-209/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-210/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-86/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-209/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-210/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
@@ -174,7 +174,7 @@ assert.match(source, /playTranscribedGuitarBar\(ctx, time\)/, "Guitar agent shou
 assert.match(source, /hasTranscribedLine\("guitar_line"\)/, "Scheduler should run guitar when transcribed guitar rows exist");
 assert.match(source, /frequency:\s*8600/, "Sampler guitar should keep the brighter v330 lowpass");
 assert.match(source, /maxCutoff:\s*9800/, "Velocity sampler should open the guitar pick cutoff lane");
-assert.match(source, /frequency:\s*light \? 5600 : 6800/, "Synth guitar fallback should keep the brighter v330 lowpass");
+assert.match(source, /frequency: g\.lpFreq, type: "lowpass", Q: 0\.7, rolloff: -24/, "Synth guitar fallback should use the v345 profile-driven steep cab lowpass");
 const TRANSCRIBED_SONGS = ["tabasco", "hey", "i-got-a-feeling", "under-the-moon", "electric-sheep", "human-fly", "sister"];
 let bassLineSongs = 0;
 let guitarLineSongs = 0;
@@ -486,7 +486,9 @@ assert.match(source, /const shelf = new Tone\.EQ3\(\{ low: -0\.35, mid: 0\.2, hi
 assert.match(source, /frequency: 8600, type: "lowpass"/, "Sampled guitar should keep the brighter v330 pick attack");
 assert.match(source, /volume: -2\.0/, "Sampled guitar should receive the v330 pressure lift");
 assert.match(source, /maxCutoff: 9800/, "Velocity-sensitive guitar should open the bright cutoff in v330");
-assert.match(source, /frequency: light \? 5600 : 6800, type: "lowpass"/, "Synth fallback guitar should open the lowpass in v330");
+assert.match(source, /type: "peaking", Q: g\.cabQ, gain: 4\.5/, "Synth fallback guitar should voice a profile-driven peaking cab (v345)");
+assert.match(source, /new Tone\.Chebyshev\(\{ order: 3, wet: 0\.18 \}\)/, "Guitar full path should add amp-warmth Chebyshev (v345)");
+assert.match(source, /const g = currentProfile\(\)\.guitar \|\|/, "Guitar tone should be profile-driven with a backward-compat fallback (v345)");
 assert.match(source, /volume: -10\.2/, "Synth fallback guitar should receive the v330 pressure lift");
 assert.match(source, /masterWidener = new Tone\.StereoWidener\(0\.72\)/, "Shared master should widen the v313 default image");
 assert.match(source, /masterWetGain = new Tone\.Gain\(lightRuntime \? 0\.12 : 0\.20\)/, "Shared master should keep v313 room on normal runtime and reduce it only in v316 light runtime");

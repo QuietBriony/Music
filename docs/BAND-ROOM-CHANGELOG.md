@@ -1,6 +1,26 @@
-# Band Room — Changelog (v65 → v344 compact)
+# Band Room — Changelog (v65 → v345 compact)
 
-Current compact release: v344.
+Current compact release: v345.
+
+---
+
+## v345 compact — AI ギター音色: 駆動アンプ/キャビネット化
+
+v344 で退避していたギター音色を実装（workflow 検証済案）。合成ギターは
+ずっと PolySynth の生 saw → ディストーション一本だったのを、**駆動アンプ+キャビネット**に：
+
+- **並列 dry/driven**: クリーンと歪みのコピーをミックス（バランスは gain、dist は
+  full-wet）→ 低次 Chebyshev でアンプの温かみ → peaking キャビ＋-24dB/oct の急峻 LP で
+  スピーカーを成形 → verb。オシレーター/ボイスは增やさず（v245/v343 freeze-safe）。
+- **profile 駆動**: 全 5 profile に guitar ブロックを追加。cramps は square でバイト＋ホットな
+  キャビ、lofi はマイルドな saw。古い保存状態用に `|| {defaults}` フォールバック。
+- **ピックアタック**: envelope の sustain を下げ decay を伸ばして、オルガンのべったりから
+  「弾いてサグ」に。**軽量パスも** dist+peaking cab 1つだけ追加（電話のブザー脱却）。
+
+レベル不変（volume -10.2/-9.8 そのまま）、lightGuitar wrapper 形状保持。gate pin 2本更新。
+drums はなお別版に退避（検証で api/clipping リスク最高）。
+
+`band-room.js?v=br-210`、`hazama-fm-v345`。CSS は br-86 のまま。
 
 ---
 
