@@ -80,7 +80,7 @@
     },
     lofi: {
       role: "dusty pocket memory and jazz-hop break surface",
-      edge: "lazy live-break kit, vinyl crackle, filtered jazz chords, and softened top end",
+      edge: "lazy live-break kit, filtered jazz chords, tape warmth, and softened top end",
       feedback: "send tape-memory and restraint hints toward Music/chill review"
     },
     jazz: {
@@ -1780,7 +1780,7 @@
       bar++;
     }, "1m"));
     layer.synths.push(keys, lp, room);
-    layer.source = `${layer.source || "drum-frames+vinyl-crackle"}+jazz-dust`;
+    layer.source = `${layer.source || "drum-frames+dusty-break-kit"}+jazz-dust`;
     return layer;
   }
 
@@ -1826,10 +1826,7 @@
   function buildLofiDefault() {
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
     const lp = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 0.6 }).connect(gain);
-    const crackle = new Tone.Noise("pink");
-    const crackleAmp = new Tone.Gain(0.06).connect(lp);
-    crackle.connect(crackleAmp);
-    crackle.start();
+    // Vinyl-crackle bed removed — musical lofi, no continuous noise "演出".
     const kick = new Tone.MembraneSynth({
       pitchDecay: 0.06, octaves: 4,
       envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.2 },
@@ -1845,9 +1842,9 @@
 
     return {
       gain,
-      synths: [crackle, crackleAmp, kick, lp],
+      synths: [kick, lp],
       scheduledIds: ids,
-      dispose: () => { try { crackle.stop(); } catch (e) {} },
+      dispose: () => {},
       source: "default"
     };
   }
@@ -1990,7 +1987,8 @@
   }
 
   // When drum-frames-lofi preset is present, render the lazy frame rhythm
-  // PLUS the vinyl crackle bed for the dusty character.
+  // Dusty character comes from the break kit + tape saturation — no continuous
+  // crackle/noise bed (removed per user: lofi as music, not a "演出" of hiss).
   function buildLofiFromFrames(frames) {
     const lofiGov = governorFor("lofi");
     const drums = buildDrumsFromFrames(frames, {
@@ -2002,19 +2000,10 @@
     });
     if (!drums) return null;
 
-    const lp = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 0.6 }).connect(drums.gain);
-    const crackle = new Tone.Noise("pink");
-    const crackleAmp = new Tone.Gain(0.06).connect(lp);
-    crackle.connect(crackleAmp);
-    try { crackle.start(); } catch (e) {}
-
-    drums.synths.push(crackle, crackleAmp, lp);
-    const prevDispose = drums.dispose;
-    drums.dispose = () => {
-      try { crackle.stop(); } catch (e) {}
-      if (prevDispose) prevDispose();
-    };
-    drums.source = "drum-frames+dusty-break-kit+vinyl-crackle";
+    // Vinyl-crackle bed removed: lofi here is the music (break kit + jazz-hop
+    // chords / Nujabes dots / flute / tape warmth), not a continuous noise
+    // "演出". Tape saturation below still gives the warm dusty tone.
+    drums.source = "drum-frames+dusty-break-kit";
     return applyProductionGovernor(
       addSoloLayer(
         addTapeSaturation(
