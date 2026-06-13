@@ -23,6 +23,7 @@ const files = [
   "scripts/check-fm-route-badge.mjs",
   "scripts/check-runtime-doc-markers.mjs",
   "scripts/check-audio-cost-gates.mjs",
+  "scripts/check-sw-version-history.mjs",
   "scripts/stack-check.mjs"
 ];
 

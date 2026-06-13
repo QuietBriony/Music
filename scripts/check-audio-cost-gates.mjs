@@ -26,7 +26,7 @@ const TARGETS = [
 ];
 
 // Flip to true once band-room burns down to 0 (next release) to enforce as FAIL.
-const BAND_ROOM_FAIL = false;
+const BAND_ROOM_FAIL = true; // v359: band-room burned down to 0 → enforce as FAIL (FM stays WARN→handoff)
 
 let bandRoomViolations = 0;
 const warnings = [];
