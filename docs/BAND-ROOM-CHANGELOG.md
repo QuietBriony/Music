@@ -1,10 +1,36 @@
-# Band Room — Changelog (v65 → v358 compact)
+# Band Room — Changelog (v65 → v359 compact)
 
-Current compact release: v358.
-
-（v349〜v351・v356 は別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため番号が飛ぶ。）
+Current sw.js VERSION: v359。band-room 本体の最新変更は v358（v349〜v351・v356・v359 は
+別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため band-room 視点では番号が飛ぶ）。
 
 ---
+
+## v359 compact — FM genre-flavor: 弱端末で acoustic-fun-field の常時 DSP を軽量化（監査 BL-028）
+
+別アプリ FM 側のリリース（sw.js VERSION は band-room と共有連番）。監査 BL-028 の対応で、
+`docs/AUDIO-COST-INVARIANTS.md` の不変条件 #2（light runtime で到達する常時 HEAVY ノードを
+device ゲートの裏に置く）を FM genre-flavor にも適用。`audio/genre-flavor.js` の
+`addAcousticFunField`（全 genre build 経路から呼ばれる）は active genre ごとに
+**2 常時 Tone.Reverb + 4 起動済 AutoPanner + 2 oversample "2x" Distortion** を積み、
+trigger 有無に関わらず全 quantum を処理する常時負荷だった（leak ではなく定常コスト）。
+band-room の `aiLightRuntimeEnabled()` と同じ signal / `?aiLight=1` override を genre-flavor に
+移植し、弱端末（モバイル/PWA/saveData/CPU≤8/メモリ≤8GB）では lean 変種を構築:
+
+- 2 常時 Reverb → skip（dry passthrough。tail と CPU だけ落とし dry レベルは維持）
+- 4 AutoPanner（連続 LFO）→ 静的 Panner（動き無し・ステレオ幅は維持）
+- 2 oversample "2x" Distortion → "none"
+
+**capable 端末（gate=false）は従来どおり完全不変**（false 分岐は元ノードと byte 等価）。
+`?aiLight=1` を URL に付ければ任意の端末で lean 版を試聴確認できる。PingPongDelay×2 も常時 DSP だが
+dry 経路を兼ねて null 化できず音色変化も大きく、convolution Reverb 比でコストも小さいため
+監査の名指しスコープ外として据え置き（adversarial review の nit）。
+
+検証: ① 6 gates 全 PASS ② live preview 実測: techno build で `AutoPanner.start` 4→0・
+`Reverb.generate` 2→0（`?aiLight=1`）、`source` 文字列は default と不変＝音色キャラ維持
+③ check-audio-cost-gates の genre-flavor 未ゲート HEAVY 行 22→18（fun-field の Reverb 2 + oversample 2 を解消）
+④ 4-lens adversarial review（routing/default-unchanged/teardown/completeness）全 clean。
+
+`audio/genre-flavor.js?v=fm-79`、`hazama-fm-v359`。band-room は br-219/br-86 のまま。
 
 ## v358 compact — iPhone 原音の「軽め盛り」: 重い畳み込みは戻さず空間とボーカル幅だけ足す
 

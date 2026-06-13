@@ -19,6 +19,27 @@
 
 ---
 
+## 2026-06-13 (cont.) — BL-028 実装: FM genre-flavor の弱端末 light ゲート (v359)
+- agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
+- goal       : user 指示「私が今すぐ実装」— hand-off 化した BL-028 を自分で実装。FM 領分の
+  「触るな」線をこの 1 件だけ user 承認で外す
+- repos      : Music（audio/genre-flavor.js + cache/changelog/checklist）
+- shipped    : v359 — `addAcousticFunField` の 3 サブビルダーに device light ゲートを追加。
+  band-room の `aiLightRuntimeEnabled()` と同 signal / `?aiLight=1` override を genre-flavor に
+  移植。弱端末では 2 常時 Reverb→skip・4 AutoPanner→静的 Panner・2 oversample "2x"→"none"。
+  capable 端末は完全不変（false 分岐は元ノードと byte 等価）。並走セッションが先行で出した
+  audio-cost guardrail（check-audio-cost-gates.mjs）+ AUDIO-COST-INVARIANTS #2 にちょうど合致 —
+  本変更はその不変条件を genre-flavor へ適用したもの。作業中に sibling が v357/v358 を 2 連続 push
+  したため fetch+ff→v357→v359 へ番号繰り上げ（衝突は genre-flavor 非接触で吸収）
+- verify     : ① 6 gates 全 PASS（check-audio-cost-gates 含む）② live preview 4179 実測:
+  techno build で AutoPanner.start 4→0 / Reverb.generate 2→0（?aiLight=1）・source 不変
+  ③ guardrail の genre-flavor 未ゲート HEAVY 行 22→18（fun-field の Reverb2+oversample2 解消）
+  ④ 4-lens adversarial workflow（routing/default-unchanged/teardown/completeness）全 clean・
+  blocker 0（PingPongDelay×2 非ゲートは nit=スコープ外の意図的判断）
+- backlog    : BL-028 を open→wip（実装・merge 済、弱端末 試聴待ち）
+- next       : user が弱端末（or ?aiLight=1）で試聴判定。残る FM hand-off は無し
+- blockers   : なし（FM 領分の修正は user が本件のみ承認）
+
 ## 2026-06-13 (cont.) — audio-overload 監査の決着 + FM 領分 hand-off 化
 - agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
 - goal       : Music repo 全体を 1 クラス（audio overload / dropout / 徐々に無音）で監査し、
