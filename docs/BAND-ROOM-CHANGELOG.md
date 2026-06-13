@@ -1,6 +1,33 @@
-# Band Room — Changelog (v65 → v345 compact)
+# Band Room — Changelog (v65 → v346 compact)
 
-Current compact release: v345.
+Current compact release: v346.
+
+---
+
+## v346 compact — AI ドラム音色: synth kit 底上げ（kick/snare/hat/crash）
+
+v344 で最リスク判定だったドラム synth kit を、ワークフロー検証で出た 9 つの
+required-fix を全解消した修正版で実装。**この synth kit は steady-state の既定ではない**
+（既定は acoustic CDN サンプル `online/tone-acoustic`）が、**再生開始の頭の quick-start**・
+**オフライン/CDN 失敗時のフォールバック**・**スマホ/PWA では毎回の開始でリビルド**される
+＝ 実際に耳に入るので底上げの価値あり。
+
+- **kick**: 生 sine 一発 →（a）55Hz(A1) のチェストサブ＋（b）DC-free な tanh 波形整形で
+  偶/奇倍音の温かみ。Chebyshev は不採用（55Hz に DC＋2倍音を盛ってクリップするため）。
+  FULL は make-up Gain(0.62)＋ sub をエンベロープ経由のみに修正（定常ドローン化バグを解消）。
+- **snare**: 単発ノイズ → クラック（速い高域スナップ）＋ダークな fizz テール＋190Hz シェル
+  トーン＋ rim を +2dB で埋もれ解消。FULL バス make-up 0.85→0.72 で増えたレイヤーを吸収。
+- **hat / crash**: 平坦な白色ノイズ → 非整数比の金属パーシャルでシマー。light の hat は
+  profile の bpFreq に追従。
+- **全 5 profile の kick** に `sub/subDecay/drive` を追加（`?? 既定`で NaN ガード）。
+- **クリッピング検証**: 全 buffer の実 peak を preview で計測しキャリブレーション。snare/hat/
+  crash は live-safe 上限 0.601 以下、kick は出荷中の旧 buffer と peak 同等（drone なし、約 30ms）。
+  ドラムの再生ホットパス（1 hit = 1 ToneBufferSource）・トリガー数・maxPolyphony は不変。
+- light パスは run-once のビルド時計算のみ追加（常時 on ノード無し、F8）。原音/stem は不可侵。
+- 退避: round-robin micro-detune（C7/C8）＋ 共有 room/glue バス（C9）— FULL 専用・最低可聴・
+  最高リスク（gate return-shape／teardown leak）のため別途。
+
+`band-room.js?v=br-211`、`hazama-fm-v346`。CSS は br-86 のまま。
 
 ---
 

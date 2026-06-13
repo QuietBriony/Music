@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-210-guitar-amp";
+  const BANDROOM_APP_VERSION = "br-211-drum-kit";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -1499,7 +1499,7 @@
   const KIT_PROFILES = {
     "default": {
       label: "default (LCD + Backdrop Bomb mixture)",
-      kick:  { decay: 0.32, octaves: 4.0,  vol: -8,  clickVol: -32 },
+      kick:  { decay: 0.32, octaves: 4.0,  vol: -8,  clickVol: -32, sub: -6, subDecay: 0.26, drive: 0.18 },
       snare: { decay: 0.14, hpFreq: 1100,  vol: -12, rimVol: -28 },
       hat:   { decay: 0.04, bpFreq: 6800,  vol: -22 },
       crash: { decay: 0.9,  vol: -18 },
@@ -1514,7 +1514,7 @@
     },
     "sakanaction": {
       label: "Sakanaction (dance rock — tight kick / clicky hat)",
-      kick:  { decay: 0.20, octaves: 5.0,  vol: -6,  clickVol: -22 },
+      kick:  { decay: 0.20, octaves: 5.0,  vol: -6,  clickVol: -22, sub: -9, subDecay: 0.16, drive: 0.10 },
       snare: { decay: 0.09, hpFreq: 1600,  vol: -10, rimVol: -24 },
       hat:   { decay: 0.028, bpFreq: 8200, vol: -20 },
       crash: { decay: 1.1,  vol: -16 },
@@ -1530,7 +1530,7 @@
     },
     "lcd-motorik": {
       label: "LCD motorik (4-on-floor / cowbell / pad swell)",
-      kick:  { decay: 0.38, octaves: 6.0,  vol: -5,  clickVol: -28 },
+      kick:  { decay: 0.38, octaves: 6.0,  vol: -5,  clickVol: -28, sub: -4, subDecay: 0.34, drive: 0.22 },
       snare: { decay: 0.18, hpFreq: 950,   vol: -8,  rimVol: -26 },
       hat:   { decay: 0.06, bpFreq: 5800,  vol: -19 },
       crash: { decay: 1.3,  vol: -14 },
@@ -1546,7 +1546,7 @@
     },
     "cramps-punk": {
       label: "Cramps punk (Human Fly / boomy / rockabilly slap)",
-      kick:  { decay: 0.40, octaves: 5.5,  vol: -7,  clickVol: -36 },
+      kick:  { decay: 0.40, octaves: 5.5,  vol: -7,  clickVol: -36, sub: -3, subDecay: 0.40, drive: 0.30 },
       snare: { decay: 0.22, hpFreq: 800,   vol: -10, rimVol: -22 },
       hat:   { decay: 0.05, bpFreq: 5000,  vol: -27 },
       crash: { decay: 1.45, vol: -18 },
@@ -1565,7 +1565,7 @@
       // v109: Nujabes 感を音色そのもので。dusty drum + walking sub bass +
       // piano chord (Salamander 推奨, linked via master preset) + warm vocal.
       // Drum: tight kick, body-rich snare (low HP), brushed hat, ride-friendly crash
-      kick:  { decay: 0.28, octaves: 4.5, vol: -7,  clickVol: -28 },
+      kick:  { decay: 0.28, octaves: 4.5, vol: -7,  clickVol: -28, sub: -7, subDecay: 0.24, drive: 0.14 },
       snare: { decay: 0.16, hpFreq: 900,  vol: -11, rimVol: -30 },
       hat:   { decay: 0.05, bpFreq: 6200, vol: -23 },
       crash: { decay: 1.2,  vol: -17 },
@@ -1837,23 +1837,36 @@
 
   function makeLightDrumKit(target, profileName) {
     const p = KIT_PROFILES[profileName] || KIT_PROFILES["default"];
+    // v346: chest-thump sub + DC-free tanh fold (peaks calibrated in preview;
+    // see changelog). Profile-driven, NaN-guarded (?? defaults).
+    const kSubDb  = p.kick.sub ?? -6;
+    const kSubDec = Math.min(p.kick.subDecay ?? 0.26, 0.14);   // cap: a thump, not a boomy drone
+    const kDrv    = p.kick.drive ?? 0.18;
+    const kSubAmp = Math.pow(10, kSubDb / 20);
+    const kDrvK   = 1 + kDrv * 1.5;            // gentle tanh pre-gain (DC-free, keeps dynamics)
+    const kNorm   = 1 / Math.tanh(kDrvK);      // unity-back so the fold never raises peak
     const kickBuf = makeLightDrumBuffer(0.42, (t, i, sr) => {
       const env = Math.exp(-t * 9.0);
       const freq = 46 + 72 * Math.exp(-t * 18);
-      const body = Math.sin(2 * Math.PI * freq * t) * env * 0.95;
-      const click = i < sr * 0.012 ? (Math.random() * 2 - 1) * (1 - i / (sr * 0.012)) * 0.12 : 0;
-      return body + click;
+      const body = Math.sin(2 * Math.PI * freq * t) * env * 0.76;
+      const sub = Math.sin(2 * Math.PI * 55 * t) * Math.exp(-t / kSubDec) * kSubAmp * 0.24;  // 55Hz (A1) thump
+      const folded = Math.tanh((body + sub) * kDrvK) * kNorm;
+      const click = i < sr * 0.012 ? (Math.random() * 2 - 1) * (1 - i / (sr * 0.012)) * 0.10 : 0;
+      return folded + click;
     });
     const snareBuf = makeLightDrumBuffer(0.24, (t) => {
       const env = Math.exp(-t * (18 / Math.max(0.06, p.snare.decay)));
-      const noise = (Math.random() * 2 - 1) * env * 0.55;
-      const body = Math.sin(2 * Math.PI * 185 * t) * Math.exp(-t * 24) * 0.14;
-      return noise + body;
+      const noise = (Math.random() * 2 - 1) * env * 0.46;
+      const crack = (Math.random() * 2 - 1) * Math.exp(-t * 90) * 0.13;   // v346: fast bright snap
+      const body = Math.sin(2 * Math.PI * 190 * t) * Math.exp(-t * 24) * 0.14;
+      return noise + crack + body;
     });
+    const hatFreq = (p.hat && p.hat.bpFreq) ? p.hat.bpFreq : 6800;
     const hatBuf = makeLightDrumBuffer(0.09, (t, i) => {
       const env = Math.exp(-t * 72);
-      const noise = ((Math.random() * 2 - 1) - (i % 2 ? 0.22 : -0.22)) * env * 0.30;
-      return noise;
+      const noise = ((Math.random() * 2 - 1) - (i % 2 ? 0.22 : -0.22)) * env * 0.26;
+      const metal = (Math.sin(2 * Math.PI * hatFreq * t) + Math.sin(2 * Math.PI * hatFreq * 1.503 * t)) * env * 0.06;  // v346: inharmonic shimmer
+      return noise + metal;
     });
     const clapBuf = makeLightDrumBuffer(0.18, (t) => (Math.random() * 2 - 1) * Math.exp(-t * 24) * 0.42);
     const cowbellBuf = makeLightDrumBuffer(0.16, (t) => (
@@ -1865,7 +1878,9 @@
     });
     const crashBuf = makeLightDrumBuffer(0.72, (t, i) => {
       const env = Math.exp(-t * 3.1);
-      return ((Math.random() * 2 - 1) - (i % 3 ? 0.12 : -0.12)) * env * 0.22;
+      const noise = ((Math.random() * 2 - 1) - (i % 3 ? 0.12 : -0.12)) * env * 0.19;
+      const shimmer = (Math.sin(2 * Math.PI * 5400 * t) + Math.sin(2 * Math.PI * 8217 * t)) * env * 0.05;  // v346: detuned partials
+      return noise + shimmer;
     });
 
     const kickPan  = new Tone.Panner(0).connect(target);
@@ -1894,37 +1909,74 @@
 
     // Render each voice's synth sound to a buffer once (offline). Sequential
     // awaits — the kit is built once per playback start, a few ms each.
+    const kSubDb  = p.kick.sub ?? -6;
+    const kSubDec = Math.min(p.kick.subDecay ?? 0.26, 0.14);
+    const kDrv    = p.kick.drive ?? 0.18;
     const kickBuf = await Tone.Offline(() => {
+      // v346: make-up < 1 so the added 55Hz sub + tanh warmth stay under the safe
+      // rendered peak (~0.6 vs the live drumBus 0.52 * polish 3.2 = 1.66x).
+      const out = new Tone.Gain(0.62).toDestination();
+      // DC-free warmth: a gentle tanh waveshaper (NOT Chebyshev — order-2 on a
+      // ~55Hz sub would add DC + a strong 2nd harmonic and clip after make-up).
+      const k = 1 + kDrv * 1.5;
+      const curve = new Float32Array(1024);
+      for (let n = 0; n < 1024; n++) {
+        const x = (n / 1023) * 2 - 1;
+        curve[n] = Math.tanh(x * k) / Math.tanh(k);
+      }
+      const shaper = new Tone.WaveShaper(curve).connect(out);
       const click = new Tone.NoiseSynth({
         noise: { type: "pink" },
         envelope: { attack: 0.001, decay: 0.022, sustain: 0, release: 0.012 },
         volume: p.kick.clickVol
-      }).toDestination();
+      }).connect(out);
       const body = new Tone.MembraneSynth({
         pitchDecay: 0.05, octaves: p.kick.octaves,
         envelope: { attack: 0.001, decay: p.kick.decay, sustain: 0, release: 0.15 },
         volume: p.kick.vol
-      }).toDestination();
-      body.triggerAttackRelease("C1", "8n", 0, 0.92);
+      }).connect(shaper);
+      // parallel 55Hz (A1) sub, enveloped ONLY (not also raw) so it is a decaying
+      // thump, not a constant drone for the whole render window.
+      const sub = new Tone.Oscillator({ frequency: 55, type: "sine", volume: kSubDb });
+      const subEnv = new Tone.AmplitudeEnvelope({ attack: 0.004, decay: kSubDec, sustain: 0, release: 0.05 }).connect(shaper);
+      sub.connect(subEnv);
+      sub.start(0).stop(kSubDec + 0.1);
+      subEnv.triggerAttackRelease(kSubDec, 0);
+      body.triggerAttackRelease("C1", "8n", 0, 0.86);
       click.triggerAttackRelease("128n", 0, 0.16);
-    }, 0.7);
+    }, 0.9);
 
     const snareBuf = await Tone.Offline(() => {
-      const bus = new Tone.Gain(0.85).toDestination();
+      // v346: layered snare = crack (hp noise) + dark fizz tail + ~190Hz shell tone
+      // + un-buried rim. Bus make-up dropped 0.85->0.72 to absorb the added layers.
+      const bus = new Tone.Gain(0.72).toDestination();
       const hp = new Tone.Filter({ frequency: p.snare.hpFreq, type: "highpass", Q: 0.8 }).connect(bus);
       const body = new Tone.NoiseSynth({
         noise: { type: "white" },
         envelope: { attack: 0.001, decay: p.snare.decay, sustain: 0, release: 0.06 },
         volume: p.snare.vol
       }).connect(hp);
+      const fizzLp = new Tone.Filter({ frequency: 2600, type: "lowpass", Q: 0.7 }).connect(bus);
+      const fizz = new Tone.NoiseSynth({
+        noise: { type: "pink" },
+        envelope: { attack: 0.002, decay: p.snare.decay * 1.4, sustain: 0, release: 0.08 },
+        volume: p.snare.vol - 8
+      }).connect(fizzLp);
+      const shell = new Tone.MembraneSynth({
+        pitchDecay: 0.03, octaves: 1.5,
+        envelope: { attack: 0.001, decay: 0.10, sustain: 0, release: 0.05 },
+        volume: p.snare.vol - 6
+      }).connect(bus);
       const rim = new Tone.MetalSynth({
         frequency: 165, envelope: { attack: 0.001, decay: 0.04, release: 0.02 },
         harmonicity: 2.4, modulationIndex: 5, resonance: 1800, octaves: 0.5,
-        volume: p.snare.rimVol
+        volume: p.snare.rimVol + 2
       }).connect(bus);
-      body.triggerAttackRelease("16n", 0, 0.9);
+      body.triggerAttackRelease("16n", 0, 0.86);
+      fizz.triggerAttackRelease("16n", 0, 0.6);
+      shell.triggerAttackRelease("G3", "32n", 0, 0.7);
       rim.triggerAttackRelease("64n", 0.005, 0.36);
-    }, 0.5);
+    }, 0.6);
 
     const hatBuf = await Tone.Offline(() => {
       const bus = new Tone.Gain(0.6).toDestination();
