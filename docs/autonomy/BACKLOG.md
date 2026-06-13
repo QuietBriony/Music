@@ -197,31 +197,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   完了条件: Phase 2 capture script が `docs/hazama-fm-design-spec.json` と実出力を
   diff 出力 + stack-check 0 BAD。tuning は方向確定 → PR → 試聴確認ごとに 1 件ずつ。
 
-### BL-025 — drum-frames の bpm/swing フィールド: wire するか metadata 宣言するか
-- priority : P2
-- repo     : Music
-- scope    : docs (宣言) or runtime (wire、別 PR + 試聴)
-- agent    : claude or codex (実装) + human (方針 + 試聴)
-- human-gate: yes
-- source   : 2026-06-01 fable review (field consumption trace)
-- detail   : drum-frames JSON の `frame.bpm` は表示のみ (genre-flavor.js が
-  `flavor.frameBpm` に晒すだけ)、`frame.swing` は **どこからも読まれない dead field**
-  と判明。実 tempo は fm.js `GENRE_PROFILES[pill].bpm` → DJTempoState → engine
-  `rampParam("transport-bpm")`、実 swing は engine `FM_MODE_SWING` (lofi/jazz 0.0 —
-  fm-67 で「三重遅延が気持ち悪い → microMs に任せる」と意図的に決定済) + event
-  microMs。よって最近の bpm/swing field tuning は可聴効果ゼロだった (microMs/velocity
-  編集分のみ可聴)。選択肢:
-  (a) buildDrumsFromFrames に frame.bpm/swing を配線する — fm-67 の三重 stacking
-      問題の再来リスク、要・実機試聴 human-gate。bpm 配線は fm.js profile と二重
-      権威になるので非推奨。
-  (b) **推奨**: presets/SCHEMA.md (または drum-patterns-genres/README.md の schema 節)
-      に「bpm/swing は annotation metadata、playback は microMs/velocity +
-      fm.js/engine テーブルが駆動」と明記して公式宣言。docs-only。
-  (c) フィールド削除 — Band Room / drum-patterns-genres 側が同 schema を共有して
-      いる (band-room は pattern bpm を使う可能性) ため要・影響調査。
-  harness (`hazama-fm-measure.mjs`) は既に consumed-authorities ベースに更新済み
-  (2026-06-01)。残るは上記方針決定と SCHEMA 明記。
-
 ## Icebox
 
 ### BL-008 — engine.js の部分モジュール化
@@ -253,6 +228,13 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 ---
 
 ## Done
+
+### BL-025 — drum-frames の bpm/swing フィールド: metadata 宣言で決着 ✅ 2026-06-13
+- 方針: option (b) を採用。`frame.bpm` (表示のみ) / `frame.swing` (dead field) を
+  wire せず、`presets/SCHEMA.md` §2 に「annotation metadata only / playback は
+  fm.js GENRE_PROFILES + engine FM_MODE_SWING + event microMs が駆動」と公式宣言。
+  wire (option a) は fm.js と二重 tempo 権威になり fm-67 の三重 stacking 再来リスク
+  のため非採用。harness は既に consumed-authorities ベース (2026-06-01)。docs-only。
 
 ### BL-019 — archive repo harvest 素材の翻訳取り込み ✅ 2026-05-25
 - repo: namima / Music / drum-floor / scope: cross-repo docs/reference
