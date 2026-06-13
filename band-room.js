@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-208-reconstruct-stability";
+  const BANDROOM_APP_VERSION = "br-209-timbre-uplift";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -331,7 +331,7 @@
     // v323: AI wall — un-scoop the mids (the 原音 v322 brief applies here too:
     // early-Nirvana wall lives in the mids) and give back a touch of body.
     // High shelf stays 1.5/4200 — that axis was measurement-tuned (v301).
-    const eq     = new Tone.EQ3({ low: -0.4, mid: 0, high: 1.5, lowFrequency: 160, highFrequency: 4200 });
+    const eq     = new Tone.EQ3({ low: -0.5, mid: 0.8, high: 1.5, lowFrequency: 130, highFrequency: 4200 });  // v344: gentle mid/body lift (+0.8) + low-cut under 130Hz; air axis (1.5/4200) preserved
     // v275: comp loosened to preserve dynamic range (measurement-driven).
     // Capture vs target showed DR 12.3 dB vs 33.6 dB (-21 dB gap). v271
     // section dynamics (5 dB swing) addressed the section layer, but the
@@ -343,9 +343,9 @@
     // drum/bass/other layers.
     // v323: one notch denser (2.05 → 2.2, release 0.17) — v301 measured AI DR
     // still wider than target (16.5 vs 8.7 dB), so more glue is also on-target.
-    const comp   = new Tone.Compressor({ threshold: -16, ratio: 2.2, attack: 0.014, release: 0.17, knee: 6 });
+    const comp   = new Tone.Compressor({ threshold: -18, ratio: 2.6, attack: 0.018, release: 0.16, knee: 8 });  // v344: a touch more glue (softer knee, slower attack so transients still snap)
     const lightRuntime = aiLightRuntimeEnabled();
-    const widen  = new Tone.StereoWidener(lightRuntime ? 0.42 : 0.58);
+    const widen  = new Tone.StereoWidener(lightRuntime ? 0.38 : 0.50);  // v344: pull width in slightly so the phantom center keeps mono body
     const makeup = new Tone.Gain(3.2);    // v243: glue-comp makeup + AI 再現 level lift (~+9 dB) so the synth band reaches the stems-tuned master at comparable level. v323: 3.0 → 3.2 (~+0.6 dB) to track the 原音 v322 loudness lift. Stems-only (原音) never touch this bus.
 
     if (lightRuntime) {
@@ -362,9 +362,12 @@
 
     // v323: grit up (0.12/0.16 → 0.15/0.20) toward the v322 wall density —
     // kept shy of the 原音 settings because synth content tips into fizz sooner.
-    const sat    = new Tone.Distortion({ distortion: 0.15, oversample: "2x", wet: 1 });
-    const satWet = new Tone.Gain(0.20);   // parallel saturated blend
+    const sat    = new Tone.Distortion({ distortion: 0.18, oversample: "2x", wet: 1 });  // v344: 0.15->0.18 a touch more harmonic density
+    const satWet = new Tone.Gain(0.24);   // v344: 0.20->0.24 parallel saturated blend
     const satDry = new Tone.Gain(0.92);   // parallel clean path
+    // v344: low-pass the saturated copy so its harmonics land as low-mid
+    // WARMTH/body (~<1.8k), not high fizz — the exciter below owns the air.
+    const satLp  = new Tone.Filter({ frequency: 1800, type: "lowpass", Q: 0.3 });
 
     // v287: parallel high-frequency exciter. The v274/v284/v286 EQ high-
     // shelf could not brighten the AI mix — the webapp source (acoustic
@@ -398,7 +401,8 @@
     eq.connect(comp);
     comp.connect(satDry);
     comp.connect(sat);
-    sat.connect(satWet);
+    sat.connect(satLp);
+    satLp.connect(satWet);
     comp.connect(exciteIn);
     exciteIn.connect(exciteShape);
     exciteShape.connect(exciteOut);
@@ -1502,7 +1506,7 @@
       // v92: bass / chord / vocal profile params
       bass:  { filterFreq: 480, filterQ: 1.4, drive: 0.08, driveWet: 0.45,
                envRelease: 0.15, postLpFreq: 1400, portamento: 0.018 },
-      chord: { oscType: "triangle", attack: 0.018, decay: 0.32, release: 0.5,
+      chord: { oscType: "triangle", attack: 0.018, decay: 0.32, release: 0.5, sustain: 0.5,
                chorusWet: 0.40, autoPanFreq: 0.18, autoPanDepth: 0.32, verbWet: 0.20 },
       vocal: { harmonicity: 2.4, vibratoFreq: 5.0, vibratoCents: 10,
                formant1: 700, formant2: 1200, hpFreq: 200, verbWet: 0.22 }
@@ -1514,9 +1518,10 @@
       hat:   { decay: 0.028, bpFreq: 8200, vol: -20 },
       crash: { decay: 1.1,  vol: -16 },
       // Bright synth bass with snappy filter env, glassy pad, clean vocal
-      bass:  { filterFreq: 720, filterQ: 2.2, drive: 0.04, driveWet: 0.35,
-               envRelease: 0.08, postLpFreq: 2400, portamento: 0.008 },
-      chord: { oscType: "sawtooth", attack: 0.008, decay: 0.20, release: 0.35,
+      bass:  { filterFreq: 720, filterQ: 2.4, drive: 0.04, driveWet: 0.35,
+               envRelease: 0.08, postLpFreq: 2400, portamento: 0.008,
+               filterDecay: 0.07, filterSustain: 0.35, filterBase: 160, filterOctaves: 2.9 },
+      chord: { oscType: "sawtooth", attack: 0.008, decay: 0.20, release: 0.35, sustain: 0.55,
                chorusWet: 0.55, autoPanFreq: 0.35, autoPanDepth: 0.42, verbWet: 0.16 },
       vocal: { harmonicity: 2.0, vibratoFreq: 4.0, vibratoCents: 6,
                formant1: 850, formant2: 1500, hpFreq: 280, verbWet: 0.14 }
@@ -1529,8 +1534,9 @@
       crash: { decay: 1.3,  vol: -14 },
       // Sub-y bass with portamento, dreamy pad swell, breathy vocal
       bass:  { filterFreq: 600, filterQ: 1.6, drive: 0.06, driveWet: 0.42,
-               envRelease: 0.22, postLpFreq: 1600, portamento: 0.04 },
-      chord: { oscType: "triangle", attack: 0.040, decay: 0.55, release: 0.85,
+               envRelease: 0.22, postLpFreq: 1600, portamento: 0.04,
+               filterDecay: 0.22, filterSustain: 0.6, filterBase: 80, filterOctaves: 2.2 },
+      chord: { oscType: "triangle", attack: 0.040, decay: 0.55, release: 0.85, sustain: 0.7,
                chorusWet: 0.48, autoPanFreq: 0.10, autoPanDepth: 0.28, verbWet: 0.34 },
       vocal: { harmonicity: 2.6, vibratoFreq: 5.5, vibratoCents: 14,
                formant1: 650, formant2: 1100, hpFreq: 180, verbWet: 0.32 }
@@ -1542,9 +1548,10 @@
       hat:   { decay: 0.05, bpFreq: 5000,  vol: -27 },
       crash: { decay: 1.45, vol: -18 },
       // Distorted slap bass, square stab chord, snarled vocal
-      bass:  { filterFreq: 380, filterQ: 1.8, drive: 0.18, driveWet: 0.70,
-               envRelease: 0.10, postLpFreq: 1200, portamento: 0.02 },
-      chord: { oscType: "square", attack: 0.005, decay: 0.18, release: 0.25,
+      bass:  { filterFreq: 380, filterQ: 2.6, drive: 0.18, driveWet: 0.70,
+               envRelease: 0.10, postLpFreq: 1200, portamento: 0.02,
+               filterDecay: 0.09, filterSustain: 0.28, filterBase: 90, filterOctaves: 3.4 },
+      chord: { oscType: "square", attack: 0.005, decay: 0.18, release: 0.25, sustain: 0.28,
                chorusWet: 0.22, autoPanFreq: 0.06, autoPanDepth: 0.18, verbWet: 0.12 },
       vocal: { harmonicity: 3.0, vibratoFreq: 6.5, vibratoCents: 18,
                formant1: 560, formant2: 1400, hpFreq: 260, verbWet: 0.18 }
@@ -1560,11 +1567,12 @@
       crash: { decay: 1.2,  vol: -17 },
       // Bass: warm upright-ish, slow filter env, soft portamento for walking feel
       bass:  { filterFreq: 380, filterQ: 1.0, drive: 0.04, driveWet: 0.30,
-               envRelease: 0.30, postLpFreq: 1200, portamento: 0.06 },
+               envRelease: 0.30, postLpFreq: 1200, portamento: 0.06,
+               filterDecay: 0.30, filterSustain: 0.65, filterBase: 70, filterOctaves: 1.8 },
       // Chord: soft triangle pad with long release + verb (用 fallback when
       // sampler not loaded; master preset auto-switches chord_instrument to
       // salamander-piano which takes over via Tone.Sampler)
-      chord: { oscType: "triangle", attack: 0.030, decay: 0.45, release: 0.75,
+      chord: { oscType: "triangle", attack: 0.030, decay: 0.45, release: 0.75, sustain: 0.6,
                chorusWet: 0.20, autoPanFreq: 0.08, autoPanDepth: 0.15, verbWet: 0.28 },
       // Vocal: warm formants, gentle vibrato, healthy verb tail (jazzy)
       vocal: { harmonicity: 2.2, vibratoFreq: 4.5, vibratoCents: 8,
@@ -2157,18 +2165,55 @@
       oversample: light ? "none" : "2x"
     }).connect(post);
     const bass = new Tone.MonoSynth({
-      // v244: fat (detuned-unison) oscillator — 3 voices, 20-cent spread.
-      // A lone sawtooth reads as a static "beep"; the slight detune gives
-      // the bass analog width + body. The lowpass below tames the extra
-      // harmonics so it stays solid, not wobbly.
-      oscillator: light ? { type: "sawtooth" } : { type: "fatsawtooth", count: 3, spread: 20 },
+      // v244: fat (detuned-unison) oscillator. A lone sawtooth reads as a
+      // static "beep"; the detune gives analog width. v344: spread 20->26 now
+      // that the clean sub (below) anchors the fundamental. Light = single saw.
+      oscillator: light ? { type: "sawtooth" } : { type: "fatsawtooth", count: 3, spread: 26 },
       filter: { type: "lowpass", frequency: b.filterFreq, Q: b.filterQ },
       envelope: { attack: 0.005, decay: 0.18, sustain: 0.6, release: b.envRelease },
-      filterEnvelope: { attack: 0.003, decay: 0.12, sustain: 0.5, release: 0.12, baseFrequency: 120, octaves: 2.6 },
+      // v344: filter envelope is now profile-driven (was one hard-coded literal
+      // that made every profile articulate the same). cramps snarls, sakanaction
+      // plucks, lcd/lofi stay round. Defaults reproduce the prior constant.
+      filterEnvelope: {
+        attack: 0.003,
+        decay: b.filterDecay ?? 0.12,
+        sustain: b.filterSustain ?? 0.5,
+        release: 0.12,
+        baseFrequency: b.filterBase ?? 120,
+        octaves: b.filterOctaves ?? 2.6
+      },
       portamento: b.portamento,
       volume: -10
     }).connect(drive);
-    return withChainDispose(markLayerKind(bass, "synth"), [post, drive]);  // v229: tear down post + drive
+
+    // v344: clean sub-oscillator one octave down — the direct fix for the
+    // "thin" bass. A lone (fat)saw has a weak fundamental; a sine an octave
+    // below at ~-5 dB supplies the body on BOTH runtimes (one sine osc is the
+    // cheapest node, so the light/phone path gets it too). Summed into the SAME
+    // `post` lowpass but NOT through `drive`, so the fundamental stays clean
+    // (no grit = no mud). Construction, not a new trigger (v241/v343 safe).
+    const subGain = new Tone.Gain(light ? 0.5 : 0.6).connect(post);
+    const sub = new Tone.Synth({
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.008, decay: 0.16, sustain: 0.85, release: b.envRelease },
+      volume: 0
+    }).connect(subGain);
+    const origTAR = bass.triggerAttackRelease.bind(bass);
+    const origTR = bass.triggerRelease.bind(bass);
+    bass.triggerAttackRelease = function (note, dur, time, vel) {
+      origTAR(note, dur, time, vel);
+      try {
+        const f = Math.max(33, Tone.Frequency(note).toFrequency() * 0.5);  // clamp: keep the sub out of sub-audible rumble
+        sub.triggerAttackRelease(f, dur, time, Math.min((vel ?? 1) * 0.9, 1));
+      } catch (e) {}
+      return bass;
+    };
+    bass.triggerRelease = function (time) {
+      origTR(time);
+      try { sub.triggerRelease(time); } catch (e) {}
+      return bass;
+    };
+    return withChainDispose(markLayerKind(bass, "synth"), [post, drive, sub, subGain]);  // v229/v344: tear down post + drive + sub
   }
 
   // ---- Original-stem players (Demucs-separated playback) ------
@@ -3303,35 +3348,49 @@
       : new Tone.Reverb({ decay: 2.5, wet: v.verbWet }).connect(target);
     const hp = new Tone.Filter({ frequency: v.hpFreq, type: "highpass", Q: 0.5 }).connect(verb);
     if (light) {
+      // v344: phone voice was a near-sine triangle "beep". A sawtooth gives
+      // real upper harmonics; ONE wide bandpass at the profile F1 gives a
+      // single vowel peak — the cheap win the light path allows (osc + 1 filter).
+      const formant = new Tone.Filter({ frequency: v.formant1, type: "bandpass", Q: 1.2 }).connect(hp);
       const voice = new Tone.Synth({
-        oscillator: { type: "triangle" },
+        oscillator: { type: "sawtooth" },
         envelope: { attack: 0.035, decay: 0.18, sustain: 0.58, release: 0.22 },
         volume: -13
-      }).connect(hp);
-      return withChainDispose(markLayerKind(voice, "synth"), [verb, hp]);
+      }).connect(formant);
+      return withChainDispose(markLayerKind(voice, "synth"), [verb, hp, formant]);
     }
-    const mix = new Tone.Gain(0.9).connect(hp);
-    const formant1 = new Tone.Filter({ frequency: v.formant1, type: "bandpass", Q: 5 }).connect(mix);
-    const formant2 = new Tone.Filter({ frequency: v.formant2, type: "bandpass", Q: 5 }).connect(mix);
+    const mix = new Tone.Gain(0.78).connect(hp);  // v344: 0.9->0.78 holds level as F3 + dry-body add summed energy
+    // v344: three formants (was two) at gentler, profile-driven Qs so the bands
+    // COLOR the carrier instead of gutting it, plus a low dry-body tap so the
+    // vowel has chest behind it. F3 (~2.6k) adds the presence that reads as a
+    // voice rather than a filtered drone. (Qs default if a profile omits them.)
+    const formant1 = new Tone.Filter({ frequency: v.formant1, type: "bandpass", Q: v.formant1Q ?? 1.8 }).connect(mix);
+    const formant2 = new Tone.Filter({ frequency: v.formant2, type: "bandpass", Q: v.formant2Q ?? 4 }).connect(mix);
+    const formant3 = new Tone.Filter({ frequency: v.formant3 ?? 2600, type: "bandpass", Q: Math.min(v.formant3Q ?? 6, 7) }).connect(mix);
+    const body = new Tone.Gain(v.bodyGain ?? 0.20).connect(mix);
 
     const voice = new Tone.AMSynth({
       harmonicity: v.harmonicity,
-      // v244: gently fat carrier (2 voices, small 12-cent spread) — adds
-      // body without fighting the vibrato LFO already on voice.detune.
-      oscillator: light ? { type: "sawtooth" } : { type: "fatsawtooth", count: 2, spread: 12 },
-      envelope: { attack: 0.05, decay: 0.32, sustain: 0.65, release: 0.62 },  // v342: softer entry, longer tail — phrase ends breathe instead of clipping
+      // v344: wider fat carrier (count 3 / spread 22; was 2/12) = audible
+      // chorusing body instead of a hollow ring. Light path is the Synth above.
+      oscillator: { type: "fatsawtooth", count: 3, spread: 22 },
+      envelope: { attack: 0.05, decay: 0.32, sustain: 0.65, release: 0.62 },  // v342: softer entry, longer tail
       modulation: { type: "sine" },
-      modulationEnvelope: { attack: 0.04, decay: 0.2, sustain: 0.5, release: 0.4 },
-      volume: -14  // v104: was -10, lowered so vocal guide doesn't dominate
+      modulationEnvelope: { attack: 0.04, decay: 0.2, sustain: 0.6, release: 0.4 },  // v344: 0.5->0.6 keeps AM partials present through the sustain
+      volume: -14  // v104: lowered so vocal guide doesn't dominate
     });
     voice.connect(formant1);
     voice.connect(formant2);
+    voice.connect(formant3);
+    voice.connect(body);
 
     const vibrato = light ? null : new Tone.LFO({ frequency: v.vibratoFreq, min: -v.vibratoCents, max: v.vibratoCents });
-    try { if (vibrato) { vibrato.connect(voice.detune); vibrato.start(); } } catch (e) {}
+    // v344: vibrato onset — amplitude ramps 0->1 over 150ms so notes start
+    // straight and bloom into vibrato like a singer (was full-depth from zero).
+    try { if (vibrato) { vibrato.connect(voice.detune); vibrato.amplitude.value = 0; vibrato.start(); vibrato.amplitude.rampTo(1, 0.15); } } catch (e) {}
 
-    // v229: vibrato is a started LFO — leaking it left an LFO running forever.
-    return withChainDispose(markLayerKind(voice, "synth"), [verb, hp, mix, formant1, formant2, vibrato].filter(Boolean));
+    // v229/v344: vibrato is a started LFO; formant3 + body added to teardown.
+    return withChainDispose(markLayerKind(voice, "synth"), [verb, hp, mix, formant1, formant2, formant3, body, vibrato].filter(Boolean));
   }
 
   // Human Fly chorus melody — hook line over G | D | Em | C 4-bar
@@ -3415,22 +3474,33 @@
     // (octave 4) and stops muddying the bass + guitar low-mid beneath it.
     const hpC = new Tone.Filter({ frequency: 190, type: "highpass", Q: 0.6 });
     const chord = new Tone.PolySynth(Tone.Synth, {
-      // v245 attempted fat oscillators here (count 2, spread 14) but combined
-      // with guitar PolySynth fat the renderer choked. Reverted to single-osc;
-      // the chord chain's existing Chorus + the FX chain provide pad width
-      // without per-voice CPU multiplier.
-      oscillator: { type: c.oscType },
-      envelope: { attack: c.attack, decay: c.decay, sustain: 0.45, release: c.release },
+      // v344: detuned-unison osc on the FULL path (light keeps single osc per
+      // v316). v245's fat attempt (count2/spread14) choked alongside guitar fat;
+      // this is gentler (count2/spread12) and the chord agent is 8ths now (v343),
+      // so it sits inside the polyphony budget. "fat"+oscType => fat{triangle,
+      // sawtooth,square}, all valid Tone v14 partial types.
+      oscillator: light ? { type: c.oscType } : { type: "fat" + c.oscType, count: 2, spread: 12 },
+      // v344: sustain is profile-driven — pads (lcd/lofi) bloom & hold, the
+      // cramps square decays to a real stab instead of a held slab.
+      envelope: { attack: c.attack, decay: c.decay, sustain: c.sustain ?? 0.45, release: c.release },
       volume: -12  // v104: was -16, raised so chord pad anchors the mix
     });
-    // v228: maxPolyphony 10 (reverted from v227's 32) — same CPU-protection
-    // reasoning as the guitar revert above. The cap stays low; step 2 cuts
-    // the chord agent's note density so a low cap suffices.
     chord.maxPolyphony = light ? 5 : 10;
     chord.connect(hpC);
-    hpC.connect(chordOutput);
-    // v229: autoPan + chorus are started LFOs — tear the whole chain down.
-    return withChainDispose(markLayerKind(chord, "synth"), [verb, autoPan, chorus, hpC].filter(Boolean));
+    // v344: slow low-pass sweep gives the pad the spectral movement it lacked
+    // (Tone.Synth has no per-voice filter env, so one shared filter + LFO on
+    // the FULL path is the cheap "opening/closing" life).
+    const lpC = light ? null : new Tone.Filter({ frequency: 2600, type: "lowpass", Q: 0.7 });
+    const lpLfo = light ? null : new Tone.LFO({ frequency: 0.08, min: 1700, max: 3400 });
+    if (lpC) {
+      hpC.connect(lpC);
+      lpC.connect(chordOutput);
+      try { lpLfo.connect(lpC.frequency); lpLfo.start(); } catch (e) {}
+    } else {
+      hpC.connect(chordOutput);
+    }
+    // v229/v344: autoPan + chorus + lpLfo are started LFOs — tear all down.
+    return withChainDispose(markLayerKind(chord, "synth"), [verb, autoPan, chorus, hpC, lpC, lpLfo].filter(Boolean));
   }
 
   // ---- Click ---------------------------------------------------

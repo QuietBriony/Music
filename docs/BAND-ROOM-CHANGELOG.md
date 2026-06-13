@@ -1,6 +1,31 @@
-# Band Room — Changelog (v65 → v343 compact)
+# Band Room — Changelog (v65 → v344 compact)
 
-Current compact release: v343.
+Current compact release: v344.
+
+---
+
+## v344 compact — AI シンセ音色の底上げ（bass / voice / chord / polish bus）
+
+ユーザー「音色がしょぼい」。ultracode で 19 エージェントが各ボイスを診断
+→ 設計 → 敵対的検証した結果を、安全・高値の 4 ボイスに絞って実装（原音は無関係、
+synth のみ）。音量を上げるではなく「構築で太くする」方向。
+
+- **bass**: クリーンなサブオシレータ（1 オクターブ下の sine、~-5 dB、drive を通さず
+  濁さず）で「しょぼい」の根本=弱い基音を補う。軽量パスでも黄る（sine 1 つだけ）。
+  filter envelope を profile 駆動に（cramps は snarl、sakanaction は pluck、lcd/lofi は丸く）。
+- **voice**: 3rd formant + dry-body tap（carrier を削りぜず色づけ、「声」に）、fat carrier 3/22、
+  vibrato の onset ramp（0.15s）。level は mix 0.9→0.78 で押さえて持維。軽量パスも
+  triangle→sawtooth + 1 formant（電話の「ピー」から脱却）。
+- **chord**: full パスだけ detuned-unison（count2/spread12、v343 の 8 分密度下で budget 内）、
+  sustain を profile 駆動（pad は伸び、cramps は stab）、遅い LP スイープで動きを追加。
+- **polish bus**（AI master、原音不可侵）: EQ で body +0.8（air 軸 1.5/4200 は維持）、glue を
+  一段、並列サチュレーションを 1.8k LP で温かみ側に、StereoWidener を少し詰めてセンター重量を戻す。
+
+敵対検証の required fixes 適用済（sub の dispose+周波数 clamp、voice の dispose+level hold+Q上限、
+chord の lpLfo dispose）。**guitar / drums は意図的に別バージョンに退避**（guitar=gate-pin churn、
+drums=検証で api/clipping リスク最高 → render-verify して単独で）。
+
+`band-room.js?v=br-209`、`hazama-fm-v344`。CSS は br-86 のまま。
 
 ---
 
