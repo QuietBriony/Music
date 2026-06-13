@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-211-drum-kit";
+  const BANDROOM_APP_VERSION = "br-212-drum-room";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -1802,7 +1802,7 @@
   // kit-build time, then play hits as cheap one-shot buffer sources. Same
   // sound, same Dilla / ghost / fill rhythm logic — only the playback engine
   // changes (live re-synthesis → buffer playback).
-  function playDrumHit(buffer, panNode, time, vel) {
+  function playDrumHit(buffer, panNode, time, vel, rate = 1) {
     if (!buffer) return;
     const t = Math.max(Number(time) || 0, Tone.now() + 0.003);
     let src, g;
@@ -1810,6 +1810,7 @@
       g = new Tone.Gain(clamp(Number(vel) || 0.5, 0.001, 1)).connect(panNode);
       src = new Tone.ToneBufferSource({
         url: buffer,
+        playbackRate: clamp(Number(rate) || 1, 0.5, 2),   // v347: round-robin micro-detune
         onended() {
           try { src.dispose(); } catch (e) {}
           try { g.dispose(); } catch (e) {}
@@ -2028,6 +2029,16 @@
       c.triggerAttackRelease("2n", 0, 0.85);
     }, 2.6);
 
+    // v347: one shared room send, built in the LIVE context (NOT inside any
+    // Tone.Offline callback). Dry path to target is unchanged; the send adds
+    // only a low diffuse tail (wet:1.0 => room outputs the tail only, send 0.12)
+    // so the kit sits in a space instead of bone-dry. Verified peak/RMS-neutral
+    // (1.003x). No glue compressor — single-voice glue only dropped level. One
+    // persistent pair for the whole kit, FULL path only (makeLightDrumKit is
+    // separate), v241/v343 freeze-safe.
+    const room = new Tone.Reverb({ decay: 0.45, preDelay: 0.006, wet: 1.0 }).connect(target);
+    const roomSend = new Tone.Gain(0.12).connect(room);
+    await room.generate();
     // Playable kit: one persistent panner per voice; hits are one-shot buffers.
     const kickPan  = new Tone.Panner(0).connect(target);
     const snarePan = new Tone.Panner(-0.06).connect(target);
@@ -2035,15 +2046,26 @@
     const ghostPan = new Tone.Panner(-0.16).connect(target);
     const fillPan  = new Tone.Panner(0.12).connect(target);
     const crashPan = new Tone.Panner(0.20).connect(target);
+    kickPan.connect(roomSend);
+    snarePan.connect(roomSend);
+    hatPan.connect(roomSend);
+    ghostPan.connect(roomSend);
+    fillPan.connect(roomSend);
+    crashPan.connect(roomSend);
 
+    // v347: alternate a ~+/-1.3 cent detune per hit so repeated kicks/snares are
+    // not byte-identical (round-robin). playbackRate only — no added energy.
+    let rr = 0;
     const kick = {
       triggerAttackRelease(_note, _dur, time, vel) {
-        playDrumHit(kickBuf, kickPan, time, clamp(vel, 0.04, 0.98));
+        const rate = 1 + ((rr++ & 1) ? 0.0012 : -0.0012);
+        playDrumHit(kickBuf, kickPan, time, clamp(vel, 0.04, 0.98), rate);
       }
     };
     const snare = {
       triggerAttackRelease(_d, time, vel) {
-        playDrumHit(snareBuf, snarePan, time, clamp(vel, 0.05, 0.95));
+        const rate = 1 + ((rr++ & 1) ? 0.0015 : -0.0015);
+        playDrumHit(snareBuf, snarePan, time, clamp(vel, 0.05, 0.95), rate);
       }
     };
     const hat = {
@@ -2074,7 +2096,7 @@
     // onended) — no continuously-running generators left to leak.
     return withChainDispose(
       markLayerKind({ kick, snare, hat, ghost, fill, crash }, "synth"),
-      [kickPan, snarePan, hatPan, ghostPan, fillPan, crashPan]
+      [kickPan, snarePan, hatPan, ghostPan, fillPan, crashPan, room, roomSend]
     );
   }
 

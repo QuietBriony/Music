@@ -1,6 +1,24 @@
-# Band Room — Changelog (v65 → v346 compact)
+# Band Room — Changelog (v65 → v347 compact)
 
-Current compact release: v346.
+Current compact release: v347.
+
+---
+
+## v347 compact — AI ドラム: round-robin 微デチューン + 共有ルーム送り
+
+v346 で退避した FULL synth kit の仕上げ。**FULL パス専用**（light/原音 は不可侵）。
+
+- **round-robin 微デチューン**: `playDrumHit` に任意の `playbackRate`（既定 1＝既存呼び出しは不変）。
+  FULL の kick/snare を1打ごとに約 ±1.3 cent 交互にデチューン → 「機関銃（同一打点）」感を解消。
+  エネルギー増無し（再生ホットパス・トリガー数・maxPolyphony 不変）。
+- **共有ルーム送り**: キット全体に1つだけの並列リバーブ送り（`wet:1.0` で tail のみ出力 + send 0.12）。
+  ドライ経路は不変、tail を薄く足してドラムが「素」に detach せず空間に座る。**preview 実測で
+  peak/RMS ニュートラル（1.003倍）を確認**。検証時のグルー・コンプは**不採用**（単発では音量を
+  下げるだけで効果薄・要マルチボイス調整だった）。ライブ context で生成（`await room.generate()`、
+  Tone.Offline 内では作らない）、`withChainDispose` の extraNodes に room/roomSend を追加して
+  リーク無し。return shape（`markLayerKind({...},"synth")` 第1引数）は不変＝ gate 維持。
+
+`band-room.js?v=br-212`、`hazama-fm-v347`。CSS は br-86 のまま。
 
 ---
 
