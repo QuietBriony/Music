@@ -1,8 +1,30 @@
-# Band Room — Changelog (v65 → v352 compact)
+# Band Room — Changelog (v65 → v353 compact)
 
-Current compact release: v352.
+Current compact release: v353.
 
 （v349〜v351 は別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため番号が飛ぶ。）
+
+---
+
+## v353 compact — 原音の音切れ修正(スマホ): master の light ゲートが mode 依存で凍結していた
+
+v352 後の監査（多エージェント, 24件確認）で、**スマホで原音が単体でも切れる**真因を特定。
+master チェーンの light 判定が `currentMode === "synth" && aiLightRuntimeEnabled()` で、
+master は**起動時に一度だけ構築・共有**される。原音は既定モードなので、スマホが原音で
+起動すると判定が false に凍結し、**重い畳み込み master リバーブ(decay 3.0)＋2x テープ
+サチュ**をセッション中ずっと使ってしまっていた（light runtime が START 時に避けるべき
+畳み込みコスト）。
+
+- **修正**: 判定を端末ベース `aiLightRuntimeEnabled()` のみに（1行）。スマホ/PWA は
+  原音でも意図どおり軽量 master（FeedbackDelay＋oversample none）になる。デスクトップ・
+  原音の stem-master グリット（v322 wall）は不変。
+- これは v352（AI バンドのリバーブ撤去）とは別系統。スマホ原音はこの master リバーブが
+  主因だったため v352 では直らなかった。
+
+監査の残課題は別途: AI バンドの mode 切替後の非破棄（v352 機構の本体, band-room.js）と、
+FM/genre-flavor.js の全面 light 未ゲート（別ワークストリームへ引き継ぎ）。
+
+`band-room.js?v=br-215`、`hazama-fm-v353`。CSS は br-86 のまま。
 
 ---
 

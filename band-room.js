@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-214-audio-fix";
+  const BANDROOM_APP_VERSION = "br-215-master-gate";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -536,7 +536,12 @@
     const masterComp2 = new Tone.Compressor({ threshold: -10, ratio: 1.7, attack: 0.016, release: 0.16, knee: 5 });
     masterWidener = new Tone.StereoWidener(0.72);
 
-    const lightRuntime = currentMode === "synth" && aiLightRuntimeEnabled();
+    // v353: was `currentMode === "synth" && aiLightRuntimeEnabled()` — but the
+    // master is built ONCE and shared, and 原音 is the default mode, so a phone
+    // booting in 原音 got the HEAVY convolution master reverb (decay 3.0) + 2x
+    // tape-sat for the whole session (audit MSC-2/3/4 → 原音 dropouts on phones).
+    // Gate on device only, so phones get the intended light master in BOTH modes.
+    const lightRuntime = aiLightRuntimeEnabled();
     masterTapeSat = new Tone.Distortion({
       distortion: lightRuntime ? 0.075 : 0.12,
       oversample: lightRuntime ? "none" : "2x",
