@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-218-ios-watchdog", "Band Room should expose the current iOS-watchdog fix version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-219-genon-rich", "Band Room should expose the current 原音 light-enrichment version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -134,13 +134,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-86/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-218/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-219/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-86/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-218/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-219/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
@@ -495,7 +495,7 @@ assert.match(source, /new Tone\.Chebyshev\(\{ order: 3, wet: 0\.18 \}\)/, "Guita
 assert.match(source, /const g = currentProfile\(\)\.guitar \|\|/, "Guitar tone should be profile-driven with a backward-compat fallback (v345)");
 assert.match(source, /volume: -10\.2/, "Synth fallback guitar should receive the v330 pressure lift");
 assert.match(source, /masterWidener = new Tone\.StereoWidener\(0\.72\)/, "Shared master should widen the v313 default image");
-assert.match(source, /masterWetGain = new Tone\.Gain\(lightRuntime \? 0\.12 : 0\.20\)/, "Shared master should keep v313 room on normal runtime and reduce it only in v316 light runtime");
+assert.match(source, /masterWetGain = new Tone\.Gain\(lightRuntime \? 0\.15 : 0\.20\)/, "Shared master should keep v313 room on normal runtime and reduce it only in v316 light runtime");
 assert.match(source, /vocalDryGain = new Tone\.Gain\(0\.68\)/, "Vocal dry center should pull back in v313");
 assert.match(source, /vocalReverbWet = new Tone\.Gain\(0\.16\)/, "Vocal should dissolve into a wider short room in v313");
 assert.match(source, /stemBus\.vocals = new Tone\.Gain\(0\.55\)/, "Vocal stem should gain a small v319 pressure lift while staying dissolved");
