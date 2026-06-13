@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-213-drum-rr";
+  const BANDROOM_APP_VERSION = "br-214-audio-fix";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -2032,16 +2032,10 @@
       c.triggerAttackRelease("2n", 0, 0.85);
     }, 2.6);
 
-    // v347: one shared room send, built in the LIVE context (NOT inside any
-    // Tone.Offline callback). Dry path to target is unchanged; the send adds
-    // only a low diffuse tail (wet:1.0 => room outputs the tail only, send 0.12)
-    // so the kit sits in a space instead of bone-dry. Verified peak/RMS-neutral
-    // (1.003x). No glue compressor — single-voice glue only dropped level. One
-    // persistent pair for the whole kit, FULL path only (makeLightDrumKit is
-    // separate), v241/v343 freeze-safe.
-    const room = new Tone.Reverb({ decay: 0.45, preDelay: 0.006, wet: 1.0 }).connect(target);
-    const roomSend = new Tone.Gain(0.12).connect(room);
-    await room.generate();
+    // v351: shared room reverb removed. A convolution Reverb running always-on
+    // on the AI bus (stacked with the guitar reverb + the pre-existing voice/
+    // chord/master reverbs) overloaded the audio thread and bled dropouts into
+    // 原音 while the synth band lingered in the graph. Round-robin (below) stays.
     // Playable kit: one persistent panner per voice; hits are one-shot buffers.
     const kickPan  = new Tone.Panner(0).connect(target);
     const snarePan = new Tone.Panner(-0.06).connect(target);
@@ -2049,12 +2043,6 @@
     const ghostPan = new Tone.Panner(-0.16).connect(target);
     const fillPan  = new Tone.Panner(0.12).connect(target);
     const crashPan = new Tone.Panner(0.20).connect(target);
-    kickPan.connect(roomSend);
-    snarePan.connect(roomSend);
-    hatPan.connect(roomSend);
-    ghostPan.connect(roomSend);
-    fillPan.connect(roomSend);
-    crashPan.connect(roomSend);
 
     // v347: alternate a ~+/-1.3 cent detune per hit so repeated kicks/snares are
     // not byte-identical (round-robin). playbackRate only — no added energy.
@@ -2100,7 +2088,7 @@
     // onended) — no continuously-running generators left to leak.
     return withChainDispose(
       markLayerKind({ kick, snare, hat, ghost, fill, crash }, "synth"),
-      [kickPan, snarePan, hatPan, ghostPan, fillPan, crashPan, room, roomSend]
+      [kickPan, snarePan, hatPan, ghostPan, fillPan, crashPan]
     );
   }
 
@@ -3337,15 +3325,16 @@
     // v345 FULL path: parallel dry + driven cab. Clean and distorted copies sum
     // (balance in the gains, distortion fully wet), a low-order Chebyshev adds
     // amp warmth, a peaking cab + steep -24 dB/oct lowpass shape the speaker,
-    // then verb. No extra oscillators/voices — v245/v343 freeze-safe.
+    // then straight out. v351: removed the always-on convolution reverb here —
+    // it overloaded the audio thread (with the drum room reverb) and bled
+    // dropouts into 原音. No extra oscillators/voices — v245/v343 freeze-safe.
     const chorus = new Tone.Chorus({ frequency: 0.9, delayTime: 3.2, depth: 0.38, wet: 0.34 }).start();
     const dryG = new Tone.Gain(g.dryWet);
-    const dist = new Tone.Distortion({ distortion: g.driveAmt, wet: 1.0, oversample: "2x" });
+    const dist = new Tone.Distortion({ distortion: g.driveAmt, wet: 1.0, oversample: "none" });   // v351: 2x->none, standing CPU cost
     const driveG = new Tone.Gain(g.driveWet);
     const cheb = new Tone.Chebyshev({ order: 3, wet: 0.18 });
     const cab = new Tone.Filter({ frequency: g.cabFreq, type: "peaking", Q: g.cabQ, gain: 4.5 });
     const lp = new Tone.Filter({ frequency: g.lpFreq, type: "lowpass", Q: 0.7, rolloff: -24 });
-    const verb = new Tone.Reverb({ decay: 1.0, wet: g.verbWet });
     const guitar = new Tone.PolySynth(Tone.Synth, {
       // v345: oscType profile-driven (cramps square bite vs rock saw). Single
       // non-fat oscillator — PolySynth voice cost unchanged (v245 fat attempt
@@ -3367,10 +3356,9 @@
     driveG.connect(cheb);
     cheb.connect(cab);
     cab.connect(lp);
-    lp.connect(verb);
-    verb.connect(target);
+    lp.connect(target);
     // v229/v345: chorus is a started LFO — tear the whole chain down.
-    return withChainDispose(markLayerKind(guitar, "synth"), [chorus, dryG, dist, driveG, cheb, cab, lp, verb, hpG].filter(Boolean));
+    return withChainDispose(markLayerKind(guitar, "synth"), [chorus, dryG, dist, driveG, cheb, cab, lp, hpG].filter(Boolean));
   }
 
   function powerChordNotes(chord, octave = 3) {

@@ -1,6 +1,26 @@
-# Band Room — Changelog (v65 → v348 compact)
+# Band Room — Changelog (v65 → v352 compact)
 
-Current compact release: v348.
+Current compact release: v352.
+
+（v349〜v351 は別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため番号が飛ぶ。）
+
+---
+
+## v352 compact — 音切れ修正: AI 常時稼働リバーブ2基を撤去（原音にも波及していた負荷）
+
+ユーザー報告「原音がとぎれとぎれ・AI もまともに鳴らない」。原因は**オーディオスレッドの過負荷**。
+v345 で合成ギターに、v347 で合成ドラムに、それぞれ**畳み込みリバーブ（常時稼働）を追加**し、
+既存の voice/chord/master リバーブに積み重なって CPU が飽和。さらに AI→原音 にモードを
+切り替えても合成バンドはグラフに繋がったまま無音を処理し続けるため、**その負荷が原音にも
+波及**してドロップアウトを起こしていた。preview のオフライン計測で、この常時稼働 FX 群は
+軽量版の **2.27倍** の描画コストと確認。
+
+- **撤去**: 合成ギターの畳み込み Reverb（v345）＋ 合成ドラムの room Reverb（v347）。これで
+  リバーブ数が v345 以前の正常時に戻る。ギターのディストーションも oversample 2x→none。
+- **維持**: round-robin 微デチューン（v347/v348、無コスト）、ギターの cab/Chebyshev/chorus、
+  ドラムの音色（v346）。原音 / stem / polish bus / master リバーブは不変。
+
+`band-room.js?v=br-214`、`hazama-fm-v352`。CSS は br-86 のまま。
 
 ---
 
