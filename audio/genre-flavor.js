@@ -23,6 +23,41 @@
 
   const Tone = window.Tone;
 
+  // fm-79 (BL-028): device/light-runtime detection, mirroring band-room.js's
+  // aiLightRuntimeEnabled() so both Hazama apps gate heavy DSP on the same
+  // signal and honor the same ?aiLight=1 / ?aiLight=0 override. The acoustic
+  // fun field (addAcousticFunField) otherwise stacks 2 always-on Tone.Reverb,
+  // 4 started AutoPanners and 2 oversampled "2x" Distortions per active genre —
+  // a standing CPU cost regardless of whether triggers fire. On constrained
+  // devices we build a lean variant (no reverb tail, static panners, no
+  // oversampling). Capable devices are unaffected (gate returns false).
+  function runtimeQueryFlag(name) {
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const value = params.get(name);
+      if (value === "1" || value === "true" || value === "on") return true;
+      if (value === "0" || value === "false" || value === "off") return false;
+    } catch (e) {}
+    return null;
+  }
+
+  function lightRuntimeEnabled() {
+    const forced = runtimeQueryFlag("aiLight");
+    if (forced != null) return forced;
+    const nav = (typeof navigator !== "undefined") ? navigator : {};
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection || null;
+    if (connection && connection.saveData) return true;
+    let standalone = false;
+    try {
+      standalone = (typeof window.matchMedia === "function" && window.matchMedia("(display-mode: standalone)").matches)
+        || nav.standalone === true;
+    } catch (e) {}
+    const mobile = standalone || /iPhone|iPad|iPod|Android|Mobile/i.test(nav.userAgent || "");
+    const cores = Number(nav.hardwareConcurrency) || 0;
+    const memory = Number(nav.deviceMemory) || 0;
+    return mobile || (cores > 0 && cores <= 8) || (memory > 0 && memory <= 8);
+  }
+
   // Working volume (linear gain). This is a parallel color layer, not the
   // full-mix loudness path, so keep real headroom before the limiter.
   const WORKING_LEVEL = 0.62;
@@ -1092,10 +1127,11 @@
     if (!layer || !layer.gain || !Array.isArray(layer.scheduledIds) || !Array.isArray(layer.synths)) return layer;
     const p = MONO_LOW_PROFILES[pill];
     if (!p) return layer;
+    const light = lightRuntimeEnabled();
     const out = new Tone.Gain(p.gain).connect(layer.gain);
     const center = new Tone.Panner(0).connect(out);
     const lp = new Tone.Filter({ frequency: p.cutoff, type: "lowpass", Q: 0.7 }).connect(center);
-    const sat = new Tone.Distortion({ distortion: p.drive, wet: p.driveWet, oversample: "2x" }).connect(lp);
+    const sat = new Tone.Distortion({ distortion: p.drive, wet: p.driveWet, oversample: light ? "none" : "2x" }).connect(lp);
     const sub = new Tone.FMSynth({
       harmonicity: 1,
       modulationIndex: 0.45,
@@ -1144,13 +1180,21 @@
     if (!layer || !layer.gain || !Array.isArray(layer.scheduledIds) || !Array.isArray(layer.synths)) return layer;
     const p = ORBITAL_AIR_PROFILES[pill];
     if (!p) return layer;
+    const light = lightRuntimeEnabled();
     const field = new Tone.Gain(p.gain).connect(layer.gain);
     const wide = new Tone.StereoWidener(p.width).connect(field);
-    const room = new Tone.Reverb({ decay: p.room, preDelay: 0.035, wet: p.roomWet }).connect(wide);
-    const delay = new Tone.PingPongDelay({ delayTime: p.delay, feedback: p.feedback, wet: p.delayWet }).connect(room);
+    // BL-028: skip the always-on convolution reverb on constrained devices
+    // (dry passthrough keeps the dry level, drops only the tail + its CPU).
+    const room = light ? null : new Tone.Reverb({ decay: p.room, preDelay: 0.035, wet: p.roomWet }).connect(wide);
+    const delay = new Tone.PingPongDelay({ delayTime: p.delay, feedback: p.feedback, wet: p.delayWet }).connect(room || wide);
     const hp = new Tone.Filter({ frequency: p.hp, type: "highpass", Q: 0.55 }).connect(delay);
-    const panA = new Tone.AutoPanner({ frequency: p.rateA, depth: 0.86, wet: 1 }).connect(hp).start();
-    const panB = new Tone.AutoPanner({ frequency: p.rateB, depth: 0.92, wet: 1 }).connect(hp).start();
+    // BL-028: static panners (no continuous LFO) on constrained devices.
+    const panA = light
+      ? new Tone.Panner(-0.45).connect(hp)
+      : new Tone.AutoPanner({ frequency: p.rateA, depth: 0.86, wet: 1 }).connect(hp).start();
+    const panB = light
+      ? new Tone.Panner(0.45).connect(hp)
+      : new Tone.AutoPanner({ frequency: p.rateB, depth: 0.92, wet: 1 }).connect(hp).start();
     const glass = new Tone.FMSynth({
       harmonicity: 1.5,
       modulationIndex: 4.4,
@@ -1211,7 +1255,7 @@
       }
       step++;
     }, p.interval || "1m", "8n"));
-    layer.synths.push(field, wide, room, delay, hp, panA, panB, glass, metal, airFilter, air);
+    [field, wide, room, delay, hp, panA, panB, glass, metal, airFilter, air].forEach((n) => { if (n) layer.synths.push(n); });
     layer.source = `${layer.source || "layer"}+orbital-air`;
     return layer;
   }
@@ -1220,15 +1264,22 @@
     if (!layer || !layer.gain || !Array.isArray(layer.scheduledIds) || !Array.isArray(layer.synths)) return layer;
     const p = NULL_ZONE_PROFILES[pill];
     if (!p) return layer;
+    const light = lightRuntimeEnabled();
     const zone = new Tone.Gain(p.gain).connect(layer.gain);
     const wide = new Tone.StereoWidener(p.width).connect(zone);
-    const room = new Tone.Reverb({ decay: p.room, preDelay: 0.02, wet: p.roomWet }).connect(wide);
-    const delay = new Tone.PingPongDelay({ delayTime: p.delay, feedback: p.feedback, wet: p.delayWet }).connect(room);
+    // BL-028: skip the always-on convolution reverb on constrained devices.
+    const room = light ? null : new Tone.Reverb({ decay: p.room, preDelay: 0.02, wet: p.roomWet }).connect(wide);
+    const delay = new Tone.PingPongDelay({ delayTime: p.delay, feedback: p.feedback, wet: p.delayWet }).connect(room || wide);
     const notch = new Tone.Filter({ frequency: p.notchLo, type: "notch", Q: p.q }).connect(delay);
     const hp = new Tone.Filter({ frequency: p.hp, type: "highpass", Q: 0.72 }).connect(notch);
-    const fold = new Tone.Distortion({ distortion: p.fold, wet: p.foldWet, oversample: "2x" }).connect(hp);
-    const panA = new Tone.AutoPanner({ frequency: p.rateA, depth: 0.98, wet: 1 }).connect(fold).start();
-    const panB = new Tone.AutoPanner({ frequency: p.rateB, depth: 0.96, wet: 1 }).connect(fold).start();
+    const fold = new Tone.Distortion({ distortion: p.fold, wet: p.foldWet, oversample: light ? "none" : "2x" }).connect(hp);
+    // BL-028: static panners (no continuous LFO) on constrained devices.
+    const panA = light
+      ? new Tone.Panner(-0.5).connect(fold)
+      : new Tone.AutoPanner({ frequency: p.rateA, depth: 0.98, wet: 1 }).connect(fold).start();
+    const panB = light
+      ? new Tone.Panner(0.5).connect(fold)
+      : new Tone.AutoPanner({ frequency: p.rateB, depth: 0.96, wet: 1 }).connect(fold).start();
     const glass = new Tone.FMSynth({
       harmonicity: 1.333,
       modulationIndex: 6.2,
@@ -1300,7 +1351,7 @@
       } catch (e) {}
       step++;
     }, p.interval || "2n", "16n"));
-    layer.synths.push(zone, wide, room, delay, notch, hp, fold, panA, panB, glass, chirp, dustFilter, dust);
+    [zone, wide, room, delay, notch, hp, fold, panA, panB, glass, chirp, dustFilter, dust].forEach((n) => { if (n) layer.synths.push(n); });
     layer.source = `${layer.source || "layer"}+null-zone`;
     return layer;
   }
