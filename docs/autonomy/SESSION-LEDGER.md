@@ -19,7 +19,22 @@
 
 ---
 
-## 2026-06-13 (cont.) — BL-028 実装: FM genre-flavor の弱端末 light ゲート (v359)
+## 2026-06-13 (cont.) — BL-028 フォローアップ: 画面内 audio runtime トグル (v360)
+- agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
+- goal       : user「一応つけといて」— v359 の light ゲートを URL `?aiLight` だけでなく
+  画面内ボタンで手動切替可能に（auto/light/full の3状態）
+- repos      : Music（fm.html + fm.css + fm.js + audio/genre-flavor.js + cache/docs）
+- shipped    : v360 — fm.html focus 群の下に `⚙ auto / 🪶 light / 💎 full` トグル。
+  優先順位 `?aiLight` URL > 画面トグル(localStorage music:fm:runtime-mode:v1) > 自動判定。
+  genre-flavor に runtimeModeOverride() + rebuild()（同一ジャンル respin 用、setGenre は no-op）+
+  state.light を追加。fm.js は既存 40HZ focus トグルと同形（同じ started||starting ガード）
+- verify     : ① 6 gates 全 PASS ② live preview 4179 実測: トグル 3状態サイクル（auto→light→full→auto）/
+  localStorage 永続（null↔light↔full）/ state.light が pref 追従（auto は端末判定: 12コア機=full）/
+  rebuild() が pref 反映（full→AutoPanner 4本・light→0本、※spy 二重掛けで 8/0 と出たが比は正）
+  ③ 4-lens adversarial review（precedence-regression/state-machine/rebuild-safety/integration）
+- backlog    : BL-028 は wip 継続（実装拡充・merge 済、弱端末 試聴待ち）
+- next       : user 試聴。普段は auto で無操作 OK、重い時だけ light 固定 / ?aiLight=1 でも可
+- blockers   : なし
 - agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
 - goal       : user 指示「私が今すぐ実装」— hand-off 化した BL-028 を自分で実装。FM 領分の
   「触るな」線をこの 1 件だけ user 承認で外す

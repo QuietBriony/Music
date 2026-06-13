@@ -1,9 +1,27 @@
-# Band Room — Changelog (v65 → v359 compact)
+# Band Room — Changelog (v65 → v360 compact)
 
-Current sw.js VERSION: v359。band-room 本体の最新変更は v358（v349〜v351・v356・v359 は
+Current sw.js VERSION: v360。band-room 本体の最新変更は v358（v349〜v351・v356・v359・v360 は
 別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため band-room 視点では番号が飛ぶ）。
 
 ---
+
+## v360 compact — FM genre-flavor: 画面内に audio runtime トグル（auto/light/full）を追加
+
+別アプリ FM 側のリリース。v359 で入れた弱端末向け light ゲートを、URL の `?aiLight` だけでなく
+**fm.html の画面内ボタンで手動切替**できるようにした（BL-028 のフォローアップ）。fm.html の
+focus(40HZ) 群の下に `⚙ auto / 🪶 light / 💎 full` の3状態トグルを追加:
+
+- **auto**（既定）: 端末を自動判定（`lightRuntimeEnabled()` = モバイル/PWA/saveData/CPU≤8/メモリ≤8GB
+  なら light）。普段はこれで触らなくてよい。status は実効値を `auto · light` / `auto · full` で表示
+- **light**: 端末問わず常に軽量（重いと感じる端末で手動強制）
+- **full**: 端末問わず常にフル（スマホでも豪華さ優先）
+
+優先順位は **`?aiLight` URL フラグ > 画面トグル(localStorage `music:fm:runtime-mode:v1`) > 自動判定**。
+トグルは playback 中に押すと `GenreFlavor.rebuild()` で現ジャンルを即座に respin して反映（`setGenre` は
+同一ジャンルで no-op のため専用 API を追加）。選択は localStorage に永続。
+
+判定ロジック自体は v359 と不変＝capable 端末の既定音は変わらない。
+`audio/genre-flavor.js?v=fm-80`、`fm.js?v=fm-72`、`fm.css?v=fm-54`、`hazama-fm-v360`。band-room は br-219/br-86 のまま。
 
 ## v359 compact — FM genre-flavor: 弱端末で acoustic-fun-field の常時 DSP を軽量化（監査 BL-028）
 

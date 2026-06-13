@@ -41,9 +41,24 @@
     return null;
   }
 
+  // In-app override (the fm.html ⚙ runtime toggle writes this key). "light"/"full"
+  // win over auto-detect; "auto"/absent falls through. The ?aiLight URL flag still
+  // wins over everything (explicit per-load override for testing/links).
+  const RUNTIME_MODE_KEY = "music:fm:runtime-mode:v1";
+  function runtimeModeOverride() {
+    try {
+      const v = localStorage.getItem(RUNTIME_MODE_KEY);
+      if (v === "light") return true;
+      if (v === "full") return false;
+    } catch (e) {}
+    return null;
+  }
+
   function lightRuntimeEnabled() {
     const forced = runtimeQueryFlag("aiLight");
     if (forced != null) return forced;
+    const stored = runtimeModeOverride();
+    if (stored != null) return stored;
     const nav = (typeof navigator !== "undefined") ? navigator : {};
     const connection = nav.connection || nav.mozConnection || nav.webkitConnection || null;
     if (connection && connection.saveData) return true;
@@ -3439,6 +3454,24 @@
     activeLayer = spinUp(name);
   }
 
+  // Force a teardown+respin of the current genre. Used when the runtime
+  // light/full toggle flips mid-playback so the new DSP weight takes effect
+  // immediately (setGenre no-ops on the same genre).
+  function rebuild() {
+    if (!started) return;
+    teardownActive();
+    activeLayer = spinUp(currentGenre);
+  }
+
+  // Lightweight read of the current effective light-runtime decision, for the
+  // fm.html runtime toggle's status label. Deliberately NOT folded into the
+  // state getter: state is read on engine hot paths (per-bar texture / output
+  // gain) that never consume `light`, and lightRuntimeEnabled() does a
+  // localStorage + URLSearchParams + matchMedia probe we must keep off them.
+  function isLight() {
+    return lightRuntimeEnabled();
+  }
+
   // ---- Organic tempo drift -------------------------------------
   // Subtle BPM modulation for non-machine genres. Real session musicians
   // breathe with the tempo — slightly faster on a build, slightly slower
@@ -3542,6 +3575,8 @@
     start,
     stop,
     setGenre,
+    rebuild,
+    isLight,
     dispose,
     get state() {
       const profile = FLAVOR_PROFILE_BY_GENRE[currentGenre] || null;

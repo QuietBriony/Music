@@ -7,7 +7,7 @@
   <meta name="description" content="Hazama FM — generative focus radio powered by the UCM Mandala Engine. Press start and listen for hours." />
 
     <link rel="stylesheet" href="style.css?v=fm-28" />
-  <link rel="stylesheet" href="fm.css?v=fm-53" />
+  <link rel="stylesheet" href="fm.css?v=fm-54" />
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
@@ -41,7 +41,7 @@
   <script src="audio/namima-audio-adapter.js?v=fm-66" defer></script>
   <script src="audio/human-groove-governor.js" defer></script>
   <script src="presets/loader.js?v=fm-18" defer></script>
-  <script src="audio/genre-flavor.js?v=fm-79" defer></script>
+  <script src="audio/genre-flavor.js?v=fm-80" defer></script>
   <!-- fm-71: Magenta DrumsRNN AI fill module. The module itself is small;
        the heavy CDN scripts + checkpoint (~5 MB) are fetched lazily on
        first click of #fm-ai-fill so page load stays light. -->
@@ -52,7 +52,7 @@
   <script src="audio/music-packet.js?v=fm-118" defer></script>
   <script src="audio/music-hazama-feedback.js?v=fm-118" defer></script>
   <script src="engine.js?v=fm-118" defer></script>
-  <script src="fm.js?v=fm-71" defer></script>
+  <script src="fm.js?v=fm-72" defer></script>
   <style>
     .share-link-button{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(210,235,255,.28);border-radius:999px;background:rgba(4,14,24,.46);color:rgba(230,245,255,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
     .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -148,6 +148,13 @@
     <div id="fm-focus-group" role="group" aria-label="Focus modulation">
       <button id="fm-focus-mode" type="button" aria-pressed="false" title="40 Hz focus modulation">40HZ</button>
       <span id="fm-focus-status" aria-live="polite">off</span>
+    </div>
+
+    <!-- fm-72 (BL-028): audio runtime weight. auto = 端末を自動判定 (弱い端末は常時FXを
+         軽量化)。light/full は手動上書き。?aiLight URL フラグはこれより優先。 -->
+    <div id="fm-runtime-group" role="group" aria-label="Audio runtime weight">
+      <button id="fm-runtime-mode" type="button" aria-pressed="false" title="重い端末向けに常時FXを軽くする。auto=端末を自動判定 / light=常に軽量 / full=常にフル">⚙ auto</button>
+      <span id="fm-runtime-status" aria-live="polite">auto</span>
     </div>
 
     <!-- fm-71: Magenta DrumsRNN AI fill — fires a 4-bar burst of AI-generated

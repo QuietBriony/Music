@@ -12,6 +12,9 @@
 
   const STORAGE_KEY = "music:fm:v1";
   const FOCUS_MODE_STORAGE_KEY = "music:fm:focus-mode:v1";
+  // BL-028: in-app audio runtime weight override (genre-flavor reads this key).
+  const RUNTIME_MODE_STORAGE_KEY = "music:fm:runtime-mode:v1";
+  const RUNTIME_MODES = ["auto", "light", "full"];
   const LISTENING_TRACE_STORAGE_KEY = "music:fm:listening-trace:v1";
   const DRUM_FLOOR_APP_URL = "https://quietbriony.github.io/drum-floor/";
   const LISTENING_TRACE_MAX_TRANSITIONS = 24;
@@ -160,6 +163,7 @@
   let lastAcidCueKey = "";
   let listeningTrace = null;
   let focusModeEnabled = false;
+  let runtimeModeChoice = "auto";
   let lastSessionWriteAt = 0;
   let lastSessionWriteSignature = "";
   let lastMediaMetadataSignature = "";
@@ -827,6 +831,24 @@
   function writeFocusModePreference(enabled) {
     try {
       localStorage.setItem(FOCUS_MODE_STORAGE_KEY, enabled ? "on" : "off");
+    } catch (e) {
+      // localStorage may be unavailable in private mode.
+    }
+  }
+
+  function readRuntimeModePreference() {
+    try {
+      const v = localStorage.getItem(RUNTIME_MODE_STORAGE_KEY);
+      return RUNTIME_MODES.includes(v) ? v : "auto";
+    } catch (e) {
+      return "auto";
+    }
+  }
+
+  function writeRuntimeModePreference(mode) {
+    try {
+      if (mode === "auto") localStorage.removeItem(RUNTIME_MODE_STORAGE_KEY);
+      else localStorage.setItem(RUNTIME_MODE_STORAGE_KEY, mode);
     } catch (e) {
       // localStorage may be unavailable in private mode.
     }
@@ -1825,6 +1847,57 @@
     });
   }
 
+  // ---- BL-028: audio runtime weight toggle (auto / light / full) ----
+  const RUNTIME_MODE_LABEL = { auto: "⚙ auto", light: "🪶 light", full: "💎 full" };
+
+  function effectiveRuntimeIsLight() {
+    try {
+      if (window.GenreFlavor && typeof window.GenreFlavor.isLight === "function") {
+        return window.GenreFlavor.isLight();
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function syncRuntimeModeButtonState() {
+    const btn = $("fm-runtime-mode");
+    const status = $("fm-runtime-status");
+    if (btn) {
+      btn.setAttribute("aria-pressed", String(runtimeModeChoice !== "auto"));
+      btn.textContent = RUNTIME_MODE_LABEL[runtimeModeChoice] || "⚙ auto";
+    }
+    if (!status) return;
+    if (runtimeModeChoice === "auto") {
+      const eff = effectiveRuntimeIsLight();
+      status.textContent = eff == null ? "auto" : (eff ? "auto · light" : "auto · full");
+    } else {
+      status.textContent = runtimeModeChoice;
+    }
+  }
+
+  function applyRuntimeModePreference() {
+    // Re-apply live: respin the current genre so the new DSP weight takes effect
+    // now (genre-flavor reads the stored mode at build time; setGenre no-ops on
+    // the same genre, so use the dedicated rebuild()).
+    if (window.GenreFlavor && typeof window.GenreFlavor.rebuild === "function" && (started || starting)) {
+      try { window.GenreFlavor.rebuild(); } catch (e) {}
+    }
+    syncRuntimeModeButtonState();
+  }
+
+  function bindRuntimeModeButton() {
+    const btn = $("fm-runtime-mode");
+    runtimeModeChoice = readRuntimeModePreference();
+    syncRuntimeModeButtonState();
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      const i = RUNTIME_MODES.indexOf(runtimeModeChoice);
+      runtimeModeChoice = RUNTIME_MODES[(i + 1) % RUNTIME_MODES.length];
+      writeRuntimeModePreference(runtimeModeChoice);
+      applyRuntimeModePreference();
+    });
+  }
+
   // ---- fm-71: AI fill button (Magenta DrumsRNN) ----------------
   // The CDN scripts + checkpoint (~5 MB) are fetched lazily on the
   // first click. While loading the button shows "loading…" and is
@@ -2202,6 +2275,7 @@
     bindDrumFloorLink();
     bindAudioRouteStatus();
     bindFocusModeButton();
+    bindRuntimeModeButton();
     bindAiFillButton();
     bindReviewSync();
     bindVisibility();
