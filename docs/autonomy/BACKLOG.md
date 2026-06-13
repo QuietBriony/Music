@@ -86,7 +86,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - agent    : codex | claude（FM workstream）
 - human-gate: yes（出音キャラが変わるので試聴判定）
 - status   : wip — v359 で light ゲート実装・merge 済（live preview 実測: AutoPanner 4→0 /
-  Reverb 2→0 @ ?aiLight=1、guardrail HEAVY 行 22→18、4-lens adversarial review clean）。弱端末試聴待ち
+  Reverb 2→0 @ ?aiLight=1、guardrail HEAVY 行 22→18、4-lens adversarial review clean）。
+  v360 で画面内トグル（⚙auto/🪶light/💎full・localStorage 永続・rebuild で即反映）も追加。弱端末試聴待ち
 - source   : 2026-06-13 audio-overload 監査（Music repo 全体・1 クラス限定）。
   band-room 側の修正可能分は #353/v354・#352/v353・#355/v356（pumpGain leak）で決着済。
   本 item は監査の FM 領分 hand-off。詳細は `docs/CODEX-HANDOFF.md` の同日節を参照。
