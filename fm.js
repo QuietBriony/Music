@@ -94,7 +94,11 @@
   const GENRE_PROFILES = {
     any: {
       culture: "auto",
-      faders: { energy: 40, wave: 40, mind: 50, creation: 50, void: 20, circle: 60, body: 50, resource: 60, observer: 50 }
+      // Slightly more present/warm neutral center (was energy 40 / body 50 /
+      // creation 50 / void 20 / circle 60) so the AUTOMIX-driven wander has a
+      // livelier base — still genre-less. The audible motion comes from the
+      // slow culture wander below (startAnyWander).
+      faders: { energy: 46, wave: 42, mind: 50, creation: 56, void: 16, circle: 64, body: 55, resource: 60, observer: 52 }
     },
     ambient: {
       bpm: 72,
@@ -144,6 +148,13 @@
   let shuffleAuditionEnabled = false;
   let shuffleAuditionTimer = null;
   let lastShuffleGenre = "";
+  // "any" wander: while ANY is the live pill, slowly drift the culture grammar
+  // through a gentle neutral set so a long listen audibly travels (AUTOMIX owns
+  // the faders, so culture is the lever it does NOT overwrite). Genre-less.
+  let anyWanderTimer = null;
+  let anyWanderIndex = 0;
+  const ANY_WANDER_CULTURES = ["auto", "tape_memory", "ambient_room", "earth_reed"];
+  const ANY_WANDER_MS = 80000;
   let lastShuffleEnergy = "";
   let lastAcidCueAt = 0;
   let lastAcidCueKey = "";
@@ -653,6 +664,29 @@
     }, 900);
   }
 
+  function stopAnyWander() {
+    if (anyWanderTimer) { clearInterval(anyWanderTimer); anyWanderTimer = null; }
+  }
+
+  function startAnyWander() {
+    stopAnyWander();
+    anyWanderIndex = 0; // start from the "auto" baseline just applied
+    anyWanderTimer = setInterval(() => {
+      // Self-terminate if playback stopped or the user left "any".
+      if ((!started && !starting) || getCurrentGenre() !== "any" || isDjSetActive()) {
+        stopAnyWander();
+        return;
+      }
+      anyWanderIndex = (anyWanderIndex + 1) % ANY_WANDER_CULTURES.length;
+      const cultureSelect = $("culture_grammar_select");
+      const next = ANY_WANDER_CULTURES[anyWanderIndex];
+      if (cultureSelect && cultureSelect.value !== next) {
+        cultureSelect.value = next;
+        dispatchChange(cultureSelect);
+      }
+    }, ANY_WANDER_MS);
+  }
+
   function applyGenreProfile(name, options = {}) {
     if (shouldDjMixGenre(options)) {
       beginGenreDjMix(name, options);
@@ -715,6 +749,10 @@
       cultureSelect.value = profile.culture;
       dispatchChange(cultureSelect);
     }
+
+    // "any" → start the slow culture wander (audible long-form drift, genre-less);
+    // any real genre locks identity, so stop it.
+    if (wantsAuto) startAnyWander(); else stopAnyWander();
 
     // Crossfade the genre flavor layer.
     if (window.GenreFlavor) {
@@ -1564,6 +1602,7 @@
       clearGenreMixTimers();
       stopShuffleAuditionTimer();
       stopGenreTempoLock();
+      stopAnyWander();
       stopDjSet({ reason: "fm-stop" });
       cancelSleepTimer("stop");
       releaseWakeLock();
