@@ -766,4 +766,43 @@ assert.equal(durationShortfalls.length, 0,
 
 assert.doesNotMatch(source, /scrollIntoView/, "Lyrics auto-follow must scroll the #br-lyrics panel only — never the page (no scrollIntoView)");
 
+// v360 (health-review — close the audio-cost-gate blind spot): check-audio-cost-gates.mjs
+// scans a ±6-line window for ANY device token, so it cannot tell an *ungated* master
+// reverb / tape-sat from a *gated* neighbour. Collapsing the line-558 ternary
+// `masterReverb = lightRuntime ? FeedbackDelay : Reverb` to an unconditional
+// `new Tone.Reverb` slips straight past it (the adjacent masterTapeSat / masterWetGain
+// lines still carry `lightRuntime` inside the window). The master is built ONCE and
+// shared, so that ungating is the exact v353 phone-原音-dropout class — and the master
+// reverb is the single costliest always-on node in the session. Lock its device tier
+// here, where we inspect the assignment statement itself rather than a line window.
+{
+  const HEAVY_REVERB = /new Tone\.(?:Reverb|Convolver|Freeverb|JCReverb)\b/;
+  // Collect every `masterReverb = …;` assignment (the hoisted `let masterReverb = null;`
+  // at L151 is harmless — it has no heavy node) and lock only the ones that build a reverb.
+  const heavyMrv = (source.match(/masterReverb\s*=[\s\S]*?;/g) || []).filter((s) => HEAVY_REVERB.test(s));
+  assert.ok(heavyMrv.length >= 1,
+    "master reverb (Tone.Reverb) assignment must exist on the shared master bus — if it was refactored away entirely, update this gate");
+  for (const stmt of heavyMrv) {
+    assert.match(stmt, /lightRuntime|aiLightRuntimeEnabled\(\)/,
+      "master reverb convolution MUST be device-gated (lightRuntime / aiLightRuntimeEnabled), never always-on: the master is built once and shared, so an ungated Tone.Reverb runs heavy convolution all session in 原音 too (v353 phone-dropout class, AUDIO-COST-INVARIANTS #1/#2)");
+    assert.match(stmt, /Tone\.FeedbackDelay|\bnull\b/,
+      "the light-runtime master reverb branch must stay cheap (FeedbackDelay or null) — never a second convolution node on phones");
+  }
+  // Same blind spot covers the master tape-sat oversample. Gate the FIELD, not the whole
+  // statement: the Distortion's `distortion:` field is itself gated, so a statement-level
+  // `lightRuntime` check would wave through an oversample-only ungating.
+  const mtsOversampleExprs = (source.match(/masterTapeSat\s*=[\s\S]*?;/g) || [])
+    .map((s) => s.match(/oversample:\s*([^,\n}]+)/))
+    .filter(Boolean)
+    .map((m) => m[1]);
+  assert.ok(mtsOversampleExprs.length >= 1,
+    "masterTapeSat must define an oversample tier on the shared master bus");
+  for (const expr of mtsOversampleExprs) {
+    if (/"(?:2x|4x)"/.test(expr)) {
+      assert.match(expr, /lightRuntime|aiLightRuntimeEnabled\(\)/,
+        "master tape-sat oversample 2x/4x MUST be device-gated (none on light) — same shared-master always-on cost class as the reverb (AUDIO-COST-INVARIANTS #2)");
+    }
+  }
+}
+
 console.log("Band Room logic check passed");
