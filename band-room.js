@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-220-voice-formant3";
+  const BANDROOM_APP_VERSION = "br-221-light-voice";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -3459,11 +3459,21 @@
       // v344: phone voice was a near-sine triangle "beep". A sawtooth gives
       // real upper harmonics; ONE wide bandpass at the profile F1 gives a
       // single vowel peak — the cheap win the light path allows (osc + 1 filter).
+      // v362: fatsawtooth unison (count 3, modest spread 13 — wider would smear
+      // energy off the single F1 bandpass and thin the vowel peak) adds analog
+      // chorusing width INSIDE the existing Synth node — no extra node/LFO/CPU —
+      // mirroring the full path's count:3/spread:22 carrier. Longer release
+      // (0.22->0.35) softens the staccato note-tail; the light voice is
+      // monophonic so the tail only rings before a rest.
       const formant = new Tone.Filter({ frequency: v.formant1, type: "bandpass", Q: 1.2 }).connect(hp);
       const voice = new Tone.Synth({
-        oscillator: { type: "sawtooth" },
-        envelope: { attack: 0.035, decay: 0.18, sustain: 0.58, release: 0.22 },
-        volume: -13
+        oscillator: { type: "fatsawtooth", count: 3, spread: 13 },
+        envelope: { attack: 0.035, decay: 0.18, sustain: 0.58, release: 0.35 },
+        // v362: -13->-11.5 restores parity — the fatsawtooth unison spreads ~1.5-2.5 dB
+        // of energy off the single F1 bandpass center (offline-render measured), so this
+        // is level compensation, NOT a lift; -11.5 is the ceiling that keeps the guide
+        // from dominating kick/bass (full path is -14).
+        volume: -11.5
       }).connect(formant);
       return withChainDispose(markLayerKind(voice, "synth"), [verb, hp, formant]);
     }
