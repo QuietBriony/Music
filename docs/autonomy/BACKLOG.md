@@ -262,6 +262,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   **⚠ chouta-surface（ARM64/Snapdragon・CUDA なし）ではローカル生成不可**（`docs/ACE-STEP-WORKFLOW.md §4.5`）。
   ACE-Step を使うなら cloud/レンタル GPU か別マシン。chouta-surface だけで歌入りデモを作るなら
   **Suno（ブラウザ）の方が現実的**（→ `docs/SUNO-WORKFLOW.md`、BL-029 は ACE-Step ルート専用）。
+  **実行プロンプト**: GPU 機 workerPC（Codex 専用）に貼る → `docs/CODEX-HANDOFF.md` TASK E。
   完了条件: user が（GPU 環境を用意して）1 曲デモ → Band Room で組み立て確認、or Suno ルートに倒す判断。
 
 ## Icebox

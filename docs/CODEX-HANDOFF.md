@@ -430,3 +430,67 @@ band-room 側の**修正可能分は全て決着済**:
 - drum-panner（`genre-flavor.js:561` 付近）の非 dispose は **GC churn であって audio コストではない**
   と adversarial verify が判定 → finding から除外。overload クラスでは無視してよい。
 ```
+
+---
+
+## TASK E (2026-06-13) — ACE-Step 1.5 で Tabasco 歌入りデモ生成（workerPC / GPU）
+
+**どこで**: GPU マシン **workerPC**（Codex 専用）。music-stack repo を選択した状態で Codex に下を貼る
+（or `codex exec "<下のプロンプト>"`）。chouta-surface（ARM/CUDA なし）では動かないため GPU 機側で実行。
+
+**なぜ Codex**: 重い R&D（モデル DL + GPU 推論）。BL-029 / `docs/ACE-STEP-WORKFLOW.md` のレーン。
+成果物（wav）は **repo に入れない**（音源を repo に置かない掟）。Codex は wav を生成して報告するだけ。
+旋律/アレンジの取り込み（Tone.js への翻訳）は人間 + Claude 親の taste 作業で、Codex はしない。
+
+**Codex プロンプト（コピペ用・英語）:**
+
+```
+You're on workerPC (a GPU machine). The current repo is QuietBriony/Music (music-stack). Your job:
+generate singable demo tracks of the Tabasco songs with ACE-Step 1.5, so a human can listen and
+translate the arrangement ideas into the Band Room engine later. You ONLY generate + report.
+
+HARD CONSTRAINTS (do not violate):
+- Clone ACE-Step and write ALL outputs OUTSIDE this repo. Never put model weights, the ACE-Step
+  checkout, or any .wav/.mp3 inside the Music repo. NEVER `git add` audio or weights. Do not commit
+  anything to the Music repo. Do not modify any Music repo file (read-only: you only READ lyrics +
+  style prompts from it).
+- Use a scratch dir under the user's home, e.g. `~/ace-step-out/` for wavs and `~/ACE-Step-1.5/` for
+  the checkout (adjust to workerPC's OS).
+- This is an offline production/reference tool, not a runtime dependency. Don't wire it into anything.
+
+STEPS:
+1. Detect environment: OS, `nvidia-smi` (GPU name + VRAM), python version. Print a one-line summary.
+   If no CUDA GPU is found, STOP and report — do not attempt CPU-only (too slow).
+2. Install ACE-Step 1.5 OUTSIDE the repo:
+     git clone https://github.com/ACE-Step/ACE-Step-1.5.git ~/ACE-Step-1.5 && cd ~/ACE-Step-1.5
+   Install `uv` (Linux/mac: `curl -LsSf https://astral.sh/uv/install.sh | sh`; Windows:
+   `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`), then `uv sync`.
+   If torch resolves to a CPU-only build, reinstall the CUDA build matching the detected CUDA version.
+   `cp .env.example .env` if present. Pick the model tier from the VRAM table in the README
+   (≤6GB→2B turbo INT8+offload … ≥24GB→XL sft); set it in `.env`. Weights auto-download on first run.
+3. Start the REST API non-interactively: `uv run acestep-api` (serves http://localhost:8001).
+   Do NOT use the Gradio UI or the interactive `--cli` wizard (you can't drive those headlessly).
+   Discover the request schema from http://localhost:8001/docs (OpenAPI) or by reading the API source.
+   If the REST API is impractical, fall back to the Python API (import the pipeline, read the repo's
+   example scripts) — still fully scripted, no interactive prompts.
+4. Read inputs FROM the Music repo (read-only):
+   - Lyrics: `docs/tabasco-lyrics-final.md` (7 songs; keep the section tags like [verse]/[chorus]).
+   - Per-song style prompts: `docs/SUNO-WORKFLOW.md` section 4 (01 TABASCO … 07 Sister, with bpm +
+     genre/voice descriptors). Use each song's prompt as the ACE-Step style/prompt text.
+5. VALIDATE FIRST with ONE song — `06 Human Fly` — full pipeline: prompt + lyrics → a real .wav in
+   `~/ace-step-out/06-human-fly.wav`. Confirm the file is non-trivial audio (size > 0, plays). Only
+   AFTER that works, generate the remaining 6, saving `~/ace-step-out/NN-<title>.wav` each.
+   Use a sensible duration per song (their full length ~2.5-5 min, or cap at the model's max).
+6. REPORT (your final message): OS + GPU + VRAM + chosen model tier; the exact generation call you
+   used (so it can be reused); absolute path of the output dir; per-song success/fail + file sizes;
+   total wall time; and any schema/API quirks you discovered (so this prompt can be refined). Do NOT
+   commit or push anything.
+
+If anything blocks setup (ARM/no-CUDA, uv failure, weight download, schema unknown), STOP and report
+the blocker with the exact error rather than guessing.
+```
+
+**戻ってきたら（Claude 親 / 人間）**: workerPC 上の `~/ace-step-out/*.wav` を聴く → 良い展開/メロを
+Band Room の Tone.js / drum-frame / preset に**翻訳**（blind copy しない）。wav は repo に入れない
+（手元 or CDN）。LoRA で album 統一したい場合は ACE-Step Gradio の "LoRA Training" タブ（8 曲 / 3090
+で ~1h）を人間が操作。詳細レーン定義は `docs/ACE-STEP-WORKFLOW.md`。
