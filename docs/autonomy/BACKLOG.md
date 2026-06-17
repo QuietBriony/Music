@@ -253,14 +253,16 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - priority : P2
 - repo     : Music（制作・参照レーン。runtime には組み込まない）
 - scope    : verify / 制作（オフライン）
-- agent    : human（ローカル GPU/Mac で生成 → 耳で判断 → アイデアを翻訳）
+- agent    : human（CUDA GPU / Apple Silicon / cloud GPU で生成 → 耳で判断 → アイデアを翻訳）
 - human-gate: yes
 - source   : 2026-06-13 user「ace step 1.5 使える？」→ `docs/ACE-STEP-WORKFLOW.md` でレーン定義
-- detail   : ACE-Step 1.5（OSS・ローカル <4GB VRAM・LoRA・cover/repaint）で `tabasco-lyrics-final.md`
-  の歌入りフルデモを生成し、展開/メロのアイデアを Band Room の Tone.js に**翻訳**（blind copy 禁止）。
-  手順は `docs/ACE-STEP-WORKFLOW.md`（Suno レーンの OSS 版）。掟: 出力 wav は repo に入れない・
-  実行時依存にしない。副産物として測定ループのジャンル参照ターゲットにも使える（BL-024 連携）。
-  完了条件: user が試して「使える/使えない」を判断。使うなら 1 曲デモ → Band Room で組み立て確認。
+- detail   : ACE-Step 1.5（OSS・LoRA・cover/repaint）で `tabasco-lyrics-final.md` の歌入りフルデモを
+  生成し、展開/メロのアイデアを Band Room の Tone.js に**翻訳**（blind copy 禁止）。掟: 出力 wav は
+  repo に入れない・実行時依存にしない。副産物として測定ループのジャンル参照ターゲットにも使える（BL-024 連携）。
+  **⚠ chouta-surface（ARM64/Snapdragon・CUDA なし）ではローカル生成不可**（`docs/ACE-STEP-WORKFLOW.md §4.5`）。
+  ACE-Step を使うなら cloud/レンタル GPU か別マシン。chouta-surface だけで歌入りデモを作るなら
+  **Suno（ブラウザ）の方が現実的**（→ `docs/SUNO-WORKFLOW.md`、BL-029 は ACE-Step ルート専用）。
+  完了条件: user が（GPU 環境を用意して）1 曲デモ → Band Room で組み立て確認、or Suno ルートに倒す判断。
 
 ## Icebox
 
