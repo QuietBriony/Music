@@ -19,6 +19,24 @@
 
 ---
 
+## 2026-06-13 (cont.) — openclaw desk currency + ACE-Step レーン定義
+- agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
+- goal       : (1)「openclaw desk に Band Room 表示がない」→ first-class 化 +
+  ダッシュボード最適化磨きこみ。(2)「ace step 1.5 使える？推奨進めて」→ 制作レーン定義
+- repos      : openclaw（index.html + sw.js）、Music（docs）
+- shipped    :
+  - openclaw #33 — Band Room を first-class 表示（別アプリ・独自改善）+ Human Review を
+    当日の audio-overload スレッド（Band Room v352–v358 / FM genre-flavor light ゲート
+    v359 + トグル v360）まで currency 更新。陳腐化「Hazama FM v172」除去。sw v4→v5。
+    gate（check-pwa-static v5 / check-session-manifest）PASS、preview 描画確認、merge・deploy 済
+  - Music docs — `ACE-STEP-WORKFLOW.md` 新規（WebSearch で 1.5 仕様確認: ローカル <4GB VRAM /
+    10分 / 50言語 / LoRA / cover・repaint・vocal-to-BGM）。Suno レーンの OSS/ローカル版として
+    定義。掟整合（runtime 非依存・出力 wav は repo 外・blind copy しない）を明記。
+    SUNO-WORKFLOW から相互リンク
+- verify     : openclaw gate 2本 PASS + live preview。docs リンク先 5 本の存在確認（dead link 無し）
+- backlog    : BL-029 追加（ACE-Step で Tabasco 歌入りデモ → Band Room アレンジ指針。human 創作）
+- next       : user が ACE-Step を試すか（任意）。openclaw のさらなる構造/UX 磨きは指定待ち
+
 ## 2026-06-13 (cont.) — BL-028 フォローアップ: 画面内 audio runtime トグル (v360)
 - agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
 - goal       : user「一応つけといて」— v359 の light ゲートを URL `?aiLight` だけでなく

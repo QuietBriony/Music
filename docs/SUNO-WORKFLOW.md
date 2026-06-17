@@ -249,3 +249,12 @@ harmony, intimate close-mic'd quality, gentle but driven
 
 (直接 URL なので変動可能性あり、迷ったら google で `suno custom mode lyrics
 prompt` 等で検索)
+
+---
+
+## 9. ローカル / OSS の代替 — ACE-Step
+
+クラウドを使わず手元の GPU/Mac で同じこと（歌入り生成・cover・声の統一）をしたい場合は
+**ACE-Step**（OSS・無料・素材を外部にアップロードしない・数曲から LoRA 学習）。
+このページの prompt テンプレ・workflow はそのまま流用できる。
+→ [ACE-STEP-WORKFLOW.md](./ACE-STEP-WORKFLOW.md)

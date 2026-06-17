@@ -249,6 +249,19 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   完了条件: user が listening-score を付け → `suggest-evolution` で pocket_director
   delta を生成 → PR → 試聴 → promotion。multi-repo 同時 tuning はしない (BL-006 方針)。
 
+### BL-029 — ACE-Step で Tabasco 歌入りデモ → Band Room アレンジの指針
+- priority : P2
+- repo     : Music（制作・参照レーン。runtime には組み込まない）
+- scope    : verify / 制作（オフライン）
+- agent    : human（ローカル GPU/Mac で生成 → 耳で判断 → アイデアを翻訳）
+- human-gate: yes
+- source   : 2026-06-13 user「ace step 1.5 使える？」→ `docs/ACE-STEP-WORKFLOW.md` でレーン定義
+- detail   : ACE-Step 1.5（OSS・ローカル <4GB VRAM・LoRA・cover/repaint）で `tabasco-lyrics-final.md`
+  の歌入りフルデモを生成し、展開/メロのアイデアを Band Room の Tone.js に**翻訳**（blind copy 禁止）。
+  手順は `docs/ACE-STEP-WORKFLOW.md`（Suno レーンの OSS 版）。掟: 出力 wav は repo に入れない・
+  実行時依存にしない。副産物として測定ループのジャンル参照ターゲットにも使える（BL-024 連携）。
+  完了条件: user が試して「使える/使えない」を判断。使うなら 1 曲デモ → Band Room で組み立て確認。
+
 ## Icebox
 
 ### BL-008 — engine.js の部分モジュール化
