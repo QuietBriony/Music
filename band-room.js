@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-219-genon-rich";
+  const BANDROOM_APP_VERSION = "br-220-voice-formant3";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -1519,7 +1519,7 @@
       chord: { oscType: "triangle", attack: 0.018, decay: 0.32, release: 0.5, sustain: 0.5,
                chorusWet: 0.40, autoPanFreq: 0.18, autoPanDepth: 0.32, verbWet: 0.20 },
       vocal: { harmonicity: 2.4, vibratoFreq: 5.0, vibratoCents: 10,
-               formant1: 700, formant2: 1200, hpFreq: 200, verbWet: 0.22 },
+               formant1: 700, formant2: 1200, formant3: 2600, formant3Q: 6, hpFreq: 200, verbWet: 0.22 },
       guitar: { oscType: "sawtooth", driveAmt: 0.55, dryWet: 0.42, driveWet: 0.62, cabFreq: 2200, cabQ: 1.5, lpFreq: 4800, verbWet: 0.12 }
     },
     "sakanaction": {
@@ -1535,7 +1535,7 @@
       chord: { oscType: "sawtooth", attack: 0.008, decay: 0.20, release: 0.35, sustain: 0.55,
                chorusWet: 0.55, autoPanFreq: 0.35, autoPanDepth: 0.42, verbWet: 0.16 },
       vocal: { harmonicity: 2.0, vibratoFreq: 4.0, vibratoCents: 6,
-               formant1: 850, formant2: 1500, hpFreq: 280, verbWet: 0.14 },
+               formant1: 850, formant2: 1500, formant3: 2950, formant3Q: 5, hpFreq: 280, verbWet: 0.14 },
       guitar: { oscType: "sawtooth", driveAmt: 0.40, dryWet: 0.50, driveWet: 0.52, cabFreq: 2600, cabQ: 1.3, lpFreq: 5200, verbWet: 0.10 }
     },
     "lcd-motorik": {
@@ -1551,7 +1551,7 @@
       chord: { oscType: "triangle", attack: 0.040, decay: 0.55, release: 0.85, sustain: 0.7,
                chorusWet: 0.48, autoPanFreq: 0.10, autoPanDepth: 0.28, verbWet: 0.34 },
       vocal: { harmonicity: 2.6, vibratoFreq: 5.5, vibratoCents: 14,
-               formant1: 650, formant2: 1100, hpFreq: 180, verbWet: 0.32 },
+               formant1: 650, formant2: 1100, formant3: 2450, formant3Q: 4.5, hpFreq: 180, verbWet: 0.32 },
       guitar: { oscType: "sawtooth", driveAmt: 0.50, dryWet: 0.45, driveWet: 0.58, cabFreq: 2000, cabQ: 1.4, lpFreq: 4600, verbWet: 0.16 }
     },
     "cramps-punk": {
@@ -1567,7 +1567,7 @@
       chord: { oscType: "square", attack: 0.005, decay: 0.18, release: 0.25, sustain: 0.28,
                chorusWet: 0.22, autoPanFreq: 0.06, autoPanDepth: 0.18, verbWet: 0.12 },
       vocal: { harmonicity: 3.0, vibratoFreq: 6.5, vibratoCents: 18,
-               formant1: 560, formant2: 1400, hpFreq: 260, verbWet: 0.18 },
+               formant1: 560, formant2: 1400, formant3: 2850, formant3Q: 6.5, hpFreq: 260, verbWet: 0.18 },
       guitar: { oscType: "square", driveAmt: 0.72, dryWet: 0.34, driveWet: 0.74, cabFreq: 2400, cabQ: 1.8, lpFreq: 5000, verbWet: 0.08 }
     },
     "lofi-nujabes": {
@@ -1590,7 +1590,7 @@
                chorusWet: 0.20, autoPanFreq: 0.08, autoPanDepth: 0.15, verbWet: 0.28 },
       // Vocal: warm formants, gentle vibrato, healthy verb tail (jazzy)
       vocal: { harmonicity: 2.2, vibratoFreq: 4.5, vibratoCents: 8,
-               formant1: 720, formant2: 1300, hpFreq: 220, verbWet: 0.34 },
+               formant1: 720, formant2: 1300, formant3: 2400, formant3Q: 4.5, hpFreq: 220, verbWet: 0.34 },
       guitar: { oscType: "sawtooth", driveAmt: 0.34, dryWet: 0.55, driveWet: 0.42, cabFreq: 1900, cabQ: 1.2, lpFreq: 4300, verbWet: 0.14 }
     }
   };

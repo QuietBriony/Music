@@ -1,9 +1,30 @@
-# Band Room — Changelog (v65 → v360 compact)
+# Band Room — Changelog (v65 → v361 compact)
 
-Current sw.js VERSION: v360。band-room 本体の最新変更は v358（v349〜v351・v356・v359・v360 は
+Current sw.js VERSION: v361。band-room 本体の最新変更は v361（v349〜v351・v356・v359・v360 は
 別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため band-room 視点では番号が飛ぶ）。
 
 ---
+
+## v361 compact — AI ボーカル: synth 音声の 3rd フォルマント（presence帯）をプロフィール別に
+
+AI 再現の synth ボーカル fallback（`makeVoiceBox` の full/desktop パス）は3フォルマント構成だが、
+F1/F2 はプロフィール別なのに **F3（~2.4–3kHz の presence/輪郭帯）だけ全プロフィール一律 2600Hz**
+だった（配線は `v.formant3 ?? 2600` で値未定義のため fallback に潰れていた）。各プロフィールの
+キャラに合わせて F3 と Q を定義:
+
+- **default 2600 / Q6**（現 fallback と同値＝音は不変、意図の明文化のみ）
+- **sakanaction 2950 / Q5**（bright・glassy → 高い airy presence）
+- **lcd-motorik 2450 / Q4.5**（breathy・dreamy → 低め・柔らかく広い）
+- **cramps-punk 2850 / Q6.5**（snarl → 強調・タイト。F3Q clamp は 7）
+- **lofi-nujabes 2400 / Q4.5**（warm・jazzy → presence を丸める）
+
+純粋に additive（既存 `?? 2600` fallback の裏。新規ノードなし、light パスは F1 単一のままで不変＝
+スマホは影響なし、desktop synth fallback のみ可聴）。gain staging も既に3フォルマント分 `mix=0.78`
+に下げ済みでクリップ増なし。`check-band-room-logic.mjs` に G-5（全5プロフィールが presence帯で
+formant3 を定義）を追加して恒久ロック。offline render の FFT 実測で presence帯エネルギーが
+プロフィール別に分離・無クリップを確認。
+
+`band-room.js?v=br-220`、`hazama-fm-v361`。CSS は br-86 のまま。
 
 ## v360 compact — FM genre-flavor: 画面内に audio runtime トグル（auto/light/full）を追加
 
