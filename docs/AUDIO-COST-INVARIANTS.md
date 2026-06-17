@@ -32,6 +32,9 @@ the cost of a lightened version.
    oversampled distortions were the v352/v355 culprits). On phones, prefer a
    `FeedbackDelay`-based "room", `oversample: "none"`, or a render-time/baked effect.
    The full (desktop) variant may keep them — gate the heavy branch behind the device check.
+   The shared **master reverb + master tape-sat** device tier is now structurally locked by
+   `scripts/check-band-room-logic.mjs` (statement-level, so it catches an ungating the ±6-line
+   window in `check-audio-cost-gates.mjs` cannot — see that gate's blind-spot note).
 
 3. **Dispose the synth band on AI→原音 switch.**
    Releasing held notes is not enough — the nodes (and their always-on FX) linger
