@@ -1,9 +1,30 @@
-# Band Room — Changelog (v65 → v361 compact)
+# Band Room — Changelog (v65 → v362 compact)
 
-Current sw.js VERSION: v361。band-room 本体の最新変更は v361（v349〜v351・v356・v359・v360 は
+Current sw.js VERSION: v362。band-room 本体の最新変更は v362（v349〜v351・v356・v359・v360 は
 別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため band-room 視点では番号が飛ぶ）。
 
 ---
+
+## v362 compact — AI ボーカル(light/スマホ): synth 音声に fatsawtooth ユニゾン幅
+
+スマホが鳴らす **light パスの synth ボーカル**（`makeVoiceBox` の light 分岐）は単一 sawtooth +
+F1 単バンドパスで、detune 幅ゼロ＝倍音が鋭いスペクトル線になり metallic/digital に聞こえていた。
+full パスが既に採用済の `fatsawtooth count:3`（@3484, spread 22）を light にもミラー:
+
+- `oscillator: sawtooth → fatsawtooth count:3 spread:13`。**ユニゾンは既存 Synth ノード内部**で
+  生成＝**新規ノード/LFO/CPU 増なし**（HEAVY 対象外、cost gate 0 維持）。spread は full の 22 でなく
+  **13**（light は単一 F1 bandpass のため広いと中心からエネルギーが散り vowel が痩せる）
+- `envelope.release 0.22 → 0.35`（フレーズ末の staccato な切れを緩和。light voice は monophonic
+  なので tail は休符前のみ鳴る）
+- `volume -13 → -11.5`：fatsawtooth が F1 bandpass 中心から ~1.5–2.5dB のエネルギーを散らすため
+  （offline render 実測）の **level 補償**（持ち上げではない）。-11.5 は guide が kick/bass を
+  食わない上限（full は -14）
+
+**スコープ**: light/スマホ AI ボーカルのみ可聴。原音/stem 不変、full パス不変、新規ノードなし。
+offline render 実測で width（crest factor 4.33→3.42＝波形が密＝ユニゾン beating）・level parity
+（RMS Δ -1.0〜0dB）・no clip（peak は baseline 以下）を確認。
+
+`band-room.js?v=br-221`、`hazama-fm-v362`。CSS は br-86 のまま。
 
 ## v361 compact — AI ボーカル: synth 音声の 3rd フォルマント（presence帯）をプロフィール別に
 
