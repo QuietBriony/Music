@@ -481,10 +481,18 @@ STEPS:
    `~/ace-step-out/06-human-fly.wav`. Confirm the file is non-trivial audio (size > 0, plays). Only
    AFTER that works, generate the remaining 6, saving `~/ace-step-out/NN-<title>.wav` each.
    Use a sensible duration per song (their full length ~2.5-5 min, or cap at the model's max).
-6. REPORT (your final message): OS + GPU + VRAM + chosen model tier; the exact generation call you
-   used (so it can be reused); absolute path of the output dir; per-song success/fail + file sizes;
-   total wall time; and any schema/API quirks you discovered (so this prompt can be refined). Do NOT
-   commit or push anything.
+6. SERVE over LAN so the user can play the wavs from another device (a Surface on the same network):
+   find this machine's LAN IPv4 (not 127.0.0.1, not a docker/virtual adapter) and print it; then start
+   a static file server for the output dir bound to 0.0.0.0 on port 8009 in the BACKGROUND and keep it
+   running, e.g. `python -m http.server 8009 --bind 0.0.0.0 --directory ~/ace-step-out`. Print the
+   directory URL `http://<LAN-IP>:8009/` and each file URL `http://<LAN-IP>:8009/NN-<title>.wav`. Note
+   if the OS firewall might block inbound 8009 and how to allow it. Report the server PID + stop
+   command; do NOT stop it. (Plaintext LAN-only file server — fine for local listening; never expose
+   it to the public internet.)
+7. REPORT (your final message): OS + GPU + VRAM + chosen model tier; the exact generation call you
+   used (so it can be reused); absolute path of the output dir + the LAN URLs from step 6; per-song
+   success/fail + file sizes; total wall time; and any schema/API quirks you discovered (so this
+   prompt can be refined). Do NOT commit or push anything.
 
 If anything blocks setup (ARM/no-CUDA, uv failure, weight download, schema unknown), STOP and report
 the blocker with the exact error rather than guessing.
