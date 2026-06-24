@@ -2,36 +2,36 @@
 
 > 毎回これを最初に読む → current_phase を判定 → 1チャンクだけ進める → ここと CSV を書き換える。
 
-- **current_phase**: DONE（Phase 4 満了 → ループ停止 2026-06-13）
-- **iteration**: 4 完了（全フェーズ完了）
-- **last_updated**: 2026-06-13
-- **synced_to**: origin/main c2993aa (v362)
-- **canon**: `docs/qa/feature-stories.csv`（単一正典）
-- **⚠ 未コミット / 未 push（user 号令待ち）**:
-  - `band-room.js` — `getCurrentMode` test hook（QA fix）
-  - `docs/qa/*` — 新設 canon（CSV / LOOP-STATE / QA-LOOP）
-  - `docs/autonomy/SESSION-LEDGER.md` — 要約追記
-  → push は **号令まで保留**。band-room.js を商品反映するなら別途 br-N cache bump + PR が要る
-    （今回は test-only hook ゆえローカルでは未 bump）。
+- **current_phase**: IDLE（round1 = 完了/shipped #366・round2 = listen/index カバー完了。次の指示待ち）
+- **canon**: `docs/qa/feature-stories.csv`（単一正典・現在 8 ストーリー）
+- **synced_to**: origin/main 0d6c324（#366 merge・本番 deploy 済）
 
-## 1 周（FM/BR 5 ストーリー）の結果
+## カバレッジ
 
-| Phase | 結果 |
-|---|---|
-| P1 story化 | FM-01〜04 + BR-01 起票（5件） |
-| P2 実走 | stack-check 0 BAD。FM-02/03/04/BR-01 機能 PASS。FM-01=headless stall（engine/preview 疑い・要実機） |
-| P3 修正 | BR-01 testability fix（band-room.js に getCurrentMode hook）。engine.js 不接触・0 BAD |
-| P4 再テスト | getCurrentMode が stems→synth→stems を正しく追従（pass）。機能層 agent 完了 |
+| surface | ストーリー | 状態 |
+|---|---|---|
+| Hazama FM (fm.html) | FM-01〜04 | 機能 PASS（FM-01 START は headless stall=要実機） |
+| Band Room | BR-01 | 機能 PASS（mode 切替・getCurrentMode hook 追加） |
+| Listen (listen.html) | LS-01, LS-02 | 機能 PASS（ハブ nav 21 link・genre 深リンク7種） |
+| Core Rig (index.html) | IX-01 | 機能 PASS（Tone+engine+4 controls load・console error 0） |
+| depth.html | — | main に無い（sibling branch）→ N/A |
 
-## 人間へ上げる（human_gate=yes / agent で done にしない）
+## ラウンド履歴
 
-- **FM-03**（audio runtime トグル）/ **FM-04**（40HZ）/ **BR-01**（原音 vs AI 出音・teardown）
-  の **鳴り・聴感** は人間判定。
-- **FM-01**: headless で START→playing に到達せず stall（cross-origin Script error.）。
-  engine.js startPlayback 領分 + preview 限定の疑い → **実機での確認が必要**（agent で fix しない）。
+- **round1（/loop dynamic, P1-P4）**: FM 4 + BR 1 を story化→実走→BR-01 testability fix→再テスト。
+  PR #366 で merge + 本番 deploy 済（Pages 自動ビルド取りこぼし → `gh api POST pages/builds` で再ビルド強制）。
+- **round2（手動「できる分進めて」, 2026-06-24）**: listen.html + index.html を story化(LS-01/LS-02/IX-01)
+  + 実走テスト。**全機能 PASS・不具合 0・fix 不要**。listen は純ハブ(script 無し)、index は Core Rig
+  load まで（playback は engine/preview 領分で要実機）。
+
+## human へ上げる（agent で done にしない）
+
+- FM-03/FM-04/BR-01 の鳴り・聴感、FM-01 と index(Core Rig) の **START→playing は実機確認が必要**
+  （headless preview では engine startPlayback が stall する）。
 
 ## 次に再開するなら
 
-- 新しい 1 周を回すなら current_phase を 1 に戻し、別サーフェス（listen / index / 他 fm・band 機能）で
-  3〜5 件を新規 story化。depth.html は main に来たら対象化。
-- まず user が WIP（docs/qa + band-room.js hook）をレビュー → 号令で commit/push。
+- 新ラウンド: fm/band-room の未カバー機能（shuffle / DJ set / mic follow / AI fill / preset 等）や
+  band-room の mix/preset を story化。または FM-01/Core Rig の START stall を実機 or 非 headless で検証。
+- ルール: 作業前 `git pull --ff-only`、engine.js は read-only、UI 触れば cache buster 3点同期、
+  音は human_gate=yes。
