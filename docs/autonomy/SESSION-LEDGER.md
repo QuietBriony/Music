@@ -19,6 +19,26 @@
 
 ---
 
+## 2026-06-13 (cont.) — QA ループ 1 周（/loop dynamic・docs/qa 新設）
+- agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
+- goal       : `/loop` 自走 QA — feature-stories.csv 正典で 5 ストーリーを P1→P4 で回す
+- repos      : Music（docs/qa 新設 + band-room.js test hook 1行）
+- 構成       : `docs/qa/feature-stories.csv`（単一正典）/ `LOOP-STATE.md`（栞）/ `QA-LOOP.md`（運用書）
+- 4 phase 結果:
+  - P1: FM-01(START) / FM-02(genre) / FM-03(runtime toggle) / FM-04(40HZ) / BR-01(mode 切替) を起票
+  - P2: stack-check **0 BAD**。preview 実走で FM-02/03/04/BR-01 機能 PASS。
+    FM-01 は headless で START→playing に到達せず stall（cross-origin Script error.・
+    engine startPlayback 領分 + preview 限定の疑い・要実機）。anchor #fm-play→#fm_play 訂正
+  - P3: 唯一の in-scope fixable = BR-01 testability gap を修正 — `band-room.js:3806` の
+    BandRoomTestHooks に `getCurrentMode:()=>currentMode` を追加。**engine.js 不接触**・
+    test-only hook ゆえ cache bump せず・stack-check 0 BAD / check-band-room-logic PASS
+  - P4: getCurrentMode が stems→synth→stems を正しく追従（pass）。機能層 agent 完了
+- human_gate : FM-03/FM-04/BR-01 の鳴り・聴感、および FM-01 の実機 START（playing 到達）は人間判定。
+  agent では done にしない
+- 状態       : **未 push（user 号令待ち）** — docs/qa + band-room.js hook + 本追記。
+  band-room.js を商品反映するなら別途 br-N cache bump + PR が必要（今回は test-only でローカル未 bump）
+- next       : user が WIP をレビュー → 号令で commit/push。新しい周は LOOP-STATE を phase1 に戻し別サーフェスで
+
 ## 2026-06-13 (cont.) — openclaw desk currency + ACE-Step レーン定義
 - agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
 - goal       : (1)「openclaw desk に Band Room 表示がない」→ first-class 化 +

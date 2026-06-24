@@ -3804,6 +3804,7 @@
     window.BandRoomTestHooks = Object.assign(window.BandRoomTestHooks || {}, {
       BANDROOM_APP_VERSION,
       BANDROOM_STORAGE_SCHEMA_VERSION,
+      getCurrentMode: () => currentMode,   // QA-loop BR-01 testability: read-only mode probe (stems|synth)
       chordRoot,
       normalizedDrumFloorSection,
       migratePrefsForCurrentMix,
