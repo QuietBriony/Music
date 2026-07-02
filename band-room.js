@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-221-light-voice";
+  const BANDROOM_APP_VERSION = "br-222-stem-vocal-pocket";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -556,12 +556,12 @@
     masterTapeSatDry = new Tone.Gain(0.94);
 
     masterReverb = lightRuntime
-      ? new Tone.FeedbackDelay({ delayTime: "16n.", feedback: 0.20, wet: 1 })   // v358: a bit more cheap room tail on light runtime
-      : new Tone.Reverb({ decay: 3.0, preDelay: 0.018, wet: 1 });
+      ? new Tone.FeedbackDelay({ delayTime: 0.024, feedback: 0.08, wet: 1 })
+      : new Tone.Reverb({ decay: 2.7, preDelay: 0.0, wet: 1 });
     // v330: AI light runtime avoids Tone.Reverb's convolution buffer build
     // during START; a short delay keeps width/space without the heavy boot cost.
     masterDryGain = new Tone.Gain(0.80);
-    masterWetGain = new Tone.Gain(lightRuntime ? 0.15 : 0.20);
+    masterWetGain = new Tone.Gain(lightRuntime ? 0.10 : 0.18);
 
     masterGain = new Tone.Gain(1.2);
     masterGain.connect(masterComp1);
@@ -681,14 +681,14 @@
     // 原音 vocal chain has no standing modulator; desktop keeps the chorus width.
     // v358: chorus restored on light runtime too — it's one cheap node (LFO + 2
     // delay lines), not the convolution reverb that the watchdog headroom needs off.
-    vocalChorus = new Tone.Chorus({ frequency: 1.1, delayTime: 4.2, depth: 0.42, wet: 0.16 }).start();
+    vocalChorus = new Tone.Chorus({ frequency: 0.9, delayTime: 2.4, depth: 0.20, wet: 0.08 }).start();
     vocalDelay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.24, wet: 1 });
     vocalDelayWet = new Tone.Gain(0.0);    // echoes stay off — they smeared the timing
     vocalReverb = lightRuntime
-      ? new Tone.FeedbackDelay({ delayTime: "16n", feedback: 0.10, wet: 1 })
-      : new Tone.Reverb({ decay: 2.9, preDelay: 0.012, wet: 1 });
-    vocalReverbWet = new Tone.Gain(0.16);  // v313: more shared room, less front-center vocal
-    vocalDryGain = new Tone.Gain(0.68);    // pull the dry vocal back into the wall
+      ? new Tone.FeedbackDelay({ delayTime: 0.018, feedback: 0.06, wet: 1 })
+      : new Tone.Reverb({ decay: 1.9, preDelay: 0.0, wet: 1 });
+    vocalReverbWet = new Tone.Gain(0.07);  // v363: timing-safe room; no tempo-locked vocal echo
+    vocalDryGain = new Tone.Gain(0.78);    // keep consonants locked to the band
 
     // v303: vocal pulled down so it sits IN the wall, not on top of it.
     // v311: 0.60 → 0.58, back into the pocket with the band — the dry path is up,
@@ -8267,7 +8267,7 @@
   // Remember sound/editing prefs. Song position intentionally resets to track 01
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
-  const MIX_PREFS_VERSION = "v342-vocal-on";
+  const MIX_PREFS_VERSION = "v363-stem-vocal-pocket";
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -8416,6 +8416,11 @@
     "br-vol-stem-bass":   { olds: ["88"], current: "91" },
     "br-vol-bass":        { olds: ["72", "80"], current: "84" }
   };
+  const V363_STEM_VOCAL_POCKET_MIGRATION = {
+    "br-vfx-chorus": { olds: ["16"], current: "8" },
+    "br-vfx-reverb": { olds: ["16"], current: "7" },
+    "br-space-reverb": { olds: ["20"], current: "14" }
+  };
 
   function readRawStoredPrefs() {
     const raw = safeLocalStorageGet(PREFS_KEY);
@@ -8560,6 +8565,12 @@
       }
     });
     Object.entries(V319_BASS_VOCAL_PRESSURE_MIGRATION).forEach(([id, rule]) => {
+      if ((rule.olds || []).includes(String(next.sliders[id]))) {
+        next.sliders[id] = rule.current;
+        changed = true;
+      }
+    });
+    Object.entries(V363_STEM_VOCAL_POCKET_MIGRATION).forEach(([id, rule]) => {
       if ((rule.olds || []).includes(String(next.sliders[id]))) {
         next.sliders[id] = rule.current;
         changed = true;

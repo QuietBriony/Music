@@ -1,7 +1,18 @@
-# Band Room — Changelog (v65 → v362 compact)
+# Band Room - Changelog (v65 -> v363 compact)
 
-Current sw.js VERSION: v362。band-room 本体の最新変更は v362（v349〜v351・v356・v359・v360 は
-別アプリ FM 側のリリース。sw.js VERSION は FM と共有の連番のため band-room 視点では番号が飛ぶ）。
+Current sw.js VERSION: v363. Latest Band Room runtime change: v363.
+
+---
+
+## v363 compact - Band Room original vocal pocket
+
+Original-stem vocals stay file-aligned; this fix is in the runtime FX path.
+The light/phone runtime no longer puts tempo-locked 16n room delay on the
+original vocal path. Vocal spread/room defaults move 16 -> 8 / 7, master room
+moves 20 -> 14, and the dry center comes back up so consonants land with the
+band instead of hearing like a late copy.
+
+`band-room.js?v=br-222`, `hazama-fm-v363`. CSS remains br-86.
 
 ---
 
