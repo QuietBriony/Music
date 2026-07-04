@@ -1077,9 +1077,9 @@ function render() {
   $("ll-view-hook").textContent = result?.hook || empty;
   $("ll-view-suno").textContent = result?.suno || empty;
   $("ll-view-map").textContent = result?.map || empty;
-  renderChips("ll-hook-cuts", result?.parts.hooks || [], "hook");
-  renderChips("ll-mantras", result?.parts.mantras || [], "mantra");
-  renderChips("ll-images", result?.parts.images || [], "image");
+  renderChips("ll-hook-cuts", result?.parts?.hooks || [], "hook");
+  renderChips("ll-mantras", result?.parts?.mantras || [], "mantra");
+  renderChips("ll-images", result?.parts?.images || [], "image");
   renderChips("ll-distill-anchors", distillProfile($("ll-distill").value).anchors || [], "distill");
   renderLibrary();
   $("ll-status").textContent = result ? `${result.title} built` : "";
@@ -1377,6 +1377,38 @@ function draftKind(item) {
   return "text";
 }
 
+function collapseText(value, max = 150) {
+  const text = String(value || "")
+    .replace(/^#\s+.*$/gm, "")
+    .replace(/\[[^\]]+\]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return "";
+  return charLength(text) > max ? `${text.slice(0, max).trim()}...` : text;
+}
+
+function draftPreview(item) {
+  return collapseText(
+    item?.result?.final ||
+    item?.result?.draft ||
+    item?.result?.hook ||
+    item?.seed ||
+    item?.sourceUrl ||
+    "",
+    160
+  ) || "no preview yet";
+}
+
+function draftScenePressure(item) {
+  return collapseText(item?.result?.scene?.pressure || item?.result?.map || "", 130);
+}
+
+function formatLibraryDate(value) {
+  const date = new Date(value || "");
+  if (Number.isNaN(date.getTime())) return "";
+  return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
 function draftWorldviewLabel(item) {
   const label = worldviewProfile(draftWorldview(item)).label;
   return draftDistill(item).trim() ? `${label} + 蒸留` : label;
@@ -1436,6 +1468,7 @@ function syncLibraryControls() {
 
 function renderLibraryInto(root, items, limit = 24) {
   if (!root) return;
+  const shelf = root.id === "ll-library-main";
   root.innerHTML = "";
   if (!items.length) {
     const empty = document.createElement("div");
@@ -1447,6 +1480,7 @@ function renderLibraryInto(root, items, limit = 24) {
   for (const item of items.slice(0, limit)) {
     const row = document.createElement("div");
     row.className = "ll-library-item";
+    if (shelf) row.classList.add("ll-library-card");
     if (item.id === state.currentId) row.dataset.active = "true";
     row.dataset.status = draftStatus(item);
 
@@ -1470,7 +1504,47 @@ function renderLibraryInto(root, items, limit = 24) {
     del.setAttribute("aria-label", `Delete ${item.title || "draft"}`);
     del.addEventListener("click", () => deleteDraftFromLibrary(item.id));
 
-    row.append(load, meta, del);
+    if (shelf) {
+      const top = document.createElement("div");
+      top.className = "ll-library-card-top";
+      const date = document.createElement("span");
+      date.className = "ll-library-date";
+      date.textContent = formatLibraryDate(item.updatedAt);
+      top.append(load, date);
+
+      const tags = document.createElement("div");
+      tags.className = "ll-library-shelf-tags";
+      for (const tag of [
+        draftStatus(item),
+        draftKind(item),
+        label,
+        taste,
+        worldview
+      ]) {
+        const chip = document.createElement("span");
+        chip.className = "ll-library-tag";
+        chip.dataset.kind = tag === "fixed" || tag === "scene" ? tag : "meta";
+        chip.textContent = tag;
+        tags.appendChild(chip);
+      }
+
+      const preview = document.createElement("p");
+      preview.className = "ll-library-preview";
+      preview.textContent = draftPreview(item);
+
+      const scenePressure = draftScenePressure(item);
+      const scene = document.createElement("p");
+      scene.className = "ll-library-scene";
+      scene.textContent = scenePressure ? `scene: ${scenePressure}` : "scene: not mapped yet";
+
+      const footer = document.createElement("div");
+      footer.className = "ll-library-card-footer";
+      footer.append(meta, del);
+
+      row.append(top, tags, preview, scene, footer);
+    } else {
+      row.append(load, meta, del);
+    }
     root.appendChild(row);
   }
 }
@@ -1629,8 +1703,12 @@ function bind() {
   $("ll-import-json").addEventListener("click", () => $("ll-import-file").click());
   $("ll-distill-to-seed").addEventListener("click", distillToSeed);
   $("ll-copy-intake-prompt").addEventListener("click", () => copyText(INTAKE_PROMPT, "intake prompt"));
-  $("ll-cloud-pull").addEventListener("click", cloudPull);
-  $("ll-cloud-push").addEventListener("click", cloudPush);
+  for (const id of ["ll-cloud-pull", "ll-cloud-pull-main"]) {
+    $(id)?.addEventListener("click", cloudPull);
+  }
+  for (const id of ["ll-cloud-push", "ll-cloud-push-main"]) {
+    $(id)?.addEventListener("click", cloudPush);
+  }
   $("ll-import-file").addEventListener("change", (event) => {
     importLibraryJson(event.target.files?.[0]);
     event.target.value = "";

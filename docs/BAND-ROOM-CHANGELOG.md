@@ -1,6 +1,19 @@
-# Band Room - Changelog (v65 -> v372 compact)
+# Band Room - Changelog (v65 -> v373 compact)
 
-Current sw.js VERSION: v372. Latest Band Room runtime change: v363.
+Current sw.js VERSION: v373. Latest Band Room runtime change: v363.
+
+---
+
+## v373 compact - Lyric Lab library shelf
+
+Lyric Lab turns the main Library tab into a shelf-style card view. Saved drafts
+now show title, updated time, status/kind/taste/worldview tags, a compact draft
+preview, and scene pressure metadata when available. The Library tab also gets
+direct Pull cloud / Push cloud buttons, so saved cloud drafts can be fetched
+from the shelf without returning to the source panel.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v373`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
