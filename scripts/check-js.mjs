@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 const files = [
   "engine.js",
   "fm.js",
+  "lyric-lab.js",
   "band-room.js",
   "sw.js",
   "audio/audio-safety.js",

@@ -1,0 +1,51 @@
+scene_id: koumori-capital
+status: draft
+source: okinawa-local-initial-scene-queue
+no_lyrics: true
+pressure: >-
+  Koumori capital: economic rooms, state-coded rooms, anti-capital feeling,
+  and base-free desire are all partly understood, so no clean side feels honest.
+image_carriers:
+  - ceiling corner
+  - meeting room flag
+  - gate light
+  - inverted listening
+distance:
+  speaker_position: translator between rooms, not neutral and not purified
+  audience_filter: base worker or soldier / Tokyo music listener / local classmate
+risk_flags:
+  - fake neutrality
+  - clean anti-American slogan
+  - clean pro-state posture
+  - dehumanized enemy
+allowed_moves:
+  - contradiction as form
+  - face and structure together
+  - bat-position listening
+avoid_moves:
+  - easy reconciliation
+  - purity performance
+  - policy explainer tone
+usable_form:
+  - scene_metadata
+  - persona_tag
+  - audience_filter
+  - arrangement_shadow
+phrase_seeds_as_metadata:
+  title_seeds:
+    - koumori_capital
+    - translator_not_neutral
+  motif_labels:
+    - capitalism understood
+    - Babylon critique understood
+    - no clean side
+  mouthfeel_notes:
+    - koumori
+    - inverted
+    - gate
+arrangement_notes:
+  ep133_scene_logic: Commit as the contradiction scene; keep it unresolved.
+  sonic_notes:
+    - unstable stereo perch
+    - sub pressure
+    - no anthem lift

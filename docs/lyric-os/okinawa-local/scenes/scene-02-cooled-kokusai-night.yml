@@ -1,0 +1,49 @@
+scene_id: cooled-kokusai-night
+status: draft
+source: okinawa-local-initial-scene-queue
+no_lyrics: true
+pressure: >-
+  Kokusai-dori brightness after the heat has cooled: nightlife as local
+  distance, not souvenir mythology.
+image_carriers:
+  - shutter light
+  - back-street air conditioner exhaust
+  - sticky shirt
+  - convenience store ice
+distance:
+  speaker_position: adult local passerby, close enough to know the room and far enough to refuse myth
+  audience_filter: Tokyo music listener / local classmate
+risk_flags:
+  - tourist nightlife
+  - drunkard mythology
+  - borrowed Koza centering
+allowed_moves:
+  - humid night image
+  - cooled heat
+  - small-room memory
+  - non-souvenir nightlife
+avoid_moves:
+  - postcard neon
+  - heroic drinking story
+  - explanation-first local guide tone
+usable_form:
+  - scene_metadata
+  - verse_image
+  - spoken_sample_seed
+phrase_seeds_as_metadata:
+  title_seeds:
+    - cooled_kokusai_night
+    - brightness_too_bright
+  motif_labels:
+    - non-souvenir night
+    - heat after cooling
+  mouthfeel_notes:
+    - shutter
+    - ice
+    - back street
+arrangement_notes:
+  ep133_scene_logic: Keep as a low-lit variation after the opening local body scene.
+  sonic_notes:
+    - half-spoken pulse
+    - narrow stereo street noise
+    - muted kick

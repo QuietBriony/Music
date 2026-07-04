@@ -1,0 +1,9 @@
+name = "music-stack"
+compatibility_date = "2026-07-03"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "LYRIC_LAB_DB"
+database_name = "music-stack-lyric-lab"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"

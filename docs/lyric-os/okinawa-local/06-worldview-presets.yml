@@ -1,0 +1,106 @@
+version: 1
+packet_id: okinawa-local-worldview-presets
+metadata_only: true
+stores_lyrics: false
+
+presets:
+  - id: shuri-ishimine-slope
+    label: "Scene 01: 首里石嶺の坂"
+    distance: "local slope, family duty, body memory"
+    anchors:
+      - "首里石嶺"
+      - "坂"
+      - "二代目"
+      - "造園"
+    avoid:
+      - "nostalgic postcard"
+
+  - id: cooled-kokusai
+    label: "Scene 02: 醒めた国際通り"
+    distance: "tourist center after intoxication has cooled"
+    anchors:
+      - "国際通り"
+      - "醒めた明かり"
+      - "小競り合い"
+      - "資本主義は把握している側"
+    avoid:
+      - "party-only memory"
+
+  - id: south-low-voice
+    label: "Scene 03: 南部で声が小さくなる"
+    distance: "ground-war memory and ancestor respect"
+    anchors:
+      - "南部"
+      - "地上戦"
+      - "先祖"
+      - "声を低くする"
+    avoid:
+      - "spectacle"
+      - "heroic compression"
+
+  - id: grave-men-ai-screen
+    label: "Scene 04: 墓メンからAI画面へ"
+    distance: "grave work and computer screen in the same day"
+    anchors:
+      - "墓メン"
+      - "墓でゆくる"
+      - "AI画面"
+      - "PCばかり触ってるように見える人"
+    avoid:
+      - "tech escape fantasy"
+
+  - id: life-risk-filial
+    label: "Scene 05: 命懸けの親孝行"
+    distance: "filial duty as risk and craft"
+    anchors:
+      - "命懸けの親孝行"
+      - "安定した会社"
+      - "嫁子供によるリスク境界"
+      - "生活の床"
+    avoid:
+      - "martyrdom performance"
+
+  - id: stable-company-left-ear
+    label: "Scene 06: 安定した会社と遠くなる左耳"
+    distance: "stable work, body fear, quiet loss"
+    anchors:
+      - "安定した会社"
+      - "左の感覚が失われていく怖さ"
+      - "予定表"
+      - "朝"
+    avoid:
+      - "medical spectacle"
+
+  - id: adult-small-conflicts
+    label: "Scene 07: 小競り合いと大人"
+    distance: "local adult friction without heroic drama"
+    anchors:
+      - "小競り合いの面倒さ"
+      - "立場"
+      - "大人"
+      - "文化を回す"
+    avoid:
+      - "simple beef"
+
+  - id: bat-capital
+    label: "Scene 08: コウモリ資本"
+    distance: "capitalism understood, not worshipped"
+    anchors:
+      - "コウモリ資本"
+      - "資本主義は把握している側"
+      - "公共事業の椅子"
+      - "依存と書かない"
+    avoid:
+      - "pure anti-capital slogan"
+
+  - id: libido-pruning
+    label: "Scene 09: リビドー剪定"
+    distance: "old drive turned into root work"
+    anchors:
+      - "リビドー剪定"
+      - "昔のBand Roomには戻らない"
+      - "造園"
+      - "根に移った熱"
+    avoid:
+      - "old self reenactment"
+

@@ -1,0 +1,509 @@
+:root {
+  color-scheme: dark;
+  --bg: #10110f;
+  --panel: #181b16;
+  --ink: #f2f0e8;
+  --muted: #a8afa0;
+  --line: rgba(242, 240, 232, 0.16);
+  --green: #8bd45e;
+  --amber: #e1b04a;
+  --coral: #ed7b61;
+  --cyan: #79cac5;
+  --shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(180deg, rgba(139, 212, 94, 0.08), transparent 32rem),
+    radial-gradient(circle at 84% 12%, rgba(237, 123, 97, 0.12), transparent 21rem),
+    var(--bg);
+  color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+select,
+input,
+textarea {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(10, 12, 10, 0.72);
+  color: var(--ink);
+}
+
+button {
+  min-height: 36px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+button:hover,
+button:focus-visible {
+  border-color: rgba(139, 212, 94, 0.62);
+  outline: none;
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  min-width: 0;
+}
+
+textarea {
+  min-height: 360px;
+  resize: vertical;
+  padding: 12px;
+  line-height: 1.65;
+}
+
+input,
+select {
+  min-height: 38px;
+  padding: 0 10px;
+}
+
+input[type="range"] {
+  padding: 0;
+  accent-color: var(--green);
+}
+
+.ll-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px clamp(16px, 3vw, 36px);
+  border-bottom: 1px solid var(--line);
+  background: rgba(16, 17, 15, 0.78);
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.ll-kicker {
+  margin: 0 0 2px;
+  color: var(--amber);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+h1 {
+  font-size: clamp(28px, 5vw, 46px);
+}
+
+h2 {
+  font-size: 18px;
+}
+
+h3 {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.ll-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ll-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ll-nav a:hover,
+.ll-nav a:focus-visible {
+  border-color: rgba(121, 202, 197, 0.68);
+  outline: none;
+}
+
+.ll-shell {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.82fr) minmax(360px, 1.18fr) minmax(220px, 0.52fr);
+  gap: 14px;
+  padding: 14px clamp(12px, 2vw, 22px) 22px;
+}
+
+.ll-panel {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(24, 27, 22, 0.9);
+  box-shadow: var(--shadow);
+}
+
+.ll-source,
+.ll-output,
+.ll-rack {
+  min-height: calc(100vh - 108px);
+}
+
+.ll-source {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.ll-panel-head,
+.ll-output-toolbar,
+.ll-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ll-field {
+  display: grid;
+  gap: 6px;
+}
+
+.ll-field span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ll-field-grow {
+  flex: 1;
+  min-height: 0;
+}
+
+.ll-field-grow textarea {
+  height: 100%;
+}
+
+.ll-distill-field textarea {
+  min-height: 150px;
+}
+
+.ll-control-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ll-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.ll-actions-library {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ll-actions-sync {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ll-actions-distill {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ll-primary {
+  border-color: rgba(139, 212, 94, 0.58);
+  background: linear-gradient(180deg, rgba(139, 212, 94, 0.24), rgba(139, 212, 94, 0.08));
+}
+
+.ll-status {
+  min-height: 18px;
+  margin: 0;
+  color: var(--cyan);
+  font-size: 12px;
+}
+
+.ll-output {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  overflow: hidden;
+}
+
+.ll-tabs {
+  justify-content: flex-start;
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.ll-tab {
+  min-height: 34px;
+  color: var(--muted);
+}
+
+.ll-tab.is-active {
+  border-color: rgba(225, 176, 74, 0.65);
+  color: var(--ink);
+  background: rgba(225, 176, 74, 0.12);
+}
+
+.ll-output-toolbar {
+  min-height: 48px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+
+#ll-output-label {
+  color: var(--amber);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ll-output-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ll-view {
+  display: none;
+  margin: 0;
+  padding: 18px;
+  overflow: auto;
+  white-space: pre-wrap;
+  color: #f7f3e8;
+  font: 14px/1.72 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+
+.ll-view.is-active {
+  display: block;
+}
+
+.ll-final-editor {
+  width: 100%;
+  min-height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  outline: none;
+  resize: none;
+}
+
+.ll-final-editor.is-active {
+  display: block;
+}
+
+.ll-library-view {
+  overflow: auto;
+  font: inherit;
+}
+
+.ll-rack {
+  padding: 14px;
+  overflow: auto;
+}
+
+.ll-rack-group {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.ll-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ll-chip {
+  max-width: 100%;
+  padding: 6px 8px;
+  border: 1px solid rgba(242, 240, 232, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--ink);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.ll-chip[data-kind="hook"] {
+  border-color: rgba(139, 212, 94, 0.42);
+}
+
+.ll-chip[data-kind="mantra"] {
+  border-color: rgba(237, 123, 97, 0.42);
+}
+
+.ll-chip[data-kind="image"] {
+  border-color: rgba(121, 202, 197, 0.36);
+}
+
+.ll-chip[data-kind="distill"] {
+  border-color: rgba(225, 176, 74, 0.42);
+  background: rgba(225, 176, 74, 0.055);
+}
+
+.ll-library-list {
+  display: grid;
+  gap: 7px;
+}
+
+.ll-library-head,
+.ll-library-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ll-library-head {
+  justify-content: space-between;
+}
+
+.ll-library-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(104px, auto);
+}
+
+.ll-library-count {
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.ll-library-list-main {
+  margin-top: 10px;
+}
+
+.ll-library-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(78px, auto) 32px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(242, 240, 232, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 5px;
+}
+
+.ll-library-item[data-active="true"] {
+  border-color: rgba(139, 212, 94, 0.52);
+}
+
+.ll-library-item[data-status="fixed"] {
+  border-color: rgba(225, 176, 74, 0.58);
+  background: rgba(225, 176, 74, 0.07);
+}
+
+.ll-library-load {
+  min-height: 30px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ll-library-meta {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ll-library-delete {
+  min-height: 30px;
+  padding: 0;
+}
+
+.ll-library-empty {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 1120px) {
+  .ll-shell {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ll-rack {
+    grid-column: 1 / -1;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .ll-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ll-nav {
+    justify-content: flex-start;
+  }
+
+  .ll-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .ll-source,
+  .ll-output,
+  .ll-rack {
+    min-height: auto;
+  }
+
+  textarea {
+    min-height: 280px;
+  }
+
+  .ll-control-grid,
+  .ll-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .ll-output-toolbar,
+  .ll-output-tools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ll-output-tools button {
+    width: 100%;
+  }
+
+  .ll-library-tools {
+    grid-template-columns: 1fr;
+  }
+}

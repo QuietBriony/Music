@@ -1,0 +1,48 @@
+scene_id: filial-company-rescue
+status: draft
+source: okinawa-local-initial-scene-queue
+no_lyrics: true
+pressure: >-
+  Life-or-death filial piety through company rescue: the crisis was real,
+  but the scene must not become heroic heir mythology.
+image_carriers:
+  - ledger
+  - payroll calendar
+  - pruning blade
+  - office light
+distance:
+  speaker_position: adult operator who names duty without self-monument
+  audience_filter: local business room / old-school hip-hop senpai
+risk_flags:
+  - heroic heir story
+  - payroll fear cosplay
+  - family excuse for blandness
+allowed_moves:
+  - duty pressure
+  - rescued-company fact
+  - work image over biography
+avoid_moves:
+  - founder speech
+  - self-pity
+  - victory lap
+usable_form:
+  - scene_metadata
+  - bridge_axis
+  - prompt_constraint
+phrase_seeds_as_metadata:
+  title_seeds:
+    - filial_company_rescue
+    - duty_without_monument
+  motif_labels:
+    - life-or-death filial piety
+    - company rescued not mythologized
+  mouthfeel_notes:
+    - ledger
+    - duty
+    - blade
+arrangement_notes:
+  ep133_scene_logic: Place after youth-memory scenes to show why old danger is no longer valid.
+  sonic_notes:
+    - tight kick
+    - dry bass
+    - no triumphant lift

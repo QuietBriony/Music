@@ -1,0 +1,50 @@
+scene_id: shuri-ishimine-slope
+status: draft
+source: okinawa-local-initial-scene-queue
+no_lyrics: true
+pressure: >-
+  Local body before politics: Shuri / Ishimine slope memory,
+  second-generation work, and daily obligation before any slogan.
+image_carriers:
+  - Ishimine slope
+  - family route
+  - pruning truck
+  - office shoes with soil
+distance:
+  speaker_position: local witness, not representative voice
+  audience_filter: local classmate / outside listener without tourist packaging
+risk_flags:
+  - nostalgic postcard
+  - representative voice
+  - origin myth
+allowed_moves:
+  - body memory
+  - work image
+  - route before slogan
+  - metadata-only scene pressure
+avoid_moves:
+  - tourist Okinawa
+  - easy roots performance
+  - local identity costume
+usable_form:
+  - scene_metadata
+  - title_seed
+  - route_image
+  - opening_position
+phrase_seeds_as_metadata:
+  title_seeds:
+    - shuri_ishimine_slope
+    - route_before_slogan
+  motif_labels:
+    - local body before politics
+    - second-generation route
+  mouthfeel_notes:
+    - slope
+    - roots
+    - dry step
+arrangement_notes:
+  ep133_scene_logic: Commit as the opening body-position scene before adding politics.
+  sonic_notes:
+    - dry steps
+    - low tempo
+    - close room

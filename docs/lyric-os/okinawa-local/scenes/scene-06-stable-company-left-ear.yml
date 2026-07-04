@@ -1,0 +1,48 @@
+scene_id: stable-company-left-ear
+status: draft
+source: okinawa-local-initial-scene-queue
+no_lyrics: true
+pressure: >-
+  Stability makes the old left-side artistic impulse harder to hear: success
+  does not erase heat, but it changes the channel.
+image_carriers:
+  - left ear
+  - right hand on keyboard
+  - quiet office
+  - unopened band room
+distance:
+  speaker_position: self-aware adult, close but not self-pitying
+  audience_filter: Tokyo music listener / old-school hip-hop senpai
+risk_flags:
+  - nostalgia cosplay
+  - self-accusation loop
+  - fake renunciation
+allowed_moves:
+  - sonic-pan metaphor
+  - stability as pressure
+  - old heat becoming faint
+avoid_moves:
+  - young-band reenactment
+  - tragic artist pose
+  - adult blandness excuse
+usable_form:
+  - scene_metadata
+  - hook_concept
+  - sonic_pan_note
+phrase_seeds_as_metadata:
+  title_seeds:
+    - stable_company_left_ear
+    - left_sense_fading
+  motif_labels:
+    - success changes hearing
+    - opposition grows quiet
+  mouthfeel_notes:
+    - left
+    - faint
+    - channel
+arrangement_notes:
+  ep133_scene_logic: Commit as the internal conflict scene before any final hook.
+  sonic_notes:
+    - left-channel fade
+    - close vocal
+    - muted harmonic noise

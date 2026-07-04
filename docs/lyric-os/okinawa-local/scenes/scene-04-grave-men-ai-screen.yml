@@ -1,0 +1,49 @@
+scene_id: grave-men-ai-screen
+status: draft
+source: okinawa-local-initial-scene-queue
+no_lyrics: true
+pressure: >-
+  Grave hangout memory becomes adult invisible work: haka-men ease, sacred /
+  profane overlap, and the screen as a new field site.
+image_carriers:
+  - grave steps
+  - cigarette ash
+  - monitor glow
+  - keyboard soil
+distance:
+  speaker_position: former participant transformed into adult operator
+  audience_filter: old-school hip-hop senpai / local classmate
+risk_flags:
+  - ancestors as prop
+  - delinquent nostalgia
+  - boss self-justification
+allowed_moves:
+  - sacred-profane overlap
+  - screen as soil
+  - memory transformed by work
+avoid_moves:
+  - youth reenactment
+  - grave romanticism
+  - AI savior story
+usable_form:
+  - scene_metadata
+  - hook_concept
+  - spoken_sample_seed
+  - work_image
+phrase_seeds_as_metadata:
+  title_seeds:
+    - grave_men_ai_screen
+    - screen_as_soil
+  motif_labels:
+    - haka-men memory
+    - invisible fieldwork
+  mouthfeel_notes:
+    - yukuru
+    - glow
+    - ash
+arrangement_notes:
+  ep133_scene_logic: Commit as a memory-to-tool scene; do not resolve it into nostalgia.
+  sonic_notes:
+    - dusty loop
+    - low monitor hum
+    - clipped spoken fragment

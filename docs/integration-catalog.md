@@ -32,6 +32,10 @@ defer to the authority docs below.
 - `docs/namima-lab-safe-ripple-lineage-decision.md`: current docs-only boundary
   that keeps `namima-lab` as safe ripple lineage / harvest-only source, routed
   primarily toward `namima`.
+- `docs/lyric-os/okinawa-local/README.md`: metadata-only Okinawa Local Lyric /
+  Scene OS for Lyric Lab and Music Stack output philosophy. It stores scene
+  pressure, distance, vocabulary, risk, and usable form; it does not store
+  lyrics, audio, samples, or copied motifs.
 
 Supporting / historical docs:
 
@@ -48,7 +52,7 @@ Supporting / historical docs:
 - Edge: experimental / reference-driven generative rig with UCM, Hazama FM,
   Music Core Rig, session packets, and broad ambient-to-club range.
 - Keep repo-specific: Music runtime, UCM faders, Hazama FM, Music Core Rig,
-  reference-driven production intent.
+  reference-driven production intent, Lyric Lab, and Scene OS metadata.
 
 ### namima
 
@@ -120,6 +124,8 @@ Allowed to harvest:
 - routing vocabulary
 - schema or packet ideas
 - review notes
+- output philosophy metadata
+- scene pressure / risk / distance packets
 - human-gated promotion patterns
 
 Not allowed by default:
@@ -151,7 +157,7 @@ to justify one.
 
 - no runtime code changes
 - no `engine.js`, `index.html`, or `style.css` changes
-- no schema changes
+- no schema changes outside reviewed metadata-only packets
 - no audio build or playback run
 - no audio assets or samples
 - no dependency installation

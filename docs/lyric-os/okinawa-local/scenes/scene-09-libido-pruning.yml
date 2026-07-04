@@ -1,0 +1,50 @@
+scene_id: libido-pruning
+status: draft
+source: okinawa-local-initial-scene-queue
+no_lyrics: true
+pressure: >-
+  The old band-room danger is not reenacted; its heat is pruned into roots,
+  family risk, cultural stewardship, and work that leaves shade.
+image_carriers:
+  - cut branch
+  - root shade
+  - empty venue corner
+  - child breathing
+distance:
+  speaker_position: adult who refuses both reckless return and dull surrender
+  audience_filter: old-school hip-hop senpai / world recording listener
+risk_flags:
+  - young-band nostalgia
+  - pretend recklessness
+  - eco-slogan
+  - family-as-excuse
+allowed_moves:
+  - pruning as transformation
+  - heat held in roots
+  - cultural stewardship without sermon
+avoid_moves:
+  - comeback mythology
+  - purity of youth
+  - green slogan
+usable_form:
+  - scene_metadata
+  - album_worldview
+  - arrangement_rule
+  - phrase_transform
+phrase_seeds_as_metadata:
+  title_seeds:
+    - libido_pruning
+    - heat_in_roots
+  motif_labels:
+    - old heat changed form
+    - shade after cutting
+  mouthfeel_notes:
+    - prune
+    - root
+    - heat
+arrangement_notes:
+  ep133_scene_logic: Use as the closing worldview scene; it can hold the system together.
+  sonic_notes:
+    - warm low loop
+    - delayed room ghost
+    - restrained hook energy

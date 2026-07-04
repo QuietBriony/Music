@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://quietbriony.github.io/Music/docs/schema/lyric-os-scene.schema.json",
+  "title": "Lyric OS Scene Metadata",
+  "description": "Metadata-only scene packet for lyric and Music Stack pressure fields. It must not store finished lyrics, raw chat dumps, audio, samples, sample URLs, or copied motifs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scene_id",
+    "status",
+    "source",
+    "no_lyrics",
+    "pressure",
+    "image_carriers",
+    "distance",
+    "risk_flags",
+    "allowed_moves",
+    "avoid_moves",
+    "usable_form",
+    "phrase_seeds_as_metadata",
+    "arrangement_notes"
+  ],
+  "properties": {
+    "scene_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "reviewed", "retired"]
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "no_lyrics": {
+      "const": true
+    },
+    "pressure": {
+      "type": "string",
+      "minLength": 1
+    },
+    "image_carriers": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "distance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["speaker_position", "audience_filter"],
+      "properties": {
+        "speaker_position": { "type": "string", "minLength": 1 },
+        "audience_filter": { "type": "string", "minLength": 1 }
+      }
+    },
+    "risk_flags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "allowed_moves": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "avoid_moves": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "usable_form": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "phrase_seeds_as_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title_seeds", "motif_labels", "mouthfeel_notes"],
+      "properties": {
+        "title_seeds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "motif_labels": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "mouthfeel_notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "arrangement_notes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ep133_scene_logic", "sonic_notes"],
+      "properties": {
+        "ep133_scene_logic": { "type": "string", "minLength": 1 },
+        "sonic_notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}
+
