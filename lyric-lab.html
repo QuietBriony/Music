@@ -19,6 +19,7 @@
       <a href="index.html">Core</a>
       <a href="band-room.html">Band Room</a>
       <a href="docs/SUNO-WORKFLOW.md">Suno</a>
+      <a href="#shelf" data-open-shelf>Shelf</a>
     </nav>
   </header>
 
@@ -136,6 +137,7 @@
       <div class="ll-actions ll-actions-library">
         <button type="button" id="ll-save-draft">Save</button>
         <button type="button" id="ll-fork-draft">Fork</button>
+        <button type="button" id="ll-open-shelf" class="ll-primary" data-open-shelf>Shelf</button>
         <button type="button" id="ll-export-json">Export JSON</button>
         <button type="button" id="ll-import-json">Import JSON</button>
         <input id="ll-import-file" type="file" accept="application/json,.json" hidden />
@@ -143,14 +145,14 @@
       <p id="ll-status" class="ll-status" aria-live="polite"></p>
     </section>
 
-    <section class="ll-panel ll-output" aria-label="Generated lyrics">
+    <section id="shelf" class="ll-panel ll-output" aria-label="Generated lyrics">
       <div class="ll-tabs" role="tablist" aria-label="Output views">
         <button type="button" class="ll-tab is-active" data-view="draft" role="tab" aria-selected="true">Draft</button>
+        <button type="button" class="ll-tab" data-view="library" role="tab" aria-selected="false">Shelf</button>
         <button type="button" class="ll-tab" data-view="final" role="tab" aria-selected="false">Final</button>
         <button type="button" class="ll-tab" data-view="hook" role="tab" aria-selected="false">Hook</button>
         <button type="button" class="ll-tab" data-view="suno" role="tab" aria-selected="false">Suno</button>
         <button type="button" class="ll-tab" data-view="map" role="tab" aria-selected="false">Map</button>
-        <button type="button" class="ll-tab" data-view="library" role="tab" aria-selected="false">Shelf</button>
       </div>
 
       <div class="ll-output-toolbar">
@@ -184,7 +186,10 @@
             <option value="memo">memo</option>
           </select>
           <div class="ll-library-cloud-tools">
-            <input id="ll-sync-token-main" type="password" autocomplete="off" placeholder="cloud sync token" />
+            <label class="ll-token-field">
+              <span>cloud token</span>
+              <input id="ll-sync-token-main" type="password" autocomplete="off" placeholder="paste sync token" title="Worker PC: .music-stack/lyric-lab-cloud-token.txt" />
+            </label>
             <button type="button" id="ll-cloud-pull-main" class="ll-primary">Load cloud shelf</button>
             <button type="button" id="ll-cloud-push-main">Save cloud shelf</button>
           </div>
@@ -198,9 +203,9 @@
         <h2>部品</h2>
         <button type="button" id="ll-copy-hook">Copy hook</button>
       </div>
-      <div class="ll-rack-group">
+      <div class="ll-rack-group ll-rack-shelf">
         <div class="ll-library-head">
-          <h3>Shelf</h3>
+          <h3>Recent</h3>
           <span id="ll-library-count" class="ll-library-count">0</span>
         </div>
         <div class="ll-library-tools">

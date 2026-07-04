@@ -1,6 +1,20 @@
-# Band Room - Changelog (v65 -> v374 compact)
+# Band Room - Changelog (v65 -> v375 compact)
 
-Current sw.js VERSION: v374. Latest Band Room runtime change: v363.
+Current sw.js VERSION: v375. Latest Band Room runtime change: v363.
+
+---
+
+## v375 compact - Lyric Lab mobile shelf path
+
+Lyric Lab makes the Shelf path visible on mobile: the header gets a Shelf link,
+the save controls get a Shelf button, and the output tabs now place Shelf next
+to Draft instead of clipping it at the far right. The main tab row wraps into a
+three-column grid on small screens, the duplicate rack shelf is hidden on
+mobile, and cloud sync controls sit on their own shelf row with clearer
+missing-token feedback.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v375`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 

@@ -1,6 +1,7 @@
 const STORAGE_KEY = "music-stack.lyric-lab.v1";
 const LIBRARY_KEY = "music-stack.lyric-lab.library.v1";
 const SYNC_TOKEN_KEY = "music-stack.lyric-lab.sync-token.v1";
+const TOKEN_HELP = "cloud token needed: worker PC .music-stack/lyric-lab-cloud-token.txt";
 const INTAKE_PROMPT = `私は沖縄ローカルの視点から、歌詞を作るための思想体系を蒸留したいです。
 
 扱いたいテーマは、
@@ -1197,6 +1198,12 @@ function setActiveView(view) {
   $("ll-output-label").textContent = view === "library" ? "shelf" : view;
 }
 
+function openShelf() {
+  setActiveView("library");
+  document.querySelector(".ll-output")?.scrollIntoView({ block: "start", behavior: "smooth" });
+  save();
+}
+
 function draftSnapshot(id = state.currentId) {
   const now = new Date().toISOString();
   const result = state.result || null;
@@ -1622,11 +1629,14 @@ async function cloudPull() {
   try {
     if (!syncTokenValue()) {
       focusCloudToken();
-      $("ll-status").textContent = "cloud sync token needed";
+      $("ll-status").textContent = TOKEN_HELP;
       return;
     }
     const response = await fetch("api/lyric-drafts", { headers: syncHeaders() });
-    if (!response.ok) throw new Error(await response.text());
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) throw new Error("cloud token rejected");
+      throw new Error(await response.text());
+    }
     const data = await response.json();
     const incoming = Array.isArray(data.drafts) ? data.drafts : [];
     mergeLibraryDrafts(incoming);
@@ -1635,7 +1645,7 @@ async function cloudPull() {
     setActiveView("library");
     $("ll-status").textContent = `${incoming.length} cloud draft(s) on shelf`;
   } catch (error) {
-    $("ll-status").textContent = "cloud pull unavailable";
+    $("ll-status").textContent = error.message === "cloud token rejected" ? error.message : "cloud pull unavailable";
   }
 }
 
@@ -1643,7 +1653,7 @@ async function cloudPush() {
   try {
     if (!syncTokenValue()) {
       focusCloudToken();
-      $("ll-status").textContent = "cloud sync token needed";
+      $("ll-status").textContent = TOKEN_HELP;
       return;
     }
     if (hasDraftInput()) saveDraftToLibrary();
@@ -1652,12 +1662,15 @@ async function cloudPush() {
       headers: syncHeaders(),
       body: JSON.stringify({ drafts: state.library })
     });
-    if (!response.ok) throw new Error(await response.text());
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) throw new Error("cloud token rejected");
+      throw new Error(await response.text());
+    }
     const data = await response.json();
     setActiveView("library");
     $("ll-status").textContent = `${data.count || 0} draft(s) saved to cloud shelf`;
   } catch (error) {
-    $("ll-status").textContent = "cloud push unavailable";
+    $("ll-status").textContent = error.message === "cloud token rejected" ? error.message : "cloud push unavailable";
   }
 }
 
@@ -1731,6 +1744,12 @@ function bind() {
   $("ll-import-json").addEventListener("click", () => $("ll-import-file").click());
   $("ll-distill-to-seed").addEventListener("click", distillToSeed);
   $("ll-copy-intake-prompt").addEventListener("click", () => copyText(INTAKE_PROMPT, "intake prompt"));
+  for (const button of document.querySelectorAll("[data-open-shelf]")) {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      openShelf();
+    });
+  }
   for (const id of ["ll-cloud-pull", "ll-cloud-pull-main"]) {
     $(id)?.addEventListener("click", cloudPull);
   }
@@ -1802,8 +1821,20 @@ function registerServiceWorker() {
 
 loadLibrary();
 restore();
+const initialShelfRequested = location.hash === "#shelf" || new URLSearchParams(location.search).get("view") === "shelf";
+if (initialShelfRequested) {
+  state.activeView = "library";
+}
 bind();
 setActiveView(state.activeView);
 if (hasDraftInput()) generate();
 else render();
 registerServiceWorker();
+if (initialShelfRequested) {
+  requestAnimationFrame(() => {
+    document.querySelector(".ll-output")?.scrollIntoView({ block: "start" });
+  });
+}
+window.addEventListener("hashchange", () => {
+  if (location.hash === "#shelf") openShelf();
+});
