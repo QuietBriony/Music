@@ -1194,7 +1194,7 @@ function setActiveView(view) {
   for (const pre of document.querySelectorAll(".ll-view")) {
     pre.classList.toggle("is-active", pre.id === `ll-view-${view}`);
   }
-  $("ll-output-label").textContent = view;
+  $("ll-output-label").textContent = view === "library" ? "shelf" : view;
 }
 
 function draftSnapshot(id = state.currentId) {
@@ -1473,7 +1473,7 @@ function renderLibraryInto(root, items, limit = 24) {
   if (!items.length) {
     const empty = document.createElement("div");
     empty.className = "ll-library-empty";
-    empty.textContent = state.library.length ? "no match" : "empty";
+    empty.textContent = state.library.length ? "no match" : "empty shelf";
     root.appendChild(empty);
     return;
   }
@@ -1549,6 +1549,13 @@ function renderLibraryInto(root, items, limit = 24) {
   }
 }
 
+function syncTokenInputs(value = syncTokenValue()) {
+  for (const id of ["ll-sync-token", "ll-sync-token-main"]) {
+    const input = $(id);
+    if (input && input.value !== value) input.value = value;
+  }
+}
+
 function renderLibrary() {
   syncLibraryControls();
   const items = filteredLibrary();
@@ -1596,14 +1603,28 @@ async function importLibraryJson(file) {
 }
 
 function syncHeaders() {
-  const token = $("ll-sync-token").value.trim();
+  const token = syncTokenValue();
   const headers = { "Content-Type": "application/json" };
   if (token) headers["X-Lyric-Lab-Token"] = token;
   return headers;
 }
 
+function syncTokenValue() {
+  return ($("ll-sync-token-main")?.value || $("ll-sync-token")?.value || "").trim();
+}
+
+function focusCloudToken() {
+  setActiveView("library");
+  ($("ll-sync-token-main") || $("ll-sync-token"))?.focus();
+}
+
 async function cloudPull() {
   try {
+    if (!syncTokenValue()) {
+      focusCloudToken();
+      $("ll-status").textContent = "cloud sync token needed";
+      return;
+    }
     const response = await fetch("api/lyric-drafts", { headers: syncHeaders() });
     if (!response.ok) throw new Error(await response.text());
     const data = await response.json();
@@ -1611,7 +1632,8 @@ async function cloudPull() {
     mergeLibraryDrafts(incoming);
     saveLibrary();
     renderLibrary();
-    $("ll-status").textContent = `${incoming.length} cloud draft(s) pulled`;
+    setActiveView("library");
+    $("ll-status").textContent = `${incoming.length} cloud draft(s) on shelf`;
   } catch (error) {
     $("ll-status").textContent = "cloud pull unavailable";
   }
@@ -1619,6 +1641,11 @@ async function cloudPull() {
 
 async function cloudPush() {
   try {
+    if (!syncTokenValue()) {
+      focusCloudToken();
+      $("ll-status").textContent = "cloud sync token needed";
+      return;
+    }
     if (hasDraftInput()) saveDraftToLibrary();
     const response = await fetch("api/lyric-drafts", {
       method: "POST",
@@ -1627,7 +1654,8 @@ async function cloudPush() {
     });
     if (!response.ok) throw new Error(await response.text());
     const data = await response.json();
-    $("ll-status").textContent = `${data.count || 0} cloud draft(s) pushed`;
+    setActiveView("library");
+    $("ll-status").textContent = `${data.count || 0} draft(s) saved to cloud shelf`;
   } catch (error) {
     $("ll-status").textContent = "cloud push unavailable";
   }
@@ -1653,7 +1681,7 @@ function save() {
   };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    localStorage.setItem(SYNC_TOKEN_KEY, $("ll-sync-token").value);
+    localStorage.setItem(SYNC_TOKEN_KEY, syncTokenValue());
   } catch (error) {
     // Ignore private-mode storage errors.
   }
@@ -1661,7 +1689,7 @@ function save() {
 
 function restore() {
   try {
-    $("ll-sync-token").value = localStorage.getItem(SYNC_TOKEN_KEY) || "";
+    syncTokenInputs(localStorage.getItem(SYNC_TOKEN_KEY) || "");
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const data = JSON.parse(raw);
@@ -1732,6 +1760,12 @@ function bind() {
       renderLibrary();
     });
   }
+  for (const id of ["ll-sync-token", "ll-sync-token-main"]) {
+    $(id)?.addEventListener("input", (event) => {
+      syncTokenInputs(event.target.value);
+      save();
+    });
+  }
   $("ll-clear").addEventListener("click", () => {
     $("ll-title").value = "";
     $("ll-source-url").value = "";
@@ -1749,7 +1783,7 @@ function bind() {
       save();
     });
   }
-  for (const id of ["ll-title", "ll-source-url", "ll-sync-token", "ll-seed", "ll-distill", "ll-direction", "ll-taste", "ll-dialect", "ll-worldview", "ll-form", "ll-voice", "ll-heat", "ll-weird"]) {
+  for (const id of ["ll-title", "ll-source-url", "ll-seed", "ll-distill", "ll-direction", "ll-taste", "ll-dialect", "ll-worldview", "ll-form", "ll-voice", "ll-heat", "ll-weird"]) {
     $(id).addEventListener("input", save);
   }
   $("ll-distill").addEventListener("input", () => renderChips("ll-distill-anchors", distillProfile($("ll-distill").value).anchors || [], "distill"));

@@ -232,10 +232,6 @@ h3 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.ll-actions-sync {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .ll-actions-distill {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -412,8 +408,13 @@ h3 {
 }
 
 .ll-library-cloud-tools {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) auto auto;
   gap: 6px;
+}
+
+.ll-library-cloud-tools input {
+  min-height: 36px;
 }
 
 .ll-library-cloud-tools button {
@@ -617,7 +618,6 @@ h3 {
   }
 
   .ll-library-cloud-tools {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 }

@@ -39,11 +39,6 @@
         <input id="ll-source-url" type="url" autocomplete="off" placeholder="Dropbox / Drive / local note URL" />
       </label>
 
-      <label class="ll-field">
-        <span>cloud sync token</span>
-        <input id="ll-sync-token" type="password" autocomplete="off" placeholder="Cloudflare env LYRIC_LAB_TOKEN" />
-      </label>
-
       <label class="ll-field ll-field-grow">
         <span>ネタ断片</span>
         <textarea id="ll-seed" spellcheck="false" placeholder="1行ずつ素材を貼る。短い言葉、変な英語、反復句、サビにしたい行を混ぜる。"></textarea>
@@ -145,10 +140,6 @@
         <button type="button" id="ll-import-json">Import JSON</button>
         <input id="ll-import-file" type="file" accept="application/json,.json" hidden />
       </div>
-      <div class="ll-actions ll-actions-sync">
-        <button type="button" id="ll-cloud-pull">Pull cloud</button>
-        <button type="button" id="ll-cloud-push">Push cloud</button>
-      </div>
       <p id="ll-status" class="ll-status" aria-live="polite"></p>
     </section>
 
@@ -159,7 +150,7 @@
         <button type="button" class="ll-tab" data-view="hook" role="tab" aria-selected="false">Hook</button>
         <button type="button" class="ll-tab" data-view="suno" role="tab" aria-selected="false">Suno</button>
         <button type="button" class="ll-tab" data-view="map" role="tab" aria-selected="false">Map</button>
-        <button type="button" class="ll-tab" data-view="library" role="tab" aria-selected="false">Library</button>
+        <button type="button" class="ll-tab" data-view="library" role="tab" aria-selected="false">Shelf</button>
       </div>
 
       <div class="ll-output-toolbar">
@@ -179,7 +170,7 @@
       <pre id="ll-view-map" class="ll-view"></pre>
       <div id="ll-view-library" class="ll-view ll-library-view">
         <div class="ll-library-head">
-          <h3>Saved drafts</h3>
+          <h3>Draft shelf</h3>
           <span id="ll-library-main-count" class="ll-library-count">0</span>
         </div>
         <div class="ll-library-tools">
@@ -193,8 +184,9 @@
             <option value="memo">memo</option>
           </select>
           <div class="ll-library-cloud-tools">
-            <button type="button" id="ll-cloud-pull-main">Pull cloud</button>
-            <button type="button" id="ll-cloud-push-main">Push cloud</button>
+            <input id="ll-sync-token-main" type="password" autocomplete="off" placeholder="cloud sync token" />
+            <button type="button" id="ll-cloud-pull-main" class="ll-primary">Load cloud shelf</button>
+            <button type="button" id="ll-cloud-push-main">Save cloud shelf</button>
           </div>
         </div>
         <div id="ll-library-main" class="ll-library-list ll-library-list-main"></div>
@@ -208,7 +200,7 @@
       </div>
       <div class="ll-rack-group">
         <div class="ll-library-head">
-          <h3>Library</h3>
+          <h3>Shelf</h3>
           <span id="ll-library-count" class="ll-library-count">0</span>
         </div>
         <div class="ll-library-tools">

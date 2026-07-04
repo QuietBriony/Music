@@ -1,6 +1,19 @@
-# Band Room - Changelog (v65 -> v373 compact)
+# Band Room - Changelog (v65 -> v374 compact)
 
-Current sw.js VERSION: v373. Latest Band Room runtime change: v363.
+Current sw.js VERSION: v374. Latest Band Room runtime change: v363.
+
+---
+
+## v374 compact - Lyric Lab shelf cloud path
+
+Lyric Lab renames the saved-draft surface to Shelf and moves the cloud sync
+token field directly into that shelf toolbar. The primary path is now visible
+in one place: enter `cloud sync token`, press `Load cloud shelf`, then open a
+draft card. Cloud controls no longer appear in the seed input panel, and
+missing-token clicks focus the shelf token field instead of failing silently.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v374`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
