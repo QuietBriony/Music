@@ -1,0 +1,255 @@
+packet_version: 0.1
+kind: lyric_os_phrase_capture
+status: draft
+scope: metadata_only
+repo_boundary:
+  allowed:
+    - phrase reasoning
+    - motif extraction
+    - scene metadata
+    - vocabulary and avoid-vocabulary
+    - prompt constraints
+    - audience filters
+  forbidden:
+    - finished lyrics
+    - unreleased full lyric drafts
+    - copied lyrics
+    - copied melodies
+    - copied motifs from references
+    - audio files
+    - sample files
+    - sample_urls
+
+source_handling:
+  chat_share_links: do_not_depend_on
+  preferred_sources:
+    - github_issue_comments
+    - short pasted chat excerpts intentionally selected by the user
+    - local markdown notes
+    - assistant-distilled summaries
+  privacy_rule: capture only what is needed for production reasoning
+  copyright_rule: do not copy protected lyrics or style-clone living artists
+
+core_kernel:
+  one_line: >-
+    Okinawa-local lyric philosophy that refuses slogans, tourism, and easy representation;
+    it lets politics appear through life, work, family risk, graves, greenery, and adult distance.
+  stance:
+    - do_not_represent_okinawa
+    - do_not_flee_from_okinawa
+    - do_not_turn_politics_into_slogan
+    - do_not_make_local_identity_a_costume
+    - keep_the_toughness_in_the_room
+    - make_contradiction_a_form_not_a_problem_to_solve
+
+persona_kernel:
+  roots:
+    - Shuri
+    - Ishimine
+  natural_geography:
+    - Kokusai-dori
+    - southern Okinawa
+    - local roads
+    - family routes
+  less_natural_as_center:
+    - Koza_drinking_mythology
+    - borrowed_bar_room_pose
+  family_boundary:
+    - wife
+    - child
+    - risk_not_taken
+  work_identity:
+    - landscaping_operator
+    - second_generation
+    - company_rescued_from_negative_cashflow
+    - not_carefree_heir
+    - economics_background
+    - tax_accounting_first_career
+    - now_stable_small_company
+    - office_staff_exists
+    - around_ten_employees
+  current_friction:
+    - workplace_small_skirmishes_are_annoying
+    - appears_to_new_staff_as_pc_ai_person_not_field_person
+  political_economic_crossing:
+    - understands_capitalism
+    - knows_economic_associations
+    - knows_industry_associations
+    - right_state_flag_ldp_coded_rooms
+    - understands_local_babylon_critique
+    - understands_base_free_emotion
+  artistic_pain:
+    - left_sense_fading
+    - old_libido_no_longer_reenactable
+    - adult_stability_after_band_room
+
+motifs:
+  left_ear_fading:
+    pressure: success and stability make old oppositional hearing weaker
+    risk: turning into shallow nostalgia or self-accusation
+    usable_as:
+      - hook_concept
+      - scene_axis
+      - sonic_pan_metaphor
+  libido_pruning:
+    pressure: old limit-seeking impulse has changed form
+    image: pruning, roots, cut branches, remaining shade
+    risk: pretending to still be reckless
+    usable_as:
+      - album_worldview
+      - arrangement_rule
+      - phrase_transform
+  grave_hangout:
+    pressure: youth, death, local ease, tobacco, talk, sacred/profane overlap
+    local_word: haka_de_yukuru
+    risk: making ancestors a prop or romanticizing delinquency
+    usable_as:
+      - scene_memory
+      - spoken_sample_seed
+      - distance_filter
+  adult_risk_boundary:
+    pressure: family and company make old danger invalid
+    image: child breathing, office light, unopened band room
+    risk: using family as excuse for blandness
+    usable_as:
+      - bridge_axis
+      - no_reckless_reenactment_rule
+  pc_ai_fieldwork:
+    pressure: field workers may not see invisible work
+    image: screen as soil, invisible roots, documents as terrain
+    risk: boss self-justification
+    usable_as:
+      - verse_image
+      - prompt_constraint
+  bat_position:
+    pressure: can sit in multiple rooms and trust none completely
+    image: bat, ceiling, sonic listening, inverted rest
+    risk: fake neutrality
+    usable_as:
+      - persona_tag
+      - audience_filter
+      - arrangement_shadow
+  green_spokesperson:
+    pressure: landscaping is public/private/natural/economic all at once
+    image: greenery, graves, public planting, roots, shade, pruning
+    risk: eco-slogan
+    usable_as:
+      - hook_title_seed
+      - project_identity
+      - vocabulary_pool
+
+audience_filters:
+  local_classmate:
+    role: detects borrowed local posture
+    avoid:
+      - tourism_okinawa
+      - representative_voice
+      - fake_Koza_centering
+      - easy_dialect_decoration
+    allow:
+      - ordinary_places
+      - family_routes
+      - awkward_local_distance
+  base_worker_or_soldier:
+    role: prevents faceless enemy writing
+    avoid:
+      - dehumanization
+      - clean_anti_american_slogan
+      - easy_reconciliation
+    allow:
+      - face_and_structure_together
+      - gate_light
+      - sleeplessness_on_both_sides_without_equating_power
+  tokyo_music_listener:
+    role: prevents lecture and souvenir writing
+    avoid:
+      - explanation_first
+      - enlightenment_tone
+      - exotic_packaging
+    allow:
+      - image_as_entrance
+      - discomfort
+      - untranslated_temperature
+  old_school_hiphop_senpai:
+    role: checks groove, attitude, and mouth-feel
+    avoid:
+      - poem_only
+      - weak_hook
+      - sermon
+    allow:
+      - repetition
+      - punchline_pressure
+      - spoken_sample_logic
+      - loopable_motto
+  world_recording_listener:
+    role: receives temperature without full context
+    avoid:
+      - overexplaining
+      - local_terms_as_decoration
+    allow:
+      - body_sensation
+      - light
+      - low_end
+      - silence
+      - family
+      - fence
+
+phrase_unit_schema:
+  required_fields:
+    - id
+    - raw_note_summary
+    - pressure
+    - image_carrier
+    - distance
+    - risk_flags
+    - usable_form
+    - no_lyrics_status
+  example_stub:
+    id: scene-left-ear-fading
+    raw_note_summary: old artistic left sense may be fading after adult stability
+    pressure: success makes clean opposition harder to inhabit
+    image_carrier: left ear, right hand on keyboard, company already stable
+    distance: first-person allowed only if not self-heroic
+    risk_flags:
+      - nostalgia_cosplay
+      - boss_complaint
+      - fake_neutrality
+    usable_form:
+      - scene_metadata
+      - hook_concept
+      - sonic_pan_note
+    no_lyrics_status: keep_as_metadata_until_human_moves_to_draft
+
+transform_rules:
+  from_chat_to_repo:
+    - remove completed lyric lines
+    - keep motifs and decision rules
+    - convert anecdotes into scene pressure
+    - convert slogans into avoid rules
+    - convert strong phrases into title_seed or motif_label, not full lyric
+  from_repo_to_session:
+    - load core_kernel
+    - choose one motif
+    - choose one audience filter
+    - generate outside-repo lyric draft only if explicitly requested
+    - return only metadata to repo
+
+scene_queue:
+  - id: shuri_ishimine_slope
+    pressure: local body before politics
+  - id: sober_kokusai_brightness
+    pressure: tourism brightness and non-souvenir night
+  - id: south_lowered_voice
+    pressure: war memory and saying less
+  - id: grave_men_to_ai_screen
+    pressure: youth hangout memory transformed into adult invisible work
+  - id: filial_company_rescue
+    pressure: life-or-death parent duty without hero mythology
+  - id: stable_company_left_ear
+    pressure: stability makes old artistic opposition faint
+  - id: small_skirmishes_after_rescue
+    pressure: large crisis solved, petty adult conflicts remain
+  - id: koumori_capital
+    pressure: economic rooms and anti-capital feeling both partly understood
+  - id: libido_pruning
+    pressure: no return to old band-room danger, but heat remains in roots
