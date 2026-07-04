@@ -1,6 +1,18 @@
-# Band Room - Changelog (v65 -> v375 compact)
+# Band Room - Changelog (v65 -> v376 compact)
 
-Current sw.js VERSION: v375. Latest Band Room runtime change: v363.
+Current sw.js VERSION: v376. Latest Band Room runtime change: v363.
+
+---
+
+## v376 compact - Lyric Lab mobile shelf cards
+
+Lyric Lab tightens the mobile Shelf card layout after cloud drafts load. Shelf
+cards now wrap long titles and Japanese preview text, clamp preview and scene
+lines, use a compact two-column tag grid on phones, and hide overflow metadata
+that was pushing card content sideways.
+
+`lyric-lab.css`, `hazama-fm-v376`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 

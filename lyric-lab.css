@@ -468,6 +468,7 @@ h3 {
   align-items: stretch;
   grid-template-columns: 1fr;
   min-height: 196px;
+  overflow: hidden;
   padding: 12px;
 }
 
@@ -489,6 +490,7 @@ h3 {
 
 .ll-library-card .ll-library-load {
   min-height: auto;
+  min-width: 0;
   padding: 0;
   border: 0;
   background: transparent;
@@ -496,6 +498,7 @@ h3 {
   font-size: 15px;
   font-weight: 800;
   line-height: 1.35;
+  overflow-wrap: anywhere;
   white-space: normal;
 }
 
@@ -546,6 +549,8 @@ h3 {
   color: var(--ink);
   font-size: 12px;
   line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .ll-library-preview {
@@ -644,6 +649,59 @@ h3 {
 
   .ll-library-cloud-tools {
     grid-template-columns: 1fr;
+  }
+
+  .ll-library-list-main {
+    grid-template-columns: 1fr;
+  }
+
+  .ll-library-card {
+    gap: 10px;
+    min-height: 0;
+    padding: 14px;
+  }
+
+  .ll-library-card-top,
+  .ll-library-card-footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .ll-library-shelf-tags {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .ll-library-tag {
+    border-radius: 6px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .ll-library-shelf-tags .ll-library-tag:nth-child(n+5) {
+    display: none;
+  }
+
+  .ll-library-preview,
+  .ll-library-scene {
+    display: -webkit-box;
+    min-height: 0;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+  }
+
+  .ll-library-preview {
+    -webkit-line-clamp: 5;
+  }
+
+  .ll-library-scene {
+    -webkit-line-clamp: 2;
+  }
+
+  .ll-library-card-footer .ll-library-meta {
+    white-space: normal;
   }
 
   .ll-rack-shelf {
