@@ -1,6 +1,19 @@
-# Band Room - Changelog (v65 -> v376 compact)
+# Band Room - Changelog (v65 -> v377 compact)
 
-Current sw.js VERSION: v376. Latest Band Room runtime change: v363.
+Current sw.js VERSION: v377. Latest Band Room runtime change: v363.
+
+---
+
+## v377 compact - Lyric Lab direction-specific endings
+
+Lyric Lab stops treating `ヒトトビ` as a global ending. The generator now keeps
+`ヒトトビ` inside the `ヒトトビ prayer` direction and gives the other directions
+their own closing phrases: rave/pulse, soil/fire, night-window, or noise-room
+endings. Cloud shelf experiments were also polished so each working draft ends
+on its own image instead of the same stamp.
+
+`lyric-lab.js`, `hazama-fm-v377`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 

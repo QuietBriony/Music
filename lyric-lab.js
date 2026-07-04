@@ -96,6 +96,7 @@ const directionProfiles = {
       "遊びだけがまだ説明を拒む"
     ],
     bridge: ["中心なんてない", "指だけが残る", "半ば過ぎてから始まりが開く"],
+    close: ["回らない", "戻らない", "ヒトトビ"],
     keywordReplies: []
   },
   rave: {
@@ -110,6 +111,7 @@ const directionProfiles = {
       "neon rain on the inside"
     ],
     bridge: ["地下道の風", "番号だけの朝", "pulse が先に歩く", "言葉はまだ曲がっている"],
+    close: ["loop city", "pulse が先に歩く", "朝まで言わない"],
     keywordReplies: [
       { test: /駅|電車|地下|夜|道路|街/, lines: ["駅の光がまだ走っている", "地下道の風が beat を運ぶ"] },
       { test: /走|飛|回|loop|hook/i, lines: ["pulse が先に歩く", "two more minutes in the tunnel"] }
@@ -125,6 +127,7 @@ const directionProfiles = {
       "石の下で拍が眠っている"
     ],
     bridge: ["土に返す名前", "手拍子の影", "水のない川", "小さい火を囲む"],
+    close: ["土に返す", "小さい火を囲む", "まだ歌になる"],
     keywordReplies: [
       { test: /土|川|石|火|水|草|緑/, lines: ["土の匂いが言葉を遅くする", "古い歌だけがまだ水を知ってる"] }
     ]
@@ -139,6 +142,7 @@ const directionProfiles = {
       "誰もいない交差点が返事をする"
     ],
     bridge: ["終電の窓", "コンビニの光", "交差点の返事", "朝までの短い距離"],
+    close: ["窓に残る", "朝までの短い距離", "まだ帰らない"],
     keywordReplies: [
       { test: /夜|窓|街|バス|駅|朝/, lines: ["終電の窓に顔が溶ける", "誰もいない交差点が返事をする"] }
     ]
@@ -153,6 +157,7 @@ const directionProfiles = {
       "歪みの奥に小さい祈りがある"
     ],
     bridge: ["録音の端", "切れたテープ", "歪みの奥", "声の外側"],
+    close: ["録音の端", "声だけ残る", "まだ消さない"],
     keywordReplies: [
       { test: /録音|声|メモ|ノイズ|歪|テープ/, lines: ["録音の端が少し焼けている", "声の外側でノイズが座る"] }
     ]
@@ -695,10 +700,11 @@ function dialectStack(mode) {
   return dialectLines[mode] || [];
 }
 
-function buildHook(parts, title, random, taste, dialect, worldview) {
+function buildHook(parts, title, random, taste, dialect, worldview, profile = directionProfiles.hitotobi) {
   const source = parts.hooks.length ? parts.hooks : parts.mantras;
   const hasCollective = parts.lines.some((line) => /われら/.test(line));
   const hasGreen = parts.lines.some((line) => /緑|みどり|代弁者/.test(line));
+  const isHitotobi = profile === directionProfiles.hitotobi;
   const hook = [];
   const localLines = [
     ...taste.hook,
@@ -721,13 +727,20 @@ function buildHook(parts, title, random, taste, dialect, worldview) {
     hook.push(hasGreen ? "みどりの代弁者" : pick(imageBanks.green, random));
   }
   hook.push("");
-  const motion = source.find((line) => /回ら/.test(line));
-  hook.push(motion || "回らない");
-  if (!motion || !motion.includes(title)) hook.push(title);
+  const closeLines = isHitotobi
+    ? [
+        source.find((line) => /回ら/.test(line)) || "回らない",
+        "ヒトトビ",
+        "",
+        source.find((line) => /戻ら|終わら/.test(line)) || "戻らない",
+        "ヒトトビ"
+      ]
+    : [
+        ...(profile.close || []).slice(0, 3),
+        pick(localLines, random) || title
+      ];
   hook.push("");
-  const returnLine = source.find((line) => /戻ら|終わら/.test(line));
-  hook.push(returnLine || "戻らない");
-  if (!returnLine || !returnLine.includes(title)) hook.push(title);
+  hook.push(...closeLines);
   return uniqueWithBreaks(hook);
 }
 
@@ -750,7 +763,7 @@ function buildDraft(parts, controls) {
   const mantraStack = parts.mantras.length ? parts.mantras : parts.hooks;
   const englishStack = parts.english.length ? parts.english : ["Live like stupid", "genius free", "mindblowing"];
   const localStack = dialectStack(dialect);
-  const hook = buildHook(parts, title, random, taste, dialect, worldview);
+  const hook = buildHook(parts, title, random, taste, dialect, worldview, profile);
   const bLines = uniqueWithBreaks([
     ...mantraStack.slice(0, controls.form === "chant" ? 6 : 3),
     "",
@@ -811,9 +824,8 @@ function buildDraft(parts, controls) {
     "",
     ...englishStack.slice(0, 3),
     "",
-    title,
-    title,
-    title
+    ...(profile.close || [title]).slice(0, controls.direction === "hitotobi" ? 3 : 2),
+    controls.direction === "hitotobi" ? "ヒトトビ" : ""
   ]);
   const sections = controls.form === "compact"
     ? [
