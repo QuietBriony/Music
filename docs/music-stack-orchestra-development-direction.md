@@ -121,6 +121,12 @@ requests, but human review is required before any runtime change.
 
 ## 5. Next 12 PR Plan
 
+> **Implementation status (2026-07-10):** several rows in this table were already
+> shipped before this document was merged. Before picking up any row, consult
+> `docs/music-stack-orchestra-plan-status.md` — it maps each row to existing
+> code, remaining gaps, and human-gate constraints. Do not re-implement shipped
+> rows (#2, #4, #5, #6, #7, #10).
+
 | # | repo | title | lane | goal |
 |---|---|---|---|---|
 | 1 | Music | fix(audio): repair Hazama FM gain staging | A | Stop clipping, pumping, and full-mix damage before wider routing. |

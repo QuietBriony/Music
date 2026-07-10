@@ -154,6 +154,9 @@ ACE-Step の「ローカル/無料/LoRA」優位は効かないので、目的�
 
 ## 6. 参考リンク
 
+- **生成済みデモ（Tabasco 7 曲 MP3 + ビジュアライザ MP4・使い捨て公開 repo）**:
+  https://quietbriony.github.io/tabasco-acestep-demos/ （BL-029 の試聴対象。
+  参照専用 — 音源 / 歌詞は製品 repo に持ち込まず、アイデアのみ Tone.js に翻訳する）
 - ACE-Step 1.5 GitHub: https://github.com/ace-step/ACE-Step-1.5
 - Releases（版/手順の正）: https://github.com/ace-step/ACE-Step-1.5/releases
 - 公式サイト（1.5）: https://ace-step.github.io/ace-step-v1.5.github.io/
