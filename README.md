@@ -78,6 +78,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Reference analysis template: [docs/reference-analysis-template.md](docs/reference-analysis-template.md)
 - Music stack integration index: [docs/music-stack-integration-index.md](docs/music-stack-integration-index.md)
 - Music Stack Orchestra Direction: [docs/music-stack-orchestra-direction.md](docs/music-stack-orchestra-direction.md)
+- Music Stack Orchestra Development Direction: [docs/music-stack-orchestra-development-direction.md](docs/music-stack-orchestra-development-direction.md)
 - Music Orchestra Protocol: [docs/music-orchestra-protocol.md](docs/music-orchestra-protocol.md)
 - Music Stack SYNC manual: [docs/music-stack-sync-manual.md](docs/music-stack-sync-manual.md)
 - MIC Jam / Groove Drive: [docs/mic-jam-groove-drive.md](docs/mic-jam-groove-drive.md)
