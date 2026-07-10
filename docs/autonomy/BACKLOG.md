@@ -109,6 +109,23 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   Reverb と oversampling。light OFF 時は出音キャラ不変を厳守（原音/デフォルト挙動は変えない）。
   完了条件: FM workstream が light ゲートを実装 → user 試聴で弱端末の詰まり減を確認。
 
+### BL-030 — #367「Next 12 PR Plan」と現物の突き合わせ + doc 権威の整理
+- priority : P1
+- repo     : stack
+- scope    : docs
+- agent    : claude
+- human-gate: yes（doc 統合の方向と、残ギャップの owner 決定は user 判断）
+- status   : wip — advisor 2026-07-10。status 正本
+  `docs/music-stack-orchestra-plan-status.md` 作成済み + 新 direction doc §5 に参照追記
+  （push 号令待ち）。残: 旧 `music-stack-orchestra-direction.md` 系 authority chain との
+  統合方針（案 A/B）を user が選ぶ
+- source   : 2026-07-10 #367 merge。12 行中 6 行（#2/#4/#5/#6/#7/#10）が既出荷、
+  routing schema / direction doc が旧 authority docs と重複と判明
+- detail   : Claude / Codex fleet が #367 の plan を素直に拾うと出荷済みシステムを
+  再実装するリスクがあるため、各行を実ファイル / git 履歴と照合した status 正本を置いた。
+  完了条件: user が doc 統合方針を決定 → 反映 PR → 本 item close。
+  実残作業は status doc 末尾の「実際に残っている作業」節が単一の正。
+
 ## P2
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
@@ -263,6 +280,11 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   ACE-Step を使うなら cloud/レンタル GPU か別マシン。chouta-surface だけで歌入りデモを作るなら
   **Suno（ブラウザ）の方が現実的**（→ `docs/SUNO-WORKFLOW.md`、BL-029 は ACE-Step ルート専用）。
   **実行プロンプト**: GPU 機 workerPC（Codex 専用）に貼る → `docs/CODEX-HANDOFF.md` TASK E。
+  **進捗（2026-07 前半）**: workerPC で Tabasco 7 曲の歌入りデモ（MP3）+ beat-synced
+  ビジュアライザ（MP4）を生成し、使い捨て公開 repo に配置済み —
+  **live: https://quietbriony.github.io/tabasco-acestep-demos/** （repo:
+  QuietBriony/tabasco-acestep-demos。参照専用・製品 repo には持ち込まない）。
+  残るは user の試聴 → 良い要素の Tone.js 翻訳（human-gate）。
   完了条件: user が（GPU 環境を用意して）1 曲デモ → Band Room で組み立て確認、or Suno ルートに倒す判断。
 
 ## Icebox
