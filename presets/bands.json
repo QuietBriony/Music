@@ -7,6 +7,38 @@
     "stores_lyrics_inline": false
   },
   "bands": {
+    "hazama": {
+      "name": "HAZAMA",
+      "subtitle": "AI × human · hypnotic dub-techno (Underworld型)",
+      "vocalist": "user",
+      "scene": "hypnotic dub-techno · 128 BPM · Underworld lineage (Rick Smith 相当=AI / Karl Hyde 相当=user)",
+      "ui_hidden": true,
+      "ui_hidden_note": "制作中。メインの band selector には出さず、footer の隠し入口 or ?band=hazama からのみアクセス。完成したら ui_hidden を外して Tabasco と併存させる。",
+      "stems_dir": "presets/hazama-stems",
+      "drum_frames_pattern": "presets/drum-frames-hazama-{songid}.json",
+      "lyrics_doc": "docs/hazama-lyrics.md",
+      "kit_profile_default": "lcd-motorik",
+      "kit_source_default": "synth",
+      "palette": {
+        "synth_profile": "lcd-motorik",
+        "bass_instrument": "",
+        "chord_instrument": "",
+        "voice_instrument": "",
+        "guitar_on": false,
+        "arp_on": true
+      },
+      "songs": [
+        {
+          "id": "still-moving",
+          "track": "01",
+          "title": "Still Moving",
+          "bpm": 128,
+          "key": "A minor",
+          "duration_s": 360,
+          "kit_profile": "lcd-motorik"
+        }
+      ]
+    },
     "tabasco": {
       "name": "Tabasco",
       "subtitle": "air rock connect box · 2005-ish LIVE",

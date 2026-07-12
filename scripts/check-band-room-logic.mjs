@@ -335,7 +335,8 @@ assert.match(source, /new Tone\.Limiter\(\{\s*threshold:\s*-1\.0\s*\}\)/, "Band 
 }
 assert.match(source, /let masterVolBase = 1\.2/, "Band Room master volume base should match the v202 louder default output");
 assert.match(source, /const mobileAiDiet = isMobileOrStandaloneRuntime\(\);/, "AI polish bus should use a lighter phone path");
-assert.match(source, /oversample: mobileAiDiet \? "none" : "2x"/, "Mobile AI polish should avoid the standing oversampled exciter cost");
+assert.match(source, /exciteShape = new Tone\.Distortion\(\{[\s\S]{0,160}?oversample: "none"/, "v304: AI polish exciter should drop standing oversampling entirely (it froze many-core ARM desktops that aren't flagged mobile)");
+assert.doesNotMatch(source, /const sat\s*=\s*new Tone\.Distortion\(\{[^)]*oversample: "2x"/, "v304: instrumentBus sat should not use standing 2x oversampling on the synth path");
 assert.match(source, /function uiTelemetryIntervalMs\(/, "Band Room should throttle playback telemetry instead of updating UI every animation frame");
 assert.match(source, /uiTelemetryIntervalMs\("timeline"\)/, "Band Room timeline updates should use the telemetry throttle");
 assert.match(source, /uiTelemetryIntervalMs\("meter"\)/, "Band Room meter updates should use the telemetry throttle");

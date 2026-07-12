@@ -1,6 +1,6 @@
-# Band Room — Changelog (v65 → v301 compact)
+# Band Room — Changelog (v65 → v310 compact)
 
-Current compact release: v301.
+Current compact release: v310.
 
 Cache marker: `band-room.{html,js,css}?v=br-NN` and `sw.js VERSION = hazama-fm-vNN`.
 The two are bumped together — sw VERSION matches the band-room generation it ships.
@@ -9,6 +9,162 @@ Note: v113 以降は **Hazama FM 側の修正も含む** ので変更が `engine
 も bump する。
 
 ---
+
+## v310 compact - HAZAMA: singable lyric sheet (the panel was empty)
+
+The lyrics panel had been showing `(lyrics todo — see docs/hazama-lyrics.md)`
+for every HAZAMA session: `extractLyricsForSong` slices from a `## NN <Title>`
+H2 heading, and the doc's title was an H1 with quotes, so extraction returned
+null. The doc is rewritten to the format band-room actually parses — `## 01
+Still Moving`, then one `[section]` marker per structure section — so the
+lyrics now render AND the block for the current section auto-highlights during
+playback (verified: 9 blocks, markers match all 9 structure sections, clicking
+`mantra` in the section nav activates the mantra block).
+
+Content is written to the arrangement that now exists rather than the old
+plan: intro is silent, the fragment lands twice in `arp`, `verse` is mostly
+space (delay answers each line), `lift` previews the hook, `mantra` is the flat
+"instrument-reading" repetition, `break` is whispered with the bass gone,
+`release` opens the voice ("so am I" / 止まらない), `outro` returns to muttering.
+Stage directions live in `（）` so they read as directions, not lines. Session
+notes (mic distance, one take, no doubling — the delay does that) sit ABOVE the
+heading so they don't render into the panel. The stale "REC only captures the
+AI bed, record your voice externally" note is gone — live mic + REC bounces
+voice and band together now.
+
+`docs/hazama-lyrics.md` joins the precache list, matching the Tabasco lyric
+docs (offline parity).
+
+- `band-room.js?v=br-177`, `hazama-fm-v310`.
+
+## v309 compact - HAZAMA: review fixes + the 6-minute arc
+
+Three-lens review pass (correctness / audio-CPU / musicality) over the HAZAMA
+additions. Fixed, in order of severity:
+
+- **Tabasco regressions (2)**: `prepareSynthPlaybackAssets` was ramping
+  `bassBus` to a constant 0.80, silently overriding the user's `br-vol-bass`
+  slider — now the non-palette target derives from the slider. And an
+  in-session band switch (HAZAMA → Tabasco) left the palette stuck (synth kit,
+  "" instruments, guitar off) AND saved it into global prefs;
+  `applyRecommendedBandPalette` now snapshots the pre-palette state and
+  restores it when entering a palette-less band (runs before
+  `applyRecommendedKitSource` so the snapshot catches kit source too).
+- **Stale-section bar**: on the first bar after every section crossing the
+  agents read the PREVIOUS section's name (scheduleBar's local `sec` isn't
+  refreshed after `sectionIdx++`), so the arp bled one bar into the break and
+  missed its release re-entry. Arp/bass agents now read `currentSection()`.
+- **The bassline octave pump never played**: degree 3 ("root+oct" per the
+  song's own note) was wrapped `% lo.length` back to the plain root — the
+  authored dut-dut-dut-POP flattened to monotone. Now a 2-octave pool like the
+  arp. Bass gate 0.90 → 0.60 so 16ths articulate instead of droning, and the
+  bass synth drops 5 dB (the continuous sub was pinning the master comps —
+  standing GR + kick-synced pumping).
+- **The 6-minute arc actually engages**: structure entries now carry `role`
+  (intro/swell/comp/verse/recap/break/outro) — previously every section
+  resolved to "verse" so `rampInstrumentBusForSection` was flat for the whole
+  track. The arp/bass buses (which bypass instrumentBus) now mirror the same
+  role gain, and the section arc also sweeps the arp LFO range + bass cutoff
+  (break = dark dub space → release = brightest). Bass drops OUT of the break
+  entirely and slams back at release. Per-section arp patterns added for
+  drive/verse/lift (call-answer / hollowed-out-with-rests / morph-into-mantra).
+- Small: bass respects the bass mute toggle; checking "arp" mid-play now
+  builds the synth; arp chain only builds when the song has an arp; octave
+  leap is now up-only; `bass_gain` removed from the palette (latent +5 dB trap).
+
+- `band-room.js?v=br-177`, `hazama-fm-v309`.
+
+## v308 compact - HAZAMA Underworld: organic arp + bassline (kill the monotony)
+
+Listening pass on v307: "音なってる。単調。有機的じゃない — use the human-groove
+work the stack already has." A workflow surveyed the stack (band-room's inline
+humanization idiom, human-groove-governor, drum-floor groove/seeded-RNG,
+genre-flavor directors). Root cause: the existing bass/chord/voice agents DO
+humanize (micro-timing, 4-bar phrase-velocity, per-bar contour rotation), but
+the NEW `triggerArpAgent` / `triggerBassSeqAgent` did NONE of it — fixed accent,
+no micro-timing, IDENTICAL 16-step pattern every bar.
+
+Both agents are now ORGANIC, reusing the band-room idiom + a seeded
+deterministic RNG (drum-floor `mulberry32`/`hashString`) so variation is
+reproducible-but-different bar-to-bar: (1) per-bar pattern VARIATION —
+`arp.variation`/`bassline.variation` add index rotation, probabilistic
+note-drop/add, octave-leaps, phrase-end displacement, bar-N octave lift; (2)
+micro-timing — centered jitter (downbeats stay tight) + offbeat swing push; (3)
+4-bar phrase-velocity shape + probabilistic ghost/accent. The cell now evolves
+instead of looping flat. All gated on `state.songData.arp`/`.bassline` so
+Tabasco is untouched.
+
+- `band-room.js?v=br-177`, `hazama-fm-v308`.
+
+## v307 compact - HAZAMA Underworld: driving bassline (groove floor)
+
+Listening pass on v306: "no groove; bass sounds thin and drops out when the
+chord hits." Root cause — the shared bass agent plays only ~1-2 kick-locked
+notes/bar, so the low end stopped between hits. Added a dedicated HAZAMA
+**driving bassline** layer (`state.songData.bassline`, a rolling 16th sub that
+follows the chord root): `makeBassSeqSynth` (deep fatsaw + light drive/growl +
+lowpass ~720 Hz so it reads distinctly from the kick, direct to its own
+`bassSeqBus` → masterGain), `triggerBassSeqAgent`, hooked in scheduleBar. When a
+song has a `bassline`, the sparse kick-locked bass agent is gated OFF (no
+double bass); songs without one (Tabasco) are untouched. This is the groove
+floor Underworld needs. Also released as part of the same pass: arp is a
+`fatsawtooth` with a slow cutoff LFO + beat-accented velocity.
+
+- `band-room.js?v=br-177`, `hazama-fm-v307`.
+
+## v306 compact - HAZAMA Underworld: fat arp + bass presence pass
+
+Listening pass on v305. The arp read thin + monotonous and the synth bass got
+lost under the kick. Fixes (HAZAMA-scoped): the arp synth is now a
+`fatsawtooth` (3-voice unison detune) with more filter resonance + a slow
+(~20 s) LFO sweeping the cutoff — thick and evolving instead of a flat saw
+loop — and `triggerArpAgent` accents the beat + lightly humanizes velocity.
+Arp bus lifted 0.62 → 0.78. Synth bass presence is now a per-band
+`palette.bass_gain` (HAZAMA 1.45), applied at play time so it reads under the
+kick WITHOUT touching the check-tuned 0.80 default that Tabasco's Human Fly
+body pass relies on.
+
+- `band-room.js?v=br-177`, `hazama-fm-v306`.
+
+## v305 compact - HAZAMA Underworld: analog palette + 16th arp
+
+HAZAMA now sounds like Underworld instead of a rock band playing techno. New
+per-band `palette` (hazama only; Tabasco has none, so it is untouched): all four
+instrument selects default to the built-in profile-aware SYNTH voices — deep
+detuned-saw analog bass, warm triangle pad, saw formant lead — under the
+`lcd-motorik` techno profile, guitar OFF. `applyRecommendedBandPalette` runs in
+`loadSong` AND after `applyPrefs`, so saved Tabasco prefs no longer clobber the
+per-band profile/instruments (the ordering race that defeated
+`kit_profile_default` alone).
+
+Plus the signature missing layer: a driving 16th-note **arp** (`#br-toggle-arp`,
+new top-level `arp` key in the song JSON). A cheap monophonic saw → lowpass →
+dotted-8th feedback delay, routed DIRECT to `masterGain` (bypasses
+`instrumentBus` + its waveshapers, per the v304 freeze lesson). The pattern is
+chord-tone degree indices into a 2-octave pool, so one rolling cell auto-voices
+Am-F-C-G; per-section `variations` + a `sections` whitelist enter / mutate /
+drop the riff across the arrangement (intro & break stay arp-free). No-op for
+any song without an `arp` key.
+
+- `band-room.js?v=br-177`, `hazama-fm-v305`.
+
+## v304 compact - HAZAMA unit (AI×human Underworld) + synth-path CPU relief
+
+Adds a hidden band **HAZAMA** — an AI × human unit (Underworld-lineage hypnotic
+dub-techno, 128 BPM A-minor). It stays out of the main band selector
+(`ui_hidden`, so Tabasco remains the sole visible album) and is reached from a
+discreet footer entry `◦ hazama` / `?band=hazama`. Per-band `kit_source_default`
+lets HAZAMA default to the built-in synth kit (instant, no CDN), and a new live
+mic path routes the mic through the external-vocal FX bus into the recorder so a
+single REC bounces voice + AI band together.
+
+Freeze fix: the two `instrumentBus` oversampled waveshapers (`sat` + the air
+`exciter`) that stalled the AI synth band on many-core ARM desktops (Snapdragon
+X Elite is not flagged "mobile", so it took the heavy 2× oversample path) are
+dropped to `oversample: "none"`. The synth path — which HAZAMA is forced
+through, unlike Tabasco's usual 原音/stems — no longer overloads. 原音 untouched.
+
+- `band-room.js?v=br-177`, `hazama-fm-v304`.
 
 ## v301 compact - Human Fly AI body pass
 

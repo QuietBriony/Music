@@ -193,6 +193,19 @@
   let voiceSynth = null;
   let chordSynth = null;
   let clickSynth = null;
+  // Underworld 16th-note arp/sequence layer (HAZAMA). Cheap MonoSynth routed
+  // DIRECT to masterGain (bypasses instrumentBus + its waveshapers, per the
+  // v304 freeze / AI-FX-budget lesson). Gated: synth mode + #br-toggle-arp +
+  // state.songData.arp (Tabasco has no arp key, so it never fires there).
+  let arpSynth = null;
+  let arpBus = null;
+  let arpLfo = null;          // v309: ref to the arp cutoff LFO so the section arc can retune its range
+  // HAZAMA driving bassline — a dedicated rolling sub sequence (the groove
+  // engine). Replaces the sparse kick-locked bass agent when the song has a
+  // `bassline` key. Deep fatsaw MonoSynth, direct to masterGain.
+  let bassSeqSynth = null;
+  let bassSeqBus = null;
+  let bassSeqFilter = null;   // v309: ref to the bass lowpass so the section arc can sweep it
 
   // Original stem buses + Tone.Player instances (Demucs separated)
   let stemBus = { vocals: null, drums: null, bass: null, other: null };
@@ -247,6 +260,11 @@
   let externalVocalPlayer = null;
   let externalVocalBus = null;
   let externalVocalBlobUrl = null;
+  // Live mic → externalVocalBus (shares the vocal FX chain + master recorder
+  // bus). Default off; opt-in via #br-toggle-live-mic. Lets the user sing live
+  // and capture voice+band in one REC bounce (HAZAMA unit).
+  let liveMicStream = null;
+  let liveMicSource = null;
 
   // v87: per-stem external replacement (drums/bass/other).
   // Lets you mute the original drums stem and feed in your own kit take, etc.
@@ -324,7 +342,7 @@
     // for Human Fly so the AI band reads as one performance, not separate
     // drum/bass/other layers.
     const comp   = new Tone.Compressor({ threshold: -16, ratio: 2.05, attack: 0.014, release: 0.18, knee: 6 });
-    const sat    = new Tone.Distortion({ distortion: 0.12, oversample: "2x", wet: 1 });
+    const sat    = new Tone.Distortion({ distortion: 0.12, oversample: "none", wet: 1 });  // v304: 2x→none — synth-path CPU relief (see exciter note below)
     const satWet = new Tone.Gain(0.16);   // parallel saturated blend
     const satDry = new Tone.Gain(0.92);   // parallel clean path
     const widen  = new Tone.StereoWidener(0.58);
@@ -350,9 +368,18 @@
     // enough given the 3.5 kHz high-pass + 0.10 wet that follow. Same air,
     // roughly half the exciter CPU.
     const mobileAiDiet = isMobileOrStandaloneRuntime();
+    // v304: the two instrumentBus oversampled waveshapers (this exciter + `sat`
+    // above) were the synth-path CPU hog that FROZE the UI on non-"diet" ARM
+    // desktops — Snapdragon X Elite has many cores so it isn't flagged mobile,
+    // yet Web Audio oversampled distortion still overloads its audio graph and
+    // stalls playback. HAZAMA has no stems, so it is FORCED through this bus
+    // (Tabasco is usually 原音/stems, which bypass it — that's why only the AI
+    // band froze). Drop oversampling to "none" unconditionally: at exciteWet
+    // ~0.06 under the 3.5 kHz high-pass the aliasing is inaudible, but the CPU
+    // saving is what keeps the AI band from wedging. AI-FX-budget lesson.
     const exciteShape = new Tone.Distortion({
       distortion: mobileAiDiet ? 0.55 : 0.9,
-      oversample: mobileAiDiet ? "none" : "2x",
+      oversample: "none",
       wet: 1
     });
     const exciteOut   = new Tone.Filter({ frequency: 3500, type: "highpass", Q: 0.5 });
@@ -401,6 +428,20 @@
     return ROLE_GAIN[role] || 0.96;  // unknown role → near-neutral default
   }
 
+  // v309 HAZAMA timbre arc — per section-role targets for the arp LFO sweep
+  // range and the driving-bass lowpass cutoff. break = dark dub space,
+  // recap (mantra/release) = brightest. Only consulted for songs that declare
+  // arp/bassline keys, so Tabasco never touches it.
+  const HZ_ROLE_TONE = {
+    intro: { arpLo: 700, arpHi: 1600, bass: 520 },
+    swell: { arpLo: 900, arpHi: 2200, bass: 620 },
+    comp:  { arpLo: 1000, arpHi: 2800, bass: 760 },
+    verse: { arpLo: 950, arpHi: 2400, bass: 700 },
+    recap: { arpLo: 1250, arpHi: 3600, bass: 920 },
+    break: { arpLo: 650, arpHi: 1400, bass: 480 },
+    outro: { arpLo: 800, arpHi: 1800, bass: 560 }
+  };
+
   // v220: ramp the instrumentBus gain to the section's target over 0.5s.
   // Fired on the first bar of each section. No-op if instrumentBus isn't
   // built yet (early boot) or we're in stems mode (stems bypass this bus).
@@ -413,6 +454,23 @@
       instrumentBus.gain.cancelScheduledValues(time);
       instrumentBus.gain.linearRampToValueAtTime(target, time + 0.5);
     } catch (e) {}
+    // v309: the HAZAMA arp / driving-bass buses bypass instrumentBus, so the
+    // section arc never reached the two loudest elements (break didn't dip,
+    // recap didn't lift). Mirror the same role gain onto their buses and sweep
+    // their timbre. Gated on the song's arp/bassline keys — Tabasco untouched.
+    if (arpBus && state.songData && state.songData.arp) {
+      try { arpBus.gain.rampTo(0.78 * target, 0.5); } catch (e) {}
+    }
+    if (bassSeqBus && state.songData && state.songData.bassline) {
+      try { bassSeqBus.gain.rampTo(1.25 * target, 0.5); } catch (e) {}
+    }
+    if (state.songData && (state.songData.arp || state.songData.bassline)) {
+      const tone = HZ_ROLE_TONE[role];
+      if (tone) {
+        try { if (arpLfo) { arpLfo.min = tone.arpLo; arpLfo.max = tone.arpHi; } } catch (e) {}
+        try { if (bassSeqFilter) bassSeqFilter.frequency.rampTo(tone.bass, 1.2); } catch (e) {}
+      }
+    }
   }
 
   function ensureMaster() {
@@ -527,6 +585,14 @@
     voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
     chordBus = new Tone.Gain(0.62).connect(chordPan);
     clickBus = new Tone.Gain(0.35).connect(clickPan);
+    // Arp bus — DIRECT to masterGain (skip instrumentBus + its waveshapers, per
+    // the v304 freeze / AI-FX-budget lesson), like voice/click. Own panner.
+    const arpPan = new Tone.Panner(0.10).connect(masterGain);
+    arpBus = new Tone.Gain(0.78).connect(arpPan);
+    // Driving-bassline bus — direct to masterGain, solid level so the sub reads
+    // as the groove floor (HAZAMA only; gated on state.songData.bassline).
+    const bassSeqPan = new Tone.Panner(0).connect(masterGain);
+    bassSeqBus = new Tone.Gain(1.25).connect(bassSeqPan);
 
     // Original-stem buses → per-stem EQ → masterGain
     // v167: slightly lower full-stem defaults so the remaster chain glues
@@ -1225,6 +1291,44 @@
   function stopExternalVocal() {
     if (!externalVocalPlayer) return;
     try { externalVocalPlayer.stop(); } catch (e) {}
+  }
+
+  // Live mic capture → externalVocalBus (→ vocal FX → master → recorder).
+  // Mirrors engine.js mic-follow's getUserMedia constraints (no AEC/NS/AGC so
+  // the voice isn't gated), but unlike mic-follow this DOES route into the
+  // audible/recorded master so REC captures voice+band together.
+  async function startLiveMic() {
+    if (liveMicSource) return true;
+    const setStatus = (t) => { const s = $("br-live-mic-status"); if (s) s.textContent = t; };
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      setStatus("mic unsupported");
+      return false;
+    }
+    ensureMaster();
+    try {
+      setStatus("requesting…");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+        video: false
+      });
+      liveMicStream = stream;
+      liveMicSource = Tone.context.createMediaStreamSource(stream);
+      liveMicSource.connect(externalVocalBus || vocalChorus);
+      setStatus("mic ON → vocal FX → REC");
+      return true;
+    } catch (e) {
+      console.warn("[Band Room] live mic start failed:", e);
+      setStatus(e && e.name === "NotAllowedError" ? "permission denied" : "mic error");
+      stopLiveMic({ silent: true });
+      return false;
+    }
+  }
+  function stopLiveMic(opts = {}) {
+    try { liveMicSource?.disconnect?.(); } catch (e) {}
+    try { liveMicStream?.getTracks?.().forEach((t) => t.stop()); } catch (e) {}
+    liveMicSource = null;
+    liveMicStream = null;
+    if (!opts.silent) { const s = $("br-live-mic-status"); if (s) s.textContent = "mic off"; }
   }
 
   // v87: per-stem external upload (drums/bass/other).
@@ -1937,6 +2041,109 @@
     }
   }
 
+  // Per-band / per-song kit SOURCE auto-mapping (sibling of the profile one).
+  // A band may set `kit_source_default` (e.g. HAZAMA → "synth" so the AI bed
+  // starts instantly with no CDN sample download) and a song may set
+  // `kit_source`. Only fires for bands that declare it — Tabasco has none, so
+  // its flow is untouched. Reuses the kit-select change handler to rebuild.
+  function applyRecommendedKitSource() {
+    const band = currentBand();
+    const songMeta = currentBandSongMeta();
+    const recommended = songMeta?.kit_source || band?.kit_source_default;
+    if (!recommended || recommended === state.kitSource) return;
+    const ksel = $("br-kit-source-select");
+    if (!ksel) return;
+    if (![...ksel.options].some((o) => o.value === recommended)) return;
+    ksel.value = recommended;
+    ksel.dispatchEvent(new Event("change"));  // rebuilds drumKit via existing handler
+  }
+
+  // Per-band ANALOG PALETTE. HAZAMA (Underworld) uses the built-in profile-aware
+  // SYNTH fallbacks (deep analog bass / warm pad / saw formant lead) instead of
+  // Tabasco's acoustic CDN samples (electric bass / acoustic guitar / grand
+  // piano), plus guitar OFF, the techno profile, and the arp layer on. Reads
+  // currentBand().palette; no-op for bands without one (Tabasco untouched).
+  // Setting each select to "" selects the synth fallback; dispatching change
+  // sets state.<part>Instrument so prepareSynthPlaybackAssets builds the right
+  // voices at play time. Called from loadSong AND after applyPrefs (so saved
+  // Tabasco prefs don't clobber the palette — the ordering race that defeated
+  // kit_profile_default alone).
+  function applyRecommendedBandPalette() {
+    const band = currentBand();
+    const pal = band && band.palette;
+    const setSel = (id, val) => {
+      if (val === undefined) return;
+      const el = $(id);
+      if (!el || el.value === val) return;
+      el.value = val;
+      if (el.value === val) { el.dispatchEvent(new Event("change")); return; }
+      // option not rendered yet (async catalog) — sync state directly; the
+      // selector renderers re-select from state when they populate.
+      const stateKey = { "br-kit-source-select": "kitSource", "br-chord-instrument-select": "chordInstrument",
+        "br-bass-instrument-select": "bassInstrument", "br-guitar-instrument-select": "guitarInstrument",
+        "br-voice-instrument-select": "voiceInstrument" }[id];
+      if (stateKey) state[stateKey] = val || null;
+    };
+    const setProfile = (val) => {
+      if (val === undefined) return;
+      const psel = $("br-kit-profile-select");
+      if (psel && psel.value !== val) {
+        psel.value = val;
+        state.kitProfile = val;
+        state.__kitProfileAutoApplying = true;  // don't latch "explicit user pick"
+        try { psel.dispatchEvent(new Event("change")); }
+        finally { state.__kitProfileAutoApplying = false; }
+      }
+    };
+    const setToggle = (id, val) => {
+      if (val === undefined) return;
+      const el = $(id);
+      if (el && el.checked !== val) { el.checked = val; el.dispatchEvent(new Event("change")); }
+    };
+    if (!pal || typeof pal !== "object") {
+      // v309: leaving a palette band mid-session (HAZAMA → Tabasco) must UNDO
+      // the palette. Without this, synth kit / "" instruments / guitar-off
+      // stuck to Tabasco AND — since palette-less bands skip the savePrefs
+      // guard — were saved into global prefs, permanently degrading Tabasco.
+      const snap = state.__prePaletteSnapshot;
+      if (snap) {
+        state.__prePaletteSnapshot = null;
+        setProfile(snap.kitProfile);
+        setSel("br-kit-source-select", snap.kitSource);
+        setSel("br-chord-instrument-select", snap.chordInstrument);
+        setSel("br-bass-instrument-select", snap.bassInstrument);
+        setSel("br-guitar-instrument-select", snap.guitarInstrument);
+        setSel("br-voice-instrument-select", snap.voiceInstrument);
+        setToggle("br-toggle-guitar", snap.guitarOn);
+        setToggle("br-toggle-arp", snap.arpOn);
+      }
+      return;
+    }
+    // Entering a palette band: snapshot the pre-palette values once (from
+    // state, not the DOM — instrument selects may not be populated yet).
+    // NOTE: must run BEFORE applyRecommendedKitSource in loadSong so the
+    // snapshot captures the pre-HAZAMA kit source.
+    if (!state.__prePaletteSnapshot) {
+      state.__prePaletteSnapshot = {
+        kitProfile: state.kitProfile,
+        kitSource: state.kitSource,
+        chordInstrument: state.chordInstrument || "",
+        bassInstrument: state.bassInstrument || "",
+        guitarInstrument: state.guitarInstrument || "",
+        voiceInstrument: state.voiceInstrument || "",
+        guitarOn: $("br-toggle-guitar") ? $("br-toggle-guitar").checked : undefined,
+        arpOn: $("br-toggle-arp") ? $("br-toggle-arp").checked : undefined
+      };
+    }
+    setProfile(pal.synth_profile);
+    setSel("br-chord-instrument-select", pal.chord_instrument);
+    setSel("br-bass-instrument-select", pal.bass_instrument);
+    setSel("br-guitar-instrument-select", pal.guitar_instrument);
+    setSel("br-voice-instrument-select", pal.voice_instrument);
+    setToggle("br-toggle-guitar", pal.guitar_on);
+    setToggle("br-toggle-arp", pal.arp_on);
+  }
+
   function currentBandSongMeta(songId = state.currentSongId) {
     const band = currentBand();
     if (!Array.isArray(band?.songs)) return null;
@@ -2396,6 +2603,20 @@
       if (SYNTH_REBUILD_PARTS.voice && synthPartEnabled("br-toggle-voice") && !voiceSynth) voiceSynth = await makeVoiceBox(voiceBus);
       if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && !chordSynth) chordSynth = await makeChordSynth(chordBus);
       if (synthPartEnabled("br-toggle-click") && !clickSynth) clickSynth = makeClick(clickBus);
+      // v309: only build the arp chain when the SONG actually has an arp —
+      // otherwise a silent standing LFO+filter+delay chain lingers in the
+      // graph during Tabasco sessions (AI-FX-budget lesson).
+      if (synthPartEnabled("br-toggle-arp") && state.songData && state.songData.arp && !arpSynth) arpSynth = makeArpSynth(arpBus);
+      // Per-band bass presence: palette bands may pin bassBus via bass_gain;
+      // everyone else follows the user's br-vol-bass slider (v309 fix — the
+      // old 0.80 constant here silently overrode the slider for Tabasco).
+      if (bassBus) {
+        const pal = currentBand() && currentBand().palette;
+        const sliderVal = Number($("br-vol-bass") && $("br-vol-bass").value);
+        const target = (pal && Number(pal.bass_gain)) || (Number.isFinite(sliderVal) ? sliderVal / 100 : 0.80);
+        try { bassBus.gain.rampTo(target, 0.1); } catch (e) {}
+      }
+      if (state.songData && state.songData.bassline && !bassSeqSynth) bassSeqSynth = makeBassSeqSynth(bassSeqBus);
       if (kitStatus && reason !== "toggle") kitStatus.textContent = "AI ready";
       return true;
     } catch (e) {
@@ -2856,6 +3077,54 @@
     return withChainDispose(chord, [verb, autoPan, chorus, hpC]);
   }
 
+  // ---- Underworld arp --------------------------------------------
+
+  // Cheap monophonic saw arp → lowpass → dotted-8th feedback delay (the
+  // signature Underworld echo). NO oversampled distortion, NO reverb — an
+  // always-firing 16th part must stay off the freeze-prone path. Routes to the
+  // arp bus → masterGain (bypasses instrumentBus). MonoSynth = single line, no
+  // polyphony flood.
+  function makeArpSynth(target) {
+    const out = target || masterGain || Tone.getDestination();
+    const delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.34, wet: 0.26 }).connect(out);
+    const filter = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 3 }).connect(delay);
+    // Slow LFO sweeps the post-filter cutoff (~20s cycle) — the evolving-filter
+    // Underworld movement that fights the "単調/monotonous" of a fixed riff.
+    const lfo = new Tone.LFO({ frequency: 0.05, min: 950, max: 3400, type: "sine" }).start();
+    lfo.connect(filter.frequency);
+    arpLfo = lfo;  // v309: section arc retunes min/max per role
+    const synth = new Tone.MonoSynth({
+      oscillator: { type: "fatsawtooth", count: 3, spread: 34 },  // unison detune = thick / ゴンブト
+      filter: { Q: 4, type: "lowpass", rolloff: -24 },
+      envelope: { attack: 0.004, decay: 0.16, sustain: 0.40, release: 0.12 },
+      filterEnvelope: { attack: 0.004, decay: 0.12, sustain: 0.55, release: 0.14, baseFrequency: 520, octaves: 3.2 },
+      volume: -2
+    }).connect(filter);
+    return withChainDispose(synth, [filter, delay, lfo]);
+  }
+
+  // ---- Underworld driving bass -----------------------------------
+
+  // Deep fatsaw sub with a little drive/growl (so it isn't "しょぼい") and a
+  // lowpass that keeps some low-mid so it reads DISTINCTLY from the kick. Mono,
+  // portamento glide. Direct to the bass-seq bus → masterGain. Cheap, no
+  // oversampling.
+  function makeBassSeqSynth(target) {
+    const out = target || masterGain || Tone.getDestination();
+    const drive = new Tone.Distortion({ distortion: 0.18, oversample: "none", wet: 0.30 }).connect(out);
+    const filter = new Tone.Filter({ frequency: 720, type: "lowpass", Q: 1.4 }).connect(drive);
+    bassSeqFilter = filter;  // v309: section arc sweeps the cutoff (break dark → release bright)
+    const synth = new Tone.MonoSynth({
+      oscillator: { type: "fatsawtooth", count: 2, spread: 16 },
+      filter: { Q: 1, type: "lowpass", rolloff: -24 },
+      envelope: { attack: 0.006, decay: 0.18, sustain: 0.62, release: 0.10 },
+      filterEnvelope: { attack: 0.005, decay: 0.12, sustain: 0.5, release: 0.10, baseFrequency: 130, octaves: 2.6 },
+      portamento: 0.02,
+      volume: -5  // v309 headroom: continuous 16/16-step sub was ~6 dB hot into the master comps (standing GR + kick-synced pumping + limiter distortion on lows)
+    }).connect(filter);
+    return withChainDispose(synth, [filter, drive]);
+  }
+
   // ---- Click ---------------------------------------------------
 
   function makeClick(target) {
@@ -3096,7 +3365,12 @@
       // v213: auto-pick kit profile from band/song recommendation (UNRIPE →
       // cramps-punk, Human Fly → cramps-punk, etc.). No-op if user has
       // explicitly chosen a non-default profile.
+      // v309: palette FIRST — it snapshots the pre-band values (so switching
+      // back to a palette-less band restores them) and must capture kitSource
+      // BEFORE applyRecommendedKitSource changes it.
+      applyRecommendedBandPalette();  // HAZAMA → analog synth palette + guitar off + arp; restores on palette-less bands
       applyRecommendedKitProfile();
+      applyRecommendedKitSource();  // HAZAMA → synth kit (instant, no CDN); Tabasco unaffected
       renderSectionNav();  // v75: clickable section list
       refreshDrumFloorLink();
       updateMediaSession(state.started ? "playing" : "paused");  // v85: refresh OS metadata
@@ -4461,6 +4735,143 @@
     });
   }
 
+  // Underworld 16th-note arp. Reads state.songData.arp (a pattern of chord-tone
+  // degree indices into a 2-octave pool), so the same rolling cell auto-voices
+  // across the Am-F-C-G progression. Per-section `variations` + a `sections`
+  // whitelist let the riff enter / mutate / drop across the arrangement.
+  // Monophonic, tight staccato (gate < 1) so the MonoSynth doesn't legato-smear.
+  // --- HAZAMA organic helpers (reuse the inline band-room humanization idiom) ---
+  // Seeded deterministic RNG (drum-floor mulberry32/hashString pattern): per-bar
+  // variation is reproducible but differs bar-to-bar — organic, not white noise.
+  function hzHashString(str) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+  function hzMulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const HZ_PHRASE_VEL = [0.95, 1.00, 1.04, 0.98];       // 4-bar arp phrase shape
+  const HZ_PHRASE_VEL_BASS = [0.96, 1.00, 1.06, 0.98];  // 4-bar bass phrase shape
+
+  // Underworld 16th arp — ORGANIC. Reuses the band-room humanization idiom
+  // (phrase-velocity shape, micro-timing jitter + offbeat swing, probabilistic
+  // ghost/accent) PLUS per-bar seeded pattern VARIATION (rotate / drop / add /
+  // octave-leap from arp.variation) so the cell evolves bar-to-bar instead of
+  // repeating identically — the core fix for "単調/monotonous".
+  function triggerArpAgent(ctx, time) {
+    const arp = state.songData && state.songData.arp;
+    if (!arp) return;
+    // v309: read the LIVE section — scheduleBar's local `sec` is stale on the
+    // first bar after a section crossing (sectionIdx already advanced), which
+    // made the whitelist/variations lag one bar at every boundary (arp bled
+    // one bar into the break, missed its release re-entry bar, etc.).
+    const liveSec = currentSection() || ctx.sec || {};
+    const secName = liveSec.section || "";
+    if (Array.isArray(arp.sections) && arp.sections.length && !arp.sections.includes(secName)) return;
+    const va = (arp.variations && arp.variations[secName]) || null;
+    const pick = (k, d) => { const v = va && va[k] !== undefined ? va[k] : arp[k]; return v === undefined ? d : v; };
+    const octave = Number(pick("octave", 3)) || 3;
+    const gate = clamp(Number(pick("gate", 0.6)) || 0.6, 0.1, 1);
+    const baseVel = clamp(Number(pick("velocity", 0.5)) || 0.5, 0.1, 0.9);
+    const pat = (va && Array.isArray(va.pattern) && va.pattern.length) ? va.pattern
+      : (Array.isArray(arp.pattern) && arp.pattern.length ? arp.pattern : [0, 2, 3, 2, 0, 2, 3, 5]);
+    const lo = chordToNotes(ctx.chord, octave);
+    if (!lo.length) return;
+    const pool = lo.concat(chordToNotes(ctx.chord, octave + 1));
+    const durSec = ctx.subTime * gate;
+    const barIn = ctx.barInSection || 0;
+    const phrasePos = barIn % 4;
+    const vr = (va && va.variation) || arp.variation || {};
+    const rng = hzMulberry32(hzHashString((state.currentSongId || "") + "arp" + secName + barIn));
+    const rot = Array.isArray(vr.rotate) ? (Number(vr.rotate[phrasePos]) || 0) : 0;
+    const dropP = Array.isArray(vr.dropProb) ? (Number(vr.dropProb[phrasePos]) || 0) : (Number(vr.dropProb) || 0);
+    const addP = Array.isArray(vr.addProb) ? (Number(vr.addProb[phrasePos]) || 0) : (Number(vr.addProb) || 0);
+    const octP = Number(vr.octaveShiftProb) || 0;
+    const ghostP = Number(vr.ghostProb) || 0;
+    const accentP = Number(vr.accentProb) || 0;
+    const swingMs = Number(vr.swingMs) || 0;
+    const phraseMult = HZ_PHRASE_VEL[phrasePos];
+    for (let s = 0; s < 16; s++) {
+      let deg = pat[(s + rot) % pat.length];
+      if (deg == null || deg === "-") {
+        if (!(addP > 0 && rng() < addP)) continue;   // rest, unless a probabilistic add
+        deg = Math.floor(rng() * lo.length);          // fill with a chord tone
+      } else if (dropP > 0 && rng() < dropP) {
+        continue;                                      // probabilistic drop → breathe
+      }
+      let idx = ((deg % pool.length) + pool.length) % pool.length;
+      if (octP > 0 && rng() < octP && idx < lo.length) idx += lo.length;  // octave leap — up only (v309: the symmetric wrap dropped peak-section notes DOWN)
+      const note = pool[idx];
+      let vmul = phraseMult;
+      if (s % 4 === 0) { if (accentP > 0 && rng() < accentP) vmul *= 1.15; }
+      else if (s % 2 === 1 && ghostP > 0 && rng() < ghostP) vmul *= 0.6;    // offbeat ghost
+      const v = clamp(baseVel * vmul * (0.90 + rng() * 0.20), 0.06, 1);
+      const jitterMs = (s % 4 === 0) ? 0 : (rng() - 0.5) * 6;               // downbeats stay tight
+      const pushMs = (s % 2 === 1) ? swingMs : 0;                           // offbeat swing
+      const t = time + s * ctx.subTime + (jitterMs + pushMs) / 1000;
+      try { arpSynth.triggerAttackRelease(note, durSec, t, v); } catch (e) {}
+    }
+  }
+
+  // HAZAMA driving bassline — ORGANIC. Per-bar seeded variation (ghost drops,
+  // phrase-end displacement, bar-N octave lift) + phrase-velocity shape +
+  // micro-timing, so the rolling sub breathes and sits in the pocket instead
+  // of a rigid 16th grid. Replaces the sparse kick-locked bass agent.
+  function triggerBassSeqAgent(ctx, time) {
+    const bl = state.songData && state.songData.bassline;
+    if (!bl) return;
+    // v309: LIVE section (see triggerArpAgent) — ctx.sec is stale on crossing bars.
+    const liveSec = currentSection() || ctx.sec || {};
+    const secName = liveSec.section || "";
+    if (Array.isArray(bl.sections) && bl.sections.length && !bl.sections.includes(secName)) return;
+    const octave = Number(bl.octave) || 1;
+    const gate = clamp(Number(bl.gate) || 0.8, 0.1, 1);
+    const baseVel = clamp(Number(bl.velocity) || 0.85, 0.1, 1);
+    const pat = (Array.isArray(bl.pattern) && bl.pattern.length) ? bl.pattern
+      : [0, "-", 0, "-", 0, "-", 0, "-", 0, "-", 0, "-", 0, "-", 0, "-"];
+    const lo = chordToNotes(ctx.chord, octave);
+    if (!lo.length) return;
+    const hi = chordToNotes(ctx.chord, octave + 1);
+    // v309: 2-octave pool like the arp — the JSON's degree 3 means "root+oct"
+    // (the Underworld dut-dut-dut-POP). The old `% lo.length` wrap silently
+    // flattened every 3 to the low root, killing the authored octave pump.
+    const pool = lo.concat(hi);
+    const durSec = ctx.subTime * gate;
+    const barIn = ctx.barInSection || 0;
+    const phrasePos = barIn % 4;
+    const barsInSection = Math.max(1, Number(liveSec.bars) || ctx.barsInSection || 1);
+    const isPhraseEndBar = (phrasePos === 3) || (barIn >= barsInSection - 1);
+    const vr = bl.variation || {};
+    const rng = hzMulberry32(hzHashString((state.currentSongId || "") + "bass" + secName + barIn));
+    const ghostP = Number(vr.ghostProb) || 0;
+    const swingMs = Number(vr.swingMs) || 0;
+    const dropLastP = Number(vr.dropLastStepProb) || 0;
+    const octLiftPos = (vr.octaveLiftPhrasePos != null) ? Number(vr.octaveLiftPhrasePos) : -1;
+    const phraseMult = HZ_PHRASE_VEL_BASS[phrasePos];
+    for (let s = 0; s < 16; s++) {
+      const deg = pat[s % pat.length];
+      if (deg == null || deg === "-") continue;
+      if (isPhraseEndBar && s >= 14 && dropLastP > 0 && rng() < dropLastP) continue;  // bar-4 breathe
+      if ((s % 4 !== 0) && ghostP > 0 && rng() < ghostP) continue;                     // ghost drop
+      const idx = ((deg % pool.length) + pool.length) % pool.length;
+      let note = pool[idx];
+      if (phrasePos === octLiftPos && s === 0 && idx < lo.length && hi[idx]) note = hi[idx];  // phrase octave lift
+      let vmul = phraseMult;
+      if (s % 4 === 0) vmul *= 1.08;  // land on the beat
+      const v = clamp(baseVel * vmul * (1 + (rng() - 0.5) * 0.12), 0.1, 1);
+      const jitterMs = (s % 4 === 0) ? 0 : (rng() - 0.5) * 5;
+      const pushMs = (s % 2 === 1) ? swingMs : 0;
+      const t = time + s * ctx.subTime + (jitterMs + pushMs) / 1000;
+      try { bassSeqSynth.triggerAttackRelease(note, durSec, t, v); } catch (e) {}
+    }
+  }
+
   // ---- Scheduler ----------------------------------------------
 
   function scheduleBar() {
@@ -4782,9 +5193,15 @@
 
       const chord = updateChordDisplay();
       const partAgentCtx = makePartAgentContext(sec, frame, chord, beatTime, subTime);
-      if (isSynthMode && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && chord) {
+      const hasBassline = !!(state.songData && state.songData.bassline);
+      // HAZAMA driving bassline (the groove floor) — replaces the sparse
+      // kick-locked bass agent below when the song declares a `bassline`.
+      if (isSynthMode && bassSeqSynth && chord && hasBassline && $("br-toggle-bass").checked) {
+        triggerBassSeqAgent(partAgentCtx, time);  // v309: respect the bass mute toggle like every other part
+      }
+      if (isSynthMode && !hasBassline && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && chord) {
         triggerBassAgent(partAgentCtx, time);
-      } else if (isSynthMode && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
+      } else if (isSynthMode && !hasBassline && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
         // v108: chord null fallback — section has no chord progression
         // (Human Fly intro/outro etc). Anchor bass to the song's key
         // root, one whole-note hit per bar, low velocity. Keeps the
@@ -4805,6 +5222,12 @@
 
       if (isSynthMode && SYNTH_REBUILD_PARTS.chord && $("br-toggle-chords").checked && chordSynth && chord) {
         triggerChordAgent(partAgentCtx, time);
+      }
+
+      // Underworld arp — HAZAMA only (gated on state.songData.arp). Direct-to-
+      // master MonoSynth line; no-op for Tabasco / any song without an arp key.
+      if (isSynthMode && $("br-toggle-arp")?.checked && arpSynth && chord && state.songData?.arp) {
+        triggerArpAgent(partAgentCtx, time);
       }
 
       updateSectionDisplay();
@@ -4981,7 +5404,7 @@
   }
 
   function releaseSustainedSynths(reason = "panic") {
-    [synthBass, guitarSynth, voiceSynth, chordSynth, clickSynth].forEach((voice) => {
+    [synthBass, guitarSynth, voiceSynth, chordSynth, clickSynth, arpSynth, bassSeqSynth].forEach((voice) => {
       if (!voice) return;
       try {
         if (typeof voice.releaseAll === "function") voice.releaseAll(Tone.now());
@@ -5577,7 +6000,7 @@
       voiceToggleEl.addEventListener("change", syncVoiceVolEnabled);
       syncVoiceVolEnabled();
     }
-    ["drums", "bass", "guitar", "voice", "chords", "click"].forEach((part) => {
+    ["drums", "bass", "guitar", "voice", "chords", "arp", "click"].forEach((part) => {
       const el = $("br-toggle-" + part);
       if (!el) return;
       el.addEventListener("change", async () => {
@@ -5862,6 +6285,19 @@
         ensureMaster();
         if (externalVocalBus) {
           try { externalVocalBus.gain.rampTo(Number(extVol.value) / 100, 0.08); } catch (e) {}
+        }
+      });
+    }
+    // Live mic toggle — opt-in getUserMedia into externalVocalBus. Revert the
+    // checkbox if permission/support fails so the UI reflects real state.
+    const liveMicToggle = $("br-toggle-live-mic");
+    if (liveMicToggle) {
+      liveMicToggle.addEventListener("change", async () => {
+        if (liveMicToggle.checked) {
+          const ok = await startLiveMic();
+          if (!ok) liveMicToggle.checked = false;
+        } else {
+          stopLiveMic();
         }
       });
     }
@@ -6217,11 +6653,29 @@
     }
   }
 
+  // Hidden bands (ui_hidden:true, e.g. HAZAMA WIP) stay out of the main band
+  // selector until finished. They're reachable via the footer "◦ hazama" entry
+  // or ?band=<id> / ?dev=1, which flips this unlock on.
+  function hiddenBandsUnlocked() {
+    try {
+      const p = new URLSearchParams(window.location.search || "");
+      if (p.get("band") || p.get("bandId")) return true;
+      if (p.get("dev") === "1") return true;
+    } catch (e) {}
+    return false;
+  }
+
+  function visibleBandIds() {
+    const bands = state.bandsRegistry?.bands || {};
+    const unlocked = hiddenBandsUnlocked();
+    return Object.keys(bands).filter((id) => unlocked || !bands[id].ui_hidden);
+  }
+
   function renderBandSelector() {
     const group = $("br-band-select");
     if (!group || !state.bandsRegistry) return;
     group.innerHTML = "";
-    const bandIds = Object.keys(state.bandsRegistry.bands);
+    const bandIds = visibleBandIds();
     if (bandIds.length === 1) {
       const band = state.bandsRegistry.bands[bandIds[0]];
       group.dataset.mode = "album";
@@ -7171,6 +7625,25 @@
       document.querySelectorAll('#br-main input[type="checkbox"]').forEach((el) => {
         if (el.id) prefs.toggles[el.id] = el.checked;
       });
+      // Don't let a band with a fixed palette (HAZAMA) leak its palette-driven
+      // instruments / profile / kit / guitar+arp toggles into the GLOBAL prefs —
+      // that would follow the user back to Tabasco. Preserve the previously-saved
+      // values for exactly those fields (or omit them if none saved yet), so a
+      // later Tabasco load falls back to its own prefs / state defaults.
+      if (currentBand() && currentBand().palette) {
+        let prev = null;
+        try { prev = JSON.parse(safeLocalStorageGet(PREFS_KEY) || "null"); } catch (e) { prev = null; }
+        const P = prev || {};
+        const PT = P.toggles || {};
+        ["kitSource", "kitProfile", "chordInstrument", "bassInstrument", "guitarInstrument", "voiceInstrument"].forEach((k) => {
+          if (Object.prototype.hasOwnProperty.call(P, k)) prefs[k] = P[k];
+          else delete prefs[k];
+        });
+        ["br-toggle-guitar", "br-toggle-arp"].forEach((id) => {
+          if (Object.prototype.hasOwnProperty.call(PT, id)) prefs.toggles[id] = PT[id];
+          else delete prefs.toggles[id];
+        });
+      }
       safeLocalStorageSet(PREFS_KEY, JSON.stringify(prefs));
       safeLocalStorageSet(BANDROOM_STORAGE_SCHEMA_KEY, String(BANDROOM_STORAGE_SCHEMA_VERSION));
     } catch (e) {}
@@ -8040,7 +8513,8 @@
 
     // Restore band-level prefs only. Track always starts at 01 on reload.
     const prefs = loadPrefs();
-    if (prefs && prefs.bandId && state.bandsRegistry?.bands?.[prefs.bandId]) {
+    if (prefs && prefs.bandId && state.bandsRegistry?.bands?.[prefs.bandId]
+        && (!state.bandsRegistry.bands[prefs.bandId].ui_hidden || hiddenBandsUnlocked())) {
       const band = state.bandsRegistry.bands[prefs.bandId];
       const firstSong = firstSongForBand(band);
       if (firstSong) {
@@ -8070,6 +8544,27 @@
       updateSubtitle();
     }
 
+    // Hidden-band deep entry: ?band=<id> (footer "◦ hazama" link) opens a
+    // ui_hidden band (HAZAMA WIP) without exposing it in the main selector.
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const directBandId = p.get("band") || p.get("bandId");
+      const directBand = directBandId && state.bandsRegistry?.bands?.[directBandId];
+      if (directBand) {
+        const fs = firstSongForBand(directBand);
+        if (fs) {
+          state.currentBandId = directBandId;
+          state.currentSongId = fs.id;
+          document.querySelectorAll("#br-band-select button").forEach((b) => {
+            b.setAttribute("aria-pressed", b.dataset.band === directBandId ? "true" : "false");
+          });
+          renderTrackButtons();
+          syncTrackButtons();
+          updateSubtitle();
+        }
+      }
+    } catch (e) {}
+
     // Pre-load the default song meta (doesn't start audio)
     await loadSong(state.currentSongId);
     renderPhraseTrigger();
@@ -8082,6 +8577,24 @@
 
     // Apply slider/toggle/mode prefs AFTER UI is bound + selectors built
     applyPrefs(prefs);
+    // Re-assert the per-band palette so saved (Tabasco) prefs don't clobber
+    // HAZAMA's analog palette / profile. No-op for bands without a palette.
+    // v309: MERGE the user's saved values into the pre-palette snapshot (only
+    // fields prefs actually carried). Do NOT re-capture wholesale — by now the
+    // palette is already applied, so a fresh capture would snapshot the
+    // palette itself and switching back to Tabasco would "restore" HAZAMA.
+    if (state.__prePaletteSnapshot && prefs) {
+      const snap = state.__prePaletteSnapshot;
+      if ("kitSource" in prefs) snap.kitSource = prefs.kitSource;
+      if ("kitProfile" in prefs) snap.kitProfile = prefs.kitProfile;
+      if ("chordInstrument" in prefs) snap.chordInstrument = prefs.chordInstrument || "";
+      if ("bassInstrument" in prefs) snap.bassInstrument = prefs.bassInstrument || "";
+      if ("guitarInstrument" in prefs) snap.guitarInstrument = prefs.guitarInstrument || "";
+      if ("voiceInstrument" in prefs) snap.voiceInstrument = prefs.voiceInstrument || "";
+      if (prefs.toggles && "br-toggle-guitar" in prefs.toggles) snap.guitarOn = !!prefs.toggles["br-toggle-guitar"];
+      if (prefs.toggles && "br-toggle-arp" in prefs.toggles) snap.arpOn = !!prefs.toggles["br-toggle-arp"];
+    }
+    applyRecommendedBandPalette();
 
     // Global save hook — any input/change anywhere in main triggers a
     // debounced write. Doesn't fire for child elements of #br-lyrics
