@@ -1,6 +1,24 @@
-# Band Room - Changelog (v65 -> v364 compact)
+# Band Room - Changelog (v65 -> v365 compact)
 
-Current sw.js VERSION: v364. Latest Band Room runtime change: v364.
+Current sw.js VERSION: v365. Latest Band Room runtime change: v365.
+
+---
+
+## v365 compact - HAZAMA hidden band (WIP) + Still Moving content
+
+Adds the HAZAMA band (AI × human dub-techno, track01 "Still Moving") to the
+registry as a *hidden* band: `ui_hidden: true` keeps it out of the main band
+selector, reachable only via `?band=hazama` / `?bandId=` / `?dev=1`. New
+`hiddenBandsUnlocked()` + `visibleBandIds()` gate the selector; both the
+saved-pref restore and the `?band=` deep entry honor the flag, so the shipped
+Tabasco-only UI is unchanged. New content: `docs/hazama-lyrics.md` (singable
+sheet, `## 01 Still Moving` + section markers) and
+`presets/drum-frames-hazama-still-moving.json`. Synth-only (no stems) — the
+original-stems path is untouched. Ported onto v363 from a stranded worktree
+branch; the arrangement/mix is not yet ear-verified, so it stays hidden until
+a human listens (human_gate).
+
+`band-room.js?v=br-224`, `hazama-fm-v365`. CSS remains br-86.
 
 ---
 

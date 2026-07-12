@@ -126,6 +126,38 @@
           }
         }
       ]
+    },
+    "hazama": {
+      "name": "HAZAMA",
+      "subtitle": "AI × human · hypnotic dub-techno (Underworld型)",
+      "vocalist": "user",
+      "scene": "hypnotic dub-techno · 128 BPM · Underworld lineage (Rick Smith 相当=AI / Karl Hyde 相当=user)",
+      "ui_hidden": true,
+      "ui_hidden_note": "制作中。メインの band selector には出さず、?band=hazama or ?dev=1 からのみアクセス。完成したら ui_hidden を外して Tabasco と併存させる。",
+      "stems_dir": "presets/hazama-stems",
+      "drum_frames_pattern": "presets/drum-frames-hazama-{songid}.json",
+      "lyrics_doc": "docs/hazama-lyrics.md",
+      "kit_profile_default": "lcd-motorik",
+      "kit_source_default": "synth",
+      "palette": {
+        "synth_profile": "lcd-motorik",
+        "bass_instrument": "",
+        "chord_instrument": "",
+        "voice_instrument": "",
+        "guitar_on": false,
+        "arp_on": true
+      },
+      "songs": [
+        {
+          "id": "still-moving",
+          "track": "01",
+          "title": "Still Moving",
+          "bpm": 128,
+          "key": "A minor",
+          "duration_s": 360,
+          "kit_profile": "lcd-motorik"
+        }
+      ]
     }
   },
   "add_new_band_workflow": {

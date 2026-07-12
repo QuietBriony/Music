@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-223-phone-clean-band";
+  const BANDROOM_APP_VERSION = "br-224-hazama-hidden-band";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -7508,11 +7508,29 @@
     }
   }
 
+  // Hidden bands (ui_hidden:true, e.g. HAZAMA WIP) stay out of the main band
+  // selector until finished. They're reachable via ?band=<id> / ?bandId= / ?dev=1,
+  // which flips this unlock on.
+  function hiddenBandsUnlocked() {
+    try {
+      const p = new URLSearchParams(window.location.search || "");
+      if (p.get("band") || p.get("bandId")) return true;
+      if (p.get("dev") === "1") return true;
+    } catch (e) {}
+    return false;
+  }
+
+  function visibleBandIds() {
+    const bands = state.bandsRegistry?.bands || {};
+    const unlocked = hiddenBandsUnlocked();
+    return Object.keys(bands).filter((id) => unlocked || !bands[id].ui_hidden);
+  }
+
   function renderBandSelector() {
     const group = $("br-band-select");
     if (!group || !state.bandsRegistry) return;
     group.innerHTML = "";
-    const bandIds = Object.keys(state.bandsRegistry.bands);
+    const bandIds = visibleBandIds();
     if (bandIds.length === 1) {
       const band = state.bandsRegistry.bands[bandIds[0]];
       group.dataset.mode = "album";
@@ -9494,7 +9512,8 @@
 
     // Restore band-level prefs only. Track always starts at 01 on reload.
     const prefs = loadPrefs();
-    if (prefs && prefs.bandId && state.bandsRegistry?.bands?.[prefs.bandId]) {
+    if (prefs && prefs.bandId && state.bandsRegistry?.bands?.[prefs.bandId]
+        && (!state.bandsRegistry.bands[prefs.bandId].ui_hidden || hiddenBandsUnlocked())) {
       const band = state.bandsRegistry.bands[prefs.bandId];
       const firstSong = firstSongForBand(band);
       if (firstSong) {
@@ -9523,6 +9542,27 @@
       syncTrackButtons();
       updateSubtitle();
     }
+
+    // Hidden-band deep entry: ?band=<id> (or ?bandId=) opens a ui_hidden band
+    // (e.g. HAZAMA WIP) without exposing it in the main selector.
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const directBandId = p.get("band") || p.get("bandId");
+      const directBand = directBandId && state.bandsRegistry?.bands?.[directBandId];
+      if (directBand) {
+        const fs = firstSongForBand(directBand);
+        if (fs) {
+          state.currentBandId = directBandId;
+          state.currentSongId = fs.id;
+          document.querySelectorAll("#br-band-select button").forEach((b) => {
+            b.setAttribute("aria-pressed", b.dataset.band === directBandId ? "true" : "false");
+          });
+          renderTrackButtons();
+          syncTrackButtons();
+          updateSubtitle();
+        }
+      }
+    } catch (e) {}
 
     // Pre-load the default song meta (doesn't start audio)
     await loadSong(state.currentSongId);
