@@ -1,8 +1,34 @@
-# Band Room - Changelog (v65 -> v363 compact)
+# Band Room - Changelog (v65 -> v364 compact)
 
-Current sw.js VERSION: v363. Latest Band Room runtime change: v363.
+Current sw.js VERSION: v364. Latest Band Room runtime change: v364.
 
 ---
+
+## v364 compact - Phone-clean AI band (fix: AI 再現 stops on iPhone from overload)
+
+AI 再現 was heavy and STOPPED on the iPhone. Root cause (diagnostic workflow, 61
+load sources profiled): the phone LIGHT path correctly gates, but it still ran a
+permanent 5-part synth band, and the per-BAR trigger BURST (~27-34 triggerAttackRelease
+at each bar tick, each pitched call instantiating a fresh OscillatorNode in Tone 14) plus
+~48 standing DSP nodes and ~11 continuous oscillators underran the iOS audio render thread.
+
+Clean fix — trim the AI 再現 LIGHT (phone) band; desktop/full keeps ALL 5 parts + full richness:
+- **Drop the CHORD part on light** (the only PolySynth, up to 5 sustained oscillators, and
+  the biggest voice-pileup source). Harmony carried by bass + guitar + the kept vocal
+  guide; the pad was already a ducked -12 dB bed. Centralized `synthPartActiveOnLight()`
+  predicate gates every chord build site; the `&& chordSynth` dispatch guards auto-skip.
+- **Drop the bass sub-oscillator on light** — the ~33-80 Hz sub is below the iPhone
+  built-in speaker roll-off (inaudible) and its wrapper fired a 2nd triggerAttackRelease
+  per bass note, so on light it doubled the bass burst for nothing. Bass = bare MonoSynth.
+- **Lower per-bar caps** on light: guitar strums 6->4, drum hits 10->8, bass notes 6->4.
+- **Bypass the StereoWidener** on the light AI polish bus (a no-op on the mono iPhone speaker).
+- **Kept: the vocal melody guide** (user choice) — all 4 remaining parts + its v362 width.
+
+Result (verified via a simulated-iPhone Node census, G-6 gate): light band 5->4 parts,
+continuous oscillators ~11 -> ~5, and the per-bar bass/chord burst cut hard. Locked by a new
+G-6 assertion (chord dropped on iPhone UA, kept on desktop UA) so it can't silently regress.
+
+`band-room.js?v=br-223`, `hazama-fm-v364`. CSS remains br-86.
 
 ## v363 compact - Band Room original vocal pocket
 
