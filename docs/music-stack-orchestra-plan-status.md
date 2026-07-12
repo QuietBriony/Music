@@ -19,7 +19,7 @@
 | 6 | drum-floor: groove packet adapter | **出荷済み** | `drum-floor/app.js:11-14`（packet / orchestra 両チャネルを消費）、`drum-floor/scripts/check-music-sync-safety.mjs`（translation contract を gate 化 — BL-009） | なし |
 | 7 | namima: mood packet adapter | **出荷済み** | `namima/sketch.js:19-22`（同チャネル消費）、`namima/scripts/check-mood-profiles.mjs`（family-safe 制約 gate — BL-002） | なし |
 | 8 | chill: light surface か archive か決定 | **未決（意図的に human）** | `chill/README.md:18` — 「human が harvest / reactivation / archive を選ぶまで candidate のまま」と明記 | **user の判断待ち**。agent が決めない |
-| 9 | Music: recording review scorecard v2 | **未着手** | 単独の scorecard doc は無し（最近傍: `docs/cross-repo-listening-review-round.md`、packet の `routing.openclaw.self_review` 5 軸） | agent-safe な docs 作業として着手可。self_review 軸（density/lowEnd/brightness/restraint/referenceFit）と揃えると機械 self-review と人間採点を突き合わせられる |
+| 9 | Music: recording review scorecard v2 | **実装済み（docs・試聴埋めは human）** | `docs/recording-review-scorecard.md`（BL-031）。machine `self_review` 5 軸（`engine.js:4445` / `audio/music-packet.js:354`）を human 1–5 と同極性に正規化し突き合わせる橋 + `review-result` 出力形。Music 側に v1 単独 doc は無かったため位置づけも明記 | 採点結果の記入は human_gate。scorecard 由来の tuning は engine 凍結域の別 PR |
 | 10 | OpenClaw: mission board docs | **出荷済み** | `openclaw/docs/music-orchestra-mission-board.md`、`openclaw/sessions/examples/music-orchestra-mission-board.example.json`、packet/harvest inspector + tests | なし |
 | 11 | drum-floor: mixture_shout demo | **部分** | mixture_shout は groove engine に genre として実装済み（taste 残課題は BL-027） | 「focused demo」としての形は未定義。BL-027（listening-score → suggest-evolution）に乗せるのが正攻法 |
 | 12 | namima: ripple ambient runtime pass | **部分（試聴待ち）** | namima#33/#34（潮 v1/v2）merge 済み — BL-026 | **live 試聴判定待ち**（human-gate、BL-026） |
@@ -45,5 +45,5 @@ routing 語彙が `music-orchestra-routing-map.md` / orchestra packet schema と
 
 - **human-gate（agent が done にしない）**: #1 弱端末試聴 / #8 chill の役割決定 /
   #12 namima 潮 試聴（BL-026）/ BL-029 ACE-Step デモ試聴 → Band Room 翻訳
-- **agent-safe（着手可）**: #9 scorecard v2（docs）/ doc 権威の統合案 B（user 承認後）
+- **agent-safe（着手可）**: ~~#9 scorecard v2（docs）~~ → 実装済み `docs/recording-review-scorecard.md`（BL-031）/ doc 権威の統合案 B（user 承認後）
 - **要承認（engine 凍結域）**: #1 の追加修理 / #3 kits 強化

@@ -126,6 +126,23 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   完了条件: user が doc 統合方針を決定 → 反映 PR → 本 item close。
   実残作業は status doc 末尾の「実際に残っている作業」節が単一の正。
 
+### BL-031 — Music recording review scorecard v2（plan #9・machine↔human 橋）
+- priority : P1
+- repo     : Music
+- scope    : docs
+- agent    : claude（枠を作る）+ human（採点を埋める）
+- human-gate: yes（採点 1–5 の記入と next_pr_candidate は人間のみ。agent は埋めない）
+- status   : wip — advisor 2026-07-12。`docs/recording-review-scorecard.md` 作成済み
+  （push 号令待ち）。scorecard の枠のみ。実採点・そこから派生する engine tuning は別
+- source   : 2026-07-10 #367 plan #9 / status doc の agent-safe 名指し
+- detail   : Music は姉妹 repo 用 scorecard（namima/chill/drum-floor）は持つが自分の
+  conductor 面には無かった。machine `self_review` 5 軸（density/lowEnd/brightness=risk・
+  restraint/referenceFit=score、極性非対称）を `machine_health`（1=良）へ正規化して
+  human 1–5 と同極性で突き合わせ、gap から「機械が過敏／機械が見落とし」を判定 →
+  次 tuning PR の根拠にする。出力は metadata-only の `review-result`。
+  完了条件: user が実際に 1 パス採点して枠が回ることを確認 → close。scorecard 由来の
+  `self_review` 重み/閾値 tuning は engine 凍結域の別 human-gated PR（BL-024 harness で検証）。
+
 ## P2
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
