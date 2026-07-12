@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "format": "song-track",
+  "song_id": "hazama-still-moving",
+  "song_title": "Still Moving",
+  "band": "HAZAMA",
+  "original_album": "HAZAMA (AI × human · Underworld型 hypnotic dub-techno)",
+  "session_signature": "128 four-on-floor · offbeat open-hat pulse · A-minor modal hypnotic · long-form. AI 生成トラック（原曲 stem 無し・synth mode 専用）",
+  "bpm": 128,
+  "key": "A minor",
+  "structure": [
+    { "section": "intro",   "frame_id": "pulse",   "bars": 16, "role": "intro" },
+    { "section": "arp",     "frame_id": "pulse",   "bars": 16, "role": "swell" },
+    { "section": "drive",   "frame_id": "drive",   "bars": 16, "role": "comp" },
+    { "section": "verse",   "frame_id": "drive",   "bars": 32, "role": "verse" },
+    { "section": "lift",    "frame_id": "lift",    "bars": 16, "role": "comp" },
+    { "section": "mantra",  "frame_id": "mantra",  "bars": 32, "role": "recap" },
+    { "section": "break",   "frame_id": "break",   "bars": 16, "role": "break" },
+    { "section": "release", "frame_id": "release", "bars": 32, "role": "recap" },
+    { "section": "outro",   "frame_id": "pulse",   "bars": 16, "role": "outro" }
+  ],
+  "total_bars": 192,
+  "estimated_duration_s": 360,
+  "frames": [
+    {
+      "id": "pulse",
+      "session_role": "intro",
+      "barLength": 4,
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.86, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 1, "sub": 0, "velocity": 0.83, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 2, "sub": 0, "velocity": 0.85, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 3, "sub": 0, "velocity": 0.83, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "hat", "beat": 0, "sub": 2, "velocity": 0.44, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 1, "sub": 2, "velocity": 0.45, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 2, "sub": 2, "velocity": 0.44, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 3, "sub": 2, "velocity": 0.46, "microMs": 0, "role": "offbeat_open" }
+      ]
+    },
+    {
+      "id": "lift",
+      "session_role": "build",
+      "barLength": 4,
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.87, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 1, "sub": 0, "velocity": 0.84, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 2, "sub": 0, "velocity": 0.86, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 3, "sub": 0, "velocity": 0.84, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "hat", "beat": 0, "sub": 0, "velocity": 0.22, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 0, "sub": 2, "velocity": 0.46, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 1, "sub": 0, "velocity": 0.22, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 1, "sub": 2, "velocity": 0.47, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 2, "sub": 0, "velocity": 0.22, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 2, "sub": 2, "velocity": 0.46, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 3, "sub": 0, "velocity": 0.22, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 3, "sub": 2, "velocity": 0.48, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "snare", "beat": 2, "sub": 0, "velocity": 0.34, "microMs": 1, "role": "soft_clap" }
+      ]
+    },
+    {
+      "id": "drive",
+      "session_role": "comp",
+      "barLength": 4,
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.90, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 1, "sub": 0, "velocity": 0.86, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 2, "sub": 0, "velocity": 0.88, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 3, "sub": 0, "velocity": 0.86, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.42, "microMs": 1, "role": "clap" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.46, "microMs": 1, "role": "clap" },
+        { "instrument": "hat", "beat": 0, "sub": 0, "velocity": 0.28, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 0, "sub": 1, "velocity": 0.24, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 0, "sub": 2, "velocity": 0.50, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 0, "sub": 3, "velocity": 0.24, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 1, "sub": 0, "velocity": 0.28, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 1, "sub": 2, "velocity": 0.51, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 2, "sub": 0, "velocity": 0.28, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 2, "sub": 2, "velocity": 0.50, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 3, "sub": 0, "velocity": 0.28, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 3, "sub": 2, "velocity": 0.52, "microMs": 0, "role": "offbeat_open" }
+      ]
+    },
+    {
+      "id": "mantra",
+      "session_role": "recap",
+      "barLength": 4,
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.90, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 1, "sub": 0, "velocity": 0.86, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 2, "sub": 0, "velocity": 0.88, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 3, "sub": 0, "velocity": 0.86, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.48, "microMs": 1, "role": "clap" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.52, "microMs": 1, "role": "clap" },
+        { "instrument": "hat", "beat": 0, "sub": 0, "velocity": 0.30, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 0, "sub": 2, "velocity": 0.53, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 1, "sub": 0, "velocity": 0.30, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 1, "sub": 2, "velocity": 0.54, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 2, "sub": 0, "velocity": 0.30, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 2, "sub": 2, "velocity": 0.55, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 3, "sub": 0, "velocity": 0.31, "microMs": 0, "role": "16th" },
+        { "instrument": "hat", "beat": 3, "sub": 2, "velocity": 0.56, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "ghost", "beat": 3, "sub": 3, "velocity": 0.14, "microMs": 2, "role": "roll" }
+      ]
+    },
+    {
+      "id": "break",
+      "session_role": "break",
+      "barLength": 4,
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.70, "microMs": 0, "role": "half_time" },
+        { "instrument": "kick", "beat": 2, "sub": 0, "velocity": 0.68, "microMs": 0, "role": "half_time" },
+        { "instrument": "hat", "beat": 1, "sub": 2, "velocity": 0.30, "microMs": 2, "role": "dub_space" },
+        { "instrument": "hat", "beat": 3, "sub": 2, "velocity": 0.32, "microMs": 2, "role": "dub_space" },
+        { "instrument": "ghost", "beat": 3, "sub": 3, "velocity": 0.10, "microMs": 3, "role": "roll" }
+      ]
+    },
+    {
+      "id": "release",
+      "session_role": "release",
+      "barLength": 4,
+      "events": [
+        { "instrument": "kick", "beat": 0, "sub": 0, "velocity": 0.93, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 1, "sub": 0, "velocity": 0.88, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 2, "sub": 0, "velocity": 0.90, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "kick", "beat": 3, "sub": 0, "velocity": 0.88, "microMs": 0, "role": "four_on_floor" },
+        { "instrument": "snare", "beat": 1, "sub": 0, "velocity": 0.52, "microMs": 0, "role": "clap" },
+        { "instrument": "snare", "beat": 3, "sub": 0, "velocity": 0.56, "microMs": 1, "role": "clap" },
+        { "instrument": "hat", "beat": 0, "sub": 2, "velocity": 0.58, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 1, "sub": 2, "velocity": 0.59, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 2, "sub": 2, "velocity": 0.60, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "hat", "beat": 3, "sub": 2, "velocity": 0.62, "microMs": 0, "role": "offbeat_open" },
+        { "instrument": "crash", "beat": 0, "sub": 0, "velocity": 0.46, "microMs": 1, "role": "release_marker" }
+      ]
+    }
+  ],
+  "chord_progression": {
+    "intro":   [ ["Am", 16] ],
+    "arp":     [ ["Am", 16] ],
+    "drive":   [ ["Am", 8], ["F", 8] ],
+    "verse":   [ ["Am", 8], ["F", 8], ["Am", 8], ["G", 8] ],
+    "lift":    [ ["F", 8], ["G", 8] ],
+    "mantra":  [ ["Am", 4], ["F", 4], ["C", 4], ["G", 4], ["Am", 4], ["F", 4], ["C", 4], ["G", 4] ],
+    "break":   [ ["Am", 16] ],
+    "release": [ ["Am", 4], ["F", 4], ["C", 4], ["G", 4], ["Am", 4], ["F", 4], ["C", 4], ["G", 4] ],
+    "outro":   [ ["Am", 16] ]
+  },
+  "arp": {
+    "octave": 3,
+    "gate": 0.55,
+    "velocity": 0.5,
+    "pattern": [0, 2, 3, 2, 0, 2, 3, 5, 0, 2, 3, 2, 0, 4, 3, 5],
+    "sections": ["arp", "drive", "verse", "lift", "mantra", "release", "outro"],
+    "variation": {
+      "rotate": [0, 0, 1, 2],
+      "dropProb": [0.0, 0.08, 0.0, 0.14],
+      "addProb": [0.0, 0.0, 0.10, 0.0],
+      "octaveShiftProb": 0.10,
+      "ghostProb": 0.24,
+      "accentProb": 0.30,
+      "swingMs": 5
+    },
+    "variations": {
+      "drive":   { "octave": 3, "gate": 0.55, "velocity": 0.52, "pattern": [0, 2, 3, 2, 0, 2, 3, 5, 3, 2, 0, 2, 3, 5, 4, 5] },
+      "verse":   { "octave": 3, "gate": 0.50, "velocity": 0.46, "pattern": [0, "-", 3, 2, 0, "-", 3, "-", 0, "-", 3, 2, 0, 2, 3, "-"] },
+      "lift":    { "octave": 3, "gate": 0.60, "velocity": 0.55, "pattern": [0, 2, 3, 2, 0, 2, 3, 5, 3, 5, 4, 5, 3, 5, 4, 2] },
+      "mantra":  { "octave": 3, "gate": 0.70, "velocity": 0.55, "pattern": [3, 5, 4, 5, 3, 5, 4, 2, 3, 5, 4, 5, 1, 5, 4, 2] },
+      "release": { "octave": 3, "gate": 0.70, "velocity": 0.60, "pattern": [3, 5, 4, 5, 3, 5, 4, 2, 3, 5, 4, 5, 1, 5, 4, 2] }
+    },
+    "_note": "degree indices into a 2-octave chord-tone pool (0-2 = triad, 3-5 = octave up); tracks the current chord so the same rolling cell auto-voices Am-F-C-G. intro/break stay arp-free (see sections)."
+  },
+  "bassline": {
+    "octave": 1,
+    "gate": 0.60,
+    "velocity": 0.90,
+    "pattern": [0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 2, 3],
+    "sections": ["arp", "drive", "verse", "lift", "mantra", "release", "outro"],
+    "variation": {
+      "octaveLiftPhrasePos": 2,
+      "ghostProb": 0.12,
+      "swingMs": 3,
+      "dropLastStepProb": 0.35
+    },
+    "_note": "rolling 16th sub, degree into a 2-octave chord pool (0=root, 2=fifth, 3=root+oct — the dut-dut-dut-POP). gate 0.60 so the 16ths articulate instead of droning. THE groove floor. intro excluded (build); break excluded (dub dropout — bass slams back in at release)."
+  },
+  "events_extracted_from": "authored (AI original, no source stem)",
+  "events_extraction_method": "hand-authored Underworld-style 128 four-on-floor"
+}
