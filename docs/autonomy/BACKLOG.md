@@ -116,9 +116,9 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - agent    : claude
 - human-gate: yes（doc 統合の方向と、残ギャップの owner 決定は user 判断）
 - status   : wip — advisor 2026-07-10。status 正本
-  `docs/music-stack-orchestra-plan-status.md` 作成済み + 新 direction doc §5 に参照追記
-  （push 号令待ち）。残: 旧 `music-stack-orchestra-direction.md` 系 authority chain との
-  統合方針（案 A/B）を user が選ぶ
+  `docs/music-stack-orchestra-plan-status.md` を **PR #371 で merge 済み**（main 7677d63）
+  + 新 direction doc §5 に参照追記。残: 旧 `music-stack-orchestra-direction.md` 系
+  authority chain との統合方針（案 A/B）を user が選ぶ
 - source   : 2026-07-10 #367 merge。12 行中 6 行（#2/#4/#5/#6/#7/#10）が既出荷、
   routing schema / direction doc が旧 authority docs と重複と判明
 - detail   : Claude / Codex fleet が #367 の plan を素直に拾うと出荷済みシステムを
