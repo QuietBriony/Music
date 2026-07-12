@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-226-hazama-hidden-band";
+  const BANDROOM_APP_VERSION = "br-227-hazama-hidden-band";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -211,6 +211,12 @@
   let bassSeqSynth = null;
   let bassSeqBus = null;
   let bassSeqFilter = null;   // v309: ref to the bass lowpass so the section arc can sweep it
+  // v368: HAZAMA production glue. duckMusic/duckBass sidechain the synth layers
+  // to the kick (the pump); dubSend is the shared dub-delay room. All HAZAMA-only
+  // (duckAt fires only when the song has arp/bassline — Tabasco has neither).
+  let duckMusic = null;
+  let duckBass = null;
+  let dubSend = null;
 
   // Original stem buses + Tone.Player instances (Demucs separated)
   let stemBus = { vocals: null, drums: null, bass: null, other: null };
@@ -681,14 +687,44 @@
     voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
     chordBus = new Tone.Gain(0.62).connect(chordPan);
     clickBus = new Tone.Gain(0.35).connect(clickPan);
-    // Arp bus — DIRECT to masterGain (skip instrumentBus + its waveshapers, per
-    // the v304 freeze / AI-FX-budget lesson), like voice/click. Own panner.
-    const arpPan = new Tone.Panner(0.10).connect(masterGain);
-    arpBus = new Tone.Gain(0.78).connect(arpPan);
-    // Driving-bassline bus — direct to masterGain, solid level so the sub reads
-    // as the groove floor (HAZAMA only; gated on state.songData.bassline).
-    const bassSeqPan = new Tone.Panner(0).connect(masterGain);
-    bassSeqBus = new Tone.Gain(1.25).connect(bassSeqPan);
+    // v368: HAZAMA production glue — sidechain pump + one shared dub room.
+    // The synth layers DUCK to the kick (duckAt in the drum dispatch) so the
+    // parts breathe together as one performance, and they share ONE dub-delay
+    // world so everything echoes on the same dotted-8th grid. HAZAMA-only:
+    // Tabasco songs have no arp/bassline so duckAt never fires and these buses
+    // pass through at unity. duckMusic = arp + dub returns (+ later stabs),
+    // gentle slow-release pump; duckBass = the sub, deeper/faster so the kick
+    // punches through.
+    duckMusic = new Tone.Gain(1).connect(masterGain);
+    duckBass = new Tone.Gain(1).connect(masterGain);
+    // Shared dub-delay send bus — hand-built with in-loop LP/HP so each repeat
+    // gets darker (the dub timbre). Return folds into duckMusic so the echoes
+    // pump with everything else. Cheap (no reverb): safe on the phone budget.
+    dubSend = new Tone.Gain(1);
+    // Fixed dotted-8th at 128 BPM (0.3516 s). Hard-coded, not Tone.Time("8n."),
+    // because ensureMaster can run before the song sets the transport BPM — and
+    // only HAZAMA (always 128) ever sends into this bus.
+    const dubDly = new Tone.Delay(0.3516, 0.75);
+    const dubLP  = new Tone.Filter(2200, "lowpass");
+    const dubHP  = new Tone.Filter(280, "highpass");
+    const dubFb  = new Tone.Gain(0.50);
+    dubSend.connect(dubDly);
+    dubDly.chain(dubLP, dubHP, dubFb);
+    dubFb.connect(dubDly);
+    const dubReturn = new Tone.Gain(0.45).connect(duckMusic);
+    dubDly.connect(dubReturn);
+    // Arp bus — DIRECT to masterGain via the pump (skip instrumentBus + its
+    // waveshapers, per the v304 freeze / AI-FX-budget lesson). v368: 260 Hz HPF
+    // so the fatsaw arp stops sharing the 100-400 Hz mud with the bass on a mono
+    // phone speaker, then through the pump.
+    const arpPan = new Tone.Panner(0.10).connect(duckMusic);
+    const arpHP  = new Tone.Filter(260, "highpass").connect(arpPan);
+    arpBus = new Tone.Gain(0.78).connect(arpHP);
+    // Driving-bassline bus — direct to masterGain via the deeper pump (HAZAMA
+    // only; gated on state.songData.bassline). v368: 1.25→1.10 to leave room for
+    // the duck's transient.
+    const bassSeqPan = new Tone.Panner(0).connect(duckBass);
+    bassSeqBus = new Tone.Gain(1.10).connect(bassSeqPan);
 
     // v303: 原音 master bus sits between the stem buses and masterGain so the
     // real recording gets its own Nirvana-loud / LCD-balanced glue (the AI
@@ -3864,21 +3900,30 @@
   // polyphony flood.
   function makeArpSynth(target) {
     const out = target || masterGain || Tone.getDestination();
-    const delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.34, wet: 0.26 }).connect(out);
-    const filter = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 3 }).connect(delay);
+    const light = aiLightRuntimeEnabled();
+    // v368: no per-arp FeedbackDelay any more — the arp now SENDS to the ONE
+    // shared dub room (dubSend), so its dotted-8th echoes live in the same space
+    // as the rest of the band instead of a private echo world. Post-filter Q
+    // 3→1.8 so the fatsaw stops being nasal/piercing.
+    const filter = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 1.8 }).connect(out);
+    const dubTap = dubSend ? new Tone.Gain(0.22) : null;  // send level into the shared dub
+    if (dubTap) { filter.connect(dubTap); dubTap.connect(dubSend); }
     // Slow LFO sweeps the post-filter cutoff (~20s cycle) — the evolving-filter
-    // Underworld movement that fights the "単調/monotonous" of a fixed riff.
-    const lfo = new Tone.LFO({ frequency: 0.05, min: 950, max: 3400, type: "sine" }).start();
+    // Underworld movement. v368: 500-2600 keeps the sweep in the audible band
+    // (the section arc retunes min/max per role on top of this base).
+    const lfo = new Tone.LFO({ frequency: 0.05, min: 500, max: 2600, type: "sine" }).start();
     lfo.connect(filter.frequency);
     arpLfo = lfo;  // v309: section arc retunes min/max per role
     const synth = new Tone.MonoSynth({
-      oscillator: { type: "fatsawtooth", count: 3, spread: 34 },  // unison detune = thick / ゴンブト
+      // v368: light/phone drops to count2/spread18 (the fat unison is the arp's
+      // biggest per-voice cost, and the mono speaker can't resolve wide detune).
+      oscillator: { type: "fatsawtooth", count: light ? 2 : 3, spread: light ? 18 : 34 },
       filter: { Q: 4, type: "lowpass", rolloff: -24 },
       envelope: { attack: 0.004, decay: 0.16, sustain: 0.40, release: 0.12 },
       filterEnvelope: { attack: 0.004, decay: 0.12, sustain: 0.55, release: 0.14, baseFrequency: 520, octaves: 3.2 },
       volume: -2
     }).connect(filter);
-    return withChainDispose(synth, [filter, delay, lfo]);
+    return withChainDispose(synth, [filter, lfo].concat(dubTap ? [dubTap] : []));
   }
 
   // ---- Underworld driving bass -----------------------------------
@@ -3889,14 +3934,18 @@
   // oversampling.
   function makeBassSeqSynth(target) {
     const out = target || masterGain || Tone.getDestination();
+    const light = aiLightRuntimeEnabled();
     const drive = new Tone.Distortion({ distortion: 0.18, oversample: "none", wet: 0.30 }).connect(out);
-    const filter = new Tone.Filter({ frequency: 720, type: "lowpass", Q: 1.4 }).connect(drive);
+    const filter = new Tone.Filter({ frequency: 720, type: "lowpass", Q: 1.2 }).connect(drive);  // v368: 1.4→1.2, less peaky against the kick
     bassSeqFilter = filter;  // v309: section arc sweeps the cutoff (break dark → release bright)
     const synth = new Tone.MonoSynth({
-      oscillator: { type: "fatsawtooth", count: 2, spread: 16 },
+      oscillator: { type: "fatsawtooth", count: light ? 2 : 3, spread: 20 },  // v368: desktop 3-osc, phone 2
       filter: { Q: 1, type: "lowpass", rolloff: -24 },
       envelope: { attack: 0.006, decay: 0.18, sustain: 0.62, release: 0.10 },
-      filterEnvelope: { attack: 0.005, decay: 0.12, sustain: 0.5, release: 0.10, baseFrequency: 130, octaves: 2.6 },
+      // v368: a punchier filter pluck (sustain 0.5→0.3, octaves 2.5) so each note
+      // has an audible "wow" attack — the part of the bass a mono phone speaker
+      // CAN reproduce even when the <80 Hz sub is below its roll-off.
+      filterEnvelope: { attack: 0.004, decay: 0.16, sustain: 0.3, release: 0.08, baseFrequency: 130, octaves: 2.5 },
       portamento: 0.02,
       volume: -5  // v309 headroom: continuous 16/16-step sub was ~6 dB hot into the master comps (standing GR + kick-synced pumping + limiter distortion on lows)
     }).connect(filter);
@@ -6013,6 +6062,29 @@
   // ghost/accent) PLUS per-bar seeded pattern VARIATION (rotate / drop / add /
   // octave-leap from arp.variation) so the cell evolves bar-to-bar instead of
   // repeating identically — the core fix for "単調/monotonous".
+  // v368: sidechain pump. Called from the drum dispatch at each kick time (t is
+  // the kick's audio time). Ducks the two HAZAMA synth buses toward the trough
+  // in 12 ms, holds ~45 ms, then releases exponentially — the "breathing" that
+  // glues 4-on-floor dance music into one performance and clears the kick/bass
+  // low-end collision. cancelScheduledValues keeps rapid fill-kicks click-free.
+  function duckAt(t) {
+    if (!duckBass || !duckMusic) return;
+    const lanes = [[duckBass.gain, 0.28, 0.055], [duckMusic.gain, 0.55, 0.09]];
+    for (const [g, depth, tau] of lanes) {
+      try {
+        g.cancelScheduledValues(t);
+        g.linearRampToValueAtTime(depth, t + 0.012);
+        g.setTargetAtTime(1, t + 0.045, tau);
+      } catch (e) {}
+    }
+  }
+
+  // v368: does the current song drive the HAZAMA synth layers? (Only then does
+  // the kick pump — Tabasco songs have neither key, so they never duck.)
+  function hazamaPumpActive() {
+    return !!(duckMusic && state.songData && (state.songData.arp || state.songData.bassline));
+  }
+
   function triggerArpAgent(ctx, time) {
     const arp = state.songData && state.songData.arp;
     if (!arp) return;
@@ -6057,7 +6129,10 @@
       let idx = ((deg % pool.length) + pool.length) % pool.length;
       if (octP > 0 && rng() < octP && idx < lo.length) idx += lo.length;  // octave leap — up only (v309: the symmetric wrap dropped peak-section notes DOWN)
       const note = pool[idx];
-      let vmul = phraseMult;
+      // v368: 16th-note accent pulse — the downbeat of each 4-step group hits
+      // hardest, the rest lean back. Turns a flat 16th wall into an uneven,
+      // driving push (Rez-like) so the arp reads as a groove, not a drone.
+      let vmul = phraseMult * [1.0, 0.62, 0.78, 0.62][s % 4];
       if (s % 4 === 0) { if (accentP > 0 && rng() < accentP) vmul *= 1.15; }
       else if (s % 2 === 1 && ghostP > 0 && rng() < ghostP) vmul *= 0.6;    // offbeat ghost
       const v = clamp(baseVel * vmul * (0.90 + rng() * 0.20), 0.06, 1);
@@ -6324,6 +6399,7 @@
           }
           if (evt.instrument === "kick") {
             inst.triggerAttackRelease("C1", "16n", t, vel);
+            if (hazamaPumpActive()) duckAt(t);  // v368: sidechain the HAZAMA synth layers to the kick
           } else if (evt.instrument === "ghost") {
             inst.triggerAttackRelease("16n", t, vel, evt.role);
           } else {

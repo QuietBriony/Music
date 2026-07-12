@@ -1,6 +1,35 @@
-# Band Room - Changelog (v65 -> v367 compact)
+# Band Room - Changelog (v65 -> v368 compact)
 
-Current sw.js VERSION: v367. Latest Band Room runtime change: v367.
+Current sw.js VERSION: v368. Latest Band Room runtime change: v368.
+
+---
+
+## v368 compact - HAZAMA production glue (sidechain pump + shared dub space)
+
+User on live v367: "音楽として成立してない。音色を音楽にして。" — the parts sat
+side-by-side, dry and unglued, not as one track. Advisor-designed production pass
+(all HAZAMA-gated; Tabasco songs have no arp/bassline so none of it engages):
+
+- **Sidechain pump** (the #1 glue): `duckBass` (1.0→0.28, fast) + `duckMusic`
+  (1.0→0.55, slow) sit after the bassSeq / arp buses. `duckAt(t)` fires from the
+  drum dispatch at every kick time (only when `hazamaPumpActive()`), so the synth
+  layers breathe with the 4-on-floor kick — the pump that reads as "one
+  performance" and clears the kick/bass low-end collision.
+- **Shared dub space**: one hand-built dub delay (dotted-8th, in-loop LP/HP so
+  repeats darken) replaces the arp's private FeedbackDelay. The arp sends into it
+  (0.22) and the return folds into `duckMusic` so the echoes pump too — everything
+  lives in the same room. Cheap (no reverb) = phone-safe.
+- **De-mud + voices**: 260 Hz HPF on the arp bus (stops the fatsaw sharing the
+  bass's 100-400 Hz on a mono phone speaker); arp post-filter Q 3→1.8 + audible-
+  band LFO (500-2600) + a 16th accent pulse [1,.62,.78,.62] so it grooves; bassSeq
+  filter-envelope punchier (sustain .5→.3, oct 2.5) so the note's "wow" pluck reads
+  on the phone even when the sub is below the speaker roll-off. Arp/bass unison
+  drop to count-2 on the phone. bassSeqBus 1.25→1.10 for duck headroom.
+
+Next levers if still thin: offbeat dub chord STABS (fills the phone pad gap),
+timbre warmth waveshaper. Ship-then-verify (hidden band).
+
+`band-room.js?v=br-227`, `band-room.css?v=br-87`, `hazama-fm-v368`.
 
 ---
 
