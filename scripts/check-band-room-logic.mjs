@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-222-stem-vocal-pocket", "Band Room should expose the current app version (v363 original vocal pocket)");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-223-phone-clean-band", "Band Room should expose the current app version (v364 phone-clean AI band)");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -134,13 +134,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-86/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-222/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-223/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-86/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-222/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-223/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
@@ -247,7 +247,7 @@ assert.match(source, /applies on AI start/, "Stopped AI instrument changes shoul
 assert.match(source, /function makeLightDrumKit\(/, "AI light runtime should avoid Tone.Offline drum rendering during START");
 assert.match(source, /aiLightRuntimeEnabled\(\)\) return makeLightDrumKit/, "AI light runtime should use the lightweight generated drum buffers");
 assert.match(source, /function rowsForLightTranscribedPlayback\(/, "AI light runtime should thin transcribed lines without rewriting the source data");
-assert.match(source, /lineKey === "guitar_line"\) return 6/, "AI light runtime should cap transcribed guitar strums per bar (v335: 6 — 8th-ish chug density)");
+assert.match(source, /lineKey === "guitar_line"\) return 4/, "AI light runtime should cap transcribed guitar strums per bar (v364: 6->4 — phone-clean burst trim)");
 assert.match(source, /const lightGuitar = \{[\s\S]*triggerAttackRelease\(notes, dur, time, vel\)/, "AI light runtime should use a single-voice guitar wrapper");
 assert.match(source, /new Tone\.FeedbackDelay\(\{ delayTime: "16n", feedback: 0\.08, wet: 0\.10 \}\)/, "AI light sampler voice should avoid heavy reverb");
 assert.match(source, /needsQuickSynthLayer\(.*quickFirst/, "AI START should rebuild stale sampler layers back to quick synth when light");
@@ -508,7 +508,7 @@ assert.match(source, /const guitarHaas = new Tone\.Delay\(0\.013\)/, "Full runti
 assert.match(source, /padDuck = hasTranscribedLine\("guitar_line"\) \? 0\.62 : 1/, "Chord pad should duck on transcribed-guitar songs (v336)");
 assert.match(source, /function playTranscribedDrumBar\(/, "Drums should support transcribed-performance playback (v338)");
 assert.match(source, /!playTranscribedDrumBar\(time, subTime\)/, "Pattern/fill drum machinery should stay silent when the real performance plays (v338)");
-assert.match(source, /lineKey === "drum_line"\) return 10/, "AI light runtime should cap transcribed drum hits per bar (v338)");
+assert.match(source, /lineKey === "drum_line"\) return 8/, "AI light runtime should cap transcribed drum hits per bar (v364: 10->8 — phone-clean burst trim)");
 assert.match(source, /crashAllowedThisBar/, "Band Room should gate crash density per bar (v290 thinning)");
 assert.match(source, /crashKeptKey/, "Band Room should keep only the most-downbeat crash per bar (v290)");
 assert.match(source, /drumBus = new Tone\.Gain\(0\.52\)/, "AI drum bus should add v317 pressure without changing bass/guitar/chord");
@@ -822,6 +822,48 @@ assert.doesNotMatch(source, /scrollIntoView/, "Lyrics auto-follow must scroll th
         "master tape-sat oversample 2x/4x MUST be device-gated (none on light) — same shared-master always-on cost class as the reverb (AUDIO-COST-INVARIANTS #2)");
     }
   }
+}
+
+// v364 (G-6 phone-clean band): on the AI 再現 LIGHT (phone) path the CHORD PolySynth —
+// the only PolySynth on light and the dominant continuous-oscillator load — MUST be
+// dropped, while drums/bass/guitar/voice stay, or the phone audio thread underruns and
+// playback STOPS (the v364 fix). Desktop/full keeps all 5 parts. Lock the composition by
+// re-running band-room.js under a simulated iPhone vs desktop navigator.
+{
+  const runWithNavigator = (nav) => {
+    const win = {
+      addEventListener() {}, dispatchEvent() {}, document: documentMock,
+      localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
+      navigator: nav, Tone: {}, location: { search: "" },
+      matchMedia: () => ({ matches: false, addEventListener() {}, addListener() {} })
+    };
+    const sb = {
+      clearInterval() {}, clearTimeout() {}, console, document: documentMock,
+      localStorage: win.localStorage, navigator: nav, location: win.location,
+      matchMedia: win.matchMedia, URLSearchParams,
+      requestAnimationFrame() { return 0; }, cancelAnimationFrame() {},
+      setInterval() { return 0; }, setTimeout() { return 0; }, window: win
+    };
+    sb.globalThis = sb;
+    vm.runInNewContext(source, sb, { filename: "band-room.js" });
+    return win.BandRoomTestHooks;
+  };
+  const iphone = runWithNavigator({
+    userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+    hardwareConcurrency: 6, deviceMemory: 4
+  });
+  assert.equal(typeof iphone?.synthPartActiveOnLight, "function", "v364: synthPartActiveOnLight must be exposed on BandRoomTestHooks");
+  assert.equal(iphone.aiLightRuntimeEnabled(), true, "v364: an iPhone UA must route to the LIGHT runtime");
+  assert.equal(iphone.synthPartActiveOnLight("chord"), false, "v364: the CHORD part MUST be dropped on the phone LIGHT band — it is the only PolySynth on light and the dominant overload that stops playback");
+  for (const part of ["drums", "bass", "guitar", "voice"]) {
+    assert.equal(iphone.synthPartActiveOnLight(part), true, `v364: the ${part} part must stay on the phone LIGHT band`);
+  }
+  const desktop = runWithNavigator({
+    userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+    hardwareConcurrency: 16, deviceMemory: 16
+  });
+  assert.equal(desktop.aiLightRuntimeEnabled(), false, "v364: a desktop (16 cores / 16 GB / non-mobile UA) must NOT be light");
+  assert.equal(desktop.synthPartActiveOnLight("chord"), true, "v364: desktop/full must keep ALL 5 parts incl. the chord pad");
 }
 
 console.log("Band Room logic check passed");

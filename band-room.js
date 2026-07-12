@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-222-stem-vocal-pocket";
+  const BANDROOM_APP_VERSION = "br-223-phone-clean-band";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -350,13 +350,14 @@
     const makeup = new Tone.Gain(3.2);    // v243: glue-comp makeup + AI 再現 level lift (~+9 dB) so the synth band reaches the stems-tuned master at comparable level. v323: 3.0 → 3.2 (~+0.6 dB) to track the 原音 v322 loudness lift. Stems-only (原音) never touch this bus.
 
     if (lightRuntime) {
-      // v316: phone/PWA AI diet. The continuous parallel saturation + exciter
-      // path sounds good, but it runs for the whole AI bus even when no note is
-      // changing. Keep EQ + glue + width, drop the always-on waveshapers.
+      // v316: phone/PWA AI diet. The continuous parallel saturation + exciter path
+      // runs for the whole AI bus even when no note changes — keep EQ + glue, drop
+      // the always-on waveshapers. v364: also bypass the StereoWidener — on the iPhone
+      // built-in (mono) speaker it is a no-op, so dropping it takes one standing
+      // mid/side matrix off the always-on summed AI bus (headroom for the phone band).
       input.connect(eq);
       eq.connect(comp);
-      comp.connect(widen);
-      widen.connect(makeup);
+      comp.connect(makeup);
       makeup.connect(dest);
       return input;
     }
@@ -2212,6 +2213,18 @@
   // kill-switch: flip any part to false to silence it if it ever regresses.
   const SYNTH_REBUILD_PARTS = { bass: true, guitar: true, voice: true, chord: true };
 
+  // v364 (phone-clean AI band): on the AI 再現 LIGHT (phone) path, drop the CHORD part.
+  // It is the only PolySynth on light (up to 5 sustained oscillators @maxPolyphony 5,
+  // band-room.js:3606) and the heaviest continuous-oscillator + voice-pileup part —
+  // the dominant load on the phone. Harmony is carried by bass + guitar + the kept
+  // vocal guide; the chord pad was already a ducked -12 dB background bed. Desktop/full
+  // keeps ALL 5 parts. Any part NOT in this set is simply never built on light, so its
+  // existing `&& <synth>` dispatch guard auto-skips it — no other change needed.
+  const LIGHT_BAND_PARTS = new Set(["drums", "bass", "guitar", "voice"]);
+  function synthPartActiveOnLight(part) {
+    return !aiLightRuntimeEnabled() || LIGHT_BAND_PARTS.has(part);
+  }
+
   async function makeSynthBass(target, opts = {}) {  // v270: async — awaits the v270 sampler pre-decode
     // v110: if bassInstrument is set to a sampler in catalog.instruments[],
     // use real samples (e.g. salamander-bass = piano left-hand register).
@@ -2267,34 +2280,38 @@
       volume: -10
     }).connect(drive);
 
-    // v344: clean sub-oscillator one octave down — the direct fix for the
-    // "thin" bass. A lone (fat)saw has a weak fundamental; a sine an octave
-    // below at ~-5 dB supplies the body on BOTH runtimes (one sine osc is the
-    // cheapest node, so the light/phone path gets it too). Summed into the SAME
-    // `post` lowpass but NOT through `drive`, so the fundamental stays clean
-    // (no grit = no mud). Construction, not a new trigger (v241/v343 safe).
-    const subGain = new Tone.Gain(light ? 0.5 : 0.6).connect(post);
-    const sub = new Tone.Synth({
-      oscillator: { type: "sine" },
-      envelope: { attack: 0.008, decay: 0.16, sustain: 0.85, release: b.envRelease },
-      volume: 0
-    }).connect(subGain);
-    const origTAR = bass.triggerAttackRelease.bind(bass);
-    const origTR = bass.triggerRelease.bind(bass);
-    bass.triggerAttackRelease = function (note, dur, time, vel) {
-      origTAR(note, dur, time, vel);
-      try {
-        const f = Math.max(33, Tone.Frequency(note).toFrequency() * 0.5);  // clamp: keep the sub out of sub-audible rumble
-        sub.triggerAttackRelease(f, dur, time, Math.min((vel ?? 1) * 0.9, 1));
-      } catch (e) {}
-      return bass;
-    };
-    bass.triggerRelease = function (time) {
-      origTR(time);
-      try { sub.triggerRelease(time); } catch (e) {}
-      return bass;
-    };
-    return withChainDispose(markLayerKind(bass, "synth"), [post, drive, sub, subGain]);  // v229/v344: tear down post + drive + sub
+    // v344: clean sub-oscillator one octave down — a sine an octave below supplies
+    // body under the (fat)saw fundamental. Summed into the SAME `post` lowpass but NOT
+    // through `drive` so it stays clean (no mud). v364: FULL/desktop ONLY. On the
+    // iPhone built-in speaker the ~33-80 Hz sub is below the speaker's roll-off
+    // (inaudible), AND the sub wrapper fires a SECOND triggerAttackRelease per bass
+    // note — so on light it doubled the bass per-bar trigger burst for nothing.
+    // Dropping it on light halves bass per-note work; the phone bass = bare MonoSynth.
+    if (!light) {
+      const subGain = new Tone.Gain(0.6).connect(post);
+      const sub = new Tone.Synth({
+        oscillator: { type: "sine" },
+        envelope: { attack: 0.008, decay: 0.16, sustain: 0.85, release: b.envRelease },
+        volume: 0
+      }).connect(subGain);
+      const origTAR = bass.triggerAttackRelease.bind(bass);
+      const origTR = bass.triggerRelease.bind(bass);
+      bass.triggerAttackRelease = function (note, dur, time, vel) {
+        origTAR(note, dur, time, vel);
+        try {
+          const f = Math.max(33, Tone.Frequency(note).toFrequency() * 0.5);  // clamp: keep the sub out of sub-audible rumble
+          sub.triggerAttackRelease(f, dur, time, Math.min((vel ?? 1) * 0.9, 1));
+        } catch (e) {}
+        return bass;
+      };
+      bass.triggerRelease = function (time) {
+        origTR(time);
+        try { sub.triggerRelease(time); } catch (e) {}
+        return bass;
+      };
+      return withChainDispose(markLayerKind(bass, "synth"), [post, drive, sub, subGain]);  // v229/v344: tear down post + drive + sub
+    }
+    return withChainDispose(markLayerKind(bass, "synth"), [post, drive]);  // v364: light/phone bass = single-saw MonoSynth, no sub (one TAR/note)
   }
 
   // ---- Original-stem players (Demucs-separated playback) ------
@@ -2992,7 +3009,7 @@
           const nextVoice = await makeVoiceBox(voiceBus);
           if (replaceSynthLayer("voice", nextVoice, snapshot)) upgraded++;
         }
-        if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && state.chordInstrument) {
+        if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && state.chordInstrument && synthPartActiveOnLight("chord")) {
           const nextChord = await makeChordSynth(chordBus);
           if (replaceSynthLayer("chord", nextChord, snapshot)) upgraded++;
         }
@@ -3044,7 +3061,7 @@
         if (old && old !== voiceSynth) disposeSynthLayer(old);
         await yieldToUi();
       }
-      if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && needsQuickSynthLayer(chordSynth, quickFirst)) {
+      if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && needsQuickSynthLayer(chordSynth, quickFirst) && synthPartActiveOnLight("chord")) {
         const old = chordSynth;
         chordSynth = await makeChordSynth(chordBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
         if (old && old !== chordSynth) disposeSynthLayer(old);
@@ -3805,6 +3822,8 @@
       BANDROOM_APP_VERSION,
       BANDROOM_STORAGE_SCHEMA_VERSION,
       getCurrentMode: () => currentMode,   // QA-loop BR-01 testability: read-only mode probe (stems|synth)
+      aiLightRuntimeEnabled,               // v364: phone-clean band composition probes
+      synthPartActiveOnLight,
       chordRoot,
       normalizedDrumFloorSection,
       migratePrefsForCurrentMix,
@@ -5228,9 +5247,9 @@
   function transcribedLightRowLimit(lineKey) {
     if (!(currentMode === "synth" && aiLightRuntimeEnabled())) return Infinity;
     if (lineKey === "vocal_melody") return 4;
-    if (lineKey === "guitar_line") return 6;  // v335: one more strum on phones — chug needs at least 8th-ish density
-    if (lineKey === "drum_line") return 10;   // v338: kit one-shots are cheap; vel-slot thinning drops quiet hats first, keeps kick/snare/crash
-    if (lineKey === "bass_line") return 6;
+    if (lineKey === "guitar_line") return 4;  // v364: 6->4 — trim the per-bar strum burst on the phone (chord dropped; guitar carries the chug)
+    if (lineKey === "drum_line") return 8;    // v364: 10->8 — fewer one-shot buffer allocs/bar (vel-slot thinning still keeps kick/snare/crash)
+    if (lineKey === "bass_line") return 4;    // v364: 6->4 — with the sub dropped, keeps the bass burst low
     return 6;
   }
 
@@ -7688,7 +7707,7 @@
         if (status) status.textContent = `chord: ${sel.value || "synth"} — rebuilding…`;
         try {
           if (chordSynth) { try { chordSynth.dispose(); } catch (e) {} }
-          chordSynth = await makeChordSynth(chordBus);  // v270: async
+          chordSynth = synthPartActiveOnLight("chord") ? await makeChordSynth(chordBus) : null;  // v270: async / v364: no chord on light
           if (status) status.textContent = `chord: ${sel.value || "synth"}`;
         } catch (e) {
           if (status) status.textContent = "chord rebuild failed: " + e.message;
@@ -8051,7 +8070,7 @@
           if (synthBass) { try { synthBass.dispose(); } catch (e) {} }
           synthBass = await makeSynthBass(bassBus);  // v270: async
           if (chordSynth) { try { chordSynth.dispose(); } catch (e) {} }
-          chordSynth = await makeChordSynth(chordBus);  // v270: async
+          chordSynth = synthPartActiveOnLight("chord") ? await makeChordSynth(chordBus) : null;  // v270: async / v364: no chord on light
           if (voiceSynth) { try { voiceSynth.dispose(); } catch (e) {} }
           voiceSynth = await makeVoiceBox(voiceBus);  // v270: async
           // Rebuild drum kit only if currently using synth source
