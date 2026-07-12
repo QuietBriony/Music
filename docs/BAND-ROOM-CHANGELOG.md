@@ -1,6 +1,35 @@
-# Band Room - Changelog (v65 -> v366 compact)
+# Band Room - Changelog (v65 -> v367 compact)
 
-Current sw.js VERSION: v366. Latest Band Room runtime change: v366.
+Current sw.js VERSION: v367. Latest Band Room runtime change: v367.
+
+---
+
+## v367 compact - HAZAMA chord depth (extended voicings, A Aeolian)
+
+User feedback on the live v366 HAZAMA: the chords sound thin — "ピー ポー" — and
+music should be deeper. Root cause: the chord progression was bare triads
+(Am/F/C/G) with long static single-chord drones (intro/arp/break/outro = 16 bars
+of Am), and the arp voices from those same triads, so both read shallow. Fix
+(advisor-designed, all A Aeolian / white-key, no accidentals):
+
+- **`chordToNotes` extended** to parse 9 / add9 / m9 / maj9 / 6 / sus2 / sus4 /
+  maj7#11 / 7sus4 (full suffix matched EXACTLY against a table). Bare root and
+  "m" return the identical major/minor triad they always did — every Tabasco
+  song uses only those two symbols, so Tabasco is byte-for-byte unaffected.
+  Tensions live at 14/17/18 (octave up) so they voice above the triad.
+- **Still Moving progression rewritten** with extended voicings that keep the
+  A-C-E-G-B common-tone web and move only 1-2 upper voices + the bass — the
+  signature is the 9th (B natural) ↔ F alternation. Static 16-bar sections now
+  "breathe" (intro Asus2→Amadd9; break = root evaporation Amadd9→Asus2→Em7→
+  E7sus4 as bass drops out; outro reverse-breath to a hollow, unresolved close).
+  Richer chord tones automatically deepen the arp too (it pools from
+  `chordToNotes`), so the harmony reads on the phone even though the pad is
+  desktop-only.
+
+Timbre (triangle→saw) + offbeat dub-techno chord stabs are the flagged next
+levers if it still reads thin. Ship-then-verify (hidden band).
+
+`band-room.js?v=br-226`, `band-room.css?v=br-87`, `hazama-fm-v367`.
 
 ---
 

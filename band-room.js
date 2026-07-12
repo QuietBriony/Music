@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-225-hazama-hidden-band";
+  const BANDROOM_APP_VERSION = "br-226-hazama-hidden-band";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -4012,20 +4012,30 @@
   function $(id) { return document.getElementById(id); }
 
   function chordToNotes(chord, octave = 3) {
-    // Parse "G", "Em", "Am", "C", "D", "Dm", "Bb", "F#m", etc.
-    const m = chord.match(/^([A-G][b#]?)(m|maj|min|sus|7|maj7|m7)?/);
+    // Parse "G", "Em", "Am", "Bb", "F#m", plus extended qualities (v367:
+    // 9 / add9 / sus / 6 / maj7#11 for HAZAMA's Underworld voicings). The full
+    // suffix after the root is matched EXACTLY against the table, so bare root
+    // ("") and "m" keep the identical major/minor triad they always produced —
+    // every Tabasco song uses only those two, so Tabasco is byte-for-byte safe.
+    const m = chord.match(/^([A-G][b#]?)(.*)$/);
     if (!m) return [];
     const root = m[1];
     const quality = m[2] || "";
     const NOTE_SEMI = { C: 0, "C#": 1, Db: 1, D: 2, "D#": 3, Eb: 3, E: 4, F: 5, "F#": 6, Gb: 6, G: 7, "G#": 8, Ab: 8, A: 9, "A#": 10, Bb: 10, B: 11 };
     const rootSemi = NOTE_SEMI[root];
     if (rootSemi == null) return [];
-    const isMinor = quality.startsWith("m") && !quality.startsWith("maj");
-    const third = isMinor ? 3 : 4;
-    const fifth = 7;
-    const seventh = quality === "7" ? 10 : quality === "maj7" ? 11 : quality === "m7" ? 10 : null;
-    const semis = [0, third, fifth];
-    if (seventh != null) semis.push(seventh);
+    // Quality → semitone intervals from the root. Tensions live at 14/17/18
+    // (octave up) so they voice ABOVE the triad and the arp's chord-tone pool
+    // scatters them high instead of clustering the low-mids into mud.
+    const QUALITIES = {
+      "": [0, 4, 7], "maj": [0, 4, 7], "m": [0, 3, 7], "min": [0, 3, 7],
+      "7": [0, 4, 7, 10], "maj7": [0, 4, 7, 11], "m7": [0, 3, 7, 10],
+      "6": [0, 4, 7, 9], "sus2": [0, 2, 7], "sus4": [0, 5, 7],
+      "add9": [0, 4, 7, 14], "madd9": [0, 3, 7, 14],
+      "m9": [0, 3, 7, 10, 14], "maj9": [0, 4, 7, 11, 14],
+      "maj7#11": [0, 4, 7, 11, 18], "7sus4": [0, 5, 7, 10]
+    };
+    const semis = QUALITIES[quality] || [0, 4, 7];
     return semis.map((s) => semiToNote(rootSemi + s + octave * 12));
   }
   function semiToNote(semi) {
