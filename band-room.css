@@ -1965,6 +1965,15 @@ body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
   padding: 0 4px;
 }
 
+/* Discreet hidden-band entry (HAZAMA WIP) — tucked into the footer, low-key
+   so it doesn't compete with Tabasco until the unit ships. */
+.br-hazama-entry {
+  opacity: 0.4;
+  letter-spacing: 0.06em;
+  font-size: 0.92em;
+}
+.br-hazama-entry:hover { opacity: 0.9; }
+
 /* v89: footer groups — clarify Band Room is its own app */
 .br-footer-group {
   display: inline-flex;

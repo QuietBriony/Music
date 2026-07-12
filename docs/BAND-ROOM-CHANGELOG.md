@@ -1,6 +1,45 @@
-# Band Room - Changelog (v65 -> v365 compact)
+# Band Room - Changelog (v65 -> v366 compact)
 
-Current sw.js VERSION: v365. Latest Band Room runtime change: v365.
+Current sw.js VERSION: v366. Latest Band Room runtime change: v366.
+
+---
+
+## v366 compact - HAZAMA audio engine port (arp + driving bassline + 6-min arc)
+
+Completes the v365 *content-only* HAZAMA port by bringing over the actual audio
+engine from the stranded v310 worktree, rebased onto v365 (which already carries
+the v364 phone-clean AI band + #374/#375 defer/preconnect perf). New, all gated
+so Tabasco is byte-for-byte unaffected:
+
+- **Arp layer** (`makeArpSynth` / `triggerArpAgent`): Underworld 16th-note cell,
+  fatsaw MonoSynth → lowpass + dotted-8th feedback delay, cutoff LFO. Cheap,
+  routed DIRECT to `masterGain` (bypasses `instrumentBus` + its waveshapers, per
+  the v304 freeze / AI-FX-budget lesson). Built only when `state.songData.arp`
+  exists and `#br-toggle-arp` is on — Tabasco songs have no `arp` key.
+- **Driving bassline** (`makeBassSeqSynth` / `triggerBassSeqAgent`): rolling sub
+  sequence on its own `bassSeqBus`, gated on `state.songData.bassline`. Replaces
+  the sparse kick-locked `triggerBassAgent` only for songs that declare a
+  bassline; the non-HAZAMA path keeps v364's `hasTranscribedLine("bass_line")`
+  condition intact.
+- **6-minute section arc** (`rampInstrumentBusForSection` extended): per-role
+  gain/tone ramps for arp + bassSeq (break drops the bass out, release slams it
+  back), reading `role` off each structure entry.
+- Per-bar seeded humanization (`hzMulberry32` / phrase-velocity tables) so the
+  loop mutates instead of repeating.
+
+Adversarial multi-agent review fixes: dispose arp/bassSeq in
+`scheduleSynthBandTeardown` + on in-session band switch (they were leaking
+always-on LFO/FeedbackDelay/Distortion onto masterGain); gate the bassSeq build
+on the bass toggle (symmetry with arp).
+
+The heavy layers bypass the shared `instrumentBus`; the v364 device-gated
+exciter/saturation (`mobileAiDiet ? "none" : "2x"`) + phone-clean AI band
+(chord / bass-sub / StereoWidener dropped on light) are preserved untouched, so
+the phone AI diet and Tabasco's tone are unchanged. HAZAMA stays a *hidden*
+synth-only band (`ui_hidden`, reachable via `?band=hazama` / footer "◦ hazama").
+The arrangement/mix is still not ear-verified — ship-then-verify on the live site.
+
+`band-room.js?v=br-225`, `band-room.css?v=br-87`, `hazama-fm-v366`.
 
 ---
 
