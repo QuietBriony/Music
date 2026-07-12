@@ -14,7 +14,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Band Room" />
 
-<script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+<!-- perf: warm the CDN socket for the eagerly-loaded Tone.js, and hint the
+     on-demand sample / Magenta CDNs so AI-fill + real-instrument fetches start
+     their DNS/TLS earlier. (plain <script> fetch = no-cors, so the Tone
+     preconnect omits crossorigin to match it.) -->
+<link rel="preconnect" href="https://unpkg.com" />
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+<link rel="dns-prefetch" href="https://tonejs.github.io" />
+<!-- Tone.js — deferred so it no longer blocks first paint. It stays first among
+     the deferred scripts, so window.Tone is ready before audio-safety.js /
+     band-room.js (also deferred) run. -->
+<script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-67" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
 <script src="band-room.js?v=br-222" defer></script>
