@@ -6,7 +6,7 @@
 <title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-86" />
+<link rel="stylesheet" href="band-room.css?v=br-87" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -14,10 +14,20 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Band Room" />
 
-<script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+<!-- perf: warm the CDN socket for the eagerly-loaded Tone.js, and hint the
+     on-demand sample / Magenta CDNs so AI-fill + real-instrument fetches start
+     their DNS/TLS earlier. (plain <script> fetch = no-cors, so the Tone
+     preconnect omits crossorigin to match it.) -->
+<link rel="preconnect" href="https://unpkg.com" />
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+<link rel="dns-prefetch" href="https://tonejs.github.io" />
+<!-- Tone.js — deferred so it no longer blocks first paint. It stays first among
+     the deferred scripts, so window.Tone is ready before audio-safety.js /
+     band-room.js (also deferred) run. -->
+<script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-67" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-222" defer></script>
+<script src="band-room.js?v=br-227" defer></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -241,6 +251,7 @@
       <label class="br-toggle"><input type="checkbox" id="br-toggle-guitar" checked /><span>guitar</span></label>
       <label class="br-toggle"><input type="checkbox" id="br-toggle-voice" checked /><span>vocal</span></label>
       <label class="br-toggle"><input type="checkbox" id="br-toggle-chords" checked /><span>chords</span></label>
+      <label class="br-toggle"><input type="checkbox" id="br-toggle-arp" /><span>arp</span></label>
       <label class="br-toggle"><input type="checkbox" id="br-toggle-click" /><span>click</span></label>
     </section>
 
@@ -577,6 +588,10 @@
         <button id="br-rec-toggle" type="button">● REC</button>
         <a id="br-rec-download" href="#" style="display:none">↓ download</a>
         <p class="br-help">START 押してプレイ中に REC。STOP REC で webm/opus ファイルが download リンクに出る。STOP REC は再生は止めない。</p>
+        <hr />
+        <label class="br-toggle"><input type="checkbox" id="br-toggle-live-mic" /><span>live mic (歌う→録音)</span></label>
+        <span id="br-live-mic-status">mic off</span>
+        <p class="br-help">マイクで直接歌う。声は vocal FX（chorus/echo/reverb）を通って録音バスに入るので、● REC で band と一緒に 1 本にバウンスできる（📻原音・🎛AI再現 どちらのモードでも可）。<strong>ハウリング防止にヘッドホン必須。</strong></p>
       </section>
     </details>
 
@@ -622,6 +637,8 @@
       <a href="docs/SUNO-WORKFLOW.md">Suno</a>
       <span class="br-sep">·</span>
       <a href="docs/FREE-SAMPLES-AND-SYNTHESIS.md">音色設計</a>
+      <span class="br-sep">·</span>
+      <a id="br-hazama-entry" class="br-hazama-entry" href="?band=hazama" title="HAZAMA — AI×human unit（制作中の隠しトラック）">◦ hazama</a>
       <span class="br-sep">·</span>
       <span id="br-boot-status" class="br-boot-status" aria-live="polite">boot</span>
       <div id="br-kbd-hint">

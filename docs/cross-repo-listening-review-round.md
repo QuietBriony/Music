@@ -82,6 +82,14 @@ After listening, choose exactly one:
 
 Do not start a multi-repo tuning PR.
 
+## Reviewing Music itself
+
+This guide covers the sibling repos. To review a `Music` (conductor) recording
+pass — Core Rig, Hazama FM, or Bandroom color — use
+`docs/recording-review-scorecard.md`. It scores the same five machine
+`self_review` axes by ear and reconciles machine vs human so disagreement drives
+the next tuning PR.
+
 ## What Music should do
 
 `Music` should remain the conductor:

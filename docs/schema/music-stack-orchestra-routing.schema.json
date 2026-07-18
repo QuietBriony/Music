@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://quietbriony.github.io/Music/docs/schema/music-stack-orchestra-routing.schema.json",
+  "title": "Music Stack Orchestra Routing",
+  "description": "Metadata-only routing policy for Music Stack Orchestra packet, sidecar, adapter, and human-gated promotion flow.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "conductor",
+    "routes",
+    "safety",
+    "promotion"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "music-stack-orchestra-routing.v1"
+    },
+    "conductor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo",
+        "role",
+        "session_packet_enabled",
+        "mic_follow_enabled"
+      ],
+      "properties": {
+        "repo": {
+          "type": "string",
+          "const": "Music"
+        },
+        "role": {
+          "type": "string",
+          "const": "conductor"
+        },
+        "session_packet_enabled": {
+          "type": "boolean"
+        },
+        "mic_follow_enabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "routes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "drum_floor",
+        "namima",
+        "chill",
+        "openclaw"
+      ],
+      "properties": {
+        "drum_floor": {
+          "$ref": "#/definitions/route"
+        },
+        "namima": {
+          "$ref": "#/definitions/route"
+        },
+        "chill": {
+          "$ref": "#/definitions/route"
+        },
+        "openclaw": {
+          "$ref": "#/definitions/route"
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "no_audio_files",
+        "no_samples",
+        "no_model_weights",
+        "no_lyrics",
+        "no_workflow_change",
+        "no_direct_code_copy",
+        "rollback_required"
+      ],
+      "properties": {
+        "no_audio_files": {
+          "type": "boolean",
+          "const": true
+        },
+        "no_samples": {
+          "type": "boolean",
+          "const": true
+        },
+        "no_model_weights": {
+          "type": "boolean",
+          "const": true
+        },
+        "no_lyrics": {
+          "type": "boolean",
+          "const": true
+        },
+        "no_workflow_change": {
+          "type": "boolean",
+          "const": true
+        },
+        "no_direct_code_copy": {
+          "type": "boolean",
+          "const": true
+        },
+        "rollback_required": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reviewer_notes",
+        "rollback_plan"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "review-only",
+            "approved-for-docs",
+            "approved-for-adapter",
+            "approved-for-runtime",
+            "rejected"
+          ]
+        },
+        "reviewer_notes": {
+          "type": "string"
+        },
+        "rollback_plan": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "definitions": {
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "intent_type",
+        "adapter_required",
+        "human_review_required",
+        "default_behavior_changed"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "intent_type": {
+          "type": "string",
+          "enum": [
+            "groove",
+            "mood",
+            "light-surface",
+            "mission-board",
+            "promotion",
+            "harvest"
+          ]
+        },
+        "adapter_required": {
+          "type": "boolean",
+          "const": true
+        },
+        "human_review_required": {
+          "type": "boolean",
+          "const": true
+        },
+        "default_behavior_changed": {
+          "type": "boolean",
+          "const": false
+        }
+      }
+    }
+  }
+}

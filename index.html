@@ -19,8 +19,18 @@
     <meta name="apple-mobile-web-app-title" content="Music Core Rig" />
     <meta name="mobile-web-app-capable" content="yes" />
 
-    <!-- Tone.js -->
-    <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
+    <!-- perf: warm the CDN socket for the eagerly-loaded Tone.js, and hint the
+         on-demand sample / Magenta CDNs so AI-fill + real-instrument fetches
+         start their DNS/TLS earlier. (plain <script> fetch = no-cors, so the
+         Tone preconnect omits crossorigin to match it.) -->
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+    <link rel="dns-prefetch" href="https://tonejs.github.io" />
+
+    <!-- Tone.js — deferred so it no longer blocks first paint. It stays first
+         among the deferred scripts, so window.Tone is ready before audio-safety
+         / engine.js (also deferred) run. -->
+    <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
     <!-- fm-60: audio safety net (iOS Safari unlock + version warning + error overlay) -->
     <script src="audio/audio-safety.js?v=fm-61" defer></script>
     <!-- Phase1: if window.AudioEngine is not present, adapter stays no-op -->

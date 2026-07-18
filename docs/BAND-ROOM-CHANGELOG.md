@@ -1,10 +1,28 @@
-# Band Room - Changelog (v65 -> v377 compact)
+# Band Room - Changelog (v65 -> v383 compact)
 
-Current sw.js VERSION: v377. Latest Band Room runtime change: v363.
+Current sw.js VERSION: v383. Latest Band Room runtime change: v368.
 
 ---
 
-## v377 compact - Lyric Lab direction-specific endings
+## v383 compact - Lyric Lab shelf editing flow
+
+Lyric Lab makes the mobile shelf a direct working surface. Cloud connection
+settings collapse after the sync key is stored, shelf actions report the device
+connection state in Japanese, and opening the shelf with a saved key refreshes
+cloud drafts automatically. Shelf cards now expose a clear `開く` action and
+open the selected lyric directly in the editable view; save/fix actions sync to
+D1 when connected, while confirmed deletion removes the same draft from cloud.
+
+Output actions are now view-specific, so shelf, draft, editing, hook, Suno, and
+map views only show controls that apply to the current task. Mobile cards carry
+fewer tags, clearer actions, and a shorter preview.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v383`.
+Band Room runtime remains `band-room.js?v=br-227`; CSS remains br-87.
+
+---
+
+## v382 compact - Lyric Lab direction-specific endings
 
 Lyric Lab stops treating `ヒトトビ` as a global ending. The generator now keeps
 `ヒトトビ` inside the `ヒトトビ prayer` direction and gives the other directions
@@ -12,24 +30,24 @@ their own closing phrases: rave/pulse, soil/fire, night-window, or noise-room
 endings. Cloud shelf experiments were also polished so each working draft ends
 on its own image instead of the same stamp.
 
-`lyric-lab.js`, `hazama-fm-v377`.
+`lyric-lab.js`, `hazama-fm-v382`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v376 compact - Lyric Lab mobile shelf cards
+## v381 compact - Lyric Lab mobile shelf cards
 
 Lyric Lab tightens the mobile Shelf card layout after cloud drafts load. Shelf
 cards now wrap long titles and Japanese preview text, clamp preview and scene
 lines, use a compact two-column tag grid on phones, and hide overflow metadata
 that was pushing card content sideways.
 
-`lyric-lab.css`, `hazama-fm-v376`.
+`lyric-lab.css`, `hazama-fm-v381`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v375 compact - Lyric Lab mobile shelf path
+## v380 compact - Lyric Lab mobile shelf path
 
 Lyric Lab makes the Shelf path visible on mobile: the header gets a Shelf link,
 the save controls get a Shelf button, and the output tabs now place Shelf next
@@ -38,12 +56,12 @@ three-column grid on small screens, the duplicate rack shelf is hidden on
 mobile, and cloud sync controls sit on their own shelf row with clearer
 missing-token feedback.
 
-`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v375`.
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v380`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v374 compact - Lyric Lab shelf cloud path
+## v379 compact - Lyric Lab shelf cloud path
 
 Lyric Lab renames the saved-draft surface to Shelf and moves the cloud sync
 token field directly into that shelf toolbar. The primary path is now visible
@@ -51,12 +69,12 @@ in one place: enter `cloud sync token`, press `Load cloud shelf`, then open a
 draft card. Cloud controls no longer appear in the seed input panel, and
 missing-token clicks focus the shelf token field instead of failing silently.
 
-`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v374`.
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v379`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v373 compact - Lyric Lab library shelf
+## v378 compact - Lyric Lab library shelf
 
 Lyric Lab turns the main Library tab into a shelf-style card view. Saved drafts
 now show title, updated time, status/kind/taste/worldview tags, a compact draft
@@ -64,12 +82,12 @@ preview, and scene pressure metadata when available. The Library tab also gets
 direct Pull cloud / Push cloud buttons, so saved cloud drafts can be fetched
 from the shelf without returning to the source panel.
 
-`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v373`.
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v378`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v372 compact - Lyric Lab Scene OS metadata
+## v377 compact - Lyric Lab Scene OS metadata
 
 Lyric Lab now builds a `scene` metadata packet with each generated draft. The
 packet keeps `no_lyrics: true` and captures scene id, pressure, image carriers,
@@ -84,12 +102,12 @@ logic can guide broader Music Stack output without storing lyrics, audio,
 samples, or copied motifs.
 
 `lyric-lab.html`, `lyric-lab.js`, `docs/lyric-os/okinawa-local/`,
-`docs/schema/lyric-os-scene.schema.json`, `hazama-fm-v372`.
+`docs/schema/lyric-os-scene.schema.json`, `hazama-fm-v377`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v371 compact - Lyric Lab distillation intake
+## v376 compact - Lyric Lab distillation intake
 
 Lyric Lab adds a `思想蒸留` intake field for pasting ChatGPT interview output
 such as worldview core, guardrails, usable vocabulary, avoided wording, lyric
@@ -104,12 +122,12 @@ The worldview selector also adds heavier Okinawa-local presets: `現代ウチナ
 `ねじれた政局`. These presets keep politics, war memory, identity, and
 dependency themes indirect and grounded in daily life rather than slogans.
 
-`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v371`.
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v376`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v370 compact - Lyric Lab worldview system
+## v375 compact - Lyric Lab worldview system
 
 Lyric Lab adds a `思想` selector so drafts can be generated from a worldview
 before lyric polishing: `夜の隙間`, `小箱 / rave残り香`, `バンド文化圏`,
@@ -119,12 +137,12 @@ streets, local rooms, venue memory, and cultural stewardship. Worldview metadata
 flows into draft lines, hooks, bridges, Suno style text, map output, library
 labels, search, localStorage, and D1-synced settings.
 
-`lyric-lab.html`, `lyric-lab.js`, `hazama-fm-v370`.
+`lyric-lab.html`, `lyric-lab.js`, `hazama-fm-v375`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v369 compact - Lyric Lab taste axes and Okinawa roots
+## v374 compact - Lyric Lab taste axes and Okinawa roots
 
 Lyric Lab adds a `好きな軸` selector that turns broad references into
 non-imitative writing modes: `時代感 rap`, `沖縄 roots`, `サイケ band`,
@@ -133,12 +151,12 @@ non-imitative writing modes: `時代感 rap`, `沖縄 roots`, `サイケ band`,
 settings affect generated body lines, hook language, bridge anchors, Suno style
 text, map metadata, library labels, search matching, and D1-synced settings.
 
-`lyric-lab.html`, `lyric-lab.js`, `hazama-fm-v369`.
+`lyric-lab.html`, `lyric-lab.js`, `hazama-fm-v374`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v368 compact - Lyric Lab library list and fixed finals
+## v373 compact - Lyric Lab library list and fixed finals
 
 Lyric Lab now has a first-class `Library` output tab plus searchable/filterable
 library controls in the side rack. Draft rows show working/fixed state,
@@ -147,12 +165,12 @@ be edited as a standalone lyric, then saved as working or marked `fixed`; fixed
 lyrics are preserved in the draft result JSON and sync through the existing D1
 path without a schema migration.
 
-`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v368`.
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v373`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v367 compact - Lyric Lab direction presets and forks
+## v372 compact - Lyric Lab direction presets and forks
 
 Lyric Lab can now switch draft direction between `ヒトトビ prayer`,
 `rave fragments`, `soil chant`, `night bus`, and `noise memo`. The selected
@@ -160,12 +178,12 @@ direction shapes generated body lines, bridge images, Suno style text, map
 metadata, and library labels. Saved drafts keep the direction setting, and
 `Fork` creates a rerolled new take without overwriting the loaded draft.
 
-`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v367`.
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v372`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v366 compact - Lyric Lab Cloudflare D1 sync path
+## v371 compact - Lyric Lab Cloudflare D1 sync path
 
 Adds the optional Cloudflare Pages sync path for Lyric Lab. Static GitHub Pages
 usage still works with localStorage and JSON import/export; Cloudflare Pages can
@@ -173,34 +191,174 @@ serve `functions/api/lyric-drafts.js` with a `LYRIC_LAB_DB` D1 binding and
 `LYRIC_LAB_TOKEN` to pull/push draft libraries across devices.
 
 `functions/api/lyric-drafts.js`, `migrations/0001_lyric_lab.sql`,
-`wrangler.example.toml`, `docs/LYRIC-LAB-D1.md`, `hazama-fm-v366`.
+`wrangler.example.toml`, `docs/LYRIC-LAB-D1.md`, `hazama-fm-v371`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v365 compact - Lyric Lab draft library and memo sources
+## v370 compact - Lyric Lab draft library and memo sources
 
 Lyric Lab now has a local draft library for seed notes, generated drafts, hook
 cuts, Suno text, settings, and source URLs. Small voice memo links such as
 Dropbox m4a shares can be attached as `voice memo URL`, then saved, reloaded,
 exported as JSON, and imported back without adding audio files to the repo.
 
-`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v365`.
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v370`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 
 ---
 
-## v364 compact - Lyric Lab local draft builder
+## v369 compact - Lyric Lab local draft builder
 
 Adds `lyric-lab.html` as a local, API-free lyric drafting surface for rough
 notes, hook cuts, section drafts, and Suno-ready text. The page is linked from
 Music Core, precached for PWA use, and keeps user material in localStorage only;
 no new fixed lyric sheet or audio asset is added.
 
-`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v364`.
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v369`.
 Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+---
+
+## v368 compact - HAZAMA production glue (sidechain pump + shared dub space)
+
+User on live v367: "音楽として成立してない。音色を音楽にして。" — the parts sat
+side-by-side, dry and unglued, not as one track. Advisor-designed production pass
+(all HAZAMA-gated; Tabasco songs have no arp/bassline so none of it engages):
+
+- **Sidechain pump** (the #1 glue): `duckBass` (1.0→0.28, fast) + `duckMusic`
+  (1.0→0.55, slow) sit after the bassSeq / arp buses. `duckAt(t)` fires from the
+  drum dispatch at every kick time (only when `hazamaPumpActive()`), so the synth
+  layers breathe with the 4-on-floor kick — the pump that reads as "one
+  performance" and clears the kick/bass low-end collision.
+- **Shared dub space**: one hand-built dub delay (dotted-8th, in-loop LP/HP so
+  repeats darken) replaces the arp's private FeedbackDelay. The arp sends into it
+  (0.22) and the return folds into `duckMusic` so the echoes pump too — everything
+  lives in the same room. Cheap (no reverb) = phone-safe.
+- **De-mud + voices**: 260 Hz HPF on the arp bus (stops the fatsaw sharing the
+  bass's 100-400 Hz on a mono phone speaker); arp post-filter Q 3→1.8 + audible-
+  band LFO (500-2600) + a 16th accent pulse [1,.62,.78,.62] so it grooves; bassSeq
+  filter-envelope punchier (sustain .5→.3, oct 2.5) so the note's "wow" pluck reads
+  on the phone even when the sub is below the speaker roll-off. Arp/bass unison
+  drop to count-2 on the phone. bassSeqBus 1.25→1.10 for duck headroom.
+
+Next levers if still thin: offbeat dub chord STABS (fills the phone pad gap),
+timbre warmth waveshaper. Ship-then-verify (hidden band).
+
+`band-room.js?v=br-227`, `band-room.css?v=br-87`, `hazama-fm-v368`.
 
 ---
+
+## v367 compact - HAZAMA chord depth (extended voicings, A Aeolian)
+
+User feedback on the live v366 HAZAMA: the chords sound thin — "ピー ポー" — and
+music should be deeper. Root cause: the chord progression was bare triads
+(Am/F/C/G) with long static single-chord drones (intro/arp/break/outro = 16 bars
+of Am), and the arp voices from those same triads, so both read shallow. Fix
+(advisor-designed, all A Aeolian / white-key, no accidentals):
+
+- **`chordToNotes` extended** to parse 9 / add9 / m9 / maj9 / 6 / sus2 / sus4 /
+  maj7#11 / 7sus4 (full suffix matched EXACTLY against a table). Bare root and
+  "m" return the identical major/minor triad they always did — every Tabasco
+  song uses only those two symbols, so Tabasco is byte-for-byte unaffected.
+  Tensions live at 14/17/18 (octave up) so they voice above the triad.
+- **Still Moving progression rewritten** with extended voicings that keep the
+  A-C-E-G-B common-tone web and move only 1-2 upper voices + the bass — the
+  signature is the 9th (B natural) ↔ F alternation. Static 16-bar sections now
+  "breathe" (intro Asus2→Amadd9; break = root evaporation Amadd9→Asus2→Em7→
+  E7sus4 as bass drops out; outro reverse-breath to a hollow, unresolved close).
+  Richer chord tones automatically deepen the arp too (it pools from
+  `chordToNotes`), so the harmony reads on the phone even though the pad is
+  desktop-only.
+
+Timbre (triangle→saw) + offbeat dub-techno chord stabs are the flagged next
+levers if it still reads thin. Ship-then-verify (hidden band).
+
+`band-room.js?v=br-226`, `band-room.css?v=br-87`, `hazama-fm-v367`.
+
+---
+
+## v366 compact - HAZAMA audio engine port (arp + driving bassline + 6-min arc)
+
+Completes the v365 *content-only* HAZAMA port by bringing over the actual audio
+engine from the stranded v310 worktree, rebased onto v365 (which already carries
+the v364 phone-clean AI band + #374/#375 defer/preconnect perf). New, all gated
+so Tabasco is byte-for-byte unaffected:
+
+- **Arp layer** (`makeArpSynth` / `triggerArpAgent`): Underworld 16th-note cell,
+  fatsaw MonoSynth → lowpass + dotted-8th feedback delay, cutoff LFO. Cheap,
+  routed DIRECT to `masterGain` (bypasses `instrumentBus` + its waveshapers, per
+  the v304 freeze / AI-FX-budget lesson). Built only when `state.songData.arp`
+  exists and `#br-toggle-arp` is on — Tabasco songs have no `arp` key.
+- **Driving bassline** (`makeBassSeqSynth` / `triggerBassSeqAgent`): rolling sub
+  sequence on its own `bassSeqBus`, gated on `state.songData.bassline`. Replaces
+  the sparse kick-locked `triggerBassAgent` only for songs that declare a
+  bassline; the non-HAZAMA path keeps v364's `hasTranscribedLine("bass_line")`
+  condition intact.
+- **6-minute section arc** (`rampInstrumentBusForSection` extended): per-role
+  gain/tone ramps for arp + bassSeq (break drops the bass out, release slams it
+  back), reading `role` off each structure entry.
+- Per-bar seeded humanization (`hzMulberry32` / phrase-velocity tables) so the
+  loop mutates instead of repeating.
+
+Adversarial multi-agent review fixes: dispose arp/bassSeq in
+`scheduleSynthBandTeardown` + on in-session band switch (they were leaking
+always-on LFO/FeedbackDelay/Distortion onto masterGain); gate the bassSeq build
+on the bass toggle (symmetry with arp).
+
+The heavy layers bypass the shared `instrumentBus`; the v364 device-gated
+exciter/saturation (`mobileAiDiet ? "none" : "2x"`) + phone-clean AI band
+(chord / bass-sub / StereoWidener dropped on light) are preserved untouched, so
+the phone AI diet and Tabasco's tone are unchanged. HAZAMA stays a *hidden*
+synth-only band (`ui_hidden`, reachable via `?band=hazama` / footer "◦ hazama").
+The arrangement/mix is still not ear-verified — ship-then-verify on the live site.
+
+`band-room.js?v=br-225`, `band-room.css?v=br-87`, `hazama-fm-v366`.
+
+---
+
+## v365 compact - HAZAMA hidden band (WIP) + Still Moving content
+
+Adds the HAZAMA band (AI × human dub-techno, track01 "Still Moving") to the
+registry as a *hidden* band: `ui_hidden: true` keeps it out of the main band
+selector, reachable only via `?band=hazama` / `?bandId=` / `?dev=1`. New
+`hiddenBandsUnlocked()` + `visibleBandIds()` gate the selector; both the
+saved-pref restore and the `?band=` deep entry honor the flag, so the shipped
+Tabasco-only UI is unchanged. New content: `docs/hazama-lyrics.md` (singable
+sheet, `## 01 Still Moving` + section markers) and
+`presets/drum-frames-hazama-still-moving.json`. Synth-only (no stems) — the
+original-stems path is untouched. Ported onto v363 from a stranded worktree
+branch; the arrangement/mix is not yet ear-verified, so it stays hidden until
+a human listens (human_gate).
+
+`band-room.js?v=br-224`, `hazama-fm-v365`. CSS remains br-86.
+
+---
+
+## v364 compact - Phone-clean AI band (fix: AI 再現 stops on iPhone from overload)
+
+AI 再現 was heavy and STOPPED on the iPhone. Root cause (diagnostic workflow, 61
+load sources profiled): the phone LIGHT path correctly gates, but it still ran a
+permanent 5-part synth band, and the per-BAR trigger BURST (~27-34 triggerAttackRelease
+at each bar tick, each pitched call instantiating a fresh OscillatorNode in Tone 14) plus
+~48 standing DSP nodes and ~11 continuous oscillators underran the iOS audio render thread.
+
+Clean fix — trim the AI 再現 LIGHT (phone) band; desktop/full keeps ALL 5 parts + full richness:
+- **Drop the CHORD part on light** (the only PolySynth, up to 5 sustained oscillators, and
+  the biggest voice-pileup source). Harmony carried by bass + guitar + the kept vocal
+  guide; the pad was already a ducked -12 dB bed. Centralized `synthPartActiveOnLight()`
+  predicate gates every chord build site; the `&& chordSynth` dispatch guards auto-skip.
+- **Drop the bass sub-oscillator on light** — the ~33-80 Hz sub is below the iPhone
+  built-in speaker roll-off (inaudible) and its wrapper fired a 2nd triggerAttackRelease
+  per bass note, so on light it doubled the bass burst for nothing. Bass = bare MonoSynth.
+- **Lower per-bar caps** on light: guitar strums 6->4, drum hits 10->8, bass notes 6->4.
+- **Bypass the StereoWidener** on the light AI polish bus (a no-op on the mono iPhone speaker).
+- **Kept: the vocal melody guide** (user choice) — all 4 remaining parts + its v362 width.
+
+Result (verified via a simulated-iPhone Node census, G-6 gate): light band 5->4 parts,
+continuous oscillators ~11 -> ~5, and the per-bar bass/chord burst cut hard. Locked by a new
+G-6 assertion (chord dropped on iPhone UA, kept on desktop UA) so it can't silently regress.
+
+`band-room.js?v=br-223`, `hazama-fm-v364`. CSS remains br-86.
 
 ## v363 compact - Band Room original vocal pocket
 
