@@ -37,6 +37,9 @@ cross-repo merges.
 - `docs/namima-lab-safe-ripple-lineage-decision.md`: current docs-only decision
   that `namima-lab` stays lineage / harvest-only, with safe ripple ownership
   routed primarily to `namima`.
+- `docs/lyric-os/okinawa-local/README.md`: metadata-only Okinawa Local Lyric /
+  Scene OS for Lyric Lab and Music Stack output philosophy. It stores pressure,
+  distance, vocabulary, risk, and scene packets, not lyrics or audio.
 
 Supporting strategy docs:
 
@@ -52,7 +55,8 @@ Supporting strategy docs:
 - **Role:** central integration target / conductor.
 - **Direction:** experimental / edge / reference-driven generative rig.
 - **Owns:** Music runtime, UCM faders, Hazama FM, Music Core Rig, session
-  packet, reference-driven production intent.
+  packet, reference-driven production intent, Lyric Lab, and metadata-only
+  Scene OS output philosophy.
 - **Boundary:** `engine.js`, `index.html`, and `style.css` stay protected in
   docs/schema PRs.
 
@@ -135,6 +139,8 @@ Supporting strategy docs:
 - **mood profile:** brightness / warmth / water_motion / garden_air / density /
   loudness_safety -> ambient feel
 - **session packet:** current Music production intent and routing hints
+- **scene metadata:** pressure / image / distance / risk / usable-form packet
+  for lyric and Music Stack output thinking; no lyric body or audio
 - **sidecar:** review-only interpretation or suggestion
 - **trace:** local or reviewed observation without audio or raw private data
 
@@ -147,6 +153,7 @@ Docs / schema / review-safe:
 - run a cross-repo listening review round before choosing runtime tuning
 - update harvest notes when source repo identity changes
 - add examples that remain metadata-only
+- roll phrase-thinking inbox notes into Scene OS metadata packets
 - prepare runtime candidates only as review documents
 
 Runtime candidate planning:

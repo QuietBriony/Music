@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://quietbriony.github.io/Music/docs/schema/lyric-os-packet.schema.json",
+  "title": "Lyric OS Packet",
+  "description": "Metadata-only packet for lyric worldview systems. It must not store finished lyrics, audio, samples, sample URLs, or copied motifs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "packet_id",
+    "source_repo",
+    "metadata_only",
+    "safety",
+    "position",
+    "kernel",
+    "vocabulary",
+    "worldview_presets"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "packet_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_repo": {
+      "const": "Music"
+    },
+    "metadata_only": {
+      "const": true
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stores_audio",
+        "stores_samples",
+        "stores_sample_urls",
+        "stores_lyrics",
+        "stores_copied_motifs"
+      ],
+      "properties": {
+        "stores_audio": { "const": false },
+        "stores_samples": { "const": false },
+        "stores_sample_urls": { "const": false },
+        "stores_lyrics": { "const": false },
+        "stores_copied_motifs": { "const": false }
+      }
+    },
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["one_line", "not_representing", "not_escaping"],
+      "properties": {
+        "one_line": { "type": "string", "minLength": 1 },
+        "not_representing": { "type": "boolean" },
+        "not_escaping": { "type": "boolean" },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "kernel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["writing_position", "central_tension", "default_voice"],
+      "properties": {
+        "writing_position": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "central_tension": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "default_voice": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "avoid"],
+          "properties": {
+            "mode": { "type": "string", "minLength": 1 },
+            "avoid": { "type": "string", "minLength": 1 },
+            "allowed": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "vocabulary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["usable_terms", "fragile_terms", "avoid_terms"],
+      "properties": {
+        "usable_terms": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "fragile_terms": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "avoid_terms": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "worldview_presets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "distance", "anchors", "avoid"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "label": { "type": "string", "minLength": 1 },
+          "distance": { "type": "string", "minLength": 1 },
+          "anchors": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "avoid": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "prompt_packets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "purpose", "must_not_request_finished_lyrics"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "purpose": { "type": "string", "minLength": 1 },
+          "must_not_request_finished_lyrics": { "const": true }
+        }
+      }
+    }
+  }
+}
+

@@ -1,0 +1,86 @@
+version: 1
+packet_id: okinawa-local-vocabulary
+metadata_only: true
+stores_lyrics: false
+
+usable_terms:
+  place:
+    - "首里石嶺"
+    - "国際通り"
+    - "南部"
+    - "松山界隈"
+    - "地元の距離"
+  grave_and_ancestor:
+    - "墓メン"
+    - "墓でゆくる"
+    - "先祖"
+    - "地上戦"
+    - "声を低くする"
+    - "姿勢を直す"
+  work_and_capital:
+    - "造園"
+    - "二代目"
+    - "安定した会社"
+    - "命懸けの親孝行"
+    - "公共事業の椅子"
+    - "資本主義は把握している側"
+    - "コウモリ資本"
+  family_and_body:
+    - "嫁子供によるリスク境界"
+    - "左の感覚が失われていく怖さ"
+    - "生活の床"
+    - "家族"
+    - "風土"
+  machine_and_scene:
+    - "PC / AIばかり触ってるように見える人"
+    - "AI画面"
+    - "小箱"
+    - "夜の隙間"
+    - "文化を回す立場"
+    - "昔のBand Roomには戻らない"
+    - "リビドー剪定"
+
+fragile_terms:
+  use_only_with_hesitation:
+    - "琉球"
+    - "独立"
+    - "ウチナーンチュ"
+    - "基地"
+    - "日本"
+    - "アメリカ"
+  handling:
+    - "言い切らない"
+    - "生活の物を通す"
+    - "軽く置かない"
+    - "説明より距離を優先する"
+
+avoid_terms:
+  tourist_shortcuts:
+    - "青い海だけの沖縄"
+    - "楽園"
+    - "南国"
+    - "癒やしの島"
+  rhetorical_traps:
+    - "単純な英雄"
+    - "単純な被害者"
+    - "政治スローガン"
+    - "観光ポスター"
+    - "代表者の声"
+
+image_rules:
+  prefer:
+    - "墓"
+    - "坂"
+    - "会社"
+    - "剪定"
+    - "椅子"
+    - "AI画面"
+    - "左耳"
+    - "茶碗"
+    - "予定表"
+  avoid_default:
+    - "港"
+    - "海"
+    - "砂浜"
+    - "リゾート"
+

@@ -1,7 +1,255 @@
-# Band Room - Changelog (v65 -> v368 compact)
+# Band Room - Changelog (v65 -> v385 compact)
 
-Current sw.js VERSION: v368. Latest Band Room runtime change: v368.
+Current sw.js VERSION: v385. Latest Band Room runtime change: v368.
 
+---
+
+## v385 compact - Lyric Lab writing loop
+
+Lyric Lab now treats the shelf as the project home: `新しい歌詞` starts a clean
+workspace without deleting saved works, voice-memo projects expose their source
+link on both the shelf and editor, and `曲設計` names the metadata view directly.
+
+`AIへ渡す` copies a song-specific editing packet with creative controls, Scene
+metadata, current text, source URL, and direction-specific ending constraints.
+AI remains optional and external; Lyric Lab itself still uses local rule-based
+drafting. A dedicated static check and usage document lock down this boundary.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`,
+`scripts/check-lyric-lab.mjs`, `docs/LYRIC-LAB-USAGE.md`, `hazama-fm-v385`.
+Band Room runtime remains `band-room.js?v=br-227`; CSS remains br-87.
+
+---
+
+## v384 compact - Lyric Lab mobile editing polish
+
+Lyric Lab replaces the mobile cloud settings disclosure with an explicit,
+layout-stable toggle, removing the empty space that could separate the shelf
+controls from saved works. The editable lyric view now keeps its three relevant
+actions on one row and reserves a practical writing area on phone screens.
+
+Browser QA at a 390 x 844 viewport confirms no horizontal overflow, a lyric
+editor taller than 500 px, successful local save/reopen behavior, and no console
+errors or warnings.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v384`.
+Band Room runtime remains `band-room.js?v=br-227`; CSS remains br-87.
+
+---
+
+## v383 compact - Lyric Lab shelf editing flow
+
+Lyric Lab makes the mobile shelf a direct working surface. Cloud connection
+settings collapse after the sync key is stored, shelf actions report the device
+connection state in Japanese, and opening the shelf with a saved key refreshes
+cloud drafts automatically. Shelf cards now expose a clear `開く` action and
+open the selected lyric directly in the editable view; save/fix actions sync to
+D1 when connected, while confirmed deletion removes the same draft from cloud.
+
+Output actions are now view-specific, so shelf, draft, editing, hook, Suno, and
+map views only show controls that apply to the current task. Mobile cards carry
+fewer tags, clearer actions, and a shorter preview.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v383`.
+Band Room runtime remains `band-room.js?v=br-227`; CSS remains br-87.
+
+---
+
+## v382 compact - Lyric Lab direction-specific endings
+
+Lyric Lab stops treating `ヒトトビ` as a global ending. The generator now keeps
+`ヒトトビ` inside the `ヒトトビ prayer` direction and gives the other directions
+their own closing phrases: rave/pulse, soil/fire, night-window, or noise-room
+endings. Cloud shelf experiments were also polished so each working draft ends
+on its own image instead of the same stamp.
+
+`lyric-lab.js`, `hazama-fm-v382`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v381 compact - Lyric Lab mobile shelf cards
+
+Lyric Lab tightens the mobile Shelf card layout after cloud drafts load. Shelf
+cards now wrap long titles and Japanese preview text, clamp preview and scene
+lines, use a compact two-column tag grid on phones, and hide overflow metadata
+that was pushing card content sideways.
+
+`lyric-lab.css`, `hazama-fm-v381`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v380 compact - Lyric Lab mobile shelf path
+
+Lyric Lab makes the Shelf path visible on mobile: the header gets a Shelf link,
+the save controls get a Shelf button, and the output tabs now place Shelf next
+to Draft instead of clipping it at the far right. The main tab row wraps into a
+three-column grid on small screens, the duplicate rack shelf is hidden on
+mobile, and cloud sync controls sit on their own shelf row with clearer
+missing-token feedback.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v380`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v379 compact - Lyric Lab shelf cloud path
+
+Lyric Lab renames the saved-draft surface to Shelf and moves the cloud sync
+token field directly into that shelf toolbar. The primary path is now visible
+in one place: enter `cloud sync token`, press `Load cloud shelf`, then open a
+draft card. Cloud controls no longer appear in the seed input panel, and
+missing-token clicks focus the shelf token field instead of failing silently.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v379`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v378 compact - Lyric Lab library shelf
+
+Lyric Lab turns the main Library tab into a shelf-style card view. Saved drafts
+now show title, updated time, status/kind/taste/worldview tags, a compact draft
+preview, and scene pressure metadata when available. The Library tab also gets
+direct Pull cloud / Push cloud buttons, so saved cloud drafts can be fetched
+from the shelf without returning to the source panel.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v378`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v377 compact - Lyric Lab Scene OS metadata
+
+Lyric Lab now builds a `scene` metadata packet with each generated draft. The
+packet keeps `no_lyrics: true` and captures scene id, pressure, image carriers,
+speaker distance, audience filter, risk flags, allowed/avoid moves, usable
+form, and EP-133-style arrangement notes. The Map tab exposes those fields, the
+draft result JSON and D1 sync path preserve them, and Library can label/search
+and filter saved scene-bearing drafts as `scene`.
+
+Docs add the reviewed metadata-only Scene OS shape, a schema, initial Okinawa
+Local scene packets, and Music Stack index links so the same pressure/distance
+logic can guide broader Music Stack output without storing lyrics, audio,
+samples, or copied motifs.
+
+`lyric-lab.html`, `lyric-lab.js`, `docs/lyric-os/okinawa-local/`,
+`docs/schema/lyric-os-scene.schema.json`, `hazama-fm-v377`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v376 compact - Lyric Lab distillation intake
+
+Lyric Lab adds a `思想蒸留` intake field for pasting ChatGPT interview output
+such as worldview core, guardrails, usable vocabulary, avoided wording, lyric
+distance, and candidate presets. Distilled anchors are parsed into generation
+weight, map output, Suno style guardrails, rack chips, localStorage, library
+search, and D1-synced settings. A `蒸留をネタへ` action can fold the distilled
+anchors into seed fragments without copying guardrail lines directly into the
+lyric body.
+
+The worldview selector also adds heavier Okinawa-local presets: `現代ウチナーンチュ`,
+`基地と生活`, `アメリカ距離感`, `先祖 / 地上戦`, `軽々しく言えない琉球`, and
+`ねじれた政局`. These presets keep politics, war memory, identity, and
+dependency themes indirect and grounded in daily life rather than slogans.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v376`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v375 compact - Lyric Lab worldview system
+
+Lyric Lab adds a `思想` selector so drafts can be generated from a worldview
+before lyric polishing: `夜の隙間`, `小箱 / rave残り香`, `バンド文化圏`,
+`帰郷 / 地元に溶ける`, `家族 / 風土を創る`, and `文化を回す立場`. The Okinawa
+roots taste now avoids beach/port imagery by default and leans into humid night
+streets, local rooms, venue memory, and cultural stewardship. Worldview metadata
+flows into draft lines, hooks, bridges, Suno style text, map output, library
+labels, search, localStorage, and D1-synced settings.
+
+`lyric-lab.html`, `lyric-lab.js`, `hazama-fm-v375`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v374 compact - Lyric Lab taste axes and Okinawa roots
+
+Lyric Lab adds a `好きな軸` selector that turns broad references into
+non-imitative writing modes: `時代感 rap`, `沖縄 roots`, `サイケ band`,
+`grunge raw`, `abstract electronic`, `dusty swing`, and `classic pop`. A new
+`方言` selector can lightly or strongly sprinkle Okinawan phrase accents. These
+settings affect generated body lines, hook language, bridge anchors, Suno style
+text, map metadata, library labels, search matching, and D1-synced settings.
+
+`lyric-lab.html`, `lyric-lab.js`, `hazama-fm-v374`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v373 compact - Lyric Lab library list and fixed finals
+
+Lyric Lab now has a first-class `Library` output tab plus searchable/filterable
+library controls in the side rack. Draft rows show working/fixed state,
+direction, and memo/text source type. A new `Final` tab lets a generated draft
+be edited as a standalone lyric, then saved as working or marked `fixed`; fixed
+lyrics are preserved in the draft result JSON and sync through the existing D1
+path without a schema migration.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v373`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v372 compact - Lyric Lab direction presets and forks
+
+Lyric Lab can now switch draft direction between `ヒトトビ prayer`,
+`rave fragments`, `soil chant`, `night bus`, and `noise memo`. The selected
+direction shapes generated body lines, bridge images, Suno style text, map
+metadata, and library labels. Saved drafts keep the direction setting, and
+`Fork` creates a rerolled new take without overwriting the loaded draft.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v372`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v371 compact - Lyric Lab Cloudflare D1 sync path
+
+Adds the optional Cloudflare Pages sync path for Lyric Lab. Static GitHub Pages
+usage still works with localStorage and JSON import/export; Cloudflare Pages can
+serve `functions/api/lyric-drafts.js` with a `LYRIC_LAB_DB` D1 binding and
+`LYRIC_LAB_TOKEN` to pull/push draft libraries across devices.
+
+`functions/api/lyric-drafts.js`, `migrations/0001_lyric_lab.sql`,
+`wrangler.example.toml`, `docs/LYRIC-LAB-D1.md`, `hazama-fm-v371`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v370 compact - Lyric Lab draft library and memo sources
+
+Lyric Lab now has a local draft library for seed notes, generated drafts, hook
+cuts, Suno text, settings, and source URLs. Small voice memo links such as
+Dropbox m4a shares can be attached as `voice memo URL`, then saved, reloaded,
+exported as JSON, and imported back without adding audio files to the repo.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v370`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
+
+---
+
+## v369 compact - Lyric Lab local draft builder
+
+Adds `lyric-lab.html` as a local, API-free lyric drafting surface for rough
+notes, hook cuts, section drafts, and Suno-ready text. The page is linked from
+Music Core, precached for PWA use, and keeps user material in localStorage only;
+no new fixed lyric sheet or audio asset is added.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v369`.
+Band Room runtime remains `band-room.js?v=br-222`; CSS remains br-86.
 ---
 
 ## v368 compact - HAZAMA production glue (sidechain pump + shared dub space)

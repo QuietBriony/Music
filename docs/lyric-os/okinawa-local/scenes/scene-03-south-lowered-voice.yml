@@ -1,0 +1,50 @@
+scene_id: south-lowered-voice
+status: draft
+source: okinawa-local-initial-scene-queue
+no_lyrics: true
+pressure: >-
+  Southern Okinawa lowers the voice: ground-war memory, ancestral respect,
+  and the refusal to turn history into a slogan or souvenir.
+image_carriers:
+  - road south
+  - cemetery wind
+  - concrete shelter shadow
+  - family silence
+distance:
+  speaker_position: respectful descendant, saying less because the ground is heavy
+  audience_filter: local classmate / world recording listener
+risk_flags:
+  - tragedy consumption
+  - political slogan
+  - light independence talk
+  - ancestor as prop
+allowed_moves:
+  - lowered voice
+  - silence as pressure
+  - ground memory
+  - respectful incompletion
+avoid_moves:
+  - heroic history summary
+  - clean national answer
+  - tourist war-site image
+usable_form:
+  - scene_metadata
+  - bridge_axis
+  - avoid_rule
+phrase_seeds_as_metadata:
+  title_seeds:
+    - south_lowered_voice
+    - ground_that_speaks_less
+  motif_labels:
+    - ancestral respect
+    - history below speech
+  mouthfeel_notes:
+    - low
+    - less
+    - ground
+arrangement_notes:
+  ep133_scene_logic: Commit as a quiet scene with less language and more absence.
+  sonic_notes:
+    - filtered low end
+    - long rests
+    - dry room tail

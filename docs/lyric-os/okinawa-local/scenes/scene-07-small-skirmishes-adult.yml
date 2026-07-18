@@ -1,0 +1,48 @@
+scene_id: small-skirmishes-adult
+status: draft
+source: okinawa-local-initial-scene-queue
+no_lyrics: true
+pressure: >-
+  The major rescue is done, but adult life keeps producing small workplace
+  skirmishes that feel too petty to become myth and too real to ignore.
+image_carriers:
+  - group chat
+  - small office air
+  - unread message
+  - paperwork corner
+distance:
+  speaker_position: operator irritated by smallness, not claiming moral height
+  audience_filter: local business room / local classmate
+risk_flags:
+  - boss complaint
+  - petty diary
+  - moral lecture
+allowed_moves:
+  - tiny friction
+  - adult comedy without punchline
+  - pressure after crisis
+avoid_moves:
+  - employee blame
+  - wise-manager sermon
+  - venting as lyric
+usable_form:
+  - scene_metadata
+  - avoid_rule
+  - verse_pressure
+phrase_seeds_as_metadata:
+  title_seeds:
+    - small_skirmishes_adult
+    - after_the_big_fire
+  motif_labels:
+    - petty conflict after rescue
+    - adult irritation
+  mouthfeel_notes:
+    - small
+    - unread
+    - corner
+arrangement_notes:
+  ep133_scene_logic: Use as a short variation, not a central identity scene.
+  sonic_notes:
+    - clipped hi-hat
+    - dry stop-start rhythm
+    - narrow midrange

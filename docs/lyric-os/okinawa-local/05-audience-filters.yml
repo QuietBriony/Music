@@ -1,0 +1,60 @@
+version: 1
+packet_id: okinawa-local-audience-filters
+metadata_only: true
+stores_lyrics: false
+
+filters:
+  local_self:
+    question: "これは自分の地元距離として言えているか。"
+    pass:
+      - "代表していない"
+      - "逃げてもいない"
+      - "生活の手触りがある"
+    fail:
+      - "観光ポスター化"
+      - "説教"
+      - "借り物の怒り"
+
+  family_boundary:
+    question: "嫁子供によるリスク境界を越えていないか。"
+    pass:
+      - "無茶の再演ではない"
+      - "守るものが書かれている"
+      - "成人後の責任がある"
+    fail:
+      - "昔のリビドーをそのまま美化"
+      - "破滅を格好よく置く"
+
+  ancestor_groundwar:
+    question: "先祖と地上戦を消費していないか。"
+    pass:
+      - "声が低い"
+      - "言葉の足りなさが残る"
+      - "派手な効果にしていない"
+    fail:
+      - "悲惨さの装飾化"
+      - "英雄化"
+      - "説明で片付ける"
+
+  outside_listener:
+    question: "外の人にも届くが、外の人向けに薄めていないか。"
+    pass:
+      - "固有名が残る"
+      - "説明より場面"
+      - "距離がある"
+    fail:
+      - "親切すぎる注釈"
+      - "沖縄記号だけ"
+
+  repo_safety:
+    question: "Music repoのno-lyrics/no-samples境界を守っているか。"
+    pass:
+      - "metadata-only"
+      - "schema or prompt only"
+      - "scene candidates only"
+    fail:
+      - "完成歌詞"
+      - "音源"
+      - "sample URL"
+      - "他人の歌詞やモチーフ"
+

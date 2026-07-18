@@ -1,0 +1,57 @@
+version: 1
+packet_id: okinawa-local-lyric-os
+source_repo: Music
+metadata_only: true
+stores_audio: false
+stores_samples: false
+stores_sample_urls: false
+stores_lyrics: false
+stores_copied_motifs: false
+
+kernel:
+  one_line: "沖縄を代表しないが、沖縄から逃げない。"
+  writing_position:
+    - "政治を叫ぶのではなく、生活から滲ませる。"
+    - "沖縄記号ではなく、地元の距離、墓、造園、家族、夜、AI画面を通す。"
+    - "昔のリビドーを再演せず、今の生活の根に移った熱を剪定する。"
+  central_tension:
+    - "憎悪と憧れ"
+    - "地元と距離"
+    - "義務と遊び"
+    - "資本主義の把握と小競り合いの面倒さ"
+    - "先祖への敬意と現代のPC/AI生活"
+    - "昔のBand Roomに戻らないこと"
+  default_voice:
+    mode: "local first-person plural / indirect witness"
+    avoid: "representative spokesman"
+    allowed:
+      - "われら"
+      - "匿名の合唱"
+      - "土地に近い個人"
+      - "生活者"
+
+fixed_anchors:
+  places:
+    - "首里石嶺"
+    - "国際通り"
+    - "南部"
+  life_roles:
+    - "墓メン"
+    - "墓でゆくる"
+    - "造園"
+    - "二代目"
+    - "命懸けの親孝行"
+    - "安定した会社"
+  social_pressure:
+    - "公共事業依存"
+    - "小競り合いの面倒さ"
+    - "資本主義は把握している側"
+    - "コウモリ資本"
+  present_body:
+    - "PC / AIばかり触ってるように見える人"
+    - "嫁子供によるリスク境界"
+    - "左の感覚が失われていく怖さ"
+  artistic_boundary:
+    - "昔のBand Roomには戻らない"
+    - "リビドー剪定"
+

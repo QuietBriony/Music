@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Lyric Lab - Music Stack</title>
+<meta name="description" content="Music Stack Lyric Lab turns loose notes into song-section lyric drafts and Suno-ready text." />
+<link rel="stylesheet" href="lyric-lab.css" />
+<link rel="icon" type="image/png" sizes="192x192" href="icons/mixer-192.png" />
+<meta name="theme-color" content="#10110f" />
+</head>
+<body data-page="lyric-lab">
+  <header class="ll-topbar">
+    <div>
+      <p class="ll-kicker">Music Stack</p>
+      <h1>Lyric Lab</h1>
+    </div>
+    <nav class="ll-nav" aria-label="Music Stack links">
+      <a href="index.html">Core</a>
+      <a href="band-room.html">Band Room</a>
+      <a href="docs/SUNO-WORKFLOW.md">Suno</a>
+      <a href="#shelf" data-open-shelf>作品棚</a>
+    </nav>
+  </header>
+
+  <main class="ll-shell">
+    <section class="ll-panel ll-source" aria-label="Seed notes">
+      <div class="ll-panel-head">
+        <h2>素材</h2>
+        <button type="button" id="ll-clear">新規</button>
+      </div>
+
+      <label class="ll-field">
+        <span>仮タイトル</span>
+        <input id="ll-title" type="text" autocomplete="off" maxlength="64" placeholder="空なら素材から拾う" />
+      </label>
+
+      <label class="ll-field">
+        <span>ボイスメモURL</span>
+        <input id="ll-source-url" type="url" autocomplete="off" placeholder="Dropbox / Drive / local note URL" />
+      </label>
+
+      <label class="ll-field ll-field-grow">
+        <span>ネタ断片</span>
+        <textarea id="ll-seed" spellcheck="false" placeholder="1行ずつ素材を貼る。短い言葉、変な英語、反復句、サビにしたい行を混ぜる。"></textarea>
+      </label>
+
+      <label class="ll-field ll-distill-field">
+        <span>思想蒸留</span>
+        <textarea id="ll-distill" spellcheck="false" placeholder="核 / 禁句 / 語彙 / 距離感 / 世界観"></textarea>
+      </label>
+
+      <div class="ll-actions ll-actions-distill">
+        <button type="button" id="ll-distill-to-seed">蒸留をネタへ</button>
+        <button type="button" id="ll-copy-intake-prompt">思想質問をコピー</button>
+      </div>
+
+      <div class="ll-control-grid">
+        <label class="ll-field">
+          <span>方向</span>
+          <select id="ll-direction">
+            <option value="hitotobi">ヒトトビ prayer</option>
+            <option value="rave">rave fragments</option>
+            <option value="folk">soil chant</option>
+            <option value="city">night bus</option>
+            <option value="noise">noise memo</option>
+          </select>
+        </label>
+        <label class="ll-field">
+          <span>好きな軸</span>
+          <select id="ll-taste">
+            <option value="era-rap">時代感 rap</option>
+            <option value="okinawa">沖縄 roots</option>
+            <option value="psych">サイケ band</option>
+            <option value="grunge">grunge raw</option>
+            <option value="abstract">abstract electronic</option>
+            <option value="dusty">dusty swing</option>
+            <option value="classic">classic pop</option>
+          </select>
+        </label>
+        <label class="ll-field">
+          <span>方言</span>
+          <select id="ll-dialect">
+            <option value="none">なし</option>
+            <option value="light">少し</option>
+            <option value="deep">濃いめ</option>
+          </select>
+        </label>
+        <label class="ll-field">
+          <span>思想</span>
+          <select id="ll-worldview">
+            <option value="gap">夜の隙間</option>
+            <option value="rave-memory">小箱 / rave残り香</option>
+            <option value="band-lineage">バンド文化圏</option>
+            <option value="return-home">帰郷 / 地元に溶ける</option>
+            <option value="family-climate">家族 / 風土を創る</option>
+            <option value="culture-role">文化を回す立場</option>
+            <option value="uchinanchu-now">現代ウチナーンチュ</option>
+            <option value="base-life">基地と生活</option>
+            <option value="america-distance">アメリカ距離感</option>
+            <option value="ancestor-groundwar">先祖 / 地上戦</option>
+            <option value="ryukyu-care">軽々しく言えない琉球</option>
+            <option value="twisted-politics">ねじれた政局</option>
+          </select>
+        </label>
+        <label class="ll-field">
+          <span>型</span>
+          <select id="ll-form">
+            <option value="full">A/B/Hook full</option>
+            <option value="compact">compact single</option>
+            <option value="chant">chant heavy</option>
+          </select>
+        </label>
+        <label class="ll-field">
+          <span>声</span>
+          <select id="ll-voice">
+            <option value="collective">われら / anonymous</option>
+            <option value="neutral">neutral</option>
+            <option value="personal">personal allowed</option>
+          </select>
+        </label>
+        <label class="ll-field">
+          <span>熱</span>
+          <input id="ll-heat" type="range" min="0" max="100" value="58" />
+        </label>
+        <label class="ll-field">
+          <span>変さ</span>
+          <input id="ll-weird" type="range" min="0" max="100" value="64" />
+        </label>
+      </div>
+
+      <div class="ll-actions">
+        <button type="button" id="ll-build" class="ll-primary">下書きを作る</button>
+        <button type="button" id="ll-reroll">別案を作る</button>
+        <button type="button" id="ll-copy-all">下書きをコピー</button>
+      </div>
+      <div class="ll-actions ll-actions-library">
+        <button type="button" id="ll-save-draft">棚に保存</button>
+        <button type="button" id="ll-fork-draft">別案として保存</button>
+        <button type="button" id="ll-open-shelf" class="ll-primary" data-open-shelf>作品棚</button>
+        <button type="button" id="ll-export-json">バックアップ</button>
+        <button type="button" id="ll-import-json">復元</button>
+        <input id="ll-import-file" type="file" accept="application/json,.json" hidden />
+      </div>
+      <p id="ll-status" class="ll-status" aria-live="polite"></p>
+    </section>
+
+    <section id="shelf" class="ll-panel ll-output" aria-label="Generated lyrics">
+      <div class="ll-tabs" role="tablist" aria-label="Output views">
+        <button type="button" class="ll-tab is-active" data-view="draft" role="tab" aria-selected="true">下書き</button>
+        <button type="button" class="ll-tab" data-view="library" role="tab" aria-selected="false">作品棚</button>
+        <button type="button" class="ll-tab" data-view="final" role="tab" aria-selected="false">磨く</button>
+        <button type="button" class="ll-tab" data-view="hook" role="tab" aria-selected="false">Hook</button>
+        <button type="button" class="ll-tab" data-view="suno" role="tab" aria-selected="false">Suno</button>
+        <button type="button" class="ll-tab" data-view="map" role="tab" aria-selected="false">曲設計</button>
+      </div>
+
+      <div class="ll-output-toolbar">
+        <div class="ll-output-context">
+          <span id="ll-output-label">下書き</span>
+          <a id="ll-source-link" class="ll-source-link" href="#" target="_blank" rel="noopener noreferrer" hidden>元メモを開く</a>
+        </div>
+        <div class="ll-output-tools">
+          <button type="button" id="ll-draft-to-final" data-views="draft">この下書きを磨く</button>
+          <button type="button" id="ll-save-final" data-views="final">保存</button>
+          <button type="button" id="ll-fix-final" data-views="final">完成にする</button>
+          <button type="button" id="ll-copy-ai-handoff" data-views="draft final">AIへ渡す</button>
+          <button type="button" id="ll-copy-view" data-views="draft final hook suno map">コピー</button>
+        </div>
+      </div>
+
+      <pre id="ll-view-draft" class="ll-view is-active"></pre>
+      <textarea id="ll-view-final" class="ll-view ll-final-editor" spellcheck="false" placeholder="歌詞本文"></textarea>
+      <pre id="ll-view-hook" class="ll-view"></pre>
+      <pre id="ll-view-suno" class="ll-view"></pre>
+      <pre id="ll-view-map" class="ll-view"></pre>
+      <div id="ll-view-library" class="ll-view ll-library-view">
+        <div class="ll-library-head ll-library-head-main">
+          <h3>保存した作品</h3>
+          <div class="ll-library-head-actions">
+            <span id="ll-library-main-count" class="ll-library-count">0作品</span>
+            <button type="button" id="ll-new-draft" class="ll-new-draft">新しい歌詞</button>
+          </div>
+        </div>
+        <div class="ll-library-tools">
+          <input id="ll-library-search-main" type="search" autocomplete="off" aria-label="作品を検索" placeholder="タイトル・本文を検索" />
+          <select id="ll-library-filter-main" aria-label="作品を絞り込む">
+            <option value="all">すべて</option>
+            <option value="current">今の方向</option>
+            <option value="scene">Scene</option>
+            <option value="fixed">完成</option>
+            <option value="working">制作中</option>
+            <option value="memo">ボイスメモ</option>
+          </select>
+          <div class="ll-library-cloud-tools">
+            <div class="ll-cloud-state">
+              <span>端末間同期</span>
+              <strong id="ll-cloud-state-main" aria-live="polite">未接続</strong>
+            </div>
+            <div class="ll-cloud-actions">
+              <button type="button" id="ll-cloud-pull-main" class="ll-primary">クラウドから更新</button>
+              <button type="button" id="ll-cloud-push-main">クラウドへ保存</button>
+            </div>
+            <div id="ll-cloud-settings-main" class="ll-cloud-settings" data-open="false">
+              <button type="button" id="ll-cloud-settings-toggle" class="ll-cloud-settings-toggle" aria-expanded="false">接続設定</button>
+              <label class="ll-token-field">
+                <span>同期キー</span>
+                <input id="ll-sync-token-main" type="password" autocomplete="off" placeholder="この端末に一度だけ貼り付け" title="Worker PC: .music-stack/lyric-lab-cloud-token.txt" />
+              </label>
+            </div>
+          </div>
+        </div>
+        <div id="ll-library-main" class="ll-library-list ll-library-list-main"></div>
+      </div>
+    </section>
+
+    <aside class="ll-panel ll-rack" aria-label="Lyric parts">
+      <div class="ll-panel-head">
+        <h2>部品</h2>
+        <button type="button" id="ll-copy-hook">Hookをコピー</button>
+      </div>
+      <div class="ll-rack-group ll-rack-shelf">
+        <div class="ll-library-head">
+          <h3>最近の作品</h3>
+          <span id="ll-library-count" class="ll-library-count">0作品</span>
+        </div>
+        <div class="ll-library-tools">
+          <input id="ll-library-search" type="search" autocomplete="off" aria-label="作品を検索" placeholder="作品を検索" />
+          <select id="ll-library-filter" aria-label="作品を絞り込む">
+            <option value="all">すべて</option>
+            <option value="current">今の方向</option>
+            <option value="scene">Scene</option>
+            <option value="fixed">完成</option>
+            <option value="working">制作中</option>
+            <option value="memo">ボイスメモ</option>
+          </select>
+        </div>
+        <div id="ll-library" class="ll-library-list"></div>
+      </div>
+      <div class="ll-rack-group">
+        <h3>Hook cuts</h3>
+        <div id="ll-hook-cuts" class="ll-chip-list"></div>
+      </div>
+      <div class="ll-rack-group">
+        <h3>Mantra</h3>
+        <div id="ll-mantras" class="ll-chip-list"></div>
+      </div>
+      <div class="ll-rack-group">
+        <h3>Image words</h3>
+        <div id="ll-images" class="ll-chip-list"></div>
+      </div>
+      <div class="ll-rack-group">
+        <h3>Distill anchors</h3>
+        <div id="ll-distill-anchors" class="ll-chip-list"></div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="lyric-lab.js" defer></script>
+</body>
+</html>
