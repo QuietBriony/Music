@@ -5,6 +5,24 @@
 >
 > ゴール: 「自分のパート (vocals / guitar / drums) 以外を切って、DAW で取り直したテイクを差し替える」 — これを band-room ↔ DAW 往復ループで回す。
 
+## 0. Lyric Lab を曲の受け渡し票にする
+
+BandLab / ACE-Step / Suno / Band Roomを直接API連携させるのではなく、Lyric Labの
+作品棚に1曲分の共通情報を持たせる。
+
+```
+BandLab or voice memo sketch
+  -> Lyric Lab (lyrics + source URL + BPM/key/duration/meter)
+  -> ACE-Step or Suno vocal demo
+  -> BandLab arrangement / recording
+  -> Band Room external stem review
+  -> reviewed Scene metadata back to Music Stack
+```
+
+`制作元`と`制作先`を選ぶと、`制作`タブが対象ツール向けのcopy packetに切り替わる。
+BandLab向けには現在の歌詞とsession情報、Band Room向けには歌詞を含まないScene
+metadataを出す。ファイルimport/exportは各ツールで人が行い、音声をrepoへ入れない。
+
 ---
 
 ## 1. band-room → DAW (素材を持ち出す)
