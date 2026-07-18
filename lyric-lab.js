@@ -1,7 +1,7 @@
 const STORAGE_KEY = "music-stack.lyric-lab.v1";
 const LIBRARY_KEY = "music-stack.lyric-lab.library.v1";
 const SYNC_TOKEN_KEY = "music-stack.lyric-lab.sync-token.v1";
-const TOKEN_HELP = "cloud token needed: worker PC .music-stack/lyric-lab-cloud-token.txt";
+const TOKEN_HELP = "接続設定に同期キーを貼り付けてください";
 const INTAKE_PROMPT = `私は沖縄ローカルの視点から、歌詞を作るための思想体系を蒸留したいです。
 
 扱いたいテーマは、
@@ -30,7 +30,10 @@ const state = {
   currentId: null,
   library: [],
   librarySearch: "",
-  libraryFilter: "all"
+  libraryFilter: "all",
+  cloudStatus: "idle",
+  cloudLoaded: false,
+  cloudCount: null
 };
 
 const imageBanks = {
@@ -1084,7 +1087,7 @@ function generate() {
 
 function render() {
   const result = state.result;
-  const empty = "素材を貼って Build。";
+  const empty = "素材を貼って「下書きを作る」。";
   $("ll-view-draft").textContent = result?.draft || empty;
   $("ll-view-final").value = result?.final || result?.draft || "";
   $("ll-view-hook").textContent = result?.hook || empty;
@@ -1095,7 +1098,7 @@ function render() {
   renderChips("ll-images", result?.parts?.images || [], "image");
   renderChips("ll-distill-anchors", distillProfile($("ll-distill").value).anchors || [], "distill");
   renderLibrary();
-  $("ll-status").textContent = result ? `${result.title} built` : "";
+  $("ll-status").textContent = result ? `${result.title} の下書きを作りました` : "";
 }
 
 function renderChips(id, list, kind) {
@@ -1128,9 +1131,9 @@ async function copyText(text, label) {
   if (!text) return;
   try {
     await navigator.clipboard.writeText(text);
-    $("ll-status").textContent = `${label} copied`;
+    $("ll-status").textContent = `${label}をコピーしました`;
   } catch (error) {
-    $("ll-status").textContent = "copy failed";
+    $("ll-status").textContent = "コピーできませんでした";
   }
 }
 
@@ -1148,14 +1151,14 @@ function distillToSeed() {
     ...profile.sections.presets
   ]).slice(0, 24);
   if (!additions.length) {
-    $("ll-status").textContent = "no distill anchors";
+    $("ll-status").textContent = "思想蒸留に拾える言葉がありません";
     return;
   }
   appendUniqueLines($("ll-seed"), additions);
   state.currentId = null;
   generate();
   save();
-  $("ll-status").textContent = `${additions.length} distill anchor(s) folded`;
+  $("ll-status").textContent = `${additions.length}個の言葉をネタへ移しました`;
 }
 
 function ensureResult() {
@@ -1171,7 +1174,7 @@ function updateSunoFromFinal() {
 
 function draftToFinal() {
   if (!ensureResult()) {
-    $("ll-status").textContent = "nothing to finalize";
+    $("ll-status").textContent = "磨く下書きがありません";
     return;
   }
   state.result.final = state.result.draft;
@@ -1180,21 +1183,27 @@ function draftToFinal() {
   setActiveView("final");
   render();
   saveDraftToLibrary();
-  $("ll-status").textContent = "draft copied to final";
+  $("ll-status").textContent = "下書きを編集画面へ移しました";
 }
 
-function saveFinal(status = "working") {
+async function saveFinal(status = "working") {
   if (!ensureResult()) {
-    $("ll-status").textContent = "nothing to save";
+    $("ll-status").textContent = "保存する歌詞がありません";
     return;
   }
   state.result.final = $("ll-view-final").value.trim() || state.result.draft;
   state.result.status = status;
   updateSunoFromFinal();
-  saveDraftToLibrary();
+  const item = saveDraftToLibrary();
   render();
   setActiveView("final");
-  $("ll-status").textContent = status === "fixed" ? `${state.result.title} fixed` : "final saved";
+  $("ll-status").textContent = status === "fixed" ? `${state.result.title} を完成にしました` : "歌詞を保存しました";
+  if (item && syncTokenValue()) {
+    const message = status === "fixed"
+      ? `${item.title} を完成版としてクラウド保存しました`
+      : `${item.title} をクラウドにも保存しました`;
+    await cloudPush({ saveCurrent: false, keepView: true, successMessage: message });
+  }
 }
 
 function setActiveView(view) {
@@ -1207,13 +1216,28 @@ function setActiveView(view) {
   for (const pre of document.querySelectorAll(".ll-view")) {
     pre.classList.toggle("is-active", pre.id === `ll-view-${view}`);
   }
-  $("ll-output-label").textContent = view === "library" ? "shelf" : view;
+  for (const tool of document.querySelectorAll(".ll-output-tools [data-views]")) {
+    tool.hidden = !tool.dataset.views.split(/\s+/).includes(view);
+  }
+  const toolbar = document.querySelector(".ll-output-toolbar");
+  if (toolbar) toolbar.hidden = view === "library";
+  $("ll-output-label").textContent = {
+    draft: "下書き",
+    library: "作品棚",
+    final: "歌詞を磨く",
+    hook: "Hook",
+    suno: "Suno",
+    map: "Map"
+  }[view] || view;
 }
 
 function openShelf() {
   setActiveView("library");
   document.querySelector(".ll-output")?.scrollIntoView({ block: "start", behavior: "smooth" });
   save();
+  if (syncTokenValue() && !state.cloudLoaded && state.cloudStatus !== "syncing") {
+    void cloudPull({ quiet: true });
+  }
 }
 
 function draftSnapshot(id = state.currentId) {
@@ -1248,7 +1272,7 @@ function saveLibrary() {
   try {
     localStorage.setItem(LIBRARY_KEY, JSON.stringify(state.library));
   } catch (error) {
-    $("ll-status").textContent = "library save failed";
+    $("ll-status").textContent = "作品棚へ保存できませんでした";
   }
 }
 
@@ -1283,8 +1307,8 @@ function hasDraftInput() {
 
 function saveDraftToLibrary() {
   if (!hasDraftInput()) {
-    $("ll-status").textContent = "nothing to save";
-    return;
+    $("ll-status").textContent = "保存する歌詞がありません";
+    return null;
   }
   if (!state.result) generate();
   if (state.result && state.activeView === "final") {
@@ -1300,7 +1324,14 @@ function saveDraftToLibrary() {
   saveLibrary();
   renderLibrary();
   save();
-  $("ll-status").textContent = `${item.title} saved`;
+  $("ll-status").textContent = `${item.title} を作品棚へ保存しました`;
+  return item;
+}
+
+async function saveDraftAndSync() {
+  const item = saveDraftToLibrary();
+  if (!item || !syncTokenValue()) return;
+  await cloudPush({ saveCurrent: false, keepView: true, successMessage: `${item.title} をクラウドにも保存しました` });
 }
 
 function nextTakeTitle(baseTitle) {
@@ -1313,8 +1344,8 @@ function nextTakeTitle(baseTitle) {
 
 function forkDraftToLibrary() {
   if (!hasDraftInput()) {
-    $("ll-status").textContent = "nothing to fork";
-    return;
+    $("ll-status").textContent = "別案にする素材がありません";
+    return null;
   }
   const title = nextTakeTitle($("ll-title").value.trim() || state.result?.title);
   state.currentId = null;
@@ -1327,12 +1358,20 @@ function forkDraftToLibrary() {
   saveLibrary();
   renderLibrary();
   save();
-  $("ll-status").textContent = `${item.title} forked`;
+  $("ll-status").textContent = `${item.title} を別案として保存しました`;
+  return item;
+}
+
+async function forkDraftAndSync() {
+  const item = forkDraftToLibrary();
+  if (!item || !syncTokenValue()) return;
+  await cloudPush({ saveCurrent: false, keepView: true, successMessage: `${item.title} を別案としてクラウド保存しました` });
 }
 
 function loadDraftFromLibrary(id) {
   const item = state.library.find((entry) => entry.id === id);
   if (!item) return;
+  const openView = item.result ? "final" : "draft";
   state.currentId = item.id;
   $("ll-title").value = item.title || "";
   $("ll-source-url").value = item.sourceUrl || "";
@@ -1347,30 +1386,58 @@ function loadDraftFromLibrary(id) {
   $("ll-heat").value = item.settings?.heat || "58";
   $("ll-weird").value = item.settings?.weird || "64";
   state.reroll = Number(item.reroll || 0);
-  state.activeView = item.activeView || "draft";
+  state.activeView = openView;
   state.result = item.result || null;
   if (state.result) {
     state.result.final = state.result.final || state.result.draft || "";
     state.result.status = state.result.status || item.status || "working";
   }
-  setActiveView(state.activeView);
   if (!state.result && $("ll-seed").value.trim()) generate();
   else {
     render();
     save();
   }
+  setActiveView(openView);
+  requestAnimationFrame(() => {
+    document.querySelector(".ll-output")?.scrollIntoView({ block: "start", behavior: "smooth" });
+  });
+  $("ll-status").textContent = `${item.title || "Untitled"} を開きました`;
 }
 
-function deleteDraftFromLibrary(id) {
+async function deleteDraftFromLibrary(id) {
+  const item = state.library.find((entry) => entry.id === id);
+  if (!item) return;
+  if (!window.confirm(`「${item.title || "Untitled"}」を作品棚から削除しますか？`)) return;
   state.library = state.library.filter((entry) => entry.id !== id);
   if (state.currentId === id) state.currentId = null;
   saveLibrary();
   renderLibrary();
   save();
+  $("ll-status").textContent = `${item.title || "Untitled"} を削除しました`;
+  if (!syncTokenValue()) return;
+  try {
+    const response = await fetch(`api/lyric-drafts?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: syncHeaders()
+    });
+    if (!response.ok) throw new Error("cloud delete failed");
+    state.cloudCount = Math.max(0, Number(state.cloudCount || 1) - 1);
+    state.cloudStatus = "connected";
+    renderCloudState();
+    $("ll-status").textContent = `${item.title || "Untitled"} をクラウドからも削除しました`;
+  } catch (error) {
+    state.cloudStatus = "error";
+    renderCloudState("削除の同期に失敗");
+    $("ll-status").textContent = "端末から削除しました。クラウド削除は再試行してください";
+  }
 }
 
 function draftStatus(item) {
   return item?.result?.status || item?.status || "working";
+}
+
+function draftStatusLabel(item) {
+  return draftStatus(item) === "fixed" ? "完成" : "制作中";
 }
 
 function draftDirection(item) {
@@ -1492,7 +1559,7 @@ function renderLibraryInto(root, items, limit = 24) {
   if (!items.length) {
     const empty = document.createElement("div");
     empty.className = "ll-library-empty";
-    empty.textContent = state.library.length ? "no match" : "empty shelf";
+    empty.textContent = state.library.length ? "該当する作品はありません" : "作品はまだありません";
     root.appendChild(empty);
     return;
   }
@@ -1514,14 +1581,14 @@ function renderLibraryInto(root, items, limit = 24) {
     const label = directionProfile(draftDirection(item)).label;
     const taste = tasteProfile(draftTaste(item)).label;
     const worldview = draftWorldviewLabel(item);
-    meta.textContent = `${draftStatus(item)} / ${label} / ${taste} / ${worldview} / ${draftKind(item)}`;
+    meta.textContent = `${draftStatusLabel(item)} / ${label} / ${taste} / ${worldview}`;
 
     const del = document.createElement("button");
     del.type = "button";
     del.className = "ll-library-delete";
     del.textContent = "x";
-    del.setAttribute("aria-label", `Delete ${item.title || "draft"}`);
-    del.addEventListener("click", () => deleteDraftFromLibrary(item.id));
+    del.setAttribute("aria-label", `${item.title || "作品"}を削除`);
+    del.addEventListener("click", () => void deleteDraftFromLibrary(item.id));
 
     if (shelf) {
       const top = document.createElement("div");
@@ -1533,16 +1600,10 @@ function renderLibraryInto(root, items, limit = 24) {
 
       const tags = document.createElement("div");
       tags.className = "ll-library-shelf-tags";
-      for (const tag of [
-        draftStatus(item),
-        draftKind(item),
-        label,
-        taste,
-        worldview
-      ]) {
+      for (const tag of [draftStatusLabel(item), label, worldview]) {
         const chip = document.createElement("span");
         chip.className = "ll-library-tag";
-        chip.dataset.kind = tag === "fixed" || tag === "scene" ? tag : "meta";
+        chip.dataset.kind = draftStatus(item) === "fixed" && tag === draftStatusLabel(item) ? "fixed" : "meta";
         chip.textContent = tag;
         tags.appendChild(chip);
       }
@@ -1558,7 +1619,17 @@ function renderLibraryInto(root, items, limit = 24) {
 
       const footer = document.createElement("div");
       footer.className = "ll-library-card-footer";
-      footer.append(meta, del);
+      const actions = document.createElement("div");
+      actions.className = "ll-library-card-actions";
+      const open = document.createElement("button");
+      open.type = "button";
+      open.className = "ll-library-open-button";
+      open.textContent = "開く";
+      open.setAttribute("aria-label", `${item.title || "Untitled"} を開く`);
+      open.addEventListener("click", () => loadDraftFromLibrary(item.id));
+      del.textContent = "削除";
+      actions.append(open, del);
+      footer.append(meta, actions);
 
       row.append(top, tags, preview, scene, footer);
     } else {
@@ -1575,6 +1646,35 @@ function syncTokenInputs(value = syncTokenValue()) {
   }
 }
 
+function renderCloudState(message = "") {
+  const root = document.querySelector(".ll-library-cloud-tools");
+  const label = $("ll-cloud-state-main");
+  const details = $("ll-cloud-settings-main");
+  const hasToken = Boolean(syncTokenValue());
+  if (!hasToken && state.cloudStatus !== "syncing") state.cloudStatus = "idle";
+  if (hasToken && state.cloudStatus === "idle") state.cloudStatus = "ready";
+
+  const text = message || {
+    idle: "この端末は未接続",
+    ready: "同期キー保存済み",
+    syncing: "同期中...",
+    connected: `${state.cloudCount ?? state.library.length}作品・接続済み`,
+    error: "接続を確認してください"
+  }[state.cloudStatus] || "未接続";
+
+  if (root) root.dataset.state = state.cloudStatus;
+  if (label) label.textContent = text;
+  const disabled = !hasToken || state.cloudStatus === "syncing";
+  for (const id of ["ll-cloud-pull-main", "ll-cloud-push-main"]) {
+    const button = $(id);
+    if (button) button.disabled = disabled;
+  }
+  if (details) {
+    if (!hasToken || state.cloudStatus === "error") details.open = true;
+    else if (state.cloudStatus === "connected") details.open = false;
+  }
+}
+
 function renderLibrary() {
   syncLibraryControls();
   const items = filteredLibrary();
@@ -1582,8 +1682,13 @@ function renderLibrary() {
   renderLibraryInto($("ll-library-main"), items, 200);
   for (const id of ["ll-library-count", "ll-library-main-count"]) {
     const count = $(id);
-    if (count) count.textContent = `${items.length}/${state.library.length}`;
+    if (count) {
+      count.textContent = items.length === state.library.length
+        ? `${state.library.length}作品`
+        : `${items.length} / ${state.library.length}作品`;
+    }
   }
+  renderCloudState();
 }
 
 function exportLibraryJson() {
@@ -1602,7 +1707,7 @@ function exportLibraryJson() {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-  $("ll-status").textContent = "library exported";
+  $("ll-status").textContent = "作品棚のバックアップを作りました";
 }
 
 async function importLibraryJson(file) {
@@ -1615,9 +1720,9 @@ async function importLibraryJson(file) {
     mergeLibraryDrafts(incoming);
     saveLibrary();
     renderLibrary();
-    $("ll-status").textContent = `${incoming.length} imported`;
+    $("ll-status").textContent = `${incoming.length}作品を復元しました`;
   } catch (error) {
-    $("ll-status").textContent = "import failed";
+    $("ll-status").textContent = "バックアップを復元できませんでした";
   }
 }
 
@@ -1634,16 +1739,22 @@ function syncTokenValue() {
 
 function focusCloudToken() {
   setActiveView("library");
-  ($("ll-sync-token-main") || $("ll-sync-token"))?.focus();
+  const details = $("ll-cloud-settings-main");
+  if (details) details.open = true;
+  requestAnimationFrame(() => ($("ll-sync-token-main") || $("ll-sync-token"))?.focus());
 }
 
-async function cloudPull() {
+async function cloudPull({ quiet = false } = {}) {
   try {
     if (!syncTokenValue()) {
       focusCloudToken();
       $("ll-status").textContent = TOKEN_HELP;
-      return;
+      renderCloudState();
+      return false;
     }
+    state.cloudStatus = "syncing";
+    renderCloudState();
+    if (!quiet) $("ll-status").textContent = "クラウドを更新しています...";
     const response = await fetch("api/lyric-drafts", { headers: syncHeaders() });
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) throw new Error("cloud token rejected");
@@ -1653,22 +1764,36 @@ async function cloudPull() {
     const incoming = Array.isArray(data.drafts) ? data.drafts : [];
     mergeLibraryDrafts(incoming);
     saveLibrary();
+    state.cloudStatus = "connected";
+    state.cloudLoaded = true;
+    state.cloudCount = incoming.length;
     renderLibrary();
     setActiveView("library");
-    $("ll-status").textContent = `${incoming.length} cloud draft(s) on shelf`;
+    $("ll-status").textContent = `クラウドから${incoming.length}作品を更新しました`;
+    return true;
   } catch (error) {
-    $("ll-status").textContent = error.message === "cloud token rejected" ? error.message : "cloud pull unavailable";
+    state.cloudStatus = "error";
+    state.cloudLoaded = false;
+    const rejected = error.message === "cloud token rejected";
+    renderCloudState(rejected ? "同期キーを確認してください" : "クラウドに接続できません");
+    if (rejected) focusCloudToken();
+    $("ll-status").textContent = rejected ? "同期キーを確認してください" : "クラウドから更新できませんでした";
+    return false;
   }
 }
 
-async function cloudPush() {
+async function cloudPush({ saveCurrent = true, keepView = false, successMessage = "" } = {}) {
   try {
     if (!syncTokenValue()) {
       focusCloudToken();
       $("ll-status").textContent = TOKEN_HELP;
-      return;
+      renderCloudState();
+      return false;
     }
-    if (hasDraftInput()) saveDraftToLibrary();
+    if (saveCurrent && hasDraftInput()) saveDraftToLibrary();
+    state.cloudStatus = "syncing";
+    renderCloudState();
+    $("ll-status").textContent = "クラウドへ保存しています...";
     const response = await fetch("api/lyric-drafts", {
       method: "POST",
       headers: syncHeaders(),
@@ -1679,10 +1804,20 @@ async function cloudPush() {
       throw new Error(await response.text());
     }
     const data = await response.json();
-    setActiveView("library");
-    $("ll-status").textContent = `${data.count || 0} draft(s) saved to cloud shelf`;
+    state.cloudStatus = "connected";
+    state.cloudLoaded = true;
+    state.cloudCount = state.library.length;
+    renderCloudState();
+    if (!keepView) setActiveView("library");
+    $("ll-status").textContent = successMessage || `${data.count || 0}作品をクラウドへ保存しました`;
+    return true;
   } catch (error) {
-    $("ll-status").textContent = error.message === "cloud token rejected" ? error.message : "cloud push unavailable";
+    state.cloudStatus = "error";
+    const rejected = error.message === "cloud token rejected";
+    renderCloudState(rejected ? "同期キーを確認してください" : "クラウドに接続できません");
+    if (rejected) focusCloudToken();
+    $("ll-status").textContent = rejected ? "同期キーを確認してください" : "クラウドへ保存できませんでした";
+    return false;
   }
 }
 
@@ -1714,7 +1849,9 @@ function save() {
 
 function restore() {
   try {
-    syncTokenInputs(localStorage.getItem(SYNC_TOKEN_KEY) || "");
+    const storedToken = localStorage.getItem(SYNC_TOKEN_KEY) || "";
+    syncTokenInputs(storedToken);
+    state.cloudStatus = storedToken ? "ready" : "idle";
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const data = JSON.parse(raw);
@@ -1748,10 +1885,10 @@ function bind() {
   $("ll-copy-view").addEventListener("click", () => copyText(activeText(), state.activeView));
   $("ll-copy-hook").addEventListener("click", () => copyText(state.result?.hook || "", "hook"));
   $("ll-draft-to-final").addEventListener("click", draftToFinal);
-  $("ll-save-final").addEventListener("click", () => saveFinal("working"));
-  $("ll-fix-final").addEventListener("click", () => saveFinal("fixed"));
-  $("ll-save-draft").addEventListener("click", saveDraftToLibrary);
-  $("ll-fork-draft").addEventListener("click", forkDraftToLibrary);
+  $("ll-save-final").addEventListener("click", () => void saveFinal("working"));
+  $("ll-fix-final").addEventListener("click", () => void saveFinal("fixed"));
+  $("ll-save-draft").addEventListener("click", () => void saveDraftAndSync());
+  $("ll-fork-draft").addEventListener("click", () => void forkDraftAndSync());
   $("ll-export-json").addEventListener("click", exportLibraryJson);
   $("ll-import-json").addEventListener("click", () => $("ll-import-file").click());
   $("ll-distill-to-seed").addEventListener("click", distillToSeed);
@@ -1763,10 +1900,10 @@ function bind() {
     });
   }
   for (const id of ["ll-cloud-pull", "ll-cloud-pull-main"]) {
-    $(id)?.addEventListener("click", cloudPull);
+    $(id)?.addEventListener("click", () => void cloudPull());
   }
   for (const id of ["ll-cloud-push", "ll-cloud-push-main"]) {
-    $(id)?.addEventListener("click", cloudPush);
+    $(id)?.addEventListener("click", () => void cloudPush());
   }
   $("ll-import-file").addEventListener("change", (event) => {
     importLibraryJson(event.target.files?.[0]);
@@ -1794,7 +1931,15 @@ function bind() {
   for (const id of ["ll-sync-token", "ll-sync-token-main"]) {
     $(id)?.addEventListener("input", (event) => {
       syncTokenInputs(event.target.value);
+      state.cloudStatus = event.target.value.trim() ? "ready" : "idle";
+      state.cloudLoaded = false;
+      renderCloudState();
       save();
+    });
+    $(id)?.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      void cloudPull();
     });
   }
   $("ll-clear").addEventListener("click", () => {
@@ -1846,6 +1991,7 @@ if (initialShelfRequested) {
   requestAnimationFrame(() => {
     document.querySelector(".ll-output")?.scrollIntoView({ block: "start" });
   });
+  if (syncTokenValue()) void cloudPull({ quiet: true });
 }
 window.addEventListener("hashchange", () => {
   if (location.hash === "#shelf") openShelf();

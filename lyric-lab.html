@@ -19,7 +19,7 @@
       <a href="index.html">Core</a>
       <a href="band-room.html">Band Room</a>
       <a href="docs/SUNO-WORKFLOW.md">Suno</a>
-      <a href="#shelf" data-open-shelf>Shelf</a>
+      <a href="#shelf" data-open-shelf>作品棚</a>
     </nav>
   </header>
 
@@ -130,16 +130,16 @@
       </div>
 
       <div class="ll-actions">
-        <button type="button" id="ll-build" class="ll-primary">Build</button>
-        <button type="button" id="ll-reroll">Reroll</button>
-        <button type="button" id="ll-copy-all">Copy draft</button>
+        <button type="button" id="ll-build" class="ll-primary">下書きを作る</button>
+        <button type="button" id="ll-reroll">別案を作る</button>
+        <button type="button" id="ll-copy-all">下書きをコピー</button>
       </div>
       <div class="ll-actions ll-actions-library">
-        <button type="button" id="ll-save-draft">Save</button>
-        <button type="button" id="ll-fork-draft">Fork</button>
-        <button type="button" id="ll-open-shelf" class="ll-primary" data-open-shelf>Shelf</button>
-        <button type="button" id="ll-export-json">Export JSON</button>
-        <button type="button" id="ll-import-json">Import JSON</button>
+        <button type="button" id="ll-save-draft">棚に保存</button>
+        <button type="button" id="ll-fork-draft">別案として保存</button>
+        <button type="button" id="ll-open-shelf" class="ll-primary" data-open-shelf>作品棚</button>
+        <button type="button" id="ll-export-json">バックアップ</button>
+        <button type="button" id="ll-import-json">復元</button>
         <input id="ll-import-file" type="file" accept="application/json,.json" hidden />
       </div>
       <p id="ll-status" class="ll-status" aria-live="polite"></p>
@@ -147,51 +147,60 @@
 
     <section id="shelf" class="ll-panel ll-output" aria-label="Generated lyrics">
       <div class="ll-tabs" role="tablist" aria-label="Output views">
-        <button type="button" class="ll-tab is-active" data-view="draft" role="tab" aria-selected="true">Draft</button>
-        <button type="button" class="ll-tab" data-view="library" role="tab" aria-selected="false">Shelf</button>
-        <button type="button" class="ll-tab" data-view="final" role="tab" aria-selected="false">Final</button>
+        <button type="button" class="ll-tab is-active" data-view="draft" role="tab" aria-selected="true">下書き</button>
+        <button type="button" class="ll-tab" data-view="library" role="tab" aria-selected="false">作品棚</button>
+        <button type="button" class="ll-tab" data-view="final" role="tab" aria-selected="false">磨く</button>
         <button type="button" class="ll-tab" data-view="hook" role="tab" aria-selected="false">Hook</button>
         <button type="button" class="ll-tab" data-view="suno" role="tab" aria-selected="false">Suno</button>
         <button type="button" class="ll-tab" data-view="map" role="tab" aria-selected="false">Map</button>
       </div>
 
       <div class="ll-output-toolbar">
-        <span id="ll-output-label">Draft</span>
+        <span id="ll-output-label">下書き</span>
         <div class="ll-output-tools">
-          <button type="button" id="ll-draft-to-final">Draft to final</button>
-          <button type="button" id="ll-save-final">Save final</button>
-          <button type="button" id="ll-fix-final">Fix</button>
-          <button type="button" id="ll-copy-view">Copy view</button>
+          <button type="button" id="ll-draft-to-final" data-views="draft">この下書きを磨く</button>
+          <button type="button" id="ll-save-final" data-views="final">保存</button>
+          <button type="button" id="ll-fix-final" data-views="final">完成にする</button>
+          <button type="button" id="ll-copy-view" data-views="draft final hook suno map">コピー</button>
         </div>
       </div>
 
       <pre id="ll-view-draft" class="ll-view is-active"></pre>
-      <textarea id="ll-view-final" class="ll-view ll-final-editor" spellcheck="false" placeholder="Draftをここで歌詞として磨く。Fixすると保存一覧で fixed 扱いになる。"></textarea>
+      <textarea id="ll-view-final" class="ll-view ll-final-editor" spellcheck="false" placeholder="歌詞本文"></textarea>
       <pre id="ll-view-hook" class="ll-view"></pre>
       <pre id="ll-view-suno" class="ll-view"></pre>
       <pre id="ll-view-map" class="ll-view"></pre>
       <div id="ll-view-library" class="ll-view ll-library-view">
-        <div class="ll-library-head">
-          <h3>Draft shelf</h3>
-          <span id="ll-library-main-count" class="ll-library-count">0</span>
+        <div class="ll-library-head ll-library-head-main">
+          <h3>保存した作品</h3>
+          <span id="ll-library-main-count" class="ll-library-count">0作品</span>
         </div>
         <div class="ll-library-tools">
-          <input id="ll-library-search-main" type="search" autocomplete="off" placeholder="search title / seed" />
-          <select id="ll-library-filter-main">
-            <option value="all">all</option>
-            <option value="current">current direction</option>
-            <option value="scene">scene</option>
-            <option value="fixed">fixed</option>
-            <option value="working">working</option>
-            <option value="memo">memo</option>
+          <input id="ll-library-search-main" type="search" autocomplete="off" aria-label="作品を検索" placeholder="タイトル・本文を検索" />
+          <select id="ll-library-filter-main" aria-label="作品を絞り込む">
+            <option value="all">すべて</option>
+            <option value="current">今の方向</option>
+            <option value="scene">Scene</option>
+            <option value="fixed">完成</option>
+            <option value="working">制作中</option>
+            <option value="memo">ボイスメモ</option>
           </select>
           <div class="ll-library-cloud-tools">
-            <label class="ll-token-field">
-              <span>cloud token</span>
-              <input id="ll-sync-token-main" type="password" autocomplete="off" placeholder="paste sync token" title="Worker PC: .music-stack/lyric-lab-cloud-token.txt" />
-            </label>
-            <button type="button" id="ll-cloud-pull-main" class="ll-primary">Load cloud shelf</button>
-            <button type="button" id="ll-cloud-push-main">Save cloud shelf</button>
+            <div class="ll-cloud-state">
+              <span>Cloud shelf</span>
+              <strong id="ll-cloud-state-main" aria-live="polite">未接続</strong>
+            </div>
+            <div class="ll-cloud-actions">
+              <button type="button" id="ll-cloud-pull-main" class="ll-primary">クラウドから更新</button>
+              <button type="button" id="ll-cloud-push-main">クラウドへ保存</button>
+            </div>
+            <details id="ll-cloud-settings-main" class="ll-cloud-settings">
+              <summary>接続設定</summary>
+              <label class="ll-token-field">
+                <span>同期キー</span>
+                <input id="ll-sync-token-main" type="password" autocomplete="off" placeholder="この端末に一度だけ貼り付け" title="Worker PC: .music-stack/lyric-lab-cloud-token.txt" />
+              </label>
+            </details>
           </div>
         </div>
         <div id="ll-library-main" class="ll-library-list ll-library-list-main"></div>
@@ -205,18 +214,18 @@
       </div>
       <div class="ll-rack-group ll-rack-shelf">
         <div class="ll-library-head">
-          <h3>Recent</h3>
-          <span id="ll-library-count" class="ll-library-count">0</span>
+          <h3>最近の作品</h3>
+          <span id="ll-library-count" class="ll-library-count">0作品</span>
         </div>
         <div class="ll-library-tools">
-          <input id="ll-library-search" type="search" autocomplete="off" placeholder="search" />
-          <select id="ll-library-filter">
-            <option value="all">all</option>
-            <option value="current">current direction</option>
-            <option value="scene">scene</option>
-            <option value="fixed">fixed</option>
-            <option value="working">working</option>
-            <option value="memo">memo</option>
+          <input id="ll-library-search" type="search" autocomplete="off" aria-label="作品を検索" placeholder="作品を検索" />
+          <select id="ll-library-filter" aria-label="作品を絞り込む">
+            <option value="all">すべて</option>
+            <option value="current">今の方向</option>
+            <option value="scene">Scene</option>
+            <option value="fixed">完成</option>
+            <option value="working">制作中</option>
+            <option value="memo">ボイスメモ</option>
           </select>
         </div>
         <div id="ll-library" class="ll-library-list"></div>

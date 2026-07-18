@@ -63,6 +63,11 @@ button:focus-visible {
   outline: none;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
 textarea,
 input,
 select {
@@ -232,7 +237,7 @@ h3 {
 }
 
 .ll-actions-library {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .ll-actions-distill {
@@ -298,6 +303,14 @@ h3 {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.ll-output-tools [hidden] {
+  display: none;
+}
+
+.ll-output-toolbar[hidden] {
+  display: none;
 }
 
 .ll-view {
@@ -417,21 +430,73 @@ h3 {
 .ll-library-cloud-tools {
   display: grid;
   grid-column: 1 / -1;
-  grid-template-columns: minmax(180px, 1fr) auto auto;
-  align-items: end;
+  grid-template-columns: minmax(160px, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(242, 240, 232, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.ll-cloud-state {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.ll-cloud-state span,
+.ll-token-field span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ll-cloud-state strong {
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.ll-library-cloud-tools[data-state="connected"] .ll-cloud-state strong {
+  color: var(--green);
+}
+
+.ll-library-cloud-tools[data-state="error"] .ll-cloud-state strong {
+  color: var(--coral);
+}
+
+.ll-cloud-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, auto));
   gap: 6px;
+}
+
+.ll-cloud-settings {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.ll-cloud-settings summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  width: fit-content;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ll-cloud-settings[open] summary {
+  margin-bottom: 8px;
 }
 
 .ll-token-field {
   display: grid;
   gap: 4px;
-}
-
-.ll-token-field span {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
 }
 
 .ll-library-cloud-tools input {
@@ -540,7 +605,7 @@ h3 {
 
 .ll-library-tag[data-kind="fixed"] {
   border-color: rgba(225, 176, 74, 0.5);
-  color: var(--gold);
+  color: var(--amber);
 }
 
 .ll-library-preview,
@@ -572,12 +637,24 @@ h3 {
 }
 
 .ll-library-card-footer .ll-library-delete {
-  width: 32px;
+  width: auto;
 }
 
 .ll-library-delete {
   min-height: 30px;
-  padding: 0;
+  padding: 0 8px;
+  color: var(--muted);
+}
+
+.ll-library-card-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.ll-library-open-button {
+  border-color: rgba(139, 212, 94, 0.52);
+  background: rgba(139, 212, 94, 0.1);
 }
 
 .ll-library-empty {
@@ -649,6 +726,17 @@ h3 {
 
   .ll-library-cloud-tools {
     grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 12px;
+  }
+
+  .ll-cloud-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ll-cloud-actions button {
+    min-height: 44px;
+    white-space: normal;
   }
 
   .ll-library-list-main {
@@ -702,6 +790,26 @@ h3 {
 
   .ll-library-card-footer .ll-library-meta {
     white-space: normal;
+  }
+
+  .ll-library-card-actions button {
+    min-height: 42px;
+  }
+
+  .ll-library-card-footer {
+    align-items: end;
+  }
+
+  .ll-library-card-footer .ll-library-meta {
+    display: none;
+  }
+
+  .ll-library-preview {
+    -webkit-line-clamp: 4;
+  }
+
+  .ll-library-scene {
+    display: none;
   }
 
   .ll-rack-shelf {
