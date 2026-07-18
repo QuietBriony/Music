@@ -26,8 +26,24 @@ const VIEW_LABELS = {
   library: "作品棚",
   final: "歌詞",
   hook: "Hook",
-  suno: "Suno",
+  suno: "制作",
   map: "曲設計"
+};
+
+const PRODUCTION_SOURCES = {
+  notes: { label: "ネタ断片", linkLabel: "制作元を開く", urlLabel: "制作元URL（任意）" },
+  "voice-memo": { label: "ボイスメモ", linkLabel: "元メモを開く", urlLabel: "ボイスメモURL" },
+  bandlab: { label: "BandLab", linkLabel: "BandLabを開く", urlLabel: "BandLabプロジェクトURL" },
+  "ace-step": { label: "ACE-Step", linkLabel: "ACE-Step素材を開く", urlLabel: "ACE-Step素材URL" },
+  "band-room": { label: "Band Room", linkLabel: "Band Room素材を開く", urlLabel: "Band Room素材URL" },
+  other: { label: "その他", linkLabel: "制作元を開く", urlLabel: "制作元URL（任意）" }
+};
+
+const PRODUCTION_TARGETS = {
+  "ace-step": "ACE-Step",
+  bandlab: "BandLab",
+  suno: "Suno",
+  "band-room": "Band Room"
 };
 
 const $ = (id) => document.getElementById(id);
@@ -859,7 +875,30 @@ function buildDraft(parts, controls) {
   return { title, draft, hook: cleanCollective(hook, controls.voice).join("\n") };
 }
 
-function buildSuno(title, draft, controls) {
+function productionSourceProfile(value) {
+  return PRODUCTION_SOURCES[value] || PRODUCTION_SOURCES.notes;
+}
+
+function productionTargetLabel(value) {
+  return PRODUCTION_TARGETS[value] || PRODUCTION_TARGETS["ace-step"];
+}
+
+function productionRouteLabel(controls) {
+  return `${productionSourceProfile(controls.productionSource).label} → ${productionTargetLabel(controls.productionTarget)}`;
+}
+
+function normalizedSession(controls) {
+  const bpm = Number(controls.bpm);
+  const duration = Number(controls.duration);
+  return {
+    bpm: Number.isFinite(bpm) && bpm >= 30 && bpm <= 300 ? Math.round(bpm) : "auto",
+    key: String(controls.key || "").trim() || "auto",
+    duration: Number.isFinite(duration) && duration >= 15 && duration <= 600 ? Math.round(duration) : "auto",
+    meter: String(controls.meter || "4/4")
+  };
+}
+
+function buildProductionStyle(controls) {
   const profile = directionProfile(controls.direction);
   const taste = tasteProfile(controls.taste);
   const worldview = worldviewForControls(controls);
@@ -872,16 +911,110 @@ function buildSuno(title, draft, controls) {
     : controls.dialect === "light"
       ? "with light Okinawan phrase accents"
       : "standard Japanese lyrics";
+  return `${profile.suno}, ${taste.suno}, ${worldview.suno}, ${energy}, ${odd}, ${dialect}`;
+}
+
+function productionMetadataLines(controls) {
+  const session = normalizedSession(controls);
+  const sourceUrl = normalizedSourceUrl(controls.sourceUrl);
+  return [
+    `route: ${productionRouteLabel(controls)}`,
+    `source_type: ${controls.productionSource || "notes"}`,
+    sourceUrl ? `source_url: ${sourceUrl}` : "source_url: none",
+    `bpm: ${session.bpm}`,
+    `key: ${session.key}`,
+    `duration_seconds: ${session.duration}`,
+    `time_signature: ${session.meter}`
+  ];
+}
+
+function buildSuno(title, draft, controls) {
+  const session = normalizedSession(controls);
+  const timing = [
+    session.bpm !== "auto" ? `${session.bpm} BPM` : "",
+    session.key !== "auto" ? `key ${session.key}` : "",
+    session.meter
+  ].filter(Boolean).join(", ");
   return [
     "[Title]",
     title,
     "",
     "[Style of Music]",
-    `${profile.suno}, ${taste.suno}, ${worldview.suno}, ${energy}, ${odd}, ${dialect}`,
+    `${buildProductionStyle(controls)}, ${timing}`,
     "",
     "[Lyrics]",
     draft
   ].join("\n");
+}
+
+function aceStepMode(controls) {
+  if (!normalizedSourceUrl(controls.sourceUrl)) return "Custom";
+  if (controls.productionSource === "ace-step") return "Repaint or Remix";
+  if (["bandlab", "band-room"].includes(controls.productionSource)) return "Remix";
+  return "Custom with reference audio";
+}
+
+function buildAceStepPacket(title, draft, controls) {
+  return [
+    "[ACE-Step handoff]",
+    `title: ${title}`,
+    `mode: ${aceStepMode(controls)}`,
+    `caption: ${buildProductionStyle(controls)}`,
+    ...productionMetadataLines(controls),
+    "audio_note: open or download the linked source manually; Lyric Lab does not upload audio",
+    "",
+    "[Lyrics]",
+    draft,
+    "",
+    "[Review boundary]",
+    "Use this as a vocal and arrangement demo. Keep only phrasing, melody, and structure that survive human review.",
+    "Keep generated audio and lyric files outside the Music repository."
+  ].join("\n");
+}
+
+function buildBandLabPacket(title, draft, controls, scene = null) {
+  const sonicNotes = scene?.arrangement_notes?.sonic_notes || [];
+  return [
+    "[BandLab handoff]",
+    `title: ${title}`,
+    ...productionMetadataLines(controls),
+    "",
+    "[Arrangement intent]",
+    `scene: ${scene?.scene_id || "not mapped"}`,
+    `pressure: ${scene?.pressure || "not mapped"}`,
+    ...prefixList(sonicNotes),
+    "",
+    "[Current lyric]",
+    draft,
+    "",
+    "[Next pass]",
+    "Import the selected demo or vocal take, align it to the session BPM, and revise the arrangement around the lyric sections.",
+    "Export mixdowns or stems outside the repository, then return only reviewed metadata to Music Stack."
+  ].join("\n");
+}
+
+function buildBandRoomPacket(title, controls, scene = null) {
+  return [
+    "[Band Room handoff / metadata only]",
+    `title: ${title}`,
+    ...productionMetadataLines(controls),
+    `scene_id: ${scene?.scene_id || "not mapped"}`,
+    `direction: ${directionProfile(controls.direction).label}`,
+    `taste: ${tasteProfile(controls.taste).label}`,
+    `worldview: ${worldviewForControls(controls).label}`,
+    "lyric_reference: keep the lyric body in Lyric Lab",
+    "audio_boundary: use a local or hosted render in an external stem slot; do not commit it to Music",
+    "",
+    "[Scene metadata]",
+    scene ? JSON.stringify(scene, null, 2) : "none"
+  ].join("\n");
+}
+
+function buildProductionPacket(title, draft, controls, scene = null) {
+  if (controls.productionTarget === "bandlab") return buildBandLabPacket(title, draft, controls, scene);
+  if (controls.productionTarget === "suno") return buildSuno(title, draft, controls);
+  if (controls.productionTarget === "band-room") return buildBandRoomPacket(title, controls, scene);
+  return buildAceStepPacket(title, draft, controls);
 }
 
 function prefixList(list) {
@@ -974,7 +1107,7 @@ function buildSceneMetadata(parts, title, controls) {
       "scene_metadata",
       parts.hooks.length ? "hook_concept" : "",
       parts.mantras.length ? "spoken_sample_seed" : "",
-      "suno_prompt_guardrail",
+      "production_handoff",
       "ep133_scene_logic"
     ]),
     phrase_seeds_as_metadata: {
@@ -984,6 +1117,8 @@ function buildSceneMetadata(parts, title, controls) {
     },
     arrangement_notes: {
       ep133_scene_logic: "commit this pressure field as a scene before mutating it",
+      production_route: productionRouteLabel(controls),
+      session: normalizedSession(controls),
       sonic_notes: sceneItems([
         directionProfile(controls.direction).label,
         tasteProfile(controls.taste).label,
@@ -1007,6 +1142,7 @@ function buildMap(parts, title, sourceUrl = "", direction = "hitotobi", tasteVal
     worldview: worldviewValue,
     distill: distillText
   });
+  const productionSession = sceneData.arrangement_notes?.session || normalizedSession({});
   const lines = [
     `title: ${title}`,
     `direction: ${profile.label}`,
@@ -1016,6 +1152,8 @@ function buildMap(parts, title, sourceUrl = "", direction = "hitotobi", tasteVal
     `scene_id: ${sceneData.scene_id}`,
     `no_lyrics: ${sceneData.no_lyrics}`,
     sourceUrl ? `source: ${sourceUrl}` : "source: (none)",
+    `production_route: ${sceneData.arrangement_notes?.production_route || "ネタ断片 → ACE-Step"}`,
+    `session: ${productionSession.bpm} BPM / ${productionSession.key} / ${productionSession.meter} / ${productionSession.duration}s`,
     "",
     "scene pressure:",
     `- ${sceneData.pressure || "(none)"}`,
@@ -1058,6 +1196,12 @@ function controls() {
   return {
     title: $("ll-title").value,
     sourceUrl: $("ll-source-url").value,
+    productionSource: $("ll-production-source").value,
+    productionTarget: $("ll-production-target").value,
+    bpm: $("ll-bpm").value,
+    key: $("ll-key").value,
+    duration: $("ll-duration").value,
+    meter: $("ll-meter").value,
     direction: $("ll-direction").value,
     taste: $("ll-taste").value,
     dialect: $("ll-dialect").value,
@@ -1083,9 +1227,25 @@ function renderSourceLink() {
   const link = $("ll-source-link");
   if (!link) return;
   const url = normalizedSourceUrl();
+  const source = productionSourceProfile($("ll-production-source").value);
   link.hidden = !url;
+  link.textContent = source.linkLabel;
   if (url) link.href = url;
   else link.removeAttribute("href");
+}
+
+function renderProductionContext() {
+  const currentControls = controls();
+  const source = productionSourceProfile(currentControls.productionSource);
+  $("ll-production-route-label").textContent = productionRouteLabel(currentControls);
+  $("ll-source-url-label").textContent = source.urlLabel;
+  $("ll-source-url").placeholder = currentControls.productionSource === "bandlab"
+    ? "https://www.bandlab.com/..."
+    : "Dropbox / Drive / 制作元URL";
+  renderSourceLink();
+  if (state.activeView === "suno") {
+    $("ll-output-label").textContent = `制作 / ${productionTargetLabel(currentControls.productionTarget)}`;
+  }
 }
 
 function buildAiHandoffPacket() {
@@ -1093,7 +1253,6 @@ function buildAiHandoffPacket() {
   const currentLyric = state.activeView === "final"
     ? $("ll-view-final").value.trim()
     : (state.result?.draft || state.result?.final || "").trim();
-  const sourceUrl = normalizedSourceUrl(currentControls.sourceUrl);
   const scene = state.result?.scene || null;
   const direction = directionProfile(currentControls.direction).label;
   const taste = tasteProfile(currentControls.taste).label;
@@ -1124,7 +1283,7 @@ function buildAiHandoffPacket() {
     `voice: ${currentControls.voice}`,
     `heat: ${currentControls.heat}`,
     `weird: ${currentControls.weird}`,
-    sourceUrl ? `voice_memo_url: ${sourceUrl}` : "voice_memo_url: none",
+    ...productionMetadataLines(currentControls),
     "",
     "seed_notes:",
     $("ll-seed").value.trim() || "none",
@@ -1146,14 +1305,14 @@ function generate() {
   const parts = classify(lines);
   const currentControls = controls();
   const built = buildDraft(parts, currentControls);
-  const suno = buildSuno(built.title, built.draft, currentControls);
   const scene = buildSceneMetadata(parts, built.title, currentControls);
+  const production = buildProductionPacket(built.title, built.draft, currentControls, scene);
   const map = buildMap(parts, built.title, currentControls.sourceUrl, currentControls.direction, currentControls.taste, currentControls.dialect, currentControls.worldview, currentControls.distill, scene);
   const previousFinal = state.currentId ? state.result?.final : "";
   const previousStatus = state.currentId ? state.result?.status : "";
   state.result = {
     ...built,
-    suno,
+    production,
     map,
     scene,
     parts,
@@ -1170,13 +1329,13 @@ function render() {
   $("ll-view-draft").textContent = result?.draft || empty;
   $("ll-view-final").value = result?.final || result?.draft || "";
   $("ll-view-hook").textContent = result?.hook || empty;
-  $("ll-view-suno").textContent = result?.suno || empty;
+  $("ll-view-suno").textContent = result?.production || result?.suno || empty;
   $("ll-view-map").textContent = result?.map || empty;
   renderChips("ll-hook-cuts", result?.parts?.hooks || [], "hook");
   renderChips("ll-mantras", result?.parts?.mantras || [], "mantra");
   renderChips("ll-images", result?.parts?.images || [], "image");
   renderChips("ll-distill-anchors", distillProfile($("ll-distill").value).anchors || [], "distill");
-  renderSourceLink();
+  renderProductionContext();
   renderLibrary();
   $("ll-status").textContent = result ? `${result.title} の下書きを作りました` : "";
 }
@@ -1202,7 +1361,7 @@ function activeText() {
     draft: state.result.draft,
     final: state.result.final,
     hook: state.result.hook,
-    suno: state.result.suno,
+    suno: state.result.production || state.result.suno,
     map: state.result.map
   }[state.activeView] || state.result.draft;
 }
@@ -1224,7 +1383,7 @@ async function copyAiHandoff() {
   }
   if (state.activeView === "final") {
     state.result.final = $("ll-view-final").value.trim() || state.result.draft;
-    updateSunoFromFinal();
+    updateProductionFromFinal();
   }
   await copyText(buildAiHandoffPacket(), "AI用データ");
 }
@@ -1258,10 +1417,25 @@ function ensureResult() {
   return Boolean(state.result);
 }
 
-function updateSunoFromFinal() {
+function updateProductionFromFinal() {
   if (!state.result) return;
+  const currentControls = controls();
   const final = state.result.final || state.result.draft || "";
-  state.result.suno = buildSuno(state.result.title, final, controls());
+  if (state.result.parts) {
+    state.result.scene = buildSceneMetadata(state.result.parts, state.result.title, currentControls);
+    state.result.map = buildMap(
+      state.result.parts,
+      state.result.title,
+      currentControls.sourceUrl,
+      currentControls.direction,
+      currentControls.taste,
+      currentControls.dialect,
+      currentControls.worldview,
+      currentControls.distill,
+      state.result.scene
+    );
+  }
+  state.result.production = buildProductionPacket(state.result.title, final, currentControls, state.result.scene);
 }
 
 function draftToFinal() {
@@ -1271,7 +1445,7 @@ function draftToFinal() {
   }
   state.result.final = state.result.draft;
   state.result.status = "working";
-  updateSunoFromFinal();
+  updateProductionFromFinal();
   setActiveView("final");
   render();
   saveDraftToLibrary();
@@ -1285,7 +1459,7 @@ async function saveFinal(status = "working") {
   }
   state.result.final = $("ll-view-final").value.trim() || state.result.draft;
   state.result.status = status;
-  updateSunoFromFinal();
+  updateProductionFromFinal();
   const item = saveDraftToLibrary();
   render();
   setActiveView("final");
@@ -1315,7 +1489,11 @@ function setActiveView(view) {
   }
   const toolbar = document.querySelector(".ll-output-toolbar");
   if (toolbar) toolbar.hidden = view === "library";
-  $("ll-output-label").textContent = view === "final" ? "歌詞を磨く" : (VIEW_LABELS[view] || view);
+  $("ll-output-label").textContent = view === "final"
+    ? "歌詞を磨く"
+    : view === "suno"
+      ? `制作 / ${productionTargetLabel($("ll-production-target").value)}`
+      : (VIEW_LABELS[view] || view);
 }
 
 function openShelf() {
@@ -1334,6 +1512,12 @@ function startNewDraft() {
   }
   $("ll-title").value = "";
   $("ll-source-url").value = "";
+  $("ll-production-source").value = "notes";
+  $("ll-production-target").value = "ace-step";
+  $("ll-bpm").value = "";
+  $("ll-key").value = "";
+  $("ll-duration").value = "";
+  $("ll-meter").value = "4/4";
   $("ll-seed").value = "";
   $("ll-distill").value = "";
   state.reroll = 0;
@@ -1361,6 +1545,12 @@ function draftSnapshot(id = state.currentId) {
     sourceUrl: $("ll-source-url").value.trim(),
     seed: $("ll-seed").value,
     settings: {
+      productionSource: $("ll-production-source").value,
+      productionTarget: $("ll-production-target").value,
+      bpm: $("ll-bpm").value,
+      key: $("ll-key").value.trim(),
+      duration: $("ll-duration").value,
+      meter: $("ll-meter").value,
       direction: $("ll-direction").value,
       taste: $("ll-taste").value,
       dialect: $("ll-dialect").value,
@@ -1426,7 +1616,7 @@ function saveDraftToLibrary() {
   if (state.result && state.activeView === "final") {
     state.result.final = $("ll-view-final").value.trim() || state.result.draft;
     state.result.status = state.result.status === "fixed" ? "fixed" : "working";
-    updateSunoFromFinal();
+    updateProductionFromFinal();
   }
   const item = draftSnapshot();
   const index = state.library.findIndex((entry) => entry.id === item.id);
@@ -1487,6 +1677,12 @@ function loadDraftFromLibrary(id) {
   state.currentId = item.id;
   $("ll-title").value = item.title || "";
   $("ll-source-url").value = item.sourceUrl || "";
+  $("ll-production-source").value = item.settings?.productionSource || (item.sourceUrl ? "voice-memo" : "notes");
+  $("ll-production-target").value = item.settings?.productionTarget || "ace-step";
+  $("ll-bpm").value = item.settings?.bpm || "";
+  $("ll-key").value = item.settings?.key || "";
+  $("ll-duration").value = item.settings?.duration || "";
+  $("ll-meter").value = item.settings?.meter || "4/4";
   $("ll-seed").value = item.seed || "";
   $("ll-direction").value = item.settings?.direction || "hitotobi";
   $("ll-taste").value = item.settings?.taste || "era-rap";
@@ -1503,6 +1699,7 @@ function loadDraftFromLibrary(id) {
   if (state.result) {
     state.result.final = state.result.final || state.result.draft || "";
     state.result.status = state.result.status || item.status || "working";
+    updateProductionFromFinal();
   }
   if (!state.result && $("ll-seed").value.trim()) generate();
   else {
@@ -1568,9 +1765,21 @@ function draftDistill(item) {
   return item?.settings?.distill || "";
 }
 
+function draftProductionSource(item) {
+  return item?.settings?.productionSource || (item?.sourceUrl ? "voice-memo" : "notes");
+}
+
+function draftProductionTarget(item) {
+  return item?.settings?.productionTarget || "ace-step";
+}
+
+function draftProductionRoute(item) {
+  return `${productionSourceProfile(draftProductionSource(item)).label} → ${productionTargetLabel(draftProductionTarget(item))}`;
+}
+
 function draftKind(item) {
   if (item?.result?.scene?.no_lyrics) return "scene";
-  if (item?.sourceUrl) return "memo";
+  if (item?.sourceUrl) return "source";
   if (draftStatus(item) === "fixed") return "lyric";
   return "text";
 }
@@ -1636,6 +1845,11 @@ function filteredLibrary() {
       item.result?.scene?.pressure,
       item.result?.scene?.scene_id,
       item.settings?.dialect,
+      draftProductionRoute(item),
+      item.settings?.bpm,
+      item.settings?.key,
+      item.settings?.duration,
+      item.settings?.meter,
       status
     ].join(" ").toLowerCase();
     return haystack.includes(query);
@@ -1648,7 +1862,7 @@ function librarySummaryText() {
       const label = directionProfile(draftDirection(item)).label;
       const taste = tasteProfile(draftTaste(item)).label;
       const worldview = draftWorldviewLabel(item);
-      return `- ${item.title || "Untitled"} [${draftStatus(item)} / ${label} / ${taste} / ${worldview} / ${draftKind(item)}]`;
+      return `- ${item.title || "Untitled"} [${draftStatus(item)} / ${label} / ${taste} / ${worldview} / ${draftProductionRoute(item)} / ${draftKind(item)}]`;
     })
     .join("\n");
 }
@@ -1693,7 +1907,8 @@ function renderLibraryInto(root, items, limit = 24) {
     const label = directionProfile(draftDirection(item)).label;
     const taste = tasteProfile(draftTaste(item)).label;
     const worldview = draftWorldviewLabel(item);
-    meta.textContent = `${draftStatusLabel(item)} / ${label} / ${taste} / ${worldview}`;
+    const productionRoute = draftProductionRoute(item);
+    meta.textContent = `${draftStatusLabel(item)} / ${productionRoute} / ${label} / ${taste} / ${worldview}`;
 
     const del = document.createElement("button");
     del.type = "button";
@@ -1712,10 +1927,14 @@ function renderLibraryInto(root, items, limit = 24) {
 
       const tags = document.createElement("div");
       tags.className = "ll-library-shelf-tags";
-      for (const tag of [draftStatusLabel(item), label, worldview]) {
+      for (const tag of [draftStatusLabel(item), productionRoute, label, worldview]) {
         const chip = document.createElement("span");
         chip.className = "ll-library-tag";
-        chip.dataset.kind = draftStatus(item) === "fixed" && tag === draftStatusLabel(item) ? "fixed" : "meta";
+        chip.dataset.kind = draftStatus(item) === "fixed" && tag === draftStatusLabel(item)
+          ? "fixed"
+          : tag === productionRoute
+            ? "production"
+            : "meta";
         chip.textContent = tag;
         tags.appendChild(chip);
       }
@@ -1735,13 +1954,14 @@ function renderLibraryInto(root, items, limit = 24) {
       actions.className = "ll-library-card-actions";
       const sourceUrl = normalizedSourceUrl(item.sourceUrl);
       if (sourceUrl) {
+        const sourceProfile = productionSourceProfile(draftProductionSource(item));
         const source = document.createElement("a");
         source.className = "ll-library-source-link";
         source.href = sourceUrl;
         source.target = "_blank";
         source.rel = "noopener noreferrer";
-        source.textContent = "メモ";
-        source.setAttribute("aria-label", `${item.title || "Untitled"} の元メモを開く`);
+        source.textContent = sourceProfile.label;
+        source.setAttribute("aria-label", `${item.title || "Untitled"} の${sourceProfile.label}を開く`);
         actions.appendChild(source);
       }
       const open = document.createElement("button");
@@ -1951,6 +2171,12 @@ function save() {
   const payload = {
     title: $("ll-title").value,
     sourceUrl: $("ll-source-url").value,
+    productionSource: $("ll-production-source").value,
+    productionTarget: $("ll-production-target").value,
+    bpm: $("ll-bpm").value,
+    key: $("ll-key").value,
+    duration: $("ll-duration").value,
+    meter: $("ll-meter").value,
     seed: $("ll-seed").value,
     direction: $("ll-direction").value,
     taste: $("ll-taste").value,
@@ -1983,6 +2209,12 @@ function restore() {
     const data = JSON.parse(raw);
     $("ll-title").value = data.title || "";
     $("ll-source-url").value = data.sourceUrl || "";
+    $("ll-production-source").value = data.productionSource || (data.sourceUrl ? "voice-memo" : "notes");
+    $("ll-production-target").value = data.productionTarget || "ace-step";
+    $("ll-bpm").value = data.bpm || "";
+    $("ll-key").value = data.key || "";
+    $("ll-duration").value = data.duration || "";
+    $("ll-meter").value = data.meter || "4/4";
     $("ll-seed").value = data.seed || "";
     $("ll-direction").value = data.direction || "hitotobi";
     $("ll-taste").value = data.taste || "era-rap";
@@ -1999,6 +2231,15 @@ function restore() {
   } catch (error) {
     // Ignore broken saved drafts.
   }
+}
+
+function refreshProductionHandoff() {
+  renderProductionContext();
+  if (!state.result) return;
+  updateProductionFromFinal();
+  $("ll-view-suno").textContent = state.result.production || state.result.suno || "";
+  $("ll-view-map").textContent = state.result.map || "";
+  renderLibrary();
 }
 
 function bind() {
@@ -2047,7 +2288,7 @@ function bind() {
     if (!state.result) return;
     state.result.final = $("ll-view-final").value;
     if (state.result.status === "fixed") state.result.status = "working";
-    updateSunoFromFinal();
+    updateProductionFromFinal();
     renderLibrary();
   });
   for (const id of ["ll-library-search", "ll-library-search-main"]) {
@@ -2083,10 +2324,12 @@ function bind() {
       save();
     });
   }
-  for (const id of ["ll-title", "ll-source-url", "ll-seed", "ll-distill", "ll-direction", "ll-taste", "ll-dialect", "ll-worldview", "ll-form", "ll-voice", "ll-heat", "ll-weird"]) {
+  for (const id of ["ll-title", "ll-source-url", "ll-production-source", "ll-production-target", "ll-bpm", "ll-key", "ll-duration", "ll-meter", "ll-seed", "ll-distill", "ll-direction", "ll-taste", "ll-dialect", "ll-worldview", "ll-form", "ll-voice", "ll-heat", "ll-weird"]) {
     $(id).addEventListener("input", save);
   }
-  $("ll-source-url").addEventListener("input", renderSourceLink);
+  for (const id of ["ll-source-url", "ll-production-source", "ll-production-target", "ll-bpm", "ll-key", "ll-duration", "ll-meter", "ll-distill", "ll-direction", "ll-taste", "ll-dialect", "ll-worldview", "ll-form", "ll-voice", "ll-heat", "ll-weird"]) {
+    $(id).addEventListener("input", refreshProductionHandoff);
+  }
   $("ll-distill").addEventListener("input", () => renderChips("ll-distill-anchors", distillProfile($("ll-distill").value).anchors || [], "distill"));
   $("ll-direction").addEventListener("change", renderLibrary);
   $("ll-taste").addEventListener("change", renderLibrary);

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Lyric Lab - Music Stack</title>
-<meta name="description" content="Music Stack Lyric Lab turns loose notes into song-section lyric drafts and Suno-ready text." />
+<meta name="description" content="Music Stack Lyric Lab grows lyric drafts and prepares production handoffs for music tools." />
 <link rel="stylesheet" href="lyric-lab.css" />
 <link rel="icon" type="image/png" sizes="192x192" href="icons/mixer-192.png" />
 <meta name="theme-color" content="#10110f" />
@@ -35,9 +35,59 @@
         <input id="ll-title" type="text" autocomplete="off" maxlength="64" placeholder="空なら素材から拾う" />
       </label>
 
+      <section class="ll-production-route" aria-labelledby="ll-production-heading">
+        <div class="ll-production-head">
+          <h3 id="ll-production-heading">制作ルート</h3>
+          <output id="ll-production-route-label">ネタ断片 → ACE-Step</output>
+        </div>
+        <div class="ll-production-grid">
+          <label class="ll-field">
+            <span>制作元</span>
+            <select id="ll-production-source">
+              <option value="notes">ネタ断片</option>
+              <option value="voice-memo">ボイスメモ</option>
+              <option value="bandlab">BandLab</option>
+              <option value="ace-step">ACE-Step</option>
+              <option value="band-room">Band Room</option>
+              <option value="other">その他</option>
+            </select>
+          </label>
+          <label class="ll-field">
+            <span>制作先</span>
+            <select id="ll-production-target">
+              <option value="ace-step">ACE-Step</option>
+              <option value="bandlab">BandLab</option>
+              <option value="suno">Suno</option>
+              <option value="band-room">Band Room</option>
+            </select>
+          </label>
+          <label class="ll-field">
+            <span>BPM</span>
+            <input id="ll-bpm" type="number" inputmode="numeric" min="30" max="300" step="1" placeholder="未定" />
+          </label>
+          <label class="ll-field">
+            <span>キー</span>
+            <input id="ll-key" type="text" autocomplete="off" maxlength="12" placeholder="未定 / Am" />
+          </label>
+          <label class="ll-field">
+            <span>尺（秒）</span>
+            <input id="ll-duration" type="number" inputmode="numeric" min="15" max="600" step="1" placeholder="未定" />
+          </label>
+          <label class="ll-field">
+            <span>拍子</span>
+            <select id="ll-meter">
+              <option value="4/4">4/4</option>
+              <option value="3/4">3/4</option>
+              <option value="6/8">6/8</option>
+              <option value="5/4">5/4</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
       <label class="ll-field">
-        <span>ボイスメモURL</span>
-        <input id="ll-source-url" type="url" autocomplete="off" placeholder="Dropbox / Drive / local note URL" />
+        <span id="ll-source-url-label">制作元URL（任意）</span>
+        <input id="ll-source-url" type="url" autocomplete="off" placeholder="Dropbox / Drive / BandLab URL" />
       </label>
 
       <label class="ll-field ll-field-grow">
@@ -151,7 +201,7 @@
         <button type="button" class="ll-tab" data-view="library" role="tab" aria-selected="false">作品棚</button>
         <button type="button" class="ll-tab" data-view="final" role="tab" aria-selected="false">磨く</button>
         <button type="button" class="ll-tab" data-view="hook" role="tab" aria-selected="false">Hook</button>
-        <button type="button" class="ll-tab" data-view="suno" role="tab" aria-selected="false">Suno</button>
+        <button type="button" class="ll-tab" data-view="suno" role="tab" aria-selected="false">制作</button>
         <button type="button" class="ll-tab" data-view="map" role="tab" aria-selected="false">曲設計</button>
       </div>
 
@@ -190,7 +240,7 @@
             <option value="scene">Scene</option>
             <option value="fixed">完成</option>
             <option value="working">制作中</option>
-            <option value="memo">ボイスメモ</option>
+            <option value="memo">制作元リンクあり</option>
           </select>
           <div class="ll-library-cloud-tools">
             <div class="ll-cloud-state">
@@ -232,7 +282,7 @@
             <option value="scene">Scene</option>
             <option value="fixed">完成</option>
             <option value="working">制作中</option>
-            <option value="memo">ボイスメモ</option>
+            <option value="memo">制作元リンクあり</option>
           </select>
         </div>
         <div id="ll-library" class="ll-library-list"></div>

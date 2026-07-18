@@ -49,6 +49,24 @@ music-stack の掟と矛盾しないために、ACE-Step は **制作ツール**
 
 → この 3 つを守れば、Suno レーンと同じ「人間の制作を助ける外部ツール」に収まる。
 
+## 1.5 Lyric Lab からの受け渡し
+
+`lyric-lab.html` で1曲を開き、`制作先 = ACE-Step`、BPM、キー、尺、拍子を設定する。
+`制作` タブは、現在の歌詞と思想設定から次を1つのパケットにまとめる。
+
+- caption / style
+- BPM / key / duration / time signature
+- lyrics
+- source URL と推奨 mode
+
+ネタ断片だけなら `Custom`、ボイスメモ付きなら `Custom with reference audio`、
+BandLab / Band Room のmixを元にするなら `Remix`、ACE-Step出力の一部を直すなら
+`Repaint or Remix` を入口にする。Lyric Labは音声を送信しないので、source URLの
+音声は人が確認してからACE-Stepへ読み込む。
+
+生成後は採用テイクをBandLabへimportするか、Band Roomのexternal stem slotで試聴する。
+音源は手元または外部ストレージに置き、repoへはScene metadataと制作判断だけを戻す。
+
 ---
 
 ## 2. 使い道（推奨 3 レーン）

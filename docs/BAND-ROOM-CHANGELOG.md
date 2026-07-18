@@ -1,6 +1,24 @@
-# Band Room - Changelog (v65 -> v385 compact)
+# Band Room - Changelog (v65 -> v386 compact)
 
-Current sw.js VERSION: v385. Latest Band Room runtime change: v368.
+Current sw.js VERSION: v386. Latest Band Room runtime change: v368.
+
+---
+
+## v386 compact - Lyric Lab production handoff
+
+Lyric Lab now keeps a per-song production route alongside the lyric: source,
+target, BPM, key, duration, and meter persist locally and in the D1 shelf JSON.
+The former `Suno` view is now `制作` and emits a reviewed handoff for ACE-Step,
+BandLab, Suno, or metadata-only Band Room work without direct service coupling.
+
+Shelf cards show the current tool route, while Scene metadata and `曲設計` share
+the same session values. Existing saved works remain readable and receive safe
+defaults when their older settings do not contain production fields.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`,
+`scripts/check-lyric-lab.mjs`, `docs/LYRIC-LAB-USAGE.md`,
+`docs/ACE-STEP-WORKFLOW.md`, `docs/DAW-INTEGRATION.md`, `hazama-fm-v386`.
+Band Room runtime remains `band-room.js?v=br-227`; CSS remains br-87.
 
 ---
 
