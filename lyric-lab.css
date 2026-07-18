@@ -305,6 +305,36 @@ h3 {
   gap: 8px;
 }
 
+.ll-output-context {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ll-source-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid rgba(121, 202, 197, 0.36);
+  border-radius: 8px;
+  color: var(--cyan);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ll-source-link:hover,
+.ll-source-link:focus-visible {
+  border-color: rgba(121, 202, 197, 0.72);
+  outline: none;
+}
+
+.ll-source-link[hidden] {
+  display: none;
+}
+
 .ll-output-tools [hidden] {
   display: none;
 }
@@ -405,6 +435,18 @@ h3 {
 
 .ll-library-head {
   justify-content: space-between;
+}
+
+.ll-library-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ll-new-draft {
+  min-height: 34px;
+  border-color: rgba(139, 212, 94, 0.52);
+  background: rgba(139, 212, 94, 0.1);
 }
 
 .ll-library-tools {
@@ -668,6 +710,25 @@ h3 {
   gap: 6px;
 }
 
+.ll-library-source-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid rgba(121, 202, 197, 0.4);
+  border-radius: 8px;
+  color: var(--cyan);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.ll-library-source-link:hover,
+.ll-library-source-link:focus-visible {
+  border-color: rgba(121, 202, 197, 0.72);
+  outline: none;
+}
+
 .ll-library-open-button {
   border-color: rgba(139, 212, 94, 0.52);
   background: rgba(139, 212, 94, 0.1);
@@ -734,7 +795,7 @@ h3 {
 
   .ll-output[data-view="final"] .ll-output-tools {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
   }
 
@@ -822,7 +883,8 @@ h3 {
     white-space: normal;
   }
 
-  .ll-library-card-actions button {
+  .ll-library-card-actions button,
+  .ll-library-card-actions a {
     min-height: 42px;
   }
 

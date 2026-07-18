@@ -1,6 +1,23 @@
-# Band Room - Changelog (v65 -> v384 compact)
+# Band Room - Changelog (v65 -> v385 compact)
 
-Current sw.js VERSION: v384. Latest Band Room runtime change: v368.
+Current sw.js VERSION: v385. Latest Band Room runtime change: v368.
+
+---
+
+## v385 compact - Lyric Lab writing loop
+
+Lyric Lab now treats the shelf as the project home: `新しい歌詞` starts a clean
+workspace without deleting saved works, voice-memo projects expose their source
+link on both the shelf and editor, and `曲設計` names the metadata view directly.
+
+`AIへ渡す` copies a song-specific editing packet with creative controls, Scene
+metadata, current text, source URL, and direction-specific ending constraints.
+AI remains optional and external; Lyric Lab itself still uses local rule-based
+drafting. A dedicated static check and usage document lock down this boundary.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`,
+`scripts/check-lyric-lab.mjs`, `docs/LYRIC-LAB-USAGE.md`, `hazama-fm-v385`.
+Band Room runtime remains `band-room.js?v=br-227`; CSS remains br-87.
 
 ---
 

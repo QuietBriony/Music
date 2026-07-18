@@ -27,7 +27,7 @@
     <section class="ll-panel ll-source" aria-label="Seed notes">
       <div class="ll-panel-head">
         <h2>素材</h2>
-        <button type="button" id="ll-clear">Clear</button>
+        <button type="button" id="ll-clear">新規</button>
       </div>
 
       <label class="ll-field">
@@ -36,7 +36,7 @@
       </label>
 
       <label class="ll-field">
-        <span>voice memo URL</span>
+        <span>ボイスメモURL</span>
         <input id="ll-source-url" type="url" autocomplete="off" placeholder="Dropbox / Drive / local note URL" />
       </label>
 
@@ -52,7 +52,7 @@
 
       <div class="ll-actions ll-actions-distill">
         <button type="button" id="ll-distill-to-seed">蒸留をネタへ</button>
-        <button type="button" id="ll-copy-intake-prompt">Copy prompt</button>
+        <button type="button" id="ll-copy-intake-prompt">思想質問をコピー</button>
       </div>
 
       <div class="ll-control-grid">
@@ -152,15 +152,19 @@
         <button type="button" class="ll-tab" data-view="final" role="tab" aria-selected="false">磨く</button>
         <button type="button" class="ll-tab" data-view="hook" role="tab" aria-selected="false">Hook</button>
         <button type="button" class="ll-tab" data-view="suno" role="tab" aria-selected="false">Suno</button>
-        <button type="button" class="ll-tab" data-view="map" role="tab" aria-selected="false">Map</button>
+        <button type="button" class="ll-tab" data-view="map" role="tab" aria-selected="false">曲設計</button>
       </div>
 
       <div class="ll-output-toolbar">
-        <span id="ll-output-label">下書き</span>
+        <div class="ll-output-context">
+          <span id="ll-output-label">下書き</span>
+          <a id="ll-source-link" class="ll-source-link" href="#" target="_blank" rel="noopener noreferrer" hidden>元メモを開く</a>
+        </div>
         <div class="ll-output-tools">
           <button type="button" id="ll-draft-to-final" data-views="draft">この下書きを磨く</button>
           <button type="button" id="ll-save-final" data-views="final">保存</button>
           <button type="button" id="ll-fix-final" data-views="final">完成にする</button>
+          <button type="button" id="ll-copy-ai-handoff" data-views="draft final">AIへ渡す</button>
           <button type="button" id="ll-copy-view" data-views="draft final hook suno map">コピー</button>
         </div>
       </div>
@@ -173,7 +177,10 @@
       <div id="ll-view-library" class="ll-view ll-library-view">
         <div class="ll-library-head ll-library-head-main">
           <h3>保存した作品</h3>
-          <span id="ll-library-main-count" class="ll-library-count">0作品</span>
+          <div class="ll-library-head-actions">
+            <span id="ll-library-main-count" class="ll-library-count">0作品</span>
+            <button type="button" id="ll-new-draft" class="ll-new-draft">新しい歌詞</button>
+          </div>
         </div>
         <div class="ll-library-tools">
           <input id="ll-library-search-main" type="search" autocomplete="off" aria-label="作品を検索" placeholder="タイトル・本文を検索" />
@@ -187,7 +194,7 @@
           </select>
           <div class="ll-library-cloud-tools">
             <div class="ll-cloud-state">
-              <span>Cloud shelf</span>
+              <span>端末間同期</span>
               <strong id="ll-cloud-state-main" aria-live="polite">未接続</strong>
             </div>
             <div class="ll-cloud-actions">
@@ -210,7 +217,7 @@
     <aside class="ll-panel ll-rack" aria-label="Lyric parts">
       <div class="ll-panel-head">
         <h2>部品</h2>
-        <button type="button" id="ll-copy-hook">Copy hook</button>
+        <button type="button" id="ll-copy-hook">Hookをコピー</button>
       </div>
       <div class="ll-rack-group ll-rack-shelf">
         <div class="ll-library-head">

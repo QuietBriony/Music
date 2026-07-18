@@ -1,5 +1,7 @@
 # Lyric Lab D1 sync
 
+User workflow: [`LYRIC-LAB-USAGE.md`](LYRIC-LAB-USAGE.md).
+
 Lyric Lab works locally with `localStorage` on GitHub Pages. Cloud sync is
 optional and only turns on when deployed to Cloudflare Pages with a D1 binding.
 

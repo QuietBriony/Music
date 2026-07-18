@@ -21,6 +21,15 @@ const INTAKE_PROMPT = `私は沖縄ローカルの視点から、歌詞を作る
 に整理してください。
 一問ずつ深く聞いてください。`;
 
+const VIEW_LABELS = {
+  draft: "下書き",
+  library: "作品棚",
+  final: "歌詞",
+  hook: "Hook",
+  suno: "Suno",
+  map: "曲設計"
+};
+
 const $ = (id) => document.getElementById(id);
 
 const state = {
@@ -1061,6 +1070,76 @@ function controls() {
   };
 }
 
+function normalizedSourceUrl(value = $("ll-source-url").value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function renderSourceLink() {
+  const link = $("ll-source-link");
+  if (!link) return;
+  const url = normalizedSourceUrl();
+  link.hidden = !url;
+  if (url) link.href = url;
+  else link.removeAttribute("href");
+}
+
+function buildAiHandoffPacket() {
+  const currentControls = controls();
+  const currentLyric = state.activeView === "final"
+    ? $("ll-view-final").value.trim()
+    : (state.result?.draft || state.result?.final || "").trim();
+  const sourceUrl = normalizedSourceUrl(currentControls.sourceUrl);
+  const scene = state.result?.scene || null;
+  const direction = directionProfile(currentControls.direction).label;
+  const taste = tasteProfile(currentControls.taste).label;
+  const worldview = worldviewProfile(currentControls.worldview).label;
+  const hitotobiRule = currentControls.direction === "hitotobi"
+    ? "ヒトトビは必要な場合だけ残してよい。"
+    : "ヒトトビを末尾や共通句として足さない。";
+
+  return [
+    "Lyric Labから、1曲だけを磨きます。",
+    "ゼロから別作品にせず、現在の核と強い行を残して編集してください。",
+    "特定の既存アーティストの歌詞や言い回しは模倣しないでください。",
+    "沖縄を観光記号や政治スローガンにせず、生活者の距離から扱ってください。",
+    hitotobiRule,
+    "",
+    "返答:",
+    "1. 残す行 / 弱い行",
+    "2. Hook別案を3つ",
+    "3. 説明を減らした磨き案の全文",
+    "4. 次に本人へ聞く質問を1つ",
+    "",
+    "project:",
+    `title: ${$("ll-title").value.trim() || state.result?.title || "Untitled"}`,
+    `direction: ${direction}`,
+    `taste_axis: ${taste}`,
+    `worldview: ${worldview}`,
+    `dialect: ${currentControls.dialect}`,
+    `voice: ${currentControls.voice}`,
+    `heat: ${currentControls.heat}`,
+    `weird: ${currentControls.weird}`,
+    sourceUrl ? `voice_memo_url: ${sourceUrl}` : "voice_memo_url: none",
+    "",
+    "seed_notes:",
+    $("ll-seed").value.trim() || "none",
+    "",
+    "distilled_worldview:",
+    currentControls.distill.trim() || "none",
+    "",
+    "scene_metadata:",
+    scene ? JSON.stringify(scene, null, 2) : "none",
+    "",
+    "current_lyric:",
+    currentLyric || "none"
+  ].join("\n");
+}
+
 function generate() {
   const text = $("ll-seed").value;
   const lines = splitSeed(text);
@@ -1097,6 +1176,7 @@ function render() {
   renderChips("ll-mantras", result?.parts?.mantras || [], "mantra");
   renderChips("ll-images", result?.parts?.images || [], "image");
   renderChips("ll-distill-anchors", distillProfile($("ll-distill").value).anchors || [], "distill");
+  renderSourceLink();
   renderLibrary();
   $("ll-status").textContent = result ? `${result.title} の下書きを作りました` : "";
 }
@@ -1135,6 +1215,18 @@ async function copyText(text, label) {
   } catch (error) {
     $("ll-status").textContent = "コピーできませんでした";
   }
+}
+
+async function copyAiHandoff() {
+  if (!ensureResult()) {
+    $("ll-status").textContent = "AIへ渡す下書きがありません";
+    return;
+  }
+  if (state.activeView === "final") {
+    state.result.final = $("ll-view-final").value.trim() || state.result.draft;
+    updateSunoFromFinal();
+  }
+  await copyText(buildAiHandoffPacket(), "AI用データ");
 }
 
 function appendUniqueLines(textarea, lines) {
@@ -1223,14 +1315,7 @@ function setActiveView(view) {
   }
   const toolbar = document.querySelector(".ll-output-toolbar");
   if (toolbar) toolbar.hidden = view === "library";
-  $("ll-output-label").textContent = {
-    draft: "下書き",
-    library: "作品棚",
-    final: "歌詞を磨く",
-    hook: "Hook",
-    suno: "Suno",
-    map: "Map"
-  }[view] || view;
+  $("ll-output-label").textContent = view === "final" ? "歌詞を磨く" : (VIEW_LABELS[view] || view);
 }
 
 function openShelf() {
@@ -1240,6 +1325,31 @@ function openShelf() {
   if (syncTokenValue() && !state.cloudLoaded && state.cloudStatus !== "syncing") {
     void cloudPull({ quiet: true });
   }
+}
+
+function startNewDraft() {
+  const hasWorkspace = hasDraftInput() || Boolean(state.result);
+  if (hasWorkspace && !window.confirm("現在の入力欄を空にして、新しい歌詞を始めますか？作品棚の保存済み作品は残ります。")) {
+    return;
+  }
+  $("ll-title").value = "";
+  $("ll-source-url").value = "";
+  $("ll-seed").value = "";
+  $("ll-distill").value = "";
+  state.reroll = 0;
+  state.currentId = null;
+  state.result = null;
+  if (location.hash === "#shelf") {
+    history.replaceState(null, "", `${location.pathname}${location.search}`);
+  }
+  setActiveView("draft");
+  render();
+  save();
+  $("ll-status").textContent = "新しい歌詞を始めます";
+  requestAnimationFrame(() => {
+    document.querySelector(".ll-source")?.scrollIntoView({ block: "start", behavior: "smooth" });
+    $("ll-title").focus();
+  });
 }
 
 function draftSnapshot(id = state.currentId) {
@@ -1623,6 +1733,17 @@ function renderLibraryInto(root, items, limit = 24) {
       footer.className = "ll-library-card-footer";
       const actions = document.createElement("div");
       actions.className = "ll-library-card-actions";
+      const sourceUrl = normalizedSourceUrl(item.sourceUrl);
+      if (sourceUrl) {
+        const source = document.createElement("a");
+        source.className = "ll-library-source-link";
+        source.href = sourceUrl;
+        source.target = "_blank";
+        source.rel = "noopener noreferrer";
+        source.textContent = "メモ";
+        source.setAttribute("aria-label", `${item.title || "Untitled"} の元メモを開く`);
+        actions.appendChild(source);
+      }
       const open = document.createElement("button");
       open.type = "button";
       open.className = "ll-library-open-button";
@@ -1887,7 +2008,8 @@ function bind() {
     generate();
   });
   $("ll-copy-all").addEventListener("click", () => copyText(state.result?.draft || "", "draft"));
-  $("ll-copy-view").addEventListener("click", () => copyText(activeText(), state.activeView));
+  $("ll-copy-view").addEventListener("click", () => copyText(activeText(), VIEW_LABELS[state.activeView] || state.activeView));
+  $("ll-copy-ai-handoff").addEventListener("click", () => void copyAiHandoff());
   $("ll-copy-hook").addEventListener("click", () => copyText(state.result?.hook || "", "hook"));
   $("ll-draft-to-final").addEventListener("click", draftToFinal);
   $("ll-save-final").addEventListener("click", () => void saveFinal("working"));
@@ -1897,7 +2019,8 @@ function bind() {
   $("ll-export-json").addEventListener("click", exportLibraryJson);
   $("ll-import-json").addEventListener("click", () => $("ll-import-file").click());
   $("ll-distill-to-seed").addEventListener("click", distillToSeed);
-  $("ll-copy-intake-prompt").addEventListener("click", () => copyText(INTAKE_PROMPT, "intake prompt"));
+  $("ll-copy-intake-prompt").addEventListener("click", () => copyText(INTAKE_PROMPT, "思想質問"));
+  $("ll-new-draft").addEventListener("click", startNewDraft);
   for (const button of document.querySelectorAll("[data-open-shelf]")) {
     button.addEventListener("click", (event) => {
       event.preventDefault();
@@ -1953,17 +2076,7 @@ function bind() {
       void cloudPull();
     });
   }
-  $("ll-clear").addEventListener("click", () => {
-    $("ll-title").value = "";
-    $("ll-source-url").value = "";
-    $("ll-seed").value = "";
-    $("ll-distill").value = "";
-    state.reroll = 0;
-    state.currentId = null;
-    state.result = null;
-    render();
-    save();
-  });
+  $("ll-clear").addEventListener("click", startNewDraft);
   for (const button of document.querySelectorAll(".ll-tab")) {
     button.addEventListener("click", () => {
       setActiveView(button.dataset.view);
@@ -1973,6 +2086,7 @@ function bind() {
   for (const id of ["ll-title", "ll-source-url", "ll-seed", "ll-distill", "ll-direction", "ll-taste", "ll-dialect", "ll-worldview", "ll-form", "ll-voice", "ll-heat", "ll-weird"]) {
     $(id).addEventListener("input", save);
   }
+  $("ll-source-url").addEventListener("input", renderSourceLink);
   $("ll-distill").addEventListener("input", () => renderChips("ll-distill-anchors", distillProfile($("ll-distill").value).anchors || [], "distill"));
   $("ll-direction").addEventListener("change", renderLibrary);
   $("ll-taste").addEventListener("change", renderLibrary);

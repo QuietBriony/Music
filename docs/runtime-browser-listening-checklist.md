@@ -106,7 +106,7 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `audio/genre-flavor.js?v=fm-80`, `audio/ai-fills.js?v=fm-71`,
   `style.css?v=fm-28`, `band-room.css?v=br-87`,
   `band-room.js?v=br-227`, `audio/audio-safety.js?v=br-67`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v384`.
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v385`.
 - For v169 Hazama FM melodic director, let FM run for at least 16 bars and
   confirm `window.MusicRuntimeState.melodicDirector` changes key/contour over
   phrases while playback stays smooth.
