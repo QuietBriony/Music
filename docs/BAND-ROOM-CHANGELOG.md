@@ -1,6 +1,22 @@
-# Band Room - Changelog (v65 -> v383 compact)
+# Band Room - Changelog (v65 -> v384 compact)
 
-Current sw.js VERSION: v383. Latest Band Room runtime change: v368.
+Current sw.js VERSION: v384. Latest Band Room runtime change: v368.
+
+---
+
+## v384 compact - Lyric Lab mobile editing polish
+
+Lyric Lab replaces the mobile cloud settings disclosure with an explicit,
+layout-stable toggle, removing the empty space that could separate the shelf
+controls from saved works. The editable lyric view now keeps its three relevant
+actions on one row and reserves a practical writing area on phone screens.
+
+Browser QA at a 390 x 844 viewport confirms no horizontal overflow, a lyric
+editor taller than 500 px, successful local save/reopen behavior, and no console
+errors or warnings.
+
+`lyric-lab.html`, `lyric-lab.css`, `lyric-lab.js`, `hazama-fm-v384`.
+Band Room runtime remains `band-room.js?v=br-227`; CSS remains br-87.
 
 ---
 

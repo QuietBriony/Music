@@ -1208,6 +1208,8 @@ async function saveFinal(status = "working") {
 
 function setActiveView(view) {
   state.activeView = view;
+  const output = document.querySelector(".ll-output");
+  if (output) output.dataset.view = view;
   for (const button of document.querySelectorAll(".ll-tab")) {
     const active = button.dataset.view === view;
     button.classList.toggle("is-active", active);
@@ -1646,10 +1648,16 @@ function syncTokenInputs(value = syncTokenValue()) {
   }
 }
 
+function setCloudSettingsOpen(open) {
+  const settings = $("ll-cloud-settings-main");
+  const toggle = $("ll-cloud-settings-toggle");
+  if (settings) settings.dataset.open = String(open);
+  if (toggle) toggle.setAttribute("aria-expanded", String(open));
+}
+
 function renderCloudState(message = "") {
   const root = document.querySelector(".ll-library-cloud-tools");
   const label = $("ll-cloud-state-main");
-  const details = $("ll-cloud-settings-main");
   const hasToken = Boolean(syncTokenValue());
   if (!hasToken && state.cloudStatus !== "syncing") state.cloudStatus = "idle";
   if (hasToken && state.cloudStatus === "idle") state.cloudStatus = "ready";
@@ -1669,10 +1677,8 @@ function renderCloudState(message = "") {
     const button = $(id);
     if (button) button.disabled = disabled;
   }
-  if (details) {
-    if (!hasToken || state.cloudStatus === "error") details.open = true;
-    else if (state.cloudStatus === "connected") details.open = false;
-  }
+  if (!hasToken || state.cloudStatus === "error") setCloudSettingsOpen(true);
+  else if (state.cloudStatus === "connected") setCloudSettingsOpen(false);
 }
 
 function renderLibrary() {
@@ -1739,8 +1745,7 @@ function syncTokenValue() {
 
 function focusCloudToken() {
   setActiveView("library");
-  const details = $("ll-cloud-settings-main");
-  if (details) details.open = true;
+  setCloudSettingsOpen(true);
   requestAnimationFrame(() => ($("ll-sync-token-main") || $("ll-sync-token"))?.focus());
 }
 
@@ -1905,6 +1910,12 @@ function bind() {
   for (const id of ["ll-cloud-push", "ll-cloud-push-main"]) {
     $(id)?.addEventListener("click", () => void cloudPush());
   }
+  $("ll-cloud-settings-toggle")?.addEventListener("click", () => {
+    const settings = $("ll-cloud-settings-main");
+    const open = settings?.dataset.open !== "true";
+    setCloudSettingsOpen(open);
+    if (open) requestAnimationFrame(() => $("ll-sync-token-main")?.focus());
+  });
   $("ll-import-file").addEventListener("change", (event) => {
     importLibraryJson(event.target.files?.[0]);
     event.target.value = "";

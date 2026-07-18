@@ -194,13 +194,13 @@
               <button type="button" id="ll-cloud-pull-main" class="ll-primary">クラウドから更新</button>
               <button type="button" id="ll-cloud-push-main">クラウドへ保存</button>
             </div>
-            <details id="ll-cloud-settings-main" class="ll-cloud-settings">
-              <summary>接続設定</summary>
+            <div id="ll-cloud-settings-main" class="ll-cloud-settings" data-open="false">
+              <button type="button" id="ll-cloud-settings-toggle" class="ll-cloud-settings-toggle" aria-expanded="false">接続設定</button>
               <label class="ll-token-field">
                 <span>同期キー</span>
                 <input id="ll-sync-token-main" type="password" autocomplete="off" placeholder="この端末に一度だけ貼り付け" title="Worker PC: .music-stack/lyric-lab-cloud-token.txt" />
               </label>
-            </details>
+            </div>
           </div>
         </div>
         <div id="ll-library-main" class="ll-library-list ll-library-list-main"></div>

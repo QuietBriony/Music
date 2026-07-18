@@ -410,6 +410,9 @@ h3 {
 .ll-library-tools {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(104px, auto);
+  align-content: start;
+  grid-auto-rows: max-content;
+  height: max-content;
 }
 
 .ll-library-count {
@@ -431,8 +434,11 @@ h3 {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: minmax(160px, 1fr) auto;
+  align-content: start;
   align-items: center;
   gap: 10px;
+  grid-auto-rows: max-content;
+  height: max-content;
   padding: 10px;
   border: 1px solid rgba(242, 240, 232, 0.12);
   border-radius: 8px;
@@ -475,23 +481,33 @@ h3 {
 }
 
 .ll-cloud-settings {
+  display: grid;
+  align-self: start;
+  gap: 8px;
   grid-column: 1 / -1;
   min-width: 0;
 }
 
-.ll-cloud-settings summary {
+.ll-cloud-settings-toggle {
   display: inline-flex;
   align-items: center;
+  justify-self: start;
   min-height: 38px;
-  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--muted);
   cursor: pointer;
   font-size: 11px;
   font-weight: 700;
 }
 
-.ll-cloud-settings[open] summary {
-  margin-bottom: 8px;
+.ll-cloud-settings .ll-token-field {
+  display: none;
+}
+
+.ll-cloud-settings[data-open="true"] .ll-token-field {
+  display: grid;
 }
 
 .ll-token-field {
@@ -714,6 +730,20 @@ h3 {
 
   .ll-output-tools button {
     width: 100%;
+  }
+
+  .ll-output[data-view="final"] .ll-output-tools {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .ll-output[data-view="final"] .ll-output-tools button {
+    min-height: 44px;
+  }
+
+  .ll-output[data-view="final"] .ll-final-editor {
+    min-height: clamp(440px, 62vh, 680px);
   }
 
   .ll-library-tools {
