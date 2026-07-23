@@ -1,8 +1,27 @@
-# Band Room - Changelog (v65 -> v387 compact)
+# Band Room - Changelog (v65 -> v388 compact)
 
-Current sw.js VERSION: v387. Latest Band Room runtime change: v387.
+Current sw.js VERSION: v388. Latest Band Room runtime change: v388.
 
 ---
+
+## v388 compact - ピーポー修正: v387 のグリッド間引きを撤回、single-saw で予算を払う
+
+v387 の「light は奇数16分を skip」は実機で **2音サイレン（ピーポー音）** を生んだ。
+authored パターンが「偶数step=根音 / 奇数step=動き」の interleave 構造だったため:
+arp `[0,2,3,2,0,2,3,5,…]` → 間引き後 `[0,3,0,3,0,3,0,3]`（2音交互）、bassline の
+オクターブPOP（step 3/7/11/15）は全滅して単調ドン。グリッド位置での間引きは
+authored 素材のメロディを狙い撃ちで壊す — **撤回**。
+
+- arp / bassline の trigger ループは **16 step フル復活**（両モード共通）
+- 代わりに phone 予算は **osc-per-trigger** で払う: arp を light で single saw
+  （count 2→1・v387 で bassline は済）。16 step × 1 osc = 間引き時の 8 step × 2 osc
+  と同じ osc-start 数で、メロディは無傷
+- G-7 を教訓ロックに書換え: 両 agent の `light && s % 2` グリッド間引きを
+  **doesNotMatch で禁止** + 両 MonoSynth の `count: light ? 1` を必須化
+
+desktop/full は byte 不変（count3/spread34 のまま）。原音不変。
+
+`band-room.js?v=br-229`, `hazama-fm-v388`. CSS remains br-87.
 
 ## v387 compact - HAZAMA phone budget（arp/bassline を v364 規律に載せる）
 

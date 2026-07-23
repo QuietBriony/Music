@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-228-hazama-phone-budget";
+  const BANDROOM_APP_VERSION = "br-229-arp-unthin";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -3884,9 +3884,13 @@
     lfo.connect(filter.frequency);
     arpLfo = lfo;  // v309: section arc retunes min/max per role
     const synth = new Tone.MonoSynth({
-      // v368: light/phone drops to count2/spread18 (the fat unison is the arp's
-      // biggest per-voice cost, and the mono speaker can't resolve wide detune).
-      oscillator: { type: "fatsawtooth", count: light ? 2 : 3, spread: light ? 18 : 34 },
+      // v368: light dropped to count2/spread18. v388: light drops to a SINGLE
+      // saw — this is where the phone burst budget is paid now that the v387
+      // grid thinning is reverted (it destroyed the authored patterns). Full
+      // 16-step pattern × 1 osc = the same osc-starts/bar as 8 steps × 2, with
+      // the melody intact; the mono phone speaker barely resolves the unison
+      // anyway (and the 260 Hz HPF + 2400 lowpass shave what detune adds).
+      oscillator: { type: "fatsawtooth", count: light ? 1 : 3, spread: light ? 0 : 34 },
       filter: { Q: 4, type: "lowpass", rolloff: -24 },
       envelope: { attack: 0.004, decay: 0.16, sustain: 0.40, release: 0.12 },
       filterEnvelope: { attack: 0.004, decay: 0.12, sustain: 0.55, release: 0.14, baseFrequency: 520, octaves: 3.2 },
@@ -6140,14 +6144,14 @@
     const accentP = Number(vr.accentProb) || 0;
     const swingMs = Number(vr.swingMs) || 0;
     const phraseMult = HZ_PHRASE_VEL[phrasePos];
-    // v387 (phone budget): on the light runtime the 16th arp thins to 8ths —
-    // skip the odd 16ths (the 0.62-velocity lean-back steps), keeping the
-    // [1.0, ×, 0.78, ×] accent skeleton that carries the driving push. Halves
-    // the per-bar trigger burst (each trigger = a fresh OscillatorNode pair on
-    // light), which is the phone-overload budget the v364 fix established.
-    const light = aiLightRuntimeEnabled();
+    // v388: the v387 grid-parity thinning (skip odd 16ths on light) is GONE —
+    // the authored patterns interleave root on even steps and ALL the melodic
+    // movement on odd steps (Still Moving arp [0,2,3,2,0,2,3,5,…] thinned to
+    // [0,3,0,3,0,3,0,3] = a two-tone siren, the on-device 「ピーポー音」 report;
+    // the bassline's octave-POPs at steps 3/7/11/15 vanished entirely). The
+    // phone budget is now paid in osc-per-trigger instead (single-saw arp on
+    // light, makeArpSynth) so the full 16-step pattern plays everywhere.
     for (let s = 0; s < 16; s++) {
-      if (light && s % 2 === 1) continue;  // v387: 8th-note arp on phones
       let deg = pat[(s + rot) % pat.length];
       if (deg == null || deg === "-") {
         if (!(addP > 0 && rng() < addP)) continue;   // rest, unless a probabilistic add
@@ -6207,11 +6211,10 @@
     const dropLastP = Number(vr.dropLastStepProb) || 0;
     const octLiftPos = (vr.octaveLiftPhrasePos != null) ? Number(vr.octaveLiftPhrasePos) : -1;
     const phraseMult = HZ_PHRASE_VEL_BASS[phrasePos];
-    // v387 (phone budget): light thins the rolling 16th sub to 8ths (see the
-    // arp note above) — the beat-landing steps survive, offbeat rolls drop.
-    const light = aiLightRuntimeEnabled();
+    // v388: no grid-parity thinning here either (see the arp note — the
+    // authored POPs sit on odd steps and were erased by the v387 skip). The
+    // light budget is paid by the single-saw voice (count light?1, v387).
     for (let s = 0; s < 16; s++) {
-      if (light && s % 2 === 1) continue;  // v387: 8th-note bass roll on phones
       const deg = pat[s % pat.length];
       if (deg == null || deg === "-") continue;
       if (isPhraseEndBar && s >= 14 && dropLastP > 0 && rng() < dropLastP) continue;  // bar-4 breathe
