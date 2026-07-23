@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-227-hazama-hidden-band";
+  const BANDROOM_APP_VERSION = "br-228-hazama-phone-budget";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -687,44 +687,13 @@
     voiceBus = new Tone.Gain(1.33).connect(voicePan);   // v243: AI 再現 level lift (~+9 dB, matches the instrumentBus makeup boost) — voice bypasses instrumentBus, so it needs the lift here
     chordBus = new Tone.Gain(0.62).connect(chordPan);
     clickBus = new Tone.Gain(0.35).connect(clickPan);
-    // v368: HAZAMA production glue — sidechain pump + one shared dub room.
-    // The synth layers DUCK to the kick (duckAt in the drum dispatch) so the
-    // parts breathe together as one performance, and they share ONE dub-delay
-    // world so everything echoes on the same dotted-8th grid. HAZAMA-only:
-    // Tabasco songs have no arp/bassline so duckAt never fires and these buses
-    // pass through at unity. duckMusic = arp + dub returns (+ later stabs),
-    // gentle slow-release pump; duckBass = the sub, deeper/faster so the kick
-    // punches through.
-    duckMusic = new Tone.Gain(1).connect(masterGain);
-    duckBass = new Tone.Gain(1).connect(masterGain);
-    // Shared dub-delay send bus — hand-built with in-loop LP/HP so each repeat
-    // gets darker (the dub timbre). Return folds into duckMusic so the echoes
-    // pump with everything else. Cheap (no reverb): safe on the phone budget.
-    dubSend = new Tone.Gain(1);
-    // Fixed dotted-8th at 128 BPM (0.3516 s). Hard-coded, not Tone.Time("8n."),
-    // because ensureMaster can run before the song sets the transport BPM — and
-    // only HAZAMA (always 128) ever sends into this bus.
-    const dubDly = new Tone.Delay(0.3516, 0.75);
-    const dubLP  = new Tone.Filter(2200, "lowpass");
-    const dubHP  = new Tone.Filter(280, "highpass");
-    const dubFb  = new Tone.Gain(0.50);
-    dubSend.connect(dubDly);
-    dubDly.chain(dubLP, dubHP, dubFb);
-    dubFb.connect(dubDly);
-    const dubReturn = new Tone.Gain(0.45).connect(duckMusic);
-    dubDly.connect(dubReturn);
-    // Arp bus — DIRECT to masterGain via the pump (skip instrumentBus + its
-    // waveshapers, per the v304 freeze / AI-FX-budget lesson). v368: 260 Hz HPF
-    // so the fatsaw arp stops sharing the 100-400 Hz mud with the bass on a mono
-    // phone speaker, then through the pump.
-    const arpPan = new Tone.Panner(0.10).connect(duckMusic);
-    const arpHP  = new Tone.Filter(260, "highpass").connect(arpPan);
-    arpBus = new Tone.Gain(0.78).connect(arpHP);
-    // Driving-bassline bus — direct to masterGain via the deeper pump (HAZAMA
-    // only; gated on state.songData.bassline). v368: 1.25→1.10 to leave room for
-    // the duck's transient.
-    const bassSeqPan = new Tone.Panner(0).connect(duckBass);
-    bassSeqBus = new Tone.Gain(1.10).connect(bassSeqPan);
+    // v368: HAZAMA production glue (sidechain pump + shared dub room) used to be
+    // built HERE, unconditionally — 13 standing nodes (a delay feedback loop +
+    // filters + duck/bus gains) processing every audio quantum for EVERY session,
+    // including 原音-only phones that never play HAZAMA. v387 (phone budget): it
+    // now builds lazily in ensureHazamaGlue() on the first HAZAMA synth build —
+    // the factories already null-guard dubSend, and duckAt()/hazamaPumpActive()
+    // null-guard duckMusic, so non-HAZAMA sessions simply never pay for it.
 
     // v303: 原音 master bus sits between the stem buses and masterGain so the
     // real recording gets its own Nirvana-loud / LCD-balanced glue (the AI
@@ -3312,14 +3281,14 @@
       // otherwise a silent standing LFO+filter+delay chain lingers in the
       // graph during Tabasco sessions (AI-FX-budget lesson). Tabasco has no
       // `arp` key, so this never fires there.
-      if (synthPartEnabled("br-toggle-arp") && state.songData && state.songData.arp && !arpSynth) arpSynth = makeArpSynth(arpBus);
+      if (synthPartEnabled("br-toggle-arp") && state.songData && state.songData.arp && !arpSynth) { ensureHazamaGlue(); arpSynth = makeArpSynth(arpBus); }
       // v365: dispose a stale arp when an arp-less song loads in-session (e.g. a
       // HAZAMA→Tabasco switch that stays in AI mode) so its always-on LFO/delay
       // stops processing on masterGain (mirror of the mode-switch teardown).
       else if (arpSynth && !(state.songData && state.songData.arp)) { disposeSynthLayer(arpSynth); arpSynth = null; arpLfo = null; }
       // HAZAMA driving bassline — gated on the bass toggle too (mirror the arp
       // guard, v365), and torn down when the loaded song declares no `bassline`.
-      if (synthPartEnabled("br-toggle-bass") && state.songData && state.songData.bassline && !bassSeqSynth) bassSeqSynth = makeBassSeqSynth(bassSeqBus);
+      if (synthPartEnabled("br-toggle-bass") && state.songData && state.songData.bassline && !bassSeqSynth) { ensureHazamaGlue(); bassSeqSynth = makeBassSeqSynth(bassSeqBus); }
       else if (bassSeqSynth && !(state.songData && state.songData.bassline)) { disposeSynthLayer(bassSeqSynth); bassSeqSynth = null; bassSeqFilter = null; }
       if (kitStatus && reason !== "toggle") {
         kitStatus.textContent = quickFirst && !shouldAutoUpgradeSynthSamples(reason) ? "AI ready (light synth)" :
@@ -3939,7 +3908,11 @@
     const filter = new Tone.Filter({ frequency: 720, type: "lowpass", Q: 1.2 }).connect(drive);  // v368: 1.4→1.2, less peaky against the kick
     bassSeqFilter = filter;  // v309: section arc sweeps the cutoff (break dark → release bright)
     const synth = new Tone.MonoSynth({
-      oscillator: { type: "fatsawtooth", count: light ? 2 : 3, spread: 20 },  // v368: desktop 3-osc, phone 2
+      // v368: desktop 3-osc, phone 2. v387: phone drops to a SINGLE saw — through
+      // the 720 Hz lowpass on a mono phone speaker the unison detune is barely
+      // audible, and each dropped osc halves the per-note OscillatorNode burst
+      // (the phone-overload budget is trigger-burst × osc-per-trigger).
+      oscillator: { type: "fatsawtooth", count: light ? 1 : 3, spread: 20 },
       filter: { Q: 1, type: "lowpass", rolloff: -24 },
       envelope: { attack: 0.006, decay: 0.18, sustain: 0.62, release: 0.10 },
       // v368: a punchier filter pluck (sustain 0.5→0.3, octaves 2.5) so each note
@@ -3950,6 +3923,55 @@
       volume: -5  // v309 headroom: continuous 16/16-step sub was ~6 dB hot into the master comps (standing GR + kick-synced pumping + limiter distortion on lows)
     }).connect(filter);
     return withChainDispose(synth, [filter, drive]);
+  }
+
+  // ---- HAZAMA production glue (lazy) ----------------------------
+
+  // v387 (phone budget): the v368 sidechain pump + shared dub room, moved out of
+  // ensureMaster. 13 standing nodes (delay feedback loop + filters + duck/bus
+  // gains) that only HAZAMA songs use — built lazily on the first HAZAMA synth
+  // build so Tabasco / 原音-only sessions (the default iPhone path) never carry
+  // them. Build-once like ensureMaster; module lets stay null until then and
+  // every consumer (dubTap in makeArpSynth, duckAt, hazamaPumpActive, the
+  // section-arc bus ramps) already null-guards.
+  function ensureHazamaGlue() {
+    if (duckMusic) return;
+    ensureMaster();
+    // The synth layers DUCK to the kick (duckAt in the drum dispatch) so the
+    // parts breathe together as one performance, and they share ONE dub-delay
+    // world so everything echoes on the same dotted-8th grid. duckMusic = arp +
+    // dub returns (+ later stabs), gentle slow-release pump; duckBass = the sub,
+    // deeper/faster so the kick punches through.
+    duckMusic = new Tone.Gain(1).connect(masterGain);
+    duckBass = new Tone.Gain(1).connect(masterGain);
+    // Shared dub-delay send bus — hand-built with in-loop LP/HP so each repeat
+    // gets darker (the dub timbre). Return folds into duckMusic so the echoes
+    // pump with everything else. Cheap (no reverb): safe on the phone budget.
+    dubSend = new Tone.Gain(1);
+    // Fixed dotted-8th at 128 BPM (0.3516 s). Hard-coded, not Tone.Time("8n."),
+    // because this can run before the song sets the transport BPM — and only
+    // HAZAMA (always 128) ever sends into this bus.
+    const dubDly = new Tone.Delay(0.3516, 0.75);
+    const dubLP  = new Tone.Filter(2200, "lowpass");
+    const dubHP  = new Tone.Filter(280, "highpass");
+    const dubFb  = new Tone.Gain(0.50);
+    dubSend.connect(dubDly);
+    dubDly.chain(dubLP, dubHP, dubFb);
+    dubFb.connect(dubDly);
+    const dubReturn = new Tone.Gain(0.45).connect(duckMusic);
+    dubDly.connect(dubReturn);
+    // Arp bus — DIRECT to masterGain via the pump (skip instrumentBus + its
+    // waveshapers, per the v304 freeze / AI-FX-budget lesson). v368: 260 Hz HPF
+    // so the fatsaw arp stops sharing the 100-400 Hz mud with the bass on a mono
+    // phone speaker, then through the pump.
+    const arpPan = new Tone.Panner(0.10).connect(duckMusic);
+    const arpHP  = new Tone.Filter(260, "highpass").connect(arpPan);
+    arpBus = new Tone.Gain(0.78).connect(arpHP);
+    // Driving-bassline bus — direct to masterGain via the deeper pump (HAZAMA
+    // only; gated on state.songData.bassline). v368: 1.25→1.10 to leave room for
+    // the duck's transient.
+    const bassSeqPan = new Tone.Panner(0).connect(duckBass);
+    bassSeqBus = new Tone.Gain(1.10).connect(bassSeqPan);
   }
 
   // ---- Click ---------------------------------------------------
@@ -6118,7 +6140,14 @@
     const accentP = Number(vr.accentProb) || 0;
     const swingMs = Number(vr.swingMs) || 0;
     const phraseMult = HZ_PHRASE_VEL[phrasePos];
+    // v387 (phone budget): on the light runtime the 16th arp thins to 8ths —
+    // skip the odd 16ths (the 0.62-velocity lean-back steps), keeping the
+    // [1.0, ×, 0.78, ×] accent skeleton that carries the driving push. Halves
+    // the per-bar trigger burst (each trigger = a fresh OscillatorNode pair on
+    // light), which is the phone-overload budget the v364 fix established.
+    const light = aiLightRuntimeEnabled();
     for (let s = 0; s < 16; s++) {
+      if (light && s % 2 === 1) continue;  // v387: 8th-note arp on phones
       let deg = pat[(s + rot) % pat.length];
       if (deg == null || deg === "-") {
         if (!(addP > 0 && rng() < addP)) continue;   // rest, unless a probabilistic add
@@ -6178,7 +6207,11 @@
     const dropLastP = Number(vr.dropLastStepProb) || 0;
     const octLiftPos = (vr.octaveLiftPhrasePos != null) ? Number(vr.octaveLiftPhrasePos) : -1;
     const phraseMult = HZ_PHRASE_VEL_BASS[phrasePos];
+    // v387 (phone budget): light thins the rolling 16th sub to 8ths (see the
+    // arp note above) — the beat-landing steps survive, offbeat rolls drop.
+    const light = aiLightRuntimeEnabled();
     for (let s = 0; s < 16; s++) {
+      if (light && s % 2 === 1) continue;  // v387: 8th-note bass roll on phones
       const deg = pat[s % pat.length];
       if (deg == null || deg === "-") continue;
       if (isPhraseEndBar && s >= 14 && dropLastP > 0 && rng() < dropLastP) continue;  // bar-4 breathe
