@@ -7,6 +7,10 @@
 > （[SUNO-WORKFLOW.md](./SUNO-WORKFLOW.md) と同じ用途）にきれいに収まる。
 > このドキュメントはその使い方と「やってよいこと / だめなこと」の境界を定義する。
 
+> **実運用の実績（2026-07）**: このレーンは HAZAMA "Still Moving" 二路線（メロウ/ハード）で実戦投入済み。
+> 確定レシピ・プロンプトの法則・判定履歴・Lyric Lab との往復パイプラインは
+> [HAZAMA-STILL-MOVING-ACESTEP.md](./HAZAMA-STILL-MOVING-ACESTEP.md) に収蔵。
+
 ---
 
 ## 0. これは何か（ACE-Step 1.5）
