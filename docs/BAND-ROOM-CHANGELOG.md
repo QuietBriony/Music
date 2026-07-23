@@ -1,8 +1,32 @@
-# Band Room - Changelog (v65 -> v386 compact)
+# Band Room - Changelog (v65 -> v387 compact)
 
-Current sw.js VERSION: v386. Latest Band Room runtime change: v368.
+Current sw.js VERSION: v387. Latest Band Room runtime change: v387.
 
 ---
+
+## v387 compact - HAZAMA phone budget（arp/bassline を v364 規律に載せる）
+
+v366-368 の HAZAMA エンジン（16分 arp + driving bassline + production glue）を
+v364 の phone-overload 予算（小節あたり trigger burst × osc数 + 常時ノード census）に
+適合させた。無対策だと HAZAMA 曲の iPhone light は arp 16×2osc + bass 16×2osc +
+voice 4×3osc ≒ **最悪 ~80 osc-start/小節** — v364 で「止まる」と診断した水準
+（~30）を大幅に超えていた（v364 が直したのは Tabasco 系 agent 帯のみ）。
+
+- **arp / bassline とも light では 8分に thinning**（16step ループの奇数 step を
+  skip）。アクセント骨格 [1.0, ×, 0.78, ×] と beat 着地は保存、burst は半減
+- **bassline の fatsaw を light では single saw に**（720Hz LP + モノスピーカー
+  でユニゾン差はほぼ不可聴。1 osc 減 = per-note burst 半減）。arp の count2 は
+  v368 の「アイデンティティ」判断を尊重して維持
+- **dub/duck glue（13 常時ノード）を ensureMaster から ensureHazamaGlue() に遅延化**
+  — HAZAMA を弾かないセッション（原音-only の iPhone 含む）は一切構築しない。
+  consumer 側（dubTap / duckAt / hazamaPumpActive / section ramp）は既に null-guard 済
+- **G-7 gate** で 3点を恒久ロック（thinning 2箇所 / single-saw / lazy-glue +
+  ensureMaster に dub 網が戻らないこと）
+
+desktop/full の HAZAMA サウンドは byte 不変。原音パス不変。light 合計 burst は
+arp 8×2 + bass 8×1 + voice ≤4×3 + drums ≤8(buffer) ≒ **~36 → 実質半減**。
+
+`band-room.js?v=br-228`, `hazama-fm-v387`. CSS remains br-87.
 
 ## v386 compact - Lyric Lab production handoff
 
