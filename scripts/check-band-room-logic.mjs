@@ -79,7 +79,7 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-228-hazama-phone-budget", "Band Room should expose the current app version (v387 HAZAMA phone budget)");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-229-arp-unthin", "Band Room should expose the current app version (v388 arp un-thin / single-saw budget)");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
@@ -134,13 +134,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-87/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-228/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-229/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-87/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-228/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-229/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
@@ -866,12 +866,16 @@ assert.doesNotMatch(source, /scrollIntoView/, "Lyrics auto-follow must scroll th
   assert.equal(desktop.synthPartActiveOnLight("chord"), true, "v364: desktop/full must keep ALL 5 parts incl. the chord pad");
 }
 
-// v387 (G-7 HAZAMA phone budget): the v366-368 HAZAMA engine (16th arp + driving
-// bassline + production glue) must respect the v364 phone-overload budget
-// (per-bar trigger burst × osc-per-trigger + standing-node census):
-// (a) both 16-step trigger loops thin to 8ths on the light runtime,
-// (b) the bassline MonoSynth is a single saw on light (720 Hz LP + mono phone
-//     speaker make the unison inaudible; each extra osc doubles the burst),
+// v387→v388 (G-7 HAZAMA phone budget): the v366-368 HAZAMA engine (16th arp +
+// driving bassline + production glue) must respect the v364 phone-overload
+// budget — but pay it in OSC-PER-TRIGGER, never by grid-parity thinning:
+// (a) v388 lesson (the on-device 「ピーポー音」 regression): the authored
+//     patterns interleave root on even steps and ALL melodic movement on odd
+//     steps (arp [0,2,3,2,…] thinned to [0,3,0,3,…] = a two-tone siren; the
+//     bassline octave-POPs at steps 3/7/11/15 vanished). Neither trigger loop
+//     may grid-skip steps on light — the full authored pattern plays.
+// (b) instead BOTH light MonoSynths are single-saw (count light?1) so the
+//     per-bar osc-start burst stays halved with the melody intact,
 // (c) the 13-node dub/duck glue builds LAZILY (ensureHazamaGlue) — never
 //     unconditionally in ensureMaster, where every 原音-only phone would pay
 //     its standing cost without ever playing HAZAMA.
@@ -880,14 +884,14 @@ assert.doesNotMatch(source, /scrollIntoView/, "Lyrics auto-follow must scroll th
     const start = source.indexOf(`function ${fn}(`);
     assert.ok(start !== -1, `v387: ${fn} should exist (HAZAMA engine)`);
     const body = source.slice(start, start + 4000);
-    assert.match(body, /if \(light && s % 2 === 1\) continue;/,
-      `v387: ${fn} must thin its 16-step loop to 8ths on the light runtime — an uncapped 16th HAZAMA loop re-creates the per-bar trigger burst that stopped AI 再現 on the iPhone (v364 budget)`);
+    assert.doesNotMatch(body, /light && s % 2/,
+      `v388: ${fn} must NOT grid-parity-thin its 16-step loop on light — the authored patterns carry all melodic movement on odd steps, so a parity skip collapses them to a two-tone siren (the ピーポー regression). Pay the phone budget in osc-per-trigger (count light?1), not in steps`);
   }
-  {
-    const start = source.indexOf("function makeBassSeqSynth(");
-    assert.ok(start !== -1, "v387: makeBassSeqSynth should exist");
-    assert.match(source.slice(start, start + 1600), /count: light \? 1 :/,
-      "v387: the HAZAMA driving bass must be a SINGLE saw on light — through its 720 Hz lowpass on a mono phone speaker the unison is inaudible, and each extra osc doubles the per-note burst");
+  for (const [fn, span] of [["makeArpSynth", 2200], ["makeBassSeqSynth", 1600]]) {
+    const start = source.indexOf(`function ${fn}(`);
+    assert.ok(start !== -1, `v387: ${fn} should exist`);
+    assert.match(source.slice(start, start + span), /count: light \? 1 :/,
+      `v388: ${fn} must be a SINGLE saw on light — full 16-step pattern × 1 osc keeps the same osc-start burst as the reverted 8-step × 2 thinning, with the melody intact (mono phone speaker + the part's filters barely resolve the unison anyway)`);
   }
   assert.match(source, /function ensureHazamaGlue\(/,
     "v387: the HAZAMA dub/duck glue must build lazily via ensureHazamaGlue()");
