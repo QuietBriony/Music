@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`worker-gaming` で作った music-stack 音楽制作環境を、あとから
+`worker-gaming`（WorkerPC）で作った music-stack 音楽制作環境を、あとから
 `studioPC` / studio PC に再現できるようにする標準構成表。
 
 repo は source of truth、DAW は repo 外の render / polish / recording
@@ -35,18 +35,97 @@ Core:
 DAW:
 
 - Cakewalk Product Center.
-- Cakewalk Sonar.
+- Cakewalk Sonar. WorkerPC / StudioPC は同じ安定版へ揃える。
 - Product Center add-ons: Core Plugins, Studio Instruments Suite, Sonar Drum
   Replacer, Session Drummer 3, TH-U, Help & Documentation, Precision Suite,
   ProChannel Modules, L-Phase/T-Phase plugin content.
-- Ableton Live 12 Lite.
+- Ableton Live 12 Lite. 両 PC とも各ライセンスで利用できる edition の同じ安定版へ
+  揃え、共有 Set では edition 固有機能を使わない。
 
 Instruments / effects:
 
 - Native Access.
-- Kontakt 7 Player.
-- Kontakt 6 / Kontakt legacy plugins only when an old project needs them.
-- Guitar Rig, Reaktor, Maschine where licenses already exist.
+- Kontakt 8 Player を新規プロジェクトの標準にする。
+- Kontakt 7 / Kontakt 6 は旧プロジェクト互換用として残す。
+- Reaktor 6 VST3、Komplete Kontrol、Traktor Pro 3、Guitar Rig、Maschine は
+  既存ライセンスの範囲で保守する。有料 major upgrade は自動購入しない。
+
+## WorkerPC Verified Baseline — 2026-07-27
+
+実行ファイルの product/file version と Native Access の Installed 表示を照合した
+更新後の基準。Cakewalk の uninstall registry は旧版番号を残すことがあるので、
+Sonar は `Sonar.exe` と Quick Start の表示を基準にする。
+
+| Product | WorkerPC verified | StudioPC target / policy |
+|---|---:|---|
+| Cakewalk Product Center | `1.1.0.004` | 公式提供の現行版 |
+| Cakewalk Sonar | `2026.07` / build `32.07.0.021` | 同じ `2026.07` build 021 |
+| Ableton Live 12 Lite | `12.4.3` | 同じ `12.4.3` |
+| Native Access | `3.25.2.893` | 同じ現行版 |
+| Kontakt 8 Player | `8.11.1` | 同じ `8.11.1`、新規 project の標準 |
+| Kontakt 7 Player | `7.10.9` | 同版を維持、旧 project 用 |
+| Kontakt 6 | `6.8.0` | 必要な旧 project がある PC では維持 |
+| Reaktor 6 | `6.5.0` | 同じ `6.5.0`、新規 project は VST3 |
+| Komplete Kontrol | `3.5.4` | 同じ `3.5.4` |
+| Traktor Pro 3 | `3.11.1.17` | 既存ライセンスの同版。Traktor Pro 4 は購入しない |
+| Maschine 2 | `2.18.4` | 使用する場合は同版 |
+| Guitar Rig 6 LE | `6.4.0` | 使用する場合は同版 |
+
+WorkerPC の Ableton は公式 account から入手した `12.4.3` へ更新し、`VST3 System
+Folders` を有効化して再スキャン済み。StudioPC も同じ `12.4.3` に合わせる。Live
+は新しい point release で保存した Set を古い point release で開けないため、旧
+Set を初回保存するときは別名保存する。
+
+### Shared NI content
+
+両 PC の同じ Native Access ライセンスから、次を優先して揃える。
+
+| Product | WorkerPC | StudioPC action |
+|---|---:|---|
+| Scarbee Mark I | installed / Kontakt 8 で認識 | install、Kontakt 8 で認識確認 |
+| Monark | `1.3.2` | 同版 |
+| Prism | `1.6.2` | 同版 |
+| TRK-01 Bass | `1.0.1` | 同版 |
+| Reaktor Factory Selection R2 | `1.0.2` | 同版 |
+| Mikro Prism | `1.1.1` | 同版 |
+| Blocks Base | `1.0.2` | 同じ license で利用可能なら同版 |
+| Expansions Selection | `1.0.1` | 同じ license で利用可能なら同版 |
+| Kinetic Treats / Kontakt Factory Selection / Play Series Selection | installed | 同じ license で利用可能な content を install |
+
+WorkerPC の Native Access は Updates `0` まで更新済み。Available に残る
+Guitar Rig 7 LE は新しい side-by-side major のため、共有構成に必要になるまで
+未導入とする。Kontakt 6 / 7、旧 Cakewalk、旧 Ableton は、旧 project の参照確認
+なしに削除しない。
+
+### VST3 paths
+
+Sonar / Ableton の共通 system folder:
+
+```text
+C:\Program Files\Common Files\VST3
+```
+
+WorkerPC で確認済みの主要 NI modules:
+
+```text
+C:\Program Files\Common Files\VST3\Kontakt 8.vst3
+C:\Program Files\Common Files\VST3\Kontakt 7.vst3
+C:\Program Files\Common Files\VST3\Kontakt.vst3
+C:\Program Files\Common Files\VST3\Reaktor 6.vst3
+C:\Program Files\Common Files\VST3\Komplete Kontrol.vst3
+C:\Program Files\Common Files\VST3\Maschine 2.vst3
+```
+
+Sonar の scan paths では、上記に加えて次を確認済み。
+
+```text
+%LOCALAPPDATA%\Programs\Common\VST3
+C:\Program Files\Cakewalk\VstPlugins
+```
+
+新規 Sonar project は `Kontakt 8.vst3` と `Reaktor 6.vst3` を使う。Kontakt 6 /
+7 の plug-in ID を使う既存 project は、そのまま旧版で開いてから必要な track を
+freeze / WAV 化する。VST2 folder は旧 project に必要なときだけ追加する。
 
 Sound design:
 
@@ -84,8 +163,13 @@ Use Ableton when:
 - A Live project already exists.
 
 Do not remove either lane. Sonar is the practical Windows/UR44 center; Ableton
-is the loop/live/sync lane. The current blocker for Ableton is plugin scan, not
-strategic value.
+is the loop/live/sync lane. WorkerPC の Ableton VST3 scan は完了しており、共有運用の
+残件は StudioPC の同版化。
+
+更新・検証の順番は Sonar → Sonar VST3 scan / smoke test → NI standalone /
+plug-in 確認 → Ableton update / VST3 rescan とする。NI instrument を使う制作でも
+DAW の project format と audio routing が土台なので、共有運用の基準は Sonar を
+先に固定する。
 
 ## VCV Rack / SuperCollider
 
@@ -185,6 +269,63 @@ For the current Band Room AI recreation loop, use
     node scripts\stack-check.mjs
     ```
 
+## Shared Sonar Smoke Test — 2026-07-27
+
+WorkerPC の repo 外に次を作成した。
+
+```text
+C:\Cakewalk Projects\WorkerPC-Common-Smoke-20260727\
+```
+
+確認済み:
+
+- Sonar `2026.07` build 021 で新規 project を作成。
+- MIDI track と Kontakt 8 VST3 instrument track を作成し、Kontakt 8 editor 起動
+  と Scarbee Mark I の認識を確認。
+- Reaktor 6 VST3 instrument track で TRK-01 Bass を読み込み、MIDI note を発音。
+- Reaktor track を freeze し、非無音の stereo waveform を生成。
+- freeze 済み Reaktor track を
+  `Audio Export\WorkerPC-Common-Smoke-20260727.wav` へ export。
+- `ffprobe` で `pcm_s24le`、`48000 Hz`、`24 bit`、`2 ch`、`5.500521 sec`
+  を確認。
+
+DAW project、Audio、Audio Export、MixScenes はすべて repo 外。StudioPC では
+同じ構成の project を別 folder に作って再試験し、同じ編集中の project folder を
+2 台で同時に開かない。共有するときは `.cwp` 単体ではなく project folder 全体を
+扱う。
+
+## Ableton VST3 Verification — 2026-07-27
+
+WorkerPC の Ableton Live 12 Lite を `12.4.3` へ更新し、Preferences > Plug-Ins の
+`VST3 System Folders` を有効化して再スキャンした。
+
+確認済み:
+
+- Browser に Native Instruments の VST3 が登録された。
+- Kontakt 8 `8.11.1`、Reaktor 6 `6.5.0`、Komplete Kontrol `3.5.4` をそれぞれ
+  instrument track へ読み込み、plug-in processor の生成を確認した。
+- Ableton が使う system folder は `C:\Program Files\Common Files\VST3`。
+
+Komplete Kontrol 内で発生していた
+`Loading issue: Plug-in not found` は、user 承認後に local database を退避して
+再構築し、解消を確認した。旧 database は削除せず、次へ退避した。
+
+```text
+C:\Users\cta88\AppData\Local\Native Instruments\Komplete Kontrol.db-backup-20260727-184514
+```
+
+Standalone Komplete Kontrol の再スキャン完了後、新しい `Plugin.data`、
+`Plugin_kk3.data`、`Browser Data\komplete.db3` の生成を確認した。Ableton の
+Komplete Kontrol VST3 で Monark の `2Pranged` preset を読み込み、Monark 本体画面の
+表示と track / Main の peak `-12.6 dB` を確認した。`Plug-in not found` は再発して
+いない。検証 Set は Git 外の次へ保存した。
+
+```text
+C:\Cakewalk Projects\WorkerPC-Ableton-VST3-Smoke-20260727 Project\WorkerPC-Ableton-VST3-Smoke-20260727.als
+```
+
+Kontakt 8 / Reaktor 6 自体の起動と発音は上記 Sonar smoke test でも確認済み。
+
 ## Manual Approval Boundary
 
 Codex can run audits, local scripts, repo checks, and normal app navigation.
@@ -208,5 +349,10 @@ constant interruption.
   <https://help.cakewalk.com/hc/ja/articles/53866492346009-Cakewalk-by-BandLabはどうなりましたか-もう再アクティベートできないようです>
 - Ableton Live 12 Lite:
   <https://help.ableton.com/hc/en-us/articles/360021524559-Live-12-Lite>
+- Ableton Live 12 release notes:
+  <https://www.ableton.com/en/release-notes/live-12/>
+- Ableton update / point-release compatibility:
+  <https://help.ableton.com/hc/en-us/articles/6003240646556-Updating-Live>
+  <https://help.ableton.com/hc/en-us/articles/360000841004-Backward-Compatibility>
 - Ableton Windows VST setup:
   <https://help.ableton.com/hc/en-us/articles/209071729-Using-VST-plug-ins-on-Windows>

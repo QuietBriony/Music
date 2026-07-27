@@ -18,7 +18,7 @@ machineName は git config `music.machineName` に保存。
 |---|---|---|---|---|
 | `chouta-surface` | メイン開発機 | (汎用) | 全 engine.js 修正、agent autonomy session 主体、Hazama FM のロジック作業 | active |
 | `studioPC` | 試聴・録音/DAW 機 (Intel、旧 `studio-surface`) | Steinberg UR44 (USB Audio) + monitor speaker/headphone、Ableton / Bandlab / Sonar (予定) | engine の音作り ear-verified 微調整、stems 録音 confirm、DAW 統合 (Sonar / Ableton / Bandlab / Cubase) | active (2026-06-02 GitHub auth + stack-check 完了、UR44 接続待ち) |
-| `worker-gaming` | 重タスク機 | RTX 2070 gaming note PC + Ableton / Cakewalk Sonar / Native Instruments / VCV / SuperCollider | Demucs stem 分離、Band Room AI 再現 batch、drum-frame candidate 生成、audio rendering | active (2026-06-01 worker venv ready / DAW maintenance current) |
+| `worker-gaming` | 重タスク機 (WorkerPC) | RTX 2070 gaming note PC + Ableton / Cakewalk Sonar / Native Instruments / VCV / SuperCollider | Demucs stem 分離、Band Room AI 再現 batch、drum-frame candidate 生成、audio rendering | active (2026-07-27 Sonar / Native Instruments 更新、共有 smoke test 完了) |
 
 `chouta-surface` は無印 (= machineName 未設定) も `chouta-surface` 扱い。
 既存のすべての SESSION-LEDGER エントリは chouta-surface 由来。
@@ -110,6 +110,20 @@ SESSION-LEDGER 追記では `studioPC` を使う。
   `python -X utf8 scripts/worker-gaming-pipeline.py snapshot-setup --tag worker-gaming-reference`
   on `worker-gaming` and compare the generated reports with the new PC's
   `check-env` / `check-daw` / `check-hardware` output.
+- **2026-07-27 WorkerPC DAW / NI refresh**: Sonar `2026.07` build 021、
+  Native Access `3.25.2.893`、Kontakt 8 Player `8.11.1`、Kontakt 7
+  `7.10.9`、Reaktor 6 `6.5.0`、Komplete Kontrol `3.5.4`、Traktor Pro 3
+  `3.11.1.17` へ更新。Kontakt 6 `6.8.0` は旧 project 用に維持した。
+  Scarbee Mark I / Monark / Prism / TRK-01 Bass / Reaktor Factory Selection
+  R2 を共有対象として確認し、Sonar で Kontakt 8 / Reaktor 6 VST3、freeze、
+  48 kHz / 24-bit WAV export の smoke test を完了した。Ableton Live 12 Lite は
+  `12.4.3` へ更新し、VST3 system folder の有効化と rescan、Kontakt 8 /
+  Reaktor 6 / Komplete Kontrol VST3 の読み込みまで確認した。Komplete Kontrol
+  local database は旧 folder を回復可能な形で退避して再構築し、Monark
+  `2Pranged` preset の読み込み、本体画面表示、音声 peak を確認した。
+  `Plug-in not found` は解消済み。
+  詳細と StudioPC の matching target は
+  [`docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md`](MUSIC-PC-DAW-PARITY-RUNBOOK.md)。
 
 ---
 

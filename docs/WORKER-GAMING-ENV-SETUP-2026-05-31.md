@@ -1,5 +1,30 @@
 # Worker Gaming Environment Setup - 2026-05-31
 
+## 2026-07-27 Maintenance Follow-Up
+
+この文書の 2026-05-31 baseline は履歴として残す。現在の WorkerPC / StudioPC
+共有基準、NI content、VST3 path、smoke test は
+[`MUSIC-PC-DAW-PARITY-RUNBOOK.md`](MUSIC-PC-DAW-PARITY-RUNBOOK.md) を正とする。
+
+- Sonar: `2026.07` / build `32.07.0.021`。Product Center で Up to date を確認。
+- Native Access: `3.25.2.893`、Updates `0`。
+- Kontakt 8 Player `8.11.1`、Kontakt 7 `7.10.9`、Reaktor 6 `6.5.0`、
+  Komplete Kontrol `3.5.4`、Traktor Pro 3 `3.11.1.17`。
+- Kontakt 6 `6.8.0` は旧 project 互換用として削除していない。
+- Monark `1.3.2`、Prism `1.6.2`、TRK-01 Bass `1.0.1`、Reaktor Factory
+  Selection R2 `1.0.2`、Mikro Prism `1.1.1` を更新。Scarbee Mark I は
+  Kontakt 8 で認識。
+- `C:\Program Files\Common Files\VST3` に Kontakt 8 / Kontakt 7 /
+  Kontakt 6 / Reaktor 6 / Komplete Kontrol / Maschine 2 の VST3 を確認。
+- Sonar smoke test で MIDI、Kontakt 8、Reaktor 6、freeze、非無音 waveform、
+  48 kHz / 24-bit stereo WAV export を確認。project と audio は repo 外。
+- Ableton Live 12 Lite は `12.4.3`。`VST3 System Folders` を有効化して rescan
+  し、Kontakt 8 / Reaktor 6 / Komplete Kontrol VST3 の読み込みを確認した。
+  Komplete Kontrol local database は旧 folder を削除せず
+  `Komplete Kontrol.db-backup-20260727-184514` へ退避して再構築した。Monark
+  `2Pranged` preset の読み込み、本体画面表示、音声 peak を確認し、
+  `Plug-in not found` は解消済み。
+
 ## Summary
 
 `worker-gaming` の音楽制作環境を保守更新方針で棚卸しし、非対話で安全に進められる更新だけ実施した。
@@ -30,7 +55,7 @@
 - Worker script now includes `check-daw` for Ableton / Native Instruments /
   Cakewalk readiness checks.
 
-## Current Music App Baseline
+## 2026-05-31 Music App Baseline (Historical)
 
 - Ableton Live 12 Lite: `12.3.2`
 - Ableton Live 10 Lite: legacy install remains under `C:\ProgramData\Ableton`
@@ -59,7 +84,7 @@
   `Version: 2026.04 (Build 078, 64 bit)` from Quick Start.
 - Product Center reports Sonar and the selected add-ons as installed.
 
-## Deferred Manual Work
+## Deferred Manual Work at 2026-05-31 (Historical)
 
 - Native Access 2: winget package not found. Use the official NI installer and sign in manually.
 - Remaining NI product updates: apply only free point updates. Do not buy
@@ -140,8 +165,8 @@ Use the Human Fly AI recreation stems in Ableton Live 12 Lite or Cakewalk Sonar:
 
 1. Import `drums.mp3`, `bass.mp3`, `other.mp3`, and `mix.wav` from `C:\workspace\music-stack-worker\ai-recreation\tabasco\human-fly`.
 2. Run `C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-daw`.
-3. If Ableton still reports `Plugin modules: 0`, open Ableton Preferences on
-   the PC screen, go to Plug-Ins, turn `VST3 System Folders` on, and rescan.
+3. Ableton `12.4.3` では `VST3 System Folders` の有効化と rescan を完了済み。
+   新しい Set では Kontakt 8 / Reaktor 6 VST3 を優先する。
 4. Scan NI VST2 from `C:\Program Files\Native Instruments\VSTPlugins 64 bit` only when needed.
 5. For the Cakewalk lane, use Sonar with the Product Center add-ons for stem
    polish, guitar/amp processing, drum replacement, and quick mix bounces.
