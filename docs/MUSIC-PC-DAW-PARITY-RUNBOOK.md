@@ -171,6 +171,66 @@ plug-in 確認 → Ableton update / VST3 rescan とする。NI instrument を使
 DAW の project format と audio routing が土台なので、共有運用の基準は Sonar を
 先に固定する。
 
+## StudioPC 50 GB Capacity Plan
+
+StudioPC の C drive 空きが約 `50 GB` の場合でも、WorkerPC と共有する制作コアは
+揃えられる見込み。ただし Native Access の全 Available 製品をミラーせず、
+「同じ DAW / plug-in version + 共有 project で使う content」を parity の単位に
+する。
+
+### Capacity guard
+
+- 作業前に全 drive の空き容量、Native Access の content / download location、
+  既存 NI library の実容量を記録する。
+- C drive は作業完了後も最低 `25 GB` を残す。これは製品の公式要件ではなく、
+  Windows update、DAW cache、録音、plug-in scan 用にこの環境で採用する運用上の
+  guardrail。
+- Native Access は必ず 1 製品ずつ処理し、各 install / update 後に空き容量を
+  再確認する。一括 queue は使わない。
+- 別の内蔵 drive / 外付け SSD がある場合、大きい NI content の保存先候補にする。
+  VST3 application は通常の system path に置き、既存 library の自動移動はしない。
+- 容量不足時に cache、旧Kontakt、旧DAW、既存 libraryを勝手に削除しない。
+  削除候補と回収見込みだけを報告し、user 承認を待つ。
+- Native Access の表示上、次の 1 製品を入れると C drive が `25 GB` 未満になる
+  見込みなら、その install 前で停止する。
+
+### Install priority
+
+| Priority | StudioPC action | Capacity policy |
+|---|---|---|
+| P0 | 既存 project、録音、user preset、旧Kontakt 6 / 7 を保護 | 削除・上書きしない |
+| P1 | Sonar、Ableton、Native Access、Kontakt 8、Reaktor 6、Komplete Kontrol | WorkerPC と同版を優先 |
+| P2 | Scarbee Mark I、Monark、Prism、TRK-01 Bass、Reaktor Factory Selection R2 | 共有必須 content |
+| P3 | Mikro Prism、Blocks Base、Kinetic Treats、Kontakt Factory Selection、Play Series Selection | 既存導入済み、または残容量が十分なら共通化 |
+| P4 | Expansions、Maschine content、VCV / SuperCollider、StudioPCで使わない追加音源 | 必要になるまで延期可 |
+
+Traktor Pro 3、Maschine、Guitar Rig は application / 既存 project の必要性を見て
+更新する。大きな追加 content を parity の必須条件にはしない。有料 major upgrade
+は導入しない。公式側に WorkerPC target より新しい安定版が出ていた場合も、
+StudioPC だけ先行更新せず、両 PC を同時に上げるか user に確認する。
+
+### StudioPC execution order
+
+1. Repo と drive / app / VST3 / library / hardware の現状を read-only で棚卸し。
+2. 既存 project を更新版で開く前に、project folder 全体を repo 外へ backup。
+   必要なら旧 NI track を freeze / WAV 化する。
+3. Cakewalk Product Center と Sonar を WorkerPC target に合わせる。
+4. StudioPC で実際に使う UR44 の公式 driver / dspMixFx だけを更新し、Sonar の
+   Yamaha Steinberg ASIO と `48 kHz` / `24 bit` を確認する。
+5. Native Access 本体を更新し、login 済み account / license / installed content
+   を確認。P1 → P2 → P3 の順で 1 製品ずつ更新する。
+6. Kontakt 8、Reaktor 6、Komplete Kontrol standalone を起動して scan と発音を
+   確認する。
+7. Ableton を WorkerPC target に合わせ、VST3 System Folders を有効化して rescan。
+8. Sonar の共通 smoke test と、Komplete Kontrol から Monark preset を読む
+   Ableton test を実施する。
+9. 実測した version、library、VST3 path、残容量、StudioPC 固有の保留事項をこの
+   Runbook と `PC-REGISTRY.md` に反映する。
+
+StudioPC の Codex へ渡す copy-paste prompt:
+
+- [`codex-prompts/studiopc-daw-parity-setup.md`](codex-prompts/studiopc-daw-parity-setup.md)
+
 ## VCV Rack / SuperCollider
 
 These are useful, but not the daily production center.
@@ -249,9 +309,10 @@ For the current Band Room AI recreation loop, use
    C:\Program Files\Native Instruments\VSTPlugins 64 bit
    ```
 
-7. Install Native Access content that is already licensed. Prioritize Kontakt 7
-   Player and installed libraries. Avoid paid major upgrades unless explicitly
-   approved.
+7. Install Native Access content that is already licensed. Prioritize Kontakt 8,
+   Reaktor 6, Komplete Kontrol, then the shared NI content listed above.
+   Preserve Kontakt 6 / 7 when already installed. Avoid paid major upgrades
+   unless explicitly approved.
 
 8. Install VCV Rack 2 Free and SuperCollider when the PC will do sound-design
    renders.

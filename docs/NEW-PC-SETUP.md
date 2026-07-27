@@ -446,6 +446,9 @@ primary PC ──push─→ GitHub main ←─pull── 別 PC (UR44 PC)
 - **`docs/PC-REGISTRY.md`** — PC 登録一覧、役割境界、専有領域マトリクス、競合
   管理、エラー対処。本 doc(NEW-PC-SETUP) と対の関係: NEW-PC-SETUP は
   「組み立て」、PC-REGISTRY は「組み立て後の住み分け + 運用」。
+- `docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md` — WorkerPC / StudioPC の DAW・NI
+  共通基準。空き約 50 GB の StudioPC 用 Codex prompt は
+  `docs/codex-prompts/studiopc-daw-parity-setup.md`。
 - `AGENTS.md` — Hard Rule 集 + cache-buster 規律 + Branch/PR convention
 - `docs/HAZAMA-FM-ARCHITECTURE.md` — engine 全体像 + Section 12 (harness lens)
 - `docs/autonomy/SESSION-LEDGER.md` — autonomy 履歴 (このセッションも含む)
