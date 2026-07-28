@@ -11,18 +11,21 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import platform
 import re
 import shutil
 import socket
 import sqlite3
+import struct
 import subprocess
 import sys
 import tempfile
 import time
 import urllib.error
 import urllib.request
+import wave
 import zipfile
 from datetime import datetime
 from pathlib import Path
@@ -642,6 +645,342 @@ def _read_json(path: Path) -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return {}
+
+
+def _resolve_repo_path(value: str) -> Path:
+    path = Path(value).expanduser()
+    return path.resolve() if path.is_absolute() else (ROOT / path).resolve()
+
+
+def _validate_sonar_ni_recipe(recipe: dict) -> list[str]:
+    errors: list[str] = []
+    if recipe.get("schema_version") != 1:
+        errors.append("schema_version must be 1")
+    if not recipe.get("id"):
+        errors.append("id is required")
+
+    daw = recipe.get("daw")
+    if not isinstance(daw, dict):
+        errors.append("daw must be an object")
+    else:
+        for key in ("name", "product_version", "file_version", "executable"):
+            if not daw.get(key):
+                errors.append(f"daw.{key} is required")
+
+    audio = recipe.get("audio")
+    if not isinstance(audio, dict):
+        errors.append("audio must be an object")
+    else:
+        if audio.get("sample_rate_hz") != 48000:
+            errors.append("audio.sample_rate_hz must be 48000")
+        if audio.get("bit_depth") != 24:
+            errors.append("audio.bit_depth must be 24")
+        if audio.get("channels") != 2:
+            errors.append("audio.channels must be 2")
+
+    reference = recipe.get("reference_audio")
+    if not isinstance(reference, dict):
+        errors.append("reference_audio must be an object")
+    else:
+        for key in ("frequency_hz", "duration_seconds", "peak_dbfs", "filename"):
+            if reference.get(key) is None:
+                errors.append(f"reference_audio.{key} is required")
+
+    instruments = recipe.get("instruments")
+    if not isinstance(instruments, list) or not instruments:
+        errors.append("instruments must be a non-empty array")
+    else:
+        for index, instrument in enumerate(instruments):
+            if not isinstance(instrument, dict):
+                errors.append(f"instruments[{index}] must be an object")
+                continue
+            for key in ("id", "plugin", "plugin_version", "plugin_path", "library", "preset"):
+                if not instrument.get(key):
+                    errors.append(f"instruments[{index}].{key} is required")
+
+    diagnostic = recipe.get("diagnostic_midi")
+    if not isinstance(diagnostic, dict) or not diagnostic.get("tracks"):
+        errors.append("diagnostic_midi.tracks must be a non-empty array")
+    return errors
+
+
+def _windows_version_info(path: Path) -> dict[str, str]:
+    if not path.exists() or not sys.platform.startswith("win"):
+        return {}
+    escaped = str(path).replace("'", "''")
+    rows = _powershell_json(
+        f"Get-Item -LiteralPath '{escaped}' -ErrorAction SilentlyContinue | "
+        "Select-Object "
+        "@{Name='ProductVersion';Expression={$_.VersionInfo.ProductVersion}},"
+        "@{Name='FileVersion';Expression={$_.VersionInfo.FileVersion}}"
+    )
+    return rows[0] if rows else {}
+
+
+def _pcm24_bytes(sample: int) -> bytes:
+    value = sample if sample >= 0 else (1 << 24) + sample
+    return bytes((value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF))
+
+
+def _write_reference_tone(recipe: dict, path: Path) -> None:
+    audio = recipe["audio"]
+    reference = recipe["reference_audio"]
+    sample_rate = int(audio["sample_rate_hz"])
+    channels = int(audio["channels"])
+    duration = float(reference["duration_seconds"])
+    frequency = float(reference["frequency_hz"])
+    peak = ((1 << 23) - 1) * (10.0 ** (float(reference["peak_dbfs"]) / 20.0))
+    frame_count = round(sample_rate * duration)
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with wave.open(str(path), "wb") as wav:
+        wav.setnchannels(channels)
+        wav.setsampwidth(3)
+        wav.setframerate(sample_rate)
+        block = bytearray()
+        for index in range(frame_count):
+            sample = round(peak * math.sin(2.0 * math.pi * frequency * index / sample_rate))
+            packed = _pcm24_bytes(sample)
+            block.extend(packed * channels)
+            if len(block) >= 1024 * 1024:
+                wav.writeframesraw(block)
+                block.clear()
+        if block:
+            wav.writeframesraw(block)
+
+
+def _midi_vlq(value: int) -> bytes:
+    if value < 0:
+        raise ValueError("MIDI delta cannot be negative")
+    output = [value & 0x7F]
+    value >>= 7
+    while value:
+        output.insert(0, (value & 0x7F) | 0x80)
+        value >>= 7
+    return bytes(output)
+
+
+def _midi_track_chunk(events: list[tuple[int, int, bytes]], name: str) -> bytes:
+    name_bytes = name.encode("utf-8")
+    data = bytearray(b"\x00\xff\x03")
+    data.extend(_midi_vlq(len(name_bytes)))
+    data.extend(name_bytes)
+    previous_tick = 0
+    for tick, _order, event in sorted(events, key=lambda item: (item[0], item[1])):
+        data.extend(_midi_vlq(tick - previous_tick))
+        data.extend(event)
+        previous_tick = tick
+    data.extend(b"\x00\xff\x2f\x00")
+    return b"MTrk" + struct.pack(">I", len(data)) + data
+
+
+def _write_diagnostic_midi(recipe: dict, path: Path) -> None:
+    diagnostic = recipe["diagnostic_midi"]
+    ppq = int(diagnostic["ppq"])
+    tempo_bpm = float(diagnostic["tempo_bpm"])
+    tempo_us = round(60_000_000 / tempo_bpm)
+    tempo_event = b"\x00\xff\x51\x03" + tempo_us.to_bytes(3, "big")
+    tempo_track = b"MTrk" + struct.pack(">I", len(tempo_event) + 4) + tempo_event + b"\x00\xff\x2f\x00"
+
+    track_chunks = []
+    for track in diagnostic["tracks"]:
+        channel = max(0, min(15, int(track["channel"]) - 1))
+        events: list[tuple[int, int, bytes]] = []
+        for note in track["notes"]:
+            start = round(float(note["start_beats"]) * ppq)
+            end = round((float(note["start_beats"]) + float(note["duration_beats"])) * ppq)
+            note_number = max(0, min(127, int(note["note"])))
+            velocity = max(1, min(127, int(note["velocity"])))
+            events.append((start, 1, bytes((0x90 | channel, note_number, velocity))))
+            events.append((end, 0, bytes((0x80 | channel, note_number, 0))))
+        track_chunks.append(_midi_track_chunk(events, str(track["name"])))
+
+    header = b"MThd" + struct.pack(">IHHH", 6, 1, 1 + len(track_chunks), ppq)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(header + tempo_track + b"".join(track_chunks))
+
+
+def _write_sonar_ni_reference_markdown(report: dict, path: Path) -> None:
+    recipe = report["recipe"]
+    paths = report["paths"]
+    lines = [
+        "# WorkerPC Sonar / NI Reference Handoff",
+        "",
+        f"- Session: `{report['session']}`",
+        f"- Recipe: `{recipe['id']}`",
+        f"- Created: `{report['created_at']}`",
+        f"- Hostname: `{report['hostname']}`",
+        f"- Exact app/plugin check: `{'PASS' if report['exact_environment'] else 'REVIEW'}`",
+        "",
+        "## Why This Is A/B First",
+        "",
+        f"- {recipe['source_observation']['audible_certainty']}",
+        f"- {recipe['source_observation']['comparison_policy']}",
+        "",
+        "## Generated Inputs",
+        "",
+        f"- Reference tone: `{paths['reference_tone']}`",
+        f"- Diagnostic MIDI: `{paths['diagnostic_midi']}`",
+        f"- Sonar project folder: `{paths['project_folder']}`",
+        f"- Export folder: `{paths['export_dir']}`",
+        "",
+        "## Environment Check",
+        "",
+    ]
+    for item in report["environment"]:
+        actual = item.get("actual") or "not detected"
+        lines.append(
+            f"- {item['label']}: `{'PASS' if item['match'] else 'REVIEW'}` "
+            f"expected `{item['expected']}`, actual `{actual}`"
+        )
+
+    lines.extend([
+        "",
+        "## Sonar A/B/C Procedure",
+        "",
+        "1. Close other DAWs and audio applications. Create a new Sonar project in the project folder above.",
+        "2. Set the project to `48 kHz / 24 bit`. Use the available WorkerPC ASIO interface at `256 samples`; use `512` only for a heavier mix.",
+        "3. Import the reference tone on its own audio track. Export only that track as `A-reference-tone.wav` with no mastering or normalization.",
+        "4. Import the diagnostic MIDI. Route channel 1 to Kontakt 8 / Scarbee Mark I / `Blue Ballad`. Export it alone as `B-scarbee-blue-ballad.wav`.",
+        "5. Route channel 2 to Reaktor 6 / `Polar Wind`. Export it alone as `C-reaktor-polar-wind.wav`.",
+        "6. Freeze both instrument tracks, then export the combined diagnostic as `D-combined-reference.wav`.",
+        "7. Compare A/B/C at matched monitor volume. Identify the source that matches the StudioPC impression before changing presets, EQ, reverb, or mastering.",
+        "8. Put the preferred lane into the `musou-teien` arrangement only after that identity check.",
+        "",
+        "## Expected Exports",
+        "",
+    ])
+    for filename in recipe["render"]["variants"]:
+        lines.append(f"- `{Path(paths['export_dir']) / filename}`")
+
+    lines.extend([
+        "",
+        "## Safety Boundary",
+        "",
+        "- This headless command generated only a WAV reference, diagnostic MIDI, and reports outside Git.",
+        "- It did not launch Sonar, change plug-in state, arm recording, or overwrite a DAW project.",
+        "- Do not add Sonar projects, generated audio, NI libraries, caches, or credentials to Git.",
+        "- Do not open the same project folder on WorkerPC and StudioPC at the same time.",
+        "",
+    ])
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def command_sonar_ni_reference(args: argparse.Namespace) -> None:
+    """Generate deterministic WorkerPC inputs and a manual Sonar/NI A/B handoff."""
+    init_dirs(args)
+    recipe_path = _resolve_repo_path(args.recipe)
+    recipe = _read_json(recipe_path)
+    errors = _validate_sonar_ni_recipe(recipe)
+    if errors:
+        raise SystemExit("invalid Sonar/NI recipe:\n- " + "\n- ".join(errors))
+
+    session = sanitize_id(args.session or str(recipe["id"]))
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    report_dir = worker_path(args, "reports", "daw-reference", session, f"sonar-ni-reference-{timestamp}")
+    input_dir = worker_path(args, "daw-export", "daw-reference", session, "inputs")
+    export_dir = worker_path(args, "daw-export", "daw-reference", session, "exports")
+    project_folder = worker_path(args, "daw-export", "daw-reference", session, recipe["render"]["project_folder_name"])
+    for directory in (report_dir, input_dir, export_dir, project_folder):
+        directory.mkdir(parents=True, exist_ok=True)
+
+    tone_path = input_dir / recipe["reference_audio"]["filename"]
+    midi_path = input_dir / recipe["diagnostic_midi"]["filename"]
+    _write_reference_tone(recipe, tone_path)
+    _write_diagnostic_midi(recipe, midi_path)
+
+    environment: list[dict[str, object]] = []
+    daw = recipe["daw"]
+    sonar_path = Path(daw["executable"])
+    sonar_versions = _windows_version_info(sonar_path)
+    sonar_actual = " / ".join(
+        value for value in (
+            sonar_versions.get("ProductVersion", ""),
+            sonar_versions.get("FileVersion", ""),
+        ) if value
+    )
+    environment.append({
+        "label": "Cakewalk Sonar",
+        "expected": f"{daw['product_version']} / {daw['file_version']}",
+        "actual": sonar_actual,
+        "path": str(sonar_path),
+        "match": (
+            sonar_path.exists()
+            and str(sonar_versions.get("ProductVersion", "")).startswith(str(daw["product_version"]))
+            and str(sonar_versions.get("FileVersion", "")).startswith(str(daw["file_version"]))
+        ),
+    })
+
+    for instrument in recipe["instruments"]:
+        standalone_path = Path(instrument["standalone_path"])
+        plugin_path = Path(instrument["plugin_path"])
+        versions = _windows_version_info(standalone_path)
+        actual = str(versions.get("ProductVersion") or versions.get("FileVersion") or "")
+        environment.append({
+            "label": instrument["plugin"],
+            "expected": instrument["plugin_version"],
+            "actual": actual,
+            "path": str(standalone_path),
+            "match": standalone_path.exists() and actual.startswith(str(instrument["plugin_version"])),
+        })
+        environment.append({
+            "label": f"{instrument['plugin']} VST3",
+            "expected": instrument["plugin_path"],
+            "actual": str(plugin_path) if plugin_path.exists() else "",
+            "path": str(plugin_path),
+            "match": plugin_path.exists(),
+        })
+
+    exact_environment = all(bool(item["match"]) for item in environment)
+    report = {
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "hostname": socket.gethostname(),
+        "session": session,
+        "worker_root": str(Path(args.worker_root).resolve()),
+        "recipe_path": str(recipe_path),
+        "recipe": recipe,
+        "repo": _repo_snapshot(),
+        "exact_environment": exact_environment,
+        "environment": environment,
+        "generated": {
+            "reference_tone": {
+                "path": str(tone_path),
+                "bytes": tone_path.stat().st_size,
+                "sha256": _sha256_file(tone_path),
+            },
+            "diagnostic_midi": {
+                "path": str(midi_path),
+                "bytes": midi_path.stat().st_size,
+                "sha256": _sha256_file(midi_path),
+            },
+        },
+        "paths": {
+            "report_dir": str(report_dir),
+            "reference_tone": str(tone_path),
+            "diagnostic_midi": str(midi_path),
+            "project_folder": str(project_folder),
+            "export_dir": str(export_dir),
+            "json": str(report_dir / "sonar-ni-reference.json"),
+            "markdown": str(report_dir / "sonar-ni-reference.md"),
+        },
+        "policy": (
+            "Headless preparation only. The command does not launch Sonar, alter plug-in state, "
+            "arm recording, or write generated audio and project data into Git."
+        ),
+    }
+    json_path = report_dir / "sonar-ni-reference.json"
+    md_path = report_dir / "sonar-ni-reference.md"
+    json_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _write_sonar_ni_reference_markdown(report, md_path)
+
+    print(f"Sonar/NI recipe: {recipe_path}")
+    print(f"Exact environment: {'PASS' if exact_environment else 'REVIEW'}")
+    print(f"Reference tone: {tone_path}")
+    print(f"Diagnostic MIDI: {midi_path}")
+    print(f"Sonar/NI JSON: {json_path}")
+    print(f"Sonar/NI Markdown: {md_path}")
+    if args.require_exact and not exact_environment:
+        raise SystemExit("WorkerPC DAW/plugin versions do not exactly match the recipe; inspect the report before opening Sonar.")
 
 
 def _output_metric_line(name: str, metric: dict) -> str:
@@ -2466,6 +2805,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--recreation-cycle", help="explicit recreation-cycle directory; defaults to the latest cycle for band/song")
     p.add_argument("--open-report", action="store_true", help="open the Markdown handoff report after writing it on Windows")
     p.set_defaults(func=command_sonar_ep133_handoff)
+
+    p = sub.add_parser("sonar-ni-reference", help="generate WorkerPC Sonar/NI A/B inputs and a manual handoff outside Git")
+    p.add_argument("--recipe", default="references/studiopc-sonar-ni-reference.json", help="tracked Sonar/NI recipe JSON")
+    p.add_argument("--session", default="musou-teien", help="repo-external report/export session id")
+    p.add_argument("--require-exact", action="store_true", help="return nonzero when DAW or plug-in versions do not match")
+    p.set_defaults(func=command_sonar_ni_reference)
 
     p = sub.add_parser("operator-run", help="run the safe Sonar/EP-133/Band Room worker loop and write one report")
     p.add_argument("band", nargs="?", default="tabasco")

@@ -251,6 +251,58 @@ Do not add Ableton/Sonar project files, Kontakt libraries, generated audio, or
 plugin state dumps to the repo unless the user explicitly approves a separate
 asset policy.
 
+### StudioPC Sonar / NI reference from ChoutaSurface
+
+StudioPC で確認した Sonar / NI 条件を WorkerPC へ準備する場合、WorkerPC の
+repo root で次を実行する。
+
+```powershell
+powershell -NoProfile -File scripts\invoke-worker-sonar-ni.ps1 `
+  -SyncRepo `
+  -Session musou-teien
+```
+
+ChoutaSurface から既存 SSH alias 経由で準備する場合:
+
+```powershell
+ssh <worker-ssh-alias> "powershell -NoProfile -File C:\workspace\music-stack\Music\scripts\invoke-worker-sonar-ni.ps1 -SyncRepo -Session musou-teien"
+```
+
+`<worker-ssh-alias>` は ChoutaSurface の既存 `~/.ssh/config` から選ぶ。hostname、
+username、private key、password は repo に記録しない。wrapper は clean な
+`main` だけを `git pull --ff-only origin main` で同期し、次を repo 外へ生成する。
+
+- report:
+  `C:\workspace\music-stack-worker\reports\daw-reference\musou-teien\sonar-ni-reference-<timestamp>\sonar-ni-reference.md`
+- input:
+  `C:\workspace\music-stack-worker\daw-export\daw-reference\musou-teien\inputs`
+- export:
+  `C:\workspace\music-stack-worker\daw-export\daw-reference\musou-teien\exports`
+
+SSH の headless 処理は Sonar を起動せず、version check、基準 WAV / MIDI、作業票の
+生成で止まる。その後 WorkerPC の Remote Codex または RustDesk で作業票を開き、
+Sonar から次を同じ `48 kHz` / `24-bit` stereo で export する。
+
+- `A-reference-tone.wav`
+- `B-scarbee-blue-ballad.wav`
+- `C-reaktor-polar-wind.wav`
+- `D-combined-reference.wav`
+
+ChoutaSurface の Claude へ渡す指示:
+
+```text
+Music repoのmainをGitHubからWorkerPCへff-only同期し、
+scripts/invoke-worker-sonar-ni.ps1をSession=musou-teienでSSH実行してください。
+dirty tree、main以外、version mismatchなら変更を消さず停止してください。
+生成されたsonar-ni-reference.mdのpathを報告し、その内容をWorkerPCのRemote
+Codexへ渡してください。Sonar GUIをSSHから自動操作しないでください。
+WAV、MIDI、Sonar project、NI library、cache、credentialはGitへ追加しないでください。
+```
+
+WorkerPC の Remote Codex は作業票どおり Scarbee `Blue Ballad` と Reaktor
+`Polar Wind` を load して A/B/C/D を書き出す。user が選んだ variant を基準に
+夢想庭園の音色、演奏、処理を詰める。
+
 Current Ableton handoff baseline:
 
 - Use Ableton Live 12 Lite and Cakewalk Sonar as the primary DAW lanes.

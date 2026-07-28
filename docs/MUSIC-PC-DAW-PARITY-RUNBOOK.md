@@ -439,6 +439,27 @@ StudioPC の通常モニター系は `KOMPLETE AUDIO 2 -> FOSTEX PM0.4`。UR44 �
 Yamaha Steinberg ASIO を選択し、KOMPLETE AUDIO 2 の driver や通常モニター系は
 削除しない。
 
+### StudioPC good-output reference
+
+StudioPC の 2026-07-28 Sonar smoke test は
+`references/studiopc-sonar-ni-reference.json` に再現条件を記録する。
+可聴が確実だった source は 2 秒の `440 Hz` reference tone で、同じ session に
+Kontakt 8 + Scarbee Mark I の `Blue Ballad` と Reaktor 6 の `Polar Wind` も
+load 済みだった。ただし、user が良いと感じた音をこの 3 source のどれかへ
+完全には分離できていない。
+
+WorkerPC では憶測で 1 source に決めず、次を同じ `48 kHz` / `24-bit` stereo で
+A/B export する。
+
+- `A-reference-tone.wav`
+- `B-scarbee-blue-ballad.wav`
+- `C-reaktor-polar-wind.wav`
+- `D-combined-reference.wav`
+
+Git で共有するのは recipe と操作手順だけとする。Sonar project、WAV、MIDI、
+NI library、plugin cache は repo 外へ置く。WorkerPC の生成と手動 handoff は
+`docs/WORKER-GAMING-RUNBOOK.md` の StudioPC Sonar / NI reference 手順を使う。
+
 ## Ableton VST3 Verification — 2026-07-27
 
 WorkerPC の Ableton Live 12 Lite を `12.4.3` へ更新し、Preferences > Plug-Ins の
