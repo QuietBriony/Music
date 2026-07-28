@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "id": "studiopc-sonar-ni-good-output-20260728",
+  "label": "StudioPC Sonar and NI good-output reference",
+  "source_observation": {
+    "machine": "studioPC",
+    "date": "2026-07-28",
+    "project": "StudioPC-Common-Smoke-20260728",
+    "audible_certainty": "The non-silent export was guaranteed by the imported 440 Hz reference tone. The NI presets were loaded, but the session did not isolate which source the user preferred.",
+    "comparison_policy": "Render the clean reference tone, Scarbee, and Reaktor as separate A/B/C files before combining them."
+  },
+  "daw": {
+    "name": "Cakewalk Sonar",
+    "product_version": "2026.07",
+    "file_version": "32.07.0.021",
+    "executable": "C:\\Program Files\\Cakewalk\\Sonar\\Sonar.exe"
+  },
+  "audio": {
+    "sample_rate_hz": 48000,
+    "bit_depth": 24,
+    "channels": 2,
+    "tracking_buffer_samples": 256,
+    "mix_buffer_samples": 512,
+    "export_format": "PCM WAV"
+  },
+  "reference_audio": {
+    "waveform": "sine",
+    "frequency_hz": 440.0,
+    "duration_seconds": 2.0,
+    "peak_dbfs": -12.3548,
+    "filename": "studiopc-reference-tone-440hz-48k24.wav"
+  },
+  "instruments": [
+    {
+      "id": "scarbee-blue-ballad",
+      "role": "electric-piano A/B lane",
+      "plugin": "Kontakt 8",
+      "plugin_version": "8.11.1",
+      "plugin_format": "VST3",
+      "plugin_path": "C:\\Program Files\\Common Files\\VST3\\Kontakt 8.vst3",
+      "standalone_path": "C:\\Program Files\\Native Instruments\\Kontakt 8\\Kontakt 8.exe",
+      "library": "Scarbee Mark I",
+      "library_version": "1.4.0",
+      "preset": "Blue Ballad"
+    },
+    {
+      "id": "reaktor-polar-wind",
+      "role": "atmosphere A/B lane",
+      "plugin": "Reaktor 6",
+      "plugin_version": "6.5.0",
+      "plugin_format": "VST3",
+      "plugin_path": "C:\\Program Files\\Common Files\\VST3\\Reaktor 6.vst3",
+      "standalone_path": "C:\\Program Files\\Native Instruments\\Reaktor 6\\Reaktor 6.exe",
+      "library": "Reaktor Factory Selection R2",
+      "library_version": "1.0.2",
+      "preset": "Polar Wind"
+    }
+  ],
+  "diagnostic_midi": {
+    "purpose": "A deterministic diagnostic phrase, not the original StudioPC performance.",
+    "tempo_bpm": 72,
+    "ppq": 480,
+    "filename": "studiopc-sonar-ni-diagnostic.mid",
+    "tracks": [
+      {
+        "name": "Scarbee Mark I - Blue Ballad",
+        "instrument_id": "scarbee-blue-ballad",
+        "channel": 1,
+        "notes": [
+          { "note": 57, "velocity": 72, "start_beats": 0, "duration_beats": 4 },
+          { "note": 60, "velocity": 68, "start_beats": 0, "duration_beats": 4 },
+          { "note": 64, "velocity": 66, "start_beats": 0, "duration_beats": 4 },
+          { "note": 71, "velocity": 58, "start_beats": 0, "duration_beats": 4 },
+          { "note": 53, "velocity": 70, "start_beats": 4, "duration_beats": 4 },
+          { "note": 57, "velocity": 66, "start_beats": 4, "duration_beats": 4 },
+          { "note": 60, "velocity": 64, "start_beats": 4, "duration_beats": 4 },
+          { "note": 64, "velocity": 58, "start_beats": 4, "duration_beats": 4 }
+        ]
+      },
+      {
+        "name": "Reaktor 6 - Polar Wind",
+        "instrument_id": "reaktor-polar-wind",
+        "channel": 2,
+        "notes": [
+          { "note": 45, "velocity": 56, "start_beats": 0, "duration_beats": 8 }
+        ]
+      }
+    ]
+  },
+  "render": {
+    "project_folder_name": "WorkerPC-Sonar-NI-Reference",
+    "freeze_instrument_tracks": true,
+    "variants": [
+      "A-reference-tone.wav",
+      "B-scarbee-blue-ballad.wav",
+      "C-reaktor-polar-wind.wav",
+      "D-combined-reference.wav"
+    ],
+    "rules": [
+      "Keep the A/B/C lanes isolated until the preferred source is identified.",
+      "Do not add mastering, normalization, or loudness matching before the first comparison.",
+      "Save the Sonar project folder and generated audio outside Git.",
+      "Do not open the same project folder on WorkerPC and StudioPC at the same time."
+    ]
+  }
+}
