@@ -17,7 +17,7 @@ machineName は git config `music.machineName` に保存。
 | machineName | 役割 | 接続機材 | 主担当タスク | 状態 |
 |---|---|---|---|---|
 | `chouta-surface` | メイン開発機 | (汎用) | 全 engine.js 修正、agent autonomy session 主体、Hazama FM のロジック作業 | active |
-| `studioPC` | 試聴・録音/DAW 機 (Intel、旧 `studio-surface`) | Steinberg UR44 (USB Audio) + monitor speaker/headphone、Ableton / Bandlab / Sonar (予定) | engine の音作り ear-verified 微調整、stems 録音 confirm、DAW 統合 (Sonar / Ableton / Bandlab / Cubase) | active (2026-06-02 GitHub auth + stack-check 完了、UR44 接続待ち) |
+| `studioPC` | 試聴・録音/DAW 機 (Intel、旧 `studio-surface`) | 通常: KOMPLETE AUDIO 2 -> FOSTEX PM0.4。ライブ/録音: Steinberg UR44 -> FX1001 | engine の音作り ear-verified 微調整、stems 録音 confirm、DAW 統合 (Sonar / Ableton / Bandlab / Cubase) | active (2026-07-28 Sonar / NI parity と UR44 ASIO smoke test 完了、Ableton 12.4.3 更新待ち) |
 | `worker-gaming` | 重タスク機 (WorkerPC) | RTX 2070 gaming note PC + Ableton / Cakewalk Sonar / Native Instruments / VCV / SuperCollider | Demucs stem 分離、Band Room AI 再現 batch、drum-frame candidate 生成、audio rendering | active (2026-07-27 Sonar / Native Instruments 更新、共有 smoke test 完了) |
 
 `chouta-surface` は無印 (= machineName 未設定) も `chouta-surface` 扱い。
@@ -57,9 +57,26 @@ SESSION-LEDGER 追記では `studioPC` を使う。
   チャンネル分け (mic/inst 用) でレコーディング併用可能。**Intel CPU** で
   UR44 driver / オーディオサブシステムが安定 (ARM 版 chouta-surface では
   UR44 ドライバ不安定のためこちらで音作りする運用)。
-- **設定の注意**: UR44 を Windows 既定の音声出力に設定。dspMixFx で
-  channel routing を確認。ASIO ドライバは DAW 使用時のみ必要 (ブラウザ
-  audio は WASAPI 経由)。
+- **設定の注意**: 通常モニターは KOMPLETE AUDIO 2 -> FOSTEX PM0.4。
+  ライブ / 録音時は Sonar で Yamaha Steinberg ASIO を選び、
+  UR44 -> FX1001 側を使用する。dspMixFx の channel routing を確認し、
+  2 系統を同じ出力先として扱わない。ASIO ドライバは DAW 使用時のみ必要
+  (ブラウザ audio は WASAPI 経由)。
+- **2026-07-28 StudioPC DAW / NI refresh**: C drive 空き `42.47 GB` から開始し、
+  検証後 `45.68 GB`。Sonar `2026.07` build `32.07.0.021`、Cakewalk Product
+  Center `1.1.0.004`、Native Access `3.25.2.893`、Kontakt 8 Player `8.11.1`、
+  Reaktor 6 `6.5.0`、Komplete Kontrol `3.5.4`、Traktor Pro 3 `3.11.1.17` を
+  WorkerPC target と照合した。Scarbee Mark I、Monark `1.3.2`、Prism `1.6.2`、
+  TRK-01 Bass `1.0.1`、Reaktor Factory Selection R2 `1.0.2` を共有必須 content
+  として確認した。VST3 は `C:\Program Files\Common Files\VST3`。
+  Yamaha Steinberg USB Driver `2.1.9`、UR44 Applications `2.2.2`、dspMixFx 起動を
+  確認し、Sonar を Yamaha Steinberg ASIO、`48 kHz` / `24-bit` /
+  `256 samples` に設定した。Sonar の Kontakt / Reaktor、freeze、非無音 WAV
+  export と、Ableton の Komplete Kontrol / Monark VST3 test は成功。
+  Ableton Live 12 Intro は `12.3.2` のため、WorkerPC の `12.4.3` と合わせる更新が
+  残る。Kontakt 8 standalone main window の再確認、UR44 -> FX1001 の可聴確認も
+  user 実機確認待ち。詳細は
+  [`docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md`](MUSIC-PC-DAW-PARITY-RUNBOOK.md)。
 
 ### `worker-gaming` (gaming note PC)
 
