@@ -76,6 +76,58 @@ Folders` を有効化して再スキャン済み。StudioPC も同じ `12.4.3` �
 は新しい point release で保存した Set を古い point release で開けないため、旧
 Set を初回保存するときは別名保存する。
 
+## StudioPC Measured State — 2026-07-28
+
+StudioPC は C drive 全体を repository にせず、
+`C:\workspace\music-stack\Music` だけを既存 Git repository として使用した。
+作業開始時の C drive 空きは `42.47 GB`、検証後は `45.68 GB`。内蔵 drive は
+C drive のみで、運用 guardrail の `25 GB` を維持している。
+
+| Product | StudioPC current | WorkerPC target | Action / capacity risk |
+|---|---:|---:|---|
+| Cakewalk Product Center | `1.1.0.004` | `1.1.0.004` | matched |
+| Cakewalk Sonar | `2026.07` / build `32.07.0.021` | same | matched |
+| Ableton Live 12 Intro | `12.3.2` | Live 12 `12.4.3` | VST3 test passed。built-in updater は `12.3.5` のみ提示したため停止。account から `12.4.3` installer を取得して WorkerPC と同時点へ合わせる |
+| Native Access | `3.25.2.893` | same | matched。registry の旧表示は判定に使わない |
+| Kontakt 8 Player | `8.11.1` | same | VST3 passed。standalone は process 起動後に main window が表示されず再確認待ち |
+| Reaktor 6 | `6.5.0` | same | VST3 / standalone passed |
+| Komplete Kontrol | `3.5.4` | same | standalone scan / VST3 passed |
+| Traktor Pro 3 | `3.11.1.17` | same | matched。Traktor Pro 4 は未購入 |
+| Kontakt 6 / 7 | not installed | old-project compatibility only | StudioPC の既存旧 project 要件が未確認のため追加も削除もしていない |
+| Maschine 2 / Guitar Rig 6 LE | not installed | use only when required | 共有 project の要件がないため延期。Guitar Rig 7 LE も major side-by-side のため未導入 |
+
+Native Access location:
+
+```text
+Download: C:\Users\Public\Downloads
+Application: C:\Program Files\Native Instruments
+Content: C:\Users\Public\Documents
+```
+
+StudioPC の共通 VST3:
+
+```text
+C:\Program Files\Common Files\VST3\Kontakt 8.vst3
+C:\Program Files\Common Files\VST3\Reaktor 6.vst3
+C:\Program Files\Common Files\VST3\Komplete Kontrol.vst3
+```
+
+StudioPC の共有必須 content は次まで揃えた。Native Access は 1 製品ずつ処理し、
+各処理後に C drive の空きを確認した。
+
+| Product | Version | StudioPC measured size |
+|---|---:|---:|
+| Scarbee Mark I | `1.4.0` | `1.32 GB` |
+| Monark | `1.3.2` | `62.8 MB` |
+| Prism | `1.6.2` | `125.3 MB` |
+| TRK-01 Bass | `1.0.1` | `23.1 MB` |
+| Reaktor Factory Selection R2 | `1.0.2` | `59.1 MB` |
+
+P3 の Mikro Prism、Blocks Base、Kinetic Treats、Kontakt Factory Selection、
+Play Series Selection と追加 Expansion は、共有 project での使用が確認できるまで
+延期する。大容量 content を追加する場合は、外付け SSD を用意して user 承認後に
+Native Access の content location を決める。既存 library は自動 relocate しない。
+
 ### Shared NI content
 
 両 PC の同じ Native Access ライセンスから、次を優先して揃える。
@@ -355,6 +407,38 @@ DAW project、Audio、Audio Export、MixScenes はすべて repo 外。StudioPC 
 2 台で同時に開かない。共有するときは `.cwp` 単体ではなく project folder 全体を
 扱う。
 
+## StudioPC Sonar / UR44 Verification — 2026-07-28
+
+StudioPC の repo 外に次を作成した。
+
+```text
+C:\Cakewalk Projects\StudioPC-Common-Smoke-20260728\
+```
+
+確認済み:
+
+- Sonar `2026.07` build `32.07.0.021` で MIDI track、Kontakt 8 VST3、
+  Reaktor 6 VST3、短い audio track を作成。
+- Kontakt 8 で Scarbee Mark I の `Blue Ballad`、Reaktor 6 で共通 Reaktor 音源
+  `Polar Wind` を読み込んだ。
+- Kontakt track の freeze を実行した。
+- `48 kHz` / `24-bit` / stereo の 2 秒 reference tone を読み込み、
+  `Audio Export\StudioPC-Common-Smoke-20260728.wav` へ export した。
+- export は PCM、2 ch、`48000 Hz`、`24-bit`、data `576000 bytes`、
+  peak `-12.3548 dBFS` で非無音。
+- Yamaha Steinberg USB Driver `2.1.9` と Steinberg UR44 Applications
+  `2.2.2` を確認し、公式 dspMixFx UR44 の起動と device 通信を確認した。
+- Sonar は `Yamaha Steinberg USB ASIO`、UR44 Mix 1、`48 kHz` / `24-bit` /
+  `256 samples`。実測 latency は入力 `9.1 ms`、出力 `11.1 ms`、合計
+  `20.1 ms`。
+- UR44 経由の再生で Sonar meter が動作し、dropout は発生しなかった。物理的な
+  `UR44 -> FX1001` 側の可聴確認は user の実機確認を完了条件とする。
+
+StudioPC の通常モニター系は `KOMPLETE AUDIO 2 -> FOSTEX PM0.4`。UR44 は
+`FX1001` 側のライブ / 録音系で、同じ出力先として扱わない。Sonar 使用時だけ
+Yamaha Steinberg ASIO を選択し、KOMPLETE AUDIO 2 の driver や通常モニター系は
+削除しない。
+
 ## Ableton VST3 Verification — 2026-07-27
 
 WorkerPC の Ableton Live 12 Lite を `12.4.3` へ更新し、Preferences > Plug-Ins の
@@ -386,6 +470,19 @@ C:\Cakewalk Projects\WorkerPC-Ableton-VST3-Smoke-20260727 Project\WorkerPC-Ablet
 ```
 
 Kontakt 8 / Reaktor 6 自体の起動と発音は上記 Sonar smoke test でも確認済み。
+
+StudioPC では Live 12 Intro `12.3.2` の `VST3 System Folders` を有効化して
+再スキャンし、Komplete Kontrol VST3 から Monark `2Pranged` preset を読み込んだ。
+`Plug-in not found` は発生せず、検証 Set は Git 外の次へ保存した。
+
+```text
+C:\Cakewalk Projects\StudioPC-Ableton-VST3-Smoke-20260728\StudioPC-Ableton-VST3-Smoke-20260728 Project\StudioPC-Ableton-VST3-Smoke-20260728.als
+```
+
+ただし WorkerPC は `12.4.3` のため、StudioPC の DAW version parity は未完了。
+StudioPC の built-in updater が提示した `12.3.5` は入れず、auto-update を停止した。
+Ableton account から StudioPC license の Live 12 Intro `12.4.3` Windows installer
+を取得し、更新後に同じ Set を再確認する。
 
 ## Manual Approval Boundary
 
