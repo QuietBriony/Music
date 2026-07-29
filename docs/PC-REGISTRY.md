@@ -77,6 +77,20 @@ SESSION-LEDGER 追記では `studioPC` を使う。
   残る。Kontakt 8 standalone main window の再確認、UR44 -> FX1001 の可聴確認も
   user 実機確認待ち。詳細は
   [`docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md`](MUSIC-PC-DAW-PARITY-RUNBOOK.md)。
+- **2026-07-29 StudioPC runtime profile**: Intel Core i7-8650U、RAM `8 GB`、
+  healthy NVMe SSD、C drive 空き約 `45 GB`。RAM がこの PC の主な制約なので、
+  StudioPC は Sonar / NI の録音、軽い編集、試聴に寄せ、Demucs、GPU render、
+  大量 batch は WorkerPC へ送る。local `Studio Audio` power plan
+  (`0708cc0f-1c4e-45a9-92e2-5d72b78fbb52`) を作成し、AC 接続時だけ
+  lid close = do nothing、sleep = never、USB selective suspend = disabled、
+  processor minimum = `50%` とした。DC 設定は元の balanced 値を維持し、
+  `バランス` plan (`381b4222-f694-41f0-9685-ff5bb260df2e`) も rollback 用に
+  残した。RustDesk、Codex、KOMPLETE Audio control、NI host integration は
+  remote / audio 用に維持する。Google Drive、OneDrive、Phone Link、TREZOR は
+  snapshot 時点で process 非稼働。SSD のため手動 defrag は行わない。
+  repo 外 snapshot は
+  `C:\workspace\music-stack-worker\reports\studiopc-20260729-setup-snapshot-*.{json,md}`
+  に保存し、5 repo の `stack-check` は `PASS 21 / FAIL 0 / SKIP 0`。
 
 ### `worker-gaming` (gaming note PC)
 
