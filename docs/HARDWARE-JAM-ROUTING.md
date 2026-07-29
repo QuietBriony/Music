@@ -85,6 +85,41 @@ Expected progression:
 4. A stereo audio track can record the EP-133 analog output.
 5. The bounce lands under `C:\workspace\music-stack-worker\daw-export\...`.
 
+## StudioPC UR44 Profiles
+
+The existing JOYSOUND / casual live-play state was captured on `studioPC`
+(`DESKTOP-T1DKM2G`) on 2026-07-29 without changing the device mix.
+
+- Physical output: `UR44 -> FX1001`.
+- Yamaha Steinberg USB Driver: `2.1.9`.
+- Steinberg UR44 Applications: `2.2.2`.
+- dspMixFx executable: `2.2.0.0`.
+- Driver state: `44.1 kHz`, `Standard`, `256 samples`.
+- Measured driver latency: input `9.592 ms`, output `11.565 ms`.
+- Device setup: input 5/6 `-10 dBV`, HPF `80 Hz`, LOOPBACK off.
+- Exact dspMixFx state:
+  [`../references/hardware/ur44/studiopc-joysound-current-20260729.UR44`](../references/hardware/ur44/studiopc-joysound-current-20260729.UR44).
+- Machine-readable record:
+  [`../references/hardware/ur44/studiopc-joysound-current-20260729.json`](../references/hardware/ur44/studiopc-joysound-current-20260729.json).
+- Repo-external screenshots:
+  `C:\workspace\music-stack-worker\reports\studiopc-ur44-20260729`.
+
+Treat this as the JOYSOUND baseline. Use dspMixFx `Menu -> Open` only when an
+intentional restore is needed. The `.UR44` file restores the DSP mixer state;
+sample rate and ASIO buffer remain driver settings and must be checked
+separately.
+
+Create a separate `SONAR_VOX_DRY_REVX` profile after a microphone and
+headphones are connected for an ear check:
+
+1. Switch the driver to `48 kHz`, `24-bit`, `256 samples`.
+2. Keep LOOPBACK off for multitrack recording.
+3. Record the microphone dry.
+4. Start with Channel Strip and REV-X as `MON.FX`, not `INS.FX`.
+5. Keep Sonar Input Echo off while direct-monitoring through dspMixFx.
+6. Save the tested state as a separate `.UR44` file. Do not overwrite the
+   JOYSOUND baseline.
+
 ## Recommended Play Modes
 
 ### EP-133 as hand sampler

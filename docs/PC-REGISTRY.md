@@ -94,6 +94,17 @@ SESSION-LEDGER 追記では `studioPC` を使う。
   repo 外 snapshot は
   `C:\workspace\music-stack-worker\reports\studiopc-20260729-setup-snapshot-*.{json,md}`
   に保存し、5 repo の `stack-check` は `PASS 21 / FAIL 0 / SKIP 0`。
+- **2026-07-29 UR44 JOYSOUND baseline**: `UR44 -> FX1001` の現行 dspMixFx
+  状態を変更せず保存した。接続時の driver は `44.1 kHz` / `Standard` /
+  `256 samples`、input latency `9.592 ms`、output latency `11.565 ms`。
+  input 5/6 は `-10 dBV`、HPF `80 Hz`、LOOPBACK off。復元用 profile と
+  machine-readable record は
+  [`references/hardware/ur44/`](../references/hardware/ur44/) に置き、
+  画面記録は repo 外の
+  `C:\workspace\music-stack-worker\reports\studiopc-ur44-20260729` に保存した。
+  Sonar 録音用は既存状態を上書きせず、実マイク試聴時に
+  `SONAR_VOX_DRY_REVX` を `48 kHz` / `24-bit` / `256 samples`、
+  LOOPBACK off、dry record + `MON.FX` から作る。
 
 ### `worker-gaming` (gaming note PC)
 
