@@ -63,6 +63,12 @@ music-stack 全体の自走開発は `docs/autonomy/` のエンジンで運用�
    - 試運転は feature flag または adapter で off-by-default
    - 昇格は人の試聴 / preview 後、PR で 1 件ずつ
    - 既存の default 再生 / OUTPUT / recorder / AutoMix / pads は変えない
+7. **端末 identity は fail-closed**。Music repo の local git config に
+   `music.machineName` と `music.machineHost` の両方が必要。
+   `powershell -NoProfile -File scripts\music-machine.ps1 -Json` で確認し、
+   未設定、hostname mismatch、必要 capability 不足では端末固有処理を進めない。
+   identity の変更は対象の物理 PC 上で
+   `scripts\music-machine.ps1 -SetMachine <登録名>` を明示実行する。
 
 ---
 

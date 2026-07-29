@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "identity_policy": {
+    "mode": "fail-closed",
+    "source": "Music repo local git config",
+    "required_keys": [
+      "music.machineName",
+      "music.machineHost"
+    ],
+    "hostname_comparison": "case-insensitive"
+  },
+  "machines": {
+    "chouta-surface": {
+      "role": "orchestrator and publishing workstation",
+      "capabilities": [
+        "repo.development",
+        "stack.orchestrate",
+        "release.publish"
+      ]
+    },
+    "studioPC": {
+      "role": "recording, DAW, hardware, and ear-verification workstation",
+      "capabilities": [
+        "repo.development",
+        "studio.audio",
+        "studio.record",
+        "ear.verify",
+        "hardware.inspect",
+        "hardware.prepare"
+      ]
+    },
+    "worker-gaming": {
+      "role": "GPU batch, stem separation, and DAW rendering workstation",
+      "capabilities": [
+        "repo.development",
+        "worker.batch",
+        "worker.gpu",
+        "worker.daw-reference",
+        "hardware.inspect",
+        "hardware.prepare"
+      ]
+    }
+  }
+}

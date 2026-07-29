@@ -1,8 +1,8 @@
 # setup-new-pc.ps1 — automate the music-stack setup on a fresh PC
 #
 # Usage (from PowerShell):
-#   .\setup-new-pc.ps1                        # default machine name = "studioPC"
-#   .\setup-new-pc.ps1 -MachineName "ur44"    # custom name
+#   .\setup-new-pc.ps1 -MachineName "studioPC"
+#   .\setup-new-pc.ps1 -MachineName "worker-gaming"
 #
 # Assumptions:
 #   - You're on Windows with PowerShell.
@@ -24,7 +24,9 @@
 #   7) Print the next-step commands.
 
 param(
-  [string]$MachineName = "studioPC",
+  [Parameter(Mandatory = $true)]
+  [ValidateSet("chouta-surface", "studioPC", "worker-gaming")]
+  [string]$MachineName,
   [string]$Workspace = "C:\workspace\music-stack"
 )
 
@@ -85,10 +87,10 @@ foreach ($repo in $repos) {
   }
 }
 
-# 4) Machine-name tag in Music repo's git config (local, not global)
+# 4) Bind the registered machine name to this Windows hostname in Music local config.
 Set-Location (Join-Path $Workspace "Music")
-git config --local music.machineName $MachineName
-Write-Ok "git config music.machineName = $MachineName (in Music repo)"
+& .\scripts\music-machine.ps1 -SetMachine $MachineName
+Write-Ok "machine identity bound to $MachineName (in Music repo local config)"
 
 # 5) stack-check
 Write-Step "Running stack-check"

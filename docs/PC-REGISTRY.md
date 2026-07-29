@@ -12,7 +12,9 @@ NEW-PC-SETUP.md (clone + setup script) と対になる doc。NEW-PC-SETUP は
 ## 登録 PC 一覧
 
 命名規則は **物理 PC を識別する hostname-flavored 名** (`<役割>-<機種>`)。
-machineName は git config `music.machineName` に保存。
+machineName は Music repo の local git config `music.machineName`、その設定を
+行った Windows hostname は `music.machineHost` に保存する。role / capability の
+machine-readable source は `config/music-machines.json`。
 
 | machineName | 役割 | 接続機材 | 主担当タスク | 状態 |
 |---|---|---|---|---|
@@ -20,8 +22,9 @@ machineName は git config `music.machineName` に保存。
 | `studioPC` | 試聴・録音/DAW 機 (Intel、旧 `studio-surface`) | 通常: KOMPLETE AUDIO 2 -> FOSTEX PM0.4。ライブ/録音: Steinberg UR44 -> FX1001 | engine の音作り ear-verified 微調整、stems 録音 confirm、DAW 統合 (Sonar / Ableton / Bandlab / Cubase) | active (2026-07-28 Sonar / NI parity と UR44 ASIO smoke test 完了、Ableton 12.4.3 更新待ち) |
 | `worker-gaming` | 重タスク機 (WorkerPC) | RTX 2070 gaming note PC + Ableton / Cakewalk Sonar / Native Instruments / VCV / SuperCollider | Demucs stem 分離、Band Room AI 再現 batch、drum-frame candidate 生成、audio rendering | active (2026-07-27 Sonar / Native Instruments 更新、共有 smoke test 完了) |
 
-`chouta-surface` は無印 (= machineName 未設定) も `chouta-surface` 扱い。
-既存のすべての SESSION-LEDGER エントリは chouta-surface 由来。
+すべての active PC は machineName と machineHost を明示設定する。未設定を
+`chouta-surface` と推測しない。過去の無印 SESSION-LEDGER entry は履歴上
+`chouta-surface` 由来として読むが、新しい端末identityの代用にはしない。
 
 `studio-surface` は 2026-05-25 セットアップ時の旧名。2026-06-02 以降、この
 物理 studio PC の local machineName は `studioPC` を使う。
@@ -219,23 +222,42 @@ SESSION-LEDGER 追記では `studioPC` を使う。
 ## machineName の運用
 
 `scripts/setup-new-pc.ps1 -MachineName "..."` が
-`git config --local music.machineName <名前>` を書き込む。
+`scripts/music-machine.ps1` を呼び、次を Music repo の local git config へ
+書き込む。
+
+- `music.machineName`: `config/music-machines.json` に登録された物理PC名
+- `music.machineHost`: 設定時の Windows hostname
+
+既存PCを一度だけbindする場合:
+
+```powershell
+# ChoutaSurface 上
+powershell -NoProfile -File scripts\music-machine.ps1 -SetMachine chouta-surface
+
+# StudioPC 上
+powershell -NoProfile -File scripts\music-machine.ps1 -SetMachine studioPC
+
+# WorkerPC 上
+powershell -NoProfile -File scripts\music-machine.ps1 -SetMachine worker-gaming
+```
 
 確認:
 
 ```powershell
-git config --get music.machineName
+powershell -NoProfile -File scripts\music-machine.ps1 -Json
 ```
 
-chouta-surface (= 本セッションのこの PC) では未設定でも OK (機能上は同じ、
-慣習的に無印 = `[chouta-surface]` 扱い)。
+未設定、manifest 未登録、現在hostnameとmachineHostの不一致ではfail-closedで
+停止する。端末固有commandはさらに必要machine / capabilityを検査する。
+hostname変更やPC移行後のrebindは、物理端末を確認してから同じ`-SetMachine`を
+再実行する。
 
 ### SESSION-LEDGER エントリヘッダ prefix
 
 ```
 ## 2026-06-01 [studioPC] — engine.js surge drop 試聴 + drop 強度微調整 (vNNN)
 ## 2026-06-05 [worker-gaming] — preset batch 生成 (drum-frames-newgenre × 6) (vNNN)
-## 2026-06-10 — 全体監査 + ledger consolidate    ← chouta-surface は無印で OK
+## 2026-06-10 [chouta-surface] — 全体監査 + ledger consolidate
 ```
 
 抽出:
@@ -244,7 +266,7 @@ chouta-surface (= 本セッションのこの PC) では未設定でも OK (機�
 grep "\[studioPC\]" docs/autonomy/SESSION-LEDGER.md           # studioPC 履歴
 grep "\[studio-surface\]" docs/autonomy/SESSION-LEDGER.md     # 旧 studio-surface 履歴
 grep "\[worker-gaming\]" docs/autonomy/SESSION-LEDGER.md      # worker-gaming 履歴
-grep -v "^## 2[0-9]\{3\}-[0-9]\{2\}-[0-9]\{2\} \[" docs/autonomy/SESSION-LEDGER.md  # chouta-surface (無印)
+grep "\[chouta-surface\]" docs/autonomy/SESSION-LEDGER.md    # 新しい明示entry
 ```
 
 ### コミットメッセージ (任意)
