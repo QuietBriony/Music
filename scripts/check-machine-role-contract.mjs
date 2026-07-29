@@ -36,6 +36,7 @@ assert.match(machineScript, /music\.machineHost/);
 assert.match(machineScript, /OrdinalIgnoreCase/);
 assert.match(machineScript, /RequireMachine/);
 assert.match(machineScript, /RequireCapability/);
+assert.match(machineScript, /ExecutionPolicy Bypass/);
 assert.match(setupScript, /Parameter\(Mandatory = \$true\)/);
 assert.match(setupScript, /ValidateSet\("chouta-surface", "studioPC", "worker-gaming"\)/);
 assert.match(setupScript, /music-machine\.ps1 -SetMachine \$MachineName/);
@@ -50,6 +51,7 @@ assert.match(pipeline, /"machine_identity": args\.machine_identity/);
 
 for (const doc of [agents, registry, setupDoc, workerRunbook]) {
   assert.match(doc, /music-machine\.ps1/);
+  assert.match(doc, /ExecutionPolicy Bypass/);
 }
 assert.doesNotMatch(registry, /未設定でも OK/);
 assert.doesNotMatch(setupDoc, /primary PC は無印で OK/);
