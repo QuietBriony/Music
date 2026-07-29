@@ -1,8 +1,8 @@
 # setup-new-pc.ps1 — automate the music-stack setup on a fresh PC
 #
 # Usage (from PowerShell):
-#   .\setup-new-pc.ps1 -MachineName "studioPC"
-#   .\setup-new-pc.ps1 -MachineName "worker-gaming"
+#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup-new-pc.ps1 -MachineName "studioPC"
+#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup-new-pc.ps1 -MachineName "worker-gaming"
 #
 # Assumptions:
 #   - You're on Windows with PowerShell.

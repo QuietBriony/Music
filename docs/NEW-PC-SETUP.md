@@ -92,7 +92,7 @@ C:\workspace\ が無くてもディレクトリツリーごと作る:
   Set-Location 'C:\workspace\music-stack'
   gh repo clone QuietBriony/Music
   Set-Location 'C:\workspace\music-stack\Music'
-  .\scripts\setup-new-pc.ps1 -MachineName 'studioPC'
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup-new-pc.ps1 -MachineName 'studioPC'
 
 setup script が残り 4 repo (chill / drum-floor / namima / openclaw) を clone、
 machineName を git config に設定、stack-check を実行 (15 PASS / 0 BAD 期待)。
@@ -191,7 +191,7 @@ mkdir C:\workspace\music-stack
 cd C:\workspace\music-stack
 gh repo clone QuietBriony/Music
 cd Music
-.\scripts\setup-new-pc.ps1 -MachineName "studioPC"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\setup-new-pc.ps1 -MachineName "studioPC"
 ```
 
 `-MachineName` は任意の識別子(デフォルト `"studioPC"`)。命名は下記「PC 命名規約」
@@ -292,7 +292,8 @@ GitHub 経由のみで、PC↔PC の直接接続はありません。
      ?v=fm-NN を共有、sw.js VERSION = hazama-fm-vNN。一緒に bump
    - ship-then-verify: user は merge 後に試聴で判定
    - **PC 命名**:
-     `powershell -NoProfile -File scripts\music-machine.ps1 -Json` で
+     `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -Json`
+     で
      machineName、bind済みhostname、role、capabilityを取得する。
      SESSION-LEDGER に追記する時は
      `## YYYY-MM-DD [<machineName>] — <一行サマリ>` 形式でprefixを付ける。
@@ -310,7 +311,8 @@ GitHub 経由のみで、PC↔PC の直接接続はありません。
 5. このPCの用途: UR44 経由の試聴 + 必要なら engine.js 修正 / 新規 polish。
 
 6. このPCの役割の把握:
-   - `powershell -NoProfile -File scripts\music-machine.ps1 -Json` で
+   - `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -Json`
+     で
      machineName、hostname一致、role、capabilityを確認
    - `docs/PC-REGISTRY.md` を読み、自分の行から **主担当 / しない / 強み** を
      内在化。専有領域マトリクスで「触っていいファイル」「触らないファイル」も
@@ -436,7 +438,8 @@ primary PC ──push─→ GitHub main ←─pull── 別 PC (UR44 PC)
 
 - `setup-new-pc.ps1 -MachineName "<登録名>"` でmachineNameと現在hostnameを
   Music repo local configへbindする
-  (確認: `powershell -NoProfile -File scripts\music-machine.ps1 -Json`)
+  (確認:
+  `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -Json`)
 - SESSION-LEDGER 追記時はヘッダに `[<PC名>]` prefix:
   `## YYYY-MM-DD [studio] — <一行サマリ> (vNNN)`
 - active PCはすべて明示identity必須。過去の無印entryは履歴としてのみ残す

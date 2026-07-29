@@ -256,15 +256,15 @@ asset policy.
 WorkerPCでは初回だけ、物理PCを確認してidentityをbindする。
 
 ```powershell
-powershell -NoProfile -File scripts\music-machine.ps1 -SetMachine worker-gaming
-powershell -NoProfile -File scripts\music-machine.ps1 -Json
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -SetMachine worker-gaming
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -Json
 ```
 
 StudioPC で確認した Sonar / NI 条件を WorkerPC へ準備する場合、WorkerPC の
 repo root で次を実行する。
 
 ```powershell
-powershell -NoProfile -File scripts\invoke-worker-sonar-ni.ps1 `
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\invoke-worker-sonar-ni.ps1 `
   -SyncRepo `
   -Session musou-teien
 ```
@@ -272,7 +272,7 @@ powershell -NoProfile -File scripts\invoke-worker-sonar-ni.ps1 `
 ChoutaSurface から既存 SSH alias 経由で準備する場合:
 
 ```powershell
-ssh <worker-ssh-alias> "powershell -NoProfile -File C:\workspace\music-stack\Music\scripts\invoke-worker-sonar-ni.ps1 -SyncRepo -Session musou-teien"
+ssh <worker-ssh-alias> "powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\workspace\music-stack\Music\scripts\invoke-worker-sonar-ni.ps1 -SyncRepo -Session musou-teien"
 ```
 
 `<worker-ssh-alias>` は ChoutaSurface の既存 `~/.ssh/config` から選ぶ。hostname、

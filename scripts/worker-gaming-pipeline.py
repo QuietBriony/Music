@@ -117,7 +117,8 @@ def _machine_identity() -> dict:
     if not machine_name:
         raise SystemExit(
             "music.machineName is not configured; run "
-            r"powershell -NoProfile -File scripts\music-machine.ps1 -SetMachine <name>"
+            r"powershell.exe -NoProfile -ExecutionPolicy Bypass -File "
+            r"scripts\music-machine.ps1 -SetMachine <name>"
         )
     if machine_name not in machines:
         raise SystemExit(
@@ -126,6 +127,7 @@ def _machine_identity() -> dict:
     if not bound_host:
         raise SystemExit(
             f"music.machineHost is not configured; rebind '{machine_name}' with "
+            r"powershell.exe -NoProfile -ExecutionPolicy Bypass -File "
             r"scripts\music-machine.ps1 -SetMachine"
         )
     if bound_host.casefold() != current_host.casefold():

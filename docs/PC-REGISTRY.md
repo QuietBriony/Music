@@ -232,25 +232,26 @@ SESSION-LEDGER 追記では `studioPC` を使う。
 
 ```powershell
 # ChoutaSurface 上
-powershell -NoProfile -File scripts\music-machine.ps1 -SetMachine chouta-surface
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -SetMachine chouta-surface
 
 # StudioPC 上
-powershell -NoProfile -File scripts\music-machine.ps1 -SetMachine studioPC
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -SetMachine studioPC
 
 # WorkerPC 上
-powershell -NoProfile -File scripts\music-machine.ps1 -SetMachine worker-gaming
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -SetMachine worker-gaming
 ```
 
 確認:
 
 ```powershell
-powershell -NoProfile -File scripts\music-machine.ps1 -Json
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -Json
 ```
 
 未設定、manifest 未登録、現在hostnameとmachineHostの不一致ではfail-closedで
 停止する。端末固有commandはさらに必要machine / capabilityを検査する。
 hostname変更やPC移行後のrebindは、物理端末を確認してから同じ`-SetMachine`を
-再実行する。
+再実行する。`-ExecutionPolicy Bypass`は起動したPowerShell processだけに適用し、
+Windowsの永続policyは変更しない。
 
 ### SESSION-LEDGER エントリヘッダ prefix
 

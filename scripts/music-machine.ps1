@@ -51,13 +51,13 @@ $boundHost = Get-LocalGitConfig "music.machineHost"
 $currentHost = [string]$env:COMPUTERNAME
 
 if (-not $machineName) {
-    throw "music.machineName is not configured. Run scripts\music-machine.ps1 -SetMachine <name>."
+    throw "music.machineName is not configured. Run powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -SetMachine <name>."
 }
 if ($machineName -notin $knownMachines) {
     throw "Unknown configured machine '$machineName'. Known machines: $($knownMachines -join ', ')"
 }
 if (-not $boundHost) {
-    throw "music.machineHost is not configured. Rebind with scripts\music-machine.ps1 -SetMachine $machineName."
+    throw "music.machineHost is not configured. Rebind with powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\music-machine.ps1 -SetMachine $machineName."
 }
 if (-not $boundHost.Equals($currentHost, [StringComparison]::OrdinalIgnoreCase)) {
     throw "Machine host mismatch. '$machineName' is bound to '$boundHost', current host is '$currentHost'. Rebind only after confirming the physical PC."
