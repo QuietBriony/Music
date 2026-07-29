@@ -253,6 +253,13 @@ asset policy.
 
 ### StudioPC Sonar / NI reference from ChoutaSurface
 
+WorkerPCでは初回だけ、物理PCを確認してidentityをbindする。
+
+```powershell
+powershell -NoProfile -File scripts\music-machine.ps1 -SetMachine worker-gaming
+powershell -NoProfile -File scripts\music-machine.ps1 -Json
+```
+
 StudioPC で確認した Sonar / NI 条件を WorkerPC へ準備する場合、WorkerPC の
 repo root で次を実行する。
 
@@ -269,8 +276,10 @@ ssh <worker-ssh-alias> "powershell -NoProfile -File C:\workspace\music-stack\Mus
 ```
 
 `<worker-ssh-alias>` は ChoutaSurface の既存 `~/.ssh/config` から選ぶ。hostname、
-username、private key、password は repo に記録しない。wrapper は clean な
-`main` だけを `git pull --ff-only origin main` で同期し、次を repo 外へ生成する。
+username、private key、password は repo に記録しない。wrapper は
+`machineName=worker-gaming`、bind済みhostname、`worker.daw-reference`
+capabilityを先に検査する。その後cleanな`main`だけを
+`git pull --ff-only origin main`で同期し、次をrepo外へ生成する。
 
 - report:
   `C:\workspace\music-stack-worker\reports\daw-reference\musou-teien\sonar-ni-reference-<timestamp>\sonar-ni-reference.md`

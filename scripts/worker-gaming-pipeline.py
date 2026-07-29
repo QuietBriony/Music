@@ -38,6 +38,25 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_WORKER_ROOT = Path(os.environ.get("MUSIC_STACK_WORKER_ROOT", r"C:\workspace\music-stack-worker"))
+MACHINE_MANIFEST = ROOT / "config" / "music-machines.json"
+COMMAND_CAPABILITY_REQUIREMENTS = {
+    "setup-midi-cli": "hardware.prepare",
+    "ep133-sysex-probe": "hardware.inspect",
+    "separate": "worker.batch",
+    "ai-render": "worker.batch",
+    "batch-ai-render": "worker.batch",
+    "recreation-cycle": "worker.batch",
+    "ep133-pack": "hardware.prepare",
+    "ep133-first-pass": "hardware.prepare",
+    "sonar-ep133-handoff": "hardware.prepare",
+    "sonar-ni-reference": "worker.daw-reference",
+    "operator-run": "worker.batch",
+    "analyze": "worker.batch",
+    "extract-drum-candidate": "worker.batch",
+}
+COMMAND_MACHINE_REQUIREMENTS = {
+    "sonar-ni-reference": "worker-gaming",
+}
 WORKER_DIRS = (
     "inbox",
     "stems",
@@ -69,6 +88,81 @@ MIDI_CLI_TOOLS = {
         "exe": Path("receivemidi-windows-1.4.4") / "receivemidi.exe",
     },
 }
+
+
+def _local_git_config(key: str) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(ROOT), "config", "--local", "--get", key],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    return result.stdout.strip() if result.returncode == 0 else ""
+
+
+def _machine_identity() -> dict:
+    try:
+        manifest = json.loads(MACHINE_MANIFEST.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"machine identity manifest is unavailable: {MACHINE_MANIFEST}: {exc}") from exc
+
+    machines = manifest.get("machines")
+    if not isinstance(machines, dict) or not machines:
+        raise SystemExit(f"machine identity manifest has no registered machines: {MACHINE_MANIFEST}")
+
+    machine_name = _local_git_config("music.machineName")
+    bound_host = _local_git_config("music.machineHost")
+    current_host = platform.node()
+    if not machine_name:
+        raise SystemExit(
+            "music.machineName is not configured; run "
+            r"powershell -NoProfile -File scripts\music-machine.ps1 -SetMachine <name>"
+        )
+    if machine_name not in machines:
+        raise SystemExit(
+            f"configured machine '{machine_name}' is not registered in {MACHINE_MANIFEST}"
+        )
+    if not bound_host:
+        raise SystemExit(
+            f"music.machineHost is not configured; rebind '{machine_name}' with "
+            r"scripts\music-machine.ps1 -SetMachine"
+        )
+    if bound_host.casefold() != current_host.casefold():
+        raise SystemExit(
+            f"machine host mismatch: '{machine_name}' is bound to '{bound_host}', "
+            f"current host is '{current_host}'"
+        )
+
+    machine = machines[machine_name]
+    capabilities = machine.get("capabilities", [])
+    if not isinstance(capabilities, list):
+        raise SystemExit(f"registered machine '{machine_name}' has invalid capabilities")
+    return {
+        "machine_name": machine_name,
+        "bound_hostname": bound_host,
+        "current_hostname": current_host,
+        "hostname_match": True,
+        "role": str(machine.get("role", "")),
+        "capabilities": [str(item) for item in capabilities],
+    }
+
+
+def _assert_machine_command(command: str) -> dict:
+    identity = _machine_identity()
+    required_machine = COMMAND_MACHINE_REQUIREMENTS.get(command)
+    required_capability = COMMAND_CAPABILITY_REQUIREMENTS.get(command)
+    if required_machine and identity["machine_name"] != required_machine:
+        raise SystemExit(
+            f"machine '{identity['machine_name']}' cannot run '{command}'; "
+            f"required machine is '{required_machine}'"
+        )
+    if required_capability and required_capability not in identity["capabilities"]:
+        raise SystemExit(
+            f"machine '{identity['machine_name']}' cannot run '{command}'; "
+            f"missing capability '{required_capability}'"
+        )
+    return identity
 
 
 def resolve_ffmpeg() -> str:
@@ -935,6 +1029,7 @@ def command_sonar_ni_reference(args: argparse.Namespace) -> None:
     report = {
         "created_at": datetime.now().isoformat(timespec="seconds"),
         "hostname": socket.gethostname(),
+        "machine_identity": args.machine_identity,
         "session": session,
         "worker_root": str(Path(args.worker_root).resolve()),
         "recipe_path": str(recipe_path),
@@ -2683,6 +2778,7 @@ except Exception as exc:
         "tag": tag,
         "captured_at": datetime.now().isoformat(timespec="seconds"),
         "hostname": platform.node(),
+        "machine_identity": args.machine_identity,
         "platform": platform.platform(),
         "repo": _repo_snapshot(),
         "worker_root": str(Path(args.worker_root).resolve()),
@@ -2849,6 +2945,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    args.machine_identity = _assert_machine_command(args.command)
     args.func(args)
     return 0
 

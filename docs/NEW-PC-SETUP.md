@@ -291,10 +291,12 @@ GitHub 経由のみで、PC↔PC の直接接続はありません。
    - cache-buster 規律: engine.js + audio/music-*.js (5 モジュール) は同じ
      ?v=fm-NN を共有、sw.js VERSION = hazama-fm-vNN。一緒に bump
    - ship-then-verify: user は merge 後に試聴で判定
-   - **PC 命名**: このPCの識別子は `git config --get music.machineName` で
-     取得 (setup script が設定済み、例: `studio`)。SESSION-LEDGER に追記する
-     時は `## YYYY-MM-DD [studio] — <一行サマリ>` 形式で prefix を付ける
-     (primary PC からの追記は無印 = `[primary]` 扱い)
+   - **PC 命名**:
+     `powershell -NoProfile -File scripts\music-machine.ps1 -Json` で
+     machineName、bind済みhostname、role、capabilityを取得する。
+     SESSION-LEDGER に追記する時は
+     `## YYYY-MM-DD [<machineName>] — <一行サマリ>` 形式でprefixを付ける。
+     未設定PCや無印を暗黙のprimaryとして扱わない
 
 4. 作業サイクル:
    a. git pull --ff-only origin main で primary PC + Band Room の最新を取得
@@ -308,7 +310,8 @@ GitHub 経由のみで、PC↔PC の直接接続はありません。
 5. このPCの用途: UR44 経由の試聴 + 必要なら engine.js 修正 / 新規 polish。
 
 6. このPCの役割の把握:
-   - `git config --get music.machineName` で識別子を取得 (例: "studioPC")
+   - `powershell -NoProfile -File scripts\music-machine.ps1 -Json` で
+     machineName、hostname一致、role、capabilityを確認
    - `docs/PC-REGISTRY.md` を読み、自分の行から **主担当 / しない / 強み** を
      内在化。専有領域マトリクスで「触っていいファイル」「触らないファイル」も
      確認 (Band Room の `band-room.*` は全 PC 触らない、等)
@@ -431,11 +434,12 @@ primary PC ──push─→ GitHub main ←─pull── 別 PC (UR44 PC)
 
 簡易版 (覚えとくべきこと):
 
-- `setup-new-pc.ps1 -MachineName "<名前>"` で git config に PC 識別子を埋め込む
-  (確認: `git config --get music.machineName`)
+- `setup-new-pc.ps1 -MachineName "<登録名>"` でmachineNameと現在hostnameを
+  Music repo local configへbindする
+  (確認: `powershell -NoProfile -File scripts\music-machine.ps1 -Json`)
 - SESSION-LEDGER 追記時はヘッダに `[<PC名>]` prefix:
   `## YYYY-MM-DD [studio] — <一行サマリ> (vNNN)`
-- primary PC は無印で OK (既存エントリも全て primary)
+- active PCはすべて明示identity必須。過去の無印entryは履歴としてのみ残す
 - 推奨命名 (物理 PC 名 + 役割サフィックス): `chouta-surface` (メイン開発機) /
   `studioPC` (UR44 + DAW) / `worker-gaming` (重タスク、gaming note PC)
 

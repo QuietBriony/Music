@@ -11,6 +11,12 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
+$machineGuard = Join-Path $repoRoot "scripts\music-machine.ps1"
+& $machineGuard -RequireMachine "worker-gaming" -RequireCapability "worker.daw-reference"
+if ($LASTEXITCODE -ne 0) {
+    throw "WorkerPC machine-role guard failed"
+}
+
 $recipePath = if ([IO.Path]::IsPathRooted($Recipe)) {
     [IO.Path]::GetFullPath($Recipe)
 } else {
