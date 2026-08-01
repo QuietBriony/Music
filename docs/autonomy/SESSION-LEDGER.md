@@ -19,6 +19,31 @@
 
 ---
 
+## 2026-08-01 — repo-wide CPU-only audit + Lyric Lab privacy boundary hardening (v389 / PR #392)
+- agent      : Codex 5.6-sol（親 + read-only 監査3並列 + adversarial review）
+- goal       : Blender / ACE-Step とGPU競合せず、Music repo全体の高価値改善を棚卸しし、
+  最優先の実害リスクをCPU-onlyで修正する
+- repos      : Music（engine.js / 出音 / 音声生成・分離・model weight は不変）
+- shipped    :
+  - `sw.js` v389: private `api/lyric-drafts` をService Workerから完全 bypass。
+    activate cleanupをMusic-owned `hazama-fm-*`だけに限定し、同一originのsister cacheを保護
+  - Cloudflare Function: undocumented open-auth flagを撤去、認証fail-closed、実request body
+    2 MB / settings+result 256 KB / 500 drafts上限、malformed input 4xx、async D1 failure 500
+  - `check-cloudflare-pwa-contract.mjs`: auth / payload / DB failure / API cache bypass /
+    current・sister cache保持をfake D1 + VM eventで実行する回帰gate
+  - `stack-check`: Python / pytest / repo不在のSKIPを通常時exit 1へ。診断時のみ
+    `--allow-skip`。`check-js`は手書き一覧からrecursive auto-discoveryへ
+  - repo-wide監査の残件をBL-033〜BL-037へ統合し、BL-031のmerge済みstatusを訂正
+- stack-check: PASS 23 / FAIL 0 / SKIP 0（`stack-check: 0 BAD`）。PythonをPATHから
+  外したprobeも通常exit 1 / `--allow-skip` exit 0
+- backlog    : BL-032 Done。BL-033（external dependency lock）、BL-034（control-plane
+  currency）、BL-035（asset契約）、BL-036（Tabasco catalog）、BL-037（satellite contract）追加
+- next       : BL-033。外部model/toolはdownload前にcommit/revision/license/size/保存先を
+  manifest化し、ACE-Step実行はGPU札が空くまで保留
+- blockers   : なし。BL-035のasset例外範囲だけはowner判断が必要
+
+---
+
 ## 2026-06-13 (cont.) — QA ループ 1 周（/loop dynamic・docs/qa 新設）
 - agent      : Claude Code (chouta-surface, Opus 4.8 / 1M, ultracode)
 - goal       : `/loop` 自走 QA — feature-stories.csv 正典で 5 ストーリーを P1→P4 で回す
