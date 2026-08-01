@@ -12,7 +12,8 @@
 //   - scripts/check-*.mjs        → node scripts/check-<...>.mjs
 //   - tests/test_*.py            → python -m pytest tests/ -q
 //
-// 1 つでも FAIL があれば exit 1。pytest 未導入などは SKIP 扱い (BAD ではない)。
+// 1 つでも FAIL があれば exit 1。pytest 未導入などは SKIP と表示するが、通常の
+// integrity gate では partial success を許さず exit 1。診断時だけ --allow-skip。
 //
 // Worktree-aware (2026-05-27〜):
 //   - 「Music」repo の check は **本スクリプトの親 dir** (= script が居る Music
@@ -29,6 +30,7 @@
 //   --deploy-health         GitHub Pages の公開 URL が 200 を返すかも確認する
 //   --music-from <path>     Music repo のパスを明示指定 (worktree-aware の上書き、
 //                           絶対パスでも script の cwd 相対でも可)
+//   --allow-skip            診断時のみ SKIP を許可する。通常 gate は fail-closed
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
@@ -50,6 +52,7 @@ const MUSIC_DIR = MUSIC_FROM_ARG
 
 const ACTIVE_REPOS = ["Music", "chill", "drum-floor", "namima", "openclaw"];
 const CHECK_DEPLOY_HEALTH = process.argv.includes("--deploy-health");
+const ALLOW_SKIP = process.argv.includes("--allow-skip");
 
 // Worktree 検出: SCRIPT_PARENT が canonical <STACK_ROOT>/Music と物理的に
 // 別パスなら sibling worktree から起動された (例: <STACK_ROOT>/Music-bl023)
@@ -180,6 +183,15 @@ console.log(`PASS ${pass}   FAIL ${fail}   SKIP ${skip}`);
 if (fail > 0) {
   console.error(`stack-check: ${fail} check(s) FAILED`);
   process.exit(1);
+}
+if (skip > 0 && !ALLOW_SKIP) {
+  console.error(`stack-check: ${skip} required check(s) SKIPPED; refusing a partial integrity gate`);
+  console.error("stack-check: use --allow-skip only for an explicit diagnostic run");
+  process.exit(1);
+}
+if (skip > 0) {
+  console.log(`stack-check: 0 BAD (${skip} SKIP explicitly allowed)`);
+  process.exit(0);
 }
 console.log("stack-check: 0 BAD");
 process.exit(0);

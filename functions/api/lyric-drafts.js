@@ -1,7 +1,14 @@
 const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
-  "Cache-Control": "no-store"
+  "Cache-Control": "private, no-store",
+  "Vary": "Authorization, X-Lyric-Lab-Token"
 };
+
+const DEFAULT_LIST_LIMIT = 100;
+const MAX_LIST_LIMIT = 500;
+const MAX_DRAFTS_PER_REQUEST = 500;
+const MAX_REQUEST_BYTES = 2_000_000;
+const MAX_DRAFT_JSON_BYTES = 256_000;
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
@@ -29,7 +36,6 @@ function constantTimeEqual(a, b) {
 }
 
 function requireAuth(request, env) {
-  if (env.LYRIC_LAB_ALLOW_OPEN === "1") return null;
   const expected = env.LYRIC_LAB_TOKEN;
   if (!expected) return text("Cloud sync disabled: set LYRIC_LAB_TOKEN.", 503);
   const auth = request.headers.get("authorization") || "";
@@ -61,11 +67,20 @@ function isoDate(value, fallback = new Date().toISOString()) {
   return Number.isNaN(date.getTime()) ? fallback : date.toISOString();
 }
 
+function isJsonObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function jsonByteLength(value) {
+  if (value == null) return 0;
+  return new TextEncoder().encode(JSON.stringify(value)).byteLength;
+}
+
 function normalizeDraft(input) {
   const now = new Date().toISOString();
   const id = clip(input.id, 160) || `draft-${Date.now()}-${crypto.randomUUID()}`;
-  const settings = input.settings && typeof input.settings === "object" ? input.settings : {};
-  const result = input.result && typeof input.result === "object" ? input.result : null;
+  const settings = isJsonObject(input.settings) ? input.settings : {};
+  const result = isJsonObject(input.result) ? input.result : null;
   const updatedAt = isoDate(input.updatedAt, now);
   return {
     id,
@@ -97,7 +112,11 @@ function rowToDraft(row) {
 }
 
 async function listDrafts(db, url) {
-  const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 100), 1), 500);
+  const requestedLimit = url.searchParams.get("limit");
+  const numericLimit = requestedLimit ? Number(requestedLimit) : DEFAULT_LIST_LIMIT;
+  const limit = Number.isFinite(numericLimit)
+    ? Math.min(Math.max(Math.trunc(numericLimit), 1), MAX_LIST_LIMIT)
+    : DEFAULT_LIST_LIMIT;
   const query = `
     SELECT id, title, source_url, seed, settings_json, result_json, reroll,
            active_view, created_at, updated_at
@@ -110,10 +129,30 @@ async function listDrafts(db, url) {
 }
 
 async function upsertDrafts(db, request) {
-  const body = await request.json().catch(() => null);
+  const contentLength = Number(request.headers.get("content-length"));
+  if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
+    return text("Draft request is too large.", 413);
+  }
+
+  const rawBody = await request.text();
+  if (new TextEncoder().encode(rawBody).byteLength > MAX_REQUEST_BYTES) {
+    return text("Draft request is too large.", 413);
+  }
+  let body = null;
+  try {
+    body = JSON.parse(rawBody);
+  } catch (error) {
+    return text("Expected { drafts: [...] }.", 400);
+  }
   const rawDrafts = Array.isArray(body) ? body : body?.drafts;
   if (!Array.isArray(rawDrafts)) return text("Expected { drafts: [...] }.", 400);
-  if (rawDrafts.length > 500) return text("Too many drafts in one request.", 413);
+  if (rawDrafts.length > MAX_DRAFTS_PER_REQUEST) return text("Too many drafts in one request.", 413);
+  if (!rawDrafts.every(isJsonObject)) return text("Every draft must be a JSON object.", 400);
+  if (rawDrafts.some((draft) =>
+    jsonByteLength(draft.settings) + jsonByteLength(draft.result) > MAX_DRAFT_JSON_BYTES
+  )) {
+    return text("Draft settings/result payload is too large.", 413);
+  }
   const drafts = rawDrafts.map(normalizeDraft);
   if (!drafts.length) return json({ ok: true, count: 0 });
 
@@ -170,9 +209,9 @@ export async function onRequest(context) {
 
   const url = new URL(request.url);
   try {
-    if (request.method === "GET") return listDrafts(db, url);
-    if (request.method === "POST" || request.method === "PUT") return upsertDrafts(db, request);
-    if (request.method === "DELETE") return deleteDraft(db, url);
+    if (request.method === "GET") return await listDrafts(db, url);
+    if (request.method === "POST" || request.method === "PUT") return await upsertDrafts(db, request);
+    if (request.method === "DELETE") return await deleteDraft(db, url);
     return text("Method not allowed.", 405);
   } catch (error) {
     return text("Lyric draft API failed.", 500);
