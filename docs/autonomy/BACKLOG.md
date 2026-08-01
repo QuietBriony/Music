@@ -39,27 +39,61 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 
 ---
 
-## P0
-
-### BL-032 — Lyric Lab API privacy boundary + fail-closed integrity gates
-- priority : P0
-- repo     : Music
-- scope    : non-engine-code / verify
-- agent    : codex
-- human-gate: no
-- status   : wip — codex 2026-08-01
-- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
-- detail   : Service Worker が same-origin GET を一律 cache-first にするため、認証済み
-  `api/lyric-drafts` 応答を Cache Storage に保存し、後続の無認証 request へ返し得る。
-  加えて activate 時に Music 以外の同一 origin cache まで削除し、`stack-check` は
-  Python / pytest 不在を SKIP のまま `0 BAD` とする。`/api/` を SW から完全 bypass、
-  cache cleanup を Music prefix 内へ限定、Cloudflare API の malformed input / async
-  failure を安定した 4xx/5xx にし、回帰 harness を追加する。`stack-check` は通常時
-  fail-closed（明示 `--allow-skip` のみ診断用）へ変更し、JS syntax 対象も自動発見にする。
-  engine.js / 音 / GPU 処理は変更しない。完了条件: 新規回帰 check + 5 repo
-  `stack-check` が `PASS / FAIL 0 / SKIP 0`、旧 Music cache は更新時に破棄される。
-
 ## P1
+
+### BL-033 — 外部依存 / モデル lock + mutable URL / license gate
+- priority : P1
+- repo     : Music
+- scope    : docs / verify / non-engine-code
+- agent    : codex | either
+- human-gate: no（runtime の出音変更やモデル実行は別 gate）
+- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
+- detail   : browser CDN、sample source、Python analysis tool、repo-external model を
+  `config/external-dependencies.json` に統合し、version / commit or model revision /
+  license / expected size / 保存先 / 実行 machine を固定する。現 catalog の GitHub CDN
+  は `@master` 15 定義、nbrosowsky sample license は code license と混同、Dirt-Samples
+  は family 単位 provenance が未確認。まず manifest + validator、次に current content と
+  同じ commit SHA へ URL pin。ACE-Step / Demucs / Whisper の weight は repo に入れず、
+  revision のみ記録し GPU 札が空くまで download / execution しない。完了条件:
+  mutable branch URL 0、license_status 未記載 0、モデル重みの tracked file 0。
+
+### BL-034 — autonomy control-plane の factual catch-up + currency gate
+- priority : P1
+- repo     : Music
+- scope    : docs / verify
+- agent    : codex | either
+- human-gate: no（BL-030 の authority 案 A/B 選択は対象外）
+- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
+- detail   : `SESSION-LEDGER.md` が 2026-06 の記録で止まる一方、main は 2026-07 の
+  Lyric Lab / HAZAMA v366-v388 / DAW・machine role 整備まで進行。`CODEX-HANDOFF.md`
+  と `HAZAMA-FM-ARCHITECTURE.md` にも実装済み候補 / 古い current marker が残る。
+  git history と現物だけから factual catch-up を作り、`last_verified_commit` ベースの
+  警告 check を追加する。方向性の統合判断は BL-030 に残す。
+
+### BL-035 — Band Room asset lane の契約 / provenance を一本化
+- priority : P1
+- repo     : Music
+- scope    : docs / verify
+- agent    : human（契約決定）+ codex | claude（反映）
+- human-gate: yes
+- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
+- detail   : AGENTS Rule 3 の「音源 / sample は追加しない」と、`presets/bands.json`・
+  `BAND-ROOM-ADD-BAND.md` の stem/sample 追加手順が矛盾。現物は承認済み tracked audio
+  790 file / 約216 MiB。既存 Band Room asset を grandfather する範囲と、ACE-Step / Suno
+  生成物・model weight を常に repo 外とする境界を owner が確定し、provenance manifest、
+  `.gitignore`、増分 guard に落とす。既存 asset の削除 / 再圧縮は本 item に含めない。
+
+### BL-036 — Tabasco songs catalog v2 + drift validator
+- priority : P1
+- repo     : Music
+- scope    : docs / verify
+- agent    : codex | either
+- human-gate: no（BPM / key の耳確認値は `human_unverified` のまま扱う）
+- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
+- detail   : `presets/tabasco-songs.json` は初期 snapshot の `TBD` / `todo` と個人PC絶対pathを
+  残すが、final lyrics と7曲分 drum-frame は出荷済み。catalog を派生 inventory と明示し、
+  現行 file reference / status へ同期。validator で7曲 coverage、frame existence、禁止絶対path、
+  status drift を検出する。precache から外すかは別判断。
 
 ### BL-003 — 実車 / Bluetooth で hidden audio bridge を実機検証
 - priority : P1
@@ -153,7 +187,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - agent    : claude（枠を作る）+ human（採点を埋める）
 - human-gate: yes（採点 1–5 の記入と next_pr_candidate は人間のみ。agent は埋めない）
 - status   : wip — advisor 2026-07-12。`docs/recording-review-scorecard.md` 作成済み
-  （push 号令待ち）。scorecard の枠のみ。実採点・そこから派生する engine tuning は別
+  （PR #372 / 40a422b で merge 済み）。scorecard の枠のみ。実採点・そこから派生する
+  engine tuning は別
 - source   : 2026-07-10 #367 plan #9 / status doc の agent-safe 名指し
 - detail   : Music は姉妹 repo 用 scorecard（namima/chill/drum-floor）は持つが自分の
   conductor 面には無かった。machine `self_review` 5 軸（density/lowEnd/brightness=risk・
@@ -164,6 +199,18 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   `self_review` 重み/閾値 tuning は engine 凍結域の別 human-gated PR（BL-024 harness で検証）。
 
 ## P2
+
+### BL-037 — Music satellite / engine seam の executable contract harness
+- priority : P2
+- repo     : Music
+- scope    : verify / non-engine-code
+- agent    : codex
+- human-gate: no（engine seam の変更は別 human-gated PR）
+- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
+- detail   : `audio/music-packet.js` / `music-hazama-feedback.js` など抽出済み satellite が
+  多数の engine global を遅延参照し、現 check は API existence までしか実行しない。
+  script load order、必須 dependency、主要 public API の実呼び出しを mock VM で固定する。
+  まず test only。dependency object 化や engine.js 編集は 1 satellite / 1 PR で別途行う。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2
@@ -355,6 +402,13 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 ---
 
 ## Done
+
+### BL-032 — Lyric Lab API privacy boundary + fail-closed integrity gates ✅ 2026-08-01
+- PR #392。Service Worker から `/api/` を完全 bypassし、cache cleanup を
+  Music-owned `hazama-fm-*` に限定。Lyric API は fail-closed auth、実body / draft size、
+  malformed input、async D1 failure を安全な応答へ統一した。
+- `check-cloudflare-pwa-contract.mjs` を追加し、`stack-check` の SKIP fail-closed化と
+  `check-js` 自動発見も実施。23 PASS / 0 FAIL / 0 SKIP。engine / 音 / GPU変更なし。
 
 ### BL-025 — drum-frames の bpm/swing フィールド: metadata 宣言で決着 ✅ 2026-06-13
 - 方針: option (b) を採用。`frame.bpm` (表示のみ) / `frame.swing` (dead field) を

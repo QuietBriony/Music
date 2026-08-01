@@ -7,7 +7,8 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v388";
+const VERSION = "hazama-fm-v389";
+const CACHE_PREFIX = "hazama-fm-";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -145,7 +146,9 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key !== STATIC_CACHE && key !== RUNTIME_CACHE)
+          .filter((key) =>
+            key.startsWith(CACHE_PREFIX) && key !== STATIC_CACHE && key !== RUNTIME_CACHE
+          )
           .map((key) => caches.delete(key))
       )
     ).then(() => self.clients.claim())
@@ -171,6 +174,10 @@ function isDocRequest(url) {
   return url.origin === self.location.origin &&
          url.pathname.includes("/docs/") &&
          /\.(?:md|json|html)$/.test(url.pathname);
+}
+
+function isApiRequest(url) {
+  return url.origin === self.location.origin && /\/api(?:\/|$)/.test(url.pathname);
 }
 
 function matchCachedRequest(request, options = {}) {
@@ -227,6 +234,11 @@ self.addEventListener("fetch", (event) => {
   if (request.headers.get("range")) return;
 
   const url = new URL(request.url);
+
+  // Authenticated Cloudflare Pages Functions own their cache semantics. In
+  // particular, Lyric Lab responses contain private shelf data and declare
+  // Cache-Control: no-store; never let the PWA cache intercept or persist them.
+  if (isApiRequest(url)) return;
 
   // HTML navigation: network-first so new deploys are picked up.
   if (isHtmlRequest(request)) {

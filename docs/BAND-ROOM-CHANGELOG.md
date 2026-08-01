@@ -1,6 +1,24 @@
-# Band Room - Changelog (v65 -> v388 compact)
+# Band Room - Changelog (v65 -> v389 compact)
 
-Current sw.js VERSION: v388. Latest Band Room runtime change: v388.
+Current sw.js VERSION: v389. Latest Band Room audio runtime change: v388.
+
+---
+
+## v389 compact - Lyric Lab API を PWA cache から隔離
+
+認証済み `api/lyric-drafts` の JSON を same-origin static cache が保存し得たため、
+Service Worker は `/api/` を完全 bypass する。activate cleanup も
+`hazama-fm-*` cache のみに限定し、同じ `quietbriony.github.io` origin にある
+chill / drum-floor / namima / openclaw の cache は削除しない。
+
+Cloudflare Function の malformed input / async DB failure を安定した 4xx/5xx にし、
+SW と API の privacy boundary を Node harness で固定。`stack-check` は通常時の SKIP を
+失敗扱いにし、JS syntax check は tracked layout の増加に追随する自動発見へ変更した。
+音声 runtime / `engine.js` / Band Room の出音は不変。
+
+`sw.js`, `functions/api/lyric-drafts.js`,
+`scripts/check-cloudflare-pwa-contract.mjs`, `scripts/stack-check.mjs`,
+`scripts/check-js.mjs`, `docs/LYRIC-LAB-D1.md`, `hazama-fm-v389`.
 
 ---
 

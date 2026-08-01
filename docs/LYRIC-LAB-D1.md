@@ -52,3 +52,18 @@ not require extra D1 columns.
 
 Audio files are not uploaded or stored. Dropbox or Drive m4a links are saved as
 source URLs only.
+
+## Private cache boundary
+
+The D1 shelf is authenticated private data, not a PWA asset:
+
+- `functions/api/lyric-drafts.js` returns `Cache-Control: private, no-store`
+  and varies responses on the authorization headers.
+- `sw.js` must bypass every same-origin `/api/` request. It must never call
+  `respondWith()` or `cache.put()` for the Lyric Lab endpoint.
+- Service Worker upgrades may delete only caches with the Music-owned
+  `hazama-fm-` prefix. Cache Storage is shared by origin, so deleting every
+  unknown key would also evict chill / drum-floor / namima / openclaw caches.
+
+Run `node scripts/check-cloudflare-pwa-contract.mjs` after changing the API,
+Service Worker routing, authentication, or cache cleanup behavior.

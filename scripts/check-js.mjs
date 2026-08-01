@@ -1,42 +1,34 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { readdirSync } from "node:fs";
+import { join, relative } from "node:path";
 
-const files = [
-  "engine.js",
-  "fm.js",
-  "lyric-lab.js",
-  "band-room.js",
-  "sw.js",
-  "audio/audio-safety.js",
-  "audio/genre-flavor.js",
-  "audio/ai-fills.js",
-  "audio/namima-audio-adapter.js",
-  "audio/human-groove-governor.js",
-  "audio/music-stack-routing.js",
-  "audio/music-focus-modulation.js",
-  "audio/music-recorder.js",
-  "audio/music-packet.js",
-  "audio/music-hazama-feedback.js",
-  "presets/loader.js",
-  "scripts/check-js.mjs",
-  "scripts/check-lyric-lab.mjs",
-  "scripts/check-band-room-logic.mjs",
-  "scripts/check-hazama-melody.mjs",
-  "scripts/check-fm-route-badge.mjs",
-  "scripts/check-runtime-doc-markers.mjs",
-  "scripts/check-audio-cost-gates.mjs",
-  "scripts/check-sw-version-history.mjs",
-  "scripts/stack-check.mjs"
-];
+const SKIP_DIRS = new Set([
+  ".git",
+  ".wrangler",
+  "node_modules",
+  "worker-output",
+  "captures",
+  "__pycache__"
+]);
+
+function discoverJavaScript(dir = ".") {
+  const files = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory() && SKIP_DIRS.has(entry.name)) continue;
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...discoverJavaScript(path));
+    else if (entry.isFile() && /\.(?:js|mjs)$/.test(entry.name)) {
+      files.push(relative(".", path).replaceAll("\\", "/"));
+    }
+  }
+  return files;
+}
+
+const files = discoverJavaScript().sort();
 
 let bad = 0;
 
 for (const file of files) {
-  if (!existsSync(file)) {
-    console.error(`BAD missing JS file: ${file}`);
-    bad += 1;
-    continue;
-  }
   const result = spawnSync(process.execPath, ["--check", file], { stdio: "inherit" });
   if (result.status !== 0) bad += 1;
 }
