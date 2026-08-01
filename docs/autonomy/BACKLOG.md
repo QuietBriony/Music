@@ -39,6 +39,26 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 
 ---
 
+## P0
+
+### BL-032 — Lyric Lab API privacy boundary + fail-closed integrity gates
+- priority : P0
+- repo     : Music
+- scope    : non-engine-code / verify
+- agent    : codex
+- human-gate: no
+- status   : wip — codex 2026-08-01
+- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
+- detail   : Service Worker が same-origin GET を一律 cache-first にするため、認証済み
+  `api/lyric-drafts` 応答を Cache Storage に保存し、後続の無認証 request へ返し得る。
+  加えて activate 時に Music 以外の同一 origin cache まで削除し、`stack-check` は
+  Python / pytest 不在を SKIP のまま `0 BAD` とする。`/api/` を SW から完全 bypass、
+  cache cleanup を Music prefix 内へ限定、Cloudflare API の malformed input / async
+  failure を安定した 4xx/5xx にし、回帰 harness を追加する。`stack-check` は通常時
+  fail-closed（明示 `--allow-skip` のみ診断用）へ変更し、JS syntax 対象も自動発見にする。
+  engine.js / 音 / GPU 処理は変更しない。完了条件: 新規回帰 check + 5 repo
+  `stack-check` が `PASS / FAIL 0 / SKIP 0`、旧 Music cache は更新時に破棄される。
+
 ## P1
 
 ### BL-003 — 実車 / Bluetooth で hidden audio bridge を実機検証
