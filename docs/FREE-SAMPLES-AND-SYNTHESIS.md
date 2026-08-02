@@ -17,8 +17,10 @@ Band Room は **どちらも受け取れる仕組み**を持っていて、現�
 
 ## 1. ブラウザで使えるフリーサンプル一覧
 
-permissive license (CC-0 / CC-BY / CC-BY-SA) で、Tone.Sampler に URL 食わせれば
-直接動くもの:
+Tone.SamplerにURLを渡せる候補。下表は探索用で、active catalogのrevisionと
+`license.status`の正本は
+[`config/external-dependencies.json`](../config/external-dependencies.json)に置く。
+配布元のcode licenseをsample assetへ読み替えない。
 
 | ライブラリ | ライセンス | 内容 | 入手 |
 |-----------|-----------|------|-----|
@@ -27,17 +29,18 @@ permissive license (CC-0 / CC-BY / CC-BY-SA) で、Tone.Sampler に URL 食わ�
 | **Sonatina Symphonic Orchestra** | CC-BY-SA 3.0 | 簡易 orchestral | mattiaswestlund.net |
 | **Iowa MIS** | educational free | 各楽器 single note (university 教材) | theremin.music.uiowa.edu/MIS.html |
 | **Philharmonia free samples** | restricted free | 各楽器 single note | philharmonia.co.uk |
-| **TR-808 / TR-909 ROM 1ショット** | CC0/gray | 古典 drum machine | github 各所 (e.g. TidalCycles dirt-samples) |
+| **TR-808 / TR-909 ROM 1ショット** | sourceごとに要確認 | 古典 drum machine | github 各所（active Dirt familyも確認待ち） |
 | **Karoryfer samples** | CC-BY-SA | bass / guitar / strings | karoryfer.com |
 | **NSynth (Magenta)** | CC-BY 4.0 | AI 合成 single note | google magenta NSynth dataset |
 | **Freesound.org** | CC-0 / CC-BY (個別) | 巨大、検索必要 | freesound.org |
-| **Tone.js example samples** | MIT 等 | drum / synth demo set | tonejs.github.io/audio |
+| **Tone.js example samples** | collection別 | Salamander CC-BY 3.0 / Casio CC-BY-NC-SA 4.0 / active drumは確認待ち | Tonejs/audio pinned commit |
 
 **Band Room で使うなら:**
 
 - 既存の `presets/sample-kits/<source>/<song>/*.wav` (v65 で Tabasco から抽出) は
   問題ない (private use)
-- 追加で欲しいなら **TR-808 / 909** の CC-0 dump を `presets/sample-kits/free-808/` に置く
+- 追加候補は、BL-035のasset契約とowner判断を通し、family単位のlicense evidenceを
+  manifestへ登録してから扱う。出典不明のTR-808 / 909 dumpをrepoへ置かない
 - **Tone.Sampler 用** には `presets/sample-instruments/{guitar,bass}/` (v91 scaffold済)
 
 実装は **band-room.js が manifest.json で自動検出**、無ければ synth に fall back。
@@ -138,17 +141,17 @@ BASS_PROFILES = {
 
 ## 6. もし将来 free sample 一式を同梱したくなったら
 
-最小限の Public Domain な drum 808 / 909 1ショット pack なら 5-10 MB 程度で
-収まる。`presets/sample-kits/free-808/` を作って:
+出典とPublic Domain適用範囲が確認できたdrum 1-shot packでも、repo同梱はBL-035の
+owner判断対象。承認後に`presets/sample-kits/free-808/`を作るなら:
 
 - `kick-01.wav`, `snare-01.wav`, `hat-01.wav`, `clap-01.wav`, `crash-01.wav`
 - `manifest.json` でライセンス明記
 
-これを KIT_OPTIONS の選択肢に `"free-808/standard"` として追加すれば、
-Tabasco stem から抽出した kit 隣に並ぶ。
+manifestへprovenance / license / expected sizeを登録し、KIT_OPTIONSの選択肢に
+`"free-808/standard"`として追加すれば、Tabasco stemから抽出したkit隣に並ぶ。
 
-実装したくなったタイミングで言ってください。GitHub の 1 GB 制限内、
-TidalCycles dirt-samples (CC0) なら問題なし。
+容量だけでは採用可否を決めない。現在のTidalCycles Dirt-Samplesはcommit固定済みだが、
+使用familyのlicense確認はpendingなので、再配布可能とは扱わない。
 
 ---
 
@@ -178,9 +181,10 @@ piano trio + breakbeat sample に切替 (将来は catalog 経由化検討中)�
 ### この方針の利点
 
 - **Pages 容量影響 ゼロ** (catalog json 1 ファイル定義のみ)
-- **ライセンス追跡が明確** (CC-0 / CC-BY / MIT を catalog の license フィールドで記述)
+- **ライセンス状態を分離追跡**（catalogはUI表示、manifestはevidence付きの`verified / pending`正本）
 - **オフライン fallback** (sample fetch 失敗時 synth で代替)
 - **拡張性無限** (catalog.json 編集だけで instrument 追加)
 
-詳細仕様: [SAMPLE-CATALOG-GUIDE.md](./SAMPLE-CATALOG-GUIDE.md)
+詳細仕様: [SAMPLE-CATALOG-GUIDE.md](./SAMPLE-CATALOG-GUIDE.md) / 正本:
+[`config/external-dependencies.json`](../config/external-dependencies.json)
 3 app 整合: [CROSS-APP-INTEGRITY.md](./CROSS-APP-INTEGRITY.md)

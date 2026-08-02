@@ -1,29 +1,42 @@
 # Hazama FM — システム全体像
 
-> 24/7 generative focus radio。1 個の Music repo + 3 個の sister repo の
-> JSON エクスポートで動く、PWA 対応の web アプリ。
+> 24/7 generative focus radio。Music + 3つのpreset供給sister + openclaw review deskで
+> 構成する、PWA対応のweb音楽スタック。
 >
 > 3 app 横断の整合性: [CROSS-APP-INTEGRITY.md](./CROSS-APP-INTEGRITY.md)
 > 音色設計の哲学: [FREE-SAMPLES-AND-SYNTHESIS.md](./FREE-SAMPLES-AND-SYNTHESIS.md)
 >
-> **v113-v115 アップデート (cross-app 音色整合)**:
+> **Current repository snapshot — verified 2026-08-02**
+>
+> `last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c`
+>
+> Current cache / asset tuple: `hazama-fm-v395`, `engine.js?v=fm-118`,
+> `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-80`, `fm.js?v=fm-72`,
+> `band-room.js?v=br-230`, `band-room.css?v=br-88`。
+> 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
+>
+> **Historical v113-v115 update (cross-app 音色整合)**:
 > - lofi mode の chord 担当を Salamander Grand Piano sampler (CC-BY 3.0、
->   tonejs.github.io 経由) に置換 — 「ノイズで lofi 風」を脱却
+>   Tonejs/audio source) に置換 — 「ノイズで lofi 風」を脱却
 > - lofi mode の bass 担当を Salamander 低オク walking sampler に置換
 > - lofi mode の drum 担当を tone-breakbeat CDN sample に置換
 > - 既存 synth pad/bass は -26 ~ -28 dB に減衰 (二重発音防止)
-> - Band Room v109-v111 の lo-fi master preset と **同じ CDN サンプル URL**
->   を使うので、3 app で「lofi = piano trio + breakbeat」音源スタック完全一致
+> - 現在のcatalog URLは`config/external-dependencies.json`のcommit-pinned jsDelivrが正本。
+>   `engine.js`の`tonejs.github.io`参照は凍結legacy例外であり、同一URLとはみなさない
 
-## 1. リポ構成 (1 + 3 + 1)
+## 1. リポ構成（Music + 4 active sibling roles）
 
 ```
 QuietBriony/Music              ← 演奏ホール (このリポ)
 ├── fm.html / fm.js / fm.css   ← Hazama FM UI shell
-├── index.html / engine.js     ← Music Core Rig (9-fader mixer / 12k 行 engine)
+├── index.html / engine.js     ← Music Core Rig (9-fader mixer / protected monolith)
+├── listen.html                ← 現行の聴感QA入口
+├── band-room.html / .js       ← Tabasco stems + HAZAMA synth-only play surface
+├── lyric-lab.html / .js       ← 歌詞 / Scene OS / 制作handoff
 ├── audio/genre-flavor.js      ← Tone.js synth layer (preset 受容)
 ├── presets/loader.js          ← sister repo JSON を fetch+validate
 ├── presets/*.json             ← sister repo からの export (6 files)
+├── config/*.json              ← machine / external dependency / currency authority
 ├── manifest.webmanifest       ← Hazama FM PWA
 ├── manifest-mixer.webmanifest ← Music Core Rig PWA (別アプリ)
 ├── manifest-band-room.webmanifest ← Band Room PWA (別アプリ)
@@ -37,20 +50,22 @@ QuietBriony/drum-floor         ← drum frame 資産庫
 
 QuietBriony/namima             ← ambient mood shape 資産庫
 └── exports/namima-shape-ambient.json
+
+QuietBriony/openclaw           ← review desk / mission board（runtime executorではない）
 ```
 
-各 sister repo は **「自分の repo 内で完結する自律的な開発」** を続ける。
-Music は sister repo が出してくれた **JSON だけ** を読み、Tone.js で再現。
+chill / drum-floor / namimaはpreset供給、openclawはreview / mission controlを担当する。
+Musicのbrowser runtimeが読むのは、review後にこのrepoへ取り込まれたsame-origin JSONだけ。
 
 ## 2. データフロー
 
 ```
-[各 sister repo の codex agent]
-        ↓  (codex 内蔵 git で commit + push + PR)
+[各 preset sister repo]
+        ↓  (repo内でexport + review)
 [sister repo main の exports/*.json]
-        ↓  (curl raw.githubusercontent.com)
+        ↓  (明示的にMusicへvendoring / provenance確認)
 [Music/presets/*.json]
-        ↓  (presets/loader.js が fetch+validate)
+        ↓  (presets/loader.js がsame-origin fetch+validate)
 [window.HazamaPresets.get(name)]
         ↓  (audio/genre-flavor.js builder が受け取る)
 [Tone.js synth + Tone.Transport schedule]
@@ -101,9 +116,10 @@ fieldStudy / glassCoding / dryGridWork / ghostPressure / voidRoom
 + hardTechno / liveJazz / nightFunk / quietPiano  (engine.js に追加した 4)
 ```
 
-各番組は 60–90 秒で AI が weight に従って rotate。
+各番組は18–42のphrase cycle targetとweightに従ってrotateする。wall timeはBPMと
+bar進行で変わるため、固定60–90秒をruntime契約にしない。
 `window.MusicRuntimeState.radioBrain.{active, next, lastReason, phrase, phraseCycles}`
-を 4860 行目で `music-runtime-state` CustomEvent として publish。
+を`music-runtime-state` CustomEventとしてpublishする。絶対行番号は移動するため正本にしない。
 
 v142 以降、mode change は `BarCounter` で 16 bar phrase 境界に gate される。
 UCM 閾値が途中で別 mode を要求した場合は `pendingMode` に保持し、次の phrase
@@ -144,20 +160,31 @@ station ident animation 駆動。
 `#fm-progress > span` の width を `(rb.phrase / rb.phraseCycles) * 100%`
 で更新。次の番組までの "残り時間" が視覚的に分かる。
 
+### 現行playability / safety controls
+
+- `auto / light / full`: device推定または人の選択でGenreFlavorの高コストfieldを再構築。
+  lightではfun-fieldの2 Reverb、4 LFO AutoPanner、選択的oversamplingを省く。その他の
+  genre Reverb / tape saturationまで消す契約ではなく、fullの音色は維持する。
+- `AI fill`: explicit / lazy境界を持つ。無効時やasset失敗時はburstを開始せず、既存の
+  base local Tone synthesisがそのまま続く。
+- `shuffle` / DJ set / mic follow / `40HZ`: いずれも画面内の明示操作。録音・mic・focus
+  modulationを暗黙開始しない。
+- route diagnostics / SYNC: metadata-onlyでBand Room、Drum Floor、openclaw reviewへ渡す。
+  audio、sample、private lyric bodyをpacketへ入れない。
+
 ### Media Session API
 
-`navigator.mediaSession.metadata` を radioBrain.active 変更時に同期 →
-iPhone ロック画面・コントロールセンター・BT ヘッドフォン・mac Touch Bar
-に「fieldStudy — initial haze room」等が表示される。
+`navigator.mediaSession.metadata`をradioBrain.active変更時に同期する。対応browser / deviceでは
+lock画面やmedia controlへ番組名を渡せるが、iPhone / 車載BT等の実表示はBL-003のhuman checklistで確認する。
 
-### 音量設計 (current v149)
+### 現行の音量設計（repository snapshot）
 
 ```
 各 GENRE synth voice
-        ↓ Tone.PolySynth volume (per builder, -8〜-22 dB)
+        ↓ per-builder voice gain / velocity（source codeが正本）
 flavor master Gain
-        ↓ × LEVEL_BY_GENRE[name] (0.46〜0.66)
-        ↓ × output follower (engine OUTPUT に追従、0.34〜0.96)
+        ↓ × LEVEL_BY_GENRE[name] (0.54〜0.72)
+        ↓ × output follower (engine OUTPUT に追従、0.38〜1.12)
         ↓ compressor / EQ safety tilt / light makeup / limiter guardrail
         ↓
    Tone.Destination (0 dB; no post-limiter boost)
@@ -166,22 +193,22 @@ flavor master Gain
         ┌─ engine 各 synth voice
         ↓
    engine masterGain
-        ↓ × outputGainFromLevel(FM target 75) ≈ 1.48 linear
-   focusModGain (optional 40 Hz / 8% AM, default OFF)
+        ↓ × outputGainFromLevel(FM target 88) ≈ 2.17 linear
+   master compressor + 3-band Null Zone field（対応時; single-widener fallback）
+    focusModGain (optional 40 Hz / 8% AM, default OFF)
         ↓
-   masterLimiter (-0.8 dBFS ceiling)
+   masterLimiter / final guardrail
         ↓
    hardwareOutput + recorder/background bridge taps
         ↓ AudioContext.destination / hidden MediaStream audio bridge
 ```
 
 - `LEVEL_BY_GENRE` (genre-flavor.js) でジャンル別音量バランス
-  (piano は 0.46、techno は 0.66、他は 0.56〜0.62)
+  (piano 0.54、techno 0.72、他は0.60〜0.68)
 - `GenreFlavor` は `fm.html` 専用の parallel color layer。Music full mix を
   直列加工しない
 - `Tone.Destination.volume = 0 dB` (fm.js fmStart)。post-limiter boost なし
-- limiter は final stop ではなく guardrail。常時突っ込ませず、OUTPUT 80〜88
-  を通常の聴感レンジにする
+- flavor limiterは-1.2 dBのguardrail。常時突っ込ませず、FMの通常START targetはOUTPUT 88
 - `40HZ` focus mode は limiter 前で 0.92〜1.00 の範囲だけを揺らすため、
   peak を持ち上げない。AI fill 中は depth 0% に自動退避
 - iOS Safari / 車載 Bluetooth 向けに、最終 mix は hidden `<audio srcObject>`
@@ -232,17 +259,17 @@ production parameter translation のみ:
   / space / structure / gesture 翻訳 (Aphex Twin / Boards of Canada /
   Burial / Brian Eno / Four Tet / Biosphere / Nujabes ...)
 - `references/hazama-fm-pill-refs.json` — pill ごとに primary / secondary
-  references を明示。**`lofi` pill は Nujabes (Aruarian Dance / Feather)
-  をメインに**、jazz/funk/techno/piano は user 確認待ちの candidates 列挙
+  referencesを明示。すべての非ANY pillにprimary referenceがあり、曲の複製ではなく
+  production axisだけをbuilder / presetへ翻訳する
 
 ```
 pills:
   ambient → Brian Eno + Boards of Canada + Aphex Twin + Huerco S.
   lofi    → Nujabes (Aruarian Dance / Feather) [primary]
-  techno  → TODO (Carl Craig / Jeff Mills / 他 候補)
-  jazz    → TODO (Bill Evans / Keith Jarrett / 他 候補)
-  funk    → TODO (Sly Stone / D'Angelo / 他 候補)
-  piano   → TODO (Keith Jarrett / Brad Mehldau / Nils Frahm / 他 候補)
+  techno  → Derrick May (Strings of Life) [primary]
+  jazz    → Art Blakey (Moanin) + Bill Evans (Peace Piece) [primary]
+  funk    → Funkadelic (Maggot Brain) [primary]
+  piano   → Debussy (Clair de Lune) + Bill Evans (Peace Piece) [primary]
 ```
 
 reference → builder への翻訳:
@@ -260,34 +287,31 @@ manifest.webmanifest         ← Hazama FM (start_url=fm.html、ミントアイ�
 manifest-mixer.webmanifest   ← Music Core Rig (start_url=index.html、warm orange)
 manifest-band-room.webmanifest ← Band Room (start_url=band-room.html)
 sw.js                        ← 共通 Service Worker
+  ├ /api/: bypass             (private Lyric Lab data; Functionsがno-storeを所有)
   ├ HTML: network-first       (deploy 即反映)
-  ├ static (CSS/JS/SVG/PNG): cache-first
+  ├ same-origin static/docs: cache-first
   ├ presets/*.json: stale-while-revalidate
-  └ Tone.js CDN: cache-first (opaque)
+  └ Tone / Magenta / pinned sample CDN: on-demand cache-first (opaque可)
 icons/icon-*.png             ← Hazama FM (mint 同心円リング)
 icons/mixer-*.png            ← Music Core Rig (orange 9-fader 放射状)
 ```
 
-iPhone Safari → 共有 → ホーム画面に追加で 2 つの独立アプリが並ぶ
-(同じ scope 内に Hazama FM 起動 + 内部リンクで mixer 移動も可)。
+FM / Core Rig / Band Roomは3つのmanifestを持ち、対応browserでは用途別install候補になる。
+実際のホーム画面 / standalone起動はdevice human checklistで確認し、repo現物だけで合格扱いしない。
 
-## 5. 開発サイクル — 「お任せお願い」フロー
+## 5. 開発サイクル — autonomy control-plane
 
 ```
-1. ユーザー: 「○○磨いて」
-2. claude code: spec 設計 (docs/codex-prompts/*.md)
-3. claude code: Codex App に paste & send (computer-use 経由)
-4. 各 codex (sister repo): branch 切る → 実装 → 自己検証 → PR (auto-merge 禁止)
-5. ユーザー (or claude code): codex chat に「マージして」
-6. 各 codex: gh pr merge --squash --delete-branch
-7. claude code: 各 main から JSON fetch → Music/presets/ にコピー
-8. claude code: genre-flavor.js / loader.js / sw.js 拡張
-9. claude code: commit + push → GitHub Pages v++ 反映
-10. claude code: live URL sanity check
+1. `docs/autonomy/STACK-INDEX.md` / LEDGER最新 / BACKLOG / 対象repoのAGENTSを読む
+2. BACKLOGのagent-safe itemをclaimし、`status: wip`をcommit（共有docs更新前にpull）
+3. 1 active implementer + read-only監査で、scopeとhuman gateを維持して実装
+4. repo固有check + `node scripts/stack-check.mjs`を0 BADにする
+5. itemをDoneへ移し、SESSION-LEDGERを先頭追記、差分を限定してcommit
+6. in-scope / clean / mergeableならAGENTSの現行規約でpush / PR / merge。接続不能はlocalで止めて報告
+7. runtime変更は必要なcache markerを同期し、browser / audio / mobile等のhuman gateを勝手に合格にしない
 ```
 
-Music repo 自体への変更 (UI/animation) も同じパターン (codex が PR 作成 →
-「マージして」 → 私が後追い merge or 直接 push)。
+merge権限やprotected file境界はこの文書へ複製せず、常に`AGENTS.md`を正本とする。
 
 ## 6. 拡張ポイント
 
@@ -313,15 +337,78 @@ Music repo 自体への変更 (UI/animation) も同じパターン (codex が PR
 station ident audio cue + bias 接続の 6 箇所更新 (詳細は engine.js
 内のコメント or `MusicRadioBrainState` 周辺の patches を参照)。
 
+### protected engine satellite seam（BL-037）
+
+`index.html`と`fm.html`は、抽出済み5 satelliteをclassic `defer` scriptとして
+同じ順序で`engine.js`より前に読み込む。Tone.jsもhost別の順序契約を持つ。
+`index.html`ではclassic `defer`でsatellite群より先、`fm.html`ではblocking classicで
+直後のinline `Tone.setContext(...)`より先に置き、その後にdeferred satellite群が続く。
+
+```text
+music-stack-routing → music-focus-modulation → music-recorder
+→ music-packet → music-hazama-feedback → engine.js
+```
+
+satelliteはload時に`window.Music*` APIだけを公開し、engineのstate / helperはAPIを
+呼ぶ時まで遅延参照する。`defer`は記述順を保つが、`async`化、`type=module`化、
+engine先行への並替えはclassic-script global lexical seamを壊すため別の設計変更になる。
+
+| satellite export | engineから遅延解決する主なdependency | harnessの実呼出し |
+|---|---|---|
+| `MusicStackRoutes` | なし（pure data / functions） | review cue + routing recommendation |
+| `MusicFocusModulation` | `clampValue`, `focusModGain`, `isPlaying`, Tone LFO | enable / suppress / disable + LFO lifecycle |
+| `MusicRecorder` | `recorderDestination.stream`, DOM / MediaRecorder | fake start / data / stop / download |
+| `MusicPacketKit` | UCM / gradient / review / routing / recorder state / clamp | session + orchestra build / SYNC / download |
+| `MusicHazamaFeedback` | Hazama / color / arc / feedback state | active postMessage + inactive no-op |
+
+`scripts/check-music-satellite-contract.mjs`は5本をengine globalsなしの同一mock VMへ
+先行loadし、その後`scripts/fixtures/music-satellite-engine-fixture.js`の明示的な47 bindingを
+注入して上記APIを実呼出しする。comment内の偽tag / URLを除外してToneを含むHTML順、
+SW一意収録、public API、実`engine.js`側のprovider / consumer member、missing dependencyと
+optional browser fallback、timer / channel cleanupも検証する。
+`engine.js`はtext markerを読むだけで**実行しない**。Tone / MediaRecorder / DOM / storage /
+BroadcastChannel / timer / postMessageは同期fakeだけで、network・実audio・GPUを使わない。
+このcontractは実browserのTone / MediaRecorder挙動、音質、試聴体験までは証明しない。
+これはtest/docs追加なのでruntime markerは`fm-118`、SWは`hazama-fm-v395`のまま。
+seam自体の変更やdependency object化は1 satellite単位の別human-gated PRで行う。
+
+### Music host DOM seam（BL-043）
+
+`config/music-host-dom-contract.json`は、共有engineと各hostのDOM境界を明示する
+read-only契約である。全UI IDのsnapshotではなく、`engine.js` 64 ID、`fm.js` 56 ID、
+`audio/genre-flavor.js` 1 ID、`audio/music-recorder.js` 3 IDから導いたconsumer seamを扱う。
+Core Rigはrequired 60 / optional 5（union 65）、Hazama FMはrequired 76 / optional 31
+（union 107）。requiredは現在そのhostが提供する機能面、optionalは別surface向けのguarded
+probeで、source側がnull-safeでも現在ある機能面をoptionalへ弱めない。
+
+`scripts/check-music-host-dom-contract.mjs`はHTMLをtreeとして解析し、IDの一意性・exact-case、
+tag / input type、required / optionalの固定分類と双方向coverage、consumer scriptのbrowser-canonicalな
+host別exact load（same-document path / classic / defer、async・nomodule・未管理SRIなし）を検証する。
+FMの`body[data-page="fm"]`、hidden `#fm-engine-shim` 24要素、performance pad、energy / genre /
+DJ setの親子・値・選択状態、progress直下span、range境界、select option、ARIA ID参照も契約に含む。
+コメント、`script` / `style` / `template`本文の偽要素はDOMとして数えず、raw-text / double-escape、
+plaintext / frameset、foreign namespace、table / select insertion mode、埋め込みCSP、disabled /
+multiple selectもfail-closedで拒否する。
+
+JavaScript側は4 consumerをtoken scanし、literal lookupのper-ID multiset、selector root、既知の
+dynamic resolver、FMの`$` bindingと7 genre profileの9 fader domainをmanifestと双方向照合する。
+lookupは件数だけでなくlive関数・引数・owner binding・loop / delegated-click用途まで結線し、dead code、
+shadow binding、computed global、string timer、`eval` / `Function` / constructor chain、escaped
+identifierによる補償を拒否する。101件の
+negative fixtureは宣言一覧との完全一致も自己検証する。
+`engine.js` / `fm.js` / audio consumerはtextで読むだけで実行・importせず、negative fixtureも
+memory内の文字列変異だけを使う。実browserのlayout / interaction、Tone.js、音質・試聴までは
+証明対象外で、runtime / HTML / SWは変更しないため`fm-118` / `hazama-fm-v395`を据え置く。
+
 ## 7. 運用ルール
 
 | 項目 | 方針 |
 |---|---|
 | **engine.js 改変** | 原則禁止。Hazama FM 用の追加は fm.js / fm.css / audio/genre-flavor.js で吸収。例外は Core Rig と FM が共有する短い runtime cue API など、Music 全体の音響境界をそろえる最小変更のみ |
 | **cache buster** | `?v=fm-N` を fm.html / sw.js の precache list で揃える。version 変えるたびに sw.js の `VERSION` も bump (`hazama-fm-vN`) |
-| **sister repo の export** | sister repo 内で完結。Music は raw.githubusercontent.com から fetch のみ |
-| **preset の絶対パス** | `presets/foo.json` で root-relative。loader.js の `PRESET_FILES` で一元管理 |
-| **PR auto-merge** | 全 sister repo で禁止。「マージして」を codex に明示要求するパターンを採用 |
+| **sister repo の export** | sister repo内で完結。review後にMusicへvendoringし、browserはsame-origin local JSONだけを読む |
+| **preset のpath** | `presets/foo.json`のpage/repo-relative path。loader.jsの`PRESET_FILES`で一元管理 |
+| **branch / PR / merge** | `AGENTS.md`が正本。0 BAD・in-scope・cleanを確認した検証済みbranchはagent merge可 |
 | **iOS Safari 対応** | Tone.start() は user gesture 内で呼ぶ、wake lock + background bridge は engine.js 標準動作 |
 
 ## 8. デバッグ
@@ -371,9 +458,9 @@ window.HazamaPresets.get("drum-frames-jazz")
 - `docs/codex-prompts/*.md` — sister repo codex に paste するための prompts
 - `docs/music-radio-brain.md` — engine.js 番組ロジックの設計メモ
 - `docs/ios-safari-background-playback-check.md` — iOS Safari 対応チェック
-- engine.js コメント — 12k 行 live runtime の各セクション説明
+- engine.js コメント — protected live runtimeの各セクション説明（行数は固定しない）
 
-## 10. Session feel & narrative (v36 → v43)
+## 10. Historical lineage — session feel & narrative (v36 → v53)
 
 genre-flavor.js の上に積んできた「人間的なセッション感」の層。順序は浅い
 表面 → 深い長尺構造。
@@ -513,11 +600,16 @@ Core Rig に flavor を載せるなら:
 判断: Core Rig は manual mix workflow なので flavor 同期は **opt-in feature** として残すのが
 無理ない。フェーダー触っている時に裏で flavor が勝手に変化すると操作感が混乱する。
 
-## 11. Band Room (band-room.html) — Tabasco LIVE Revival
+## 11. Band Room (band-room.html) — Tabasco stems + HAZAMA synth lane
 
-Hazama FM とは別ページ。`band-room.html` は user 自身のバンド (Tabasco) の
-20 年前 LIVE 録音を、Demucs で 4-stem 分離 → ボーカル抜きで再生 +
-歌い直し + AI 再現できるプラットフォーム。
+Hazama FMとは別ページ。`band-room.html`は2つのlaneを同じplay surfaceに載せる。
+
+- Tabasco: 既存LIVE録音の4-stem原音、歌い直し、AI再現を比較するlane。
+- HAZAMA: stemsを要求しないsynth-only lane。`?band=hazama`でAI再現を自動選択してSTART
+  できるが、main selectorでは`ui_hidden`。通常公開の合格はBL-041 human gate。
+
+利用者の最短導線は`listen.html` → HAZAMA → Lyric Lab。詳細操作は
+`BAND-ROOM-MANUAL.md`、用途別レシピは`BAND-ROOM-USAGE.md`を正本とする。
 
 ### 機能まとめ
 
@@ -533,6 +625,7 @@ Hazama FM とは別ページ。`band-room.html` は user 自身のバンド (Tab
 | External vocal upload (Suno or 自録) | ✅ v63 |
 | Vocal phrase trigger (240 phrases click) | ✅ v64 |
 | 全 7 曲歌詞 (proper English v2.1) | ✅ |
+| HAZAMA synth-only / unavailable原音disable / fail-closed START | ✅ v390（実音昇格はBL-041） |
 
 ### ファイル構成
 
@@ -540,8 +633,9 @@ Hazama FM とは別ページ。`band-room.html` は user 自身のバンド (Tab
 band-room.html / .css / .js                    # standalone (no engine.js / genre-flavor.js)
 presets/bands.json                             # band registry (UI に出すバンド一覧)
 presets/drum-frames-tabasco-{songid}.json      # 7 曲分 song-track (intro→verse→chorus→...)
-presets/tabasco-stems/{songid}/{stem}.mp3      # 28 ファイル, 96 kbps, 79 MB
-presets/unripe-stems/{songid}/{stem}.mp3       # 24 ファイル, 96 kbps, 78 MB
+presets/tabasco-songs.json                     # 7曲の派生inventory（runtime非消費 / SW非precache）
+presets/tabasco-stems/{songid}/{stem}.mp3      # grandfathered Tabasco stems
+presets/unripe-stems/{songid}/{stem}.mp3       # grandfathered UNRIPE stems
 presets/sample-kits/{src}/{song}/              # 抽出済サンプル
   ├ {kick,snare,hat,crash}-NN.wav             # drum hits (8 each)
   └ vocal-phrase-NN.wav                       # vocal phrases (top 20)
@@ -557,6 +651,24 @@ scripts/_recompress_stems.py                   # 192→96 kbps 再エンコ
 scripts/_copy_stems.py                         # raw Demucs → repo へ
 scripts/_gen_tabasco_songs.py                  # song-track JSON 生成
 ```
+
+### Tabasco data authority
+
+| データ | 正本 / role | runtime | 検証 |
+|---|---|---|---|
+| 曲ID・順序・title・catalog duration | `presets/bands.json` | Band Roomがfetch | Band Room gate + catalog gate |
+| BPM・key・構成・frame | `drum-frames-tabasco-{songid}.json` 7件 | Band Roomがfetch | catalog gate |
+| canonical / synth / fallback歌詞 | `docs/tabasco-lyrics-final.md` | Band Roomがfetch | Band Room gate + catalog gate |
+| stems karaoke行 / 時刻 | `docs/tabasco-lyrics-timed.json`（ASR由来・5曲） | 原音modeで任意fetch | Band Room gate |
+| 横断一覧 | `presets/tabasco-songs.json` v2（派生inventory） | **読まない** / SW非precache | catalog gate |
+
+派生inventoryのBPM / keyはruntime値の索引であり、人耳確認済みの主張ではない。
+全7曲を`human_unverified`に保ち、確認値の昇格は別のhuman reviewで行う。
+音源のownership / license / grandfather範囲はこのinventoryで決めず、BL-035のowner契約に残す。
+`scripts/check-tabasco-songs-catalog.mjs`が正本との差、禁止絶対path、legacy placeholder、
+frame / lyrics欠落、runtimeやprecacheへの誤接続をnetworkなしで拒否する。
+`bands.json`の`duration_s`はcatalog宣言尺で、実効再生尺はloaded stem bufferと
+frame構成尺も含む最大値をBand Room runtimeが選ぶ。
 
 ### 主要 commit 履歴
 
@@ -577,13 +689,13 @@ scripts/_gen_tabasco_songs.py                  # song-track JSON 生成
 | 観点 | Hazama FM | Band Room |
 |---|---|---|
 | 性格 | 24/7 generative focus radio (Apple Music の Claude FM 的) | 特定の歌を再生 + 練習 + リバイバル |
-| 元データ | 9 番組 × 7 GENRE × 物語進行 | 7 曲 × 8 セクション × 4 stem × 240 vocal phrase |
-| エンジン | engine.js (12k 行) + genre-flavor.js (3k 行) | Tone.js のみ standalone |
+| 元データ | 9 番組 × 7 GENRE × 物語進行 | Tabasco stems / song tracks + HAZAMA synth song track |
+| エンジン | protected engine.js + genre-flavor.js | Tone.js standalone（engine.js非依存） |
 | 共有 | Tone.js, master mastering 思想 | engine.js も genre-flavor.js も使わない |
 | URL | `/Music/fm.html` | `/Music/band-room.html` |
 | PWA | manifest.webmanifest (Hazama FM) / manifest-mixer.webmanifest | manifest-band-room.webmanifest |
 
-Band Room は engine.js / genre-flavor.js の重 monolith と分離した「軽い jam app」として
+Band Roomはengine.js / genre-flavor.jsのprotected monolithと分離したjam appとして
 独立進化させた。Hazama FM の mastering chain ノウハウ (compressor + EQ3 + limiter
 スペック) は band-room.js master 構築時に再利用。
 
@@ -609,8 +721,7 @@ music-stack の既存配置に重ねたもの。**現状の運用に名前を付
 外部 / 内部 harvest は **AGENTS.md Hard Rule 6（非干渉）** に従う ——
 sidecar → adapter → feature-flagged runtime → 人の試聴/preview → 昇格、の順。
 
-なお `namima-lab` / `test` / `hazama` は archive（external reference / harvest
-candidate）であり、active runtime には含めない。並走する複数 chat（FM 担当 /
-Band Room 担当 等）は **multi-agent harness coordination** の最小例として動いて
-いる ── 共有ファイル（`sw.js` / `docs/BAND-ROOM-CHANGELOG.md`）は commit 前 pull、
-衝突は版番号の大きい方を採用。
+`namima-lab` / `test`はarchive / harvest-only。外部`hazama`はreferenceでありactive repoでは
+ないが、`presets/bands.json`のHAZAMA bandとは別物なので混同しない。並走する複数sessionは
+**multi-agent harness coordination**として動く。共有ファイルは編集直前pull、衝突時は
+rebase後に意味を手動統合して全checkを再実行し、版番号だけで勝者を決めない。

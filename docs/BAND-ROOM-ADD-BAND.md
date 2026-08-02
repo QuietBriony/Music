@@ -40,6 +40,8 @@ CPU 1 曲あたり 2-5 分 (7 曲なら ~20-30 分)。
       "name": "<Band Display Name>",
       "subtitle": "短い説明",
       "scene": "ジャンル / 軸",
+      "playback_modes": ["stems", "synth"],
+      "default_playback_mode": "stems",
       "stems_dir": "presets/<band-id>-stems",
       "drum_frames_pattern": "presets/drum-frames-<band-id>-{songid}.json",
       "lyrics_doc": "docs/<band-id>-lyrics.md",
@@ -55,6 +57,12 @@ CPU 1 曲あたり 2-5 分 (7 曲なら ~20-30 分)。
 song-id は stem 分離スクリプトの sanitize_id 出力と一致させる:
 - `06 Human Fly.m4a` → song-id `human-fly`
 - `01 TABASCO.m4a` → song-id `tabasco`
+
+`playback_modes` を省略すると従来互換で `stems` / `synth` の両方が有効。
+原音を持たない synth-only band は `playback_modes: ["synth"]` と
+`default_playback_mode: "synth"` を宣言する。Band Room は利用不能な mode を無効化し、
+deep-link でも正しい mode を自動選択する。必要なら `playback_mode_note` に画面表示用の
+短い説明を追加する。
 
 ## 4. (オプション) drum-frames JSON 作成
 

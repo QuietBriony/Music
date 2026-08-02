@@ -104,9 +104,33 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `band-room.html`, and `sw.js`. Current repo markers include
   `engine.js?v=fm-118`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-80`, `audio/ai-fills.js?v=fm-71`,
-  `style.css?v=fm-28`, `band-room.css?v=br-87`,
-  `band-room.js?v=br-229`, `audio/audio-safety.js?v=br-67`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v389`.
+  `style.css?v=fm-28`, `band-room.css?v=br-88`,
+  `band-room.js?v=br-230`, `audio/audio-safety.js?v=br-67`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v395`.
+- For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
+  old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
+  confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,
+  while `presets/tabasco-songs.json` is absent from `PRECACHE_URLS`. The network-free
+  `check-tabasco-songs-catalog.mjs` enforces the source-side contract before this browser pass.
+- For v394 sample-cache classification, select one pinned Tonejs/audio family online,
+  reload it once, then confirm the same family can be resolved from the runtime cache.
+  `check-external-dependencies.mjs` statically passes all 21 catalog roots through the
+  exact Service Worker classifier before this browser check.
+- For v393 dependency lock, confirm the online catalog still lists 21 sources, a
+  selected CDN source loads only after user selection, and synth fallback remains
+  available when it fails. This manual pass does not download or execute ACE-Step,
+  Demucs, or Whisper; their revisions and repo-external storage are static-gated by
+  `scripts/check-external-dependencies.mjs`.
+- For v392 playability docs, confirm README exposes the public Listen / HAZAMA /
+  Band Room / Lyric Lab entries and that Manual owns the shortest HAZAMA → START →
+  recovery → Lyric Lab path. Usage should point to that contract, not claim that
+  audio, mobile, car/Bluetooth, or HAZAMA selector promotion passed automatically.
+- For v391 Listen hub, open `listen.html` and confirm the first listening pass
+  points to `band-room.html?band=hazama`, exposes the `?aiLight=1` phone-light
+  comparison and `lyric-lab.html` handoff, and separates the 60–90 second quick
+  pass from the roughly six-minute arc. v299 Funk and v301 Human Fly must read
+  as historical evidence, not the current pass. This is a route/copy check;
+  sound quality, mobile stability, and HAZAMA selector promotion remain BL-041.
 - For v169 Hazama FM melodic director, let FM run for at least 16 bars and
   confirm `window.MusicRuntimeState.melodicDirector` changes key/contour over
   phrases while playback stays smooth.
@@ -122,6 +146,17 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - If Band Room changed in the same PR, also confirm the current `band-room.css`
   / `band-room.js` / `audio/audio-safety.js` markers (see the marker list
   above) and `band-room.html` references match `sw.js`.
+- For v390 Band Room playability, open `band-room.html?band=hazama`. Confirm
+  `🎛 AI 再現` is selected automatically, `📻 原音` is disabled with the
+  synth-only explanation, and START does not enter `playing` if asset prep
+  reports failure. With keyboard focus on a button/link/details summary,
+  Space must retain that control's native action rather than toggle transport.
+  Switch HAZAMA -> Tabasco and confirm Tabasco returns to `📻 原音`; a synth
+  choice made explicitly on Tabasco should still remain intentional.
+  While `WARMING UP` / `PREPARING AI` is visible, band, track, and mode controls
+  should be temporarily disabled. Simulate a denied AudioContext or failed
+  asset fetch and confirm START returns to idle with recovery text; pressing
+  REC or stems-pack in that state must not begin a silent recording.
 - For v168 Band Room saved mix migration, load with old v166 default slider
   values in `band-room.prefs.v1` and confirm only exact old defaults migrate to
   the v168 default mix while custom slider values remain untouched.

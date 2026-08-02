@@ -17,7 +17,8 @@ music-stack を 1 session 進めるための定型手順。Claude / Codex / 人�
 1. `Music/docs/autonomy/STACK-INDEX.md` — repo 構造
 2. `Music/docs/autonomy/SESSION-LEDGER.md` — 最新エントリ（前 session の next / blockers）
 3. `Music/docs/autonomy/BACKLOG.md` — 待ち行列の上位
-4. 触る repo の `AGENTS.md`
+4. `Music/config/autonomy-doc-currency.json` — handoff / architecture / ledgerの事実基準
+5. 触る repo の `AGENTS.md`
 
 ## 2. ベースライン確認（壊れていない所から始める）
 
@@ -44,6 +45,8 @@ BACKLOG から、**この session で完了でき、`human-gate=no` または ga
 - 非 engine の app コード → 実装 → `stack-check` 0 BAD → merge・本番デプロイまで自律実行
   （プロジェクトオーナー指示でデフォルト ON。2026-05-16〜）
 - cache buster を伴う UI 変更は、その repo の `AGENTS.md` の同期 bump 手順に従う
+- currency manifestの監視pathを変えた場合は、対応するcurrent docも同じworktreeで更新する。
+  `check-autonomy-doc-currency.mjs`はdirty sourceだけ、またはdocより新しいcommitted sourceを拒否する
 - engine.js / index.html / style.css は触らない（要・人間）
 
 ## 5. 検証
@@ -83,7 +86,8 @@ music-stack の自律ランを 1 回回して。起点は C:\workspace\music-sta
 5. stack-check で 0 BAD を再確認
 6. BACKLOG と SESSION-LEDGER を更新、commit、人間へ報告
 
-重い R&D は Codex に投げてよい（docs/CODEX-HANDOFF.md）。
+重いR&Dは`docs/CODEX-HANDOFF.md`の現行resource boundaryに従う。GPU / model download /
+executionはmachine capabilityとoperatorの明示許可が揃う時だけで、自動開始しない。
 ```
 
 ## Codex CLI で回す場合

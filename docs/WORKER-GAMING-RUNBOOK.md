@@ -114,7 +114,9 @@ fallbacks, but the preferred path is the repo-external worker root above.
    python -X utf8 scripts/worker-gaming-pipeline.py init
    ```
 
-2. Install GPU Python packages in a venv, not the global Python:
+2. Install GPU Python packages in a venv, not the global Python. The checked baseline is
+   recorded in [`config/external-dependencies.json`](../config/external-dependencies.json);
+   do not implicitly upgrade it during a repository task:
 
    ```powershell
    python -m venv C:\workspace\music-stack-worker\.venv
@@ -122,18 +124,20 @@ fallbacks, but the preferred path is the repo-external worker root above.
    python -m pip install --upgrade pip
    ```
 
-3. Use the official PyTorch selector for the current Windows CUDA pip command:
-   <https://pytorch.org/get-started/locally/>. Verify before running heavy jobs:
+3. Use the official PyTorch selector only when intentionally rebuilding the environment.
+   The measured WorkerPC baseline is `torch==2.11.0+cu128` and
+   `torchaudio==2.11.0+cu128`; the matching wheel URL/hash still needs capture in the
+   dependency manifest. Verify before running heavy jobs:
 
    ```powershell
    python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
    ```
 
-4. Install worker audio packages. For Demucs details, use the upstream project:
-   <https://github.com/facebookresearch/demucs>.
+4. Install the locked worker audio baseline. For Demucs details, use the archived upstream
+   project snapshot linked from the dependency manifest.
 
    ```powershell
-   python -m pip install demucs librosa soundfile imageio-ffmpeg scipy numpy
+   python -m pip install "demucs==4.0.1" "librosa==0.11.0" "soundfile==0.13.1" "imageio-ffmpeg==0.6.0" "scipy==1.17.1" "numpy==2.4.6" "requests==2.34.2"
    ```
 
 5. Confirm:
@@ -142,6 +146,12 @@ fallbacks, but the preferred path is the repo-external worker root above.
    python -X utf8 scripts/worker-gaming-pipeline.py check-env
    node scripts/stack-check.mjs
    ```
+
+Model weights are a separate lane. `htdemucs`, local Whisper, and ACE-Step remain under
+`C:\workspace\music-stack-worker\models\...`, never in `Music`; their download is
+`deny_unless_explicit` and requires the `worker.gpu` machine capability. A normal repo check,
+docs edit, or `check-env` must not fetch or initialize them. In particular, do not run the
+model commands while another GPU workload is active.
 
 ## Standard Jobs
 

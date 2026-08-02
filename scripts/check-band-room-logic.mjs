@@ -4,6 +4,7 @@ import vm from "node:vm";
 
 const source = readFileSync("band-room.js", "utf8");
 const html = readFileSync("band-room.html", "utf8");
+const css = readFileSync("band-room.css", "utf8");
 const sw = readFileSync("sw.js", "utf8");
 const changelog = readFileSync("docs/BAND-ROOM-CHANGELOG.md", "utf8");
 const bandRoomManifest = JSON.parse(readFileSync("manifest-band-room.webmanifest", "utf8"));
@@ -79,8 +80,139 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-229-arp-unthin", "Band Room should expose the current app version (v388 arp un-thin / single-saw budget)");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-230-playability-entry", "Band Room should expose the current playability-entry app version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
+const playbackModesForBand = windowMock.BandRoomTestHooks?.playbackModesForBand;
+const bandSupportsPlaybackMode = windowMock.BandRoomTestHooks?.bandSupportsPlaybackMode;
+const preferredPlaybackModeForBand = windowMock.BandRoomTestHooks?.preferredPlaybackModeForBand;
+const resolveBandPlaybackMode = windowMock.BandRoomTestHooks?.resolveBandPlaybackMode;
+const playbackStartContractMatches = windowMock.BandRoomTestHooks?.playbackStartContractMatches;
+const tonePlaybackContextReady = windowMock.BandRoomTestHooks?.tonePlaybackContextReady;
+const playbackSelectionTransitionInFlight = windowMock.BandRoomTestHooks?.playbackSelectionTransitionInFlight;
+const songSwitchBusyReason = windowMock.BandRoomTestHooks?.songSwitchBusyReason;
+const guardBackgroundBridgePlay = windowMock.BandRoomTestHooks?.guardBackgroundBridgePlay;
+const backgroundBridgeStaleAttemptShouldPause = windowMock.BandRoomTestHooks?.backgroundBridgeStaleAttemptShouldPause;
+const backgroundBridgeSingleFlightDecision = windowMock.BandRoomTestHooks?.backgroundBridgeSingleFlightDecision;
+const keyboardShortcutTargetIsInteractive = windowMock.BandRoomTestHooks?.keyboardShortcutTargetIsInteractive;
+assert.equal(typeof playbackModesForBand, "function", "Band playback capabilities should be exposed for contract tests");
+assert.equal(typeof bandSupportsPlaybackMode, "function", "Band playback capability checks should be exposed");
+assert.equal(typeof preferredPlaybackModeForBand, "function", "Band default playback selection should be exposed");
+assert.equal(typeof resolveBandPlaybackMode, "function", "Band mode transitions should be exposed for round-trip tests");
+assert.equal(typeof playbackStartContractMatches, "function", "START selection snapshots should be exposed for race tests");
+assert.equal(typeof tonePlaybackContextReady, "function", "AudioContext readiness should be exposed for fail-closed tests");
+assert.equal(typeof playbackSelectionTransitionInFlight, "function", "Selection-transition readiness should be exposed for START race tests");
+assert.equal(typeof songSwitchBusyReason, "function", "Song-switch ownership should be exposed for cross-transition tests");
+assert.equal(typeof guardBackgroundBridgePlay, "function", "Bridge attempt generation guard should be exposed for late-resolution tests");
+assert.equal(typeof backgroundBridgeStaleAttemptShouldPause, "function", "Bridge audio ownership should be exposed for stale-owner tests");
+assert.equal(typeof backgroundBridgeSingleFlightDecision, "function", "Bridge single-flight policy should be exposed for overlap tests");
+assert.equal(typeof keyboardShortcutTargetIsInteractive, "function", "Global shortcut target guard should be exposed");
+const hazamaBand = bandsRegistry.bands?.hazama;
+assert.deepEqual(Array.from(playbackModesForBand(hazamaBand)), ["synth"], "HAZAMA should declare synth-only playback");
+assert.equal(preferredPlaybackModeForBand(hazamaBand, "stems"), "synth", "HAZAMA deep links should leave the silent stems default");
+assert.equal(bandSupportsPlaybackMode(hazamaBand, "stems"), false, "HAZAMA should disable unavailable original stems");
+assert.equal(bandSupportsPlaybackMode(hazamaBand, "synth"), true, "HAZAMA should keep AI recreation available");
+assert.deepEqual(Array.from(playbackModesForBand(bandsRegistry.bands?.tabasco)), ["stems", "synth"], "Bands without an explicit capability list should keep both legacy modes");
+assert.equal(preferredPlaybackModeForBand(bandsRegistry.bands?.tabasco, "stems"), "stems", "Tabasco should preserve the original-stems entry");
+const hazamaEntry = resolveBandPlaybackMode(hazamaBand, "hazama", "stems", null);
+assert.deepEqual(
+  { mode: hazamaEntry.mode, forcedByBandId: hazamaEntry.forcedByBandId },
+  { mode: "synth", forcedByBandId: "hazama" },
+  "Tabasco stems -> HAZAMA should force the only playable synth mode"
+);
+const tabascoReturn = resolveBandPlaybackMode(bandsRegistry.bands?.tabasco, "tabasco", hazamaEntry.mode, hazamaEntry.forcedByBandId);
+assert.deepEqual(
+  { mode: tabascoReturn.mode, forcedByBandId: tabascoReturn.forcedByBandId },
+  { mode: "stems", forcedByBandId: null },
+  "HAZAMA -> Tabasco should return to Tabasco's original-stems entry rather than leak the forced synth mode"
+);
+const intentionalTabascoSynth = resolveBandPlaybackMode(bandsRegistry.bands?.tabasco, "tabasco", "synth", null);
+assert.equal(intentionalTabascoSynth.mode, "synth", "A user-selected supported Tabasco synth mode should remain intentional");
+const startContract = {
+  stopSeq: 3,
+  songSwitchSeq: 4,
+  modeSwitchSeq: 5,
+  bandId: "tabasco",
+  songId: "hey",
+  mode: "stems"
+};
+assert.equal(playbackStartContractMatches(startContract, { ...startContract }), true, "Unchanged START selection snapshot should remain valid");
+for (const [field, value] of [["stopSeq", 4], ["songSwitchSeq", 6], ["modeSwitchSeq", 7], ["bandId", "hazama"], ["songId", "yoru"], ["mode", "synth"]]) {
+  assert.equal(
+    playbackStartContractMatches(startContract, { ...startContract, [field]: value }),
+    false,
+    `START should abort when ${field} changes during async preparation`
+  );
+}
+windowMock.Tone.context = { state: "suspended" };
+assert.equal(tonePlaybackContextReady(), false, "A suspended AudioContext must fail closed before playback UI enters playing");
+windowMock.Tone.context.state = "running";
+assert.equal(tonePlaybackContextReady(), true, "A running AudioContext should pass the START readiness gate");
+delete windowMock.Tone.context;
+assert.equal(tonePlaybackContextReady(), false, "A missing AudioContext must fail closed");
+assert.equal(playbackSelectionTransitionInFlight(["playback-start"]), false, "START's own selector lock should not invalidate its snapshot");
+assert.equal(playbackSelectionTransitionInFlight(["song-switch"]), true, "A song load in flight must block START");
+assert.equal(playbackSelectionTransitionInFlight(["mode-switch"]), true, "A mode preparation in flight must block START");
+assert.equal(playbackSelectionTransitionInFlight(["band-switch:9"]), true, "A band load in flight must block START");
+const staleSongBusyReason = songSwitchBusyReason(8);
+const newerBandBusyReason = "band-switch:9";
+assert.notEqual(staleSongBusyReason, songSwitchBusyReason(10), "Concurrent song switches must have independent busy ownership");
+const crossedSelectionReasons = new Set([staleSongBusyReason, newerBandBusyReason]);
+crossedSelectionReasons.delete(staleSongBusyReason);
+assert.equal(playbackSelectionTransitionInFlight(crossedSelectionReasons), true, "Releasing a stale song load must preserve the newer band lock");
+crossedSelectionReasons.delete(newerBandBusyReason);
+assert.equal(playbackSelectionTransitionInFlight(crossedSelectionReasons), false, "Song-to-band cancellation must leave no orphaned selector lock");
+let resolveLateBridge;
+let lateBridgeCurrent = true;
+let lateBridgePauseCount = 0;
+const lateBridgePlay = new Promise((resolve) => { resolveLateBridge = resolve; });
+const guardedLateBridge = guardBackgroundBridgePlay(
+  lateBridgePlay,
+  { pause() { lateBridgePauseCount++; } },
+  () => lateBridgeCurrent
+);
+lateBridgeCurrent = false;
+resolveLateBridge();
+await assert.rejects(guardedLateBridge, /stale background audio bridge attempt/, "A timed-out bridge must reject a later play resolution");
+assert.equal(lateBridgePauseCount, 1, "A timed-out bridge must pause if its original play promise resolves late");
+assert.equal(backgroundBridgeStaleAttemptShouldPause(1, 1, "failed"), true, "A stale attempt may clean up audio when no newer owner exists");
+assert.equal(backgroundBridgeStaleAttemptShouldPause(1, 3, "pending"), false, "A stale attempt must not pause audio claimed by a newer pending attempt");
+assert.equal(backgroundBridgeStaleAttemptShouldPause(1, 3, "active"), false, "A stale attempt must not pause audio claimed by a newer active attempt");
+assert.equal(backgroundBridgeStaleAttemptShouldPause(1, 3, "failed"), true, "A stale attempt may clean up audio after the newer owner fails");
+let resolveOldBridge;
+let sharedBridgePauseCount = 0;
+let oldBridgeCurrent = true;
+let sharedController = { seq: 1, state: "pending" };
+const oldBridgePlay = new Promise((resolve) => { resolveOldBridge = resolve; });
+const guardedOldBridge = guardBackgroundBridgePlay(
+  oldBridgePlay,
+  { pause() { sharedBridgePauseCount++; } },
+  () => oldBridgeCurrent,
+  () => backgroundBridgeStaleAttemptShouldPause(1, sharedController.seq, sharedController.state)
+);
+oldBridgeCurrent = false;
+sharedController = { seq: 3, state: "active" };
+resolveOldBridge();
+await assert.rejects(guardedOldBridge, /stale background audio bridge attempt/, "An old bridge should still reject after a newer owner takes over");
+assert.equal(sharedBridgePauseCount, 0, "An old late play resolution must not pause the shared audio owned by a newer bridge");
+assert.equal(backgroundBridgeSingleFlightDecision(false, 0, 0), "start", "No active bridge attempt should start immediately");
+assert.equal(backgroundBridgeSingleFlightDecision(true, 7, 7), "share", "Duplicate lifecycle events should share the current bridge attempt");
+assert.equal(backgroundBridgeSingleFlightDecision(true, 7, 8), "queue", "A rearm after stop should wait for the stale attempt before starting a new owner");
+assert.equal(keyboardShortcutTargetIsInteractive({ tagName: "BUTTON" }), true, "Space on a focused button must keep native activation");
+assert.equal(keyboardShortcutTargetIsInteractive({ tagName: "A" }), true, "Links must not be hijacked by global transport shortcuts");
+assert.equal(keyboardShortcutTargetIsInteractive({ tagName: "DIV", isContentEditable: true }), true, "Contenteditable surfaces must keep text-entry keyboard behavior");
+assert.equal(keyboardShortcutTargetIsInteractive({ tagName: "DIV", closest: () => ({}) }), true, "Nested elements inside interactive controls must be guarded");
+assert.equal(keyboardShortcutTargetIsInteractive({ tagName: "DIV", closest: () => null }), false, "Non-interactive page background should retain global shortcuts");
+let guardedShortcutSelector = "";
+keyboardShortcutTargetIsInteractive({
+  tagName: "SPAN",
+  closest(selector) {
+    guardedShortcutSelector = selector;
+    return null;
+  }
+});
+assert.match(guardedShortcutSelector, /button/, "Shortcut guard should inspect nested button content");
+assert.match(guardedShortcutSelector, /(?:^|,\s*)a(?:,|$)/, "Shortcut guard should inspect nested links");
+assert.match(guardedShortcutSelector, /summary/, "Shortcut guard should inspect disclosure summaries");
 const migratedMixPrefs = migratePrefsForCurrentMix({
   sliders: {
     "br-vol-stem-drums": "92",
@@ -133,14 +265,14 @@ assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor
 assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
-assert.match(html, /band-room\.css\?v=br-87/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-229/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.css\?v=br-88/, "Band Room HTML should reference the current CSS cache marker");
+assert.match(html, /band-room\.js\?v=br-230/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
-assert.match(sw, /band-room\.css\?v=br-87/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-229/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.css\?v=br-88/, "Service worker should precache the current Band Room CSS marker");
+assert.match(sw, /band-room\.js\?v=br-230/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
@@ -228,9 +360,72 @@ assert.match(source, /bandIds\.length === 1[\s\S]*br-album-plaque/, "Single-band
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/core\.js/, "Band Room should lazy-load Magenta only when AI fill is used");
 assert.doesNotMatch(html, /@magenta\/music@1\.23\.1\/es6\/music_rnn\.js/, "Band Room should lazy-load Magenta RNN only when AI fill is used");
 assert.doesNotMatch(html, /@tonejs\/midi@2\.0\.28\/build\/Midi\.min\.js/, "Band Room should lazy-load @tonejs/midi only when MIDI import is used");
+const sourceSection = (startMarker, endMarker, maxLength = 12000) => {
+  const start = source.indexOf(startMarker);
+  assert.ok(start >= 0, `Expected source marker: ${startMarker}`);
+  const end = source.indexOf(endMarker, start + startMarker.length);
+  assert.ok(end > start, `Expected source boundary after ${startMarker}: ${endMarker}`);
+  return source.slice(start, Math.min(end, start + maxLength));
+};
+const startPlaybackSource = sourceSection("async function startPlayback(opts = {})", "async function startPlaybackBoot(opts = {})");
+const startPlaybackBootSource = sourceSection("async function startPlaybackBoot(opts = {})", "function tonePlaybackContextReady()");
+const playbackContractSource = sourceSection("function applyBandPlaybackModeContract()", "// v213: per-band / per-song kit profile");
+const selectBandSource = sourceSection("async function selectBand(bandId)", "// v99: render the per-voice override grid");
+const switchToSongSource = sourceSection("async function switchToSong(songId, options = {})", "async function selectAdjacentSong(delta)");
+const switchPlaybackModeSource = sourceSection("async function switchPlaybackMode(newMode)", "function removeBandRoomAudioState(reason = \"reset\")");
+const bindUiSource = sourceSection("function bindUI()", "// ---- Band registry loader", 100000);
+const bridgeSingleFlightSource = sourceSection("function startBackgroundAudioBridge(options = {})", "async function startBackgroundAudioBridgeAttempt(options = {})");
+const bridgeStartSource = sourceSection("async function startBackgroundAudioBridgeAttempt(options = {})", "function stopBackgroundAudioBridge()");
+const domBootStart = source.indexOf('window.addEventListener("DOMContentLoaded", async () => {');
+assert.ok(domBootStart >= 0, "Band Room DOM boot listener should exist");
+const domBootSource = source.slice(domBootStart, domBootStart + 10000);
 assert.match(source, /async function preparePlaybackAssetsForCurrentMode\(/, "START should delegate to mode-specific asset preparation");
 assert.match(source, /async function prepareSynthPlaybackAssets\(/, "AI playback assets should have a dedicated lazy prep path");
 assert.match(source, /async function prepareStemPlaybackAssets\(/, "Original stems should have a dedicated prep path");
+assert.match(startPlaybackBootSource, /const playbackReady = await preparePlaybackAssetsForCurrentMode\("start"\)/, "START should retain the mode-specific preparation result");
+assert.match(startPlaybackBootSource, /if \(!playbackReady\) \{[\s\S]{0,900}abortPlaybackStart\("assets-unavailable"\)[\s\S]{0,900}return false;/, "Failed asset preparation must not advance the UI into a silent playing state");
+assert.match(startPlaybackBootSource, /await Tone\.start\(\)[\s\S]{0,500}catch \(e\) \{[\s\S]{0,500}abortPlaybackStart\("tone-start-failed"\)[\s\S]{0,500}return false;/, "Tone.start rejection must fail closed instead of reporting silent playback");
+assert.match(startPlaybackBootSource, /tonePlaybackContextReady\(\)[\s\S]{0,500}abortPlaybackStart\("tone-context-suspended"\)/, "A non-running AudioContext must fail closed");
+assert.equal((startPlaybackBootSource.match(/tonePlaybackContextReady\(\)/g) || []).length, 2, "AudioContext should be checked after Tone.start and again after async asset/bridge preparation");
+assert.match(startPlaybackBootSource, /playbackStartStillAllowed\(opts\.startContract\)/, "START should revalidate its band/song/mode snapshot after async preparation");
+assert.match(startPlaybackBootSource, /state\.started = true;[\s\S]{0,1200}return true;/, "START should return success only after the playing state is committed");
+assert.match(startPlaybackSource, /setPlaybackStartSelectionBusy\(true\)/, "START should lock band, track, and mode selectors while preparing");
+assert.match(startPlaybackSource, /playbackSelectionTransitionInFlight\(\)[\s\S]{0,500}return false;/, "START should refuse stale song data while a song or mode transition is already active");
+assert.match(startPlaybackSource, /finally \{[\s\S]{0,300}setPlaybackStartSelectionBusy\(false\)/, "START should always release its selector busy state");
+assert.match(domBootSource, /applyBandPlaybackModeContract\(\);[\s\S]{0,1200}await loadSong\(state\.currentSongId\)/, "Boot should apply each band's playback contract before preparing its first song");
+assert.match(playbackContractSource, /radio\.disabled = !supported/, "HAZAMA deep-link boot should disable unsupported stems controls");
+assert.match(source, /if \(!bandSupportsPlaybackMode\(currentBand\(\), newMode\)\)/, "Mode switching should reject playback modes a band does not provide");
+assert.match(selectBandSource, /state\.currentBandId = previous\.bandId;[\s\S]{0,900}state\.songData = previous\.songData;/, "Failed band loads should restore the previous playable selection atomically");
+assert.match(selectBandSource, /updateMediaSession\("paused"\)/, "Failed band loads should leave OS playback state paused");
+assert.match(selectBandSource, /const busyReason = `band-switch:\$\{switchSeq\}`[\s\S]{0,500}setTrackSelectorBusy\(true, "loading band\.\.\.", busyReason\)/, "Band loads should own an independent busy reason that blocks START");
+assert.match(selectBandSource, /setBandAndModeSelectionBusy\(false, busyReason\)[\s\S]{0,300}const restarted = await startPlayback/, "Completed band loads should hand selector ownership to START before resuming");
+assert.match(selectBandSource, /const restarted = await startPlayback\(\)[\s\S]{0,500}if \(!restarted\)[\s\S]{0,500}updateMediaSession\("paused"\)/, "A band that loads but cannot resume should leave MediaSession paused");
+assert.match(switchToSongSource, /const busyReason = songSwitchBusyReason\(switchSeq\)[\s\S]{0,300}setTrackSelectorBusy\(true, "loading track\.\.\.", busyReason\)/, "Each song load should own a sequence-specific selector reason");
+assert.match(switchToSongSource, /setTrackSelectorBusy\(false, "", busyReason\)[\s\S]{0,500}const restarted = await startPlayback/, "Completed song loads should hand selector ownership to START before resuming");
+assert.match(switchToSongSource, /finally \{\s*setTrackSelectorBusy\(false, "", busyReason\);\s*\}/, "A cancelled stale song load should always release only its own selector reason");
+assert.match(switchPlaybackModeSource, /playbackModeSwitchInFlight = true[\s\S]{0,500}setTrackSelectorBusy\(true, busyText, "mode-switch"\)/, "Mode preparation should own an independent busy reason and reject rapid competing switches");
+assert.doesNotMatch(bindUiSource, /startPlayback\(\)\.then\(\(\) => start(?:Recording|StemsPack)\(\)\)/, "Recording must not start after a failed playback promise");
+assert.match(bindUiSource, /await runAfterPlaybackStarts\(startRecording\)/, "Master recording should require confirmed playback success");
+assert.match(bindUiSource, /await runAfterPlaybackStarts\(startStemsPack\)/, "Stem recording should require confirmed playback success");
+assert.match(bridgeStartSource, /await waitForBackgroundBridgePlay\(guardedResult\)/, "An optional media bridge must not leave START pending forever");
+assert.match(bridgeStartSource, /guardBackgroundBridgePlay\([\s\S]{0,500}attemptSeq === backgroundBridgeAttemptSeq/, "Bridge play should be guarded by an attempt generation");
+assert.match(bridgeStartSource, /backgroundBridgeStaleAttemptShouldPause\(\s*attemptSeq,\s*backgroundBridgeControllerSeq,\s*backgroundBridgeControllerState\s*\)/, "A stale bridge should respect the newer shared-audio owner");
+assert.match(bridgeStartSource, /backgroundBridgeAttemptSeq\+\+[\s\S]{0,300}audio\.pause\(\)/, "Bridge timeout/error should invalidate the attempt and pause the hidden audio element");
+assert.match(bridgeSingleFlightSource, /decision === "share"[\s\S]{0,300}return backgroundBridgeStartPromise/, "Overlapping bridge lifecycle events should share one current attempt");
+assert.match(bridgeSingleFlightSource, /decision === "queue"[\s\S]{0,500}pending\.then/, "A stopped stale bridge should settle before a replacement attempt starts");
+assert.match(html, /id="br-mode-status"[^>]*role="status"[^>]*aria-live="polite"/, "Band-specific playback limitations should be announced next to the mode controls");
+assert.match(html, /id="br-start-status"[^>]*role="alert"[^>]*aria-live="assertive"[^>]*aria-atomic="true"/, "START failures should use an atomic actionable alert");
+assert.match(html, /id="br-mode"[^>]*aria-describedby="br-mode-status"/, "The playback-mode group should reference its capability explanation");
+assert.match(html, /id="br-play"[^>]*aria-describedby="br-start-status"/, "START should reference its live recovery message");
+assert.match(source, /e\.key !== "Escape" && keyboardShortcutTargetIsInteractive\(e\.target\)/, "Global shortcuts should preserve native keyboard behavior on interactive targets");
+assert.match(source, /function openHelpOverlay\([\s\S]*close\.focus/, "Opening help should move focus into the modal dialog");
+assert.match(source, /function closeHelpOverlay\([\s\S]*helpReturnFocus[\s\S]*target\.focus/, "Closing help should restore focus to the opener");
+assert.match(source, /previousTarget !== document\.body[\s\S]{0,300}previousTarget\.isConnected !== false/, "Help close should fall back to its toggle when body or a detached opener cannot receive focus");
+assert.match(source, /function trapHelpOverlayFocus\(/, "The modal help dialog should keep Tab focus inside while open");
+assert.match(css, /#br-main input\[type="range"\]:focus-visible,[\s\S]*outline:\s*2px solid var\(--accent-glass\)/, "Custom Band Room ranges should retain a visible keyboard focus indicator");
+assert.doesNotMatch(css, /#br-mode label\.br-radio input\[type="radio"\]\s*\{[^}]*display:\s*none/, "Playback-mode radios must remain keyboard reachable");
+assert.match(css, /#br-mode label\.br-radio:focus-within\s*\{[^}]*outline:\s*2px solid var\(--accent-glass\)/, "Playback-mode pills should show a keyboard focus indicator");
+assert.match(source, /el\.hidden = false;[\s\S]{0,300}el\.textContent = text;/, "START alerts should be made observable before their message mutates");
 assert.match(source, /function stemMasteringGainForSong\(songId, stem\)/, "Original stems should support per-song album mastering trims");
 assert.match(source, /new Tone\.Gain\(stemMasteringGainForSong\(songId, stem\)\)\.connect\(target\)/, "Stem players should route through the per-song mastering gain before EQ");
 assert.match(source, /stemPlayerGains/, "Per-song stem mastering gain nodes should be retained for disposal");
@@ -663,17 +858,243 @@ const escapeLyricTitle = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 });
 assert.doesNotMatch(finalLyrics, /v2\.1|v3|draft|cut-up|候補|template/i, "Final lyrics should not surface draft/candidate language");
 
-// v306: karaoke timed-lyrics — line-level follow in 原音 (stems) mode.
-assert.ok(existsSync("docs/tabasco-lyrics-timed.json"), "Karaoke timed-lyrics data file should exist");
-const timedLyrics = JSON.parse(readFileSync("docs/tabasco-lyrics-timed.json", "utf8"));
-assert.ok(timedLyrics.songs && Object.keys(timedLyrics.songs).length >= 4, "Timed lyrics should cover the real-vocal songs (4+)");
-for (const [sid, lines] of Object.entries(timedLyrics.songs)) {
-  assert.ok(Array.isArray(lines) && lines.length >= 5, `Timed lyrics for ${sid} should carry several lines`);
-  assert.ok(lines.every((l) => typeof l.t === "number" && typeof l.x === "string" && l.x.trim()), `Timed lyrics for ${sid} should be non-empty {t,x} entries`);
-  for (let i = 1; i < lines.length; i++) {
-    assert.ok(lines[i].t >= lines[i - 1].t, `Timed lyrics for ${sid} must be time-ordered for the karaoke binary search`);
+// v306 / BL-042: karaoke timed-lyrics and the emergency Tabasco registry mirror.
+const TIMED_LYRIC_SONG_IDS = Object.freeze([
+  "hey",
+  "i-got-a-feeling",
+  "under-the-moon",
+  "human-fly",
+  "sister"
+]);
+
+function tabascoFallbackProjection(registry) {
+  const tabasco = registry?.bands?.tabasco;
+  return {
+    stems_dir: tabasco?.stems_dir,
+    drum_frames_pattern: tabasco?.drum_frames_pattern,
+    lyrics_doc: tabasco?.lyrics_doc,
+    songs: Array.from(tabasco?.songs || [], (song) => ({
+      id: song?.id,
+      track: song?.track,
+      title: song?.title
+    }))
+  };
+}
+
+function assertTabascoFallbackParity(fallbackRegistry, canonicalRegistry) {
+  assert.deepEqual(
+    Object.keys(fallbackRegistry?.bands || {}),
+    ["tabasco"],
+    "Band Room emergency fallback must expose exactly the Tabasco band"
+  );
+  assert.deepEqual(
+    tabascoFallbackProjection(fallbackRegistry),
+    tabascoFallbackProjection(canonicalRegistry),
+    "Band Room emergency fallback paths and ordered song identity must match presets/bands.json"
+  );
+}
+
+function assertTimedLyricsContract(data, canonicalRegistry) {
+  const songs = data?.songs;
+  assert.ok(songs && typeof songs === "object" && !Array.isArray(songs), "Timed lyrics songs must be an object");
+  assert.deepEqual(
+    Object.keys(songs).sort(),
+    [...TIMED_LYRIC_SONG_IDS].sort(),
+    "Timed lyrics song ID set must match the five ASR-backed vocal songs"
+  );
+  const catalogById = new Map(
+    Array.from(canonicalRegistry?.bands?.tabasco?.songs || [], (song) => [song.id, song])
+  );
+  for (const songId of TIMED_LYRIC_SONG_IDS) {
+    const catalog = catalogById.get(songId);
+    assert.ok(catalog, `Timed lyrics song ${songId} must exist in the Tabasco registry`);
+    const duration = Number(catalog.duration_s);
+    assert.ok(Number.isFinite(duration) && duration > 0, `Timed lyrics song ${songId} needs a finite positive catalog duration`);
+    const lines = songs[songId];
+    assert.ok(Array.isArray(lines) && lines.length >= 5, `Timed lyrics for ${songId} should carry several lines`);
+    for (let index = 0; index < lines.length; index += 1) {
+      const line = lines[index];
+      assert.ok(
+        typeof line?.t === "number" && Number.isFinite(line.t),
+        `Timed lyrics for ${songId} line ${index} must have a finite numeric timestamp`
+      );
+      assert.ok(line.t >= 0, `Timed lyrics for ${songId} line ${index} must have a non-negative timestamp`);
+      assert.ok(
+        line.t <= duration,
+        `Timed lyrics for ${songId} line ${index} must stay within catalog duration ${duration}s`
+      );
+      assert.ok(
+        typeof line?.x === "string" && line.x.trim(),
+        `Timed lyrics for ${songId} line ${index} must have non-empty text`
+      );
+      if (index > 0) {
+        assert.ok(
+          line.t > lines[index - 1].t,
+          `Timed lyrics for ${songId} must have strictly increasing timestamps`
+        );
+      }
+    }
   }
 }
+
+function cloneJson(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function expectFallbackContractFailure(label, fallbackRegistry, mutate, pattern) {
+  const fixture = cloneJson(fallbackRegistry);
+  mutate(fixture);
+  assert.throws(
+    () => assertTabascoFallbackParity(fixture, bandsRegistry),
+    pattern,
+    `Fallback validator must reject ${label}`
+  );
+}
+
+function expectTimedLyricsContractFailure(label, timedLyrics, mutate, pattern) {
+  const fixture = structuredClone(timedLyrics);
+  mutate(fixture);
+  assert.throws(
+    () => assertTimedLyricsContract(fixture, bandsRegistry),
+    pattern,
+    `Timed lyrics validator must reject ${label}`
+  );
+}
+
+assert.ok(existsSync("docs/tabasco-lyrics-timed.json"), "Karaoke timed-lyrics data file should exist");
+const timedLyrics = JSON.parse(readFileSync("docs/tabasco-lyrics-timed.json", "utf8"));
+const authorityHookAnchor = "\n  function hiddenBandsUnlocked() {";
+assert.equal(
+  source.split(authorityHookAnchor).length - 1,
+  1,
+  "Band Room authority test hook anchor must remain unique"
+);
+const authoritySource = source.replace(
+  authorityHookAnchor,
+  "\n  window.__BandRoomAuthorityContract = Object.freeze({ " +
+    "loadBandsRegistry, ensureTimedLyricsLoaded, timedLinesForSong " +
+    "});" + authorityHookAnchor
+);
+const authorityFetchPaths = [];
+const authorityFetch = async (url) => {
+  const path = String(url || "").replace(/[?#].*$/, "");
+  authorityFetchPaths.push(path);
+  if (path === "presets/bands.json") {
+    return { ok: false, status: 503, async json() { return null; } };
+  }
+  if (path === "docs/tabasco-lyrics-timed.json") {
+    return { ok: true, status: 200, async json() { return structuredClone(timedLyrics); } };
+  }
+  throw new Error(`Unexpected Band Room authority fetch: ${path}`);
+};
+const authorityDocument = {
+  addEventListener() {},
+  body: inertElement(),
+  createElement() { return inertElement(); },
+  documentElement: inertElement(),
+  getElementById() { return null; },
+  querySelector() { return null; },
+  querySelectorAll() { return []; }
+};
+const authorityWindow = {
+  addEventListener() {},
+  dispatchEvent() {},
+  document: authorityDocument,
+  localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
+  navigator: {},
+  Tone: {}
+};
+const authoritySandbox = {
+  clearInterval() {},
+  clearTimeout() {},
+  console: { log() {}, warn() {}, error() {} },
+  document: authorityDocument,
+  fetch: authorityFetch,
+  localStorage: authorityWindow.localStorage,
+  navigator: authorityWindow.navigator,
+  requestAnimationFrame() { return 0; },
+  cancelAnimationFrame() {},
+  setInterval() { return 0; },
+  setTimeout() { return 0; },
+  window: authorityWindow
+};
+authoritySandbox.globalThis = authoritySandbox;
+vm.runInNewContext(authoritySource, authoritySandbox, {
+  filename: "band-room.authority-contract.js",
+  timeout: 1000,
+  contextCodeGeneration: { strings: false, wasm: false }
+});
+const authorityHooks = authorityWindow.__BandRoomAuthorityContract;
+assert.ok(authorityHooks, "Band Room authority hooks should be injected in memory");
+const fallbackRegistry = await authorityHooks.loadBandsRegistry();
+assertTabascoFallbackParity(fallbackRegistry, bandsRegistry);
+const loadedTimedLyrics = await authorityHooks.ensureTimedLyricsLoaded();
+assertTimedLyricsContract(loadedTimedLyrics, bandsRegistry);
+assert.deepEqual(
+  authorityFetchPaths,
+  ["presets/bands.json", "docs/tabasco-lyrics-timed.json"],
+  "Band Room authority exercise must fetch only the registry and timed lyrics paths"
+);
+for (const songId of TIMED_LYRIC_SONG_IDS) {
+  assert.deepEqual(
+    cloneJson(authorityHooks.timedLinesForSong(songId)),
+    timedLyrics.songs[songId],
+    `Band Room timed lookup should expose ${songId}`
+  );
+}
+for (const songId of ["tabasco", "electric-sheep"]) {
+  assert.equal(authorityHooks.timedLinesForSong(songId), null, `Band Room timed lookup should leave ${songId} on fallback lyrics`);
+}
+
+expectFallbackContractFailure("a differently-cased band key", fallbackRegistry, (fixture) => {
+  fixture.bands.Tabasco = fixture.bands.tabasco;
+  delete fixture.bands.tabasco;
+}, /exactly the Tabasco band/);
+expectFallbackContractFailure("a song ID drift", fallbackRegistry, (fixture) => {
+  fixture.bands.tabasco.songs[0].id = "tabasco-drift";
+}, /ordered song identity/);
+expectFallbackContractFailure("song reordering", fallbackRegistry, (fixture) => {
+  [fixture.bands.tabasco.songs[0], fixture.bands.tabasco.songs[1]] =
+    [fixture.bands.tabasco.songs[1], fixture.bands.tabasco.songs[0]];
+}, /ordered song identity/);
+expectFallbackContractFailure("track formatting drift", fallbackRegistry, (fixture) => {
+  fixture.bands.tabasco.songs[0].track = "1";
+}, /ordered song identity/);
+expectFallbackContractFailure("title case drift", fallbackRegistry, (fixture) => {
+  fixture.bands.tabasco.songs[0].title = "Tabasco";
+}, /ordered song identity/);
+for (const field of ["stems_dir", "drum_frames_pattern", "lyrics_doc"]) {
+  expectFallbackContractFailure(`${field} path drift`, fallbackRegistry, (fixture) => {
+    fixture.bands.tabasco[field] += ".drift";
+  }, /paths and ordered song identity/);
+}
+
+expectTimedLyricsContractFailure("a missing song ID", timedLyrics, (fixture) => {
+  delete fixture.songs.hey;
+}, /song ID set/);
+expectTimedLyricsContractFailure("an excluded extra song ID", timedLyrics, (fixture) => {
+  fixture.songs["electric-sheep"] = structuredClone(fixture.songs.hey);
+}, /song ID set/);
+for (const badTimestamp of ["63.88", Number.NaN, Number.POSITIVE_INFINITY]) {
+  expectTimedLyricsContractFailure(`timestamp ${String(badTimestamp)}`, timedLyrics, (fixture) => {
+    fixture.songs.hey[0].t = badTimestamp;
+  }, /finite numeric timestamp/);
+}
+expectTimedLyricsContractFailure("a negative timestamp", timedLyrics, (fixture) => {
+  fixture.songs.hey[0].t = -0.01;
+}, /non-negative timestamp/);
+expectTimedLyricsContractFailure("a descending timestamp", timedLyrics, (fixture) => {
+  fixture.songs.hey[1].t = fixture.songs.hey[0].t - 0.01;
+}, /strictly increasing timestamps/);
+expectTimedLyricsContractFailure("a duplicate timestamp", timedLyrics, (fixture) => {
+  fixture.songs.hey[1].t = fixture.songs.hey[0].t;
+}, /strictly increasing timestamps/);
+expectTimedLyricsContractFailure("a timestamp beyond catalog duration", timedLyrics, (fixture) => {
+  fixture.songs.hey.at(-1).t = bandsRegistry.bands.tabasco.songs.find((song) => song.id === "hey").duration_s + 0.01;
+}, /within catalog duration/);
+expectTimedLyricsContractFailure("blank lyric text", timedLyrics, (fixture) => {
+  fixture.songs.hey[0].x = "   ";
+}, /non-empty text/);
 assert.match(source, /function updateKaraokeHighlight\(/, "Band Room should follow the sung line in stems mode (karaoke)");
 assert.match(source, /function renderLyricsView\(/, "Band Room should choose karaoke vs section-block lyric rendering");
 assert.match(source, /tabasco-lyrics-timed\.json/, "Band Room should load the karaoke timing data");
@@ -908,4 +1329,4 @@ assert.doesNotMatch(source, /scrollIntoView/, "Lyrics auto-follow must scroll th
     "v387: the bassline build site must ensure the lazy glue before building");
 }
 
-console.log("Band Room logic check passed");
+console.log("Band Room logic check passed (Tabasco fallback 7 songs; timed lyrics 5 songs)");

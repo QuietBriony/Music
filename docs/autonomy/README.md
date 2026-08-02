@@ -21,16 +21,20 @@
 | `SESSION-LEDGER.md` | 追記専用のセッション台帳。各 session が何をやったか / 次に何を残したか |
 | `AUTONOMOUS-RUN.md` | 自律ランのプレイブック。session 開始時に踏む手順 + コピペ用プロンプト |
 | `../../scripts/stack-check.mjs` | 5 repo の既存チェックを 1 コマンドで集約実行する整合性ゲート |
+| `../../config/autonomy-doc-currency.json` | handoff / architecture / ledgerの事実基準commitと監視path |
+| `../../scripts/check-autonomy-doc-currency.mjs` | 基準以後のruntime/config変更に対するdocs追随をnetworkなしで検証 |
 
 ## 設計思想
 
 - **human-gated を壊さない。** このエンジンは「人を外す」ものではなく、人が回す
-  1 session を、誰がやっても迷わず・速く・安全にするための足場。merge と
-  音の最終判断は人間が持つ（`Music/AGENTS.md` の hard rules 準拠）。
+  1 sessionを、誰がやっても迷わず・速く・安全にするための足場。実音 / 実機の最終判断は
+  人間が持つ。0 BAD・in-scope・cleanな検証済みbranchのagent mergeは`Music/AGENTS.md`に従う。
 - **有機的な compute 投入。** BACKLOG にアイデアが溜まり、session ごとに上から
   消化され、発見した新タスクが追記される。スケジュール自動実行はしない（手動トリガ）。
 - **正本を分散させない。** STACK-INDEX は機械可読な構造マップ、
   `docs/music-stack-integration-index.md` が役割・境界の人間向け正本。リンクで繋ぎ重複させない。
+- **事実の古さを隠さない。** `last_verified_commit`より新しい監視対象を変える時は、対応docsも
+  同じworktreeまたは後続commitで更新する。branch名・日付・ahead件数だけではcurrentと判定しない。
 
 ## 自律ランの安全上限
 

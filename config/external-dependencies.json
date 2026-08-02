@@ -1,0 +1,1335 @@
+{
+  "schema_version": 1,
+  "last_verified": "2026-08-02",
+  "purpose": "Single source of truth for executable external code, browser samples, analysis tools, and repository-external model weights used by Music.",
+  "policy": {
+    "machine_registry": "config/music-machines.json",
+    "catalog": "presets/online-samples-catalog.json",
+    "mutable_branch_urls": "forbidden",
+    "unknown_license_behavior": "keep pending and do not promote as cleared",
+    "model_weight_storage": "repo_external",
+    "model_download": "deny_unless_explicit",
+    "license_statuses": [
+      "verified",
+      "pending",
+      "not_applicable"
+    ],
+    "revision_statuses": [
+      "verified",
+      "snapshot_only",
+      "provider_managed"
+    ],
+    "integrity_statuses": [
+      "verified",
+      "pending",
+      "not_applicable"
+    ],
+    "size_statuses": [
+      "measured_local",
+      "upstream_reported",
+      "github_repo_reported",
+      "upper_bound",
+      "provider_limit"
+    ],
+    "model_weight_extensions": [
+      ".ckpt",
+      ".gguf",
+      ".onnx",
+      ".pt",
+      ".pth",
+      ".safetensors"
+    ],
+    "user_dynamic_urls": {
+      "classification": "user_dynamic",
+      "consumers": [
+        "band-room.js custom kit localStorage"
+      ],
+      "manifest_pin_required": false,
+      "tracked_catalog_promotion_requires_manifest": true,
+      "note": "A URL typed by the user is not a tracked dependency. It must never be copied into the catalog without an immutable source revision, license evidence, and size budget."
+    }
+  },
+  "dependencies": [
+    {
+      "id": "tonejs-runtime",
+      "kind": "browser_script",
+      "consumers": [
+        "band-room.html",
+        "fm.html",
+        "index.html",
+        "sw.js runtime cache"
+      ],
+      "source_url": "https://www.npmjs.com/package/tone/v/14.8.49",
+      "runtime_urls": [
+        "https://unpkg.com/tone@14.8.49/build/Tone.js"
+      ],
+      "version": "14.8.49",
+      "revision": {
+        "type": "npm_version",
+        "value": "14.8.49",
+        "status": "verified",
+        "evidence": "Exact version is present in all three HTML script URLs."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Runtime URLs are exact-version npm artifacts; SRI has not yet been recorded."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "MIT",
+        "scope": "runtime code",
+        "evidence": "https://github.com/Tonejs/Tone.js/blob/e55cb153d33adcbef29eb3efebd762f361d6b332/LICENSE.md"
+      },
+      "expected_size": {
+        "max_bytes": 2000000,
+        "status": "upper_bound",
+        "scope": "single browser script transfer",
+        "evidence": "Music browser dependency budget; refresh before raising."
+      },
+      "storage": {
+        "class": "browser_runtime_cache",
+        "target": "hazama-fm-v395-runtime",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "page_load",
+        "download_policy": "automatic",
+        "machines": [],
+        "required_capabilities": []
+      },
+      "fallback": "No audio runtime; page must expose its existing unavailable state.",
+      "fail_closed": true
+    },
+    {
+      "id": "magenta-music-browser",
+      "kind": "browser_script",
+      "consumers": [
+        "audio/ai-fills.js",
+        "band-room.js",
+        "sw.js runtime cache"
+      ],
+      "source_url": "https://www.npmjs.com/package/@magenta/music/v/1.23.1",
+      "runtime_urls": [
+        "https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/es6/core.js",
+        "https://cdn.jsdelivr.net/npm/@magenta/music@1.23.1/es6/music_rnn.js"
+      ],
+      "version": "1.23.1",
+      "revision": {
+        "type": "npm_version",
+        "value": "1.23.1",
+        "status": "verified",
+        "evidence": "Exact version is present in both dynamic loader constants."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Exact-version npm artifacts are used; content hashes have not yet been recorded."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "Apache-2.0",
+        "scope": "runtime code",
+        "evidence": "https://github.com/magenta/magenta-js/blob/96bad8837da43beb53f2e5aaea9f29f3db4bdddb/LICENSE"
+      },
+      "expected_size": {
+        "max_bytes": 6000000,
+        "status": "upper_bound",
+        "scope": "two browser script transfers combined",
+        "evidence": "Music browser dependency budget; refresh before raising."
+      },
+      "storage": {
+        "class": "browser_runtime_cache",
+        "target": "hazama-fm-v395-runtime",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "button_click",
+        "download_policy": "user_action",
+        "machines": [],
+        "required_capabilities": []
+      },
+      "fallback": "Use the deterministic local AI-fill fallback and keep playback available.",
+      "fail_closed": false
+    },
+    {
+      "id": "tonejs-midi-browser",
+      "kind": "browser_script",
+      "consumers": [
+        "band-room.js",
+        "sw.js runtime cache"
+      ],
+      "source_url": "https://www.npmjs.com/package/@tonejs/midi/v/2.0.28",
+      "runtime_urls": [
+        "https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.28/build/Midi.min.js"
+      ],
+      "version": "2.0.28",
+      "revision": {
+        "type": "npm_version",
+        "value": "2.0.28",
+        "status": "verified",
+        "evidence": "Exact version is present in the Band Room dynamic loader."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Exact-version npm artifact is used; content hash has not yet been recorded."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "MIT",
+        "scope": "runtime code",
+        "evidence": "https://github.com/Tonejs/Midi/blob/1d3a1f539a2de55a448687285a393bc3aff7da1a/LICENSE.md"
+      },
+      "expected_size": {
+        "max_bytes": 1000000,
+        "status": "upper_bound",
+        "scope": "single browser script transfer",
+        "evidence": "Music browser dependency budget; refresh before raising."
+      },
+      "storage": {
+        "class": "browser_runtime_cache",
+        "target": "hazama-fm-v395-runtime",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "file_select",
+        "download_policy": "user_action",
+        "machines": [],
+        "required_capabilities": []
+      },
+      "fallback": "Reject MIDI import without disturbing the current session.",
+      "fail_closed": true
+    },
+    {
+      "id": "magenta-drums-rnn-checkpoint",
+      "kind": "browser_model",
+      "consumers": [
+        "audio/ai-fills.js",
+        "band-room.js",
+        "sw.js runtime cache"
+      ],
+      "source_url": "https://github.com/magenta/magenta-js/blob/96bad8837da43beb53f2e5aaea9f29f3db4bdddb/music/checkpoints/checkpoints.json",
+      "runtime_urls": [
+        "https://storage.googleapis.com/magentadata/js/checkpoints/music_rnn/drum_kit_rnn"
+      ],
+      "version": "drum_kit_rnn",
+      "revision": {
+        "type": "checkpoint_index_commit",
+        "value": "96bad8837da43beb53f2e5aaea9f29f3db4bdddb",
+        "status": "snapshot_only",
+        "evidence": "The Magenta.js checkpoint index at this commit names this URL and reports 11.9 MB; the GCS directory itself is not content-addressed."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Upstream directory does not expose a repository-pinned aggregate digest in the checked index."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "Apache-2.0",
+        "scope": "Magenta checkpoint distribution",
+        "evidence": "https://github.com/magenta/magenta-js/blob/96bad8837da43beb53f2e5aaea9f29f3db4bdddb/LICENSE"
+      },
+      "expected_size": {
+        "bytes": 11900000,
+        "status": "upstream_reported",
+        "scope": "checkpoint directory",
+        "evidence": "magenta-js music/checkpoints/checkpoints.json at revision 96bad8837da43beb53f2e5aaea9f29f3db4bdddb"
+      },
+      "storage": {
+        "class": "browser_runtime_cache",
+        "target": "hazama-fm-v395-runtime",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "button_click",
+        "download_policy": "user_action",
+        "machines": [],
+        "required_capabilities": []
+      },
+      "fallback": "Use the deterministic local fill generator.",
+      "fail_closed": false
+    },
+    {
+      "id": "tonejs-audio-samples",
+      "kind": "sample_source",
+      "consumers": [
+        "presets/online-samples-catalog.json",
+        "engine.js legacy_frozen"
+      ],
+      "source_url": "https://github.com/Tonejs/audio/tree/efd8296360f9526e379bfbe5c1698ff54d6a1d34",
+      "runtime_urls": [
+        "https://cdn.jsdelivr.net/gh/Tonejs/audio@efd8296360f9526e379bfbe5c1698ff54d6a1d34",
+        "https://tonejs.github.io/audio"
+      ],
+      "version": null,
+      "revision": {
+        "type": "git_commit",
+        "value": "efd8296360f9526e379bfbe5c1698ff54d6a1d34",
+        "status": "verified",
+        "evidence": "GitHub default-branch head checked 2026-08-02; catalog URLs use this commit. engine.js remains a documented frozen legacy URL."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Individual sample hashes have not been recorded."
+      },
+      "license": {
+        "status": "pending",
+        "spdx": null,
+        "scope": "mixed sample families",
+        "evidence": "Upstream says each collection carries its own license; drum collection evidence is incomplete. See asset_families."
+      },
+      "asset_families": [
+        {
+          "id": "drum-samples",
+          "license_status": "pending",
+          "license_spdx": null,
+          "evidence": "No collection license file was found for the three consumed drum folders at the pinned commit."
+        },
+        {
+          "id": "salamander",
+          "license_status": "verified",
+          "license_spdx": "CC-BY-3.0",
+          "evidence": "https://github.com/Tonejs/audio/blob/efd8296360f9526e379bfbe5c1698ff54d6a1d34/salamander/README"
+        },
+        {
+          "id": "casio",
+          "license_status": "verified",
+          "license_spdx": "CC-BY-NC-SA-4.0",
+          "evidence": "https://github.com/Tonejs/audio/blob/efd8296360f9526e379bfbe5c1698ff54d6a1d34/casio/README.md"
+        }
+      ],
+      "expected_size": {
+        "bytes": 234356736,
+        "status": "github_repo_reported",
+        "scope": "entire upstream repository, not normal per-session transfer",
+        "evidence": "GitHub repository size 228864 KiB checked 2026-08-02."
+      },
+      "storage": {
+        "class": "browser_runtime_cache",
+        "target": "hazama-fm-v395-runtime",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "user_selection",
+        "download_policy": "user_action",
+        "machines": [],
+        "required_capabilities": []
+      },
+      "runtime_pin_enforced": false,
+      "fallback": "Use the local Tone.js synthesizer voices.",
+      "fail_closed": false
+    },
+    {
+      "id": "dirt-samples",
+      "kind": "sample_source",
+      "consumers": [
+        "presets/online-samples-catalog.json"
+      ],
+      "source_url": "https://github.com/tidalcycles/Dirt-Samples/tree/c74fc80f8db8038f6a33648ffef5ac00a07ad402",
+      "runtime_urls": [
+        "https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@c74fc80f8db8038f6a33648ffef5ac00a07ad402"
+      ],
+      "version": null,
+      "revision": {
+        "type": "git_commit",
+        "value": "c74fc80f8db8038f6a33648ffef5ac00a07ad402",
+        "status": "verified",
+        "evidence": "GitHub compare confirmed master identical to this commit on 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Individual consumed sample hashes have not been recorded."
+      },
+      "license": {
+        "status": "pending",
+        "spdx": null,
+        "scope": "consumed sample families",
+        "evidence": "No repository-level LICENSE file was present at the pinned commit; prior blanket CC0 wording was removed."
+      },
+      "asset_families": [
+        {
+          "id": "808-909-clap-amen-glitch-tabla",
+          "license_status": "pending",
+          "license_spdx": null,
+          "evidence": "Family-level provenance remains to be confirmed before any redistribution or license-cleared promotion."
+        }
+      ],
+      "expected_size": {
+        "bytes": 178692096,
+        "status": "github_repo_reported",
+        "scope": "entire upstream repository, not normal per-session transfer",
+        "evidence": "GitHub repository size 174504 KiB checked 2026-08-02."
+      },
+      "storage": {
+        "class": "browser_runtime_cache",
+        "target": "hazama-fm-v395-runtime",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "user_selection",
+        "download_policy": "user_action",
+        "machines": [],
+        "required_capabilities": []
+      },
+      "fallback": "Use the local Tone.js drum synthesizer.",
+      "fail_closed": false
+    },
+    {
+      "id": "tonejs-instruments-samples",
+      "kind": "sample_source",
+      "consumers": [
+        "presets/online-samples-catalog.json"
+      ],
+      "source_url": "https://github.com/nbrosowsky/tonejs-instruments/tree/622c2f1c32c8cfce4158ddc3eb26e518ddef37e5",
+      "runtime_urls": [
+        "https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@622c2f1c32c8cfce4158ddc3eb26e518ddef37e5/samples"
+      ],
+      "version": null,
+      "revision": {
+        "type": "git_commit",
+        "value": "622c2f1c32c8cfce4158ddc3eb26e518ddef37e5",
+        "status": "verified",
+        "evidence": "GitHub compare confirmed master identical to this commit on 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Individual consumed sample hashes have not been recorded."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "CC-BY-3.0",
+        "scope": "sample assets; repository code is separately MIT",
+        "evidence": "https://github.com/nbrosowsky/tonejs-instruments/blob/622c2f1c32c8cfce4158ddc3eb26e518ddef37e5/README.md"
+      },
+      "asset_families": [
+        {
+          "id": "guitar-bass-strings-winds-organ-harp",
+          "license_status": "verified",
+          "license_spdx": "CC-BY-3.0",
+          "evidence": "Pinned upstream README applies CC BY 3.0 to samples."
+        }
+      ],
+      "expected_size": {
+        "bytes": 1773338624,
+        "status": "github_repo_reported",
+        "scope": "entire upstream repository, not normal per-session transfer",
+        "evidence": "GitHub repository size 1731776 KiB checked 2026-08-02."
+      },
+      "storage": {
+        "class": "browser_runtime_cache",
+        "target": "hazama-fm-v395-runtime",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "user_selection",
+        "download_policy": "user_action",
+        "machines": [],
+        "required_capabilities": []
+      },
+      "fallback": "Use the corresponding local Tone.js synthesizer voice.",
+      "fail_closed": false
+    },
+    {
+      "id": "torch-worker",
+      "kind": "python_package",
+      "consumers": [
+        "scripts/worker-gaming-pipeline.py",
+        "ACE-Step external environment",
+        "Demucs external environment",
+        "Whisper external environment"
+      ],
+      "source_url": "https://pytorch.org/get-started/locally/",
+      "runtime_urls": [],
+      "version": "2.11.0+cu128",
+      "revision": {
+        "type": "installed_distribution_version",
+        "value": "2.11.0+cu128",
+        "status": "verified",
+        "evidence": "worker-gaming venv distribution metadata read without importing torch on 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Wheel hash depends on the official selector result and has not been captured."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "BSD-3-Clause",
+        "scope": "installed Python distribution",
+        "evidence": "worker-gaming venv distribution metadata"
+      },
+      "expected_size": {
+        "bytes": 4420767664,
+        "status": "measured_local",
+        "scope": "installed distribution footprint",
+        "evidence": "worker-gaming venv measured 2026-08-02."
+      },
+      "storage": {
+        "class": "worker_external_venv",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/.venv",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "preinstalled_only",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.gpu"
+        ]
+      },
+      "fallback": "Skip GPU jobs; repository validation remains CPU-only.",
+      "fail_closed": true
+    },
+    {
+      "id": "torchaudio-worker",
+      "kind": "python_package",
+      "consumers": [
+        "scripts/worker-gaming-pipeline.py"
+      ],
+      "source_url": "https://pytorch.org/audio/stable/",
+      "runtime_urls": [],
+      "version": "2.11.0+cu128",
+      "revision": {
+        "type": "installed_distribution_version",
+        "value": "2.11.0+cu128",
+        "status": "verified",
+        "evidence": "worker-gaming venv distribution metadata read on 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Wheel hash has not been captured."
+      },
+      "license": {
+        "status": "pending",
+        "spdx": null,
+        "scope": "installed Python distribution",
+        "evidence": "Installed distribution metadata did not provide a license value; source/distribution scope still needs confirmation."
+      },
+      "expected_size": {
+        "bytes": 10392318,
+        "status": "measured_local",
+        "scope": "installed distribution footprint",
+        "evidence": "worker-gaming venv measured 2026-08-02."
+      },
+      "storage": {
+        "class": "worker_external_venv",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/.venv",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "preinstalled_only",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.gpu"
+        ]
+      },
+      "fallback": "Skip jobs that require torchaudio.",
+      "fail_closed": true
+    },
+    {
+      "id": "demucs-python",
+      "kind": "python_package",
+      "consumers": [
+        "scripts/worker-gaming-pipeline.py",
+        "scripts/_separate_band.py"
+      ],
+      "source_url": "https://github.com/facebookresearch/demucs/tree/e976d93ecc3865e5757426930257e200846a520a",
+      "runtime_urls": [],
+      "version": "4.0.1",
+      "revision": {
+        "type": "installed_distribution_version",
+        "value": "4.0.1",
+        "status": "verified",
+        "evidence": "worker-gaming venv distribution metadata; upstream repository snapshot e976d93ecc3865e5757426930257e200846a520a is archived."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Installed wheel hash has not been captured."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "MIT",
+        "scope": "code and released model distribution",
+        "evidence": "https://github.com/facebookresearch/demucs/blob/e976d93ecc3865e5757426930257e200846a520a/LICENSE"
+      },
+      "expected_size": {
+        "bytes": 612118,
+        "status": "measured_local",
+        "scope": "installed Python distribution, excluding model weights",
+        "evidence": "worker-gaming venv measured 2026-08-02."
+      },
+      "storage": {
+        "class": "worker_external_venv",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/.venv",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "preinstalled_only",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch",
+          "worker.gpu"
+        ]
+      },
+      "fallback": "Reuse existing external stems or skip separation.",
+      "fail_closed": true
+    },
+    {
+      "id": "demucs-htdemucs-model",
+      "kind": "repo_external_model",
+      "consumers": [
+        "scripts/worker-gaming-pipeline.py",
+        "scripts/_separate_band.py"
+      ],
+      "source_url": "https://dl.fbaipublicfiles.com/demucs/hybrid_transformer/955717e8-8726e21a.th",
+      "runtime_urls": [],
+      "version": "htdemucs",
+      "revision": {
+        "type": "demucs_model_signature",
+        "value": "955717e8",
+        "status": "verified",
+        "evidence": "Demucs 4.0.1 remote/files.txt maps htdemucs to 955717e8-8726e21a.th."
+      },
+      "integrity": {
+        "algorithm": "sha256",
+        "value": "8726e21a993978c7ba086d3872e7608d7d5bfca646ca4aca459ffda844faa8b4",
+        "status": "verified",
+        "evidence": "Filename digest prefix and read-only upstream mirror metadata checked 2026-08-02."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "MIT",
+        "scope": "released Demucs model",
+        "evidence": "https://github.com/facebookresearch/demucs/blob/e976d93ecc3865e5757426930257e200846a520a/LICENSE"
+      },
+      "expected_size": {
+        "max_bytes": 90000000,
+        "status": "upper_bound",
+        "scope": "single htdemucs checkpoint",
+        "evidence": "Upstream mirror reports 84.1 MB."
+      },
+      "storage": {
+        "class": "worker_external_model_cache",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/models/demucs/955717e8-8726e21a.th",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "deny_unless_explicit",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch",
+          "worker.gpu"
+        ]
+      },
+      "fallback": "Reuse existing external stems or skip separation; never download during repository checks.",
+      "fail_closed": true
+    },
+    {
+      "id": "librosa-worker",
+      "kind": "python_package",
+      "consumers": [
+        "scripts/analyze-band-stems.py",
+        "scripts/compare-capture.py",
+        "scripts/hazama-fm-compare-capture.py",
+        "scripts/render-bandroom-ai-recreation.py"
+      ],
+      "source_url": "https://pypi.org/project/librosa/0.11.0/",
+      "runtime_urls": [],
+      "version": "0.11.0",
+      "revision": {
+        "type": "installed_distribution_version",
+        "value": "0.11.0",
+        "status": "verified",
+        "evidence": "worker-gaming venv distribution metadata read 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Wheel hash has not been captured."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "ISC",
+        "scope": "installed Python distribution",
+        "evidence": "worker-gaming venv distribution metadata"
+      },
+      "expected_size": {
+        "bytes": 2040305,
+        "status": "measured_local",
+        "scope": "installed distribution footprint",
+        "evidence": "worker-gaming venv measured 2026-08-02."
+      },
+      "storage": {
+        "class": "worker_external_venv",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/.venv",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "preinstalled_only",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch"
+        ]
+      },
+      "fallback": "Skip optional analysis and preserve source audio unchanged.",
+      "fail_closed": true
+    },
+    {
+      "id": "soundfile-worker",
+      "kind": "python_package",
+      "consumers": [
+        "scripts/render-bandroom-ai-recreation.py"
+      ],
+      "source_url": "https://pypi.org/project/soundfile/0.13.1/",
+      "runtime_urls": [],
+      "version": "0.13.1",
+      "revision": {
+        "type": "installed_distribution_version",
+        "value": "0.13.1",
+        "status": "verified",
+        "evidence": "worker-gaming venv distribution metadata read 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Wheel hash has not been captured."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "BSD-3-Clause",
+        "scope": "installed Python distribution",
+        "evidence": "worker-gaming venv distribution metadata"
+      },
+      "expected_size": {
+        "bytes": 2560428,
+        "status": "measured_local",
+        "scope": "installed distribution footprint",
+        "evidence": "worker-gaming venv measured 2026-08-02."
+      },
+      "storage": {
+        "class": "worker_external_venv",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/.venv",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "preinstalled_only",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch"
+        ]
+      },
+      "fallback": "Skip optional rendering.",
+      "fail_closed": true
+    },
+    {
+      "id": "imageio-ffmpeg-worker",
+      "kind": "python_package",
+      "consumers": [
+        "scripts/render-bandroom-ai-recreation.py",
+        "scripts/worker-gaming-pipeline.py"
+      ],
+      "source_url": "https://pypi.org/project/imageio-ffmpeg/0.6.0/",
+      "runtime_urls": [],
+      "version": "0.6.0 / bundled ffmpeg 7.1",
+      "revision": {
+        "type": "installed_distribution_version",
+        "value": "0.6.0",
+        "status": "verified",
+        "evidence": "worker-gaming venv metadata and bundled executable filename read 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Wheel and bundled executable hashes have not been captured."
+      },
+      "license": {
+        "status": "pending",
+        "spdx": null,
+        "scope": "BSD-2-Clause wrapper plus bundled FFmpeg binary configuration",
+        "evidence": "Wrapper metadata is BSD-2-Clause; the exact license configuration of the bundled ffmpeg-win-x86_64-v7.1.exe still needs separate confirmation."
+      },
+      "expected_size": {
+        "bytes": 87727295,
+        "status": "measured_local",
+        "scope": "installed distribution footprint including 87638016-byte bundled executable",
+        "evidence": "worker-gaming venv measured 2026-08-02."
+      },
+      "storage": {
+        "class": "worker_external_venv",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/.venv",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "preinstalled_only",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch"
+        ]
+      },
+      "fallback": "Use an explicitly verified system FFmpeg or skip render/export.",
+      "fail_closed": true
+    },
+    {
+      "id": "numpy-worker",
+      "kind": "python_package",
+      "consumers": [
+        "scripts/analyze-band-stems.py",
+        "scripts/compare-capture.py",
+        "scripts/hazama-fm-compare-capture.py",
+        "scripts/render-bandroom-ai-recreation.py"
+      ],
+      "source_url": "https://pypi.org/project/numpy/2.4.6/",
+      "runtime_urls": [],
+      "version": "2.4.6",
+      "revision": {
+        "type": "installed_distribution_version",
+        "value": "2.4.6",
+        "status": "verified",
+        "evidence": "worker-gaming venv distribution metadata read 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Wheel hash has not been captured."
+      },
+      "license": {
+        "status": "pending",
+        "spdx": null,
+        "scope": "installed distribution including bundled components",
+        "evidence": "Installed metadata did not provide a single license value; bundled component audit is pending."
+      },
+      "expected_size": {
+        "bytes": 52846718,
+        "status": "measured_local",
+        "scope": "installed distribution footprint",
+        "evidence": "worker-gaming venv measured 2026-08-02."
+      },
+      "storage": {
+        "class": "worker_external_venv",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/.venv",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "preinstalled_only",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch"
+        ]
+      },
+      "fallback": "Skip optional analysis/render jobs.",
+      "fail_closed": true
+    },
+    {
+      "id": "scipy-worker",
+      "kind": "python_package",
+      "consumers": [
+        "scripts/render-bandroom-ai-recreation.py"
+      ],
+      "source_url": "https://pypi.org/project/scipy/1.17.1/",
+      "runtime_urls": [],
+      "version": "1.17.1",
+      "revision": {
+        "type": "installed_distribution_version",
+        "value": "1.17.1",
+        "status": "verified",
+        "evidence": "worker-gaming venv distribution metadata read 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Wheel hash has not been captured."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "BSD-3-Clause",
+        "scope": "top-level installed distribution; bundled notices still apply",
+        "evidence": "worker-gaming venv distribution metadata"
+      },
+      "expected_size": {
+        "bytes": 136543332,
+        "status": "measured_local",
+        "scope": "installed distribution footprint",
+        "evidence": "worker-gaming venv measured 2026-08-02."
+      },
+      "storage": {
+        "class": "worker_external_venv",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/.venv",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "preinstalled_only",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch"
+        ]
+      },
+      "fallback": "Skip optional recreation rendering.",
+      "fail_closed": true
+    },
+    {
+      "id": "requests-worker",
+      "kind": "python_package",
+      "consumers": [
+        "scripts/worker-gaming-pipeline.py"
+      ],
+      "source_url": "https://pypi.org/project/requests/2.34.2/",
+      "runtime_urls": [],
+      "version": "2.34.2",
+      "revision": {
+        "type": "installed_distribution_version",
+        "value": "2.34.2",
+        "status": "verified",
+        "evidence": "worker-gaming venv distribution metadata read 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "Wheel hash has not been captured."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "Apache-2.0",
+        "scope": "installed Python distribution",
+        "evidence": "worker-gaming venv distribution metadata"
+      },
+      "expected_size": {
+        "bytes": 478078,
+        "status": "measured_local",
+        "scope": "installed distribution footprint",
+        "evidence": "worker-gaming venv measured 2026-08-02."
+      },
+      "storage": {
+        "class": "worker_external_venv",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/.venv",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "preinstalled_only",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch"
+        ]
+      },
+      "fallback": "Skip network-backed worker operations.",
+      "fail_closed": true
+    },
+    {
+      "id": "openai-whisper-python",
+      "kind": "python_package",
+      "consumers": [
+        "scripts/transcribe-timed-vocals.py"
+      ],
+      "source_url": "https://github.com/openai/whisper/tree/5f86d1d86363843179951550570367b37c5d6f78",
+      "runtime_urls": [],
+      "version": null,
+      "revision": {
+        "type": "git_commit",
+        "value": "5f86d1d86363843179951550570367b37c5d6f78",
+        "status": "verified",
+        "evidence": "Official repository head checked 2026-08-02; package is not installed in the worker venv."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "No package artifact has been selected or downloaded."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "MIT",
+        "scope": "code and released model",
+        "evidence": "https://github.com/openai/whisper/blob/5f86d1d86363843179951550570367b37c5d6f78/LICENSE"
+      },
+      "expected_size": {
+        "max_bytes": 10000000,
+        "status": "upper_bound",
+        "scope": "source/package only, excluding model weight",
+        "evidence": "Repository policy budget; no artifact installed."
+      },
+      "storage": {
+        "class": "worker_external_venv",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/.venv",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "deny_unless_explicit",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch",
+          "worker.gpu"
+        ]
+      },
+      "fallback": "Use manual lyric timing; do not install or download during repository checks.",
+      "fail_closed": true
+    },
+    {
+      "id": "openai-whisper-small-model",
+      "kind": "repo_external_model",
+      "consumers": [
+        "scripts/transcribe-timed-vocals.py"
+      ],
+      "source_url": "https://openaipublic.azureedge.net/main/whisper/models/9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794/small.pt",
+      "runtime_urls": [],
+      "version": "small",
+      "revision": {
+        "type": "model_sha256",
+        "value": "9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794",
+        "status": "verified",
+        "evidence": "Official openai/whisper _MODELS table at commit 5f86d1d86363843179951550570367b37c5d6f78."
+      },
+      "integrity": {
+        "algorithm": "sha256",
+        "value": "9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794",
+        "status": "verified",
+        "evidence": "Official downloader derives and verifies the SHA-256 embedded in the URL."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "MIT",
+        "scope": "released Whisper model",
+        "evidence": "https://github.com/openai/whisper/blob/5f86d1d86363843179951550570367b37c5d6f78/LICENSE"
+      },
+      "expected_size": {
+        "max_bytes": 500000000,
+        "status": "upper_bound",
+        "scope": "single small.pt checkpoint",
+        "evidence": "Official model table identifies the 244M-parameter small model; public artifact is approximately 461 MB."
+      },
+      "storage": {
+        "class": "worker_external_model_cache",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/models/whisper/small.pt",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "deny_unless_explicit",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch",
+          "worker.gpu"
+        ]
+      },
+      "fallback": "Use manual lyric timing; never auto-download from a repository check.",
+      "fail_closed": true
+    },
+    {
+      "id": "openai-whisper-api",
+      "kind": "hosted_api_model",
+      "consumers": [
+        "scripts/_transcribe_vocals_openai.py"
+      ],
+      "source_url": "https://platform.openai.com/docs/guides/speech-to-text",
+      "runtime_urls": [],
+      "version": "whisper-1",
+      "revision": {
+        "type": "provider_model_alias",
+        "value": "whisper-1",
+        "status": "provider_managed",
+        "evidence": "Hosted model alias; provider controls the underlying revision."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "not_applicable",
+        "evidence": "No local model artifact."
+      },
+      "license": {
+        "status": "not_applicable",
+        "spdx": null,
+        "scope": "hosted service",
+        "evidence": "Use is governed by the provider terms, not a redistributable repository artifact license."
+      },
+      "expected_size": {
+        "max_bytes": 26214400,
+        "status": "provider_limit",
+        "scope": "maximum audio upload per request",
+        "evidence": "OpenAI Audio API FAQ 25 MiB request limit checked 2026-08-02."
+      },
+      "storage": {
+        "class": "provider_remote",
+        "target": "OpenAI Audio API",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "explicit_user_action",
+        "download_policy": "not_applicable",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.batch"
+        ],
+        "data_egress": true
+      },
+      "fallback": "Use local/manual transcription; never upload without explicit operator intent.",
+      "fail_closed": true
+    },
+    {
+      "id": "ace-step-1-5-code",
+      "kind": "external_tool_source",
+      "consumers": [
+        "docs/ACE-STEP-WORKFLOW.md",
+        "docs/CODEX-HANDOFF.md"
+      ],
+      "source_url": "https://github.com/ace-step/ACE-Step-1.5/tree/dce621408bee8c31b4fcf4811682eb9359e1bc94",
+      "runtime_urls": [],
+      "version": "v0.1.8",
+      "revision": {
+        "type": "git_commit",
+        "value": "dce621408bee8c31b4fcf4811682eb9359e1bc94",
+        "status": "verified",
+        "evidence": "Official GitHub v0.1.8 release commit checked 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "No source archive has been selected or downloaded."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "MIT",
+        "scope": "source code",
+        "evidence": "https://github.com/ace-step/ACE-Step-1.5/blob/dce621408bee8c31b4fcf4811682eb9359e1bc94/LICENSE"
+      },
+      "expected_size": {
+        "bytes": 12207104,
+        "status": "github_repo_reported",
+        "scope": "repository metadata size, excluding model weights",
+        "evidence": "GitHub repository size 11921 KiB checked 2026-08-02."
+      },
+      "storage": {
+        "class": "worker_external_source",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/tools/ACE-Step-1.5",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "deny_unless_explicit",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.gpu"
+        ]
+      },
+      "fallback": "Use the existing browser composition lane; do not clone or execute while GPU capacity is reserved.",
+      "fail_closed": true
+    },
+    {
+      "id": "ace-step-v15-turbo-model",
+      "kind": "repo_external_model",
+      "consumers": [
+        "docs/ACE-STEP-WORKFLOW.md",
+        "docs/HAZAMA-STILL-MOVING-ACESTEP.md"
+      ],
+      "source_url": "https://huggingface.co/ACE-Step/Ace-Step1.5/tree/571cee88618ae5ef3d3fcdf79c46068ce4e2d727/acestep-v15-turbo",
+      "runtime_urls": [],
+      "version": "acestep-v15-turbo",
+      "revision": {
+        "type": "huggingface_commit",
+        "value": "571cee88618ae5ef3d3fcdf79c46068ce4e2d727",
+        "status": "verified",
+        "evidence": "Official model folder history reports this verified commit; checked 2026-08-02."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "The folder includes multiple LFS/Xet artifacts; aggregate digest is not recorded here."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "MIT",
+        "scope": "official model repository",
+        "evidence": "https://huggingface.co/ACE-Step/Ace-Step1.5/tree/571cee88618ae5ef3d3fcdf79c46068ce4e2d727"
+      },
+      "expected_size": {
+        "max_bytes": 16000000000,
+        "status": "upper_bound",
+        "scope": "turbo model plus shared components required by the unified repository",
+        "evidence": "Official turbo folder reports 4.79 GB; upper bound reserves shared VAE/encoder components without downloading them."
+      },
+      "storage": {
+        "class": "worker_external_model_cache",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/models/ace-step/Ace-Step1.5/571cee88618ae5ef3d3fcdf79c46068ce4e2d727",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "deny_unless_explicit",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "worker.gpu"
+        ]
+      },
+      "fallback": "Use existing reference renders or the browser composition lane; never download during repository work.",
+      "fail_closed": true
+    },
+    {
+      "id": "sendmidi-cli",
+      "kind": "cli_tool",
+      "consumers": [
+        "scripts/worker-gaming-pipeline.py"
+      ],
+      "source_url": "https://github.com/gbevin/SendMIDI/releases/tag/1.3.1",
+      "runtime_urls": [
+        "https://github.com/gbevin/SendMIDI/releases/download/1.3.1/sendmidi-windows-1.3.1.zip"
+      ],
+      "version": "1.3.1",
+      "revision": {
+        "type": "release_version",
+        "value": "1.3.1",
+        "status": "verified",
+        "evidence": "Versioned GitHub release URL is enforced by worker-gaming-pipeline.py."
+      },
+      "integrity": {
+        "algorithm": "sha256",
+        "value": "9fa5904014e7e1243392affd525244a304e12f6399e1012e5aee5739b8e4b0e3",
+        "status": "verified",
+        "evidence": "worker-gaming-pipeline.py MIDI_CLI_TOOLS"
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "GPL-3.0-or-later",
+        "scope": "CLI tool",
+        "evidence": "https://github.com/gbevin/SendMIDI/blob/1.3.1/COPYING.md"
+      },
+      "expected_size": {
+        "max_bytes": 20000000,
+        "status": "upper_bound",
+        "scope": "release archive",
+        "evidence": "Worker tool download budget; hash remains authoritative."
+      },
+      "storage": {
+        "class": "worker_external_tool_cache",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/tools/midi-cli",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "user_action",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "hardware.inspect"
+        ]
+      },
+      "fallback": "Skip the MIDI probe and produce the handoff checklist only.",
+      "fail_closed": true
+    },
+    {
+      "id": "receivemidi-cli",
+      "kind": "cli_tool",
+      "consumers": [
+        "scripts/worker-gaming-pipeline.py"
+      ],
+      "source_url": "https://github.com/gbevin/ReceiveMIDI/releases/tag/1.4.4",
+      "runtime_urls": [
+        "https://github.com/gbevin/ReceiveMIDI/releases/download/1.4.4/receivemidi-windows-1.4.4.zip"
+      ],
+      "version": "1.4.4",
+      "revision": {
+        "type": "release_version",
+        "value": "1.4.4",
+        "status": "verified",
+        "evidence": "Versioned GitHub release URL is enforced by worker-gaming-pipeline.py."
+      },
+      "integrity": {
+        "algorithm": "sha256",
+        "value": "931366c157062053a5401d1193a37b884787cc6be606b9d44646749b6e125959",
+        "status": "verified",
+        "evidence": "worker-gaming-pipeline.py MIDI_CLI_TOOLS"
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "GPL-3.0-or-later",
+        "scope": "CLI tool",
+        "evidence": "https://github.com/gbevin/ReceiveMIDI/blob/1.4.4/COPYING.md"
+      },
+      "expected_size": {
+        "max_bytes": 20000000,
+        "status": "upper_bound",
+        "scope": "release archive",
+        "evidence": "Worker tool download budget; hash remains authoritative."
+      },
+      "storage": {
+        "class": "worker_external_tool_cache",
+        "target": "${MUSIC_STACK_WORKER_ROOT}/tools/midi-cli",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "operator_command",
+        "download_policy": "user_action",
+        "machines": [
+          "worker-gaming"
+        ],
+        "required_capabilities": [
+          "hardware.inspect"
+        ]
+      },
+      "fallback": "Skip the MIDI probe and produce the handoff checklist only.",
+      "fail_closed": true
+    }
+  ]
+}

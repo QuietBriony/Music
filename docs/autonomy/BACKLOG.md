@@ -41,34 +41,17 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 
 ## P1
 
-### BL-033 — 外部依存 / モデル lock + mutable URL / license gate
+### BL-041 — HAZAMA を main Band selector へ昇格する実機判定
 - priority : P1
 - repo     : Music
-- scope    : docs / verify / non-engine-code
-- agent    : codex | either
-- human-gate: no（runtime の出音変更やモデル実行は別 gate）
-- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
-- detail   : browser CDN、sample source、Python analysis tool、repo-external model を
-  `config/external-dependencies.json` に統合し、version / commit or model revision /
-  license / expected size / 保存先 / 実行 machine を固定する。現 catalog の GitHub CDN
-  は `@master` 15 定義、nbrosowsky sample license は code license と混同、Dirt-Samples
-  は family 単位 provenance が未確認。まず manifest + validator、次に current content と
-  同じ commit SHA へ URL pin。ACE-Step / Demucs / Whisper の weight は repo に入れず、
-  revision のみ記録し GPU 札が空くまで download / execution しない。完了条件:
-  mutable branch URL 0、license_status 未記載 0、モデル重みの tracked file 0。
-
-### BL-034 — autonomy control-plane の factual catch-up + currency gate
-- priority : P1
-- repo     : Music
-- scope    : docs / verify
-- agent    : codex | either
-- human-gate: no（BL-030 の authority 案 A/B 選択は対象外）
-- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
-- detail   : `SESSION-LEDGER.md` が 2026-06 の記録で止まる一方、main は 2026-07 の
-  Lyric Lab / HAZAMA v366-v388 / DAW・machine role 整備まで進行。`CODEX-HANDOFF.md`
-  と `HAZAMA-FM-ARCHITECTURE.md` にも実装済み候補 / 古い current marker が残る。
-  git history と現物だけから factual catch-up を作り、`last_verified_commit` ベースの
-  警告 check を追加する。方向性の統合判断は BL-030 に残す。
+- scope    : verify / runtime
+- agent    : human
+- human-gate: yes
+- source   : 2026-08-01 Band Room playability / UI audit
+- detail   : desktop + mobile で `?band=hazama` の synth 自動選択、START 一発、
+  60–90秒の単調/ピーポー/途切れ、Tabasco 復帰時のmode/paletteを確認。合格後のみ
+  `presets/bands.json` の `ui_hidden` とfooter WIP表現を別PRで通常公開へ変更する。
+  自律ランで `ui_hidden` を外さない。
 
 ### BL-035 — Band Room asset lane の契約 / provenance を一本化
 - priority : P1
@@ -82,18 +65,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   790 file / 約216 MiB。既存 Band Room asset を grandfather する範囲と、ACE-Step / Suno
   生成物・model weight を常に repo 外とする境界を owner が確定し、provenance manifest、
   `.gitignore`、増分 guard に落とす。既存 asset の削除 / 再圧縮は本 item に含めない。
-
-### BL-036 — Tabasco songs catalog v2 + drift validator
-- priority : P1
-- repo     : Music
-- scope    : docs / verify
-- agent    : codex | either
-- human-gate: no（BPM / key の耳確認値は `human_unverified` のまま扱う）
-- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
-- detail   : `presets/tabasco-songs.json` は初期 snapshot の `TBD` / `todo` と個人PC絶対pathを
-  残すが、final lyrics と7曲分 drum-frame は出荷済み。catalog を派生 inventory と明示し、
-  現行 file reference / status へ同期。validator で7曲 coverage、frame existence、禁止絶対path、
-  status drift を検出する。precache から外すかは別判断。
 
 ### BL-003 — 実車 / Bluetooth で hidden audio bridge を実機検証
 - priority : P1
@@ -199,18 +170,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   `self_review` 重み/閾値 tuning は engine 凍結域の別 human-gated PR（BL-024 harness で検証）。
 
 ## P2
-
-### BL-037 — Music satellite / engine seam の executable contract harness
-- priority : P2
-- repo     : Music
-- scope    : verify / non-engine-code
-- agent    : codex
-- human-gate: no（engine seam の変更は別 human-gated PR）
-- source   : 2026-08-01 repo-wide CPU-only 5.6-sol audit
-- detail   : `audio/music-packet.js` / `music-hazama-feedback.js` など抽出済み satellite が
-  多数の engine global を遅延参照し、現 check は API existence までしか実行しない。
-  script load order、必須 dependency、主要 public API の実呼び出しを mock VM で固定する。
-  まず test only。dependency object 化や engine.js 編集は 1 satellite / 1 PR で別途行う。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2
@@ -402,6 +361,118 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 ---
 
 ## Done
+
+### BL-044 — autonomy queue semantic gate ✅ 2026-08-02
+- `scripts/check-autonomy-queue.mjs` を追加し、fence / HTML comment / blockquote / codeを除く
+  live Markdownからactive / legacy Doneを分離。BL ID一意性、必須field / canonical順・値、
+  human-gate / status / protected engine claim、Done heading / outcomeをfail-closedにした。
+- 最新ledgerの必須field・stack結果・`backlog` / `next`参照と、全entryの日付順を検証。
+  5正例 + 113 memory-only負fixtureで、GPU / audio / model / networkを実行せず固定した。
+
+### BL-043 — Music host DOM seam manifest / gate ✅ 2026-08-02
+- `engine.js` 64 ID、`fm.js` 56 ID、audio consumer 2種のDOM lookupをread-only抽出し、
+  Core required 60 / optional 5、FM required 76 / optional 31のhost別manifestへ固定した。
+- HTML tree / browser-state guardでID exact-case・tag / range / select / ARIA / hidden shim、
+  canonical classic-defer consumer、raw-text / plaintext / frameset / foreign / table / select、
+  CSP / SRI / legacy language / URL control文字によるconsumer停止をnetworkなしで検証する。
+- source token gateはper-ID multisetだけでなくlive function・parameter・owner binding・loop /
+  delegated click・genre profile 9-fader domainまで結線。shadow / dead compensation、escaped
+  identifier、computed global、string timer、eval / Function / constructor経路をfail-closedにした。
+- 101件のin-memory負fixtureをlabel hash / exact count付きで自己検証。stack-check 30 PASS /
+  0 FAIL / 0 SKIP（0 BAD）。`engine.js`、HTML / SW / runtime、audio / GPU / modelは不変。
+
+### BL-042 — Band Room auxiliary authority drift gate ✅ 2026-08-02
+- test-only hookをメモリ内で注入し、実`loadBandsRegistry()`をfake 503へ通してhardcoded
+  Tabasco fallbackを取得。`bands.json`正本と3 path、7曲のID・順序・track・titleを完全一致
+  検証し、実timed loader / song lookupもfake JSONで実行した。tracked runtimeは無変更。
+- timed lyricsをHey / I got a feeling / Under the Moon / Human Fly / Sisterのexact 5曲へ限定。
+  各行をfinite number・非負・strict昇順・registry `duration_s`以内・空でない本文へ固定し、
+  TABASCO / Electric Sheepがfinal-sheet fallbackになることも検証した。
+- band key / song identity / order / track / title / 3 path、missing / extra ID、string / NaN /
+  Infinity / 負値 / 逆順 / 同時刻 / 曲尺超過 / 空本文を個別に壊すin-memory負試験がreject。
+- stack-check 29 PASS / 0 FAIL / 0 SKIP（0 BAD）。`band-room.js`、registry、timed JSON、
+  audio / GPU / model / network、`br-230` / `hazama-fm-v395`は不変。
+
+### BL-037 — Music satellite / engine seam executable contract harness ✅ 2026-08-02
+- 5 satelliteをengine globalsなしの同一VMへ先行loadし、test-only fixtureで47個の遅延
+  bindingを後から注入。routing / focus / recorder / packet / Hazama feedbackの5 API群を
+  fakeだけで実呼出しし、missing seam、browser fallback、timer / channel cleanupも検証した。
+- `index.html` / `fm.html`のhost別Tone契約、classic defer順、重複・欠落・async / module化、
+  SW precache一意収録 / marker parityを固定。comment / script body内の偽tag・URL、
+  dependency / consumer member driftを意図的に作る負テストがrejectすることも確認した。
+- `engine.js`はprovider / consumer markerをtextで読むだけで実行・変更せず、HTML / SW /
+  satellite runtimeも不変。Tone / MediaRecorder / DOM / storage / BroadcastChannel / timerは
+  同期fakeで、network、実audio、GPU / modelを使わない。`fm-118` / `hazama-fm-v395`据置。
+- stack-check 29 PASS / 0 FAIL / 0 SKIP（0 BAD）。実browser挙動、音質、試聴は証明対象外。
+
+### BL-036 — Tabasco songs catalog v2 + drift validator ✅ 2026-08-02
+- `presets/tabasco-songs.json`をmetadata-only / runtime非消費の派生inventory v2へ置換。
+  7曲のID・順序・title・durationを`bands.json`、BPM / key / 構成を各drum-frame、
+  歌詞をfinal文書へ同期し、個人PC絶対path、`TBD` / `todo`、完了済みnext stepを除去した。
+- BPM / keyは全曲`human_unverified`を維持し、asset provenanceはBL-035のowner判断に残した。
+  Human Fly frameの表示名driftだけをruntime registryへ正規化した。
+- runtimeが読まない一覧をSW precacheから外し、旧v1 cache退役のため`hazama-fm-v395`へ更新。
+  `check-tabasco-songs-catalog.mjs`が7曲coverage、frame / lyrics / path / status / non-precache
+  deliveryをnetworkなしで検証。意図的BPM driftの負試験もFAILを確認して復元した。
+- stack-check 28 PASS / 0 FAIL / 0 SKIP。`engine.js`、音源、音色・mix・level、model weight、
+  GPU処理、audio renderは不変。PWA更新後のoffline実機確認はbrowser checklistに残す。
+
+### BL-034 — autonomy control-plane の factual catch-up + currency gate ✅ 2026-08-02
+- `CODEX-HANDOFF.md`を現行のBACKLOG / LEDGER入口、resource / machine boundary、
+  Listen → HAZAMA → Lyric Labへ同期。v276候補、BL-028未着手、TASK E再生成promptを
+  実装状況付きhistorical archiveへ封じた。
+- `HAZAMA-FM-ARCHITECTURE.md`を5 active repo role、5 public surface、3 manifest、
+  same-origin preset、現行audio constants / UI safety / PWA routing / HAZAMA synth laneへ更新。
+- `config/autonomy-doc-currency.json`で3文書と事実sourceを
+  `last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c`へ固定。
+  `check-autonomy-doc-currency.mjs`がancestor、marker、runtime tuple、committed / dirty source
+  よりdocが古い状態をnetworkなしで拒否する。
+- 監査でv393のTonejs/audio固定URLがSW sample cache分類から漏れる回帰を発見しv394で修正。
+  catalog 21 rootを実classifierへ通すgateを追加。stack-check 27 PASS / 0 FAIL / 0 SKIP。
+  `engine.js`、sample content、音色・mix・level、model weight、GPU / audio処理は不変。
+
+### BL-033 — 外部依存 / モデル lock + mutable URL / license gate ✅ 2026-08-02
+- browser CDN、sample source、worker package、repo-external modelを24件の
+  `config/external-dependencies.json` に統合。version / commit・model revision / integrity /
+  license / size上限 / 保存先 / 実行machine / fallbackを単一の正本にした。
+- catalog 21定義をdependency IDへ接続し、GitHub由来sample URLを同一contentのcommit SHAへ
+  固定。mutable URL 0、license statusはverified 18 / pending 5 / N/A 1。根拠がないDirtと
+  drum familyは推測せずpending、CasioはCC-BY-NC-SA-4.0へ訂正した。
+- ACE-Step / Demucs / Whisperの3モデルはrepo-external・明示download・`worker.gpu`限定。
+  download / import / executionは行わず、tracked weight 0をvalidatorでfail-closed検証する。
+- `check-external-dependencies.mjs`と`hazama-fm-v393`を追加。stack-check 26 PASS / 0 FAIL /
+  0 SKIP。`engine.js`、音色・mix・level、意図するsample content、音源/model weightは不変。
+  実CDN取得・実音・GPU実行はhuman gateのまま。
+
+### BL-040 — README / Band Room manual を現行の遊び方へ同期 ✅ 2026-08-02
+- READMEに公開Listen / HAZAMA direct / Band Room / Lyric Lab / FM / Core Rigを集約。
+  ManualをHAZAMA → START → fail-closed復帰 → Lyric Labの詳細正本にし、Usageは
+  用途別レシピと正本参照へ整理した。
+- v168-eraのcurrent表現、常にTabasco復元、START連打、Wi-Fi必須等の古い案内を、
+  synth-only自動選択、band/song/mode busy、保存visible band/deep-link優先、
+  cache-awareの現行挙動へ更新。`check-band-room-docs.mjs`で回帰検証する。
+- precache済みdocsを既存PWAへ届けるため`hazama-fm-v392`。Band Room runtime
+  (`br-230` / `br-88`)、`engine.js`、音色・mix・level、音源、model / GPU処理は不変。
+  stack-check 25 PASS / 0 FAIL / 0 SKIP。実音・mobile・selector昇格はBL-041、
+  車載/BluetoothはBL-003のhuman gateに残す。
+
+### BL-039 — Listen hub を HAZAMA / Lyric Lab 現行導線へ更新 ✅ 2026-08-02
+- `listen.html` の最初の一手をHAZAMAへ更新し、通常 / `?aiLight=1` の60–90秒quick pass、
+  約6分arc、Lyric Lab制作handoffを一画面に統合。v299 Funk / v301 Human Flyは
+  historical evidenceとして保持した。
+- v388 / v390の現在QAとBL-041の人間試聴境界をlistening backlog、LS-01 / LS-03、
+  runtime checklistへ同期。`check-listen-hub.mjs`でroute、local target、静的a11y、
+  current / historical境界を回帰検証する。
+- `hazama-fm-v391`。Band Room runtime (`br-230` / `br-88`)、`engine.js`、音色・mix・level、
+  音源、model / GPU処理は不変。実音・mobile・selector昇格はBL-041に残す。
+
+### BL-038 — Band Room synth-only playability contract + fail-closed START ✅ 2026-08-01
+- HAZAMA deep-linkを自動 `AI 再現` にし、非対応の原音modeをdisable。HAZAMAが強制した
+  synthだけをTabasco復帰時にstemsへ戻し、利用者がTabascoで選んだsynthは維持する。
+- Tone/AudioContext/assetsをfail-closed化し、START中のband/song/mode snapshotとbusy reasonを
+  固定。band load rollback、再START失敗時MediaSession、REC無音開始、bridge pending/late resolveを
+  CPU-only契約と回帰テストで保護。keyboard shortcut / Help focus / range・mode focusも改善。
+- `engine.js` / 音色・mix・level / 音源 / model / GPU処理は不変。stack-check 23 PASS / 0 FAIL / 0 SKIP。
 
 ### BL-032 — Lyric Lab API privacy boundary + fail-closed integrity gates ✅ 2026-08-01
 - PR #392。Service Worker から `/api/` を完全 bypassし、cache cleanup を

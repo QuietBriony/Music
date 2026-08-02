@@ -4,6 +4,11 @@
 > が起動時に fetch して、kit dropdown と chord instrument selector に並べる。
 > repo に音源本体を置かないので **容量を消費しない**。
 
+> revision、license status、容量、保存先の正本は
+> [`config/external-dependencies.json`](../config/external-dependencies.json)。catalog の
+> `license` はUI表示用で、利用許可を単独で証明しない。`pending` のsourceは「使えると
+> 法的確認済み」を意味しない。
+
 ---
 
 ## なぜ catalog 方式か
@@ -16,7 +21,7 @@
 すれば:
 
 - catalog 編集だけで音源バリエーション無限
-- ライセンス情報を catalog 内に明示
+- UI向けライセンス表示をcatalogに置き、根拠と確認状態はdependency manifestへ接続
 - ユーザーが localStorage 経由で個別 kit を追加できる (v102)
 - 将来 catalog を別 repo に出しても band-room.js 変更不要
 
@@ -58,10 +63,11 @@ Service Worker (`sw.js`) の precache に含まれてるので、オフライン
 ```json
 {
   "id": "dirt-808",
-  "label": "TR-808 (TidalCycles dirt-samples, CC-0)",
+  "label": "TR-808 (TidalCycles dirt-samples; license review pending)",
   "source": "tidalcycles/dirt-samples",
-  "license": "CC-0 (Public Domain)",
-  "base_url": "https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@master",
+  "dependency_id": "dirt-samples",
+  "license": "UNVERIFIED — see dependency manifest",
+  "base_url": "https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@c74fc80f8db8038f6a33648ffef5ac00a07ad402",
   "voices": {
     "kick":  "/808bd/BD0000.WAV",
     "snare": "/808sd/SD0000.WAV",
@@ -78,7 +84,8 @@ Service Worker (`sw.js`) の precache に含まれてるので、オフライン
 | `id` | string | ✓ | drum source 識別子。kit selector の value (`online/<id>`) になる。`[a-zA-Z0-9_-]+` |
 | `label` | string | ✓ | UI 表示名 |
 | `source` | string |  | 出典 (repo/site 名)、UI title attr 用 |
-| `license` | string |  | ライセンス記述 (CC-0 / CC-BY / MIT 等)、UI title attr 用 |
+| `dependency_id` | string | ✓ | `config/external-dependencies.json` の `sample_source` ID |
+| `license` | string | ✓ | UI表示用。法的状態の正本はmanifestの`license.status` |
 | `base_url` | string | ✓ | サンプル URL の prefix。末尾スラッシュなし |
 | `voices` | object | ✓ | 6 voice 必須: `kick / snare / hat / ghost / fill / crash` — 各 voice path は base_url に concat される |
 
@@ -104,8 +111,9 @@ band-room の drum-floor scheduler が drum-frames JSON の `events[]` から名
   "label": "Salamander Grand Piano (Tone.js demo)",
   "kind": "sampler",
   "source": "tonejs.github.io",
+  "dependency_id": "tonejs-audio-samples",
   "license": "CC-BY 3.0",
-  "base_url": "https://tonejs.github.io/audio/salamander",
+  "base_url": "https://cdn.jsdelivr.net/gh/Tonejs/audio@efd8296360f9526e379bfbe5c1698ff54d6a1d34/salamander",
   "notes": {
     "A0": "/A0.mp3",
     "C1": "/C1.mp3",
@@ -120,6 +128,7 @@ band-room の drum-floor scheduler が drum-frames JSON の `events[]` から名
 | `id` | string | ✓ | 識別子 |
 | `label` | string | ✓ | UI 表示名 |
 | `kind` | string | ✓ | 今は `"sampler"` のみ対応 |
+| `dependency_id` | string | ✓ | manifestのimmutable source / license evidenceへ接続 |
 | `base_url` | string | ✓ | サンプル URL の prefix |
 | `notes` | object | ✓ | note name → relative path。Tone.Sampler が pitch shift で補間 |
 
@@ -130,32 +139,33 @@ note name は Tone.js 規約: `C4 / C#4 / Db4 / D4 / ...` (西洋音名 + octave
 
 ## サンプル URL の探し方
 
-### A. tonejs.github.io (MIT / Tone.js 公式 demo)
+### A. Tone.js公式demo audio（collectionごとにlicenseが異なる）
 
-Tone.js の例で使われてる音源は **そのまま借りられる**。CORS 対応済み、安定。
+Tone.jsのコードlicenseとsample assetのlicenseは別。catalogでは、確認済みの
+SalamanderをCC-BY 3.0、CasioをCC-BY-NC-SA 4.0、根拠が見つからないdrum 3 familyを
+`pending` としてmanifestに記録している。runtimeはGitHub commitへ固定する。
 
 ```
-https://tonejs.github.io/audio/drum-samples/CR78/{kick,snare,hihat}.mp3
-https://tonejs.github.io/audio/drum-samples/breakbeat13/{kick,snare,hihat}.mp3
-https://tonejs.github.io/audio/drum-samples/acoustic-kit/{kick,snare,hihat}.mp3
-https://tonejs.github.io/audio/salamander/{A0,C1,Ds1,Fs1,A1,...,C8}.mp3
-https://tonejs.github.io/audio/casio/{A1,A2,As1,B1,C2,Cs2,D2,Ds2,E2}.mp3
+https://cdn.jsdelivr.net/gh/Tonejs/audio@efd8296360f9526e379bfbe5c1698ff54d6a1d34/drum-samples/CR78/{kick,snare,hihat}.mp3
+https://cdn.jsdelivr.net/gh/Tonejs/audio@efd8296360f9526e379bfbe5c1698ff54d6a1d34/salamander/{A0,C1,Ds1,Fs1,A1,...,C8}.mp3
+https://cdn.jsdelivr.net/gh/Tonejs/audio@efd8296360f9526e379bfbe5c1698ff54d6a1d34/casio/{A1,A2,As1,B1,C2,Cs2,D2,Ds2,E2}.mp3
 ```
 
 Tone.js のソースを github で grep すれば他の URL も見つかる。
 
 ### B. jsDelivr 経由で github の wav repo を借りる
 
-任意の github repo の任意の commit に jsDelivr CDN 経由でアクセス:
+任意のgithub repoの**40桁commit SHA**にjsDelivr CDN経由でアクセスする。branch/tagは
+後から同名の内容が動き得るためtracked catalogでは禁止:
 
 ```
-https://cdn.jsdelivr.net/gh/<owner>/<repo>@<branch_or_tag>/<path>
+cdn.jsdelivr.net/gh/&lt;owner&gt;/&lt;repo&gt;@&lt;40-character-commit-sha&gt;/&lt;path&gt;
 ```
 
-例: TidalCycles dirt-samples (CC-0):
+例: 現在固定しているTidalCycles dirt-samples（licenseはfamily単位で確認待ち）:
 
 ```
-https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@master/808bd/BD0000.WAV
+https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@c74fc80f8db8038f6a33648ffef5ac00a07ad402/808bd/BD0000.WAV
 ```
 
 注意: jsDelivr は git LFS には対応してない。raw な wav は OK。
@@ -174,12 +184,12 @@ https://freesound.org/data/previews/<id>/<id>_<user>-lq.mp3
 
 CORS は Freesound 側で許可されてる。
 
-### D. nbrosowsky/tonejs-instruments (MIT、Tone.js 用に整備済)
+### D. nbrosowsky/tonejs-instruments（sampleはCC-BY 3.0、codeはMIT）
 
 これが一番楽。jsDelivr 経由で全楽器サンプル群が一発で取れる。
 
 ```
-https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@master/samples/<instrument>/<note>.mp3
+https://cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments@622c2f1c32c8cfce4158ddc3eb26e518ddef37e5/samples/<instrument>/<note>.mp3
 ```
 
 利用可能な instrument:
@@ -195,7 +205,7 @@ violin, xylophone
 
 ```bash
 # Github contents API で一覧取れる
-curl -s "https://api.github.com/repos/nbrosowsky/tonejs-instruments/contents/samples/violin" \
+curl -s "https://api.github.com/repos/nbrosowsky/tonejs-instruments/contents/samples/violin?ref=622c2f1c32c8cfce4158ddc3eb26e518ddef37e5" \
   | jq -r '.[].name' | head -20
 ```
 
@@ -244,7 +254,7 @@ Salamander / VSCO 2 等は SFZ 形式で配布されてることが多い。SFZ 
 ```bash
 curl -I -X OPTIONS \
   -H "Origin: https://quietbriony.github.io" \
-  https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@master/808bd/BD0000.WAV
+  https://cdn.jsdelivr.net/gh/tidalcycles/dirt-samples@c74fc80f8db8038f6a33648ffef5ac00a07ad402/808bd/BD0000.WAV
 ```
 
 `access-control-allow-origin: *` が出れば OK。
@@ -262,8 +272,9 @@ curl -I -X OPTIONS \
 
 ### 1. catalog json を直接編集 (全員に反映)
 
-`presets/online-samples-catalog.json` を編集 → commit & push。Pages 再 build →
-全リスナーの band-room に反映。
+先に`config/external-dependencies.json`へsource revision、license evidence/status、容量、
+保存先を追加し、そのIDを`dependency_id`に指定する。次にcatalogを編集 → validator →
+commit & push。Pages再build後、全リスナーのBand Roomに反映される。
 
 ### 2. localStorage 経由で個別 kit 追加 (自分のブラウザだけ)
 
@@ -288,6 +299,7 @@ NSynth の wav は Google Storage にあって CORS 対応。
   "label": "NSynth strings (Magenta AI synth, CC-BY 4.0)",
   "kind": "sampler",
   "source": "magenta nsynth",
+  "dependency_id": "<manifestに先に追加したsample_source ID>",
   "license": "CC-BY 4.0",
   "base_url": "https://storage.googleapis.com/magentadata/datasets/nsynth/audio",
   "notes": {
@@ -312,6 +324,7 @@ VSCO 2 の percussion から組み立てる例:
   "id": "vsco2-percussion",
   "label": "VSCO 2 Community Percussion (CC0)",
   "source": "versilstudios",
+  "dependency_id": "<manifestに先に追加したsample_source ID>",
   "license": "CC0",
   "base_url": "https://example-vsco-cdn.com/vsco2/perc",
   "voices": {
@@ -446,18 +459,18 @@ Pages auto-deploy で全リスナーの band-room から利用可能になる。
 catalog に追加したい？
 │
 ├─ 自分で wav を作った
-│  └─→ OK (好きな license で repo にコミット or CDN ホスト)
+│  └─→ BL-035のasset契約とowner判断を通し、出典・生成条件・許諾をmanifestへ記録
 │
 ├─ ネットで見つけた
 │  │
 │  ├─ ライセンス表記が CC-0 / Public Domain
-│  │  └─→ OK (catalog の license フィールドに明記)
+│  │  └─→ 配布元・asset familyへの適用範囲を確認し、証拠URLをmanifestへ記録後に候補化
 │  │
 │  ├─ ライセンスが CC-BY (要 attribution)
-│  │  └─→ OK だが label に "by <author>" 入れて catalog に license: "CC-BY <ver>" 明記
+│  │  └─→ manifestに作者・版・証拠を記録し、必要なattributionをUI/docsへ出して候補化
 │  │
 │  ├─ MIT / Apache 2.0 / BSD
-│  │  └─→ OK (catalog の license フィールドに明記)
+│  │  └─→ code licenseかsample asset licenseかを分離確認。assetへ適用される場合だけ候補化
 │  │
 │  ├─ ライセンスが CC-BY-NC (非商用のみ)
 │  │  └─→ band-room は商用?個人練習なら OK だが、Pages = public、グレー
@@ -479,43 +492,18 @@ catalog に追加したい？
 
 ---
 
-## catalog validation スクリプト (将来の自動化案)
+## catalog / dependency validation
 
-`scripts/_validate_catalog.py` (未実装、将来追加):
+`node scripts/check-external-dependencies.mjs`はnetworkなしで次をfail-closed検証する。
 
-```python
-import json, requests, sys
-with open("presets/online-samples-catalog.json") as f:
-    cat = json.load(f)
+- catalog 21定義すべてが既知の`sample_source`へ接続している
+- jsDelivr GitHub URLが40桁commit SHAで、mutable branch URLがない
+- manifest全entryにrevision、license status、容量、保存先、実行machineがある
+- ACE-Step / Demucs / Whisper modelはrepo外・明示download・`worker.gpu`
+- tracked model weightが0で、Service Worker precacheにも入らない
 
-errors = 0
-for kit in cat.get("kits", []):
-    for voice, path in kit["voices"].items():
-        url = kit["base_url"] + path
-        try:
-            r = requests.head(url, timeout=5, allow_redirects=True)
-            if r.status_code != 200:
-                print(f"  ❌ {kit['id']}/{voice}: {url} → {r.status_code}")
-                errors += 1
-            cors = r.headers.get("access-control-allow-origin")
-            if not cors:
-                print(f"  ⚠️ {kit['id']}/{voice}: no CORS header")
-        except Exception as e:
-            print(f"  ❌ {kit['id']}/{voice}: {e}")
-            errors += 1
-
-for inst in cat.get("instruments", []):
-    for note, path in inst["notes"].items():
-        url = inst["base_url"] + path
-        r = requests.head(url, timeout=5, allow_redirects=True)
-        if r.status_code != 200:
-            print(f"  ❌ {inst['id']}/{note}: {r.status_code}")
-            errors += 1
-
-sys.exit(1 if errors else 0)
-```
-
-このスクリプトを CI に組み込めば、catalog の URL が死んだとき自動検知できる。
+URLの200/CORSや実際の音はnetwork/耳を使う別の明示検証。通常の`stack-check`では
+上流へアクセスせず、再現可能なstatic contractだけを検証する。
 
 ---
 
@@ -524,11 +512,11 @@ sys.exit(1 if errors else 0)
 実用的にすぐ使える順:
 
 ### 多楽器セット
-- **nbrosowsky/tonejs-instruments** (MIT) — 20 楽器、Tone.js 用に整備、jsDelivr 経由でロード安定。**v111 でメイン採用**
-- **tonejs.github.io/audio/** (MIT/CC-BY、Tone.js 公式 demo) — Salamander piano, Casio synth, drum kits
+- **nbrosowsky/tonejs-instruments** (sample: CC-BY 3.0 / code: MIT) — 20 楽器、commit固定。**v111 でメイン採用**
+- **Tonejs/audio** (collection別) — SalamanderはCC-BY 3.0、CasioはCC-BY-NC-SA 4.0、使用中drum familyは確認待ち
 
 ### ドラム特化
-- **tidalcycles/dirt-samples** (CC-0) — 808/909/各種 percussion 大量、jsDelivr 経由。**v97 で 6 kit 採用**
+- **tidalcycles/dirt-samples** (license review pending) — 808/909/各種percussion、commit固定。**v97 で6 kit採用**
 - **kb1ooo/sample-pack** (gh, CC0 個別) — 雑多な 1ショット
 
 ### Magenta / AI 系
@@ -547,5 +535,6 @@ sys.exit(1 if errors else 0)
 - **Drumkito** (CC0/CC-BY) — boom-bap / vintage drum 派生
 
 ### 注意
+- 上の一覧は発見候補を含む。active sourceの法的状態はcatalog文字列でなくdependency manifestを正とする
 - LinnDrum, Roland TR-X の official ROM dump は灰色 (Roland が legal action する事例あり、避ける)
 - Sample CD / loop pack は基本 NG (商用ライセンス)

@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "last_verified_commit": "04bceffbe7560a04386f32048d221dfa8b51346c",
+  "verified_at": "2026-08-02",
+  "policy": {
+    "comparison": "tree_delta_plus_document_freshness",
+    "network": "forbidden",
+    "dirty_fact_requires_dirty_document": true,
+    "committed_fact_requires_descendant_document_commit": true
+  },
+  "documents": [
+    {
+      "path": "docs/CODEX-HANDOFF.md",
+      "purpose": "Live agent entrypoint, resource boundary, and historical prompt archive.",
+      "watch_exact": [
+        "AGENTS.md",
+        "band-room.html",
+        "band-room.js",
+        "config/external-dependencies.json",
+        "config/music-machines.json",
+        "docs/ACE-STEP-WORKFLOW.md",
+        "docs/autonomy/AUTONOMOUS-RUN.md",
+        "docs/autonomy/README.md",
+        "docs/autonomy/STACK-INDEX.md",
+        "functions/api/lyric-drafts.js",
+        "listen.html",
+        "lyric-lab.html",
+        "lyric-lab.js",
+        "presets/bands.json",
+        "scripts/stack-check.mjs",
+        "sw.js"
+      ],
+      "watch_prefixes": [],
+      "required_markers": [
+        "BL-041",
+        "Current control-plane snapshot",
+        "Historical TASK E",
+        "config/external-dependencies.json",
+        "hazama-fm-v395",
+        "last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c",
+        "worker-gaming",
+        "worker.gpu"
+      ],
+      "forbidden_markers": [
+        "GPU マシン **workerPC**",
+        "Session 跨ぎでこの doc",
+        "`~/ace-step-out",
+        "推奨アプローチ（FM workstream・未実行",
+        "現在の AI 再現 baseline"
+      ]
+    },
+    {
+      "path": "docs/HAZAMA-FM-ARCHITECTURE.md",
+      "purpose": "Current topology, runtime, playability, PWA, and repository-role contract.",
+      "watch_exact": [
+        "AGENTS.md",
+        "band-room.css",
+        "band-room.html",
+        "band-room.js",
+        "config/external-dependencies.json",
+        "config/music-host-dom-contract.json",
+        "engine.js",
+        "fm.css",
+        "fm.html",
+        "fm.js",
+        "index.html",
+        "listen.html",
+        "lyric-lab.html",
+        "lyric-lab.js",
+        "manifest-band-room.webmanifest",
+        "manifest-mixer.webmanifest",
+        "manifest.webmanifest",
+        "references/apple-music-refs.json",
+        "references/hazama-fm-pill-refs.json",
+        "scripts/check-music-host-dom-contract.mjs",
+        "scripts/check-music-satellite-contract.mjs",
+        "scripts/fixtures/music-satellite-engine-fixture.js",
+        "scripts/stack-check.mjs",
+        "style.css",
+        "sw.js"
+      ],
+      "watch_prefixes": [
+        "audio/",
+        "presets/"
+      ],
+      "required_markers": [
+        "AGENTS.md",
+        "BL-037",
+        "BL-041",
+        "BL-043",
+        "audio/genre-flavor.js?v=fm-80",
+        "band-room.css?v=br-88",
+        "band-room.js?v=br-230",
+        "engine.js?v=fm-118",
+        "fm.css?v=fm-54",
+        "fm.js?v=fm-72",
+        "hazama-fm-v395",
+        "last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c",
+        "lyric-lab.html",
+        "manifest-band-room.webmanifest",
+        "manifest-mixer.webmanifest",
+        "manifest.webmanifest",
+        "openclaw",
+        "same-origin",
+        "style.css?v=fm-28"
+      ],
+      "forbidden_markers": [
+        "12k 行",
+        "2 つの独立アプリ",
+        "PR auto-merge",
+        "curl raw.githubusercontent.com",
+        "current v149",
+        "tonejs.github.io 経由",
+        "→ TODO",
+        "衝突は版番号の大きい方"
+      ]
+    },
+    {
+      "path": "docs/autonomy/SESSION-LEDGER.md",
+      "purpose": "Append-only operational record of shipped facts, checks, next work, and blockers.",
+      "watch_exact": [
+        "AGENTS.md",
+        "band-room.css",
+        "band-room.html",
+        "band-room.js",
+        "config/external-dependencies.json",
+        "config/music-machines.json",
+        "docs/autonomy/AUTONOMOUS-RUN.md",
+        "docs/autonomy/README.md",
+        "docs/autonomy/STACK-INDEX.md",
+        "engine.js",
+        "fm.css",
+        "fm.html",
+        "fm.js",
+        "index.html",
+        "listen.html",
+        "lyric-lab.html",
+        "lyric-lab.js",
+        "manifest-band-room.webmanifest",
+        "manifest-mixer.webmanifest",
+        "manifest.webmanifest",
+        "scripts/check-autonomy-queue.mjs",
+        "scripts/stack-check.mjs",
+        "style.css",
+        "sw.js"
+      ],
+      "watch_prefixes": [
+        "audio/",
+        "functions/",
+        "migrations/",
+        "presets/"
+      ],
+      "required_markers": [
+        "BL-034",
+        "BL-044",
+        "hazama-fm-v395",
+        "last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c"
+      ],
+      "forbidden_markers": []
+    }
+  ]
+}

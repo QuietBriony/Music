@@ -6,7 +6,7 @@
 <title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-87" />
+<link rel="stylesheet" href="band-room.css?v=br-88" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -27,7 +27,7 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-67" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-229" defer></script>
+<script src="band-room.js?v=br-230" defer></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -135,6 +135,7 @@
     <div id="br-help-card">
       <h2 id="br-help-title">クイックガイド</h2>
       <ul>
+        <li><strong>まず遊ぶ</strong> — 曲を選んで START。HAZAMA は AI 再現専用なので自動で正しいモードになります</li>
         <li><strong>モード切替</strong> — 📻 原音 (4 stems) / 🎛 AI 再現 (打ち込み再現)</li>
         <li><strong>section nav</strong> — チップで jump、shift-click で A→B ループ</li>
         <li><strong>phrase trigger</strong> — q-p / a-l のキーで発火 (即発火 / 次小節 / ループ)</li>
@@ -175,7 +176,7 @@
       <!-- populated by band-room.js -->
     </section>
 
-    <section id="br-mode" aria-label="Playback mode">
+    <section id="br-mode" aria-label="Playback mode" aria-describedby="br-mode-status">
       <label class="br-radio">
         <input type="radio" name="br-mode" value="stems" checked />
         <span>📻 原音</span>
@@ -192,6 +193,7 @@
           <option value="sakanaction">サカナ風</option>
         </select>
       </label>
+      <p id="br-mode-status" role="status" aria-live="polite" hidden></p>
     </section>
 
     <section id="br-fm-suggestion" hidden aria-live="polite">
@@ -201,7 +203,8 @@
     </section>
 
     <section id="br-transport">
-      <button id="br-play" type="button" aria-label="Start playback" data-state="idle">START</button>
+      <button id="br-play" type="button" aria-label="Start playback" aria-describedby="br-start-status" data-state="idle">START</button>
+      <p id="br-start-status" role="alert" aria-live="assertive" aria-atomic="true" hidden></p>
       <button id="br-reset-audio" type="button" aria-label="Reset Band Room audio state" title="Stop audio, clear local audio state, and relaunch in safe boot">RESET AUDIO</button>
       <div id="br-song-timeline" aria-label="Song timeline">
         <span id="br-song-elapsed">0:00</span>

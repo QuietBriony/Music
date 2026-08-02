@@ -346,42 +346,43 @@
         <p class="subtitle">聴く入口、聴きどころ、未解決の指摘を一画面にまとめた実聴用ページ。</p>
       </div>
       <nav class="top-actions" aria-label="Primary pages">
+        <a data-listen-target="hazama" href="band-room.html?band=hazama">HAZAMA Band Room</a>
+        <a data-listen-target="lyric-lab" href="lyric-lab.html">Lyric Lab</a>
         <a href="fm.html">Hazama FM</a>
         <a href="index.html">Core Rig</a>
-        <a href="band-room.html?from=drum-floor&band=tabasco&song=human-fly">Human Fly</a>
       </nav>
     </header>
 
-    <section aria-labelledby="today-pass-title">
+    <main>
+    <section id="current-pass" aria-labelledby="today-pass-title" data-current-listen-pass="hazama-v390">
       <div class="section-head">
         <h2 id="today-pass-title">Today&apos;s listening pass</h2>
-        <p class="section-note">まず Human Fly。短い感想で次の修正先が決まる。</p>
+        <p class="section-note">まず HAZAMA。90秒の入口確認から6分arcへ。</p>
       </div>
       <div class="pass-grid">
         <div class="pass-panel">
-          <h3>聴く順番</h3>
+          <h3>HAZAMA quick pass（60–90秒）</h3>
           <ol>
-            <li><a class="mini-link" href="band-room.html?from=drum-floor&band=tabasco&song=human-fly">Human Fly</a> を開き、`AI 再現` にして 60-90 秒。ドラムだけ感、明るさ、bass/other の芯、固まりを確認。</li>
-            <li>同じ Human Fly を `原音 stems` に戻して 30 秒。AI が原音に対して薄いか、別物として成立しているかを比較。</li>
-            <li><a class="mini-link" href="fm.html?g=funk">FM Funk</a> を 60 秒。潰れが戻ってないか、逆にスカスカか、clavi/EP の返答があるかを見る。</li>
+            <li><a class="mini-link" data-listen-target="hazama" href="band-room.html?band=hazama">HAZAMA Band Room — Still Moving</a> を開く。v390 のsynth-only入口では `AI 再現` が自動選択され、利用できない `原音` は disabled になる。</li>
+            <li>START を一度押す。準備に失敗した時は無音の `playing` へ進まず、START直下の案内へ戻ることを確認。</li>
+            <li>60–90秒聴き、v388で守った16-step arp / bassの動きが2音サイレン（「ピーポー」）へ戻っていないか、単調・途切れ・重さを一言で残す。</li>
+            <li>弱端末の再現確認には <a class="mini-link" data-listen-target="hazama-light" href="band-room.html?band=hazama&amp;aiLight=1">phone-light</a> を使い、同じ60–90秒を比べる。</li>
           </ol>
-          <p class="decision-text">最初の返答は一行でいい。例: `Human Fly AI: bass は出たが other がまだ薄い。明るさはOK。展開は平坦。`</p>
+          <p class="decision-text">返答例: `HAZAMA light / 90秒: START一発。ピーポーなし。途切れなし。まだ少し単調。`</p>
         </div>
         <div class="pass-panel">
-          <h3>何を言えば何を直すか</h3>
+          <h3>6分arc → 制作へ</h3>
           <ul>
-            <li>`まだドラムだけ` → guitar/chord/other の密度と音量、section 別の出し方を上げる。</li>
-            <li>`明るい/シャリつく` → cymbal、exciter、high shelf をもう一段下げる。</li>
-            <li>`こもる/重い` → low-mid と bass sustain を整理する。</li>
-            <li>`平坦/展開がない` → intro/verse/chorus/break の section gain とフレーズ差を広げる。</li>
-            <li>`固まる/重い` → mobile AI 描画、scheduler、sampler preload をさらに軽くする。</li>
-            <li>`良くなった` → その要素を固定して、次は melody/voice stuck 感へ進む。</li>
+            <li>quick passが安定したら約6分。intro / arp / drive / verse / lift / mantra / break / release / outro の役割と密度が移り、同じ短い断片に張り付かないかを見る。</li>
+            <li>`ピーポー` → v388のphone-light回帰。`鳴らない` → v390のSTART / asset準備。`途切れる` → phone予算。`平坦` → 6分arcのsection差として分けて返す。</li>
+            <li>残したい言葉、展開、制作先が見えたら <a class="mini-link" data-listen-target="lyric-lab" href="lyric-lab.html">Lyric Lab</a> で歌詞とACE-Step等への制作handoffを整理する。</li>
+            <li>v388の構造gateとv390の入口契約は自動確認済み。実音、mobile、通常公開への昇格はBL-041の人間判定まで保留。</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <section aria-labelledby="fm-audition-title">
+    <section id="historical-passes" aria-labelledby="fm-audition-title">
       <div class="section-head">
         <h2 id="fm-audition-title">FM quick audition</h2>
         <p class="section-note">Open, press START, then listen before switching.</p>
@@ -414,11 +415,11 @@
           </div>
           <div class="meta"><b>FM</b><span>60 sec</span></div>
         </a>
-        <a class="card rose" href="fm.html?g=funk">
+        <a class="card rose" data-pass-status="historical" href="fm.html?g=funk">
           <div>
             <strong>Funk pocket</strong>
             <span>Clavi/EP color and rubber syncopation after the v293 timing pass.</span>
-            <span class="known-issue"><b>Current pass:</b> v299 reduced funk layer level, kick/snare weight, sub bass, and tape saturation after the "crushed/packed" phone note.</span>
+            <span class="known-issue"><b>Historical pass (v299):</b> reduced funk layer level, kick/snare weight, sub bass, and tape saturation after the "crushed/packed" phone note.</span>
             <span class="listen-cue"><b>Listen for:</b> clavi/EP が返答しているか。body pocket は硬すぎないか。</span>
             <span class="known-issue"><b>Past note:</b> timing drift は解消。次はフレーズの面白さを確認。</span>
           </div>
@@ -460,10 +461,28 @@
 
     <section aria-labelledby="core-title">
       <div class="section-head">
-        <h2 id="core-title">Core and band room</h2>
-        <p class="section-note">Use these after FM exposes a direction worth keeping.</p>
+        <h2 id="core-title">Current play surfaces</h2>
+        <p class="section-note">HAZAMAから聴き、Lyric Labへ制作判断を渡す。</p>
       </div>
       <div class="grid">
+        <a class="card green wide" data-listen-target="hazama" href="band-room.html?band=hazama">
+          <div>
+            <strong>HAZAMA Band Room — Still Moving</strong>
+            <span>v390 synth-only entry: modeを探さず、START一発で現在の試聴へ入る。</span>
+            <span class="listen-cue"><b>Quick / long:</b> 60–90秒で安定とピーポー再発、約6分でsection arcと単調さを分けて見る。</span>
+            <span class="known-issue"><b>Human gate:</b> 実音・phone-light・通常公開は未判定。合格扱いにしない。</span>
+          </div>
+          <div class="meta"><b>HAZAMA</b><span>90 sec / 6 min</span></div>
+        </a>
+        <a class="card rose wide" data-listen-target="lyric-lab" href="lyric-lab.html">
+          <div>
+            <strong>Lyric Lab</strong>
+            <span>聴いた後の言葉、曲設計、制作先を同じ作品棚で整理する。</span>
+            <span class="listen-cue"><b>Use after listening:</b> keep / fix を短く残し、ACE-Step・BandLab・Suno・metadata-only Band Roomのhandoffへ。</span>
+            <span class="known-issue"><b>Boundary:</b> この導線はモデルを実行せず、音声やweightをrepoへ追加しない。</span>
+          </div>
+          <div class="meta"><b>Words</b><span>handoff</span></div>
+        </a>
         <a class="card blue wide" href="index.html">
           <div>
             <strong>Music Core Rig</strong>
@@ -473,15 +492,15 @@
           </div>
           <div class="meta"><b>Music</b><span>2 min</span></div>
         </a>
-        <a class="card green wide" href="band-room.html">
+        <a class="card amber wide" data-pass-status="historical" href="band-room.html?from=drum-floor&amp;band=tabasco&amp;song=human-fly">
           <div>
-            <strong>Band Room</strong>
-            <span>Practice box, stems, route badge, master volume, and live-band recovery checks.</span>
-            <span class="known-issue"><b>Current pass:</b> v301 moves Human Fly AI away from bright/mostly-drums: centroid 3045Hz, DR 11.79dB, stronger bass/guitar/chords.</span>
+            <strong>Human Fly comparison</strong>
+            <span>原音stemsとAI再現を比較する、以前のBand Room基準点。</span>
+            <span class="known-issue"><b>Previous measurement (v301):</b> centroid 3045Hz、DR 11.79dB、bass/guitar/chordsを前進。</span>
             <span class="listen-cue"><b>Listen for:</b> Human Fly AI のドラムだけ感が減ったか。bass/other の芯、明るさ、60-90秒の安定。</span>
-            <span class="known-issue"><b>Past note:</b> AI 再現が薄い、ドラムだけ感、voice/melody stuck 感が残りやすい。Gamingnote 2026-06-01: Human Fly は AI mix が明るく、bass/other が薄いので実聴比較。</span>
+            <span class="known-issue"><b>Historical note:</b> HAZAMA current passを終えた後の比較用。現在の最初の一手ではない。</span>
           </div>
-          <div class="meta"><b>Music</b><span>30 sec</span></div>
+          <div class="meta"><b>Band Room</b><span>historical</span></div>
         </a>
       </div>
       <div class="visual-row">
@@ -497,9 +516,11 @@
       </div>
       <div class="review-grid">
         <div class="review-panel">
-          <h3>過去指摘として拾うもの</h3>
+          <h3>今の判定と過去指摘</h3>
           <ul>
-            <li>FM: melody が単調、短い断片を回しているだけに聞こえる。</li>
+            <li>HAZAMA current: START一発、2音サイレン（ピーポー）再発、途切れ、60–90秒の単調さ。</li>
+            <li>HAZAMA long: 約6分のsection arcが進むか、同じ短い断片へ戻り続けないか。</li>
+            <li>Historical FM: melody が単調、短い断片を回しているだけに聞こえる。</li>
             <li>FM: rhythm や転調の入り方が不自然で、気持ち悪い瞬間がある。</li>
             <li>FM: bass/root/5th/octave の固定 loop 感が残る。</li>
             <li>Band Room: AI 再現の音量差、薄さ、ドラムだけ感、melody/voice stuck 感。</li>
@@ -509,15 +530,13 @@
         </div>
         <div class="review-panel">
           <h3>返し方の例</h3>
-          <p class="feedback-sample">対象: FM funk / 60秒
-感想: ドラムは良いけどメロディが同じ
-残す: clavi の色と pocket
-直す: 返答フレーズ、休符、違う音域
+          <p class="feedback-sample">対象: HAZAMA phone-light / 90秒
+感想: START一発、ピーポーなし、少し単調
+残す: arpの動きと低域
+直す: verseからliftの差
 優先度: 高
 
-対象: Band Room AI / Human Fly
-感想: 音が薄い。ドラムだけ前に出る
-直す: bass/voice の芯、音量差、練習用の安定</p>
+次: 6分arcを通す → Lyric Labでkeep/fixを作品へ残す</p>
         </div>
       </div>
       <div class="visual-row">
@@ -550,6 +569,8 @@
         </a>
       </div>
     </section>
+
+    </main>
 
     <footer>
       <span>Music Stack listening index</span>

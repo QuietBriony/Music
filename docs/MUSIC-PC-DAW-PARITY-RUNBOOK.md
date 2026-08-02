@@ -32,6 +32,14 @@ Core:
 - Python packages in the worker venv: PyTorch, torchaudio, Demucs, librosa,
   soundfile, imageio-ffmpeg, scipy, numpy.
 
+Exact CPU/GPU analysis package versions, license status, measured footprint, and external
+model locations are maintained in
+[`config/external-dependencies.json`](../config/external-dependencies.json). Rebuild from
+that baseline rather than an unbounded `pip install -U`. ACE-Step / Demucs / Whisper weights
+stay under the repo-external worker root and are not copied to StudioPC unless an operator
+explicitly schedules that model lane. DAW/product versions below remain the source of truth
+for commercial desktop software and are not inferred from the Python manifest.
+
 DAW:
 
 - Cakewalk Product Center.

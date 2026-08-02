@@ -2,7 +2,7 @@
  "version": 1,
  "format": "song-track",
  "song_id": "tabasco-human-fly",
- "song_title": "Human Fly (v2)",
+ "song_title": "Human Fly",
  "band": "air rock connect box",
  "original_album": "Tabasco. LIVE (2005-ish)",
  "session_signature": "LCD motorik + Backdrop Bomb mixture + Nirvana quiet-loud + UNRIPE hardcore-postpunk 16th drive · drum events extracted from real stem",
@@ -834,7 +834,7 @@
  "notes": [
   "drum-floor preset format with song-track extension (structure + chord_progression + bass_pattern_hints)",
   "band-room.html consumes this directly via Tone.js scheduling",
-  "songs catalog: presets/tabasco-songs.json"
+  "derived inventory (not runtime input): presets/tabasco-songs.json"
  ],
  "events_extracted_from": "presets/tabasco-stems/human-fly/drums.mp3",
  "events_extraction_method": "librosa.onset_detect + band-energy classify + 16th-quantize",

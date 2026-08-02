@@ -1,12 +1,12 @@
 # Band Room — Architecture Map
 
-One-page orientation for `band-room.js` (~9.5k lines, single IIFE). For the change
+One-page orientation for `band-room.js` (single IIFE; line count is intentionally not pinned). For the change
 log see `BAND-ROOM-CHANGELOG.md`; for the audio-perf rules see
 `AUDIO-COST-INVARIANTS.md`; for FM-side hand-offs see `CODEX-HANDOFF.md` (BL-028).
 
 ## What it is
 
-A PWA (`band-room.html` + `band-room.js`) for practising along to the Tabasco catalog.
+A PWA (`band-room.html` + `band-room.js`) for Tabasco practice and the HAZAMA synth-only lane.
 Two playback modes, switched by the `#br-mode` radios:
 
 - **原音 (stems)** — the real recording: 4 separated stems (`drums/bass/vocals/other`)
@@ -47,7 +47,23 @@ shared master: masterGain(1.2) → comp×2 → EQ → widener → tape-sat + roo
 - One IIFE wrapper; module `state` object near the top; `window.BandRoomTestHooks`
   exposes `BANDROOM_APP_VERSION`, prefs migration, etc. — the **test/gate contract**, so
   keep it stable across refactors.
-- Stems load from `presets/tabasco-stems/{songId}/{stem}.mp3` (local, SW-precached).
+- Runtime song registry and catalog duration come from `presets/bands.json`; per-song BPM / key / structure comes from
+  `presets/drum-frames-tabasco-{songid}.json`; final lyrics come from
+  `docs/tabasco-lyrics-final.md` for canonical / synth / fallback text. Stems mode can overlay
+  ASR-derived timestamps / lines from `docs/tabasco-lyrics-timed.json` for 5 songs.
+- The hardcoded Tabasco registry used only when `bands.json` fails is an emergency mirror, not
+  another authority. BL-042 keeps its three paths (`stems_dir`, `drum_frames_pattern`,
+  `lyrics_doc`) and all 7 ordered `{ id, track, title }` rows exactly aligned with the registry.
+- Timed lyrics are limited to the 5 ASR-backed vocal songs. Their timestamps must be finite,
+  non-negative, strictly increasing, and no later than each registry `duration_s`; TABASCO and
+  Electric Sheep intentionally use the final-sheet fallback instead.
+- `presets/tabasco-songs.json` v2 is a metadata-only **derived inventory**. Runtime code does
+  not fetch it and the Service Worker does not precache it. Its BPM / key status remains
+  `human_unverified`; asset provenance remains the BL-035 owner decision.
+- Effective playback duration is the maximum of registry duration, loaded stem buffers, and
+  frame structure duration; catalog `duration_s` alone does not truncate a longer source.
+- Tabasco stems resolve from the selected band registry entry (normally
+  `presets/tabasco-stems/{songId}/{stem}.mp3`).
 
 ## Versioning (three number systems — bump the right one)
 
@@ -59,12 +75,16 @@ shared master: masterGain(1.2) → comp×2 → EQ → widener → tape-sat + roo
 
 - **Dev-only / infra changes** (gate scripts, docs, dead-code) take **no version bump**.
 - The `hazama-fm-vNNN` counter is **shared with the FM workstream** → parallel sessions
-  collide on it. Always `git fetch` before push; on collision the higher number wins
-  (renumber + rebase). Gate: `check-sw-version-history` (dup-detection + sw==latest).
+  collide on it. Always fetch before a shared update; on collision, stop, compare both
+  changes, reserve the next unused number, rebase, and rerun every gate. Never discard a
+  concurrent change merely because its number is lower. Gate: `check-sw-version-history`
+  (dup-detection + sw==latest).
 
 ## Integrity gates (run `node scripts/stack-check.mjs` for all)
 
-`check-band-room-logic.mjs` (band-room invariants incl. G-4 dispose-coverage),
+`check-band-room-logic.mjs` (band-room invariants incl. G-4 dispose-coverage, emergency fallback
+parity, and exact timed-lyrics ID / timeline bounds),
+`check-tabasco-songs-catalog.mjs` (7-song registry / frame / lyrics / path / delivery drift),
 `check-js.mjs` (syntax), `check-fm-route-badge.mjs`, `check-runtime-doc-markers.mjs`,
 `check-audio-cost-gates.mjs` (G-1/G-2: no ungated always-on heavy node — band-room=FAIL,
 FM=WARN→handoff), `check-sw-version-history.mjs` (G-3), `audit.py` (preset/precache/

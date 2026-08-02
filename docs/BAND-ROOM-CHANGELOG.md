@@ -1,6 +1,136 @@
-# Band Room - Changelog (v65 -> v389 compact)
+# Band Room - Changelog (v65 -> v395 compact)
 
-Current sw.js VERSION: v389. Latest Band Room audio runtime change: v388.
+Current sw.js VERSION: v395. Latest Band Room runtime change: v390 (playability only; audio graph unchanged). v391-v392 change Listen/playability docs; v393 pins external dependency metadata and the cached sample catalog; v394 restores the pinned Tonejs/audio families to the sample runtime cache; v395 replaces the stale Tabasco snapshot with a validated derived inventory.
+
+---
+
+## v395 compact - Tabasco derived inventory / drift gate
+
+BL-036として、初期分析snapshotの`presets/tabasco-songs.json`を、現行7曲の正本から
+導出するmetadata-only inventory v2へ置換した。
+
+- 個人PC絶対path、`TBD` / `todo`、完了済みnext stepを除去。BPM / keyはruntime値を
+  記録するが、人耳確認済みとはせず全曲`human_unverified`を維持
+- `presets/bands.json`を曲順 / title / catalog durationの正本、7 drum-frameをBPM / key /
+  構成の正本、`docs/tabasco-lyrics-final.md`をcanonical / fallback歌詞正本として明示
+- 唯一の表示名driftだったHuman Fly frameの`Human Fly (v2)`をregistryの`Human Fly`へ同期
+- runtimeが読まない派生inventoryをprecacheから外し、旧v1 cacheを退役させるため
+  Service Workerを`hazama-fm-v395`へ更新
+- `check-tabasco-songs-catalog.mjs`で7曲coverage、正本同期、frame / lyrics、repo相対path、
+  placeholder、runtime非消費、SW非precache方針をnetworkなしで検証
+
+Band Room runtimeは`band-room.js?v=br-230` / `band-room.css?v=br-88`のまま。
+`engine.js`、音源、音色、mix / level、model weight、GPU処理、audio renderは不変。
+
+---
+
+## v394 compact - pinned Tonejs/audio sample cache classification
+
+v393でcatalogのTonejs/audio 6 familyをcommit-pinned jsDelivrへ移した際、Service Workerの
+sample classifierが旧`tonejs.github.io/audio`だけを認識していたため、初回取得後の
+runtime cache対象から外れる回帰を修正した。
+
+- `isSampleCdn()`へ`cdn.jsdelivr.net/gh/Tonejs/audio@<commit>`を追加。Dirt / nbrosowskyも
+  `@revision`を含むGitHub CDN pathへ判定を狭めた
+- `check-external-dependencies.mjs`がcatalog 21定義とsample source全runtime rootを実際の
+  Service Worker classifierへ通し、cache漏れをnetworkなしで拒否する
+- browser runtime cache targetを`hazama-fm-v394-runtime`へ同期
+
+Band Room runtimeは`band-room.js?v=br-230` / `band-room.css?v=br-88`のまま。
+`engine.js`、sample URL/content、音色、mix / level、model weight、GPU処理、audio renderは不変。
+
+---
+
+## v393 compact - external dependency lock / sample provenance gate
+
+BL-033として、browser CDN、online sample、worker package、repo外modelを
+`config/external-dependencies.json`へ統合した。
+
+- catalog 21定義に`dependency_id`を付与。Dirt-Samples 6定義と
+  tonejs-instruments 9定義の`@master`を現在内容の40桁commit SHAへ固定し、Tone demo
+  6定義もTonejs/audio commitへ固定
+- nbrosowsky sampleをcode MITと分離してCC-BY 3.0へ訂正。DirtとTone drum familyは
+  根拠を推測せず`pending`、CasioはCC-BY-NC-SA 4.0として記録
+- ACE-Step v0.1.8、`acestep-v15-turbo`、Demucs `htdemucs`、Whisper `small`を
+  revision/hash付きrepo外modelとして登録。downloadは明示operator + `worker.gpu`限定
+- WorkerPCの既存Python distributionをmetadataだけで測定し、runbookをexact versionへ固定
+- `check-external-dependencies.mjs`でschema、runtime URL対応、mutable URL 0、license status、
+  machine capability、Service Worker非混入、tracked model weight 0をnetworkなしで検証
+- cached catalog / sample guide / handoff更新を既存PWAへ届けるためService Workerを
+  `hazama-fm-v393`へ更新
+
+Band Room runtimeは`band-room.js?v=br-230` / `band-room.css?v=br-88`のまま。
+`engine.js`、音色、mix / level、model weight本体、GPU処理、audio renderは不変。
+
+---
+
+## v392 compact - Band Roomの現行playability guideを一本化
+
+README / Band Room Manual / Usageを、v390-v391で成立した現在の入口へ同期した。
+
+- READMEに公開Listen / HAZAMA direct / Band Room / Lyric Lab / FM / Core Rigを集約
+- Manualを最短操作の正本にし、HAZAMA synth-only、自動AI再現、原音disabled、
+  START準備中のband/song/mode busy、fail-closed復帰、Lyric Lab handoffを一続きに整理
+- Usageは用途別レシピを保ちつつ、保存済みvisible band / deep-linkの起動優先順、
+  START復旧、初回asset取得とcache、手動Lyric Lab handoffを現行動作へ更新
+- `check-band-room-docs.mjs`で公開入口、local Markdown link、version境界、
+  shortest-flow markers、human gateの非昇格を回帰検証
+- Manual / Usageはprecache対象かつdocsはcache-firstなので、既存PWAへ更新を届けるため
+  Service Workerだけ`hazama-fm-v392`へ更新
+
+Band Room runtimeは`band-room.js?v=br-230` / `band-room.css?v=br-88`のまま。
+音色、mix / level、Tone graph、`engine.js`、GPU / model処理は不変。
+実音・desktop/mobile・main selector昇格はBL-041、車載/BluetoothはBL-003のhuman gate。
+
+---
+
+## v391 compact - Listen hub を HAZAMA current QAへ更新
+
+`listen.html` の最初の一手を2026-06のHuman Fly v301から現在のHAZAMAへ更新した。
+
+- 上部と主要cardから `band-room.html?band=hazama` / `lyric-lab.html` を直接開ける
+- 60–90秒quick passと約6分arcを分け、v388のphone-light 16-step / 2音ピーポー回帰、
+  v390のsynth-only自動選択 / fail-closed STARTを現在の判定項目として表示
+- `?aiLight=1` のphone-light比較入口を用意し、実音・mobile・通常公開はBL-041の
+  human gateまで未判定と明示
+- v299 FM Funk / v301 Human Flyは削除せず historical evidenceへ降格
+- listening backlogとLS-01 / LS-03を同期し、静的route・copy・local targetを
+  `check-listen-hub.mjs`で回帰検証
+
+Band Room runtimeは `band-room.js?v=br-230` / `band-room.css?v=br-88` のまま。
+音色、mix / level、Tone graph、`engine.js`、GPU / model処理は不変。
+
+`listen.html`, `scripts/check-listen-hub.mjs`, listening QA docs,
+`hazama-fm-v391`.
+
+---
+
+## v390 compact - HAZAMA を一発で遊べる playback contract
+
+HAZAMA は synth-only なのに Band Room が常に `📻 原音` で起動していたため、
+`?band=hazama` → START が stems 不在のまま silent-playing 表示へ進み得た。
+
+- `bands.json` に band 単位の `playback_modes` / `default_playback_mode` を追加。
+  HAZAMA deep-link は自動で `🎛 AI 再現` になり、利用不能な原音 pill を disabled 表示
+- START は asset preparation の成否を必ず確認し、失敗時は playing へ進まず
+  START 直下の live status に復旧手順を表示
+- `Tone.start()` / AudioContext も fail-closed 化し、asset/bridge準備後にもcontextを再確認。
+  START 準備中は band / track / mode を一時 lockし、非同期処理の各段でsnapshotを再検証。
+  先行するtrack/mode切替中のSTARTとrapid mode switchも拒否する
+- HAZAMA が強制した synth mode は Tabasco 復帰時に stems へ戻す一方、Tabasco で
+  ユーザーが選んだ synth は維持。band load 失敗時は旧 band / 曲 / 歌詞へ atomic rollback
+- START 失敗後に REC / stems pack が無音録音を始めない。background media bridge に
+  2 秒 timeout + attempt generationを設け、pendingやtimeout後のlate resolveが
+  START停止／direct+bridge二重出力を起こさない
+- Space 等の global shortcut は button / link / summary / contenteditable の標準操作を
+  横取りしない。Help dialog は open 時に focus を移し、close 時に opener へ戻し、Tab を trap
+- mode radio を Tab 到達可能な visually-hidden control にし、pill に `:focus-within` を追加。
+  custom range に `:focus-visible`、START alert に確実な live-region 更新順を追加。
+  クイックガイドも最初の一手を先頭にした
+
+音色、mix / level、Tone graph、`engine.js` は不変。GPU / model 処理なし。
+
+`band-room.js?v=br-230`, `band-room.css?v=br-88`, `hazama-fm-v390`.
 
 ---
 

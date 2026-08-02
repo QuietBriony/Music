@@ -1,0 +1,1678 @@
+{
+  "version": 1,
+  "purpose": "Explicit read-only DOM seam contract for the shared Music engine, Core Rig, and Hazama FM hosts.",
+  "policy": {
+    "required": "Consumer-facing element currently provided by this host; absence is a regression even when source access is null-safe.",
+    "optional": "A guarded probe owned by another host surface; it may be absent, but exact case/tag/type is checked if present.",
+    "runtime_execution": false
+  },
+  "consumers": [
+    {
+      "name": "engine",
+      "path": "engine.js",
+      "ids": [
+        "atmosphere_select",
+        "audio_output_select",
+        "audio_output_status",
+        "auto_arc_mode",
+        "auto_arc_status",
+        "auto_cycle",
+        "auto_toggle",
+        "background_value",
+        "bpm-value",
+        "btn_acid_lock",
+        "btn_audio_output",
+        "btn_keep_awake",
+        "btn_mic_follow",
+        "btn_odd_logic_ask",
+        "btn_packet_json",
+        "btn_rec",
+        "btn_reload_presets",
+        "btn_start",
+        "btn_stop",
+        "catalog-detail-body",
+        "catalog-info",
+        "catalog-select",
+        "culture_grammar_select",
+        "culture_grammar_status",
+        "energy-value",
+        "fader_body",
+        "fader_circle",
+        "fader_creation",
+        "fader_energy",
+        "fader_mind",
+        "fader_observer",
+        "fader_resource",
+        "fader_void",
+        "fader_wave",
+        "fm-genre",
+        "fm-mic-follow-amount",
+        "fm-mic-follow-amount-readout",
+        "fm-mic-follow-disable",
+        "fm-mic-follow-enable",
+        "header_bpm",
+        "header_output",
+        "header_sync",
+        "mandala-layers",
+        "mic_follow_bar",
+        "mic_follow_detail",
+        "mic_follow_label",
+        "mic_follow_panel",
+        "mode-label",
+        "odd_logic_mode",
+        "odd_logic_status",
+        "output_level",
+        "output_value",
+        "preset-status",
+        "preset_select",
+        "source_color_select",
+        "status-text",
+        "sync_help",
+        "sync_route_kicker",
+        "sync_route_link",
+        "sync_route_reason",
+        "sync_route_title",
+        "transport-dock",
+        "transport_dock_toggle",
+        "voice_status"
+      ],
+      "extraction": {
+        "get_element_by_id": {
+          "literal_call_count": 87,
+          "literal_call_counts": {
+            "atmosphere_select": 2,
+            "audio_output_select": 3,
+            "audio_output_status": 1,
+            "auto_arc_mode": 3,
+            "auto_arc_status": 1,
+            "auto_cycle": 2,
+            "auto_toggle": 2,
+            "background_value": 1,
+            "bpm-value": 1,
+            "btn_acid_lock": 2,
+            "btn_audio_output": 1,
+            "btn_keep_awake": 2,
+            "btn_mic_follow": 3,
+            "btn_odd_logic_ask": 1,
+            "btn_packet_json": 1,
+            "btn_rec": 1,
+            "btn_reload_presets": 1,
+            "btn_start": 3,
+            "btn_stop": 3,
+            "catalog-detail-body": 1,
+            "catalog-info": 1,
+            "catalog-select": 1,
+            "culture_grammar_select": 3,
+            "culture_grammar_status": 1,
+            "energy-value": 1,
+            "fm-mic-follow-amount": 2,
+            "fm-mic-follow-amount-readout": 1,
+            "fm-mic-follow-disable": 1,
+            "fm-mic-follow-enable": 1,
+            "header_bpm": 1,
+            "header_output": 1,
+            "header_sync": 1,
+            "mandala-layers": 1,
+            "mic_follow_bar": 1,
+            "mic_follow_detail": 1,
+            "mic_follow_label": 1,
+            "mic_follow_panel": 1,
+            "mode-label": 3,
+            "odd_logic_mode": 3,
+            "odd_logic_status": 1,
+            "output_level": 3,
+            "output_value": 1,
+            "preset-status": 3,
+            "preset_select": 2,
+            "source_color_select": 2,
+            "status-text": 5,
+            "sync_help": 1,
+            "sync_route_kicker": 1,
+            "sync_route_link": 1,
+            "sync_route_reason": 1,
+            "sync_route_title": 1,
+            "transport-dock": 2,
+            "transport_dock_toggle": 1,
+            "voice_status": 1
+          },
+          "literal_ids": [
+            "atmosphere_select",
+            "audio_output_select",
+            "audio_output_status",
+            "auto_arc_mode",
+            "auto_arc_status",
+            "auto_cycle",
+            "auto_toggle",
+            "background_value",
+            "bpm-value",
+            "btn_acid_lock",
+            "btn_audio_output",
+            "btn_keep_awake",
+            "btn_mic_follow",
+            "btn_odd_logic_ask",
+            "btn_packet_json",
+            "btn_rec",
+            "btn_reload_presets",
+            "btn_start",
+            "btn_stop",
+            "catalog-detail-body",
+            "catalog-info",
+            "catalog-select",
+            "culture_grammar_select",
+            "culture_grammar_status",
+            "energy-value",
+            "fm-mic-follow-amount",
+            "fm-mic-follow-amount-readout",
+            "fm-mic-follow-disable",
+            "fm-mic-follow-enable",
+            "header_bpm",
+            "header_output",
+            "header_sync",
+            "mandala-layers",
+            "mic_follow_bar",
+            "mic_follow_detail",
+            "mic_follow_label",
+            "mic_follow_panel",
+            "mode-label",
+            "odd_logic_mode",
+            "odd_logic_status",
+            "output_level",
+            "output_value",
+            "preset-status",
+            "preset_select",
+            "source_color_select",
+            "status-text",
+            "sync_help",
+            "sync_route_kicker",
+            "sync_route_link",
+            "sync_route_reason",
+            "sync_route_title",
+            "transport-dock",
+            "transport_dock_toggle",
+            "voice_status"
+          ],
+          "dynamic_arguments": [
+            {
+              "expression": "id",
+              "count": 4,
+              "scopes": [
+                "getSliderValue",
+                "syncSliderValue",
+                "setupTransportDockEscape",
+                "attachUI"
+              ],
+              "scope_domains": {
+                "setupTransportDockEscape": [
+                  "btn_start",
+                  "btn_stop"
+                ]
+              }
+            },
+            {
+              "expression": "map[k]",
+              "count": 1,
+              "scopes": [
+                "applyPresetUCM"
+              ]
+            }
+          ]
+        },
+        "literal_helper_calls": [
+          {
+            "callee": "getSliderValue",
+            "scope": "updateFromUI",
+            "call_count": 9,
+            "ids": [
+              "fader_body",
+              "fader_circle",
+              "fader_creation",
+              "fader_energy",
+              "fader_mind",
+              "fader_observer",
+              "fader_resource",
+              "fader_void",
+              "fader_wave"
+            ]
+          }
+        ],
+        "query_selectors": [
+          "#fm-genre button[aria-pressed='true']",
+          "[data-performance-pad=\"${active}\"]",
+          "[data-performance-pad=\"${name}\"]",
+          "[data-performance-pad]",
+          "[data-performance-pad].active"
+        ],
+        "body_data_page_fm_checks": 2,
+        "body_data_page_fm_operator_counts": {
+          "!==": 1,
+          "===": 1
+        },
+        "body_data_page_fm_predicates": [
+          {
+            "scope": "hazamaFmRuntimeGenre",
+            "operator": "!==",
+            "usage": "undefined_or_early_return_null"
+          },
+          {
+            "scope": "setupMediaSessionControls",
+            "operator": "===",
+            "usage": "early_return"
+          }
+        ],
+        "fader_literal_occurrences_per_id": 4,
+        "fader_origins": [
+          {
+            "scope": "program",
+            "binding": "SLIDER_BY_UCM",
+            "form": "object_values",
+            "mapping": {
+              "body": "fader_body",
+              "circle": "fader_circle",
+              "creation": "fader_creation",
+              "energy": "fader_energy",
+              "mind": "fader_mind",
+              "observer": "fader_observer",
+              "resource": "fader_resource",
+              "void": "fader_void",
+              "wave": "fader_wave"
+            }
+          },
+          {
+            "scope": "program",
+            "callee": "getSliderValue",
+            "form": "literal_call_arguments"
+          },
+          {
+            "scope": "applyPresetUCM",
+            "binding": "map",
+            "form": "object_values",
+            "mapping": {
+              "body": "fader_body",
+              "circle": "fader_circle",
+              "creation": "fader_creation",
+              "energy": "fader_energy",
+              "mind": "fader_mind",
+              "observer": "fader_observer",
+              "resource": "fader_resource",
+              "void": "fader_void",
+              "wave": "fader_wave"
+            }
+          },
+          {
+            "scope": "attachUI",
+            "binding": "ids",
+            "form": "array_values"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fm",
+      "path": "fm.js",
+      "ids": [
+        "auto_toggle",
+        "background_value",
+        "culture_grammar_select",
+        "fader_body",
+        "fader_circle",
+        "fader_creation",
+        "fader_energy",
+        "fader_mind",
+        "fader_observer",
+        "fader_resource",
+        "fader_void",
+        "fader_wave",
+        "fm-ai-fill",
+        "fm-ai-fill-status",
+        "fm-band-room-link",
+        "fm-dj-set",
+        "fm-dj-status",
+        "fm-drum-floor-link",
+        "fm-energy",
+        "fm-focus-mode",
+        "fm-focus-status",
+        "fm-genre",
+        "fm-next",
+        "fm-now",
+        "fm-progress",
+        "fm-resume",
+        "fm-route",
+        "fm-route-close",
+        "fm-route-diag-bridge",
+        "fm-route-diag-context",
+        "fm-route-diag-event",
+        "fm-route-diag-output",
+        "fm-route-diag-route",
+        "fm-route-panel",
+        "fm-route-rearm",
+        "fm-route-rearm-status",
+        "fm-route-status",
+        "fm-runtime-mode",
+        "fm-runtime-status",
+        "fm-section",
+        "fm-shuffle-status",
+        "fm-sync-status",
+        "fm-trace-body",
+        "fm-trace-btn",
+        "fm-trace-close",
+        "fm-trace-panel",
+        "fm_play",
+        "fm_shuffle",
+        "fm_sync",
+        "install-hint",
+        "install-hint-action",
+        "install-hint-details",
+        "install-hint-dismiss",
+        "install-hint-toggle",
+        "mandala-container",
+        "output_level"
+      ],
+      "extraction": {
+        "dollar_binding": {
+          "parameter": "id",
+          "target": "document.getElementById(id)"
+        },
+        "dollar_calls": {
+          "literal_call_count": 64,
+          "literal_call_counts": {
+            "auto_toggle": 1,
+            "background_value": 2,
+            "culture_grammar_select": 2,
+            "fader_energy": 1,
+            "fm-ai-fill": 1,
+            "fm-ai-fill-status": 1,
+            "fm-band-room-link": 2,
+            "fm-dj-set": 2,
+            "fm-dj-status": 1,
+            "fm-drum-floor-link": 2,
+            "fm-energy": 2,
+            "fm-focus-mode": 2,
+            "fm-focus-status": 1,
+            "fm-genre": 2,
+            "fm-next": 1,
+            "fm-now": 4,
+            "fm-resume": 2,
+            "fm-route": 2,
+            "fm-route-close": 1,
+            "fm-route-panel": 1,
+            "fm-route-rearm": 1,
+            "fm-route-rearm-status": 1,
+            "fm-route-status": 1,
+            "fm-runtime-mode": 2,
+            "fm-runtime-status": 1,
+            "fm-section": 1,
+            "fm-shuffle-status": 1,
+            "fm-sync-status": 1,
+            "fm-trace-body": 1,
+            "fm-trace-btn": 1,
+            "fm-trace-close": 1,
+            "fm-trace-panel": 1,
+            "fm_play": 2,
+            "fm_shuffle": 2,
+            "fm_sync": 2,
+            "install-hint": 2,
+            "install-hint-action": 2,
+            "install-hint-details": 1,
+            "install-hint-dismiss": 1,
+            "install-hint-toggle": 1,
+            "mandala-container": 1,
+            "output_level": 4
+          },
+          "literal_ids": [
+            "auto_toggle",
+            "background_value",
+            "culture_grammar_select",
+            "fader_energy",
+            "fm-ai-fill",
+            "fm-ai-fill-status",
+            "fm-band-room-link",
+            "fm-dj-set",
+            "fm-dj-status",
+            "fm-drum-floor-link",
+            "fm-energy",
+            "fm-focus-mode",
+            "fm-focus-status",
+            "fm-genre",
+            "fm-next",
+            "fm-now",
+            "fm-resume",
+            "fm-route",
+            "fm-route-close",
+            "fm-route-panel",
+            "fm-route-rearm",
+            "fm-route-rearm-status",
+            "fm-route-status",
+            "fm-runtime-mode",
+            "fm-runtime-status",
+            "fm-section",
+            "fm-shuffle-status",
+            "fm-sync-status",
+            "fm-trace-body",
+            "fm-trace-btn",
+            "fm-trace-close",
+            "fm-trace-panel",
+            "fm_play",
+            "fm_shuffle",
+            "fm_sync",
+            "install-hint",
+            "install-hint-action",
+            "install-hint-details",
+            "install-hint-dismiss",
+            "install-hint-toggle",
+            "mandala-container",
+            "output_level"
+          ],
+          "dynamic_arguments": [
+            {
+              "expression": "id",
+              "count": 1,
+              "scopes": [
+                "setRouteDiagnosticText"
+              ]
+            },
+            {
+              "expression": "\"fader_\"+key",
+              "count": 1,
+              "key_source": {
+                "binding": "GENRE_PROFILES",
+                "nested_property": "faders",
+                "profile_count": 7,
+                "profile_names": [
+                  "any",
+                  "ambient",
+                  "techno",
+                  "lofi",
+                  "jazz",
+                  "funk",
+                  "piano"
+                ],
+                "keys": [
+                  "body",
+                  "circle",
+                  "creation",
+                  "energy",
+                  "mind",
+                  "observer",
+                  "resource",
+                  "void",
+                  "wave"
+                ]
+              },
+              "expanded_ids": [
+                "fader_body",
+                "fader_circle",
+                "fader_creation",
+                "fader_energy",
+                "fader_mind",
+                "fader_observer",
+                "fader_resource",
+                "fader_void",
+                "fader_wave"
+              ]
+            }
+          ]
+        },
+        "literal_helper_calls": [
+          {
+            "callee": "setRouteDiagnosticText",
+            "scope": "renderAudioRoutePanel",
+            "call_count": 5,
+            "ids": [
+              "fm-route-diag-bridge",
+              "fm-route-diag-context",
+              "fm-route-diag-event",
+              "fm-route-diag-output",
+              "fm-route-diag-route"
+            ]
+          }
+        ],
+        "query_selectors": [
+          "#fm-energy button[aria-pressed=\"true\"]",
+          "#fm-energy button[data-energy=\"${next}\"]",
+          "#fm-genre button[aria-pressed=\"true\"]",
+          "#fm-genre button[data-genre=\"${name}\"]",
+          "#fm-progress > span"
+        ],
+        "member_query_selectors": [
+          {
+            "receiver": "btn",
+            "method": "querySelector",
+            "selector": ".fm-genre-caption",
+            "scope": "applyGenrePillCaptions",
+            "owner_lookup": "document.querySelector:#fm-genre button[data-genre=\"${name}\"]",
+            "usage": "guard_return"
+          },
+          {
+            "receiver": "group",
+            "method": "querySelectorAll",
+            "selector": "button[data-djset]",
+            "scope": "syncDjSetButtonState",
+            "owner_lookup": "$:fm-dj-set",
+            "usage": "for_each"
+          },
+          {
+            "receiver": "group",
+            "method": "querySelectorAll",
+            "selector": "button[data-energy]",
+            "scope": "setEnergySelection",
+            "owner_lookup": "$:fm-energy",
+            "usage": "for_each"
+          },
+          {
+            "receiver": "group",
+            "method": "querySelectorAll",
+            "selector": "button[data-genre]",
+            "scope": "setGenreSelection",
+            "owner_lookup": "$:fm-genre",
+            "usage": "for_each"
+          }
+        ],
+        "member_closest_selectors": [
+          {
+            "receiver": "e.target",
+            "method": "closest",
+            "selector": "button[data-djset]",
+            "scope": "bindDjSetButtons",
+            "owner_lookup": "$:fm-dj-set",
+            "usage": "click_delegate"
+          },
+          {
+            "receiver": "e.target",
+            "method": "closest",
+            "selector": "button[data-energy]",
+            "scope": "bindEnergyPill",
+            "owner_lookup": "$:fm-energy",
+            "usage": "click_delegate"
+          },
+          {
+            "receiver": "e.target",
+            "method": "closest",
+            "selector": "button[data-genre]",
+            "scope": "bindGenrePill",
+            "owner_lookup": "$:fm-genre",
+            "usage": "click_delegate"
+          }
+        ]
+      }
+    },
+    {
+      "name": "genre_flavor",
+      "path": "audio/genre-flavor.js",
+      "ids": [
+        "output_level"
+      ],
+      "extraction": {
+        "get_element_by_id": {
+          "literal_call_count": 2,
+          "literal_call_counts": {
+            "output_level": 2
+          },
+          "literal_ids": [
+            "output_level"
+          ],
+          "dynamic_arguments": []
+        }
+      }
+    },
+    {
+      "name": "music_recorder",
+      "path": "audio/music-recorder.js",
+      "ids": [
+        "btn_rec",
+        "rec_download",
+        "status-text"
+      ],
+      "extraction": {
+        "get_element_by_id": {
+          "literal_call_count": 4,
+          "literal_call_counts": {
+            "btn_rec": 1,
+            "rec_download": 2,
+            "status-text": 1
+          },
+          "literal_ids": [
+            "btn_rec",
+            "rec_download",
+            "status-text"
+          ],
+          "dynamic_arguments": []
+        }
+      }
+    }
+  ],
+  "hosts": [
+    {
+      "name": "core",
+      "path": "index.html",
+      "consumers": [
+        "engine",
+        "music_recorder"
+      ],
+      "body_data_page": null,
+      "required": [
+        {
+          "id": "atmosphere_select",
+          "tag": "select"
+        },
+        {
+          "id": "audio_output_select",
+          "tag": "select"
+        },
+        {
+          "id": "audio_output_status",
+          "tag": "span"
+        },
+        {
+          "id": "auto_arc_mode",
+          "tag": "select"
+        },
+        {
+          "id": "auto_arc_status",
+          "tag": "span"
+        },
+        {
+          "id": "auto_cycle",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "auto_toggle",
+          "tag": "input",
+          "input_type": "checkbox"
+        },
+        {
+          "id": "background_value",
+          "tag": "span"
+        },
+        {
+          "id": "bpm-value",
+          "tag": "span"
+        },
+        {
+          "id": "btn_acid_lock",
+          "tag": "button"
+        },
+        {
+          "id": "btn_audio_output",
+          "tag": "button"
+        },
+        {
+          "id": "btn_keep_awake",
+          "tag": "button"
+        },
+        {
+          "id": "btn_mic_follow",
+          "tag": "button"
+        },
+        {
+          "id": "btn_odd_logic_ask",
+          "tag": "button"
+        },
+        {
+          "id": "btn_packet_json",
+          "tag": "button"
+        },
+        {
+          "id": "btn_rec",
+          "tag": "button"
+        },
+        {
+          "id": "btn_reload_presets",
+          "tag": "button"
+        },
+        {
+          "id": "btn_start",
+          "tag": "button"
+        },
+        {
+          "id": "btn_stop",
+          "tag": "button"
+        },
+        {
+          "id": "catalog-detail-body",
+          "tag": "div"
+        },
+        {
+          "id": "catalog-info",
+          "tag": "span"
+        },
+        {
+          "id": "catalog-select",
+          "tag": "select"
+        },
+        {
+          "id": "culture_grammar_select",
+          "tag": "select"
+        },
+        {
+          "id": "culture_grammar_status",
+          "tag": "span"
+        },
+        {
+          "id": "energy-value",
+          "tag": "div"
+        },
+        {
+          "id": "fader_body",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "fader_circle",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "fader_creation",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "fader_energy",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "fader_mind",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "fader_observer",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "fader_resource",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "fader_void",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "fader_wave",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "header_bpm",
+          "tag": "strong"
+        },
+        {
+          "id": "header_output",
+          "tag": "strong"
+        },
+        {
+          "id": "header_sync",
+          "tag": "strong"
+        },
+        {
+          "id": "mandala-layers",
+          "tag": "div"
+        },
+        {
+          "id": "mic_follow_bar",
+          "tag": "span"
+        },
+        {
+          "id": "mic_follow_detail",
+          "tag": "span"
+        },
+        {
+          "id": "mic_follow_label",
+          "tag": "span"
+        },
+        {
+          "id": "mic_follow_panel",
+          "tag": "div"
+        },
+        {
+          "id": "mode-label",
+          "tag": "span"
+        },
+        {
+          "id": "odd_logic_mode",
+          "tag": "select"
+        },
+        {
+          "id": "odd_logic_status",
+          "tag": "span"
+        },
+        {
+          "id": "output_level",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "output_value",
+          "tag": "span"
+        },
+        {
+          "id": "preset-status",
+          "tag": "span"
+        },
+        {
+          "id": "preset_select",
+          "tag": "select"
+        },
+        {
+          "id": "rec_download",
+          "tag": "a"
+        },
+        {
+          "id": "source_color_select",
+          "tag": "select"
+        },
+        {
+          "id": "status-text",
+          "tag": "span"
+        },
+        {
+          "id": "sync_help",
+          "tag": "span"
+        },
+        {
+          "id": "sync_route_kicker",
+          "tag": "span"
+        },
+        {
+          "id": "sync_route_link",
+          "tag": "a"
+        },
+        {
+          "id": "sync_route_reason",
+          "tag": "small"
+        },
+        {
+          "id": "sync_route_title",
+          "tag": "strong"
+        },
+        {
+          "id": "transport-dock",
+          "tag": "div"
+        },
+        {
+          "id": "transport_dock_toggle",
+          "tag": "button"
+        },
+        {
+          "id": "voice_status",
+          "tag": "div"
+        }
+      ],
+      "optional": [
+        {
+          "id": "fm-genre",
+          "tag": "div",
+          "reason": "FM-only genre group"
+        },
+        {
+          "id": "fm-mic-follow-amount",
+          "tag": "input",
+          "reason": "FM-only mic-follow control",
+          "input_type": "range"
+        },
+        {
+          "id": "fm-mic-follow-amount-readout",
+          "tag": "span",
+          "reason": "FM-only mic-follow control"
+        },
+        {
+          "id": "fm-mic-follow-disable",
+          "tag": "button",
+          "reason": "FM-only mic-follow control"
+        },
+        {
+          "id": "fm-mic-follow-enable",
+          "tag": "button",
+          "reason": "FM-only mic-follow control"
+        }
+      ],
+      "structures": {
+        "performance_pads": [
+          {
+            "value": "drift",
+            "tag": "button"
+          },
+          {
+            "value": "repeat",
+            "tag": "button"
+          },
+          {
+            "value": "punch",
+            "tag": "button"
+          },
+          {
+            "value": "void",
+            "tag": "button"
+          }
+        ],
+        "range_groups": [
+          {
+            "ids": [
+              "auto_cycle"
+            ],
+            "min": "1",
+            "max": "10"
+          },
+          {
+            "ids": [
+              "fader_body",
+              "fader_circle",
+              "fader_creation",
+              "fader_energy",
+              "fader_mind",
+              "fader_observer",
+              "fader_resource",
+              "fader_void",
+              "fader_wave",
+              "output_level"
+            ],
+            "min": "0",
+            "max": "100"
+          }
+        ],
+        "select_options": [
+          {
+            "id": "auto_arc_mode",
+            "values": [
+              "live",
+              "arc36"
+            ],
+            "effective_selected": "live"
+          },
+          {
+            "id": "culture_grammar_select",
+            "values": [
+              "auto",
+              "ambient_room",
+              "tape_memory",
+              "broken_machine",
+              "ghost_dub",
+              "acid_core",
+              "chrome_hymn",
+              "earth_reed"
+            ],
+            "effective_selected": "auto"
+          }
+        ],
+        "attribute_groups": [],
+        "containers": [],
+        "direct_children": [],
+        "id_references": [
+          {
+            "source_id": "transport_dock_toggle",
+            "attribute": "aria-controls",
+            "target_id": "transport-dock"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fm",
+      "path": "fm.html",
+      "consumers": [
+        "engine",
+        "fm",
+        "genre_flavor",
+        "music_recorder"
+      ],
+      "body_data_page": "fm",
+      "required": [
+        {
+          "id": "audio_output_status",
+          "tag": "span",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "auto_arc_mode",
+          "tag": "select",
+          "within": "fm-engine-shim",
+          "selected_option": "arc36"
+        },
+        {
+          "id": "auto_arc_status",
+          "tag": "span",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "auto_cycle",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "auto_toggle",
+          "tag": "input",
+          "input_type": "checkbox",
+          "within": "fm-engine-shim",
+          "attributes": {
+            "checked": ""
+          }
+        },
+        {
+          "id": "background_value",
+          "tag": "span",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "btn_start",
+          "tag": "button",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "btn_stop",
+          "tag": "button",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "culture_grammar_select",
+          "tag": "select",
+          "within": "fm-engine-shim",
+          "selected_option": "auto"
+        },
+        {
+          "id": "fader_body",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "fader_circle",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "fader_creation",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "fader_energy",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "fader_mind",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "fader_observer",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "fader_resource",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "fader_void",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "fader_wave",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "fm-ai-fill",
+          "tag": "button"
+        },
+        {
+          "id": "fm-ai-fill-status",
+          "tag": "span"
+        },
+        {
+          "id": "fm-band-room-link",
+          "tag": "a"
+        },
+        {
+          "id": "fm-dj-set",
+          "tag": "div"
+        },
+        {
+          "id": "fm-dj-status",
+          "tag": "span"
+        },
+        {
+          "id": "fm-drum-floor-link",
+          "tag": "a"
+        },
+        {
+          "id": "fm-energy",
+          "tag": "div"
+        },
+        {
+          "id": "fm-focus-mode",
+          "tag": "button"
+        },
+        {
+          "id": "fm-focus-status",
+          "tag": "span"
+        },
+        {
+          "id": "fm-genre",
+          "tag": "div"
+        },
+        {
+          "id": "fm-mic-follow-amount",
+          "tag": "input",
+          "input_type": "range"
+        },
+        {
+          "id": "fm-mic-follow-amount-readout",
+          "tag": "span"
+        },
+        {
+          "id": "fm-mic-follow-disable",
+          "tag": "button"
+        },
+        {
+          "id": "fm-mic-follow-enable",
+          "tag": "button"
+        },
+        {
+          "id": "fm-next",
+          "tag": "div"
+        },
+        {
+          "id": "fm-now",
+          "tag": "div"
+        },
+        {
+          "id": "fm-progress",
+          "tag": "div"
+        },
+        {
+          "id": "fm-resume",
+          "tag": "div"
+        },
+        {
+          "id": "fm-route",
+          "tag": "button"
+        },
+        {
+          "id": "fm-route-close",
+          "tag": "button"
+        },
+        {
+          "id": "fm-route-diag-bridge",
+          "tag": "dd"
+        },
+        {
+          "id": "fm-route-diag-context",
+          "tag": "dd"
+        },
+        {
+          "id": "fm-route-diag-event",
+          "tag": "dd"
+        },
+        {
+          "id": "fm-route-diag-output",
+          "tag": "dd"
+        },
+        {
+          "id": "fm-route-diag-route",
+          "tag": "dd"
+        },
+        {
+          "id": "fm-route-panel",
+          "tag": "aside"
+        },
+        {
+          "id": "fm-route-rearm",
+          "tag": "button"
+        },
+        {
+          "id": "fm-route-rearm-status",
+          "tag": "span"
+        },
+        {
+          "id": "fm-route-status",
+          "tag": "span"
+        },
+        {
+          "id": "fm-runtime-mode",
+          "tag": "button"
+        },
+        {
+          "id": "fm-runtime-status",
+          "tag": "span"
+        },
+        {
+          "id": "fm-section",
+          "tag": "div"
+        },
+        {
+          "id": "fm-shuffle-status",
+          "tag": "span"
+        },
+        {
+          "id": "fm-sync-status",
+          "tag": "div"
+        },
+        {
+          "id": "fm-trace-body",
+          "tag": "pre"
+        },
+        {
+          "id": "fm-trace-btn",
+          "tag": "button"
+        },
+        {
+          "id": "fm-trace-close",
+          "tag": "button"
+        },
+        {
+          "id": "fm-trace-panel",
+          "tag": "aside"
+        },
+        {
+          "id": "fm_play",
+          "tag": "button"
+        },
+        {
+          "id": "fm_shuffle",
+          "tag": "button"
+        },
+        {
+          "id": "fm_sync",
+          "tag": "button"
+        },
+        {
+          "id": "header_bpm",
+          "tag": "span",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "header_output",
+          "tag": "span",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "header_sync",
+          "tag": "span",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "install-hint",
+          "tag": "div"
+        },
+        {
+          "id": "install-hint-action",
+          "tag": "button"
+        },
+        {
+          "id": "install-hint-details",
+          "tag": "div"
+        },
+        {
+          "id": "install-hint-dismiss",
+          "tag": "button"
+        },
+        {
+          "id": "install-hint-toggle",
+          "tag": "button"
+        },
+        {
+          "id": "mandala-container",
+          "tag": "div"
+        },
+        {
+          "id": "mandala-layers",
+          "tag": "div"
+        },
+        {
+          "id": "mic_follow_bar",
+          "tag": "div"
+        },
+        {
+          "id": "mic_follow_detail",
+          "tag": "p"
+        },
+        {
+          "id": "mic_follow_label",
+          "tag": "span"
+        },
+        {
+          "id": "mic_follow_panel",
+          "tag": "div"
+        },
+        {
+          "id": "mode-label",
+          "tag": "span",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "output_level",
+          "tag": "input",
+          "input_type": "range",
+          "within": "fm-engine-shim"
+        },
+        {
+          "id": "status-text",
+          "tag": "span",
+          "within": "fm-engine-shim"
+        }
+      ],
+      "optional": [
+        {
+          "id": "atmosphere_select",
+          "tag": "select",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "audio_output_select",
+          "tag": "select",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "bpm-value",
+          "tag": "span",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "btn_acid_lock",
+          "tag": "button",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "btn_audio_output",
+          "tag": "button",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "btn_keep_awake",
+          "tag": "button",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "btn_mic_follow",
+          "tag": "button",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "btn_odd_logic_ask",
+          "tag": "button",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "btn_packet_json",
+          "tag": "button",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "btn_rec",
+          "tag": "button",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "btn_reload_presets",
+          "tag": "button",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "catalog-detail-body",
+          "tag": "div",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "catalog-info",
+          "tag": "span",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "catalog-select",
+          "tag": "select",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "culture_grammar_status",
+          "tag": "span",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "energy-value",
+          "tag": "div",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "odd_logic_mode",
+          "tag": "select",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "odd_logic_status",
+          "tag": "span",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "output_value",
+          "tag": "span",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "preset-status",
+          "tag": "span",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "preset_select",
+          "tag": "select",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "rec_download",
+          "tag": "a",
+          "reason": "Core Rig recorder download link"
+        },
+        {
+          "id": "source_color_select",
+          "tag": "select",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "sync_help",
+          "tag": "span",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "sync_route_kicker",
+          "tag": "span",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "sync_route_link",
+          "tag": "a",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "sync_route_reason",
+          "tag": "small",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "sync_route_title",
+          "tag": "strong",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "transport-dock",
+          "tag": "div",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "transport_dock_toggle",
+          "tag": "button",
+          "reason": "Core Rig-only control"
+        },
+        {
+          "id": "voice_status",
+          "tag": "div",
+          "reason": "Core Rig-only control"
+        }
+      ],
+      "structures": {
+        "performance_pads": [],
+        "range_groups": [
+          {
+            "ids": [
+              "auto_cycle"
+            ],
+            "min": "1",
+            "max": "10"
+          },
+          {
+            "ids": [
+              "fader_body",
+              "fader_circle",
+              "fader_creation",
+              "fader_energy",
+              "fader_mind",
+              "fader_observer",
+              "fader_resource",
+              "fader_void",
+              "fader_wave",
+              "fm-mic-follow-amount",
+              "output_level"
+            ],
+            "min": "0",
+            "max": "100"
+          }
+        ],
+        "select_options": [
+          {
+            "id": "auto_arc_mode",
+            "values": [
+              "live",
+              "arc36"
+            ],
+            "effective_selected": "arc36"
+          },
+          {
+            "id": "culture_grammar_select",
+            "values": [
+              "auto",
+              "ambient_room",
+              "tape_memory",
+              "broken_machine",
+              "ghost_dub",
+              "acid_core",
+              "chrome_hymn",
+              "earth_reed"
+            ],
+            "effective_selected": "auto"
+          }
+        ],
+        "attribute_groups": [
+        {
+          "attribute": "data-djset",
+          "tag": "button",
+          "parent_id": "fm-dj-set",
+          "values": [
+              "focus-30",
+              "drive-30",
+              "night-30",
+              "stop"
+            ]
+          },
+        {
+          "attribute": "data-energy",
+          "tag": "button",
+          "parent_id": "fm-energy",
+          "selected_value": "mid",
+          "values": [
+              "low",
+              "mid",
+              "high"
+            ]
+          },
+        {
+          "attribute": "data-genre",
+          "tag": "button",
+          "parent_id": "fm-genre",
+          "selected_value": "any",
+          "values": [
+              "any",
+              "ambient",
+              "techno",
+              "lofi",
+              "jazz",
+              "funk",
+              "piano"
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "id": "fm-engine-shim",
+            "tag": "div",
+            "attributes": {
+              "hidden": "",
+              "aria-hidden": "true"
+            },
+            "descendant_ids": [
+              "audio_output_status",
+              "auto_arc_mode",
+              "auto_arc_status",
+              "auto_cycle",
+              "auto_toggle",
+              "background_value",
+              "btn_start",
+              "btn_stop",
+              "culture_grammar_select",
+              "fader_body",
+              "fader_circle",
+              "fader_creation",
+              "fader_energy",
+              "fader_mind",
+              "fader_observer",
+              "fader_resource",
+              "fader_void",
+              "fader_wave",
+              "header_bpm",
+              "header_output",
+              "header_sync",
+              "mode-label",
+              "output_level",
+              "status-text"
+            ]
+          }
+        ],
+        "direct_children": [
+          {
+            "parent_id": "fm-progress",
+            "tag": "span",
+            "count": 1
+          }
+        ],
+        "id_references": [
+          {
+            "source_id": "fm-route",
+            "attribute": "aria-controls",
+            "target_id": "fm-route-panel"
+          },
+          {
+            "source_id": "fm-trace-panel",
+            "attribute": "aria-labelledby",
+            "target_id": "fm-trace-title"
+          }
+        ]
+      }
+    }
+  ]
+}

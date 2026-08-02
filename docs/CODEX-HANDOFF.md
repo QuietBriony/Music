@@ -1,18 +1,47 @@
 # Codex CLI Handoff — Music Stack
 
-ユーザーが「Codex CLI 呼んでもいい / 計算資源マックス」と承認済み (2026-05-15)。
-重い R&D タスクは Codex に投げる用にプロンプトと context を準備したドキュメント。
+> **Current control-plane snapshot — verified 2026-08-02**
+>
+> `last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c`
+>
+> 実行タスクの正本は [autonomy/BACKLOG.md](./autonomy/BACKLOG.md)、直前sessionの状態は
+> [autonomy/SESSION-LEDGER.md](./autonomy/SESSION-LEDGER.md)。このmarker以後に事実ソースが
+> 変わった場合は`check-autonomy-doc-currency.mjs`が再確認を要求する。
 
-## 推奨ワークフロー
+この文書はCodex / Claude等がMusic repoへ入るための現行入口と、過去promptのarchive。
+2026-05-15の「計算資源マックス」は歴史的なsession承認であり、現在のGPU利用許可ではない。
+machine / capabilityの正本は`config/music-machines.json`、外部modelのrevision・保存先・
+明示download条件は`config/external-dependencies.json`。`worker-gaming` / `worker.gpu`を使う
+処理は、operatorが空きとdownload / executionを明示した時だけ行う。
+
+## 現在地（2026-08-02）
+
+- 通常の遊び方は`listen.html` → HAZAMA Band Room → Lyric Lab。HAZAMAはsynth-onlyで
+  deep-linkからSTARTできるが、main selector昇格はBL-041の実音 / desktop / mobile human gate待ち。
+- Lyric Labのprivate `/api/lyric-drafts`はService Workerをbypassし、Cloudflare Pages
+  Functions / D1側がauthと`no-store`を所有する。
+- browser / sample / worker / model依存は`config/external-dependencies.json`の24件が正本。
+  ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
+- 現行cacheは`hazama-fm-v395`。Band Room runtime markerは`band-room.js?v=br-230` /
+  `band-room.css?v=br-88`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
+- Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
+  7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
+  ASR由来の`tabasco-lyrics-timed.json`を使う。`presets/tabasco-songs.json` v2は
+  runtime非消費 / SW非precacheの派生inventoryで、
+  BPM / keyは人耳確認まで`human_unverified`。asset provenance決定はBL-035に残す。
+- `origin/main`より先のlocal stacked branchがあり得る。branch名やcommit件数ではなく、現物・
+  ancestry・`last_verified_commit`以後の事実差分でcurrencyを判断する。
+
+## 現行ワークフロー
 
 1. `cd C:\workspace\music-stack\Music`
 2. `codex`（Codex CLI 起動。CLI version は環境で変わるので固定前提にしない）
 3. **`docs/autonomy/AUTONOMOUS-RUN.md` のプレイブックに従う** — STACK-INDEX /
    SESSION-LEDGER / BACKLOG を読み、`agent: codex` / `agent: either` の item を 1 つ
-   claim（`status: wip` を即 commit）して回す。下の TASK A-D は履歴で再実行しない。
-4. 完了したら手動レビュー → `git diff` → `node scripts/stack-check.mjs` で 0 BAD → commit
-5. `BACKLOG.md`（item を Done へ）と `SESSION-LEDGER.md`（追記）を更新。親 Claude に
-   「Codex で X 完了、次は?」と伝えれば締めとレビューする
+   claim（`status: wip` を即 commit）して回す。下の TASK A-E は履歴で再実行しない。
+4. 完了したら差分レビュー → `git diff --check` → `node scripts/stack-check.mjs`で0 BAD → commit
+5. 共有docs更新直前にpullを試し、`BACKLOG.md`（Doneへ移動）と`SESSION-LEDGER.md`
+   （最新entryを先頭へ追記）を同期。接続制限等でpull / pushできなければlocal commitを残して報告
 
 ## 並列運用の目安
 
@@ -23,7 +52,7 @@
 
 ---
 
-## 2026-05-15 完了ステータス
+## Historical archive — 2026-05-15 完了ステータス（Do Not Execute）
 
 | Task | Status | Commit | Notes |
 | --- | --- | --- | --- |
@@ -63,14 +92,14 @@
 
 **次タスクの正本は `docs/autonomy/BACKLOG.md`**（2026-05-16 v174 で集約）。
 Codex も `docs/autonomy/AUTONOMOUS-RUN.md` のプレイブックに従い、BACKLOG の
-`agent: codex` / `agent: either` item を取る。完了済み TASK A-D は再実行しない。
+`agent: codex` / `agent: either` item を取る。完了済み TASK A-E は再実行しない。
 
 ---
 
 ## Archived Prompts — Do Not Execute
 
-TASK A-D は完了済み。以下は履歴参照のみで、コピペ実行しない。
-新規作業は必ず TASK E 以降として、最新 HEAD と user request から作る。
+TASK A-E は完了済み。以下は履歴参照のみで、コピペ実行しない。
+新規作業は上部の現行workflowからBACKLOG itemをclaimし、TASK番号から作らない。
 
 ## TASK A — Hazama FM: phrase-locked mode transitions
 
@@ -232,7 +261,7 @@ Repo: https://github.com/QuietBriony/Music
 
 ---
 
-## 親 Claude (この session) への引き継ぎ Tips
+## Historical review tips（現行gateは上部workflowを使用）
 
 Codex から戻ってきた場合:
 1. `git status` で変更ファイル確認
@@ -243,21 +272,20 @@ Codex から戻ってきた場合:
 6. `git push`
 7. ユーザーに簡潔報告
 
-## Session 跨ぎでこの doc に到達した Claude へ
+## Historical session note — superseded by autonomy control-plane
 
-- まずこのファイル全体 (`docs/USER-NOTES-MEMO.md` + `docs/CODEX-HANDOFF.md`) を読む
-- 次に最新の git log を確認 (`git log --oneline -15`)
-- 完了済み TASK A-D は再実行しない。新規 request / notes から TASK E 以降を作る
-- 完了後にユーザー報告 + 次の TASK 候補を提示
+- この節より上の現行workflow、`autonomy/AUTONOMOUS-RUN.md`、BACKLOG、LEDGERを使う。
+- `USER-NOTES-MEMO.md`や下のTASK番号から作業を選ばない。A-Eはすべて歴史資料。
+- 最新git logと現物は確認するが、未claimの古い候補を自動で復活させない。
 
 ---
 
-## 2026-05-25 AI 再現 + measurement-driven thread (v245-v276)
+## Historical archive — 2026-05-25 AI再現 + measurement-driven thread (v245-v276)
 
 長尺 thread が一段落。v265 で生音 5/5 達成、v272-v276 で measurement
 loop 完成 + 実 calibration 2 回。
 
-### 現在の AI 再現 baseline（v276 時点）
+### Historical AI再現baseline（v276時点）
 
 | パート | 音源 | groove |
 |---|---|---|
@@ -294,41 +322,20 @@ v276 target を full-mix で再生成 → 過去解釈の偏りが判明
 
 normal science の小サイクル完走。
 
-### 未解決 / open options (推奨順)
+### Historical open options — status catch-up（Do Not Execute）
 
-1. **autonomous re-capture で v275 効果を fair 比較で測定**
-   - preview MCP の制約: 13 MB WAV の base64 extract で renderer hang
-   - recipe: 短い録音（~10 秒）→ chunk 化なし単発で取れる
-   - 結果次第で v275 を一部巻き戻す（threshold -14 → -16 など）
+| 2026-05-25候補 | 2026-08-02の事実 |
+|---|---|
+| autonomous re-capture / brightness | v284-v290でoffline renderer、rolloff、EQ / exciter / rebalanceまで実施済み |
+| section-aware part入退場 | repo内に完了根拠なし。現行BACKLOGへ再起票されない限り実行しない |
+| kick → bass sidechain | HAZAMAはv368でGain automation型duckを実装。Tabasco一般化は未claimで、代替完了扱いしない |
+| v270 regression sweep | 実音 / background / mobile確認はBL-041とBL-003のhuman gateへ集約 |
+| 計測指標 | `rolloff_p85_hz` / `tempo_stability_pct`はv283で実装。section-wise RMSは未claim |
 
-2. **brightness 残ギャップ -364 Hz の polish**
-   - instrumentBus.high: 3.0 → 3.5 dB or highFrequency: 4200 → 3500
-   - subtle、必須ではない
+### Historical Codex prompt — Do Not Execute
 
-3. **A-2: section-aware part 入退場**
-   - intro: drums only / verse: +bass / chorus: full / break: -guitar
-   - bar-callback で SYNTH_REBUILD_PARTS の per-section gate 追加
-   - 効果は大、リスク中（既存 agent ロジックと干渉注意）
-
-4. **D-1: kick → bass sidechain**
-   - kick 鳴る瞬間 bass を -3 dB ducking
-   - Tone.Compressor の sidechain。bassBus に挿入
-
-5. **F: v270 大改造後の regression sweep**
-   - iOS BG playback wake-lock (v235) が壊れてないか
-   - mid-song instrument-change の async 経路（v270）
-   - PWA オフライン first-visit (catalog race v266 で対処済)
-
-6. **計測の追加指標**
-   - spectral_rolloff (高域の "シャリ感")
-   - tempo_stability (BPM の jitter)
-   - section-wise RMS (v271 dynamics 発火を verify)
-
-### Codex に投げるなら？
-
-このスレッドの作業は中規模 (各 ship が 1 ファイル ~5-50 行)、versioning
-/ changelog / gate run が定型 → codex でほぼ全部できる。重い思考は計測
-解釈と diff の意味判断のみ。
+以下は当時の作業形式を保存しただけで、現在のBACKLOG / AGENTS / machine contractを
+満たさない。候補選択やbranch作成にコピペしない。
 
 推奨 codex prompt:
 
@@ -368,7 +375,7 @@ question for the user. Standard ship discipline:
 
 ---
 
-## 2026-06-13 audio-overload 監査 — FM 領分 hand-off
+## Historical audit — 2026-06-13 audio-overload FM hand-off（v359-v360実装済み）
 
 Music repo 全体を **1 クラス限定**（audio-thread overload / playback dropout /
 「ちゃんと鳴らない」/ 徐々に slowdown → silence）で監査した結果の引き継ぎ。
@@ -381,9 +388,9 @@ band-room 側の**修正可能分は全て決着済**:
 | genre-flavor `pumpGain` master leak（drum-frames 切替ごとに master 直結 Gain が漏れる） | 修正済 #355 / v356 |
 | class 4（feedback/暴走）・class 5（rAF 枯渇） | clean（該当なし）|
 
-以下 2 件は **FM 領分**（genre-flavor.js は fm.html が読む FM genre flavor 層）。
-監査 RULES「FM territory は別 workstream 所有 — file:line で REPORT のみ、修正しない」
-に従い**未着手**。BACKLOG の **BL-028** で追跡。
+以下2件は監査時点では **FM領分の未着手finding**だった。現在はv359で
+`addAcousticFunField`のlight gate、v360で画面内`auto / light / full`切替まで実装・merge済み。
+BL-028に残るのは弱端末の実音human gateであり、この歴史節から再実装しない。
 
 ### F-1 — `addAcousticFunField` の常時 DSP 負荷（全 genre）
 
@@ -405,17 +412,17 @@ band-room 側の**修正可能分は全て決着済**:
   genre 切替で `teardownActive` が dispose。蓄積ではなく active 中の steady-state CPU コスト。
   （pumpGain leak #847 とは別物。あちらは累積、こちらは定常負荷。）
 
-### F-2 — device/light-runtime ゲートの不在
+### F-2 — device/light-runtimeゲートの不在（監査当時。現在は解消）
 
 - `applyProductionGovernor`→`addAcousticFunField` の gating は**音楽的なものだけ**:
   movement intro skip（`:1184` `:1262`）/ 会話 role の chance scaling / dropBar 抑制。
   これらは note **trigger** を減らすだけで、上記の常時 Reverb/LFO/oversample 構築は止めない。
-- genre-flavor.js に device-tier / light-runtime 概念が**皆無**
+- 監査時点のgenre-flavor.jsにはdevice-tier / light-runtime概念が**皆無**だった
   （`light|lowPower|deviceTier|isMobile|reduceFx|perfMode` grep clean。`:806` の "Light wash" は
   美的 wash の意で端末ゲートではない）。弱端末でも full stack を構築・稼働する。
 - band-room の master が v353/#352 で獲得した「mode 依存 light ゲート」のような逃げ道が FM 側に無い。
 
-### 推奨アプローチ（FM workstream・未実行 / 出音キャラ判断を伴うので report-only）
+### Historical proposed approach（v359-v360で実装、実音判断だけ未完了）
 
 1. light/low-power ゲートを 1 本追加し、active 時は `addAcousticFunField` を skip するか
    軽量変種を構築（2 Reverb → flavor 層共有の send 1 本 / oversample "2x" → 無し /
@@ -433,19 +440,23 @@ band-room 側の**修正可能分は全て決着済**:
 
 ---
 
-## TASK E (2026-06-13) — ACE-Step 1.5 で Tabasco 歌入りデモ生成（workerPC / GPU）
+## Historical TASK E (2026-06-13) — ACE-Step Tabasco demo（完了 / Do Not Execute）
 
-**どこで**: GPU マシン **workerPC**（Codex 専用）。music-stack repo を選択した状態で Codex に下を貼る
-（or `codex exec "<下のプロンプト>"`）。chouta-surface（ARM/CUDA なし）では動かないため GPU 機側で実行。
+2026-07前半にTabasco 7曲のMP3 + MP4生成と参照公開まで完了済み。残る作業はBL-029の
+人間試聴 → 良い要素のTone.js翻訳だけで、下の生成promptは再実行しない。
+
+現行machine IDは`worker-gaming`、必要capabilityは`worker.gpu`。GPUの空き、revision固定、
+download / executionの明示許可が揃わない時は開始しない。正本は
+`docs/ACE-STEP-WORKFLOW.md`と`config/external-dependencies.json`。
 
 **なぜ Codex**: 重い R&D（モデル DL + GPU 推論）。BL-029 / `docs/ACE-STEP-WORKFLOW.md` のレーン。
 成果物（wav）は **repo に入れない**（音源を repo に置かない掟）。Codex は wav を生成して報告するだけ。
 旋律/アレンジの取り込み（Tone.js への翻訳）は人間 + Claude 親の taste 作業で、Codex はしない。
 
-**Codex プロンプト（コピペ用・英語）:**
+**Historical prompt（監査資料。コピペ禁止）:**
 
 ```
-You're on workerPC (a GPU machine). The current repo is QuietBriony/Music (music-stack). Your job:
+You're on worker-gaming (a GPU machine). The current repo is QuietBriony/Music (music-stack). Your job:
 generate singable demo tracks of the Tabasco songs with ACE-Step 1.5, so a human can listen and
 translate the arrangement ideas into the Band Room engine later. You ONLY generate + report.
 
@@ -454,20 +465,25 @@ HARD CONSTRAINTS (do not violate):
   checkout, or any .wav/.mp3 inside the Music repo. NEVER `git add` audio or weights. Do not commit
   anything to the Music repo. Do not modify any Music repo file (read-only: you only READ lyrics +
   style prompts from it).
-- Use a scratch dir under the user's home, e.g. `~/ace-step-out/` for wavs and `~/ACE-Step-1.5/` for
-  the checkout (adjust to workerPC's OS).
+- Use the repo-external worker root from `config/external-dependencies.json`, e.g.
+  `C:\workspace\music-stack-worker\outputs\ace-step\` for wavs,
+  `C:\workspace\music-stack-worker\tools\ACE-Step-1.5\` for code, and
+  `C:\workspace\music-stack-worker\models\ace-step\` for weights (adjust path syntax to worker OS).
 - This is an offline production/reference tool, not a runtime dependency. Don't wire it into anything.
 
 STEPS:
 1. Detect environment: OS, `nvidia-smi` (GPU name + VRAM), python version. Print a one-line summary.
    If no CUDA GPU is found, STOP and report — do not attempt CPU-only (too slow).
 2. Install ACE-Step 1.5 OUTSIDE the repo:
-     git clone https://github.com/ACE-Step/ACE-Step-1.5.git ~/ACE-Step-1.5 && cd ~/ACE-Step-1.5
-   Install `uv` (Linux/mac: `curl -LsSf https://astral.sh/uv/install.sh | sh`; Windows:
-   `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`), then `uv sync`.
+     git clone https://github.com/ACE-Step/ACE-Step-1.5.git <worker-root>/tools/ACE-Step-1.5
+     git -C <worker-root>/tools/ACE-Step-1.5 checkout --detach dce621408bee8c31b4fcf4811682eb9359e1bc94
+   This is release `v0.1.8`; refuse a different HEAD until the dependency manifest is reviewed.
+   Install `uv` through an operator-reviewed package/installer path (do not pipe a remote script into
+   a shell), then run `uv sync` in that detached checkout.
    If torch resolves to a CPU-only build, reinstall the CUDA build matching the detected CUDA version.
-   `cp .env.example .env` if present. Pick the model tier from the VRAM table in the README
-   (≤6GB→2B turbo INT8+offload … ≥24GB→XL sft); set it in `.env`. Weights auto-download on first run.
+   `cp .env.example .env` if present. Use only `acestep-v15-turbo` at Hugging Face revision
+   `571cee88618ae5ef3d3fcdf79c46068ce4e2d727`, stored below the worker model root. Confirm GPU idle
+   capacity and explicitly authorize that download; do not rely on an implicit first-run moving revision.
 3. Start the REST API non-interactively: `uv run acestep-api` (serves http://localhost:8001).
    Do NOT use the Gradio UI or the interactive `--cli` wizard (you can't drive those headlessly).
    Discover the request schema from http://localhost:8001/docs (OpenAPI) or by reading the API source.
@@ -478,13 +494,13 @@ STEPS:
    - Per-song style prompts: `docs/SUNO-WORKFLOW.md` section 4 (01 TABASCO … 07 Sister, with bpm +
      genre/voice descriptors). Use each song's prompt as the ACE-Step style/prompt text.
 5. VALIDATE FIRST with ONE song — `06 Human Fly` — full pipeline: prompt + lyrics → a real .wav in
-   `~/ace-step-out/06-human-fly.wav`. Confirm the file is non-trivial audio (size > 0, plays). Only
-   AFTER that works, generate the remaining 6, saving `~/ace-step-out/NN-<title>.wav` each.
+   `<worker-root>/outputs/ace-step/06-human-fly.wav`. Confirm the file is non-trivial audio (size > 0, plays). Only
+   AFTER that works, generate the remaining 6 under `<worker-root>/outputs/ace-step/NN-<title>.wav`.
    Use a sensible duration per song (their full length ~2.5-5 min, or cap at the model's max).
 6. SERVE over LAN so the user can play the wavs from another device (a Surface on the same network):
    find this machine's LAN IPv4 (not 127.0.0.1, not a docker/virtual adapter) and print it; then start
    a static file server for the output dir bound to 0.0.0.0 on port 8009 in the BACKGROUND and keep it
-   running, e.g. `python -m http.server 8009 --bind 0.0.0.0 --directory ~/ace-step-out`. Print the
+    running, e.g. `python -m http.server 8009 --bind 0.0.0.0 --directory <worker-root>/outputs/ace-step`. Print the
    directory URL `http://<LAN-IP>:8009/` and each file URL `http://<LAN-IP>:8009/NN-<title>.wav`. Note
    if the OS firewall might block inbound 8009 and how to allow it. Report the server PID + stop
    command; do NOT stop it. (Plaintext LAN-only file server — fine for local listening; never expose
@@ -498,7 +514,7 @@ If anything blocks setup (ARM/no-CUDA, uv failure, weight download, schema unkno
 the blocker with the exact error rather than guessing.
 ```
 
-**戻ってきたら（Claude 親 / 人間）**: workerPC 上の `~/ace-step-out/*.wav` を聴く → 良い展開/メロを
+**当時の戻り先（人間）**: `worker-gaming`のrepo外outputを聴く → 良い展開/メロを
 Band Room の Tone.js / drum-frame / preset に**翻訳**（blind copy しない）。wav は repo に入れない
 （手元 or CDN）。LoRA で album 統一したい場合は ACE-Step Gradio の "LoRA Training" タブ（8 曲 / 3090
 で ~1h）を人間が操作。詳細レーン定義は `docs/ACE-STEP-WORKFLOW.md`。

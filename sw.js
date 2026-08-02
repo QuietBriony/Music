@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v389";
+const VERSION = "hazama-fm-v395";
 const CACHE_PREFIX = "hazama-fm-";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
@@ -22,8 +22,8 @@ const PRECACHE_URLS = [
   "lyric-lab.css",
   "lyric-lab.js",
   "band-room.html",
-  "band-room.css?v=br-87",
-  "band-room.js?v=br-229",
+  "band-room.css?v=br-88",
+  "band-room.js?v=br-230",
   "presets/drum-frames-tabasco-human-fly.json",
   "presets/drum-frames-tabasco-tabasco.json",
   "presets/drum-frames-tabasco-hey.json",
@@ -31,7 +31,6 @@ const PRECACHE_URLS = [
   "presets/drum-frames-tabasco-under-the-moon.json",
   "presets/drum-frames-tabasco-electric-sheep.json",
   "presets/drum-frames-tabasco-sister.json",
-  "presets/tabasco-songs.json",
   "presets/bands.json",
   "presets/drum-frames-hazama-still-moving.json",
   "docs/hazama-lyrics.md",
@@ -205,9 +204,9 @@ function isMagentaCdn(url) {
   return false;
 }
 
-// v230: online sample CDNs for AI 再現's real instruments + drum kits.
-//   - tonejs.github.io/audio hosts the Tone.js demo drum samples + the
-//     Salamander piano / Casio sample sets
+// v230 / v394: online sample CDNs for AI 再現's real instruments + drum kits.
+//   - Tonejs/audio is content-pinned on jsDelivr for the catalog; the frozen
+//     engine.js legacy path still uses tonejs.github.io/audio
 //   - cdn.jsdelivr.net/gh/tidalcycles/dirt-samples hosts the dirt drum kits
 //   - cdn.jsdelivr.net/gh/nbrosowsky/tonejs-instruments hosts the guitar /
 //     bass / strings / flute samplers — including AI 再現's DEFAULT guitar
@@ -219,10 +218,13 @@ function isMagentaCdn(url) {
 // first online play pays the download, every later play — including
 // offline — is instant.
 function isSampleCdn(url) {
-  if (url.hostname === "tonejs.github.io" && url.pathname.includes("/audio/")) return true;
+  if (url.hostname === "tonejs.github.io" &&
+      (url.pathname === "/audio" || url.pathname.startsWith("/audio/"))) return true;
+  const path = url.pathname.toLowerCase();
   if (url.hostname === "cdn.jsdelivr.net" &&
-      (url.pathname.includes("/tidalcycles/dirt-samples") ||
-       url.pathname.includes("/nbrosowsky/tonejs-instruments"))) return true;
+      (path.includes("/gh/tonejs/audio@") ||
+       path.includes("/gh/tidalcycles/dirt-samples@") ||
+       path.includes("/gh/nbrosowsky/tonejs-instruments@"))) return true;
   return false;
 }
 

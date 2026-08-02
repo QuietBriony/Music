@@ -6,6 +6,22 @@ Version: 1.0 (Markdown Spec Edition)
 UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、  
 1つの UI / Engine で **静 → 動** を無段階生成する。
 
+## まず遊ぶ — HAZAMA → Lyric Lab
+
+1. **[Listen hub](https://quietbriony.github.io/Music/listen.html)** を開く。
+2. current pass の **[HAZAMA Band Room](https://quietbriony.github.io/Music/band-room.html?band=hazama)** へ進む。HAZAMA は synth-only なので `🎛 AI 再現` が自動選択され、利用できない `📻 原音` は disabled になる。
+3. `START` を一度押す。`WARMING UP` / `PREPARING AI` の間は band・song・mode の切替完了を待つ。失敗した場合は START 直下の案内に従って再度 `START`、直らなければ `RESET AUDIO` を使う。
+4. 残したい言葉や制作方針が見えたら **[Lyric Lab](https://quietbriony.github.io/Music/lyric-lab.html)** へ渡す。リンクを開くだけでは model の実行・download・音声生成は始まらない。
+
+公開アプリの直接入口:
+
+- [Listen hub](https://quietbriony.github.io/Music/listen.html) — 現在の試聴順と制作handoff
+- [HAZAMA Band Room](https://quietbriony.github.io/Music/band-room.html?band=hazama) — 現行の最短playability入口
+- [Band Room](https://quietbriony.github.io/Music/band-room.html) — Tabasco原音 / AI再現、練習・録音
+- [Lyric Lab](https://quietbriony.github.io/Music/lyric-lab.html) — 歌詞整理と制作先へのhandoff
+- [Hazama FM](https://quietbriony.github.io/Music/fm.html) — 連続フォーカスBGM
+- [Music Core Rig](https://quietbriony.github.io/Music/) — 9 fader mixer
+
 ### ● 対応ジャンル
 - Ambient / Drone
 - Lofi / Nujabes
@@ -51,6 +67,8 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - 観察者
 
 ### 使い方マニュアル (ユーザー向け)
+- 🎧 **[Band Room クイックガイド](docs/BAND-ROOM-USAGE.md)** — HAZAMAの最短再生、START復帰、用途別の遊び方
+- 🎸 **[Band Room 総合マニュアル](docs/BAND-ROOM-MANUAL.md)** — 現行UIの全体像と詳細機能への入口
 - 📻 **[Hazama FM 使い方](docs/USAGE-HAZAMA-FM.md)** — 24/7 流しっぱなしフォーカス BGM の操作方法
 - 🎚️ **[Music Core Rig 使い方](docs/USAGE-MUSIC-CORE-RIG.md)** — 9 fader mixer の操作方法
 
@@ -61,6 +79,8 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - 🏛️ **[Hazama FM アーキテクチャ](docs/HAZAMA-FM-ARCHITECTURE.md)** — システム全体像
 - 🎸 **[Band Room アーキテクチャ](docs/BAND-ROOM-ARCHITECTURE.md)** — 原音/AI 二系統・device ゲート・version 三系統・ゲート一覧・所有境界（1枚地図）
 - 🔊 **[Audio-Cost Invariants](docs/AUDIO-COST-INVARIANTS.md)** — 音切れ回帰を防ぐ MUST-NOT-REGRESS 4原則（`scripts/check-audio-cost-gates.mjs` が機械強制）
+- 🔒 **[External dependency manifest](config/external-dependencies.json)** — browser CDN / sample / worker package / repo外modelの版、license status、容量、保存先、machine正本
+- 🧭 **[Autonomy doc currency](config/autonomy-doc-currency.json)** — handoff / architecture / ledgerの最終事実commitと監視path
 - 🎵 **音楽的参照**:
   - [`references/apple-music-refs.json`](references/apple-music-refs.json) — 全 18 アーティスト x production translation
   - [`references/hazama-fm-pill-refs.json`](references/hazama-fm-pill-refs.json) — GENRE pill → reference 紐付け
@@ -71,6 +91,12 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - ✅ **JS syntax**: `node scripts/check-js.mjs`
 - ✅ **Band Room pure logic**: `node scripts/check-band-room-logic.mjs`
 - ✅ **FM route / handoff DOM**: `node scripts/check-fm-route-badge.mjs`
+- ✅ **Music satellite / engine seam**: `node scripts/check-music-satellite-contract.mjs`
+- ✅ **Music host DOM seam**: `node scripts/check-music-host-dom-contract.mjs`
+- ✅ **External dependency / model-weight gate**: `node scripts/check-external-dependencies.mjs`
+- ✅ **Autonomy document currency gate**: `node scripts/check-autonomy-doc-currency.mjs`
+- ✅ **Autonomy queue semantic gate**: `node scripts/check-autonomy-queue.mjs`
+- ✅ **Tabasco derived inventory gate**: `node scripts/check-tabasco-songs-catalog.mjs`
 
 ### 参考資料
 - Reference-Driven Generative Rig: [docs/reference-driven-generative-rig.md](docs/reference-driven-generative-rig.md)
@@ -119,12 +145,10 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 ## 📻 Hazama FM mode
 START 一発で永遠に流れるフォーカス BGM ページ。`MusicRadioBrain` (9 番組: fieldStudy / glassCoding / dryGridWork / ghostPressure / voidRoom / hardTechno / liveJazz / nightFunk / quietPiano) を可視化、`engine.js` は無変更で再利用。
 - Local: `fm.html` をローカルサーバー経由で開く (例: `python -m http.server 8000` → `http://localhost:8000/fm.html`)
-- Pages: `https://quietbriony.github.io/Music/fm.html`
 - 詳しい使い方: [docs/USAGE-HAZAMA-FM.md](docs/USAGE-HAZAMA-FM.md)
 
 ## 🎚️ Music Core Rig (full mixer)
 9 fader を直接動かして音作り・録音できる mixer モード。Hazama FM と同じ engine。
-- Pages: `https://quietbriony.github.io/Music/`
 - 詳しい使い方: [docs/USAGE-MUSIC-CORE-RIG.md](docs/USAGE-MUSIC-CORE-RIG.md)
 
 ---

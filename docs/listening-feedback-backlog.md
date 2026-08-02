@@ -23,7 +23,24 @@ priority: high
 
 ## Current Reopened Notes
 
-### 2026-06-01 phone notes
+### 2026-08-02 HAZAMA v388/v390 current pass
+
+- Agent gates confirm the v388 structure keeps all 16 arp / bass steps in
+  phone-light mode and pays the budget with one oscillator per trigger instead
+  of recreating the two-tone siren ("ピーポー") regression.
+- Agent gates confirm the v390 `?band=hazama` entry is synth-only, selects
+  `AI 再現` automatically, and fails closed when START preparation cannot finish.
+- Human listening remains open: run 60–90 seconds on normal and `?aiLight=1`,
+  then continue through the roughly six-minute intro / arp / drive / verse /
+  lift / mantra / break / release / outro arc. Report siren recurrence,
+  monotony, dropout, or weight separately.
+- Keep HAZAMA hidden from the normal band selector until BL-041 passes on
+  desktop and mobile. The Listen route is a review entrance, not promotion.
+- After listening, use `lyric-lab.html` to retain the words, keep/fix decision,
+  and production handoff. This route does not execute ACE-Step or download a
+  model.
+
+### Historical: 2026-06-01 phone notes
 
 - `FM funk`: sounded packed/crushed. v299 pass should be checked for more
   headroom, less sub buildup, and less tape/limiter flattening.
@@ -66,7 +83,7 @@ priority: high
 - Reference spread should be audible as Music-specific behavior, not just docs
   or console state.
 
-## Worker-Gaming Run Log
+## Historical Worker-Gaming Run Log
 
 ### 2026-06-01 - tabasco/human-fly v301 recreation-cycle
 

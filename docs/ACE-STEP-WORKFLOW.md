@@ -120,16 +120,24 @@ brightness / DR / pocket の目標値を、市販曲だけでなく生成リフ�
 
 ## 4. セットアップ（高レベル）
 
-ローカル GPU（VRAM 4GB〜）or Mac/AMD/Intel。詳細は公式 README に従う:
+実行する場合だけ、`worker.gpu`を持つrepo外workerでセットアップする。版・保存先・
+license statusの正本は
+[`config/external-dependencies.json`](../config/external-dependencies.json)。通常のrepo改善、
+stack-check、docs作業からclone / weight download / model初期化を始めない。
 
-1. `git clone https://github.com/ace-step/ACE-Step-1.5`
-2. 依存インストール（Python 環境。Mac/AMD/Intel/CUDA それぞれの手順あり）
-3. モデル重みを取得 → ローカル推論 or Web UI 起動
-4. 歌詞 + スタイル文を入力して生成。section タグ（`[verse]` `[chorus]` 等）は
+1. codeはrelease `v0.1.8` / commit
+   `dce621408bee8c31b4fcf4811682eb9359e1bc94`へdetach checkoutする
+2. modelは`acestep-v15-turbo` / Hugging Face revision
+   `571cee88618ae5ef3d3fcdf79c46068ce4e2d727`だけを選び、
+   `C:\workspace\music-stack-worker\models\ace-step\...`へrepo外保存する
+3. 依存インストールとweight取得はoperatorがGPU空き・容量・machine identityを確認して
+   明示実行する。自動downloadに任せる前にrevisionを指定する
+4. その後にだけローカル推論 or Web UIを起動する
+5. 歌詞 + スタイル文を入力して生成。section タグ（`[verse]` `[chorus]` 等）は
    Suno と同様に構造把握を助ける（[SUNO-WORKFLOW.md §2](./SUNO-WORKFLOW.md) の
    prompt テンプレがそのまま流用できる）
 
-※ バージョン/手順は変動。公式 GitHub / Releases を正とする。
+上流手順が変わっても、manifest更新とreviewなしにmoving HEADへ追従しない。
 
 ---
 
@@ -162,7 +170,7 @@ ACE-Step の「ローカル/無料/LoRA」優位は効かないので、目的�
 | | Suno | ACE-Step 1.5 |
 |---|---|---|
 | 動作 | クラウド | **ローカル**（VRAM <4GB / Mac/AMD/Intel/CUDA） |
-| コスト | $10〜/月 | **無料**（OSS・Apache-2.0） |
+| コスト | $10〜/月 | **無料**（OSS・MIT。model card/依存の条件は個別確認） |
 | 素材アップロード | 必要（Cover 時） | **不要**（手元で完結＝私物 stem に安心） |
 | 声/スタイル統一 | Persona | **LoRA 学習**（数曲から） |
 | 元演奏に忠実 | Cover Mode | cover / **repainting** |

@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-229-arp-unthin";
+  const BANDROOM_APP_VERSION = "br-230-playability-entry";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -140,6 +140,11 @@
   let backgroundBridgeActive = false;
   let backgroundBridgeHealthBound = false;
   let backgroundBridgeRearmTimer = 0;
+  let backgroundBridgeAttemptSeq = 0;
+  let backgroundBridgeStartPromise = null;
+  let backgroundBridgeStartAttemptSeq = 0;
+  let backgroundBridgeControllerSeq = 0;
+  let backgroundBridgeControllerState = "idle";
   let playbackLifecycleStopSeq = 0;
   let screenWakeLock = null;  // v235: screen Wake Lock sentinel (iOS focus-listening stability)
   let autoAdvanceInFlight = false;
@@ -148,6 +153,10 @@
   let suspendReleaseTimers = [];
   let songSwitchSeq = 0;
   let modeSwitchSeq = 0;
+  let playbackModeSwitchInFlight = false;
+  let playbackModeForcedByBandId = null;
+  const trackSelectorBusyReasons = new Map();
+  const bandAndModeBusyReasons = new Set();
   let masterReverb = null;
   let masterWidener = null;
   let masterDryGain = null;
@@ -225,6 +234,7 @@
   let loadedStemsSongId = null;
   let loadedStemsVariant = null;
   let currentMode = "stems";  // "stems" | "synth"
+  let helpReturnFocus = null;
   // v339: AI 再構築 — rebuild the groove in a reference style while keeping
   // the song's identity (real vocal melody, real bass pitches, corrected
   // chords). Applies in synth mode only; session-only (not persisted).
@@ -1099,9 +1109,82 @@
     status.setAttribute("aria-label", status.title);
   }
 
-  async function startBackgroundAudioBridge(options = {}) {
+  const BACKGROUND_BRIDGE_PLAY_TIMEOUT_MS = 2000;
+
+  async function waitForBackgroundBridgePlay(result, timeoutMs = BACKGROUND_BRIDGE_PLAY_TIMEOUT_MS) {
+    if (!result || typeof result.then !== "function") return result;
+    let timeoutId = 0;
+    try {
+      return await Promise.race([
+        result,
+        new Promise((resolve, reject) => {
+          timeoutId = setTimeout(() => reject(new Error("background audio bridge timeout")), timeoutMs);
+        })
+      ]);
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  function backgroundBridgeStaleAttemptShouldPause(attemptSeq, controllerSeq, controllerState) {
+    const newerOwnsAudio = controllerSeq > attemptSeq &&
+      (controllerState === "pending" || controllerState === "active");
+    return !newerOwnsAudio;
+  }
+
+  function guardBackgroundBridgePlay(result, audio, isCurrent, shouldPauseStale = () => true) {
+    if (!result || typeof result.then !== "function") return result;
+    return Promise.resolve(result).then((value) => {
+      if (!isCurrent()) {
+        if (shouldPauseStale()) {
+          try { audio.pause(); } catch (e) {}
+        }
+        throw new Error("stale background audio bridge attempt");
+      }
+      return value;
+    });
+  }
+
+  function backgroundBridgeSingleFlightDecision(hasInFlight, inFlightSeq, currentSeq) {
+    if (!hasInFlight) return "start";
+    return inFlightSeq === currentSeq ? "share" : "queue";
+  }
+
+  function startBackgroundAudioBridge(options = {}) {
+    const decision = backgroundBridgeSingleFlightDecision(
+      !!backgroundBridgeStartPromise,
+      backgroundBridgeStartAttemptSeq,
+      backgroundBridgeAttemptSeq
+    );
+    if (decision === "share") return backgroundBridgeStartPromise;
+    if (decision === "queue") {
+      const pending = backgroundBridgeStartPromise;
+      return pending.then(
+        () => startBackgroundAudioBridge(options),
+        () => startBackgroundAudioBridge(options)
+      );
+    }
+
+    const attempt = startBackgroundAudioBridgeAttempt(options);
+    backgroundBridgeStartPromise = attempt;
+    backgroundBridgeStartAttemptSeq = backgroundBridgeAttemptSeq;
+    const clearAttempt = () => {
+      if (backgroundBridgeStartPromise === attempt) {
+        backgroundBridgeStartPromise = null;
+        backgroundBridgeStartAttemptSeq = 0;
+      }
+    };
+    attempt.then(clearAttempt, clearAttempt);
+    return attempt;
+  }
+
+  async function startBackgroundAudioBridgeAttempt(options = {}) {
+    const attemptSeq = ++backgroundBridgeAttemptSeq;
+    backgroundBridgeControllerSeq = attemptSeq;
+    backgroundBridgeControllerState = "pending";
     const force = options.force === true;
     if (!force && !shouldPreferBackgroundAudioBridge()) {
+      backgroundBridgeControllerState = "direct";
       routeHardwareOutputForBridge(false);
       setAudioRouteStatus("direct");
       return false;
@@ -1109,6 +1192,7 @@
 
     const audio = ensureBackgroundBridgeAudio();
     if (!audio) {
+      backgroundBridgeControllerState = "failed";
       routeHardwareOutputForBridge(false);
       setAudioRouteStatus("direct");
       return false;
@@ -1119,8 +1203,23 @@
       audio.volume = 1;
       setAudioRouteStatus(options.rearm ? "rearming" : "arming");
       const result = audio.play();
-      if (result && typeof result.then === "function") await result;
+      const guardedResult = guardBackgroundBridgePlay(
+        result,
+        audio,
+        () => attemptSeq === backgroundBridgeAttemptSeq,
+        () => backgroundBridgeStaleAttemptShouldPause(
+          attemptSeq,
+          backgroundBridgeControllerSeq,
+          backgroundBridgeControllerState
+        )
+      );
+      await waitForBackgroundBridgePlay(guardedResult);
+      if (attemptSeq !== backgroundBridgeAttemptSeq) {
+        try { audio.pause(); } catch (e) {}
+        return false;
+      }
       backgroundBridgeActive = true;
+      backgroundBridgeControllerState = "active";
       clearBackgroundBridgeRearmTimer();
       routeHardwareOutputForBridge(true, force);
       document.body?.classList.toggle("br-bg-audio", true);
@@ -1128,7 +1227,10 @@
       return true;
     } catch (e) {
       console.warn("[Band Room] background audio bridge failed:", e);
+      if (attemptSeq === backgroundBridgeAttemptSeq) backgroundBridgeAttemptSeq++;
+      try { audio.pause(); } catch (pauseError) {}
       backgroundBridgeActive = false;
+      if (backgroundBridgeControllerSeq === attemptSeq) backgroundBridgeControllerState = "failed";
       routeHardwareOutputForBridge(false, true);
       document.body?.classList.toggle("br-bg-audio", false);
       setAudioRouteStatus("failed");
@@ -1137,6 +1239,9 @@
   }
 
   function stopBackgroundAudioBridge() {
+    backgroundBridgeAttemptSeq++;
+    backgroundBridgeControllerSeq = backgroundBridgeAttemptSeq;
+    backgroundBridgeControllerState = "stopped";
     clearBackgroundBridgeRearmTimer();
     backgroundBridgeActive = false;
     routeHardwareOutputForBridge(false, true);
@@ -2427,6 +2532,70 @@
     if (el) el.textContent = text || "";
   }
 
+  function setStartStatus(text = "", kind = "") {
+    const el = $("br-start-status");
+    if (!el) return;
+    if (!text) {
+      el.textContent = "";
+      el.hidden = true;
+      delete el.dataset.kind;
+      return;
+    }
+    // Make the live region observable before mutating its message so AT can
+    // announce a START failure consistently.
+    el.hidden = false;
+    if (kind) el.dataset.kind = kind;
+    else delete el.dataset.kind;
+    el.textContent = text;
+  }
+
+  function openHelpOverlay() {
+    const overlay = $("br-help-overlay");
+    if (!overlay || !overlay.hidden) return;
+    helpReturnFocus = typeof document !== "undefined" ? document.activeElement : null;
+    overlay.hidden = false;
+    const close = $("br-help-close");
+    if (close && typeof close.focus === "function") {
+      try { close.focus({ preventScroll: true }); } catch (e) { close.focus(); }
+    }
+  }
+
+  function closeHelpOverlay() {
+    const overlay = $("br-help-overlay");
+    if (!overlay || overlay.hidden) return;
+    overlay.hidden = true;
+    const previousTarget = helpReturnFocus;
+    const canRestorePrevious = previousTarget &&
+      typeof previousTarget.focus === "function" &&
+      previousTarget !== document.body &&
+      previousTarget !== document.documentElement &&
+      previousTarget.isConnected !== false;
+    const target = canRestorePrevious ? previousTarget : $("br-help-toggle");
+    helpReturnFocus = null;
+    if (target && typeof target.focus === "function") {
+      try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+    }
+  }
+
+  function trapHelpOverlayFocus(event) {
+    if (event.key !== "Tab") return;
+    const overlay = $("br-help-overlay");
+    if (!overlay || overlay.hidden || typeof overlay.querySelectorAll !== "function") return;
+    const focusable = Array.from(overlay.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => !el.hidden && typeof el.focus === "function");
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
   function disposeStemPlayers() {
     Object.keys(stemPlayers).forEach((k) => {
       const p = stemPlayers[k];
@@ -2449,6 +2618,85 @@
   function currentBand() {
     if (!state.bandsRegistry) return null;
     return state.bandsRegistry.bands[state.currentBandId] || null;
+  }
+
+  const BAND_PLAYBACK_MODES = ["stems", "synth"];
+
+  function playbackModesForBand(band) {
+    if (!Array.isArray(band?.playback_modes)) return BAND_PLAYBACK_MODES.slice();
+    const declared = band.playback_modes.filter((mode, index, modes) => (
+      BAND_PLAYBACK_MODES.includes(mode) && modes.indexOf(mode) === index
+    ));
+    return declared.length ? declared : BAND_PLAYBACK_MODES.slice();
+  }
+
+  function bandSupportsPlaybackMode(band, mode) {
+    return playbackModesForBand(band).includes(mode);
+  }
+
+  function preferredPlaybackModeForBand(band, fallbackMode = "stems") {
+    const modes = playbackModesForBand(band);
+    if (modes.includes(band?.default_playback_mode)) return band.default_playback_mode;
+    if (modes.includes(fallbackMode)) return fallbackMode;
+    return modes[0] || "stems";
+  }
+
+  function resolveBandPlaybackMode(band, bandId, mode, forcedByBandId = null) {
+    const modes = playbackModesForBand(band);
+    if (forcedByBandId && forcedByBandId !== bandId) {
+      return {
+        mode: preferredPlaybackModeForBand(band, "stems"),
+        forcedByBandId: null
+      };
+    }
+    if (!modes.includes(mode)) {
+      return {
+        mode: preferredPlaybackModeForBand(band, mode),
+        forcedByBandId: bandId || null
+      };
+    }
+    return {
+      mode,
+      forcedByBandId: forcedByBandId === bandId ? forcedByBandId : null
+    };
+  }
+
+  function applyBandPlaybackModeContract() {
+    const band = currentBand();
+    const modes = playbackModesForBand(band);
+    const resolved = resolveBandPlaybackMode(
+      band,
+      state.currentBandId,
+      currentMode,
+      playbackModeForcedByBandId
+    );
+    currentMode = resolved.mode;
+    playbackModeForcedByBandId = resolved.forcedByBandId;
+
+    document.querySelectorAll('input[name="br-mode"]').forEach((radio) => {
+      const supported = modes.includes(radio.value);
+      radio.disabled = !supported;
+      radio.setAttribute("aria-disabled", supported ? "false" : "true");
+      const label = typeof radio.closest === "function" ? radio.closest("label.br-radio") : null;
+      if (label) label.title = supported ? "" : `${band?.name || "このバンド"} ではこの再生モードを利用できません`;
+    });
+
+    const status = $("br-mode-status");
+    const constrained = !!band && modes.length === 1;
+    if (status) {
+      const modeLabel = modes[0] === "synth" ? "🎛 AI 再現" : "📻 原音";
+      if (constrained) {
+        status.hidden = false;
+        status.textContent = band.playback_mode_note || `${band.name || "This band"} は ${modeLabel} 専用です。`;
+      } else {
+        status.textContent = "";
+        status.hidden = true;
+      }
+    }
+
+    setBodyPlaybackMode(currentMode);
+    syncModeRadioSelection(currentMode);
+    return currentMode;
   }
 
   // v213: per-band / per-song kit profile auto-mapping. bands.json may
@@ -4180,6 +4428,18 @@
       sanitizeRangeInputValue,
       sanitizePrefsForBoot,
       resetBandRoomAudioState,
+      playbackModesForBand,
+      bandSupportsPlaybackMode,
+      preferredPlaybackModeForBand,
+      resolveBandPlaybackMode,
+      playbackStartContractMatches,
+      tonePlaybackContextReady,
+      playbackSelectionTransitionInFlight,
+      songSwitchBusyReason,
+      guardBackgroundBridgePlay,
+      backgroundBridgeStaleAttemptShouldPause,
+      backgroundBridgeSingleFlightDecision,
+      keyboardShortcutTargetIsInteractive,
       firstSongIdForBand: (band) => firstSongForBand(band)?.id || null,
       adjacentSongIdInBand: (band, currentSongId, delta) => (
         adjacentSongInBand(band, currentSongId, delta)?.id || null
@@ -4281,24 +4541,65 @@
     });
   }
 
-  function setTrackSelectorBusy(isBusy, text = "") {
+  function setTrackSelectorBusy(isBusy, text = "", reason = "default") {
+    if (isBusy) trackSelectorBusyReasons.set(reason, text || "loading...");
+    else trackSelectorBusyReasons.delete(reason);
+    const busy = trackSelectorBusyReasons.size > 0;
+    const busyText = Array.from(trackSelectorBusyReasons.values()).pop() || "";
     const group = $("br-track-select");
     if (!group) return;
-    group.setAttribute("aria-busy", isBusy ? "true" : "false");
+    group.setAttribute("aria-busy", busy ? "true" : "false");
     group.querySelectorAll("button[data-song]").forEach((btn) => {
-      btn.disabled = !!isBusy;
+      btn.disabled = busy;
     });
     let status = group.querySelector(".br-track-status");
-    if (isBusy || text) {
+    if (busy) {
       if (!status) {
         status = document.createElement("span");
         status.className = "br-track-status";
         group.appendChild(status);
       }
-      status.textContent = text || "loading...";
+      status.textContent = busyText;
     } else if (status) {
       status.remove();
     }
+  }
+
+  function playbackSelectionTransitionInFlight(reasons = trackSelectorBusyReasons.keys()) {
+    return Array.from(reasons).some((reason) => reason !== "playback-start");
+  }
+
+  function songSwitchBusyReason(switchSeq) {
+    return `song-switch:${switchSeq}`;
+  }
+
+  function setBandAndModeSelectionBusy(isBusy, reason = "default") {
+    if (isBusy) bandAndModeBusyReasons.add(reason);
+    else bandAndModeBusyReasons.delete(reason);
+    const busy = bandAndModeBusyReasons.size > 0;
+    const bandGroup = $("br-band-select");
+    if (bandGroup) {
+      bandGroup.setAttribute("aria-busy", busy ? "true" : "false");
+      bandGroup.querySelectorAll("button[data-band]").forEach((btn) => {
+        const band = state.bandsRegistry?.bands?.[btn.dataset.band];
+        btn.disabled = busy || !Array.isArray(band?.songs) || band.songs.length === 0;
+      });
+    }
+    const modeGroup = $("br-mode");
+    if (modeGroup) modeGroup.setAttribute("aria-busy", busy ? "true" : "false");
+    if (busy) {
+      document.querySelectorAll('input[name="br-mode"]').forEach((radio) => {
+        radio.disabled = true;
+        radio.setAttribute("aria-disabled", "true");
+      });
+    } else {
+      applyBandPlaybackModeContract();
+    }
+  }
+
+  function setPlaybackStartSelectionBusy(isBusy) {
+    setBandAndModeSelectionBusy(isBusy, "playback-start");
+    setTrackSelectorBusy(isBusy, "starting playback...", "playback-start");
   }
 
   function disposeAutoSelfKitForSongChange() {
@@ -4366,9 +4667,10 @@
 
     clearAutoAdvanceTimer();
     const switchSeq = ++songSwitchSeq;
+    const busyReason = songSwitchBusyReason(switchSeq);
     const wasPlaying = state.started;
     const keepBridge = wasPlaying && options.keepBackgroundBridge === true;
-    setTrackSelectorBusy(true, "loading track...");
+    setTrackSelectorBusy(true, "loading track...", busyReason);
     try {
       if (wasPlaying) {
         if (options.fadeStems) {
@@ -4394,11 +4696,19 @@
       renderPhraseTrigger();
       disposeAutoSelfKitForSongChange();
       if (wasPlaying && options.restart !== false) {
-        await startPlayback({ autoAdvance: options.autoAdvance === true });
+        // The song transition is complete; release its reason before START
+        // takes ownership of the selector busy state.
+        setTrackSelectorBusy(false, "", busyReason);
+        const restarted = await startPlayback({ autoAdvance: options.autoAdvance === true });
+        if (!restarted) {
+          if (keepBridge) stopBackgroundAudioBridge();
+          updateMediaSession("paused");
+          return false;
+        }
       }
       return true;
     } finally {
-      if (switchSeq === songSwitchSeq) setTrackSelectorBusy(false);
+      setTrackSelectorBusy(false, "", busyReason);
     }
   }
 
@@ -6610,14 +6920,50 @@
 
   // ---- Playback lifecycle -------------------------------------
 
+  function createPlaybackStartContract() {
+    return {
+      stopSeq: playbackLifecycleStopSeq,
+      songSwitchSeq,
+      modeSwitchSeq,
+      bandId: state.currentBandId,
+      songId: state.currentSongId,
+      mode: currentMode
+    };
+  }
+
+  function playbackStartContractMatches(contract, current) {
+    return !!contract && !!current &&
+      contract.stopSeq === current.stopSeq &&
+      contract.songSwitchSeq === current.songSwitchSeq &&
+      contract.modeSwitchSeq === current.modeSwitchSeq &&
+      contract.bandId === current.bandId &&
+      contract.songId === current.songId &&
+      contract.mode === current.mode;
+  }
+
+  function currentPlaybackStartContractState() {
+    return createPlaybackStartContract();
+  }
+
   async function startPlayback(opts = {}) {
-    if (state.started || state.starting) return;
-    const startSeq = playbackLifecycleStopSeq;
+    if (state.started) return true;
+    if (state.starting) return false;
+    if (playbackSelectionTransitionInFlight()) {
+      setStartStatus("曲または再生モードを切り替えています。切替が終わってから START を押してください。", "error");
+      return false;
+    }
+    const startContract = createPlaybackStartContract();
     state.starting = true;
     setButtonState("starting");
+    setStartStatus("");
+    setPlaybackStartSelectionBusy(true);
     try {
       await yieldToUi();
-      await startPlaybackBoot(Object.assign({}, opts, { startSeq }));
+      if (!playbackStartStillAllowed(startContract)) {
+        abortPlaybackStart("selection-changed");
+        return false;
+      }
+      return await startPlaybackBoot(Object.assign({}, opts, { startContract }));
     } catch (e) {
       console.warn("[Band Room] startPlayback failed:", e);
       stopPlayback({ resetPosition: false, keepBackgroundBridge: false, updateMedia: true });
@@ -6625,6 +6971,10 @@
       state.started = false;
       state.starting = false;
       setButtonState("idle");
+      setStartStatus("再生を開始できませんでした。もう一度 START、直らなければ RESET AUDIO を試してください。", "error");
+      return false;
+    } finally {
+      setPlaybackStartSelectionBusy(false);
     }
   }
 
@@ -6633,27 +6983,69 @@
       await Tone.start();
     } catch (e) {
       console.warn("[Band Room] Tone.start failed:", e);
+      abortPlaybackStart("tone-start-failed");
+      setStartStatus("ブラウザの音声を開始できませんでした。もう一度 START、直らなければ RESET AUDIO を試してください。", "error");
+      return false;
+    }
+    if (!tonePlaybackContextReady()) {
+      abortPlaybackStart("tone-context-suspended");
+      setStartStatus("ブラウザの音声が停止中です。画面をタップしてから START、直らなければ RESET AUDIO を試してください。", "error");
+      return false;
+    }
+    if (!playbackStartStillAllowed(opts.startContract)) {
+      abortPlaybackStart("selection-changed");
+      return false;
     }
     await yieldToUi();
+    if (!playbackStartStillAllowed(opts.startContract)) {
+      abortPlaybackStart("selection-changed");
+      return false;
+    }
 
     if (!state.songData) {
-      await loadSong(state.currentSongId);
+      await loadSong(state.currentSongId, { switchSeq: opts.startContract?.songSwitchSeq });
+    }
+    if (!playbackStartStillAllowed(opts.startContract)) {
+      abortPlaybackStart("selection-changed");
+      return false;
     }
     if (!state.songData) {
       state.starting = false;
       setButtonState("idle");
-      return;
+      setStartStatus("曲データを読み込めませんでした。ページを再読み込みして、もう一度 START を押してください。", "error");
+      return false;
     }
 
     ensureMaster();
     await yieldToUi();
+    if (!playbackStartStillAllowed(opts.startContract)) {
+      abortPlaybackStart("selection-changed");
+      return false;
+    }
     const backgroundBridgeStart = startBackgroundAudioBridge();
     if (currentMode === "synth") setButtonState("preparing-ai");
-    await preparePlaybackAssetsForCurrentMode("start");
+    const playbackReady = await preparePlaybackAssetsForCurrentMode("start");
     await backgroundBridgeStart;
-    if (!playbackStartStillAllowed(opts.startSeq)) {
-      abortPlaybackStart("lifecycle-stop");
-      return;
+    if (!playbackStartStillAllowed(opts.startContract)) {
+      abortPlaybackStart("selection-changed");
+      return false;
+    }
+    if (!playbackReady) {
+      abortPlaybackStart("assets-unavailable");
+      setStartStatus(
+        currentMode === "stems"
+          ? (bandSupportsPlaybackMode(currentBand(), "synth")
+            ? "原音 stems を読み込めませんでした。🎛 AI 再現に切り替えて START を押してください。"
+            : "原音 stems を読み込めませんでした。通信を確認して、もう一度 START を押してください。")
+          : "AI 再現の準備に失敗しました。もう一度 START、直らなければ RESET AUDIO を試してください。",
+        "error"
+      );
+      return false;
+    }
+    if (!tonePlaybackContextReady()) {
+      abortPlaybackStart("tone-context-suspended-after-prep");
+      setStartStatus("準備中にブラウザの音声が停止しました。画面をタップしてから、もう一度 START を押してください。", "error");
+      return false;
     }
 
     // v76: respect the tempo slider when starting (so re-start at 80% stays at 80%)
@@ -6690,6 +7082,7 @@
     state.started = true;
     state.starting = false;
     setButtonState("playing");
+    setStartStatus("");
     updateSectionDisplay();
     updateChordDisplay();
     startMasterMeter();
@@ -6703,10 +7096,22 @@
     if (midiOut) startMidiClock();
     startPlaybackHealthWatchdog();
     requestScreenWakeLock();  // v235: keep the screen awake for stable focus listening
+    return true;
   }
 
-  function playbackStartStillAllowed(startSeq) {
-    if (startSeq !== playbackLifecycleStopSeq) return false;
+  function tonePlaybackContextReady() {
+    try {
+      const context = typeof Tone.getContext === "function" ? Tone.getContext() : Tone.context;
+      return !!context && context.state === "running";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function playbackStartStillAllowed(startContract) {
+    if (!state.starting) return false;
+    if (playbackSelectionTransitionInFlight()) return false;
+    if (!playbackStartContractMatches(startContract, currentPlaybackStartContractState())) return false;
     if (!backgroundAudioEnabled() && typeof document !== "undefined" && document.hidden) return false;
     return true;
   }
@@ -7132,6 +7537,12 @@
     else startPlayback();
   }
 
+  async function runAfterPlaybackStarts(action) {
+    const started = state.started || await startPlayback();
+    if (!started || !state.started) return false;
+    return action() !== false;
+  }
+
   function setButtonState(s) {
     const btn = $("br-play");
     if (!btn) return;
@@ -7196,7 +7607,15 @@
 
   async function switchPlaybackMode(newMode) {
     if (newMode !== "stems" && newMode !== "synth") return false;
+    if (!bandSupportsPlaybackMode(currentBand(), newMode)) {
+      applyBandPlaybackModeContract();
+      return false;
+    }
     const oldMode = currentMode;
+    if (playbackModeSwitchInFlight) {
+      syncModeRadioSelection(oldMode);
+      return false;
+    }
     if (newMode === oldMode) {
       syncModeRadioSelection(oldMode);
       return true;
@@ -7209,13 +7628,17 @@
 
     if (!state.started) {
       currentMode = newMode;
+      playbackModeForcedByBandId = null;
       setBodyPlaybackMode(currentMode);
       syncModeRadioSelection(currentMode);
       return true;
     }
 
     const busyText = newMode === "synth" ? "preparing AI..." : "loading stems...";
-    setTrackSelectorBusy(true, busyText);
+    playbackModeSwitchInFlight = true;
+    syncModeRadioSelection(oldMode);
+    setBandAndModeSelectionBusy(true, "mode-switch");
+    setTrackSelectorBusy(true, busyText, "mode-switch");
     if (newMode === "synth") {
       setButtonState("preparing-ai");
       const kitStatus = $("br-kit-status");
@@ -7230,6 +7653,7 @@
         if (switchSeq !== modeSwitchSeq) return false;
         if (!state.started) {
           currentMode = "synth";
+          playbackModeForcedByBandId = null;
           setBodyPlaybackMode(currentMode);
           syncModeRadioSelection(currentMode);
           setButtonState("idle");
@@ -7239,6 +7663,7 @@
         const offsetSec = playbackContentElapsedSec();
         stopStemLayerPlayback();
         currentMode = "synth";
+        playbackModeForcedByBandId = null;
         setBodyPlaybackMode(currentMode);
         resetPlaybackClock(offsetSec);
       } else {
@@ -7246,6 +7671,7 @@
         if (switchSeq !== modeSwitchSeq) return false;
         if (!state.started) {
           currentMode = "stems";
+          playbackModeForcedByBandId = null;
           setBodyPlaybackMode(currentMode);
           syncModeRadioSelection(currentMode);
           setButtonState("idle");
@@ -7256,6 +7682,7 @@
         releaseSustainedSynths("mode-switch-stems");
         scheduleSynthBandTeardown(); // v354: free the synth band's always-on FX so it stops costing during 原音
         currentMode = "stems";
+        playbackModeForcedByBandId = null;
         setBodyPlaybackMode(currentMode);
         resetPlaybackClock(offsetSec);
         startStemLayerPlayback(offsetSec);
@@ -7277,7 +7704,11 @@
       }
       return false;
     } finally {
-      if (switchSeq === modeSwitchSeq) setTrackSelectorBusy(false);
+      if (switchSeq === modeSwitchSeq) {
+        playbackModeSwitchInFlight = false;
+        setTrackSelectorBusy(false, "", "mode-switch");
+        setBandAndModeSelectionBusy(false, "mode-switch");
+      }
     }
   }
 
@@ -7777,7 +8208,7 @@
     // v90: stems pack export toggle
     const stemsPackBtn = $("br-stems-pack-toggle");
     if (stemsPackBtn) {
-      stemsPackBtn.addEventListener("click", () => {
+      stemsPackBtn.addEventListener("click", async () => {
         const anyRecording = Object.values(stemRecorders).some(
           (r) => r && r.state === "recording"
         );
@@ -7786,7 +8217,7 @@
         } else {
           ensureMaster();
           if (!state.started) {
-            startPlayback().then(() => startStemsPack());
+            await runAfterPlaybackStarts(startStemsPack);
           } else {
             startStemsPack();
           }
@@ -7925,14 +8356,13 @@
     const helpToggle = $("br-help-toggle");
     const helpOverlay = $("br-help-overlay");
     const helpClose = $("br-help-close");
-    const openHelp = () => { if (helpOverlay) helpOverlay.hidden = false; };
-    const closeHelp = () => { if (helpOverlay) helpOverlay.hidden = true; };
-    if (helpToggle) helpToggle.addEventListener("click", openHelp);
-    if (helpClose) helpClose.addEventListener("click", closeHelp);
+    if (helpToggle) helpToggle.addEventListener("click", openHelpOverlay);
+    if (helpClose) helpClose.addEventListener("click", closeHelpOverlay);
     if (helpOverlay) {
       helpOverlay.addEventListener("click", (e) => {
-        if (e.target === helpOverlay) closeHelp();
+        if (e.target === helpOverlay) closeHelpOverlay();
       });
+      helpOverlay.addEventListener("keydown", trapHelpOverlayFocus);
     }
 
     // v87: per-stem external upload (drums / bass / other)
@@ -7986,14 +8416,14 @@
     // v81: recorder toggle button
     const recBtn = $("br-rec-toggle");
     if (recBtn) {
-      recBtn.addEventListener("click", () => {
+      recBtn.addEventListener("click", async () => {
         if (mediaRecorder && mediaRecorder.state === "recording") {
           stopRecording();
         } else {
           ensureMaster();
           if (!state.started) {
             // Need playback to be active for there to be audio to record
-            startPlayback().then(() => startRecording());
+            await runAfterPlaybackStarts(startRecording);
           } else {
             startRecording();
           }
@@ -8151,32 +8581,77 @@
   }
 
   async function selectBand(bandId) {
-    if (!state.bandsRegistry || !state.bandsRegistry.bands[bandId]) return;
+    if (!state.bandsRegistry || !state.bandsRegistry.bands[bandId]) return false;
     const band = state.bandsRegistry.bands[bandId];
     const firstSong = firstSongForBand(band);
-    if (!firstSong) return;
+    if (!firstSong) return false;
+    const previous = {
+      bandId: state.currentBandId,
+      songId: state.currentSongId,
+      songData: state.songData,
+      timedLines: state.currentTimedLines,
+      lyricMarkdown: state.currentLyricMarkdown,
+      mode: currentMode,
+      forcedModeBandId: playbackModeForcedByBandId
+    };
     const switchSeq = ++songSwitchSeq;
-    const wasPlaying = state.started;
-    if (wasPlaying) stopPlayback({ keepBackgroundBridge: true, updateMedia: false });
-    state.currentBandId = bandId;
-    state.currentSongId = firstSong.id;
-    document.querySelectorAll("#br-band-select button").forEach((b) => {
-      b.setAttribute("aria-pressed", b.dataset.band === bandId ? "true" : "false");
-    });
-    renderTrackButtons();
-    updateSubtitle();
-    const loaded = await loadSong(state.currentSongId, { switchSeq });
-    if (switchSeq !== songSwitchSeq) return;
-    if (!loaded) {
-      if (wasPlaying) stopBackgroundAudioBridge();
-      return;
+    const busyReason = `band-switch:${switchSeq}`;
+    setBandAndModeSelectionBusy(true, busyReason);
+    setTrackSelectorBusy(true, "loading band...", busyReason);
+    try {
+      const wasPlaying = state.started;
+      if (wasPlaying) stopPlayback({ keepBackgroundBridge: true, updateMedia: false });
+      state.currentBandId = bandId;
+      state.currentSongId = firstSong.id;
+      applyBandPlaybackModeContract();
+      setBandAndModeSelectionBusy(true, busyReason);
+      setStartStatus("");
+      document.querySelectorAll("#br-band-select button").forEach((b) => {
+        b.setAttribute("aria-pressed", b.dataset.band === bandId ? "true" : "false");
+      });
+      renderTrackButtons();
+      setTrackSelectorBusy(true, "loading band...", busyReason);
+      updateSubtitle();
+      const loaded = await loadSong(state.currentSongId, { switchSeq });
+      if (switchSeq !== songSwitchSeq) return false;
+      if (!loaded) {
+        state.currentBandId = previous.bandId;
+        state.currentSongId = previous.songId;
+        state.songData = previous.songData;
+        state.currentTimedLines = previous.timedLines;
+        state.currentLyricMarkdown = previous.lyricMarkdown;
+        currentMode = previous.mode;
+        playbackModeForcedByBandId = previous.forcedModeBandId;
+        renderBandSelector();
+        applyBandPlaybackModeContract();
+        syncTrackButtons();
+        renderLyricsView();
+        if (wasPlaying) stopBackgroundAudioBridge();
+        updateMediaSession("paused");
+        setStartStatus("バンドを読み込めなかったため、前の曲に戻しました。通信を確認して、もう一度選んでください。", "error");
+        return false;
+      }
+      clearLoopRange();
+      refreshLoopVisuals();
+      syncTrackButtons();
+      renderPhraseTrigger();
+      schedulePrefsSave();  // v78/v152: persist band and sound prefs; song resets on reload
+      if (wasPlaying) {
+        // The band load is complete; hand selector ownership to START.
+        setTrackSelectorBusy(false, "", busyReason);
+        setBandAndModeSelectionBusy(false, busyReason);
+        const restarted = await startPlayback();
+        if (!restarted) {
+          stopBackgroundAudioBridge();
+          updateMediaSession("paused");
+          return false;
+        }
+      }
+      return true;
+    } finally {
+      setTrackSelectorBusy(false, "", busyReason);
+      setBandAndModeSelectionBusy(false, busyReason);
     }
-    clearLoopRange();
-    refreshLoopVisuals();
-    syncTrackButtons();
-    renderPhraseTrigger();
-    if (wasPlaying) await startPlayback();
-    schedulePrefsSave();  // v78/v152: persist band and sound prefs; song resets on reload
   }
 
   // v99: render the per-voice override grid. 6 selects, each with the
@@ -9929,25 +10404,33 @@
 
   // ---- Boot ---------------------------------------------------
 
-  // v79: keyboard shortcuts. Skipped when focus is inside a text input,
-  // so typing in a file/textbox/select doesn't trigger transport actions.
+  function keyboardShortcutTargetIsInteractive(target) {
+    if (!target) return false;
+    if (target.isContentEditable) return true;
+    if (typeof target.closest === "function") {
+      return !!target.closest('input, textarea, select, button, a, summary, [contenteditable]:not([contenteditable="false"]), [role="button"]');
+    }
+    const tag = (target.tagName || "").toLowerCase();
+    return ["input", "textarea", "select", "button", "a", "summary"].includes(tag);
+  }
+
+  // v79/v390: global shortcuts must not replace native button/link/details
+  // keyboard behavior. Escape stays global so the modal help can always close.
   document.addEventListener("keydown", (e) => {
-    const tag = (e.target?.tagName || "").toLowerCase();
-    if (tag === "input" || tag === "textarea" || tag === "select") return;
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key !== "Escape" && keyboardShortcutTargetIsInteractive(e.target)) return;
     switch (e.key) {
       case "?": {
         // v86: open quick help
         e.preventDefault();
-        const ov = $("br-help-overlay");
-        if (ov) ov.hidden = false;
+        openHelpOverlay();
         break;
       }
       case "Escape": {
         const ov = $("br-help-overlay");
         if (ov && !ov.hidden) {
           e.preventDefault();
-          ov.hidden = true;
+          closeHelpOverlay();
         }
         break;
       }
@@ -9974,7 +10457,7 @@
         // toggle mode
         const cur = currentMode === "stems" ? "synth" : "stems";
         const radio = document.querySelector(`input[name=br-mode][value="${cur}"]`);
-        if (radio) { radio.checked = true; radio.dispatchEvent(new Event("change")); }
+        if (radio && !radio.disabled) { radio.checked = true; radio.dispatchEvent(new Event("change")); }
         break;
       }
       case "1": case "2": case "3": case "4":
@@ -10136,6 +10619,11 @@
         }
       }
     } catch (e) {}
+
+    // A synth-only band such as HAZAMA must never boot into a silent stems
+    // surface. Apply the registry contract after prefs/deep-link band choice,
+    // before the first song is prepared.
+    applyBandPlaybackModeContract();
 
     // Pre-load the default song meta (doesn't start audio)
     await loadSong(state.currentSongId);

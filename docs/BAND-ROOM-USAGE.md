@@ -1,12 +1,28 @@
 # Band Room — 使い方ガイド
 
-> air rock connect box (Tabasco) リバイバル + AI 再現の練習/jam web app。
-> https://quietbriony.github.io/Music/band-room.html
+> Listen hub: https://quietbriony.github.io/Music/listen.html
+> Band Room: https://quietbriony.github.io/Music/band-room.html
+> HAZAMA直接入口: https://quietbriony.github.io/Music/band-room.html?band=hazama
 >
-> 2 つのモードを切り替えながら、本物の音源と AI 合成を A/B したり、混ぜたり、
-> 自分で歌い直したり、Suno で生成した声を upload したりできる。
+> Tabascoの原音 / AI再現をA/Bしたり、HAZAMAのsynth-only bandを聴いたり、
+> 自分のtakeを録音・uploadしたりできる。
 
-## 画面構成 (v168 — コア + 折り畳み詳細)
+## いちばん短い遊び方
+
+1. Listen hubから`HAZAMA Band Room — Still Moving`を開く。
+2. `🎛 AI 再現`が自動選択され、利用できない`📻 原音`がdisabledになったら、
+   `START`を一度押す。
+3. `WARMING UP` / `PREPARING AI`中はband・song・modeのbusy解除を待つ。
+   失敗したらSTART直下の案内に従い、再度`START`、次に`RESET AUDIO`を使う。
+4. 聴き終えたらListen hubへ戻り、Lyric Labでkeep / fix・歌詞・制作先を手動で整理する。
+   リンクを開くだけでmodel実行やdownloadが始まることはない。
+
+復旧条件を含むこの導線の正本は
+[BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
+現行playability契約はv390、client markerは`br-230` / `br-88`。
+実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
+
+## 画面構成（現行: br-230 / br-88）
 
 ```
 ┌─────────────────────────────────┐
@@ -14,13 +30,14 @@
 ├─────────────────────────────────┤
 │  [-] master volume [====] 80 [+] │  ← 車 / touch 向け常時音量
 ├─────────────────────────────────┤
-│  [Tabasco]                       │  ← band 選択
+│  [Tabasco] [...]                 │  ← visible band 選択（HAZAMAはdeep-link）
 ├─────────────────────────────────┤
 │  [01] [02] [03] [04] [05] [06] [07] │  ← song 選択 (7 曲)
 ├─────────────────────────────────┤
-│  [ 📻 原音 ]  [ 🎛 AI 再現 ]      │  ← mode pill
+│  [ 📻 原音 ]  [ 🎛 AI 再現 ]      │  ← HAZAMAはAIのみ / 原音disabled
 ├─────────────────────────────────┤
-│  [ START ]                       │  ← 再生
+│  [ START ]                       │  ← warming / preparing / stop
+│  復旧案内                         │  ← START失敗時だけ表示
 │  0:00 ━━━━━━━━━━━━━ 5:04          │  ← song timeline / seek
 │  117 BPM · G major               │
 │  verse-1 · 4/16 → chorus-1       │  ← 現在 / 次セクション
@@ -49,12 +66,17 @@
 └─────────────────────────────────┘
 ```
 
-詳細は [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md) (v65-v79 履歴 + キーボード一覧)。
+版ごとの詳細は[BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md)、
+操作の全体像は[BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)を参照。
 
-## 最初の再生
+## 通常入口とdeep-link
 
-reload 後は必ず Tabasco の 01 `TABASCO` から始まります。前回開いていた song は
-復元せず、band / volume / mixer などの操作 prefs だけ保持します。
+初回の通常入口はTabascoの01 `TABASCO`から始まります。以後のqueryなしreloadは
+保存済みのvisible bandを復元し、そのbandの01へ戻ります。前回のsongやplayback modeは
+復元せず、volume / mixer / kit等の操作prefsを保持します。
+
+`?band=hazama`は保存済みbandより優先され、HAZAMAの01 `Still Moving`と
+`🎛 AI 再現`を開きます。Drum Floorからの明示的な戻りqueryも通常復元より優先されます。
 
 曲末は同じ曲を loop せず、set list 順に次の track へ進みます。01 終了後は
 02 `Hey`、以降 03, 04... と続き、最後の曲だけ停止します。A/B loop を明示した時は
@@ -72,7 +94,7 @@ AI 再現モードでは、各パートが原曲 drum-frame を読む part agent
 bass は kick と ghost の位置にロックし、guitar は snare / crash / hat 密度で刻みを
 変え、vocal guide と chords は section role と accent へ応答します。
 
-v168 以降の default mix は少し余裕を持たせています。master は limiter に張り付き
+現行default mixは少し余裕を持たせています。masterはlimiterに張り付き
 にくく、stem vocal blend は控えめ、AI 再現は bass / guitar / chords が前に出すぎない
 バランスです。旧 default が保存済みのブラウザも、完全一致する旧 slider 値だけ
 新 default へ移行します。大きくしたい時は master volume を上げるのが一番安全です。
@@ -93,7 +115,15 @@ Hazama FM の `band room →` から開くと、FM の genre に近い Band Room
 `FM suggests ...` として表示されます。`AI` で AI 再現モードへ切り替え、
 `inject` で現在 frame に入れます。どちらも自動再生はしません。
 
-## 5 つの典型用途
+## Lyric Labへ渡す
+
+Band Roomから自動転送はしません。Listen hubへ戻って
+[Lyric Lab](../lyric-lab.html)を開き、制作元をBand Roomとして、keep / fix、歌詞、
+BPM / key / 尺、制作先を手動で入力します。`下書きを作る`後に棚へ保存するか、
+ACE-Step等へ渡すproduction handoffを整理します。この操作だけで外部modelやGPU処理は
+起動しません。
+
+## 用途別の遊び方
 
 ### 1. カラオケ — 元バンドの演奏で自分が歌う
 
@@ -224,12 +254,14 @@ scripts/
 ## トラブルシューティング
 
 ### iPhone Safari で音が出ない
-→ START 押した直後の audioContext 起動許可を tap で与える必要あり。
-   何回かボタン押し直すか、ホーム画面に PWA 化したアイコンから起動。
+→ `WARMING UP` / `PREPARING AI`が終わるまで待ちます。START直下に音声停止の
+   案内が出てボタンが`START`へ戻ったら、画面を一度tapして`START`を一度押します。
+   直らなければ`RESET AUDIO`、次にreloadを試します。準備中の連打は不要です。
 
 ### 曲再生中に止まる / 遅れる
-→ 4 stems 同時 buffer load が重い。`Tone.Loaded()` 待ちで対処してるが、
-   モバイルで通信遅いと厳しい。WiFi 必須。
+→ 初回のstems / online sample取得にはnetworkが必要です。取得後は対応assetがcacheされ、
+   Wi-Fiだけが必須ではありません。HAZAMAの弱端末比較は
+   `?band=hazama&aiLight=1`を使い、それでも止まる場合はBL-041の実機結果へ記録します。
 
 ### Suno 生成 mp3 を upload してもズレる
 → Suno の BPM/key は近似なので Tabasco 本来の構造と微妙にズレる。
@@ -237,7 +269,8 @@ scripts/
    にして external vocal だけ流すか、自分で歌い直す方が綺麗。
 
 ### サンプルキットに切り替えると無音
-→ 初回 Tone.loaded() の最中。"sample kit: ..." 表示まで待つ。
+→ 初回asset取得中は`sample kit: ...`表示まで待ちます。失敗案内が出た場合は
+   通信を確認し、mode / song切替が終わってから`START`を押します。
 
 ### vocal phrase trigger が空
 → その曲の vocal stem から十分な phrases が検出できなかった (短すぎ等)。

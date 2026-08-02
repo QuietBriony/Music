@@ -19,6 +19,228 @@
 
 ---
 
+## 2026-08-02 — Autonomy queue semantic gate (v395 / stacked local feature branch)
+- agent      : Codex 5.6-sol（親 + inventory / schema / policy / fixture-fuzz adversarial read-only監査）
+- goal       : BACKLOG / SESSION-LEDGERの意味破損を、runtime・audio・GPU・model・networkへ
+  触れず、現行legacy記録とclaim運用を保った実行可能契約で止める
+- repos      : Music（autonomy checker / README / currency manifest / Backlog / Ledgerのみ。
+  `engine.js`、HTML、SW、audio、model weightは不変）
+- implemented:
+  - live Markdown state machineでfence / comment / quote / indented code / raw preを除外し、
+    active 7必須field・canonical field順 / repo / scope / agent、human-gate / status、
+    protected engine / no-gate claimを検証。legacy Doneは✅日付 + outcomeの別schemaで維持
+  - 最新ledgerのfield / PASS結果 / backlog / next参照、全entryの有効日付・newest-firstを固定。
+    malformed heading / ID、claim bypass、none混在を含む5正例 + 113負fixtureをmemory-only実行
+- stack-check: PASS 31 / FAIL 0 / SKIP 0（0 BAD。offline CPU-only、GPU / audio / model実行なし）
+- backlog    : BL-044 Done
+- next       : none
+- blockers   : GitHub 443接続制限でpull / push保留。残るactive itemはすべてhuman-gated
+
+---
+
+## 2026-08-02 — Music host DOM / source-binding contract (fm-118 / v395 / stacked local feature branch)
+- agent      : Codex 5.6-sol（親 + host-inventory / engine-DOM / gate-design adversarial read-only監査）
+- goal       : Core / FMで意図的に異なるDOM surfaceと4 consumerのlookupを、runtime・audio・
+  GPUへ触れずbrowser-safeな静的契約として固定する
+- repos      : Music（manifest / checker / focused architecture / autonomy docsのみ。`engine.js`、
+  `index.html` / `fm.html`、SW、audio consumer、model weightは不変）
+- implemented:
+  - 4 consumerのliteral / dynamic lookupをhost別required / optional seamへ固定。Core 65、
+    FM 107のunion、tag / range / select / ARIA / hidden shim / script loadを双方向検証
+  - browser tree-state差、canonical URL / CSP / SRI / legacy typing、live function / parameter /
+    owner / loop / delegated-click、genre profile 9-fader結線をfail-closed化
+  - shadow / dead code、escaped identifier、computed global、string timer、eval / Function /
+    constructorを含む101件のmemory-only負fixtureをexact count + label hashで自己検証
+- stack-check: PASS 30 / FAIL 0 / SKIP 0（0 BAD。gate実行はnetwork / GPU / model / audio renderなし）
+- backlog    : BL-043 Done
+- next       : BL-044（autonomy queue semantic gate）
+- blockers   : GitHub 443接続制限でpull / push保留。実browser操作・音質・試聴はhuman確認
+
+---
+
+## 2026-08-02 — Band Room auxiliary authority drift gate (br-230 / v395 / stacked local feature branch)
+- agent      : Codex 5.6-sol（親 + authority / gate-design / architecture adversarial read-only監査）
+- goal       : Band Room緊急fallbackとkaraoke timingが正本から静かにずれる回帰を、
+  runtime・audio・GPUへ触れず実行可能な契約で拒否する
+- repos      : Music（既存logic gate + focused architecture / autonomy docsのみ。
+  `band-room.js`、registry、timed JSON、SW、音源、model weightは不変）
+- implemented:
+  - test-only memory hookで実registry loaderをfake 503へ通し、fallbackの3 pathと7曲の
+    ID / 順序 / track / titleを`bands.json`へ完全一致。timed loader / per-song lookupも
+    fake JSONで実行し、想定2 path以外のfetchをfail-closed
+  - timed lyricsをASR-backed 5曲のexact setへ固定し、全timestampをfinite・非負・
+    strict昇順・catalog duration以内、本文をnonblankとして検証。除外2曲のfallbackも確認
+  - fallback 8種とtimed 10種のin-memory driftを個別に作り、全てrejectする負試験を追加
+- stack-check: PASS 29 / FAIL 0 / SKIP 0（0 BAD、network / GPU / model / audio renderなし）
+- backlog    : BL-042 Done
+- next       : BL-043（Music host DOM seam manifest / gate）
+- blockers   : GitHub 443接続制限でpull / push保留。実音・mobile・HAZAMA昇格はhuman gate
+
+---
+
+## 2026-08-02 — Music satellite / engine seam executable harness (fm-118 / v395 / stacked local feature branch)
+- agent      : Codex 5.6-sol（親 + architecture / currency / handoff adversarial read-only監査）
+- goal       : 抽出済み5 satelliteのclassic-script late-binding seamを、GPU / audioなしで
+  実行可能なload-order・dependency・public API契約へ固定する
+- repos      : Music（test fixture / validator / docs / currency manifestのみ。`engine.js`、
+  HTML、SW、satellite runtime、音源、音色・mix・level、model weightは不変）
+- implemented:
+  - engine globalsなしの同一VMへ5 satelliteを先行load後、47 bindingのfixtureを注入。
+    routing / focus / recorder / packet / Hazama feedbackをfakeで実行し、missing seam、
+    optional fallback、複数origin、timer / BroadcastChannel cleanupまで検証
+  - FM / Core host別Tone契約、satellite→engineのclassic defer順、engine→fm順、SW一意収録 /
+    marker parityを固定。comment / script body / 属性alias / unquoted module / consumer member /
+    dependency driftのfalse-passを負テストで閉じた
+  - 新gate / fixtureをHAZAMA architecture currency監視へ接続。runtime versionは
+    `fm-118` / `hazama-fm-v395`据置で、実browserのTone / MediaRecorder、音質・試聴は対象外
+- stack-check: PASS 29 / FAIL 0 / SKIP 0（0 BAD、network / GPU / model / audio renderなし）
+- backlog    : BL-037 Done。次のCPU-only候補BL-042 / BL-043 / BL-044を追加
+- next       : BL-042（Band Room fallback / timed lyrics authority drift gate）
+- blockers   : GitHub 443接続制限でpull / push保留。engine seam変更は別human-gated PR
+
+---
+
+## 2026-08-02 — Tabasco catalog v2 + drift validator (v395 / stacked local feature branch)
+- agent      : Codex 5.6-sol（親 + inventory / architecture / gate-design read-only監査）
+- goal       : 初期snapshotの個人path / placeholder / stale statusを除去し、Band Roomで遊ぶ
+  7曲の現行正本と派生一覧が再びずれないCPU-only契約へ整理する
+- repos      : Music（preset metadata / verification / docs / SW cache epochのみ。
+  `engine.js`、音源、音色・mix・level、model weight、GPU / audio処理は不変）
+- implemented:
+  - `tabasco-songs.json`をv2派生inventoryへ置換。`bands.json`、7 drum-frame、final lyricsへ
+    ID / track / title / duration / BPM / key / artifact statusを同期し、全BPM / keyを
+    `human_unverified`、asset provenanceをBL-035 pendingとして明示
+  - Human Fly frameの表示名だけをruntime registryへ正規化。catalogはruntime非消費のため
+    precacheから除外し、旧v1 cacheを退役させる`hazama-fm-v395`へversion chainを同期
+  - network-free gateでschema、7曲coverage、tracked exact-case path、frame structure /
+    lyrics heading、禁止絶対path / placeholder、runtime非消費、SW非precacheを検証
+  - BPMを意図的にdriftさせる負試験がFAILすることを確認後、正しい136へ復元
+- stack-check: PASS 28 / FAIL 0 / SKIP 0（0 BAD、GPU / model / audio renderなし）
+- backlog    : BL-036 Done
+- next       : human判断はBL-035 / BL-041。次のagent-safe itemはBL-037
+  （Music satellite / engine seam executable contract harness）
+- blockers   : GitHub 443接続制限でpull / push保留。既存PWA更新後のcache退役と
+  Tabasco 7曲offline再生はbrowser checklistのhuman passに残す
+
+---
+
+## 2026-08-02 — Autonomy factual catch-up + currency gate (v394 / stacked local feature branch)
+- agent      : Codex 5.6-sol（親 + handoff / architecture / gate-design read-only監査）
+- goal       : 古い実行promptとcurrent markerを現物へ同期し、runtime / configだけ進んで
+  handoff / architecture / ledgerが古くなる状態をcommit基準で検出する
+- repos      : Music（docs / config / verification + SW sample classifier。`engine.js`、
+  sample content、音色・mix・level、model weightは不変）
+- last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c
+- implemented:
+  - CODEX-HANDOFFを現行control-plane / resource境界へ更新し、v276候補、BL-028、TASK Eを
+    実装状況付きhistorical archiveへ移動。GPUは`worker-gaming` / `worker.gpu` + 明示許可限定
+  - HAZAMA architectureを5 repo role / 5 public surface / 3 manifest、same-origin preset、
+    現行runtime tuple、audio constants、playability / privacy / PWA contractへ同期
+  - 3文書の監視pathとmarkerをcurrency manifestへ固定。ancestor + tree delta + doc freshnessで
+    stacked branch、same-worktree更新、change→revertを誤検知せずstaleだけfail-closed
+  - v393でcommit-pinned Tonejs/audio 6 familyがSW sample cacheから漏れた回帰を発見。
+    `hazama-fm-v394` classifierとcatalog 21 rootのnetwork-free assertionで修正
+- stack-check: PASS 27 / FAIL 0 / SKIP 0（0 BAD、GPU / model / audio renderなし）
+- backlog    : BL-034 Done
+- next       : owner判断はBL-035。次のagent-safe P1はBL-036（Tabasco catalog v2 + drift gate）
+- blockers   : GitHub 443接続制限でpull / push保留。browser実音 / mobile / CDN offline再取得は
+  human checklistへ残し、BL-030のauthority A/B判断は変更していない
+
+---
+
+## 2026-08-02 — External dependency lock + immutable sample catalog (v393 / stacked local feature branch)
+- agent      : Codex 5.6-sol（親 + architecture / quality / roadmap read-only監査）
+- goal       : Blender / ACE-StepのGPUを塞がず、過去要望にまたがるbrowser・sample・worker・
+  model依存を監査可能な単一契約へ統合し、再現不能なmutable参照とlicense誤認を止める
+- repos      : Music（manifest、catalog、validator、運用docs、docs cacheのみ。`engine.js`、
+  音色・mix・level、意図するsample content、音源/model weightは不変）
+- implemented:
+  - `config/external-dependencies.json`へ24依存を集約し、revision / integrity / license /
+    size上限 / storage / execution machine / fallback / fail-closed条件を記録
+  - catalog 21定義をdependency IDへ接続し、GitHub由来URLを既存contentのcommit SHAへ固定。
+    mutable URL 0、license status verified 18 / pending 5 / N/A 1
+  - ACE-Step / Demucs / Whisperはrepo-external・明示download・`worker.gpu`限定。download、
+    import、executionなし。tracked model weight 0
+  - network-free validator、README / sample / worker / ACE-Step / handoff runbook、SW v393を同期
+- stack-check: PASS 26 / FAIL 0 / SKIP 0（0 BAD、GPU / model / audio renderなし）
+- backlog    : BL-033 Done
+- next       : agent-safe P1はBL-034。実音 / mobileはBL-041、持込asset契約はBL-035
+- blockers   : GitHub 443接続制限でpull / push保留。実CDN取得、browser実音、GPU / model実行は
+  このsessionでは未実施
+
+---
+
+## 2026-08-02 — Band Room playability docs current contract (v392 / stacked local feature branch)
+- agent      : Codex 5.6-sol（親 + architecture / quality / roadmap read-only監査）
+- goal       : GPUを使わず、公開入口からHAZAMAを再生し、失敗復帰してLyric Labへ
+  制作判断を渡す現実の最短導線をREADME / Manual / Usageで一本化する
+- repos      : Music（利用者docs、docs cache、回帰checkのみ。Band Room runtime、
+  `engine.js`、音色・mix・level、音源、model weightは不変）
+- implemented:
+  - READMEに公開Listen / HAZAMA direct / Band Room / Lyric Lab / FM / Core Rigと
+    4-stepの入口を追加。分散していた公開URLを1か所へ集約
+  - Manualを詳細正本にし、synth-only自動AI、原音disabled、START準備中の
+    band/song/mode busy、fail-closed復帰、手動Lyric Lab handoffを一続きに整理
+  - Usageは用途別レシピを維持しつつ、saved visible band / deep-link優先、START復旧、
+    初回network assetとcache、Lyric Labのmanual metadata handoffを現行化
+  - `check-band-room-docs.mjs`で93 Markdown links、公開入口、v390 runtime / v392 cache境界、
+    stale表現、BL-041 / BL-003 human gateを検証。precache更新のためSWをv392へbump
+- stack-check: PASS 25 / FAIL 0 / SKIP 0（0 BAD、GPU / model / audio renderなし）
+- backlog    : BL-040 Done。HAZAMAの実音 / desktop+mobile / selector昇格はBL-041、
+  車載/BluetoothはBL-003のhuman gateのまま
+- next       : human側はBL-041。agent-safe全体P1はBL-033、次点BL-034
+- blockers   : browser画面capture、実音、mobile、車載/Bluetoothは未実施。claim pushは
+  実行環境のGitHub 443接続制限で保留
+
+---
+
+## 2026-08-02 — Listen hub HAZAMA current QA route (v391 / stacked local feature branch)
+- agent      : Codex 5.6-sol（親 + architecture / quality / roadmap read-only監査）
+- goal       : 前回playability契約の次手として、GPUを使わずHAZAMAを聴く入口から
+  Lyric Labの制作handoffまで一画面で迷わず回せるようにする
+- repos      : Music（Listen / QA docs / cacheのみ。Band Room runtime、`engine.js`、
+  音色・mix・level、音源、model weightは不変）
+- implemented:
+  - `listen.html` のcurrent passをHAZAMAへ更新。通常 / `?aiLight=1` の60–90秒、
+    実sectionに沿う約6分arc、Lyric Lab handoffを既存card / responsive規則で統合
+  - v388の16-step / 2音サイレン回帰とv390のsynth-only / fail-closed STARTを
+    現在QAにし、v299 Funk / v301 Human Flyはhistorical evidenceへ降格
+  - listening backlog、LS-01 / LS-03、runtime checklist、changelog、SW v391を同期。
+    `check-listen-hub.mjs`で25 links / 20 unique target、local href、静的a11y、
+    current / historical境界、CSV 12列を回帰検証
+- stack-check: PASS 24 / FAIL 0 / SKIP 0（0 BAD、GPU / model処理なし）
+- backlog    : BL-039 Done。BL-041の実音 / desktop+mobile / selector昇格はhuman gateのまま
+- next       : playability文書列はBL-040。全体P1キューはBL-033 / BL-034を維持
+- blockers   : browser画面capture、実音、mobile試聴は未実施。v390親branchと本branchの
+  git pushは実行環境のGitHub 443接続制限で保留
+
+---
+
+## 2026-08-01 — Band Room playability entry contract (v390 / local feature branch)
+- agent      : Codex 5.6-sol（親 + architecture / quality / roadmap read-only監査）
+- goal       : 過去要望と現行UIを統合し、GPUを使わず「選ぶ→START→鳴る／失敗が分かる」
+  最短経路を現実に遊べる状態へする
+- repos      : Music（`engine.js` / 音色・mix・level / 音源 / model weight は不変）
+- implemented:
+  - HAZAMAをregistry上 synth-only + default synthにし、deep-linkとband切替で自動適用。
+    強制mode provenanceを持ち、Tabascoへ戻る時だけ既定stemsへ復帰
+  - Tone / AudioContext / assetsをfail-closed化。START中はband/song/mode snapshotと
+    selector busy reasonを検証し、track/mode競合・rapid mode switchを遮断
+  - band load rollback、再START失敗時MediaSession、REC/stems-pack無音開始、
+    background bridge timeout + late resolve二重出力を防止
+  - Space shortcutのnative control保護、Help focus return/Tab trap、rangeとmode pillの
+    keyboard focus、START alertのlive-region更新順を改善
+  - capability docs / changelog / runtime listening checklistと実行回帰gateを同期
+- stack-check: PASS 23 / FAIL 0 / SKIP 0（0 BAD、既存music-stack-worker CPU環境 +
+  repo内TEMP。GPU処理なし）
+- backlog    : BL-038 Done。BL-039（Listen hub）、BL-040（manual/README）、
+  BL-041（HAZAMA selector昇格の人間判定）を追加
+- next       : BL-039を別の小PRで実施。現P0差分へ`listen.html`を混ぜず、原子的に保つ
+- blockers   : browser connectorのpermissionで画面capture/実音QAは未実施。
+  BL-041と実ブラウザ・mobile試聴は人間gate
+
+---
+
 ## 2026-08-01 — repo-wide CPU-only audit + Lyric Lab privacy boundary hardening (v389 / PR #392)
 - agent      : Codex 5.6-sol（親 + read-only 監査3並列 + adversarial review）
 - goal       : Blender / ACE-Step とGPU競合せず、Music repo全体の高価値改善を棚卸しし、

@@ -367,6 +367,19 @@ html, body {
   border-color: var(--accent-soft);
 }
 
+#br-start-status {
+  max-width: 560px;
+  margin: -2px 0 0;
+  color: var(--text-sub);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+#br-start-status[data-kind="error"] {
+  color: #ffb2a0;
+}
+
 #br-reset-audio {
   appearance: none;
   background: rgba(143, 255, 245, 0.04);
@@ -646,6 +659,21 @@ body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
   color: var(--accent-glass);
 }
 
+#br-mode label.br-radio:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.42;
+  border-style: dashed;
+}
+
+#br-mode-status {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--text-sub);
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 #br-fm-suggestion {
   width: min(92vw, 520px);
   margin: 2px auto 8px;
@@ -686,7 +714,19 @@ body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
 }
 
 #br-mode label.br-radio input[type="radio"] {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+#br-mode label.br-radio:focus-within {
+  outline: 2px solid var(--accent-glass);
+  outline-offset: 3px;
 }
 
 #br-phrase-trigger {
@@ -2685,4 +2725,11 @@ body.br-bg-audio #br-audio-route-status {
   #br-master-vol-bar button { width: 36px; height: 38px; }
   #br-master-vol-bar input[type="range"] { flex-basis: 40vw; width: 40vw; min-width: 88px; max-width: 150px; }
   #br-master-vol-readout { flex-basis: 28px; font-size: 12px; }
+}
+
+/* v390: custom sliders keep a visible keyboard focus indicator. */
+#br-main input[type="range"]:focus-visible,
+#br-master-vol-bar input[type="range"]:focus-visible {
+  outline: 2px solid var(--accent-glass);
+  outline-offset: 3px;
 }
