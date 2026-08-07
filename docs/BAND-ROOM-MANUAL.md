@@ -15,8 +15,8 @@
 ## 現在地とversion
 
 - 現行playability契約は **v390**。client markerは
-  `band-room.js?v=br-230` / `band-room.css?v=br-88`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v395**。Band Roomの音色、
+  `band-room.js?v=br-231` / `band-room.css?v=br-88`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v396**。Band Roomの音色、
   mix / level、Tone graph、`engine.js`はv390から変更していない。
 - Tabascoの曲順 / title / catalog durationは`presets/bands.json`、BPM / key / 構成は
   7曲のdrum-frame、canonical / fallback歌詞はfinal文書が正本。原音karaokeでは任意の
@@ -64,7 +64,7 @@
 
 ---
 
-## 画面構成（現行: br-230 / br-88）
+## 画面構成（現行: br-231 / br-88）
 
 ```
 ┌─────────────────────────────────┐

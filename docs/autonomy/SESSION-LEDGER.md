@@ -19,6 +19,39 @@
 
 ---
 
+## 2026-08-07 — HAZAMA arp lead ピーポー是正: acid pluck 化 (v396 / BL-041 初回実機判定の反映)
+- agent      : Claude Fable 5（Surface 対話 session・ユーザー実機試聴と往復）
+- goal       : BL-041 初回の耳判定「メイン旋律のシンセがピーポー音にしか聞こえない」（iPhone・
+  モノスピーカー）を、phone 負荷予算を変えない音色変更で解消する
+- repos      : Music（`makeArpSynth` の envelope / filterEnvelope + version 同期 + docs のみ。
+  `engine.js`、arp 以外の voice、音源、model weight、GPU 処理は不変）
+- shipped    :
+  - 切り分け: v387 の 16 分間引き回帰（v388 修正済み・deploy 済み v395 を実機で確認）では
+    なく、リード音色の持続感が原因（amp sustain 0.40 / filter sustain 0.55 の持続ノコギリが
+    モノ実機で 2 音間を行き来する連続音に融合）。`arp` データ保有曲は HAZAMA Still Moving
+    のみ＝Tabasco 7 曲の出音は不変
+  - `makeArpSynth` pluck 化: amp sustain 0.40→0.12 / filter sustain 0.55→0.18 /
+    baseFrequency 520→360 / octaves 3.2→3.6 / release 短縮 / volume -2→-1。
+    oscillator 構成（light=single saw / full=3-osc）不変＝トリガー予算不変
+  - version 同期: `band-room.js?v=br-231` / `BANDROOM_APP_VERSION=br-231-arp-pluck` /
+    SW `hazama-fm-v396` / changelog v396 + Manual / Usage / checklist / architecture /
+    handoff / currency manifest / logic gate の marker 追随
+  - 2026-08-02 統合の潜在欠陥を修正: `autonomy-doc-currency.json` の `last_verified_commit`
+    が worker ローカルの squash 前 SHA (04bceff…) を指し、push 済み履歴に存在せず
+    **新規 clone では check-autonomy-doc-currency が必ず FAIL** だった → main 実在の
+    8c7cd13 へ更新・verified_at 2026-08-07
+- stack-check: PASS 31 / FAIL 0 / SKIP 0（Surface に pytest / numpy / scipy を導入して従来 SKIP の
+  3 suite を実走化。openclaw connectors.py の f-string 内バックスラッシュ（Python 3.12 未満で
+  SyntaxError）も同時修正 = openclaw 側の別 commit）
+- backlog    : BL-041 open 継続（この音色変更の採否も次回実機試聴で判定）。
+  実音源レーン（`sample-kits/hazama/still-moving/` が 404 = 原音 kit 未整備）を
+  「音楽にする」本命候補として次の判断に上げる
+- next       : BL-041（ユーザー実機で再試聴。ピーポー解消なら続行、
+  音色で届かなければ HAZAMA 原音 kit＝承認済み bed 音源の stems 化へ）
+- blockers   : 音色の採否・原音レーン方針は human gate
+
+---
+
 ## 2026-08-02 — Autonomy queue semantic gate (v395 / stacked local feature branch)
 - agent      : Codex 5.6-sol（親 + inventory / schema / policy / fixture-fuzz adversarial read-only監査）
 - goal       : BACKLOG / SESSION-LEDGERの意味破損を、runtime・audio・GPU・model・networkへ

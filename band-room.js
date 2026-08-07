@@ -19,7 +19,7 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-230-playability-entry";
+  const BANDROOM_APP_VERSION = "br-231-arp-pluck";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -4140,9 +4140,15 @@
       // anyway (and the 260 Hz HPF + 2400 lowpass shave what detune adds).
       oscillator: { type: "fatsawtooth", count: light ? 1 : 3, spread: light ? 0 : 34 },
       filter: { Q: 4, type: "lowpass", rolloff: -24 },
-      envelope: { attack: 0.004, decay: 0.16, sustain: 0.40, release: 0.12 },
-      filterEnvelope: { attack: 0.004, decay: 0.12, sustain: 0.55, release: 0.14, baseFrequency: 520, octaves: 3.2 },
-      volume: -2
+      // v396: pluck, not siren — on the mono phone speaker the sustained saw
+      // (amp sustain 0.40 / filter sustain 0.55) fused the 16ths into one
+      // continuous two-pitch tone = the BL-041「ピーポー」verdict. Low sustains
+      // make every 16th a discrete bouncing acid pluck (the filter envelope
+      // carries the note, the gaps carry the groove); darker base + deeper
+      // sweep keeps it out of the siren register. Same osc count = same budget.
+      envelope: { attack: 0.004, decay: 0.18, sustain: 0.12, release: 0.10 },
+      filterEnvelope: { attack: 0.004, decay: 0.14, sustain: 0.18, release: 0.12, baseFrequency: 360, octaves: 3.6 },
+      volume: -1
     }).connect(filter);
     return withChainDispose(synth, [filter, lfo].concat(dubTap ? [dubTap] : []));
   }

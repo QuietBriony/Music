@@ -19,10 +19,10 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行playability契約はv390、client markerは`br-230` / `br-88`。
+現行runtimeはv396（HAZAMA arp lead: 持続ノコギリ→acid pluck）、playability契約はv390、client markerは`br-231` / `br-88`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
-## 画面構成（現行: br-230 / br-88）
+## 画面構成（現行: br-231 / br-88）
 
 ```
 ┌─────────────────────────────────┐

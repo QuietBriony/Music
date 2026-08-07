@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "last_verified_commit": "04bceffbe7560a04386f32048d221dfa8b51346c",
-  "verified_at": "2026-08-02",
+  "last_verified_commit": "8c7cd135c154c26bc701f5bcae4236e933342993",
+  "verified_at": "2026-08-07",
   "policy": {
     "comparison": "tree_delta_plus_document_freshness",
     "network": "forbidden",
@@ -36,7 +36,7 @@
         "Current control-plane snapshot",
         "Historical TASK E",
         "config/external-dependencies.json",
-        "hazama-fm-v395",
+        "hazama-fm-v396",
         "last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c",
         "worker-gaming",
         "worker.gpu"
@@ -90,11 +90,11 @@
         "BL-043",
         "audio/genre-flavor.js?v=fm-80",
         "band-room.css?v=br-88",
-        "band-room.js?v=br-230",
+        "band-room.js?v=br-231",
         "engine.js?v=fm-118",
         "fm.css?v=fm-54",
         "fm.js?v=fm-72",
-        "hazama-fm-v395",
+        "hazama-fm-v396",
         "last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c",
         "lyric-lab.html",
         "manifest-band-room.webmanifest",
@@ -153,7 +153,7 @@
       "required_markers": [
         "BL-034",
         "BL-044",
-        "hazama-fm-v395",
+        "hazama-fm-v396",
         "last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c"
       ],
       "forbidden_markers": []

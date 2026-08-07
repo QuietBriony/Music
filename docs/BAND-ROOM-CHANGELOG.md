@@ -1,6 +1,26 @@
-# Band Room - Changelog (v65 -> v395 compact)
+# Band Room - Changelog (v65 -> v396 compact)
 
-Current sw.js VERSION: v395. Latest Band Room runtime change: v390 (playability only; audio graph unchanged). v391-v392 change Listen/playability docs; v393 pins external dependency metadata and the cached sample catalog; v394 restores the pinned Tonejs/audio families to the sample runtime cache; v395 replaces the stale Tabasco snapshot with a validated derived inventory.
+Current sw.js VERSION: v396. Latest Band Room runtime change: v396 (HAZAMA arp lead timbre: sustained saw -> acid pluck, same osc budget). Before that: v390 (playability only; audio graph unchanged); v391-v392 change Listen/playability docs; v393 pins external dependency metadata and the cached sample catalog; v394 restores the pinned Tonejs/audio families to the sample runtime cache; v395 replaces the stale Tabasco snapshot with a validated derived inventory.
+
+---
+
+## v396 compact - HAZAMA arp lead: ピーポー -> acid pluck (BL-041 初回実機判定の反映)
+
+BL-041の初回実機試聴（iPhone・モノスピーカー）で「メイン旋律のシンセがピーポー音にしか
+聞こえない」判定が出た。v387の16分間引き回帰（v388で修正済み）とは別物で、今回は
+**リード音色そのものの持続感**が原因: amp sustain 0.40 / filter sustain 0.55 の
+持続ノコギリが、モノ実機では16分同士が融合して2音間を行き来する連続音＝サイレンに読めた。
+
+- `makeArpSynth`のenvelopeをプラック化: amp sustain 0.40→0.12（音符が離散化し、
+  隙間がグルーヴを運ぶ）、filterEnvelope sustain 0.55→0.18 / baseFrequency 520→360 /
+  octaves 3.2→3.6（1音ごとの"wow"が深く、暗いフロアからスイープ）
+- oscillator構成（light=single saw / full=3-osc fatsaw）は不変＝**phone負荷予算は不変**。
+  RMS低下の補償でvolume -2→-1
+- `arp`データを持つ曲は現状HAZAMA Still Movingのみ＝Tabasco 7曲の出音は不変
+- 音色判定はhuman gate継続: この変更自体もBL-041の次回実機試聴で採否を判定する
+
+Band Room runtimeは`band-room.js?v=br-231`へ、Service Workerは`hazama-fm-v396`へ更新。
+`band-room.css?v=br-88`のまま。`engine.js`、音源、model weight、GPU処理は不変。
 
 ---
 
