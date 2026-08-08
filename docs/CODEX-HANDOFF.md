@@ -22,7 +22,7 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
   Functions / D1側がauthと`no-store`を所有する。
 - browser / sample / worker / model依存は`config/external-dependencies.json`の24件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v397`。Band Room runtime markerは`band-room.js?v=br-231` /
+- 現行cacheは`hazama-fm-v398`。Band Room runtime markerは`band-room.js?v=br-231` /
   `band-room.css?v=br-88`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ

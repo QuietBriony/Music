@@ -1,6 +1,20 @@
-# Band Room - Changelog (v65 -> v397 compact)
+# Band Room - Changelog (v65 -> v398 compact)
 
-Current sw.js VERSION: v397. Latest Band Room runtime change: v396 (HAZAMA arp lead timbre: sustained saw -> acid pluck, same osc budget). v397 adds the HAZAMA 原音 stems lane (registry + assets only; runtime JS unchanged). Before that: v390 (playability only; audio graph unchanged); v391-v392 change Listen/playability docs; v393 pins external dependency metadata and the cached sample catalog; v394 restores the pinned Tonejs/audio families to the sample runtime cache; v395 replaces the stale Tabasco snapshot with a validated derived inventory.
+Current sw.js VERSION: v398. Latest Band Room runtime change: v396 (HAZAMA arp lead timbre: sustained saw -> acid pluck, same osc budget). v397 adds the HAZAMA 原音 stems lane (registry + assets only; runtime JS unchanged); v398 adds the second HAZAMA song 02 Still Moving (Hard) to the same lane. Before that: v390 (playability only; audio graph unchanged); v391-v392 change Listen/playability docs; v393 pins external dependency metadata and the cached sample catalog; v394 restores the pinned Tonejs/audio families to the sample runtime cache; v395 replaces the stale Tabasco snapshot with a validated derived inventory.
+
+---
+
+## v398 compact - HAZAMA 02 Still Moving (Hard) を原音レーンへ追加
+
+v397 で開通した原音レーンに `renders/完成版/02_ハード路線`（6 分・360 秒）を
+同一レシピ（worker Demucs htdemucs / 192kbps）で追加。
+
+- `presets/hazama-stems/still-moving-hard/{vocals,drums,bass,other}.mp3`（各 8.2MB）
+- `bands.json` hazama.songs に track 02（128 BPM / A minor / 360s）を追加
+- `drum-frames-hazama-still-moving-hard.json` は当面 01 の複製（`loadSong` が frames 必須のため）。
+  🎛 AI 再現で 02 を選ぶと 01 と同じアレンジが鳴る＝ハード専用の AI アレンジは未著作で、
+  02 の正は 📻 原音。frames 内 `events_extracted_from` に流用である旨を明記
+- runtime JS 不変。registry 配信のため SW `hazama-fm-v398`
 
 ---
 

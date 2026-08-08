@@ -19,6 +19,28 @@
 
 ---
 
+## 2026-08-08 — HAZAMA 02 Still Moving (Hard) を原音レーンへ追加 (v398)
+- agent      : Claude Fable 5（Surface 対話 session・ユーザー明示指示「02_ハード路線 いっとくか」）
+- goal       : v397 で開通した原音レーンに第二曲（ハード路線レンダー）を同一レシピで追加する
+- repos      : Music（stems assets + bands.json + frames 複製 + docs + SW cache version のみ。
+  runtime JS、engine.js、音色・mix・level、model weight は不変）
+- shipped    :
+  - `renders/完成版/02_ハード路線_still-moving-hard_6min.mp3`（360 秒実測）を worker Demucs
+    htdemucs 4-stem 分離し `presets/hazama-stems/still-moving-hard/`（各 8.2MB）へ収録
+  - `bands.json` hazama.songs へ track 02（128 BPM / A minor / 360s・値は 01 と同系の
+    authored 値で human_unverified）を追加
+  - `drum-frames-hazama-still-moving-hard.json` は 01 の複製（loadSong が frames 必須のため）。
+    ハード専用 AI アレンジは未著作＝02 の正は 📻 原音、と frames と changelog に明記
+  - SW `hazama-fm-v398` + version 同期（changelog / Manual / handoff / checklist /
+    architecture / currency manifest last_verified_commit=dd8c34f）
+- stack-check: PASS 31 / FAIL 0 / SKIP 0
+- backlog    : BL-041 open 継続（試聴対象が 2 曲になった）
+- next       : BL-041（iPhone で 01 / 02 を聴き比べ。ハード専用 AI アレンジの著作と
+  stem_mastering 調整は耳の結果待ち）
+- blockers   : 音の採否・バランス調整は human gate
+
+---
+
 ## 2026-08-08 — HAZAMA 原音レーン開通: Still Moving 完成レンダーを 4-stem 収録 (v397)
 - agent      : Claude Fable 5（Surface 対話 session・ユーザー明示指示「原音レーンやって」）
 - goal       : 「こんだけやって、音楽にならない」への構造的応答。合成再現に頼らず、

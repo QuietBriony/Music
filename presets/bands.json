@@ -159,6 +159,15 @@
           "key": "A minor",
           "duration_s": 360,
           "kit_profile": "lcd-motorik"
+        },
+        {
+          "id": "still-moving-hard",
+          "track": "02",
+          "title": "Still Moving (Hard)",
+          "bpm": 128,
+          "key": "A minor",
+          "duration_s": 360,
+          "kit_profile": "lcd-motorik"
         }
       ]
     }
