@@ -107,17 +107,17 @@ assert.equal(typeof backgroundBridgeStaleAttemptShouldPause, "function", "Bridge
 assert.equal(typeof backgroundBridgeSingleFlightDecision, "function", "Bridge single-flight policy should be exposed for overlap tests");
 assert.equal(typeof keyboardShortcutTargetIsInteractive, "function", "Global shortcut target guard should be exposed");
 const hazamaBand = bandsRegistry.bands?.hazama;
-assert.deepEqual(Array.from(playbackModesForBand(hazamaBand)), ["synth"], "HAZAMA should declare synth-only playback");
-assert.equal(preferredPlaybackModeForBand(hazamaBand, "stems"), "synth", "HAZAMA deep links should leave the silent stems default");
-assert.equal(bandSupportsPlaybackMode(hazamaBand, "stems"), false, "HAZAMA should disable unavailable original stems");
+assert.deepEqual(Array.from(playbackModesForBand(hazamaBand)), ["stems", "synth"], "HAZAMA should declare stems + synth playback (v397 原音レーン)");
+assert.equal(preferredPlaybackModeForBand(hazamaBand, "stems"), "stems", "HAZAMA deep links should default to the recorded original stems");
+assert.equal(bandSupportsPlaybackMode(hazamaBand, "stems"), true, "HAZAMA should enable the recorded original stems (v397)");
 assert.equal(bandSupportsPlaybackMode(hazamaBand, "synth"), true, "HAZAMA should keep AI recreation available");
 assert.deepEqual(Array.from(playbackModesForBand(bandsRegistry.bands?.tabasco)), ["stems", "synth"], "Bands without an explicit capability list should keep both legacy modes");
 assert.equal(preferredPlaybackModeForBand(bandsRegistry.bands?.tabasco, "stems"), "stems", "Tabasco should preserve the original-stems entry");
 const hazamaEntry = resolveBandPlaybackMode(hazamaBand, "hazama", "stems", null);
 assert.deepEqual(
   { mode: hazamaEntry.mode, forcedByBandId: hazamaEntry.forcedByBandId },
-  { mode: "synth", forcedByBandId: "hazama" },
-  "Tabasco stems -> HAZAMA should force the only playable synth mode"
+  { mode: "stems", forcedByBandId: null },
+  "Tabasco stems -> HAZAMA should keep the stems mode without forcing (both bands support it since v397)"
 );
 const tabascoReturn = resolveBandPlaybackMode(bandsRegistry.bands?.tabasco, "tabasco", hazamaEntry.mode, hazamaEntry.forcedByBandId);
 assert.deepEqual(

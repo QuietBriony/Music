@@ -4,14 +4,14 @@
 > Band Room: https://quietbriony.github.io/Music/band-room.html
 > HAZAMA直接入口: https://quietbriony.github.io/Music/band-room.html?band=hazama
 >
-> Tabascoの原音 / AI再現をA/Bしたり、HAZAMAのsynth-only bandを聴いたり、
-> 自分のtakeを録音・uploadしたりできる。
+> Tabascoの原音 / AI再現をA/Bしたり、HAZAMAの原音（Still Moving完成レンダー）と
+> AI再現を聴き比べたり、自分のtakeを録音・uploadしたりできる。
 
 ## いちばん短い遊び方
 
 1. Listen hubから`HAZAMA Band Room — Still Moving`を開く。
-2. `🎛 AI 再現`が自動選択され、利用できない`📻 原音`がdisabledになったら、
-   `START`を一度押す。
+2. `📻 原音`が自動選択されたら`START`を一度押す（v396まではsynth-only＝
+   AI再現専用が自動選択・原音disabledだったが、v397で原音stemsを収録した）。
 3. `WARMING UP` / `PREPARING AI`中はband・song・modeのbusy解除を待つ。
    失敗したらSTART直下の案内に従い、再度`START`、次に`RESET AUDIO`を使う。
 4. 聴き終えたらListen hubへ戻り、Lyric Labでkeep / fix・歌詞・制作先を手動で整理する。
@@ -34,7 +34,7 @@
 ├─────────────────────────────────┤
 │  [01] [02] [03] [04] [05] [06] [07] │  ← song 選択 (7 曲)
 ├─────────────────────────────────┤
-│  [ 📻 原音 ]  [ 🎛 AI 再現 ]      │  ← HAZAMAはAIのみ / 原音disabled
+│  [ 📻 原音 ]  [ 🎛 AI 再現 ]      │  ← HAZAMAは原音が既定（AI切替可）
 ├─────────────────────────────────┤
 │  [ START ]                       │  ← warming / preparing / stop
 │  復旧案内                         │  ← START失敗時だけ表示

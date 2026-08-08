@@ -1,6 +1,28 @@
-# Band Room - Changelog (v65 -> v396 compact)
+# Band Room - Changelog (v65 -> v397 compact)
 
-Current sw.js VERSION: v396. Latest Band Room runtime change: v396 (HAZAMA arp lead timbre: sustained saw -> acid pluck, same osc budget). Before that: v390 (playability only; audio graph unchanged); v391-v392 change Listen/playability docs; v393 pins external dependency metadata and the cached sample catalog; v394 restores the pinned Tonejs/audio families to the sample runtime cache; v395 replaces the stale Tabasco snapshot with a validated derived inventory.
+Current sw.js VERSION: v397. Latest Band Room runtime change: v396 (HAZAMA arp lead timbre: sustained saw -> acid pluck, same osc budget). v397 adds the HAZAMA 原音 stems lane (registry + assets only; runtime JS unchanged). Before that: v390 (playability only; audio graph unchanged); v391-v392 change Listen/playability docs; v393 pins external dependency metadata and the cached sample catalog; v394 restores the pinned Tonejs/audio families to the sample runtime cache; v395 replaces the stale Tabasco snapshot with a validated derived inventory.
+
+---
+
+## v397 compact - HAZAMA 原音レーン開通: Still Moving 完成レンダーの Demucs 4-stem 収録
+
+「こんだけやって、音楽にならない」への構造的応答。Band Room の HAZAMA はこれまで
+ブラウザ合成の AI 再現**のみ**で、iPhone には負荷予算で最も削られたライト版が届いていた。
+一方で Still Moving には承認済みの完成レンダー（`renders/完成版/01_メロウ路線` 6分）が
+既に存在し、レジストリも `stems_dir: presets/hazama-stems` を宣言済み＝**置き場が空なだけ**だった。
+
+- 完成レンダー（メロウ路線 6min mp3）を worker RTX 2070 の Demucs htdemucs で
+  4-stem 分離（`--mp3-bitrate 192`、Tabasco と同一レシピ）し、
+  `presets/hazama-stems/still-moving/{vocals,drums,bass,other}.mp3`（各 8.2MB）として収録
+- `bands.json` hazama: `playback_modes ["synth"]→["stems","synth"]`、
+  `default_playback_mode "synth"→"stems"`。深リンク `?band=hazama` の START は
+  以後**実音源の再生**になり、🎛 AI 再現はモード切替で選択可能
+- runtime JS は不変（`band-room.js?v=br-231` のまま）。モード有効化・既定選択・
+  stems URL 解決はすべて既存の registry 駆動ロジック
+- stems は precache しない（on-demand fetch、`add_new_band_workflow` step_5 の方針どおり）。
+  registry 更新を既存 PWA へ届けるため Service Worker を `hazama-fm-v397` へ更新
+- `ui_hidden` は維持＝BL-041（メイン selector 昇格）の human gate はそのまま。
+  判定対象が「合成の再現」から「実音源＋AI 再現の二本立て」に変わる
 
 ---
 

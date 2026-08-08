@@ -3,7 +3,7 @@
 > 通常入口: https://quietbriony.github.io/Music/band-room.html
 > HAZAMA直接入口: https://quietbriony.github.io/Music/band-room.html?band=hazama
 >
-> Tabasco LIVEの原音 / AI再現と、HAZAMAのsynth-only再生をブラウザで遊ぶ
+> Tabasco LIVEの原音 / AI再現と、HAZAMAの原音 stems / AI再現をブラウザで遊ぶ
 > 練習・比較・録音web app。install不要、PWA対応。
 >
 > このページの「最短導線」がSTART復旧を含む操作の正本。
@@ -16,15 +16,16 @@
 
 - 現行playability契約は **v390**。client markerは
   `band-room.js?v=br-231` / `band-room.css?v=br-88`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v396**。Band Roomの音色、
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v397**。Band Roomの音色、
   mix / level、Tone graph、`engine.js`はv390から変更していない。
 - Tabascoの曲順 / title / catalog durationは`presets/bands.json`、BPM / key / 構成は
   7曲のdrum-frame、canonical / fallback歌詞はfinal文書が正本。原音karaokeでは任意の
   timed lyricsを重ねる。`tabasco-songs.json`は保守用の派生一覧で、
   再生runtimeやoffline起動には使わない。
-- Tabascoは `📻 原音` と `🎛 AI 再現` を切替可能。HAZAMAは
-  **synth-only / AI再現専用**で、deep-link時に `🎛 AI 再現`を自動選択し、
-  利用できない `📻 原音`をdisabledにする。
+- TabascoもHAZAMAも `📻 原音` と `🎛 AI 再現` を切替可能。HAZAMAの原音は
+  Still Moving完成レンダー（メロウ路線）のDemucs 4-stem（v397収録）で、
+  deep-link時は `📻 原音` を自動選択する。v390〜v396は
+  **synth-only / AI再現専用**（`🎛 AI 再現`を自動選択・原音disabled）だった。
 - HAZAMAはまだmain band selectorでは `ui_hidden`。desktop / mobileの実音確認と
   公開昇格は **BL-041 human gate**、車載 / Bluetoothの実機確認は
   **BL-003 human gate**であり、この文書更新では合格扱いにしない。
@@ -35,7 +36,7 @@
 
 1. [Listen hub](../listen.html)を開き、current passの
    [HAZAMA Band Room](../band-room.html?band=hazama)へ進む。
-2. `🎛 AI 再現`が自動選択され、`📻 原音`がdisabledであることを確認する。
+2. `📻 原音`が自動選択されることを確認する（`🎛 AI 再現`へ切替も可能）。
 3. `START`を一度押す。表示が `WARMING UP` / `PREPARING AI` の間は、
    band / song / modeがbusy中なので切替を待つ。
 4. まず60–90秒、続けられれば約6分のarcを聴く。弱端末の比較だけ
@@ -76,7 +77,7 @@
 ├─────────────────────────────────┤
 │  [01] [02] [03] [04] [05] [06] [07] │  ← Tabasco の 7 曲
 ├─────────────────────────────────┤
-│  [ 📻 原音 ]  [ 🎛 AI 再現 ]      │  ← HAZAMAではAI自動選択 / 原音disabled
+│  [ 📻 原音 ]  [ 🎛 AI 再現 ]      │  ← HAZAMAでは原音を自動選択（AI切替可）
 ├─────────────────────────────────┤
 │  [ START ]                       │  ← 再生 / warming / preparing / stop
 │  復旧案内                         │  ← START失敗時だけ表示
@@ -119,8 +120,8 @@
 
 - **📻 原音 stems** — Demucs で分離した 4 stem (vocals/drums/bass/other) を再生
 - **🎛 AI 再現** — Tone.js 合成器で打ち込み再現
-- Tabasco等の両対応bandはmode barで切替。HAZAMAはAI再現専用で、原音pillは
-  disabledになり、`m` shortcutでも非対応modeへ移らない。
+- 両対応bandはmode barで切替（v397からHAZAMAも両対応・原音が既定）。
+  非対応modeのpillはdisabledになり、`m` shortcutでも移らない。
 
 ### 練習 / 再生
 

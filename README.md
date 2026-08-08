@@ -9,7 +9,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 ## まず遊ぶ — HAZAMA → Lyric Lab
 
 1. **[Listen hub](https://quietbriony.github.io/Music/listen.html)** を開く。
-2. current pass の **[HAZAMA Band Room](https://quietbriony.github.io/Music/band-room.html?band=hazama)** へ進む。HAZAMA は synth-only なので `🎛 AI 再現` が自動選択され、利用できない `📻 原音` は disabled になる。
+2. current pass の **[HAZAMA Band Room](https://quietbriony.github.io/Music/band-room.html?band=hazama)** へ進む。HAZAMA は `📻 原音`（Still Moving 完成レンダーの stems・v397 収録）が自動選択され、`🎛 AI 再現`（ブラウザ合成バンド）へも切り替えられる。
 3. `START` を一度押す。`WARMING UP` / `PREPARING AI` の間は band・song・mode の切替完了を待つ。失敗した場合は START 直下の案内に従って再度 `START`、直らなければ `RESET AUDIO` を使う。
 4. 残したい言葉や制作方針が見えたら **[Lyric Lab](https://quietbriony.github.io/Music/lyric-lab.html)** へ渡す。リンクを開くだけでは model の実行・download・音声生成は始まらない。
 

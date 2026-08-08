@@ -19,6 +19,32 @@
 
 ---
 
+## 2026-08-08 — HAZAMA 原音レーン開通: Still Moving 完成レンダーを 4-stem 収録 (v397)
+- agent      : Claude Fable 5（Surface 対話 session・ユーザー明示指示「原音レーンやって」）
+- goal       : 「こんだけやって、音楽にならない」への構造的応答。合成再現に頼らず、
+  承認済みの Still Moving 完成レンダーを Band Room の 📻 原音モードで鳴らす
+- repos      : Music（stems assets + bands.json + docs + SW cache version のみ。
+  runtime JS（band-room.js?v=br-231）、engine.js、音色・mix・level、model weight は不変）
+- shipped    :
+  - `renders/完成版/01_メロウ路線_still-moving_6min.mp3`（6 分・track01 正本）を
+    worker RTX 2070 の Demucs htdemucs（--mp3-bitrate 192・Tabasco と同一レシピ・
+    external-dependencies 契約どおり worker.gpu 実行）で 4-stem 分離し、
+    `presets/hazama-stems/still-moving/{vocals,drums,bass,other}.mp3`（各 8.2MB）を収録
+  - `bands.json` hazama: `playback_modes ["stems","synth"]`・`default_playback_mode "stems"`。
+    deep-link の START は実音源再生になり、AI 再現は切替で残る。`ui_hidden` は維持
+    （BL-041 の昇格 human gate はそのまま）
+  - stems は precache せず on-demand（add_new_band_workflow step_5 の方針）。registry を
+    既存 PWA へ届けるため SW `hazama-fm-v397`。README / Manual / Usage / checklist /
+    architecture / handoff / currency manifest / changelog を「原音＋AI 二本立て」へ現行化
+- stack-check: PASS 31 / FAIL 0 / SKIP 0（音の採否・実機確認は human gate に残す）
+- backlog    : BL-041 open 継続（判定対象が「合成の再現」から「実音源＋AI 再現」へ拡大）。
+  BL-035 の provenance 対象に hazama-stems（自作 ACE-Step レンダー由来・license self）を追記対象として明示
+- next       : BL-041（iPhone で ?band=hazama を開き 📻 原音の START 一発・6 分 arc・
+  Tabasco 復帰を確認。原音が「音楽として」鳴るかの耳判定）
+- blockers   : 原音の音量バランス（stem_mastering の dB 調整）と AI 再現の残す/直すは human gate
+
+---
+
 ## 2026-08-07 — HAZAMA arp lead ピーポー是正: acid pluck 化 (v396 / BL-041 初回実機判定の反映)
 - agent      : Claude Fable 5（Surface 対話 session・ユーザー実機試聴と往復）
 - goal       : BL-041 初回の耳判定「メイン旋律のシンセがピーポー音にしか聞こえない」（iPhone・
