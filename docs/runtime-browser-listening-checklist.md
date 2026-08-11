@@ -120,8 +120,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `engine.js?v=fm-118`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-80`, `audio/ai-fills.js?v=fm-71`,
   `style.css?v=fm-28`, `band-room.css?v=br-90`,
-  `band-room.js?v=br-235`, `audio/audio-safety.js?v=br-67`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v400`.
+  `band-room.js?v=br-236`, `audio/audio-safety.js?v=br-67`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v401`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,
@@ -182,6 +182,15 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   START context says KARAOKE. Switch to Tabasco and confirm its original vocal
   returns. Track 02 must report its lyrics as unregistered rather than showing
   01 words through the shared `Still Moving` title prefix.
+- For v401 HAZAMA pocket, use both 01 AI and provisional 02 AI. Press `all off`
+  and confirm arp also turns OFF; `defaults` and `all on` must turn arp ON.
+  Listen 30–90 seconds each to `drums + bass`, `drums + arp`, and
+  `drums + bass + arp` with vocal OFF, then the default mix. Record whether the
+  short-note packing is isolated to arp, bass, vocal guide, or the combined mix.
+  If the short pass is stable, continue through the roughly six-minute section
+  arc. Repeat START and the physical lock/unlock lifecycle on an actual phone
+  Safari tab or installed PWA; a Surface pass does not satisfy this mobile gate.
+  Do not remove `ui_hidden` until v401 sound and real-mobile stability both pass.
 - The lifecycle check called "lock/unlock" means: while playback is active,
   lock the physical device so its screen turns off, wait 10 seconds, unlock the
   device, and return to the same Band Room tab. Confirm audio continued or

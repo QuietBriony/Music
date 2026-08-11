@@ -20,10 +20,25 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行runtime / playability契約はv400（02 AI明示 + session-only KARAOKE + 曲別歌詞境界）、client markerは`br-235` / `br-90`。
+現行runtime / playability契約はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）、client markerは`br-236` / `br-90`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
-## 画面構成（現行: br-235 / br-90）
+### v401 AIの短時間レイヤー判定
+
+AI再現を開き、`all off`から次の4つを各30–90秒だけ聴きます。切替時は必要な
+checkboxだけONにし、最後に`defaults`で通常mixへ戻します。
+
+1. `drums + bass` — 低音の初動、間、詰まりを確認。
+2. `drums + arp` — 電子MIDI感や短音の連打がarp由来か確認。
+3. `drums + bass + arp`、`vocal OFF` — v401のauthored基準配置20–21発/barを確認。
+   実演時のbass ghost/dropは、この基準から発音を減らすだけです。
+4. `defaults` — 全体mixで人間らしい間が残るか確認。
+
+01 AIと02 AI暫定の両方で行います。02は01 authored framesデータ共有ですが、
+曲ID seedによる微細な実演差があります。02固有アレンジの
+合否には使わず、02原音を基準にします。Surface合格だけではreal mobile合格になりません。
+
+## 画面構成（現行: br-236 / br-90）
 
 ```
 ┌─────────────────────────────────┐
@@ -49,7 +64,7 @@
 ├─────────────────────────────────┤
 │  layer toggles (mode 別)         │
 │  📻 vocals · drums · bass · other │
-│  🎛 drums · click · bass · g · v · c │
+│  🎛 drums · bass · guitar · vocal · chords · arp · click │
 ├─────────────────────────────────┤
 │  [ lyrics — current section が   │  ← 自動スクロール + ハイライト
 │    glow して、他は dim ]         │

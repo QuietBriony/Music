@@ -133,10 +133,10 @@
       "vocalist": "user",
       "scene": "hypnotic dub-techno · 128 BPM · Underworld lineage (Rick Smith 相当=AI / Karl Hyde 相当=user)",
       "ui_hidden": true,
-      "ui_hidden_note": "BL-041 AMBER。原音は試聴継続、AIの短音過密と実mobile確認が未完了。メインの band selector には出さず、?band=hazama or ?dev=1 からのみアクセス。",
+      "ui_hidden_note": "BL-041 AMBER。v401 AI authored-rest候補の人間再試聴と実mobile確認が未完了。メインの band selector には出さず、?band=hazama or ?dev=1 からのみアクセス。",
       "playback_modes": ["stems", "synth"],
       "default_playback_mode": "stems",
-      "playback_mode_note": "📻 原音 = 01メロウ / 02 Hard完成レンダーの Demucs 4-stem。🎛 AI 再現 = ブラウザ合成バンド（02は01 frames共有の暫定版）。",
+      "playback_mode_note": "📻 原音 = 01メロウ / 02 Hard完成レンダーの Demucs 4-stem。🎛 AI 再現 = v401 authored-rest候補（02は01 authored framesデータ共有の暫定版。実演の微細な揺らぎは曲IDごと）。",
       "stems_dir": "presets/hazama-stems",
       "drum_frames_pattern": "presets/drum-frames-hazama-{songid}.json",
       "lyrics_doc": "docs/hazama-lyrics.md",
@@ -162,7 +162,7 @@
           "stems_total_mib": 32.96,
           "playback_notes": {
             "stems": "基準: メロウ完成レンダーの 4 stems · 約33.0 MiB · 6:00",
-            "synth": "AI 再現: ローカルdrum one-shot + ブラウザ合成の比較レーン（HAZAMA高密度安全モード）"
+            "synth": "AI 再現: v401 authored-rest候補。arp＋bassのauthored基準配置を20–21発/小節へ整理し、実演時のbass ghost/dropはそこから発音を減らす人間再試聴レーン"
           }
         },
         {
@@ -177,7 +177,7 @@
           "ai_recreation_source_song": "still-moving",
           "playback_notes": {
             "stems": "基準: Hard完成レンダーの 4 stems · 約33.0 MiB · 6:00",
-            "synth": "⚠ 02固有AIではありません。01 Still Moving の AI frames を再生中です。比較基準は02の 📻 原音です"
+            "synth": "⚠ 02固有AIではありません。01 Still Moving の v401 authored framesデータを共有しています（実演の微細な揺らぎは曲IDごと）。比較基準は02の 📻 原音です"
           }
         }
       ]

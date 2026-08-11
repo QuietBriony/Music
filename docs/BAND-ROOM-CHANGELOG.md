@@ -1,6 +1,37 @@
-# Band Room - Changelog (v65 -> v400 compact)
+# Band Room - Changelog (v65 -> v401 compact)
 
-Current sw.js VERSION: v400. Latest Band Room runtime change: v400 (HAZAMA 02 AI honesty, session-only KARAOKE, exact lyric boundary). v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard). v396 is the previous audio-timbre change (HAZAMA arp lead: sustained saw -> acid pluck).
+Current sw.js VERSION: v401. Latest Band Room runtime change: v401 (HAZAMA authored-rest pocket + truthful arp bulk controls). v400 provides HAZAMA 02 AI honesty, session-only KARAOKE, and exact lyric boundaries. v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard).
+
+---
+
+## v401 compact - HAZAMA AI authored-rest pocket candidate
+
+Surface試聴の「電子MIDI・短音が詰まり音楽になっていない」を、音色を重ねずにarrangement data側で
+切り分けた人間再試聴候補。01/02の共有AI musical payloadは同一のまま、機械的な偶奇skipではなく
+sectionごとに明示した休符でarp / bassの同時密度を下げた。
+
+- active sectionのarpを11–12、bassを9、authored基準配置を合計20–21発/小節へ整理
+  （v400はverse 27、他active section 32。最大約37.5%減）
+- arp gateを`0.82–0.86`、bass gateを`0.86`へ伸ばし、各16分音を約96–101msへ。
+  全patternに偶数・奇数step双方の音とstep 15のphrase-tail休符を保持
+- authored restをずらす`rotate`、再充填する`addProb`、配置を不定にする`dropProb`はゼロ。
+  octave / velocity / accent / swingの小さな揺らぎは維持。bassのghost / phrase-tail dropは
+  authored基準から発音を減らすだけで、20–21を実発音のexact値としては扱わない
+- 02は引き続き01 authored framesデータ共有の暫定版。曲ID seedによりvelocity / jitter /
+  bass dropの微細な実演差は残る。musical payload equality、11–12 + 9 density、
+  16-step、偶奇、末尾休符、arp gate `.82/.84/.86`、bass gate `.86`を
+  `check-band-room-logic.mjs`でfail-close
+- 01/02両frameをService Workerへprecacheし、fresh/offline PWAでも02 AIだけ欠けないようにした。
+  registryの全synth曲frameがprecacheされることを自動検査
+- AI layerの`all on / all off`へ従来漏れていたarpを含め、`defaults`はHAZAMAの
+  guitar OFF / arp ON、Tabascoのguitar ON / arp OFFをband-awareに復元。再生中のbulk
+  変更は全checkboxを確定してからasset prepを一度だけ行い、重複synth / 常時nodeを残さない
+- 停止中の曲 / band切替でtimelineだけ0:00へ戻りsection / chordが旧曲のまま残る表示ずれを解消
+- `engine.js`、synth envelope、原音stems、model / GPU処理は不変。通常selectorは
+  `ui_hidden:true`を維持し、Surface再試聴 + real mobile合格までBL-041 AMBER
+
+Band Room runtimeは`band-room.js?v=br-236`、CSSは`band-room.css?v=br-90`、
+Service Workerは`hazama-fm-v401`。
 
 ---
 

@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-08-11 [worker-gaming] — HAZAMA AIの短音過密をauthored restsで再設計 (v401)
+- agent      : Codex（Surface human feedback反映 + authored pocket設計 + browser/runtime review）
+- goal       : BL-041の「短音が詰まる」を、engine変更なしで休符・gate・安全なレイヤー比較導線へ落とす
+- repos      : Music（HAZAMA 01/02 frames、Band Room UI/runtime、offline cache、Listen、docs、static gates。原音/engine不変）
+- shipped    : PR #397 `Give HAZAMA AI an authored-rest pocket` candidate。`hazama-fm-v401` / `band-room.js?v=br-236` /
+  `band-room.css?v=br-90`、arp+bass authored基準20–21発/bar、約96–101ms gate、
+  palette-aware defaults、一括toggle単発prepare、02 frame offline precache、停止中section/chord同期
+- stack-check: PASS 32 / FAIL 0 / SKIP 0
+- backlog    : BL-041をAMBER継続。v400 Surface操作○ / AI音質×を根拠にv401再試聴候補を実装
+- next       : BL-041 — v401をSurface + iPhone Safari/PWAで30–90秒再試聴し、音質・lock復帰・通常selector昇格を判定
+- blockers   : v401の人間音質評価とreal mobileは未確認。02固有AI/歌詞は未作成
+
+---
+
 ## 2026-08-11 [worker-gaming] — HAZAMA Surface AMBERを試聴UIへ反映 (v400)
 - agent      : Codex（ユーザー人間試聴の判定整理 + Band Room audition polish）
 - goal       : BL-041のSurface結果を正確に残し、02 AI誤認・02歌詞誤表示・KARAOKE持ち越しを解消する

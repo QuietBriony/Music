@@ -47,7 +47,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : verify / runtime
 - agent    : human
 - human-gate: yes
-- status   : wip — human gate AMBER 2026-08-11（Surface pass、AI音質・実mobile待ち）
+- status   : wip — human gate AMBER 2026-08-11（v401再試聴・実mobile待ち）
 - source   : 2026-08-01 Band Room playability / UI audit
 - detail   : 現行は `?band=hazama` で01原音が既定。Listenの01/02 × 原音/AI 4ケースを
   desktop + real mobileで確認し、START一発、60–90秒の単調/ピーポー/途切れ、
@@ -56,7 +56,9 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   START、ピーポーなし、途切れなし、画面復帰、Tabasco復帰は概ね○。ただし01/02 AIは
   「電子MIDI・短音が詰まり音楽になっていない」で音質×、02 AIの01 frames共有表示も
   見落とされた。iPhone Safari / PWA等の実mobileは未確認。v400で暫定表示とKARAOKE導線、
-  02歌詞境界を磨くが、AIのauthored rests再試聴と実mobile合格後のみ`ui_hidden`を外す。
+  02歌詞境界を改善。v401はarp + basslineのauthored基準配置を20–21発/bar、
+  gate 0.82–0.86へ整理し、bass runtimeはそこから発音を減らすだけのauthored-rest候補。
+  Surfaceとreal mobileでのレイヤー別再試聴合格後のみ`ui_hidden`を外す。
   自律ランで `ui_hidden` を外さない。
 
 ### BL-035 — Band Room asset lane の契約 / provenance を一本化

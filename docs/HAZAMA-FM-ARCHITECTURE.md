@@ -10,9 +10,9 @@
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v400`, `engine.js?v=fm-118`,
+> Current cache / asset tuple: `hazama-fm-v401`, `engine.js?v=fm-118`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-80`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-235`, `band-room.css?v=br-90`。
+> `band-room.js?v=br-236`, `band-room.css?v=br-90`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:
@@ -608,8 +608,12 @@ Hazama FMとは別ページ。`band-room.html`は2つのlaneを同じplay surfac
 - HAZAMA: 01/02とも原音4-stemとAI再現を比較するlane。`?band=hazama`は原音を既定選択し、
   `song` / `mode` queryで4ケースへ直接入る。02 AIは02固有ではなく01 frames共有の暫定版。
   v400はその境界を常時強調し、`mix=karaoke`で既存原音4-stemのvocalsだけをsession中OFFにする。
-  02固有歌詞が未登録なら01を誤流用しない。main selectorでは`ui_hidden`で、通常公開の合格は
-  BL-041 human gate。Surface passは操作安定○、AI短音過密×、real mobile未確認のAMBER。
+  02固有歌詞が未登録なら01を誤流用しない。v401はAIのarp + basslineを明示休符の
+  authored基準配置20–21発/bar、gate 0.82–0.86へ整理した再試聴候補。bass runtimeは
+  基準から発音を減らすだけで、02は同じframeデータでも曲ID seedの微細な実演差がある。
+  main selectorでは`ui_hidden`で、
+  通常公開の合格はBL-041 human gate。v400 Surface passは操作安定○、AI短音過密×、
+  v401実音とreal mobileは未確認のAMBER。
 
 利用者の最短導線は`listen.html` → HAZAMA → Lyric Lab。詳細操作は
 `BAND-ROOM-MANUAL.md`、用途別レシピは`BAND-ROOM-USAGE.md`を正本とする。
@@ -628,7 +632,7 @@ Hazama FMとは別ページ。`band-room.html`は2つのlaneを同じplay surfac
 | External vocal upload (Suno or 自録) | ✅ v63 |
 | Vocal phrase trigger (240 phrases click) | ✅ v64 |
 | 全 7 曲歌詞 (proper English v2.1) | ✅ |
-| HAZAMA 01/02 原音/AI/KARAOKE導線 / dense AI safe START / 曲別歌詞境界 | ✅ v400（実音昇格はBL-041） |
+| HAZAMA 01/02 原音/AI/KARAOKE導線 / dense AI safe START / authored-rest候補 / 曲別歌詞境界 | ✅ v401（実音昇格はBL-041） |
 
 ### ファイル構成
 

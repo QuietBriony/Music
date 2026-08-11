@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-235-hazama-audition-clarity";
-  const BANDROOM_RELEASE_VERSION = "v400";
+  const BANDROOM_APP_VERSION = "br-236-hazama-pocket-rests";
+  const BANDROOM_RELEASE_VERSION = "v401";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
@@ -2714,9 +2714,23 @@
   function provisionalAiContext(song = currentBandSongMeta(), band = currentBand()) {
     if (!song?.ai_recreation_source_song) return "";
     const source = band?.songs?.find((item) => item.id === song.ai_recreation_source_song) || null;
-    const sourceLabel = source?.track ? `${source.track} AI共有` : `${song.ai_recreation_source_song}共有`;
+    const sourceLabel = source?.track ? `${source.track} authored frames共有` : `${song.ai_recreation_source_song} authored frames共有`;
     const targetLabel = song?.track ? `${song.track}固有AIなし` : "この曲固有AIなし";
     return `${sourceLabel}・${targetLabel}`;
+  }
+
+  function synthDefaultToggleState(band = currentBand()) {
+    const palette = band?.palette || {};
+    const pick = (key, fallback) => typeof palette[key] === "boolean" ? palette[key] : fallback;
+    return {
+      drums: pick("drums_on", true),
+      bass: pick("bass_on", true),
+      guitar: pick("guitar_on", true),
+      voice: pick("voice_on", true),
+      chords: pick("chords_on", true),
+      arp: pick("arp_on", false),
+      click: pick("click_on", false)
+    };
   }
 
   function karaokeStemToggleState(active, current = {}) {
@@ -4602,6 +4616,7 @@
       aiLayerLightRuntimeEnabled,
       denseAiSongRequiresSafety,
       provisionalAiContext,
+      synthDefaultToggleState,
       directKaraokeRequested,
       karaokeStemToggleState,
       stemKaraokeActiveFromState,
@@ -4691,6 +4706,11 @@
       applyRecommendedKitProfile();
       applyRecommendedKitSource();  // HAZAMA → synth kit (instant, no CDN); Tabasco unaffected
       renderSectionNav();  // v75: clickable section list
+      // v401: a stopped song/band change already resets the timeline to 0:00.
+      // Refresh its dependent labels now as well, rather than leaving the
+      // previous track's section progress and chord visible until START.
+      updateSectionDisplay();
+      updateChordDisplay();
       refreshDrumFloorLink();
       updateMediaSession(state.started ? "playing" : "paused");  // v85: refresh OS metadata
       // Load lyrics from the band's lyrics_doc if present. v306: also pull this
@@ -8105,11 +8125,16 @@
       voiceToggleEl.addEventListener("change", syncVoiceVolEnabled);
       syncVoiceVolEnabled();
     }
+    // A bulk action dispatches each checkbox's normal change event so all
+    // secondary UI stays in sync, but asset creation must run only once after
+    // the complete layer state is visible. Otherwise each async listener can
+    // build the same synth concurrently and leave losing always-on nodes alive.
+    let synthBulkToggleDepth = 0;
     ["drums", "bass", "guitar", "voice", "chords", "arp", "click"].forEach((part) => {
       const el = $("br-toggle-" + part);
       if (!el) return;
       el.addEventListener("change", async () => {
-        if (!el.checked || currentMode !== "synth" || !state.started) return;
+        if (synthBulkToggleDepth > 0 || !el.checked || currentMode !== "synth" || !state.started) return;
         await prepareSynthPlaybackAssets("toggle");
       });
     });
@@ -8407,16 +8432,26 @@
 
     // v105: bulk toggle buttons (all on / all off / defaults / karaoke)
     document.querySelectorAll(".br-toggle-all").forEach((btn) => {
-      btn.addEventListener("click", () => {
+      btn.addEventListener("click", async () => {
         const action = btn.dataset.toggleAll;
-        if (action === "synth-on") {
-          ["drums", "bass", "guitar", "voice", "chords"].forEach((v) => setToggle("br-toggle-" + v, true));
-          setToggle("br-toggle-click", false); // click stays off
-        } else if (action === "synth-off") {
-          ["drums", "bass", "guitar", "voice", "chords", "click"].forEach((v) => setToggle("br-toggle-" + v, false));
-        } else if (action === "synth-default") {
-          ["drums", "bass", "guitar", "voice", "chords"].forEach((v) => setToggle("br-toggle-" + v, true));
-          setToggle("br-toggle-click", false);
+        if (["synth-on", "synth-off", "synth-default"].includes(action)) {
+          synthBulkToggleDepth++;
+          try {
+            if (action === "synth-on") {
+              ["drums", "bass", "guitar", "voice", "chords", "arp"].forEach((v) => setToggle("br-toggle-" + v, true));
+              setToggle("br-toggle-click", false); // click stays off
+            } else if (action === "synth-off") {
+              ["drums", "bass", "guitar", "voice", "chords", "arp", "click"].forEach((v) => setToggle("br-toggle-" + v, false));
+            } else {
+              Object.entries(synthDefaultToggleState()).forEach(([part, on]) => setToggle("br-toggle-" + part, on));
+            }
+          } finally {
+            synthBulkToggleDepth--;
+          }
+          if (action !== "synth-off" && currentMode === "synth" && state.started) {
+            await prepareSynthPlaybackAssets("toggle");
+          }
+          schedulePrefsSave();
         } else if (action === "stems-on") {
           ["vocals", "drums", "bass", "other"].forEach((s) => setToggle("br-toggle-stem-" + s, true));
         } else if (action === "stems-off") {
