@@ -36,7 +36,7 @@
         "Current control-plane snapshot",
         "Historical TASK E",
         "config/external-dependencies.json",
-        "hazama-fm-v399",
+        "hazama-fm-v400",
         "last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287",
         "worker-gaming",
         "worker.gpu"
@@ -89,12 +89,12 @@
         "BL-041",
         "BL-043",
         "audio/genre-flavor.js?v=fm-80",
-        "band-room.css?v=br-89",
-        "band-room.js?v=br-234",
+        "band-room.css?v=br-90",
+        "band-room.js?v=br-235",
         "engine.js?v=fm-118",
         "fm.css?v=fm-54",
         "fm.js?v=fm-72",
-        "hazama-fm-v399",
+        "hazama-fm-v400",
         "last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287",
         "lyric-lab.html",
         "manifest-band-room.webmanifest",
@@ -153,7 +153,7 @@
       "required_markers": [
         "BL-034",
         "BL-044",
-        "hazama-fm-v399",
+        "hazama-fm-v400",
         "last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287"
       ],
       "forbidden_markers": []

@@ -47,10 +47,16 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : verify / runtime
 - agent    : human
 - human-gate: yes
+- status   : wip — human gate AMBER 2026-08-11（Surface pass、AI音質・実mobile待ち）
 - source   : 2026-08-01 Band Room playability / UI audit
-- detail   : desktop + mobile で `?band=hazama` の synth 自動選択、START 一発、
-  60–90秒の単調/ピーポー/途切れ、Tabasco 復帰時のmode/paletteを確認。合格後のみ
-  `presets/bands.json` の `ui_hidden` とfooter WIP表現を別PRで通常公開へ変更する。
+- detail   : 現行は `?band=hazama` で01原音が既定。Listenの01/02 × 原音/AI 4ケースを
+  desktop + real mobileで確認し、START一発、60–90秒の単調/ピーポー/途切れ、
+  再生中の端末画面ロック→10秒→解除後の継続/復帰、HAZAMA→Tabasco切替時の
+  原音mode/palette復帰を別々に判定する。2026-08-11 Surface / interface speakerでは
+  START、ピーポーなし、途切れなし、画面復帰、Tabasco復帰は概ね○。ただし01/02 AIは
+  「電子MIDI・短音が詰まり音楽になっていない」で音質×、02 AIの01 frames共有表示も
+  見落とされた。iPhone Safari / PWA等の実mobileは未確認。v400で暫定表示とKARAOKE導線、
+  02歌詞境界を磨くが、AIのauthored rests再試聴と実mobile合格後のみ`ui_hidden`を外す。
   自律ランで `ui_hidden` を外さない。
 
 ### BL-035 — Band Room asset lane の契約 / provenance を一本化

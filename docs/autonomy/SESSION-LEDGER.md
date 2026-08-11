@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-08-11 [worker-gaming] — HAZAMA Surface AMBERを試聴UIへ反映 (v400)
+- agent      : Codex（ユーザー人間試聴の判定整理 + Band Room audition polish）
+- goal       : BL-041のSurface結果を正確に残し、02 AI誤認・02歌詞誤表示・KARAOKE持ち越しを解消する
+- repos      : Music（Band Room UI/runtime、Listen、registry metadata、docs、static gates。音源/AI frames/engine不変）
+- shipped    : `feature/hazama-v400-audition-clarity` candidate。`hazama-fm-v400` / `band-room.js?v=br-235` /
+  `band-room.css?v=br-90`、02 AI非固有の強調、01/02 session-only KARAOKE、完全title歌詞一致、
+  画面ロックとhidden-band/権限unlockの用語分離
+- stack-check: PASS 32 / FAIL 0 / SKIP 0
+- backlog    : BL-041をAMBER更新。Surfaceは操作安定○、AI短音過密×、real mobile未確認
+- next       : BL-041 — authored restsでarp+bass過密を減らす別候補を出し、Surface + iPhoneで30–90秒再試聴
+- blockers   : 通常selector昇格はAI音質とreal mobileのhuman gate待ち。02固有AI/歌詞は未作成
+
+---
+
 ## 2026-08-11 [worker-gaming] — HAZAMA v399 / Chrome baselineをPR #394でmerge closeout
 - agent      : Codex（commit、PR、squash merge、branch cleanup）
 - goal       : HAZAMA safe STARTとWorkerPC Chrome共有基準をmainへ出し、母艦がGit同期できる状態で閉じる

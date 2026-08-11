@@ -133,7 +133,7 @@
       "vocalist": "user",
       "scene": "hypnotic dub-techno · 128 BPM · Underworld lineage (Rick Smith 相当=AI / Karl Hyde 相当=user)",
       "ui_hidden": true,
-      "ui_hidden_note": "制作中。メインの band selector には出さず、?band=hazama or ?dev=1 からのみアクセス。完成したら ui_hidden を外して Tabasco と併存させる。",
+      "ui_hidden_note": "BL-041 AMBER。原音は試聴継続、AIの短音過密と実mobile確認が未完了。メインの band selector には出さず、?band=hazama or ?dev=1 からのみアクセス。",
       "playback_modes": ["stems", "synth"],
       "default_playback_mode": "stems",
       "playback_mode_note": "📻 原音 = 01メロウ / 02 Hard完成レンダーの Demucs 4-stem。🎛 AI 再現 = ブラウザ合成バンド（02は01 frames共有の暫定版）。",
@@ -177,7 +177,7 @@
           "ai_recreation_source_song": "still-moving",
           "playback_notes": {
             "stems": "基準: Hard完成レンダーの 4 stems · 約33.0 MiB · 6:00",
-            "synth": "暫定: 01 Still Moving の AI frames を共有。02 固有の AI アレンジは未作成。基準は 📻 原音"
+            "synth": "⚠ 02固有AIではありません。01 Still Moving の AI frames を再生中です。比較基準は02の 📻 原音です"
           }
         }
       ]

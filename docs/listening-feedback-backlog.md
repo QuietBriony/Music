@@ -23,7 +23,7 @@ priority: high
 
 ## Current Reopened Notes
 
-### 2026-08-11 HAZAMA v397-v399 01/02 current pass
+### 2026-08-11 HAZAMA v397-v400 01/02 current pass
 
 - v397 added the 01 original 4-stem reference; v398 added the 02 Hard original
   lane. Each song is 128 BPM / A minor / 360 seconds and about 32.96 MiB.
@@ -32,6 +32,17 @@ priority: high
 - v399 makes HAZAMA's dense arp+bassline AI band use the layer-only light safety
   tier, with checked-in local drum one-shots and no saved/CDN drum override on
   START, while leaving the shared master and original-stem graph unchanged.
+- Surface / interface-speaker human pass: 01原音・01AI・02原音はSTARTでき、AIの
+  ピーポー再発と途切れはなし。画面ロック解除後は同じBand Roomへ正常復帰し、
+  HAZAMAからTabascoへの原音/palette復帰も通過した。02 AIも出音は確認したが、
+  START表示の個別記録はなく、暫定境界は見落とされた。
+- Musical verdict is AMBER: both AI cases read as over-programmed electronic MIDI,
+  with too many packed short notes. Keep both originals as references; 01の日本語箇所は
+  再考、02は英語の雰囲気と電子音のきれいさをkeepし、人間らしい初動と間を磨く。
+- Surfaceはdesktop-class lifecycle evidenceであり、iPhone Safari / installed PWA等の
+  real-mobile stability gateは閉じない。HAZAMA remains `ui_hidden:true`.
+- v400 makes the non-track-specific 02 AI warning prominent, fixes 02 inheriting 01 lyrics,
+  and exposes session-only 01/02 original-stem KARAOKE routes. No new audio asset is added.
 - Run the four short cases (01 original / 01 AI / 02 original / 02 AI), then a
   roughly six-minute arc where useful. Record START responsiveness, keep, and
   fix separately; use the local listening note to copy that context.
@@ -42,7 +53,7 @@ priority: high
   earlier 01 original pass also reached 4/4, and the subsequent fix did not
   touch the original-stem graph. Cold local one-shot decode was slow under the
   already-loaded audit profile, but completed instead of freezing the renderer.
-- Human listening remains behind BL-041 for sound quality, mobile stability and
+- Human listening remains behind BL-041 for AI musical quality, real-mobile stability and
   main-selector promotion. Static/browser responsiveness checks do not promote it.
 
 ### Historical: 2026-08-02 HAZAMA v388/v390 pass

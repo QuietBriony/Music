@@ -51,12 +51,14 @@ const sandbox = {
   clearTimeout() {},
   console,
   document: documentMock,
+  Event: class Event { constructor(type) { this.type = type; } },
   localStorage: windowMock.localStorage,
   navigator: windowMock.navigator,
   requestAnimationFrame() { return 0; },
   cancelAnimationFrame() {},
   setInterval() { return 0; },
   setTimeout() { return 0; },
+  URLSearchParams,
   window: windowMock
 };
 sandbox.globalThis = sandbox;
@@ -80,13 +82,19 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-234-hazama-safe-start", "Band Room should expose the current safe-start app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v399", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-235-hazama-audition-clarity", "Band Room should expose the current audition-clarity app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v400", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const playbackModesForBand = windowMock.BandRoomTestHooks?.playbackModesForBand;
 const bandSupportsPlaybackMode = windowMock.BandRoomTestHooks?.bandSupportsPlaybackMode;
 const preferredPlaybackModeForBand = windowMock.BandRoomTestHooks?.preferredPlaybackModeForBand;
 const resolveBandPlaybackMode = windowMock.BandRoomTestHooks?.resolveBandPlaybackMode;
+const resolveBandPlaybackModeTransition = windowMock.BandRoomTestHooks?.resolveBandPlaybackModeTransition;
+const directKaraokeRequested = windowMock.BandRoomTestHooks?.directKaraokeRequested;
+const karaokeStemToggleState = windowMock.BandRoomTestHooks?.karaokeStemToggleState;
+const stemKaraokeActiveFromState = windowMock.BandRoomTestHooks?.stemKaraokeActiveFromState;
+const setStemToggleChecked = windowMock.BandRoomTestHooks?.setStemToggleChecked;
+const togglePreferenceIsSessionOnly = windowMock.BandRoomTestHooks?.togglePreferenceIsSessionOnly;
 const playbackStartContractMatches = windowMock.BandRoomTestHooks?.playbackStartContractMatches;
 const tonePlaybackContextReady = windowMock.BandRoomTestHooks?.tonePlaybackContextReady;
 const playbackSelectionTransitionInFlight = windowMock.BandRoomTestHooks?.playbackSelectionTransitionInFlight;
@@ -108,6 +116,12 @@ assert.equal(shouldApplySynthDrumVoiceOverrides("start"), false, "AI START shoul
 assert.equal(shouldApplySynthDrumVoiceOverrides("mode-switch"), false, "AI mode switch should not wait on saved drum voice samples");
 assert.equal(shouldApplySynthDrumVoiceOverrides("toggle"), true, "Explicit live rebuilds may apply saved drum voice samples");
 assert.equal(typeof resolveBandPlaybackMode, "function", "Band mode transitions should be exposed for round-trip tests");
+assert.equal(typeof resolveBandPlaybackModeTransition, "function", "Cross-band mode transitions should be exposed for review-band return tests");
+assert.equal(typeof directKaraokeRequested, "function", "KARAOKE deep-link parsing should be exposed for behavior tests");
+assert.equal(typeof karaokeStemToggleState, "function", "KARAOKE stem-state transitions should be exposed for behavior tests");
+assert.equal(typeof stemKaraokeActiveFromState, "function", "KARAOKE active-state detection should be exposed for behavior tests");
+assert.equal(typeof setStemToggleChecked, "function", "Stem checkbox changes should share one event-emitting setter");
+assert.equal(typeof togglePreferenceIsSessionOnly, "function", "Session-only toggle policy should be exposed for preference tests");
 assert.equal(typeof playbackStartContractMatches, "function", "START selection snapshots should be exposed for race tests");
 assert.equal(typeof tonePlaybackContextReady, "function", "AudioContext readiness should be exposed for fail-closed tests");
 assert.equal(typeof playbackSelectionTransitionInFlight, "function", "Selection-transition readiness should be exposed for START race tests");
@@ -118,6 +132,7 @@ assert.equal(typeof backgroundBridgeSingleFlightDecision, "function", "Bridge si
 assert.equal(typeof keyboardShortcutTargetIsInteractive, "function", "Global shortcut target guard should be exposed");
 assert.equal(typeof denseAiSongRequiresSafety, "function", "Dense AI song safety policy should be exposed");
 const hazamaBand = bandsRegistry.bands?.hazama;
+assert.equal(hazamaBand?.ui_hidden, true, "HAZAMA must stay outside the normal selector while BL-041 is AMBER");
 assert.deepEqual(Array.from(playbackModesForBand(hazamaBand)), ["stems", "synth"], "HAZAMA should declare stems + synth playback (v397 原音レーン)");
 assert.equal(preferredPlaybackModeForBand(hazamaBand, "stems"), "stems", "HAZAMA deep links should default to the recorded original stems");
 assert.equal(bandSupportsPlaybackMode(hazamaBand, "stems"), true, "HAZAMA should enable the recorded original stems (v397)");
@@ -130,7 +145,44 @@ const hazama02 = hazamaBand?.songs?.find((song) => song.id === "still-moving-har
 assert.equal(hazama01?.stems_total_mib, 32.96, "HAZAMA 01 should disclose its four-stem load size");
 assert.equal(hazama02?.stems_total_mib, 32.96, "HAZAMA 02 should disclose its four-stem load size");
 assert.equal(hazama02?.ai_recreation_source_song, "still-moving", "HAZAMA 02 should declare that its provisional AI frames come from 01");
-assert.match(hazama02?.playback_notes?.synth || "", /暫定[\s\S]*01 Still Moving[\s\S]*基準は 📻 原音/, "HAZAMA 02 synth status should explain the provisional copy and original reference");
+assert.match(hazama02?.playback_notes?.synth || "", /02固有AIではありません[\s\S]*01 Still Moving[\s\S]*比較基準は02の 📻 原音/, "HAZAMA 02 synth status should state that it is not track-specific, name the shared source, and point to the original reference");
+assert.equal(directKaraokeRequested("?band=hazama&mode=stems&mix=karaoke"), true, "mix=karaoke should activate the explicit session-only KARAOKE route");
+assert.equal(directKaraokeRequested("?band=hazama&mode=stems"), false, "A normal original route must not silently activate KARAOKE");
+assert.deepEqual(
+  { ...karaokeStemToggleState(true, { vocals: true, drums: false, bass: false, other: false }) },
+  { vocals: false, drums: true, bass: true, other: true },
+  "Activating KARAOKE should produce the canonical vocal-off backing mix"
+);
+assert.deepEqual(
+  { ...karaokeStemToggleState(false, { vocals: false, drums: false, bass: true, other: false }) },
+  { vocals: true, drums: false, bass: true, other: false },
+  "Leaving KARAOKE should restore only vocals and preserve the user's non-vocal stem mutes"
+);
+assert.equal(stemKaraokeActiveFromState("stems", { vocals: false, drums: true, bass: true, other: true }), true, "Canonical original vocal-off state should be identified as KARAOKE");
+assert.equal(stemKaraokeActiveFromState("stems", { vocals: false, drums: true, bass: false, other: true }), false, "A custom backing mix should not be mislabeled as canonical KARAOKE");
+assert.equal(stemKaraokeActiveFromState("synth", { vocals: false, drums: true, bass: true, other: true }), false, "AI mode must never be labeled as original-stem KARAOKE");
+assert.equal(togglePreferenceIsSessionOnly("br-toggle-stem-vocals"), true, "Original vocal mute should remain session-only");
+assert.equal(togglePreferenceIsSessionOnly("br-toggle-stem-bass"), false, "Non-vocal stem preferences should remain persistable");
+const provisionalAiContext = windowMock.BandRoomTestHooks?.provisionalAiContext;
+assert.equal(provisionalAiContext(hazama02, hazamaBand), "01 AI共有・02固有AIなし", "02 START context should name both its 01 AI source and missing track-specific AI");
+const originalGetElementById = documentMock.getElementById;
+const stemToggleEvents = [];
+const fakeVocalToggle = {
+  checked: true,
+  dispatchEvent(event) { stemToggleEvents.push(event.type); }
+};
+documentMock.getElementById = (id) => id === "br-toggle-stem-vocals" ? fakeVocalToggle : null;
+assert.equal(setStemToggleChecked("vocals", false), true, "Shared stem setter should report a real state change");
+assert.equal(fakeVocalToggle.checked, false, "Shared stem setter should update the checkbox state");
+assert.deepEqual(stemToggleEvents, ["change"], "Shared stem setter should emit change so player mute, mode status, and START context refresh together");
+assert.equal(setStemToggleChecked("vocals", false), false, "Shared stem setter should not emit duplicate no-op changes");
+documentMock.getElementById = originalGetElementById;
+const extractLyricsForSong = windowMock.BandRoomTestHooks?.extractLyricsForSong;
+assert.equal(typeof extractLyricsForSong, "function", "Lyrics heading matching should be exposed for regression tests");
+const hazamaLyricsFixture = "## 01 Still Moving\n\n[verse]\n01 words\n\n## 03 Other Song\n\nother words";
+assert.match(extractLyricsForSong(hazamaLyricsFixture, "Still Moving") || "", /01 words/, "Exact HAZAMA 01 heading should load its lyrics");
+assert.equal(extractLyricsForSong(hazamaLyricsFixture, "Still Moving (Hard)"), null, "HAZAMA 02 must not inherit 01 lyrics through a shared title prefix");
+assert.match(extractLyricsForSong("## 01 TABASCO - wake-up chant\n\n[verse]\nlegacy words", "TABASCO") || "", /legacy words/, "A complete title may keep the existing descriptive heading suffix");
 assert.deepEqual(Array.from(playbackModesForBand(bandsRegistry.bands?.tabasco)), ["stems", "synth"], "Bands without an explicit capability list should keep both legacy modes");
 assert.equal(preferredPlaybackModeForBand(bandsRegistry.bands?.tabasco, "stems"), "stems", "Tabasco should preserve the original-stems entry");
 const hazamaEntry = resolveBandPlaybackMode(hazamaBand, "hazama", "stems", null);
@@ -145,8 +197,16 @@ assert.deepEqual(
   { mode: "stems", forcedByBandId: null },
   "HAZAMA -> Tabasco should return to Tabasco's original-stems entry rather than leak the forced synth mode"
 );
+const hazamaAiToTabasco = resolveBandPlaybackModeTransition(bandsRegistry, "hazama", "tabasco", "synth", null);
+assert.deepEqual(
+  { mode: hazamaAiToTabasco.mode, forcedByBandId: hazamaAiToTabasco.forcedByBandId },
+  { mode: "stems", forcedByBandId: null },
+  "Explicit HAZAMA AI -> Tabasco must return to Tabasco original even though both bands support synth"
+);
 const intentionalTabascoSynth = resolveBandPlaybackMode(bandsRegistry.bands?.tabasco, "tabasco", "synth", null);
 assert.equal(intentionalTabascoSynth.mode, "synth", "A user-selected supported Tabasco synth mode should remain intentional");
+const tabascoSynthSameBand = resolveBandPlaybackModeTransition(bandsRegistry, "tabasco", "tabasco", "synth", null);
+assert.equal(tabascoSynthSameBand.mode, "synth", "A user-selected Tabasco AI mode should remain intentional when no review-band exit occurs");
 const startContract = {
   stopSeq: 3,
   songSwitchSeq: 4,
@@ -285,14 +345,14 @@ assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor
 assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
-assert.match(html, /band-room\.css\?v=br-89/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-234/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.css\?v=br-90/, "Band Room HTML should reference the current CSS cache marker");
+assert.match(html, /band-room\.js\?v=br-235/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
-assert.match(sw, /band-room\.css\?v=br-89/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-234/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.css\?v=br-90/, "Service worker should precache the current Band Room CSS marker");
+assert.match(sw, /band-room\.js\?v=br-235/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
@@ -389,7 +449,7 @@ const sourceSection = (startMarker, endMarker, maxLength = 12000) => {
 };
 const startPlaybackSource = sourceSection("async function startPlayback(opts = {})", "async function startPlaybackBoot(opts = {})");
 const startPlaybackBootSource = sourceSection("async function startPlaybackBoot(opts = {})", "function tonePlaybackContextReady()");
-const playbackContractSource = sourceSection("function applyBandPlaybackModeContract()", "// v213: per-band / per-song kit profile");
+const playbackContractSource = sourceSection("function applyBandPlaybackModeContract(previousBandId = null)", "// v213: per-band / per-song kit profile");
 const selectBandSource = sourceSection("async function selectBand(bandId)", "// v99: render the per-voice override grid");
 const switchToSongSource = sourceSection("async function switchToSong(songId, options = {})", "async function selectAdjacentSong(delta)");
 const switchPlaybackModeSource = sourceSection("async function switchPlaybackMode(newMode)", "function removeBandRoomAudioState(reason = \"reset\")");
@@ -441,7 +501,18 @@ assert.match(bridgeSingleFlightSource, /decision === "share"[\s\S]{0,300}return 
 assert.match(bridgeSingleFlightSource, /decision === "queue"[\s\S]{0,500}pending\.then/, "A stopped stale bridge should settle before a replacement attempt starts");
 assert.match(html, /id="br-mode-status"[^>]*role="status"[^>]*aria-live="polite"/, "Band-specific playback limitations should be announced next to the mode controls");
 assert.doesNotMatch(html, /HAZAMA は AI 再現専用/, "The quick guide must not retain the pre-v397 HAZAMA synth-only claim");
-assert.match(html, /HAZAMA 02[\s\S]{0,220}01 の frames[\s\S]{0,160}基準音は 📻 原音/, "The quick guide should disclose HAZAMA 02's provisional AI recreation");
+assert.match(html, /HAZAMA 02[\s\S]{0,260}02固有ではなく[\s\S]{0,160}01 の frames[\s\S]{0,160}比較基準は02の 📻 原音/, "The quick guide should clearly disclose HAZAMA 02's non-specific provisional AI recreation");
+assert.match(html, /data-toggle-all="stems-karaoke">KARAOKE（vocal off）<\/button>/, "Original stems should expose the human-take karaoke action in the primary layer controls");
+assert.match(source, /mix"\) === "karaoke"/, "Band Room should support a session-only KARAOKE deep link");
+assert.match(source, /SESSION_ONLY_TOGGLE_IDS = new Set\(\["br-toggle-stem-vocals"\]\)/, "KARAOKE vocal-off must not become a global saved preference");
+assert.match(selectBandSource, /if \(previous\.bandId !== bandId\) setStemKaraokeActive\(false\)/, "A band change should restore the original vocal instead of leaking KARAOKE into Tabasco");
+assert.match(selectBandSource, /applyBandPlaybackModeContract\(previous\.bandId\)/, "Band changes should pass the previous band into the hidden-review return contract");
+assert.match(source, /function setStemKaraokeActive\([\s\S]{0,900}setButtonState\(\$\("br-play"\)\?\.dataset\.state \|\| "idle"\)/, "KARAOKE changes should refresh START's visible and accessible context together");
+assert.match(bindUiSource, /acceptVocalFile[\s\S]{0,700}setStemToggleChecked\("vocals", false\)/, "External vocal replacement should use the event-emitting stem setter so mix context refreshes");
+assert.match(bindUiSource, /loadExternalStem\(stem, file\)[\s\S]{0,500}setStemToggleChecked\(stem, false\)/, "External backing replacements should use the event-emitting stem setter so KARAOKE status cannot go stale");
+assert.match(source, /暫定（\$\{provisionalContext\}）/, "START context should identify the shared provisional AI source, not only say 'provisional'");
+assert.match(css, /#br-mode-status\[data-provisional="true"\][\s\S]{0,500}font-size:\s*12px/, "The provisional 02 AI boundary should be visually prominent rather than 10px secondary copy");
+assert.match(css, /\.br-toggle-all\[data-toggle-all="stems-karaoke"\][\s\S]{0,300}min-height:\s*44px/, "The primary KARAOKE action should provide a mobile-sized 44px tap target");
 assert.match(html, /id="br-start-status"[^>]*role="alert"[^>]*aria-live="assertive"[^>]*aria-atomic="true"/, "START failures should use an atomic actionable alert");
 assert.match(html, /id="br-mode"[^>]*aria-describedby="br-mode-status"/, "The playback-mode group should reference its capability explanation");
 assert.match(html, /id="br-play"[^>]*aria-describedby="br-start-context br-start-status"/, "START should reference its visible context and live recovery message");
@@ -1137,7 +1208,7 @@ assert.match(source, /tabasco-lyrics-timed\.json/, "Band Room should load the ka
 
 const savePrefsBody = source.match(/function savePrefs\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
 assert.doesNotMatch(savePrefsBody, /songId\s*:/, "Saved prefs should not restore the last song");
-assert.doesNotMatch(savePrefsBody, /\bmode\s*:/, "Saved prefs must not persist playback mode — band-room always opens 原音 (AI 再現 is WIP)");
+assert.doesNotMatch(savePrefsBody, /\bmode\s*:/, "Saved prefs must not persist playback mode — the normal entrance always opens the original baseline");
 
 const bandRoomScriptMarker = html.match(/band-room\.js\?v=(br-\d+)/);
 assert.ok(bandRoomScriptMarker, "Band Room HTML should load a cache-busted script marker");
