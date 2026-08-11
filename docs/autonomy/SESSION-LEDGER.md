@@ -23,7 +23,7 @@
 - agent      : Codex（Surface human feedback反映 + authored pocket設計 + browser/runtime review）
 - goal       : BL-041の「短音が詰まる」を、engine変更なしで休符・gate・安全なレイヤー比較導線へ落とす
 - repos      : Music（HAZAMA 01/02 frames、Band Room UI/runtime、offline cache、Listen、docs、static gates。原音/engine不変）
-- shipped    : `feature/hazama-v401-pocket-rests` candidate。`hazama-fm-v401` / `band-room.js?v=br-236` /
+- shipped    : PR #397 `Give HAZAMA AI an authored-rest pocket` candidate。`hazama-fm-v401` / `band-room.js?v=br-236` /
   `band-room.css?v=br-90`、arp+bass authored基準20–21発/bar、約96–101ms gate、
   palette-aware defaults、一括toggle単発prepare、02 frame offline precache、停止中section/chord同期
 - stack-check: PASS 32 / FAIL 0 / SKIP 0
