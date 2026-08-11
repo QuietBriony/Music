@@ -119,9 +119,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `band-room.html`, and `sw.js`. Current repo markers include
   `engine.js?v=fm-118`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-80`, `audio/ai-fills.js?v=fm-71`,
-  `style.css?v=fm-28`, `band-room.css?v=br-89`,
-  `band-room.js?v=br-234`, `audio/audio-safety.js?v=br-67`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v399`.
+  `style.css?v=fm-28`, `band-room.css?v=br-90`,
+  `band-room.js?v=br-235`, `audio/audio-safety.js?v=br-67`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v400`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,
@@ -175,6 +175,19 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   should be temporarily disabled. Simulate a denied AudioContext or failed
   asset fetch and confirm START returns to idle with recovery text; pressing
   REC or stems-pack in that state must not begin a silent recording.
+- For v400 HAZAMA audition clarity, confirm provisional 02 AI shows a visible
+  warning that it is not a 02-specific arrangement, is playing 01 AI frames,
+  and uses 02 original as the comparison reference. Open the 01/02 KARAOKE
+  links and confirm `mix=karaoke` opens original stems with vocals OFF and the
+  START context says KARAOKE. Switch to Tabasco and confirm its original vocal
+  returns. Track 02 must report its lyrics as unregistered rather than showing
+  01 words through the shared `Still Moving` title prefix.
+- The lifecycle check called "lock/unlock" means: while playback is active,
+  lock the physical device so its screen turns off, wait 10 seconds, unlock the
+  device, and return to the same Band Room tab. Confirm audio continued or
+  resumes cleanly without a stuck note. This is unrelated to Chrome site
+  permission, Computer Use permission, or revealing a hidden band. Separately,
+  switch HAZAMA -> Tabasco to test mode/palette restoration.
 - For v168 Band Room saved mix migration, load with old v166 default slider
   values in `band-room.prefs.v1` and confirm only exact old defaults migrate to
   the v168 default mix while custom slider values remain untouched.

@@ -14,10 +14,11 @@
 
 ## 現在地とversion
 
-- 現行playability契約は **v399**。client markerは
-  `band-room.js?v=br-234` / `band-room.css?v=br-89`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v399**。v399はHAZAMAの
-  AI safe STARTと監査UIを変更し、原音stem、`engine.js`、model weightは変更していない。
+- 現行playability契約は **v400**。client markerは
+  `band-room.js?v=br-235` / `band-room.css?v=br-90`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v400**。v400はHAZAMAの
+  02 AI暫定表示、session-only KARAOKE導線、曲別歌詞一致を変更し、原音stem、
+  `engine.js`、model weightは変更していない。
 - Tabascoの曲順 / title / catalog durationは`presets/bands.json`、BPM / key / 構成は
   7曲のdrum-frame、canonical / fallback歌詞はfinal文書が正本。原音karaokeでは任意の
   timed lyricsを重ねる。`tabasco-songs.json`は保守用の派生一覧で、
@@ -27,7 +28,9 @@
   deep-link時は `📻 原音` を自動選択する。02のAI再現は01 frames共有の暫定版で、
   02固有の基準は原音。v390〜v396は
   **synth-only / AI再現専用**（`🎛 AI 再現`を自動選択・原音disabled）だった。
-- HAZAMAはまだmain band selectorでは `ui_hidden`。desktop / mobileの実音確認と
+- HAZAMAはまだmain band selectorでは `ui_hidden`。Surface試聴ではSTART、ピーポーなし、
+  途切れなし、画面ロック解除後の復帰、Tabasco復帰は前進したが、AIの短音過密は音質×。
+  real mobileの実音確認と
   公開昇格は **BL-041 human gate**、車載 / Bluetoothの実機確認は
   **BL-003 human gate**であり、この文書更新では合格扱いにしない。
 - 詳細な版履歴は [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md)、
@@ -38,7 +41,8 @@
 1. [Listen hub](../listen.html)を開き、current passの
    [HAZAMA Band Room](../band-room.html?band=hazama)へ進む。
 2. 01 / 02を選び、`📻 原音`（基準）と`🎛 AI 再現`を切り替える。02のAI再現には
-   「01 frames共有・暫定」と表示される。4ケースの直接linkはListen hubにある。
+   「02固有AIではない・01 AI共有・比較基準は02原音」と表示される。4ケースの直接linkはListen hubにある。
+   歌詞を外して演奏を聴く／自分で歌う時は01/02の`KARAOKE` linkを使う。
 3. `START`を一度押す。表示が `WARMING UP` / `PREPARING AI` の間は、
    band / song / modeがbusy中なので切替を待つ。
 4. まず60–90秒、続けられれば約6分のarcを聴く。弱端末の比較だけ
@@ -67,7 +71,7 @@
 
 ---
 
-## 画面構成（現行: br-234 / br-89）
+## 画面構成（現行: br-235 / br-90）
 
 ```
 ┌─────────────────────────────────┐

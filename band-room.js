@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-234-hazama-safe-start";
-  const BANDROOM_RELEASE_VERSION = "v399";
+  const BANDROOM_APP_VERSION = "br-235-hazama-audition-clarity";
+  const BANDROOM_RELEASE_VERSION = "v400";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
@@ -2687,6 +2687,22 @@
     };
   }
 
+  function resolveBandPlaybackModeTransition(registry, fromBandId, toBandId, mode, forcedByBandId = null) {
+    const bands = registry?.bands || {};
+    const fromBand = bands[fromBandId] || null;
+    const toBand = bands[toBandId] || null;
+    // Hidden bands are isolated review surfaces. Leaving one must land on the
+    // destination band's recorded/default baseline even when both bands also
+    // support AI mode.
+    if (fromBandId && fromBandId !== toBandId && fromBand?.ui_hidden) {
+      return {
+        mode: preferredPlaybackModeForBand(toBand, "stems"),
+        forcedByBandId: null
+      };
+    }
+    return resolveBandPlaybackMode(toBand, toBandId, mode, forcedByBandId);
+  }
+
   function playbackSelectionNote(band = currentBand(), songId = state.currentSongId, mode = currentMode) {
     const song = Array.isArray(band?.songs)
       ? band.songs.find((item) => item.id === songId) || null
@@ -2695,27 +2711,89 @@
     return typeof note === "string" ? note.trim() : "";
   }
 
+  function provisionalAiContext(song = currentBandSongMeta(), band = currentBand()) {
+    if (!song?.ai_recreation_source_song) return "";
+    const source = band?.songs?.find((item) => item.id === song.ai_recreation_source_song) || null;
+    const sourceLabel = source?.track ? `${source.track} AI共有` : `${song.ai_recreation_source_song}共有`;
+    const targetLabel = song?.track ? `${song.track}固有AIなし` : "この曲固有AIなし";
+    return `${sourceLabel}・${targetLabel}`;
+  }
+
+  function karaokeStemToggleState(active, current = {}) {
+    if (active) return { ...current, vocals: false, drums: true, bass: true, other: true };
+    return { ...current, vocals: true };
+  }
+
+  function stemKaraokeActiveFromState(mode, stems = {}) {
+    return mode === "stems" && stems.vocals === false &&
+      ["drums", "bass", "other"].every((stem) => stems[stem] !== false);
+  }
+
+  function stemKaraokeActive() {
+    return stemKaraokeActiveFromState(currentMode, {
+      vocals: $("br-toggle-stem-vocals")?.checked,
+      drums: $("br-toggle-stem-drums")?.checked,
+      bass: $("br-toggle-stem-bass")?.checked,
+      other: $("br-toggle-stem-other")?.checked
+    });
+  }
+
+  function setStemToggleChecked(stem, checked) {
+    const el = $("br-toggle-stem-" + stem);
+    if (!el || el.checked === checked) return false;
+    el.checked = checked;
+    el.dispatchEvent(new Event("change"));
+    return true;
+  }
+
+  function setStemKaraokeActive(active) {
+    const current = Object.fromEntries(["vocals", "drums", "bass", "other"].map((stem) => (
+      [stem, $("br-toggle-stem-" + stem)?.checked]
+    )));
+    const values = karaokeStemToggleState(active, current);
+    Object.entries(values).forEach(([stem, checked]) => {
+      setStemToggleChecked(stem, checked);
+    });
+    updatePlaybackModeStatus();
+    setButtonState($("br-play")?.dataset.state || "idle");
+  }
+
+  function directKaraokeRequested(search = window.location?.search || "") {
+    try {
+      return new URLSearchParams(search).get("mix") === "karaoke";
+    } catch (e) {
+      return false;
+    }
+  }
+
   function updatePlaybackModeStatus() {
     const status = $("br-mode-status");
     if (!status) return;
     const band = currentBand();
+    const song = currentBandSongMeta();
     const modes = playbackModesForBand(band);
     const constrained = !!band && modes.length === 1;
     const selectionNote = playbackSelectionNote(band, state.currentSongId, currentMode);
-    let message = selectionNote;
+    const provisional = currentMode === "synth" && !!song?.ai_recreation_source_song;
+    let message = stemKaraokeActive()
+      ? "KARAOKE: 原音4 stemsのvocalsだけOFF。drums / bass / otherで自分の声を重ねられます。"
+      : selectionNote;
     if (!message && constrained) {
       const modeLabel = modes[0] === "synth" ? "🎛 AI 再現" : "📻 原音";
       message = band.playback_mode_note || `${band.name || "This band"} は ${modeLabel} 専用です。`;
     }
     status.textContent = message;
+    status.dataset.provisional = provisional ? "true" : "false";
+    status.dataset.karaoke = stemKaraokeActive() ? "true" : "false";
     status.hidden = !message;
   }
 
-  function applyBandPlaybackModeContract() {
+  function applyBandPlaybackModeContract(previousBandId = null) {
     const band = currentBand();
     const modes = playbackModesForBand(band);
-    const resolved = resolveBandPlaybackMode(
-      band,
+    const resolved = resolveBandPlaybackModeTransition(
+      state.bandsRegistry,
+      previousBandId,
       state.currentBandId,
       currentMode,
       playbackModeForcedByBandId
@@ -4523,6 +4601,14 @@
       aiLightRuntimeEnabled,               // v364: phone-clean band composition probes
       aiLayerLightRuntimeEnabled,
       denseAiSongRequiresSafety,
+      provisionalAiContext,
+      directKaraokeRequested,
+      karaokeStemToggleState,
+      stemKaraokeActiveFromState,
+      stemKaraokeActive,
+      setStemToggleChecked,
+      togglePreferenceIsSessionOnly,
+      extractLyricsForSong,
       shouldApplySynthDrumVoiceOverrides,
       synthDrumSourceForPrep,
       synthPartActiveOnLight,
@@ -4536,6 +4622,7 @@
       bandSupportsPlaybackMode,
       preferredPlaybackModeForBand,
       resolveBandPlaybackMode,
+      resolveBandPlaybackModeTransition,
       playbackStartContractMatches,
       tonePlaybackContextReady,
       playbackSelectionTransitionInFlight,
@@ -4622,7 +4709,7 @@
             const md = await lyricsRes.text();
             if (switchSeq != null && switchSeq !== songSwitchSeq) return null;
             state.currentLyricMarkdown =
-              extractLyricsForSong(md, data.song_title || songId) || `(lyrics todo — see ${lyricsDoc})`;
+              extractLyricsForSong(md, data.song_title || songId) || `(lyrics not registered for this track — see ${lyricsDoc})`;
           } else {
             state.currentLyricMarkdown = "(lyrics file not available offline)";
           }
@@ -4828,9 +4915,14 @@
   }
 
   function extractLyricsForSong(md, songTitle) {
-    // Match "## NN <Title>" headings
+    // Match the complete "## NN <Title>" heading. Prefix matching used to
+    // map 02 "Still Moving (Hard)" onto 01 "Still Moving", showing the wrong
+    // words as if they belonged to the Hard render.
     const lines = md.split("\n");
-    const titleRe = new RegExp(`^##\\s+\\d+\\s+${escapeRegex(songTitle).split(" ")[0]}`, "i");
+    const titleRe = new RegExp(
+      `^##\\s+\\d+\\s+${escapeRegex(songTitle)}(?:\\s+(?:[-—–:]\\s*.*))?\\s*$`,
+      "i"
+    );
     let start = -1, end = lines.length;
     for (let i = 0; i < lines.length; i++) {
       if (start === -1 && titleRe.test(lines[i])) start = i;
@@ -7676,9 +7768,11 @@
     if (currentMode === "stems") {
       const size = Number(song?.stems_total_mib);
       const sizeLabel = Number.isFinite(size) && size > 0 ? ` · 約${size.toFixed(1)} MiB` : "";
-      return `${songLabel} · 原音 4 stems${sizeLabel}`;
+      const mixLabel = stemKaraokeActive() ? "原音 KARAOKE（vocal off）" : "原音 4 stems";
+      return `${songLabel} · ${mixLabel}${sizeLabel}`;
     }
-    const provisional = song?.ai_recreation_source_song ? " · 暫定" : "";
+    const provisionalContext = provisionalAiContext(song);
+    const provisional = provisionalContext ? ` · 暫定（${provisionalContext}）` : "";
     return `${songLabel} · AI 再現${provisional}`;
   }
 
@@ -8042,6 +8136,8 @@
         if (player) {
           player.mute = !el.checked;
         }
+        updatePlaybackModeStatus();
+        setButtonState($("br-play")?.dataset.state || "idle");
       });
     });
 
@@ -8246,11 +8342,7 @@
       const tog = $("br-toggle-external-vocal");
       if (tog && !tog.checked) {
         tog.checked = true;
-        const stemTog = $("br-toggle-stem-vocals");
-        if (stemTog) {
-          stemTog.checked = false;
-          if (stemPlayers.vocals) stemPlayers.vocals.mute = true;
-        }
+        setStemToggleChecked("vocals", false);
         if (state.started) startExternalVocalIfEnabled(playbackContentElapsedSec());
       }
     };
@@ -8330,8 +8422,7 @@
         } else if (action === "stems-off") {
           ["vocals", "drums", "bass", "other"].forEach((s) => setToggle("br-toggle-stem-" + s, false));
         } else if (action === "stems-karaoke") {
-          setToggle("br-toggle-stem-vocals", false);
-          ["drums", "bass", "other"].forEach((s) => setToggle("br-toggle-stem-" + s, true));
+          setStemKaraokeActive(true);
         }
       });
     });
@@ -8547,11 +8638,7 @@
         if (togEl && !togEl.checked) {
           togEl.checked = true;
           // Mute the original stem so external takes over
-          const origTog = $(`br-toggle-stem-${stem}`);
-          if (origTog) {
-            origTog.checked = false;
-            if (stemPlayers[stem]) stemPlayers[stem].mute = true;
-          }
+          setStemToggleChecked(stem, false);
           if (state.started) startExternalStemIfEnabled(stem, playbackContentElapsedSec());
         }
       };
@@ -8774,7 +8861,7 @@
       if (wasPlaying) stopPlayback({ keepBackgroundBridge: true, updateMedia: false });
       state.currentBandId = bandId;
       state.currentSongId = firstSong.id;
-      applyBandPlaybackModeContract();
+      applyBandPlaybackModeContract(previous.bandId);
       setBandAndModeSelectionBusy(true, busyReason);
       setStartStatus("");
       document.querySelectorAll("#br-band-select button").forEach((b) => {
@@ -8802,6 +8889,10 @@
         setStartStatus("バンドを読み込めなかったため、前の曲に戻しました。通信を確認して、もう一度選んでください。", "error");
         return false;
       }
+      // Stem karaoke is a take-level choice, not a global band preference.
+      // A band change always restores the original vocal so HAZAMA vocal-off
+      // cannot leak into Tabasco (or vice versa).
+      if (previous.bandId !== bandId) setStemKaraokeActive(false);
       clearLoopRange();
       refreshLoopVisuals();
       syncTrackButtons();
@@ -9505,6 +9596,12 @@
   // on reload so Band Room behaves like an album/set entry point.
   const PREFS_KEY = BANDROOM_PREFS_KEY;
   const MIX_PREFS_VERSION = "v363-stem-vocal-pocket";
+  // Session-only because KARAOKE / external-vocal takes must never make the
+  // next album or Tabasco silently reopen without its original vocal.
+  const SESSION_ONLY_TOGGLE_IDS = new Set(["br-toggle-stem-vocals"]);
+  function togglePreferenceIsSessionOnly(id) {
+    return SESSION_ONLY_TOGGLE_IDS.has(id);
+  }
   const V167_DEFAULT_MIX_MIGRATION = {
     "br-vol-stem-vocals": { old: "72", current: "68" },
     "br-vol-stem-drums": { old: "92", current: "86" },
@@ -9823,8 +9920,8 @@
         bandId: state.currentBandId,
         storageSchemaVersion: BANDROOM_STORAGE_SCHEMA_VERSION,
         mixPrefsVersion: MIX_PREFS_VERSION,
-        // v205: mode intentionally NOT persisted — band-room always opens in
-        // 原音 (stems); AI 再現 is still WIP, don't land users in it.
+        // Mode intentionally NOT persisted — the normal entrance always opens
+        // the recorded original baseline; explicit review deep links may select AI.
         kitSource: state.kitSource,
         kitProfile: state.kitProfile,
         voiceOverrides: state.voiceOverrides,
@@ -9841,7 +9938,7 @@
       });
       // Capture key checkbox toggles (mute states)
       document.querySelectorAll('#br-main input[type="checkbox"]').forEach((el) => {
-        if (el.id) prefs.toggles[el.id] = el.checked;
+        if (el.id && !togglePreferenceIsSessionOnly(el.id)) prefs.toggles[el.id] = el.checked;
       });
       // Don't let a band with a fixed palette (HAZAMA) leak its palette-driven
       // instruments / profile / kit / guitar+arp toggles into the GLOBAL prefs —
@@ -9882,6 +9979,7 @@
     }
     if (prefs.toggles) {
       Object.entries(prefs.toggles).forEach(([id, v]) => {
+        if (togglePreferenceIsSessionOnly(id)) return;
         const el = document.getElementById(id);
         if (el && el.type === "checkbox") {
           el.checked = !!v;
@@ -9889,8 +9987,8 @@
         }
       });
     }
-    // v205: mode is NOT restored — band-room always opens in 原音 (stems).
-    // AI 再現 is still WIP; landing users in the unfinished mode confuses.
+    // Mode is NOT restored — the normal entrance always opens in 原音 (stems).
+    // An explicit `mode=synth` review link is handled separately during boot.
     // Kit source (select)
     // v208: silently retire saved "auto-self" — the song-extracted sample
     // kits sound raw / amateur (Demucs bleed + onset artifacts) and that's
@@ -10842,6 +10940,13 @@
       if (prefs.toggles && "br-toggle-arp" in prefs.toggles) snap.arpOn = !!prefs.toggles["br-toggle-arp"];
     }
     applyRecommendedBandPalette();
+
+    // `mix=karaoke` is an explicit, session-only deep link. Apply it after
+    // saved prefs so a stale local vocal toggle cannot override the requested
+    // 01/02 human-take lane. It is intentionally not persisted.
+    if (currentMode === "stems" && directKaraokeRequested()) {
+      setStemKaraokeActive(true);
+    }
 
     // Global save hook — any input/change anywhere in main triggers a
     // debounced write. Doesn't fire for child elements of #br-lyrics

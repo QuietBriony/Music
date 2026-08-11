@@ -1,6 +1,31 @@
-# Band Room - Changelog (v65 -> v399 compact)
+# Band Room - Changelog (v65 -> v400 compact)
 
-Current sw.js VERSION: v399. Latest Band Room runtime change: v399 (HAZAMA AI safe START, four-case audition context, loading/status and feedback UI). v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard). v396 is the previous audio-timbre change (HAZAMA arp lead: sustained saw -> acid pluck).
+Current sw.js VERSION: v400. Latest Band Room runtime change: v400 (HAZAMA 02 AI honesty, session-only KARAOKE, exact lyric boundary). v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard). v396 is the previous audio-timbre change (HAZAMA arp lead: sustained saw -> acid pluck).
+
+---
+
+## v400 compact - HAZAMA human pass: honest 02 AI + KARAOKE + lyric boundary
+
+Surface / interface-speakerのBL-041試聴で、START、ピーポーなし、途切れなし、画面ロック解除後の
+復帰、Tabasco復帰は前進した一方、01/02 AIは「電子MIDI・短音が詰まり音楽になっていない」で
+音質×。02 AIの暫定表示も見落とされたため、selectorは`ui_hidden:true`のまま監査面を磨いた。
+
+- 02 AIのmode statusとSTART文脈を「02固有AIではない / 01 AI共有 / 比較基準は02原音」へ
+  具体化し、色だけに頼らない枠・本文・12pxで常時強調
+- 01/02原音へ`mix=karaoke` direct linkを追加。既存4 stemsのvocalsだけOFFにし、
+  START文脈とmode statusを`KARAOKE`へ変更。新音源・生成・追加downloadなし
+- KARAOKE vocal-offをsession-onlyにし、保存prefsやHAZAMA→Tabasco切替へ漏らさない。
+  解除時はdrums / bass / otherの利用者muteを保持し、HAZAMA AIからでもTabasco原音へ復帰
+- external vocal / stem差し替えも共通stem setter経由でmode statusとSTART文脈を同期。
+  KARAOKE主操作は実mobile判定前に44px tap targetへ拡大
+- song titleの先頭語だけで歌詞見出しを選ぶ実装を完全title一致へ変更。
+  02 `Still Moving (Hard)`に01歌詞を誤表示せず、未登録を明示
+- Listen / Manual / Usage / architecture / BL-041へSurface AMBER結果と、
+  「端末の画面ロック→解除」とhidden band / Chrome権限unlockの違いを記録
+- AI frame / envelope / original stems / `engine.js`は不変。AIのauthored-rest音質候補は別試聴PR
+
+Band Room runtimeは`band-room.js?v=br-235`、CSSは`band-room.css?v=br-90`、
+Service Workerは`hazama-fm-v400`。
 
 ---
 

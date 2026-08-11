@@ -6,7 +6,7 @@
 <title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-89" />
+<link rel="stylesheet" href="band-room.css?v=br-90" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -27,7 +27,7 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-67" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-234" defer></script>
+<script src="band-room.js?v=br-235" defer></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -136,7 +136,8 @@
       <h2 id="br-help-title">クイックガイド</h2>
       <ul>
         <li><strong>まず遊ぶ</strong> — 曲を選んで START。HAZAMA は 01 / 02 とも 📻 原音（基準）と 🎛 AI 再現を切り替えられます</li>
-        <li><strong>HAZAMA 02</strong> — AI 再現は暫定で 01 の frames を共有。02 固有の基準音は 📻 原音です</li>
+        <li><strong>HAZAMA 02</strong> — AI 再現は02固有ではなく、暫定で 01 の frames を共有。比較基準は02の 📻 原音です</li>
+        <li><strong>KARAOKE</strong> — 📻 原音で「KARAOKE（vocal off）」を押すと、既存4 stemsの声だけを消して自分のtakeを重ねられます</li>
         <li><strong>モード切替</strong> — 📻 原音 (4 stems) / 🎛 AI 再現 (打ち込み再現)</li>
         <li><strong>section nav</strong> — チップで jump、shift-click で A→B ループ</li>
         <li><strong>phrase trigger</strong> — q-p / a-l のキーで発火 (即発火 / 次小節 / ループ)</li>
@@ -251,7 +252,7 @@
       <div class="br-toggle-bulk">
         <button type="button" class="br-toggle-all" data-toggle-all="stems-on">all on</button>
         <button type="button" class="br-toggle-all" data-toggle-all="stems-off">all off</button>
-        <button type="button" class="br-toggle-all" data-toggle-all="stems-karaoke">karaoke (vocal off)</button>
+        <button type="button" class="br-toggle-all" data-toggle-all="stems-karaoke">KARAOKE（vocal off）</button>
       </div>
       <label class="br-toggle"><input type="checkbox" id="br-toggle-stem-vocals" checked /><span>vocals</span></label>
       <label class="br-toggle"><input type="checkbox" id="br-toggle-stem-drums" checked /><span>drums</span></label>
@@ -659,7 +660,7 @@
       <span class="br-sep">·</span>
       <a href="docs/FREE-SAMPLES-AND-SYNTHESIS.md">音色設計</a>
       <span class="br-sep">·</span>
-      <a id="br-hazama-entry" class="br-hazama-entry" href="?band=hazama" title="HAZAMA — AI×human unit（制作中の隠しトラック）">◦ hazama</a>
+      <a id="br-hazama-entry" class="br-hazama-entry" href="?band=hazama" title="HAZAMA — 通常selector未公開・試聴中">◦ hazama 試聴中</a>
       <span class="br-sep">·</span>
       <span id="br-boot-status" class="br-boot-status" aria-live="polite">boot</span>
       <div id="br-kbd-hint">
