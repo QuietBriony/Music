@@ -18,13 +18,15 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 
 - 通常の遊び方は`listen.html` → HAZAMA Band Room → Lyric Lab。HAZAMAは01/02とも
   原音4-stem（基準）とAI再現を切替可能。02 AIは02固有ではなく01 frames共有の暫定版。
-  v400は01/02のsession-only KARAOKEと曲別歌詞境界を追加。Surface passは操作安定○、
-  AI短音過密×、real mobile未確認のAMBERで、main selector昇格はBL-041待ち。
+  v400は01/02のsession-only KARAOKEと曲別歌詞境界を追加。v400 Surface passは操作安定○、
+  AI短音過密×。v401はarp + basslineのauthored基準配置を20–21発/barへ整理した
+  authored-rest再試聴候補（bass runtimeはそこから発音を減らすだけ）。
+  v401実音とreal mobileは未確認のAMBERで、main selector昇格はBL-041待ち。
 - Lyric Labのprivate `/api/lyric-drafts`はService Workerをbypassし、Cloudflare Pages
   Functions / D1側がauthと`no-store`を所有する。
 - browser / sample / worker / model依存は`config/external-dependencies.json`の24件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v400`。Band Room runtime markerは`band-room.js?v=br-235` /
+- 現行cacheは`hazama-fm-v401`。Band Room runtime markerは`band-room.js?v=br-236` /
   `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ

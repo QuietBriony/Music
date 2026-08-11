@@ -828,25 +828,25 @@
   },
   "arp": {
     "octave": 3,
-    "gate": 0.55,
+    "gate": 0.82,
     "velocity": 0.5,
     "pattern": [
       0,
       2,
       3,
-      2,
+      "-",
       0,
       2,
-      3,
+      "-",
       5,
       0,
-      2,
+      "-",
       3,
       2,
       0,
       4,
-      3,
-      5
+      "-",
+      "-"
     ],
     "sections": [
       "arp",
@@ -861,53 +861,53 @@
       "rotate": [
         0,
         0,
-        1,
-        2
+        0,
+        0
       ],
       "dropProb": [
         0.0,
-        0.08,
         0.0,
-        0.14
+        0.0,
+        0.0
       ],
       "addProb": [
         0.0,
         0.0,
-        0.1,
+        0.0,
         0.0
       ],
-      "octaveShiftProb": 0.1,
-      "ghostProb": 0.24,
+      "octaveShiftProb": 0.06,
+      "ghostProb": 0.18,
       "accentProb": 0.3,
       "swingMs": 5
     },
     "variations": {
       "drive": {
         "octave": 3,
-        "gate": 0.55,
+        "gate": 0.82,
         "velocity": 0.52,
         "pattern": [
           0,
           2,
           3,
-          2,
+          "-",
           0,
           2,
-          3,
+          "-",
           5,
           3,
           2,
           0,
-          2,
+          "-",
           3,
           5,
           4,
-          5
+          "-"
         ]
       },
       "verse": {
         "octave": 3,
-        "gate": 0.5,
+        "gate": 0.86,
         "velocity": 0.46,
         "pattern": [
           0,
@@ -919,8 +919,8 @@
           3,
           "-",
           0,
+          2,
           "-",
-          3,
           2,
           0,
           2,
@@ -930,97 +930,120 @@
       },
       "lift": {
         "octave": 3,
-        "gate": 0.6,
+        "gate": 0.82,
         "velocity": 0.55,
         "pattern": [
           0,
           2,
           3,
-          2,
+          "-",
           0,
           2,
-          3,
+          "-",
           5,
           3,
           5,
           4,
-          5,
+          "-",
           3,
           5,
           4,
-          2
+          "-"
         ]
       },
       "mantra": {
         "octave": 3,
-        "gate": 0.7,
+        "gate": 0.84,
         "velocity": 0.55,
         "pattern": [
           3,
           5,
           4,
-          5,
+          "-",
           3,
           5,
-          4,
+          "-",
           2,
           3,
           5,
           4,
-          5,
+          "-",
           1,
           5,
           4,
-          2
+          "-"
         ]
       },
       "release": {
         "octave": 3,
-        "gate": 0.7,
+        "gate": 0.84,
         "velocity": 0.6,
         "pattern": [
           3,
           5,
           4,
-          5,
+          "-",
           3,
           5,
           4,
           2,
-          3,
+          "-",
           5,
           4,
-          5,
+          "-",
           1,
           5,
           4,
-          2
+          "-"
+        ]
+      },
+      "outro": {
+        "octave": 3,
+        "gate": 0.86,
+        "velocity": 0.46,
+        "pattern": [
+          0,
+          "-",
+          3,
+          2,
+          0,
+          2,
+          "-",
+          5,
+          0,
+          "-",
+          3,
+          2,
+          0,
+          "-",
+          3,
+          "-"
         ]
       }
     },
-    "_note": "degree indices into a 2-octave chord-tone pool (0-2 = triad, 3-5 = octave up); tracks the current chord so the same rolling cell auto-voices Am-F-C-G. intro/break stay arp-free (see sections)."
+    "_note": "v401 authored-rest pocket: 11-12 deliberate hits per bar with a fixed phrase-tail rest; no rotate/add/drop refill. Degree indices track the current chord in a 2-octave pool. intro/break stay arp-free."
   },
   "bassline": {
     "octave": 1,
-    "gate": 0.6,
+    "gate": 0.86,
     "velocity": 0.9,
     "pattern": [
       0,
-      0,
-      0,
+      "-",
+      "-",
       3,
       0,
       0,
-      0,
+      "-",
       3,
       0,
-      0,
-      0,
+      "-",
+      "-",
       3,
-      0,
+      "-",
       0,
       2,
-      3
+      "-"
     ],
     "sections": [
       "arp",
@@ -1033,11 +1056,11 @@
     ],
     "variation": {
       "octaveLiftPhrasePos": 2,
-      "ghostProb": 0.12,
+      "ghostProb": 0.06,
       "swingMs": 3,
-      "dropLastStepProb": 0.35
+      "dropLastStepProb": 0.2
     },
-    "_note": "rolling 16th sub, degree into a 2-octave chord pool (0=root, 2=fifth, 3=root+oct — the dut-dut-dut-POP). gate 0.60 so the 16ths articulate instead of droning. THE groove floor. intro excluded (build); break excluded (dub dropout — bass slams back in at release)."
+    "_note": "v401 authored-rest bass pocket: 9 deliberate baseline hits, root/octave POP movement on both even and odd steps, gate 0.86, and a fixed phrase-tail rest. Runtime ghost/drop may only subtract hits. intro/break remain excluded."
   },
   "events_extracted_from": "authored (AI original, no source stem) — interim copy of still-moving frames; hard-route専用のAI再現アレンジは未著作 (原音stemsが正)",
   "events_extraction_method": "hand-authored Underworld-style 128 four-on-floor"

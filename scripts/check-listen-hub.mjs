@@ -116,7 +116,7 @@ for (const match of html.matchAll(/<img\b([^>]*)>/gi)) {
 }
 
 const currentPass = sectionById("current-pass");
-for (const marker of [/HAZAMA/, /v398/, /v399/, /v400/, /15[–-]30秒/, /6分/, /phone-light/, /01 原音/, /01 AI 再現/, /02 原音/, /02 AI 再現（暫定）/, /02固有AIではありません/, /約33 MiB/, /01 frames共有/, /START/, /KARAOKE/, /画面ロック/, /Tabasco/, /feedback pad/, /lyric-lab\.html/]) {
+for (const marker of [/HAZAMA/, /v398/, /v399/, /v400/, /v401/, /基準配置[\s\S]{0,20}20[–-]21発\/bar/, /bass dropはさらに減算/, /v401レイヤー判定/, /drums \+ bass/, /drums \+ arp/, /vocal OFF/, /15[–-]30秒/, /30[–-]90秒/, /6分/, /phone-light/, /01 原音/, /01 AI 再現/, /02 原音/, /02 AI 再現（暫定）/, /02固有AIではありません/, /約33 MiB/, /authored framesデータ共有/, /START/, /KARAOKE/, /画面ロック/, /Tabasco/, /feedback pad/, /lyric-lab\.html/]) {
   assert.match(currentPass, marker, `Current pass should include ${marker}`);
 }
 assert.doesNotMatch(currentPass, /v299|v301/, "v299/v301 should not remain in the current pass");
@@ -126,11 +126,12 @@ assert.match(historicalCards, /v299/, "Historical cards should retain the v299 e
 assert.match(historicalCards, /v301/, "Historical cards should retain the v301 evidence");
 assert.doesNotMatch(historicalCards, /<b>Current pass:<\/b>/, "Historical cards must not claim to be current");
 
-const feedbackCurrentStart = feedback.indexOf("### 2026-08-11 HAZAMA v397-v400 01/02 current pass");
+const feedbackCurrentStart = feedback.indexOf("### 2026-08-11 HAZAMA v397-v401 01/02 current pass");
 const feedbackHistoricalStart = feedback.indexOf("### Historical:");
 assert.ok(feedbackCurrentStart >= 0 && feedbackHistoricalStart > feedbackCurrentStart, "Listening backlog should separate current HAZAMA from historical notes");
 const feedbackCurrent = feedback.slice(feedbackCurrentStart, feedbackHistoricalStart);
-assert.match(feedbackCurrent, /v397[\s\S]*v398[\s\S]*v399[\s\S]*v400/, "Listening backlog current note should cover the original lanes, safe START, and audition clarity");
+assert.match(feedbackCurrent, /v397[\s\S]*v398[\s\S]*v399[\s\S]*v400[\s\S]*v401/, "Listening backlog current note should cover the original lanes, safe START, audition clarity, and authored-rest candidate");
+assert.match(feedbackCurrent, /20[–-]21[\s\S]*drums \+ bass[\s\S]*drums \+ arp[\s\S]*vocal OFF/, "Listening backlog should preserve the v401 layer-isolation pass");
 assert.match(feedbackCurrent, /four short cases[\s\S]*six-minute/i, "Listening backlog should separate the four-case quick pass and long arc");
 assert.match(feedbackCurrent, /02[\s\S]*01 frames[\s\S]*original/i, "Listening backlog should preserve the provisional 02 AI boundary");
 assert.match(feedbackCurrent, /BL-041/, "Listening backlog should keep the audible decision behind BL-041");
@@ -149,7 +150,7 @@ assert.ok(ls03, "Feature stories should add LS-03");
 assert.equal((stories.match(/^LS-01,/gm) || []).length, 1, "LS-01 should be unique");
 assert.equal((stories.match(/^LS-03,/gm) || []).length, 1, "LS-03 should be unique");
 assert.match(ls01[0], /band-room\.html\?band=hazama[\s\S]*lyric-lab\.html/, "LS-01 should include HAZAMA and Lyric Lab navigation");
-assert.match(ls03[0], /v397-v400[\s\S]*4ケース[\s\S]*BL-041/, "LS-03 should cover the current four-case QA while preserving BL-041");
+assert.match(ls03[0], /v397-v401[\s\S]*4ケース[\s\S]*authored-rest[\s\S]*BL-041/, "LS-03 should cover the current four-case and v401 layer QA while preserving BL-041");
 
 for (const route of [
   /song=still-moving&amp;mode=stems&amp;mix=karaoke/,

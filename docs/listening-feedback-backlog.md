@@ -23,7 +23,7 @@ priority: high
 
 ## Current Reopened Notes
 
-### 2026-08-11 HAZAMA v397-v400 01/02 current pass
+### 2026-08-11 HAZAMA v397-v401 01/02 current pass
 
 - v397 added the 01 original 4-stem reference; v398 added the 02 Hard original
   lane. Each song is 128 BPM / A minor / 360 seconds and about 32.96 MiB.
@@ -43,9 +43,19 @@ priority: high
   real-mobile stability gateは閉じない。HAZAMA remains `ui_hidden:true`.
 - v400 makes the non-track-specific 02 AI warning prominent, fixes 02 inheriting 01 lyrics,
   and exposes session-only 01/02 original-stem KARAOKE routes. No new audio asset is added.
-- Run the four short cases (01 original / 01 AI / 02 original / 02 AI), then a
-  roughly six-minute arc where useful. Record START responsiveness, keep, and
-  fix separately; use the local listening note to copy that context.
+- v401 is the response to the Surface musical verdict: active arp + bassline drops from
+  27/32 to a 20–21-hit authored baseline per bar, every lane ends on a rest, and gates
+  rise from roughly 59–82 ms to 96–101 ms. Arp runtime may not refill or move those
+  rests; bass ghost / phrase-tail drops may only subtract from the baseline. 01/02 share
+  the musical frame data, but their song-ID seeds can produce small velocity, jitter, and
+  bass-drop differences. The envelope and original stems remain unchanged; this is a
+  candidate, not a human listening pass.
+- Run the four short cases first (01 original / 01 AI / 02 original / 02 AI), then the
+  v401 layer isolation below and a roughly six-minute arc only where useful.
+- Re-listen to 01 AI and provisional 02 AI for 30–90 seconds per layer: `drums + bass`,
+  `drums + arp`, `drums + bass + arp` with vocal OFF, then `defaults`. Record which
+  layer creates or removes short-note packing. Continue to a roughly six-minute arc
+  only after the short pass is stable.
 - 02 AI is provisional: it shares 01 frames and is not a 02-specific AI
   arrangement. The 02 original remains the reference for Hard-route decisions.
 - Local Chrome recheck on `br-234` passed short START/STOP responsiveness for
@@ -53,7 +63,7 @@ priority: high
   earlier 01 original pass also reached 4/4, and the subsequent fix did not
   touch the original-stem graph. Cold local one-shot decode was slow under the
   already-loaded audit profile, but completed instead of freezing the renderer.
-- Human listening remains behind BL-041 for AI musical quality, real-mobile stability and
+- Human listening remains behind BL-041 for v401 AI musical quality, real-mobile stability and
   main-selector promotion. Static/browser responsiveness checks do not promote it.
 
 ### Historical: 2026-08-02 HAZAMA v388/v390 pass

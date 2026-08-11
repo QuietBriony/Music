@@ -14,23 +14,27 @@
 
 ## 現在地とversion
 
-- 現行playability契約は **v400**。client markerは
-  `band-room.js?v=br-235` / `band-room.css?v=br-90`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v400**。v400はHAZAMAの
-  02 AI暫定表示、session-only KARAOKE導線、曲別歌詞一致を変更し、原音stem、
-  `engine.js`、model weightは変更していない。
+- 現行playability契約は **v401**。client markerは
+  `band-room.js?v=br-236` / `band-room.css?v=br-90`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v401**。v401はHAZAMA AIの
+  arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
+  約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
+  減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、
+  曲別歌詞一致も含む。原音stem、`engine.js`、model weightは変更していない。
 - Tabascoの曲順 / title / catalog durationは`presets/bands.json`、BPM / key / 構成は
   7曲のdrum-frame、canonical / fallback歌詞はfinal文書が正本。原音karaokeでは任意の
   timed lyricsを重ねる。`tabasco-songs.json`は保守用の派生一覧で、
   再生runtimeやoffline起動には使わない。
 - TabascoもHAZAMAも `📻 原音` と `🎛 AI 再現` を切替可能。HAZAMAの原音は
   01 メロウ / 02 Hard完成レンダーのDemucs 4-stem（各約33.0 MiB）で、
-  deep-link時は `📻 原音` を自動選択する。02のAI再現は01 frames共有の暫定版で、
+  deep-link時は `📻 原音` を自動選択する。02のAI再現は01 authored framesデータ共有の暫定版で、
+  曲ID seedによる微細な実演差はある。
   02固有の基準は原音。v390〜v396は
   **synth-only / AI再現専用**（`🎛 AI 再現`を自動選択・原音disabled）だった。
-- HAZAMAはまだmain band selectorでは `ui_hidden`。Surface試聴ではSTART、ピーポーなし、
-  途切れなし、画面ロック解除後の復帰、Tabasco復帰は前進したが、AIの短音過密は音質×。
-  real mobileの実音確認と
+- HAZAMAはまだmain band selectorでは `ui_hidden`。v400時点のSurface試聴ではSTART、
+  ピーポーなし、途切れなし、画面ロック解除後の復帰、Tabasco復帰は前進したが、
+  AIの短音過密は音質×。v401はその再試聴候補で、Surfaceとreal mobileの実音確認後に判定する。
+  real mobileの安定性確認と
   公開昇格は **BL-041 human gate**、車載 / Bluetoothの実機確認は
   **BL-003 human gate**であり、この文書更新では合格扱いにしない。
 - 詳細な版履歴は [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md)、
@@ -41,11 +45,13 @@
 1. [Listen hub](../listen.html)を開き、current passの
    [HAZAMA Band Room](../band-room.html?band=hazama)へ進む。
 2. 01 / 02を選び、`📻 原音`（基準）と`🎛 AI 再現`を切り替える。02のAI再現には
-   「02固有AIではない・01 AI共有・比較基準は02原音」と表示される。4ケースの直接linkはListen hubにある。
+   「02固有AIではない・01 authored frames共有・比較基準は02原音」と表示される。4ケースの直接linkはListen hubにある。
    歌詞を外して演奏を聴く／自分で歌う時は01/02の`KARAOKE` linkを使う。
 3. `START`を一度押す。表示が `WARMING UP` / `PREPARING AI` の間は、
    band / song / modeがbusy中なので切替を待つ。
-4. まず60–90秒、続けられれば約6分のarcを聴く。弱端末の比較だけ
+4. v401 AIはまず`all off`から、`drums + bass`、`drums + arp`、
+   `drums + bass + arp`（vocal OFF）、`defaults`の順に各30–90秒聴く。
+   どの層で短音過密になるかを分け、続けられれば約6分のarcを聴く。弱端末の比較だけ
    [phone-light](../band-room.html?band=hazama&aiLight=1)を使う。
 5. Listen hubへ戻って[Lyric Lab](../lyric-lab.html)を開き、制作元をBand Roomとして
    keep / fix、歌詞、BPM / key / 尺、制作先を手動で整理する。リンクを開くだけでは、
@@ -71,7 +77,7 @@
 
 ---
 
-## 画面構成（現行: br-235 / br-90）
+## 画面構成（現行: br-236 / br-90）
 
 ```
 ┌─────────────────────────────────┐
@@ -99,7 +105,7 @@
 ├─────────────────────────────────┤
 │  layer toggles (mode 別)         │
 │  📻 vocals · drums · bass · other │
-│  🎛 drums · click · bass · g · v · c │
+│  🎛 drums · bass · guitar · vocal · chords · arp · click │
 ├─────────────────────────────────┤
 │  [ lyrics — current section が    │  ← 自動スクロール + ハイライト
 │    glow して、他は dim ]          │

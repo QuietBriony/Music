@@ -92,7 +92,7 @@ for (const [name, text] of [["Manual", manual], ["Usage", usage]]) {
   assert.match(text, /📻 原音/, `${name} should expose HAZAMA's original reference lane`);
   assert.match(text, /🎛 AI 再現/, `${name} should expose HAZAMA's AI comparison lane`);
   assert.match(text, /01[\s\S]{0,120}02|01\s*\/\s*02/, `${name} should cover both HAZAMA songs`);
-  assert.match(text, /02[\s\S]{0,100}01 frames[\s\S]{0,100}暫定|02[\s\S]{0,100}暫定[\s\S]{0,100}01 frames/, `${name} should explain the provisional HAZAMA 02 AI source`);
+  assert.match(text, /02[\s\S]{0,140}01 authored frames[\s\S]{0,140}暫定|02[\s\S]{0,140}暫定[\s\S]{0,140}01 authored frames/, `${name} should explain the provisional HAZAMA 02 authored-frame source`);
   assert.match(text, /KARAOKE/, `${name} should expose the original-stem vocal-off lane`);
   assert.match(text, /session(?:-only|限定)/, `${name} should explain that KARAOKE vocal-off does not become a global preference`);
   assert.match(text, /原音[^\n]{0,40}(?:既定|自動選択)/, `${name} should explain the original-reference default`);

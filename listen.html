@@ -354,7 +354,7 @@
     </header>
 
     <main>
-    <section id="current-pass" aria-labelledby="today-pass-title" data-current-listen-pass="hazama-v400">
+    <section id="current-pass" aria-labelledby="today-pass-title" data-current-listen-pass="hazama-v401">
       <div class="section-head">
         <h2 id="today-pass-title">Today&apos;s listening pass</h2>
         <p class="section-note">HAZAMA 01/02 × 原音/AIを短く比較してから6分arcへ。</p>
@@ -364,11 +364,12 @@
           <h3>HAZAMA 4ケース quick pass（各15–30秒）</h3>
           <ol>
             <li><a class="mini-link" data-listen-target="hazama-01-original" href="band-room.html?band=hazama&amp;song=still-moving&amp;mode=stems">01 原音 — Still Moving</a>（基準 / 4 stems / 約33 MiB）。</li>
-            <li><a class="mini-link" data-listen-target="hazama-01-ai" href="band-room.html?band=hazama&amp;song=still-moving&amp;mode=synth">01 AI 再現</a>（v399 safe START / 音質磨き待ち）。</li>
+            <li><a class="mini-link" data-listen-target="hazama-01-ai" href="band-room.html?band=hazama&amp;song=still-moving&amp;mode=synth">01 AI 再現</a>（v401 authored-rest再試聴候補）。</li>
             <li><a class="mini-link" data-listen-target="hazama-02-original" href="band-room.html?band=hazama&amp;song=still-moving-hard&amp;mode=stems">02 原音 — Still Moving (Hard)</a>（02固有の基準 / 4 stems / 約33 MiB）。</li>
-            <li><a class="mini-link" data-listen-target="hazama-02-ai" href="band-room.html?band=hazama&amp;song=still-moving-hard&amp;mode=synth">02 AI 再現（暫定）</a>（02固有AIではありません。01 frames共有。比較基準は02原音）。</li>
+            <li><a class="mini-link" data-listen-target="hazama-02-ai" href="band-room.html?band=hazama&amp;song=still-moving-hard&amp;mode=synth">02 AI 再現（暫定）</a>（02固有AIではありません。01 authored framesデータ共有。曲ID由来の微細な揺らぎは別。比較基準は02原音）。</li>
             <li>各画面でSTARTを一度押す。準備に失敗した時は無音の`playing`へ進まず、START直下の案内へ戻ることを確認。</li>
             <li>AIの弱端末比較には <a class="mini-link" data-listen-target="hazama-light" href="band-room.html?band=hazama&amp;song=still-moving&amp;mode=synth&amp;aiLight=1">phone-light</a> を使う。</li>
+            <li><strong>v401レイヤー判定</strong>: AIで`all off`から、`drums + bass`、`drums + arp`、`drums + bass + arp`（vocal OFF）、`defaults`を各30–90秒。短音の詰まりがどの層で出るか分ける。</li>
             <li>歌詞と演奏を切り分けるなら <a class="mini-link" data-listen-target="hazama-01-karaoke" href="band-room.html?band=hazama&amp;song=still-moving&amp;mode=stems&amp;mix=karaoke">01 KARAOKE</a> / <a class="mini-link" data-listen-target="hazama-02-karaoke" href="band-room.html?band=hazama&amp;song=still-moving-hard&amp;mode=stems&amp;mix=karaoke">02 KARAOKE</a>（原音4 stems・vocal off）。</li>
             <li><strong>画面ロック試験</strong>: 再生中に端末をロック（画面OFF）→10秒→端末ロック解除。同じBand Roomへ戻り、継続または正常復帰を確認。サイト権限やhidden bandのunlockとは別です。</li>
             <li><strong>別試験</strong>: HAZAMAからTabascoを選び、📻 原音と通常paletteへ戻ることを確認。</li>
@@ -381,7 +382,7 @@
             <li>quick passが安定したら約6分。intro / arp / drive / verse / lift / mantra / break / release / outro の役割と密度が移り、同じ短い断片に張り付かないかを見る。</li>
             <li>`ピーポー` → v388のphone-light回帰。`固まる` → v399のdense AI safe START。`途切れる` → phone予算。`平坦` → 6分arcのsection差として分けて返す。</li>
             <li>残したい言葉、展開、制作先が見えたら <a class="mini-link" data-listen-target="lyric-lab" href="lyric-lab.html">Lyric Lab</a> で歌詞とACE-Step等への制作handoffを整理する。</li>
-            <li>v398で01/02原音を収録し、v399で4ケース導線とAI safe START、v400で02暫定表示・KARAOKE・歌詞境界を明確化。Surface試聴はSTART/途切れ/画面復帰○、AI音質は短音過密で再調整、実mobileと通常公開はBL-041で保留。</li>
+            <li>v398で01/02原音を収録し、v399で4ケース導線とAI safe START、v400で02暫定表示・KARAOKE・歌詞境界を明確化。v401はAIのarp+bass authored基準配置を20–21発/barの明示休符へ整理した再試聴候補（実演のbass dropはさらに減算）。v400 Surface試聴はSTART/途切れ/画面復帰○、AI音質×。v401実音、real mobile、通常公開はBL-041で保留。</li>
           </ul>
         </div>
       </div>
@@ -473,9 +474,9 @@
         <a class="card green wide" data-listen-target="hazama" href="band-room.html?band=hazama">
           <div>
             <strong>HAZAMA Band Room — Still Moving</strong>
-            <span>v400: 01/02 × 原音/AIの4ケース＋原音KARAOKE。AIは短音過密の再調整待ち。</span>
+            <span>v401: 01/02 × 原音/AI＋KARAOKE。AIはarp+bassのauthored基準配置20–21発/barの再試聴候補。</span>
             <span class="listen-cue"><b>Quick / long:</b> 各15–30秒でSTARTと差、約6分でsection arcと単調さを分けて見る。</span>
-            <span class="known-issue"><b>Human gate:</b> Surface操作○ / AI音質×。real mobile・通常公開は保留。</span>
+            <span class="known-issue"><b>Human gate:</b> v400 Surface操作○ / AI音質×。v401実音・real mobile・通常公開は保留。</span>
           </div>
           <div class="meta"><b>HAZAMA</b><span>90 sec / 6 min</span></div>
         </a>
