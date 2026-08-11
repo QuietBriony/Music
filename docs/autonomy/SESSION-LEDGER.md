@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-08-11 [worker-gaming] — HAZAMA v399 / Chrome baselineをPR #394でmerge closeout
+- agent      : Codex（commit、PR、squash merge、branch cleanup）
+- goal       : HAZAMA safe STARTとWorkerPC Chrome共有基準をmainへ出し、母艦がGit同期できる状態で閉じる
+- repos      : Music（PR #394のmerge事実を記録するdocs-only closeout）
+- shipped    : PR #394 `Stabilize HAZAMA playback and document Chrome baseline` をsquash merge。
+  main commit `5b19a66a4609c53bb7d43367458c7969e76ee744`、remote/local feature branch削除、
+  `hazama-fm-v399` / `band-room.js?v=br-234` とChrome Computer Use baselineを共有可能化
+- stack-check: PASS 32 / FAIL 0 / SKIP 0
+- backlog    : none
+- next       : BL-041（HAZAMA音質・mobile安定・通常selector昇格のhuman gate。母艦/StudioPCのChrome snapshotは各実機確認後に追加）
+- blockers   : 母艦/StudioPCのChrome実状態は各物理PCでのみ確認可能。コード・merge blockerはなし
+
+---
+
 ## 2026-08-11 [worker-gaming] — Chrome Computer Use状態と母艦共有境界を正本化
 - agent      : Codex（WorkerPC Chrome接続の実測 + OpenAI公式手順との照合）
 - goal       : WorkerPC固有のChrome状態を秘密情報なしで記録し、母艦/StudioPCへ安全に再現できる導線を作る
