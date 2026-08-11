@@ -23,7 +23,29 @@ priority: high
 
 ## Current Reopened Notes
 
-### 2026-08-02 HAZAMA v388/v390 current pass
+### 2026-08-11 HAZAMA v397-v399 01/02 current pass
+
+- v397 added the 01 original 4-stem reference; v398 added the 02 Hard original
+  lane. Each song is 128 BPM / A minor / 360 seconds and about 32.96 MiB.
+- The approved Chrome pass reached loaded/playing state for both originals.
+  Before v399, START in 01 and 02 AI recreation made the renderer unresponsive.
+- v399 makes HAZAMA's dense arp+bassline AI band use the layer-only light safety
+  tier, with checked-in local drum one-shots and no saved/CDN drum override on
+  START, while leaving the shared master and original-stem graph unchanged.
+- Run the four short cases (01 original / 01 AI / 02 original / 02 AI), then a
+  roughly six-minute arc where useful. Record START responsiveness, keep, and
+  fix separately; use the local listening note to copy that context.
+- 02 AI is provisional: it shares 01 frames and is not a 02-specific AI
+  arrangement. The 02 original remains the reference for Hard-route decisions.
+- Local Chrome recheck on `br-234` passed short START/STOP responsiveness for
+  01 AI and provisional 02 AI; 02 original reached `stems loaded (4/4)`. The
+  earlier 01 original pass also reached 4/4, and the subsequent fix did not
+  touch the original-stem graph. Cold local one-shot decode was slow under the
+  already-loaded audit profile, but completed instead of freezing the renderer.
+- Human listening remains behind BL-041 for sound quality, mobile stability and
+  main-selector promotion. Static/browser responsiveness checks do not promote it.
+
+### Historical: 2026-08-02 HAZAMA v388/v390 pass
 
 - Agent gates confirm the v388 structure keeps all 16 arp / bass steps in
   phone-light mode and pays the budget with one oscillator per trigger instead
@@ -40,7 +62,7 @@ priority: high
   and production handoff. This route does not execute ACE-Step or download a
   model.
 
-### Historical: 2026-06-01 phone notes
+### Historical — 2026-06-01 phone notes
 
 - `FM funk`: sounded packed/crushed. v299 pass should be checked for more
   headroom, less sub buildup, and less tape/limiter flattening.

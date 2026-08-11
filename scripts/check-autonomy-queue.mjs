@@ -401,7 +401,9 @@ function parseLatestLedger(text, backlog) {
   const latestIndex = lines.findIndex((entry, index) => index > dividerIndex && entry.text.trim());
   assert.ok(latestIndex >= 0, "ledger latest entry is missing");
   const latestHeading = lines[latestIndex];
-  const heading = latestHeading.text.match(/^## (\d{4}-\d{2}-\d{2}) — (.+)$/);
+  const heading = latestHeading.text.match(
+    /^## (\d{4}-\d{2}-\d{2})(?: \([^()\r\n]+\)| \[[^\[\]\r\n]+\])? — (.+)$/
+  );
   assert.ok(heading && heading[2].trim(), `ledger latest entry heading drift at line ${latestHeading.line}`);
   calendarDate(heading[1], "ledger latest entry date");
 

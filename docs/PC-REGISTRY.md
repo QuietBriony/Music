@@ -128,6 +128,11 @@ SESSION-LEDGER 追記では `studioPC` を使う。
   DefaultLiveSet 起動まで確認済み。
 - **運用手順**: [`docs/WORKER-GAMING-RUNBOOK.md`](WORKER-GAMING-RUNBOOK.md) と
   `python -X utf8 scripts/worker-gaming-pipeline.py check-env` を入口にする。
+- **2026-08-11 Chrome / Codex baseline**: ChatGPT Chrome extension は
+  `ユーザー 2` (`Profile 1`) で接続確認済み。Music QA は
+  `https://quietbriony.github.io` の site-specific allow を使い、母艦へは profile
+  自体でなく再現手順だけを共有する。秘密情報を含めない正本は
+  [`docs/CHROME-COMPUTER-USE-BASELINE.md`](CHROME-COMPUTER-USE-BASELINE.md)。
 - **2026-05-31 DAW/NI follow-up**: Kontakt 7 Player `7.6.1` installed and
   `Kontakt 7.vst3` is present. Use
   `python -X utf8 scripts/worker-gaming-pipeline.py check-daw` to confirm

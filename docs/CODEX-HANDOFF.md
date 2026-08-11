@@ -1,8 +1,8 @@
 # Codex CLI Handoff — Music Stack
 
-> **Current control-plane snapshot — verified 2026-08-02**
+> **Current control-plane snapshot — verified 2026-08-11**
 >
-> `last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c`
+> `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
 > 実行タスクの正本は [autonomy/BACKLOG.md](./autonomy/BACKLOG.md)、直前sessionの状態は
 > [autonomy/SESSION-LEDGER.md](./autonomy/SESSION-LEDGER.md)。このmarker以後に事実ソースが
@@ -14,16 +14,17 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 明示download条件は`config/external-dependencies.json`。`worker-gaming` / `worker.gpu`を使う
 処理は、operatorが空きとdownload / executionを明示した時だけ行う。
 
-## 現在地（2026-08-02）
+## 現在地（2026-08-11）
 
-- 通常の遊び方は`listen.html` → HAZAMA Band Room → Lyric Lab。HAZAMAはsynth-onlyで
-  deep-linkからSTARTできるが、main selector昇格はBL-041の実音 / desktop / mobile human gate待ち。
+- 通常の遊び方は`listen.html` → HAZAMA Band Room → Lyric Lab。HAZAMAは01/02とも
+  原音4-stem（基準）とAI再現を切替可能。02 AIは01 frames共有の暫定版で、main selector
+  昇格はBL-041の実音 / desktop / mobile human gate待ち。
 - Lyric Labのprivate `/api/lyric-drafts`はService Workerをbypassし、Cloudflare Pages
   Functions / D1側がauthと`no-store`を所有する。
 - browser / sample / worker / model依存は`config/external-dependencies.json`の24件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v398`。Band Room runtime markerは`band-room.js?v=br-231` /
-  `band-room.css?v=br-88`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
+- 現行cacheは`hazama-fm-v399`。Band Room runtime markerは`band-room.js?v=br-234` /
+  `band-room.css?v=br-89`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
   ASR由来の`tabasco-lyrics-timed.json`を使う。`presets/tabasco-songs.json` v2は

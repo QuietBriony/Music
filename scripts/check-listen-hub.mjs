@@ -77,7 +77,11 @@ for (const required of [
   "fm.html",
   "index.html",
   "band-room.html?band=hazama",
-  "band-room.html?band=hazama&aiLight=1",
+  "band-room.html?band=hazama&song=still-moving&mode=stems",
+  "band-room.html?band=hazama&song=still-moving&mode=synth",
+  "band-room.html?band=hazama&song=still-moving-hard&mode=stems",
+  "band-room.html?band=hazama&song=still-moving-hard&mode=synth",
+  "band-room.html?band=hazama&song=still-moving&mode=synth&aiLight=1",
   "lyric-lab.html",
   "https://quietbriony.github.io/drum-floor/",
   "https://quietbriony.github.io/chill/session.html",
@@ -112,7 +116,7 @@ for (const match of html.matchAll(/<img\b([^>]*)>/gi)) {
 }
 
 const currentPass = sectionById("current-pass");
-for (const marker of [/HAZAMA/, /v388/, /v390/, /60[–-]90秒/, /6分/, /phone-light/, /2音サイレン/, /synth-only/, /START/, /lyric-lab\.html/]) {
+for (const marker of [/HAZAMA/, /v398/, /v399/, /15[–-]30秒/, /6分/, /phone-light/, /01 原音/, /01 AI 再現/, /02 原音/, /02 AI 再現（暫定）/, /約33 MiB/, /01 frames共有/, /START/, /feedback pad/, /lyric-lab\.html/]) {
   assert.match(currentPass, marker, `Current pass should include ${marker}`);
 }
 assert.doesNotMatch(currentPass, /v299|v301/, "v299/v301 should not remain in the current pass");
@@ -122,12 +126,13 @@ assert.match(historicalCards, /v299/, "Historical cards should retain the v299 e
 assert.match(historicalCards, /v301/, "Historical cards should retain the v301 evidence");
 assert.doesNotMatch(historicalCards, /<b>Current pass:<\/b>/, "Historical cards must not claim to be current");
 
-const feedbackCurrentStart = feedback.indexOf("### 2026-08-02 HAZAMA v388/v390 current pass");
+const feedbackCurrentStart = feedback.indexOf("### 2026-08-11 HAZAMA v397-v399 01/02 current pass");
 const feedbackHistoricalStart = feedback.indexOf("### Historical:");
 assert.ok(feedbackCurrentStart >= 0 && feedbackHistoricalStart > feedbackCurrentStart, "Listening backlog should separate current HAZAMA from historical notes");
 const feedbackCurrent = feedback.slice(feedbackCurrentStart, feedbackHistoricalStart);
-assert.match(feedbackCurrent, /v388[\s\S]*v390/, "Listening backlog current note should cover v388 and v390");
-assert.match(feedbackCurrent, /60[–-]90 seconds[\s\S]*six-minute/i, "Listening backlog should separate quick and long passes");
+assert.match(feedbackCurrent, /v397[\s\S]*v398[\s\S]*v399/, "Listening backlog current note should cover the original lanes, track 02, and safe START");
+assert.match(feedbackCurrent, /four short cases[\s\S]*six-minute/i, "Listening backlog should separate the four-case quick pass and long arc");
+assert.match(feedbackCurrent, /02[\s\S]*01 frames[\s\S]*original/i, "Listening backlog should preserve the provisional 02 AI boundary");
 assert.match(feedbackCurrent, /BL-041/, "Listening backlog should keep the audible decision behind BL-041");
 assert.doesNotMatch(feedbackCurrent, /v299|v301/, "Historical v299/v301 notes should stay outside the current backlog section");
 
@@ -144,7 +149,7 @@ assert.ok(ls03, "Feature stories should add LS-03");
 assert.equal((stories.match(/^LS-01,/gm) || []).length, 1, "LS-01 should be unique");
 assert.equal((stories.match(/^LS-03,/gm) || []).length, 1, "LS-03 should be unique");
 assert.match(ls01[0], /band-room\.html\?band=hazama[\s\S]*lyric-lab\.html/, "LS-01 should include HAZAMA and Lyric Lab navigation");
-assert.match(ls03[0], /v388\/v390[\s\S]*BL-041/, "LS-03 should separate static QA from BL-041 listening");
+assert.match(ls03[0], /v397-v399[\s\S]*4ケース[\s\S]*BL-041/, "LS-03 should cover the current four-case QA while preserving BL-041");
 
 assert.match(sw, /"listen\.html"/, "Listen should remain in the Service Worker precache");
 

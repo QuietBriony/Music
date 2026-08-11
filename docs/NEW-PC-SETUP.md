@@ -228,6 +228,19 @@ node scripts/stack-check.mjs
 期待結果: `PASS 15 / FAIL 0 / SKIP 0` (= 0 BAD)。これが出れば 5 repo すべてが
 正しく落ちて整合性も取れている状態。
 
+### 3.1 Codex App / Chrome Computer Use（使う PC だけ）
+
+Chrome profile は PC 間でコピーせず、その PC で実際に使う profile に ChatGPT
+Chrome extension を入れて有効化する。ChatGPT Desktop の
+`Settings > Computer Use > Google Chrome > Manage` では、Music QA に必要な
+`https://quietbriony.github.io` だけを site-specific に許可する。
+
+WorkerPC の実測状態、母艦へ共有する範囲、秘密情報を Git に入れない境界、接続失敗時の
+止まり方は
+[`docs/CHROME-COMPUTER-USE-BASELINE.md`](CHROME-COMPUTER-USE-BASELINE.md)
+を正本にする。別 PC は direct Music URL と操作前 screenshot が成功してから、その PC
+の dated snapshot を `verified` に更新する。
+
 ---
 
 ## 4. UR44 を音出しに使う設定 (任意)

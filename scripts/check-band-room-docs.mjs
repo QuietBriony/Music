@@ -89,9 +89,11 @@ for (const [name, text] of [["Manual", manual], ["Usage", usage]]) {
   assert.ok(text.includes(bandJsMarker), `${name} should identify current Band Room JS marker ${bandJsMarker}`);
   assert.ok(text.includes(bandCssMarker), `${name} should identify current Band Room CSS marker ${bandCssMarker}`);
   assert.match(text, /HAZAMA/, `${name} should name HAZAMA`);
-  assert.match(text, /synth-only|AI再現専用/, `${name} should explain HAZAMA's synth-only contract`);
-  assert.match(text, /自動選択/, `${name} should explain automatic AI playback selection`);
-  assert.match(text, /disabled/, `${name} should explain the unavailable original mode`);
+  assert.match(text, /📻 原音/, `${name} should expose HAZAMA's original reference lane`);
+  assert.match(text, /🎛 AI 再現/, `${name} should expose HAZAMA's AI comparison lane`);
+  assert.match(text, /01[\s\S]{0,120}02|01\s*\/\s*02/, `${name} should cover both HAZAMA songs`);
+  assert.match(text, /02[\s\S]{0,100}01 frames[\s\S]{0,100}暫定|02[\s\S]{0,100}暫定[\s\S]{0,100}01 frames/, `${name} should explain the provisional HAZAMA 02 AI source`);
+  assert.match(text, /原音[^\n]{0,40}(?:既定|自動選択)/, `${name} should explain the original-reference default`);
   assert.match(text, /WARMING UP/, `${name} should name the initial START busy state`);
   assert.match(text, /PREPARING AI/, `${name} should name the AI preparation busy state`);
   assert.match(text, /RESET AUDIO/, `${name} should expose the actionable START recovery control`);
