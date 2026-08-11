@@ -118,6 +118,7 @@ UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、
 - Preset translation schema: [docs/preset-translation-schema.md](docs/preset-translation-schema.md)
 - Repo Harvest Orchestra Workflow: [docs/repo-harvest-orchestra-workflow.md](docs/repo-harvest-orchestra-workflow.md)
 - Worker Gaming runbook: [docs/WORKER-GAMING-RUNBOOK.md](docs/WORKER-GAMING-RUNBOOK.md)
+- Chrome Computer Use baseline: [docs/CHROME-COMPUTER-USE-BASELINE.md](docs/CHROME-COMPUTER-USE-BASELINE.md)
 - Worker Gaming environment setup log: [docs/WORKER-GAMING-ENV-SETUP-2026-05-31.md](docs/WORKER-GAMING-ENV-SETUP-2026-05-31.md)
 - Music PC DAW parity runbook: [docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md](docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md)
 - Hardware jam routing: [docs/HARDWARE-JAM-ROUTING.md](docs/HARDWARE-JAM-ROUTING.md)

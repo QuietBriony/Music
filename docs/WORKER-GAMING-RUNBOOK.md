@@ -35,6 +35,8 @@ Observed on 2026-05-31 and updated on 2026-06-01:
 - Global Python may still have CPU-only `torch`; run worker jobs through the
   venv Python.
 - Latest setup report: [WORKER-GAMING-ENV-SETUP-2026-05-31.md](WORKER-GAMING-ENV-SETUP-2026-05-31.md)
+- Chrome / ChatGPT site permission and cross-PC parity baseline:
+  [CHROME-COMPUTER-USE-BASELINE.md](CHROME-COMPUTER-USE-BASELINE.md)
 - Studio/worker DAW parity plan:
   [MUSIC-PC-DAW-PARITY-RUNBOOK.md](MUSIC-PC-DAW-PARITY-RUNBOOK.md)
 

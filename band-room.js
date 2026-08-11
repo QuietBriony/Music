@@ -19,11 +19,14 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-231-arp-pluck";
+  const BANDROOM_APP_VERSION = "br-234-hazama-safe-start";
+  const BANDROOM_RELEASE_VERSION = "v399";
+  const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
   const BANDROOM_MASTER_VOL_KEY = "band-room.masterVol.v2";
+  const BANDROOM_FEEDBACK_NOTE_KEY = "band-room.feedback-note.v1";
   const BANDROOM_ALLOW_BACKGROUND_AUDIO_KEY = "band-room.allowBackgroundAudio.v1";
   const BANDROOM_AI_SAMPLER_UPGRADE_KEY = "band-room.aiSamplerUpgrade.v1";
   const BANDROOM_AUDIO_STATE_KEYS = [BANDROOM_PREFS_KEY, BANDROOM_MASTER_VOL_KEY];
@@ -379,7 +382,10 @@
     // v323: one notch denser (2.05 → 2.2, release 0.17) — v301 measured AI DR
     // still wider than target (16.5 vs 8.7 dB), so more glue is also on-target.
     const comp   = new Tone.Compressor({ threshold: -18, ratio: 2.6, attack: 0.018, release: 0.16, knee: 8 });  // v344: a touch more glue (softer knee, slower attack so transients still snap)
-    const lightRuntime = aiLightRuntimeEnabled();
+    // This bus is AI-layer-only (original stems bypass it), so dense-song
+    // safety may use the lean EQ+comp route even on a desktop. The shared
+    // master and stem master remain device-gated below.
+    const lightRuntime = aiLayerLightRuntimeEnabled();
     const widen  = new Tone.StereoWidener(lightRuntime ? 0.38 : 0.50);  // v344: pull width in slightly so the phantom center keeps mono body
     const makeup = new Tone.Gain(3.2);    // v243: glue-comp makeup + AI 再現 level lift (~+9 dB) so the synth band reaches the stems-tuned master at comparable level. v323: 3.0 → 3.2 (~+0.6 dB) to track the 原音 v322 loudness lift. Stems-only (原音) never touch this bus.
 
@@ -665,7 +671,7 @@
     // feeds two takes: dry hard-left and a 13ms Haas-delayed copy hard-right —
     // the classic L/R rhythm-guitar wall without a second sampler. Light
     // runtime keeps the old single slightly-left placement.
-    const guitarPan = new Tone.Panner(aiLightRuntimeEnabled() ? -0.18 : -0.42).connect(instrumentBus);
+    const guitarPan = new Tone.Panner(aiLayerLightRuntimeEnabled() ? -0.18 : -0.42).connect(instrumentBus);
     const voicePan  = new Tone.Panner(0.00).connect(masterGain);
     const chordPan  = new Tone.Panner(+0.16).connect(instrumentBus);
     const clickPan  = new Tone.Panner(0.00).connect(masterGain);
@@ -687,8 +693,8 @@
     // v319: add a small bass pressure lift without moving the drum/guitar wall.
     drumBus = new Tone.Gain(0.52).connect(drumPan);
     bassBus = new Tone.Gain(0.84).connect(bassPan);
-    guitarBus = new Tone.Gain(aiLightRuntimeEnabled() ? 0.88 : 0.74).connect(guitarPan);  // v336: doubled path adds ~+2.5 dB — compensate so the wall widens without getting louder
-    if (!aiLightRuntimeEnabled()) {
+    guitarBus = new Tone.Gain(aiLayerLightRuntimeEnabled() ? 0.88 : 0.74).connect(guitarPan);  // v336: doubled path adds ~+2.5 dB — compensate so the wall widens without getting louder
+    if (!aiLayerLightRuntimeEnabled()) {
       const guitarHaas = new Tone.Delay(0.013);
       const guitarPanB = new Tone.Panner(0.42).connect(instrumentBus);
       guitarBus.connect(guitarHaas);
@@ -923,6 +929,23 @@
            (memory > 0 && memory <= 8);
   }
 
+  // HAZAMA runs two authored 16-step lines (arp + bassline) alongside the drum
+  // frame on every bar. The old desktop "quick" path still built the full
+  // offline-rendered drum kit, multi-oscillator voices and chord pad before the
+  // first note. In Chrome that burst could monopolize the renderer at START.
+  // Keep shared/master cost device-gated (AUDIO-COST-INVARIANTS); this separate
+  // gate only chooses the lazily-built AI band. ?aiLight=0 remains an explicit
+  // diagnostics override for the full path.
+  function denseAiSongRequiresSafety(bandId = state.currentBandId, songData = state.songData) {
+    return bandId === "hazama" && !!songData?.arp && !!songData?.bassline;
+  }
+
+  function aiLayerLightRuntimeEnabled() {
+    const forced = runtimeQueryFlag("aiLight");
+    if (forced != null) return forced;
+    return aiLightRuntimeEnabled() || denseAiSongRequiresSafety();
+  }
+
   function aiSamplerUpgradeEnabled() {
     const forced = runtimeQueryFlag("aiSamples");
     if (forced != null) return forced;
@@ -942,7 +965,7 @@
   }
 
   function yieldToUi() {
-    const delayMs = aiLightRuntimeEnabled() ? 40 : (isMobileOrStandaloneRuntime() ? 24 : 8);
+    const delayMs = aiLayerLightRuntimeEnabled() ? 40 : (isMobileOrStandaloneRuntime() ? 24 : 8);
     return new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 
@@ -955,7 +978,7 @@
   }
 
   function uiTelemetryIntervalMs(kind = "timeline") {
-    if (isBandAiPlaybackMode() && aiLightRuntimeEnabled()) return kind === "meter" ? 900 : 1000;
+    if (isBandAiPlaybackMode() && aiLayerLightRuntimeEnabled()) return kind === "meter" ? 900 : 1000;
     if (isMobileOrStandaloneRuntime()) return kind === "meter" ? 500 : 800;
     if (isBandAiPlaybackMode()) return kind === "meter" ? 300 : 500;
     return kind === "meter" ? 100 : 250;
@@ -2427,7 +2450,7 @@
   // existing `&& <synth>` dispatch guard auto-skips it — no other change needed.
   const LIGHT_BAND_PARTS = new Set(["drums", "bass", "guitar", "voice"]);
   function synthPartActiveOnLight(part) {
-    return !aiLightRuntimeEnabled() || LIGHT_BAND_PARTS.has(part);
+    return !aiLayerLightRuntimeEnabled() || LIGHT_BAND_PARTS.has(part);
   }
 
   async function makeSynthBass(target, opts = {}) {  // v270: async — awaits the v270 sampler pre-decode
@@ -2435,7 +2458,7 @@
     // use real samples (e.g. salamander-bass = piano left-hand register).
     // Falls back to profile-aware synth bass otherwise.
     const b = currentProfile().bass;
-    const light = opts.light === true || aiLightRuntimeEnabled();
+    const light = opts.light === true || aiLayerLightRuntimeEnabled();
     const post = new Tone.Filter({ frequency: b.postLpFreq, type: "lowpass", Q: 0.6 }).connect(target);
 
     if (!opts.forceSynth && state.bassInstrument && state.onlineCatalog) {
@@ -2529,7 +2552,10 @@
 
   function setStemsStatus(text) {
     const el = $("br-stems-status");
-    if (el) el.textContent = text || "";
+    if (!el) return;
+    const message = text || "";
+    el.textContent = message;
+    el.setAttribute("aria-busy", /^loading\b/i.test(message) ? "true" : "false");
   }
 
   function setStartStatus(text = "", kind = "") {
@@ -2661,6 +2687,30 @@
     };
   }
 
+  function playbackSelectionNote(band = currentBand(), songId = state.currentSongId, mode = currentMode) {
+    const song = Array.isArray(band?.songs)
+      ? band.songs.find((item) => item.id === songId) || null
+      : null;
+    const note = song?.playback_notes?.[mode];
+    return typeof note === "string" ? note.trim() : "";
+  }
+
+  function updatePlaybackModeStatus() {
+    const status = $("br-mode-status");
+    if (!status) return;
+    const band = currentBand();
+    const modes = playbackModesForBand(band);
+    const constrained = !!band && modes.length === 1;
+    const selectionNote = playbackSelectionNote(band, state.currentSongId, currentMode);
+    let message = selectionNote;
+    if (!message && constrained) {
+      const modeLabel = modes[0] === "synth" ? "🎛 AI 再現" : "📻 原音";
+      message = band.playback_mode_note || `${band.name || "This band"} は ${modeLabel} 専用です。`;
+    }
+    status.textContent = message;
+    status.hidden = !message;
+  }
+
   function applyBandPlaybackModeContract() {
     const band = currentBand();
     const modes = playbackModesForBand(band);
@@ -2681,21 +2731,9 @@
       if (label) label.title = supported ? "" : `${band?.name || "このバンド"} ではこの再生モードを利用できません`;
     });
 
-    const status = $("br-mode-status");
-    const constrained = !!band && modes.length === 1;
-    if (status) {
-      const modeLabel = modes[0] === "synth" ? "🎛 AI 再現" : "📻 原音";
-      if (constrained) {
-        status.hidden = false;
-        status.textContent = band.playback_mode_note || `${band.name || "This band"} は ${modeLabel} 専用です。`;
-      } else {
-        status.textContent = "";
-        status.hidden = true;
-      }
-    }
-
     setBodyPlaybackMode(currentMode);
     syncModeRadioSelection(currentMode);
+    updatePlaybackModeStatus();
     return currentMode;
   }
 
@@ -3205,32 +3243,52 @@
     }
     const variant = syncStemVariantSelect(songId);
     const variantLabel = stemVariantLabel(variant);
-    setStemsStatus(variant.original ? "loading stems…" : `loading ${variantLabel} stems…`);
+    const expectedStemCount = STEM_NAMES.length;
+    const expectedMiB = Number(currentBandSongMeta(songId)?.stems_total_mib);
+    const sizeNote = Number.isFinite(expectedMiB) && expectedMiB > 0
+      ? ` · 約${expectedMiB.toFixed(1)} MiB`
+      : "";
+    const loadingLabel = variant.original ? "loading stems" : `loading ${variantLabel} stems`;
+    let settled = 0;
+    let ready = 0;
+    setStemsStatus(`${loadingLabel}${sizeNote} · 0/${expectedStemCount} ready`);
     const promises = STEM_NAMES.map(async (stem) => {
-      const candidates = stemLoadCandidates(stem, songId, variant);
-      for (const candidate of candidates) {
-        try {
-          if (!(await stemUrlAvailable(candidate.url))) continue;
-          // Route via per-stem EQ chain (v66). EQ output already wired to:
-          //   - bus → master (drums/bass/other)
-          //   - vocalChorus (vocals)
-          const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
-          // v320: per-song album mastering. Some Tabasco stems land below
-          // Electric Sheep; trim each stem before the shared remaster so
-          // track-to-track band pressure stays consistent.
-          const trimGain = new Tone.Gain(stemMasteringGainForSong(songId, stem)).connect(target);
-          // v152: album-flow playback advances to the next track at song end.
-          // Keep stems non-looping so the audio does not wrap underneath.
-          const player = new Tone.Player({
-            url: candidate.url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: false
-          }).connect(trimGain);
-          await Tone.loaded();
-          return { stem, player, trimGain, source: candidate.source, fallback: candidate.fallback };
-        } catch (e) {
-          console.warn("[Band Room] stem candidate failed:", stem, candidate.url, e);
+      let loadedResult = null;
+      try {
+        const candidates = stemLoadCandidates(stem, songId, variant);
+        for (const candidate of candidates) {
+          let trimGain = null;
+          let player = null;
+          try {
+            if (!(await stemUrlAvailable(candidate.url))) continue;
+            // Route via per-stem EQ chain (v66). EQ output already wired to:
+            //   - bus → master (drums/bass/other)
+            //   - vocalChorus (vocals)
+            const target = stemEQs[stem] ? stemEQs[stem].input : stemBus[stem];
+            // v320: per-song album mastering. Some Tabasco stems land below
+            // Electric Sheep; trim each stem before the shared remaster so
+            // track-to-track band pressure stays consistent.
+            trimGain = new Tone.Gain(stemMasteringGainForSong(songId, stem)).connect(target);
+            // v152: album-flow playback advances to the next track at song end.
+            // Keep stems non-looping so the audio does not wrap underneath.
+            player = new Tone.Player({
+              url: candidate.url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: false
+            }).connect(trimGain);
+            await Tone.loaded();
+            loadedResult = { stem, player, trimGain, source: candidate.source, fallback: candidate.fallback };
+            return loadedResult;
+          } catch (e) {
+            try { player?.dispose(); } catch (disposeError) {}
+            try { trimGain?.dispose(); } catch (disposeError) {}
+            console.warn("[Band Room] stem candidate failed:", stem, candidate.url, e);
+          }
         }
+        return null;
+      } finally {
+        settled++;
+        if (loadedResult) ready++;
+        setStemsStatus(`${loadingLabel}${sizeNote} · ${ready}/${expectedStemCount} ready (${settled}/${expectedStemCount} checked)`);
       }
-      return null;
     });
     const results = await Promise.all(promises);
     let loaded = 0;
@@ -3322,6 +3380,29 @@
 
   function shouldStageSynthPlaybackFirst(reason) {
     return reason === "start" || reason === "mode-switch";
+  }
+
+  function shouldApplySynthDrumVoiceOverrides(reason = "start") {
+    // A staged START must be self-contained. Saved per-voice drum overrides can
+    // point at CDN or large sample kits; applying them here makes the quick
+    // synth path wait on Tone.loaded() before the first frame. Keep START local
+    // and let an explicit toggle/rebuild (or the opt-in sampler upgrade) apply
+    // those overrides after playback is already responsive.
+    return !shouldStageSynthPlaybackFirst(reason);
+  }
+
+  function synthDrumSourceForPrep(reason = "start") {
+    if (!shouldStageSynthPlaybackFirst(reason)) return state.kitSource;
+    // The generated light kit still allocates a fresh ToneBufferSource + Gain
+    // graph for every hit. On HAZAMA's four-on-floor frame that alone can stall
+    // Chrome's renderer. Reuse the tiny checked-in Human Fly one-shots
+    // (six local WAVs, no CDN) for the dense safety lane; the melodic parts stay
+    // browser-synthesized. The explicit ?aiLight=0 diagnostic keeps the full
+    // generated kit.
+    if (denseAiSongRequiresSafety() && aiLayerLightRuntimeEnabled()) {
+      return HAZAMA_SAFETY_DRUM_SOURCE;
+    }
+    return "synth";
   }
 
   function voiceOverridesSnapshotKey() {
@@ -3438,7 +3519,11 @@
   function queueSynthSamplerUpgrade(reason = "start") {
     if (!shouldAutoUpgradeSynthSamples(reason)) {
       const kitStatus = $("br-kit-status");
-      if (kitStatus) kitStatus.textContent = "AI ready (light synth)";
+      if (kitStatus) {
+        kitStatus.textContent = denseAiSongRequiresSafety() && aiLayerLightRuntimeEnabled()
+          ? "AI ready (HAZAMA safety)"
+          : "AI ready (light synth)";
+      }
       return;
     }
     const snapshot = synthSamplerUpgradeSnapshot(reason);
@@ -3484,7 +3569,9 @@
 
   function needsQuickSynthLayer(layer, quickFirst) {
     if (!layer) return true;
-    return quickFirst && aiLightRuntimeEnabled() && isSamplerLayer(layer);
+    if (quickFirst && denseAiSongRequiresSafety() && aiLayerLightRuntimeEnabled() &&
+        layer._kitPath === `presets/sample-kits/${HAZAMA_SAFETY_DRUM_SOURCE}`) return false;
+    return quickFirst && aiLayerLightRuntimeEnabled() && isSamplerLayer(layer);
   }
 
   async function prepareSynthPlaybackAssets(reason = "start") {
@@ -3497,30 +3584,32 @@
       const quickFirst = shouldStageSynthPlaybackFirst(reason);
       if (!quickFirst) await ensureOnlineCatalogForSynth();
       if (synthPartEnabled("br-toggle-drums") && needsQuickSynthLayer(drumKit, quickFirst)) {
-        drumKit = await buildKitForSource(quickFirst ? "synth" : state.kitSource);
+        drumKit = await buildKitForSource(synthDrumSourceForPrep(reason), {
+          applyVoiceOverrides: shouldApplySynthDrumVoiceOverrides(reason)
+        });
         await yieldToUi();
       }
       if (SYNTH_REBUILD_PARTS.bass && synthPartEnabled("br-toggle-bass") && needsQuickSynthLayer(synthBass, quickFirst)) {
         const old = synthBass;
-        synthBass = await makeSynthBass(bassBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
+        synthBass = await makeSynthBass(bassBus, { forceSynth: quickFirst, light: quickFirst && aiLayerLightRuntimeEnabled() });
         if (old && old !== synthBass) disposeSynthLayer(old);
         await yieldToUi();
       }
       if (SYNTH_REBUILD_PARTS.guitar && synthPartEnabled("br-toggle-guitar") && needsQuickSynthLayer(guitarSynth, quickFirst)) {
         const old = guitarSynth;
-        guitarSynth = await makeGuitar(guitarBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
+        guitarSynth = await makeGuitar(guitarBus, { forceSynth: quickFirst, light: quickFirst && aiLayerLightRuntimeEnabled() });
         if (old && old !== guitarSynth) disposeSynthLayer(old);
         await yieldToUi();
       }
       if (SYNTH_REBUILD_PARTS.voice && synthPartEnabled("br-toggle-voice") && needsQuickSynthLayer(voiceSynth, quickFirst)) {
         const old = voiceSynth;
-        voiceSynth = await makeVoiceBox(voiceBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
+        voiceSynth = await makeVoiceBox(voiceBus, { forceSynth: quickFirst, light: quickFirst && aiLayerLightRuntimeEnabled() });
         if (old && old !== voiceSynth) disposeSynthLayer(old);
         await yieldToUi();
       }
       if (SYNTH_REBUILD_PARTS.chord && synthPartEnabled("br-toggle-chords") && needsQuickSynthLayer(chordSynth, quickFirst) && synthPartActiveOnLight("chord")) {
         const old = chordSynth;
-        chordSynth = await makeChordSynth(chordBus, { forceSynth: quickFirst, light: quickFirst && aiLightRuntimeEnabled() });
+        chordSynth = await makeChordSynth(chordBus, { forceSynth: quickFirst, light: quickFirst && aiLayerLightRuntimeEnabled() });
         if (old && old !== chordSynth) disposeSynthLayer(old);
         await yieldToUi();
       }
@@ -3539,7 +3628,9 @@
       if (synthPartEnabled("br-toggle-bass") && state.songData && state.songData.bassline && !bassSeqSynth) { ensureHazamaGlue(); bassSeqSynth = makeBassSeqSynth(bassSeqBus); }
       else if (bassSeqSynth && !(state.songData && state.songData.bassline)) { disposeSynthLayer(bassSeqSynth); bassSeqSynth = null; bassSeqFilter = null; }
       if (kitStatus && reason !== "toggle") {
-        kitStatus.textContent = quickFirst && !shouldAutoUpgradeSynthSamples(reason) ? "AI ready (light synth)" :
+        kitStatus.textContent = denseAiSongRequiresSafety() && aiLayerLightRuntimeEnabled()
+          ? "AI ready (HAZAMA safety)"
+          : quickFirst && !shouldAutoUpgradeSynthSamples(reason) ? "AI ready (light synth)" :
           (quickFirst ? "AI ready (quick synth)" : "AI ready");
       }
       if (quickFirst) queueSynthSamplerUpgrade(reason);
@@ -3600,6 +3691,7 @@
     }
     // v99: build the base kit first, then layer per-voice overrides on top.
     const baseKit = await buildBaseKit(source);
+    if (opts.applyVoiceOverrides === false) return baseKit;
     const overrideKit = await applyVoiceOverrides(baseKit);
     return overrideKit;
   }
@@ -3608,7 +3700,7 @@
   async function buildBaseKit(source) {
     const resolved = resolveKitSource(source);
     if (resolved === "synth" || !resolved) {
-      if (aiLightRuntimeEnabled()) return makeLightDrumKit(drumBus, state.kitProfile || "default");
+      if (aiLayerLightRuntimeEnabled()) return makeLightDrumKit(drumBus, state.kitProfile || "default");
       return makeDrumKit(drumBus, state.kitProfile || "default");
     }
     if (resolved.startsWith("online/")) {
@@ -3759,7 +3851,7 @@
   // Section-aware picking: silent intro / palm-mute 8th verse / open
   // prechorus / 16th chorus / sparse bridge / hit outro.
   async function makeGuitar(target, opts = {}) {  // v270: async
-    const light = opts.light === true || aiLightRuntimeEnabled();
+    const light = opts.light === true || aiLayerLightRuntimeEnabled();
     // v111: if guitarInstrument is set to a catalog sampler, use real samples.
     // Less distortion + softer chain than synth fallback (real samples already
     // have body and harmonic content).
@@ -3906,7 +3998,7 @@
   // mp3, drop into presets/vocals/{song-id}.mp3, then load via a
   // future HTMLAudio layer.
   async function makeVoiceBox(target, opts = {}) {  // v270: async
-    const light = opts.light === true || aiLightRuntimeEnabled();
+    const light = opts.light === true || aiLayerLightRuntimeEnabled();
     // v111: if voiceInstrument is set to a catalog sampler, use it
     // (typically violin / cello / flute for "lead melody as instrument").
     // This bypasses the formant-vowel synth path entirely and gives the
@@ -4042,7 +4134,7 @@
   // ---- Chord synth ---------------------------------------------
 
   async function makeChordSynth(target, opts = {}) {  // v270: async
-    const light = opts.light === true || aiLightRuntimeEnabled();
+    const light = opts.light === true || aiLayerLightRuntimeEnabled();
     // v92: profile-aware chord synth.
     // v101: if state.chordInstrument is set to an "instruments[]" catalog
     //   entry id (e.g. "salamander-piano"), use Tone.Sampler with that
@@ -4117,7 +4209,7 @@
   // polyphony flood.
   function makeArpSynth(target) {
     const out = target || masterGain || Tone.getDestination();
-    const light = aiLightRuntimeEnabled();
+    const light = aiLayerLightRuntimeEnabled();
     // v368: no per-arp FeedbackDelay any more — the arp now SENDS to the ONE
     // shared dub room (dubSend), so its dotted-8th echoes live in the same space
     // as the rest of the band instead of a private echo world. Post-filter Q
@@ -4161,7 +4253,7 @@
   // oversampling.
   function makeBassSeqSynth(target) {
     const out = target || masterGain || Tone.getDestination();
-    const light = aiLightRuntimeEnabled();
+    const light = aiLayerLightRuntimeEnabled();
     const drive = new Tone.Distortion({ distortion: 0.18, oversample: "none", wet: 0.30 }).connect(out);
     const filter = new Tone.Filter({ frequency: 720, type: "lowpass", Q: 1.2 }).connect(drive);  // v368: 1.4→1.2, less peaky against the kick
     bassSeqFilter = filter;  // v309: section arc sweeps the cutoff (break dark → release bright)
@@ -4424,9 +4516,15 @@
   if (typeof window !== "undefined") {
     window.BandRoomTestHooks = Object.assign(window.BandRoomTestHooks || {}, {
       BANDROOM_APP_VERSION,
+      BANDROOM_RELEASE_VERSION,
+      HAZAMA_SAFETY_DRUM_SOURCE,
       BANDROOM_STORAGE_SCHEMA_VERSION,
       getCurrentMode: () => currentMode,   // QA-loop BR-01 testability: read-only mode probe (stems|synth)
       aiLightRuntimeEnabled,               // v364: phone-clean band composition probes
+      aiLayerLightRuntimeEnabled,
+      denseAiSongRequiresSafety,
+      shouldApplySynthDrumVoiceOverrides,
+      synthDrumSourceForPrep,
       synthPartActiveOnLight,
       chordRoot,
       normalizedDrumFloorSection,
@@ -4494,6 +4592,8 @@
       updateSongTimelineDisplay(0);
       $("br-bpm").textContent = data.bpm || "—";
       $("br-key").textContent = data.key || "—";
+      updatePlaybackModeStatus();
+      setButtonState(state.started ? "playing" : (state.starting ? "starting" : "idle"));
       // v213: auto-pick kit profile from band/song recommendation (UNRIPE →
       // cramps-punk, Human Fly → cramps-punk, etc.). No-op if user has
       // explicitly chosen a non-default profile.
@@ -5916,7 +6016,7 @@
   }
 
   function transcribedLightRowLimit(lineKey) {
-    if (!(currentMode === "synth" && aiLightRuntimeEnabled())) return Infinity;
+    if (!(currentMode === "synth" && aiLayerLightRuntimeEnabled())) return Infinity;
     if (lineKey === "vocal_melody") return 4;
     if (lineKey === "guitar_line") return 4;  // v364: 6->4 — trim the per-bar strum burst on the phone (chord dropped; guitar carries the chug)
     if (lineKey === "drum_line") return 8;    // v364: 10->8 — fewer one-shot buffer allocs/bar (vel-slot thinning still keeps kick/snare/crash)
@@ -5958,7 +6058,7 @@
       // quantize clamp, no fixed gate — the performance IS the humanization.
       const t = time + (Number(row[1]) || 0) * ctx.subTime;
       const rawDurSteps = Math.max(0.5, Number(row[2]) || 1);
-      const durSteps = aiLightRuntimeEnabled()
+      const durSteps = aiLayerLightRuntimeEnabled()
         ? Math.min(rawDurSteps, lineKey === "bass_line" ? 2.8 : 3.0)
         : rawDurSteps;
       const durSec = Math.max(0.05, durSteps * ctx.subTime);
@@ -6061,7 +6161,7 @@
     // triggers tripled the call count (12/bar) — past the v241 freeze budget
     // — and after minutes of play the voice churn ground playback to a halt
     // (user: しばらくなったら激重でならなくなる). Batched = 4 calls/bar.
-    const notesPerStrum = aiLightRuntimeEnabled() ? 2 : 3;
+    const notesPerStrum = aiLayerLightRuntimeEnabled() ? 2 : 3;
     const voicing = guitarVoicingFromMidi(root, ctx.chord, false, notesPerStrum);
     if (!voicing.length) return false;
     strums.forEach(({ st, v, d }) => {
@@ -6129,7 +6229,7 @@
     const rows = rowsForLightTranscribedPlayback("guitar_line", transcribedNotesForBar("guitar_line", state.barCount));
     if (!rows.length || !guitarSynth) return false;
     const isJazzy = isJazzyMode();
-    const light = aiLightRuntimeEnabled();
+    const light = aiLayerLightRuntimeEnabled();
     // v334: a power chord needs root+5th MINIMUM — the old floor(9/rows)
     // collapsed dense bars to single notes, which is exactly the しょぼい
     // thin-mono-guitar sound. Voices stay bounded because the v334 data caps
@@ -6369,8 +6469,8 @@
     const padDuck = hasTranscribedLine("guitar_line") ? 0.62 : 1;
     chordAgentPlan(ctx).forEach((step) => {
       const t = time + step.sub * ctx.subTime;
-      const notes = aiLightRuntimeEnabled() && Array.isArray(step.notes) ? step.notes.slice(0, 2) : step.notes;
-      const dur = aiLightRuntimeEnabled() && step.dur === "1n" ? "2n" : (step.dur || "4n");
+      const notes = aiLayerLightRuntimeEnabled() && Array.isArray(step.notes) ? step.notes.slice(0, 2) : step.notes;
+      const dur = aiLayerLightRuntimeEnabled() && step.dur === "1n" ? "2n" : (step.dur || "4n");
       try { chordSynth.triggerAttackRelease(notes, dur, t + 0.005, step.vel * padDuck); } catch (e) {}
     });
   }
@@ -6681,7 +6781,7 @@
           });
         }
         let crashFiredThisBar = false;
-        const lightDrumRuntime = aiLightRuntimeEnabled();
+        const lightDrumRuntime = aiLayerLightRuntimeEnabled();
 
         frame.events.forEach((evt) => {
           const inst = drumKit[evt.instrument];
@@ -7151,7 +7251,7 @@
       fill.style.width = pct.toFixed(1) + "%";
       fill.style.background = dB > -3 ? "#ff5566" : (dB > -12 ? "#ffb39a" : "#ff8866");
       // --- Spectrum ---
-      const drawSpectrum = ctx && !(aiLightRuntimeEnabled() && isBandAiPlaybackMode()) &&
+      const drawSpectrum = ctx && !(aiLayerLightRuntimeEnabled() && isBandAiPlaybackMode()) &&
         !(isMobileOrStandaloneRuntime() && isBandAiPlaybackMode());
       const fft = drawSpectrum ? ensureMasterFft() : null;
       if (ctx && fft) {
@@ -7553,19 +7653,43 @@
     const btn = $("br-play");
     if (!btn) return;
     btn.dataset.state = s;
+    const context = playbackStartContext();
     if (s === "playing") {
       btn.textContent = "STOP";
-      btn.setAttribute("aria-label", "Stop playback");
+      btn.setAttribute("aria-label", `${context}を停止`);
     } else if (s === "preparing-ai") {
       btn.textContent = "PREPARING AI";
-      btn.setAttribute("aria-label", "Preparing AI playback");
+      btn.setAttribute("aria-label", `${context}を準備中`);
     } else if (s === "starting") {
       btn.textContent = "WARMING UP";
-      btn.setAttribute("aria-label", "Starting");
+      btn.setAttribute("aria-label", `${context}を開始中`);
     } else {
       btn.textContent = "START";
-      btn.setAttribute("aria-label", "Start playback");
+      btn.setAttribute("aria-label", `${context}を再生`);
     }
+    updateStartContext(s);
+  }
+
+  function playbackStartContext() {
+    const song = currentBandSongMeta();
+    const songLabel = song ? `${song.track || ""} ${song.title || song.id || ""}`.trim() : "現在の曲";
+    if (currentMode === "stems") {
+      const size = Number(song?.stems_total_mib);
+      const sizeLabel = Number.isFinite(size) && size > 0 ? ` · 約${size.toFixed(1)} MiB` : "";
+      return `${songLabel} · 原音 4 stems${sizeLabel}`;
+    }
+    const provisional = song?.ai_recreation_source_song ? " · 暫定" : "";
+    return `${songLabel} · AI 再現${provisional}`;
+  }
+
+  function updateStartContext(buttonState = $("br-play")?.dataset.state || "idle") {
+    const el = $("br-start-context");
+    const suffix = buttonState === "playing" ? "再生中" :
+      (buttonState === "starting" || buttonState === "preparing-ai" ? "準備中" : "");
+    const context = playbackStartContext();
+    if (el) el.textContent = suffix ? `${context} · ${suffix}` : context;
+    const feedback = $("br-feedback-note");
+    if (feedback) feedback.placeholder = `例: ${context} / 30秒 — keep: 低域、fix: vocal位置`;
   }
 
   function syncModeRadioSelection(mode = currentMode) {
@@ -7577,6 +7701,8 @@
     if (document.body) document.body.dataset.mode = mode;
     // v306: karaoke (stems) vs section-block (synth) lyric view differs by mode
     renderLyricsView();
+    updatePlaybackModeStatus();
+    updateStartContext();
   }
 
   function stopStemLayerPlayback() {
@@ -7758,6 +7884,45 @@
   function bindUI() {
     $("br-play")?.addEventListener("click", togglePlay);
     $("br-reset-audio")?.addEventListener("click", () => resetBandRoomAudioState("manual-reset"));
+    const feedbackNote = $("br-feedback-note");
+    const feedbackStatus = $("br-feedback-status");
+    let feedbackStatusTimer = null;
+    const showFeedbackStatus = (message) => {
+      if (!feedbackStatus) return;
+      feedbackStatus.textContent = message;
+      clearTimeout(feedbackStatusTimer);
+      feedbackStatusTimer = setTimeout(() => { feedbackStatus.textContent = ""; }, 3200);
+    };
+    if (feedbackNote) {
+      feedbackNote.value = safeLocalStorageGet(BANDROOM_FEEDBACK_NOTE_KEY) || "";
+      feedbackNote.addEventListener("input", () => {
+        safeLocalStorageSet(BANDROOM_FEEDBACK_NOTE_KEY, feedbackNote.value);
+      });
+    }
+    $("br-feedback-copy")?.addEventListener("click", async () => {
+      const note = feedbackNote?.value.trim() || "";
+      if (!note) {
+        showFeedbackStatus("メモがありません");
+        feedbackNote?.focus();
+        return;
+      }
+      const payload = `${playbackStartContext()}\n${note}`;
+      try {
+        await navigator.clipboard.writeText(payload);
+        showFeedbackStatus("context付きでコピーしました");
+      } catch (e) {
+        showFeedbackStatus("コピーできませんでした。メモ本文を選択してください");
+        feedbackNote?.focus();
+        feedbackNote?.select();
+      }
+    });
+    $("br-feedback-clear")?.addEventListener("click", () => {
+      if (!feedbackNote || !feedbackNote.value) return;
+      feedbackNote.value = "";
+      safeLocalStorageRemove(BANDROOM_FEEDBACK_NOTE_KEY);
+      showFeedbackStatus("この端末のメモを消しました");
+      feedbackNote.focus();
+    });
     const songSeek = $("br-song-seek");
     if (songSeek) {
       const previewSeek = () => updateSongTimelineDisplay(Number(songSeek.value) || 0);
@@ -10547,13 +10712,14 @@
 
   function updateBootDiagnostics(storageStatus = "ok") {
     const controlled = !!navigator.serviceWorker?.controller;
-    const label = `${BANDROOM_APP_VERSION} / ${BANDROOM_BOOT_MODE} / storage:${storageStatus}`;
+    const label = `release ${BANDROOM_RELEASE_VERSION} · ${BANDROOM_APP_VERSION} / ${BANDROOM_BOOT_MODE} / storage:${storageStatus}`;
     const el = $("br-boot-status");
     if (el) {
       el.textContent = label;
       el.title = `Band Room ${label}${controlled ? " / sw:controlled" : " / sw:uncontrolled"}`;
     }
     window.BandRoomBoot = {
+      releaseVersion: BANDROOM_RELEASE_VERSION,
       appVersion: BANDROOM_APP_VERSION,
       storageSchemaVersion: BANDROOM_STORAGE_SCHEMA_VERSION,
       bootMode: BANDROOM_BOOT_MODE,
@@ -10612,7 +10778,11 @@
       const directBandId = p.get("band") || p.get("bandId");
       const directBand = directBandId && state.bandsRegistry?.bands?.[directBandId];
       if (directBand) {
-        const fs = firstSongForBand(directBand);
+        const requestedSongId = p.get("song") || p.get("songId") || "";
+        const requestedSong = Array.isArray(directBand.songs)
+          ? directBand.songs.find((song) => song.id === requestedSongId) || null
+          : null;
+        const fs = requestedSong || firstSongForBand(directBand);
         if (fs) {
           state.currentBandId = directBandId;
           state.currentSongId = fs.id;
@@ -10626,8 +10796,19 @@
       }
     } catch (e) {}
 
-    // A synth-only band such as HAZAMA must never boot into a silent stems
-    // surface. Apply the registry contract after prefs/deep-link band choice,
+    // Direct audition links may pin one of the four HAZAMA review cases:
+    // 01/02 × stems/synth. Invalid or unsupported values fail closed to the
+    // band's normal playback contract.
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const directMode = p.get("mode") || "";
+      if (BAND_PLAYBACK_MODES.includes(directMode) && bandSupportsPlaybackMode(currentBand(), directMode)) {
+        currentMode = directMode;
+        playbackModeForcedByBandId = null;
+      }
+    } catch (e) {}
+
+    // Apply the registry contract after prefs/deep-link band/song/mode choice,
     // before the first song is prepared.
     applyBandPlaybackModeContract();
 

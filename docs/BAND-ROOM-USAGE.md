@@ -10,8 +10,8 @@
 ## いちばん短い遊び方
 
 1. Listen hubから`HAZAMA Band Room — Still Moving`を開く。
-2. `📻 原音`が自動選択されたら`START`を一度押す（v396まではsynth-only＝
-   AI再現専用が自動選択・原音disabledだったが、v397で原音stemsを収録した）。
+2. 01 / 02と`📻 原音`（基準）/ `🎛 AI 再現`を選び、`START`を一度押す。
+   02のAI再現は01 frames共有の暫定版なので、02固有の判断は原音を使う。
 3. `WARMING UP` / `PREPARING AI`中はband・song・modeのbusy解除を待つ。
    失敗したらSTART直下の案内に従い、再度`START`、次に`RESET AUDIO`を使う。
 4. 聴き終えたらListen hubへ戻り、Lyric Labでkeep / fix・歌詞・制作先を手動で整理する。
@@ -19,10 +19,10 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行runtimeはv396（HAZAMA arp lead: 持続ノコギリ→acid pluck）、playability契約はv390、client markerは`br-231` / `br-88`。
+現行runtime / playability契約はv399（HAZAMA AI safe START + 01/02監査UI）、client markerは`br-234` / `br-89`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
-## 画面構成（現行: br-231 / br-88）
+## 画面構成（現行: br-234 / br-89）
 
 ```
 ┌─────────────────────────────────┐
@@ -37,6 +37,7 @@
 │  [ 📻 原音 ]  [ 🎛 AI 再現 ]      │  ← HAZAMAは原音が既定（AI切替可）
 ├─────────────────────────────────┤
 │  [ START ]                       │  ← warming / preparing / stop
+│  01 Still Moving · 原音 4 stems   │  ← 選択文脈 / 読込サイズ
 │  復旧案内                         │  ← START失敗時だけ表示
 │  0:00 ━━━━━━━━━━━━━ 5:04          │  ← song timeline / seek
 │  117 BPM · G major               │
@@ -76,7 +77,8 @@
 復元せず、volume / mixer / kit等の操作prefsを保持します。
 
 `?band=hazama`は保存済みbandより優先され、HAZAMAの01 `Still Moving`と
-`🎛 AI 再現`を開きます。Drum Floorからの明示的な戻りqueryも通常復元より優先されます。
+`📻 原音`を開きます。`song` / `mode` queryで01/02 × 原音/AIの4ケースへ直接入れます。
+Drum Floorからの明示的な戻りqueryも通常復元より優先されます。
 
 曲末は同じ曲を loop せず、set list 順に次の track へ進みます。01 終了後は
 02 `Hey`、以降 03, 04... と続き、最後の曲だけ停止します。A/B loop を明示した時は

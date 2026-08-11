@@ -19,6 +19,35 @@
 
 ---
 
+## 2026-08-11 [worker-gaming] — Chrome Computer Use状態と母艦共有境界を正本化
+- agent      : Codex（WorkerPC Chrome接続の実測 + OpenAI公式手順との照合）
+- goal       : WorkerPC固有のChrome状態を秘密情報なしで記録し、母艦/StudioPCへ安全に再現できる導線を作る
+- repos      : Music（docs、cross-link、静的doc gateのみ。runtime/audio不変）
+- shipped    : working tree（uncommitted）。`docs/CHROME-COMPUTER-USE-BASELINE.md` を新設し、
+  `worker-gaming`、`ユーザー 2` / `Profile 1`、Music site-specific allow、fresh task、
+  screenshot-first、fail-closed、`tabs.finalize`、母艦はprofile clone禁止を正本化。
+  README / PC registry / Worker runbook / New PC setup / browser checklistからリンク
+- stack-check: PASS 32 / FAIL 0 / SKIP 0
+- backlog    : none
+- next       : BL-041（HAZAMA音質・mobile安定・通常selector昇格のhuman gate。母艦/StudioPCのChrome snapshotは各実機で確認後に追加）
+- blockers   : 母艦/StudioPCのChrome実状態はこのWorkerPC taskからは未確認。commit / pushも未実施
+
+---
+
+## 2026-08-11 — HAZAMA 01/02 Chrome監査反映とAI safe START (v399)
+- agent      : Codex（Chrome短時間試聴・UI監査からのユーザー明示follow-up）
+- goal       : 01/02の原音/AI 4ケースを明瞭にし、AI STARTのrenderer freezeと旧synth-only表示を修正する
+- repos      : Music（Band Room runtime/UI、Listen、registry metadata、docs、static gatesのみ）
+- shipped    : working tree（uncommitted）。`hazama-fm-v399` / `band-room.js?v=br-234` /
+  `band-room.css?v=br-89`、HAZAMA dense AI layer safety、02 AI暫定表示、約33 MiB stem進捗、
+  文脈付きSTART、端末内listening note、4ケースdirect link。音源、frames、`engine.js`は不変
+- stack-check: PASS 31 / FAIL 0 / SKIP 0（`br-234` local Chrome 4ケース短時間監査後）
+- backlog    : direct user task（BL claimなし）。BL-041 human gateは維持
+- next       : BL-041（音質・mobile安定・通常selector昇格のhuman gate。必要ならユーザー判断でcommit / push）
+- blockers   : 音質・mobile・通常selector昇格はBL-041。`last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
+
+---
+
 ## 2026-08-08 — HAZAMA 02 Still Moving (Hard) を原音レーンへ追加 (v398)
 - agent      : Claude Fable 5（Surface 対話 session・ユーザー明示指示「02_ハード路線 いっとくか」）
 - goal       : v397 で開通した原音レーンに第二曲（ハード路線レンダー）を同一レシピで追加する

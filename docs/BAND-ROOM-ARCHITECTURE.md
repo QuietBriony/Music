@@ -6,7 +6,8 @@ log see `BAND-ROOM-CHANGELOG.md`; for the audio-perf rules see
 
 ## What it is
 
-A PWA (`band-room.html` + `band-room.js`) for Tabasco practice and the HAZAMA synth-only lane.
+A PWA (`band-room.html` + `band-room.js`) for Tabasco practice and HAZAMA 01/02
+original-stem / AI-recreation comparison.
 Two playback modes, switched by the `#br-mode` radios:
 
 - **原音 (stems)** — the real recording: 4 separated stems (`drums/bass/vocals/other`)
@@ -35,8 +36,15 @@ shared master: masterGain(1.2) → comp×2 → EQ → widener → tape-sat + roo
   FX don't bleed into 原音. (Gate: `check-band-room-logic` G-4 dispose-coverage.)
 - **Device gating** — `aiLightRuntimeEnabled()` / `isMobileOrStandaloneRuntime()`. Phones
   get *light* variants (FeedbackDelay instead of convolution Reverb, `oversample:"none"`,
-  no started LFOs). The master/buses are built **once and shared**, so audio-cost gating
-  MUST key on **device, never `currentMode`** (the v353 bug). See `AUDIO-COST-INVARIANTS.md`.
+  no started LFOs). The shared master / stem graph is built **once and shared**, so its
+  audio-cost gating MUST key on **device, never `currentMode`** (the v353 bug). The
+  AI-only `instrumentBus` may additionally use dense-song layer safety because stems bypass it.
+  See `AUDIO-COST-INVARIANTS.md`.
+- **Dense-song layer safety** — `aiLayerLightRuntimeEnabled()` adds a layer-only tier for
+  HAZAMA songs carrying both `arp` and `bassline`. It keeps the shared master device-gated,
+  uses the lean AI-only instrument polish route plus checked-in local drum one-shots, and
+  prevents START from building the full multi-oscillator band before the dual 16-step
+  sequencers begin. `?aiLight=0` explicitly overrides it for diagnostics.
 - **Playback health watchdog** (`startPlaybackHealthWatchdog`, 2.5 s) recovers from a
   genuine suspend, but **debounces** transient iOS non-"running" context reads (≥2
   consecutive bad ticks) so it doesn't hard-restart the stems every tick (the v357

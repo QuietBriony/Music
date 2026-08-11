@@ -8,11 +8,11 @@
 >
 > **Current repository snapshot — verified 2026-08-02**
 >
-> `last_verified_commit: 04bceffbe7560a04386f32048d221dfa8b51346c`
+> `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v398`, `engine.js?v=fm-118`,
+> Current cache / asset tuple: `hazama-fm-v399`, `engine.js?v=fm-118`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-80`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-231`, `band-room.css?v=br-88`。
+> `band-room.js?v=br-234`, `band-room.css?v=br-89`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:
@@ -31,7 +31,7 @@ QuietBriony/Music              ← 演奏ホール (このリポ)
 ├── fm.html / fm.js / fm.css   ← Hazama FM UI shell
 ├── index.html / engine.js     ← Music Core Rig (9-fader mixer / protected monolith)
 ├── listen.html                ← 現行の聴感QA入口
-├── band-room.html / .js       ← Tabasco stems + HAZAMA synth-only play surface
+├── band-room.html / .js       ← Tabasco + HAZAMA original-stem / AI comparison surface
 ├── lyric-lab.html / .js       ← 歌詞 / Scene OS / 制作handoff
 ├── audio/genre-flavor.js      ← Tone.js synth layer (preset 受容)
 ├── presets/loader.js          ← sister repo JSON を fetch+validate
@@ -605,7 +605,8 @@ Core Rig に flavor を載せるなら:
 Hazama FMとは別ページ。`band-room.html`は2つのlaneを同じplay surfaceに載せる。
 
 - Tabasco: 既存LIVE録音の4-stem原音、歌い直し、AI再現を比較するlane。
-- HAZAMA: stemsを要求しないsynth-only lane。`?band=hazama`でAI再現を自動選択してSTART
+- HAZAMA: 01/02とも原音4-stemとAI再現を比較するlane。`?band=hazama`は原音を既定選択し、
+  `song` / `mode` queryで4ケースへ直接入る。02 AIは01 frames共有の暫定版
   できるが、main selectorでは`ui_hidden`。通常公開の合格はBL-041 human gate。
 
 利用者の最短導線は`listen.html` → HAZAMA → Lyric Lab。詳細操作は
@@ -625,7 +626,7 @@ Hazama FMとは別ページ。`band-room.html`は2つのlaneを同じplay surfac
 | External vocal upload (Suno or 自録) | ✅ v63 |
 | Vocal phrase trigger (240 phrases click) | ✅ v64 |
 | 全 7 曲歌詞 (proper English v2.1) | ✅ |
-| HAZAMA synth-only / unavailable原音disable / fail-closed START | ✅ v390（実音昇格はBL-041） |
+| HAZAMA 01/02 原音/AI導線 / dense AI safe START / fail-closed START | ✅ v399（実音昇格はBL-041） |
 
 ### ファイル構成
 

@@ -21,6 +21,21 @@ Use m4a recording only for milestone comparisons, CarPlay/output-level checks, o
 4. Turn `AUTO MIX` on for self-running checks.
 5. Keep Console open on desktop checks and watch for red errors.
 
+## Chrome Computer Use Preflight
+
+ChatGPT / Codex から外部 Chrome を使う場合は
+[`CHROME-COMPUTER-USE-BASELINE.md`](CHROME-COMPUTER-USE-BASELINE.md) を先に確認する。
+
+1. `scripts/music-machine.ps1 -Json` で machine identity と hostname match を確認する。
+2. その PC で実際に使う Chrome profile と、extension を入れた profile が同じことを
+   確認する。WorkerPC の検証済み表示名は `ユーザー 2` (`Profile 1`)。
+3. `https://quietbriony.github.io` は site-specific allow にし、全サイト許可を Music
+   QA の前提にしない。
+4. 許可変更後は新しい task を使い、direct URL を開いて操作前 screenshot を先に取る。
+5. 拒否、blocklist、browser safety interstitial は迂回しない。permission prompt は
+   user 承認範囲の `Allow once` を使う。
+6. Chrome task に session 名を付け、`tabs.finalize` を最後の Chrome 操作にする。
+
 ## Acid OFF Check
 
 Run for at least 90 seconds.
@@ -104,9 +119,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `band-room.html`, and `sw.js`. Current repo markers include
   `engine.js?v=fm-118`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-80`, `audio/ai-fills.js?v=fm-71`,
-  `style.css?v=fm-28`, `band-room.css?v=br-88`,
-  `band-room.js?v=br-231`, `audio/audio-safety.js?v=br-67`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v398`.
+  `style.css?v=fm-28`, `band-room.css?v=br-89`,
+  `band-room.js?v=br-234`, `audio/audio-safety.js?v=br-67`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v399`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,
@@ -146,10 +161,13 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
 - If Band Room changed in the same PR, also confirm the current `band-room.css`
   / `band-room.js` / `audio/audio-safety.js` markers (see the marker list
   above) and `band-room.html` references match `sw.js`.
-- For v390 Band Room playability, open `band-room.html?band=hazama`. Confirm
-  `🎛 AI 再現` is selected automatically, `📻 原音` is disabled with the
-  synth-only explanation, and START does not enter `playing` if asset prep
-  reports failure. With keyboard focus on a button/link/details summary,
+- For v399 HAZAMA playability, open the four direct cases from Listen:
+  01/02 × `📻 原音` / `🎛 AI 再現`. Confirm each query keeps the requested song
+  and mode, START names that context, stem loading shows about 33 MiB plus
+  ready/checked progress, and 02 AI clearly says that it provisionally shares
+  01 frames while 02 original is the reference. AI START must remain responsive
+  on 01 and 02; `?aiLight=0` is diagnostics-only. START must not enter `playing`
+  if asset prep reports failure. With keyboard focus on a button/link/details summary,
   Space must retain that control's native action rather than toggle transport.
   Switch HAZAMA -> Tabasco and confirm Tabasco returns to `📻 原音`; a synth
   choice made explicitly on Tabasco should still remain intentional.

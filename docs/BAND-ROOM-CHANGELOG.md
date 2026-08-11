@@ -1,6 +1,35 @@
-# Band Room - Changelog (v65 -> v398 compact)
+# Band Room - Changelog (v65 -> v399 compact)
 
-Current sw.js VERSION: v398. Latest Band Room runtime change: v396 (HAZAMA arp lead timbre: sustained saw -> acid pluck, same osc budget). v397 adds the HAZAMA 原音 stems lane (registry + assets only; runtime JS unchanged); v398 adds the second HAZAMA song 02 Still Moving (Hard) to the same lane. Before that: v390 (playability only; audio graph unchanged); v391-v392 change Listen/playability docs; v393 pins external dependency metadata and the cached sample catalog; v394 restores the pinned Tonejs/audio families to the sample runtime cache; v395 replaces the stale Tabasco snapshot with a validated derived inventory.
+Current sw.js VERSION: v399. Latest Band Room runtime change: v399 (HAZAMA AI safe START, four-case audition context, loading/status and feedback UI). v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard). v396 is the previous audio-timbre change (HAZAMA arp lead: sustained saw -> acid pluck).
+
+---
+
+## v399 compact - HAZAMA 01/02 safe START + four-case audition UI
+
+2026-08-11 の Chrome 短時間監査で、01 / 02 の原音 4-stem は実際に読み込み・再生できた一方、
+両曲の AI 再現は START 直後に renderer が応答しなくなる事象を再現した。コード上の
+"quick synth" は sample download を避けるだけで、desktop では Tone.Offline の full drum kit、
+multi-oscillator voice / chord と HAZAMA の 16-step arp + bassline を初回に同時構築していた。
+
+- HAZAMA の `arp` + `bassline` を持つ高密度 AI 曲は、通常 START で layer-only の light tierを使う。
+  shared master / stem graph の device gateは変更せず、`?aiLight=0`だけfull path診断を明示許可
+- safe STARTのdrumは、hitごとにWeb Audio nodeを生成するlight synth kitではなく、既存の
+  `tabasco/human-fly`ローカルone-shotを再利用。保存済みvoice override / CDN読込はSTART後へ回す
+- 原音と共有しないAI専用`instrumentBus`もdense-song safetyではEQ+compだけのlean routeへ切替。
+  共有master / stem graphのdevice gateは維持
+- 01 / 02 × 原音 / AI を query（`song` / `mode`）で直接開けるようにし、選択中の曲・mode、
+  原音 4-stem の約33.0 MiB、02 AIが01 frames共有の暫定版であることを画面表示
+- STARTに曲・modeのvisible contextと文脈付きaccessible nameを追加。stem loadingは
+  ready / checked進捗、`aria-busy`、atomic live statusを表示
+- 端末内だけに保存し、曲・mode context付きでclipboardへコピーできる listening noteを追加
+- HELP / Listen hub / Manual / Usage / architecture の旧synth-only表示を現行二本立てへ同期し、
+  static gateを v399 / br-234 / br-89 と02暫定表示へ更新
+- 原音stem、drum-frame、`engine.js`、model weightは変更なし。追加download / GPU処理なし
+- `br-234` local Chrome再監査: 01 AIは`AI ready (HAZAMA safety)`→STOP→STARTへ復帰、
+  02原音は`stems loaded (4/4)`、02暫定AIもSTOPへ到達して操作応答を維持
+
+Band Room runtimeは`band-room.js?v=br-234`、CSSは`band-room.css?v=br-89`、
+Service Workerは`hazama-fm-v399`。
 
 ---
 
