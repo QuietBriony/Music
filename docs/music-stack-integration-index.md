@@ -8,7 +8,8 @@ docs.
 Use it to find the current role map, metadata-only coordination rules, harvest
 workflow, and next safe work queue. It does not authorize runtime migration,
 audio asset movement, dependency additions, archive/delete actions, or
-cross-repo merges.
+cross-repo merges. It also does not authorize copying private operator data
+into this public repository.
 
 ## 2. Current authority map
 
@@ -59,6 +60,19 @@ Supporting strategy docs:
   Scene OS output philosophy.
 - **Boundary:** `engine.js`, `index.html`, and `style.css` stay protected in
   docs/schema PRs.
+
+### music-ops (optional private operator overlay; not a runtime)
+
+- **Role:** private operational source of truth when it exists beside Music.
+- **Owns:** owned equipment, lifecycle state, real placement and relationship
+  labels, physical constraints, actual routing, machine observations, and
+  device-verified settings.
+- **Does not own:** creative intent, public workflow, presets, runtime, apps,
+  playback defaults, or the active five-repository topology.
+- **Availability:** optional. Public clones and CI must work without it. When
+  absent, do not infer the owner's hardware state.
+- **Boundary:** never copy its private site labels, hostnames, financial data,
+  or exact operational snapshots into Music.
 
 ### drum-floor
 
@@ -131,6 +145,19 @@ Supporting strategy docs:
 - metadata-only packets / sidecars / traces by default
 - human review before promotion
 - references are production translations, not copying targets
+
+### Public creative vs private operational authority
+
+| Question | Canonical source |
+|---|---|
+| What sound, workflow, schema, preset, or app should be reusable? | public `Music` |
+| What equipment is owned, where is it, and how is it actually connected? | private `music-ops`, when available |
+| What did it cost, where was it purchased, or how should a person browse the list? | private Google Sheet view |
+
+Public hardware examples use anonymous IDs such as `site-dtm-desk` and
+`site-yard-main`. A manufacturer-documented feature remains `documented` until
+the current Windows endpoint, DAW route, physical cable, and audible result are
+checked; only then may the private source mark it `verified_on_device`.
 
 ## 5. Shared schema / vocabulary concepts
 

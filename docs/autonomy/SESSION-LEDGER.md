@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-08-16 [worker-gaming] — public Music / private music-ops 境界を実装
+- agent      : Codex（repo棚卸し、private overlay新設、public current-tree sanitization）
+- goal       : Music Stackのactive 5 repoを維持しつつ、創作知識と所有機材・実配線・実環境の正本を分離する
+- repos      : Music（public-safe docs/reference/validation only）+ music-ops（private canonical inventory/routing/machine evidence）
+- shipped    : working tree。Musicはoptional private overlay contract、EP-133 OS 2.5 USB audio時系列、
+  USB audio/MIDI/sample tool分離、analog fallback、public-safe DAW/PC/hardware docsへ更新。
+  exact UR44 profileと旧machine/routing snapshotsはprivateへcopy後、public current treeから除去
+- stack-check: PASS 32 / FAIL 0 / SKIP 0（queueの台帳形式gateを確定後に再実行）
+- backlog    : none
+- next       : none
+- blockers   : 現sessionのread-only machine identityはworker roleで、対象audio endpointは未観測。実機・音量・gain・cableは未変更
+
+---
+
 ## 2026-08-11 [worker-gaming] — HAZAMA AIの短音過密をauthored restsで再設計 (v401)
 - agent      : Codex（Surface human feedback反映 + authored pocket設計 + browser/runtime review）
 - goal       : BL-041の「短音が詰まる」を、engine変更なしで休符・gate・安全なレイヤー比較導線へ落とす

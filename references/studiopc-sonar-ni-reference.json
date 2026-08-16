@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "id": "studiopc-sonar-ni-good-output-20260728",
-  "label": "StudioPC Sonar and NI good-output reference",
+  "id": "sonar-ni-ab-reference-template-v1",
+  "label": "Public Sonar and NI deterministic A/B reference template",
   "source_observation": {
-    "machine": "studioPC",
-    "date": "2026-07-28",
-    "project": "StudioPC-Common-Smoke-20260728",
-    "audible_certainty": "The non-silent export was guaranteed by the imported 440 Hz reference tone. The NI presets were loaded, but the session did not isolate which source the user preferred.",
-    "comparison_policy": "Render the clean reference tone, Scarbee, and Reaktor as separate A/B/C files before combining them."
+    "machine": "public-template",
+    "date": "not_applicable",
+    "project": "Sonar-NI-Reference-Template",
+    "audible_certainty": "The deterministic 440 Hz reference tone proves a non-silent diagnostic lane; it does not prove a private machine route or a preferred instrument sound.",
+    "comparison_policy": "Render the clean reference tone, Scarbee, and Reaktor as separate A/B/C files before combining them; record actual machine observations privately."
   },
   "daw": {
     "name": "Cakewalk Sonar",
@@ -28,7 +28,7 @@
     "frequency_hz": 440.0,
     "duration_seconds": 2.0,
     "peak_dbfs": -12.3548,
-    "filename": "studiopc-reference-tone-440hz-48k24.wav"
+    "filename": "reference-tone-440hz-48k24.wav"
   },
   "instruments": [
     {
@@ -60,7 +60,7 @@
     "purpose": "A deterministic diagnostic phrase, not the original StudioPC performance.",
     "tempo_bpm": 72,
     "ppq": 480,
-    "filename": "studiopc-sonar-ni-diagnostic.mid",
+    "filename": "sonar-ni-diagnostic.mid",
     "tracks": [
       {
         "name": "Scarbee Mark I - Blue Ballad",
@@ -88,7 +88,7 @@
     ]
   },
   "render": {
-    "project_folder_name": "WorkerPC-Sonar-NI-Reference",
+    "project_folder_name": "Sonar-NI-Reference",
     "freeze_instrument_tracks": true,
     "variants": [
       "A-reference-tone.wav",
@@ -100,7 +100,7 @@
       "Keep the A/B/C lanes isolated until the preferred source is identified.",
       "Do not add mastering, normalization, or loudness matching before the first comparison.",
       "Save the Sonar project folder and generated audio outside Git.",
-      "Do not open the same project folder on WorkerPC and StudioPC at the same time."
+      "Do not open the same writable project folder on two machines at the same time."
     ]
   }
 }

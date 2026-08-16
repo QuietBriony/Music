@@ -14,6 +14,11 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 明示download条件は`config/external-dependencies.json`。`worker-gaming` / `worker.gpu`を使う
 処理は、operatorが空きとdownload / executionを明示した時だけ行う。
 
+所有機材、実配置、実配線、exact machine observation は public Music の正本ではない。
+同じ workspace に optional private `../music-ops` がある場合は、その `AGENTS.md`、
+`docs/INDEX.md`、canonical JSON を先に読む。ない環境では推測せず、public-safe な
+workflow と `needs_verification` だけを使う。active runtime repo は従来どおり 5 つ。
+
 ## 現在地（2026-08-11）
 
 - 通常の遊び方は`listen.html` → HAZAMA Band Room → Lyric Lab。HAZAMAは01/02とも

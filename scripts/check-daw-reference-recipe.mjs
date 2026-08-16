@@ -9,7 +9,8 @@ const parityRunbook = readFileSync("docs/MUSIC-PC-DAW-PARITY-RUNBOOK.md", "utf8"
 const workerRunbook = readFileSync("docs/WORKER-GAMING-RUNBOOK.md", "utf8");
 
 assert.equal(recipe.schema_version, 1);
-assert.equal(recipe.id, "studiopc-sonar-ni-good-output-20260728");
+assert.equal(recipe.id, "sonar-ni-ab-reference-template-v1");
+assert.equal(recipe.source_observation.machine, "public-template");
 assert.equal(recipe.daw.product_version, "2026.07");
 assert.equal(recipe.daw.file_version, "32.07.0.021");
 assert.equal(recipe.audio.sample_rate_hz, 48000);
@@ -18,6 +19,7 @@ assert.equal(recipe.audio.channels, 2);
 assert.equal(recipe.reference_audio.frequency_hz, 440);
 assert.equal(recipe.reference_audio.duration_seconds, 2);
 assert.match(recipe.source_observation.audible_certainty, /440 Hz reference tone/);
+assert.doesNotMatch(JSON.stringify(recipe), /StudioPC-Common|WorkerPC-Sonar|studiopc-reference/);
 
 const instruments = new Map(recipe.instruments.map((item) => [item.id, item]));
 assert.equal(instruments.get("scarbee-blue-ballad")?.plugin, "Kontakt 8");

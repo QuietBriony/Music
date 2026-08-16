@@ -57,6 +57,11 @@ QuietBriony/openclaw           ← review desk / mission board（runtime executo
 chill / drum-floor / namimaはpreset供給、openclawはreview / mission controlを担当する。
 Musicのbrowser runtimeが読むのは、review後にこのrepoへ取り込まれたsame-origin JSONだけ。
 
+同じworkspaceにoptional private `music-ops`が存在する場合も、これはruntime / preset
+供給repoではなく、所有機材・実配置・実配線・machine observationのoperator overlay。
+active 5 repo構成、browser data flow、deployには含めない。private overlayがない公開clone
+では実機状態を推測せず、Music内のpublic-safe workflowだけを使う。
+
 ## 2. データフロー
 
 ```

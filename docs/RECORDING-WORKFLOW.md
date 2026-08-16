@@ -5,7 +5,9 @@
 >
 > 答え: **全部 OK**。UR44 経由で multi-track 録音 → DAW で stem 出し →
 > band-room の `🥁🎸🎹 external stems` slot にドロップ = 完全 self-cover。
-> EP-133 は USB-C で sample / MIDI、3.5mm out で音声録音という2レーンで同じ流れに乗る。
+> EP-133 は現行公式 guide では USB audio 入出力に対応する。USB MIDI、sample
+> tool、analog output は別 lane として扱い、host/DAW で未検証なら analog capture
+> を fallback にする。
 >
 > 関連: [PRODUCTION-PATH.md](./PRODUCTION-PATH.md) /
 > [DAW-INTEGRATION.md](./DAW-INTEGRATION.md) /
@@ -22,7 +24,7 @@
 | ベース guitar | 1/4" TS → UR44 **Hi-Z** ボタン押した ch | `🥁🎸🎹 external bass` |
 | エレキ guitar | 1/4" TS → UR44 Hi-Z ch、または **アンプ後 line out → UR44 line** | `🥁🎸🎹 external other` |
 | 電子ドラム (line out) | 1/4" TRS stereo → UR44 ch3/4 line | `🥁🎸🎹 external drums` |
-| **EP-133 K.O. II** | USB-C → PC (MIDI / sample transfer) + 3.5mm line out → UR44 stereo line ch | sampler の出音は drums or other |
+| **EP-133 K.O. II** | verified USB audio input endpoint、または 3.5mm stereo out → verified interface line inputs。USB MIDI / sample tool は別 lane | sampler の出音は drums or other |
 
 UR44 は **4ch 同時録音可能** (Cubase / Cubasis 込みで来る、他 DAW でも動く)。
 
@@ -99,39 +101,51 @@ Steinberg UR44 = **Cubase AI / LE が bundle**。それ以外でも:
 
 ## 4. EP-133 K.O. II をどう使うか
 
-Teenage Engineering EP-133 = pocket sampler / sequencer。USB-C は
-MIDI / clock / sample transfer / firmware / 給電の lane として使う。
-音声録音は 3.5mm stereo output から UR44 / Sonar に入れる。
+Teenage Engineering の current online guide は version 2.5 で、OS 2.5 から
+class-compliant USB audio input / output を説明している。OS 2.0-era manual は
+この追加より古く、current USB audio 非対応の根拠には使わない。
 
-### path A: EP-133 → USB-C → PC (sample / MIDI)
+### path A: EP-133 USB audio out → PC / DAW
 
-1. EP-133 を USB-C で PC に接続
-2. Windows / browser で **"EP-133"** が MIDI / USB device として見える
-3. EP sample tool で sample transfer / backup / restore を行う
-4. 必要なら DAW / Band Room から MIDI clock / transport を扱う
-5. 音声そのものは下の path B で録る
+1. installed OS を確認する（firmware update は行わない）
+2. Windows で EP-133 の audio input endpoint を確認する
+3. DAW で input として選び、短い non-destructive capture を試す
+4. 別 audio interface を output に使う場合は、DAW/driver が multi-device path を
+   support するか確認する
 
-これは transfer / sync 用。USB-C だけでは Band Room に戻す録音 take は作らない。
+official に documented でも、endpoint、host monitoring、driver combination、
+audible output を確認するまでは `documented_proposed`。
 
-### path B: EP-133 → 3.5mm line out → UR44
+### path B: PC USB audio → EP-133
 
-1. EP-133 phones / line out (3.5mm TRS) を 1/4" 変換 → UR44 ch3 (L) + ch4 (R)
-2. UR44 経由で DAW に record
-3. 利点: UR44 で他楽器と同時 multi-track 録音可能、Sonar の monitoring / export に乗る
-4. 欠点: cable と input gain の人間確認が必要
+1. host の audio output device として EP-133 を選ぶ
+2. EP-133 で SAMPLE mode を開き、USB を source に選ぶ
+3. 実際の sampling は pad/project を確認した人間だけが実行する
+
+これは host-to-device の audio direction。sample tool transfer とは別。
+
+### path C: USB MIDI / sample tool
+
+- USB MIDI: note / clock / transport / control。audio ではない。
+- EP sample tool: sample transfer / backup / restore。audio streaming ではない。
+- sample/project write、pad assignment、restore、firmware update は人間 gate。
+
+### path D: EP-133 analog output → audio interface (fallback)
+
+1. EP-133 3.5mm stereo output を suitable breakout cable へ接続
+2. current audio interface の verified stereo line-input pair へ入れる
+3. operator が cable、gain、volume、clip、monitor を確認して DAW capture する
+
+USB input と別 interface output を DAW が同時利用できない場合に使える。exact
+input pair、sample rate、driver、buffer、monitor chain は private verified profile を
+参照し、古い snapshot から転記しない。
 
 ### EP-133 の sequence を band-room の drum-frames に流用したい?
 
-別 path: **EP-133 で叩いた MIDI を export → drum-frames JSON 形式に変換**
-できる:
-
-1. EP-133 でパターン作る
-2. MIDI export (USB 経由で SysEx? あるいは pattern を録音 → MIDI 変換)
-3. その MIDI を python script で drum-frames JSON 形式に変換
-4. `presets/drum-frames-tabasco-<song>.json` の frame events を上書き
-
-このパターン抽出は **`scripts/_extract_drum_patterns.py`** (v65) と同系統の
-スクリプトを書けば可能。やる需要あれば実装。
+USB MIDI を DAW が実時間で受信できることを確認できれば、演奏を review 用 MIDI
+として repo 外へ録る候補はある。ただし EP-133 project の直接 export や SysEx
+format を推測しない。変換結果は candidate として review し、既存 preset を
+自動上書きしない。
 
 ---
 
