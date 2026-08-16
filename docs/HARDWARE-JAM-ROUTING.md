@@ -1,210 +1,214 @@
 # Hardware Jam Routing
 
-## Purpose
+## Purpose and boundary
 
-EP-133 K.O.II、UR44、Sonar、Ableton、VCV Rack、SuperCollider を
-music-stack の外部演奏・録音レイヤーとして使うための配線と運用メモ。
+This is a public-safe routing guide for using a hardware sampler, Windows host,
+DAW, audio interface, monitors, and MIDI controllers with Music Stack. It owns
+reusable workflow and safety rules, not anyone's asset inventory or current
+physical wiring.
 
-repo は候補生成と記録、hardware / DAW は手触りと録音、Band Room は確認画面にする。
+When an optional private `../music-ops` checkout is available, its canonical
+JSON owns the real equipment, sites, machine observations, exact routing, and
+verification state. Without it, keep examples anonymous and mark device facts
+`needs_verification`.
 
-Operator entry points:
+Use these state labels consistently:
 
-- [music-hardware-dashboard.html](music-hardware-dashboard.html)
-- [EP133-KOII-BANDROOM-WORKFLOW.md](EP133-KOII-BANDROOM-WORKFLOW.md)
+- `documented_proposed` — supported by current documentation or a reversible
+  design, but not proven end to end on the current device.
+- `partially_verified` — some endpoints or lanes were observed, but the full
+  physical and audible route was not.
+- `verified_on_device` — current device/OS, Windows endpoint, DAW path, cable,
+  and audible output were all checked.
 
-Default safe automation command:
+## EP-133 USB audio timeline
 
-```powershell
-cd C:\workspace\music-stack\Music
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py operator-run tabasco human-fly --open-dashboard --open-folder
-```
+The old “USB is MIDI/power/sample transfer only; audio must be analog” rule is
+stale.
 
-This prepares reports and transfer material only. It does not write to EP-133,
-change DAW projects, alter Band Room defaults, send MIDI, or record audio.
+Teenage Engineering's current EP-133 guide was version 2.5 when checked on
+2026-08-16. OS 2.5 added class-compliant USB audio input and output; the current
+guide documents selecting EP-133 as an input/output device and selecting USB as
+a sampling source. OS 2.5.1 followed with fixes. An OS 2.0-era manual predates
+that feature and must not be used as evidence that current USB audio is absent.
 
-## First Patch
+This is manufacturer documentation, not proof that a particular unit is on a
+current OS or that a particular Windows/DAW host can monitor two interfaces at
+once. Confirm those points on the device before using `verified_on_device`.
 
-Start with this simple wired routing:
+## Keep the connection lanes distinct
+
+### USB audio: EP-133 to host
 
 ```text
-EP-133 K.O.II audio out
-  -> 3.5 mm stereo TRS to dual 1/4 inch TS
-  -> UR44 line inputs 5/6 or another stereo input pair
-  -> Sonar stereo audio track
-  -> C:\workspace\music-stack-worker\daw-export\...
-  -> Band Room preview
+EP-133 playback
+  -> USB-C audio output
+  -> class-compliant host input
+  -> DAW/recorder track
 ```
 
-Use USB-C at the same time for EP-133 MIDI / clock / sample transfer:
+This direction is for recording sound from EP-133 into a host.
+
+### USB audio: host to EP-133
 
 ```text
-PC USB-C
-  -> EP-133 USB-C
-  -> Windows MIDI device
-  -> Sonar or Ableton MIDI clock / transport / notes when needed
+host playback
+  -> EP-133 USB audio input
+  -> SAMPLE mode with USB selected as the source
 ```
 
-Audio capture should still use the analog output into UR44. Treat USB-C as the
-control and file-transfer lane.
+This direction can feed audio to EP-133 for listening or sampling. Actual
+sampling writes device content and remains a manual gate.
 
-## What Codex Can Touch
+### USB MIDI
 
-If EP-133 is connected by USB-C, Codex can:
+USB MIDI carries notes, clock, transport, and control messages. It is not an
+audio stream. Confirm the required MIDI direction and avoid automatic device
+writes or transport actions.
 
-- run `check-hardware` to confirm Windows sees the device;
-- inspect whether UR44 / Yamaha Steinberg devices are visible;
-- help configure Sonar or Ableton from the PC UI when no password/UAC is needed;
-- operate browser-side tools such as the EP sample tool if the browser exposes
-  the device and the user grants access;
-- generate repo-side stems, loops, one-shots, naming sheets, and sample packs
-  outside Git for transfer to EP-133.
+### EP sample tool
 
-Codex cannot:
+The EP sample tool transfers/manages sample and project data. It is not the
+same lane as USB audio or USB MIDI. Backup, restore, sample transfer, and pad or
+project replacement require explicit human review.
 
-- press EP-133 pads, knobs, fader, or system buttons;
-- plug cables or set hardware gain;
-- approve UAC prompts;
-- enter account passwords or MFA;
-- decide whether the monitor mix sounds good without a human ear check.
+### Analog audio
 
-## First Verification Command
+The 3.5 mm stereo output remains a useful fallback and capture route:
 
-After plugging EP-133 or UR44 into a Windows PC:
-
-```powershell
-cd C:\workspace\music-stack\Music
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-hardware
+```text
+EP-133 3.5 mm stereo output
+  -> suitable stereo breakout cable
+  -> verified stereo line-input pair on an audio interface
+  -> DAW stereo track
 ```
 
-Expected progression:
+Analog capture is no longer the only possible route, but it is often simpler
+when a DAW/driver cannot use EP-133 USB input and a second interface output at
+the same time.
 
-1. EP-133 appears as a USB/MIDI device.
-2. UR44 appears as a Yamaha Steinberg / UR44 audio and MIDI device on the
-   studio PC.
-3. Sonar can select Yamaha Steinberg ASIO.
-4. A stereo audio track can record the EP-133 analog output.
-5. The bounce lands under `C:\workspace\music-stack-worker\daw-export\...`.
+## Public-safe routing templates
 
-## StudioPC UR44 Profiles
+### `site-dtm-desk`: shared host-monitor path
 
-The existing JOYSOUND / casual live-play state was captured on `studioPC`
-(`DESKTOP-T1DKM2G`) on 2026-07-29 without changing the device mix.
+```text
+EP-133 USB audio
+  -> Windows/DAW host monitoring
+  -> selected USB audio interface
+  -> powered monitor pair
+```
 
-- Physical output: `UR44 -> FX1001`.
-- Yamaha Steinberg USB Driver: `2.1.9`.
-- Steinberg UR44 Applications: `2.2.2`.
-- dspMixFx executable: `2.2.0.0`.
-- Driver state: `44.1 kHz`, `Standard`, `256 samples`.
-- Measured driver latency: input `9.592 ms`, output `11.565 ms`.
-- Device setup: input 5/6 `-10 dBV`, HPF `80 Hz`, LOOPBACK off.
-- Exact dspMixFx state:
-  [`../references/hardware/ur44/studiopc-joysound-current-20260729.UR44`](../references/hardware/ur44/studiopc-joysound-current-20260729.UR44).
-- Machine-readable record:
-  [`../references/hardware/ur44/studiopc-joysound-current-20260729.json`](../references/hardware/ur44/studiopc-joysound-current-20260729.json).
-- Repo-external screenshots:
-  `C:\workspace\music-stack-worker\reports\studiopc-ur44-20260729`.
+Manual gates:
 
-Treat this as the JOYSOUND baseline. Use dspMixFx `Menu -> Open` only when an
-intentional restore is needed. The `.UR44` file restores the DSP mixer state;
-sample rate and ASIO buffer remain driver settings and must be checked
-separately.
+1. Confirm the installed EP-133 OS without updating it.
+2. Record the exact Windows input/output endpoint names and directions.
+3. Confirm the host can combine normal PC playback with EP-133 input without
+   feedback or an unsupported multi-device assumption.
+4. Inspect the installed output cables and monitor inputs.
+5. Let the operator control power, gain, volume, cabling, and the audible test.
 
-Create a separate `SONAR_VOX_DRY_REVX` profile after a microphone and
-headphones are connected for an ear check:
+For a KOMPLETE AUDIO 2 / PM0.4n example, current manufacturer specifications
+say the interface has balanced 1/4-inch jack outputs, while PM0.4n has
+unbalanced TS and RCA inputs and gives the TS input priority. Do not relabel the
+interface output as TS merely because a TS-ended cable is used downstream.
 
-1. Switch the driver to `48 kHz`, `24-bit`, `256 samples`.
-2. Keep LOOPBACK off for multitrack recording.
-3. Record the microphone dry.
-4. Start with Channel Strip and REV-X as `MON.FX`, not `INS.FX`.
-5. Keep Sonar Input Echo off while direct-monitoring through dspMixFx.
-6. Save the tested state as a separate `.UR44` file. Do not overwrite the
-   JOYSOUND baseline.
+### `site-yard-main`: DAW capture and alternate monitoring
 
-## Recommended Play Modes
+```text
+capture source
+  -> verified USB-audio lane OR analog fallback
+  -> DAW
+  -> selected audio interface
+  -> verified downstream monitor chain
+```
 
-### EP-133 as hand sampler
+Use an interface-switch procedure when two monitor environments are separate.
+Do not document a private room layout or assume permanent room-crossing cable.
+Exact driver, sample rate, bit depth, buffer, input pair, output assignment, and
+downstream component order belong to the private verified profile.
 
-1. Generate a loop, one-shot, or texture from Music / drum-floor / VCV /
-   SuperCollider.
-2. Move it to `C:\workspace\music-stack-worker\hardware-jam\ep133-inbox`.
-3. Transfer or sample it into EP-133.
-4. Chop, sequence, punch-in FX, resample.
-5. Record the result into Sonar through UR44 and keep rough captures under
-   `C:\workspace\music-stack-worker\hardware-jam\captures`.
+Recommended decision order:
 
-### EP-133 as external rhythm brain
+1. Inspect current endpoints and DAW driver mode read-only.
+2. Try the reversible USB-audio design only if the host supports the required
+   input/output combination.
+3. Use analog EP-133-to-interface capture as the fallback.
+4. Record whether EP-133 needed any setting change; if none, say so.
+5. Promote the route only after an audible operator check.
 
-1. Build the beat by hand on EP-133.
-2. Use MIDI clock only if timing with Sonar/Ableton matters.
-3. Record stereo takes into Sonar.
-4. Keep the best takes in `daw-export`, then review in Band Room.
+### MIDI-controller mapping
 
-### DAW sends material into EP-133
+```text
+USB MIDI controllers
+  -> reviewed application mapping
+  -> Traktor, DAW, or browser app
 
-1. Render a short 1-4 bar loop from Sonar, Ableton, or Band Room.
-2. Sample it into EP-133 through the 3.5 mm input or transfer it with the sample
-   tool.
-3. Use EP-133 for destructive human variation.
-4. Re-record into Sonar.
+application audio
+  -> separately selected audio interface
+```
 
-### VCV / SuperCollider as texture makers
+A mixer-style MIDI controller is still a controller; it must not be described
+as an audio mixer or audio interface unless the manufacturer documents that
+separate capability. Review mappings before enabling transport, recording, or
+destructive actions.
 
-- VCV Rack: clocked modular loops, noisy transitions, odd percussion, filter
-  movement.
-- SuperCollider: procedural percussion, drones, glitch fills, ambience.
+## What automation may do
 
-Render audio outside Git, then feed EP-133 or Sonar. Do not wire these tools to
-automatic record, upload, or merge flows.
+Allowed, read-only or repo-side work:
 
-## Sonar vs Ableton
+- inspect Windows device visibility and endpoint names;
+- inspect DAW driver/I/O settings without changing them;
+- generate public-safe checklists, schemas, and routing candidates;
+- create transfer material outside Git;
+- compare documented state with a private canonical profile.
 
-Use Sonar first when UR44 or external hardware is involved:
+Human gates:
 
-- stable timeline recording;
-- ASIO-focused audio input selection;
-- stereo take management;
-- Cakewalk add-ons for mix cleanup;
-- export for Band Room review.
+- plugging/unplugging cables or switching interfaces;
+- power, gain, monitor volume, and hearing checks;
+- sample/project writes, pad changes, backup/restore, and firmware updates;
+- DAW record-arm, actual recording, and final taste decisions.
 
-Use Ableton when clip/session behavior is the reason:
+## Generic verification record
 
-- loop sketching;
-- live clip launching;
-- Ableton Link experiments;
-- fast electronic arrangement.
+For each route, record:
 
-Keep both. The practical default is Sonar for capture and polish, Ableton for
-loop/live/sync play.
+- route/profile ID and intent;
+- `documented_proposed`, `partially_verified`, or `verified_on_device`;
+- source/controller/sink asset IDs in the private overlay;
+- endpoint names and directions;
+- driver, sample rate, bit depth, and buffer only if directly observed;
+- topology and physical constraints without copying them public;
+- startup steps, manual gates, audible result, date, evidence, and rollback.
 
-## Cable Checklist
+## Safety
 
-- EP-133 output to UR44: 3.5 mm stereo TRS to dual 1/4 inch TS.
-- EP-133 input from phone/PC: 3.5 mm stereo cable or the output of an audio
-  interface/mixer at safe level.
-- EP-133 MIDI: TRS MIDI Type-A adapters or cables as required by the connected
-  device.
-- UR44 to PC: USB cable plus Yamaha Steinberg USB driver on the Intel studio PC.
-- Monitor/headphones: connected to UR44, not the ARM Surface.
-
-## Safety Notes
-
-- Start with EP-133 and UR44 input gains low, then raise slowly.
-- Do not connect sync output to audio inputs unless deliberately recording a
+- Start with an operator-controlled safe level; do not automate gain or volume.
+- Do not connect sync output to an audio input unless deliberately recording a
   pulse signal.
-- MIDI, sync, and audio are separate lanes. Do not substitute a MIDI cable for a
-  sync24 cable.
-- Leave repo runtime untouched while jamming. Promote only reviewed metadata,
-  candidates, docs, or code afterward.
+- MIDI, sync, USB audio, analog audio, and sample transfer are separate lanes.
+- Do not auto-start playback, arm recording, send MIDI, write device content,
+  update firmware, upload media, or alter Music runtime defaults.
+- Keep audio, recordings, samples, DAW projects, videos, and manuals outside
+  Git.
 
-## Official References
+## Official references
 
+- EP-133 current guide:
+  <https://teenage.engineering/guides/ep-133>
+- EP-133 OS 2.5 changes:
+  <https://teenage.engineering/guides/ep-133/whats-new>
+- EP-133 USB audio sampling direction:
+  <https://teenage.engineering/guides/ep-133/how-to>
 - EP-133 hardware overview:
   <https://teenage.engineering/guides/ep-133/hardware-overview>
-- EP-133 system / MIDI settings:
-  <https://teenage.engineering/guides/ep-133/system>
-- EP-133 product and EP sample tool:
-  <https://teenage.engineering/products/ep-133>
-- EP sample tool:
-  <https://teenage.engineering/apps/ep-sample-tool>
-- UR44 operation manual:
+- EP-133 current downloads/releases:
+  <https://teenage.engineering/downloads/ep-133>
+- KOMPLETE AUDIO 2 specifications:
+  <https://www.native-instruments.com/en/products/komplete/audio-interfaces/komplete-audio-1-audio-2/specifications/>
+- KOMPLETE AUDIO 2 connections:
+  <https://www.native-instruments.com/en/komplete-audio-2-quickstart/connecting-devices/>
+- Fostex PM0.4n specifications:
+  <https://www.fostex.jp/products/pm0-4n/>
+- Steinberg UR44 operation manual:
   <https://download.steinberg.net/downloads_hardware/UR44/UR44_documentation/UR44_OperationManual_en.pdf>

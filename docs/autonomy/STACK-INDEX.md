@@ -25,6 +25,21 @@ deploy はすべて GitHub Pages（`<remote>` の main ブランチ）。
 > 公開後の軽い疎通確認が必要な時だけ `node scripts/stack-check.mjs --deploy-health` を使う。
 > active 5 repo の GitHub Pages URL が HTTP 200 を返すかを追加で見る（通常 gate には混ぜない）。
 
+## Optional private operator overlay（runtime ではない）
+
+同じ workspace に private `music-ops` repo が存在する場合、所有機材、実配置、
+物理制約、machine observation、常用 routing の正本として参照する。
+
+| repo | 役割 | deploy | active-stack count | check |
+|---|---|---|---|---|
+| `music-ops` | optional private operator overlay。実機・配線・配置の private source of truth | なし | **含めない** | repo 内で `node scripts/check-music-ops.mjs` |
+
+- active runtime は引き続き上記 5 repo だけ。
+- Music の public clone / CI に `music-ops` がなくても正常。存在しない場合は実機状態を
+  推測せず、public-safe な workflow と `needs_verification` だけを扱う。
+- private label、hostname、財務情報、exact routing を public Music へコピーしない。
+- `test` / `namima-lab` を overlay や hardware repo へ転用しない。
+
 ## Archived repos（触らない）
 
 | repo | 状態 | harvest 完了マーカー |

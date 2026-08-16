@@ -3,29 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Music Hardware Dashboard</title>
+  <title>Music Hardware Workflow Overview</title>
   <style>
     :root {
       color-scheme: light dark;
-      --bg: #f6f4ef;
-      --panel: #ffffff;
-      --text: #151515;
-      --muted: #65615b;
-      --line: #d9d3c7;
-      --accent: #0b6f6a;
-      --accent-2: #b64031;
-      --code: #111827;
+      --bg: #f3f1eb;
+      --panel: #fffdf8;
+      --text: #171715;
+      --muted: #68635b;
+      --line: #d8d1c5;
+      --accent: #116c68;
+      --accent-soft: #dcece9;
+      --warn: #9a4d2e;
+      --warn-soft: #f4e3da;
+      --code: #121820;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #121211;
-        --panel: #1d1d1b;
+        --bg: #121311;
+        --panel: #1d1f1b;
         --text: #f5f2e9;
-        --muted: #b9b3a7;
-        --line: #34322f;
-        --accent: #4fc3b7;
-        --accent-2: #ff8a73;
-        --code: #070707;
+        --muted: #bbb4a8;
+        --line: #393a35;
+        --accent: #68c9bf;
+        --accent-soft: #183b38;
+        --warn: #ff9b75;
+        --warn-soft: #44261c;
+        --code: #090d12;
       }
     }
     * { box-sizing: border-box; }
@@ -33,168 +37,140 @@
       margin: 0;
       background: var(--bg);
       color: var(--text);
-      font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font: 15px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     header, main {
-      max-width: 1120px;
+      width: min(1120px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 24px;
     }
-    header {
-      display: grid;
-      gap: 10px;
-      padding-top: 32px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 34px;
-      line-height: 1.1;
-      letter-spacing: 0;
-    }
-    h2 {
-      margin: 0 0 12px;
-      font-size: 19px;
-      letter-spacing: 0;
-    }
+    header { padding: 42px 0 24px; }
+    main { padding-bottom: 48px; }
+    h1, h2, h3 { margin-top: 0; line-height: 1.15; }
+    h1 { margin-bottom: 12px; font-size: clamp(2rem, 6vw, 3.6rem); letter-spacing: -0.04em; }
+    h2 { margin-bottom: 12px; font-size: 1.25rem; }
+    h3 { margin-bottom: 8px; font-size: 1rem; }
     p { margin: 0; color: var(--muted); }
-    a { color: var(--accent); font-weight: 650; text-decoration: none; }
+    a { color: var(--accent); font-weight: 700; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 14px;
-      margin-bottom: 16px;
-    }
-    .card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      padding: 16px;
-    }
-    .status {
-      display: inline-flex;
-      align-items: center;
-      min-height: 28px;
-      border-radius: 999px;
-      padding: 3px 10px;
-      margin-bottom: 12px;
-      font-size: 13px;
-      font-weight: 700;
-      background: color-mix(in srgb, var(--accent) 14%, transparent);
-      color: var(--accent);
-    }
-    .status.warn {
-      background: color-mix(in srgb, var(--accent-2) 14%, transparent);
-      color: var(--accent-2);
-    }
-    pre {
-      overflow: auto;
-      margin: 12px 0 0;
-      padding: 12px;
-      border-radius: 8px;
-      background: var(--code);
-      color: #f7f7f7;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-    ul {
-      margin: 10px 0 0;
-      padding-left: 18px;
-    }
-    li { margin: 4px 0; }
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .links a {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 8px 10px;
-      background: var(--panel);
-    }
+    .eyebrow { color: var(--accent); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+    .lead { max-width: 780px; font-size: 1.05rem; }
+    .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .links a { border: 1px solid var(--line); border-radius: 999px; background: var(--panel); padding: 8px 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(245px, 1fr)); gap: 14px; margin: 16px 0; }
+    .card { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 18px; }
+    .wide { margin-top: 16px; }
+    .tag { display: inline-block; margin-bottom: 12px; border-radius: 999px; padding: 3px 9px; background: var(--accent-soft); color: var(--accent); font-size: 0.76rem; font-weight: 800; }
+    .tag.warn { background: var(--warn-soft); color: var(--warn); }
+    code { color: inherit; }
+    pre { overflow: auto; margin: 12px 0 0; border-radius: 10px; background: var(--code); color: #f7f7f7; padding: 13px; font-size: 0.82rem; line-height: 1.5; }
+    ol, ul { margin: 10px 0 0; padding-left: 20px; }
+    li { margin: 5px 0; }
+    .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+    .step { border-left: 3px solid var(--accent); padding: 8px 12px; background: color-mix(in srgb, var(--panel) 90%, var(--accent)); }
+    .step strong { display: block; }
+    @media (max-width: 700px) { .flow { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <header>
-    <h1>Music Hardware Dashboard</h1>
-    <p>worker-gaming / EP-133 / UR44 / Sonar / Band Room の非破壊ハンドオフ入口。</p>
-    <div class="links">
+    <div class="eyebrow">Public-safe hardware guide</div>
+    <h1>Music Hardware Workflow</h1>
+    <p class="lead">個人の現在状態を表示する dashboard ではなく、USB audio、MIDI、sample transfer、analog capture、DAW monitoring を安全に分けて検証するための overview。</p>
+    <nav class="links" aria-label="Related documentation">
+      <a href="./HARDWARE-JAM-ROUTING.md">Routing guide</a>
       <a href="./EP133-KOII-BANDROOM-WORKFLOW.md">EP-133 workflow</a>
-      <a href="./HARDWARE-JAM-ROUTING.md">Hardware routing</a>
-      <a href="./BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md">AI recreation loop</a>
+      <a href="./MUSIC-PC-DAW-PARITY-RUNBOOK.md">DAW parity</a>
       <a href="../band-room.html">Band Room</a>
-      <a href="https://teenage.engineering/apps/ep-sample-tool">EP sample tool</a>
-    </div>
+      <a href="https://teenage.engineering/guides/ep-133">Current EP-133 guide</a>
+    </nav>
   </header>
 
   <main>
-    <section class="grid" aria-label="Hardware status">
+    <section class="card wide">
+      <span class="tag">Authority boundary</span>
+      <h2>Public workflow, private operational truth</h2>
+      <p>Music は再利用可能な workflow と安全ルールを正本にする。所有機材、実配置、hostname、exact wiring、driver snapshot、検証済み設定は、利用可能なら private operator overlay を先に読む。private source がない環境では推測せず <code>needs_verification</code> にする。</p>
+    </section>
+
+    <section class="grid" aria-label="Connection lanes">
       <article class="card">
-        <span class="status">EP-133 visible on gaming PC</span>
-        <h2>USB-C Lane</h2>
-        <p>USB-C は MIDI / sample transfer / firmware / 給電。audio capture は analog output で扱う。</p>
-        <pre>python -X utf8 scripts\worker-gaming-pipeline.py check-hardware</pre>
+        <span class="tag">USB audio out</span>
+        <h2>EP-133 → host</h2>
+        <p>現行公式 guide は class-compliant USB audio output を説明している。DAW input endpoint として実機確認する。</p>
       </article>
       <article class="card">
-        <span class="status warn">UR44 pending on studio PC</span>
-        <h2>Audio Capture Lane</h2>
-        <p>EP-133 3.5 mm output を UR44 line input に入れ、Sonar stereo track で録る。</p>
-        <pre>EP-133 out -> UR44 line in -> Sonar -> daw-export</pre>
+        <span class="tag">USB audio in</span>
+        <h2>host → EP-133</h2>
+        <p>host output を EP-133 に送り、sample 時は USB source を選ぶ。実際の sample write は人間 gate。</p>
       </article>
       <article class="card">
-        <span class="status">No default runtime changes</span>
-        <h2>Repo Safety</h2>
-        <p>pack、録音、cycle report は worker root に置く。Git には review 済み metadata / docs / code だけ。</p>
+        <span class="tag">USB MIDI</span>
+        <h2>notes / clock / control</h2>
+        <p>MIDI は audio ではない。方向、mapping、transport action を明示し、record や device write を自動化しない。</p>
       </article>
       <article class="card">
-        <span class="status">Read-only SysEx OK</span>
-        <h2>EP-133 Probe</h2>
-        <p>SendMIDI / ReceiveMIDI で device-info だけ読む。sample / project / pad は書き換えない。</p>
-        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py setup-midi-cli
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-sysex-probe</pre>
+        <span class="tag">Sample tool</span>
+        <h2>file and project data</h2>
+        <p>sample transfer、backup、restore は audio stream と別。permission と device write は必ず人間確認。</p>
+      </article>
+      <article class="card">
+        <span class="tag">Analog fallback</span>
+        <h2>line capture</h2>
+        <p>USB input と別 interface output を DAW が同時利用できない場合は、stereo analog output を verified line inputs へ送る。</p>
+      </article>
+      <article class="card">
+        <span class="tag warn">Historical note</span>
+        <h2>OS 2.0 manual</h2>
+        <p>古い OS 2.0 資料は current USB audio 非対応の根拠にしない。現行公式 guide と installed OS を確認する。</p>
       </article>
     </section>
 
-    <section class="grid" aria-label="Main commands">
+    <section class="card wide">
+      <h2>Verification ladder</h2>
+      <div class="flow">
+        <div class="step"><strong>1. documented_proposed</strong>current official source と reversible design を記録。</div>
+        <div class="step"><strong>2. partially_verified</strong>endpoint、DAW lane、cable の一部を read-only 確認。</div>
+        <div class="step"><strong>3. verified_on_device</strong>current device、OS、route、cable、audible output を人間が確認。</div>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="Reusable templates">
       <article class="card">
-        <h2>Safe Operator Run</h2>
-        <p>通常入口。環境確認、DAW/Hardware doctor、read-only SysEx probe、EP-133 pack、Sonar handoff、snapshotを1つのlocal reportに束ねる。</p>
-        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py operator-run tabasco human-fly --open-dashboard --open-folder</pre>
+        <h2>Shared monitor template</h2>
+        <pre>sampler USB audio
+  -&gt; host monitoring
+  -&gt; selected audio interface
+  -&gt; powered monitors</pre>
+        <p>PC audio との同時 monitor、feedback、latency、connector/cable を確認する。</p>
       </article>
       <article class="card">
-        <h2>Create EP-133 Pack</h2>
-        <p>Band Room source kit と AI recreation から転送用 WAV と pad map を作る。最初の実機転送はB01-B04だけをstageする。</p>
-        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-pack tabasco human-fly --include-ai-recreation --open-folder
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-first-pass tabasco human-fly --open-folder</pre>
+        <h2>DAW capture template</h2>
+        <pre>sampler
+  -&gt; USB audio OR analog fallback
+  -&gt; DAW
+  -&gt; selected interface
+  -&gt; verified monitor chain</pre>
+        <p>sample rate、driver、buffer、出力 chain は実測値だけを private profile に記録する。</p>
       </article>
       <article class="card">
-        <h2>Write Handoff Checklist</h2>
-        <p>Sonar取り込み、EP sample tool転送、Band Room戻し名を1枚のlocal reportにする。</p>
-        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py sonar-ep133-handoff tabasco human-fly --open-report</pre>
-      </article>
-      <article class="card">
-        <h2>Recreation Cycle</h2>
-        <p>生成 stem、target analysis、drum-frame candidate、Sonar handoff report を作る。</p>
-        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py recreation-cycle tabasco human-fly --with-analysis --with-drum-candidate</pre>
-      </article>
-      <article class="card">
-        <h2>Studio PC Rebuild</h2>
-        <p>gaming PC の構成を Studio PC に再現する前に snapshot を取る。</p>
-        <pre>C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py snapshot-setup --tag worker-gaming</pre>
+        <h2>MIDI controller template</h2>
+        <pre>MIDI controllers
+  -&gt; reviewed mapping
+
+app audio
+  -&gt; separate audio interface</pre>
+        <p>mixer-style controller を audio mixer/interface として扱わない。</p>
       </article>
     </section>
 
-    <section class="card" aria-label="Operator checklist">
-      <h2>Operator Checklist</h2>
+    <section class="card wide">
+      <span class="tag warn">Manual gates</span>
+      <h2>Automation stops here</h2>
       <ul>
-        <li>まず `operator-run` のMarkdownで最新pack、handoff、snapshot、manual gateを確認する。</li>
-        <li>EP-133 に書く前に、必要なら EP sample tool で project backup を取る。</li>
-        <li>EP sample tool の device permission は人間が許可する。</li>
-        <li>`sonar-ep133-handoff` のMarkdownでpad mapとBand Room戻し名を確認する。</li>
-        <li>Band Room external stems に戻すまでは、runtime preset を変更しない。</li>
-        <li>良い take だけ `hardware-jam\captures` / `daw-export` から review する。</li>
+        <li>cable、power、gain、volume、monitor、ear check</li>
+        <li>sample/project write、pad assignment、backup/restore、firmware update</li>
+        <li>DAW record-arm、recording、final listening decision</li>
+        <li>interface switch と physical routing confirmation</li>
       </ul>
     </section>
   </main>

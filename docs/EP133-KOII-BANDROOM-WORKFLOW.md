@@ -2,240 +2,182 @@
 
 ## Position
 
-EP-133 K.O.II は、Band Room AI 再現を手で汚して戻すための
-hardware sampler / rhythm sketch box として扱う。
+Use EP-133 K.O.II as a hand-operated sampler and rhythm sketch box that can
+reshape material prepared around Band Room. Music owns the reusable workflow;
+an optional private `music-ops` overlay owns the actual unit, machine, cabling,
+placement, and verified route.
 
-この repo では、EP-133 本体を自動で書き換えない。Codex ができるのは
-Windows から見えるか確認し、転送用素材、pad map、録音後の戻し先を作るところまで。
-sample transfer、project backup、pad assignment、耳での判断は人間確認を挟む。
+This repository never treats device access as permission to write. EP-133
+sample/project writes, pad assignment, backup/restore, firmware updates, and
+listening decisions remain human gates.
 
-## Do Not Break Defaults
+## Do not break defaults
 
-安全ルール:
+- Do not change Band Room default playback, runtime, presets, or service worker
+  for a hardware experiment.
+- Keep generated audio, transfer packs, recordings, and DAW projects outside
+  Git.
+- Commit only public-safe docs, code, schemas, and reviewed metadata.
+- Do not store a private asset register, site labels, hostnames, exact wiring,
+  device identifiers, or machine snapshots in Music.
 
-- Band Room の default playback、preset JSON、service worker、DAW project は変更しない。
-- EP-133 本体への sample / project 書き込みは EP sample tool で人間が確認して実行する。
-- 生成 audio、転送 pack、録音 take は `C:\workspace\music-stack-worker` に置く。
-- Git に入れるのは docs、code、review 済み candidate JSON、metadata だけ。
+## Documentation timeline
 
-## Connection Lanes
+An OS 2.0-era manual reflects the feature set at that time. It is historical
+documentation and must not be used to conclude that current EP-133 USB audio is
+unsupported.
 
-### USB-C
+When checked on 2026-08-16:
 
-USB-C は次のために使う:
+- the current online guide identified itself as version 2.5;
+- OS 2.5 (2026-06-24) documented USB audio input and output with a
+  class-compliant host;
+- OS 2.5.1 (2026-07-03) followed with fixes.
 
-- Windows への MIDI device 認識
-- MIDI clock / transport
-- EP sample tool の sample transfer / backup / restore
-- firmware update
-- 給電
+The current official guide outranks the older manual. The installed unit's OS,
+Windows endpoints, DAW compatibility, and audible result still require direct
+verification. Do not update firmware just to complete documentation.
 
-PC 側は USB-C to USB-C でも USB-A to USB-C でもよい。重要なのは
-**data 対応 cable**で、充電専用 cable だと EP-133 が給電だけされて Windows に出ない。
+## Do not mix up the USB directions
 
-電池は入れたままでよい。長時間作業中に USB 給電が揺れても本体が落ちにくい。
+| Lane | Direction | Purpose | Write risk |
+|---|---|---|---|
+| USB audio out | EP-133 -> host | record/play EP-133 into a computer or DAW | read/capture until the DAW records |
+| USB audio in | host -> EP-133 | feed host audio to EP-133; select USB as sampling source when sampling | sampling writes a sound and needs a human gate |
+| USB MIDI | either direction | notes, clock, transport, control | messages may trigger actions; review mappings |
+| EP sample tool | file/data transfer | sample management and project backup/restore | writes/restores device content; human gate |
+| USB power | host/charger -> EP-133 | power | not an audio or data claim |
 
-### Audio
+Sample transfer is not audio streaming. MIDI is not audio. USB audio in and out
+are separate endpoint directions. State the intended lane every time.
 
-音声録音の本線は USB-C ではなく analog output:
+## Capture choices
 
-```text
-EP-133 output 3.5 mm stereo
-  -> 3.5 mm stereo TRS to dual 1/4 inch TS
-  -> UR44 stereo line input
-  -> Sonar stereo audio track
-  -> C:\workspace\music-stack-worker\daw-export\...
-  -> Band Room external stems
-```
-
-Gaming PC では EP-133 が MIDI / USB device として見えているが、audio input としては
-見えていない。Studio PC で UR44 をつないだら、この analog capture lane を本命にする。
-
-## Current Verification
-
-EP-133 をつないだら:
-
-```powershell
-cd C:\workspace\music-stack\Music
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py check-hardware
-```
-
-期待する状態:
-
-- `EP-133 | MidiEndpoint | OK`
-- `EP-133 | MEDIA | OK`
-- `USB\VID_2367&PID_0020...`
-
-UR44 は Studio PC 側で `Yamaha Steinberg` / `UR44` として見える状態を目標にする。
-
-## Read-Only SysEx Probe
-
-EP sample tool が不安定なときでも、CLI で EP-133 の MIDI / SysEx 応答だけは自動確認できる:
-
-```powershell
-cd C:\workspace\music-stack\Music
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py setup-midi-cli
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-sysex-probe
-```
-
-`setup-midi-cli` は固定 version / SHA256 検証つきで `SendMIDI` / `ReceiveMIDI` を
-worker tool cache に用意する。`ep133-sysex-probe` はそれらを使い、EP-133 に device-info request だけを送る。
-成功すると `C:\workspace\music-stack-worker\reports\ep133-sysex-probe-...` に report を書く。
-
-安全境界:
-
-- sample、sound slot、project、pad assignment は書き換えない。
-- 取得した serial は report 上で redacted 表示にする。
-- 実際の sample transfer、project backup、restore は引き続き EP sample tool の人間確認で行う。
-
-## Recommended Operator Run
-
-For the normal worker-gaming loop, start with the non-destructive operator
-command:
-
-```powershell
-cd C:\workspace\music-stack\Music
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py operator-run tabasco human-fly --open-dashboard --open-folder
-```
-
-This runs the environment, DAW, and hardware doctors, reuses existing AI
-recreation stems unless `--force-recreation` is specified, verifies the
-SendMIDI / ReceiveMIDI lane with a read-only EP-133 device-info SysEx probe, creates the latest
-EP-133 transfer pack, writes the Sonar/EP-133 handoff checklist, captures a
-setup snapshot, and leaves one aggregate report under
-`C:\workspace\music-stack-worker\reports\<band>\<song>\operator-run-...`.
-
-The command still stops at the correct manual gates: EP sample tool permission,
-EP-133 project backup/write, Sonar import/export, Band Room file selection,
-audio recording, and ear checks.
-
-Use `--no-midi-probe` only when EP-133 is not connected and you still want the
-rest of the local handoff report.
-
-## First Transfer Pack
-
-Band Room / AI recreation から EP-133 に入れるための素材 pack を作る:
-
-```powershell
-cd C:\workspace\music-stack\Music
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-pack tabasco human-fly --include-ai-recreation --open-folder
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py ep133-first-pass tabasco human-fly --open-folder
-```
-
-出力先:
+### USB audio capture candidate
 
 ```text
-C:\workspace\music-stack-worker\hardware-jam\ep133-inbox\<band>\<song>\ep133-pack-YYYYMMDD-HHMMSS\
-  transfer\
-    A01_kick_...
-    A02_snare_...
-    ...
-    B01_drums-loop_8.0s.wav
-  ep133-transfer-manifest.json
-  ep133-transfer-pack.md
+EP-133 USB audio output
+  -> verified host input endpoint
+  -> DAW audio track
 ```
 
-この command は EP-133 に何も書かない。`transfer` folder に、EP sample tool へ
-drag しやすい 46.875 kHz / 16-bit WAV と suggested pad map を作るだけ。
+This is current manufacturer-documented capability. It becomes a usable DAW
+route only after the current host proves the endpoint and driver combination.
+A DAW may not be able to take EP-133 USB input while using a different ASIO
+interface for output; verify rather than assuming multi-device support.
 
-`ep133-first-pass` は最新 pack から `B01`-`B04` の AI recreation loop だけを
-`first-pass-B-loops` にコピーする。最初の実機転送はこの4つだけで試すと、
-backup / pad assignment / 音量確認の事故範囲を小さくできる。
-
-## Sonar / EP-133 Handoff Checklist
-
-最新の AI recreation cycle と EP-133 transfer pack を束ねて、Sonar 取り込み表、
-EP sample tool 作業チェック、Band Room に戻す録音名を1枚の local report にする:
-
-```powershell
-cd C:\workspace\music-stack\Music
-C:\workspace\music-stack-worker\.venv\Scripts\python.exe -X utf8 scripts\worker-gaming-pipeline.py sonar-ep133-handoff tabasco human-fly --open-report
-```
-
-出力先:
+### Analog fallback/capture route
 
 ```text
-C:\workspace\music-stack-worker\reports\<band>\<song>\sonar-ep133-handoff-YYYYMMDD-HHMMSS\
-  sonar-ep133-handoff.json
-  sonar-ep133-handoff.md
+EP-133 3.5 mm stereo output
+  -> suitable stereo breakout cable
+  -> verified interface stereo line inputs
+  -> DAW stereo track
 ```
 
-この checklist も EP-133 / Sonar / Band Room を自動操作しない。PC前の確認用に、
-どのファイルを Sonar に入れるか、どの sample を EP-133 に送るか、録った take を
-どの external slot に戻すかを固定する。
+Keep this route as a fallback and as an intentional analog capture option. The
+operator must confirm the cable, input pair, gain, monitor level, and clipping.
 
-## EP Sample Tool Flow
+## Public-safe workflow
 
-1. EP-133 を USB-C で PC へ直結する。
-2. <https://teenage.engineering/apps/ep-sample-tool> を開く。
-3. Browser の MIDI/device permission で `EP-133` を許可する。
-4. `ep133-transfer-pack.md` を横に開き、suggested pad map を見る。
-5. `transfer` folder の WAV を sample tool へ入れる。
-6. EP-133 側で project / pad / group を確認してから置き換える。
-7. 重要な本体 project があるなら、先に sample tool で backup を取る。
+### 1. Prepare outside Git
 
-## Suggested Project Layout
+Generate or collect short candidate material under a repo-external worker
+directory. The preparation step may create a naming sheet, conversion report,
+and suggested pad map, but it must not write to EP-133.
 
-最初は単純でよい:
+### 2. Review the transfer boundary
 
-| Group | Role | Contents |
-|---|---|---|
-| A | drum kit / one-shots | kick, snare, hat, tom, crash, texture |
-| B | loops | AI drums, bass, other, rough mix short loops |
-| C | free | EP-133 built-in sounds, resample, live chop |
-| D | arrangement | live variation, punch-in FX, song mode scenes |
+Before opening the sample tool:
 
-Band Room に戻すときは、音の役割で分ける:
+1. confirm which EP-133 project/group/pads are in scope;
+2. decide whether a backup is required;
+3. verify that each file is authorized and stored outside Git;
+4. keep the first transfer deliberately small;
+5. let the operator approve the browser/device permission and the actual write.
 
-- drum / beat take -> Band Room `external drums`
-- bass-like loop -> Band Room `external bass`
-- guitar / noise / sample texture -> Band Room `external other`
-- vocal phrase -> Band Room `external vocal` only when it is meant as a vocal layer
+### 3. Perform on-device variation
 
-## Jam Recipe
+Chop, sequence, resample, and use performance effects by hand. Do not automate
+pad, fader, project, or firmware changes from repository tooling.
 
-1. `recreation-cycle` で Band Room AI stem と target analysis を作る。
-2. `ep133-pack` で EP-133 transfer pack を作る。
-3. EP sample tool で pack を入れる。
-4. EP-133 で chop、pattern、resample、punch-in FX を試す。
-5. 良い take は Sonar / UR44 で録音する。
-6. 録音を `hardware-jam\captures` か `daw-export` に置く。
-7. Band Room の external stems で原音 / AI / hardware take を A/B する。
-8. 良かった timing や質感だけを metadata / candidate JSON / docs に昇格する。
+### 4. Capture to a DAW
 
-## What Codex Can Do
+Inspect current endpoints and DAW settings first. Prefer the verified USB audio
+route when the host supports the required input/output combination; otherwise
+use the analog fallback. Do not copy exact driver settings from an old machine
+snapshot.
 
-Codex が進められること:
+### 5. Review in Band Room
 
-- `check-hardware` で EP-133 / UR44 / MIDI visibility を見る。
-- `ep133-sysex-probe` で EP-133 の read-only MIDI/SysEx 応答を確認する。
-- `ep133-pack` で転送用素材と pad map を作る。
-- EP sample tool を開く。
-- Sonar に取り込むための録音 folder / naming sheet を作る。
-- 録音後の WAV を Band Room external stems に入れる手順を整理する。
+Export a review take outside Git and load it through Band Room's existing
+external-file workflow. Do not change default playback or presets. Promote
+only the reusable timing, texture, or process observation—not the recording or
+private route.
 
-人間確認が必要なこと:
+## What repo automation may do
 
-- EP-133 の pad、knob、fader、project selection。
-- EP sample tool の device permission と実際の書き込み確認。
-- cable、UR44 gain、monitor volume、clip していないかの確認。
-- 最終的に「これが良い」と判断する耳チェック。
+- inspect device and endpoint visibility read-only;
+- prepare transfer files and reports outside Git;
+- generate a suggested pad map;
+- prepare a DAW/Band Room handoff checklist;
+- compare current observations with a private routing profile;
+- open a tool or report without granting permissions or writing the device.
+
+## Human gates
+
+- identifying the physical unit and installed OS;
+- cable, power, gain, monitor volume, and ear checks;
+- browser device permission;
+- project backup/restore;
+- sample transfer and pad assignment;
+- firmware update;
+- DAW record-arm and recording;
+- choosing the take that sounds good.
+
+## Verification record
+
+Keep `documented_proposed` separate from `verified_on_device`. A complete
+private verification record should include:
+
+- installed EP-133 OS and observation date;
+- Windows endpoint names and audio directions;
+- DAW driver/input/output behavior;
+- selected USB or analog lane;
+- cable and physical constraints;
+- whether EP-133 needed any setting change;
+- audible result and operator;
+- rollback steps.
+
+If the private overlay is unavailable, do not invent those fields.
 
 ## Troubleshooting
 
-- EP-133 が給電だけされる: cable が充電専用かもしれない。data 対応 cable に替える。
-- Windows に `EP-133` が出ない: USB hub を避けて PC 直挿しにする。
-- sample tool が認識しない: browser permission を確認し、別 browser / cable を試す。
-- Sonar に音が入らない: USB-C ではなく analog output -> UR44 input を確認する。
-- Band Room に戻せない: まず WAV / MP3 として export し、external stems の file input に入れる。
+- USB supplies power but no endpoints appear: verify a data-capable cable and
+  direct connection, then recheck the host.
+- USB MIDI appears but audio does not: confirm the installed EP-133 OS and look
+  separately for audio input/output endpoints.
+- Host audio does not reach EP-133 sampling: select EP-133 as the host output,
+  then select USB as the sampling source on the device under a human gate.
+- DAW cannot combine EP-133 input with another interface output: use one
+  supported driver path or the analog fallback; do not force an undocumented
+  aggregate setup.
+- No analog capture: check the stereo breakout, line-input pair, DAW input, and
+  operator-controlled gain.
+- Sample tool does not see the device: check browser permission and cable, but
+  do not retry writes blindly.
 
-## Official References
+## Official references
 
-- EP-133 hardware overview:
+- Current EP-133 guide:
+  <https://teenage.engineering/guides/ep-133>
+- OS 2.5 changes:
+  <https://teenage.engineering/guides/ep-133/whats-new>
+- USB audio sampling direction:
+  <https://teenage.engineering/guides/ep-133/how-to>
+- Hardware overview and USB audio output:
   <https://teenage.engineering/guides/ep-133/hardware-overview>
+- Current downloads/releases:
+  <https://teenage.engineering/downloads/ep-133>
 - EP sample tool:
   <https://teenage.engineering/apps/ep-sample-tool>
-- EP-133 system / MIDI settings:
-  <https://teenage.engineering/guides/ep-133/system>
-- EP-133 product specifications:
-  <https://teenage.engineering/products/ep-133>

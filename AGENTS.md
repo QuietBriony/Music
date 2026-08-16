@@ -21,6 +21,24 @@ Hazama FM と Music Core Rig を壊さずに磨くための最低契約事項。
 
 sibling repo を触る場合は、その repo の `AGENTS.md` を先に読む。
 
+### Optional private operator overlay
+
+`C:\workspace\music-stack\music-ops` が利用可能な環境では、所有機材、実配線、
+実配置、machine の現在状態について回答・変更する前に、次を先に読む。
+
+- `../music-ops/AGENTS.md`
+- `../music-ops/docs/INDEX.md`
+- `../music-ops/inventory/equipment.json`
+- `../music-ops/inventory/sites.json`
+- `../music-ops/routing/profiles.json`
+- `../music-ops/machines/machines.json`
+
+`music-ops` は private operator overlay であり、active runtime repo ではない。
+private repo がない clone / CI / public contributor 環境では、所有・現配線・現配置を
+推測しない。Music 内の public-safe な一般情報だけを使い、実機依存の結論は
+`needs_verification` とする。private site label、hostname、財務情報、exact physical
+constraint を Music へコピーしない。
+
 別 PC で workspace / Codex App 表示を再現する手順は
 [`docs/NEW-PC-SETUP.md`](docs/NEW-PC-SETUP.md) を参照。
 
