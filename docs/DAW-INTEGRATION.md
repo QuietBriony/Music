@@ -1,5 +1,10 @@
 # DAW Integration — Ableton / BandLab / Logic 連携の道筋
 
+> 現在のSonarを含む役割分担・保存形式は[総合manual](MUSIC-STACK-SYSTEM-MANUAL.md#daw)へ。
+> 以下には旧versionの手順も含む。現在のBand Room mix RECはWAV変換を試み、
+> 失敗時はM4A/WebM、stems packはM4A/WebM。MIDI importはドラム先頭1小節、
+> MIDI OUTはclockで、曲全体のnote出力・CC learn・別PC同期とは異なる。
+
 > band-room は Web Audio sandbox の中。DAW 直結はできない。
 > でも **stem 単位の inout** + **MIDI clock** で十分実用的なワークフローが組める。
 >

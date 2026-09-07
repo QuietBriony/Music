@@ -1,5 +1,10 @@
 # Music Stack 統合ロードマップ
 
+> **背景・履歴用。現行の実行キューではありません（2026-09-07整理）。**
+> 現在の使い方は[総合manual](MUSIC-STACK-SYSTEM-MANUAL.md)、責任境界は
+> [Integration Index](music-stack-integration-index.md)、次作業は[BACKLOG](autonomy/BACKLOG.md)。
+> 以下のPhaseが未実装とは限りません。既存のpacket・adapter・Deskを再作成しないでください。
+
 この文書は、Music Stack の次工程を docs-first / metadata-only / human-gated に保つためのロードマップです。
 
 実装統合、runtime 移植、音源追加、archive/delete、dependency 追加はこの文書だけでは許可しません。

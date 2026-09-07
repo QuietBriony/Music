@@ -1,5 +1,12 @@
 # Music Stack Orchestra Development Direction
 
+> **Historical development plan — 2026-09-07に現行入口を統合。**
+> 下記は当時の提案であり、実行キューではない。[Integration Index](music-stack-integration-index.md)が
+> protocol / routing / schemaの入口、[総合manual](MUSIC-STACK-SYSTEM-MANUAL.md)が利用者の入口、
+> [BACKLOG](autonomy/BACKLOG.md)が次作業の正本。chillは現在activeなquiet piano / trio surface。
+> [当時の12行の照合結果](music-stack-orchestra-plan-status.md)を残し、出荷済みadapterやDeskを再実装しない。
+> 本文中のFirst Implementation PRや役割未決は歴史的記録で、今の実行指示ではない。
+
 ## 1. Purpose
 
 This document fixes the practical development direction for the Music Stack

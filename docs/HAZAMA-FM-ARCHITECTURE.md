@@ -10,7 +10,7 @@
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v401`, `engine.js?v=fm-118`,
+> Current cache / asset tuple: `hazama-fm-v402`, `engine.js?v=fm-118`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-80`, `fm.js?v=fm-72`,
 > `band-room.js?v=br-236`, `band-room.css?v=br-90`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
@@ -23,6 +23,14 @@
 > - 既存 synth pad/bass は -26 ~ -28 dB に減衰 (二重発音防止)
 > - 現在のcatalog URLは`config/external-dependencies.json`のcommit-pinned jsDelivrが正本。
 >   `engine.js`の`tonejs.github.io`参照は凍結legacy例外であり、同一URLとはみなさない
+
+## 2026-09-07 — 利用者の総合入口（audio runtime不変）
+
+`listen.html`は用途別launcherと静的な全道具一覧、試聴・確認待ちの入口を兼ねる。
+`config/music-stack-tools.json`をbuild-timeにHTMLと`docs/MUSIC-STACK-SYSTEM-MANUAL.md`へ描画。
+browser JS・外部依存・音声・自動MIDIを追加せず、単独の管理アプリも増やさない。
+`check-music-stack-guide.mjs`が表示一致・入口・source path・境界・負例を検査する。
+共有cacheだけv402へ更新し、Band Roomの音質candidateはv401 / BL-041のまま。
 
 ## 1. リポ構成（Music + 4 active sibling roles）
 

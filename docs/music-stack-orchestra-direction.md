@@ -1,5 +1,12 @@
 # Music Stack Orchestra Direction
 
+> **Historical direction — 2026-09-07に現行入口を統合。**
+> これは背景資料であり、下のNext PR Plan / Near-Term Recommendationは実行キューではない。
+> 現在の責任と契約は[Integration Index](music-stack-integration-index.md)とそこから辿るprotocol / schema、
+> 利用者の正本は[総合manual](MUSIC-STACK-SYSTEM-MANUAL.md)、作業は[BACKLOG](autonomy/BACKLOG.md)。
+> chillはactiveなquiet piano / trio surface、各packet adapterとDeskは既存実装。
+> 役割未決やpacket新設という古い表現を現在の未実装と解釈しない。旧内容は経緯として保存する。
+
 ## Purpose
 
 This document fixes the development direction for the Music Stack Orchestra

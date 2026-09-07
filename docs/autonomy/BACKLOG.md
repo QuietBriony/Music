@@ -142,22 +142,29 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   Reverb と oversampling。light OFF 時は出音キャラ不変を厳守（原音/デフォルト挙動は変えない）。
   完了条件: FM workstream が light ゲートを実装 → user 試聴で弱端末の詰まり減を確認。
 
-### BL-030 — #367「Next 12 PR Plan」と現物の突き合わせ + doc 権威の整理
+### BL-045 — 和声マップ＋アシッドの8小節session契約と独立preview
+- priority : P1
+- repo     : Music
+- scope    : non-engine-code
+- agent    : codex
+- human-gate: yes（音を出すpreviewの採用・実MIDI・実機は人間確認。session契約の静的実装は可能）
+- source   : 2026-09-07 userの全体統合依頼、`docs/VISUAL-COMPOSER-PLAN.md`
+- detail   : 既存Drum Floor / Band Roomを再発明せず、Drums / Acid / Airの8小節を
+  同一時間軸で扱う。まずnote/rest/accent/slide/seedの保存・読込契約と負例を実装。
+  次にoff-by-defaultな単一transportのpreview、3トラックMIDI＋音色メモへ進む。
+  engine / 既定再生 / REC / OUTPUT不変、機材なしが初回完成条件。音質と実機を静的passで代用しない。
+
+### BL-046 — 既存作品・採用候補のprivate所在台帳
 - priority : P1
 - repo     : stack
 - scope    : docs
-- agent    : claude
-- human-gate: yes（doc 統合の方向と、残ギャップの owner 決定は user 判断）
-- status   : wip — advisor 2026-07-10。status 正本
-  `docs/music-stack-orchestra-plan-status.md` を **PR #371 で merge 済み**（main 7677d63）
-  + 新 direction doc §5 に参照追記。残: 旧 `music-stack-orchestra-direction.md` 系
-  authority chain との統合方針（案 A/B）を user が選ぶ
-- source   : 2026-07-10 #367 merge。12 行中 6 行（#2/#4/#5/#6/#7/#10）が既出荷、
-  routing schema / direction doc が旧 authority docs と重複と判明
-- detail   : Claude / Codex fleet が #367 の plan を素直に拾うと出荷済みシステムを
-  再実装するリスクがあるため、各行を実ファイル / git 履歴と照合した status 正本を置いた。
-  完了条件: user が doc 統合方針を決定 → 反映 PR → 本 item close。
-  実残作業は status doc 末尾の「実際に残っている作業」節が単一の正。
+- agent    : codex
+- human-gate: yes（採用・削除・公開・外部保存先の変更は人間判断）
+- source   : 2026-09-07 Music Stack owner guideの未確認範囲
+- detail   : Git外の音源・DAW project・recipe・iPhone版・handoffをread-onlyで照合し、
+  private側へtrack id / source / 方式 / 所在 / 採用判定待ちを記録する。
+  private music-opsの既存未コミット作業と競合させない。現行YouTubeの公開担当確認と
+  公開URL照合は別工程。音源の移動・削除・upload、未確認の公開済み判定はしない。
 
 ### BL-031 — Music recording review scorecard v2（plan #9・machine↔human 橋）
 - priority : P1
@@ -369,6 +376,13 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 ---
 
 ## Done
+
+### BL-030 — #367 planとdoc権威の統合 ✅ 2026-09-07
+- outcome : userの全体統合依頼に基づき、既存Listenを総合入口、system manualを利用者向け正本、
+  Integration Indexをprotocol/schemaの入口、BACKLOGを作業の正本に固定。
+  二つの旧directionとroadmapは明示的な背景・履歴にし、元の提案を削除せず保存。
+  道具一覧は14項目のJSONから2表示へ生成し、実装・候補・手動・未実装を区別。
+  音質・実mobile・実機のhuman gateは既存itemとBL-045/BL-046へ残す。
 
 ### BL-044 — autonomy queue semantic gate ✅ 2026-08-02
 - `scripts/check-autonomy-queue.mjs` を追加し、fence / HTML comment / blockquote / codeを除く
