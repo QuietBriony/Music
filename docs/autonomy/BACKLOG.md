@@ -160,7 +160,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : docs
 - agent    : codex
 - human-gate: yes（採用・削除・公開・外部保存先の変更は人間判断）
-- status   : wip — codex 2026-09-07。初回のprivate出自ノート・既存台帳とのread-only結合・負例検証を実装。元script / 入力 / stemの回収と再現確認が残る。音源・判定・公開設定は未変更
+- status   : wip — codex 2026-09-08。private出自ノートにPCの素材所在・用途・再開ルート・比較作業票を接続。host/path/size境界も検証。元script / 入力 / stemの回収と再現確認が残る。音源・判定・公開設定は未変更
 - source   : 2026-09-07 Music Stack owner guideの未確認範囲
 - detail   : Git外の音源・DAW project・recipe・iPhone版・handoffをread-onlyで照合し、
   private側へtrack id / source / 方式 / 所在 / 採用判定待ちを記録する。
@@ -168,6 +168,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   公開URL照合は別工程。音源の移動・削除・upload、未確認の公開済み判定はしない。
   共通手順は`docs/WORK-PROVENANCE-GUIDE.md`。既存verdictを複製せず、出自・親素材・
   不足・Sonarで触れる範囲・改善先をprivate補助記録へ追加。再実行未確認をverifiedへ昇格しない。
+  ローカルとcloudの表示を区別し、登録済み素材の所在・サイズのみ点検。MIDI / projectの
+  現物と音声素材を区別した再開入口は実装済み。自動DAW起動・音声読込・再生成はしない。
 
 ### BL-031 — Music recording review scorecard v2（plan #9・machine↔human 橋）
 - priority : P1

@@ -19,6 +19,21 @@
 
 ---
 
+## 2026-09-08 — 制作ノートからローカル素材・編集の再開へ接続
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : 既存ネタをPCで開いて磨く入口と、音声・MIDI・生成の違いを分かりやすくする
+- repos      : Music（汎用guide / 台帳のみ）、private music-ops（既存制作ノートの改善）
+- implemented: privateの表示にlocal所在・拡張子別用途・3つの再開ルート・比較作業票を追加。
+  host違い・unsafe path・サイズ不一致・権限不足を確認済みリンクにしない負例検証を追加。
+  exact path / 個別作品 / cloudリンクはprivate内。元音源・project・catalog・判定は変更しない。
+- stack-check: PASS 33 / FAIL 0 / SKIP 0（baseline・変更後full gate）。private制作ノート34＋local所在69 check、private repo checkもPASS
+- backlog    : BL-046継続。表示と所在の入口を改善、元データ回収・再生成一致・本人の採用判断は残る
+- next       : BL-046 — 一つの比較区間を選び、未回収の元pattern / stemを確認して編集方式を決める
+- blockers   : 別PCの原本・実音・MIDI音源依存・オフライン保存は未検証。機材・音量・YouTubeは未操作。
+  private overlayの既存未コミット作業は保持。runtimeとcache versionは変更なし
+
+---
+
 ## 2026-09-07 — 既存の試聴棚を出自・再開方法へ接続
 - agent      : Codex（同じ会話内、委任なし）
 - goal       : ネタの意図、制作方式、親素材、再現の不足、Sonar等で磨く工程を辿れるようにする
