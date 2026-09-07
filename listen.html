@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Music Stack Listen</title>
-  <meta name="description" content="Music Stack listening entry points, listening cues, and unresolved review notes." />
+  <title>Music Stack — 聴く・触る・作って残す</title>
+  <meta name="description" content="Music Stackの総合入口。全道具の役割、最初の使い方、Sonar・音源生成・保存への道筋と実装状況。" />
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <meta name="theme-color" content="#061119" />
   <style>
@@ -15,7 +15,7 @@
       --panel-strong: rgba(10, 25, 36, 0.94);
       --line: rgba(214, 238, 246, 0.18);
       --text: rgba(236, 247, 250, 0.94);
-      --muted: rgba(190, 211, 218, 0.68);
+      --muted: #b2c5ce;
       --cyan: #71d9d0;
       --amber: #f0bf68;
       --rose: #e58da6;
@@ -318,6 +318,54 @@
       font-size: 0.76rem;
     }
 
+    html { scroll-padding-top: 16px; }
+    a:focus-visible, summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
+    .skip-link { position: absolute; left: 14px; top: -100px; z-index: 5; padding: 14px; background: var(--bg); }
+    .skip-link:focus { top: 8px; }
+    .top-actions a, .mini-link { display: inline-block; min-height: 44px; line-height: 1.5; }
+    .eyebrow { margin: 0 0 12px; color: var(--cyan); font-size: .76rem; letter-spacing: .14em; }
+    .section-head h2 { font-size: 1rem; letter-spacing: .02em; text-transform: none; }
+    .intent-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .intent-card { min-height: 155px; }
+    .intent-card .intent-no { color: var(--cyan); font: .75rem ui-monospace, monospace; margin: 0 0 14px; }
+    .intent-card strong { line-height: 1.45; }
+    .guide-note { color: var(--muted); font-size: .86rem; line-height: 1.8; }
+    .guide-note strong { color: var(--text); }
+    .journey { list-style: none; padding: 0; margin: 16px 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+    .journey li { background: var(--panel-strong); padding: 16px 14px; border-bottom: 2px solid var(--line); }
+    .journey b, .journey span { display: block; }
+    .journey b { font-size: .87rem; color: var(--cyan); margin-bottom: 8px; }
+    .journey span { color: var(--muted); font-size: .77rem; line-height: 1.7; }
+    .tool-group { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; margin: 10px 0; }
+    summary { cursor: pointer; padding: 17px 16px; font-weight: 600; line-height: 1.6; }
+    .tool-group summary span { color: var(--muted); font-size: .8rem; margin-left: 10px; white-space: nowrap; }
+    .tool-grid { padding: 0 16px 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .tool-item { min-width: 0; padding: 18px; background: #0b1c26; border: 1px solid var(--line); border-radius: 6px; }
+    .tool-item h3 { margin: 8px 0; font-size: 1.08rem; }
+    .tool-item p, .tool-item dd { font-size: .86rem; line-height: 1.8; }
+    .tool-item dd { margin: 3px 0 12px; color: var(--muted); }
+    .tool-item dt { font-size: .75rem; font-weight: 650; }
+    .tool-item .tool-status { color: var(--cyan); font-size: .73rem; margin: 0; }
+    .tool-item[data-tool-status="planned"] .tool-status,
+    .tool-item[data-tool-status="candidate"] .tool-status { color: var(--amber); }
+    .tool-item a { overflow-wrap: anywhere; }
+    .learning-panel { border-left: 3px solid var(--cyan); }
+    .learning-panel p { line-height: 1.8; font-size: .88rem; }
+    .review-fold { border: 1px solid var(--line); border-radius: 8px; padding: 0 14px 14px; }
+    .review-fold:not([open]) { padding-bottom: 0; }
+    .review-fold > summary { padding-left: 0; }
+    .review-fold .grid, .review-fold .pass-grid { margin-top: 8px; }
+    @media (max-width: 920px) { .intent-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 560px) {
+      .intent-grid, .tool-grid { grid-template-columns: 1fr; }
+      .intent-card { min-height: 112px; }
+      .journey { grid-template-columns: 1fr; }
+      .journey li { display: grid; grid-template-columns: 105px 1fr; gap: 10px; padding: 12px 14px; }
+      .journey b { margin: 0; }
+      .tool-grid { padding: 0 10px 10px; }
+      .tool-item { padding: 14px; }
+    }
+
     @media (max-width: 920px) {
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .pass-grid { grid-template-columns: 1fr; }
@@ -339,26 +387,257 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#start-here">使い方へスキップ</a>
   <div class="shell">
     <header>
       <div>
-        <h1>Music Stack Listen</h1>
-        <p class="subtitle">聴く入口、聴きどころ、未解決の指摘を一画面にまとめた実聴用ページ。</p>
+        <p class="eyebrow">LISTEN / PLAY / MAKE</p>
+        <h1>Music Stack</h1>
+        <p class="subtitle">聴く。触る。作って残す。<br>積み重ねてきた道具を、自分の音楽にするための入口。</p>
       </div>
       <nav class="top-actions" aria-label="Primary pages">
-        <a data-listen-target="hazama" href="band-room.html?band=hazama">HAZAMA Band Room</a>
-        <a data-listen-target="lyric-lab" href="lyric-lab.html">Lyric Lab</a>
-        <a href="fm.html">Hazama FM</a>
-        <a href="index.html">Core Rig</a>
+        <a href="#tool-map">全道具の地図</a>
+        <a href="#first-session">最初の15分</a>
+        <a href="#current-pass">試聴・確認待ち</a>
+        <a href="https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md">総合ガイド</a>
       </nav>
     </header>
 
     <main>
+    <section id="start-here" aria-labelledby="start-title">
+      <div class="section-head">
+        <h2 id="start-title">今日は、どこから遊ぶ？</h2>
+        <p class="section-note">最初は一つだけ。機材なしで始められます。</p>
+      </div>
+      <div class="intent-grid">
+        <a class="card intent-card blue" href="index.html"><div><p class="intent-no">01 / PLAY</p><strong>アシッド・質感を触る</strong><span>Core RigでCULTのACIDへ。<br>密度・余白・低域を一つずつ。</span></div><div class="meta"><b>Music Core Rig →</b></div></a>
+        <a class="card intent-card green" href="https://quietbriony.github.io/chill/session.html"><div><p class="intent-no">02 / SPACE</p><strong>静けさ・溶け方を聴く</strong><span>ピアノと長い休符。<br>音を足す前に、余白を知る。</span></div><div class="meta"><b>Chill Session →</b></div></a>
+        <a class="card intent-card amber" data-listen-target="hazama" href="band-room.html?band=hazama"><div><p class="intent-no">03 / COMPARE</p><strong>曲で遊ぶ・聴き比べる</strong><span>原音とブラウザAI再現。<br>パートを消す・差し替える。</span></div><div class="meta"><b>HAZAMA Band Room →</b></div></a>
+        <a class="card intent-card rose" data-listen-target="lyric-lab" href="lyric-lab.html"><div><p class="intent-no">04 / WRITE</p><strong>言葉・曲の意図を残す</strong><span>作品棚と制作パケット。<br>ACE-Step等へは人が渡す。</span></div><div class="meta"><b>Lyric Lab →</b></div></a>
+      </div>
+      <p class="guide-note">流しっぱなしなら <a class="mini-link" href="fm.html">Hazama FM</a>。
+        どのアプリも音を出すのは手動STARTから。この入口自体は音・MIDI・モデルを起動しません。</p>
+    </section>
+
+    <section id="production-flow" aria-labelledby="flow-title">
+      <div class="section-head"><h2 id="flow-title">全体像 — 探索から、一つの作品へ</h2></div>
+      <ol class="journey" aria-label="制作の順序。自動接続ではなく手動受け渡し">
+        <li><b>1. 意図を決める</b><span>reference / Lyric Lab<br>残すもの・削るもの</span></li>
+        <li><b>2. 聴く・触る</b><span>ブラウザの楽器群<br>まず一つを鳴らす</span></li>
+        <li><b>3. 素材を作る</b><span>REC / ACE-Step / renderer<br>音声・MIDI・recipe</span></li>
+        <li><b>4. 仕上げる</b><span>Sonar / NI / 人の演奏<br>編集・音色・mix</span></li>
+        <li><b>5. 保存・渡す</b><span>master / iPhone試聴版<br>公開は別の確認工程</span></li>
+      </ol>
+      <p class="guide-note"><strong>アプリ8つを同時に鳴らす図ではありません。</strong>
+        SYNCは設定情報の受け渡しで、録音・別PC同期・DAW接続ではありません。
+        <a class="mini-link" href="https://quietbriony.github.io/openclaw/">段取りを見る：OpenClaw Desk</a></p>
+    </section>
+
+    <section id="tool-map" aria-labelledby="tools-title">
+      <div class="section-head"><h2 id="tools-title">全道具の地図</h2><p class="section-note">用途・最初の一手・残るもの・まだできないこと。</p></div>
+      <p class="guide-note">実装あり ≠ 音質・実機・公開まで確認済み。<strong>候補／手動工程／未実装</strong>は分けてあります。</p>
+<!-- stack-tools:begin -->
+<p class="guide-note">ソース照合：2026-09-07。実装確認と、実音・実機の合格は別です。</p>
+<details class="tool-group" data-tool-group="browser">
+  <summary>ブラウザで聴く・触る・整理する <span>8項目</span></summary>
+  <div class="tool-grid">
+    <article class="tool-item" id="tool-core-rig" data-tool-status="implemented">
+      <p class="tool-status">Music · 実装あり・実音評価は別</p>
+      <h3>Music Core Rig</h3>
+      <p>密度と質感をつまみで演奏する中心の音源。アシッドやIDM探索の入口。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>START → AUTO MIXを手動に → CULTのACIDを試し、まず一つのfaderだけ動かす。</dd>
+        <dt>残るもの</dt><dd>RECの音声ファイル／SYNCの設定JSON。</dd>
+        <dt>できることの境界</dt><dd>Hazama FMと同じengine。汎用ピアノロールや303専用16-stepエディタではない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="core-rig" href="index.html">Music Core Rig — 開く</a>
+    </article>
+    <article class="tool-item" id="tool-hazama-fm" data-tool-status="implemented">
+      <p class="tool-status">Music · 実装あり・実音評価は別</p>
+      <h3>Hazama FM</h3>
+      <p>ジャンルとenergyを選んで流す、少ない操作のラジオ。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>START → techno / ambient / pianoなどを一つ選び、60–90秒聴く。</dd>
+        <dt>残るもの</dt><dd>RECの音声ファイル／SYNCの設定・聴感文脈。</dd>
+        <dt>できることの境界</dt><dd>YouTubeのhazamaチャンネルとは別のアプリ。新曲をAIモデルで生成・投稿するボタンではない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="hazama-fm" href="fm.html">Hazama FM — 開く</a>
+    </article>
+    <article class="tool-item" id="tool-band-room" data-tool-status="implemented">
+      <p class="tool-status">Music · 実装あり・実音評価は別</p>
+      <h3>Band Room / HAZAMA</h3>
+      <p>原音のパート別音声とブラウザAI再現を聴き比べ、練習・差し替え・録音する。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>HAZAMA 01の原音でSTART → AI再現と比較。Tabasco等の通常Band Roomにも切り替えられる。</dd>
+        <dt>残るもの</dt><dd>mix REC／4 stems pack／listening note。MIDI読込は先頭1小節のドラム用。</dd>
+        <dt>できることの境界</dt><dd>HAZAMA v401の音質・実mobileはBL-041で判定待ち。02 AIは01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作で、一般的な鍵盤・CC learnではない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="band-room" href="band-room.html?band=hazama">Band Room / HAZAMA — 開く</a>
+    </article>
+    <article class="tool-item" id="tool-lyric-lab" data-tool-status="implemented">
+      <p class="tool-status">Music · 実装あり・実音評価は別</p>
+      <h3>Lyric Lab</h3>
+      <p>歌詞・曲の設計・制作指示を一曲ずつ整理する作品棚。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>既存作品を開く → 制作先とBPM等を確認 → 制作パケットをコピー。</dd>
+        <dt>残るもの</dt><dd>歌詞付き制作指示／歌詞を含まないScene metadata。</dd>
+        <dt>できることの境界</dt><dd>ACE-Step等へ自動送信しない。端末間の作品棚同期は認証済みCloudflare/D1環境が別途必要。GitHub Pagesの入口だけでは保証されない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="lyric-lab" href="lyric-lab.html">Lyric Lab — 開く</a>
+    </article>
+    <article class="tool-item" id="tool-chill" data-tool-status="implemented">
+      <p class="tool-status">chill · 実装あり・実音評価は別</p>
+      <h3>Chill Session</h3>
+      <p>ピアノと余白を中心に、ゆっくり変化する静かな演奏。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>START。まずピアノだけを聴き、必要な時だけBASS / DRUMSを足す。</dd>
+        <dt>残るもの</dt><dd>ブラウザ演奏／quiet-piano recipeとsession文脈。</dd>
+        <dt>できることの境界</dt><dd>独立したactiveアプリ。汎用アンビエントに統一せず、長い休符とピアノの役割を残す。実音の好みの判定は別。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="chill" href="https://quietbriony.github.io/chill/session.html">Chill Session — 開く</a>
+    </article>
+    <article class="tool-item" id="tool-drum-floor" data-tool-status="implemented">
+      <p class="tool-status">drum-floor · 実装あり・実音評価は別</p>
+      <h3>Drum Floor</h3>
+      <p>ノリ・休符・強弱を作るドラム専門の演奏面と候補生成器。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>最初はマイクもMIDIも使わず、再生（SYNC/手動）でgrooveを試す。</dd>
+        <dt>残るもの</dt><dd>ブラウザ演奏／CLIのMIDI候補／明示有効化した時だけMIDI note出力。</dd>
+        <dt>できることの境界</dt><dd>SYNC受信だけでは再生・MIDI送信しない。MusicやDAWとのサンプル精度の同時演奏を保証するものではない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="drum-floor" href="https://quietbriony.github.io/drum-floor/">Drum Floor — 開く</a>
+    </article>
+    <article class="tool-item" id="tool-namima" data-tool-status="implemented">
+      <p class="tool-status">namima · 実装あり・実音評価は別</p>
+      <h3>Namima</h3>
+      <p>水・庭・穏やかな空気のための、映像付きアンビエント。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>Tap to start → 音と波紋を聴く。ほかのプレイヤーは止めて比較する。</dd>
+        <dt>残るもの</dt><dd>ブラウザの音・映像／安全なmoodの翻訳。</dd>
+        <dt>できることの境界</dt><dd>同じrepoのオフライン周波数レンダーとは別物。暗いアシッドや強い低域を既定音へ混ぜない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="namima" href="https://quietbriony.github.io/namima/">Namima — 開く</a>
+    </article>
+    <article class="tool-item" id="tool-desk" data-tool-status="implemented">
+      <p class="tool-status">openclaw · 実装あり・実音評価は別</p>
+      <h3>OpenClaw Desk</h3>
+      <p>SYNCを読み、次の行き先・確認待ち・候補の段取りを見る制作卓。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>Core RigかFMでSYNC → 同じブラウザのDeskでlatest packetを確認。</dd>
+        <dt>残るもの</dt><dd>review・routing案・人間が実行するコマンドの提示。</dd>
+        <dt>できることの境界</dt><dd>このrepoのDeskは音を出さず、機材操作・REC・upload・mergeを自動実行しない。汎用OpenClaw製品の説明ではない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="desk" href="https://quietbriony.github.io/openclaw/">OpenClaw Desk — 開く</a>
+    </article>
+  </div>
+</details>
+<details class="tool-group" data-tool-group="production">
+  <summary>PCで作る・仕上げる・渡す <span>5項目</span></summary>
+  <div class="tool-grid">
+    <article class="tool-item" id="tool-ace-step" data-tool-status="manual">
+      <p class="tool-status">Music · 手動工程・環境確認</p>
+      <h3>ACE-Step 制作レーン</h3>
+      <p>スタイル文や歌詞から固定音声の候補を作り、人が選ぶオフライン制作。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>既存のHAZAMA制作レシピを読む。実行PC・model・出力先を確認してから別途生成する。</dd>
+        <dt>残るもの</dt><dd>生成音声／seed・prompt・採用判断。HAZAMA Still Movingの制作実績あり。</dd>
+        <dt>できることの境界</dt><dd>Band RoomのAI再現とは別の生成方式。GPU・model download・生成はこの入口から開始しない。生成物のYouTube公開実績は未確認。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="ace-step" href="https://github.com/QuietBriony/Music/blob/main/docs/ACE-STEP-WORKFLOW.md">ACE-Step 制作レーン — 手順を読む</a>
+    </article>
+    <article class="tool-item" id="tool-offline-render" data-tool-status="candidate">
+      <p class="tool-status">namima · 候補・要検証</p>
+      <h3>周波数・IDMレンダー / iPhone受け渡し</h3>
+      <p>周波数・ドローン・深いビートの実験を固定ファイルとして作る、別系統のPythonレーン。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>namimaのREADMEでcandidate境界と依存を確認。出力先を明示して試作する。</dd>
+        <dt>残るもの</dt><dd>WAV／ffmpeg利用時のiPhone用M4A／seed・SHA-256付きhandoff。専用調律向けMIDIも別モジュールにある。</dd>
+        <dt>できることの境界</dt><dd>ブラウザNamimaへ未接続。依存・保存先・調律音源は環境確認が必要。M4A作成はDrive同期完了やYouTube公開を意味しない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="offline-render" href="https://github.com/QuietBriony/namima/blob/main/README.md">周波数・IDMレンダー / iPhone受け渡し — 手順を読む</a>
+    </article>
+    <article class="tool-item" id="tool-worker-pipeline" data-tool-status="manual">
+      <p class="tool-status">Music · 手動工程・環境確認</p>
+      <h3>素材解析・stems・AI再現の制作CLI</h3>
+      <p>既存素材の解析・パート分離・再現候補・DAW受け渡しを支える制作スクリプト群。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>runbookで対象コマンドとmachine capabilityを確認。重い処理は別途明示して実行する。</dd>
+        <dt>残るもの</dt><dd>repo外のworker-output／解析metadata／stemsや再現候補。</dd>
+        <dt>できることの境界</dt><dd>データを作るレーンで、公開runtimeの自動更新器ではない。未採用候補を既存曲へ上書きしない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="worker-pipeline" href="https://github.com/QuietBriony/Music/blob/main/docs/WORKER-GAMING-RUNBOOK.md">素材解析・stems・AI再現の制作CLI — 手順を読む</a>
+    </article>
+    <article class="tool-item" id="tool-daw-hardware" data-tool-status="manual">
+      <p class="tool-status">Music · 手動工程・環境確認</p>
+      <h3>Sonar / NI / MIDI・機材</h3>
+      <p>MIDIを目で直し、好きな音源で鳴らし、人の演奏とmixを仕上げる場所。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>音声かMIDIを一つ持ち込み、Sonarの1トラックで確認。実機接続はprivate台帳から別途確認。</dd>
+        <dt>残るもの</dt><dd>DAW project／MIDI／採用音色の設定／mix・master。</dd>
+        <dt>できることの境界</dt><dd>MIDIだけではNI preset・303 slide・microtuning・音色は再現されない。M32等のノブ割当やEP-133への書込みを自動化しない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="daw-hardware" href="https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md#daw">Sonar / NI / MIDI・機材 — 手順を読む</a>
+    </article>
+    <article class="tool-item" id="tool-release" data-tool-status="manual">
+      <p class="tool-status">Music · 手動工程・環境確認</p>
+      <h3>保存・動画化・YouTube公開</h3>
+      <p>採用音源を聴ける形で保存し、動画・説明・権利確認を揃えて公開担当へ渡す。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>masterとiPhone試聴版、制作メモを一組にして保存。公開先と権限は公開担当へ確認する。</dd>
+        <dt>残るもの</dt><dd>受け渡し一式。公開URLは実際の公開確認後に記録。</dd>
+        <dt>できることの境界</dt><dd>現行YouTubeの制作方式・投稿済み曲・upload権限は今回未監査。Gitの同期や音源生成だけでは投稿されない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="release" href="https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md#delivery">保存・動画化・YouTube公開 — 手順を読む</a>
+    </article>
+  </div>
+</details>
+<details class="tool-group" data-tool-group="next">
+  <summary>これから育てる <span>1項目</span></summary>
+  <div class="tool-grid">
+    <article class="tool-item" id="tool-visual-composer" data-tool-status="planned">
+      <p class="tool-status">Music · 未実装・設計のみ</p>
+      <h3>和声マップ＋アシッド演奏面</h3>
+      <p>Drums / Acid / Airを同じ時間軸で触り、ノリを固定しながら和声を溶かす小さな楽器。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>既存部品と不足分の設計を見る。まず機材なしの8小節を完成条件にする。</dd>
+        <dt>残るもの</dt><dd>計画: session JSON＋MIDI＋音色・調律・slide等の受け渡しメモ。</dd>
+        <dt>できることの境界</dt><dd>まだ演奏画面はない。Sonarの代替DAWは作らず、既存音源の既定動作も変更しない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="visual-composer" href="https://github.com/QuietBriony/Music/blob/main/docs/VISUAL-COMPOSER-PLAN.md">和声マップ＋アシッド演奏面 — 設計を読む</a>
+    </article>
+  </div>
+</details>
+<!-- stack-tools:end -->
+      <p class="guide-note">機能の正本：<a class="mini-link" href="config/music-stack-tools.json">道具台帳 JSON</a>
+        <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md">根拠・使い方・保存の総合ガイド</a>
+        実機・現配線の正本は非公開music-ops。公開ページには複製しません。</p>
+      <p class="guide-note">この一覧はページ内で読めます。詳しい文書はGitHubの読みやすい表示へ開くため、通信が必要です。</p>
+    </section>
+
+    <section id="first-session" aria-labelledby="first-session-title">
+      <div class="section-head"><h2 id="first-session-title">最初の15分 — 一つのネタを、開き直せるところまで</h2></div>
+      <div class="pass-grid">
+        <div class="pass-panel learning-panel">
+          <h3>今日はCore Rigひとつで</h3>
+          <ol><li>START → AUTO MIXを手動 → CULTのACIDを選ぶ。</li><li>つまみを一つだけ動かして戻す。低域・音数・空間、何が変わった？</li><li>60–90秒聴き、「残す1点／削る1点」をメモ。</li><li>設定を残すならSYNC。音を残すならREC。保存形式はブラウザごとに確認。</li></ol>
+          <p class="guide-note">「もっと生成」より先に、同じネタをもう一度開けることを目標に。</p>
+        </div>
+        <div class="pass-panel">
+          <h3>この先の道筋</h3>
+          <p class="guide-note">Sonarは仕上げと目で見るMIDI編集に残す。自作するのは、好みを直接触れる小さな楽器。
+            次は<strong>Drums / Acid / Airの8小節</strong>。和声マップと16-step演奏面は、まだ設計段階です。</p>
+          <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/VISUAL-COMPOSER-PLAN.md">和声マップ＋アシッドの設計</a>
+          <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md#delivery">保存・iPhone・YouTubeへの受け渡し</a>
+        </div>
+      </div>
+    </section>
+
     <section id="current-pass" aria-labelledby="today-pass-title" data-current-listen-pass="hazama-v401">
       <div class="section-head">
-        <h2 id="today-pass-title">Today&apos;s listening pass</h2>
+        <h2 id="today-pass-title">確認待ち — HAZAMAの試聴</h2>
         <p class="section-note">HAZAMA 01/02 × 原音/AIを短く比較してから6分arcへ。</p>
       </div>
+      <details class="review-fold"><summary>HAZAMA v401：原音／AIの4ケースと実機確認を開く</summary>
       <div class="pass-grid">
         <div class="pass-panel">
           <h3>HAZAMA 4ケース quick pass（各15–30秒）</h3>
@@ -386,8 +665,10 @@
           </ul>
         </div>
       </div>
+      </details>
     </section>
 
+    <details class="review-fold" id="listening-library"><summary>詳しい試聴ライブラリー・過去の比較・feedback</summary>
     <section id="historical-passes" aria-labelledby="fm-audition-title">
       <div class="section-head">
         <h2 id="fm-audition-title">FM quick audition</h2>
@@ -576,10 +857,11 @@
       </div>
     </section>
 
+    </details>
     </main>
 
     <footer>
-      <span>Music Stack listening index</span>
+      <span>Music Stack · 道具を知る → 音を作る → 残す</span>
       <span><a class="mini-link" href="docs/music-stack-human-review-queue.html">Human review queue</a></span>
     </footer>
   </div>

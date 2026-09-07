@@ -1,5 +1,16 @@
 # Music Stack Integration Index
 
+## まず使う／全体を理解する
+
+- [Music Stack Listen](../listen.html): 日常の総合入口。別の管理アプリを増やさない。
+- [全体像と使い方](MUSIC-STACK-SYSTEM-MANUAL.md): 利用者向け正本。生成・演奏・DAW・保存を区別。
+- [道具台帳](../config/music-stack-tools.json): publicな入口・機能・境界・実装根拠。
+- [BACKLOG](autonomy/BACKLOG.md): 現行の作業待ち行列。過去のNext PR Planは直接実行しない。
+
+2026-09-07の統合では、このindexをrepo責任と連携契約の入口、system manualを利用の入口に固定。
+二つのorchestra direction文書と旧ロードマップは背景・履歴として残す。runtimeのprotocol / schemaは
+置き換えない。実機の正本は引き続きprivate `music-ops`で、public機能台帳へ移さない。
+
 ## 1. Purpose
 
 This document is the top-level entry for the current Music Stack integration

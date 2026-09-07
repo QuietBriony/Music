@@ -1,5 +1,9 @@
 # Music Integration Catalog
 
+利用する道具の一覧は [総合manual](MUSIC-STACK-SYSTEM-MANUAL.md) /
+[生成元JSON](../config/music-stack-tools.json)へ。この文書はrepo単位の責任境界の短縮版。
+新しい作業は[BACKLOG](autonomy/BACKLOG.md)から取り、下記や旧計画の再実装をしない。
+
 ## 1) Purpose
 
 This document is the current catalog for the local Music Stack roles and safe

@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-09-07",
+  "evidence_scope": "Repository source inspection, not an audible, device, account, or publication certification. source_revisions are the audit starting commits; newly authored Music guide files belong to this change, not those base commits.",
+  "source_revisions": {
+    "Music": "9bc8c4e",
+    "chill": "2e15163",
+    "drum-floor": "175fb1a",
+    "namima": "ac2b2ab",
+    "openclaw": "9aa5166"
+  },
+  "groups": [
+    { "id": "browser", "title": "ブラウザで聴く・触る・整理する" },
+    { "id": "production", "title": "PCで作る・仕上げる・渡す" },
+    { "id": "next", "title": "これから育てる" }
+  ],
+  "statuses": {
+    "implemented": "実装あり・実音評価は別",
+    "candidate": "候補・要検証",
+    "manual": "手動工程・環境確認",
+    "planned": "未実装・設計のみ"
+  },
+  "tools": [
+    {
+      "id": "core-rig", "repo": "Music", "group": "browser", "status": "implemented",
+      "title": "Music Core Rig", "href": "index.html", "action": "開く",
+      "purpose": "密度と質感をつまみで演奏する中心の音源。アシッドやIDM探索の入口。",
+      "first_step": "START → AUTO MIXを手動に → CULTのACIDを試し、まず一つのfaderだけ動かす。",
+      "outputs": "RECの音声ファイル／SYNCの設定JSON。",
+      "boundary": "Hazama FMと同じengine。汎用ピアノロールや303専用16-stepエディタではない。",
+      "sources": [{ "repo": "Music", "path": "index.html" }, { "repo": "Music", "path": "docs/USAGE-MUSIC-CORE-RIG.md" }, { "repo": "Music", "path": "audio/music-recorder.js" }]
+    },
+    {
+      "id": "hazama-fm", "repo": "Music", "group": "browser", "status": "implemented",
+      "title": "Hazama FM", "href": "fm.html", "action": "開く",
+      "purpose": "ジャンルとenergyを選んで流す、少ない操作のラジオ。",
+      "first_step": "START → techno / ambient / pianoなどを一つ選び、60–90秒聴く。",
+      "outputs": "RECの音声ファイル／SYNCの設定・聴感文脈。",
+      "boundary": "YouTubeのhazamaチャンネルとは別のアプリ。新曲をAIモデルで生成・投稿するボタンではない。",
+      "sources": [{ "repo": "Music", "path": "fm.html" }, { "repo": "Music", "path": "fm.js" }, { "repo": "Music", "path": "audio/music-recorder.js" }]
+    },
+    {
+      "id": "band-room", "repo": "Music", "group": "browser", "status": "implemented",
+      "title": "Band Room / HAZAMA", "href": "band-room.html?band=hazama", "action": "開く",
+      "purpose": "原音のパート別音声とブラウザAI再現を聴き比べ、練習・差し替え・録音する。",
+      "first_step": "HAZAMA 01の原音でSTART → AI再現と比較。Tabasco等の通常Band Roomにも切り替えられる。",
+      "outputs": "mix REC／4 stems pack／listening note。MIDI読込は先頭1小節のドラム用。",
+      "boundary": "HAZAMA v401の音質・実mobileはBL-041で判定待ち。02 AIは01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作で、一般的な鍵盤・CC learnではない。",
+      "sources": [{ "repo": "Music", "path": "band-room.html" }, { "repo": "Music", "path": "band-room.js" }, { "repo": "Music", "path": "presets/bands.json" }]
+    },
+    {
+      "id": "lyric-lab", "repo": "Music", "group": "browser", "status": "implemented",
+      "title": "Lyric Lab", "href": "lyric-lab.html", "action": "開く",
+      "purpose": "歌詞・曲の設計・制作指示を一曲ずつ整理する作品棚。",
+      "first_step": "既存作品を開く → 制作先とBPM等を確認 → 制作パケットをコピー。",
+      "outputs": "歌詞付き制作指示／歌詞を含まないScene metadata。",
+      "boundary": "ACE-Step等へ自動送信しない。端末間の作品棚同期は認証済みCloudflare/D1環境が別途必要。GitHub Pagesの入口だけでは保証されない。",
+      "sources": [{ "repo": "Music", "path": "lyric-lab.js" }, { "repo": "Music", "path": "docs/LYRIC-LAB-USAGE.md" }, { "repo": "Music", "path": "functions/api/lyric-drafts.js" }]
+    },
+    {
+      "id": "chill", "repo": "chill", "group": "browser", "status": "implemented",
+      "title": "Chill Session", "href": "https://quietbriony.github.io/chill/session.html", "action": "開く",
+      "purpose": "ピアノと余白を中心に、ゆっくり変化する静かな演奏。",
+      "first_step": "START。まずピアノだけを聴き、必要な時だけBASS / DRUMSを足す。",
+      "outputs": "ブラウザ演奏／quiet-piano recipeとsession文脈。",
+      "boundary": "独立したactiveアプリ。汎用アンビエントに統一せず、長い休符とピアノの役割を残す。実音の好みの判定は別。",
+      "sources": [{ "repo": "chill", "path": "session.html" }, { "repo": "chill", "path": "engine.js" }, { "repo": "chill", "path": "AGENTS.md" }]
+    },
+    {
+      "id": "drum-floor", "repo": "drum-floor", "group": "browser", "status": "implemented",
+      "title": "Drum Floor", "href": "https://quietbriony.github.io/drum-floor/", "action": "開く",
+      "purpose": "ノリ・休符・強弱を作るドラム専門の演奏面と候補生成器。",
+      "first_step": "最初はマイクもMIDIも使わず、再生（SYNC/手動）でgrooveを試す。",
+      "outputs": "ブラウザ演奏／CLIのMIDI候補／明示有効化した時だけMIDI note出力。",
+      "boundary": "SYNC受信だけでは再生・MIDI送信しない。MusicやDAWとのサンプル精度の同時演奏を保証するものではない。",
+      "sources": [{ "repo": "drum-floor", "path": "app.js" }, { "repo": "drum-floor", "path": "src/midi-output.js" }, { "repo": "drum-floor", "path": "drum_floor/midi.py" }]
+    },
+    {
+      "id": "namima", "repo": "namima", "group": "browser", "status": "implemented",
+      "title": "Namima", "href": "https://quietbriony.github.io/namima/", "action": "開く",
+      "purpose": "水・庭・穏やかな空気のための、映像付きアンビエント。",
+      "first_step": "Tap to start → 音と波紋を聴く。ほかのプレイヤーは止めて比較する。",
+      "outputs": "ブラウザの音・映像／安全なmoodの翻訳。",
+      "boundary": "同じrepoのオフライン周波数レンダーとは別物。暗いアシッドや強い低域を既定音へ混ぜない。",
+      "sources": [{ "repo": "namima", "path": "audio.js" }, { "repo": "namima", "path": "sketch.js" }, { "repo": "namima", "path": "music-session-adapter.js" }]
+    },
+    {
+      "id": "desk", "repo": "openclaw", "group": "browser", "status": "implemented",
+      "title": "OpenClaw Desk", "href": "https://quietbriony.github.io/openclaw/", "action": "開く",
+      "purpose": "SYNCを読み、次の行き先・確認待ち・候補の段取りを見る制作卓。",
+      "first_step": "Core RigかFMでSYNC → 同じブラウザのDeskでlatest packetを確認。",
+      "outputs": "review・routing案・人間が実行するコマンドの提示。",
+      "boundary": "このrepoのDeskは音を出さず、機材操作・REC・upload・mergeを自動実行しない。汎用OpenClaw製品の説明ではない。",
+      "sources": [{ "repo": "openclaw", "path": "index.html" }, { "repo": "openclaw", "path": "README.md" }, { "repo": "openclaw", "path": "AGENTS.md" }]
+    },
+    {
+      "id": "ace-step", "repo": "Music", "group": "production", "status": "manual",
+      "title": "ACE-Step 制作レーン", "href": "https://github.com/QuietBriony/Music/blob/main/docs/ACE-STEP-WORKFLOW.md", "action": "手順を読む",
+      "purpose": "スタイル文や歌詞から固定音声の候補を作り、人が選ぶオフライン制作。",
+      "first_step": "既存のHAZAMA制作レシピを読む。実行PC・model・出力先を確認してから別途生成する。",
+      "outputs": "生成音声／seed・prompt・採用判断。HAZAMA Still Movingの制作実績あり。",
+      "boundary": "Band RoomのAI再現とは別の生成方式。GPU・model download・生成はこの入口から開始しない。生成物のYouTube公開実績は未確認。",
+      "sources": [{ "repo": "Music", "path": "docs/HAZAMA-STILL-MOVING-ACESTEP.md" }, { "repo": "Music", "path": "config/external-dependencies.json" }]
+    },
+    {
+      "id": "offline-render", "repo": "namima", "group": "production", "status": "candidate",
+      "title": "周波数・IDMレンダー / iPhone受け渡し", "href": "https://github.com/QuietBriony/namima/blob/main/README.md", "action": "手順を読む",
+      "purpose": "周波数・ドローン・深いビートの実験を固定ファイルとして作る、別系統のPythonレーン。",
+      "first_step": "namimaのREADMEでcandidate境界と依存を確認。出力先を明示して試作する。",
+      "outputs": "WAV／ffmpeg利用時のiPhone用M4A／seed・SHA-256付きhandoff。専用調律向けMIDIも別モジュールにある。",
+      "boundary": "ブラウザNamimaへ未接続。依存・保存先・調律音源は環境確認が必要。M4A作成はDrive同期完了やYouTube公開を意味しない。",
+      "sources": [{ "repo": "namima", "path": "src/namima/deliver.py" }, { "repo": "namima", "path": "src/namima/idm_ambient.py" }, { "repo": "namima", "path": "src/namima/solfeggio_composer.py" }, { "repo": "namima", "path": "src/namima/midi_export.py" }, { "repo": "namima", "path": "src/namima/hazama_release.py" }]
+    },
+    {
+      "id": "worker-pipeline", "repo": "Music", "group": "production", "status": "manual",
+      "title": "素材解析・stems・AI再現の制作CLI", "href": "https://github.com/QuietBriony/Music/blob/main/docs/WORKER-GAMING-RUNBOOK.md", "action": "手順を読む",
+      "purpose": "既存素材の解析・パート分離・再現候補・DAW受け渡しを支える制作スクリプト群。",
+      "first_step": "runbookで対象コマンドとmachine capabilityを確認。重い処理は別途明示して実行する。",
+      "outputs": "repo外のworker-output／解析metadata／stemsや再現候補。",
+      "boundary": "データを作るレーンで、公開runtimeの自動更新器ではない。未採用候補を既存曲へ上書きしない。",
+      "sources": [{ "repo": "Music", "path": "scripts/worker-gaming-pipeline.py" }, { "repo": "Music", "path": "scripts/render-bandroom-ai-recreation.py" }, { "repo": "Music", "path": "docs/BAND-ROOM-AI-RECREATION-GROWTH-LOOP.md" }]
+    },
+    {
+      "id": "daw-hardware", "repo": "Music", "group": "production", "status": "manual",
+      "title": "Sonar / NI / MIDI・機材", "href": "https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md#daw", "action": "手順を読む",
+      "purpose": "MIDIを目で直し、好きな音源で鳴らし、人の演奏とmixを仕上げる場所。",
+      "first_step": "音声かMIDIを一つ持ち込み、Sonarの1トラックで確認。実機接続はprivate台帳から別途確認。",
+      "outputs": "DAW project／MIDI／採用音色の設定／mix・master。",
+      "boundary": "MIDIだけではNI preset・303 slide・microtuning・音色は再現されない。M32等のノブ割当やEP-133への書込みを自動化しない。",
+      "sources": [{ "repo": "Music", "path": "docs/DAW-INTEGRATION.md" }, { "repo": "Music", "path": "docs/EP133-KOII-BANDROOM-WORKFLOW.md" }, { "repo": "Music", "path": "references/studiopc-sonar-ni-reference.json" }]
+    },
+    {
+      "id": "release", "repo": "Music", "group": "production", "status": "manual",
+      "title": "保存・動画化・YouTube公開", "href": "https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md#delivery", "action": "手順を読む",
+      "purpose": "採用音源を聴ける形で保存し、動画・説明・権利確認を揃えて公開担当へ渡す。",
+      "first_step": "masterとiPhone試聴版、制作メモを一組にして保存。公開先と権限は公開担当へ確認する。",
+      "outputs": "受け渡し一式。公開URLは実際の公開確認後に記録。",
+      "boundary": "現行YouTubeの制作方式・投稿済み曲・upload権限は今回未監査。Gitの同期や音源生成だけでは投稿されない。",
+      "sources": [{ "repo": "Music", "path": "docs/PRODUCTION-PATH.md" }, { "repo": "Music", "path": "docs/MUSIC-STACK-SYSTEM-MANUAL.md" }]
+    },
+    {
+      "id": "visual-composer", "repo": "Music", "group": "next", "status": "planned",
+      "title": "和声マップ＋アシッド演奏面", "href": "https://github.com/QuietBriony/Music/blob/main/docs/VISUAL-COMPOSER-PLAN.md", "action": "設計を読む",
+      "purpose": "Drums / Acid / Airを同じ時間軸で触り、ノリを固定しながら和声を溶かす小さな楽器。",
+      "first_step": "既存部品と不足分の設計を見る。まず機材なしの8小節を完成条件にする。",
+      "outputs": "計画: session JSON＋MIDI＋音色・調律・slide等の受け渡しメモ。",
+      "boundary": "まだ演奏画面はない。Sonarの代替DAWは作らず、既存音源の既定動作も変更しない。",
+      "sources": [{ "repo": "Music", "path": "docs/VISUAL-COMPOSER-PLAN.md" }, { "repo": "drum-floor", "path": "src/midi-output.js" }, { "repo": "Music", "path": "band-room.js" }]
+    }
+  ]
+}

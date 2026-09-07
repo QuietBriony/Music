@@ -1,5 +1,12 @@
 # Music Stack Orchestra — Next 12 PR Plan 実装状況（正本）
 
+> **2026-09-07 closeout（BL-030）**: ユーザーの全体統合依頼により、文書を削除せず
+> 旧二つのdirectionを歴史資料へ位置づけ、Integration Index → protocol / schema、
+> 総合manual → 利用、BACKLOG → 作業、という権威を一本化した。
+> 以下は2026-07時点の照合記録で、現在の作業キューではない。chillは現行
+> `chill/AGENTS.md`と`autonomy/STACK-INDEX.md`上でactiveなquiet piano / trio surface。
+> 下の#8や「案A/B待ち」を再開要求として扱わない。人間の音質・実機ゲートは引き続きBACKLOGに残す。
+
 > `docs/music-stack-orchestra-development-direction.md` §5 の「Next 12 PR Plan」を
 > **リポジトリの現物と突き合わせた結果**。plan から item を取る agent（Claude / Codex）は
 > 着手前に必ずここを見ること。12 行中 6 行は既に出荷済みで、再実装は禁止。

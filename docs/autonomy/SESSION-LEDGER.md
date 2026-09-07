@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-09-07 — Music Stackを理解して使う入口へ統合 (v402)
+- agent      : Codex（同じ会話内で棚卸し・実装。委任なし）
+- goal       : 積み上がった道具の役割、実装境界、使い方、保存・制作先を一つの入口で把握できるようにする
+- repos      : Music（Listen / public docs / catalog / build-time checks）。sister 4 repoとprivate overlayは参照のみ
+- implemented: Listenの用途別入口・14道具の生成一覧・15分の導線、system manual、和声＋acidの設計。
+  古いdirection/roadmapは履歴へ整理。音声engine / FM / Band Roomの既定動作・機材設定・外部upload不変
+  共有cacheはhazama-fm-v402。出荷commit / PRは本変更のGit履歴を参照。
+  Playwrightで1280px / 390px、横overflowなし、折りたたみとEnter操作、読みやすい文書リンクを確認。
+  Listenのaudio / video / iframe / script要素0、console error 0。実端末の音質確認は含めない
+- stack-check: PASS 33 / FAIL 0 / SKIP 0（新規guide gateを含む。baselineは32 PASS。変更後に再実行）
+- backlog    : BL-030 Done。BL-045 / BL-046を追加
+- next       : BL-046 — 採用候補の所在・方式・試聴版をprivateで台帳化するread-only棚卸し
+- blockers   : 個々の既存音源の全件試聴、実iPhone / MIDI / 配線、別PC / Drive同期、YouTube公開状態は未確認。
+  private music-opsの無関係な未コミット変更は保持し、今回は編集しない
+
+---
+
 ## 2026-08-16 [worker-gaming] — public Music / private music-ops 境界を実装
 - agent      : Codex（repo棚卸し、private overlay新設、public current-tree sanitization）
 - goal       : Music Stackのactive 5 repoを維持しつつ、創作知識と所有機材・実配線・実環境の正本を分離する

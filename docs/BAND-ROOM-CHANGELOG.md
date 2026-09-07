@@ -1,6 +1,17 @@
-# Band Room - Changelog (v65 -> v401 compact)
+# Band Room - Changelog (v65 -> v402 compact)
 
-Current sw.js VERSION: v401. Latest Band Room runtime change: v401 (HAZAMA authored-rest pocket + truthful arp bulk controls). v400 provides HAZAMA 02 AI honesty, session-only KARAOKE, and exact lyric boundaries. v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard).
+Current sw.js VERSION: v402. Latest Band Room runtime change: v401 (HAZAMA authored-rest pocket + truthful arp bulk controls). v402 changes only the shared Listen/guide surface and its cache, not the audio runtime. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE, and exact lyric boundaries. v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard).
+
+## v402 compact - Music Stack owner guide and single tool catalog
+
+Shared cache: `hazama-fm-v402`。Band Roomのaudio asset tupleはv401から不変。
+
+- Listenを日常の総合入口へ整理。用途別4入口、制作の5段階、全14道具、最初の15分。
+- 既存HAZAMA v401の試聴ゲート・02 AI暫定表示・過去の比較を保持し、詳細は折りたたむ。
+- `config/music-stack-tools.json`からListenとsystem manualの一覧を生成。Node built-insの検証を追加。
+- 古いdirection / roadmapを履歴として位置づけ、現行の契約・使い方・BACKLOGへ誘導。
+- 和声マップ＋アシッドは設計のみ。Sonar、private運用台帳、手動公開の役割を分離。
+- engine / FM / Band Roomの音・既定再生・MIDI・録音は変更なし。依存・音源・model・workflow追加なし。
 
 ---
 

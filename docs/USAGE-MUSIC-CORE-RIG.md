@@ -14,7 +14,7 @@
 > v170 以降は bassline director も共有され、Core Rig 側でも walking bass の
 > gate / interval walk が phrase ごとに動きます。
 >
-> REC ボタンで wav export → Band Room の **🥁🎸🎹 external stems slot** に
+> 現行RECはブラウザ対応によりM4A / WebM。必要なら音声変換してBand Roomの **🥁🎸🎹 external stems slot** に
 > drag-drop で素材橋。lofi mode の録音は Nujabes 寄り素材として Band Room
 > の Tabasco に重ねられる。
 
@@ -29,7 +29,7 @@
 | 用途 | 流しっぱなし作業 BGM | 音作り・特定の質感探し |
 | 操作量 | START 1 タップで完結 | 9 フェーダー + AUTO MIX + CULTURE 等で詳細制御 |
 | UI | 単純 (pill 7 個) | 全コントロール可視 |
-| 録音 | 不可 | REC ボタンで WAV ダウンロード可 |
+| 録音 | REC（M4A / WebM、ブラウザ対応による） | 同じrecorderでM4A / WebM保存 |
 
 両方とも **engine は同じ** (engine.js)。違いは UI の見せ方だけ。
 
@@ -37,7 +37,7 @@
 
 - Hazama FM で流れてる音の「中身」を見たい時
 - 自分で音を作り込みたい時
-- 録音したい時 (engine 出力を WAV で保存)
+- 録音したい時（出力形式とSonar / iPhoneへの渡し方は総合manualへ）
 - マイクで歌って engine に追従させたい時 (MIC follow)
 
 ---
@@ -184,7 +184,7 @@ v154 以降の default は 88。90 以上は engine の limiter に当たりや�
 
 ### REC (録音)
 
-START 中に REC を押すと engine 出力を **WAV で録音開始**。
+START中にRECを押すとengine出力を録音開始。ブラウザ対応により**M4A / WebM**で保存します。
 もう一度押すと停止 + ダウンロードリンクが出る。
 
 ### MIC (Mic Follow)
@@ -272,7 +272,7 @@ OUTPUT fader の現在値。
 - IDEA を OFF にする
 - 観サイクルを長く (10 min) して切替頻度を下げる
 
-### 録音した WAV が真っ黒 (無音)
+### 録音ファイルが無音
 
 - OUTPUT fader が 0 だった可能性
 - START 押した後 REC ON が正しい順序

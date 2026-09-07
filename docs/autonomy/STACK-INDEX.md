@@ -6,6 +6,11 @@ music-stack を触るエージェントが **最初に読む構造マップ**。
 
 作業フローは [`AUTONOMOUS-RUN.md`](AUTONOMOUS-RUN.md)、待ち行列は [`BACKLOG.md`](BACKLOG.md)。
 
+利用者の入口は [`../../listen.html`](../../listen.html) →
+[`../MUSIC-STACK-SYSTEM-MANUAL.md`](../MUSIC-STACK-SYSTEM-MANUAL.md)。
+道具の役割・実装状態・入口は`config/music-stack-tools.json`から同じ一覧を生成し、
+`check-music-stack-guide.mjs`で表示と根拠pathを検証する。5 repo構成・private境界は不変。
+
 ## Active repos (5)
 
 ローカル配置: `C:\workspace\music-stack\<repo>`

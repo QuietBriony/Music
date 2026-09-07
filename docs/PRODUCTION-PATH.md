@@ -1,5 +1,10 @@
 # Production Path — band-room + Hazama FM を「作品」にする道筋
 
+> **Historical production ideas。現行手順は[総合manual](MUSIC-STACK-SYSTEM-MANUAL.md#delivery)へ。**
+> 本文のv118・録音形式・価格・公開サービス条件は過去の記述。現在の保証ではない。
+> Band Room mix RECはWAV変換を試み、失敗時はM4A/WebM、stems packはM4A/WebM。
+> Core Rig/FMも環境により形式が変わる。生成・保存・YouTube公開は別工程で、投稿権限は別確認。
+
 > 機能磨き (= "system を完成させる") とは直交した **「作品を世に出す」**
 > ための work item 集。技術ではなく **録音 / 歌い直し / mix / 公開** に
 > 時間を使うフェーズ。

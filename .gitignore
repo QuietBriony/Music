@@ -5,3 +5,7 @@ captures/
 .wrangler/
 __pycache__/
 *.pyc
+
+# Local browser verification artifacts (never production inputs).
+.playwright-cli/
+output/playwright/

@@ -1,12 +1,20 @@
-# UCM Mandala Engine — 音響曼荼羅OS（2026 β）
-総合芸術 × 自動音楽生成 × 観システム同期エンジン  
-Version: 1.0 (Markdown Spec Edition)
+# Music Stack — 聴く・触る・作って残す
 
-## 🎯 目的
+**[総合入口：Music Stack Listen](https://quietbriony.github.io/Music/listen.html)** から、今日の目的に合う道具を一つ選ぶ。
+
+- **[全体像と使い方](docs/MUSIC-STACK-SYSTEM-MANUAL.md)** — 最初の15分、全道具、MIDI / Sonar、保存・iPhone・公開への道筋。
+- **[道具台帳](config/music-stack-tools.json)** — 実装あり／候補／手動／未実装を区別。Listenとmanualの一覧はこのJSONから生成。
+- **[次の楽器：和声マップ＋アシッド](docs/VISUAL-COMPOSER-PLAN.md)** — Drums / Acid / Airの8小節。設計のみ、まだ演奏画面はない。
+
+active 5 repoの役割は残し、入口・記録・手動受け渡しを統合する。Sonarの代替DAWは作らない。
+機材・現配線・PC実状態はprivate `music-ops`が正本。公開ページから実機操作やuploadは行わない。
+実装棚卸しと全曲試聴・別PC同期・YouTube公開確認は別で、未確認範囲は総合manualに記載。
+
+## 設計背景 — UCM Mandala Engine
 UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、  
 1つの UI / Engine で **静 → 動** を無段階生成する。
 
-## まず遊ぶ — HAZAMA → Lyric Lab
+## 曲で遊ぶ場合 — HAZAMA → Lyric Lab
 
 1. **[Listen hub](https://quietbriony.github.io/Music/listen.html)** を開く。
 2. current pass の **[HAZAMA Band Room](https://quietbriony.github.io/Music/band-room.html?band=hazama)** へ進む。HAZAMA は `📻 原音`（Still Moving 完成レンダーの stems・v397 収録）が自動選択され、`🎛 AI 再現`（ブラウザ合成バンド）へも切り替えられる。

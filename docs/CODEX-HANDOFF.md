@@ -19,9 +19,14 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 `docs/INDEX.md`、canonical JSON を先に読む。ない環境では推測せず、public-safe な
 workflow と `needs_verification` だけを使う。active runtime repo は従来どおり 5 つ。
 
-## 現在地（2026-08-11）
+## 現在地（2026-09-07）
 
-- 通常の遊び方は`listen.html` → HAZAMA Band Room → Lyric Lab。HAZAMAは01/02とも
+- `listen.html`は用途別の総合入口。全14道具は`config/music-stack-tools.json`から
+  Listen / `docs/MUSIC-STACK-SYSTEM-MANUAL.md`へ生成する。音声runtime不変のv402。
+  和声マップ＋アシッドは`docs/VISUAL-COMPOSER-PLAN.md`の未実装設計。BL-045で次工程を管理。
+  古いdirectionは背景資料、利用はsystem manual、契約はintegration index、作業はBACKLOGへ一本化。
+
+- 曲を試す導線は`listen.html` → HAZAMA Band Room → Lyric Lab。HAZAMAは01/02とも
   原音4-stem（基準）とAI再現を切替可能。02 AIは02固有ではなく01 frames共有の暫定版。
   v400は01/02のsession-only KARAOKEと曲別歌詞境界を追加。v400 Surface passは操作安定○、
   AI短音過密×。v401はarp + basslineのauthored基準配置を20–21発/barへ整理した
@@ -31,7 +36,7 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   Functions / D1側がauthと`no-store`を所有する。
 - browser / sample / worker / model依存は`config/external-dependencies.json`の24件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v401`。Band Room runtime markerは`band-room.js?v=br-236` /
+- 現行cacheは`hazama-fm-v402`。Band Room runtime markerは`band-room.js?v=br-236` /
   `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
