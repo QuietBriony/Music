@@ -19,6 +19,22 @@
 
 ---
 
+## 2026-09-08 — 道具の正本と制作ノートを結合し、保存までの整合性を一括検証
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : 個別の整理を全体の制作導線へ結び、説明と保存先のズレを検出する
+- repos      : Music（manual / 台帳のみ）、private music-ops（作品→道具IDの結合とoffline一括gate）
+- implemented: public道具台帳のtitle / URL / statusをprivate表示へread-only結合。
+  privateはIDと次作業の役割のみを保持。音声・MIDI編集・新規再構成・設計・公開準備を区別。
+  一括gateは道具ID、表示鮮度、登録素材metadata、納品ノートのlocal mirror、過去readback記録を検証。
+  未実装道具・回収待ちsourceの誤昇格を拒否。GPU・実音・DAW・公開の自動実行は追加しない。
+- stack-check: PASS 33 / FAIL 0 / SKIP 0（baseline・変更後full gate）。private関連160 checksとrepo checkもPASS
+- backlog    : BL-046継続。制作の入口・記録・保存の結合は改善、実音と元データ回収は別工程
+- next       : BL-046 — 一つのネタの元pattern / stemを確認し、音声編集か新規再構成かを決める
+- blockers   : 別PC原本、生成一致、試聴、現在の公開状態は未確認。既存private未コミット作業は保持。
+  publicへのprivate作品・host・exact path転記なし。runtime / cache versionは不変
+
+---
+
 ## 2026-09-08 — 制作ノートからローカル素材・編集の再開へ接続
 - agent      : Codex（同じ会話内、委任なし）
 - goal       : 既存ネタをPCで開いて磨く入口と、音声・MIDI・生成の違いを分かりやすくする
