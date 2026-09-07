@@ -19,6 +19,22 @@
 
 ---
 
+## 2026-09-07 — 既存の試聴棚を出自・再開方法へ接続
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : ネタの意図、制作方式、親素材、再現の不足、Sonar等で磨く工程を辿れるようにする
+- repos      : Music（汎用guide / manual / 台帳のみ）、private music-ops（出自補助記録とread-only表示生成）
+- implemented: 既存納品catalogとverdictを正本のまま保持。privateの出自記録を結合し、試聴・
+  根拠メモ・親素材・回収待ち・改善先へ接続。表示生成はstdoutのみ、素材の内容や音声は読まない。
+  namimaは既存mainのcatalog/reel実装をff-onlyで同期しただけでコード未変更。
+  claim時にqueueのfield順検証が失敗したが、順序を修正しfull stack-checkで0 BADへ復帰。
+- stack-check: PASS 33 / FAIL 0 / SKIP 0（baseline / queue修正後。最終docs更新後にも再実行する）
+- backlog    : BL-046継続（初回棚卸しは実装、原本回収・再生成一致・人の採用判断は残る）
+- next       : BL-046 — 元script・入力guide・stemの所在を確認し、選んだ1ネタの再開条件を揃える
+- blockers   : 別PCのローカル全体、未回収原本、実音・MIDI・公開状態は未確認。認証・機材設定は操作しない。
+  private overlayの既存未コミット作業は保持。音源・project・既存catalog / CSV / verdictは未変更
+
+---
+
 ## 2026-09-07 — Music Stackを理解して使う入口へ統合 (v402)
 - agent      : Codex（同じ会話内で棚卸し・実装。委任なし）
 - goal       : 積み上がった道具の役割、実装境界、使い方、保存・制作先を一つの入口で把握できるようにする
