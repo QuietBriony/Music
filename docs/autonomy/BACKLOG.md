@@ -159,6 +159,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - repo     : stack
 - scope    : docs
 - agent    : codex
+- status   : wip — codex 2026-09-07。既存delivery台帳を正本のまま読み、出自・再現の不足・磨く場所をprivate補助記録へ接続する。音源・判定・公開設定は変更しない
 - human-gate: yes（採用・削除・公開・外部保存先の変更は人間判断）
 - source   : 2026-09-07 Music Stack owner guideの未確認範囲
 - detail   : Git外の音源・DAW project・recipe・iPhone版・handoffをread-onlyで照合し、
