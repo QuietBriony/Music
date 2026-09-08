@@ -59,6 +59,13 @@ pad / lead / echo / sub / drums / texture / reverbをSonarの別音声トラッ�
 その後で元のpatternや音色設計を変えると、生成し直す目的を絞れます。
 この実装の追跡は[BL-047](autonomy/BACKLOG.md)。個々の出力pathや作品名はpublicへ置きません。
 
+同じPRの`namima.stem_compare`で、既存packetからA＝基準、B＝pad直接音を減らす、
+C＝さらにecho / reverbを減らす、D＝さらにtextureをmute、という段階比較も作れます。
+元の同じ区間をRMSでレベル合わせし、4つのフルWAV・比較リール・fader表・再実行planを保存。
+任意で既存ffmpegによるM4Aを出力します。再合成、音符・タイミング変更、DAW操作はしません。
+RMS一致は聴感合格ではありません。全版でノレないなら、次はmixでなく元patternを見直す判断材料にします。
+この比較もhuman merge / 実試聴待ち。元の完成masterとのA/Bではなく、同じstemからのmix差です。
+
 ## 聴く入口を、そのPCの編集素材へつなぐ
 
 制作カードにはクラウドの試聴リンクと、確認したPCのローカル保存先を併記する。

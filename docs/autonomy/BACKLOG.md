@@ -179,7 +179,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code
 - agent    : codex
 - human-gate: yes（namimaのmerge・Sonar実操作・音の採用は人間確認）
-- status   : wip — codex 2026-09-08。namima PR #40のstem出口を使う段階的な引き算比較を追加中。human merge / Sonar取込 / 試聴は未完了
+- status   : wip — codex 2026-09-08。namima PR #40でstem出口と段階的な引き算比較を実装。human merge / Sonar取込 / 試聴は未完了
 - source   : userの制作再開・全体最適化依頼、BL-046のsource確認
 - detail   : 既存offline rendererの既定出音を保持し、パート別WAV・再生成recipe・
   DAW取込手順を新規出力先だけへ書き出す。stemはmaster前であること、共有残響と
@@ -190,6 +190,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   短いCPU packetのformat / hash / 量子化後sumを確認。MIDI・個別drum分離は未実装。
   続きは既存packetをhash検証して読み、同じ区間・平均レベルで段階的なmix差を比較する。
   fader値と親packetを残し、元音源・master処理・採用判定を上書きしない。
+  比較toolの27 tests（元exporterと合わせ61 tests）PASS。4版のフルWAVと同区間reel、
+  任意のM4A・fader表・plan / hashを出力。全版でpatternは不変、聴感の採用は判定しない。
 
 ### BL-031 — Music recording review scorecard v2（plan #9・machine↔human 橋）
 - priority : P1

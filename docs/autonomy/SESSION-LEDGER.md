@@ -19,6 +19,24 @@
 
 ---
 
+## 2026-09-08 — 同じstemから段階的な引き算を試聴・再現する比較を追加
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : 編集素材を使い、どの密度・残響調整が有効かを人が比較できるようにする
+- repos      : namima（offline比較tool / tests / docs）、Music（再開guide / backlog / ledger）
+- implemented: [namima PR #40](https://github.com/QuietBriony/namima/pull/40)へ比較toolを追加。
+  完了packetをhash / format / 長さで検証し、同じPCMから基準→pad減衰→return減衰→texture muteの
+  4段階を出力。元pattern・音程・タイミングは不変。RMS合わせ、fader表、比較plan、由来とhashを保存。
+  既存ffmpegの明示指定時のみM4Aを新規作成。元packet・生成器・catalog・verdict・公開PWAは変更しない
+- stack-check: PASS 33 / FAIL 0 / SKIP 0（baseline / 最終gate）。比較tool27＋元exporter34 tests PASS。
+  実packetから4つの43秒WAVと42.25秒reelを出力し、hash / 時刻 / source不変を確認。
+  M4AはAAC / 48 kHz / stereo / 42.25秒を確認。実iPhone・実聴感の検証ではない
+- backlog    : BL-047継続。編集と比較の出口は実装、merge / Sonar実操作 / 試聴はhuman gate
+- next       : BL-047 — 同じ区間の4版を人が比較し、mixの引き算を残すか、元patternへ戻るかを決める
+- blockers   : 人の好み・実Sonar・実iPhoneは未確認。namima固有契約により無人mergeはしない。
+  GPU・機材・Drive・YouTube・private正本は未操作。音源はGit外。既存private作業は保持
+
+---
+
 ## 2026-09-08 — offline生成器からSonarのパート編集へ進む出口を実装
 - agent      : Codex（同じ会話内、委任なし）
 - goal       : 由来を確認できた生成器から、完成WAVだけでなく編集できる素材を出す
