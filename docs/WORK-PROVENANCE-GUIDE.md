@@ -41,6 +41,24 @@ Music Stackは道具の入口・探索・制作契約、Sonarは編集・演奏�
 視覚的な8小節の楽器は[設計](VISUAL-COMPOSER-PLAN.md)段階であり、
 既存ネタの全MIDI化や自動DAW往復が完了したという意味ではない。
 
+## 元の生成器がある場合の、編集素材への出口
+
+offline IDMについては[namima PR #40](https://github.com/QuietBriony/namima/pull/40)で
+opt-inのパート別WAV出口を実装・検証しました（2026-09-08、human merge待ち）。
+[取込手順](https://github.com/QuietBriony/namima/blob/8b9d0c20c6025632cea51c6915a1e70ca221fbd7/docs/idm-stem-export.md)から、
+pad / lead / echo / sub / drums / texture / reverbをSonarの別音声トラックへ持ち込めます。
+通常のmainへ導入済みとは扱わず、PWA・既定再生・既存納品catalogも変更しません。
+
+- 「過去WAVを分離・復元」ではなく「同じ生成器から新たに編集候補を生成」。
+- 7partはmaster前。共有残響は印刷済みで、各partのmuteやfaderに自動追従しません。
+- premaster / masterの比較用WAVは重ねて鳴らさない。個別正規化もしません。
+- 元コード・preset・設定・依存版・各file hash・未判定項目を同じpacketへ記録します。
+- MIDI / .cwpではありません。音符と音色presetの編集、実Sonar取込・試聴は別工程です。
+
+まず音声パートを引き算して、何が気になるかを言葉にする。
+その後で元のpatternや音色設計を変えると、生成し直す目的を絞れます。
+この実装の追跡は[BL-047](autonomy/BACKLOG.md)。個々の出力pathや作品名はpublicへ置きません。
+
 ## 聴く入口を、そのPCの編集素材へつなぐ
 
 制作カードにはクラウドの試聴リンクと、確認したPCのローカル保存先を併記する。

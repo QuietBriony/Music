@@ -19,6 +19,26 @@
 
 ---
 
+## 2026-09-08 — offline生成器からSonarのパート編集へ進む出口を実装
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : 由来を確認できた生成器から、完成WAVだけでなく編集できる素材を出す
+- repos      : namima（offline Python / tests / docs）、Music（guide / backlog / ledger）
+- implemented: namima `8b9d0c2`、[PR #40](https://github.com/QuietBriony/namima/pull/40)。human merge待ち。
+  opt-inの7つのweighted premaster part、sum / master比較WAV、recipe、
+  hash付きmanifest、Sonar手動取込ガイド。新規absolute directoryのみ、長さ・gain等を先行検証。
+  共通gain・時刻整列・印刷済み残響・nonlinear masterとの差を明示。既定masterの処理順は不変。
+- stack-check: PASS 33 / FAIL 0 / SKIP 0（baseline / 変更後）。新規exporter tests 34 PASS。
+  同環境の16小節IDM float出力が変更前hashと一致。CPU試作の9 WAVでformat / hash / sum誤差を確認
+  ledgerのimplemented / shipped重複欄はqueue gateが拒否したため修正し、全体を再検証
+- backlog    : BL-047をclaim、実装+PRまで。BL-046の所在・歴史的再現の未確認事項は閉じない
+- next       : BL-047 — 人がPRをreview / mergeし、編集packetをSonarで手動取込・引き算試聴する
+- blockers   : Sonar実操作・試聴・採用は未判定。namima固有契約によりmergeは人間待ち。
+  MIDI / 個別drum / 圧縮試聴版は未出力。GPU・機材・公開PWA・Drive・YouTube・private正本は未変更。
+  namimaのauthor未設定はMusicの確認済みidentityをcommit単位で使用し、persistent設定は変更しなかった。
+  既存のアクセス不可ignored pytest folderは変更していない。音源はGit外、元納品も不変
+
+---
+
 ## 2026-09-08 — 道具の正本と制作ノートを結合し、保存までの整合性を一括検証
 - agent      : Codex（同じ会話内、委任なし）
 - goal       : 個別の整理を全体の制作導線へ結び、説明と保存先のズレを検出する

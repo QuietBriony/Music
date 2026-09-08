@@ -179,12 +179,15 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code
 - agent    : codex
 - human-gate: yes（namimaのmerge・Sonar実操作・音の採用は人間確認）
-- status   : wip — codex 2026-09-08
+- status   : wip — codex 2026-09-08。namima PR #40で実装・検証済み、同repoの契約によりhuman merge / Sonar取込 / 試聴待ち
 - source   : userの制作再開・全体最適化依頼、BL-046のsource確認
 - detail   : 既存offline rendererの既定出音を保持し、パート別WAV・再生成recipe・
   DAW取込手順を新規出力先だけへ書き出す。stemはmaster前であること、共有残響と
   nonlinear masterの差を明記。全part共通gain・時刻整列・上書き拒否を検証する。
   公開PWA・GPU・機材・既存音源・catalog・採用判定は不変。feature branch + PRまで。
+  PR: https://github.com/QuietBriony/namima/pull/40 。7part＋premaster/master比較WAV・
+  recipe・取込手順を実装。新規34 tests PASS、同条件の既定masterは変更前と一致。
+  短いCPU packetのformat / hash / 量子化後sumを確認。MIDI・個別drum分離は未実装。
 
 ### BL-031 — Music recording review scorecard v2（plan #9・machine↔human 橋）
 - priority : P1
