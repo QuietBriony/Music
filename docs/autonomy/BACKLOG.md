@@ -173,6 +173,19 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   public機能台帳のtitle / href / statusをprivate表示へread-only結合。未実装・元source回収待ちを
   実作業可能へ昇格させない。private内の一括gateで保存表示と納品側のノートのズレを検出する。
 
+### BL-047 — offline IDMをDAWで磨くためのopt-in stem出口
+- priority : P1
+- repo     : namima
+- scope    : non-engine-code
+- agent    : codex
+- human-gate: yes（namimaのmerge・Sonar実操作・音の採用は人間確認）
+- status   : wip — codex 2026-09-08
+- source   : userの制作再開・全体最適化依頼、BL-046のsource確認
+- detail   : 既存offline rendererの既定出音を保持し、パート別WAV・再生成recipe・
+  DAW取込手順を新規出力先だけへ書き出す。stemはmaster前であること、共有残響と
+  nonlinear masterの差を明記。全part共通gain・時刻整列・上書き拒否を検証する。
+  公開PWA・GPU・機材・既存音源・catalog・採用判定は不変。feature branch + PRまで。
+
 ### BL-031 — Music recording review scorecard v2（plan #9・machine↔human 橋）
 - priority : P1
 - repo     : Music
