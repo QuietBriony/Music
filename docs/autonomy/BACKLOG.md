@@ -160,7 +160,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : docs
 - agent    : codex
 - human-gate: yes（採用・削除・公開・外部保存先の変更は人間判断）
-- status   : wip — codex 2026-09-08。private出自ノートを共通の道具IDへ接続し、素材所在・表示鮮度・保存先照合を一括検証。元script / 入力 / stemの回収と再現確認が残る。音源・判定・公開設定は未変更
+- status   : wip — codex 2026-09-08。private出自ノートへ新しい編集・比較packetを接続。素材所在・表示鮮度・保存先照合を一括検証。旧原本の回収と再現確認が残る。判定・公開設定は未変更
 - source   : 2026-09-07 Music Stack owner guideの未確認範囲
 - detail   : Git外の音源・DAW project・recipe・iPhone版・handoffをread-onlyで照合し、
   private側へtrack id / source / 方式 / 所在 / 採用判定待ちを記録する。
@@ -172,6 +172,9 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   現物と音声素材を区別した再開入口は実装済み。自動DAW起動・音声読込・再生成はしない。
   public機能台帳のtitle / href / statusをprivate表示へread-only結合。未実装・元source回収待ちを
   実作業可能へ昇格させない。private内の一括gateで保存表示と納品側のノートのズレを検出する。
+  BL-047の編集素材と比較候補を既存ノートの再開カードへ統合。実入力の親と、同じ生成器系列の
+  旧納品への参照を区別し、観測日・byte size・循環・unknown IDを検証。既存catalog/verdictは不変。
+  同じprivate表示fileだけを更新・readbackし、ノート同期と音源uploadを混同しない。
 
 ### BL-047 — offline IDMをDAWで磨くためのopt-in stem出口
 - priority : P1

@@ -19,6 +19,24 @@
 
 ---
 
+## 2026-09-08 — 新しい編集・比較候補を既存の制作ノートへ統合
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : 作った候補の由来・素材・再開先を一つのノートで辿れるようにする
+- repos      : Music（汎用guide / backlog / ledger）、private music-ops（worksの範囲だけ）
+- implemented: 既存のprivate補助記録へローカル編集候補と比較候補を追加。
+  再開入口、実入力と生成器系列の区別、観測日・全fileサイズ照合、循環・unknown ID・verdict複製拒否。
+  古いstem未出力の案内を直し、音量調整と元のリズム配置変更を区別。
+  同じprivate制作ノートを更新し、cloud本文とローカル同期byte一致、parent・非共有をreadback確認。
+  旧catalog・旧出自記録・音源・採用判定は不変。新しい音源のuploadはしていない
+- stack-check: PASS 33 / FAIL 0 / SKIP 0（baseline / 最終gate）。private関連212 checksとrepo check PASS。
+  保存済み表示・cloud本文・ローカル同期を照合。旧catalog群のhashと旧出自記録も不変
+- backlog    : BL-046継続。BL-047の候補を既存の制作再開レーンへ接続
+- next       : BL-047 — 本人が同じ区間の比較を聴き、引き算を残すか元patternへ戻るかを決める
+- blockers   : 試聴・実Sonar・個別drum MIDI・別PC原本確認は未完了。namima PR #40はhuman merge待ち。
+  GPU・機材・YouTube・音源upload・public runtimeは未操作。別件のprivate未コミット作業は保持
+
+---
+
 ## 2026-09-08 — 同じstemから段階的な引き算を試聴・再現する比較を追加
 - agent      : Codex（同じ会話内、委任なし）
 - goal       : 編集素材を使い、どの密度・残響調整が有効かを人が比較できるようにする
