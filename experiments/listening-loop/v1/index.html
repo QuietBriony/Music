@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101715">
+  <meta name="description" content="20秒の3案を聴いて、好みから次の音を育てる。Musicの独立試聴実験。">
+  <title>3つ聴いて、ひとつ育てる — Music</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <a class="brand" href="../../../listen.html">MUSIC <span>／ LISTENING LOOP 01</span></a>
+      <p class="eyebrow">好みから、次の音へ。</p>
+      <h1>3つ聴いて、<br>ひとつ育てる。</h1>
+      <p class="intro">まずは A・B・C を再生。<br>好きな方向を選ぶと、次の3案が変わります。</p>
+      <div class="session-line"><span id="round">ROUND 01</span><span>各20秒 · 合成音のみ</span></div>
+    </header>
+
+    <section aria-label="今回の3案" id="candidates"></section>
+
+    <section class="feedback" aria-labelledby="feedback-title">
+      <h2 id="feedback-title">ピンとこなかったら</h2>
+      <div class="feedback-options">
+        <button id="monotonous" type="button" aria-pressed="false" disabled>どれも単調</button>
+        <button id="unclear" type="button" aria-pressed="false" disabled>差がわからない</button>
+      </div>
+      <p class="hint" id="feedback-hint">2案をそれぞれ5秒以上再生すると選べます。</p>
+      <button class="next" id="next" type="button" disabled>評価を選んで、次の3案へ <span aria-hidden="true">↗</span></button>
+      <p id="status" role="status" aria-live="polite">回路を読み込んで、3案を準備しています…</p>
+      <button class="retry" id="retry" type="button" hidden>読み込みをやり直す</button>
+    </section>
+
+    <details class="about">
+      <summary>ハエの回路は、何をしている？</summary>
+      <p>実測されたハエの脚運動回路の一部（1,045ニューロン）を、独自の小さなモデルで動かしています。その出力が、音の選択や拍の置き方に関わります。全脳の再現ではありません。</p>
+      <p>音づくりは既存Musicの合成方式と設計知識を使用。録音の切り貼りはせず、新しい旋律・和音・リズムを作ります。</p>
+      <label for="condition">比較条件 <span class="hint">変更するとラウンド1に戻ります</span></label>
+      <select id="condition" disabled>
+        <option value="circuit">実測回路を使う</option>
+        <option value="rules">回路なしのルール（比較用）</option>
+      </select>
+      <p class="hint">同じseed・同じ刺激で、接続を使うかどうかを比較します。回路が良い音を生むと証明されたわけではありません。</p>
+      <p>評価で変えるのは音の配合と探索幅です。コードや回路自体を自動改良するRSIは、まだ接続していません。</p>
+      <p>評価はこのタブ内だけに保持し、外へ送信しません。次の相談に使う場合だけ、メモを保存してこの会話に添付できます。音声は含みません。</p>
+      <div class="memo-actions"><button id="export" type="button" disabled>実験メモを保存</button><button id="reset" type="button" disabled>最初から</button></div>
+      <p class="hint">最大12ラウンド。ブラウザを閉じるとメモは消えます。バックグラウンドでは停止します。初回はインターネット接続が必要です。</p>
+      <p class="credits">Data: MaleCNS collaboration — FlyEM / HHMI Janelia, University of Cambridge, MRC LMB, Google Research. Extraction: Denis Shiryaev. <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> · <a href="./THIRD-PARTY.md">出典・変更内容</a> · <a href="../../../docs/LISTENING-LOOP-EXPERIMENT.md">実験の仕様</a></p>
+    </details>
+
+    <footer>Music の独立プレビュー。FM・Band Room・Hazama本体は変更していません。</footer>
+    <noscript><p>この試聴ページにはJavaScriptが必要です。</p></noscript>
+  </main>
+
+  <aside class="transport" aria-label="再生コントロール">
+    <div class="transport-inner">
+      <button id="stop" type="button" disabled><span aria-hidden="true">■</span> 停止</button>
+      <label for="volume">音量 <output id="volume-value" for="volume">35%</output></label>
+      <input id="volume" type="range" min="0" max="100" value="35" step="1" aria-label="音量">
+    </div>
+    <p>はじめは小さめの音量で。鳴らない時はSafari / Chromeで開いて再生。</p>
+  </aside>
+</body>
+</html>

@@ -51,12 +51,57 @@
   },
   "dependencies": [
     {
+      "id": "malecns-locomotor-data",
+      "kind": "connectome_data",
+      "consumers": ["experiments/listening-loop/v1/model.mjs", "scripts/check-listening-loop.mjs"],
+      "source_url": "https://raw.githubusercontent.com/Apolotary/fly-lab/631ada7f1e074581ac986e91c7e68ad7074fedb1/data/locomotor_circuit.json",
+      "runtime_urls": [],
+      "revision": {
+        "type": "git_commit",
+        "value": "631ada7f1e074581ac986e91c7e68ad7074fedb1",
+        "status": "verified",
+        "evidence": "Pinned Fly Lab data; upstream extraction DesktopFly 32b00011e83c3dc85fa3ea0b3934155b04f1635d. Verified 2026-09-14."
+      },
+      "integrity": {
+        "algorithm": "sha256",
+        "value": "8f76d94034dcf802453e3a0a8ed5342d122e57d37e2bb5ea28da66de0856f5d6",
+        "status": "verified",
+        "evidence": "scripts/import-listening-circuit.mjs and scripts/check-listening-loop.mjs verify exact unmodified bytes. Browser verifies before use."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "CC-BY-4.0",
+        "scope": "Measured MaleCNS v1.0 locomotor subset JSON DATA only; no external source code",
+        "evidence": "https://github.com/Apolotary/fly-lab/blob/631ada7f1e074581ac986e91c7e68ad7074fedb1/THIRD_PARTY_NOTICES.md; experiments/listening-loop/v1/THIRD-PARTY.md"
+      },
+      "expected_size": {
+        "bytes": 1076374,
+        "status": "measured_local",
+        "scope": "Single unchanged JSON, 1045 neurons / 17224 edges",
+        "evidence": "Verified pinned bytes 2026-09-14; importer fails closed on size or hash mismatch."
+      },
+      "storage": {
+        "class": "tracked_static_data",
+        "target": "experiments/listening-loop/v1/circuit.json",
+        "tracked_in_git": true
+      },
+      "execution": {
+        "activation": "explicit_preview_navigation",
+        "download_policy": "pinned_same_origin_data_only_at_runtime",
+        "machines": [],
+        "required_capabilities": []
+      },
+      "fallback": "Show retry state; do not fabricate a circuit or start audio. Rules-only comparison is an explicit user choice, not a silent fallback.",
+      "fail_closed": true
+    },
+    {
       "id": "tonejs-runtime",
       "kind": "browser_script",
       "consumers": [
         "band-room.html",
         "fm.html",
         "index.html",
+        "experiments/listening-loop/v1/audio.mjs (explicit Play tap only)",
         "sw.js runtime cache"
       ],
       "source_url": "https://www.npmjs.com/package/tone/v/14.8.49",

@@ -19,6 +19,33 @@
 
 ---
 
+## 2026-09-14 — Musicの合成方式と実測脚運動回路を使う3案試聴preview
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : 単調・差が不明というuser評価から、音楽的な3案を聴いて次案を選べるようにする
+- repos      : Musicのみ
+- implemented: `experiments/listening-loop/v1/`。96 BPM / 8小節 / 20秒 × 3案、
+  和声・低音・拍・余白の対比、定型評価による有限12round、回路なし比較、任意JSONメモ保存。
+  固定revisionのMaleCNS脚運動回路DATA（1045 neurons / 17224 edges / 1076374 bytes）を
+  hash照合、CC BY 4.0 attribution、byte保持のgit属性とともに格納。外部コードコピーなし。
+  既存Tone.jsを再生tap時のみ起動。load時の空contextを閉じ、再生contextは1つ、
+  同時graph上限2（短いfadeを含む）、STOP / 非表示 / 中断 / 遅延startのキャンセルを実装。
+  既存FM / Band Room / Core Rig / sw.js・Hazama本体・Openclaw-labは変更しない。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（最終gate。baselineは33項目。記録書式の指摘は修正済み）
+  新規72 checks、audit 0 BAD / 0 WARN、外部依存・queue・guide checks PASS。
+  desktop Chromiumで初期context 0、A再生、Bの20秒自動停止、B選択→次案・非自動再生、
+  連打、JSON保存、320/390px、模擬visibility停止→context 0→手動再開を確認。
+  corrupt circuit拒否、Tone fetch失敗からretry、遅延start取消、mute中の評価無効、
+  差が不明→探索幅拡大、reset取消でsession保持を確認（故意のnetwork errorは正常系と区別）。
+  OfflineContextの初回3案はpeak 0.276 / 0.376 / 0.331、RMS -24.42 / -24.26 / -26.50 dBFS
+  （volume 100%、44.1kHz、左ch、LUFSではない）。NaN / clippingなし、停止後tail 0。
+  定数のpalette補正で初回のRMS差は約2.24dB。好みや音質の合格判定ではない。
+- backlog    : BL-048追加、human gate継続。BL-041の昇格判断は未変更
+- next       : BL-048 — 本人が3案と次の3案を試聴し、好み・単調・違いを評価する
+- blockers   : 実iPhone Safariの初回・画面lock/復帰・聴感は未確認。RSIは未実装で、
+  Openclaw-labへの接続はこのメモを人がreviewする次工程。音声upload・実機・GPU操作なし
+
+---
+
 ## 2026-09-08 — 新しい編集・比較候補を既存の制作ノートへ統合
 - agent      : Codex（同じ会話内、委任なし）
 - goal       : 作った候補の由来・素材・再開先を一つのノートで辿れるようにする

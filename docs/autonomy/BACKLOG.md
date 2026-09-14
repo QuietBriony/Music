@@ -196,6 +196,22 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   比較toolの27 tests（元exporterと合わせ61 tests）PASS。4版のフルWAVと同区間reel、
   任意のM4A・fader表・plan / hashを出力。全版でpatternは不変、聴感の採用は判定しない。
 
+### BL-048 — Listening Loopの3案試聴とRSI向けの比較材料
+- priority : P1
+- repo     : Music
+- scope    : non-engine-code / verify
+- agent    : codex + human
+- human-gate: yes（音楽としての好み・実iPhone・既存runtimeへの採用）
+- status   : wip — codex 2026-09-14。独立preview実装、human試聴待ち
+- source   : user「単調」「ハエ脳カスタム」「RSI」「既存musicつかっていいよ」
+- detail   : `experiments/listening-loop/v1/`で20秒×3案 → 定型評価 → 次の3案。
+  既存Tone.js、固定hashのMaleCNS脚運動回路DATAと独自モデルを使う。
+  回路なし比較、初期無音、停止・hidden cleanup、有限12round、任意メモ保存。
+  data source/licenseと非干渉境界は`docs/LISTENING-LOOP-EXPERIMENT.md`。
+  FM・Band Room・Core Rig・Hazama本体は不変、音源や外部コードは取り込まない。
+  人の評価を得た後、Openclaw-labで生成/評価方法を比較する材料にできるか検討。
+  自動RSI接続、回路の自己改変、音質合格、実iPhone合格、既存runtimeへの昇格は含まない。
+
 ### BL-031 — Music recording review scorecard v2（plan #9・machine↔human 橋）
 - priority : P1
 - repo     : Music
