@@ -1,0 +1,2 @@
+# Immutable source data: preserve exact upstream bytes on Windows and Pages.
+circuit.json -text

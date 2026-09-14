@@ -6,6 +6,26 @@ This checklist makes browser listening the default review path for Music runtime
 
 Use m4a recording only for milestone comparisons, CarPlay/output-level checks, or when browser listening is ambiguous.
 
+## Listening Loop standalone preview (BL-048)
+
+For `experiments/listening-loop/v1/` only; this is not the FM/Band Room gate below.
+
+- Initial page: zero audio contexts and no Tone script until a Play tap; volume 35%.
+- Play each candidate for 20 seconds. Check chord / beat / space differences by ear.
+- Early stop, rapid A/B/C switches, volume to zero, then back; no stacked voices.
+- Five played seconds enable that candidate's preference. Two eligible candidates
+  enable the two negative feedback choices. Muted time must not qualify a candidate.
+- Pick B, explicitly make next three, confirm changed parameters and **no autoplay**.
+- Hide the tab or lock the physical phone: this experiment intentionally stops and
+  closes its own context, unlike FM background radio. Return and tap to start afresh.
+- Block circuit/Tone download: clear recovery text, no fake circuit, no autoplay;
+  cancel a delayed start and confirm it cannot start after the stop.
+- Check 320px and 390px, keyboard focus, expanded source details and memo export.
+- Optional JSON export contains only bounded experiment/feedback metadata, no audio,
+  private device context or upload. Condition/reset warns before clearing a used session.
+- Actual iPhone Safari first tap / lock-return / loudness and musical preference
+  remain a human gate even when desktop Chromium and offline waveform checks pass.
+
 ## Primary Targets
 
 - iPhone Safari

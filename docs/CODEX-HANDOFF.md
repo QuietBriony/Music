@@ -19,7 +19,13 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 `docs/INDEX.md`、canonical JSON を先に読む。ない環境では推測せず、public-safe な
 workflow と `needs_verification` だけを使う。active runtime repo は従来どおり 5 つ。
 
-## 現在地（2026-09-07）
+## 現在地（2026-09-14）
+
+- BL-048: `experiments/listening-loop/v1/` に20秒×3案の独立試聴previewを追加。
+  既存Tone.js合成、固定hashのMaleCNS脚運動回路JSON、独自の音楽写像、定型評価からの
+  有限探索。FM / Band Room / Core Rig / Hazama本体 / Openclaw-labは未変更。
+  本人の音質・実iPhone判定は未完了。RSI実装ではなく、手動review用メモの出口まで。
+  仕様・data license・再現条件は`docs/LISTENING-LOOP-EXPERIMENT.md`。
 
 - `listen.html`は用途別の総合入口。全14道具は`config/music-stack-tools.json`から
   Listen / `docs/MUSIC-STACK-SYSTEM-MANUAL.md`へ生成する。音声runtime不変のv402。
@@ -34,7 +40,7 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   v401実音とreal mobileは未確認のAMBERで、main selector昇格はBL-041待ち。
 - Lyric Labのprivate `/api/lyric-drafts`はService Workerをbypassし、Cloudflare Pages
   Functions / D1側がauthと`no-store`を所有する。
-- browser / sample / worker / model依存は`config/external-dependencies.json`の24件が正本。
+- browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の25件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
 - 現行cacheは`hazama-fm-v402`。Band Room runtime markerは`band-room.js?v=br-236` /
   `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。

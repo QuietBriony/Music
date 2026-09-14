@@ -24,6 +24,18 @@
 > - 現在のcatalog URLは`config/external-dependencies.json`のcommit-pinned jsDelivrが正本。
 >   `engine.js`の`tonejs.github.io`参照は凍結legacy例外であり、同一URLとはみなさない
 
+## 2026-09-14 — Listening Loop 独立preview（既存runtime不変）
+
+`experiments/listening-loop/v1/` は明示navigation + Playだけで動く実験。
+既存Tone.jsの合成方式とreference recipeの設計知識を使うが、`engine.js`等はimportしない。
+MaleCNS由来の脚運動回路データ1,076,374 bytesを固定revision/hashで格納し、
+`config/external-dependencies.json`へ登録。外部アプリのコード・音源・モデルweightは未導入。
+正規化された独自モデルの出力を20秒の楽譜に翻訳し、評価から次の3案のパラメータを探索する。
+コード・回路の自己改変はなく、Openclaw-labへの受け渡しもメモの手動reviewのみ。
+既存PWA cache / asset tupleはv402のまま。新規のversion付きパスを使い、SW登録を増やさない。
+BL-048で本人の音質・実mobile gateを保持。BL-041の昇格判定とは別。
+詳細は[LISTENING-LOOP-EXPERIMENT.md](LISTENING-LOOP-EXPERIMENT.md)。
+
 ## 2026-09-07 — 利用者の総合入口（audio runtime不変）
 
 `listen.html`は用途別launcherと静的な全道具一覧、試聴・確認待ちの入口を兼ねる。

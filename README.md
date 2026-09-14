@@ -10,6 +10,12 @@ active 5 repoの役割は残し、入口・記録・手動受け渡しを統合�
 機材・現配線・PC実状態はprivate `music-ops`が正本。公開ページから実機操作やuploadは行わない。
 実装棚卸しと全曲試聴・別PC同期・YouTube公開確認は別で、未確認範囲は総合manualに記載。
 
+独立試聴プレビュー: **[3つ聴いて、ひとつ育てる](https://quietbriony.github.io/Music/experiments/listening-loop/v1/)**。
+20秒の3案 → 好み / 単調 / 差が不明 → 次の3案。既存Tone.js合成と実測運動回路の
+小さなモデルを使う実験で、FM / Band Room / Hazama本体は不変。
+音質・実iPhoneの判定はまだ人の試聴待ち。自動RSI接続なし。
+[出典・境界・再現手順](docs/LISTENING-LOOP-EXPERIMENT.md)。
+
 ## 設計背景 — UCM Mandala Engine
 UCM（Unified Cognitive Model）を音楽生成エンジンへ翻訳し、  
 1つの UI / Engine で **静 → 動** を無段階生成する。
