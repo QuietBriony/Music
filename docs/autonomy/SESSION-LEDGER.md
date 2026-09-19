@@ -19,6 +19,25 @@
 
 ---
 
+## 2026-09-20 — 年鑑・名前の索引・PCごとの再開場所
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : いつ作ったか・何の版か・どこで再開するかを既存の入口から把握する
+- repos      : Music（Listen・manual・handoff）、private music-ops（works表示・machine観測）
+- implemented: Listenに2025〜2026のrepo／公開実験の年鑑と名前の索引を追加。
+  repo作成日・commit日をJSTで区別し、個別作品・実PC・素材所在は同じprivateノートへ集約。
+  active 5 repo、全14道具、既存試聴入口、audio runtimeとcache tuple v402を保持する。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（年鑑追加後の全体gate。最終の案内文・本行更新後にも再検証）
+  320 / 390 / 1280pxの横overflow 0、主navigation・索引44px、年鑑anchorとPC折りたたみ、
+  全内部anchor、根拠commit 9件の解決、console error/warning 0を確認。
+  private check / works gateもPASS。Docは45見出し・82リンク（内部29）・日付chip 26をreadback。
+  既存カード、見出しID、46リンク、一言メモ、日付chip、非共有parentを保持した。
+- backlog    : BL-046の既存整理を前進。BL-049 / BL-045は着手保留のまま
+- next       : BL-046 — 同じ年鑑・作品カードから一作品・一区間を選び、既存の比較と素材で磨く
+- blockers   : 他PCの現在状態・全素材の網羅・公開版の同一性・現在の動画投稿状態は未確認。
+  年鑑の掲載は新たな採用判断や再生成・公開操作を意味しない
+
+---
+
 ## 2026-09-20 — 既存の作品・道具・実験を同じ入口へ整理
 - agent      : Codex（同じ会話内、委任なし）
 - goal       : 新設を増やさず、既存の関係・現在地・次の一手を把握できるようにする
