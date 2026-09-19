@@ -373,6 +373,16 @@
     .plan-steps h3 { font-size: 1rem; line-height: 1.6; margin: 10px 0; }
     .plan-steps p { color: var(--muted); font-size: .9rem; line-height: 1.8; }
     .plan-state { display: inline-block; color: var(--amber); font-size: .8rem; }
+    .collection-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .collection-grid .card { min-height: 145px; }
+    .collection-links { padding: 0 18px 18px; }
+    .collection-links article + article { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .collection-links h3 { margin: 0 0 8px; font-size: 1rem; line-height: 1.6; }
+    .collection-links p { color: var(--muted); font-size: .9rem; line-height: 1.8; }
+    .collection-links a { display: inline-flex; align-items: center; min-height: 44px; margin: 4px 4px 4px 0; overflow-wrap: anywhere; }
+    .collection-grid .intent-no { color: var(--cyan); }
+    .parked-plan { padding: 0 18px 18px; }
+    @media (max-width: 560px) { .collection-grid { grid-template-columns: 1fr; } }
     @media (max-width: 680px) {
       .return-grid, .plan-steps { grid-template-columns: 1fr; }
       .return-card { min-height: 0; padding: 16px 18px; }
@@ -420,9 +430,9 @@
       </div>
       <nav class="top-actions" aria-label="Primary pages">
         <a href="#return-here">続きから</a>
+        <a href="#collection-map">全体を把握</a>
+        <a href="#recorded-works">前の音を聴く</a>
         <a href="#start-here">今すぐ遊ぶ</a>
-        <a href="#tool-map">道具の地図</a>
-        <a href="#workbench-plan">これから作る制作台</a>
       </nav>
     </header>
 
@@ -433,10 +443,35 @@
         <p class="section-note">このページをブックマークしておくと、次もここへ戻れます。</p>
       </div>
       <div class="return-grid">
-        <a class="card return-card" href="#production-notebook"><div><p class="intent-no">01 / RESUME</p><strong>前回の続きを思い出す</strong><span>制作ノートで「何を作ったか」と<br>「次に一つ変えるもの」を確認。</span></div><div class="meta"><b>制作ノートの入口へ →</b></div></a>
-        <a class="card return-card amber" href="#revive-ideas"><div><p class="intent-no">02 / REVISIT</p><strong>過去のネタを育てる</strong><span>短く聴いて、好きな区間を選ぶ。<br>一言のメモから、次の版へ。</span></div><div class="meta"><b>ネタの再開方法へ →</b></div></a>
-        <a class="card return-card blue" href="experiments/listening-loop/v1/"><div><p class="intent-no">03 / PLAY</p><strong>今すぐ、3つ聴き比べる</strong><span>20秒の3案から一つを選ぶ。<br>ブラウザだけで試せる実験。</span></div><div class="meta"><b>3つ聴いて、ひとつ育てる →</b></div></a>
+        <a class="card return-card" href="#collection-map"><div><p class="intent-no">01 / MAP</p><strong>何があるか、把握する</strong><span>作品・道具・実験・映像。<br>別々に作ったものの関係を見る。</span></div><div class="meta"><b>4つのまとまりへ →</b></div></a>
+        <a class="card return-card amber" href="#recorded-works"><div><p class="intent-no">02 / REVISIT</p><strong>前に作った音を聴く</strong><span>既存のデモや比較を開く。<br>好きだった区間を思い出す。</span></div><div class="meta"><b>試聴の棚へ →</b></div></a>
+        <a class="card return-card blue" href="#production-notebook"><div><p class="intent-no">03 / RESUME</p><strong>ひとつ選んで、続きを磨く</strong><span>再開ノートで素材と前回の変更を確認。<br>残す音と、直す点を一つずつ。</span></div><div class="meta"><b>制作ノートの入口へ →</b></div></a>
       </div>
+    </section>
+
+    <section id="collection-map" aria-labelledby="collection-title">
+      <div class="section-head"><h2 id="collection-title">いまあるものは、この4つ。</h2><p class="section-note">まず整理して、使って、磨く。</p></div>
+      <div class="collection-grid">
+        <a class="card" href="#recorded-works"><div><p class="intent-no">作品の棚</p><strong>作った音を、聴き直す</strong><span>固定音声・別テイク・比較リール。<br>公開デモと、自分の再開ノートへ。</span></div><div class="meta"><b>前の音を探す →</b></div></a>
+        <a class="card green" href="#tool-map"><div><p class="intent-no">触る道具</p><strong>鳴らす・編集する・段取りする</strong><span>Music / chill / drum-floor / namima / openclaw。<br>同じ制作に使う、役割の違う道具。</span></div><div class="meta"><b>用途と操作を見る →</b></div></a>
+        <a class="card blue" href="#sound-experiments"><div><p class="intent-no">音の実験</p><strong>聴き比べて、方向を決める</strong><span>Musicの3案比較と、Hazamaの反応音。<br>別の実験として、気に入った点を拾う。</span></div><div class="meta"><b>3つの実験へ →</b></div></a>
+        <a class="card rose" href="#visual-release"><div><p class="intent-no">映像・公開</p><strong>音に景色を合わせる</strong><span>既存の映像プレビュー・ビジュアライザー。<br>制作候補と公開済み作品を分けて確認。</span></div><div class="meta"><b>映像の入口へ →</b></div></a>
+      </div>
+      <p class="guide-note">このページは入口の地図、再開ノートは個別作品の履歴と素材の案内です。
+        ファイルは元の場所にあります。<strong>全素材の集約・照合が完了した一覧ではありません。</strong>
+        同じ曲の試聴版・別テイク・再編集版は、作品のつながりとして辿ります。</p>
+    </section>
+
+    <section id="recorded-works" aria-labelledby="recorded-title">
+      <div class="section-head"><h2 id="recorded-title">前に作った音を聴く</h2><p class="section-note">既存の公開試聴ページ。過去版を含みます。</p></div>
+      <details class="tool-group" open>
+        <summary>公開デモの棚 <span>曲・別テイク・比較</span></summary>
+        <div class="collection-links">
+          <article><h3>Tabasco / ACE-Step デモ</h3><p>7曲の固定音声を聴き直す参照棚。Band Roomの演奏・パート操作とは別の入口です。</p><a class="mini-link" href="https://quietbriony.github.io/tabasco-acestep-demos/">7曲のデモを開く →</a></article>
+          <article><h3>namimaの録音・比較</h3><p>IDMのA / B / CとCの6分版、周波数アンビエントの候補。
+            namimaのブラウザ楽器とは別の、作成済み音声です。試聴ページだけでは元コードや編集素材の所在は分かりません。</p><a class="mini-link" href="https://quietbriony.github.io/tabasco-acestep-demos/idm-preview/">IDMの比較・6分版 →</a><a class="mini-link" href="https://quietbriony.github.io/tabasco-acestep-demos/namima-freq/">周波数アンビエント候補 →</a></article>
+        </div>
+      </details>
       <div class="resume-panel" id="production-notebook">
         <h3>自分の作品は「Music — 再開ノート」へ</h3>
         <p>Googleドキュメント版で、<strong>試聴リンク・作品の由来・前回の続き・次の一手</strong>を読めます。
@@ -444,7 +479,7 @@
         <a class="mini-link" href="https://drive.google.com/drive/u/0/search?q=Music%20%E5%86%8D%E9%96%8B%E3%83%8E%E3%83%BC%E3%83%88" rel="noreferrer">Driveで再開ノートを探す →</a>
         <p>一度開いたら、Driveの「スター付き」に入れると次回すぐ戻れます。
           見つからない場合はアカウントを切り替えるか、この会話の直リンクから開いてください。
-          この公開ページには個人の作品名や保存先を載せていません。</p>
+          非公開作品の名前や保存先は、再開ノート側で確認できます。</p>
       </div>
       <div class="resume-panel" id="revive-ideas">
         <h3>全部を思い出さなくていい。一区間から再開する。</h3>
@@ -456,6 +491,29 @@
         <blockquote class="note-example">「この曲の0:50〜1:20。低音は残して、パッドを少し減らしたい」</blockquote>
         <p>スマホではまず試聴とメモ。パート別の素材がある曲はミックスから、完成音声がある曲は区間・フェード・効果から触り直せます。</p>
       </div>
+    </section>
+
+    <section id="sound-experiments" aria-labelledby="experiments-title">
+      <div class="section-head"><h2 id="experiments-title">音の実験 — 何を比べる場所か</h2></div>
+      <details class="tool-group">
+        <summary>3つの実験を見る <span>それぞれ独立</span></summary>
+        <div class="collection-links">
+          <article><h3>Music / Listening Loop</h3><p>20秒の3案を比べ、好みを一つ選んで次の候補へ進む実験。過去の曲を自動読込する編集画面ではありません。</p><a class="mini-link" href="experiments/listening-loop/v1/">3つ聴いて、ひとつ育てる →</a></article>
+          <article><h3>Hazama / Sensory Response Lab</h3><p>小さな回路を使う音の変化と、通常の変調を比較する試作。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/sensory-audio-lab.html">回路と変調を比べる →</a></article>
+          <article><h3>Hazama / 世界が音で応える</h3><p>沈む地面・脈動・断片・混合のA〜Dを比較。ゲームの場面に音がどう応えるかを探る場所です。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/scene-response-lab.html">場面の反応音を比べる →</a></article>
+          <p>HazamaはMusicと別のゲームrepoです。試聴候補と本体の採用状態は別に確認し、各実験の評価が自動で共有されるとは扱いません。</p>
+        </div>
+      </details>
+    </section>
+
+    <section id="visual-release" aria-labelledby="visual-title">
+      <div class="section-head"><h2 id="visual-title">映像・公開へつながるもの</h2></div>
+      <details class="tool-group">
+        <summary>既存の映像候補を見る <span>公開履歴は別に照合</span></summary>
+        <div class="collection-links"><article><h3>hazamaの映像・音声プレビュー</h3><p>60秒の音、庭のビジュアル、キャラクター案などの参照。YouTubeの投稿一覧や現在の制作進捗を示すページではありません。</p><a class="mini-link" href="https://quietbriony.github.io/tabasco-acestep-demos/hazama-preview/">映像・音声候補 →</a><a class="mini-link" href="https://quietbriony.github.io/tabasco-acestep-demos/viz/composition.html">既存ビジュアライザー →</a></article></div>
+      </details>
+      <p class="guide-note">上の関連ページは2026-09-20にHTTP 200とページ内容を確認。実スマホの再生、全ローカル素材、YouTube公開履歴の照合は残っています。
+        道具の実装確認日は下の一覧に記載しています。</p>
     </section>
 
     <section id="start-here" aria-labelledby="start-title">
@@ -474,17 +532,19 @@
     </section>
 
     <section id="workbench-plan" aria-labelledby="workbench-title">
-      <div class="section-head"><h2 id="workbench-title">これから作る、ブラウザ制作台</h2><p class="section-note">推奨設計。編集画面とチャット接続は未実装。</p></div>
+      <div class="section-head"><h2 id="workbench-title">将来案は、ここに保管</h2><p class="section-note">今は既存の整理と改良を優先。</p></div>
+      <details class="tool-group"><summary>ブラウザ制作台の設計を見る <span>未実装・着手保留</span></summary><div class="parked-plan">
       <p class="guide-note">目指すのは<strong>「音を聴く → 一部分をいじる → 元と比べる → 続きから再開する」</strong>こと。
         まずはブラウザで動く構成にし、Tidalのインストールを前提にしません。</p>
       <div class="plan-steps">
-        <article><span class="plan-state">1 / 最初に作る</span><h3>素材を並べて、ひとつ動かす</h3><p>パートごとの音量・ミュート・区間を目で見て操作。元音源を保ち、比較できる編集版を作ります。</p></article>
-        <article><span class="plan-state">2 / 一緒に作る</span><h3>何を変えたか残して、再開する</h3><p>元の版と変更理由を保存。閉じて開き直しても、同じ素材・区間・つまみの状態へ戻れるようにします。</p></article>
-        <article><span class="plan-state">3 / 土台ができたら</span><h3>画面・コード・チャットで触る</h3><p>同じ曲の設定を三つの入口から編集。まずパート編集を完成させ、その後に音符やStrudelとの接続を検討します。</p></article>
+        <article><span class="plan-state">案 1 / 素材編集</span><h3>素材を並べて、ひとつ動かす</h3><p>パートごとの音量・ミュート・区間を目で見て操作。元音源を保ち、比較できる編集版を作る案です。</p></article>
+        <article><span class="plan-state">案 2 / 履歴</span><h3>何を変えたか残して、再開する</h3><p>元の版と変更理由を保存。閉じて開き直しても、同じ素材・区間・つまみの状態へ戻る案です。</p></article>
+        <article><span class="plan-state">案 3 / 接続</span><h3>画面・コード・チャットで触る</h3><p>同じ曲の設定を三つの入口から編集する案。既存の道具で足りない操作が具体的になってから検討します。</p></article>
       </div>
       <p class="guide-note">録音のまま触れる曲、パートごとに触れる曲、元コードの回収が必要な曲を、作品ごとに案内します。</p>
       <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/BROWSER-WORKBENCH-DESIGN.md">制作台の詳しい設計</a>
       <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md">全体の使い方</a>
+      </div></details>
     </section>
 
     <section id="production-flow" aria-labelledby="flow-title">

@@ -142,37 +142,6 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   Reverb と oversampling。light OFF 時は出音キャラ不変を厳守（原音/デフォルト挙動は変えない）。
   完了条件: FM workstream が light ゲートを実装 → user 試聴で弱端末の詰まり減を確認。
 
-### BL-045 — 和声マップ＋アシッドの8小節session契約と独立preview
-- priority : P1
-- repo     : Music
-- scope    : non-engine-code
-- agent    : codex
-- human-gate: yes（音を出すpreviewの採用・実MIDI・実機は人間確認。session契約の静的実装は可能）
-- source   : 2026-09-07 userの全体統合依頼、`docs/VISUAL-COMPOSER-PLAN.md`
-- detail   : 既存Drum Floor / Band Roomを再発明せず、Drums / Acid / Airの8小節を
-  同一時間軸で扱う。まずnote/rest/accent/slide/seedの保存・読込契約と負例を実装。
-  次にoff-by-defaultな単一transportのpreview、3トラックMIDI＋音色メモへ進む。
-  engine / 既定再生 / REC / OUTPUT不変、機材なしが初回完成条件。音質と実機を静的passで代用しない。
-  2026-09-19の推奨設計は`docs/BROWSER-WORKBENCH-DESIGN.md`。先にBL-049で既存素材・
-  revision・再開の共通sessionを整え、そのevent編集面として実装する。自由なStrudelコードと
-  gridの完全相互変換は前提にせず、有限event固定は子revision。元の周期とsourceを保持する。
-
-### BL-049 — 既存ネタをブラウザで触り直す制作台の最初の一周
-- priority : P1
-- repo     : Music
-- scope    : non-engine-code
-- agent    : codex
-- human-gate: yes（独立previewの試聴・実iPhone・既存runtimeへの採用は人間確認）
-- source   : 2026-09-19 user「推奨設計して、今までの作ったネタを活性化させたい」
-- detail   : `docs/BROWSER-WORKBENCH-DESIGN.md`の順序1〜2。設計のみ、runtime未実装。
-  private制作ノートにある既存stem一組を候補とし、一般化した素材参照・revision・mix記述を定義。
-  ローカルfile選択、同一区間の試聴、gain / mute / solo、排他的な原本比較、undo、保存・再開を
-  Music内の独立previewへ実装する。つまみ・宣言的コード・変更JSONは同じsessionを編集する。
-  元音声と既存catalogを上書きせず、private素材・pathをpublic repoへ追加しない。
-  完成条件は一つの過去ネタを一部分だけ変え、元と比較し、閉じて同じ状態へ戻れること。
-  初回は既存Tone.js系の一つのclock。Tidal導入・Strudel依存追加・GPU・cloud同期を前提にしない。
-  次はBL-045のevent編集、必要なStrudel adapterとchat bridge。新規生成数を成果にしない。
-
 ### BL-046 — 既存作品・採用候補のprivate所在台帳
 - priority : P1
 - repo     : stack
@@ -199,6 +168,10 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   2026-09-20: スマホ用native Google Docs表示を同じprivate folderに追加し、本文・試聴リンク・
   parent・非共有状態をreadback。公開Listenには汎用検索と再開手順だけを置く。
   既存音声のDrive所在確認と、未uploadのローカル試作を区別。音声内容・実mobile試聴は未判定。
+  同日追記: 最新方針に合わせ、Listenと同じnativeノートに作品／道具／実験／映像の地図を整理。
+  関連repoの既存公開試聴を接続し、同じ生成器系列と実入力の親子、過去版と現在素材を区別する。
+  次は既存の一作品について区間・残す音・修正一点を絞り、既存素材と道具で再訪する。
+  全ローカル出力、旧原本、YouTube公開履歴の照合は残る。新しい制作面は既定で開始しない。
 
 ### BL-047 — offline IDMをDAWで磨くためのopt-in stem出口
 - priority : P1
@@ -255,6 +228,41 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   `self_review` 重み/閾値 tuning は engine 凍結域の別 human-gated PR（BL-024 harness で検証）。
 
 ## P2
+
+### BL-045 — 和声マップ＋アシッドの8小節session契約と独立preview
+- priority : P2
+- repo     : Music
+- scope    : non-engine-code
+- agent    : codex
+- human-gate: yes（音を出すpreviewの採用・実MIDI・実機は人間確認。session契約の静的実装は可能）
+- source   : 2026-09-07 userの全体統合依頼、`docs/VISUAL-COMPOSER-PLAN.md`
+- detail   : 既存Drum Floor / Band Roomを再発明せず、Drums / Acid / Airの8小節を
+  同一時間軸で扱う。まずnote/rest/accent/slide/seedの保存・読込契約と負例を実装。
+  次にoff-by-defaultな単一transportのpreview、3トラックMIDI＋音色メモへ進む。
+  engine / 既定再生 / REC / OUTPUT不変、機材なしが初回完成条件。音質と実機を静的passで代用しない。
+  2026-09-19の推奨設計は`docs/BROWSER-WORKBENCH-DESIGN.md`。先にBL-049で既存素材・
+  revision・再開の共通sessionを整え、そのevent編集面として実装する。自由なStrudelコードと
+  gridの完全相互変換は前提にせず、有限event固定は子revision。元の周期とsourceを保持する。
+  2026-09-20: userは新設より既存の整理・改良・把握を希望。着手保留。まずBL-046を進め、
+  既存の道具で不足する操作が具体化し、新規制作面を再開する依頼がある時に再検討する。
+
+### BL-049 — 既存ネタをブラウザで触り直す制作台の最初の一周
+- priority : P2
+- repo     : Music
+- scope    : non-engine-code
+- agent    : codex
+- human-gate: yes（独立previewの試聴・実iPhone・既存runtimeへの採用は人間確認）
+- source   : 2026-09-19 user「推奨設計して、今までの作ったネタを活性化させたい」
+- detail   : `docs/BROWSER-WORKBENCH-DESIGN.md`の順序1〜2。設計のみ、runtime未実装。
+  private制作ノートにある既存stem一組を候補とし、一般化した素材参照・revision・mix記述を定義。
+  ローカルfile選択、同一区間の試聴、gain / mute / solo、排他的な原本比較、undo、保存・再開を
+  Music内の独立previewへ実装する。つまみ・宣言的コード・変更JSONは同じsessionを編集する。
+  元音声と既存catalogを上書きせず、private素材・pathをpublic repoへ追加しない。
+  完成条件は一つの過去ネタを一部分だけ変え、元と比較し、閉じて同じ状態へ戻れること。
+  初回は既存Tone.js系の一つのclock。Tidal導入・Strudel依存追加・GPU・cloud同期を前提にしない。
+  次はBL-045のevent編集、必要なStrudel adapterとchat bridge。新規生成数を成果にしない。
+  2026-09-20: 着手保留。最新のuser方針は既存の整理・改良・把握。設計は保管し、
+  次の既定タスクに選ばない。既存の道具での不足が具体化した時にuserの再開依頼から検討する。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2

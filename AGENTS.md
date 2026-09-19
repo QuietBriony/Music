@@ -50,6 +50,16 @@ constraint を Music へコピーしない。
 - コマンド名、ファイルパス、API 名、エラー文、コード識別子は原文のまま書いてよい。
 - PR タイトルや commit message は既存履歴に合わせて英語 / 日本語を選ぶ。
 
+### 既存の入口へ戻す（2026-09-20）
+
+現方針は新設より、既存の整理・改良・把握を優先する。新しいdashboard / repo / 制作面を
+既定の次工程にしない。公開の入口は`listen.html`、個別作品の履歴はprivate再開ノートへ戻す。
+公開ページを追加・変更した作業を閉じる時は、Listenの該当入口と説明を同じ作業で更新する。
+道具の事実は`config/music-stack-tools.json`を更新して既存rendererで表示を揃え、
+関連repoの公開デモはListenの作品／実験／映像sectionへリンクする。別の一覧を新設しない。
+個別作品は既存IDへ「何の版・何を変えた・どこで聴く・何が残る・次の一手」を紐づける。
+privateな作品名・file ID・素材pathはpublicへ転記せず、未照合・未採用もそのまま記録する。
+
 ---
 
 ## Autonomous development engine
