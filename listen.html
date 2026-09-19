@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Music Stack — 聴く・触る・作って残す</title>
-  <meta name="description" content="Music Stackの総合入口。全道具の役割、最初の使い方、Sonar・音源生成・保存への道筋と実装状況。" />
+  <title>Music Stack — 続きから、また遊ぶ</title>
+  <meta name="description" content="久しぶりでも迷わない音楽制作の入口。制作ノートで前回を思い出し、過去のネタを聴いて、ブラウザの楽器でまた遊ぶ。" />
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <meta name="theme-color" content="#061119" />
   <style>
@@ -355,6 +355,29 @@
     .review-fold:not([open]) { padding-bottom: 0; }
     .review-fold > summary { padding-left: 0; }
     .review-fold .grid, .review-fold .pass-grid { margin-top: 8px; }
+    .return-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .return-card { min-height: 178px; padding: 20px; }
+    .return-card strong { font-size: 1.22rem; line-height: 1.5; }
+    .return-card span { font-size: .9rem; line-height: 1.75; }
+    .return-card .intent-no { margin: 0 0 12px; color: var(--cyan); font: .75rem ui-monospace, monospace; }
+    .resume-panel { margin-top: 14px; padding: 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-strong); }
+    .resume-panel h3 { margin: 0 0 10px; font-size: 1.05rem; line-height: 1.5; }
+    .resume-panel p, .resume-panel li { color: var(--muted); font-size: .95rem; line-height: 1.85; }
+    .resume-panel p:last-child { margin-bottom: 0; }
+    .resume-panel strong { color: var(--text); }
+    .resume-panel ol { padding-left: 1.5rem; }
+    .resume-panel li + li { margin-top: 10px; }
+    .note-example { margin: 14px 0; padding: 14px 16px; border-left: 3px solid var(--cyan); background: var(--panel); font-size: 1rem; line-height: 1.85; }
+    .plan-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .plan-steps article { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .plan-steps h3 { font-size: 1rem; line-height: 1.6; margin: 10px 0; }
+    .plan-steps p { color: var(--muted); font-size: .9rem; line-height: 1.8; }
+    .plan-state { display: inline-block; color: var(--amber); font-size: .8rem; }
+    @media (max-width: 680px) {
+      .return-grid, .plan-steps { grid-template-columns: 1fr; }
+      .return-card { min-height: 0; padding: 16px 18px; }
+      .resume-panel { padding: 16px; }
+    }
     @media (max-width: 920px) { .intent-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 560px) {
       .intent-grid, .tool-grid { grid-template-columns: 1fr; }
@@ -387,26 +410,57 @@
   </style>
 </head>
 <body>
-  <a class="skip-link" href="#start-here">使い方へスキップ</a>
+  <a class="skip-link" href="#return-here">再開する入口へスキップ</a>
   <div class="shell">
     <header>
       <div>
-        <p class="eyebrow">LISTEN / PLAY / MAKE</p>
+        <p class="eyebrow">REMEMBER / PLAY / KEEP</p>
         <h1>Music Stack</h1>
-        <p class="subtitle">聴く。触る。作って残す。<br>積み重ねてきた道具を、自分の音楽にするための入口。</p>
+        <p class="subtitle">前に作った音を思い出す。ひとつ動かす。また残す。<br>久しぶりに戻ってきたら、このページから。</p>
       </div>
       <nav class="top-actions" aria-label="Primary pages">
-        <a href="#tool-map">全道具の地図</a>
-        <a href="#first-session">最初の15分</a>
-        <a href="#current-pass">試聴・確認待ち</a>
-        <a href="https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md">総合ガイド</a>
+        <a href="#return-here">続きから</a>
+        <a href="#start-here">今すぐ遊ぶ</a>
+        <a href="#tool-map">道具の地図</a>
+        <a href="#workbench-plan">これから作る制作台</a>
       </nav>
     </header>
 
     <main>
+    <section id="return-here" aria-labelledby="return-title">
+      <div class="section-head">
+        <h2 id="return-title">続きは、ここから。</h2>
+        <p class="section-note">このページをブックマークしておくと、次もここへ戻れます。</p>
+      </div>
+      <div class="return-grid">
+        <a class="card return-card" href="#production-notebook"><div><p class="intent-no">01 / RESUME</p><strong>前回の続きを思い出す</strong><span>制作ノートで「何を作ったか」と<br>「次に一つ変えるもの」を確認。</span></div><div class="meta"><b>制作ノートの入口へ →</b></div></a>
+        <a class="card return-card amber" href="#revive-ideas"><div><p class="intent-no">02 / REVISIT</p><strong>過去のネタを育てる</strong><span>短く聴いて、好きな区間を選ぶ。<br>一言のメモから、次の版へ。</span></div><div class="meta"><b>ネタの再開方法へ →</b></div></a>
+        <a class="card return-card blue" href="experiments/listening-loop/v1/"><div><p class="intent-no">03 / PLAY</p><strong>今すぐ、3つ聴き比べる</strong><span>20秒の3案から一つを選ぶ。<br>ブラウザだけで試せる実験。</span></div><div class="meta"><b>3つ聴いて、ひとつ育てる →</b></div></a>
+      </div>
+      <div class="resume-panel" id="production-notebook">
+        <h3>自分の作品は「Music — 再開ノート」へ</h3>
+        <p>Googleドキュメント版で、<strong>試聴リンク・作品の由来・前回の続き・次の一手</strong>を読めます。
+          同じGoogleアカウントのDriveで「Music 再開ノート」を探してください。</p>
+        <a class="mini-link" href="https://drive.google.com/drive/u/0/search?q=Music%20%E5%86%8D%E9%96%8B%E3%83%8E%E3%83%BC%E3%83%88" rel="noreferrer">Driveで再開ノートを探す →</a>
+        <p>一度開いたら、Driveの「スター付き」に入れると次回すぐ戻れます。
+          見つからない場合はアカウントを切り替えるか、この会話の直リンクから開いてください。
+          この公開ページには個人の作品名や保存先を載せていません。</p>
+      </div>
+      <div class="resume-panel" id="revive-ideas">
+        <h3>全部を思い出さなくていい。一区間から再開する。</h3>
+        <ol>
+          <li>再開ノートの<strong>試聴リール</strong>で、気になる音を一つ選ぶ。</li>
+          <li><strong>作品名と元曲の時刻</strong>を決めて、残したいものと一つ変えたいものを書く。</li>
+          <li>このチャットへ渡す。素材を確かめ、元の音と比較できる別の版へつなぐ。</li>
+        </ol>
+        <blockquote class="note-example">「この曲の0:50〜1:20。低音は残して、パッドを少し減らしたい」</blockquote>
+        <p>スマホではまず試聴とメモ。パート別の素材がある曲はミックスから、完成音声がある曲は区間・フェード・効果から触り直せます。</p>
+      </div>
+    </section>
+
     <section id="start-here" aria-labelledby="start-title">
       <div class="section-head">
-        <h2 id="start-title">今日は、どこから遊ぶ？</h2>
+        <h2 id="start-title">楽器で遊ぶなら、ここから。</h2>
         <p class="section-note">最初は一つだけ。機材なしで始められます。</p>
       </div>
       <div class="intent-grid">
@@ -417,6 +471,20 @@
       </div>
       <p class="guide-note">流しっぱなしなら <a class="mini-link" href="fm.html">Hazama FM</a>。
         どのアプリも音を出すのは手動STARTから。この入口自体は音・MIDI・モデルを起動しません。</p>
+    </section>
+
+    <section id="workbench-plan" aria-labelledby="workbench-title">
+      <div class="section-head"><h2 id="workbench-title">これから作る、ブラウザ制作台</h2><p class="section-note">推奨設計。編集画面とチャット接続は未実装。</p></div>
+      <p class="guide-note">目指すのは<strong>「音を聴く → 一部分をいじる → 元と比べる → 続きから再開する」</strong>こと。
+        まずはブラウザで動く構成にし、Tidalのインストールを前提にしません。</p>
+      <div class="plan-steps">
+        <article><span class="plan-state">1 / 最初に作る</span><h3>素材を並べて、ひとつ動かす</h3><p>パートごとの音量・ミュート・区間を目で見て操作。元音源を保ち、比較できる編集版を作ります。</p></article>
+        <article><span class="plan-state">2 / 一緒に作る</span><h3>何を変えたか残して、再開する</h3><p>元の版と変更理由を保存。閉じて開き直しても、同じ素材・区間・つまみの状態へ戻れるようにします。</p></article>
+        <article><span class="plan-state">3 / 土台ができたら</span><h3>画面・コード・チャットで触る</h3><p>同じ曲の設定を三つの入口から編集。まずパート編集を完成させ、その後に音符やStrudelとの接続を検討します。</p></article>
+      </div>
+      <p class="guide-note">録音のまま触れる曲、パートごとに触れる曲、元コードの回収が必要な曲を、作品ごとに案内します。</p>
+      <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/BROWSER-WORKBENCH-DESIGN.md">制作台の詳しい設計</a>
+      <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md">全体の使い方</a>
     </section>
 
     <section id="production-flow" aria-labelledby="flow-title">
@@ -625,7 +693,7 @@
         <div class="pass-panel">
           <h3>この先の道筋</h3>
           <p class="guide-note">Sonarは仕上げと目で見るMIDI編集に残す。自作するのは、好みを直接触れる小さな楽器。
-            次は<strong>Drums / Acid / Airの8小節</strong>。和声マップと16-step演奏面は、まだ設計段階です。</p>
+            次は<strong>既存素材のパート編集と保存・再開</strong>。その土台ができたら、Drums / Acid / Airの8小節や音符編集へ進みます。どちらも設計段階です。</p>
           <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/VISUAL-COMPOSER-PLAN.md">和声マップ＋アシッドの設計</a>
           <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md#delivery">保存・iPhone・YouTubeへの受け渡し</a>
         </div>
