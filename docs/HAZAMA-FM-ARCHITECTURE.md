@@ -24,6 +24,17 @@
 > - 現在のcatalog URLは`config/external-dependencies.json`のcommit-pinned jsDelivrが正本。
 >   `engine.js`の`tonejs.github.io`参照は凍結legacy例外であり、同一URLとはみなさない
 
+## 2026-09-20 — 再開の入口とブラウザ制作台の設計
+
+`listen.html`は「前回の続き／過去のネタ／今すぐ遊ぶ」を先頭に置く静的launcher。
+Driveの個人ノートへは汎用の検索リンクだけを案内し、公開HTMLへ個人のfile ID・作品名・
+ローカル素材pathを埋め込まない。privateノートはGoogle Docsの読みやすい表示として別管理する。
+同じページの`#workbench-plan`は推奨設計の要約であり、編集runtimeではない。
+BL-049は素材・revision・保存再開を先に、BL-045はその上にpattern編集を計画する。
+契約は[BROWSER-WORKBENCH-DESIGN.md](BROWSER-WORKBENCH-DESIGN.md)。
+新規JS・音源・依存・自動再生はなく、既存のnetwork-first HTML navigationで更新する。
+cache / asset tupleとaudio runtimeはv402のまま。
+
 ## 2026-09-14 — Listening Loop 独立preview（既存runtime不変）
 
 `experiments/listening-loop/v1/` は明示navigation + Playだけで動く実験。

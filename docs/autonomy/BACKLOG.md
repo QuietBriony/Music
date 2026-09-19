@@ -153,6 +153,25 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   同一時間軸で扱う。まずnote/rest/accent/slide/seedの保存・読込契約と負例を実装。
   次にoff-by-defaultな単一transportのpreview、3トラックMIDI＋音色メモへ進む。
   engine / 既定再生 / REC / OUTPUT不変、機材なしが初回完成条件。音質と実機を静的passで代用しない。
+  2026-09-19の推奨設計は`docs/BROWSER-WORKBENCH-DESIGN.md`。先にBL-049で既存素材・
+  revision・再開の共通sessionを整え、そのevent編集面として実装する。自由なStrudelコードと
+  gridの完全相互変換は前提にせず、有限event固定は子revision。元の周期とsourceを保持する。
+
+### BL-049 — 既存ネタをブラウザで触り直す制作台の最初の一周
+- priority : P1
+- repo     : Music
+- scope    : non-engine-code
+- agent    : codex
+- human-gate: yes（独立previewの試聴・実iPhone・既存runtimeへの採用は人間確認）
+- source   : 2026-09-19 user「推奨設計して、今までの作ったネタを活性化させたい」
+- detail   : `docs/BROWSER-WORKBENCH-DESIGN.md`の順序1〜2。設計のみ、runtime未実装。
+  private制作ノートにある既存stem一組を候補とし、一般化した素材参照・revision・mix記述を定義。
+  ローカルfile選択、同一区間の試聴、gain / mute / solo、排他的な原本比較、undo、保存・再開を
+  Music内の独立previewへ実装する。つまみ・宣言的コード・変更JSONは同じsessionを編集する。
+  元音声と既存catalogを上書きせず、private素材・pathをpublic repoへ追加しない。
+  完成条件は一つの過去ネタを一部分だけ変え、元と比較し、閉じて同じ状態へ戻れること。
+  初回は既存Tone.js系の一つのclock。Tidal導入・Strudel依存追加・GPU・cloud同期を前提にしない。
+  次はBL-045のevent編集、必要なStrudel adapterとchat bridge。新規生成数を成果にしない。
 
 ### BL-046 — 既存作品・採用候補のprivate所在台帳
 - priority : P1
@@ -175,6 +194,11 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   BL-047の編集素材と比較候補を既存ノートの再開カードへ統合。実入力の親と、同じ生成器系列の
   旧納品への参照を区別し、観測日・byte size・循環・unknown IDを検証。既存catalog/verdictは不変。
   同じprivate表示fileだけを更新・readbackし、ノート同期と音源uploadを混同しない。
+  2026-09-19: private側に着手順の設計を追加。既存IDと不足記録を参照し、BL-049へ渡す候補を
+  示す。新しい採用判定・素材現存確認・cloud更新を行ったという意味ではない。
+  2026-09-20: スマホ用native Google Docs表示を同じprivate folderに追加し、本文・試聴リンク・
+  parent・非共有状態をreadback。公開Listenには汎用検索と再開手順だけを置く。
+  既存音声のDrive所在確認と、未uploadのローカル試作を区別。音声内容・実mobile試聴は未判定。
 
 ### BL-047 — offline IDMをDAWで磨くためのopt-in stem出口
 - priority : P1

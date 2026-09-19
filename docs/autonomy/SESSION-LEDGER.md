@@ -19,6 +19,44 @@
 
 ---
 
+## 2026-09-20 — スマホで再開できる制作ノートと公開入口
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : MDを開けないスマホから、過去の音・前回の続き・次の一手へ戻れるようにする
+- repos      : Music（静的Listenと設計・handoff）、private music-ops（worksの表示記録）
+- implemented: `listen.html`先頭へ再開・ネタの再訪・Listening Loopの3入口を追加。
+  汎用Drive検索、区間と一言メモの手順、BL-049のHTML設計要約を置いた。
+  private側はnative Google Docsへ11 packetとローカル5組、試聴リンク、リール目次を整理。
+  元MD・catalog・verdict・音源を保持し、個人file IDや素材pathはpublicへ転記しない。
+  既存network-first HTMLを使い、JS・音源・依存・cache tuple・audio runtimeは不変。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（入口実装後、最終の案内文・backlog・本entry追記前の全体gate）
+  最終文面後にListen / guide / queue / doc currencyを再検証。private checkもPASS。
+  Chromiumで390px / 320pxの横overflowなし、44px以上の主navigation、再開anchor遷移、
+  1280px表示、console error/warning 0を確認。native Docの本文・38リンク・28見出し・日付chip、
+  親folder・非共有状態をreadback。Driveの11 folder・37 fileのlistingは実音確認とは区別。
+- backlog    : BL-046のスマホ表示と入口を前進。BL-049 / BL-045の編集runtimeは未実装のまま
+- next       : BL-049 — 既存パート素材の編集・比較・保存再開が一周できる独立preview
+- blockers   : 実iPhoneのDocs表示・音声再生は本人未確認。ローカル試作の音声upload、制作台、
+  chat連動、音符編集は本変更に含まない。作品採用や素材回収の判定も変更しない
+
+---
+
+## 2026-09-19 — 既存ネタをブラウザで触り直す制作台の推奨設計
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : 過去のネタを思い出し、一部分を触り、比較・保存・再開できる構成を設計する
+- repos      : Music（公開可能な汎用設計・導線・queue）、private music-ops（worksの設計メモ）
+- implemented: `docs/BROWSER-WORKBENCH-DESIGN.md`に作品・revision・素材参照・単一clock、
+  宣言的コードとGUIの共通session、chat変更の検証、Strudelの限定導入、段階的な完成条件を定義。
+  Visual Composerと出自ガイドへ接続。private側は既存IDを使って対象と再開順だけを記録する。
+  runtime、依存、音源、catalog、採用判断、Drive表示、機材を変更していない。設計のみ、未実装。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（設計・導線・queue編集後、このentry追記前の全体gate）
+  設計関連5文書・23 local link・private/source ID境界を確認。entry追記後のqueue / doc currency再検証もPASS。
+- backlog    : BL-049追加。BL-045はBL-049の素材・版保存を土台にする。BL-046の回収・所在確認は継続
+- next       : BL-049 — session・revision・素材照合と一作品用の独立preview。保存→閉じる→再開までを先に完成
+- blockers   : 設計は完了。実装・実試聴・実iPhone・chat bridge・Strudel adapterは今後の工程。
+  素材の所在とhashは過去記録を参照した段階で、今回再確認済みとは扱わない
+
+---
+
 ## 2026-09-14 — Musicの合成方式と実測脚運動回路を使う3案試聴preview
 - agent      : Codex（同じ会話内、委任なし）
 - goal       : 単調・差が不明というuser評価から、音楽的な3案を聴いて次案を選べるようにする

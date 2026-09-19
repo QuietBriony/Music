@@ -19,7 +19,14 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 `docs/INDEX.md`、canonical JSON を先に読む。ない環境では推測せず、public-safe な
 workflow と `needs_verification` だけを使う。active runtime repo は従来どおり 5 つ。
 
-## 現在地（2026-09-14）
+## 現在地（2026-09-20）
+
+- `listen.html`先頭を「前回の続き／過去のネタ／今すぐ遊ぶ」へ整理。
+  `#production-notebook`は個人IDを含まないDrive検索、`#revive-ideas`は区間と一言メモの手順。
+  `#workbench-plan`でBL-049の推奨設計をHTMLのまま読める。制作台・chat接続は未実装。
+  個人の再開ノートはprivate側で管理し、作品名・Drive file ID・PC素材パスを公開側へ入れない。
+  HTML navigationは既存SWのnetwork-firstで更新し、音声runtime/cache tupleはv402を保持する。
+  詳細設計は`docs/BROWSER-WORKBENCH-DESIGN.md`、次の実装はBL-049。
 
 - BL-048: `experiments/listening-loop/v1/` に20秒×3案の独立試聴previewを追加。
   既存Tone.js合成、固定hashのMaleCNS脚運動回路JSON、独自の音楽写像、定型評価からの
