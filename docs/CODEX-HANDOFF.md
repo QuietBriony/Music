@@ -30,6 +30,8 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   `#collection-map`で作品／道具／実験／映像を整理し、既存の公開デモ・Hazama試聴へ接続。
   関連repoの入口の正本はListen。デモ・ゲームrepoをactive 5へ追加せず、原本も移動しない。
   設計は`#workbench-plan`の折りたたみに保管。登録範囲と全素材照合の未完了を明記する。
+  `#yearbook`に2025〜2026のrepo・公開実験の年鑑と名前の索引を追加。日付種別とJSTを明記。
+  実PC・個別作品・素材所在は同じprivateノートの年鑑へ。public側は一般的な担当の説明だけ。
 
 - BL-048: `experiments/listening-loop/v1/` に20秒×3案の独立試聴previewを追加。
   既存Tone.js合成、固定hashのMaleCNS脚運動回路JSON、独自の音楽写像、定型評価からの

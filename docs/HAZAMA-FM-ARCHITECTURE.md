@@ -34,6 +34,8 @@ Driveの個人ノートへは汎用の検索リンクだけを案内し、公開
 `#collection-map`に作品／道具／実験／映像の関係を示し、関連公開デモとHazamaの試聴を接続。
 これらは参照navigationであり、別repoのruntime統合や音声移植ではない。
 active 5構成を保ち、全素材の集約・照合完了とは表示しない。制作台案は折りたたみへ移した。
+`#yearbook`はrepo作成・最初のcommit・公開実験の変更を日本時間で辿る静的な年鑑と索引。
+個別作品の制作日、PCの実構成、素材の保存先はprivateの同じ再開ノートが案内する。
 契約は[BROWSER-WORKBENCH-DESIGN.md](BROWSER-WORKBENCH-DESIGN.md)。
 新規JS・音源・依存・自動再生はなく、既存のnetwork-first HTML navigationで更新する。
 cache / asset tupleとaudio runtimeはv402のまま。

@@ -382,6 +382,14 @@
     .collection-links a { display: inline-flex; align-items: center; min-height: 44px; margin: 4px 4px 4px 0; overflow-wrap: anywhere; }
     .collection-grid .intent-no { color: var(--cyan); }
     .parked-plan { padding: 0 18px 18px; }
+    .index-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+    .yearbook { list-style: none; margin: 0; padding: 0 18px 18px; }
+    .yearbook li { border-left: 2px solid var(--line); padding: 4px 0 18px 18px; }
+    .yearbook li:last-child { padding-bottom: 0; }
+    .yearbook time { color: var(--cyan); font: .85rem ui-monospace, monospace; }
+    .yearbook h3 { margin: 6px 0; font-size: 1rem; line-height: 1.65; }
+    .yearbook p { margin: 6px 0; color: var(--muted); font-size: .88rem; line-height: 1.8; }
+    .yearbook a { text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
     @media (max-width: 560px) { .collection-grid { grid-template-columns: 1fr; } }
     @media (max-width: 680px) {
       .return-grid, .plan-steps { grid-template-columns: 1fr; }
@@ -431,6 +439,7 @@
       <nav class="top-actions" aria-label="Primary pages">
         <a href="#return-here">続きから</a>
         <a href="#collection-map">全体を把握</a>
+        <a href="#yearbook">年鑑・索引</a>
         <a href="#recorded-works">前の音を聴く</a>
         <a href="#start-here">今すぐ遊ぶ</a>
       </nav>
@@ -462,6 +471,37 @@
         同じ曲の試聴版・別テイク・再編集版は、作品のつながりとして辿ります。</p>
     </section>
 
+    <section id="yearbook" aria-labelledby="yearbook-title">
+      <div class="section-head"><h2 id="yearbook-title">いつ作った？ 名前から探す。</h2><p class="section-note">記録を辿る年鑑 · 2026-09-20確認</p></div>
+      <p class="guide-note">道具の始まりと、その後の実験を時系列で。<strong>個別作品の制作日・版・担当PC・素材の保存先</strong>は、同じ再開ノートの年鑑にまとめています。</p>
+      <nav class="index-links" aria-label="名前から探す索引">
+        <a class="mini-link" href="#tool-map">Music・chill・drum-floor・namima・openclaw</a>
+        <a class="mini-link" href="#recorded-works">Tabasco・IDM・周波数の録音</a>
+        <a class="mini-link" href="#sound-experiments">Listening Loop・Hazamaの音実験</a>
+        <a class="mini-link" href="#visual-release">映像・可視化</a>
+        <a class="mini-link" href="#production-notebook">自分の作品年鑑・PC・素材</a>
+      </nav>
+      <details class="tool-group" open>
+        <summary>2025 → 2026 の歩み <span>確認できる最初の記録</span></summary>
+        <ol class="yearbook">
+          <li><time datetime="2025-11">2025.11</time><h3>Musicとchillから始まる</h3><p>Musicのrepo作成は11月20日、最初のGit記録は11月21日。chillは11月22日。いまの総合入口と、静けさを探る道具の土台です。</p><p>根拠：<a href="https://github.com/QuietBriony/Music/commit/776c8a6">Musicの最初のcommit</a> · <a href="https://github.com/QuietBriony/chill/commit/e6f532d">chillの最初のcommit</a></p></li>
+          <li><time datetime="2025-12-01">2025.12.01</time><h3>namimaが加わる</h3><p>アンビエントやIDMの生成・試聴へつながるrepo。ブラウザ楽器と書き出した録音は、入口を分けて案内しています。</p><p>根拠：<a href="https://github.com/QuietBriony/namima/commit/7dee5e9">namimaの最初のcommit</a></p></li>
+          <li><time datetime="2026-02-23">2026.02.23</time><h3>drum-floor：リズムを探る</h3><p>リズム側の道具が加わる。Music / chill / namimaとは役割を分けて使います。</p><p>根拠：<a href="https://github.com/QuietBriony/drum-floor/commit/6ed92f1">drum-floorの最初のcommit</a></p></li>
+          <li><time datetime="2026-05-03">2026.05.03</time><h3>openclaw：制作の段取りを残す</h3><p>意図・比較・次の一手を整理するrepo。これで現在のactive 5 repoが揃います。</p><p>根拠：<a href="https://github.com/QuietBriony/openclaw/commit/7599749">openclawの最初のcommit</a></p></li>
+          <li><time datetime="2026-06-24">2026.06.24</time><h3>固定音声を聴き返すデモ棚</h3><p>tabasco-acestep-demosのrepo作成日。後からIDM・周波数アンビエント・映像のpreviewも置かれています。各曲の制作日とは区別します。</p><p><a href="https://github.com/QuietBriony/tabasco-acestep-demos">デモrepo</a> · <a href="#recorded-works">試聴の棚へ</a></p></li>
+          <li><time datetime="2026-09">2026.09</time><h3>音の反応を比較する実験へ</h3><p>14日にHazamaの回路と変調の比較、15日にMusicのListening LoopとHazamaの場面A〜DがGitへ追加。19日に場面の混合案が更新されました。</p><p>根拠：<a href="https://github.com/QuietBriony/hazama/commit/9099e5c">回路比較</a> · <a href="https://github.com/QuietBriony/Music/commit/e5126a6">Listening Loop</a> · <a href="https://github.com/QuietBriony/hazama/commit/1db4cdc">場面A〜D</a> · <a href="https://github.com/QuietBriony/hazama/commit/365e32e">混合案</a></p></li>
+        </ol>
+      </details>
+      <p class="guide-note">日付は日本時間。GitHubのrepo作成日時・辿れる最初のcommit・機能追加のcommitを根拠にしています。着想した日、録音した日、公開した日は同じとは限りません。作品ごとの日付が不明なものは、再開ノートで「資料の日付」として残します。</p>
+      <details class="tool-group">
+        <summary>PCごとの役回り <span>制作のどこを担当するか</span></summary>
+        <div class="collection-links">
+          <article><h3>企画・整理 → 生成・書き出し → 録音・聴き込み</h3><p>企画側ではコード・意図・版・公開手順を整える。生成側ではGPU処理、音源分離、長い音声や映像の書き出し。録音側ではDAW・MIDI・実機を使い、耳で確かめる。日常の再生環境では長時間聴いて使い心地を確かめます。</p></article>
+          <article><h3>どのPCへ戻るかは再開ノートで</h3><p>実際のPC名、現在確認できた構成、過去の接続記録、ローカル素材の場所を同じノートに整理。現在確認できた情報と、別PCの過去記録を分けています。</p><a class="mini-link" href="#production-notebook">PC・素材の案内へ →</a></article>
+        </div>
+      </details>
+    </section>
+
     <section id="recorded-works" aria-labelledby="recorded-title">
       <div class="section-head"><h2 id="recorded-title">前に作った音を聴く</h2><p class="section-note">既存の公開試聴ページ。過去版を含みます。</p></div>
       <details class="tool-group" open>
@@ -474,7 +514,7 @@
       </details>
       <div class="resume-panel" id="production-notebook">
         <h3>自分の作品は「Music — 再開ノート」へ</h3>
-        <p>Googleドキュメント版で、<strong>試聴リンク・作品の由来・前回の続き・次の一手</strong>を読めます。
+        <p>Googleドキュメント版で、<strong>作品年鑑・名前の索引・担当PC・素材の場所・試聴リンク・次の一手</strong>を読めます。
           同じGoogleアカウントのDriveで「Music 再開ノート」を探してください。</p>
         <a class="mini-link" href="https://drive.google.com/drive/u/0/search?q=Music%20%E5%86%8D%E9%96%8B%E3%83%8E%E3%83%BC%E3%83%88" rel="noreferrer">Driveで再開ノートを探す →</a>
         <p>一度開いたら、Driveの「スター付き」に入れると次回すぐ戻れます。
@@ -752,8 +792,8 @@
         </div>
         <div class="pass-panel">
           <h3>この先の道筋</h3>
-          <p class="guide-note">Sonarは仕上げと目で見るMIDI編集に残す。自作するのは、好みを直接触れる小さな楽器。
-            次は<strong>既存素材のパート編集と保存・再開</strong>。その土台ができたら、Drums / Acid / Airの8小節や音符編集へ進みます。どちらも設計段階です。</p>
+          <p class="guide-note">Sonarは仕上げとMIDI編集に使う。いまは<strong>既存素材と比較版を開いて、一部分を磨く</strong>段階です。
+            年鑑と再開ノートに変更と次の一手を戻します。新しい演奏面の設計は保管し、必要な操作が具体化したときに見直します。</p>
           <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/VISUAL-COMPOSER-PLAN.md">和声マップ＋アシッドの設計</a>
           <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md#delivery">保存・iPhone・YouTubeへの受け渡し</a>
         </div>
