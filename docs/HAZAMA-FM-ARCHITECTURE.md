@@ -30,7 +30,10 @@
 Driveの個人ノートへは汎用の検索リンクだけを案内し、公開HTMLへ個人のfile ID・作品名・
 ローカル素材pathを埋め込まない。privateノートはGoogle Docsの読みやすい表示として別管理する。
 同じページの`#workbench-plan`は推奨設計の要約であり、編集runtimeではない。
-BL-049は素材・revision・保存再開を先に、BL-045はその上にpattern編集を計画する。
+最新の利用者方針によりBL-049 / BL-045の着手は保留し、BL-046の既存整理・再訪を優先する。
+`#collection-map`に作品／道具／実験／映像の関係を示し、関連公開デモとHazamaの試聴を接続。
+これらは参照navigationであり、別repoのruntime統合や音声移植ではない。
+active 5構成を保ち、全素材の集約・照合完了とは表示しない。制作台案は折りたたみへ移した。
 契約は[BROWSER-WORKBENCH-DESIGN.md](BROWSER-WORKBENCH-DESIGN.md)。
 新規JS・音源・依存・自動再生はなく、既存のnetwork-first HTML navigationで更新する。
 cache / asset tupleとaudio runtimeはv402のまま。

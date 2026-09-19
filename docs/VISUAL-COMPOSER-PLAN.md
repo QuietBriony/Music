@@ -1,6 +1,7 @@
 # 和声マップ＋アシッド演奏面 — 既存Music Stackを育てる設計
 
 Status: **planned / 未実装**。2026-09-07の全体統合に伴う設計。
+2026-09-20の利用者方針により着手保留。既存の整理・改良・把握（BL-046）を先に行う。
 これは実行許可や聴感合格の代わりではありません。作業順は[BACKLOG](autonomy/BACKLOG.md)に集約します。
 使い方の入口は[総合manual](MUSIC-STACK-SYSTEM-MANUAL.md)へ。
 

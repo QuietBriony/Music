@@ -26,7 +26,10 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   `#workbench-plan`でBL-049の推奨設計をHTMLのまま読める。制作台・chat接続は未実装。
   個人の再開ノートはprivate側で管理し、作品名・Drive file ID・PC素材パスを公開側へ入れない。
   HTML navigationは既存SWのnetwork-firstで更新し、音声runtime/cache tupleはv402を保持する。
-  詳細設計は`docs/BROWSER-WORKBENCH-DESIGN.md`、次の実装はBL-049。
+  最新方針は新設より既存の整理・改良。BL-049 / BL-045は着手保留、次はBL-046。
+  `#collection-map`で作品／道具／実験／映像を整理し、既存の公開デモ・Hazama試聴へ接続。
+  関連repoの入口の正本はListen。デモ・ゲームrepoをactive 5へ追加せず、原本も移動しない。
+  設計は`#workbench-plan`の折りたたみに保管。登録範囲と全素材照合の未完了を明記する。
 
 - BL-048: `experiments/listening-loop/v1/` に20秒×3案の独立試聴previewを追加。
   既存Tone.js合成、固定hashのMaleCNS脚運動回路JSON、独自の音楽写像、定型評価からの

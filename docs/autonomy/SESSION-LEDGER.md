@@ -19,6 +19,26 @@
 
 ---
 
+## 2026-09-20 — 既存の作品・道具・実験を同じ入口へ整理
+- agent      : Codex（同じ会話内、委任なし）
+- goal       : 新設を増やさず、既存の関係・現在地・次の一手を把握できるようにする
+- repos      : Music（Listen・manual・作業順）、private music-ops（worksの計画・表示記録）
+- implemented: Listenに作品／道具／実験／映像の4つの地図を置き、関連repoにあった7つの
+  公開試聴・映像入口を接続。過去版・独立実験・制作候補と、全素材照合の未完了を区別する。
+  privateの同じGoogle Docへ関係図の要約と関連入口を追記。11 packet・ローカル5組の
+  元カード、既存リンク、一言メモ、日付chip、非共有の親folderを保持してreadback。
+  BL-049 / BL-045をP2・着手保留へ移し、既存の入口を更新して作業を閉じる方針を記録した。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（整理後の全体gate。本行の結果確定後にqueue / currencyを再検証）
+  入口・guide・queueの個別検証、320 / 390 / 1280pxで横overflow 0・主navigation 44px、
+  anchor遷移と折りたたみ内の実験3リンク・映像2リンクを確認。console error/warning 0。
+  private全体checkとworks gateはPASS。Docは32見出し・46リンク・既存メモと日付の保持を確認。
+- backlog    : BL-046の既存整理を前進。BL-049 / BL-045は将来案として保管
+- next       : BL-046 — 既存の一作品・一区間を選び、素材と前回の版を確認して既存の道具で磨く
+- blockers   : 全PCの音声、旧原本、公開版との同一hash、YouTube投稿履歴は未照合。
+  実iPhoneの再生・本人の採用判断は未確認。新しい制作面・音声移動・別repo改変は行わない
+
+---
+
 ## 2026-09-20 — スマホで再開できる制作ノートと公開入口
 - agent      : Codex（同じ会話内、委任なし）
 - goal       : MDを開けないスマホから、過去の音・前回の続き・次の一手へ戻れるようにする
