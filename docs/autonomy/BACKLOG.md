@@ -41,6 +41,21 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 
 ## P1
 
+### BL-050 — Band Room AI 再現のパート別忠実度（原曲どおりに叩く・弾く）
+- priority : P1
+- repo     : Music
+- scope    : runtime / verify
+- agent    : claude | codex
+- human-gate: no（検証済みは merge。耳の判定は本人委任の測定判定、本人は違和感だけ上書き）
+- source   : 2026-09-23 owner「bandroom のパートごとの AI 完成させたい」
+- detail   : 音色ではなく、各パートが原曲 stem に対して発音タイミング・強弱・音高と和音・構成で忠実になることを
+  「完成」とする（2026-07-23 の音色凍結は維持）。正本は `docs/BAND-ROOM-PART-AI-BRIEF.md`。
+  まず part-fidelity ハーネスで Human Fly drums の実例（snare 21/21・8 ms・r 0.83、kick 34/41・11 ms・
+  r 0.66、hat 約 40 対 5）を再現し、Tabasco 7 曲 × 4 パートの baseline を取る。次に schedule-dump hook、
+  行のない小節（stem エネルギーで判定）、section crash の重なり、クラスを見ない light 間引き、minor の無い
+  コード名、2.3% 刻みの bpm_fit を順に直す。iPhone 予算（1 小節約 30 トリガー）と G-1〜G-7 を守る。
+  tom / ride は新 voice にしない。HAZAMA と ui_hidden（BL-041）は対象外。
+
 ### BL-041 — HAZAMA を main Band selector へ昇格する実機判定
 - priority : P1
 - repo     : Music

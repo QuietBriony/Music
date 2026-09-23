@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-09-23 — Band Room パート別 AI 忠実度の引き継ぎブリーフと BL-050
+- agent      : Claude Opus 5.5（Surface対話、workflow＝パート別読み取り6＋曲データ/道具＋履歴/制約→統合→照合役）
+- goal       : 本人の「パートごとの AI を完成させたい」を、新しいチャットが初手から正しく始められる形にする
+- repos      : Music（docs と backlog のみ。runtime は不変）
+- implemented: `docs/BAND-ROOM-PART-AI-BRIEF.md` を追加。完成＝音色でなく原曲 stem への忠実度（2026-07-23 の
+  音色凍結と両立）、パート別の現状表、part-fidelity ハーネスの設計、進める順番、iPhone 予算・gate・雑務、
+  最初の一手、新チャットへの書き出し。照合役がコードと突き合わせて 11 件訂正・9 件補足（light の条件、
+  kit の実体、bpm_fit の 2.3% 刻み、light 間引きがクラスを見ない実害、再構築マトリクスの上限なし、
+  minor の無いコード名、休み小節で歌う voice など）。主要 3 点は手元で再確認。BL-050 を P1 で起票。
+  古い「bandroom専用改善」チャット（8/8 締め・宿題ゼロ・PR 全 merge 済み）は閉じてよいと本人へ回答
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（docs・backlog 追加後の全体 gate）
+- backlog    : BL-050 追加（Band Room AI 再現のパート別忠実度）
+- next       : BL-050 — 新チャットで Human Fly drums の実例を再現する part-fidelity ハーネスから
+- blockers   : なし（判定は測定で行い、本人は違和感だけ上書き）
+
+---
+
 ## 2026-09-23 — AI判定1位のIDM Eを◎下限まで改良しv2として納品
 - agent      : Claude Opus 5.5（Surface対話、workflow＝同一特徴量で候補6本を測定→3観点審査→監査）
 - goal       : 本人委任の基準（Aphex Twin近さ）で1位だったE-6m（6.2 △）を、音色・作曲を変えずに◎へ寄せる
