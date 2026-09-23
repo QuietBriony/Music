@@ -19,6 +19,27 @@
 
 ---
 
+## 2026-09-23 — pages.dev（Lyric Lab APIの住処）を2か月ぶりにmainへ同期
+- agent      : Claude Opus 5.5（Surface対話、worker経由の手動direct upload）
+- goal       : 本番pages.devに残っていたLyric Labのcache欠陥（v386 SWが認証付きAPI応答をcacheし、
+  古い棚から全置換POSTしうる）を、検証済みmainの再配信で解消する
+- repos      : Music（commit 411b300をそのまま配信。コード変更なし）、Cloudflare Pages project music-stack
+- implemented: workerで`git archive`（core.autocrlf=false）した411b300のclean export（1116 file・
+  289 MB・最大8.24 MB・LF・functions / wrangler.toml同梱）から`wrangler@4.129.1 pages deploy
+  --branch=main`で本番配信（deployment 938d8877、新規upload 270 file）。事前にdeployment一覧で
+  本番=main・直前=8e1c39f（2026-07-18）を確認。配信後: sw.jsがGitHub Pagesと同じ
+  hazama-fm-v402でrepoとbyte一致（CR除去後）、`/api/`をSWがbypass、未認証401、
+  既存tokenの読み取りGETは200・`private, no-store`・Vary付きで棚8作品を確認（書き込みなし）。
+  7月のworking-tree uploadで公開されていたgitignore済みのai-recreation stemは本番aliasでHTMLへ
+  fallback（旧deploymentの固有URLには残る。削除は不可逆なのでhuman判断）。一時exportは削除。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（配信対象411b300のgate結果。本entryはdocsのみ）
+- backlog    : BL-046の配信先ずれを解消（pages.devとGitHub Pagesがv402で一致）
+- next       : BL-046 — reel v2（3:13）とreel v1（8:56）を聴いてpacket名で一言。判定の書き戻しから磨く対象を1つ選ぶ
+- blockers   : pages.devは今後もmerge毎の自動反映はない（手順はLYRIC-LAB-D1.md）。
+  旧deployment群の削除と、既存端末のSW更新後の棚の同期状態の実確認はhuman
+
+---
+
 ## 2026-09-23 — 未試聴の新着を聴ける形へ整理・PR #40統合・配信先ずれの記録
 - agent      : Claude Opus 5.5（Surface対話、workflow 2本＝review 3観点＋反証 / build＋独立検証）
 - goal       : 9/8〜9/20に作られたが聴く導線のない試作を、既存の納品規約でスマホ試聴へ載せ、
