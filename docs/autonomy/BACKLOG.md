@@ -148,7 +148,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : docs
 - agent    : codex
 - human-gate: yes（採用・削除・公開・外部保存先の変更は人間判断）
-- status   : wip — codex 2026-09-08。private出自ノートへ新しい編集・比較packetを接続。素材所在・表示鮮度・保存先照合を一括検証。旧原本の回収と再現確認が残る。判定・公開設定は未変更
+- status   : wip — claude 2026-09-23。worker-local 4組をDriveへコピーpacket化しcatalog 16件＋reel v2、private NOTES / receiptを追従。旧原本の回収と再現確認が残る。判定・公開設定は未変更
 - source   : 2026-09-07 Music Stack owner guideの未確認範囲
 - detail   : Git外の音源・DAW project・recipe・iPhone版・handoffをread-onlyで照合し、
   private側へtrack id / source / 方式 / 所在 / 採用判定待ちを記録する。
@@ -179,7 +179,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code
 - agent    : codex
 - human-gate: yes（namimaのmerge・Sonar実操作・音の採用は人間確認）
-- status   : wip — codex 2026-09-08。namima PR #40でstem出口と段階的な引き算比較を実装。human merge / Sonar取込 / 試聴は未完了
+- status   : wip — claude 2026-09-23。PR #40をreview（3観点＋反証）→確証2件と軽微3件を修正（1f10539）→squash merge（31ee478）。残りはhumanのSonar取込とA〜D試聴（Drive試聴packet化済み）
 - source   : userの制作再開・全体最適化依頼、BL-046のsource確認
 - detail   : 既存offline rendererの既定出音を保持し、パート別WAV・再生成recipe・
   DAW取込手順を新規出力先だけへ書き出す。stemはmaster前であること、共有残響と

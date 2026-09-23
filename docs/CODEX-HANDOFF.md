@@ -52,6 +52,8 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   v401実音とreal mobileは未確認のAMBERで、main selector昇格はBL-041待ち。
 - Lyric Labのprivate `/api/lyric-drafts`はService Workerをbypassし、Cloudflare Pages
   Functions / D1側がauthと`no-store`を所有する。
+  ただしAPIの住処`music-stack.pages.dev`はGit連携なしの手動アップロードで、mainへの
+  mergeだけでは反映されない。redeploy手順と注意は`docs/LYRIC-LAB-D1.md`。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の25件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
 - 現行cacheは`hazama-fm-v402`。Band Room runtime markerは`band-room.js?v=br-236` /

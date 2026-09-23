@@ -19,6 +19,30 @@
 
 ---
 
+## 2026-09-23 — 未試聴の新着を聴ける形へ整理・PR #40統合・配信先ずれの記録
+- agent      : Claude Opus 5.5（Surface対話、workflow 2本＝review 3観点＋反証 / build＋独立検証）
+- goal       : 9/8〜9/20に作られたが聴く導線のない試作を、既存の納品規約でスマホ試聴へ載せ、
+  merge待ちの道具を検証して統合し、2か月ずれていた配信先と文書を把握可能にする
+- repos      : namima（PR #40 review修正＋merge）、Music（docs・queueのみ。runtime / sw / 音源は不変）、
+  private music-ops（works/NOTES.mdとdrive-view.jsonのみ）、private Drive納品folder
+- implemented: PR #40を3観点でreviewし、所見ごとに3体で反証。確証2件（HANDOFFの再現コマンドが
+  :gで丸まる、comparison.jsonに絶対pathとWindowsユーザー名）と軽微3件を1f10539で修正し、
+  8 testを追加。merge結果で161 PASS、承認済みIDM 4本（36小節×3・144小節）とbyte一致を確認して
+  squash merge（31ee478）。workerのnamimaをmainへ戻し、pytest残骸は削除せず隔離へ移動。
+  worker-localの4組（IDM引き算A〜D・Sonar用43秒・Human Fly drums A/B/C・ACE Air Texture 4本）を
+  原本をcopyのみでDrive packet化（原本50ファイルは前後hash一致、11 packetと直下fileは不変）。
+  catalogへ系統F / Gと5件を登録（16件）、新着だけの試聴reel v2（3:13・7抜粋）を生成。
+  private側はbuild-notes再生成→同一fileIdのPRODUCTION-NOTES更新→cloud readback一致→receipt更新で
+  gate 3本PASS（66aed4f）。Speaker LabのWIPには触れていない。
+  Music docs: CROSS-APP-INTEGRITY §7の2か月古い版表を現物確認手順付きへ更新、LYRIC-LAB-D1と
+  CODEX-HANDOFFへ「pages.devはGit連携なしの手動upload（7/18以降v386のまま）」と安全なredeploy手順を記録。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（docs・queue更新後の全体gate）
+- backlog    : BL-047はmerge済み（残りhumanのSonar取込・試聴）。BL-046前進（新着4組のpacket化・catalog・reel v2）
+- next       : BL-046 — reel v2（3:13）とreel v1（8:56）を聴いてpacket名で一言。判定の書き戻しから磨く対象を1つ選ぶ
+- blockers   : 音の採否・Sonar実操作・実iPhone再生はhuman。pages.devのredeployは本entry時点で未実施
+  （Lyric LabのSW v386がauthenticated API応答をcacheする既知欠陥が本番に残る）。再開ノートGoogle Docsは
+  11 packet時点の要約のまま（Docs部分編集の手段がなく未更新）
+
 ## 2026-09-20 — 年鑑・名前の索引・PCごとの再開場所
 - agent      : Codex（同じ会話内、委任なし）
 - goal       : いつ作ったか・何の版か・どこで再開するかを既存の入口から把握する

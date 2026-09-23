@@ -115,13 +115,30 @@ catalog 1 ファイル編集だけで 3 app 全部の音色候補が同期する
 
 ## 7. 各 app の現在地 (cache version)
 
-| app | latest cache marker | sw VERSION |
+この表は手書きの控えで、正本は各 HTML の `?v=` と `sw.js` の `VERSION`。
+版数は頻繁に進むので、判断に使う前に必ず現物を確認する（2026-09-23 に v173 時代の表が
+2 か月放置されていたのを是正）。確認コマンド:
+
+```bash
+grep -o '[a-z/-]*\.\(css\|js\)?v=[a-z0-9-]*' band-room.html fm.html index.html | sort -u
+grep -o 'VERSION = "[^"]*"' sw.js
+```
+
+| app | cache marker（2026-09-23 時点の控え） | sw VERSION |
 |-----|---------------------|------------|
-| Band Room | `band-room.css?v=br-73` / `band-room.js?v=br-86` | hazama-fm-v173 |
-| Hazama FM | `engine.js?v=fm-85` / `fm.css?v=fm-50` / `fm.js?v=fm-64` / `audio/genre-flavor.js?v=fm-70` | 同上 |
-| Music Core Rig | `engine.js?v=fm-85` / `style.css?v=fm-28` | 同上 |
+| Band Room | `band-room.css?v=br-90` / `band-room.js?v=br-236` / `audio/audio-safety.js?v=br-67` | hazama-fm-v402 |
+| Hazama FM | `engine.js?v=fm-118` / `fm.css?v=fm-54` / `fm.js?v=fm-72` / `audio/genre-flavor.js?v=fm-80` | 同上 |
+| Music Core Rig | `engine.js?v=fm-118` / `style.css?v=fm-28` | 同上 |
 
 `sw.js` の VERSION は **3 app 共通** で `hazama-fm-vNN`。ここを bump すると 3 app 全部のキャッシュが invalidate される。
+
+**配信先は 2 つあり、同期のされ方が違う**:
+
+- GitHub Pages（`quietbriony.github.io/Music/`）= main への push で自動配信。公開正本。
+- Cloudflare Pages（`music-stack.pages.dev`）= Lyric Lab の D1 API（`/api/lyric-drafts`）の住処。
+  **Git 連携なしの手動アップロード**なので、main が進んでも自動では追いつかない
+  （2026-07-18 の 8e1c39f から 2026-09 まで v386 のまま放置されていた）。手順は
+  [LYRIC-LAB-D1.md](LYRIC-LAB-D1.md#redeploying-pagesdev-manual-direct-upload)。
 
 ---
 

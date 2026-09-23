@@ -31,7 +31,38 @@ LYRIC_LAB_TOKEN=<your shared sync token>
 ```
 
 5. Deploy as Cloudflare Pages. The client calls `api/lyric-drafts` and sends the
-   token in `X-Lyric-Lab-Token`.
+   token in `X-Lyric-Lab-Token`. The `music-stack` project has **no Git
+   integration**: it is a manual direct upload, so merges to `main` do not reach
+   `music-stack.pages.dev` until someone redeploys (see below).
+
+## Redeploying pages.dev (manual direct upload)
+
+`wrangler pages deploy` uploads every file under the directory it is given and
+does **not** read `.gitignore` (it only skips `functions/`, `_worker.js`,
+`_redirects`, `_headers`, `_routes.json`, `node_modules`, `.git`, `.wrangler`,
+`.DS_Store`). Deploying straight from a working tree therefore publishes
+ignored local output (browser-verification screenshots, generated stems,
+`__pycache__`) and, from an autocrlf checkout, CRLF text. Deploy a clean export
+of one commit instead, from an x64 machine that is already logged in to
+wrangler (wrangler's `workerd` does not run on Windows ARM64):
+
+```powershell
+git -C <Music clone> -c core.autocrlf=false archive --format=tar -o C:	emp\music-<sha>.tar <sha>
+mkdir C:	emp\music-deploy-<sha>; tar -xf C:	emp\music-<sha>.tar -C C:	emp\music-deploy-<sha>
+cd C:	emp\music-deploy-<sha>
+npx wrangler@4.129.1 pages deployment list --project-name=music-stack   # read-only check first
+npx wrangler@4.129.1 pages deploy . --project-name=music-stack --branch=main --commit-hash=<sha> --commit-dirty=false
+```
+
+Pin the wrangler version (`--no-install` fails when the latest is not cached)
+and pass `--branch=main` explicitly: an export has no branch, and without it
+the upload becomes a preview deployment instead of production. The export keeps
+`functions/` and `wrangler.toml` (the `LYRIC_LAB_DB` binding); project
+environment variables such as `LYRIC_LAB_TOKEN` are not touched.
+
+Verify after deploying, with a cache-bust query: `sw.js` shows the same
+`hazama-fm-vNNN` as GitHub Pages, and an unauthenticated
+`/api/lyric-drafts` returns 401 with `Cache-Control: private, no-store`.
 
 ## Data model
 
