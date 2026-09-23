@@ -148,7 +148,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : docs
 - agent    : codex
 - human-gate: yes（採用・削除・公開・外部保存先の変更は人間判断）
-- status   : wip — claude 2026-09-23。worker-local 4組をDriveへコピーpacket化しcatalog 16件＋reel v2、private NOTES / receiptを追従。旧原本の回収と再現確認が残る。判定・公開設定は未変更
+- status   : wip — claude 2026-09-23。16 packet全件に判定を記録（本人委任のAI判定・基準=Aphex Twin近さ＋本人の言葉があるものは原文）。◎0・△8・×4・対象外2。旧原本の回収と再現確認が残る
 - source   : 2026-09-07 Music Stack owner guideの未確認範囲
 - detail   : Git外の音源・DAW project・recipe・iPhone版・handoffをread-onlyで照合し、
   private側へtrack id / source / 方式 / 所在 / 採用判定待ちを記録する。

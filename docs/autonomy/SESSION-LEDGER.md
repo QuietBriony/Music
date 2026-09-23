@@ -19,6 +19,25 @@
 
 ---
 
+## 2026-09-23 — 未判定16 packetを本人委任のAI判定（基準=Aphex Twin近さ）で解消
+- agent      : Claude Opus 5.5（Surface対話、workflow＝rubric調査‖音響特徴量抽出→3観点審査→整合性監査）
+- goal       : 本人の「入力が微妙、推論でつぶせない？Aphex Twinに近ければいい」を受け、試聴待ちの山を判定で解消する
+- repos      : private Drive catalog.json（verdict）とprivate music-ops（works/NOTES.md・drive-view.json、1d8387d）。
+  Music / namimaのコードは不変
+- implemented: web調査でAphexの時代別rubric（切り刻み・拍を保った悪戯・素朴な動機・非12-TET・アシッド等、
+  出典付き・重み付き）を作成。並行して25音声区間の特徴量を測定し、テンポ推定は既知BPM 17件で誤差0件を確認。
+  リズム / 旋律・音色 / 総合の3審査が採点し、監査役が設計値の混入と閾値の不整合を是正（E-6mは◎→△6.2）。
+  結果は◎0・△8・×4・対象外2。上位はE-6m（6.2）・D-v4（6.0）・E引き算（5.5、推しC）。
+  Human Flyは本人の「音はよさげ」と計測（スネア21/21・8 ms・相関0.83、キック5打が46〜118 ms早い、
+  再生音16〜36 ms遅れ、シンバル層は原音約40打に対し5打）を記録。E-6mの本人判定（方向C）は先頭に保持。
+  catalogは本人委任のAI判定と明記し、本人の言葉と区別した。music-opsは再生成→同一fileId更新→readback一致→gate 3本PASS
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（Music側は台帳のみ）
+- backlog    : BL-046前進（判定なし13→0）
+- next       : BL-046 — 最上位E-6mをE引き算Cのバランス＋ドラム+3〜6 dBで90秒判定クリップにし、同じ特徴量で lead ≥ 0.3 を確認
+- blockers   : 判定は耳でなく特徴量と推論によるもので、Aphex実曲での較正はない（相対評価）。本人の試聴で上書き可
+
+---
+
 ## 2026-09-23 — pages.dev（Lyric Lab APIの住処）を2か月ぶりにmainへ同期
 - agent      : Claude Opus 5.5（Surface対話、worker経由の手動direct upload）
 - goal       : 本番pages.devに残っていたLyric Labのcache欠陥（v386 SWが認証付きAPI応答をcacheし、
