@@ -19,6 +19,25 @@
 
 ---
 
+## 2026-09-23 — AI判定1位のIDM Eを◎下限まで改良しv2として納品
+- agent      : Claude Opus 5.5（Surface対話、workflow＝同一特徴量で候補6本を測定→3観点審査→監査）
+- goal       : 本人委任の基準（Aphex Twin近さ）で1位だったE-6m（6.2 △）を、音色・作曲を変えずに◎へ寄せる
+- repos      : namima（9da6292・e87f87c）、private Drive packet＋catalog、private music-ops（c36879f）、
+  tabasco-acestep-demos（idm-preview公開ページ）。Music runtimeは不変
+- implemented: idm_ambientにパート別の音量trim（dB）、変化するブレイク（xtal→on→roll）、リード入り以降だけ
+  trimを効かせるtrims_from_leadを追加。既定値では承認済みの36小節×3・144小節とbyte一致。
+  90秒候補6本を前回と同一のパイプラインで測定し、3審査が全員V5を1位（中央値6.6 ◎下限）。
+  監査の指摘2点（padを下げるとiPhoneでイントロが痩せる・evolveのRNGが親区間まで揺らす）を直した
+  V6を144小節で焼き、全体の旋律0.13→0.32・打/和音−15.3→−11.8 dB・2:40以降のIOI CV 0.86 / pulse 0.51を確認。
+  Drive packet 2026-09-23_idm-ambient-C-v2-6m03sとして納品し（旧6:00は成長記録として保持）、
+  catalog 17件・判定済み17、private notesは同一fileId更新→readback一致→gate 3本PASS
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（Music側は台帳のみ。namima 166 tests PASS）
+- backlog    : BL-046前進（最上位作品をv2へ）。BL-047の道具（trim・stem）を実作品で使用
+- next       : BL-046 — E v2の次段は32分・64分の加速フィルと32分ゴースト（IOI<80msを3〜5%へ）と動機の強化
+- blockers   : 判定は特徴量と推論による相対評価で、耳での確認は本人の任意。32分以下の刻みと動機は未達
+
+---
+
 ## 2026-09-23 — 未判定16 packetを本人委任のAI判定（基準=Aphex Twin近さ）で解消
 - agent      : Claude Opus 5.5（Surface対話、workflow＝rubric調査‖音響特徴量抽出→3観点審査→整合性監査）
 - goal       : 本人の「入力が微妙、推論でつぶせない？Aphex Twinに近ければいい」を受け、試聴待ちの山を判定で解消する
