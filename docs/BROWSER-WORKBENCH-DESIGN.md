@@ -9,8 +9,10 @@
 
 **2026-09-28追記:** Strudel試奏の小さな実装を
 [`experiments/workbench/v1/`](../experiments/workbench/v1/)に分離した。
-3本の音声と保存コードはCloudflare KVから公開API経由で読み、
+3本の音声はCloudflare KVから公開API経由で読み、
 [ブラウザ制作台](https://music-private-live-workbench.pages.dev/)で再生・編集できる。
+元の4小節をテストとして残し、aphex1初稿とともにGit管理の公開試作一覧から選んで
+コードを戻せる。名前付き下書きはその端末のブラウザ保存で、共有版には反映しない。
 このアカウントでZero Trustの有効化にカード登録が必要だったためAccessを使わず、本人がこの3本とコードの公開を確認した。
 これは本設計の共通session、既存作品棚との接続、端末間の編集同期を
 実装したものではない。スマホ用の試奏入口として先に検証する。

@@ -281,6 +281,9 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   2026-09-28: userがスマホから聴きながらコードを触る本人用Cloudflareページを具体的に再依頼。
   `experiments/workbench/v1/`で単一の4小節Strudel試奏を限定実装。従来の共通session、
   作品棚、undo、保存・再開の完成条件は未達であり、このitemは継続する。
+  同日追記: 既存4小節をテストとして残し、aphex1初稿を公開試作一覧へ追加。
+  選択によるコード復元と端末内の名前付き下書き保存を実装。端末間同期、既存作品棚への
+  正式接続、実音・iPhone試聴、共通sessionは未完了のまま。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2

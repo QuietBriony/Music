@@ -29,10 +29,13 @@
 `experiments/workbench/v1/`はStrudelコードとKV上の3本のWAVを試す独立アプリ。
 同じMusic repoを使うが、既存GitHub Pages、`music-stack.pages.dev`、FM / Band Room / Core Rigの
 runtimeやService Workerには接続しない。別のCloudflare Pagesプロジェクトで配信し、
-ページ・保存コード・3本のWAVを公開する。Cloudflare Accessは使わない。
-Strudel 1.3.0は`config/external-dependencies.json`に登録し、素材と保存コードの実体はGit管理外のKVに置く。
-APIは公開GETのみで、閲覧者が保存版を書き換える経路はない。
-初期版は単一の4小節試奏で、端末間同期やSurface編集版の取り込みは未実装。
+ページ・試作コード・3本のWAVを公開する。Cloudflare Accessは使わない。
+Strudel 1.3.0は`config/external-dependencies.json`に登録。音声素材はKVに置き、
+公開試作コードと名前付き索引は同アプリのGit管理ファイルに置く。
+初期の4小節をテストとして残し、aphex1初稿も選択・コード復元できる。
+旧`GET /api/pattern`は互換用の読み取り口として残し、現行画面は使わない。
+APIは公開GETのみで、閲覧者が公開版を書き換える経路はない。
+端末内の名前付き下書きはlocalStorageで復元可能。端末間同期やSurface編集版の取り込みは未実装。
 デプロイ・操作手順は同アプリの`README.md`に記録する。
 
 ## 2026-09-20 — 再開の入口とブラウザ制作台の設計

@@ -17,35 +17,53 @@
         <div>
           <p class="eyebrow">STRUDEL / LIVE</p>
           <h1>Music Live Workbench</h1>
-          <p class="subhead">3つの音を重ね、コードを変えながら聴く</p>
+          <p class="subhead">試作を選び、コードを戻して、聴きながら変える</p>
         </div>
         <a href="https://strudel.cc/learn/first-sounds/" target="_blank" rel="noreferrer">Strudelの基本 ↗</a>
       </header>
 
       <section class="intro" aria-label="使い方">
-        <span>1. 下の Play で音を開始</span>
-        <span>2. コードを直して再評価</span>
-        <span>3. Stop で停止</span>
+        <span>試作を選ぶ → Playで聴く → 直したら「コードを反映」</span>
+      </section>
+
+      <section class="library" aria-labelledby="library-title">
+        <div class="library-heading">
+          <div>
+            <p class="eyebrow">SAVED IDEAS</p>
+            <h2 id="library-title">試作を選ぶ</h2>
+          </div>
+          <p>選ぶとコードが編集欄に戻ります。再生は手動です。</p>
+        </div>
+        <div id="published-list" class="pattern-list" aria-label="公開した試作"></div>
+        <details id="draft-details" class="draft-details">
+          <summary>この端末の下書き <span id="draft-count">0件</span></summary>
+          <p>自分で保存した版。ほかの端末には同期しません。</p>
+          <div id="draft-list" class="draft-list"></div>
+        </details>
       </section>
 
       <section class="workspace" aria-labelledby="editor-title">
         <div class="section-heading">
-          <h2 id="editor-title">コードと音</h2>
+          <div>
+            <h2 id="editor-title">コードと音</h2>
+            <p id="current-work">読み込み中…</p>
+          </div>
           <div class="controls">
             <button id="play" type="button" disabled>Play</button>
             <button id="update" type="button" disabled>コードを反映</button>
             <button id="stop" type="button" disabled>Stop</button>
-            <button id="reload-pattern" type="button" title="保存済みの元コードを読み直す">元コードを読み直す</button>
+            <button id="save-draft" type="button" disabled>この端末に保存</button>
+            <button id="reload-pattern" type="button" disabled title="選択した保存版のコードに戻す">選択中の版に戻す</button>
           </div>
         </div>
-        <p id="status" role="status">保存済みのコードを読み込み中…</p>
+        <p id="status" role="status">試作一覧を読み込み中…</p>
         <div id="editor"></div>
       </section>
 
       <footer>
         <p>スマホは音声再生のため、最初に Play を押してください。画面を離れると再生が止まることがあります。</p>
-        <p>このページと3本の音源・保存コードは公開されています。ブラウザ内編集は端末だけの試奏で、他の人の再生や保存版は変わりません。</p>
-        <p>AIが更新した保存版は「元コードを読み直す」で取得します。</p>
+        <p>公開試作のコードと3本の音源は誰でも取得できます。ここで編集した内容は自動では公開されません。「この端末に保存」は同じブラウザだけの下書きです。</p>
+        <p>AIが公開試作を更新したらページを再読込し、一覧からその版を選んでください。コードを切り替えても音は自動再生されません。</p>
         <a href="https://github.com/QuietBriony/Music/tree/main/experiments/workbench/v1" target="_blank" rel="noreferrer">このアプリのソースと手順 ↗</a>
       </footer>
     </main>

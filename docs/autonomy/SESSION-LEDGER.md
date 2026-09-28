@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-09-28 — Strudel試作の名前付き索引とコード復元
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 既存試奏台を磨き、元の4小節を残してaphex1を新しい試作として聴き比べられるようにする
+- repos      : Music（既存FM / Band Room / Core Rig runtimeは不変）
+- implemented: 公開試作をGit管理の一覧とコード2件へ整理。選択でコードを戻し、音は手動Play。
+  編集したコードは端末内に名前付きで保存・復元でき、未保存のまま切り替える時は確認。
+  Listen、道具一覧、設計、手順、引き継ぎを更新。音声3本は既存KVのまま。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（ログの仮記入を修正後、全体gateを再実行）
+- backlog    : BL-049の限定的なコード再訪と端末内保存。共通session・正式作品棚接続は継続
+- next       : BL-049 — 本人のiPhoneでaphex1とテストの出音を比べ、音の密度と元素材の対応を調整する
+- blockers   : 実iPhoneの聴感判定、Surface編集版の照合、端末間同期は未確認
+
+---
+
 ## 2026-09-28 — Strudel試奏台を公開入口へ切替
 - agent      : Codex（Remote対話、単一thread）
 - goal       : カード登録なしの無料枠で、スマホから音を聴きコードを直せる公開ページにする

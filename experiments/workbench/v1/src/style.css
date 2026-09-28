@@ -10,10 +10,31 @@ h1 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.6rem); line-height: 1.15; }
 .subhead { margin: 10px 0 0; color: #b0afba; }
 .intro { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
 .intro span { padding: 8px 12px; border: 1px solid #363641; border-radius: 999px; color: #dedce5; font-size: .82rem; }
+.library { padding: 18px; margin-bottom: 20px; border: 1px solid #35323f; border-radius: 18px; background: #15151b; }
+.library-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.library-heading p:last-child, .draft-heading p { margin: 0; color: #aaa9b7; font-size: .85rem; }
+.library-heading .eyebrow { margin-bottom: 5px; }
+.pattern-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.pattern-card { display: flex; flex-direction: column; align-items: start; text-align: left; min-height: 132px; gap: 5px; padding: 14px; border-color: #4b4756; background: #20202a; }
+.pattern-card strong { font-size: 1.05rem; }
+.pattern-card[aria-pressed="true"], .draft-open[aria-pressed="true"] { border-color: #9fb2ff; background: #29304a; }
+.card-label { color: #b7b7c7; font-size: .76rem; }
+.card-description { color: #d2d0da; font-size: .84rem; line-height: 1.45; }
+.draft-details { margin-top: 18px; border-top: 1px solid #393642; padding-top: 12px; }
+.draft-details summary { cursor: pointer; font-size: .93rem; font-weight: 700; }
+.draft-details summary span { margin-left: 8px; color: #aaa9b7; font-size: .79rem; font-weight: 400; }
+.draft-details > p { margin: 8px 0 12px; color: #aaa9b7; font-size: .85rem; }
+.draft-list { display: grid; gap: 8px; }
+.draft-row { display: flex; gap: 8px; }
+.draft-open { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 12px; text-align: left; min-width: 0; }
+.draft-open strong { overflow-wrap: anywhere; }
+.draft-remove { min-width: 64px; }
+.empty-note { margin: 0; color: #9999a7; font-size: .84rem; }
 .workspace { border: 1px solid #35323f; border-radius: 18px; background: #15151b; overflow: hidden; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px 0; }
 .controls { display: flex; flex-wrap: wrap; gap: 8px; }
 h2 { margin: 0; font-size: 1rem; }
+#current-work { margin: 6px 0 0; color: #aeb7d7; font-size: .83rem; }
 button { min-height: 44px; border: 1px solid #696178; border-radius: 9px; padding: 8px 12px; color: #f4f2f6; background: #24212c; font: inherit; cursor: pointer; }
 button:disabled { opacity: .55; cursor: wait; }
 button:focus-visible, a:focus-visible { outline: 3px solid #9fb2ff; outline-offset: 3px; }
@@ -28,6 +49,11 @@ footer p { margin: 0 0 8px; }
   .masthead { align-items: start; flex-direction: column; gap: 12px; padding-inline: 5px; }
   .intro { padding-inline: 4px; }
   .intro span { width: 100%; border-radius: 8px; }
+  .library { border-radius: 12px; padding: 14px; }
+  .library-heading { align-items: start; flex-direction: column; }
+  .pattern-list { grid-template-columns: 1fr; }
+  .pattern-card { min-height: 0; }
+  .draft-open { align-items: start; flex-direction: column; }
   .workspace { border-radius: 12px; }
   .section-heading { align-items: start; flex-direction: column; }
   #editor, #editor .cm-editor { min-height: 68svh; }
