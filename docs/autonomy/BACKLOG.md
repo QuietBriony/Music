@@ -278,6 +278,9 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   次はBL-045のevent編集、必要なStrudel adapterとchat bridge。新規生成数を成果にしない。
   2026-09-20: 着手保留。最新のuser方針は既存の整理・改良・把握。設計は保管し、
   次の既定タスクに選ばない。既存の道具での不足が具体化した時にuserの再開依頼から検討する。
+  2026-09-28: userがスマホから聴きながらコードを触る本人用Cloudflareページを具体的に再依頼。
+  `experiments/workbench/v1/`で単一の4小節Strudel試奏を限定実装。従来の共通session、
+  作品棚、undo、保存・再開の完成条件は未達であり、このitemは継続する。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2

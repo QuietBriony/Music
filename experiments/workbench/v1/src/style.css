@@ -1,0 +1,34 @@
+:root { color-scheme: dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0c0c10; color: #f4f2f6; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 1100px; min-height: 100svh; margin: auto; padding: max(24px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom)); }
+a { color: #a9b9ff; }
+.masthead { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 26px; }
+.masthead a { white-space: nowrap; font-size: .86rem; }
+.eyebrow { margin: 0 0 8px; color: #8e96ad; font-size: .72rem; font-weight: 700; letter-spacing: .18em; }
+h1 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.6rem); line-height: 1.15; }
+.subhead { margin: 10px 0 0; color: #b0afba; }
+.intro { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.intro span { padding: 8px 12px; border: 1px solid #363641; border-radius: 999px; color: #dedce5; font-size: .82rem; }
+.workspace { border: 1px solid #35323f; border-radius: 18px; background: #15151b; overflow: hidden; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px 0; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; }
+h2 { margin: 0; font-size: 1rem; }
+button { min-height: 44px; border: 1px solid #696178; border-radius: 9px; padding: 8px 12px; color: #f4f2f6; background: #24212c; font: inherit; cursor: pointer; }
+button:disabled { opacity: .55; cursor: wait; }
+button:focus-visible, a:focus-visible { outline: 3px solid #9fb2ff; outline-offset: 3px; }
+#status { min-height: 1.4em; margin: 8px 18px 14px; color: #aeadb9; font-size: .88rem; }
+#editor { min-height: 520px; }
+strudel-editor { display: contents; }
+#editor .cm-editor { min-height: 520px; }
+footer { max-width: 72ch; margin-top: 22px; color: #a9a8b3; font-size: .82rem; line-height: 1.55; }
+footer p { margin: 0 0 8px; }
+@media (max-width: 640px) {
+  main { padding-inline: 10px; }
+  .masthead { align-items: start; flex-direction: column; gap: 12px; padding-inline: 5px; }
+  .intro { padding-inline: 4px; }
+  .intro span { width: 100%; border-radius: 8px; }
+  .workspace { border-radius: 12px; }
+  .section-heading { align-items: start; flex-direction: column; }
+  #editor, #editor .cm-editor { min-height: 68svh; }
+}
