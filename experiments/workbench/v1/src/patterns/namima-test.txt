@@ -1,0 +1,12 @@
+// namima IDM / 96 BPM / bars 13-16 from the 43-second edit candidate
+// Samples load automatically on this public page. Change PAD, SUB, DRUMS between 0 and 1 to try parts in/out.
+setcpm(24)
+const PAD = 1.0
+const SUB = 0.6
+const DRUMS = 1.1
+const MASTER = 1.000000
+stack(
+  s("pad").slow(4).gain(PAD * MASTER),
+  s("sub").slow(4).gain(SUB * MASTER),
+  s("drums").slow(4).gain(DRUMS * MASTER)
+)

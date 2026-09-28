@@ -60,10 +60,10 @@
     {
       "id": "strudel-workbench", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Strudel Live Workbench", "href": "https://music-private-live-workbench.pages.dev/", "action": "音とコードを触る",
-      "purpose": "3本の音を重ね、Strudelコードを変えながらその場で聴くブラウザ試奏台。",
-      "first_step": "スマホかPCで開く → Play → コードを直して『コードを反映』。",
-      "outputs": "その端末だけの試奏。管理者が更新した保存コードは『元コードを読み直す』で取得。",
-      "boundary": "ページ・保存コード・3本のWAVは公開。閲覧者の編集は保存版へ同期されない。iPhoneの実音確認は別。",
+      "purpose": "公開試作を名前から選び、Strudelコードを戻して聴きながら変えるブラウザ試奏台。",
+      "first_step": "aphex1か元の4小節テストを選ぶ → Play → 直したら『コードを反映』。",
+      "outputs": "公開試作2件はGitで版管理。自分の編集は名前付きでその端末のブラウザに保存・復元できる。",
+      "boundary": "ページ・試作コード・3本のWAVは公開。端末内下書きは他端末へ同期されない。iPhoneの実音確認は別。",
       "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }]
     },
     {

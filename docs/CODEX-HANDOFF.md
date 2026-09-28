@@ -56,8 +56,10 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   mergeだけでは反映されない。redeploy手順と注意は`docs/LYRIC-LAB-D1.md`。
 - Strudel試奏の独立アプリを`experiments/workbench/v1/`に追加。既存の公開Listenと
   `music-stack.pages.dev`のruntimeは変更せず、別Pagesプロジェクトで公開する。
-  KVに置いた音声3本と保存コードは公開GETで読める。閲覧者の編集は端末内のみ。
-  初期版は単一の4小節セットで、Surface側の編集成果と端末間同期はまだ取り込んでいない。
+  音声3本はKV公開GET、試作コードと索引はGit管理の静的ファイルで読む。
+  既存4小節はテストとして残し、aphex1初稿も選択でコード復元できる。
+  閲覧者の名前付き下書きはその端末のブラウザだけに保存。Surface側の編集成果と
+  端末間同期、実iPhoneの出音確認はまだ取り込んでいない。
   手順と制約は同ディレクトリの`README.md`。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の26件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。

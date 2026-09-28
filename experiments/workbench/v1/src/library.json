@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "default_id": "aphex1",
+  "items": [
+    {
+      "id": "aphex1",
+      "title": "aphex1",
+      "label": "新しい試作",
+      "indexed_at": "2026-09-28",
+      "description": "変則的なドラムの切り返し、短いゴースト音、揺れるパッド。聴いてから密度を調整する初稿。",
+      "path": "/patterns/aphex1.txt"
+    },
+    {
+      "id": "namima-test",
+      "title": "namima IDM・4小節テスト",
+      "label": "元のテスト",
+      "indexed_at": "2026-09-28",
+      "description": "最初に公開した3本のループを重ねるコード。比較用にそのまま残しています。",
+      "path": "/patterns/namima-test.txt"
+    }
+  ]
+}
