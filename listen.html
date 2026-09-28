@@ -463,7 +463,7 @@
       <div class="collection-grid">
         <a class="card" href="#recorded-works"><div><p class="intent-no">作品の棚</p><strong>作った音を、聴き直す</strong><span>固定音声・別テイク・比較リール。<br>公開デモと、自分の再開ノートへ。</span></div><div class="meta"><b>前の音を探す →</b></div></a>
         <a class="card green" href="#tool-map"><div><p class="intent-no">触る道具</p><strong>鳴らす・編集する・段取りする</strong><span>Music / chill / drum-floor / namima / openclaw。<br>同じ制作に使う、役割の違う道具。</span></div><div class="meta"><b>用途と操作を見る →</b></div></a>
-        <a class="card blue" href="#sound-experiments"><div><p class="intent-no">音の実験</p><strong>聴き比べて、方向を決める</strong><span>Musicの3案比較と、Hazamaの反応音。<br>別の実験として、気に入った点を拾う。</span></div><div class="meta"><b>3つの実験へ →</b></div></a>
+        <a class="card blue" href="#sound-experiments"><div><p class="intent-no">音の実験</p><strong>聴き比べて、方向を決める</strong><span>Musicの3案比較、Hazamaの反応音、Strudel試奏。<br>気に入った点を拾う。</span></div><div class="meta"><b>4つの実験へ →</b></div></a>
         <a class="card rose" href="#visual-release"><div><p class="intent-no">映像・公開</p><strong>音に景色を合わせる</strong><span>既存の映像プレビュー・ビジュアライザー。<br>制作候補と公開済み作品を分けて確認。</span></div><div class="meta"><b>映像の入口へ →</b></div></a>
       </div>
       <p class="guide-note">このページは入口の地図、再開ノートは個別作品の履歴と素材の案内です。
@@ -472,12 +472,13 @@
     </section>
 
     <section id="yearbook" aria-labelledby="yearbook-title">
-      <div class="section-head"><h2 id="yearbook-title">いつ作った？ 名前から探す。</h2><p class="section-note">記録を辿る年鑑 · 2026-09-20確認</p></div>
+      <div class="section-head"><h2 id="yearbook-title">いつ作った？ 名前から探す。</h2><p class="section-note">記録を辿る年鑑 · 2026-09-28確認</p></div>
       <p class="guide-note">道具の始まりと、その後の実験を時系列で。<strong>個別作品の制作日・版・担当PC・素材の保存先</strong>は、同じ再開ノートの年鑑にまとめています。</p>
       <nav class="index-links" aria-label="名前から探す索引">
         <a class="mini-link" href="#tool-map">Music・chill・drum-floor・namima・openclaw</a>
         <a class="mini-link" href="#recorded-works">Tabasco・IDM・周波数の録音</a>
         <a class="mini-link" href="#sound-experiments">Listening Loop・Hazamaの音実験</a>
+        <a class="mini-link" href="#workbench-plan">Strudelのブラウザ制作台</a>
         <a class="mini-link" href="#visual-release">映像・可視化</a>
         <a class="mini-link" href="#production-notebook">自分の作品年鑑・PC・素材</a>
       </nav>
@@ -490,6 +491,7 @@
           <li><time datetime="2026-05-03">2026.05.03</time><h3>openclaw：制作の段取りを残す</h3><p>意図・比較・次の一手を整理するrepo。これで現在のactive 5 repoが揃います。</p><p>根拠：<a href="https://github.com/QuietBriony/openclaw/commit/7599749">openclawの最初のcommit</a></p></li>
           <li><time datetime="2026-06-24">2026.06.24</time><h3>固定音声を聴き返すデモ棚</h3><p>tabasco-acestep-demosのrepo作成日。後からIDM・周波数アンビエント・映像のpreviewも置かれています。各曲の制作日とは区別します。</p><p><a href="https://github.com/QuietBriony/tabasco-acestep-demos">デモrepo</a> · <a href="#recorded-works">試聴の棚へ</a></p></li>
           <li><time datetime="2026-09">2026.09</time><h3>音の反応を比較する実験へ</h3><p>14日にHazamaの回路と変調の比較、15日にMusicのListening LoopとHazamaの場面A〜DがGitへ追加。19日に場面の混合案が更新されました。</p><p>根拠：<a href="https://github.com/QuietBriony/hazama/commit/9099e5c">回路比較</a> · <a href="https://github.com/QuietBriony/Music/commit/e5126a6">Listening Loop</a> · <a href="https://github.com/QuietBriony/hazama/commit/1db4cdc">場面A〜D</a> · <a href="https://github.com/QuietBriony/hazama/commit/365e32e">混合案</a></p></li>
+          <li><time datetime="2026-09-28">2026.09.28</time><h3>スマホで触るStrudel試奏台</h3><p>Musicの既存repo内に、3本の音と保存コードを読み込むブラウザ制作台を追加。Playで聴き、コードを直して反映できます。公開ページとして運用し、編集は端末内で試します。</p><p><a href="https://music-private-live-workbench.pages.dev/">試奏台を開く</a> · <a href="https://github.com/QuietBriony/Music/tree/main/experiments/workbench/v1">実装と手順</a></p></li>
         </ol>
       </details>
       <p class="guide-note">日付は日本時間。GitHubのrepo作成日時・辿れる最初のcommit・機能追加のcommitを根拠にしています。着想した日、録音した日、公開した日は同じとは限りません。作品ごとの日付が不明なものは、再開ノートで「資料の日付」として残します。</p>
@@ -536,11 +538,12 @@
     <section id="sound-experiments" aria-labelledby="experiments-title">
       <div class="section-head"><h2 id="experiments-title">音の実験 — 何を比べる場所か</h2></div>
       <details class="tool-group">
-        <summary>3つの実験を見る <span>それぞれ独立</span></summary>
+        <summary>4つの実験を見る <span>それぞれ独立</span></summary>
         <div class="collection-links">
           <article><h3>Music / Listening Loop</h3><p>20秒の3案を比べ、好みを一つ選んで次の候補へ進む実験。過去の曲を自動読込する編集画面ではありません。</p><a class="mini-link" href="experiments/listening-loop/v1/">3つ聴いて、ひとつ育てる →</a></article>
           <article><h3>Hazama / Sensory Response Lab</h3><p>小さな回路を使う音の変化と、通常の変調を比較する試作。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/sensory-audio-lab.html">回路と変調を比べる →</a></article>
           <article><h3>Hazama / 世界が音で応える</h3><p>沈む地面・脈動・断片・混合のA〜Dを比較。ゲームの場面に音がどう応えるかを探る場所です。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/scene-response-lab.html">場面の反応音を比べる →</a></article>
+          <article><h3>Music / Strudel Live Workbench</h3><p>3本の音を重ね、コードを書き換えて聴く公開試奏台。ブラウザでの変更はその端末だけに残り、保存版は変わりません。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/">音とコードを触る →</a></article>
           <p>HazamaはMusicと別のゲームrepoです。試聴候補と本体の採用状態は別に確認し、各実験の評価が自動で共有されるとは扱いません。</p>
         </div>
       </details>
@@ -572,8 +575,10 @@
     </section>
 
     <section id="workbench-plan" aria-labelledby="workbench-title">
-      <div class="section-head"><h2 id="workbench-title">将来案は、ここに保管</h2><p class="section-note">今は既存の整理と改良を優先。</p></div>
-      <details class="tool-group"><summary>ブラウザ制作台の設計を見る <span>未実装・着手保留</span></summary><div class="parked-plan">
+      <div class="section-head"><h2 id="workbench-title">コードで音を触る</h2><p class="section-note">Strudelの小さな試奏台から。</p></div>
+      <p class="guide-note">3本の音を重ね、スマホからも再生とコード編集ができます。ページ・音・保存コードは公開。編集は端末内だけで、保存版へは自動同期しません。</p>
+      <a class="mini-link" href="https://music-private-live-workbench.pages.dev/">Strudel Live Workbenchを開く →</a>
+      <details class="tool-group"><summary>この先の制作台設計を見る <span>共通session・履歴は未実装</span></summary><div class="parked-plan">
       <p class="guide-note">目指すのは<strong>「音を聴く → 一部分をいじる → 元と比べる → 続きから再開する」</strong>こと。
         まずはブラウザで動く構成にし、Tidalのインストールを前提にしません。</p>
       <div class="plan-steps">
@@ -605,9 +610,9 @@
       <div class="section-head"><h2 id="tools-title">全道具の地図</h2><p class="section-note">用途・最初の一手・残るもの・まだできないこと。</p></div>
       <p class="guide-note">実装あり ≠ 音質・実機・公開まで確認済み。<strong>候補／手動工程／未実装</strong>は分けてあります。</p>
 <!-- stack-tools:begin -->
-<p class="guide-note">ソース照合：2026-09-07。実装確認と、実音・実機の合格は別です。</p>
+<p class="guide-note">ソース照合：2026-09-28。実装確認と、実音・実機の合格は別です。</p>
 <details class="tool-group" data-tool-group="browser">
-  <summary>ブラウザで聴く・触る・整理する <span>8項目</span></summary>
+  <summary>ブラウザで聴く・触る・整理する <span>9項目</span></summary>
   <div class="tool-grid">
     <article class="tool-item" id="tool-core-rig" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
@@ -652,6 +657,17 @@
         <dt>できることの境界</dt><dd>ACE-Step等へ自動送信しない。端末間の作品棚同期は認証済みCloudflare/D1環境が別途必要。GitHub Pagesの入口だけでは保証されない。</dd>
       </dl>
       <a class="mini-link" data-tool-entry="lyric-lab" href="lyric-lab.html">Lyric Lab — 開く</a>
+    </article>
+    <article class="tool-item" id="tool-strudel-workbench" data-tool-status="implemented">
+      <p class="tool-status">Music · 実装あり・実音評価は別</p>
+      <h3>Strudel Live Workbench</h3>
+      <p>3本の音を重ね、Strudelコードを変えながらその場で聴くブラウザ試奏台。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>スマホかPCで開く → Play → コードを直して『コードを反映』。</dd>
+        <dt>残るもの</dt><dd>その端末だけの試奏。管理者が更新した保存コードは『元コードを読み直す』で取得。</dd>
+        <dt>できることの境界</dt><dd>ページ・保存コード・3本のWAVは公開。閲覧者の編集は保存版へ同期されない。iPhoneの実音確認は別。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/">Strudel Live Workbench — 音とコードを触る</a>
     </article>
     <article class="tool-item" id="tool-chill" data-tool-status="implemented">
       <p class="tool-status">chill · 実装あり・実音評価は別</p>

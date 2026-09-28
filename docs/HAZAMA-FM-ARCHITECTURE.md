@@ -24,13 +24,14 @@
 > - 現在のcatalog URLは`config/external-dependencies.json`のcommit-pinned jsDelivrが正本。
 >   `engine.js`の`tonejs.github.io`参照は凍結legacy例外であり、同一URLとはみなさない
 
-## 2026-09-28 — 本人用ブラウザ試奏の独立境界
+## 2026-09-28 — 公開ブラウザ試奏の独立境界
 
-`experiments/workbench/v1/`はStrudelコードと非公開KV上の3本のWAVを試す独立アプリ。
+`experiments/workbench/v1/`はStrudelコードとKV上の3本のWAVを試す独立アプリ。
 同じMusic repoを使うが、既存GitHub Pages、`music-stack.pages.dev`、FM / Band Room / Core Rigの
 runtimeやService Workerには接続しない。別のCloudflare Pagesプロジェクトで配信し、
-Access設定がない時は全ページ・APIを拒否する。Strudel 1.3.0とAccess plugin 1.0.5は
-`config/external-dependencies.json`に登録した。素材と保存コードはGit管理外のKVに置く。
+ページ・保存コード・3本のWAVを公開する。Cloudflare Accessは使わない。
+Strudel 1.3.0は`config/external-dependencies.json`に登録し、素材と保存コードの実体はGit管理外のKVに置く。
+APIは公開GETのみで、閲覧者が保存版を書き換える経路はない。
 初期版は単一の4小節試奏で、端末間同期やSurface編集版の取り込みは未実装。
 デプロイ・操作手順は同アプリの`README.md`に記録する。
 

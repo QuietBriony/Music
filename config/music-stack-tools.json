@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-09-07",
+  "reviewed_at": "2026-09-28",
   "evidence_scope": "Repository source inspection, not an audible, device, account, or publication certification. source_revisions are the audit starting commits; newly authored Music guide files belong to this change, not those base commits.",
   "source_revisions": {
     "Music": "9bc8c4e",
@@ -56,6 +56,15 @@
       "outputs": "歌詞付き制作指示／歌詞を含まないScene metadata。",
       "boundary": "ACE-Step等へ自動送信しない。端末間の作品棚同期は認証済みCloudflare/D1環境が別途必要。GitHub Pagesの入口だけでは保証されない。",
       "sources": [{ "repo": "Music", "path": "lyric-lab.js" }, { "repo": "Music", "path": "docs/LYRIC-LAB-USAGE.md" }, { "repo": "Music", "path": "functions/api/lyric-drafts.js" }]
+    },
+    {
+      "id": "strudel-workbench", "repo": "Music", "group": "browser", "status": "implemented",
+      "title": "Strudel Live Workbench", "href": "https://music-private-live-workbench.pages.dev/", "action": "音とコードを触る",
+      "purpose": "3本の音を重ね、Strudelコードを変えながらその場で聴くブラウザ試奏台。",
+      "first_step": "スマホかPCで開く → Play → コードを直して『コードを反映』。",
+      "outputs": "その端末だけの試奏。管理者が更新した保存コードは『元コードを読み直す』で取得。",
+      "boundary": "ページ・保存コード・3本のWAVは公開。閲覧者の編集は保存版へ同期されない。iPhoneの実音確認は別。",
+      "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }]
     },
     {
       "id": "chill", "repo": "chill", "group": "browser", "status": "implemented",

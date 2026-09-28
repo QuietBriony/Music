@@ -1,24 +1,24 @@
-# 本人用ブラウザ制作台（v1）
+# 公開ブラウザ制作台（v1）
 
 `Music` repo 内の独立した Strudel 試奏アプリ。PCとスマホで同じCloudflare Pages URLを開き、3本のループを聴きながらコードを変える。既存の `music-stack.pages.dev` とGitHub Pagesの公開再生は変更しない。
 
-## 現在できること
+入口: <https://music-private-live-workbench.pages.dev>。既存Pagesプロジェクトの名前には `private` が残るが、**このページ、保存コード、3本のWAVは公開**される。URLを知る人は音源を取得できる。検索結果には載せない設定だが、これはアクセス制限ではない。
 
-- Play / Stop、コード編集後の再評価。
-- 保存済みのStrudelコードを非公開KVから読み直す。
-- `pad` / `sub` / `drums` のWAVを非公開KVから同一オリジンで読む。スマホへのフォルダimportは不要。
-- Access設定が欠ける環境では全ページ・APIを `503` で拒否する。Accessトークンの検証後にも所有者メールを照合する。
+## 使い方
 
-ブラウザ内で直したコードはその端末だけの試奏で、保存版へ自動同期しない。AIから保存版を更新するときは、手元のコードファイルをKVへアップロードし、スマホで「元コードを読み直す」を押す。ライブの自動pushや同時編集は今後の段階。
+1. スマホまたはPCで入口を開き、`Play` を押す。iPhoneでは再生開始にタップが必要。
+2. コードを変更し、`コードを反映` を押す。`Stop` ですぐ停止する。
+3. AIが保存版を更新したら、`元コードを読み直す` を押す。
 
-## Cloudflare Pages の配置
+ブラウザ内で直したコードはその端末だけの試奏で、保存版へ自動同期しない。読み直すと端末内の変更は破棄される。公開閲覧者にサーバーへの書き込み機能はない。
 
-Git連携の**別Pagesプロジェクト**を、同じ `QuietBriony/Music` repoから作る。既存の公開 `music-stack` プロジェクトは使わない。
-入口は <https://music-private-live-workbench.pages.dev>。Cloudflare Accessの設定が揃うまでは意図的に開けない。
+## 配置と公開範囲
+
+新しいrepoは作らず、`QuietBriony/Music` の `experiments/workbench/v1` を既存のCloudflare Pagesプロジェクトへ配信する。
 
 | 設定 | 値 |
 |---|---|
-| Project | `music-private-live-workbench` |
+| Project | `music-private-live-workbench`（旧名称） |
 | Repository | `QuietBriony/Music` |
 | Root directory | `experiments/workbench/v1` |
 | Production branch | `main` |
@@ -27,46 +27,23 @@ Git連携の**別Pagesプロジェクト**を、同じ `QuietBriony/Music` repo�
 | Functions | このrootの `functions/` |
 | KV binding | `MUSIC_LIVE_ASSETS`（Pages本番設定） |
 
-`wrangler.toml`はローカル検証専用。`pages_build_output_dir`を含めず、本番のKV bindingと
-非公開の環境変数はCloudflare Pages側で設定する。Wrangler設定を本番の正本にすると、
-Gitに書けないAccess値やKVの保存keyまで同じ設定ファイルで管理することになるため。
-mainへのpush後はPagesのdeployment一覧を確認する。Git連携で新規buildが始まらない場合は、
-このディレクトリで`npm ci`、`npm run build`を実行し、
-`npx wrangler@4.129.1 pages deploy dist --project-name music-private-live-workbench --branch main`
-で同じ成果物を手動反映できる。Wranglerがローカル専用設定を無視する警告は意図どおり。
-2026-09-28の初回productionはmainの`8fc4066`から手動デプロイし、全経路が認証未設定で
-`503`になることを確認した。Git pushからの自動buildはまだ確認できていない。
+KV namespaceそのものはGitHubから見えないが、`GET /api/pattern` と `GET /api/sounds/{pad,sub,drums}` は公開される。音声ファイルと保存コードはGitHubに追加しない。APIは設定されたKV keyを読むだけで、書き込み口は設けない。知らないパート名は404で返す。
 
-現在のpreview deploymentは無効。Cloudflare Accessでproductionの `<project>.pages.dev` を保護し、許可メールを本人1件だけにする。Previewを有効にする場合は `*.<project>.pages.dev` も先に保護する。Preview保護だけではproduction URLは保護されない。AccessのApplication Audience（AUD）とteam domainを確認し、Pagesのproduction環境へ次の値を設定する。
+Pages本番の `LIVE_PATTERN_KEY` と `LIVE_SOUND_PREFIX` はCloudflare側に設定済み。`wrangler.toml`はローカル検証専用で、本番bindingの正本はCloudflare Pages側に置く。新しい音やコードを保存版へ反映する時は、管理者のWranglerからKVを書き換える。
 
-| Pages環境変数 | 内容 |
-|---|---|
-| `CF_ACCESS_DOMAIN` | `https://<team>.cloudflareaccess.com` |
-| `CF_ACCESS_AUD` | このAccessアプリのAUD |
-| `OWNER_EMAIL` | 許可する本人のメールアドレス |
-| `LIVE_SOUND_PREFIX` | KV内の音声セットprefix |
-| `LIVE_PATTERN_KEY` | KV内の保存コードkey |
+Cloudflare Access / Zero Trustは使わない。Pages FunctionsとKVは[Workers Freeの上限](https://developers.cloudflare.com/pages/functions/pricing/)・[KV Freeの上限](https://developers.cloudflare.com/kv/platform/pricing/)内で運用し、上限超過時はリクエストが失敗する。音声3本を公開する方針は2026-09-28に本人が確認した。
 
-実データのprefix、作品名、素材ファイル、Access値をpublic repoへ書かない。R2は現在のCloudflareアカウントで未有効化なので、v1の約1 MB×3本に限りKVを使用する。大きなstemへ拡張する際は別の保管方式を選ぶ。
-
-デプロイ後は未ログインの `/`、`/api/pattern`、`/api/sounds/pad` がAccessログインへ向かうこと、本人ログイン後に3本の音声がHTTP 200で読み込めることを確認する。custom domainを追加する場合はそのdomainにもAccessポリシーが必要。
+mainへのpush後はPagesのdeployment一覧を確認する。Git連携で新規buildが始まらない場合は、このディレクトリで`npm ci`、`npm run build`を実行し、`npx wrangler@4.129.1 pages deploy dist --project-name music-private-live-workbench --branch main`で同じ成果物を手動反映できる。Wranglerがローカル専用設定を無視する警告は意図どおり。
 
 ## 保存版の更新
 
-音声・コードをGitHubへpushしない。本人のローカルファイルからKVへ送る例（プロジェクトrootで実行）：
+保存コードには `s("pad")`、`s("sub")`、`s("drums")` をそのまま書く。ページが公開音声URLの `samples(...)` 定義を先頭に足す。新しいパートを増やすにはAPIの許可名と音声ファイルを一緒に更新する。
+
+管理者がローカルの保存コードをKVへ送る例（プロジェクトrootで実行）：
 
 ```powershell
-npx wrangler@4.129.1 kv key put '<LIVE_PATTERN_KEY>' --path '<private-pattern-file>' --namespace-id '<KV_NAMESPACE_ID>' --remote
+npx wrangler@4.129.1 kv key put '<LIVE_PATTERN_KEY>' --path '<pattern-file>' --namespace-id '<KV_NAMESPACE_ID>' --remote
 ```
-
-コードには `s("pad")`、`s("sub")`、`s("drums")` をそのまま書く。ページが非公開音声URLの `samples(...)` 定義を先頭に足す。新しいパートを増やすにはAPIの許可名と音声ファイル、音声セットを一緒に更新する。
-
-## スマホで使う
-
-1. 本人のメールでCloudflare Accessにログインする。
-2. ページを開いて `Play` を押す。iPhoneでは再生開始にタップが必要。
-3. コードを変更し、`コードを反映` を押す。`Stop` はすぐ停止する。
-4. AIが保存版を更新したら、`元コードを読み直す` で取得する。試奏中の変更はこの操作で破棄される。
 
 ## ローカル確認
 
@@ -77,7 +54,5 @@ npm test
 npx wrangler@4.129.1 pages functions build --outdir .wrangler/function-build
 npx wrangler@4.129.1 pages dev dist
 ```
-
-Access設定がないローカル `pages dev` は意図的に `503`。画面・音の疎通はprivate素材をループバックのテストサーバーから返して確認する。
 
 Strudel本体は `@strudel/repl@1.3.0` をnpmで固定し、ビルド時に同じPages配信へ同梱する。この独立アプリのコードはStrudelの[利用条件](https://strudel.cc/technical-manual/project-start/)に合わせてAGPL-3.0で公開する（[LICENSE](LICENSE)）。既存Musicランタイムとはコードを結合しない。

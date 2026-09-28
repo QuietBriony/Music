@@ -23,7 +23,7 @@ function safeHref(href) {
   assert.doesNotMatch(href, /[\s<>"'\\]/);
   if (href.startsWith("https://")) {
     const url = new URL(href);
-    assert.ok(["quietbriony.github.io", "github.com"].includes(url.hostname), `Unexpected public destination: ${href}`);
+    assert.ok(["quietbriony.github.io", "github.com", "music-private-live-workbench.pages.dev"].includes(url.hostname), `Unexpected public destination: ${href}`);
     assert.ok(!url.username && !url.password && !url.port);
   } else {
     safePath(href.split(/[?#]/)[0]);

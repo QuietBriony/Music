@@ -19,11 +19,11 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 `docs/INDEX.md`、canonical JSON を先に読む。ない環境では推測せず、public-safe な
 workflow と `needs_verification` だけを使う。active runtime repo は従来どおり 5 つ。
 
-## 現在地（2026-09-20）
+## 現在地（2026-09-28）
 
 - `listen.html`先頭を「前回の続き／過去のネタ／今すぐ遊ぶ」へ整理。
   `#production-notebook`は個人IDを含まないDrive検索、`#revive-ideas`は区間と一言メモの手順。
-  `#workbench-plan`でBL-049の推奨設計をHTMLのまま読める。制作台・chat接続は未実装。
+  `#workbench-plan`にStrudelの小さな試奏台とBL-049の推奨設計を案内。共通session・chat接続は未実装。
   個人の再開ノートはprivate側で管理し、作品名・Drive file ID・PC素材パスを公開側へ入れない。
   HTML navigationは既存SWのnetwork-firstで更新し、音声runtime/cache tupleはv402を保持する。
   最新方針は新設より既存の整理・改良。BL-049 / BL-045は着手保留、次はBL-046。
@@ -39,7 +39,7 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   本人の音質・実iPhone判定は未完了。RSI実装ではなく、手動review用メモの出口まで。
   仕様・data license・再現条件は`docs/LISTENING-LOOP-EXPERIMENT.md`。
 
-- `listen.html`は用途別の総合入口。全14道具は`config/music-stack-tools.json`から
+- `listen.html`は用途別の総合入口。全15道具は`config/music-stack-tools.json`から
   Listen / `docs/MUSIC-STACK-SYSTEM-MANUAL.md`へ生成する。音声runtime不変のv402。
   和声マップ＋アシッドは`docs/VISUAL-COMPOSER-PLAN.md`の未実装設計。BL-045で次工程を管理。
   古いdirectionは背景資料、利用はsystem manual、契約はintegration index、作業はBACKLOGへ一本化。
@@ -54,12 +54,12 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   Functions / D1側がauthと`no-store`を所有する。
   ただしAPIの住処`music-stack.pages.dev`はGit連携なしの手動アップロードで、mainへの
   mergeだけでは反映されない。redeploy手順と注意は`docs/LYRIC-LAB-D1.md`。
-- 本人用Strudel試奏の独立アプリを`experiments/workbench/v1/`に追加。既存の公開Listenと
-  `music-stack.pages.dev`は変更せず、別PagesプロジェクトでAccess認証後に利用する。
-  音声・保存コードは非公開KVに置き、認証設定がない時は全リクエストを拒否する。
+- Strudel試奏の独立アプリを`experiments/workbench/v1/`に追加。既存の公開Listenと
+  `music-stack.pages.dev`のruntimeは変更せず、別Pagesプロジェクトで公開する。
+  KVに置いた音声3本と保存コードは公開GETで読める。閲覧者の編集は端末内のみ。
   初期版は単一の4小節セットで、Surface側の編集成果と端末間同期はまだ取り込んでいない。
   手順と制約は同ディレクトリの`README.md`。
-- browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の27件が正本。
+- browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の26件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
 - 現行cacheは`hazama-fm-v402`。Band Room runtime markerは`band-room.js?v=br-236` /
   `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
