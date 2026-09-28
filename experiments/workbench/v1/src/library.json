@@ -5,10 +5,18 @@
     {
       "id": "aphex1",
       "title": "aphex1",
-      "label": "新しい試作",
+      "label": "ドラムに余白を作った版",
       "indexed_at": "2026-09-28",
-      "description": "変則的なドラムの切り返し、短いゴースト音、揺れるパッド。聴いてから密度を調整する初稿。",
+      "description": "96 BPM相当。ドラムの刻みを減らし、速いゴースト音を外した調整版。",
       "path": "/patterns/aphex1.txt"
+    },
+    {
+      "id": "aphex1-v1",
+      "title": "aphex1 初稿・高速版",
+      "label": "前の版",
+      "indexed_at": "2026-09-28",
+      "description": "108 BPM相当でドラムを細かく刻んだ最初の公開版。比較用に保存。",
+      "path": "/patterns/aphex1-v1.txt"
     },
     {
       "id": "namima-test",

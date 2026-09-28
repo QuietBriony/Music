@@ -19,6 +19,19 @@
 
 ---
 
+## 2026-09-28 — aphex1のドラム密度調整と高速初稿の保存
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 本人の聴感フィードバックを受け、aphex1の速さと混雑を減らして比較可能にする
+- repos      : Music（既存FM / Band Room / Core Rig runtimeは不変）
+- implemented: aphex1を108→96 BPM相当、ドラムを約半分以下、ゴースト音なしに調整。
+  高速初稿をaphex1-v1として一覧に保存し、既存4小節テストも維持。Listenと操作説明を更新。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0
+- backlog    : BL-049の本人試聴による初稿評価と調整版の提示
+- next       : BL-049 — 本人が調整版と高速初稿を試聴し、ドラムの余白・低域・展開の好みを選ぶ
+- blockers   : 調整版の実音評価は未完了。端末間同期と共通sessionは未実装
+
+---
+
 ## 2026-09-28 — Strudel試作の名前付き索引とコード復元
 - agent      : Codex（Remote対話、単一thread）
 - goal       : 既存試奏台を磨き、元の4小節を残してaphex1を新しい試作として聴き比べられるようにする
