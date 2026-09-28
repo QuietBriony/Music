@@ -61,9 +61,9 @@
       "id": "strudel-workbench", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Strudel Live Workbench", "href": "https://music-private-live-workbench.pages.dev/", "action": "音とコードを触る",
       "purpose": "公開試作を名前から選び、Strudelコードを戻して聴きながら変えるブラウザ試奏台。",
-      "first_step": "aphex1のドラム調整版・高速初稿・元の4小節テストを選ぶ → Play → 直したら『コードを反映』。",
-      "outputs": "公開試作3件はGitで版管理。自分の編集は名前付きでその端末のブラウザに保存・復元できる。",
-      "boundary": "ページ・試作コード・3本のWAVは公開。端末内下書きは他端末へ同期されない。調整版の聴感は再試聴待ち。",
+      "first_step": "Techno 01・直進かAuto Grooveを選ぶ → Play → 再生中は別の試作を選んで切り替え。",
+      "outputs": "公開試作6件はGitで版管理。自分の編集は名前付きでその端末のブラウザに保存・復元できる。",
+      "boundary": "ページ・試作コード・3本のWAVは公開。自動変奏はパターン内で行い、チャットからの即時反映・端末間同期は未実装。新しい3試作の聴感は本人確認待ち。",
       "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }]
     },
     {

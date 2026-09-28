@@ -1,0 +1,14 @@
+// Techno 02 — slower, spacious dub-leaning sketch, 2026-09-29
+// Same three public loops, with an open low end and fewer bright drum accents.
+// 28 cycles per minute = about 112 BPM in 4/4.
+setcpm(28)
+const KICK = 0.72
+const HATS = 0.16
+const SUB = 0.52
+const PAD = 0.32
+stack(
+  s("drums").slice(16, "0 ~ 0 ~ 0 ~ 0 ~").clip(0.75).lpf(240).gain(KICK),
+  s("drums").slice(16, "~ ~ 3 ~ ~ ~ 7 ~").clip(0.42).hpf(1500).room(0.28).gain(HATS),
+  s("sub").slice(8, "0 ~ ~ ~ 4 ~ ~ ~").clip(0.9).lpf(210).gain(SUB),
+  s("pad").slow(4).lpf("<420 850 600 1350>").room(0.38).gain(PAD)
+)

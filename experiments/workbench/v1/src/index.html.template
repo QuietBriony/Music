@@ -23,7 +23,7 @@
       </header>
 
       <section class="intro" aria-label="使い方">
-        <span>試作を選ぶ → Playで聴く → 直したら「コードを反映」</span>
+        <span>試作を選ぶ → Playで聴く → 再生中は別の試作を選ぶだけで切り替え</span>
       </section>
 
       <section class="library" aria-labelledby="library-title">
@@ -32,7 +32,7 @@
             <p class="eyebrow">SAVED IDEAS</p>
             <h2 id="library-title">試作を選ぶ</h2>
           </div>
-          <p>選ぶとコードが編集欄に戻ります。再生は手動です。</p>
+          <p>最初の再生はPlay。再生中は別の試作を選ぶと、その演奏へ切り替わります。</p>
         </div>
         <div id="published-list" class="pattern-list" aria-label="公開した試作"></div>
         <details id="draft-details" class="draft-details">
@@ -63,7 +63,7 @@
       <footer>
         <p>スマホは音声再生のため、最初に Play を押してください。画面を離れると再生が止まることがあります。</p>
         <p>公開試作のコードと3本の音源は誰でも取得できます。ここで編集した内容は自動では公開されません。「この端末に保存」は同じブラウザだけの下書きです。</p>
-        <p>AIが公開試作を更新したらページを再読込し、一覧からその版を選んでください。コードを切り替えても音は自動再生されません。</p>
+        <p>公開試作が増えたらページを再読込してください。再生中に一覧から別の試作を選ぶと演奏を切り替えます。チャットの指示を自動で受け取る機能はまだありません。</p>
         <a href="https://github.com/QuietBriony/Music/tree/main/experiments/workbench/v1" target="_blank" rel="noreferrer">このアプリのソースと手順 ↗</a>
       </footer>
     </main>
