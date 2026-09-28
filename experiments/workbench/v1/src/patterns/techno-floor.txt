@@ -1,0 +1,14 @@
+// Techno 01 — straight four-on-the-floor, 2026-09-29
+// Reuses the kick-like first slice and the bright offbeat slices from the existing drums loop.
+// 31 cycles per minute = about 124 BPM in 4/4.
+setcpm(31)
+const KICK = 0.82
+const HATS = 0.27
+const SUB = 0.48
+const PAD = 0.22
+stack(
+  s("drums").slice(16, "0 0 0 0").clip(0.8).lpf(260).gain(KICK),
+  s("drums").slice(16, "~ 1 ~ 3 ~ 5 ~ 15").clip(0.3).hpf(1800).gain(HATS),
+  s("sub").slice(8, "0 ~ 2 ~ 0 ~ 4 ~").clip(0.8).lpf(190).gain(SUB),
+  s("pad").slow(4).lpf("<550 900 1500 700>").room(0.18).gain(PAD)
+)

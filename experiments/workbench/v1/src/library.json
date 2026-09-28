@@ -11,6 +11,30 @@
       "path": "/patterns/aphex1.txt"
     },
     {
+      "id": "techno-floor",
+      "title": "Techno 01・直進",
+      "label": "4つ打ち / 124 BPM",
+      "indexed_at": "2026-09-29",
+      "description": "ドラムの低音を4つ打ちにして、高音の切片を裏拍へ。まずは踊れる基準版。",
+      "path": "/patterns/techno-floor.txt"
+    },
+    {
+      "id": "techno-dub",
+      "title": "Techno 02・余白",
+      "label": "ダブ寄り / 112 BPM",
+      "indexed_at": "2026-09-29",
+      "description": "キックは残して高音を減らし、低音とパッドの空間を広げた版。",
+      "path": "/patterns/techno-dub.txt"
+    },
+    {
+      "id": "auto-groove",
+      "title": "Auto Groove・毎周変化",
+      "label": "自動変奏 / 116 BPM",
+      "indexed_at": "2026-09-29",
+      "description": "8小節ごとにキックが一度抜け、高音パートは確率で変化。再生中ずっと少しずつ違う。",
+      "path": "/patterns/auto-groove.txt"
+    },
+    {
       "id": "aphex1-v1",
       "title": "aphex1 初稿・高速版",
       "label": "前の版",

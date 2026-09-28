@@ -26,6 +26,8 @@ let activeEditor;
 let activeSelection;
 let loadedCode = '';
 let busy = false;
+let wantsPlayback = false;
+let playbackToken = 0;
 
 function fullCode(pattern) {
   return samplePrelude + '\n\n' + pattern.replace(/\r\n?/g, '\n').trim() + '\n';
@@ -46,7 +48,7 @@ function mayReplaceCode() {
 }
 
 function setEditorCode(code) {
-  activeEditor?.editor?.stop();
+  if (!wantsPlayback) activeEditor?.editor?.stop();
   if (!activeEditor) {
     activeEditor = document.createElement('strudel-editor');
     activeEditor.setAttribute('code', code);
@@ -62,6 +64,24 @@ function setEditorCode(code) {
   stopButton.disabled = false;
   saveButton.disabled = false;
   reloadButton.disabled = false;
+}
+
+async function evaluateCurrent(message) {
+  const token = ++playbackToken;
+  try {
+    await activeEditor.editor.evaluate();
+    if (token !== playbackToken) {
+      if (!wantsPlayback) activeEditor.editor.stop();
+      return;
+    }
+    wantsPlayback = true;
+    status.textContent = message;
+  } catch (error) {
+    if (token !== playbackToken) return;
+    wantsPlayback = false;
+    activeEditor.editor.stop();
+    throw error;
+  }
 }
 
 function setCurrentSelection(selection) {
@@ -101,7 +121,11 @@ async function openPublished(item) {
       kind: 'published', id: item.id, label: item.title, detail: item.label,
     });
     setWorkUrl(item.id);
-    status.textContent = 'コードを開きました。Play で聴けます。切り替えてもこの版は一覧に残ります。';
+    if (wantsPlayback) {
+      await evaluateCurrent('再生中。' + item.title + ' に切り替えました。');
+    } else {
+      status.textContent = 'コードを開きました。Play で聴けます。切り替えてもこの版は一覧に残ります。';
+    }
   } catch (error) {
     status.textContent = error.message || '読み込みに失敗しました';
   } finally {
@@ -185,6 +209,7 @@ function renderDrafts() {
 
 async function openDraft(id) {
   if (busy || !mayReplaceCode()) return;
+  busy = true;
   try {
     const draft = readDrafts().find((item) => item.id === id);
     if (!draft) throw new Error('下書きが見つかりません');
@@ -194,9 +219,15 @@ async function openDraft(id) {
       kind: 'draft', id: draft.id, label: draft.title, detail: 'この端末の下書き',
     });
     setWorkUrl(null);
-    status.textContent = '下書きを開きました。Play で聴けます。';
+    if (wantsPlayback) {
+      await evaluateCurrent('再生中。下書き「' + draft.title + '」に切り替えました。');
+    } else {
+      status.textContent = '下書きを開きました。Play で聴けます。';
+    }
   } catch (error) {
     status.textContent = error.message || '下書きを開けませんでした';
+  } finally {
+    busy = false;
   }
 }
 
@@ -282,24 +313,32 @@ reloadButton.addEventListener('click', () => {
 });
 saveButton.addEventListener('click', saveDraft);
 playButton.addEventListener('click', async () => {
-  if (!activeEditor?.editor) return;
+  if (busy || !activeEditor?.editor) return;
+  busy = true;
+  wantsPlayback = true;
   try {
-    await activeEditor.editor.evaluate();
-    status.textContent = '再生中。コードを変えた後は「コードを反映」で更新できます。';
+    await evaluateCurrent('再生中。別の試作を選ぶと演奏を切り替えられます。');
   } catch (error) {
     status.textContent = error.message || '再生に失敗しました';
+  } finally {
+    busy = false;
   }
 });
 updateButton.addEventListener('click', async () => {
-  if (!activeEditor?.editor) return;
+  if (busy || !activeEditor?.editor) return;
+  busy = true;
+  wantsPlayback = true;
   try {
-    await activeEditor.editor.evaluate();
-    status.textContent = '現在のコードを反映しました。';
+    await evaluateCurrent('現在のコードを反映しました。再生中です。');
   } catch (error) {
     status.textContent = error.message || 'コードの反映に失敗しました';
+  } finally {
+    busy = false;
   }
 });
 stopButton.addEventListener('click', () => {
+  playbackToken++;
+  wantsPlayback = false;
   activeEditor?.editor?.stop();
   status.textContent = '停止しました。';
 });
