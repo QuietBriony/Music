@@ -1,6 +1,8 @@
 name = "music-private-live-workbench"
 compatibility_date = "2026-09-14"
-pages_build_output_dir = "dist"
+
+# Local `wrangler pages dev` only. Production configuration lives in the
+# Cloudflare Pages project so Access values and private KV keys stay off GitHub.
 
 [[kv_namespaces]]
 binding = "MUSIC_LIVE_ASSETS"
