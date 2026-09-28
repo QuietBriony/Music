@@ -14,6 +14,7 @@
 ## Cloudflare Pages の配置
 
 Git連携の**別Pagesプロジェクト**を、同じ `QuietBriony/Music` repoから作る。既存の公開 `music-stack` プロジェクトは使わない。
+入口は <https://music-private-live-workbench.pages.dev>。Cloudflare Accessの設定が揃うまでは意図的に開けない。
 
 | 設定 | 値 |
 |---|---|
@@ -24,9 +25,13 @@ Git連携の**別Pagesプロジェクト**を、同じ `QuietBriony/Music` repo�
 | Build command | `npm run build` |
 | Build output | `dist` |
 | Functions | このrootの `functions/` |
-| KV binding | `MUSIC_LIVE_ASSETS`（`wrangler.toml`） |
+| KV binding | `MUSIC_LIVE_ASSETS`（Pages本番設定） |
 
-Cloudflare Accessでproductionの `<project>.pages.dev` とpreviewの `*.<project>.pages.dev` を両方保護し、許可メールを本人1件だけにする。Preview保護だけではproduction URLは保護されない。AccessのApplication Audience（AUD）とteam domainを確認し、Pagesのproduction/preview環境へ次の値を設定する。
+`wrangler.toml`はローカル検証専用。`pages_build_output_dir`を含めず、本番のKV bindingと
+非公開の環境変数はCloudflare Pages側で設定する。Wrangler設定を本番の正本にすると、
+Gitに書けないAccess値やKVの保存keyまで同じ設定ファイルで管理することになるため。
+
+現在のpreview deploymentは無効。Cloudflare Accessでproductionの `<project>.pages.dev` を保護し、許可メールを本人1件だけにする。Previewを有効にする場合は `*.<project>.pages.dev` も先に保護する。Preview保護だけではproduction URLは保護されない。AccessのApplication Audience（AUD）とteam domainを確認し、Pagesのproduction環境へ次の値を設定する。
 
 | Pages環境変数 | 内容 |
 |---|---|
