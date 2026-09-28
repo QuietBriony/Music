@@ -30,6 +30,12 @@ Git連携の**別Pagesプロジェクト**を、同じ `QuietBriony/Music` repo�
 `wrangler.toml`はローカル検証専用。`pages_build_output_dir`を含めず、本番のKV bindingと
 非公開の環境変数はCloudflare Pages側で設定する。Wrangler設定を本番の正本にすると、
 Gitに書けないAccess値やKVの保存keyまで同じ設定ファイルで管理することになるため。
+mainへのpush後はPagesのdeployment一覧を確認する。Git連携で新規buildが始まらない場合は、
+このディレクトリで`npm ci`、`npm run build`を実行し、
+`npx wrangler@4.129.1 pages deploy dist --project-name music-private-live-workbench --branch main`
+で同じ成果物を手動反映できる。Wranglerがローカル専用設定を無視する警告は意図どおり。
+2026-09-28の初回productionはmainの`8fc4066`から手動デプロイし、全経路が認証未設定で
+`503`になることを確認した。Git pushからの自動buildはまだ確認できていない。
 
 現在のpreview deploymentは無効。Cloudflare Accessでproductionの `<project>.pages.dev` を保護し、許可メールを本人1件だけにする。Previewを有効にする場合は `*.<project>.pages.dev` も先に保護する。Preview保護だけではproduction URLは保護されない。AccessのApplication Audience（AUD）とteam domainを確認し、Pagesのproduction環境へ次の値を設定する。
 
