@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-09-28 — Strudel試奏台を公開入口へ切替
+- agent      : Codex（Remote対話、単一thread）
+- goal       : カード登録なしの無料枠で、スマホから音を聴きコードを直せる公開ページにする
+- repos      : Music（既存FM / Band Room / Core Rig runtimeは不変）
+- implemented: 本人が3本のWAVと保存コードの公開を確認。Cloudflare Access middlewareを外し、
+  KVの公開GETでpad / sub / drumsと保存コードを読む。ページ内編集は端末だけで、保存版の書込口はない。
+  Listenの入口と年鑑、操作手順、外部依存台帳、設計・引き継ぎ文書を公開範囲に合わせて更新。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（公開切替の全体gate）
+- backlog    : BL-049の限定的な試奏入口。共通session・作品棚・AI自動同期は未完了
+- next       : BL-049 — 本人のiPhoneで出音と編集を確認し、Surface側の更新コードを選んで保存版へ取り込む
+- blockers   : 実iPhoneの出音とSurface編集版の取り込みは未確認
+
+---
+
 ## 2026-09-28 — 本人用Strudel試奏台の独立実装
 - agent      : Codex（Remote対話、単一thread）
 - goal       : スマホからコードを触り、音を聴ける本人用ページをMusic repoとCloudflareで用意する
