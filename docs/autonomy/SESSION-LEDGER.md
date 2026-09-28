@@ -19,6 +19,21 @@
 
 ---
 
+## 2026-09-28 — 本人用Strudel試奏台の独立実装
+- agent      : Codex（Remote対話、単一thread）
+- goal       : スマホからコードを触り、音を聴ける本人用ページをMusic repoとCloudflareで用意する
+- repos      : Music（既存FM / Band Room / Core Rig runtimeは不変）
+- implemented: `experiments/workbench/v1/`にStrudel編集画面、Play / Stop / 再評価、
+  Access認証と所有者照合、非公開KVからの保存コード・3本のWAV配信を追加。
+  音声・コード実体はGitへ入れず、外部依存台帳・設計・引き継ぎ文書を更新。
+  初期KVはWorker側で確認できた4小節版で、Surface編集版は未取り込み。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（最終値はcommit前の再実行で確認）
+- backlog    : BL-049の限定的な試奏入口。共通session・作品棚・AI自動同期は未完了
+- next       : BL-049 — PagesのAccess設定後に本人のiPhoneで出音と編集を確認し、Surface版を取り込む
+- blockers   : Cloudflare Accessアプリ作成と本人ログイン、実機試聴は未確認
+
+---
+
 ## 2026-09-23 — Band Room パート別 AI 忠実度の引き継ぎブリーフと BL-050
 - agent      : Claude Opus 5.5（Surface対話、workflow＝パート別読み取り6＋曲データ/道具＋履歴/制約→統合→照合役）
 - goal       : 本人の「パートごとの AI を完成させたい」を、新しいチャットが初手から正しく始められる形にする

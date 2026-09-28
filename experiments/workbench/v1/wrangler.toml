@@ -1,0 +1,7 @@
+name = "music-private-live-workbench"
+compatibility_date = "2026-09-14"
+pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "MUSIC_LIVE_ASSETS"
+id = "1cb20c36f0ad476784f1fb1c5f44eee4"

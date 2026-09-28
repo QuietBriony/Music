@@ -54,7 +54,12 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   Functions / D1側がauthと`no-store`を所有する。
   ただしAPIの住処`music-stack.pages.dev`はGit連携なしの手動アップロードで、mainへの
   mergeだけでは反映されない。redeploy手順と注意は`docs/LYRIC-LAB-D1.md`。
-- browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の25件が正本。
+- 本人用Strudel試奏の独立アプリを`experiments/workbench/v1/`に追加。既存の公開Listenと
+  `music-stack.pages.dev`は変更せず、別PagesプロジェクトでAccess認証後に利用する。
+  音声・保存コードは非公開KVに置き、認証設定がない時は全リクエストを拒否する。
+  初期版は単一の4小節セットで、Surface側の編集成果と端末間同期はまだ取り込んでいない。
+  手順と制約は同ディレクトリの`README.md`。
+- browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の27件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
 - 現行cacheは`hazama-fm-v402`。Band Room runtime markerは`band-room.js?v=br-236` /
   `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。

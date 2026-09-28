@@ -7,6 +7,12 @@
 以下は将来案として保管する。次の作業は[BACKLOG](autonomy/BACKLOG.md)のBL-046。
 制作台が必要になった時の依存順はBL-049 → BL-045。
 
+**2026-09-28追記:** 本人用Strudel試奏の小さな実装を
+[`experiments/workbench/v1/`](../experiments/workbench/v1/)に分離した。
+3本の音声と保存コードは非公開Cloudflare KVから読み、Cloudflare Access認証がない時は
+全ページを拒否する。これは本設計の共通session、既存作品棚との接続、端末間の編集同期を
+実装したものではない。スマホ用の試奏入口として先に検証する。
+
 ## 1. 採る構成
 
 **既存作品の入口＋ブラウザの編集台＋共通の編集データ**をMusicの中につくる。

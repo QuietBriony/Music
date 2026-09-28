@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="dark">
+    <link rel="icon" href="data:,">
+    <title>Music Live Workbench</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/vendor/strudel/index.js" defer></script>
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <main>
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">PRIVATE / LIVE</p>
+          <h1>Music Live Workbench</h1>
+          <p class="subhead">3つの音を重ね、コードを変えながら聴く</p>
+        </div>
+        <a href="https://strudel.cc/learn/first-sounds/" target="_blank" rel="noreferrer">Strudelの基本 ↗</a>
+      </header>
+
+      <section class="intro" aria-label="使い方">
+        <span>1. 下の Play で音を開始</span>
+        <span>2. コードを直して再評価</span>
+        <span>3. Stop で停止</span>
+      </section>
+
+      <section class="workspace" aria-labelledby="editor-title">
+        <div class="section-heading">
+          <h2 id="editor-title">コードと音</h2>
+          <div class="controls">
+            <button id="play" type="button" disabled>Play</button>
+            <button id="update" type="button" disabled>コードを反映</button>
+            <button id="stop" type="button" disabled>Stop</button>
+            <button id="reload-pattern" type="button" title="保存済みの元コードを読み直す">元コードを読み直す</button>
+          </div>
+        </div>
+        <p id="status" role="status">保存済みのコードを読み込み中…</p>
+        <div id="editor"></div>
+      </section>
+
+      <footer>
+        <p>スマホは音声再生のため、最初に Play を押してください。画面を離れると再生が止まることがあります。</p>
+        <p>このページのブラウザ内編集は端末内の試奏です。AIが更新した保存版は「元コードを読み直す」で取得します。</p>
+        <a href="https://github.com/QuietBriony/Music/tree/main/experiments/workbench/v1" target="_blank" rel="noreferrer">このアプリのソースと手順 ↗</a>
+      </footer>
+    </main>
+  </body>
+</html>
