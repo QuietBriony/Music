@@ -32,7 +32,8 @@ runtimeやService Workerには接続しない。別のCloudflare Pagesプロジ�
 ページ・試作コード・3本のWAVを公開する。Cloudflare Accessは使わない。
 Strudel 1.3.0は`config/external-dependencies.json`に登録。音声素材はKVに置き、
 公開試作コードと名前付き索引は同アプリのGit管理ファイルに置く。
-初期の4小節をテストとして残し、aphex1初稿も選択・コード復元できる。
+初期の4小節をテストとして残し、aphex1のドラム調整版と高速初稿も
+別IDで選択・コード復元できる。調整版の本人再試聴はこれから。
 旧`GET /api/pattern`は互換用の読み取り口として残し、現行画面は使わない。
 APIは公開GETのみで、閲覧者が公開版を書き換える経路はない。
 端末内の名前付き下書きはlocalStorageで復元可能。端末間同期やSurface編集版の取り込みは未実装。

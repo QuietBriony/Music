@@ -284,6 +284,9 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   同日追記: 既存4小節をテストとして残し、aphex1初稿を公開試作一覧へ追加。
   選択によるコード復元と端末内の名前付き下書き保存を実装。端末間同期、既存作品棚への
   正式接続、実音・iPhone試聴、共通sessionは未完了のまま。
+  同日追記: 本人がaphex1初稿のドラムを過密・速すぎると聴感評価。
+  96 BPM相当・ドラムを間引いた調整版を既存IDへ置き、初稿は別IDで比較可能にする。
+  調整版の再試聴と最終採用判断は引き続きhuman-gate。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2
