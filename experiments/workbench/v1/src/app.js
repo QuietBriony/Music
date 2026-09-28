@@ -28,7 +28,7 @@ let loadedCode = '';
 let busy = false;
 
 function fullCode(pattern) {
-  return samplePrelude + '\n\n' + pattern.trim() + '\n';
+  return samplePrelude + '\n\n' + pattern.replace(/\r\n?/g, '\n').trim() + '\n';
 }
 
 function currentCode() {
@@ -55,7 +55,8 @@ function setEditorCode(code) {
     activeEditor.editor.setCode(code);
   }
   activeEditor.editor?.setLineWrappingEnabled?.(true);
-  loadedCode = code;
+  // CodeMirror normalizes line endings. Compare with its actual document.
+  loadedCode = activeEditor.editor?.code || code;
   playButton.disabled = false;
   updateButton.disabled = false;
   stopButton.disabled = false;
