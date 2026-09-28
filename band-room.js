@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-236-hazama-pocket-rests";
-  const BANDROOM_RELEASE_VERSION = "v401";
+  const BANDROOM_APP_VERSION = "br-237-transcribed-crashes";
+  const BANDROOM_RELEASE_VERSION = "v403";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
@@ -6784,10 +6784,11 @@
           }
           return;
         }
-        // v106: crash hint on big section entry (chorus / bridge / outro).
-        // Fires on beat 0 of the new section so the transition has lift.
+        // Pattern-only songs keep the section-entry lift. A transcribed
+        // performance already owns its crashes, including intentional rests.
         const newSec = state.songData.structure[state.sectionIdx];
-        if (newSec && drumKit && drumKit.crash && (currentMode === "synth") && $("br-toggle-drums").checked) {
+        if (newSec && drumKit && drumKit.crash && (currentMode === "synth") &&
+            $("br-toggle-drums").checked && !hasTranscribedLine("drum_line")) {
           const sn = newSec.section || "";
           const isLift = sn.startsWith("chorus") || sn === "bridge" ||
                          sn.startsWith("outro") || sn === "chant-b";

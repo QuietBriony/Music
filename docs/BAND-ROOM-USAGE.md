@@ -20,7 +20,7 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行runtime / playability契約はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）、client markerは`br-236` / `br-90`。
+現行runtime / playability契約はv403（採譜のある曲への追加クラッシュを停止。v401のauthored rests等を継承）、client markerは`br-237` / `br-90`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
 ### v401 AIの短時間レイヤー判定
@@ -38,7 +38,7 @@ checkboxだけONにし、最後に`defaults`で通常mixへ戻します。
 曲ID seedによる微細な実演差があります。02固有アレンジの
 合否には使わず、02原音を基準にします。Surface合格だけではreal mobile合格になりません。
 
-## 画面構成（現行: br-236 / br-90）
+## 画面構成（現行: br-237 / br-90）
 
 ```
 ┌─────────────────────────────────┐

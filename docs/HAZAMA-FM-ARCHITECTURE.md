@@ -10,9 +10,9 @@
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v402`, `engine.js?v=fm-118`,
+> Current cache / asset tuple: `hazama-fm-v403`, `engine.js?v=fm-118`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-80`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-236`, `band-room.css?v=br-90`。
+> `band-room.js?v=br-237`, `band-room.css?v=br-90`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

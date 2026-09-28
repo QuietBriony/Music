@@ -1,6 +1,14 @@
-# Band Room - Changelog (v65 -> v402 compact)
+# Band Room - Changelog (v65 -> v403 compact)
 
-Current sw.js VERSION: v402. Latest Band Room runtime change: v401 (HAZAMA authored-rest pocket + truthful arp bulk controls). v402 changes only the shared Listen/guide surface and its cache, not the audio runtime. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE, and exact lyric boundaries. v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard).
+Current sw.js VERSION: v403. Latest Band Room runtime change: v403 (preserve transcribed crash placement). Publication is pending; this local candidate does not update the live site.
+
+## v403 compact - Keep transcribed crash placement
+
+- A song carrying `drum_line` no longer receives an extra generated crash at chorus / bridge / outro / chant-b entry. The transcribed crash, its fractional timing, and its velocity remain unchanged.
+- Pattern-only songs keep the entry hint. Original-stem playback, drum mute, the light note budget, synthesis/FX, and HAZAMA song data are unchanged.
+- `check-band-room-transcribed-drums.mjs` executes the actual scheduler with silent instrument stubs in light/full modes. It failed on the previous runtime with an extra crash at the section downbeat and passes after the guard.
+- `measure-transcribed-retention.mjs` records Tabasco 7-song row retention using the runtime's actual selector. It measures row loss, not audio similarity or the complete BL-050 fidelity score. Baseline: `docs/examples/tabasco-transcribed-retention.json`.
+- Candidate markers: `band-room.js?v=br-237`, `hazama-fm-v403`. Public ACE-Step demos and original stems are preserved.
 
 ## v402 compact - Music Stack owner guide and single tool catalog
 

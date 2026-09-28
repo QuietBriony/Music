@@ -140,8 +140,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `engine.js?v=fm-118`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-80`, `audio/ai-fills.js?v=fm-71`,
   `style.css?v=fm-28`, `band-room.css?v=br-90`,
-  `band-room.js?v=br-236`, `audio/audio-safety.js?v=br-67`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v402`.
+  `band-room.js?v=br-237`, `audio/audio-safety.js?v=br-67`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v403`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,

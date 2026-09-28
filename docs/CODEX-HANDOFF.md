@@ -21,6 +21,11 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
 
 ## 現在地（2026-09-20）
 
+2026-09-28 branch candidate（`codex/bandroom-part-fidelity`）: BL-050の原曲再現を再開。採譜曲へのsection crash追加を止める
+v403 / br-237候補を無音schedulerで検証済み。stack-checkは35 PASS / 0 FAIL / 0 SKIP。
+公開ACE-Stepデモは保持し、原曲stemを比較基準にする。ブラウザ試聴は未実施。
+7曲の行保持率と残件は `docs/BAND-ROOM-PART-AI-BRIEF.md` 冒頭。公開サイトへの反映は未実施。
+
 - `listen.html`先頭を「前回の続き／過去のネタ／今すぐ遊ぶ」へ整理。
   `#production-notebook`は個人IDを含まないDrive検索、`#revive-ideas`は区間と一言メモの手順。
   `#workbench-plan`でBL-049の推奨設計をHTMLのまま読める。制作台・chat接続は未実装。
@@ -56,7 +61,7 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   mergeだけでは反映されない。redeploy手順と注意は`docs/LYRIC-LAB-D1.md`。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の25件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v402`。Band Room runtime markerは`band-room.js?v=br-236` /
+- 現行cacheは`hazama-fm-v403`。Band Room runtime markerは`band-room.js?v=br-237` /
   `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ

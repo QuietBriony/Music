@@ -14,9 +14,9 @@
 
 ## 現在地とversion
 
-- 現行playability契約は **v401**。client markerは
-  `band-room.js?v=br-236` / `band-room.css?v=br-90`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v402**（Listen・総合ガイド更新、音声runtime不変）。v401はHAZAMA AIの
+- この作業用checkoutの候補は **v403**（未公開）。client markerは
+  `band-room.js?v=br-237` / `band-room.css?v=br-90`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v403**（採譜のある曲への追加クラッシュを停止）。v401はHAZAMA AIの
   arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
   約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
   減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、
@@ -77,7 +77,7 @@
 
 ---
 
-## 画面構成（現行: br-236 / br-90）
+## 画面構成（現行: br-237 / br-90）
 
 ```
 ┌─────────────────────────────────┐

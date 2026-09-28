@@ -19,6 +19,19 @@
 
 ---
 
+## 2026-09-28 — 原曲のパート再現へ戻す、小さなcrash修正候補（v403 / br-237）
+- agent      : Codex
+- goal       : 公開ACE-Stepデモを比較資料として保管し、原曲に対する各パートの忠実度を改善する。
+- repos      : Music（作業ブランチ `codex/bandroom-part-fidelity`。main未反映）
+- implemented: 採譜曲へのsection crash追加を止める候補、実schedulerの無音回帰テスト、7曲のlight行保持率測定を準備。サイト未反映。
+  旧runtimeでは余計なcrashを再現するテストが失敗し、修正後にlight/full両方で成功。元音源・採譜データ・音色は変更なし。
+- stack-check: PASS 35 / FAIL 0 / SKIP 0（5 repo。初回の文書書式・版番号の3失敗を修正して再実行）
+- backlog    : BL-050継続。原音とのF1・音高/和音・休符照合は未完了。
+- next       : BL-050（Human Fly 8小節の原音との比較。hatの採譜漏れとlightの間引き損失を分ける）
+- blockers   : ブラウザ試聴・公開・Shareは未実施。今回の検証は発音指示と既存の整合性検査まで。
+
+---
+
 ## 2026-09-23 — Band Room パート別 AI 忠実度の引き継ぎブリーフと BL-050
 - agent      : Claude Opus 5.5（Surface対話、workflow＝パート別読み取り6＋曲データ/道具＋履歴/制約→統合→照合役）
 - goal       : 本人の「パートごとの AI を完成させたい」を、新しいチャットが初手から正しく始められる形にする

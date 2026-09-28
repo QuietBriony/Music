@@ -1,0 +1,310 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-09-28T06:17:58.257Z",
+  "scope": "Tabasco transcription row retention in the actual light selector",
+  "limitations": [
+    "Not audio comparison or a full scheduler dump.",
+    "Missing transcription bars are not necessarily rests.",
+    "Removed section hints are counted for one declared song pass; transcribed crashes remain."
+  ],
+  "runtimeSha256": "2465a4bd28c9ad2f0418aaf136e8700d81846fb719befa4955917e4a1fd0ec76",
+  "selectorSha256": "80541ac96d613894ee91b387c17540970db4f4c69b768225f09b8ab83d241e5a",
+  "registrySha256": "04c108069fd130251f1be775d6409cd0a68814f036db7505d000274b0e147106",
+  "songs": [
+    {
+      "id": "tabasco",
+      "title": "TABASCO",
+      "inputSha256": "2f908f3d9a84e9a5de87d7abda4e24ed80d64a86f4303d6191684936bedc19c7",
+      "totalBars": 26,
+      "parts": {
+        "drums": {
+          "status": "pattern-fallback",
+          "transcribed": 0,
+          "lightRetained": 0,
+          "discarded": 0,
+          "discardedPercent": null
+        },
+        "bass": {
+          "status": "transcribed",
+          "transcribed": 71,
+          "lightRetained": 55,
+          "discarded": 16,
+          "discardedPercent": 22.5
+        },
+        "guitar": {
+          "status": "transcribed",
+          "transcribed": 85,
+          "lightRetained": 66,
+          "discarded": 19,
+          "discardedPercent": 22.4
+        },
+        "voice": {
+          "status": "pattern-fallback",
+          "transcribed": 0,
+          "lightRetained": 0,
+          "discarded": 0,
+          "discardedPercent": null
+        }
+      },
+      "generatedSectionCrashesBeforeFix": 0
+    },
+    {
+      "id": "hey",
+      "title": "Hey",
+      "inputSha256": "9991d672efba04ddd47937413f98ca8b030b92ce6b43d748fcd5d18b1c796368",
+      "totalBars": 156,
+      "parts": {
+        "drums": {
+          "status": "transcribed",
+          "transcribed": 984,
+          "lightRetained": 962,
+          "discarded": 22,
+          "discardedPercent": 2.2,
+          "discardedByClass": {
+            "kick": 14,
+            "snare": 6,
+            "hat": 2,
+            "crash": 0
+          }
+        },
+        "bass": {
+          "status": "transcribed",
+          "transcribed": 763,
+          "lightRetained": 558,
+          "discarded": 205,
+          "discardedPercent": 26.9
+        },
+        "guitar": {
+          "status": "transcribed",
+          "transcribed": 976,
+          "lightRetained": 582,
+          "discarded": 394,
+          "discardedPercent": 40.4
+        },
+        "voice": {
+          "status": "transcribed",
+          "transcribed": 922,
+          "lightRetained": 549,
+          "discarded": 373,
+          "discardedPercent": 40.5
+        }
+      },
+      "generatedSectionCrashesBeforeFix": 7
+    },
+    {
+      "id": "i-got-a-feeling",
+      "title": "I got a feeling",
+      "inputSha256": "ea048bc12823e349e1b6de11b1d6b55a8d2fe331f8e3df25aad840ec6d007809",
+      "totalBars": 180,
+      "parts": {
+        "drums": {
+          "status": "transcribed",
+          "transcribed": 1012,
+          "lightRetained": 982,
+          "discarded": 30,
+          "discardedPercent": 3,
+          "discardedByClass": {
+            "kick": 5,
+            "snare": 11,
+            "hat": 14,
+            "crash": 0
+          }
+        },
+        "bass": {
+          "status": "transcribed",
+          "transcribed": 539,
+          "lightRetained": 454,
+          "discarded": 85,
+          "discardedPercent": 15.8
+        },
+        "guitar": {
+          "status": "transcribed",
+          "transcribed": 1205,
+          "lightRetained": 697,
+          "discarded": 508,
+          "discardedPercent": 42.2
+        },
+        "voice": {
+          "status": "transcribed",
+          "transcribed": 852,
+          "lightRetained": 569,
+          "discarded": 283,
+          "discardedPercent": 33.2
+        }
+      },
+      "generatedSectionCrashesBeforeFix": 7
+    },
+    {
+      "id": "under-the-moon",
+      "title": "Under the Moon",
+      "inputSha256": "2ae3f770c78d49064fbd93398854715e239c028d04a53a741eec7986f6cf4b1a",
+      "totalBars": 210,
+      "parts": {
+        "drums": {
+          "status": "transcribed",
+          "transcribed": 734,
+          "lightRetained": 734,
+          "discarded": 0,
+          "discardedPercent": 0,
+          "discardedByClass": {
+            "kick": 0,
+            "snare": 0,
+            "hat": 0,
+            "crash": 0
+          }
+        },
+        "bass": {
+          "status": "transcribed",
+          "transcribed": 566,
+          "lightRetained": 521,
+          "discarded": 45,
+          "discardedPercent": 8
+        },
+        "guitar": {
+          "status": "transcribed",
+          "transcribed": 882,
+          "lightRetained": 727,
+          "discarded": 155,
+          "discardedPercent": 17.6
+        },
+        "voice": {
+          "status": "transcribed",
+          "transcribed": 934,
+          "lightRetained": 695,
+          "discarded": 239,
+          "discardedPercent": 25.6
+        }
+      },
+      "generatedSectionCrashesBeforeFix": 9
+    },
+    {
+      "id": "electric-sheep",
+      "title": "Electric Sheep",
+      "inputSha256": "a37b096874aa87506f6e31d6bb3c66a88ccbb1c99413496d424ca1708f6df384",
+      "totalBars": 81,
+      "parts": {
+        "drums": {
+          "status": "transcribed",
+          "transcribed": 568,
+          "lightRetained": 509,
+          "discarded": 59,
+          "discardedPercent": 10.4,
+          "discardedByClass": {
+            "kick": 12,
+            "snare": 33,
+            "hat": 10,
+            "crash": 4
+          }
+        },
+        "bass": {
+          "status": "transcribed",
+          "transcribed": 379,
+          "lightRetained": 278,
+          "discarded": 101,
+          "discardedPercent": 26.6
+        },
+        "guitar": {
+          "status": "transcribed",
+          "transcribed": 786,
+          "lightRetained": 309,
+          "discarded": 477,
+          "discardedPercent": 60.7
+        },
+        "voice": {
+          "status": "pattern-fallback",
+          "transcribed": 0,
+          "lightRetained": 0,
+          "discarded": 0,
+          "discardedPercent": null
+        }
+      },
+      "generatedSectionCrashesBeforeFix": 4
+    },
+    {
+      "id": "human-fly",
+      "title": "Human Fly",
+      "inputSha256": "3b6e950db96315bd6cebe00cdb94d27b0f6f9625616e55d252d0f028bd5669ef",
+      "totalBars": 116,
+      "parts": {
+        "drums": {
+          "status": "transcribed",
+          "transcribed": 912,
+          "lightRetained": 799,
+          "discarded": 113,
+          "discardedPercent": 12.4,
+          "discardedByClass": {
+            "kick": 25,
+            "snare": 65,
+            "hat": 21,
+            "crash": 2
+          }
+        },
+        "bass": {
+          "status": "transcribed",
+          "transcribed": 728,
+          "lightRetained": 419,
+          "discarded": 309,
+          "discardedPercent": 42.4
+        },
+        "guitar": {
+          "status": "transcribed",
+          "transcribed": 688,
+          "lightRetained": 436,
+          "discarded": 252,
+          "discardedPercent": 36.6
+        },
+        "voice": {
+          "status": "transcribed",
+          "transcribed": 654,
+          "lightRetained": 420,
+          "discarded": 234,
+          "discardedPercent": 35.8
+        }
+      },
+      "generatedSectionCrashesBeforeFix": 5
+    },
+    {
+      "id": "sister",
+      "title": "Sister",
+      "inputSha256": "c19fca88a2d50bb5e47a0748cf431f35928959d70a98eb53f3ce17879d59ee12",
+      "totalBars": 137,
+      "parts": {
+        "drums": {
+          "status": "transcribed",
+          "transcribed": 806,
+          "lightRetained": 740,
+          "discarded": 66,
+          "discardedPercent": 8.2,
+          "discardedByClass": {
+            "kick": 46,
+            "snare": 18,
+            "hat": 2,
+            "crash": 0
+          }
+        },
+        "bass": {
+          "status": "transcribed",
+          "transcribed": 455,
+          "lightRetained": 376,
+          "discarded": 79,
+          "discardedPercent": 17.4
+        },
+        "guitar": {
+          "status": "transcribed",
+          "transcribed": 772,
+          "lightRetained": 493,
+          "discarded": 279,
+          "discardedPercent": 36.1
+        },
+        "voice": {
+          "status": "transcribed",
+          "transcribed": 757,
+          "lightRetained": 494,
+          "discarded": 263,
+          "discardedPercent": 34.7
+        }
+      },
+      "generatedSectionCrashesBeforeFix": 6
+    }
+  ]
+}

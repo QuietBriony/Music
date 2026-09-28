@@ -126,7 +126,7 @@ grep -o 'VERSION = "[^"]*"' sw.js
 
 | app | cache marker（2026-09-23 時点の控え） | sw VERSION |
 |-----|---------------------|------------|
-| Band Room | `band-room.css?v=br-90` / `band-room.js?v=br-236` / `audio/audio-safety.js?v=br-67` | hazama-fm-v402 |
+| Band Room | `band-room.css?v=br-90` / `band-room.js?v=br-237` / `audio/audio-safety.js?v=br-67` | hazama-fm-v403 |
 | Hazama FM | `engine.js?v=fm-118` / `fm.css?v=fm-54` / `fm.js?v=fm-72` / `audio/genre-flavor.js?v=fm-80` | 同上 |
 | Music Core Rig | `engine.js?v=fm-118` / `style.css?v=fm-28` | 同上 |
 
