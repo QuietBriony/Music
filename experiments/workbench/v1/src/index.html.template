@@ -33,7 +33,7 @@
           <div>
             <p class="eyebrow">PATCH BAY / BROWSER MACHINES</p>
             <h2 id="module-rack-title">音のモジュールを選ぶ</h2>
-            <p>コードで組むStrudelと、16ステップを触る303＋909。今は演奏を切り替えて使います。</p>
+            <p>コードで組むStrudelと、16ステップを触る303＋909。保存パッチとテンポを受け渡し、演奏は切り替えて使います。</p>
           </div>
         </div>
         <div class="module-grid">
@@ -53,6 +53,18 @@
             </div>
           </article>
         </div>
+        <section class="acid-bridge" aria-label="303＋909とStrudelの接続">
+          <div class="acid-bridge-heading">
+            <div><strong>この端末の303＋909パッチ</strong><span>中のFILEで保存・名前変更。ここから選ぶと、そのパッチを読み込めます。</span></div>
+            <button id="acid-patches-refresh" type="button">一覧を更新</button>
+          </div>
+          <div id="acid-saved-list" class="acid-saved-list"></div>
+          <div class="acid-tempo-actions">
+            <button id="acid-tempo-to-machine" type="button" disabled>StrudelのBPM → 303＋909</button>
+            <button id="acid-tempo-to-code" type="button" disabled>303＋909のBPM → コード</button>
+          </div>
+          <p class="module-stage-note">BPMはボタンを押した時だけ渡します。右のボタンは303＋909を止め、Strudelのコードを編集します。音・ステップ・時計は同期しません。</p>
+        </section>
         <div id="acid-module-stage" class="module-stage" hidden>
           <div class="module-stage-actions">
             <div><strong>acidBros / 303 × 2 ＋ 909</strong><span>RUNで音を出す。閉じると演奏が止まります。</span></div>
@@ -63,7 +75,7 @@
           </div>
           <p id="acid-module-status" role="status">読み込み前です。</p>
           <iframe id="acid-module-frame" title="acidBros 303と909の演奏画面" allow="autoplay; midi" loading="lazy"></iframe>
-          <p class="module-stage-note">FILEで保存してから閉じてください。保存先はこの端末のブラウザです。Strudelのコード・2デッキとはまだ同期せず、相互に音やパターンは渡しません。</p>
+          <p class="module-stage-note">FILEで保存してから閉じてください。保存先はこの端末のブラウザです。コード・2デッキと音やステップは相互に渡しません。</p>
           <p class="module-stage-note">スマホで操作面が狭い時は「全画面で開く」。303のCUTOFFは明るさ、RESONANCEは「ミョン」、DECAYはうねりの長さ。909は各ドラムの行をタップして打点を置きます。</p>
         </div>
       </section>

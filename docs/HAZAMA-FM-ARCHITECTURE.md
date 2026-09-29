@@ -37,8 +37,11 @@ ownerの明示許可で909のハット・シンバル4 WAV（計438,798 bytes）
 同梱元commit・hash・MIT表示は`third_party/acidbros/UPSTREAM.md`に記録し、
 元アプリのService Worker登録・ズーム抑止・自動MIDI許可要求を外した。上流更新は自動ではない。
 起動は試奏台の明示操作のみ。Strudelを止めてから表示し、閉じるかStrudelのPlayで
-iframeを破棄して停止する。両者の音声clock・パターン・保存形式は未接続。
+iframeを破棄して停止する。両者の音声clock・パターン・保存形式は独立。
 acidBrosの`FILE`保存は同じoriginの別localStorageキーで、Strudel下書きとは独立。
+試奏台からそのFILE一覧を参照し、同じブラウザのパッチをページ内または全画面で再開できる。
+same-origin message bridgeで、選択中StrudelコードのBPMとacidBrosのBPMを明示操作で一回ずつ
+双方向転送する。再生位置・音声・step dataの同期やコード変換は行わない。
 初期の4小節をテストとして残し、aphex1のドラム調整版・高速初稿、
 テクノ2案、自動変奏、Acid 303 / 909のハード版と初稿の計8件を別IDで選択・コード復元できる。
 Acidの909ドラムはStrudel標準の外部バンク、303風ベースはブラウザ合成。

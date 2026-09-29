@@ -69,7 +69,9 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   2026-09-29にacidBros v153を`third_party/acidbros/`へ固定snapshotとして収録し、
   `/?module=acidbros`から303×2・909の16-step演奏を開ける。909用4 WAV（計438,798 bytes）は
   ownerがこの独立試奏台に限ってrepo同梱を明示許可した例外。元のService Worker登録と自動MIDI許可要求は削除。
-  Strudelとは別clock・別保存形式で、切替時に前の演奏を停止。自由配線・音声mix・コード変換は未実装。
+  Strudelとは別clock・別保存形式で、切替時に前の演奏を停止。2026-09-30に同じブラウザの
+  acidBros FILE保存を試奏台に索引化し、保存パッチのページ内/全画面再開と、明示操作の
+  BPM双方向転送を追加。自由配線・音声mix・連続clock同期・コード変換は未実装。
   上流の自動更新はせず、出所・変更点・hashは`third_party/acidbros/UPSTREAM.md`に記録。
   下書き名入力と未保存の切り替え確認はページ内UIで行う。
   閲覧者の名前付き下書きはその端末のブラウザだけに保存。Surface側の編集成果と

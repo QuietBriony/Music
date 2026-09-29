@@ -517,6 +517,8 @@
           <li><time datetime="2026-09-29">2026.09.29</time><h3>303風ベースと909系ドラムを触る</h3><p>同じStrudel試奏台にアシッド・テクノを追加。Play後、コード冒頭の青いつまみで音の明るさ、共鳴、うねりを演奏中に変えられます。909の音はStrudel標準バンクから再生時に読み込みます。この初稿も比較用に残しました。</p><p><a href="https://music-private-live-workbench.pages.dev/?work=acid-303-909-v1">Acid初稿を開く</a> · <a href="https://github.com/QuietBriony/Music/tree/main/experiments/workbench/v1">使い方とコード</a></p></li>
           <li><time datetime="2026-09-29">2026.09.29</time><h3>Acidを硬く、縦フェーダーで演奏</h3><p>共鳴・フィルターのうねり・歪みを強めた版を追加。Play後はコードの上の4本の縦フェーダーで明るさ、みょん感、歪み、長さを触れます。動かした値はコードにも残り、初稿も一覧から戻せます。</p><p><a href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">ハード版を開く</a> · <a href="https://music-private-live-workbench.pages.dev/?work=acid-303-909-v1">初稿を聴き比べる</a></p></li>
           <li><time datetime="2026-09-29">2026.09.29</time><h3>作品別音量と2デッキ</h3><p>8つの試作に音量調整を追加。AとBを一つのテンポで重ね、各音量とクロスフェーダーを演奏中に触れます。調整値と組み合わせコードは端末内に残せます。</p><p><a href="https://music-private-live-workbench.pages.dev/?deck=acid-303-909,techno-dub">Acid × Techno 02を開く</a></p></li>
+          <li><time datetime="2026-09-29">2026.09.29</time><h3>303×2・909のステップ演奏</h3><p>既存試奏台にacidBrosを独立モジュールとして追加。4本の小さな909用WAVも同梱し、FILEで端末内に保存できます。</p><p><a href="https://music-private-live-workbench.pages.dev/?module=acidbros">303＋909を開く</a></p></li>
+          <li><time datetime="2026-09-30">2026.09.30</time><h3>保存パッチとBPMを繋ぐ</h3><p>303＋909のFILE保存を試奏台から選び直せます。スマホではパッチを全画面で開き、StrudelとのBPMはボタン操作で一回ずつ転送。演奏位置や音はまだ同期しません。</p><p><a href="https://music-private-live-workbench.pages.dev/">試奏台のパッチ一覧へ</a> · <a href="https://github.com/QuietBriony/Music/tree/main/experiments/workbench/v1">使い方</a></p></li>
         </ol>
       </details>
       <p class="guide-note">日付は日本時間。GitHubのrepo作成日時・辿れる最初のcommit・機能追加のcommitを根拠にしています。着想した日、録音した日、公開した日は同じとは限りません。作品ごとの日付が不明なものは、再開ノートで「資料の日付」として残します。</p>
@@ -602,7 +604,7 @@
 
     <section id="workbench-plan" aria-labelledby="workbench-title">
       <div class="section-head"><h2 id="workbench-title">コードと303・909で音を触る</h2><p class="section-note">一つの試奏台に二つの演奏面。</p></div>
-      <p class="guide-note">Strudelではaphex1、テクノ2案、Acid 303 / 909、自動変奏、元のテストをコードから演奏。作品別LEVELと2デッキ同期ミックスも使えます。別の「303＋909を開く」では、2台の303と11パートの909を16ステップとつまみで演奏。こちらの909用WAVは小さな4本を同じページへ同梱しています。両演奏面の時計・保存形式はまだ別で、切替時に前の演奏を停止します。各々の端末内保存はできますが、チャットから公開版への即時同期は未実装です。</p>
+      <p class="guide-note">Strudelではaphex1、テクノ2案、Acid 303 / 909、自動変奏、元のテストをコードから演奏。作品別LEVELと2デッキ同期ミックスも使えます。別の「303＋909を開く」では、2台の303と11パートの909を16ステップとつまみで演奏。こちらの909用WAVは小さな4本を同じページへ同梱しています。FILEで保存したパッチは試奏台の一覧から再開でき、BPMはボタンで双方向に一回ずつ渡せます。両演奏面の時計・保存形式は別で、切替時に前の演奏を停止します。チャットから公開版への即時同期は未実装です。</p>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">Acid 303 / 909を触る →</a>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?module=acidbros">303＋909のステップ画面を開く →</a>
       <details class="tool-group"><summary>この先の制作台設計を見る <span>共通session・履歴は未実装</span></summary><div class="parked-plan">
@@ -637,7 +639,7 @@
       <div class="section-head"><h2 id="tools-title">全道具の地図</h2><p class="section-note">用途・最初の一手・残るもの・まだできないこと。</p></div>
       <p class="guide-note">実装あり ≠ 音質・実機・公開まで確認済み。<strong>候補／手動工程／未実装</strong>は分けてあります。</p>
 <!-- stack-tools:begin -->
-<p class="guide-note">ソース照合：2026-09-29。実装確認と、実音・実機の合格は別です。</p>
+<p class="guide-note">ソース照合：2026-09-30。実装確認と、実音・実機の合格は別です。</p>
 <details class="tool-group" data-tool-group="browser">
   <summary>ブラウザで聴く・触る・整理する <span>9項目</span></summary>
   <div class="tool-grid">
@@ -688,11 +690,11 @@
     <article class="tool-item" id="tool-strudel-workbench" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
       <h3>Strudel Live Workbench</h3>
-      <p>公開試作をStrudelコードと2デッキで触り、別モジュールで303×2台・909のステップ演奏もできる試奏台。</p>
+      <p>公開試作をStrudelコードと2デッキで触り、303×2台・909の保存パッチも同じ入口から選べる試奏台。</p>
       <dl>
-        <dt>最初の一手</dt><dd>コードならAcid 303 / 909を選ぶ → Play。つまみなら「この中で開く」→中のRUN。スマホでは全画面で開ける。</dd>
-        <dt>残るもの</dt><dd>Strudelの公開試作8件はGit管理、LEVEL・2デッキ・コード下書きは端末保存。acidBrosのFILE保存は別の端末内領域。</dd>
-        <dt>できることの境界</dt><dd>acidBrosは同梱した独立エンジンで、Strudelとの音・BPM・パターン同期やコード変換は未実装。実iPhone試聴、端末間同期、チャット即時反映も未確認。ページ・コード・WAV計7本は公開。</dd>
+        <dt>最初の一手</dt><dd>コードならAcid 303 / 909を選ぶ → Play。303＋909なら「この中で開く」→RUN→FILEで保存。スマホでは全画面で開ける。</dd>
+        <dt>残るもの</dt><dd>公開試作8件はGit管理、LEVEL・2デッキ・コード下書きは端末保存。acidBrosのFILE保存パッチは試奏台の一覧から再開でき、BPMは明示操作で双方向転送。</dd>
+        <dt>できることの境界</dt><dd>acidBrosは独立エンジン。BPMの一回転送はできるが、音・時計・パターンの同期とコード変換は未実装。実iPhone試聴、端末間同期、チャット即時反映も未確認。ページ・コード・WAV計7本は公開。</dd>
       </dl>
       <a class="mini-link" data-tool-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/">Strudel Live Workbench — 音とコードを触る</a>
     </article>

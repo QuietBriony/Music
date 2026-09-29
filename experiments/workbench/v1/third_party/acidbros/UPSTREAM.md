@@ -8,6 +8,7 @@
 - Omitted: upstream PWA service worker/manifest, screenshots, documentation, and development dependencies.
 - Local `index.html` changes: no service-worker registration, no viewport zoom blocking, no links to omitted screenshots, and `lang=en`.
 - Local `js/ui/UI.js` change: MIDI access is requested from Settings > Refresh rather than on page load.
+- Local `js/main.js` / `js/workbench-bridge.js` change: same-origin, explicit FILE selection and one-shot BPM transfer for the parent workbench; a selected local FILE can also open full-page via `?file=`. This bridge never starts transport or converts patterns.
 - Local whitespace-only cleanup: trailing spaces in `TR909.js`, `UnifiedSynth.js`, and `MidiManager.js`.
 
 The four WAV files total **438,798 bytes**. Their SHA-256 hashes are:
