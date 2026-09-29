@@ -47,6 +47,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : runtime / verify
 - agent    : claude | codex
 - human-gate: no（検証済みは merge。耳の判定は本人委任の測定判定、本人は違和感だけ上書き）
+- status   : wip — codex 2026-09-29
 - source   : 2026-09-23 owner「bandroom のパートごとの AI 完成させたい」
 - detail   : 音色ではなく、各パートが原曲 stem に対して発音タイミング・強弱・音高と和音・構成で忠実になることを
   「完成」とする（2026-07-23 の音色凍結は維持）。正本は `docs/BAND-ROOM-PART-AI-BRIEF.md`。
