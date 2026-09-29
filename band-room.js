@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-236-hazama-pocket-rests";
-  const BANDROOM_RELEASE_VERSION = "v401";
+  const BANDROOM_APP_VERSION = "br-237-tabasco-drum-priority";
+  const BANDROOM_RELEASE_VERSION = "v403";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
@@ -4627,6 +4627,8 @@
       shouldApplySynthDrumVoiceOverrides,
       synthDrumSourceForPrep,
       synthPartActiveOnLight,
+      selectVelocitySlotRows,
+      selectPriorityDrumRows,
       chordRoot,
       normalizedDrumFloorSection,
       migratePrefsForCurrentMix,
@@ -6131,7 +6133,7 @@
     if (!(currentMode === "synth" && aiLayerLightRuntimeEnabled())) return Infinity;
     if (lineKey === "vocal_melody") return 4;
     if (lineKey === "guitar_line") return 4;  // v364: 6->4 — trim the per-bar strum burst on the phone (chord dropped; guitar carries the chug)
-    if (lineKey === "drum_line") return 8;    // v364: 10->8 — fewer one-shot buffer allocs/bar (vel-slot thinning still keeps kick/snare/crash)
+    if (lineKey === "drum_line") return 8;    // phone budget: never exceed 8 drum triggers/bar
     if (lineKey === "bass_line") return 4;    // v364: 6->4 — with the sub dropped, keeps the bass burst low
     return 6;
   }
@@ -6140,6 +6142,11 @@
     if (!Array.isArray(rows) || !rows.length) return [];
     const limit = transcribedLightRowLimit(lineKey);
     if (!Number.isFinite(limit) || rows.length <= limit) return rows;
+    if (lineKey === "drum_line") return selectPriorityDrumRows(rows, limit);
+    return selectVelocitySlotRows(rows, limit);
+  }
+
+  function selectVelocitySlotRows(rows, limit) {
     const slots = Math.max(1, Math.floor(limit));
     const bestBySlot = new Array(slots).fill(null);
     rows.forEach((row) => {
@@ -6156,6 +6163,29 @@
         if (picked.length >= slots) break;
         if (!picked.includes(row)) picked.push(row);
       }
+    }
+    return picked.sort((a, b) => (Number(a[1]) || 0) - (Number(b[1]) || 0));
+  }
+
+  function selectPriorityDrumRows(rows, limit = 8) {
+    if (!Array.isArray(rows) || !rows.length) return [];
+    if (rows.length <= limit) return rows;
+    // Preserve the current velocity/slot groove and every kick/snare it
+    // chose. Only replace a selected hat when a core hit was omitted.
+    // This improves fidelity without trading one backbeat for another or
+    // increasing the iPhone trigger count.
+    const picked = selectVelocitySlotRows(rows, limit).slice();
+    const priority = { 3: 3, 1: 2, 0: 1 }; // crash, snare, kick
+    const missingCore = rows.filter((row) => priority[Number(row[3])] && !picked.includes(row))
+      .sort((a, b) =>
+        priority[Number(b[3])] - priority[Number(a[3])] ||
+        (Number(b[4]) || 0) - (Number(a[4]) || 0)
+      );
+    for (const row of missingCore) {
+      const hats = picked.filter((item) => Number(item[3]) === 2);
+      if (!hats.length) break;
+      const weakestHat = hats.reduce((a, b) => (Number(a[4]) || 0) <= (Number(b[4]) || 0) ? a : b);
+      picked.splice(picked.indexOf(weakestHat), 1, row);
     }
     return picked.sort((a, b) => (Number(a[1]) || 0) - (Number(b[1]) || 0));
   }
@@ -6787,7 +6817,8 @@
         // v106: crash hint on big section entry (chorus / bridge / outro).
         // Fires on beat 0 of the new section so the transition has lift.
         const newSec = state.songData.structure[state.sectionIdx];
-        if (newSec && drumKit && drumKit.crash && (currentMode === "synth") && $("br-toggle-drums").checked) {
+        if (newSec && drumKit && drumKit.crash && (currentMode === "synth") &&
+            $("br-toggle-drums").checked && !hasTranscribedLine("drum_line")) {
           const sn = newSec.section || "";
           const isLift = sn.startsWith("chorus") || sn === "bridge" ||
                          sn.startsWith("outro") || sn === "chant-b";

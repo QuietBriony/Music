@@ -331,6 +331,7 @@
     .intent-card strong { line-height: 1.45; }
     .guide-note { color: var(--muted); font-size: .86rem; line-height: 1.8; }
     .guide-note strong { color: var(--text); }
+    .arcb-launch { border: 1px solid rgba(255, 196, 105, .42); border-left: 4px solid #ffc469; border-radius: 8px; background: rgba(255, 196, 105, .07); padding: 12px 14px; }
     .journey { list-style: none; padding: 0; margin: 16px 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
     .journey li { background: var(--panel-strong); padding: 16px 14px; border-bottom: 2px solid var(--line); }
     .journey b, .journey span { display: block; }
@@ -439,6 +440,7 @@
       <nav class="top-actions" aria-label="Primary pages">
         <a href="#return-here">続きから</a>
         <a href="#collection-map">全体を把握</a>
+        <a href="#play-by-style">ジャンル・フォルダ</a>
         <a href="#yearbook">年鑑・索引</a>
         <a href="#recorded-works">前の音を聴く</a>
         <a href="#start-here">今すぐ遊ぶ</a>
@@ -451,6 +453,9 @@
         <h2 id="return-title">続きは、ここから。</h2>
         <p class="section-note">このページをブックマークしておくと、次もここへ戻れます。</p>
       </div>
+      <p class="guide-note arcb-launch"><strong>いま優先するARCB / Tabascoのバンド練習：</strong><br>
+        <a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">🥁 Human Flyの原音ドラムから聴く →</a>
+        <a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth">AIドラム再現と比べる →</a></p>
       <div class="return-grid">
         <a class="card return-card" href="#collection-map"><div><p class="intent-no">01 / MAP</p><strong>何があるか、把握する</strong><span>作品・道具・実験・映像。<br>別々に作ったものの関係を見る。</span></div><div class="meta"><b>4つのまとまりへ →</b></div></a>
         <a class="card return-card amber" href="#recorded-works"><div><p class="intent-no">02 / REVISIT</p><strong>前に作った音を聴く</strong><span>既存のデモや比較を開く。<br>好きだった区間を思い出す。</span></div><div class="meta"><b>試聴の棚へ →</b></div></a>
@@ -471,10 +476,26 @@
         同じ曲の試聴版・別テイク・再編集版は、作品のつながりとして辿ります。</p>
     </section>
 
+    <section id="play-by-style" aria-labelledby="play-by-style-title">
+      <div class="section-head"><h2 id="play-by-style-title">ジャンル・フォルダから使う</h2><p class="section-note">既存の道具と曲に直接入る。</p></div>
+      <details class="tool-group" open>
+        <summary>音・目的から選ぶ <span>ARCB / Tabascoを先頭に</span></summary>
+        <div class="collection-links">
+          <article><h3>バンド / ロック — Music → ARCB / Tabasco Band Room</h3><p>7曲の原音stemsとAI演奏を切替。まずHuman Flyでドラムの原音と再現を比べる。原音のドラムだけ聴くなら「all off → drums ON」、自分で叩くなら「all on → drums OFF」。</p><a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">Human Fly 原音 →</a><a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth">Human Fly AI再現 →</a><a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/BAND-ROOM-MANUAL.md">バンド練習の操作 →</a></article>
+          <article><h3>テクノ / アシッド — Music → Strudel試奏台</h3><p>コードを選び、再生中にフェーダーで303風ベースと909系ドラムを変える。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">Acid 303 / 909 →</a></article>
+          <article><h3>IDM / 実験 — namima・Music</h3><p>namimaの録音比較と、aphex1の編集できるパターンを行き来する。</p><a class="mini-link" href="https://quietbriony.github.io/tabasco-acestep-demos/idm-preview/">namimaの録音 →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=aphex1">aphex1試奏 →</a></article>
+          <article><h3>アンビエント / 静けさ — chill・Music</h3><p>ピアノと余白から始める。流して聴く時はHazama FM。</p><a class="mini-link" href="https://quietbriony.github.io/chill/session.html">Chill Session →</a><a class="mini-link" href="fm.html?g=ambient">Hazama FM ambient →</a></article>
+          <article><h3>ビート / グルーヴ — drum-floor</h3><p>リズムの探索。バンド曲の原音・AI再現は上のBand Roomへ。</p><a class="mini-link" href="https://quietbriony.github.io/drum-floor/">Drum Floor →</a></article>
+          <article><h3>言葉 / 段取り — Music・openclaw</h3><p>曲の意図はLyric Lab、作業の順番はOpenClaw Desk。</p><a class="mini-link" href="lyric-lab.html">Lyric Lab →</a><a class="mini-link" href="https://quietbriony.github.io/openclaw/">OpenClaw Desk →</a></article>
+        </div>
+      </details>
+    </section>
+
     <section id="yearbook" aria-labelledby="yearbook-title">
       <div class="section-head"><h2 id="yearbook-title">いつ作った？ 名前から探す。</h2><p class="section-note">記録を辿る年鑑 · 2026-09-28確認</p></div>
       <p class="guide-note">道具の始まりと、その後の実験を時系列で。<strong>個別作品の制作日・版・担当PC・素材の保存先</strong>は、同じ再開ノートの年鑑にまとめています。</p>
       <nav class="index-links" aria-label="名前から探す索引">
+        <a class="mini-link" href="#play-by-style">ARCB・ロック・テクノ・IDM・アンビエント</a>
         <a class="mini-link" href="#tool-map">Music・chill・drum-floor・namima・openclaw</a>
         <a class="mini-link" href="#recorded-works">Tabasco・IDM・周波数の録音</a>
         <a class="mini-link" href="#sound-experiments">Listening Loop・Hazamaの音実験</a>
@@ -570,8 +591,9 @@
       <div class="intent-grid">
         <a class="card intent-card blue" href="index.html"><div><p class="intent-no">01 / PLAY</p><strong>アシッド・質感を触る</strong><span>Core RigでCULTのACIDへ。<br>密度・余白・低域を一つずつ。</span></div><div class="meta"><b>Music Core Rig →</b></div></a>
         <a class="card intent-card green" href="https://quietbriony.github.io/chill/session.html"><div><p class="intent-no">02 / SPACE</p><strong>静けさ・溶け方を聴く</strong><span>ピアノと長い休符。<br>音を足す前に、余白を知る。</span></div><div class="meta"><b>Chill Session →</b></div></a>
-        <a class="card intent-card amber" data-listen-target="hazama" href="band-room.html?band=hazama"><div><p class="intent-no">03 / COMPARE</p><strong>曲で遊ぶ・聴き比べる</strong><span>原音とブラウザAI再現。<br>パートを消す・差し替える。</span></div><div class="meta"><b>HAZAMA Band Room →</b></div></a>
-        <a class="card intent-card rose" data-listen-target="lyric-lab" href="lyric-lab.html"><div><p class="intent-no">04 / WRITE</p><strong>言葉・曲の意図を残す</strong><span>作品棚と制作パケット。<br>ACE-Step等へは人が渡す。</span></div><div class="meta"><b>Lyric Lab →</b></div></a>
+        <a class="card intent-card amber" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems"><div><p class="intent-no">03 / BAND</p><strong>ARCBのドラムから練習</strong><span>Human Flyの原音を基準に、<br>AI再現とパートを比較する。</span></div><div class="meta"><b>Tabasco Band Room →</b></div></a>
+        <a class="card intent-card amber" data-listen-target="hazama" href="band-room.html?band=hazama"><div><p class="intent-no">04 / COMPARE</p><strong>HAZAMAを聴き比べる</strong><span>原音とブラウザAI再現。<br>パートを消す・差し替える。</span></div><div class="meta"><b>HAZAMA Band Room →</b></div></a>
+        <a class="card intent-card rose" data-listen-target="lyric-lab" href="lyric-lab.html"><div><p class="intent-no">05 / WRITE</p><strong>言葉・曲の意図を残す</strong><span>作品棚と制作パケット。<br>ACE-Step等へは人が渡す。</span></div><div class="meta"><b>Lyric Lab →</b></div></a>
       </div>
       <p class="guide-note">流しっぱなしなら <a class="mini-link" href="fm.html">Hazama FM</a>。
         どのアプリも音を出すのは手動STARTから。この入口自体は音・MIDI・モデルを起動しません。</p>
@@ -613,7 +635,7 @@
       <div class="section-head"><h2 id="tools-title">全道具の地図</h2><p class="section-note">用途・最初の一手・残るもの・まだできないこと。</p></div>
       <p class="guide-note">実装あり ≠ 音質・実機・公開まで確認済み。<strong>候補／手動工程／未実装</strong>は分けてあります。</p>
 <!-- stack-tools:begin -->
-<p class="guide-note">ソース照合：2026-09-28。実装確認と、実音・実機の合格は別です。</p>
+<p class="guide-note">ソース照合：2026-09-29。実装確認と、実音・実機の合格は別です。</p>
 <details class="tool-group" data-tool-group="browser">
   <summary>ブラウザで聴く・触る・整理する <span>9項目</span></summary>
   <div class="tool-grid">
@@ -641,14 +663,14 @@
     </article>
     <article class="tool-item" id="tool-band-room" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
-      <h3>Band Room / HAZAMA</h3>
+      <h3>Band Room / ARCB・Tabasco</h3>
       <p>原音のパート別音声とブラウザAI再現を聴き比べ、練習・差し替え・録音する。</p>
       <dl>
-        <dt>最初の一手</dt><dd>HAZAMA 01の原音でSTART → AI再現と比較。Tabasco等の通常Band Roomにも切り替えられる。</dd>
+        <dt>最初の一手</dt><dd>Human Fly原音でSTART → all off → drums ON。AI再現と比較し、自分で叩く時は原音のall on → drums OFF。</dd>
         <dt>残るもの</dt><dd>mix REC／4 stems pack／listening note。MIDI読込は先頭1小節のドラム用。</dd>
-        <dt>できることの境界</dt><dd>HAZAMA v401の音質・実mobileはBL-041で判定待ち。02 AIは01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作で、一般的な鍵盤・CC learnではない。</dd>
+        <dt>できることの境界</dt><dd>TabascoのAIドラムは軽量再生8打/小節で、原音どおりのhatやfillは未完成。HAZAMA v401の音質・実mobileはBL-041で判定待ち。02 AIは01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作で、一般的な鍵盤・CC learnではない。</dd>
       </dl>
-      <a class="mini-link" data-tool-entry="band-room" href="band-room.html?band=hazama">Band Room / HAZAMA — 開く</a>
+      <a class="mini-link" data-tool-entry="band-room" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">Band Room / ARCB・Tabasco — 開く</a>
     </article>
     <article class="tool-item" id="tool-lyric-lab" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
@@ -805,9 +827,9 @@
       <div class="section-head"><h2 id="first-session-title">最初の15分 — 一つのネタを、開き直せるところまで</h2></div>
       <div class="pass-grid">
         <div class="pass-panel learning-panel">
-          <h3>今日はCore Rigひとつで</h3>
-          <ol><li>START → AUTO MIXを手動 → CULTのACIDを選ぶ。</li><li>つまみを一つだけ動かして戻す。低域・音数・空間、何が変わった？</li><li>60–90秒聴き、「残す1点／削る1点」をメモ。</li><li>設定を残すならSYNC。音を残すならREC。保存形式はブラウザごとに確認。</li></ol>
-          <p class="guide-note">「もっと生成」より先に、同じネタをもう一度開けることを目標に。</p>
+          <h3>今日はARCB / Human Flyのドラムから</h3>
+          <ol><li>原音でSTART → all off → drums ON。30秒、キックとスネアの位置を聴く。</li><li>STOPしてAI再現に切替 → START。同じsectionのドラムを比べ、足りない打点を一つメモ。</li><li>原音へ戻し、all on → drums OFFで自分のドラムを重ねる。</li><li>残す点と違和感をlistening noteに書き、曲名・区間つきでコピーする。</li></ol>
+          <p class="guide-note">原音stemsは比較の基準。AI再現は練習用に育てている途中です。</p>
         </div>
         <div class="pass-panel">
           <h3>この先の道筋</h3>
@@ -936,9 +958,18 @@
     <section aria-labelledby="core-title">
       <div class="section-head">
         <h2 id="core-title">Current play surfaces</h2>
-        <p class="section-note">HAZAMAから聴き、Lyric Labへ制作判断を渡す。</p>
+        <p class="section-note">いまはARCB / Tabascoのドラムを優先。HAZAMAの試聴ゲートも残す。</p>
       </div>
       <div class="grid">
+        <a class="card amber wide" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">
+          <div>
+            <strong>ARCB / Tabasco — Human Flyのドラム</strong>
+            <span>原音4 stemsを基準に、AI再現の打点と強弱を比較。7曲はBand Room上部の曲選択で切替。</span>
+            <span class="listen-cue"><b>最初の一手:</b> 原音でSTART → all off → drums ON。次にAI再現へ切り替え、同じ区間を聴く。</span>
+            <span class="known-issue"><b>再現の現在地:</b> 軽量再生は8打／小節の上限を維持し、スネア・クラッシュ・キックを優先。ハイハットの採譜不足と原音との差は測定継続中。</span>
+          </div>
+          <div class="meta"><b>Band Room</b><span>drums first</span></div>
+        </a>
         <a class="card green wide" data-listen-target="hazama" href="band-room.html?band=hazama">
           <div>
             <strong>HAZAMA Band Room — Still Moving</strong>

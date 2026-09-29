@@ -70,7 +70,7 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   手順と制約は同ディレクトリの`README.md`。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の26件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v402`。Band Room runtime markerは`band-room.js?v=br-236` /
+- 現行cacheは`hazama-fm-v403`。Band Room runtime markerは`band-room.js?v=br-237` /
   `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ

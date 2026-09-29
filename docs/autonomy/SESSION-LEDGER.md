@@ -19,6 +19,24 @@
 
 ---
 
+## 2026-09-29 — ARCB / Tabascoのドラム再現をHuman Flyから測定・改善 (v403)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 既存Band Roomをバンド練習に使いやすくし、ドラム再現の原音差を測って減らす
+- repos      : Music（Listen / Band Room / dev-only測定と資料。sister repoは変更なし）
+- implemented: Listenにジャンル・フォルダ別の既存入口とARCB先頭の導線を追加。
+  Human Fly原音drums solo→AI再現→ドラム抜き伴奏の操作をHTMLとマニュアルへ記載。
+  7曲のドラムstemと採譜行をCPU-onlyで比較する探索的ハーネスを追加。6曲にdrum_line、
+  `tabasco`はframe fallback。Human Flyは独立検出器の時刻差約27msが残り、最終忠実度は未判定。
+  AI lightの8打/小節を守り、既に選ばれたkick/snare/crashを減らさずhatと交換する修正と、
+  採譜済み曲のsection crash重複防止を追加。原音stem、kit音色、GPU、modelは不変。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（最終gate）
+- backlog    : BL-050継続。ドラムの探索baselineと軽量再生の小修正を実施
+- next       : BL-050 — 実スケジューラーdump、検出器の時刻較正、hat同時打ちとframe fallbackの測定
+- blockers   : ±30msの絶対F1は検出器間の系統差で未確定。実iPhoneの長時間負荷・本人の出音評価は未実施
+
+---
+
 ## 2026-09-29 — Acid 303 / 909を硬くし、縦フェーダーで演奏
 
 - agent      : Codex（Remote対話、単一thread）

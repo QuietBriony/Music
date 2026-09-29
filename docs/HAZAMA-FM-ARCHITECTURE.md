@@ -10,9 +10,9 @@
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v402`, `engine.js?v=fm-118`,
+> Current cache / asset tuple: `hazama-fm-v403`, `engine.js?v=fm-118`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-80`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-236`, `band-room.css?v=br-90`。
+> `band-room.js?v=br-237`, `band-room.css?v=br-90`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:
@@ -79,7 +79,7 @@ BL-048で本人の音質・実mobile gateを保持。BL-041の昇格判定とは
 `config/music-stack-tools.json`をbuild-timeにHTMLと`docs/MUSIC-STACK-SYSTEM-MANUAL.md`へ描画。
 browser JS・外部依存・音声・自動MIDIを追加せず、単独の管理アプリも増やさない。
 `check-music-stack-guide.mjs`が表示一致・入口・source path・境界・負例を検査する。
-共有cacheだけv402へ更新し、Band Roomの音質candidateはv401 / BL-041のまま。
+共有cacheはv403。Tabascoドラムの軽量再生選択を更新し、HAZAMAの音質candidateはv401 / BL-041のまま。
 
 ## 1. リポ構成（Music + 4 active sibling roles）
 
