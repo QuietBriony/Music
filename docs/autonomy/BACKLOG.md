@@ -298,6 +298,9 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   スマホ・PCの共通sessionと本人の聴感評価は引き続き未完了。
   同日追記: Acidをより硬い共鳴・フィルター変化・歪みへ調整し、画面に4本の縦フェーダーを追加。
   操作値はコードに残り、初稿は別IDで比較可能。本人の耳によるハード版の最終調整は未完了。
+  同日追記: 公開8試作ごとのLEVELと端末内設定、A/B選択・音量・crossfadeを持つ2デッキ同期ミックスを
+  同じStrudel試奏台へ追加。BはAのテンポへ同期し、組み合わせコードは既存下書きへ保存可能。
+  自動ラウドネス補正・独立transport・実iPhoneの負荷と聴感評価は未完了。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2

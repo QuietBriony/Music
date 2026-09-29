@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-09-29 — Strudel試奏台に作品別LEVELと2デッキ同期ミックス (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 試作ごとの音量差を手で合わせ、既存の曲をA/Bデッキで組み合わせて遊ぶ
+- repos      : Music（独立Cloudflare試奏台とListenの入口。sister repo不変）
+- implemented: 公開8試作のLEVEL 0–100%を端末へID別保存。2試作のA/B trimとcrossfadeを
+  Strudelの単一clockに合成し、BをAのテンポへ同期。コード内sliderへ反映し、既存の名前付き下書きで
+  組み合わせを復元可能。スマホ幅では2デッキ入口を先頭へ置く。旧標準下書きにLEVELを補う。
+  390pxブラウザで操作とコード値を照合。ローカルサーバーではKV音声APIが無く、同時出音は本番と実iPhoneでの確認待ち。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（実装・案内文更新後の全体gate）
+- backlog    : BL-049継続。共通sessionと原本比較は別の未完了範囲
+- next       : BL-049 — 本人が2試作のLEVELと中央mixをiPhoneで試聴し、好みの組み合わせを下書き保存。
+  その後は共通session / 比較・undoを優先
+- blockers   : 自動ラウドネス測定ではなく本人の耳による調整。端末間同期なし。異なるBPMを独立して保つDJデッキではない
+
+---
+
 ## 2026-09-29 — ARCB / Tabascoのドラム再現をHuman Flyから測定・改善 (v403)
 
 - agent      : Codex（Remote対話、単一thread）

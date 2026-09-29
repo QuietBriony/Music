@@ -25,6 +25,22 @@
       <section class="intro" aria-label="使い方">
         <span>試作を選ぶ → Playで聴く → 再生中は別の試作を選ぶだけで切り替え</span>
         <span>Acid 303 / 909はPlay後、縦フェーダーで音を変える</span>
+        <span>作品ごとの音量を合わせ、2デッキで重ねられます</span>
+      </section>
+
+      <section class="deck-setup" aria-labelledby="deck-title">
+        <div>
+          <p class="eyebrow">TWO DECKS / ONE CLOCK</p>
+          <h2 id="deck-title">2つの試作を組み合わせる</h2>
+          <p>公開試作からAとBを選びます。BはAのテンポに同期し、フェーダーで演奏中に混ぜられます。</p>
+        </div>
+        <div class="deck-pickers">
+          <label>デッキA・テンポの基準 <select id="deck-a-select" aria-label="デッキAの試作"></select></label>
+          <label>デッキB・重ねる音 <select id="deck-b-select" aria-label="デッキBの試作"></select></label>
+          <button id="deck-swap" type="button" disabled>A ⇄ B</button>
+          <button id="deck-open" type="button" disabled>組み合わせを開く</button>
+        </div>
+        <p id="deck-info" class="deck-info">組み合わせを開いてPlay。各音量と横フェーダーを動かしてみてください。</p>
       </section>
 
       <section class="library" aria-labelledby="library-title">
@@ -66,6 +82,19 @@
           </div>
         </form>
         <p id="status" role="status">試作一覧を読み込み中…</p>
+        <section id="single-level-panel" class="mix-panel" aria-label="作品の音量" hidden>
+          <div class="mix-panel-heading"><h3>この試作の音量</h3><p>0で消音、100%で元の音量。調整値はこの端末に作品ごとに残ります。</p></div>
+          <label class="mix-fader" for="single-level"><span>LEVEL</span><input id="single-level" type="range" min="0" max="1" step="0.01" value="1" aria-label="この試作の音量"><output id="single-level-output" for="single-level">100%</output></label>
+        </section>
+        <section id="deck-faders" class="mix-panel" aria-label="2デッキの音量とクロスフェーダー" hidden>
+          <div class="mix-panel-heading"><h3>2デッキ・ミキサー</h3><p>Play後もそのまま動かせます。値はコードとこの端末の組み合わせ設定に残ります。</p></div>
+          <div class="deck-fader-grid">
+            <label class="mix-fader"><span>A 音量</span><input data-deck-fader="a" type="range" min="0" max="1" step="0.01" value="0.65" aria-label="デッキAの音量"><output>65%</output></label>
+            <label class="mix-fader"><span>CROSSFADE</span><input data-deck-fader="cross" type="range" min="0" max="1" step="0.01" value="0.5" aria-label="AとBのクロスフェーダー"><output>50%</output></label>
+            <label class="mix-fader"><span>B 音量</span><input data-deck-fader="b" type="range" min="0" max="1" step="0.01" value="0.65" aria-label="デッキBの音量"><output>65%</output></label>
+          </div>
+          <p class="deck-info">CROSSFADEは左端でAだけ、右端でBだけ、中央で両方。音が重なる中央ではA/B音量を下げて使います。</p>
+        </section>
         <section id="acid-faders" class="acid-faders" aria-label="Acid 303 / 909 フェーダー" hidden>
           <div class="acid-faders-heading">
             <div>
@@ -127,6 +156,7 @@
         <p>スマホは音声再生のため、最初に Play を押してください。画面を離れると再生が止まることがあります。</p>
         <p>公開試作のコードと3本の音源は誰でも取得できます。ここで編集した内容は自動では公開されません。「この端末に保存」は同じブラウザだけの下書きです。</p>
         <p>公開試作が増えたらページを再読込してください。再生中に一覧から別の試作を選ぶと演奏を切り替えます。チャットの指示を自動で受け取る機能はまだありません。</p>
+        <p>2デッキは一つのStrudel演奏にコードをまとめて同期再生します。独立した2台のプレーヤーではありません。「この端末に保存」で組み合わせのコードを下書きに残せます。</p>
         <p>Acid 303 / 909のドラムはStrudel標準の外部音源バンクを使います。初回の音読み込みには少し時間がかかることがあります。</p>
         <a href="https://github.com/QuietBriony/Music/tree/main/experiments/workbench/v1" target="_blank" rel="noreferrer">このアプリのソースと手順 ↗</a>
       </footer>

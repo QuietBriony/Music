@@ -1,3 +1,9 @@
+import {
+  clampLevel, comparableCode, deckMixCode, managedSliderValue,
+  replaceManagedSliderValue, singleWorkCode, upgradeLegacyDraftCode, SINGLE_LEVEL,
+  DECK_A_LEVEL, DECK_B_LEVEL, DECK_XFADE,
+} from './mix-code.js';
+
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
 const publishedList = document.querySelector('#published-list');
@@ -19,17 +25,22 @@ const stopButton = document.querySelector('#stop');
 const acidFaderPanel = document.querySelector('#acid-faders');
 const acidFaderHelp = document.querySelector('#acid-faders-help');
 const acidFaders = [...acidFaderPanel.querySelectorAll('[data-acid-fader]')];
+const singleLevelPanel = document.querySelector('#single-level-panel');
+const singleLevelFader = document.querySelector('#single-level');
+const singleLevelOutput = document.querySelector('#single-level-output');
+const deckASelect = document.querySelector('#deck-a-select');
+const deckBSelect = document.querySelector('#deck-b-select');
+const deckOpenButton = document.querySelector('#deck-open');
+const deckSwapButton = document.querySelector('#deck-swap');
+const deckInfo = document.querySelector('#deck-info');
+const deckFadersPanel = document.querySelector('#deck-faders');
+const deckFaders = [...deckFadersPanel.querySelectorAll('[data-deck-fader]')];
 const ACID_FADER_KEYS = ['CUTOFF', 'RESONANCE', 'DRIVE', 'DECAY'];
 
 const DRAFT_KEY = 'music-workbench-drafts-v1';
+const LEVEL_KEY = 'music-workbench-levels-v1';
+const DECK_KEY = 'music-workbench-decks-v1';
 const MAX_CODE_LENGTH = 100_000;
-const samplePrelude = [
-  'samples({',
-  "  pad: '/api/sounds/pad',",
-  "  sub: '/api/sounds/sub',",
-  "  drums: '/api/sounds/drums',",
-  '});',
-].join('\n');
 
 let catalog;
 let activeEditor;
@@ -41,7 +52,7 @@ let playbackToken = 0;
 let faderSyncQueued = false;
 
 function acidSliderDeclarations(code) {
-  if (!code.includes('ACID_FADER_BANK_V1') || (code.match(/\bslider\s*\(/g) || []).length !== 4) return null;
+  if (code.includes('DECK_MIX_V1') || !code.includes('ACID_FADER_BANK_V1')) return null;
   const declarations = ACID_FADER_KEYS.map((key) => {
     const expression = new RegExp('\\bconst\\s+' + key + '\\s*=\\s*slider\\(\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*\\)');
     const match = expression.exec(code);
@@ -59,7 +70,8 @@ function syncAcidFaders() {
   const declarations = acidSliderDeclarations(currentCode());
   acidFaderPanel.hidden = !declarations;
   if (!declarations) return;
-  const ready = wantsPlayback && inlineSliders().length === ACID_FADER_KEYS.length;
+  const offset = managedSliderValue(currentCode(), SINGLE_LEVEL) === null ? 0 : 1;
+  const ready = wantsPlayback && inlineSliders().length >= offset + ACID_FADER_KEYS.length;
   acidFaderHelp.textContent = ready
     ? '演奏中。フェーダーを動かすと次の音から変わり、値はコードに残ります。'
     : 'Play後にフェーダーが有効になります。値はコードにも残ります。';
@@ -76,37 +88,151 @@ function syncAcidFaders() {
   });
 }
 
-function queueAcidFaderSync() {
+function queueControlSync() {
   if (faderSyncQueued) return;
   faderSyncQueued = true;
   requestAnimationFrame(() => {
     faderSyncQueued = false;
     syncAcidFaders();
+    syncMixFaders();
   });
 }
 
 acidFaders.forEach((fader, index) => {
   fader.addEventListener('input', () => {
     if (!wantsPlayback || !acidSliderDeclarations(currentCode())) return;
-    const sliders = inlineSliders();
-    if (sliders.length !== ACID_FADER_KEYS.length) return;
-    sliders[index].value = fader.value;
-    sliders[index].dispatchEvent(new Event('input', { bubbles: true }));
-    queueAcidFaderSync();
+    const offset = managedSliderValue(currentCode(), SINGLE_LEVEL) === null ? 0 : 1;
+    const slider = inlineSliders()[offset + index];
+    if (!slider) return;
+    slider.value = fader.value;
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+    queueControlSync();
   });
 });
-editorHost.addEventListener('input', queueAcidFaderSync);
-
-function fullCode(pattern) {
-  return samplePrelude + '\n\n' + pattern.replace(/\r\n?/g, '\n').trim() + '\n';
-}
 
 function currentCode() {
   return activeEditor?.editor?.code || '';
 }
 
+function readStoredMap(key) {
+  try {
+    const value = JSON.parse(window.localStorage.getItem(key) || '{}');
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeStoredMap(key, value) {
+  try { window.localStorage.setItem(key, JSON.stringify(value)); } catch { /* still playable without storage */ }
+}
+
+function workLevelKey(selection) {
+  return selection?.kind === 'published' || selection?.kind === 'draft'
+    ? selection.kind + ':' + selection.id : null;
+}
+
+function savedWorkLevel(selection, fallback = 1) {
+  const key = workLevelKey(selection);
+  const saved = key && readStoredMap(LEVEL_KEY)[key];
+  return saved === undefined ? fallback : clampLevel(saved);
+}
+
+function deckPairFromCode(code) {
+  const match = /^\/\/ DECK_MIX_V1 ([a-z0-9-]+) \+ ([a-z0-9-]+)/m.exec(code);
+  return match && { a: match[1], b: match[2] };
+}
+
+function savedDeckSettings(a, b) {
+  const value = readStoredMap(DECK_KEY)[a + '|' + b];
+  if (value && typeof value === 'object') {
+    return { a: clampLevel(value.a), b: clampLevel(value.b), cross: clampLevel(value.cross) };
+  }
+  return {
+    a: clampLevel(savedWorkLevel({ kind: 'published', id: a }) * 0.65),
+    b: clampLevel(savedWorkLevel({ kind: 'published', id: b }) * 0.65),
+    cross: 0.5,
+  };
+}
+
+function persistManagedSettings() {
+  const code = currentCode();
+  const single = managedSliderValue(code, SINGLE_LEVEL);
+  const workKey = workLevelKey(activeSelection);
+  if (single !== null && workKey) {
+    const map = readStoredMap(LEVEL_KEY);
+    map[workKey] = single;
+    writeStoredMap(LEVEL_KEY, map);
+  }
+  const pair = deckPairFromCode(code);
+  if (pair) {
+    const a = managedSliderValue(code, DECK_A_LEVEL);
+    const b = managedSliderValue(code, DECK_B_LEVEL);
+    const cross = managedSliderValue(code, DECK_XFADE);
+    if (a !== null && b !== null && cross !== null) {
+      const map = readStoredMap(DECK_KEY);
+      map[pair.a + '|' + pair.b] = { a, b, cross };
+      writeStoredMap(DECK_KEY, map);
+    }
+  }
+}
+
+function syncMixFaders() {
+  const code = currentCode();
+  const single = managedSliderValue(code, SINGLE_LEVEL);
+  const isDeck = Boolean(deckPairFromCode(code));
+  singleLevelPanel.hidden = isDeck || single === null;
+  deckFadersPanel.hidden = !isDeck;
+  if (single !== null && !isDeck) {
+    singleLevelFader.value = single;
+    singleLevelOutput.textContent = Math.round(single * 100) + '%';
+    singleLevelFader.disabled = busy || (wantsPlayback && !inlineSliders()[0]);
+  }
+  if (isDeck) {
+    const names = { a: DECK_A_LEVEL, b: DECK_B_LEVEL, cross: DECK_XFADE };
+    const indices = { a: 0, b: 1, cross: 2 };
+    for (const fader of deckFaders) {
+      const key = fader.dataset.deckFader;
+      const value = managedSliderValue(code, names[key]);
+      fader.disabled = value === null || busy || (wantsPlayback && !inlineSliders()[indices[key]]);
+      if (value !== null) {
+        fader.value = value;
+        fader.closest('label').querySelector('output').textContent = Math.round(value * 100) + '%';
+      }
+    }
+  }
+}
+
+function applyManagedFader(name, value, sliderIndex) {
+  if (!activeEditor?.editor || managedSliderValue(currentCode(), name) === null) return;
+  if (wantsPlayback) {
+    const slider = inlineSliders()[sliderIndex];
+    if (!slider) return;
+    slider.value = String(value);
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+  } else {
+    activeEditor.editor.setCode(replaceManagedSliderValue(currentCode(), name, value));
+  }
+  requestAnimationFrame(() => {
+    persistManagedSettings();
+    queueControlSync();
+  });
+}
+
+singleLevelFader.addEventListener('input', () => applyManagedFader(SINGLE_LEVEL, singleLevelFader.value, 0));
+const deckNameByFader = { a: DECK_A_LEVEL, b: DECK_B_LEVEL, cross: DECK_XFADE };
+const deckIndexByFader = { a: 0, b: 1, cross: 2 };
+deckFaders.forEach((fader) => fader.addEventListener('input', () => {
+  const key = fader.dataset.deckFader;
+  applyManagedFader(deckNameByFader[key], fader.value, deckIndexByFader[key]);
+}));
+editorHost.addEventListener('input', () => {
+  queueControlSync();
+  requestAnimationFrame(persistManagedSettings);
+});
+
 function hasUnsavedChanges() {
-  return Boolean(activeSelection && currentCode() !== loadedCode);
+  return Boolean(activeSelection && comparableCode(currentCode()) !== comparableCode(loadedCode));
 }
 
 function askConfirmation(message, acceptLabel) {
@@ -142,7 +268,7 @@ function setEditorCode(code) {
   stopButton.disabled = false;
   saveButton.disabled = false;
   reloadButton.disabled = false;
-  queueAcidFaderSync();
+  queueControlSync();
 }
 
 async function evaluateCurrent(message) {
@@ -155,12 +281,12 @@ async function evaluateCurrent(message) {
     }
     wantsPlayback = true;
     status.textContent = message;
-    queueAcidFaderSync();
+    queueControlSync();
   } catch (error) {
     if (token !== playbackToken) return;
     wantsPlayback = false;
     activeEditor.editor.stop();
-    queueAcidFaderSync();
+    queueControlSync();
     throw error;
   }
 }
@@ -182,8 +308,16 @@ function setCurrentSelection(selection) {
 
 function setWorkUrl(id) {
   const url = new URL(window.location.href);
+  url.searchParams.delete('deck');
   if (id) url.searchParams.set('work', id);
   else url.searchParams.delete('work');
+  window.history.replaceState(null, '', url);
+}
+
+function setDeckUrl(a, b) {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('work');
+  url.searchParams.set('deck', a + ',' + b);
   window.history.replaceState(null, '', url);
 }
 
@@ -199,10 +333,14 @@ async function openPublished(item) {
     const pattern = await response.text();
     if (!pattern.trim()) throw new Error('保存済みのコードが空です');
     await customElements.whenDefined('strudel-editor');
-    setEditorCode(fullCode(pattern));
+    setEditorCode(singleWorkCode(pattern, savedWorkLevel({ kind: 'published', id: item.id })));
     setCurrentSelection({
       kind: 'published', id: item.id, label: item.title, detail: item.label,
     });
+    deckASelect.value = item.id;
+    if (deckBSelect.value === item.id) {
+      deckBSelect.value = catalog.items.find((candidate) => candidate.id !== item.id)?.id || '';
+    }
     setWorkUrl(item.id);
     const acidHint = item.id === 'acid-303-909'
       ? ' Play後に縦フェーダーで音を変えられます。'
@@ -216,6 +354,47 @@ async function openPublished(item) {
     status.textContent = error.message || '読み込みに失敗しました';
   } finally {
     busy = false;
+    queueControlSync();
+  }
+}
+
+async function openDeck(aId = deckASelect.value, bId = deckBSelect.value) {
+  if (busy) return;
+  busy = true;
+  try {
+    if (!await mayReplaceCode()) return;
+    const a = catalog.items.find((item) => item.id === aId);
+    const b = catalog.items.find((item) => item.id === bId);
+    if (!a || !b) throw new Error('デッキの試作が見つかりません');
+    if (a.id === b.id) throw new Error('AとBには別の試作を選んでください');
+    status.textContent = '2つの試作を読み込み中…';
+    const [aResponse, bResponse] = await Promise.all([
+      fetch(a.path, { cache: 'no-store' }), fetch(b.path, { cache: 'no-store' }),
+    ]);
+    if (!aResponse.ok || !bResponse.ok) throw new Error('デッキのコードを取得できません');
+    const [aSource, bSource] = await Promise.all([aResponse.text(), bResponse.text()]);
+    await customElements.whenDefined('strudel-editor');
+    const code = deckMixCode(
+      { id: a.id, source: aSource }, { id: b.id, source: bSource }, savedDeckSettings(a.id, b.id),
+    );
+    setEditorCode(code);
+    setCurrentSelection({ kind: 'deck', id: a.id + '+' + b.id,
+      label: a.title + ' × ' + b.title, detail: '2デッキ同期ミックス' });
+    deckASelect.value = a.id;
+    deckBSelect.value = b.id;
+    deckInfo.textContent = 'Aの' + (Number(aSource.match(/^setcpm\((\d+(?:\.\d+)?)\)/m)?.[1]) * 4)
+      + ' BPMにBを同期。A/B音量と横フェーダーで混ぜます。';
+    setDeckUrl(a.id, b.id);
+    if (wantsPlayback) {
+      await evaluateCurrent('再生中。' + a.title + ' × ' + b.title + ' を混ぜています。');
+    } else {
+      status.textContent = '2デッキを開きました。Playで一緒に再生します。';
+    }
+  } catch (error) {
+    status.textContent = error.message || 'デッキを開けませんでした';
+  } finally {
+    busy = false;
+    queueControlSync();
   }
 }
 
@@ -253,9 +432,30 @@ function renderPublished() {
       makeElement('strong', '', item.title),
       makeElement('span', 'card-description', item.description),
     );
-    button.addEventListener('click', () => openPublished(item));
+    button.addEventListener('click', async () => {
+      await openPublished(item);
+      if (activeSelection?.kind === 'published' && activeSelection.id === item.id) {
+        document.querySelector('.workspace').scrollIntoView({ behavior: 'auto', block: 'start' });
+      }
+    });
     publishedList.append(button);
   }
+}
+
+function renderDeckOptions() {
+  for (const select of [deckASelect, deckBSelect]) {
+    select.replaceChildren();
+    for (const item of catalog.items) {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.title;
+      select.append(option);
+    }
+  }
+  deckASelect.value = catalog.default_id;
+  deckBSelect.value = catalog.items.find((item) => item.id !== catalog.default_id)?.id || '';
+  deckOpenButton.disabled = false;
+  deckSwapButton.disabled = false;
 }
 
 function renderDrafts() {
@@ -302,11 +502,21 @@ async function openDraft(id) {
     const draft = readDrafts().find((item) => item.id === id);
     if (!draft) throw new Error('下書きが見つかりません');
     await customElements.whenDefined('strudel-editor');
-    setEditorCode(draft.code);
+    const draftCode = upgradeLegacyDraftCode(draft.code, savedWorkLevel({ kind: 'draft', id }));
+    setEditorCode(replaceManagedSliderValue(
+      draftCode, SINGLE_LEVEL, savedWorkLevel({ kind: 'draft', id }, managedSliderValue(draftCode, SINGLE_LEVEL) ?? 1),
+    ));
     setCurrentSelection({
       kind: 'draft', id: draft.id, label: draft.title, detail: 'この端末の下書き',
     });
     setWorkUrl(null);
+    const pair = deckPairFromCode(draft.code);
+    if (pair && catalog.items.some((item) => item.id === pair.a)
+        && catalog.items.some((item) => item.id === pair.b)) {
+      deckASelect.value = pair.a;
+      deckBSelect.value = pair.b;
+      deckInfo.textContent = '保存した2デッキのコードを開いています。フェーダーで混ぜられます。';
+    }
     if (wantsPlayback) {
       await evaluateCurrent('再生中。下書き「' + draft.title + '」に切り替えました。');
     } else {
@@ -316,6 +526,7 @@ async function openDraft(id) {
     status.textContent = error.message || '下書きを開けませんでした';
   } finally {
     busy = false;
+    queueControlSync();
   }
 }
 
@@ -393,8 +604,15 @@ async function loadCatalog() {
       throw new Error('試作一覧の形式が合いません');
     }
     renderPublished();
+    renderDeckOptions();
     renderDrafts();
-    const requested = new URL(window.location.href).searchParams.get('work');
+    const params = new URL(window.location.href).searchParams;
+    const deckRequested = params.get('deck')?.split(',');
+    if (deckRequested?.length === 2 && deckRequested.every((id) => catalog.items.some((item) => item.id === id))) {
+      await openDeck(deckRequested[0], deckRequested[1]);
+      return;
+    }
+    const requested = params.get('work');
     const item = catalog.items.find((entry) => entry.id === requested)
       || catalog.items.find((entry) => entry.id === catalog.default_id);
     if (!item) throw new Error('開く試作がありません');
@@ -404,6 +622,19 @@ async function loadCatalog() {
   }
 }
 
+deckOpenButton.addEventListener('click', async () => {
+  const expected = deckASelect.value + '+' + deckBSelect.value;
+  await openDeck();
+  if (activeSelection?.kind === 'deck' && activeSelection.id === expected) {
+    document.querySelector('.workspace').scrollIntoView({ behavior: 'auto', block: 'start' });
+  }
+});
+deckSwapButton.addEventListener('click', () => {
+  const oldA = deckASelect.value;
+  deckASelect.value = deckBSelect.value;
+  deckBSelect.value = oldA;
+  deckInfo.textContent = 'AとBを入れ替えました。「組み合わせを開く」で反映します。';
+});
 reloadButton.addEventListener('click', () => {
   if (activeSelection?.kind === 'published') {
     const item = catalog.items.find((entry) => entry.id === activeSelection.id);
@@ -446,7 +677,7 @@ stopButton.addEventListener('click', () => {
   wantsPlayback = false;
   activeEditor?.editor?.stop();
   status.textContent = '停止しました。';
-  queueAcidFaderSync();
+  queueControlSync();
 });
 window.addEventListener('beforeunload', (event) => {
   if (!hasUnsavedChanges()) return;

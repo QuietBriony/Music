@@ -1,5 +1,6 @@
 :root { color-scheme: dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0c0c10; color: #f4f2f6; }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; }
 main { max-width: 1100px; min-height: 100svh; margin: auto; padding: max(24px, env(safe-area-inset-top)) 18px max(24px, env(safe-area-inset-bottom)); }
 a { color: #a9b9ff; }
@@ -30,6 +31,14 @@ h1 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.6rem); line-height: 1.15; }
 .draft-open strong { overflow-wrap: anywhere; }
 .draft-remove { min-width: 64px; }
 .empty-note { margin: 0; color: #9999a7; font-size: .84rem; }
+.deck-setup { display: grid; gap: 14px; margin-bottom: 20px; padding: 18px; border: 1px solid #4a5570; border-radius: 18px; background: linear-gradient(140deg, #18202d, #15151b 72%); }
+.deck-setup h2 { font-size: 1.1rem; }
+.deck-setup p { margin: 8px 0 0; color: #c3c8d7; font-size: .87rem; line-height: 1.5; }
+.deck-pickers { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto; gap: 9px; align-items: end; }
+.deck-pickers label { display: grid; gap: 6px; min-width: 0; color: #dfe5f7; font-size: .81rem; font-weight: 700; }
+.deck-pickers select { width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid #737f9d; border-radius: 9px; color: #f4f2f6; background: #202737; font: inherit; }
+.deck-pickers button:last-child { border-color: #9fb2ff; background: #303e62; }
+.deck-info { color: #bec9e4 !important; }
 .workspace { border: 1px solid #35323f; border-radius: 18px; background: #15151b; overflow: hidden; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px 0; }
 .controls { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -46,6 +55,17 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 #confirm-dialog::backdrop { background: rgb(0 0 0 / .7); }
 #confirm-dialog p { margin: 0 0 16px; line-height: 1.5; }
 #status { min-height: 1.4em; margin: 8px 18px 14px; color: #aeadb9; font-size: .88rem; }
+.mix-panel { margin: 0 18px 18px; padding: 15px; border: 1px solid #53678b; border-radius: 14px; background: #1a2333; }
+.mix-panel-heading { display: flex; justify-content: space-between; align-items: end; gap: 15px; }
+.mix-panel h3 { margin: 0; font-size: .98rem; }
+.mix-panel-heading p, .mix-panel > p { margin: 0; color: #bfcbe4; font-size: .81rem; line-height: 1.5; }
+.mix-panel > p { margin-top: 10px; }
+.mix-fader { display: grid; grid-template-columns: minmax(76px, auto) minmax(100px, 1fr) 50px; align-items: center; gap: 10px; margin-top: 13px; color: #ecf1ff; font-size: .82rem; font-weight: 700; }
+.mix-fader input[type="range"] { width: 100%; min-height: 44px; accent-color: #a9b9ff; touch-action: pan-y; }
+.mix-fader output { text-align: right; font-variant-numeric: tabular-nums; color: #dce5ff; }
+.deck-fader-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.deck-fader-grid .mix-fader { grid-template-columns: 1fr auto; gap: 2px 8px; }
+.deck-fader-grid .mix-fader input { grid-column: 1 / -1; grid-row: 2; }
 .acid-faders { margin: 0 18px 18px; padding: 16px; border: 1px solid #796344; border-radius: 14px; background: linear-gradient(160deg, #282019, #17171b 70%); }
 .acid-faders-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; }
 .acid-faders-heading h3 { margin: 0; font-size: 1rem; }
@@ -80,8 +100,14 @@ footer p { margin: 0 0 8px; }
   .pattern-list { grid-template-columns: 1fr; }
   .pattern-card { min-height: 0; }
   .draft-open { align-items: start; flex-direction: column; }
+  .deck-setup { padding: 14px; border-radius: 12px; }
+  .deck-pickers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .deck-pickers label { grid-column: 1 / -1; }
   .workspace { border-radius: 12px; }
   .section-heading { align-items: start; flex-direction: column; }
+  .mix-panel { margin-inline: 10px; padding: 12px; }
+  .mix-panel-heading { align-items: start; flex-direction: column; gap: 5px; }
+  .deck-fader-grid { grid-template-columns: 1fr; gap: 0; }
   .acid-faders { margin-inline: 10px; padding: 12px 8px; }
   .acid-faders-heading { align-items: start; flex-direction: column; gap: 4px; padding-inline: 5px; }
   .fader-bank { gap: 5px; }

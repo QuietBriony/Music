@@ -516,6 +516,7 @@
           <li><time datetime="2026-09-29">2026.09.29</time><h3>テクノと自動変奏を追加</h3><p>既存のStrudel試奏台へ直進テクノ、余白のあるテクノ、自動変奏の3試作を追加。再生中は一覧から選ぶだけで演奏を切り替えられます。自動変奏はパターン内の確率処理で、チャットからの即時更新はまだありません。</p><p><a href="https://music-private-live-workbench.pages.dev/?work=techno-floor">直進テクノを開く</a> · <a href="https://music-private-live-workbench.pages.dev/?work=auto-groove">自動変奏を開く</a></p></li>
           <li><time datetime="2026-09-29">2026.09.29</time><h3>303風ベースと909系ドラムを触る</h3><p>同じStrudel試奏台にアシッド・テクノを追加。Play後、コード冒頭の青いつまみで音の明るさ、共鳴、うねりを演奏中に変えられます。909の音はStrudel標準バンクから再生時に読み込みます。この初稿も比較用に残しました。</p><p><a href="https://music-private-live-workbench.pages.dev/?work=acid-303-909-v1">Acid初稿を開く</a> · <a href="https://github.com/QuietBriony/Music/tree/main/experiments/workbench/v1">使い方とコード</a></p></li>
           <li><time datetime="2026-09-29">2026.09.29</time><h3>Acidを硬く、縦フェーダーで演奏</h3><p>共鳴・フィルターのうねり・歪みを強めた版を追加。Play後はコードの上の4本の縦フェーダーで明るさ、みょん感、歪み、長さを触れます。動かした値はコードにも残り、初稿も一覧から戻せます。</p><p><a href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">ハード版を開く</a> · <a href="https://music-private-live-workbench.pages.dev/?work=acid-303-909-v1">初稿を聴き比べる</a></p></li>
+          <li><time datetime="2026-09-29">2026.09.29</time><h3>作品別音量と2デッキ</h3><p>8つの試作に音量調整を追加。AとBを一つのテンポで重ね、各音量とクロスフェーダーを演奏中に触れます。調整値と組み合わせコードは端末内に残せます。</p><p><a href="https://music-private-live-workbench.pages.dev/?deck=acid-303-909,techno-dub">Acid × Techno 02を開く</a></p></li>
         </ol>
       </details>
       <p class="guide-note">日付は日本時間。GitHubのrepo作成日時・辿れる最初のcommit・機能追加のcommitを根拠にしています。着想した日、録音した日、公開した日は同じとは限りません。作品ごとの日付が不明なものは、再開ノートで「資料の日付」として残します。</p>
@@ -567,7 +568,7 @@
           <article><h3>Music / Listening Loop</h3><p>20秒の3案を比べ、好みを一つ選んで次の候補へ進む実験。過去の曲を自動読込する編集画面ではありません。</p><a class="mini-link" href="experiments/listening-loop/v1/">3つ聴いて、ひとつ育てる →</a></article>
           <article><h3>Hazama / Sensory Response Lab</h3><p>小さな回路を使う音の変化と、通常の変調を比較する試作。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/sensory-audio-lab.html">回路と変調を比べる →</a></article>
           <article><h3>Hazama / 世界が音で応える</h3><p>沈む地面・脈動・断片・混合のA〜Dを比較。ゲームの場面に音がどう応えるかを探る場所です。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/scene-response-lab.html">場面の反応音を比べる →</a></article>
-          <article><h3>Music / Strudel Live Workbench</h3><p>aphex1、テクノ、アシッド、自動変奏、元のテストを聴き比べる公開試奏台。ハード版Acidは縦フェーダーで演奏中に触れます。編集は端末内に保存できます。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/">音とコードを触る →</a></article>
+          <article><h3>Music / Strudel Live Workbench</h3><p>aphex1、テクノ、アシッド、自動変奏、元のテストを聴き比べる公開試奏台。作品別音量を合わせ、2デッキで組み合わせられます。編集は端末内に保存できます。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/">音とコードを触る →</a></article>
           <p>HazamaはMusicと別のゲームrepoです。試聴候補と本体の採用状態は別に確認し、各実験の評価が自動で共有されるとは扱いません。</p>
         </div>
       </details>
@@ -601,7 +602,7 @@
 
     <section id="workbench-plan" aria-labelledby="workbench-title">
       <div class="section-head"><h2 id="workbench-title">コードで音を触る</h2><p class="section-note">Strudelの小さな試奏台から。</p></div>
-      <p class="guide-note">aphex1、テクノ2案、Acid 303 / 909のハード版と初稿、自動変奏、元のテストから選ぶとコードが編集欄に戻ります。最初にPlayを押し、再生中は一覧を選ぶだけで切り替え。ハード版Acidは画面の縦フェーダーで明るさ・共鳴・歪み・長さを変えられます。各数字を上げ下げした時の音の違いもフェーダーの下に説明しています。気に入った編集は端末に名前付きで保存できます。チャットから公開版への即時同期はまだありません。</p>
+      <p class="guide-note">aphex1、テクノ2案、Acid 303 / 909のハード版と初稿、自動変奏、元のテストから選ぶとコードが編集欄に戻ります。最初にPlayを押し、再生中は一覧を選ぶだけで切り替え。作品別のLEVELは端末に保存でき、ページ先頭の2デッキではA/B音量と横フェーダーで2試作を同期ミックス。BはAのテンポで鳴ります。ハード版Acidの縦フェーダーは明るさ・共鳴・歪み・長さを変えます。気に入った編集や組み合わせは端末に名前付きで保存できます。チャットから公開版への即時同期はまだありません。</p>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">Acid 303 / 909を触る →</a>
       <details class="tool-group"><summary>この先の制作台設計を見る <span>共通session・履歴は未実装</span></summary><div class="parked-plan">
       <p class="guide-note">目指すのは<strong>「音を聴く → 一部分をいじる → 元と比べる → 続きから再開する」</strong>こと。
@@ -686,11 +687,11 @@
     <article class="tool-item" id="tool-strudel-workbench" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
       <h3>Strudel Live Workbench</h3>
-      <p>公開試作を名前から選び、Strudelコードを戻して聴きながら変えるブラウザ試奏台。</p>
+      <p>公開試作を名前から戻し、作品別音量を合わせ、2デッキで同期ミックスしながらStrudelコードを触る試奏台。</p>
       <dl>
-        <dt>最初の一手</dt><dd>Acid 303 / 909を選ぶ → Play → 画面の縦フェーダーで明るさ・共鳴・歪み・長さを動かす。</dd>
-        <dt>残るもの</dt><dd>公開試作8件はGitで版管理。Acid初稿も選択して比較できる。自分の編集は名前付きでその端末のブラウザに保存・復元できる。</dd>
-        <dt>できることの境界</dt><dd>ページ・試作コード・3本のWAVは公開。909標準バンクは再生時に外部から取得。チャットからの即時反映・端末間同期は未実装。聴感は本人確認待ち。</dd>
+        <dt>最初の一手</dt><dd>Acid 303 / 909を選ぶ → Play → LEVELで音量を合わせる。2デッキはA/Bを選び、組み合わせを開いて横フェーダーで混ぜる。</dd>
+        <dt>残るもの</dt><dd>公開試作8件はGitで版管理。作品別音量・2デッキ設定・名前付きコード下書きはその端末のブラウザで復元できる。</dd>
+        <dt>できることの境界</dt><dd>2デッキはAのテンポに同期する単一Strudel演奏で独立DJデッキではない。音量の自動均一化、実iPhone同時再生、端末間同期、チャット即時反映は未実装。ページ・試作コード・3本のWAVは公開。</dd>
       </dl>
       <a class="mini-link" data-tool-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/">Strudel Live Workbench — 音とコードを触る</a>
     </article>
