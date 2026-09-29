@@ -24,7 +24,7 @@
 
       <section class="intro" aria-label="使い方">
         <span>試作を選ぶ → Playで聴く → 再生中は別の試作を選ぶだけで切り替え</span>
-        <span>Acid 303 / 909はコード冒頭の青いつまみを動かして音を変える</span>
+        <span>Acid 303 / 909はPlay後、縦フェーダーで音を変える</span>
       </section>
 
       <section class="library" aria-labelledby="library-title">
@@ -66,6 +66,50 @@
           </div>
         </form>
         <p id="status" role="status">試作一覧を読み込み中…</p>
+        <section id="acid-faders" class="acid-faders" aria-label="Acid 303 / 909 フェーダー" hidden>
+          <div class="acid-faders-heading">
+            <div>
+              <p class="eyebrow">ACID / LIVE CONTROLS</p>
+              <h3>303を手で動かす</h3>
+            </div>
+            <p id="acid-faders-help">Play後にフェーダーを動かすと、次の音から変わります。値はコードに残ります。</p>
+          </div>
+          <div class="fader-bank">
+            <label class="acid-fader">
+              <span>CUTOFF</span>
+              <output>420 Hz</output>
+              <input type="range" data-acid-fader="CUTOFF" aria-label="フィルターの開き" min="120" max="2200" step="10" value="420" disabled>
+              <small>明るさ</small>
+            </label>
+            <label class="acid-fader">
+              <span>RESONANCE</span>
+              <output>18</output>
+              <input type="range" data-acid-fader="RESONANCE" aria-label="共鳴の強さ" min="1" max="35" step="1" value="18" disabled>
+              <small>みょん</small>
+            </label>
+            <label class="acid-fader">
+              <span>DRIVE</span>
+              <output>3.2</output>
+              <input type="range" data-acid-fader="DRIVE" aria-label="歪みの強さ" min="0" max="7" step="0.1" value="3.2" disabled>
+              <small>歪み</small>
+            </label>
+            <label class="acid-fader">
+              <span>DECAY</span>
+              <output>0.18 s</output>
+              <input type="range" data-acid-fader="DECAY" aria-label="うねりの長さ" min="0.03" max="0.5" step="0.01" value="0.18" disabled>
+              <small>長さ</small>
+            </label>
+          </div>
+          <div class="acid-fader-guide" aria-label="数字と音の変化">
+            <p class="acid-fader-guide-intro">フェーダーを上へ動かすと数字が増えます。まずは1本ずつ動かして聴き比べます。</p>
+            <dl>
+              <div><dt>CUTOFF <span>初期値 420 Hz</span></dt><dd>上げるとフィルターが開いて明るく鋭い音。下げるとこもった低音になります。</dd></div>
+              <div><dt>RESONANCE <span>初期値 18</span></dt><dd>上げると特定の高さが強調され「ミョン」が鋭く。下げると丸い音になります。</dd></div>
+              <div><dt>DRIVE <span>初期値 3.2</span></dt><dd>上げると歪みが増えてザラついた硬い音。下げると澄んだ音になります。</dd></div>
+              <div><dt>DECAY <span>初期値 0.18 s</span></dt><dd>上げるとフィルターの「ミョーン」が長く、下げると「ピュッ」と短くなります。音符自体の長さは変えません。</dd></div>
+            </dl>
+          </div>
+        </section>
         <div id="editor"></div>
       </section>
 

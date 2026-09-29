@@ -61,8 +61,8 @@
       "id": "strudel-workbench", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Strudel Live Workbench", "href": "https://music-private-live-workbench.pages.dev/", "action": "音とコードを触る",
       "purpose": "公開試作を名前から選び、Strudelコードを戻して聴きながら変えるブラウザ試奏台。",
-      "first_step": "Acid 303 / 909を選ぶ → Play → コード冒頭の青いつまみで明るさと共鳴を動かす。",
-      "outputs": "公開試作7件はGitで版管理。自分の編集は名前付きでその端末のブラウザに保存・復元できる。",
+      "first_step": "Acid 303 / 909を選ぶ → Play → 画面の縦フェーダーで明るさ・共鳴・歪み・長さを動かす。",
+      "outputs": "公開試作8件はGitで版管理。Acid初稿も選択して比較できる。自分の編集は名前付きでその端末のブラウザに保存・復元できる。",
       "boundary": "ページ・試作コード・3本のWAVは公開。909標準バンクは再生時に外部から取得。チャットからの即時反映・端末間同期は未実装。聴感は本人確認待ち。",
       "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }]
     },

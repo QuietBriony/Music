@@ -21,10 +21,18 @@
     {
       "id": "acid-303-909",
       "title": "Acid 303 / 909",
-      "label": "アシッド・テクノ / 128 BPM",
+      "label": "ハード版 / 128 BPM",
       "indexed_at": "2026-09-29",
-      "description": "909系4つ打ちと合成303風ベース。コード内のスライダーでカットオフ、共鳴、うねりを触る。",
+      "description": "共鳴・フィルターのうねり・歪みを強めた303風ベース。画面の縦フェーダーで演奏中に触る。",
       "path": "/patterns/acid-303-909.txt"
+    },
+    {
+      "id": "acid-303-909-v1",
+      "title": "Acid 303 / 909 初稿",
+      "label": "前の穏やかな版 / 128 BPM",
+      "indexed_at": "2026-09-29",
+      "description": "共鳴と歪みを強める前の版。コード内の青い4つまみで比較できます。",
+      "path": "/patterns/acid-303-909-v1.txt"
     },
     {
       "id": "techno-dub",
