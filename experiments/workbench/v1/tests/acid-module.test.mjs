@@ -16,7 +16,7 @@ function filesUnder(path) {
 }
 
 test('the optional acid module has its local code, worklets, icons, and four intact WAVs', () => {
-  for (const path of ['index.html', 'js/main.js', 'js/audio/TB303FilterProcessor.js',
+  for (const path of ['index.html', 'js/main.js', 'js/workbench-bridge.js', 'js/audio/TB303FilterProcessor.js',
     'js/audio/ClockProcessor.js', 'assets/favicon.png', 'assets/DSEG7Classic-Bold.woff2']) {
     assert.ok(existsSync(join(root, path)), path + ' is missing');
   }
@@ -47,6 +47,17 @@ test('the optional acid module has its local code, worklets, icons, and four int
   }
   assert.equal(bytes, 438798);
   assert.ok(statSync(join(root, 'index.html')).size > 0);
+});
+
+test('the optional bridge only accepts same-origin parent commands and does not start playback', () => {
+  const bridge = read('js/workbench-bridge.js').toString('utf8');
+  assert.match(bridge, /event\.origin !== window\.location\.origin/);
+  assert.match(bridge, /event\.source !== window\.parent/);
+  assert.match(bridge, /command\.type === 'load-file'/);
+  assert.match(bridge, /new URLSearchParams\(window\.location\.search\)\.get\('file'\)/);
+  assert.match(bridge, /AudioEngine\.stop\(\)/);
+  assert.match(bridge, /command\.type === 'set-tempo'/);
+  assert.doesNotMatch(bridge, /AudioEngine\.play\(/);
 });
 
 test('embedded snapshot does not install another service worker or request MIDI at load', () => {

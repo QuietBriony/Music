@@ -19,6 +19,22 @@
 
 ---
 
+## 2026-09-30 — 既存試奏台の303＋909 FILE/BPM接続 (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 既存Strudel試奏と303＋909の保存・再開導線を繋ぎ、BPMを往復させる
+- repos      : Music（独立Cloudflare試奏台、Listen、道具台帳。sister repo不変）
+- implemented: acidBrosのFILE保存を同じブラウザの試奏台から一覧・選択し、ページ内/全画面で
+  同じパッチへ戻れる。same-origin bridgeでStrudel↔303＋909のBPMをボタン操作時に転送。
+  303＋909→コードは`setcpm`行だけ変更して停止、未保存コードは下書きへ保存可能。
+  時計・音・step dataは混ぜず、切替停止と人の試聴境界を維持。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（ログ書式修正後の最終gate）
+- backlog    : BL-049継続。共通session、原本比較/undo、音声routingは未実装
+- next       : BL-049 — 本人が実iPhoneでFILE保存→一覧→全画面再開とBPM往復を試し、出音と使い勝手を評価
+- blockers   : 実iPhoneの出音・長時間負荷・本人の好みは未判定。両エンジンのclockは独立
+
+---
+
 ## 2026-09-29 — 試奏台に303×2＋909の独立ブラウザモジュール (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）

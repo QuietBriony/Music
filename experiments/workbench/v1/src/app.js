@@ -3,6 +3,7 @@ import {
   replaceManagedSliderValue, singleWorkCode, upgradeLegacyDraftCode, SINGLE_LEVEL,
   DECK_A_LEVEL, DECK_B_LEVEL, DECK_XFADE,
 } from './mix-code.js';
+import { strudelBpm, withStrudelBpm } from './tempo-bridge.js';
 
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
@@ -42,6 +43,10 @@ const acidModuleCardFull = document.querySelector('#acid-module-card-full');
 const acidModuleStage = document.querySelector('#acid-module-stage');
 const acidModuleFrame = document.querySelector('#acid-module-frame');
 const acidModuleStatus = document.querySelector('#acid-module-status');
+const acidSavedList = document.querySelector('#acid-saved-list');
+const acidPatchesRefresh = document.querySelector('#acid-patches-refresh');
+const acidTempoToMachine = document.querySelector('#acid-tempo-to-machine');
+const acidTempoToCode = document.querySelector('#acid-tempo-to-code');
 const ACID_FADER_KEYS = ['CUTOFF', 'RESONANCE', 'DRIVE', 'DECAY'];
 
 const DRAFT_KEY = 'music-workbench-drafts-v1';
@@ -57,6 +62,62 @@ let busy = false;
 let wantsPlayback = false;
 let playbackToken = 0;
 let faderSyncQueued = false;
+let acidBridgeReady = false;
+let pendingAcidFileId = null;
+
+function savedAcidFiles() {
+  try {
+    const files = JSON.parse(window.localStorage.getItem('acidbros_files') || '[]');
+    return Array.isArray(files) ? files.filter((file) =>
+      file && typeof file.id === 'string' && typeof file.name === 'string'
+      && Number.isFinite(file.modified)).sort((a, b) => b.modified - a.modified) : [];
+  } catch { return []; }
+}
+
+function renderAcidFiles() {
+  acidSavedList.replaceChildren();
+  const files = savedAcidFiles();
+  if (!files.length) {
+    acidSavedList.append(makeElement('p', 'empty-note', '保存パッチはまだありません。中のFILE → SAVEで作れます。'));
+    return;
+  }
+  let currentId = '';
+  try { currentId = window.localStorage.getItem('acidbros_current_file') || ''; } catch { /* storage can be unavailable */ }
+  for (const file of files) {
+    const item = makeElement('div', 'acid-saved-item');
+    const button = makeElement('button', 'acid-saved-file');
+    button.type = 'button';
+    button.append(makeElement('span', '', file.name), makeElement('small', '',
+      new Date(file.modified).toLocaleString('ja-JP') + (file.id === currentId ? ' · 前回のFILE' : '')));
+    button.addEventListener('click', async () => {
+      if (!acidModuleStage.hidden && !await askConfirmation(
+        'いまの303＋909を停止して「' + file.name + '」を開きます。中の未保存の変更は消えます。', '開く'
+      )) return;
+      if (acidModuleStage.hidden) openAcidModule({ fileId: file.id });
+      else {
+        pendingAcidFileId = file.id;
+        sendAcidCommand({ type: 'load-file', fileId: file.id });
+      }
+    });
+    const fullPage = makeElement('a', '', '全画面 ↗');
+    fullPage.href = '/modules/acidbros/?file=' + encodeURIComponent(file.id);
+    fullPage.target = '_blank';
+    fullPage.rel = 'noopener';
+    fullPage.addEventListener('click', openAcidFullPage);
+    item.append(button, fullPage);
+    acidSavedList.append(item);
+  }
+}
+
+function syncAcidBridgeControls() {
+  acidTempoToMachine.disabled = !acidBridgeReady || strudelBpm(currentCode()) === null;
+  acidTempoToCode.disabled = !acidBridgeReady || !activeEditor?.editor;
+}
+
+function sendAcidCommand(command) {
+  if (!acidBridgeReady || acidModuleStage.hidden) return;
+  acidModuleFrame.contentWindow?.postMessage({ source: 'music-workbench-v1', ...command }, window.location.origin);
+}
 
 function setModuleUrl(open) {
   const url = new URL(window.location.href);
@@ -69,6 +130,9 @@ function closeAcidModule({ updateUrl = true, focus = false } = {}) {
   if (acidModuleStage.hidden) return;
   // Destroying the frame is the only reliable stop for this independent audio engine.
   acidModuleFrame.src = 'about:blank';
+  acidBridgeReady = false;
+  pendingAcidFileId = null;
+  syncAcidBridgeControls();
   acidModuleStage.hidden = true;
   acidModuleOpen.setAttribute('aria-expanded', 'false');
   acidModuleOpen.textContent = 'この中で開く';
@@ -85,9 +149,11 @@ function stopStrudelForModule() {
   status.textContent = 'Strudelを停止しました。acidBrosではRUNを押して演奏します。';
 }
 
-function openAcidModule({ updateUrl = true, scroll = true } = {}) {
+function openAcidModule({ updateUrl = true, scroll = true, fileId = null } = {}) {
   if (!acidModuleStage.hidden) return;
   stopStrudelForModule();
+  pendingAcidFileId = fileId;
+  renderAcidFiles();
   acidModuleStage.hidden = false;
   acidModuleOpen.setAttribute('aria-expanded', 'true');
   acidModuleOpen.textContent = '303＋909を閉じる';
@@ -115,8 +181,47 @@ function openAcidFullPage() {
 acidModuleFull.addEventListener('click', openAcidFullPage);
 acidModuleCardFull.addEventListener('click', openAcidFullPage);
 acidModuleFrame.addEventListener('load', () => {
-  if (!acidModuleStage.hidden) acidModuleStatus.textContent = '準備できました。中のRUNを押すと音が出ます。';
+  if (!acidModuleStage.hidden && !acidBridgeReady) acidModuleStatus.textContent = '画面を読み込みました。接続待ち…';
 });
+window.addEventListener('message', (event) => {
+  if (event.origin !== window.location.origin || event.source !== acidModuleFrame.contentWindow
+    || acidModuleStage.hidden || event.data?.source !== 'acidbros-bridge-v1') return;
+  const message = event.data;
+  if (message.type === 'ready') {
+    acidBridgeReady = true;
+    syncAcidBridgeControls();
+    acidModuleStatus.textContent = '準備できました（' + message.bpm + ' BPM）。中のRUNを押すと音が出ます。';
+    if (pendingAcidFileId) sendAcidCommand({ type: 'load-file', fileId: pendingAcidFileId });
+  } else if (message.type === 'file-loaded') {
+    pendingAcidFileId = null;
+    renderAcidFiles();
+    acidModuleStatus.textContent = '保存パッチを開きました（' + message.bpm + ' BPM）。RUNで再生できます。';
+  } else if (message.type === 'tempo-set') {
+    acidModuleStatus.textContent = '303＋909を' + message.bpm + ' BPMにしました。保存するなら中のFILE → SAVE。';
+  } else if (message.type === 'tempo-read') {
+    try {
+      const updated = withStrudelBpm(currentCode(), message.bpm);
+      activeEditor.editor.setCode(updated);
+      closeAcidModule();
+      status.textContent = '303＋909の' + message.bpm + ' BPMをStrudelコードへ反映しました。Playで確認し、残すなら「この端末に保存」。';
+      document.querySelector('.workspace').scrollIntoView({ behavior: 'auto', block: 'start' });
+    } catch (error) {
+      acidModuleStatus.textContent = error.message || 'コードのテンポを変更できませんでした。';
+    }
+  } else if (message.type === 'error') {
+    pendingAcidFileId = null;
+    acidModuleStatus.textContent = message.message || 'パッチを読み込めませんでした。';
+  }
+});
+acidPatchesRefresh.addEventListener('click', renderAcidFiles);
+window.addEventListener('storage', (event) => {
+  if (event.key === 'acidbros_files' || event.key === 'acidbros_current_file') renderAcidFiles();
+});
+acidTempoToMachine.addEventListener('click', () => {
+  const bpm = strudelBpm(currentCode());
+  if (bpm !== null) sendAcidCommand({ type: 'set-tempo', bpm });
+});
+acidTempoToCode.addEventListener('click', () => sendAcidCommand({ type: 'read-tempo' }));
 
 function acidSliderDeclarations(code) {
   if (code.includes('DECK_MIX_V1') || !code.includes('ACID_FADER_BANK_V1')) return null;
@@ -162,6 +267,7 @@ function queueControlSync() {
     faderSyncQueued = false;
     syncAcidFaders();
     syncMixFaders();
+    syncAcidBridgeControls();
   });
 }
 
@@ -757,4 +863,5 @@ window.addEventListener('beforeunload', (event) => {
   event.returnValue = '';
 });
 
+renderAcidFiles();
 loadCatalog();
