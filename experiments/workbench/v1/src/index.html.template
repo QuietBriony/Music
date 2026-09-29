@@ -24,6 +24,7 @@
 
       <section class="intro" aria-label="使い方">
         <span>試作を選ぶ → Playで聴く → 再生中は別の試作を選ぶだけで切り替え</span>
+        <span>Acid 303 / 909はコード冒頭の青いつまみを動かして音を変える</span>
       </section>
 
       <section class="library" aria-labelledby="library-title">
@@ -56,14 +57,33 @@
             <button id="reload-pattern" type="button" disabled title="選択した保存版のコードに戻す">選択中の版に戻す</button>
           </div>
         </div>
+        <form id="draft-form" class="inline-panel" hidden>
+          <label for="draft-title">下書きの名前</label>
+          <div class="inline-actions">
+            <input id="draft-title" name="title" type="text" maxlength="80" required>
+            <button type="submit">保存</button>
+            <button id="cancel-draft" type="button">キャンセル</button>
+          </div>
+        </form>
         <p id="status" role="status">試作一覧を読み込み中…</p>
         <div id="editor"></div>
       </section>
+
+      <dialog id="confirm-dialog" aria-labelledby="confirm-message">
+        <form method="dialog">
+          <p id="confirm-message"></p>
+          <div class="inline-actions">
+            <button id="confirm-accept" type="submit" value="yes">続ける</button>
+            <button type="submit" value="no">キャンセル</button>
+          </div>
+        </form>
+      </dialog>
 
       <footer>
         <p>スマホは音声再生のため、最初に Play を押してください。画面を離れると再生が止まることがあります。</p>
         <p>公開試作のコードと3本の音源は誰でも取得できます。ここで編集した内容は自動では公開されません。「この端末に保存」は同じブラウザだけの下書きです。</p>
         <p>公開試作が増えたらページを再読込してください。再生中に一覧から別の試作を選ぶと演奏を切り替えます。チャットの指示を自動で受け取る機能はまだありません。</p>
+        <p>Acid 303 / 909のドラムはStrudel標準の外部音源バンクを使います。初回の音読み込みには少し時間がかかることがあります。</p>
         <a href="https://github.com/QuietBriony/Music/tree/main/experiments/workbench/v1" target="_blank" rel="noreferrer">このアプリのソースと手順 ↗</a>
       </footer>
     </main>

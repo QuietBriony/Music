@@ -19,7 +19,7 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 `docs/INDEX.md`、canonical JSON を先に読む。ない環境では推測せず、public-safe な
 workflow と `needs_verification` だけを使う。active runtime repo は従来どおり 5 つ。
 
-## 現在地（2026-09-28）
+## 現在地（2026-09-29）
 
 - `listen.html`先頭を「前回の続き／過去のネタ／今すぐ遊ぶ」へ整理。
   `#production-notebook`は個人IDを含まないDrive検索、`#revive-ideas`は区間と一言メモの手順。
@@ -58,10 +58,14 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   `music-stack.pages.dev`のruntimeは変更せず、別Pagesプロジェクトで公開する。
   音声3本はKV公開GET、試作コードと索引はGit管理の静的ファイルで読む。
   既存4小節とaphex1の調整版・高速初稿に、直進テクノ、余白のあるテクノ、
-  確率的な自動変奏を追加。6件を別IDで選択・コード復元できる。最初のPlayは手動、
+  確率的な自動変奏とAcid 303 / 909を追加。7件を別IDで選択・コード復元できる。最初のPlayは手動、
   再生中に一覧から選ぶと同じブラウザで次の演奏へ切り替わる。
+  Acidの909ドラムはStrudel標準の外部バンク、303風ベースはブラウザ合成。
+  コード冒頭の4つのスライダーは再生中に音とコード値を変えられる。
+  下書き名入力と未保存の切り替え確認はページ内UIで行う。
   閲覧者の名前付き下書きはその端末のブラウザだけに保存。Surface側の編集成果と
-  端末間同期、チャットからの即時反映、新しい3試作の本人試聴はまだ取り込んでいない。
+  端末間同期、チャットからの即時反映、追加試作の本人試聴はまだ取り込んでいない。
+  Computer Useで触れるのも接続したブラウザ画面だけで、スマホとの共通sessionではない。
   手順と制約は同ディレクトリの`README.md`。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の26件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
