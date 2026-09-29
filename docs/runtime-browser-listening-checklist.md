@@ -6,6 +6,15 @@ This checklist makes browser listening the default review path for Music runtime
 
 Use m4a recording only for milestone comparisons, CarPlay/output-level checks, or when browser listening is ambiguous.
 
+## Strudel workbench LEVEL / 2-deck audition (BL-049)
+
+For `experiments/workbench/v1/` on its separate Cloudflare Pages URL:
+
+- Compare a loud and quiet published work at the same device output. Set each LEVEL by ear, switch away and back, and confirm the values return without a code-loss dialog.
+- Open two published works as A/B. A sets the common tempo; verify B plays at A's speed. Move A/B levels and CROSSFADE left / center / right while playing; center needs enough headroom and should not produce an audible clip.
+- Stop, reopen the same `?deck=a,b` URL, then save the combined code as a local draft and reopen it. Neither loading the page nor changing selectors should autoplay.
+- Repeat on the actual iPhone browser with its own output volume. Desktop Chromium UI checks and code-level gain checks do not certify perceived loudness, clipping, or two-pattern phone load.
+
 ## Listening Loop standalone preview (BL-048)
 
 For `experiments/listening-loop/v1/` only; this is not the FM/Band Room gate below.
