@@ -13,5 +13,6 @@ await cp(join(root, 'src', 'library.json'), join(output, 'library.json'));
 await cp(join(root, 'src', 'patterns'), join(output, 'patterns'), { recursive: true });
 await cp(join(root, 'src', '_headers'), join(output, '_headers'));
 await cp(join(root, 'LICENSE'), join(output, 'LICENSE'));
+await cp(join(root, 'third_party', 'acidbros'), join(output, 'modules', 'acidbros'), { recursive: true });
 await cp(join(root, 'node_modules', '@strudel', 'repl', 'dist'), join(output, 'vendor', 'strudel'), { recursive: true });
 await cp(join(root, 'node_modules', '@strudel', 'repl', 'LICENSE'), join(output, 'vendor', 'strudel', 'LICENSE'));

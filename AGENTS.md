@@ -82,7 +82,7 @@ music-stack 全体の自走開発は `docs/autonomy/` のエンジンで運用�
    - どうしても engine 内部を触る必要があるときは **必ず `MusicRadioBrainState` 周辺のような明確に境界が引ける箇所** に限定する
    - 例外: cache buster / VERSION の bump、Music Core Rig と Hazama FM が共有する短い runtime cue API のみ
 2. **検証済み PR / branch の agent merge は許可**。user が作業を任せた範囲の PR / branch は、`node scripts/stack-check.mjs` で `0 BAD`、mergeable / clean、かつ今回の作業に属すると確認できれば main へ merge・pushし、merged branch を削除してよい。古い PR・他 agent の未検証作業・判断不能な branch は混ぜず、final で残件として明示する。
-3. **音源 / サンプル / 歌詞は repo に追加しない**。すべて Tone.js 合成。
+3. **音源 / サンプル / 歌詞は原則 repo に追加しない**。例外として owner が2026-09-29に明示許可した独立試奏台の `experiments/workbench/v1/third_party/acidbros/assets/samples/tr909/` の4 WAV（合計438,798 bytes）のみ同梱する。この例外を他の音源やCore Rig / FM / Band Roomへ広げない。出所とhashは`experiments/workbench/v1/third_party/acidbros/UPSTREAM.md`。
 4. **GitHub Actions の新規追加は user 承認必須**。現状は `audit.py` をローカル / CI 任意手動実行。
 5. **`presets/*.json` (Hazama FM 用 6 ファイル) と `presets/<legacy>.json` (engine 用 6 ファイル) を混同しない**。詳細は `presets/SCHEMA.md` Section 4.
 6. **外部 / sister repo からの harvest は非干渉で**:

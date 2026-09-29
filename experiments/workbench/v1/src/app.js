@@ -35,6 +35,13 @@ const deckSwapButton = document.querySelector('#deck-swap');
 const deckInfo = document.querySelector('#deck-info');
 const deckFadersPanel = document.querySelector('#deck-faders');
 const deckFaders = [...deckFadersPanel.querySelectorAll('[data-deck-fader]')];
+const acidModuleOpen = document.querySelector('#acid-module-open');
+const acidModuleClose = document.querySelector('#acid-module-close');
+const acidModuleFull = document.querySelector('#acid-module-full');
+const acidModuleCardFull = document.querySelector('#acid-module-card-full');
+const acidModuleStage = document.querySelector('#acid-module-stage');
+const acidModuleFrame = document.querySelector('#acid-module-frame');
+const acidModuleStatus = document.querySelector('#acid-module-status');
 const ACID_FADER_KEYS = ['CUTOFF', 'RESONANCE', 'DRIVE', 'DECAY'];
 
 const DRAFT_KEY = 'music-workbench-drafts-v1';
@@ -50,6 +57,66 @@ let busy = false;
 let wantsPlayback = false;
 let playbackToken = 0;
 let faderSyncQueued = false;
+
+function setModuleUrl(open) {
+  const url = new URL(window.location.href);
+  if (open) url.searchParams.set('module', 'acidbros');
+  else url.searchParams.delete('module');
+  window.history.replaceState(null, '', url);
+}
+
+function closeAcidModule({ updateUrl = true, focus = false } = {}) {
+  if (acidModuleStage.hidden) return;
+  // Destroying the frame is the only reliable stop for this independent audio engine.
+  acidModuleFrame.src = 'about:blank';
+  acidModuleStage.hidden = true;
+  acidModuleOpen.setAttribute('aria-expanded', 'false');
+  acidModuleOpen.textContent = 'この中で開く';
+  acidModuleStatus.textContent = '停止しました。';
+  if (updateUrl) setModuleUrl(false);
+  if (focus) acidModuleOpen.focus();
+}
+
+function stopStrudelForModule() {
+  playbackToken++;
+  wantsPlayback = false;
+  activeEditor?.editor?.stop();
+  queueControlSync();
+  status.textContent = 'Strudelを停止しました。acidBrosではRUNを押して演奏します。';
+}
+
+function openAcidModule({ updateUrl = true, scroll = true } = {}) {
+  if (!acidModuleStage.hidden) return;
+  stopStrudelForModule();
+  acidModuleStage.hidden = false;
+  acidModuleOpen.setAttribute('aria-expanded', 'true');
+  acidModuleOpen.textContent = '303＋909を閉じる';
+  acidModuleStatus.textContent = '303＋909を読み込み中…';
+  acidModuleFrame.src = '/modules/acidbros/';
+  if (updateUrl) setModuleUrl(true);
+  if (scroll) {
+    const reveal = () => setTimeout(() => {
+      if (!acidModuleStage.hidden) acidModuleStage.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }, 0);
+    if (document.readyState === 'complete') reveal();
+    else window.addEventListener('load', reveal, { once: true });
+  }
+}
+
+acidModuleOpen.addEventListener('click', () => {
+  if (acidModuleStage.hidden) openAcidModule();
+  else closeAcidModule();
+});
+acidModuleClose.addEventListener('click', () => closeAcidModule({ focus: true }));
+function openAcidFullPage() {
+  stopStrudelForModule();
+  closeAcidModule();
+}
+acidModuleFull.addEventListener('click', openAcidFullPage);
+acidModuleCardFull.addEventListener('click', openAcidFullPage);
+acidModuleFrame.addEventListener('load', () => {
+  if (!acidModuleStage.hidden) acidModuleStatus.textContent = '準備できました。中のRUNを押すと音が出ます。';
+});
 
 function acidSliderDeclarations(code) {
   if (code.includes('DECK_MIX_V1') || !code.includes('ACID_FADER_BANK_V1')) return null;
@@ -610,6 +677,7 @@ async function loadCatalog() {
     const deckRequested = params.get('deck')?.split(',');
     if (deckRequested?.length === 2 && deckRequested.every((id) => catalog.items.some((item) => item.id === id))) {
       await openDeck(deckRequested[0], deckRequested[1]);
+      if (params.get('module') === 'acidbros') openAcidModule({ updateUrl: false });
       return;
     }
     const requested = params.get('work');
@@ -617,6 +685,7 @@ async function loadCatalog() {
       || catalog.items.find((entry) => entry.id === catalog.default_id);
     if (!item) throw new Error('開く試作がありません');
     await openPublished(item);
+    if (params.get('module') === 'acidbros') openAcidModule({ updateUrl: false });
   } catch (error) {
     status.textContent = error.message || '試作一覧を読み込めませんでした';
   }
@@ -648,6 +717,7 @@ draftForm.addEventListener('submit', saveDraft);
 cancelDraftButton.addEventListener('click', () => { draftForm.hidden = true; saveButton.focus(); });
 playButton.addEventListener('click', async () => {
   if (busy || !activeEditor?.editor) return;
+  closeAcidModule();
   busy = true;
   wantsPlayback = true;
   try {
@@ -662,6 +732,7 @@ playButton.addEventListener('click', async () => {
 });
 updateButton.addEventListener('click', async () => {
   if (busy || !activeEditor?.editor) return;
+  closeAcidModule();
   busy = true;
   wantsPlayback = true;
   try {
@@ -673,6 +744,7 @@ updateButton.addEventListener('click', async () => {
   }
 });
 stopButton.addEventListener('click', () => {
+  closeAcidModule();
   playbackToken++;
   wantsPlayback = false;
   activeEditor?.editor?.stop();
