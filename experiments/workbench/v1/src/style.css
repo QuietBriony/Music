@@ -37,11 +37,19 @@ h2 { margin: 0; font-size: 1rem; }
 #current-work { margin: 6px 0 0; color: #aeb7d7; font-size: .83rem; }
 button { min-height: 44px; border: 1px solid #696178; border-radius: 9px; padding: 8px 12px; color: #f4f2f6; background: #24212c; font: inherit; cursor: pointer; }
 button:disabled { opacity: .55; cursor: wait; }
-button:focus-visible, a:focus-visible { outline: 3px solid #9fb2ff; outline-offset: 3px; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid #9fb2ff; outline-offset: 3px; }
+.inline-panel { margin: 12px 18px 0; padding: 14px; border: 1px solid #696178; border-radius: 10px; background: #20202a; }
+.inline-panel label { display: block; margin-bottom: 8px; font-size: .9rem; font-weight: 700; }
+.inline-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.inline-actions input { flex: 1 1 200px; min-width: 0; min-height: 44px; border: 1px solid #696178; border-radius: 9px; padding: 8px 10px; color: #f4f2f6; background: #15151b; font: inherit; }
+#confirm-dialog { width: min(420px, calc(100vw - 32px)); border: 1px solid #696178; border-radius: 12px; padding: 18px; color: #f4f2f6; background: #20202a; }
+#confirm-dialog::backdrop { background: rgb(0 0 0 / .7); }
+#confirm-dialog p { margin: 0 0 16px; line-height: 1.5; }
 #status { min-height: 1.4em; margin: 8px 18px 14px; color: #aeadb9; font-size: .88rem; }
 #editor { min-height: 520px; }
 strudel-editor { display: contents; }
 #editor .cm-editor { min-height: 520px; }
+#editor .cm-slider input[type="range"] { width: 104px !important; min-height: 36px; }
 footer { max-width: 72ch; margin-top: 22px; color: #a9a8b3; font-size: .82rem; line-height: 1.55; }
 footer p { margin: 0 0 8px; }
 @media (max-width: 640px) {
@@ -57,4 +65,5 @@ footer p { margin: 0 0 8px; }
   .workspace { border-radius: 12px; }
   .section-heading { align-items: start; flex-direction: column; }
   #editor, #editor .cm-editor { min-height: 68svh; }
+  #editor .cm-slider input[type="range"] { width: 120px !important; min-height: 44px; }
 }

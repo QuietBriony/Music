@@ -1,0 +1,21 @@
+// Acid 303 / 909 — 2026-09-29
+// 再生中に青いつまみを動かす。909音はStrudel標準バンク、303風ベースは合成音。
+const CUTOFF = slider(350, 120, 1600, 10) // 明るさ
+const RESONANCE = slider(10, 1, 25, 1) // みょん感
+const DECAY = slider(0.12, 0.03, 0.5, 0.01) // うねりの長さ
+const ENVELOPE = slider(4, 0, 8, 0.1) // うねりの幅
+setcpm(32)
+stack(
+  s("bd*4").bank("RolandTR909").gain(0.55),
+  s("~ sd ~ sd").bank("RolandTR909").gain(0.34),
+  s("~ hh ~ hh ~ hh ~ hh").bank("RolandTR909").gain(0.22),
+  s("~ ~ ~ ~ ~ ~ ~ oh").bank("RolandTR909").gain(0.12),
+  note("<[c2 ~ c2 eb2 g1 ~ bb1 c2] [c2 ~ eb2 g1 c2 ~ d2 bb1] [c2 c3 ~ eb2 g1 ~ f2 eb2] [c2 ~ c2 eb2 ~ g1 bb1 d2]>")
+    .s("sawtooth")
+    .attack(0.003).decay(0.13).sustain(0).release(0.03)
+    .lpf(CUTOFF).lpq(RESONANCE)
+    .lpa(0.003).lpd(DECAY).lps(0).lpenv(ENVELOPE)
+    .ftype("ladder")
+    .distort("1.4:.6")
+    .gain(0.3)
+)

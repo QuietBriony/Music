@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-09-29 — 再生中に触れるAcid 303 / 909を既存試奏台へ追加
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 人とComputer Useで画面を触りながら音を変え、採用したコードを索引へ残す入口を作る
+- repos      : Music（既存FM / Band Room / Core Rig runtimeは不変）
+- implemented: 既存Strudel試奏台の7件目にAcid 303 / 909を追加。標準909バンクと
+  合成303風ベース、再生中に音とコード値が変わる4つのスライダーを用意。
+  Computer Useのブラウザで使えない標準prompt/confirmをページ内フォーム・確認画面へ変更し、
+  つまみ変更→名前付き保存→試作切替→下書き復元を同じ画面で検証。
+  Listen年鑑・道具一覧・操作手順・設計と引き継ぎを同期。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（公開前の全体gate）
+- backlog    : BL-049の試奏と即時操作を拡張。端末内下書き・Git公開版の境界は維持
+- next       : BL-049 — 本人の耳で出音とスライダー幅を評価し、採用値を試作コードへ保存
+- blockers   : Computer Useは接続先ブラウザだけ。スマホとの共通session、音声認識、
+  チャット即時反映、EP-133 / VCV連動は未実装
+
+---
+
 ## 2026-09-29 — テクノ2案と自動変奏、再生中の試作切り替え
 - agent      : Codex（Remote対話、単一thread）
 - goal       : 既存3本の音で複数の方向を聴き比べ、チャット公開待ちを演奏操作から切り離す

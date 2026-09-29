@@ -7,6 +7,12 @@ const draftCount = document.querySelector('#draft-count');
 const currentWork = document.querySelector('#current-work');
 const reloadButton = document.querySelector('#reload-pattern');
 const saveButton = document.querySelector('#save-draft');
+const draftForm = document.querySelector('#draft-form');
+const draftTitle = document.querySelector('#draft-title');
+const cancelDraftButton = document.querySelector('#cancel-draft');
+const confirmDialog = document.querySelector('#confirm-dialog');
+const confirmMessage = document.querySelector('#confirm-message');
+const confirmAccept = document.querySelector('#confirm-accept');
 const playButton = document.querySelector('#play');
 const updateButton = document.querySelector('#update');
 const stopButton = document.querySelector('#stop');
@@ -41,9 +47,19 @@ function hasUnsavedChanges() {
   return Boolean(activeSelection && currentCode() !== loadedCode);
 }
 
-function mayReplaceCode() {
-  return !hasUnsavedChanges() || window.confirm(
-    'いまの編集は保存されていません。切り替えると消えます。保存せずに続けますか？'
+function askConfirmation(message, acceptLabel) {
+  confirmMessage.textContent = message;
+  confirmAccept.textContent = acceptLabel;
+  confirmDialog.returnValue = '';
+  return new Promise((resolve) => {
+    confirmDialog.addEventListener('close', () => resolve(confirmDialog.returnValue === 'yes'), { once: true });
+    confirmDialog.showModal();
+  });
+}
+
+async function mayReplaceCode() {
+  return !hasUnsavedChanges() || await askConfirmation(
+    'いまの編集は保存されていません。切り替えると消えます。', '保存せず続ける'
   );
 }
 
@@ -107,10 +123,12 @@ function setWorkUrl(id) {
 }
 
 async function openPublished(item) {
-  if (busy || !mayReplaceCode()) return;
+  if (busy) return;
   busy = true;
-  status.textContent = item.title + ' を読み込み中…';
   try {
+    if (!await mayReplaceCode()) return;
+    draftForm.hidden = true;
+    status.textContent = item.title + ' を読み込み中…';
     const response = await fetch(item.path, { cache: 'no-store' });
     if (!response.ok) throw new Error('コードの取得に失敗しました (' + response.status + ')');
     const pattern = await response.text();
@@ -121,10 +139,13 @@ async function openPublished(item) {
       kind: 'published', id: item.id, label: item.title, detail: item.label,
     });
     setWorkUrl(item.id);
+    const acidHint = item.id === 'acid-303-909'
+      ? ' コード冒頭の青いつまみを動かすと、演奏中の音が変わります。'
+      : '';
     if (wantsPlayback) {
-      await evaluateCurrent('再生中。' + item.title + ' に切り替えました。');
+      await evaluateCurrent('再生中。' + item.title + ' に切り替えました。' + acidHint);
     } else {
-      status.textContent = 'コードを開きました。Play で聴けます。切り替えてもこの版は一覧に残ります。';
+      status.textContent = 'コードを開きました。Play で聴けます。切り替えてもこの版は一覧に残ります。' + acidHint;
     }
   } catch (error) {
     status.textContent = error.message || '読み込みに失敗しました';
@@ -208,9 +229,11 @@ function renderDrafts() {
 }
 
 async function openDraft(id) {
-  if (busy || !mayReplaceCode()) return;
+  if (busy) return;
   busy = true;
   try {
+    if (!await mayReplaceCode()) return;
+    draftForm.hidden = true;
     const draft = readDrafts().find((item) => item.id === id);
     if (!draft) throw new Error('下書きが見つかりません');
     await customElements.whenDefined('strudel-editor');
@@ -231,16 +254,28 @@ async function openDraft(id) {
   }
 }
 
-function saveDraft() {
+function showDraftForm() {
   const code = currentCode();
   if (!code) return;
   if (code.length > MAX_CODE_LENGTH) {
     status.textContent = 'コードが長すぎて、この端末には保存できません。';
     return;
   }
-  const suggested = (activeSelection?.label || '試作') + ' ' + new Date().toLocaleString('ja-JP');
-  const title = window.prompt('下書きの名前', suggested)?.trim();
-  if (!title) return;
+  draftTitle.value = ((activeSelection?.label || '試作') + ' ' + new Date().toLocaleString('ja-JP')).slice(0, 80);
+  draftForm.hidden = false;
+  draftTitle.focus();
+  draftTitle.select();
+}
+
+function saveDraft(event) {
+  event.preventDefault();
+  const title = draftTitle.value.trim();
+  const code = currentCode();
+  if (!title || !code) return;
+  if (code.length > MAX_CODE_LENGTH) {
+    status.textContent = 'コードが長すぎて、この端末には保存できません。';
+    return;
+  }
   try {
     const draft = {
       id: window.crypto.randomUUID(),
@@ -258,17 +293,18 @@ function saveDraft() {
     setWorkUrl(null);
     renderDrafts();
     draftDetails.open = true;
+    draftForm.hidden = true;
     status.textContent = 'この端末に保存しました。下書き一覧からいつでもコードを戻せます。';
   } catch {
     status.textContent = '保存できませんでした。ブラウザの空き容量や保存設定を確認してください。';
   }
 }
 
-function deleteDraft(id) {
+async function deleteDraft(id) {
   try {
     const drafts = readDrafts();
     const draft = drafts.find((item) => item.id === id);
-    if (!draft || !window.confirm('「' + draft.title + '」をこの端末から削除しますか？')) return;
+    if (!draft || !await askConfirmation('「' + draft.title + '」をこの端末から削除しますか？', '削除する')) return;
     writeDrafts(drafts.filter((item) => item.id !== id));
     if (activeSelection?.kind === 'draft' && activeSelection.id === id) {
       activeSelection = { kind: 'unsaved', label: '開いているコード', detail: '下書きは削除済み' };
@@ -311,13 +347,18 @@ reloadButton.addEventListener('click', () => {
     openDraft(activeSelection.id);
   }
 });
-saveButton.addEventListener('click', saveDraft);
+saveButton.addEventListener('click', showDraftForm);
+draftForm.addEventListener('submit', saveDraft);
+cancelDraftButton.addEventListener('click', () => { draftForm.hidden = true; saveButton.focus(); });
 playButton.addEventListener('click', async () => {
   if (busy || !activeEditor?.editor) return;
   busy = true;
   wantsPlayback = true;
   try {
-    await evaluateCurrent('再生中。別の試作を選ぶと演奏を切り替えられます。');
+    const acidHint = activeSelection?.id === 'acid-303-909'
+      ? ' コード冒頭の青いつまみを動かして音を変えられます。'
+      : '';
+    await evaluateCurrent('再生中。別の試作を選ぶと演奏を切り替えられます。' + acidHint);
   } catch (error) {
     status.textContent = error.message || '再生に失敗しました';
   } finally {

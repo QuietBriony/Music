@@ -24,7 +24,7 @@
 > - 現在のcatalog URLは`config/external-dependencies.json`のcommit-pinned jsDelivrが正本。
 >   `engine.js`の`tonejs.github.io`参照は凍結legacy例外であり、同一URLとはみなさない
 
-## 2026-09-28 — 公開ブラウザ試奏の独立境界
+## 2026-09-29 — 公開ブラウザ試奏の独立境界
 
 `experiments/workbench/v1/`はStrudelコードとKV上の3本のWAVを試す独立アプリ。
 同じMusic repoを使うが、既存GitHub Pages、`music-stack.pages.dev`、FM / Band Room / Core Rigの
@@ -33,11 +33,15 @@ runtimeやService Workerには接続しない。別のCloudflare Pagesプロジ�
 Strudel 1.3.0は`config/external-dependencies.json`に登録。音声素材はKVに置き、
 公開試作コードと名前付き索引は同アプリのGit管理ファイルに置く。
 初期の4小節をテストとして残し、aphex1のドラム調整版・高速初稿、
-テクノ2案、自動変奏の計6件を別IDで選択・コード復元できる。
+テクノ2案、自動変奏、Acid 303 / 909の計7件を別IDで選択・コード復元できる。
+Acidの909ドラムはStrudel標準の外部バンク、303風ベースはブラウザ合成。
+コード冒頭の4つのスライダーで演奏中に音とコード値を変えられる。
+下書き名入力・未保存の切り替え確認はページ内UIに置き、ブラウザのprompt/confirmに依存しない。
 最初のPlayは手動、再生中に別の試作を選ぶとその演奏へ切り替わる。
 旧`GET /api/pattern`は互換用の読み取り口として残し、現行画面は使わない。
 APIは公開GETのみで、閲覧者が公開版を書き換える経路はない。
-端末内の名前付き下書きはlocalStorageで復元可能。端末間同期、チャットからの即時反映、Surface編集版の取り込みは未実装。
+端末内の名前付き下書きはlocalStorageで復元可能。Computer Useの操作も接続したブラウザ画面だけに作用する。
+端末間同期、チャットからの即時反映、Surface編集版の取り込みは未実装。
 デプロイ・操作手順は同アプリの`README.md`に記録する。
 
 ## 2026-09-20 — 再開の入口とブラウザ制作台の設計

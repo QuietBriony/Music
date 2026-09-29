@@ -19,6 +19,14 @@
       "path": "/patterns/techno-floor.txt"
     },
     {
+      "id": "acid-303-909",
+      "title": "Acid 303 / 909",
+      "label": "アシッド・テクノ / 128 BPM",
+      "indexed_at": "2026-09-29",
+      "description": "909系4つ打ちと合成303風ベース。コード内のスライダーでカットオフ、共鳴、うねりを触る。",
+      "path": "/patterns/acid-303-909.txt"
+    },
+    {
       "id": "techno-dub",
       "title": "Techno 02・余白",
       "label": "ダブ寄り / 112 BPM",
