@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "last_verified": "2026-09-28",
+  "last_verified": "2026-09-29",
   "purpose": "Single source of truth for executable external code, browser samples, analysis tools, and repository-external model weights used by Music.",
   "policy": {
     "machine_registry": "config/music-machines.json",
@@ -50,6 +50,51 @@
     }
   },
   "dependencies": [
+    {
+      "id": "acidbros-workbench-module",
+      "kind": "browser_script",
+      "consumers": ["experiments/workbench/v1/build.mjs", "experiments/workbench/v1/src/index.html.template", "experiments/workbench/v1/third_party/acidbros"],
+      "source_url": "https://github.com/acidsound/acidBros/tree/f0b348a7a641f76689b8ca97f3c1e4b90ab9c44e",
+      "runtime_urls": [],
+      "version": "v153",
+      "revision": {
+        "type": "git_commit",
+        "value": "f0b348a7a641f76689b8ca97f3c1e4b90ab9c44e",
+        "status": "verified",
+        "evidence": "The local snapshot was copied from this exact commit; UPSTREAM.md records the selected files and local HTML adaptations."
+      },
+      "integrity": {
+        "algorithm": null,
+        "value": null,
+        "status": "pending",
+        "evidence": "The vendored HTML is intentionally modified; four WAV SHA-256 hashes are recorded in third_party/acidbros/UPSTREAM.md. No whole-tree digest is enforced yet."
+      },
+      "license": {
+        "status": "verified",
+        "spdx": "MIT",
+        "scope": "acidBros browser source and included TR-909 WAV files in the upstream repository",
+        "evidence": "The source commit README declares MIT License; third_party/acidbros/LICENSE and UPSTREAM.md preserve its notice and provenance."
+      },
+      "expected_size": {
+        "bytes": 1370540,
+        "status": "measured_local",
+        "scope": "selected runtime source and assets, excluding local license/provenance notes",
+        "evidence": "Measured from the selected vendored files on 2026-09-29; four WAV files total 438798 bytes."
+      },
+      "storage": {
+        "class": "tracked_static_assets",
+        "target": "experiments/workbench/v1/third_party/acidbros",
+        "tracked_in_git": true
+      },
+      "execution": {
+        "activation": "explicit_module_open",
+        "download_policy": "bundled_same_origin",
+        "machines": [],
+        "required_capabilities": []
+      },
+      "fallback": "Leave acidBros closed and continue using the existing Strudel workbench.",
+      "fail_closed": true
+    },
     {
       "id": "strudel-repl-workbench",
       "kind": "browser_script",

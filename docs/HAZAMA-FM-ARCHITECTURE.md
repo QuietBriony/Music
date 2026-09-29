@@ -29,9 +29,16 @@
 `experiments/workbench/v1/`はStrudelコードとKV上の3本のWAVを試す独立アプリ。
 同じMusic repoを使うが、既存GitHub Pages、`music-stack.pages.dev`、FM / Band Room / Core Rigの
 runtimeやService Workerには接続しない。別のCloudflare Pagesプロジェクトで配信し、
-ページ・試作コード・3本のWAVを公開する。Cloudflare Accessは使わない。
+ページ・試作コード・KVの3本のWAVを公開する。Cloudflare Accessは使わない。
 Strudel 1.3.0は`config/external-dependencies.json`に登録。音声素材はKVに置き、
 公開試作コードと名前付き索引は同アプリのGit管理ファイルに置く。
+2026-09-29追加の`acidBros` v153は同じPages配信の`/modules/acidbros/`に固定snapshotとして置く。
+ownerの明示許可で909のハット・シンバル4 WAV（計438,798 bytes）だけ例外的に同梱。
+同梱元commit・hash・MIT表示は`third_party/acidbros/UPSTREAM.md`に記録し、
+元アプリのService Worker登録・ズーム抑止・自動MIDI許可要求を外した。上流更新は自動ではない。
+起動は試奏台の明示操作のみ。Strudelを止めてから表示し、閉じるかStrudelのPlayで
+iframeを破棄して停止する。両者の音声clock・パターン・保存形式は未接続。
+acidBrosの`FILE`保存は同じoriginの別localStorageキーで、Strudel下書きとは独立。
 初期の4小節をテストとして残し、aphex1のドラム調整版・高速初稿、
 テクノ2案、自動変奏、Acid 303 / 909のハード版と初稿の計8件を別IDで選択・コード復元できる。
 Acidの909ドラムはStrudel標準の外部バンク、303風ベースはブラウザ合成。

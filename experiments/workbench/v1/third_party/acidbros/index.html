@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AcidBros: WebAudio Acid Studio</title>
+  <link rel="stylesheet" type="text/css" href="css/base.css" />
+  <link rel="stylesheet" type="text/css" href="css/icons.css" />
+  <link rel="stylesheet" type="text/css" href="css/layout.css" />
+  <link rel="stylesheet" type="text/css" href="css/components.css" />
+  <link rel="stylesheet" type="text/css" href="css/machines.css" />
+  <link rel="stylesheet" type="text/css" href="css/overlays.css" />
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+
+  <!-- SEO -->
+  <meta name="description"
+    content="AcidBros is a browser-based TB-303 and TR-909 emulator. Create acid techno tracks directly in your browser with this powerful WebAudio synthesizer. Features authentic sound generation, pattern sequencing, and song mode." />
+  <meta name="keywords"
+    content="TB-303, TR-909, Acid Techno, WebAudio, Synthesizer, Drum Machine, Browser DAW, AcidBros, Roland Emulator, Music Production" />
+  <meta name="author" content="AcidBros" />
+  <meta name="theme-color" content="#111111" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="AcidBros: WebAudio Acid Studio" />
+  <meta property="og:description"
+    content="Create acid techno tracks in your browser. Authentic TB-303 and TR-909 emulation with sequencer and song mode." />
+  <meta property="og:site_name" content="AcidBros" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:title" content="AcidBros: WebAudio Acid Studio" />
+  <meta property="twitter:description"
+    content="Create acid techno tracks in your browser. Authentic TB-303 and TR-909 emulation with sequencer and song mode." />
+  <meta property="twitter:creator" content="@acidsound" />
+  <!-- Embedded module: no PWA registration or zoom blocking on the workbench origin. -->
+</head>
+
+<body>
+  <div class="rack">
+    <!-- Learn Mode Exit Banner (Moved inside rack) -->
+    <div id="learnModeExitBanner" class="learn-mode-exit-banner hidden">
+      <div class="learn-mode-banner-content">
+        <span class="learn-mode-banner-text">🎯 MIDI Learn Mode Active - Click any control to map</span>
+        <button id="exitLearnModeBtn" class="exit-learn-mode-btn">Exit Learn Mode</button>
+      </div>
+    </div>
+
+    <!-- Transport -->
+    <div class="top-bar">
+      <div class="controls-row">
+        <div class="transport-controls">
+          <div class="version-display">v153</div>
+          <button id="fileManagerBtn" class="transport-icon-btn" title="File Manager" aria-label="File Manager">
+            <span class="icon icon-lg icon-folder"></span>
+          </button>
+          <button id="playBtn" class="transport-icon-btn play" data-midi-mappable="button" title="Run"
+            aria-label="Play">
+            <span class="icon icon-lg icon-play"></span>
+          </button>
+          <button id="stopBtn" class="transport-icon-btn stop" data-midi-mappable="button" title="Stop"
+            aria-label="Stop">
+            <span class="icon icon-lg icon-stop"></span>
+          </button>
+          <button id="randomBtn" class="transport-icon-btn" title="Randomize" aria-label="Randomize Pattern">
+            <span class="icon icon-lg icon-dice"></span>
+          </button>
+          <button id="clearBtn" class="transport-icon-btn" title="Clear" aria-label="Clear Pattern">
+            <span class="icon icon-lg icon-trash"></span>
+          </button>
+          <button id="shareBtn" class="transport-icon-btn share" title="Share" aria-label="Share URL">
+            <span class="icon icon-lg icon-share"></span>
+          </button>
+          <button id="settingsBtn" class="transport-icon-btn" title="Settings" aria-label="Settings">
+            <span class="icon icon-lg icon-cog"></span>
+          </button>
+          <button id="bmcBtn" class="transport-icon-btn bmc" title="Buy me a coffee">
+            <span class="icon icon-lg icon-coffee"></span>
+          </button>
+        </div>
+        <div class="tempo-group">
+          <div class="oscilloscope-container" id="scopeContainer">
+            <canvas id="oscilloscope" width="120" height="44"></canvas>
+            <button id="scopeToggle" class="scope-toggle" title="Toggle Oscilloscope (Performance)"></button>
+          </div>
+          <div class="tempo-container">
+            <div id="tempo-knob-container"></div>
+            <div class="tempo-display-wrapper">
+              <div class="tempo-label">TEMPO</div>
+              <div class="led-display" id="tempoDisplay">
+                <div class="digit" id="digit-100"></div>
+                <div class="digit" id="digit-10"></div>
+                <div class="digit" id="digit-1"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Swing Control Panel -->
+      <div class="swing-control-panel" id="swingPanel">
+        <div class="swing-label">SWING</div>
+        <div class="ribbon-controller" id="ribbonController">
+          <div class="swing-track"></div>
+          <div class="swing-guide swing-guide-25"></div>
+          <div class="swing-guide swing-guide-75"></div>
+          <div class="swing-dot fixed swing-dot-0"></div>
+          <div class="swing-dot fixed swing-dot-50"></div>
+          <div class="swing-dot moving" id="swingDot1"></div>
+          <div class="swing-dot moving" id="swingDot2"></div>
+        </div>
+        <div class="swing-display" id="swingDisplay">50</div>
+      </div>
+    </div>
+
+    <!-- Mode Controls (Pattern/Song Mode) -->
+    <div id="mode-controls" class="mode-controls">
+      <div class="mode-switch-group">
+        <!-- Item 0: Spacer for layout balance -->
+        <div class="switch-group-item spacer mode-switch-spacer"></div>
+        <!-- Item 1: Mode Switch -->
+        <div class="switch-group-item">
+          <div class="switch-label">MODE</div>
+          <div class="mode-switch">
+            <input type="radio" name="mode_switch" id="mode_pattern" value="pattern" checked>
+            <label for="mode_pattern" title="Pattern Mode"><span class="icon icon-pattern"></span></label>
+
+            <input type="radio" name="mode_switch" id="mode_song" value="song">
+            <label for="mode_song" title="Song Mode"><span class="icon icon-song"></span></label>
+
+            <div class="switch-handle"></div>
+          </div>
+        </div>
+        <!-- Item 2: Shuffle -->
+        <div class="switch-group-item">
+          <div class="switch-label">SHUFFLE</div>
+          <button id="shuffleBtn" class="icon-action-btn" title="Swing/Shuffle" aria-label="Swing and Shuffle Control">
+            <span class="icon icon-shuffle"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Context Controls Container -->
+      <div id="mode-context-controls" class="mode-context-controls">
+        <!-- Pattern Mode Controls -->
+        <div id="pattern-controls-container">
+          <div class="pattern-select-row">
+            <button class="pat-btn" id="pat-btn-0" data-pattern="0" data-midi-mappable="button">P1</button>
+            <button class="pat-btn" id="pat-btn-1" data-pattern="1" data-midi-mappable="button">P2</button>
+            <button class="pat-btn" id="pat-btn-2" data-pattern="2" data-midi-mappable="button">P3</button>
+            <button class="pat-btn" id="pat-btn-3" data-pattern="3" data-midi-mappable="button">P4</button>
+            <button class="pat-btn" id="pat-btn-4" data-pattern="4" data-midi-mappable="button">P5</button>
+            <button class="pat-btn" id="pat-btn-5" data-pattern="5" data-midi-mappable="button">P6</button>
+            <button class="pat-btn" id="pat-btn-6" data-pattern="6" data-midi-mappable="button">P7</button>
+            <button class="pat-btn" id="pat-btn-7" data-pattern="7" data-midi-mappable="button">P8</button>
+            <button class="pat-btn" id="pat-btn-8" data-pattern="8" data-midi-mappable="button">P9</button>
+            <button class="pat-btn" id="pat-btn-9" data-pattern="9" data-midi-mappable="button">P10</button>
+            <button class="pat-btn" id="pat-btn-10" data-pattern="10" data-midi-mappable="button">P11</button>
+            <button class="pat-btn" id="pat-btn-11" data-pattern="11" data-midi-mappable="button">P12</button>
+            <button class="pat-btn" id="pat-btn-12" data-pattern="12" data-midi-mappable="button">P13</button>
+            <button class="pat-btn" id="pat-btn-13" data-pattern="13" data-midi-mappable="button">P14</button>
+            <button class="pat-btn" id="pat-btn-14" data-pattern="14" data-midi-mappable="button">P15</button>
+            <button class="pat-btn" id="pat-btn-15" data-pattern="15" data-midi-mappable="button">P16</button>
+          </div>
+          <div class="pattern-actions">
+            <button id="copyPatternBtn" class="icon-action-btn" title="Copy Pattern"><span
+                class="icon icon-copy"></span></button>
+            <button id="pastePatternBtn" class="icon-action-btn" title="Paste Pattern"><span
+                class="icon icon-paste"></span></button>
+          </div>
+        </div>
+
+        <!-- Song Mode Controls -->
+        <div id="song-controls-container" class="hidden">
+          <div class="pattern-select-row">
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-0" data-pattern="0" data-midi-mappable="button"
+              title="Click to select and add to song">P1</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-1" data-pattern="1" data-midi-mappable="button"
+              title="Click to select and add to song">P2</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-2" data-pattern="2" data-midi-mappable="button"
+              title="Click to select and add to song">P3</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-3" data-pattern="3" data-midi-mappable="button"
+              title="Click to select and add to song">P4</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-4" data-pattern="4" data-midi-mappable="button"
+              title="Click to select and add to song">P5</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-5" data-pattern="5" data-midi-mappable="button"
+              title="Click to select and add to song">P6</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-6" data-pattern="6" data-midi-mappable="button"
+              title="Click to select and add to song">P7</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-7" data-pattern="7" data-midi-mappable="button"
+              title="Click to select and add to song">P8</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-8" data-pattern="8" data-midi-mappable="button"
+              title="Click to select and add to song">P9</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-9" data-pattern="9" data-midi-mappable="button"
+              title="Click to select and add to song">P10</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-10" data-pattern="10" data-midi-mappable="button"
+              title="Click to select and add to song">P11</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-11" data-pattern="11" data-midi-mappable="button"
+              title="Click to select and add to song">P12</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-12" data-pattern="12" data-midi-mappable="button"
+              title="Click to select and add to song">P13</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-13" data-pattern="13" data-midi-mappable="button"
+              title="Click to select and add to song">P14</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-14" data-pattern="14" data-midi-mappable="button"
+              title="Click to select and add to song">P15</button>
+            <button class="pat-btn song-pat-btn" id="song-pat-btn-15" data-pattern="15" data-midi-mappable="button"
+              title="Click to select and add to song">P16</button>
+          </div>
+          <div id="song-timeline" class="song-timeline"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File Manager Overlay & Popover -->
+    <div id="fileManagerOverlay" class="file-manager-overlay hidden">
+      <div id="fileManagerPopover" class="file-manager-popover">
+        <div class="file-manager-header">
+          <h3 class="modal-title">FILE MANAGER</h3>
+          <button id="fileCloseBtn" class="file-close-btn" title="Close">
+            <span class="icon icon-close"></span>
+          </button>
+
+          <!-- Actions Row -->
+          <div class="file-header-actions">
+            <button id="fileNewBtn" class="file-action-btn" title="New">
+              <span class="icon icon-file-new"></span>
+            </button>
+            <button id="fileSaveBtn" class="file-action-btn" title="Save">
+              <span class="icon icon-file-save"></span>
+            </button>
+            <button id="fileImportBtn" class="file-action-btn" title="Import">
+              <span class="icon icon-file-import"></span>
+            </button>
+            <button id="fileExportBtn" class="file-action-btn" title="Export">
+              <span class="icon icon-file-export"></span>
+            </button>
+            <button id="fileDeleteAllBtn" class="file-action-btn" title="Delete All">
+              <span class="icon icon-file-delete-all"></span>
+            </button>
+          </div>
+        </div>
+        <div class="file-list-container">
+          <div id="fileList" class="file-list"></div>
+        </div>
+        <input type="file" id="fileImportInput" accept=".json" class="hidden">
+      </div>
+    </div>
+
+    <!-- DRUM SYNTH EDITOR OVERLAY -->
+    <div id="drumSynthOverlay" class="overlay hidden">
+      <div class="modal drumsynth-modal">
+        <div class="modal-header">
+          <div class="header-left">
+            <span class="modal-title">DRUM SYNTH EDITOR</span>
+            <span class="current-voice-label" id="ds-voice-label">BD (Bass Drum)</span>
+          </div>
+          <div class="header-right">
+            <button class="header-action-btn icon-only" id="ds-reset-btn" title="Reset to Factory">
+              <span class="icon icon-refresh"></span>
+            </button>
+            <button class="header-action-btn icon-only" id="ds-load-preset" title="Load Preset">
+              <span class="icon icon-folder"></span>
+            </button>
+            <button class="header-action-btn icon-only" id="ds-save-preset" title="Save Preset">
+              <span class="icon icon-file-save"></span>
+            </button>
+            <button class="close-btn" id="ds-close-btn">&times;</button>
+          </div>
+        </div>
+
+        <div class="modal-body drumsynth-body">
+          <!-- Oscillators Row -->
+          <div class="ds-section-row">
+            <!-- OSC 1 -->
+            <div class="ds-module" id="ds-osc1">
+              <div class="module-header">
+                <span class="module-title">OSC 1 (Main)</span>
+                <div class="ds-switch">
+                  <input type="radio" name="ds_sw_osc1" id="ds_sw_osc1_off" value="false">
+                  <label for="ds_sw_osc1_off">OFF</label>
+                  <input type="radio" name="ds_sw_osc1" id="ds_sw_osc1_on" value="true" checked>
+                  <label for="ds_sw_osc1_on">ON</label>
+                  <div class="switch-handle"></div>
+                </div>
+              </div>
+              <div class="module-controls">
+                <div class="ds-radio-group" data-param="wave">
+                  <input type="radio" name="w_osc1" id="w_osc1_tri" value="Tri" checked>
+                  <label for="w_osc1_tri">TRI</label>
+                  <input type="radio" name="w_osc1" id="w_osc1_sin" value="Sine">
+                  <label for="w_osc1_sin">SIN</label>
+                  <input type="radio" name="w_osc1" id="w_osc1_sqr" value="Sqr">
+                  <label for="w_osc1_sqr">SQR</label>
+                </div>
+                <div class="knob-group" id="ds-osc1-knobs"></div>
+              </div>
+            </div>
+            <!-- OSC 2 -->
+            <div class="ds-module" id="ds-osc2">
+              <div class="module-header">
+                <span class="module-title">OSC 2</span>
+                <div class="ds-switch">
+                  <input type="radio" name="ds_sw_osc2" id="ds_sw_osc2_off" value="false" checked>
+                  <label for="ds_sw_osc2_off">OFF</label>
+                  <input type="radio" name="ds_sw_osc2" id="ds_sw_osc2_on" value="true">
+                  <label for="ds_sw_osc2_on">ON</label>
+                  <div class="switch-handle"></div>
+                </div>
+              </div>
+              <div class="module-controls">
+                <div class="ds-radio-group" data-param="wave">
+                  <input type="radio" name="w_osc2" id="w_osc2_tri" value="Tri" checked>
+                  <label for="w_osc2_tri">TRI</label>
+                  <input type="radio" name="w_osc2" id="w_osc2_sin" value="Sine">
+                  <label for="w_osc2_sin">SIN</label>
+                  <input type="radio" name="w_osc2" id="w_osc2_sqr" value="Sqr">
+                  <label for="w_osc2_sqr">SQR</label>
+                </div>
+                <div class="knob-group" id="ds-osc2-knobs"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ds-section-row">
+            <!-- OSC 3 -->
+            <div class="ds-module" id="ds-osc3">
+              <div class="module-header">
+                <span class="module-title">OSC 3</span>
+                <div class="ds-switch">
+                  <input type="radio" name="ds_sw_osc3" id="ds_sw_osc3_off" value="false" checked>
+                  <label for="ds_sw_osc3_off">OFF</label>
+                  <input type="radio" name="ds_sw_osc3" id="ds_sw_osc3_on" value="true">
+                  <label for="ds_sw_osc3_on">ON</label>
+                  <div class="switch-handle"></div>
+                </div>
+              </div>
+              <div class="module-controls">
+                <div class="ds-radio-group" data-param="wave">
+                  <input type="radio" name="w_osc3" id="w_osc3_tri" value="Tri" checked>
+                  <label for="w_osc3_tri">TRI</label>
+                  <input type="radio" name="w_osc3" id="w_osc3_sin" value="Sine">
+                  <label for="w_osc3_sin">SIN</label>
+                  <input type="radio" name="w_osc3" id="w_osc3_sqr" value="Sqr">
+                  <label for="w_osc3_sqr">SQR</label>
+                </div>
+                <div class="knob-group" id="ds-osc3-knobs"></div>
+              </div>
+            </div>
+            <!-- OSC 4 -->
+            <div class="ds-module" id="ds-osc4">
+              <div class="module-header">
+                <span class="module-title">OSC 4</span>
+                <div class="ds-switch">
+                  <input type="radio" name="ds_sw_osc4" id="ds_sw_osc4_off" value="false" checked>
+                  <label for="ds_sw_osc4_off">OFF</label>
+                  <input type="radio" name="ds_sw_osc4" id="ds_sw_osc4_on" value="true">
+                  <label for="ds_sw_osc4_on">ON</label>
+                  <div class="switch-handle"></div>
+                </div>
+              </div>
+              <div class="module-controls">
+                <div class="ds-radio-group" data-param="wave">
+                  <input type="radio" name="w_osc4" id="w_osc4_tri" value="Tri" checked>
+                  <label for="w_osc4_tri">TRI</label>
+                  <input type="radio" name="w_osc4" id="w_osc4_sin" value="Sine">
+                  <label for="w_osc4_sin">SIN</label>
+                  <input type="radio" name="w_osc4" id="w_osc4_sqr" value="Sqr">
+                  <label for="w_osc4_sqr">SQR</label>
+                </div>
+                <div class="knob-group" id="ds-osc4-knobs"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Click & Snap Section -->
+          <div class="ds-section-row">
+            <!-- Click Module -->
+            <div class="ds-module" id="ds-click">
+              <div class="module-header">
+                <span class="module-title">CLICK</span>
+                <div class="ds-switch">
+                  <input type="radio" name="ds_sw_click" id="ds_sw_click_off" value="false">
+                  <label for="ds_sw_click_off">OFF</label>
+                  <input type="radio" name="ds_sw_click" id="ds_sw_click_on" value="true" checked>
+                  <label for="ds_sw_click_on">ON</label>
+                  <div class="switch-handle"></div>
+                </div>
+              </div>
+              <div class="module-controls">
+                <div class="ds-radio-group" data-param="spacer"></div>
+                <div class="knob-group" id="ds-click-knobs"></div>
+              </div>
+            </div>
+            <!-- Snap Module -->
+            <div class="ds-module" id="ds-snap">
+              <div class="module-header">
+                <span class="module-title">SNAP</span>
+                <div class="ds-switch">
+                  <input type="radio" name="ds_sw_snap" id="ds_sw_snap_off" value="false">
+                  <label for="ds_sw_snap_off">OFF</label>
+                  <input type="radio" name="ds_sw_snap" id="ds_sw_snap_on" value="true" checked>
+                  <label for="ds_sw_snap_on">ON</label>
+                  <div class="switch-handle"></div>
+                </div>
+              </div>
+              <div class="module-controls">
+                <div class="ds-radio-group" data-param="spacer"></div>
+                <div class="knob-group" id="ds-snap-knobs"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Noise Section -->
+          <div class="ds-section-row">
+            <div class="ds-module wide-module" id="ds-noise">
+              <div class="module-header">
+                <span class="module-title">NOISE & FILTER</span>
+                <div class="ds-switch">
+                  <input type="radio" name="ds_sw_noise" id="ds_sw_noise_off" value="false">
+                  <label for="ds_sw_noise_off">OFF</label>
+                  <input type="radio" name="ds_sw_noise" id="ds_sw_noise_on" value="true" checked>
+                  <label for="ds_sw_noise_on">ON</label>
+                  <div class="switch-handle"></div>
+                </div>
+              </div>
+              <div class="module-controls">
+                <div class="ds-radio-group" data-param="filter_type">
+                  <input type="radio" name="f_noise" id="f_noise_lpf" value="LPF" checked>
+                  <label for="f_noise_lpf">LPF</label>
+                  <input type="radio" name="f_noise" id="f_noise_hpf" value="HPF">
+                  <label for="f_noise_hpf">HPF</label>
+                  <input type="radio" name="f_noise" id="f_noise_bpf" value="BPF">
+                  <label for="f_noise_bpf">BPF</label>
+                </div>
+                <div class="knob-group" id="ds-noise-knobs"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Noise2 Section -->
+          <div class="ds-section-row">
+            <div class="ds-module wide-module" id="ds-noise2">
+              <div class="module-header">
+                <span class="module-title">NOISE 2 & FILTER</span>
+                <div class="ds-switch">
+                  <input type="radio" name="ds_sw_noise2" id="ds_sw_noise2_off" value="false">
+                  <label for="ds_sw_noise2_off">OFF</label>
+                  <input type="radio" name="ds_sw_noise2" id="ds_sw_noise2_on" value="true" checked>
+                  <label for="ds_sw_noise2_on">ON</label>
+                  <div class="switch-handle"></div>
+                </div>
+              </div>
+              <div class="module-controls">
+                <div class="ds-radio-group" data-param="filter_type">
+                  <input type="radio" name="f_noise2" id="f_noise2_lpf" value="LPF">
+                  <label for="f_noise2_lpf">LPF</label>
+                  <input type="radio" name="f_noise2" id="f_noise2_hpf" value="HPF" checked>
+                  <label for="f_noise2_hpf">HPF</label>
+                  <input type="radio" name="f_noise2" id="f_noise2_bpf" value="BPF">
+                  <label for="f_noise2_bpf">BPF</label>
+                </div>
+                <div class="knob-group" id="ds-noise2-knobs"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Drum Shaper Section -->
+          <div class="ds-section-row">
+            <div class="ds-module wide-module hidden" id="ds-shaper">
+              <div class="module-header">
+                <span class="module-title">DRUM SHAPER</span>
+                <div class="ds-switch">
+                  <input type="radio" name="ds_sw_shaper" id="ds_sw_shaper_off" value="false">
+                  <label for="ds_sw_shaper_off">OFF</label>
+                  <input type="radio" name="ds_sw_shaper" id="ds_sw_shaper_on" value="true" checked>
+                  <label for="ds_sw_shaper_on">ON</label>
+                  <div class="switch-handle"></div>
+                </div>
+              </div>
+              <div class="module-controls">
+                <div class="ds-radio-group" data-param="spacer"></div>
+                <div class="knob-group" id="ds-shaper-knobs"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="ds-footer">
+          <div class="ds-footer-left ds-footer-flex-row">
+            <!-- Live Track Knobs (reused from 909 UI) -->
+            <div id="ds-live-knobs" class="knob-group-section ds-live-knobs-clean">
+              <!-- Dynamically populated -->
+            </div>
+
+            <div class="preview-controls-right ds-preview-controls-clean">
+              <span class="ds-play-label">Play</span>
+              <button class="preview-btn arcade-button" id="ds-preview-btn" title="Preview Drum Sound">
+              </button>
+            </div>
+          </div>
+          <div class="apply-controls">
+            <span class="current-voice-label" id="ds-voice-label-footer">BASS DRUM (BD)</span>
+            <button class="apply-btn" id="ds-apply-btn">APPLY</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Overlay -->
+    <div id="settingsOverlay" class="file-manager-overlay hidden">
+      <div id="settingsPopover" class="file-manager-popover settings-popover">
+        <div class="file-manager-header">
+          <h3 class="modal-title">SETTINGS</h3>
+          <button id="settingsCloseBtn" class="file-close-btn" title="Close">
+            <span class="icon icon-close"></span>
+          </button>
+        </div>
+
+        <div class="settings-container">
+          <div class="settings-sidebar">
+            <button class="settings-tab-btn active" data-tab="general">General</button>
+            <button class="settings-tab-btn" data-tab="midi">MIDI</button>
+          </div>
+          <div class="settings-content">
+            <!-- General Tab -->
+            <div id="tab-general" class="settings-tab-content active">
+              <div class="tab-section">
+                <div class="tab-header">
+                  <h4>Pattern Behavior</h4>
+                </div>
+                <div class="settings-option">
+                  <label class="settings-checkbox">
+                    <input type="checkbox" id="keepSoundSettingsCheckbox">
+                    <span class="checkmark"></span>
+                    <span class="label-text">Keep sound settings when changing patterns</span>
+                  </label>
+                  <p class="settings-help">When enabled, knobs and waveforms stay the same when switching patterns
+                    (useful for live performance). When disabled, each pattern has its own sound settings.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- MIDI Tab -->
+            <div id="tab-midi" class="settings-tab-content hidden">
+              <!-- MIDI Devices Section -->
+              <div class="tab-section">
+                <div class="tab-header">
+                  <h4>MIDI Devices</h4>
+                  <div class="tab-actions">
+                    <button id="midiRefreshBtn" class="file-action-btn" title="Refresh Devices">
+                      <span class="icon icon-sm icon-refresh"></span>
+                    </button>
+                  </div>
+                </div>
+                <div id="midiDeviceList" class="midi-device-list"></div>
+              </div>
+
+              <!-- MIDI Mappings Section -->
+              <div class="tab-section">
+                <div class="tab-header">
+                  <h4>MIDI Mappings</h4>
+                  <div class="tab-actions">
+                    <button id="midiClearAllBtn" class="file-action-btn" title="Clear All Mappings">
+                      <span class="icon icon-sm icon-trash"></span>
+                    </button>
+                  </div>
+                </div>
+                <div id="midiMappingList" class="file-list"></div>
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TB-303 Unit 1 -->
+    <div class="machine tb-303">
+      <div class="machine-header">
+        <h2>TB-303 <small>UNIT 1</small></h2>
+        <div class="waveform-control">
+          <button id="pianoToggle303_1" class="header-clear-btn piano-toggle-btn" title="Toggle Note Editor">
+            <span class="icon icon-sm icon-piano"></span>
+          </button>
+          <div class="waveform-switch-group">
+            <div class="switch-label">WAVEFORM</div>
+            <div class="waveform-switch" id="waveform-switch-1" data-midi-mappable="waveform-toggle" data-unit="1">
+              <input type="radio" name="wave303_1" id="wave-saw-1" value="sawtooth" checked>
+              <label for="wave-saw-1" title="Sawtooth"><span class="icon icon-saw"></span></label>
+              <input type="radio" name="wave303_1" id="wave-sq-1" value="square">
+              <label for="wave-sq-1" title="Square"><span class="icon icon-sq"></span></label>
+              <div class="switch-handle"></div>
+            </div>
+          </div>
+          <button id="clear303_1" class="header-clear-btn clear-303-btn" title="Clear Sequence">
+            <span class="icon icon-sm icon-trash"></span>
+          </button>
+          <button id="lock303_1" class="header-lock-btn" title="Lock Randomization">
+            <span class="icon icon-sm icon-unlocked" id="lock-icon-303-1-unlocked"></span>
+            <span class="icon icon-sm icon-locked hidden" id="lock-icon-303-1-locked"></span>
+          </button>
+        </div>
+      </div>
+      <div class="knob-group" id="knobs303_1"></div>
+      <div id="grid303_1" class="sequencer-303"></div>
+
+      <!-- Note Editor (Piano UI) Unit 1 -->
+      <div id="noteEditor303_1" class="note-editor hidden">
+        <div class="editor-header">
+          <div class="nav-group">
+            <button class="editor-btn prev-btn" title="Previous Step">&lt;</button>
+            <div class="step-indicator">01</div>
+            <button class="editor-btn next-btn" title="Next Step">&gt;</button>
+          </div>
+          <div class="nav-group">
+            <button class="editor-btn preview-toggle-btn active" title="Toggle Preview Sound">
+              <span class="icon icon-sm icon-speaker"></span>
+            </button>
+            <button class="editor-btn live-toggle-btn" title="Toggle TB-303 Live Mode">
+              <span class="icon icon-sm icon-song"></span>
+            </button>
+          </div>
+        </div>
+        <div class="editor-controls">
+          <div class="control-group octave-selector-group">
+            <span class="control-label">Oct</span>
+            <div class="octave-selector">
+              <button class="editor-btn octave-btn" data-val="1">dn</button>
+              <button class="editor-btn octave-btn" data-val="3">up</button>
+            </div>
+          </div>
+          <div class="control-group modifier-group">
+            <span class="control-label">Mod</span>
+            <button class="editor-btn mod-btn accent-btn">AC</button>
+            <button class="editor-btn mod-btn slide-btn">SL</button>
+          </div>
+          <div class="control-group rest-group">
+            <span class="control-label">Note</span>
+            <button class="editor-btn rest-btn">Off</button>
+          </div>
+        </div>
+        <div class="piano-container">
+          <div class="piano-keys-wrapper" id="pianoKeys303_1"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TB-303 Unit 2 -->
+    <div class="machine tb-303">
+      <div class="machine-header">
+        <h2>TB-303 <small>UNIT 2</small></h2>
+        <div class="waveform-control">
+          <button id="pianoToggle303_2" class="header-clear-btn piano-toggle-btn" title="Toggle Note Editor">
+            <span class="icon icon-sm icon-piano"></span>
+          </button>
+          <div class="waveform-switch-group">
+            <div class="switch-label">WAVEFORM</div>
+            <div class="waveform-switch" id="waveform-switch-2" data-midi-mappable="waveform-toggle" data-unit="2">
+              <input type="radio" name="wave303_2" id="wave-saw-2" value="sawtooth" checked>
+              <label for="wave-saw-2" title="Sawtooth"><span class="icon icon-saw"></span></label>
+              <input type="radio" name="wave303_2" id="wave-sq-2" value="square">
+              <label for="wave-sq-2" title="Square"><span class="icon icon-sq"></span></label>
+              <div class="switch-handle"></div>
+            </div>
+          </div>
+          <button id="clear303_2" class="header-clear-btn clear-303-btn" title="Clear Sequence">
+            <span class="icon icon-sm icon-trash"></span>
+          </button>
+          <button id="lock303_2" class="header-lock-btn" title="Lock Randomization">
+            <span class="icon icon-sm icon-unlocked" id="lock-icon-303-2-unlocked"></span>
+            <span class="icon icon-sm icon-locked hidden" id="lock-icon-303-2-locked"></span>
+          </button>
+        </div>
+      </div>
+      <div class="knob-group" id="knobs303_2"></div>
+      <div id="grid303_2" class="sequencer-303"></div>
+
+      <!-- Note Editor (Piano UI) Unit 2 -->
+      <div id="noteEditor303_2" class="note-editor hidden">
+        <div class="editor-header">
+          <div class="nav-group">
+            <button class="editor-btn prev-btn" title="Previous Step">&lt;</button>
+            <div class="step-indicator">01</div>
+            <button class="editor-btn next-btn" title="Next Step">&gt;</button>
+          </div>
+          <div class="nav-group">
+            <button class="editor-btn preview-toggle-btn active" title="Toggle Preview Sound">
+              <span class="icon icon-sm icon-speaker"></span>
+            </button>
+            <button class="editor-btn live-toggle-btn" title="Toggle TB-303 Live Mode">
+              <span class="icon icon-sm icon-song"></span>
+            </button>
+          </div>
+        </div>
+        <div class="editor-controls">
+          <div class="control-group octave-selector-group">
+            <span class="control-label">Oct</span>
+            <div class="octave-selector">
+              <button class="editor-btn octave-btn" data-val="1">dn</button>
+              <button class="editor-btn octave-btn" data-val="3">up</button>
+            </div>
+          </div>
+          <div class="control-group modifier-group">
+            <span class="control-label">Mod</span>
+            <button class="editor-btn mod-btn accent-btn">AC</button>
+            <button class="editor-btn mod-btn slide-btn">SL</button>
+          </div>
+          <div class="control-group rest-group">
+            <span class="control-label">Note</span>
+            <button class="editor-btn rest-btn">Off</button>
+          </div>
+        </div>
+        <div class="piano-container">
+          <div class="piano-keys-wrapper" id="pianoKeys303_2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TR-909 -->
+    <div class="machine tr-909">
+      <div class="machine-header">
+        <h2>TR-909</h2>
+        <button id="clear909Btn" class="header-clear-btn" title="Clear All Tracks">
+          <span class="icon icon-sm icon-trash"></span>
+        </button>
+        <button id="lock909" class="header-lock-btn" title="Lock Randomization">
+          <span class="icon icon-sm icon-unlocked" id="lock-icon-909-unlocked"></span>
+          <span class="icon icon-sm icon-locked hidden" id="lock-icon-909-locked"></span>
+        </button>
+      </div>
+      <div id="tracks909"></div>
+    </div>
+  </div>
+
+  <!-- Audio Resume Overlay (iOS Safari background resume) -->
+  <div id="audioResumeOverlay" class="audio-resume-overlay hidden">
+    <div class="audio-resume-content">
+      <div class="audio-resume-icon">
+        <span class="icon icon-play icon-xl"></span>
+      </div>
+      <div class="audio-resume-text">Tap to Resume</div>
+      <div class="audio-resume-subtext">Audio was paused in background</div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast">Link copied to clipboard!</div>
+</body>
+<script type="module" src="js/main.js"></script>
+
+</html>

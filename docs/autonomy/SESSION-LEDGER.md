@@ -19,6 +19,24 @@
 
 ---
 
+## 2026-09-29 — 試奏台に303×2＋909の独立ブラウザモジュール (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 既存試奏台からモジュラー風に303・909を触り、スマホでも専用ステップ画面を使う
+- repos      : Music（独立Cloudflare試奏台、Listen、依存台帳。sister repo不変）
+- implemented: acidBros v153を固定snapshotとして収録し、303×2台・909の16-step画面を
+  ページ内または全画面で開く。owner許可で909用4 WAV計438,798 bytesを同梱。
+  起動時にStrudelを停止し、閉じる/Strudel Play時にiframeを破棄して停止する。
+  上流のService Worker登録・ズーム抑止・自動MIDI許可を除去。出所、変更点、sample hashと
+  独立した保存方式を記録。390pxブラウザで表示・WAV読込・WebAudioWorklet起動・切替を確認。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0（最終gate）
+- backlog    : BL-049継続。共通session・音声routing・コード変換は未実装
+- next       : BL-049 — 本人が実iPhoneで303/909を試聴し、FILE保存と全画面操作を確認。
+  その後、共通sessionと安全な音声routing・比較/undoを設計する
+- blockers   : 実iPhoneの出音・長時間負荷・本人の好みは未判定。StrudelとacidBrosの時計は独立
+
+---
+
 ## 2026-09-29 — Strudel試奏台に作品別LEVELと2デッキ同期ミックス (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）

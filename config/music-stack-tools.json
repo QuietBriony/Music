@@ -60,10 +60,10 @@
     {
       "id": "strudel-workbench", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Strudel Live Workbench", "href": "https://music-private-live-workbench.pages.dev/", "action": "音とコードを触る",
-      "purpose": "公開試作を名前から戻し、作品別音量を合わせ、2デッキで同期ミックスしながらStrudelコードを触る試奏台。",
-      "first_step": "Acid 303 / 909を選ぶ → Play → LEVELで音量を合わせる。2デッキはA/Bを選び、組み合わせを開いて横フェーダーで混ぜる。",
-      "outputs": "公開試作8件はGitで版管理。作品別音量・2デッキ設定・名前付きコード下書きはその端末のブラウザで復元できる。",
-      "boundary": "2デッキはAのテンポに同期する単一Strudel演奏で独立DJデッキではない。音量の自動均一化、実iPhone同時再生、端末間同期、チャット即時反映は未実装。ページ・試作コード・3本のWAVは公開。",
+      "purpose": "公開試作をStrudelコードと2デッキで触り、別モジュールで303×2台・909のステップ演奏もできる試奏台。",
+      "first_step": "コードならAcid 303 / 909を選ぶ → Play。つまみなら「この中で開く」→中のRUN。スマホでは全画面で開ける。",
+      "outputs": "Strudelの公開試作8件はGit管理、LEVEL・2デッキ・コード下書きは端末保存。acidBrosのFILE保存は別の端末内領域。",
+      "boundary": "acidBrosは同梱した独立エンジンで、Strudelとの音・BPM・パターン同期やコード変換は未実装。実iPhone試聴、端末間同期、チャット即時反映も未確認。ページ・コード・WAV計7本は公開。",
       "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }]
     },
     {

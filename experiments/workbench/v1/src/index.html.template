@@ -28,6 +28,46 @@
         <span>作品ごとの音量を合わせ、2デッキで重ねられます</span>
       </section>
 
+      <section class="module-rack" aria-labelledby="module-rack-title">
+        <div class="module-rack-heading">
+          <div>
+            <p class="eyebrow">PATCH BAY / BROWSER MACHINES</p>
+            <h2 id="module-rack-title">音のモジュールを選ぶ</h2>
+            <p>コードで組むStrudelと、16ステップを触る303＋909。今は演奏を切り替えて使います。</p>
+          </div>
+        </div>
+        <div class="module-grid">
+          <article class="module-card">
+            <span class="module-number">01 / CODE</span>
+            <h3>Strudel 試奏台</h3>
+            <p>下の作品一覧と2デッキ。コード、LEVEL、フェーダーを編集できます。</p>
+            <a href="#editor-title">コードへ ↓</a>
+          </article>
+          <article class="module-card module-card-acid">
+            <span class="module-number">02 / MACHINE</span>
+            <h3>acidBros · 303 × 2 ＋ 909</h3>
+            <p>303の発振器→フィルター→ディレイ、909の11パートをステップとつまみで演奏。音はブラウザ内で作ります。</p>
+            <div class="module-card-actions">
+              <button id="acid-module-open" type="button" aria-controls="acid-module-stage" aria-expanded="false">この中で開く</button>
+              <a id="acid-module-card-full" href="/modules/acidbros/" target="_blank" rel="noopener">全画面で開く ↗</a>
+            </div>
+          </article>
+        </div>
+        <div id="acid-module-stage" class="module-stage" hidden>
+          <div class="module-stage-actions">
+            <div><strong>acidBros / 303 × 2 ＋ 909</strong><span>RUNで音を出す。閉じると演奏が止まります。</span></div>
+            <div>
+              <a id="acid-module-full" href="/modules/acidbros/" target="_blank" rel="noopener">全画面で開く ↗</a>
+              <button id="acid-module-close" type="button">閉じて停止</button>
+            </div>
+          </div>
+          <p id="acid-module-status" role="status">読み込み前です。</p>
+          <iframe id="acid-module-frame" title="acidBros 303と909の演奏画面" allow="autoplay; midi" loading="lazy"></iframe>
+          <p class="module-stage-note">FILEで保存してから閉じてください。保存先はこの端末のブラウザです。Strudelのコード・2デッキとはまだ同期せず、相互に音やパターンは渡しません。</p>
+          <p class="module-stage-note">スマホで操作面が狭い時は「全画面で開く」。303のCUTOFFは明るさ、RESONANCEは「ミョン」、DECAYはうねりの長さ。909は各ドラムの行をタップして打点を置きます。</p>
+        </div>
+      </section>
+
       <section class="deck-setup" aria-labelledby="deck-title">
         <div>
           <p class="eyebrow">TWO DECKS / ONE CLOCK</p>
@@ -158,6 +198,7 @@
         <p>公開試作が増えたらページを再読込してください。再生中に一覧から別の試作を選ぶと演奏を切り替えます。チャットの指示を自動で受け取る機能はまだありません。</p>
         <p>2デッキは一つのStrudel演奏にコードをまとめて同期再生します。独立した2台のプレーヤーではありません。「この端末に保存」で組み合わせのコードを下書きに残せます。</p>
         <p>Acid 303 / 909のドラムはStrudel標準の外部音源バンクを使います。初回の音読み込みには少し時間がかかることがあります。</p>
+        <p>acidBrosは<a href="https://github.com/acidsound/acidBros" target="_blank" rel="noreferrer">元のブラウザ作品</a>をこの試奏台の独立モジュールとして収録しました。909用の小さな音声4本も同梱しています。</p>
         <a href="https://github.com/QuietBriony/Music/tree/main/experiments/workbench/v1" target="_blank" rel="noreferrer">このアプリのソースと手順 ↗</a>
       </footer>
     </main>

@@ -568,7 +568,7 @@
           <article><h3>Music / Listening Loop</h3><p>20秒の3案を比べ、好みを一つ選んで次の候補へ進む実験。過去の曲を自動読込する編集画面ではありません。</p><a class="mini-link" href="experiments/listening-loop/v1/">3つ聴いて、ひとつ育てる →</a></article>
           <article><h3>Hazama / Sensory Response Lab</h3><p>小さな回路を使う音の変化と、通常の変調を比較する試作。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/sensory-audio-lab.html">回路と変調を比べる →</a></article>
           <article><h3>Hazama / 世界が音で応える</h3><p>沈む地面・脈動・断片・混合のA〜Dを比較。ゲームの場面に音がどう応えるかを探る場所です。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/scene-response-lab.html">場面の反応音を比べる →</a></article>
-          <article><h3>Music / Strudel Live Workbench</h3><p>aphex1、テクノ、アシッド、自動変奏、元のテストを聴き比べる公開試奏台。作品別音量を合わせ、2デッキで組み合わせられます。編集は端末内に保存できます。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/">音とコードを触る →</a></article>
+          <article><h3>Music / Live Workbench</h3><p>aphex1、テクノ、アシッドのStrudelコードと2デッキ、別モジュールの303×2台・909を同じ試奏台から使えます。編集は各モジュールで端末内に保存します。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/">音とコードを触る →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?module=acidbros">303＋909を開く →</a></article>
           <p>HazamaはMusicと別のゲームrepoです。試聴候補と本体の採用状態は別に確認し、各実験の評価が自動で共有されるとは扱いません。</p>
         </div>
       </details>
@@ -601,9 +601,10 @@
     </section>
 
     <section id="workbench-plan" aria-labelledby="workbench-title">
-      <div class="section-head"><h2 id="workbench-title">コードで音を触る</h2><p class="section-note">Strudelの小さな試奏台から。</p></div>
-      <p class="guide-note">aphex1、テクノ2案、Acid 303 / 909のハード版と初稿、自動変奏、元のテストから選ぶとコードが編集欄に戻ります。最初にPlayを押し、再生中は一覧を選ぶだけで切り替え。作品別のLEVELは端末に保存でき、ページ先頭の2デッキではA/B音量と横フェーダーで2試作を同期ミックス。BはAのテンポで鳴ります。ハード版Acidの縦フェーダーは明るさ・共鳴・歪み・長さを変えます。気に入った編集や組み合わせは端末に名前付きで保存できます。チャットから公開版への即時同期はまだありません。</p>
+      <div class="section-head"><h2 id="workbench-title">コードと303・909で音を触る</h2><p class="section-note">一つの試奏台に二つの演奏面。</p></div>
+      <p class="guide-note">Strudelではaphex1、テクノ2案、Acid 303 / 909、自動変奏、元のテストをコードから演奏。作品別LEVELと2デッキ同期ミックスも使えます。別の「303＋909を開く」では、2台の303と11パートの909を16ステップとつまみで演奏。こちらの909用WAVは小さな4本を同じページへ同梱しています。両演奏面の時計・保存形式はまだ別で、切替時に前の演奏を停止します。各々の端末内保存はできますが、チャットから公開版への即時同期は未実装です。</p>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">Acid 303 / 909を触る →</a>
+      <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?module=acidbros">303＋909のステップ画面を開く →</a>
       <details class="tool-group"><summary>この先の制作台設計を見る <span>共通session・履歴は未実装</span></summary><div class="parked-plan">
       <p class="guide-note">目指すのは<strong>「音を聴く → 一部分をいじる → 元と比べる → 続きから再開する」</strong>こと。
         まずはブラウザで動く構成にし、Tidalのインストールを前提にしません。</p>
@@ -687,11 +688,11 @@
     <article class="tool-item" id="tool-strudel-workbench" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
       <h3>Strudel Live Workbench</h3>
-      <p>公開試作を名前から戻し、作品別音量を合わせ、2デッキで同期ミックスしながらStrudelコードを触る試奏台。</p>
+      <p>公開試作をStrudelコードと2デッキで触り、別モジュールで303×2台・909のステップ演奏もできる試奏台。</p>
       <dl>
-        <dt>最初の一手</dt><dd>Acid 303 / 909を選ぶ → Play → LEVELで音量を合わせる。2デッキはA/Bを選び、組み合わせを開いて横フェーダーで混ぜる。</dd>
-        <dt>残るもの</dt><dd>公開試作8件はGitで版管理。作品別音量・2デッキ設定・名前付きコード下書きはその端末のブラウザで復元できる。</dd>
-        <dt>できることの境界</dt><dd>2デッキはAのテンポに同期する単一Strudel演奏で独立DJデッキではない。音量の自動均一化、実iPhone同時再生、端末間同期、チャット即時反映は未実装。ページ・試作コード・3本のWAVは公開。</dd>
+        <dt>最初の一手</dt><dd>コードならAcid 303 / 909を選ぶ → Play。つまみなら「この中で開く」→中のRUN。スマホでは全画面で開ける。</dd>
+        <dt>残るもの</dt><dd>Strudelの公開試作8件はGit管理、LEVEL・2デッキ・コード下書きは端末保存。acidBrosのFILE保存は別の端末内領域。</dd>
+        <dt>できることの境界</dt><dd>acidBrosは同梱した独立エンジンで、Strudelとの音・BPM・パターン同期やコード変換は未実装。実iPhone試聴、端末間同期、チャット即時反映も未確認。ページ・コード・WAV計7本は公開。</dd>
       </dl>
       <a class="mini-link" data-tool-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/">Strudel Live Workbench — 音とコードを触る</a>
     </article>

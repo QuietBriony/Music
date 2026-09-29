@@ -66,12 +66,17 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   公開8試作の作品別音量LEVELは端末内にID別保存。2デッキではA/B選択・各音量・crossfadeを
   一つのStrudel clockで演奏し、BをAのテンポに同期する。組み合わせコードは既存の下書き保存で戻せる。
   自動音量均一化や独立した2 transportではない。実iPhoneの同時再生負荷・本人の音量合わせは未判定。
+  2026-09-29にacidBros v153を`third_party/acidbros/`へ固定snapshotとして収録し、
+  `/?module=acidbros`から303×2・909の16-step演奏を開ける。909用4 WAV（計438,798 bytes）は
+  ownerがこの独立試奏台に限ってrepo同梱を明示許可した例外。元のService Worker登録と自動MIDI許可要求は削除。
+  Strudelとは別clock・別保存形式で、切替時に前の演奏を停止。自由配線・音声mix・コード変換は未実装。
+  上流の自動更新はせず、出所・変更点・hashは`third_party/acidbros/UPSTREAM.md`に記録。
   下書き名入力と未保存の切り替え確認はページ内UIで行う。
   閲覧者の名前付き下書きはその端末のブラウザだけに保存。Surface側の編集成果と
   端末間同期、チャットからの即時反映、追加試作の本人試聴はまだ取り込んでいない。
   Computer Useで触れるのも接続したブラウザ画面だけで、スマホとの共通sessionではない。
   手順と制約は同ディレクトリの`README.md`。
-- browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の26件が正本。
+- browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の27件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
 - 現行cacheは`hazama-fm-v403`。Band Room runtime markerは`band-room.js?v=br-237` /
   `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
