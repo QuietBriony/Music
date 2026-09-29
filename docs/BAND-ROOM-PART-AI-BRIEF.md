@@ -2,6 +2,17 @@
 
 新しいチャット（Claude / Codex）が最初に読む文書。対応する backlog は **BL-050**。
 
+> 2026-09-29 進捗：Human FlyからドラムのCPU-only測定を開始。
+> `scripts/measure-part-fidelity.py` と `docs/part-fidelity-tabasco-drums-20260929.json` は
+> Tabasco 7曲のドラムだけの**探索的baseline**。6曲にdrum_lineがあり、曲`tabasco`は
+> frame fallbackなので同ハーネスでは採点しない。stem高域のfluxはhat確定ラベルではない。
+> Human Fly 9–16小節は独立検出器がK41/S21/高域44を検出。±30msではK26/S15が
+> 一致し、±40msではK39/S20。検出器と採譜時刻の系統差が約27msあるため、合格判定は保留。
+> v403ではphone-lightの8打/小節を維持したまま、選択済みhatが未選択の
+> kick/snare/crashを追い出さないようにし、採譜曲へのsection crash追加を止めた。
+> Human Fly全曲のlight保持はK444→446、S260→264、crash5→5（元行K469/S325/C7）。
+> 次は実スケジューラーのdump、時刻較正、高域の同時打ち採譜。7曲×4パートの完成判定は未着手。
+
 基準の状態：Music commit `1c31d10`、sw `hazama-fm-v402`（sw.js:10）、`band-room.js?v=br-236`（band-room.html:30）。
 行番号はこの時点のもの。略号：BR = band-room.js、T = scripts/transcribe-stem-lines.py、L = scripts/check-band-room-logic.mjs。
 作り方：パート別の読み取り 6 体 + 曲データ／道具 + 履歴／制約の調査 → 統合 → 照合役がコードと突き合わせて 11 件訂正・9 件補足。

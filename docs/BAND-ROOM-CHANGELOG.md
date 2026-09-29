@@ -1,6 +1,17 @@
-# Band Room - Changelog (v65 -> v402 compact)
+# Band Room - Changelog (v65 -> v403 compact)
 
-Current sw.js VERSION: v402. Latest Band Room runtime change: v401 (HAZAMA authored-rest pocket + truthful arp bulk controls). v402 changes only the shared Listen/guide surface and its cache, not the audio runtime. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE, and exact lyric boundaries. v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard).
+Current sw.js VERSION: v403. Latest Band Room runtime change: v403 (Tabasco drum light-row priority and section-crash guard). HAZAMA playability candidate remains v401. v402 changed only the shared Listen/guide surface and its cache. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE, and exact lyric boundaries. v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard).
+
+## v403 compact - ARCB / Tabasco drum fidelity first pass
+
+- 既存のBand Roomで軽量再生の8打/小節上限を維持し、従来のvelocity/slot選択で落ちたkick・snare・crashを選択済みhatと交換。元から選ばれた拍の核は減らさない。
+- 採譜済み`drum_line`のある曲でsection境界の合成crashを重ねない。行のない小節のframe fallbackは残す。
+- Human Fly 9–16小節は現行lightのK37/S20/C1からK39/S20/C1（元データK41/S21/C1）。全曲の打点保持量と原音stemへの帯域別spectral-flux比較は`part-fidelity-tabasco-drums-20260929.json`。
+- 原音との時刻判定は検出器間に約27msの系統差があり、同報告の±30ms F1を最終合格としない。高域のonsetはhat以外の漏れも含む。実ブラウザのkit attack、他パートと合わせたiPhone負荷、再生録音の音質は未検証。
+- Listenにジャンル/フォルダ別の既存入口とARCBのドラム練習導線を追加。新音声・model・repoは追加しない。
+- Band Room runtime `band-room.js?v=br-237`、CSS `br-90`、shared cache `hazama-fm-v403`。HAZAMAの`ui_hidden`/v401音声候補は変更しない。
+
+---
 
 ## v402 compact - Music Stack owner guide and single tool catalog
 

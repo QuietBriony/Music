@@ -14,9 +14,9 @@
 
 ## 現在地とversion
 
-- 現行playability契約は **v401**。client markerは
-  `band-room.js?v=br-236` / `band-room.css?v=br-90`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v402**（Listen・総合ガイド更新、音声runtime不変）。v401はHAZAMA AIの
+- 現行Band Room runtimeは **v403**（Tabascoドラムのlight打点選択）。HAZAMAのplayability候補は **v401** のまま。client markerは
+  `band-room.js?v=br-237` / `band-room.css?v=br-90`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v403**。v401はHAZAMA AIの
   arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
   約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
   減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、
@@ -40,7 +40,14 @@
 - 詳細な版履歴は [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md)、
   未完了タスクの正本は [autonomy/BACKLOG.md](./autonomy/BACKLOG.md)。
 
-## 最短導線 — HAZAMAを聴いてLyric Labへ渡す
+## 最短導線 — ARCB / Tabascoのドラムからバンド練習
+
+1. [Human Flyの原音](../band-room.html?band=tabasco&song=human-fly&mode=stems)を開き、`START`を押す。4 stemsを聴いたら原音の`all off`→`drums`だけONでドラムの打ち方を確認する。
+2. 同じ小節を[Human FlyのAI再現](../band-room.html?band=tabasco&song=human-fly&mode=synth)で聴く。`all off`→`drums`だけONで打点、フィル、強弱を比較する。7曲は画面上部の曲ボタンから選ぶ。
+3. 自分でドラムを叩く練習では`📻 原音`で`all on`→`drums`だけOFFにして残りの3 stemsを伴奏にする。逆にドラムだけ聴きたいときは手順1。音が出るのは手動`START`後だけ。
+4. AI再現は練習用。スマホのlight経路では8打/小節の上限があり、v403でkick・snare・crashの脱落を減らしたが、ハイハットや速いフィルはまだ原音通りではない。原音stemsを正解として使う。
+
+## HAZAMAを聴いてLyric Labへ渡す
 
 1. [Listen hub](../listen.html)を開き、current passの
    [HAZAMA Band Room](../band-room.html?band=hazama)へ進む。
@@ -77,7 +84,7 @@
 
 ---
 
-## 画面構成（現行: br-236 / br-90）
+## 画面構成（現行: br-237 / br-90）
 
 ```
 ┌─────────────────────────────────┐

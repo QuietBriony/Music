@@ -27,7 +27,7 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-67" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-236" defer></script>
+<script src="band-room.js?v=br-237" defer></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -139,6 +139,7 @@
         <li><strong>HAZAMA 02</strong> — AI 再現は02固有ではなく、暫定で 01 の frames を共有。比較基準は02の 📻 原音です</li>
         <li><strong>KARAOKE</strong> — 📻 原音で「KARAOKE（vocal off）」を押すと、既存4 stemsの声だけを消して自分のtakeを重ねられます</li>
         <li><strong>モード切替</strong> — 📻 原音 (4 stems) / 🎛 AI 再現 (打ち込み再現)</li>
+        <li><strong>ARCB / Tabascoのドラム</strong> — Human Flyで📻 原音の「all off → drums ON」を聴き、同じ区間を🎛 AI 再現へ切替。自分で叩く時は原音の「all on → drums OFF」</li>
         <li><strong>section nav</strong> — チップで jump、shift-click で A→B ループ</li>
         <li><strong>phrase trigger</strong> — q-p / a-l のキーで発火 (即発火 / 次小節 / ループ)</li>
         <li><strong>external vocal</strong> — Suno mp3 を drag-drop で読み込み</li>
@@ -159,7 +160,8 @@
       </p>
       <p>
         <strong>詳細マニュアル:</strong>
-        <a href="docs/BAND-ROOM-MANUAL.md">📖 BAND-ROOM-MANUAL</a> ·
+        <a href="listen.html#play-by-style">📖 バンド練習の使い方（スマホ表示）</a> ·
+        <a href="docs/BAND-ROOM-MANUAL.md">offline原文</a> ·
         <a href="docs/SAMPLE-CATALOG-GUIDE.md">catalog 編集</a>
       </p>
       <button id="br-help-close" type="button">閉じる</button>
@@ -648,7 +650,9 @@
         <a href="docs/tabasco-lyrics-final.md">final singable</a>
       </span>
       <span class="br-sep">/</span>
-      <a href="docs/BAND-ROOM-MANUAL.md">📖 manual</a>
+      <a href="listen.html#play-by-style">📖 manual</a>
+      <span class="br-sep">·</span>
+      <a href="docs/BAND-ROOM-MANUAL.md">offline原文</a>
       <span class="br-sep">·</span>
       <a href="docs/SAMPLE-CATALOG-GUIDE.md">catalog</a>
       <span class="br-sep">·</span>
