@@ -294,6 +294,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   ブラウザ内の4つまみは演奏中に音とコード値を変える。採用状態は端末内下書きから
   Git管理の試作とListen索引へ昇格する。Computer Useは接続画面だけを操作し、
   スマホ・PCの共通sessionと本人の聴感評価は引き続き未完了。
+  同日追記: Acidをより硬い共鳴・フィルター変化・歪みへ調整し、画面に4本の縦フェーダーを追加。
+  操作値はコードに残り、初稿は別IDで比較可能。本人の耳によるハード版の最終調整は未完了。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2

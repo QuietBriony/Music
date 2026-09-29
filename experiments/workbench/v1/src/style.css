@@ -46,6 +46,24 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 #confirm-dialog::backdrop { background: rgb(0 0 0 / .7); }
 #confirm-dialog p { margin: 0 0 16px; line-height: 1.5; }
 #status { min-height: 1.4em; margin: 8px 18px 14px; color: #aeadb9; font-size: .88rem; }
+.acid-faders { margin: 0 18px 18px; padding: 16px; border: 1px solid #796344; border-radius: 14px; background: linear-gradient(160deg, #282019, #17171b 70%); }
+.acid-faders-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; }
+.acid-faders-heading h3 { margin: 0; font-size: 1rem; }
+.acid-faders-heading p:last-child { max-width: 46ch; margin: 0; color: #c7bcb1; font-size: .8rem; line-height: 1.5; }
+.fader-bank { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.acid-fader { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; padding: 10px 4px 8px; border: 1px solid #5d4a35; border-radius: 12px; background: #151416; }
+.acid-fader span { color: #f9c782; font-size: .68rem; font-weight: 800; letter-spacing: .04em; }
+.acid-fader output { min-height: 1.4em; color: #fff4df; font-size: .87rem; font-variant-numeric: tabular-nums; }
+.acid-fader input[type="range"] { width: 36px; height: 146px; margin: 4px 0; writing-mode: vertical-lr; direction: rtl; accent-color: #ff9c42; cursor: ns-resize; touch-action: none; }
+.acid-fader input[type="range"]:disabled { opacity: .5; cursor: wait; }
+.acid-fader small { color: #b5a898; font-size: .72rem; }
+.acid-fader-guide { margin-top: 14px; padding-top: 12px; border-top: 1px solid #5d4a35; }
+.acid-fader-guide-intro { margin: 0 0 10px; color: #e7d7c1; font-size: .86rem; line-height: 1.5; }
+.acid-fader-guide dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 18px; margin: 0; }
+.acid-fader-guide dl > div { min-width: 0; }
+.acid-fader-guide dt { color: #f9c782; font-size: .83rem; font-weight: 800; }
+.acid-fader-guide dt span { margin-left: 4px; color: #d9c4a9; font-weight: 500; }
+.acid-fader-guide dd { margin: 3px 0 0; color: #d0c5ba; font-size: .85rem; line-height: 1.55; }
 #editor { min-height: 520px; }
 strudel-editor { display: contents; }
 #editor .cm-editor { min-height: 520px; }
@@ -64,6 +82,12 @@ footer p { margin: 0 0 8px; }
   .draft-open { align-items: start; flex-direction: column; }
   .workspace { border-radius: 12px; }
   .section-heading { align-items: start; flex-direction: column; }
+  .acid-faders { margin-inline: 10px; padding: 12px 8px; }
+  .acid-faders-heading { align-items: start; flex-direction: column; gap: 4px; padding-inline: 5px; }
+  .fader-bank { gap: 5px; }
+  .acid-fader { padding-inline: 2px; }
+  .acid-fader span { font-size: .68rem; }
+  .acid-fader-guide dl { grid-template-columns: 1fr; }
   #editor, #editor .cm-editor { min-height: 68svh; }
   #editor .cm-slider input[type="range"] { width: 120px !important; min-height: 44px; }
 }

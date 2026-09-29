@@ -1,9 +1,10 @@
-// Acid 303 / 909 — 2026-09-29
-// 再生中に青いつまみを動かす。909音はStrudel標準バンク、303風ベースは合成音。
-const CUTOFF = slider(350, 120, 1600, 10) // 明るさ
-const RESONANCE = slider(10, 1, 25, 1) // みょん感
-const DECAY = slider(0.12, 0.03, 0.5, 0.01) // うねりの長さ
-const ENVELOPE = slider(4, 0, 8, 0.1) // うねりの幅
+// Acid 303 / 909 — hard faders / ACID_FADER_BANK_V1
+// Play後は画面の縦フェーダーで操作。値はこのコードにも残る。
+// 909はStrudel標準バンク、303風ベースはブラウザ合成。音量に注意。
+const CUTOFF = slider(420, 120, 2200, 10) // フィルターの開き
+const RESONANCE = slider(18, 1, 35, 1) // みょんの強さ
+const DRIVE = slider(3.2, 0, 7, 0.1) // 歪み
+const DECAY = slider(0.18, 0.03, 0.5, 0.01) // うねりの長さ
 setcpm(32)
 stack(
   s("bd*4").bank("RolandTR909").gain(0.55),
@@ -14,8 +15,8 @@ stack(
     .s("sawtooth")
     .attack(0.003).decay(0.13).sustain(0).release(0.03)
     .lpf(CUTOFF).lpq(RESONANCE)
-    .lpa(0.003).lpd(DECAY).lps(0).lpenv(ENVELOPE)
+    .lpa(0.003).lpd(DECAY).lps(0).lpenv(6.5)
     .ftype("ladder")
-    .distort("1.4:.6")
-    .gain(0.3)
+    .distort(DRIVE).postgain(0.48)
+    .gain(0.36)
 )

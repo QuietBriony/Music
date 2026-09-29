@@ -16,6 +16,10 @@ const confirmAccept = document.querySelector('#confirm-accept');
 const playButton = document.querySelector('#play');
 const updateButton = document.querySelector('#update');
 const stopButton = document.querySelector('#stop');
+const acidFaderPanel = document.querySelector('#acid-faders');
+const acidFaderHelp = document.querySelector('#acid-faders-help');
+const acidFaders = [...acidFaderPanel.querySelectorAll('[data-acid-fader]')];
+const ACID_FADER_KEYS = ['CUTOFF', 'RESONANCE', 'DRIVE', 'DECAY'];
 
 const DRAFT_KEY = 'music-workbench-drafts-v1';
 const MAX_CODE_LENGTH = 100_000;
@@ -34,6 +38,64 @@ let loadedCode = '';
 let busy = false;
 let wantsPlayback = false;
 let playbackToken = 0;
+let faderSyncQueued = false;
+
+function acidSliderDeclarations(code) {
+  if (!code.includes('ACID_FADER_BANK_V1') || (code.match(/\bslider\s*\(/g) || []).length !== 4) return null;
+  const declarations = ACID_FADER_KEYS.map((key) => {
+    const expression = new RegExp('\\bconst\\s+' + key + '\\s*=\\s*slider\\(\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*\\)');
+    const match = expression.exec(code);
+    return match && { index: match.index, value: match[1], min: match[2], max: match[3], step: match[4] };
+  });
+  if (declarations.some((item) => !item) || declarations.some((item, index) => index && item.index <= declarations[index - 1].index)) return null;
+  return declarations;
+}
+
+function inlineSliders() {
+  return [...editorHost.querySelectorAll('.cm-slider input[type="range"]')];
+}
+
+function syncAcidFaders() {
+  const declarations = acidSliderDeclarations(currentCode());
+  acidFaderPanel.hidden = !declarations;
+  if (!declarations) return;
+  const ready = wantsPlayback && inlineSliders().length === ACID_FADER_KEYS.length;
+  acidFaderHelp.textContent = ready
+    ? '演奏中。フェーダーを動かすと次の音から変わり、値はコードに残ります。'
+    : 'Play後にフェーダーが有効になります。値はコードにも残ります。';
+  acidFaders.forEach((fader, index) => {
+    const setting = declarations[index];
+    fader.min = setting.min;
+    fader.max = setting.max;
+    fader.step = setting.step;
+    fader.value = setting.value;
+    fader.disabled = !ready;
+    const suffix = fader.dataset.acidFader === 'CUTOFF' ? ' Hz'
+      : fader.dataset.acidFader === 'DECAY' ? ' s' : '';
+    fader.parentElement.querySelector('output').textContent = fader.value + suffix;
+  });
+}
+
+function queueAcidFaderSync() {
+  if (faderSyncQueued) return;
+  faderSyncQueued = true;
+  requestAnimationFrame(() => {
+    faderSyncQueued = false;
+    syncAcidFaders();
+  });
+}
+
+acidFaders.forEach((fader, index) => {
+  fader.addEventListener('input', () => {
+    if (!wantsPlayback || !acidSliderDeclarations(currentCode())) return;
+    const sliders = inlineSliders();
+    if (sliders.length !== ACID_FADER_KEYS.length) return;
+    sliders[index].value = fader.value;
+    sliders[index].dispatchEvent(new Event('input', { bubbles: true }));
+    queueAcidFaderSync();
+  });
+});
+editorHost.addEventListener('input', queueAcidFaderSync);
 
 function fullCode(pattern) {
   return samplePrelude + '\n\n' + pattern.replace(/\r\n?/g, '\n').trim() + '\n';
@@ -80,6 +142,7 @@ function setEditorCode(code) {
   stopButton.disabled = false;
   saveButton.disabled = false;
   reloadButton.disabled = false;
+  queueAcidFaderSync();
 }
 
 async function evaluateCurrent(message) {
@@ -92,10 +155,12 @@ async function evaluateCurrent(message) {
     }
     wantsPlayback = true;
     status.textContent = message;
+    queueAcidFaderSync();
   } catch (error) {
     if (token !== playbackToken) return;
     wantsPlayback = false;
     activeEditor.editor.stop();
+    queueAcidFaderSync();
     throw error;
   }
 }
@@ -140,8 +205,8 @@ async function openPublished(item) {
     });
     setWorkUrl(item.id);
     const acidHint = item.id === 'acid-303-909'
-      ? ' コード冒頭の青いつまみを動かすと、演奏中の音が変わります。'
-      : '';
+      ? ' Play後に縦フェーダーで音を変えられます。'
+      : item.id === 'acid-303-909-v1' ? ' コード冒頭の青いつまみで音を変えられます。' : '';
     if (wantsPlayback) {
       await evaluateCurrent('再生中。' + item.title + ' に切り替えました。' + acidHint);
     } else {
@@ -355,9 +420,8 @@ playButton.addEventListener('click', async () => {
   busy = true;
   wantsPlayback = true;
   try {
-    const acidHint = activeSelection?.id === 'acid-303-909'
-      ? ' コード冒頭の青いつまみを動かして音を変えられます。'
-      : '';
+    const acidHint = acidSliderDeclarations(currentCode())
+      ? ' 画面の縦フェーダーで音を変えられます。' : '';
     await evaluateCurrent('再生中。別の試作を選ぶと演奏を切り替えられます。' + acidHint);
   } catch (error) {
     status.textContent = error.message || '再生に失敗しました';
@@ -382,6 +446,7 @@ stopButton.addEventListener('click', () => {
   wantsPlayback = false;
   activeEditor?.editor?.stop();
   status.textContent = '停止しました。';
+  queueAcidFaderSync();
 });
 window.addEventListener('beforeunload', (event) => {
   if (!hasUnsavedChanges()) return;
