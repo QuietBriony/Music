@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-10-01 — 試奏台の手入力と操作表示を同期 (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 公開版の最終確認で見つかったコード直接編集時の操作表示の遅れを修復
+- repos      : Music（同じ試奏台・Listen・説明のみ）
+- shipped    : 主改善は[PR #423](https://github.com/QuietBriony/Music/pull/423)でmainへmergeし同じPagesへ配信。
+  CodeMirrorがnative beforeinputを消費してinput通知が来ないことを実ブラウザで確認。
+  本文DOM更新でcode差分がある時だけ操作を同期する。再生highlightで再同期せず、手編集を保つ。
+  実Chromeのkeyboard入力で操作無効化、Undoで操作復帰、18本の停止中/再生中フェーダーとpointer入力を確認。
+  端末保存後のoffline再読込とcrash/rideだけの音声信号を再確認。試奏台52 tests PASS。
+- stack-check: PASS 37 / FAIL 0 / SKIP 0（追加修正の最終統合check）
+- backlog    : BL-049継続。新しい制作面/公開先は増やさない
+- next       : BL-049 — 本人の新AUTO試奏と実iPhone、既存ARCBドラム素材の照合へ戻る
+- blockers   : 実iPhoneと聴感の好みは本人未判定
+
+---
+
 ## 2026-10-01 — フェーダー接続と軸を守るテクノ変奏 (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）
