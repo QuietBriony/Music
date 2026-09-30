@@ -9,6 +9,8 @@ import {
   readBackupState, writeBackupState,
 } from './session-backup.js';
 import { initPwa } from './pwa.js';
+import { initPerformance } from './performance.js';
+import { readTechnoSet } from './performance-code.js';
 
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
@@ -79,6 +81,30 @@ let acidBridgeReady = false;
 let pendingAcidFileId = null;
 let pendingBackup = null;
 let backupReadToken = 0;
+let performance;
+let setEvaluateTimer;
+let audioPrepared;
+
+function cancelSetEvaluation() {
+  clearTimeout(setEvaluateTimer);
+  setEvaluateTimer = undefined;
+}
+
+function changeSetCode(code) {
+  if (busy || !activeEditor?.editor) return;
+  activeEditor.editor.setCode(code);
+  queueControlSync();
+  cancelSetEvaluation();
+  if (!wantsPlayback) return;
+  const token = playbackToken;
+  // Coalesce rapid step edits. Stop and selection changes invalidate this
+  // pending update, so it can never restart a stopped set.
+  setEvaluateTimer = setTimeout(async () => {
+    if (!wantsPlayback || token !== playbackToken || !readTechnoSet(currentCode())) return;
+    try { await evaluateCurrent('再生中。セットの打点・音符・展開を反映しました。'); }
+    catch (error) { status.textContent = error.message || 'セットを反映できませんでした'; }
+  }, 100);
+}
 
 function savedAcidFiles() {
   try {
@@ -157,6 +183,7 @@ function closeAcidModule({ updateUrl = true, focus = false } = {}) {
 }
 
 function stopStrudelForModule() {
+  cancelSetEvaluation();
   playbackToken++;
   wantsPlayback = false;
   activeEditor?.editor?.stop();
@@ -283,6 +310,7 @@ function queueControlSync() {
     syncAcidFaders();
     syncMixFaders();
     syncAcidBridgeControls();
+    performance?.sync();
   });
 }
 
@@ -462,7 +490,18 @@ function setEditorCode(code) {
 async function evaluateCurrent(message) {
   const token = ++playbackToken;
   try {
+    await activeEditor.editor.prebaked;
+    // First-click initialization in the pinned REPL runs asynchronously. Wait
+    // for its worklets before scheduling the first filtered/distorted notes.
+    if (!audioPrepared) {
+      audioPrepared = Promise.all([window.getAudioContext?.().resume(), window.initAudio?.()])
+        .catch((error) => { audioPrepared = undefined; throw error; });
+    }
+    await audioPrepared;
+    if (token !== playbackToken || !wantsPlayback) return;
     await activeEditor.editor.evaluate();
+    const evalError = activeEditor.editor.repl?.state?.evalError;
+    if (evalError) throw evalError;
     if (token !== playbackToken) {
       if (!wantsPlayback) activeEditor.editor.stop();
       return;
@@ -480,6 +519,7 @@ async function evaluateCurrent(message) {
 }
 
 function setCurrentSelection(selection) {
+  cancelSetEvaluation();
   activeSelection = selection;
   currentWork.textContent = selection.label + ' — ' + selection.detail;
   publishedList.querySelectorAll('[data-work-id]').forEach((button) => {
@@ -496,6 +536,7 @@ function setCurrentSelection(selection) {
 
 function setWorkUrl(id) {
   const url = new URL(window.location.href);
+  url.searchParams.delete('stage');
   url.searchParams.delete('deck');
   if (id) url.searchParams.set('work', id);
   else url.searchParams.delete('work');
@@ -504,6 +545,7 @@ function setWorkUrl(id) {
 
 function setDeckUrl(a, b) {
   const url = new URL(window.location.href);
+  url.searchParams.delete('stage');
   url.searchParams.delete('work');
   url.searchParams.set('deck', a + ',' + b);
   window.history.replaceState(null, '', url);
@@ -703,6 +745,7 @@ async function openDraft(id) {
     setCurrentSelection({
       kind: 'draft', id: draft.id, label: draft.title, detail: 'この端末の下書き',
     });
+    if (readTechnoSet(draftCode)) performance.show();
     setWorkUrl(null);
     const pair = deckPairFromCode(draft.code);
     if (pair && catalog.items.some((item) => item.id === pair.a)
@@ -896,6 +939,12 @@ async function loadCatalog() {
     renderDeckOptions();
     renderDrafts();
     const params = new URL(window.location.href).searchParams;
+    performance.setCatalog(catalog);
+    if (params.get('stage') === 'techno' || (window.matchMedia('(min-width: 1000px)').matches
+      && !params.has('work') && !params.has('deck') && !params.has('module'))) {
+      await performance.openPreset();
+      return;
+    }
     const deckRequested = params.get('deck')?.split(',');
     if (deckRequested?.length === 2 && deckRequested.every((id) => catalog.items.some((item) => item.id === id))) {
       await openDeck(deckRequested[0], deckRequested[1]);
@@ -966,6 +1015,7 @@ updateButton.addEventListener('click', async () => {
   }
 });
 stopButton.addEventListener('click', () => {
+  cancelSetEvaluation();
   closeAcidModule();
   playbackToken++;
   wantsPlayback = false;
@@ -981,6 +1031,53 @@ function warnUnsavedExit(event) {
 window.addEventListener('beforeunload', warnUnsavedExit);
 
 renderAcidFiles();
+performance = initPerformance({
+  getCode: currentCode,
+  isPlaying: () => wantsPlayback && Boolean(activeEditor?.editor?.repl?.scheduler?.started),
+  isBusy: () => busy,
+  cycle: () => activeEditor?.editor?.repl?.scheduler?.now() || 0,
+  changeCode: changeSetCode,
+  async openCode(code, title) {
+    if (busy) return false;
+    busy = true;
+    try {
+      if (!await mayReplaceCode()) return false;
+      closeAcidModule();
+      cancelSetEvaluation();
+      await customElements.whenDefined('strudel-editor');
+      setEditorCode(code);
+      setCurrentSelection({ kind: 'set', label: title, detail: 'テクノ・ライブセット' });
+      const url = new URL(window.location.href);
+      url.searchParams.delete('work'); url.searchParams.delete('deck'); url.searchParams.delete('module');
+      url.searchParams.set('stage', 'techno');
+      window.history.replaceState(null, '', url);
+      if (wantsPlayback) await evaluateCurrent('再生中。' + title + ' を演奏しています。');
+      else status.textContent = title + ' を開きました。「セットを鳴らす」で開始します。';
+      return true;
+    } catch (error) {
+      status.textContent = error.message || 'セットを開けませんでした';
+      return false;
+    } finally { busy = false; queueControlSync(); }
+  },
+  fader(key, value, index) {
+    const code = currentCode();
+    if (busy || !readTechnoSet(code)) return;
+    if (wantsPlayback) {
+      const slider = inlineSliders()[index];
+      if (!slider) return;
+      slider.value = value;
+      slider.dispatchEvent(new Event('input', { bubbles: true }));
+    } else {
+      activeEditor.editor.setCode(code.replace(new RegExp('(const SET_' + key + ' = slider\\()[0-9.]+'), (_, before) => before + value));
+    }
+    queueControlSync();
+  },
+  play: () => playButton.click(), stop: () => stopButton.click(),
+  save() {
+    saveButton.click();
+    if (!draftForm.hidden) draftForm.scrollIntoView({ block: 'center' });
+  },
+});
 loadCatalog();
 initPwa({
   confirmReload: async () => {
@@ -990,6 +1087,7 @@ initPwa({
     if ((wantsPlayback || codeWarning || acidWarning) && !await askConfirmation(
       '演奏を止め、アプリを更新して開き直します。' + codeWarning + acidWarning, '更新して開き直す')) return false;
     closeAcidModule({ updateUrl: false });
+    cancelSetEvaluation();
     playbackToken++;
     wantsPlayback = false;
     activeEditor?.editor?.stop();

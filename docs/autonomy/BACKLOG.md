@@ -268,7 +268,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code
 - agent    : codex
 - human-gate: yes（独立previewの試聴・実iPhone・既存runtimeへの採用は人間確認）
-- status   : wip — codex 2026-09-30（公開Strudel試奏・2デッキ・acidBros FILE/BPM橋・PCオフライン・JSON持ち運び・スマホPWA）
+- status   : wip — codex 2026-09-30（公開Strudel試奏・2デッキ・acidBros FILE/BPM橋・PCオフライン・JSON持ち運び・スマホPWA・テクノ演奏面）
 - source   : 2026-09-19 user「推奨設計して、今までの作ったネタを活性化させたい」
 - detail   : `docs/BROWSER-WORKBENCH-DESIGN.md`の順序1〜2。設計のみ、runtime未実装。
   private制作ノートにある既存stem一組を候補とし、一般化した素材参照・revision・mix記述を定義。
@@ -322,6 +322,11 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   固定909のhash確認、WAV Range対応、演奏中はwaitingのままの手動更新、下書き保持を検証。
   後からコードで指定する外部音源は自動cacheせず、source区分を画面とREADMEへ明記。
   実iPhoneのホーム画面追加・機内モード試奏・保存維持/FILE再開は本人確認待ち。
+  同日追記: 本人の依頼で同じ試奏台にPCで並べるテクノ演奏面を追加。909/808風の16-step、
+  303音符/フェーダー、パートMUTE/音量、既存試作の素材A/Bを一つのStrudel clockで演奏。
+  3セット・5シーン・64小節AUTO、既存下書き/JSONへの全状態保存と再開を実装。
+  808風は合成近似で音声追加なし。手動コード本文変更はセット操作を無効化して保護する。
+  本人の聴感、実iPhone、ARCBドラムの素材照合、共通sessionと原本比較/undoは引き続き残る。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2

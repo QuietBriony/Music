@@ -94,6 +94,14 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   端末間の自動同期、チャットからの即時反映、追加試作の本人試聴はまだ取り込んでいない。
   Computer Useで触れるのも接続したブラウザ画面だけで、スマホとの共通sessionではない。
   手順と制約は同ディレクトリの`README.md`。
+- 2026-09-30の本人のテクノ演奏依頼で、同じ試奏台に`/?stage=techno`を追加。
+  PC幅のrootはこの面から開始し、既存work/deck/module URLは従来どおり。909/808風の16-step、
+  303音符/4フェーダー、パートMUTE/音量、公開8試作の素材A/Bを一つのStrudel clockへ組む。
+  Acid Drive / Dub Room / Electro 808の3セットと5シーン、8小節単位の64小節AUTOを用意。
+  音量0のイベントは除外し、初回はAudioWorklet準備後に発音。編集直後のStopは予約再評価を取消す。
+  808風は合成による近似で、新規WAVや808バンクは追加しない。acidBrosは別clockのまま。
+  全状態と素材コードを既存の名前付き下書き/JSONへ保存・再開。コード本文を直接変更した版は
+  セット操作を無効にし、手動編集を保つ。音色の本人判定と実iPhoneは未確認。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
 - 現行cacheは`hazama-fm-v403`。Band Room runtime markerは`band-room.js?v=br-237` /

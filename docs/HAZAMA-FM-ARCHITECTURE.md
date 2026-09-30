@@ -27,6 +27,12 @@
 ## 2026-09-29 — 公開ブラウザ試奏の独立境界
 
 `experiments/workbench/v1/`はStrudelコードとKV上の3本のWAVを試す独立アプリ。
+2026-09-30に同じ配信の`/?stage=techno`へPC演奏面を追加。16-stepの909/808風ドラム、
+303、公開試作の素材A/Bを単一Strudel clockで組み、共通BPM・MUTE・音量・シーン・AUTOを操作する。
+3プリセットの808風は既存のStrudel合成で近似し、新しい音声素材や依存を同梱しない。
+音量0のイベントは除外。全状態と素材コードは既存下書き/JSONに残し、手動コード編集は上書きしない。
+初回はAudioWorklet準備を待ち、Stopや作品切替は保留中のセット再評価を無効化する。
+acidBrosとのclock同期・音声routingには広げない。本人の聴感/実iPhone判定は別。
 同じMusic repoを使うが、既存GitHub Pages、`music-stack.pages.dev`、FM / Band Room / Core Rigの
 runtimeやService Workerには接続しない。別のCloudflare Pagesプロジェクトで配信し、
 ページ・試作コード・KVの3本のWAVを公開する。Cloudflare Accessは使わない。
