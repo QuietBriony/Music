@@ -9,14 +9,28 @@ export function sliderDeclarations(code) {
   });
 }
 
+// Faders edit only one numeric literal. They remain usable after hand edits to
+// the musical body, without granting the pattern generator permission to rewrite it.
+export function sliderSettings(code, names) {
+  const declarations = sliderDeclarations(code);
+  return new Map(names.flatMap(name => {
+    const matches = declarations.filter(item => item.name === name);
+    if (matches.length !== 1) return [];
+    const item = matches[0];
+    if (![Number(item.value), item.min, item.max, item.step].every(Number.isFinite)
+      || item.min > item.max || item.step <= 0) return [];
+    return [[name, item]];
+  }));
+}
+
 export function sliderChange(code, name, input) {
-  const matches = sliderDeclarations(code).filter((item) => item.name === name);
-  if (matches.length !== 1) throw new Error('このフェーダーの接続を確認できません');
-  const item = matches[0];
+  const item = sliderSettings(code, [name]).get(name);
+  if (!item) throw new Error('このフェーダーの接続を確認できません');
   const value = Number(input);
   if (!Number.isFinite(value)) throw new Error('フェーダーの値が不正です');
   const clamped = Math.max(item.min, Math.min(item.max, value));
-  const next = Number((item.min + Math.round((clamped - item.min) / item.step) * item.step).toFixed(6));
+  const next = Math.max(item.min, Math.min(item.max,
+    Number((item.min + Math.round((clamped - item.min) / item.step) * item.step).toFixed(6))));
   return { ...item, value: next, insert: String(next) };
 }
 

@@ -3,6 +3,7 @@ import {
   SET_SLIDERS, SET_TRACKS, technoSetCode, EXTRA_DRUMS, groovePlan, upgradeSet,
   LIVE_MODES, liveFrame, liveMotif,
 } from './live-code.js';
+import { sliderSettings } from './slider-bridge.js';
 
 const names = { kick: 'KICK', snare: 'SNARE', hh: 'CLOSED HAT', oh: 'OPEN HAT', bell: 'COWBELL', acid: '303',
   response:'303返し',percussion:'追加打楽器',pad:'パッド',...Object.fromEntries(EXTRA_DRUMS) };
@@ -168,7 +169,7 @@ export function initPerformance(hooks) {
     input.setAttribute('aria-label', title);
     label.append(el('span', title), output, input);
     input.addEventListener('input', () => {
-      if (!readTechnoSet(hooks.getCode())) return;
+      if (!isSetCode(hooks.getCode())) return;
       hooks.fader(key, Number(input.value));
       // CodeMirror updates its document synchronously, widgets on the next frame.
       requestAnimationFrame(sync);
@@ -276,21 +277,36 @@ export function initPerformance(hooks) {
       state = readTechnoSet(code);
       if (!state && !isSetCode(code) && view) show(false);
     }
-    fieldset.disabled = !state || loading || hooks.isBusy();
-    groovePanel.disabled = fieldset.disabled;
+    const blocked = loading || hooks.isBusy();
+    const setCode = isSetCode(code);
+    // Structural buttons still require an intact generated score. A named
+    // fader can safely patch its literal even when the musical body was edited.
+    fieldset.disabled = !setCode || blocked;
+    fieldset.querySelectorAll('button,input:not([data-set-fader]),select').forEach(control => {
+      control.disabled = !state || blocked;
+    });
+    groovePanel.disabled = !state || blocked;
     groovePanel.hidden = !state?.groove;
     document.querySelector('#set-upgrade').hidden = !state || Boolean(state.live);
     document.querySelector('#set-legacy-hint').hidden = !state || Boolean(state.live);
     liveControls.hidden=!state?.live;
     phrase.hidden = !state?.groove;
-    start.disabled = !state || loading || hooks.isBusy();
+    start.disabled = !setCode || blocked;
     presetList.querySelectorAll('button').forEach((button) => {
       button.disabled = !catalog || loading || hooks.isBusy();
       button.setAttribute('aria-pressed', String(state?.preset === button.dataset.setPreset));
     });
+    const settings = setCode ? sliderSettings(code, [...faders.keys()].map(key => 'SET_' + key)) : new Map();
+    for (const [key, fader] of faders) {
+      const setting = settings.get('SET_' + key);
+      fader.input.disabled = !setting || blocked;
+      if (!setting) { fader.output.textContent = '—'; continue; }
+      Object.assign(fader.input, { min: setting.min, max: setting.max, step: setting.step, value: setting.value });
+      fader.output.textContent = fader.suffix === '%' ? Math.round(Number(setting.value) * 100) + '%'
+        : setting.value + fader.suffix;
+    }
     if (!state) {
-      for (const fader of faders.values()) fader.input.disabled = true;
-      if (isSetCode(code)) note.textContent = 'コードを直接編集した版です。セットの操作を戻す時は先に保存し、上のセットを選び直してください。';
+      if (setCode) note.textContent = 'コードを手直しした版です。音量・音色の接続が残るフェーダーは使えます。コードの変更は「コードを反映」。打点・展開ボタンを戻す時は先に保存し、セットを選び直してください。';
       return;
     }
     document.querySelector('#set-kit-details').hidden=!state.groove;
@@ -316,13 +332,6 @@ export function initPerformance(hooks) {
       liveLock.setAttribute('aria-pressed',String(Boolean(state.live.lock)));
       liveLock.textContent=state.live.lock?'キープ中 · 流れに戻す':'今の展開をキープ';
     }
-    for (const [key, fader] of faders) {
-      if (state.values[key] === undefined) { fader.input.disabled=true; fader.output.textContent='—'; continue; }
-      fader.input.disabled = loading || hooks.isBusy();
-      fader.input.value = state.values[key];
-      fader.output.textContent = fader.suffix === '%' ? Math.round(state.values[key] * 100) + '%'
-        : state.values[key] + fader.suffix;
-    }
     for (const [track, buttons] of steps) buttons.forEach((button, i) => {
       button.setAttribute('aria-pressed', String(Boolean(state.steps[track]?.[i])));
     });
@@ -340,8 +349,10 @@ export function initPerformance(hooks) {
       : 'ドラム・303・素材A/Bは同じテンポ。ステップとシーンは次の演奏処理から、フェーダーは次の音から反映。';
   }
 
+  const stepIndicators = [...panel.querySelectorAll('[data-step]')];
+  let highlightedStep = -2;
   function position() {
-    if (!view) return;
+    if (!view || document.hidden) return;
     const playing = hooks.isPlaying();
     start.textContent = playing ? '■ セットを止める' : '▶ セットを鳴らす';
     start.setAttribute('aria-pressed', String(playing));
@@ -359,7 +370,10 @@ export function initPerformance(hooks) {
     document.querySelector('#set-listen-title').textContent=(state?.live ? LIVE_MODES.find(([id]) => id===state.live.mode)?.[1] : 'セット') || 'LIVE';
     document.querySelector('#set-listen-phase').textContent=playing ? (labels[scene] || '') + (state?.live?.lock?' · キープ':frame?' · あと'+Math.ceil(frame.remaining)+'小節':'') : '再生を押すと始まります';
     document.querySelector('#set-listen-progress').value=frame?.position || 0;
-    panel.querySelectorAll('[data-step]').forEach((button) => button.classList.toggle('is-current', Number(button.dataset.step) === step));
+    if (!document.body.classList.contains('listening-view') && step !== highlightedStep) {
+      highlightedStep = step;
+      stepIndicators.forEach(button => button.classList.toggle('is-current', Number(button.dataset.step) === step));
+    }
   }
   // Visual feedback uses the audio scheduler's cycle, never a second sound clock.
   const interval = setInterval(position, 80);

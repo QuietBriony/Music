@@ -31,6 +31,7 @@ export async function initPwa({ confirmReload, reload }) {
   const prepare = document.querySelector('#pwa-prepare');
   const install = document.querySelector('#pwa-install');
   const update = document.querySelector('#pwa-update');
+  const quickUpdate = document.querySelector('#pwa-update-top');
   const updateHint = document.querySelector('#pwa-update-hint');
   const installed = document.querySelector('#pwa-installed');
   let registration, saving = false, updating = false, prompt;
@@ -68,8 +69,11 @@ export async function initPwa({ confirmReload, reload }) {
   }
 
   function waitingUpdate() {
-    update.hidden = !registration?.waiting;
-    updateHint.hidden = update.hidden;
+    update.hidden = !registration;
+    quickUpdate.hidden = !registration;
+    updateHint.hidden = !registration?.waiting;
+    update.textContent = registration?.waiting ? 'アプリを更新・再読込' : '更新を確認・再読込';
+    quickUpdate.textContent = registration?.waiting ? '更新あり · 開き直す' : 'アプリ更新';
   }
   async function refreshStatus() {
     if (saving || updating) return;
@@ -95,6 +99,7 @@ export async function initPwa({ confirmReload, reload }) {
     saving = true;
     prepare.disabled = true;
     update.disabled = true;
+    quickUpdate.disabled = true;
     try {
       // Best effort: browser/OS storage policy can still remove saved data.
       Promise.resolve(navigator.storage?.persist?.()).catch(() => {});
@@ -111,17 +116,42 @@ export async function initPwa({ confirmReload, reload }) {
       saving = false;
       prepare.disabled = false;
       update.disabled = false;
+      quickUpdate.disabled = false;
     }
   });
   update.addEventListener('click', async () => {
-    if (saving || updating || !registration?.waiting) return;
-    if (!await confirmReload()) return;
+    if (saving || updating || !registration) return;
     updating = true;
     prepare.disabled = true;
     update.disabled = true;
-    detail.textContent = 'アプリを更新して開き直します。保存済みの下書き・FILEはそのまま残ります。';
+    quickUpdate.disabled = true;
     try {
+      if (!registration.waiting && navigator.onLine) {
+        detail.textContent = '新しいアプリを確認しています…';
+        await registration.update();
+        const installing = registration.installing;
+        if (installing && installing.state !== 'installed') await new Promise((resolve, reject) => {
+          const finish = error => {
+            clearTimeout(timer);
+            installing.removeEventListener('statechange', listener);
+            error ? reject(error) : resolve();
+          };
+          const listener = () => {
+            if (installing.state === 'installed') finish();
+            if (installing.state === 'redundant') finish(new Error('更新を取得できませんでした。ネット接続中にもう一度試してください。'));
+          };
+          const timer = setTimeout(() => finish(new Error('更新の確認が完了しませんでした。ネット接続中にもう一度試してください。')), 45_000);
+          installing.addEventListener('statechange', listener);
+          listener();
+        });
+      }
+      waitingUpdate();
+      // Another open tab may already have activated this worker. A reload is
+      // still needed to replace the old page scripts in this tab.
+      if (!await confirmReload()) { updating = false; await refreshStatus(); return; }
+      detail.textContent = 'アプリを開き直します。保存済みの下書き・FILEはそのまま残ります。';
       const worker = registration.waiting;
+      if (!worker) { reload(); return; }
       const changed = new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
           navigator.serviceWorker.removeEventListener('controllerchange', listener);
@@ -133,12 +163,15 @@ export async function initPwa({ confirmReload, reload }) {
       await Promise.all([changed, workerRequest(worker, 'activate')]);
       reload();
     } catch (error) {
+      detail.textContent = error.message;
+    } finally {
       updating = false;
       prepare.disabled = false;
       update.disabled = false;
-      detail.textContent = error.message;
+      quickUpdate.disabled = false;
     }
   });
+  quickUpdate.addEventListener('click', () => update.click());
   window.addEventListener('online', refreshStatus);
   window.addEventListener('offline', refreshStatus);
   navigator.serviceWorker.addEventListener('controllerchange', refreshStatus);

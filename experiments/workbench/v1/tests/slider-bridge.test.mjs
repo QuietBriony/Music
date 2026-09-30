@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { SliderBridge, sliderDeclarations, sliderChange } from '../src/slider-bridge.js';
+import { SliderBridge, sliderDeclarations, sliderChange, sliderSettings } from '../src/slider-bridge.js';
 
 function setup() {
   const mirror={code:'// slider(99, 0, 100, 1) in metadata\nconst A = slider(0.5, 0, 1, 0.01)\nconst B = slider(700, 120, 4800, 10)\nconst C = slider(14, 1, 26, 1)\ns("sawtooth").gain(A).lpf(B).lpq(C)'};
@@ -73,4 +73,24 @@ test('a custom score keeps non-slider visual decorations while its named fader s
   assert.equal(signals.get(id),.3);
   assert.equal(decorations.length,0);
   assert.equal(mirror.widgets.at(-1).type,'pianoroll');
+});
+
+test('hand-edited musical code retains live faders and only its requested literal changes',()=>{
+  const {mirror,bridge,signals}=setup();
+  const original=sliderDeclarations(mirror.code);
+  mirror.code += '\n// live hand edit\n// keep this arrangement and its annotations';
+  const before=mirror.code;
+  assert.equal(sliderSettings(before,['A','B','Missing']).size,2);
+  bridge.set('A',.24,true);
+  assert.equal(mirror.code,before.slice(0,original[0].from)+'0.24'+before.slice(original[0].to));
+  assert.equal(signals.get('slider_'+original[0].from),.24);
+});
+
+test('missing, duplicate and malformed connections disable only that fader',()=>{
+  const code='const A = slider(0.5, 0, 1, 0.01)\nconst B = slider(0, 0, 1, 0)\n'
+    +'const C = slider(0.5, 1, 0, 0.1)\nconst D = slider(.., 0, 1, 0.1)';
+  assert.deepEqual([...sliderSettings(code,['A','B','C','D','Missing']).keys()],['A']);
+  assert.equal(sliderSettings(code+'\nconst A = slider(0, 0, 1, 0.1)',['A']).size,0);
+  for (const name of ['B','C','D','Missing']) assert.throws(()=>sliderChange(code,name,.4));
+  assert.equal(sliderChange('const A = slider(0, 0, 0.96, 0.1)','A',1).value,.96);
 });
