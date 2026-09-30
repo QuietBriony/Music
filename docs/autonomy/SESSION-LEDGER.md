@@ -19,6 +19,27 @@
 
 ---
 
+## 2026-10-01 — 自動LIVEと柔らかいアンビエント展開 (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 本人の自動LIVE/やわらかい展開依頼を同じ試奏台へ反映
+- repos      : Music（独立試奏台、既存Listen/道具索引/説明）
+- shipped    : V3は音声時計から章ごとの展開順と弱拍の小変奏を決め、軸/休符/強拍を維持。
+  展開間隔8/16/32小節、盛り上がり、展開キープ、聴く画面を追加。自動コード再評価なし。
+  Ambient Driftは76 BPM、長い合成三和音とfilter/gainの緩い補間。自動ドラム/303を抜く。
+  手動MUTE/音符固定を優先。19フェーダーとLIVE設定を既存下書き/JSONへ保存、旧V1/V2は明示更新のみ。
+  素材/音声ファイル/依存追加なし。試奏台58 tests PASS。Chromeで19フェーダーの停止中/再生中入力、
+  4セット×5シーン、テクノ130秒で第2章まで継続・コード不変/再評価1回を確認。
+  Ambient Driftは60秒連続出力を確認後、低BPMでclampされたpad delayを1/4cycleへ短縮。
+  最終版は390px、保存コード/設定の完全復元、offline再読込から20秒の出力、JS error/warning 0。
+  手動シーンでLIVE/キープ解除、手動MUTE/音符固定を確認。協奏の役割と未実装の別窓同期/AI自動受信をREADMEへ記録。
+- stack-check: PASS 37 / FAIL 0 / SKIP 0（最終統合check、0 BAD）
+- backlog    : BL-049継続。同じアプリ/配信を磨く。ARCB原本の照合は残る
+- next       : BL-049 — 本人のLIVE/Ambient Drift試聴、実iPhoneとARCB原本比較
+- blockers   : 実iPhoneの背景/画面ロック/車載継続と音楽的好みは未判定
+
+---
+
 ## 2026-10-01 — 試奏台の手入力と操作表示を同期 (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）

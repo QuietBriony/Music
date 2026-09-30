@@ -18,7 +18,7 @@ test('PWA release contains the complete self-hosted app and valid home-screen as
   const release = JSON.parse(await readFile(new URL('offline-assets.json', dist)));
   const urls = release.assets.map((file) => file.url);
   for (const path of ['/index.html', '/app.js', '/pwa.js', '/session-backup.js', '/manifest.webmanifest',
-    '/vendor/strudel/index.js', '/modules/acidbros/index.html', '/patterns/acid-303-909.txt']) assert.ok(urls.includes(path), path);
+    '/vendor/strudel/index.js', '/modules/acidbros/index.html', '/patterns/acid-303-909.txt', '/live-code.js', '/live-plan.js']) assert.ok(urls.includes(path), path);
   assert.equal(urls.filter((url) => url.endsWith('.wav')).length, 4, 'only the four approved bundled acidBros WAVs');
   assert.equal(urls.some((url) => url.startsWith('/api/') || url === '/sw.js'), false);
   for (const file of release.assets) {

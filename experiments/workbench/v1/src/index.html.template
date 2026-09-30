@@ -39,6 +39,7 @@
           <div id="set-master"></div>
           <button id="set-save" type="button">セットを保存</button>
           <button id="set-library" type="button" aria-expanded="false">保存版・バックアップ</button>
+          <button id="set-listen-toggle" type="button" aria-pressed="false">聴く画面</button>
           <a href="#editor-title">コードを見る ↓</a>
         </div>
         <div class="set-choice-row">
@@ -52,9 +53,20 @@
             <button id="set-undo-phrase" type="button" disabled>採用前へ戻す</button>
           </fieldset>
         </div>
-        <p id="set-legacy-hint" class="set-help" hidden>保存した旧版をそのまま開いています。<button id="set-upgrade" type="button">この版から育つAUTOを作る</button> 元の保存データは書き換えません。</p>
+        <p id="set-legacy-hint" class="set-help" hidden>保存版の展開をそのまま開いています。<button id="set-upgrade" type="button">この版からLIVE展開を作る</button> 元の保存データは書き換えません。</p>
+        <article id="set-listening" class="set-listening" aria-label="聴く画面">
+          <p class="eyebrow">LISTEN / ONE CONTINUOUS SET</p><h3 id="set-listen-title">LIVE</h3>
+          <p id="set-listen-phase">再生を押すと始まります</p><progress id="set-listen-progress" max="1" value="0" aria-label="今の展開の進み具合"></progress>
+          <p class="set-help">流れは自動。音量・停止は上のボタンから。画面ロック中の再生継続は端末とブラウザによります。</p>
+        </article>
         <fieldset id="set-controls" disabled>
           <legend class="sr-only">テクノセットの演奏操作</legend>
+          <div id="set-live-controls" class="set-live-controls" hidden>
+            <label>流れ<select id="set-live-mode" aria-label="LIVEの流れ"></select></label>
+            <label>展開の間隔<select id="set-live-pace" aria-label="展開の間隔"><option value="8">8小節 · 動く</option><option value="16">16小節 · ゆったり</option><option value="32">32小節 · 長く漂う</option></select></label>
+            <label>盛り上がり<select id="set-live-energy" aria-label="盛り上がり"><option value="0.35">やわらかく</option><option value="0.65">ほどよく</option><option value="0.9">強めに</option></select></label>
+            <button id="set-live-lock" type="button" aria-pressed="false">今の展開をキープ</button>
+          </div>
           <div class="set-scenes-row">
             <label class="set-bpm-label">BPM<input id="set-bpm" type="number" min="60" max="180" step="1" value="128"></label>
             <div id="set-scenes" class="set-scenes" aria-label="展開を選ぶ"></div>
@@ -67,7 +79,7 @@
               </div>
               <p class="set-help">点灯が打点。クリックで追加・削除。左から1小節、4つずつが1拍。</p>
               <details id="set-kit-details" class="set-kit-details" hidden><summary>追加打楽器を出す · CLAP / TOM / CRASH…</summary>
-                <div id="set-kit" class="set-kit"></div><p class="set-help">選ぶと打点の行を追加。タムは8小節目のフィル、クラッシュは8小節の頭。合成音と同梱のクラッシュ／ライドを使います。音量はミキサーの「追加打楽器」。</p>
+                <div id="set-kit" class="set-kit"></div><p class="set-help">選ぶと打点の行を追加。タムは8小節目の短いフィル。LIVEのクラッシュはブレイク後や山場の入口だけ。合成音と同梱のクラッシュ／ライドを使います。音量はミキサーの「追加打楽器」。</p>
               </details>
               <div class="set-step-scroll"><div id="set-step-rows"></div></div>
               <div id="set-boom"></div>
@@ -79,7 +91,7 @@
               <div class="set-note-scroll"><div id="set-acid-notes" aria-label="303の16ステップ音符"></div></div>
               <p class="set-help">ここは軸の16音。押すと次の高さ、~ は休符。PCはShift＋クリックで休符。新セットは4小節反復→弱拍の小変奏→8小節で戻る。</p>
               <details id="set-synth-details" class="set-synth-details"><summary>303の2役・残響・音色の起伏</summary><div id="set-groove-faders"></div>
-                <p class="set-help">303は低音と高い返しの2役。返し音量はミキサーで調整／MUTE。残響はテンポに合う短いディレイ、音色の起伏は16小節で明るさをゆっくり上下。0で止めます。アクセントとスライド風の音程移動はコードに残ります。</p>
+                <p class="set-help">303は低音と高い返しの2役。返し音量はミキサーで調整／MUTE。残響はテンポに合う短いディレイ。LIVEの音色は展開に沿ってつながり、起伏0でフィルターの自動変化を止めます。明るさと起伏はパッドにも効きます。アクセントとスライド風の音程移動はコードに残ります。</p>
               </details>
             </article>
             <article class="set-card set-mix">
@@ -98,13 +110,15 @@
         <p id="set-status" class="set-status" role="status">セットを選び、再生ボタンを押してください。</p>
         <p id="set-phrase" class="set-help" aria-live="off"></p>
         <details class="set-guide"><summary>遊び方・数字の意味</summary>
-          <ol><li>Acid Drive / Dub Room / Electro 808を選び「セットを鳴らす」。PCはドラム・303・ミキサー・素材A/Bが並びます。スマホは縦に並びます。</li>
-          <li>INTRO→GROOVE→ACID→BREAK→PEAKで展開を切り替える。BREAKはドラム欄のキックを抜く。新セットは軸のフレーズを4小節反復し、弱拍の1〜2音だけ変えて8小節で帰還。ハットの静かなフィルは8小節目だけ。AUTOのパート展開は64小節。手動シーンを押すとAUTOを解除します。</li>
+          <ol><li>Acid Drive / Dub Room / Electro 808 / Ambient Driftを選び「セットを鳴らす」。新セットはLIVE自動展開がオン。PCは操作面が並び、スマホは縦に並びます。「聴く画面」で操作面を畳み、長めに流せます。</li>
+          <li>LIVEは8/16/32小節ごとに展開し、8つの展開で一つの章。章ごとに流れと弱拍の小変奏が変わり、固定の64小節だけを繰り返しません。軸のフレーズと休符は保ち、4小節反復→弱拍1〜2音の小変奏→8小節で帰還。「今の展開をキープ」で流れを留め、もう一度押すと自動へ戻ります。手動シーンを押すとLIVEを解除します。</li>
           <li>ドラムの打点を変え、303の明るさとみょんを動かす。MUTEでキックを抜き、戻して盛り上げます。素材A/Bは音量を少し上げて足します。</li>
           <li>「セットを保存」で名前付き下書きに残す。打点・音符・音色・BPM・フェーダー・素材A/B・AUTOをコードに保存します。「保存版・バックアップ」で再開・JSON持ち運び。</li></ol>
-          <p>「音符を固定」で気に入った軸を反復。「今の変奏を残す」は演奏中の小変奏を新しい軸にし、固定します。「採用前へ戻す」で一つ前の軸へ戻せます。保存コードには変奏seedと固定状態も残るので、同じ8小節が再現します。保存済み旧版は1小節と旧AUTOのまま開き、必要な時だけ「この版から育つAUTOを作る」を押します。</p>
+          <p>「音符を固定」で気に入った軸を反復。「今の変奏を残す」は演奏中の小変奏を新しい軸にし、固定します。「採用前へ戻す」で一つ前の軸へ戻せます。保存コードにseed・固定・LIVEの流れ・間隔・盛り上がり・キープを残し、再開は1小節目から同じ規則で展開します。旧V1/V2は元のコードで開き、必要な時だけ「この版からLIVE展開を作る」を押します。</p>
           <p>明るさ（CUTOFF）は120〜4800 Hzで、高いほど鋭く、低いほどこもる。みょん（RESONANCE）は1〜26で共鳴の強さ。歪み（DRIVE）は0〜5で硬さ。うねりの長さ（DECAY）は0.03〜0.45秒でフィルターの動きが残る長さです。</p>
-          <p>303返し音量は0〜40%、追加打楽器音量は0〜50%。0で抜けます。303の残響は0〜35%で短いディレイを足す。音色の起伏は0〜100%で16小節の明るさの上下を増やす。音符固定中も音色とパート展開は続き、起伏を0にするとフィルターの周期変化も止まります。</p>
+          <p>303返し音量は0〜40%、追加打楽器音量は0〜50%。0で抜けます。303の残響は0〜35%で短いディレイを足す。音色の起伏は0〜100%で明るさの自動変化を増やします。音符固定中も音色とパート展開は続き、起伏を0にするとフィルターの自動変化も止まります。</p>
+          <p>「盛り上がり」は音数を大量に足す操作ではなく、返し・打楽器の存在感と明るさを調整します。フィルは静かな8小節目だけ、クラッシュはブレイク後や山場の入口。「展開の間隔」を長くすると同じ雰囲気を長めに保ちます。手動MUTE・音符固定はLIVEより優先します。</p>
+          <p>Ambient Driftは76 BPM、32小節ごとの柔らかい展開。長い三和音とゆっくり動くフィルターを合成し、自動ドラムと303は入りません。「パッド音量」は0〜65%で背景の和音。通常のテクノにも薄く重ねられ、MUTEで抜けます。素材A/Bにドラムを含む作品を足す時は、その音は手動音量のまま鳴ります。</p>
           <p>元のacidBrosのサイコロは、低音303と上の303の音程関係・アクセント・スライド・909の骨格・音色をまとめて変えます。2台は独立した合成器とディレイを持ち、同じ時計から共通出力へ混ざります。LR分離ではありません。こちらは軸を守る変奏へ応用しています。スライド風は各音のピッチ包絡による近似で、元の発振器を続けるレガートとは異なります。</p>
           <p>PCのSpaceで開始/停止、1〜5でシーン、Escで全停止。コードや入力欄を編集中はSpaceと数字を奪いません。止めた後の再開は1小節目からです。</p>
           <p>808風は低音キック・スネア・ハット・カウベルを合成する近似です。Roland純正の再現ではありません。ドラム・303・素材A/BはStrudelの時計を共有。別画面のacidBrosとの同時同期は行いません。</p>

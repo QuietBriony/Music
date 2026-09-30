@@ -482,9 +482,9 @@
         <summary>音・目的から選ぶ <span>ARCB / Tabascoを先頭に</span></summary>
         <div class="collection-links">
           <article><h3>バンド / ロック — Music → ARCB / Tabasco Band Room</h3><p>7曲の原音stemsとAI演奏を切替。まずHuman Flyでドラムの原音と再現を比べる。原音のドラムだけ聴くなら「all off → drums ON」、自分で叩くなら「all on → drums OFF」。</p><a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">Human Fly 原音 →</a><a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth">Human Fly AI再現 →</a><a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/BAND-ROOM-MANUAL.md">バンド練習の操作 →</a></article>
-          <article><h3>テクノ / アシッド — Music → Strudel試奏台</h3><p>ドラム・低音303と返し・素材A/Bを同じテンポで演奏。4〜8小節で軸を守る変奏、音符固定・採用・一段戻し、追加打楽器を使える。PCは操作面が並び、808風の低音も合成で鳴らす。コードを直接編集した版も保存して比較できる。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?stage=techno">テクノ・ライブセット →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">Acid 303 / 909 コード →</a></article>
+          <article><h3>テクノ / アシッド — Music → Strudel試奏台</h3><p>ドラム・2役303・素材A/Bを同じテンポで演奏。LIVEは軸を守り、章ごとの小変奏・抜き差し・音色で流れを続ける。盛り上がり・間隔・展開キープを操作でき、聴く画面で長めに流せる。保存版とコード編集も同じ入口。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?stage=techno">テクノ・自動LIVE →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">Acid 303 / 909 コード →</a></article>
           <article><h3>IDM / 実験 — namima・Music</h3><p>namimaの録音比較と、aphex1の編集できるパターンを行き来する。</p><a class="mini-link" href="https://quietbriony.github.io/tabasco-acestep-demos/idm-preview/">namimaの録音 →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=aphex1">aphex1試奏 →</a></article>
-          <article><h3>アンビエント / 静けさ — chill・Music</h3><p>ピアノと余白から始める。流して聴く時はHazama FM。</p><a class="mini-link" href="https://quietbriony.github.io/chill/session.html">Chill Session →</a><a class="mini-link" href="fm.html?g=ambient">Hazama FM ambient →</a></article>
+          <article><h3>アンビエント / 静けさ — chill・Music</h3><p>Ambient Driftは同じ試奏台の76 BPM・長い和音がゆっくり移る自動LIVE。ピアノと余白はChill、ラジオはHazama FM。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?stage=ambient">Ambient Drift →</a><a class="mini-link" href="https://quietbriony.github.io/chill/session.html">Chill Session →</a><a class="mini-link" href="fm.html?g=ambient">Hazama FM ambient →</a></article>
           <article><h3>ビート / グルーヴ — drum-floor</h3><p>リズムの探索。バンド曲の原音・AI再現は上のBand Roomへ。</p><a class="mini-link" href="https://quietbriony.github.io/drum-floor/">Drum Floor →</a></article>
           <article><h3>言葉 / 段取り — Music・openclaw</h3><p>曲の意図はLyric Lab、作業の順番はOpenClaw Desk。</p><a class="mini-link" href="lyric-lab.html">Lyric Lab →</a><a class="mini-link" href="https://quietbriony.github.io/openclaw/">OpenClaw Desk →</a></article>
         </div>
@@ -640,7 +640,7 @@
       <div class="section-head"><h2 id="tools-title">全道具の地図</h2><p class="section-note">用途・最初の一手・残るもの・まだできないこと。</p></div>
       <p class="guide-note">実装あり ≠ 音質・実機・公開まで確認済み。<strong>候補／手動工程／未実装</strong>は分けてあります。</p>
 <!-- stack-tools:begin -->
-<p class="guide-note">ソース照合：2026-09-30。実装確認と、実音・実機の合格は別です。</p>
+<p class="guide-note">ソース照合：2026-10-01。実装確認と、実音・実機の合格は別です。</p>
 <details class="tool-group" data-tool-group="browser">
   <summary>ブラウザで聴く・触る・整理する <span>9項目</span></summary>
   <div class="tool-grid">
@@ -691,10 +691,10 @@
     <article class="tool-item" id="tool-strudel-workbench" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
       <h3>Strudel Live Workbench</h3>
-      <p>テクノのドラム・低音303と返し・素材A/Bを共通テンポで演奏。軸を守る4〜8小節変奏と追加打楽器を選べる。公開8試作・2デッキ・別エンジンのacidBros保存パッチも同じ入口。</p>
+      <p>テクノ/ダブ/アンビエントを自動LIVEで演奏。軸を守り、章ごとに抜き差し・弱拍変奏・音色を変える。公開8試作・2デッキ・別エンジンのacidBros保存パッチも同じ入口。</p>
       <dl>
-        <dt>最初の一手</dt><dd>テクノセット → セットを鳴らす → 打点・フェーダー・MUTE・展開を触る。気に入った変奏は採用・固定。「追加打楽器」でクラップ・タム・シンバルを出す。PWAはホーム画面に追加し、アプリ側で音を保存。PCローカルはREADMEの初回準備 → npm run local。acidBrosは別の303＋909を開く → RUN。</dd>
-        <dt>残るもの</dt><dd>公開試作8件はGit管理。テクノ3セットは全打点・音符・BPM・音色・フェーダー・MUTE・素材A/B・AUTO・変奏seed/固定/採用前の軸を名前付きコード下書きへ保存。旧セットは旧音のまま復元し、明示操作で新形式へ移せる。LEVEL・2デッキ・acidBros FILEもJSONで別端末へ追加できる。</dd>
+        <dt>最初の一手</dt><dd>Acid DriveかAmbient Drift → セットを鳴らす。新セットはLIVEオン。「盛り上がり」「展開の間隔」「今の展開をキープ」で調整。「聴く画面」で操作面を畳む。PWAはアプリ側で音を保存。PCローカルはREADMEの初回準備 → npm run local。</dd>
+        <dt>残るもの</dt><dd>公開8試作はGit管理。4セットは全打点・音符・BPM・音色・19フェーダー・MUTE・素材A/B・AUTO・変奏seed/固定/採用前の軸・LIVEの流れ/間隔/盛り上がり/キープを名前付きコード下書きへ保存。旧V1/V2は旧音を保ち明示更新だけ。LEVEL・2デッキ・acidBros FILEもJSONで別端末へ追加できる。</dd>
         <dt>できることの境界</dt><dd>スマホPWAはアプリと公開8試作に必要な音を端末保存（約10 MB）してオフライン利用可。PCはローカルHTTPでも同じ画面を使える。後から指定する外部URL・他の標準バンクは自動保存しない。更新は保存後の明示操作。保存削除/OS整理では再準備が必要。JSON転送は手動で未保存編集・音源は含まない。acidBrosは別エンジンで、音・時計・パターン同期やチャット即時反映は未実装。実iPhoneの追加・試聴は未確認。公開ページ・コード・自前配信のWAV7本は公開。</dd>
       </dl>
       <a class="mini-link" data-tool-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/">Strudel Live Workbench — 音とコードを触る</a>

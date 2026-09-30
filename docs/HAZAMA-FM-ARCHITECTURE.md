@@ -42,6 +42,12 @@ acidBrosとのclock同期・音声routingには広げない。本人の聴感/�
 依存せず、評価時のslider signal IDへ数値を送り、コードの数値だけを部分編集する。
 CodeMirrorの本文DOM更新ではcodeが変わった時だけ操作表示を更新し、手入力/Undoにも追従する。
 再生highlightだけの更新では同期処理を増やさず、コード本文を変えた版の生成操作は無効にする。
+同日の新LIVE形式V3は`live-plan.js`の純粋関数を保存コードにも埋め込み、音声時計から章/展開と
+弱拍の変奏を決める。8/16/32小節の間隔、盛り上がり、展開キープ、表示を畳む聴く画面を持ち、
+周期的なコード再評価を増やさない。Ambient Driftは76 BPM・合成三和音の長いパッドと緩い補間。
+アンビエントの自動ドラム/303は0で、手動素材A/BとMUTEは維持。全19フェーダー/LIVE設定を
+既存下書き/JSONへ保存。旧V1/V2の生成結果は変更せず、明示upgradeで移す。新しい音声/依存なし。
+スマホの背景/画面ロック/車載継続は未確認で、「聴く画面」を背景プレーヤーとは扱わない。
 同じMusic repoを使うが、既存GitHub Pages、`music-stack.pages.dev`、FM / Band Room / Core Rigの
 runtimeやService Workerには接続しない。別のCloudflare Pagesプロジェクトで配信し、
 ページ・試作コード・KVの3本のWAVを公開する。Cloudflare Accessは使わない。

@@ -112,6 +112,11 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   元2台は独立した発振器/filter/delayを共通masterへ混ぜ、LR分離ではない。比較/操作は試奏台README。
   最終公開検証でCodeMirrorの手入力がnative inputを消費して操作表示が遅れる点を発見。
   本文のDOM更新をcode差分で検出し、直接編集/Undoでも操作表示を更新。演奏highlightでは再同期しない。
+- 本人の「自動LIVE・やわらかい展開」依頼で新セットをV3へ。音声時計から純粋に章/展開/弱拍変奏を
+  決め、8/16/32小節の展開間隔、盛り上がり、展開キープ、聴く画面を追加。自動のコード再評価なし。
+  Ambient Driftは76 BPM・長い合成三和音と穏やかなfilter/gain補間で、自動ドラム/303を抜く。
+  手動MUTE/音符固定を優先し、19フェーダーとLIVE設定を既存下書き/JSONへ保存。旧V1/V2は明示更新のみ。
+  素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
 - 現行cacheは`hazama-fm-v404`。Band Room runtime markerは`band-room.js?v=br-238` /
