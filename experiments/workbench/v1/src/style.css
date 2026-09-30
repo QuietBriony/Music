@@ -11,6 +11,21 @@ h1 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.6rem); line-height: 1.15; }
 .subhead { margin: 10px 0 0; color: #b0afba; }
 .intro { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
 .intro span { padding: 8px 12px; border: 1px solid #363641; border-radius: 999px; color: #dedce5; font-size: .82rem; }
+.pwa-panel { margin-bottom: 20px; padding: 4px 16px; border: 1px solid #485967; border-radius: 14px; background: #141b20; }
+.pwa-panel summary { min-height: 48px; padding-block: 13px; cursor: pointer; font-size: .9rem; font-weight: 700; }
+.pwa-panel summary span { display: inline-block; margin-left: 8px; color: #a2dfc6; font-size: .79rem; font-weight: 400; }
+.pwa-panel p, .pwa-steps { color: #c2cdd5; font-size: .84rem; line-height: 1.65; }
+.pwa-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.pwa-actions button { border-color: #6c998a; background: #233a33; }
+.pwa-steps { padding-left: 23px; }
+.pwa-steps li { padding-left: 3px; margin-block: 9px; }
+.pwa-panel h3 { margin: 18px 0 10px; font-size: .95rem; }
+.pwa-sources { display: grid; gap: 10px; margin: 0 0 12px; font-size: .84rem; line-height: 1.55; }
+.pwa-sources > div { display: grid; grid-template-columns: 145px minmax(0, 1fr); gap: 8px; }
+.pwa-sources dt { color: #c6efd8; font-weight: 650; }
+.pwa-sources dd { margin: 0; color: #c2cdd5; }
+.pwa-panel .pwa-note { color: #a6b6c1; font-size: .8rem; }
+@media (max-width: 540px) { .pwa-sources > div { grid-template-columns: 1fr; gap: 2px; } }
 .module-rack { margin-bottom: 20px; padding: 18px; border: 1px solid #5b5375; border-radius: 18px; background: linear-gradient(135deg, #211d30, #15151b 76%); }
 .module-rack-heading h2 { font-size: 1.1rem; }
 .module-rack-heading p:last-child { margin: 8px 0 0; color: #cbc5d8; font-size: .86rem; line-height: 1.5; }

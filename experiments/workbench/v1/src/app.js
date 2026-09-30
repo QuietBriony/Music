@@ -8,6 +8,7 @@ import {
   BACKUP_KEYS, MAX_BACKUP_BYTES, backupText, mergeBackup, parseBackup,
   readBackupState, writeBackupState,
 } from './session-backup.js';
+import { initPwa } from './pwa.js';
 
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
@@ -972,11 +973,31 @@ stopButton.addEventListener('click', () => {
   status.textContent = '停止しました。';
   queueControlSync();
 });
-window.addEventListener('beforeunload', (event) => {
+function warnUnsavedExit(event) {
   if (!hasUnsavedChanges()) return;
   event.preventDefault();
   event.returnValue = '';
-});
+}
+window.addEventListener('beforeunload', warnUnsavedExit);
 
 renderAcidFiles();
 loadCatalog();
+initPwa({
+  confirmReload: async () => {
+    if (busy || confirmDialog.open) return false;
+    const codeWarning = hasUnsavedChanges() ? ' 未保存のコードは消えます。先に「この端末に保存」で残せます。' : '';
+    const acidWarning = !acidModuleStage.hidden ? ' 303＋909の調整は先にFILEで保存してください。' : '';
+    if ((wantsPlayback || codeWarning || acidWarning) && !await askConfirmation(
+      '演奏を止め、アプリを更新して開き直します。' + codeWarning + acidWarning, '更新して開き直す')) return false;
+    closeAcidModule({ updateUrl: false });
+    playbackToken++;
+    wantsPlayback = false;
+    activeEditor?.editor?.stop();
+    queueControlSync();
+    return true;
+  },
+  reload: () => {
+    window.removeEventListener('beforeunload', warnUnsavedExit);
+    window.location.reload();
+  },
+});

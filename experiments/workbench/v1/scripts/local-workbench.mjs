@@ -24,6 +24,7 @@ const maxWavBytes = 20_000_000;
 const mime = {
   '.css': 'text/css; charset=utf-8', '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.md': 'text/markdown; charset=utf-8', '.png': 'image/png',
   '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8',
   '.wav': 'audio/wav', '.woff2': 'font/woff2',
@@ -107,7 +108,7 @@ function send(res, status, body = '') {
   res.end(body);
 }
 
-export function createLocalServer({ directory = dist, sounds = cacheDir } = {}) {
+export function createLocalServer({ directory = dist, sounds = cacheDir, injectLocalBridge = true } = {}) {
   return createServer(async (req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'Method not allowed');
     let pathname;
@@ -146,7 +147,7 @@ export function createLocalServer({ directory = dist, sounds = cacheDir } = {}) 
         info = await stat(target);
       }
       if (!info.isFile()) return send(res, 404, 'Not found');
-      if (target === join(directory, 'index.html')) {
+      if (injectLocalBridge && target === join(directory, 'index.html')) {
         const original = await readFile(target, 'utf8');
         const marker = '<script src="/vendor/strudel/index.js" defer></script>';
         if (!original.includes(marker)) throw new Error('Strudel起動タグが見つかりません');

@@ -36,6 +36,14 @@ Strudel起動時の外部音源一覧をローカル一覧へ差し替える。�
 aphex1・Acid 303 / 909・acidBrosのブラウザ再生開始を外部通信なしで確認した。
 新しいコードが任意の外部サンプルを使う場合は対象外。PCローカルと
 PagesのlocalStorageは別originで、自動移行しない。ネイティブアプリ化やスマホLAN配信ではない。
+スマホは同じPages URLのPWAをホーム画面へ追加できる。独立originの`/sw.js`はbuild時の全静的
+ファイルhashを固定し、世代が揃ってからinstall。次世代はwaitingで保持し、演奏中の自動再読込は
+行わない。ユーザーの「アプリを更新・再読込」だけでactivateする。
+音源は別cacheで、明示操作時だけ公開3ループ＋固定909の4音を取得する。全7本の形式・容量・
+固定4本のSHA-256を確認後にmetadata pointerをcommitし、失敗時は以前の完全セットを保つ。
+初期registryはネット失敗時に909の4音だけの一覧へ退避。WAVのRangeリクエストは206で返す。
+private API・未登録の外部音源は保存せず、下書き/FILEのlocalStorageはSW更新時に変更しない。
+アプリ本体と準備済み音で約10 MB。ブラウザ/OSの保存削除では再準備が必要で、実iPhoneは未確認。
 cacheした909の4音はMusic Git/Pagesへ再配布しない。元repoのライセンス確認はpendingで、
 `config/external-dependencies.json`に出所・commit・SHA-256・サイズ・境界を記録する。
 Strudel 1.3.0は`config/external-dependencies.json`に登録。音声素材はKVに置き、

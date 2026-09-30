@@ -19,6 +19,25 @@
 
 ---
 
+## 2026-09-30 — 既存試奏台のスマホPWA・音源保存の可視化 (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 同じ試奏台をスマホのホーム画面から再開し、追加音源の所在とオフライン範囲を把握できるようにする
+- repos      : Music（既存試奏台、Listen、道具/依存台帳。sister repo不変）
+- implemented: manifest/icon、ホーム画面手順、明示的な7音の端末保存と準備状態を追加。
+  アプリ本体とacidBrosはhash一致の世代をcacheし、更新はwaiting→保存後の明示操作で再読込。
+  音源は全7本成功後にpointerを切り替え、失敗時は以前の完全セットを残す。固定909の4音は
+  元配信先から端末だけへ取得。追加URL/他の標準バンク・private APIはcache対象外。
+  単体33件、通信遮断とHTTP cache消去後のStrudel 3ループ/909とacidBros起動、同梱4WAV、
+  WAV Range 206、更新待ち/キャンセル/再読込後の下書き保持をChromeで確認。
+  画面とREADMEの音源区分、Listen・台帳・引き継ぎを同時更新。実iPhoneは未確認。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0
+- backlog    : BL-049継続。スマホPWA入口と音源の端末保存を追加。共通session・原本比較/undo・ARCBドラム照合は未完了
+- next       : BL-049 — 本人が実iPhoneでホーム画面追加→音保存→機内モード試奏とFILE再開を試し、ARCBドラムの既存素材照合へ戻る
+- blockers   : 実iPhoneの追加/出音/保存維持は本人未判定。追加の任意音源はオフライン対象外で、端末間自動同期は未実装
+
+---
+
 ## 2026-09-30 — 既存試奏台のJSON持ち運び・保存再開 (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）

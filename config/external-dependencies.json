@@ -98,7 +98,7 @@
     {
       "id": "strudel-workbench-local-909-cache",
       "kind": "local_prepare_assets",
-      "consumers": ["experiments/workbench/v1/scripts/local-workbench.mjs"],
+      "consumers": ["experiments/workbench/v1/scripts/local-workbench.mjs", "experiments/workbench/v1/src/offline-policy.js", "experiments/workbench/v1/src/offline-pack.js", "experiments/workbench/v1/src/sw.js.template"],
       "source_url": "https://github.com/ritchse/tidal-drum-machines/tree/6577395a4d05031728ced2ec3e5637fa89d8be48/machines/RolandTR909",
       "runtime_urls": [
         "https://raw.githubusercontent.com/felixroos/dough-samples/9eacfc86ec4393e68a463ff52b01c19cfaa77f38/tidal-drum-machines.json",
@@ -115,7 +115,7 @@
         "algorithm": "sha256",
         "value": "bd=5ae8cbf94145b4d8a2c4ee6a6a922045564887c22812916149c1e5740820b8bb;sd=f5fef391d10d453966d38a680e8f20445cf258cbb182781c90021161f8c5d7b4;hh=6b737acdd4e9db504dc8225c613ae72fb9b67c2e493b011c50750e16c708e9bd;oh=d68cfd300f400f7b616b9cd7b75971b29bfe90d2d6c79c1206719def21d539c7",
         "status": "verified",
-        "evidence": "The local prepare script rejects bytes that differ from these four observed source hashes; cache manifest is checked before serving."
+        "evidence": "Both PC preparation and the explicit PWA sound-save action reject bytes that differ from these four source hashes. The PWA commits its pack pointer only after all seven sounds pass validation."
       },
       "license": {
         "status": "pending",
@@ -131,11 +131,11 @@
       },
       "storage": {
         "class": "user_local_cache",
-        "target": "~/.music-live-workbench/sounds",
+        "target": "PC: ~/.music-live-workbench/sounds; PWA: this browser's music-workbench-device-sounds-v1-* Cache Storage",
         "tracked_in_git": false
       },
       "execution": {
-        "activation": "explicit_local_prepare_command",
+        "activation": "explicit_local_prepare_command_or_pwa_save_sounds_button",
         "download_policy": "manual_once_then_offline",
         "machines": [],
         "required_capabilities": []
