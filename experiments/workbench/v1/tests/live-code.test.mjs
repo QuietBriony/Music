@@ -15,6 +15,7 @@ test('four LIVE presets save all controls, phrase lock and manual mutes without 
     state.live.lock='groove'; state.muted=['pad','response','hh'];
     const code=technoSetCode(state);
     assert.deepEqual(readTechnoSet(code),state);
+    assert.deepEqual(readTechnoSet(code.replace(/\r\n?/g,'\n').replace(/\n/g,'\r\n')),state,'saved scores also restore with Windows line endings');
     assert.equal(SET_SLIDERS.length,19);
     assert.ok(code.length < 100_000);
     assert.equal([...code.matchAll(/^setcpm\(/gm)].length,1);

@@ -106,7 +106,7 @@ function liveCode(input) {
     '// LIVE：軸へ戻りながら章ごとの変奏を続ける。音と画面は同じStrudel時計。旧保存版は明示更新だけ。',
     "samples({pad:'/api/sounds/pad',sub:'/api/sounds/sub',drums:'/api/sounds/drums',set_crash:'/modules/acidbros/assets/samples/tr909/cr01.wav',set_ride:'/modules/acidbros/assets/samples/tr909/rd01.wav'});",
     ...SET_SLIDERS.map(([key,title,,min,max,step]) => `const SET_${key} = slider(${state.values[key]}, ${min}, ${max}, ${step}) // ${title}`),
-    `setcpm(${state.bpm/4})`,liveFrame.toString(),liveMotif.toString(),
+    `setcpm(${state.bpm/4})`,liveFrame.toString().replace(/\r\n?/g,'\n'),liveMotif.toString().replace(/\r\n?/g,'\n'),
     // Double-quoted literals become mini patterns in this REPL. These bounded
     // settings and pitches are ordinary JS, so emit single-quoted enum values.
     `const setLive = {mode:'${state.live.mode}',pace:${state.live.pace},energy:${state.live.energy},lock:${state.live.lock ? "'"+state.live.lock+"'" : 'null'}}`,
