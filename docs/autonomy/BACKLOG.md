@@ -268,7 +268,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code
 - agent    : codex
 - human-gate: yes（独立previewの試聴・実iPhone・既存runtimeへの採用は人間確認）
-- status   : wip — codex 2026-09-30（公開Strudel試奏・2デッキ・acidBros FILE/BPM橋・PCオフライン入口・JSON持ち運び）
+- status   : wip — codex 2026-09-30（公開Strudel試奏・2デッキ・acidBros FILE/BPM橋・PCオフライン・JSON持ち運び・スマホPWA）
 - source   : 2026-09-19 user「推奨設計して、今までの作ったネタを活性化させたい」
 - detail   : `docs/BROWSER-WORKBENCH-DESIGN.md`の順序1〜2。設計のみ、runtime未実装。
   private制作ノートにある既存stem一組を候補とし、一般化した素材参照・revision・mix記述を定義。
@@ -317,6 +317,11 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   書き出し、別端末/別originへpreview後に追加できる。既存版と設定を保ち、重複は増やさず、
   取り込んだコードは手動Playまで実行しない。未保存編集・音源は含まず、自動同期は未実装。
   実iPhoneでのファイル保存/読込と本人の再開・聴感確認はhuman-gateとして継続。
+  同日追記: 同じPages URLをホーム画面へ追加するPWAと「音を端末に保存」を実装。
+  約10 MBで既存8試作とacidBrosのオフライン起動を支援。全音源成功後のcache切替、
+  固定909のhash確認、WAV Range対応、演奏中はwaitingのままの手動更新、下書き保持を検証。
+  後からコードで指定する外部音源は自動cacheせず、source区分を画面とREADMEへ明記。
+  実iPhoneのホーム画面追加・機内モード試奏・保存維持/FILE再開は本人確認待ち。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2

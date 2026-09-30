@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="color-scheme" content="dark">
     <meta name="robots" content="noindex,nofollow">
-    <link rel="icon" href="data:,">
+    <meta name="theme-color" content="#0c0c10">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Music Live">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="/icons/music-live.svg">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
     <title>Music Live Workbench</title>
     <link rel="stylesheet" href="/style.css">
     <script src="/vendor/strudel/index.js" defer></script>
@@ -27,6 +33,32 @@
         <span>Acid 303 / 909はPlay後、縦フェーダーで音を変える</span>
         <span>作品ごとの音量を合わせ、2デッキで重ねられます</span>
       </section>
+
+      <details class="pwa-panel">
+        <summary>ホーム画面・オフライン <span id="pwa-summary">準備を確認中</span> <span id="pwa-update-hint" hidden>更新あり</span></summary>
+        <p id="pwa-installed" hidden>ホーム画面のアプリで開いています。</p>
+        <p id="pwa-status" role="status">このブラウザへの保存を確認しています。</p>
+        <div class="pwa-actions">
+          <button id="pwa-install" type="button" hidden>ホーム画面に追加</button>
+          <button id="pwa-prepare" type="button" disabled>オフライン用の音を端末に保存</button>
+          <button id="pwa-update" type="button" hidden>アプリを更新・再読込</button>
+        </div>
+        <ol class="pwa-steps">
+          <li>iPhoneはこのURLを<strong>Safari</strong>で開き、共有メニュー →「ホーム画面に追加」。「Webアプリとして開く」があればオンにします。AndroidはChromeのメニューから「アプリをインストール」または「ホーム画面に追加」。</li>
+          <li>追加したアイコンから開き、ネット接続中に<strong>「オフライン用の音を端末に保存」</strong>。「準備OK」になったら、ネットなしでも試奏できます。</li>
+          <li>Play / RUNは毎回タップ。編集は「この端末に保存」またはFILEで残し、大切な版は「持ち運び・バックアップ」からJSONにも書き出します。</li>
+        </ol>
+        <p class="pwa-note">ブラウザとホーム画面アプリで保存領域が別になる場合があります。下書きが見えなければJSONで持ち運びます。保存データの削除やOSの整理で音が消えた時は、この欄で再保存。画面ロック中の演奏は端末によります。<a href="https://support.apple.com/ja-jp/guide/iphone/iphea86e5236/ios" target="_blank" rel="noreferrer">iPhoneの追加手順 ↗</a></p>
+        <h3>追加音源はどこにある？</h3>
+        <dl class="pwa-sources">
+          <div><dt>303・合成音</dt><dd>ブラウザ内で音を作ります。音声ファイル不要。</dd></div>
+          <div><dt>pad / sub / drums</dt><dd>このページの配信先にある3ループ。ボタンで端末に保存。</dd></div>
+          <div><dt>Strudelの909</dt><dd>外部の標準バンクからキック・スネア・閉/開ハットの4音を端末だけに保存。アプリ配布には含めません。</dd></div>
+          <div><dt>acidBrosの909</dt><dd>4本のWAVはアプリに同梱。他のドラムは合成。アプリ本体と一緒に保存。</dd></div>
+          <div><dt>後から追加する音</dt><dd>コードで別のURLや他の標準バンクを指定した音は、オンラインで読み込みます。自動ではオフライン保存されません。</dd></div>
+        </dl>
+        <p class="pwa-note">コードには音源の参照先が残り、音声ファイルは別に保存されます。端末に音を保存すると通信待ちが減りますが、再生中の処理負荷は音数や効果にも左右されます。</p>
+      </details>
 
       <section class="module-rack" aria-labelledby="module-rack-title">
         <div class="module-rack-heading">
@@ -226,7 +258,7 @@
       <footer>
         <p>スマホは音声再生のため、最初に Play を押してください。画面を離れると再生が止まることがあります。</p>
         <p>公開試作のコードと3本の音源は誰でも取得できます。ここで編集した内容は自動では公開されません。「この端末に保存」は同じブラウザの下書きです。別の端末には「持ち運び・バックアップ」からJSONで渡せます。</p>
-        <p>公開試作が増えたらページを再読込してください。再生中に一覧から別の試作を選ぶと演奏を切り替えます。チャットの指示を自動で受け取る機能はまだありません。</p>
+        <p>「ホーム画面・オフライン」に「更新あり」と出たら、編集を保存して「アプリを更新・再読込」。再生中に一覧から別の試作を選ぶと演奏を切り替えます。チャットの指示を自動で受け取る機能はまだありません。</p>
         <p>2デッキは一つのStrudel演奏にコードをまとめて同期再生します。独立した2台のプレーヤーではありません。「この端末に保存」で組み合わせのコードを下書きに残せます。</p>
         <p>Acid 303 / 909のドラムはStrudel標準の外部音源バンクを使います。初回の音読み込みには少し時間がかかることがあります。</p>
         <p>acidBrosは<a href="https://github.com/acidsound/acidBros" target="_blank" rel="noreferrer">元のブラウザ作品</a>をこの試奏台の独立モジュールとして収録しました。909用の小さな音声4本も同梱しています。</p>
