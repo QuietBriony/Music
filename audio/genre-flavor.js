@@ -73,6 +73,17 @@
     return mobile || (cores > 0 && cores <= 8) || (memory > 0 && memory <= 8);
   }
 
+  // Every genre room follows the same device tier. A quiet layer can still
+  // overload a phone if its convolution buffers and standing FX are stacked.
+  function makeRuntimeRoom(options) {
+    if (!lightRuntimeEnabled()) return new Tone.Reverb(options);
+    return new Tone.FeedbackDelay({
+      delayTime: 0.045,
+      feedback: Math.min(0.55, 0.18 + (Number(options.decay) || 1) * 0.045),
+      wet: Math.min(0.24, Number(options.wet) || 0)
+    });
+  }
+
   // Working volume (linear gain). This is a parallel color layer, not the
   // full-mix loudness path, so keep real headroom before the limiter.
   const WORKING_LEVEL = 0.62;
@@ -246,11 +257,24 @@
   };
   function fifth(note) { return FIFTH_OF[note] || "A2"; }
 
+  function scheduleAmbientDrone(pad, baseNote) {
+    let lastAttackTime = -Infinity;
+    return Tone.Transport.scheduleRepeat((time) => {
+      const t = safeEventTime(time);
+      // Catch-up ticks must not precede the fifth reserved on this mono
+      // voice 300 ms later. Building the layer never starts it twice.
+      if (t <= lastAttackTime) return;
+      pad.triggerAttackRelease(baseNote, "16m", t, 0.5);
+      lastAttackTime = safeEventTime(t + 0.3);
+      pad.triggerAttackRelease(fifth(baseNote), "16m", lastAttackTime, 0.45);
+    }, "16m", Tone.Transport.seconds + 0.1);
+  }
+
   // ---- AMBIENT --------------------------------------------------
 
   function buildAmbientDefault() {
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
-    const reverb = new Tone.Reverb({ decay: 6, wet: 0.4 }).connect(gain);
+    const reverb = makeRuntimeRoom({ decay: 6, wet: 0.4 }).connect(gain);
     const pad = new Tone.AMSynth({
       harmonicity: 1.5,
       oscillator: { type: "sine" },
@@ -261,13 +285,7 @@
     }).connect(reverb);
 
     const ids = [];
-    const droneTick = (time) => {
-      const t = safeEventTime(time);
-      pad.triggerAttackRelease("D2", "16m", t, 0.5);
-      pad.triggerAttackRelease("A2", "16m", safeEventTime(t + 0.3), 0.45);
-    };
-    droneTick(Tone.Transport.now() + 0.1);
-    ids.push(Tone.Transport.scheduleRepeat(droneTick, "16m"));
+    ids.push(scheduleAmbientDrone(pad, "D2"));
 
     return { gain, synths: [pad, reverb], scheduledIds: ids, source: "default" };
   }
@@ -278,7 +296,7 @@
     const p = presets[0]; // first preset; rotation could be added later
 
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
-    const reverb = new Tone.Reverb({
+    const reverb = makeRuntimeRoom({
       decay: p.reverb?.decay || 6,
       wet: clamp(p.reverb?.wet ?? 0.3, 0, 0.9)
     }).connect(gain);
@@ -310,13 +328,7 @@
 
     const baseNote = padCfg.baseNote || "D2";
     const ids = [];
-    const droneTick = (time) => {
-      const t = safeEventTime(time);
-      pad.triggerAttackRelease(baseNote, "16m", t, 0.5);
-      pad.triggerAttackRelease(fifth(baseNote), "16m", safeEventTime(t + 0.3), 0.45);
-    };
-    droneTick(Tone.Transport.now() + 0.1);
-    ids.push(Tone.Transport.scheduleRepeat(droneTick, "16m"));
+    ids.push(scheduleAmbientDrone(pad, baseNote));
 
     // Air noise bed (continuous, very low).
     let air = null, airAmp = null;
@@ -1075,10 +1087,11 @@
   // killing the drum transients. Used by funk + lofi.
   function addTapeSaturation(layer, amount = 0.5) {
     if (!layer || !layer.gain) return layer;
+    const light = lightRuntimeEnabled();
     const sat = new Tone.Distortion({
       distortion: clamp(0.04 + amount * 0.05, 0, 0.16),
       wet: 1,
-      oversample: "2x"
+      oversample: light ? "none" : "2x"
     });
     const tilt = new Tone.Filter({ frequency: 320, type: "lowshelf", gain: 0.6 + amount * 0.4 });
     const wet = new Tone.Gain(clamp(0.08 + amount * 0.07, 0, 0.18));
@@ -1200,7 +1213,7 @@
     const wide = new Tone.StereoWidener(p.width).connect(field);
     // BL-028: skip the always-on convolution reverb on constrained devices
     // (dry passthrough keeps the dry level, drops only the tail + its CPU).
-    const room = light ? null : new Tone.Reverb({ decay: p.room, preDelay: 0.035, wet: p.roomWet }).connect(wide);
+    const room = light ? null : makeRuntimeRoom({ decay: p.room, preDelay: 0.035, wet: p.roomWet }).connect(wide);
     const delay = new Tone.PingPongDelay({ delayTime: p.delay, feedback: p.feedback, wet: p.delayWet }).connect(room || wide);
     const hp = new Tone.Filter({ frequency: p.hp, type: "highpass", Q: 0.55 }).connect(delay);
     // BL-028: static panners (no continuous LFO) on constrained devices.
@@ -1283,7 +1296,7 @@
     const zone = new Tone.Gain(p.gain).connect(layer.gain);
     const wide = new Tone.StereoWidener(p.width).connect(zone);
     // BL-028: skip the always-on convolution reverb on constrained devices.
-    const room = light ? null : new Tone.Reverb({ decay: p.room, preDelay: 0.02, wet: p.roomWet }).connect(wide);
+    const room = light ? null : makeRuntimeRoom({ decay: p.room, preDelay: 0.02, wet: p.roomWet }).connect(wide);
     const delay = new Tone.PingPongDelay({ delayTime: p.delay, feedback: p.feedback, wet: p.delayWet }).connect(room || wide);
     const notch = new Tone.Filter({ frequency: p.notchLo, type: "notch", Q: p.q }).connect(delay);
     const hp = new Tone.Filter({ frequency: p.hp, type: "highpass", Q: 0.72 }).connect(notch);
@@ -1566,7 +1579,7 @@
 
   function addJazzComping(layer) {
     if (!layer) return null;
-    const room = new Tone.Reverb({ decay: 1.4, wet: 0.16 }).connect(layer.gain);
+    const room = makeRuntimeRoom({ decay: 1.4, wet: 0.16 }).connect(layer.gain);
     const piano = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: "triangle" },
       envelope: { attack: 0.018, decay: 0.34, sustain: 0.08, release: 0.7 },
@@ -1808,7 +1821,7 @@
 
   function addLofiJazzDust(layer) {
     if (!layer) return null;
-    const room = new Tone.Reverb({ decay: 1.8, wet: 0.2 }).connect(layer.gain);
+    const room = makeRuntimeRoom({ decay: 1.8, wet: 0.2 }).connect(layer.gain);
     const lp = new Tone.Filter({ frequency: 1800, type: "lowpass", Q: 0.6 }).connect(room);
     const keys = new Tone.PolySynth(Tone.FMSynth, {
       harmonicity: 1.6,
@@ -1922,7 +1935,7 @@
   // Aruarian Dance, Feather) and references/hazama-fm-pill-refs.json.
   function addNujabesMemoryDots(layer) {
     if (!layer) return null;
-    const room = new Tone.Reverb({ decay: 2.4, wet: 0.28 }).connect(layer.gain);
+    const room = makeRuntimeRoom({ decay: 2.4, wet: 0.28 }).connect(layer.gain);
     const lp = new Tone.Filter({ frequency: 1500, type: "lowpass", Q: 0.5 }).connect(room);
     const memory = new Tone.PolySynth(Tone.FMSynth, {
       harmonicity: 2.0,
@@ -1971,7 +1984,7 @@
   // it follows the shipped phrase motif. A line, not more density.
   function addAmbientLead(layer) {
     if (!layer) return null;
-    const hall = new Tone.Reverb({ decay: 7, preDelay: 0.04, wet: 0.42 }).connect(layer.gain);
+    const hall = makeRuntimeRoom({ decay: 7, preDelay: 0.04, wet: 0.42 }).connect(layer.gain);
     const delay = new Tone.FeedbackDelay({ delayTime: "4n.", feedback: 0.22, wet: 0.14 }).connect(hall);
     const lp = new Tone.Filter({ frequency: 3200, type: "lowpass", Q: 0.3 }).connect(delay);
     // PolySynth (low cap) so held tails ring/overlap into a slow line, not a cut-off mono.
@@ -2012,7 +2025,7 @@
 
   function addNujabesFluteLead(layer) {
     if (!layer) return null;
-    const hall = new Tone.Reverb({ decay: 3.6, preDelay: 0.03, wet: 0.34 }).connect(layer.gain);
+    const hall = makeRuntimeRoom({ decay: 3.6, preDelay: 0.03, wet: 0.34 }).connect(layer.gain);
     const delay = new Tone.FeedbackDelay({ delayTime: "8n.", feedback: 0.18, wet: 0.16 }).connect(hall);
     const lp = new Tone.Filter({ frequency: 4200, type: "lowpass", Q: 0.4 }).connect(delay);
     const flute = new Tone.FMSynth({
@@ -2155,7 +2168,7 @@
   // lofi: muted trumpet (sine FM with pitch dive)
   function addSoloLayer(layer, pill) {
     if (!layer) return null;
-    const hall = new Tone.Reverb({ decay: pill === "jazz" ? 2.0 : 1.4, wet: 0.18 }).connect(layer.gain);
+    const hall = makeRuntimeRoom({ decay: pill === "jazz" ? 2.0 : 1.4, wet: 0.18 }).connect(layer.gain);
     const lp = new Tone.Filter({ frequency: pill === "funk" ? 2400 : 3200, type: "lowpass", Q: 0.5 }).connect(hall);
 
     let solo;
@@ -2532,7 +2545,7 @@
 
   function buildJazzDefault() {
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
-    const room = new Tone.Reverb({ decay: 1.6, wet: 0.22 }).connect(gain);
+    const room = makeRuntimeRoom({ decay: 1.6, wet: 0.22 }).connect(gain);
 
     const brushHi = new Tone.Filter({ frequency: 4600, type: "lowpass" });
     const brushLo = new Tone.Filter({ frequency: 1200, type: "highpass" });
@@ -2600,7 +2613,7 @@
     });
     if (!drums) return null;
 
-    const room = new Tone.Reverb({ decay: 1.6, wet: 0.22 }).connect(drums.gain);
+    const room = makeRuntimeRoom({ decay: 1.6, wet: 0.22 }).connect(drums.gain);
     const brushHi = new Tone.Filter({ frequency: 5000, type: "lowpass" });
     const brushLo = new Tone.Filter({ frequency: 1300, type: "highpass" });
     brushHi.connect(brushLo).connect(room);
@@ -2749,7 +2762,7 @@
       volume: -16
     }).connect(claviFilter);
     clavi.maxPolyphony = 6;
-    const epRoom = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).connect(gain);
+    const epRoom = makeRuntimeRoom({ decay: 1.2, wet: 0.2 }).connect(gain);
     const ep = new Tone.PolySynth(Tone.FMSynth, {
       harmonicity: 3, modulationIndex: 5,
       oscillator: { type: "sine" },
@@ -2877,7 +2890,7 @@
       volume: -23
     }).connect(claviFilter);
     clavi.maxPolyphony = 4;
-    const epRoom = new Tone.Reverb({ decay: 1.1, wet: 0.16 }).connect(drums.gain);
+    const epRoom = makeRuntimeRoom({ decay: 1.1, wet: 0.16 }).connect(drums.gain);
     const ep = new Tone.PolySynth(Tone.FMSynth, {
       harmonicity: 3, modulationIndex: 5,
       oscillator: { type: "sine" },
@@ -3021,7 +3034,7 @@
 
   function buildPianoDefault() {
     const gain = new Tone.Gain(0.0001).connect(ensureMaster());
-    const room = new Tone.Reverb({ decay: 3.4, wet: 0.36 }).connect(gain);
+    const room = makeRuntimeRoom({ decay: 3.4, wet: 0.36 }).connect(gain);
     const lp = new Tone.Filter({ frequency: 2200, type: "lowpass", Q: 0.5 }).connect(room);
     const piano = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: "triangle" },
@@ -3114,7 +3127,7 @@
     const roleGain = role === "bed" ? 1.05 : role === "memory" ? 0.78 : 0.7;
     const layerGain = new Tone.Gain(roleGain).connect(gain);
     const roomWet = role === "bed" ? 0.12 : role === "memory" ? 0.1 : 0.11;
-    const room = new Tone.Reverb({ decay: role === "bed" ? 1.45 : 1.15, wet: roomWet }).connect(layerGain);
+    const room = makeRuntimeRoom({ decay: role === "bed" ? 1.45 : 1.15, wet: roomWet }).connect(layerGain);
     const lp = new Tone.Filter({
       frequency: role === "memory" ? Math.min(cutoff, 1950) : Math.min(cutoff + 260, 2600),
       type: "lowpass",
@@ -3184,7 +3197,7 @@
       || null;
     const voicings = normalizePianoVoicings(sourceLayer);
     const anchorGain = new Tone.Gain(0.9).connect(gain);
-    const room = new Tone.Reverb({ decay: 1.1, wet: 0.075 }).connect(anchorGain);
+    const room = makeRuntimeRoom({ decay: 1.1, wet: 0.075 }).connect(anchorGain);
     const lp = new Tone.Filter({ frequency: 2750, type: "lowpass", Q: 0.42 }).connect(room);
     const hammerFilter = new Tone.Filter({ frequency: 2250, type: "bandpass", Q: 2.4 }).connect(anchorGain);
     const hammer = new Tone.NoiseSynth({
@@ -3227,7 +3240,7 @@
 
   function buildPianoPlaningReplyLayer(gain) {
     const layerGain = new Tone.Gain(0.72).connect(gain);
-    const room = new Tone.Reverb({ decay: 1.25, wet: 0.105 }).connect(layerGain);
+    const room = makeRuntimeRoom({ decay: 1.25, wet: 0.105 }).connect(layerGain);
     const lp = new Tone.Filter({ frequency: 2450, type: "lowpass", Q: 0.42 }).connect(room);
     const piano = new Tone.PolySynth(Tone.Synth, {
       oscillator: { type: "triangle" },
@@ -3264,7 +3277,7 @@
   // production_translation: impressionist + whole-tone + concert hall).
   function addDebussyMemoryDots(layer) {
     if (!layer) return null;
-    const hall = new Tone.Reverb({ decay: 4.2, preDelay: 0.035, wet: 0.24 }).connect(layer.gain);
+    const hall = makeRuntimeRoom({ decay: 4.2, preDelay: 0.035, wet: 0.24 }).connect(layer.gain);
     const lp = new Tone.Filter({ frequency: 2400, type: "lowpass", Q: 0.4 }).connect(hall);
     const memory = new Tone.PolySynth(Tone.FMSynth, {
       harmonicity: 1.4,
@@ -3362,9 +3375,10 @@
     if (!activeLayer) return;
     const layer = activeLayer;
     activeLayer = null;
+    clearSchedules(layer.scheduledIds);
+    layer.scheduledIds = [];
     try { layer.gain.gain.rampTo(0, CROSSFADE_S); } catch (e) {}
     setTimeout(() => {
-      clearSchedules(layer.scheduledIds);
       if (typeof layer.dispose === "function") layer.dispose();
       disposeSynths(layer.synths);
       try { layer.gain.dispose(); } catch (e) {}

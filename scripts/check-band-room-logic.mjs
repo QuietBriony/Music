@@ -82,8 +82,8 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-237-tabasco-drum-priority", "Band Room should expose the current drum-priority app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v403", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-238-stable-ai-playback", "Band Room should expose the current drum-priority app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v404", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const playbackModesForBand = windowMock.BandRoomTestHooks?.playbackModesForBand;
 const bandSupportsPlaybackMode = windowMock.BandRoomTestHooks?.bandSupportsPlaybackMode;
@@ -429,13 +429,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-90/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-237/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-238/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-90/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-237/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-238/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
@@ -663,7 +663,7 @@ assert.match(source, /function shouldStageSynthPlaybackFirst\(reason\)/, "AI STA
 assert.match(source, /queueSynthSamplerUpgrade\(reason\)/, "AI START should queue a background sample upgrade after quick synth prep");
 assert.match(source, /function aiLightRuntimeEnabled\(\)/, "AI playback should expose a light runtime gate");
 assert.match(source, /function aiLayerLightRuntimeEnabled\(\)/, "Dense AI songs should have a separate layer-only safety gate");
-assert.match(source, /function aiLayerLightRuntimeEnabled\(\) \{[\s\S]{0,260}forced != null\) return forced;[\s\S]{0,160}denseAiSongRequiresSafety\(\)/, "The dense-song safety tier should retain an explicit aiLight diagnostic override");
+assert.match(source, /function aiLayerLightRuntimeEnabled\(\) \{[\s\S]{0,260}forced != null\) return forced;[\s\S]{0,300}return true;/, "The dense-song safety tier should retain an explicit aiLight diagnostic override");
 assert.match(source, /function makeInstrumentPolishBus\(dest\) \{[\s\S]{0,6000}const lightRuntime = aiLayerLightRuntimeEnabled\(\)/, "Dense AI safety should bypass the heavy saturation/exciter instrument bus");
 assert.match(source, /function aiSamplerUpgradeEnabled\(\)/, "AI sampler upgrade should be opt-in rather than automatic");
 assert.match(source, /if \(!shouldAutoUpgradeSynthSamples\(reason\)\)/, "AI sample upgrade queue should skip by default for light playback");
@@ -1514,7 +1514,8 @@ assert.doesNotMatch(source, /scrollIntoView/, "Lyrics auto-follow must scroll th
     hardwareConcurrency: 16, deviceMemory: 16
   });
   assert.equal(desktop.aiLightRuntimeEnabled(), false, "v364: a desktop (16 cores / 16 GB / non-mobile UA) must NOT be light");
-  assert.equal(desktop.synthPartActiveOnLight("chord"), true, "v364: desktop/full must keep ALL 5 parts incl. the chord pad");
+  assert.equal(desktop.aiLayerLightRuntimeEnabled(), true, "Ordinary desktop AI playback must use the bounded band");
+  assert.equal(desktop.synthPartActiveOnLight("chord"), false, "The stable desktop band must avoid the sustained chord voice pool");
 }
 
 // v387→v388 (G-7 HAZAMA phone budget): the v366-368 HAZAMA engine (16th arp +

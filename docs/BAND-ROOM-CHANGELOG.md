@@ -1,6 +1,17 @@
-# Band Room - Changelog (v65 -> v403 compact)
+# Band Room - Changelog (v65 -> v404 compact)
 
-Current sw.js VERSION: v403. Latest Band Room runtime change: v403 (Tabasco drum light-row priority and section-crash guard). HAZAMA playability candidate remains v401. v402 changed only the shared Listen/guide surface and its cache. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE, and exact lyric boundaries. v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard).
+Current sw.js VERSION: v404. Latest Band Room runtime change: v404 (stable default AI band, native drum one-shots and STOP cleanup). FM light genre rooms are now device-gated throughout. HAZAMA playability candidate remains v401. v403 refined Tabasco light drum-row priority and the section-crash guard. v402 changed only the shared Listen/guide surface and its cache. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE, and exact lyric boundaries. v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard).
+
+## v404 compact - Stable AI playback and phone genre rooms
+
+- Capable desktop Human Fly AI playback could freeze the renderer, while the light band continued. Ordinary AI starts now use the bounded band on all devices; the shared original-stem/master graph remains device-gated. Full-band diagnostics remain explicit via `?aiLight=0`.
+- Generated drum hits use one native buffer source and gain, with immediate audio-clock timing and tracked cleanup. STOP destroys the synth band and pending drum hits, invalidates sample upgrades, and rebuilds lazily on the next START.
+- All Hazama FM GenreFlavor rooms use a shared device gate. Light runtime uses a short delay room instead of stacked convolution, including piano recipe and secondary color layers.
+- The shared engine change is limited to the existing pad scheduling guard: its old 52-voice admission limit exceeded the synth's actual 24-voice ceiling. Match the synth ceiling to reject an overfull chord before it loses arbitrary notes, and correct the outdated voice-stealing comment.
+- FM ambient queues one Transport start, skips duplicate/stale drone ticks, and clears retiring schedules immediately while the existing tail fades. The old manual start plus first Transport tick could throw a non-increasing oscillator-start error on restart.
+- The shared audio safety adapter preserves pinned jsDelivr sample URLs: Tone 14.8.49 encoded `repo@commit` as `repo%40commit`, causing HTTP 400 and silent catalog instruments in FM/Core Rig. Other URLs and format selection retain the original loader.
+- Checked every catalog path hosted by the two pinned GitHub audio sources against their commit trees. Removed 8 nonexistent harp and 2 nonexistent flute sample mappings; Tone.Sampler interpolates the remaining recorded notes.
+- Runtime markers: `band-room.js?v=br-238`, `audio/genre-flavor.js?v=fm-81`, `engine.js?v=fm-119`, shared cache `hazama-fm-v404`. Real iPhone listening remains a manual check.
 
 ## v403 compact - ARCB / Tabasco drum fidelity first pass
 

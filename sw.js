@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v403";
+const VERSION = "hazama-fm-v404";
 const CACHE_PREFIX = "hazama-fm-";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
@@ -26,7 +26,7 @@ const PRECACHE_URLS = [
   "lyric-lab.js",
   "band-room.html",
   "band-room.css?v=br-90",
-  "band-room.js?v=br-237",
+  "band-room.js?v=br-238",
   "presets/drum-frames-tabasco-human-fly.json",
   "presets/drum-frames-tabasco-tabasco.json",
   "presets/drum-frames-tabasco-hey.json",
@@ -67,18 +67,18 @@ const PRECACHE_URLS = [
   "fm.css?v=fm-54",
   "fm.js?v=fm-72",
   "style.css?v=fm-28",
-  "audio/music-stack-routing.js?v=fm-118",
-  "audio/music-focus-modulation.js?v=fm-118",
-  "audio/music-recorder.js?v=fm-118",
-  "audio/music-packet.js?v=fm-118",
-  "audio/music-hazama-feedback.js?v=fm-118",
-  "engine.js?v=fm-118",
+  "audio/music-stack-routing.js?v=fm-119",
+  "audio/music-focus-modulation.js?v=fm-119",
+  "audio/music-recorder.js?v=fm-119",
+  "audio/music-packet.js?v=fm-119",
+  "audio/music-hazama-feedback.js?v=fm-119",
+  "engine.js?v=fm-119",
   "docs/music-stack-human-review-queue.html",
   "audio/namima-audio-adapter.js?v=fm-66",
-  "audio/audio-safety.js?v=fm-61",
-  "audio/audio-safety.js?v=br-67",
+  "audio/audio-safety.js?v=fm-62",
+  "audio/audio-safety.js?v=br-68",
   "audio/human-groove-governor.js",
-  "audio/genre-flavor.js?v=fm-80",
+  "audio/genre-flavor.js?v=fm-81",
   "audio/ai-fills.js?v=fm-71",
   "presets/loader.js?v=fm-18",
   "presets/SCHEMA.md",

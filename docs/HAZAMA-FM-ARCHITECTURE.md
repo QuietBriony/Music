@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-09-30: v404はTabascoも標準で軽量AIバンド、native drum one-shotとSTOPの予約音解放。FM追加レイヤーの全room/tapeをdevice-gate。共通audio-safetyはTone 14.8.49のURL再encodeによるjsDelivr音源HTTP 400を修正（`fm-62` / `br-68`）。共有engineの変更は既存pad予約guardの上限を実際の24 voiceへ合わせる1行と説明のみ（`fm-119`）。Chromeで7曲のSTART/STOPとHuman Fly連続再生を確認。実iPhoneの長時間・音質判定は未確認。
+
 > 24/7 generative focus radio。Music + 3つのpreset供給sister + openclaw review deskで
 > 構成する、PWA対応のweb音楽スタック。
 >
@@ -10,9 +12,9 @@
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v403`, `engine.js?v=fm-118`,
-> `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-80`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-237`, `band-room.css?v=br-90`。
+> Current cache / asset tuple: `hazama-fm-v404`, `engine.js?v=fm-119`,
+> `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
+> `band-room.js?v=br-238`, `band-room.css?v=br-90`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

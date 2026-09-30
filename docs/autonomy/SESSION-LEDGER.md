@@ -19,6 +19,30 @@
 
 ---
 
+## 2026-09-30 — 既存アプリの再生負荷・予約音・起動競合を修正 (v404)
+
+- agent      : Codex（本人依頼、単一thread）
+- goal       : ARCB/TabascoのAI再現が重く再生できない状態を再現し、既存アプリの負荷と停止動作を改善
+- repos      : Music / namima / drum-floor。chillは再生確認のみ、共有engineはpad予約guardの上限1行と説明のみ
+- shipped    : Human Flyの旧desktop/fullでrenderer応答停止を再現。標準AIをbounded bandに統一、native drum source/gainと終了/STOP解放、遅延sampler upgrade無効化。FMの全追加room/tapeをdevice-gate。
+  namima [PR #41](https://github.com/QuietBriony/namima/pull/41) / drum-floor [PR #56](https://github.com/QuietBriony/drum-floor/pull/56)（本人の公開反映承認後、mainへmerge）。
+  namimaはsingle-flight/cancel可能な起動、二重IR生成を廃止、phone delay room・polyphony/更新頻度の上限。
+  drum-floorはaudio-clockへ小節を固定、noise buffer再利用、voice/send解放と予約音STOP。
+  共通audio-safetyでTone 14.8.49のjsDelivr URL再encodeを限定回避し、HTTP 400と無音のcatalog音源を修正。
+  2つの固定commitの全catalog pathをupstream treeへ照合し、存在しないharp 8音/flute 2音を削除。
+  ChromeでHuman Fly START約0.6s、30s再生、7曲START約0.4–0.5sとSTOP後のactive drum source 0。
+  namima lightは3回の起動/背景停止/再開、convolver 0、停止後のmeter 0。
+  Drum Floorは118 BPMの小節間隔2.033898秒を維持、noise buffer 3個で再利用、STOP後voice 0。
+  chillは21秒再生・STOP後減衰・再開。FMは6ジャンルでlive context/出力を確認、JS/音源HTTP error 0。
+  FMの反復再開でambient初回予約の二重発音を検出。単一Transport予約と古いcallback即時解放、stale tick抑止を追加。
+  3回の再開と80秒の連続再生でJS error 0、GenreFlavor予約5件を維持。残るnote-dropを共有core padへ追跡し、52 voiceの予約guardを実際の24 voiceへ同期。
+- stack-check: PASS 37 / FAIL 0 / SKIP 0（起動競合・予約音・clock・URL loaderの実行テストを含む）
+- backlog    : 本人依頼の再生修復。BL-041 / BL-049の人間試聴・制作候補境界は継続
+- next       : BL-041 本人の実iPhoneで同じ入口を試聴し、HAZAMA候補の音質判定を継続
+- blockers   : 実iPhone/車載/長時間の音質は未確認。最終FM再開/80秒確認はJS error 0・出力継続、音数上限のnote-drop warning 1件は残る。sister runtimeの人間レビュー境界は本人の公開反映承認で通過
+
+---
+
 ## 2026-09-30 — 同じ試奏台へテクノ演奏面・合成808・全状態保存 (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）

@@ -2500,8 +2500,8 @@ reject("managed consumer async", () => validateHost(
   fmHost,
   replaceOnce(
     fmHtml,
-    'src="audio/genre-flavor.js?v=fm-80" defer',
-    'src="audio/genre-flavor.js?v=fm-80" defer async',
+    'src="audio/genre-flavor.js?v=fm-81" defer',
+    'src="audio/genre-flavor.js?v=fm-81" defer async',
     "managed async"
   ),
   consumers
@@ -2510,8 +2510,8 @@ reject("managed consumer nomodule", () => validateHost(
   fmHost,
   replaceOnce(
     fmHtml,
-    'src="audio/genre-flavor.js?v=fm-80" defer',
-    'src="audio/genre-flavor.js?v=fm-80" defer nomodule',
+    'src="audio/genre-flavor.js?v=fm-81" defer',
+    'src="audio/genre-flavor.js?v=fm-81" defer nomodule',
     "managed nomodule"
   ),
   consumers

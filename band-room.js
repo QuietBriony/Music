@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-237-tabasco-drum-priority";
-  const BANDROOM_RELEASE_VERSION = "v403";
+  const BANDROOM_APP_VERSION = "br-238-stable-ai-playback";
+  const BANDROOM_RELEASE_VERSION = "v404";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
@@ -943,7 +943,10 @@
   function aiLayerLightRuntimeEnabled() {
     const forced = runtimeQueryFlag("aiLight");
     if (forced != null) return forced;
-    return aiLightRuntimeEnabled() || denseAiSongRequiresSafety();
+    // The full Tabasco band also freezes capable desktop renderers. Use the
+    // bounded band on every ordinary START; keep the shared stems/master
+    // device-gated and the full band available via explicit ?aiLight=0.
+    return true;
   }
 
   function aiSamplerUpgradeEnabled() {
@@ -2041,24 +2044,44 @@
   // kit-build time, then play hits as cheap one-shot buffer sources. Same
   // sound, same Dilla / ghost / fill rhythm logic — only the playback engine
   // changes (live re-synthesis → buffer playback).
+  const activeDrumHits = new Set();
+  function stopDrumHits() {
+    for (const hit of Array.from(activeDrumHits)) {
+      try { hit.source.stop(); } catch (e) {}
+      hit.cleanup();
+    }
+  }
+
   function playDrumHit(buffer, panNode, time, vel, rate = 1) {
     if (!buffer) return;
-    const t = Math.max(Number(time) || 0, Tone.now() + 0.003);
-    let src, g;
+    const raw = Tone.getContext().rawContext;
+    const audioBuffer = typeof buffer.get === "function" ? buffer.get() : buffer;
+    if (!audioBuffer) return;
+    // One native source + gain per hit, without Tone's per-hit timelines,
+    // tickers and timeout bookkeeping. Use the audio clock, not lookAhead.
+    const t = Math.max(Number(time) || 0, raw.currentTime + 0.003);
+    let source, gain, hit;
+    const cleanup = () => {
+      if (hit) activeDrumHits.delete(hit);
+      if (source) source.onended = null;
+      try { source?.disconnect(); } catch (e) {}
+      try { gain?.disconnect(); } catch (e) {}
+    };
     try {
-      g = new Tone.Gain(clamp(Number(vel) || 0.5, 0.001, 1)).connect(panNode);
-      src = new Tone.ToneBufferSource({
-        url: buffer,
-        playbackRate: clamp(Number(rate) || 1, 0.5, 2),   // v347: round-robin micro-detune
-        onended() {
-          try { src.dispose(); } catch (e) {}
-          try { g.dispose(); } catch (e) {}
-        }
-      }).connect(g);
-      src.start(t);
+      gain = raw.createGain();
+      gain.gain.value = clamp(Number(vel) || 0.5, 0.001, 1);
+      Tone.connect(gain, panNode);
+      source = raw.createBufferSource();
+      source.buffer = audioBuffer;
+      source.playbackRate.value = clamp(Number(rate) || 1, 0.5, 2);
+      source.connect(gain);
+      hit = { source, cleanup };
+      activeDrumHits.add(hit);
+      source.onended = cleanup;
+      source.start(t);
     } catch (e) {
-      try { if (src) src.dispose(); } catch (e2) {}
-      try { if (g) g.dispose(); } catch (e2) {}
+      try { source?.stop(); } catch (e2) {}
+      cleanup();
     }
   }
 
@@ -3537,6 +3560,15 @@
     try { if (layer && typeof layer.dispose === "function") layer.dispose(); } catch (e) {}
   }
 
+  function stopSynthBand() {
+    ++synthSamplerUpgradeSeq;
+    stopDrumHits();
+    [drumKit, synthBass, guitarSynth, voiceSynth, chordSynth, clickSynth, arpSynth, bassSeqSynth]
+      .forEach(disposeSynthLayer);
+    drumKit = synthBass = guitarSynth = voiceSynth = chordSynth = clickSynth = null;
+    arpSynth = bassSeqSynth = arpLfo = bassSeqFilter = null;
+  }
+
   function replaceSynthLayer(name, nextLayer, snapshot) {
     if (!synthSamplerUpgradeStillCurrent(snapshot) || !isSamplerLayer(nextLayer)) {
       disposeSynthLayer(nextLayer);
@@ -4627,6 +4659,12 @@
       shouldApplySynthDrumVoiceOverrides,
       synthDrumSourceForPrep,
       synthPartActiveOnLight,
+      audioRuntimeDiagnostics: () => ({
+        lightBand: aiLayerLightRuntimeEnabled(),
+        activeDrumHits: activeDrumHits.size,
+        playing: state.started,
+        starting: state.starting
+      }),
       selectVelocitySlotRows,
       selectPriorityDrumRows,
       chordRoot,
@@ -7433,6 +7471,7 @@
   }
 
   function releaseSustainedSynths(reason = "panic") {
+    stopDrumHits();
     [synthBass, guitarSynth, voiceSynth, chordSynth, clickSynth, arpSynth, bassSeqSynth].forEach((voice) => {
       if (!voice) return;
       try {
@@ -7740,6 +7779,9 @@
 
   function stopPlayback(options = {}) {
     clearAutoAdvanceTimer();
+    // A whole bar has already been scheduled on the audio clock. Transport
+    // cancellation alone leaves those notes alive after STOP or a quick restart.
+    stopSynthBand();
     const retainedOffsetSec = options.resetPosition ? 0 : clampPlaybackSecond(playbackContentElapsedSec());
     if (!state.started) {
       if (options.resetPosition) setTimelineStateForSecond(0);

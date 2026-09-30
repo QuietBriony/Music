@@ -7422,7 +7422,8 @@ const pad = new Tone.PolySynth({
   // BL-022: capped from 64. The pad fires 1n/2n haze chords with a
   // multi-second release from ~20 trigger paths; an over-generous ceiling
   // let voices pile up and spike CPU on simultaneous onsets. 24 bounds the
-  // load — an overflow steals the oldest (deep-decay, inaudible) voice.
+  // load. Tone 14.8.49 drops new notes at the ceiling; the scheduling
+  // guard below rejects a whole chord rather than admitting a partial one.
   maxPolyphony: 24,
   options: {
     oscillator: { type: "triangle" },
@@ -8031,7 +8032,7 @@ reedBuzz.volume.value = -48;
 guardToneTriggerReleaseSchedule("kick", kick, 2, { minRetriggerSec: 0.06 });
 guardToneTriggerReleaseSchedule("hat", hat, 1);
 guardToneTriggerReleaseSchedule("bass", bass, 2);
-guardToneTriggerReleaseSchedule("pad", pad, 2, { maxActiveVoices: 52 });
+guardToneTriggerReleaseSchedule("pad", pad, 2, { maxActiveVoices: pad.maxPolyphony });
 guardToneTriggerReleaseSchedule("texture", texture, 1);
 guardToneTriggerReleaseSchedule("glass", glass, 2);
 // v260 audit polish (F): align maxActiveVoices with pianoMemory's maxPolyphony 24

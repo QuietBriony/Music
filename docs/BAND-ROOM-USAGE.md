@@ -10,7 +10,7 @@
 ## いちばん短い遊び方
 
 1. Listen hubのARCB / TabascoからHuman Fly原音を開き、`START`を一度押す。ドラムだけなら原音の`all off`→`drums` ON、自分でドラムを叩くなら原音の`all on`→`drums` OFF。
-2. 同じ区間を`🎛 AI 再現`へ切り替えて打点・強弱を比較する。AIは練習用で、スマホ軽量再生は8打/小節の上限がある。正確なドラムの基準は原音stems。
+2. 同じ区間を`🎛 AI 再現`へ切り替えて打点・強弱を比較する。AIは練習用で、標準の軽量再生は端末を問わず8打/小節の上限がある。正確なドラムの基準は原音stems。
 3. ほかのTabasco曲は上の01〜07ボタンで選ぶ。HAZAMAはListenの直接入口から01 / 02と`📻 原音`（基準）/ `🎛 AI 再現`を比較する。
    02のAI再現は02固有ではなく01 frames共有の暫定版なので、02固有の判断は原音を使う。
    歌詞を外す／自分で歌う時はListenの01/02 `KARAOKE` linkを開く。
@@ -21,7 +21,7 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行runtimeはv403（Tabascoドラムlight選択）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-237` / `br-90`。
+現行runtimeはv404（標準AIの軽量再生とSTOP時の予約音解放）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-238` / `br-90`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
 ### v401 AIの短時間レイヤー判定
