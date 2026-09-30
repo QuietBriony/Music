@@ -60,11 +60,11 @@
     {
       "id": "strudel-workbench", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Strudel Live Workbench", "href": "https://music-private-live-workbench.pages.dev/", "action": "音とコードを触る",
-      "purpose": "一つの入口で公開試作をStrudelコードと2デッキで触り、別エンジンの303×2台・909の保存パッチも選べる試奏台。",
-      "first_step": "スマホはSafari / Chromeで開く → ホーム画面に追加 → 追加したアプリの「ホーム画面・オフライン」で音を保存。オンラインは作品を選ぶ → Play。PCローカルはREADMEの初回準備 → npm run local。303＋909は「この中で開く」→RUN。",
-      "outputs": "公開試作8件はGit管理、LEVEL・2デッキ・コード下書きは端末保存。acidBrosのFILE保存は一覧で再開、BPMは明示操作で双方向転送。「持ち運び・バックアップ」で保存済みコード・設定・FILEを1つのJSONへ書き出し、別端末へ追加できる。",
+      "purpose": "一つの入口でテクノのドラム・303・素材A/Bを共通テンポで演奏。公開8試作のコードと2デッキ、別エンジンのacidBros保存パッチも選べる試奏台。",
+      "first_step": "PCのrootはテクノセット → セットを鳴らす → 打点・フェーダー・MUTE・展開を触る。スマホも上のテクノ入口から使える。PWAはSafari / Chromeからホーム画面に追加し、アプリ側で音を保存。PCローカルはREADMEの初回準備 → npm run local。acidBrosは別の303＋909を開く → RUN。",
+      "outputs": "公開試作8件はGit管理。テクノ3セットは16ステップ・303音符・BPM・音色・全フェーダー・MUTE・素材A/B・AUTOを名前付きコード下書きに保存。LEVEL・2デッキとacidBros FILEも端末保存。「持ち運び・バックアップ」でJSONを書き出し、別端末へ追加できる。",
       "boundary": "スマホPWAはアプリと公開8試作に必要な音を端末保存（約10 MB）してオフライン利用可。PCはローカルHTTPでも同じ画面を使える。後から指定する外部URL・他の標準バンクは自動保存しない。更新は保存後の明示操作。保存削除/OS整理では再準備が必要。JSON転送は手動で未保存編集・音源は含まない。acidBrosは別エンジンで、音・時計・パターン同期やチャット即時反映は未実装。実iPhoneの追加・試聴は未確認。公開ページ・コード・自前配信のWAV7本は公開。",
-      "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }, { "repo": "Music", "path": "experiments/workbench/v1/scripts/local-workbench.mjs" }, { "repo": "Music", "path": "experiments/workbench/v1/src/session-backup.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/pwa.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/offline-policy.js" }]
+      "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/performance.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/performance-code.js" }, { "repo": "Music", "path": "experiments/workbench/v1/scripts/local-workbench.mjs" }, { "repo": "Music", "path": "experiments/workbench/v1/src/session-backup.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/pwa.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/offline-policy.js" }]
     },
     {
       "id": "chill", "repo": "chill", "group": "browser", "status": "implemented",

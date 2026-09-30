@@ -25,8 +25,69 @@
           <h1>Music Live Workbench</h1>
           <p class="subhead">試作を選び、コードを戻して、聴きながら変える</p>
         </div>
-        <a href="https://strudel.cc/learn/first-sounds/" target="_blank" rel="noreferrer">Strudelの基本 ↗</a>
+        <div class="masthead-actions">
+          <button id="performance-open" type="button" aria-controls="performance" aria-expanded="false">テクノ・ライブセットを開く</button>
+          <a href="https://strudel.cc/learn/first-sounds/" target="_blank" rel="noreferrer">Strudelの基本 ↗</a>
+        </div>
       </header>
+
+      <section id="performance" class="performance" aria-labelledby="set-title" hidden>
+        <div class="set-transport">
+          <div class="set-heading"><p class="eyebrow">TECHNO / LIVE SET</p><h2 id="set-title">鳴らす。抜く。みょんを上げる。</h2><span id="set-position">STOPPED</span></div>
+          <button id="set-start" class="set-start" type="button" disabled>▶ セットを鳴らす</button>
+          <button id="set-stop" class="set-stop" type="button">■ 全停止</button>
+          <div id="set-master"></div>
+          <button id="set-save" type="button">セットを保存</button>
+          <button id="set-library" type="button" aria-expanded="false">保存版・バックアップ</button>
+          <a href="#editor-title">コードを見る ↓</a>
+        </div>
+        <div id="set-presets" class="set-presets" aria-label="テクノセットの選択"></div>
+        <fieldset id="set-controls" disabled>
+          <legend class="sr-only">テクノセットの演奏操作</legend>
+          <div class="set-scenes-row">
+            <label class="set-bpm-label">BPM<input id="set-bpm" type="number" min="60" max="180" step="1" value="128"></label>
+            <div id="set-scenes" class="set-scenes" aria-label="展開を選ぶ"></div>
+            <button id="set-auto" type="button" aria-pressed="false">AUTO 展開</button>
+          </div>
+          <div class="set-grid">
+            <article class="set-card set-drums">
+              <div class="set-card-heading"><div><p class="eyebrow">01 / RHYTHM</p><h3>ドラム · 16 STEP</h3></div>
+                <label>音色<select id="set-bank" aria-label="ドラム音色"><option value="909">909 · 四つ打ち</option><option value="808">808風 · 合成</option></select></label>
+              </div>
+              <p class="set-help">点灯が打点。クリックで追加・削除。左から1小節、4つずつが1拍。</p>
+              <div class="set-step-scroll"><div id="set-step-rows"></div></div>
+              <div id="set-boom"></div>
+              <p class="set-help">808の低音の長さ：上げると「ブーン」が伸びます。909には影響しません。カウベルは両方で使えます。</p>
+            </article>
+            <article class="set-card set-acid">
+              <div class="set-card-heading"><div><p class="eyebrow">02 / ACID</p><h3>303 · LIVE FADERS</h3></div><span class="set-chip">BROWSER SYNTH</span></div>
+              <div id="set-acid-faders" class="set-acid-faders"></div>
+              <div class="set-note-scroll"><div id="set-acid-notes" aria-label="303の16ステップ音符"></div></div>
+              <p class="set-help">音符を押すと次の高さ。~ は休符。PCはShift＋クリックで休符。明るさ→開く、みょん→共鳴、歪み→硬さ、長さ→ミョーン。</p>
+            </article>
+            <article class="set-card set-mix">
+              <div class="set-card-heading"><div><p class="eyebrow">03 / MIX</p><h3>パートを出し入れ</h3></div><span class="set-chip">ONE CLOCK</span></div>
+              <div id="set-mixer" class="set-mixer"></div>
+              <p class="set-help">MUTEでそのパートを抜く。ハットは閉/開をまとめて操作。シーンを変えても手動MUTEと打点は残ります。</p>
+            </article>
+            <article class="set-card set-layers">
+              <div class="set-card-heading"><div><p class="eyebrow">04 / SAVED IDEAS</p><h3>過去のネタを重ねる</h3></div><span class="set-chip">A ↔ B</span></div>
+              <div class="set-layer-pickers"><label>素材A<select data-set-layer="a" aria-label="セットの素材A"></select></label><label>素材B<select data-set-layer="b" aria-label="セットの素材B"></select></label></div>
+              <div id="set-layer-faders"></div>
+              <p class="set-help">最初は音量0。少しずつ上げて同じBPMで重ねる。クロスは左=A、右=B、中央=両方。素材にドラムや低音が含まれる時は小さめに。</p>
+            </article>
+          </div>
+        </fieldset>
+        <p id="set-status" class="set-status" role="status">セットを選び、再生ボタンを押してください。</p>
+        <details class="set-guide"><summary>遊び方・数字の意味</summary>
+          <ol><li>Acid Drive / Dub Room / Electro 808を選び「セットを鳴らす」。PCはドラム・303・ミキサー・素材A/Bが並びます。スマホは縦に並びます。</li>
+          <li>INTRO→GROOVE→ACID→BREAK→PEAKで展開を切り替える。BREAKはドラム欄のキックを抜き、PEAKはハットを倍に。AUTOは8小節単位の64小節ループ。手動シーンを押すとAUTOを解除します。</li>
+          <li>ドラムの打点を変え、303の明るさとみょんを動かす。MUTEでキックを抜き、戻して盛り上げます。素材A/Bは音量を少し上げて足します。</li>
+          <li>「セットを保存」で名前付き下書きに残す。打点・音符・音色・BPM・フェーダー・素材A/B・AUTOをコードに保存します。「保存版・バックアップ」で再開・JSON持ち運び。</li></ol>
+          <p>PCのSpaceで開始/停止、1〜5でシーン、Escで全停止。コードや入力欄を編集中はSpaceと数字を奪いません。止めた後の再開は1小節目からです。</p>
+          <p>808風は低音キック・スネア・ハット・カウベルを合成する近似です。Roland純正の再現ではありません。ドラム・303・素材A/BはStrudelの時計を共有。別画面のacidBrosとの同時同期は行いません。</p>
+        </details>
+      </section>
 
       <section class="intro" aria-label="使い方">
         <span>試作を選ぶ → Playで聴く → 再生中は別の試作を選ぶだけで切り替え</span>

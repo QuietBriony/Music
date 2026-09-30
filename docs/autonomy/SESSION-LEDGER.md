@@ -19,6 +19,27 @@
 
 ---
 
+## 2026-09-30 — 同じ試奏台へテクノ演奏面・合成808・全状態保存 (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : PCでドラム・303・過去ネタを並べ、共通テンポでテクノセットを演奏する
+- repos      : Music（既存試奏台、Listenと台帳/説明。sister repo・FM/Core Rig不変）
+- implemented: 909/808風16-step・303音符/4フェーダー・パート音量/MUTE・素材A/Bを
+  単一Strudel clockへ組む3セット。INTRO/GROOVE/ACID/BREAK/PEAKと64小節AUTOを追加。
+  808は合成近似で新規音声なし。音量0の発音を除外。全状態と素材コードを既存下書き/JSONへ
+  保存・再開し、コード本文の手動変更はセット操作で上書きしない。初回は音声処理の準備を待ち、
+  打点変更直後のStopで遅延再評価が再生を再開しないようにする。
+  試奏台42 tests PASS。Chromeで3セット×5シーン、AUTOのキック抜き/ハット倍化、
+  フェーダー値の発音反映、909/808音声信号、MUTEとCutoffの保存復元、素材A/Bの140 BPM同期を確認。
+  390px幅で横溢れなし、既存7音の端末保存後はoffline再読込・909/808の初回起動も確認。
+  PC 1440×1080では操作部が画面内に収まり、Play直後の1〜5キーで展開、Esc停止も確認。
+- stack-check: PASS 36 / FAIL 0 / SKIP 0
+- backlog    : BL-049継続。既存の試奏台/Pagesを拡張し、新しいrepo/公開先は作らない
+- next       : BL-049 — 本人のテクノ試奏と実iPhone確認、既存ARCBドラム素材の照合へ戻る
+- blockers   : 実出力機器での好み/音量・実iPhoneは本人未判定。acidBrosは別clock。チャット即時反映・原本比較/undoは未実装
+
+---
+
 ## 2026-09-30 — Pages転送後のPWAオフライン再読込を修正 (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）
