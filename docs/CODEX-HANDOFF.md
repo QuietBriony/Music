@@ -88,6 +88,8 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   保存後に更新・再読込。任意の追加音源・private APIはcache対象外。909の4音は端末だけへ取得し、
   Git/Pagesへ複製しない。通信遮断・HTTP cache消去後の再読込、Strudelのループ/909、acidBrosの
   起動/同梱WAV、Range 206、更新後の下書き保持をChromeで検証。実iPhoneの追加・出音は未確認。
+  Pagesの`/index.html → /`転送responseをそのまま返すとoffline navigationが失敗するため、
+  SWはhash確認後のdecoded bodyから転送/圧縮metadataを持たないsnapshotを作って保存する。
   閲覧者の名前付き下書きは端末内保存で、JSONを渡すまで別端末には移らない。Surface側の編集成果と
   端末間の自動同期、チャットからの即時反映、追加試作の本人試聴はまだ取り込んでいない。
   Computer Useで触れるのも接続したブラウザ画面だけで、スマホとの共通sessionではない。

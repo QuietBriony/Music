@@ -39,6 +39,8 @@ PagesのlocalStorageは別originで、自動移行しない。ネイティブア
 スマホは同じPages URLのPWAをホーム画面へ追加できる。独立originの`/sw.js`はbuild時の全静的
 ファイルhashを固定し、世代が揃ってからinstall。次世代はwaitingで保持し、演奏中の自動再読込は
 行わない。ユーザーの「アプリを更新・再読込」だけでactivateする。
+Pagesのindex URL転送はhash確認後のResponse再生成で吸収し、redirect flagとContent-Encodingを
+cacheからの配信へ持ち込まない。これによりnavigationのredirect:manualと矛盾しない。
 音源は別cacheで、明示操作時だけ公開3ループ＋固定909の4音を取得する。全7本の形式・容量・
 固定4本のSHA-256を確認後にmetadata pointerをcommitし、失敗時は以前の完全セットを保つ。
 初期registryはネット失敗時に909の4音だけの一覧へ退避。WAVのRangeリクエストは206で返す。

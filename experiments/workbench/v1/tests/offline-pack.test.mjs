@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { SOUND_FILES, SOUND_CACHE_PREFIX, SOUND_META_CACHE, SOUND_META_PATH,
-  SAMPLE_REGISTRIES, soundDigest, soundFileFor, offlineRegistry, soundRange } from '../src/offline-policy.js';
+  SAMPLE_REGISTRIES, appSnapshotResponse, soundDigest, soundFileFor, offlineRegistry, soundRange } from '../src/offline-policy.js';
 import { readSoundPack, saveSoundPack } from '../src/offline-pack.js';
 
 const origin = 'https://music.example';
@@ -14,6 +14,26 @@ const wave = () => {
 const files = [{ key: '/api/sounds/pad', url: '/api/sounds/pad', label: 'pad' },
   { key: '/api/sounds/sub', url: '/api/sounds/sub', label: 'sub' }];
 const okFetch = async () => new Response(wave(), { headers: { 'Content-Type': 'audio/wav' } });
+
+test('Pages redirects and compressed network headers become a safe verified app snapshot', async () => {
+  const bytes = new TextEncoder().encode('<!doctype html><p>offline</p>');
+  const network = new Response(bytes, { headers: { 'Content-Type': 'text/html; charset=utf-8',
+    'Content-Encoding': 'br', 'Content-Length': '7' } });
+  Object.defineProperty(network, 'redirected', { value: true });
+  Object.defineProperty(network, 'url', { value: origin + '/' });
+  const snapshot = await appSnapshotResponse(network, await soundDigest(bytes));
+  assert.equal(snapshot.redirected, false);
+  assert.equal(snapshot.url, '');
+  assert.equal(snapshot.headers.get('Content-Encoding'), null);
+  assert.equal(snapshot.headers.get('Content-Length'), String(bytes.length));
+  assert.match(snapshot.headers.get('Content-Type'), /text\/html/);
+  assert.equal(await snapshot.text(), '<!doctype html><p>offline</p>');
+});
+
+test('a failed or mismatched app response cannot enter the offline generation', async () => {
+  await assert.rejects(appSnapshotResponse(new Response('missing', { status: 404 }), 'missing'), /取得できません/);
+  await assert.rejects(appSnapshotResponse(new Response('different'), await soundDigest(wave())), /揃っていません/);
+});
 
 class MemoryStorage {
   sets = new Map();

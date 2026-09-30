@@ -19,6 +19,22 @@
 
 ---
 
+## 2026-09-30 — Pages転送後のPWAオフライン再読込を修正 (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 本番特有のindex URL転送で発見したPWAのoffline navigation失敗を修正する
+- repos      : Music（独立試奏台のSW保存処理と説明。sister repo不変）
+- implemented: Pagesが`/index.html`を`/`へ転送したResponseをそのままcacheするとnavigationで
+  拒否されることを本番ブラウザで確認。静的ファイルはhash検証後のdecoded bodyからResponseを
+  再生成し、redirect flag・Content-Encodingを引き継がないsnapshotへ変更。
+  転送/圧縮headerとhash不一致の単体検証を追加し、試奏台の全35件がPASS。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0
+- backlog    : BL-049継続。PWAの公開配信境界を修正。既存の音源保存と下書き/FILEは不変
+- next       : BL-049 — 本人が実iPhoneのホーム画面追加→音保存→機内モード試奏を確認し、ARCBドラムの素材照合へ戻る
+- blockers   : 実iPhoneの追加/出音/保存維持は本人未判定。追加の任意音源はオフライン対象外
+
+---
+
 ## 2026-09-30 — 既存試奏台のスマホPWA・音源保存の可視化 (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）
