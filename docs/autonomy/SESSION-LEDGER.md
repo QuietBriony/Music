@@ -19,6 +19,22 @@
 
 ---
 
+## 2026-09-30 — 既存試奏台のPCローカル・オフライン入口 (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 単一入口/別エンジンの境界を明確にし、同じ試奏台をPCでネットなしでも再開する
+- repos      : Music（既存試奏台、Listen、依存台帳。sister repo不変）
+- implemented: `npm run local:prepare`で公開3ループとcommit固定909の4音をrepo外user cacheへ保存。
+  ローカルHTTPで同じ8試作を開き、Strudel起動時の外部音源一覧を必要最小限の端末内一覧へ差し替え。
+  aphex1、Acid 303 / 909、acidBrosの再生開始とローカル音源読込をブラウザで確認。
+  公開Pagesの画面・音源とFM / Band Room / Core Rigのruntimeは不変。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0
+- backlog    : BL-049継続。共通session、原本比較/undo、音声routingは未実装
+- next       : BL-049 — 本人がPCローカルと実iPhoneの聴感・FILE再開を試し、必要な共通session範囲を決める
+- blockers   : 実際の出音と音質は本人の耳で未判定。ローカルとPagesの下書きは別origin。909元repoの再配布ライセンスはpending
+
+---
+
 ## 2026-09-30 — 既存試奏台の303＋909 FILE/BPM接続 (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）

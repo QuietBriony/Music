@@ -570,7 +570,7 @@
           <article><h3>Music / Listening Loop</h3><p>20秒の3案を比べ、好みを一つ選んで次の候補へ進む実験。過去の曲を自動読込する編集画面ではありません。</p><a class="mini-link" href="experiments/listening-loop/v1/">3つ聴いて、ひとつ育てる →</a></article>
           <article><h3>Hazama / Sensory Response Lab</h3><p>小さな回路を使う音の変化と、通常の変調を比較する試作。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/sensory-audio-lab.html">回路と変調を比べる →</a></article>
           <article><h3>Hazama / 世界が音で応える</h3><p>沈む地面・脈動・断片・混合のA〜Dを比較。ゲームの場面に音がどう応えるかを探る場所です。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/scene-response-lab.html">場面の反応音を比べる →</a></article>
-          <article><h3>Music / Live Workbench</h3><p>aphex1、テクノ、アシッドのStrudelコードと2デッキ、別モジュールの303×2台・909を同じ試奏台から使えます。編集は各モジュールで端末内に保存します。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/">音とコードを触る →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?module=acidbros">303＋909を開く →</a></article>
+          <article><h3>Music / Live Workbench</h3><p>aphex1、テクノ、アシッドのStrudelコードと2デッキ、別エンジンの303×2台・909を同じ入口から使えます。PCでは初回に必要な音を保存すればローカルブラウザでも試奏できます。編集は各端末に保存します。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/">音とコードを触る →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?module=acidbros">303＋909を開く →</a><a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/README.md#pcでローカル起動オフライン試奏">PCローカル起動の手順 →</a></article>
           <p>HazamaはMusicと別のゲームrepoです。試聴候補と本体の採用状態は別に確認し、各実験の評価が自動で共有されるとは扱いません。</p>
         </div>
       </details>
@@ -604,9 +604,10 @@
 
     <section id="workbench-plan" aria-labelledby="workbench-title">
       <div class="section-head"><h2 id="workbench-title">コードと303・909で音を触る</h2><p class="section-note">一つの試奏台に二つの演奏面。</p></div>
-      <p class="guide-note">Strudelではaphex1、テクノ2案、Acid 303 / 909、自動変奏、元のテストをコードから演奏。作品別LEVELと2デッキ同期ミックスも使えます。別の「303＋909を開く」では、2台の303と11パートの909を16ステップとつまみで演奏。こちらの909用WAVは小さな4本を同じページへ同梱しています。FILEで保存したパッチは試奏台の一覧から再開でき、BPMはボタンで双方向に一回ずつ渡せます。両演奏面の時計・保存形式は別で、切替時に前の演奏を停止します。チャットから公開版への即時同期は未実装です。</p>
+      <p class="guide-note">Strudelではaphex1、テクノ2案、Acid 303 / 909、自動変奏、元のテストをコードから演奏。作品別LEVELと2デッキ同期ミックスも使えます。別の「303＋909を開く」では、2台の303と11パートの909を16ステップとつまみで演奏。こちらの909用WAVは小さな4本を同じページへ同梱しています。FILEで保存したパッチは試奏台の一覧から再開でき、BPMはボタンで双方向に一回ずつ渡せます。両演奏面の時計・保存形式は別で、切替時に前の演奏を停止します。PCでは同じMusic repoをローカル起動でき、初回に必要な7音を保存すれば公開8試作をオフラインで試せます。Chrome/Edgeなどのブラウザは必要で、端末間の下書きは自動共有されません。チャットから公開版への即時同期は未実装です。</p>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">Acid 303 / 909を触る →</a>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?module=acidbros">303＋909のステップ画面を開く →</a>
+      <a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/README.md#pcでローカル起動オフライン試奏">PCローカル起動の手順 →</a>
       <details class="tool-group"><summary>この先の制作台設計を見る <span>共通session・履歴は未実装</span></summary><div class="parked-plan">
       <p class="guide-note">目指すのは<strong>「音を聴く → 一部分をいじる → 元と比べる → 続きから再開する」</strong>こと。
         まずはブラウザで動く構成にし、Tidalのインストールを前提にしません。</p>
@@ -690,11 +691,11 @@
     <article class="tool-item" id="tool-strudel-workbench" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
       <h3>Strudel Live Workbench</h3>
-      <p>公開試作をStrudelコードと2デッキで触り、303×2台・909の保存パッチも同じ入口から選べる試奏台。</p>
+      <p>一つの入口で公開試作をStrudelコードと2デッキで触り、別エンジンの303×2台・909の保存パッチも選べる試奏台。</p>
       <dl>
-        <dt>最初の一手</dt><dd>コードならAcid 303 / 909を選ぶ → Play。303＋909なら「この中で開く」→RUN→FILEで保存。スマホでは全画面で開ける。</dd>
+        <dt>最初の一手</dt><dd>オンラインはAcid 303 / 909を選ぶ → Play。PCローカルはREADMEに従い初回準備 → npm run local。303＋909なら「この中で開く」→RUN。</dd>
         <dt>残るもの</dt><dd>公開試作8件はGit管理、LEVEL・2デッキ・コード下書きは端末保存。acidBrosのFILE保存パッチは試奏台の一覧から再開でき、BPMは明示操作で双方向転送。</dd>
-        <dt>できることの境界</dt><dd>acidBrosは独立エンジン。BPMの一回転送はできるが、音・時計・パターンの同期とコード変換は未実装。実iPhone試聴、端末間同期、チャット即時反映も未確認。ページ・コード・WAV計7本は公開。</dd>
+        <dt>できることの境界</dt><dd>acidBrosは独立エンジン。PCローカルはブラウザ＋127.0.0.1で公開8試作に必要な音のみ初回端末保存し、以後オフライン利用可。任意の外部サンプルは対象外。音・時計・パターンの同期、端末間の下書き共有、チャット即時反映は未実装。実iPhone試聴は未確認。公開ページ・コード・WAV計7本は公開。</dd>
       </dl>
       <a class="mini-link" data-tool-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/">Strudel Live Workbench — 音とコードを触る</a>
     </article>
