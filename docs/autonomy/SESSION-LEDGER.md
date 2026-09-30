@@ -33,6 +33,8 @@
   Ambient Driftは60秒連続出力を確認後、低BPMでclampされたpad delayを1/4cycleへ短縮。
   最終版は390px、保存コード/設定の完全復元、offline再読込から20秒の出力、JS error/warning 0。
   手動シーンでLIVE/キープ解除、手動MUTE/音符固定を確認。協奏の役割と未実装の別窓同期/AI自動受信をREADMEへ記録。
+  main checkout後の再build/testで、埋込関数のCRLFによる保存照合失敗を検出し配信を止めた。
+  関数の改行を正規化し、4セットのWindows改行復元も検証する修正を追加。
 - stack-check: PASS 37 / FAIL 0 / SKIP 0（最終統合check、0 BAD）
 - backlog    : BL-049継続。同じアプリ/配信を磨く。ARCB原本の照合は残る
 - next       : BL-049 — 本人のLIVE/Ambient Drift試聴、実iPhoneとARCB原本比較

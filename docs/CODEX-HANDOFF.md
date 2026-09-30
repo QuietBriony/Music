@@ -116,6 +116,7 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   決め、8/16/32小節の展開間隔、盛り上がり、展開キープ、聴く画面を追加。自動のコード再評価なし。
   Ambient Driftは76 BPM・長い合成三和音と穏やかなfilter/gain補間で、自動ドラム/303を抜く。
   手動MUTE/音符固定を優先し、19フェーダーとLIVE設定を既存下書き/JSONへ保存。旧V1/V2は明示更新のみ。
+  保存コードの埋込関数は改行を正規化し、Windows checkout/端末間持ち運びでも照合を維持。
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
