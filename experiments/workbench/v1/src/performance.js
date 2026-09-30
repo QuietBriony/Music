@@ -1,9 +1,10 @@
 import {
-  defaultSet, readTechnoSet, sceneAtCycle, SET_MARKER, SET_PRESETS, SET_SCENES,
-  SET_SLIDERS, SET_TRACKS, technoSetCode,
-} from './performance-code.js';
+  defaultSet, readTechnoSet, sceneAtCycle, isSetCode, SET_PRESETS, SET_SCENES,
+  SET_SLIDERS, SET_TRACKS, technoSetCode, EXTRA_DRUMS, groovePlan, upgradeSet,
+} from './groove-code.js';
 
-const names = { kick: 'KICK', snare: 'SNARE', hh: 'CLOSED HAT', oh: 'OPEN HAT', bell: 'COWBELL', acid: '303' };
+const names = { kick: 'KICK', snare: 'SNARE', hh: 'CLOSED HAT', oh: 'OPEN HAT', bell: 'COWBELL', acid: '303',
+  response:'303返し',percussion:'追加打楽器',...Object.fromEntries(EXTRA_DRUMS) };
 const scenes = { intro: '01 INTRO', groove: '02 GROOVE', acid: '03 ACID', break: '04 BREAK', peak: '05 PEAK' };
 const noteChoices = ['~', 'g1', 'bb1', 'c2', 'd2', 'eb2', 'f2', 'g2', 'bb2', 'c3'];
 const el = (tag, text, className) => {
@@ -27,6 +28,11 @@ export function initPerformance(hooks) {
   const acidNotes = document.querySelector('#set-acid-notes');
   const mixer = document.querySelector('#set-mixer');
   const presetList = document.querySelector('#set-presets');
+  const groovePanel = document.querySelector('#set-evolution');
+  const hold = document.querySelector('#set-hold');
+  const variation = document.querySelector('#set-variation');
+  const phrase = document.querySelector('#set-phrase');
+  const kit = document.querySelector('#set-kit');
   const open = document.querySelector('#performance-open');
   const layerSelects = [...panel.querySelectorAll('[data-set-layer]')];
   let catalog;
@@ -40,6 +46,7 @@ export function initPerformance(hooks) {
   const muteButtons = new Map();
   const sceneButtons = new Map();
   const noteButtons = [];
+  const extraRows = new Map();
 
   function show(enabled = true) {
     view = enabled;
@@ -102,7 +109,7 @@ export function initPerformance(hooks) {
     sceneList.append(button);
   }
 
-  for (const track of SET_TRACKS.filter((key) => key !== 'acid')) {
+  for (const track of SET_TRACKS.filter((key) => !['acid','response','percussion'].includes(key))) {
     const row = el('div', '', 'set-step-row');
     row.append(el('span', names[track], 'set-row-title'));
     const buttons = [];
@@ -118,6 +125,16 @@ export function initPerformance(hooks) {
     }
     steps.set(track, buttons);
     stepList.append(row);
+    if (EXTRA_DRUMS.some(([id]) => id===track)) extraRows.set(track,row);
+  }
+  for (const [id,title] of EXTRA_DRUMS) {
+    const button=el('button',title); button.type='button'; button.dataset.kit=id;
+    button.addEventListener('click',() => mutate(next => {
+      const selected=next.groove.kit.includes(id);
+      next.groove.kit=next.groove.kit.filter(key => key!==id);
+      if (!selected) next.groove.kit.push(id);
+    }));
+    kit.append(button);
   }
   for (let i = 0; i < 16; i++) {
     const button = el('button', '', 'set-note');
@@ -142,7 +159,7 @@ export function initPerformance(hooks) {
     label.append(el('span', title), output, input);
     input.addEventListener('input', () => {
       if (!readTechnoSet(hooks.getCode())) return;
-      hooks.fader(key, Number(input.value), SET_SLIDERS.findIndex((s) => s[0] === key));
+      hooks.fader(key, Number(input.value));
       // CodeMirror updates its document synchronously, widgets on the next frame.
       requestAnimationFrame(sync);
     });
@@ -151,8 +168,9 @@ export function initPerformance(hooks) {
   }
 
   addFader('MASTER', document.querySelector('#set-master'));
-  for (const [key, track] of [['KICK', 'kick'], ['SNARE', 'snare'], ['HATS', 'hh'], ['BELL', 'bell'], ['ACID', 'acid']]) {
+  for (const [key, track] of [['KICK', 'kick'], ['SNARE', 'snare'], ['HATS', 'hh'], ['BELL', 'bell'], ['ACID', 'acid'],['RESPONSE','response'],['PERC','percussion']]) {
     const strip = el('div', '', 'set-channel');
+    if (['response','percussion'].includes(track)) strip.dataset.grooveChannel='true';
     addFader(key, strip, true);
     const button = el('button', 'MUTE', 'set-mute');
     button.type = 'button';
@@ -170,6 +188,22 @@ export function initPerformance(hooks) {
   for (const key of ['CUTOFF', 'RESONANCE', 'DRIVE', 'DECAY']) addFader(key, document.querySelector('#set-acid-faders'), true);
   addFader('BOOM', document.querySelector('#set-boom'));
   for (const key of ['A', 'B', 'CROSS']) addFader(key, document.querySelector('#set-layer-faders'));
+  for (const key of ['SPACE','MOTION']) addFader(key, document.querySelector('#set-groove-faders'));
+  hold.addEventListener('click',() => mutate(next => { next.groove.hold=!next.groove.hold; }));
+  variation.addEventListener('change',() => mutate(next => { next.groove.variation=Number(variation.value); }));
+  document.querySelector('#set-next-variation').addEventListener('click',() => mutate(next => {
+    next.groove.seed=(next.groove.seed+1)>>>0 || 1; next.groove.hold=false;
+  }));
+  document.querySelector('#set-adopt-phrase').addEventListener('click',() => mutate(next => {
+    const bar=Math.max(0,Math.floor(hooks.cycle()))%8;
+    next.groove.previousNotes=[...next.notes];
+    next.notes=groovePlan(next).notes[bar]; next.groove.hold=true;
+  }));
+  document.querySelector('#set-undo-phrase').addEventListener('click',() => mutate(next => {
+    if (!next.groove.previousNotes) return;
+    next.notes=[...next.groove.previousNotes]; next.groove.previousNotes=null; next.groove.hold=true;
+  }));
+  document.querySelector('#set-upgrade').addEventListener('click',() => mutate(next => Object.assign(next,upgradeSet(next))));
 
   layerSelects.forEach((select, index) => select.addEventListener('change', async () => {
     const id = select.value;
@@ -210,9 +244,14 @@ export function initPerformance(hooks) {
     if (code !== cachedCode) {
       cachedCode = code;
       state = readTechnoSet(code);
-      if (!state && !code.includes(SET_MARKER) && view) show(false);
+      if (!state && !isSetCode(code) && view) show(false);
     }
     fieldset.disabled = !state || loading || hooks.isBusy();
+    groovePanel.disabled = fieldset.disabled;
+    groovePanel.hidden = !state?.groove;
+    document.querySelector('#set-upgrade').hidden = !state || Boolean(state.groove);
+    document.querySelector('#set-legacy-hint').hidden = !state || Boolean(state.groove);
+    phrase.hidden = !state?.groove;
     start.disabled = !state || loading || hooks.isBusy();
     presetList.querySelectorAll('button').forEach((button) => {
       button.disabled = !catalog || loading || hooks.isBusy();
@@ -220,21 +259,34 @@ export function initPerformance(hooks) {
     });
     if (!state) {
       for (const fader of faders.values()) fader.input.disabled = true;
-      if (code.includes(SET_MARKER)) note.textContent = 'コードを直接編集した版です。セットの操作を戻す時は先に保存し、上のセットを選び直してください。';
+      if (isSetCode(code)) note.textContent = 'コードを直接編集した版です。セットの操作を戻す時は先に保存し、上のセットを選び直してください。';
       return;
+    }
+    document.querySelector('#set-kit-details').hidden=!state.groove;
+    document.querySelector('#set-synth-details').hidden=!state.groove;
+    mixer.style.setProperty('--set-channel-count',state.groove?'7':'5');
+    mixer.querySelectorAll('[data-groove-channel]').forEach(n => { n.hidden=!state.groove; });
+    extraRows.forEach((row,id) => { row.hidden=!state.groove?.kit.includes(id); });
+    if (state.groove) {
+      hold.setAttribute('aria-pressed',String(state.groove.hold));
+      hold.textContent=state.groove.hold?'音符固定中':'音符を固定';
+      variation.value=state.groove.variation;
+      document.querySelector('#set-undo-phrase').disabled=!state.groove.previousNotes;
+      kit.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed',String(state.groove.kit.includes(button.dataset.kit))));
     }
     bpm.value = state.bpm;
     bank.value = state.bank;
     auto.setAttribute('aria-pressed', String(state.auto));
     auto.textContent = state.auto ? 'AUTO 展開中 · 64小節' : 'AUTO 展開';
     for (const [key, fader] of faders) {
+      if (state.values[key] === undefined) { fader.input.disabled=true; fader.output.textContent='—'; continue; }
       fader.input.disabled = loading || hooks.isBusy();
       fader.input.value = state.values[key];
       fader.output.textContent = fader.suffix === '%' ? Math.round(state.values[key] * 100) + '%'
         : state.values[key] + fader.suffix;
     }
     for (const [track, buttons] of steps) buttons.forEach((button, i) => {
-      button.setAttribute('aria-pressed', String(state.steps[track][i]));
+      button.setAttribute('aria-pressed', String(Boolean(state.steps[track]?.[i])));
     });
     noteButtons.forEach((button, i) => {
       button.textContent = (i + 1) + ' ' + state.notes[i].toUpperCase();
@@ -243,7 +295,7 @@ export function initPerformance(hooks) {
     });
     for (const [track, button] of muteButtons) button.setAttribute('aria-pressed', String(state.muted.includes(track)));
     layerSelects.forEach((select, i) => { select.value = state.layers[i].id; });
-    note.textContent = state.auto ? '8小節ごとにパートが入り替わります。ステップとフェーダーは演奏中も操作できます。'
+    note.textContent = state.auto ? (state.groove?'軸の音符を4小節反復→小変奏→8小節で帰還。パートは8小節ごとに出し入れ。':'旧版：8小節ごとにパートが入り替わります。')
       : 'ドラム・303・素材A/Bは同じテンポ。ステップとシーンは次の演奏処理から、フェーダーは次の音から反映。';
   }
 
@@ -257,6 +309,8 @@ export function initPerformance(hooks) {
     bar.textContent = playing ? String(Math.floor(cycle) % 64 + 1).padStart(2, '0') + ' / 64 · ' + (Math.floor((cycle % 1) * 4) + 1) + '拍'
       : 'STOPPED · Spaceで開始/停止';
     const scene = state?.auto ? sceneAtCycle(cycle) : state?.scene;
+    if (state?.groove) phrase.textContent=state.groove.hold || !state.groove.variation ? '音符固定 · 軸を反復'
+      : Math.floor(cycle)%8 < 4 ? '軸を反復 · 1〜4小節' : '小変奏 · 5〜8小節 → 軸に帰還';
     for (const [key, button] of sceneButtons) button.setAttribute('aria-pressed', String(key === scene));
     panel.querySelectorAll('[data-step]').forEach((button) => button.classList.toggle('is-current', Number(button.dataset.step) === step));
   }

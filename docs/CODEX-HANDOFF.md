@@ -104,6 +104,12 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   808風は合成による近似で、新規WAVや808バンクは追加しない。acidBrosは別clockのまま。
   全状態と素材コードを既存の名前付き下書き/JSONへ保存・再開。コード本文を直接変更した版は
   セット操作を無効にし、手動編集を保つ。音色の本人判定と実iPhoneは未確認。
+- 2026-10-01に元acidBrosの全体サイコロをコード比較し、同じ試奏台の新セットをV2へ。
+  休符/強拍を保持して4小節反復＋弱拍1〜2音変奏、8小節帰還、アクセント・pitch envelopeの
+  スライド風近似、疎な303返し、16小節cutoff起伏とtempo delay。追加7打楽器は合成と既存WAV再利用。
+  音符固定・採用/一段戻し・seedを下書き/JSONへ保存。旧V1は旧出音で復元し明示upgradeだけ許す。
+  フェーダーを仮想化DOMの順番から切り離し、評価時のslider IDへ接続。停止中の編集も許す。
+  元2台は独立した発振器/filter/delayを共通masterへ混ぜ、LR分離ではない。比較/操作は試奏台README。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
 - 現行cacheは`hazama-fm-v404`。Band Room runtime markerは`band-room.js?v=br-238` /

@@ -35,6 +35,11 @@
 音量0のイベントは除外。全状態と素材コードは既存下書き/JSONに残し、手動コード編集は上書きしない。
 初回はAudioWorklet準備を待ち、Stopや作品切替は保留中のセット再評価を無効化する。
 acidBrosとのclock同期・音声routingには広げない。本人の聴感/実iPhone判定は別。
+2026-10-01の新セットV2は軸の4小節反復＋弱拍1〜2音の変奏で8小節帰還。低音303と疎な返し、
+アクセント、pitch envelopeのスライド風近似、16小節の音色起伏/tempo delay、追加7打楽器を組む。
+追加音声なし（合成＋同梱済みcrash/ride）。固定/採用/一段戻しとseedを既存下書き/JSONへ保存。
+旧V1は旧コード/出音を保ち、明示upgradeだけ新形式へ。外部フェーダーは表示中のCodeMirror widgetに
+依存せず、評価時のslider signal IDへ数値を送り、コードの数値だけを部分編集する。
 同じMusic repoを使うが、既存GitHub Pages、`music-stack.pages.dev`、FM / Band Room / Core Rigの
 runtimeやService Workerには接続しない。別のCloudflare Pagesプロジェクトで配信し、
 ページ・試作コード・KVの3本のWAVを公開する。Cloudflare Accessは使わない。
