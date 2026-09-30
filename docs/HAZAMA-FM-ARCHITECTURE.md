@@ -40,6 +40,8 @@ acidBrosとのclock同期・音声routingには広げない。本人の聴感/�
 追加音声なし（合成＋同梱済みcrash/ride）。固定/採用/一段戻しとseedを既存下書き/JSONへ保存。
 旧V1は旧コード/出音を保ち、明示upgradeだけ新形式へ。外部フェーダーは表示中のCodeMirror widgetに
 依存せず、評価時のslider signal IDへ数値を送り、コードの数値だけを部分編集する。
+CodeMirrorの本文DOM更新ではcodeが変わった時だけ操作表示を更新し、手入力/Undoにも追従する。
+再生highlightだけの更新では同期処理を増やさず、コード本文を変えた版の生成操作は無効にする。
 同じMusic repoを使うが、既存GitHub Pages、`music-stack.pages.dev`、FM / Band Room / Core Rigの
 runtimeやService Workerには接続しない。別のCloudflare Pagesプロジェクトで配信し、
 ページ・試作コード・KVの3本のWAVを公開する。Cloudflare Accessは使わない。

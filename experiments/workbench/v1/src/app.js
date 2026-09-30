@@ -95,8 +95,17 @@ window.addEventListener('message', (event) => {
     sliderBridge.nativeMessage(event.data.id, event.data.value);
   }
 });
-new MutationObserver(() => sliderBridge.decorateNative(editorHost.querySelectorAll('.cm-slider input')))
-  .observe(editorHost, { childList: true, subtree: true });
+let observedEditorCode = '';
+new MutationObserver(() => {
+  sliderBridge.decorateNative(editorHost.querySelectorAll('.cm-slider input'));
+  // CodeMirror consumes native beforeinput events. Observe its rendered text
+  // so hand edits also refresh the controls, without resyncing on play highlights.
+  const code = currentCode();
+  if (code !== observedEditorCode) {
+    observedEditorCode = code;
+    queueControlSync();
+  }
+}).observe(editorHost, { childList: true, characterData: true, subtree: true });
 
 function cancelSetEvaluation() {
   clearTimeout(setEvaluateTimer);

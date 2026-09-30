@@ -110,6 +110,8 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   音符固定・採用/一段戻し・seedを下書き/JSONへ保存。旧V1は旧出音で復元し明示upgradeだけ許す。
   フェーダーを仮想化DOMの順番から切り離し、評価時のslider IDへ接続。停止中の編集も許す。
   元2台は独立した発振器/filter/delayを共通masterへ混ぜ、LR分離ではない。比較/操作は試奏台README。
+  最終公開検証でCodeMirrorの手入力がnative inputを消費して操作表示が遅れる点を発見。
+  本文のDOM更新をcode差分で検出し、直接編集/Undoでも操作表示を更新。演奏highlightでは再同期しない。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
 - 現行cacheは`hazama-fm-v404`。Band Room runtime markerは`band-room.js?v=br-238` /
