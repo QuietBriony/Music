@@ -24,7 +24,7 @@
 - agent      : Codex（Remote対話、単一thread）
 - goal       : 本人の自動LIVE/やわらかい展開依頼を同じ試奏台へ反映
 - repos      : Music（独立試奏台、既存Listen/道具索引/説明）
-- shipped    : V3は音声時計から章ごとの展開順と弱拍の小変奏を決め、軸/休符/強拍を維持。
+- shipped    : [PR #425](https://github.com/QuietBriony/Music/pull/425)。V3は音声時計から章ごとの展開順と弱拍の小変奏を決め、軸/休符/強拍を維持。
   展開間隔8/16/32小節、盛り上がり、展開キープ、聴く画面を追加。自動コード再評価なし。
   Ambient Driftは76 BPM、長い合成三和音とfilter/gainの緩い補間。自動ドラム/303を抜く。
   手動MUTE/音符固定を優先。19フェーダーとLIVE設定を既存下書き/JSONへ保存、旧V1/V2は明示更新のみ。
