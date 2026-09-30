@@ -268,7 +268,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code
 - agent    : codex
 - human-gate: yes（独立previewの試聴・実iPhone・既存runtimeへの採用は人間確認）
-- status   : wip — codex 2026-09-30（公開Strudel試奏・2デッキ・acidBros FILE/BPM橋・PCオフライン入口）
+- status   : wip — codex 2026-09-30（公開Strudel試奏・2デッキ・acidBros FILE/BPM橋・PCオフライン入口・JSON持ち運び）
 - source   : 2026-09-19 user「推奨設計して、今までの作ったネタを活性化させたい」
 - detail   : `docs/BROWSER-WORKBENCH-DESIGN.md`の順序1〜2。設計のみ、runtime未実装。
   private制作ノートにある既存stem一組を候補とし、一般化した素材参照・revision・mix記述を定義。
@@ -313,6 +313,10 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   標準909の公開8試作で使う4音をrepo外のuser cacheへ取得し、以後のStrudel/acidBros再生は
   外部通信なしでブラウザ検証。任意の外部サンプル、スマホLAN接続、オンラインとローカルの
   下書き同期は範囲外。2エンジンの時計・保存形式は分かれたまま。
+  同日追記: 既存の保存済みコード・LEVEL・2デッキ設定・acidBros FILEを一つのJSONで
+  書き出し、別端末/別originへpreview後に追加できる。既存版と設定を保ち、重複は増やさず、
+  取り込んだコードは手動Playまで実行しない。未保存編集・音源は含まず、自動同期は未実装。
+  実iPhoneでのファイル保存/読込と本人の再開・聴感確認はhuman-gateとして継続。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2

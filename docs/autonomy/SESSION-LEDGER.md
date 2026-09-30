@@ -19,6 +19,24 @@
 
 ---
 
+## 2026-09-30 — 既存試奏台のJSON持ち運び・保存再開 (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : スマホ/Surface/PCローカル間で既存の保存版を持ち運び、別ブラウザから再開する
+- repos      : Music（既存試奏台、Listen、道具台帳。sister repo不変）
+- implemented: 保存済みStrudel下書き・LEVEL・2デッキ設定・acidBros FILEを一つのJSONへ書き出す。
+  名前/件数preview後に既存版・設定を保って追加し、重複抑止・ID衝突時の再割当・保存失敗時のrollbackを実装。
+  取り込んだコードは選択時にStrudelを停止し、手動Playまで実行しない。現在のacid FILEは追加で変更しない。
+  単体20件、ブラウザでファイルdownload/import・preview・重複・不正JSON拒否・FILEの137 BPM再開を確認。
+  音量37%で保存したコードを別ブラウザへ戻し、390pxスマホ幅とdesktopを画像確認。
+  Listen・道具台帳・README・引き継ぎを同時更新。音源・既存音声runtime・上流snapshotは不変。
+- stack-check: PASS 34 / FAIL 0 / SKIP 0
+- backlog    : BL-049継続。保存版の手動転送を追加。共通session、原本比較/undo、音声routingは未実装
+- next       : BL-049 — 本人が実iPhone/Surfaceで保存→JSON転送→一覧再開を試し、ARCBドラムの既存素材と照合を進める
+- blockers   : 実iPhoneのファイル受け渡し・出音は本人未判定。未保存編集と音源はJSONに含まず、自動同期は未実装
+
+---
+
 ## 2026-09-30 — 既存試奏台のPCローカル・オフライン入口 (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）

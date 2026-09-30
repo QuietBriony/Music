@@ -4,6 +4,10 @@ import {
   DECK_A_LEVEL, DECK_B_LEVEL, DECK_XFADE,
 } from './mix-code.js';
 import { strudelBpm, withStrudelBpm } from './tempo-bridge.js';
+import {
+  BACKUP_KEYS, MAX_BACKUP_BYTES, backupText, mergeBackup, parseBackup,
+  readBackupState, writeBackupState,
+} from './session-backup.js';
 
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
@@ -47,11 +51,19 @@ const acidSavedList = document.querySelector('#acid-saved-list');
 const acidPatchesRefresh = document.querySelector('#acid-patches-refresh');
 const acidTempoToMachine = document.querySelector('#acid-tempo-to-machine');
 const acidTempoToCode = document.querySelector('#acid-tempo-to-code');
+const backupExport = document.querySelector('#backup-export');
+const backupFile = document.querySelector('#backup-file');
+const backupPreview = document.querySelector('#backup-preview');
+const backupSummary = document.querySelector('#backup-summary');
+const backupItems = document.querySelector('#backup-items');
+const backupApply = document.querySelector('#backup-apply');
+const backupCancel = document.querySelector('#backup-cancel');
+const backupStatus = document.querySelector('#backup-status');
 const ACID_FADER_KEYS = ['CUTOFF', 'RESONANCE', 'DRIVE', 'DECAY'];
 
-const DRAFT_KEY = 'music-workbench-drafts-v1';
-const LEVEL_KEY = 'music-workbench-levels-v1';
-const DECK_KEY = 'music-workbench-decks-v1';
+const DRAFT_KEY = BACKUP_KEYS.drafts;
+const LEVEL_KEY = BACKUP_KEYS.levels;
+const DECK_KEY = BACKUP_KEYS.decks;
 const MAX_CODE_LENGTH = 100_000;
 
 let catalog;
@@ -64,6 +76,8 @@ let playbackToken = 0;
 let faderSyncQueued = false;
 let acidBridgeReady = false;
 let pendingAcidFileId = null;
+let pendingBackup = null;
+let backupReadToken = 0;
 
 function savedAcidFiles() {
   try {
@@ -654,7 +668,8 @@ function renderDrafts() {
     open.setAttribute('aria-pressed', String(activeSelection?.kind === 'draft' && activeSelection.id === draft.id));
     open.append(
       makeElement('strong', '', draft.title),
-      makeElement('span', 'card-label', new Date(draft.savedAt).toLocaleString('ja-JP')),
+      makeElement('span', 'card-label', new Date(draft.savedAt).toLocaleString('ja-JP')
+        + (draft.importedAt ? ' · 読み込んだ版・確認してPlay' : '')),
     );
     open.addEventListener('click', () => openDraft(draft.id));
     const remove = makeElement('button', 'draft-remove', '削除');
@@ -675,6 +690,11 @@ async function openDraft(id) {
     const draft = readDrafts().find((item) => item.id === id);
     if (!draft) throw new Error('下書きが見つかりません');
     await customElements.whenDefined('strudel-editor');
+    if (draft.importedAt) {
+      playbackToken++;
+      wantsPlayback = false;
+      activeEditor?.editor?.stop();
+    }
     const draftCode = upgradeLegacyDraftCode(draft.code, savedWorkLevel({ kind: 'draft', id }));
     setEditorCode(replaceManagedSliderValue(
       draftCode, SINGLE_LEVEL, savedWorkLevel({ kind: 'draft', id }, managedSliderValue(draftCode, SINGLE_LEVEL) ?? 1),
@@ -693,7 +713,9 @@ async function openDraft(id) {
     if (wantsPlayback) {
       await evaluateCurrent('再生中。下書き「' + draft.title + '」に切り替えました。');
     } else {
-      status.textContent = '下書きを開きました。Play で聴けます。';
+      status.textContent = draft.importedAt
+        ? '読み込んだ下書きを開きました。コードを確認してからPlayで聴けます。'
+        : '下書きを開きました。Play で聴けます。';
     }
   } catch (error) {
     status.textContent = error.message || '下書きを開けませんでした';
@@ -702,6 +724,99 @@ async function openDraft(id) {
     queueControlSync();
   }
 }
+
+function backupCounts(state) {
+  return '下書き ' + state.strudel.drafts.length + '件 · 303＋909 ' + state.acidbros.files.length
+    + '件 · 音量／2デッキ設定 ' + (Object.keys(state.strudel.levels).length + Object.keys(state.strudel.decks).length) + '件';
+}
+
+function backupChanges(stats) {
+  return '追加：下書き ' + stats.drafts + '件、303＋909 ' + stats.acidFiles + '件、設定 ' + stats.settings
+    + '件。同じ保存版 ' + stats.duplicates + '件は追加しません。';
+}
+
+function clearBackupPreview() {
+  backupReadToken++;
+  pendingBackup = null;
+  backupPreview.hidden = true;
+  backupFile.value = '';
+  backupApply.disabled = true;
+}
+
+backupExport.addEventListener('click', () => {
+  try {
+    const state = readBackupState(window.localStorage);
+    const now = new Date().toISOString();
+    const url = URL.createObjectURL(new Blob([backupText(state, now)], { type: 'application/json' }));
+    const link = makeElement('a');
+    link.href = url;
+    link.download = 'music-workbench-' + now.slice(0, 19).replace(/:/g, '-') + '.json';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    backupStatus.textContent = '書き出しました。' + backupCounts(state) + '。ファイルを別の端末へ渡し、ここで読み込めます。'
+      + (hasUnsavedChanges() ? ' いまの未保存のコード変更は含まれていません。' : '');
+  } catch (error) {
+    backupStatus.textContent = '書き出せませんでした。保存済みデータを確認してください。' + (error.message || '');
+  }
+});
+
+backupFile.addEventListener('change', async () => {
+  const token = ++backupReadToken;
+  pendingBackup = null;
+  backupPreview.hidden = true;
+  backupApply.disabled = true;
+  const file = backupFile.files?.[0];
+  if (!file) return;
+  backupStatus.textContent = 'ファイルの内容を確認中…';
+  try {
+    if (file.size > MAX_BACKUP_BYTES) throw new Error('8 MB以内のJSONを選んでください');
+    const incoming = parseBackup(await file.text());
+    if (token !== backupReadToken) return;
+    const { stats } = mergeBackup(readBackupState(window.localStorage), incoming);
+    pendingBackup = incoming;
+    backupSummary.textContent = file.name + ' — ' + backupCounts(incoming);
+    backupItems.replaceChildren();
+    for (const draft of incoming.strudel.drafts) {
+      backupItems.append(makeElement('li', '', 'コード：' + draft.title + ' · ' + new Date(draft.savedAt).toLocaleString('ja-JP')));
+    }
+    for (const patch of incoming.acidbros.files) {
+      backupItems.append(makeElement('li', '', '303＋909：' + patch.name + ' · ' + new Date(patch.modified).toLocaleString('ja-JP')));
+    }
+    backupItems.hidden = backupItems.children.length === 0;
+    backupPreview.hidden = false;
+    backupApply.disabled = false;
+    backupStatus.textContent = backupChanges(stats) + ' まだこの端末には保存していません。';
+  } catch (error) {
+    if (token !== backupReadToken) return;
+    backupFile.value = '';
+    backupStatus.textContent = '読み込めませんでした。' + (error.message || 'ファイルとこの端末の保存設定を確認してください。');
+  }
+});
+
+backupApply.addEventListener('click', () => {
+  if (!pendingBackup) return;
+  try {
+    // Re-read immediately before adding; preserve saves/settings made after preview.
+    const { state, stats } = mergeBackup(readBackupState(window.localStorage), pendingBackup);
+    writeBackupState(window.localStorage, state);
+    clearBackupPreview();
+    renderDrafts();
+    renderAcidFiles();
+    if (stats.drafts) draftDetails.open = true;
+    backupStatus.textContent = backupChanges(stats)
+      + ' 一覧から選んで再開できます。設定は作品・組み合わせを開き直すと反映されます。';
+  } catch (error) {
+    backupStatus.textContent = '追加できませんでした。ブラウザの空き容量や保存設定を確認してください。' + (error.message || '');
+  }
+});
+
+backupCancel.addEventListener('click', () => {
+  clearBackupPreview();
+  backupStatus.textContent = '読み込みをキャンセルしました。';
+  backupFile.focus();
+});
 
 function showDraftForm() {
   const code = currentCode();

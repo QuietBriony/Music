@@ -106,8 +106,27 @@
         <div id="published-list" class="pattern-list" aria-label="公開した試作"></div>
         <details id="draft-details" class="draft-details">
           <summary>この端末の下書き <span id="draft-count">0件</span></summary>
-          <p>自分で保存した版。ほかの端末には同期しません。</p>
+          <p>自分で保存した版。別の端末へは、下の「持ち運び・バックアップ」から渡せます。</p>
           <div id="draft-list" class="draft-list"></div>
+        </details>
+        <details id="backup-details" class="backup-details">
+          <summary>持ち運び・バックアップ</summary>
+          <p>保存したコード、作品の音量、2デッキ設定、303＋909のFILEをひとつのJSONに。スマホ・Surface・PCローカルの間で持ち運べます。</p>
+          <p>先にコードは「この端末に保存」、303＋909は中のFILE → SAVE。未保存の変更と音声ファイルは含みません。</p>
+          <div class="backup-actions">
+            <button id="backup-export" type="button">保存済みをJSONに書き出す</button>
+            <label for="backup-file">別の端末のJSONを読み込む<input id="backup-file" type="file" accept=".json,application/json"></label>
+          </div>
+          <section id="backup-preview" class="backup-preview" aria-label="読み込む内容の確認" hidden>
+            <strong id="backup-summary"></strong>
+            <ul id="backup-items"></ul>
+            <p>今ある保存版・設定は保ち、同じ版は増やしません。追加したコードは、選んで確認してからPlay。303＋909も一覧から選びます。</p>
+            <div class="inline-actions">
+              <button id="backup-apply" type="button" disabled>この端末の一覧に追加する</button>
+              <button id="backup-cancel" type="button">キャンセル</button>
+            </div>
+          </section>
+          <p id="backup-status" role="status">自動同期はしません。書き出したファイルを保存・転送して使います。acidBrosのFILE → EXPORT ALLも読み込めます。</p>
         </details>
       </section>
 
@@ -206,7 +225,7 @@
 
       <footer>
         <p>スマホは音声再生のため、最初に Play を押してください。画面を離れると再生が止まることがあります。</p>
-        <p>公開試作のコードと3本の音源は誰でも取得できます。ここで編集した内容は自動では公開されません。「この端末に保存」は同じブラウザだけの下書きです。</p>
+        <p>公開試作のコードと3本の音源は誰でも取得できます。ここで編集した内容は自動では公開されません。「この端末に保存」は同じブラウザの下書きです。別の端末には「持ち運び・バックアップ」からJSONで渡せます。</p>
         <p>公開試作が増えたらページを再読込してください。再生中に一覧から別の試作を選ぶと演奏を切り替えます。チャットの指示を自動で受け取る機能はまだありません。</p>
         <p>2デッキは一つのStrudel演奏にコードをまとめて同期再生します。独立した2台のプレーヤーではありません。「この端末に保存」で組み合わせのコードを下書きに残せます。</p>
         <p>Acid 303 / 909のドラムはStrudel標準の外部音源バンクを使います。初回の音読み込みには少し時間がかかることがあります。</p>
