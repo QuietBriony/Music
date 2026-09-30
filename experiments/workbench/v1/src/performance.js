@@ -1,11 +1,13 @@
 import {
   defaultSet, readTechnoSet, sceneAtCycle, isSetCode, SET_PRESETS, SET_SCENES,
   SET_SLIDERS, SET_TRACKS, technoSetCode, EXTRA_DRUMS, groovePlan, upgradeSet,
-} from './groove-code.js';
+  LIVE_MODES, liveFrame, liveMotif,
+} from './live-code.js';
 
 const names = { kick: 'KICK', snare: 'SNARE', hh: 'CLOSED HAT', oh: 'OPEN HAT', bell: 'COWBELL', acid: '303',
-  response:'303返し',percussion:'追加打楽器',...Object.fromEntries(EXTRA_DRUMS) };
+  response:'303返し',percussion:'追加打楽器',pad:'パッド',...Object.fromEntries(EXTRA_DRUMS) };
 const scenes = { intro: '01 INTRO', groove: '02 GROOVE', acid: '03 ACID', break: '04 BREAK', peak: '05 PEAK' };
+const softScenes = { intro:'01 空気',groove:'02 重なる',acid:'03 広がる',break:'04 余白',peak:'05 光' };
 const noteChoices = ['~', 'g1', 'bb1', 'c2', 'd2', 'eb2', 'f2', 'g2', 'bb2', 'c3'];
 const el = (tag, text, className) => {
   const node = document.createElement(tag);
@@ -34,6 +36,13 @@ export function initPerformance(hooks) {
   const phrase = document.querySelector('#set-phrase');
   const kit = document.querySelector('#set-kit');
   const open = document.querySelector('#performance-open');
+  const liveControls = document.querySelector('#set-live-controls');
+  const liveMode = document.querySelector('#set-live-mode');
+  const livePace = document.querySelector('#set-live-pace');
+  const liveEnergy = document.querySelector('#set-live-energy');
+  const liveLock = document.querySelector('#set-live-lock');
+  const listenToggle = document.querySelector('#set-listen-toggle');
+  for (const [id,title] of LIVE_MODES) { const option=el('option',title);option.value=id;liveMode.append(option); }
   const layerSelects = [...panel.querySelectorAll('[data-set-layer]')];
   let catalog;
   let state;
@@ -54,6 +63,7 @@ export function initPerformance(hooks) {
     document.body.classList.toggle('performance-view', enabled);
     open.setAttribute('aria-expanded', String(enabled));
     open.textContent = enabled ? '試作・別の303＋909を見る' : 'テクノ・ライブセットを開く';
+    if (!enabled) { document.body.classList.remove('listening-view'); listenToggle.setAttribute('aria-pressed','false'); listenToggle.textContent='聴く画面'; }
   }
 
   function mutate(change) {
@@ -104,12 +114,12 @@ export function initPerformance(hooks) {
   for (const scene of SET_SCENES) {
     const button = el('button', scenes[scene]);
     button.type = 'button';
-    button.addEventListener('click', () => mutate((next) => { next.scene = scene; next.auto = false; }));
+    button.addEventListener('click', () => mutate((next) => { next.scene = scene; next.auto = false; if (next.live) next.live.lock=null; }));
     sceneButtons.set(scene, button);
     sceneList.append(button);
   }
 
-  for (const track of SET_TRACKS.filter((key) => !['acid','response','percussion'].includes(key))) {
+  for (const track of SET_TRACKS.filter((key) => !['acid','response','percussion','pad'].includes(key))) {
     const row = el('div', '', 'set-step-row');
     row.append(el('span', names[track], 'set-row-title'));
     const buttons = [];
@@ -168,9 +178,10 @@ export function initPerformance(hooks) {
   }
 
   addFader('MASTER', document.querySelector('#set-master'));
-  for (const [key, track] of [['KICK', 'kick'], ['SNARE', 'snare'], ['HATS', 'hh'], ['BELL', 'bell'], ['ACID', 'acid'],['RESPONSE','response'],['PERC','percussion']]) {
+  for (const [key, track] of [['KICK', 'kick'], ['SNARE', 'snare'], ['HATS', 'hh'], ['BELL', 'bell'], ['ACID', 'acid'],['RESPONSE','response'],['PERC','percussion'],['AIR','pad']]) {
     const strip = el('div', '', 'set-channel');
     if (['response','percussion'].includes(track)) strip.dataset.grooveChannel='true';
+    if (track === 'pad') strip.dataset.liveChannel='true';
     addFader(key, strip, true);
     const button = el('button', 'MUTE', 'set-mute');
     button.type = 'button';
@@ -195,15 +206,34 @@ export function initPerformance(hooks) {
     next.groove.seed=(next.groove.seed+1)>>>0 || 1; next.groove.hold=false;
   }));
   document.querySelector('#set-adopt-phrase').addEventListener('click',() => mutate(next => {
-    const bar=Math.max(0,Math.floor(hooks.cycle()))%8;
+    const cycle=Math.max(0,hooks.cycle());
     next.groove.previousNotes=[...next.notes];
-    next.notes=groovePlan(next).notes[bar]; next.groove.hold=true;
+    next.notes=next.live ? liveMotif(next.notes,next.groove,liveFrame(next.live,next.groove.seed,cycle,next.auto,next.scene).chapter,cycle).notes
+      : groovePlan(next).notes[Math.floor(cycle)%8];
+    next.groove.hold=true;
   }));
   document.querySelector('#set-undo-phrase').addEventListener('click',() => mutate(next => {
     if (!next.groove.previousNotes) return;
     next.notes=[...next.groove.previousNotes]; next.groove.previousNotes=null; next.groove.hold=true;
   }));
-  document.querySelector('#set-upgrade').addEventListener('click',() => mutate(next => Object.assign(next,upgradeSet(next))));
+  document.querySelector('#set-upgrade').addEventListener('click',() => mutate(next => { Object.assign(next,upgradeSet(next)); next.auto=true; }));
+  liveMode.addEventListener('change',() => mutate(next => {
+    next.live.mode=liveMode.value;
+    next.live.pace={techno:8,dub:16,ambient:32}[liveMode.value];
+    next.live.lock=null;
+    if (liveMode.value==='ambient') { next.live.energy=.35; next.values.AIR=Math.max(.35,next.values.AIR); }
+  }));
+  livePace.addEventListener('change',() => mutate(next => { next.live.pace=Number(livePace.value); }));
+  liveEnergy.addEventListener('change',() => mutate(next => { next.live.energy=Number(liveEnergy.value); }));
+  liveLock.addEventListener('click',() => mutate(next => {
+    next.live.lock=next.live.lock ? null : liveFrame(next.live,next.groove.seed,hooks.cycle(),next.auto,next.scene).section;
+  }));
+  listenToggle.addEventListener('click',() => {
+    const listening=document.body.classList.toggle('listening-view');
+    listenToggle.setAttribute('aria-pressed',String(listening));
+    listenToggle.textContent=listening?'操作に戻る':'聴く画面';
+    if (listening) panel.scrollIntoView({block:'start'});
+  });
 
   layerSelects.forEach((select, index) => select.addEventListener('change', async () => {
     const id = select.value;
@@ -249,8 +279,9 @@ export function initPerformance(hooks) {
     fieldset.disabled = !state || loading || hooks.isBusy();
     groovePanel.disabled = fieldset.disabled;
     groovePanel.hidden = !state?.groove;
-    document.querySelector('#set-upgrade').hidden = !state || Boolean(state.groove);
-    document.querySelector('#set-legacy-hint').hidden = !state || Boolean(state.groove);
+    document.querySelector('#set-upgrade').hidden = !state || Boolean(state.live);
+    document.querySelector('#set-legacy-hint').hidden = !state || Boolean(state.live);
+    liveControls.hidden=!state?.live;
     phrase.hidden = !state?.groove;
     start.disabled = !state || loading || hooks.isBusy();
     presetList.querySelectorAll('button').forEach((button) => {
@@ -264,8 +295,9 @@ export function initPerformance(hooks) {
     }
     document.querySelector('#set-kit-details').hidden=!state.groove;
     document.querySelector('#set-synth-details').hidden=!state.groove;
-    mixer.style.setProperty('--set-channel-count',state.groove?'7':'5');
+    mixer.style.setProperty('--set-channel-count',state.live?'8':state.groove?'7':'5');
     mixer.querySelectorAll('[data-groove-channel]').forEach(n => { n.hidden=!state.groove; });
+    mixer.querySelectorAll('[data-live-channel]').forEach(n => { n.hidden=!state.live; });
     extraRows.forEach((row,id) => { row.hidden=!state.groove?.kit.includes(id); });
     if (state.groove) {
       hold.setAttribute('aria-pressed',String(state.groove.hold));
@@ -277,7 +309,13 @@ export function initPerformance(hooks) {
     bpm.value = state.bpm;
     bank.value = state.bank;
     auto.setAttribute('aria-pressed', String(state.auto));
-    auto.textContent = state.auto ? 'AUTO 展開中 · 64小節' : 'AUTO 展開';
+    auto.textContent = state.live ? state.auto?'LIVE 自動展開中':'LIVE 自動展開' : state.auto ? 'AUTO 展開中 · 64小節' : 'AUTO 展開';
+    if (state.live) {
+      liveMode.value=state.live.mode; livePace.value=state.live.pace; liveEnergy.value=state.live.energy;
+      liveLock.disabled=!state.auto;
+      liveLock.setAttribute('aria-pressed',String(Boolean(state.live.lock)));
+      liveLock.textContent=state.live.lock?'キープ中 · 流れに戻す':'今の展開をキープ';
+    }
     for (const [key, fader] of faders) {
       if (state.values[key] === undefined) { fader.input.disabled=true; fader.output.textContent='—'; continue; }
       fader.input.disabled = loading || hooks.isBusy();
@@ -295,7 +333,10 @@ export function initPerformance(hooks) {
     });
     for (const [track, button] of muteButtons) button.setAttribute('aria-pressed', String(state.muted.includes(track)));
     layerSelects.forEach((select, i) => { select.value = state.layers[i].id; });
-    note.textContent = state.auto ? (state.groove?'軸の音符を4小節反復→小変奏→8小節で帰還。パートは8小節ごとに出し入れ。':'旧版：8小節ごとにパートが入り替わります。')
+    document.querySelector('#set-title').textContent=state.live?.mode==='ambient'?'漂う。重なる。ゆっくり移る。':'鳴らす。抜く。みょんを上げる。';
+    note.textContent = state.live ? state.live.mode==='ambient'?'長い和音と柔らかい音色でゆっくり移ります。自動のドラムは入りません。素材A/Bは手動音量を優先。'
+      : state.auto?'軸は8小節で帰還。章ごとに小変奏と抜き差しが変わり、音色はゆっくりつながります。手動MUTEを優先。':'手動シーンで演奏中。LIVEを押すと自動の流れへ戻ります。'
+      : state.auto ? (state.groove?'軸の音符を4小節反復→小変奏→8小節で帰還。パートは8小節ごとに出し入れ。':'旧版：8小節ごとにパートが入り替わります。')
       : 'ドラム・303・素材A/Bは同じテンポ。ステップとシーンは次の演奏処理から、フェーダーは次の音から反映。';
   }
 
@@ -306,12 +347,18 @@ export function initPerformance(hooks) {
     start.setAttribute('aria-pressed', String(playing));
     const cycle = playing ? Math.max(0, hooks.cycle()) : 0;
     const step = playing ? Math.floor((cycle % 1) * 16) : -1;
-    bar.textContent = playing ? String(Math.floor(cycle) % 64 + 1).padStart(2, '0') + ' / 64 · ' + (Math.floor((cycle % 1) * 4) + 1) + '拍'
+    const frame=state?.live ? liveFrame(state.live,state.groove.seed,cycle,state.auto,state.scene) : null;
+    const length=frame ? frame.span*8 : 64;
+    bar.textContent = playing ? (frame?'第'+(frame.chapter+1)+'章 · ':'') + String(Math.floor(cycle) % length + 1).padStart(2, '0') + ' / '+length+' · ' + (Math.floor((cycle % 1) * 4) + 1) + '拍'
       : 'STOPPED · Spaceで開始/停止';
-    const scene = state?.auto ? sceneAtCycle(cycle) : state?.scene;
+    const scene = frame?.section || (state?.auto ? sceneAtCycle(cycle) : state?.scene);
     if (state?.groove) phrase.textContent=state.groove.hold || !state.groove.variation ? '音符固定 · 軸を反復'
       : Math.floor(cycle)%8 < 4 ? '軸を反復 · 1〜4小節' : '小変奏 · 5〜8小節 → 軸に帰還';
-    for (const [key, button] of sceneButtons) button.setAttribute('aria-pressed', String(key === scene));
+    const labels=state?.live?.mode==='ambient'?softScenes:scenes;
+    for (const [key, button] of sceneButtons) { button.setAttribute('aria-pressed', String(key === scene)); button.textContent=labels[key]; }
+    document.querySelector('#set-listen-title').textContent=(state?.live ? LIVE_MODES.find(([id]) => id===state.live.mode)?.[1] : 'セット') || 'LIVE';
+    document.querySelector('#set-listen-phase').textContent=playing ? (labels[scene] || '') + (state?.live?.lock?' · キープ':frame?' · あと'+Math.ceil(frame.remaining)+'小節':'') : '再生を押すと始まります';
+    document.querySelector('#set-listen-progress').value=frame?.position || 0;
     panel.querySelectorAll('[data-step]').forEach((button) => button.classList.toggle('is-current', Number(button.dataset.step) === step));
   }
   // Visual feedback uses the audio scheduler's cycle, never a second sound clock.

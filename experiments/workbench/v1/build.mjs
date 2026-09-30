@@ -14,6 +14,8 @@ await cp(join(root, 'src', 'performance.js'), join(output, 'performance.js'));
 await cp(join(root, 'src', 'performance-code.js'), join(output, 'performance-code.js'));
 await cp(join(root, 'src', 'slider-bridge.js'), join(output, 'slider-bridge.js'));
 await cp(join(root, 'src', 'groove-code.js'), join(output, 'groove-code.js'));
+await cp(join(root, 'src', 'live-code.js'), join(output, 'live-code.js'));
+await cp(join(root, 'src', 'live-plan.js'), join(output, 'live-plan.js'));
 await cp(join(root, 'src', 'mix-code.js'), join(output, 'mix-code.js'));
 await cp(join(root, 'src', 'tempo-bridge.js'), join(output, 'tempo-bridge.js'));
 await cp(join(root, 'src', 'session-backup.js'), join(output, 'session-backup.js'));

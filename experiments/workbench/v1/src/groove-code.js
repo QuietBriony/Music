@@ -158,6 +158,7 @@ function evolvingCode(input) {
 }
 
 export function technoSetCode(state) { return state.groove ? evolvingCode(state) : legacyCode(state); }
+export function validateGrooveSet(state) { return validate(state); }
 export function isSetCode(code) { return code.includes(SET_MARKER) || code.includes(LEGACY_MARKER); }
 export function readTechnoSet(code) {
   if (!code.includes(SET_MARKER)) return readLegacy(code);

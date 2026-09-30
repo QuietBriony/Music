@@ -10,7 +10,7 @@ import {
 } from './session-backup.js';
 import { initPwa } from './pwa.js';
 import { initPerformance } from './performance.js';
-import { isSetCode, readTechnoSet } from './groove-code.js';
+import { isSetCode, readTechnoSet } from './live-code.js';
 import { SliderBridge } from './slider-bridge.js';
 
 const editorHost = document.querySelector('#editor');
@@ -948,9 +948,9 @@ async function loadCatalog() {
     renderDrafts();
     const params = new URL(window.location.href).searchParams;
     performance.setCatalog(catalog);
-    if (params.get('stage') === 'techno' || (window.matchMedia('(min-width: 1000px)').matches
+    if (['techno','ambient'].includes(params.get('stage')) || (window.matchMedia('(min-width: 1000px)').matches
       && !params.has('work') && !params.has('deck') && !params.has('module'))) {
-      await performance.openPreset();
+      await performance.openPreset(params.get('stage')==='ambient'?'ambient-drift':undefined);
       return;
     }
     const deckRequested = params.get('deck')?.split(',');
@@ -1057,7 +1057,7 @@ performance = initPerformance({
       setCurrentSelection({ kind: 'set', label: title, detail: 'テクノ・ライブセット' });
       const url = new URL(window.location.href);
       url.searchParams.delete('work'); url.searchParams.delete('deck'); url.searchParams.delete('module');
-      url.searchParams.set('stage', 'techno');
+      url.searchParams.set('stage', readTechnoSet(code)?.live?.mode==='ambient'?'ambient':'techno');
       window.history.replaceState(null, '', url);
       if (wantsPlayback) await evaluateCurrent('再生中。' + title + ' を演奏しています。');
       else status.textContent = title + ' を開きました。「セットを鳴らす」で開始します。';
