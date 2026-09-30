@@ -19,6 +19,29 @@
 
 ---
 
+## 2026-10-01 — フェーダー接続と軸を守るテクノ変奏 (BL-049)
+
+- agent      : Codex（Remote対話、単一thread）
+- goal       : 元acidBrosサイコロの音程/リズム制約を比較し、反応しない縦フェーダーと旧AUTOを改善
+- repos      : Music（同じ独立試奏台、Listen/道具索引/説明。FM・Core Rig・sister runtime不変）
+- shipped    : 評価時のslider signal IDへ接続し、CodeMirrorの表示widget順/仮想化への依存を除去。
+  停止中の調整、数値桁数の変更、スクロール後のinline widget再接続と音への反映を検証。
+  新セットV2は4小節反復＋弱拍1〜2音の小変奏、8小節帰還、強拍アクセントとpitch envelopeの
+  スライド風近似、303の疎な返し、16小節cutoff起伏とtempo delay。ハット常時倍化を廃止。
+  CLAP/RIM/3TOM/CRASH/RIDEの選択を追加。音声追加なし、合成と同梱済み2 WAVを再利用。
+  固定・採用/一段戻し・seedを既存下書き/JSONへ保存。旧V1コードと公開8試作は維持し明示upgrade。
+  元2台は独立した合成器/filter/delayを同じclockから共通masterへ混合し、LR分離でないことを確認。
+  試奏台52 tests PASS、Chromeで3セット×5シーン、8小節フィル/クラッシュ、追加キットの出力、
+  inline widget 0の状態で外部フェーダー反映と桁数変更後のnative編集を確認。
+  変奏の採用/一段戻し・完全コード保存復元・JSON round-trip、390pxでのtouch入力と横溢れなし、
+  端末保存後のoffline再読込とcrash/rideだけの音声信号を確認。追加音パックは従来の7本のまま。
+- stack-check: PASS 37 / FAIL 0 / SKIP 0（最終統合check）
+- backlog    : BL-049継続。元コード比較と操作説明を試奏台README/画面内guide、既存Listenへ記録
+- next       : BL-049 — 本人の新AUTO/2役303の試奏、実iPhone確認と既存ARCBドラム素材照合を続ける
+- blockers   : 聴感の好みと実iPhoneは本人未判定。元303の発振器継続レガートの完全再現、ARCB原本比較は未実装
+
+---
+
 ## 2026-09-30 — 既存アプリの再生負荷・予約音・起動競合を修正 (v404)
 
 - agent      : Codex（本人依頼、単一thread）

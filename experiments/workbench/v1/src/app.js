@@ -10,7 +10,8 @@ import {
 } from './session-backup.js';
 import { initPwa } from './pwa.js';
 import { initPerformance } from './performance.js';
-import { readTechnoSet } from './performance-code.js';
+import { isSetCode, readTechnoSet } from './groove-code.js';
+import { SliderBridge } from './slider-bridge.js';
 
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
@@ -84,6 +85,18 @@ let backupReadToken = 0;
 let performance;
 let setEvaluateTimer;
 let audioPrepared;
+const sliderBridge = new SliderBridge(() => activeEditor?.editor, {
+  setSignal: (id, value) => window.sliderWithID(id, value),
+  updateWidgets: (view, widgets) => window.updateSliderWidgets?.(view, widgets),
+  decorate: () => sliderBridge.decorateNative(editorHost.querySelectorAll('.cm-slider input')),
+}, () => { queueControlSync(); persistManagedSettings(); });
+window.addEventListener('message', (event) => {
+  if (event.source === window && event.origin === window.location.origin && event.data?.type === 'cm-slider') {
+    sliderBridge.nativeMessage(event.data.id, event.data.value);
+  }
+});
+new MutationObserver(() => sliderBridge.decorateNative(editorHost.querySelectorAll('.cm-slider input')))
+  .observe(editorHost, { childList: true, subtree: true });
 
 function cancelSetEvaluation() {
   clearTimeout(setEvaluateTimer);
@@ -266,7 +279,7 @@ acidTempoToMachine.addEventListener('click', () => {
 acidTempoToCode.addEventListener('click', () => sendAcidCommand({ type: 'read-tempo' }));
 
 function acidSliderDeclarations(code) {
-  if (code.includes('DECK_MIX_V1') || !code.includes('ACID_FADER_BANK_V1')) return null;
+  if (isSetCode(code) || code.includes('DECK_MIX_V1') || !code.includes('ACID_FADER_BANK_V1')) return null;
   const declarations = ACID_FADER_KEYS.map((key) => {
     const expression = new RegExp('\\bconst\\s+' + key + '\\s*=\\s*slider\\(\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*,\\s*([0-9.]+)\\s*\\)');
     const match = expression.exec(code);
@@ -276,19 +289,14 @@ function acidSliderDeclarations(code) {
   return declarations;
 }
 
-function inlineSliders() {
-  return [...editorHost.querySelectorAll('.cm-slider input[type="range"]')];
-}
-
 function syncAcidFaders() {
   const declarations = acidSliderDeclarations(currentCode());
   acidFaderPanel.hidden = !declarations;
   if (!declarations) return;
-  const offset = managedSliderValue(currentCode(), SINGLE_LEVEL) === null ? 0 : 1;
-  const ready = wantsPlayback && inlineSliders().length >= offset + ACID_FADER_KEYS.length;
-  acidFaderHelp.textContent = ready
-    ? '演奏中。フェーダーを動かすと次の音から変わり、値はコードに残ります。'
-    : 'Play後にフェーダーが有効になります。値はコードにも残ります。';
+  const ready = Boolean(activeEditor?.editor) && !busy;
+  acidFaderHelp.textContent = wantsPlayback
+    ? '演奏中。次の音から変わり、値はコードに残ります。'
+    : '停止中も調整できます。Playでその値から鳴ります。';
   acidFaders.forEach((fader, index) => {
     const setting = declarations[index];
     fader.min = setting.min;
@@ -310,18 +318,16 @@ function queueControlSync() {
     syncAcidFaders();
     syncMixFaders();
     syncAcidBridgeControls();
+    sliderBridge.capture();
     performance?.sync();
   });
 }
 
 acidFaders.forEach((fader, index) => {
   fader.addEventListener('input', () => {
-    if (!wantsPlayback || !acidSliderDeclarations(currentCode())) return;
-    const offset = managedSliderValue(currentCode(), SINGLE_LEVEL) === null ? 0 : 1;
-    const slider = inlineSliders()[offset + index];
-    if (!slider) return;
-    slider.value = fader.value;
-    slider.dispatchEvent(new Event('input', { bubbles: true }));
+    if (!acidSliderDeclarations(currentCode()) || busy) return;
+    try { sliderBridge.set(ACID_FADER_KEYS[index], fader.value, wantsPlayback); }
+    catch (error) { status.textContent = error.message; }
     queueControlSync();
   });
 });
@@ -402,15 +408,14 @@ function syncMixFaders() {
   if (single !== null && !isDeck) {
     singleLevelFader.value = single;
     singleLevelOutput.textContent = Math.round(single * 100) + '%';
-    singleLevelFader.disabled = busy || (wantsPlayback && !inlineSliders()[0]);
+    singleLevelFader.disabled = busy;
   }
   if (isDeck) {
     const names = { a: DECK_A_LEVEL, b: DECK_B_LEVEL, cross: DECK_XFADE };
-    const indices = { a: 0, b: 1, cross: 2 };
     for (const fader of deckFaders) {
       const key = fader.dataset.deckFader;
       const value = managedSliderValue(code, names[key]);
-      fader.disabled = value === null || busy || (wantsPlayback && !inlineSliders()[indices[key]]);
+      fader.disabled = value === null || busy;
       if (value !== null) {
         fader.value = value;
         fader.closest('label').querySelector('output').textContent = Math.round(value * 100) + '%';
@@ -419,28 +424,21 @@ function syncMixFaders() {
   }
 }
 
-function applyManagedFader(name, value, sliderIndex) {
+function applyManagedFader(name, value) {
   if (!activeEditor?.editor || managedSliderValue(currentCode(), name) === null) return;
-  if (wantsPlayback) {
-    const slider = inlineSliders()[sliderIndex];
-    if (!slider) return;
-    slider.value = String(value);
-    slider.dispatchEvent(new Event('input', { bubbles: true }));
-  } else {
-    activeEditor.editor.setCode(replaceManagedSliderValue(currentCode(), name, value));
-  }
+  try { sliderBridge.set(name, value, wantsPlayback); }
+  catch (error) { status.textContent = error.message; }
   requestAnimationFrame(() => {
     persistManagedSettings();
     queueControlSync();
   });
 }
 
-singleLevelFader.addEventListener('input', () => applyManagedFader(SINGLE_LEVEL, singleLevelFader.value, 0));
+singleLevelFader.addEventListener('input', () => applyManagedFader(SINGLE_LEVEL, singleLevelFader.value));
 const deckNameByFader = { a: DECK_A_LEVEL, b: DECK_B_LEVEL, cross: DECK_XFADE };
-const deckIndexByFader = { a: 0, b: 1, cross: 2 };
 deckFaders.forEach((fader) => fader.addEventListener('input', () => {
   const key = fader.dataset.deckFader;
-  applyManagedFader(deckNameByFader[key], fader.value, deckIndexByFader[key]);
+  applyManagedFader(deckNameByFader[key], fader.value);
 }));
 editorHost.addEventListener('input', () => {
   queueControlSync();
@@ -502,6 +500,7 @@ async function evaluateCurrent(message) {
     await activeEditor.editor.evaluate();
     const evalError = activeEditor.editor.repl?.state?.evalError;
     if (evalError) throw evalError;
+    sliderBridge.capture();
     if (token !== playbackToken) {
       if (!wantsPlayback) activeEditor.editor.stop();
       return;
@@ -1059,17 +1058,11 @@ performance = initPerformance({
       return false;
     } finally { busy = false; queueControlSync(); }
   },
-  fader(key, value, index) {
+  fader(key, value) {
     const code = currentCode();
     if (busy || !readTechnoSet(code)) return;
-    if (wantsPlayback) {
-      const slider = inlineSliders()[index];
-      if (!slider) return;
-      slider.value = value;
-      slider.dispatchEvent(new Event('input', { bubbles: true }));
-    } else {
-      activeEditor.editor.setCode(code.replace(new RegExp('(const SET_' + key + ' = slider\\()[0-9.]+'), (_, before) => before + value));
-    }
+    try { sliderBridge.set('SET_' + key, value, wantsPlayback); }
+    catch (error) { status.textContent = error.message; }
     queueControlSync();
   },
   play: () => playButton.click(), stop: () => stopButton.click(),
