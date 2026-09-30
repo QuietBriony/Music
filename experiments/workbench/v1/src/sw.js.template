@@ -16,10 +16,7 @@ async function saveShell() {
     while (next < missing.length) {
       const file = missing[next++];
       const response = await fetch(file.url, { cache: 'reload' });
-      if (!response.ok || await soundDigest(await response.clone().arrayBuffer()) !== file.sha256) {
-        throw new Error('アプリの更新内容が揃っていません。ネット接続中に更新してください。');
-      }
-      await cache.put(file.url, response);
+      await cache.put(file.url, await appSnapshotResponse(response, file.sha256));
     }
   }));
 }

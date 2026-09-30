@@ -116,7 +116,7 @@ npx wrangler@4.129.1 kv key put '<LIVE_PATTERN_KEY>' --path '<pattern-file>' --n
 
 コードを保存しても、その中の音声ファイル自体は入らない。追加音源をオフラインに含めたい時は、対象URL・利用条件・容量・hashを確認して、必要な音だけ保存対象へ追加する。自前のループを公開する場合は管理者がKVとAPIの許可名を更新する。現画面には任意の音声アップロード機能はない。端末への保存は通信待ちを減らすが、音数・エフェクト・端末性能による処理負荷は別。
 
-PWAのSWはこの独立Pages originだけに登録し、MusicのFM / Band Room / Core Rigとは別。build時に全静的ファイルのhashを生成し、混ざった配信世代をcacheしない。公開音源7本だけを明示保存し、private APIや未登録の外部URLはcacheしない。Safari等のWAV Rangeリクエストに206で返す。SW更新は下書き/FILEのlocalStorageを変更しない。
+PWAのSWはこの独立Pages originだけに登録し、MusicのFM / Band Room / Core Rigとは別。build時に全静的ファイルのhashを生成し、混ざった配信世代をcacheしない。Pagesの`/index.html → /`転送はhash確認後のdecoded bodyからResponseを作り直し、転送flagと圧縮metadataを持たずに保存する。公開音源7本だけを明示保存し、private APIや未登録の外部URLはcacheしない。Safari等のWAV Rangeリクエストに206で返す。SW更新は下書き/FILEのlocalStorageを変更しない。
 
 ## PCでローカル起動・オフライン試奏
 

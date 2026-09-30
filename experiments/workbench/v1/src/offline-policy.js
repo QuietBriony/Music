@@ -44,6 +44,21 @@ export async function soundDigest(bytes) {
     .map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
+// Pages redirects /index.html to /. Returning a redirected network Response
+// from a worker can fail a navigation with redirect:manual. Save a verified,
+// decoded snapshot without the network redirect/encoding metadata.
+export async function appSnapshotResponse(response, sha256) {
+  if (!response.ok) throw new Error('アプリの更新内容を取得できません。ネット接続中に更新してください。');
+  const bytes = await response.arrayBuffer();
+  if (await soundDigest(bytes) !== sha256) {
+    throw new Error('アプリの更新内容が揃っていません。ネット接続中に更新してください。');
+  }
+  const headers = new Headers(response.headers);
+  headers.delete('Content-Encoding');
+  headers.set('Content-Length', String(bytes.byteLength));
+  return new Response(bytes, { status: response.status, headers });
+}
+
 export function validWav(bytes) {
   const view = new Uint8Array(bytes);
   return view.length >= 44 && view.length <= MAX_SOUND_BYTES
