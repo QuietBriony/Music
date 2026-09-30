@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "last_verified": "2026-09-29",
+  "last_verified": "2026-09-30",
   "purpose": "Single source of truth for executable external code, browser samples, analysis tools, and repository-external model weights used by Music.",
   "policy": {
     "machine_registry": "config/music-machines.json",
@@ -93,6 +93,54 @@
         "required_capabilities": []
       },
       "fallback": "Leave acidBros closed and continue using the existing Strudel workbench.",
+      "fail_closed": true
+    },
+    {
+      "id": "strudel-workbench-local-909-cache",
+      "kind": "local_prepare_assets",
+      "consumers": ["experiments/workbench/v1/scripts/local-workbench.mjs"],
+      "source_url": "https://github.com/ritchse/tidal-drum-machines/tree/6577395a4d05031728ced2ec3e5637fa89d8be48/machines/RolandTR909",
+      "runtime_urls": [
+        "https://raw.githubusercontent.com/felixroos/dough-samples/9eacfc86ec4393e68a463ff52b01c19cfaa77f38/tidal-drum-machines.json",
+        "https://raw.githubusercontent.com/ritchse/tidal-drum-machines/6577395a4d05031728ced2ec3e5637fa89d8be48/machines/"
+      ],
+      "version": "four first RolandTR909 sounds for published acid patterns",
+      "revision": {
+        "type": "git_commits",
+        "value": "map 9eacfc86ec4393e68a463ff52b01c19cfaa77f38; WAV 6577395a4d05031728ced2ec3e5637fa89d8be48",
+        "status": "verified",
+        "evidence": "Both source repositories were resolved with git ls-remote on 2026-09-30; the local prepare script pins these commits."
+      },
+      "integrity": {
+        "algorithm": "sha256",
+        "value": "bd=5ae8cbf94145b4d8a2c4ee6a6a922045564887c22812916149c1e5740820b8bb;sd=f5fef391d10d453966d38a680e8f20445cf258cbb182781c90021161f8c5d7b4;hh=6b737acdd4e9db504dc8225c613ae72fb9b67c2e493b011c50750e16c708e9bd;oh=d68cfd300f400f7b616b9cd7b75971b29bfe90d2d6c79c1206719def21d539c7",
+        "status": "verified",
+        "evidence": "The local prepare script rejects bytes that differ from these four observed source hashes; cache manifest is checked before serving."
+      },
+      "license": {
+        "status": "pending",
+        "spdx": null,
+        "scope": "Four RolandTR909 WAV files downloaded into a user's local cache, never committed to Music or deployed by this feature",
+        "evidence": "The pinned ritchse/tidal-drum-machines README has no license notice and no root LICENSE was found on 2026-09-30; redistribution is not marked cleared."
+      },
+      "expected_size": {
+        "bytes": 290988,
+        "status": "measured_local",
+        "scope": "Four first RolandTR909 WAV files; the three existing public workbench loops are additional",
+        "evidence": "Downloaded and measured in the user cache on 2026-09-30."
+      },
+      "storage": {
+        "class": "user_local_cache",
+        "target": "~/.music-live-workbench/sounds",
+        "tracked_in_git": false
+      },
+      "execution": {
+        "activation": "explicit_local_prepare_command",
+        "download_policy": "manual_once_then_offline",
+        "machines": [],
+        "required_capabilities": []
+      },
+      "fallback": "If preparation fails, use the existing online workbench; do not claim offline readiness.",
       "fail_closed": true
     },
     {

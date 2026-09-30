@@ -30,6 +30,14 @@
 同じMusic repoを使うが、既存GitHub Pages、`music-stack.pages.dev`、FM / Band Room / Core Rigの
 runtimeやService Workerには接続しない。別のCloudflare Pagesプロジェクトで配信し、
 ページ・試作コード・KVの3本のWAVを公開する。Cloudflare Accessは使わない。
+PCローカルでは同じ画面を`127.0.0.1`のHTTPサーバーから開く。初回準備時だけKV公開WAV3本と
+commitを固定した標準909のキック・スネア・閉/開ハット4本をuser cacheへ保存し、
+Strudel起動時の外部音源一覧をローカル一覧へ差し替える。公開8試作が参照する音源を揃え、
+aphex1・Acid 303 / 909・acidBrosのブラウザ再生開始を外部通信なしで確認した。
+新しいコードが任意の外部サンプルを使う場合は対象外。PCローカルと
+PagesのlocalStorageは別originで、自動移行しない。ネイティブアプリ化やスマホLAN配信ではない。
+cacheした909の4音はMusic Git/Pagesへ再配布しない。元repoのライセンス確認はpendingで、
+`config/external-dependencies.json`に出所・commit・SHA-256・サイズ・境界を記録する。
 Strudel 1.3.0は`config/external-dependencies.json`に登録。音声素材はKVに置き、
 公開試作コードと名前付き索引は同アプリのGit管理ファイルに置く。
 2026-09-29追加の`acidBros` v153は同じPages配信の`/modules/acidbros/`に固定snapshotとして置く。

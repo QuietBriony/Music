@@ -60,11 +60,11 @@
     {
       "id": "strudel-workbench", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Strudel Live Workbench", "href": "https://music-private-live-workbench.pages.dev/", "action": "音とコードを触る",
-      "purpose": "公開試作をStrudelコードと2デッキで触り、303×2台・909の保存パッチも同じ入口から選べる試奏台。",
-      "first_step": "コードならAcid 303 / 909を選ぶ → Play。303＋909なら「この中で開く」→RUN→FILEで保存。スマホでは全画面で開ける。",
+      "purpose": "一つの入口で公開試作をStrudelコードと2デッキで触り、別エンジンの303×2台・909の保存パッチも選べる試奏台。",
+      "first_step": "オンラインはAcid 303 / 909を選ぶ → Play。PCローカルはREADMEに従い初回準備 → npm run local。303＋909なら「この中で開く」→RUN。",
       "outputs": "公開試作8件はGit管理、LEVEL・2デッキ・コード下書きは端末保存。acidBrosのFILE保存パッチは試奏台の一覧から再開でき、BPMは明示操作で双方向転送。",
-      "boundary": "acidBrosは独立エンジン。BPMの一回転送はできるが、音・時計・パターンの同期とコード変換は未実装。実iPhone試聴、端末間同期、チャット即時反映も未確認。ページ・コード・WAV計7本は公開。",
-      "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }]
+      "boundary": "acidBrosは独立エンジン。PCローカルはブラウザ＋127.0.0.1で公開8試作に必要な音のみ初回端末保存し、以後オフライン利用可。任意の外部サンプルは対象外。音・時計・パターンの同期、端末間の下書き共有、チャット即時反映は未実装。実iPhone試聴は未確認。公開ページ・コード・WAV計7本は公開。",
+      "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }, { "repo": "Music", "path": "experiments/workbench/v1/scripts/local-workbench.mjs" }]
     },
     {
       "id": "chill", "repo": "chill", "group": "browser", "status": "implemented",

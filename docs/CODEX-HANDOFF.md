@@ -19,14 +19,14 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 `docs/INDEX.md`、canonical JSON を先に読む。ない環境では推測せず、public-safe な
 workflow と `needs_verification` だけを使う。active runtime repo は従来どおり 5 つ。
 
-## 現在地（2026-09-29）
+## 現在地（2026-09-30）
 
 - `listen.html`先頭を「前回の続き／過去のネタ／今すぐ遊ぶ」へ整理。
   `#production-notebook`は個人IDを含まないDrive検索、`#revive-ideas`は区間と一言メモの手順。
   `#workbench-plan`にStrudelの小さな試奏台とBL-049の推奨設計を案内。共通session・chat接続は未実装。
   個人の再開ノートはprivate側で管理し、作品名・Drive file ID・PC素材パスを公開側へ入れない。
   HTML navigationは既存SWのnetwork-firstで更新し、音声runtime/cache tupleはv402を保持する。
-  最新方針は新設より既存の整理・改良。BL-049 / BL-045は着手保留、次はBL-046。
+  最新方針は新設より既存の整理・改良。BL-049は本人の具体依頼で既存試奏台の改善として再開。
   `#collection-map`で作品／道具／実験／映像を整理し、既存の公開デモ・Hazama試聴へ接続。
   関連repoの入口の正本はListen。デモ・ゲームrepoをactive 5へ追加せず、原本も移動しない。
   設計は`#workbench-plan`の折りたたみに保管。登録範囲と全素材照合の未完了を明記する。
@@ -74,11 +74,15 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   BPM双方向転送を追加。自由配線・音声mix・連続clock同期・コード変換は未実装。
   上流の自動更新はせず、出所・変更点・hashは`third_party/acidbros/UPSTREAM.md`に記録。
   下書き名入力と未保存の切り替え確認はページ内UIで行う。
+  PCローカルは同じ`dist`をloopback HTTPで配信。初回`npm run local:prepare`で公開ループ3本と
+  commit固定の909の4音（計3,171,120 bytes）をuser cacheへ保存し、外部レジストリをローカル一覧へ
+  差し替える。aphex1・Acid 303 / 909・acidBrosのオフラインブラウザ再生開始を確認。`file://`直接起動・
+  ネイティブアプリ・スマホからPCの127.0.0.1接続ではない。オンラインとローカルの端末内保存は別origin。
   閲覧者の名前付き下書きはその端末のブラウザだけに保存。Surface側の編集成果と
   端末間同期、チャットからの即時反映、追加試作の本人試聴はまだ取り込んでいない。
   Computer Useで触れるのも接続したブラウザ画面だけで、スマホとの共通sessionではない。
   手順と制約は同ディレクトリの`README.md`。
-- browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の27件が正本。
+- browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
 - 現行cacheは`hazama-fm-v403`。Band Room runtime markerは`band-room.js?v=br-237` /
   `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
