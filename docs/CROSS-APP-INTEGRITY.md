@@ -124,11 +124,11 @@ grep -o '[a-z/-]*\.\(css\|js\)?v=[a-z0-9-]*' band-room.html fm.html index.html |
 grep -o 'VERSION = "[^"]*"' sw.js
 ```
 
-| app | cache marker（2026-09-29 時点の控え） | sw VERSION |
+| app | cache marker（2026-09-30 時点の控え） | sw VERSION |
 |-----|---------------------|------------|
-| Band Room | `band-room.css?v=br-90` / `band-room.js?v=br-237` / `audio/audio-safety.js?v=br-67` | hazama-fm-v403 |
-| Hazama FM | `engine.js?v=fm-118` / `fm.css?v=fm-54` / `fm.js?v=fm-72` / `audio/genre-flavor.js?v=fm-80` | 同上 |
-| Music Core Rig | `engine.js?v=fm-118` / `style.css?v=fm-28` | 同上 |
+| Band Room | `band-room.css?v=br-90` / `band-room.js?v=br-238` / `audio/audio-safety.js?v=br-68` | hazama-fm-v404 |
+| Hazama FM | `engine.js?v=fm-119` / `fm.css?v=fm-54` / `fm.js?v=fm-72` / `audio/genre-flavor.js?v=fm-81` | 同上 |
+| Music Core Rig | `engine.js?v=fm-119` / `style.css?v=fm-28` | 同上 |
 
 `sw.js` の VERSION は **3 app 共通** で `hazama-fm-vNN`。ここを bump すると 3 app 全部のキャッシュが invalidate される。
 

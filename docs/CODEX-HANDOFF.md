@@ -21,6 +21,8 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
 
 ## 現在地（2026-09-30）
 
+2026-09-30: v404はTabascoも標準で軽量AIバンド、native drum one-shotとSTOPの予約音解放。FM追加レイヤーの全room/tapeをdevice-gate。共通audio-safetyで固定jsDelivr URLの再encodeを限定回避し、upstreamに存在しないharp/flute mappingも除去。共有engineは既存pad予約guardの上限を実際の24 voiceへ合わせる1行と説明のみ修正（`fm-119`）。Chromeで7曲のSTART/STOPとHuman Fly連続再生を確認。実iPhoneの長時間・音質判定は未確認。
+
 - `listen.html`先頭を「前回の続き／過去のネタ／今すぐ遊ぶ」へ整理。
   `#production-notebook`は個人IDを含まないDrive検索、`#revive-ideas`は区間と一言メモの手順。
   `#workbench-plan`にStrudelの小さな試奏台とBL-049の推奨設計を案内。共通session・chat接続は未実装。
@@ -104,7 +106,7 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   セット操作を無効にし、手動編集を保つ。音色の本人判定と実iPhoneは未確認。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v403`。Band Room runtime markerは`band-room.js?v=br-237` /
+- 現行cacheは`hazama-fm-v404`。Band Room runtime markerは`band-room.js?v=br-238` /
   `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ

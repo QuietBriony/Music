@@ -11,6 +11,12 @@
 
 ---
 
+2026-09-30（v404）: Tone 14.8.49はpathの`repo@commit`を`repo%40commit`へencodeし、
+jsDelivrでHTTP 400になる。FM/Core Rigの共通`audio/audio-safety.js`は既存の固定commit・
+mp3/wav/ogg URLだけを直接fetch/decodeする。Band Roomの既存手動preloadは継続。
+Tonejs/audioとnbrosowsky/tonejs-instrumentsの固定commit treeに全catalog pathを照合し、
+存在しないharp 8音・flute 2音を除去した。未録音のpitchはSamplerが有効なnoteから補間する。
+
 ## なぜ catalog 方式か
 
 ブラウザは VST/AU プラグインをロードできない。Web Audio API がホストできるのは

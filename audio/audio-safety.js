@@ -15,6 +15,30 @@
 (function () {
   "use strict";
 
+  // Tone 14.8.49 encodes every path segment with encodeURIComponent,
+  // turning jsDelivr's repo@commit separator into %40. jsDelivr returns
+  // HTTP 400 for that path. Keep the already-pinned catalog URL intact;
+  // other URLs and Tone's baseUrl/format handling use the original loader.
+  function installPinnedSampleLoader() {
+    if (typeof Tone === "undefined" || !Tone.ToneAudioBuffer) return;
+    const BufferType = Tone.ToneAudioBuffer;
+    if (BufferType._musicPinnedSampleLoader) return;
+    const originalLoad = BufferType.load;
+    if (typeof originalLoad !== "function") return;
+    const pinnedAudio = /^https:\/\/cdn\.jsdelivr\.net\/gh\/(?:Tonejs\/audio|nbrosowsky\/tonejs-instruments)@[a-f0-9]{40}\/[^?#]+\.(?:mp3|wav|ogg)$/;
+    BufferType.load = function (url) {
+      if (BufferType.baseUrl || typeof url !== "string" || !pinnedAudio.test(url)) {
+        return originalLoad.call(this, url);
+      }
+      return fetch(url).then((response) => {
+        if (!response.ok) throw new Error("could not load url: " + url + " (HTTP " + response.status + ")");
+        return response.arrayBuffer();
+      }).then((data) => Tone.getContext().decodeAudioData(data));
+    };
+    BufferType._musicPinnedSampleLoader = true;
+  }
+  installPinnedSampleLoader();
+
   // ---- 1. iOS version detection + warning ----
   const ua = navigator.userAgent || "";
   const iosMatch = ua.match(/OS (\d+)[_.](\d+)/);

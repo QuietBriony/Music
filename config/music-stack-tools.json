@@ -36,7 +36,7 @@
       "purpose": "ジャンルとenergyを選んで流す、少ない操作のラジオ。",
       "first_step": "START → techno / ambient / pianoなどを一つ選び、60–90秒聴く。",
       "outputs": "RECの音声ファイル／SYNCの設定・聴感文脈。",
-      "boundary": "YouTubeのhazamaチャンネルとは別のアプリ。新曲をAIモデルで生成・投稿するボタンではない。",
+      "boundary": "軽量設定で追加音色の残響・歪み負荷を抑える。YouTubeのhazamaチャンネルとは別のアプリ。新曲をAIモデルで生成・投稿するボタンではない。",
       "sources": [{ "repo": "Music", "path": "fm.html" }, { "repo": "Music", "path": "fm.js" }, { "repo": "Music", "path": "audio/music-recorder.js" }]
     },
     {
@@ -45,7 +45,7 @@
       "purpose": "原音のパート別音声とブラウザAI再現を聴き比べ、練習・差し替え・録音する。",
       "first_step": "Human Fly原音でSTART → all off → drums ON。AI再現と比較し、自分で叩く時は原音のall on → drums OFF。",
       "outputs": "mix REC／4 stems pack／listening note。MIDI読込は先頭1小節のドラム用。",
-      "boundary": "TabascoのAIドラムは軽量再生8打/小節で、原音どおりのhatやfillは未完成。HAZAMA v401の音質・実mobileはBL-041で判定待ち。02 AIは01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作で、一般的な鍵盤・CC learnではない。",
+      "boundary": "AI再現は端末を問わず標準で軽量演奏。TabascoのAIドラムは8打/小節で、原音どおりのhatやfillは未完成。HAZAMA v401の音質・実mobileはBL-041で判定待ち。02 AIは01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作で、一般的な鍵盤・CC learnではない。",
       "sources": [{ "repo": "Music", "path": "band-room.html" }, { "repo": "Music", "path": "band-room.js" }, { "repo": "Music", "path": "presets/bands.json" }]
     },
     {

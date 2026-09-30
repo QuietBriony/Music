@@ -32,17 +32,17 @@ shared master: masterGain(1.2) → comp×2 → EQ → widener → tape-sat + roo
 - **Synth factories** (`makeDrumKit`/`makeLightDrumKit`/`makeSynthBass`/`makeGuitar`/
   `makeVoiceBox`/`makeChordSynth`) each return their layer via
   `withChainDispose(markLayerKind(...))` so it tears down cleanly. The synth band is
-  **disposed on AI→原音 switch** (`scheduleSynthBandTeardown`, v354) so its always-on
+  **disposed on STOP and AI→原音 switch** (`scheduleSynthBandTeardown`, v354) so its always-on
   FX don't bleed into 原音. (Gate: `check-band-room-logic` G-4 dispose-coverage.)
 - **Device gating** — `aiLightRuntimeEnabled()` / `isMobileOrStandaloneRuntime()`. Phones
   get *light* variants (FeedbackDelay instead of convolution Reverb, `oversample:"none"`,
   no started LFOs). The shared master / stem graph is built **once and shared**, so its
   audio-cost gating MUST key on **device, never `currentMode`** (the v353 bug). The
-  AI-only `instrumentBus` may additionally use dense-song layer safety because stems bypass it.
+  AI-only `instrumentBus` and instrument factories use the bounded tier for all ordinary starts because stems bypass it.
   See `AUDIO-COST-INVARIANTS.md`.
-- **Dense-song layer safety** — `aiLayerLightRuntimeEnabled()` adds a layer-only tier for
-  HAZAMA songs carrying both `arp` and `bassline`. It keeps the shared master device-gated,
-  uses the lean AI-only instrument polish route plus checked-in local drum one-shots, and
+- **Stable default band** — `aiLayerLightRuntimeEnabled()` now selects the bounded tier
+  for both Tabasco and HAZAMA, including capable desktops. It keeps the shared master device-gated,
+  uses the lean AI-only instrument polish route (HAZAMA also uses local one-shots), and
   prevents START from building the full multi-oscillator band before the dual 16-step
   sequencers begin. `?aiLight=0` explicitly overrides it for diagnostics.
 - **Playback health watchdog** (`startPlaybackHealthWatchdog`, 2.5 s) recovers from a
@@ -112,3 +112,7 @@ version consistency; canonical form is **bare** `audit.py`).
   and the **always-on FX budget** (`AUDIO-COST-INVARIANTS.md`).
 - iOS preview can't be reproduced in the Chromium preview (it keeps the context
   running); verify audio-graph cost via `Tone.Offline` render-timing, not live playback.
+
+## v404 playback stability
+
+Generated drums use native buffer sources and gains with tracked cleanup on end/STOP. `stopSynthBand` disposes scheduled melodic voices and invalidates late sampler upgrades; the next START rebuilds lazily. `scripts/check-audio-playback-stability.mjs` covers timing, cancellation and the FM room device tier. Core Rig engine remains unchanged; its pre-existing shared convolution room is still a cost.
