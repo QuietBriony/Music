@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-01: 独立試奏台はコード手直し後の音量/音色フェーダーと演奏面上のPWA更新/再読込を改善。現在のStrudel/acidBrosエンジンは維持し、自作化/軽量化はREADMEに保存した計画。Core Rig / FM / Band Roomの実装はこの修正に含まない。
+
 2026-09-30: v404はTabascoも標準で軽量AIバンド、native drum one-shotとSTOPの予約音解放。FM追加レイヤーの全room/tapeをdevice-gate。共通audio-safetyはTone 14.8.49のURL再encodeによるjsDelivr音源HTTP 400を修正（`fm-62` / `br-68`）。共有engineの変更は既存pad予約guardの上限を実際の24 voiceへ合わせる1行と説明のみ（`fm-119`）。Chromeで7曲のSTART/STOPとHuman Fly連続再生を確認。実iPhoneの長時間・音質判定は未確認。
 
 > 24/7 generative focus radio。Music + 3つのpreset供給sister + openclaw review deskで

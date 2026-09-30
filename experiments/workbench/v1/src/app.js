@@ -1007,6 +1007,7 @@ playButton.addEventListener('click', async () => {
     status.textContent = error.message || '再生に失敗しました';
   } finally {
     busy = false;
+    queueControlSync();
   }
 });
 updateButton.addEventListener('click', async () => {
@@ -1020,6 +1021,7 @@ updateButton.addEventListener('click', async () => {
     status.textContent = error.message || 'コードの反映に失敗しました';
   } finally {
     busy = false;
+    queueControlSync();
   }
 });
 stopButton.addEventListener('click', () => {
@@ -1069,7 +1071,7 @@ performance = initPerformance({
   },
   fader(key, value) {
     const code = currentCode();
-    if (busy || !readTechnoSet(code)) return;
+    if (busy || !isSetCode(code)) return;
     try { sliderBridge.set('SET_' + key, value, wantsPlayback); }
     catch (error) { status.textContent = error.message; }
     queueControlSync();

@@ -268,7 +268,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code
 - agent    : codex
 - human-gate: yes（独立previewの試聴・実iPhone・既存runtimeへの採用は人間確認）
-- status   : wip — codex 2026-09-30（公開Strudel試奏・2デッキ・acidBros FILE/BPM橋・PCオフライン・JSON持ち運び・スマホPWA・テクノ演奏面）
+- status   : wip — codex 2026-10-01（公開Strudel試奏・2デッキ・acidBros FILE/BPM橋・PCオフライン・JSON持ち運び・PWA更新・自動LIVE/アンビエント・コード手直し後のフェーダー）
 - source   : 2026-09-19 user「推奨設計して、今までの作ったネタを活性化させたい」
 - detail   : `docs/BROWSER-WORKBENCH-DESIGN.md`の順序1〜2。設計のみ、runtime未実装。
   private制作ノートにある既存stem一組を候補とし、一般化した素材参照・revision・mix記述を定義。

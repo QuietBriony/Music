@@ -40,6 +40,7 @@
           <button id="set-save" type="button">セットを保存</button>
           <button id="set-library" type="button" aria-expanded="false">保存版・バックアップ</button>
           <button id="set-listen-toggle" type="button" aria-pressed="false">聴く画面</button>
+          <button id="pwa-update-top" type="button" hidden>アプリ更新</button>
           <a href="#editor-title">コードを見る ↓</a>
         </div>
         <div class="set-choice-row">
