@@ -1,5 +1,5 @@
-import { createScore } from "./score.mjs?v=1";
-import { renderScore } from "./dsp.mjs?v=1";
+import { createScore } from "./score.mjs?v=2";
+import { renderScore } from "./dsp.mjs?v=2";
 
 self.onmessage = ({ data }) => {
   try {

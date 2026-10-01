@@ -2857,6 +2857,12 @@ body.br-bg-audio #br-audio-route-status {
   #br-master-vol-readout { flex-basis: 28px; font-size: 12px; }
 }
 
+#br-arcb-instruments:not([hidden]) { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 14px; margin: 12px 0; border: 1px solid var(--accent-glass); border-radius: 8px; }
+#br-arcb-instruments > strong { font-size: 13px; }
+#br-arcb-instruments label { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+#br-arcb-instruments select { min-height: 44px; max-width: 100%; }
+#br-arcb-instruments p { flex-basis: 100%; margin: 0; }
+
 /* v390: custom sliders keep a visible keyboard focus indicator. */
 #br-main input[type="range"]:focus-visible,
 #br-master-vol-bar input[type="range"]:focus-visible {

@@ -1,5 +1,11 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-01: v407は本人の試奏評価と「そのままARCB再現」の承認を受け、Tabasco 7曲のAI再現を新しい弦・ドラム音源へ接続。
+ギターはクリーン／クランチ／ディストーション。既存の音符・打点・sectionを同じtransportで鳴らし、原音・REC・part muteを維持。
+Workerで52音を準備し、PCMは9,567,360 bytes。再生中はnative BufferSource、共通アンプ7 node、最大128発まで。
+歌声は合成せず、melodyパートが採譜済みの歌の音程を弦でなぞる。ギター和音・奏法は近似、実iPhoneの長時間負荷と聴感は残る。
+`?physical=0`は旧音源の診断用。HAZAMAの別音源と原音stemsは維持。既存の公開先とListenから案内する。
+
 2026-10-01: 共有cache `hazama-fm-v406`はListenの公開ページ案内を先頭へ。
 公開先を既存の箱で流用する本人方針をAGENTSへ保存。固定ブックマークは
 `https://music-stack.pages.dev/listen.html`。9画面の案内も機能台帳と同じJSONから生成する。
@@ -135,8 +141,8 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v405`。Band Room runtime markerは`band-room.js?v=br-239` /
-  `band-room.css?v=br-91`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
+- 現行cacheは`hazama-fm-v407`。Band Room runtime markerは`band-room.js?v=br-240` /
+  `band-room.css?v=br-92`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
   ASR由来の`tabasco-lyrics-timed.json`を使う。`presets/tabasco-songs.json` v2は

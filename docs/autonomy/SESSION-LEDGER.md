@@ -19,6 +19,27 @@
 
 ---
 
+## 2026-10-01 — ARCB 7曲を新しい弦・ドラム音源へ接続 (v407 / BL-051)
+
+- agent      : Codex（単一thread、既存worktree・公開箱を流用）
+- goal       : 本人が評価した弦の試奏をARCBへつなぎ、Radiohead／レッチリのような輪郭と打感へ寄せる
+- repos      : Music
+- shipped    : 本人の「全然前よりいい」「そのままARBC再現してほしい」で試奏昇格gateを通過。
+  7曲の既存音符・打点・構成をnative音源adapterへ接続。52音をWorkerで準備し、PCMは9,567,360 bytes。
+  ギターはクリーン／クランチ／ディストーション、共有7 nodeのアンプ。ベース・ドラムも新音源。
+  melodyは採譜した歌の音程を弦でなぞる。歌声と細かな奏法の完全再現は主張しない。
+  旧軽量版の4／4／8行から16／16／24行へ演奏を戻し、予約128発・8秒先までで負荷を制限。
+  原音、part mute、REC、STOP／mode切替／reset／Worker取消を接続。旧音源は診断用physical=0。
+  旧音源選択と鳴らさないchords／arpを新ARCBモードで無効にし、melody表示を揃えた。
+  Listen／manual／用途台帳・共有cache v407を同期。engine・音声ファイル・外部依存・公開先の追加なし。
+  Chromeで7曲のSTART／出音／STOP、3音色、mute／solo、seek／tempo／reset、原音往復、offline再開。
+  Human Fly約1分で予約落ち0、4.08秒のREC WAVに出力あり。390px横はみ出しなし。
+  bank全open弦音の測定音高±20 cent、小数音程、52 bufferのDC・有限値・末尾、Worker取消とnode解放を検査。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（0 BAD / 0 WARN。docs版表記を修正して全体再検証、最後のUI整理とdocsは関連検査も再実行）
+- backlog    : BL-051のARCB接続と歪みを実装。BL-050の採譜忠実度は継続
+- next       : BL-051 — 本人の新ARCB版と実iPhone負荷を判定し、原音との音高・和音・奏法の差を直す
+- blockers   : 実iPhone長時間・原曲採譜正解率・歌声生成は未判定／未実装
+
 ## 2026-10-01 — 公開ページ一覧を磨き、既存の公開箱へ戻す (v406)
 
 - agent      : Codex（単一thread、既存のclean worktreeを再利用）
