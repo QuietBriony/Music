@@ -1,5 +1,12 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-01: 独立Strudel試奏台のLIVEを磨いた。手動フェーダー基準と自動展開の制御値を小バーで区別。
+BPMは60〜180の横フェーダー／数字からclockへ直接渡し、metadataとsetcpmだけ更新するため再評価しない。
+V1/V2/V3の保存形式と音符、音色faderのsignal IDを保持。対応環境のaudioSession playback指定、
+再開ごとの既存AudioContext resume、明示「音を再接続」と表示復帰を追加。停止した演奏は再開しない。
+物理音量と出力先はOS／車側。実iPhone／Bluetooth／CarPlayの音量ボタン・長時間負荷は未確認。
+既存Listen／機能台帳／manualと同じPagesへ戻し、新規音源・依存・公開先は追加しない。
+
 2026-10-01: v407は本人の試奏評価と「そのままARCB再現」の承認を受け、Tabasco 7曲のAI再現を新しい弦・ドラム音源へ接続。
 ギターはクリーン／クランチ／ディストーション。既存の音符・打点・sectionを同じtransportで鳴らし、原音・REC・part muteを維持。
 Workerで52音を準備し、PCMは9,567,360 bytes。再生中はnative BufferSource、共通アンプ7 node、最大128発まで。

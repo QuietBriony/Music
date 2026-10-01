@@ -353,6 +353,11 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   追加ドラム/303/パッドはMUTEで開始。外側の混合処理まで編集したコードは変換しない。
   元acidBrosとの音/時計/音符変換は未実装のまま。本人の最新方針は全面自作よりOSS活用、
   復元できる保管と更新比較、良い音源への部分的な差し替え。復元一式の保管整備は未完了。
+  同日追記: LIVEの自動展開値を小バーで示し、手動基準は保持。BPMフェーダーはclockへ直結して
+  metadata／setcpmだけを更新し、V1/V2/V3の音符・保存形式・fader接続を維持する。
+  音楽playback指定、既存contextの再開ごとのresume、明示音声再接続と画面復帰を追加。
+  自動値の毎frameコード書換・BPM自動加速・追加音源は導入せず、実iPhoneの負荷と
+  Bluetooth／CarPlayの物理音量・出力切替は本人確認待ち。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2

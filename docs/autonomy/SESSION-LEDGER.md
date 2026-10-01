@@ -19,6 +19,24 @@
 
 ---
 
+## 2026-10-01 — LIVEの動きを見せ、BPMと音声復帰を軽くする (BL-049)
+
+- agent      : Codex（単一thread、既存Music repoと公開箱）
+- goal       : 再生中のフェーダーとコードのつながりを見せ、BPM操作・スマホ出力の復帰を磨く
+- repos      : Music
+- shipped    : 手動の基準値は保持し、同じLIVE時計の展開後制御値を小バーで表示。
+  BPMの数字／横フェーダーは60〜180をclockへ直接渡し、metadataとsetcpmだけ更新、全code再評価なし。
+  V1/V2/V3の保存形式・音符・slider signal IDを維持。初期化は一度、resumeは再開ごとに通す。
+  対応browserのaudioSession playback指定、既存contextの「音を再接続」と表示復帰を追加。
+  停止した演奏は再開しない。新audio graph・音声・依存は追加せず、既存Listen／台帳／manualへ反映。
+  ChromiumでPlay、99 BPM→音色変更→保存／reload／再開、再接続、聴く画面の音量、停止を確認。
+  390×844の縦faderをmouse dragでき、ページ横はみ出しなし。console warning/errorなし。
+  workbench 74 tests PASS、BPM旧版往復・数字桁変更後の信号・中断／初期化失敗の再試行を検証。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（着手前と出荷前、0 BAD / 0 WARN。最後の音声session指定は関連6 tests、syntaxとdocs/queueも再確認）
+- backlog    : BL-049のライブ操作・音声復帰を前進
+- next       : BL-049 — 実iPhoneの長時間負荷・物理音量・Bluetooth／CarPlay復帰と、OSS／音源の復元保管を確認
+- blockers   : 実iPhone／車での出力先と物理音量の改善は未判定。BPM自動化と音声実測VUは追加しない
+
 ## 2026-10-01 — ARCB 7曲を新しい弦・ドラム音源へ接続 (v407 / BL-051)
 
 - agent      : Codex（単一thread、既存worktree・公開箱を流用）
