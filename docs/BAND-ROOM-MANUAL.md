@@ -14,9 +14,9 @@
 
 ## 現在地とversion
 
-- 現行Band Room runtimeは **v407**（ARCB 7曲の新しい弦・ドラム音源、ギター3音色）。HAZAMAのplayability候補は **v401** のまま。client markerは
-  `band-room.js?v=br-240` / `band-room.css?v=br-92`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v407**。v401はHAZAMA AIの
+- 現行Band Room runtimeは **v408**（ARCB 7曲の弦のサステイン、ドラムの余韻、空気感）。HAZAMAのplayability候補は **v401** のまま。client markerは
+  `band-room.js?v=br-241` / `band-room.css?v=br-93`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v408**。v401はHAZAMA AIの
   arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
   約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
   減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、
@@ -39,6 +39,15 @@
   **BL-003 human gate**であり、この文書更新では合格扱いにしない。
 - 詳細な版履歴は [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md)、
   未完了タスクの正本は [autonomy/BACKLOG.md](./autonomy/BACKLOG.md)。
+
+### ARCBの弦の響きと空気感（v408）
+
+AI再現では、短い音符でもギターの和音とベースの響きが自然に減衰します。
+次の和音／ベース音では前の音を滑らかに押さえ、低音が重なるのを防ぎます。
+「空気感」は全パートの共通の部屋の響き。既定35%、0%で直接音だけになります。
+ギターのクリーン／クランチ／ディストーションと組み合わせて、余韻と輪郭を聴き比べてください。
+パートの音量は部屋へ送る音にも効き、STOPとseekは残響も止めます。
+
 
 ## 最短導線 — ARCB / Tabascoのドラムからバンド練習
 
@@ -93,7 +102,7 @@ melodyは歌の音程を弦でなぞるパートです。歌声の再現では�
 Radiohead／レッチリのような輪郭と打感を方向性とし、特定録音の音色コピーは主張しません。
 採譜の誤り、ギターの全構成音・細かな奏法、実iPhone負荷は次の評価対象です。
 
-## 画面構成（現行: br-240 / br-92）
+## 画面構成（現行: br-241 / br-93）
 
 ```
 ┌─────────────────────────────────┐

@@ -19,6 +19,27 @@
 
 ---
 
+## 2026-10-01 — ARCBの弦の響きとドラムの余韻を残す (v408 / BL-051)
+
+- agent      : Codex（単一thread、既存worktreeと公開箱を流用）
+- goal       : 本人の「音がちょちょぎれる」「ジャーン／ボーン」「ドラム一発の余韻」の指摘を直す
+- repos      : Music
+- shipped    : 短いscore gateで弦を25 ms後に切る処理と、自動palm mute判定を除去。
+  新ARCBだけ旧bass duration上限を外す。ギターの和音を1 strokeとして鳴らし、次のstroke／bass音で前の音を滑らかに減衰。
+  弦とdrumのbody／金属の余韻を延ばす。52音のbankは11,826,560 bytesで12 MB未満。
+  共有roomはnativeの4 filtered delay loop、post-fader sendとreturnを含む26 node。
+  空気感0–100%、既定35%。既存instrument/master/RECへ戻し、STOP／seekでroomを破棄、owned sendだけdisconnect。
+  音高・採譜打点、7 nodeのamp、予約128発／8秒先の上限を保持。engine・音声ファイル・依存・公開先の追加なし。
+  0.12秒gateの実native出力でguitar／bassの0.4–0.65秒RMSは0.0077／0.0131、0.7–1.0秒も減衰を確認。
+  snareのbodyとroom impulseの減衰を実出力で測定。bank音高±20 cent、palm減衰、bass次音のdampingとgraph解放を検査。
+  Human Fly約1分は予約落ち0、最大観測47発、output peak 0.547。空気感0／35／100、seek、原音往復、part fader 0、全muteとSTOPを確認。
+  新音源のREC WAVは2.82秒、peak 0.485。390px横はみ出しなし。RESET AUDIO後とoffline再読込後もbank／room再準備・出音を確認。
+  Listen台帳／manualとcache hazama-fm-v408を同期。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（0 BAD / 0 WARN。native波形測定とChromeのlifecycle／REC確認を併用）
+- backlog    : BL-051のサステイン・drum余韻・空気感を前進
+- next       : BL-051 — 本人の新ARCB版と実iPhone負荷を判定し、原音との音高・和音・奏法の差を直す
+- blockers   : 楽器の聴感・実iPhone長時間負荷・採譜忠実度は本人の評価を継続。歌声と精密body共鳴は未実装
+
 ## 2026-10-01 — LIVEの動きを見せ、BPMと音声復帰を軽くする (BL-049)
 
 - agent      : Codex（単一thread、既存Music repoと公開箱）

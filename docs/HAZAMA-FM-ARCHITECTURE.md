@@ -6,6 +6,13 @@ BPMはclockへ直接渡し、保存metadataとsetcpmだけを変更。全コー�
 対応環境のaudioSession playback指定と「音を再接続」を追加。物理音量・出力先はOS側のまま。
 V1/V2/V3保存形式と同じStrudel／acidBrosの切替を保持。実iPhone・車の接続・長時間負荷は未確認。
 
+2026-10-01: v408は「音がちょちょぎれる」「ジャーン／ボーンとドラムの余韻」という本人の指摘に対応。
+短い音符を自動でpalm muteにする判定と、新ARCBに残っていた旧bass gate上限を除去。
+ギター和音は1 strokeとして扱い、note gateの後も弦の自然減衰を残す。次の和音／bass音では短いfadeで前の弦を押さえる。
+ドラムの胴鳴り／金属の余韻を伸ばし、post-faderの共通roomを追加。空気感0–100%、既定35%。
+roomはnativeの4 filtered delay loop、26 node（send込み）。STOP／seek／mode切替で予約音とroomを解放する。
+52音のbankは11,826,560 bytes、12 MB上限内。共有7 node amp・予約128発／8秒先の上限を維持する。
+
 2026-10-01: v407は本人の試奏評価と「そのままARCB再現」の承認を受け、Tabasco 7曲のAI再現を新しい弦・ドラム音源へ接続。
 ギターはクリーン／クランチ／ディストーション。既存の音符・打点・sectionを同じtransportで鳴らし、原音・REC・part muteを維持。
 Workerで52音を準備し、PCMは9,567,360 bytes。再生中はnative BufferSource、共通アンプ7 node、最大128発まで。
@@ -38,9 +45,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v407`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v408`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-240`, `band-room.css?v=br-92`。
+> `band-room.js?v=br-241`, `band-room.css?v=br-93`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

@@ -19,11 +19,12 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-240-arcb-physical-instruments";
-  const BANDROOM_RELEASE_VERSION = "v407";
+  const BANDROOM_APP_VERSION = "br-241-natural-band-resonance";
+  const BANDROOM_RELEASE_VERSION = "v408";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
+  let physicalRoomWet = 0.35;
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -982,7 +983,7 @@
     physicalArcbAbort?.abort(); physicalArcbAbort = abort;
     const began = bandRoomNowMs();
     try {
-      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=1");
+      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=2");
       const context = Tone.getContext().rawContext;
       const bank = await physicalArcbModule.prepareInstrumentBank(context, {
         signal: abort.signal,
@@ -992,10 +993,11 @@
       [drumKit, synthBass, guitarSynth, voiceSynth, chordSynth, arpSynth, bassSeqSynth].forEach(disposeSynthLayer);
       chordSynth = arpSynth = bassSeqSynth = null;
       physicalArcb = physicalArcbModule.createPhysicalBand(context, bank,
-        { guitar: guitarBus, bass: bassBus, drums: drumBus, voice: voiceBus }, {
+        { guitar: guitarBus, bass: bassBus, drums: drumBus, voice: voiceBus, room: instrumentBus }, {
           connect: (source, target) => Tone.connect(source, target),
+          disconnect: (source, target) => Tone.disconnect(source, target),
           seconds: (duration) => Tone.Time(duration).toSeconds(),
-          midi: (note) => Tone.Frequency(note).toMidi(), tone: physicalGuitarTone
+          midi: (note) => Tone.Frequency(note).toMidi(), tone: physicalGuitarTone, roomWet: physicalRoomWet
         });
       drumKit = physicalArcb.drums; synthBass = physicalArcb.bass;
       guitarSynth = physicalArcb.guitar; voiceSynth = physicalArcb.melody;
@@ -6315,7 +6317,7 @@
       // quantize clamp, no fixed gate — the performance IS the humanization.
       const t = time + (Number(row[1]) || 0) * ctx.subTime;
       const rawDurSteps = Math.max(0.5, Number(row[2]) || 1);
-      const durSteps = aiLayerLightRuntimeEnabled()
+      const durSteps = aiLayerLightRuntimeEnabled() && !synth?._physical
         ? Math.min(rawDurSteps, lineKey === "bass_line" ? 2.8 : 3.0)
         : rawDurSteps;
       const durSec = Math.max(0.05, durSteps * ctx.subTime);
@@ -6515,7 +6517,9 @@
       // apart; simultaneous PolySynth notes read as an organ stab. Light
       // runtime keeps the single batched call (CPU). v335: upstrokes sweep
       // high→low (reversed order).
-      if (light) {
+      if (guitarSynth._physical) {
+        try { guitarSynth.triggerAttackRelease(voicing, durSec, t, vel, { upstroke: isUpstroke }); } catch (e) {}
+      } else if (light) {
         try { guitarSynth.triggerAttackRelease(voicing, durSec, t, vel); } catch (e) {}
       } else {
         const sweep = isUpstroke ? voicing.slice().reverse() : voicing;
@@ -8153,6 +8157,12 @@
     $("br-arcb-guitar-tone")?.addEventListener("change", (event) => {
       physicalGuitarTone = event.target.value;
       physicalArcb?.setTone(physicalGuitarTone);
+    });
+    $("br-arcb-room")?.addEventListener("input", (event) => {
+      const value = clamp(Number(event.target.value) || 0, 0, 100);
+      physicalRoomWet = value / 100;
+      physicalArcb?.setRoom(physicalRoomWet);
+      if ($("br-arcb-room-value")) $("br-arcb-room-value").textContent = value + "%";
     });
     window.addEventListener("band-room:physical-preview", (event) => {
       // Do not let an awaited song boot finish over the short rehearsal.

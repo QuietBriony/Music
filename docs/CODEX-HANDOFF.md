@@ -7,6 +7,13 @@ V1/V2/V3の保存形式と音符、音色faderのsignal IDを保持。対応環�
 物理音量と出力先はOS／車側。実iPhone／Bluetooth／CarPlayの音量ボタン・長時間負荷は未確認。
 既存Listen／機能台帳／manualと同じPagesへ戻し、新規音源・依存・公開先は追加しない。
 
+2026-10-01: v408は「音がちょちょぎれる」「ジャーン／ボーンとドラムの余韻」という本人の指摘に対応。
+短い音符を自動でpalm muteにする判定と、新ARCBに残っていた旧bass gate上限を除去。
+ギター和音は1 strokeとして扱い、note gateの後も弦の自然減衰を残す。次の和音／bass音では短いfadeで前の弦を押さえる。
+ドラムの胴鳴り／金属の余韻を伸ばし、post-faderの共通roomを追加。空気感0–100%、既定35%。
+roomはnativeの4 filtered delay loop、26 node（send込み）。STOP／seek／mode切替で予約音とroomを解放する。
+52音のbankは11,826,560 bytes、12 MB上限内。共有7 node amp・予約128発／8秒先の上限を維持する。
+
 2026-10-01: v407は本人の試奏評価と「そのままARCB再現」の承認を受け、Tabasco 7曲のAI再現を新しい弦・ドラム音源へ接続。
 ギターはクリーン／クランチ／ディストーション。既存の音符・打点・sectionを同じtransportで鳴らし、原音・REC・part muteを維持。
 Workerで52音を準備し、PCMは9,567,360 bytes。再生中はnative BufferSource、共通アンプ7 node、最大128発まで。
@@ -148,8 +155,8 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v407`。Band Room runtime markerは`band-room.js?v=br-240` /
-  `band-room.css?v=br-92`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
+- 現行cacheは`hazama-fm-v408`。Band Room runtime markerは`band-room.js?v=br-241` /
+  `band-room.css?v=br-93`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
   ASR由来の`tabasco-lyrics-timed.json`を使う。`presets/tabasco-songs.json` v2は

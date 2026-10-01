@@ -1,6 +1,13 @@
-# Band Room - Changelog (v65 -> v407 compact)
+# Band Room - Changelog (v65 -> v408 compact)
 
-Current sw.js VERSION: v407. Latest Band Room runtime change: v407 (ARCB seven-song physical instrument bank and electric guitar amp). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v408. Latest Band Room runtime change: v408 (natural string sustain, drum decay and shared band room). HAZAMA playability candidate remains v401.
+
+## v408 compact - Natural string sustain and shared band room
+
+- Shared cache `hazama-fm-v408`, runtime `br-241` / `br-93`. DSP/preview modules v3, bank/adapter modules v2, room v1, amp v1.
+- Short score gates no longer cut strings after 25 ms or automatically select palm damping. Guitar strokes own the whole chord; the next stroke/bass note damps the old strings with a short fade. Remove the legacy duration cap only for the new ARCB adapter.
+- Longer string buffers and drum/body decays, still 52 sounds and 11,826,560 bytes below the 12 MB bank cap. Pending-source and ahead-time bounds remain 128 / 8 seconds.
+- One small shared room, four filtered native delay loops, post-fader sends through the existing master/REC. Air slider 0–100%, default 35%. Clear room state on STOP, seek and mode change; disconnect only owned bus sends.
 
 ## v407 compact - ARCB new instruments and electric guitar
 

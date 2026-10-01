@@ -2861,6 +2861,8 @@ body.br-bg-audio #br-audio-route-status {
 #br-arcb-instruments > strong { font-size: 13px; }
 #br-arcb-instruments label { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 #br-arcb-instruments select { min-height: 44px; max-width: 100%; }
+#br-arcb-room { width: 110px; min-height: 44px; }
+#br-arcb-room-value { min-width: 34px; }
 #br-arcb-instruments p { flex-basis: 100%; margin: 0; }
 
 /* v390: custom sliders keep a visible keyboard focus indicator. */
