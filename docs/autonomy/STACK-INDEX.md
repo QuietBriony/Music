@@ -14,11 +14,14 @@ music-stack を触るエージェントが **最初に読む構造マップ**。
 ## Active repos (5)
 
 ローカル配置: `C:\workspace\music-stack\<repo>`
-deploy はすべて GitHub Pages（`<remote>` の main ブランチ）。
+Musicの普段の入口は既存Cloudflare Pagesの`music-stack`。GitHub Pagesは同じMusicの別入口、
+sibling 4 repoは各repoの既存GitHub Pages。独立試奏台はMusic repo内の別runtimeを既存
+`music-private-live-workbench`で配信する。新規の箱は作らず、公開入口はListenの
+`#public-pages`と`config/music-stack-tools.json`へ戻す。MusicのCloudflareは手動deployが必要。
 
 | repo | 役割（1行） | deploy | remote | AGENTS.md | check コマンド（repo root から） |
 |---|---|---|---|---|---|
-| `Music` | central conductor。Band Room / Hazama FM / Music Core Rig の runtime | quietbriony.github.io/Music | QuietBriony/Music | `Music/AGENTS.md` | `audit.py` + `check-js` + `check-band-room-logic` + `check-fm-route-badge` + `check-hazama-melody` |
+| `Music` | central conductor。Band Room / Hazama FM / Music Core Rig の runtime | music-stack.pages.dev（普段） / quietbriony.github.io/Music（別入口） | QuietBriony/Music | `Music/AGENTS.md` | `audit.py` + `check-js` + `check-band-room-logic` + `check-fm-route-badge` + `check-hazama-melody` |
 | `chill` | quiet piano / trio / long-form listening surface | quietbriony.github.io/chill | QuietBriony/chill | `chill/AGENTS.md` | `node scripts/check-pwa-static.mjs` |
 | `drum-floor` | rhythm / groove / VCV / stage-safety reference | quietbriony.github.io/drum-floor | QuietBriony/drum-floor | `drum-floor/AGENTS.md` | `python -m pytest tests/ -q` |
 | `namima` | public-friendly ambient visual player | quietbriony.github.io/namima | QuietBriony/namima | `namima/AGENTS.md` | `node scripts/check-music-session-adapter.mjs` + `check-pwa-static.mjs` |

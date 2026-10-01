@@ -3,7 +3,7 @@
   "reviewed_at": "2026-10-01",
   "evidence_scope": "Repository source inspection, not an audible, device, account, or publication certification. source_revisions are the audit starting commits; newly authored Music guide files belong to this change, not those base commits.",
   "source_revisions": {
-    "Music": "72475ae",
+    "Music": "3bee271",
     "chill": "2e15163",
     "drum-floor": "582fd5a",
     "namima": "55fedeb",
@@ -22,10 +22,20 @@
     "manual": "手動工程・環境確認",
     "planned": "未実装・設計のみ"
   },
+  "public_navigation": {
+    "bookmark": "https://music-stack.pages.dev/listen.html",
+    "mirror": "https://quietbriony.github.io/Music/listen.html",
+    "groups": [
+      { "id": "music", "title": "Music — バンド・ラジオ・作品棚", "note": "同じMusicの中にある4つの画面。ロック／ジャズの試奏もBand Roomから。", "tool_ids": ["band-room", "hazama-fm", "core-rig", "lyric-lab"] },
+      { "id": "workbench", "title": "試奏台 — テクノ・アシッド・アンビエント", "note": "試作ミックス、ライブセット、303／909は同じ試奏台の中で切り替えます。", "tool_ids": ["strudel-workbench"] },
+      { "id": "siblings", "title": "ほかの道具 — 静かな音・リズム・段取り", "note": "前からある4つのアプリ。それぞれの役割を残して使います。", "tool_ids": ["chill", "namima", "drum-floor", "desk"] }
+    ]
+  },
   "tools": [
     {
       "id": "core-rig", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Music Core Rig", "href": "index.html", "action": "開く",
+      "public_summary": "つまみを動かし、アシッドやIDMの音を探る。",
       "purpose": "密度と質感をつまみで演奏する中心の音源。アシッドやIDM探索の入口。",
       "first_step": "START → AUTO MIXを手動に → CULTのACIDを試し、まず一つのfaderだけ動かす。",
       "outputs": "RECの音声ファイル／SYNCの設定JSON。",
@@ -35,6 +45,7 @@
     {
       "id": "hazama-fm", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Hazama FM", "href": "fm.html", "action": "開く",
+      "public_summary": "ジャンルを選んで、ラジオのように流す。",
       "purpose": "ジャンルとenergyを選んで流す、少ない操作のラジオ。",
       "first_step": "START → techno / ambient / pianoなどを一つ選び、60–90秒聴く。",
       "outputs": "RECの音声ファイル／SYNCの設定・聴感文脈。",
@@ -44,6 +55,7 @@
     {
       "id": "band-room", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Band Room / ARCB・Tabasco", "href": "band-room.html?band=tabasco&song=human-fly&mode=stems", "action": "開く",
+      "public_summary": "原音とAI演奏を聴き比べる。パートを消して練習する。",
       "purpose": "原音のパート別音声とブラウザAI再現を聴き比べ、練習・差し替え・録音する。",
       "first_step": "Human Fly原音でSTART → all off → drums ON。AI再現と比較し、自分で叩く時は原音のall on → drums OFF。",
       "outputs": "mix REC／4 stems pack／listening note。MIDI読込は先頭1小節のドラム用。",
@@ -53,6 +65,7 @@
     {
       "id": "lyric-lab", "repo": "Music", "group": "planning", "status": "implemented",
       "title": "Lyric Lab", "href": "lyric-lab.html", "action": "開く",
+      "public_summary": "歌詞・曲のアイデア・制作指示を一曲ずつ残す。",
       "purpose": "歌詞・曲の設計・制作指示を一曲ずつ整理する作品棚。",
       "first_step": "既存作品を開く → 制作先とBPM等を確認 → 制作パケットをコピー。",
       "outputs": "歌詞付き制作指示／歌詞を含まないScene metadata。",
@@ -62,6 +75,7 @@
     {
       "id": "strudel-workbench", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Strudel Live Workbench", "href": "https://music-private-live-workbench.pages.dev/", "action": "音とコードを触る",
+      "public_summary": "音とコードを触る。テクノやアンビエントのLIVEを続ける。",
       "purpose": "試作・A/Bミックス／ライブセット／元の303×2＋909を同じ入口で選ぶ。A/Bをコード・テンポ・混ぜ具合ごとライブセットへ持ち込み、追加ドラムや303風をMUTE解除で足す。テクノ/ダブ/アンビエントの自動LIVEも使える。",
       "first_step": "上の演奏面ボタンで選ぶ。2つ重ねるならA/Bを選んで「組み合わせのコードを開く」→ Play。楽器を足すなら「このA/Bでライブセットへ」。追加パートはミュートから開始。セットだけならライブセット → Acid DriveかAmbient Drift → セットを鳴らす。全体音量・接続が残る音色フェーダーは再生中も使える。PWAはアプリ更新で確認・再読込。PCローカルはREADMEの初回準備 → npm run local。",
       "outputs": "公開8試作はGit管理。4セットと引き継いだA/Bは全打点・音符・BPM・音色・19フェーダー・MUTE・素材コード・AUTO・変奏seed/固定/採用前の軸・LIVE設定を名前付き下書きへ保存。既存保存コードの出音は維持。LEVEL・A/B・acidBros FILEもJSONで別端末へ追加できる。",
@@ -71,6 +85,7 @@
     {
       "id": "chill", "repo": "chill", "group": "quiet", "status": "implemented",
       "title": "Chill Session", "href": "https://quietbriony.github.io/chill/session.html", "action": "開く",
+      "public_summary": "ピアノと余白。ベースやドラムを少しずつ足す。",
       "purpose": "ピアノと余白を中心に、ゆっくり変化する静かな演奏。",
       "first_step": "START。まずピアノだけを聴き、必要な時だけBASS / DRUMSを足す。",
       "outputs": "ブラウザ演奏／quiet-piano recipeとsession文脈。",
@@ -80,6 +95,7 @@
     {
       "id": "drum-floor", "repo": "drum-floor", "group": "browser", "status": "implemented",
       "title": "Drum Floor", "href": "https://quietbriony.github.io/drum-floor/", "action": "開く",
+      "public_summary": "ドラムのノリ・休符・強弱を試す。",
       "purpose": "ノリ・休符・強弱を作るドラム専門の演奏面と候補生成器。",
       "first_step": "最初はマイクもMIDIも使わず、再生（SYNC/手動）でgrooveを試す。",
       "outputs": "ブラウザ演奏／CLIのMIDI候補／明示有効化した時だけMIDI note出力。",
@@ -89,6 +105,7 @@
     {
       "id": "namima", "repo": "namima", "group": "quiet", "status": "implemented",
       "title": "Namima", "href": "https://quietbriony.github.io/namima/", "action": "開く",
+      "public_summary": "水と波紋の映像に、穏やかな音を合わせる。",
       "purpose": "水・庭・穏やかな空気のための、映像付きアンビエント。",
       "first_step": "Tap to start → 音と波紋を聴く。ほかのプレイヤーは止めて比較する。",
       "outputs": "ブラウザの音・映像／安全なmoodの翻訳。",
@@ -98,6 +115,7 @@
     {
       "id": "desk", "repo": "openclaw", "group": "planning", "status": "implemented",
       "title": "OpenClaw Desk", "href": "https://quietbriony.github.io/openclaw/", "action": "開く",
+      "public_summary": "制作の段取りと、次に進む道具を確認する。",
       "purpose": "SYNCを読み、次の行き先・確認待ち・候補の段取りを見る制作卓。",
       "first_step": "Core RigかFMでSYNC → 同じブラウザのDeskでlatest packetを確認。",
       "outputs": "review・routing案・人間が実行するコマンドの提示。",

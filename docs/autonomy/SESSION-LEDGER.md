@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-10-01 — 公開ページ一覧を磨き、既存の公開箱へ戻す (v406)
+
+- agent      : Codex（単一thread、既存のclean worktreeを再利用）
+- goal       : 公開先が増えて本人が追えなくなる状況を防ぎ、既存Listenから用途別に開けるようにする
+- repos      : Music。workspace rootのAGENTSにも本人方針を保存（Git管理外）
+- shipped    : Listenの先頭に9画面の用途別案内と固定ブックマークを配置。
+  Music内の4画面／同じStrudel試奏台／sibling 4アプリを案内し、録音・実験・映像は既存sectionへ。
+  別入口とarchiveは折り畳み。機能台帳の同じtool IDからListenとmanualへ生成する。
+  既存Cloudflare Pages／GitHub Pages／repoを流用する方針をAGENTSに保存し、READMEと配信先説明を整備。
+  共有cache hazama-fm-v406、依存cacheの保存先とdocs markerを同期。音声runtimeと公開先は維持。
+  Chromeの320／390／768／1440pxで横はみ出しなし。9入口のURL・操作領域・キーボードスキップ・折り畳みを確認。
+  Listenのscript／audio／video／iframeは0。9行き先と総合入口・GitHub Pages版がHTTP 200。
+- stack-check: PASS 38 / FAIL 0 / SKIP 0（0 BAD / 0 WARN。初回のcache marker 3件を修正して全体を再検証）
+- backlog    : 公開入口の整理と既存箱の流用は本人の追加依頼。BL-051の試奏候補とBL-049の試奏台を同じ入口に維持
+- next       : BL-051 — 本人の音・実iPhone負荷の判定→ARCBの1区間をscore adapterで変換して比較
+- blockers   : 実iPhoneの音質・長時間再生は今回の静的入口整理では判定しない
+
 ## 2026-10-01 — 旧試作を正式archiveし、3人バンドの任意試奏を作る (v405 / BL-051・BL-052)
 
 - agent      : Codex（単一thread。既存checkoutの別作業は触らず、既存のclean worktreeを再利用）

@@ -60,6 +60,18 @@ constraint を Music へコピーしない。
 個別作品は既存IDへ「何の版・何を変えた・どこで聴く・何が残る・次の一手」を紐づける。
 privateな作品名・file ID・素材pathはpublicへ転記せず、未照合・未採用もそのまま記録する。
 
+### 公開先の箱を流用する（2026-10-01・本人方針）
+
+公開先を増やすと本人が追えなくなるため、既存のCloudflare Pages / GitHub Pages / repoを流用する。
+本人が新設を明示依頼した場合を除き、新しいhosting project・Pages repo・別の公開一覧を作らない。
+Musicは既存`music-stack`（`https://music-stack.pages.dev/`）、独立試奏台は既存
+`music-private-live-workbench`を使い、追加の演奏面は同じ箱のpath・query・画面内切替へ戻す。
+MusicのGitHub Pages版とsibling 4 repoの既存Pagesも保持し、普段のブックマークは
+`https://music-stack.pages.dev/listen.html`へ一本化する。更新ごとのdeployment hash URLは
+版確認用として扱い、普段使う新しい入口として案内しない。
+公開ページ一覧は同じ`config/music-stack-tools.json`から既存Listenとmanualへ生成する。
+公開ページを変更したら、その用途と入口を同じ作業で更新し、既存公開先への反映も確認する。
+
 ---
 
 ## Autonomous development engine

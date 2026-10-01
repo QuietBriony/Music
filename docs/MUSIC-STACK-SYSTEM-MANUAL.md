@@ -12,6 +12,50 @@
 
 ## 1. 最初に理解すること
 
+### 公開ページは既存の箱を流用する（2026-10-01）
+
+新しいCloudflare Pagesプロジェクト・GitHub Pages repo・並行した一覧は、本人が明示依頼した時だけ作る。
+Musicは既存`music-stack`、独立試奏台は既存`music-private-live-workbench`で更新する。
+mainへのmergeだけではMusicのCloudflare手動配信は更新されないため、同じprojectへdeployして確認する。
+更新ごとの一時URLは版の参照用。利用者へは普段の固定URLを案内する。
+
+<!-- public-pages:begin -->
+普段のブックマークは [Music Stack Listen](https://music-stack.pages.dev/listen.html)。公開先を増やさず、既存のページと道具をここから辿ります。
+
+### Music — バンド・ラジオ・作品棚
+
+同じMusicの中にある4つの画面。ロック／ジャズの試奏もBand Roomから。
+
+| 公開ページ | 用途 |
+|---|---|
+| [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=stems) | 原音とAI演奏を聴き比べる。パートを消して練習する。 |
+| [Hazama FM](../fm.html) | ジャンルを選んで、ラジオのように流す。 |
+| [Music Core Rig](../index.html) | つまみを動かし、アシッドやIDMの音を探る。 |
+| [Lyric Lab](../lyric-lab.html) | 歌詞・曲のアイデア・制作指示を一曲ずつ残す。 |
+
+### 試奏台 — テクノ・アシッド・アンビエント
+
+試作ミックス、ライブセット、303／909は同じ試奏台の中で切り替えます。
+
+| 公開ページ | 用途 |
+|---|---|
+| [Strudel Live Workbench](https://music-private-live-workbench.pages.dev/) | 音とコードを触る。テクノやアンビエントのLIVEを続ける。 |
+
+### ほかの道具 — 静かな音・リズム・段取り
+
+前からある4つのアプリ。それぞれの役割を残して使います。
+
+| 公開ページ | 用途 |
+|---|---|
+| [Chill Session](https://quietbriony.github.io/chill/session.html) | ピアノと余白。ベースやドラムを少しずつ足す。 |
+| [Namima](https://quietbriony.github.io/namima/) | 水と波紋の映像に、穏やかな音を合わせる。 |
+| [Drum Floor](https://quietbriony.github.io/drum-floor/) | ドラムのノリ・休符・強弱を試す。 |
+| [OpenClaw Desk](https://quietbriony.github.io/openclaw/) | 制作の段取りと、次に進む道具を確認する。 |
+
+[MusicのGitHub Pages版](https://quietbriony.github.io/Music/listen.html)は同じ道具の別入口。Lyric Labの端末間同期は既存Cloudflare/D1の認証が必要です。
+録音・実験・映像はListenの既存sectionへ。test／namima-labは履歴保管で、演奏アプリの一覧には含めません。
+<!-- public-pages:end -->
+
 ### いまは既存をまとめて磨く（2026-09-20）
 
 2026-10-01の整理：役割の重ならない5 repoは残し、使う道具を用途別の棚へ統合。

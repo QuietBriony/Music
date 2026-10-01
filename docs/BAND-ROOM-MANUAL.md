@@ -16,7 +16,7 @@
 
 - 現行Band Room runtimeは **v405**（任意のrock/jazz 8小節試奏。標準AIはv404の安定化を維持）。HAZAMAのplayability候補は **v401** のまま。client markerは
   `band-room.js?v=br-239` / `band-room.css?v=br-91`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v405**。v401はHAZAMA AIの
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v406**。v401はHAZAMA AIの
   arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
   約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
   減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、

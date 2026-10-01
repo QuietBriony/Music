@@ -1,5 +1,11 @@
 # Hazama FM — システム全体像
 
+2026-10-01: 共有cache `hazama-fm-v406`は既存Listenの先頭に公開ページ一覧を配置。
+固定URLは`https://music-stack.pages.dev/listen.html`。既存の公開箱を流用する本人方針をAGENTSに保存。
+9画面を用途と同じ箱の関係で案内し、別入口／archiveと詳しい機能は同じListenから辿る。
+正本は引き続き`config/music-stack-tools.json`。MusicのCloudflare手動deployとGitHub Pagesの別入口を区別。
+新しいhosting project・repo・runtimeは作らず、音声runtimeのasset tupleはv405を保持。
+
 2026-10-01: 共有cache v405は既存Band Room内の任意rock/jazz 8小節試奏とListenの用途別整理。
 弦DSPと近似drumをWorkerで事前レンダーし、3 sourceを同期再生。FM／Core Rigの音源は変更しない。
 test／namima-labはエッセンス回収済みを照合して正式GitHub archive。詳細は`PHYSICAL-BAND-REHEARSAL.md`と`archive-repo-harvest-audit.md`。
@@ -20,7 +26,7 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v405`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v406`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
 > `band-room.js?v=br-239`, `band-room.css?v=br-91`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。

@@ -1,6 +1,8 @@
 # Music Stack — 聴く・触る・作って残す
 
-**[総合入口：Music Stack Listen](https://quietbriony.github.io/Music/listen.html)** から、今日の目的に合う道具を一つ選ぶ。
+**[総合入口：Music Stack Listen](https://music-stack.pages.dev/listen.html)** から、今日の目的に合う道具を一つ選ぶ。
+公開先は既存の箱を流用し、公開ページ一覧も同じListenへ戻す。
+[GitHub Pages版の別入口](https://quietbriony.github.io/Music/listen.html)も保持する。
 
 - **[全体像と使い方](docs/MUSIC-STACK-SYSTEM-MANUAL.md)** — 最初の15分、全道具、MIDI / Sonar、保存・iPhone・公開への道筋。
 - **[道具台帳](config/music-stack-tools.json)** — 実装あり／候補／手動／未実装を区別。Listenとmanualの一覧はこのJSONから生成。
