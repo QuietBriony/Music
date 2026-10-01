@@ -1,5 +1,10 @@
 # Band Room — Measurement Loop
 
+2026-10-01: CodexもPlaywright CLI経由で実ブラウザのSTART／seek／RECを操作し、完成したWAVを解析できます。
+下記の「Codexにはcapture toolがない」は歴史的な制約です。現在のARCBは
+[合奏測定](ARCB-MIX-MEASUREMENT.md)と`measure-band-mix.py`を使い、音声はignored出力に留めます。
+個別stemの漏れを音色の正解にせず、原音を再結合した同一区間の出力で補正を確認します。
+
 How to ground AI 再現 tuning in **real measured numbers** instead of
 qualitative ear feedback ("グルーブない" → "kick avg +18 ms vs Tabasco -3 ms").
 

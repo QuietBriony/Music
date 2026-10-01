@@ -57,7 +57,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   本人が試奏を「全然前よりいい」と評価し、「そのままARBC再現」を指示したため昇格gateを通過。
   v407で7曲の既存schedulerへ音源adapterを接続、3音色の共通アンプと既存RECを使用。
   v408で短音の強制muteとbass gate上限を除去、和音単位の弦のサステインと次音の減衰、drum余韻、共通room／空気感35%を追加。
-  Radiohead／レッチリ的な輪郭・打感を方向性とする。次は実iPhone負荷と原音との音高・和音・奏法比較。
+  v409は本人の全体音感の補正指示を受け、実post-masterの原音伴奏／新合奏で帯域・音量・余韻を確認。採譜時計と途中seekを修正。詳細は`docs/ARCB-MIX-MEASUREMENT.md`。
+  Radiohead／レッチリ的な輪郭・打感を方向性とする。実iPhone負荷と完全な音高・和音・奏法の一致は未達。
   BL-050の採譜忠実度の改善は継続する。
 
 ### BL-050 — Band Room AI 再現のパート別忠実度（原曲どおりに叩く・弾く）

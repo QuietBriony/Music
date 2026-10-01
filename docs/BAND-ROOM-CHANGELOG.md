@@ -1,6 +1,13 @@
-# Band Room - Changelog (v65 -> v408 compact)
+# Band Room - Changelog (v65 -> v409 compact)
 
-Current sw.js VERSION: v408. Latest Band Room runtime change: v408 (natural string sustain, drum decay and shared band room). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v409. Latest Band Room runtime change: v409 (measured mix balance, transcription clock and partial-bar seek). HAZAMA playability candidate remains v401.
+
+## v409 compact - Measured band balance and continuous seek
+
+- Shared cache `hazama-fm-v409`, runtime `br-242` / `br-93`. DSP/preview chain v4, bank/adapter chain v3, room and amp v1.
+- Blend physical string displacement with a small pick excitation, colour drum noise in the Worker, and rebalance bass/kick/snare/metal/guitar. Extend the string release while retaining next-note damping. Back off the rebuilt band's old polish boost by 3 dB.
+- Use agreeing, bounded transcription `bpm_fit` values for native ARCB playback. Rebuild the Transport on seek, resume the current bar without replaying elapsed attacks, and meet its next boundary. Preserve original/legacy/HAZAMA clock behavior.
+- Compare actual REC WAV mixes against recombined original accompaniment. `scripts/measure-band-mix.py` keeps channel powers, separates balance from level/dynamics, hashes captures and detects quiet gaps. Audio remains ignored/local. Results and limitations: [ARCB-MIX-MEASUREMENT.md](ARCB-MIX-MEASUREMENT.md).
 
 ## v408 compact - Natural string sustain and shared band room
 

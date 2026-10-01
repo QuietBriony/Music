@@ -1,5 +1,13 @@
 # Hazama FM — システム全体像
 
+2026-10-01: v409は原音の分離漏れを前提に、ARCBの合奏全体を測定して補正。
+弦の初期変位と小さなpick成分を分け、ベースの芯とギターの中域を残す。打楽器ノイズを帯域で色付けし、kick／snare／金属と弦の相対量を調整。
+弦の余韻を少し延ばし、次音のdampingは保持。新ARCBの既存polish makeupを3 dB下げ、歌の音程ガイドも同じ方向へ調整。
+一致する採譜bpm_fitを合奏の時計に使い、名目BPMとの差による累積ずれを解消。途中seekはTransportを再構成し、残りの小節と次小節を連続させる。
+実際のpost-master REC WAVを原音drums+bass+otherの再結合と比較。計測の条件・結果・限界は[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
+52音／11,826,560 bytes、amp 7 node／room 26 node、予約128発／8秒先の予算を保持。音声・依存・公開先の追加なし。
+歌声・完全な多声音高採譜の達成や実iPhoneの負荷合格を主張しない。本人の違和感は測定判定を上書きする。
+
 2026-10-01: 独立Strudel試奏台のLIVEは手動基準と自動展開の制御値を小バーで区別する。
 BPMはclockへ直接渡し、保存metadataとsetcpmだけを変更。全コード再評価や新clockを作らない。
 既存80ms表示を使い、非表示中の表示更新を避ける。AudioContext resumeは再開ごとに通し、
@@ -45,9 +53,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v408`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v409`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-241`, `band-room.css?v=br-93`。
+> `band-room.js?v=br-242`, `band-room.css?v=br-93`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

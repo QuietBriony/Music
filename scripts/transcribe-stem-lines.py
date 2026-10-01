@@ -58,8 +58,9 @@ def fit_bpm(nominal: float) -> float:
 
 
 def extract_line(stem: str, fmin_note: str, fmax_note: str, midi_lo: int, midi_hi: int,
-                 bpm: float, total_steps: int, min_ms: float = 70.0):
-    y, _ = librosa.load(str(STEM_DIR / f"{stem}.mp3"), sr=SR, mono=True)
+                 bpm: float, total_steps: int, min_ms: float = 70.0,
+                 offset: float = 0, duration=None, min_probability: float = 0):
+    y, _ = librosa.load(str(STEM_DIR / f"{stem}.mp3"), sr=SR, mono=True, offset=offset, duration=duration)
     f0, voiced, _prob = librosa.pyin(
         y, sr=SR, hop_length=HOP,
         fmin=librosa.note_to_hz(fmin_note), fmax=librosa.note_to_hz(fmax_note),
@@ -67,9 +68,9 @@ def extract_line(stem: str, fmin_note: str, fmax_note: str, midi_lo: int, midi_h
     )
     rms = librosa.feature.rms(y=y, hop_length=HOP, frame_length=2048)[0]
     rms_peak = float(np.percentile(rms[rms > 0], 98)) if np.any(rms > 0) else 1.0
-    times = librosa.times_like(f0, sr=SR, hop_length=HOP)
+    times = librosa.times_like(f0, sr=SR, hop_length=HOP) + offset
     midi = np.full(len(f0), -1, dtype=int)
-    ok = voiced & np.isfinite(f0)
+    ok = voiced & np.isfinite(f0) & (_prob >= min_probability)
     midi[ok] = np.round(librosa.hz_to_midi(f0[ok])).astype(int)
     # gate out-of-register detections (bleed / octave errors)
     midi[(midi < midi_lo) | (midi > midi_hi)] = -1
@@ -157,12 +158,12 @@ def bar_roots_from_progression(progression, structure, fallback_pc):
     return bar_roots
 
 
-def extract_guitar_line(bpm: float, total_steps: int, bar_root_pc):
+def extract_guitar_line(bpm: float, total_steps: int, bar_root_pc, offset: float = 0, duration=None):
     """Extract guitar strum timing/length/velocity from the polyphonic other stem."""
     path = STEM_DIR / "other.mp3"
     if not path.exists():
         return []
-    y, _ = librosa.load(str(path), sr=SR, mono=True)
+    y, _ = librosa.load(str(path), sr=SR, mono=True, offset=offset, duration=duration)
     if not np.any(y):
         return []
 
@@ -191,7 +192,7 @@ def extract_guitar_line(bpm: float, total_steps: int, bar_root_pc):
     if len(onsets) < 8:
         return []
 
-    times = librosa.frames_to_time(np.arange(len(band_energy)), sr=SR, hop_length=HOP)
+    times = librosa.frames_to_time(np.arange(len(band_energy)), sr=SR, hop_length=HOP) + offset
     step_sec = 60.0 / bpm / 4.0
     events = []
     for idx, raw_frame in enumerate(onsets):
@@ -244,7 +245,7 @@ def extract_guitar_line(bpm: float, total_steps: int, bar_root_pc):
     return out
 
 
-def extract_drum_line(bpm: float, total_steps: int):
+def extract_drum_line(bpm: float, total_steps: int, offset: float = 0, duration=None, min_onsets: int = 32):
     """Transcribe the full kit performance from drums.mp3.
 
     v338 — the last 生バンド感 piece: every hit of the real performance with
@@ -256,7 +257,7 @@ def extract_drum_line(bpm: float, total_steps: int):
     path = STEM_DIR / "drums.mp3"
     if not path.exists():
         return []
-    y, _ = librosa.load(str(path), sr=SR, mono=True)
+    y, _ = librosa.load(str(path), sr=SR, mono=True, offset=offset, duration=duration)
     if not np.any(y):
         return []
 
@@ -280,10 +281,10 @@ def extract_drum_line(bpm: float, total_steps: int):
         backtrack=False, pre_max=3, post_max=3, pre_avg=5, post_avg=5,
         delta=0.05, wait=1
     )
-    if len(onsets) < 32:
+    if len(onsets) < min_onsets:
         return []
 
-    times = librosa.frames_to_time(np.arange(S.shape[1]), sr=SR, hop_length=HOP)
+    times = librosa.frames_to_time(np.arange(S.shape[1]), sr=SR, hop_length=HOP) + offset
     step_sec = 60.0 / bpm / 4.0
     frames_025s = max(1, int(0.25 / (HOP / SR)))
     high_p95 = float(np.percentile(e_high[e_high > 0], 95)) if np.any(e_high > 0) else 1.0
@@ -345,6 +346,7 @@ def main() -> None:
     if GUITAR_ONLY:
         fitted = (data.get("guitar_line") or data.get("bass_line") or data.get("vocal_melody") or {}).get("bpm_fit")
         bpm = float(fitted or fit_bpm(nominal))
+        total_steps = max(total_steps, int(np.ceil(librosa.get_duration(path=str(STEM_DIR / 'drums.mp3')) * bpm / 15)))
         structure = data.get("structure") or []
         key_root_pc = root_pc_from_name((data.get("key") or "C").split(" ")[0]) or 0
         guitar_roots = bar_roots_from_progression(data.get("chord_progression") or {}, structure, key_root_pc)
@@ -367,6 +369,7 @@ def main() -> None:
     if DRUMS_ONLY:
         fitted = (data.get("drum_line") or data.get("guitar_line") or data.get("bass_line") or {}).get("bpm_fit")
         bpm = float(fitted or fit_bpm(nominal))
+        total_steps = max(total_steps, int(np.ceil(librosa.get_duration(path=str(STEM_DIR / 'drums.mp3')) * bpm / 15)))
         drums = extract_drum_line(bpm, total_steps)
         counts = {}
         for e in drums:
@@ -390,6 +393,7 @@ def main() -> None:
         return
 
     bpm = fit_bpm(nominal)
+    total_steps = max(total_steps, int(np.ceil(librosa.get_duration(path=str(STEM_DIR / 'drums.mp3')) * bpm / 15)))
     print(f"{SONG}: nominal bpm {nominal} -> fitted {bpm:.2f}", flush=True)
 
     bass = extract_line("bass", "C1", "C4", 24, 55, bpm, total_steps)

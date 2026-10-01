@@ -1,6 +1,6 @@
 // Small, original implementation of a lossy plucked-string delay loop and
 // damped drum modes. Rendered in a Worker; none of this runs on the audio thread.
-import { PARTS, STYLES } from "./score.mjs?v=3";
+import { PARTS, STYLES } from "./score.mjs?v=4";
 
 export const midiFrequency = (note) => 440 * 2 ** ((note - 69) / 12);
 function random(seed) {
@@ -27,7 +27,13 @@ export function renderString(event, sampleRate, seed = 1) {
   let mean = 0;
   for (let i = 0; i < size; i++) excitation[i] = rand() * 2 - 1;
   for (let i = 0; i < size; i++) {
-    ring[i] = (excitation[i] - excitation[(i + size - pluck) % size]) * 0.35;
+    // A displaced string has a pitched body. White-noise-only excitation
+    // made its fundamental depend on the seed and left a thin pick click
+    // dominating the peak-normalized bank. Keep a small pick component.
+    const position = Math.min(1, i / delay), pickPosition = event.part === "bass" ? 0.22 : 0.16;
+    const displacement = (position < pickPosition ? position / pickPosition : (1 - position) / (1 - pickPosition)) * 2 - 1;
+    const pickNoise = excitation[i] - excitation[(i + size - pluck) % size];
+    ring[i] = (displacement * (event.part === "bass" ? 0.95 : 0.4) + pickNoise * (event.part === "bass" ? 0.035 : 0.3)) * 0.35;
     mean += ring[i] / size;
   }
   for (let i = 0; i < size; i++) ring[i] -= mean;
@@ -54,8 +60,8 @@ export function renderString(event, sampleRate, seed = 1) {
 }
 
 const DRUMS = {
-  kick: { frequency: 58, ratios: [1, 1.59, 2.14, 2.3, 2.65], decay: 0.25, length: 0.65, noise: 0.01 },
-  snare: { frequency: 180, ratios: [1, 1.59, 2.14, 2.3, 2.65], decay: 0.14, length: 0.5, noise: 0.42 },
+  kick: { frequency: 58, ratios: [1, 1.59, 2.14, 2.3, 2.65], decay: 0.25, length: 0.65, noise: 0.01, noiseHP: 900, noiseLP: 4500, noiseDecay: 0.015 },
+  snare: { frequency: 180, ratios: [1, 1.59, 2.14, 2.3, 2.65], decay: 0.14, length: 0.5, noise: 0.7, noiseHP: 700, noiseLP: 6500 },
   hat: { frequency: 3200, ratios: [1, 1.29, 1.61, 1.93, 2.28, 2.84], decay: 0.022, length: 0.095, noise: 0.14 },
   ride: { frequency: 2800, ratios: [1, 1.44, 1.87, 2.43, 2.99], decay: 0.28, length: 0.9, noise: 0.035 },
   crash: { frequency: 1950, ratios: [1, 1.39, 1.73, 2.19, 2.71, 3.47, 4.23], decay: 0.42, length: 1.55, noise: 0.16 },
@@ -72,7 +78,9 @@ export function renderDrum(event, sampleRate, seed) {
     return { re: 1 / (i + 1) ** 1.3, im: 0, c: Math.cos(omega) * radius, s: Math.sin(omega) * radius };
   });
   const rand = random(seed);
-  let previousNoise = 0;
+  const noiseLP = 1 - Math.exp(-2 * Math.PI * (spec.noiseLP || 12000) / sampleRate);
+  const noiseHP = 1 - Math.exp(-2 * Math.PI * (spec.noiseHP || 2500) / sampleRate);
+  let noiseLow = 0, noiseBase = 0;
   for (let frame = 0; frame < output.length; frame++) {
     let value = 0;
     for (const mode of modes) {
@@ -82,8 +90,11 @@ export function renderDrum(event, sampleRate, seed) {
       mode.re = re;
     }
     const noise = rand() * 2 - 1;
-    value = value * 0.38 + (noise - previousNoise) * spec.noise * Math.exp(-frame / (sampleRate * spec.decay));
-    previousNoise = noise;
+    // Baked noise colour separates the head/body from wire/cymbal air.
+    // Differencing white noise pushed snare brightness toward the top octave.
+    noiseLow += noiseLP * (noise - noiseLow);
+    noiseBase += noiseHP * (noiseLow - noiseBase);
+    value = value * 0.38 + (noiseLow - noiseBase) * spec.noise * Math.exp(-frame / (sampleRate * (spec.noiseDecay || spec.decay)));
     const attack = Math.min(1, frame / (sampleRate * 0.001));
     const release = Math.min(1, (output.length - 1 - frame) / (sampleRate * 0.015));
     output[frame] = value * attack * release * event.velocity;

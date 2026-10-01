@@ -19,6 +19,29 @@
 
 ---
 
+## 2026-10-01 — 分離漏れを前提にARCBの合奏を測定・補正 (v409 / BL-050・051)
+
+- agent      : Codex（単一thread、既存worktree・公開箱を流用）
+- goal       : 本人の「全体の音感として、補正も確認しながら完成」の依頼に対応する
+- repos      : Music
+- shipped    : feature/arcb-mix-calibration。弦の初期変位とpick成分、打楽器の帯域、bass／kick／snare／金属／guitarの相対量を補正。
+  新ARCBの既存makeupを3 dB下げ、melody guideも弱める。弦のreleaseを延ばし、次音のdampingを保持。
+  一致・範囲内のbpm_fitを演奏時計に使い、途中seekは予約を再構成して経過済みattackを拒否。
+  実decodeした曲長で最後のsectionだけ補正。I got a feelingの末尾約9秒へ既存検出器で75行を追加し、全曲の旧行を保持。
+  新しい単音pitch行はvoicing probability 0.65以上、末尾velocityは0.65以下。ギター根音・打楽器クラスは推定のまま。
+  実ブラウザのpost-master RECから原音drums+bass+otherと新合奏を7区間で比較。音声はignoredのlocal出力のみ。
+  主帯域差の平均は5.60→3.88 dB、6/7区間で減少。聴感の改善率・原曲再現率として扱わない。
+  Electric Sheep高域、Sisterの薄い区間、原音との音量差は残る。根拠・条件・hashはdocs/ARCB-MIX-MEASUREMENT.mdとJSONへ。
+  80／100／120%の前後seek、全mixと3音色、mute／STOP、RECと原音往復、RESET、cached offlineをChromeで確認。
+  予約落ち0、STOP後peak 0.00000392／pending 0、script error 0、390pxの横はみ出しなし。
+  末尾の別RECは357.853秒付近から10.08秒、368.101秒でもI got a feelingを再生。誤った次曲の録音を拒否する。
+  bank 52音／11,826,560 bytes、amp 7 node／room 26 node、予約128発／8秒先を保持。
+  音声・依存・モデル・公開先の追加なし。Listenの既存台帳・manualとcache hazama-fm-v409／br-242を同期。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（Usageの現行marker漏れを修正して全体を再実行。測定self-test、旧採譜行の保持とsource hashも検査）
+- backlog    : BL-050の採譜時計・末尾、BL-051の合奏音色・余韻を前進
+- next       : BL-051 — 本人の新ARCB版の違和感を区間で確認し、音高・和音・奏法の近似と実iPhone長時間負荷を判定する
+- blockers   : 数値だけで音楽的完成度・歌声生成・原曲の完全再現・実iPhone負荷の合格は主張しない
+
 ## 2026-10-01 — ARCBの弦の響きとドラムの余韻を残す (v408 / BL-051)
 
 - agent      : Codex（単一thread、既存worktreeと公開箱を流用）

@@ -1,4 +1,4 @@
-import { GUITAR_KEYS, BASS_KEYS, nearestKey, MAX_BANK_BYTES } from "./bank.mjs?v=2";
+import { GUITAR_KEYS, BASS_KEYS, nearestKey, MAX_BANK_BYTES } from "./bank.mjs?v=3";
 import { createGuitarAmp } from "./amp.mjs?v=1";
 import { createBandRoom } from "./room.mjs?v=1";
 
@@ -10,7 +10,7 @@ export async function prepareInstrumentBank(context, { signal, progress = () => 
   if (cached?.context === context) return cached;
   cached = undefined;
   const bank = await new Promise((resolve, reject) => {
-    const worker = new Worker(new URL("./bank-worker.mjs?v=2", import.meta.url), { type: "module" });
+    const worker = new Worker(new URL("./bank-worker.mjs?v=3", import.meta.url), { type: "module" });
     let settled = false;
     const finish = (error, value) => {
       if (settled) return;
@@ -82,6 +82,7 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
 
   function fire(part, key, time, velocity, rate = 1, duration = Infinity) {
     if (disposed || !Number.isFinite(time) || !Number.isFinite(velocity) || velocity <= 0) return;
+    if (time < context.currentTime - 0.05) return; // elapsed attacks when resuming inside a bar
     const buffer = bank.buffers.get(key);
     if (!buffer || pending.size >= 128) { stats.dropped++; return; }
     const at = Math.max(context.currentTime, time);
@@ -90,10 +91,10 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
     source.buffer = buffer; source.playbackRate.value = rate;
     const palm = key.startsWith("palm:");
     const hold = Number.isFinite(duration) ? Math.max(part === "guitar" && !palm ? 0.2 : 0.12, duration) : Infinity;
-    const tail = palm ? 0.13 : (part === "guitar" ? 1.2 : (part === "bass" ? 1.1 : 0.3));
+    const tail = palm ? 0.13 : (part === "guitar" ? 1.8 : (part === "bass" ? 1.4 : 0.3));
     const length = Math.max(0.035, Math.min(buffer.duration / rate, hold + tail));
     const releaseAt = at + Math.min(hold, length - 0.025);
-    const level = Math.min(1, velocity) * (part === "guitar" ? 0.7 : (part === "melody" ? 0.65 : 1));
+    const level = Math.min(1, velocity) * (part === "guitar" ? 0.9 : (part === "melody" ? 0.46 : 1));
     gain.gain.setValueAtTime(level, at);
     gain.gain.setValueAtTime(level, releaseAt);
     gain.gain.linearRampToValueAtTime(0, at + length);
@@ -116,6 +117,7 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
       triggerAttackRelease(notes, duration, time, velocity = 0.7, { technique = "open", upstroke = false } = {}) {
         if (disposed || !Number.isFinite(velocity) || velocity <= 0) return;
         const gate = Math.max(0.02, Number(seconds(duration)) || 0.2);
+        if (Number(time) < context.currentTime - 0.05) return;
         const at = Math.max(context.currentTime, Number(time));
         if (!Number.isFinite(at) || at - context.currentTime > 8) return;
         const pitches = (Array.isArray(notes) ? notes.slice(0, 3) : [notes]).map((note) => Number(midi(note)))

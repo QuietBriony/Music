@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-241-natural-band-resonance";
-  const BANDROOM_RELEASE_VERSION = "v408";
+  const BANDROOM_APP_VERSION = "br-242-measured-band-balance";
+  const BANDROOM_RELEASE_VERSION = "v409";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -200,6 +200,7 @@
   // unaffected because stems route through stemBus.* → masterGain directly,
   // bypassing instrumentBus.
   let instrumentBus = null;
+  let instrumentMakeup = null;
 
   // Synth (AI 再現) layers
   let drumKit = null;
@@ -390,7 +391,10 @@
     // master and stem master remain device-gated below.
     const lightRuntime = aiLayerLightRuntimeEnabled();
     const widen  = new Tone.StereoWidener(lightRuntime ? 0.38 : 0.50);  // v344: pull width in slightly so the phantom center keeps mono body
-    const makeup = new Tone.Gain(3.2);    // v243: glue-comp makeup + AI 再現 level lift (~+9 dB) so the synth band reaches the stems-tuned master at comparable level. v323: 3.0 → 3.2 (~+0.6 dB) to track the 原音 v322 loudness lift. Stems-only (原音) never touch this bus.
+    // v409: the rebuilt strings have more body. Back off the old AI boost
+    // by 3 dB for this band, after the amp/glue so its drive stays intact.
+    const makeup = new Tone.Gain(physicalInstrumentMakeup());
+    instrumentMakeup = makeup;
 
     if (lightRuntime) {
       // v316: phone/PWA AI diet. The continuous parallel saturation + exciter path
@@ -955,9 +959,51 @@
   function physicalArcbEnabled(bandId = state.currentBandId) {
     return bandId === "tabasco" && runtimeQueryFlag("physical") !== false;
   }
+  function physicalInstrumentMakeup() {
+    return currentMode === "synth" && physicalArcbEnabled() ? 3.2 * 10 ** (-3 / 20) : 3.2;
+  }
+
+  // A transcription's fractional steps were encoded with bpm_fit, not the
+  // catalog's rounded BPM. Agreeing lines share that clock; mismatched or
+  // implausible fits never silently retime a song.
+  function transcribedPerformanceBpm(data, enabled = false) {
+    const nominal = Number(data?.bpm);
+    const base = Number.isFinite(nominal) && nominal >= 30 && nominal <= 300 ? nominal : 117;
+    if (!enabled) return base;
+    const lines = ["bass_line", "guitar_line", "drum_line", "vocal_melody"]
+      .map(key => data?.[key]).filter(line => Array.isArray(line?.events) && line.events.length);
+    const fits = lines.map(line => Number(line.bpm_fit));
+    if (fits.length < 2 || fits.some(fit => !Number.isFinite(fit) || fit < 30 || fit > 300 || Math.abs(fit / base - 1) > 0.05)) return base;
+    if (Math.max(...fits) - Math.min(...fits) > 0.05) return base;
+    return fits.reduce((sum, fit) => sum + fit, 0) / fits.length;
+  }
+  function playbackBaseBpm() {
+    return transcribedPerformanceBpm(state.songData, currentMode === "synth" && physicalArcbEnabled());
+  }
+  function transcribedPerformanceStructure(data, enabled = false) {
+    const structure = data?.structure;
+    const duration = Number(data?.performance_duration_s);
+    if (!enabled || !Array.isArray(structure) || !structure.length || !Number.isFinite(duration) || duration <= 0 || duration > 7200) return structure;
+    const total = Math.ceil(duration * transcribedPerformanceBpm(data, true) / 240);
+    const previous = structure.slice(0, -1).reduce((sum, section) => sum + (Number(section.bars) || 0), 0);
+    return [...structure.slice(0, -1), { ...structure.at(-1), bars: Math.max(1, total - previous) }];
+  }
+  function playbackStructure() {
+    return transcribedPerformanceStructure(state.songData, currentMode === "synth" && physicalArcbEnabled());
+  }
+  function transportSecondForContent(seconds) {
+    return currentMode === "synth" && physicalArcbEnabled() ? seconds / playbackRateMultiplier() : seconds;
+  }
+  function physicalScheduleWindow(offset, bpm) {
+    const barSeconds = 240 / bpm;
+    const bar = Math.floor(Math.max(0, offset) / barSeconds + 1e-9);
+    const phase = Math.max(0, offset - bar * barSeconds);
+    return { phase, nextBoundary: (bar + 1) * barSeconds };
+  }
 
   function syncPhysicalInstrumentUi() {
     const enabled = currentMode === "synth" && physicalArcbEnabled();
+    try { instrumentMakeup?.gain.rampTo(physicalInstrumentMakeup(), 0.04); } catch (e) {}
     const controls = $("br-arcb-instruments");
     if (controls) controls.hidden = !enabled;
     ["br-bass-instrument-select", "br-guitar-instrument-select", "br-kit-source-select", "br-voice-instrument-select", "br-kit-profile-select", "br-chord-instrument-select", "br-voice-overrides-clear"].forEach((id) => {
@@ -983,7 +1029,7 @@
     physicalArcbAbort?.abort(); physicalArcbAbort = abort;
     const began = bandRoomNowMs();
     try {
-      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=2");
+      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=3");
       const context = Tone.getContext().rawContext;
       const bank = await physicalArcbModule.prepareInstrumentBank(context, {
         signal: abort.signal,
@@ -3170,9 +3216,9 @@
   }
 
   function songStructureDurationSec() {
-    if (!state.songData || !Array.isArray(state.songData.structure)) return 0;
-    const bpm = Number(state.songData.bpm) || 117;
-    const totalBars = state.songData.structure.reduce((sum, section) => sum + (Number(section.bars) || 0), 0);
+    if (!state.songData || !Array.isArray(playbackStructure())) return 0;
+    const bpm = playbackBaseBpm();
+    const totalBars = playbackStructure().reduce((sum, section) => sum + (Number(section.bars) || 0), 0);
     return totalBars > 0 ? totalBars * (60 / bpm * 4) : 0;
   }
 
@@ -3252,13 +3298,13 @@
   }
 
   function timelineStateForSecond(seconds) {
-    const structure = state.songData?.structure;
+    const structure = playbackStructure();
     if (!Array.isArray(structure) || structure.length === 0) {
       return { barCount: 0, sectionIdx: 0, sectionBarStart: 0 };
     }
-    const bpm = Number(state.songData?.bpm) || 117;
+    const bpm = playbackBaseBpm();
     const barDur = 60 / bpm * 4;
-    const rawBar = Math.max(0, Math.floor((Number(seconds) || 0) / Math.max(0.001, barDur)));
+    const rawBar = Math.max(0, Math.floor((Number(seconds) || 0) / Math.max(0.001, barDur) + 1e-9));
     let cursor = 0;
     for (let idx = 0; idx < structure.length; idx++) {
       const bars = Math.max(0, Number(structure[idx]?.bars) || 0);
@@ -3285,7 +3331,7 @@
     state.pendingSeekOffsetSec = targetSec;
     state.playbackStartOffsetSec = targetSec;
     if (options.syncTransport !== false) {
-      try { Tone.Transport.seconds = targetSec; } catch (e) {}
+      try { Tone.Transport.seconds = transportSecondForContent(targetSec); } catch (e) {}
     }
     updateSectionDisplay();
     updateChordDisplay();
@@ -3297,6 +3343,10 @@
 
   function restartCurrentAudioAt(offsetSec) {
     const targetSec = clampPlaybackSecond(offsetSec);
+    if (currentMode === "synth" && physicalArcbEnabled()) {
+      restartSynthTransportSchedule("timeline-seek", targetSec);
+      return targetSec;
+    }
     releaseSustainedSynths("timeline-seek");
     if (currentMode === "stems") {
       stopStemPlayback();
@@ -4737,6 +4787,10 @@
         starting: state.starting
       }),
       physicalArcbEnabled,
+      transcribedPerformanceBpm,
+      transcribedPerformanceStructure,
+      physicalScheduleWindow,
+      playbackClockDiagnostics: () => ({ songId: state.currentSongId, contentSeconds: playbackContentElapsedSec(), barCount: state.barCount, bpm: playbackBaseBpm(), instrumentMakeup: instrumentMakeup?.gain.value, totalBars: playbackStructure()?.reduce((sum, section) => sum + section.bars, 0), sourceDuration: state.songData?.performance_duration_s }),
       physicalInstrumentDiagnostics: () => physicalArcb
         ? { enabled: true, tone: physicalGuitarTone, prepareMs: physicalArcb.prepareMs, ...physicalArcb.snapshot() }
         : { enabled: false, pending: 0, preparing: Boolean(physicalArcbAbort), tone: physicalGuitarTone },
@@ -5338,8 +5392,8 @@
   // ---- Section state machine ----------------------------------
 
   function currentSection() {
-    if (!state.songData || !state.songData.structure) return null;
-    const s = state.songData.structure;
+    if (!state.songData || !playbackStructure()) return null;
+    const s = playbackStructure();
     if (state.sectionIdx >= s.length) return null;
     return s[state.sectionIdx];
   }
@@ -5604,7 +5658,7 @@
     $("br-section-name").textContent = sec.section;
     const barInSection = clamp(state.barCount - state.sectionBarStart + 1, 1, Math.max(1, Number(sec.bars) || 1));
     $("br-section-progress").textContent = `${barInSection} / ${sec.bars} bars`;
-    const nextSec = state.songData.structure[state.sectionIdx + 1];
+    const nextSec = playbackStructure()[state.sectionIdx + 1];
     $("br-section-next-name").textContent = nextSec ? nextSec.section : "(end)";
     // v75: refresh section nav chip active state
     document.querySelectorAll("#br-section-nav button").forEach((b) => {
@@ -5622,8 +5676,8 @@
     const nav = $("br-section-nav");
     if (!nav) return;
     nav.innerHTML = "";
-    if (!state.songData || !state.songData.structure) return;
-    state.songData.structure.forEach((sec, idx) => {
+    if (!state.songData || !playbackStructure()) return;
+    playbackStructure().forEach((sec, idx) => {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.dataset.idx = String(idx);
@@ -5684,12 +5738,12 @@
   }
 
   function jumpToSection(idx) {
-    if (!state.songData || !state.songData.structure) return;
-    if (idx < 0 || idx >= state.songData.structure.length) return;
+    if (!state.songData || !playbackStructure()) return;
+    if (idx < 0 || idx >= playbackStructure().length) return;
     // Compute cumulative bars to this section start
     let cum = 0;
-    for (let i = 0; i < idx; i++) cum += state.songData.structure[i].bars;
-    const bpm = state.songData.bpm || 117;
+    for (let i = 0; i < idx; i++) cum += playbackStructure()[i].bars;
+    const bpm = playbackBaseBpm();
     const barDur = 60 / bpm * 4;
     const targetSec = cum * barDur;
     clearAutoAdvanceTimer();
@@ -5768,7 +5822,7 @@
       return chordAtBarInProgression(prog, nextBar);
     }
     // Crosses into next section — peek at its first chord.
-    const nextSec = state.songData.structure?.[state.sectionIdx + 1];
+    const nextSec = playbackStructure()?.[state.sectionIdx + 1];
     if (!nextSec) return null;
     const nextProg = cp[nextSec.section] || cp[nextSec.section.split("-")[0]];
     return chordAtBarInProgression(nextProg, 0);
@@ -6913,7 +6967,7 @@
 
   function scheduleBar() {
     // This fires once per bar. Reads current frame's events, schedules drums.
-    state.scheduledIds.push(Tone.Transport.scheduleRepeat((time) => {
+    const runBar = (time) => {
       state.lastSchedulerBarAtMs = bandRoomNowMs();
       let sec = currentSection();
       if (!sec) {
@@ -6924,7 +6978,7 @@
       if (state.barCount - state.sectionBarStart >= sec.bars) {
         state.sectionIdx++;
         state.sectionBarStart = state.barCount;
-        if (state.sectionIdx >= state.songData.structure.length) {
+        if (state.sectionIdx >= playbackStructure().length) {
           if (state.loopA != null && state.loopB != null) {
             const targetA = state.loopA;
             requestAnimationFrame(() => jumpToSection(targetA));
@@ -6935,7 +6989,7 @@
         }
         // v106: crash hint on big section entry (chorus / bridge / outro).
         // Fires on beat 0 of the new section so the transition has lift.
-        const newSec = state.songData.structure[state.sectionIdx];
+        const newSec = playbackStructure()[state.sectionIdx];
         if (newSec && drumKit && drumKit.crash && (currentMode === "synth") &&
             $("br-toggle-drums").checked && !hasTranscribedLine("drum_line")) {
           const sn = newSec.section || "";
@@ -7283,7 +7337,21 @@
 
       updateSectionDisplay();
       state.barCount++;
-    }, "1m"));
+    };
+    if (currentMode === "synth" && physicalArcbEnabled()) {
+      const offset = transportSecondForContent(state.pendingSeekOffsetSec || 0);
+      const schedule = physicalScheduleWindow(offset, Tone.Transport.bpm.value);
+      // Resume the rest of the selected bar now, then continue at its next
+      // boundary. The native adapter ignores elapsed attacks in this one bar.
+      if (schedule.phase > 0.001) {
+        state.scheduledIds.push(Tone.Transport.scheduleOnce(time => runBar(time - schedule.phase), offset));
+        state.scheduledIds.push(Tone.Transport.scheduleRepeat(runBar, "1m", schedule.nextBoundary));
+      } else {
+        state.scheduledIds.push(Tone.Transport.scheduleRepeat(runBar, "1m", offset));
+      }
+    } else {
+      state.scheduledIds.push(Tone.Transport.scheduleRepeat(runBar, "1m"));
+    }
   }
 
   // ---- Playback lifecycle -------------------------------------
@@ -7419,9 +7487,9 @@
 
     // v76: respect the tempo slider when starting (so re-start at 80% stays at 80%)
     const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
-    Tone.Transport.bpm.value = (state.songData.bpm || 117) * tempoMult;
+    Tone.Transport.bpm.value = playbackBaseBpm() * tempoMult;
 
-    const bpm = state.songData.bpm || 117;
+    const bpm = playbackBaseBpm();
     const barDur = 60 / bpm * 4;
     const barOffsetSec = state.barCount > 0 ? state.barCount * barDur : 0;
     const requestedOffsetSec = opts.preservePosition
@@ -7438,7 +7506,8 @@
 
     resetPlaybackHealthState();
     scheduleBar();
-    Tone.Transport.start();
+    if (currentMode === "synth" && physicalArcbEnabled()) Tone.Transport.start("+0.03", transportSecondForContent(stemOffsetSec));
+    else Tone.Transport.start();
     resetPlaybackClock(stemOffsetSec);
     state.lastStemResyncAtMs = 0;
     if (currentMode === "stems") {
@@ -7769,14 +7838,14 @@
   }
 
   function synthSchedulerStallLimitMs() {
-    const bpm = Number(state.songData?.bpm) || 117;
+    const bpm = playbackBaseBpm();
     const barMs = (60 / Math.max(1, bpm)) * 4 * 1000;
     return Math.max(6200, barMs * 2.4);
   }
 
-  function restartSynthTransportSchedule(reason = "ai-stall") {
+  function restartSynthTransportSchedule(reason = "ai-stall", targetSecond = playbackContentElapsedSec()) {
     if (!state.started || !isBandAiPlaybackMode()) return false;
-    const targetSec = clampPlaybackSecond(playbackContentElapsedSec());
+    const targetSec = clampPlaybackSecond(targetSecond);
     try { releaseSustainedSynths(reason); } catch (e) {}
     try { Tone.Transport.stop(); } catch (e) {}
     try { Tone.Transport.cancel(0); } catch (e) {}
@@ -7786,8 +7855,8 @@
     resetPlaybackClock(targetSec);
     resetPlaybackHealthState();
     scheduleBar();
-    try { Tone.Transport.start("+0.03", targetSec); } catch (e) { try { Tone.Transport.start("+0.03"); } catch (err) {} }
-    console.warn("[Band Room] restarted AI scheduler after stall:", reason);
+    try { Tone.Transport.start("+0.03", transportSecondForContent(targetSec)); } catch (e) { try { Tone.Transport.start("+0.03"); } catch (err) {} }
+    if (reason !== "timeline-seek") console.warn("[Band Room] restarted AI scheduler after stall:", reason);
     return true;
   }
 
@@ -8412,7 +8481,7 @@
           clearAutoAdvanceTimer();
         }
         if (tempoRead) tempoRead.textContent = tempoEl.value + "%";
-        const baseBpm = state.songData?.bpm || 117;
+        const baseBpm = playbackBaseBpm();
         const targetBpm = baseBpm * mult;
         try { Tone.Transport.bpm.rampTo(targetBpm, 0.4); } catch (e) {}
         // Also adjust stem playback rate (acknowledged: pitch shifts)
@@ -9738,7 +9807,7 @@
     // Section jump range
     else if (data1 >= 60 && data1 <= 68) {
       const idx = data1 - 60;
-      if (state.songData?.structure?.[idx]) jumpToSection(idx);
+      if (playbackStructure()?.[idx]) jumpToSection(idx);
     }
   }
 
@@ -10936,7 +11005,7 @@
         // next section
         e.preventDefault();
         if (state.songData) {
-          const max = (state.songData.structure?.length || 1) - 1;
+          const max = (playbackStructure()?.length || 1) - 1;
           jumpToSection(Math.min(max, state.sectionIdx + 1));
         }
         break;
@@ -10953,7 +11022,7 @@
       case "9": {
         // jump to section index (1-based)
         const idx = Number(e.key) - 1;
-        if (state.songData?.structure?.[idx]) jumpToSection(idx);
+        if (playbackStructure()?.[idx]) jumpToSection(idx);
         break;
       }
       default: {
