@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Music Stack — 続きから、また遊ぶ</title>
-  <meta name="description" content="久しぶりでも迷わない音楽制作の入口。制作ノートで前回を思い出し、過去のネタを聴いて、ブラウザの楽器でまた遊ぶ。" />
+  <title>Music Stack — 公開ページと音楽の入口</title>
+  <meta name="description" content="バンド、ラジオ、テクノ、静かな音。既存の公開ページを用途から選び、録音・作品・実験へ戻る音楽の入口。" />
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
   <meta name="theme-color" content="#061119" />
   <style>
@@ -391,6 +391,20 @@
     .yearbook h3 { margin: 6px 0; font-size: 1rem; line-height: 1.65; }
     .yearbook p { margin: 6px 0; color: var(--muted); font-size: .88rem; line-height: 1.8; }
     .yearbook a { text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+    .bookmark-panel { padding: 18px; border: 1px solid var(--cyan); border-radius: 8px; background: var(--panel-strong); }
+    .bookmark-panel strong, .bookmark-panel a { display: block; line-height: 1.7; }
+    .bookmark-panel a { color: var(--cyan); overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; padding: 8px 0; }
+    .bookmark-panel p { color: var(--muted); margin: 0; font-size: .85rem; line-height: 1.7; }
+    .public-box { margin-top: 22px; }
+    .public-box h3 { margin: 0; font-size: 1rem; line-height: 1.6; }
+    .public-box .guide-note { margin: 6px 0 12px; }
+    .public-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .public-entry { min-width: 0; padding: 15px 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .public-entry:hover { background: var(--panel-strong); border-color: var(--cyan); }
+    .public-entry strong { display: flex; justify-content: space-between; gap: 12px; font-size: .95rem; line-height: 1.6; }
+    .public-entry strong span { color: var(--cyan); }
+    .public-entry > span { display: block; color: var(--muted); font-size: .84rem; line-height: 1.7; margin-top: 6px; }
+    @media (max-width: 560px) { .public-grid { grid-template-columns: 1fr; } }
     @media (max-width: 560px) { .collection-grid { grid-template-columns: 1fr; } }
     @media (max-width: 680px) {
       .return-grid, .plan-steps { grid-template-columns: 1fr; }
@@ -429,15 +443,16 @@
   </style>
 </head>
 <body>
-  <a class="skip-link" href="#return-here">再開する入口へスキップ</a>
+  <a class="skip-link" href="#public-pages">公開ページ一覧へスキップ</a>
   <div class="shell">
     <header>
       <div>
         <p class="eyebrow">REMEMBER / PLAY / KEEP</p>
         <h1>Music Stack</h1>
-        <p class="subtitle">前に作った音を思い出す。ひとつ動かす。また残す。<br>久しぶりに戻ってきたら、このページから。</p>
+        <p class="subtitle">バンド、ラジオ、テクノ、静かな音。<br>使う道具も、前に作った音も、この入口から。</p>
       </div>
       <nav class="top-actions" aria-label="Primary pages">
+        <a href="#public-pages">公開ページ一覧</a>
         <a href="#return-here">続きから</a>
         <a href="#collection-map">全体を把握</a>
         <a href="#play-by-style">ジャンル・フォルダ</a>
@@ -448,6 +463,45 @@
     </header>
 
     <main>
+    <section id="public-pages" aria-labelledby="public-pages-title">
+      <div class="section-head"><h2 id="public-pages-title">どこを開く？ 公開ページ一覧</h2><p class="section-note">用途から選んで、そのまま開く。</p></div>
+<!-- public-pages:begin -->
+<div class="bookmark-panel">
+  <strong>いつも戻るのは、このページ。</strong>
+  <a href="https://music-stack.pages.dev/listen.html">music-stack.pages.dev/listen.html</a>
+  <p>ここをブックマークすれば、作品も道具も同じ入口から辿れます。</p>
+</div>
+<div class="public-box" data-public-box="music">
+  <h3>Music — バンド・ラジオ・作品棚</h3>
+  <p class="guide-note">同じMusicの中にある4つの画面。ロック／ジャズの試奏もBand Roomから。</p>
+  <div class="public-grid">
+    <a class="public-entry" data-public-entry="band-room" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems"><strong>Band Room / ARCB・Tabasco <span aria-hidden="true">→</span></strong><span>原音とAI演奏を聴き比べる。パートを消して練習する。</span></a>
+    <a class="public-entry" data-public-entry="hazama-fm" href="fm.html"><strong>Hazama FM <span aria-hidden="true">→</span></strong><span>ジャンルを選んで、ラジオのように流す。</span></a>
+    <a class="public-entry" data-public-entry="core-rig" href="index.html"><strong>Music Core Rig <span aria-hidden="true">→</span></strong><span>つまみを動かし、アシッドやIDMの音を探る。</span></a>
+    <a class="public-entry" data-public-entry="lyric-lab" href="lyric-lab.html"><strong>Lyric Lab <span aria-hidden="true">→</span></strong><span>歌詞・曲のアイデア・制作指示を一曲ずつ残す。</span></a>
+  </div>
+</div>
+<div class="public-box" data-public-box="workbench">
+  <h3>試奏台 — テクノ・アシッド・アンビエント</h3>
+  <p class="guide-note">試作ミックス、ライブセット、303／909は同じ試奏台の中で切り替えます。</p>
+  <div class="public-grid">
+    <a class="public-entry" data-public-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/"><strong>Strudel Live Workbench <span aria-hidden="true">→</span></strong><span>音とコードを触る。テクノやアンビエントのLIVEを続ける。</span></a>
+  </div>
+</div>
+<div class="public-box" data-public-box="siblings">
+  <h3>ほかの道具 — 静かな音・リズム・段取り</h3>
+  <p class="guide-note">前からある4つのアプリ。それぞれの役割を残して使います。</p>
+  <div class="public-grid">
+    <a class="public-entry" data-public-entry="chill" href="https://quietbriony.github.io/chill/session.html"><strong>Chill Session <span aria-hidden="true">→</span></strong><span>ピアノと余白。ベースやドラムを少しずつ足す。</span></a>
+    <a class="public-entry" data-public-entry="namima" href="https://quietbriony.github.io/namima/"><strong>Namima <span aria-hidden="true">→</span></strong><span>水と波紋の映像に、穏やかな音を合わせる。</span></a>
+    <a class="public-entry" data-public-entry="drum-floor" href="https://quietbriony.github.io/drum-floor/"><strong>Drum Floor <span aria-hidden="true">→</span></strong><span>ドラムのノリ・休符・強弱を試す。</span></a>
+    <a class="public-entry" data-public-entry="desk" href="https://quietbriony.github.io/openclaw/"><strong>OpenClaw Desk <span aria-hidden="true">→</span></strong><span>制作の段取りと、次に進む道具を確認する。</span></a>
+  </div>
+</div>
+<nav class="index-links" aria-label="公開ページの続き"><a class="mini-link" href="#recorded-works">録音・公開デモを聴く →</a><a class="mini-link" href="#sound-experiments">音の実験 →</a><a class="mini-link" href="#visual-release">映像・公開 →</a><a class="mini-link" href="#tool-map">詳しい機能と使い方 →</a></nav>
+<details class="tool-group"><summary>別の入口・過去のアプリ <span>普段は上のURLへ</span></summary><div class="collection-links"><p>MusicのGitHub Pages版も同じ道具の別入口です。作品棚の端末間同期を使う時は、いつものMusicへ戻ってください。</p><a class="mini-link" href="https://quietbriony.github.io/Music/listen.html">Musicの別入口 →</a><p>test／namima-labは回収済みのアイデアと履歴を保管しています。残したエッセンスは、今の道具と試奏へつないでいます。</p><a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/archive-repo-harvest-audit.md">アーカイブの記録 →</a></div></details>
+<!-- public-pages:end -->
+    </section>
     <section id="return-here" aria-labelledby="return-title">
       <div class="section-head">
         <h2 id="return-title">続きは、ここから。</h2>
@@ -483,7 +537,7 @@
     <section id="play-by-style" aria-labelledby="play-by-style-title">
       <div class="section-head"><h2 id="play-by-style-title">ジャンル・フォルダから使う</h2><p class="section-note">既存の道具と曲に直接入る。</p></div>
       <details class="tool-group" open>
-        <summary>音・目的から選ぶ <span>ARCB / Tabascoを先頭に</span></summary>
+        <summary>音・目的から選ぶ <span>曲や演奏面へ直接入る</span></summary>
         <div class="collection-links">
           <article><h3>バンド / ロック — Music → ARCB / Tabasco Band Room</h3><p>7曲の原音stemsとAI演奏を切替。まずHuman Flyでドラムの原音と再現を比べる。原音のドラムだけ聴くなら「all off → drums ON」、自分で叩くなら「all on → drums OFF」。</p><a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">Human Fly 原音 →</a><a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth">Human Fly AI再現 →</a><a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/docs/BAND-ROOM-MANUAL.md">バンド練習の操作 →</a></article>
           <article><h3>テクノ / アシッド — Music → Strudel試奏台</h3><p>ドラム・2役303・素材A/Bを同じテンポで演奏。LIVEは軸を守り、章ごとの小変奏・抜き差し・音色で流れを続ける。盛り上がり・間隔・展開キープを操作でき、聴く画面で長めに流せる。保存版とコード編集も同じ入口。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?stage=techno">テクノ・自動LIVE →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">Acid 303 / 909 コード →</a></article>
@@ -507,7 +561,7 @@
         <a class="mini-link" href="#visual-release">映像・可視化</a>
         <a class="mini-link" href="#production-notebook">自分の作品年鑑・PC・素材</a>
       </nav>
-      <details class="tool-group" open>
+      <details class="tool-group">
         <summary>2025 → 2026 の歩み <span>確認できる最初の記録</span></summary>
         <ol class="yearbook">
           <li><time datetime="2025-11">2025.11</time><h3>Musicとchillから始まる</h3><p>Musicのrepo作成は11月20日、最初のGit記録は11月21日。chillは11月22日。いまの総合入口と、静けさを探る道具の土台です。</p><p>根拠：<a href="https://github.com/QuietBriony/Music/commit/776c8a6">Musicの最初のcommit</a> · <a href="https://github.com/QuietBriony/chill/commit/e6f532d">chillの最初のcommit</a></p></li>

@@ -1,5 +1,11 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-01: 共有cache `hazama-fm-v406`はListenの公開ページ案内を先頭へ。
+公開先を既存の箱で流用する本人方針をAGENTSへ保存。固定ブックマークは
+`https://music-stack.pages.dev/listen.html`。9画面の案内も機能台帳と同じJSONから生成する。
+Music 4画面／同じ独立試奏台／sibling 4アプリを用途別に表示し、別入口とarchiveは折り畳む。
+新しいhosting・repo・一覧は作らない。Band Room等の音声runtimeはv405のまま。
+
 2026-10-01: v405の任意3人試奏を既存Band Room内へ追加。新規のrock/jazz 8小節score、
 弦の損失ループ、近似modal drumsをWorkerで事前レンダーし、3 sourceを同期再生。
 通常曲のSTARTと排他にし、準備取消／STOP／自然終了／pagehideで解放する。

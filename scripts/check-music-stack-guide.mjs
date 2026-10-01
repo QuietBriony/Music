@@ -23,7 +23,7 @@ function safeHref(href) {
   assert.doesNotMatch(href, /[\s<>"'\\]/);
   if (href.startsWith("https://")) {
     const url = new URL(href);
-    assert.ok(["quietbriony.github.io", "github.com", "music-private-live-workbench.pages.dev"].includes(url.hostname), `Unexpected public destination: ${href}`);
+    assert.ok(["quietbriony.github.io", "github.com", "music-stack.pages.dev", "music-private-live-workbench.pages.dev"].includes(url.hostname), `Unexpected public destination: ${href}`);
     assert.ok(!url.username && !url.password && !url.port);
   } else {
     safePath(href.split(/[?#]/)[0]);
@@ -65,6 +65,28 @@ function validate(data) {
     }
   }
   for (const id of groups) assert.ok(data.tools.some((tool) => tool.group === id), `Empty group ${id}`);
+  const navigation = data.public_navigation;
+  assert.equal(navigation.bookmark, "https://music-stack.pages.dev/listen.html");
+  assert.equal(navigation.mirror, "https://quietbriony.github.io/Music/listen.html");
+  safeHref(navigation.bookmark);
+  safeHref(navigation.mirror);
+  const publicGroups = new Set();
+  const publicIds = new Set();
+  for (const group of navigation.groups) {
+    assert.match(group.id, slug);
+    assert.ok(!publicGroups.has(group.id));
+    publicGroups.add(group.id);
+    assert.ok(group.title.trim() && group.note.trim() && group.tool_ids.length);
+    for (const id of group.tool_ids) {
+      assert.ok(!publicIds.has(id), `Repeated public entry: ${id}`);
+      publicIds.add(id);
+      const tool = data.tools.find((entry) => entry.id === id);
+      assert.ok(tool, `Unknown public entry: ${id}`);
+      assert.equal(tool.status, "implemented", `Public app list must not promote a plan: ${id}`);
+      assert.ok(typeof tool.public_summary === "string" && tool.public_summary.trim());
+    }
+  }
+  assert.ok(publicIds.size > 0);
 }
 
 validate(catalog);
@@ -90,11 +112,11 @@ for (const tool of catalog.tools) {
 
 for (const target of guideTargets(catalog)) {
   const actual = read(target.path).replace(/\r\n/g, "\n");
-  assert.equal(actual, replaceBlock(actual, target.block), `${target.path}: generated catalog is stale; run render-stack-guide.mjs --write`);
+  assert.equal(actual, replaceBlock(actual, target.block, target.begin, target.end), `${target.path}: generated catalog is stale; run render-stack-guide.mjs --write`);
 }
 
 // Navigation, no runtime activation, and key limitations survive future editing.
-for (const id of ["start-here", "production-flow", "tool-map", "first-session", "current-pass"]) assert.ok(html.includes(`id="${id}"`));
+for (const id of ["public-pages", "start-here", "production-flow", "tool-map", "first-session", "current-pass"]) assert.ok(html.includes(`id="${id}"`));
 for (const match of html.matchAll(/href="#([^"]+)"/g)) assert.ok(html.includes(`id="${match[1]}"`), `Missing section link #${match[1]}`);
 for (const path of ["MUSIC-STACK-SYSTEM-MANUAL.md", "VISUAL-COMPOSER-PLAN.md"]) {
   assert.ok(html.includes(`href="https://github.com/QuietBriony/Music/blob/main/docs/${path}"`), "New guide links must use the readable Markdown view");
@@ -124,7 +146,11 @@ for (const mutate of [
   (data) => { data.tools[0].href = "javascript:alert(1)"; },
   (data) => { data.tools[0].href = "https://example.com/unknown"; },
   (data) => { data.tools[0].boundary = ""; },
-  (data) => { data.reviewed_at = "2026-02-31"; }
+  (data) => { data.reviewed_at = "2026-02-31"; },
+  (data) => { data.public_navigation.bookmark = "https://new-site.pages.dev/listen.html"; },
+  (data) => { data.public_navigation.groups[0].tool_ids.push("visual-composer"); },
+  (data) => { data.public_navigation.groups[0].tool_ids.push("unknown-app"); },
+  (data) => { data.public_navigation.groups[0].tool_ids.push(data.public_navigation.groups[0].tool_ids[0]); }
 ]) {
   const fixture = structuredClone(catalog);
   mutate(fixture);

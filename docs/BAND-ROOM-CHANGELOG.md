@@ -1,6 +1,12 @@
-# Band Room - Changelog (v65 -> v405 compact)
+# Band Room - Changelog (v65 -> v406 compact)
 
-Current sw.js VERSION: v405. Latest Band Room runtime change: v405 (optional original rock/jazz physical band rehearsal; normal song synthesis unchanged). v404 provides the stable light AI band, native drum one-shots, STOP cleanup and device-gated FM rooms. HAZAMA playability candidate remains v401. v403 refined Tabasco drum-row priority. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE and exact lyric boundaries.
+Current sw.js VERSION: v406. Latest Band Room runtime change: v405 (optional original rock/jazz physical band rehearsal; normal song synthesis unchanged). v404 provides the stable light AI band, native drum one-shots, STOP cleanup and device-gated FM rooms. HAZAMA playability candidate remains v401. v403 refined Tabasco drum-row priority. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE and exact lyric boundaries.
+
+## v406 compact - Existing public entry guide
+
+- Listenの先頭に9画面の用途別公開ページ一覧を配置。同じ台帳からmanualと生成し、固定ブックマーク・Music内の画面・同じ試奏台・既存4アプリを案内する。
+- 公開先は既存の箱を流用する本人方針をAGENTSに保存。別入口とarchiveは折り畳み、新しいhosting projectや一覧を作らない。
+- 共有cache `hazama-fm-v406`。Band Roomのruntimeはv405 / `br-239` / `br-91`を維持。
 
 ## v405 compact - Optional physical band rehearsal and old prototype consolidation
 
