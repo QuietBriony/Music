@@ -38,6 +38,25 @@ export function defaultSet(preset = 'acid-drive', layers = []) {
   return state;
 }
 
+export function setFromMix(layers, settings) {
+  const state = defaultSet('acid-drive', layers);
+  const bpm = splitPublishedPattern(layers[0].source).cpm * 4;
+  if (!Number.isInteger(bpm) || bpm < 60 || bpm > 180) {
+    throw new Error('ライブセットへ持ち込めるテンポは整数の60〜180 BPMです。元の組み合わせはそのまま残ります。');
+  }
+  for (const value of [settings.a, settings.b, settings.cross]) {
+    if (!Number.isFinite(value) || value < 0 || value > 1) throw new Error('A/Bの音量設定が不正です');
+  }
+  state.bpm = bpm;
+  state.muted = [...SET_TRACKS];
+  // Imported layers use 0.66 headroom, close to the standalone mix's 0.7.
+  // Extra instrument levels keep their normal balance when unmuted later.
+  state.layerGain = 1;
+  for (const key of ['KICK', 'SNARE', 'HATS', 'BELL', 'ACID', 'RESPONSE', 'PERC', 'AIR']) state.values[key] = Math.round(state.values[key] * state.values.MASTER * 100) / 100;
+  Object.assign(state.values, { MASTER: 1, A: settings.a, B: settings.b, CROSS: settings.cross });
+  return validate(state);
+}
+
 function validate(state) {
   if (!state || !SET_PRESETS.some(p => p.id === state.preset) || !Array.isArray(state.muted)
     || state.muted.some(id => !SET_TRACKS.includes(id))) throw new Error('LIVEセットの形式が合いません');
@@ -45,7 +64,8 @@ function validate(state) {
   const config = state.live;
   if (!config || !LIVE_MODES.some(([id]) => id === config.mode) || ![8,16,32].includes(config.pace)
     || ![.35,.65,.9].includes(config.energy) || !(config.lock === null || ['intro','groove','acid','break','peak'].includes(config.lock))
-    || !Number.isFinite(state.values.AIR) || state.values.AIR < 0 || state.values.AIR > .65) throw new Error('LIVE展開の設定が不正です');
+    || !Number.isFinite(state.values.AIR) || state.values.AIR < 0 || state.values.AIR > .65
+    || (state.layerGain !== undefined && (!Number.isFinite(state.layerGain) || state.layerGain < 0 || state.layerGain > 1))) throw new Error('LIVE展開の設定が不正です');
   return state;
 }
 
@@ -101,7 +121,7 @@ function liveCode(input) {
     else voice=seq(track,'set_ride');
     voices.push(voice+'.gain(SET_PERC).mul(gain(0.65))'+gate(track));
   }
-  voices.push('xfade(setLayerA.mul(gain(SET_A)), SET_CROSS, setLayerB.mul(gain(SET_B))).mul(gain(0.3))');
+  voices.push('xfade(setLayerA.mul(gain(SET_A)), SET_CROSS, setLayerB.mul(gain(SET_B))).mul(gain(' + (state.layerGain ?? 0.3) + '))');
   return [SET_MARKER+JSON.stringify(metadata),
     '// LIVE：軸へ戻りながら章ごとの変奏を続ける。音と画面は同じStrudel時計。旧保存版は明示更新だけ。',
     "samples({pad:'/api/sounds/pad',sub:'/api/sounds/sub',drums:'/api/sounds/drums',set_crash:'/modules/acidbros/assets/samples/tr909/cr01.wav',set_ride:'/modules/acidbros/assets/samples/tr909/rd01.wav'});",

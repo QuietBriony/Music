@@ -1,7 +1,7 @@
 import {
   clampLevel, comparableCode, deckMixCode, managedSliderValue,
   replaceManagedSliderValue, singleWorkCode, upgradeLegacyDraftCode, SINGLE_LEVEL,
-  DECK_A_LEVEL, DECK_B_LEVEL, DECK_XFADE,
+  DECK_A_LEVEL, DECK_B_LEVEL, DECK_XFADE, readDeckMix,
 } from './mix-code.js';
 import { strudelBpm, withStrudelBpm } from './tempo-bridge.js';
 import {
@@ -42,6 +42,11 @@ const deckBSelect = document.querySelector('#deck-b-select');
 const deckOpenButton = document.querySelector('#deck-open');
 const deckSwapButton = document.querySelector('#deck-swap');
 const deckInfo = document.querySelector('#deck-info');
+const deckToSet = document.querySelector('#deck-to-set');
+const deckTransferHint = document.querySelector('#deck-transfer-hint');
+const playRoute = document.querySelector('#play-route');
+const libraryMode = document.querySelector('#mode-library');
+const machineMode = document.querySelector('#mode-machine');
 const deckFadersPanel = document.querySelector('#deck-faders');
 const deckFaders = [...deckFadersPanel.querySelectorAll('[data-deck-fader]')];
 const acidModuleOpen = document.querySelector('#acid-module-open');
@@ -198,7 +203,7 @@ function closeAcidModule({ updateUrl = true, focus = false } = {}) {
   syncAcidBridgeControls();
   acidModuleStage.hidden = true;
   acidModuleOpen.setAttribute('aria-expanded', 'false');
-  acidModuleOpen.textContent = 'この中で開く';
+  acidModuleOpen.textContent = '切り替えて開く';
   acidModuleStatus.textContent = '停止しました。';
   if (updateUrl) setModuleUrl(false);
   if (focus) acidModuleOpen.focus();
@@ -329,8 +334,68 @@ function queueControlSync() {
     syncAcidBridgeControls();
     sliderBridge.capture();
     performance?.sync();
+    syncPlayModes();
   });
 }
+
+function syncPlayModes() {
+  const machine = !acidModuleStage.hidden;
+  const set = !machine && document.body.classList.contains('performance-view');
+  libraryMode.setAttribute('aria-pressed', String(!machine && !set));
+  machineMode.setAttribute('aria-pressed', String(machine));
+  document.querySelector('#performance-open').setAttribute('aria-pressed', String(set));
+  const bpm = strudelBpm(currentCode());
+  playRoute.textContent = machine
+    ? '別の演奏：元の303×2＋909。中のRUNで開始。コード側は停止し、BPMだけボタンで受け渡します。'
+    : set ? '同期演奏：セットの303風・ドラム・素材A/Bを、ひとつのコードで一緒に鳴らします。'
+    : isSetCode(currentCode()) ? 'ライブセットのコードを開いています。上の「ライブセット」で操作面へ戻れます。試作を選ぶと演奏を切り替えます。'
+    : deckPairFromCode(currentCode()) ? '同期ミックス：AとBのコードをまとめて' + bpm + ' BPMで演奏。元の303×2＋909画面は別の演奏です。'
+    : '試作のコードを演奏。303／909風もコードの中の音です。2つ重ねるならA/Bミックスへ。';
+  playRoute.dataset.mode = machine ? 'machine' : set ? 'set' : 'library';
+  const pair = deckPairFromCode(currentCode());
+  const opened = pair && pair.a === deckASelect.value && pair.b === deckBSelect.value;
+  const unsupported = opened && !readDeckMix(currentCode());
+  deckToSet.disabled = busy || !catalog || !deckASelect.value || deckASelect.value === deckBSelect.value || Boolean(unsupported);
+  deckTransferHint.textContent = unsupported
+    ? 'このコードは組み合わせ全体を手直しした版です。今の版を保存してから、A/Bを選び直して組み合わせを開いてください。'
+    : opened ? '開いているA/Bのコード・BPM・音量・クロスを持ち込みます。追加パートはミュートから開始。'
+    : '選んだ公開試作と、この端末のA/B音量設定から作ります。追加パートはミュートから開始。';
+}
+
+libraryMode.addEventListener('click', () => { closeAcidModule(); performance.show(false); queueControlSync(); });
+machineMode.addEventListener('click', () => { performance.show(false); openAcidModule(); queueControlSync(); });
+deckASelect.addEventListener('change', queueControlSync);
+deckBSelect.addEventListener('change', queueControlSync);
+
+deckToSet.addEventListener('click', async () => {
+  if (busy || !catalog || deckToSet.disabled) return;
+  deckToSet.disabled = true;
+  let mix;
+  let preservedCode;
+  try {
+    const pair = deckPairFromCode(currentCode());
+    if (pair && pair.a === deckASelect.value && pair.b === deckBSelect.value) {
+      mix = readDeckMix(currentCode());
+      if (!mix) throw new Error('組み合わせ全体を編集したコードは、自動で移せません。元のコードはそのまま残ります。');
+      preservedCode = currentCode();
+    } else {
+      busy = true;
+      const layers = await Promise.all([deckASelect.value, deckBSelect.value].map(async id => {
+        const item = catalog.items.find(entry => entry.id === id);
+        if (!item) throw new Error('試作が見つかりません');
+        const response = await fetch(item.path, { cache: 'no-store' });
+        if (!response.ok) throw new Error('素材コードを読み込めません');
+        return { id, source: await response.text() };
+      }));
+      mix = { layers, settings: savedDeckSettings(layers[0].id, layers[1].id) };
+      busy = false;
+    }
+    mix.layers = mix.layers.map(layer => ({ ...layer,
+      title: catalog.items.find(item => item.id === layer.id)?.title || layer.id }));
+    await performance.openMix(mix.layers, mix.settings, preservedCode);
+  } catch (error) { deckInfo.textContent = error.message || 'ライブセットへ移せませんでした'; }
+  finally { busy = false; queueControlSync(); }
+});
 
 acidFaders.forEach((fader, index) => {
   fader.addEventListener('input', () => {
@@ -545,6 +610,7 @@ function setCurrentSelection(selection) {
 function setWorkUrl(id) {
   const url = new URL(window.location.href);
   url.searchParams.delete('stage');
+  url.searchParams.delete('module');
   url.searchParams.delete('deck');
   if (id) url.searchParams.set('work', id);
   else url.searchParams.delete('work');
@@ -554,6 +620,7 @@ function setWorkUrl(id) {
 function setDeckUrl(a, b) {
   const url = new URL(window.location.href);
   url.searchParams.delete('stage');
+  url.searchParams.delete('module');
   url.searchParams.delete('work');
   url.searchParams.set('deck', a + ',' + b);
   window.history.replaceState(null, '', url);
@@ -982,6 +1049,7 @@ deckSwapButton.addEventListener('click', () => {
   deckASelect.value = deckBSelect.value;
   deckBSelect.value = oldA;
   deckInfo.textContent = 'AとBを入れ替えました。「組み合わせを開く」で反映します。';
+  queueControlSync();
 });
 reloadButton.addEventListener('click', () => {
   if (activeSelection?.kind === 'published') {
@@ -1042,16 +1110,20 @@ window.addEventListener('beforeunload', warnUnsavedExit);
 
 renderAcidFiles();
 performance = initPerformance({
+  viewChanged: syncPlayModes,
+  closeMachine: closeAcidModule,
   getCode: currentCode,
   isPlaying: () => wantsPlayback && Boolean(activeEditor?.editor?.repl?.scheduler?.started),
   isBusy: () => busy,
   cycle: () => activeEditor?.editor?.repl?.scheduler?.now() || 0,
   changeCode: changeSetCode,
-  async openCode(code, title) {
+  async openCode(code, title, preservedCode) {
     if (busy) return false;
     busy = true;
     try {
-      if (!await mayReplaceCode()) return false;
+      // A verified deck handoff copies its complete musical bodies and mix.
+      // If anything changed since capture, keep the normal unsaved-edit guard.
+      if (preservedCode !== currentCode() && !await mayReplaceCode()) return false;
       closeAcidModule();
       cancelSetEvaluation();
       await customElements.whenDefined('strudel-editor');

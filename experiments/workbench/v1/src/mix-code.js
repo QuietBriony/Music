@@ -84,6 +84,27 @@ export function deckMixCode(a, b, settings) {
   ].join('\n\n');
 }
 
+// Recover musical bodies, including edits inside their wrappers. Accept only
+// our complete layout: never evaluate or guess at a partially edited program.
+export function readDeckMix(source) {
+  try {
+    const code = sourceText(source);
+    const pair = /^\/\/ DECK_MIX_V1 ([a-z0-9-]+) \+ ([a-z0-9-]+) — /m.exec(code);
+    const tempo = /^setcpm\(([0-9.]+)\)$/m.exec(code);
+    if (!pair || !tempo || code.length > 100_000) return null;
+    const settings = Object.fromEntries([['a', DECK_A_LEVEL], ['b', DECK_B_LEVEL], ['cross', DECK_XFADE]]
+      .map(([key, name]) => [key, managedSliderValue(code, name)]));
+    if (Object.values(settings).some(value => value === null || value < 0 || value > 1)) return null;
+    const layers = ['A', 'B'].map((side, index) => {
+      const match = new RegExp('^const deck' + side + ' = \\(\\(\\) => \\{\\n([\\s\\S]*?)\\nreturn (stack\\([\\s\\S]*?)\\n\\}\\)\\(\\)$', 'm').exec(code);
+      if (!match) throw new Error('Missing deck body');
+      return { id: pair[index + 1], source: match[1] + '\n\nsetcpm(' + tempo[1] + ')\n\n' + match[2] };
+    });
+    if (sourceText(deckMixCode(layers[0], layers[1], settings)) !== code) return null;
+    return { layers, settings };
+  } catch { return null; }
+}
+
 function sliderPattern(name) {
   return new RegExp(`(\\bconst\\s+${name}\\s*=\\s*slider\\(\\s*)([0-9.]+)(\\s*,)`);
 }

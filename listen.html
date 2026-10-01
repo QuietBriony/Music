@@ -570,7 +570,7 @@
           <article><h3>Music / Listening Loop</h3><p>20秒の3案を比べ、好みを一つ選んで次の候補へ進む実験。過去の曲を自動読込する編集画面ではありません。</p><a class="mini-link" href="experiments/listening-loop/v1/">3つ聴いて、ひとつ育てる →</a></article>
           <article><h3>Hazama / Sensory Response Lab</h3><p>小さな回路を使う音の変化と、通常の変調を比較する試作。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/sensory-audio-lab.html">回路と変調を比べる →</a></article>
           <article><h3>Hazama / 世界が音で応える</h3><p>沈む地面・脈動・断片・混合のA〜Dを比較。ゲームの場面に音がどう応えるかを探る場所です。</p><a class="mini-link" href="https://quietbriony.github.io/hazama/tools/sensory/scene-response-lab.html">場面の反応音を比べる →</a></article>
-          <article><h3>Music / Live Workbench</h3><p>テクノ3セットのドラム・303・素材A/Bを一つの時計で演奏。打点・フェーダー・展開を名前付きで保存・再開できます。aphex1と2デッキ、独立したacidBrosも同じ入口。PWAまたはPCローカルでオフライン試奏できます。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?stage=techno">テクノ・ライブセット →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/">音とコードを触る →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?module=acidbros">別の303＋909を開く →</a><a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/README.md#pcでローカル起動オフライン試奏">PCローカル起動の手順 →</a></article>
+          <article><h3>Music / Live Workbench</h3><p>試作・A/Bミックス、4つのライブセット、元の303×2＋909をボタンで選ぶ。選んだA/Bをコードと混ぜ具合ごとライブセットへ持ち込み、MUTE解除でドラムや303風を足せます。名前付き保存・再開、PWAとPCローカルのオフライン試奏も同じ入口。</p><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?stage=techno">ライブセット →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?deck=acid-303-909,techno-dub">Acid × Technoを重ねる →</a><a class="mini-link" href="https://music-private-live-workbench.pages.dev/?module=acidbros">元の303×2＋909へ →</a><a class="mini-link" href="https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/README.md#pcでローカル起動オフライン試奏">PCローカル起動の手順 →</a></article>
           <p>HazamaはMusicと別のゲームrepoです。試聴候補と本体の採用状態は別に確認し、各実験の評価が自動で共有されるとは扱いません。</p>
         </div>
       </details>
@@ -604,6 +604,7 @@
 
     <section id="workbench-plan" aria-labelledby="workbench-title">
       <div class="section-head"><h2 id="workbench-title">コードと303・909で音を触る</h2><p class="section-note">一つの試奏台に二つの演奏面。</p></div>
+      <p class="guide-note">上の「試作・A/Bミックス」「ライブセット」「元の303×2＋909」で選ぶ。A/Bを重ねてから「このA/Bでライブセットへ」でテンポ・素材コード・音量・クロスを引き継ぎ、追加楽器をMUTE解除で足せます。元のacidBrosは切り替えて使う別エンジンで、音符や音色はStrudelへ自動反映しません。</p>
       <p class="guide-note">Strudelではaphex1、テクノ2案、Acid 303 / 909、自動変奏、元のテストをコードから演奏。作品別LEVELと2デッキ同期ミックスも使えます。別の「303＋909を開く」では、2台の303と11パートの909を16ステップとつまみで演奏。こちらの909用WAVは小さな4本を同じページへ同梱しています。FILEで保存したパッチは試奏台の一覧から再開でき、BPMはボタンで双方向に一回ずつ渡せます。両演奏面の時計・保存形式は別で、切替時に前の演奏を停止します。PCでは同じMusic repoをローカル起動でき、初回に必要な7音を保存すれば公開8試作をオフラインで試せます。Chrome/Edgeなどのブラウザは必要で、端末間の下書きは自動共有されません。チャットから公開版への即時同期は未実装です。</p>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?work=acid-303-909">Acid 303 / 909を触る →</a>
       <a class="mini-link" href="https://music-private-live-workbench.pages.dev/?module=acidbros">303＋909のステップ画面を開く →</a>
@@ -691,10 +692,10 @@
     <article class="tool-item" id="tool-strudel-workbench" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
       <h3>Strudel Live Workbench</h3>
-      <p>テクノ/ダブ/アンビエントを自動LIVEで演奏。軸を守り、章ごとに抜き差し・弱拍変奏・音色を変える。公開8試作・2デッキ・別エンジンのacidBros保存パッチも同じ入口。</p>
+      <p>試作・A/Bミックス／ライブセット／元の303×2＋909を同じ入口で選ぶ。A/Bをコード・テンポ・混ぜ具合ごとライブセットへ持ち込み、追加ドラムや303風をMUTE解除で足す。テクノ/ダブ/アンビエントの自動LIVEも使える。</p>
       <dl>
-        <dt>最初の一手</dt><dd>Acid DriveかAmbient Drift → セットを鳴らす。全体音量は再生中・聴く画面でも触れる。コード手直し後も接続が残るフェーダーは数値だけ変更。新セットはLIVEオン。「盛り上がり」「展開の間隔」「今の展開をキープ」で調整。Ambientがなければホーム画面・オフラインで更新。最新版は演奏面上のアプリ更新でも確認・再読込できる。PCローカルはREADMEの初回準備 → npm run local。</dd>
-        <dt>残るもの</dt><dd>公開8試作はGit管理。4セットは全打点・音符・BPM・音色・19フェーダー・MUTE・素材A/B・AUTO・変奏seed/固定/採用前の軸・LIVEの流れ/間隔/盛り上がり/キープを名前付きコード下書きへ保存。旧V1/V2は旧音を保ち明示更新だけ。LEVEL・2デッキ・acidBros FILEもJSONで別端末へ追加できる。</dd>
+        <dt>最初の一手</dt><dd>上の演奏面ボタンで選ぶ。2つ重ねるならA/Bを選んで「組み合わせのコードを開く」→ Play。楽器を足すなら「このA/Bでライブセットへ」。追加パートはミュートから開始。セットだけならライブセット → Acid DriveかAmbient Drift → セットを鳴らす。全体音量・接続が残る音色フェーダーは再生中も使える。PWAはアプリ更新で確認・再読込。PCローカルはREADMEの初回準備 → npm run local。</dd>
+        <dt>残るもの</dt><dd>公開8試作はGit管理。4セットと引き継いだA/Bは全打点・音符・BPM・音色・19フェーダー・MUTE・素材コード・AUTO・変奏seed/固定/採用前の軸・LIVE設定を名前付き下書きへ保存。既存保存コードの出音は維持。LEVEL・A/B・acidBros FILEもJSONで別端末へ追加できる。</dd>
         <dt>できることの境界</dt><dd>スマホPWAはアプリと公開8試作に必要な音を端末保存（約10 MB）してオフライン利用可。PCはローカルHTTPでも同じ画面を使える。後から指定する外部URL・他の標準バンクは自動保存しない。更新は保存後の明示操作。保存削除/OS整理では再準備が必要。JSON転送は手動で未保存編集・音源は含まない。acidBrosは別エンジンで、音・時計・パターン同期やチャット即時反映は未実装。実iPhoneの追加・試聴は未確認。公開ページ・コード・自前配信のWAV7本は公開。</dd>
       </dl>
       <a class="mini-link" data-tool-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/">Strudel Live Workbench — 音とコードを触る</a>

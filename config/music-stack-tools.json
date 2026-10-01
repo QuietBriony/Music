@@ -60,9 +60,9 @@
     {
       "id": "strudel-workbench", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Strudel Live Workbench", "href": "https://music-private-live-workbench.pages.dev/", "action": "音とコードを触る",
-      "purpose": "テクノ/ダブ/アンビエントを自動LIVEで演奏。軸を守り、章ごとに抜き差し・弱拍変奏・音色を変える。公開8試作・2デッキ・別エンジンのacidBros保存パッチも同じ入口。",
-      "first_step": "Acid DriveかAmbient Drift → セットを鳴らす。全体音量は再生中・聴く画面でも触れる。コード手直し後も接続が残るフェーダーは数値だけ変更。新セットはLIVEオン。「盛り上がり」「展開の間隔」「今の展開をキープ」で調整。Ambientがなければホーム画面・オフラインで更新。最新版は演奏面上のアプリ更新でも確認・再読込できる。PCローカルはREADMEの初回準備 → npm run local。",
-      "outputs": "公開8試作はGit管理。4セットは全打点・音符・BPM・音色・19フェーダー・MUTE・素材A/B・AUTO・変奏seed/固定/採用前の軸・LIVEの流れ/間隔/盛り上がり/キープを名前付きコード下書きへ保存。旧V1/V2は旧音を保ち明示更新だけ。LEVEL・2デッキ・acidBros FILEもJSONで別端末へ追加できる。",
+      "purpose": "試作・A/Bミックス／ライブセット／元の303×2＋909を同じ入口で選ぶ。A/Bをコード・テンポ・混ぜ具合ごとライブセットへ持ち込み、追加ドラムや303風をMUTE解除で足す。テクノ/ダブ/アンビエントの自動LIVEも使える。",
+      "first_step": "上の演奏面ボタンで選ぶ。2つ重ねるならA/Bを選んで「組み合わせのコードを開く」→ Play。楽器を足すなら「このA/Bでライブセットへ」。追加パートはミュートから開始。セットだけならライブセット → Acid DriveかAmbient Drift → セットを鳴らす。全体音量・接続が残る音色フェーダーは再生中も使える。PWAはアプリ更新で確認・再読込。PCローカルはREADMEの初回準備 → npm run local。",
+      "outputs": "公開8試作はGit管理。4セットと引き継いだA/Bは全打点・音符・BPM・音色・19フェーダー・MUTE・素材コード・AUTO・変奏seed/固定/採用前の軸・LIVE設定を名前付き下書きへ保存。既存保存コードの出音は維持。LEVEL・A/B・acidBros FILEもJSONで別端末へ追加できる。",
       "boundary": "スマホPWAはアプリと公開8試作に必要な音を端末保存（約10 MB）してオフライン利用可。PCはローカルHTTPでも同じ画面を使える。後から指定する外部URL・他の標準バンクは自動保存しない。更新は保存後の明示操作。保存削除/OS整理では再準備が必要。JSON転送は手動で未保存編集・音源は含まない。acidBrosは別エンジンで、音・時計・パターン同期やチャット即時反映は未実装。実iPhoneの追加・試聴は未確認。公開ページ・コード・自前配信のWAV7本は公開。",
       "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/performance.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/performance-code.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/groove-code.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/slider-bridge.js" }, { "repo": "Music", "path": "experiments/workbench/v1/scripts/local-workbench.mjs" }, { "repo": "Music", "path": "experiments/workbench/v1/src/session-backup.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/pwa.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/offline-policy.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/live-code.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/live-plan.js" }]
     },

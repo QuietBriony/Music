@@ -1,7 +1,7 @@
 import {
   defaultSet, readTechnoSet, sceneAtCycle, isSetCode, SET_PRESETS, SET_SCENES,
   SET_SLIDERS, SET_TRACKS, technoSetCode, EXTRA_DRUMS, groovePlan, upgradeSet,
-  LIVE_MODES, liveFrame, liveMotif,
+  LIVE_MODES, liveFrame, liveMotif, setFromMix,
 } from './live-code.js';
 import { sliderSettings } from './slider-bridge.js';
 
@@ -63,8 +63,9 @@ export function initPerformance(hooks) {
     panel.hidden = !enabled;
     document.body.classList.toggle('performance-view', enabled);
     open.setAttribute('aria-expanded', String(enabled));
-    open.textContent = enabled ? '試作・別の303＋909を見る' : 'テクノ・ライブセットを開く';
+    open.textContent = 'ライブセット';
     if (!enabled) { document.body.classList.remove('listening-view'); listenToggle.setAttribute('aria-pressed','false'); listenToggle.textContent='聴く画面'; }
+    hooks.viewChanged?.();
   }
 
   function mutate(change) {
@@ -103,6 +104,23 @@ export function initPerformance(hooks) {
       loading = false;
       sync();
     }
+  }
+
+  async function openMix(layers, settings, preservedCode) {
+    if (!catalog || loading || hooks.isBusy()) return false;
+    loading = true;
+    try {
+      const initial = setFromMix(layers, settings);
+      if (!await hooks.openCode(technoSetCode(initial), layers.map(layer => layer.title).join(' × ') + ' · ライブセット', preservedCode)) return false;
+      show();
+      panel.scrollIntoView({ behavior: 'auto', block: 'start' });
+      return true;
+    } finally { loading = false; sync(); }
+  }
+
+  function enter() {
+    if (isSetCode(hooks.getCode())) { hooks.closeMachine(); show(); sync(); panel.scrollIntoView({ block: 'start' }); }
+    else return openPreset();
   }
 
   for (const preset of SET_PRESETS) {
@@ -264,11 +282,7 @@ export function initPerformance(hooks) {
     document.querySelector('#set-library').setAttribute('aria-expanded', String(visible));
     if (visible) document.querySelector('.library').scrollIntoView({ block: 'start' });
   });
-  open.addEventListener('click', () => {
-    if (view) show(false);
-    else if (readTechnoSet(hooks.getCode())) { show(); sync(); }
-    else openPreset();
-  });
+  open.addEventListener('click', enter);
 
   function sync() {
     const code = hooks.getCode();
@@ -342,11 +356,21 @@ export function initPerformance(hooks) {
     });
     for (const [track, button] of muteButtons) button.setAttribute('aria-pressed', String(state.muted.includes(track)));
     layerSelects.forEach((select, i) => { select.value = state.layers[i].id; });
+    document.querySelector('#set-layer-summary').textContent = state.layers.map((layer, i) =>
+      (i ? 'B：' : 'A：') + layer.title).join(' / ') + ' · ' + state.bpm + ' BPMで一緒に鳴ります。';
     document.querySelector('#set-title').textContent=state.live?.mode==='ambient'?'漂う。重なる。ゆっくり移る。':'鳴らす。抜く。みょんを上げる。';
+    document.querySelector('#set-acid-title').textContent = state.layerGain === 1 ? '追加の303風 · LIVE FADERS' : '303風 · LIVE FADERS';
+    document.querySelector('#set-mixer-title').textContent = state.layerGain === 1 ? '追加パートを出し入れ' : 'パートを出し入れ';
     note.textContent = state.live ? state.live.mode==='ambient'?'長い和音と柔らかい音色でゆっくり移ります。自動のドラムは入りません。素材A/Bは手動音量を優先。'
       : state.auto?'軸は8小節で帰還。章ごとに小変奏と抜き差しが変わり、音色はゆっくりつながります。手動MUTEを優先。':'手動シーンで演奏中。LIVEを押すと自動の流れへ戻ります。'
       : state.auto ? (state.groove?'軸の音符を4小節反復→小変奏→8小節で帰還。パートは8小節ごとに出し入れ。':'旧版：8小節ごとにパートが入り替わります。')
       : 'ドラム・303・素材A/Bは同じテンポ。ステップとシーンは次の演奏処理から、フェーダーは次の音から反映。';
+    if (state.layerGain === 1) {
+      document.querySelector('#set-title').textContent = 'A/Bに楽器を足す。';
+      note.textContent = SET_TRACKS.every(track => state.muted.includes(track))
+        ? 'A/Bのコードと混ぜ具合を引き継ぎました。追加のドラム・303・パッドはミュート中。ミキサーのMUTEを解除すると同じテンポで足せます。'
+        : 'A/Bに楽器を重ねています。LIVEは追加パートを展開します。素材A/Bのフレーズと音量はそのままで、手動で混ぜられます。';
+    }
   }
 
   const stepIndicators = [...panel.querySelectorAll('[data-step]')];
@@ -390,7 +414,7 @@ export function initPerformance(hooks) {
   });
 
   return {
-    show, sync, openPreset,
+    show, sync, openPreset, openMix, enter,
     setCatalog(next) {
       catalog = next;
       layerSelects.forEach((select) => {
