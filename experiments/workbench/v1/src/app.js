@@ -657,13 +657,18 @@ async function openPublished(item) {
   busy = true;
   try {
     if (!await mayReplaceCode()) return;
-    draftForm.hidden = true;
+    const codeBeforeLoad = comparableCode(currentCode());
     status.textContent = item.title + ' を読み込み中…';
     const response = await fetch(item.path, { cache: 'no-store' });
     if (!response.ok) throw new Error('コードの取得に失敗しました (' + response.status + ')');
     const pattern = await response.text();
     if (!pattern.trim()) throw new Error('保存済みのコードが空です');
     await customElements.whenDefined('strudel-editor');
+    if (comparableCode(currentCode()) !== codeBeforeLoad && !await mayReplaceCode()) {
+      status.textContent = '切り替えを中止しました。いまの編集を残しています。';
+      return;
+    }
+    draftForm.hidden = true;
     setEditorCode(singleWorkCode(pattern, savedWorkLevel({ kind: 'published', id: item.id })));
     setCurrentSelection({
       kind: 'published', id: item.id, label: item.title, detail: item.label,
@@ -694,6 +699,7 @@ async function openDeck(aId = deckASelect.value, bId = deckBSelect.value) {
   busy = true;
   try {
     if (!await mayReplaceCode()) return;
+    const codeBeforeLoad = comparableCode(currentCode());
     const a = catalog.items.find((item) => item.id === aId);
     const b = catalog.items.find((item) => item.id === bId);
     if (!a || !b) throw new Error('デッキの試作が見つかりません');
@@ -705,6 +711,10 @@ async function openDeck(aId = deckASelect.value, bId = deckBSelect.value) {
     if (!aResponse.ok || !bResponse.ok) throw new Error('デッキのコードを取得できません');
     const [aSource, bSource] = await Promise.all([aResponse.text(), bResponse.text()]);
     await customElements.whenDefined('strudel-editor');
+    if (comparableCode(currentCode()) !== codeBeforeLoad && !await mayReplaceCode()) {
+      status.textContent = '切り替えを中止しました。いまの編集を残しています。';
+      return;
+    }
     const code = deckMixCode(
       { id: a.id, source: aSource }, { id: b.id, source: bSource }, savedDeckSettings(a.id, b.id),
     );
@@ -830,10 +840,15 @@ async function openDraft(id) {
   busy = true;
   try {
     if (!await mayReplaceCode()) return;
-    draftForm.hidden = true;
+    const codeBeforeLoad = comparableCode(currentCode());
     const draft = readDrafts().find((item) => item.id === id);
     if (!draft) throw new Error('下書きが見つかりません');
     await customElements.whenDefined('strudel-editor');
+    if (comparableCode(currentCode()) !== codeBeforeLoad && !await mayReplaceCode()) {
+      status.textContent = '切り替えを中止しました。いまの編集を残しています。';
+      return;
+    }
+    draftForm.hidden = true;
     if (draft.importedAt) {
       playbackToken++;
       wantsPlayback = false;
@@ -1162,9 +1177,14 @@ performance = initPerformance({
       // A verified deck handoff copies its complete musical bodies and mix.
       // If anything changed since capture, keep the normal unsaved-edit guard.
       if (preservedCode !== currentCode() && !await mayReplaceCode()) return false;
+      const codeBeforeLoad = comparableCode(currentCode());
+      await customElements.whenDefined('strudel-editor');
+      if (comparableCode(currentCode()) !== codeBeforeLoad && !await mayReplaceCode()) {
+        status.textContent = '切り替えを中止しました。いまの編集を残しています。';
+        return false;
+      }
       closeAcidModule();
       cancelSetEvaluation();
-      await customElements.whenDefined('strudel-editor');
       setEditorCode(code);
       setCurrentSelection({ kind: 'set', label: title, detail: 'テクノ・ライブセット' });
       const url = new URL(window.location.href);
