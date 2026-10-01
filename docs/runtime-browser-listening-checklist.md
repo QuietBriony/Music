@@ -8,6 +8,10 @@ Use m4a recording only for milestone comparisons, CarPlay/output-level checks, o
 
 ## Strudel workbench LEVEL / 2-deck audition (BL-049)
 
+- While a LIVE set plays, move MASTER/CUTOFF/KICK and the BPM fader between three- and two-digit tempos. The saved metadata and one `setcpm` must agree; live sound faders must stay connected after the offsets change. The tempo status must show the scheduler's BPM, without evaluating the whole score.
+- Small bars show section controls, not measured audio. Check manual MUTE goes to zero, motion zero freezes base cutoff, and Ambient Drift shows no automatic drums. Stop/listening view must hide them; return to controls must show current values.
+- Save a changed tempo and timbre, reload, reopen and Play. Stop during preparation and reconnect must never restart a stopped set. On actual iPhone, try body-volume keys and Bluetooth/CarPlay connect/disconnect, then `音を再接続`; its desktop fallback does not certify the device route, hardware volume or long-session load.
+
 For `experiments/workbench/v1/` on its separate Cloudflare Pages URL:
 
 - Compare a loud and quiet published work at the same device output. Set each LEVEL by ear, switch away and back, and confirm the values return without a code-loss dialog.

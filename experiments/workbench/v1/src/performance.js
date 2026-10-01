@@ -4,6 +4,7 @@ import {
   LIVE_MODES, liveFrame, liveMotif, setFromMix,
 } from './live-code.js';
 import { sliderSettings } from './slider-bridge.js';
+import { liveReadouts } from './live-controls.js';
 
 const names = { kick: 'KICK', snare: 'SNARE', hh: 'CLOSED HAT', oh: 'OPEN HAT', bell: 'COWBELL', acid: '303',
   response:'303返し',percussion:'追加打楽器',pad:'パッド',...Object.fromEntries(EXTRA_DRUMS) };
@@ -22,6 +23,8 @@ export function initPerformance(hooks) {
   const fieldset = document.querySelector('#set-controls');
   const note = document.querySelector('#set-status');
   const bpm = document.querySelector('#set-bpm');
+  const bpmFader = document.querySelector('#set-bpm-fader');
+  const tempoStatus = document.querySelector('#set-tempo-status');
   const bank = document.querySelector('#set-bank');
   const auto = document.querySelector('#set-auto');
   const bar = document.querySelector('#set-position');
@@ -186,13 +189,19 @@ export function initPerformance(hooks) {
     input.dataset.setFader = key;
     input.setAttribute('aria-label', title);
     label.append(el('span', title), output, input);
+    const liveOutput = el('small', '', 'set-live-value');
+    const meter = el('progress');
+    meter.max = max;
+    meter.setAttribute('aria-hidden', 'true');
+    meter.className = 'set-live-meter';
+    liveOutput.hidden = meter.hidden = true;
+    label.append(meter, liveOutput);
     input.addEventListener('input', () => {
       if (!isSetCode(hooks.getCode())) return;
       hooks.fader(key, Number(input.value));
-      // CodeMirror updates its document synchronously, widgets on the next frame.
-      requestAnimationFrame(sync);
+      // The shared hook batches all control/CodeMirror refreshes once per frame.
     });
-    faders.set(key, { input, output, suffix });
+    faders.set(key, { input, output, suffix, liveOutput, meter });
     target.append(label);
   }
 
@@ -269,8 +278,13 @@ export function initPerformance(hooks) {
   }));
   bpm.addEventListener('change', () => {
     const value = Number(bpm.value);
-    if (!Number.isInteger(value) || value < 60 || value > 180) { sync(); return; }
-    mutate((next) => { next.bpm = value; });
+    if (!Number.isInteger(value) || value < 60 || value > 180) { bpm.value = state?.bpm || 128; sync(); return; }
+    hooks.tempo(value);
+  });
+  bpmFader.addEventListener('input', () => {
+    const value = Number(bpmFader.value);
+    bpm.value = value;
+    hooks.tempo(value);
   });
   bank.addEventListener('change', () => mutate((next) => { next.bank = bank.value; }));
   auto.addEventListener('click', () => mutate((next) => { next.auto = !next.auto; }));
@@ -336,7 +350,9 @@ export function initPerformance(hooks) {
       document.querySelector('#set-undo-phrase').disabled=!state.groove.previousNotes;
       kit.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed',String(state.groove.kit.includes(button.dataset.kit))));
     }
-    bpm.value = state.bpm;
+    // Background synchronization must not overwrite a number while being typed.
+    if (document.activeElement !== bpm) bpm.value = state.bpm;
+    bpmFader.value = state.bpm;
     bank.value = state.bank;
     auto.setAttribute('aria-pressed', String(state.auto));
     auto.textContent = state.live ? state.auto?'LIVE 自動展開中':'LIVE 自動展開' : state.auto ? 'AUTO 展開中 · 64小節' : 'AUTO 展開';
@@ -378,11 +394,24 @@ export function initPerformance(hooks) {
   function position() {
     if (!view || document.hidden) return;
     const playing = hooks.isPlaying();
+    const tempo = hooks.bpm();
+    const tempoText = playing && Number.isFinite(tempo) ? '再生 ' + Math.round(tempo) + ' BPM · コードに保存'
+      : '演奏中も変更 · コードに保存';
+    if (tempoStatus.textContent !== tempoText) tempoStatus.textContent = tempoText;
     start.textContent = playing ? '■ セットを止める' : '▶ セットを鳴らす';
     start.setAttribute('aria-pressed', String(playing));
     const cycle = playing ? Math.max(0, hooks.cycle()) : 0;
     const step = playing ? Math.floor((cycle % 1) * 16) : -1;
     const frame=state?.live ? liveFrame(state.live,state.groove.seed,cycle,state.auto,state.scene) : null;
+    const readouts = playing && hooks.isAudioRunning() && !document.body.classList.contains('listening-view') ? liveReadouts(state, frame) : new Map();
+    for (const [key, fader] of faders) {
+      const value = readouts.get(key);
+      fader.liveOutput.hidden = fader.meter.hidden = value === undefined;
+      if (value === undefined) continue;
+      const text = key === 'CUTOFF' ? '展開 ' + Math.round(value) + ' Hz' : '展開 ' + Math.round(value * 100) + '%';
+      if (fader.liveOutput.textContent !== text) fader.liveOutput.textContent = text;
+      fader.meter.value = Math.max(0, Math.min(fader.meter.max, value));
+    }
     const length=frame ? frame.span*8 : 64;
     bar.textContent = playing ? (frame?'第'+(frame.chapter+1)+'章 · ':'') + String(Math.floor(cycle) % length + 1).padStart(2, '0') + ' / '+length+' · ' + (Math.floor((cycle % 1) * 4) + 1) + '拍'
       : 'STOPPED · Spaceで開始/停止';

@@ -1,5 +1,11 @@
 # Hazama FM — システム全体像
 
+2026-10-01: 独立Strudel試奏台のLIVEは手動基準と自動展開の制御値を小バーで区別する。
+BPMはclockへ直接渡し、保存metadataとsetcpmだけを変更。全コード再評価や新clockを作らない。
+既存80ms表示を使い、非表示中の表示更新を避ける。AudioContext resumeは再開ごとに通し、
+対応環境のaudioSession playback指定と「音を再接続」を追加。物理音量・出力先はOS側のまま。
+V1/V2/V3保存形式と同じStrudel／acidBrosの切替を保持。実iPhone・車の接続・長時間負荷は未確認。
+
 2026-10-01: v407は本人の試奏評価と「そのままARCB再現」の承認を受け、Tabasco 7曲のAI再現を新しい弦・ドラム音源へ接続。
 ギターはクリーン／クランチ／ディストーション。既存の音符・打点・sectionを同じtransportで鳴らし、原音・REC・part muteを維持。
 Workerで52音を準備し、PCMは9,567,360 bytes。再生中はnative BufferSource、共通アンプ7 node、最大128発まで。

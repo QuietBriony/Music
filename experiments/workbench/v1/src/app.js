@@ -12,6 +12,8 @@ import { initPwa } from './pwa.js';
 import { initPerformance } from './performance.js';
 import { isSetCode, readTechnoSet } from './live-code.js';
 import { SliderBridge } from './slider-bridge.js';
+import { setTempoChanges } from './live-controls.js';
+import { AudioPlayback } from './audio-playback.js';
 
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
@@ -89,7 +91,34 @@ let pendingBackup = null;
 let backupReadToken = 0;
 let performance;
 let setEvaluateTimer;
-let audioPrepared;
+const audioStatus = document.querySelector('#audio-status');
+const audioReconnect = document.querySelector('#audio-reconnect');
+const audioPlayback = new AudioPlayback(() => window.getAudioContext?.(), () => window.initAudio?.(), navigator, syncAudioStatus);
+function syncAudioStatus() {
+  const state = audioPlayback.context?.state;
+  audioStatus.textContent = !wantsPlayback ? '停止中。Playで音声接続を開始します。'
+    : state === 'running' ? '音声接続中。出力先と端末音量はスマホ／PC側で調整します。'
+      : '音声が中断されています。「音を再接続」を押してください。';
+  audioReconnect.disabled = !wantsPlayback || busy;
+}
+async function reconnectAudio() {
+  if (!wantsPlayback || busy) return;
+  const token = playbackToken;
+  busy = true;
+  syncAudioStatus();
+  try {
+    await audioPlayback.prepare();
+    if (token === playbackToken && wantsPlayback) status.textContent = '音声を再接続しました。コードと再生位置はそのままです。';
+  } catch (error) { status.textContent = error.message || '再接続できませんでした。出力先を確認してください'; }
+  finally { busy = false; queueControlSync(); }
+}
+audioReconnect.addEventListener('click', reconnectAudio);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && audioPlayback.context?.state !== 'running') reconnectAudio();
+});
+window.addEventListener('pageshow', () => {
+  if (audioPlayback.context?.state !== 'running') reconnectAudio();
+});
 const sliderBridge = new SliderBridge(() => activeEditor?.editor, {
   setSignal: (id, value) => window.sliderWithID(id, value),
   updateWidgets: (view, widgets) => window.updateSliderWidgets?.(view, widgets),
@@ -334,6 +363,7 @@ function queueControlSync() {
     syncAcidBridgeControls();
     sliderBridge.capture();
     performance?.sync();
+    syncAudioStatus();
     syncPlayModes();
   });
 }
@@ -562,14 +592,10 @@ function setEditorCode(code) {
 async function evaluateCurrent(message) {
   const token = ++playbackToken;
   try {
+    // Resume during the tap, before waiting for the REPL's sample preparation.
+    await audioPlayback.prepare();
     await activeEditor.editor.prebaked;
-    // First-click initialization in the pinned REPL runs asynchronously. Wait
-    // for its worklets before scheduling the first filtered/distorted notes.
-    if (!audioPrepared) {
-      audioPrepared = Promise.all([window.getAudioContext?.().resume(), window.initAudio?.()])
-        .catch((error) => { audioPrepared = undefined; throw error; });
-    }
-    await audioPrepared;
+    // Worklets and sample preparation have completed before filtered notes.
     if (token !== playbackToken || !wantsPlayback) return;
     await activeEditor.editor.evaluate();
     const evalError = activeEditor.editor.repl?.state?.evalError;
@@ -1115,8 +1141,20 @@ performance = initPerformance({
   getCode: currentCode,
   isPlaying: () => wantsPlayback && Boolean(activeEditor?.editor?.repl?.scheduler?.started),
   isBusy: () => busy,
+  isAudioRunning: () => audioPlayback.context?.state === 'running',
   cycle: () => activeEditor?.editor?.repl?.scheduler?.now() || 0,
+  bpm: () => activeEditor?.editor?.repl?.scheduler?.cps * 240,
   changeCode: changeSetCode,
+  tempo(value) {
+    if (busy || !activeEditor?.editor) return;
+    try {
+      const changes = setTempoChanges(currentCode(), value);
+      if (wantsPlayback) activeEditor.editor.repl.setCps(value / 240);
+      activeEditor.editor.editor.dispatch({ changes });
+      sliderBridge.refresh();
+      queueControlSync();
+    } catch (error) { status.textContent = error.message; }
+  },
   async openCode(code, title, preservedCode) {
     if (busy) return false;
     busy = true;

@@ -36,6 +36,13 @@
         <button id="mode-machine" type="button" aria-pressed="false">元の303×2＋909</button>
       </nav>
       <p id="play-route" class="play-route" data-mode="library">試作のコードを演奏。A/Bミックスとライブセットは同じStrudelで、元の303×2＋909は切り替えて演奏します。</p>
+      <details class="audio-help">
+        <summary>音が出ない・端末の音量ボタンが効かない時</summary>
+        <p id="audio-status">停止中。Playで音声接続を開始します。</p>
+        <button id="audio-reconnect" type="button" disabled>音を再接続</button>
+        <p>ページの音量フェーダーと、スマホ本体・車の音量は別です。iPhoneはコントロールセンターの再生先で「iPhone」または車を選び、接続先の音量も確認。接続し直して無音なら「音を再接続」。復帰しない時は編集を保存して再読込してください。</p>
+        <p>この欄の再接続はStrudel用です。「元の303×2＋909」は中のRUNを止めて押し直します。</p>
+      </details>
 
       <section id="performance" class="performance" aria-labelledby="set-title" hidden>
         <p class="set-connection">ひとつのコードで同期演奏：ドラム ＋ 303風の低音・返し ＋ 素材A/B → 全体音量</p>
@@ -76,7 +83,7 @@
             <button id="set-live-lock" type="button" aria-pressed="false">今の展開をキープ</button>
           </div>
           <div class="set-scenes-row">
-            <label class="set-bpm-label">BPM<input id="set-bpm" type="number" min="60" max="180" step="1" value="128"></label>
+            <div class="set-tempo"><label class="set-bpm-label">BPM<input id="set-bpm" type="number" min="60" max="180" step="1" value="128"></label><input id="set-bpm-fader" type="range" min="60" max="180" step="1" value="128" aria-label="BPMフェーダー"><span id="set-tempo-status">演奏中も変更 · コードに保存</span></div>
             <div id="set-scenes" class="set-scenes" aria-label="展開を選ぶ"></div>
             <button id="set-auto" type="button" aria-pressed="false">AUTO 展開</button>
           </div>
@@ -117,6 +124,7 @@
           </div>
         </fieldset>
         <p id="set-status" class="set-status" role="status">セットを選び、再生ボタンを押してください。</p>
+        <p class="set-help set-automation-help">フェーダーは手で決める基準値。下の小バーはコードによる自動展開を掛けた値で、音量の実測ではありません。明るさはフィルターのうねりを足す前の値。基準値を触れば自動の動きも追従します。BPMは手動で、自動展開が勝手に加速することはありません。</p>
         <p id="set-phrase" class="set-help" aria-live="off"></p>
         <details class="set-guide"><summary>遊び方・数字の意味</summary>
           <ol><li>Acid Drive / Dub Room / Electro 808 / Ambient Driftを選び「セットを鳴らす」。新セットはLIVE自動展開がオン。PCは操作面が並び、スマホは縦に並びます。「聴く画面」で操作面を畳み、長めに流せます。</li>

@@ -187,6 +187,18 @@ npx wrangler@4.129.1 kv key put '<LIVE_PATTERN_KEY>' --path '<pattern-file>' --n
 
 ## スマホのホーム画面・オフライン
 
+### ライブ中のフェーダー・BPM・スマホ音量
+
+- 手動フェーダーは基準値。LIVE中はその下の小バーに、同じ演奏時計で計算した「展開後」の値を表示する。自動の抜き差しと明るさが見え、基準値を触ると追従する。小バーは音声を測るVUではなく、全体音量・音色・各発音の強弱より前の制御値。停止中・聴く画面・本文を手直しして生成形式が変わった版では表示しない。
+- BPMは数字または横フェーダーで60〜180を操作する。演奏時計へ直接渡し、コードのmetadataと`setcpm`だけを書き換える。全コードの再実行や音源再取得はせず、既存フェーダーの接続・軸の音符・旧V1/V2/V3保存形式を保つ。「再生 ○ BPM」は実際の時計の値。打点／シーン変更は従来どおり必要なコード反映が入る。
+- 保存するとBPMと手動基準値・自動展開の設定を残す。自動値を毎フレームcodeへ書く処理はない。表示は既存の80ms更新を使い、非表示のページと「聴く画面」では小バーを更新しない。実iPhoneの長時間負荷は未測定。BPMの自動加速は既定に追加しない。
+- 上部の「音が出ない・端末の音量ボタンが効かない時」に、Strudel用の「音を再接続」を置く。初回のworklet初期化は一度だけ、再開時には既存AudioContextを毎回resumeする。ページへ戻った時の復帰も既に再生中の時だけで、停止した演奏を勝手に始めない。対応ブラウザでは`navigator.audioSession.type = 'playback'`を音楽再生時に指定し、未対応では通常のWeb Audioを使う。
+- ページの音量、スマホのメディア音量、車の音量は別。出力先と物理ボタンの音量はOSと接続先が決めるため、ページから強制変更できない。iPhoneのコントロールセンターで再生先を選んだ後、無音なら再接続。復帰しなければ編集保存→アプリ再読込。acidBrosは別エンジンなので中のRUNを押し直す。実iPhone／Bluetooth／CarPlayでの物理音量ボタンと再接続は本人確認待ち。
+
+根拠: [MDN Audio Session API](https://developer.mozilla.org/en-US/docs/Web/API/Audio_Session_API)、[AudioContextの中断と復帰](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/state)、[Appleの出力先選択](https://support.apple.com/en-gb/guide/iphone/iph315e0d58d/ios)。API指定は端末の出力先を強制するものではなく、実機の問題が解消したとはまだ主張しない。
+
+### ホーム画面へ追加・音を保存
+
 1. [試奏台](https://music-private-live-workbench.pages.dev/)をiPhoneのSafariで開く。共有メニュー →「ホーム画面に追加」→「追加」。「Webアプリとして開く」があればオン。[Appleの手順](https://support.apple.com/ja-jp/guide/iphone/iphea86e5236/ios)。AndroidはChromeのメニューから「アプリをインストール」または「ホーム画面に追加」。対応ブラウザでは画面内の追加ボタンも使える。
 2. ホーム画面のアイコンから開く。「ホーム画面・オフライン」を開き、ネット接続中に「オフライン用の音を端末に保存」。**「オフライン準備OK」になるまで待つ**。
 3. 機内モードなどで同じアイコンから開き直し、作品を選ぶ → Play。303＋909は「この中で開く」または「全画面で開く」→ RUN。自動では再生しない。
