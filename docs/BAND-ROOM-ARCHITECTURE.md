@@ -15,6 +15,14 @@ Two playback modes, switched by the `#br-mode` radios:
 - **AI 再現 (synth)** — a synthesized re-creation (transcribed drum/bass/guitar/chord
   lines + a vowel vocal guide). Built lazily on play.
 
+v405 adds an optional, collapsed [physical band rehearsal](PHYSICAL-BAND-REHEARSAL.md),
+separate from these song modes. `audio/physical-band/score.mjs` feeds a Worker-rendered
+string/modal approximation; `preview.mjs` plays three short buffers on one native
+audio clock, reusing Tone's raw context. Its bounded gain/pan graph goes directly
+to the destination and is not connected to the song master/REC. The existing
+`startPlayback` / `stopPlayback` bridge keeps it exclusive with normal playback.
+It creates no Worker or audio nodes before an explicit preview gesture.
+
 ## Audio graph (both modes sum at `masterGain` → `masterLimiter` @ -1.0 dB)
 
 ```

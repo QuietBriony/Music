@@ -22,6 +22,15 @@
 
 * { box-sizing: border-box; }
 
+.br-physical-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 12px 0; }
+.br-physical-controls label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.br-physical-controls button, .br-physical-controls select { min-height: 44px; padding: 8px 12px; border: 1px solid var(--panel-border); border-radius: 8px; background: var(--bg-2); color: var(--text); font: inherit; }
+.br-physical-controls button:not(:disabled) { cursor: pointer; }
+.br-physical-controls button:disabled { opacity: .45; }
+.br-physical-controls button:focus-visible, .br-physical-controls select:focus-visible { outline: 2px solid var(--air-soft); outline-offset: 2px; }
+.br-physical-controls input[type="range"] { max-width: min(180px, 45vw); }
+#br-physical-band summary { line-height: 1.5; }
+
 html, body {
   margin: 0;
   padding: 0;

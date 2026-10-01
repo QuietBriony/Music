@@ -1,5 +1,9 @@
 # Hazama FM — システム全体像
 
+2026-10-01: 共有cache v405は既存Band Room内の任意rock/jazz 8小節試奏とListenの用途別整理。
+弦DSPと近似drumをWorkerで事前レンダーし、3 sourceを同期再生。FM／Core Rigの音源は変更しない。
+test／namima-labはエッセンス回収済みを照合して正式GitHub archive。詳細は`PHYSICAL-BAND-REHEARSAL.md`と`archive-repo-harvest-audit.md`。
+
 2026-10-01追記: 独立試奏台の演奏面を「試作・A/Bミックス」「ライブセット」「元の303×2＋909」で明示。生成形式を検証したA/Bコード・BPM・音量・クロスをV3セットへ引き継ぎ、追加パートはMUTEで開始する。通常セットの素材減衰と旧保存コードは維持。acidBrosは切替停止の別エンジン。全面自作より既存OSS活用/復元保管/更新比較を優先し、復元一式の保管は未完了。
 
 2026-10-01: 独立試奏台はコード手直し後の音量/音色フェーダーと演奏面上のPWA更新/再読込を改善。現在のStrudel/acidBrosエンジンは維持し、自作化/軽量化はREADMEに保存した計画。Core Rig / FM / Band Roomの実装はこの修正に含まない。
@@ -16,9 +20,9 @@
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v404`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v405`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-238`, `band-room.css?v=br-90`。
+> `band-room.js?v=br-239`, `band-room.css?v=br-91`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

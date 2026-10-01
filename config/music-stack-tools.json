@@ -3,16 +3,18 @@
   "reviewed_at": "2026-10-01",
   "evidence_scope": "Repository source inspection, not an audible, device, account, or publication certification. source_revisions are the audit starting commits; newly authored Music guide files belong to this change, not those base commits.",
   "source_revisions": {
-    "Music": "9bc8c4e",
+    "Music": "72475ae",
     "chill": "2e15163",
-    "drum-floor": "175fb1a",
-    "namima": "ac2b2ab",
+    "drum-floor": "582fd5a",
+    "namima": "55fedeb",
     "openclaw": "9aa5166"
   },
   "groups": [
-    { "id": "browser", "title": "ブラウザで聴く・触る・整理する" },
+    { "id": "browser", "title": "演奏する・練習する" },
+    { "id": "quiet", "title": "静かに聴く — ピアノ / 水と映像" },
+    { "id": "planning", "title": "作品を残す・次の段取りを決める" },
     { "id": "production", "title": "PCで作る・仕上げる・渡す" },
-    { "id": "next", "title": "これから育てる" }
+    { "id": "next", "title": "試奏する・設計を保管する" }
   ],
   "statuses": {
     "implemented": "実装あり・実音評価は別",
@@ -49,7 +51,7 @@
       "sources": [{ "repo": "Music", "path": "band-room.html" }, { "repo": "Music", "path": "band-room.js" }, { "repo": "Music", "path": "presets/bands.json" }]
     },
     {
-      "id": "lyric-lab", "repo": "Music", "group": "browser", "status": "implemented",
+      "id": "lyric-lab", "repo": "Music", "group": "planning", "status": "implemented",
       "title": "Lyric Lab", "href": "lyric-lab.html", "action": "開く",
       "purpose": "歌詞・曲の設計・制作指示を一曲ずつ整理する作品棚。",
       "first_step": "既存作品を開く → 制作先とBPM等を確認 → 制作パケットをコピー。",
@@ -67,7 +69,7 @@
       "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/performance.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/performance-code.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/groove-code.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/slider-bridge.js" }, { "repo": "Music", "path": "experiments/workbench/v1/scripts/local-workbench.mjs" }, { "repo": "Music", "path": "experiments/workbench/v1/src/session-backup.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/pwa.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/offline-policy.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/live-code.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/live-plan.js" }]
     },
     {
-      "id": "chill", "repo": "chill", "group": "browser", "status": "implemented",
+      "id": "chill", "repo": "chill", "group": "quiet", "status": "implemented",
       "title": "Chill Session", "href": "https://quietbriony.github.io/chill/session.html", "action": "開く",
       "purpose": "ピアノと余白を中心に、ゆっくり変化する静かな演奏。",
       "first_step": "START。まずピアノだけを聴き、必要な時だけBASS / DRUMSを足す。",
@@ -85,7 +87,7 @@
       "sources": [{ "repo": "drum-floor", "path": "app.js" }, { "repo": "drum-floor", "path": "src/midi-output.js" }, { "repo": "drum-floor", "path": "drum_floor/midi.py" }]
     },
     {
-      "id": "namima", "repo": "namima", "group": "browser", "status": "implemented",
+      "id": "namima", "repo": "namima", "group": "quiet", "status": "implemented",
       "title": "Namima", "href": "https://quietbriony.github.io/namima/", "action": "開く",
       "purpose": "水・庭・穏やかな空気のための、映像付きアンビエント。",
       "first_step": "Tap to start → 音と波紋を聴く。ほかのプレイヤーは止めて比較する。",
@@ -94,7 +96,7 @@
       "sources": [{ "repo": "namima", "path": "audio.js" }, { "repo": "namima", "path": "sketch.js" }, { "repo": "namima", "path": "music-session-adapter.js" }]
     },
     {
-      "id": "desk", "repo": "openclaw", "group": "browser", "status": "implemented",
+      "id": "desk", "repo": "openclaw", "group": "planning", "status": "implemented",
       "title": "OpenClaw Desk", "href": "https://quietbriony.github.io/openclaw/", "action": "開く",
       "purpose": "SYNCを読み、次の行き先・確認待ち・候補の段取りを見る制作卓。",
       "first_step": "Core RigかFMでSYNC → 同じブラウザのDeskでlatest packetを確認。",
@@ -146,6 +148,15 @@
       "outputs": "受け渡し一式。公開URLは実際の公開確認後に記録。",
       "boundary": "現行YouTubeの制作方式・投稿済み曲・upload権限は今回未監査。Gitの同期や音源生成だけでは投稿されない。",
       "sources": [{ "repo": "Music", "path": "docs/PRODUCTION-PATH.md" }, { "repo": "Music", "path": "docs/MUSIC-STACK-SYSTEM-MANUAL.md" }]
+    },
+    {
+      "id": "physical-band", "repo": "Music", "group": "next", "status": "candidate",
+      "title": "ギター・ベース・ドラムの8小節試奏", "href": "band-room.html#br-physical-band", "action": "試奏する",
+      "purpose": "小さく作り直した弦モデルのギター／ベースと打楽器の響きで、ロックとジャズを聴き比べる。",
+      "first_step": "スタイルを選ぶ → 8小節を試奏 → 3パートのON/OFFと試奏音量を動かす。",
+      "outputs": "ページ内で再利用する短い合奏。音声・modelのdownloadなし。",
+      "boundary": "8小節の独立したオリジナル試奏。ARCB採譜・通常のAI再現・RECへ未接続。ドラムは簡略化した振動モードとノイズ。多楽器の精密シミュレーションやAI作曲は未実装。実iPhoneの音質・負荷は未確認。",
+      "sources": [{ "repo": "Music", "path": "audio/physical-band/score.mjs" }, { "repo": "Music", "path": "audio/physical-band/dsp.mjs" }, { "repo": "Music", "path": "docs/PHYSICAL-BAND-REHEARSAL.md" }]
     },
     {
       "id": "visual-composer", "repo": "Music", "group": "next", "status": "planned",

@@ -21,7 +21,7 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行runtimeはv404（標準AIの軽量再生とSTOP時の予約音解放）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-238` / `br-90`。
+現行runtimeはv405（任意のrock/jazz 8小節試奏。標準AIはv404の安定化を維持）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-239` / `br-91`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
 ### v401 AIの短時間レイヤー判定
@@ -39,7 +39,7 @@ checkboxだけONにし、最後に`defaults`で通常mixへ戻します。
 曲ID seedによる微細な実演差があります。02固有アレンジの
 合否には使わず、02原音を基準にします。Surface合格だけではreal mobile合格になりません。
 
-## 画面構成（現行: br-237 / br-90）
+## 画面構成（現行: br-239 / br-91）
 
 ```
 ┌─────────────────────────────────┐
@@ -296,3 +296,10 @@ scripts/
 ### vocal phrase trigger が空
 → その曲の vocal stem から十分な phrases が検出できなかった (短すぎ等)。
    01 TABASCO は 44 秒の opener なので 0 個になる。他の曲は 20 個ある。
+
+## ギター・ベース・ドラムの8小節試奏
+
+既存Band Roomの折り畳み試奏でrock/jazzを選び、パートON/OFFと試奏音量を動かせる。
+曲のAI再現とは別の短い候補。ARCB採譜・RECへ未接続。
+音はWorkerで準備し、停止は準備中でも有効。
+詳細と音質・端末負荷の境界は[試奏ガイド](PHYSICAL-BAND-REHEARSAL.md)。

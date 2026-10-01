@@ -2,6 +2,30 @@
 
 ## 1. Purpose
 
+### Current decision — 2026-10-01
+
+The owner authorized consolidation and archiving of unfinished apps in the current
+conversation. The two completed BL-019 sources are now formally archived on GitHub;
+their source and history remain readable. There were no open PRs or changes after
+their harvest-closure commits. GitHub API confirmed `archived: true` for both.
+
+| Source | Retained main commit | Essence and current home | Decision |
+|---|---|---|---|
+| [test](https://github.com/QuietBriony/test) | `768f115c4af97297629a0c1d4173db4db0e07216` | Style interpolation: [Music translation](test-style-archetype-translation.md), [JSON](../references/style-archetype-from-test.json). Probability interpolation: [drum-floor recipe](https://github.com/QuietBriony/drum-floor/blob/main/docs/probability-interpolation-from-test.md) | Formal archive complete |
+| [namima-lab](https://github.com/QuietBriony/namima-lab) | `3909660856b4b221ab01f45efa6cda0ba0e3f1a6` | Organic pluck and safe ripple: [namima recipe](https://github.com/QuietBriony/namima/blob/main/docs/organic-pluck-lab-recipe.md). Dark v3 remains rejected for namima | Formal archive complete |
+| chill | Active quiet piano / trio | Touch / Phrase / Room, long rests, deterministic Flow Director, recovery and optional trio: `chill/exports/chill-piano-recipe.json` | Keep working quiet surface; reuse concepts rather than copy its runtime |
+| drum-floor | Active rhythm surface | Pocket, rests, velocity, deterministic groove grammar and stop safety | Keep rhythm specialist; translate performer parameters into the band score |
+| namima | Active ambient visual surface | Water/garden identity, safe start/stop and lightweight graphics | Keep distinct quiet visual experience |
+| openclaw | Active metadata desk | Session routing, candidate/review queue | Move to the planning shelf in Listen; no second audio engine |
+| Music | Active conductor | ARCB score/section/part data, FM pacing, live workbench and local song drafts | Keep existing entrances; rebuild only the instrument DSP in a bounded optional adapter |
+
+The faster zero-base candidate is the instrument DSP, not the entire music stack.
+The first implementation is the [physical band rehearsal](PHYSICAL-BAND-REHEARSAL.md)
+inside Band Room: short original rock/jazz scores, plucked-string guitar/bass,
+approximate modal drums, Worker rendering and three synchronized playback sources.
+It is a listening candidate, not a claim that all old apps or ARCB fidelity are complete.
+The older observations below are retained as the provenance of the BL-019 decisions.
+
 `chill` / `test` / `namima-lab` are not primary Music runtimes.
 
 They remain useful as harvest sources when their ideas are translated into the

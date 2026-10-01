@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-238-stable-ai-playback";
-  const BANDROOM_RELEASE_VERSION = "v404";
+  const BANDROOM_APP_VERSION = "br-239-physical-band-rehearsal";
+  const BANDROOM_RELEASE_VERSION = "v405";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
@@ -7240,6 +7240,7 @@
       return false;
     }
     const startContract = createPlaybackStartContract();
+    window.dispatchEvent(new CustomEvent("band-room:playback-starting"));
     state.starting = true;
     setButtonState("starting");
     setStartStatus("");
@@ -7778,6 +7779,7 @@
   }
 
   function stopPlayback(options = {}) {
+    window.dispatchEvent(new CustomEvent("band-room:playback-stopped"));
     clearAutoAdvanceTimer();
     // A whole bar has already been scheduled on the audio clock. Transport
     // cancellation alone leaves those notes alive after STOP or a quick restart.
@@ -8069,6 +8071,15 @@
   // ---- UI bindings --------------------------------------------
 
   function bindUI() {
+    window.addEventListener("band-room:physical-preview", (event) => {
+      // Do not let an awaited song boot finish over the short rehearsal.
+      if (state.starting || playbackSelectionTransitionInFlight()) {
+        event.preventDefault();
+        return;
+      }
+      stopPlayback({ resetPosition: false });
+      setButtonState("idle");
+    });
     $("br-play")?.addEventListener("click", togglePlay);
     $("br-reset-audio")?.addEventListener("click", () => resetBandRoomAudioState("manual-reset"));
     const feedbackNote = $("br-feedback-note");

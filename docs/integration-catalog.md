@@ -94,7 +94,7 @@ Supporting / historical docs:
 - Do not dilute: OpenClaw tracks what should happen next, but must not
   auto-promote, auto-merge, or auto-start any sister repo runtime.
 
-### namima-lab (archived)
+### namima-lab (GitHub archive confirmed 2026-10-01)
 
 - Role: lineage / staging / harvest-only source.
 - Edge: historical namima experiments, ripple interaction ideas, organic pluck
@@ -102,9 +102,9 @@ Supporting / historical docs:
 - Do not dilute: do not revive as the active runtime, merge directly into
   Music, or use as a dependency-heavy experiment lane without separate approval.
 
-### test (archived)
+### test (GitHub archive confirmed 2026-10-01)
 
-- Role: archive candidate and harvest-only source unless intentionally
+- Role: formally archived and harvest-only source unless intentionally
   reactivated.
 - Edge: small style blend and probability/interpolation ideas.
 - Do not dilute: do not treat as a primary runtime or add assets/dependencies.
