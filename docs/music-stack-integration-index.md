@@ -62,6 +62,12 @@ Supporting strategy docs:
 
 ## 3. Current repo roles
 
+2026-10-01の本人承認で`test`と`namima-lab`をGitHub正式archive。
+固定SHAとエッセンスの回収先は[archive audit](archive-repo-harvest-audit.md#current-decision--2026-10-01)。
+音を鳴らす面、静かな面、作品棚／段取りを既存Listen内で分けた。
+次の楽器中核は[Band Roomの3人試奏](PHYSICAL-BAND-REHEARSAL.md)で作り直し、
+既存の曲／パートデータ・奏法・休符を入力として残す。5 repoの役割は保持する。
+
 ### Music
 
 - **Role:** central integration target / conductor.
@@ -122,7 +128,7 @@ Supporting strategy docs:
 - **Boundary:** track next steps as metadata only; do not auto-promote,
   auto-merge, or auto-start any sister repo runtime.
 
-### namima-lab (archived)
+### namima-lab (formally archived 2026-10-01)
 
 - **Role:** lineage / staging / harvest-only source.
 - **Direction:** historical namima experiments, ripple interaction, organic
@@ -130,9 +136,9 @@ Supporting strategy docs:
 - **Boundary:** do not revive as active runtime or merge directly into Music
   without separate approval.
 
-### test (archived)
+### test (formally archived 2026-10-01)
 
-- **Role:** archive candidate / harvest-only source.
+- **Role:** formally archived / harvest-only source.
 - **Direction:** style blend, probability / interpolation ideas.
 - **Boundary:** do not treat as primary runtime or add assets/dependencies.
 

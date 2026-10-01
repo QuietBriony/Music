@@ -14,9 +14,9 @@
 
 ## 現在地とversion
 
-- 現行Band Room runtimeは **v404**（標準AIの軽量再生とSTOP時の予約音解放）。HAZAMAのplayability候補は **v401** のまま。client markerは
-  `band-room.js?v=br-238` / `band-room.css?v=br-90`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v404**。v401はHAZAMA AIの
+- 現行Band Room runtimeは **v405**（任意のrock/jazz 8小節試奏。標準AIはv404の安定化を維持）。HAZAMAのplayability候補は **v401** のまま。client markerは
+  `band-room.js?v=br-239` / `band-room.css?v=br-91`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v405**。v401はHAZAMA AIの
   arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
   約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
   減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、
@@ -84,7 +84,7 @@
 
 ---
 
-## 画面構成（現行: br-237 / br-90）
+## 画面構成（現行: br-239 / br-91）
 
 ```
 ┌─────────────────────────────────┐
@@ -298,3 +298,10 @@ Tabasco 以外のバンドを追加するなら別 doc:
 - **Drum Floor** (`https://quietbriony.github.io/drum-floor/`) — 現曲 / BPM / section / frame を metadata-only で受ける手動ドラム preview
 - これらは **隔離されたアプリ** (catalog / 操作モデル別)、band-room と素材レベルで
   橋渡し可 ([DAW-INTEGRATION.md](./DAW-INTEGRATION.md) 参照)
+
+## ギター・ベース・ドラムの8小節試奏
+
+既存Band Roomの折り畳み試奏でrock/jazzを選び、パートON/OFFと試奏音量を動かせる。
+曲のAI再現とは別の短い候補。ARCB採譜・RECへ未接続。
+音はWorkerで準備し、停止は準備中でも有効。
+詳細と音質・端末負荷の境界は[試奏ガイド](PHYSICAL-BAND-REHEARSAL.md)。

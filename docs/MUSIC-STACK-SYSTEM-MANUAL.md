@@ -14,6 +14,13 @@
 
 ### いまは既存をまとめて磨く（2026-09-20）
 
+2026-10-01の整理：役割の重ならない5 repoは残し、使う道具を用途別の棚へ統合。
+回収完了済みの`test`／`namima-lab`は本人承認で正式archiveした。
+エッセンスの回収先は[archive audit](archive-repo-harvest-audit.md)。
+音源を小さく作り直す最初の候補は[Band Roomのギター・ベース・ドラム試奏](PHYSICAL-BAND-REHEARSAL.md)。
+ロック／ジャズの8小節を別スレッドで準備し、3パートを同じ時計で再生する。
+通常の曲再生への昇格は音と端末負荷の確認後に行う。
+
 利用者の方針は「新しく作るより、まとめる・磨く・把握する」。
 現在の入口はListenとprivateの再開ノートの2つを維持する。
 Listenの[年鑑・索引](../listen.html#yearbook)から、repoの始まりと公開実験の履歴を辿れる。
@@ -26,7 +33,7 @@ GitHub作成日時とcommit日時は日本時間で表示し、録音日・公�
 | まとまり | 中身・見る場所 | 区別すること |
 |---|---|---|
 | 作品の棚 | [既存の公開デモ](../listen.html#recorded-works)、private再開ノート | 固定音声・比較抜粋・別版。リンクの数を作品数にしない |
-| 触る道具 | [全15道具](../listen.html#tool-map)、下の実装台帳 | 楽器・制作工程・段取りの違い。5 active repoの役割を保つ |
+| 触る道具 | [用途別の道具](../listen.html#tool-map)、下の実装台帳 | 演奏・静かな音・作品棚・制作工程。5 active repoの役割を保つ |
 | 音の実験 | [Musicの3案比較とHazamaの2試聴](../listen.html#sound-experiments) | 別projectの独立した実験。共通runtimeや評価の自動共有ではない |
 | 映像・公開 | [既存プレビューと可視化](../listen.html#visual-release) | 制作候補とYouTube等の公開履歴は別に確認 |
 
@@ -70,18 +77,28 @@ cloud認証まで合格済みという意味ではありません。候補・手
 今回新設したMusicのガイド・設計は、この変更に属し、開始時commitには含まれません。
 
 <!-- stack-tools:begin -->
-### ブラウザで聴く・触る・整理する
+### 演奏する・練習する
 
 | 道具・入口 | 今できること／最初の一手 | 保存・境界 | 状態・実装根拠 |
 |---|---|---|---|
 | [Music Core Rig](../index.html) | 密度と質感をつまみで演奏する中心の音源。アシッドやIDM探索の入口。<br>START → AUTO MIXを手動に → CULTのACIDを試し、まず一つのfaderだけ動かす。 | RECの音声ファイル／SYNCの設定JSON。<br>Hazama FMと同じengine。汎用ピアノロールや303専用16-stepエディタではない。 | 実装あり・実音評価は別<br>[Music/index.html](https://github.com/QuietBriony/Music/blob/main/index.html) / [Music/docs/USAGE-MUSIC-CORE-RIG.md](https://github.com/QuietBriony/Music/blob/main/docs/USAGE-MUSIC-CORE-RIG.md) / [Music/audio/music-recorder.js](https://github.com/QuietBriony/Music/blob/main/audio/music-recorder.js) |
 | [Hazama FM](../fm.html) | ジャンルとenergyを選んで流す、少ない操作のラジオ。<br>START → techno / ambient / pianoなどを一つ選び、60–90秒聴く。 | RECの音声ファイル／SYNCの設定・聴感文脈。<br>軽量設定で追加音色の残響・歪み負荷を抑える。YouTubeのhazamaチャンネルとは別のアプリ。新曲をAIモデルで生成・投稿するボタンではない。 | 実装あり・実音評価は別<br>[Music/fm.html](https://github.com/QuietBriony/Music/blob/main/fm.html) / [Music/fm.js](https://github.com/QuietBriony/Music/blob/main/fm.js) / [Music/audio/music-recorder.js](https://github.com/QuietBriony/Music/blob/main/audio/music-recorder.js) |
 | [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=stems) | 原音のパート別音声とブラウザAI再現を聴き比べ、練習・差し替え・録音する。<br>Human Fly原音でSTART → all off → drums ON。AI再現と比較し、自分で叩く時は原音のall on → drums OFF。 | mix REC／4 stems pack／listening note。MIDI読込は先頭1小節のドラム用。<br>AI再現は端末を問わず標準で軽量演奏。TabascoのAIドラムは8打/小節で、原音どおりのhatやfillは未完成。HAZAMA v401の音質・実mobileはBL-041で判定待ち。02 AIは01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作で、一般的な鍵盤・CC learnではない。 | 実装あり・実音評価は別<br>[Music/band-room.html](https://github.com/QuietBriony/Music/blob/main/band-room.html) / [Music/band-room.js](https://github.com/QuietBriony/Music/blob/main/band-room.js) / [Music/presets/bands.json](https://github.com/QuietBriony/Music/blob/main/presets/bands.json) |
-| [Lyric Lab](../lyric-lab.html) | 歌詞・曲の設計・制作指示を一曲ずつ整理する作品棚。<br>既存作品を開く → 制作先とBPM等を確認 → 制作パケットをコピー。 | 歌詞付き制作指示／歌詞を含まないScene metadata。<br>ACE-Step等へ自動送信しない。端末間の作品棚同期は認証済みCloudflare/D1環境が別途必要。GitHub Pagesの入口だけでは保証されない。 | 実装あり・実音評価は別<br>[Music/lyric-lab.js](https://github.com/QuietBriony/Music/blob/main/lyric-lab.js) / [Music/docs/LYRIC-LAB-USAGE.md](https://github.com/QuietBriony/Music/blob/main/docs/LYRIC-LAB-USAGE.md) / [Music/functions/api/lyric-drafts.js](https://github.com/QuietBriony/Music/blob/main/functions/api/lyric-drafts.js) |
 | [Strudel Live Workbench](https://music-private-live-workbench.pages.dev/) | 試作・A/Bミックス／ライブセット／元の303×2＋909を同じ入口で選ぶ。A/Bをコード・テンポ・混ぜ具合ごとライブセットへ持ち込み、追加ドラムや303風をMUTE解除で足す。テクノ/ダブ/アンビエントの自動LIVEも使える。<br>上の演奏面ボタンで選ぶ。2つ重ねるならA/Bを選んで「組み合わせのコードを開く」→ Play。楽器を足すなら「このA/Bでライブセットへ」。追加パートはミュートから開始。セットだけならライブセット → Acid DriveかAmbient Drift → セットを鳴らす。全体音量・接続が残る音色フェーダーは再生中も使える。PWAはアプリ更新で確認・再読込。PCローカルはREADMEの初回準備 → npm run local。 | 公開8試作はGit管理。4セットと引き継いだA/Bは全打点・音符・BPM・音色・19フェーダー・MUTE・素材コード・AUTO・変奏seed/固定/採用前の軸・LIVE設定を名前付き下書きへ保存。既存保存コードの出音は維持。LEVEL・A/B・acidBros FILEもJSONで別端末へ追加できる。<br>スマホPWAはアプリと公開8試作に必要な音を端末保存（約10 MB）してオフライン利用可。PCはローカルHTTPでも同じ画面を使える。後から指定する外部URL・他の標準バンクは自動保存しない。更新は保存後の明示操作。保存削除/OS整理では再準備が必要。JSON転送は手動で未保存編集・音源は含まない。acidBrosは別エンジンで、音・時計・パターン同期やチャット即時反映は未実装。実iPhoneの追加・試聴は未確認。公開ページ・コード・自前配信のWAV7本は公開。 | 実装あり・実音評価は別<br>[Music/experiments/workbench/v1/README.md](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/README.md) / [Music/experiments/workbench/v1/src/app.js](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/src/app.js) / [Music/experiments/workbench/v1/src/performance.js](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/src/performance.js) / [Music/experiments/workbench/v1/src/performance-code.js](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/src/performance-code.js) / [Music/experiments/workbench/v1/src/groove-code.js](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/src/groove-code.js) / [Music/experiments/workbench/v1/src/slider-bridge.js](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/src/slider-bridge.js) / [Music/experiments/workbench/v1/scripts/local-workbench.mjs](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/scripts/local-workbench.mjs) / [Music/experiments/workbench/v1/src/session-backup.js](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/src/session-backup.js) / [Music/experiments/workbench/v1/src/pwa.js](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/src/pwa.js) / [Music/experiments/workbench/v1/src/offline-policy.js](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/src/offline-policy.js) / [Music/experiments/workbench/v1/src/live-code.js](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/src/live-code.js) / [Music/experiments/workbench/v1/src/live-plan.js](https://github.com/QuietBriony/Music/blob/main/experiments/workbench/v1/src/live-plan.js) |
-| [Chill Session](https://quietbriony.github.io/chill/session.html) | ピアノと余白を中心に、ゆっくり変化する静かな演奏。<br>START。まずピアノだけを聴き、必要な時だけBASS / DRUMSを足す。 | ブラウザ演奏／quiet-piano recipeとsession文脈。<br>独立したactiveアプリ。汎用アンビエントに統一せず、長い休符とピアノの役割を残す。実音の好みの判定は別。 | 実装あり・実音評価は別<br>[chill/session.html](https://github.com/QuietBriony/chill/blob/main/session.html) / [chill/engine.js](https://github.com/QuietBriony/chill/blob/main/engine.js) / [chill/AGENTS.md](https://github.com/QuietBriony/chill/blob/main/AGENTS.md) |
 | [Drum Floor](https://quietbriony.github.io/drum-floor/) | ノリ・休符・強弱を作るドラム専門の演奏面と候補生成器。<br>最初はマイクもMIDIも使わず、再生（SYNC/手動）でgrooveを試す。 | ブラウザ演奏／CLIのMIDI候補／明示有効化した時だけMIDI note出力。<br>SYNC受信だけでは再生・MIDI送信しない。MusicやDAWとのサンプル精度の同時演奏を保証するものではない。 | 実装あり・実音評価は別<br>[drum-floor/app.js](https://github.com/QuietBriony/drum-floor/blob/main/app.js) / [drum-floor/src/midi-output.js](https://github.com/QuietBriony/drum-floor/blob/main/src/midi-output.js) / [drum-floor/drum\_floor/midi.py](https://github.com/QuietBriony/drum-floor/blob/main/drum_floor/midi.py) |
+
+### 静かに聴く — ピアノ / 水と映像
+
+| 道具・入口 | 今できること／最初の一手 | 保存・境界 | 状態・実装根拠 |
+|---|---|---|---|
+| [Chill Session](https://quietbriony.github.io/chill/session.html) | ピアノと余白を中心に、ゆっくり変化する静かな演奏。<br>START。まずピアノだけを聴き、必要な時だけBASS / DRUMSを足す。 | ブラウザ演奏／quiet-piano recipeとsession文脈。<br>独立したactiveアプリ。汎用アンビエントに統一せず、長い休符とピアノの役割を残す。実音の好みの判定は別。 | 実装あり・実音評価は別<br>[chill/session.html](https://github.com/QuietBriony/chill/blob/main/session.html) / [chill/engine.js](https://github.com/QuietBriony/chill/blob/main/engine.js) / [chill/AGENTS.md](https://github.com/QuietBriony/chill/blob/main/AGENTS.md) |
 | [Namima](https://quietbriony.github.io/namima/) | 水・庭・穏やかな空気のための、映像付きアンビエント。<br>Tap to start → 音と波紋を聴く。ほかのプレイヤーは止めて比較する。 | ブラウザの音・映像／安全なmoodの翻訳。<br>同じrepoのオフライン周波数レンダーとは別物。暗いアシッドや強い低域を既定音へ混ぜない。 | 実装あり・実音評価は別<br>[namima/audio.js](https://github.com/QuietBriony/namima/blob/main/audio.js) / [namima/sketch.js](https://github.com/QuietBriony/namima/blob/main/sketch.js) / [namima/music-session-adapter.js](https://github.com/QuietBriony/namima/blob/main/music-session-adapter.js) |
+
+### 作品を残す・次の段取りを決める
+
+| 道具・入口 | 今できること／最初の一手 | 保存・境界 | 状態・実装根拠 |
+|---|---|---|---|
+| [Lyric Lab](../lyric-lab.html) | 歌詞・曲の設計・制作指示を一曲ずつ整理する作品棚。<br>既存作品を開く → 制作先とBPM等を確認 → 制作パケットをコピー。 | 歌詞付き制作指示／歌詞を含まないScene metadata。<br>ACE-Step等へ自動送信しない。端末間の作品棚同期は認証済みCloudflare/D1環境が別途必要。GitHub Pagesの入口だけでは保証されない。 | 実装あり・実音評価は別<br>[Music/lyric-lab.js](https://github.com/QuietBriony/Music/blob/main/lyric-lab.js) / [Music/docs/LYRIC-LAB-USAGE.md](https://github.com/QuietBriony/Music/blob/main/docs/LYRIC-LAB-USAGE.md) / [Music/functions/api/lyric-drafts.js](https://github.com/QuietBriony/Music/blob/main/functions/api/lyric-drafts.js) |
 | [OpenClaw Desk](https://quietbriony.github.io/openclaw/) | SYNCを読み、次の行き先・確認待ち・候補の段取りを見る制作卓。<br>Core RigかFMでSYNC → 同じブラウザのDeskでlatest packetを確認。 | review・routing案・人間が実行するコマンドの提示。<br>このrepoのDeskは音を出さず、機材操作・REC・upload・mergeを自動実行しない。汎用OpenClaw製品の説明ではない。 | 実装あり・実音評価は別<br>[openclaw/index.html](https://github.com/QuietBriony/openclaw/blob/main/index.html) / [openclaw/README.md](https://github.com/QuietBriony/openclaw/blob/main/README.md) / [openclaw/AGENTS.md](https://github.com/QuietBriony/openclaw/blob/main/AGENTS.md) |
 
 ### PCで作る・仕上げる・渡す
@@ -94,10 +111,11 @@ cloud認証まで合格済みという意味ではありません。候補・手
 | [Sonar / NI / MIDI・機材](https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md#daw) | MIDIを目で直し、好きな音源で鳴らし、人の演奏とmixを仕上げる場所。<br>音声かMIDIを一つ持ち込み、Sonarの1トラックで確認。実機接続はprivate台帳から別途確認。 | DAW project／MIDI／採用音色の設定／mix・master。<br>MIDIだけではNI preset・303 slide・microtuning・音色は再現されない。M32等のノブ割当やEP-133への書込みを自動化しない。 | 手動工程・環境確認<br>[Music/docs/DAW-INTEGRATION.md](https://github.com/QuietBriony/Music/blob/main/docs/DAW-INTEGRATION.md) / [Music/docs/EP133-KOII-BANDROOM-WORKFLOW.md](https://github.com/QuietBriony/Music/blob/main/docs/EP133-KOII-BANDROOM-WORKFLOW.md) / [Music/references/studiopc-sonar-ni-reference.json](https://github.com/QuietBriony/Music/blob/main/references/studiopc-sonar-ni-reference.json) |
 | [保存・動画化・YouTube公開](https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md#delivery) | 採用音源を聴ける形で保存し、動画・説明・権利確認を揃えて公開担当へ渡す。<br>masterとiPhone試聴版、制作メモを一組にして保存。公開先と権限は公開担当へ確認する。 | 受け渡し一式。公開URLは実際の公開確認後に記録。<br>現行YouTubeの制作方式・投稿済み曲・upload権限は今回未監査。Gitの同期や音源生成だけでは投稿されない。 | 手動工程・環境確認<br>[Music/docs/PRODUCTION-PATH.md](https://github.com/QuietBriony/Music/blob/main/docs/PRODUCTION-PATH.md) / [Music/docs/MUSIC-STACK-SYSTEM-MANUAL.md](https://github.com/QuietBriony/Music/blob/main/docs/MUSIC-STACK-SYSTEM-MANUAL.md) |
 
-### これから育てる
+### 試奏する・設計を保管する
 
 | 道具・入口 | 今できること／最初の一手 | 保存・境界 | 状態・実装根拠 |
 |---|---|---|---|
+| [ギター・ベース・ドラムの8小節試奏](../band-room.html#br-physical-band) | 小さく作り直した弦モデルのギター／ベースと打楽器の響きで、ロックとジャズを聴き比べる。<br>スタイルを選ぶ → 8小節を試奏 → 3パートのON/OFFと試奏音量を動かす。 | ページ内で再利用する短い合奏。音声・modelのdownloadなし。<br>8小節の独立したオリジナル試奏。ARCB採譜・通常のAI再現・RECへ未接続。ドラムは簡略化した振動モードとノイズ。多楽器の精密シミュレーションやAI作曲は未実装。実iPhoneの音質・負荷は未確認。 | 候補・要検証<br>[Music/audio/physical-band/score.mjs](https://github.com/QuietBriony/Music/blob/main/audio/physical-band/score.mjs) / [Music/audio/physical-band/dsp.mjs](https://github.com/QuietBriony/Music/blob/main/audio/physical-band/dsp.mjs) / [Music/docs/PHYSICAL-BAND-REHEARSAL.md](https://github.com/QuietBriony/Music/blob/main/docs/PHYSICAL-BAND-REHEARSAL.md) |
 | [和声マップ＋アシッド演奏面](https://github.com/QuietBriony/Music/blob/main/docs/VISUAL-COMPOSER-PLAN.md) | Drums / Acid / Airを同じ時間軸で触り、ノリを固定しながら和声を溶かす小さな楽器。<br>既存部品と不足分の設計を見る。まず機材なしの8小節を完成条件にする。 | 計画: session JSON＋MIDI＋音色・調律・slide等の受け渡しメモ。<br>まだ演奏画面はない。Sonarの代替DAWは作らず、既存音源の既定動作も変更しない。 | 未実装・設計のみ<br>[Music/docs/VISUAL-COMPOSER-PLAN.md](https://github.com/QuietBriony/Music/blob/main/docs/VISUAL-COMPOSER-PLAN.md) / [drum-floor/src/midi-output.js](https://github.com/QuietBriony/drum-floor/blob/main/src/midi-output.js) / [Music/band-room.js](https://github.com/QuietBriony/Music/blob/main/band-room.js) |
 <!-- stack-tools:end -->
 

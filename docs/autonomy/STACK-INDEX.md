@@ -45,16 +45,27 @@ deploy はすべて GitHub Pages（`<remote>` の main ブランチ）。
 - private label、hostname、財務情報、exact routing を public Music へコピーしない。
 - `test` / `namima-lab` を overlay や hardware repo へ転用しない。
 
-## Archived repos（触らない）
+## Archived repos（履歴と回収済みアイデアを保管）
 
 | repo | 状態 | harvest 完了マーカー |
 |---|---|---|
-| `namima-lab` | lineage / staging / harvest-only。active runtime として revive しない | BL-019 ✅ 2026-05-25 — organic-pluck recipe → `namima/docs/organic-pluck-lab-recipe.md` (namima PR #32) |
-| `test` | archive candidate / harvest-only。primary runtime にしない | BL-019 ✅ 2026-05-25 — style archetype → `Music/references/style-archetype-from-test.json` + `Music/docs/test-style-archetype-translation.md` (Music PR #249) / probability interpolation → `drum-floor/docs/probability-interpolation-from-test.md` (drum-floor PR #52) |
+| `namima-lab` | GitHub正式archive済み 2026-10-01。lineage / harvest-only | BL-019 ✅ 2026-05-25 — organic-pluck recipe → `namima/docs/organic-pluck-lab-recipe.md` (namima PR #32) |
+| `test` | GitHub正式archive済み 2026-10-01。harvest-only | BL-019 ✅ 2026-05-25 — style archetype → `Music/references/style-archetype-from-test.json` + `Music/docs/test-style-archetype-translation.md` (Music PR #249) / probability interpolation → `drum-floor/docs/probability-interpolation-from-test.md` (drum-floor PR #52) |
 
-archive 操作・復活・削除は別承認が必要。本エンジンの対象外。
-両 archive 候補 repo は dormant-asset 監査 → 翻訳 harvest → archive のループが
-完了済 (BL-019)。formal GitHub archive toggle は user 判断保留。
+2026-10-01の本人の「半端な分は統合して整理やアーカイブしてっていいよ」を受け、
+両repoのREADME、mainの最新commit、open PRなし、回収先の存在を照合して正式archive。
+GitHub APIで両方の`archived: true`を確認。コード・履歴は削除しない。
+今後の復活や他repoのarchiveは現在の用途と回収先を確認してから判断する。
+判断・固定SHA・残すエッセンスは[`../archive-repo-harvest-audit.md`](../archive-repo-harvest-audit.md)。
+
+## 2026-10-01の整理と再構築
+
+- Listenの既存台帳を「演奏・練習」「静かに聴く」「作品棚・段取り」「PC制作」「試作・設計」に整理。
+- `chill`は音が動作し、ピアノと余白に独自の役割があるため保管だけにしない。
+- `openclaw`は段取りの道具。音源の再構築先にはしない。
+- ギター／ベース／ドラムの新中核は既存Band Room内の任意試奏から始める。
+  [`../PHYSICAL-BAND-REHEARSAL.md`](../PHYSICAL-BAND-REHEARSAL.md)の8小節を試し、
+  合格した部品だけをARCBのscoreへ接続する。既存engine全置換を先行しない。
 
 ## Cross-repo coordination
 

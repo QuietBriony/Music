@@ -19,6 +19,27 @@
 
 ---
 
+## 2026-10-01 — 旧試作を正式archiveし、3人バンドの任意試奏を作る (v405 / BL-051・BL-052)
+
+- agent      : Codex（単一thread。既存checkoutの別作業は触らず、既存のclean worktreeを再利用）
+- goal       : 旧アプリのエッセンスを残して整理し、ギター／ベース／ドラムからロック→ジャズへ進む
+- repos      : Music。GitHubのtest／namima-labはarchive設定だけ変更
+- shipped    : 本人のarchive承認に基づき、両repoのclosure commit・README・open PRなし・回収先を照合。
+  GitHub APIで両方`archived: true`を確認。ソースと履歴は保持。
+  既存Listen台帳を演奏／静かな音／作品棚・段取り／PC制作／試作へ統合。
+  Band Roomの折り畳み試奏に独自のrock/jazz 8小節scoreを追加。弦の損失ループと近似modal drumsを
+  Workerで32 kHz事前レンダーし、3 sourceを同じaudio時刻で開始。既存Tone native contextを再利用。
+  2 scoreまでのcache、準備取消／Worker timeout／STOP／自然終了／pagehideの解放、通常曲との排他。
+  ARCB採譜・REC・標準AI音色へ未接続。音声ファイル・model・依存・Actions・新repoなし。
+  Chromeで初回rock 152–270 ms、jazz 220 ms、cache再開0 ms、全mute／guitar単独／停止静音を確認。
+  jazzの自然終了でsource/node/Worker 0、cache PCM合計13,553,136 bytes。390pxで横はみ出しなし。
+  Human Fly AI→試奏→AIの切替が排他で、JS例外0。offline再読込後の初回Workerレンダーと出音も確認。DSPは3 sample rate×5音の周期性±20 cent、
+  palm減衰、出音／末尾静音／headroom／PCM上限／seed再現／異常入力を検査。
+- stack-check: PASS 38 / FAIL 0 / SKIP 0（0 BAD。追加DSP検査を含む）
+- backlog    : BL-052完了。BL-051は任意の8小節候補まで実装し、通常曲へ昇格する試奏判定を残す
+- next       : BL-051 — 本人の音・実iPhone負荷の判定→ARCBの1区間をscore adapterで変換して比較
+- blockers   : 生楽器のリアルさ・実iPhone負荷・長い曲のAI作曲は未検証／未実装
+
 ## 2026-10-01 — A/Bミックスからライブセットへつなぐ (BL-049)
 
 - agent      : Codex（Remote対話、単一thread）

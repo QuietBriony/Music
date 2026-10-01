@@ -41,6 +41,22 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 
 ## P1
 
+### BL-051 — 小さな楽器中核を作り直し、ロックからジャズへ
+- priority : P1
+- repo     : Music
+- scope    : runtime / verify
+- agent    : codex | claude
+- human-gate: yes（本人の試奏で音を判定して通常曲へ昇格。任意の短い候補は検証後merge可）
+- status   : open
+- source   : 2026-10-01本人の物理モデル参考画像、ロック→ジャズ、旧アプリ整理・archive承認
+- detail   : `audio/physical-band/`を既存Band Room内の任意試奏として実装。
+  2026-10-01に8小節の候補まで実装済み。
+  弦DSP／原創rock+jazz score／Workerレンダー／3 source同期／準備取消・停止を分離。
+  元のBand Room採譜、drum-floor pocket、chillの余白と奏法を入力のエッセンスとして残す。
+  正本は`docs/PHYSICAL-BAND-REHEARSAL.md`。写真の多楽器精密モデルの達成は主張しない。
+  次は本人の試奏と実iPhone負荷確認→ARCBの1区間をadapterで変換→原音との時刻・力度・音高比較。
+  BL-050の原曲忠実度と別の任意候補で、標準AI再現の音色凍結は維持する。
+
 ### BL-050 — Band Room AI 再現のパート別忠実度（原曲どおりに叩く・弾く）
 - priority : P1
 - repo     : Music
@@ -526,6 +542,15 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 ---
 
 ## Done
+
+### BL-052 — 旧試作の正式archiveと既存入口の用途別統合 ✅ 2026-10-01
+- repo: stack / scope: docs / GitHub archive settings
+- source: 本人「半端な分は統合して整理やアーカイブしてっていいよ」
+- detail: BL-019回収完了の`test`／`namima-lab`をmainのclosure commit・open PRなし・回収先と照合し正式archive。
+  GitHub APIで両方`archived: true`を確認。コードと履歴を保持。
+  既存Listenの台帳を演奏／静かな音／作品棚・段取り／PC制作／試作・設計へ分け、
+  活動中のStrudel、ARCB、FM、chill、drum-floor、namimaの役割を残す。
+  `docs/archive-repo-harvest-audit.md`に固定SHA・残すエッセンス・移植先を記録。
 
 ### BL-030 — #367 planとdoc権威の統合 ✅ 2026-09-07
 - outcome : userの全体統合依頼に基づき、既存Listenを総合入口、system manualを利用者向け正本、

@@ -1,6 +1,14 @@
-# Band Room - Changelog (v65 -> v404 compact)
+# Band Room - Changelog (v65 -> v405 compact)
 
-Current sw.js VERSION: v404. Latest Band Room runtime change: v404 (stable default AI band, native drum one-shots and STOP cleanup). FM light genre rooms are now device-gated throughout. HAZAMA playability candidate remains v401. v403 refined Tabasco light drum-row priority and the section-crash guard. v402 changed only the shared Listen/guide surface and its cache. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE, and exact lyric boundaries. v399 provides HAZAMA AI safe START and four-case audition context. v397 adds the HAZAMA 原音 stems lane; v398 adds 02 Still Moving (Hard).
+Current sw.js VERSION: v405. Latest Band Room runtime change: v405 (optional original rock/jazz physical band rehearsal; normal song synthesis unchanged). v404 provides the stable light AI band, native drum one-shots, STOP cleanup and device-gated FM rooms. HAZAMA playability candidate remains v401. v403 refined Tabasco drum-row priority. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE and exact lyric boundaries.
+
+## v405 compact - Optional physical band rehearsal and old prototype consolidation
+
+- 既存Band Roomの折り畳み試奏に、オリジナルのrock/jazz 8小節を追加。弦の損失ループによるギター／ベースと、近似modal drums。ARCB採譜・REC・標準AI音色へ未接続。
+- 音はWorkerで事前レンダーし、再生は3 sourceを同じaudio時刻で開始。cacheは最大2 score。準備中の取消、停止・自然終了・通常曲との排他・pagehideでWorker/source/nodeを解放。
+- Listenの既存台帳を用途別に整理し、BL-019回収済みtest／namima-labを本人承認で正式GitHub archive。コード・履歴・recipeは保持。
+- DSP検査は3 sample rate × 5音の周期性、減衰、出音、末尾静音、headroom、PCM上限、seed再現、異常入力。全音域の聴感合格や実iPhone負荷合格は主張しない。
+- Runtime markers: `band-room.js?v=br-239`, `band-room.css?v=br-91`, physical modules `?v=1`, shared cache `hazama-fm-v405`。
 
 ## v404 compact - Stable AI playback and phone genre rooms
 

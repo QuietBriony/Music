@@ -456,6 +456,10 @@
       <p class="guide-note arcb-launch"><strong>いま優先するARCB / Tabascoのバンド練習：</strong><br>
         <a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">🥁 Human Flyの原音ドラムから聴く →</a>
         <a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth">AIドラム再現と比べる →</a><br>AI再現は安定性を優先した軽量演奏へ更新しました。</p>
+      <p class="guide-note"><strong>ギター・ベース・ドラムから、小さく作り直す：</strong><br>
+        <a class="mini-link" href="band-room.html#br-physical-band">ロック / ジャズの8小節を試奏 →</a><br>
+        新しい弦の音を試す候補です。元の曲のAI再現とは別の短い演奏です。
+        旧試作のtest / namima-labは回収済みアイデアと履歴を残してアーカイブしました。</p>
       <div class="return-grid">
         <a class="card return-card" href="#collection-map"><div><p class="intent-no">01 / MAP</p><strong>何があるか、把握する</strong><span>作品・道具・実験・映像。<br>別々に作ったものの関係を見る。</span></div><div class="meta"><b>4つのまとまりへ →</b></div></a>
         <a class="card return-card amber" href="#recorded-works"><div><p class="intent-no">02 / REVISIT</p><strong>前に作った音を聴く</strong><span>既存のデモや比較を開く。<br>好きだった区間を思い出す。</span></div><div class="meta"><b>試聴の棚へ →</b></div></a>
@@ -643,7 +647,7 @@
 <!-- stack-tools:begin -->
 <p class="guide-note">ソース照合：2026-10-01。実装確認と、実音・実機の合格は別です。</p>
 <details class="tool-group" data-tool-group="browser">
-  <summary>ブラウザで聴く・触る・整理する <span>9項目</span></summary>
+  <summary>演奏する・練習する <span>5項目</span></summary>
   <div class="tool-grid">
     <article class="tool-item" id="tool-core-rig" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
@@ -678,17 +682,6 @@
       </dl>
       <a class="mini-link" data-tool-entry="band-room" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">Band Room / ARCB・Tabasco — 開く</a>
     </article>
-    <article class="tool-item" id="tool-lyric-lab" data-tool-status="implemented">
-      <p class="tool-status">Music · 実装あり・実音評価は別</p>
-      <h3>Lyric Lab</h3>
-      <p>歌詞・曲の設計・制作指示を一曲ずつ整理する作品棚。</p>
-      <dl>
-        <dt>最初の一手</dt><dd>既存作品を開く → 制作先とBPM等を確認 → 制作パケットをコピー。</dd>
-        <dt>残るもの</dt><dd>歌詞付き制作指示／歌詞を含まないScene metadata。</dd>
-        <dt>できることの境界</dt><dd>ACE-Step等へ自動送信しない。端末間の作品棚同期は認証済みCloudflare/D1環境が別途必要。GitHub Pagesの入口だけでは保証されない。</dd>
-      </dl>
-      <a class="mini-link" data-tool-entry="lyric-lab" href="lyric-lab.html">Lyric Lab — 開く</a>
-    </article>
     <article class="tool-item" id="tool-strudel-workbench" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
       <h3>Strudel Live Workbench</h3>
@@ -699,17 +692,6 @@
         <dt>できることの境界</dt><dd>スマホPWAはアプリと公開8試作に必要な音を端末保存（約10 MB）してオフライン利用可。PCはローカルHTTPでも同じ画面を使える。後から指定する外部URL・他の標準バンクは自動保存しない。更新は保存後の明示操作。保存削除/OS整理では再準備が必要。JSON転送は手動で未保存編集・音源は含まない。acidBrosは別エンジンで、音・時計・パターン同期やチャット即時反映は未実装。実iPhoneの追加・試聴は未確認。公開ページ・コード・自前配信のWAV7本は公開。</dd>
       </dl>
       <a class="mini-link" data-tool-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/">Strudel Live Workbench — 音とコードを触る</a>
-    </article>
-    <article class="tool-item" id="tool-chill" data-tool-status="implemented">
-      <p class="tool-status">chill · 実装あり・実音評価は別</p>
-      <h3>Chill Session</h3>
-      <p>ピアノと余白を中心に、ゆっくり変化する静かな演奏。</p>
-      <dl>
-        <dt>最初の一手</dt><dd>START。まずピアノだけを聴き、必要な時だけBASS / DRUMSを足す。</dd>
-        <dt>残るもの</dt><dd>ブラウザ演奏／quiet-piano recipeとsession文脈。</dd>
-        <dt>できることの境界</dt><dd>独立したactiveアプリ。汎用アンビエントに統一せず、長い休符とピアノの役割を残す。実音の好みの判定は別。</dd>
-      </dl>
-      <a class="mini-link" data-tool-entry="chill" href="https://quietbriony.github.io/chill/session.html">Chill Session — 開く</a>
     </article>
     <article class="tool-item" id="tool-drum-floor" data-tool-status="implemented">
       <p class="tool-status">drum-floor · 実装あり・実音評価は別</p>
@@ -722,6 +704,22 @@
       </dl>
       <a class="mini-link" data-tool-entry="drum-floor" href="https://quietbriony.github.io/drum-floor/">Drum Floor — 開く</a>
     </article>
+  </div>
+</details>
+<details class="tool-group" data-tool-group="quiet">
+  <summary>静かに聴く — ピアノ / 水と映像 <span>2項目</span></summary>
+  <div class="tool-grid">
+    <article class="tool-item" id="tool-chill" data-tool-status="implemented">
+      <p class="tool-status">chill · 実装あり・実音評価は別</p>
+      <h3>Chill Session</h3>
+      <p>ピアノと余白を中心に、ゆっくり変化する静かな演奏。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>START。まずピアノだけを聴き、必要な時だけBASS / DRUMSを足す。</dd>
+        <dt>残るもの</dt><dd>ブラウザ演奏／quiet-piano recipeとsession文脈。</dd>
+        <dt>できることの境界</dt><dd>独立したactiveアプリ。汎用アンビエントに統一せず、長い休符とピアノの役割を残す。実音の好みの判定は別。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="chill" href="https://quietbriony.github.io/chill/session.html">Chill Session — 開く</a>
+    </article>
     <article class="tool-item" id="tool-namima" data-tool-status="implemented">
       <p class="tool-status">namima · 実装あり・実音評価は別</p>
       <h3>Namima</h3>
@@ -732,6 +730,22 @@
         <dt>できることの境界</dt><dd>同じrepoのオフライン周波数レンダーとは別物。暗いアシッドや強い低域を既定音へ混ぜない。</dd>
       </dl>
       <a class="mini-link" data-tool-entry="namima" href="https://quietbriony.github.io/namima/">Namima — 開く</a>
+    </article>
+  </div>
+</details>
+<details class="tool-group" data-tool-group="planning">
+  <summary>作品を残す・次の段取りを決める <span>2項目</span></summary>
+  <div class="tool-grid">
+    <article class="tool-item" id="tool-lyric-lab" data-tool-status="implemented">
+      <p class="tool-status">Music · 実装あり・実音評価は別</p>
+      <h3>Lyric Lab</h3>
+      <p>歌詞・曲の設計・制作指示を一曲ずつ整理する作品棚。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>既存作品を開く → 制作先とBPM等を確認 → 制作パケットをコピー。</dd>
+        <dt>残るもの</dt><dd>歌詞付き制作指示／歌詞を含まないScene metadata。</dd>
+        <dt>できることの境界</dt><dd>ACE-Step等へ自動送信しない。端末間の作品棚同期は認証済みCloudflare/D1環境が別途必要。GitHub Pagesの入口だけでは保証されない。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="lyric-lab" href="lyric-lab.html">Lyric Lab — 開く</a>
     </article>
     <article class="tool-item" id="tool-desk" data-tool-status="implemented">
       <p class="tool-status">openclaw · 実装あり・実音評価は別</p>
@@ -807,8 +821,19 @@
   </div>
 </details>
 <details class="tool-group" data-tool-group="next">
-  <summary>これから育てる <span>1項目</span></summary>
+  <summary>試奏する・設計を保管する <span>2項目</span></summary>
   <div class="tool-grid">
+    <article class="tool-item" id="tool-physical-band" data-tool-status="candidate">
+      <p class="tool-status">Music · 候補・要検証</p>
+      <h3>ギター・ベース・ドラムの8小節試奏</h3>
+      <p>小さく作り直した弦モデルのギター／ベースと打楽器の響きで、ロックとジャズを聴き比べる。</p>
+      <dl>
+        <dt>最初の一手</dt><dd>スタイルを選ぶ → 8小節を試奏 → 3パートのON/OFFと試奏音量を動かす。</dd>
+        <dt>残るもの</dt><dd>ページ内で再利用する短い合奏。音声・modelのdownloadなし。</dd>
+        <dt>できることの境界</dt><dd>8小節の独立したオリジナル試奏。ARCB採譜・通常のAI再現・RECへ未接続。ドラムは簡略化した振動モードとノイズ。多楽器の精密シミュレーションやAI作曲は未実装。実iPhoneの音質・負荷は未確認。</dd>
+      </dl>
+      <a class="mini-link" data-tool-entry="physical-band" href="band-room.html#br-physical-band">ギター・ベース・ドラムの8小節試奏 — 試奏する</a>
+    </article>
     <article class="tool-item" id="tool-visual-composer" data-tool-status="planned">
       <p class="tool-status">Music · 未実装・設計のみ</p>
       <h3>和声マップ＋アシッド演奏面</h3>

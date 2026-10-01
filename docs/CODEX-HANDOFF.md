@@ -1,5 +1,12 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-01: v405の任意3人試奏を既存Band Room内へ追加。新規のrock/jazz 8小節score、
+弦の損失ループ、近似modal drumsをWorkerで事前レンダーし、3 sourceを同期再生。
+通常曲のSTARTと排他にし、準備取消／STOP／自然終了／pagehideで解放する。
+ARCB採譜・REC・標準AI音色へ未接続、実iPhone負荷・音質は未確認。詳細は`PHYSICAL-BAND-REHEARSAL.md`。
+本人の旧アプリ整理・archive承認で、BL-019回収済みtest／namima-labの正式archiveをAPI確認。
+Listen台帳は用途別に統合し、5 active repoと作品データ・recipeを残した（BL-051/052）。
+
 > **Current control-plane snapshot — verified 2026-08-11**
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
@@ -122,8 +129,8 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v404`。Band Room runtime markerは`band-room.js?v=br-238` /
-  `band-room.css?v=br-90`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
+- 現行cacheは`hazama-fm-v405`。Band Room runtime markerは`band-room.js?v=br-239` /
+  `band-room.css?v=br-91`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
   ASR由来の`tabasco-lyrics-timed.json`を使う。`presets/tabasco-songs.json` v2は
