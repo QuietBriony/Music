@@ -26,12 +26,19 @@
           <p class="subhead">試作を選び、コードを戻して、聴きながら変える</p>
         </div>
         <div class="masthead-actions">
-          <button id="performance-open" type="button" aria-controls="performance" aria-expanded="false">テクノ・ライブセットを開く</button>
           <a href="https://strudel.cc/learn/first-sounds/" target="_blank" rel="noreferrer">Strudelの基本 ↗</a>
         </div>
       </header>
 
+      <nav class="play-modes" aria-label="演奏する画面">
+        <button id="mode-library" type="button" aria-pressed="true">試作・A/Bミックス</button>
+        <button id="performance-open" type="button" aria-controls="performance" aria-expanded="false" aria-pressed="false">ライブセット</button>
+        <button id="mode-machine" type="button" aria-pressed="false">元の303×2＋909</button>
+      </nav>
+      <p id="play-route" class="play-route" data-mode="library">試作のコードを演奏。A/Bミックスとライブセットは同じStrudelで、元の303×2＋909は切り替えて演奏します。</p>
+
       <section id="performance" class="performance" aria-labelledby="set-title" hidden>
+        <p class="set-connection">ひとつのコードで同期演奏：ドラム ＋ 303風の低音・返し ＋ 素材A/B → 全体音量</p>
         <div class="set-transport">
           <div class="set-heading"><p class="eyebrow">TECHNO / LIVE SET</p><h2 id="set-title">鳴らす。抜く。みょんを上げる。</h2><span id="set-position">STOPPED</span></div>
           <button id="set-start" class="set-start" type="button" disabled>▶ セットを鳴らす</button>
@@ -87,7 +94,7 @@
               <p class="set-help">808の低音の長さ：上げると「ブーン」が伸びます。909には影響しません。カウベルは両方で使えます。</p>
             </article>
             <article class="set-card set-acid">
-              <div class="set-card-heading"><div><p class="eyebrow">02 / ACID</p><h3>303 · LIVE FADERS</h3></div><span class="set-chip">BROWSER SYNTH</span></div>
+              <div class="set-card-heading"><div><p class="eyebrow">02 / ACID</p><h3 id="set-acid-title">303風 · LIVE FADERS</h3></div><span class="set-chip">コードと連動</span></div>
               <div id="set-acid-faders" class="set-acid-faders"></div>
               <div class="set-note-scroll"><div id="set-acid-notes" aria-label="303の16ステップ音符"></div></div>
               <p class="set-help">ここは軸の16音。押すと次の高さ、~ は休符。PCはShift＋クリックで休符。新セットは4小節反復→弱拍の小変奏→8小節で戻る。</p>
@@ -96,15 +103,16 @@
               </details>
             </article>
             <article class="set-card set-mix">
-              <div class="set-card-heading"><div><p class="eyebrow">03 / MIX</p><h3>パートを出し入れ</h3></div><span class="set-chip">ONE CLOCK</span></div>
+              <div class="set-card-heading"><div><p class="eyebrow">03 / MIX</p><h3 id="set-mixer-title">パートを出し入れ</h3></div><span class="set-chip">ONE CLOCK</span></div>
               <div id="set-mixer" class="set-mixer"></div>
               <p class="set-help">MUTEでそのパートを抜く。ハットは閉/開をまとめて操作。シーンを変えても手動MUTEと打点は残ります。</p>
             </article>
             <article class="set-card set-layers">
-              <div class="set-card-heading"><div><p class="eyebrow">04 / SAVED IDEAS</p><h3>過去のネタを重ねる</h3></div><span class="set-chip">A ↔ B</span></div>
+              <div class="set-card-heading"><div><p class="eyebrow">04 / SAVED IDEAS</p><h3>試作を重ねる · 素材A/B</h3></div><span class="set-chip">同じBPM</span></div>
               <div class="set-layer-pickers"><label>素材A<select data-set-layer="a" aria-label="セットの素材A"></select></label><label>素材B<select data-set-layer="b" aria-label="セットの素材B"></select></label></div>
               <div id="set-layer-faders"></div>
-              <p class="set-help">最初は音量0。少しずつ上げて同じBPMで重ねる。クロスは左=A、右=B、中央=両方。素材にドラムや低音が含まれる時は小さめに。</p>
+              <p id="set-layer-summary" class="set-help"></p>
+              <p class="set-help">通常セットは音量0から。A/Bミックスから移ると混ぜ具合を引き継ぐ。クロスは左=A、右=B、中央=両方。素材の中の音符・音色は下のコードで編集。左の303フェーダーはセットが追加する303風に効きます。</p>
             </article>
           </div>
         </fieldset>
@@ -162,23 +170,23 @@
         <div class="module-rack-heading">
           <div>
             <p class="eyebrow">PATCH BAY / BROWSER MACHINES</p>
-            <h2 id="module-rack-title">音のモジュールを選ぶ</h2>
-            <p>コードで組むStrudelと、16ステップを触る303＋909。保存パッチとテンポを受け渡し、演奏は切り替えて使います。</p>
+            <h2 id="module-rack-title">演奏面のつながり</h2>
+            <p>試作・A/Bミックス・ライブセットはコードで演奏。元の303×2＋909は別の楽器として、切り替えて使います。</p>
           </div>
         </div>
         <div class="module-grid">
           <article class="module-card">
             <span class="module-number">01 / CODE</span>
-            <h3>Strudel 試奏台</h3>
-            <p>下の作品一覧と2デッキ。コード、LEVEL、フェーダーを編集できます。</p>
+            <h3>コードで一緒に鳴らす · Strudel</h3>
+            <p>試作を1つ聴く、A/Bで重ねる、ライブセットのドラムや303風を足す。コードと音量フェーダーが連動します。</p>
             <a href="#editor-title">コードへ ↓</a>
           </article>
           <article class="module-card module-card-acid">
             <span class="module-number">02 / MACHINE</span>
-            <h3>acidBros · 303 × 2 ＋ 909</h3>
-            <p>303の発振器→フィルター→ディレイ、909の11パートをステップとつまみで演奏。音はブラウザ内で作ります。</p>
+            <h3>元の303×2＋909 · acidBros</h3>
+            <p>16ステップとつまみで演奏する別の楽器。開くとコード側の演奏は止まります。音符・音色はコードへ自動で入りません。</p>
             <div class="module-card-actions">
-              <button id="acid-module-open" type="button" aria-controls="acid-module-stage" aria-expanded="false">この中で開く</button>
+              <button id="acid-module-open" type="button" aria-controls="acid-module-stage" aria-expanded="false">切り替えて開く</button>
               <a id="acid-module-card-full" href="/modules/acidbros/" target="_blank" rel="noopener">全画面で開く ↗</a>
             </div>
           </article>
@@ -213,16 +221,18 @@
       <section class="deck-setup" aria-labelledby="deck-title">
         <div>
           <p class="eyebrow">TWO DECKS / ONE CLOCK</p>
-          <h2 id="deck-title">2つの試作を組み合わせる</h2>
-          <p>公開試作からAとBを選びます。BはAのテンポに同期し、フェーダーで演奏中に混ぜられます。</p>
+          <h2 id="deck-title">2つの試作を組み合わせる · A/Bミックス</h2>
+          <p>AとBのコードをひとつにまとめ、Aのテンポで一緒に鳴らします。Acid 303 / 909を選ぶと、その試作の303風・ドラムも重なります。</p>
         </div>
         <div class="deck-pickers">
           <label>デッキA・テンポの基準 <select id="deck-a-select" aria-label="デッキAの試作"></select></label>
           <label>デッキB・重ねる音 <select id="deck-b-select" aria-label="デッキBの試作"></select></label>
           <button id="deck-swap" type="button" disabled>A ⇄ B</button>
-          <button id="deck-open" type="button" disabled>組み合わせを開く</button>
+          <button id="deck-open" type="button" disabled>組み合わせのコードを開く</button>
         </div>
         <p id="deck-info" class="deck-info">組み合わせを開いてPlay。各音量と横フェーダーを動かしてみてください。</p>
+        <div class="deck-transfer"><button id="deck-to-set" type="button" disabled>このA/Bでライブセットへ</button><p id="deck-transfer-hint">A/Bを選ぶと、ライブセットへ持ち込めます。</p></div>
+        <p>ライブセットでは同じA/Bにドラムや303風を足せます。元の303×2＋909画面の音は、このミックスには入りません。</p>
       </section>
 
       <section class="library" aria-labelledby="library-title">

@@ -9,6 +9,15 @@ a { color: #a9b9ff; }
 .eyebrow { margin: 0 0 8px; color: #8e96ad; font-size: .72rem; font-weight: 700; letter-spacing: .18em; }
 h1 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.6rem); line-height: 1.15; }
 .subhead { margin: 10px 0 0; color: #b0afba; }
+.play-modes { display: flex; gap: 8px; margin: 0 0 10px; padding-block: 6px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: #0c0c10; }
+.play-modes button { flex: 1 1 0; min-width: 0; min-height: 48px; border-color: #465270; padding: 10px 8px; font-size: .84rem; }
+.play-modes button[aria-pressed="true"] { background: #253e32; border-color: #91c4a8; color: #e5ffef; }
+.play-route { border-left: 3px solid #91c4a8; margin: 0 0 22px; padding: 8px 12px; color: #c5d4cc; font-size: .86rem; line-height: 1.6; }
+.play-route[data-mode="machine"] { border-color: #c0a1e7; color: #d5c6e6; }
+.set-connection { padding: 12px 16px; margin: 0 0 14px; border: 1px solid #466253; border-radius: 12px; color: #c9e5d3; background: #15201b; font-size: .84rem; line-height: 1.6; }
+.deck-transfer { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid #39465d; }
+.deck-transfer button { border-color: #83b396; }
+.deck-transfer p { flex: 1 1 230px; margin: 0; }
 .intro { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
 .intro span { padding: 8px 12px; border: 1px solid #363641; border-radius: 999px; color: #dedce5; font-size: .82rem; }
 .pwa-panel { margin-bottom: 20px; padding: 4px 16px; border: 1px solid #485967; border-radius: 14px; background: #141b20; }
