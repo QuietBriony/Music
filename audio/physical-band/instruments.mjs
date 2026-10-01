@@ -1,5 +1,6 @@
-import { GUITAR_KEYS, BASS_KEYS, nearestKey, MAX_BANK_BYTES } from "./bank.mjs?v=1";
+import { GUITAR_KEYS, BASS_KEYS, nearestKey, MAX_BANK_BYTES } from "./bank.mjs?v=2";
 import { createGuitarAmp } from "./amp.mjs?v=1";
+import { createBandRoom } from "./room.mjs?v=1";
 
 // One bank per current audio context. Prepared in a Worker only after START;
 // PCM is transferred once, then discarded after copying into AudioBuffers.
@@ -9,7 +10,7 @@ export async function prepareInstrumentBank(context, { signal, progress = () => 
   if (cached?.context === context) return cached;
   cached = undefined;
   const bank = await new Promise((resolve, reject) => {
-    const worker = new Worker(new URL("./bank-worker.mjs?v=1", import.meta.url), { type: "module" });
+    const worker = new Worker(new URL("./bank-worker.mjs?v=2", import.meta.url), { type: "module" });
     let settled = false;
     const finish = (error, value) => {
       if (settled) return;
@@ -38,13 +39,46 @@ export async function prepareInstrumentBank(context, { signal, progress = () => 
   return cached;
 }
 
-export function createPhysicalBand(context, bank, targets, { connect, seconds, midi, tone = "crunch" }) {
+export function createPhysicalBand(context, bank, targets, { connect, disconnect = (source, target) => source.disconnect(target), seconds, midi, tone = "crunch", roomWet = 0.35 }) {
   const pending = new Set();
   const stats = { played: 0, dropped: 0, last: {} };
   const amp = createGuitarAmp(context, tone);
   connect(amp.output, targets.guitar);
   const destinations = { bass: targets.bass, guitar: amp.input, drums: targets.drums, melody: targets.voice };
   let disposed = false;
+  let room, sends = [];
+
+  function clearRoom() {
+    for (const [bus, send] of sends) { disconnect(bus, send); send.disconnect(); }
+    sends = []; room?.dispose(); room = undefined;
+  }
+  function attachRoom() {
+    if (!targets.room || disposed) return;
+    room = createBandRoom(context, roomWet);
+    // Post-fader sends: muting a part also removes its room input. Return
+    // through the existing instrument/master/REC path, with no dry bypass.
+    for (const [part, level] of Object.entries({ guitar: 0.35, bass: 0.08, drums: 0.4, voice: 0.15 })) {
+      const send = context.createGain(); send.gain.value = level;
+      connect(targets[part], send); send.connect(room.input); sends.push([targets[part], send]);
+    }
+    connect(room.output, targets.room);
+  }
+  attachRoom();
+
+  function damp(part, at, fade) {
+    for (const hit of pending) {
+      if (hit.part !== part || hit.at >= at || hit.end <= at) continue;
+      const end = Math.min(hit.end, at + fade);
+      const level = hit.level * Math.max(0, Math.min(1, (hit.end - at) / (hit.end - hit.releaseAt)));
+      hit.gain.gain.cancelScheduledValues(at);
+      // Preserve the original slope up to the damping time: cancelling its
+      // old ramp endpoint and adding a set-value event would create a step.
+      hit.gain.gain.linearRampToValueAtTime(level, at);
+      hit.gain.gain.linearRampToValueAtTime(0, end);
+      hit.releaseAt = at; hit.level = level; hit.end = end;
+      try { hit.source.stop(end); } catch {}
+    }
+  }
 
   function fire(part, key, time, velocity, rate = 1, duration = Infinity) {
     if (disposed || !Number.isFinite(time) || !Number.isFinite(velocity) || velocity <= 0) return;
@@ -54,13 +88,17 @@ export function createPhysicalBand(context, bank, targets, { connect, seconds, m
     if (at - context.currentTime > 8) { stats.dropped++; return; }
     const source = context.createBufferSource(), gain = context.createGain();
     source.buffer = buffer; source.playbackRate.value = rate;
-    const length = Math.max(0.035, Math.min(buffer.duration / rate, duration + 0.025));
+    const palm = key.startsWith("palm:");
+    const hold = Number.isFinite(duration) ? Math.max(part === "guitar" && !palm ? 0.2 : 0.12, duration) : Infinity;
+    const tail = palm ? 0.13 : (part === "guitar" ? 1.2 : (part === "bass" ? 1.1 : 0.3));
+    const length = Math.max(0.035, Math.min(buffer.duration / rate, hold + tail));
+    const releaseAt = at + Math.min(hold, length - 0.025);
     const level = Math.min(1, velocity) * (part === "guitar" ? 0.7 : (part === "melody" ? 0.65 : 1));
     gain.gain.setValueAtTime(level, at);
-    gain.gain.setValueAtTime(level, at + Math.max(0, length - 0.025));
+    gain.gain.setValueAtTime(level, releaseAt);
     gain.gain.linearRampToValueAtTime(0, at + length);
     source.connect(gain); connect(gain, destinations[part]);
-    const hit = { part, source, gain, end: at + length };
+    const hit = { part, source, gain, at, level, releaseAt, end: at + length };
     function cleanup() { source.onended = null; source.disconnect(); gain.disconnect(); pending.delete(hit); }
     hit.cleanup = cleanup; pending.add(hit); source.onended = cleanup;
     try { source.start(at); source.stop(at + length); stats.played++; stats.last[part] = { at, key, rate, velocity }; }
@@ -75,14 +113,22 @@ export function createPhysicalBand(context, bank, targets, { connect, seconds, m
   function string(part, keys) {
     return {
       _physical: true,
-      triggerAttackRelease(notes, duration, time, velocity = 0.7) {
+      triggerAttackRelease(notes, duration, time, velocity = 0.7, { technique = "open", upstroke = false } = {}) {
+        if (disposed || !Number.isFinite(velocity) || velocity <= 0) return;
         const gate = Math.max(0.02, Number(seconds(duration)) || 0.2);
-        (Array.isArray(notes) ? notes.slice(0, 3) : [notes]).forEach((note, i) => {
-          const pitch = Number(midi(note));
-          if (!Number.isFinite(pitch) || pitch < 24 || pitch > 84) return;
+        const at = Math.max(context.currentTime, Number(time));
+        if (!Number.isFinite(at) || at - context.currentTime > 8) return;
+        const pitches = (Array.isArray(notes) ? notes.slice(0, 3) : [notes]).map((note) => Number(midi(note)))
+          .filter((pitch) => Number.isFinite(pitch) && pitch >= 24 && pitch <= 84);
+        if (!pitches.length) return;
+        // One stroke owns the whole chord; crossing its strings must never
+        // choke its siblings. A later stroke / bass note damps the old one.
+        damp(part, at, part === "bass" ? 0.06 : (part === "guitar" ? 0.1 : 0.04));
+        if (upstroke) pitches.reverse();
+        pitches.forEach((pitch, i) => {
           const root = nearestKey(pitch, keys);
-          const technique = part === "guitar" && gate < 0.2 ? "palm" : (part === "melody" ? "guitar" : part);
-          fire(part, `${technique}:${root}`, Number(time) + (part === "guitar" ? i * 0.006 : 0), velocity, 2 ** ((pitch - root) / 12), gate);
+          const key = part === "guitar" && technique === "palm" ? "palm" : (part === "melody" ? "guitar" : part);
+          fire(part, `${key}:${root}`, at + (part === "guitar" ? i * 0.007 : 0), velocity * (part === "guitar" ? 1 - i * 0.06 : 1), 2 ** ((pitch - root) / 12), gate);
         });
       },
       releaseAll() { release(part); }, dispose() { release(part); }
@@ -97,8 +143,9 @@ export function createPhysicalBand(context, bank, targets, { connect, seconds, m
   }
   return { bass: string("bass", BASS_KEYS), guitar: string("guitar", GUITAR_KEYS), melody: string("melody", GUITAR_KEYS), drums,
     setTone: amp.setTone,
-    snapshot: () => ({ pending: pending.size, bytes: bank.bytes, ...stats }),
-    releaseAll() { release(); },
-    dispose() { if (disposed) return; disposed = true; release(); amp.dispose(); }
+    setRoom(value) { if (Number.isFinite(value)) { roomWet = Math.max(0, Math.min(1, value)); room?.setWet(roomWet); } },
+    snapshot: () => ({ pending: pending.size, bytes: bank.bytes, roomWet, roomNodes: room ? room.nodes.length + sends.length : 0, ...stats }),
+    releaseAll() { release(); clearRoom(); attachRoom(); },
+    dispose() { if (disposed) return; disposed = true; release(); clearRoom(); amp.dispose(); }
   };
 }

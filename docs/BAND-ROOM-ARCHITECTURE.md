@@ -23,6 +23,20 @@ to the destination and is not connected to the song master/REC. The existing
 `startPlayback` / `stopPlayback` bridge keeps it exclusive with normal playback.
 It creates no Worker or audio nodes before an explicit preview gesture.
 
+## ARCB native adapter (v408)
+
+Tabasco AI uses `audio/physical-band/instruments.mjs`, one 52-sound Worker bank,
+a shared 7-node guitar amp, and bounded native sources. It follows the existing
+score and transport. Short note gates open a natural release; each new guitar
+stroke owns all its strings and fades the previous stroke, while bass retriggers
+fade the old note. The legacy adapter remains explicit via `?physical=0`.
+
+`room.mjs` adds one small room: four filtered delay loops, 26 nodes including
+post-fader sends from guitar/bass/drums/melody. Its return goes through
+`instrumentBus`, master and REC. The 35% default air control can be set to zero.
+Release/seek clears the loops; dispose disconnects owned sends without touching
+the buses' existing dry connections. Bank memory remains under 12 MB.
+
 ## Audio graph (both modes sum at `masterGain` → `masterLimiter` @ -1.0 dB)
 
 ```

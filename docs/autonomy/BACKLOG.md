@@ -56,6 +56,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   正本は`docs/PHYSICAL-BAND-REHEARSAL.md`。写真の多楽器精密モデルの達成は主張しない。
   本人が試奏を「全然前よりいい」と評価し、「そのままARBC再現」を指示したため昇格gateを通過。
   v407で7曲の既存schedulerへ音源adapterを接続、3音色の共通アンプと既存RECを使用。
+  v408で短音の強制muteとbass gate上限を除去、和音単位の弦のサステインと次音の減衰、drum余韻、共通room／空気感35%を追加。
   Radiohead／レッチリ的な輪郭・打感を方向性とする。次は実iPhone負荷と原音との音高・和音・奏法比較。
   BL-050の採譜忠実度の改善は継続する。
 

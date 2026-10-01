@@ -6,6 +6,13 @@ This checklist makes browser listening the default review path for Music runtime
 
 Use m4a recording only for milestone comparisons, CarPlay/output-level checks, or when browser listening is ambiguous.
 
+## ARCB natural sustain and air (v408 / BL-051)
+
+- In AI mode, solo guitar in clean/crunch/drive: short notes must ring between strokes; strings of a chord must not choke each other. Solo bass: the body must survive a short gate, with a smooth change on the next note and no stacked low drone.
+- Solo drums: check snare/tom body and ride/crash tail after one hit. Compare air at 0 / 35 / 100%; room must sit behind the attack. Part volume zero must also remove its room input.
+- STOP, seek, all off, original/AI switch and RESET AUDIO must remove old notes and room state. Restart must prepare one bank and one room; recording must include the same audible room.
+- Check dense bars and about a minute of playback for dropped triggers and clipping, then 390px control usability. Actual iPhone long-session load and the user's judgment of instrument realism remain listening checks.
+
 ## Strudel workbench LEVEL / 2-deck audition (BL-049)
 
 - While a LIVE set plays, move MASTER/CUTOFF/KICK and the BPM fader between three- and two-digit tempos. The saved metadata and one `setcpm` must agree; live sound faders must stay connected after the offsets change. The tempo status must show the scheduler's BPM, without evaluating the whole score.
@@ -152,9 +159,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `band-room.html`, and `sw.js`. Current repo markers include
   `engine.js?v=fm-119`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-81`, `audio/ai-fills.js?v=fm-71`,
-  `style.css?v=fm-28`, `band-room.css?v=br-92`,
-  `band-room.js?v=br-240`, `audio/audio-safety.js?v=br-68`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v407`.
+  `style.css?v=fm-28`, `band-room.css?v=br-93`,
+  `band-room.js?v=br-241`, `audio/audio-safety.js?v=br-68`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v408`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,

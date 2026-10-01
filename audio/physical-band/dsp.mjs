@@ -1,6 +1,6 @@
 // Small, original implementation of a lossy plucked-string delay loop and
 // damped drum modes. Rendered in a Worker; none of this runs on the audio thread.
-import { PARTS, STYLES } from "./score.mjs?v=2";
+import { PARTS, STYLES } from "./score.mjs?v=3";
 
 export const midiFrequency = (note) => 440 * 2 ** ((note - 69) / 12);
 function random(seed) {
@@ -32,7 +32,7 @@ export function renderString(event, sampleRate, seed = 1) {
   }
   for (let i = 0; i < size; i++) ring[i] -= mean;
   const palm = event.technique === "palm";
-  const sustain = palm ? 0.22 : (event.part === "bass" ? 2.1 : 1.4);
+  const sustain = palm ? 0.22 : (event.part === "bass" ? 4.5 : 3.2);
   const loss = Math.exp(-6.91 / (frequency * sustain));
   const frames = Math.ceil(event.duration * sampleRate);
   const output = new Float32Array(frames);
@@ -54,12 +54,12 @@ export function renderString(event, sampleRate, seed = 1) {
 }
 
 const DRUMS = {
-  kick: { frequency: 58, ratios: [1, 1.59, 2.14, 2.3, 2.65], decay: 0.22, length: 0.5, noise: 0.01 },
-  snare: { frequency: 180, ratios: [1, 1.59, 2.14, 2.3, 2.65], decay: 0.095, length: 0.3, noise: 0.42 },
+  kick: { frequency: 58, ratios: [1, 1.59, 2.14, 2.3, 2.65], decay: 0.25, length: 0.65, noise: 0.01 },
+  snare: { frequency: 180, ratios: [1, 1.59, 2.14, 2.3, 2.65], decay: 0.14, length: 0.5, noise: 0.42 },
   hat: { frequency: 3200, ratios: [1, 1.29, 1.61, 1.93, 2.28, 2.84], decay: 0.022, length: 0.095, noise: 0.14 },
-  ride: { frequency: 2800, ratios: [1, 1.44, 1.87, 2.43, 2.99], decay: 0.16, length: 0.55, noise: 0.035 },
-  crash: { frequency: 1950, ratios: [1, 1.39, 1.73, 2.19, 2.71, 3.47, 4.23], decay: 0.32, length: 1.2, noise: 0.16 },
-  tom: { frequency: 104, ratios: [1, 1.59, 2.14, 2.3, 2.65], decay: 0.16, length: 0.45, noise: 0.025 },
+  ride: { frequency: 2800, ratios: [1, 1.44, 1.87, 2.43, 2.99], decay: 0.28, length: 0.9, noise: 0.035 },
+  crash: { frequency: 1950, ratios: [1, 1.39, 1.73, 2.19, 2.71, 3.47, 4.23], decay: 0.42, length: 1.55, noise: 0.16 },
+  tom: { frequency: 104, ratios: [1, 1.59, 2.14, 2.3, 2.65], decay: 0.22, length: 0.65, noise: 0.025 },
   cowbell: { frequency: 540, ratios: [1, 1.5, 2.13], decay: 0.07, length: 0.25, noise: 0.005 }
 };
 export function renderDrum(event, sampleRate, seed) {

@@ -16,20 +16,35 @@ for(const [key,data] of Object.entries(bank.samples)){
  if(!key.startsWith('drums')&&!key.startsWith('palm')){const n=+key.split(':')[1],cents=1200*Math.log2(pitch(data,n)/midiFrequency(n));assert.ok(Math.abs(cents)<20,`${key}: ${cents}`);}
 }
 for(let n=24;n<=84;n++){const keys=n<40?BASS_KEYS:GUITAR_KEYS; assert.ok(Math.abs(nearestKey(n,keys)-n)<=1);}
+const rms=(data,from,to)=>Math.sqrt(data.slice(Math.round(from*32000),Math.round(to*32000)).reduce((sum,x)=>sum+x*x,0)/Math.round((to-from)*32000));
+assert.ok(rms(bank.samples['guitar:49'],.4,.65)>.001,'Open string retains an audible body after a short score gate');
+assert.ok(rms(bank.samples['bass:36'],.4,.65)>.003,'Bass body survives a short score gate');
+assert.ok(rms(bank.samples['palm:49'],.3,.5)<rms(bank.samples['guitar:49'],.3,.5)*.1,'Explicit palm articulation remains short');
+assert.ok(rms(bank.samples['drums:snare'],.2,.35)>.003,'Snare has a decaying body after its attack');
 // Exercise the actual adapter: fractional pitches, scheduling, hard STOP of
 // future notes, capacity bound, and disconnect of every source and amp node.
-const made=[];const param=()=>({value:0,setValueAtTime(){},linearRampToValueAtTime(){},setTargetAtTime(){}});
-function node(){const n={gain:param(),frequency:param(),Q:param(),playbackRate:param(),connect(){},disconnect(){this.disconnected=true;},start(t){this.startAt=t;},stop(t){this.stopAt=t;}};made.push(n);return n;}
-const context={currentTime:2,createGain:node,createBiquadFilter:node,createWaveShaper:node,createBufferSource:node};
+const made=[];const param=()=>({value:0,setValueAtTime(){},linearRampToValueAtTime(){},setTargetAtTime(){},cancelScheduledValues(){}});
+function node(){const n={gain:param(),frequency:param(),Q:param(),pan:param(),delayTime:param(),playbackRate:param(),connect(){},disconnect(){this.disconnected=true;},start(t){this.startAt=t;},stop(t){this.stopAt=t;}};made.push(n);return n;}
+const context={currentTime:2,createGain:node,createBiquadFilter:node,createWaveShaper:node,createBufferSource:node,createDelay:node,createStereoPanner:node};
 const buffers=new Map(Object.entries(bank.samples).map(([k,s])=>[k,{duration:s.length/32000}]));
 const band=createPhysicalBand(context,{buffers,bytes:bank.bytes},{},{connect:(s,t)=>s.connect(t),seconds:Number,midi:Number});
 band.bass.triggerAttackRelease(26.5,.4,3,.8);band.guitar.triggerAttackRelease([48,55,60],.2,3,.8);band.drums.kick.triggerAttackRelease('C1','16n',3,.6);
 let snap=band.snapshot();assert.equal(snap.pending,5);assert.equal(snap.last.bass.rate,2**(-.5/12));
+const firstBass=made.find(n=>n.startAt===3);
+assert.ok(firstBass.stopAt>4,'Short bass score gate does not chop the body');
+assert.ok(made.filter(n=>n.startAt>=3&&n.startAt<3.02).every(n=>n.stopAt>3.45),'Strings in one stroke do not choke each other');
+band.bass.triggerAttackRelease(36,.12,3.6,.8);
+assert.ok(firstBass.stopAt<=3.661,'The next bass note damps the old pitch');
 band.bass.releaseAll();assert.equal(band.snapshot().pending,4);
 for(let i=0;i<150;i++)band.guitar.triggerAttackRelease(48,.2,3,.8);
 assert.equal(band.snapshot().pending,128);assert.ok(band.snapshot().dropped>0);
 band.dispose();band.dispose();assert.equal(band.snapshot().pending,0);assert.ok(made.every(n=>n.disconnected));
-console.log(`Physical instruments PASS: 52 finite/DC-free buffers, measured tuning, fractional playback rates, ${bank.bytes} bytes, future-note cancellation and graph disposal`);
+const sendsRemoved=[];
+const withRoom=createPhysicalBand(context,{buffers,bytes:bank.bytes},{guitar:{},bass:{},drums:{},voice:{},room:{}},{connect:(s,t)=>s.connect?.(t),disconnect:(bus,send)=>sendsRemoved.push([bus,send]),seconds:Number,midi:Number});
+assert.equal(withRoom.snapshot().roomNodes,26);withRoom.setRoom(0);assert.equal(withRoom.snapshot().roomWet,0);
+withRoom.releaseAll();assert.equal(sendsRemoved.length,4);assert.equal(withRoom.snapshot().pending,0);
+withRoom.dispose();assert.equal(sendsRemoved.length,8);assert.ok(made.every(n=>n.disconnected),'STOP disconnects every owned room node and send');
+console.log(`Physical instruments PASS: 52 finite/DC-free buffers, measured tuning, fractional playback rates, ${bank.bytes} bytes, natural sustain, chord grouping, bass damping, future-note cancellation and owned-room disposal`);
 
 
 let workers=0, terminated=0;

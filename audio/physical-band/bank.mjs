@@ -1,4 +1,4 @@
-import { renderString, renderDrum } from "./dsp.mjs?v=2";
+import { renderString, renderDrum } from "./dsp.mjs?v=3";
 
 export const BANK_SAMPLE_RATE = 32000;
 export const MAX_BANK_BYTES = 12_000_000;
@@ -26,10 +26,10 @@ export function renderInstrumentBank(progress = () => {}) {
   const samples = {};
   const jobs = [
     ...GUITAR_KEYS.flatMap((note) => [
-      [`guitar:${note}`, () => renderString({ part: "guitar", note, duration: 1.8, velocity: 1, technique: "open" }, BANK_SAMPLE_RATE, 113 + note), 0.22],
+      [`guitar:${note}`, () => renderString({ part: "guitar", note, duration: 2.5, velocity: 1, technique: "open" }, BANK_SAMPLE_RATE, 113 + note), 0.22],
       [`palm:${note}`, () => renderString({ part: "guitar", note, duration: 0.55, velocity: 1, technique: "palm" }, BANK_SAMPLE_RATE, 113 + note), 0.22]
     ]),
-    ...BASS_KEYS.map((note) => [`bass:${note}`, () => renderString({ part: "bass", note, duration: 2.6, velocity: 1, technique: "pick" }, BANK_SAMPLE_RATE, 211 + note), 0.32]),
+    ...BASS_KEYS.map((note) => [`bass:${note}`, () => renderString({ part: "bass", note, duration: 3, velocity: 1, technique: "pick" }, BANK_SAMPLE_RATE, 211 + note), 0.32]),
     ...DRUM_KEYS.map((drum, i) => [`drums:${drum}`, () => renderDrum({ drum, velocity: 1 }, BANK_SAMPLE_RATE, 331 + i), drum === "kick" ? 0.58 : (drum === "snare" ? 0.45 : 0.23)])
   ];
   jobs.forEach(([key, render, peak], i) => {

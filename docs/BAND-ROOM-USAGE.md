@@ -1,6 +1,6 @@
 # Band Room — 使い方ガイド
 
-2026-10-01: 現行runtime v407はARCB 7曲の新しい弦・ドラム音源です。AI再現でSTARTし、ギターの音をクリーン／クランチ／ディストーションから選びます。melodyは歌の音程を弦でなぞるパート。原音と切り替えて練習・RECできます。
+2026-10-01: 現行runtime v408はARCB 7曲の新しい弦・ドラム音源です。AI再現でSTARTし、ギターの音をクリーン／クランチ／ディストーションから選びます。melodyは歌の音程を弦でなぞるパート。原音と切り替えて練習・RECできます。
 
 > Listen hub: https://quietbriony.github.io/Music/listen.html
 > Band Room: https://quietbriony.github.io/Music/band-room.html
@@ -23,7 +23,7 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行runtimeはv407（ARCB 7曲の新音源・ギター3音色）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-240` / `br-92`。
+現行runtimeはv408（ARCB 7曲の弦のサステイン・ドラムの余韻・空気感）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-241` / `br-93`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
 ### v401 AIの短時間レイヤー判定
@@ -41,7 +41,16 @@ checkboxだけONにし、最後に`defaults`で通常mixへ戻します。
 曲ID seedによる微細な実演差があります。02固有アレンジの
 合否には使わず、02原音を基準にします。Surface合格だけではreal mobile合格になりません。
 
-## 画面構成（現行: br-239 / br-91）
+### ARCBの弦の響きと空気感（v408）
+
+AI再現では、短い音符でもギターの和音とベースの響きが自然に減衰します。
+次の和音／ベース音では前の音を滑らかに押さえ、低音が重なるのを防ぎます。
+「空気感」は全パートの共通の部屋の響き。既定35%、0%で直接音だけになります。
+ギターのクリーン／クランチ／ディストーションと組み合わせて、余韻と輪郭を聴き比べてください。
+パートの音量は部屋へ送る音にも効き、STOPとseekは残響も止めます。
+
+
+## 画面構成（現行: br-241 / br-93）
 
 ```
 ┌─────────────────────────────────┐

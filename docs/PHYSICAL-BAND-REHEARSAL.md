@@ -1,5 +1,12 @@
 # ギター・ベース・ドラム — 小さな合奏から作り直す
 
+2026-10-01: v408は「音がちょちょぎれる」「ジャーン／ボーンとドラムの余韻」という本人の指摘に対応。
+短い音符を自動でpalm muteにする判定と、新ARCBに残っていた旧bass gate上限を除去。
+ギター和音は1 strokeとして扱い、note gateの後も弦の自然減衰を残す。次の和音／bass音では短いfadeで前の弦を押さえる。
+ドラムの胴鳴り／金属の余韻を伸ばし、post-faderの共通roomを追加。空気感0–100%、既定35%。
+roomはnativeの4 filtered delay loop、26 node（send込み）。STOP／seek／mode切替で予約音とroomを解放する。
+52音のbankは11,826,560 bytes、12 MB上限内。共有7 node amp・予約128発／8秒先の上限を維持する。
+
 2026-10-01: v407は本人の試奏評価と「そのままARCB再現」の承認を受け、Tabasco 7曲のAI再現を新しい弦・ドラム音源へ接続。
 ギターはクリーン／クランチ／ディストーション。既存の音符・打点・sectionを同じtransportで鳴らし、原音・REC・part muteを維持。
 Workerで52音を準備し、PCMは9,567,360 bytes。再生中はnative BufferSource、共通アンプ7 node、最大128発まで。
@@ -91,3 +98,16 @@ ampの実出力で220 Hz入力の第3倍音比がclean <0.001、crunch 0.084、d
 `check-physical-instruments.mjs`は52 bufferの有限値・DC・末尾静音・PCM上限、open guitarとbass全bank音の波形周期性±20 cent、
 小数音程の再生速度、future noteの停止・全node解放、準備取消時のWorker解放を検査する。
 これはChromeと数値検査の記録。原曲との音高正解率、細かな奏法、実iPhoneの長時間再生の評価は別に残る。
+
+## v408の余韻と検証
+
+0.12秒の短いgateでも、nativeの出力波形でguitar／bassの0.4–0.65秒RMSは0.0077／0.0131。
+0.7–1.0秒も弦の減衰を確認。snareのbodyとroom impulseは有限値のまま減衰する。
+次のbass音が前の音を押さえ、同じguitar strokeの3弦は互いを切らない。
+短いgateだけでpalm muteを選ばず、明示したpalm奏法は短いまま残す。
+roomは4 filtered delay loopの共有graph。低域を整理したpost-fader sendと既存master/RECへのreturnを持つ。
+
+ChromeのHuman Fly約1分で予約落ち0、最大観測47発、output peak 0.547。
+空気感0／35／100、seek、原音往復、全mute／part fader 0、STOP後静音とgraph解放を確認。
+RECは2.82秒の実WAV（peak 0.485）で確認。390px横はみ出しなし。
+数値とChromeの検査で、本人の聴感や実iPhoneの長時間負荷を合格扱いにしない。

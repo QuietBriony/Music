@@ -6,7 +6,7 @@
 <title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-92" />
+<link rel="stylesheet" href="band-room.css?v=br-93" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -27,8 +27,8 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-240" defer></script>
-<script type="module" src="audio/physical-band/preview.mjs?v=2"></script>
+<script src="band-room.js?v=br-241" defer></script>
+<script type="module" src="audio/physical-band/preview.mjs?v=3"></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -204,7 +204,8 @@
     <section id="br-arcb-instruments" hidden aria-label="ARCBの新しい楽器音">
       <strong>ARCB · 新しいギター / ベース / ドラム</strong>
       <label>ギターの音 <select id="br-arcb-guitar-tone" aria-label="ARCBギターの音"><option value="acoustic">クリーン</option><option value="crunch" selected>クランチ</option><option value="drive">ディストーション</option></select></label>
-      <p class="br-help">7曲の音符と打点を、新しい弦とドラムで再現します。melodyは歌の音程を弦でなぞります。原音と切り替え、パートを消して練習できます。</p>
+      <label>空気感 <input id="br-arcb-room" type="range" min="0" max="100" value="35" step="1" aria-label="合奏の空気感" /><output id="br-arcb-room-value" for="br-arcb-room">35%</output></label>
+      <p class="br-help">弦の響きとドラムの余韻を残し、同じ部屋で合奏する空気感を加えます。0%で部屋の響きを消せます。melodyは歌の音程を弦でなぞります。原音と切り替え、パートを消して練習できます。</p>
     </section>
 
     <section id="br-fm-suggestion" hidden aria-live="polite">
