@@ -1,5 +1,11 @@
 # Hazama FM — システム全体像
 
+2026-10-01: v407は本人の試奏評価と「そのままARCB再現」の承認を受け、Tabasco 7曲のAI再現を新しい弦・ドラム音源へ接続。
+ギターはクリーン／クランチ／ディストーション。既存の音符・打点・sectionを同じtransportで鳴らし、原音・REC・part muteを維持。
+Workerで52音を準備し、PCMは9,567,360 bytes。再生中はnative BufferSource、共通アンプ7 node、最大128発まで。
+歌声は合成せず、melodyパートが採譜済みの歌の音程を弦でなぞる。ギター和音・奏法は近似、実iPhoneの長時間負荷と聴感は残る。
+`?physical=0`は旧音源の診断用。HAZAMAの別音源と原音stemsは維持。既存の公開先とListenから案内する。
+
 2026-10-01: 共有cache `hazama-fm-v406`は既存Listenの先頭に公開ページ一覧を配置。
 固定URLは`https://music-stack.pages.dev/listen.html`。既存の公開箱を流用する本人方針をAGENTSに保存。
 9画面を用途と同じ箱の関係で案内し、別入口／archiveと詳しい機能は同じListenから辿る。
@@ -26,9 +32,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v406`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v407`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-239`, `band-room.css?v=br-91`。
+> `band-room.js?v=br-240`, `band-room.css?v=br-92`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

@@ -1,17 +1,19 @@
 // Optional Band Room adapter. Loading this file creates no context, Worker,
 // AudioNode or audio request. All expensive synthesis happens after a gesture.
+import { createGuitarAmp } from "./amp.mjs?v=1";
 const panel = document.getElementById("br-physical-band");
 if (panel) {
   if (location.hash === "#br-physical-band") panel.open = true;
   const play = panel.querySelector("[data-physical-play]");
   const stopButton = panel.querySelector("[data-physical-stop]");
   const style = panel.querySelector("[data-physical-style]");
+  const tone = panel.querySelector("[data-physical-tone]");
   const status = panel.querySelector("[data-physical-status]");
   const volume = panel.querySelector("[data-physical-volume]");
   const parts = ["guitar", "bass", "drums"];
   const cache = new Map(); // At most two short scores, not an unbounded song bank.
   let context, ownsContext = false, token = 0, phase = "idle", worker, cancelRender;
-  let master, sources = [], nodes = [], gains = {}, lastRender, renderMs = 0;
+  let master, guitarAmp, sources = [], nodes = [], gains = {}, lastRender, renderMs = 0;
   const message = (text) => { status.textContent = text; };
   const updateButtons = () => { play.disabled = phase !== "idle"; stopButton.disabled = phase === "idle"; };
 
@@ -26,7 +28,7 @@ if (panel) {
       try { source.stop(); } catch {}
     }
     for (const node of nodes) node.disconnect();
-    sources = []; nodes = []; gains = {}; master = undefined;
+    sources = []; nodes = []; gains = {}; master = guitarAmp = undefined;
     phase = "idle";
     updateButtons();
     if (text) message(text);
@@ -47,7 +49,7 @@ if (panel) {
         else { renderMs = Math.round(performance.now() - began); cache.set(selected, rendered); resolve(rendered); }
       };
       try {
-        taskWorker = new Worker(new URL("./render-worker.mjs?v=1", import.meta.url), { type: "module" });
+        taskWorker = new Worker(new URL("./render-worker.mjs?v=2", import.meta.url), { type: "module" });
         worker = taskWorker;
         cancelRender = () => finish(new Error("cancelled"));
         timeout = setTimeout(() => finish(new Error("準備に時間がかかっています。停止して、もう一度お試しください。")), 30000);
@@ -99,10 +101,15 @@ if (panel) {
         const gain = context.createGain();
         gain.gain.value = panel.querySelector(`[data-physical-part="${part}"]`).checked ? 1 : 0;
         source.connect(gain);
+        let output = gain;
+        if (part === "guitar" && tone.value !== "acoustic") {
+          guitarAmp = createGuitarAmp(context, tone.value);
+          gain.connect(guitarAmp.input); output = guitarAmp.output; nodes.push(...guitarAmp.nodes);
+        }
         if (context.createStereoPanner) {
           const pan = context.createStereoPanner(); pan.pan.value = [-0.2, 0, 0.1][index];
-          gain.connect(pan); pan.connect(master); nodes.push(pan);
-        } else gain.connect(master);
+          output.connect(pan); pan.connect(master); nodes.push(pan);
+        } else output.connect(master);
         nodes.push(source, gain); sources.push(source); gains[part] = gain;
         source.onended = () => { if (run === token && ++ended === parts.length) stop("8小節の試奏が終わりました。"); };
       });
@@ -118,6 +125,7 @@ if (panel) {
   play.addEventListener("click", start);
   stopButton.addEventListener("click", () => stop());
   style.addEventListener("change", () => stop("選んだスタイルで試奏を押してください。"));
+  tone.addEventListener("change", () => stop("選んだギターの音で試奏を押してください。"));
   volume.addEventListener("input", () => master?.gain.setTargetAtTime(Number(volume.value) / 100, context.currentTime, 0.015));
   parts.forEach((part) => panel.querySelector(`[data-physical-part="${part}"]`).addEventListener("change", (event) => {
     gains[part]?.gain.setTargetAtTime(event.target.checked ? 1 : 0, context.currentTime, 0.015);

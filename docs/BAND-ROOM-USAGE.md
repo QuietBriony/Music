@@ -1,5 +1,7 @@
 # Band Room — 使い方ガイド
 
+2026-10-01: 現行runtime v407はARCB 7曲の新しい弦・ドラム音源です。AI再現でSTARTし、ギターの音をクリーン／クランチ／ディストーションから選びます。melodyは歌の音程を弦でなぞるパート。原音と切り替えて練習・RECできます。
+
 > Listen hub: https://quietbriony.github.io/Music/listen.html
 > Band Room: https://quietbriony.github.io/Music/band-room.html
 > HAZAMA直接入口: https://quietbriony.github.io/Music/band-room.html?band=hazama
@@ -9,8 +11,8 @@
 
 ## いちばん短い遊び方
 
-1. Listen hubのARCB / TabascoからHuman Fly原音を開き、`START`を一度押す。ドラムだけなら原音の`all off`→`drums` ON、自分でドラムを叩くなら原音の`all on`→`drums` OFF。
-2. 同じ区間を`🎛 AI 再現`へ切り替えて打点・強弱を比較する。AIは練習用で、標準の軽量再生は端末を問わず8打/小節の上限がある。正確なドラムの基準は原音stems。
+1. Listen hubのARCB / TabascoからHuman Flyを開き、`📻 原音`を選択して`START`を一度押す。ドラムだけなら原音の`all off`→`drums` ON、自分でドラムを叩くなら原音の`all on`→`drums` OFF。
+2. 同じ区間を`🎛 AI 再現`へ切り替えて打点・強弱を比較する。AIは練習用で、ARCBの新音源は採譜の打点を24打/小節まで鳴らす。正確なドラムの基準は原音stems。
 3. ほかのTabasco曲は上の01〜07ボタンで選ぶ。HAZAMAはListenの直接入口から01 / 02と`📻 原音`（基準）/ `🎛 AI 再現`を比較する。
    02のAI再現は02固有ではなく01 frames共有の暫定版なので、02固有の判断は原音を使う。
    歌詞を外す／自分で歌う時はListenの01/02 `KARAOKE` linkを開く。
@@ -21,7 +23,7 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行runtimeはv405（任意のrock/jazz 8小節試奏。標準AIはv404の安定化を維持）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-239` / `br-91`。
+現行runtimeはv407（ARCB 7曲の新音源・ギター3音色）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-240` / `br-92`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
 ### v401 AIの短時間レイヤー判定

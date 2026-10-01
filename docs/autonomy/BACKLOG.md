@@ -54,8 +54,10 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   弦DSP／原創rock+jazz score／Workerレンダー／3 source同期／準備取消・停止を分離。
   元のBand Room採譜、drum-floor pocket、chillの余白と奏法を入力のエッセンスとして残す。
   正本は`docs/PHYSICAL-BAND-REHEARSAL.md`。写真の多楽器精密モデルの達成は主張しない。
-  次は本人の試奏と実iPhone負荷確認→ARCBの1区間をadapterで変換→原音との時刻・力度・音高比較。
-  BL-050の原曲忠実度と別の任意候補で、標準AI再現の音色凍結は維持する。
+  本人が試奏を「全然前よりいい」と評価し、「そのままARBC再現」を指示したため昇格gateを通過。
+  v407で7曲の既存schedulerへ音源adapterを接続、3音色の共通アンプと既存RECを使用。
+  Radiohead／レッチリ的な輪郭・打感を方向性とする。次は実iPhone負荷と原音との音高・和音・奏法比較。
+  BL-050の採譜忠実度の改善は継続する。
 
 ### BL-050 — Band Room AI 再現のパート別忠実度（原曲どおりに叩く・弾く）
 - priority : P1

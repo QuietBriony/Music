@@ -1,6 +1,18 @@
-# Band Room - Changelog (v65 -> v406 compact)
+# Band Room - Changelog (v65 -> v407 compact)
 
-Current sw.js VERSION: v406. Latest Band Room runtime change: v405 (optional original rock/jazz physical band rehearsal; normal song synthesis unchanged). v404 provides the stable light AI band, native drum one-shots, STOP cleanup and device-gated FM rooms. HAZAMA playability candidate remains v401. v403 refined Tabasco drum-row priority. v400 provides HAZAMA 02 AI honesty, session-only KARAOKE and exact lyric boundaries.
+Current sw.js VERSION: v407. Latest Band Room runtime change: v407 (ARCB seven-song physical instrument bank and electric guitar amp). HAZAMA playability candidate remains v401.
+
+## v407 compact - ARCB new instruments and electric guitar
+
+- 共有cache `hazama-fm-v407`、runtime `br-240` / `br-92`。既存4 physical moduleはv2、音源bankとamp moduleはv1。
+
+2026-10-01: v407は本人の試奏評価と「そのままARCB再現」の承認を受け、Tabasco 7曲のAI再現を新しい弦・ドラム音源へ接続。
+ギターはクリーン／クランチ／ディストーション。既存の音符・打点・sectionを同じtransportで鳴らし、原音・REC・part muteを維持。
+Workerで52音を準備し、PCMは9,567,360 bytes。再生中はnative BufferSource、共通アンプ7 node、最大128発まで。
+歌声は合成せず、melodyパートが採譜済みの歌の音程を弦でなぞる。ギター和音・奏法は近似、実iPhoneの長時間負荷と聴感は残る。
+`?physical=0`は旧音源の診断用。HAZAMAの別音源と原音stemsは維持。既存の公開先とListenから案内する。
+
+
 
 ## v406 compact - Existing public entry guide
 

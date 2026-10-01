@@ -19,9 +19,11 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-239-physical-band-rehearsal";
-  const BANDROOM_RELEASE_VERSION = "v405";
+  const BANDROOM_APP_VERSION = "br-240-arcb-physical-instruments";
+  const BANDROOM_RELEASE_VERSION = "v407";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
+  let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
+  let physicalGuitarTone = "crunch";
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
   const BANDROOM_PREFS_KEY = "band-room.prefs.v1";
@@ -949,6 +951,60 @@
     return true;
   }
 
+  function physicalArcbEnabled(bandId = state.currentBandId) {
+    return bandId === "tabasco" && runtimeQueryFlag("physical") !== false;
+  }
+
+  function syncPhysicalInstrumentUi() {
+    const enabled = currentMode === "synth" && physicalArcbEnabled();
+    const controls = $("br-arcb-instruments");
+    if (controls) controls.hidden = !enabled;
+    ["br-bass-instrument-select", "br-guitar-instrument-select", "br-kit-source-select", "br-voice-instrument-select", "br-kit-profile-select", "br-chord-instrument-select", "br-voice-overrides-clear"].forEach((id) => {
+      const control = $(id);
+      if (control) { control.disabled = enabled; control.title = enabled ? "ARCBは新しい弦・ドラム音源。ギターの音は上の選択で変えられます。" : ""; }
+    });
+    document.querySelectorAll("#br-voice-overrides-grid select, #br-voice-overrides-grid button, .br-kit-preview").forEach((control) => { control.disabled = enabled; });
+    const voiceLabel = $("br-toggle-voice")?.parentElement?.querySelector("span");
+    if (voiceLabel) voiceLabel.textContent = enabled ? "melody" : "vocal";
+    const voiceVolumeLabel = $("br-vol-voice")?.parentElement?.querySelector("span");
+    if (voiceVolumeLabel) voiceVolumeLabel.textContent = enabled ? "melody" : "vocal";
+    ["chords", "arp"].forEach((part) => {
+      const toggle = $("br-toggle-" + part);
+      if (toggle) { toggle.disabled = enabled; if (enabled) toggle.checked = false; toggle.title = enabled ? "ARCBの和音はguitarパートで鳴らします。" : ""; }
+    });
+    if ($("br-vol-chords")) $("br-vol-chords").disabled = enabled;
+  }
+
+  async function preparePhysicalArcb() {
+    if (physicalArcb) return;
+    const stopSeq = playbackLifecycleStopSeq;
+    const abort = new AbortController();
+    physicalArcbAbort?.abort(); physicalArcbAbort = abort;
+    const began = bandRoomNowMs();
+    try {
+      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=1");
+      const context = Tone.getContext().rawContext;
+      const bank = await physicalArcbModule.prepareInstrumentBank(context, {
+        signal: abort.signal,
+        progress(value) { if (!abort.signal.aborted && $("br-kit-status")) $("br-kit-status").textContent = `弦・ドラムを準備中… ${Math.round(value * 100)}%`; }
+      });
+      if (abort.signal.aborted || stopSeq !== playbackLifecycleStopSeq || !physicalArcbEnabled()) throw new Error("Instrument preparation cancelled");
+      [drumKit, synthBass, guitarSynth, voiceSynth, chordSynth, arpSynth, bassSeqSynth].forEach(disposeSynthLayer);
+      chordSynth = arpSynth = bassSeqSynth = null;
+      physicalArcb = physicalArcbModule.createPhysicalBand(context, bank,
+        { guitar: guitarBus, bass: bassBus, drums: drumBus, voice: voiceBus }, {
+          connect: (source, target) => Tone.connect(source, target),
+          seconds: (duration) => Tone.Time(duration).toSeconds(),
+          midi: (note) => Tone.Frequency(note).toMidi(), tone: physicalGuitarTone
+        });
+      drumKit = physicalArcb.drums; synthBass = physicalArcb.bass;
+      guitarSynth = physicalArcb.guitar; voiceSynth = physicalArcb.melody;
+      physicalArcb.prepareMs = Math.round(bandRoomNowMs() - began);
+    } finally {
+      if (physicalArcbAbort === abort) physicalArcbAbort = null;
+    }
+  }
+
   function aiSamplerUpgradeEnabled() {
     const forced = runtimeQueryFlag("aiSamples");
     if (forced != null) return forced;
@@ -960,7 +1016,7 @@
   }
 
   function shouldAutoUpgradeSynthSamples(reason = "start") {
-    return shouldStageSynthPlaybackFirst(reason) && aiSamplerUpgradeEnabled() && !BANDROOM_SAFE_BOOT;
+    return !physicalArcbEnabled() && shouldStageSynthPlaybackFirst(reason) && aiSamplerUpgradeEnabled() && !BANDROOM_SAFE_BOOT;
   }
 
   function samplerDecodeConcurrency() {
@@ -3475,7 +3531,7 @@
   }
 
   function shouldRebuildSynthControlNow() {
-    return currentMode === "synth" && state.started && !state.starting;
+    return !physicalArcbEnabled() && currentMode === "synth" && state.started && !state.starting;
   }
 
   function markSynthControlDeferred(status, label, value) {
@@ -3562,6 +3618,8 @@
 
   function stopSynthBand() {
     ++synthSamplerUpgradeSeq;
+    physicalArcbAbort?.abort(); physicalArcbAbort = null;
+    physicalArcb?.dispose(); physicalArcb = null;
     stopDrumHits();
     [drumKit, synthBass, guitarSynth, voiceSynth, chordSynth, clickSynth, arpSynth, bassSeqSynth]
       .forEach(disposeSynthLayer);
@@ -3618,10 +3676,12 @@
   let synthBandTeardownTimer = null;
   function scheduleSynthBandTeardown() {
     if (synthBandTeardownTimer) clearTimeout(synthBandTeardownTimer);
+    const capturedPhysical = physicalArcb;
     const captured = { drumKit, synthBass, guitarSynth, voiceSynth, chordSynth, clickSynth, arpSynth, bassSeqSynth };
     synthBandTeardownTimer = setTimeout(() => {
       synthBandTeardownTimer = null;
       if (currentMode !== "stems") return; // switched back to AI — leave its band wired
+      if (capturedPhysical && physicalArcb === capturedPhysical) { capturedPhysical.dispose(); physicalArcb = null; }
       Object.values(captured).forEach((layer) => { if (layer) disposeSynthLayer(layer); });
       // Null only vars that still point at the disposed instances, so a
       // concurrent rebuild is never clobbered (mirrors the prepareSynth pattern).
@@ -3641,6 +3701,7 @@
   }
 
   function queueSynthSamplerUpgrade(reason = "start") {
+    if (physicalArcbEnabled()) return;
     if (!shouldAutoUpgradeSynthSamples(reason)) {
       const kitStatus = $("br-kit-status");
       if (kitStatus) {
@@ -3706,6 +3767,13 @@
     }
     try {
       const quickFirst = shouldStageSynthPlaybackFirst(reason);
+      syncPhysicalInstrumentUi();
+      if (physicalArcbEnabled()) {
+        await preparePhysicalArcb();
+        if (synthPartEnabled("br-toggle-click") && !clickSynth) clickSynth = makeClick(clickBus);
+        if (kitStatus) kitStatus.textContent = "ARCB · 新しい弦 / ドラム音源";
+        return true;
+      }
       if (!quickFirst) await ensureOnlineCatalogForSynth();
       if (synthPartEnabled("br-toggle-drums") && needsQuickSynthLayer(drumKit, quickFirst)) {
         drumKit = await buildKitForSource(synthDrumSourceForPrep(reason), {
@@ -3760,6 +3828,7 @@
       if (quickFirst) queueSynthSamplerUpgrade(reason);
       return true;
     } catch (e) {
+      if (e.message === "Instrument preparation cancelled") return false;
       if (kitStatus) kitStatus.textContent = "AI prep failed: " + (e.message || e);
       console.warn("[Band Room] AI prep failed:", e);
       return false;
@@ -4665,6 +4734,10 @@
         playing: state.started,
         starting: state.starting
       }),
+      physicalArcbEnabled,
+      physicalInstrumentDiagnostics: () => physicalArcb
+        ? { enabled: true, tone: physicalGuitarTone, prepareMs: physicalArcb.prepareMs, ...physicalArcb.snapshot() }
+        : { enabled: false, pending: 0, preparing: Boolean(physicalArcbAbort), tone: physicalGuitarTone },
       selectVelocitySlotRows,
       selectPriorityDrumRows,
       chordRoot,
@@ -6169,6 +6242,10 @@
 
   function transcribedLightRowLimit(lineKey) {
     if (!(currentMode === "synth" && aiLayerLightRuntimeEnabled())) return Infinity;
+    if (physicalArcb) {
+      if (lineKey === "drum_line") return 24;
+      if (["guitar_line", "bass_line", "vocal_melody"].includes(lineKey)) return 16;
+    }
     if (lineKey === "vocal_melody") return 4;
     if (lineKey === "guitar_line") return 4;  // v364: 6->4 — trim the per-bar strum burst on the phone (chord dropped; guitar carries the chug)
     if (lineKey === "drum_line") return 8;    // phone budget: never exceed 8 drum triggers/bar
@@ -6409,7 +6486,7 @@
     const rows = rowsForLightTranscribedPlayback("guitar_line", transcribedNotesForBar("guitar_line", state.barCount));
     if (!rows.length || !guitarSynth) return false;
     const isJazzy = isJazzyMode();
-    const light = aiLayerLightRuntimeEnabled();
+    const light = aiLayerLightRuntimeEnabled() && !guitarSynth?._physical;
     // v334: a power chord needs root+5th MINIMUM — the old floor(9/rows)
     // collapsed dense bars to single notes, which is exactly the しょぼい
     // thin-mono-guitar sound. Voices stay bounded because the v334 data caps
@@ -6962,7 +7039,7 @@
           });
         }
         let crashFiredThisBar = false;
-        const lightDrumRuntime = aiLayerLightRuntimeEnabled();
+        const lightDrumRuntime = aiLayerLightRuntimeEnabled() && !drumKit._physical;
 
         frame.events.forEach((evt) => {
           const inst = drumKit[evt.instrument];
@@ -7472,6 +7549,7 @@
   }
 
   function releaseSustainedSynths(reason = "panic") {
+    physicalArcb?.releaseAll();
     stopDrumHits();
     [synthBass, guitarSynth, voiceSynth, chordSynth, clickSynth, arpSynth, bassSeqSynth].forEach((voice) => {
       if (!voice) return;
@@ -7888,6 +7966,7 @@
 
   function setBodyPlaybackMode(mode = currentMode) {
     if (document.body) document.body.dataset.mode = mode;
+    syncPhysicalInstrumentUi();
     // v306: karaoke (stems) vs section-block (synth) lyric view differs by mode
     renderLyricsView();
     updatePlaybackModeStatus();
@@ -8071,6 +8150,10 @@
   // ---- UI bindings --------------------------------------------
 
   function bindUI() {
+    $("br-arcb-guitar-tone")?.addEventListener("change", (event) => {
+      physicalGuitarTone = event.target.value;
+      physicalArcb?.setTone(physicalGuitarTone);
+    });
     window.addEventListener("band-room:physical-preview", (event) => {
       // Do not let an awaited song boot finish over the short rehearsal.
       if (state.starting || playbackSelectionTransitionInFlight()) {
@@ -8218,7 +8301,12 @@
       const el = $("br-toggle-" + part);
       if (!el) return;
       el.addEventListener("change", async () => {
-        if (synthBulkToggleDepth > 0 || !el.checked || currentMode !== "synth" || !state.started) return;
+        if (synthBulkToggleDepth > 0) return;
+        if (!el.checked && physicalArcb) {
+          const layer = part === "drums" ? drumKit : part === "bass" ? synthBass : part === "guitar" ? guitarSynth : part === "voice" ? voiceSynth : null;
+          if (part === "drums") layer?.dispose(); else layer?.releaseAll();
+        }
+        if (!el.checked || currentMode !== "synth" || !state.started) return;
         await prepareSynthPlaybackAssets("toggle");
       });
     });
@@ -8525,6 +8613,7 @@
               ["drums", "bass", "guitar", "voice", "chords", "arp"].forEach((v) => setToggle("br-toggle-" + v, true));
               setToggle("br-toggle-click", false); // click stays off
             } else if (action === "synth-off") {
+              physicalArcb?.releaseAll();
               ["drums", "bass", "guitar", "voice", "chords", "arp", "click"].forEach((v) => setToggle("br-toggle-" + v, false));
             } else {
               Object.entries(synthDefaultToggleState()).forEach(([part, on]) => setToggle("br-toggle-" + part, on));
@@ -8532,6 +8621,7 @@
           } finally {
             synthBulkToggleDepth--;
           }
+          syncPhysicalInstrumentUi();
           if (action !== "synth-off" && currentMode === "synth" && state.started) {
             await prepareSynthPlaybackAssets("toggle");
           }

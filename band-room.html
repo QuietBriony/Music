@@ -6,7 +6,7 @@
 <title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-91" />
+<link rel="stylesheet" href="band-room.css?v=br-92" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -27,8 +27,8 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-239" defer></script>
-<script type="module" src="audio/physical-band/preview.mjs?v=1"></script>
+<script src="band-room.js?v=br-240" defer></script>
+<script type="module" src="audio/physical-band/preview.mjs?v=2"></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -201,6 +201,12 @@
       <p id="br-mode-status" role="status" aria-live="polite" hidden></p>
     </section>
 
+    <section id="br-arcb-instruments" hidden aria-label="ARCBの新しい楽器音">
+      <strong>ARCB · 新しいギター / ベース / ドラム</strong>
+      <label>ギターの音 <select id="br-arcb-guitar-tone" aria-label="ARCBギターの音"><option value="acoustic">クリーン</option><option value="crunch" selected>クランチ</option><option value="drive">ディストーション</option></select></label>
+      <p class="br-help">7曲の音符と打点を、新しい弦とドラムで再現します。melodyは歌の音程を弦でなぞります。原音と切り替え、パートを消して練習できます。</p>
+    </section>
+
     <section id="br-fm-suggestion" hidden aria-live="polite">
       <span id="br-fm-suggestion-text">FM suggests pattern</span>
       <button id="br-fm-suggestion-ai" type="button">AI</button>
@@ -299,6 +305,7 @@
         <p class="br-help">新しい弦の音と合奏を試す、8小節のオリジナル演奏です。曲のAI再現とは別の試奏で、音は準備してから再生します。通常の曲再生とは切り替えて聴けます。</p>
         <div class="br-physical-controls">
           <label>スタイル <select data-physical-style aria-label="試奏スタイル"><option value="rock">ロック · 112 BPM</option><option value="jazz">ジャズ · 116 BPM</option></select></label>
+          <label>ギターの音 <select data-physical-tone aria-label="試奏ギターの音"><option value="acoustic">今の弦の音</option><option value="crunch">クランチ</option><option value="drive">ディストーション</option></select></label>
           <button type="button" data-physical-play>8小節を試奏</button>
           <button type="button" data-physical-stop disabled>停止</button>
           <label>試奏の音量 <input data-physical-volume type="range" min="0" max="70" value="45" aria-label="試奏の音量" /></label>
@@ -309,7 +316,7 @@
           <label><input type="checkbox" data-physical-part="drums" checked /> ドラム</label>
         </div>
         <p class="br-help" data-physical-status role="status">試奏を押すと、8小節の音を準備します。</p>
-        <p class="br-help">試作段階：弦の振動と打楽器の響きを簡略化した音源です。生楽器のリアルさはこれから磨きます。ARCBの採譜や録音にはまだ接続していません。</p>
+        <p class="br-help">試作段階：弦の振動と打楽器の響きを簡略化した音源です。生楽器のリアルさはこれから磨きます。ARCBのAI再現も同じ弦・ドラム音源を使います。この短い試奏は独立した曲で、RECは通常曲の再生で使えます。</p>
       </section>
     </details>
 
