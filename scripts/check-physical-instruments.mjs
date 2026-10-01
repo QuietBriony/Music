@@ -28,6 +28,8 @@ function node(){const n={gain:param(),frequency:param(),Q:param(),pan:param(),de
 const context={currentTime:2,createGain:node,createBiquadFilter:node,createWaveShaper:node,createBufferSource:node,createDelay:node,createStereoPanner:node};
 const buffers=new Map(Object.entries(bank.samples).map(([k,s])=>[k,{duration:s.length/32000}]));
 const band=createPhysicalBand(context,{buffers,bytes:bank.bytes},{},{connect:(s,t)=>s.connect(t),seconds:Number,midi:Number});
+band.bass.triggerAttackRelease(36,.2,1,.8);band.drums.snare.triggerAttackRelease('16n',1,.7);
+assert.equal(band.snapshot().pending,0,'Elapsed attacks on a mid-bar seek must not burst together at the current time');
 band.bass.triggerAttackRelease(26.5,.4,3,.8);band.guitar.triggerAttackRelease([48,55,60],.2,3,.8);band.drums.kick.triggerAttackRelease('C1','16n',3,.6);
 let snap=band.snapshot();assert.equal(snap.pending,5);assert.equal(snap.last.bass.rate,2**(-.5/12));
 const firstBass=made.find(n=>n.startAt===3);

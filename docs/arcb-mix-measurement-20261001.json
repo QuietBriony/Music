@@ -1,0 +1,1142 @@
+{
+  "scope": "Actual post-master instrumental mix; original drums+bass+other recombined by the app. Melody guide excluded in both comparisons.",
+  "frequency_bands_hz": [
+    [
+      32,
+      80
+    ],
+    [
+      80,
+      250
+    ],
+    [
+      250,
+      1000
+    ],
+    [
+      1000,
+      4000
+    ],
+    [
+      4000,
+      12000
+    ],
+    [
+      12000,
+      16000
+    ]
+  ],
+  "baseline_phase": "clock",
+  "candidate_phase": "delivered",
+  "caveats": [
+    "Relative band powers are level-normalized; dynamics and level are separate measurements.",
+    "Stem bleed is not instrument ground truth. Recombining three stems can retain vocal leakage and separation artifacts.",
+    "REC/seek times have small encoding and control delays; this is not sample-aligned waveform fidelity.",
+    "A quiet interval can be musical: check against the original before calling it a dropout.",
+    "No listening-quality score, pitch/chord accuracy claim, or physical iPhone measurement."
+  ],
+  "clips": [
+    {
+      "clip": "electric-sheep-16",
+      "baseline": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.652161,
+        "rms": 0.122722,
+        "crest_db": 14.51,
+        "active_rms_p95_p10_db": 4.44,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.167023,
+          0.010864,
+          0.248583,
+          0.492788,
+          0.056258,
+          0.024484
+        ],
+        "sha256": "6117c3a9cd237ef8e2f9be19e26afbb718bd499ba1a963d9e437293b932161be",
+        "app": "br-242-measured-band-balance",
+        "bpm": 129.2,
+        "capture_content_start_s": 17.824,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -14.5,
+        "true_peak_dbtp": -3.7
+      },
+      "candidate": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.585236,
+        "rms": 0.131644,
+        "crest_db": 12.96,
+        "active_rms_p95_p10_db": 2.24,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.180177,
+          0.038292,
+          0.683494,
+          0.078229,
+          0.015096,
+          0.004713
+        ],
+        "sha256": "b9d33956087e88ea47ae456a71ebe37dbe78144b6df3c2c69fc20bb45be2ca0a",
+        "app": "br-242-measured-band-balance",
+        "bpm": 129.2,
+        "capture_content_start_s": 17.816,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -15.3,
+        "true_peak_dbtp": -4.7
+      },
+      "reference": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.444611,
+        "rms": 0.091577,
+        "crest_db": 13.72,
+        "active_rms_p95_p10_db": 4.83,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.119155,
+          0.055462,
+          0.448879,
+          0.227343,
+          0.136784,
+          0.012377
+        ],
+        "sha256": "a7d6664b3db3ee1b1d8d75f1a2fe6f7c542429ac6166d32ac39e011df595850a",
+        "app": "br-241-natural-band-resonance",
+        "bpm": 129,
+        "capture_content_start_s": 17.9,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -17.1,
+        "true_peak_dbtp": -7.0
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          1.47,
+          -7.08,
+          -2.57,
+          3.36,
+          -3.86,
+          2.96
+        ],
+        "core_band_mean_absolute_difference_db": 3.67,
+        "level_difference_db": 2.54
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          1.8,
+          -1.61,
+          1.83,
+          -4.63,
+          -9.57,
+          -4.19
+        ],
+        "core_band_mean_absolute_difference_db": 3.89,
+        "level_difference_db": 3.15
+      },
+      "balance_comparison_usable": true
+    },
+    {
+      "clip": "hey-16",
+      "baseline": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.552124,
+        "rms": 0.106411,
+        "crest_db": 14.3,
+        "active_rms_p95_p10_db": 7.21,
+        "quiet_fraction": 0.0339,
+        "longest_quiet_s": 0.34,
+        "band_power_fraction": [
+          0.287928,
+          0.013816,
+          0.303163,
+          0.357601,
+          0.033218,
+          0.004274
+        ],
+        "sha256": "80c7236e7cb32e8f9abb1db6a7853dd3052e4ce689575da6b1e661efb5cef1e0",
+        "app": "br-242-measured-band-balance",
+        "bpm": 120.19,
+        "capture_content_start_s": 17.810666666666666,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -16.4,
+        "true_peak_dbtp": -5.2
+      },
+      "candidate": {
+        "duration_s": 9.96,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.501984,
+        "rms": 0.105562,
+        "crest_db": 13.54,
+        "active_rms_p95_p10_db": 5.79,
+        "quiet_fraction": 0.0341,
+        "longest_quiet_s": 0.34,
+        "band_power_fraction": [
+          0.408288,
+          0.108039,
+          0.395529,
+          0.08761,
+          0.000482,
+          5.3e-05
+        ],
+        "sha256": "34b064cd945ea8e357ba90eecd56cde37ef8d497055627df08bdc900329a4886",
+        "app": "br-242-measured-band-balance",
+        "bpm": 120.19,
+        "capture_content_start_s": 17.810666666666666,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -18.0,
+        "true_peak_dbtp": -6.0
+      },
+      "reference": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.401947,
+        "rms": 0.058282,
+        "crest_db": 16.77,
+        "active_rms_p95_p10_db": 14.97,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.456274,
+          0.241069,
+          0.24459,
+          0.029279,
+          0.021984,
+          0.006804
+        ],
+        "sha256": "9af201a2fc7cf1287de3608cd0469fa86a4034112bd812c8bdb9ad09b004409b",
+        "app": "br-241-natural-band-resonance",
+        "bpm": 123.00000000000001,
+        "capture_content_start_s": 17.9,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -23.5,
+        "true_peak_dbtp": -7.5
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          -2.0,
+          -12.42,
+          0.93,
+          10.87,
+          1.79,
+          -2.02
+        ],
+        "core_band_mean_absolute_difference_db": 5.6,
+        "level_difference_db": 5.23
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          -0.48,
+          -3.49,
+          2.09,
+          4.76,
+          -13.42,
+          -8.33
+        ],
+        "core_band_mean_absolute_difference_db": 4.85,
+        "level_difference_db": 5.16
+      },
+      "balance_comparison_usable": true
+    },
+    {
+      "clip": "human-fly-16",
+      "baseline": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.586761,
+        "rms": 0.13269,
+        "crest_db": 12.91,
+        "active_rms_p95_p10_db": 5.67,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.575433,
+          0.02591,
+          0.159474,
+          0.209021,
+          0.02295,
+          0.007211
+        ],
+        "sha256": "27d44f1ad3ee5ac0e464f27d57a4a6b32ac6e71788e96ee9f051e6d2c28f59ee",
+        "app": "br-242-measured-band-balance",
+        "bpm": 117.44999999999999,
+        "capture_content_start_s": 17.82133333333333,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -15.7,
+        "true_peak_dbtp": -4.6
+      },
+      "candidate": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.501404,
+        "rms": 0.108331,
+        "crest_db": 13.31,
+        "active_rms_p95_p10_db": 5.41,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.466248,
+          0.085865,
+          0.336082,
+          0.099362,
+          0.009511,
+          0.002932
+        ],
+        "sha256": "b504e944ee12942b105dc4128302d1590933c9e68fea1ae94b239024169c114f",
+        "app": "br-242-measured-band-balance",
+        "bpm": 117.44999999999999,
+        "capture_content_start_s": 17.818666666666665,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -17.8,
+        "true_peak_dbtp": -6.0
+      },
+      "reference": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.466492,
+        "rms": 0.096823,
+        "crest_db": 13.66,
+        "active_rms_p95_p10_db": 8.53,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.253765,
+          0.124979,
+          0.497273,
+          0.035684,
+          0.066393,
+          0.021905
+        ],
+        "sha256": "e2a7e9cac7978beb094633e45ff49940770de89c7c9a4a1b44bfd41d596eca29",
+        "app": "br-241-natural-band-resonance",
+        "bpm": 117.00000000000001,
+        "capture_content_start_s": 17.9,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -17.9,
+        "true_peak_dbtp": -6.6
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          3.56,
+          -6.83,
+          -4.94,
+          7.68,
+          -4.61,
+          -4.83
+        ],
+        "core_band_mean_absolute_difference_db": 5.52,
+        "level_difference_db": 2.74
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          2.64,
+          -1.63,
+          -1.7,
+          4.45,
+          -8.44,
+          -8.73
+        ],
+        "core_band_mean_absolute_difference_db": 3.77,
+        "level_difference_db": 0.98
+      },
+      "balance_comparison_usable": true
+    },
+    {
+      "clip": "i-got-a-feeling-16",
+      "baseline": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.568085,
+        "rms": 0.112708,
+        "crest_db": 14.05,
+        "active_rms_p95_p10_db": 7.01,
+        "quiet_fraction": 0.0419,
+        "longest_quiet_s": 0.42,
+        "band_power_fraction": [
+          0.481839,
+          0.019382,
+          0.206863,
+          0.261245,
+          0.026472,
+          0.0042
+        ],
+        "sha256": "7b31e205e48f53babff3b2f08a33fe3def02a4d002b89cbca3273a0fafe8b172",
+        "app": "br-242-measured-band-balance",
+        "bpm": 120.19,
+        "capture_content_start_s": 17.829333333333334,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -16.6,
+        "true_peak_dbtp": -4.9
+      },
+      "candidate": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.517578,
+        "rms": 0.105066,
+        "crest_db": 13.85,
+        "active_rms_p95_p10_db": 5.29,
+        "quiet_fraction": 0.0439,
+        "longest_quiet_s": 0.44,
+        "band_power_fraction": [
+          0.287624,
+          0.078904,
+          0.569877,
+          0.062239,
+          0.001085,
+          0.000271
+        ],
+        "sha256": "e0abe71551a61e39ee3b555eca358b962252bc7ea38b159b1a9b1818da48ae59",
+        "app": "br-242-measured-band-balance",
+        "bpm": 120.19,
+        "capture_content_start_s": 17.810666666666666,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -17.7,
+        "true_peak_dbtp": -5.7
+      },
+      "reference": {
+        "duration_s": 9.96,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.35965,
+        "rms": 0.069362,
+        "crest_db": 14.3,
+        "active_rms_p95_p10_db": 8.44,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.335036,
+          0.107164,
+          0.526431,
+          0.025557,
+          0.005468,
+          0.000344
+        ],
+        "sha256": "2a639fed58ccdcb2d3d365410d2b63c31d532307c78e3c5407284a475bfeea10",
+        "app": "br-241-natural-band-resonance",
+        "bpm": 117.00000000000001,
+        "capture_content_start_s": 17.9,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -21.8,
+        "true_peak_dbtp": -8.9
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          1.58,
+          -7.43,
+          -4.06,
+          10.1,
+          6.85,
+          6.23
+        ],
+        "core_band_mean_absolute_difference_db": 6.0,
+        "level_difference_db": 4.22
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          -0.66,
+          -1.33,
+          0.34,
+          3.87,
+          -7.02,
+          0.0
+        ],
+        "core_band_mean_absolute_difference_db": 2.65,
+        "level_difference_db": 3.61
+      },
+      "balance_comparison_usable": true
+    },
+    {
+      "clip": "sister-16",
+      "baseline": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.473236,
+        "rms": 0.071672,
+        "crest_db": 16.39,
+        "active_rms_p95_p10_db": 21.46,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.248503,
+          0.012924,
+          0.398513,
+          0.298447,
+          0.029035,
+          0.012579
+        ],
+        "sha256": "dbac2f2649090120ad8d021bdf66f0cf80643c799ed47ad58d450de070547b6c",
+        "app": "br-242-measured-band-balance",
+        "bpm": 117.44999999999999,
+        "capture_content_start_s": 17.810666666666666,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -19.3,
+        "true_peak_dbtp": -6.4
+      },
+      "candidate": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.426147,
+        "rms": 0.070303,
+        "crest_db": 15.65,
+        "active_rms_p95_p10_db": 16.15,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.110452,
+          0.099466,
+          0.680846,
+          0.092294,
+          0.01286,
+          0.004082
+        ],
+        "sha256": "d6c4d9e1fa0bc644c9f42642760a4f4db149ff420b9f8a68e367baa29bb235a6",
+        "app": "br-242-measured-band-balance",
+        "bpm": 117.44999999999999,
+        "capture_content_start_s": 17.813333333333333,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -20.1,
+        "true_peak_dbtp": -7.4
+      },
+      "reference": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.19223,
+        "rms": 0.039247,
+        "crest_db": 13.8,
+        "active_rms_p95_p10_db": 10.46,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.001624,
+          0.043665,
+          0.916056,
+          0.038311,
+          0.00032,
+          2.4e-05
+        ],
+        "sha256": "156e52787216b65a7e2aa7e2e0a8187c8fa9e59b4fe8123ca3d6f428f718a1e9",
+        "app": "br-241-natural-band-resonance",
+        "bpm": 117.00000000000001,
+        "capture_content_start_s": 17.9,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -25.6,
+        "true_peak_dbtp": -14.3
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          21.85,
+          -5.29,
+          -3.61,
+          8.92,
+          14.63,
+          11.0
+        ],
+        "core_band_mean_absolute_difference_db": 10.86,
+        "level_difference_db": 5.23
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          18.33,
+          3.58,
+          -1.29,
+          3.82,
+          11.09,
+          6.11
+        ],
+        "core_band_mean_absolute_difference_db": 7.62,
+        "level_difference_db": 5.06
+      },
+      "balance_comparison_usable": true
+    },
+    {
+      "clip": "tabasco-6",
+      "baseline": {
+        "duration_s": 9.96,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.593903,
+        "rms": 0.122061,
+        "crest_db": 13.74,
+        "active_rms_p95_p10_db": 6.74,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.423258,
+          0.01812,
+          0.220727,
+          0.277275,
+          0.039563,
+          0.021058
+        ],
+        "sha256": "3e51e5a23fea3665ab708af159a87ce63e8d2ecc62a90777f366a06f39d2e2c7",
+        "app": "br-242-measured-band-balance",
+        "bpm": 132.51000000000002,
+        "capture_content_start_s": 7.818666666666667,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -15.7,
+        "true_peak_dbtp": -4.4
+      },
+      "candidate": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.489716,
+        "rms": 0.10009,
+        "crest_db": 13.79,
+        "active_rms_p95_p10_db": 5.03,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.338633,
+          0.104724,
+          0.339848,
+          0.17731,
+          0.030382,
+          0.009104
+        ],
+        "sha256": "c8d77abfbbd12a306d790427b2641d99feef38d7157c4af1457062c96e6565c2",
+        "app": "br-242-measured-band-balance",
+        "bpm": 132.51000000000002,
+        "capture_content_start_s": 7.8613333333333335,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -17.7,
+        "true_peak_dbtp": -6.2
+      },
+      "reference": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.450073,
+        "rms": 0.101402,
+        "crest_db": 12.94,
+        "active_rms_p95_p10_db": 6.87,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.270241,
+          0.112915,
+          0.430468,
+          0.095161,
+          0.073988,
+          0.017227
+        ],
+        "sha256": "5196eb48cf4994a928704cdb8d8c746f15a9172eaf85bc1566b9205dbf1eee02",
+        "app": "br-241-natural-band-resonance",
+        "bpm": 136,
+        "capture_content_start_s": 7.9,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -17.3,
+        "true_peak_dbtp": -6.7
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          1.95,
+          -7.95,
+          -2.9,
+          4.64,
+          -2.72,
+          0.87
+        ],
+        "core_band_mean_absolute_difference_db": 4.03,
+        "level_difference_db": 1.61
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          0.98,
+          -0.33,
+          -1.03,
+          2.7,
+          -3.87,
+          -2.77
+        ],
+        "core_band_mean_absolute_difference_db": 1.78,
+        "level_difference_db": -0.11
+      },
+      "balance_comparison_usable": true
+    },
+    {
+      "clip": "under-the-moon-16",
+      "baseline": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.60675,
+        "rms": 0.125434,
+        "crest_db": 13.69,
+        "active_rms_p95_p10_db": 9.27,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.576324,
+          0.020543,
+          0.186533,
+          0.179902,
+          0.026561,
+          0.010136
+        ],
+        "sha256": "cb28ad55ddcf625a03cda32e136f725a4aafe1e3d9fc43056cbbbca585a63d80",
+        "app": "br-242-measured-band-balance",
+        "bpm": 161.5,
+        "capture_content_start_s": 17.82133333333333,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -16.2,
+        "true_peak_dbtp": -4.3
+      },
+      "candidate": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.509552,
+        "rms": 0.109092,
+        "crest_db": 13.39,
+        "active_rms_p95_p10_db": 7.83,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.482401,
+          0.071709,
+          0.365504,
+          0.066499,
+          0.010672,
+          0.003216
+        ],
+        "sha256": "d78dae375dbd3fa4e9beddce9a939f64f904a65548b790da99a164286cc59bcf",
+        "app": "br-242-measured-band-balance",
+        "bpm": 161.5,
+        "capture_content_start_s": 17.821333333333335,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -18.0,
+        "true_peak_dbtp": -5.6
+      },
+      "reference": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.406097,
+        "rms": 0.061267,
+        "crest_db": 16.43,
+        "active_rms_p95_p10_db": 11.87,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.394375,
+          0.18852,
+          0.278645,
+          0.087789,
+          0.038637,
+          0.012033
+        ],
+        "sha256": "6d6873a07e4c78f61a50bb5b0a38874a831663744b73711d7f6f5502ecc436f8",
+        "app": "br-241-natural-band-resonance",
+        "bpm": 161,
+        "capture_content_start_s": 17.9,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -22.5,
+        "true_peak_dbtp": -7.7
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          1.65,
+          -9.63,
+          -1.74,
+          3.12,
+          -1.63,
+          -0.75
+        ],
+        "core_band_mean_absolute_difference_db": 3.55,
+        "level_difference_db": 6.22
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          0.87,
+          -4.2,
+          1.18,
+          -1.21,
+          -5.59,
+          -5.73
+        ],
+        "core_band_mean_absolute_difference_db": 2.61,
+        "level_difference_db": 5.01
+      },
+      "balance_comparison_usable": true
+    }
+  ],
+  "baseline_source": "PR #433 / bea62539c0f3e6a620344ab568a0b36f92b4473b sound bank, with v409 scheduler correction applied before tone calibration",
+  "candidate_source": "v409 / br-242; DSP v4, bank/adapter v3, amp/room v1",
+  "candidate_source_sha256_lf": {
+    "band-room.js": "096ecc03d14151b8c8721fbcc00681a1073ff68f02a4d02f01980acf59d9c15e",
+    "audio/physical-band/dsp.mjs": "a04a911e783baeb57564d6671725c0a674d8c5c2fc0d0c0b4dcbc6224e81d8a5",
+    "audio/physical-band/bank.mjs": "d3810063c71993c6eb15d108fd02ec6a7f9dcc6a96c070787856e698d6cadf27",
+    "audio/physical-band/instruments.mjs": "613d049cf18ef3968a8fa25d74dcfd3278f3ae46f0c10601f738b6d8c64ed67c"
+  },
+  "original_seek_baseline": {
+    "electric-sheep-16": {
+      "duration_s": 9.96,
+      "channels": 2,
+      "sample_rate": 48000,
+      "peak": 0.571655,
+      "rms": 0.058684,
+      "crest_db": 19.77,
+      "active_rms_p95_p10_db": 50.64,
+      "quiet_fraction": 0.6667,
+      "longest_quiet_s": 6.64,
+      "band_power_fraction": [
+        0.343191,
+        0.015945,
+        0.214257,
+        0.363932,
+        0.044538,
+        0.018137
+      ],
+      "sha256": "e8a1ae03e56317e132e7ef89713bb538ad9ae20ae4a82b9b60d21f2d039222bb",
+      "app": "br-241-natural-band-resonance",
+      "bpm": 129,
+      "capture_content_start_s": 17,
+      "dropped_hits": 0
+    },
+    "hey-16": {
+      "duration_s": 10.02,
+      "channels": 2,
+      "sample_rate": 48000,
+      "peak": 0.537598,
+      "rms": 0.106369,
+      "crest_db": 14.07,
+      "active_rms_p95_p10_db": 8.6,
+      "quiet_fraction": 0.0,
+      "longest_quiet_s": 0.0,
+      "band_power_fraction": [
+        0.357618,
+        0.016104,
+        0.263375,
+        0.33098,
+        0.028385,
+        0.003538
+      ],
+      "sha256": "9896cdde145743ee2b1c2b7447c293db9f9a9144ab6bb9026205d3ed03a3e2da",
+      "app": "br-241-natural-band-resonance",
+      "bpm": 123.00000000000001,
+      "capture_content_start_s": 17.8,
+      "dropped_hits": 0
+    },
+    "human-fly-16": {
+      "duration_s": 10.02,
+      "channels": 2,
+      "sample_rate": 48000,
+      "peak": 0.582764,
+      "rms": 0.136531,
+      "crest_db": 12.61,
+      "active_rms_p95_p10_db": 6.24,
+      "quiet_fraction": 0.0,
+      "longest_quiet_s": 0.0,
+      "band_power_fraction": [
+        0.610168,
+        0.023009,
+        0.144638,
+        0.193381,
+        0.021204,
+        0.0076
+      ],
+      "sha256": "9ae532d9f79fb810627559e1ac7d0ec3f550421bbd4e6dfc1757a1517b741912",
+      "app": "br-241-natural-band-resonance",
+      "bpm": 117.00000000000001,
+      "capture_content_start_s": 17,
+      "dropped_hits": 0
+    },
+    "i-got-a-feeling-16": {
+      "duration_s": 10.02,
+      "channels": 2,
+      "sample_rate": 48000,
+      "peak": 0.543091,
+      "rms": 0.103293,
+      "crest_db": 14.42,
+      "active_rms_p95_p10_db": 7.34,
+      "quiet_fraction": 0.0,
+      "longest_quiet_s": 0.0,
+      "band_power_fraction": [
+        0.441732,
+        0.019485,
+        0.219927,
+        0.287216,
+        0.027462,
+        0.004178
+      ],
+      "sha256": "726dde7f720868d0f5f32cc4e853acb8696766df8c4f408af06ccee126edff17",
+      "app": "br-241-natural-band-resonance",
+      "bpm": 117.00000000000001,
+      "capture_content_start_s": 16.9,
+      "dropped_hits": 0
+    },
+    "sister-16": {
+      "duration_s": 10.02,
+      "channels": 2,
+      "sample_rate": 48000,
+      "peak": 0.429596,
+      "rms": 0.017422,
+      "crest_db": 27.84,
+      "active_rms_p95_p10_db": 64.98,
+      "quiet_fraction": 0.8044,
+      "longest_quiet_s": 8.06,
+      "band_power_fraction": [
+        0.000663,
+        0.005162,
+        0.646774,
+        0.3371,
+        0.006505,
+        0.003795
+      ],
+      "sha256": "08527197022670be5582295b447baf11d70f5247ad68f9edee4a73d279a1896a",
+      "app": "br-241-natural-band-resonance",
+      "bpm": 117.00000000000001,
+      "capture_content_start_s": 17,
+      "dropped_hits": 0
+    },
+    "tabasco-6": {
+      "duration_s": 10.02,
+      "channels": 2,
+      "sample_rate": 48000,
+      "peak": 0.272736,
+      "rms": 0.013016,
+      "crest_db": 26.43,
+      "active_rms_p95_p10_db": 65.62,
+      "quiet_fraction": 0.8184,
+      "longest_quiet_s": 8.2,
+      "band_power_fraction": [
+        0.001837,
+        0.001579,
+        0.386629,
+        0.59681,
+        0.012824,
+        0.00032
+      ],
+      "sha256": "fcf20f1287c0b296d2bba0c0e3a3399594bf66a3ac2462211d6da0e15dc3f024",
+      "app": "br-241-natural-band-resonance",
+      "bpm": 136,
+      "capture_content_start_s": 7,
+      "dropped_hits": 0
+    },
+    "under-the-moon-16": {
+      "duration_s": 10.02,
+      "channels": 2,
+      "sample_rate": 48000,
+      "peak": 0.585938,
+      "rms": 0.062355,
+      "crest_db": 19.46,
+      "active_rms_p95_p10_db": 53.29,
+      "quiet_fraction": 0.6886,
+      "longest_quiet_s": 6.9,
+      "band_power_fraction": [
+        0.507328,
+        0.026347,
+        0.208758,
+        0.220621,
+        0.027322,
+        0.009623
+      ],
+      "sha256": "e3f2a5eb629b8bdb9d06a9fa8e4dd44d6d2e6fa19fe84662ad04a28445a5c25a",
+      "app": "br-241-natural-band-resonance",
+      "bpm": 161,
+      "capture_content_start_s": 17,
+      "dropped_hits": 0
+    }
+  },
+  "summary": {
+    "core_band_discrepancy_mean_baseline_db": 5.604,
+    "core_band_discrepancy_mean_candidate_db": 3.881,
+    "relative_decrease_pct": 30.7,
+    "not_a_perceived_quality_score": true
+  },
+  "calibration_clips": [
+    "human-fly-16",
+    "electric-sheep-16",
+    "hey-16"
+  ],
+  "validation_clips": [
+    "i-got-a-feeling-16",
+    "under-the-moon-16",
+    "sister-16",
+    "tabasco-6"
+  ],
+  "coverage": [
+    {
+      "song": "electric-sheep",
+      "catalog_bpm": 129,
+      "encoded_bpm": 129.2,
+      "decoded_duration_s": 150.073,
+      "native_total_bars": 81,
+      "tail_extension": null
+    },
+    {
+      "song": "hey",
+      "catalog_bpm": 123,
+      "encoded_bpm": 120.19,
+      "decoded_duration_s": 304.927,
+      "native_total_bars": 153,
+      "tail_extension": null
+    },
+    {
+      "song": "human-fly",
+      "catalog_bpm": 117,
+      "encoded_bpm": 117.45,
+      "decoded_duration_s": 239.491,
+      "native_total_bars": 118,
+      "tail_extension": null
+    },
+    {
+      "song": "i-got-a-feeling",
+      "catalog_bpm": 117,
+      "encoded_bpm": 120.19,
+      "decoded_duration_s": 368.718,
+      "native_total_bars": 185,
+      "tail_extension": {
+        "from_s": 359.431,
+        "to_s": 368.718,
+        "method": "Existing detectors; new pitch rows probability >=0.65; earlier rows retained; tail velocity ceiling <=0.65",
+        "added_rows": {
+          "bass_line": 1,
+          "vocal_melody": 1,
+          "guitar_line": 32,
+          "drum_line": 41
+        },
+        "drums_sha256": "52fbb4048a68e8ef662ac79cf755f774cd103e719917ea43cf68b8ecb2eb0dca"
+      }
+    },
+    {
+      "song": "sister",
+      "catalog_bpm": 117,
+      "encoded_bpm": 117.45,
+      "decoded_duration_s": 281.287,
+      "native_total_bars": 138,
+      "tail_extension": null
+    },
+    {
+      "song": "tabasco",
+      "catalog_bpm": 136,
+      "encoded_bpm": 132.51,
+      "decoded_duration_s": 44.722,
+      "native_total_bars": 25,
+      "tail_extension": null
+    },
+    {
+      "song": "under-the-moon",
+      "catalog_bpm": 161,
+      "encoded_bpm": 161.5,
+      "decoded_duration_s": 313.313,
+      "native_total_bars": 211,
+      "tail_extension": null
+    }
+  ],
+  "browser_validation": {
+    "release": "v409",
+    "viewport_width": 390,
+    "horizontal_overflow": false,
+    "tested_seek_rates_pct": [
+      100,
+      80,
+      120,
+      100
+    ],
+    "tested_guitar_tones": [
+      "acoustic",
+      "crunch",
+      "drive"
+    ],
+    "all_off_output_peak": 6.38264373264974e-06,
+    "stop_output_peak": 3.91713638236979e-06,
+    "stop_pending_sources": 0,
+    "reset_output_peak": 0.07537902891635895,
+    "cached_offline_output_peak": 0.06491199135780334,
+    "offline_dropped_hits": 0,
+    "script_errors": [],
+    "scope": "Chromium desktop output and 390px layout, not physical iPhone or human listening certification"
+  },
+  "tail_capture": {
+    "synth": {
+      "measurement": {
+        "duration_s": 10.08,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.537292,
+        "rms": 0.09697,
+        "crest_db": 14.87,
+        "active_rms_p95_p10_db": 7.93,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.245557,
+          0.097993,
+          0.487299,
+          0.126576,
+          0.032505,
+          0.01007
+        ],
+        "sha256": "67407c5e6df9f632c290e5528d5509bfb7e8b96a1a45bafafe5f72a5179ce59b",
+        "app": "br-242-measured-band-balance",
+        "bpm": 120.19,
+        "capture_content_start_s": 357.85333333333335,
+        "dropped_hits": 0
+      },
+      "clock": {
+        "songId": "i-got-a-feeling",
+        "contentSeconds": 368.10133333333334,
+        "barCount": 185,
+        "bpm": 120.19,
+        "instrumentMakeup": 2.2654265100292412,
+        "totalBars": 185,
+        "sourceDuration": 368.718
+      }
+    },
+    "stems": {
+      "measurement": {
+        "duration_s": 9.96,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.382233,
+        "rms": 0.082527,
+        "crest_db": 13.31,
+        "active_rms_p95_p10_db": 59.8,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.075984,
+          0.048217,
+          0.75379,
+          0.121111,
+          0.000853,
+          4.6e-05
+        ],
+        "sha256": "e387e2f447775e8fd8ecbd09f493e10f3f55b2107ec87de0bb89041d5e7c94c9",
+        "app": "br-242-measured-band-balance",
+        "bpm": 117.00000000000001,
+        "capture_content_start_s": 358.07466666666664,
+        "dropped_hits": 0
+      },
+      "clock": {
+        "songId": "i-got-a-feeling",
+        "contentSeconds": 368.21066666666667,
+        "barCount": 179,
+        "bpm": 117,
+        "instrumentMakeup": 3.2,
+        "totalBars": 180,
+        "sourceDuration": 368.718
+      }
+    }
+  }
+}

@@ -49,7 +49,7 @@ if (panel) {
         else { renderMs = Math.round(performance.now() - began); cache.set(selected, rendered); resolve(rendered); }
       };
       try {
-        taskWorker = new Worker(new URL("./render-worker.mjs?v=3", import.meta.url), { type: "module" });
+        taskWorker = new Worker(new URL("./render-worker.mjs?v=4", import.meta.url), { type: "module" });
         worker = taskWorker;
         cancelRender = () => finish(new Error("cancelled"));
         timeout = setTimeout(() => finish(new Error("準備に時間がかかっています。停止して、もう一度お試しください。")), 30000);

@@ -6,6 +6,13 @@ This checklist makes browser listening the default review path for Music runtime
 
 Use m4a recording only for milestone comparisons, CarPlay/output-level checks, or when browser listening is ambiguous.
 
+## ARCB measured mix and continuous seek (v409 / BL-050)
+
+- Compare accompaniment against the recombined original, with original vocals and the melody guide OFF. Separation leakage is not ground truth for a single instrument. Check body, pick/transient, wire/cymbal air and the common decay together.
+- Seek early/late and backward while playing at 80/100/120%, then switch original/AI at the same content second. No old-note burst, multi-second scheduler silence or wrong-bar accumulation. Check the guide/full mix too.
+- Repeat STOP/restart, all OFF/ON, RESET AUDIO, cached offline start and clean/crunch/drive. Confirm actual post-master recording, no clipping or dropped notes and 390px controls.
+- Digital measurements and capture hashes: [ARCB-MIX-MEASUREMENT.md](ARCB-MIX-MEASUREMENT.md). These do not certify perfect transcription or physical iPhone playback.
+
 ## ARCB natural sustain and air (v408 / BL-051)
 
 - In AI mode, solo guitar in clean/crunch/drive: short notes must ring between strokes; strings of a chord must not choke each other. Solo bass: the body must survive a short gate, with a smooth change on the next note and no stacked low drone.
@@ -160,8 +167,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `engine.js?v=fm-119`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-81`, `audio/ai-fills.js?v=fm-71`,
   `style.css?v=fm-28`, `band-room.css?v=br-93`,
-  `band-room.js?v=br-241`, `audio/audio-safety.js?v=br-68`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v408`.
+  `band-room.js?v=br-242`, `audio/audio-safety.js?v=br-68`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v409`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,

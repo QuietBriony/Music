@@ -14,9 +14,9 @@
 
 ## 現在地とversion
 
-- 現行Band Room runtimeは **v408**（ARCB 7曲の弦のサステイン、ドラムの余韻、空気感）。HAZAMAのplayability候補は **v401** のまま。client markerは
-  `band-room.js?v=br-241` / `band-room.css?v=br-93`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v408**。v401はHAZAMA AIの
+- 現行Band Room runtimeは **v409**（ARCBの合奏バランスと途中移動、採譜の時計を補正）。HAZAMAのplayability候補は **v401** のまま。client markerは
+  `band-room.js?v=br-242` / `band-room.css?v=br-93`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v409**。v401はHAZAMA AIの
   arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
   約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
   減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、
@@ -40,7 +40,15 @@
 - 詳細な版履歴は [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md)、
   未完了タスクの正本は [autonomy/BACKLOG.md](./autonomy/BACKLOG.md)。
 
-### ARCBの弦の響きと空気感（v408）
+### ARCBの合奏補正（v409）
+
+ギター・ベースの芯、打楽器の低音と高域、弦の余韻を合奏で調整しています。
+途中へ移動した後の長い無音と、採譜の時刻を別テンポで鳴らす累積ずれを修正しました。
+原音と比較するときは、原音のvocalsとAIのmelodyをOFFにして伴奏同士を聴くと判断しやすくなります。
+原音には分離漏れがあるため、パート単体の漏れをその楽器の正しい音として扱いません。
+melodyは歌声ではなく音程のガイドです。実出力の測定は[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
+
+### ARCBの弦の響きと空気感（v408以降）
 
 AI再現では、短い音符でもギターの和音とベースの響きが自然に減衰します。
 次の和音／ベース音では前の音を滑らかに押さえ、低音が重なるのを防ぎます。
@@ -54,7 +62,7 @@ AI再現では、短い音符でもギターの和音とベースの響きが自
 1. [Human Flyの原音](../band-room.html?band=tabasco&song=human-fly&mode=stems)を開き、`START`を押す。4 stemsを聴いたら原音の`all off`→`drums`だけONでドラムの打ち方を確認する。
 2. 同じ小節を[Human FlyのAI再現](../band-room.html?band=tabasco&song=human-fly&mode=synth)で聴く。`all off`→`drums`だけONで打点、フィル、強弱を比較する。7曲は画面上部の曲ボタンから選ぶ。
 3. 自分でドラムを叩く練習では`📻 原音`で`all on`→`drums`だけOFFにして残りの3 stemsを伴奏にする。逆にドラムだけ聴きたいときは手順1。音が出るのは手動`START`後だけ。
-4. AI再現は練習用。スマホのlight経路では8打/小節の上限があり、v403でkick・snare・crashの脱落を減らしたが、ハイハットや速いフィルはまだ原音通りではない。原音stemsを正解として使う。
+4. AI再現は練習用。新ARCBは最大24打/小節、弦とmelodyは各16行まで再生します。採譜の取りこぼしやハイハット・和音の近似は残るため、原音全体と比較してください。
 
 ## HAZAMAを聴いてLyric Labへ渡す
 
@@ -102,7 +110,7 @@ melodyは歌の音程を弦でなぞるパートです。歌声の再現では�
 Radiohead／レッチリのような輪郭と打感を方向性とし、特定録音の音色コピーは主張しません。
 採譜の誤り、ギターの全構成音・細かな奏法、実iPhone負荷は次の評価対象です。
 
-## 画面構成（現行: br-241 / br-93）
+## 画面構成（現行: br-242 / br-93）
 
 ```
 ┌─────────────────────────────────┐

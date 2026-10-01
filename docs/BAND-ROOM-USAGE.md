@@ -1,10 +1,10 @@
 # Band Room — 使い方ガイド
 
-2026-10-01: 現行runtime v408はARCB 7曲の新しい弦・ドラム音源です。AI再現でSTARTし、ギターの音をクリーン／クランチ／ディストーションから選びます。melodyは歌の音程を弦でなぞるパート。原音と切り替えて練習・RECできます。
+2026-10-01: 現行runtime v409はARCB 7曲の合奏バランス、余韻、採譜の時計と途中移動を補正しています。AI再現でSTARTし、ギターの音をクリーン／クランチ／ディストーションから選びます。melodyは歌の音程を弦でなぞるパート。原音と切り替えて練習・RECできます。
 
-> Listen hub: https://quietbriony.github.io/Music/listen.html
-> Band Room: https://quietbriony.github.io/Music/band-room.html
-> HAZAMA直接入口: https://quietbriony.github.io/Music/band-room.html?band=hazama
+> Listen hub: https://music-stack.pages.dev/listen.html
+> Band Room: https://music-stack.pages.dev/band-room.html
+> HAZAMA直接入口: https://music-stack.pages.dev/band-room.html?band=hazama
 >
 > Tabascoの原音 / AI再現をA/Bしたり、HAZAMAの原音（Still Moving完成レンダー）と
 > AI再現を聴き比べたり、自分のtakeを録音・uploadしたりできる。
@@ -12,7 +12,7 @@
 ## いちばん短い遊び方
 
 1. Listen hubのARCB / TabascoからHuman Flyを開き、`📻 原音`を選択して`START`を一度押す。ドラムだけなら原音の`all off`→`drums` ON、自分でドラムを叩くなら原音の`all on`→`drums` OFF。
-2. 同じ区間を`🎛 AI 再現`へ切り替えて打点・強弱を比較する。AIは練習用で、ARCBの新音源は採譜の打点を24打/小節まで鳴らす。正確なドラムの基準は原音stems。
+2. 同じ区間を`🎛 AI 再現`へ切り替えて打点・強弱を比較する。AIは練習用で、ARCBの新音源は採譜の打点を24打/小節まで鳴らす。分離漏れもあるため、原音全体でも確認する。
 3. ほかのTabasco曲は上の01〜07ボタンで選ぶ。HAZAMAはListenの直接入口から01 / 02と`📻 原音`（基準）/ `🎛 AI 再現`を比較する。
    02のAI再現は02固有ではなく01 frames共有の暫定版なので、02固有の判断は原音を使う。
    歌詞を外す／自分で歌う時はListenの01/02 `KARAOKE` linkを開く。
@@ -23,7 +23,7 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行runtimeはv408（ARCB 7曲の弦のサステイン・ドラムの余韻・空気感）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-241` / `br-93`。
+現行runtimeはv409（ARCB 7曲の合奏補正・採譜時計・途中移動）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-242` / `br-93`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
 ### v401 AIの短時間レイヤー判定
@@ -41,7 +41,12 @@ checkboxだけONにし、最後に`defaults`で通常mixへ戻します。
 曲ID seedによる微細な実演差があります。02固有アレンジの
 合否には使わず、02原音を基準にします。Surface合格だけではreal mobile合格になりません。
 
-### ARCBの弦の響きと空気感（v408）
+### ARCBの合奏補正（v409）
+
+原音のvocalsとAIのmelodyを両方OFFにすると、伴奏全体の低音・打感・ギターの響きを比べやすくなります。
+単独パートの分離漏れを音色の正解にはしません。[合奏の測定結果](ARCB-MIX-MEASUREMENT.md)に補正前後の数値と残る違いを記録しています。
+
+### ARCBの弦の響きと空気感（v408以降）
 
 AI再現では、短い音符でもギターの和音とベースの響きが自然に減衰します。
 次の和音／ベース音では前の音を滑らかに押さえ、低音が重なるのを防ぎます。
@@ -50,7 +55,7 @@ AI再現では、短い音符でもギターの和音とベースの響きが自
 パートの音量は部屋へ送る音にも効き、STOPとseekは残響も止めます。
 
 
-## 画面構成（現行: br-241 / br-93）
+## 画面構成（現行: br-242 / br-93）
 
 ```
 ┌─────────────────────────────────┐

@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v408";
+const VERSION = "hazama-fm-v409";
 const CACHE_PREFIX = "hazama-fm-";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
@@ -26,15 +26,15 @@ const PRECACHE_URLS = [
   "lyric-lab.js",
   "band-room.html",
   "band-room.css?v=br-93",
-  "band-room.js?v=br-241",
-  "audio/physical-band/preview.mjs?v=3",
-  "audio/physical-band/render-worker.mjs?v=3",
-  "audio/physical-band/score.mjs?v=3",
-  "audio/physical-band/dsp.mjs?v=3",
+  "band-room.js?v=br-242",
+  "audio/physical-band/preview.mjs?v=4",
+  "audio/physical-band/render-worker.mjs?v=4",
+  "audio/physical-band/score.mjs?v=4",
+  "audio/physical-band/dsp.mjs?v=4",
   "audio/physical-band/amp.mjs?v=1",
-  "audio/physical-band/bank.mjs?v=2",
-  "audio/physical-band/bank-worker.mjs?v=2",
-  "audio/physical-band/instruments.mjs?v=2",
+  "audio/physical-band/bank.mjs?v=3",
+  "audio/physical-band/bank-worker.mjs?v=3",
+  "audio/physical-band/instruments.mjs?v=3",
   "audio/physical-band/room.mjs?v=1",
   "docs/PHYSICAL-BAND-REHEARSAL.md",
   "presets/drum-frames-tabasco-human-fly.json",

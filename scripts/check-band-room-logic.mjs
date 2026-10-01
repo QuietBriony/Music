@@ -82,9 +82,36 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-241-natural-band-resonance", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v408", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-242-measured-band-balance", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v409", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
+const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
+const performanceStructure = windowMock.BandRoomTestHooks.transcribedPerformanceStructure;
+const scheduleWindow = windowMock.BandRoomTestHooks.physicalScheduleWindow;
+for (const song of bandsRegistry.bands.tabasco.songs) {
+  const data = JSON.parse(readFileSync(`presets/drum-frames-tabasco-${song.id}.json`, "utf8"));
+  const fit = data.bass_line.bpm_fit;
+  assert.ok(Math.abs(performanceBpm(data, true) - fit) < 1e-6, `${song.id}: all transcribed parts must use their encoded clock`);
+  assert.equal(performanceBpm(data, false), data.bpm, "Original/legacy timing keeps the catalog tempo");
+  assert.equal(performanceStructure(data, false), data.structure,"Original structure is never rewritten");
+  const adjusted=performanceStructure(data,true);
+  assert.deepEqual(JSON.parse(JSON.stringify(adjusted.slice(0,-1))),data.structure.slice(0,-1),"Only the ending may extend/shrink with the encoded clock");
+  const seconds=adjusted.reduce((sum,section)=>sum+section.bars,0)*240/fit;
+  assert.ok(seconds>=data.performance_duration_s && seconds-data.performance_duration_s<240/fit,"Native ending must cover the decoded source and at most one additional bar");
+  const row = data.guitar_line.events.at(-1);
+  const step = row[0] * 16 + row[1];
+  assert.ok(Math.abs(step * 15 / performanceBpm(data, true) - step * 15 / fit) < 1e-6, "Late events must not accumulate catalog/fit drift");
+}
+const fittedLine = bpm_fit => ({bpm_fit, events:[[0,0,1,48,.6]]});
+assert.equal(performanceBpm({bpm:117,bass_line:fittedLine(117.45)}, true),117,"One estimate is insufficient to retime a song");
+assert.equal(performanceBpm({bpm:117,bass_line:fittedLine(117.45),guitar_line:fittedLine(120)},true),117,"Disagreeing line clocks fail closed");
+assert.equal(performanceBpm({bpm:117,bass_line:fittedLine(240),guitar_line:fittedLine(240)},true),117,"Octave-tempo errors must not retime a song");
+assert.equal(performanceBpm({bpm:117,bass_line:fittedLine(NaN),guitar_line:fittedLine(117)},true),117);
+for (const rate of [.5,.8,1,1.2]) {
+  const offset=17.7/rate, window=scheduleWindow(offset,117.45*rate), bar=240/(117.45*rate);
+  assert.ok(window.phase>=0 && window.phase<bar);
+  assert.ok(Math.abs(window.nextBoundary+window.phase-offset-bar)<1e-7,"Partial-bar resume must meet the following bar at every practice speed");
+}
 const playbackModesForBand = windowMock.BandRoomTestHooks?.playbackModesForBand;
 const bandSupportsPlaybackMode = windowMock.BandRoomTestHooks?.bandSupportsPlaybackMode;
 const preferredPlaybackModeForBand = windowMock.BandRoomTestHooks?.preferredPlaybackModeForBand;
@@ -429,13 +456,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-93/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-241/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-242/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-93/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-241/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-242/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");

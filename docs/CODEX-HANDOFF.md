@@ -1,5 +1,13 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-01: v409は原音の分離漏れを前提に、ARCBの合奏全体を測定して補正。
+弦の初期変位と小さなpick成分を分け、ベースの芯とギターの中域を残す。打楽器ノイズを帯域で色付けし、kick／snare／金属と弦の相対量を調整。
+弦の余韻を少し延ばし、次音のdampingは保持。新ARCBの既存polish makeupを3 dB下げ、歌の音程ガイドも同じ方向へ調整。
+一致する採譜bpm_fitを合奏の時計に使い、名目BPMとの差による累積ずれを解消。途中seekはTransportを再構成し、残りの小節と次小節を連続させる。
+実際のpost-master REC WAVを原音drums+bass+otherの再結合と比較。計測の条件・結果・限界は[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
+52音／11,826,560 bytes、amp 7 node／room 26 node、予約128発／8秒先の予算を保持。音声・依存・公開先の追加なし。
+歌声・完全な多声音高採譜の達成や実iPhoneの負荷合格を主張しない。本人の違和感は測定判定を上書きする。
+
 2026-10-01: 独立Strudel試奏台のLIVEを磨いた。手動フェーダー基準と自動展開の制御値を小バーで区別。
 BPMは60〜180の横フェーダー／数字からclockへ直接渡し、metadataとsetcpmだけ更新するため再評価しない。
 V1/V2/V3の保存形式と音符、音色faderのsignal IDを保持。対応環境のaudioSession playback指定、
@@ -155,7 +163,7 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v408`。Band Room runtime markerは`band-room.js?v=br-241` /
+- 現行cacheは`hazama-fm-v409`。Band Room runtime markerは`band-room.js?v=br-242` /
   `band-room.css?v=br-93`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
