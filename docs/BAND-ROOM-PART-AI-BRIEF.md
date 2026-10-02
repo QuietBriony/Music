@@ -4,6 +4,7 @@
 > パートの分離漏れを正解にせず、再結合した伴奏と実post-master出力を比較します。
 > 下記のv402時点の音色凍結・旧8/4行予算・名目BPMによる時計は歴史的baseline。
 > v409は新ARCBの最大24打/16行、共通bpm_fit、合奏の音色と余韻の測定補正を使用。
+> v410は採譜の空白小節のfallbackを止め、未採譜melodyを明示。検出漏れは休符の証明と区別する。
 > 成果と残る採譜の近似は[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。HAZAMAの昇格gateは別のまま。
 
 新しいチャット（Claude / Codex）が最初に読む文書。対応する backlog は **BL-050**。

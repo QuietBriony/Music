@@ -14,9 +14,9 @@
 
 ## 現在地とversion
 
-- 現行Band Room runtimeは **v409**（ARCBの合奏バランスと途中移動、採譜の時計を補正）。HAZAMAのplayability候補は **v401** のまま。client markerは
-  `band-room.js?v=br-242` / `band-room.css?v=br-93`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v409**。v401はHAZAMA AIの
+- 現行Band Room runtimeは **v410**（採譜の空白小節を保ち、未採譜のmelodyを明示）。HAZAMAのplayability候補は **v401** のまま。client markerは
+  `band-room.js?v=br-243` / `band-room.css?v=br-93`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v410**。v401はHAZAMA AIの
   arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
   約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
   減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、
@@ -40,7 +40,15 @@
 - 詳細な版履歴は [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md)、
   未完了タスクの正本は [autonomy/BACKLOG.md](./autonomy/BACKLOG.md)。
 
-### ARCBの合奏補正（v409）
+### 採譜の空白と歌の音程（v410）
+
+採譜のあるパートは音符のない小節に自動伴奏を足さず、前の音の余韻を残します。
+空白には検出漏れも含まれ、原曲の完全な休符判定ではありません。
+Electric Sheep／TABASCOの歌の音程は未採譜のため、melodyを鳴らさず画面に表示します。
+採譜のある曲へ戻すと、元のmelody選択で使えます。明示的な「再構築」は従来どおり別の伴奏を作ります。
+実測と残る違いは[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
+
+### ARCBの合奏補正（v409以降）
 
 ギター・ベースの芯、打楽器の低音と高域、弦の余韻を合奏で調整しています。
 途中へ移動した後の長い無音と、採譜の時刻を別テンポで鳴らす累積ずれを修正しました。
@@ -110,7 +118,7 @@ melodyは歌の音程を弦でなぞるパートです。歌声の再現では�
 Radiohead／レッチリのような輪郭と打感を方向性とし、特定録音の音色コピーは主張しません。
 採譜の誤り、ギターの全構成音・細かな奏法、実iPhone負荷は次の評価対象です。
 
-## 画面構成（現行: br-242 / br-93）
+## 画面構成（現行: br-243 / br-93）
 
 ```
 ┌─────────────────────────────────┐

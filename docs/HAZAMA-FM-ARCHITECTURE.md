@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-02: v410は採譜の空白小節へ足していた自動伴奏を止め、既存のreleaseとroom tailを残す。未採譜の歌の音程は生成せず、Electric Sheep／TABASCOのmelodyを明示。合奏・soloの確認と残る採譜漏れは[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
+
 2026-10-02: 独立WorkbenchのV4は量0の影グルーヴを追加。既存打点を守るHPF補助層と小節同期を同じStrudel演奏コードへ出し、全音の設定を編集・保存できる。先読みqueryと操作cycleを分け、手編集本文・旧保存コード・Stopを保護する。独立再レビューと実ブラウザ検証後、本人が既存公開先への反映を承認。Listenの台帳とmanualを同期。音声runtime/cache tupleは保持し、未聴取・実iPhone未評価を残す。[検証条件](WORKBENCH-SHADOW-GROOVE.md)。
 
 2026-10-01: v409は原音の分離漏れを前提に、ARCBの合奏全体を測定して補正。
@@ -55,9 +57,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v409`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v410`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-242`, `band-room.css?v=br-93`。
+> `band-room.js?v=br-243`, `band-room.css?v=br-93`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:
