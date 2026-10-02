@@ -19,6 +19,24 @@
 
 ---
 
+## 2026-10-02 — 最新main上で棚切替とV4全文編集を再検証 (PR435)
+
+- agent      : Codex（担当worktree、独立エージェントによるレビューPASS）
+- goal       : PR435を最新mainへ通常mergeし、影グルーヴV4・ARCB更新との統合を検証する
+- repos      : Music（自分の差分はWorkbench app・tests・README・台帳のみ）
+- implemented: feature/workbench-selection-guardへmain 42b67afを統合し、ARCB・影グルーヴ・従来PR435の台帳記録を全文保持。
+  棚・2デッキ・下書き・セット移行の読込後再確認を維持し、V4手編集の4経路cancel/Stop連打・保存版/取り込み版・旧V3の恒久回帰11件を追加。
+  Workbench109 PASS、build117 files / PWA0507c3913c5dd26b4ee5。独立検査は既存19件と追加13件PASS、最終差分レビューにブロッカーなし。
+  実Chromeは棚21件＋V4/V3追加22件PASS。影の音色・左右・HPFをキーボード編集し、4経路の遅延cancelとStop5連打後の承認を確認。
+  実Strudel schedulerの明示Play/Stop、全文保存・再選択・実File/JSON preview/merge・imported停止・旧V3全文一致を確認。page/console error0、390px横はみ出しなし。
+  通常merge commitと通常pushで既存Draft PR435を更新する。mainへのmergeとdeployは親threadへ戻す。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（5repo全体。別途audit 0 BAD / 0 WARN、syntax/logic/route checksも成功）
+- backlog    : none
+- next       : none
+- blockers   : Afterimage実データは未取得。Library/DriveのWindows保存障害を再試行せず、架空の曲・コード・棚項目は追加していない。
+  当該曲の15%・256小節・7720イベント・終端・権利・本人の聴感・実iPhoneは未検証。既存曲と明示した生成fixtureの検査を当該曲の検証として扱わない。
+  BL-049/050/051のclaim、他worktree、保留中private-live relay、sister repoは自分の差分で変更しない。認証・ACL・install・新しい公開先の変更なし。
+
 ## 2026-10-02 — ARCB採譜の空白への余計な発音を停止 (v410 / BL-050)
 
 - agent      : Codex（単一thread、既存worktree・公開箱を流用）
@@ -50,6 +68,24 @@
 - backlog    : BL-049を前進。本人は独立再レビューPASS後にPR／merge／既存Workbench反映を承認
 - next       : BL-049 — 量0から音量を揃えたABを本人が試聴し、騒がしいだけ／kickが弱いなら不採用とする
 - blockers   : 未聴取・実iPhone未評価。数値を音質改善の証明と扱わない。303音量差は調査のみでgain変更なし
+
+## 2026-10-01 — 試作の読込待ちに加えた編集を保護する (Workbench)
+
+- agent      : Codex（分離worktree、独立レビューあり）
+- goal       : 既存の曲棚で選択・読込・Playの安全性を確認し、読込中の未保存編集を守る
+- repos      : Music（experiments/workbench/v1とこの記録のみ）
+- implemented: feature/workbench-selection-guard。曲・2デッキ・下書き・セット移動の4経路で、読込後に編集が増えた場合の置換を再確認。
+  キャンセル時はコード・選択・URL・演奏を保持。下書きフォームの非表示とセット移動の停止処理は承諾後へ移した。
+  既存8試作で回帰14件を実行し、修正前9 PASS / 5 FAILから14 PASSへ。Workbench全体89 PASS / 0 FAIL。
+  Chromeの実UIで既存8試作、明示Play、保存・再選択、読込待ちの編集・キャンセル・競合選択・Stopを21項目確認。
+  390pxで横はみ出しなし、page script error 0。保存15%の復元と、内部15%に外側1.0を掛ける既存音量仕様を検証。
+  独立レビューは選択・mix19 PASS、追加7 PASS、修正必須の所見なし。merge・deployはせずdraft PRで親へ戻す。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（5repo全体。別途audit 0 BAD / 0 WARN、Workbench buildと全89テストを確認）
+- backlog    : none
+- next       : none
+- blockers   : Afterimage実データはLibraryのWindows保存metadata障害で未取得。再試行せず、架空の曲や棚項目は追加していない。
+  Afterimageの256小節・7720イベント・終端・実曲の15%音量、権利、実iPhoneの聴感・長時間動作は未検証。
+  BL-049・050・051のclaim、別worktreeのprivate-live relay候補、正本とsister repoは変更していない。
 
 ## 2026-10-01 — 分離漏れを前提にARCBの合奏を測定・補正 (v409 / BL-050・051)
 

@@ -61,3 +61,13 @@ test('pinned Strudel multiplies a work trim with its existing per-part gains', (
   const mixed = xfade(left.mul(gain(0.5)), 0.5, right.mul(gain(0.5))).mul(gain(0.7));
   assert.deepEqual(mixed.queryArc(0, 1).map((hap) => Number(hap.value.gain.toFixed(3))), [0.175, 0.07, 0.14]);
 });
+
+test('code already trimmed to 15% receives a neutral default shelf level', () => {
+  const original = works[0].source.replace(/\r\n?/g, '\n').trim() + '\n.mul(gain(0.15))';
+  const code = singleWorkCode(original);
+  new Script(code);
+  assert.equal(managedSliderValue(code, 'WORKBENCH_LEVEL_V1'), 1);
+  assert.ok(code.includes(original));
+  const trimmed = stack(s('bd').gain(0.5), s('hh').gain(0.2)).mul(gain(0.15));
+  assert.deepEqual(trimmed.mul(gain(1)).queryArc(0, 1).map((hap) => hap.value.gain), [0.075, 0.03]);
+});
