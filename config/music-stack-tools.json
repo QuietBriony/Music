@@ -55,11 +55,11 @@
     {
       "id": "band-room", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Band Room / ARCB・Tabasco", "href": "band-room.html?band=tabasco&song=human-fly&mode=synth", "action": "開く",
-      "public_summary": "ARCBをギター・ベース・ドラムで再現。弦の響き・歪み・空気感と合奏バランスを補正。原音と比較・録音。",
-      "purpose": "ARCB 7曲の採譜を新しい弦・ドラム音源で鳴らす。ギターはクリーン／クランチ／ディストーション、弦のサステインと共通の空気感。合奏全体の測定で音量・帯域・時計を補正。原音・パートON/OFF・RECで練習する。HAZAMAは別の既存音源。",
+      "public_summary": "ARCBをギター・ベース・ドラムで再現。弦の響き・歪み・空気感と合奏バランスを補正。採譜の空白は余韻を残す。原音と比較・録音。",
+      "purpose": "ARCB 7曲の採譜を新しい弦・ドラム音源で鳴らす。ギターはクリーン／クランチ／ディストーション、弦のサステインと共通の空気感。合奏全体の測定で音量・帯域・時計を補正。採譜の空白に余計な音を足さず余韻を残す。未採譜のmelodyは明示。原音・パートON/OFF・RECで練習する。HAZAMAは別の既存音源。",
       "first_step": "ARCBの曲を選び、AI再現でSTART。ギターの音と空気感を選び、melodyや他パートを消して聴き比べる。",
       "outputs": "mix REC／4 stems pack／listening note。MIDI読込は先頭1小節のドラム用。",
-      "boundary": "melodyは歌の音程を弦でなぞる。歌声は未再現。ギター和音・奏法は近似で、原音の完全再現と実iPhone長時間負荷は未保証。HAZAMA 02は01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作。",
+      "boundary": "melodyは採れた歌の音程を弦でなぞる。未採譜の曲は鳴らさず表示。歌声は未再現。ギター和音・奏法は近似で、原音の完全再現と実iPhone長時間負荷は未保証。HAZAMA 02は01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作。",
       "sources": [{ "repo": "Music", "path": "band-room.html" }, { "repo": "Music", "path": "band-room.js" }, { "repo": "Music", "path": "presets/bands.json" }]
     },
     {

@@ -1,6 +1,6 @@
 # Band Room — 使い方ガイド
 
-2026-10-01: 現行runtime v409はARCB 7曲の合奏バランス、余韻、採譜の時計と途中移動を補正しています。AI再現でSTARTし、ギターの音をクリーン／クランチ／ディストーションから選びます。melodyは歌の音程を弦でなぞるパート。原音と切り替えて練習・RECできます。
+2026-10-02: 現行runtime v410はARCB 7曲の合奏バランス、余韻、採譜の時計と途中移動を補正しています。AI再現でSTARTし、ギターの音をクリーン／クランチ／ディストーションから選びます。採譜の空白小節は余計な音を足さず余韻を残します。melodyは採れた歌の音程のガイド。Electric Sheep／TABASCOでは未採譜表示で鳴りません。原音と切り替えて練習・RECできます。
 
 > Listen hub: https://music-stack.pages.dev/listen.html
 > Band Room: https://music-stack.pages.dev/band-room.html
@@ -23,7 +23,7 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行runtimeはv409（ARCB 7曲の合奏補正・採譜時計・途中移動）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-242` / `br-93`。
+現行runtimeはv410（ARCBの採譜空白・未採譜melody表示と合奏補正）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-243` / `br-93`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
 ### v401 AIの短時間レイヤー判定
@@ -41,7 +41,7 @@ checkboxだけONにし、最後に`defaults`で通常mixへ戻します。
 曲ID seedによる微細な実演差があります。02固有アレンジの
 合否には使わず、02原音を基準にします。Surface合格だけではreal mobile合格になりません。
 
-### ARCBの合奏補正（v409）
+### ARCBの合奏補正（v410）
 
 原音のvocalsとAIのmelodyを両方OFFにすると、伴奏全体の低音・打感・ギターの響きを比べやすくなります。
 単独パートの分離漏れを音色の正解にはしません。[合奏の測定結果](ARCB-MIX-MEASUREMENT.md)に補正前後の数値と残る違いを記録しています。
@@ -55,7 +55,7 @@ AI再現では、短い音符でもギターの和音とベースの響きが自
 パートの音量は部屋へ送る音にも効き、STOPとseekは残響も止めます。
 
 
-## 画面構成（現行: br-242 / br-93）
+## 画面構成（現行: br-243 / br-93）
 
 ```
 ┌─────────────────────────────────┐

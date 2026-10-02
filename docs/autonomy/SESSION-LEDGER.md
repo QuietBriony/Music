@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-10-02 — ARCB採譜の空白への余計な発音を停止 (v410 / BL-050)
+
+- agent      : Codex（単一thread、既存worktree・公開箱を流用）
+- goal       : 本人の「磨き進めて」に対応し、薄い区間の合奏差を測定して修正
+- repos      : Music
+- shipped    : feature/arcb-score-rests。native ARCBで既存scoreの空白小節に生成fallbackを足さず、既存release／room tailを保つ。
+  未採譜のElectric Sheep／TABASCO melodyは生成せず表示。checkbox保存値を保持して曲・原音・legacy切替でcontrol復帰。
+  wholly missing instrumental scoreと明示的な再構築は既存動作。bank／音色／音符行／node数を増やさない。
+  実post-master RECの4区間をv409／v410／原音伴奏再結合で比較。Sister帯域差7.57→2.94／7.22→3.13 dB、他2区間は同程度。
+  これは聴感scoreや完全一致の達成ではない。Sister音量差約5 dB、Electric Sheep guitarの検出漏れは残る。
+  soloの休みと復帰、未採譜guide source 0、全mix3音色／seek80・100・120%／mute／STOP／RESET／cached offline／390pxを確認。
+  Listenの既存台帳・manual、cache tupleと測定記録を同期。音声・依存・公開先の追加なし。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0
+- backlog    : BL-050を前進。採譜漏れと全曲の音感の補正は継続
+- next       : BL-050 — 原音が鳴る空白小節の採譜漏れ、guitar和音／奏法と合奏音量を根拠付きで補正
+- blockers   : 実iPhoneの負荷と本人の耳の最終判定は未評価。数値を試聴・原曲一致の保証と扱わない
+
 ## 2026-10-02 — 編集可能な影グルーヴを既存LIVEへ統合 (BL-049)
 
 - agent      : Codex（独立worktree、親threadによる独立再レビューPASS）

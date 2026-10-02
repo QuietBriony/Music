@@ -82,12 +82,26 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-242-measured-band-balance", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v409", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-243-score-rests", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v410", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
 const performanceStructure = windowMock.BandRoomTestHooks.transcribedPerformanceStructure;
 const scheduleWindow = windowMock.BandRoomTestHooks.physicalScheduleWindow;
+const fallbackAllowed = windowMock.BandRoomTestHooks.transcribedFallbackAllowed;
+for (const part of ["bass_line", "guitar_line", "drum_line", "vocal_melody"]) {
+  for (const events of [[], [[3, 0, 1, 48, .6]]]) {
+    assert.equal(fallbackAllowed({[part]: {events}}, part, true), false,
+      "An empty native score bar must not trigger generated attacks");
+    assert.equal(fallbackAllowed({[part]: {events}}, part, false), true,
+      "Legacy and other bands keep their existing fallback");
+  }
+  for (const data of [null, {}, {[part]: {events: null}}]) {
+    assert.equal(fallbackAllowed(data, part, true), part !== "vocal_melody",
+      "A missing native guide is silent; a wholly missing instrumental part retains accompaniment");
+    assert.equal(fallbackAllowed(data, part, false), true);
+  }
+}
 for (const song of bandsRegistry.bands.tabasco.songs) {
   const data = JSON.parse(readFileSync(`presets/drum-frames-tabasco-${song.id}.json`, "utf8"));
   const fit = data.bass_line.bpm_fit;
@@ -456,13 +470,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-93/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-242/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-243/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-93/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-242/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-243/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
