@@ -9,6 +9,66 @@ const MANIFEST_PATH = "config/autonomy-doc-currency.json";
 const read = (path) => readFileSync(resolve(ROOT, path), "utf8");
 const manifest = JSON.parse(read(MANIFEST_PATH));
 
+function liveSection(content, heading, level = 3) {
+  const lines = content.replace(/\r\n/g, "\n").split("\n");
+  const starts = lines.flatMap((line, index) => line === `${"#".repeat(level)} ${heading}` ? [index] : []);
+  assert.equal(starts.length, 1, `collaboration section must appear once: ${heading}`);
+  const end = lines.findIndex((line, index) => index > starts[0] && /^#{1,3} /.test(line));
+  return lines.slice(starts[0] + 1, end < 0 ? undefined : end).join("\n");
+}
+
+function checkHandoffWorkflow(content) {
+  const workflow = liveSection(content, "現行ワークフロー", 2);
+  for (const marker of ["同期", "最終HEAD", "`node scripts/stack-check.mjs`を再実行", "終了コード0", "FAIL 0 / SKIP 0", "--allow-skip", "診断結果を完了証拠にせず", "同じHEAD", "独立レビュー", "旧証跡は失効", "COLLAB-CLAUDE-AND-CODEX.md"]) {
+    assert.ok(workflow.includes(marker), `current Codex handoff workflow is missing ${marker}`);
+  }
+}
+
+function checkCollaborationGuide(content) {
+  const contract = liveSection(content, "同じHEADの完了証跡");
+  for (const marker of ["終了コード0", "FAIL 0 / SKIP 0", "--allow-skip", "診断用", "最終HEAD", "証拠は失効", "独立レビュー"]) {
+    assert.ok(contract.includes(marker), `collaboration completion contract is missing ${marker}`);
+  }
+  for (const heading of ["作業後 (commit / push 前)", "衝突したら"]) {
+    const section = liveSection(content, heading);
+    const commands = [...section.matchAll(/^```bash[^\n]*\n([\s\S]*?)^```\s*$/gm)]
+      .flatMap((match) => match[1].split("\n"))
+      .map((line) => line.replace(/\s+#.*$/, "").trim()).filter(Boolean);
+    assert.equal(commands[0], "set -e", `${heading}: failed commands must stop the example`);
+    assert.equal(commands.some((line) => /\|\||&&|;|^set \+e\b/.test(line)), false, `${heading}: do not mask failures or combine completion commands`);
+    const sync = commands.map((line, index) => /^git\s+(?:pull|merge|rebase)\b/.test(line) ? index : -1).filter((index) => index >= 0);
+    const gates = commands.map((line, index) => /^node\s+scripts\/stack-check\.mjs(?:\s|$)/.test(line) ? index : -1).filter((index) => index >= 0);
+    assert.equal(gates.length, 1, `${heading}: exactly one full stack-check is required`);
+    assert.equal(commands[gates[0]], "node scripts/stack-check.mjs", `${heading}: run the strict full gate without failure-masking operators or diagnostic flags`);
+    assert.ok(sync.length > 0 && gates[0] > Math.max(...sync), `${heading}: stack-check must follow the last sync/conflict resolution`);
+    assert.equal(commands[gates[0]].includes("--allow-skip"), false, `${heading}: diagnostic skips cannot satisfy the completion gate`);
+    assert.equal(commands.filter((line) => /^FINAL_HEAD=/.test(line)).length, 1, `${heading}: capture HEAD exactly once`);
+    const capture = commands.indexOf("FINAL_HEAD=$(git rev-parse HEAD)");
+    const verification = 'test "$(git rev-parse HEAD)" = "$FINAL_HEAD"';
+    assert.equal(commands.filter((line) => line === verification).length, 1, `${heading}: verify HEAD exactly once`);
+    const verify = commands.indexOf(verification);
+    assert.ok(capture > Math.max(...sync) && capture < gates[0], `${heading}: capture the final HEAD after synchronization and before the gate`);
+    assert.ok(verify > gates[0], `${heading}: verify the same HEAD after the gate`);
+    const clean = commands.map((line, index) => line === 'test -z "$(git status --porcelain)"' ? index : -1).filter((index) => index >= 0);
+    assert.ok(clean.some((index) => index < capture) && clean.some((index) => index > verify), `${heading}: require a clean candidate before and after checks`);
+    const audit = commands.indexOf("python -X utf8 scripts/audit.py");
+    const pushes = commands.map((line, index) => /^git\s+push\b/.test(line) ? index : -1).filter((index) => index >= 0);
+    assert.equal(pushes.length, 1, `${heading}: push the owned candidate exactly once`);
+    const push = pushes[0];
+    assert.equal(commands[push], "git push origin HEAD", `${heading}: push only the current owned branch`);
+    assert.deepEqual(commands.slice(capture, push + 1), [
+      "FINAL_HEAD=$(git rev-parse HEAD)", "node scripts/stack-check.mjs", "python -X utf8 scripts/audit.py",
+      verification, 'test -z "$(git status --porcelain)"', "git push origin HEAD"
+    ], `${heading}: keep the checked candidate unchanged until push`);
+    assert.ok(audit > gates[0] && push > audit && push > verify && push > Math.max(...clean), `${heading}: push only after full gate, audit and final identity checks`);
+    assert.equal(commands.some((line) => /^git\s+push\b/.test(line) && /--force/.test(line)), false, `${heading}: do not force push`);
+  }
+  for (const heading of ["シナリオ A: claude 単独運用", "シナリオ B: codex 単独運用", "シナリオ C: 並列同時開発", "シナリオ D: claude が codex を呼ぶ (今回のセッションの実例)", "シナリオ E: codex が止まって claude が続ける (今回の引き継ぎ例)"]) {
+    const section = liveSection(content, heading);
+    assert.ok(section.includes("「作業後」") && section.includes("「同じHEADの完了証跡」"), `${heading}: use the common completion workflow`);
+  }
+}
+
 function git(args, { allowFailure = false } = {}) {
   const result = spawnSync(
     "git",
@@ -170,7 +230,7 @@ const sw = read("sw.js");
 const fmHtml = read("fm.html");
 const bandRoomHtml = read("band-room.html");
 const architecture = read("docs/HAZAMA-FM-ARCHITECTURE.md");
-const handoff = read("docs/CODEX-HANDOFF.md");
+const handoff = read("docs/CODEX-HANDOFF.md").replace(/\r\n/g, "\n");
 const machineRegistry = JSON.parse(read("config/music-machines.json"));
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 assert.ok(swVersion, "sw.js cache version is missing");
@@ -206,8 +266,54 @@ assert.ok(machineRegistry.machines["worker-gaming"], "worker-gaming machine is m
 assert.ok(machineRegistry.machines["worker-gaming"].capabilities.includes("worker.gpu"), "worker-gaming must provide worker.gpu");
 assert.ok(handoff.includes("worker-gaming") && handoff.includes("worker.gpu"), "handoff must use canonical GPU machine identity");
 
+const collaboration = read("docs/COLLAB-CLAUDE-AND-CODEX.md").replace(/\r\n/g, "\n");
+const collaborationDocument = manifest.documents.find((document) => document.path === "docs/COLLAB-CLAUDE-AND-CODEX.md");
+assert.ok(collaborationDocument, "currency manifest must cover the live collaboration guide");
+for (const path of ["AGENTS.md", MANIFEST_PATH, "docs/autonomy/AUTONOMOUS-RUN.md", "scripts/check-autonomy-doc-currency.mjs", "scripts/stack-check.mjs"]) {
+  assert.ok(collaborationDocument.watch_exact.includes(path), `collaboration currency must watch ${path}`);
+}
+checkCollaborationGuide(collaboration);
+checkCollaborationGuide(collaboration.replace(/\n/g, "\r\n"));
+const post = liveSection(collaboration, "作業後 (commit / push 前)");
+const conflict = liveSection(collaboration, "衝突したら");
+const negativeCollaborationFixtures = [
+  ["whole gate omitted", post, post.replace("node scripts/stack-check.mjs", "node scripts/check-js.mjs")],
+  ["conflict gate omitted", conflict, conflict.replace("node scripts/stack-check.mjs", "node scripts/check-js.mjs")],
+  ["rebase after validation", post, post.replace("git push origin HEAD", "git rebase origin/main\ngit push origin HEAD")],
+  ["merge after validation", post, post.replace("git push origin HEAD", "git merge origin/main\ngit push origin HEAD")],
+  ["rebase continue after validation", conflict, conflict.replace("git push origin HEAD", "git rebase --continue\ngit push origin HEAD")],
+  ["diagnostic gate", post, post.replace("node scripts/stack-check.mjs", "node scripts/stack-check.mjs --allow-skip")],
+  ["failed gate ignored", post, post.replace("node scripts/stack-check.mjs", "node scripts/stack-check.mjs || true")],
+  ["HEAD evidence overwritten", post, post.replace('test "$(git rev-parse HEAD)" = "$FINAL_HEAD"', 'FINAL_HEAD=$(git rev-parse HEAD)\ntest "$(git rev-parse HEAD)" = "$FINAL_HEAD"')],
+  ["candidate changed after gate", post, post.replace('test "$(git rev-parse HEAD)" = "$FINAL_HEAD"', 'git commit --allow-empty -m later-change\ntest "$(git rev-parse HEAD)" = "$FINAL_HEAD"')],
+  ["HEAD evidence omitted", post, post.replace('test "$(git rev-parse HEAD)" = "$FINAL_HEAD"', "")],
+  ["HEAD captured before synchronization", post, post.replace("FINAL_HEAD=$(git rev-parse HEAD)\n", "").replace("git merge origin/main", "FINAL_HEAD=$(git rev-parse HEAD)\ngit merge origin/main")],
+  ["nonzero commands continue", post, post.replace("set -e", "")],
+  ["dirty final candidate", post, post.replace('test -z "$(git status --porcelain)"\ngit push', "git push")],
+  ["Claude handoff falls back to audit", liveSection(collaboration, "シナリオ E: codex が止まって claude が続ける (今回の引き継ぎ例)"), "audit.pyだけでcommitしてpushする"],
+  ["Claude alone falls back to audit", liveSection(collaboration, "シナリオ A: claude 単独運用"), "audit.pyだけで完了する"]
+];
+for (const [name, original, broken] of negativeCollaborationFixtures) {
+  assert.notEqual(original, broken, `negative collaboration fixture did not mutate: ${name}`);
+  assert.throws(() => checkCollaborationGuide(collaboration.replace(original, broken)), assert.AssertionError, `negative collaboration fixture accepted: ${name}`);
+}
+checkHandoffWorkflow(handoff);
+checkHandoffWorkflow(handoff.replace(/\n/g, "\r\n"));
+const handoffWorkflow = liveSection(handoff, "現行ワークフロー", 2);
+const negativeHandoffFixtures = [
+  ["whole gate omitted", handoffWorkflow.replace("`node scripts/stack-check.mjs`", "`node scripts/check-js.mjs`")],
+  ["post-sync rerun omitted", handoffWorkflow.replace("を再実行", "を参照")],
+  ["diagnostic gate", handoffWorkflow.replace("`node scripts/stack-check.mjs`", "`node scripts/stack-check.mjs --allow-skip`")],
+  ["old evidence reused", handoffWorkflow.replace("旧証跡は失効", "旧証跡を流用")]
+];
+for (const [name, broken] of negativeHandoffFixtures) {
+  assert.notEqual(handoffWorkflow, broken, `negative handoff fixture did not mutate: ${name}`);
+  assert.throws(() => checkHandoffWorkflow(handoff.replace(handoffWorkflow, broken)), assert.AssertionError, `negative handoff fixture accepted: ${name}`);
+}
+
 console.log(
   `Autonomy doc currency check passed (${manifest.documents.length} documents; baseline ` +
   `${manifest.last_verified_commit.slice(0, 7)}; ${committedSourceChanges} committed source changes; ` +
-  `${stagedSourceChanges} staged source changes; ${worktreeSourceChanges} worktree source changes; ${swVersion})`
+  `${stagedSourceChanges} staged source changes; ${worktreeSourceChanges} worktree source changes; ${swVersion}; ` +
+  `completion 4 positive controls / ${negativeCollaborationFixtures.length + negativeHandoffFixtures.length} negative fixtures)`
 );
