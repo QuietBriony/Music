@@ -203,9 +203,14 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
 3. **`docs/autonomy/AUTONOMOUS-RUN.md` のプレイブックに従う** — STACK-INDEX /
    SESSION-LEDGER / BACKLOG を読み、`agent: codex` / `agent: either` の item を 1 つ
    claim（`status: wip` を即 commit）して回す。下の TASK A-E は履歴で再実行しない。
-4. 完了したら差分レビュー → `git diff --check` → `node scripts/stack-check.mjs`で0 BAD → commit
-5. 共有docs更新直前にpullを試し、`BACKLOG.md`（Doneへ移動）と`SESSION-LEDGER.md`
-   （最新entryを先頭へ追記）を同期。接続制限等でpull / pushできなければlocal commitを残して報告
+4. 自分のscopeの差分をレビューし、`git diff --check`とAGENTSのcommit前gate・全体gateを通して候補commitを作る。
+5. 自分のcleanなworktreeで最新main・共有docsを同期し、衝突を解消した**最終HEAD**で
+   `node scripts/stack-check.mjs`を再実行。終了コード0、FAIL 0 / SKIP 0、0 BADとauditの0 BAD / 0 WARNが必要。
+   `--allow-skip`の診断結果を完了証拠にせず、同じHEADのログ・独立レビュー対象を確認する。
+   HEADや検査対象repoの状態が変わったら旧証跡は失効し、検証・必要レビューを再確認する。
+   詳細は`COLLAB-CLAUDE-AND-CODEX.md`の「同じHEADの完了証跡」と「作業後」に従う。
+   `BACKLOG.md`と`SESSION-LEDGER.md`の記録更新後も候補HEADを一致させる。
+   接続制限等でpull / pushできなければlocal commitと未確認事項を残して報告する。
 
 ## 並列運用の目安
 

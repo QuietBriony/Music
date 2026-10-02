@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-10-02 — Claude/Codexの現行引継ぎを同期後の全体gateへ揃える候補
+
+- agent      : Codex（専用worktree、独立26件PASS・追加ブロッカーなし）
+- goal       : 担当入口によって完了証拠が変わる旧手順を予防し、事故観測は断定しない
+- repos      : Music
+- implemented: feature/collab-final-head-gate。現役COLLABの作業後・衝突解消・単独運用・引継ぎを、最新main同期後の同じ最終HEADでの全体gateと必要レビューへ揃える。
+  個別4checkは全体gateの代用にせず、--allow-skipの0 BADを全通過と混同しない。
+  COLLABを既存doc-currencyの監視対象に追加し、既存検査内の正常例4件・負例19件で全体gate省略・検証後rebase・HEAD証跡省略・失敗mask・検証後の候補変更等をofflineで検出する。
+  文書検査が実際のgate実行を証明するとは扱わず、候補commit後に最終HEAD・対象repo状態・ログ・独立レビューを照合する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（commit前の全体検証。独立指摘修正後のdocgateとsyntaxも再検証、audit 0 BAD / 0 WARN）
+- backlog    : none
+- next       : none
+- blockers   : 候補commit後の同じ最終HEADでも全体gateを実行し、HEAD・対象repo状態・レビューとの一致を確認してからpush/PR/mergeする。AGENTS固有境界、他担当・既存claim、Afterimage/PR435、音声/runtime/CI、認証・公開先・課金は変更しない。
+
 ## 2026-10-02 — stack-check予防修正の公開・merge承認を受領
 
 - agent      : Codex（専用worktree、独立再レビューで必須修正なし）
