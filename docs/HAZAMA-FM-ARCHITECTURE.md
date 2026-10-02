@@ -81,7 +81,7 @@ Musicで実際の停止事故を観測したという記録ではなく、`scrip
 - audit/Node検査は120秒、pytestは600秒、pytest事前確認は15秒。
 - `--check-timeout-ms N` / `--pytest-timeout-ms N`で1000〜1800000msの整数だけ上書きできる。0・無期限・範囲外は実行前に拒否。
 - Windows 10以降では非継承Job Objectへ`PROC_THREAD_ATTRIBUTE_JOB_LIST`で生成と同時に所属させ、停止状態から実行する。生成後の割当待ちにsupervisorが死ぬ隙間を作らない。期限超過や親終了後の子をまとめて終了し、ActiveProcesses=0の確認まで次へ進めない。対応APIが使えない環境はFAILで止める。
-- supervisorの起動15秒＋Job終了確認5秒も外側watchdogで制限する。終了要求や親exit後のpipe/close待ちは独立した5秒上限で確定する。終了確認不能・中断はFAILとして残りを起動しない。timeoutは`--allow-skip`でもFAIL。
+- 外側watchdogの期限は検査上限＋20秒（helper起動・Job終了確認のための追加猶予）。起動phaseだけを15秒で打ち切る設定ではない。Job終了確認と、終了要求や親exit後のpipe/close待ちはそれぞれ5秒上限。終了確認不能・中断はFAILとして残りを起動しない。timeoutは`--allow-skip`でもFAIL。
 - stdout/stderrは常時drainし、それぞれ末尾32KiBまでだけ保持。既存の失敗要約には終了コード・上限・経過時間・末尾ログを残す。
 - POSIXは検査専用process groupを終了する。Windowsの実検査結果を他OSでの実行証明とは扱わない。
 

@@ -19,6 +19,19 @@
 
 ---
 
+## 2026-10-02 — stack-check予防修正の公開・merge承認を受領
+
+- agent      : Codex（専用worktree、独立再レビューで必須修正なし）
+- goal       : 本人の明示承認に従い、今回の予防修正だけをdraft PR経由で検証・mergeする
+- repos      : Music
+- shipped    : feature/stack-check-timeouts。実行コードは検証済み1e369c0のまま、外側watchdogの検査上限＋20秒という追加猶予の説明を正確にした。
+  最新mainは42b67afで、他worktreeのtimeout範囲と競合なし。13 fixture・独立5 fixtureの実行コードhashは一致。
+  実POSIX・OSからのCtrl+C配送は未検証であり、repoの明示必須検証には含まれない。未検証範囲をPRへ明記する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（実行コードが同一の候補、audit 0 BAD / 0 WARN。説明の修正後も関連gateを確認）
+- backlog    : none
+- next       : none
+- blockers   : push・PR・mergeの保留指示は本人の明示承認により解除。merge前にremote head・mergeable/clean・必須checkを確認する。Afterimage/PR435、音声、他担当branch、CI設定・公開先・認証・課金は変更しない。
+
 ## 2026-10-02 — stack-checkの期限と即時進捗を追加するローカル候補
 
 - agent      : Codex（専用worktree、独立レビュー5件PASS・追加ブロッカーなし）
