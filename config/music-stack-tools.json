@@ -55,11 +55,11 @@
     {
       "id": "band-room", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Band Room / ARCB・Tabasco", "href": "band-room.html?band=tabasco&song=human-fly&mode=synth", "action": "開く",
-      "public_summary": "ARCBをギター・ベース・ドラムで再現。弦の響き・歪み・空気感と合奏バランスを補正。原音と比較・録音。",
-      "purpose": "ARCB 7曲の採譜を新しい弦・ドラム音源で鳴らす。ギターはクリーン／クランチ／ディストーション、弦のサステインと共通の空気感。合奏全体の測定で音量・帯域・時計を補正。原音・パートON/OFF・RECで練習する。HAZAMAは別の既存音源。",
+      "public_summary": "ARCBをギター・ベース・ドラムで再現。弦の響き・歪み・空気感と合奏バランスを補正。採譜の空白は余韻を残す。原音と比較・録音。",
+      "purpose": "ARCB 7曲の採譜を新しい弦・ドラム音源で鳴らす。ギターはクリーン／クランチ／ディストーション、弦のサステインと共通の空気感。合奏全体の測定で音量・帯域・時計を補正。採譜の空白に余計な音を足さず余韻を残す。未採譜のmelodyは明示。原音・パートON/OFF・RECで練習する。HAZAMAは別の既存音源。",
       "first_step": "ARCBの曲を選び、AI再現でSTART。ギターの音と空気感を選び、melodyや他パートを消して聴き比べる。",
       "outputs": "mix REC／4 stems pack／listening note。MIDI読込は先頭1小節のドラム用。",
-      "boundary": "melodyは歌の音程を弦でなぞる。歌声は未再現。ギター和音・奏法は近似で、原音の完全再現と実iPhone長時間負荷は未保証。HAZAMA 02は01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作。",
+      "boundary": "melodyは採れた歌の音程を弦でなぞる。未採譜の曲は鳴らさず表示。歌声は未再現。ギター和音・奏法は近似で、原音の完全再現と実iPhone長時間負荷は未保証。HAZAMA 02は01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作。",
       "sources": [{ "repo": "Music", "path": "band-room.html" }, { "repo": "Music", "path": "band-room.js" }, { "repo": "Music", "path": "presets/bands.json" }]
     },
     {
@@ -75,10 +75,10 @@
     {
       "id": "strudel-workbench", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Strudel Live Workbench", "href": "https://music-private-live-workbench.pages.dev/", "action": "音とコードを触る",
-      "public_summary": "音とコードを触る。テクノやアンビエントのLIVEを続ける。",
-      "purpose": "試作・A/Bミックス／ライブセット／元の303×2＋909を同じ入口で選ぶ。A/Bをコード・テンポ・混ぜ具合ごとライブセットへ持ち込み、追加ドラムや303風をMUTE解除で足す。自動LIVEの動きを小バーで見ながら、音色・音量・BPMを演奏中に操作する。",
+      "public_summary": "音とコードを触る。LIVEに影グルーヴを量0から足せる。",
+      "purpose": "試作・A/Bミックス／ライブセット／元の303×2＋909を同じ入口で選ぶ。A/Bをコード・テンポ・混ぜ具合ごとライブセットへ持ち込み、追加ドラムや303風をMUTE解除で足す。自動LIVEの動きを小バーで見ながら、音色・音量・BPMを演奏中に操作する。影グルーヴは量0から静かなHPF補助層を足し、打点・音量・フィルター・小節同期を同じ演奏コードで編集できる。",
       "first_step": "上の演奏面ボタンで選ぶ。A/Bを選んで「組み合わせのコードを開く」→ Play。楽器を足すなら「このA/Bでライブセットへ」、追加パートはミュートから開始。セットだけならライブセット → Acid DriveかAmbient Drift → セットを鳴らす。音量・音色は基準値、自動の動きは下の小バー。BPMは横フェーダーで触れ、再実行せずコードに残る。スマホの出力や物理音量は上部の音声案内、無音なら音を再接続。PWAはアプリ更新。PCローカルはREADMEの初回準備 → npm run local。",
-      "outputs": "公開8試作はGit管理。4セットと引き継いだA/Bは全打点・音符・BPM・音色・19フェーダー・MUTE・素材コード・AUTO・変奏seed/固定/採用前の軸・LIVE設定を名前付き下書きへ保存。既存保存コードの出音は維持。LEVEL・A/B・acidBros FILEもJSONで別端末へ追加できる。",
+      "outputs": "公開8試作はGit管理。4セットと引き継いだA/Bは全打点・音符・BPM・音色・22フェーダー・MUTE・素材コード・AUTO・変奏seed/固定/採用前の軸・LIVE設定・影の量/HPF/同期関数を名前付き下書きへ保存。手編集したコード本文をフェーダー操作で上書きしない。V1〜V3保存コードは明示更新まで出音を維持。LEVEL・A/B・acidBros FILEもJSONで別端末へ追加できる。",
       "boundary": "スマホPWAはアプリと公開8試作に必要な音を端末保存（約10 MB）してオフライン利用可。PCはローカルHTTPでも同じ画面を使える。後から指定する外部URL・他の標準バンクは自動保存しない。更新は保存後の明示操作。保存削除/OS整理では再準備が必要。JSON転送は手動で未保存編集・音源は含まない。acidBrosは別エンジンで、音・時計・パターン同期やチャット即時反映は未実装。実iPhoneの追加・試聴は未確認。公開ページ・コード・自前配信のWAV7本は公開。",
       "sources": [{ "repo": "Music", "path": "experiments/workbench/v1/README.md" }, { "repo": "Music", "path": "experiments/workbench/v1/src/app.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/performance.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/performance-code.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/groove-code.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/slider-bridge.js" }, { "repo": "Music", "path": "experiments/workbench/v1/scripts/local-workbench.mjs" }, { "repo": "Music", "path": "experiments/workbench/v1/src/session-backup.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/pwa.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/offline-policy.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/live-code.js" }, { "repo": "Music", "path": "experiments/workbench/v1/src/live-plan.js" }]
     },

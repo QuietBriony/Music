@@ -19,6 +19,56 @@
 
 ---
 
+## 2026-10-02 — 最新main上で棚切替とV4全文編集を再検証 (PR435)
+
+- agent      : Codex（担当worktree、独立エージェントによるレビューPASS）
+- goal       : PR435を最新mainへ通常mergeし、影グルーヴV4・ARCB更新との統合を検証する
+- repos      : Music（自分の差分はWorkbench app・tests・README・台帳のみ）
+- implemented: feature/workbench-selection-guardへmain 42b67afを統合し、ARCB・影グルーヴ・従来PR435の台帳記録を全文保持。
+  棚・2デッキ・下書き・セット移行の読込後再確認を維持し、V4手編集の4経路cancel/Stop連打・保存版/取り込み版・旧V3の恒久回帰11件を追加。
+  Workbench109 PASS、build117 files / PWA0507c3913c5dd26b4ee5。独立検査は既存19件と追加13件PASS、最終差分レビューにブロッカーなし。
+  実Chromeは棚21件＋V4/V3追加22件PASS。影の音色・左右・HPFをキーボード編集し、4経路の遅延cancelとStop5連打後の承認を確認。
+  実Strudel schedulerの明示Play/Stop、全文保存・再選択・実File/JSON preview/merge・imported停止・旧V3全文一致を確認。page/console error0、390px横はみ出しなし。
+  通常merge commitと通常pushで既存Draft PR435を更新する。mainへのmergeとdeployは親threadへ戻す。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（5repo全体。別途audit 0 BAD / 0 WARN、syntax/logic/route checksも成功）
+- backlog    : none
+- next       : none
+- blockers   : Afterimage実データは未取得。Library/DriveのWindows保存障害を再試行せず、架空の曲・コード・棚項目は追加していない。
+  当該曲の15%・256小節・7720イベント・終端・権利・本人の聴感・実iPhoneは未検証。既存曲と明示した生成fixtureの検査を当該曲の検証として扱わない。
+  BL-049/050/051のclaim、他worktree、保留中private-live relay、sister repoは自分の差分で変更しない。認証・ACL・install・新しい公開先の変更なし。
+
+## 2026-10-02 — ARCB採譜の空白への余計な発音を停止 (v410 / BL-050)
+
+- agent      : Codex（単一thread、既存worktree・公開箱を流用）
+- goal       : 本人の「磨き進めて」に対応し、薄い区間の合奏差を測定して修正
+- repos      : Music
+- shipped    : feature/arcb-score-rests。native ARCBで既存scoreの空白小節に生成fallbackを足さず、既存release／room tailを保つ。
+  未採譜のElectric Sheep／TABASCO melodyは生成せず表示。checkbox保存値を保持して曲・原音・legacy切替でcontrol復帰。
+  wholly missing instrumental scoreと明示的な再構築は既存動作。bank／音色／音符行／node数を増やさない。
+  実post-master RECの4区間をv409／v410／原音伴奏再結合で比較。Sister帯域差7.57→2.94／7.22→3.13 dB、他2区間は同程度。
+  これは聴感scoreや完全一致の達成ではない。Sister音量差約5 dB、Electric Sheep guitarの検出漏れは残る。
+  soloの休みと復帰、未採譜guide source 0、全mix3音色／seek80・100・120%／mute／STOP／RESET／cached offline／390pxを確認。
+  Listenの既存台帳・manual、cache tupleと測定記録を同期。音声・依存・公開先の追加なし。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0
+- backlog    : BL-050を前進。採譜漏れと全曲の音感の補正は継続
+- next       : BL-050 — 原音が鳴る空白小節の採譜漏れ、guitar和音／奏法と合奏音量を根拠付きで補正
+- blockers   : 実iPhoneの負荷と本人の耳の最終判定は未評価。数値を試聴・原曲一致の保証と扱わない
+
+## 2026-10-02 — 編集可能な影グルーヴを既存LIVEへ統合 (BL-049)
+
+- agent      : Codex（独立worktree、親threadによる独立再レビューPASS）
+- goal       : 本人の「ライブにも織り込む」「音のコードは全部見て編集できる」に対応する
+- repos      : Music
+- shipped    : feature/workbench-shadow-groove。量0のHPF補助層を既存打楽器へ統合。
+  リズム・音源・包絡・gain・HPF・同一clockの小節同期を演奏コードに出し、手編集とV1〜V3を保護。
+  先読みlookupと操作cycleを分け、一小節の余分な操作遅延を修正。Stop後の再開処理を追加しない。
+  Listenの既存台帳・manualを同期。音源・依存・公開先の追加なし。既存audio runtime/cache tupleを保持。
+  seed731／BPM128／8小節のnative onsetと量0/offの一致、音量を揃えたABのclip 0・低域増加なしを確認。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（Workbench83件、Chrome UI15件／稼働clock24件もPASS）
+- backlog    : BL-049を前進。本人は独立再レビューPASS後にPR／merge／既存Workbench反映を承認
+- next       : BL-049 — 量0から音量を揃えたABを本人が試聴し、騒がしいだけ／kickが弱いなら不採用とする
+- blockers   : 未聴取・実iPhone未評価。数値を音質改善の証明と扱わない。303音量差は調査のみでgain変更なし
+
 ## 2026-10-01 — 試作の読込待ちに加えた編集を保護する (Workbench)
 
 - agent      : Codex（分離worktree、独立レビューあり）

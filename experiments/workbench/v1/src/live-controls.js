@@ -7,7 +7,7 @@ export function setTempoChanges(code, bpm) {
   if (!state || !Number.isInteger(bpm) || bpm < 60 || bpm > 180) {
     throw new Error('このセットのBPMは変更できません。コードの接続と60〜180の範囲を確認してください');
   }
-  const header = /^\/\/ TECHNO_SET_V[123] (.+)$/m.exec(code);
+  const header = /^\/\/ TECHNO_SET_V[1234] (.+)$/m.exec(code);
   const tempo = /^setcpm\(([0-9.]+)\)$/m.exec(code);
   const metadata = JSON.parse(header[1]);
   metadata.bpm = bpm;

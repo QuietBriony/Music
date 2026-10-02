@@ -1,6 +1,13 @@
-# Band Room - Changelog (v65 -> v409 compact)
+# Band Room - Changelog (v65 -> v410 compact)
 
-Current sw.js VERSION: v409. Latest Band Room runtime change: v409 (measured mix balance, transcription clock and partial-bar seek). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v410. Latest Band Room runtime change: v410 (preserve score rests and mark untranscribed melody). HAZAMA playability candidate remains v401.
+
+## v410 compact - Preserve score rests and known melody
+
+- Shared cache `hazama-fm-v410`, runtime `br-243` / `br-93`. Physical bank, DSP, amp, room and authored note rows unchanged.
+- Native ARCB holds an empty bar in an existing score instead of generating bass, guitar, drums or melody attacks. Existing releases and room tails continue through it. Explicit reconstruction and wholly missing instrumental scores retain their existing behavior.
+- An absent native melody score is silent and labelled untranscribed. Disable its unavailable controls without overwriting saved selection; restore them when switching to a scored song or the original/legacy mode.
+- Compare actual post-master recordings against v409 and the recombined original accompaniment; retain the distinction between a score gap and a confirmed musical rest. Measurement: [ARCB-MIX-MEASUREMENT.md](ARCB-MIX-MEASUREMENT.md).
 
 ## v409 compact - Measured band balance and continuous seek
 

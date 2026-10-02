@@ -1,4 +1,47 @@
-# ARCB — 合奏の測定と補正（v409 / 2026-10-01）
+# ARCB — 合奏の測定と補正（現行 v410）
+
+## 空白小節への自動伴奏を停止（v410 / 2026-10-02）
+
+採譜のあるパートで、その小節に音符がない場合も旧fallbackが新しいbass／guitar／drum／melodyを足していた。
+新ARCBではこの発音を止め、直前の音のreleaseとroom tailは自然に残す。
+パート全体が未採譜の場合の楽器伴奏（TABASCOのdrumなど）と、明示的な「再構築」は既存動作を保つ。
+歌の音程データがないElectric Sheep／TABASCOはmelodyを鳴らさず、未採譜表示と無効なcontrolで明示。
+曲を戻すとcontrolを復帰し、選択の保存値は書き換えない。bank・音色・音符行・余韻・effect node数は変更していない。
+
+Sisterの7–10小節では原音bassが約−64〜−82 dBFS、Human Fly冒頭のdrumsは約−71／−68 dBFSで、
+旧自動伴奏を加える根拠がなかった。一方で、音符がない小節には検出漏れもある。
+Electric Sheepの52小節はguitar行がないが原音otherは約−19 dBFS。ここは休符の確定ではなく、採譜漏れが残る。
+存在しない歌の音程やstrumを生成して、原曲の再現だと見せない。
+
+v409とv410の実post-master RECを、同じseek条件の原音drums+bass+other再結合と比較した。
+100%／crunch／room35%／melodyと原音vocals OFF／再構築off、seekから約1.82秒後の10秒。
+32–80／80–250／250–1000／1000–4000／4000–12000／12000–16000 Hzの6帯域で正規化した主5帯域の差の絶対値平均を比較する。録音開始の微小差を含み、品質の点数ではない。
+
+| seek区間 | v409 帯域差 dB | v410 帯域差 dB | v410 / 原音 LUFS | v410 true peak dBTP |
+|---|---:|---:|---:|---:|
+| electric-sheep-96 | 2.45 | 2.58 | -15.5 / -15.7 | -4.7 |
+| human-fly-0 | 2.73 | 2.79 | -17.7 / -17.8 | -5.8 |
+| sister-16 | 7.57 | 2.94 | -20.4 / -25.7 | -7.3 |
+| sister-50 | 7.22 | 3.13 | -18.3 / -23.6 | -6.9 |
+
+薄いSisterの2区間の差は縮小。他の2区間はほぼ同程度で、全曲の改善率として平均しない。
+Sisterの音量差は約5 dB、高域・和音・奏法の近似も残る。
+合奏の最長quietは0〜0.04秒、予約落ちは0。数値から人の試聴や実iPhoneの合格は主張しない。
+
+実ブラウザのsolo確認でSisterのbass休みはpeak 0／新規source 0、再開区間はpeak約0.103。
+Human Flyの冒頭drumもpeak 0／source 0で、その後のscoreはpeak約0.083。
+Electric Sheepの未採譜guideはsource 0、Human Flyへ戻すとguideは発音し保存選択も復帰。
+390pxで未採譜の説明を確認し、原音・legacyへのcontrol復帰とscript error 0を確認。
+7曲のSTARTで有限出力／予約落ち0を確認（sample peak約0.152〜0.357）。TABASCOは未採譜drumの既存伴奏を保持。
+全mixの80／100／120% seek・3音色・all OFF／ONも確認。STOP 2秒後peak約0.00000355／pending 0、
+RESETとcached offlineはscoreの最初の音を待ってpeak約0.333／0.338。390px横はみ出し0・script error 0。
+[数値・録音hash・source hash・solo／mix／offline検証](arcb-rest-measurement-20261002.json)。音声は引き続きignored localのみ。
+
+```powershell
+python -X utf8 scripts/measure-band-mix.py --captures output/playwright/mix-calibration --baseline polish-before --candidate polish-after --reference polish-before --out output/playwright/polish-rest-report.json
+```
+
+## 合奏音源の補正（v409 / 2026-10-01・履歴）
 
 本人の「分離できていないところも多い。全体の音感として補正も確認して完成」の指示に対応。
 入口は[いつものBand Room](../band-room.html?band=tabasco&song=human-fly&mode=synth)。

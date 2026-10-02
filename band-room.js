@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-242-measured-band-balance";
-  const BANDROOM_RELEASE_VERSION = "v409";
+  const BANDROOM_APP_VERSION = "br-243-score-rests";
+  const BANDROOM_RELEASE_VERSION = "v410";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -1011,10 +1011,21 @@
       if (control) { control.disabled = enabled; control.title = enabled ? "ARCBは新しい弦・ドラム音源。ギターの音は上の選択で変えられます。" : ""; }
     });
     document.querySelectorAll("#br-voice-overrides-grid select, #br-voice-overrides-grid button, .br-kit-preview").forEach((control) => { control.disabled = enabled; });
+    const missingMelody = enabled && !hasTranscribedLine("vocal_melody");
+    const melodyLabel = missingMelody ? "melody（未採譜）" : "melody";
     const voiceLabel = $("br-toggle-voice")?.parentElement?.querySelector("span");
-    if (voiceLabel) voiceLabel.textContent = enabled ? "melody" : "vocal";
+    if (voiceLabel) voiceLabel.textContent = enabled ? melodyLabel : "vocal";
     const voiceVolumeLabel = $("br-vol-voice")?.parentElement?.querySelector("span");
-    if (voiceVolumeLabel) voiceVolumeLabel.textContent = enabled ? "melody" : "vocal";
+    if (voiceVolumeLabel) voiceVolumeLabel.textContent = enabled ? melodyLabel : "vocal";
+    ["br-toggle-voice", "br-vol-voice"].forEach((id) => {
+      const control = $(id);
+      if (control) {
+        control.disabled = missingMelody;
+        control.title = missingMelody ? "歌の音程が未採譜のため、この曲のmelodyは鳴りません。" : "";
+      }
+    });
+    const scoreNote = $("br-arcb-score-note");
+    if (scoreNote) scoreNote.hidden = !missingMelody;
     ["chords", "arp"].forEach((part) => {
       const toggle = $("br-toggle-" + part);
       if (toggle) { toggle.disabled = enabled; if (enabled) toggle.checked = false; toggle.title = enabled ? "ARCBの和音はguitarパートで鳴らします。" : ""; }
@@ -4789,6 +4800,7 @@
       physicalArcbEnabled,
       transcribedPerformanceBpm,
       transcribedPerformanceStructure,
+      transcribedFallbackAllowed,
       physicalScheduleWindow,
       playbackClockDiagnostics: () => ({ songId: state.currentSongId, contentSeconds: playbackContentElapsedSec(), barCount: state.barCount, bpm: playbackBaseBpm(), instrumentMakeup: instrumentMakeup?.gain.value, totalBars: playbackStructure()?.reduce((sum, section) => sum + section.bars, 0), sourceDuration: state.songData?.performance_duration_s }),
       physicalInstrumentDiagnostics: () => physicalArcb
@@ -4850,6 +4862,7 @@
       if (switchSeq != null && switchSeq !== songSwitchSeq) return null;
       state.songData = data;
       state.currentSongId = songId;
+      syncPhysicalInstrumentUi();
       syncStemVariantSelect(songId);
       state.barCount = 0;
       state.sectionIdx = 0;
@@ -6296,6 +6309,20 @@
     return !!(line && Array.isArray(line.events) && line.events.length);
   }
 
+  function transcribedFallbackAllowed(data, lineKey, native = false) {
+    if (!native) return true;
+    // A native guide must follow known song pitches. An absent score is not
+    // permission to invent a vocal melody. Other wholly missing parts retain
+    // their existing accompaniment, but empty bars of an authored score rest.
+    if (lineKey === "vocal_melody") return false;
+    return !Array.isArray(data?.[lineKey]?.events);
+  }
+
+  function allowsTranscribedFallback(lineKey) {
+    return transcribedFallbackAllowed(state.songData, lineKey,
+      currentMode === "synth" && physicalArcbEnabled());
+  }
+
   function transcribedLightRowLimit(lineKey) {
     if (!(currentMode === "synth" && aiLayerLightRuntimeEnabled())) return Infinity;
     if (physicalArcb) {
@@ -6363,7 +6390,7 @@
 
   function playTranscribedBar(synth, lineKey, ctx, time) {
     const rows = rowsForLightTranscribedPlayback(lineKey, transcribedNotesForBar(lineKey, state.barCount));
-    if (!rows.length) return false;
+    if (!rows.length) return !allowsTranscribedFallback(lineKey);
     rows.forEach((row) => {
       // v328 (生感): step and durSteps are FRACTIONAL — the data carries the
       // player's real micro-timing (間/pocket) and real note lengths
@@ -6518,7 +6545,7 @@
     const drumStyle = reconstructStyleFor("drums");
     if (drumStyle !== "off") return reconstructDrumBar(time, subTime, drumStyle);
     const rows = rowsForLightTranscribedPlayback("drum_line", transcribedNotesForBar("drum_line", state.barCount));
-    if (!rows.length) return false;
+    if (!rows.length) return !allowsTranscribedFallback("drum_line");
     const micScale = micFollowVelocityScale();
     rows.forEach((row) => {
       const cls = DRUM_CLASS[Number(row[3])] || "snare";
@@ -6540,7 +6567,8 @@
     const guitarStyle = reconstructStyleFor("guitar");
     if (guitarStyle !== "off") return reconstructGuitarBar(ctx, time, guitarStyle);
     const rows = rowsForLightTranscribedPlayback("guitar_line", transcribedNotesForBar("guitar_line", state.barCount));
-    if (!rows.length || !guitarSynth) return false;
+    if (!guitarSynth) return false;
+    if (!rows.length) return !allowsTranscribedFallback("guitar_line");
     const isJazzy = isJazzyMode();
     const light = aiLayerLightRuntimeEnabled() && !guitarSynth?._physical;
     // v334: a power chord needs root+5th MINIMUM — the old floor(9/rows)
@@ -6744,7 +6772,8 @@
   let lastVocalNote = { bar: -99, endStep: 0, midi: 0 };
   function playTranscribedVocalBar(ctx, time) {
     const rows = rowsForLightTranscribedPlayback("vocal_melody", transcribedNotesForBar("vocal_melody", state.barCount));
-    if (!rows.length || !voiceSynth) return false;
+    if (!voiceSynth) return false;
+    if (!rows.length) return !allowsTranscribedFallback("vocal_melody");
     rows.forEach((row) => {
       const step = Number(row[1]) || 0;
       const durSteps = Math.max(0.5, Number(row[2]) || 1);
@@ -7306,7 +7335,7 @@
       }
       if (isSynthMode && !hasBassline && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && (chord || hasTranscribedLine("bass_line"))) {
         triggerBassAgent(partAgentCtx, time);
-      } else if (isSynthMode && !hasBassline && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && !chord && state.songData?.key) {
+      } else if (isSynthMode && !hasBassline && SYNTH_REBUILD_PARTS.bass && $("br-toggle-bass").checked && synthBass && !chord && state.songData?.key && allowsTranscribedFallback("bass_line")) {
         // v108: chord null fallback — section has no chord progression
         // (Human Fly intro/outro etc). Anchor bass to the song's key
         // root, one whole-note hit per bar, low velocity. Keeps the

@@ -59,6 +59,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   v408で短音の強制muteとbass gate上限を除去、和音単位の弦のサステインと次音の減衰、drum余韻、共通room／空気感35%を追加。
   v409は本人の全体音感の補正指示を受け、実post-masterの原音伴奏／新合奏で帯域・音量・余韻を確認。採譜時計と途中seekを修正。詳細は`docs/ARCB-MIX-MEASUREMENT.md`。
   Radiohead／レッチリ的な輪郭・打感を方向性とする。実iPhone負荷と完全な音高・和音・奏法の一致は未達。
+  v410は既存採譜の空白小節のfallbackを停止し、未採譜melodyを明示。Sisterの薄い区間の実REC差とsoloの休み・復帰を確認。
   BL-050の採譜忠実度の改善は継続する。
 
 ### BL-050 — Band Room AI 再現のパート別忠実度（原曲どおりに叩く・弾く）
@@ -360,6 +361,13 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   音楽playback指定、既存contextの再開ごとのresume、明示音声再接続と画面復帰を追加。
   自動値の毎frameコード書換・BPM自動加速・追加音源は導入せず、実iPhoneの負荷と
   Bluetooth／CarPlayの物理音量・出力切替は本人確認待ち。
+
+  2026-10-02: 本人依頼の影グルーヴをV4へ統合。既存打点を守る静かなHPF補助層を量0で開始し、
+  リズム・gain・HPF・同一clockの小節同期関数まで編集可能なコードへ出す。V1〜V3と手編集を保護。
+  先読みqueryと操作cycleの混同による一小節の余分な遅延を修正し、独立再レビューPASS。
+  Workbench83件／aggregate39件とChromeのUI15件／稼働clock24件PASS。本人が既存配信への反映を承認。
+  音量を揃えたseed731／BPM128／8小節ABはlocalに保持。未聴取・実iPhone未評価で音質改善は未判定。
+  音量差の質問は調査だけとし、masterや303 gainを変更しない。Afterimageとrelay候補は別作業のまま。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2

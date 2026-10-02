@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { setImmediate } from 'node:timers/promises';
 import { createContext, runInContext } from 'node:vm';
 import test from 'node:test';
+import { defaultSet, readTechnoSet, technoSetCode } from '../src/live-code.js';
 import {
   clampLevel, comparableCode, deckMixCode, managedSliderValue,
   replaceManagedSliderValue, singleWorkCode, upgradeLegacyDraftCode,
@@ -16,6 +17,16 @@ const patterns = new Map(catalog.items.map((item) => [item.path,
   readFileSync(new URL('patterns/' + item.id + '.txt', source), 'utf8'),
 ]));
 const [first, second, third] = catalog.items;
+const liveState = defaultSet('acid-drive', ['techno-dub', 'namima-test'].map(id => {
+  const item = catalog.items.find(entry => entry.id === id);
+  return { id, title: item.title, source: patterns.get(item.path) };
+}));
+const liveCode = technoSetCode(liveState);
+const editedLiveCode = liveCode.replace(
+  '.hpf(signal(t => setShadowAt(t).hpf))', '.hpf(signal(t => setShadowAt(t).hpf * 1.25))',
+);
+assert.notEqual(editedLiveCode, liveCode, 'fixture edits the generated shadow sound body');
+const liveSelection = { kind: 'set', label: 'Acid Drive', detail: 'Existing V4 live set' };
 
 function between(start, end) {
   const a = app.indexOf(start);
@@ -63,7 +74,9 @@ class Element {
   setAttribute(name, value) { this.attributes.set(name, value); }
 }
 
-function harness({ playing = false, code = singleWorkCode(patterns.get(first.path)) } = {}) {
+function harness({ playing = false, code = singleWorkCode(patterns.get(first.path)),
+  selection = { kind: 'published', id: first.id, label: first.title, detail: first.label },
+} = {}) {
   const storage = new Map();
   const responseGates = new Map();
   const fetches = [];
@@ -91,7 +104,7 @@ function harness({ playing = false, code = singleWorkCode(patterns.get(first.pat
   });
   const context = createContext({
     URL, catalog, loadedCode: code, activeEditor: { editor },
-    activeSelection: { kind: 'published', id: first.id, label: first.title, detail: first.label },
+    activeSelection: selection,
     busy: false, wantsPlayback: playing, playbackToken: 0,
     SINGLE_LEVEL, DECK_A_LEVEL, DECK_B_LEVEL, DECK_XFADE,
     LEVEL_KEY: 'levels', DECK_KEY: 'decks', DRAFT_KEY: 'drafts',
@@ -119,7 +132,7 @@ function harness({ playing = false, code = singleWorkCode(patterns.get(first.pat
     audioPlayback: { prepare: () => preparation?.promise || Promise.resolve() },
     sliderBridge: { capture() {} }, queueControlSync() {}, cancelSetEvaluation() {},
     closeAcidModule() { closedMachine++; }, acidSliderDeclarations: () => null,
-    readTechnoSet: () => null, performance: { show() {} },
+    readTechnoSet, performance: { show() {} },
   });
   let confirmations = 0;
   context.confirmDialog.showModal = () => { context.confirmDialog.open = true; confirmations++; };
@@ -149,9 +162,9 @@ function harness({ playing = false, code = singleWorkCode(patterns.get(first.pat
     waitForPreparation() { return preparation = deferred(); },
     waitForEvaluation() { return evaluation = deferred(); },
     waitForDefinition() { return definition = deferred(); },
-    saveDraft(imported = false) {
+    saveDraft(imported = false, savedCode = singleWorkCode(patterns.get(second.path))) {
       storage.set('drafts', JSON.stringify([{
-        id: 'saved-work', title: second.title, code: singleWorkCode(patterns.get(second.path)),
+        id: 'saved-work', title: second.title, code: savedCode,
         savedAt: '2026-10-01T00:00:00.000Z', ...(imported ? { importedAt: '2026-10-01T01:00:00.000Z' } : {}),
       }]));
     },
@@ -296,4 +309,79 @@ test('a stored 15% work level survives switching and applies one outer trim', as
   assert.equal(managedSliderValue(h.editor.code, SINGLE_LEVEL), 0.15);
   assert.equal((h.editor.code.match(/\.mul\(gain\(WORKBENCH_LEVEL_V1\)\)/g) || []).length, 1);
   assert.ok(h.editor.code.includes(patterns.get(first.path).replace(/\r\n?/g, '\n').trim()), 'original per-part gains survive');
+});
+
+for (const route of ['published', 'deck', 'draft', 'performance']) {
+  test(route + ': late cancel preserves a hand-edited V4 shadow sound body', async () => {
+    const h = harness({ playing: true, code: liveCode, selection: liveSelection });
+    h.saveDraft();
+    const gate = route === 'published' ? h.waitForFetch(second.path) : h.waitForDefinition();
+    const opening = route === 'published' ? h.open(second)
+      : route === 'deck' ? h.openDeck() : route === 'draft' ? h.openDraft() : h.openPerformance();
+    await setImmediate();
+    h.editor.code = editedLiveCode;
+    assert.equal(readTechnoSet(h.editor.code), null, 'musical body edits stay outside automatic restructuring');
+    const before = h.state();
+    gate.resolve();
+    await setImmediate();
+    assert.equal(h.confirmations, 1);
+    await h.confirm(false);
+    await opening;
+    assert.deepEqual(h.state(), before);
+    assert.equal(h.evaluated, 0);
+  });
+
+  test(route + ': repeated Stop survives accepting a delayed V4 hand-edit switch', async () => {
+    const h = harness({ playing: true, code: liveCode, selection: liveSelection });
+    h.saveDraft();
+    const gate = route === 'published' ? h.waitForFetch(second.path) : h.waitForDefinition();
+    const opening = route === 'published' ? h.open(second)
+      : route === 'deck' ? h.openDeck() : route === 'draft' ? h.openDraft() : h.openPerformance();
+    await setImmediate();
+    h.editor.code = editedLiveCode;
+    await h.stop(); await h.stop(); await h.stop();
+    gate.resolve();
+    await setImmediate();
+    assert.equal(h.confirmations, 1);
+    await h.confirm(true);
+    await opening;
+    assert.equal(h.evaluated, 0);
+    assert.equal(h.state().playing, false);
+    assert.equal(h.state().wantsPlayback, false);
+    assert.equal(h.context.busy, false);
+  });
+}
+
+test('a saved hand-edited V4 draft restores the entire sound code', async () => {
+  const h = harness();
+  h.saveDraft(false, editedLiveCode);
+  await h.openDraft();
+  assert.equal(h.editor.code, editedLiveCode);
+  assert.equal(h.state().playing, false);
+  assert.equal(h.evaluated, 0);
+});
+
+test('an imported V4 draft stops an existing live set and needs another explicit Play', async () => {
+  const h = harness({ playing: true, code: liveCode, selection: liveSelection });
+  h.saveDraft(true, editedLiveCode);
+  await h.openDraft();
+  assert.equal(h.editor.code, editedLiveCode);
+  assert.equal(h.state().playing, false);
+  assert.equal(h.state().wantsPlayback, false);
+  assert.equal(h.evaluated, 0);
+  await h.play();
+  assert.equal(h.evaluated, 1);
+});
+
+test('opening a saved V3 live set preserves its exact legacy body', async () => {
+  const legacy = structuredClone(liveState);
+  delete legacy.shadow;
+  for (const name of ['SHADOW', 'SHADOW_ON', 'SHADOW_HPF']) delete legacy.values[name];
+  const legacyCode = technoSetCode(legacy);
+  assert.ok(legacyCode.startsWith('// TECHNO_SET_V3 '));
+  const h = harness();
+  h.saveDraft(false, legacyCode);
+  await h.openDraft();
+  assert.equal(h.editor.code, legacyCode);
+  assert.equal(h.editor.code.includes('TECHNO_SET_V4'), false);
 });

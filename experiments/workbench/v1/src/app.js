@@ -120,7 +120,14 @@ window.addEventListener('pageshow', () => {
   if (audioPlayback.context?.state !== 'running') reconnectAudio();
 });
 const sliderBridge = new SliderBridge(() => activeEditor?.editor, {
-  setSignal: (id, value) => window.sliderWithID(id, value),
+  setSignal: (id, value) => {
+    const scheduler = activeEditor?.editor?.repl?.scheduler;
+    const cycle = scheduler?.started ? scheduler.now() : 0;
+    window.sliderWithID(id, value);
+    // The editable score owns the boundary rule. Stamp the input before
+    // widget refresh or the next scheduler lookahead can cross that boundary.
+    if (wantsPlayback && scheduler?.started) scheduler.pattern?.shadowInput?.(cycle);
+  },
   updateWidgets: (view, widgets) => window.updateSliderWidgets?.(view, widgets),
   decorate: () => sliderBridge.decorateNative(editorHost.querySelectorAll('.cm-slider input')),
 }, () => { queueControlSync(); persistManagedSettings(); });
