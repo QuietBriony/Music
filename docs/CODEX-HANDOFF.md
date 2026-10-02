@@ -62,6 +62,25 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 `docs/INDEX.md`、canonical JSON を先に読む。ない環境では推測せず、public-safe な
 workflow と `needs_verification` だけを使う。active runtime repo は従来どおり 5 つ。
 
+## 2026-10-02 — stack-checkの無期限待ちを防ぐローカル候補
+
+Musicで実際の停止事故を観測したという記録ではなく、`scripts/stack-check.mjs`の
+無期限`spawnSync`と全完了後だけの表示を対象にした構造上の予防。
+起動方法・自動発見・PASS/FAIL/SKIP集計・終了コード・`--music-from`・`--allow-skip`・
+任意の`--deploy-health`は維持し、検査の開始・終了・elapsedをその場で表示する。
+
+- audit/Node検査は120秒、pytestは600秒、pytest事前確認は15秒。
+- `--check-timeout-ms N` / `--pytest-timeout-ms N`で1000〜1800000msの整数だけ上書きできる。0・無期限・範囲外は実行前に拒否。
+- Windows 10以降では非継承Job Objectへ`PROC_THREAD_ATTRIBUTE_JOB_LIST`で生成と同時に所属させ、停止状態から実行する。生成後の割当待ちにsupervisorが死ぬ隙間を作らない。期限超過や親終了後の子をまとめて終了し、ActiveProcesses=0の確認まで次へ進めない。対応APIが使えない環境はFAILで止める。
+- supervisorの起動15秒＋Job終了確認5秒も外側watchdogで制限する。終了要求や親exit後のpipe/close待ちは独立した5秒上限で確定する。終了確認不能・中断はFAILとして残りを起動しない。timeoutは`--allow-skip`でもFAIL。
+- stdout/stderrは常時drainし、それぞれ末尾32KiBまでだけ保持。既存の失敗要約には終了コード・上限・経過時間・末尾ログを残す。
+- POSIXは検査専用process groupを終了する。Windowsの実検査結果を他OSでの実行証明とは扱わない。
+
+`scripts/lib/stack-check-process.mjs`と`stack-check-job.ps1`が期限と終了管理、
+`scripts/tests/stack-check.test.mjs`が短い注入fixture。追加dependency・CI設定・audio/runtime変更はない。
+Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)と[生成時のJOB_LIST属性](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute)。
+
+
 ## 現在地（2026-09-30）
 
 2026-10-02: 本人承認の影グルーヴを既存WorkbenchのV4へ統合。量0が初期値で、打点・gain・HPF・同一clockでの小節同期は編集可能な演奏コードに出す。V1〜V3と手編集本文を保護。独立再レビューPASS、Workbench83件とaggregate39件PASS、実Chromeで保存/停止/稼働中clockを検証。Listenの既存台帳を同期し、音声runtime/cache tupleは保持。未聴取・実iPhone未評価なので音質改善は未判定。[設計と検証](WORKBENCH-SHADOW-GROOVE.md)。
