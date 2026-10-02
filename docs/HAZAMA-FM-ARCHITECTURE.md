@@ -71,6 +71,25 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 > - 現在のcatalog URLは`config/external-dependencies.json`のcommit-pinned jsDelivrが正本。
 >   `engine.js`の`tonejs.github.io`参照は凍結legacy例外であり、同一URLとはみなさない
 
+## 2026-10-02 — stack-checkの無期限待ちを防ぐローカル候補
+
+Musicで実際の停止事故を観測したという記録ではなく、`scripts/stack-check.mjs`の
+無期限`spawnSync`と全完了後だけの表示を対象にした構造上の予防。
+起動方法・自動発見・PASS/FAIL/SKIP集計・終了コード・`--music-from`・`--allow-skip`・
+任意の`--deploy-health`は維持し、検査の開始・終了・elapsedをその場で表示する。
+
+- audit/Node検査は120秒、pytestは600秒、pytest事前確認は15秒。
+- `--check-timeout-ms N` / `--pytest-timeout-ms N`で1000〜1800000msの整数だけ上書きできる。0・無期限・範囲外は実行前に拒否。
+- Windows 10以降では非継承Job Objectへ`PROC_THREAD_ATTRIBUTE_JOB_LIST`で生成と同時に所属させ、停止状態から実行する。生成後の割当待ちにsupervisorが死ぬ隙間を作らない。期限超過や親終了後の子をまとめて終了し、ActiveProcesses=0の確認まで次へ進めない。対応APIが使えない環境はFAILで止める。
+- 外側watchdogの期限は検査上限＋20秒（helper起動・Job終了確認のための追加猶予）。起動phaseだけを15秒で打ち切る設定ではない。Job終了確認と、終了要求や親exit後のpipe/close待ちはそれぞれ5秒上限。終了確認不能・中断はFAILとして残りを起動しない。timeoutは`--allow-skip`でもFAIL。
+- stdout/stderrは常時drainし、それぞれ末尾32KiBまでだけ保持。既存の失敗要約には終了コード・上限・経過時間・末尾ログを残す。
+- POSIXは検査専用process groupを終了する。Windowsの実検査結果を他OSでの実行証明とは扱わない。
+
+`scripts/lib/stack-check-process.mjs`と`stack-check-job.ps1`が期限と終了管理、
+`scripts/tests/stack-check.test.mjs`が短い注入fixture。追加dependency・CI設定・audio/runtime変更はない。
+Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)と[生成時のJOB_LIST属性](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute)。
+
+
 ## 2026-09-29 — 公開ブラウザ試奏の独立境界
 
 `experiments/workbench/v1/`はStrudelコードとKV上の3本のWAVを試す独立アプリ。

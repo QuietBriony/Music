@@ -30,9 +30,13 @@
 //   --deploy-health         GitHub Pages の公開 URL が 200 を返すかも確認する
 //   --music-from <path>     Music repo のパスを明示指定 (worktree-aware の上書き、
 //                           絶対パスでも script の cwd 相対でも可)
+//   --check-timeout-ms N    audit/Node deadline (default 120000ms)
+//   --pytest-timeout-ms N   pytest deadline (default 600000ms)
+//                          integers 1000..1800000ms; never unbounded
 //   --allow-skip            診断時のみ SKIP を許可する。通常 gate は fail-closed
 
-import { spawnSync } from "node:child_process";
+import { performance } from "node:perf_hooks";
+import { runCheck, checkResult, pytestProbeResult, timeoutOptions, PROBE_TIMEOUT_MS } from "./lib/stack-check-process.mjs";
 import { existsSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -66,15 +70,23 @@ const DEPLOY_TARGETS = {
   openclaw: "https://quietbriony.github.io/openclaw/"
 };
 
-function run(cmd, args, cwd) {
-  return spawnSync(cmd, args, { cwd, encoding: "utf8" });
+let limits;
+try { limits = timeoutOptions(process.argv.slice(2)); }
+catch (error) { console.error(`stack-check: ${error.message}`); process.exit(1); }
+
+async function checkedProcess(repo, name, cmd, args, cwd, timeoutMs, classify = checkResult) {
+  console.log(`[start] ${repo} / ${name} limit=${timeoutMs}ms`);
+  const result = await runCheck(cmd, args, cwd, timeoutMs);
+  const classified = classify(result, timeoutMs);
+  console.log(`[end] ${repo} / ${name} ${classified.status} elapsed=${result.elapsedMs}ms`);
+  return { result, classified };
 }
 
 let pytestReady = null;
-function hasPytest() {
+async function hasPytest() {
   if (pytestReady === null) {
-    const r = run("python", ["-m", "pytest", "--version"], STACK_ROOT);
-    pytestReady = !r.error && r.status === 0;
+    const { classified } = await checkedProcess("prerequisite", "pytest --version", "python", ["-m", "pytest", "--version"], STACK_ROOT, PROBE_TIMEOUT_MS, pytestProbeResult);
+    pytestReady = classified;
   }
   return pytestReady;
 }
@@ -122,8 +134,13 @@ async function deployHealthResult(repo) {
 }
 
 const results = [];
+console.log("\nmusic-stack — stack-check");
+if (IS_SIBLING_WORKTREE) {
+  console.log(`(worktree-aware: Music = ${MUSIC_DIR}, sister repos = ${STACK_ROOT})`);
+}
+console.log("=".repeat(68));
 
-for (const repo of ACTIVE_REPOS) {
+repos: for (const repo of ACTIVE_REPOS) {
   // Music は worktree-aware (SCRIPT_PARENT または --music-from で指定された path)、
   // sister 4 repo は <STACK_ROOT>/<name>。
   const repoDir = repo === "Music" ? MUSIC_DIR : join(STACK_ROOT, repo);
@@ -137,22 +154,28 @@ for (const repo of ACTIVE_REPOS) {
     continue;
   }
   for (const c of checks) {
-    if (c.needsPytest && !hasPytest()) {
-      results.push({ repo, check: c.name, status: "SKIP", detail: "pytest not installed" });
-      continue;
+    if (c.needsPytest) {
+      const ready = await hasPytest();
+      if (ready.status !== "PASS") {
+        results.push({ repo, check: c.name, ...ready });
+        if (ready.stop) break repos;
+        continue;
+      }
     }
-    const r = run(c.cmd, c.args, repoDir);
-    if (r.error) {
-      results.push({ repo, check: c.name, status: "SKIP", detail: r.error.code || String(r.error) });
-    } else if (r.status === 0) {
-      results.push({ repo, check: c.name, status: "PASS", detail: "" });
-    } else {
-      const tail = `${r.stdout || ""}${r.stderr || ""}`.trim().split(/\r?\n/).slice(-3).join(" / ");
-      results.push({ repo, check: c.name, status: "FAIL", detail: tail.slice(0, 240) });
+    const timeoutMs = c.needsPytest ? limits.pytest : limits.check;
+    const { classified } = await checkedProcess(repo, c.name, c.cmd, c.args, repoDir, timeoutMs);
+    results.push({ repo, check: c.name, ...classified });
+    if (classified.stop) {
+      console.error("stack-check: process-tree cleanup uncertain; remaining checks were not started");
+      break repos;
     }
   }
   if (CHECK_DEPLOY_HEALTH) {
-    results.push(await deployHealthResult(repo));
+    console.log(`[start] ${repo} / deploy 200 limit=12000ms`);
+    const began = performance.now();
+    const result = await deployHealthResult(repo);
+    results.push(result);
+    console.log(`[end] ${repo} / deploy 200 ${result.status} elapsed=${Math.round(performance.now() - began)}ms`);
   }
 }
 
@@ -162,11 +185,7 @@ let fail = 0;
 let skip = 0;
 let currentRepo = "";
 
-console.log("\nmusic-stack — stack-check");
-if (IS_SIBLING_WORKTREE) {
-  console.log(`(worktree-aware: Music = ${MUSIC_DIR}, sister repos = ${STACK_ROOT})`);
-}
-console.log("=".repeat(68));
+console.log("\n" + "=".repeat(68));
 for (const r of results) {
   if (r.repo !== currentRepo) {
     console.log(`\n[${r.repo}]`);

@@ -19,6 +19,34 @@
 
 ---
 
+## 2026-10-02 — stack-check予防修正の公開・merge承認を受領
+
+- agent      : Codex（専用worktree、独立再レビューで必須修正なし）
+- goal       : 本人の明示承認に従い、今回の予防修正だけをdraft PR経由で検証・mergeする
+- repos      : Music
+- shipped    : feature/stack-check-timeouts。実行コードは検証済み1e369c0のまま、外側watchdogの検査上限＋20秒という追加猶予の説明を正確にした。
+  最新mainは42b67afで、他worktreeのtimeout範囲と競合なし。13 fixture・独立5 fixtureの実行コードhashは一致。
+  実POSIX・OSからのCtrl+C配送は未検証であり、repoの明示必須検証には含まれない。未検証範囲をPRへ明記する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（実行コードが同一の候補、audit 0 BAD / 0 WARN。説明の修正後も関連gateを確認）
+- backlog    : none
+- next       : none
+- blockers   : push・PR・mergeの保留指示は本人の明示承認により解除。merge前にremote head・mergeable/clean・必須checkを確認する。Afterimage/PR435、音声、他担当branch、CI設定・公開先・認証・課金は変更しない。
+
+## 2026-10-02 — stack-checkの期限と即時進捗を追加するローカル候補
+
+- agent      : Codex（専用worktree、独立レビュー5件PASS・追加ブロッカーなし）
+- goal       : 無期限待ちの構造を予防し、検査の期限・進捗・終了診断をrepo内に持たせる
+- repos      : Music
+- implemented: feature/stack-check-timeouts。通常検査120秒・pytest600秒・事前確認15秒、整数1000〜1800000msのoverride、即時start/end/elapsedを追加。
+  Windows 10以降のJOB_LIST属性で生成と同時に非継承Jobへ所属させ、停止状態から実行。全プロセス終了とclose待ちを別々に制限し、確認不能時は残りを起動しない。出力は末尾32KiB/streamを保持。
+  既存CLI・自動発見・PASS/FAIL/SKIP summaryと厳格なskip契約を維持。短いfixture13件・独立fixture5件PASS。
+  既存5repoの39正常検査もPASS。最長はnamima pytestの193730msで、通常検査の最長はcheck-jsの9015ms（helper起動時間を含む）。
+  実際のMusic停止事故を観測したという主張はしない。構造上の予防だけ。push・PR作成は本人指示で保留する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（42b67afベースの今回の候補で実行、audit 0 BAD / 0 WARN）
+- backlog    : none
+- next       : none
+- blockers   : push・PR作成は本人指示で保留。実POSIXカーネルとCtrl+C配送は未検証。BL-049/050/051や他worktree、Afterimage、live audio、sister repo、CI、課金操作は変更していない。
+
 ## 2026-10-02 — ARCB採譜の空白への余計な発音を停止 (v410 / BL-050)
 
 - agent      : Codex（単一thread、既存worktree・公開箱を流用）
