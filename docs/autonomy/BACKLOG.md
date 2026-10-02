@@ -361,6 +361,13 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   自動値の毎frameコード書換・BPM自動加速・追加音源は導入せず、実iPhoneの負荷と
   Bluetooth／CarPlayの物理音量・出力切替は本人確認待ち。
 
+  2026-10-02: 本人依頼の影グルーヴをV4へ統合。既存打点を守る静かなHPF補助層を量0で開始し、
+  リズム・gain・HPF・同一clockの小節同期関数まで編集可能なコードへ出す。V1〜V3と手編集を保護。
+  先読みqueryと操作cycleの混同による一小節の余分な遅延を修正し、独立再レビューPASS。
+  Workbench83件／aggregate39件とChromeのUI15件／稼働clock24件PASS。本人が既存配信への反映を承認。
+  音量を揃えたseed731／BPM128／8小節ABはlocalに保持。未聴取・実iPhone未評価で音質改善は未判定。
+  音量差の質問は調査だけとし、masterや303 gainを変更しない。Afterimageとrelay候補は別作業のまま。
+
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2
 - repo     : Music

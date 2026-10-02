@@ -46,6 +46,8 @@ export function initPerformance(hooks) {
   const liveEnergy = document.querySelector('#set-live-energy');
   const liveLock = document.querySelector('#set-live-lock');
   const listenToggle = document.querySelector('#set-listen-toggle');
+  const shadowDetails = document.querySelector('#set-shadow-details');
+  const shadowMute = document.querySelector('#set-shadow-mute');
   for (const [id,title] of LIVE_MODES) { const option=el('option',title);option.value=id;liveMode.append(option); }
   const layerSelects = [...panel.querySelectorAll('[data-set-layer]')];
   let catalog;
@@ -228,6 +230,11 @@ export function initPerformance(hooks) {
   addFader('BOOM', document.querySelector('#set-boom'));
   for (const key of ['A', 'B', 'CROSS']) addFader(key, document.querySelector('#set-layer-faders'));
   for (const key of ['SPACE','MOTION']) addFader(key, document.querySelector('#set-groove-faders'));
+  for (const key of ['SHADOW','SHADOW_HPF']) addFader(key, document.querySelector('#set-shadow-faders'));
+  shadowMute.addEventListener('click', () => {
+    const setting = sliderSettings(hooks.getCode(), ['SET_SHADOW_ON']).get('SET_SHADOW_ON');
+    if (setting && !hooks.isBusy()) hooks.fader('SHADOW_ON', Number(setting.value) > 0 ? 0 : 1);
+  });
   hold.addEventListener('click',() => mutate(next => { next.groove.hold=!next.groove.hold; }));
   variation.addEventListener('change',() => mutate(next => { next.groove.variation=Number(variation.value); }));
   document.querySelector('#set-next-variation').addEventListener('click',() => mutate(next => {
@@ -315,8 +322,8 @@ export function initPerformance(hooks) {
     });
     groovePanel.disabled = !state || blocked;
     groovePanel.hidden = !state?.groove;
-    document.querySelector('#set-upgrade').hidden = !state || Boolean(state.live);
-    document.querySelector('#set-legacy-hint').hidden = !state || Boolean(state.live);
+    document.querySelector('#set-upgrade').hidden = !state || Boolean(state.shadow);
+    document.querySelector('#set-legacy-hint').hidden = !state || Boolean(state.shadow);
     liveControls.hidden=!state?.live;
     phrase.hidden = !state?.groove;
     start.disabled = !setCode || blocked;
@@ -325,6 +332,11 @@ export function initPerformance(hooks) {
       button.setAttribute('aria-pressed', String(state?.preset === button.dataset.setPreset));
     });
     const settings = setCode ? sliderSettings(code, [...faders.keys()].map(key => 'SET_' + key)) : new Map();
+    const shadowSetting = setCode ? sliderSettings(code, ['SET_SHADOW_ON']).get('SET_SHADOW_ON') : null;
+    shadowDetails.hidden = !shadowSetting;
+    shadowMute.disabled = !shadowSetting || blocked;
+    shadowMute.setAttribute('aria-pressed', String(Number(shadowSetting?.value) === 0));
+    shadowMute.textContent = Number(shadowSetting?.value) === 0 ? '影を戻す' : '影をミュート';
     for (const [key, fader] of faders) {
       const setting = settings.get('SET_' + key);
       fader.input.disabled = !setting || blocked;

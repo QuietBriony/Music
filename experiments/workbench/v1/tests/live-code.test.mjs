@@ -16,7 +16,7 @@ test('four LIVE presets save all controls, phrase lock and manual mutes without 
     const code=technoSetCode(state);
     assert.deepEqual(readTechnoSet(code),state);
     assert.deepEqual(readTechnoSet(code.replace(/\r\n?/g,'\n').replace(/\n/g,'\r\n')),state,'saved scores also restore with Windows line endings');
-    assert.equal(SET_SLIDERS.length,19);
+    assert.equal(SET_SLIDERS.length,22);
     assert.ok(code.length < 100_000);
     assert.equal([...code.matchAll(/^setcpm\(/gm)].length,1);
     const changed=code.replace('SET_AIR = slider('+state.values.AIR+',','SET_AIR = slider(0.3,');

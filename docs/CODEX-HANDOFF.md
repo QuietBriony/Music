@@ -62,6 +62,8 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
 
 ## 現在地（2026-09-30）
 
+2026-10-02: 本人承認の影グルーヴを既存WorkbenchのV4へ統合。量0が初期値で、打点・gain・HPF・同一clockでの小節同期は編集可能な演奏コードに出す。V1〜V3と手編集本文を保護。独立再レビューPASS、Workbench83件とaggregate39件PASS、実Chromeで保存/停止/稼働中clockを検証。Listenの既存台帳を同期し、音声runtime/cache tupleは保持。未聴取・実iPhone未評価なので音質改善は未判定。[設計と検証](WORKBENCH-SHADOW-GROOVE.md)。
+
 2026-10-01: 独立試奏台はコード手直し後も接続が残る音量/音色フェーダーを使い、本文生成ボタンだけ制限する。演奏面上のアプリ更新とPWA内の確認/再読込を追加。演奏面の3ボタンと接続説明、A/Bコード/BPM/混ぜ具合をライブセットへ持ち込む操作を追加し、追加パートはMUTEで開始。外側の混合処理まで手直ししたコードは推測変換しない。既存セット出音とacidBrosの切替停止を維持。最新方針は全面自作よりOSS活用/復元保管/更新比較。音源の置換や依存/音源を揃えた復元一式の保管は未実装。
 
 2026-09-30: v404はTabascoも標準で軽量AIバンド、native drum one-shotとSTOPの予約音解放。FM追加レイヤーの全room/tapeをdevice-gate。共通audio-safetyで固定jsDelivr URLの再encodeを限定回避し、upstreamに存在しないharp/flute mappingも除去。共有engineは既存pad予約guardの上限を実際の24 voiceへ合わせる1行と説明のみ修正（`fm-119`）。Chromeで7曲のSTART/STOPとHuman Fly連続再生を確認。実iPhoneの長時間・音質判定は未確認。

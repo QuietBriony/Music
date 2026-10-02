@@ -68,7 +68,7 @@
             <button id="set-undo-phrase" type="button" disabled>採用前へ戻す</button>
           </fieldset>
         </div>
-        <p id="set-legacy-hint" class="set-help" hidden>保存版の展開をそのまま開いています。<button id="set-upgrade" type="button">この版からLIVE展開を作る</button> 元の保存データは書き換えません。</p>
+        <p id="set-legacy-hint" class="set-help" hidden>保存版の展開をそのまま開いています。<button id="set-upgrade" type="button">この版から影つきLIVEを作る</button> 元の保存データは書き換えません。影の初期量は0です。</p>
         <article id="set-listening" class="set-listening" aria-label="聴く画面">
           <p class="eyebrow">LISTEN / ONE CONTINUOUS SET</p><h3 id="set-listen-title">LIVE</h3>
           <p id="set-listen-phase">再生を押すと始まります</p><progress id="set-listen-progress" max="1" value="0" aria-label="今の展開の進み具合"></progress>
@@ -98,6 +98,11 @@
               </details>
               <div class="set-step-scroll"><div id="set-step-rows"></div></div>
               <div id="set-boom"></div>
+              <details id="set-shadow-details" class="set-kit-details" hidden><summary>影グルーヴ・低音カット</summary>
+                <div id="set-shadow-faders"></div>
+                <button id="set-shadow-mute" type="button" aria-pressed="false">影をミュート</button>
+                <p class="set-help">空いている裏拍だけに小さなハット／リム。量0またはミュートで元の演奏。変更は同じ演奏時計の次の小節へ。直前の操作で、すでに予約された音は元の値で鳴ります。音符・強弱・左右・HPFは「コードを見る」で直接編集できます。追加打楽器のMUTEも優先します。</p>
+              </details>
               <p class="set-help">808の低音の長さ：上げると「ブーン」が伸びます。909には影響しません。カウベルは両方で使えます。</p>
             </article>
             <article class="set-card set-acid">

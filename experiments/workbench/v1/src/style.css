@@ -244,6 +244,7 @@ footer p { margin: 0 0 8px; }
 .set-kit button { font-size: .63rem; min-height: 34px; padding: 4px 8px; }
 .set-kit button[aria-pressed="true"] { background: #294334; border-color: #b3f3bd; }
 #set-groove-faders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 8px; }
+#set-shadow-faders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 8px 0; }
 .set-scenes-row { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-bottom: 16px; }
 .set-bpm-label { display: grid; gap: 4px; font-size: .67rem; font-weight: 800; color: #d9e0dc; }
 #set-bpm { width: 76px; min-height: 44px; padding: 8px; border: 1px solid #77897c; background: #151d18; color: #effff0; border-radius: 9px; font-size: 1.1rem; font-weight: 700; }

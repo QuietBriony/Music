@@ -19,6 +19,21 @@
 
 ---
 
+## 2026-10-02 — 編集可能な影グルーヴを既存LIVEへ統合 (BL-049)
+
+- agent      : Codex（独立worktree、親threadによる独立再レビューPASS）
+- goal       : 本人の「ライブにも織り込む」「音のコードは全部見て編集できる」に対応する
+- repos      : Music
+- shipped    : feature/workbench-shadow-groove。量0のHPF補助層を既存打楽器へ統合。
+  リズム・音源・包絡・gain・HPF・同一clockの小節同期を演奏コードに出し、手編集とV1〜V3を保護。
+  先読みlookupと操作cycleを分け、一小節の余分な操作遅延を修正。Stop後の再開処理を追加しない。
+  Listenの既存台帳・manualを同期。音源・依存・公開先の追加なし。既存audio runtime/cache tupleを保持。
+  seed731／BPM128／8小節のnative onsetと量0/offの一致、音量を揃えたABのclip 0・低域増加なしを確認。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（Workbench83件、Chrome UI15件／稼働clock24件もPASS）
+- backlog    : BL-049を前進。本人は独立再レビューPASS後にPR／merge／既存Workbench反映を承認
+- next       : BL-049 — 量0から音量を揃えたABを本人が試聴し、騒がしいだけ／kickが弱いなら不採用とする
+- blockers   : 未聴取・実iPhone未評価。数値を音質改善の証明と扱わない。303音量差は調査のみでgain変更なし
+
 ## 2026-10-01 — 分離漏れを前提にARCBの合奏を測定・補正 (v409 / BL-050・051)
 
 - agent      : Codex（単一thread、既存worktree・公開箱を流用）
