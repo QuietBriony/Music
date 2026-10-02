@@ -5,12 +5,15 @@ import {
 } from './groove-code.js';
 import { splitPublishedPattern } from './mix-code.js';
 import { liveFrame, liveMotif } from './live-plan.js';
+import { SHADOW_SLIDERS, shadowCode } from './shadow-groove.js';
 export { SET_SCENES, sceneAtCycle, EXTRA_DRUMS, groovePlan } from './groove-code.js';
 export { liveFrame, liveMotif } from './live-plan.js';
 
 export const SET_MARKER = '// TECHNO_SET_V3 ';
+export const SHADOW_MARKER = '// TECHNO_SET_V4 ';
 export const SET_PRESETS = [...GROOVE_PRESETS, {id:'ambient-drift',title:'Ambient Drift',bpm:76,bank:'909'}];
-export const SET_SLIDERS = [...GROOVE_SLIDERS, ['AIR','パッド音量',.12,0,.65,.01,'%']];
+const LIVE_SLIDERS = [...GROOVE_SLIDERS, ['AIR','パッド音量',.12,0,.65,.01,'%']];
+export const SET_SLIDERS = [...LIVE_SLIDERS, ...SHADOW_SLIDERS];
 export const SET_TRACKS = [...GROOVE_TRACKS, 'pad'];
 export const LIVE_MODES = [['techno','テクノ · 走る'],['dub','ダブ · ゆったり'],['ambient','アンビエント · 漂う']];
 
@@ -19,6 +22,10 @@ export function upgradeSet(input) {
   if (!state.live) {
     state.live = {mode:state.preset === 'dub-room' ? 'dub' : 'techno', pace:state.preset === 'dub-room' ? 16 : 8, energy:.65, lock:null};
     state.values.AIR = .12;
+  }
+  if (!state.shadow) {
+    state.shadow = {version:1};
+    for (const [key,,value] of SHADOW_SLIDERS) state.values[key] = value;
   }
   return state;
 }
@@ -66,6 +73,12 @@ function validate(state) {
     || ![.35,.65,.9].includes(config.energy) || !(config.lock === null || ['intro','groove','acid','break','peak'].includes(config.lock))
     || !Number.isFinite(state.values.AIR) || state.values.AIR < 0 || state.values.AIR > .65
     || (state.layerGain !== undefined && (!Number.isFinite(state.layerGain) || state.layerGain < 0 || state.layerGain > 1))) throw new Error('LIVE展開の設定が不正です');
+  if (state.shadow) {
+    if (state.shadow.version !== 1) throw new Error('影グルーヴの形式が不正です');
+    for (const [key,,,min,max] of SHADOW_SLIDERS) if (!Number.isFinite(state.values[key])
+      || state.values[key] < min || state.values[key] > max) throw new Error('影グルーヴの値が範囲外です');
+    if (![0,1].includes(state.values.SHADOW_ON)) throw new Error('影グルーヴのミュートが不正です');
+  }
   return state;
 }
 
@@ -122,10 +135,13 @@ function liveCode(input) {
     voices.push(voice+'.gain(SET_PERC).mul(gain(0.65))'+gate(track));
   }
   voices.push('xfade(setLayerA.mul(gain(SET_A)), SET_CROSS, setLayerB.mul(gain(SET_B))).mul(gain(' + (state.layerGain ?? 0.3) + '))');
-  return [SET_MARKER+JSON.stringify(metadata),
+  const shadow = state.shadow ? shadowCode(state, gate('percussion')) : null;
+  if (shadow) voices.push(shadow.voice);
+  return [(shadow ? SHADOW_MARKER : SET_MARKER)+JSON.stringify(metadata),
     '// LIVE：軸へ戻りながら章ごとの変奏を続ける。音と画面は同じStrudel時計。旧保存版は明示更新だけ。',
-    "samples({pad:'/api/sounds/pad',sub:'/api/sounds/sub',drums:'/api/sounds/drums',set_crash:'/modules/acidbros/assets/samples/tr909/cr01.wav',set_ride:'/modules/acidbros/assets/samples/tr909/rd01.wav'});",
-    ...SET_SLIDERS.map(([key,title,,min,max,step]) => `const SET_${key} = slider(${state.values[key]}, ${min}, ${max}, ${step}) // ${title}`),
+    "samples({pad:'/api/sounds/pad',sub:'/api/sounds/sub',drums:'/api/sounds/drums',set_crash:'/modules/acidbros/assets/samples/tr909/cr01.wav',set_ride:'/modules/acidbros/assets/samples/tr909/rd01.wav'"
+      + (shadow ? ",set_shadow_hh:'/modules/acidbros/assets/samples/tr909/hh01.wav'" : '') + "});",
+    ...(shadow ? SET_SLIDERS : LIVE_SLIDERS).map(([key,title,,min,max,step]) => `const SET_${key} = slider(${state.values[key]}, ${min}, ${max}, ${step}) // ${title}`),
     `setcpm(${state.bpm/4})`,liveFrame.toString().replace(/\r\n?/g,'\n'),liveMotif.toString().replace(/\r\n?/g,'\n'),
     // Double-quoted literals become mini patterns in this REPL. These bounded
     // settings and pitches are ordinary JS, so emit single-quoted enum values.
@@ -134,21 +150,29 @@ function liveCode(input) {
     `const setFrame = t => liveFrame(setLive, setGroove.seed, Number(t), ${state.auto}, '${state.scene}')`,
     `const setMotif = t => liveMotif([${state.notes.map(n=>"'"+n+"'").join(',')}], setGroove, setFrame(t).chapter, Number(t))`,
     'const setBreath = signal(t => setFrame(t).tone).mul(SET_MOTION).add(SET_MOTION.mul(-1).add(1))',
+    ...(shadow?.declarations || []),
     `const setLayerA = (() => {\n${a.declarations}\nreturn ${a.expression}\n})()`,
     `const setLayerB = (() => {\n${b.declarations}\nreturn ${b.expression}\n})()`,
-    'stack(\n  '+voices.join(',\n  ')+'\n).mul(gain(SET_MASTER)).mul(gain(0.66)).filterValues(v => v.gain > 0)','',
+    (shadow ? 'const setScore = ' : '') + 'stack(\n  '+voices.join(',\n  ')+'\n).mul(gain(SET_MASTER)).mul(gain(0.66)).filterValues(v => v.gain > 0)',
+    ...(shadow ? [
+      '// 操作した演奏cycleで境界を予約。先読み済みのquery cycleとは分ける。',
+      'setScore.shadowInput = t => setShadowAt(t, t)',
+      'setScore',
+    ] : []), '',
   ].join('\n');
 }
 
 export function technoSetCode(state) { return state.live ? liveCode(state) : grooveCode(state); }
-export function isSetCode(code) { return code.includes(SET_MARKER) || isGrooveCode(code); }
+export function isSetCode(code) { return code.includes(SHADOW_MARKER) || code.includes(SET_MARKER) || isGrooveCode(code); }
 export function readTechnoSet(code) {
-  if (!code.includes(SET_MARKER)) return readGroove(code);
+  const marker = code.includes(SHADOW_MARKER) ? SHADOW_MARKER : SET_MARKER;
+  if (!code.includes(marker)) return readGroove(code);
   try {
     if (code.length > 100_000) return null;
     const text=code.replace(/\r\n?/g,'\n');
-    const state=JSON.parse(text.split('\n').find(line => line.startsWith(SET_MARKER)).slice(SET_MARKER.length));
-    state.values=Object.fromEntries(SET_SLIDERS.map(([key]) => {
+    const state=JSON.parse(text.split('\n').find(line => line.startsWith(marker)).slice(marker.length));
+    if (Boolean(state.shadow) !== (marker === SHADOW_MARKER)) return null;
+    state.values=Object.fromEntries((state.shadow ? SET_SLIDERS : LIVE_SLIDERS).map(([key]) => {
       const match=new RegExp('^const SET_'+key+' = slider\\(([0-9.]+),','m').exec(text);
       return [key,match?Number(match[1]):NaN];
     }));
