@@ -6,6 +6,14 @@ This checklist makes browser listening the default review path for Music runtime
 
 Use m4a recording only for milestone comparisons, CarPlay/output-level checks, or when browser listening is ambiguous.
 
+## ARCB source-backed harmony (v412 / BL-050)
+
+- Native adapter instruments.mjs?v=5 reads conservative bar voicings from the existing seven scores.
+- Verify actual harmonic and fallback sources, at most three notes per stroke, all original attack timings and confidence rejection.
+- Compare actual guitar solo REC with original other through a separate linear STFT pitch-class representation; CQT template fit is not quality evidence.
+- Also compare instrumental full mixes, score rests, all songs/tones/styles, seek rates, mute, STOP, RESET, cached offline and mobile layout.
+- Other contains separation bleed; short captures cannot certify all bars, chord accuracy, subjective sound or iPhone load.
+
 ## ARCB rock strokes (v411 / BL-050)
 
 - Native ARCB uses instruments.mjs?v=4; the bank/DSP remain v3/v4.
@@ -182,8 +190,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `engine.js?v=fm-119`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-81`, `audio/ai-fills.js?v=fm-71`,
   `style.css?v=fm-28`, `band-room.css?v=br-93`,
-  `band-room.js?v=br-244`, `audio/audio-safety.js?v=br-68`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v411`.
+  `band-room.js?v=br-245`, `audio/audio-safety.js?v=br-68`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v412`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,

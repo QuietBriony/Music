@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-03: v412はARCB guitarのbass由来の根音を、原音otherの持続する和音・音域から確かな234小節だけ補正。打点、強弱、bass/drums、ロック奏法と余韻を維持。実RECを独立したSTFT表現でも比較。採用率を正答率と扱わない。[合奏測定](ARCB-MIX-MEASUREMENT.md)。
+
 2026-10-03: v411はARCBの8分／16分の上下ストローク、ロックの刻み、響かせる／カッティング／パームミュートを追加。短い検出音符だけでコードを切らず、同じ弦bankとampを使う。奏法は音符からの推定。実ブラウザ出力と前後比較は[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
 
 2026-10-02: v410は採譜の空白小節へ足していた自動伴奏を止め、既存のreleaseとroom tailを残す。未採譜の歌の音程は生成せず、Electric Sheep／TABASCOのmelodyを明示。合奏・soloの確認と残る採譜漏れは[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
@@ -59,9 +61,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v411`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v412`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-244`, `band-room.css?v=br-93`。
+> `band-room.js?v=br-245`, `band-room.css?v=br-93`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:
