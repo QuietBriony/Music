@@ -82,13 +82,28 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-243-score-rests", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v410", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-244-rock-strokes", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v411", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
 const performanceStructure = windowMock.BandRoomTestHooks.transcribedPerformanceStructure;
 const scheduleWindow = windowMock.BandRoomTestHooks.physicalScheduleWindow;
 const fallbackAllowed = windowMock.BandRoomTestHooks.transcribedFallbackAllowed;
+const stroke = windowMock.BandRoomTestHooks.transcribedGuitarStroke;
+const strum = step => [Math.floor(step / 16), step % 16, .92, 48, .6];
+for (const step of [0, 2, 14, 16, 18]) {
+  const result = stroke(strum(step), strum(step - 2), strum(step + 2));
+  assert.equal(result.upstroke, Math.round(step / 2) % 2 === 1, "Eighth-note strokes alternate across barlines and partial-bar seek");
+  assert.equal(result.technique, "open", "Normal eighth notes retain their string body");
+}
+assert.equal(stroke(strum(13), strum(12), strum(14)).upstroke, true, "Sixteenth-note offbeats sweep upward");
+assert.equal(stroke(strum(13), strum(12), strum(14)).technique, "palm", "Rock's quick weak strokes can use the physical palm bank");
+assert.equal(stroke(strum(12), strum(11), strum(13)).technique, "open", "Quarter-note accent is allowed to ring");
+assert.equal(stroke(strum(13), strum(12), strum(20)).technique, "open", "A sparse chord is never muted merely for a short detected duration");
+assert.equal(stroke(strum(13), strum(12), strum(14), "open").technique, "open");
+assert.equal(stroke(strum(13), strum(12), strum(14), "cut").technique, "cut");
+assert.ok(stroke(strum(13), strum(12), strum(14), "cut").gateSteps < 1, "Cutting leaves a gap ahead of the following stroke");
+assert.equal(stroke(strum(13), strum(12), undefined, "palm").technique, "palm");
 for (const part of ["bass_line", "guitar_line", "drum_line", "vocal_melody"]) {
   for (const events of [[], [[3, 0, 1, 48, .6]]]) {
     assert.equal(fallbackAllowed({[part]: {events}}, part, true), false,
@@ -470,13 +485,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-93/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-243/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-244/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-93/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-243/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-244/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");

@@ -14,9 +14,9 @@
 
 ## 現在地とversion
 
-- 現行Band Room runtimeは **v410**（採譜の空白小節を保ち、未採譜のmelodyを明示）。HAZAMAのplayability候補は **v401** のまま。client markerは
-  `band-room.js?v=br-243` / `band-room.css?v=br-93`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v410**。v401はHAZAMA AIの
+- 現行Band Room runtimeは **v411**（ロックのストロークとカッティング、弾き方を選択）。HAZAMAのplayability候補は **v401** のまま。client markerは
+  `band-room.js?v=br-244` / `band-room.css?v=br-93`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v411**。v401はHAZAMA AIの
   arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
   約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
   減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、
@@ -39,6 +39,16 @@
   **BL-003 human gate**であり、この文書更新では合格扱いにしない。
 - 詳細な版履歴は [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md)、
   未完了タスクの正本は [autonomy/BACKLOG.md](./autonomy/BACKLOG.md)。
+
+### ロックのギターの弾き方（v411）
+
+ギターの音を「クランチ」または「ディストーション」にして、弾き方を選びます。
+「ロック」は8分／16分の上下ストロークで和音を鳴らし、速く弱い刻みの一部をパームミュートします。
+「響かせる」は和音の胴と余韻を残し、「カッティング」は弦をまとめて短く切り、
+「パームミュート」はブリッジ側を押さえた弦の音を使います。
+弾き方はセッション内の選択です。原曲の手の動きやミュートを検出したものではなく、音符からの推定です。
+通常のコードを短い検出音符だけで切らず、次のストロークまで響かせます。ベースとドラムの余韻も残します。
+実出力と修正前後の比較は[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
 
 ### 採譜の空白と歌の音程（v410）
 
@@ -118,7 +128,7 @@ melodyは歌の音程を弦でなぞるパートです。歌声の再現では�
 Radiohead／レッチリのような輪郭と打感を方向性とし、特定録音の音色コピーは主張しません。
 採譜の誤り、ギターの全構成音・細かな奏法、実iPhone負荷は次の評価対象です。
 
-## 画面構成（現行: br-243 / br-93）
+## 画面構成（現行: br-244 / br-93）
 
 ```
 ┌─────────────────────────────────┐

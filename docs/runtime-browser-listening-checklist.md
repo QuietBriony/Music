@@ -6,6 +6,15 @@ This checklist makes browser listening the default review path for Music runtime
 
 Use m4a recording only for milestone comparisons, CarPlay/output-level checks, or when browser listening is ambiguous.
 
+## ARCB rock strokes (v411 / BL-050)
+
+- Native ARCB uses instruments.mjs?v=4; the bank/DSP remain v3/v4.
+- Eighth-note up/down directions continue across barlines and seeks; dense sixteenths use a finer grid.
+- Test all four guitar styles in live playback, all three tones, original/legacy restoration and score rests.
+- Isolated post-amp render: open chord retains body; cut releases its strings together; palm uses the lossy string bank.
+- Actual START/seek/REC mix before/after; do not interpret spectral distance as a listening score or exact hand reconstruction.
+- Verify 390px layout, STOP pending 0, reset and cached offline, errors/dropped 0.
+
 ## ARCB score gaps and unavailable guide (v410 / BL-050)
 
 - Solo Sister bass at 18 s and Human Fly intro drums: no generated attacks in empty scored bars, and recorded notes resume later. Keep natural tails; an empty detection is not proof of an acoustic rest.
@@ -173,8 +182,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `engine.js?v=fm-119`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-81`, `audio/ai-fills.js?v=fm-71`,
   `style.css?v=fm-28`, `band-room.css?v=br-93`,
-  `band-room.js?v=br-243`, `audio/audio-safety.js?v=br-68`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v410`.
+  `band-room.js?v=br-244`, `audio/audio-safety.js?v=br-68`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v411`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,

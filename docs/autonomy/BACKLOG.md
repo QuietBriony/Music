@@ -78,6 +78,11 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   コード名、2.3% 刻みの bpm_fit を順に直す。iPhone 予算（1 小節約 30 トリガー）と G-1〜G-7 を守る。
   tom / ride は新 voice にしない。HAZAMA と ui_hidden（BL-041）は対象外。
 
+  2026-10-03 v411: 8分／16分の上下ストローク、ロック／響かせる／カッティング／パームミュートを追加。
+  和音共通releaseと実post-amp波形、4区間のpost-master REC、7曲／seek／STOP／offlineを確認。
+  既存bank・scoreを保ち、奏法は音符からの推定。採譜漏れ・多声音高／和音・原音の手の動きの推定は継続。
+  証跡: `docs/ARCB-MIX-MEASUREMENT.md`、`docs/arcb-guitar-measurement-20261003.json`。
+
 ### BL-041 — HAZAMA を main Band selector へ昇格する実機判定
 - priority : P1
 - repo     : Music

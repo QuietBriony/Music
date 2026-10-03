@@ -1,6 +1,13 @@
-# Band Room - Changelog (v65 -> v410 compact)
+# Band Room - Changelog (v65 -> v411 compact)
 
-Current sw.js VERSION: v410. Latest Band Room runtime change: v410 (preserve score rests and mark untranscribed melody). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v411. Latest Band Room runtime change: v411 (rock stroke direction, grouped cutting and physical palm articulation). HAZAMA playability candidate remains v401.
+
+## v411 compact - Rock guitar strokes and grouped muting
+
+- Shared cache `hazama-fm-v411`, runtime `br-244` / `br-93`, physical adapter v4. Bank v3 / DSP v4 / amp and room v1 remain the same.
+- Anchor up/down direction to absolute eighth/sixteenth positions, including across bars and seeks. Preserve detected attack time and dynamics; a stroke crosses its strings in order.
+- Expose rock / ring / cutting / palm articulation. Rock interprets fast weak strokes conservatively and lets sparse chords ring. Cutting closes the whole chord with a common short release; palm really uses existing lossy-string buffers. No new attacks or note/pitch rows.
+- Preserve score rests, native guide availability, bass/drums/legacy behavior and the 52-buffer / 12 MB / 128-source / 8-second limits. Digital measurements and remaining interpretation limits are recorded in the existing ARCB measurement report.
 
 ## v410 compact - Preserve score rests and known melody
 
