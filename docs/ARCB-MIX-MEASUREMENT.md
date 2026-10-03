@@ -1,4 +1,50 @@
-# ARCB — 合奏の測定と補正（現行 v411）
+# ARCB — 合奏の測定と補正（現行 v412）
+
+## 原音からギターの和音・音域を補正（v412 / 2026-10-03）
+
+従来のguitar_lineはbass由来の根音で、ロックの和音は根音・5度・octaveから作っていた。
+既存7曲のstereo otherをCPUで解析し、弦の根音と音域をギター側の持続する響きから推定する。
+左右を波形のまま足さず、harmonic CQTの振幅を平均して位相キャンセルを避ける。
+小節を3区間に分け、少なくとも2区間で同じpitch classが出て、候補間の差と従来音符からの改善が明確な小節だけ採用。
+三度はpower chordより明確な根拠が出た3小節だけ追加。major/minorを曲名・keyから決め打ちしない。
+
+887個の音符のある小節のうち234小節、5,426打点のうち1,402打点に和音を採用。
+未採用の小節は従来の音符、空白は余韻を保つ。全ての元の打点・duration・velocity、bass/drumsと時計は同じ。
+original eventsとotherのSHA256を保存して検査し、再生時は最大3音の小さい配列のみを読む。
+解析やモデルはブラウザへ持ち込まない。bank 52音／11,826,560 bytes、amp 7／room 26 node、予約128／8秒のまま。
+採用率やtemplate fitは採譜の正答率ではない。otherには他楽器と分離漏れがあり、リフの途中変化・octave・運指は未確定。
+
+実START／seek／post-master RECからギターsoloを7区間、各約10秒取得。
+同じv412の補正配列を無効にした基準と、有効な候補を比較し、基準のharmonic sourceが0であることを確認。
+両方とも100%／crunch／ロック／room35%、guideと他パートOFF。
+推定に使ったCQTやchord templateとは別に、線形STFT（FFT 16,384、hop 4,096、90–2,400 Hz）のstereo平均powerを12音へ集計。
+各RECの実content時刻に対応するotherと、正規化したpitch class分布のcosine距離を比較する。小さいほど近い。
+
+| seek区間 | 従来の和音 | 補正あり |
+|---|---:|---:|
+| electric-sheep-16 | 0.442 | 0.314 |
+| hey-16 | 0.695 | 0.679 |
+| human-fly-16 | 0.541 | 0.21 |
+| i-got-a-feeling-16 | 0.606 | 0.596 |
+| sister-50 | 0.606 | 0.456 |
+| tabasco-28 | 0.528 | 0.404 |
+| under-the-moon-16 | 0.206 | 0.182 |
+
+補正sourceが実際に出た6区間では分布の差が縮小。Heyのこの区間は補正source 0の対照で、微小差は録音窓の差を含む。
+これは音色・倍音にも依存する周波数分布の診断で、根音・octave・和音の正答率、人の音質評価、全採用小節の合格ではない。
+既知のA／F# sineと逆位相stereoで測定器を確認。mono和のキャンセルを数値へ持ち込まない。
+
+合奏も修正前v411／後v412の実RECを原音drums+bass+other再結合と比較。
+主5帯域の正規化差はElectric Sheep 3.78→3.38 dB、Human Fly 3.44→3.43、Hey 5.00→4.97、Sister 2.90→2.73。
+quietは前後ほぼ同じ。予約落ち0、clipなし。音高だけを合わせて音量や帯域を崩していないかも確認した。
+7曲、3音色、4弾き方、seek80／100／120%、muteと復帰、休みsolo、未採譜guide、STOP、RESET、cached offline、390pxを検査。
+実iPhone負荷と主観的な最終音質は未評価。
+[採用数・実録音hash・比較数値・browser検証](arcb-harmony-measurement-20261003.json)。音声はignored localのみ。
+
+```powershell
+python -X utf8 scripts/measure-guitar-harmony.py --all --out output/playwright/harmony-analysis.json
+python -X utf8 scripts/measure-guitar-output.py --captures output/playwright/mix-calibration --out output/playwright/harmony-guitar-report.json
+```
 
 ## ロックの上下ストロークとミュート（v411 / 2026-10-03）
 

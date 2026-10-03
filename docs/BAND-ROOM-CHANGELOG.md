@@ -1,6 +1,13 @@
-# Band Room - Changelog (v65 -> v411 compact)
+# Band Room - Changelog (v65 -> v412 compact)
 
-Current sw.js VERSION: v411. Latest Band Room runtime change: v411 (rock stroke direction, grouped cutting and physical palm articulation). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v412. Latest Band Room runtime change: v412 (confidence-gated guitar register and harmony from existing stems). HAZAMA playability candidate remains v401.
+
+## v412 compact - Source-backed guitar harmony
+
+- Shared cache `hazama-fm-v412`, runtime `br-245` / `br-93`, physical adapter v5. Bank v3 / DSP v4 / amp and room v1 remain unchanged.
+- Analyze the existing stereo other stems on CPU. Conservative sustained harmonic templates replace bass-derived guitar roots in 234 of 887 scored bars; weak or changing evidence retains the original voicing. Only three accepted bars add an a third supported across multiple temporal windows.
+- Preserve every original attack, duration and velocity, bass/drum score, transport and rock articulation. Playback reads bounded arrays with at most three notes per stroke; stale or malformed metadata fails closed.
+- Actual post-master recordings and independent STFT pitch-class comparisons are documented in the existing ARCB measurement report. Coverage and template fit are not pitch accuracy or a human listening score.
 
 ## v411 compact - Rock guitar strokes and grouped muting
 

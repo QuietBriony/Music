@@ -83,6 +83,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   既存bank・scoreを保ち、奏法は音符からの推定。採譜漏れ・多声音高／和音・原音の手の動きの推定は継続。
   証跡: `docs/ARCB-MIX-MEASUREMENT.md`、`docs/arcb-guitar-measurement-20261003.json`。
 
+  v412はbass由来のguitar根音を原音otherから確かな234小節だけ補正。実solo RECの7区間を独立STFTで比較し、補正sourceの出た6区間のpitch-class分布差が縮小。和音の正答率ではなく、リフの途中変化と分離漏れ・採譜漏れは継続。全打点、強弱、bass/drums、音源と負荷予算を保持。
+
 ### BL-041 — HAZAMA を main Band selector へ昇格する実機判定
 - priority : P1
 - repo     : Music

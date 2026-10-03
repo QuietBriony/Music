@@ -14,9 +14,9 @@
 
 ## 現在地とversion
 
-- 現行Band Room runtimeは **v411**（ロックのストロークとカッティング、弾き方を選択）。HAZAMAのplayability候補は **v401** のまま。client markerは
-  `band-room.js?v=br-244` / `band-room.css?v=br-93`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v411**。v401はHAZAMA AIの
+- 現行Band Room runtimeは **v412**（原音から和音・音域を補正、ロックのストロークと弾き方）。HAZAMAのplayability候補は **v401** のまま。client markerは
+  `band-room.js?v=br-245` / `band-room.css?v=br-93`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v412**。v401はHAZAMA AIの
   arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
   約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
   減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、
@@ -39,6 +39,13 @@
   **BL-003 human gate**であり、この文書更新では合格扱いにしない。
 - 詳細な版履歴は [BAND-ROOM-CHANGELOG.md](./BAND-ROOM-CHANGELOG.md)、
   未完了タスクの正本は [autonomy/BACKLOG.md](./autonomy/BACKLOG.md)。
+
+### 原音に基づくギターの和音と音域（v412）
+
+原音のotherから、同じ響きが続く区間だけギターの和音と音域を補正します。
+7曲の234小節に採用。曖昧な区間は従来の音符を保ちます。ベース由来の根音だけで全コードを決める方式を一部改善しました。
+打点と強弱、ベース・ドラムのノリ、弦の余韻と弾き方は保ちます。分離漏れがあり、完全な多声採譜ではありません。
+実際の合奏録音と原音の比較は[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
 
 ### ロックのギターの弾き方（v411）
 
@@ -128,7 +135,7 @@ melodyは歌の音程を弦でなぞるパートです。歌声の再現では�
 Radiohead／レッチリのような輪郭と打感を方向性とし、特定録音の音色コピーは主張しません。
 採譜の誤り、ギターの全構成音・細かな奏法、実iPhone負荷は次の評価対象です。
 
-## 画面構成（現行: br-244 / br-93）
+## 画面構成（現行: br-245 / br-93）
 
 ```
 ┌─────────────────────────────────┐

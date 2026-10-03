@@ -41,7 +41,7 @@ export async function prepareInstrumentBank(context, { signal, progress = () => 
 
 export function createPhysicalBand(context, bank, targets, { connect, disconnect = (source, target) => source.disconnect(target), seconds, midi, tone = "crunch", roomWet = 0.35 }) {
   const pending = new Set();
-  const stats = { played: 0, dropped: 0, last: {}, guitarStrokes: { open: 0, palm: 0, cut: 0, up: 0, down: 0 } };
+  const stats = { played: 0, dropped: 0, last: {}, guitarStrokes: { open: 0, palm: 0, cut: 0, up: 0, down: 0 }, guitarVoicings: { harmonic: 0, fallback: 0 } };
   const amp = createGuitarAmp(context, tone);
   connect(amp.output, targets.guitar);
   const destinations = { bass: targets.bass, guitar: amp.input, drums: targets.drums, melody: targets.voice };
@@ -115,7 +115,7 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
   function string(part, keys) {
     return {
       _physical: true,
-      triggerAttackRelease(notes, duration, time, velocity = 0.7, { technique = "open", upstroke = false, sweep = 0.007 } = {}) {
+      triggerAttackRelease(notes, duration, time, velocity = 0.7, { technique = "open", upstroke = false, sweep = 0.007, voicingSource = "fallback" } = {}) {
         if (disposed || !Number.isFinite(velocity) || velocity <= 0) return;
         const gate = Math.max(0.02, Number(seconds(duration)) || 0.2);
         if (Number(time) < context.currentTime - 0.05) return;
@@ -141,6 +141,9 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
         if (part === "guitar" && stats.played > playedBefore) {
           stats.guitarStrokes[["palm", "cut"].includes(technique) ? technique : "open"]++;
           stats.guitarStrokes[upstroke ? "up" : "down"]++;
+          const source = voicingSource === "harmonic" ? "harmonic" : "fallback";
+          stats.guitarVoicings[source]++;
+          stats.lastStrum = { at, notes: pitches.slice(), source, technique, upstroke };
         }
       },
       releaseAll() { release(part); }, dispose() { release(part); }

@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-10-03 — ARCBの原音に基づくギター和音・音域補正 (v412 / BL-050)
+
+- agent      : Codex（本人方針どおり単一会話、既存worktreeと公開箱を流用）
+- goal       : バンドの精度を上げるため、ベース由来だったギター和音を原音の根拠で補正
+- repos      : Music
+- implemented: feature/arcb-band-harmony。既存stereo otherをCPUで解析し、時間を分けて候補が一致する234/887小節に有界の和音・音域を採用。曖昧な区間は従来の音符を保持。
+  全打点・duration・velocity、bass/drums、時計、ロック奏法と余韻は保持。実ブラウザRECで合奏とguitar soloを原音と比較し、別表現のSTFTも使う。template fitや採用率を正答率と扱わない。
+  Listenの同じ台帳・manual・測定記録・cache tupleを同期。音声、model、依存、公開先の追加なし。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（作業前baseline。候補commit前と最新main同期後の同じ最終HEADで全体gate・audit・同一会話の別工程レビューを確認してからpush/merge。HEAD・5repo状態とログをignored localへ保存。）
+- backlog    : BL-050を前進。多声採譜と分離漏れの補正は継続
+- next       : BL-050 — 信頼できない区間のリフ・和音変化と採譜漏れを原音全体から確認
+- blockers   : 短い比較区間以外、完全な多声採譜、主観的音質と実iPhone負荷は未評価。実測の範囲を明示
+
+
 
 ## 2026-10-03 — ARCBのロックギターのストロークとカッティング (v411 / BL-050)
 

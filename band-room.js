@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-244-rock-strokes";
-  const BANDROOM_RELEASE_VERSION = "v411";
+  const BANDROOM_APP_VERSION = "br-245-band-harmony";
+  const BANDROOM_RELEASE_VERSION = "v412";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -1041,7 +1041,7 @@
     physicalArcbAbort?.abort(); physicalArcbAbort = abort;
     const began = bandRoomNowMs();
     try {
-      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=4");
+      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=5");
       const context = Tone.getContext().rawContext;
       const bank = await physicalArcbModule.prepareInstrumentBank(context, {
         signal: abort.signal,
@@ -4803,6 +4803,7 @@
       transcribedPerformanceStructure,
       transcribedFallbackAllowed,
       transcribedGuitarStroke,
+      validatedGuitarVoicings,
       physicalScheduleWindow,
       playbackClockDiagnostics: () => ({ songId: state.currentSongId, contentSeconds: playbackContentElapsedSec(), barCount: state.barCount, bpm: playbackBaseBpm(), instrumentMakeup: instrumentMakeup?.gain.value, totalBars: playbackStructure()?.reduce((sum, section) => sum + section.bars, 0), sourceDuration: state.songData?.performance_duration_s }),
       physicalInstrumentDiagnostics: () => physicalArcb
@@ -6308,6 +6309,7 @@
         const ordered = events.slice().sort((a, b) => (a[0] * 16 + a[1]) - (b[0] * 16 + b[1]));
         transcribedLineCache.guitarNeighbors = new WeakMap();
         ordered.forEach((row, i) => transcribedLineCache.guitarNeighbors.set(row, { previous: ordered[i - 1], next: ordered[i + 1] }));
+        transcribedLineCache.guitarVoicings = validatedGuitarVoicings(state.songData.guitar_line);
       }
     }
     return byBar.get(absBar) || null;
@@ -6348,6 +6350,22 @@
     const technique = style === "palm" || (style === "rock" && fastRock) ? "palm" : (style === "cut" ? "cut" : "open");
     return { upstroke, technique, sweep: technique === "open" ? 0.007 : 0.003,
       gateSteps: technique === "open" ? duration : Math.min(duration, after * 0.82) };
+  }
+
+  function validatedGuitarVoicings(line) {
+    const result = new Map(), data = line?.harmonic_voicings;
+    if (data?.format !== "bar-voicings-v1" || !Array.isArray(line?.events) ||
+        data.events_count !== line.events.length || data.bpm_fit !== line.bpm_fit || !Array.isArray(data.bars)) return result;
+    const present = new Set(line.events.map(row => row[0]));
+    for (const row of data.bars) {
+      if (!Array.isArray(row) || !Number.isInteger(row[0]) || !present.has(row[0]) || result.has(row[0]) ||
+          !Array.isArray(row[1]) || row[1].length < 2 || row[1].length > 3 ||
+          row[1].some((note, i, notes) => !Number.isInteger(note) || note < 40 || note > 84 || (i && note <= notes[i - 1])) ||
+          row[1].at(-1) - row[1][0] > 24 || ![row[2], row[3], row[4]].every(Number.isFinite) ||
+          row[2] < 0.48 || row[2] > 1 || row[3] < 0.06 || row[3] > 1 || row[4] < 0.66666 || row[4] > 1) return new Map();
+      result.set(row[0], row[1].slice());
+    }
+    return result;
   }
 
   function transcribedLightRowLimit(lineKey) {
@@ -6620,7 +6638,9 @@
       const durSteps = light ? Math.min(rawDurSteps, 1.6) : rawDurSteps;
       const durSec = Math.max(0.045, durSteps * ctx.subTime * 0.96);
       const vel = clamp(((Number(row[4]) || 0.55) * 0.96 + 0.02) * (!guitarSynth._physical && isUpstroke ? 0.88 : 1), 0.16, 0.98);
-      const voicing = guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum);
+      const measured = guitarSynth._physical ? transcribedLineCache.guitarVoicings?.get(row[0]) : null;
+      const voicing = measured ? measured.slice(0, notesPerStrum).map(note => Tone.Frequency(note, "midi").toNote())
+        : guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum);
       if (!voicing.length) return;
       // v334: strum stagger — a real downstroke hits low→high strings ~5-8ms
       // apart; simultaneous PolySynth notes read as an organ stab. Light
@@ -6630,7 +6650,7 @@
         const neighbors = transcribedLineCache.guitarNeighbors?.get(row) || {};
         const stroke = transcribedGuitarStroke(row, neighbors.previous, neighbors.next, physicalGuitarStyle);
         const gate = Math.max(0.045, stroke.gateSteps * ctx.subTime * 0.96);
-        try { guitarSynth.triggerAttackRelease(voicing, gate, t, vel, stroke); } catch (e) {}
+        try { guitarSynth.triggerAttackRelease(voicing, gate, t, vel, { ...stroke, voicingSource: measured ? "harmonic" : "fallback" }); } catch (e) {}
       } else if (light) {
         try { guitarSynth.triggerAttackRelease(voicing, durSec, t, vel); } catch (e) {}
       } else {
