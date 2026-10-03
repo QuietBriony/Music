@@ -19,6 +19,22 @@
 
 ---
 
+
+## 2026-10-03 — ARCBのロックギターのストロークとカッティング (v411 / BL-050)
+
+- agent      : Codex（本人方針どおり単一会話、既存worktree・公開箱を流用）
+- goal       : 参考画像の上下ストロークとミュートを参考に、ギターのロック奏法を実出力で確認して実装
+- repos      : Music
+- implemented: feature/arcb-rock-articulation。8分／16分gridの上下ストロークを曲全体に固定。ロック／響かせる／カッティング／パームミュートをセッション内で選択。
+  cutは和音を共通releaseで止め、palmは既存物理弦bufferを使う。通常コードの胴と余韻を保持。奏法は音符からの推定で、参考画像の実音の再現率とは扱わない。
+  同じ和音の実post-amp波形はopen約2秒／cut約0.21秒。4区間のpost-master RECで合奏の帯域差は前後ほぼ同程度。
+  7曲／3音色／4弾き方／seek80・100・120%／solo休みと復帰／未採譜guide／STOP／RESET／cached offline／390px、script error・予約落ち0。
+  bank・DSP・amp・room・7曲の音符行を保持。Listen台帳と既存manual、測定記録とcache tupleを同期。音声・依存・公開先の追加なし。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（作業前のbaseline。候補commit前と最新main同期後の最終HEADで全体gate・audit・差分レビューを確認してからpush/mergeする。実行ログとHEAD・5repo状態の証跡はignored localに保存。）
+- backlog    : BL-050を前進。奏法の推定、和音と採譜漏れは継続
+- next       : BL-050 — guitar多声音高／和音と採譜漏れを原音全体の根拠付きで補正
+- blockers   : 実iPhoneの負荷と本人の耳の最終判定は未評価。数値を人の試聴や原曲一致の保証と扱わない
+
 ## 2026-10-02 — Claude/Codexの現行引継ぎを同期後の全体gateへ揃える候補
 
 - agent      : Codex（専用worktree、独立26件PASS・追加ブロッカーなし）
