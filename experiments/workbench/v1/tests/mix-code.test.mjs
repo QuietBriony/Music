@@ -12,7 +12,7 @@ import {
 const source = new URL('../src/', import.meta.url);
 const library = JSON.parse(readFileSync(new URL('library.json', source), 'utf8'));
 const works = library.items.map((item) => ({
-  id: item.id,
+  id: item.id, mixable: item.mixable,
   source: readFileSync(new URL('patterns/' + item.id + '.txt', source), 'utf8'),
 }));
 
@@ -38,8 +38,9 @@ test('older standard drafts gain a level fader without replacing their pattern',
 });
 
 test('published pairs compose into one tempo and two isolated code scopes', () => {
-  for (const a of works) {
-    for (const b of works) {
+  const mixable = works.filter((work) => work.mixable !== false);
+  for (const a of mixable) {
+    for (const b of mixable) {
       if (a.id === b.id) continue;
       const code = deckMixCode(a, b, { a: 0.55, b: 0.45, cross: 0.5 });
       new Script(code, { filename: a.id + '+' + b.id });

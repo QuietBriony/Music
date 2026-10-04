@@ -419,7 +419,7 @@ deckToSet.addEventListener('click', async () => {
       busy = true;
       const layers = await Promise.all([deckASelect.value, deckBSelect.value].map(async id => {
         const item = catalog.items.find(entry => entry.id === id);
-        if (!item) throw new Error('試作が見つかりません');
+        if (!item || item.mixable === false) throw new Error('A/B・LIVE素材に使える試作を選んでください');
         const response = await fetch(item.path, { cache: 'no-store' });
         if (!response.ok) throw new Error('素材コードを読み込めません');
         return { id, source: await response.text() };
@@ -676,13 +676,20 @@ async function openPublished(item) {
       return;
     }
     draftForm.hidden = true;
+    if (item.playback === 'from-start') {
+      playbackToken++;
+      wantsPlayback = false;
+      activeEditor?.editor?.stop();
+    }
     setEditorCode(singleWorkCode(pattern, savedWorkLevel({ kind: 'published', id: item.id })));
     setCurrentSelection({
       kind: 'published', id: item.id, label: item.title, detail: item.label,
     });
-    deckASelect.value = item.id;
-    if (deckBSelect.value === item.id) {
-      deckBSelect.value = catalog.items.find((candidate) => candidate.id !== item.id)?.id || '';
+    if (item.mixable !== false) {
+      deckASelect.value = item.id;
+      if (deckBSelect.value === item.id) {
+        deckBSelect.value = catalog.items.find((candidate) => candidate.mixable !== false && candidate.id !== item.id)?.id || '';
+      }
     }
     setWorkUrl(item.id);
     const acidHint = item.id === 'acid-303-909'
@@ -691,7 +698,9 @@ async function openPublished(item) {
     if (wantsPlayback) {
       await evaluateCurrent('再生中。' + item.title + ' に切り替えました。' + acidHint);
     } else {
-      status.textContent = 'コードを開きました。Play で聴けます。切り替えてもこの版は一覧に残ります。' + acidHint;
+      status.textContent = item.playback === 'from-start'
+        ? '単曲のコードを開きました。Playで冒頭から聴けます。A/B・LIVE素材には使いません。'
+        : 'コードを開きました。Play で聴けます。切り替えてもこの版は一覧に残ります。' + acidHint;
     }
   } catch (error) {
     status.textContent = error.message || '読み込みに失敗しました';
@@ -710,6 +719,7 @@ async function openDeck(aId = deckASelect.value, bId = deckBSelect.value) {
     const a = catalog.items.find((item) => item.id === aId);
     const b = catalog.items.find((item) => item.id === bId);
     if (!a || !b) throw new Error('デッキの試作が見つかりません');
+    if (a.mixable === false || b.mixable === false) throw new Error('この作品は単曲用です。棚から選んでPlayで聴いてください。');
     if (a.id === b.id) throw new Error('AとBには別の試作を選んでください');
     status.textContent = '2つの試作を読み込み中…';
     const [aResponse, bResponse] = await Promise.all([
@@ -793,7 +803,7 @@ function renderPublished() {
 function renderDeckOptions() {
   for (const select of [deckASelect, deckBSelect]) {
     select.replaceChildren();
-    for (const item of catalog.items) {
+    for (const item of catalog.items.filter((item) => item.mixable !== false)) {
       const option = document.createElement('option');
       option.value = item.id;
       option.textContent = item.title;
@@ -801,7 +811,7 @@ function renderDeckOptions() {
     }
   }
   deckASelect.value = catalog.default_id;
-  deckBSelect.value = catalog.items.find((item) => item.id !== catalog.default_id)?.id || '';
+  deckBSelect.value = catalog.items.find((item) => item.mixable !== false && item.id !== catalog.default_id)?.id || '';
   deckOpenButton.disabled = false;
   deckSwapButton.disabled = false;
 }
@@ -856,7 +866,7 @@ async function openDraft(id) {
       return;
     }
     draftForm.hidden = true;
-    if (draft.importedAt) {
+    if (draft.importedAt || /^\/\/ WORKBENCH_PLAYBACK_V1 from-start$/m.test(draft.code)) {
       playbackToken++;
       wantsPlayback = false;
       activeEditor?.editor?.stop();
@@ -871,8 +881,8 @@ async function openDraft(id) {
     if (readTechnoSet(draftCode)) performance.show();
     setWorkUrl(null);
     const pair = deckPairFromCode(draft.code);
-    if (pair && catalog.items.some((item) => item.id === pair.a)
-        && catalog.items.some((item) => item.id === pair.b)) {
+    if (pair && catalog.items.some((item) => item.mixable !== false && item.id === pair.a)
+        && catalog.items.some((item) => item.mixable !== false && item.id === pair.b)) {
       deckASelect.value = pair.a;
       deckBSelect.value = pair.b;
       deckInfo.textContent = '保存した2デッキのコードを開いています。フェーダーで混ぜられます。';
@@ -1069,7 +1079,7 @@ async function loadCatalog() {
       return;
     }
     const deckRequested = params.get('deck')?.split(',');
-    if (deckRequested?.length === 2 && deckRequested.every((id) => catalog.items.some((item) => item.id === id))) {
+    if (deckRequested?.length === 2 && deckRequested.every((id) => catalog.items.some((item) => item.mixable !== false && item.id === id))) {
       await openDeck(deckRequested[0], deckRequested[1]);
       if (params.get('module') === 'acidbros') openAcidModule({ updateUrl: false });
       return;

@@ -83,7 +83,7 @@ export function initPerformance(hooks) {
 
   async function loadLayer(id) {
     const item = catalog?.items.find((entry) => entry.id === id);
-    if (!item) throw new Error('試作が見つかりません');
+    if (!item || item.mixable === false) throw new Error('LIVE素材に使える試作を選んでください');
     const response = await fetch(item.path, { cache: 'no-store' });
     if (!response.ok) throw new Error('素材コードを読み込めません');
     return { id: item.id, title: item.title, source: await response.text() };
@@ -460,7 +460,7 @@ export function initPerformance(hooks) {
       catalog = next;
       layerSelects.forEach((select) => {
         select.replaceChildren();
-        for (const item of catalog.items) {
+        for (const item of catalog.items.filter((item) => item.mixable !== false)) {
           const option = el('option', item.title); option.value = item.id; select.append(option);
         }
       });

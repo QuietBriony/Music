@@ -19,6 +19,24 @@
 
 ---
 
+## 2026-10-04 — Afterimage FINAL v1を既存の単曲棚へ追加 (PR435)
+
+- agent      : Codex（専用worktree、別担当が実スコア・オフライン画面を独立検証）
+- goal       : 本人依頼の「棚から選んでコードを開き、Playで聴く」を初回JSON importなしで実装する
+- repos      : Music（既存Workbench catalog・pattern・選択guard・tests・README・台帳）
+- implemented: Afterimage FINAL v1互換スコアをAGPL-3.0-or-laterで既存棚へ追加。元の8作品とdefault_id、保存keyを保持。
+  スコアは互換元にSPDXと冒頭開始指定のコメント2行だけを追加。private file ID・受け渡し記録・音源バイナリは公開Gitへ追加しない。
+  単曲選択は読込後の編集確認が完了してからStopして明示Playを待つ。内蔵15%を中立の外側音量で保持する。
+  有限編曲・samples宣言を含む単曲なのでA/B・LIVE素材から除外し、直接IDのdeck要求も拒否する。既存素材の継続再生を保持。
+  コード内の冒頭開始指定は下書きに残り、再選択時も停止してPlayを待つ。遅延cancelと保存済みdraft・音量・A/B選択を保護する。
+  Workbench113 PASS。独立スコア13件とオフライン実ブラウザ29件PASS。固定transpilerで7720 onsets・11音色・256以後の新規発音0を確認。
+  実CyclistのStop→再開は模擬時計で先頭cycle0を確認し、音声試聴とは区別する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（commit前の全体gate、audit 0 BAD / 0 WARN。台帳記録後の必要検査とcommit後の同じ最終HEADで全体gate・独立レビューを完了してから通常pushする）
+- backlog    : none
+- next       : none
+- blockers   : 外部sampleの通常GETが先に拒否されたため、再取得・代替URL・設定変更は行わない。全曲の音声・実iPhone・主観的8分試聴・DJ v2は未確認。
+  PR435をdraftのまま更新し、merge/deployは行わない。BL-049/050/051のclaim、他worktree、認証・ACL・音声runtime・既存配信先を保持する。
+
 ## 2026-10-04 — 本人用作品を既存下書き棚で再検証 (PR435)
 
 - agent      : Codex（専用worktree、実スコアと実ブラウザは独立担当で検証）

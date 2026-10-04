@@ -147,7 +147,7 @@ function harness({ playing = false, code = singleWorkCode(patterns.get(first.pat
     get evaluated() { return evaluated; }, get stopped() { return stopped; },
     get closedMachine() { return closedMachine; },
     open: (item) => context.openPublished(item),
-    openDeck: () => context.openDeck(first.id, second.id),
+    openDeck: (a = first.id, b = second.id) => context.openDeck(a, b),
     openDraft: () => context.openDraft('saved-work'),
     openPerformance: () => runInContext('openPerformance', context)(
       singleWorkCode(patterns.get(second.path)), 'Existing preset handoff', editor.code,
@@ -384,4 +384,72 @@ test('opening a saved V3 live set preserves its exact legacy body', async () => 
   await h.openDraft();
   assert.equal(h.editor.code, legacyCode);
   assert.equal(h.editor.code.includes('TECHNO_SET_V4'), false);
+});
+
+
+const afterimage = catalog.items.find((item) => item.id === 'afterimage-final-v1');
+assert.ok(afterimage, 'FINAL v1 is available without importing a backup');
+
+test('Afterimage opens stopped from a running loop and preserves drafts and deck choices', async () => {
+  const h = harness({ playing: true });
+  h.saveDraft();
+  h.storage.set('levels', JSON.stringify({ 'published:aphex1': 0.4 }));
+  h.storage.set('decks', JSON.stringify({ existing: { a: 0.5, b: 0.8, cross: 0.3 } }));
+  const stored = [...h.storage];
+  const choices = [h.context.deckASelect.value, h.context.deckBSelect.value];
+  await h.open(afterimage);
+  assert.equal(h.context.activeSelection.id, afterimage.id);
+  assert.equal(h.editor.code, singleWorkCode(patterns.get(afterimage.path)));
+  assert.match(h.editor.code, /const SET_MASTER = slider\(0\.15,0,1,\.01\)/);
+  assert.equal(managedSliderValue(h.editor.code, SINGLE_LEVEL), 1);
+  assert.equal(h.evaluated, 0, 'selection never starts or updates audio for this finite work');
+  assert.equal(h.state().playing, false);
+  assert.equal(h.state().wantsPlayback, false);
+  assert.ok(h.stopped > 0, 'stop resets the existing scheduler before explicit Play');
+  assert.deepEqual([...h.storage], stored);
+  assert.deepEqual([h.context.deckASelect.value, h.context.deckBSelect.value], choices);
+  await h.play();
+  assert.equal(h.evaluated, 1);
+  assert.equal(h.state().playing, true);
+});
+
+test('cancelling a delayed Afterimage selection leaves the running hand edit intact', async () => {
+  const h = harness({ playing: true });
+  const gate = h.waitForFetch(afterimage.path);
+  const opening = h.open(afterimage);
+  await setImmediate();
+  h.editor.code += '\n// retained while FINAL loads';
+  const before = h.state();
+  const stopsBefore = h.stopped;
+  gate.resolve();
+  await setImmediate();
+  await h.confirm(false);
+  await opening;
+  assert.deepEqual(h.state(), before);
+  assert.equal(h.stopped, stopsBefore);
+  assert.equal(h.evaluated, 0);
+});
+
+test('Afterimage cannot enter a deck through a direct ID request', async () => {
+  const h = harness({ playing: true });
+  const before = h.state();
+  await h.openDeck(afterimage.id, second.id);
+  assert.deepEqual(h.state(), before);
+  assert.deepEqual(h.fetches, []);
+  assert.equal(h.evaluated, 0);
+  assert.match(h.context.status.textContent, /単曲用/);
+});
+
+test('a saved Afterimage draft retains its code and waits for explicit Play', async () => {
+  const h = harness({ playing: true });
+  const saved = singleWorkCode(patterns.get(afterimage.path), 0.72) + '\n// my retained edit';
+  h.saveDraft(false, saved);
+  const before = h.storage.get('drafts');
+  await h.openDraft();
+  assert.equal(h.editor.code, saved);
+  assert.equal(h.storage.get('drafts'), before);
+  assert.equal(h.state().playing, false);
+  assert.equal(h.evaluated, 0);
+  await h.play();
+  assert.equal(h.evaluated, 1);
 });
