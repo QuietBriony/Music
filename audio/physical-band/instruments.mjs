@@ -41,7 +41,7 @@ export async function prepareInstrumentBank(context, { signal, progress = () => 
 
 export function createPhysicalBand(context, bank, targets, { connect, disconnect = (source, target) => source.disconnect(target), seconds, midi, tone = "crunch", roomWet = 0.35 }) {
   const pending = new Set();
-  const stats = { played: 0, dropped: 0, last: {} };
+  const stats = { played: 0, dropped: 0, last: {}, guitarStrokes: { open: 0, palm: 0, cut: 0, up: 0, down: 0 }, guitarVoicings: { harmonic: 0, fallback: 0 } };
   const amp = createGuitarAmp(context, tone);
   connect(amp.output, targets.guitar);
   const destinations = { bass: targets.bass, guitar: amp.input, drums: targets.drums, melody: targets.voice };
@@ -80,7 +80,7 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
     }
   }
 
-  function fire(part, key, time, velocity, rate = 1, duration = Infinity) {
+  function fire(part, key, time, velocity, rate = 1, duration = Infinity, technique = "open", upstroke = false) {
     if (disposed || !Number.isFinite(time) || !Number.isFinite(velocity) || velocity <= 0) return;
     if (time < context.currentTime - 0.05) return; // elapsed attacks when resuming inside a bar
     const buffer = bank.buffers.get(key);
@@ -90,8 +90,9 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
     const source = context.createBufferSource(), gain = context.createGain();
     source.buffer = buffer; source.playbackRate.value = rate;
     const palm = key.startsWith("palm:");
-    const hold = Number.isFinite(duration) ? Math.max(part === "guitar" && !palm ? 0.2 : 0.12, duration) : Infinity;
-    const tail = palm ? 0.13 : (part === "guitar" ? 1.8 : (part === "bass" ? 1.4 : 0.3));
+    const articulated = part === "guitar" && (palm || technique === "cut");
+    const hold = Number.isFinite(duration) ? Math.max(articulated ? 0.025 : (part === "guitar" ? 0.2 : 0.12), duration) : Infinity;
+    const tail = articulated ? (palm ? 0.065 : 0.025) : (part === "guitar" ? 1.8 : (part === "bass" ? 1.4 : 0.3));
     const length = Math.max(0.035, Math.min(buffer.duration / rate, hold + tail));
     const releaseAt = at + Math.min(hold, length - 0.025);
     const level = Math.min(1, velocity) * (part === "guitar" ? 0.9 : (part === "melody" ? 0.46 : 1));
@@ -102,7 +103,7 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
     const hit = { part, source, gain, at, level, releaseAt, end: at + length };
     function cleanup() { source.onended = null; source.disconnect(); gain.disconnect(); pending.delete(hit); }
     hit.cleanup = cleanup; pending.add(hit); source.onended = cleanup;
-    try { source.start(at); source.stop(at + length); stats.played++; stats.last[part] = { at, key, rate, velocity }; }
+    try { source.start(at); source.stop(at + length); stats.played++; stats.last[part] = { at, key, rate, velocity, ...(part === "guitar" ? { technique, upstroke } : {}) }; }
     catch { cleanup(); stats.dropped++; }
   }
   function release(part) {
@@ -114,7 +115,7 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
   function string(part, keys) {
     return {
       _physical: true,
-      triggerAttackRelease(notes, duration, time, velocity = 0.7, { technique = "open", upstroke = false } = {}) {
+      triggerAttackRelease(notes, duration, time, velocity = 0.7, { technique = "open", upstroke = false, sweep = 0.007, voicingSource = "fallback" } = {}) {
         if (disposed || !Number.isFinite(velocity) || velocity <= 0) return;
         const gate = Math.max(0.02, Number(seconds(duration)) || 0.2);
         if (Number(time) < context.currentTime - 0.05) return;
@@ -125,13 +126,25 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
         if (!pitches.length) return;
         // One stroke owns the whole chord; crossing its strings must never
         // choke its siblings. A later stroke / bass note damps the old one.
-        damp(part, at, part === "bass" ? 0.06 : (part === "guitar" ? 0.1 : 0.04));
+        const articulated = part === "guitar" && ["palm", "cut"].includes(technique);
+        damp(part, at, part === "bass" ? 0.06 : (part === "guitar" ? (articulated ? 0.018 : 0.1) : 0.04));
         if (upstroke) pitches.reverse();
+        const spread = Number.isFinite(sweep) ? Math.max(0.002, Math.min(0.012, sweep)) : 0.007;
+        const playedBefore = stats.played;
         pitches.forEach((pitch, i) => {
           const root = nearestKey(pitch, keys);
           const key = part === "guitar" && technique === "palm" ? "palm" : (part === "melody" ? "guitar" : part);
-          fire(part, `${key}:${root}`, at + (part === "guitar" ? i * 0.007 : 0), velocity * (part === "guitar" ? 1 - i * 0.06 : 1), 2 ** ((pitch - root) / 12), gate);
+          const offset = part === "guitar" ? i * spread : 0;
+          // One fretting-hand release closes all strings of a cut together.
+          fire(part, `${key}:${root}`, at + offset, velocity * (part === "guitar" ? 1 - i * 0.06 : 1), 2 ** ((pitch - root) / 12), articulated ? Math.max(0.025, gate - offset) : gate, technique, upstroke);
         });
+        if (part === "guitar" && stats.played > playedBefore) {
+          stats.guitarStrokes[["palm", "cut"].includes(technique) ? technique : "open"]++;
+          stats.guitarStrokes[upstroke ? "up" : "down"]++;
+          const source = voicingSource === "harmonic" ? "harmonic" : "fallback";
+          stats.guitarVoicings[source]++;
+          stats.lastStrum = { at, notes: pitches.slice(), source, technique, upstroke };
+        }
       },
       releaseAll() { release(part); }, dispose() { release(part); }
     };

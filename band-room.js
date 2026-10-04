@@ -19,11 +19,12 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-243-score-rests";
-  const BANDROOM_RELEASE_VERSION = "v410";
+  const BANDROOM_APP_VERSION = "br-245-band-harmony";
+  const BANDROOM_RELEASE_VERSION = "v412";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
+  let physicalGuitarStyle = "rock";
   let physicalRoomWet = 0.35;
   const BANDROOM_STORAGE_SCHEMA_VERSION = 2;
   const BANDROOM_STORAGE_SCHEMA_KEY = "band-room.storage.schema";
@@ -1040,7 +1041,7 @@
     physicalArcbAbort?.abort(); physicalArcbAbort = abort;
     const began = bandRoomNowMs();
     try {
-      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=3");
+      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=5");
       const context = Tone.getContext().rawContext;
       const bank = await physicalArcbModule.prepareInstrumentBank(context, {
         signal: abort.signal,
@@ -4801,10 +4802,12 @@
       transcribedPerformanceBpm,
       transcribedPerformanceStructure,
       transcribedFallbackAllowed,
+      transcribedGuitarStroke,
+      validatedGuitarVoicings,
       physicalScheduleWindow,
       playbackClockDiagnostics: () => ({ songId: state.currentSongId, contentSeconds: playbackContentElapsedSec(), barCount: state.barCount, bpm: playbackBaseBpm(), instrumentMakeup: instrumentMakeup?.gain.value, totalBars: playbackStructure()?.reduce((sum, section) => sum + section.bars, 0), sourceDuration: state.songData?.performance_duration_s }),
       physicalInstrumentDiagnostics: () => physicalArcb
-        ? { enabled: true, tone: physicalGuitarTone, prepareMs: physicalArcb.prepareMs, ...physicalArcb.snapshot() }
+        ? { enabled: true, tone: physicalGuitarTone, guitarStyle: physicalGuitarStyle, prepareMs: physicalArcb.prepareMs, ...physicalArcb.snapshot() }
         : { enabled: false, pending: 0, preparing: Boolean(physicalArcbAbort), tone: physicalGuitarTone },
       selectVelocitySlotRows,
       selectPriorityDrumRows,
@@ -4861,6 +4864,7 @@
       const data = await res.json();
       if (switchSeq != null && switchSeq !== songSwitchSeq) return null;
       state.songData = data;
+      transcribedLineCache = { songId: null, lines: {} };
       state.currentSongId = songId;
       syncPhysicalInstrumentUi();
       syncStemVariantSelect(songId);
@@ -6301,6 +6305,12 @@
         byBar.get(bar).push(ev);
       }
       transcribedLineCache.lines[lineKey] = byBar;
+      if (lineKey === "guitar_line") {
+        const ordered = events.slice().sort((a, b) => (a[0] * 16 + a[1]) - (b[0] * 16 + b[1]));
+        transcribedLineCache.guitarNeighbors = new WeakMap();
+        ordered.forEach((row, i) => transcribedLineCache.guitarNeighbors.set(row, { previous: ordered[i - 1], next: ordered[i + 1] }));
+        transcribedLineCache.guitarVoicings = validatedGuitarVoicings(state.songData.guitar_line);
+      }
     }
     return byBar.get(absBar) || null;
   }
@@ -6321,6 +6331,41 @@
   function allowsTranscribedFallback(lineKey) {
     return transcribedFallbackAllowed(state.songData, lineKey,
       currentMode === "synth" && physicalArcbEnabled());
+  }
+
+  function transcribedGuitarStroke(row, previous, next, style = "rock") {
+    const absoluteStep = (item) => item ? Number(item[0]) * 16 + Number(item[1]) : NaN;
+    const step = absoluteStep(row);
+    const gap = (value) => Number.isFinite(value) && value >= 0.3 ? value : Infinity;
+    const before = gap(step - absoluteStep(previous)), after = gap(absoluteStep(next) - step);
+    const duration = Math.max(0.3, Number(row?.[2]) || 1);
+    // Anchor direction to the full score, including across barlines/seeks.
+    // Eighth notes alternate too; dense sixteenths use their own grid.
+    const subdivision = Math.min(before, after) <= 1.35 ? 1 : 2;
+    const upstroke = Number.isFinite(step) && Math.round(step / subdivision) % 2 === 1;
+    const accent = Number.isFinite(step) && Math.abs(step - Math.round(step / 4) * 4) <= 0.3;
+    // This is an explicitly labelled rock interpretation, not a claim that
+    // the source performance's hand position was detected. Sparse chords ring.
+    const fastRock = before <= 2.4 && after <= 1.35 && duration <= 1.25 && !accent && Number(row?.[4]) < 0.82;
+    const technique = style === "palm" || (style === "rock" && fastRock) ? "palm" : (style === "cut" ? "cut" : "open");
+    return { upstroke, technique, sweep: technique === "open" ? 0.007 : 0.003,
+      gateSteps: technique === "open" ? duration : Math.min(duration, after * 0.82) };
+  }
+
+  function validatedGuitarVoicings(line) {
+    const result = new Map(), data = line?.harmonic_voicings;
+    if (data?.format !== "bar-voicings-v1" || !Array.isArray(line?.events) ||
+        data.events_count !== line.events.length || data.bpm_fit !== line.bpm_fit || !Array.isArray(data.bars)) return result;
+    const present = new Set(line.events.map(row => row[0]));
+    for (const row of data.bars) {
+      if (!Array.isArray(row) || !Number.isInteger(row[0]) || !present.has(row[0]) || result.has(row[0]) ||
+          !Array.isArray(row[1]) || row[1].length < 2 || row[1].length > 3 ||
+          row[1].some((note, i, notes) => !Number.isInteger(note) || note < 40 || note > 84 || (i && note <= notes[i - 1])) ||
+          row[1].at(-1) - row[1][0] > 24 || ![row[2], row[3], row[4]].every(Number.isFinite) ||
+          row[2] < 0.48 || row[2] > 1 || row[3] < 0.06 || row[3] > 1 || row[4] < 0.66666 || row[4] > 1) return new Map();
+      result.set(row[0], row[1].slice());
+    }
+    return result;
   }
 
   function transcribedLightRowLimit(lineKey) {
@@ -6588,19 +6633,24 @@
       strokeIdx = (step - prevStep) < 1.2 ? strokeIdx + 1 : 0;
       prevStep = step;
       const isUpstroke = strokeIdx % 2 === 1;
-      const t = time + step * ctx.subTime + (isUpstroke ? 0.004 : 0);
+      const t = time + step * ctx.subTime + (!guitarSynth._physical && isUpstroke ? 0.004 : 0);
       const rawDurSteps = Math.max(0.3, Number(row[2]) || 1);
       const durSteps = light ? Math.min(rawDurSteps, 1.6) : rawDurSteps;
       const durSec = Math.max(0.045, durSteps * ctx.subTime * 0.96);
-      const vel = clamp(((Number(row[4]) || 0.55) * 0.96 + 0.02) * (isUpstroke ? 0.88 : 1), 0.16, 0.98);
-      const voicing = guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum);
+      const vel = clamp(((Number(row[4]) || 0.55) * 0.96 + 0.02) * (!guitarSynth._physical && isUpstroke ? 0.88 : 1), 0.16, 0.98);
+      const measured = guitarSynth._physical ? transcribedLineCache.guitarVoicings?.get(row[0]) : null;
+      const voicing = measured ? measured.slice(0, notesPerStrum).map(note => Tone.Frequency(note, "midi").toNote())
+        : guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum);
       if (!voicing.length) return;
       // v334: strum stagger — a real downstroke hits low→high strings ~5-8ms
       // apart; simultaneous PolySynth notes read as an organ stab. Light
       // runtime keeps the single batched call (CPU). v335: upstrokes sweep
       // high→low (reversed order).
       if (guitarSynth._physical) {
-        try { guitarSynth.triggerAttackRelease(voicing, durSec, t, vel, { upstroke: isUpstroke }); } catch (e) {}
+        const neighbors = transcribedLineCache.guitarNeighbors?.get(row) || {};
+        const stroke = transcribedGuitarStroke(row, neighbors.previous, neighbors.next, physicalGuitarStyle);
+        const gate = Math.max(0.045, stroke.gateSteps * ctx.subTime * 0.96);
+        try { guitarSynth.triggerAttackRelease(voicing, gate, t, vel, { ...stroke, voicingSource: measured ? "harmonic" : "fallback" }); } catch (e) {}
       } else if (light) {
         try { guitarSynth.triggerAttackRelease(voicing, durSec, t, vel); } catch (e) {}
       } else {
@@ -8252,6 +8302,9 @@
   // ---- UI bindings --------------------------------------------
 
   function bindUI() {
+    $("br-arcb-guitar-style")?.addEventListener("change", (event) => {
+      physicalGuitarStyle = event.target.value;
+    });
     $("br-arcb-guitar-tone")?.addEventListener("change", (event) => {
       physicalGuitarTone = event.target.value;
       physicalArcb?.setTone(physicalGuitarTone);

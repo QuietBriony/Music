@@ -19,6 +19,50 @@
 
 ---
 
+## 2026-10-04 — 本人用作品を既存下書き棚で再検証 (PR435)
+
+- agent      : Codex（専用worktree、実スコアと実ブラウザは独立担当で検証）
+- goal       : 既存Workbenchの選択時編集保護と、本人用JSONを既存下書き棚へ追加する経路を確認する
+- repos      : Music（既存Workbenchの汎用guard・README・台帳のみ）
+- implemented: PR435の汎用guardを保持し、main 581ac818を通常merge。双方の既存台帳entryを保持し、未保存編集の再確認とStopの世代保護を維持。
+  本人用スコア・JSON・private file ID・音声は公開Gitへ追加せず、既存importと名前付き下書き棚で扱う。
+  READMEに個人棚の保存範囲とmini列の二重引用符を追記。構文合格と実演奏一致を分け、原本を保持した別の互換版は本人用受け渡しで管理する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（通常merge候補の全体gate、audit 0 BAD / 0 WARN。台帳記録後の必要検査と、候補commit後の同じ最終HEADで全体gate・独立レビューを確認してから通常pushする）
+- backlog    : none
+- next       : none
+- blockers   : 既存外部sampleの通常GETが拒否されたため、完全な音声再生は未検証。再取得・別URL・設定変更は行わない。実iPhone・8分間の主観試聴・DJ v2は未評価。
+  PR435はdraftで継続し、merge/deployは行わない。既存worktree、BL-049/050/051のclaim、音声runtime・公開先・認証・ACLを保持する。
+
+## 2026-10-03 — ARCBの原音に基づくギター和音・音域補正 (v412 / BL-050)
+
+- agent      : Codex（本人方針どおり単一会話、既存worktreeと公開箱を流用）
+- goal       : バンドの精度を上げるため、ベース由来だったギター和音を原音の根拠で補正
+- repos      : Music
+- implemented: feature/arcb-band-harmony。既存stereo otherをCPUで解析し、時間を分けて候補が一致する234/887小節に有界の和音・音域を採用。曖昧な区間は従来の音符を保持。
+  全打点・duration・velocity、bass/drums、時計、ロック奏法と余韻は保持。実ブラウザRECで合奏とguitar soloを原音と比較し、別表現のSTFTも使う。template fitや採用率を正答率と扱わない。
+  Listenの同じ台帳・manual・測定記録・cache tupleを同期。音声、model、依存、公開先の追加なし。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（作業前baseline。候補commit前と最新main同期後の同じ最終HEADで全体gate・audit・同一会話の別工程レビューを確認してからpush/merge。HEAD・5repo状態とログをignored localへ保存。）
+- backlog    : BL-050を前進。多声採譜と分離漏れの補正は継続
+- next       : BL-050 — 信頼できない区間のリフ・和音変化と採譜漏れを原音全体から確認
+- blockers   : 短い比較区間以外、完全な多声採譜、主観的音質と実iPhone負荷は未評価。実測の範囲を明示
+
+
+
+## 2026-10-03 — ARCBのロックギターのストロークとカッティング (v411 / BL-050)
+
+- agent      : Codex（本人方針どおり単一会話、既存worktree・公開箱を流用）
+- goal       : 参考画像の上下ストロークとミュートを参考に、ギターのロック奏法を実出力で確認して実装
+- repos      : Music
+- implemented: feature/arcb-rock-articulation。8分／16分gridの上下ストロークを曲全体に固定。ロック／響かせる／カッティング／パームミュートをセッション内で選択。
+  cutは和音を共通releaseで止め、palmは既存物理弦bufferを使う。通常コードの胴と余韻を保持。奏法は音符からの推定で、参考画像の実音の再現率とは扱わない。
+  同じ和音の実post-amp波形はopen約2秒／cut約0.21秒。4区間のpost-master RECで合奏の帯域差は前後ほぼ同程度。
+  7曲／3音色／4弾き方／seek80・100・120%／solo休みと復帰／未採譜guide／STOP／RESET／cached offline／390px、script error・予約落ち0。
+  bank・DSP・amp・room・7曲の音符行を保持。Listen台帳と既存manual、測定記録とcache tupleを同期。音声・依存・公開先の追加なし。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（作業前のbaseline。候補commit前と最新main同期後の最終HEADで全体gate・audit・差分レビューを確認してからpush/mergeする。実行ログとHEAD・5repo状態の証跡はignored localに保存。）
+- backlog    : BL-050を前進。奏法の推定、和音と採譜漏れは継続
+- next       : BL-050 — guitar多声音高／和音と採譜漏れを原音全体の根拠付きで補正
+- blockers   : 実iPhoneの負荷と本人の耳の最終判定は未評価。数値を人の試聴や原曲一致の保証と扱わない
+
 ## 2026-10-02 — 最新main上で棚切替とV4全文編集を再検証 (PR435)
 
 - agent      : Codex（担当worktree、独立エージェントによるレビューPASS）
@@ -36,6 +80,48 @@
 - blockers   : Afterimage実データは未取得。Library/DriveのWindows保存障害を再試行せず、架空の曲・コード・棚項目は追加していない。
   当該曲の15%・256小節・7720イベント・終端・権利・本人の聴感・実iPhoneは未検証。既存曲と明示した生成fixtureの検査を当該曲の検証として扱わない。
   BL-049/050/051のclaim、他worktree、保留中private-live relay、sister repoは自分の差分で変更しない。認証・ACL・install・新しい公開先の変更なし。
+
+## 2026-10-02 — Claude/Codexの現行引継ぎを同期後の全体gateへ揃える候補
+
+- agent      : Codex（専用worktree、独立26件PASS・追加ブロッカーなし）
+- goal       : 担当入口によって完了証拠が変わる旧手順を予防し、事故観測は断定しない
+- repos      : Music
+- implemented: feature/collab-final-head-gate。現役COLLABの作業後・衝突解消・単独運用・引継ぎを、最新main同期後の同じ最終HEADでの全体gateと必要レビューへ揃える。
+  個別4checkは全体gateの代用にせず、--allow-skipの0 BADを全通過と混同しない。
+  COLLABを既存doc-currencyの監視対象に追加し、既存検査内の正常例4件・負例19件で全体gate省略・検証後rebase・HEAD証跡省略・失敗mask・検証後の候補変更等をofflineで検出する。
+  文書検査が実際のgate実行を証明するとは扱わず、候補commit後に最終HEAD・対象repo状態・ログ・独立レビューを照合する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（commit前の全体検証。独立指摘修正後のdocgateとsyntaxも再検証、audit 0 BAD / 0 WARN）
+- backlog    : none
+- next       : none
+- blockers   : 候補commit後の同じ最終HEADでも全体gateを実行し、HEAD・対象repo状態・レビューとの一致を確認してからpush/PR/mergeする。AGENTS固有境界、他担当・既存claim、Afterimage/PR435、音声/runtime/CI、認証・公開先・課金は変更しない。
+
+## 2026-10-02 — stack-check予防修正の公開・merge承認を受領
+
+- agent      : Codex（専用worktree、独立再レビューで必須修正なし）
+- goal       : 本人の明示承認に従い、今回の予防修正だけをdraft PR経由で検証・mergeする
+- repos      : Music
+- shipped    : feature/stack-check-timeouts。実行コードは検証済み1e369c0のまま、外側watchdogの検査上限＋20秒という追加猶予の説明を正確にした。
+  最新mainは42b67afで、他worktreeのtimeout範囲と競合なし。13 fixture・独立5 fixtureの実行コードhashは一致。
+  実POSIX・OSからのCtrl+C配送は未検証であり、repoの明示必須検証には含まれない。未検証範囲をPRへ明記する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（実行コードが同一の候補、audit 0 BAD / 0 WARN。説明の修正後も関連gateを確認）
+- backlog    : none
+- next       : none
+- blockers   : push・PR・mergeの保留指示は本人の明示承認により解除。merge前にremote head・mergeable/clean・必須checkを確認する。Afterimage/PR435、音声、他担当branch、CI設定・公開先・認証・課金は変更しない。
+
+## 2026-10-02 — stack-checkの期限と即時進捗を追加するローカル候補
+
+- agent      : Codex（専用worktree、独立レビュー5件PASS・追加ブロッカーなし）
+- goal       : 無期限待ちの構造を予防し、検査の期限・進捗・終了診断をrepo内に持たせる
+- repos      : Music
+- implemented: feature/stack-check-timeouts。通常検査120秒・pytest600秒・事前確認15秒、整数1000〜1800000msのoverride、即時start/end/elapsedを追加。
+  Windows 10以降のJOB_LIST属性で生成と同時に非継承Jobへ所属させ、停止状態から実行。全プロセス終了とclose待ちを別々に制限し、確認不能時は残りを起動しない。出力は末尾32KiB/streamを保持。
+  既存CLI・自動発見・PASS/FAIL/SKIP summaryと厳格なskip契約を維持。短いfixture13件・独立fixture5件PASS。
+  既存5repoの39正常検査もPASS。最長はnamima pytestの193730msで、通常検査の最長はcheck-jsの9015ms（helper起動時間を含む）。
+  実際のMusic停止事故を観測したという主張はしない。構造上の予防だけ。push・PR作成は本人指示で保留する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（42b67afベースの今回の候補で実行、audit 0 BAD / 0 WARN）
+- backlog    : none
+- next       : none
+- blockers   : push・PR作成は本人指示で保留。実POSIXカーネルとCtrl+C配送は未検証。BL-049/050/051や他worktree、Afterimage、live audio、sister repo、CI、課金操作は変更していない。
 
 ## 2026-10-02 — ARCB採譜の空白への余計な発音を停止 (v410 / BL-050)
 

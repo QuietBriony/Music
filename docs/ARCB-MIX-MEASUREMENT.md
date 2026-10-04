@@ -1,4 +1,89 @@
-# ARCB — 合奏の測定と補正（現行 v410）
+# ARCB — 合奏の測定と補正（現行 v412）
+
+## 原音からギターの和音・音域を補正（v412 / 2026-10-03）
+
+従来のguitar_lineはbass由来の根音で、ロックの和音は根音・5度・octaveから作っていた。
+既存7曲のstereo otherをCPUで解析し、弦の根音と音域をギター側の持続する響きから推定する。
+左右を波形のまま足さず、harmonic CQTの振幅を平均して位相キャンセルを避ける。
+小節を3区間に分け、少なくとも2区間で同じpitch classが出て、候補間の差と従来音符からの改善が明確な小節だけ採用。
+三度はpower chordより明確な根拠が出た3小節だけ追加。major/minorを曲名・keyから決め打ちしない。
+
+887個の音符のある小節のうち234小節、5,426打点のうち1,402打点に和音を採用。
+未採用の小節は従来の音符、空白は余韻を保つ。全ての元の打点・duration・velocity、bass/drumsと時計は同じ。
+original eventsとotherのSHA256を保存して検査し、再生時は最大3音の小さい配列のみを読む。
+解析やモデルはブラウザへ持ち込まない。bank 52音／11,826,560 bytes、amp 7／room 26 node、予約128／8秒のまま。
+採用率やtemplate fitは採譜の正答率ではない。otherには他楽器と分離漏れがあり、リフの途中変化・octave・運指は未確定。
+
+実START／seek／post-master RECからギターsoloを7区間、各約10秒取得。
+同じv412の補正配列を無効にした基準と、有効な候補を比較し、基準のharmonic sourceが0であることを確認。
+両方とも100%／crunch／ロック／room35%、guideと他パートOFF。
+推定に使ったCQTやchord templateとは別に、線形STFT（FFT 16,384、hop 4,096、90–2,400 Hz）のstereo平均powerを12音へ集計。
+各RECの実content時刻に対応するotherと、正規化したpitch class分布のcosine距離を比較する。小さいほど近い。
+
+| seek区間 | 従来の和音 | 補正あり |
+|---|---:|---:|
+| electric-sheep-16 | 0.442 | 0.314 |
+| hey-16 | 0.695 | 0.679 |
+| human-fly-16 | 0.541 | 0.21 |
+| i-got-a-feeling-16 | 0.606 | 0.596 |
+| sister-50 | 0.606 | 0.456 |
+| tabasco-28 | 0.528 | 0.404 |
+| under-the-moon-16 | 0.206 | 0.182 |
+
+補正sourceが実際に出た6区間では分布の差が縮小。Heyのこの区間は補正source 0の対照で、微小差は録音窓の差を含む。
+これは音色・倍音にも依存する周波数分布の診断で、根音・octave・和音の正答率、人の音質評価、全採用小節の合格ではない。
+既知のA／F# sineと逆位相stereoで測定器を確認。mono和のキャンセルを数値へ持ち込まない。
+
+合奏も修正前v411／後v412の実RECを原音drums+bass+other再結合と比較。
+主5帯域の正規化差はElectric Sheep 3.78→3.38 dB、Human Fly 3.44→3.43、Hey 5.00→4.97、Sister 2.90→2.73。
+quietは前後ほぼ同じ。予約落ち0、clipなし。音高だけを合わせて音量や帯域を崩していないかも確認した。
+7曲、3音色、4弾き方、seek80／100／120%、muteと復帰、休みsolo、未採譜guide、STOP、RESET、cached offline、390pxを検査。
+実iPhone負荷と主観的な最終音質は未評価。
+[採用数・実録音hash・比較数値・browser検証](arcb-harmony-measurement-20261003.json)。音声はignored localのみ。
+
+```powershell
+python -X utf8 scripts/measure-guitar-harmony.py --all --out output/playwright/harmony-analysis.json
+python -X utf8 scripts/measure-guitar-output.py --captures output/playwright/mix-calibration --out output/playwright/harmony-guitar-report.json
+```
+
+## ロックの上下ストロークとミュート（v411 / 2026-10-03）
+
+本人の参考画像は「物理シミュレーションのカッティング、ストロークのアップダウン」という説明。
+画像に音声はないため、その演奏の音色や手の動きを測定したとは扱わない。
+既存の物理弦bankとampを使い、採譜の時刻・強弱を保ったまま弦を低→高／高→低へ横切る。
+方向は曲全体の8分／密な16分gridから決め、小節境界と途中seekでも保つ。
+速く弱い非アクセントの刻みだけをロックのミュート候補とし、短い検出durationだけで通常コードを切らない。
+「弾き方」でロック／響かせる／カッティング／パームミュートを選択できる。奏法は音符からの推定。
+
+カッティングは開いた弦の和音を共通の短いreleaseで切り、パームミュートは既存の損失の大きい弦bufferを使う。
+音色だけの差し替えではなく、方向・弦を横切る時間・音を止める動作の区別を追加した。
+bank／DSP／amp／roomと7曲の音符行は同じ。52音／11,826,560 bytes、amp 7 node／room 26 node、予約128／8秒を保つ。
+ベース・ドラムの余韻、空白小節、未採譜guide、原音／legacyの挙動も保持。
+
+実ブラウザのOfflineAudioContextで同じC3/G3/C4和音を、既存弦PCM→production crunch ampでrender。
+48 kHz mono、attack 0.05秒、gate 0.12秒、弦間7 ms、velocity 0.8、roomなし。
+振幅0.0001を最後に超えた時刻は、downの響かせる音2.007秒／cut 0.212秒／palm 0.230秒。
+0.3–0.5秒のRMSはopen 0.07286、cut／palmは0。upは弦順が反転しopenのRMS 0.07494。
+これは聴覚のT60や原音の奏法正答率ではない。共通releaseと異なる実波形を確認した値。
+通常再生の4弾き方でも対応するsourceが増加し、予約落ち0。
+
+同日の修正前v410／後v411を実post-master RECし、原音drums+bass+other再結合と比較。
+100%／crunch／room35%／guideとvocals OFF／再構築off、seekから約1.82秒後の10秒。
+録音は48 kHz stereo PCM16。既存6帯域の正規化power差と、音量・dynamicsを別々に評価する。
+
+| seek区間 | v410 帯域差 dB | v411 帯域差 dB | v411 LUFS | v411 true peak dBTP |
+|---|---:|---:|---:|---:|
+| electric-sheep-16 | 3.86 | 3.67 | -15.8 | -4.7 |
+| human-fly-16 | 3.66 | 3.54 | -17.8 | -5.8 |
+| hey-16 | 4.94 | 5.00 | -18.0 | -6.4 |
+| sister-50 | 2.93 | 2.91 | -18.4 | -6.4 |
+
+主5帯域の差はおおむね同程度。全曲の品質改善率として平均しない。
+Heyのquiet 0.34秒は前後同じで、分離原音との違いと採譜漏れは残る。
+原音に含まれる分離漏れ、録音開始時刻の差、推定和音の限界があり、完全再現とは扱わない。
+7曲のSTART、3音色、seek80／100／120%、全muteと復帰、休みsolo、未採譜guide、RESET、cached offline、390pxを確認。
+STOP 2秒後peak 0.00000410／pending 0、全script error 0／予約落ち0。
+[数値・録音hash・source hash・実ブラウザ検証](arcb-guitar-measurement-20261003.json)。音声はignored localのみ。
 
 ## 空白小節への自動伴奏を停止（v410 / 2026-10-02）
 

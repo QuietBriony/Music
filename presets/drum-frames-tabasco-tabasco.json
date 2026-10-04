@@ -1711,7 +1711,50 @@
     49,
     0.16
    ]
-  ]
+  ],
+  "harmonic_voicings": {
+   "format": "bar-voicings-v1",
+   "method": "stereo sustained CQT harmonic templates; confidence-gated power/triad candidates",
+   "events_count": 85,
+   "events_sha256": "230410031621aa28a66e3fc44b6ed1be9173f98ee31601ceded2836f3a9e3a63",
+   "stem_sha256": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2",
+   "bpm_fit": 132.51,
+   "bars": [
+    [
+     14,
+     [
+      43,
+      50,
+      55
+     ],
+     0.56087,
+     0.16435,
+     1.0
+    ],
+    [
+     16,
+     [
+      59,
+      66,
+      71
+     ],
+     0.66601,
+     0.22209,
+     1.0
+    ],
+    [
+     17,
+     [
+      48,
+      55,
+      60
+     ],
+     0.70682,
+     0.22565,
+     1.0
+    ]
+   ]
+  }
  },
  "performance_duration_s": 44.722
 }

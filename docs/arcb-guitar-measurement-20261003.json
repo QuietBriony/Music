@@ -1,0 +1,2592 @@
+{
+  "scope": "Actual post-master instrumental mix; original drums+bass+other recombined by the app. Melody guide excluded in both comparisons.",
+  "frequency_bands_hz": [
+    [
+      32,
+      80
+    ],
+    [
+      80,
+      250
+    ],
+    [
+      250,
+      1000
+    ],
+    [
+      1000,
+      4000
+    ],
+    [
+      4000,
+      12000
+    ],
+    [
+      12000,
+      16000
+    ]
+  ],
+  "baseline_phase": "rock-before",
+  "candidate_phase": "rock-after",
+  "caveats": [
+    "Relative band powers are level-normalized; dynamics and level are separate measurements.",
+    "Stem bleed is not instrument ground truth. Recombining three stems can retain vocal leakage and separation artifacts.",
+    "REC/seek times have small encoding and control delays; this is not sample-aligned waveform fidelity.",
+    "A quiet interval can be musical: check against the original before calling it a dropout.",
+    "No listening-quality score, pitch/chord accuracy claim, or physical iPhone measurement.",
+    "Up/down and automatic rock muting are interpretations of detected notes, not measured picking-hand movements. The supplied still screenshot has no reference audio.",
+    "The isolated test renders existing physical PCM through the production amp with no room; its silence threshold is amplitude 0.0001 and is not perceptual T60.",
+    "No added score attacks, score pitch edits, DSP/amp changes, audio assets or per-voice effects in this release."
+  ],
+  "clips": [
+    {
+      "clip": "electric-sheep-16",
+      "baseline": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.563751,
+        "rms": 0.131629,
+        "crest_db": 12.63,
+        "active_rms_p95_p10_db": 2.24,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.187006,
+          0.039981,
+          0.673914,
+          0.07929,
+          0.015074,
+          0.004735
+        ],
+        "sha256": "4ec08efe143543c634298673c82094120be9969bea277bbbd2a77f7da071942b",
+        "app": "br-243-score-rests",
+        "bpm": 129.2,
+        "capture_content_start_s": 17.829333333333334,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -15.3,
+        "true_peak_dbtp": -4.9
+      },
+      "candidate": {
+        "duration_s": 10.14,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.582214,
+        "rms": 0.123723,
+        "crest_db": 13.45,
+        "active_rms_p95_p10_db": 4.36,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.227454,
+          0.039072,
+          0.621935,
+          0.085101,
+          0.020065,
+          0.006373
+        ],
+        "sha256": "a2374ac6fb967d3e8914d497495fa1c24a5b6491c17f1f83b362f0cce178e4c8",
+        "app": "br-244-rock-strokes",
+        "bpm": 129.2,
+        "capture_content_start_s": 17.829333333333334,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -15.8,
+        "true_peak_dbtp": -4.7
+      },
+      "reference": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.433624,
+        "rms": 0.091479,
+        "crest_db": 13.52,
+        "active_rms_p95_p10_db": 4.92,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.12234,
+          0.055286,
+          0.442741,
+          0.22881,
+          0.138072,
+          0.012751
+        ],
+        "sha256": "dac6079dca9b993f3a312e2455581f431afd0f598bc08688a46f2070bad05b14",
+        "app": "br-243-score-rests",
+        "bpm": 129,
+        "capture_content_start_s": 17.949333333333332,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -17.1,
+        "true_peak_dbtp": -7.2
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          1.84,
+          -1.41,
+          1.82,
+          -4.6,
+          -9.62,
+          -4.3
+        ],
+        "core_band_mean_absolute_difference_db": 3.86,
+        "level_difference_db": 3.16
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          2.69,
+          -1.51,
+          1.48,
+          -4.3,
+          -8.38,
+          -3.01
+        ],
+        "core_band_mean_absolute_difference_db": 3.67,
+        "level_difference_db": 2.62
+      },
+      "balance_comparison_usable": true
+    },
+    {
+      "clip": "hey-16",
+      "baseline": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.524597,
+        "rms": 0.105398,
+        "crest_db": 13.94,
+        "active_rms_p95_p10_db": 6.09,
+        "quiet_fraction": 0.0339,
+        "longest_quiet_s": 0.34,
+        "band_power_fraction": [
+          0.412203,
+          0.110009,
+          0.387415,
+          0.089844,
+          0.000476,
+          5.3e-05
+        ],
+        "sha256": "4c3a033e2b292ec5cd028a5b706b3294827f5db2e29dc530bcd9ed63b877f7cc",
+        "app": "br-243-score-rests",
+        "bpm": 120.19,
+        "capture_content_start_s": 17.821333333333335,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -18.0,
+        "true_peak_dbtp": -5.6
+      },
+      "candidate": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.479523,
+        "rms": 0.106986,
+        "crest_db": 13.03,
+        "active_rms_p95_p10_db": 5.64,
+        "quiet_fraction": 0.0339,
+        "longest_quiet_s": 0.34,
+        "band_power_fraction": [
+          0.410772,
+          0.096459,
+          0.414205,
+          0.077998,
+          0.000508,
+          5.7e-05
+        ],
+        "sha256": "cf6a1cfe1c1e931770262026dedf66ff80b9747e7738c598894eac7ef345d010",
+        "app": "br-244-rock-strokes",
+        "bpm": 120.19,
+        "capture_content_start_s": 17.818666666666665,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -18.0,
+        "true_peak_dbtp": -6.4
+      },
+      "reference": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.439392,
+        "rms": 0.06011,
+        "crest_db": 17.28,
+        "active_rms_p95_p10_db": 15.21,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.41856,
+          0.289473,
+          0.238743,
+          0.026659,
+          0.020307,
+          0.006259
+        ],
+        "sha256": "8d58a6c4964a7416dbdb5c2ece2dce866ef4c3988a79df8121104207c8d806b9",
+        "app": "br-243-score-rests",
+        "bpm": 123.00000000000001,
+        "capture_content_start_s": 18.010666666666665,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -23.2,
+        "true_peak_dbtp": -7.1
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          -0.07,
+          -4.2,
+          2.1,
+          5.28,
+          -13.08,
+          -7.97
+        ],
+        "core_band_mean_absolute_difference_db": 4.94,
+        "level_difference_db": 4.88
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          -0.08,
+          -4.77,
+          2.39,
+          4.66,
+          -13.08,
+          -7.97
+        ],
+        "core_band_mean_absolute_difference_db": 5.0,
+        "level_difference_db": 5.01
+      },
+      "balance_comparison_usable": true
+    },
+    {
+      "clip": "human-fly-16",
+      "baseline": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.512054,
+        "rms": 0.108868,
+        "crest_db": 13.45,
+        "active_rms_p95_p10_db": 5.52,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.465978,
+          0.089012,
+          0.332368,
+          0.100285,
+          0.009488,
+          0.002869
+        ],
+        "sha256": "d36ef62c3d4ade7799d23f152f6a9b5c351c9a656e6aed2feb68bcd38f6bc807",
+        "app": "br-243-score-rests",
+        "bpm": 117.44999999999999,
+        "capture_content_start_s": 17.823999999999998,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -17.8,
+        "true_peak_dbtp": -5.8
+      },
+      "candidate": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.515503,
+        "rms": 0.108776,
+        "crest_db": 13.51,
+        "active_rms_p95_p10_db": 5.35,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.463654,
+          0.092076,
+          0.335298,
+          0.095961,
+          0.009954,
+          0.003057
+        ],
+        "sha256": "e81152e0fa3e3b25e0078d74570a3f6c41913ac1f2d05d247c3e15bded124a7f",
+        "app": "br-244-rock-strokes",
+        "bpm": 117.44999999999999,
+        "capture_content_start_s": 17.818666666666665,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -17.8,
+        "true_peak_dbtp": -5.8
+      },
+      "reference": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.434265,
+        "rms": 0.097031,
+        "crest_db": 13.02,
+        "active_rms_p95_p10_db": 8.3,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.25853,
+          0.115335,
+          0.498162,
+          0.037149,
+          0.067771,
+          0.023053
+        ],
+        "sha256": "066d190e2bc4d103b0e8694f8facdef57c4dc8cf5d557472867787d94480d37f",
+        "app": "br-243-score-rests",
+        "bpm": 117.00000000000001,
+        "capture_content_start_s": 17.978666666666665,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -17.9,
+        "true_peak_dbtp": -7.2
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          2.56,
+          -1.13,
+          -1.76,
+          4.31,
+          -8.54,
+          -9.05
+        ],
+        "core_band_mean_absolute_difference_db": 3.66,
+        "level_difference_db": 1.0
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          2.54,
+          -0.98,
+          -1.72,
+          4.12,
+          -8.33,
+          -8.77
+        ],
+        "core_band_mean_absolute_difference_db": 3.54,
+        "level_difference_db": 0.99
+      },
+      "balance_comparison_usable": true
+    },
+    {
+      "clip": "sister-50",
+      "baseline": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.455872,
+        "rms": 0.075292,
+        "crest_db": 15.64,
+        "active_rms_p95_p10_db": 29.02,
+        "quiet_fraction": 0.004,
+        "longest_quiet_s": 0.04,
+        "band_power_fraction": [
+          0.004809,
+          0.097287,
+          0.738711,
+          0.158728,
+          0.000463,
+          2e-06
+        ],
+        "sha256": "a4ab2b2d57fe67bc48ba7057e1c1899929078513168e612c876dc399c47610f7",
+        "app": "br-243-score-rests",
+        "bpm": 117.44999999999999,
+        "capture_content_start_s": 51.821333333333335,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -18.3,
+        "true_peak_dbtp": -6.8
+      },
+      "candidate": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.47934,
+        "rms": 0.074224,
+        "crest_db": 16.2,
+        "active_rms_p95_p10_db": 29.87,
+        "quiet_fraction": 0.012,
+        "longest_quiet_s": 0.12,
+        "band_power_fraction": [
+          0.004193,
+          0.090892,
+          0.756083,
+          0.148305,
+          0.000524,
+          2e-06
+        ],
+        "sha256": "692d62cbe72b3c780e1d7e074cf25dfdec82f92f90ccb05f8bd3e424c61cccc6",
+        "app": "br-244-rock-strokes",
+        "bpm": 117.44999999999999,
+        "capture_content_start_s": 51.85066666666667,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -18.4,
+        "true_peak_dbtp": -6.4
+      },
+      "reference": {
+        "duration_s": 10.02,
+        "channels": 2,
+        "sample_rate": 48000,
+        "peak": 0.269714,
+        "rms": 0.046674,
+        "crest_db": 15.24,
+        "active_rms_p95_p10_db": 19.03,
+        "quiet_fraction": 0.0,
+        "longest_quiet_s": 0.0,
+        "band_power_fraction": [
+          0.009155,
+          0.034389,
+          0.919218,
+          0.036356,
+          0.000857,
+          2.4e-05
+        ],
+        "sha256": "20014a7d18346a4659058f817849d86b636dbbc8605822de9f50dabb06297890",
+        "app": "br-243-score-rests",
+        "bpm": 117.00000000000001,
+        "capture_content_start_s": 51.99466666666667,
+        "dropped_hits": 0,
+        "segment_integrated_lufs": -22.8,
+        "true_peak_dbtp": -11.4
+      },
+      "baseline_difference": {
+        "band_difference_db": [
+          -2.8,
+          4.52,
+          -0.95,
+          6.4,
+          0.0,
+          0.0
+        ],
+        "core_band_mean_absolute_difference_db": 2.93,
+        "level_difference_db": 4.15
+      },
+      "candidate_difference": {
+        "band_difference_db": [
+          -3.39,
+          4.22,
+          -0.85,
+          6.11,
+          0.0,
+          0.0
+        ],
+        "core_band_mean_absolute_difference_db": 2.91,
+        "level_difference_db": 4.03
+      },
+      "balance_comparison_usable": true
+    }
+  ],
+  "release": "v411",
+  "app": "br-244-rock-strokes",
+  "date": "2026-10-03",
+  "articulation": {
+    "isolated": [
+      {
+        "id": "rock-articulation-open-down",
+        "sampleRate": 48000,
+        "channels": 1,
+        "frames": 144000,
+        "technique": "open",
+        "upstroke": false,
+        "tone": "crunch",
+        "room": 0,
+        "notes": [
+          48,
+          55,
+          60
+        ],
+        "attack": 0.05,
+        "gate": 0.12,
+        "sweep": 0.007,
+        "peak": 0.34997546672821045,
+        "maxJump": 0.10429005324840546,
+        "lastAbove": 2.0073333333333334,
+        "rmsAttack": 0.14795605818153967,
+        "rmsRelease": 0.11392672767262031,
+        "rmsBody": 0.0728559376706816,
+        "rmsTail": 0.025906072252934752,
+        "scheduled": {
+          "pending": 3,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 0,
+          "played": 3,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 0.064,
+              "key": "guitar:61",
+              "rate": 0.9438743126816935,
+              "velocity": 0.7040000000000001,
+              "technique": "open",
+              "upstroke": false
+            }
+          },
+          "guitarStrokes": {
+            "open": 1,
+            "palm": 0,
+            "cut": 0,
+            "up": 0,
+            "down": 1
+          }
+        }
+      },
+      {
+        "id": "rock-articulation-open-up",
+        "sampleRate": 48000,
+        "channels": 1,
+        "frames": 144000,
+        "technique": "open",
+        "upstroke": true,
+        "tone": "crunch",
+        "room": 0,
+        "notes": [
+          48,
+          55,
+          60
+        ],
+        "attack": 0.05,
+        "gate": 0.12,
+        "sweep": 0.007,
+        "peak": 0.402275949716568,
+        "maxJump": 0.10110258869826794,
+        "lastAbove": 2.0229583333333334,
+        "rmsAttack": 0.15632969481161904,
+        "rmsRelease": 0.11992898907119987,
+        "rmsBody": 0.07493755669244208,
+        "rmsTail": 0.025973834442442376,
+        "scheduled": {
+          "pending": 3,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 0,
+          "played": 3,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 0.064,
+              "key": "guitar:49",
+              "rate": 0.9438743126816935,
+              "velocity": 0.7040000000000001,
+              "technique": "open",
+              "upstroke": true
+            }
+          },
+          "guitarStrokes": {
+            "open": 1,
+            "palm": 0,
+            "cut": 0,
+            "up": 1,
+            "down": 0
+          }
+        }
+      },
+      {
+        "id": "rock-articulation-cut-down",
+        "sampleRate": 48000,
+        "channels": 1,
+        "frames": 144000,
+        "technique": "cut",
+        "upstroke": false,
+        "tone": "crunch",
+        "room": 0,
+        "notes": [
+          48,
+          55,
+          60
+        ],
+        "attack": 0.05,
+        "gate": 0.12,
+        "sweep": 0.007,
+        "peak": 0.34997546672821045,
+        "maxJump": 0.10429027676582336,
+        "lastAbove": 0.2123125,
+        "rmsAttack": 0.1479562410911451,
+        "rmsRelease": 0.043411120882186335,
+        "rmsBody": 0,
+        "rmsTail": 0,
+        "scheduled": {
+          "pending": 3,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 0,
+          "played": 3,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 0.064,
+              "key": "guitar:61",
+              "rate": 0.9438743126816935,
+              "velocity": 0.7040000000000001,
+              "technique": "cut",
+              "upstroke": false
+            }
+          },
+          "guitarStrokes": {
+            "open": 0,
+            "palm": 0,
+            "cut": 1,
+            "up": 0,
+            "down": 1
+          }
+        }
+      },
+      {
+        "id": "rock-articulation-palm-down",
+        "sampleRate": 48000,
+        "channels": 1,
+        "frames": 144000,
+        "technique": "palm",
+        "upstroke": false,
+        "tone": "crunch",
+        "room": 0,
+        "notes": [
+          48,
+          55,
+          60
+        ],
+        "attack": 0.05,
+        "gate": 0.12,
+        "sweep": 0.007,
+        "peak": 0.326659232378006,
+        "maxJump": 0.08572283573448658,
+        "lastAbove": 0.23041666666666666,
+        "rmsAttack": 0.09321302483926149,
+        "rmsRelease": 0.002320401688483419,
+        "rmsBody": 0,
+        "rmsTail": 0,
+        "scheduled": {
+          "pending": 3,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 0,
+          "played": 3,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 0.064,
+              "key": "palm:61",
+              "rate": 0.9438743126816935,
+              "velocity": 0.7040000000000001,
+              "technique": "palm",
+              "upstroke": false
+            }
+          },
+          "guitarStrokes": {
+            "open": 0,
+            "palm": 1,
+            "cut": 0,
+            "up": 0,
+            "down": 1
+          }
+        }
+      }
+    ],
+    "styles": [
+      {
+        "style": "rock",
+        "before": {
+          "open": 5,
+          "palm": 0,
+          "cut": 0,
+          "up": 4,
+          "down": 1
+        },
+        "after": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "rock",
+          "prepareMs": 5,
+          "pending": 29,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 69,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 6.824518518518521,
+              "key": "guitar:52",
+              "rate": 1.0594630943592953,
+              "velocity": 0.8623999999999999,
+              "technique": "open",
+              "upstroke": true
+            },
+            "bass": {
+              "at": 6.787530012771394,
+              "key": "bass:42",
+              "rate": 0.9438743126816935,
+              "velocity": 0.16
+            },
+            "drums": {
+              "at": 6.670033205619415,
+              "key": "drums:hat",
+              "rate": 1,
+              "velocity": 0.16
+            }
+          },
+          "guitarStrokes": {
+            "open": 20,
+            "palm": 1,
+            "cut": 0,
+            "up": 14,
+            "down": 7
+          }
+        }
+      },
+      {
+        "style": "open",
+        "before": {
+          "open": 20,
+          "palm": 1,
+          "cut": 0,
+          "up": 14,
+          "down": 7
+        },
+        "after": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "open",
+          "prepareMs": 5,
+          "pending": 26,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 112,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 10.72490166028097,
+              "key": "guitar:55",
+              "rate": 1,
+              "velocity": 0.8623999999999999,
+              "technique": "open",
+              "upstroke": true
+            },
+            "bass": {
+              "at": 10.699407407407408,
+              "key": "bass:42",
+              "rate": 1.0594630943592953,
+              "velocity": 0.16
+            },
+            "drums": {
+              "at": 10.920352490421458,
+              "key": "drums:kick",
+              "rate": 1,
+              "velocity": 0.99
+            }
+          },
+          "guitarStrokes": {
+            "open": 29,
+            "palm": 1,
+            "cut": 0,
+            "up": 18,
+            "down": 12
+          }
+        }
+      },
+      {
+        "style": "cut",
+        "before": {
+          "open": 29,
+          "palm": 1,
+          "cut": 0,
+          "up": 18,
+          "down": 12
+        },
+        "after": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "cut",
+          "prepareMs": 5,
+          "pending": 23,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 162,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 14.861218390804598,
+              "key": "guitar:52",
+              "rate": 1.0594630943592953,
+              "velocity": 0.744128,
+              "technique": "cut",
+              "upstroke": true
+            },
+            "bass": {
+              "at": 13.602344827586208,
+              "key": "bass:42",
+              "rate": 1.0594630943592953,
+              "velocity": 0.61
+            },
+            "drums": {
+              "at": 15.122140485312901,
+              "key": "drums:kick",
+              "rate": 1,
+              "velocity": 0.95
+            }
+          },
+          "guitarStrokes": {
+            "open": 29,
+            "palm": 1,
+            "cut": 10,
+            "up": 24,
+            "down": 16
+          }
+        }
+      },
+      {
+        "style": "palm",
+        "before": {
+          "open": 29,
+          "palm": 1,
+          "cut": 10,
+          "up": 24,
+          "down": 16
+        },
+        "after": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "palm",
+          "prepareMs": 5,
+          "pending": 5,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 186,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 17.171563218390805,
+              "key": "palm:64",
+              "rate": 1,
+              "velocity": 0.6512,
+              "technique": "palm",
+              "upstroke": false
+            },
+            "bass": {
+              "at": 13.602344827586208,
+              "key": "bass:42",
+              "rate": 1.0594630943592953,
+              "velocity": 0.61
+            },
+            "drums": {
+              "at": 17.154068965517244,
+              "key": "drums:kick",
+              "rate": 1,
+              "velocity": 1
+            }
+          },
+          "guitarStrokes": {
+            "open": 29,
+            "palm": 7,
+            "cut": 10,
+            "up": 26,
+            "down": 20
+          }
+        }
+      }
+    ],
+    "errors": []
+  },
+  "validation": {
+    "validate": {
+      "results": [
+        {
+          "rate": 100,
+          "second": 64,
+          "probe": {
+            "peak": 0.3241812586784363,
+            "rms": 0.08485708384369012,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 47,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 69,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 4.175810983397191,
+                  "key": "guitar:55",
+                  "rate": 1,
+                  "velocity": 0.6005119999999999,
+                  "technique": "open",
+                  "upstroke": true
+                },
+                "melody": {
+                  "at": 4.534735632183908,
+                  "key": "guitar:67",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.96
+                },
+                "drums": {
+                  "at": 4.417238825031929,
+                  "key": "drums:hat",
+                  "rate": 1,
+                  "velocity": 0.3
+                },
+                "bass": {
+                  "at": 4.326561941251597,
+                  "key": "bass:30",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.72
+                }
+              },
+              "guitarStrokes": {
+                "open": 11,
+                "palm": 3,
+                "cut": 0,
+                "up": 11,
+                "down": 3
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 65.95733333333334,
+              "barCount": 32,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 117.44999999999999
+          },
+          "next": {
+            "peak": 0.3743989169597626,
+            "rms": 0.10608037654340963,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 22,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 111,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 6.543627075351214,
+                  "key": "guitar:67",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.48224000000000006,
+                  "technique": "open",
+                  "upstroke": false
+                },
+                "melody": {
+                  "at": 6.590929757343551,
+                  "key": "guitar:70",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.9
+                },
+                "drums": {
+                  "at": 6.529627075351214,
+                  "key": "drums:kick",
+                  "rate": 1,
+                  "velocity": 0.37
+                },
+                "bass": {
+                  "at": 6.486204342273308,
+                  "key": "bass:33",
+                  "rate": 1,
+                  "velocity": 0.79
+                }
+              },
+              "guitarStrokes": {
+                "open": 17,
+                "palm": 4,
+                "cut": 0,
+                "up": 14,
+                "down": 7
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 68.8,
+              "barCount": 33,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 117.44999999999999
+          }
+        },
+        {
+          "rate": 80,
+          "second": 24,
+          "probe": {
+            "peak": 0.3245183229446411,
+            "rms": 0.11023374623590118,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 38,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 166,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 9.734187313750532,
+                  "key": "guitar:64",
+                  "rate": 1,
+                  "velocity": 0.37241599999999997,
+                  "technique": "open",
+                  "upstroke": false
+                },
+                "melody": {
+                  "at": 9.37376330353342,
+                  "key": "guitar:67",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.95
+                },
+                "drums": {
+                  "at": 9.705819497658577,
+                  "key": "drums:snare",
+                  "rate": 1,
+                  "velocity": 0.41
+                },
+                "bass": {
+                  "at": 9.431234567901233,
+                  "key": "bass:30",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.74
+                }
+              },
+              "guitarStrokes": {
+                "open": 25,
+                "palm": 4,
+                "cut": 0,
+                "up": 17,
+                "down": 12
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 25.536,
+              "barCount": 13,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 93.96000000000001
+          },
+          "next": {
+            "peak": 0.42588239908218384,
+            "rms": 0.11116734239092912,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 25,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 202,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 11.940445295870582,
+                  "key": "guitar:55",
+                  "rate": 1,
+                  "velocity": 0.7272319999999999,
+                  "technique": "open",
+                  "upstroke": true
+                },
+                "melody": {
+                  "at": 12.073316304810557,
+                  "key": "guitar:64",
+                  "rate": 1,
+                  "velocity": 0.95
+                },
+                "drums": {
+                  "at": 12.26009791400596,
+                  "key": "drums:snare",
+                  "rate": 1,
+                  "velocity": 0.72
+                },
+                "bass": {
+                  "at": 11.99988080034057,
+                  "key": "bass:30",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.67
+                }
+              },
+              "guitarStrokes": {
+                "open": 30,
+                "palm": 4,
+                "cut": 0,
+                "up": 21,
+                "down": 13
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 27.8016,
+              "barCount": 14,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 93.96000000000001
+          }
+        },
+        {
+          "rate": 120,
+          "second": 64,
+          "probe": {
+            "peak": 0.34661853313446045,
+            "rms": 0.11212016826117097,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 41,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 249,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 14.336286930608766,
+                  "key": "guitar:55",
+                  "rate": 1,
+                  "velocity": 0.6005119999999999,
+                  "technique": "open",
+                  "upstroke": true
+                },
+                "melody": {
+                  "at": 14.633057471264365,
+                  "key": "guitar:67",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.96
+                },
+                "drums": {
+                  "at": 14.535143465304381,
+                  "key": "drums:hat",
+                  "rate": 1,
+                  "velocity": 0.3
+                },
+                "bass": {
+                  "at": 14.459579395487438,
+                  "key": "bass:30",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.72
+                }
+              },
+              "guitarStrokes": {
+                "open": 36,
+                "palm": 7,
+                "cut": 0,
+                "up": 28,
+                "down": 15
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 66.3168,
+              "barCount": 32,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 140.94
+          },
+          "next": {
+            "peak": 0.33082062005996704,
+            "rms": 0.07593609894087544,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 46,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 331,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 17.63556321839081,
+                  "key": "guitar:67",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.6005119999999999,
+                  "technique": "open",
+                  "upstroke": false
+                },
+                "melody": {
+                  "at": 17.149021711366544,
+                  "key": "guitar:79",
+                  "rate": 1,
+                  "velocity": 1
+                },
+                "drums": {
+                  "at": 17.99831928480205,
+                  "key": "drums:kick",
+                  "rate": 1,
+                  "velocity": 0.78
+                },
+                "bass": {
+                  "at": 17.952555129842494,
+                  "key": "bass:30",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.73
+                }
+              },
+              "guitarStrokes": {
+                "open": 48,
+                "palm": 9,
+                "cut": 0,
+                "up": 34,
+                "down": 23
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 69.7824,
+              "barCount": 34,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 140.94
+          }
+        },
+        {
+          "rate": 100,
+          "second": 24,
+          "probe": {
+            "peak": 0.38741743564605713,
+            "rms": 0.12896237013261191,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 31,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 386,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 19.818816517667095,
+                  "key": "guitar:64",
+                  "rate": 1,
+                  "velocity": 0.37241599999999997,
+                  "technique": "open",
+                  "upstroke": false
+                },
+                "melody": {
+                  "at": 19.527677309493406,
+                  "key": "guitar:67",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.95
+                },
+                "drums": {
+                  "at": 19.79332226479353,
+                  "key": "drums:snare",
+                  "rate": 1,
+                  "velocity": 0.41
+                },
+                "bass": {
+                  "at": 19.573654320987657,
+                  "key": "bass:30",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.74
+                }
+              },
+              "guitarStrokes": {
+                "open": 56,
+                "palm": 9,
+                "cut": 0,
+                "up": 37,
+                "down": 28
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 25.928,
+              "barCount": 13,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 117.44999999999999
+          },
+          "next": {
+            "peak": 0.37659311294555664,
+            "rms": 0.12930588733512552,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 43,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 457,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 23.22111536824181,
+                  "key": "guitar:55",
+                  "rate": 1,
+                  "velocity": 0.8539519999999999,
+                  "technique": "open",
+                  "upstroke": true
+                },
+                "melody": {
+                  "at": 23.660499787143472,
+                  "key": "guitar:64",
+                  "rate": 1,
+                  "velocity": 0.9
+                },
+                "drums": {
+                  "at": 23.85717922520222,
+                  "key": "drums:snare",
+                  "rate": 1,
+                  "velocity": 0.76
+                },
+                "bass": {
+                  "at": 23.81120221370797,
+                  "key": "bass:30",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.66
+                }
+              },
+              "guitarStrokes": {
+                "open": 65,
+                "palm": 9,
+                "cut": 0,
+                "up": 43,
+                "down": 31
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 28.805333333333333,
+              "barCount": 15,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 117.44999999999999
+          }
+        },
+        {
+          "tone": "acoustic",
+          "probe": {
+            "peak": 0.39876890182495117,
+            "rms": 0.1321114703743928,
+            "stats": {
+              "enabled": true,
+              "tone": "acoustic",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 21,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 457,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 23.22111536824181,
+                  "key": "guitar:55",
+                  "rate": 1,
+                  "velocity": 0.8539519999999999,
+                  "technique": "open",
+                  "upstroke": true
+                },
+                "melody": {
+                  "at": 23.660499787143472,
+                  "key": "guitar:64",
+                  "rate": 1,
+                  "velocity": 0.9
+                },
+                "drums": {
+                  "at": 23.85717922520222,
+                  "key": "drums:snare",
+                  "rate": 1,
+                  "velocity": 0.76
+                },
+                "bass": {
+                  "at": 23.81120221370797,
+                  "key": "bass:30",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.66
+                }
+              },
+              "guitarStrokes": {
+                "open": 65,
+                "palm": 9,
+                "cut": 0,
+                "up": 43,
+                "down": 31
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 29.949333333333332,
+              "barCount": 15,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 117.44999999999999
+          }
+        },
+        {
+          "tone": "crunch",
+          "probe": {
+            "peak": 0.40009236335754395,
+            "rms": 0.11153373312980709,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 35,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 491,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 25.63618561089826,
+                  "key": "guitar:55",
+                  "rate": 1,
+                  "velocity": 0.7779200000000001,
+                  "technique": "open",
+                  "upstroke": true
+                },
+                "melody": {
+                  "at": 25.564714346530444,
+                  "key": "guitar:58",
+                  "rate": 1,
+                  "velocity": 0.73
+                },
+                "drums": {
+                  "at": 25.866119199659433,
+                  "key": "drums:snare",
+                  "rate": 1,
+                  "velocity": 0.68
+                },
+                "bass": {
+                  "at": 25.924867603235423,
+                  "key": "bass:30",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.67
+                }
+              },
+              "guitarStrokes": {
+                "open": 68,
+                "palm": 9,
+                "cut": 0,
+                "up": 44,
+                "down": 33
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 31.11733333333333,
+              "barCount": 16,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 117.44999999999999
+          }
+        },
+        {
+          "tone": "drive",
+          "probe": {
+            "peak": 0.3468649983406067,
+            "rms": 0.12801049900311767,
+            "stats": {
+              "enabled": true,
+              "tone": "drive",
+              "guitarStyle": "rock",
+              "prepareMs": 140,
+              "pending": 21,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 491,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 25.63618561089826,
+                  "key": "guitar:55",
+                  "rate": 1,
+                  "velocity": 0.7779200000000001,
+                  "technique": "open",
+                  "upstroke": true
+                },
+                "melody": {
+                  "at": 25.564714346530444,
+                  "key": "guitar:58",
+                  "rate": 1,
+                  "velocity": 0.73
+                },
+                "drums": {
+                  "at": 25.866119199659433,
+                  "key": "drums:snare",
+                  "rate": 1,
+                  "velocity": 0.68
+                },
+                "bass": {
+                  "at": 25.924867603235423,
+                  "key": "bass:30",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.67
+                }
+              },
+              "guitarStrokes": {
+                "open": 68,
+                "palm": 9,
+                "cut": 0,
+                "up": 44,
+                "down": 33
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 32.248,
+              "barCount": 16,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "bpm": 117.44999999999999
+          }
+        }
+      ],
+      "mute": {
+        "peak": 4.211874056636589e-06,
+        "rms": 1.052273878313146e-06,
+        "stats": {
+          "enabled": true,
+          "tone": "drive",
+          "guitarStyle": "rock",
+          "prepareMs": 140,
+          "pending": 0,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 491,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 25.63618561089826,
+              "key": "guitar:55",
+              "rate": 1,
+              "velocity": 0.7779200000000001,
+              "technique": "open",
+              "upstroke": true
+            },
+            "melody": {
+              "at": 25.564714346530444,
+              "key": "guitar:58",
+              "rate": 1,
+              "velocity": 0.73
+            },
+            "drums": {
+              "at": 25.866119199659433,
+              "key": "drums:snare",
+              "rate": 1,
+              "velocity": 0.68
+            },
+            "bass": {
+              "at": 25.924867603235423,
+              "key": "bass:30",
+              "rate": 0.9438743126816935,
+              "velocity": 0.67
+            }
+          },
+          "guitarStrokes": {
+            "open": 68,
+            "palm": 9,
+            "cut": 0,
+            "up": 44,
+            "down": 33
+          }
+        },
+        "clock": {
+          "songId": "human-fly",
+          "contentSeconds": 34.754666666666665,
+          "barCount": 17,
+          "bpm": 117.45,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 118,
+          "sourceDuration": 239.491
+        },
+        "bpm": 117.44999999999999
+      },
+      "full": {
+        "peak": 0.3910086154937744,
+        "rms": 0.12154385521541364,
+        "stats": {
+          "enabled": true,
+          "tone": "drive",
+          "guitarStyle": "rock",
+          "prepareMs": 140,
+          "pending": 37,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 545,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 31.869902085994045,
+              "key": "guitar:55",
+              "rate": 1,
+              "velocity": 0.549824,
+              "technique": "open",
+              "upstroke": true
+            },
+            "melody": {
+              "at": 31.98489314601959,
+              "key": "guitar:55",
+              "rate": 0.9438743126816935,
+              "velocity": 0.76
+            },
+            "drums": {
+              "at": 32.06535291613453,
+              "key": "drums:hat",
+              "rate": 1,
+              "velocity": 0.16
+            },
+            "bass": {
+              "at": 31.82269646658153,
+              "key": "bass:30",
+              "rate": 1.0594630943592953,
+              "velocity": 0.43
+            }
+          },
+          "guitarStrokes": {
+            "open": 77,
+            "palm": 9,
+            "cut": 0,
+            "up": 49,
+            "down": 37
+          }
+        },
+        "clock": {
+          "songId": "human-fly",
+          "contentSeconds": 37.38933333333333,
+          "barCount": 19,
+          "bpm": 117.45,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 118,
+          "sourceDuration": 239.491
+        },
+        "bpm": 117.44999999999999
+      },
+      "stop": {
+        "peak": 4.0973945942823775e-06,
+        "rms": 7.311694768196888e-07,
+        "stats": {
+          "enabled": false,
+          "pending": 0,
+          "preparing": false,
+          "tone": "drive"
+        },
+        "clock": {
+          "songId": "human-fly",
+          "contentSeconds": 37.541333333333334,
+          "barCount": 18,
+          "bpm": 117.45,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 118,
+          "sourceDuration": 239.491
+        },
+        "bpm": 117.44999999999999
+      },
+      "mobile": {
+        "overflow": false,
+        "version": "v411"
+      },
+      "errors": []
+    },
+    "offline": {
+      "reset": {
+        "peak": 0.3297145366668701,
+        "stats": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "rock",
+          "prepareMs": 138,
+          "pending": 33,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 58,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 4.721982120051086,
+              "key": "guitar:55",
+              "rate": 1,
+              "velocity": 0.8623999999999999,
+              "technique": "open",
+              "upstroke": true
+            },
+            "melody": {
+              "at": 4.71947637292465,
+              "key": "guitar:52",
+              "rate": 1,
+              "velocity": 0.51
+            },
+            "bass": {
+              "at": 3.7552362707535125,
+              "key": "bass:51",
+              "rate": 0.9438743126816935,
+              "velocity": 0.16
+            }
+          },
+          "guitarStrokes": {
+            "open": 13,
+            "palm": 1,
+            "cut": 0,
+            "up": 10,
+            "down": 4
+          }
+        },
+        "clock": {
+          "songId": "human-fly",
+          "contentSeconds": 2.6586666666666665,
+          "barCount": 2,
+          "bpm": 117.45,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 118,
+          "sourceDuration": 239.491
+        }
+      },
+      "cached": {
+        "audio/physical-band/instruments.mjs?v=4": 200,
+        "audio/physical-band/bank-worker.mjs?v=3": 200,
+        "audio/physical-band/bank.mjs?v=3": 200,
+        "audio/physical-band/dsp.mjs?v=4": 200,
+        "audio/physical-band/score.mjs?v=4": 200,
+        "audio/physical-band/room.mjs?v=1": 200
+      },
+      "offline": {
+        "peak": 0.32100844383239746,
+        "stats": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "rock",
+          "prepareMs": 136,
+          "pending": 33,
+          "bytes": 11826560,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 58,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 4.329982120051087,
+              "key": "guitar:55",
+              "rate": 1,
+              "velocity": 0.8623999999999999,
+              "technique": "open",
+              "upstroke": true
+            },
+            "melody": {
+              "at": 4.327476372924649,
+              "key": "guitar:52",
+              "rate": 1,
+              "velocity": 0.51
+            },
+            "bass": {
+              "at": 3.3632362707535126,
+              "key": "bass:51",
+              "rate": 0.9438743126816935,
+              "velocity": 0.16
+            }
+          },
+          "guitarStrokes": {
+            "open": 13,
+            "palm": 1,
+            "cut": 0,
+            "up": 10,
+            "down": 4
+          }
+        },
+        "clock": {
+          "songId": "human-fly",
+          "contentSeconds": 2.6879999999999997,
+          "barCount": 2,
+          "bpm": 117.45,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 118,
+          "sourceDuration": 239.491
+        }
+      },
+      "errors": []
+    },
+    "rest": {
+      "results": {
+        "bass": {
+          "rested": {
+            "peak": 0,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 183,
+              "pending": 0,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 0,
+              "dropped": 0,
+              "last": {},
+              "guitarStrokes": {
+                "open": 0,
+                "palm": 0,
+                "cut": 0,
+                "up": 0,
+                "down": 0
+              }
+            },
+            "clock": {
+              "songId": "sister",
+              "contentSeconds": 19.333333333333332,
+              "barCount": 10,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 138,
+              "sourceDuration": 281.287
+            }
+          },
+          "still": {
+            "peak": 0,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 183,
+              "pending": 0,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 0,
+              "dropped": 0,
+              "last": {},
+              "guitarStrokes": {
+                "open": 0,
+                "palm": 0,
+                "cut": 0,
+                "up": 0,
+                "down": 0
+              }
+            },
+            "clock": {
+              "songId": "sister",
+              "contentSeconds": 20.357333333333333,
+              "barCount": 10,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 138,
+              "sourceDuration": 281.287
+            }
+          },
+          "resumed": {
+            "peak": 0.10961896181106567,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 183,
+              "pending": 3,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 4,
+              "dropped": 0,
+              "last": {
+                "bass": {
+                  "at": 4.843959131545337,
+                  "key": "bass:54",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.78
+                }
+              },
+              "guitarStrokes": {
+                "open": 0,
+                "palm": 0,
+                "cut": 0,
+                "up": 0,
+                "down": 0
+              }
+            },
+            "clock": {
+              "songId": "sister",
+              "contentSeconds": 5.317333333333334,
+              "barCount": 3,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 138,
+              "sourceDuration": 281.287
+            }
+          },
+          "later": {
+            "peak": 0.08345858752727509,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 183,
+              "pending": 5,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 8,
+              "dropped": 0,
+              "last": {
+                "bass": {
+                  "at": 6.980613026819924,
+                  "key": "bass:36",
+                  "rate": 1,
+                  "velocity": 0.74
+                }
+              },
+              "guitarStrokes": {
+                "open": 0,
+                "palm": 0,
+                "cut": 0,
+                "up": 0,
+                "down": 0
+              }
+            },
+            "clock": {
+              "songId": "sister",
+              "contentSeconds": 6.845333333333333,
+              "barCount": 4,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 138,
+              "sourceDuration": 281.287
+            }
+          }
+        },
+        "drums": {
+          "intro": {
+            "peak": 0,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 149,
+              "pending": 0,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 0,
+              "dropped": 0,
+              "last": {},
+              "guitarStrokes": {
+                "open": 0,
+                "palm": 0,
+                "cut": 0,
+                "up": 0,
+                "down": 0
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 1.4320000000000002,
+              "barCount": 1,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            }
+          },
+          "drums": {
+            "peak": 0.08374879509210587,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 149,
+              "pending": 2,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 5,
+              "dropped": 0,
+              "last": {
+                "drums": {
+                  "at": 4.109781183482334,
+                  "key": "drums:hat",
+                  "rate": 1,
+                  "velocity": 0.16
+                }
+              },
+              "guitarStrokes": {
+                "open": 0,
+                "palm": 0,
+                "cut": 0,
+                "up": 0,
+                "down": 0
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 9.341333333333333,
+              "barCount": 4,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            }
+          },
+          "moreDrums": {
+            "peak": 0.027762383222579956,
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 149,
+              "pending": 3,
+              "bytes": 11826560,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 8,
+              "dropped": 0,
+              "last": {
+                "drums": {
+                  "at": 6.061249893571732,
+                  "key": "drums:kick",
+                  "rate": 1,
+                  "velocity": 0.99
+                }
+              },
+              "guitarStrokes": {
+                "open": 0,
+                "palm": 0,
+                "cut": 0,
+                "up": 0,
+                "down": 0
+              }
+            },
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 10.669333333333334,
+              "barCount": 5,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            }
+          }
+        },
+        "missingUi": {
+          "disabled": true,
+          "volumeDisabled": true,
+          "checked": true,
+          "label": "melody（未採譜）",
+          "noteHidden": false
+        },
+        "missing": {
+          "peak": 5.373412270692768e-10,
+          "stats": {
+            "enabled": true,
+            "tone": "crunch",
+            "guitarStyle": "rock",
+            "prepareMs": 6,
+            "pending": 0,
+            "bytes": 11826560,
+            "roomWet": 0.35,
+            "roomNodes": 26,
+            "played": 0,
+            "dropped": 0,
+            "last": {},
+            "guitarStrokes": {
+              "open": 0,
+              "palm": 0,
+              "cut": 0,
+              "up": 0,
+              "down": 0
+            }
+          },
+          "clock": {
+            "songId": "electric-sheep",
+            "contentSeconds": 2.730666666666666,
+            "barCount": 2,
+            "bpm": 129.2,
+            "instrumentMakeup": 2.2654265100292412,
+            "totalBars": 81,
+            "sourceDuration": 150.073
+          }
+        },
+        "scoredUi": {
+          "disabled": false,
+          "volumeDisabled": false,
+          "checked": true,
+          "label": "melody",
+          "noteHidden": true
+        },
+        "guide": {
+          "peak": 0.01819148287177086,
+          "stats": {
+            "enabled": true,
+            "tone": "crunch",
+            "guitarStyle": "rock",
+            "prepareMs": 8,
+            "pending": 5,
+            "bytes": 11826560,
+            "roomWet": 0.35,
+            "roomNodes": 26,
+            "played": 7,
+            "dropped": 0,
+            "last": {
+              "melody": {
+                "at": 9.744739037888465,
+                "key": "guitar:49",
+                "rate": 0.9438743126816935,
+                "velocity": 0.16
+              }
+            },
+            "guitarStrokes": {
+              "open": 0,
+              "palm": 0,
+              "cut": 0,
+              "up": 0,
+              "down": 0
+            }
+          },
+          "clock": {
+            "songId": "human-fly",
+            "contentSeconds": 17.330666666666666,
+            "barCount": 9,
+            "bpm": 117.45,
+            "instrumentMakeup": 2.2654265100292412,
+            "totalBars": 118,
+            "sourceDuration": 239.491
+          }
+        },
+        "originalUi": {
+          "disabled": false,
+          "volumeDisabled": false,
+          "checked": true,
+          "label": "vocal",
+          "noteHidden": true
+        },
+        "legacyUi": {
+          "disabled": false,
+          "volumeDisabled": false,
+          "checked": true,
+          "label": "vocal",
+          "noteHidden": true
+        }
+      },
+      "errors": []
+    },
+    "all-songs": {
+      "results": [
+        {
+          "song": "tabasco",
+          "peak": 0.3396996557712555,
+          "stats": {
+            "enabled": true,
+            "tone": "crunch",
+            "guitarStyle": "rock",
+            "prepareMs": 181,
+            "pending": 14,
+            "bytes": 11826560,
+            "roomWet": 0.35,
+            "roomNodes": 26,
+            "played": 39,
+            "dropped": 0,
+            "last": {
+              "drums": {
+                "at": 3.8025700680512373,
+                "key": "drums:hat",
+                "rate": 1,
+                "velocity": 0.4740835159320678
+              },
+              "bass": {
+                "at": 2.888731567428873,
+                "key": "bass:51",
+                "rate": 0.9438743126816935,
+                "velocity": 0.16
+              },
+              "guitar": {
+                "at": 3.296664100822579,
+                "key": "guitar:49",
+                "rate": 1.0594630943592953,
+                "velocity": 0.8623999999999999,
+                "technique": "open",
+                "upstroke": true
+              }
+            },
+            "guitarStrokes": {
+              "open": 4,
+              "palm": 0,
+              "cut": 0,
+              "up": 2,
+              "down": 2
+            }
+          },
+          "disabled": true
+        },
+        {
+          "song": "hey",
+          "peak": 0.25781533122062683,
+          "stats": {
+            "enabled": true,
+            "tone": "crunch",
+            "guitarStyle": "rock",
+            "prepareMs": 194,
+            "pending": 30,
+            "bytes": 11826560,
+            "roomWet": 0.35,
+            "roomNodes": 26,
+            "played": 66,
+            "dropped": 0,
+            "last": {
+              "drums": {
+                "at": 4.48254558060848,
+                "key": "drums:hat",
+                "rate": 1,
+                "velocity": 0.16
+              },
+              "bass": {
+                "at": 4.412656238733116,
+                "key": "bass:33",
+                "rate": 1,
+                "velocity": 0.89
+              },
+              "guitar": {
+                "at": 4.449120670050198,
+                "key": "guitar:70",
+                "rate": 1,
+                "velocity": 0.49068800000000007,
+                "technique": "open",
+                "upstroke": false
+              }
+            },
+            "guitarStrokes": {
+              "open": 15,
+              "palm": 3,
+              "cut": 0,
+              "up": 8,
+              "down": 10
+            }
+          },
+          "disabled": false
+        },
+        {
+          "song": "i-got-a-feeling",
+          "peak": 0.16171002388000488,
+          "stats": {
+            "enabled": true,
+            "tone": "crunch",
+            "guitarStyle": "rock",
+            "prepareMs": 153,
+            "pending": 27,
+            "bytes": 11826560,
+            "roomWet": 0.35,
+            "roomNodes": 26,
+            "played": 37,
+            "dropped": 0,
+            "last": {
+              "bass": {
+                "at": 0.79819868541476,
+                "key": "bass:27",
+                "rate": 1.0594630943592953,
+                "velocity": 0.16
+              },
+              "guitar": {
+                "at": 4.400267576337466,
+                "key": "guitar:64",
+                "rate": 0.9438743126816935,
+                "velocity": 0.33862400000000004,
+                "technique": "open",
+                "upstroke": false
+              }
+            },
+            "guitarStrokes": {
+              "open": 9,
+              "palm": 3,
+              "cut": 0,
+              "up": 6,
+              "down": 6
+            }
+          },
+          "disabled": false
+        },
+        {
+          "song": "under-the-moon",
+          "peak": 0.2671229839324951,
+          "stats": {
+            "enabled": true,
+            "tone": "crunch",
+            "guitarStyle": "rock",
+            "prepareMs": 140,
+            "pending": 17,
+            "bytes": 11826560,
+            "roomWet": 0.35,
+            "roomNodes": 26,
+            "played": 38,
+            "dropped": 0,
+            "last": {
+              "bass": {
+                "at": 0.43181217750258005,
+                "key": "bass:30",
+                "rate": 0.9438743126816935,
+                "velocity": 0.16
+              },
+              "guitar": {
+                "at": 3.3835830753353973,
+                "key": "guitar:64",
+                "rate": 1,
+                "velocity": 0.406208,
+                "technique": "open",
+                "upstroke": false
+              },
+              "drums": {
+                "at": 3.2999236326109394,
+                "key": "drums:hat",
+                "rate": 1,
+                "velocity": 0.16
+              }
+            },
+            "guitarStrokes": {
+              "open": 9,
+              "palm": 3,
+              "cut": 0,
+              "up": 5,
+              "down": 7
+            }
+          },
+          "disabled": false
+        },
+        {
+          "song": "electric-sheep",
+          "peak": 0.31070199608802795,
+          "stats": {
+            "enabled": true,
+            "tone": "crunch",
+            "guitarStyle": "rock",
+            "prepareMs": 134,
+            "pending": 32,
+            "bytes": 11826560,
+            "roomWet": 0.35,
+            "roomNodes": 26,
+            "played": 77,
+            "dropped": 0,
+            "last": {
+              "drums": {
+                "at": 4.1223405572755425,
+                "key": "drums:kick",
+                "rate": 1,
+                "velocity": 0.69
+              },
+              "bass": {
+                "at": 4.017851393188855,
+                "key": "bass:39",
+                "rate": 0.9438743126816935,
+                "velocity": 0.76
+              },
+              "guitar": {
+                "at": 4.031851393188855,
+                "key": "guitar:49",
+                "rate": 1.0594630943592953,
+                "velocity": 0.73568,
+                "technique": "open",
+                "upstroke": true
+              }
+            },
+            "guitarStrokes": {
+              "open": 15,
+              "palm": 3,
+              "cut": 0,
+              "up": 9,
+              "down": 9
+            }
+          },
+          "disabled": true
+        },
+        {
+          "song": "human-fly",
+          "peak": 0.3335532546043396,
+          "stats": {
+            "enabled": true,
+            "tone": "crunch",
+            "guitarStyle": "rock",
+            "prepareMs": 175,
+            "pending": 33,
+            "bytes": 11826560,
+            "roomWet": 0.35,
+            "roomNodes": 26,
+            "played": 58,
+            "dropped": 0,
+            "last": {
+              "guitar": {
+                "at": 4.43931545338442,
+                "key": "guitar:55",
+                "rate": 1,
+                "velocity": 0.8623999999999999,
+                "technique": "open",
+                "upstroke": true
+              },
+              "melody": {
+                "at": 4.436809706257983,
+                "key": "guitar:52",
+                "rate": 1,
+                "velocity": 0.51
+              },
+              "bass": {
+                "at": 3.4725696040868463,
+                "key": "bass:51",
+                "rate": 0.9438743126816935,
+                "velocity": 0.16
+              }
+            },
+            "guitarStrokes": {
+              "open": 13,
+              "palm": 1,
+              "cut": 0,
+              "up": 10,
+              "down": 4
+            }
+          },
+          "disabled": false
+        },
+        {
+          "song": "sister",
+          "peak": 0.18546754121780396,
+          "stats": {
+            "enabled": true,
+            "tone": "crunch",
+            "guitarStyle": "rock",
+            "prepareMs": 138,
+            "pending": 12,
+            "bytes": 11826560,
+            "roomWet": 0.35,
+            "roomNodes": 26,
+            "played": 41,
+            "dropped": 0,
+            "last": {
+              "drums": {
+                "at": 2.1677522349936145,
+                "key": "drums:hat",
+                "rate": 1,
+                "velocity": 0.16
+              },
+              "bass": {
+                "at": 4.36315453384419,
+                "key": "bass:45",
+                "rate": 1,
+                "velocity": 0.55
+              },
+              "guitar": {
+                "at": 3.773067688378034,
+                "key": "guitar:49",
+                "rate": 0.9438743126816935,
+                "velocity": 0.152768,
+                "technique": "open",
+                "upstroke": true
+              }
+            },
+            "guitarStrokes": {
+              "open": 7,
+              "palm": 1,
+              "cut": 0,
+              "up": 5,
+              "down": 3
+            }
+          },
+          "disabled": false
+        }
+      ],
+      "errors": []
+    }
+  },
+  "capture_configuration": {
+    "sample_rate": 48000,
+    "channels": 2,
+    "bits": 16,
+    "rate_percent": 100,
+    "tone": "crunch",
+    "room_percent": 35,
+    "guitar_style": "rock",
+    "guide": false,
+    "original_vocals": false,
+    "reconstruction": "off",
+    "seconds_requested": 10
+  },
+  "candidate_stroke_counts": {
+    "rock-after-electric-sheep-16-synth": {
+      "open": 54,
+      "palm": 32,
+      "cut": 0,
+      "up": 38,
+      "down": 48
+    },
+    "rock-after-hey-16-synth": {
+      "open": 33,
+      "palm": 7,
+      "cut": 0,
+      "up": 30,
+      "down": 10
+    },
+    "rock-after-human-fly-16-synth": {
+      "open": 36,
+      "palm": 1,
+      "cut": 0,
+      "up": 21,
+      "down": 16
+    },
+    "rock-after-sister-50-synth": {
+      "open": 31,
+      "palm": 8,
+      "cut": 0,
+      "up": 21,
+      "down": 18
+    }
+  },
+  "isolated_capture_sha256": {
+    "rock-articulation-cut-down.f32": "c21af2fae7fe161ae754a065173ebe3c5aef119eab22a2f4caf5ec6d4baf37ca",
+    "rock-articulation-open-down.f32": "d4b6a61116ba52478ec0abdf75331613db7960bd563ef05b5950d3a3d87d1550",
+    "rock-articulation-open-up.f32": "48fc412b593f1f6bc95f9d5bbeee39491b22a2828b2a43a17602d489741df574",
+    "rock-articulation-palm-down.f32": "648e78a66ca7bc4c398ad9526d0ad3d021b9b58b966347ce507ffefa88a92cf7"
+  },
+  "source_sha256_lf": {
+    "band-room.js": "51a7e52857b62beabd73deddde34c84a776c54bd010e2500369f42d698c48bcf",
+    "audio/physical-band/instruments.mjs": "2000c016d052d528f6657bb4fb4e2ca2c5f08ae3686adf7e3371abd6d3968a62",
+    "audio/physical-band/bank.mjs": "d3810063c71993c6eb15d108fd02ec6a7f9dcc6a96c070787856e698d6cadf27",
+    "audio/physical-band/dsp.mjs": "a04a911e783baeb57564d6671725c0a674d8c5c2fc0d0c0b4dcbc6224e81d8a5",
+    "audio/physical-band/amp.mjs": "d7271cb2576244aa36d388777df07291b2b40527994c971ea2b301fc2f87d281",
+    "audio/physical-band/room.mjs": "a7b3052608c05880229e1ae84b71150213725aca813132e61bddae46fcea8d49",
+    "presets/drum-frames-tabasco-electric-sheep.json": "8e16b1aaab540efd65f5b4747db0cca4882f46f4c18f05c5f85ea6d908e177d3",
+    "presets/drum-frames-tabasco-hey.json": "ff30197b62c7bb049f500970c5796770822d5141c52829cbaed5084cbc21497a",
+    "presets/drum-frames-tabasco-human-fly.json": "cf790fe891926dac3807f951c8a74c4ead99df39e2e263f971259af947114bb9",
+    "presets/drum-frames-tabasco-i-got-a-feeling.json": "1df4db0efb7ebb400e5603e981dedd690c9a6d2d5a2c07bd4b8d62a503057fb6",
+    "presets/drum-frames-tabasco-sister.json": "a5100b6cfddb88a708f7bfbfb1db76ec775f63117f783ef4316a2ee104e12c83",
+    "presets/drum-frames-tabasco-tabasco.json": "a67c826302d2775c136732acb7ddba875c70989479a03f25dc88f1d1178d64aa",
+    "presets/drum-frames-tabasco-under-the-moon.json": "906a1a602ffce961c7e521151354cc6a7fb8d1321217fbe93ae5618f840619b6"
+  }
+}

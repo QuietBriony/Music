@@ -1,5 +1,9 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-03: v412はARCB guitarのbass由来の根音を、原音otherの持続する和音・音域から確かな234小節だけ補正。打点、強弱、bass/drums、ロック奏法と余韻を維持。実RECを独立したSTFT表現でも比較。採用率を正答率と扱わない。[合奏測定](ARCB-MIX-MEASUREMENT.md)。
+
+2026-10-03: v411はARCBの8分／16分の上下ストローク、ロックの刻み、響かせる／カッティング／パームミュートを追加。短い検出音符だけでコードを切らず、同じ弦bankとampを使う。奏法は音符からの推定。実ブラウザ出力と前後比較は[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
+
 2026-10-02: v410は採譜の空白小節へ足していた自動伴奏を止め、既存のreleaseとroom tailを残す。未採譜の歌の音程は生成せず、Electric Sheep／TABASCOのmelodyを明示。合奏・soloの確認と残る採譜漏れは[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
 
 2026-10-01: v409は原音の分離漏れを前提に、ARCBの合奏全体を測定して補正。
@@ -61,6 +65,25 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 同じ workspace に optional private `../music-ops` がある場合は、その `AGENTS.md`、
 `docs/INDEX.md`、canonical JSON を先に読む。ない環境では推測せず、public-safe な
 workflow と `needs_verification` だけを使う。active runtime repo は従来どおり 5 つ。
+
+## 2026-10-02 — stack-checkの無期限待ちを防ぐローカル候補
+
+Musicで実際の停止事故を観測したという記録ではなく、`scripts/stack-check.mjs`の
+無期限`spawnSync`と全完了後だけの表示を対象にした構造上の予防。
+起動方法・自動発見・PASS/FAIL/SKIP集計・終了コード・`--music-from`・`--allow-skip`・
+任意の`--deploy-health`は維持し、検査の開始・終了・elapsedをその場で表示する。
+
+- audit/Node検査は120秒、pytestは600秒、pytest事前確認は15秒。
+- `--check-timeout-ms N` / `--pytest-timeout-ms N`で1000〜1800000msの整数だけ上書きできる。0・無期限・範囲外は実行前に拒否。
+- Windows 10以降では非継承Job Objectへ`PROC_THREAD_ATTRIBUTE_JOB_LIST`で生成と同時に所属させ、停止状態から実行する。生成後の割当待ちにsupervisorが死ぬ隙間を作らない。期限超過や親終了後の子をまとめて終了し、ActiveProcesses=0の確認まで次へ進めない。対応APIが使えない環境はFAILで止める。
+- 外側watchdogの期限は検査上限＋20秒（helper起動・Job終了確認のための追加猶予）。起動phaseだけを15秒で打ち切る設定ではない。Job終了確認と、終了要求や親exit後のpipe/close待ちはそれぞれ5秒上限。終了確認不能・中断はFAILとして残りを起動しない。timeoutは`--allow-skip`でもFAIL。
+- stdout/stderrは常時drainし、それぞれ末尾32KiBまでだけ保持。既存の失敗要約には終了コード・上限・経過時間・末尾ログを残す。
+- POSIXは検査専用process groupを終了する。Windowsの実検査結果を他OSでの実行証明とは扱わない。
+
+`scripts/lib/stack-check-process.mjs`と`stack-check-job.ps1`が期限と終了管理、
+`scripts/tests/stack-check.test.mjs`が短い注入fixture。追加dependency・CI設定・audio/runtime変更はない。
+Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)と[生成時のJOB_LIST属性](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute)。
+
 
 ## 現在地（2026-09-30）
 
@@ -167,7 +190,7 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v410`。Band Room runtime markerは`band-room.js?v=br-243` /
+- 現行cacheは`hazama-fm-v412`。Band Room runtime markerは`band-room.js?v=br-245` /
   `band-room.css?v=br-93`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
@@ -184,9 +207,59 @@ workflow と `needs_verification` だけを使う。active runtime repo は従�
 3. **`docs/autonomy/AUTONOMOUS-RUN.md` のプレイブックに従う** — STACK-INDEX /
    SESSION-LEDGER / BACKLOG を読み、`agent: codex` / `agent: either` の item を 1 つ
    claim（`status: wip` を即 commit）して回す。下の TASK A-E は履歴で再実行しない。
-4. 完了したら差分レビュー → `git diff --check` → `node scripts/stack-check.mjs`で0 BAD → commit
-5. 共有docs更新直前にpullを試し、`BACKLOG.md`（Doneへ移動）と`SESSION-LEDGER.md`
-   （最新entryを先頭へ追記）を同期。接続制限等でpull / pushできなければlocal commitを残して報告
+4. 自分のscopeの差分をレビューし、`git diff --check`とAGENTSのcommit前gate・全体gateを通して候補commitを作る。
+5. 自分のcleanなworktreeで最新main・共有docsを同期し、衝突を解消した**最終HEAD**で
+   `node scripts/stack-check.mjs`を再実行。終了コード0、FAIL 0 / SKIP 0、0 BADとauditの0 BAD / 0 WARNが必要。
+   `--allow-skip`の診断結果を完了証拠にせず、同じHEADのログ・独立レビュー対象を確認する。
+   HEADや検査対象repoの状態が変わったら旧証跡は失効し、検証・必要レビューを再確認する。
+   詳細は`COLLAB-CLAUDE-AND-CODEX.md`の「同じHEADの完了証跡」と「作業後」に従う。
+   `BACKLOG.md`と`SESSION-LEDGER.md`の記録更新後も候補HEADを一致させる。
+   接続制限等でpull / pushできなければlocal commitと未確認事項を残して報告する。
+
+### dot・agent経由の依頼の受領票
+
+引き継ぎでは既存の`SESSION-LEDGER.md`の`goal`、`implemented`または`shipped`、
+`stack-check`、`next`、`blockers`と
+`COLLAB-CLAUDE-AND-CODEX.md`の最終HEADゲートを使い、案件ごとに次を揃える。
+この記録は権限を付与しない。dotや別agentによる転記は依頼経路として記し、
+実行側で確認した本人承認と区別する。
+
+- **対象**: repoとworktreeの絶対path、担当、同期したmainのSHA、branch/PR番号、候補HEAD、
+  dirty差分、他担当のclaimと共有ファイル。
+- **会話の到達先**: 実行task/threadと転送元のID、通常のメタデータで取得できた表示名
+  （取得できなければ「不明」）、本人の発言が実行taskに届いたか。IDだけで表示名や到達を推測しない。
+- **承認・保留の出典**: 原発言の文言、会話・メッセージIDと日時、取得方法、対象操作、
+  実行側が原発言を確認できたか。個人情報や秘匿IDの実値は公開repoへ載せずprivate側で保持する。
+- **実行証拠**: 実際に使ったコマンド、終了コード、同じHEADのPASS/FAIL/SKIP・0 BAD/0 WARN、
+  ログの場所、独立レビューの対象HEADと未解決事項、PR差分・必須check・mergeableの確認結果。
+- **完了判定**: commit、push、PR作成、merge、remote mainのSHA、公開URLへの反映を
+  それぞれ実行済み・未実行・結果未確認に分ける。mergeと公開反映を一つの結果にまとめない。
+- **停止と再開**: 拒否・失敗した操作と対象、返された理由、残るリスク、再開に必要な
+  本人確認・権限・再検証を具体的に残す。追加の有効な承認や条件が揃うまでは、
+  拒否された操作を別経路で再試行しない。
+
+本人に別の会話への移動を頼む前に、通常の会話メタデータと実際に受信した発言で到達先を確認する。
+確認できない表示名や移動先を推測して案内しない。対象操作への本人の直接指示を既に確認でき、
+他の実行条件も満たすなら、同じ承認を繰り返し求めずに進める。
+
+2026-10-04のPR #442では、dot・agent経由の転送文だけでは本人承認を検証できずmergeを停止した。
+その後、本人の直接入力が同じ実行taskに届き、mergeとremote mainへの反映を確認した。
+実行中にアクセス設定を変更した記録はない。実行前の設定状態は独立に確認しておらず、
+設定と停止・成功の因果関係は断定しない。今後の転送承認が通るかも未検証。
+
+同期済みの自分のworktreeで、既存コマンドから対象と検証を取り直す。HEAD・差分・検査対象repoが
+変わったら「同じHEADの完了証跡」を取り直す。
+
+```bash
+git status --short --branch
+git rev-parse HEAD
+git diff --name-only origin/main...HEAD
+git diff --name-only
+git diff --cached --name-only
+node scripts/stack-check.mjs
+python -X utf8 scripts/audit.py
+git ls-remote origin refs/heads/main
+```
 
 ## 並列運用の目安
 

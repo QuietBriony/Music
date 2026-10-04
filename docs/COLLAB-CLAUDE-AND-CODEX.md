@@ -1,5 +1,7 @@
 # Collab: claude code と codex の並列開発プレイブック
 
+2026-10-03: 現行runtimeはARCBの和音・音域補正を含むv412。cache tupleの更新も、下記の最終HEADに紐づく全体gateとレビューの契約を使う。
+
 Music repo を **claude code (Anthropic) と codex (OpenAI) の両方** で
 継続開発するためのガイド。先に [`AGENTS.md`](../AGENTS.md) を読むこと。
 
@@ -10,7 +12,7 @@ Music repo を **claude code (Anthropic) と codex (OpenAI) の両方** で
 - **計算資源が余ってる方を使う** — codex chat で context 詰まったら claude code、claude のセッションが長くなったら codex に振る
 - **視点が違う** — claude は repo 全体俯瞰 + UX、codex は narrow な実装 + 各 repo の事情に詳しい
 - **片方が止まっても止まらない** — A が編集中でも B が別領域を磨ける
-- **盤石な整合性ガード** — `scripts/audit.py` を両方が共有する単一の真実
+- **共通の整合性ガード** — `node scripts/stack-check.mjs`で5 repoの既存検査を集約し、個別auditだけで完了扱いしない
 
 ---
 
@@ -53,10 +55,8 @@ Music repo を **claude code (Anthropic) と codex (OpenAI) の両方** で
 ```bash
 git fetch origin --quiet
 git pull --ff-only origin main
-python -X utf8 scripts/audit.py   # 現状 0 BAD 確認
-node scripts/check-js.mjs
-node scripts/check-band-room-logic.mjs
-node scripts/check-fm-route-badge.mjs
+node scripts/stack-check.mjs
+python -X utf8 scripts/audit.py   # 0 BAD / 0 WARN 確認
 ```
 
 直近 commit history を確認:
@@ -72,34 +72,64 @@ git log --oneline -10
 - 小さい修正は main 直接でも OK (cache bump、LEVEL_BY_GENRE 微調整等)
 - 同じファイル領域で衝突しそうな改修は branch + PR で安全に
 
+### 同じHEADの完了証跡
+
+Claude単独・Codex単独・並走・引継ぎのどの入口でも、最新mainの同期と衝突解消を終えてから
+`node scripts/stack-check.mjs`を実行する。**終了コード0、FAIL 0 / SKIP 0、0 BAD**が必要。
+`--allow-skip`は診断用であり、その0 BADを全通過・完了証拠として扱わない。
+個別4checkは原因調査とAGENTSのcommit前検査に使えるが、全体gateの代用にはしない。
+
+記録するのは作業worktreeの絶対path、同期したmainのSHA、候補の`git rev-parse HEAD`、実行コマンド、
+終了コードとPASS/FAIL/SKIP、auditの0 BAD / 0 WARN、ログの場所、独立レビューの対象HEADと未解決事項。
+5 repoの検査対象もHEADとdirtyの有無を控える。実行後のHEAD・作業差分と対象repoの状態が変わったら証拠は失効する。
+rebase・merge・衝突解消・追加commitの後は、古いログを流用せず新しい最終HEADで全体gateと必要レビューを再確認する。
+文書検査はこの手順の省略を検出するだけで、実際に検証を実行した証明にはならない。
+
 ### 作業後 (commit / push 前)
 
+自分のworktreeだけで作業する。未commit差分はAGENTSのcommit前gateと全体gateを通して、
+自分の変更だけを候補commitへまとめる。他担当のdirtyなworktreeでpull/rebase/stashを開始しない。
+以下はcleanなfeature branchの候補commitを同期し、**同期後の同じHEAD**を検証してpushするbash記法の例。
+既にpush済みのbranchは通常mergeを使い、未公開の自分のcommitだけならrebaseでもよい。強制pushは禁止。
+PowerShellでは各コマンドの`$LASTEXITCODE`を確認し、非0ならそこで停止する。
+
 ```bash
-python -X utf8 scripts/audit.py   # 0 BAD 必須
-node scripts/check-js.mjs
-node scripts/check-band-room-logic.mjs
-node scripts/check-fm-route-badge.mjs
-git status                # 変更ファイル確認
-git pull --rebase origin main   # 他 agent の差分を取り込み
-# (衝突あれば手動解決)
-git push origin main
+set -e
+git fetch origin --quiet
+git merge origin/main
+test -z "$(git status --porcelain)"
+FINAL_HEAD=$(git rev-parse HEAD)
+node scripts/stack-check.mjs
+python -X utf8 scripts/audit.py   # 0 BAD / 0 WARN 必須
+test "$(git rev-parse HEAD)" = "$FINAL_HEAD"
+test -z "$(git status --porcelain)"
+git push origin HEAD
 ```
 
 ### 衝突したら
 
-例: `fm.js` で claude と codex の編集が衝突
-1. `git pull --rebase origin main` で reject
-2. `fm.js` を開いて `<<<<<<<` マーカーで両方の意図を理解
-3. 両方の意図を残せるならマージ、難しいなら片方を採用 + 後で対話
-4. `git add fm.js && git rebase --continue`
-5. `python -X utf8 scripts/audit.py` と `node scripts/check-js.mjs` で再検証
-6. `git push origin main`
+自分の候補branchで両者の意図を確認し、難しい判断は保留する。
+公開済みbranchのmergeなら解消後の候補commitを作り、「作業後」の全体gateへ戻る。
+未公開の自分のbranchのrebaseなら、全衝突を解消してstageし、最後のcontinueを完了してから再検証する。
+audit/check-jsの2checkだけでpushしない。例えば最後のrebase continueからの手順は:
+
+```bash
+set -e
+git rebase --continue
+test -z "$(git status --porcelain)"
+FINAL_HEAD=$(git rev-parse HEAD)
+node scripts/stack-check.mjs
+python -X utf8 scripts/audit.py   # 0 BAD / 0 WARN 必須
+test "$(git rev-parse HEAD)" = "$FINAL_HEAD"
+test -z "$(git status --porcelain)"
+git push origin HEAD
+```
 
 ---
 
 ## 「マージして」自然言語パターン (codex 専用)
 
-codex の各 task chat に **「マージして」と日本語で送る** だけで:
+codexの各taskへ「マージして」と送った場合も、下のagent merge条件と「同じHEADの完了証跡」を確認してから:
 ```
 gh pr merge <PR#> --merge --delete-branch
 git switch main
@@ -114,7 +144,8 @@ claude code はこのパターンを使わず、`gh pr merge` を直接呼ぶか
 
 - 対象 PR / branch が今回 user から任された作業に属する
 - mergeable / clean な状態
-- `node scripts/stack-check.mjs` が `0 BAD`
+- 「作業後」の同期・衝突解消後の最終HEADで`node scripts/stack-check.mjs`が終了コード0、FAIL 0 / SKIP 0、0 BAD
+- `--allow-skip`による診断ログを使わず、独立レビューの対象HEADと検証したHEADが一致し、未解決の問題がない
 - engine.js を含む場合は差分レビュー済み
 - branch deletion は --delete-branch 付き
 
@@ -147,34 +178,36 @@ claude code は **computer-use MCP** 経由で Codex Desktop App を操作可能
 
 ### シナリオ A: claude 単独運用
 
-何も特別なことはしない。`audit.py` で整合性、cache buster で
-deploy 同期、git pull で最新化。これだけで OK。
+Claude単独でも「作業後」と「同じHEADの完了証跡」に従う。同期後の全体gateと必要レビューを通し、
+runtimeを変えた場合だけAGENTSのcache buster規則でdeployを同期する。auditだけで完了扱いしない。
 
 ### シナリオ B: codex 単独運用
 
 codex chat に「○○を磨いて」と日本語指示。codex が PR まで自走。
-検証済みで今回任された範囲の PR は agent が merge まで進めてよい。main 同期は codex が自動。
+「作業後」と「同じHEADの完了証跡」を満たした今回のPRはagentがmergeまで進めてよい。
+main同期は自分のcleanなworktreeで行い、HEADが変われば検証・レビューを再確認する。
 
 ### シナリオ C: 並列同時開発
 
 - claude code: Music repo の UI 改修 (fm.js + fm.css)
 - codex: sister repo の preset 拡張 (chill / drum-floor / namima)
 - 互いに干渉しない領域なので衝突なし
+- 両担当とも「作業後」と「同じHEADの完了証跡」を満たす。5 repoの対象状態が変われば全体gateを再実行する
 
 ### シナリオ D: claude が codex を呼ぶ (今回のセッションの実例)
 
 - ユーザー: 「○○磨いて」
 - claude code: spec 設計 → Codex App 開く → 4 task に並列 prompt 投入
-- 各 codex: branch → 実装 → PR → 検証済みなら merge
+- 各codex: branch → 実装 → PR → 「作業後」と「同じHEADの完了証跡」を確認 → 条件を満たせばmerge
 - ユーザー: 判断不能・未検証・human-gate が残る PR だけ個別確認
-- claude code: JSON 取り込み + Music repo 改修 + デプロイ
+- claude code: JSON取り込み + Music改修 → 自分の最終HEADで同じ全体gateと必要レビュー → デプロイ
 
 ### シナリオ E: codex が止まって claude が続ける (今回の引き継ぎ例)
 
 - codex chat の context が詰まる
-- claude code が同じ repo を直接触って引き継ぎ
-- 整合性は audit.py で自動チェック
-- cache buster ルールを守って commit + push
+- claude codeが担当scope・worktree・候補HEAD・検証ログ・未解決事項を確認して引き継ぎ、他担当の差分を混ぜない
+- 「作業後」と「同じHEADの完了証跡」に戻り、同期/衝突解消後の全体gateと必要レビューを実施
+- cache buster規則はruntime変更時に守り、古いHEADのauditだけを引継ぎ完了証拠にしない
 
 ---
 
@@ -183,7 +216,7 @@ codex chat に「○○を磨いて」と日本語指示。codex が PR まで�
 - **claude / codex 両方が同じローカル repo を触る** ことに対する信頼:
   - 両者は同じ Windows ファイルシステム上で動く
   - git で互いの変更を追える
-  - audit.py で破壊検出可能
+  - stack-checkで既存の全体検査を実行する。未検出の問題がないという保証にはしない
 - **両者が同じ origin/main に push する** ことに対する信頼:
   - GitHub の commit author / timestamp で追跡
   - 強制 push 禁止
@@ -202,7 +235,7 @@ codex chat に「○○を磨いて」と日本語指示。codex が PR まで�
 
 ## 監査ログ
 
-毎 commit 直前に audit.py / check-js / Band Room logic check / FM route-handoff check を回す習慣で、整合性は automatic に保たれる。
+「同じHEADの完了証跡」を候補HEADへ紐づける。個別checkの成功だけでは全体整合を完了扱いしない。
 GitHub Actions で audit.py を CI 化したい場合は user 承認が必要 (現状未導入)。
 
 ```yaml
@@ -239,7 +272,7 @@ jobs:
 
 | 課題 | 解決 |
 |---|---|
-| 両 agent が同じ整合性ガードを使う | `python -X utf8 scripts/audit.py` + `node scripts/check-js.mjs` + handoff checks が 1 つの真実 |
+| 両 agent が同じ整合性ガードを使う | 同期/衝突解消後の同じHEADで`node scripts/stack-check.mjs`、FAIL 0 / SKIP 0、0 BADと必要レビュー |
 | cache buster の同期忘れ | audit.py の Section 5 で検出 |
 | engine.js への意図せぬ改変 | AGENTS.md Hard rules + user 承認 |
 | 同時編集衝突 | git pull --rebase + 手動解決 |

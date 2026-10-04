@@ -19,6 +19,7 @@
         "config/external-dependencies.json",
         "config/music-machines.json",
         "docs/ACE-STEP-WORKFLOW.md",
+        "docs/COLLAB-CLAUDE-AND-CODEX.md",
         "docs/autonomy/AUTONOMOUS-RUN.md",
         "docs/autonomy/README.md",
         "docs/autonomy/STACK-INDEX.md",
@@ -27,6 +28,7 @@
         "lyric-lab.html",
         "lyric-lab.js",
         "presets/bands.json",
+        "scripts/check-autonomy-doc-currency.mjs",
         "scripts/stack-check.mjs",
         "sw.js"
       ],
@@ -36,7 +38,7 @@
         "Current control-plane snapshot",
         "Historical TASK E",
         "config/external-dependencies.json",
-        "hazama-fm-v410",
+        "hazama-fm-v412",
         "last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287",
         "worker-gaming",
         "worker.gpu"
@@ -47,6 +49,29 @@
         "`~/ace-step-out",
         "推奨アプローチ（FM workstream・未実行",
         "現在の AI 再現 baseline"
+      ]
+    },
+    {
+      "path": "docs/COLLAB-CLAUDE-AND-CODEX.md",
+      "purpose": "Live Claude/Codex completion and conflict-resolution workflow with final-HEAD evidence.",
+      "watch_exact": [
+        "AGENTS.md",
+        "config/autonomy-doc-currency.json",
+        "docs/autonomy/AUTONOMOUS-RUN.md",
+        "scripts/check-autonomy-doc-currency.mjs",
+        "scripts/stack-check.mjs"
+      ],
+      "watch_prefixes": [],
+      "required_markers": [
+        "--allow-skip",
+        "FAIL 0 / SKIP 0",
+        "FINAL_HEAD=$(git rev-parse HEAD)",
+        "node scripts/stack-check.mjs",
+        "同じHEADの完了証跡"
+      ],
+      "forbidden_markers": [
+        "これだけで OK",
+        "整合性は audit.py で自動チェック"
       ]
     },
     {
@@ -90,11 +115,11 @@
         "BL-043",
         "audio/genre-flavor.js?v=fm-81",
         "band-room.css?v=br-93",
-        "band-room.js?v=br-243",
+        "band-room.js?v=br-245",
         "engine.js?v=fm-119",
         "fm.css?v=fm-54",
         "fm.js?v=fm-72",
-        "hazama-fm-v410",
+        "hazama-fm-v412",
         "last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287",
         "lyric-lab.html",
         "manifest-band-room.webmanifest",
@@ -125,6 +150,7 @@
         "band-room.js",
         "config/external-dependencies.json",
         "config/music-machines.json",
+        "docs/COLLAB-CLAUDE-AND-CODEX.md",
         "docs/autonomy/AUTONOMOUS-RUN.md",
         "docs/autonomy/README.md",
         "docs/autonomy/STACK-INDEX.md",
@@ -139,6 +165,7 @@
         "manifest-band-room.webmanifest",
         "manifest-mixer.webmanifest",
         "manifest.webmanifest",
+        "scripts/check-autonomy-doc-currency.mjs",
         "scripts/check-autonomy-queue.mjs",
         "scripts/stack-check.mjs",
         "style.css",

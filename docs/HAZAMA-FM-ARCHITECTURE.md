@@ -1,5 +1,9 @@
 # Hazama FM — システム全体像
 
+2026-10-03: v412はARCB guitarのbass由来の根音を、原音otherの持続する和音・音域から確かな234小節だけ補正。打点、強弱、bass/drums、ロック奏法と余韻を維持。実RECを独立したSTFT表現でも比較。採用率を正答率と扱わない。[合奏測定](ARCB-MIX-MEASUREMENT.md)。
+
+2026-10-03: v411はARCBの8分／16分の上下ストローク、ロックの刻み、響かせる／カッティング／パームミュートを追加。短い検出音符だけでコードを切らず、同じ弦bankとampを使う。奏法は音符からの推定。実ブラウザ出力と前後比較は[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
+
 2026-10-02: v410は採譜の空白小節へ足していた自動伴奏を止め、既存のreleaseとroom tailを残す。未採譜の歌の音程は生成せず、Electric Sheep／TABASCOのmelodyを明示。合奏・soloの確認と残る採譜漏れは[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。
 
 2026-10-02: 独立WorkbenchのV4は量0の影グルーヴを追加。既存打点を守るHPF補助層と小節同期を同じStrudel演奏コードへ出し、全音の設定を編集・保存できる。先読みqueryと操作cycleを分け、手編集本文・旧保存コード・Stopを保護する。独立再レビューと実ブラウザ検証後、本人が既存公開先への反映を承認。Listenの台帳とmanualを同期。音声runtime/cache tupleは保持し、未聴取・実iPhone未評価を残す。[検証条件](WORKBENCH-SHADOW-GROOVE.md)。
@@ -57,9 +61,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v410`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v412`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-243`, `band-room.css?v=br-93`。
+> `band-room.js?v=br-245`, `band-room.css?v=br-93`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:
@@ -70,6 +74,25 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 > - 既存 synth pad/bass は -26 ~ -28 dB に減衰 (二重発音防止)
 > - 現在のcatalog URLは`config/external-dependencies.json`のcommit-pinned jsDelivrが正本。
 >   `engine.js`の`tonejs.github.io`参照は凍結legacy例外であり、同一URLとはみなさない
+
+## 2026-10-02 — stack-checkの無期限待ちを防ぐローカル候補
+
+Musicで実際の停止事故を観測したという記録ではなく、`scripts/stack-check.mjs`の
+無期限`spawnSync`と全完了後だけの表示を対象にした構造上の予防。
+起動方法・自動発見・PASS/FAIL/SKIP集計・終了コード・`--music-from`・`--allow-skip`・
+任意の`--deploy-health`は維持し、検査の開始・終了・elapsedをその場で表示する。
+
+- audit/Node検査は120秒、pytestは600秒、pytest事前確認は15秒。
+- `--check-timeout-ms N` / `--pytest-timeout-ms N`で1000〜1800000msの整数だけ上書きできる。0・無期限・範囲外は実行前に拒否。
+- Windows 10以降では非継承Job Objectへ`PROC_THREAD_ATTRIBUTE_JOB_LIST`で生成と同時に所属させ、停止状態から実行する。生成後の割当待ちにsupervisorが死ぬ隙間を作らない。期限超過や親終了後の子をまとめて終了し、ActiveProcesses=0の確認まで次へ進めない。対応APIが使えない環境はFAILで止める。
+- 外側watchdogの期限は検査上限＋20秒（helper起動・Job終了確認のための追加猶予）。起動phaseだけを15秒で打ち切る設定ではない。Job終了確認と、終了要求や親exit後のpipe/close待ちはそれぞれ5秒上限。終了確認不能・中断はFAILとして残りを起動しない。timeoutは`--allow-skip`でもFAIL。
+- stdout/stderrは常時drainし、それぞれ末尾32KiBまでだけ保持。既存の失敗要約には終了コード・上限・経過時間・末尾ログを残す。
+- POSIXは検査専用process groupを終了する。Windowsの実検査結果を他OSでの実行証明とは扱わない。
+
+`scripts/lib/stack-check-process.mjs`と`stack-check-job.ps1`が期限と終了管理、
+`scripts/tests/stack-check.test.mjs`が短い注入fixture。追加dependency・CI設定・audio/runtime変更はない。
+Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects)と[生成時のJOB_LIST属性](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-updateprocthreadattribute)。
+
 
 ## 2026-09-29 — 公開ブラウザ試奏の独立境界
 

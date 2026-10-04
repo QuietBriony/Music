@@ -27,7 +27,7 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-243" defer></script>
+<script src="band-room.js?v=br-245" defer></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=4"></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
@@ -204,9 +204,11 @@
     <section id="br-arcb-instruments" hidden aria-label="ARCBの新しい楽器音">
       <strong>ARCB · 新しいギター / ベース / ドラム</strong>
       <label>ギターの音 <select id="br-arcb-guitar-tone" aria-label="ARCBギターの音"><option value="acoustic">クリーン</option><option value="crunch" selected>クランチ</option><option value="drive">ディストーション</option></select></label>
+      <label>弾き方 <select id="br-arcb-guitar-style" aria-label="ギターの弾き方"><option value="rock" selected>ロック</option><option value="open">響かせる</option><option value="cut">カッティング</option><option value="palm">パームミュート</option></select></label>
       <label>空気感 <input id="br-arcb-room" type="range" min="0" max="100" value="35" step="1" aria-label="合奏の空気感" /><output id="br-arcb-room-value" for="br-arcb-room">35%</output></label>
       <p class="br-help">弦の響きとドラムの余韻を残し、同じ部屋で合奏する空気感を加えます。0%で部屋の響きを消せます。melodyは採譜できた歌の音程を弦でなぞります。原音と切り替え、パートを消して練習できます。</p>
       <p id="br-arcb-score-note" class="br-help" hidden aria-live="polite">この曲は歌の音程が未採譜です。melodyは鳴りません。</p>
+      <p class="br-help">ロックはストロークを上下に弾き分け、速い刻みの一部をミュートします。響かせる／カッティング／パームミュートで伸ばす音と切る音を選べます。奏法は音符からの推定です。和音と音域は原音の確かな区間を補正し、曖昧な区間は従来の音符を保ちます。</p>
     </section>
 
     <section id="br-fm-suggestion" hidden aria-live="polite">
