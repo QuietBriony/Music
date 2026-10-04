@@ -19,6 +19,23 @@
 
 ---
 
+## 2026-10-04 — Afterimageの音源登録を分離し既存909を保護 (PR435)
+
+- agent      : Codex（専用worktree、スコア・実登録処理・オフラインUIを独立検証）
+- goal       : AfterimageをPlayした後、既存Acidへ戻ると共有909登録に外部URLが残る回帰を修正する
+- repos      : Music（Workbench pattern・tests・catalog説明・Listen・機能台帳・関連docs）
+- implemented: Afterimageの4ドラムbankと2cymbalを専用名へ分離。音源6URL、音符・打点・gain・DSP・seed・tempoを保持。
+  固定版superdoughの実登録処理とnanostoresで既存909の4ローカル登録・共有cymbal2登録を保護。
+  旧名のnegative controlでは同じ回帰を再現し、修正版のAfterimage→Acid→再選択、保存下書き、Stop／明示Playを検証。
+  Workbench117件、対象39件、スコア14件、オフラインUI29項目PASS。7720イベントとgainは名称逆写像後に互換元と一致。
+  単曲棚9件と従来8素材をListen／manual／READMEへ同期。PWAの既存4cache aliasとPC-local直URLの差を明記。
+  初回全体gateの文書currency失敗を受け、CODEX-HANDOFF／ARCHITECTURE／この追記を同期。音声バイナリ・依存・取得経路追加なし。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（文書同期後のcommit前全体gate、audit 0 BAD / 0 WARN。初回PASS 38 / FAIL 1 / SKIP 0の失敗ログも保持。この記録後の必要検査とcommit後の同じ最終HEADで全体gate・独立レビューを確認してから通常pushする）
+- backlog    : none
+- next       : none
+- blockers   : 新規公開する第三者音声の公開／商用権利、全8分の出音、実iPhoneは未確認。完成扱いにせずPR435はdraft、merge／deployは保留。
+  拒否済みsample GETの再取得・別URL・設定変更は行わない。正本・他worktree・claim・認証・ACL・既存audio runtimeを保持する。
+
 ## 2026-10-04 — Afterimage FINAL v1を既存の単曲棚へ追加 (PR435)
 
 - agent      : Codex（専用worktree、別担当が実スコア・オフライン画面を独立検証）

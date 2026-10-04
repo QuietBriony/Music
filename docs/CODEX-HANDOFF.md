@@ -1,5 +1,12 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-04: Draft PR435のAfterimage FINAL v1は専用のsample名を使い、既存909の登録を保持する候補。
+単曲棚は9件、A/B・LIVE素材は従来8件。選択後は停止して明示Playを待ち、コードと下書きを保護する。
+音源6URLは同一で、音声追加・取得経路の変更なし。既存音素材保存済みのPWAでは4URLが既存cache aliasに一致するが、
+PCローカルbridgeはregistry経路だけを扱うためAfterimageの直URLは外部参照のまま。
+[Workbench README](../experiments/workbench/v1/README.md)とListen・機能台帳・manualを同期。
+実音声・全8分・実iPhone・第三者音声の公開／商用権利は未確認。merge・deployは保留する。
+
 2026-10-03: v412はARCB guitarのbass由来の根音を、原音otherの持続する和音・音域から確かな234小節だけ補正。打点、強弱、bass/drums、ロック奏法と余韻を維持。実RECを独立したSTFT表現でも比較。採用率を正答率と扱わない。[合奏測定](ARCB-MIX-MEASUREMENT.md)。
 
 2026-10-03: v411はARCBの8分／16分の上下ストローク、ロックの刻み、響かせる／カッティング／パームミュートを追加。短い検出音符だけでコードを切らず、同じ弦bankとampを使う。奏法は音符からの推定。実ブラウザ出力と前後比較は[ARCB合奏測定](ARCB-MIX-MEASUREMENT.md)。

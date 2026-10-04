@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { setImmediate } from 'node:timers/promises';
 import { createContext, runInContext } from 'node:vm';
 import test from 'node:test';
+import { createSampleRegistry } from './helpers/sample-registry.mjs';
 import { defaultSet, readTechnoSet, technoSetCode } from '../src/live-code.js';
 import {
   clampLevel, comparableCode, deckMixCode, managedSliderValue,
@@ -76,6 +77,7 @@ class Element {
 
 function harness({ playing = false, code = singleWorkCode(patterns.get(first.path)),
   selection = { kind: 'published', id: first.id, label: first.title, detail: first.label },
+  sampleRegistry,
 } = {}) {
   const storage = new Map();
   const responseGates = new Map();
@@ -94,6 +96,7 @@ function harness({ playing = false, code = singleWorkCode(patterns.get(first.pat
     async evaluate() {
       evaluated++;
       if (evaluation) await evaluation.promise;
+      if (sampleRegistry) await sampleRegistry.registerCode(this.code);
       this.repl.scheduler.started = true;
     },
   };
@@ -452,4 +455,60 @@ test('a saved Afterimage draft retains its code and waits for explicit Play', as
   assert.equal(h.evaluated, 0);
   await h.play();
   assert.equal(h.evaluated, 1);
+});
+
+
+test('Afterimage, existing Acid, re-selection and draft Play preserve local sound registrations', async () => {
+  const registry = await createSampleRegistry();
+  await registry.registerSamples({
+    _base: '/__local__/samples/',
+    RolandTR909_bd: ['bd.wav'], RolandTR909_sd: ['sd.wav'],
+    RolandTR909_hh: ['hh.wav'], RolandTR909_oh: ['oh.wav'],
+    set_crash: ['old-crash.wav'], set_ride: ['old-ride.wav'],
+  });
+  const protectedNames = ['RolandTR909_bd', 'RolandTR909_sd', 'RolandTR909_hh', 'RolandTR909_oh', 'set_crash', 'set_ride'];
+  const original = registry.snapshot(protectedNames);
+  const h = harness({ sampleRegistry: registry });
+  const acid = catalog.items.find((item) => item.id === 'acid-303-909');
+  h.saveDraft();
+  const existingDraft = h.storage.get('drafts');
+  await h.open(afterimage);
+  assert.equal(h.evaluated, 0);
+  assert.deepEqual(registry.snapshot(protectedNames), original);
+  await h.play();
+  assert.equal(h.evaluated, 1);
+  assert.deepEqual(registry.snapshot(protectedNames), original);
+  const newWorkSources = registry.snapshot([
+    'AfterimageFinalV1_bd', 'AfterimageFinalV1_sd', 'AfterimageFinalV1_hh', 'AfterimageFinalV1_oh',
+    'afterimage_final_v1_crash', 'afterimage_final_v1_ride',
+  ]);
+  assert.equal(Object.keys(newWorkSources).length, 6);
+  await h.open(acid);
+  assert.equal(h.state().playing, true, 'existing loop switching keeps its established transport behavior');
+  assert.deepEqual(registry.snapshot(protectedNames), original);
+  await h.open(afterimage);
+  assert.equal(h.state().playing, false);
+  assert.equal(h.evaluated, 2, 'reselecting this finite work waits for a fresh Play');
+  await h.stop();
+  await h.play();
+  assert.equal(h.evaluated, 3);
+  assert.deepEqual(registry.snapshot(protectedNames), original);
+  assert.deepEqual(registry.snapshot(Object.keys(newWorkSources)), newWorkSources);
+  assert.equal(h.storage.get('drafts'), existingDraft, 'published selection and registration do not rewrite saved drafts');
+  const saved = h.editor.code + '\n// retained finite edit';
+  h.saveDraft(false, saved);
+  const savedDraft = h.storage.get('drafts');
+  await h.open(acid);
+  await h.openDraft();
+  assert.equal(h.editor.code, saved);
+  assert.equal(h.state().playing, false);
+  assert.equal(h.storage.get('drafts'), savedDraft);
+  await h.play();
+  assert.deepEqual(registry.snapshot(protectedNames), original);
+  assert.deepEqual(registry.snapshot(Object.keys(newWorkSources)), newWorkSources);
+  await h.stop();
+  assert.equal(h.state().playing, false);
+  assert.equal(h.state().wantsPlayback, false);
+  assert.equal(registry.boundaryAttempts.network, 0);
+  assert.equal(registry.boundaryAttempts.audio, 0);
 });

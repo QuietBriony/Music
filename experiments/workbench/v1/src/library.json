@@ -71,7 +71,7 @@
       "title": "Afterimage（残像）/ Acid Drive",
       "label": "FINAL v1 / 128 BPM / 8:00",
       "indexed_at": "2026-10-04",
-      "description": "256小節の単曲。選択でコードを開き、Playで冒頭から再生。全体音量15%。外部ドラム音源はネット接続が必要。A/B・LIVE素材には使いません。",
+      "description": "256小節の単曲。選択でコードを開き、Playで冒頭から再生。全体音量15%。外部ドラムは初回通信が必要。保存済PWAでは既存の音源cacheを参照。A/B・LIVE素材には使いません。",
       "path": "/patterns/afterimage-final-v1.txt",
       "playback": "from-start",
       "mixable": false

@@ -85,7 +85,7 @@ export async function initPwa({ confirmReload, reload }) {
       prepare.textContent = ready ? '保存した音を更新する' : 'オフライン用の音を端末に保存';
       detail.textContent = ready
         ? 'このブラウザにアプリと音を保存済み（約' + ((state.appBytes + state.soundBytes) / 1_000_000).toFixed(1)
-          + ' MB）。公開8試作と303＋909をネットなしで使えます。音の保存：' + new Date(state.preparedAt).toLocaleString('ja-JP')
+          + ' MB）。従来8試作と303＋909をネットなしで使えます。音の保存：' + new Date(state.preparedAt).toLocaleString('ja-JP')
         : 'ネット接続中に下のボタンで音を保存してください。ホーム画面に追加した後は、追加したアプリ側でも準備OKを確認します。';
       waitingUpdate();
     } catch (error) {
