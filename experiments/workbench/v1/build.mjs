@@ -1,7 +1,8 @@
 import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, relative } from 'node:path';
+import { basename, dirname, join, relative } from 'node:path';
+import { synthInitBundle } from './scripts/strudel-synth-init.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const output = join(root, 'dist');
@@ -19,6 +20,7 @@ await cp(join(root, 'src', 'live-plan.js'), join(output, 'live-plan.js'));
 await cp(join(root, 'src', 'live-controls.js'), join(output, 'live-controls.js'));
 await cp(join(root, 'src', 'shadow-groove.js'), join(output, 'shadow-groove.js'));
 await cp(join(root, 'src', 'audio-playback.js'), join(output, 'audio-playback.js'));
+await cp(join(root, 'src', 'sample-preparation.js'), join(output, 'sample-preparation.js'));
 await cp(join(root, 'src', 'mix-code.js'), join(output, 'mix-code.js'));
 await cp(join(root, 'src', 'tempo-bridge.js'), join(output, 'tempo-bridge.js'));
 await cp(join(root, 'src', 'session-backup.js'), join(output, 'session-backup.js'));
@@ -27,11 +29,17 @@ await cp(join(root, 'src', 'manifest.webmanifest'), join(output, 'manifest.webma
 await cp(join(root, 'src', 'icons'), join(output, 'icons'), { recursive: true });
 await cp(join(root, 'src', 'style.css'), join(output, 'style.css'));
 await cp(join(root, 'src', 'library.json'), join(output, 'library.json'));
-await cp(join(root, 'src', 'patterns'), join(output, 'patterns'), { recursive: true });
+// Keep the received recording-based reference in source/history, outside the
+// published app. The public candidate is its separate synthetic arrangement.
+await cp(join(root, 'src', 'patterns'), join(output, 'patterns'), {
+  recursive: true, filter: (source) => basename(source) !== 'afterimage-final-v1.txt',
+});
 await cp(join(root, 'src', '_headers'), join(output, '_headers'));
 await cp(join(root, 'LICENSE'), join(output, 'LICENSE'));
 await cp(join(root, 'third_party', 'acidbros'), join(output, 'modules', 'acidbros'), { recursive: true });
 await cp(join(root, 'node_modules', '@strudel', 'repl', 'dist'), join(output, 'vendor', 'strudel'), { recursive: true });
+const replPath = join(output, 'vendor', 'strudel', 'index.js');
+await writeFile(replPath, synthInitBundle(await readFile(replPath, 'utf8')));
 await cp(join(root, 'node_modules', '@strudel', 'repl', 'LICENSE'), join(output, 'vendor', 'strudel', 'LICENSE'));
 
 // One immutable app generation: a waiting worker is activated only by the user.

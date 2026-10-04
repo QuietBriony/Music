@@ -20,6 +20,13 @@ test('PWA release contains the complete self-hosted app and valid home-screen as
   for (const path of ['/index.html', '/app.js', '/pwa.js', '/session-backup.js', '/manifest.webmanifest',
     '/vendor/strudel/index.js', '/modules/acidbros/index.html', '/patterns/acid-303-909.txt', '/live-code.js', '/live-plan.js']) assert.ok(urls.includes(path), path);
   assert.equal(urls.filter((url) => url.endsWith('.wav')).length, 4, 'only the four approved bundled acidBros WAVs');
+  assert.ok(urls.includes('/patterns/afterimage-synth-v1.txt'));
+  assert.ok(urls.includes('/sample-preparation.js'));
+  assert.ok(!urls.includes('/patterns/afterimage-final-v1.txt'), 'recorded reference stays outside the published app');
+  await assert.rejects(readFile(new URL('patterns/afterimage-final-v1.txt', dist)), { code: 'ENOENT' });
+  const reference = await readFile(new URL('../src/patterns/afterimage-final-v1.txt', import.meta.url));
+  assert.equal(reference.length, 7797);
+  assert.equal(createHash('sha256').update(reference).digest('hex'), 'd59bb636b012d5e9d780b1127e54a6ae6b3310fd518ef49edc1e44b39289beb4');
   assert.equal(urls.some((url) => url.startsWith('/api/') || url === '/sw.js'), false);
   for (const file of release.assets) {
     const bytes = await readFile(new URL(file.url.slice(1), dist));

@@ -9,6 +9,7 @@ import {
   readBackupState, writeBackupState,
 } from './session-backup.js';
 import { initPwa } from './pwa.js';
+import { createSamplePreparation } from './sample-preparation.js';
 import { initPerformance } from './performance.js';
 import { isSetCode, readTechnoSet } from './live-code.js';
 import { SliderBridge } from './slider-bridge.js';
@@ -90,6 +91,7 @@ let pendingAcidFileId = null;
 let pendingBackup = null;
 let backupReadToken = 0;
 let performance;
+const prepareCodeSamples = createSamplePreparation(() => window.strudel.prebake());
 let setEvaluateTimer;
 const audioStatus = document.querySelector('#audio-status');
 const audioReconnect = document.querySelector('#audio-reconnect');
@@ -580,6 +582,7 @@ function setEditorCode(code) {
   if (!wantsPlayback) activeEditor?.editor?.stop();
   if (!activeEditor) {
     activeEditor = document.createElement('strudel-editor');
+    activeEditor.setAttribute('synth-only', '');
     activeEditor.setAttribute('code', code);
     editorHost.append(activeEditor);
   } else {
@@ -599,9 +602,11 @@ function setEditorCode(code) {
 async function evaluateCurrent(message) {
   const token = ++playbackToken;
   try {
-    // Resume during the tap, before waiting for the REPL's sample preparation.
+    // Resume during the tap, before waiting for the REPL scope and sound setup.
     await audioPlayback.prepare();
     await activeEditor.editor.prebaked;
+    if (token !== playbackToken || !wantsPlayback) return;
+    await prepareCodeSamples(currentCode());
     // Worklets and sample preparation have completed before filtered notes.
     if (token !== playbackToken || !wantsPlayback) return;
     await activeEditor.editor.evaluate();

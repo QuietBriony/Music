@@ -21,6 +21,10 @@ function sourceText(source) {
   return source.replace(/\r\n?/g, '\n').trim();
 }
 
+export function isSynthOnlyCode(source) {
+  return /^\/\/ WORKBENCH_SYNTH_ONLY_V1$/m.test(source.replace(/\r\n?/g, '\n'));
+}
+
 export function splitPublishedPattern(source) {
   const text = sourceText(source);
   const tempo = [...text.matchAll(/^setcpm\(\s*(\d+(?:\.\d+)?)\s*\)\s*;?\s*$/gm)];
@@ -41,7 +45,7 @@ export function singleWorkCode(source, level = 1) {
   // its gain keeps the per-part gain and the Acid post-distortion balance.
   splitPublishedPattern(source);
   return [
-    samplePrelude,
+    ...(isSynthOnlyCode(source) ? [] : [samplePrelude]),
     '// WORKBENCH_SINGLE_V1 — 作品ごとの音量。1が元の音量、0がミュート。',
     `const ${SINGLE_LEVEL} = slider(${clampLevel(level)}, 0, 1, 0.01)`,
     sourceText(source),

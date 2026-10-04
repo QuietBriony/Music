@@ -19,6 +19,26 @@
 
 ---
 
+## 2026-10-04 — Afterimageの6録音voiceを合成した別版を用意 (PR435)
+
+- agent      : Codex（専用worktree、スコア・実ブラウザ・差分を独立担当で検証）
+- goal       : 原版を保管し、録音音源に依存しない別の音色で本人が試聴できるようにする
+- repos      : Music（Workbenchの別score・catalog・sample準備・build・tests・Listen・manual・関連docs）
+- implemented: 原版7797 bytes / SHA256 d59bb636b012d5e9d780b1127e54a6ae6b3310fd518ef49edc1e44b39289beb4を保持し公開buildから除外。
+  public棚は従来8作品とafterimage-synth-v1の9件。bdはsine、sd/hh/oh/crashはwhite、rideはFM squareで別音色にする。
+  128 BPM・256小節・seed731・構成・内蔵15%と全7720イベントの打点・gain・非drum値を保持。白色雑音のPCMはseed731による再現性を主張しない。
+  合成scoreにはsamples/bank/外部URLなし。固定版REPLの配布copyだけにhash固定のopt-in初期化を加え、初回はscopeと既存合成voiceだけを準備。
+  既存作品のdefault録音registryは最初の明示Playで元のloader/URLのまま一度準備。Stop世代保護と失敗時の再取得なしを保持。
+  新しい録音音声・依存・API・公開先は追加しない。実ブラウザ34項目PASS、external/録音WAV request0。
+  冒頭・中盤・終盤各8小節を既存superdoughとfresh OfflineAudioContextで実音出力し、nonfinite/clip0、終端tailの収束を確認。
+  初回context混在FAILは証跡保持。全8分の一括検査は約12分で検査用実行sessionだけ通常中断し、音声未完了を明記する。
+  Workbench130件PASS、配布119filesの原版除外・4既存WAVのみ・原版SHA保持を恒久検査。Listen／manual／関連docsを同期し、commit前の独立レビューで必須修正0。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（今回の合成候補のcommit前全体gate、audit 0 BAD / 0 WARN、5repoのHEAD・statusは実行前後一致。台帳記録後の必要検査とcommit後の同じ最終HEADで全体gate・独立レビュー・上限付き短区間実音検査を照合してから通常pushする）
+- backlog    : none
+- next       : none
+- blockers   : 全8分の音声測定は未完了。本人の音色評価、実iPhoneは未確認。原版の録音音源の公開／商用権利は未確定。
+  PR435はdraft、merge/deployは保留。拒否済みGETの再取得・別経路・認証・ACL・設定変更は行わない。正本・他worktree・claimを保持。
+
 ## 2026-10-04 — Afterimageの音源登録を分離し既存909を保護 (PR435)
 
 - agent      : Codex（専用worktree、スコア・実登録処理・オフラインUIを独立検証）

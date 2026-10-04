@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { setImmediate } from 'node:timers/promises';
 import { createContext, runInContext } from 'node:vm';
 import test from 'node:test';
+import { createSamplePreparation } from '../src/sample-preparation.js';
 import { createSampleRegistry } from './helpers/sample-registry.mjs';
 import { defaultSet, readTechnoSet, technoSetCode } from '../src/live-code.js';
 import {
@@ -77,7 +78,7 @@ class Element {
 
 function harness({ playing = false, code = singleWorkCode(patterns.get(first.path)),
   selection = { kind: 'published', id: first.id, label: first.title, detail: first.label },
-  sampleRegistry,
+  sampleRegistry, loadDefaults = () => {},
 } = {}) {
   const storage = new Map();
   const responseGates = new Map();
@@ -111,6 +112,7 @@ function harness({ playing = false, code = singleWorkCode(patterns.get(first.pat
     busy: false, wantsPlayback: playing, playbackToken: 0,
     SINGLE_LEVEL, DECK_A_LEVEL, DECK_B_LEVEL, DECK_XFADE,
     LEVEL_KEY: 'levels', DECK_KEY: 'decks', DRAFT_KEY: 'drafts',
+    prepareCodeSamples: createSamplePreparation(loadDefaults),
     clampLevel, comparableCode, deckMixCode, managedSliderValue,
     replaceManagedSliderValue, singleWorkCode, upgradeLegacyDraftCode,
     status: new Element(), currentWork: new Element(), draftForm: new Element(),
@@ -273,12 +275,13 @@ test('Stop during selection loading prevents the late response from starting pla
   assert.equal(h.state().wantsPlayback, false);
 });
 
-for (const boundary of ['audio preparation', 'sample preparation', 'evaluation']) {
+for (const boundary of ['audio preparation', 'sample preparation', 'default registries', 'evaluation']) {
   test('Stop during ' + boundary + ' prevents a late playback restart', async () => {
     const h = harness();
     const gate = boundary === 'audio preparation' ? h.waitForPreparation()
       : boundary === 'evaluation' ? h.waitForEvaluation() : deferred();
     if (boundary === 'sample preparation') h.editor.prebaked = gate.promise;
+    if (boundary === 'default registries') h.context.prepareCodeSamples = createSamplePreparation(() => gate.promise);
     const playing = h.play();
     await setImmediate();
     await h.stop();
@@ -300,6 +303,26 @@ test('imported saved code opens stopped even when the prior work was playing', a
   assert.equal(h.state().playing, false);
   await h.play();
   assert.equal(h.evaluated, 1);
+});
+
+test('a failed default registry cannot block synthetic Play or trigger a retry', async () => {
+  let calls = 0;
+  const h = harness({ loadDefaults() { calls++; throw new Error('registry unavailable'); } });
+  await h.play();
+  assert.equal(h.evaluated, 0);
+  assert.equal(h.state().playing, false);
+  assert.equal(calls, 1);
+  await h.play();
+  assert.equal(calls, 1, 'failed registry preparation remains cached');
+  const item = catalog.items.find(entry => entry.id === 'afterimage-synth-v1');
+  await h.open(item);
+  assert.equal(h.state().playing, false);
+  await h.play();
+  assert.equal(h.evaluated, 1);
+  assert.equal(h.state().playing, true);
+  assert.equal(calls, 1);
+  await h.stop();
+  assert.equal(h.state().playing, false);
 });
 
 test('a stored 15% work level survives switching and applies one outer trim', async () => {
@@ -390,8 +413,8 @@ test('opening a saved V3 live set preserves its exact legacy body', async () => 
 });
 
 
-const afterimage = catalog.items.find((item) => item.id === 'afterimage-final-v1');
-assert.ok(afterimage, 'FINAL v1 is available without importing a backup');
+const afterimage = catalog.items.find((item) => item.id === 'afterimage-synth-v1');
+assert.ok(afterimage, 'SYNTH v1 is available without importing a backup');
 
 test('Afterimage opens stopped from a running loop and preserves drafts and deck choices', async () => {
   const h = harness({ playing: true });
@@ -482,7 +505,7 @@ test('Afterimage, existing Acid, re-selection and draft Play preserve local soun
     'AfterimageFinalV1_bd', 'AfterimageFinalV1_sd', 'AfterimageFinalV1_hh', 'AfterimageFinalV1_oh',
     'afterimage_final_v1_crash', 'afterimage_final_v1_ride',
   ]);
-  assert.equal(Object.keys(newWorkSources).length, 6);
+  assert.ok(Object.values(newWorkSources).every(value => value === undefined), 'synthetic selection registers no sample sources');
   await h.open(acid);
   assert.equal(h.state().playing, true, 'existing loop switching keeps its established transport behavior');
   assert.deepEqual(registry.snapshot(protectedNames), original);
