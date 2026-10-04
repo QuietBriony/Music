@@ -7,7 +7,8 @@
 - **[全体像と使い方](docs/MUSIC-STACK-SYSTEM-MANUAL.md)** — 最初の15分、全道具、MIDI / Sonar、保存・iPhone・公開への道筋。
 - **[道具台帳](config/music-stack-tools.json)** — 実装あり／候補／手動／未実装を区別。Listenとmanualの一覧はこのJSONから生成。
 - **[次の楽器：和声マップ＋アシッド](docs/VISUAL-COMPOSER-PLAN.md)** — Drums / Acid / Airの8小節。設計のみ、まだ演奏画面はない。
-- **[推奨設計：過去のネタを触り直すブラウザ制作台](docs/BROWSER-WORKBENCH-DESIGN.md)** — 既存素材、版の保存・再開、コード／画面／チャットの編集をつなぐ。設計段階。
+- **[公開中：LIVE試奏台](https://music-private-live-workbench.pages.dev/?stage=techno)** — LIVEセット、試作のA/Bミックス、コード編集を一つのアプリで試せる。名前付き下書きは端末に保存し、JSONで手動持ち運びできる。
+- **[設計：ブラウザ制作台の全体構想](docs/BROWSER-WORKBENCH-DESIGN.md)** — 共通session、既存作品棚との接続、端末間の自動編集同期は未実装。公開中の試奏台とは範囲が異なる。
 
 active 5 repoの役割は残し、入口・記録・手動受け渡しを統合する。Sonarの代替DAWは作らない。
 機材・現配線・PC実状態はprivate `music-ops`が正本。公開ページから実機操作やuploadは行わない。
