@@ -735,7 +735,7 @@ def _write_snapshot_markdown(snapshot: dict[str, object], md_path: Path) -> None
 
 
 def _read_json(path: Path) -> dict:
-    if not path.exists():
+    if not path.is_file():
         return {}
     try:
         return json.loads(path.read_text(encoding="utf-8"))
