@@ -32,6 +32,75 @@
 - blockers   : Cloudflare認証、OS/network権限、新token作成、人間の音質・実機合格は付与しない。Afterimageの全曲採用・実iPhone・BL-049完了は含まない。
   反映後にWorkerのcapabilityと既存認証の非秘密状態を確認。ログインやtoken保存が必要なら別途本人操作。
 
+## 2026-10-04 — Afterimageの6録音voiceを合成した別版を用意 (PR435)
+
+- agent      : Codex（専用worktree、スコア・実ブラウザ・差分を独立担当で検証）
+- goal       : 原版を保管し、録音音源に依存しない別の音色で本人が試聴できるようにする
+- repos      : Music（Workbenchの別score・catalog・sample準備・build・tests・Listen・manual・関連docs）
+- implemented: 原版7797 bytes / SHA256 d59bb636b012d5e9d780b1127e54a6ae6b3310fd518ef49edc1e44b39289beb4を保持し公開buildから除外。
+  public棚は従来8作品とafterimage-synth-v1の9件。bdはsine、sd/hh/oh/crashはwhite、rideはFM squareで別音色にする。
+  128 BPM・256小節・seed731・構成・内蔵15%と全7720イベントの打点・gain・非drum値を保持。白色雑音のPCMはseed731による再現性を主張しない。
+  合成scoreにはsamples/bank/外部URLなし。固定版REPLの配布copyだけにhash固定のopt-in初期化を加え、初回はscopeと既存合成voiceだけを準備。
+  既存作品のdefault録音registryは最初の明示Playで元のloader/URLのまま一度準備。Stop世代保護と失敗時の再取得なしを保持。
+  新しい録音音声・依存・API・公開先は追加しない。実ブラウザ34項目PASS、external/録音WAV request0。
+  冒頭・中盤・終盤各8小節を既存superdoughとfresh OfflineAudioContextで実音出力し、nonfinite/clip0、終端tailの収束を確認。
+  初回context混在FAILは証跡保持。全8分の一括検査は約12分で検査用実行sessionだけ通常中断し、音声未完了を明記する。
+  Workbench130件PASS、配布119filesの原版除外・4既存WAVのみ・原版SHA保持を恒久検査。Listen／manual／関連docsを同期し、commit前の独立レビューで必須修正0。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（今回の合成候補のcommit前全体gate、audit 0 BAD / 0 WARN、5repoのHEAD・statusは実行前後一致。台帳記録後の必要検査とcommit後の同じ最終HEADで全体gate・独立レビュー・上限付き短区間実音検査を照合してから通常pushする）
+- backlog    : none
+- next       : none
+- blockers   : 全8分の音声測定は未完了。本人の音色評価、実iPhoneは未確認。原版の録音音源の公開／商用権利は未確定。
+  PR435はdraft、merge/deployは保留。拒否済みGETの再取得・別経路・認証・ACL・設定変更は行わない。正本・他worktree・claimを保持。
+
+## 2026-10-04 — Afterimageの音源登録を分離し既存909を保護 (PR435)
+
+- agent      : Codex（専用worktree、スコア・実登録処理・オフラインUIを独立検証）
+- goal       : AfterimageをPlayした後、既存Acidへ戻ると共有909登録に外部URLが残る回帰を修正する
+- repos      : Music（Workbench pattern・tests・catalog説明・Listen・機能台帳・関連docs）
+- implemented: Afterimageの4ドラムbankと2cymbalを専用名へ分離。音源6URL、音符・打点・gain・DSP・seed・tempoを保持。
+  固定版superdoughの実登録処理とnanostoresで既存909の4ローカル登録・共有cymbal2登録を保護。
+  旧名のnegative controlでは同じ回帰を再現し、修正版のAfterimage→Acid→再選択、保存下書き、Stop／明示Playを検証。
+  Workbench117件、対象39件、スコア14件、オフラインUI29項目PASS。7720イベントとgainは名称逆写像後に互換元と一致。
+  単曲棚9件と従来8素材をListen／manual／READMEへ同期。PWAの既存4cache aliasとPC-local直URLの差を明記。
+  初回全体gateの文書currency失敗を受け、CODEX-HANDOFF／ARCHITECTURE／この追記を同期。音声バイナリ・依存・取得経路追加なし。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（文書同期後のcommit前全体gate、audit 0 BAD / 0 WARN。初回PASS 38 / FAIL 1 / SKIP 0の失敗ログも保持。この記録後の必要検査とcommit後の同じ最終HEADで全体gate・独立レビューを確認してから通常pushする）
+- backlog    : none
+- next       : none
+- blockers   : 新規公開する第三者音声の公開／商用権利、全8分の出音、実iPhoneは未確認。完成扱いにせずPR435はdraft、merge／deployは保留。
+  拒否済みsample GETの再取得・別URL・設定変更は行わない。正本・他worktree・claim・認証・ACL・既存audio runtimeを保持する。
+
+## 2026-10-04 — Afterimage FINAL v1を既存の単曲棚へ追加 (PR435)
+
+- agent      : Codex（専用worktree、別担当が実スコア・オフライン画面を独立検証）
+- goal       : 本人依頼の「棚から選んでコードを開き、Playで聴く」を初回JSON importなしで実装する
+- repos      : Music（既存Workbench catalog・pattern・選択guard・tests・README・台帳）
+- implemented: Afterimage FINAL v1互換スコアをAGPL-3.0-or-laterで既存棚へ追加。元の8作品とdefault_id、保存keyを保持。
+  スコアは互換元にSPDXと冒頭開始指定のコメント2行だけを追加。private file ID・受け渡し記録・音源バイナリは公開Gitへ追加しない。
+  単曲選択は読込後の編集確認が完了してからStopして明示Playを待つ。内蔵15%を中立の外側音量で保持する。
+  有限編曲・samples宣言を含む単曲なのでA/B・LIVE素材から除外し、直接IDのdeck要求も拒否する。既存素材の継続再生を保持。
+  コード内の冒頭開始指定は下書きに残り、再選択時も停止してPlayを待つ。遅延cancelと保存済みdraft・音量・A/B選択を保護する。
+  Workbench113 PASS。独立スコア13件とオフライン実ブラウザ29件PASS。固定transpilerで7720 onsets・11音色・256以後の新規発音0を確認。
+  実CyclistのStop→再開は模擬時計で先頭cycle0を確認し、音声試聴とは区別する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（commit前の全体gate、audit 0 BAD / 0 WARN。台帳記録後の必要検査とcommit後の同じ最終HEADで全体gate・独立レビューを完了してから通常pushする）
+- backlog    : none
+- next       : none
+- blockers   : 外部sampleの通常GETが先に拒否されたため、再取得・代替URL・設定変更は行わない。全曲の音声・実iPhone・主観的8分試聴・DJ v2は未確認。
+  PR435をdraftのまま更新し、merge/deployは行わない。BL-049/050/051のclaim、他worktree、認証・ACL・音声runtime・既存配信先を保持する。
+
+## 2026-10-04 — 本人用作品を既存下書き棚で再検証 (PR435)
+
+- agent      : Codex（専用worktree、実スコアと実ブラウザは独立担当で検証）
+- goal       : 既存Workbenchの選択時編集保護と、本人用JSONを既存下書き棚へ追加する経路を確認する
+- repos      : Music（既存Workbenchの汎用guard・README・台帳のみ）
+- implemented: PR435の汎用guardを保持し、main 581ac818を通常merge。双方の既存台帳entryを保持し、未保存編集の再確認とStopの世代保護を維持。
+  本人用スコア・JSON・private file ID・音声は公開Gitへ追加せず、既存importと名前付き下書き棚で扱う。
+  READMEに個人棚の保存範囲とmini列の二重引用符を追記。構文合格と実演奏一致を分け、原本を保持した別の互換版は本人用受け渡しで管理する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（通常merge候補の全体gate、audit 0 BAD / 0 WARN。台帳記録後の必要検査と、候補commit後の同じ最終HEADで全体gate・独立レビューを確認してから通常pushする）
+- backlog    : none
+- next       : none
+- blockers   : 既存外部sampleの通常GETが拒否されたため、完全な音声再生は未検証。再取得・別URL・設定変更は行わない。実iPhone・8分間の主観試聴・DJ v2は未評価。
+  PR435はdraftで継続し、merge/deployは行わない。既存worktree、BL-049/050/051のclaim、音声runtime・公開先・認証・ACLを保持する。
+
 ## 2026-10-03 — ARCBの原音に基づくギター和音・音域補正 (v412 / BL-050)
 
 - agent      : Codex（本人方針どおり単一会話、既存worktreeと公開箱を流用）
@@ -61,6 +130,24 @@
 - backlog    : BL-050を前進。奏法の推定、和音と採譜漏れは継続
 - next       : BL-050 — guitar多声音高／和音と採譜漏れを原音全体の根拠付きで補正
 - blockers   : 実iPhoneの負荷と本人の耳の最終判定は未評価。数値を人の試聴や原曲一致の保証と扱わない
+
+## 2026-10-02 — 最新main上で棚切替とV4全文編集を再検証 (PR435)
+
+- agent      : Codex（担当worktree、独立エージェントによるレビューPASS）
+- goal       : PR435を最新mainへ通常mergeし、影グルーヴV4・ARCB更新との統合を検証する
+- repos      : Music（自分の差分はWorkbench app・tests・README・台帳のみ）
+- implemented: feature/workbench-selection-guardへmain 42b67afを統合し、ARCB・影グルーヴ・従来PR435の台帳記録を全文保持。
+  棚・2デッキ・下書き・セット移行の読込後再確認を維持し、V4手編集の4経路cancel/Stop連打・保存版/取り込み版・旧V3の恒久回帰11件を追加。
+  Workbench109 PASS、build117 files / PWA0507c3913c5dd26b4ee5。独立検査は既存19件と追加13件PASS、最終差分レビューにブロッカーなし。
+  実Chromeは棚21件＋V4/V3追加22件PASS。影の音色・左右・HPFをキーボード編集し、4経路の遅延cancelとStop5連打後の承認を確認。
+  実Strudel schedulerの明示Play/Stop、全文保存・再選択・実File/JSON preview/merge・imported停止・旧V3全文一致を確認。page/console error0、390px横はみ出しなし。
+  通常merge commitと通常pushで既存Draft PR435を更新する。mainへのmergeとdeployは親threadへ戻す。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（5repo全体。別途audit 0 BAD / 0 WARN、syntax/logic/route checksも成功）
+- backlog    : none
+- next       : none
+- blockers   : Afterimage実データは未取得。Library/DriveのWindows保存障害を再試行せず、架空の曲・コード・棚項目は追加していない。
+  当該曲の15%・256小節・7720イベント・終端・権利・本人の聴感・実iPhoneは未検証。既存曲と明示した生成fixtureの検査を当該曲の検証として扱わない。
+  BL-049/050/051のclaim、他worktree、保留中private-live relay、sister repoは自分の差分で変更しない。認証・ACL・install・新しい公開先の変更なし。
 
 ## 2026-10-02 — Claude/Codexの現行引継ぎを同期後の全体gateへ揃える候補
 
@@ -135,6 +222,24 @@
 - backlog    : BL-049を前進。本人は独立再レビューPASS後にPR／merge／既存Workbench反映を承認
 - next       : BL-049 — 量0から音量を揃えたABを本人が試聴し、騒がしいだけ／kickが弱いなら不採用とする
 - blockers   : 未聴取・実iPhone未評価。数値を音質改善の証明と扱わない。303音量差は調査のみでgain変更なし
+
+## 2026-10-01 — 試作の読込待ちに加えた編集を保護する (Workbench)
+
+- agent      : Codex（分離worktree、独立レビューあり）
+- goal       : 既存の曲棚で選択・読込・Playの安全性を確認し、読込中の未保存編集を守る
+- repos      : Music（experiments/workbench/v1とこの記録のみ）
+- implemented: feature/workbench-selection-guard。曲・2デッキ・下書き・セット移動の4経路で、読込後に編集が増えた場合の置換を再確認。
+  キャンセル時はコード・選択・URL・演奏を保持。下書きフォームの非表示とセット移動の停止処理は承諾後へ移した。
+  既存8試作で回帰14件を実行し、修正前9 PASS / 5 FAILから14 PASSへ。Workbench全体89 PASS / 0 FAIL。
+  Chromeの実UIで既存8試作、明示Play、保存・再選択、読込待ちの編集・キャンセル・競合選択・Stopを21項目確認。
+  390pxで横はみ出しなし、page script error 0。保存15%の復元と、内部15%に外側1.0を掛ける既存音量仕様を検証。
+  独立レビューは選択・mix19 PASS、追加7 PASS、修正必須の所見なし。merge・deployはせずdraft PRで親へ戻す。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（5repo全体。別途audit 0 BAD / 0 WARN、Workbench buildと全89テストを確認）
+- backlog    : none
+- next       : none
+- blockers   : Afterimage実データはLibraryのWindows保存metadata障害で未取得。再試行せず、架空の曲や棚項目は追加していない。
+  Afterimageの256小節・7720イベント・終端・実曲の15%音量、権利、実iPhoneの聴感・長時間動作は未検証。
+  BL-049・050・051のclaim、別worktreeのprivate-live relay候補、正本とsister repoは変更していない。
 
 ## 2026-10-01 — 分離漏れを前提にARCBの合奏を測定・補正 (v409 / BL-050・051)
 

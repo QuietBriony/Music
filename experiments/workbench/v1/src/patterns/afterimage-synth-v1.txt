@@ -1,0 +1,118 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// WORKBENCH_PLAYBACK_V1 from-start
+// WORKBENCH_SYNTH_ONLY_V1
+// Six percussion roles use native synthesis; this is a new timbre preview.
+// ACID DRIVE / AFTERIMAGE SYNTH V1 — 8-minute arrangement, 2026-10-04
+// Built from the open Workbench Acid Drive 128 set (Strudel/superdough 1.3.0).
+// 256 bars at 128 BPM. Original motif and arrangement; synthesized percussion.
+// Deterministic phrase seed: 731. Stop after cycle 256. No A/B source loops.
+setcpm(32)
+const SET_MASTER = slider(0.15,0,1,.01)
+const SEED = 731
+const BASE = [36,null,36,39,31,null,34,36,36,48,null,39,31,null,34,38]
+// 16 chapters of 16 bars: every chapter lasts exactly 30 seconds.
+const CHAPTERS = [
+// name, kick, snare, hats, open, acid, answer, perc, ride, pad, cutoff, resonance, drive
+ ['Ignition',    .82,0,.24,0,.12,0,0,0,.40,420,12,1.7],
+ ['Underpass',   1,.52,.60,.35,.44,.10,.10,0,.30,620,15,2.0],
+ ['First acid',  1,.74,.80,.56,.78,.32,.30,0,.22,850,18,2.4],
+ ['Glass turns', 1,.82,.85,.65,.95,.65,.58,.10,.18,1380,20,2.6],
+ ['Open space',  0,0,.16,0,.26,.32,.08,0,.70,480,17,2.0],
+ ['Re-entry',    1,.70,.76,.50,.80,.46,.42,0,.26,840,18,2.4],
+ ['Pressure',   1,.85,.94,.72,1,.70,.72,.46,.18,1540,20,2.8],
+ ['White line', 1,.94,1,.90,1,.90,.92,.80,.12,2200,22,3.0],
+ ['Afterimage', 0,0,.08,0,.38,.54,.08,0,.76,530,18,2.0],
+ ['Suspension', 0,0,.24,0,.60,.60,.14,0,.55,780,19,2.4],
+ ['Return',     1,.82,.88,.64,1,.68,.54,.22,.20,1350,20,2.7],
+ ['Second skin',1,.90,.97,.76,1,.88,.80,.56,.14,1880,21,2.9],
+ ['Apex',       1,1,1,.96,1,1,.94,1,.12,2460,22,3.1],
+ ['Release',    1,.78,.85,.66,.82,.56,.62,.38,.24,1270,18,2.4],
+ ['Night road', 1,.50,.64,.36,.56,.34,.24,0,.34,740,16,2.1],
+ ['Dissolve',  .75,.25,.40,.10,.36,.18,.08,0,.44,420,12,1.7]
+]
+const smooth = x => { x=Math.max(0,Math.min(1,x)); return x*x*(3-2*x) }
+const frame = time => {
+ const t=Math.max(0,Number(time)), c=Math.min(15,Math.floor(t/16)), local=t%16
+ const now=CHAPTERS[c], before=CHAPTERS[Math.max(0,c-1)]
+ const f={chapter:c,local,name:now[0]}, names=['kick','snare','hh','oh','acid','response','perc','ride','pad','cutoff','q','drive']
+ for(let k=0;k<names.length;k++) f[names[k]]=before[k+1]+(now[k+1]-before[k+1])*smooth(local/2)
+ // Kick changes are exact at chapter boundaries; avoid a half-hearted downbeat.
+ f.kick=now[1]
+ // Eight-bar questions and answers; peaks breathe rather than getting louder every beat.
+ const breath=.83+.17*Math.sin((t-2)*Math.PI/8)
+ f.cutoff*=breath*(.88+.24*local/16)
+ f.decay=.12+.055*smooth(local/16)+.025*(c===7||c===12)
+ // A short drum vacuum before both breakdowns and the final return.
+ if((c===3||c===7)&&local>=15) {f.kick=0;f.snare=0;f.oh=0;f.ride=0}
+ // The second break grows, then leaves half a bar before the return.
+ if(c===9) {f.cutoff=640+1800*smooth(local/16);f.q=19+3*smooth(local/16);if(local>=15.5){f.hh=0;f.acid=0;f.response=0}}
+ // First four bars introduce the motif one fragment at a time.
+ if(c===0&&local<4) f.acid*=.5
+ // Last 8 bars dismantle the drums; last 4 bars hold only the pad and echo.
+ if(c===15&&local>=8) {f.snare=0;f.oh=0;f.ride=0;f.perc=0;f.hh*=1-smooth((local-8)/4)}
+ if(c===15&&local>=12) {f.kick=0;f.acid=0;f.response=0}
+ f.end=t<256?1:0
+ f.fill=t<252&&Math.floor(t)%8===7&&f.kick>0
+ f.crash=[80,96,112,160,176,192].includes(Math.floor(t))
+ return f
+}
+const motif=time=>{
+ const t=Number(time), step=Math.floor((t%1)*16+1e-7)%16, chapter=Math.floor(t/16)
+ const ns=[...BASE]
+ // The open set's home notes remain; only weak beats answer or climb.
+ if(Math.floor(t)%8>=4){
+  const variants=[[3,41],[7,43],[11,38],[15,39]]
+  const v=variants[(chapter+SEED)%4]; ns[v[0]]=v[1]
+ }
+ if(chapter===9&&Math.floor(t)%4>=2){ns[7]=48;ns[15]=46}
+ if(chapter===11||chapter===12){if(Math.floor(t)%8>=6){ns[3]=43;ns[11]=46}}
+ const n=ns[step], prev=ns[(step+15)%16]
+ const ints=(step%2?[3,7]:[7,3]).filter(i=>[0,2,3,5,7,10].includes((n+i)%12))
+ return {note:n,slide:[3,7,11].includes(step)&&n!=null&&prev!=null?n-prev:0,
+  answer:n==null?null:n+12+ints[0],accent:step%4===0||step===6?1.16:.86}
+}
+const level=(pattern,key)=>pattern.mul(gain(signal(t=>frame(t)[key]))).filterWhen(t=>frame(t)[key]>0&&Number(t)<256)
+const cutoff=signal(t=>frame(t).cutoff)
+// Tags identify the six converted roles without adding onset events.
+const synthPart=(pattern,part)=>pattern.withHap(h=>h.withValue(v=>({...v,afterimageSynthPart:part})))
+stack(
+ level(synthPart(s("sine ~ ~ ~ sine ~ ~ ~ sine ~ ~ ~ sine ~ ~ ~").freq(52).penv(36).pattack(.001).pdec(.035).psustain(0).panchor(0)
+  .attack(.002).decay(.20).sustain(0).release(.04).gain(.65),'bd'),'kick'),
+ level(synthPart(s("~ ~ ~ ~ white ~ ~ ~ ~ ~ ~ ~ white ~ ~ ~").hpf(1400).lpf(9000)
+  .attack(.002).decay(.10).sustain(0).release(.025).gain(.38),'sd'),'snare'),
+ level(stack(
+  synthPart(s("~ ~ white ~ ~ ~ white ~ ~ ~ white ~ ~ ~ white ~").hpf(6500)
+   .attack(.001).decay(.035).sustain(0).release(.01).gain(.28),'hh'),
+  synthPart(s("~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ white").hpf(6500)
+   .attack(.001).decay(.035).sustain(0).release(.01).gain(.056).filterWhen(t=>frame(t).fill),'hh')
+ ).pan(.54),'hh'),
+ level(synthPart(s("~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ white ~").hpf(5500)
+  .attack(.001).decay(.22).sustain(0).release(.09).gain(.168).pan(.40),'oh'),'oh'),
+ level(note("c2 ~ c2 eb2 g1 ~ bb1 c2 c2 c3 ~ eb2 g1 ~ bb1 d2")
+  .withHap(h=>h.withValue(v=>({...v,note:motif(h.whole.begin).note})))
+  .s('sawtooth').attack(.003).decay(.16).sustain(0).release(.035)
+  .penv(signal(t=>motif(t).slide)).pattack(.055).pdecay(0).psustain(1).prelease(0).panchor(1)
+  .lpf(cutoff).lpq(signal(t=>frame(t).q)).lpa(.003).lpd(signal(t=>frame(t).decay)).lps(0).lpenv(6.5)
+  .ftype('ladder').distort(signal(t=>frame(t).drive)).postgain(.38).gain(.32)
+  .mul(gain(signal(t=>motif(t).accent))).orbit(1).delay(.12).delaysync(.1875).delayfeedback(.24),'acid'),
+ level(note("~ ~ ~ c4 ~ ~ ~ c4 ~ ~ ~ ~ ~ ~ c4 ~")
+  .withHap(h=>h.withValue(v=>({...v,note:motif(h.whole.begin).answer})))
+  .s('square').hpf(170).lpf(cutoff.mul(1.5)).lpq(8).attack(.004).decay(.11).sustain(0).release(.03)
+  .lpenv(3).lpd(.16).gain(.11).postgain(.4).pan(.64)
+  .orbit(2).delay(.12).delaysync(.125).delayfeedback(.2),'response'),
+ level(note("<[c3,eb3,g3] [eb3,g3,bb3] [bb2,d3,f3] [g2,bb2,d3]>").slow(4)
+  .s('triangle').hpf(90).lpf(cutoff.mul(1.2).add(160)).attack(1.2).decay(.8).sustain(.58).release(1.6)
+  .gain(.12).postgain(.24).pan(signal(t=>.46+.13*Math.sin(Number(t)*Math.PI/32)))
+  .orbit(3).delay(.03).delaysync(.25).delayfeedback(.2),'pad'),
+ level(s("~ ~ ~ ~ white ~ ~ ~ ~ ~ ~ ~ white ~ ~ ~").hpf(900).attack(.002).decay(.1).sustain(0).release(.025).gain(.078).pan(.43),'perc'),
+ level(s("~ ~ ~ square ~ ~ ~ ~ ~ ~ square ~ ~ ~ ~ ~").freq(540).fm(.8).fmh(1.48).hpf(500).lpf(2800)
+  .attack(.002).decay(.055).sustain(0).release(.02).gain(.038).pan(.62).filterWhen(t=>frame(t).chapter>=2),'perc'),
+ level(s("~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ sine ~").freq(110).penv(7).pdec(.08).panchor(0)
+  .attack(.002).decay(.18).sustain(0).release(.02).gain(.078).pan(.35).filterWhen(t=>frame(t).fill),'perc'),
+ level(s("~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ sine ~ ~").freq(220).penv(7).pdec(.08).panchor(0)
+  .attack(.002).decay(.18).sustain(0).release(.02).gain(.065).pan(.65).filterWhen(t=>frame(t).fill),'perc'),
+ synthPart(s("white ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~").hpf(2200).lpf(10000)
+  .attack(.002).decay(.80).sustain(0).release(.55).gain(.060).filterWhen(t=>frame(t).crash&&Number(t)<256),'crash'),
+ level(synthPart(s("~ ~ square ~ ~ ~ square ~ ~ ~ square ~ ~ ~ square ~").freq(820).fm(.8).fmh(1.48).hpf(1500).lpf(9000)
+  .attack(.002).decay(.16).sustain(0).release(.05).gain(.060).pan(.35),'ride'),'ride')
+).mul(gain(SET_MASTER)).mul(gain(.66)).filterValues(v=>v.gain>0&&v.note!==null)

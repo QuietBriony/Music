@@ -65,6 +65,16 @@
       "indexed_at": "2026-09-28",
       "description": "最初に公開した3本のループを重ねるコード。比較用にそのまま残しています。",
       "path": "/patterns/namima-test.txt"
+    },
+    {
+      "id": "afterimage-synth-v1",
+      "title": "Afterimage（残像）/ Acid Drive・合成版",
+      "label": "SYNTH v1 / 128 BPM / 8:00",
+      "indexed_at": "2026-10-04",
+      "description": "256小節の単曲。6つのドラム／シンバルを既存エンジンで合成し、録音サンプルを読みません。原版とは音色が異なります。選択後は停止してPlayで冒頭から再生。内蔵音量15%。A/B・LIVE素材には使いません。",
+      "path": "/patterns/afterimage-synth-v1.txt",
+      "playback": "from-start",
+      "mixable": false
     }
   ]
 }

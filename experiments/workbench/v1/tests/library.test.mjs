@@ -15,6 +15,8 @@ test('the public library has a valid default and loadable, parseable patterns', 
     assert.match(item.id, /^[a-z0-9-]+$/);
     assert.equal(item.path, '/patterns/' + item.id + '.txt');
     assert.ok(item.title && item.label && item.indexed_at && item.description);
+    if (item.mixable !== undefined) assert.equal(typeof item.mixable, 'boolean');
+    if (item.playback !== undefined) assert.equal(item.playback, 'from-start');
     const code = readFileSync(new URL('patterns/' + item.id + '.txt', source), 'utf8');
     assert.match(code, /stack\(/);
     new Script(code, { filename: item.path });
