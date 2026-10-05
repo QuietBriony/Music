@@ -1,15 +1,14 @@
 # Hazama FM — システム全体像
 
-2026-10-05: Afterimage Synth v1（PR435）はmain `e16dd967a4353d357894ed4c463646abb36cea80`へmergeし、既存Workbenchへ公開済み。
-この記録時点（2026-10-05）の未commit・未公開候補は単曲棚10件（通常6／ミニマルテクノ1／アーカイブ3）。ジャンルは目安として表示し、推定には説明を添え、全件を「試作」とする。アーカイブも再選択できる。
-Minimal Techno 01は124 BPM・32小節（約61.94秒）・曲内master12%。native sine kick／white hat／triangle bassの3パートを反復し、最後4小節でfadeして32小節以後の新規発音は0。
-UIのschedulerと再生表示は自動Stopしないため、終了後は明示Stopを使う。冒頭開始・mixable=falseでA/B・LIVE素材から除く。
-Afterimage Synth v1は128 BPM・256小節（8分）・seed731・曲内master15%と全打点・構成を保持する合成別版。両合成単曲は録音参照0で、選択後は停止して明示Playを待ち、冒頭から開始する。
-原録音版Afterimage FINAL v1のソース（7797 bytes・SHA256 d59bb636b012d5e9d780b1127e54a6ae6b3310fd518ef49edc1e44b39289beb4）と履歴は保持し、公開ビルドから除外する。
-初期REPLはscopeと合成音だけを準備し、WORKBENCH_SYNTH_ONLY_V1は旧作品のdefault録音registryと3ループ前置きを省略。従来7音pack・PC正式ローカル起動の準備条件を保持する。
-従来ID・default・保存互換・A/BとLIVEの素材8件を維持。[Workbench README](../experiments/workbench/v1/README.md)とListen・機能台帳・manualを同期。
-Afterimageの実エンジン3短区間では非有限値・クリップ・録音GET0、終端の余韻は減衰。全8分の実音測定は未完了。本人の試聴・音色採用・実iPhoneは未確認、第三者録音の公開／商用権利は未解決。
-この記録時点では今回候補の最終gate・commit・公開確認は未完了で、base e16の検証結果と区別する。最終HEADと公開結果は対応PRの証跡で確認する。
+2026-10-05: ジャンル表示・通常6／ミニマル1／アーカイブ3の棚10件はPR445でmain `e7554c8f517633d695ce47836fb9a588af246f15`へmergeし、既存WorkbenchとMusicの案内へ公開済み。Afterimage Synth v1（PR435）の公開済み事実も維持する。
+この記録時点の新候補は、同じMinimal Techno 01に限定した「一回再生／固定ループ／自動展開」。既定の一回再生は124 BPM・32小節（約61.94秒）・曲内master12%、末尾4小節のfadeと32小節以後の新規発音0を保持する。
+固定ループは32小節を反復し、自動展開は16小節×4章（通常→ハット減／ベース暗め→キック間引き→復帰）の64小節で元へ戻る。各32小節の末尾fadeと冒頭のパート導入を使い、3 native voiceのまま、音符や音量へ変化を累積しない。ループと自動展開は曲内master上限12%。
+`src/minimal-playback.js`の専用marker／mode変換と既存schedulerを使い、反復用タイマー・周期的な再評価・外部APIを追加しない。モード選択は未保存編集を保護してStopと保留中の再評価取消を通し、明示Playを待って冒頭から再開する。モードはコードと既存下書きに残る。
+UIの`#minimal-playback-panel`／`#minimal-playback-mode`は値once／loop／develop、既定once。ページロード時の発音はなく、Stop後の自動再開もない。他作品の再生・保存・defaultと、A/B・LIVE素材8件を保持する。Minimal Techno 01は引き続き冒頭開始・mixable=false。
+両合成単曲は録音参照0。Afterimage Synth v1の128 BPM・256小節・seed731・曲内master15%と全打点・構成は保持し、原録音版Afterimage FINAL v1（7797 bytes・SHA256 d59bb636b012d5e9d780b1127e54a6ae6b3310fd518ef49edc1e44b39289beb4）はソースと履歴に保管し公開buildから除外する。
+A/BはBをAのBPMへ合わせる一つのStrudel clock。A/Bをライブセットへ持ち込み追加303風をMUTE解除で足せるが、素材内の303と別の操作。従来8素材に完全nativeのコードはなく、既存録音／標準RolandTR909の端末準備と権利条件を維持し、acidBros同梱4 WAVの既存許可範囲とは区別する。固定gain 0.7／0.66はリミッターでも自動ラウドネス補正でもない。acidBrosは切替停止する別エンジン。
+初期REPLはscopeと合成音だけを準備し、WORKBENCH_SYNTH_ONLY_V1は旧作品のdefault録音registryと3ループ前置きを省略。従来7音pack・PC正式ローカル起動の準備条件を保持する。[Workbench README](../experiments/workbench/v1/README.md)とListen・機能台帳・manualを同期。
+Afterimage Synth v1の既存3短区間では非有限値・クリップ・録音GET0。全8分の実音測定、本人の聴感・音色採用・実iPhone、第三者録音の公開／商用権利は未確認／未解決。この記録時点では新モードの短PCM・複数周実時間・最終gate・独立レビュー・commit・公開確認は未完了。公開済みPR445の結果を新候補の合格に流用せず、最終HEADと公開結果は対応PRの証跡で確認する。
 
 2026-10-03: v412はARCB guitarのbass由来の根音を、原音otherの持続する和音・音域から確かな234小節だけ補正。打点、強弱、bass/drums、ロック奏法と余韻を維持。実RECを独立したSTFT表現でも比較。採用率を正答率と扱わない。[合奏測定](ARCB-MIX-MEASUREMENT.md)。
 
