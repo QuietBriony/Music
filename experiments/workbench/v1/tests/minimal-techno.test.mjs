@@ -5,6 +5,7 @@ import { registerHooks } from 'node:module';
 import test from 'node:test';
 import vm from 'node:vm';
 import { singleWorkCode, splitPublishedPattern } from '../src/mix-code.js';
+import { minimalPlaybackCode, readMinimalPlaybackMode } from '../src/minimal-playback.js';
 
 const scorePath = new URL('../src/patterns/minimal-techno-01.txt', import.meta.url);
 const bytes = await readFile(scorePath);
@@ -57,6 +58,8 @@ const finite = value => typeof value === 'number' ? Number.isFinite(value)
   : Array.isArray(value) ? value.every(finite)
     : value && typeof value === 'object' ? Object.values(value).every(finite) : true;
 const score = await evaluate(source);
+const loopScore = await evaluate(minimalPlaybackCode(source, 'loop'));
+const developScore = await evaluate(minimalPlaybackCode(source, 'develop'));
 const events = Array.from({ length: 32 }, (_, bar) => onsets(score.pattern, bar, bar + 1)).flat();
 const countRoles = list => list.reduce((counts, event) => {
   const role = event.value.minimalTechnoPart;
@@ -162,6 +165,69 @@ test('the live shelf trim preserves every event and master while applying its ow
     assert.equal(onsets(wrapped.pattern, 0, 32).length, 0);
     assert.equal(onsets(wrapped.pattern, 32, 64).length, 0);
   }
+});
+
+test('fixed loop repeats the complete 32-bar score on the same tempo and bounded master', () => {
+  assert.deepEqual(loopScore.tempos, [31]);
+  assert.equal(onsets(loopScore.pattern, -1, 0).length, 0);
+  const first = onsets(loopScore.pattern, 0, 32), second = onsets(loopScore.pattern, 32, 64);
+  assert.equal(first.length, 332);
+  assert.equal(second.length, 332);
+  second.forEach((event, index) => {
+    const previous = first[index];
+    assert.ok(Math.abs(event.begin - 32 - previous.begin) < 1e-10);
+    assert.equal(event.value.s, previous.value.s);
+    assert.equal(event.value.note, previous.value.note);
+    for (const field of ['gain', 'cutoff']) if (typeof previous.value[field] === 'number') {
+      assert.ok(Math.abs(event.value[field] - previous.value[field]) < 1e-10);
+    }
+  });
+  assert.deepEqual(countRoles(onsets(loopScore.pattern, 32, 34)), {kick: 8});
+  assert.deepEqual(countRoles(onsets(loopScore.pattern, 34, 36)), {kick: 8, hat: 8});
+  loopScore.sliders[0].value = 1;
+  assert.ok(onsets(loopScore.pattern, 64, 96).every(event => event.value.gain <= .58 * .12 + 1e-12));
+  loopScore.sliders[0].value = 0;
+  assert.equal(onsets(loopScore.pattern, 0, 96).length, 0);
+  loopScore.sliders[0].value = .12;
+});
+
+test('automatic development subtracts and returns across a bounded deterministic 64-bar cycle', () => {
+  assert.deepEqual(developScore.tempos, [31]);
+  assert.equal(onsets(developScore.pattern, 16, 17).filter(e => e.value.minimalTechnoPart === 'hat').length, 2);
+  assert.equal(onsets(developScore.pattern, 40, 41).filter(e => e.value.minimalTechnoPart === 'kick').length, 2);
+  assert.equal(onsets(developScore.pattern, 48, 49).filter(e => e.value.minimalTechnoPart === 'kick').length, 4);
+  const first = onsets(developScore.pattern, 0, 64), next = onsets(developScore.pattern, 64, 128);
+  assert.equal(first.length, next.length);
+  assert.ok(first.length < 664 && first.length > 500);
+  next.forEach((event, index) => {
+    assert.ok(Math.abs(event.begin - 64 - first[index].begin) < 1e-10);
+    assert.equal(event.value.s, first[index].value.s);
+    assert.equal(event.value.note, first[index].value.note);
+    for (const field of ['gain', 'cutoff']) if (typeof first[index].value[field] === 'number') {
+      assert.ok(Math.abs(event.value[field] - first[index].value[field]) < 1e-10);
+    }
+  });
+  assert.ok(first.every(finite));
+  assert.ok(first.every(event => event.value.gain <= .58 * .12 + 1e-12));
+  developScore.sliders[0].value = 1;
+  assert.ok(onsets(developScore.pattern, 64, 128).every(event => event.value.gain <= .58 * .12 + 1e-12));
+  developScore.sliders[0].value = .12;
+});
+
+test('mode conversion preserves the body and rejects ambiguous or foreign scores', () => {
+  assert.equal(readMinimalPlaybackMode(source), 'once');
+  const crlf = source.replace(/\r?\n/g, '\r\n');
+  assert.equal(readMinimalPlaybackMode(crlf), 'once');
+  assert.equal(minimalPlaybackCode(minimalPlaybackCode(crlf, 'loop'), 'once'), crlf);
+  for (const mode of ['once', 'loop', 'develop']) {
+    const result = minimalPlaybackCode(source, mode);
+    assert.equal(readMinimalPlaybackMode(result), mode);
+    assert.equal(minimalPlaybackCode(result, 'once'), source);
+  }
+  assert.equal(readMinimalPlaybackMode('const MINIMAL_MODE = \'once\''), null);
+  assert.equal(readMinimalPlaybackMode(source + "\nconst MINIMAL_MODE = 'loop'"), null);
+  assert.throws(() => minimalPlaybackCode(source, 'random'));
+  assert.throws(() => minimalPlaybackCode('unchanged manual draft', 'loop'));
 });
 
 test('pure evaluation changes no score file and opens no network, samples or audio', async () => {

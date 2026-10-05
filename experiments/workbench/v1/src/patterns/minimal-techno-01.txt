@@ -1,17 +1,27 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // WORKBENCH_PLAYBACK_V1 from-start
 // WORKBENCH_SYNTH_ONLY_V1
+// WORKBENCH_MINIMAL_PLAYBACK_V1
 // MINIMAL TECHNO 01 / SMALL STEPS - short original sketch, 2026-10-05.
 // 124 BPM, 32 bars (about 62 seconds). Three native synthesis voices only.
 // Repeated pulse, one quiet bass answer every eight bars, and a slow filter drift.
 // Kick alone for two bars; hats enter at bar 2 and bass at bar 4.
-// The last four bars fade. No new events at or after bar 32; no recorded samples.
+// Once ends after 32 bars. Loop repeats the same clock; develop cycles four 16-bar chapters.
+// The last four bars fade into a quiet boundary. No recorded samples or added voices.
 setcpm(31)
+const MINIMAL_MODE = 'once'
 const SET_MASTER = slider(0.12,0,1,.01)
 const BARS = 32
 const smooth = x => { x=Math.max(0,Math.min(1,x)); return x*x*(3-2*x) }
+const phase = time => MINIMAL_MODE==='once' ? Number(time) : ((Number(time)%BARS)+BARS)%BARS
+const chapter = time => MINIMAL_MODE==='develop' ? Math.floor(Math.max(0,Number(time))/16)%4 : 0
+const keep = (role,time) => {
+ const t=phase(time), step=Math.floor((t%1)*16+1e-7)%16, section=chapter(time)
+ // 0: home, 1: space in hats, 2: subtract kick, 3: return. No accumulating randomness.
+ return !(role==='hat'&&section===1&&step%8!==2) && !(role==='kick'&&section===2&&t>=8&&step%8!==0)
+}
 const fade = time => {
- const t=Number(time)
+ const t=phase(time)
  return t>=0&&t<BARS ? 1-smooth((t-28)/4) : 0
 }
 const bassNote = time => {
@@ -22,7 +32,7 @@ const bassNote = time => {
 const part = (pattern,role,start) => pattern
  .withHap(h=>h.withValue(v=>({...v,minimalTechnoPart:role})))
  .mul(gain(signal(t=>fade(t))))
- .filterWhen(t=>Number(t)>=start&&Number(t)<BARS)
+ .filterWhen(t=>Number(t)>=0&&phase(t)>=start&&phase(t)<BARS&&keep(role,t))
 stack(
  part(s("sine ~ ~ ~ sine ~ ~ ~ sine ~ ~ ~ sine ~ ~ ~")
   .freq(49).penv(28).pattack(.001).pdec(.035).psustain(0).panchor(0)
@@ -32,6 +42,6 @@ stack(
   .gain(.14).pan(.54),'hat',2),
  part(note("c2 ~ ~ ~ ~ ~ g1 ~ ~ ~ ~ ~ c2 ~ ~ ~")
   .withHap(h=>h.withValue(v=>({...v,note:bassNote(h.whole.begin)})))
-  .s('triangle').hpf(35).lpf(signal(t=>520+70*Math.sin(Number(t)*Math.PI/16)))
+  .s('triangle').hpf(35).lpf(signal(t=>(chapter(t)===1?420:520)+70*Math.sin(Number(t)*Math.PI/16)))
   .attack(.004).decay(.13).sustain(0).release(.04).gain(.24),'bass',4)
-).mul(gain(SET_MASTER)).filterValues(v=>v.gain>0)
+).mul(gain(SET_MASTER.fmap(value=>MINIMAL_MODE==='once'?value:Math.min(value,.12)))).filterValues(v=>v.gain>0)
