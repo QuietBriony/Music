@@ -61,6 +61,11 @@ machine / capabilityの正本は`config/music-machines.json`、外部modelのrev
 明示download条件は`config/external-dependencies.json`。`worker-gaming` / `worker.gpu`を使う
 処理は、operatorが空きとdownload / executionを明示した時だけ行う。
 
+2026-10-05: 本人の明示承認により`worker-gaming`へ恒常的な共通`release.publish`を追加。
+端末identityと既存capabilityは保持する。公開はreviewed PRと既存release gateを通す。
+project限定・単発grantではなく、Cloudflare認証、OS/network権限、新token作成や人間試聴の
+合格を付与するものではない。役割境界は[`PC-REGISTRY.md`](PC-REGISTRY.md)を参照。
+
 所有機材、実配置、実配線、exact machine observation は public Music の正本ではない。
 同じ workspace に optional private `../music-ops` がある場合は、その `AGENTS.md`、
 `docs/INDEX.md`、canonical JSON を先に読む。ない環境では推測せず、public-safe な
