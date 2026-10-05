@@ -193,6 +193,73 @@ test('a saved non-default mode reopens from code without new mode settings', () 
   }
 });
 
+test('mode-only changes can return through all three modes without an edit confirmation', async () => {
+  for (const savedMode of ['once', 'loop', 'develop']) {
+    const saved = minimalPlaybackCode(initialCode, savedMode);
+    const h = harness({ playing: true, code: saved, loadedCode: saved });
+    const modes = savedMode === 'loop' ? ['develop', 'once', 'loop'] : ['loop', 'develop', 'once', savedMode];
+    for (const mode of modes) {
+      const changing = h.change(mode);
+      await setImmediate();
+      assert.equal(h.confirms, 0, 'a mode choice alone is not a hand edit');
+      await changing;
+      assert.equal(readMinimalPlaybackMode(h.editor.code), mode);
+      assert.equal(h.editor.repl.scheduler.started, false);
+      assert.equal(h.context.wantsPlayback, false);
+      assert.equal(h.context.loadedCode, saved, 'saving still uses the original baseline');
+    }
+    assert.equal(h.context.hasUnsavedChanges(), false, 'return to the saved mode is clean');
+  }
+});
+
+test('mode-only changes retain the common save and score-replacement guard', async () => {
+  const h = harness();
+  await h.change('loop');
+  assert.equal(h.context.hasUnsavedChanges(), true);
+  const replacing = h.context.mayReplaceCode();
+  await setImmediate();
+  assert.equal(h.confirms, 1, 'replacing the score still protects the unsaved mode');
+  await h.confirm(false);
+  assert.equal(await replacing, false);
+  assert.equal(readMinimalPlaybackMode(h.editor.code), 'loop');
+  const returning = h.change('once');
+  await setImmediate();
+  assert.equal(h.confirms, 1, 'the mode-only return does not add another confirmation');
+  await returning;
+  assert.equal(h.context.hasUnsavedChanges(), false);
+});
+
+test('hand edits after a mode-only change still require confirmation and survive cancellation', async () => {
+  const h = harness();
+  await h.change('loop');
+  h.editor.code += '\n// a real edit after choosing loop';
+  h.editor.repl.scheduler.started = true;
+  h.context.wantsPlayback = true;
+  const edited = h.editor.code;
+  const stopsBefore = h.stops;
+  const changing = h.change('develop');
+  await setImmediate();
+  assert.equal(h.confirms, 1);
+  await h.confirm(false); await changing;
+  assert.equal(h.editor.code, edited);
+  assert.equal(h.editor.repl.scheduler.started, true);
+  assert.equal(h.context.wantsPlayback, true);
+  assert.equal(h.stops, stopsBefore);
+  assert.equal(h.context.hasUnsavedChanges(), true);
+  assert.equal(h.context.minimalPlaybackMode.value, 'loop');
+});
+
+test('an unsupported saved baseline cannot suppress confirmation for a recognized current score', async () => {
+  const h = harness({ loadedCode: 'setcpm(31)\ns("sine")' });
+  const unchanged = h.editor.code;
+  const changing = h.change('loop');
+  await setImmediate();
+  assert.equal(h.confirms, 1);
+  await h.confirm(false); await changing;
+  assert.equal(h.editor.code, unchanged);
+  assert.equal(h.stops, 0);
+});
+
 test('Stop while mode confirmation is open stays stopped after accepting or cancelling', async () => {
   for (const accepted of [true, false]) {
     const edited = initialCode + '\n// unsaved phrase';

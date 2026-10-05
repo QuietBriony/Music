@@ -19,6 +19,18 @@
 
 ---
 
+## 2026-10-05 — ミニマルのモードだけの切替で不要な未保存確認を抑える（候補）
+
+- agent      : Codex（専用worktree、確認契約の査定と独立レビューを分担）
+- goal       : 公開PR446で本人操作により見つかった、未手編集のloopからonceへ戻す時の不要な確認を最小修正
+- repos      : Music（Workbenchのモード確認判定、対象回帰tests、README）
+- implemented: モード切替の確認だけは既知形式のcurrent／loadedを一時的にonceへ揃えて比較し、モード以外の編集がある場合に既存確認を使う。
+  loadedCode、共通未保存判定、下書き保存、他作品切替、確認中の編集再読、Stop／保留取消／明示Playの契約は維持。スコア、DSP、sidecar、音源、公開先は変更しない。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（先行PR446の検証済みbase 671bf06d7c1954ddb73485de75ae7aa8cdb762ecと同treeの結果。今回候補は対象回帰12 tests PASS、モード往復の修正前FAILを保持。最終gate・独立レビュー・公開後の対象操作確認はこの記録時点で未完了。複数周PCM／303比較は変更範囲外なので再実行しない。）
+- backlog    : none
+- next       : none
+- blockers   : この記録時点でなし。最終結果は対応PRとtaskの固定証跡を参照。
+
 ## 2026-10-05 — Minimal Techno 01の固定ループと控えめな自動展開を用意（候補）
 
 - agent      : Codex（専用worktreeでスコア／UI／文書／実音検証／独立レビューを分担）
