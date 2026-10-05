@@ -37,7 +37,8 @@
         "worker.gpu",
         "worker.daw-reference",
         "hardware.inspect",
-        "hardware.prepare"
+        "hardware.prepare",
+        "release.publish"
       ]
     }
   }

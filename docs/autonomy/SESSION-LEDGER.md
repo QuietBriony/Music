@@ -19,6 +19,19 @@
 
 ---
 
+## 2026-10-05 — Workerの恒常公開capabilityを正式に追加
+
+- agent      : Codex
+- goal       : 本人が明示承認した`worker-gaming`の継続的なMusic公開担当を既存仕様へ反映
+- repos      : Music。PR435の曲・棚・runtime差分とは分離
+- implemented: `config/music-machines.json`へ`release.publish`を1項目追加し、PC-REGISTRYとhandoffを同期。既存capabilityと端末identityを保持。
+  恒常的な共通capabilityで、project限定・単発grantではない。媒体はAGENTSの別規則を維持。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（変更前581ac818のclean baselineのみ、audit 0 BAD / 0 WARN。候補commit前と同期後の同じ最終HEADで全体gate・端末登録contract・独立レビューを再確認し、HEAD・5repo状態とログをPRの完了証跡と照合する。）
+- backlog    : none
+- next       : none
+- blockers   : Cloudflare認証、OS/network権限、新token作成、人間の音質・実機合格は付与しない。Afterimageの全曲採用・実iPhone・BL-049完了は含まない。
+  反映後にWorkerのcapabilityと既存認証の非秘密状態を確認。ログインやtoken保存が必要なら別途本人操作。
+
 ## 2026-10-04 — Afterimageの6録音voiceを合成した別版を用意 (PR435)
 
 - agent      : Codex（専用worktree、スコア・実ブラウザ・差分を独立担当で検証）
