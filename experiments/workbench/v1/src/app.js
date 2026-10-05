@@ -785,6 +785,24 @@ function makeElement(tag, className, text) {
 
 function renderPublished() {
   publishedList.replaceChildren();
+  const groups = [
+    { id: 'regular', title: '試作を選ぶ', description: 'ジャンルと説明を見て、聴く試作を選べます。' },
+    { id: 'minimal-techno', title: 'ミニマルテクノ', description: '少数の音を反復し、小さな変化を聴く短い試作。' },
+    { id: 'archive', title: 'アーカイブ・初稿とテスト', description: '初稿とテストを比較用に残しています。ここから選んで、引き続きPlayで聴けます。' },
+  ];
+  const lists = new Map();
+  for (const group of groups) {
+    const section = makeElement('section', 'shelf-group');
+    section.dataset.shelfGroup = group.id;
+    const title = makeElement('h3', '', group.title);
+    title.id = 'shelf-' + group.id + '-title';
+    section.setAttribute('aria-labelledby', title.id);
+    const list = makeElement('div', 'pattern-list');
+    list.id = 'shelf-' + group.id + '-list';
+    section.append(title, makeElement('p', 'shelf-group-description', group.description), list);
+    publishedList.append(section);
+    lists.set(group.id, list);
+  }
   for (const item of catalog.items) {
     const button = makeElement('button', 'pattern-card');
     button.type = 'button';
@@ -793,15 +811,28 @@ function renderPublished() {
     button.append(
       makeElement('span', 'card-label', item.label + ' · ' + item.indexed_at),
       makeElement('strong', '', item.title),
-      makeElement('span', 'card-description', item.description),
     );
+    if (item.genre || item.status === 'prototype') {
+      const tags = makeElement('span', 'card-tags');
+      if (item.genre) tags.append(makeElement('span', 'card-genre', 'ジャンル：' + item.genre));
+      if (item.status === 'prototype') tags.append(makeElement('span', 'card-status', '試作'));
+      button.append(tags);
+    }
+    button.append(makeElement('span', 'card-description', item.description));
+    if (item.genre && item.genre_note) {
+      button.append(makeElement('span', 'card-genre-note', item.genre_note));
+    }
     button.addEventListener('click', async () => {
       await openPublished(item);
       if (activeSelection?.kind === 'published' && activeSelection.id === item.id) {
         document.querySelector('.workspace').scrollIntoView({ behavior: 'auto', block: 'start' });
       }
     });
-    publishedList.append(button);
+    const group = ['minimal-techno', 'archive'].includes(item.shelf) ? item.shelf : 'regular';
+    lists.get(group).append(button);
+  }
+  for (const list of lists.values()) {
+    if (!list.children.length) list.append(makeElement('p', 'empty-note', 'この欄の試作はまだありません。'));
   }
 }
 

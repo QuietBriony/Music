@@ -8,7 +8,10 @@
       "label": "ドラムに余白を作った版",
       "indexed_at": "2026-09-28",
       "description": "96 BPM相当。ドラムの刻みを減らし、速いゴースト音を外した調整版。",
-      "path": "/patterns/aphex1.txt"
+      "path": "/patterns/aphex1.txt",
+      "genre": "IDM／ブロークンビート系",
+      "genre_note": "ドラムの刻みと変則的な構成からの目安です。",
+      "status": "prototype"
     },
     {
       "id": "techno-floor",
@@ -16,7 +19,9 @@
       "label": "4つ打ち / 124 BPM",
       "indexed_at": "2026-09-29",
       "description": "ドラムの低音を4つ打ちにして、高音の切片を裏拍へ。まずは踊れる基準版。",
-      "path": "/patterns/techno-floor.txt"
+      "path": "/patterns/techno-floor.txt",
+      "genre": "テクノ",
+      "status": "prototype"
     },
     {
       "id": "acid-303-909",
@@ -24,7 +29,10 @@
       "label": "ハード版 / 128 BPM",
       "indexed_at": "2026-09-29",
       "description": "共鳴・フィルターのうねり・歪みを強めた303風ベース。画面の縦フェーダーで演奏中に触る。",
-      "path": "/patterns/acid-303-909.txt"
+      "path": "/patterns/acid-303-909.txt",
+      "genre": "アシッドテクノ系",
+      "genre_note": "303風ベースとドラムの構成からの目安です。",
+      "status": "prototype"
     },
     {
       "id": "acid-303-909-v1",
@@ -32,7 +40,11 @@
       "label": "前の穏やかな版 / 128 BPM",
       "indexed_at": "2026-09-29",
       "description": "共鳴と歪みを強める前の版。コード内の青い4つまみで比較できます。",
-      "path": "/patterns/acid-303-909-v1.txt"
+      "path": "/patterns/acid-303-909-v1.txt",
+      "genre": "アシッドテクノ系",
+      "genre_note": "303風ベースとドラムの構成からの目安です。",
+      "status": "prototype",
+      "shelf": "archive"
     },
     {
       "id": "techno-dub",
@@ -40,7 +52,9 @@
       "label": "ダブ寄り / 112 BPM",
       "indexed_at": "2026-09-29",
       "description": "キックは残して高音を減らし、低音とパッドの空間を広げた版。",
-      "path": "/patterns/techno-dub.txt"
+      "path": "/patterns/techno-dub.txt",
+      "genre": "テクノ（ダブ寄り）",
+      "status": "prototype"
     },
     {
       "id": "auto-groove",
@@ -48,7 +62,10 @@
       "label": "自動変奏 / 116 BPM",
       "indexed_at": "2026-09-29",
       "description": "8小節ごとにキックが一度抜け、高音パートは確率で変化。再生中ずっと少しずつ違う。",
-      "path": "/patterns/auto-groove.txt"
+      "path": "/patterns/auto-groove.txt",
+      "genre": "テクノ系",
+      "genre_note": "反復リズムと自動変奏の構成からの目安です。",
+      "status": "prototype"
     },
     {
       "id": "aphex1-v1",
@@ -56,7 +73,11 @@
       "label": "前の版",
       "indexed_at": "2026-09-28",
       "description": "108 BPM相当でドラムを細かく刻んだ最初の公開版。比較用に保存。",
-      "path": "/patterns/aphex1-v1.txt"
+      "path": "/patterns/aphex1-v1.txt",
+      "genre": "IDM／ブロークンビート系",
+      "genre_note": "ドラムの刻みと変則的な構成からの目安です。",
+      "status": "prototype",
+      "shelf": "archive"
     },
     {
       "id": "namima-test",
@@ -64,7 +85,10 @@
       "label": "元のテスト",
       "indexed_at": "2026-09-28",
       "description": "最初に公開した3本のループを重ねるコード。比較用にそのまま残しています。",
-      "path": "/patterns/namima-test.txt"
+      "path": "/patterns/namima-test.txt",
+      "genre": "IDM",
+      "status": "prototype",
+      "shelf": "archive"
     },
     {
       "id": "afterimage-synth-v1",
@@ -74,7 +98,23 @@
       "description": "256小節の単曲。6つのドラム／シンバルを既存エンジンで合成し、録音サンプルを読みません。原版とは音色が異なります。選択後は停止してPlayで冒頭から再生。内蔵音量15%。A/B・LIVE素材には使いません。",
       "path": "/patterns/afterimage-synth-v1.txt",
       "playback": "from-start",
-      "mixable": false
+      "mixable": false,
+      "genre": "アシッドテクノ系",
+      "genre_note": "作品名と303風ベースの構成からの目安です。",
+      "status": "prototype"
+    },
+    {
+      "id": "minimal-techno-01",
+      "title": "Minimal Techno 01・小さな変化",
+      "label": "合成音 / 124 BPM / 約1分",
+      "indexed_at": "2026-10-05",
+      "description": "32小節の短い試作。少数の合成音を反復し、小さな変化を加えます。32小節で発音が終了します。選択後は停止してPlayで冒頭から再生。内蔵音量12%。A/B・LIVE素材には使いません。",
+      "path": "/patterns/minimal-techno-01.txt",
+      "playback": "from-start",
+      "mixable": false,
+      "genre": "ミニマルテクノ",
+      "status": "prototype",
+      "shelf": "minimal-techno"
     }
   ]
 }

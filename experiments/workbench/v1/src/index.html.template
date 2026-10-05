@@ -252,11 +252,11 @@
         <div class="library-heading">
           <div>
             <p class="eyebrow">SAVED IDEAS</p>
-            <h2 id="library-title">試作を選ぶ</h2>
+            <h2 id="library-title">作品棚・ジャンルから選ぶ</h2>
           </div>
           <p>最初の再生はPlay。再生中は別の試作を選ぶと、その演奏へ切り替わります。</p>
         </div>
-        <div id="published-list" class="pattern-list" aria-label="公開した試作"></div>
+        <div id="published-list" class="published-shelf" aria-label="公開した試作"></div>
         <details id="draft-details" class="draft-details">
           <summary>この端末の下書き <span id="draft-count">0件</span></summary>
           <p>自分で保存した版。別の端末へは、下の「持ち運び・バックアップ」から渡せます。</p>

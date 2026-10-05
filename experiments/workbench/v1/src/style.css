@@ -75,11 +75,19 @@ h1 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.6rem); line-height: 1.15; }
 .library-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
 .library-heading p:last-child, .draft-heading p { margin: 0; color: #aaa9b7; font-size: .85rem; }
 .library-heading .eyebrow { margin-bottom: 5px; }
+.published-shelf { display: grid; gap: 24px; }
+.shelf-group + .shelf-group { border-top: 1px solid #393642; padding-top: 18px; }
+.shelf-group h3 { margin: 0 0 8px; font-size: 1rem; }
+.shelf-group-description { margin: 0 0 12px; color: #aaa9b7; font-size: .84rem; line-height: 1.5; }
 .pattern-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
 .pattern-card { display: flex; flex-direction: column; align-items: start; text-align: left; min-height: 132px; gap: 5px; padding: 14px; border-color: #4b4756; background: #20202a; }
 .pattern-card strong { font-size: 1.05rem; }
 .pattern-card[aria-pressed="true"], .draft-open[aria-pressed="true"] { border-color: #9fb2ff; background: #29304a; }
 .card-label { color: #b7b7c7; font-size: .76rem; }
+.card-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.card-genre, .card-status { padding: 3px 7px; border: 1px solid #615d73; border-radius: 6px; color: #d9dcf1; font-size: .73rem; }
+.card-status { border-color: #807354; color: #e5d3a8; }
+.card-genre-note { color: #aaa9b7; font-size: .75rem; line-height: 1.45; }
 .card-description { color: #d2d0da; font-size: .84rem; line-height: 1.45; }
 .draft-details { margin-top: 18px; border-top: 1px solid #393642; padding-top: 12px; }
 .draft-details summary { cursor: pointer; font-size: .93rem; font-weight: 700; }
