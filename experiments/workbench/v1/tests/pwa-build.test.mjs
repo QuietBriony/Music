@@ -19,6 +19,13 @@ test('PWA release contains the complete self-hosted app and valid home-screen as
   const urls = release.assets.map((file) => file.url);
   for (const path of ['/index.html', '/app.js', '/pwa.js', '/session-backup.js', '/manifest.webmanifest',
     '/vendor/strudel/index.js', '/modules/acidbros/index.html', '/patterns/acid-303-909.txt', '/live-code.js', '/live-plan.js']) assert.ok(urls.includes(path), path);
+  const appCode = await readFile(new URL('app.js', dist), 'utf8');
+  const localImports = [...appCode.matchAll(/\bfrom\s+['"](\.\/[^'"]+\.js)['"]/g)].map(match => match[1]);
+  assert.ok(localImports.length > 0, 'app declares local modules');
+  for (const specifier of localImports) {
+    assert.ok(urls.includes('/' + specifier.slice(2)), 'local app import in offline release: ' + specifier);
+    await readFile(new URL(specifier, dist));
+  }
   assert.equal(urls.filter((url) => url.endsWith('.wav')).length, 4, 'only the four approved bundled acidBros WAVs');
   assert.ok(urls.includes('/patterns/afterimage-synth-v1.txt'));
   assert.ok(urls.includes('/sample-preparation.js'));

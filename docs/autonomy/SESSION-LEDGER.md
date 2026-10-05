@@ -19,6 +19,21 @@
 
 ---
 
+## 2026-10-05 — Minimal Techno 01の固定ループと控えめな自動展開を用意（候補）
+
+- agent      : Codex（専用worktreeでスコア／UI／文書／実音検証／独立レビューを分担）
+- goal       : 本人依頼の約62秒ミニマルの連続再生と、引き算・復帰を含む控えめな自動展開を同じWorkbenchへ追加
+- repos      : Music（既存Workbenchの当該単曲・専用mode変換・UI・testsとconfig／Listen／manual／handoff／architecture）
+- implemented: 候補の再生モードはonce／loop／develop、既定once。既存32小節の一回再生を保持し、loopは同じ32小節、developは16小節×4章の64小節で元へ戻る。
+  native sine kick／white hat／triangle bassの3パート、124 BPM、各32小節の末尾4小節fadeと冒頭のパート導入を維持。反復／展開の曲内master上限12%、音数やgainを変化で累積しない。
+  既存schedulerのclockで反復し、新しい周期タイマー・外部API・音源・依存・公開先を追加しない。モード変更は未保存編集保護とStop／保留取消を通し、明示Playで冒頭再開。モードはコードと下書きへ残る。
+  従来default・他9作品・保存互換・A/BとLIVE素材8件を保持し、Minimal Techno 01はmixable=falseを維持。台帳から既存rendererでListen／manualを同期し、README／handoff／architectureを更新。
+  先行の棚10件はPR445でmain e7554c8f517633d695ce47836fb9a588af246f15へmergeし既存2公開先へ反映済み。この記録時点の新モードは未commit・未公開候補。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（先行PR445の最終Fと同一treeのbase e755で検証済み。新モード候補のprecommit／最終HEAD全体gate・短PCM・複数周実時間・独立レビュー・公開確認はこの記録時点では未完了。最終結果は対応PRの証跡で確認する。）
+- backlog    : none
+- next       : none
+- blockers   : 本人の聴感・音色採用・実iPhone、A/B＋追加303の音質と低域干渉は未確認。録音／同梱TR909の従来準備条件・未確定の公開／商用権利は維持し、拒否済み取得の別経路・認証変更を行わない。
+
 ## 2026-10-05 — Workbenchのジャンル表示・短いミニマル・アーカイブ棚を同期（候補）
 
 - agent      : Codex（棚UI・合成パターン・実ブラウザ・文書を分担）

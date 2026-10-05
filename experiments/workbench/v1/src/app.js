@@ -15,6 +15,7 @@ import { isSetCode, readTechnoSet } from './live-code.js';
 import { SliderBridge } from './slider-bridge.js';
 import { setTempoChanges } from './live-controls.js';
 import { AudioPlayback } from './audio-playback.js';
+import { readMinimalPlaybackMode, minimalPlaybackCode } from './minimal-playback.js';
 
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
@@ -40,6 +41,8 @@ const acidFaders = [...acidFaderPanel.querySelectorAll('[data-acid-fader]')];
 const singleLevelPanel = document.querySelector('#single-level-panel');
 const singleLevelFader = document.querySelector('#single-level');
 const singleLevelOutput = document.querySelector('#single-level-output');
+const minimalPlaybackPanel = document.querySelector('#minimal-playback-panel');
+const minimalPlaybackMode = document.querySelector('#minimal-playback-mode');
 const deckASelect = document.querySelector('#deck-a-select');
 const deckBSelect = document.querySelector('#deck-b-select');
 const deckOpenButton = document.querySelector('#deck-open');
@@ -362,6 +365,48 @@ function syncAcidFaders() {
   });
 }
 
+function syncMinimalPlayback() {
+  const mode = readMinimalPlaybackMode(currentCode());
+  minimalPlaybackPanel.hidden = mode === null;
+  minimalPlaybackMode.disabled = mode === null || busy;
+  if (mode !== null) minimalPlaybackMode.value = mode;
+}
+
+async function changeMinimalPlaybackMode() {
+  const mode = minimalPlaybackMode.value;
+  const before = readMinimalPlaybackMode(currentCode());
+  if (busy || !activeEditor?.editor || before === null || mode === before) {
+    queueControlSync();
+    return;
+  }
+  busy = true;
+  queueControlSync();
+  try {
+    if (!await mayReplaceCode(
+      'いまの編集は保存されていません。編集を残して再生モードだけ変え、停止します。',
+      '編集を残して変更',
+    )) return;
+    // Re-read after the confirmation: hand edits can continue while it is open.
+    // Conversion must succeed before stopping or replacing the current score.
+    const code = minimalPlaybackCode(currentCode(), mode);
+    cancelSetEvaluation();
+    closeAcidModule();
+    playbackToken++;
+    wantsPlayback = false;
+    activeEditor.editor.stop();
+    activeEditor.editor.setCode(code);
+    // Keep loadedCode unchanged so this mode edit uses the existing save guard.
+    const label = { once: '1回（ループOFF）', loop: '固定ループ', develop: '自動展開' }[mode];
+    status.textContent = 'モードを「' + label + '」に変更しました。停止中です。Playで冒頭から始めます。';
+  } catch (error) {
+    status.textContent = error.message || '再生モードを変更できませんでした。現在のコードを残しています。';
+  } finally {
+    busy = false;
+    queueControlSync();
+  }
+}
+minimalPlaybackMode.addEventListener('change', changeMinimalPlaybackMode);
+
 function queueControlSync() {
   if (faderSyncQueued) return;
   faderSyncQueued = true;
@@ -369,6 +414,7 @@ function queueControlSync() {
     faderSyncQueued = false;
     syncAcidFaders();
     syncMixFaders();
+    syncMinimalPlayback();
     syncAcidBridgeControls();
     sliderBridge.capture();
     performance?.sync();
@@ -572,9 +618,12 @@ function askConfirmation(message, acceptLabel) {
   });
 }
 
-async function mayReplaceCode() {
+async function mayReplaceCode(
+  message = 'いまの編集は保存されていません。切り替えると消えます。',
+  acceptLabel = '保存せず続ける',
+) {
   return !hasUnsavedChanges() || await askConfirmation(
-    'いまの編集は保存されていません。切り替えると消えます。', '保存せず続ける'
+    message, acceptLabel
   );
 }
 
