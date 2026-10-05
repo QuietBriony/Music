@@ -18,7 +18,7 @@ Without the private overlay, do not infer those details.
 |---|---|---|---|
 | `chouta-surface` | orchestrator and publishing workstation | repo development, stack orchestration, release coordination | assuming studio hardware is attached |
 | `studioPC` | recording and listening workstation | DAW recording, hardware inspection/preparation, ear verification | long unattended GPU batches |
-| `worker-gaming` | batch and reference-render workstation | GPU/batch work, stem preparation, DAW reference rendering | declaring an ear-critical result verified |
+| `worker-gaming` | batch and reference-render workstation | GPU/batch work, stem preparation, DAW reference rendering, reviewed Music publishing | declaring an ear-critical result verified |
 
 These are stable logical IDs, not public hostnames. A physical machine may be
 replaced while retaining the role only after an explicit local rebind and
@@ -74,10 +74,18 @@ does not change the permanent Windows policy.
 
 - Owns long-running analysis, stem preparation, deterministic reference
   renders, and repo-external reports.
-- Does not auto-arm a DAW, record, send device writes, or upload media.
+- Does not auto-arm a DAW, record, or send device writes.
+- Does not upload media as part of batch/reference processing.
 - Does not publish its installed software or machine snapshot as current truth
   for the studio role.
 - Produces review material for later studio/human verification.
+- May publish reviewed Music releases after the required release checks through
+  its persistent, shared `release.publish` capability. This is not a project-limited
+  or one-time grant. Media remains subject to the separate rules in `AGENTS.md`.
+- This capability does not grant Cloudflare access or OS/network permissions.
+  Existing authentication is still required; login, token creation, and security
+  setting changes require separate user authorization. Publishing does not certify
+  a human listening or hardware result.
 
 ## Public vs private machine data
 
