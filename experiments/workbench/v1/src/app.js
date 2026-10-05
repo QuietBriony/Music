@@ -372,6 +372,16 @@ function syncMinimalPlayback() {
   if (mode !== null) minimalPlaybackMode.value = mode;
 }
 
+function hasUnsavedMinimalPlaybackEdits() {
+  if (!hasUnsavedChanges()) return false;
+  const code = currentCode();
+  if (readMinimalPlaybackMode(code) === null || readMinimalPlaybackMode(loadedCode) === null) return true;
+  // A mode choice is saved in code, but another mode choice keeps that body.
+  // Preserve the common dirty/save guard; only this confirmation ignores mode.
+  return comparableCode(minimalPlaybackCode(code, 'once'))
+    !== comparableCode(minimalPlaybackCode(loadedCode, 'once'));
+}
+
 async function changeMinimalPlaybackMode() {
   const mode = minimalPlaybackMode.value;
   const before = readMinimalPlaybackMode(currentCode());
@@ -382,7 +392,7 @@ async function changeMinimalPlaybackMode() {
   busy = true;
   queueControlSync();
   try {
-    if (!await mayReplaceCode(
+    if (hasUnsavedMinimalPlaybackEdits() && !await mayReplaceCode(
       'いまの編集は保存されていません。編集を残して再生モードだけ変え、停止します。',
       '編集を残して変更',
     )) return;
