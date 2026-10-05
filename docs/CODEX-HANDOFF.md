@@ -1,14 +1,15 @@
 # Codex CLI Handoff — Music Stack
 
-2026-10-04: Draft PR435の単曲棚は従来8作品＋Afterimage Synth v1の9件。A/B・LIVE素材は従来8件。
-合成別版は128 BPM・256小節（8分）・seed731・曲内master15%と全打点・構成を保持し、6打楽器を既存エンジンの合成音へ置換。
-録音参照は0で、原音色の再現は主張しない。選択後は停止して明示Playを待ち、冒頭から開始。コードと下書きを保護する。
-原録音版Afterimage FINAL v1のソース（7797 bytes・SHA256 d59bb636b012d5e9d780b1127e54a6ae6b3310fd518ef49edc1e44b39289beb4）と履歴は変更せず、公開ビルドから除外。
-初期REPLはscopeと合成音だけを準備する。旧作品のdefault録音registryは最初の明示Play時に元URLのまま準備し、WORKBENCH_SYNTH_ONLY_V1は省略。
-従来7音pack・PC正式ローカル起動の準備条件は維持するが、Synth v1の音そのものには録音準備が不要。
-[Workbench README](../experiments/workbench/v1/README.md)とListen・機能台帳・manualを同期。
-合成版は実エンジンの3短区間で測定済み。非有限値・クリップ・録音GETは0、終端の余韻は減衰。全8分の実音測定は未完了。
-本人の試聴・音色採用・実iPhoneは未確認。第三者録音の公開／商用権利は未解決のまま。merge・deployは保留する。
+2026-10-05: Afterimage Synth v1（PR435）はmain `e16dd967a4353d357894ed4c463646abb36cea80`へmergeし、既存Workbenchへ公開済み。
+この記録時点（2026-10-05）の未commit・未公開候補は単曲棚10件（通常6／ミニマルテクノ1／アーカイブ3）。ジャンルは目安として表示し、推定には説明を添え、全件を「試作」とする。アーカイブも再選択できる。
+Minimal Techno 01は124 BPM・32小節（約61.94秒）・曲内master12%。native sine kick／white hat／triangle bassの3パートを反復し、最後4小節でfadeして32小節以後の新規発音は0。
+UIのschedulerと再生表示は自動Stopしないため、終了後は明示Stopを使う。冒頭開始・mixable=falseでA/B・LIVE素材から除く。
+Afterimage Synth v1は128 BPM・256小節（8分）・seed731・曲内master15%と全打点・構成を保持する合成別版。両合成単曲は録音参照0で、選択後は停止して明示Playを待ち、冒頭から開始する。
+原録音版Afterimage FINAL v1のソース（7797 bytes・SHA256 d59bb636b012d5e9d780b1127e54a6ae6b3310fd518ef49edc1e44b39289beb4）と履歴は保持し、公開ビルドから除外する。
+初期REPLはscopeと合成音だけを準備し、WORKBENCH_SYNTH_ONLY_V1は旧作品のdefault録音registryと3ループ前置きを省略。従来7音pack・PC正式ローカル起動の準備条件を保持する。
+従来ID・default・保存互換・A/BとLIVEの素材8件を維持。[Workbench README](../experiments/workbench/v1/README.md)とListen・機能台帳・manualを同期。
+Afterimageの実エンジン3短区間では非有限値・クリップ・録音GET0、終端の余韻は減衰。全8分の実音測定は未完了。本人の試聴・音色採用・実iPhoneは未確認、第三者録音の公開／商用権利は未解決。
+この記録時点では今回候補の最終gate・commit・公開確認は未完了で、base e16の検証結果と区別する。最終HEADと公開結果は対応PRの証跡で確認する。
 
 2026-10-03: v412はARCB guitarのbass由来の根音を、原音otherの持続する和音・音域から確かな234小節だけ補正。打点、強弱、bass/drums、ロック奏法と余韻を維持。実RECを独立したSTFT表現でも比較。採用率を正答率と扱わない。[合奏測定](ARCB-MIX-MEASUREMENT.md)。
 

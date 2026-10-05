@@ -19,6 +19,20 @@
 
 ---
 
+## 2026-10-05 — Workbenchのジャンル表示・短いミニマル・アーカイブ棚を同期（候補）
+
+- agent      : Codex（棚UI・合成パターン・実ブラウザ・文書を分担）
+- goal       : 既存Workbenchの試作をジャンルと棚で探しやすくし、旧作を保管して短いミニマルを試す
+- repos      : Music（既存Workbenchとconfig／Listen／manual／handoff／architecture）
+- implemented: 候補の棚10件を通常6／ミニマルテクノ1／アーカイブ3へ整理。全件「試作」、ジャンルと推定の説明を表示し、アーカイブも再選択可能。
+  Minimal Techno 01はnative sine kick／white hat／triangle bass、124 BPM・32小節（約61.94秒）・内蔵12%。最後4小節でfade、32小節以後の新規発音0。UIは自動Stopせず、冒頭開始・mixable=falseでA/B・LIVEから除外。
+  従来ID・default・保存／下書き互換・A/BとLIVE素材8件を保持。台帳から既存rendererでListenとmanualを同期し、README／handoff／architectureを更新。
+  先行Afterimage Synth v1（PR435）はmain e16dd967a4353d357894ed4c463646abb36cea80へmergeし既存Workbenchへ公開済み。このエントリを記録した時点では今回の棚分類・ジャンル・ミニマル追加は未commit・未公開の候補。最終HEADと公開結果は今回PRの証跡で確認する。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（base E／e16同一treeで検証済み。このエントリの記録時点では今回候補のprecommit全体gateと最終HEADのgate・独立レビュー・公開確認は未完了。実施結果は今回PRの証跡で確認する。）
+- backlog    : none
+- next       : none
+- blockers   : 本人の聴感・音色採用・実iPhoneは未確認。Afterimage全8分の実音測定と原録音の公開／商用権利は未解決。このエントリを記録した時点では新候補のcommit・公開は行っていない。
+
 ## 2026-10-05 — Workerの恒常公開capabilityを正式に追加
 
 - agent      : Codex

@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// WORKBENCH_PLAYBACK_V1 from-start
+// WORKBENCH_SYNTH_ONLY_V1
+// MINIMAL TECHNO 01 / SMALL STEPS - short original sketch, 2026-10-05.
+// 124 BPM, 32 bars (about 62 seconds). Three native synthesis voices only.
+// Repeated pulse, one quiet bass answer every eight bars, and a slow filter drift.
+// Kick alone for two bars; hats enter at bar 2 and bass at bar 4.
+// The last four bars fade. No new events at or after bar 32; no recorded samples.
+setcpm(31)
+const SET_MASTER = slider(0.12,0,1,.01)
+const BARS = 32
+const smooth = x => { x=Math.max(0,Math.min(1,x)); return x*x*(3-2*x) }
+const fade = time => {
+ const t=Number(time)
+ return t>=0&&t<BARS ? 1-smooth((t-28)/4) : 0
+}
+const bassNote = time => {
+ const t=Number(time), step=Math.floor((t%1)*16+1e-7)%16
+ // The home pulse stays C; only the last note answers with Bb in alternate phrases.
+ return step===6 ? 31 : step===12&&Math.floor(t/8)%2===1 ? 34 : 36
+}
+const part = (pattern,role,start) => pattern
+ .withHap(h=>h.withValue(v=>({...v,minimalTechnoPart:role})))
+ .mul(gain(signal(t=>fade(t))))
+ .filterWhen(t=>Number(t)>=start&&Number(t)<BARS)
+stack(
+ part(s("sine ~ ~ ~ sine ~ ~ ~ sine ~ ~ ~ sine ~ ~ ~")
+  .freq(49).penv(28).pattack(.001).pdec(.035).psustain(0).panchor(0)
+  .attack(.002).decay(.15).sustain(0).release(.035).gain(.58),'kick',0),
+ part(s("~ ~ white ~ ~ ~ white ~ ~ ~ white ~ ~ ~ white ~")
+  .hpf(7000).lpf(10000).attack(.001).decay(.026).sustain(0).release(.012)
+  .gain(.14).pan(.54),'hat',2),
+ part(note("c2 ~ ~ ~ ~ ~ g1 ~ ~ ~ ~ ~ c2 ~ ~ ~")
+  .withHap(h=>h.withValue(v=>({...v,note:bassNote(h.whole.begin)})))
+  .s('triangle').hpf(35).lpf(signal(t=>520+70*Math.sin(Number(t)*Math.PI/16)))
+  .attack(.004).decay(.13).sustain(0).release(.04).gain(.24),'bass',4)
+).mul(gain(SET_MASTER)).filterValues(v=>v.gain>0)
