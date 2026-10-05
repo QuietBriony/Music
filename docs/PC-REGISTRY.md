@@ -74,8 +74,8 @@ does not change the permanent Windows policy.
 
 - Owns long-running analysis, stem preparation, deterministic reference
   renders, and repo-external reports.
-- Does not auto-arm a DAW, record, send device writes, or upload media as part of
-  batch/reference processing.
+- Does not auto-arm a DAW, record, or send device writes.
+- Does not upload media as part of batch/reference processing.
 - Does not publish its installed software or machine snapshot as current truth
   for the studio role.
 - Produces review material for later studio/human verification.
