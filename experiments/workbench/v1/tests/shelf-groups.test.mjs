@@ -43,14 +43,14 @@ class Element {
 }
 
 function harness(library = catalog, requested = '') {
-  const publishedList = new Element(), opened = [];
+  const publishedList = new Element(), opened = [], scrolls = [];
   const context = createContext({
     URL, catalog: library, publishedList, draftList: new Element(), currentWork: new Element(),
     activeSelection: null, cancelSetEvaluation() {},
     deckASelect: new Element('select'), deckBSelect: new Element('select'),
     deckOpenButton: new Element('button'), deckSwapButton: new Element('button'),
     status: new Element(),
-    document: { createElement: tag => new Element(tag), querySelector: () => ({ scrollIntoView() {} }) },
+    document: { createElement: tag => new Element(tag), querySelector: selector => ({ scrollIntoView(options) { scrolls.push({ selector, options }); } }) },
     window: {
       location: { href: 'http://localhost/' + (requested ? '?work=' + requested : '') },
       matchMedia: () => ({ matches: false }),
@@ -74,8 +74,22 @@ function harness(library = catalog, requested = '') {
     between('function makeElement(', 'function renderDrafts('),
     between('async function loadCatalog()', "deckOpenButton.addEventListener('click'"),
   ].join('\n'), context);
-  return { context, publishedList, opened, render: () => context.renderPublished(), load: () => context.loadCatalog() };
+  return { context, publishedList, opened, scrolls, render: () => context.renderPublished(), load: () => context.loadCatalog() };
 }
+
+test('a direct minimal link shows playback controls without changing other work landings', async () => {
+  const minimal = harness(catalog, 'minimal-techno-01');
+  await minimal.load();
+  assert.deepEqual(minimal.opened, ['minimal-techno-01']);
+  assert.equal(minimal.scrolls.length, 1);
+  assert.equal(minimal.scrolls[0].selector, '.workspace');
+  assert.deepEqual({ ...minimal.scrolls[0].options }, { behavior: 'auto', block: 'start' });
+  for (const requested of ['', 'aphex1', 'afterimage-synth-v1', 'unknown-work']) {
+    const h = harness(catalog, requested);
+    await h.load();
+    assert.equal(h.scrolls.length, 0, 'other work links keep their existing landing');
+  }
+});
 
 const group = (h, id) => h.publishedList.children.find(section => section.dataset.shelfGroup === id);
 const cardIds = section => section.querySelectorAll('[data-work-id]').map(button => button.dataset.workId);
@@ -91,7 +105,7 @@ test('the shelf retains the default and archive IDs, with one independent finite
   assert.equal(minimal.playback, 'from-start');
   assert.equal(minimal.mixable, false);
   assert.match(minimal.description, /32小節で発音が終了/);
-  assert.match(minimal.description, /内蔵音量12%/);
+  assert.match(minimal.description, /内蔵音量60%/);
   for (const item of catalog.items) {
     assert.equal(item.path, '/patterns/' + item.id + '.txt');
     assert.equal(item.status, 'prototype');

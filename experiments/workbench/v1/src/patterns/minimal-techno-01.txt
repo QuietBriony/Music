@@ -10,7 +10,7 @@
 // The last four bars fade into a quiet boundary. No recorded samples or added voices.
 setcpm(31)
 const MINIMAL_MODE = 'once'
-const SET_MASTER = slider(0.12,0,1,.01)
+const SET_MASTER = slider(0.60,0,1,.01)
 const BARS = 32
 const smooth = x => { x=Math.max(0,Math.min(1,x)); return x*x*(3-2*x) }
 const phase = time => MINIMAL_MODE==='once' ? Number(time) : ((Number(time)%BARS)+BARS)%BARS
@@ -44,4 +44,4 @@ stack(
   .withHap(h=>h.withValue(v=>({...v,note:bassNote(h.whole.begin)})))
   .s('triangle').hpf(35).lpf(signal(t=>(chapter(t)===1?420:520)+70*Math.sin(Number(t)*Math.PI/16)))
   .attack(.004).decay(.13).sustain(0).release(.04).gain(.24),'bass',4)
-).mul(gain(SET_MASTER.fmap(value=>MINIMAL_MODE==='once'?value:Math.min(value,.12)))).filterValues(v=>v.gain>0)
+).mul(gain(SET_MASTER.fmap(value=>MINIMAL_MODE==='once'?value:Math.min(value,.60)))).filterValues(v=>v.gain>0)

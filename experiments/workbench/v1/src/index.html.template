@@ -297,15 +297,22 @@
             <button id="reload-pattern" type="button" disabled title="選択した保存版のコードに戻す">選択中の版に戻す</button>
           </div>
         </div>
-        <section id="minimal-playback-panel" class="minimal-playback-panel" aria-label="ミニマルテクノの再生モード" hidden>
-          <label for="minimal-playback-mode">ミニマルテクノの再生
-            <select id="minimal-playback-mode" aria-describedby="minimal-playback-help" disabled>
+        <section id="minimal-playback-panel" class="minimal-playback-panel" aria-label="ミニマルテクノの聴き方と再生モード" hidden>
+          <div class="minimal-first-steps">
+            <h3>Playで聴く · Stopで止める</h3>
+            <p>最初はキックだけ。約8秒で3パートが揃います。<a href="#single-level-panel">音量は下のLEVEL</a>で調整できます。</p>
+          </div>
+          <label for="minimal-playback-mode">続け方を選ぶ
+            <select id="minimal-playback-mode" aria-describedby="minimal-playback-detail minimal-playback-help" disabled>
               <option value="once" selected>1回（ループOFF）</option>
               <option value="loop">固定ループ</option>
               <option value="develop">自動展開</option>
             </select>
           </label>
-          <p id="minimal-playback-help">モードを変えると停止します。Playで冒頭から開始。固定ループは同じ32小節、自動展開は繰り返しに変化を加えます。Stopで止まり、勝手には再開しません。</p>
+          <div class="minimal-mode-guide">
+            <p id="minimal-playback-detail" aria-live="polite">1回：32小節・約62秒で音が終わります。終了後はStop。</p>
+            <p id="minimal-playback-help">モードを変えると停止します。もう一度Playで冒頭から開始。聴き直すときもStop → Play。</p>
+          </div>
         </section>
         <form id="draft-form" class="inline-panel" hidden>
           <label for="draft-title">下書きの名前</label>
