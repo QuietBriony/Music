@@ -73,7 +73,7 @@ test('the short 124 BPM score is synth-only and uses the existing shelf format',
   assert.match(source, /^\/\/ WORKBENCH_SYNTH_ONLY_V1$/m);
   assert.doesNotMatch(source, /\bsamples\s*\(|\.bank\s*\(|\bfetch\s*\(|https?:|\/api\/|\.wav\b/);
   assert.deepEqual(score.tempos, [31]);
-  assert.deepEqual(score.sliders.map(({ value, min, max, step }) => [value, min, max, step]), [[.12, 0, 1, .01]]);
+  assert.deepEqual(score.sliders.map(({ value, min, max, step }) => [value, min, max, step]), [[.60, 0, 1, .01]]);
   assert.equal(splitPublishedPattern(source).cpm, 31);
   assert.ok(32 * 60 / 31 > 61 && 32 * 60 / 31 < 63);
 });
@@ -92,9 +92,9 @@ test('three sparse native voices enter gradually and retain a repeated pulse', (
   }
 });
 
-test('resolved synthesis stays finite, quiet and short with no recorded voice', () => {
+test('resolved synthesis stays finite, bounded and short with no recorded voice', () => {
   const native = { kick: 'sine', hat: 'white', bass: 'triangle' };
-  const gains = { kick: .58 * .12, hat: .14 * .12, bass: .24 * .12 };
+  const gains = { kick: .58 * .60, hat: .14 * .60, bass: .24 * .60 };
   for (const event of events) {
     const { value } = event;
     const role = value.minimalTechnoPart;
@@ -118,6 +118,31 @@ test('resolved synthesis stays finite, quiet and short with no recorded voice', 
   for (const event of events.filter(event => event.value.minimalTechnoPart === 'bass')) {
     assert.ok(event.value.cutoff >= 450 && event.value.cutoff <= 590);
     assert.ok([31, 34, 36].includes(event.value.note));
+  }
+});
+
+test('all three modes raise the former master fivefold without changing notes or timing', async () => {
+  for (const mode of ['once', 'loop', 'develop']) {
+    const candidate = await evaluate(minimalPlaybackCode(source, mode));
+    const end = mode === 'once' ? 32 : 64;
+    candidate.sliders[0].value = .12;
+    const former = onsets(candidate.pattern, 0, end);
+    candidate.sliders[0].value = .60;
+    const normal = onsets(candidate.pattern, 0, end);
+    assert.ok(normal.length > 0);
+    assert.equal(normal.length, former.length);
+    normal.forEach((event, index) => {
+      const previous = former[index];
+      assert.deepEqual({ ...event, value: { ...event.value, gain: previous.value.gain } }, previous);
+      assert.ok(Math.abs(event.value.gain - previous.value.gain * 5) < 1e-12);
+    });
+    candidate.sliders[0].value = 1;
+    const upper = onsets(candidate.pattern, 0, end);
+    upper.forEach((event, index) => {
+      const scale = mode === 'once' ? 1 / .60 : 1;
+      assert.ok(Math.abs(event.value.gain - normal[index].value.gain * scale) < 1e-12,
+        mode + ' keeps its existing master behavior with the new repeating-mode ceiling');
+    });
   }
 });
 
@@ -147,7 +172,7 @@ test('the live shelf trim preserves every event and master while applying its ow
     assert.doesNotMatch(code, /\bsamples\s*\(|\/api\//);
     const wrapped = await evaluate(code);
     assert.deepEqual(wrapped.tempos, [31]);
-    assert.deepEqual(wrapped.sliders.map(control => control.value), [level, .12]);
+    assert.deepEqual(wrapped.sliders.map(control => control.value), [level, .60]);
     const result = onsets(wrapped.pattern, 0, 32);
     assert.equal(result.length, events.length);
     result.forEach((event, index) => {
@@ -158,7 +183,7 @@ test('the live shelf trim preserves every event and master while applying its ow
     wrapped.sliders[0].value = .25;
     const live = onsets(wrapped.pattern, 0, 1);
     assert.ok(Math.abs(live[0].value.gain - events[0].value.gain * .25) < 1e-12);
-    wrapped.sliders[1].value = .06;
+    wrapped.sliders[1].value = .30;
     const masterTrimmed = onsets(wrapped.pattern, 0, 1);
     assert.ok(Math.abs(masterTrimmed[0].value.gain - events[0].value.gain * .25 * .5) < 1e-12);
     wrapped.sliders[1].value = 0;
@@ -185,10 +210,10 @@ test('fixed loop repeats the complete 32-bar score on the same tempo and bounded
   assert.deepEqual(countRoles(onsets(loopScore.pattern, 32, 34)), {kick: 8});
   assert.deepEqual(countRoles(onsets(loopScore.pattern, 34, 36)), {kick: 8, hat: 8});
   loopScore.sliders[0].value = 1;
-  assert.ok(onsets(loopScore.pattern, 64, 96).every(event => event.value.gain <= .58 * .12 + 1e-12));
+  assert.ok(onsets(loopScore.pattern, 64, 96).every(event => event.value.gain <= .58 * .60 + 1e-12));
   loopScore.sliders[0].value = 0;
   assert.equal(onsets(loopScore.pattern, 0, 96).length, 0);
-  loopScore.sliders[0].value = .12;
+  loopScore.sliders[0].value = .60;
 });
 
 test('automatic development subtracts and returns across a bounded deterministic 64-bar cycle', () => {
@@ -208,10 +233,10 @@ test('automatic development subtracts and returns across a bounded deterministic
     }
   });
   assert.ok(first.every(finite));
-  assert.ok(first.every(event => event.value.gain <= .58 * .12 + 1e-12));
+  assert.ok(first.every(event => event.value.gain <= .58 * .60 + 1e-12));
   developScore.sliders[0].value = 1;
-  assert.ok(onsets(developScore.pattern, 64, 128).every(event => event.value.gain <= .58 * .12 + 1e-12));
-  developScore.sliders[0].value = .12;
+  assert.ok(onsets(developScore.pattern, 64, 128).every(event => event.value.gain <= .58 * .60 + 1e-12));
+  developScore.sliders[0].value = .60;
 });
 
 test('mode conversion preserves the body and rejects ambiguous or foreign scores', () => {

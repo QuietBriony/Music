@@ -49,7 +49,7 @@ function harness({ playing = false, code = initialCode, loadedCode = initialCode
     activeEditor: { editor }, activeSelection: { kind: 'published', id: 'minimal-techno-01' },
     loadedCode, wantsPlayback: playing, playbackToken: 7, busy: false,
     comparableCode, minimalPlaybackCode, readMinimalPlaybackMode,
-    minimalPlaybackPanel: new Element(), minimalPlaybackMode: new Element(), status: new Element(),
+    minimalPlaybackPanel: new Element(), minimalPlaybackMode: new Element(), minimalPlaybackDetail: new Element(), status: new Element(),
     stopButton: new Element(),
     confirmDialog: new Element(), confirmMessage: new Element(), confirmAccept: new Element(),
     currentCode: () => editor.code,
@@ -92,6 +92,7 @@ test('the optional panel exposes three explicit modes and stays hidden for other
   const h = harness();
   assert.equal(h.context.minimalPlaybackPanel.hidden, false);
   assert.equal(h.context.minimalPlaybackMode.value, 'once');
+  assert.match(h.context.minimalPlaybackDetail.textContent, /1回.*32小節.*62秒/);
   h.editor.code = 'setcpm(31)\ns("sine")';
   h.context.syncMinimalPlayback();
   assert.equal(h.context.minimalPlaybackPanel.hidden, true);
@@ -187,6 +188,8 @@ test('a saved non-default mode reopens from code without new mode settings', () 
     const saved = minimalPlaybackCode(initialCode, mode);
     const h = harness({ code: saved, loadedCode: saved });
     assert.equal(h.context.minimalPlaybackMode.value, mode);
+    assert.match(h.context.minimalPlaybackDetail.textContent,
+      mode === 'loop' ? /同じ32小節.*繰り返し/ : /16小節.*4章.*124秒.*引き算と復帰/);
     assert.equal(h.context.hasUnsavedChanges(), false);
     assert.equal(h.context.wantsPlayback, false);
     assert.equal(h.stops, 0);

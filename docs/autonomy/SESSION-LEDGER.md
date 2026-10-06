@@ -3,6 +3,20 @@
 自律開発 session の追記専用ログ。**新しい session は最新エントリを読んでから始める。**
 古いエントリは編集しない（追記のみ）。新しいものを先頭に積む。
 
+## 2026-10-06 — Minimal Techno 01の標準音量と初回操作案内を修正（ソース候補）
+
+- agent      : Codex（単曲修正・案内・実音測定・狭幅操作・独立レビューを分担）
+- goal       : 本人が報告した低音量と、Play／Stop・再生モード・音量の場所の分かりにくさを既存Workbenchで改善
+- repos      : Music（Workbenchの当該単曲／UI／関連tests／READMEと既存案内）
+- shipped    : 曲内SET_MASTER既定とloop／develop上限を0.12から0.60へ変更。同じLEVELでgainは5倍（約+13.98 dB）、音符・発音時刻・共通native gain・他作品・保存済みLEVELと下書きを保持。
+  直リンクは操作欄から開き、Play／StopとLEVELを案内。onceは32小節・約62秒、loopは同じ32小節反復、developは64小節・約124秒で元へ戻る。モード変更で停止し、次の明示Playで冒頭再開。once終了後は手動Stop。
+  全Workbench 159 tests PASS／FAIL 0／SKIP 0、build成功。配布対象の他9作品とnative vendorは旧mainのbytesと一致。既存rendererでListen／manualへ用途と操作を同期。
+  base mainは3ba558d80521de48f043fdf3d45febc8e7cb9575、branchはfeature/workbench-minimal-level-guide-20261005。この記録はcommit前のソース候補で、公開成功を示すものではない。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0、0 BAD。commit前の当該worktreeで必須4checkも成功（audit 0 BAD / 0 WARN）。candidateとmerge後の最終HEADでstrict全体gateと独立レビューを再確認する。
+- backlog    : none
+- next       : none
+- blockers   : この記録時点では最終候補の実PCM・390／320px操作・独立レビューは確認中。実iPhoneと本人の聴感は別途未確認。303／909／Rhodes統合は別worktreeに保持、808比較素材はWorker側の品質検証・採用が未完了のため統合試聴を保留。旧公開URLの403再確認は行わない。
+
 ## エントリ形式
 
 ```

@@ -125,6 +125,11 @@ h1 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.6rem); line-height: 1.15; }
 .minimal-playback-panel label { display: grid; gap: 7px; min-width: 0; color: #d7ebdf; font-size: .85rem; font-weight: 650; }
 .minimal-playback-panel select { width: 100%; min-width: 180px; min-height: 44px; padding: 8px 10px; border: 1px solid #83b396; border-radius: 9px; color: #f4f2f6; background: #20352a; font: inherit; }
 .minimal-playback-panel p { flex: 1 1 260px; margin: 0; color: #c0d3c7; font-size: .82rem; line-height: 1.6; }
+.minimal-first-steps { flex-basis: 100%; }
+.minimal-first-steps h3 { margin: 0 0 5px; font-size: .95rem; }
+.minimal-first-steps a { color: #d7ebdf; text-underline-offset: 3px; }
+.minimal-mode-guide { flex: 1 1 260px; }
+.minimal-mode-guide p + p { margin-top: 6px; }
 .minimal-playback-panel select:focus-visible { outline: 3px solid #9fb2ff; outline-offset: 3px; }
 h2 { margin: 0; font-size: 1rem; }
 #current-work { margin: 6px 0 0; color: #aeb7d7; font-size: .83rem; }
@@ -199,6 +204,8 @@ footer p { margin: 0 0 8px; }
   .workspace { border-radius: 12px; }
   .section-heading { align-items: start; flex-direction: column; }
   .mix-panel { margin-inline: 10px; padding: 12px; }
+  .minimal-playback-panel { margin-inline: 10px; padding: 12px; gap: 12px; }
+  .minimal-playback-panel label { flex-basis: 100%; }
   .mix-panel-heading { align-items: start; flex-direction: column; gap: 5px; }
   .deck-fader-grid { grid-template-columns: 1fr; gap: 0; }
   .acid-faders { margin-inline: 10px; padding: 12px 8px; }

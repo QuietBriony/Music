@@ -43,6 +43,7 @@ const singleLevelFader = document.querySelector('#single-level');
 const singleLevelOutput = document.querySelector('#single-level-output');
 const minimalPlaybackPanel = document.querySelector('#minimal-playback-panel');
 const minimalPlaybackMode = document.querySelector('#minimal-playback-mode');
+const minimalPlaybackDetail = document.querySelector('#minimal-playback-detail');
 const deckASelect = document.querySelector('#deck-a-select');
 const deckBSelect = document.querySelector('#deck-b-select');
 const deckOpenButton = document.querySelector('#deck-open');
@@ -369,7 +370,14 @@ function syncMinimalPlayback() {
   const mode = readMinimalPlaybackMode(currentCode());
   minimalPlaybackPanel.hidden = mode === null;
   minimalPlaybackMode.disabled = mode === null || busy;
-  if (mode !== null) minimalPlaybackMode.value = mode;
+  if (mode !== null) {
+    minimalPlaybackMode.value = mode;
+    minimalPlaybackDetail.textContent = {
+      once: '1回：32小節・約62秒で音が終わります。終了後はStop。',
+      loop: '固定ループ：同じ32小節・約62秒を繰り返します。',
+      develop: '自動展開：16小節ずつ4章、約124秒で引き算と復帰を繰り返します。',
+    }[mode];
+  }
 }
 
 function hasUnsavedMinimalPlaybackEdits() {
@@ -1184,6 +1192,10 @@ async function loadCatalog() {
       || catalog.items.find((entry) => entry.id === catalog.default_id);
     if (!item) throw new Error('開く試作がありません');
     await openPublished(item);
+    if (requested === 'minimal-techno-01' && !params.has('module')
+      && activeSelection?.kind === 'published' && activeSelection.id === requested) {
+      document.querySelector('.workspace').scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
     if (params.get('module') === 'acidbros') openAcidModule({ updateUrl: false });
   } catch (error) {
     status.textContent = error.message || '試作一覧を読み込めませんでした';
