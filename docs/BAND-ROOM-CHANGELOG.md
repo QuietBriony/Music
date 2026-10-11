@@ -1,6 +1,10 @@
-# Band Room - Changelog (v65 -> v413 compact)
+# Band Room - Changelog (v65 -> v414 compact)
 
-Current sw.js VERSION: v413. Latest Band Room runtime change: v413 (optional fixed-phrase guitar synthesis / recording comparison). HAZAMA playability candidate remains v401.
+## v414 — 2026-10-12
+
+Add a bounded modal electric-string candidate to the existing fixed guitar audition. Pick/pickup shape, mode-dependent decay and a weak second polarization retain the struck body and ring. New synthesis / previous synthesis / existing recording share the score, crunch and phrase RMS. No recording is used by the new synthesis; regular ARCB voices are not promoted in this release. Cache `hazama-fm-v414`, client `br-247`, audition modules v2 and electric-string v1; existing CSS remains br-93.
+
+Current sw.js VERSION: v414. Latest Band Room runtime change: v414 (optional new electric-string synthesis with measured ring). HAZAMA playability candidate remains v401.
 
 ## v413 compact - Compare one rock guitar before rebuilding the band
 

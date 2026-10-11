@@ -1,0 +1,525 @@
+{
+  "date": "2026-10-12",
+  "sample_rate": 32000,
+  "conditions": {
+    "phrase": "Actual UI playback BufferSource PCM, 10.8 s, common offline crunch, before user volume, matched full-phrase RMS. No room or recorded excitation in new synthesis.",
+    "isolated": "Four exact MIDI pitches, independent OfflineAudioContext 2.5 s post-crunch renders. All dry notes use the same 18 Hz DC blocker and 0.22 peak normalization; no phrase level matching. Same existing four recorded assets. These isolated notes are not the nearest-grid UI score.",
+    "decay_windows_s_after_onset": [
+      [
+        0.05,
+        0.35
+      ],
+      [
+        1.6,
+        1.9
+      ]
+    ],
+    "pitch": "Normalized waveform autocorrelation around expected period, parabolic peak interpolation. Measures periodicity for a known note, not general transcription accuracy."
+  },
+  "phrase": {
+    "synthetic": {
+      "sha256": "0b14723f2433372654eca49a824d19989005c4534c1c605efa54fe4ba625fcaa",
+      "frames": 345600,
+      "rms": 0.06000000000117413,
+      "peak": 0.47470033168792725,
+      "pitch": {
+        "hz": 82.4068305876893,
+        "cents": -0.0012319420879769952
+      },
+      "attack_rms": 0.08245248405450115,
+      "late_rms": 0.0027134339494121556,
+      "late_vs_attack_db": -29.653689795860924,
+      "attack_spectrum": {
+        "power_centroid_hz": 313.70099295445027,
+        "power_fraction_20_250_1000_4000_16000_hz": [
+          0.8343289855629294,
+          0.06850235024279146,
+          0.09604201456185377,
+          0.0011089857388551668
+        ]
+      },
+      "late_spectrum": {
+        "power_centroid_hz": 111.8087403048423,
+        "power_fraction_20_250_1000_4000_16000_hz": [
+          0.9516128482153352,
+          0.0462408337973551,
+          0.0021463154680390205,
+          1.1884594134461198e-10
+        ]
+      },
+      "end_rms": 0.0
+    },
+    "refined": {
+      "sha256": "a59c76e9098033df3784bfa2d2063f4a16a3324c5c08c6726efa2d2b60ac5e72",
+      "frames": 345600,
+      "rms": 0.06000000000208417,
+      "peak": 0.295075923204422,
+      "pitch": {
+        "hz": 82.4977517372734,
+        "cents": 1.907821204539793
+      },
+      "attack_rms": 0.08017830834988436,
+      "late_rms": 0.020565571888363013,
+      "late_vs_attack_db": -11.818321962227449,
+      "attack_spectrum": {
+        "power_centroid_hz": 236.63700896851014,
+        "power_fraction_20_250_1000_4000_16000_hz": [
+          0.7644638413064917,
+          0.2161809601777692,
+          0.017558843854297058,
+          2.880522847948353e-06
+        ]
+      },
+      "late_spectrum": {
+        "power_centroid_hz": 173.5824944487778,
+        "power_fraction_20_250_1000_4000_16000_hz": [
+          0.8901963776618494,
+          0.10921741395132226,
+          0.0005811626658480437,
+          8.966584587778608e-13
+        ]
+      },
+      "end_rms": 0.0
+    },
+    "recorded": {
+      "sha256": "446fdad1d088741f6545f68eafc15ba1a90e90d9aac534422c3fb66a3ea1db96",
+      "frames": 345600,
+      "rms": 0.060000000002971586,
+      "peak": 0.5560866594314575,
+      "pitch": {
+        "hz": 82.34888327512354,
+        "cents": -1.2190393534410544
+      },
+      "attack_rms": 0.07425483717199442,
+      "late_rms": 0.02161505752587931,
+      "late_vs_attack_db": -10.719367087977293,
+      "attack_spectrum": {
+        "power_centroid_hz": 298.9685416246145,
+        "power_fraction_20_250_1000_4000_16000_hz": [
+          0.5177833151203323,
+          0.4781410427259297,
+          0.003989462154315053,
+          9.801402754074319e-08
+        ]
+      },
+      "late_spectrum": {
+        "power_centroid_hz": 222.95956491472168,
+        "power_fraction_20_250_1000_4000_16000_hz": [
+          0.7362845026667295,
+          0.2637125093328834,
+          2.922010869314941e-06,
+          4.885624036540459e-08
+        ]
+      },
+      "end_rms": 8.067498332328198e-07
+    }
+  },
+  "isolated": {
+    "40": {
+      "synthetic": {
+        "sha256": "e942bd453792cbf1c6727d8366e2464c2f6667c7191a4f30f438c449f0a3f4c1",
+        "frames": 80000,
+        "rms": 0.048239414999381766,
+        "peak": 0.671239972114563,
+        "pitch": {
+          "hz": 82.40680070309872,
+          "cents": -0.0018597690504725138
+        },
+        "attack_rms": 0.0962033128819525,
+        "late_rms": 0.0032225476084038495,
+        "late_vs_attack_db": -29.49981371272138,
+        "attack_spectrum": {
+          "power_centroid_hz": 308.42562277440874,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.8371180793696028,
+            0.06866391912736339,
+            0.09306230492333803,
+            0.001094264821305769
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 111.80823557784052,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.9516131766015752,
+            0.04624064064753356,
+            0.0021461802638677026,
+            5.881904602129683e-11
+          ]
+        }
+      },
+      "refined": {
+        "sha256": "a3fbc772695357959a8b1c7dcaa0ca248d307c6b77ee6b8b30e22c7f36da351a",
+        "frames": 80000,
+        "rms": 0.08698675372580224,
+        "peak": 0.7979795932769775,
+        "pitch": {
+          "hz": 82.49767611299117,
+          "cents": 1.906234211081321
+        },
+        "attack_rms": 0.14249930626405016,
+        "late_rms": 0.03898972135362076,
+        "late_vs_attack_db": -11.257252372216255,
+        "attack_spectrum": {
+          "power_centroid_hz": 237.7682378307581,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.7620641629836661,
+            0.2149934563945496,
+            0.017625575787930378,
+            3.237896471174173e-06
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 173.50047971910956,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.8906704002251409,
+            0.10872610593887738,
+            0.0005850118549608023,
+            6.595445986325782e-13
+          ]
+        }
+      },
+      "recorded": {
+        "sha256": "aaccdc78f6434d3039169e4bfdaa1b7844dddff78416bd21f340759ad04b7081",
+        "frames": 80000,
+        "rms": 0.03751420898110942,
+        "peak": 0.46378475427627563,
+        "pitch": {
+          "hz": 82.35285794912775,
+          "cents": -1.135481147920945
+        },
+        "attack_rms": 0.07205421443903177,
+        "late_rms": 0.021523590055351458,
+        "late_vs_attack_db": -10.494893519053107,
+        "attack_spectrum": {
+          "power_centroid_hz": 297.20257633229625,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.5218883671523339,
+            0.47366995915733784,
+            0.004153869312344778,
+            9.749971785010664e-08
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 222.99135663165387,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.7362579723560763,
+            0.2637389728848457,
+            2.952079476188239e-06,
+            4.880793762289025e-08
+          ]
+        }
+      },
+      "decay_error_db": {
+        "synthetic": 19.004920193668273,
+        "refined": 0.762358853163148
+      }
+    },
+    "45": {
+      "synthetic": {
+        "sha256": "c5d027664c094b4529d6f5302a1bdf828e6433e085b9a277c02990896e71d528",
+        "frames": 80000,
+        "rms": 0.05318241696452513,
+        "peak": 0.8142900466918945,
+        "pitch": {
+          "hz": 109.99983289029835,
+          "cents": -0.002630056592628727
+        },
+        "attack_rms": 0.10682118658935628,
+        "late_rms": 0.003827242374575085,
+        "late_vs_attack_db": -28.915428628987744,
+        "attack_spectrum": {
+          "power_centroid_hz": 188.91745677210213,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.9297841299648121,
+            0.04156661516423567,
+            0.027515580614867998,
+            4.61599840741621e-05
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 133.21626591919204,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.9691762771334079,
+            0.030649741882351825,
+            0.00017397914691741608,
+            3.049830671762201e-11
+          ]
+        }
+      },
+      "refined": {
+        "sha256": "bdf71e7589a03c4512cc51efcb39584db4050c667f03f512aeb532fdd5f4ec01",
+        "frames": 80000,
+        "rms": 0.08065241242526132,
+        "peak": 0.7137095332145691,
+        "pitch": {
+          "hz": 110.12461796322724,
+          "cents": 1.9601886068801508
+        },
+        "attack_rms": 0.1372801534787526,
+        "late_rms": 0.031901492514462046,
+        "late_vs_attack_db": -12.67593508004343,
+        "attack_spectrum": {
+          "power_centroid_hz": 305.0034224687607,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.5519469220471198,
+            0.41416058212355783,
+            0.025665967988427362,
+            1.2792576634774112e-05
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 231.9399655883562,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.7087600841974472,
+            0.28698760462757655,
+            0.004228779581296767,
+            6.33148836017521e-13
+          ]
+        }
+      },
+      "recorded": {
+        "sha256": "6c8fc65d3033b957a3f3bcaa7e0a58b494dc63b3ac195d3bc5dcb2649da61d47",
+        "frames": 80000,
+        "rms": 0.03611720812388051,
+        "peak": 0.4622277319431305,
+        "pitch": {
+          "hz": 109.96870583072685,
+          "cents": -0.49259308540131685
+        },
+        "attack_rms": 0.07865513952858373,
+        "late_rms": 0.014422177565260192,
+        "late_vs_attack_db": -14.733925350565531,
+        "attack_spectrum": {
+          "power_centroid_hz": 260.6317587980448,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.6178585556512364,
+            0.3795521591049197,
+            0.00226790683740075,
+            1.518297828759357e-07
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 133.94004362682608,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.9785902352662714,
+            0.021407166251514582,
+            2.4495293732809953e-06,
+            8.66948823511097e-08
+          ]
+        }
+      },
+      "decay_error_db": {
+        "synthetic": 14.181503278422213,
+        "refined": 2.057990270522101
+      }
+    },
+    "51": {
+      "synthetic": {
+        "sha256": "1750f8f76dc0e64974924afff8322f01d8cfa1c95a16e842d2cc2161037ac368",
+        "frames": 80000,
+        "rms": 0.046488772706545625,
+        "peak": 0.6288794279098511,
+        "pitch": {
+          "hz": 155.56309990836306,
+          "cents": -0.004361966085247481
+        },
+        "attack_rms": 0.09155604457257854,
+        "late_rms": 0.0029895349018176664,
+        "late_vs_attack_db": -29.721667877587418,
+        "attack_spectrum": {
+          "power_centroid_hz": 262.42916519372426,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.8073863781649102,
+            0.14845392778637165,
+            0.04398247454792647,
+            3.248167958376187e-05
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 177.91964606979096,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.8939206972514655,
+            0.10603883425236924,
+            4.0468088298323425e-05,
+            7.875213639629297e-11
+          ]
+        }
+      },
+      "refined": {
+        "sha256": "2cbf15edb53cb180d886dca2152450158f416b12cb93f65bcb3859bcfb2a92e2",
+        "frames": 80000,
+        "rms": 0.07495809132711015,
+        "peak": 0.8226090669631958,
+        "pitch": {
+          "hz": 155.72992345686737,
+          "cents": 1.8511928541476343
+        },
+        "attack_rms": 0.13448915544319834,
+        "late_rms": 0.02901272474344812,
+        "late_vs_attack_db": -13.3219749730608,
+        "attack_spectrum": {
+          "power_centroid_hz": 435.5974538223464,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.17878954751084433,
+            0.7679675197481289,
+            0.04948175942196715,
+            0.0003192254022948249
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 412.80499396451887,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.23533432858833442,
+            0.7540682133942568,
+            0.010594490338966062,
+            3.189093497168442e-10
+          ]
+        }
+      },
+      "recorded": {
+        "sha256": "92a70593c3718f0127a609e3039b814bc12a33cb0ae7beff20b5e35b5beab667",
+        "frames": 80000,
+        "rms": 0.040301091008995676,
+        "peak": 0.5063037276268005,
+        "pitch": {
+          "hz": 155.49541147996754,
+          "cents": -0.75781837075178
+        },
+        "attack_rms": 0.08445536999784582,
+        "late_rms": 0.013992833132366985,
+        "late_vs_attack_db": -15.6144322759227,
+        "attack_spectrum": {
+          "power_centroid_hz": 335.9092973486205,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.19707054150882905,
+            0.7976555364691679,
+            0.004774541350442712,
+            2.79467519382911e-07
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 320.08704266327135,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.03778377233146715,
+            0.9622052209591643,
+            1.0882475241024966e-05,
+            1.2326723782100844e-07
+          ]
+        }
+      },
+      "decay_error_db": {
+        "synthetic": 14.107235601664717,
+        "refined": 2.2924573028618997
+      }
+    },
+    "57": {
+      "synthetic": {
+        "sha256": "c3b9b00cbdb3375f8eddf55e965f0d468b676e789734cca0e4896305eb3c0f06",
+        "frames": 80000,
+        "rms": 0.04428989600059323,
+        "peak": 0.7294459342956543,
+        "pitch": {
+          "hz": 219.99972837131583,
+          "cents": -0.0021375141683598097
+        },
+        "attack_rms": 0.0827414320195129,
+        "late_rms": 0.0023286250468638587,
+        "late_vs_attack_db": -31.012469371555717,
+        "attack_spectrum": {
+          "power_centroid_hz": 406.50917916543557,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.5929005423654027,
+            0.36820700686576,
+            0.03873470340995851,
+            1.4808331126965292e-05
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 276.1739215582924,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.7806506669504293,
+            0.21921901012123746,
+            0.0001303227470556866,
+            8.630375412391699e-11
+          ]
+        }
+      },
+      "refined": {
+        "sha256": "112dc76cdfb4295046b302351be234defc04748215ff4d092143ea4e043f47d7",
+        "frames": 80000,
+        "rms": 0.0740010750961958,
+        "peak": 0.8909271955490112,
+        "pitch": {
+          "hz": 220.16789602719356,
+          "cents": 1.3207111908922091
+        },
+        "attack_rms": 0.13611472951921416,
+        "late_rms": 0.02880021547339332,
+        "late_vs_attack_db": -13.490187749487959,
+        "attack_spectrum": {
+          "power_centroid_hz": 601.8759111353029,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.16577832888698435,
+            0.7832444239741115,
+            0.04804433199131051,
+            0.0018520979790413652
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 573.8888201667079,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.10164289680079235,
+            0.8787222454056769,
+            0.019634224638373072,
+            4.926372560624188e-07
+          ]
+        }
+      },
+      "recorded": {
+        "sha256": "e96623aa3e96daa76e0021938f060b371f16d937dc19a073103c21d3913c4ae5",
+        "frames": 80000,
+        "rms": 0.04213878908501439,
+        "peak": 0.5383346080780029,
+        "pitch": {
+          "hz": 219.64782494047472,
+          "cents": -2.773572619274351
+        },
+        "attack_rms": 0.0845543802085604,
+        "late_rms": 0.01887009464408416,
+        "late_vs_attack_db": -13.027240641370119,
+        "attack_spectrum": {
+          "power_centroid_hz": 498.79475952911696,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.20765561688584738,
+            0.7594739084770828,
+            0.03211580812633698,
+            4.7432360033072e-06
+          ]
+        },
+        "late_spectrum": {
+          "power_centroid_hz": 261.464889253197,
+          "power_fraction_20_250_1000_4000_16000_hz": [
+            0.8345987344389503,
+            0.165105614690522,
+            0.0002953126996723629,
+            8.153395890265612e-08
+          ]
+        }
+      },
+      "decay_error_db": {
+        "synthetic": 17.985228730185597,
+        "refined": 0.4629471081178398
+      }
+    }
+  },
+  "limits": [
+    "Decay and pitch do not certify perceived realism or whole-band reconstruction.",
+    "Reference is one existing single-velocity electric guitar with its own pickup/tone; no attempt to match its full spectrum.",
+    "New string models bounded modes and weakly split polarizations, not measured pickup, bridge coupling, fret noise, bends or player gestures.",
+    "Physical iPhone performance and owner listening are unverified."
+  ],
+  "mean_isolated_decay_error_db": {
+    "synthetic": 16.319721950985198,
+    "refined": 1.3939383836662471
+  }
+}

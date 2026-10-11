@@ -1,5 +1,13 @@
 # Session Ledger — music-stack
 
+## 2026-10-12 — codex / BL-051 guitar sustain candidate v414
+
+- Scope: Music-audio-stability, base main c928fcd7a52be4c5aaebceef7abfc67798d0a4af. Same conversation; no child tasks.
+- Change: optional new modal electric-string synthesis, three-way fixed-phrase comparison and matching Listen/manual entry. Existing ARCB bank, amp, bass/drums and engine.js stay outside this change.
+- Baseline strict stack gate: PASS 40 / FAIL 0 / SKIP 0, exit 0; all five repository HEAD/status/content fingerprints unchanged. New renderer measures pitch, sustain and palm damping across 28 pitch/rate cases.
+- Final candidate/full-stack/public verification is pending at this entry creation; completion proof will be recorded on this work's PR at the exact final HEAD. Local evidence: output/playwright/guitar-sustain/.
+- Next: judge the new guitar's timbre by listening before promotion into ordinary ARCB songs; whole-band realism, detailed articulation and actual iPhone performance remain open.
+
 ## 2026-10-12 — LIVEを再生・変化・保存のシンプルな演奏面へ
 
 - agent      : Codex（本人方針どおり単一会話、別task／subagentなし）

@@ -1,6 +1,6 @@
 # Collab: claude code と codex の並列開発プレイブック
 
-2026-10-03: 現行runtimeはARCBの和音・音域補正と任意ギター比較を含むv413。cache tupleの更新も、下記の最終HEADに紐づく全体gateとレビューの契約を使う。
+2026-10-12: 現行runtimeはARCBの和音・音域補正、任意ギター比較と新しい弦候補を含むv414。cache tupleの更新も、下記の最終HEADに紐づく全体gateとレビューの契約を使う。
 
 Music repo を **claude code (Anthropic) と codex (OpenAI) の両方** で
 継続開発するためのガイド。先に [`AGENTS.md`](../AGENTS.md) を読むこと。
