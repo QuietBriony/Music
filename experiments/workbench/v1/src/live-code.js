@@ -7,6 +7,7 @@ import { splitPublishedPattern } from './mix-code.js';
 import { liveFrame, liveMotif } from './live-plan.js';
 import { SHADOW_SLIDERS, shadowCode } from './shadow-groove.js';
 import { validateDice } from './musical-dice.js';
+import { validateInstruments, instrumentCode, instrumentGain } from './instrument-voices.js';
 export { SET_SCENES, sceneAtCycle, EXTRA_DRUMS, groovePlan } from './groove-code.js';
 export { liveFrame, liveMotif } from './live-plan.js';
 
@@ -81,6 +82,7 @@ function validate(state) {
     if (![0,1].includes(state.values.SHADOW_ON)) throw new Error('影グルーヴのミュートが不正です');
   }
   if (state.dice !== undefined) validateDice(state.dice);
+  if (state.instruments !== undefined) validateInstruments(state.instruments);
   return state;
 }
 
@@ -115,17 +117,17 @@ function liveCode(input) {
   const noteMap = field => '.withHap(h => h.withValue(v => ({...v,note:setMotif(h.whole.begin).'+field+'})))';
   const voices = [kick+gate('kick'),snare+gate('snare'),hh+gate('hh'),oh+gate('oh'),
     seq('bell','square')+'.freq(540).fm(0.8).fmh(1.48).hpf(500).lpf(2800).attack(0.002).decay(0.055).sustain(0).release(0.02).gain(SET_BELL).mul(gain(0.3))'+gate('bell'),
-    'note('+JSON.stringify(state.notes.join(' '))+')'+noteMap('note')+'.s("sawtooth").attack(0.003).decay(0.16).sustain(0).release(0.035)'
+    'note('+JSON.stringify(state.notes.join(' '))+')'+noteMap('note')+instrumentCode(state,'bass')+'.attack(0.003).decay(0.16).sustain(0).release(0.035)'
       +'.penv(signal(t => setMotif(t).slide)).pattack(0.055).pdecay(0).psustain(1).prelease(0).panchor(1)'
       +'.lpf(SET_CUTOFF.mul(setBreath)).lpq(SET_RESONANCE).lpa(0.003).lpd(SET_DECAY).lps(0).lpenv(6.5).ftype("ladder")'
       +'.distort(SET_DRIVE).postgain(0.38).gain(SET_ACID).mul(gain(signal(t => setMotif(t).accent)))'
-      +'.delay(SET_SPACE).delaysync(0.1875).delayfeedback(0.24)'+gate('acid'),
-    'note('+JSON.stringify(response)+')'+noteMap('response')+'.s("square").hpf(170).lpf(SET_CUTOFF.mul(setBreath).mul(1.5)).lpq(8)'
+      +'.delay(SET_SPACE).delaysync(0.1875).delayfeedback(0.24)'+gate('acid')+instrumentGain(state,'bass'),
+    'note('+JSON.stringify(response)+')'+noteMap('response')+instrumentCode(state,'response')+'.hpf(170).lpf(SET_CUTOFF.mul(setBreath).mul(1.5)).lpq(8)'
       +'.attack(0.004).decay(0.11).sustain(0).release(0.03).lpenv(3).lpd(SET_DECAY).gain(SET_RESPONSE).postgain(0.4)'
-      +'.delay(SET_SPACE).delaysync(0.125).delayfeedback(0.2)'+gate('response'),
-    'note("<[c3,eb3,g3] [eb3,g3,bb3] [bb2,d3,f3] [g2,bb2,d3]>").slow(4).s("triangle")'
+      +'.delay(SET_SPACE).delaysync(0.125).delayfeedback(0.2)'+gate('response')+instrumentGain(state,'response'),
+    'note("<[c3,eb3,g3] [eb3,g3,bb3] [bb2,d3,f3] [g2,bb2,d3]>").slow(4)'+instrumentCode(state,'pad')
       +'.hpf(90).lpf(SET_CUTOFF.mul(setBreath).mul(1.2).add(160)).attack(1.2).decay(0.8).sustain(0.58).release(1.6)'
-      +'.gain(SET_AIR).postgain(0.24).delay(SET_SPACE.mul(0.25)).delaysync(0.25).delayfeedback(0.2)'+gate('pad'),
+      +'.gain(SET_AIR).postgain(0.24).delay(SET_SPACE.mul(0.25)).delaysync(0.25).delayfeedback(0.2)'+gate('pad')+instrumentGain(state,'pad'),
   ];
   for (const track of state.groove.kit) {
     let voice;

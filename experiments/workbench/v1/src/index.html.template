@@ -73,15 +73,23 @@
           <div class="set-dice-actions">
             <button id="set-roll-dice" type="button">🎲 フレーズで遊ぶ</button>
             <button id="set-nudge-dice" type="button">少し変える</button>
+            <button id="set-instrument-dice" type="button">🎲 楽器だけ</button>
             <button id="set-keep-dice" type="button">このノリを軸に</button>
             <button id="set-restore-dice" type="button" disabled>ランダム前へ戻す</button>
           </div>
           <div class="set-dice-locks">
-            <label><input id="set-dice-drums-lock" type="checkbox">ドラム固定</label>
-            <label><input id="set-dice-tone-lock" type="checkbox">音色固定</label>
-            <span>303だけ残すなら「音符を固定」</span>
+            <label><input id="set-dice-drums-lock" type="checkbox">ドラム固定（打点＋909/808）</label>
+            <label><input id="set-dice-tone-lock" type="checkbox">音色ツマミ固定</label>
+            <label><input id="set-dice-instruments-lock" type="checkbox">楽器固定</label>
+            <span>メロディを残すなら「音符を固定」</span>
           </div>
-          <p id="set-dice-status" class="set-help" aria-live="polite">303の短い反復と返し、ハット、音色をまとめて作る。「少し変える」は休符と強拍を保つ。音量とBPMはそのまま。</p>
+          <div class="set-instruments">
+            <label>低音の楽器<select id="set-instrument-bass"></select></label>
+            <label>返しの楽器<select id="set-instrument-response"></select></label>
+            <label>パッドの楽器<select id="set-instrument-pad"></select></label>
+          </div>
+          <p class="set-help">楽器だけなら音符・打点・ツマミを保ち、低音／返し／パッドと909／808風の音源を替える。選択欄で手動でも変更可。アンビエントはパッドだけ。低音／返し／パッドは合成音で、追加音源のダウンロードは不要。楽器固定はサイコロにだけ効く。</p>
+          <p id="set-dice-status" class="set-help" aria-live="polite">短い反復と返し、ハット、楽器、音色をまとめて作る。音量とBPMはそのまま。</p>
         </fieldset>
         <p id="set-legacy-hint" class="set-help" hidden>保存版の展開をそのまま開いています。<button id="set-upgrade" type="button">この版から影つきLIVEを作る</button> 元の保存データは書き換えません。影の初期量は0です。</p>
         <article id="set-listening" class="set-listening" aria-label="聴く画面">

@@ -18,6 +18,7 @@ await cp(join(root, 'src', 'groove-code.js'), join(output, 'groove-code.js'));
 await cp(join(root, 'src', 'live-code.js'), join(output, 'live-code.js'));
 await cp(join(root, 'src', 'live-plan.js'), join(output, 'live-plan.js'));
 await cp(join(root, 'src', 'musical-dice.js'), join(output, 'musical-dice.js'));
+await cp(join(root, 'src', 'instrument-voices.js'), join(output, 'instrument-voices.js'));
 await cp(join(root, 'src', 'live-controls.js'), join(output, 'live-controls.js'));
 await cp(join(root, 'src', 'shadow-groove.js'), join(output, 'shadow-groove.js'));
 await cp(join(root, 'src', 'audio-playback.js'), join(output, 'audio-playback.js'));

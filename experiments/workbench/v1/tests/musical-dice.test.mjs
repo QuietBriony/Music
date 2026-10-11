@@ -7,7 +7,7 @@ import {rollDice,keepDice,restoreDice} from '../src/musical-dice.js';
 const layers=await Promise.all(['techno-dub','namima-test'].map(async id=>({
   id,title:id,source:await readFile(new URL('../src/patterns/'+id+'.txt',import.meta.url),'utf8'),
 })));
-const untouched = state => ({bpm:state.bpm,bank:state.bank,muted:state.muted,layers:state.layers,
+const untouched = state => ({bpm:state.bpm,muted:state.muted,layers:state.layers,
   live:state.live,auto:state.auto,scene:state.scene,groove:state.groove,shadow:state.shadow,
   kick:state.steps.kick,snare:state.steps.snare,clap:state.steps.clap,crash:state.steps.crash,
   levels:Object.fromEntries(Object.entries(state.values).filter(([key])=>!['CUTOFF','RESONANCE','DRIVE','DECAY','SPACE','MOTION'].includes(key)))});
