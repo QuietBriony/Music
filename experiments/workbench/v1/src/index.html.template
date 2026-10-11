@@ -45,38 +45,47 @@
       </details>
 
       <section id="performance" class="performance" aria-labelledby="set-title" hidden>
-        <p class="set-connection">ひとつのコードで同期演奏：ドラム ＋ 303風の低音・返し ＋ 素材A/B → 全体音量</p>
+        <div class="set-heading"><p class="eyebrow">MUSIC / LIVE</p><h2 id="set-title">ライブセット</h2><span id="set-position">停止中</span></div>
         <div class="set-transport">
-          <div class="set-heading"><p class="eyebrow">TECHNO / LIVE SET</p><h2 id="set-title">鳴らす。抜く。みょんを上げる。</h2><span id="set-position">STOPPED</span></div>
-          <button id="set-start" class="set-start" type="button" disabled>▶ セットを鳴らす</button>
+          <button id="set-start" class="set-start" type="button" disabled>▶ 再生</button>
           <button id="set-stop" class="set-stop" type="button">■ 全停止</button>
           <div id="set-master"></div>
-          <button id="set-save" type="button">セットを保存</button>
-          <button id="set-library" type="button" aria-expanded="false">保存版・バックアップ</button>
-          <button id="set-listen-toggle" type="button" aria-pressed="false">聴く画面</button>
-          <button id="pwa-update-top" type="button" hidden>アプリ更新</button>
-          <a href="#editor-title">コードを見る ↓</a>
+          <button id="set-save" type="button" title="名前を付けてこの端末に保存">保存</button>
         </div>
+        <div class="set-toolbar" aria-label="表示と保存版">
+          <button id="set-library" type="button" aria-controls="draft-details backup-details" aria-expanded="false">保存版を開く</button>
+          <button id="set-listen-toggle" type="button" aria-pressed="false">聴くだけ</button>
+          <button id="set-detail-toggle" type="button" aria-pressed="false">全操作を開く</button>
+          <a id="set-code-link" href="#editor-title">コードを見る</a>
+          <button id="pwa-update-top" type="button" hidden>アプリ更新</button>
+        </div>
+        <div id="set-feedback" class="set-feedback"></div>
+        <p class="set-quick-start">再生 → 少し変える → 好きな響きを保存</p>
         <div class="set-choice-row">
           <div id="set-presets" class="set-presets" aria-label="テクノセットの選択"></div>
           <fieldset id="set-evolution" class="set-evolution" hidden>
             <legend class="sr-only">フレーズを育てる</legend>
-            <label>変奏<select id="set-variation"><option value="0">なし</option><option value="1" selected>控えめ · 1音</option><option value="2">少し · 2音</option></select></label>
+            <label data-set-advanced>変奏<select id="set-variation"><option value="0">なし</option><option value="1" selected>控えめ · 1音</option><option value="2">少し · 2音</option></select></label>
             <button id="set-hold" type="button" aria-pressed="false">音符を固定</button>
-            <button id="set-next-variation" type="button">別の小変奏</button>
-            <button id="set-adopt-phrase" type="button">今の変奏を残す</button>
-            <button id="set-undo-phrase" type="button" disabled>採用前へ戻す</button>
+            <button id="set-next-variation" type="button" data-set-advanced>別の小変奏</button>
+            <button id="set-adopt-phrase" type="button" data-set-advanced>今の変奏を残す</button>
+            <button id="set-undo-phrase" type="button" data-set-advanced disabled>採用前へ戻す</button>
           </fieldset>
         </div>
         <fieldset id="set-dice" class="set-dice" hidden>
-          <legend>ランダムで弾く</legend>
+          <legend>フレーズで遊ぶ</legend>
           <div class="set-dice-actions">
-            <button id="set-roll-dice" type="button">🎲 フレーズで遊ぶ</button>
-            <button id="set-nudge-dice" type="button">少し変える</button>
-            <button id="set-instrument-dice" type="button">🎲 楽器だけ</button>
-            <button id="set-keep-dice" type="button">このノリを軸に</button>
-            <button id="set-restore-dice" type="button" disabled>ランダム前へ戻す</button>
+            <button id="set-nudge-dice" type="button" title="休符と強拍を保ち、音符・音色・楽器を少し変える">少し変える</button>
+            <button id="set-roll-dice" type="button" title="低音の反復と返し、ハット、楽器、音色を組み替える">🎲 フレーズ</button>
+            <button id="set-instrument-dice" type="button" title="音符とリズムを保って、楽器を替える">🎲 楽器だけ</button>
           </div>
+          <div class="set-dice-memory">
+            <button id="set-keep-dice" type="button" title="今のフレーズと楽器を、試し直すときの戻り先にする。端末に残すには保存">ここを戻り先に</button>
+            <button id="set-restore-dice" type="button" disabled>戻り先へ戻す</button>
+          </div>
+          <p id="set-dice-status" class="set-help" aria-live="polite">同じノリを少しずつ変える。音量・BPMはそのまま。</p>
+          <details id="set-dice-options" class="set-dice-options" data-set-full-open>
+            <summary>楽器を選ぶ・固定する <span id="set-dice-settings-summary">固定なし</span></summary>
           <div class="set-dice-locks">
             <label><input id="set-dice-drums-lock" type="checkbox">ドラム固定（打点＋909/808）</label>
             <label><input id="set-dice-tone-lock" type="checkbox">音色ツマミ固定</label>
@@ -89,7 +98,8 @@
             <label>パッドの楽器<select id="set-instrument-pad"></select></label>
           </div>
           <p class="set-help">楽器だけなら音符・打点・ツマミを保ち、低音／返し／パッドと909／808風の音源を替える。選択欄で手動でも変更可。アンビエントはパッドだけ。低音／返し／パッドは合成音で、追加音源のダウンロードは不要。楽器固定はサイコロにだけ効く。</p>
-          <p id="set-dice-status" class="set-help" aria-live="polite">短い反復と返し、ハット、楽器、音色をまとめて作る。音量とBPMはそのまま。</p>
+          <p class="set-help">MUTE中や自動展開で休んでいるパートは、楽器を選んでも鳴りません。「ここを戻り先に」は試し直す目印。端末に残すには上の「保存」を押してください。</p>
+          </details>
         </fieldset>
         <p id="set-legacy-hint" class="set-help" hidden>保存版の展開をそのまま開いています。<button id="set-upgrade" type="button">この版から影つきLIVEを作る</button> 元の保存データは書き換えません。影の初期量は0です。</p>
         <article id="set-listening" class="set-listening" aria-label="聴く画面">
@@ -101,27 +111,27 @@
           <legend class="sr-only">テクノセットの演奏操作</legend>
           <div id="set-live-controls" class="set-live-controls" hidden>
             <label>流れ<select id="set-live-mode" aria-label="LIVEの流れ"></select></label>
-            <label>展開の間隔<select id="set-live-pace" aria-label="展開の間隔"><option value="8">8小節 · 動く</option><option value="16">16小節 · ゆったり</option><option value="32">32小節 · 長く漂う</option></select></label>
-            <label>盛り上がり<select id="set-live-energy" aria-label="盛り上がり"><option value="0.35">やわらかく</option><option value="0.65">ほどよく</option><option value="0.9">強めに</option></select></label>
+            <label data-set-advanced>展開の間隔<select id="set-live-pace" aria-label="展開の間隔"><option value="8">8小節 · 動く</option><option value="16">16小節 · ゆったり</option><option value="32">32小節 · 長く漂う</option></select></label>
+            <label data-set-advanced>盛り上がり<select id="set-live-energy" aria-label="盛り上がり"><option value="0.35">やわらかく</option><option value="0.65">ほどよく</option><option value="0.9">強めに</option></select></label>
             <button id="set-live-lock" type="button" aria-pressed="false">今の展開をキープ</button>
           </div>
           <div class="set-scenes-row">
             <div class="set-tempo"><label class="set-bpm-label">BPM<input id="set-bpm" type="number" min="60" max="180" step="1" value="128"></label><input id="set-bpm-fader" type="range" min="60" max="180" step="1" value="128" aria-label="BPMフェーダー"><span id="set-tempo-status">演奏中も変更 · コードに保存</span></div>
-            <div id="set-scenes" class="set-scenes" aria-label="展開を選ぶ"></div>
+            <div id="set-scenes" class="set-scenes" aria-label="展開を選ぶ" data-set-advanced></div>
             <button id="set-auto" type="button" aria-pressed="false">AUTO 展開</button>
           </div>
           <div class="set-grid">
-            <article class="set-card set-drums">
+            <article class="set-card set-drums" data-set-advanced>
               <div class="set-card-heading"><div><p class="eyebrow">01 / RHYTHM</p><h3>ドラム · 16 STEP</h3></div>
                 <label>音色<select id="set-bank" aria-label="ドラム音色"><option value="909">909 · 四つ打ち</option><option value="808">808風 · 合成</option></select></label>
               </div>
               <p class="set-help">点灯が打点。クリックで追加・削除。左から1小節、4つずつが1拍。</p>
-              <details id="set-kit-details" class="set-kit-details" hidden><summary>追加打楽器を出す · CLAP / TOM / CRASH…</summary>
+              <details id="set-kit-details" class="set-kit-details" data-set-full-open hidden><summary>追加打楽器を出す · CLAP / TOM / CRASH…</summary>
                 <div id="set-kit" class="set-kit"></div><p class="set-help">選ぶと打点の行を追加。タムは8小節目の短いフィル。LIVEのクラッシュはブレイク後や山場の入口だけ。合成音と同梱のクラッシュ／ライドを使います。音量はミキサーの「追加打楽器」。</p>
               </details>
               <div class="set-step-scroll"><div id="set-step-rows"></div></div>
               <div id="set-boom"></div>
-              <details id="set-shadow-details" class="set-kit-details" hidden><summary>影グルーヴ・低音カット</summary>
+              <details id="set-shadow-details" class="set-kit-details" data-set-full-open hidden><summary>影グルーヴ・低音カット</summary>
                 <div id="set-shadow-faders"></div>
                 <button id="set-shadow-mute" type="button" aria-pressed="false">影をミュート</button>
                 <p class="set-help">空いている裏拍だけに小さなハット／リム。量0またはミュートで元の演奏。変更は同じ演奏時計の次の小節へ。直前の操作で、すでに予約された音は元の値で鳴ります。音符・強弱・左右・HPFは「コードを見る」で直接編集できます。追加打楽器のMUTEも優先します。</p>
@@ -129,20 +139,20 @@
               <p class="set-help">808の低音の長さ：上げると「ブーン」が伸びます。909には影響しません。カウベルは両方で使えます。</p>
             </article>
             <article class="set-card set-acid">
-              <div class="set-card-heading"><div><p class="eyebrow">02 / ACID</p><h3 id="set-acid-title">303風 · LIVE FADERS</h3></div><span class="set-chip">コードと連動</span></div>
+              <div class="set-card-heading"><div><p class="eyebrow">TONE</p><h3 id="set-acid-title">音色を触る</h3></div><span class="set-chip">コードと連動</span></div>
               <div id="set-acid-faders" class="set-acid-faders"></div>
-              <div class="set-note-scroll"><div id="set-acid-notes" aria-label="303の16ステップ音符"></div></div>
-              <p class="set-help">ここは軸の16音。押すと次の高さ、~ は休符。PCはShift＋クリックで休符。新セットは4小節反復→弱拍の小変奏→8小節で戻る。</p>
-              <details id="set-synth-details" class="set-synth-details"><summary>303の2役・残響・音色の起伏</summary><div id="set-groove-faders"></div>
+              <div class="set-note-scroll" data-set-advanced><div id="set-acid-notes" aria-label="低音の16ステップ音符"></div></div>
+              <p class="set-help" data-set-advanced>ここは軸の16音。押すと次の高さ、~ は休符。PCはShift＋クリックで休符。新セットは4小節反復→弱拍の小変奏→8小節で戻る。</p>
+              <details id="set-synth-details" class="set-synth-details" data-set-full-open><summary>残響・音色の起伏</summary><div id="set-groove-faders"></div>
                 <p class="set-help">303は低音と高い返しの2役。返し音量はミキサーで調整／MUTE。残響はテンポに合う短いディレイ。LIVEの音色は展開に沿ってつながり、起伏0でフィルターの自動変化を止めます。明るさと起伏はパッドにも効きます。アクセントとスライド風の音程移動はコードに残ります。</p>
               </details>
             </article>
             <article class="set-card set-mix">
-              <div class="set-card-heading"><div><p class="eyebrow">03 / MIX</p><h3 id="set-mixer-title">パートを出し入れ</h3></div><span class="set-chip">ONE CLOCK</span></div>
+              <div class="set-card-heading"><div><p class="eyebrow">MIX</p><h3 id="set-mixer-title">パートを出し入れ</h3></div><span class="set-chip">同時に演奏</span></div>
               <div id="set-mixer" class="set-mixer"></div>
               <p class="set-help">MUTEでそのパートを抜く。ハットは閉/開をまとめて操作。シーンを変えても手動MUTEと打点は残ります。</p>
             </article>
-            <article class="set-card set-layers">
+            <article class="set-card set-layers" data-set-advanced>
               <div class="set-card-heading"><div><p class="eyebrow">04 / SAVED IDEAS</p><h3>試作を重ねる · 素材A/B</h3></div><span class="set-chip">同じBPM</span></div>
               <div class="set-layer-pickers"><label>素材A<select data-set-layer="a" aria-label="セットの素材A"></select></label><label>素材B<select data-set-layer="b" aria-label="セットの素材B"></select></label></div>
               <div id="set-layer-faders"></div>
@@ -152,13 +162,15 @@
           </div>
         </fieldset>
         <p id="set-status" class="set-status" role="status">セットを選び、再生ボタンを押してください。</p>
-        <p class="set-help set-automation-help">フェーダーは手で決める基準値。下の小バーはコードによる自動展開を掛けた値で、音量の実測ではありません。明るさはフィルターのうねりを足す前の値。基準値を触れば自動の動きも追従します。BPMは手動で、自動展開が勝手に加速することはありません。</p>
-        <p id="set-phrase" class="set-help" aria-live="off"></p>
+        <p class="set-help set-automation-help" data-set-advanced>フェーダーは手で決める基準値。下の小バーはコードによる自動展開を掛けた値で、音量の実測ではありません。明るさはフィルターのうねりを足す前の値。基準値を触れば自動の動きも追従します。BPMは手動で、自動展開が勝手に加速することはありません。</p>
+        <p id="set-phrase" class="set-help" aria-live="off" data-set-advanced></p>
         <details class="set-guide"><summary>遊び方・数字の意味</summary>
-          <ol><li>Acid Drive / Dub Room / Electro 808 / Ambient Driftを選び「セットを鳴らす」。新セットはLIVE自動展開がオン。PCは操作面が並び、スマホは縦に並びます。「聴く画面」で操作面を畳み、長めに流せます。</li>
+          <p>最初はシンプル表示。「再生」→「少し変える」から遊べます。楽器の選択・固定は「楽器を選ぶ・固定する」。「全操作を開く」で打点、音符、A/B、詳しい展開とコードを表示します。「ここを戻り先に」は試し直すための目印、上の「保存」は名前を付けて端末に残す操作です。</p>
+          <p class="set-connection">ひとつのコードで同期演奏：ドラム ＋ 低音・返し・パッド ＋ 素材A/B → 全体音量</p>
+          <ol><li>Acid Drive / Dub Room / Electro 808 / Ambient Driftを選び「再生」。新セットはLIVE自動展開がオン。PCは操作面が並び、スマホは縦に並びます。「聴くだけ」で操作面を畳み、長めに流せます。</li>
           <li>LIVEは8/16/32小節ごとに展開し、8つの展開で一つの章。章ごとに流れと弱拍の小変奏が変わり、固定の64小節だけを繰り返しません。軸のフレーズと休符は保ち、4小節反復→弱拍1〜2音の小変奏→8小節で帰還。「今の展開をキープ」で流れを留め、もう一度押すと自動へ戻ります。手動シーンを押すとLIVEを解除します。</li>
           <li>ドラムの打点を変え、303の明るさとみょんを動かす。MUTEでキックを抜き、戻して盛り上げます。素材A/Bは音量を少し上げて足します。</li>
-          <li>「セットを保存」で名前付き下書きに残す。打点・音符・音色・BPM・フェーダー・素材A/B・AUTOをコードに保存します。「保存版・バックアップ」で再開・JSON持ち運び。</li></ol>
+          <li>上の「保存」で名前付き下書きに残す。打点・音符・音色・BPM・フェーダー・素材A/B・AUTOをコードに保存します。「保存版を開く」で再開・JSON持ち運び。</li></ol>
           <p>「音符を固定」で気に入った軸を反復。「今の変奏を残す」は演奏中の小変奏を新しい軸にし、固定します。「採用前へ戻す」で一つ前の軸へ戻せます。保存コードにseed・固定・LIVEの流れ・間隔・盛り上がり・キープを残し、再開は1小節目から同じ規則で展開します。旧V1/V2は元のコードで開き、必要な時だけ「この版からLIVE展開を作る」を押します。</p>
           <p>明るさ（CUTOFF）は120〜4800 Hzで、高いほど鋭く、低いほどこもる。みょん（RESONANCE）は1〜26で共鳴の強さ。歪み（DRIVE）は0〜5で硬さ。うねりの長さ（DECAY）は0.03〜0.45秒でフィルターの動きが残る長さです。</p>
           <p>303返し音量は0〜40%、追加打楽器音量は0〜50%。0で抜けます。303の残響は0〜35%で短いディレイを足す。音色の起伏は0〜100%で明るさの自動変化を増やします。音符固定中も音色とパート展開は続き、起伏を0にするとフィルターの自動変化も止まります。</p>
@@ -309,7 +321,7 @@
       <section class="workspace" aria-labelledby="editor-title">
         <div class="section-heading">
           <div>
-            <h2 id="editor-title">コードと音</h2>
+            <h2 id="editor-title" tabindex="-1">コードと音</h2>
             <p id="current-work">読み込み中…</p>
           </div>
           <div class="controls">

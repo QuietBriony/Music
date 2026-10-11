@@ -931,7 +931,7 @@ function renderDrafts() {
   }
   draftCount.textContent = drafts.length + '件';
   if (drafts.length === 0) {
-    draftList.append(makeElement('p', 'empty-note', 'まだ下書きはありません。コードを直したら「この端末に保存」を押します。'));
+    draftList.append(makeElement('p', 'empty-note', 'まだ保存版はありません。名前を付けて保存すると、ここから開き直せます。'));
     return;
   }
   for (const draft of drafts) {
@@ -1138,7 +1138,10 @@ function saveDraft(event) {
     renderDrafts();
     draftDetails.open = true;
     draftForm.hidden = true;
-    status.textContent = 'この端末に保存しました。下書き一覧からいつでもコードを戻せます。';
+    status.textContent = document.body.classList.contains('performance-view')
+      ? 'この端末に保存しました。「保存版を開く」からいつでも戻せます。'
+      : 'この端末に保存しました。下書き一覧からいつでもコードを戻せます。';
+    focusSaveButton();
   } catch {
     status.textContent = '保存できませんでした。ブラウザの空き容量や保存設定を確認してください。';
   }
@@ -1226,7 +1229,10 @@ reloadButton.addEventListener('click', () => {
 });
 saveButton.addEventListener('click', showDraftForm);
 draftForm.addEventListener('submit', saveDraft);
-cancelDraftButton.addEventListener('click', () => { draftForm.hidden = true; saveButton.focus(); });
+function focusSaveButton() {
+  (document.body.classList.contains('performance-view') ? document.querySelector('#set-save') : saveButton).focus();
+}
+cancelDraftButton.addEventListener('click', () => { draftForm.hidden = true; focusSaveButton(); });
 playButton.addEventListener('click', async () => {
   if (busy || !activeEditor?.editor) return;
   closeAcidModule();
@@ -1316,7 +1322,7 @@ performance = initPerformance({
       url.searchParams.set('stage', readTechnoSet(code)?.live?.mode==='ambient'?'ambient':'techno');
       window.history.replaceState(null, '', url);
       if (wantsPlayback) await evaluateCurrent('再生中。' + title + ' を演奏しています。');
-      else status.textContent = title + ' を開きました。「セットを鳴らす」で開始します。';
+      else status.textContent = title + ' を開きました。「再生」で開始します。';
       return true;
     } catch (error) {
       status.textContent = error.message || 'セットを開けませんでした';
@@ -1340,7 +1346,7 @@ loadCatalog();
 initPwa({
   confirmReload: async () => {
     if (busy || confirmDialog.open) return false;
-    const codeWarning = hasUnsavedChanges() ? ' 未保存のコードは消えます。先に「この端末に保存」で残せます。' : '';
+    const codeWarning = hasUnsavedChanges() ? ' 未保存のコードは消えます。先に名前を付けて保存してください。' : '';
     const acidWarning = !acidModuleStage.hidden ? ' 303＋909の調整は先にFILEで保存してください。' : '';
     if ((wantsPlayback || codeWarning || acidWarning) && !await askConfirmation(
       '演奏を止め、アプリを更新して開き直します。' + codeWarning + acidWarning, '更新して開き直す')) return false;

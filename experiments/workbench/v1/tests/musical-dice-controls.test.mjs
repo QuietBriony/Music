@@ -19,7 +19,7 @@ function harness(){
   let code=technoSetCode(defaultSet('acid-drive',layers)),changes=0;
   const context=vm.createContext({structuredClone,rollDice,keepDice,restoreDice,readTechnoSet,technoSetCode,INSTRUMENT_ROLES,INSTRUMENT_VOICES,instrumentProfile,
     el:(_tag,title)=>({textContent:title}),
-    state:readTechnoSet(code),loading:false,blocked:false,dicePanel:{},diceStatus:{},
+    state:readTechnoSet(code),loading:false,blocked:false,dicePanel:{},diceStatus:{dataset:{}},
     drumsLock:control('#set-dice-drums-lock'),toneLock:control('#set-dice-tone-lock'),
     instrumentsLock:control('#set-dice-instruments-lock'),
     document:{querySelector:control},hooks:{getCode:()=>code,isBusy:()=>context.blocked,
@@ -41,7 +41,10 @@ test('production buttons preserve checked locks, update saved score and restore 
   h.click('#set-roll-dice');
   assert.deepEqual(h.state().steps,original.steps);assert.notDeepEqual(h.state().notes,original.notes);
   assert.match(h.context.diceStatus.textContent,/候補 1/);
-  const kept=h.state();h.click('#set-keep-dice');h.click('#set-nudge-dice');h.click('#set-restore-dice');
+  const kept=h.state();h.click('#set-keep-dice');
+  h.context.sync();assert.match(h.context.diceStatus.textContent,/ここを戻り先にしました/, 'queued UI refresh preserves the action feedback');
+  h.click('#set-nudge-dice');assert.match(h.context.diceStatus.textContent,/候補 2/, 'the next action replaces the feedback');
+  h.click('#set-restore-dice');h.context.sync();assert.match(h.context.diceStatus.textContent,/戻しました/);
   assert.deepEqual(h.state().notes,kept.notes);assert.deepEqual(h.state().values,kept.values);assert.deepEqual(h.state().instruments,kept.instruments);
   assert.equal(h.controls.get('#set-restore-dice').disabled,false);
 });
