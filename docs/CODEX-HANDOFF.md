@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-12: v414は一本の比較に、芯と余韻を作り直した合成候補を追加。弦の振動モード・ピックとpickupの位置・周波数別の損失と弱い二方向の振動を、最大128 modeの有限Workerで合成する。新旧合成と既存録音を同じ10.8秒／クランチ／phrase RMSで比較し、再生は1 source／1 gain、準備済みPCMは4,147,200 bytes。音声素材の追加なし。ARCB通常曲へは未昇格で、本人の試奏と実iPhone確認が残る。[設計と測定](PHYSICAL-BAND-REHEARSAL.md#新しい弦の芯と余韻v414)。
+
 2026-10-12（LIVE画面整理）: Workbenchはシンプル表示を既定にし、再生・全停止・全体音量・保存を上部に、少し変える／フレーズ／楽器だけを主操作に整理。固定と楽器選択は折りたたみ、全操作またはコードを見るで打点・音符・素材A/B・詳しい展開と既存コードを表示する。戻り先と端末保存を区別。元の保存フォームとstatusをLIVE内へ移し、入力・handler・保存失敗表示を保持して通常画面では元へ戻す。音声・score生成・保存schema・既存clock・依存は変更しない。接続ブラウザがなく画面の目視・実端末操作・本人聴感は未確認。
 
 2026-10-11: v413は同じ10.8秒の単音・E5・A5・短いミュートを、現行弦合成と既存の録音エレキ4音で比較する任意の試奏。共通クランチと平均音量をそろえ、採譜の誤りと音源の不足を切り分ける。録音は明示準備時だけ取得しSHA-256を照合、再生は1 source／1 gain。ARCBへ未採用で、録音ミュートはfilter／減衰の近似。人の聴感を数値から合格扱いしない。[比較条件](PHYSICAL-BAND-REHEARSAL.md)。
@@ -218,7 +220,7 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v413`。Band Room runtime markerは`band-room.js?v=br-246` /
+- 現行cacheは`hazama-fm-v414`。Band Room runtime markerは`band-room.js?v=br-247` /
   `band-room.css?v=br-93`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ

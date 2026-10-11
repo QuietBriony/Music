@@ -1,4 +1,4 @@
-import { AUDITION_RATE, AUDITION_SECONDS, recordedAuditionNotes, renderAudition, matchAuditionLevels } from "./guitar-audition.mjs?v=1";
+import { AUDITION_RATE, AUDITION_SECONDS, recordedAuditionNotes, renderAudition, matchAuditionLevels } from "./guitar-audition.mjs?v=2";
 const panel = document.getElementById("br-guitar-audition");
 if (panel) {
   if (location.hash === "#br-guitar-audition") panel.open = true;
@@ -37,7 +37,7 @@ if (panel) {
   }
   function synthNotes(signal) {
     return new Promise((resolve, reject) => {
-      const task = new Worker(new URL("./guitar-audition-worker.mjs?v=1", import.meta.url), { type: "module" });
+      const task = new Worker(new URL("./guitar-audition-worker.mjs?v=2", import.meta.url), { type: "module" });
       worker = task;
       const finish = (error, notes) => {
         task.terminate(); signal.removeEventListener("abort", cancel);
@@ -55,7 +55,7 @@ if (panel) {
     if (!exclusive()) return;
     stop(null); const run = token;
     controller = new AbortController(); const signal = controller.signal;
-    phase = "preparing"; update(); message("合成と録音ギター4音を準備しています…");
+    phase = "preparing"; update(); message("新旧の弦合成と録音ギター4音を準備しています…");
     timeout = setTimeout(() => { if (run === token) stop("準備が30秒を超えたため停止しました。"); }, 30000);
     try {
       const resumed = acquire();
@@ -67,16 +67,18 @@ if (panel) {
         return null;
       });
       const [notes] = await Promise.all([synthNotes(signal), resumed]); signal.throwIfAborted();
-      const synthetic = await renderAudition(OfflineContext, notes);
+      const synthetic = await renderAudition(OfflineContext, notes.synthetic);
+      signal.throwIfAborted();
+      const refined = await renderAudition(OfflineContext, notes.refined);
       signal.throwIfAborted();
       const recordedNotes = await reference; signal.throwIfAborted();
       const recorded = recordedNotes ? await renderAudition(OfflineContext, recordedNotes, true) : null;
       signal.throwIfAborted();
       if (run !== token) return;
-      measurements = matchAuditionLevels(synthetic, recorded);
-      prepared = { synthetic, recorded };
+      measurements = matchAuditionLevels(synthetic, recorded, refined);
+      prepared = { refined, synthetic, recorded };
       clearTimeout(timeout); controller = undefined; phase = "idle"; update();
-      message(recorded ? "準備できました。合成と録音ギターを同じフレーズで聴き比べてください。" : failure);
+      message(recorded ? "準備できました。新しい弦の芯と余韻を、これまでの合成・録音ギターと聴き比べてください。" : failure);
     } catch (error) {
       if (run !== token) return;
       stop(error.message || "比較音を準備できませんでした。");
@@ -95,7 +97,8 @@ if (panel) {
       source.connect(gain); gain.connect(context.destination);
       source.onended = () => { if (run === token) stop("比較フレーズが終わりました。"); };
       source.start(context.currentTime + 0.03); phase = "playing"; update();
-      message(`${kind === "synthetic" ? "現行の弦合成" : "録音されたエレキギター"} · 単音 → E5 → A5 → 短いミュート → E5`);
+      const label = { refined: "新しい弦合成", synthetic: "これまでの弦合成", recorded: "録音されたエレキギター" }[kind];
+      message(`${label} · 単音 → E5 → A5 → 短いミュート → E5`);
     } catch (error) { if (run === token) stop(error.message || "再生を開始できませんでした。"); }
   }));
   stopButton.addEventListener("click", () => stop());

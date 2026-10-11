@@ -47,7 +47,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : runtime / verify
 - agent    : codex | claude
 - human-gate: yes（本人の試奏で音を判定して通常曲へ昇格。任意の短い候補は検証後merge可）
-- status   : wip — codex 2026-10-11。一本の固定フレーズで弦合成／既存録音エレキを比較する任意候補を検証中
+- status   : wip — codex 2026-10-12。v414で芯と余韻を作り直した新合成を一本比較へ追加。通常曲への昇格と本人の聴感は未完了
 - source   : 2026-10-01本人の物理モデル参考画像、ロック→ジャズ、旧アプリ整理・archive承認
 - detail   : `audio/physical-band/`を既存Band Room内の任意試奏として実装。
   2026-10-01に8小節の候補まで実装済み。

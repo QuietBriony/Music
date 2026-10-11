@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-12: v414は一本の比較に、芯と余韻を作り直した合成候補を追加。弦の振動モード・ピックとpickupの位置・周波数別の損失と弱い二方向の振動を、最大128 modeの有限Workerで合成する。新旧合成と既存録音を同じ10.8秒／クランチ／phrase RMSで比較し、再生は1 source／1 gain、準備済みPCMは4,147,200 bytes。音声素材の追加なし。ARCB通常曲へは未昇格で、本人の試奏と実iPhone確認が残る。[設計と測定](PHYSICAL-BAND-REHEARSAL.md#新しい弦の芯と余韻v414)。
+
 2026-10-12（LIVE画面整理）: Workbenchはシンプル表示を既定にし、再生・全停止・全体音量・保存を上部に、少し変える／フレーズ／楽器だけを主操作に整理。固定と楽器選択は折りたたみ、全操作またはコードを見るで打点・音符・素材A/B・詳しい展開と既存コードを表示する。戻り先と端末保存を区別。元の保存フォームとstatusをLIVE内へ移し、入力・handler・保存失敗表示を保持して通常画面では元へ戻す。音声・score生成・保存schema・既存clock・依存は変更しない。接続ブラウザがなく画面の目視・実端末操作・本人聴感は未確認。
 
 2026-10-11: v413は同じ10.8秒の単音・E5・A5・短いミュートを、現行弦合成と既存の録音エレキ4音で比較する任意の試奏。共通クランチと平均音量をそろえ、採譜の誤りと音源の不足を切り分ける。録音は明示準備時だけ取得しSHA-256を照合、再生は1 source／1 gain。ARCBへ未採用で、録音ミュートはfilter／減衰の近似。人の聴感を数値から合格扱いしない。[比較条件](PHYSICAL-BAND-REHEARSAL.md)。
@@ -83,9 +85,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v413`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v414`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-246`, `band-room.css?v=br-93`。
+> `band-room.js?v=br-247`, `band-room.css?v=br-93`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

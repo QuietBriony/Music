@@ -2,6 +2,7 @@
 // Recorded assets stay on the already registered immutable CDN, outside Git.
 import { renderString } from "./dsp.mjs?v=4";
 import { createGuitarAmp } from "./amp.mjs?v=1";
+import { renderElectricString } from "./electric-string.mjs?v=1";
 
 export const AUDITION_RATE = 32000;
 export const AUDITION_SECONDS = 10.8;
@@ -35,10 +36,11 @@ function normalizeNote(data) {
   return data;
 }
 
-export function syntheticAuditionNotes() {
+export function syntheticAuditionNotes(refined = false) {
   const notes = [40, 43, 46, 52, 58]; // Same nearest-note grid and seed as the current bank.
-  return notes.map((midi) => ({ midi, data: normalizeNote(renderString({ part: "guitar", note: midi, duration: 2.5, velocity: 1, technique: "open" }, AUDITION_RATE, 113 + midi)) }))
-    .concat([{ midi: 40, palm: true, data: normalizeNote(renderString({ part: "guitar", note: 40, duration: 0.55, velocity: 1, technique: "palm" }, AUDITION_RATE, 153)) }]);
+  const render = refined ? renderElectricString : renderString;
+  return notes.map((midi) => ({ midi, data: normalizeNote(render({ part: "guitar", note: midi, duration: 2.5, velocity: 1, technique: "open" }, AUDITION_RATE, 113 + midi)) }))
+    .concat([{ midi: 40, palm: true, data: normalizeNote(render({ part: "guitar", note: 40, duration: 0.55, velocity: 1, technique: "palm" }, AUDITION_RATE, 153)) }]);
 }
 
 async function boundedBody(response) {
@@ -130,12 +132,12 @@ export async function renderAudition(OfflineContext, notes, recorded = false) {
   finally { nodes.forEach((node) => node.disconnect()); amp.dispose(); }
 }
 
-export function matchAuditionLevels(synthetic, recorded) {
-  const inputs = [synthetic, recorded].filter(Boolean);
+export function matchAuditionLevels(synthetic, recorded, refined = null) {
+  const inputs = [synthetic, recorded, refined].filter(Boolean);
   const metrics = inputs.map(signalMetrics);
   if (metrics.some(({ rms, peak }) => rms < 0.00001 || peak <= 0)) throw new Error("比較音の出力を確認できません。");
-  // Equal phrase RMS, with a common target reduced if either signal needs headroom.
+  // Equal phrase RMS, with a common target reduced if any signal needs headroom.
   const target = Math.min(0.06, ...metrics.map(({ rms, peak }) => 0.65 * rms / peak));
   inputs.forEach((data, i) => { const gain = target / metrics[i].rms; for (let j = 0; j < data.length; j++) data[j] *= gain; });
-  return { targetRms: target, synthetic: signalMetrics(synthetic), recorded: recorded ? signalMetrics(recorded) : null };
+  return { targetRms: target, synthetic: signalMetrics(synthetic), recorded: recorded ? signalMetrics(recorded) : null, refined: refined ? signalMetrics(refined) : null };
 }

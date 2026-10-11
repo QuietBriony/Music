@@ -1,5 +1,7 @@
 # Band Room — 総合マニュアル（現行 playability）
 
+2026-10-12: 一本の比較に「新しい弦合成で聴く」を追加。比較を準備 → 新しい弦合成 → これまでの合成 → 録音ギターで、低いEの芯、コードの余韻、ミュートの短さを同じ音量で確認します。新しい合成は録音を使わず、弦の倍音と減衰を作り直した候補です。ARCBの通常曲への採用は試聴後に決めます。
+
 2026-10-11: ギター一本の比較を追加。「ロックギター一本を比較」を開き、比較を準備 → 合成で聴く／録音ギターで聴く。同じクランチと平均音量で11秒を比較。録音4音は準備を押した時だけ約0.41 MB取得し、ARCBへは未採用。短いミュートは加工による近似、RECは通常曲で使用。実iPhoneと音色の採用は本人確認。
 
 > 通常入口: https://quietbriony.github.io/Music/band-room.html
@@ -16,9 +18,9 @@
 
 ## 現在地とversion
 
-- 現行Band Room runtimeは **v413**（原音から和音・音域を補正、ロックのストロークと弾き方）。HAZAMAのplayability候補は **v401** のまま。client markerは
-  `band-room.js?v=br-246` / `band-room.css?v=br-93`。
-- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v413**。v401はHAZAMA AIの
+- 現行Band Room runtimeは **v414**（原音から和音・音域を補正、ロックのストロークと弾き方）。HAZAMAのplayability候補は **v401** のまま。client markerは
+  `band-room.js?v=br-247` / `band-room.css?v=br-93`。
+- この文書を既存PWAへ届けるdocs cacheは **hazama-fm-v414**。v401はHAZAMA AIの
   arp + basslineのauthored基準配置をactive sectionあたり20–21発へ整理し、明示休符と
   約96–101 msのnote gateを入れた再試聴候補。実演時のbass ghost/dropは基準から発音を
   減らすだけ。v400の02 AI暫定表示、session-only KARAOKE導線、
@@ -137,7 +139,7 @@ melodyは歌の音程を弦でなぞるパートです。歌声の再現では�
 Radiohead／レッチリのような輪郭と打感を方向性とし、特定録音の音色コピーは主張しません。
 採譜の誤り、ギターの全構成音・細かな奏法、実iPhone負荷は次の評価対象です。
 
-## 画面構成（現行: br-246 / br-93）
+## 画面構成（現行: br-247 / br-93）
 
 ```
 ┌─────────────────────────────────┐
