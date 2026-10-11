@@ -6,6 +6,7 @@ import {
 import { splitPublishedPattern } from './mix-code.js';
 import { liveFrame, liveMotif } from './live-plan.js';
 import { SHADOW_SLIDERS, shadowCode } from './shadow-groove.js';
+import { validateDice } from './musical-dice.js';
 export { SET_SCENES, sceneAtCycle, EXTRA_DRUMS, groovePlan } from './groove-code.js';
 export { liveFrame, liveMotif } from './live-plan.js';
 
@@ -79,6 +80,7 @@ function validate(state) {
       || state.values[key] < min || state.values[key] > max) throw new Error('影グルーヴの値が範囲外です');
     if (![0,1].includes(state.values.SHADOW_ON)) throw new Error('影グルーヴのミュートが不正です');
   }
+  if (state.dice !== undefined) validateDice(state.dice);
   return state;
 }
 

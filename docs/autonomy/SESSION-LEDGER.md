@@ -3,6 +3,23 @@
 自律開発 session の追記専用ログ。**新しい session は最新エントリを読んでから始める。**
 古いエントリは編集しない（追記のみ）。新しいものを先頭に積む。
 
+## 2026-10-11 — LIVEのランダムを反復・返し・部分固定で遊べる形へ
+
+- agent      : Codex（本人方針に沿った単一会話、既存Music repo／公開箱）
+- goal       : ランダムで音を増やすより、短い反復と返し・音色で楽しく弾けるようにする
+- repos      : Music（独立Workbench、Listen／台帳／manual／handoff／architecture）
+- implemented: 「🎲 フレーズで遊ぶ」「少し変える」「このノリを軸に」「ランダム前へ戻す」を追加。
+  303はC minorの反復と末尾の返し、7〜10発。裏拍ハット4発＋返し最大2発、OH最大2発、6音色値を連動。
+  小変更は休符・強拍を保ち弱拍2音まで。音符／ドラム／音色を固定し、アンビエントは音色だけ。
+  キック／スネア、音量・BPM・MUTE・A/B・kit・LIVE時計を保持。候補とseed／試行番号／固定／戻り先を既存下書き・JSONへ。
+  戻す操作は後からの音量・BPM・MUTE編集を保持する。新規audio・sample・依存・clockなし、旧V1〜V4は明示操作まで互換。
+  128生成の密度・再現性・保存／復元を検証し、固定Strudel transpilerと実queryでone clock・kick／backbeat位置・8小節帰還を確認。
+  初回suiteは古いdistとWindows checkoutの原版CRLFで2件失敗。build更新と原版のGit正本LFへのローカル整合後、164件PASS。原版のGit差分なし。実scoreとproduction操作guardの追加後、最終167件PASS。
+- stack-check: PASS 39 / FAIL 0 / SKIP 0（0 BAD / 0 WARN。初回は文書currencyでFAIL、関連文書と本記録を同期した再検証は全件PASS。最終の見た目／台帳更新はPWA buildと関連チェックで再確認。）
+- backlog    : BL-049継続。既存claim・他worktree・FM／Band Room／Core Rigを保持
+- next       : 検証済み候補をPR／mainへ戻し、既存公開先へ反映して配布版の一致を確認
+- blockers   : 接続中ブラウザがなく画面・実端末・実音の聴感は未確認。既存sample GETの拒否を再試行・別経路で回避しない。本人の気持ちよさとiPhoneは未判定。
+
 ## 2026-10-06 — Minimal Techno 01の標準音量と初回操作案内を修正（ソース候補）
 
 - agent      : Codex（単曲修正・案内・実音測定・狭幅操作・独立レビューを分担）

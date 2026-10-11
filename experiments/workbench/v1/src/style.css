@@ -254,6 +254,15 @@ footer p { margin: 0 0 8px; }
 .listening-view #set-controls,.listening-view .set-choice-row,.listening-view .set-guide,.listening-view #set-phrase,.listening-view .workspace { display:none; }
 .listening-view #set-status { text-align:center; }
 .set-evolution { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.performance .set-dice { border:1px solid #748956;border-radius:12px;padding:12px;margin:12px 0;background:#243022; }
+.set-dice legend { color:#e0f1bc;font-weight:700;padding-inline:6px; }
+.set-dice-actions,.set-dice-locks { display:flex;flex-wrap:wrap;gap:8px;align-items:center; }
+.set-dice-actions button { min-height:44px; }
+#set-roll-dice { background:#d4eda0;color:#14220f;border-color:#d4eda0;font-weight:700; }
+.set-dice-locks { margin-top:10px;font-size:.75rem;color:#c3d2bb; }
+.set-dice-locks label { display:flex;align-items:center;gap:5px;min-height:44px; }
+.set-dice-locks input { width:20px;height:20px;accent-color:#c8e899; }
+.listening-view #set-dice { display:none; }
 .set-evolution button { font-size: .72rem; padding-inline: 9px; }
 .set-evolution label { font-size: .68rem; display: flex; align-items: center; gap: 5px; }
 .set-evolution select { background: #18231d; color: #dceade; border: 1px solid #65776a; border-radius: 8px; min-height: 40px; }
