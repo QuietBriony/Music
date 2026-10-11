@@ -1,5 +1,6 @@
 // Button-time composition, not another audio clock. The resulting notes,
-// hits and timbre are ordinary saved score data. No new voices or samples.
+// hits and instruments are ordinary saved score data. No added polyphony.
+import {INSTRUMENT_ROLES, INSTRUMENT_VOICES, instrumentProfile, validateInstruments} from './instrument-voices.js';
 const pitches = ['g1','bb1','c2','d2','eb2','f2','g2','bb2','c3'];
 const tracks = ['hh','oh','bell','rim','lt','mt','ht','ride'];
 const toneRanges = {CUTOFF:[120,4800],RESONANCE:[1,26],DRIVE:[0,5],DECAY:[.03,.45],SPACE:[0,.35],MOTION:[0,1]};
@@ -14,7 +15,8 @@ const tones = [
   {CUTOFF:980,RESONANCE:19,DRIVE:3.1,DECAY:.1,SPACE:.08,MOTION:.55},
 ];
 const snapshot = state => ({notes:[...state.notes],steps:Object.fromEntries(tracks.map(key=>[key,[...state.steps[key]]])),
-  tone:Object.fromEntries(Object.keys(toneRanges).map(key=>[key,state.values[key]]))});
+  tone:Object.fromEntries(Object.keys(toneRanges).map(key=>[key,state.values[key]])),
+  bank:state.bank,instruments:state.instruments ? structuredClone(state.instruments) : null});
 const validNotes = notes => Array.isArray(notes) && notes.length === 16 && notes.every(n=>n==='~' || pitches.includes(n));
 const uint = n => Number.isInteger(n) && n >= 1 && n <= 0xffffffff;
 
@@ -27,13 +29,20 @@ export function validateDice(dice) {
     || dice.anchor.steps[track].some(v=>typeof v !== 'boolean')) throw new Error('ランダムの戻す打点が不正です');
   for (const [key,[min,max]] of Object.entries(toneRanges)) if (!Number.isFinite(dice.anchor.tone?.[key])
     || dice.anchor.tone[key] < min || dice.anchor.tone[key] > max) throw new Error('ランダムの戻す音色が不正です');
+  if (dice.locks.instruments !== undefined && typeof dice.locks.instruments !== 'boolean') throw new Error('楽器固定の設定が不正です');
+  if (dice.anchor.bank !== undefined && !['909','808'].includes(dice.anchor.bank)) throw new Error('戻すドラム音源が不正です');
+  if (dice.anchor.instruments !== undefined && dice.anchor.instruments !== null) validateInstruments(dice.anchor.instruments);
   return dice;
 }
 
 function prepare(state) {
   if (!state?.live || !state.groove) throw new Error('LIVEセットを開いてください');
-  if (!state.dice) state.dice = {version:1,seed:state.groove.seed,turn:0,locks:{drums:false,tone:false},anchor:snapshot(state)};
-  return validateDice(state.dice);
+  if (!state.dice) state.dice = {version:1,seed:state.groove.seed,turn:0,locks:{drums:false,tone:false,instruments:false},anchor:snapshot(state)};
+  const dice=validateDice(state.dice);
+  // Extend an old checkpoint only at an explicit button action, never on read.
+  if (dice.anchor.bank === undefined) dice.anchor.bank=state.bank;
+  if (dice.anchor.instruments === undefined) dice.anchor.instruments=state.instruments ? structuredClone(state.instruments) : null;
+  return dice;
 }
 
 function generator(seed) {
@@ -47,16 +56,16 @@ const chooseOther = (options,current,pick) => {
 };
 
 export function rollDice(input, kind = 'phrase', locks) {
-  if (!['phrase','nudge'].includes(kind)) throw new Error('ランダムの操作が不正です');
+  if (!['phrase','nudge','instruments'].includes(kind)) throw new Error('ランダムの操作が不正です');
   const state = structuredClone(input);
   const dice = prepare(state);
-  if (locks) dice.locks = {...locks};
+  if (locks) dice.locks = {...dice.locks,...locks};
   validateDice(dice);
   dice.turn = (dice.turn + 1) >>> 0;
   const pick = generator((dice.seed ^ Math.imul(dice.turn,2654435761)) >>> 0);
   // A repeated two-beat cell, sparse pickups, and a shared C-minor palette.
   // The existing 303 answer follows these notes with minor thirds/fifths.
-  if (!state.groove.hold && state.live.mode !== 'ambient') {
+  if (kind !== 'instruments' && !state.groove.hold && state.live.mode !== 'ambient') {
     if (kind === 'phrase') {
       const mask = masks[pick(masks.length)];
       const root = ['g1','c2','bb1'].includes(dice.anchor.notes[0]) ? dice.anchor.notes[0] : 'c2';
@@ -76,9 +85,9 @@ export function rollDice(input, kind = 'phrase', locks) {
       }
     }
   }
-  if (!dice.locks.drums && state.live.mode !== 'ambient') {
+  if (kind !== 'instruments' && !dice.locks.drums && state.live.mode !== 'ambient') {
     if (kind === 'phrase') {
-      // Keep kick/backbeat and instrument selection; decorate their gaps.
+      // Keep kick/backbeat and kit membership; decorate their gaps.
       state.steps.hh = hits([2,6,10,14,...[[3,11],[7,15],[1,9],[]][pick(4)]]);
       state.steps.oh = hits([[6,14],[14],[10],[2,10]][pick(4)]);
       state.steps.bell = hits([[3,10],[7,14],[6,11],[3]][pick(4)]);
@@ -96,7 +105,7 @@ export function rollDice(input, kind = 'phrase', locks) {
       state.steps.oh = hits([[6,14],[14],[10],[2,10]][pick(4)]);
     }
   }
-  if (!dice.locks.tone) {
+  if (kind !== 'instruments' && !dice.locks.tone) {
     const target = {...tones[pick(tones.length)]};
     if (state.live.mode !== 'techno') Object.assign(target,{CUTOFF:240+pick(25)*10,RESONANCE:6+pick(5),DRIVE:.3+pick(6)/10,DECAY:.26,SPACE:.24,MOTION:.35});
     const basis = kind === 'phrase' ? dice.anchor.tone : state.values;
@@ -106,8 +115,16 @@ export function rollDice(input, kind = 'phrase', locks) {
       state.values[key] = Number((Math.round(mixed/quantum)*quantum).toFixed(2));
     }
   }
+  if (!dice.locks.instruments) {
+    const profile={...instrumentProfile(state)};
+    const roles=state.live.mode==='ambient' ? ['pad'] : Object.keys(INSTRUMENT_ROLES);
+    const selected=kind==='nudge' ? [roles[pick(roles.length)]] : roles;
+    for (const role of selected) profile[role]=chooseOther(INSTRUMENT_VOICES[role].map(voice=>voice.id),profile[role],pick);
+    state.instruments=profile;
+    if (kind !== 'nudge' && !dice.locks.drums && state.live.mode !== 'ambient') state.bank=state.bank==='909' ? '808' : '909';
+  }
   // BPM, levels, MUTE, A/B, LIVE chapter settings, axis variation and kit
-  // are untouched. Ambient rolls only timbre, so no drums can reappear.
+  // are untouched. Ambient changes only pad family and soft timbre.
   return state;
 }
 
@@ -125,5 +142,8 @@ export function restoreDice(input) {
   state.notes = [...anchor.notes];
   for (const key of tracks) state.steps[key] = [...anchor.steps[key]];
   Object.assign(state.values,anchor.tone);
+  if (anchor.bank !== undefined) state.bank=anchor.bank;
+  if (anchor.instruments === null) delete state.instruments;
+  else if (anchor.instruments !== undefined) state.instruments=structuredClone(anchor.instruments);
   return state;
 }

@@ -262,6 +262,9 @@ footer p { margin: 0 0 8px; }
 .set-dice-locks { margin-top:10px;font-size:.75rem;color:#c3d2bb; }
 .set-dice-locks label { display:flex;align-items:center;gap:5px;min-height:44px; }
 .set-dice-locks input { width:20px;height:20px;accent-color:#c8e899; }
+.set-instruments { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px;margin-top:10px; }
+.set-instruments label { display:flex;flex-direction:column;gap:6px;font-size:.8rem;color:#c3d2bb; }
+.set-instruments select { width:100%;min-width:0;min-height:44px; }
 .listening-view #set-dice { display:none; }
 .set-evolution button { font-size: .72rem; padding-inline: 9px; }
 .set-evolution label { font-size: .68rem; display: flex; align-items: center; gap: 5px; }

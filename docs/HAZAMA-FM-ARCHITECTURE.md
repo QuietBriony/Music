@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-11（楽器拡張）: Workbenchの`instrument-voices.js`に低音／返し／パッド各3個の固定ネイティブ合成recipeを持ち、optional instruments metadataのIDからコードを生成。「🎲 楽器だけ」と手動選択は既存LIVEの3役を差し替える。既存909／808風経路を保ち、追加パート・音声・依存・clockはなし。音量／BPM／MUTE／A/Bは保持し、候補ごとの固定gainは聴感の自動補正ではない。dice checkpointに楽器とbankを任意追加、旧checkpointと旧scoreを読んだだけでは書換えない。実Strudel queryで全9recipeの音程／発音位置／発音数とgainを照合。FM／Band Room／Core Rigは変更なし。実機と本人の聴感は未確認。
+
 2026-10-11: 独立WorkbenchのLIVEランダムを`musical-dice.js`に分離。押した時だけ有限の反復フレーズ・装飾ドラム・音色を生成し、結果を既存V3/V4のnotes／steps／valuesへ保存。optional dice metadataにseed・turn・固定設定・戻り先を持つ。既存clockとliveMotifを変更せず、旧保存コードはバイト互換。音数・範囲・復元・実Strudelの打点と8小節帰還を検証。新規音声・依存・音声時計、FM／Band Room／Core Rigの変更なし。画面と本人の聴感は未確認。
 
 2026-10-06: Minimal Techno 01の低音量・初回操作案内の更新候補を検証中。曲内`SET_MASTER`の既定とloop／developの上限を0.12から0.60へ揃え、当該単曲を同じLEVELで5倍（約+13.98 dB）にする。共通LEVEL、native synth gain、他作品、3パートと単一clockの再生構成は保持する。この記録時点では未公開。

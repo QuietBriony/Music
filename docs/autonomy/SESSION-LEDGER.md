@@ -3,6 +3,24 @@
 自律開発 session の追記専用ログ。**新しい session は最新エントリを読んでから始める。**
 古いエントリは編集しない（追記のみ）。新しいものを先頭に積む。
 
+## 2026-10-11 — LIVEサイコロで楽器を替え、選択・固定・保存できる形へ
+
+- agent      : Codex（本人方針に沿う単一会話・既存Music repo／公開箱）
+- goal       : フレーズだけでなく楽器も替えて遊び、気に入った音の組み合わせを残す
+- repos      : Music（独立Workbenchと既存Listen／台帳／manual／handoff／architecture）
+- implemented: 「🎲 楽器だけ」、低音／返し／パッド各3候補の手動選択と楽器固定。
+  既存合成エンジンの波形／FM recipeを同じ3役で差し替える。ドラムは既存909／808風を交互に切替。
+  楽器だけの操作は音符・全打点・6音色値を保持。小変更は楽器1役、アンビエントはパッドだけ。
+  BPM・音量・MUTE・A/B・kit・LIVE時計を保持し、別パート・音声・sample・依存・timerは追加しない。
+  楽器／bank／固定／戻り先を既存コード・下書き・JSONへ保存。旧checkpointは明示操作時だけ拡張。
+  変更前のV3／V4／旧dice×4presetの12hash一致、全9recipeの実Strudel queryで音程／時刻／発音数／gain一致、
+  48回の再現性・3候補の幅、独立固定・復元・production操作guardを確認。Workbench 174 tests PASS、build成功。
+  PWA候補123 files／6,867,539 bytes、追加WAVなし。実音測定と本人試聴は未実施。固定gainは聴感の自動補正ではない。
+- stack-check: commit前のstrict全体gateと最終HEADの結果、公開SHA／release／deploymentは当該PRの検証記録へ残す
+- backlog    : BL-049継続。他worktree・FM／Band Room／Core Rig・既存claimを保持
+- next       : 必須gate後に当該候補を既存main／公開先へ反映し、静的配布物の一致を照合
+- blockers   : この記録は公開前の候補。実端末操作・聴感は未確認。過去のsample GET拒否を再試行・別経路で回避しない。
+
 ## 2026-10-11 — LIVEのランダムを反復・返し・部分固定で遊べる形へ
 
 - agent      : Codex（本人方針に沿った単一会話、既存Music repo／公開箱）
