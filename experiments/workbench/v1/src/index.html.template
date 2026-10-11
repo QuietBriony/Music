@@ -68,6 +68,21 @@
             <button id="set-undo-phrase" type="button" disabled>採用前へ戻す</button>
           </fieldset>
         </div>
+        <fieldset id="set-dice" class="set-dice" hidden>
+          <legend>ランダムで弾く</legend>
+          <div class="set-dice-actions">
+            <button id="set-roll-dice" type="button">🎲 フレーズで遊ぶ</button>
+            <button id="set-nudge-dice" type="button">少し変える</button>
+            <button id="set-keep-dice" type="button">このノリを軸に</button>
+            <button id="set-restore-dice" type="button" disabled>ランダム前へ戻す</button>
+          </div>
+          <div class="set-dice-locks">
+            <label><input id="set-dice-drums-lock" type="checkbox">ドラム固定</label>
+            <label><input id="set-dice-tone-lock" type="checkbox">音色固定</label>
+            <span>303だけ残すなら「音符を固定」</span>
+          </div>
+          <p id="set-dice-status" class="set-help" aria-live="polite">303の短い反復と返し、ハット、音色をまとめて作る。「少し変える」は休符と強拍を保つ。音量とBPMはそのまま。</p>
+        </fieldset>
         <p id="set-legacy-hint" class="set-help" hidden>保存版の展開をそのまま開いています。<button id="set-upgrade" type="button">この版から影つきLIVEを作る</button> 元の保存データは書き換えません。影の初期量は0です。</p>
         <article id="set-listening" class="set-listening" aria-label="聴く画面">
           <p class="eyebrow">LISTEN / ONE CONTINUOUS SET</p><h3 id="set-listen-title">LIVE</h3>

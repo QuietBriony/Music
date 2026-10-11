@@ -5,6 +5,7 @@ import {
 } from './live-code.js';
 import { sliderSettings } from './slider-bridge.js';
 import { liveReadouts } from './live-controls.js';
+import { rollDice, keepDice, restoreDice } from './musical-dice.js';
 
 const names = { kick: 'KICK', snare: 'SNARE', hh: 'CLOSED HAT', oh: 'OPEN HAT', bell: 'COWBELL', acid: '303',
   response:'303返し',percussion:'追加打楽器',pad:'パッド',...Object.fromEntries(EXTRA_DRUMS) };
@@ -48,6 +49,10 @@ export function initPerformance(hooks) {
   const listenToggle = document.querySelector('#set-listen-toggle');
   const shadowDetails = document.querySelector('#set-shadow-details');
   const shadowMute = document.querySelector('#set-shadow-mute');
+  const dicePanel = document.querySelector('#set-dice');
+  const diceStatus = document.querySelector('#set-dice-status');
+  const drumsLock = document.querySelector('#set-dice-drums-lock');
+  const toneLock = document.querySelector('#set-dice-tone-lock');
   for (const [id,title] of LIVE_MODES) { const option=el('option',title);option.value=id;liveMode.append(option); }
   const layerSelects = [...panel.querySelectorAll('[data-set-layer]')];
   let catalog;
@@ -236,6 +241,17 @@ export function initPerformance(hooks) {
     if (setting && !hooks.isBusy()) hooks.fader('SHADOW_ON', Number(setting.value) > 0 ? 0 : 1);
   });
   hold.addEventListener('click',() => mutate(next => { next.groove.hold=!next.groove.hold; }));
+  for (const [id, kind] of [['set-roll-dice','phrase'],['set-nudge-dice','nudge']]) {
+    document.querySelector('#'+id).addEventListener('click',() => mutate(next => {
+      Object.assign(next,rollDice(next,kind,{drums:drumsLock.checked,tone:toneLock.checked}));
+    }));
+  }
+  document.querySelector('#set-keep-dice').addEventListener('click',() => mutate(next => { Object.assign(next,keepDice(next)); }));
+  document.querySelector('#set-restore-dice').addEventListener('click',() => mutate(next => { Object.assign(next,restoreDice(next)); }));
+  for (const input of [drumsLock,toneLock]) input.addEventListener('change',() => mutate(next => {
+    if (!next.dice) Object.assign(next,keepDice(next));
+    next.dice.locks={drums:drumsLock.checked,tone:toneLock.checked};
+  }));
   variation.addEventListener('change',() => mutate(next => { next.groove.variation=Number(variation.value); }));
   document.querySelector('#set-next-variation').addEventListener('click',() => mutate(next => {
     next.groove.seed=(next.groove.seed+1)>>>0 || 1; next.groove.hold=false;
@@ -322,6 +338,16 @@ export function initPerformance(hooks) {
     });
     groovePanel.disabled = !state || blocked;
     groovePanel.hidden = !state?.groove;
+    dicePanel.disabled = !state?.live || blocked;
+    dicePanel.hidden = !state?.live;
+    document.querySelector('#set-restore-dice').disabled = !state?.dice || blocked;
+    if (state?.live) {
+      drumsLock.checked = state.dice?.locks.drums || false;
+      toneLock.checked = state.dice?.locks.tone || false;
+      diceStatus.textContent = (state.dice ? '候補 '+state.dice.turn+' · ' : '')
+        + (state.live.mode==='ambient' ? 'アンビエントは音色だけを変えます。' : state.groove.hold ? '303の音符は固定中。ハットと音色で遊べます。' : '303の反復と返し、ハット、音色で遊ぶ。「少し変える」は休符と強拍を保つ。')
+        + ' 気に入ったら「このノリを軸に」→「セットを保存」。音量・BPM・MUTE・素材A/Bはそのまま。';
+    }
     document.querySelector('#set-upgrade').hidden = !state || Boolean(state.shadow);
     document.querySelector('#set-legacy-hint').hidden = !state || Boolean(state.shadow);
     liveControls.hidden=!state?.live;

@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-11: 独立WorkbenchのLIVEランダムを`musical-dice.js`に分離。押した時だけ有限の反復フレーズ・装飾ドラム・音色を生成し、結果を既存V3/V4のnotes／steps／valuesへ保存。optional dice metadataにseed・turn・固定設定・戻り先を持つ。既存clockとliveMotifを変更せず、旧保存コードはバイト互換。音数・範囲・復元・実Strudelの打点と8小節帰還を検証。新規音声・依存・音声時計、FM／Band Room／Core Rigの変更なし。画面と本人の聴感は未確認。
+
 2026-10-06: Minimal Techno 01の低音量・初回操作案内の更新候補を検証中。曲内`SET_MASTER`の既定とloop／developの上限を0.12から0.60へ揃え、当該単曲を同じLEVELで5倍（約+13.98 dB）にする。共通LEVEL、native synth gain、他作品、3パートと単一clockの再生構成は保持する。この記録時点では未公開。
 作品直リンク`?work=minimal-techno-01`はPlay／Stopのある操作欄から開き、その下の「この試作の音量」LEVELで調整する。onceは32小節・約62秒、loopは同じ32小節の反復、developは64小節・約124秒。onceの発音終了後はStopを押し、モード変更後は次の明示Playで冒頭再開する。冒頭はキックだけ、約8秒で3パートが揃う。保存済みLEVELと下書きは保持する。
 今回候補の最終HEADの実音／WAV測定、関連tests、390／320pxのローカル実操作、独立レビュー、全体gateと公開確認は別途確認する。実iPhoneと本人の聴感は未確認。303／909／Rhodes統合は別worktreeに保持し、808素材未取得のため統合試聴は保留。以下の12%と旧検証状況は過去の記録。
