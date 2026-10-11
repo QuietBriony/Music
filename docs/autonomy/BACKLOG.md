@@ -47,13 +47,15 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : runtime / verify
 - agent    : codex | claude
 - human-gate: yes（本人の試奏で音を判定して通常曲へ昇格。任意の短い候補は検証後merge可）
-- status   : open
+- status   : wip — codex 2026-10-11。一本の固定フレーズで弦合成／既存録音エレキを比較する任意候補を検証中
 - source   : 2026-10-01本人の物理モデル参考画像、ロック→ジャズ、旧アプリ整理・archive承認
 - detail   : `audio/physical-band/`を既存Band Room内の任意試奏として実装。
   2026-10-01に8小節の候補まで実装済み。
   弦DSP／原創rock+jazz score／Workerレンダー／3 source同期／準備取消・停止を分離。
   元のBand Room採譜、drum-floor pocket、chillの余白と奏法を入力のエッセンスとして残す。
   正本は`docs/PHYSICAL-BAND-REHEARSAL.md`。写真の多楽器精密モデルの達成は主張しない。
+  2026-10-11: 本人の「まだギター／バンドに聴こえない」を受け、採譜から切り離した10.8秒の一本比較へ方針を絞る。
+  既存録音4音（CC BY 3.0、固定CDN、hash照合）と現行弦合成を同じクランチ／平均音量で比較。ARCBへ録音音源を昇格させる前に本人が音源の差を判定する。
   本人が試奏を「全然前よりいい」と評価し、「そのままARBC再現」を指示したため昇格gateを通過。
   v407で7曲の既存schedulerへ音源adapterを接続、3音色の共通アンプと既存RECを使用。
   v408で短音の強制muteとbass gate上限を除去、和音単位の弦のサステインと次音の減衰、drum余韻、共通room／空気感35%を追加。

@@ -1,0 +1,34 @@
+{
+  "sampleRate": 32000,
+  "duration": 10.8,
+  "note_sequence": "E2 / E5 / A5 / four short damped E2 / E5",
+  "conditions": "Actual playback BufferSource PCM after common offline crunch, before user volume; same score; phrase RMS matched. No human realism certification. Recorded mute uses envelope/filter approximation.",
+  "outputs": {
+    "synthetic": {
+      "sha256": "a4d3df1d03a5ee160696aff206826507d36b7343fa2dd5330991f4692e172c97",
+      "rms": 0.05999999865889549,
+      "peak": 0.4747004806995392,
+      "E2_pitch": {
+        "hz": 82.4074984689255,
+        "cents_from_E2": 0.012803898638529187
+      },
+      "attack_rms_50_350ms": 0.08245247602462769,
+      "late_rms_1600_1900ms": 0.0027134339325129986,
+      "late_vs_attack_db": -29.65368900405579,
+      "end_rms": 0.0
+    },
+    "recorded": {
+      "sha256": "4a22fe51b86910c66e55f92613b4020ade13c325b19a2c3d3e0d2297b3e13465",
+      "rms": 0.05999999865889549,
+      "peak": 0.5560867190361023,
+      "E2_pitch": {
+        "hz": 82.35327497571006,
+        "cents_from_E2": -1.126709580697922
+      },
+      "attack_rms_50_350ms": 0.0742548480629921,
+      "late_rms_1600_1900ms": 0.021615060046315193,
+      "late_vs_attack_db": -10.719367349118432,
+      "end_rms": 8.067499379649234e-07
+    }
+  }
+}

@@ -174,12 +174,12 @@
     },
     {
       "id": "physical-band", "repo": "Music", "group": "next", "status": "candidate",
-      "title": "ギター・ベース・ドラムの8小節試奏", "href": "band-room.html#br-physical-band", "action": "試奏する",
-      "purpose": "ロック／ジャズの独自8小節で弦・打感・ギター3音色を試す。ARCBのAI再現も同じ楽器中核を使用。",
-      "first_step": "スタイルを選ぶ → 8小節を試奏 → 3パートのON/OFFと試奏音量を動かす。",
-      "outputs": "ページ内で再利用する短い合奏。音声・modelのdownloadなし。",
-      "boundary": "8小節試奏は独立曲。RECは通常曲のAI再現で使用。精密な多楽器モデルや歌声生成ではない。実iPhone聴感は本人確認。",
-      "sources": [{ "repo": "Music", "path": "audio/physical-band/score.mjs" }, { "repo": "Music", "path": "audio/physical-band/dsp.mjs" }, { "repo": "Music", "path": "docs/PHYSICAL-BAND-REHEARSAL.md" }]
+      "title": "ロックギター一本の比較 / バンド試奏", "href": "band-room.html#br-guitar-audition", "action": "聴き比べる",
+      "purpose": "同じ11秒の単音・パワーコード・短いミュートを、弦合成と録音エレキで比較。従来のロック／ジャズ8小節試奏も使用できる。",
+      "first_step": "比較を準備（録音4音） → 合成で聴く / 録音ギターで聴く。下の8小節試奏では3パートを切り替える。",
+      "outputs": "平均音量をそろえた同じフレーズ。準備を押した時だけ録音4音約0.41 MBを取得。modelのdownloadなし。",
+      "boundary": "録音ギターは比較用でARCBへ未採用。単一強度の音程変換と近似ミュート。RECは通常曲で使用。音の採用・実iPhone聴感は本人確認。",
+      "sources": [{ "repo": "Music", "path": "audio/physical-band/guitar-audition.mjs" }, { "repo": "Music", "path": "audio/physical-band/dsp.mjs" }, { "repo": "Music", "path": "docs/PHYSICAL-BAND-REHEARSAL.md" }]
     },
     {
       "id": "visual-composer", "repo": "Music", "group": "next", "status": "planned",

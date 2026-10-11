@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-11: v413は同じ10.8秒の単音・E5・A5・短いミュートを、現行弦合成と既存の録音エレキ4音で比較する任意の試奏。共通クランチと平均音量をそろえ、採譜の誤りと音源の不足を切り分ける。録音は明示準備時だけ取得しSHA-256を照合、再生は1 source／1 gain。ARCBへ未採用で、録音ミュートはfilter／減衰の近似。人の聴感を数値から合格扱いしない。[比較条件](PHYSICAL-BAND-REHEARSAL.md)。
+
 2026-10-11（楽器拡張）: Workbenchの`instrument-voices.js`に低音／返し／パッド各3個の固定ネイティブ合成recipeを持ち、optional instruments metadataのIDからコードを生成。「🎲 楽器だけ」と手動選択は既存LIVEの3役を差し替える。既存909／808風経路を保ち、追加パート・音声・依存・clockはなし。音量／BPM／MUTE／A/Bは保持し、候補ごとの固定gainは聴感の自動補正ではない。dice checkpointに楽器とbankを任意追加、旧checkpointと旧scoreを読んだだけでは書換えない。実Strudel queryで全9recipeの音程／発音位置／発音数とgainを照合。FM／Band Room／Core Rigは変更なし。実機と本人の聴感は未確認。
 
 2026-10-11: 独立WorkbenchのLIVEランダムを`musical-dice.js`に分離。押した時だけ有限の反復フレーズ・装飾ドラム・音色を生成し、結果を既存V3/V4のnotes／steps／valuesへ保存。optional dice metadataにseed・turn・固定設定・戻り先を持つ。既存clockとliveMotifを変更せず、旧保存コードはバイト互換。音数・範囲・復元・実Strudelの打点と8小節帰還を検証。新規音声・依存・音声時計、FM／Band Room／Core Rigの変更なし。画面と本人の聴感は未確認。
@@ -79,9 +81,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v412`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v413`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-245`, `band-room.css?v=br-93`。
+> `band-room.js?v=br-246`, `band-room.css?v=br-93`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

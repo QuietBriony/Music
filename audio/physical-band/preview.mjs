@@ -131,6 +131,7 @@ if (panel) {
     gains[part]?.gain.setTargetAtTime(event.target.checked ? 1 : 0, context.currentTime, 0.015);
   }));
   window.addEventListener("band-room:playback-starting", () => stop());
+  window.addEventListener("band-room:physical-preview", (event) => { if (event.detail?.owner === "guitar-audition") stop(); });
   window.addEventListener("band-room:playback-stopped", () => { if (phase !== "idle") stop(); });
   window.addEventListener("pagehide", () => { stop(null); cache.clear(); lastRender = undefined; if (ownsContext) context?.close(); });
   window.PhysicalBandPreview = Object.freeze({ snapshot: () => ({

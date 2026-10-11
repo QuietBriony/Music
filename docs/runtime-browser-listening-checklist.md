@@ -6,6 +6,15 @@ This checklist makes browser listening the default review path for Music runtime
 
 Use m4a recording only for milestone comparisons, CarPlay/output-level checks, or when browser listening is ambiguous.
 
+## One guitar audition (v413 / BL-051)
+
+Open the existing Band Room `#br-guitar-audition`. Before Prepare, no audition Worker, PCM or external audio request should occur.
+Prepare explicitly downloads four pinned electric-guitar notes (410,784 bytes). Compare synthesis / recording at the same volume, from the phrase start each time.
+Check the low E attack and ring, E5/A5 chords and short damped notes. The recorded mute is an approximation, and this recording source has not been promoted into ARCB.
+Stop during preparation and playback; switch between both buttons, the eight-bar rehearsal and a normal song. There should be no overlap or delayed restart.
+Hide the page while playing, then return: playback stays stopped. A failed / corrupt asset disables the recording choice without retries or substitutions.
+Digital pitch, level and decay measurements do not certify perceived timbre, real iPhone performance or artistic adoption.
+
 ## ARCB source-backed harmony (v412 / BL-050)
 
 - Native adapter instruments.mjs?v=5 reads conservative bar voicings from the existing seven scores.
@@ -190,8 +199,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `engine.js?v=fm-119`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-81`, `audio/ai-fills.js?v=fm-71`,
   `style.css?v=fm-28`, `band-room.css?v=br-93`,
-  `band-room.js?v=br-245`, `audio/audio-safety.js?v=br-68`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v412`.
+  `band-room.js?v=br-246`, `audio/audio-safety.js?v=br-68`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v413`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,

@@ -1,6 +1,8 @@
 # Band Room — 使い方ガイド
 
-2026-10-03: 現行runtime v412は原音の確かな区間から和音・音域を補正し、ロックの上下ストロークと弾き方を加え、ARCB 7曲の合奏バランス、余韻、採譜の時計と途中移動を補正しています。AI再現でSTARTし、ギターの音をクリーン／クランチ／ディストーションから選びます。採譜の空白小節は余計な音を足さず余韻を残します。melodyは採れた歌の音程のガイド。Electric Sheep／TABASCOでは未採譜表示で鳴りません。原音と切り替えて練習・RECできます。
+2026-10-11: ギター一本の比較を追加。「ロックギター一本を比較」を開き、比較を準備 → 合成で聴く／録音ギターで聴く。同じクランチと平均音量で11秒を比較。録音4音は準備を押した時だけ約0.41 MB取得し、ARCBへは未採用。短いミュートは加工による近似、RECは通常曲で使用。実iPhoneと音色の採用は本人確認。
+
+2026-10-03: 現行runtime v413は原音の確かな区間から和音・音域を補正し、ロックの上下ストロークと弾き方を加え、ARCB 7曲の合奏バランス、余韻、採譜の時計と途中移動を補正しています。AI再現でSTARTし、ギターの音をクリーン／クランチ／ディストーションから選びます。採譜の空白小節は余計な音を足さず余韻を残します。melodyは採れた歌の音程のガイド。Electric Sheep／TABASCOでは未採譜表示で鳴りません。原音と切り替えて練習・RECできます。
 
 > Listen hub: https://music-stack.pages.dev/listen.html
 > Band Room: https://music-stack.pages.dev/band-room.html
@@ -23,7 +25,7 @@
 
 復旧条件を含むこの導線の正本は
 [BAND-ROOM-MANUAL.md](./BAND-ROOM-MANUAL.md)。
-現行runtimeはv412（ARCBのロック奏法、採譜空白・未採譜melody表示と合奏補正）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-245` / `br-93`。
+現行runtimeはv413（ARCBのロック奏法、採譜空白・未採譜melody表示と合奏補正）、HAZAMA playability候補はv401（authored rests + 02 AI明示 + session-only KARAOKE + 曲別歌詞境界）のまま。client markerは`br-246` / `br-93`。
 実音・mobile合格とHAZAMAのmain selector昇格はBL-041 human gateで、まだ未判定。
 
 ### v401 AIの短時間レイヤー判定
@@ -72,7 +74,7 @@ AI再現では、短い音符でもギターの和音とベースの響きが自
 パートの音量は部屋へ送る音にも効き、STOPとseekは残響も止めます。
 
 
-## 画面構成（現行: br-245 / br-93）
+## 画面構成（現行: br-246 / br-93）
 
 ```
 ┌─────────────────────────────────┐

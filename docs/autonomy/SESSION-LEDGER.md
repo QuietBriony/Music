@@ -1,5 +1,20 @@
 # Session Ledger — music-stack
 
+## 2026-10-11 — 一本のロックギター比較へ評価方法を絞る（候補）
+
+- agent      : Codex（本人の単一会話方針に従い、別task／subagentなし）
+- goal       : 同じ既知のフレーズで音源の不足と採譜の不足を切り分け、既存Band Roomから聴き比べる
+- repos      : Music、既存Music-audio-stabilityを再利用。正本の他担当branchとsiblingは編集しない
+- implemented: 10.8秒の単音／E5／A5／短いミュート／E5を共通クランチで準備し、phrase RMSとpeak ceilingをそろえる任意候補。
+  明示準備時だけ既存固定CDNの録音エレキ4音410,784 bytesを取得しSHA-256を照合。録音ミュートはfilter／減衰の近似、単一velocityの音程変換であり、実演の奏法録音ではない。
+  Workerとoffline ampで準備、再生は1 source／1 gain。Stop・曲／8小節試奏の開始・hidden／pagehideを排他にする。
+  公開音声・model・hosting・repo追加なし。ARCBの既定音源・score・mixerは保持。Listenとmanualは既存台帳を同じrendererで同期。
+- stack-check: clean main 75adebedffa4580c9bae67a088a5c9670a60a5d1のbaseline PASS 39 / FAIL 0 / SKIP 0。
+  本エントリ追記時は候補の実ブラウザ・precommit全体gate・最終HEADのgate／同会話再レビュー／公開照合は未完了。完了証跡は今回PRに記録する。
+- backlog    : BL-051（一本の比較と本人試聴）、BL-050（採譜忠実度は継続）
+- next       : 同じフレーズで録音ギターの音色・余韻を本人確認し、採用音源を決めてからベース／ドラムを合わせる
+- blockers   : 録音比較はARCBへ未採用。実iPhone・本人の聴感は未確認。RMS／周波数の一致を楽器のリアルさの合格としない。
+
 自律開発 session の追記専用ログ。**新しい session は最新エントリを読んでから始める。**
 古いエントリは編集しない（追記のみ）。新しいものを先頭に積む。
 
