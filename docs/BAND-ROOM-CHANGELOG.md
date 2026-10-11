@@ -1,11 +1,18 @@
-# Band Room - Changelog (v65 -> v412 compact)
+# Band Room - Changelog (v65 -> v413 compact)
 
-Current sw.js VERSION: v412. Latest Band Room runtime change: v412 (confidence-gated guitar register and harmony from existing stems). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v413. Latest Band Room runtime change: v413 (optional fixed-phrase guitar synthesis / recording comparison). HAZAMA playability candidate remains v401.
+
+## v413 compact - Compare one rock guitar before rebuilding the band
+
+- Add an optional 10.8-second single-note / E5 / A5 / damped-note audition inside the existing Band Room. Recorded electric guitar and current string synthesis use the same score, shared crunch settings and matched phrase RMS with a peak ceiling. Neither replaces ARCB playback.
+- Load only four existing pinned CC BY 3.0 guitar samples after Prepare, verify their SHA-256, bound network bytes and decoded duration, and stop on failure without another URL or synthesized substitution. Recorded damped notes are a filter/envelope approximation, not recorded palm articulations.
+- Prepare synthesis in a cancellable Worker and the common amp offline. Playback needs one BufferSource and one gain. Stop, song/rehearsal starts and hiding/leaving the page cancel it. Average level matching does not establish perceived timbre realism.
+- Reuse the existing Listen catalog and hosting. Cache `hazama-fm-v413`, rehearsal adapter v5, audition modules v1. Main ARCB JS br-246, CSS br-93 and its bank/DSP/amp/room are unchanged.
 
 ## v412 compact - Source-backed guitar harmony
 
 - Shared cache `hazama-fm-v412`, runtime `br-245` / `br-93`, physical adapter v5. Bank v3 / DSP v4 / amp and room v1 remain unchanged.
-- Analyze the existing stereo other stems on CPU. Conservative sustained harmonic templates replace bass-derived guitar roots in 234 of 887 scored bars; weak or changing evidence retains the original voicing. Only three accepted bars add an a third supported across multiple temporal windows.
+- Analyze the existing stereo other stems on CPU. Conservative sustained harmonic templates replace bass-derived guitar roots in 234 of 887 scored bars; weak or changing evidence retains the original voicing. Only three accepted bars add a third supported across multiple temporal windows.
 - Preserve every original attack, duration and velocity, bass/drum score, transport and rock articulation. Playback reads bounded arrays with at most three notes per stroke; stale or malformed metadata fails closed.
 - Actual post-master recordings and independent STFT pitch-class comparisons are documented in the existing ARCB measurement report. Coverage and template fit are not pitch accuracy or a human listening score.
 

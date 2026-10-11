@@ -273,7 +273,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v412-runtime",
+        "target": "hazama-fm-v413-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -325,7 +325,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v412-runtime",
+        "target": "hazama-fm-v413-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -375,7 +375,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v412-runtime",
+        "target": "hazama-fm-v413-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -426,7 +426,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v412-runtime",
+        "target": "hazama-fm-v413-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -497,7 +497,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v412-runtime",
+        "target": "hazama-fm-v413-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -555,7 +555,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v412-runtime",
+        "target": "hazama-fm-v413-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -571,7 +571,8 @@
       "id": "tonejs-instruments-samples",
       "kind": "sample_source",
       "consumers": [
-        "presets/online-samples-catalog.json"
+        "presets/online-samples-catalog.json",
+        "audio/physical-band/guitar-audition.mjs"
       ],
       "source_url": "https://github.com/nbrosowsky/tonejs-instruments/tree/622c2f1c32c8cfce4158ddc3eb26e518ddef37e5",
       "runtime_urls": [
@@ -588,7 +589,7 @@
         "algorithm": null,
         "value": null,
         "status": "pending",
-        "evidence": "Individual consumed sample hashes have not been recorded."
+        "evidence": "Four guitar audition assets have SHA-256 recorded and checked in audio/physical-band/guitar-audition.mjs (2026-10-11); other consumed assets remain pending."
       },
       "license": {
         "status": "verified",
@@ -612,7 +613,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v412-runtime",
+        "target": "hazama-fm-v413-runtime",
         "tracked_in_git": false
       },
       "execution": {

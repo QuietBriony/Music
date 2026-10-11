@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-11: v413は同じ10.8秒の単音・E5・A5・短いミュートを、現行弦合成と既存の録音エレキ4音で比較する任意の試奏。共通クランチと平均音量をそろえ、採譜の誤りと音源の不足を切り分ける。録音は明示準備時だけ取得しSHA-256を照合、再生は1 source／1 gain。ARCBへ未採用で、録音ミュートはfilter／減衰の近似。人の聴感を数値から合格扱いしない。[比較条件](PHYSICAL-BAND-REHEARSAL.md)。
+
 2026-10-11（楽器拡張）: LIVEに「🎲 楽器だけ」、低音／返し／パッド各3候補の手動選択、楽器固定を追加。既存のネイティブ合成音を同じ3役で差し替え、ドラム音源は909／808風の既存経路を使う。音符・打点・ツマミだけ固定して楽器で遊べる。小変更は楽器1役、アンビエントはパッドだけ。選択・固定・戻り先をコード／下書き／JSONへ保存する。旧diceは明示操作時だけcheckpointを拡張し、旧V3/V4・4preset・旧diceの12種類を変更前のコードhashで照合。追加音声・依存・clockなし。実機操作と本人の聴感は未確認。
 
 2026-10-11: LIVEセットに「ランダムで弾く」を追加。ボタン時に303の7〜10音の反復・返し、最大6打点のハット、6音色値を連動して更新。「少し変える」は休符と強拍を保ち弱拍2音まで。音符／ドラム／音色固定、今のノリを戻り先に採用、ランダム前へ戻す、下書き／JSONで候補・seed・試行番号・戻り先を保存する。キック／スネア・BPM・全音量・MUTE・素材A/B・LIVE時計と旧V1〜V4を保持し、アンビエントは音色だけ。既存の100ms反映へ接続し、音声・依存・新規時計は追加しない。Strudelの実queryで打点と8小節帰還を確認。接続中ブラウザがないため画面・実端末と本人の聴感は未確認。公開結果はSESSION-LEDGER参照。
@@ -214,7 +216,7 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v412`。Band Room runtime markerは`band-room.js?v=br-245` /
+- 現行cacheは`hazama-fm-v413`。Band Room runtime markerは`band-room.js?v=br-246` /
   `band-room.css?v=br-93`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ

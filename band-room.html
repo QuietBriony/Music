@@ -27,8 +27,9 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-245" defer></script>
-<script type="module" src="audio/physical-band/preview.mjs?v=4"></script>
+<script src="band-room.js?v=br-246" defer></script>
+<script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
+<script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=1"></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -302,6 +303,23 @@
     </section>
 
     <!-- ===== DETAILS (collapsed by default) ===== -->
+
+    <details id="br-guitar-audition" class="br-details">
+      <summary>ロックギター一本を比較 — 合成 / 録音ギター</summary>
+      <section aria-label="ロックギターの同じフレーズを比較">
+        <p class="br-help">約11秒：低いEの単音 → E5 → A5 → 短いミュート4回 → E5の余韻。同じ音符・クランチ処理で平均音量をそろえ、音源の響きの違いを確かめます。</p>
+        <div class="br-physical-controls">
+          <button type="button" data-guitar-prepare>比較を準備（録音4音）</button>
+          <button type="button" data-guitar-play="synthetic" disabled>合成で聴く</button>
+          <button type="button" data-guitar-play="recorded" disabled>録音ギターで聴く</button>
+          <button type="button" data-guitar-stop disabled>停止</button>
+          <label>比較の音量 <input data-guitar-volume type="range" min="0" max="70" value="45" aria-label="ギター比較の音量" /></label>
+        </div>
+        <p class="br-help" data-guitar-status role="status">準備を押すと、既存の録音ギター4音（約0.41 MB）を取得します。</p>
+        <p class="br-help">比較用の独自フレーズです。ARCBの曲再現へはまだ採用していません。録音ギターは一段階の強さの音を音程変換し、短いミュートは減衰とフィルターで近似します。実演の奏法録音・歌声・原曲の再生ではありません。RECは通常曲で使えます。</p>
+        <p class="br-help">録音音源：<a href="https://github.com/nbrosowsky/tonejs-instruments/tree/622c2f1c32c8cfce4158ddc3eb26e518ddef37e5" target="_blank" rel="noopener">nbrosowsky / tonejs-instruments</a> · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>（単音を音程変換・音量調整・クランチ加工）</p>
+      </section>
+    </details>
 
     <details id="br-physical-band" class="br-details">
       <summary>ギター・ベース・ドラムの試奏 — ロック / ジャズ</summary>
