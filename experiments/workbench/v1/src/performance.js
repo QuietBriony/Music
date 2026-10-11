@@ -7,6 +7,7 @@ import { sliderSettings } from './slider-bridge.js';
 import { liveReadouts } from './live-controls.js';
 import { rollDice, keepDice, restoreDice } from './musical-dice.js';
 import { INSTRUMENT_ROLES, INSTRUMENT_VOICES, instrumentProfile } from './instrument-voices.js';
+import { initPerformanceLayout } from './performance-layout.js';
 
 const names = { kick: 'KICK', snare: 'SNARE', hh: 'CLOSED HAT', oh: 'OPEN HAT', bell: 'COWBELL', acid: '303',
   response:'303返し',percussion:'追加打楽器',pad:'パッド',...Object.fromEntries(EXTRA_DRUMS) };
@@ -55,6 +56,13 @@ export function initPerformance(hooks) {
   const drumsLock = document.querySelector('#set-dice-drums-lock');
   const toneLock = document.querySelector('#set-dice-tone-lock');
   const instrumentsLock = document.querySelector('#set-dice-instruments-lock');
+  const layout = initPerformanceLayout({
+    body:document.body,detailButton:document.querySelector('#set-detail-toggle'),codeLink:document.querySelector('#set-code-link'),
+    listenButton:listenToggle,libraryButton:document.querySelector('#set-library'),library:document.querySelector('.library'),
+    libraryTitle:document.querySelector('#library-title'),draftDetails:document.querySelector('#draft-details'),
+    feedback:document.querySelector('#set-feedback'),draftForm:document.querySelector('#draft-form'),status:document.querySelector('#status'),
+    fullDetails:[...panel.querySelectorAll('[data-set-full-open]')],
+  });
   const instrumentSelects = new Map(Object.keys(INSTRUMENT_ROLES).map(role=>[role,document.querySelector('#set-instrument-'+role)]));
   for (const [role,select] of instrumentSelects) {
     for (const voice of INSTRUMENT_VOICES[role]) { const option=el('option',voice.title);option.value=voice.id;select.append(option); }
@@ -82,19 +90,20 @@ export function initPerformance(hooks) {
   function show(enabled = true) {
     view = enabled;
     panel.hidden = !enabled;
-    document.body.classList.toggle('performance-view', enabled);
+    layout.show(enabled);
     open.setAttribute('aria-expanded', String(enabled));
     open.textContent = 'ライブセット';
-    if (!enabled) { document.body.classList.remove('listening-view'); listenToggle.setAttribute('aria-pressed','false'); listenToggle.textContent='聴く画面'; }
     hooks.viewChanged?.();
   }
 
   function mutate(change) {
     const current = readTechnoSet(hooks.getCode());
     if (!current || loading || hooks.isBusy()) return;
+    diceStatus.dataset.notice = '';
     change(current);
     hooks.changeCode(technoSetCode(current));
     sync();
+    return true;
   }
 
   async function loadLayer(id) {
@@ -198,7 +207,8 @@ export function initPerformance(hooks) {
   }
 
   function addFader(key, target, vertical = false) {
-    const [, title, value, min, max, step, suffix] = SET_SLIDERS.find((s) => s[0] === key);
+    const [, sourceTitle, value, min, max, step, suffix] = SET_SLIDERS.find((s) => s[0] === key);
+    const title = {ACID:'低音',RESPONSE:'返し',SPACE:'残響'}[key] || sourceTitle;
     const label = el('label', '', vertical ? 'set-fader set-fader-vertical' : 'set-fader');
     const output = el('output');
     const input = el('input');
@@ -257,12 +267,16 @@ export function initPerformance(hooks) {
       Object.assign(next,rollDice(next,kind,{drums:drumsLock.checked,tone:toneLock.checked,instruments:instrumentsLock.checked}));
     }));
   }
-  document.querySelector('#set-keep-dice').addEventListener('click',() => mutate(next => { Object.assign(next,keepDice(next)); }));
-  document.querySelector('#set-restore-dice').addEventListener('click',() => mutate(next => {
-    const restored=restoreDice(next);
-    if (!restored.instruments) delete next.instruments;
-    Object.assign(next,restored);
-  }));
+  document.querySelector('#set-keep-dice').addEventListener('click',() => {
+    if (mutate(next => { Object.assign(next,keepDice(next)); })) diceStatus.dataset.notice=diceStatus.textContent='ここを戻り先にしました。端末に残すなら上の「保存」。';
+  });
+  document.querySelector('#set-restore-dice').addEventListener('click',() => {
+    if (mutate(next => {
+      const restored=restoreDice(next);
+      if (!restored.instruments) delete next.instruments;
+      Object.assign(next,restored);
+    })) diceStatus.dataset.notice=diceStatus.textContent='戻り先のフレーズ・楽器に戻しました。';
+  });
   for (const input of [drumsLock,toneLock,instrumentsLock]) input.addEventListener('change',() => mutate(next => {
     if (!next.dice) Object.assign(next,keepDice(next));
     next.dice.locks={drums:drumsLock.checked,tone:toneLock.checked,instruments:instrumentsLock.checked};
@@ -294,12 +308,6 @@ export function initPerformance(hooks) {
   liveLock.addEventListener('click',() => mutate(next => {
     next.live.lock=next.live.lock ? null : liveFrame(next.live,next.groove.seed,hooks.cycle(),next.auto,next.scene).section;
   }));
-  listenToggle.addEventListener('click',() => {
-    const listening=document.body.classList.toggle('listening-view');
-    listenToggle.setAttribute('aria-pressed',String(listening));
-    listenToggle.textContent=listening?'操作に戻る':'聴く画面';
-    if (listening) panel.scrollIntoView({block:'start'});
-  });
 
   layerSelects.forEach((select, index) => select.addEventListener('change', async () => {
     const id = select.value;
@@ -329,17 +337,13 @@ export function initPerformance(hooks) {
   start.addEventListener('click', () => hooks.isPlaying() ? hooks.stop() : hooks.play());
   document.querySelector('#set-stop').addEventListener('click', hooks.stop);
   document.querySelector('#set-save').addEventListener('click', hooks.save);
-  document.querySelector('#set-library').addEventListener('click', () => {
-    const visible = document.body.classList.toggle('set-library-visible');
-    document.querySelector('#set-library').setAttribute('aria-expanded', String(visible));
-    if (visible) document.querySelector('.library').scrollIntoView({ block: 'start' });
-  });
   open.addEventListener('click', enter);
 
   function sync() {
     const code = hooks.getCode();
     if (code !== cachedCode) {
       cachedCode = code;
+      diceStatus.dataset.notice = '';
       state = readTechnoSet(code);
       if (!state && !isSetCode(code) && view) show(false);
     }
@@ -362,9 +366,10 @@ export function initPerformance(hooks) {
       instrumentsLock.checked = state.dice?.locks.instruments || false;
       for (const [role,select] of instrumentSelects) select.value=instrumentProfile(state)[role];
       document.querySelector('#set-instrument-dice').disabled = instrumentsLock.checked || blocked;
-      diceStatus.textContent = (state.dice ? '候補 '+state.dice.turn+' · ' : '')
-        + (state.live.mode==='ambient' ? 'アンビエントはパッドの楽器と音色だけを変えます。' : state.groove.hold ? '低音の音符は固定中。ハット・楽器・音色で遊べます。' : '低音の反復と返し、ハット、楽器、音色で遊ぶ。「少し変える」は休符と強拍を保ち楽器は1役だけ。')
-        + ' 気に入ったら「このノリを軸に」→「セットを保存」。音量・BPM・MUTE・素材A/Bはそのまま。';
+      const locks=[state.groove.hold && '音符',drumsLock.checked && 'ドラム',toneLock.checked && 'ツマミ',instrumentsLock.checked && '楽器'].filter(Boolean);
+      document.querySelector('#set-dice-settings-summary').textContent=(locks.length ? locks.join('・')+'固定' : '固定なし')+' · '+(state.bank==='909'?'909':'808風');
+      const diceText=diceStatus.dataset.notice || (state.dice ? '候補 '+state.dice.turn+' · ' : '')+(state.live.mode==='ambient' ? 'パッドの響きで遊ぶ。' : '同じノリを少しずつ変える。')+' 音量・BPMはそのまま。';
+      if (diceStatus.textContent!==diceText) diceStatus.textContent=diceText;
     }
     document.querySelector('#set-upgrade').hidden = !state || Boolean(state.shadow);
     document.querySelector('#set-legacy-hint').hidden = !state || Boolean(state.shadow);
@@ -430,8 +435,8 @@ export function initPerformance(hooks) {
     layerSelects.forEach((select, i) => { select.value = state.layers[i].id; });
     document.querySelector('#set-layer-summary').textContent = state.layers.map((layer, i) =>
       (i ? 'B：' : 'A：') + layer.title).join(' / ') + ' · ' + state.bpm + ' BPMで一緒に鳴ります。';
-    document.querySelector('#set-title').textContent=state.live?.mode==='ambient'?'漂う。重なる。ゆっくり移る。':'鳴らす。抜く。みょんを上げる。';
-    document.querySelector('#set-acid-title').textContent = state.layerGain === 1 ? '追加の303風 · LIVE FADERS' : '303風 · LIVE FADERS';
+    document.querySelector('#set-title').textContent=state.live?.mode==='ambient'?'アンビエント・LIVE':'ライブセット';
+    document.querySelector('#set-acid-title').textContent = state.layerGain === 1 ? '追加する楽器の音色' : '音色を触る';
     document.querySelector('#set-mixer-title').textContent = state.layerGain === 1 ? '追加パートを出し入れ' : 'パートを出し入れ';
     note.textContent = state.live ? state.live.mode==='ambient'?'長い和音と柔らかい音色でゆっくり移ります。自動のドラムは入りません。素材A/Bは手動音量を優先。'
       : state.auto?'軸は8小節で帰還。章ごとに小変奏と抜き差しが変わり、音色はゆっくりつながります。手動MUTEを優先。':'手動シーンで演奏中。LIVEを押すと自動の流れへ戻ります。'
@@ -454,7 +459,7 @@ export function initPerformance(hooks) {
     const tempoText = playing && Number.isFinite(tempo) ? '再生 ' + Math.round(tempo) + ' BPM · コードに保存'
       : '演奏中も変更 · コードに保存';
     if (tempoStatus.textContent !== tempoText) tempoStatus.textContent = tempoText;
-    start.textContent = playing ? '■ セットを止める' : '▶ セットを鳴らす';
+    start.textContent = playing ? '■ 停止' : '▶ 再生';
     start.setAttribute('aria-pressed', String(playing));
     const cycle = playing ? Math.max(0, hooks.cycle()) : 0;
     const step = playing ? Math.floor((cycle % 1) * 16) : -1;
@@ -493,7 +498,7 @@ export function initPerformance(hooks) {
     if (event.target.closest('input,textarea,select,[contenteditable="true"],.cm-editor')) return;
     // Keep Space's normal button activation, but scene shortcuts still work
     // after clicking Play or a scene instead of requiring a background click.
-    if (event.code === 'Space' && !event.target.closest('button')) { event.preventDefault(); start.click(); }
+    if (event.code === 'Space' && !event.target.closest('button,summary,a')) { event.preventDefault(); start.click(); }
     const index = Number(event.key) - 1;
     if (index >= 0 && index < 5 && /^\d$/.test(event.key)) sceneButtons.get(SET_SCENES[index]).click();
   });
