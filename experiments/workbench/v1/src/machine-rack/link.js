@@ -59,6 +59,7 @@ export function createMachineLink({ audio, ui, data }) {
     tempo: value => { if (value !== audio.tempo) showTempo(); notice(); },
   };
   return {
+    recordingSource: () => audio.isPlaying ? audio.outputGain : null,
     capture: () => captureMachineState(data,audio),
     validate: snapshot => { decodeMachineState(snapshot,BinaryFormatDecoder); },
     restore(snapshot) {

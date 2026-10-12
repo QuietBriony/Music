@@ -11,6 +11,9 @@ await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 await cp(join(root, 'src', 'index.html.template'), join(output, 'index.html'));
 await cp(join(root, 'src', 'app.js'), join(output, 'app.js'));
+for (const file of ['vocal-recorder.js', 'vocal-store.js', 'vocal-booth.js', 'vocal-booth.css']) {
+  await cp(join(root, 'src', file), join(output, file));
+}
 await cp(join(root, 'src', 'machine-clock.js'), join(output, 'machine-clock.js'));
 await cp(join(root, 'src', 'machine-state.js'), join(output, 'machine-state.js'));
 await cp(join(root, 'src', 'performance.js'), join(output, 'performance.js'));

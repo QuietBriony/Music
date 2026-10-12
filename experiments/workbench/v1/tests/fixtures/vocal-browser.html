@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>Local synthetic recorder verification</title>
+<h1>Local synthetic recorder verification</h1><p>No microphone device access. Two generated tones only.</p>
+<button id="run">Run synthetic voice + backing capture</button><pre id="result">Ready</pre>
+<script type="module">
+import {VocalRecorder} from '/vocal-recorder.js';
+document.querySelector('#run').onclick=async()=>{
+  const result=document.querySelector('#result');result.textContent='Recording two generated tones…';
+  const ctx=new AudioContext();await ctx.resume();
+  const synth=(frequency,level)=>{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.frequency.value=frequency;gain.gain.value=level;osc.connect(gain);osc.start();return {osc,gain};};
+  const backing=synth(140,.15),voice=synth(700,.1),stream=ctx.createMediaStreamDestination();voice.gain.connect(stream);
+  const recorder=new VocalRecorder({getSources:()=>[backing.gain],Recorder:MediaRecorder,
+    mediaDevices:{getUserMedia:async()=>stream.stream}});
+  try {
+    await recorder.arm();recorder.start({metadata:{title:'synthetic validation'}});
+    await new Promise(resolve=>setTimeout(resolve,2500));
+    const take=await recorder.stop(),stats={};
+    for(const [name,blob] of Object.entries(take.audio)) {
+      const decoded=await ctx.decodeAudioData(await blob.arrayBuffer()),samples=decoded.getChannelData(0);
+      let peak=0,energy=0;for(const v of samples){peak=Math.max(peak,Math.abs(v));energy+=v*v;}
+      const amplitude=frequency=>{let re=0,im=0,n=0;for(let i=decoded.sampleRate/2|0;i<Math.min(samples.length,decoded.sampleRate*1.5);i++){const phase=2*Math.PI*frequency*i/decoded.sampleRate;re+=samples[i]*Math.cos(phase);im+=samples[i]*Math.sin(phase);n++;}return 2*Math.hypot(re,im)/n;};
+      stats[name]={bytes:blob.size,duration:decoded.duration,peak,rms:Math.sqrt(energy/samples.length),backing140Hz:amplitude(140),voice700Hz:amplitude(700)};
+    }
+    const pass=stats.mix.backing140Hz>.04&&stats.mix.voice700Hz>.02&&stats.voice.voice700Hz>.04&&stats.voice.backing140Hz<.005&&stats.backing.backing140Hz>.06&&stats.backing.voice700Hz<.005&&Object.values(stats).every(s=>s.duration>2&&s.peak<1);
+    result.textContent=(pass?'PASS':'FAIL')+'\n'+JSON.stringify(stats,null,2);
+  } catch(error) {result.textContent='FAIL '+error.stack;}
+  finally {backing.osc.stop();voice.osc.stop();await ctx.close();}
+};
+</script>

@@ -137,6 +137,7 @@ function harness({ playing = false, code = singleWorkCode(patterns.get(first.pat
     audioPlayback: { prepare: () => preparation?.promise || Promise.resolve() },
     sliderBridge: { capture() {} }, queueControlSync() {}, cancelSetEvaluation() {},
     joint: false, stopJoint() {}, hasUnsavedJointChanges:()=>false,
+    vocalBooth: { refresh() {} },
     closeAcidModule() { closedMachine++; }, acidSliderDeclarations: () => null,
     readTechnoSet, performance: { show() {} },
   });

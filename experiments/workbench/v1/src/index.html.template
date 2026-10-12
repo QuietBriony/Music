@@ -14,6 +14,7 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
     <title>Music Live Workbench</title>
     <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/vocal-booth.css">
     <script src="/vendor/strudel/index.js" defer></script>
     <script type="module" src="/app.js"></script>
   </head>
@@ -35,8 +36,10 @@
         <button id="performance-open" type="button" aria-controls="performance" aria-expanded="false" aria-pressed="false">ライブセット</button>
         <button id="mode-machine" type="button" aria-pressed="false">元の303×2＋909</button>
         <button id="mode-linked" type="button" aria-pressed="false">一緒に鳴らす</button>
+        <button id="vocal-open" type="button" aria-controls="vocal-booth">歌詞・録音</button>
       </nav>
       <p id="play-route" class="play-route" data-mode="library">試作のコードを演奏。A/Bミックスとライブセットは同じStrudelで、元の303×2＋909は切り替えて演奏します。</p>
+      <div id="vocal-host"></div>
       <details class="audio-help">
         <summary>音が出ない・端末の音量ボタンが効かない時</summary>
         <p id="audio-status">停止中。Playで音声接続を開始します。</p>

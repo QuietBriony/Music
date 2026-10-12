@@ -13,7 +13,7 @@ export class AudioPlayback {
     // music playback uses the media session's output/volume behavior where
     // supported. Feature detection keeps other browsers unchanged.
     try {
-      if (this.navigator.audioSession && this.navigator.audioSession.type !== 'playback') {
+      if (this.navigator.audioSession && !['playback','play-and-record'].includes(this.navigator.audioSession.type)) {
         this.navigator.audioSession.type = 'playback';
       }
     } catch { /* Unsupported or read-only session: ordinary Web Audio fallback. */ }

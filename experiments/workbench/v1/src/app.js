@@ -18,6 +18,7 @@ import { AudioPlayback } from './audio-playback.js';
 import { readMinimalPlaybackMode, minimalPlaybackCode } from './minimal-playback.js';
 import { connectMachineClock } from './machine-clock.js';
 import { normalizeJointState } from './machine-state.js';
+import { initVocalBooth } from './vocal-booth.js';
 
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
@@ -836,6 +837,7 @@ async function evaluateCurrent(message) {
       });
     }
     await activeEditor.editor.evaluate();
+    vocalBooth.refresh();
     const evalError = activeEditor.editor.repl?.state?.evalError;
     if (evalError) throw evalError;
     sliderBridge.capture();
@@ -1523,9 +1525,30 @@ performance = initPerformance({
     if (!draftForm.hidden) draftForm.scrollIntoView({ block: 'center' });
   },
 });
+const vocalBooth = initVocalBooth({
+  parent: document.querySelector('#vocal-host'),
+  getSources() {
+    const native = acidModuleFrame.contentWindow?.musicMachineLink?.recordingSource?.();
+    if (!joint && !acidModuleStage.hidden) return native ? [native] : [];
+    if (!wantsPlayback || !activeEditor?.editor?.repl?.scheduler?.started) return [];
+    const source = window.getSuperdoughAudioController?.().output?.destinationGain;
+    return [source, joint ? native : null].filter(Boolean);
+  },
+  snapshot(title) {
+    const nativeOnly = !joint && !acidModuleStage.hidden;
+    const linked = nativeOnly ? normalizeJointState({version:1, level:1,
+      machine:acidModuleFrame.contentWindow.musicMachineLink.capture()}) : joint ? captureJoint() : null;
+    const code = nativeOnly ? `setcpm(${linked.machine.tempo / 4})\nsilence` : currentCode();
+    return {strudel:{drafts:[{id:crypto.randomUUID(), title, savedAt:new Date().toISOString(), code,
+      ...(linked ? {joint:linked} : {})}], levels:{}, decks:{}}, acidbros:{files:[]}};
+  },
+  stopPlayback: () => stopButton.click(), isBusy: () => busy,
+});
+document.querySelector('#vocal-open').addEventListener('click', () => vocalBooth.open());
 loadCatalog();
 initPwa({
   confirmReload: async () => {
+    if (vocalBooth.busy()) { status.textContent='録音を終え、未保存テイクをダウンロードしてから更新してください。'; return false; }
     if (busy || confirmDialog.open) return false;
     const codeWarning = hasUnsavedChanges() ? ' 未保存の変更は消えます。先に名前を付けて保存してください。' : '';
     const acidWarning = !joint && !acidModuleStage.hidden ? ' 303＋909の調整は先にFILEで保存してください。' : '';
