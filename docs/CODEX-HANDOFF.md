@@ -2,6 +2,7 @@
 
 2026-10-12（Strudel＋元の303／909）: Workbenchの「一緒に鳴らす」を明示選択すると、Strudelのscheduler／AudioContextで元の303×2＋909も駆動する。元の音源・サイコロ・楽器固定・フェーダー・FILEを保持。PCは左右、スマホは縦に配置し、停止してもフレーズを保持する。単独画面の「Strudelと一緒に」はsessionStorageで現パターン・固定を一度だけ持ち込み、FILEを上書きしない。保存はStrudel下書きと機材FILEの2つ、混ぜ具合の一括保存と音符変換は未実装。新音源・依存・hostingなし。元の単独clock、FM／Band Room／Core Rigは保持。実Strudel時計のdeadline／BPM／再評価とStop競合、旧FILE／コード互換を検証。公開完了と最終gateは対応PRの証跡を参照。本人の聴感と実iPhoneは未確認。
 
+2026-10-12: v415はベースとドラムの新旧比較を既存Band Roomへ追加。15秒の固定音符／打点で、ベースのみ・ドラムのみ・共通v414ギターを含む合奏を比較する。ベースは低域専用の48モード、ドラムは打面・ワイヤー・金属を分けた有限合成。録音・modelの取得なし、WorkerとOfflineAudioContextで準備し、再生は1 source／1 gain。比較PCMは11,520,000 bytes＋一時バッファ。既存ARCBへの昇格と本人の聴感・実iPhoneは未完了。[設計と測定](PHYSICAL-BAND-REHEARSAL.md#ベースとドラムの比較v415)。
 
 2026-10-12（元の303モジュール）: Workbenchの元の303×2＋909は`?rack=1`で低音（Unit 2）・返し（Unit 1）・ドラムの3カードを表示。元の音源／clock／Data.randomizeを再利用し、楽器別サイコロ・固定・ネイティブ縦フェーダー・一時戻り先を追加。サイコロ／復元は現在の音量とBPMを保持し、固定していても手で音色を変更可能。FILE／16パターン／SONGは元の画面へ切り替える。Strudelとは排他の別エンジンのまま。追加音声・依存・外部素材・hostingなし。操作と制限はWorkbench README冒頭。ローカルブラウザでRUN／Stop・演奏中フェーダー・固定／サイコロ・復元・打楽器追加・FILE導線・PC/スマホ幅を検証。本人聴感と実iPhoneは別途確認。
 
@@ -225,8 +226,8 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v414`。Band Room runtime markerは`band-room.js?v=br-247` /
-  `band-room.css?v=br-93`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
+- 現行cacheは`hazama-fm-v415`。Band Room runtime markerは`band-room.js?v=br-248` /
+  `band-room.css?v=br-94`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
   ASR由来の`tabasco-lyrics-timed.json`を使う。`presets/tabasco-songs.json` v2は

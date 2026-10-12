@@ -1,0 +1,713 @@
+{
+  "date": "2026-10-12",
+  "sample_rate": 32000,
+  "method": {
+    "capture": "Actual browser BufferSource PCM, after common room and level matching, before user volume. Isolated notes are the direct original DSP output.",
+    "bass_decay": "RMS 1.6-1.9s divided by 0.08-0.38s after note onset, in dB.",
+    "pitch": "Known-note normalized autocorrelation with interpolated peak; not a transcription benchmark.",
+    "percussion": "Finite waveforms, late energy, band power and 95% cumulative energy time. No recorded bass/drum reference has been fitted.",
+    "overlap": "20-150 Hz filtered first bass/kick: energy(bass+drums)/(energy(bass)+energy(drums)), before common band normalization.",
+    "limits": "Design metrics do not certify instrument realism, listening preference, actual iPhone performance or full-band reproduction."
+  },
+  "isolated_bass": {
+    "28": {
+      "previous": {
+        "sha256": "9ecd46d21e8361c4f4a0f3515e2d61d460df6e466452275725d05b2fec89fad9",
+        "duration_s": 3.0,
+        "rms": 0.06402111711418507,
+        "peak": 0.3509671688079834,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.0009753201677560414,
+        "energy_95_percent_time_s": 0.9760625,
+        "frequency_hz": 41.203444937245536,
+        "cents_from_expected": 1.3577151435617924e-05,
+        "periodicity": 0.9999896848141968,
+        "late_vs_attack_db": -20.14143163496231,
+        "power_centroid_hz": 49.29236847913265,
+        "band_power_fraction": {
+          "20-80": 0.8579508215356408,
+          "80-200": 0.13886254092646044,
+          "200-1000": 0.0028476803895537317,
+          "1000-4000": 0.00031393112015125303,
+          "4000-12000": 2.440946132564224e-05
+        }
+      },
+      "refined": {
+        "sha256": "35fb42fe69667ba46af1e59dd7d7d78330f97cd7345ee11be317ad2b3357ce28",
+        "duration_s": 3.0,
+        "rms": 0.2505094400944819,
+        "peak": 0.8937502503395081,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.027184931366822034,
+        "energy_95_percent_time_s": 2.01065625,
+        "frequency_hz": 41.21389008038265,
+        "cents_from_expected": 0.43882872542787515,
+        "periodicity": 0.9999398563752154,
+        "late_vs_attack_db": -8.74098929497052,
+        "power_centroid_hz": 76.74581124392056,
+        "band_power_fraction": {
+          "20-80": 0.4674916321825972,
+          "80-200": 0.48494871695451625,
+          "200-1000": 0.047469195341587146,
+          "1000-4000": 9.02324924889771e-05,
+          "4000-12000": 3.1280309295494753e-16
+        }
+      }
+    },
+    "33": {
+      "previous": {
+        "sha256": "217196fb60ef01f768492a268f9770a03b06f05222cfb3a689332c8ceb236717",
+        "duration_s": 3.0,
+        "rms": 0.06386068631982511,
+        "peak": 0.3408389091491699,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.000954520533431217,
+        "energy_95_percent_time_s": 0.97615625,
+        "frequency_hz": 54.99998348268876,
+        "cents_from_expected": -0.0005199151982471413,
+        "periodicity": 0.9999961989033167,
+        "late_vs_attack_db": -20.2161180216625,
+        "power_centroid_hz": 65.46583687023647,
+        "band_power_fraction": {
+          "20-80": 0.8525975392108432,
+          "80-200": 0.14320678275997056,
+          "200-1000": 0.00391033976842169,
+          "1000-4000": 0.00026319130254787344,
+          "4000-12000": 5.380865333140799e-06
+        }
+      },
+      "refined": {
+        "sha256": "01f41b39c3c95dbce8c7021a160e94e80595c5dad6b1867878d07075982c436f",
+        "duration_s": 3.0,
+        "rms": 0.24474290016570915,
+        "peak": 0.8927579522132874,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.019661954989912744,
+        "energy_95_percent_time_s": 1.946625,
+        "frequency_hz": 55.013340454286734,
+        "cents_from_expected": 0.41986633092033476,
+        "periodicity": 0.9999484781907539,
+        "late_vs_attack_db": -9.330079336150606,
+        "power_centroid_hz": 101.85641907035071,
+        "band_power_fraction": {
+          "20-80": 0.4663569067706107,
+          "80-200": 0.4848675827444382,
+          "200-1000": 0.04788599187980161,
+          "1000-4000": 0.0008894733505097417,
+          "4000-12000": 3.3096994188567116e-16
+        }
+      }
+    },
+    "38": {
+      "previous": {
+        "sha256": "9343a6261d4b5923498ac03679a4b990d8405f0a179f904daa8279b0e001f006",
+        "duration_s": 3.0,
+        "rms": 0.06349829501016808,
+        "peak": 0.3448812663555145,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.0008959492329291781,
+        "energy_95_percent_time_s": 0.970875,
+        "frequency_hz": 73.41618340611741,
+        "cents_from_expected": -0.00020216625080836395,
+        "periodicity": 0.9999969265719812,
+        "late_vs_attack_db": -20.404930421383437,
+        "power_centroid_hz": 86.92387605037989,
+        "band_power_fraction": {
+          "20-80": 0.852757673109193,
+          "80-200": 0.1248209263409574,
+          "200-1000": 0.022117373279435942,
+          "1000-4000": 0.00022519444944048403,
+          "4000-12000": 2.653608686644333e-06
+        }
+      },
+      "refined": {
+        "sha256": "87bf9ac1966edaa8743f0783677c1174fd451d6ef11c812b11511b81515d60ef",
+        "duration_s": 3.0,
+        "rms": 0.23932493127955942,
+        "peak": 0.8860830068588257,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.019684242690520787,
+        "energy_95_percent_time_s": 1.88996875,
+        "frequency_hz": 73.4327297010974,
+        "cents_from_expected": 0.3899336375542242,
+        "periodicity": 0.9999570709836793,
+        "late_vs_attack_db": -9.83057548038345,
+        "power_centroid_hz": 134.93619801148972,
+        "band_power_fraction": {
+          "20-80": 0.4669851166414699,
+          "80-200": 0.44795365384504027,
+          "200-1000": 0.08158487577711881,
+          "1000-4000": 0.003476353707518639,
+          "4000-12000": 3.326608840692279e-16
+        }
+      }
+    },
+    "43": {
+      "previous": {
+        "sha256": "41c0e65a09ae3ab3e45fcaa3f0a377a0b11d5b6e9271e2f3d51b0b0891ef9fdf",
+        "duration_s": 3.0,
+        "rms": 0.06359343400135467,
+        "peak": 0.3492570221424103,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.0007823030137071857,
+        "energy_95_percent_time_s": 0.9700625,
+        "frequency_hz": 97.99885536320932,
+        "cents_from_expected": -6.41664299655111e-05,
+        "periodicity": 0.9999307514177963,
+        "late_vs_attack_db": -20.392178220566688,
+        "power_centroid_hz": 116.3639066185926,
+        "band_power_fraction": {
+          "20-80": 1.5302797748612467e-06,
+          "80-200": 0.9652448196566521,
+          "200-1000": 0.03406891100122873,
+          "1000-4000": 0.000426520887668681,
+          "4000-12000": 3.6189016571714477e-06
+        }
+      },
+      "refined": {
+        "sha256": "2ab456b7c4c16754c142048d436a4bd2c1aa1e4d25f88883a423964a6617a458",
+        "duration_s": 3.0,
+        "rms": 0.23428593499430853,
+        "peak": 0.8792750239372253,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.015062141889518205,
+        "energy_95_percent_time_s": 1.8275625,
+        "frequency_hz": 98.01822911011801,
+        "cents_from_expected": 0.3421559059241076,
+        "periodicity": 0.9997931323419917,
+        "late_vs_attack_db": -10.234705716173043,
+        "power_centroid_hz": 178.06359779281718,
+        "band_power_fraction": {
+          "20-80": 8.138278264107655e-07,
+          "80-200": 0.878858488831785,
+          "200-1000": 0.1134700018708425,
+          "1000-4000": 0.007670689620253682,
+          "4000-12000": 5.6272665957385105e-09
+        }
+      }
+    }
+  },
+  "isolated_drums": {
+    "kick": {
+      "previous": {
+        "sha256": "e426d65392510e57caee212f631104d116ead9a1658a79020c7b5c9cc2c7be29",
+        "duration_s": 0.65,
+        "rms": 0.12616048347124967,
+        "peak": 0.6182178854942322,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.014882772987527092,
+        "energy_95_percent_time_s": 0.3520625,
+        "power_centroid_hz": 62.33583249032782,
+        "band_power_fraction": {
+          "20-80": 0.8966561048413348,
+          "80-200": 0.10334389107380706,
+          "200-1000": 2.631402359153913e-10,
+          "1000-4000": 4.775954139157548e-10,
+          "4000-12000": 7.204393279045246e-10
+        },
+        "late_1s_rms": 0.0
+      },
+      "refined": {
+        "sha256": "8d53ad99fa8ea18054a46c024d469b70b9ccf4162942b64c84663df09b6b596c",
+        "duration_s": 0.95,
+        "rms": 0.10999977894896217,
+        "peak": 0.8947295546531677,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.001164635962156546,
+        "energy_95_percent_time_s": 0.29859375,
+        "power_centroid_hz": 58.838476906920754,
+        "band_power_fraction": {
+          "20-80": 0.9816055074360244,
+          "80-200": 0.018348049528323716,
+          "200-1000": 4.642887507170196e-05,
+          "1000-4000": 3.8968014437029524e-09,
+          "4000-12000": 6.137959309442479e-09
+        },
+        "late_1s_rms": 0.0
+      }
+    },
+    "snare": {
+      "previous": {
+        "sha256": "c2f6bb82a36e664f1c4d9189fd891d7951f24b511866b46b1000297329ae482b",
+        "duration_s": 0.5,
+        "rms": 0.14556821839173947,
+        "peak": 0.8868129253387451,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.008359450736776367,
+        "energy_95_percent_time_s": 0.2063125,
+        "power_centroid_hz": 3406.8429135796127,
+        "band_power_fraction": {
+          "20-80": 1.723034112786062e-05,
+          "80-200": 0.48069739688300284,
+          "200-1000": 0.062019591803909487,
+          "1000-4000": 0.13585084144056128,
+          "4000-12000": 0.2380374987551352
+        },
+        "late_1s_rms": 0.0
+      },
+      "refined": {
+        "sha256": "4960dd063fe292949c05e31244b1b60c8b4f83177b74f6775c799069a2098467",
+        "duration_s": 1.1,
+        "rms": 0.08413562036295942,
+        "peak": 0.8257619738578796,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.00031074206650435544,
+        "energy_95_percent_time_s": 0.20903125,
+        "power_centroid_hz": 2888.616187568334,
+        "band_power_fraction": {
+          "20-80": 1.93047053062077e-05,
+          "80-200": 0.5742852697919494,
+          "200-1000": 0.05579459718636547,
+          "1000-4000": 0.10235100756613848,
+          "4000-12000": 0.1959905430729987
+        },
+        "late_1s_rms": 0.0007287108472065278
+      }
+    },
+    "hat": {
+      "previous": {
+        "sha256": "5f71ce7ca81da6aaa695285fc5b6f42e1aaf053a70f771dc5a8fdc0c756712ca",
+        "duration_s": 0.095,
+        "rms": 0.09890128384027369,
+        "peak": 0.6102504134178162,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.005136008399525396,
+        "energy_95_percent_time_s": 0.03215625,
+        "power_centroid_hz": 3465.902833383452,
+        "band_power_fraction": {
+          "20-80": 1.916136487125713e-07,
+          "80-200": 8.704271390490232e-07,
+          "200-1000": 0.00015235155986582547,
+          "1000-4000": 0.8953776402642315,
+          "4000-12000": 0.09621827593865619
+        },
+        "late_1s_rms": 0.0
+      },
+      "refined": {
+        "sha256": "790c2507e2f7118404a1aace16446e1082c2c0e5eda6a10c989d609ddb34d52c",
+        "duration_s": 0.18,
+        "rms": 0.030449035957851877,
+        "peak": 0.22358156740665436,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.0001342170837311265,
+        "energy_95_percent_time_s": 0.04071875,
+        "power_centroid_hz": 9102.655356758403,
+        "band_power_fraction": {
+          "20-80": 2.743383266654723e-06,
+          "80-200": 1.6476093790416473e-05,
+          "200-1000": 0.0023519175755222226,
+          "1000-4000": 0.12269270616481441,
+          "4000-12000": 0.5809912612020527
+        },
+        "late_1s_rms": 0.0
+      }
+    },
+    "tom": {
+      "previous": {
+        "sha256": "4a9b15acb0d7133003185c7d1b4dedaad75481c7f05f91e9a767aa85e9ea88ce",
+        "duration_s": 0.65,
+        "rms": 0.11840798793637577,
+        "peak": 0.5487011671066284,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.011370219963355358,
+        "energy_95_percent_time_s": 0.31309375,
+        "power_centroid_hz": 119.86774960210607,
+        "band_power_fraction": {
+          "20-80": 4.643577125647487e-08,
+          "80-200": 0.9791193627294155,
+          "200-1000": 0.019904810649106038,
+          "1000-4000": 0.0001338003925729422,
+          "4000-12000": 0.0005690333842215743
+        },
+        "late_1s_rms": 0.0
+      },
+      "refined": {
+        "sha256": "b52a4a3b89170e482b836bef148008064892429ceb7ffbfdb7a33dc546641953",
+        "duration_s": 1.25,
+        "rms": 0.06339761753963333,
+        "peak": 0.6555454730987549,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.0006780924963930179,
+        "energy_95_percent_time_s": 0.29659375,
+        "power_centroid_hz": 121.04783067730146,
+        "band_power_fraction": {
+          "20-80": 1.1536757931489909e-08,
+          "80-200": 0.9429611134864521,
+          "200-1000": 0.057038863258207576,
+          "1000-4000": 2.5858289184304915e-09,
+          "4000-12000": 6.652789062378035e-09
+        },
+        "late_1s_rms": 0.0025085336389670484
+      }
+    },
+    "ride": {
+      "previous": {
+        "sha256": "a904af40a5c0d99ecdcfbb1926c8f03c2af5f20674f5fcee681d5558264e1ecd",
+        "duration_s": 0.9,
+        "rms": 0.11501367206714283,
+        "peak": 0.68412184715271,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.008138383693389165,
+        "energy_95_percent_time_s": 0.40103125,
+        "power_centroid_hz": 2957.3929892592555,
+        "band_power_fraction": {
+          "20-80": 5.091265461377635e-09,
+          "80-200": 7.489243667175e-08,
+          "200-1000": 9.216261071596405e-06,
+          "1000-4000": 0.9055237855349707,
+          "4000-12000": 0.09394980098792378
+        },
+        "late_1s_rms": 0.0
+      },
+      "refined": {
+        "sha256": "952d0f66a80661dfa975033fd063f6bf2ff749ba6e10c0267cb0eed5b9155923",
+        "duration_s": 2.7,
+        "rms": 0.03247382456076145,
+        "peak": 0.33832278847694397,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.00010807028272526307,
+        "energy_95_percent_time_s": 0.62446875,
+        "power_centroid_hz": 3822.9287598867777,
+        "band_power_fraction": {
+          "20-80": 1.0486014975843054e-06,
+          "80-200": 1.8429050633879694e-05,
+          "200-1000": 0.07209819210074468,
+          "1000-4000": 0.6424030255404273,
+          "4000-12000": 0.21602148416448572
+        },
+        "late_1s_rms": 0.008647579120890285
+      }
+    },
+    "crash": {
+      "previous": {
+        "sha256": "d13230745dd3d013f4b658dcce2f88d44414fdc3ba525220511e6dddbcc73f6c",
+        "duration_s": 1.55,
+        "rms": 0.10951511229884495,
+        "peak": 0.7247375249862671,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.0051014312249743655,
+        "energy_95_percent_time_s": 0.6051875,
+        "power_centroid_hz": 2297.2470455942575,
+        "band_power_fraction": {
+          "20-80": 9.12946953544864e-08,
+          "80-200": 1.454970283562938e-06,
+          "200-1000": 0.0001969652001333405,
+          "1000-4000": 0.9623087721780773,
+          "4000-12000": 0.027064980328232915
+        },
+        "late_1s_rms": 0.020751652805882842
+      },
+      "refined": {
+        "sha256": "e13801eb4dac7b04606a2afc6f74a5e9d94cc38c358c01869acbc4412f38f896",
+        "duration_s": 3.0,
+        "rms": 0.05623491289403013,
+        "peak": 0.4694221615791321,
+        "clipped_samples": 0,
+        "last_20ms_rms": 0.0010531656926086094,
+        "energy_95_percent_time_s": 1.0314375,
+        "power_centroid_hz": 7720.793828641424,
+        "band_power_fraction": {
+          "20-80": 3.1520722535722113e-06,
+          "80-200": 5.935199371930405e-05,
+          "200-1000": 0.05386953104869933,
+          "1000-4000": 0.19728805732438268,
+          "4000-12000": 0.5275597394747161
+        },
+        "late_1s_rms": 0.03399394245012802
+      }
+    }
+  },
+  "playback": {
+    "bass": {
+      "previous": {
+        "sha256": "4320a94b72cb011a193b26e9cf7e8c63bd9aa2d12ced587c4cac05078ef23bf8",
+        "duration_s": 15.0,
+        "rms": 0.06499999999960249,
+        "peak": 0.3128608763217926,
+        "clipped_samples": 0,
+        "last_20ms_rms": 2.6384895772998597e-10,
+        "energy_95_percent_time_s": 12.270625,
+        "power_centroid_hz": 60.618907446519295,
+        "band_power_fraction": {
+          "20-80": 0.8631745429029467,
+          "80-200": 0.1302478406596336,
+          "200-1000": 0.005828811145755233,
+          "1000-4000": 0.0005307527519974402,
+          "4000-12000": 8.646068233481769e-05
+        },
+        "frequency_hz": 41.203459962094904,
+        "cents_from_expected": 0.0006448720858790205,
+        "periodicity": 0.9999897345548399,
+        "low_E_late_vs_attack_db": -20.115359886973998
+      },
+      "refined": {
+        "sha256": "cc14662041827b2daa8cf09553b16a008c5ae6dae408c03f506eccb3d4f37e83",
+        "duration_s": 15.0,
+        "rms": 0.0649999999867436,
+        "peak": 0.29524344205856323,
+        "clipped_samples": 0,
+        "last_20ms_rms": 1.723041855250598e-09,
+        "energy_95_percent_time_s": 12.728875,
+        "power_centroid_hz": 96.44598008473902,
+        "band_power_fraction": {
+          "20-80": 0.4974084842798051,
+          "80-200": 0.44674119009309504,
+          "200-1000": 0.05295215137702854,
+          "1000-4000": 0.0028398890114356237,
+          "4000-12000": 2.178096997551748e-09
+        },
+        "frequency_hz": 41.213510568273975,
+        "cents_from_expected": 0.4228868352458322,
+        "periodicity": 0.9999452070878884,
+        "low_E_late_vs_attack_db": -8.706810149628469
+      }
+    },
+    "drums": {
+      "previous": {
+        "sha256": "de55965f9132d9d9de153a3bba9603daa31112441fed91ce35022f98edb6603a",
+        "duration_s": 15.0,
+        "rms": 0.058486888306776126,
+        "peak": 0.6499999761581421,
+        "clipped_samples": 0,
+        "last_20ms_rms": 1.4254342984700992e-08,
+        "energy_95_percent_time_s": 12.153875,
+        "power_centroid_hz": 1089.1638883077612,
+        "band_power_fraction": {
+          "20-80": 0.5460451583878854,
+          "80-200": 0.22936192213198048,
+          "200-1000": 0.04122692427241166,
+          "1000-4000": 0.07904535171419208,
+          "4000-12000": 0.10162171776472777
+        }
+      },
+      "refined": {
+        "sha256": "723fcfeaa940e90d6b99d1a9791c77cb20b1c75a84ef3b90d48c4735d7386344",
+        "duration_s": 15.0,
+        "rms": 0.05848688829979427,
+        "peak": 0.6386659741401672,
+        "clipped_samples": 0,
+        "last_20ms_rms": 6.564387074717206e-05,
+        "energy_95_percent_time_s": 12.2355,
+        "power_centroid_hz": 1513.0346212373745,
+        "band_power_fraction": {
+          "20-80": 0.5125845670742615,
+          "80-200": 0.2290843389310047,
+          "200-1000": 0.035347549425284695,
+          "1000-4000": 0.06303715702279897,
+          "4000-12000": 0.15433663633555458
+        }
+      }
+    },
+    "band": {
+      "previous": {
+        "sha256": "4222eb9400637be633f2ad4314ac6574f3dda9f8025b96abf9326513b402831b",
+        "duration_s": 15.0,
+        "rms": 0.07929586181578796,
+        "peak": 0.6043545603752136,
+        "clipped_samples": 0,
+        "last_20ms_rms": 3.473047715488394e-08,
+        "energy_95_percent_time_s": 12.29953125,
+        "power_centroid_hz": 499.87817633169436,
+        "band_power_fraction": {
+          "20-80": 0.6361186726105116,
+          "80-200": 0.16489678736220645,
+          "200-1000": 0.12089469967010984,
+          "1000-4000": 0.037555551700596795,
+          "4000-12000": 0.039167651812168684
+        }
+      },
+      "refined": {
+        "sha256": "91980d9457818c97a2c38b9600d34ad77fff407fc113ed250dc48b9a03147a16",
+        "duration_s": 15.0,
+        "rms": 0.07929586182435673,
+        "peak": 0.6499999761581421,
+        "clipped_samples": 0,
+        "last_20ms_rms": 5.4001384652349516e-05,
+        "energy_95_percent_time_s": 12.61378125,
+        "power_centroid_hz": 673.6565777345577,
+        "band_power_fraction": {
+          "20-80": 0.3775461112037398,
+          "80-200": 0.36842929601169444,
+          "200-1000": 0.16151638563977314,
+          "1000-4000": 0.031721754767403694,
+          "4000-12000": 0.058295711436567754
+        }
+      }
+    }
+  },
+  "bass_kick_overlap": {
+    "previous": {
+      "energy_ratio": 0.9777578688231854,
+      "relative_db": -0.09768680236238565
+    },
+    "refined": {
+      "energy_ratio": 1.0450305192371168,
+      "relative_db": 0.1912897383724405
+    }
+  },
+  "browser": {
+    "initial": {
+      "phase": "idle",
+      "part": "band",
+      "sources": 0,
+      "nodes": 0,
+      "worker": false,
+      "preparing": false,
+      "duration": 15,
+      "cacheBytes": 0
+    },
+    "prepareMs": 915,
+    "prepared": {
+      "phase": "idle",
+      "part": "band",
+      "sources": 0,
+      "nodes": 0,
+      "worker": false,
+      "preparing": false,
+      "duration": 15,
+      "cacheBytes": 11520000,
+      "measurements": {
+        "bass": {
+          "previous": {
+            "rms": 0.06499999999960401,
+            "peak": 0.3128608763217926
+          },
+          "refined": {
+            "rms": 0.0649999999867443,
+            "peak": 0.29524344205856323
+          },
+          "targetRms": 0.065
+        },
+        "drums": {
+          "previous": {
+            "rms": 0.05848688830677446,
+            "peak": 0.6499999761581421
+          },
+          "refined": {
+            "rms": 0.058486888299797576,
+            "peak": 0.6386659741401672
+          },
+          "targetRms": 0.058486888296230014
+        },
+        "band": {
+          "previous": {
+            "rms": 0.07929586181578935,
+            "peak": 0.6043545603752136
+          },
+          "refined": {
+            "rms": 0.07929586182436034,
+            "peak": 0.6499999761581421
+          },
+          "targetRms": 0.07929586182552563
+        }
+      }
+    },
+    "song": {
+      "enabled": true,
+      "tone": "crunch",
+      "guitarStyle": "rock",
+      "prepareMs": 141,
+      "pending": 22,
+      "bytes": 11826560,
+      "roomWet": 0.35,
+      "roomNodes": 26,
+      "played": 22,
+      "dropped": 0,
+      "last": {
+        "guitar": {
+          "at": 35.49419157088123,
+          "key": "guitar:43",
+          "rate": 1,
+          "velocity": 0.8032640000000001,
+          "technique": "open",
+          "upstroke": true
+        },
+        "melody": {
+          "at": 35.32948914431673,
+          "key": "guitar:43",
+          "rate": 0.9438743126816935,
+          "velocity": 0.16
+        }
+      },
+      "guitarStrokes": {
+        "open": 5,
+        "palm": 0,
+        "cut": 0,
+        "up": 4,
+        "down": 1
+      },
+      "guitarVoicings": {
+        "harmonic": 5,
+        "fallback": 0
+      },
+      "lastStrum": {
+        "at": 35.480191570881225,
+        "notes": [
+          55,
+          50,
+          43
+        ],
+        "source": "harmonic",
+        "technique": "open",
+        "upstroke": true
+      }
+    },
+    "songStopped": {
+      "enabled": false,
+      "pending": 0,
+      "preparing": false,
+      "tone": "crunch"
+    },
+    "final": {
+      "phase": "idle",
+      "part": "drums",
+      "sources": 0,
+      "nodes": 0,
+      "worker": false,
+      "preparing": false,
+      "duration": 15,
+      "cacheBytes": 11520000,
+      "measurements": {
+        "bass": {
+          "previous": {
+            "rms": 0.06499999999960401,
+            "peak": 0.3128608763217926
+          },
+          "refined": {
+            "rms": 0.0649999999867443,
+            "peak": 0.29524344205856323
+          },
+          "targetRms": 0.065
+        },
+        "drums": {
+          "previous": {
+            "rms": 0.05848688830677446,
+            "peak": 0.6499999761581421
+          },
+          "refined": {
+            "rms": 0.058486888299797576,
+            "peak": 0.6386659741401672
+          },
+          "targetRms": 0.058486888296230014
+        },
+        "band": {
+          "previous": {
+            "rms": 0.07929586181578935,
+            "peak": 0.6043545603752136
+          },
+          "refined": {
+            "rms": 0.07929586182436034,
+            "peak": 0.6499999761581421
+          },
+          "targetRms": 0.07929586182552563
+        }
+      }
+    },
+    "layout": {
+      "width": 390,
+      "scroll": 390
+    },
+    "errors": [],
+    "recordingsRequestedByRhythm": 0
+  }
+}
