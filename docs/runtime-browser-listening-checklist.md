@@ -1,5 +1,12 @@
 # Runtime Browser Listening Checklist
 
+## Rhythm audition (v415 / BL-051)
+
+- Before preparation: no Worker, sources, PCM or recording request. Prepare within 30 seconds; cancellation restores controls.
+- Bass / drums / band: switch old/new at matched phrase RMS, natural end, Stop, volume and part-change cleanup.
+- Exclusive with guitar audition, eight-bar preview and normal ARCB. Hidden/pagehide stop; cached offline prepare/play.
+- Capture actual playback PCM for frequency, decay, drum tail, headroom and bass/kick overlap analysis. Numbers do not certify timbre or real iPhone performance.
+
 ## Purpose
 
 This checklist makes browser listening the default review path for Music runtime tuning.
@@ -198,9 +205,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `band-room.html`, and `sw.js`. Current repo markers include
   `engine.js?v=fm-119`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-81`, `audio/ai-fills.js?v=fm-71`,
-  `style.css?v=fm-28`, `band-room.css?v=br-93`,
-  `band-room.js?v=br-247`, `audio/audio-safety.js?v=br-68`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v414`.
+  `style.css?v=fm-28`, `band-room.css?v=br-94`,
+  `band-room.js?v=br-248`, `audio/audio-safety.js?v=br-68`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v415`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,

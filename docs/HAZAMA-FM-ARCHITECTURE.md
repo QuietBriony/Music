@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-12: v415はベースとドラムの新旧比較を既存Band Roomへ追加。15秒の固定音符／打点で、ベースのみ・ドラムのみ・共通v414ギターを含む合奏を比較する。ベースは低域専用の48モード、ドラムは打面・ワイヤー・金属を分けた有限合成。録音・modelの取得なし、WorkerとOfflineAudioContextで準備し、再生は1 source／1 gain。比較PCMは11,520,000 bytes＋一時バッファ。既存ARCBへの昇格と本人の聴感・実iPhoneは未完了。[設計と測定](PHYSICAL-BAND-REHEARSAL.md#ベースとドラムの比較v415)。
+
 2026-10-12（元の303モジュール）: Listenの既存Workbench入口を更新。acidBrosの303低音・303返し・909を3カードに並べ、元の連動サイコロ、楽器別固定／dice、音色・音量フェーダーと一時戻り先を提供する。Data/UIへのfirst-party adapterで、同じ音源・clock・FILE形式を使い、元の編集画面へ戻れる。Strudelとは従来どおり別エンジンで排他切替、FM／Core Rig／Band Roomの再生には接続しない。追加音声・依存・配信先なし。使い方は[Workbench README](../experiments/workbench/v1/README.md)。
 
 2026-10-12: v414は一本の比較に、芯と余韻を作り直した合成候補を追加。弦の振動モード・ピックとpickupの位置・周波数別の損失と弱い二方向の振動を、最大128 modeの有限Workerで合成する。新旧合成と既存録音を同じ10.8秒／クランチ／phrase RMSで比較し、再生は1 source／1 gain、準備済みPCMは4,147,200 bytes。音声素材の追加なし。ARCB通常曲へは未昇格で、本人の試奏と実iPhone確認が残る。[設計と測定](PHYSICAL-BAND-REHEARSAL.md#新しい弦の芯と余韻v414)。
@@ -87,9 +89,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v414`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v415`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-247`, `band-room.css?v=br-93`。
+> `band-room.js?v=br-248`, `band-room.css?v=br-94`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:
