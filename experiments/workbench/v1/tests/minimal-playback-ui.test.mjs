@@ -53,7 +53,7 @@ function harness({ playing = false, code = initialCode, loadedCode = initialCode
     stopButton: new Element(),
     confirmDialog: new Element(), confirmMessage: new Element(), confirmAccept: new Element(),
     currentCode: () => editor.code,
-    cancelSetEvaluation() { cancels++; }, closeAcidModule() {}, joint: false, stopJoint() {},
+    cancelSetEvaluation() { cancels++; }, closeAcidModule() {}, joint: false, stopJoint() {}, hasUnsavedJointChanges:()=>false,
     queueControlSync() { syncs++; context.syncMinimalPlayback(); },
     setTimeout() { throw new Error('Mode changes must not schedule playback'); },
     setInterval() { throw new Error('Mode changes must not create a sound clock'); },

@@ -12,6 +12,7 @@ await mkdir(output, { recursive: true });
 await cp(join(root, 'src', 'index.html.template'), join(output, 'index.html'));
 await cp(join(root, 'src', 'app.js'), join(output, 'app.js'));
 await cp(join(root, 'src', 'machine-clock.js'), join(output, 'machine-clock.js'));
+await cp(join(root, 'src', 'machine-state.js'), join(output, 'machine-state.js'));
 await cp(join(root, 'src', 'performance.js'), join(output, 'performance.js'));
 await cp(join(root, 'src', 'performance-layout.js'), join(output, 'performance-layout.js'));
 await cp(join(root, 'src', 'performance-code.js'), join(output, 'performance-code.js'));

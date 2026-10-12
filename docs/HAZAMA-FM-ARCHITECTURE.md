@@ -1,6 +1,8 @@
 # Hazama FM — システム全体像
 
-2026-10-12（Strudel＋元の303／909）: Workbenchの「一緒に鳴らす」を明示選択すると、Strudelのscheduler／AudioContextで元の303×2＋909も駆動する。元の音源・サイコロ・楽器固定・フェーダー・FILEを保持。PCは左右、スマホは縦に配置し、停止してもフレーズを保持する。単独画面の「Strudelと一緒に」はsessionStorageで現パターン・固定を一度だけ持ち込み、FILEを上書きしない。保存はStrudel下書きと機材FILEの2つ、混ぜ具合の一括保存と音符変換は未実装。新音源・依存・hostingなし。元の単独clock、FM／Band Room／Core Rigは保持。実Strudel時計のdeadline／BPM／再評価とStop競合、旧FILE／コード互換を検証。公開完了と最終gateは対応PRの証跡を参照。本人の聴感と実iPhoneは未確認。
+2026-10-12（組み合わせ保存・909可視化）: Workbenchの同期画面で名前付き保存。既存Strudel下書きへコードと元の303／909の全16パターン・正確な音色・固定・候補・混ぜ具合を保存し、一覧／戻すボタンで停止状態に復元。旧コード／FILEは維持、既存FILEを上書きしない。JSONバックアップは組み合わせを含む場合schema 2。909は基本4パートを配置でき、全11パートの打点数・音量・サイコロ候補を表示。音色の選択はソロではない。候補追加だけでは打点を増やさず、音量0は保持。新規音声・依存・hostingなし。保存失敗／復元rollback／全11音同時tick／旧backup互換を検証。ブラウザと公開版・最終gateの証跡は対応PR。本人聴感と実iPhoneは未確認。
+
+2026-10-12（Strudel＋元の303／909）: Workbenchの「一緒に鳴らす」を明示選択すると、Strudelのscheduler／AudioContextで元の303×2＋909も駆動する。元の音源・サイコロ・楽器固定・フェーダー・FILEを保持。PCは左右、スマホは縦に配置し、停止してもフレーズを保持する。単独画面の「Strudelと一緒に」はsessionStorageで現パターン・固定を一度だけ持ち込み、FILEを上書きしない。初回の同期実装では保存は2つだったが、上記の組み合わせ保存で統合済み。音符変換は未実装。新音源・依存・hostingなし。元の単独clock、FM／Band Room／Core Rigは保持。実Strudel時計のdeadline／BPM／再評価とStop競合、旧FILE／コード互換を検証。公開完了と最終gateは対応PRの証跡を参照。本人の聴感と実iPhoneは未確認。
 
 2026-10-12: v415はベースとドラムの新旧比較を既存Band Roomへ追加。15秒の固定音符／打点で、ベースのみ・ドラムのみ・共通v414ギターを含む合奏を比較する。ベースは低域専用の48モード、ドラムは打面・ワイヤー・金属を分けた有限合成。録音・modelの取得なし、WorkerとOfflineAudioContextで準備し、再生は1 source／1 gain。比較PCMは11,520,000 bytes＋一時バッファ。既存ARCBへの昇格と本人の聴感・実iPhoneは未完了。[設計と測定](PHYSICAL-BAND-REHEARSAL.md#ベースとドラムの比較v415)。
 

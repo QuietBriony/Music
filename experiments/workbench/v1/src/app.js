@@ -17,6 +17,7 @@ import { setTempoChanges } from './live-controls.js';
 import { AudioPlayback } from './audio-playback.js';
 import { readMinimalPlaybackMode, minimalPlaybackCode } from './minimal-playback.js';
 import { connectMachineClock } from './machine-clock.js';
+import { normalizeJointState } from './machine-state.js';
 
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
@@ -97,11 +98,49 @@ let pendingBackup = null;
 let backupReadToken = 0;
 let performance;
 let joint = false, machineLink = null, machineClock = null;
+let jointBaseline = '';
 const jointButton = document.querySelector('#mode-linked');
 const jointPanel = document.querySelector('#joint-panel');
 const jointPanes = document.querySelector('#joint-panes');
 const jointLevel = document.querySelector('#joint-machine-level');
 const jointStatus = document.querySelector('#joint-status');
+const jointSaved = document.querySelector('#joint-saved');
+function captureJoint() {
+  if (!joint || !machineLink?.capture) throw new Error('303／909の接続を待ってください。古い画面ならアプリ更新が必要です。');
+  return normalizeJointState({version:1, level:Number(jointLevel.value), machine:machineLink.capture()});
+}
+function hasUnsavedJointChanges() {
+  if (!joint || !jointBaseline) return false;
+  try { return JSON.stringify(captureJoint()) !== jointBaseline; } catch { return true; }
+}
+function waitForJointMachine() {
+  if (machineLink) return Promise.resolve(machineLink);
+  const frame=acidModuleFrame.contentWindow;
+  return new Promise((resolve,reject) => {
+    const finish=() => {
+      if (!joint || acidModuleFrame.contentWindow !== frame) return;
+      if (machineLink) { clearTimeout(timer); window.removeEventListener('message',ready); resolve(machineLink); }
+    };
+    const ready=event => { if(event.origin === location.origin && event.source === frame) finish(); };
+    const timer=setTimeout(() => { window.removeEventListener('message',ready); reject(new Error('303／909を開けませんでした。接続を確認して選び直してください。')); },15000);
+    window.addEventListener('message',ready); finish();
+  });
+}
+async function restoreJointDraft(draft) {
+  const saved=normalizeJointState(draft.joint);
+  setJoint(true);
+  const link=await waitForJointMachine();
+  if (!joint || link !== machineLink) throw new Error('組み合わせを開く操作を中止しました。');
+  link.validate(saved.machine); // Decode before changing either score.
+  const previousCode=currentCode(), previousLoaded=loadedCode, previousMachine=link.capture();
+  try { link.restore(saved.machine); setEditorCode(draft.code); }
+  catch(error) { link.restore(previousMachine); setEditorCode(previousCode); loadedCode=previousLoaded; throw error; }
+  jointLevel.value=String(saved.level); link.setLevel(saved.level);
+  document.querySelector('#joint-machine-output').textContent=Math.round(saved.level*100)+'%';
+  jointBaseline=JSON.stringify(captureJoint());
+  performance.show(Boolean(readTechnoSet(draft.code)));
+  jointStatus.textContent='「'+draft.title+'」を戻しました。フレーズ・音色・固定・混ぜ具合を復元。再生で開始します。';
+}
 // Place the still-empty iframe once. Moving a loaded iframe reloads its audio engine.
 jointPanes.append(acidModuleStage);
 const jointMovables = ['#performance', '.workspace'].map(selector => {
@@ -130,12 +169,14 @@ function connectJointFrame() {
   if (!machineLink) throw new Error('303／909を更新して開き直してください');
   machineLink.connect({ play: () => playButton.click(), stop: () => stopButton.click() });
   machineLink.setLevel(Number(jointLevel.value));
+  if (machineLink.capture) jointBaseline=JSON.stringify(captureJoint());
   jointStatus.textContent = '接続しました。再生で一緒に開始。303／909の音量は控えめから重ねます。';
 }
 function stopJoint() { machineLink?.stop(); }
 function disconnectJoint() {
   machineClock?.disconnect(); machineClock = null;
   const previous = machineLink; machineLink = null;
+  jointBaseline = '';
   previous?.disconnect().catch(error => { jointStatus.textContent = error.message; });
 }
 function setJoint(enabled, {updateUrl = true} = {}) {
@@ -163,6 +204,28 @@ jointLevel.addEventListener('input', () => {
   machineLink?.setLevel(Number(jointLevel.value));
   document.querySelector('#joint-machine-output').textContent = Math.round(Number(jointLevel.value)*100)+'%';
 });
+document.querySelector('#joint-save').addEventListener('click', () => {
+  showDraftForm(); if (!draftForm.hidden) draftForm.scrollIntoView({block:'center'});
+});
+jointSaved.addEventListener('change', async () => {
+  if (jointSaved.value) await openDraft(jointSaved.value);
+  renderJointSaves();
+});
+document.querySelector('#joint-restore').addEventListener('click', () => {
+  if (jointSaved.value) openDraft(jointSaved.value);
+});
+function renderJointSaves() {
+  jointSaved.replaceChildren();
+  const placeholder=makeElement('option','','保存した組み合わせを選ぶ'); placeholder.value=''; jointSaved.append(placeholder);
+  try {
+    for (const draft of readDrafts().filter(d=>d.joint).sort((a,b)=>b.savedAt.localeCompare(a.savedAt))) {
+      const option=makeElement('option','',draft.title+' · '+new Date(draft.savedAt).toLocaleString('ja-JP'));
+      option.value=draft.id; jointSaved.append(option);
+    }
+    jointSaved.value=activeSelection?.kind==='draft' ? activeSelection.id : '';
+    document.querySelector('#joint-restore').disabled=!jointSaved.value;
+  } catch { placeholder.textContent='保存一覧を読めません'; }
+}
 const prepareCodeSamples = createSamplePreparation(() => window.strudel.prebake());
 let setEvaluateTimer;
 const audioStatus = document.querySelector('#audio-status');
@@ -710,7 +773,7 @@ editorHost.addEventListener('input', () => {
 });
 
 function hasUnsavedChanges() {
-  return Boolean(activeSelection && comparableCode(currentCode()) !== comparableCode(loadedCode));
+  return Boolean(activeSelection && comparableCode(currentCode()) !== comparableCode(loadedCode)) || hasUnsavedJointChanges();
 }
 
 function askConfirmation(message, acceptLabel) {
@@ -1018,6 +1081,7 @@ function renderDeckOptions() {
 }
 
 function renderDrafts() {
+  renderJointSaves();
   draftList.replaceChildren();
   let drafts;
   try {
@@ -1041,6 +1105,7 @@ function renderDrafts() {
     open.append(
       makeElement('strong', '', draft.title),
       makeElement('span', 'card-label', new Date(draft.savedAt).toLocaleString('ja-JP')
+        + (draft.joint ? ' · Strudel＋303／909' : ' · コード')
         + (draft.importedAt ? ' · 読み込んだ版・確認してPlay' : '')),
     );
     open.addEventListener('click', () => openDraft(draft.id));
@@ -1064,6 +1129,13 @@ async function openDraft(id) {
     await customElements.whenDefined('strudel-editor');
     if (comparableCode(currentCode()) !== codeBeforeLoad && !await mayReplaceCode()) {
       status.textContent = '切り替えを中止しました。いまの編集を残しています。';
+      return;
+    }
+    if (draft.joint !== undefined) {
+      await restoreJointDraft(draft);
+      setCurrentSelection({kind:'draft',id:draft.id,label:draft.title,detail:'Strudel＋303／909の組み合わせ'});
+      setWorkUrl(null); draftForm.hidden=true; renderJointSaves();
+      status.textContent='組み合わせを戻しました。「一緒に再生」で最初から聴けます。';
       return;
     }
     draftForm.hidden = true;
@@ -1204,6 +1276,7 @@ function showDraftForm() {
     return;
   }
   draftTitle.value = ((activeSelection?.label || '試作') + ' ' + new Date().toLocaleString('ja-JP')).slice(0, 80);
+  draftForm.querySelector('label').textContent=joint ? '組み合わせの名前' : '下書きの名前';
   draftForm.hidden = false;
   draftTitle.focus();
   draftTitle.select();
@@ -1224,24 +1297,30 @@ function saveDraft(event) {
       title: title.slice(0, 80),
       code,
       savedAt: new Date().toISOString(),
+      ...(joint ? {joint:captureJoint()} : {}),
     };
     const drafts = readDrafts();
+    if (drafts.length >= 500) throw new Error('保存版が500件あります。バックアップして整理してください。');
     drafts.unshift(draft);
     writeDrafts(drafts);
     loadedCode = code;
+    if (draft.joint) jointBaseline=JSON.stringify(draft.joint);
     setCurrentSelection({
-      kind: 'draft', id: draft.id, label: draft.title, detail: 'この端末の下書き',
+      kind: 'draft', id: draft.id, label: draft.title, detail: draft.joint ? 'Strudel＋303／909の組み合わせ' : 'この端末の下書き',
     });
     setWorkUrl(null);
     renderDrafts();
     draftDetails.open = true;
     draftForm.hidden = true;
-    status.textContent = document.body.classList.contains('performance-view')
+    if (draft.joint) jointStatus.textContent='「'+draft.title+'」をまとめて保存しました。上の一覧から両側を戻せます。';
+    status.textContent = draft.joint ? 'Strudelと303／909のフレーズ・音色・固定・混ぜ具合を、この端末にまとめて保存しました。'
+      : document.body.classList.contains('performance-view')
       ? 'この端末に保存しました。「保存版を開く」からいつでも戻せます。'
       : 'この端末に保存しました。下書き一覧からいつでもコードを戻せます。';
     focusSaveButton();
-  } catch {
-    status.textContent = '保存できませんでした。ブラウザの空き容量や保存設定を確認してください。';
+  } catch (error) {
+    status.textContent = '保存できませんでした。'+(error.message || 'ブラウザの空き容量や保存設定を確認してください。');
+    if (joint) jointStatus.textContent=status.textContent;
   }
 }
 
@@ -1448,8 +1527,8 @@ loadCatalog();
 initPwa({
   confirmReload: async () => {
     if (busy || confirmDialog.open) return false;
-    const codeWarning = hasUnsavedChanges() ? ' 未保存のコードは消えます。先に名前を付けて保存してください。' : '';
-    const acidWarning = !acidModuleStage.hidden ? ' 303＋909の調整は先にFILEで保存してください。' : '';
+    const codeWarning = hasUnsavedChanges() ? ' 未保存の変更は消えます。先に名前を付けて保存してください。' : '';
+    const acidWarning = !joint && !acidModuleStage.hidden ? ' 303＋909の調整は先にFILEで保存してください。' : '';
     if ((wantsPlayback || codeWarning || acidWarning) && !await askConfirmation(
       '演奏を止め、アプリを更新して開き直します。' + codeWarning + acidWarning, '更新して開き直す')) return false;
     closeAcidModule({ updateUrl: false });

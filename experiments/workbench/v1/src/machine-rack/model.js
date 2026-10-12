@@ -54,6 +54,21 @@ export function createMachineRack({data,ui,knobs}) {
         locks:{...data.unitLocks},tracks:[...data.active909Tracks],canRestore:Boolean(checkpoint)};
     },
     remember,
+    drumCandidates(ids) {
+      editable();
+      if (data.unitLocks.tr909) throw new Error('909の固定を外してから候補を変えてください。');
+      if (!Array.isArray(ids) || !ids.length || new Set(ids).size!==ids.length || ids.some(id=>!DRUMS.some(([key])=>key===id))) throw new Error('打楽器を1つ以上選んでください。');
+      data.active909Tracks=[...ids]; data.saveSettings(); refresh();
+    },
+    basicDrums() {
+      const pattern=editable();
+      if (data.unitLocks.tr909) throw new Error('909の固定を外してからビートを組んでください。');
+      if (!checkpoint) remember();
+      data.active909Tracks=['bd','sd','ch','oh'];
+      const hits={bd:[0,4,8,12],sd:[4,12],ch:[0,4,8,12],oh:[2,6,10,14]};
+      for(const [id,track] of Object.entries(pattern.units.tr909.tracks)) track.steps=Array.from({length:16},(_,i)=>hits[id]?.includes(i)?1:0);
+      data.saveSettings(); refresh();
+    },
     restore() {
       const pattern=editable();
       if (!checkpoint) return false;

@@ -459,3 +459,6 @@ footer p { margin: 0 0 8px; }
 
 .joint-panel:not(.is-linked) > .joint-transport, .joint-panel:not(.is-linked) > #joint-status, .joint-panel:not(.is-linked) > details { display: none; }
 .joint-panel:not(.is-linked) .joint-panes { display: block; }
+
+.joint-saves {display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0;}
+.joint-saves select {min-width:0;max-width:100%;flex:1 1 260px;}

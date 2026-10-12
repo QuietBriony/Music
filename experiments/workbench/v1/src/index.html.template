@@ -50,9 +50,10 @@
           <label>303／909を重ねる <output id="joint-machine-output">55%</output><input id="joint-machine-level" type="range" min="0" max="1" step="0.01" value="0.55" aria-label="303／909全体音量"></label>
         </div>
         <p id="joint-status" role="status">接続を準備中…</p>
+        <div class="joint-saves"><button id="joint-save" type="button">組み合わせを保存</button><label for="joint-saved">組み合わせを開く</label><select id="joint-saved"><option value="">保存した組み合わせを選ぶ</option></select><button id="joint-restore" type="button" disabled>選んだ保存版へ戻す</button></div>
         <details><summary>固定して遊ぶ・保存する</summary><p>左は今開いているStrudel。右の303／909と同じ時計・音声接続で鳴ります。BPMはStrudelで変更。両方のキックや低音が重なる時は、一方のMUTEや音量で引き算してください。</p>
           <p>右の「固定」はその楽器のフレーズと音色をサイコロから守ります。手のフェーダーは固定中も使えます。Strudel LIVE側は「音符を固定」と「楽器を選ぶ・固定する」。それぞれのサイコロは、自分の側だけ変えます。</p>
-          <p>保存は2つ：Strudelは「保存」、303／909は「FILE → SAVE」。この接続は演奏時のもので、303／909をStrudelのコードに変換するものではありません。音量の混ぜ具合はこの画面を開いている間の設定です。</p></details>
+          <p>「組み合わせを保存」で、Strudelのコードと303／909の全16パターン・音色・固定・打楽器候補・混ぜ具合を名前付きで保存。上の一覧か「保存版を開く」で選ぶと、停止した状態で両側が戻ります。「一緒に鳴らす」中は左の「保存」も同じまとめ保存です。</p><p>この端末・ブラウザに保存します。「持ち運び・バックアップ」のJSONにも含まれます。音声ファイルと演奏位置は含まれず、再生は冒頭から。従来のコード下書きと機材FILEもそのまま使えます。</p></details>
         <div id="joint-panes" class="joint-panes"></div>
       </section>
 
@@ -306,7 +307,7 @@
         <div id="published-list" class="published-shelf" aria-label="公開した試作"></div>
         <details id="draft-details" class="draft-details">
           <summary>この端末の下書き <span id="draft-count">0件</span></summary>
-          <p>自分で保存した版。別の端末へは、下の「持ち運び・バックアップ」から渡せます。</p>
+          <p>名前付きのコード・Strudel＋303／909の組み合わせ。別の端末へは、下の「持ち運び・バックアップ」から渡せます。</p>
           <div id="draft-list" class="draft-list"></div>
         </details>
         <details id="backup-details" class="backup-details">
