@@ -1,3 +1,4 @@
+import { varyVoice } from './variation.js';
 // Explicit controls for the bundled acidBros machine; no second audio clock.
 export const UNITS = [['tb303_2','303 · 低音'],['tb303_1','303 · 返し'],['tr909','909 · ドラム']];
 export const SYNTH_CONTROLS = [
@@ -55,6 +56,30 @@ export function createMachineRack({data,ui,knobs}) {
         locks:{...data.unitLocks},drumLocks:{...data.drumLocks},tracks:[...data.active909Tracks],canRestore:Boolean(checkpoint)};
     },
     remember,
+    evolve(turn,previous,random=Math.random) {
+      const pattern=editable();
+      const isSynth=id=>id.startsWith('tb303');
+      const get=id=>isSynth(id)?pattern.units[id]:pattern.units.tr909.tracks[id];
+      const put=(id,value)=>{if(isSynth(id))pattern.units[id]=value;else pattern.units.tr909.tracks[id]=value;};
+      const locked=id=>isSynth(id)?data.unitLocks[id]:data.unitLocks.tr909||data.drumLocks[id];
+      if(!checkpoint) remember();
+      const original=clone(pattern.units);
+      try {
+        // Return the previous variation to its motif only if nobody edited or
+        // locked it. Manual edits/dice adopt the current sound via auto.manual.
+        if(previous?.pattern===pattern&&!locked(previous.id)&&JSON.stringify(get(previous.id))===JSON.stringify(previous.after)) put(previous.id,clone(previous.before));
+        const candidates=[...ids.slice(0,2),...data.active909Tracks].filter(id=>{
+          const voice=get(id);return voice&&!locked(id)&&(isSynth(id)?voice.settings.volume>0&&voice.sequence.some(s=>s.active):voice.level>0&&voice.steps.some(Boolean));
+        });
+        let result=null;
+        if(candidates.length) {
+          const id=candidates[turn%candidates.length],before=clone(get(id));
+          const varied=varyVoice(before,isSynth(id),turn,random);
+          if(varied) {put(id,varied.voice);result={pattern,id,before,after:clone(varied.voice),detail:varied.detail,label:[...UNITS,...DRUMS].find(([key])=>key===id)[1]};}
+        }
+        refresh();return result;
+      } catch(error) {pattern.units=original;refresh();throw error;}
+    },
     drumCandidates(ids) {
       editable();
       if (data.unitLocks.tr909) throw new Error('909の固定を外してから候補を変えてください。');

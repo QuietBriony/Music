@@ -71,7 +71,7 @@ export function readBackupState(storage) {
 export function backupText(state, exportedAt = new Date().toISOString()) {
   require(isDate(exportedAt), '書き出し日時が不正です');
   const normalized=normalizeBackupState(state);
-  const text = JSON.stringify({ format: BACKUP_FORMAT, schema_version: normalized.strudel.drafts.some(d=>d.joint) ? 3 : 1, exportedAt,
+  const text = JSON.stringify({ format: BACKUP_FORMAT, schema_version: normalized.strudel.drafts.some(d=>d.joint) ? 4 : 1, exportedAt,
     ...normalized }, null, 2);
   require(new TextEncoder().encode(text).length <= MAX_BACKUP_BYTES, 'バックアップが大きすぎます');
   return text;
@@ -86,7 +86,7 @@ export function parseBackup(text) {
   if (value?.version === 1 && Array.isArray(value.files) && !value.format) {
     return normalizeBackupState({ strudel: { drafts: [], levels: {}, decks: {} }, acidbros: { files: value.files } });
   }
-  require(value?.format === BACKUP_FORMAT && [1,2,3].includes(value.schema_version) && isDate(value.exportedAt),
+  require(value?.format === BACKUP_FORMAT && [1,2,3,4].includes(value.schema_version) && isDate(value.exportedAt),
     'この試奏台のバックアップJSONではありません');
   return normalizeBackupState(value);
 }

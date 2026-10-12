@@ -1,5 +1,14 @@
 # Session Ledger — music-stack
 
+## 2026-10-12 — 固定を残す303／909 AUTO
+
+- scope: Codex、単一会話。base main 9a704d6。既存WorkbenchとListen／manualのみ。
+- change: 2／4／8／16小節の穏やかな変奏、固定／無音保護、手動優先、元画面と同じ演奏。音数・モチーフを保ち、変奏を戻しながら1声ずつ変える。音量・BPM・FILE形式を維持。
+- architecture: 元AudioEngineのschedule／stopに任意adapter。新clock／intervalなし。停止・pattern切替で進行をリセット、SONGは保護。
+- persistence: settings／handoff／machine snapshot v3、combined backup schema 4。旧snapshot 1・2／backup 1・2・3はAUTO OFFで移行。保存版は停止復元。
+- validation: 120回の変奏で固定キック・303と全音量、打点数・音程集合不変。境界／重複tick／手動優先／停止再開／全clock入口／保存互換／失敗rollbackを検証。実画面と最終gate・公開確認は本作業PR。
+- boundaries: 新規音声・依存・hostingなし。実iPhone・本人の聴感は未確認。
+
 ## 2026-10-12 — 909のパート固定と部分サイコロ
 
 - scope: Codex、単一会話。base 010ca5f、ARCB更新を含むmain 66419ceへ同期。既存Workbench／Listenを更新。

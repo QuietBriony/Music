@@ -15,6 +15,9 @@
 #wbr-file { margin-left:auto; }
 .wbr-route,.wbr-summary { color:#c0c9b9; font-size:.78rem; line-height:1.6; }
 .wbr-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.wbr-auto {display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px;padding:10px;border:1px solid #596b55;border-radius:10px;background:#1c261f;}
+.wbr-auto label {display:flex;align-items:center;gap:8px;font-size:.82rem;}
+#wbr-auto-status {font-size:.78rem;color:#c9d7bd;line-height:1.5;}
 #wbr-status { min-height:2.8em; font-size:.82rem; line-height:1.5; margin:12px 0; }
 .wbr-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
 .wbr-card { min-width:0; padding:14px; border:1px solid #87744e; border-radius:12px; background:linear-gradient(140deg,#383025,#1b211c); }
