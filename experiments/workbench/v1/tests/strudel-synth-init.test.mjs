@@ -42,3 +42,21 @@ test('default initialization retains the original registries, arguments and orde
 test('build transform refuses an unreviewed dependency', () => {
   assert.throws(() => synthInitBundle(original + '\n'), /reviewed pinned REPL/);
 });
+
+test('moving the opted-in editor retains its code, scheduler and single Mirror instance', () => {
+  const start=patched.indexOf('class o extends HTMLElement{static observedAttributes=["code"]');
+  const end=patched.indexOf('customElements.define("strudel-editor",o)',start);
+  let mirrors=0,roots=0;
+  class Element { hasAttribute(name){return name==='synth-only';} }
+  class Mirror { constructor(){mirrors++;this.scheduler={};}updateSettings(){}setCode(code){this.code=code;} }
+  const Constructor=runInNewContext(patched.slice(start,end)+';o;',{
+    HTMLElement:Element,StrudelMirror:Mirror,codemirrorSettings:{get:()=>({})},
+    setTimeout(){},document:{createElement:()=>({})},getDrawContext(){},
+    webaudioOutput(){},getAudioContext(){},transpiler(){},silence:{},
+  });
+  const editor=new Constructor();editor.code='note(48)';editor.parentElement={insertBefore(){roots++;}};
+  editor.connectedCallback();const mirror=editor.editor;mirror.code='note(51)';
+  editor.connectedCallback();editor.connectedCallback();
+  assert.equal(editor.editor,mirror);assert.equal(editor.editor.code,'note(51)');
+  assert.equal(mirrors,1);assert.equal(roots,1);
+});

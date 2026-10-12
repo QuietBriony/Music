@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-12（Strudel＋元の303／909）: Workbenchの「一緒に鳴らす」を明示選択すると、Strudelのscheduler／AudioContextで元の303×2＋909も駆動する。元の音源・サイコロ・楽器固定・フェーダー・FILEを保持。PCは左右、スマホは縦に配置し、停止してもフレーズを保持する。単独画面の「Strudelと一緒に」はsessionStorageで現パターン・固定を一度だけ持ち込み、FILEを上書きしない。保存はStrudel下書きと機材FILEの2つ、混ぜ具合の一括保存と音符変換は未実装。新音源・依存・hostingなし。元の単独clock、FM／Band Room／Core Rigは保持。実Strudel時計のdeadline／BPM／再評価とStop競合、旧FILE／コード互換を検証。公開完了と最終gateは対応PRの証跡を参照。本人の聴感と実iPhoneは未確認。
+
 2026-10-12: v415はベースとドラムの新旧比較を既存Band Roomへ追加。15秒の固定音符／打点で、ベースのみ・ドラムのみ・共通v414ギターを含む合奏を比較する。ベースは低域専用の48モード、ドラムは打面・ワイヤー・金属を分けた有限合成。録音・modelの取得なし、WorkerとOfflineAudioContextで準備し、再生は1 source／1 gain。比較PCMは11,520,000 bytes＋一時バッファ。既存ARCBへの昇格と本人の聴感・実iPhoneは未完了。[設計と測定](PHYSICAL-BAND-REHEARSAL.md#ベースとドラムの比較v415)。
 
 2026-10-12（元の303モジュール）: Listenの既存Workbench入口を更新。acidBrosの303低音・303返し・909を3カードに並べ、元の連動サイコロ、楽器別固定／dice、音色・音量フェーダーと一時戻り先を提供する。Data/UIへのfirst-party adapterで、同じ音源・clock・FILE形式を使い、元の編集画面へ戻れる。Strudelとは従来どおり別エンジンで排他切替、FM／Core Rig／Band Roomの再生には接続しない。追加音声・依存・配信先なし。使い方は[Workbench README](../experiments/workbench/v1/README.md)。

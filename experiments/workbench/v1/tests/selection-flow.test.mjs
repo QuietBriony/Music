@@ -136,6 +136,7 @@ function harness({ playing = false, code = singleWorkCode(patterns.get(first.pat
     customElements: { whenDefined: () => definition?.promise || Promise.resolve() },
     audioPlayback: { prepare: () => preparation?.promise || Promise.resolve() },
     sliderBridge: { capture() {} }, queueControlSync() {}, cancelSetEvaluation() {},
+    joint: false, stopJoint() {},
     closeAcidModule() { closedMachine++; }, acidSliderDeclarations: () => null,
     readTechnoSet, performance: { show() {} },
   });
@@ -175,6 +176,25 @@ function harness({ playing = false, code = singleWorkCode(patterns.get(first.pat
     },
   };
 }
+
+test('linked Stop during machine preparation preserves the iframe and cannot start late',async()=>{
+  const h=harness(),gate=deferred();let machineStops=0;
+  Object.assign(h.context,{joint:true,connectJointFrame(){},machineLink:{prepare:()=>gate.promise},
+    stopJoint(){machineStops++;}});
+  const pending=h.play();await setImmediate();await h.stop();gate.resolve(true);await pending;
+  assert.equal(h.closedMachine,0);assert.equal(h.evaluated,0);assert.equal(machineStops,1);
+  assert.equal(h.state().wantsPlayback,false);
+});
+
+test('linked play, update and stop retain the machine frame and saved Strudel body',async()=>{
+  const h=harness();let clocks=0,machineStops=0;
+  Object.assign(h.context,{joint:true,connectJointFrame(){},machineLink:{prepare:async()=>true},machineClock:null,
+    jointStatus:new Element(),connectMachineClock(){clocks++;return{};},stopJoint(){machineStops++;}});
+  const before=h.editor.code;
+  await h.play();await h.context.updateButton.click();await h.stop();
+  assert.equal(h.closedMachine,0);assert.equal(clocks,1);assert.equal(machineStops,1);
+  assert.equal(h.editor.code,before);assert.equal(h.state().playing,false);
+});
 
 test('each existing shelf work loads its own code and needs explicit Play when stopped', async () => {
   const h = harness();

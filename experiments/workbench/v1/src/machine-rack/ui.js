@@ -1,9 +1,10 @@
 import { createMachineRack, UNITS, SYNTH_CONTROLS, DRUMS } from './model.js';
+import { carryMachine } from './handoff.js';
 
 export function initMachineRack({data,ui,audio,knobs}) {
   const model=createMachineRack({data,ui,knobs});
   const host=document.createElement('section');host.className='wbr-shell';host.lang='ja';
-  host.innerHTML=`<nav class="wbr-view"><button type="button" id="wbr-view">モジュールで遊ぶ</button><span>acidBros · 元の303 × 2 ＋ 909</span></nav>
+  host.innerHTML=`<nav class="wbr-view"><button type="button" id="wbr-view">モジュールで遊ぶ</button><span>acidBros · 元の303 × 2 ＋ 909</span><button type="button" id="wbr-link" hidden>Strudelと一緒に</button></nav>
     <section id="wbr-panel" hidden aria-label="303と909のモジュール操作">
       <div class="wbr-transport"><button type="button" id="wbr-run">▶ RUN</button><button type="button" id="wbr-stop">■ 停止</button>
         <label>BPM <input id="wbr-bpm" type="number" min="60" max="200" step="1"></label><button type="button" id="wbr-file">FILE · 保存／開く</button></div>
@@ -15,13 +16,24 @@ export function initMachineRack({data,ui,audio,knobs}) {
         <p>低音は元の303の2号機、返しは1号機。元のサイコロが2台の音程関係・アクセント・スライドを作ります。固定した楽器はサイコロで変わらず、手では音色を触れます。こちらのサイコロと戻す操作では各音量・BPMを保ちます。</p>
         <p>明るさはフィルターの開き、みょんは共鳴。うねりの深さは音の立ち上がりの変化量、長さはその余韻。残響はディレイの量。数値は元の機材のつまみと同じでHzや秒ではありません。音量0で次の発音を抜き、残響は自然に残ります。</p>
         <p>「ここを戻り先に」は今開いているパターンの目印。端末に残すには「FILE · 保存／開く」→ SAVE。16パターンやSONGをつなぐ詳しい編集は「元の操作画面へ」。画面を替えても同じ演奏です。</p>
-        <p>この3モジュールは同時に鳴ります。WorkbenchのStrudel LIVEとは切り替えて使います。Strudelへの音・ステップの転送や自由なケーブル配線はまだありません。</p>
+        <p>この3モジュールは同時に鳴ります。Workbenchの「一緒に鳴らす」ではStrudelと時計・音声接続を共有します。保存はStrudelのコードと、こちらのFILEの2つ。自由なケーブル配線はありません。</p>
       </details>
     </section>`;
   document.body.prepend(host);
   const find=id=>host.querySelector('#wbr-'+id),panel=find('panel'),status=find('status');
+  find('link').hidden = window.parent !== window;
+  find('link').addEventListener('click', () => {
+    try {
+      carryMachine(data, window.sessionStorage);
+      audio.stop();
+      window.location.assign('/?stage=ambient&link=1&carry=1&bpm='+Math.round(audio.tempo));
+    } catch (error) { status.textContent = '引き継げませんでした。FILEで保存してください。' + error.message; }
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && audio.externalTransport) { event.preventDefault(); audio.stop(); }
+  });
   const actionControls=[],faders=[],locks=new Map(),waves=new Map(),summaries=new Map();
-  let active=false,pending=false,queued=false,drum='bd';
+  let active=false,pending=false,queued=false,drum='bd',linkedPlayback=false;
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
   function act(fn,message) {
     try { const changed=fn();status.textContent=changed===false?'固定中です。変える楽器の固定を外してください。':message; }
@@ -79,7 +91,15 @@ export function initMachineRack({data,ui,audio,knobs}) {
     for(const [id,text] of summaries) text.textContent=id==='tr909'
       ? 'サイコロ候補：'+state.tracks.map(t=>DRUMS.find(([id])=>id===t)?.[1]||t).join(' / ')
       : (state.units[id]?.sequence || []).filter(s=>s.active).length+' / 16音 · '+(state.locks[id]?'このフレーズと音色を保つ':'音色もサイコロで変化');
-    find('run').disabled=pending;find('bpm').disabled=pending;
+    const linked=Boolean(audio.externalTransport);
+    if (linked && linkedPlayback!==audio.isPlaying) {
+      linkedPlayback=audio.isPlaying;
+      status.textContent=linkedPlayback?'Strudelと同期演奏中。固定・サイコロ・音色で遊べます。':'全停止しました。フレーズと音色はそのまま。';
+    }
+    find('run').textContent=linked?'▶ 一緒に再生':'▶ RUN';
+    find('stop').textContent=linked?'■ 全停止':'■ 停止';
+    host.querySelector('.wbr-route').textContent=linked?'Strudelと同じ時計・同じ音声接続。BPMは上のStrudel側で変更。':'303の低音 ＋ 303の返し ＋ 909 → 同じ時計・同じ出力';
+    find('run').disabled=pending;find('bpm').disabled=pending||linked;
     if(document.activeElement!==find('bpm')) find('bpm').value=audio.tempo;
     if(!state.editable) status.textContent='SONGを演奏中の設定です。編集は「元の操作画面へ」からPATTERNを選んでください。';
   }
@@ -100,7 +120,7 @@ export function initMachineRack({data,ui,audio,knobs}) {
   let transport=0;
   find('run').addEventListener('click',async()=>{
     const token=++transport;pending=true;status.textContent='音を準備中…';render();
-    try { await audio.play(true);if(token===transport) status.textContent=audio.isPlaying?'3モジュールを演奏中。固定・サイコロ・音色で遊べます。':'もう一度RUNを押して音声接続を確認してください。'; }
+    try { await audio.play(true);if(token===transport) status.textContent=audio.isPlaying?(audio.externalTransport?'Strudelと同期演奏中。固定・サイコロ・音色で遊べます。':'3モジュールを演奏中。固定・サイコロ・音色で遊べます。'):'もう一度RUNを押して音声接続を確認してください。'; }
     catch(error) {if(token===transport)status.textContent=error.message || '再生できませんでした。';}
     finally {if(token===transport){pending=false;render();}}
   });

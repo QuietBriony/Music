@@ -34,6 +34,7 @@
         <button id="mode-library" type="button" aria-pressed="true">試作・A/Bミックス</button>
         <button id="performance-open" type="button" aria-controls="performance" aria-expanded="false" aria-pressed="false">ライブセット</button>
         <button id="mode-machine" type="button" aria-pressed="false">元の303×2＋909</button>
+        <button id="mode-linked" type="button" aria-pressed="false">一緒に鳴らす</button>
       </nav>
       <p id="play-route" class="play-route" data-mode="library">試作のコードを演奏。A/Bミックスとライブセットは同じStrudelで、元の303×2＋909は切り替えて演奏します。</p>
       <details class="audio-help">
@@ -43,6 +44,17 @@
         <p>ページの音量フェーダーと、スマホ本体・車の音量は別です。iPhoneはコントロールセンターの再生先で「iPhone」または車を選び、接続先の音量も確認。接続し直して無音なら「音を再接続」。復帰しない時は編集を保存して再読込してください。</p>
         <p>この欄の再接続はStrudel用です。「元の303×2＋909」は中のRUNを止めて押し直します。</p>
       </details>
+
+      <section id="joint-panel" class="joint-panel" aria-label="Strudelと303／909の同期演奏" hidden>
+        <div class="joint-transport"><strong>Strudel ＋ 303 × 2 ＋ 909</strong><button id="joint-play" type="button">▶ 一緒に再生</button><button id="joint-stop" type="button">■ 全停止</button>
+          <label>303／909を重ねる <output id="joint-machine-output">55%</output><input id="joint-machine-level" type="range" min="0" max="1" step="0.01" value="0.55" aria-label="303／909全体音量"></label>
+        </div>
+        <p id="joint-status" role="status">接続を準備中…</p>
+        <details><summary>固定して遊ぶ・保存する</summary><p>左は今開いているStrudel。右の303／909と同じ時計・音声接続で鳴ります。BPMはStrudelで変更。両方のキックや低音が重なる時は、一方のMUTEや音量で引き算してください。</p>
+          <p>右の「固定」はその楽器のフレーズと音色をサイコロから守ります。手のフェーダーは固定中も使えます。Strudel LIVE側は「音符を固定」と「楽器を選ぶ・固定する」。それぞれのサイコロは、自分の側だけ変えます。</p>
+          <p>保存は2つ：Strudelは「保存」、303／909は「FILE → SAVE」。この接続は演奏時のもので、303／909をStrudelのコードに変換するものではありません。音量の混ぜ具合はこの画面を開いている間の設定です。</p></details>
+        <div id="joint-panes" class="joint-panes"></div>
+      </section>
 
       <section id="performance" class="performance" aria-labelledby="set-title" hidden>
         <div class="set-heading"><p class="eyebrow">MUSIC / LIVE</p><h2 id="set-title">ライブセット</h2><span id="set-position">停止中</span></div>
@@ -178,7 +190,7 @@
           <p>Ambient Driftは76 BPM、32小節ごとの柔らかい展開。長い三和音とゆっくり動くフィルターを合成し、自動ドラムと303は入りません。「パッド音量」は0〜65%で背景の和音。通常のテクノにも薄く重ねられ、MUTEで抜けます。素材A/Bにドラムを含む作品を足す時は、その音は手動音量のまま鳴ります。</p>
           <p>元のacidBrosのサイコロは、低音303と上の303の音程関係・アクセント・スライド・909の骨格・音色をまとめて変えます。2台は独立した合成器とディレイを持ち、同じ時計から共通出力へ混ざります。LR分離ではありません。こちらは軸を守る変奏へ応用しています。スライド風は各音のピッチ包絡による近似で、元の発振器を続けるレガートとは異なります。</p>
           <p>PCのSpaceで開始/停止、1〜5でシーン、Escで全停止。コードや入力欄を編集中はSpaceと数字を奪いません。止めた後の再開は1小節目からです。</p>
-          <p>808風は低音キック・スネア・ハット・カウベルを合成する近似です。Roland純正の再現ではありません。ドラム・303・素材A/BはStrudelの時計を共有。別画面のacidBrosとの同時同期は行いません。</p>
+          <p>808風は低音キック・スネア・ハット・カウベルを合成する近似です。Roland純正の再現ではありません。ドラム・303・素材A/BはStrudelの時計を共有。「一緒に鳴らす」では元のacidBrosも同じ時計で動きます。</p>
         </details>
       </section>
 
@@ -219,7 +231,7 @@
           <div>
             <p class="eyebrow">PATCH BAY / BROWSER MACHINES</p>
             <h2 id="module-rack-title">演奏面のつながり</h2>
-            <p>試作・A/Bミックス・ライブセットはコードで演奏。元の303×2＋909は別の楽器として、切り替えて使います。</p>
+            <p>試作・A/Bミックス・ライブセットはコードで演奏。元の303×2＋909は「一緒に鳴らす」で同期して重ねられます。</p>
           </div>
         </div>
         <div class="module-grid">
@@ -249,7 +261,7 @@
             <button id="acid-tempo-to-machine" type="button" disabled>StrudelのBPM → 303＋909</button>
             <button id="acid-tempo-to-code" type="button" disabled>303＋909のBPM → コード</button>
           </div>
-          <p class="module-stage-note">BPMはボタンを押した時だけ渡します。右のボタンは303＋909を止め、Strudelのコードを編集します。音・ステップ・時計は同期しません。</p>
+          <p class="module-stage-note">BPMはボタンを押した時だけ渡します。右のボタンは303＋909を止め、Strudelのコードを編集します。単独モード用です。「一緒に鳴らす」ではStrudelがテンポと時計を担当します。</p>
         </section>
         <div id="acid-module-stage" class="module-stage" hidden>
           <div class="module-stage-actions">
@@ -261,7 +273,7 @@
           </div>
           <p id="acid-module-status" role="status">読み込み前です。</p>
           <iframe id="acid-module-frame" title="acidBros 303と909の演奏画面" allow="autoplay; midi" loading="lazy"></iframe>
-          <p class="module-stage-note">RUN → 好きな楽器を固定 → ほかをサイコロ。気に入ったら「FILE · 保存／開く」→ SAVE。「元の操作画面へ」で16ステップやSONGも編集できます。Strudelとは切り替えて使い、音やステップは相互に渡しません。</p>
+          <p class="module-stage-note">RUN → 好きな楽器を固定 → ほかをサイコロ。気に入ったら「FILE · 保存／開く」→ SAVE。「元の操作画面へ」で16ステップやSONGも編集できます。「一緒に鳴らす」でStrudelと同期。音符や保存は各画面で管理します。</p>
           <p class="module-stage-note">スマホで操作面が狭い時は「全画面で開く」。303の明るさはフィルター、みょんは共鳴、長さはうねりの余韻。元の操作画面では909の各ドラムの行をタップして打点も編集できます。</p>
         </div>
       </section>

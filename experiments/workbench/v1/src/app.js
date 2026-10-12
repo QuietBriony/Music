@@ -16,6 +16,7 @@ import { SliderBridge } from './slider-bridge.js';
 import { setTempoChanges } from './live-controls.js';
 import { AudioPlayback } from './audio-playback.js';
 import { readMinimalPlaybackMode, minimalPlaybackCode } from './minimal-playback.js';
+import { connectMachineClock } from './machine-clock.js';
 
 const editorHost = document.querySelector('#editor');
 const status = document.querySelector('#status');
@@ -95,6 +96,73 @@ let pendingAcidFileId = null;
 let pendingBackup = null;
 let backupReadToken = 0;
 let performance;
+let joint = false, machineLink = null, machineClock = null;
+const jointButton = document.querySelector('#mode-linked');
+const jointPanel = document.querySelector('#joint-panel');
+const jointPanes = document.querySelector('#joint-panes');
+const jointLevel = document.querySelector('#joint-machine-level');
+const jointStatus = document.querySelector('#joint-status');
+// Place the still-empty iframe once. Moving a loaded iframe reloads its audio engine.
+jointPanes.append(acidModuleStage);
+const jointMovables = ['#performance', '.workspace'].map(selector => {
+  const node = document.querySelector(selector), anchor = document.createComment('joint-return');
+  node.before(anchor); return { node, anchor };
+});
+function jointLayout() {
+  const set = document.body.classList.contains('performance-view');
+  for (const {node,anchor} of jointMovables) {
+    const selected = joint && node.matches(set ? '#performance' : '.workspace');
+    if (selected && node.parentElement !== jointPanes) jointPanes.insertBefore(node, acidModuleStage);
+    else if (!selected && node.previousSibling !== anchor) anchor.after(node);
+  }
+  jointPanel.hidden = acidModuleStage.hidden;
+  jointPanel.classList.toggle('is-linked', joint);
+  const master = document.querySelector('#set-master .set-fader');
+  if (master) {
+    const label = joint ? 'Strudel音量' : '全体音量';
+    master.querySelector('span').textContent = label;
+    master.querySelector('input').setAttribute('aria-label', label);
+  }
+}
+function connectJointFrame() {
+  if (!joint || !acidBridgeReady || machineLink) return;
+  machineLink = acidModuleFrame.contentWindow.musicMachineLink;
+  if (!machineLink) throw new Error('303／909を更新して開き直してください');
+  machineLink.connect({ play: () => playButton.click(), stop: () => stopButton.click() });
+  machineLink.setLevel(Number(jointLevel.value));
+  jointStatus.textContent = '接続しました。再生で一緒に開始。303／909の音量は控えめから重ねます。';
+}
+function stopJoint() { machineLink?.stop(); }
+function disconnectJoint() {
+  machineClock?.disconnect(); machineClock = null;
+  const previous = machineLink; machineLink = null;
+  previous?.disconnect().catch(error => { jointStatus.textContent = error.message; });
+}
+function setJoint(enabled, {updateUrl = true} = {}) {
+  cancelSetEvaluation(); playbackToken++; wantsPlayback = false;
+  activeEditor?.editor?.stop(); stopJoint();
+  if (!enabled) disconnectJoint();
+  joint = enabled; jointPanel.hidden = !enabled;
+  document.body.classList.toggle('joint-view', enabled);
+  jointButton.setAttribute('aria-pressed', String(enabled));
+  if (enabled) {
+    openAcidModule({scroll:false});
+    connectJointFrame();
+  }
+  if (updateUrl) {
+    const url = new URL(window.location.href);
+    enabled ? url.searchParams.set('link','1') : url.searchParams.delete('link');
+    window.history.replaceState(null,'',url);
+  }
+  jointLayout(); queueControlSync();
+}
+jointButton.addEventListener('click', () => { setJoint(!joint); if (joint) jointPanel.scrollIntoView({block:'start'}); });
+document.querySelector('#joint-play').addEventListener('click', () => playButton.click());
+document.querySelector('#joint-stop').addEventListener('click', () => stopButton.click());
+jointLevel.addEventListener('input', () => {
+  machineLink?.setLevel(Number(jointLevel.value));
+  document.querySelector('#joint-machine-output').textContent = Math.round(Number(jointLevel.value)*100)+'%';
+});
 const prepareCodeSamples = createSamplePreparation(() => window.strudel.prebake());
 let setEvaluateTimer;
 const audioStatus = document.querySelector('#audio-status');
@@ -220,8 +288,8 @@ function renderAcidFiles() {
 }
 
 function syncAcidBridgeControls() {
-  acidTempoToMachine.disabled = !acidBridgeReady || strudelBpm(currentCode()) === null;
-  acidTempoToCode.disabled = !acidBridgeReady || !activeEditor?.editor;
+  acidTempoToMachine.disabled = joint || !acidBridgeReady || strudelBpm(currentCode()) === null;
+  acidTempoToCode.disabled = joint || !acidBridgeReady || !activeEditor?.editor;
 }
 
 function sendAcidCommand(command) {
@@ -238,12 +306,14 @@ function setModuleUrl(open) {
 
 function closeAcidModule({ updateUrl = true, focus = false } = {}) {
   if (acidModuleStage.hidden) return;
+  if (joint) setJoint(false, {updateUrl});
   // Destroying the frame is the only reliable stop for this independent audio engine.
   acidModuleFrame.src = 'about:blank';
   acidBridgeReady = false;
   pendingAcidFileId = null;
   syncAcidBridgeControls();
   acidModuleStage.hidden = true;
+  jointPanel.hidden = true;
   acidModuleOpen.setAttribute('aria-expanded', 'false');
   acidModuleOpen.textContent = '切り替えて開く';
   acidModuleStatus.textContent = '停止しました。';
@@ -257,7 +327,7 @@ function stopStrudelForModule() {
   wantsPlayback = false;
   activeEditor?.editor?.stop();
   queueControlSync();
-  status.textContent = 'Strudelを停止しました。acidBrosではRUNを押して演奏します。';
+  status.textContent = joint ? '停止中です。「一緒に再生」で開始します。' : 'Strudelを停止しました。acidBrosではRUNを押して演奏します。';
 }
 
 function openAcidModule({ updateUrl = true, scroll = true, fileId = null } = {}) {
@@ -266,10 +336,12 @@ function openAcidModule({ updateUrl = true, scroll = true, fileId = null } = {})
   pendingAcidFileId = fileId;
   renderAcidFiles();
   acidModuleStage.hidden = false;
+  jointPanel.hidden = false;
   acidModuleOpen.setAttribute('aria-expanded', 'true');
   acidModuleOpen.textContent = '303＋909を閉じる';
   acidModuleStatus.textContent = '303＋909を読み込み中…';
-  acidModuleFrame.src = '/modules/acidbros/?rack=1';
+  const carry = new URL(window.location.href).searchParams.get('carry') === '1';
+  acidModuleFrame.src = '/modules/acidbros/?rack=1' + (carry ? '&carry=1' : '');
   if (updateUrl) setModuleUrl(true);
   if (scroll) {
     const reveal = () => setTimeout(() => {
@@ -300,8 +372,22 @@ window.addEventListener('message', (event) => {
   const message = event.data;
   if (message.type === 'ready') {
     acidBridgeReady = true;
+    connectJointFrame();
+    const url = new URL(window.location.href);
+    if (joint && url.searchParams.get('carry') === '1') {
+      const bpm = Number(url.searchParams.get('bpm'));
+      try {
+        if (Number.isInteger(bpm) && bpm >= 60 && bpm <= 180) {
+          if (isSetCode(currentCode())) activeEditor.editor.editor.dispatch({ changes:setTempoChanges(currentCode(), bpm) });
+          else activeEditor.editor.setCode(withStrudelBpm(currentCode(), bpm));
+        }
+      } catch { /* Keep current code when no literal tempo exists. */ }
+      url.searchParams.delete('carry'); url.searchParams.delete('bpm'); window.history.replaceState(null,'',url);
+      queueControlSync();
+    }
     syncAcidBridgeControls();
-    acidModuleStatus.textContent = '準備できました（' + message.bpm + ' BPM）。中のRUNで3モジュールを演奏。固定・サイコロ・フェーダーで遊べます。';
+    acidModuleStatus.textContent = joint ? 'Strudelと接続中。BPMはStrudel側で変更。固定・サイコロ・フェーダーで遊べます。'
+      : '準備できました（' + message.bpm + ' BPM）。中のRUNで3モジュールを演奏。固定・サイコロ・フェーダーで遊べます。';
     if (pendingAcidFileId) sendAcidCommand({ type: 'load-file', fileId: pendingAcidFileId });
   } else if (message.type === 'file-loaded') {
     pendingAcidFileId = null;
@@ -442,19 +528,20 @@ function queueControlSync() {
 }
 
 function syncPlayModes() {
-  const machine = !acidModuleStage.hidden;
+  const machine = !joint && !acidModuleStage.hidden;
   const set = !machine && document.body.classList.contains('performance-view');
   libraryMode.setAttribute('aria-pressed', String(!machine && !set));
   machineMode.setAttribute('aria-pressed', String(machine));
   document.querySelector('#performance-open').setAttribute('aria-pressed', String(set));
   const bpm = strudelBpm(currentCode());
-  playRoute.textContent = machine
+  playRoute.textContent = joint ? '同期演奏：Strudel ＋ 元の303×2＋909。再生・全停止・時計を共有。好きな楽器を固定し、ほかをサイコロやフェーダーで変えます。' : machine
     ? '別の演奏：元の303×2＋909。中のRUNで開始。コード側は停止し、BPMだけボタンで受け渡します。'
     : set ? '同期演奏：セットの303風・ドラム・素材A/Bを、ひとつのコードで一緒に鳴らします。'
     : isSetCode(currentCode()) ? 'ライブセットのコードを開いています。上の「ライブセット」で操作面へ戻れます。試作を選ぶと演奏を切り替えます。'
     : deckPairFromCode(currentCode()) ? '同期ミックス：AとBのコードをまとめて' + bpm + ' BPMで演奏。元の303×2＋909画面は別の演奏です。'
     : '試作のコードを演奏。303／909風もコードの中の音です。2つ重ねるならA/Bミックスへ。';
   playRoute.dataset.mode = machine ? 'machine' : set ? 'set' : 'library';
+  jointLayout();
   const pair = deckPairFromCode(currentCode());
   const opened = pair && pair.a === deckASelect.value && pair.b === deckBSelect.value;
   const unsupported = opened && !readDeckMix(currentCode());
@@ -465,8 +552,8 @@ function syncPlayModes() {
     : '選んだ公開試作と、この端末のA/B音量設定から作ります。追加パートはミュートから開始。';
 }
 
-libraryMode.addEventListener('click', () => { closeAcidModule(); performance.show(false); queueControlSync(); });
-machineMode.addEventListener('click', () => { performance.show(false); openAcidModule(); queueControlSync(); });
+libraryMode.addEventListener('click', () => { if (!joint) closeAcidModule(); performance.show(false); queueControlSync(); });
+machineMode.addEventListener('click', () => { if (joint) setJoint(false); performance.show(false); openAcidModule(); queueControlSync(); });
 deckASelect.addEventListener('change', queueControlSync);
 deckBSelect.addEventListener('change', queueControlSync);
 
@@ -676,6 +763,15 @@ async function evaluateCurrent(message) {
     await prepareCodeSamples(currentCode());
     // Worklets and sample preparation have completed before filtered notes.
     if (token !== playbackToken || !wantsPlayback) return;
+    if (joint) {
+      connectJointFrame();
+      if (!machineLink) throw new Error('303／909の読み込みを待って、もう一度再生してください');
+      const prepared = await machineLink.prepare(audioPlayback.context);
+      if (!prepared || token !== playbackToken || !wantsPlayback) return;
+      if (!machineClock) machineClock = connectMachineClock(activeEditor.editor.repl.scheduler, window, machineLink, () => {
+        wantsPlayback = false; jointStatus.textContent = '全停止しました。フレーズ・固定・音色はそのまま。'; queueControlSync();
+      });
+    }
     await activeEditor.editor.evaluate();
     const evalError = activeEditor.editor.repl?.state?.evalError;
     if (evalError) throw evalError;
@@ -686,10 +782,12 @@ async function evaluateCurrent(message) {
     }
     wantsPlayback = true;
     status.textContent = message;
+    if (joint) jointStatus.textContent = '同期演奏中。StrudelがBPMと小節を担当。固定・サイコロ・音色はそれぞれの面から。';
     queueControlSync();
   } catch (error) {
     if (token !== playbackToken) return;
     wantsPlayback = false;
+    stopJoint();
     activeEditor.editor.stop();
     queueControlSync();
     throw error;
@@ -1182,12 +1280,14 @@ async function loadCatalog() {
     if (['techno','ambient'].includes(params.get('stage')) || (window.matchMedia('(min-width: 1000px)').matches
       && !params.has('work') && !params.has('deck') && !params.has('module'))) {
       await performance.openPreset(params.get('stage')==='ambient'?'ambient-drift':undefined);
+      if (params.get('link') === '1') setJoint(true);
       return;
     }
     const deckRequested = params.get('deck')?.split(',');
     if (deckRequested?.length === 2 && deckRequested.every((id) => catalog.items.some((item) => item.mixable !== false && item.id === id))) {
       await openDeck(deckRequested[0], deckRequested[1]);
-      if (params.get('module') === 'acidbros') openAcidModule({ updateUrl: false });
+      if (params.get('link') === '1') setJoint(true);
+      else if (params.get('module') === 'acidbros') openAcidModule({ updateUrl: false });
       return;
     }
     const requested = params.get('work');
@@ -1199,7 +1299,8 @@ async function loadCatalog() {
       && activeSelection?.kind === 'published' && activeSelection.id === requested) {
       document.querySelector('.workspace').scrollIntoView({ behavior: 'auto', block: 'start' });
     }
-    if (params.get('module') === 'acidbros') openAcidModule({ updateUrl: false });
+    if (params.get('link') === '1') setJoint(true);
+    else if (params.get('module') === 'acidbros') openAcidModule({ updateUrl: false });
   } catch (error) {
     status.textContent = error.message || '試作一覧を読み込めませんでした';
   }
@@ -1235,7 +1336,7 @@ function focusSaveButton() {
 cancelDraftButton.addEventListener('click', () => { draftForm.hidden = true; focusSaveButton(); });
 playButton.addEventListener('click', async () => {
   if (busy || !activeEditor?.editor) return;
-  closeAcidModule();
+  if (!joint) closeAcidModule();
   busy = true;
   wantsPlayback = true;
   try {
@@ -1251,7 +1352,7 @@ playButton.addEventListener('click', async () => {
 });
 updateButton.addEventListener('click', async () => {
   if (busy || !activeEditor?.editor) return;
-  closeAcidModule();
+  if (!joint) closeAcidModule();
   busy = true;
   wantsPlayback = true;
   try {
@@ -1265,7 +1366,8 @@ updateButton.addEventListener('click', async () => {
 });
 stopButton.addEventListener('click', () => {
   cancelSetEvaluation();
-  closeAcidModule();
+  if (!joint) closeAcidModule();
+  stopJoint();
   playbackToken++;
   wantsPlayback = false;
   activeEditor?.editor?.stop();
@@ -1282,7 +1384,7 @@ window.addEventListener('beforeunload', warnUnsavedExit);
 renderAcidFiles();
 performance = initPerformance({
   viewChanged: syncPlayModes,
-  closeMachine: closeAcidModule,
+  closeMachine: () => { if (!joint) closeAcidModule(); },
   getCode: currentCode,
   isPlaying: () => wantsPlayback && Boolean(activeEditor?.editor?.repl?.scheduler?.started),
   isBusy: () => busy,
@@ -1313,7 +1415,7 @@ performance = initPerformance({
         status.textContent = '切り替えを中止しました。いまの編集を残しています。';
         return false;
       }
-      closeAcidModule();
+      if (!joint) closeAcidModule();
       cancelSetEvaluation();
       setEditorCode(code);
       setCurrentSelection({ kind: 'set', label: title, detail: 'テクノ・ライブセット' });

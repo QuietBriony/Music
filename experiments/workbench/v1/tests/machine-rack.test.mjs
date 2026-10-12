@@ -5,13 +5,14 @@ import vm from 'node:vm';
 import { createMachineRack, DRUMS, SYNTH_CONTROLS } from '../src/machine-rack/model.js';
 import { BinaryFormatEncoder } from '../third_party/acidbros/js/data/BinaryFormatEncoder.js';
 import { BinaryFormatDecoder } from '../third_party/acidbros/js/data/BinaryFormatDecoder.js';
+import { carryMachine, takeMachine } from '../src/machine-rack/handoff.js';
 
 // Exercise the pinned machine's real randomizer and save/apply mappings, with
 // native knob/radio DOM substitutes. No audio, browser, storage or network.
 function rig() {
   const inputs = new Map(), knobs = {}, radios = {}, saved = new Map();
   const ui = { renderAll(){}, refreshParamCache(){}, updateLockUI(){} };
-  const audio = { tempo:127, swing:50 };
+  const audio = { tempo:127, swing:50, instruments:new Map() };
   for (const n of [1,2]) for (const wave of ['saw','sq']) {
     const id=`wave-${wave}-${n}`;
     radios[id]={ get checked(){return radios['selected'+n]===wave;}, set checked(v){if(v)radios['selected'+n]=wave;}, value:wave==='saw'?'sawtooth':'square' };
@@ -19,8 +20,8 @@ function rig() {
   const ids=[...['tune','cutoff','reso','env','decay','accent','vol','delayTime','delayFb','delayWet'].flatMap(k=>[k+'303_1',k+'303_2']), ...DRUMS.flatMap(([, , controls])=>controls.map(c=>c[2]))];
   for(const id of ids) {const input={value:0};inputs.set(id+'-input',input);knobs[id]={setValue(v){input.value=String(v);}};}
   let seed=731;const randomMath=Object.create(Math);randomMath.random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
-  const context = vm.createContext({ console, Math:randomMath, Uint8Array, TextEncoder, TextDecoder, btoa, atob,
-    UI:ui, AudioEngine:audio, MidiManager:{mappings:[]}, BinaryFormatEncoder, BinaryFormatDecoder,
+  const context = vm.createContext({ console:{...console,error(...args){throw new Error(args.join(' '));}}, Math:randomMath, Uint8Array, TextEncoder, TextDecoder, btoa, atob,
+    UI:ui, AudioEngine:audio, MidiManager:{mappings:[],clearAllMappings(){}}, BinaryFormatEncoder, BinaryFormatDecoder,
     window:{knobInstances:knobs},
     localStorage:{setItem:(k,v)=>saved.set(k,v),getItem:k=>saved.get(k)},
     document:{getElementById:id=>inputs.get(id)||radios[id]||null,querySelector:selector=>radios[`wave-${radios['selected'+selector.match(/303_(\d)/)[1]]}-${selector.match(/303_(\d)/)[1]}`]}
@@ -106,4 +107,20 @@ test('rack edits remain compatible with the original full FILE encoding',()=>{
   assert.equal(decoded.bpm,127);assert.equal(decoded.patterns[0].units.tb303_2.settings.cutoff,38);
   assert.equal(decoded.patterns[0].units.tr909.tracks.bd.level,29);assert.equal(decoded.patterns[0].units.tb303_1.settings.waveform,'square');
   assert.deepEqual(structuredClone(decoded.patterns[0].units.tb303_2.sequence),snapshot(r).tb303_2.sequence);
+});
+
+test('real native full encoding handoff keeps PATTERN editable, the selected phrase and dice locks',()=>{
+  const r=rig();r.data.currentPatternId=5;r.data.applyPatternSettings(5);r.model.randomize();r.model.lock('tb303_2');
+  const before=snapshot(r),values=new Map();
+  const storage={setItem:(k,v)=>values.set(k,v),getItem:k=>values.get(k),removeItem:k=>values.delete(k)};
+  carryMachine(r.data,storage);
+  // The unmodified native decoder treats full FILEs as SONG.
+  assert.equal(new BinaryFormatDecoder().decode(r.data.exportFullState()).mode,'song');
+  const target=rig();target.ui.updateSwingUI=()=>{};target.ui.updateSevenSegment=()=>{};
+  takeMachine(target.data,storage,BinaryFormatDecoder);
+  assert.equal(target.data.currentPatternId,5);assert.equal(target.model.read().editable,true);
+  assert.equal(target.data.unitLocks.tb303_2,true);
+  assert.deepEqual(snapshot(target).tb303_2.sequence,before.tb303_2.sequence);
+  target.model.randomize('tb303_1');
+  assert.deepEqual(snapshot(target).tb303_2.sequence,before.tb303_2.sequence);
 });
