@@ -174,12 +174,12 @@
     },
     {
       "id": "physical-band", "repo": "Music", "group": "next", "status": "candidate",
-      "title": "ロックギター一本の比較 / バンド試奏", "href": "band-room.html#br-guitar-audition", "action": "聴き比べる",
-      "purpose": "芯と余韻を作り直した新しい弦合成を、従来の合成・録音エレキと同じ11秒で比較。ロック／ジャズ8小節試奏も使用できる。",
-      "first_step": "比較を準備（録音4音） → 新しい弦合成で聴く。これまでの合成・録音ギターと切り替えて比較する。",
-      "outputs": "平均音量をそろえた同じフレーズ。準備を押した時だけ録音4音約0.41 MBを取得。modelのdownloadなし。",
-      "boundary": "新しい合成と録音ギターは比較候補。ARCB通常曲への採用・実iPhone聴感は本人確認。録音は単一強度・近似ミュート。RECは通常曲で使用。",
-      "sources": [{ "repo": "Music", "path": "audio/physical-band/guitar-audition.mjs" }, { "repo": "Music", "path": "audio/physical-band/electric-string.mjs" }, { "repo": "Music", "path": "docs/PHYSICAL-BAND-REHEARSAL.md" }]
+      "title": "ベース・ドラム・ギターの音を比較", "href": "band-room.html#br-rhythm-audition", "action": "聴き比べる",
+      "purpose": "ベースの低音、ドラム一打の余韻、3人の合奏を新旧の音で比較。ギター一本の比較と従来の8小節試奏も同じ画面に。",
+      "first_step": "ベース・ドラムの比較を準備 → 聴くパートを選ぶ → 新しい音で聴く／これまでの音で聴く。",
+      "outputs": "15秒の単独／合奏比較。平均音量と音符をそろえ、録音取得なしで合成。ギターの録音比較だけは明示準備時に約0.41 MB取得。",
+      "boundary": "新しい楽器は比較候補。ARCB通常曲への採用・実iPhone聴感は本人確認。合奏のギターは共通。RECは通常曲で使用。",
+      "sources": [{ "repo": "Music", "path": "audio/physical-band/rhythm-audition.mjs" }, { "repo": "Music", "path": "audio/physical-band/rhythm-synthesis.mjs" }, { "repo": "Music", "path": "audio/physical-band/guitar-audition.mjs" }, { "repo": "Music", "path": "audio/physical-band/electric-string.mjs" }, { "repo": "Music", "path": "docs/PHYSICAL-BAND-REHEARSAL.md" }]
     },
     {
       "id": "visual-composer", "repo": "Music", "group": "next", "status": "planned",

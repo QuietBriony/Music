@@ -30,6 +30,10 @@
 .br-physical-controls button:focus-visible, .br-physical-controls select:focus-visible { outline: 2px solid var(--air-soft); outline-offset: 2px; }
 .br-physical-controls input[type="range"] { max-width: min(180px, 45vw); }
 #br-physical-band summary { line-height: 1.5; }
+:is(#br-rhythm-audition, #br-guitar-audition, #br-physical-band) > section { padding: 14px; font-size: 13px; line-height: 1.65; }
+:is(#br-rhythm-audition, #br-guitar-audition, #br-physical-band) .br-help { color: var(--text-sub); margin: 0 0 12px; }
+:is(#br-rhythm-audition, #br-guitar-audition, #br-physical-band) [role="status"] { color: var(--accent-glass); }
+#br-rhythm-audition [data-rhythm-play="refined"] { border-color: var(--air); }
 
 html, body {
   margin: 0;

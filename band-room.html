@@ -6,7 +6,7 @@
 <title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-93" />
+<link rel="stylesheet" href="band-room.css?v=br-94" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -27,9 +27,10 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-247" defer></script>
+<script src="band-room.js?v=br-248" defer></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
+<script type="module" src="audio/physical-band/rhythm-preview.mjs?v=1"></script>
 <style>
   .share-link-button{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px));z-index:1200;min-height:30px;border:1px solid rgba(143,247,241,.28);border-radius:999px;background:rgba(5,9,11,.56);color:rgba(223,254,250,.78);font:11px/1 system-ui,-apple-system,Segoe UI,sans-serif;letter-spacing:.08em;padding:0 9px;cursor:pointer;opacity:.66;backdrop-filter:blur(8px)}
   .share-link-button:hover,.share-link-button:focus-visible{opacity:1}
@@ -303,6 +304,23 @@
     </section>
 
     <!-- ===== DETAILS (collapsed by default) ===== -->
+
+    <details id="br-rhythm-audition" class="br-details">
+      <summary>ベース・ドラムを比較 — 低音の芯と一打の余韻</summary>
+      <section aria-label="ベースとドラムの新旧比較">
+        <p class="br-help">15秒：最初はベースの長い単音とドラムの一打ずつ、8秒後から120 BPMの2小節、最後は余韻。ベースだけ・ドラムだけ・3人の合奏を同じ音符と平均音量で聴き比べます。</p>
+        <div class="br-physical-controls">
+          <button type="button" data-rhythm-prepare>ベース・ドラムの比較を準備</button>
+          <label>聴くパート <select data-rhythm-part aria-label="比較するパート"><option value="band">3人で合奏</option><option value="bass">ベースだけ</option><option value="drums">ドラムだけ</option></select></label>
+          <button type="button" data-rhythm-play="refined" disabled>新しい音で聴く</button>
+          <button type="button" data-rhythm-play="previous" disabled>これまでの音で聴く</button>
+          <button type="button" data-rhythm-stop disabled>停止</button>
+          <label>比較の音量 <input data-rhythm-volume type="range" min="0" max="70" value="45" aria-label="ベース・ドラム比較の音量" /></label>
+        </div>
+        <p class="br-help" data-rhythm-status role="status">準備を押すと音を合成します。録音素材の取得はありません。</p>
+        <p class="br-help">新しいベースは低音の伸び、ドラムは打面・スネアのワイヤー・金属の響きを作り分けた候補です。合奏のギターは両方とも前回の新しい弦合成を使用。通常のARCB曲への採用は試聴後に決めます。RECは通常曲で使えます。</p>
+      </section>
+    </details>
 
     <details id="br-guitar-audition" class="br-details">
       <summary>ロックギター一本を比較 — 新しい弦の芯と余韻</summary>

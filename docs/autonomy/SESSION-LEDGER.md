@@ -1,5 +1,12 @@
 # Session Ledger — music-stack
 
+## 2026-10-12 — codex / BL-051 bass and drum audition v415
+
+- Scope: Music-audio-stability; initial base 73bfc5d5789526413958b66b33b42efe0fdf0399; synchronized main bcd8d80d9f7a56d432ce1ed17ce566ad4048c352. Same conversation; no child tasks.
+- Change: bounded original bass/head/wire/metal synthesis and 15-second solo / band comparison. Same v414 guitar in both mixes; shared score, RMS matching and room. Existing ARCB bank and engine.js unchanged.
+- Baseline strict gate: PASS 41 / FAIL 0 / SKIP 0, exit 0; five repository states unchanged. Final waveform, browser, full-stack and public proof is pending at entry creation and will be recorded on this work's PR at the exact final HEAD. Local evidence: output/playwright/rhythm-audition/.
+- Next: owner audition before default-song promotion. The modal/spectral design is not a measured reconstruction of specific instruments; physical iPhone and whole-band perceptual quality remain open.
+
 ## 2026-10-12 — 元の303×2＋909を同じ音源のモジュール操作面へ
 
 - agent: Codex。単一会話・subagentなし。base main `73bfc5d`、既存Music／Workbenchへ反映。
