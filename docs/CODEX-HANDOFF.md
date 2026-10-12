@@ -1,5 +1,8 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-12（Strudel＋元の303／909）: Workbenchの「一緒に鳴らす」を明示選択すると、Strudelのscheduler／AudioContextで元の303×2＋909も駆動する。元の音源・サイコロ・楽器固定・フェーダー・FILEを保持。PCは左右、スマホは縦に配置し、停止してもフレーズを保持する。単独画面の「Strudelと一緒に」はsessionStorageで現パターン・固定を一度だけ持ち込み、FILEを上書きしない。保存はStrudel下書きと機材FILEの2つ、混ぜ具合の一括保存と音符変換は未実装。新音源・依存・hostingなし。元の単独clock、FM／Band Room／Core Rigは保持。実Strudel時計のdeadline／BPM／再評価とStop競合、旧FILE／コード互換を検証。公開完了と最終gateは対応PRの証跡を参照。本人の聴感と実iPhoneは未確認。
+
+
 2026-10-12（元の303モジュール）: Workbenchの元の303×2＋909は`?rack=1`で低音（Unit 2）・返し（Unit 1）・ドラムの3カードを表示。元の音源／clock／Data.randomizeを再利用し、楽器別サイコロ・固定・ネイティブ縦フェーダー・一時戻り先を追加。サイコロ／復元は現在の音量とBPMを保持し、固定していても手で音色を変更可能。FILE／16パターン／SONGは元の画面へ切り替える。Strudelとは排他の別エンジンのまま。追加音声・依存・外部素材・hostingなし。操作と制限はWorkbench README冒頭。ローカルブラウザでRUN／Stop・演奏中フェーダー・固定／サイコロ・復元・打楽器追加・FILE導線・PC/スマホ幅を検証。本人聴感と実iPhoneは別途確認。
 
 2026-10-12: v414は一本の比較に、芯と余韻を作り直した合成候補を追加。弦の振動モード・ピックとpickupの位置・周波数別の損失と弱い二方向の振動を、最大128 modeの有限Workerで合成する。新旧合成と既存録音を同じ10.8秒／クランチ／phrase RMSで比較し、再生は1 source／1 gain、準備済みPCMは4,147,200 bytes。音声素材の追加なし。ARCB通常曲へは未昇格で、本人の試奏と実iPhone確認が残る。[設計と測定](PHYSICAL-BAND-REHEARSAL.md#新しい弦の芯と余韻v414)。

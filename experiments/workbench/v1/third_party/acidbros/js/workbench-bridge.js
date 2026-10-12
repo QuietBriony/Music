@@ -1,9 +1,12 @@
 import { UI } from './ui/UI.js';
 import { AudioEngine } from './audio/AudioEngine.js';
 import { FileManager } from './data/FileManager.js';
+import { Data } from './data/Data.js';
+import { BinaryFormatDecoder } from './data/BinaryFormatDecoder.js';
+import { takeMachine } from './workbench-rack/handoff.js';
 
-// The embedded machine keeps its own audio clock and file format. This bridge
-// only handles explicit file and tempo actions from the same-origin workbench.
+// File/tempo messages remain explicit and same-origin. The separate link adapter
+// lets an opted-in host supply the audio context and musical clock directly.
 function loadSavedFile(fileId) {
     if (typeof fileId !== 'string' || !fileId || fileId.length > 100) return false;
     // Loading another pattern while RUN is active would leave two different
@@ -19,6 +22,10 @@ function loadSavedFile(fileId) {
 }
 
 export function initWorkbenchBridge() {
+    if (new URLSearchParams(window.location.search).get('carry') === '1') {
+        try { if (takeMachine(Data, window.sessionStorage, BinaryFormatDecoder)) UI.renderAll(); }
+        catch (error) { UI.showToast(error.message); }
+    }
     const requestedFileId = new URLSearchParams(window.location.search).get('file');
     if (requestedFileId && !loadSavedFile(requestedFileId)) {
         UI.showToast('Saved patch is not on this browser');

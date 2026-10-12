@@ -5,6 +5,8 @@ import { TR909 } from './TR909.js';
 
 export const AudioEngine = {
     ctx: null,
+    externalTransport: null,
+    outputGain: null,
     master: null,
     analyser: null, // FFT Analyser
     clockNode: null, // AudioWorkletNode
@@ -152,7 +154,8 @@ export const AudioEngine = {
                 this.master.ratio.value = 12;
 
                 const outGain = this.ctx.createGain();
-                outGain.gain.value = 0.8;
+                this.outputGain = outGain;
+                outGain.gain.value = this.externalTransport ? 0 : 0.8;
 
                 // Chain: Master -> Analyser -> OutGain -> Destination
                 this.master.connect(this.analyser);
@@ -182,18 +185,20 @@ export const AudioEngine = {
                 if (this.ctx.audioWorklet) {
                     try {
                         await this.withTimeout(
-                            this.ctx.audioWorklet.addModule('js/audio/TB303FilterProcessor.js'),
+                            this.ctx.audioWorklet.addModule(new URL('./TB303FilterProcessor.js', import.meta.url)),
                             3000,
                             'TB303 worklet module load'
                         );
-                        await this.withTimeout(
-                            this.ctx.audioWorklet.addModule('js/audio/ClockProcessor.js'),
-                            3000,
-                            'Clock worklet module load'
-                        );
-                        this.createClockNode();
-                        this.useWorklet = true;
-                        console.log("AudioEngine: Using AudioWorklet for timing.");
+                        if (!this.externalTransport) {
+                            await this.withTimeout(
+                                this.ctx.audioWorklet.addModule(new URL('./ClockProcessor.js', import.meta.url)),
+                                3000,
+                                'Clock worklet module load'
+                            );
+                            this.createClockNode();
+                            this.useWorklet = true;
+                            console.log("AudioEngine: Using AudioWorklet for timing.");
+                        }
 
                     } catch (err) {
                         console.warn('AudioEngine: Failed to load AudioWorklet, falling back to setTimeout.', err);
@@ -375,6 +380,7 @@ export const AudioEngine = {
     },
 
     async play(restartFromTop = false) {
+        if (this.externalTransport) return this.externalTransport.play();
         const commandId = ++this.transportCommandId;
 
         // First attempt must happen before heavyweight async init().
@@ -480,10 +486,12 @@ export const AudioEngine = {
     },
 
     stop() {
+        if (this.externalTransport) return this.externalTransport.stop();
         this.stopInternal(true);
     },
 
     setTempo(newTempo) {
+        if (this.externalTransport) return this.externalTransport.tempo(newTempo);
         this.tempo = newTempo;
         if (this.useWorklet && this.clockNode) {
             this.clockNode.port.postMessage({ type: 'tempo', value: newTempo });
@@ -500,7 +508,7 @@ export const AudioEngine = {
 
     // --- Worklet Handler ---
     handleTick(data) {
-        if (!this.useWorklet || !this.isPlaying) return;
+        if ((!this.useWorklet && !this.externalTransport) || !this.isPlaying) return;
         if (this.awaitingWorkletTick) {
             this.clearWorkletWatchdog();
         }

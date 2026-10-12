@@ -22,3 +22,9 @@ The four WAV files total **438,798 bytes**. Their SHA-256 hashes are:
 | `rd01.wav` | `bafd8dcb23d81433534337c1b0b3ad33b0631eca501519ae1ed7fe80525bbcda` |
 
 This is a pinned local snapshot. An upstream update requires inspecting its code/assets, refreshing this notice, testing the embedded player on desktop/mobile, and deploying a new Music commit. It does not update automatically.
+
+## Optional Strudel host connection (2026-10-12)
+
+`AudioEngine.js` exposes its output gain, delegates transport/tempo only when `externalTransport` is set, and accepts host ticks without starting its own clock. Worklet URLs are relative to the module, so a parent-owned AudioContext resolves them correctly. Standalone scheduling is unchanged. First-party `workbench-rack/link.js` shares the parent's context and drives the original `handleTick`/voices, disconnects retired voice buses on Stop, reuses the decoded drum bank, and never closes the parent context. The original voice algorithms, randomizer, four WAVs and FILE format are retained.
+
+The original full-page rack can carry its unsaved encoded state, selected pattern and unit locks through one-use sessionStorage into the same-origin host. `workbench-bridge.js` validates this transfer before native import; no FILE is overwritten or content published. The host adds silent clock pulses to its Strudel scheduler. This is an opt-in audio/clock link, not score conversion or free cable routing.

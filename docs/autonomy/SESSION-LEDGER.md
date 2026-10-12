@@ -1,5 +1,15 @@
 # Session Ledger — music-stack
 
+## 2026-10-12 — Strudelと元の303／909を共通時計で合奏
+
+- agent: Codex、単一会話。base main bcd8d80、既存WorkbenchとMusicの入口を更新。
+- change: 明示的な同期モード、左右の操作面、まとめて再生／停止、機材全体音量。元の固定・サイコロ・フェーダーを保持。単独画面から未保存フレーズと固定をタブ内で持ち込む。
+- architecture: 同じAudioContext、Strudel schedulerが16ステップの時刻を供給。元のclockを重ねて起動せず、旧voice busをStopで切断。iframeは再配置せず、Strudel要素はopt-in再接続ガードで既存Mirrorを保持。
+- boundaries: 元の音源／FILE schema、旧Strudelコードを保持。音符変換／自由配線／一括保存なし。新規音声・依存・hostingなし。
+- validation: 実Cyclist／Patternを使う時計・BPM・再評価テスト、Stopと準備の競合、旧contextの所有権、楽器固定／保存の既存試験、タブ内引継ぎを確認。最終gate・ブラウザ・公開版の完了証跡は本作業PRに残す。
+- next: 本人の聴感と実iPhoneで音量・操作を確認。保存はStrudelとFILEの2つ。
+
+
 ## 2026-10-12 — 元の303×2＋909を同じ音源のモジュール操作面へ
 
 - agent: Codex。単一会話・subagentなし。base main `73bfc5d`、既存Music／Workbenchへ反映。

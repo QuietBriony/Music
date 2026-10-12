@@ -1,5 +1,8 @@
 # Hazama FM — システム全体像
 
+2026-10-12（Strudel＋元の303／909）: Workbenchの「一緒に鳴らす」を明示選択すると、Strudelのscheduler／AudioContextで元の303×2＋909も駆動する。元の音源・サイコロ・楽器固定・フェーダー・FILEを保持。PCは左右、スマホは縦に配置し、停止してもフレーズを保持する。単独画面の「Strudelと一緒に」はsessionStorageで現パターン・固定を一度だけ持ち込み、FILEを上書きしない。保存はStrudel下書きと機材FILEの2つ、混ぜ具合の一括保存と音符変換は未実装。新音源・依存・hostingなし。元の単独clock、FM／Band Room／Core Rigは保持。実Strudel時計のdeadline／BPM／再評価とStop競合、旧FILE／コード互換を検証。公開完了と最終gateは対応PRの証跡を参照。本人の聴感と実iPhoneは未確認。
+
+
 2026-10-12（元の303モジュール）: Listenの既存Workbench入口を更新。acidBrosの303低音・303返し・909を3カードに並べ、元の連動サイコロ、楽器別固定／dice、音色・音量フェーダーと一時戻り先を提供する。Data/UIへのfirst-party adapterで、同じ音源・clock・FILE形式を使い、元の編集画面へ戻れる。Strudelとは従来どおり別エンジンで排他切替、FM／Core Rig／Band Roomの再生には接続しない。追加音声・依存・配信先なし。使い方は[Workbench README](../experiments/workbench/v1/README.md)。
 
 2026-10-12: v414は一本の比較に、芯と余韻を作り直した合成候補を追加。弦の振動モード・ピックとpickupの位置・周波数別の損失と弱い二方向の振動を、最大128 modeの有限Workerで合成する。新旧合成と既存録音を同じ10.8秒／クランチ／phrase RMSで比較し、再生は1 source／1 gain、準備済みPCMは4,147,200 bytes。音声素材の追加なし。ARCB通常曲へは未昇格で、本人の試奏と実iPhone確認が残る。[設計と測定](PHYSICAL-BAND-REHEARSAL.md#新しい弦の芯と余韻v414)。

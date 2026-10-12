@@ -14,6 +14,8 @@ export function synthInitBundle(source) {
       ';if(synthOnly){await Promise.all([o,registerSynthSounds(),registerZZFXSounds()]);return}await Promise.all([o,registerSynthSounds(),registerZZFXSounds(),'],
     ['drawContext:d,prebake,onUpdateState:b=>',
       'drawContext:d,prebake:()=>prebake({synthOnly:this.hasAttribute("synth-only")}),onUpdateState:b=>'],
+    ['connectedCallback(){setTimeout(()=>{const b=(this.innerHTML+"")',
+      'connectedCallback(){if(this.hasAttribute("synth-only")&&this.editor)return;setTimeout(()=>{const b=(this.innerHTML+"")'],
   ];
   for (const [before, after] of replacements) {
     if (source.split(before).length !== 2) throw new Error('Strudel synth initialization anchor changed');
