@@ -6,6 +6,7 @@ import {
 } from '../src/session-backup.js';
 import { BinaryFormatEncoder } from '../third_party/acidbros/js/data/BinaryFormatEncoder.js';
 import { BinaryFormatDecoder } from '../third_party/acidbros/js/data/BinaryFormatDecoder.js';
+import { captureMachineState } from '../src/machine-state.js';
 
 const savedAt = '2026-09-30T01:00:00.000Z';
 const importedAt = '2026-09-30T02:00:00.000Z';
@@ -24,6 +25,30 @@ const fixture = () => ({
     decks: { 'aphex1|techno-dub': { a: 0.5, b: 0.6, cross: 0.3 } },
   },
   acidbros: { files: [{ id: 'file-one', name: '303の試作', data: acidData, created: 100, modified: 200 }] },
+});
+const jointFixture = () => ({ version:1,level:.37,machine:captureMachineState({
+  ...acidState,currentPatternId:7,mode:'pattern',keepSoundSettings:false,
+  unitLocks:{tb303_1:false,tb303_2:true,tr909:true},active909Tracks:['bd','sd','ch','oh'],
+  exportFullState:()=>acidData,
+}, {tempo:137,swing:50}) });
+
+test('combined saves survive backup import, retain same-code/different-machine versions, and require schema 2',()=>{
+  const current=fixture();current.strudel.drafts[0].joint=jointFixture();
+  const text=backupText(current,savedAt);assert.equal(JSON.parse(text).schema_version,2);
+  const parsed=parseBackup(text);assert.deepEqual(parsed.strudel.drafts[0].joint,current.strudel.drafts[0].joint);
+  const incoming=parseBackup(text);incoming.strudel.drafts[0].joint.machine.locks.tr909=false;
+  const merged=mergeBackup(current,incoming,()=> 'second-version',importedAt);
+  assert.equal(merged.stats.drafts,1,'same Strudel code does not erase a different machine snapshot');
+  assert.equal(merged.state.strudel.drafts[0].joint.machine.locks.tr909,true);
+  assert.equal(merged.state.strudel.drafts[1].joint.machine.locks.tr909,false);
+  const repeat=mergeBackup(merged.state,incoming,()=> 'unused',importedAt);
+  assert.equal(repeat.stats.drafts,0);
+  const storage=new MemoryStorage();writeBackupState(storage,merged.state);
+  assert.deepEqual(readBackupState(storage),merged.state);
+  const invalid=fixture();invalid.strudel.drafts[0].joint=jointFixture();invalid.strudel.drafts[0].joint.level=2;
+  assert.throws(()=>writeBackupState(storage,invalid),/音量/);
+  assert.deepEqual(readBackupState(storage),merged.state,'invalid imports cannot partially replace existing saves');
+  assert.equal(JSON.parse(backupText(fixture())).schema_version,1,'old code-only backups remain compatible');
 });
 
 class MemoryStorage {

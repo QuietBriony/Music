@@ -32,7 +32,7 @@ export function initMachineRack({data,ui,audio,knobs}) {
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && audio.externalTransport) { event.preventDefault(); audio.stop(); }
   });
-  const actionControls=[],faders=[],locks=new Map(),waves=new Map(),summaries=new Map();
+  const actionControls=[],faders=[],locks=new Map(),waves=new Map(),summaries=new Map(),drumRows=new Map();
   let active=false,pending=false,queued=false,drum='bd',linkedPlayback=false;
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
   function act(fn,message) {
@@ -65,6 +65,16 @@ export function initMachineRack({data,ui,audio,knobs}) {
       wave.addEventListener('change',()=>act(()=>model.wave(unit,wave.value),'波形を変更しました。'));waveLabel.append(wave);card.append(waveLabel);waves.set(unit,wave);
       const bank=el('div',null,'wbr-faders');card.append(bank);SYNTH_CONTROLS.forEach(control=>addFader(bank,unit,control));
     } else {
+      button(card,'基本4パートを組む',()=>act(()=>model.basicDrums(),'キック・スネア・閉／開ハットを組みました。音色・音量・303はそのまま。'));
+      const parts=el('details',null,'wbr-drum-parts');parts.append(el('summary','全11パート・サイコロ候補'));
+      button(parts,'全11パートを候補に',()=>act(()=>model.drumCandidates(DRUMS.map(([id])=>id)),'全11パートを候補にしました。「この楽器だけ」で組み替えます。'));
+      for(const [id,title] of DRUMS) {
+        const row=el('label',null,'wbr-drum-row'),box=el('input'),info=el('span');box.type='checkbox';box.setAttribute('aria-label',title+'をサイコロ候補に');
+        box.addEventListener('change',()=>act(()=>model.drumCandidates(DRUMS.map(([id])=>id).filter(key=>key===id?box.checked:data.active909Tracks.includes(key))),'サイコロ候補を変えました。今の打点はそのまま。'));
+        row.append(box,info);parts.append(row);drumRows.set(id,{box,info,title});
+      }
+      card.append(parts);
+      card.append(el('p','下の選択は音色の編集対象です。ソロ再生ではありません。','wbr-summary'));
       const select=el('select');select.id='wbr-drum';select.setAttribute('aria-label','音色を触る打楽器');
       DRUMS.forEach(([id,title])=>{const option=el('option',title);option.value=id;select.append(option);});
       select.addEventListener('change',()=>{drum=select.value;render();});card.append(select);
@@ -77,6 +87,11 @@ export function initMachineRack({data,ui,audio,knobs}) {
   function render() {
     if(!active) return;
     const state=model.read();
+    for(const [id,{box,info,title}] of drumRows) {
+      const track=state.units.tr909?.tracks[id],hits=track?.steps?.filter(Boolean).length || 0;
+      box.checked=state.tracks.includes(id);box.disabled=!state.editable||pending||state.locks.tr909;
+      info.textContent=title+' · '+hits+'打 · 音量'+Math.round(track?.level || 0)+(track?.level===0?'（無音）':!hits?'（打点なし）':'');
+    }
     actionControls.forEach(b=>{b.disabled=!state.editable||pending;});
     for(const id of ['dice','keep','restore']) find(id).disabled=!state.editable||pending||(id==='restore'&&!state.canRestore);
     for(const [id,b] of locks) {b.setAttribute('aria-pressed',String(state.locks[id]));b.textContent=state.locks[id]?'固定中':'固定';}
@@ -89,7 +104,7 @@ export function initMachineRack({data,ui,audio,knobs}) {
       out.textContent=Number.isFinite(value)?String(Math.round(value*10)/10):'—';
     });
     for(const [id,text] of summaries) text.textContent=id==='tr909'
-      ? 'サイコロ候補：'+state.tracks.map(t=>DRUMS.find(([id])=>id===t)?.[1]||t).join(' / ')
+      ? '鳴る設定：'+DRUMS.filter(([id])=>state.units.tr909?.tracks[id]?.level>0 && state.units.tr909.tracks[id].steps.some(Boolean)).length+' / 11パート。サイコロ候補：'+state.tracks.map(t=>DRUMS.find(([id])=>id===t)?.[1]||t).join(' / ')+(state.tracks.length===1?'。1パートだけです。「基本4パートを組む」で増やせます。':'')
       : (state.units[id]?.sequence || []).filter(s=>s.active).length+' / 16音 · '+(state.locks[id]?'このフレーズと音色を保つ':'音色もサイコロで変化');
     const linked=Boolean(audio.externalTransport);
     if (linked && linkedPlayback!==audio.isPlaying) {

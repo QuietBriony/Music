@@ -31,3 +31,7 @@
 .wbr-guide summary { min-height:44px; padding-block:12px; cursor:pointer; }
 @media(max-width:1000px) { .wbr-cards { grid-template-columns:repeat(2,minmax(0,1fr)); }.wbr-card:last-child { grid-column:1 / -1; }.wbr-card:last-child .wbr-faders { grid-template-columns:repeat(4,minmax(0,1fr)); } }
 @media(max-width:600px) { body.workbench-rack-mode { padding:10px; }.wbr-cards { grid-template-columns:minmax(0,1fr); }.wbr-transport { gap:7px; }.wbr-shell button { font-size:.8rem; }.wbr-view span { width:100%; } }
+
+.wbr-drum-parts {margin:12px 0;}
+.wbr-drum-row {display:flex;align-items:center;gap:8px;margin:8px 0;font-size:.82rem;}
+.wbr-drum-row input {width:20px;height:20px;flex-shrink:0;}

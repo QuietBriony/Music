@@ -1,5 +1,8 @@
 import { TB303 } from '../audio/TB303.js';
 import { TR909 } from '../audio/TR909.js';
+import { BinaryFormatDecoder } from '../data/BinaryFormatDecoder.js';
+import { FileManager } from '../data/FileManager.js';
+import { captureMachineState, decodeMachineState, applyMachineState } from '../../../../machine-state.js';
 
 // A same-origin, explicit host connection. Original Data/UI/FILE and voice
 // implementations are retained; the standalone sequencer never runs linked.
@@ -56,6 +59,18 @@ export function createMachineLink({ audio, ui, data }) {
     tempo: value => { if (value !== audio.tempo) showTempo(); notice(); },
   };
   return {
+    capture: () => captureMachineState(data,audio),
+    validate: snapshot => { decodeMachineState(snapshot,BinaryFormatDecoder); },
+    restore(snapshot) {
+      const decoded=decodeMachineState(snapshot,BinaryFormatDecoder);
+      const previous=decodeMachineState(captureMachineState(data,audio),BinaryFormatDecoder);
+      stop();
+      try { applyMachineState({data,audio,ui},decoded); showTempo(); }
+      catch(error) { applyMachineState({data,audio,ui},previous); showTempo(); throw error; }
+      // A combined save is an independent snapshot, not an edit of a named FILE.
+      FileManager.currentFileId=null;
+      notice();
+    },
     connect(host) {
       if (callbacks) return;
       stop(); callbacks = host; audio.externalTransport = transport; notice();

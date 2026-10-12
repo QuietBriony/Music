@@ -1,5 +1,13 @@
 # Session Ledger — music-stack
 
+## 2026-10-12 — 組み合わせの名前付き保存と909全パートの可視化
+
+- scope: Codex、単一会話。base afe1434。既存Workbench／Listenのみ。
+- change: Strudel＋元の303／909を1件に保存し、固定・正確な音色・全16パターン・混ぜ具合を復元。既存下書きとFILEは保持。組み合わせ入りbackupはschema 2。
+- drums: 基本4パート配置、全11声の打点数・音量・候補表示。編集対象の選択をソロと区別。音量0は勝手に変更しない。
+- validation: 名前付き保存→サイコロ／固定解除／音量変更→両側復元と停止をCUAで確認。全11声同時tick、旧形式互換、保存quota失敗・restore rollbackをテスト。最終gate・公開確認は対応PRへ記録。
+- boundaries: 音源／上流FILE形式／randomizerは維持、新規音声・依存・hostingなし。端末間はJSON手動、音声／演奏位置は含めない。本人聴感と実iPhoneは未確認。
+
 ## 2026-10-12 — Strudelと元の303／909を共通時計で合奏
 
 - agent: Codex、単一会話。base main bcd8d80、既存WorkbenchとMusicの入口を更新。

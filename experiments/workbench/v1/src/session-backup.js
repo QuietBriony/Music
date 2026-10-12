@@ -1,3 +1,4 @@
+import { checkAcidData, normalizeJointState } from './machine-state.js';
 export const BACKUP_FORMAT = 'music-live-workbench-backup';
 export const MAX_BACKUP_BYTES = 8_000_000;
 export const BACKUP_KEYS = {
@@ -12,44 +13,6 @@ const level = (value) => typeof value === 'number' && Number.isFinite(value) && 
 
 function require(condition, message) {
   if (!condition) throw new Error(message);
-}
-
-// FILE saves are opaque full-project binary strings. Check the container before
-// adding one to storage; decoding/importing it into the audio engine is deferred
-// until the user explicitly selects the patch.
-function checkAcidData(data) {
-  require(typeof data === 'string' && data.length <= 300_000 && /^[A-Za-z0-9_-]+$/.test(data),
-    '303＋909のパッチ形式が合いません。中のFILEで開き、保存し直してください。');
-  let binary;
-  try { binary = atob(data.replace(/-/g, '+').replace(/_/g, '/')); }
-  catch { throw new Error('303＋909のパッチを読めません'); }
-  const byte = (offset) => binary.charCodeAt(offset);
-  let offset = 0;
-  let global = false;
-  const units = new Set();
-  while (offset + 3 <= binary.length) {
-    const block = byte(offset);
-    const size = byte(offset + 1) | (byte(offset + 2) << 8);
-    offset += 3;
-    require(offset + size <= binary.length && block <= 4, '303＋909のパッチが途中で切れています');
-    if (block === 0) {
-      require(size === 0 && offset === binary.length && global && units.size === 3,
-        '303＋909の完全なFILE保存が必要です');
-      return;
-    }
-    if (block === 1) {
-      require(!global && size >= 5 && byte(offset + 2) === 2 && byte(offset) >= 60 && byte(offset) <= 200,
-        '303＋909の完全なFILE保存が必要です');
-      global = true;
-    } else if (block === 2) {
-      const unit = byte(offset) + ':' + byte(offset + 1);
-      require(size >= 3 && ['1:0', '1:1', '2:0'].includes(unit) && !units.has(unit),
-        '303＋909の楽器データが不正です');
-      units.add(unit);
-    }
-    offset += size;
-  }
-  throw new Error('303＋909のパッチに終了データがありません');
 }
 
 export function normalizeBackupState(value) {
@@ -67,6 +30,7 @@ export function normalizeBackupState(value) {
       && item.code.length > 0 && item.code.length <= 100_000 && isDate(item.savedAt), '下書きの形式が合いません');
     draftIds.add(item.id);
     return { id: item.id, title: item.title, code: item.code, savedAt: item.savedAt,
+      ...(item.joint === undefined ? {} : { joint: normalizeJointState(item.joint) }),
       ...(isDate(item.importedAt) ? { importedAt: item.importedAt } : {}) };
   });
   const fileIds = new Set();
@@ -106,8 +70,9 @@ export function readBackupState(storage) {
 
 export function backupText(state, exportedAt = new Date().toISOString()) {
   require(isDate(exportedAt), '書き出し日時が不正です');
-  const text = JSON.stringify({ format: BACKUP_FORMAT, schema_version: 1, exportedAt,
-    ...normalizeBackupState(state) }, null, 2);
+  const normalized=normalizeBackupState(state);
+  const text = JSON.stringify({ format: BACKUP_FORMAT, schema_version: normalized.strudel.drafts.some(d=>d.joint) ? 2 : 1, exportedAt,
+    ...normalized }, null, 2);
   require(new TextEncoder().encode(text).length <= MAX_BACKUP_BYTES, 'バックアップが大きすぎます');
   return text;
 }
@@ -121,7 +86,7 @@ export function parseBackup(text) {
   if (value?.version === 1 && Array.isArray(value.files) && !value.format) {
     return normalizeBackupState({ strudel: { drafts: [], levels: {}, decks: {} }, acidbros: { files: value.files } });
   }
-  require(value?.format === BACKUP_FORMAT && value.schema_version === 1 && isDate(value.exportedAt),
+  require(value?.format === BACKUP_FORMAT && [1,2].includes(value.schema_version) && isDate(value.exportedAt),
     'この試奏台のバックアップJSONではありません');
   return normalizeBackupState(value);
 }
@@ -143,7 +108,8 @@ export function mergeBackup(current, incoming, makeId = () => crypto.randomUUID(
   };
   for (const draft of input.strudel.drafts) {
     const duplicate = state.strudel.drafts.find((item) => item.title === draft.title
-      && item.code === draft.code && item.savedAt === draft.savedAt);
+      && item.code === draft.code && item.savedAt === draft.savedAt
+      && JSON.stringify(item.joint) === JSON.stringify(draft.joint));
     if (duplicate) { draftIds.set(draft.id, duplicate.id); stats.duplicates++; continue; }
     const id = nextId(state.strudel.drafts, draft.id);
     draftIds.set(draft.id, id);

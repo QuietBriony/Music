@@ -6,12 +6,14 @@ import { createMachineRack, DRUMS, SYNTH_CONTROLS } from '../src/machine-rack/mo
 import { BinaryFormatEncoder } from '../third_party/acidbros/js/data/BinaryFormatEncoder.js';
 import { BinaryFormatDecoder } from '../third_party/acidbros/js/data/BinaryFormatDecoder.js';
 import { carryMachine, takeMachine } from '../src/machine-rack/handoff.js';
+import { captureMachineState, decodeMachineState, applyMachineState } from '../src/machine-state.js';
+import { TR909 } from '../third_party/acidbros/js/audio/TR909.js';
 
 // Exercise the pinned machine's real randomizer and save/apply mappings, with
 // native knob/radio DOM substitutes. No audio, browser, storage or network.
 function rig() {
   const inputs = new Map(), knobs = {}, radios = {}, saved = new Map();
-  const ui = { renderAll(){}, refreshParamCache(){}, updateLockUI(){} };
+  const ui = { renderAll(){}, refreshParamCache(){}, updateLockUI(){}, updateSwingUI(){} };
   const audio = { tempo:127, swing:50, instruments:new Map() };
   for (const n of [1,2]) for (const wave of ['saw','sq']) {
     const id=`wave-${wave}-${n}`;
@@ -35,6 +37,48 @@ function rig() {
 }
 const snapshot = r=>structuredClone(r.data.patterns[r.data.currentPatternId].units);
 const volumes = units=>[units.tb303_1.settings.volume,units.tb303_2.settings.volume,...Object.values(units.tr909.tracks).map(t=>t.level)];
+
+test('combined snapshot restores all patterns, fractional tone, mode, locks and drum candidates',()=>{
+  const r=rig();r.model.randomize();r.model.set('tb303_2','reso',10.8);r.model.basicDrums();
+  r.model.lock('tb303_2');r.model.lock('tr909');r.data.currentPatternId=7;
+  r.data.patterns[7].units.tb303_1.sequence[9]={active:true,note:'D#',octave:3,accent:true,slide:true};
+  r.data.applyPatternSettings(7);r.model.set('tb303_1','reso',7.3);
+  r.data.keepSoundSettings=true;r.audio.swing=55.5;
+  const saved=captureMachineState(r.data,r.audio), before=JSON.stringify(saved);
+  r.data.currentPatternId=0;r.data.mode='song';r.data.unitLocks={};r.data.active909Tracks=['bd'];r.audio.swing=50;
+  applyMachineState(r,decodeMachineState(saved,BinaryFormatDecoder));
+  assert.equal(r.data.currentPatternId,7);assert.equal(r.data.mode,'pattern');assert.equal(r.data.keepSoundSettings,true);
+  assert.equal(r.audio.swing,55.5);assert.equal(r.data.patterns[0].units.tb303_2.settings.reso,10.8);
+  assert.equal(r.data.patterns[7].units.tb303_1.settings.reso,7.3);
+  assert.equal(r.data.patterns[7].units.tb303_1.sequence[9].note,'D#');
+  const after=captureMachineState(r.data,r.audio);
+  assert.deepEqual({...after,code:null},{...JSON.parse(before),code:null});
+  r.data.mode='song';const song=captureMachineState(r.data,r.audio);r.data.mode='pattern';
+  applyMachineState(r,decodeMachineState(song,BinaryFormatDecoder));assert.equal(r.data.mode,'song');
+  assert.throws(()=>decodeMachineState({...saved,code:saved.code.slice(0,-20)},BinaryFormatDecoder));
+  assert.equal(r.data.mode,'song','bad data is rejected before mutation');
+});
+
+test('basic drum recovery makes four simultaneous parts without changing 303, tone or levels',()=>{
+  const r=rig();r.model.randomize();r.data.active909Tracks=['bd'];
+  const before=snapshot(r),levels=volumes(before);r.model.basicDrums();const after=snapshot(r);
+  assert.deepEqual(after.tb303_1,before.tb303_1);assert.deepEqual(after.tb303_2,before.tb303_2);
+  assert.deepEqual(volumes(after),levels);
+  assert.deepEqual([...r.data.active909Tracks],['bd','sd','ch','oh']);
+  assert.deepEqual(DRUMS.filter(([id])=>after.tr909.tracks[id].steps.some(Boolean)).map(([id])=>id),['bd','sd','ch','oh']);
+  r.model.drumCandidates(DRUMS.map(([id])=>id));assert.deepEqual(snapshot(r),after,'candidate changes do not silently replace the beat');
+  r.model.lock('tr909');assert.throws(()=>r.model.basicDrums(),/固定/);assert.throws(()=>r.model.drumCandidates(['bd']),/固定/);
+});
+
+test('the original 909 triggers all eleven voices on one step, independently of the edit selector',()=>{
+  const voice=new TR909({},{}),calls=[];
+  voice.voices=new Map(DRUMS.map(([id])=>[id,{trigger:(time,params)=>calls.push({id,time,params})}]));
+  const steps=Object.fromEntries(DRUMS.map(([id])=>[id,[1,...Array(15).fill(0)]]));
+  const params=Object.fromEntries(DRUMS.map(([id],i)=>[id,{level:20+i}]));
+  voice.processStep(1.25,0,steps,params,128);
+  assert.equal(calls.length,11);assert.deepEqual(calls.map(c=>c.id),DRUMS.map(([id])=>id));
+  assert.ok(calls.every(c=>c.time===1.25&&c.params===params[c.id]));
+});
 
 test('single-module dice uses the original bass/answer rules and preserves other modules',()=>{
   const r=rig();r.model.randomize();r.model.lock('tb303_2');
