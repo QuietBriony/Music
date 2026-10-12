@@ -475,7 +475,7 @@
   <h3>Music — バンド・ラジオ・作品棚</h3>
   <p class="guide-note">同じMusicの中にある4つの画面。ロック／ジャズの試奏もBand Roomから。</p>
   <div class="public-grid">
-    <a class="public-entry" data-public-entry="band-room" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth"><strong>Band Room / ARCB・Tabasco <span aria-hidden="true">→</span></strong><span>ARCBをギター・ベース・ドラムで再現。原音から和音と音域を補正。上下のストロークと、ロック／カッティング／パームミュート。弦の響き・歪み・空気感を原音と比較・録音。</span></a>
+    <a class="public-entry" data-public-entry="band-room" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth"><strong>Band Room / ARCB・Tabasco <span aria-hidden="true">→</span></strong><span>ARCBを新しいギター・ベース・生ドラムで合奏。原音を再分析し、ストロークごとに和音を補正。上下のストロークと、ロック／カッティング／パームミュート。弦の響き・歪み・空気感を原音と比較・録音。</span></a>
     <a class="public-entry" data-public-entry="hazama-fm" href="fm.html"><strong>Hazama FM <span aria-hidden="true">→</span></strong><span>ジャンルを選んで、ラジオのように流す。</span></a>
     <a class="public-entry" data-public-entry="core-rig" href="index.html"><strong>Music Core Rig <span aria-hidden="true">→</span></strong><span>つまみを動かし、アシッドやIDMの音を探る。</span></a>
     <a class="public-entry" data-public-entry="lyric-lab" href="lyric-lab.html"><strong>Lyric Lab <span aria-hidden="true">→</span></strong><span>歌詞・曲のアイデア・制作指示を一曲ずつ残す。</span></a>
@@ -509,10 +509,10 @@
       </div>
       <p class="guide-note arcb-launch"><strong>いま優先するARCB / Tabascoのバンド練習：</strong><br>
         <a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">🥁 Human Flyの原音ドラムから聴く →</a>
-        <a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth">AIドラム再現と比べる →</a><br>AI再現は新しい弦・ドラム音源へ更新。クランチやディストーションも選べます。</p>
+        <a class="mini-link" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth">AIドラム再現と比べる →</a><br>AI再現は比較試奏の3楽器を採用。弦の余韻と生ドラムを合わせ、原音を再分析して和音も補正しています。クランチやディストーションも選べます。</p>
       <p class="guide-note"><strong>ギター・ベース・ドラムから、小さく作り直す：</strong><br>
         <a class="mini-link" href="band-room.html#br-physical-band">ロック / ジャズの8小節を試奏 →</a><br>
-        新しい弦・打感を試す短い独立曲。ARCBのAI再現も同じ楽器音を使います。
+        初期モデルのロック／ジャズを試す短い独立曲。通常のARCBは、その後に改良した3楽器で合奏します。
         旧試作のtest / namima-labは回収済みアイデアと履歴を残してアーカイブしました。</p>
       <div class="return-grid">
         <a class="card return-card" href="#collection-map"><div><p class="intent-no">01 / MAP</p><strong>何があるか、把握する</strong><span>作品・道具・実験・映像。<br>別々に作ったものの関係を見る。</span></div><div class="meta"><b>4つのまとまりへ →</b></div></a>
@@ -729,7 +729,7 @@
     <article class="tool-item" id="tool-band-room" data-tool-status="implemented">
       <p class="tool-status">Music · 実装あり・実音評価は別</p>
       <h3>Band Room / ARCB・Tabasco</h3>
-      <p>ARCB 7曲の採譜を新しい弦・ドラム音源で鳴らす。原音の確かな区間から和音・音域を補正し、曖昧な区間は従来の音符を保持。ギター3音色とロック／響かせる／カッティング／パームミュートの弾き方。上下のストローク、弦の余韻と共通の空気感。合奏の音量・帯域・時計を測定して補正。採譜空白は余韻を残し、未採譜melodyを明示。HAZAMAは別の既存音源。</p>
+      <p>ARCB 7曲へ比較試奏の3楽器を採用。低弦・胴鳴り・金属の余韻を鳴らす。原音を再分析してストロークごとにも和音・音域を補正し、曖昧な区間は従来の音符を保持。ギター3音色とロック／響かせる／カッティング／パームミュートの弾き方。上下のストローク、弦の余韻と共通の空気感。合奏の音量・帯域・時計を測定して補正。採譜空白は余韻を残し、未採譜melodyを明示。HAZAMAは別の既存音源。</p>
       <dl>
         <dt>最初の一手</dt><dd>ARCBの曲を選び、AI再現でSTART。ギターの音をクランチ／ディストーション、弾き方をロックにして、各パートを消して原音と聴き比べる。</dd>
         <dt>残るもの</dt><dd>mix REC／4 stems pack／listening note。MIDI読込は先頭1小節のドラム用。</dd>
@@ -885,7 +885,7 @@
       <dl>
         <dt>最初の一手</dt><dd>ベース・ドラムの比較を準備 → 聴くパートを選ぶ → 新しい音で聴く／これまでの音で聴く。</dd>
         <dt>残るもの</dt><dd>15秒の単独／合奏比較。平均音量と音符をそろえ、録音取得なしで合成。ギターの録音比較だけは明示準備時に約0.41 MB取得。</dd>
-        <dt>できることの境界</dt><dd>新しい楽器は比較候補。ARCB通常曲への採用・実iPhone聴感は本人確認。合奏のギターは共通。RECは通常曲で使用。</dd>
+        <dt>できることの境界</dt><dd>新しい3楽器はv416でARCB通常曲にも採用。比較の合奏ではギターを共通にしてベース・ドラムの差を確認。実iPhone聴感は継続。RECは通常曲で使用。</dd>
       </dl>
       <a class="mini-link" data-tool-entry="physical-band" href="band-room.html#br-rhythm-audition">ベース・ドラム・ギターの音を比較 — 聴き比べる</a>
     </article>

@@ -1,6 +1,10 @@
-# Band Room - Changelog (v65 -> v415 compact)
+# Band Room - Changelog (v65 -> v416 compact)
 
-Current sw.js VERSION: v415. Latest Band Room runtime change: v415 (optional bass and acoustic-percussion comparison). HAZAMA playability candidate remains v401.
+## v416 — 2026-10-12
+
+Promote the auditioned electric guitar, bass and acoustic percussion to normal ARCB after the owner explicitly requested adoption. Prepare 53 finite buffers (13,610,240 bytes) in the existing Worker; keep the scheduler, amp, room and recorder. A quiet-snare buffer changes wire/body balance. Native rock fallback no longer inherits a disabled piano preference and turns into jazz chords. Conservative attack-specific harmony reads existing other stems on CPU, with exact-row binding and confidence rejection. Original recordings remain unchanged. Cache `hazama-fm-v416`, client `br-249`, bank/worker v4, adapter v6; CSS br-94.
+
+Current sw.js VERSION: v416. Latest Band Room runtime change: v416 (ARCB band promotion and attack-level harmony). HAZAMA playability candidate remains v401.
 
 ## v415 — 2026-10-12
 

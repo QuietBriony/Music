@@ -1,5 +1,12 @@
 # Runtime Browser Listening Checklist
 
+## ARCB band adoption (v416 / BL-051 + BL-050)
+
+- Owner explicitly requested normal-song adoption of the three instruments. Run all seven songs, three tones and four articulations with at most 128 sources; Stop/seek/mute/reset/offline must release old sound.
+- Verify the 53-buffer bank, quiet/loud snare, natural string and cymbal tails and zero dropped notes in dense playback.
+- Native rock fallback must ignore the inactive piano preference. Attack harmony must bind to the exact score row and reject stale/weak metadata.
+- Capture post-master mixes and guitar solos; compare with original stems through independent STFT. Preserve the raw recordings, exact timing/velocity and ambiguous notes. Numeric agreement is not a perceptual fidelity score.
+
 ## Rhythm audition (v415 / BL-051)
 
 - Before preparation: no Worker, sources, PCM or recording request. Prepare within 30 seconds; cancellation restores controls.
@@ -206,8 +213,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `engine.js?v=fm-119`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-81`, `audio/ai-fills.js?v=fm-71`,
   `style.css?v=fm-28`, `band-room.css?v=br-94`,
-  `band-room.js?v=br-248`, `audio/audio-safety.js?v=br-68`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v415`.
+  `band-room.js?v=br-249`, `audio/audio-safety.js?v=br-68`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v416`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,

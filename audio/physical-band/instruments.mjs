@@ -1,4 +1,4 @@
-import { GUITAR_KEYS, BASS_KEYS, nearestKey, MAX_BANK_BYTES } from "./bank.mjs?v=3";
+import { GUITAR_KEYS, BASS_KEYS, nearestKey, MAX_BANK_BYTES } from "./bank.mjs?v=4";
 import { createGuitarAmp } from "./amp.mjs?v=1";
 import { createBandRoom } from "./room.mjs?v=1";
 
@@ -10,7 +10,7 @@ export async function prepareInstrumentBank(context, { signal, progress = () => 
   if (cached?.context === context) return cached;
   cached = undefined;
   const bank = await new Promise((resolve, reject) => {
-    const worker = new Worker(new URL("./bank-worker.mjs?v=3", import.meta.url), { type: "module" });
+    const worker = new Worker(new URL("./bank-worker.mjs?v=4", import.meta.url), { type: "module" });
     let settled = false;
     const finish = (error, value) => {
       if (settled) return;
@@ -41,7 +41,7 @@ export async function prepareInstrumentBank(context, { signal, progress = () => 
 
 export function createPhysicalBand(context, bank, targets, { connect, disconnect = (source, target) => source.disconnect(target), seconds, midi, tone = "crunch", roomWet = 0.35 }) {
   const pending = new Set();
-  const stats = { played: 0, dropped: 0, last: {}, guitarStrokes: { open: 0, palm: 0, cut: 0, up: 0, down: 0 }, guitarVoicings: { harmonic: 0, fallback: 0 } };
+  const stats = { played: 0, dropped: 0, last: {}, guitarStrokes: { open: 0, palm: 0, cut: 0, up: 0, down: 0 }, guitarVoicings: { attack: 0, harmonic: 0, fallback: 0 } };
   const amp = createGuitarAmp(context, tone);
   connect(amp.output, targets.guitar);
   const destinations = { bass: targets.bass, guitar: amp.input, drums: targets.drums, melody: targets.voice };
@@ -141,7 +141,7 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
         if (part === "guitar" && stats.played > playedBefore) {
           stats.guitarStrokes[["palm", "cut"].includes(technique) ? technique : "open"]++;
           stats.guitarStrokes[upstroke ? "up" : "down"]++;
-          const source = voicingSource === "harmonic" ? "harmonic" : "fallback";
+          const source = ["attack", "harmonic"].includes(voicingSource) ? voicingSource : "fallback";
           stats.guitarVoicings[source]++;
           stats.lastStrum = { at, notes: pitches.slice(), source, technique, upstroke };
         }
@@ -153,7 +153,9 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
   for (const [name, drum] of Object.entries({ kick: "kick", snare: "snare", hat: "hat", ghost: "snare", fill: "tom", crash: "crash", ride: "ride", cowbell: "cowbell" })) {
     drums[name] = { triggerAttackRelease(...args) {
       const [time, velocity] = name === "kick" ? args.slice(2) : args.slice(1);
-      fire("drums", `drums:${drum}`, Number(time), (velocity ?? 0.6) * (name === "ghost" ? 0.45 : 1));
+      const level = (velocity ?? 0.6) * (name === "ghost" ? 0.45 : 1);
+      const key = drum === "snare" && level < 0.4 ? "snare-soft" : drum;
+      fire("drums", `drums:${key}`, Number(time), level);
     } };
   }
   return { bass: string("bass", BASS_KEYS), guitar: string("guitar", GUITAR_KEYS), melody: string("melody", GUITAR_KEYS), drums,

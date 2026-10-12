@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-248-rhythm-audition";
-  const BANDROOM_RELEASE_VERSION = "v415";
+  const BANDROOM_APP_VERSION = "br-249-band-refinement";
+  const BANDROOM_RELEASE_VERSION = "v416";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -1041,7 +1041,7 @@
     physicalArcbAbort?.abort(); physicalArcbAbort = abort;
     const began = bandRoomNowMs();
     try {
-      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=5");
+      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=6");
       const context = Tone.getContext().rawContext;
       const bank = await physicalArcbModule.prepareInstrumentBank(context, {
         signal: abort.signal,
@@ -4804,6 +4804,8 @@
       transcribedFallbackAllowed,
       transcribedGuitarStroke,
       validatedGuitarVoicings,
+      validatedGuitarAttackVoicings,
+      guitarVoicingFromMidi,
       physicalScheduleWindow,
       playbackClockDiagnostics: () => ({ songId: state.currentSongId, contentSeconds: playbackContentElapsedSec(), barCount: state.barCount, bpm: playbackBaseBpm(), instrumentMakeup: instrumentMakeup?.gain.value, totalBars: playbackStructure()?.reduce((sum, section) => sum + section.bars, 0), sourceDuration: state.songData?.performance_duration_s }),
       physicalInstrumentDiagnostics: () => physicalArcb
@@ -6310,6 +6312,7 @@
         transcribedLineCache.guitarNeighbors = new WeakMap();
         ordered.forEach((row, i) => transcribedLineCache.guitarNeighbors.set(row, { previous: ordered[i - 1], next: ordered[i + 1] }));
         transcribedLineCache.guitarVoicings = validatedGuitarVoicings(state.songData.guitar_line);
+        transcribedLineCache.guitarAttackVoicings = validatedGuitarAttackVoicings(state.songData.guitar_line);
       }
     }
     return byBar.get(absBar) || null;
@@ -6364,6 +6367,26 @@
           row[1].at(-1) - row[1][0] > 24 || ![row[2], row[3], row[4]].every(Number.isFinite) ||
           row[2] < 0.48 || row[2] > 1 || row[3] < 0.06 || row[3] > 1 || row[4] < 0.66666 || row[4] > 1) return new Map();
       result.set(row[0], row[1].slice());
+    }
+    return result;
+  }
+
+  function validatedGuitarAttackVoicings(line) {
+    const result = new Map(), data = line?.attack_voicings;
+    if (data?.format !== "attack-voicings-v1" || !Array.isArray(line?.events) ||
+        data.events_count !== line.events.length || data.bpm_fit !== line.bpm_fit || !Array.isArray(data.attacks)) return result;
+    for (const entry of data.attacks) {
+      if (!Array.isArray(entry) || entry.length !== 6) return new Map();
+      const [index, original, notes, similarity, margin, agreement] = entry, row = line.events[index];
+      // Bind each inferred chord to its exact attack, including pitch and
+      // velocity. A later score edit must not silently shift its annotation.
+      if (!Number.isInteger(index) || !Array.isArray(row) || result.has(row) ||
+          !Array.isArray(original) || original.length !== 5 || original.some((n, i) => !Number.isFinite(n) || n !== row[i]) ||
+          !Array.isArray(notes) || notes.length < 2 || notes.length > 3 ||
+          notes.some((n, i) => !Number.isInteger(n) || n < 40 || n > 84 || (i && n <= notes[i - 1])) ||
+          notes.at(-1) - notes[0] > 24 || ![similarity, margin, agreement].every(Number.isFinite) ||
+          similarity < 0.65 || similarity > 1 || margin < 0.12 || margin > 1 || agreement !== 1) return new Map();
+      result.set(row, notes.slice());
     }
     return result;
   }
@@ -6453,8 +6476,9 @@
     return true;
   }
 
-  function guitarVoicingFromMidi(rootMidi, chord, isJazzy, maxNotes) {
-    if (isJazzy && chord) {
+  function guitarVoicingFromMidi(rootMidi, chord, isJazzy, maxNotes, native = false) {
+    // The native rock guitar must not inherit a disabled piano preference.
+    if (isJazzy && chord && !native) {
       const ext = /m\b|min\b/.test(chord) ? "m7" : "maj7";
       const voicingChord = chord.replace(/(m|maj7|7|m7)?$/, ext);
       const full = chordToNotes(voicingChord, 3);
@@ -6638,9 +6662,10 @@
       const durSteps = light ? Math.min(rawDurSteps, 1.6) : rawDurSteps;
       const durSec = Math.max(0.045, durSteps * ctx.subTime * 0.96);
       const vel = clamp(((Number(row[4]) || 0.55) * 0.96 + 0.02) * (!guitarSynth._physical && isUpstroke ? 0.88 : 1), 0.16, 0.98);
-      const measured = guitarSynth._physical ? transcribedLineCache.guitarVoicings?.get(row[0]) : null;
+      const attack = guitarSynth._physical ? transcribedLineCache.guitarAttackVoicings?.get(row) : null;
+      const measured = attack || (guitarSynth._physical ? transcribedLineCache.guitarVoicings?.get(row[0]) : null);
       const voicing = measured ? measured.slice(0, notesPerStrum).map(note => Tone.Frequency(note, "midi").toNote())
-        : guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum);
+        : guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum, !!guitarSynth._physical);
       if (!voicing.length) return;
       // v334: strum stagger — a real downstroke hits low→high strings ~5-8ms
       // apart; simultaneous PolySynth notes read as an organ stab. Light
@@ -6650,7 +6675,7 @@
         const neighbors = transcribedLineCache.guitarNeighbors?.get(row) || {};
         const stroke = transcribedGuitarStroke(row, neighbors.previous, neighbors.next, physicalGuitarStyle);
         const gate = Math.max(0.045, stroke.gateSteps * ctx.subTime * 0.96);
-        try { guitarSynth.triggerAttackRelease(voicing, gate, t, vel, { ...stroke, voicingSource: measured ? "harmonic" : "fallback" }); } catch (e) {}
+        try { guitarSynth.triggerAttackRelease(voicing, gate, t, vel, { ...stroke, voicingSource: attack ? "attack" : (measured ? "harmonic" : "fallback") }); } catch (e) {}
       } else if (light) {
         try { guitarSynth.triggerAttackRelease(voicing, durSec, t, vel); } catch (e) {}
       } else {

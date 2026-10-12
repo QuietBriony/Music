@@ -15599,6 +15599,21 @@
      1.0
     ]
    ]
+  },
+  "attack_voicings": {
+   "format": "attack-voicings-v1",
+   "method": "stereo sustained CQT; three agreeing windows within each existing attack",
+   "events_count": 688,
+   "events_sha256": "2fbdb774b75aafef1ebc3e0d47e42e9b4eb99e1d9fd4474461c77af6b5ebfbea",
+   "stem_sha256": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
+   "bpm_fit": 117.45,
+   "attacks": [
+    [29,[4,13.27,2.0,55,1.0],[43,50,55],0.68005,0.22123,1.0],
+    [90,[16,9.35,2.0,55,1.0],[43,50,55],0.68678,0.21236,1.0],
+    [93,[17,14.17,2.0,55,0.91],[43,50,55],0.7693,0.25469,1.0],
+    [341,[56,13.61,2.0,55,0.55],[43,50,55],0.66185,0.25809,1.0],
+    [580,[94,15.86,2.0,50,0.71],[48,55,60],0.66332,0.20944,1.0]
+   ]
   }
  },
  "drum_line": {

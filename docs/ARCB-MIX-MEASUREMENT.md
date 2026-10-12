@@ -1,4 +1,67 @@
-# ARCB — 合奏の測定と補正（現行 v412）
+# ARCB — 合奏の測定と補正（現行 v416）
+
+## 通常ARCBへ新しい3楽器を採用（v416 / 2026-10-12）
+
+本人の「そのままARCBにも反映」を受け、v414のギターとv415のベース・ドラムを通常7曲へ採用。
+ギターの3秒の響き、ベースの基音と余韻、弱いスネアの胴／ワイヤー、シンバルの減衰を既存アンプと部屋へ送る。
+使っていないピアノ初期設定からロックギターへジャズ和音が混ざる経路も修正した。
+3楽器は合成音で、原音ファイルの差し替えや再分離は行っていない。
+
+### 再採譜の範囲と留保
+
+既存otherをstereo harmonic CQTで再解析。短い刻みの前後の和音が窓へ混ざるため、
+打点の前後から120 msを避け、10 frame以上の安定区間を3分割して全て同じpitch classとなる候補だけに絞った。
+similarity ≥0.65、別rootとの差 ≥0.12、従来音符からの説明力の増分 ≥0.12。
+広い条件の574候補は採用せず、5,426打点のうち67打点へ追加。曲別ではHuman Fly 5、Electric Sheep 2、
+Hey 4、Sister 16、I got a feeling 20、Under the moon 20、TABASCO 0。
+元の打点・音長・強弱とscore hashを保ち、各注釈は元の5値の行に結び付けた。
+既存の小節和音も残す。これは正答率や全曲の完全な採譜ではない。
+
+同じ新音源で追加注釈だけを無効／有効にした実ギターsolo RECを、原音otherと独立な線形STFTで比較。
+下表はpitch-class分布のcosine距離（小さいほど近い）。4区間は縮小、2区間は小幅に拡大。
+otherの分離漏れ、倍音、録音窓の差を含むため、全67打点の正しさを証明する値ではない。
+
+| seek区間 | 追加注釈なし | 追加注釈あり |
+|---|---:|---:|
+| electric-sheep-40 | 0.217 | 0.177 |
+| hey-8 | 0.385 | 0.348 |
+| human-fly-32 | 0.030 | 0.043 |
+| i-got-a-feeling-20 | 0.052 | 0.048 |
+| sister-185 | 0.370 | 0.288 |
+| under-the-moon-97 | 0.328 | 0.331 |
+
+ベースは3,502音中2,828音をYINで再検査し、安定した食い違い16件を抽出。
+長さを満たす3件もFFTでは1 octave下への変更を裏付けられず、今回はベースの譜面を変更しない。
+ドラムも既存の帯域別transient検査を7曲で再実行。高域検出にはスネアや分離漏れが混ざり、
+正確なhatラベルではない。TABASCOのframe fallback、打点漏れ・クラス推定は継続課題。
+
+### 合奏を実出力で確認
+
+通常START／seek／post-master RECの7曲各約8秒を、v415と原音drums+bass+other再結合へ比較。
+vocals／melodyはOFF、100%／crunch／ロック／room35%。Human Fly、Electric Sheep、Heyで相対量を調整し、
+残る4曲を確認用にした。ギターpeak正規化0.12、ベース0.30、kick0.48、snare／金属0.55。
+下表は音量を正規化した主5帯域の差の平均dBで、聴感の点数ではない。全曲の曲別EQ合わせ込みはしない。
+
+| seek区間 | v415 帯域差 dB | v416 帯域差 dB |
+|---|---:|---:|
+| electric-sheep-16 | 3.64 | 3.21 |
+| hey-16 | 4.55 | 4.20 |
+| human-fly-16 | 3.58 | 2.88 |
+| i-got-a-feeling-16 | 3.32 | 4.05 |
+| sister-16 | 5.26 | 1.97 |
+| tabasco-6 | 1.77 | 2.03 |
+| under-the-moon-16 | 1.99 | 2.78 |
+
+改善しない区間もあり、低中域の不足や高域の差が残る。長い余韻だけで再現完成とは判断しない。
+全7区間で予約落ち0、PCM clipなし。bankは53音／13,610,240 bytes（以前11,826,560 bytes）。
+準備はSTART後のWorkerで一度、再生は既存のnative BufferSourceと128予約上限を使う。
+3音色、4弾き方、seek80／100／120%、60秒連続、mute／復帰／STOP、RESET、cached offline、390pxを確認。
+実iPhoneの負荷と主観的な合奏品質は未評価。
+
+[数値・入力hash・実REC・browser検証](arcb-band-measurement-20261012.json)。PCMはignored localのみ。
+再実行: `python -X utf8 scripts/refine-guitar-attacks.py --out <local-report.json>`。
+`--write`は追加注釈のない元score専用。既存注釈の上書きは拒否する。
+分析は既存CPU環境、[librosa YIN](https://librosa.org/doc/0.11.0/generated/librosa.yin.html)などを使用。新しい学習モデルや音源は取得しない。
 
 ## 原音からギターの和音・音域を補正（v412 / 2026-10-03）
 
