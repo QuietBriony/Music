@@ -1,5 +1,6 @@
 import { createMachineRack, UNITS, SYNTH_CONTROLS, DRUMS } from './model.js';
 import { carryMachine } from './handoff.js';
+import { createRackAuto } from './auto.js';
 
 export function initMachineRack({data,ui,audio,knobs}) {
   const model=createMachineRack({data,ui,knobs});
@@ -10,6 +11,9 @@ export function initMachineRack({data,ui,audio,knobs}) {
         <label>BPM <input id="wbr-bpm" type="number" min="60" max="200" step="1"></label><button type="button" id="wbr-file">FILE · 保存／開く</button></div>
       <p class="wbr-route">303の低音 ＋ 303の返し ＋ 909 → 同じ時計・同じ出力</p>
       <div class="wbr-actions"><button type="button" id="wbr-dice">🎲 組み合わせ</button><button type="button" id="wbr-keep">ここを戻り先に</button><button type="button" id="wbr-restore">戻り先へ戻す</button></div>
+      <div class="wbr-auto"><button type="button" id="wbr-auto" aria-pressed="false">303／909 AUTO · OFF</button>
+        <label>変化の間隔 <select id="wbr-interval" aria-label="303／909 AUTOの変化間隔"><option value="2">2小節</option><option value="4" selected>4小節</option><option value="8">8小節</option><option value="16">16小節</option></select></label>
+        <span id="wbr-auto-status" role="status">固定を残して、少しずつ変化</span></div>
       <p id="wbr-status" role="status">RUN → 気に入った楽器を固定 → ほかをサイコロで変える。</p>
       <div id="wbr-cards" class="wbr-cards"></div>
       <details class="wbr-guide"><summary>どうつながる？ 保存・フェーダーの使い方</summary>
@@ -17,10 +21,13 @@ export function initMachineRack({data,ui,audio,knobs}) {
         <p>明るさはフィルターの開き、みょんは共鳴。うねりの深さは音の立ち上がりの変化量、長さはその余韻。残響はディレイの量。数値は元の機材のつまみと同じでHzや秒ではありません。音量0で次の発音を抜き、残響は自然に残ります。</p>
         <p>「ここを戻り先に」は今開いているパターンの目印。端末に残すには「FILE · 保存／開く」→ SAVE。16パターンやSONGをつなぐ詳しい編集は「元の操作画面へ」。画面を替えても同じ演奏です。</p>
         <p>この3モジュールは同時に鳴ります。「一緒に鳴らす」ではStrudelと時計・音声接続を共有し、「組み合わせを保存」で両側のフレーズ・音色・固定を名前付き保存できます。単独のFILEは音符・音色、パート固定はこのブラウザの設定に残ります。自由なケーブル配線はありません。</p>
+        <p>AUTOは初期OFF。固定したキック・303などを残し、選んだ小節数ごとに1パートのアクセント・スライド・裏拍・音色を少し変え、次の変化で元のフレーズへ戻します。無音のパートを勝手に足さず、音量・BPMも変えません。手動サイコロやフェーダーで触った音を新しい基準にして、次の変化を待ちます。OFFで今の形をキープ、停止中は進みません。組み合わせ保存にはAUTOのON/OFFと間隔も入り、開いても自動で再生しません。</p>
+        <p>打点や303の音符を直接打ち替える時は「元の操作画面へ」。909のパートを選び16ステップを編集、303は音符・アクセント・スライドを編集します。同じ演奏が続きます。「モジュールで遊ぶ」で戻れます。音色はこのラックのパート選択とフェーダーでも変えられます。</p>
       </details>
     </section>`;
   document.body.prepend(host);
   const find=id=>host.querySelector('#wbr-'+id),panel=find('panel'),status=find('status');
+  const auto=createRackAuto({data,audio,model,notify:()=>render()});audio.rackAuto=auto;
   find('link').hidden = window.parent !== window;
   find('link').addEventListener('click', () => {
     try {
@@ -37,6 +44,7 @@ export function initMachineRack({data,ui,audio,knobs}) {
   let kickLock,snareDice,hatsDice;
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
   function act(fn,message) {
+    auto.manual();
     try { const changed=fn();status.textContent=changed===false?'固定中です。変える楽器の固定を外してください。':message; }
     catch(error) { status.textContent=error.message || '操作できませんでした。'; }
     render();
@@ -99,6 +107,13 @@ export function initMachineRack({data,ui,audio,knobs}) {
   function render() {
     if(!active) return;
     const state=model.read();
+    const motion=auto.read();
+    find('auto').setAttribute('aria-pressed',String(motion.enabled));
+    find('auto').textContent='303／909 AUTO · '+(motion.enabled?'ON':'OFF');
+    find('auto').disabled=!state.editable||pending;find('interval').disabled=!state.editable||pending;
+    find('interval').value=String(motion.bars);
+    find('auto-status').textContent=!state.editable?'PATTERNで使えます':!motion.enabled?(motion.lastChange.startsWith('AUTOを止めました')?motion.lastChange:'今の形をキープ'):!audio.isPlaying?'再生すると'+motion.bars+'小節ごとに変化':
+      '次の変化まで '+motion.remaining+'小節'+(motion.lastChange?' · '+motion.lastChange:'');
     actionControls.forEach(b=>{b.disabled=!state.editable||pending;});
     for(const [id,{box,info,title,lock,dice}] of drumRows) {
       const track=state.units.tr909?.tracks[id],hits=track?.steps?.filter(Boolean).length || 0;
@@ -143,6 +158,8 @@ export function initMachineRack({data,ui,audio,knobs}) {
     render();
   }
   find('view').addEventListener('click',()=>show(!active));
+  find('auto').addEventListener('click',()=>auto.configure(!data.rackAuto.enabled,Number(find('interval').value)));
+  find('interval').addEventListener('change',()=>auto.configure(data.rackAuto.enabled,Number(find('interval').value)));
   find('dice').addEventListener('click',()=>act(()=>model.randomize(),'固定していない楽器を組み替えました。音量とBPMはそのまま。'));
   find('keep').addEventListener('click',()=>act(()=>model.remember(),'戻り先にしました。端末に残すにはFILE → SAVE。'));
   find('restore').addEventListener('click',()=>act(()=>model.restore(),'フレーズと音色を戻しました。音量とBPMはそのまま。'));
@@ -163,5 +180,15 @@ export function initMachineRack({data,ui,audio,knobs}) {
   for(const name of ['input','change','pointerup']) document.addEventListener(name,event=>{if(!host.contains(event.target))queueRender();});
   document.addEventListener('visibilitychange',queueRender);
   document.addEventListener('workbench-machine-changed',queueRender);
+  // Trusted native edits and rack drags take precedence over scheduled changes.
+  // Programmatic native knob refreshes must not reset AUTO on every bar.
+  document.addEventListener('pointerdown',event=>{
+    if(!host.contains(event.target)||event.target.matches('input,select')) auto.touch(true);
+  },true);
+  for(const name of ['pointerup','pointercancel']) document.addEventListener(name,()=>auto.touch(false),true);
+  window.addEventListener('blur',()=>auto.touch(false));
+  for(const name of ['input','change','click','keydown']) document.addEventListener(name,event=>{
+    if(event.isTrusted&&!host.contains(event.target)) auto.manual();
+  },true);
   show(new URLSearchParams(window.location.search).get('rack')==='1');
 }

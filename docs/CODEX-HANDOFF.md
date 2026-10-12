@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-12（ラックの穏やかなAUTO）: 既存303／909ラックに初期OFFのAUTOと2／4／8／16小節間隔。既存schedule入口だけで進め、単独Worklet／fallback／Strudel同期で時計を増やさない。鳴っている候補の未固定1声をアクセント・スライド・裏拍・音色で小さく変え、前の変奏を戻して音数・音程モチーフの蓄積を避ける。固定キック／303、音量／BPM／無音は保持。手動dice／fader／元画面編集を新基準にし、ドラッグ中は変更を待つ。停止・PATTERN切替で小節進行をリセット、SONGは変更しない。settings／handoff／combined snapshot v3／backup schema 4にAUTO設定を保存、旧版はAUTO OFF。復元は停止状態で再生位置は含めない。新規音声・依存・hostingなし。最終gate／公開CUA証跡は対応PR、本人聴感と実iPhoneは未確認。
+
 2026-10-12（909パート固定）: Workbenchの909にキック固定・スネアだけ／ハットだけのサイコロ、全11声の個別固定／diceを追加。固定は打点・音色を全体／元画面のサイコロから保護し、手動フェーダーは有効。単独設定・タブ内引継ぎ・組み合わせ保存に固定を保持。機材snapshot v2／backup schema 3、旧v1／schema 1・2も読込可。音源／音楽生成規則／FILE形式は保持。新規音声・依存・hostingなし。固定キックを繰り返しdiceして守る回帰、対象外パート／音量／BPM不変、旧保存互換、失敗rollbackを検証。公開版と最終gateの証跡は対応PR。本人聴感と実iPhoneは未確認。
 
 2026-10-12: v416は本人の「そのままARCBにも反映」を受け、v414のギターとv415のベース・生ドラムを通常ARCB 7曲へ採用。低弦の余韻、弱いスネアのワイヤー、共通アンプ／roomを既存schedulerで鳴らす。53 buffer／13,610,240 bytes、bank v4／adapter v6。使っていないピアノ設定によるジャズ和音の混入を修正し、原音otherをストローク単位で再分析する。音声・model・依存・公開先の追加なし。原音ファイルを保持し、分離漏れと本人の聴感・実iPhoneの確認は継続。[測定と境界](ARCB-MIX-MEASUREMENT.md)。

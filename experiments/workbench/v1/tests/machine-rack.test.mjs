@@ -8,6 +8,8 @@ import { BinaryFormatDecoder } from '../third_party/acidbros/js/data/BinaryForma
 import { carryMachine, takeMachine } from '../src/machine-rack/handoff.js';
 import { captureMachineState, decodeMachineState, applyMachineState } from '../src/machine-state.js';
 import { TR909 } from '../third_party/acidbros/js/audio/TR909.js';
+import { createRackAuto } from '../src/machine-rack/auto.js';
+import { varyVoice } from '../src/machine-rack/variation.js';
 
 // Exercise the pinned machine's real randomizer and save/apply mappings, with
 // native knob/radio DOM substitutes. No audio, browser, storage or network.
@@ -45,6 +47,7 @@ test('combined snapshot restores all patterns, fractional tone, mode, locks and 
   r.data.applyPatternSettings(7);r.model.set('tb303_1','reso',7.3);
   r.data.keepSoundSettings=true;r.audio.swing=55.5;
   const saved=captureMachineState(r.data,r.audio), before=JSON.stringify(saved);
+  r.audio.rackAuto={reset(){r.model.read();}};
   r.data.currentPatternId=0;r.data.mode='song';r.data.unitLocks={};r.data.active909Tracks=['bd'];r.audio.swing=50;
   applyMachineState(r,decodeMachineState(saved,BinaryFormatDecoder));
   assert.equal(r.data.currentPatternId,7);assert.equal(r.data.mode,'pattern');assert.equal(r.data.keepSoundSettings,true);
@@ -220,4 +223,104 @@ test('partial dice failure rolls back candidates and temporary protection; SONG 
   assert.throws(()=>r.model.randomize('cr'),/dice failed/);assert.deepEqual(snapshot(r),before);
   assert.deepEqual(r.data.drumLocks,locks);assert.deepEqual(r.data.active909Tracks,tracks);
   r.data.mode='song';assert.throws(()=>r.model.lockDrum('bd'),/SONG/);assert.throws(()=>r.model.randomize('hats'),/SONG/);
+});
+
+test('gentle variations return to the motif, preserve locked kick/303 and never accumulate more hits',()=>{
+  const r=rig();r.model.randomize();r.model.basicDrums();r.model.lock('tb303_2');r.model.lockDrum('bd');
+  r.model.remember();
+  const before=snapshot(r),volume=volumes(before),seen=new Set();let previous;
+  for(let turn=0;turn<120;turn++) {
+    previous=r.model.evolve(turn,previous,()=>.6);const now=snapshot(r);
+    assert.deepEqual(now.tb303_2,before.tb303_2);assert.deepEqual(now.tr909.tracks.bd,before.tr909.tracks.bd);
+    assert.deepEqual(volumes(now),volume);assert.equal(r.audio.tempo,127);
+    const units=[...['tb303_1','tb303_2'].map(id=>[id,now[id],before[id]]),...DRUMS.map(([id])=>[id,now.tr909.tracks[id],before.tr909.tracks[id]])];
+    assert.equal(units.filter(([,a,b])=>JSON.stringify(a)!==JSON.stringify(b)).length,1,'only one variation at a time');
+    for(const [id,a,b] of units) {
+      const hits=v=>id.startsWith('tb303')?v.sequence.filter(s=>s.active).length:v.steps.filter(Boolean).length;
+      assert.equal(hits(a),hits(b),id+' retains its hit count');
+      if(id.startsWith('tb303')) assert.deepEqual(a.sequence.filter(s=>s.active).map(s=>s.note).sort(),b.sequence.filter(s=>s.active).map(s=>s.note).sort());
+    }
+    seen.add(previous.detail);
+  }
+  assert.ok(seen.size>=3);r.model.restore();assert.deepEqual(snapshot(r),before,'existing return point remains usable');
+});
+
+test('auto respects newly locked, muted, excluded and manually edited voices',()=>{
+  const r=rig();r.model.randomize();r.model.basicDrums();
+  let p=r.model.evolve(0,null,()=>.3);assert.equal(p.id,'tb303_2');
+  r.model.lock(p.id);const held=snapshot(r)[p.id];p=r.model.evolve(1,p,()=>.3);assert.deepEqual(snapshot(r).tb303_2,held);
+  r.model.set('tb303_1','cutoff',71);const edited=snapshot(r).tb303_1;
+  r.model.set('tb303_1','volume',0);const muted=snapshot(r).tb303_1;
+  r.data.active909Tracks=['bd'];r.model.lockDrum('bd');
+  const before=snapshot(r);assert.equal(r.model.evolve(2,p),null);assert.deepEqual(snapshot(r),before);
+  assert.equal(snapshot(r).tb303_1.settings.cutoff,edited.settings.cutoff);assert.deepEqual(snapshot(r).tb303_1,muted);
+  r.data.mode='song';assert.throws(()=>r.model.evolve(0),/SONG/);
+});
+
+test('variation leaves quarter beats intact and handles sparse or empty motifs',()=>{
+  const drum={steps:[1,1,0,0,1,0,0,0,1,0,0,0,1,0,0,0],level:25,decay:99};
+  const moved=varyVoice(drum,false,1,()=>0).voice;
+  for(const i of [0,4,8,12]) assert.equal(moved.steps[i],1);
+  assert.equal(moved.steps.filter(Boolean).length,5);assert.equal(moved.level,25);
+  assert.equal(varyVoice({...drum,steps:Array(16).fill(0)},false,0),null);
+  assert.equal(varyVoice(drum,false,2,()=>.8).voice.decay,93,'tone stays bounded without clipping to silence');
+});
+
+test('AUTO follows real bar ticks, suspends for hands, stops safely and adopts manual dice/faders',()=>{
+  const r=rig();r.model.randomize();r.model.basicDrums();r.model.lock('tb303_2');r.model.lockDrum('bd');
+  const auto=createRackAuto(r),before=snapshot(r);r.audio.isPlaying=true;
+  const bar=n=>{for(let s=0;s<16;s++)auto.tick(n*2+s/8,s);};
+  bar(0);assert.deepEqual(snapshot(r),before,'default off');
+  auto.configure(true,4);for(let b=0;b<4;b++)bar(b);assert.deepEqual(snapshot(r),before);
+  auto.tick(8,0);const changed=snapshot(r);assert.notDeepEqual(changed,before);
+  auto.tick(8,0);assert.deepEqual(snapshot(r),changed,'duplicate bar start cannot double-advance');
+  auto.touch(true);for(let b=5;b<12;b++)bar(b);assert.deepEqual(snapshot(r),changed,'hands keep control at the boundary');
+  auto.manual();r.model.randomize('hats');r.model.set('tb303_1','cutoff',61);const manual=snapshot(r);
+  auto.touch(false);auto.configure(true,2);bar(20);bar(21);assert.deepEqual(snapshot(r),manual);
+  bar(22);assert.equal(snapshot(r).tb303_1.settings.cutoff,61);
+  auto.configure(false,2);const frozen=snapshot(r);bar(23);assert.deepEqual(snapshot(r),frozen,'OFF keeps what is audible');
+  auto.configure(true,2);r.audio.isPlaying=false;auto.reset();for(let b=24;b<30;b++)bar(b);assert.deepEqual(snapshot(r),frozen);
+  r.audio.isPlaying=true;bar(30);bar(31);assert.deepEqual(snapshot(r),frozen,'restart waits a full interval');
+  r.data.mode='song';for(let b=32;b<40;b++)bar(b);assert.deepEqual(snapshot(r),frozen,'SONG is never rewritten');
+  r.data.mode='pattern';r.data.currentPatternId=1;r.data.applyPatternSettings(1);bar(40);bar(41);assert.ok(snapshot(r).tb303_1.sequence.every(s=>!s.active),'silent new pattern stays silent');
+});
+
+test('AUTO settings round-trip without playback, reject invalid intervals, and migrate old snapshots OFF',()=>{
+  const r=rig(),auto=createRackAuto(r);auto.configure(true,8);r.data.rackAuto={};r.data.loadSettings();
+  assert.deepEqual({...r.data.rackAuto},{enabled:true,bars:8});
+  const saved=captureMachineState(r.data,r.audio);auto.configure(false,2);
+  applyMachineState(r,decodeMachineState(saved,BinaryFormatDecoder));assert.deepEqual(r.data.rackAuto,{enabled:true,bars:8});assert.ok(!r.audio.isPlaying);
+  for(const version of [1,2]) {const old={...saved,version};delete old.rackAuto;applyMachineState(r,decodeMachineState(old,BinaryFormatDecoder));assert.deepEqual(r.data.rackAuto,{enabled:false,bars:4});}
+  assert.throws(()=>auto.configure(true,3),/間隔/);
+  assert.throws(()=>decodeMachineState({...saved,rackAuto:{enabled:'true',bars:4}},BinaryFormatDecoder),/AUTO/);
+  r.data.rackAuto={enabled:true,bars:16};const storage={value:null,setItem(k,v){this.value=v;},getItem(){return this.value;},removeItem(){this.value=null;}};
+  carryMachine(r.data,storage);const target=rig();target.ui.updateSevenSegment=()=>{};
+  takeMachine(target.data,storage,BinaryFormatDecoder);assert.deepEqual(target.data.rackAuto,{enabled:true,bars:16});
+});
+
+test('AUTO failure rolls back the musical data and disables further automatic edits',()=>{
+  const r=rig();r.model.randomize();const before=snapshot(r);let once=true;
+  r.ui.renderAll=()=>{if(once){once=false;throw Error('render failed');}};
+  assert.throws(()=>r.model.evolve(0,null),/render failed/);assert.deepEqual(snapshot(r),before);
+  const auto=createRackAuto({...r,model:{evolve(){throw Error('offline error');}}});r.audio.isPlaying=true;auto.configure(true,2);
+  for(let b=0;b<3;b++)for(let s=0;s<16;s++)auto.tick(b*2+s/8,s);
+  assert.equal(auto.read().enabled,false);assert.match(auto.read().lastChange,/offline error/);assert.deepEqual(snapshot(r),before);
+});
+
+test('native worklet/linked ticks and fallback scheduler vary before voice scheduling and Stop resets AUTO',()=>{
+  const calls=[],source=readFileSync(new URL('../third_party/acidbros/js/audio/AudioEngine.js',import.meta.url),'utf8')
+    .replace(/^import .*;\r?\n/gm,'').replaceAll('import.meta.url',JSON.stringify('https://example.invalid/AudioEngine.js')).replace('export const AudioEngine =','const AudioEngine =');
+  const ui={getParams:()=>({}),drawPlayhead(){},clearPlayhead(){},updateQueuedPatternUI(){}};
+  const data={mode:'pattern',getSequence:()=>[]};
+  const context=vm.createContext({console,Data:data,UI:ui,window:{setTimeout(){return 1;},clearTimeout(){}}});
+  const audio=vm.runInContext(source+';AudioEngine;',context);audio.ctx={currentTime:0};
+  audio.rackAuto={tick(t,s){calls.push(['auto',s,t]);},reset(){calls.push(['reset',audio.isPlaying]);}};
+  audio.instruments.set('tr909',{processStep(t,s){calls.push(['voice',s,t]);}});audio.isPlaying=true;
+  for(const linked of [false,true]) {
+    audio.useWorklet=!linked;audio.externalTransport=linked?{}:null;
+    audio.handleTick({time:1,step:0});assert.deepEqual(calls.splice(0),[['auto',0,1],['voice',0,1]]);
+  }
+  audio.externalTransport=null;audio.useWorklet=false;audio.nextNoteTime=0;audio.currentStep=0;audio.scheduleAheadTime=.01;
+  audio.scheduler();assert.deepEqual(calls.splice(0),[['auto',0,0],['voice',0,0]]);
+  audio.stopInternal();assert.deepEqual(calls[0],['reset',false]);
 });

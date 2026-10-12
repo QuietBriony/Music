@@ -19,6 +19,7 @@ export const Data = {
     },
     active909Tracks: ['bd'], // Default list of visible 909 tracks
     drumLocks: {}, // Workbench: per-voice dice protection, separate from candidates.
+    rackAuto: { enabled: false, bars: 4 }, // Opt-in, follows the existing scheduler.
     customSampleMap: {}, // trackId -> customSampleId (saved globally)
 
     // Pattern Bank (16 Patterns)
@@ -91,6 +92,8 @@ export const Data = {
                 }
                 this.drumLocks = Object.fromEntries(Object.keys(this.getDefaultTR909Settings())
                     .map(id => [id, parsed.drumLocks?.[id] === true]));
+                this.rackAuto = { enabled: parsed.rackAuto?.enabled === true,
+                    bars: [2,4,8,16].includes(parsed.rackAuto?.bars) ? parsed.rackAuto.bars : 4 };
                 if (parsed.customSampleMap) {
                     this.customSampleMap = parsed.customSampleMap;
                 }
@@ -106,6 +109,7 @@ export const Data = {
                 keepSoundSettings: this.keepSoundSettings,
                 unitLocks: this.unitLocks,
                 drumLocks: this.drumLocks,
+                rackAuto: this.rackAuto,
                 active909Tracks: this.active909Tracks,
                 customSampleMap: this.customSampleMap
             }));

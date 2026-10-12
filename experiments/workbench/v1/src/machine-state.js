@@ -52,8 +52,9 @@ function tone(value) {
   return result;
 }
 export function normalizeMachineState(value) {
-  require([1,2].includes(value?.version), 'この組み合わせの機材データには対応していません');
+  require([1,2,3].includes(value?.version), 'この組み合わせの機材データには対応していません');
   require(value.version === 1 || (value.drumLocks && drums.every(id=>typeof value.drumLocks[id]==='boolean')), '909のパート固定が不正です');
+  require(value.version !== 3 || (typeof value.rackAuto?.enabled==='boolean' && [2,4,8,16].includes(value.rackAuto.bars)), '303／909 AUTOの設定が不正です');
   checkAcidData(value.code);
   require(Number.isInteger(value.pattern) && value.pattern >= 0 && value.pattern < 16
     && ['pattern','song'].includes(value.mode) && typeof value.keepSoundSettings === 'boolean', '機材のパターン設定が不正です');
@@ -65,10 +66,11 @@ export function normalizeMachineState(value) {
   // The original FILE codec rounds resonance/tuning. Keep the exact fader
   // values alongside it, including tones in the other fifteen patterns.
   const tones = value.tones.map(pair => Object.fromEntries(synths.map(id => [id,tone(pair?.[id])])));
-  return { version:2, code:value.code, pattern:value.pattern, mode:value.mode,
+  return { version:3, code:value.code, pattern:value.pattern, mode:value.mode,
     keepSoundSettings:value.keepSoundSettings, tempo:value.tempo, swing:value.swing,
     locks:Object.fromEntries([...synths,'tr909'].map(id => [id,value.locks[id]])),
-    drumLocks:Object.fromEntries(drums.map(id=>[id,value.version===2 && value.drumLocks[id]])), tracks:[...value.tracks], tones };
+    drumLocks:Object.fromEntries(drums.map(id=>[id,value.version>=2 && value.drumLocks[id]])),
+    rackAuto:value.version===3?{enabled:value.rackAuto.enabled,bars:value.rackAuto.bars}:{enabled:false,bars:4}, tracks:[...value.tracks], tones };
 }
 export function normalizeJointState(value) {
   require(value?.version === 1 && number(value.level,0,1), '組み合わせの音量・保存形式が不正です');
@@ -76,9 +78,10 @@ export function normalizeJointState(value) {
 }
 export function captureMachineState(data, audio) {
   const code = data.exportFullState();
-  return normalizeMachineState({ version:2, code, pattern:data.currentPatternId, mode:data.mode,
+  return normalizeMachineState({ version:3, code, pattern:data.currentPatternId, mode:data.mode,
     keepSoundSettings:data.keepSoundSettings, tempo:audio.tempo, swing:audio.swing,
     locks:data.unitLocks, drumLocks:Object.fromEntries(drums.map(id=>[id,data.drumLocks?.[id]===true])), tracks:data.active909Tracks,
+    rackAuto:data.rackAuto || {enabled:false,bars:4},
     tones:data.patterns.map(p => Object.fromEntries(synths.map(id => [id,p.units[id].settings]))) });
 }
 export function decodeMachineState(value, Decoder) {
@@ -97,10 +100,14 @@ export function applyMachineState({data,audio,ui}, decoded) {
   data.mode=s.mode; data.keepSoundSettings=s.keepSoundSettings;
   data.unitLocks={...s.locks}; data.active909Tracks=[...s.tracks]; data.customSampleMap=state.customSampleMap || {};
   data.drumLocks={...s.drumLocks};
+  data.rackAuto={...s.rackAuto};
   audio.tempo=s.tempo; audio.swing=s.swing;
   data.applyPatternSettings(s.pattern);
   audio.instruments.get('tr909')?.setCustomSampleMap?.(data.customSampleMap);
   ui.renderAll(); ui.updateSwingUI();
   for (const [id,locked] of Object.entries(s.locks)) ui.updateLockUI(id,locked);
   ui.refreshParamCache(s.pattern);
+  // A reset refreshes the rack, which reads native knobs back into the pattern.
+  // Apply restored tones first so that stale controls cannot overwrite a save.
+  audio.rackAuto?.reset();
 }

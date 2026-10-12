@@ -32,9 +32,10 @@ const jointFixture = () => ({ version:1,level:.37,machine:captureMachineState({
   exportFullState:()=>acidData,
 }, {tempo:137,swing:50}) });
 
-test('combined saves survive backup import, retain same-code/different-machine versions, and require schema 3',()=>{
+test('combined saves survive backup import, retain same-code/different-machine versions, and require schema 4',()=>{
   const current=fixture();current.strudel.drafts[0].joint=jointFixture();
-  const text=backupText(current,savedAt);assert.equal(JSON.parse(text).schema_version,3);
+  current.strudel.drafts[0].joint.machine.rackAuto={enabled:true,bars:8};
+  const text=backupText(current,savedAt);assert.equal(JSON.parse(text).schema_version,4);
   const parsed=parseBackup(text);assert.deepEqual(parsed.strudel.drafts[0].joint,current.strudel.drafts[0].joint);
   const incoming=parseBackup(text);incoming.strudel.drafts[0].joint.machine.locks.tr909=false;
   const merged=mergeBackup(current,incoming,()=> 'second-version',importedAt);
@@ -52,6 +53,11 @@ test('combined saves survive backup import, retain same-code/different-machine v
   const legacy=JSON.parse(text);legacy.schema_version=2;legacy.strudel.drafts[0].joint.machine.version=1;
   delete legacy.strudel.drafts[0].joint.machine.drumLocks;
   assert.ok(Object.values(parseBackup(JSON.stringify(legacy)).strudel.drafts[0].joint.machine.drumLocks).every(v=>v===false));
+  const legacyParts=JSON.parse(text);legacyParts.schema_version=3;legacyParts.strudel.drafts[0].joint.machine.version=2;
+  delete legacyParts.strudel.drafts[0].joint.machine.rackAuto;
+  assert.deepEqual(parseBackup(JSON.stringify(legacyParts)).strudel.drafts[0].joint.machine.rackAuto,{enabled:false,bars:4});
+  const brokenAuto=JSON.parse(text);brokenAuto.strudel.drafts[0].joint.machine.rackAuto.bars=0;
+  assert.throws(()=>parseBackup(JSON.stringify(brokenAuto)),/AUTO/);
   current.strudel.drafts[0].joint.machine.drumLocks.bd=true;
   assert.equal(parseBackup(backupText(current,savedAt)).strudel.drafts[0].joint.machine.drumLocks.bd,true);
 });

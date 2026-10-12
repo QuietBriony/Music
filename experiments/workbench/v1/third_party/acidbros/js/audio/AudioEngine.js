@@ -458,6 +458,7 @@ export const AudioEngine = {
         if (invalidateCommand) this.transportCommandId++;
 
         this.isPlaying = false;
+        this.rackAuto?.reset();
         this.workletRecoveryAttempts = 0;
         this.currentSongIndex = 0;
         this.lastStep = null;
@@ -591,6 +592,7 @@ export const AudioEngine = {
     },
 
     schedule(time, stepIndex) {
+        this.rackAuto?.tick(time, stepIndex);
         this.instruments.forEach((inst, id) => {
             const seqData = Data.getSequence(id);
             const params = UI.getParams(id);
