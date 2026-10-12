@@ -1,5 +1,7 @@
 # Runtime Browser Listening Checklist
 
+2026-10-12 v418: 読み込み中に選んだ原音の「ライブ／厚め」とA/B復元を、その後の保存設定の適用で戻さない。操作しなかった場合は従来どおり保存した仕上げを復元する。v417の音作り・採譜・原音ファイルは保持。
+
 ## Rhythm alignment and original live master (v417 / BL-050)
 
 - Compare early/middle/late score windows with independent drum spectral flux; check bass split pitch evidence, original note retention, final releases and per-bar limits.
@@ -220,8 +222,8 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `engine.js?v=fm-119`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-81`, `audio/ai-fills.js?v=fm-71`,
   `style.css?v=fm-28`, `band-room.css?v=br-95`,
-  `band-room.js?v=br-250`, `audio/audio-safety.js?v=br-68`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v417`.
+  `band-room.js?v=br-251`, `audio/audio-safety.js?v=br-68`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v418`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,

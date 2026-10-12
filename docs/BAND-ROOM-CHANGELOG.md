@@ -1,10 +1,14 @@
-# Band Room - Changelog (v65 -> v417 compact)
+# Band Room - Changelog (v65 -> v418 compact)
+
+## v418 — 2026-10-12
+
+A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
+
+Current sw.js VERSION: v418. Latest Band Room runtime change: v418 (mastering selection during boot). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 
 Recheck local original bass/drums on CPU. Correct 249 bass attacks, split 128 supported repeated notes, align 4,122 drum attacks and add 287 low-level coincident cymbal hypotheses. Preserve existing pitches/velocities and guitar harmony; retain TABASCO's unresolved drum fallback. Add an original-recording live master with slow gentle compression, native stereo/room and bounded output; keep the previous dense path selectable and persistent. Both paths share volume, recorder and output protection. Pre-START profile changes set an initial gain directly instead of queuing suspended-context ramps, preventing a silent dense start. A failed HEAD availability probe now accepts a complete cached original GET; online HTTP failures and partial/missing cache entries remain unavailable. No new recordings, models, dependencies or hosts. Cache `hazama-fm-v417`, client `br-250`, CSS br-95; bank v4 / adapter v6 unchanged.
-
-Current sw.js VERSION: v417. Latest Band Room runtime change: v417 (rhythm alignment and original live mastering). HAZAMA playability candidate remains v401.
 
 ## v416 — 2026-10-12
 

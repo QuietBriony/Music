@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-250-rhythm-live";
-  const BANDROOM_RELEASE_VERSION = "v417";
+  const BANDROOM_APP_VERSION = "br-251-mastering-intent";
+  const BANDROOM_RELEASE_VERSION = "v418";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -144,6 +144,7 @@
   let originalLiveGate = null;
   let originalDenseGate = null;
   let originalMastering = "live";
+  let originalMasteringWasChosen = false;
   let masterLimiter = null;
   let masterHardwareOutput = null;
   let masterPlaybackDest = null;
@@ -530,7 +531,8 @@
     return input;
   }
 
-  function setOriginalMastering(value) {
+  function setOriginalMastering(value, fromUser = false) {
+    if (fromUser) originalMasteringWasChosen = true;
     originalMastering = value === "dense" ? "dense" : "live";
     const select = $("br-original-mastering");
     if (select) select.value = originalMastering;
@@ -2068,7 +2070,7 @@
 
   function restoreSnapshot(snap) {
     if (!snap) return;
-    if (snap.originalMastering) setOriginalMastering(snap.originalMastering);
+    if (snap.originalMastering) setOriginalMastering(snap.originalMastering, true);
     Object.entries(snap.sliders || {}).forEach(([id, v]) => {
       const el = document.getElementById(id);
       if (el) {
@@ -8593,7 +8595,7 @@
 
     // Vocal FX sliders (chorus / delay / reverb — vocal stem only)
     $("br-original-mastering")?.addEventListener("change", (event) => {
-      setOriginalMastering(event.target.value);
+      setOriginalMastering(event.target.value, true);
       schedulePrefsSave();
     });
     syncOriginalMasteringControls();
@@ -10437,7 +10439,9 @@
 
   function applyPrefs(prefs) {
     if (!prefs) return;
-    setOriginalMastering(prefs.originalMastering);
+    // Song/stem loading is asynchronous; a choice made during that wait wins
+    // over the older saved value captured at the beginning of boot.
+    if (!originalMasteringWasChosen) setOriginalMastering(prefs.originalMastering);
     prefs = migratePrefsForCurrentMix(prefs);
     // Sliders + toggles — re-trigger 'input'/'change' so handlers run
     if (prefs.sliders) {

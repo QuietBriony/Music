@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-12 v418: 読み込み中に選んだ原音の「ライブ／厚め」とA/B復元を、その後の保存設定の適用で戻さない。操作しなかった場合は従来どおり保存した仕上げを復元する。v417の音作り・採譜・原音ファイルは保持。
+
 v417追加検証: START前の「厚め」選択・保存復元で無音になる条件を再現。停止中のAudioContextには予約rampを積まず初期gainを直接設定し、再生中のみ40msで切り替える。変更前3条件が無音、変更後は同条件とliveの全4条件で実出力を確認。
 
 v417追記: 原音のHEADネットワーク例外時は保存済み200 GETを確認する。既存cacheのない原音を再生可能とは表示しない。
@@ -107,9 +109,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v417`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v418`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-250`, `band-room.css?v=br-95`。
+> `band-room.js?v=br-251`, `band-room.css?v=br-95`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:
