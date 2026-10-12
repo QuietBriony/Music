@@ -1,8 +1,8 @@
 import { VocalRecorder, recordingExtension } from './vocal-recorder.js';
 import { openTakeStore, takeBytes } from './vocal-store.js';
 import { backupText } from './session-backup.js';
+import { BUILTIN_LYRICS, createLyricDrafts } from './vocal-lyrics.js';
 
-const DRAFT_KEY = 'music-workbench-vocal-draft-v1';
 const time = ms => Math.floor(ms / 60000) + ':' + String(Math.floor(ms / 1000) % 60).padStart(2,'0');
 export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isBusy = () => false }) {
   const host = document.createElement('details'); host.className = 'vocal-booth'; host.id = 'vocal-booth';
@@ -10,17 +10,22 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
     <div class="vocal-content">
       <p class="vocal-lead">① 演奏を再生 → ② ヘッドホンでマイクを準備 → ③ 歌詞を見ながら録音</p>
       <div class="vocal-grid"><div class="vocal-page">
+        <label>歌詞を選ぶ<select id="vocal-song"><option value="custom">自分の下書き</option></select></label>
+        <p id="vocal-song-note" class="vocal-note"></p>
         <label>作品・テイク名<input id="vocal-title" maxlength="80" placeholder="例：残響の住所 · take 1"></label>
         <label>歌詞・入り方のメモ<textarea id="vocal-lyrics" maxlength="50000" rows="13" placeholder="歌詞を貼り付けるか、TXTを読み込みます。\n\n[Intro · 4小節] 息を整える\n[Verse · 16小節] 2拍を大きく感じて語る\n[Hook · 8小節] 短い言葉を繰り返す\n[Outro · 4小節] 声を抜いて余韻"></textarea></label>
-        <div class="vocal-actions"><label class="vocal-file">歌詞TXTを読み込む<input id="vocal-file" type="file" accept=".txt,text/plain"></label><button type="button" id="vocal-text-export">歌詞TXTを保存</button></div>
-        <p id="vocal-draft-status" role="status">歌詞と名前は、このブラウザに自動保存。公開・送信しません。</p>
+        <div class="vocal-actions"><button type="button" id="vocal-read">歌詞を大きく表示</button><button type="button" id="vocal-text-export">歌詞TXTを保存</button></div>
+        <details><summary>手持ちの歌詞TXTを追加する</summary><label class="vocal-file">歌詞TXTを読み込む<input id="vocal-file" type="file" accept=".txt,text/plain"></label></details>
+        <p id="vocal-draft-status" role="status">内蔵歌詞はファイル不要。書き換えた歌詞と名前はこのブラウザだけに自動保存します。</p>
       </div><div class="vocal-controls">
         <label>録音するもの<select id="vocal-mode"><option value="voice">演奏 ＋ 声（声だけ／演奏だけも残す）</option><option value="backing">演奏だけ（マイク不要）</option></select></label>
         <div class="vocal-actions"><button type="button" id="vocal-arm">マイクを準備</button><button type="button" id="vocal-disarm" disabled>マイクを切る</button></div>
         <label>録音する声の音量 <output id="vocal-gain-value">100%</output><input id="vocal-gain" type="range" min="0" max="2" step="0.01" value="1" aria-label="録音する声の音量"></label>
         <label>声の入力 <meter id="vocal-meter" min="0" max="1" low="0.05" high="0.85" optimum="0.35" value="0"></meter><span id="vocal-meter-label">マイクOFF</span></label>
-        <div class="vocal-actions"><button type="button" id="vocal-record">● 録音開始</button><button type="button" id="vocal-stop" disabled>■ 録音を終える</button><output id="vocal-clock">0:00 / 5:00</output></div>
-        <p id="vocal-status" role="status">まず好きなフレーズを固定して再生。録音中もAUTO・サイコロ・フェーダーで遊べます。</p>
+        <div id="vocal-transport-home"><div id="vocal-transport">
+          <div class="vocal-actions"><button type="button" id="vocal-record">● 録音開始</button><button type="button" id="vocal-stop" disabled>■ 録音を終える</button><output id="vocal-clock">0:00 / 5:00</output></div>
+          <p id="vocal-status" role="status">まず好きなフレーズを固定して再生。録音中もAUTO・サイコロ・フェーダーで遊べます。</p>
+        </div></div>
         <details class="vocal-guide"><summary>語り・ラップを録るコツと保存先</summary>
           <p>速いビートは半分の速さで数え、1行を1〜2小節で。まずキックと低音を固定、返しの303を少し下げ、AUTOは8小節。短い語り → ラップ → 同じ言葉の繰り返し → 演奏だけ、の順に試します。</p>
           <p>有線ヘッドホン推奨。声はスピーカーへ返さず録音だけに入ります。入力メーターが張り付く時は声の音量やマイクとの距離を調整。声だけのファイルはこの音量フェーダーの前で録ります。</p>
@@ -38,23 +43,59 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
           <p id="vocal-delete-confirm" hidden>この端末のテイクを削除します。<button type="button" id="vocal-delete-yes">削除する</button><button type="button" id="vocal-delete-no">キャンセル</button></p>
         </div>
       </section>
-    </div>`;
+    </div>
+    <dialog id="vocal-reader" class="vocal-reader" aria-labelledby="vocal-reader-title">
+      <div class="vocal-reader-head"><h3 id="vocal-reader-title"></h3><button type="button" id="vocal-reader-close" autofocus>編集・演奏に戻る</button></div>
+      <div id="vocal-reader-text" class="vocal-reader-text" tabindex="0" role="region" aria-label="読む歌詞"></div>
+      <div id="vocal-reader-transport"></div>
+    </dialog>`;
   parent.append(host);
   const $ = id => host.querySelector('#vocal-' + id);
   const store = openTakeStore(window.indexedDB); const pending = new Map();
   let takes = [], selected = null, urls = [], timer;
   const say = text => { $('status').textContent = text; };
   const draft = () => ({title:$('title').value.trim() || '声のスケッチ', lyrics:$('lyrics').value});
+  const editableDraft = () => ({title:$('title').value, lyrics:$('lyrics').value});
+  let lyricDrafts;
+  for (const song of BUILTIN_LYRICS) {
+    const option=document.createElement('option'); option.value=song.id; option.textContent=song.title+'（内蔵）'; $('song').append(option);
+  }
+  function showDraft(data) {
+    $('title').value=data.title; $('lyrics').value=data.lyrics; $('song').value=lyricDrafts.selected;
+    $('song-note').textContent=BUILTIN_LYRICS.find(song=>song.id===lyricDrafts.selected)?.note
+      || '自由に書ける下書き。歌詞を切り替えても、ここへ戻すと続きから編集できます。';
+  }
   function saveText() {
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(draft())); $('draft-status').textContent = '名前・歌詞をこのブラウザに保存しました。公開・送信しません。'; }
+    try { lyricDrafts.save(editableDraft()); $('draft-status').textContent = 'この歌詞の編集を端末に保存しました。書き換えた内容は公開・送信しません。'; }
     catch { $('draft-status').textContent = '名前・歌詞を自動保存できません。歌詞TXTを保存してください。'; }
   }
   try {
-    const saved = JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}');
-    $('title').value = typeof saved.title === 'string' ? saved.title.slice(0,80) : '';
-    $('lyrics').value = typeof saved.lyrics === 'string' ? saved.lyrics.slice(0,50000) : '';
-  } catch { $('draft-status').textContent = '歌詞の保存欄を読めません。TXTで保管してください。'; }
+    lyricDrafts = createLyricDrafts(localStorage);
+  } catch {
+    lyricDrafts = createLyricDrafts({getItem:()=>null, setItem:()=>{throw new Error('保存欄を利用できません');}});
+    $('draft-status').textContent = '歌詞の保存欄を読めません。編集はTXTで保管してください。';
+  }
+  showDraft(lyricDrafts.current());
+  $('song').addEventListener('change', () => {
+    try {
+      showDraft(lyricDrafts.choose($('song').value, editableDraft()));
+      $('draft-status').textContent='歌詞を切り替えました。前の編集も端末に保存済み。選び直すと戻せます。';
+    } catch {
+      $('song').value=lyricDrafts.selected;
+      $('draft-status').textContent='今の歌詞を保存できないため切替を止めました。先に歌詞TXTを保存してください。';
+    }
+  });
   $('title').addEventListener('input', saveText); $('lyrics').addEventListener('input', saveText);
+  $('read').addEventListener('click', () => {
+    $('reader-title').textContent=draft().title;
+    $('reader-text').textContent=$('lyrics').value || '歌詞を選ぶか、編集欄に書いてから開いてください。';
+    $('reader-transport').append($('transport'));
+    $('reader').showModal(); $('reader-text').scrollTop=0;
+  });
+  $('reader-close').addEventListener('click', () => $('reader').close());
+  $('reader').addEventListener('close', () => { $('transport-home').append($('transport')); $('read').focus(); });
+  // Reading keys scroll/close the dialog, not the background live set or MIDI mappings.
+  for (const type of ['keydown','keyup']) $('reader').addEventListener(type, event => event.stopPropagation());
   function addDownload(parent, text, blob, name) {
     const a = document.createElement('a'), url = URL.createObjectURL(blob); urls.push(url);
     a.textContent = text; a.href = url; a.download = name; parent.append(a);
@@ -70,6 +111,7 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
     try {
       if (file.size > 200000) throw new Error('歌詞TXTは200 KB以内で用意してください。');
       const text = await file.text(); if (text.length > 50000) throw new Error('歌詞は5万文字以内です。');
+      if (recorder.active) throw new Error('録音を終えてから歌詞を追加してください。');
       // Keep existing lyrics; importing appends instead of silently replacing them.
       const combined = [$('lyrics').value, text].filter(Boolean).join('\n\n');
       if (combined.length > 50000) throw new Error('今の歌詞と合わせると5万文字を超えます。先にTXTで保存して整理してください。');
@@ -92,6 +134,7 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
     $('disarm').disabled = !recorder.stream && !requesting;
     $('record').disabled = active || requesting;
     $('stop').disabled = recorder.state !== 'recording';
+    for (const id of ['song','title','lyrics','file','use-text']) $(id).disabled=active;
     $('record').textContent = recorder.state === 'recording' ? '● 録音中' : recorder.state === 'finishing' ? '保存中…' : '● 録音開始';
     host.classList.toggle('is-recording', active);
     if (!host.open && !active && !recorder.stream) clearInterval(timer);
