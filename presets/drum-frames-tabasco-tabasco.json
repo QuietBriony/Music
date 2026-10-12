@@ -1754,6 +1754,17 @@
      1.0
     ]
    ]
+  },
+  "attack_voicings": {
+   "format": "attack-voicings-v1",
+   "method": "stereo sustained CQT; three agreeing windows within each existing attack",
+   "events_count": 85,
+   "events_sha256": "230410031621aa28a66e3fc44b6ed1be9173f98ee31601ceded2836f3a9e3a63",
+   "stem_sha256": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2",
+   "bpm_fit": 132.51,
+   "attacks": [
+
+   ]
   }
  },
  "performance_duration_s": 44.722

@@ -1,7 +1,9 @@
-import { renderString, renderDrum } from "./dsp.mjs?v=4";
+import { renderDrum } from "./dsp.mjs?v=4";
+import { renderElectricString } from "./electric-string.mjs?v=1";
+import { renderElectricBass, renderAcousticDrum } from "./rhythm-synthesis.mjs?v=1";
 
 export const BANK_SAMPLE_RATE = 32000;
-export const MAX_BANK_BYTES = 12_000_000;
+export const MAX_BANK_BYTES = 13_700_000;
 export const GUITAR_KEYS = [...Array.from({ length: 15 }, (_, i) => 40 + i * 3), 84];
 export const BASS_KEYS = Array.from({ length: 13 }, (_, i) => 24 + i * 3);
 export const DRUM_KEYS = ["kick", "snare", "hat", "ride", "crash", "tom", "cowbell"];
@@ -26,11 +28,13 @@ export function renderInstrumentBank(progress = () => {}) {
   const samples = {};
   const jobs = [
     ...GUITAR_KEYS.flatMap((note) => [
-      [`guitar:${note}`, () => renderString({ part: "guitar", note, duration: 2.5, velocity: 1, technique: "open" }, BANK_SAMPLE_RATE, 113 + note), 0.22],
-      [`palm:${note}`, () => renderString({ part: "guitar", note, duration: 0.55, velocity: 1, technique: "palm" }, BANK_SAMPLE_RATE, 113 + note), 0.22]
+      [`guitar:${note}`, () => renderElectricString({ note, duration: 3, velocity: 1, technique: "open" }, BANK_SAMPLE_RATE), 0.12],
+      [`palm:${note}`, () => renderElectricString({ note, duration: 0.55, velocity: 1, technique: "palm" }, BANK_SAMPLE_RATE), 0.12]
     ]),
-    ...BASS_KEYS.map((note) => [`bass:${note}`, () => renderString({ part: "bass", note, duration: 3, velocity: 1, technique: "pick" }, BANK_SAMPLE_RATE, 211 + note), 0.16]),
-    ...DRUM_KEYS.map((drum, i) => [`drums:${drum}`, () => renderDrum({ drum, velocity: 1 }, BANK_SAMPLE_RATE, 331 + i), drum === "kick" ? 0.42 : (drum === "snare" ? 0.55 : 0.4)])
+    ...BASS_KEYS.map((note) => [`bass:${note}`, () => renderElectricBass({ note, duration: 3, velocity: 1 }, BANK_SAMPLE_RATE), 0.30]),
+    ...DRUM_KEYS.map((drum, i) => [`drums:${drum}`, () => (drum === "cowbell" ? renderDrum : renderAcousticDrum)({ drum, velocity: 1 }, BANK_SAMPLE_RATE, 331 + i), drum === "kick" ? 0.48 : (["snare", "hat", "ride", "crash"].includes(drum) ? 0.55 : 0.4)]),
+    // A quiet snare excites less wire, rather than scaling the loud hit alone.
+    ["drums:snare-soft", () => renderAcousticDrum({ drum: "snare", velocity: 0.35 }, BANK_SAMPLE_RATE, 332), 0.55]
   ];
   jobs.forEach(([key, render, peak], i) => {
     samples[key] = finish(render(), peak);

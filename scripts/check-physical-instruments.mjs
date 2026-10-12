@@ -3,7 +3,7 @@ import { renderInstrumentBank, nearestKey, GUITAR_KEYS, BASS_KEYS, MAX_BANK_BYTE
 import { midiFrequency } from '../audio/physical-band/dsp.mjs';
 import { createPhysicalBand, prepareInstrumentBank } from '../audio/physical-band/instruments.mjs';
 const bank=renderInstrumentBank();
-assert.ok(bank.bytes<MAX_BANK_BYTES); assert.equal(Object.keys(bank.samples).length,52);
+assert.ok(bank.bytes<MAX_BANK_BYTES); assert.equal(Object.keys(bank.samples).length,53);
 function pitch(data,note){
  const period=32000/midiFrequency(note), from=1920, to=Math.min(data.length-Math.ceil(period*1.2),7680), s=new Map();
  for(let lag=Math.floor(period*.9);lag<=Math.ceil(period*1.1);lag++){let dot=0,a=0,b=0;for(let i=from;i<to;i++){dot+=data[i]*data[i+lag];a+=data[i]**2;b+=data[i+lag]**2;}s.set(lag,dot/Math.sqrt(a*b));}
@@ -19,8 +19,12 @@ for(let n=24;n<=84;n++){const keys=n<40?BASS_KEYS:GUITAR_KEYS; assert.ok(Math.ab
 const rms=(data,from,to)=>Math.sqrt(data.slice(Math.round(from*32000),Math.round(to*32000)).reduce((sum,x)=>sum+x*x,0)/Math.round((to-from)*32000));
 assert.ok(rms(bank.samples['guitar:49'],.4,.65)>.001,'Open string retains an audible body after a short score gate');
 assert.ok(rms(bank.samples['bass:36'],.4,.65)>.003,'Bass body survives a short score gate');
+assert.ok(rms(bank.samples['guitar:40'],1.6,1.9)/rms(bank.samples['guitar:40'],.08,.38)>.18,'Promoted electric guitar retains its low-string ring');
+assert.ok(rms(bank.samples['bass:27'],1.6,1.9)/rms(bank.samples['bass:27'],.08,.38)>.22,'Promoted electric bass retains its low-note body');
 assert.ok(rms(bank.samples['palm:49'],.3,.5)<rms(bank.samples['guitar:49'],.3,.5)*.1,'Explicit palm articulation remains short');
 assert.ok(rms(bank.samples['drums:snare'],.2,.35)>.003,'Snare has a decaying body after its attack');
+assert.ok(bank.samples['drums:crash'].length===96000 && rms(bank.samples['drums:crash'],.8,1.1)>.006,'Promoted cymbal keeps a natural finite tail');
+assert.notDeepEqual(bank.samples['drums:snare'],bank.samples['drums:snare-soft'],'Quiet snare has its own wire/body balance');
 // Exercise the actual adapter: fractional pitches, scheduling, hard STOP of
 // future notes, capacity bound, and disconnect of every source and amp node.
 const made=[];const param=()=>({value:0,setValueAtTime(){},linearRampToValueAtTime(){},setTargetAtTime(){},cancelScheduledValues(){}});
@@ -39,6 +43,11 @@ band.bass.triggerAttackRelease(36,.12,3.6,.8);
 assert.ok(firstBass.stopAt<=3.661,'The next bass note damps the old pitch');
 band.bass.releaseAll();assert.equal(band.snapshot().pending,4);
 band.guitar.releaseAll();band.drums.dispose();assert.equal(band.snapshot().pending,0);
+band.drums.snare.triggerAttackRelease('16n',3.8,.3);
+assert.equal(band.snapshot().last.drums.key,'drums:snare-soft');
+band.drums.snare.triggerAttackRelease('16n',3.9,.8);
+assert.equal(band.snapshot().last.drums.key,'drums:snare');
+band.drums.dispose();
 let start=made.length;
 band.guitar.triggerAttackRelease([48,55,60],.12,4,.8,{technique:'cut',upstroke:true,sweep:.003});
 const cut=made.slice(start).filter(n=>Number.isFinite(n.startAt));
@@ -60,7 +69,7 @@ const withRoom=createPhysicalBand(context,{buffers,bytes:bank.bytes},{guitar:{},
 assert.equal(withRoom.snapshot().roomNodes,26);withRoom.setRoom(0);assert.equal(withRoom.snapshot().roomWet,0);
 withRoom.releaseAll();assert.equal(sendsRemoved.length,4);assert.equal(withRoom.snapshot().pending,0);
 withRoom.dispose();assert.equal(sendsRemoved.length,8);assert.ok(made.every(n=>n.disconnected),'STOP disconnects every owned room node and send');
-console.log(`Physical instruments PASS: 52 finite/DC-free buffers, measured tuning, fractional playback rates, ${bank.bytes} bytes, natural sustain, chord grouping, bass damping, future-note cancellation and owned-room disposal`);
+console.log(`Physical instruments PASS: 53 finite/DC-free buffers, measured tuning, fractional playback rates, ${bank.bytes} bytes, natural sustain, chord grouping, bass damping, future-note cancellation and owned-room disposal`);
 
 
 let workers=0, terminated=0;

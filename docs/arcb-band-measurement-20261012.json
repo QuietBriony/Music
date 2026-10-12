@@ -1,0 +1,4010 @@
+{
+  "release": "v416 / br-249",
+  "date": "2026-10-12",
+  "baseline_commit": "1b59d659884857589bdecd1a3d17a1e413c917a1",
+  "scope": "Normal ARCB adoption of synthesized guitar, bass and drums; no replacement recording and no new source separation.",
+  "source_sha256_lf": {
+    "band-room.js": "8ba2e26494e7206ea974eeb1df4cb13a9f1e5626adebc10cf8489678b42879d3",
+    "audio/physical-band/bank.mjs": "8b62e49e17fcc55675075a05e94c40cf3e4c626d9aa6631dc9aa37569c1afdbb",
+    "audio/physical-band/instruments.mjs": "7cde04bc623bcb239778dd0d83c34e51518ffe3beae61cd6fe53bcd600e4e231",
+    "audio/physical-band/electric-string.mjs": "2b24dec52d94e800d8a57c71df63a7cc5e0c491a59af8f552c2b8b951bb2a588",
+    "audio/physical-band/rhythm-synthesis.mjs": "93726a9879aacf266d4fea43a8c393b716b69c16eaf63a1509b12d4c20babeab",
+    "scripts/refine-guitar-attacks.py": "aeaaecb71c972d3739f6e6ef587a9257e5d7541afb9e4e404a2301b3545d0ebe",
+    "scripts/measure-guitar-output.py": "34c2d6b0f0aff928515ff2b5f17acbe536219e9aff7c2395f924bb96b783a2e0",
+    "scripts/measure-band-mix.py": "e2021a9bc9b1961b051baab2c988a3de3cb1d265ff5f35d51f3a13bb93c061ba"
+  },
+  "bank": {
+    "buffers": 53,
+    "sample_rate": 32000,
+    "pcm_bytes": 13610240,
+    "previous_bytes": 11826560,
+    "byte_limit": 13700000,
+    "peak_normalization": {
+      "guitar": 0.12,
+      "bass": 0.3,
+      "kick": 0.48,
+      "snare_hat_ride_crash": 0.55,
+      "tom_cowbell": 0.4
+    },
+    "pending_source_limit": 128
+  },
+  "harmony": {
+    "thresholds": {
+      "similarity": 0.65,
+      "pitch_class_margin": 0.12,
+      "agreement": 1,
+      "improvement": 0.12
+    },
+    "previous_broad_trial_candidates": 574,
+    "accepted": 67,
+    "reason_to_reject_broad_trial": "CQT windows on dense strums can contain adjacent harmony; actual same-bank output was mixed. Require 120 ms guards on both sides and stronger template evidence.",
+    "sample_rate": 22050,
+    "hop": 256,
+    "filter_bins": 72,
+    "midi_min": 40,
+    "hpss_margin": 3,
+    "window_end_limit_after_attack_s": 0.45,
+    "minimum_frames": 10,
+    "limits": [
+      "No new attacks; bass, drums, vocals and score clock unchanged.",
+      "Other includes separation bleed; confidence is not ground truth.",
+      "Verify actual browser output with independent STFT pitch-class analysis."
+    ],
+    "songs": [
+      {
+        "song": "human-fly",
+        "events": 688,
+        "inspected": 242,
+        "accepted": 5,
+        "events_sha256": "2fbdb774b75aafef1ebc3e0d47e42e9b4eb99e1d9fd4474461c77af6b5ebfbea",
+        "source_sha256": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+      },
+      {
+        "song": "electric-sheep",
+        "events": 786,
+        "inspected": 55,
+        "accepted": 2,
+        "events_sha256": "a833f689720782986a12961bae60111494cc15e7fa440ea629a3aa2e87737311",
+        "source_sha256": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6"
+      },
+      {
+        "song": "hey",
+        "events": 976,
+        "inspected": 267,
+        "accepted": 4,
+        "events_sha256": "055856c6cc83576ce4616b4ef3ed8a5c964ff21ab607dedc791137197084072c",
+        "source_sha256": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a"
+      },
+      {
+        "song": "sister",
+        "events": 772,
+        "inspected": 265,
+        "accepted": 16,
+        "events_sha256": "62dd8bc3be8336a715ac0c566242076f52b0e664e2d5757cb6b2d51e4d80c619",
+        "source_sha256": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06"
+      },
+      {
+        "song": "i-got-a-feeling",
+        "events": 1237,
+        "inspected": 260,
+        "accepted": 20,
+        "events_sha256": "0de62ea8f01a4362ecfeaef92171895cf37aa86a32d8426af79974dd7e48ce6a",
+        "source_sha256": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81"
+      },
+      {
+        "song": "under-the-moon",
+        "events": 882,
+        "inspected": 368,
+        "accepted": 20,
+        "events_sha256": "adf86bda1db6665374d77b6242401607e86138c0bb954e41e31c25e689662f30",
+        "source_sha256": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8"
+      },
+      {
+        "song": "tabasco",
+        "events": 85,
+        "inspected": 38,
+        "accepted": 0,
+        "events_sha256": "230410031621aa28a66e3fc44b6ed1be9173f98ee31601ceded2836f3a9e3a63",
+        "source_sha256": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2"
+      }
+    ]
+  },
+  "bass_recheck": {
+    "method": "Existing bass stems: strongest stereo channel, 11025 Hz, order-3 28-1200 Hz bandpass; YIN MIDI24-60, 2048 frame, hop128. Inspect +55ms to min(end-25ms,start+0.5s); at least 3 frames.",
+    "candidate_rule": "At least .85 of frames within 30 cents, median RMS > .003, pitch differs from score. Short observations are not sufficient to replace notes.",
+    "events": 3502,
+    "measured": 2828,
+    "stable_disagreements": 16,
+    "adopted_changes": 0,
+    "long_candidate_fft_checks": [
+      {
+        "index": 45,
+        "time": 24.31,
+        "duration": 0.267,
+        "old": 43,
+        "yin": 31,
+        "stable": 1.0,
+        "rms": 0.012135,
+        "velocity": 0.55,
+        "song": "i-got-a-feeling",
+        "fundamental_to_upper_db": -10.669,
+        "fundamental_over_floor_db": 24.609,
+        "fft_cents": -93.21,
+        "accepted": false
+      },
+      {
+        "index": 120,
+        "time": 74.536,
+        "duration": 0.279,
+        "old": 42,
+        "yin": 30,
+        "stable": 1.0,
+        "rms": 0.016009,
+        "velocity": 0.6,
+        "song": "under-the-moon",
+        "fundamental_to_upper_db": -18.039,
+        "fundamental_over_floor_db": 31.814,
+        "fft_cents": -18.49,
+        "accepted": false
+      },
+      {
+        "index": 538,
+        "time": 290.689,
+        "duration": 0.986,
+        "old": 42,
+        "yin": 30,
+        "stable": 0.972,
+        "rms": 0.022812,
+        "velocity": 0.73,
+        "song": "under-the-moon",
+        "fundamental_to_upper_db": -19.593,
+        "fundamental_over_floor_db": 24.935,
+        "fft_cents": 6.79,
+        "accepted": false
+      }
+    ],
+    "songs": [
+      {
+        "song": "human-fly",
+        "events": 728,
+        "measured": 576,
+        "candidate_changes": [
+          {
+            "index": 37,
+            "time": 22.14,
+            "duration": 0.128,
+            "old": 51,
+            "yin": 31,
+            "stable": 1.0,
+            "rms": 0.06432,
+            "velocity": 0.92
+          },
+          {
+            "index": 43,
+            "time": 23.557,
+            "duration": 0.116,
+            "old": 48,
+            "yin": 29,
+            "stable": 1.0,
+            "rms": 0.032073,
+            "velocity": 0.7
+          },
+          {
+            "index": 451,
+            "time": 147.266,
+            "duration": 0.162,
+            "old": 38,
+            "yin": 50,
+            "stable": 0.857,
+            "rms": 0.078197,
+            "velocity": 1.0
+          }
+        ],
+        "stem_sha256": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1"
+      },
+      {
+        "song": "electric-sheep",
+        "events": 379,
+        "measured": 269,
+        "candidate_changes": [
+          {
+            "index": 181,
+            "time": 71.041,
+            "duration": 0.116,
+            "old": 52,
+            "yin": 40,
+            "stable": 1.0,
+            "rms": 0.069756,
+            "velocity": 0.85
+          },
+          {
+            "index": 192,
+            "time": 73.967,
+            "duration": 0.128,
+            "old": 50,
+            "yin": 38,
+            "stable": 1.0,
+            "rms": 0.085133,
+            "velocity": 0.92
+          },
+          {
+            "index": 248,
+            "time": 98.545,
+            "duration": 0.174,
+            "old": 47,
+            "yin": 35,
+            "stable": 1.0,
+            "rms": 0.079306,
+            "velocity": 0.94
+          },
+          {
+            "index": 283,
+            "time": 112.407,
+            "duration": 0.151,
+            "old": 49,
+            "yin": 30,
+            "stable": 1.0,
+            "rms": 0.051223,
+            "velocity": 0.76
+          }
+        ],
+        "stem_sha256": "369fcdb6b59c6de1fe1f9e271b4fd52e24aa8bfbba1e22e04103dcec3c92a297"
+      },
+      {
+        "song": "hey",
+        "events": 763,
+        "measured": 626,
+        "candidate_changes": [
+          {
+            "index": 239,
+            "time": 92.446,
+            "duration": 0.175,
+            "old": 40,
+            "yin": 28,
+            "stable": 1.0,
+            "rms": 0.037896,
+            "velocity": 0.83
+          }
+        ],
+        "stem_sha256": "bffc7e34eb26a8d7c580bf11cace981fcb6ba924fcc8c38cc5ba322cc79e5298"
+      },
+      {
+        "song": "sister",
+        "events": 455,
+        "measured": 371,
+        "candidate_changes": [
+          {
+            "index": 137,
+            "time": 118.333,
+            "duration": 0.36,
+            "old": 48,
+            "yin": 29,
+            "stable": 0.875,
+            "rms": 0.004898,
+            "velocity": 0.23
+          },
+          {
+            "index": 178,
+            "time": 142.088,
+            "duration": 0.116,
+            "old": 51,
+            "yin": 27,
+            "stable": 1.0,
+            "rms": 0.051652,
+            "velocity": 0.86
+          },
+          {
+            "index": 271,
+            "time": 189.47,
+            "duration": 0.673,
+            "old": 52,
+            "yin": 33,
+            "stable": 0.861,
+            "rms": 0.018562,
+            "velocity": 0.49
+          },
+          {
+            "index": 287,
+            "time": 196.123,
+            "duration": 0.244,
+            "old": 53,
+            "yin": 34,
+            "stable": 0.857,
+            "rms": 0.033982,
+            "velocity": 0.73
+          }
+        ],
+        "stem_sha256": "67f9bb28fd9f1b0e63c73ffda795534521ce5eae73dece1ce4704e0bde2b4dec"
+      },
+      {
+        "song": "i-got-a-feeling",
+        "events": 540,
+        "measured": 466,
+        "candidate_changes": [
+          {
+            "index": 41,
+            "time": 22.917,
+            "duration": 0.127,
+            "old": 42,
+            "yin": 30,
+            "stable": 1.0,
+            "rms": 0.00713,
+            "velocity": 0.31
+          },
+          {
+            "index": 45,
+            "time": 24.31,
+            "duration": 0.267,
+            "old": 43,
+            "yin": 31,
+            "stable": 1.0,
+            "rms": 0.012135,
+            "velocity": 0.55
+          }
+        ],
+        "stem_sha256": "cfcc470fb787a69c443853cd6b62e3ca6f5ebeab5924672d14cf23f0b51c46e3"
+      },
+      {
+        "song": "under-the-moon",
+        "events": 566,
+        "measured": 467,
+        "candidate_changes": [
+          {
+            "index": 120,
+            "time": 74.536,
+            "duration": 0.279,
+            "old": 42,
+            "yin": 30,
+            "stable": 1.0,
+            "rms": 0.016009,
+            "velocity": 0.6
+          },
+          {
+            "index": 538,
+            "time": 290.689,
+            "duration": 0.986,
+            "old": 42,
+            "yin": 30,
+            "stable": 0.972,
+            "rms": 0.022812,
+            "velocity": 0.73
+          }
+        ],
+        "stem_sha256": "bb6c470965b051f25cc8816b3f7fdf3104fa1c601dcaec2e70d9317a2a37818c"
+      },
+      {
+        "song": "tabasco",
+        "events": 71,
+        "measured": 53,
+        "candidate_changes": [],
+        "stem_sha256": "794f80c4a54b21dc209db23a3b81e00ebaa24be1ef2bc66174ee407efc439c37"
+      }
+    ]
+  },
+  "drum_recheck": {
+    "method": "band-limited spectral-flux reference vs transcription rows at fitted BPM",
+    "reference_detector": {
+      "sample_rate": 22050,
+      "fft": 1024,
+      "hop": 128,
+      "bands_hz": {
+        "kick": [
+          40,
+          180
+        ],
+        "snare": [
+          180,
+          1200
+        ],
+        "hat": [
+          4000,
+          10000
+        ]
+      },
+      "peak_factor_p95": {
+        "kick": 1.0,
+        "snare": 0.8,
+        "hat": 0.6
+      },
+      "snare_low_to_mid_flux_max": 5.5,
+      "calibration": "Factors calibrated on Human Fly bars 9–16 against the prior class-count envelope and inspected transcription alignment; exploratory, not independent ground-truth labels."
+    },
+    "limits": [
+      "High-band transients include cymbal, snare bleed and separation artifacts; not verified hat labels.",
+      "Rows and light thinning, not captured Band Room WebAudio; kit attack and section hints excluded.",
+      "No detector-latency or per-bar alignment applied. Human Fly has about +27 ms candidate-minus-flux offset; raw ±30 ms F1 is diagnostic only."
+    ],
+    "adopted_changes": 0,
+    "songs": [
+      {
+        "song": "tabasco",
+        "bars_one_based": [
+          9,
+          16
+        ],
+        "assessment": "not_scored_frame_fallback",
+        "source_sha256": {
+          "drums_mp3": "780518047c6c79efc9d8208f41fccd7c25fec10b2439790ce03df67768f07086",
+          "song_json": "b22e5c6ec924124804e3066a17f5a5f4de2263a97b3614fb8e361c6e028185ac"
+        },
+        "counts": {
+          "original": {},
+          "current_light": {},
+          "priority_light": {}
+        },
+        "metrics": {},
+        "transcribed_line_present": false
+      },
+      {
+        "song": "hey",
+        "bars_one_based": [
+          9,
+          16
+        ],
+        "assessment": "diagnostic_only_unaligned_detector",
+        "source_sha256": {
+          "drums_mp3": "c9468c23c8cbef60b788ff8954c0632453161d07d1ec67b314d04fdcb6a30b0a",
+          "song_json": "92abd8c12265ab456d9fe943c1fcbdf5fe77b59cd70fbec3e5cef5e1b9d63ceb"
+        },
+        "counts": {
+          "original": {
+            "hat": 54,
+            "kick": 8,
+            "snare": 2
+          },
+          "current_light": {
+            "hat": 53,
+            "kick": 8,
+            "snare": 2
+          },
+          "priority_light": {
+            "hat": 53,
+            "kick": 8,
+            "snare": 2
+          }
+        },
+        "metrics": {
+          "full_data": {
+            "kick": {
+              "reference": 17,
+              "candidate": 8,
+              "matched": 8,
+              "precision": 1.0,
+              "recall": 0.471,
+              "f1": 0.64,
+              "median_abs_delta_ms": 21.5,
+              "mean_signed_delta_ms": 19.6,
+              "velocity_flux_correlation": null
+            },
+            "snare": {
+              "reference": 24,
+              "candidate": 2,
+              "matched": 2,
+              "precision": 1.0,
+              "recall": 0.083,
+              "f1": 0.154,
+              "median_abs_delta_ms": 25.0,
+              "mean_signed_delta_ms": 25.0,
+              "velocity_flux_correlation": null
+            },
+            "hat": {
+              "reference": 57,
+              "candidate": 54,
+              "matched": 24,
+              "precision": 0.444,
+              "recall": 0.421,
+              "f1": 0.432,
+              "median_abs_delta_ms": 27.5,
+              "mean_signed_delta_ms": 26.1,
+              "velocity_flux_correlation": 0.4
+            }
+          },
+          "current_light_data": {
+            "kick": {
+              "reference": 17,
+              "candidate": 8,
+              "matched": 8,
+              "precision": 1.0,
+              "recall": 0.471,
+              "f1": 0.64,
+              "median_abs_delta_ms": 21.5,
+              "mean_signed_delta_ms": 19.6,
+              "velocity_flux_correlation": null
+            },
+            "snare": {
+              "reference": 24,
+              "candidate": 2,
+              "matched": 2,
+              "precision": 1.0,
+              "recall": 0.083,
+              "f1": 0.154,
+              "median_abs_delta_ms": 25.0,
+              "mean_signed_delta_ms": 25.0,
+              "velocity_flux_correlation": null
+            },
+            "hat": {
+              "reference": 57,
+              "candidate": 53,
+              "matched": 23,
+              "precision": 0.434,
+              "recall": 0.404,
+              "f1": 0.418,
+              "median_abs_delta_ms": 27.5,
+              "mean_signed_delta_ms": 26.3,
+              "velocity_flux_correlation": 0.398
+            }
+          },
+          "priority_light_data": {
+            "kick": {
+              "reference": 17,
+              "candidate": 8,
+              "matched": 8,
+              "precision": 1.0,
+              "recall": 0.471,
+              "f1": 0.64,
+              "median_abs_delta_ms": 21.5,
+              "mean_signed_delta_ms": 19.6,
+              "velocity_flux_correlation": null
+            },
+            "snare": {
+              "reference": 24,
+              "candidate": 2,
+              "matched": 2,
+              "precision": 1.0,
+              "recall": 0.083,
+              "f1": 0.154,
+              "median_abs_delta_ms": 25.0,
+              "mean_signed_delta_ms": 25.0,
+              "velocity_flux_correlation": null
+            },
+            "hat": {
+              "reference": 57,
+              "candidate": 53,
+              "matched": 23,
+              "precision": 0.434,
+              "recall": 0.404,
+              "f1": 0.418,
+              "median_abs_delta_ms": 27.5,
+              "mean_signed_delta_ms": 26.3,
+              "velocity_flux_correlation": 0.398
+            }
+          }
+        },
+        "transcribed_line_present": true
+      },
+      {
+        "song": "i-got-a-feeling",
+        "bars_one_based": [
+          9,
+          16
+        ],
+        "assessment": "diagnostic_only_unaligned_detector",
+        "source_sha256": {
+          "drums_mp3": "52fbb4048a68e8ef662ac79cf755f774cd103e719917ea43cf68b8ecb2eb0dca",
+          "song_json": "a8e4c1a6ab4c73321d67d10325a6c6b8091612bf0b177a0250d109724ad7119f"
+        },
+        "counts": {
+          "original": {
+            "hat": 42,
+            "kick": 26,
+            "snare": 16
+          },
+          "current_light": {
+            "hat": 29,
+            "kick": 24,
+            "snare": 8
+          },
+          "priority_light": {
+            "hat": 20,
+            "kick": 25,
+            "snare": 16
+          }
+        },
+        "metrics": {
+          "full_data": {
+            "kick": {
+              "reference": 30,
+              "candidate": 26,
+              "matched": 20,
+              "precision": 0.769,
+              "recall": 0.667,
+              "f1": 0.714,
+              "median_abs_delta_ms": 21.9,
+              "mean_signed_delta_ms": 17.5,
+              "velocity_flux_correlation": 0.901
+            },
+            "snare": {
+              "reference": 19,
+              "candidate": 16,
+              "matched": 4,
+              "precision": 0.25,
+              "recall": 0.211,
+              "f1": 0.229,
+              "median_abs_delta_ms": 22.5,
+              "mean_signed_delta_ms": 20.8,
+              "velocity_flux_correlation": 0.996
+            },
+            "hat": {
+              "reference": 71,
+              "candidate": 42,
+              "matched": 8,
+              "precision": 0.19,
+              "recall": 0.113,
+              "f1": 0.142,
+              "median_abs_delta_ms": 27.7,
+              "mean_signed_delta_ms": 27.1,
+              "velocity_flux_correlation": null
+            }
+          },
+          "current_light_data": {
+            "kick": {
+              "reference": 30,
+              "candidate": 24,
+              "matched": 20,
+              "precision": 0.833,
+              "recall": 0.667,
+              "f1": 0.741,
+              "median_abs_delta_ms": 21.9,
+              "mean_signed_delta_ms": 17.5,
+              "velocity_flux_correlation": 0.901
+            },
+            "snare": {
+              "reference": 19,
+              "candidate": 8,
+              "matched": 1,
+              "precision": 0.125,
+              "recall": 0.053,
+              "f1": 0.074,
+              "median_abs_delta_ms": 10.8,
+              "mean_signed_delta_ms": 10.8,
+              "velocity_flux_correlation": null
+            },
+            "hat": {
+              "reference": 71,
+              "candidate": 29,
+              "matched": 3,
+              "precision": 0.103,
+              "recall": 0.042,
+              "f1": 0.06,
+              "median_abs_delta_ms": 27.5,
+              "mean_signed_delta_ms": 27.6,
+              "velocity_flux_correlation": null
+            }
+          },
+          "priority_light_data": {
+            "kick": {
+              "reference": 30,
+              "candidate": 25,
+              "matched": 20,
+              "precision": 0.8,
+              "recall": 0.667,
+              "f1": 0.727,
+              "median_abs_delta_ms": 21.9,
+              "mean_signed_delta_ms": 17.5,
+              "velocity_flux_correlation": 0.901
+            },
+            "snare": {
+              "reference": 19,
+              "candidate": 16,
+              "matched": 4,
+              "precision": 0.25,
+              "recall": 0.211,
+              "f1": 0.229,
+              "median_abs_delta_ms": 22.5,
+              "mean_signed_delta_ms": 20.8,
+              "velocity_flux_correlation": 0.996
+            },
+            "hat": {
+              "reference": 71,
+              "candidate": 20,
+              "matched": 3,
+              "precision": 0.15,
+              "recall": 0.042,
+              "f1": 0.066,
+              "median_abs_delta_ms": 27.5,
+              "mean_signed_delta_ms": 27.6,
+              "velocity_flux_correlation": null
+            }
+          }
+        },
+        "transcribed_line_present": true
+      },
+      {
+        "song": "under-the-moon",
+        "bars_one_based": [
+          9,
+          16
+        ],
+        "assessment": "diagnostic_only_unaligned_detector",
+        "source_sha256": {
+          "drums_mp3": "7463b1475b3887206d97a3a2fe4ac7a0b7a0dcadd2e41bee8e3deea038311a2b",
+          "song_json": "3b1a491860d0f9dd25662801b4a2f13d0552ee960e2f93689a77e35046a3c04c"
+        },
+        "counts": {
+          "original": {
+            "hat": 10,
+            "snare": 11,
+            "kick": 11
+          },
+          "current_light": {
+            "hat": 10,
+            "snare": 11,
+            "kick": 11
+          },
+          "priority_light": {
+            "hat": 10,
+            "snare": 11,
+            "kick": 11
+          }
+        },
+        "metrics": {
+          "full_data": {
+            "kick": {
+              "reference": 17,
+              "candidate": 11,
+              "matched": 11,
+              "precision": 1.0,
+              "recall": 0.647,
+              "f1": 0.786,
+              "median_abs_delta_ms": 21.7,
+              "mean_signed_delta_ms": 21.7,
+              "velocity_flux_correlation": 0.864
+            },
+            "snare": {
+              "reference": 8,
+              "candidate": 11,
+              "matched": 6,
+              "precision": 0.545,
+              "recall": 0.75,
+              "f1": 0.632,
+              "median_abs_delta_ms": 21.5,
+              "mean_signed_delta_ms": 18.7,
+              "velocity_flux_correlation": 0.78
+            },
+            "hat": {
+              "reference": 25,
+              "candidate": 10,
+              "matched": 2,
+              "precision": 0.2,
+              "recall": 0.08,
+              "f1": 0.114,
+              "median_abs_delta_ms": 27.5,
+              "mean_signed_delta_ms": 27.5,
+              "velocity_flux_correlation": null
+            }
+          },
+          "current_light_data": {
+            "kick": {
+              "reference": 17,
+              "candidate": 11,
+              "matched": 11,
+              "precision": 1.0,
+              "recall": 0.647,
+              "f1": 0.786,
+              "median_abs_delta_ms": 21.7,
+              "mean_signed_delta_ms": 21.7,
+              "velocity_flux_correlation": 0.864
+            },
+            "snare": {
+              "reference": 8,
+              "candidate": 11,
+              "matched": 6,
+              "precision": 0.545,
+              "recall": 0.75,
+              "f1": 0.632,
+              "median_abs_delta_ms": 21.5,
+              "mean_signed_delta_ms": 18.7,
+              "velocity_flux_correlation": 0.78
+            },
+            "hat": {
+              "reference": 25,
+              "candidate": 10,
+              "matched": 2,
+              "precision": 0.2,
+              "recall": 0.08,
+              "f1": 0.114,
+              "median_abs_delta_ms": 27.5,
+              "mean_signed_delta_ms": 27.5,
+              "velocity_flux_correlation": null
+            }
+          },
+          "priority_light_data": {
+            "kick": {
+              "reference": 17,
+              "candidate": 11,
+              "matched": 11,
+              "precision": 1.0,
+              "recall": 0.647,
+              "f1": 0.786,
+              "median_abs_delta_ms": 21.7,
+              "mean_signed_delta_ms": 21.7,
+              "velocity_flux_correlation": 0.864
+            },
+            "snare": {
+              "reference": 8,
+              "candidate": 11,
+              "matched": 6,
+              "precision": 0.545,
+              "recall": 0.75,
+              "f1": 0.632,
+              "median_abs_delta_ms": 21.5,
+              "mean_signed_delta_ms": 18.7,
+              "velocity_flux_correlation": 0.78
+            },
+            "hat": {
+              "reference": 25,
+              "candidate": 10,
+              "matched": 2,
+              "precision": 0.2,
+              "recall": 0.08,
+              "f1": 0.114,
+              "median_abs_delta_ms": 27.5,
+              "mean_signed_delta_ms": 27.5,
+              "velocity_flux_correlation": null
+            }
+          }
+        },
+        "transcribed_line_present": true
+      },
+      {
+        "song": "electric-sheep",
+        "bars_one_based": [
+          9,
+          16
+        ],
+        "assessment": "diagnostic_only_unaligned_detector",
+        "source_sha256": {
+          "drums_mp3": "935036c51a438cb0eb9ee05a29403f7cef0bb82fae90aee899f517a2952e6404",
+          "song_json": "8ec5a7914bb1a40291a94a869dbebdb5b28fc99fb93979dd4c908ff4d679b7f0"
+        },
+        "counts": {
+          "original": {
+            "snare": 34,
+            "kick": 10,
+            "crash": 2
+          },
+          "current_light": {
+            "snare": 34,
+            "kick": 10,
+            "crash": 2
+          },
+          "priority_light": {
+            "snare": 34,
+            "kick": 10,
+            "crash": 2
+          }
+        },
+        "metrics": {
+          "full_data": {
+            "kick": {
+              "reference": 46,
+              "candidate": 10,
+              "matched": 2,
+              "precision": 0.2,
+              "recall": 0.043,
+              "f1": 0.071,
+              "median_abs_delta_ms": 27.1,
+              "mean_signed_delta_ms": 27.1,
+              "velocity_flux_correlation": null
+            },
+            "snare": {
+              "reference": 37,
+              "candidate": 34,
+              "matched": 9,
+              "precision": 0.265,
+              "recall": 0.243,
+              "f1": 0.254,
+              "median_abs_delta_ms": 27.1,
+              "mean_signed_delta_ms": 26.4,
+              "velocity_flux_correlation": 0.826
+            },
+            "hat": {
+              "reference": 91,
+              "candidate": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "median_abs_delta_ms": null,
+              "mean_signed_delta_ms": null,
+              "velocity_flux_correlation": null
+            }
+          },
+          "current_light_data": {
+            "kick": {
+              "reference": 46,
+              "candidate": 10,
+              "matched": 2,
+              "precision": 0.2,
+              "recall": 0.043,
+              "f1": 0.071,
+              "median_abs_delta_ms": 27.1,
+              "mean_signed_delta_ms": 27.1,
+              "velocity_flux_correlation": null
+            },
+            "snare": {
+              "reference": 37,
+              "candidate": 34,
+              "matched": 9,
+              "precision": 0.265,
+              "recall": 0.243,
+              "f1": 0.254,
+              "median_abs_delta_ms": 27.1,
+              "mean_signed_delta_ms": 26.4,
+              "velocity_flux_correlation": 0.826
+            },
+            "hat": {
+              "reference": 91,
+              "candidate": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "median_abs_delta_ms": null,
+              "mean_signed_delta_ms": null,
+              "velocity_flux_correlation": null
+            }
+          },
+          "priority_light_data": {
+            "kick": {
+              "reference": 46,
+              "candidate": 10,
+              "matched": 2,
+              "precision": 0.2,
+              "recall": 0.043,
+              "f1": 0.071,
+              "median_abs_delta_ms": 27.1,
+              "mean_signed_delta_ms": 27.1,
+              "velocity_flux_correlation": null
+            },
+            "snare": {
+              "reference": 37,
+              "candidate": 34,
+              "matched": 9,
+              "precision": 0.265,
+              "recall": 0.243,
+              "f1": 0.254,
+              "median_abs_delta_ms": 27.1,
+              "mean_signed_delta_ms": 26.4,
+              "velocity_flux_correlation": 0.826
+            },
+            "hat": {
+              "reference": 91,
+              "candidate": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "median_abs_delta_ms": null,
+              "mean_signed_delta_ms": null,
+              "velocity_flux_correlation": null
+            }
+          }
+        },
+        "transcribed_line_present": true
+      },
+      {
+        "song": "human-fly",
+        "bars_one_based": [
+          9,
+          16
+        ],
+        "assessment": "diagnostic_only_unaligned_detector",
+        "source_sha256": {
+          "drums_mp3": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88",
+          "song_json": "1655c3166443298ab807f1aeed1d2456f5616bc47f19fb1bf780dcb165be112c"
+        },
+        "counts": {
+          "original": {
+            "snare": 21,
+            "kick": 41,
+            "hat": 5,
+            "crash": 1
+          },
+          "current_light": {
+            "snare": 20,
+            "kick": 37,
+            "hat": 5,
+            "crash": 1
+          },
+          "priority_light": {
+            "snare": 20,
+            "kick": 39,
+            "hat": 3,
+            "crash": 1
+          }
+        },
+        "metrics": {
+          "full_data": {
+            "kick": {
+              "reference": 41,
+              "candidate": 41,
+              "matched": 26,
+              "precision": 0.634,
+              "recall": 0.634,
+              "f1": 0.634,
+              "median_abs_delta_ms": 26.1,
+              "mean_signed_delta_ms": 23.7,
+              "velocity_flux_correlation": 0.807
+            },
+            "snare": {
+              "reference": 21,
+              "candidate": 21,
+              "matched": 15,
+              "precision": 0.714,
+              "recall": 0.714,
+              "f1": 0.714,
+              "median_abs_delta_ms": 26.4,
+              "mean_signed_delta_ms": 24.0,
+              "velocity_flux_correlation": 0.842
+            },
+            "hat": {
+              "reference": 44,
+              "candidate": 5,
+              "matched": 2,
+              "precision": 0.4,
+              "recall": 0.045,
+              "f1": 0.082,
+              "median_abs_delta_ms": 20.8,
+              "mean_signed_delta_ms": 20.8,
+              "velocity_flux_correlation": null
+            }
+          },
+          "current_light_data": {
+            "kick": {
+              "reference": 41,
+              "candidate": 37,
+              "matched": 25,
+              "precision": 0.676,
+              "recall": 0.61,
+              "f1": 0.641,
+              "median_abs_delta_ms": 26.2,
+              "mean_signed_delta_ms": 23.8,
+              "velocity_flux_correlation": 0.751
+            },
+            "snare": {
+              "reference": 21,
+              "candidate": 20,
+              "matched": 14,
+              "precision": 0.7,
+              "recall": 0.667,
+              "f1": 0.683,
+              "median_abs_delta_ms": 23.9,
+              "mean_signed_delta_ms": 23.7,
+              "velocity_flux_correlation": 0.856
+            },
+            "hat": {
+              "reference": 44,
+              "candidate": 5,
+              "matched": 2,
+              "precision": 0.4,
+              "recall": 0.045,
+              "f1": 0.082,
+              "median_abs_delta_ms": 20.8,
+              "mean_signed_delta_ms": 20.8,
+              "velocity_flux_correlation": null
+            }
+          },
+          "priority_light_data": {
+            "kick": {
+              "reference": 41,
+              "candidate": 39,
+              "matched": 26,
+              "precision": 0.667,
+              "recall": 0.634,
+              "f1": 0.65,
+              "median_abs_delta_ms": 26.1,
+              "mean_signed_delta_ms": 23.7,
+              "velocity_flux_correlation": 0.807
+            },
+            "snare": {
+              "reference": 21,
+              "candidate": 20,
+              "matched": 14,
+              "precision": 0.7,
+              "recall": 0.667,
+              "f1": 0.683,
+              "median_abs_delta_ms": 23.9,
+              "mean_signed_delta_ms": 23.7,
+              "velocity_flux_correlation": 0.856
+            },
+            "hat": {
+              "reference": 44,
+              "candidate": 3,
+              "matched": 1,
+              "precision": 0.333,
+              "recall": 0.023,
+              "f1": 0.043,
+              "median_abs_delta_ms": 21.2,
+              "mean_signed_delta_ms": 21.2,
+              "velocity_flux_correlation": null
+            }
+          }
+        },
+        "transcribed_line_present": true
+      },
+      {
+        "song": "sister",
+        "bars_one_based": [
+          9,
+          16
+        ],
+        "assessment": "diagnostic_only_unaligned_detector",
+        "source_sha256": {
+          "drums_mp3": "cad60ebac3b54df8878e09adc42918ce694dbc689e32616421c60a883acdc48f",
+          "song_json": "8652e111ceedce882436b80af3e041cc3205027b1850dc8db40f900668bc7db3"
+        },
+        "counts": {
+          "original": {
+            "hat": 7,
+            "snare": 1
+          },
+          "current_light": {
+            "hat": 7,
+            "snare": 1
+          },
+          "priority_light": {
+            "hat": 7,
+            "snare": 1
+          }
+        },
+        "metrics": {
+          "full_data": {
+            "kick": {
+              "reference": 47,
+              "candidate": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "median_abs_delta_ms": null,
+              "mean_signed_delta_ms": null,
+              "velocity_flux_correlation": null
+            },
+            "snare": {
+              "reference": 10,
+              "candidate": 1,
+              "matched": 1,
+              "precision": 1.0,
+              "recall": 0.1,
+              "f1": 0.182,
+              "median_abs_delta_ms": 19.6,
+              "mean_signed_delta_ms": -19.6,
+              "velocity_flux_correlation": null
+            },
+            "hat": {
+              "reference": 28,
+              "candidate": 7,
+              "matched": 1,
+              "precision": 0.143,
+              "recall": 0.036,
+              "f1": 0.057,
+              "median_abs_delta_ms": 2.7,
+              "mean_signed_delta_ms": -2.7,
+              "velocity_flux_correlation": null
+            }
+          },
+          "current_light_data": {
+            "kick": {
+              "reference": 47,
+              "candidate": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "median_abs_delta_ms": null,
+              "mean_signed_delta_ms": null,
+              "velocity_flux_correlation": null
+            },
+            "snare": {
+              "reference": 10,
+              "candidate": 1,
+              "matched": 1,
+              "precision": 1.0,
+              "recall": 0.1,
+              "f1": 0.182,
+              "median_abs_delta_ms": 19.6,
+              "mean_signed_delta_ms": -19.6,
+              "velocity_flux_correlation": null
+            },
+            "hat": {
+              "reference": 28,
+              "candidate": 7,
+              "matched": 1,
+              "precision": 0.143,
+              "recall": 0.036,
+              "f1": 0.057,
+              "median_abs_delta_ms": 2.7,
+              "mean_signed_delta_ms": -2.7,
+              "velocity_flux_correlation": null
+            }
+          },
+          "priority_light_data": {
+            "kick": {
+              "reference": 47,
+              "candidate": 0,
+              "matched": 0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "median_abs_delta_ms": null,
+              "mean_signed_delta_ms": null,
+              "velocity_flux_correlation": null
+            },
+            "snare": {
+              "reference": 10,
+              "candidate": 1,
+              "matched": 1,
+              "precision": 1.0,
+              "recall": 0.1,
+              "f1": 0.182,
+              "median_abs_delta_ms": 19.6,
+              "mean_signed_delta_ms": -19.6,
+              "velocity_flux_correlation": null
+            },
+            "hat": {
+              "reference": 28,
+              "candidate": 7,
+              "matched": 1,
+              "precision": 0.143,
+              "recall": 0.036,
+              "f1": 0.057,
+              "median_abs_delta_ms": 2.7,
+              "mean_signed_delta_ms": -2.7,
+              "velocity_flux_correlation": null
+            }
+          }
+        },
+        "transcribed_line_present": true
+      }
+    ]
+  },
+  "guitar_output": {
+    "scope": "Actual guitar-only post-master REC versus other, stereo channel power averaged.",
+    "method": {
+      "representation": "Linear STFT pitch-class power; no CQT/HPSS/chord template",
+      "fft": 16384,
+      "hop": 4096,
+      "frequency_hz": [
+        90,
+        2400
+      ],
+      "bin_weight_width_semitones": 0.2,
+      "pitch_class_order": "C C# D D# E F F# G G# A A# B",
+      "distance": "1 - cosine, lower is closer"
+    },
+    "caveats": [
+      "Other contains other instruments and separation bleed; it is not isolated guitar truth.",
+      "Pitch-class energy depends on timbre and harmonic overtones; it cannot certify exact roots, octaves or chord accuracy.",
+      "The captured output is actual audio, but comparison is aggregate rather than sample-aligned.",
+      "These short windows do not certify all accepted bars, subjective quality or iPhone performance."
+    ],
+    "clips": [
+      {
+        "clip": "electric-sheep-40",
+        "baseline": {
+          "cosine_distance": 0.216687,
+          "output_pitch_class_energy": [
+            0.0037847894229714333,
+            0.08480125591081093,
+            0.002469202289321311,
+            0.01394215454365185,
+            0.5169872847782563,
+            0.005571252235855105,
+            0.5458022709820761,
+            0.001913679667072402,
+            0.01898348292686093,
+            0.0017856220007824333,
+            0.003150341978108293,
+            0.6534598559622744
+          ],
+          "reference_pitch_class_energy": [
+            0.08763646438969845,
+            0.15463064641171195,
+            0.27396083724877524,
+            0.20585415459889642,
+            0.26100764561709233,
+            0.08393862620257829,
+            0.19789071917630507,
+            0.2410191340655296,
+            0.04303013632455961,
+            0.13151611602822327,
+            0.15477857725544195,
+            0.7971528127293085
+          ],
+          "wav_sha256": "0aea4dbe9a705402b2ad0a798d69848d138f52d20c15aca70ce48bac211424b4",
+          "reference_sha256": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6"
+        },
+        "candidate": {
+          "cosine_distance": 0.177154,
+          "output_pitch_class_energy": [
+            0.003902105487406772,
+            0.08662288876712079,
+            0.05073003045635506,
+            0.013824489528138336,
+            0.4932441817535471,
+            0.005591203091730231,
+            0.5112673815754253,
+            0.001977856475885847,
+            0.01762431670223084,
+            0.054789605208769236,
+            0.003438746774200796,
+            0.6940266004203927
+          ],
+          "reference_pitch_class_energy": [
+            0.08757081181779994,
+            0.15464202034715863,
+            0.27396440092052093,
+            0.20638918708428086,
+            0.26089438675706816,
+            0.08397148887268384,
+            0.19780596912038786,
+            0.24076908734796174,
+            0.043008093723106794,
+            0.13147399400970805,
+            0.15588768295695896,
+            0.7969404527267722
+          ],
+          "wav_sha256": "77de2cb6ff60eaec23ff38e2f48ee318c3c9b00a7277c10e08362e4447968c12",
+          "reference_sha256": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6"
+        },
+        "capture_metadata": [
+          {
+            "id": "band-refined-control-electric-sheep-40-synth",
+            "mode": "synth",
+            "song": "electric-sheep",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 40,
+            "firstElapsed": 41.821333333333335,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 288000,
+            "duration": 6,
+            "peak": 0.556732177734375,
+            "rms": 0.12365454961401161,
+            "bpm": 129.2,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "electric-sheep",
+              "contentSeconds": 47.97866666666667,
+              "barCount": 25,
+              "bpm": 129.2,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 81,
+              "sourceDuration": 150.073
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 1179,
+              "pending": 12,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 129,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 9.80681372549019,
+                  "key": "palm:58",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.6005119999999999,
+                  "technique": "palm",
+                  "upstroke": true
+                }
+              },
+              "guitarStrokes": {
+                "open": 29,
+                "palm": 14,
+                "cut": 0,
+                "up": 25,
+                "down": 18
+              },
+              "guitarVoicings": {
+                "attack": 0,
+                "harmonic": 0,
+                "fallback": 43
+              },
+              "lastStrum": {
+                "at": 9.80081372549019,
+                "notes": [
+                  71,
+                  66,
+                  59
+                ],
+                "source": "fallback",
+                "technique": "palm",
+                "upstroke": true
+              }
+            },
+            "errors": []
+          },
+          {
+            "id": "band-refined-candidate-electric-sheep-40-synth",
+            "mode": "synth",
+            "song": "electric-sheep",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 40,
+            "firstElapsed": 41.824,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 288000,
+            "duration": 6,
+            "peak": 0.559539794921875,
+            "rms": 0.1239342778314245,
+            "bpm": 129.2,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "electric-sheep",
+              "contentSeconds": 47.936,
+              "barCount": 25,
+              "bpm": 129.2,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 81,
+              "sourceDuration": 150.073
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 901,
+              "pending": 15,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 129,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 9.486813725490197,
+                  "key": "palm:58",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.6005119999999999,
+                  "technique": "palm",
+                  "upstroke": true
+                }
+              },
+              "guitarStrokes": {
+                "open": 29,
+                "palm": 14,
+                "cut": 0,
+                "up": 25,
+                "down": 18
+              },
+              "guitarVoicings": {
+                "attack": 1,
+                "harmonic": 0,
+                "fallback": 42
+              },
+              "lastStrum": {
+                "at": 9.480813725490197,
+                "notes": [
+                  71,
+                  66,
+                  59
+                ],
+                "source": "fallback",
+                "technique": "palm",
+                "upstroke": true
+              }
+            },
+            "errors": []
+          }
+        ]
+      },
+      {
+        "clip": "hey-8",
+        "baseline": {
+          "cosine_distance": 0.384996,
+          "output_pitch_class_energy": [
+            0.31250923780630524,
+            0.010662391191981304,
+            0.4582558476076348,
+            0.010356902012214102,
+            0.3375392076228628,
+            0.003175572689926493,
+            0.29582679606150863,
+            0.5985367910370019,
+            0.014360597437073106,
+            0.07532535349466023,
+            0.00463976056272635,
+            0.35568856456247827
+          ],
+          "reference_pitch_class_energy": [
+            0.9101222860513852,
+            0.06939192363110532,
+            0.3202203839324585,
+            0.018603892938862894,
+            0.10142082057890035,
+            0.0065785894934178215,
+            0.11825722747780723,
+            0.0795212714046513,
+            0.012834673798857995,
+            0.043707321906703046,
+            0.019504012025467293,
+            0.1757317722581906
+          ],
+          "wav_sha256": "afa56f51ee7bcfa4829abc1e3f6a9ad741510085206a6c48da1408efaae032f8",
+          "reference_sha256": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a"
+        },
+        "candidate": {
+          "cosine_distance": 0.347723,
+          "output_pitch_class_energy": [
+            0.3567764053360014,
+            0.008887033862241479,
+            0.5149476217582984,
+            0.009228139660411836,
+            0.26956856721767053,
+            0.003440855873606608,
+            0.23340700375315945,
+            0.612235108552869,
+            0.015942768662231994,
+            0.10039585694865567,
+            0.005300937967145959,
+            0.3082597867601737
+          ],
+          "reference_pitch_class_energy": [
+            0.9105809104568969,
+            0.0696258613962091,
+            0.3205639132829381,
+            0.018665320109621,
+            0.10145744445597857,
+            0.006574800960656955,
+            0.11696153272904727,
+            0.07954934852487827,
+            0.012851657363313262,
+            0.0437385969618241,
+            0.019523394785767527,
+            0.17343787165683908
+          ],
+          "wav_sha256": "b19ce43f368e202bd5f2ba876283f782a35141ed0809a719abdab35e76ea426a",
+          "reference_sha256": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a"
+        },
+        "capture_metadata": [
+          {
+            "id": "band-refined-control-hey-8-synth",
+            "mode": "synth",
+            "song": "hey",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 8,
+            "firstElapsed": 9.832,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 288000,
+            "duration": 6,
+            "peak": 0.556365966796875,
+            "rms": 0.10041293301604103,
+            "bpm": 120.19,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "hey",
+              "contentSeconds": 15.957333333333334,
+              "barCount": 7,
+              "bpm": 120.19,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 153,
+              "sourceDuration": 304.927
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 1132,
+              "pending": 6,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 57,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 9.361165321574184,
+                  "key": "guitar:43",
+                  "rate": 1,
+                  "velocity": 0.4991359999999999,
+                  "technique": "open",
+                  "upstroke": true
+                }
+              },
+              "guitarStrokes": {
+                "open": 18,
+                "palm": 1,
+                "cut": 0,
+                "up": 10,
+                "down": 9
+              },
+              "guitarVoicings": {
+                "attack": 0,
+                "harmonic": 7,
+                "fallback": 12
+              },
+              "lastStrum": {
+                "at": 9.347165321574185,
+                "notes": [
+                  55,
+                  50,
+                  43
+                ],
+                "source": "harmonic",
+                "technique": "open",
+                "upstroke": true
+              }
+            },
+            "errors": []
+          },
+          {
+            "id": "band-refined-candidate-hey-8-synth",
+            "mode": "synth",
+            "song": "hey",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 8,
+            "firstElapsed": 9.826666666666666,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 288000,
+            "duration": 6,
+            "peak": 0.5142822265625,
+            "rms": 0.08991222476018476,
+            "bpm": 120.19,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "hey",
+              "contentSeconds": 15.936,
+              "barCount": 7,
+              "bpm": 120.19,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 153,
+              "sourceDuration": 304.927
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 879,
+              "pending": 6,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 84,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 9.385165321574174,
+                  "key": "guitar:43",
+                  "rate": 1,
+                  "velocity": 0.4991359999999999,
+                  "technique": "open",
+                  "upstroke": true
+                }
+              },
+              "guitarStrokes": {
+                "open": 25,
+                "palm": 3,
+                "cut": 0,
+                "up": 12,
+                "down": 16
+              },
+              "guitarVoicings": {
+                "attack": 1,
+                "harmonic": 7,
+                "fallback": 20
+              },
+              "lastStrum": {
+                "at": 9.371165321574175,
+                "notes": [
+                  55,
+                  50,
+                  43
+                ],
+                "source": "harmonic",
+                "technique": "open",
+                "upstroke": true
+              }
+            },
+            "errors": []
+          }
+        ]
+      },
+      {
+        "clip": "human-fly-32",
+        "baseline": {
+          "cosine_distance": 0.029785,
+          "output_pitch_class_energy": [
+            0.0003345079593320294,
+            0.001606553929412579,
+            0.714144259390738,
+            0.0006766150375000684,
+            0.00028167408811388683,
+            0.0009312130989208308,
+            0.0062151417459267114,
+            0.6869594548479003,
+            0.0013837078284505205,
+            0.13402095667305144,
+            0.000415151834846616,
+            0.008846193775184414
+          ],
+          "reference_pitch_class_energy": [
+            0.013450664597620851,
+            0.0199077683196947,
+            0.5645289819186992,
+            0.03189499650595263,
+            0.004696257606772191,
+            0.04923926907268385,
+            0.0463160388589107,
+            0.8011664700042788,
+            0.01168686408797272,
+            0.11201734765296607,
+            0.01271311005062325,
+            0.1428529224431209
+          ],
+          "wav_sha256": "8438fe04e7e2edf146ec8b67704ed81ba401c10a6870ede33ad84e647d39fc9f",
+          "reference_sha256": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+        },
+        "candidate": {
+          "cosine_distance": 0.043433,
+          "output_pitch_class_energy": [
+            0.000569153025603411,
+            0.0018982165482742154,
+            0.7464786278779469,
+            0.001150158455806337,
+            0.0015828805007594346,
+            0.0014313780343539802,
+            0.00960042766614308,
+            0.639902692058176,
+            0.0017667352687123522,
+            0.18177730334036812,
+            0.0014207234546095172,
+            0.012004266282547624
+          ],
+          "reference_pitch_class_energy": [
+            0.014296025316244418,
+            0.019929555298998043,
+            0.5637372503046649,
+            0.03203761511828874,
+            0.004746560255350842,
+            0.049374616137380686,
+            0.04639548573166298,
+            0.8016055128170866,
+            0.011678572176944532,
+            0.11243253450647664,
+            0.012789504531440652,
+            0.14299294809330523
+          ],
+          "wav_sha256": "b27d567c9ab8ea9fd6ac207098b7b6c9b754c37dad35b403f72ba68d2993fb23",
+          "reference_sha256": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+        },
+        "capture_metadata": [
+          {
+            "id": "band-refined-control-human-fly-32-synth",
+            "mode": "synth",
+            "song": "human-fly",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 32,
+            "firstElapsed": 33.84,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 290880,
+            "duration": 6.06,
+            "peak": 0.58831787109375,
+            "rms": 0.1130641740841135,
+            "bpm": 117.44999999999999,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 40.06133333333334,
+              "barCount": 19,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 1429,
+              "pending": 12,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 45,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 10.560579821200513,
+                  "key": "guitar:55",
+                  "rate": 1,
+                  "velocity": 0.549824,
+                  "technique": "open",
+                  "upstroke": true
+                }
+              },
+              "guitarStrokes": {
+                "open": 15,
+                "palm": 0,
+                "cut": 0,
+                "up": 7,
+                "down": 8
+              },
+              "guitarVoicings": {
+                "attack": 0,
+                "harmonic": 0,
+                "fallback": 15
+              },
+              "lastStrum": {
+                "at": 10.546579821200513,
+                "notes": [
+                  67,
+                  62,
+                  55
+                ],
+                "source": "fallback",
+                "technique": "open",
+                "upstroke": true
+              }
+            },
+            "errors": []
+          },
+          {
+            "id": "band-refined-candidate-human-fly-32-synth",
+            "mode": "synth",
+            "song": "human-fly",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 32,
+            "firstElapsed": 33.832,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 288000,
+            "duration": 6,
+            "peak": 0.56640625,
+            "rms": 0.10480139797989568,
+            "bpm": 117.44999999999999,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "human-fly",
+              "contentSeconds": 39.949333333333335,
+              "barCount": 19,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 118,
+              "sourceDuration": 239.491
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 875,
+              "pending": 15,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 45,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 9.941913154533843,
+                  "key": "guitar:55",
+                  "rate": 1,
+                  "velocity": 0.549824,
+                  "technique": "open",
+                  "upstroke": true
+                }
+              },
+              "guitarStrokes": {
+                "open": 15,
+                "palm": 0,
+                "cut": 0,
+                "up": 7,
+                "down": 8
+              },
+              "guitarVoicings": {
+                "attack": 2,
+                "harmonic": 0,
+                "fallback": 13
+              },
+              "lastStrum": {
+                "at": 9.927913154533844,
+                "notes": [
+                  67,
+                  62,
+                  55
+                ],
+                "source": "fallback",
+                "technique": "open",
+                "upstroke": true
+              }
+            },
+            "errors": []
+          }
+        ]
+      },
+      {
+        "clip": "i-got-a-feeling-20",
+        "baseline": {
+          "cosine_distance": 0.052415,
+          "output_pitch_class_energy": [
+            0.0015726954706010562,
+            0.18259644710596054,
+            0.6005674900366316,
+            0.005817694730127008,
+            0.002807225624569124,
+            0.002394882538239604,
+            0.4062475874623363,
+            0.45625228075816415,
+            0.002049422209312158,
+            0.13284429598512776,
+            0.004296389256486629,
+            0.46373891405668183
+          ],
+          "reference_pitch_class_energy": [
+            0.003973723369947575,
+            0.052691327559534575,
+            0.6043549253184618,
+            0.031148892643616678,
+            0.03814383875045756,
+            0.007953005670740853,
+            0.4996722579870333,
+            0.5706714047106676,
+            0.00901993769807002,
+            0.03648426230194472,
+            0.006444571393210678,
+            0.22952623116023707
+          ],
+          "wav_sha256": "6b7555ebe210ae9595c097e8e9560fa56f09067ac7b42640acaf9075c293e51a",
+          "reference_sha256": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81"
+        },
+        "candidate": {
+          "cosine_distance": 0.048232,
+          "output_pitch_class_energy": [
+            0.0017351397973517386,
+            0.13296861243459732,
+            0.6225083894387105,
+            0.006218169631660607,
+            0.0032603080657574346,
+            0.0022841865711795547,
+            0.4581292285834848,
+            0.4034332563482311,
+            0.0036482731344904627,
+            0.12517535965049878,
+            0.0051270866135253446,
+            0.45430813302989187
+          ],
+          "reference_pitch_class_energy": [
+            0.003793597190919751,
+            0.052624860682286216,
+            0.591238407566047,
+            0.029680153508827956,
+            0.038818738831667324,
+            0.008044195522149607,
+            0.5152188452166854,
+            0.5688967800786244,
+            0.008695936334792747,
+            0.03630307956098427,
+            0.006512554078078792,
+            0.23381811712031478
+          ],
+          "wav_sha256": "3cb011fa16955e2c32b3ae6fe0cd3c907f23b3a7c80bec51f3074b9a4fde6b00",
+          "reference_sha256": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81"
+        },
+        "capture_metadata": [
+          {
+            "id": "band-refined-control-i-got-a-feeling-20-synth",
+            "mode": "synth",
+            "song": "i-got-a-feeling",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 20,
+            "firstElapsed": 21.890666666666668,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 296640,
+            "duration": 6.18,
+            "peak": 0.572235107421875,
+            "rms": 0.11025398270334702,
+            "bpm": 120.19,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "i-got-a-feeling",
+              "contentSeconds": 28.28,
+              "barCount": 15,
+              "bpm": 120.19,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 185,
+              "sourceDuration": 368.718
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 963,
+              "pending": 27,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 126,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 11.487859999445291,
+                  "key": "guitar:70",
+                  "rate": 1.0594630943592953,
+                  "velocity": 0.5160319999999999,
+                  "technique": "open",
+                  "upstroke": false
+                }
+              },
+              "guitarStrokes": {
+                "open": 36,
+                "palm": 6,
+                "cut": 0,
+                "up": 23,
+                "down": 19
+              },
+              "guitarVoicings": {
+                "attack": 0,
+                "harmonic": 6,
+                "fallback": 36
+              },
+              "lastStrum": {
+                "at": 11.473859999445292,
+                "notes": [
+                  59,
+                  66,
+                  71
+                ],
+                "source": "fallback",
+                "technique": "open",
+                "upstroke": false
+              }
+            },
+            "errors": []
+          },
+          {
+            "id": "band-refined-candidate-i-got-a-feeling-20-synth",
+            "mode": "synth",
+            "song": "i-got-a-feeling",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 20,
+            "firstElapsed": 21.88533333333333,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 288000,
+            "duration": 6,
+            "peak": 0.552642822265625,
+            "rms": 0.111970710178393,
+            "bpm": 120.19,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "i-got-a-feeling",
+              "contentSeconds": 28,
+              "barCount": 14,
+              "bpm": 120.19,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 185,
+              "sourceDuration": 368.718
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 790,
+              "pending": 6,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 102,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 9.339021660149207,
+                  "key": "guitar:55",
+                  "rate": 1,
+                  "velocity": 0.6512,
+                  "technique": "open",
+                  "upstroke": false
+                }
+              },
+              "guitarStrokes": {
+                "open": 29,
+                "palm": 5,
+                "cut": 0,
+                "up": 19,
+                "down": 15
+              },
+              "guitarVoicings": {
+                "attack": 4,
+                "harmonic": 6,
+                "fallback": 24
+              },
+              "lastStrum": {
+                "at": 9.325021660149208,
+                "notes": [
+                  43,
+                  50,
+                  55
+                ],
+                "source": "harmonic",
+                "technique": "open",
+                "upstroke": false
+              }
+            },
+            "errors": []
+          }
+        ]
+      },
+      {
+        "clip": "sister-185",
+        "baseline": {
+          "cosine_distance": 0.370354,
+          "output_pitch_class_energy": [
+            0.37682614125443764,
+            0.018685853607939305,
+            0.1864336929635156,
+            0.011770240455603355,
+            0.5495710284890207,
+            0.316436433603426,
+            0.27650293469671594,
+            0.1407453278457014,
+            0.017030582469318302,
+            0.3441720936942115,
+            0.003200271500133707,
+            0.45340784409032275
+          ],
+          "reference_pitch_class_energy": [
+            0.15150694304625162,
+            0.02751133734566467,
+            0.6287335534055256,
+            0.028379180268510523,
+            0.13895153591706122,
+            0.22649284845750747,
+            0.027372126830558407,
+            0.07776985159527366,
+            0.014838038450382224,
+            0.7010056128215258,
+            0.026463995493790877,
+            0.10219692238645618
+          ],
+          "wav_sha256": "ca7d82d60689c3b96d8f971164c274e03f887807d6ca5d1a01ad08a99c2f7314",
+          "reference_sha256": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06"
+        },
+        "candidate": {
+          "cosine_distance": 0.287659,
+          "output_pitch_class_energy": [
+            0.32805048191646974,
+            0.021346416063859567,
+            0.2129793843157796,
+            0.011214011393679762,
+            0.5690780241660012,
+            0.288426477258882,
+            0.22862608951407867,
+            0.1465728675450284,
+            0.01677502782617633,
+            0.4647287736336167,
+            0.0031658778117321534,
+            0.3865020796543287
+          ],
+          "reference_pitch_class_energy": [
+            0.15150209455469393,
+            0.027517758901915906,
+            0.6282188724217912,
+            0.028405251198925483,
+            0.13904128999628249,
+            0.22639149214434973,
+            0.02738402925042393,
+            0.07781246596473604,
+            0.014845901463869236,
+            0.7014662786412457,
+            0.026478770169981913,
+            0.10226123038821723
+          ],
+          "wav_sha256": "d4f08b35b2022b5244dde95135155e9cda0197e819e5953d0086182734139174",
+          "reference_sha256": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06"
+        },
+        "capture_metadata": [
+          {
+            "id": "band-refined-control-sister-185-synth",
+            "mode": "synth",
+            "song": "sister",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 185,
+            "firstElapsed": 186.84,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 288000,
+            "duration": 6,
+            "peak": 0.543060302734375,
+            "rms": 0.11698176451944901,
+            "bpm": 117.44999999999999,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "sister",
+              "contentSeconds": 192.97066666666666,
+              "barCount": 95,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 138,
+              "sourceDuration": 281.287
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 894,
+              "pending": 27,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 129,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 10.41151638995317,
+                  "key": "guitar:67",
+                  "rate": 1,
+                  "velocity": 0.549824,
+                  "technique": "open",
+                  "upstroke": false
+                }
+              },
+              "guitarStrokes": {
+                "open": 29,
+                "palm": 14,
+                "cut": 0,
+                "up": 22,
+                "down": 21
+              },
+              "guitarVoicings": {
+                "attack": 0,
+                "harmonic": 10,
+                "fallback": 33
+              },
+              "lastStrum": {
+                "at": 10.397516389953172,
+                "notes": [
+                  55,
+                  62,
+                  67
+                ],
+                "source": "fallback",
+                "technique": "open",
+                "upstroke": false
+              }
+            },
+            "errors": []
+          },
+          {
+            "id": "band-refined-candidate-sister-185-synth",
+            "mode": "synth",
+            "song": "sister",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 185,
+            "firstElapsed": 186.83733333333333,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 288000,
+            "duration": 6,
+            "peak": 0.552459716796875,
+            "rms": 0.11352081777706298,
+            "bpm": 117.44999999999999,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "sister",
+              "contentSeconds": 192.96266666666668,
+              "barCount": 95,
+              "bpm": 117.45,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 138,
+              "sourceDuration": 281.287
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 769,
+              "pending": 27,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 129,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 10.272849723286503,
+                  "key": "guitar:67",
+                  "rate": 1,
+                  "velocity": 0.549824,
+                  "technique": "open",
+                  "upstroke": false
+                }
+              },
+              "guitarStrokes": {
+                "open": 29,
+                "palm": 14,
+                "cut": 0,
+                "up": 22,
+                "down": 21
+              },
+              "guitarVoicings": {
+                "attack": 2,
+                "harmonic": 10,
+                "fallback": 31
+              },
+              "lastStrum": {
+                "at": 10.258849723286504,
+                "notes": [
+                  55,
+                  62,
+                  67
+                ],
+                "source": "fallback",
+                "technique": "open",
+                "upstroke": false
+              }
+            },
+            "errors": []
+          }
+        ]
+      },
+      {
+        "clip": "under-the-moon-97",
+        "baseline": {
+          "cosine_distance": 0.328285,
+          "output_pitch_class_energy": [
+            0.4921014596252247,
+            0.002154970523530298,
+            0.4219825672830628,
+            0.0008128384349975413,
+            0.004934272294911471,
+            0.2064721099808982,
+            0.0038894230879541023,
+            0.7272420629232422,
+            0.001825620590272562,
+            0.09003644962676652,
+            0.0008567004239726572,
+            0.009985374917162724
+          ],
+          "reference_pitch_class_energy": [
+            0.4267729108986759,
+            0.01718042547294132,
+            0.5893636520674077,
+            0.017773911057699987,
+            0.6182656421381496,
+            0.13532491988084194,
+            0.029507202148868112,
+            0.23649191948003043,
+            0.0027005123505392794,
+            0.10539300544361743,
+            0.014786013174820088,
+            0.03473245621694843
+          ],
+          "wav_sha256": "35ce503093d554e7089f21bc13562e19b91ba0a01c14e45b111046929fc37fd8",
+          "reference_sha256": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8"
+        },
+        "candidate": {
+          "cosine_distance": 0.331486,
+          "output_pitch_class_energy": [
+            0.40903983437020236,
+            0.0026235779697083485,
+            0.46342351960493217,
+            0.0010554876126300232,
+            0.006752777287137194,
+            0.20432184995217542,
+            0.004524418299605603,
+            0.7523974954270946,
+            0.002923582711808923,
+            0.0994101535495256,
+            0.0010025597040107391,
+            0.010471256584298948
+          ],
+          "reference_pitch_class_energy": [
+            0.4267729108986759,
+            0.01718042547294132,
+            0.5893636520674077,
+            0.017773911057699987,
+            0.6182656421381496,
+            0.13532491988084194,
+            0.029507202148868112,
+            0.23649191948003043,
+            0.0027005123505392794,
+            0.10539300544361743,
+            0.014786013174820088,
+            0.03473245621694843
+          ],
+          "wav_sha256": "f4409c83fc36869e144d61d05f96db90e174b68dbfd06339e27a8c070cad9d7e",
+          "reference_sha256": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8"
+        },
+        "capture_metadata": [
+          {
+            "id": "band-refined-control-under-the-moon-97-synth",
+            "mode": "synth",
+            "song": "under-the-moon",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 97,
+            "firstElapsed": 98.82933333333334,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 288000,
+            "duration": 6,
+            "peak": 0.544647216796875,
+            "rms": 0.11338478696063219,
+            "bpm": 161.5,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "under-the-moon",
+              "contentSeconds": 104.98666666666666,
+              "barCount": 70,
+              "bpm": 161.5,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 211,
+              "sourceDuration": 313.313
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 1084,
+              "pending": 9,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 51,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 9.80271826625387,
+                  "key": "guitar:49",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.617408,
+                  "technique": "open",
+                  "upstroke": true
+                }
+              },
+              "guitarStrokes": {
+                "open": 17,
+                "palm": 0,
+                "cut": 0,
+                "up": 4,
+                "down": 13
+              },
+              "guitarVoicings": {
+                "attack": 0,
+                "harmonic": 0,
+                "fallback": 17
+              },
+              "lastStrum": {
+                "at": 9.78871826625387,
+                "notes": [
+                  60,
+                  55,
+                  48
+                ],
+                "source": "fallback",
+                "technique": "open",
+                "upstroke": true
+              }
+            },
+            "errors": []
+          },
+          {
+            "id": "band-refined-candidate-under-the-moon-97-synth",
+            "mode": "synth",
+            "song": "under-the-moon",
+            "solo": true,
+            "baseline": false,
+            "seekRequested": 97,
+            "firstElapsed": 98.82933333333334,
+            "sampleRate": 48000,
+            "channels": 2,
+            "bits": 16,
+            "frames": 288000,
+            "duration": 6,
+            "peak": 0.539459228515625,
+            "rms": 0.11298909699665725,
+            "bpm": 161.5,
+            "app": "br-249-band-refinement",
+            "clock": {
+              "songId": "under-the-moon",
+              "contentSeconds": 104.97066666666666,
+              "barCount": 70,
+              "bpm": 161.5,
+              "instrumentMakeup": 2.2654265100292412,
+              "totalBars": 211,
+              "sourceDuration": 313.313
+            },
+            "stats": {
+              "enabled": true,
+              "tone": "crunch",
+              "guitarStyle": "rock",
+              "prepareMs": 866,
+              "pending": 9,
+              "bytes": 13610240,
+              "roomWet": 0.35,
+              "roomNodes": 26,
+              "played": 51,
+              "dropped": 0,
+              "last": {
+                "guitar": {
+                  "at": 9.541384932920536,
+                  "key": "guitar:49",
+                  "rate": 0.9438743126816935,
+                  "velocity": 0.617408,
+                  "technique": "open",
+                  "upstroke": true
+                }
+              },
+              "guitarStrokes": {
+                "open": 17,
+                "palm": 0,
+                "cut": 0,
+                "up": 4,
+                "down": 13
+              },
+              "guitarVoicings": {
+                "attack": 2,
+                "harmonic": 0,
+                "fallback": 15
+              },
+              "lastStrum": {
+                "at": 9.527384932920537,
+                "notes": [
+                  60,
+                  55,
+                  48
+                ],
+                "source": "fallback",
+                "technique": "open",
+                "upstroke": true
+              }
+            },
+            "errors": []
+          }
+        ]
+      }
+    ]
+  },
+  "mix_output": {
+    "scope": "Actual post-master instrumental mix; original drums+bass+other recombined by the app. Melody guide excluded in both comparisons.",
+    "frequency_bands_hz": [
+      [
+        32,
+        80
+      ],
+      [
+        80,
+        250
+      ],
+      [
+        250,
+        1000
+      ],
+      [
+        1000,
+        4000
+      ],
+      [
+        4000,
+        12000
+      ],
+      [
+        12000,
+        16000
+      ]
+    ],
+    "baseline_phase": "band-before",
+    "candidate_phase": "band-release",
+    "caveats": [
+      "Relative band powers are level-normalized; dynamics and level are separate measurements.",
+      "Stem bleed is not instrument ground truth. Recombining three stems can retain vocal leakage and separation artifacts.",
+      "REC/seek times have small encoding and control delays; this is not sample-aligned waveform fidelity.",
+      "A quiet interval can be musical: check against the original before calling it a dropout.",
+      "No listening-quality score, pitch/chord accuracy claim, or physical iPhone measurement."
+    ],
+    "clips": [
+      {
+        "clip": "electric-sheep-16",
+        "baseline": {
+          "duration_s": 8.04,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.620148,
+          "rms": 0.126647,
+          "crest_db": 13.8,
+          "active_rms_p95_p10_db": 3.95,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.198992,
+            0.0376,
+            0.637013,
+            0.103816,
+            0.017138,
+            0.005441
+          ],
+          "sha256": "bc5bfe1a281222a984b142dd3c055169e89a0a1dc8a482709feb89ad2bd1756c",
+          "app": "br-248-rhythm-audition",
+          "bpm": 129.2,
+          "capture_content_start_s": 17.938666666666666,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -15.6,
+          "true_peak_dbtp": -4.1
+        },
+        "candidate": {
+          "duration_s": 7.98,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.624512,
+          "rms": 0.143044,
+          "crest_db": 12.8,
+          "active_rms_p95_p10_db": 2.4,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.272561,
+            0.041776,
+            0.469584,
+            0.198097,
+            0.013354,
+            0.004629
+          ],
+          "sha256": "efd9a45918ce4f225e0124400c80ffda525c420772192c0c511347f0725c1f88",
+          "app": "br-249-band-refinement",
+          "bpm": 129.2,
+          "capture_content_start_s": 17.818666666666665,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -14.5,
+          "true_peak_dbtp": -4.1
+        },
+        "reference": {
+          "duration_s": 7.14,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.462952,
+          "rms": 0.092868,
+          "crest_db": 13.95,
+          "active_rms_p95_p10_db": 4.39,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.109588,
+            0.054819,
+            0.452272,
+            0.23955,
+            0.131212,
+            0.012559
+          ],
+          "sha256": "7b1bf785808bb210a81ce150a8f7036cd3ebb24a283a4aef4288c7b232c638d1",
+          "app": "br-248-rhythm-audition",
+          "bpm": 129,
+          "capture_content_start_s": 18.77466666666667,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -17.0,
+          "true_peak_dbtp": -6.7
+        },
+        "baseline_difference": {
+          "band_difference_db": [
+            2.59,
+            -1.64,
+            1.49,
+            -3.63,
+            -8.84,
+            -3.63
+          ],
+          "core_band_mean_absolute_difference_db": 3.64,
+          "level_difference_db": 2.69
+        },
+        "candidate_difference": {
+          "band_difference_db": [
+            3.96,
+            -1.18,
+            0.16,
+            -0.83,
+            -9.92,
+            -4.33
+          ],
+          "core_band_mean_absolute_difference_db": 3.21,
+          "level_difference_db": 3.75
+        },
+        "balance_comparison_usable": true
+      },
+      {
+        "clip": "hey-16",
+        "baseline": {
+          "duration_s": 8.52,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.507233,
+          "rms": 0.112945,
+          "crest_db": 13.05,
+          "active_rms_p95_p10_db": 5.71,
+          "quiet_fraction": 0.0258,
+          "longest_quiet_s": 0.22,
+          "band_power_fraction": [
+            0.442826,
+            0.103641,
+            0.374289,
+            0.07863,
+            0.000549,
+            6.5e-05
+          ],
+          "sha256": "dfd45ab23f369bdd2645d6aba74f8a1ffc6e82e1307c7851a9387275378e6347",
+          "app": "br-248-rhythm-audition",
+          "bpm": 120.19,
+          "capture_content_start_s": 17.92,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -17.6,
+          "true_peak_dbtp": -5.9
+        },
+        "candidate": {
+          "duration_s": 7.98,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.619324,
+          "rms": 0.129885,
+          "crest_db": 13.57,
+          "active_rms_p95_p10_db": 3.8,
+          "quiet_fraction": 0.0426,
+          "longest_quiet_s": 0.34,
+          "band_power_fraction": [
+            0.470644,
+            0.103461,
+            0.370292,
+            0.054133,
+            0.001083,
+            0.000387
+          ],
+          "sha256": "ce90988aeb0d51ca872daaa8b958c3834c7d7ac36cbae2e2c975499c2c456a79",
+          "app": "br-249-band-refinement",
+          "bpm": 120.19,
+          "capture_content_start_s": 17.821333333333335,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -16.5,
+          "true_peak_dbtp": -4.2
+        },
+        "reference": {
+          "duration_s": 6.6,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.40036,
+          "rms": 0.061731,
+          "crest_db": 16.24,
+          "active_rms_p95_p10_db": 14.9,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.438103,
+            0.232494,
+            0.275611,
+            0.02668,
+            0.020645,
+            0.006467
+          ],
+          "sha256": "f7b4848d1c4accfe656375d7c3fa8bb64d5b3a185ef4702d4411404ba2eec2dd",
+          "app": "br-248-rhythm-audition",
+          "bpm": 123.00000000000001,
+          "capture_content_start_s": 18.22,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -22.9,
+          "true_peak_dbtp": -7.9
+        },
+        "baseline_difference": {
+          "band_difference_db": [
+            0.05,
+            -3.51,
+            1.33,
+            4.69,
+            -13.15,
+            -8.11
+          ],
+          "core_band_mean_absolute_difference_db": 4.55,
+          "level_difference_db": 5.25
+        },
+        "candidate_difference": {
+          "band_difference_db": [
+            0.31,
+            -3.52,
+            1.28,
+            3.07,
+            -12.8,
+            -8.11
+          ],
+          "core_band_mean_absolute_difference_db": 4.2,
+          "level_difference_db": 6.46
+        },
+        "balance_comparison_usable": true
+      },
+      {
+        "clip": "human-fly-16",
+        "baseline": {
+          "duration_s": 8.1,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.490692,
+          "rms": 0.107217,
+          "crest_db": 13.21,
+          "active_rms_p95_p10_db": 5.63,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.494949,
+            0.147994,
+            0.241976,
+            0.100134,
+            0.011439,
+            0.003507
+          ],
+          "sha256": "b8bcd36605af3066b4a4643003a3bd8df307f67a7c77571e60b6691d81d4dab7",
+          "app": "br-248-rhythm-audition",
+          "bpm": 117.44999999999999,
+          "capture_content_start_s": 17.882666666666665,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -18.0,
+          "true_peak_dbtp": -6.2
+        },
+        "candidate": {
+          "duration_s": 7.98,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.536041,
+          "rms": 0.115895,
+          "crest_db": 13.3,
+          "active_rms_p95_p10_db": 3.85,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.26597,
+            0.084175,
+            0.579319,
+            0.056801,
+            0.01016,
+            0.003576
+          ],
+          "sha256": "c5fe59faadf25f24e86a2fb16e3947a912ba7153ac164b5832d4c698488391f0",
+          "app": "br-249-band-refinement",
+          "bpm": 117.44999999999999,
+          "capture_content_start_s": 17.834666666666667,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -16.9,
+          "true_peak_dbtp": -5.4
+        },
+        "reference": {
+          "duration_s": 7.68,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.424591,
+          "rms": 0.095288,
+          "crest_db": 12.98,
+          "active_rms_p95_p10_db": 8.24,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.27103,
+            0.15455,
+            0.441314,
+            0.036109,
+            0.07278,
+            0.024216
+          ],
+          "sha256": "25a321c8320a23adeb9dfa31a791642e019cc73270db5365e8abfb5a4a4fbab0",
+          "app": "br-248-rhythm-audition",
+          "bpm": 117.00000000000001,
+          "capture_content_start_s": 18.353333333333335,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -18.1,
+          "true_peak_dbtp": -7.4
+        },
+        "baseline_difference": {
+          "band_difference_db": [
+            2.62,
+            -0.19,
+            -2.61,
+            4.43,
+            -8.04,
+            -8.39
+          ],
+          "core_band_mean_absolute_difference_db": 3.58,
+          "level_difference_db": 1.02
+        },
+        "candidate_difference": {
+          "band_difference_db": [
+            -0.08,
+            -2.64,
+            1.18,
+            1.97,
+            -8.55,
+            -8.31
+          ],
+          "core_band_mean_absolute_difference_db": 2.88,
+          "level_difference_db": 1.7
+        },
+        "balance_comparison_usable": true
+      },
+      {
+        "clip": "i-got-a-feeling-16",
+        "baseline": {
+          "duration_s": 8.04,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.518707,
+          "rms": 0.103869,
+          "crest_db": 13.97,
+          "active_rms_p95_p10_db": 5.49,
+          "quiet_fraction": 0.0423,
+          "longest_quiet_s": 0.34,
+          "band_power_fraction": [
+            0.259396,
+            0.075894,
+            0.592978,
+            0.07029,
+            0.001154,
+            0.000288
+          ],
+          "sha256": "e6629a9885cce75530aba4e7265264bdffd9616dd8aeb0ab4808ebf85398e953",
+          "app": "br-248-rhythm-audition",
+          "bpm": 120.19,
+          "capture_content_start_s": 17.864,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -17.7,
+          "true_peak_dbtp": -5.7
+        },
+        "candidate": {
+          "duration_s": 7.98,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.57196,
+          "rms": 0.122865,
+          "crest_db": 13.36,
+          "active_rms_p95_p10_db": 3.28,
+          "quiet_fraction": 0.0526,
+          "longest_quiet_s": 0.42,
+          "band_power_fraction": [
+            0.237083,
+            0.072702,
+            0.49486,
+            0.193581,
+            0.00131,
+            0.000465
+          ],
+          "sha256": "769a1ae72f2c82ac13e86cb91f72df4760fa122ffa21bfb64d90fb57eddaae1b",
+          "app": "br-249-band-refinement",
+          "bpm": 120.19,
+          "capture_content_start_s": 17.818666666666665,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -15.8,
+          "true_peak_dbtp": -4.9
+        },
+        "reference": {
+          "duration_s": 7.32,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.386108,
+          "rms": 0.067931,
+          "crest_db": 15.09,
+          "active_rms_p95_p10_db": 8.56,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.409765,
+            0.115468,
+            0.444431,
+            0.024277,
+            0.005703,
+            0.000356
+          ],
+          "sha256": "1ef8ee320eeee12cfe6f6b4055973af1c7f1efd8ac586fd48506ffeb105e0a96",
+          "app": "br-248-rhythm-audition",
+          "bpm": 117.00000000000001,
+          "capture_content_start_s": 18.727999999999998,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -22.2,
+          "true_peak_dbtp": -8.3
+        },
+        "baseline_difference": {
+          "band_difference_db": [
+            -1.99,
+            -1.82,
+            1.25,
+            4.62,
+            -6.94,
+            0.0
+          ],
+          "core_band_mean_absolute_difference_db": 3.32,
+          "level_difference_db": 3.69
+        },
+        "candidate_difference": {
+          "band_difference_db": [
+            -2.38,
+            -2.01,
+            0.47,
+            9.02,
+            -6.39,
+            0.0
+          ],
+          "core_band_mean_absolute_difference_db": 4.05,
+          "level_difference_db": 5.15
+        },
+        "balance_comparison_usable": true
+      },
+      {
+        "clip": "sister-16",
+        "baseline": {
+          "duration_s": 8.04,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.45285,
+          "rms": 0.061176,
+          "crest_db": 17.39,
+          "active_rms_p95_p10_db": 19.15,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.010314,
+            0.272257,
+            0.515401,
+            0.200401,
+            0.001437,
+            0.00019
+          ],
+          "sha256": "89f21c342adfe5eba75f4b19e8e2572948f133999ba3079987a63b725407caed",
+          "app": "br-248-rhythm-audition",
+          "bpm": 117.44999999999999,
+          "capture_content_start_s": 17.896,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -21.2,
+          "true_peak_dbtp": -6.8
+        },
+        "candidate": {
+          "duration_s": 7.98,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.442749,
+          "rms": 0.077434,
+          "crest_db": 15.14,
+          "active_rms_p95_p10_db": 10.52,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.005753,
+            0.047004,
+            0.835415,
+            0.110789,
+            0.00077,
+            0.000268
+          ],
+          "sha256": "3e4405a819a7cfa6b6c2edc1a1484e9247fff1c6100e2ce3b714d4d304d618d4",
+          "app": "br-249-band-refinement",
+          "bpm": 117.44999999999999,
+          "capture_content_start_s": 17.816,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -19.6,
+          "true_peak_dbtp": -7.1
+        },
+        "reference": {
+          "duration_s": 7.86,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.194153,
+          "rms": 0.037785,
+          "crest_db": 14.22,
+          "active_rms_p95_p10_db": 10.78,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.001969,
+            0.036879,
+            0.91426,
+            0.046542,
+            0.000323,
+            2.7e-05
+          ],
+          "sha256": "6b3cb94de5556bc753fb422b46bdce5d7540796744e3211435d5b0d11d1b8497",
+          "app": "br-248-rhythm-audition",
+          "bpm": 117.00000000000001,
+          "capture_content_start_s": 18.887999999999998,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -26.0,
+          "true_peak_dbtp": -14.2
+        },
+        "baseline_difference": {
+          "band_difference_db": [
+            7.19,
+            8.68,
+            -2.49,
+            6.34,
+            1.57,
+            0.0
+          ],
+          "core_band_mean_absolute_difference_db": 5.26,
+          "level_difference_db": 4.19
+        },
+        "candidate_difference": {
+          "band_difference_db": [
+            4.66,
+            1.05,
+            -0.39,
+            3.77,
+            0.0,
+            0.0
+          ],
+          "core_band_mean_absolute_difference_db": 1.97,
+          "level_difference_db": 6.23
+        },
+        "balance_comparison_usable": true
+      },
+      {
+        "clip": "tabasco-6",
+        "baseline": {
+          "duration_s": 7.98,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.52359,
+          "rms": 0.099627,
+          "crest_db": 14.41,
+          "active_rms_p95_p10_db": 6.42,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.320649,
+            0.111275,
+            0.355048,
+            0.176265,
+            0.02833,
+            0.008433
+          ],
+          "sha256": "45396bcaaa0428cfc2333173091e61952ae9fb6719253d50a1fc7b97c403e89b",
+          "app": "br-248-rhythm-audition",
+          "bpm": 132.51000000000002,
+          "capture_content_start_s": 7.930666666666666,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -17.7,
+          "true_peak_dbtp": -5.6
+        },
+        "candidate": {
+          "duration_s": 7.98,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.551239,
+          "rms": 0.117267,
+          "crest_db": 13.44,
+          "active_rms_p95_p10_db": 4.99,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.307326,
+            0.065535,
+            0.515067,
+            0.07514,
+            0.027541,
+            0.009391
+          ],
+          "sha256": "b5f8833bdbf8ab50bf31d144ed6ee4ddc7c7b09952c95e4f3b1eaa72ba585dde",
+          "app": "br-249-band-refinement",
+          "bpm": 132.51000000000002,
+          "capture_content_start_s": 7.8293333333333335,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -16.5,
+          "true_peak_dbtp": -5.1
+        },
+        "reference": {
+          "duration_s": 7.2,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.440369,
+          "rms": 0.100052,
+          "crest_db": 12.87,
+          "active_rms_p95_p10_db": 6.78,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.265719,
+            0.127692,
+            0.412496,
+            0.099856,
+            0.076348,
+            0.017891
+          ],
+          "sha256": "633c69d20bf6701b463535571c3d74b23cf28b8ec69e9cf84e2f49f520b093c5",
+          "app": "br-248-rhythm-audition",
+          "bpm": 136,
+          "capture_content_start_s": 9.310666666666666,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -17.4,
+          "true_peak_dbtp": -7.1
+        },
+        "baseline_difference": {
+          "band_difference_db": [
+            0.82,
+            -0.6,
+            -0.65,
+            2.47,
+            -4.31,
+            -3.27
+          ],
+          "core_band_mean_absolute_difference_db": 1.77,
+          "level_difference_db": -0.04
+        },
+        "candidate_difference": {
+          "band_difference_db": [
+            0.63,
+            -2.9,
+            0.96,
+            -1.24,
+            -4.43,
+            -2.8
+          ],
+          "core_band_mean_absolute_difference_db": 2.03,
+          "level_difference_db": 1.38
+        },
+        "balance_comparison_usable": true
+      },
+      {
+        "clip": "under-the-moon-16",
+        "baseline": {
+          "duration_s": 8.1,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.543243,
+          "rms": 0.108264,
+          "crest_db": 14.01,
+          "active_rms_p95_p10_db": 8.17,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.489128,
+            0.099522,
+            0.309502,
+            0.085961,
+            0.012227,
+            0.00366
+          ],
+          "sha256": "cb5a472c89dd53891e3175e93a9de9b780bfe575b83fc4b2cd048ce2965b9120",
+          "app": "br-248-rhythm-audition",
+          "bpm": 161.5,
+          "capture_content_start_s": 17.842666666666666,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -18.0,
+          "true_peak_dbtp": -5.3
+        },
+        "candidate": {
+          "duration_s": 7.98,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.567902,
+          "rms": 0.123238,
+          "crest_db": 13.27,
+          "active_rms_p95_p10_db": 5.19,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.417752,
+            0.082378,
+            0.394318,
+            0.095846,
+            0.007285,
+            0.00242
+          ],
+          "sha256": "652fd7ee5ac34dfae3f580aadb458bf75e95ee82749b36d3f8b122ebccfc4994",
+          "app": "br-249-band-refinement",
+          "bpm": 161.5,
+          "capture_content_start_s": 17.826666666666668,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -16.8,
+          "true_peak_dbtp": -4.9
+        },
+        "reference": {
+          "duration_s": 7.92,
+          "channels": 2,
+          "sample_rate": 48000,
+          "peak": 0.427734,
+          "rms": 0.062163,
+          "crest_db": 16.75,
+          "active_rms_p95_p10_db": 10.58,
+          "quiet_fraction": 0.0,
+          "longest_quiet_s": 0.0,
+          "band_power_fraction": [
+            0.413762,
+            0.198339,
+            0.258896,
+            0.077874,
+            0.039034,
+            0.012095
+          ],
+          "sha256": "de1b5ed371bb12bdfce2592caad32fc5fd45430af40ab34e896d6809e7ec86fc",
+          "app": "br-248-rhythm-audition",
+          "bpm": 161,
+          "capture_content_start_s": 18.27733333333333,
+          "dropped_hits": 0,
+          "segment_integrated_lufs": -22.6,
+          "true_peak_dbtp": -7.4
+        },
+        "baseline_difference": {
+          "band_difference_db": [
+            0.73,
+            -2.99,
+            0.78,
+            0.43,
+            -5.04,
+            -5.19
+          ],
+          "core_band_mean_absolute_difference_db": 1.99,
+          "level_difference_db": 4.82
+        },
+        "candidate_difference": {
+          "band_difference_db": [
+            0.04,
+            -3.82,
+            1.83,
+            0.9,
+            -7.29,
+            -6.99
+          ],
+          "core_band_mean_absolute_difference_db": 2.78,
+          "level_difference_db": 5.94
+        },
+        "balance_comparison_usable": true
+      }
+    ]
+  },
+  "calibration_songs": [
+    "human-fly",
+    "electric-sheep",
+    "hey"
+  ],
+  "held_out_songs": [
+    "sister",
+    "i-got-a-feeling",
+    "under-the-moon",
+    "tabasco"
+  ],
+  "browser": {
+    "scope": "Desktop Chromium, 390px viewport. Not physical iPhone or human listening certification.",
+    "capture_metadata": [
+      {
+        "id": "band-release-human-fly-16-synth",
+        "mode": "synth",
+        "song": "human-fly",
+        "seekRequested": 16,
+        "firstElapsed": 17.834666666666667,
+        "sampleRate": 48000,
+        "channels": 2,
+        "bits": 16,
+        "frames": 383040,
+        "duration": 7.98,
+        "peak": 0.536041259765625,
+        "rms": 0.11589484870967752,
+        "bpm": 117.44999999999999,
+        "app": "br-249-band-refinement",
+        "clock": {
+          "songId": "human-fly",
+          "contentSeconds": 25.96,
+          "barCount": 13,
+          "bpm": 117.45,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 118,
+          "sourceDuration": 239.491
+        },
+        "stats": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "rock",
+          "prepareMs": 712,
+          "pending": 29,
+          "bytes": 13610240,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 175,
+          "dropped": 0,
+          "last": {
+            "drums": {
+              "at": 11.551400595998299,
+              "key": "drums:snare",
+              "rate": 1,
+              "velocity": 0.41
+            },
+            "guitar": {
+              "at": 11.576894848871861,
+              "key": "guitar:64",
+              "rate": 1.0594630943592953,
+              "velocity": 0.37241599999999997,
+              "technique": "open",
+              "upstroke": false
+            },
+            "bass": {
+              "at": 11.331732652192423,
+              "key": "bass:30",
+              "rate": 1.0594630943592953,
+              "velocity": 0.74
+            }
+          },
+          "guitarStrokes": {
+            "open": 31,
+            "palm": 1,
+            "cut": 0,
+            "up": 17,
+            "down": 15
+          },
+          "guitarVoicings": {
+            "attack": 0,
+            "harmonic": 19,
+            "fallback": 13
+          },
+          "lastStrum": {
+            "at": 11.562894848871862,
+            "notes": [
+              53,
+              60,
+              65
+            ],
+            "source": "fallback",
+            "technique": "open",
+            "upstroke": false
+          }
+        },
+        "errors": []
+      },
+      {
+        "id": "band-release-electric-sheep-16-synth",
+        "mode": "synth",
+        "song": "electric-sheep",
+        "seekRequested": 16,
+        "firstElapsed": 17.818666666666665,
+        "sampleRate": 48000,
+        "channels": 2,
+        "bits": 16,
+        "frames": 383040,
+        "duration": 7.98,
+        "peak": 0.62451171875,
+        "rms": 0.14304374786394738,
+        "bpm": 129.2,
+        "app": "br-249-band-refinement",
+        "clock": {
+          "songId": "electric-sheep",
+          "contentSeconds": 25.938666666666666,
+          "barCount": 14,
+          "bpm": 129.2,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 81,
+          "sourceDuration": 150.073
+        },
+        "stats": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "rock",
+          "prepareMs": 1113,
+          "pending": 17,
+          "bytes": 13610240,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 247,
+          "dropped": 0,
+          "last": {
+            "drums": {
+              "at": 13.202327915376685,
+              "key": "drums:snare",
+              "rate": 1,
+              "velocity": 0.74
+            },
+            "bass": {
+              "at": 12.633442466460275,
+              "key": "bass:36",
+              "rate": 0.9438743126816935,
+              "velocity": 0.93
+            },
+            "guitar": {
+              "at": 13.208327915376685,
+              "key": "palm:61",
+              "rate": 1,
+              "velocity": 0.668096,
+              "technique": "palm",
+              "upstroke": true
+            }
+          },
+          "guitarStrokes": {
+            "open": 48,
+            "palm": 26,
+            "cut": 0,
+            "up": 36,
+            "down": 38
+          },
+          "guitarVoicings": {
+            "attack": 0,
+            "harmonic": 21,
+            "fallback": 53
+          },
+          "lastStrum": {
+            "at": 11.344742776057807,
+            "notes": [
+              71,
+              66,
+              59
+            ],
+            "source": "fallback",
+            "technique": "open",
+            "upstroke": true
+          }
+        },
+        "errors": []
+      },
+      {
+        "id": "band-release-hey-16-synth",
+        "mode": "synth",
+        "song": "hey",
+        "seekRequested": 16,
+        "firstElapsed": 17.821333333333335,
+        "sampleRate": 48000,
+        "channels": 2,
+        "bits": 16,
+        "frames": 383040,
+        "duration": 7.98,
+        "peak": 0.61932373046875,
+        "rms": 0.1298851057222342,
+        "bpm": 120.19,
+        "app": "br-249-band-refinement",
+        "clock": {
+          "songId": "hey",
+          "contentSeconds": 25.941333333333333,
+          "barCount": 12,
+          "bpm": 120.19,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 153,
+          "sourceDuration": 304.927
+        },
+        "stats": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "rock",
+          "prepareMs": 851,
+          "pending": 8,
+          "bytes": 13610240,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 155,
+          "dropped": 0,
+          "last": {
+            "drums": {
+              "at": 12.946498876778433,
+              "key": "drums:hat",
+              "rate": 1,
+              "velocity": 0.16
+            },
+            "bass": {
+              "at": 13.050084865629419,
+              "key": "bass:33",
+              "rate": 0.9438743126816935,
+              "velocity": 0.16
+            },
+            "guitar": {
+              "at": 12.960498876778432,
+              "key": "guitar:52",
+              "rate": 1,
+              "velocity": 0.279488,
+              "technique": "open",
+              "upstroke": true
+            }
+          },
+          "guitarStrokes": {
+            "open": 33,
+            "palm": 7,
+            "cut": 0,
+            "up": 30,
+            "down": 10
+          },
+          "guitarVoicings": {
+            "attack": 0,
+            "harmonic": 0,
+            "fallback": 40
+          },
+          "lastStrum": {
+            "at": 10.949660537482304,
+            "notes": [
+              60,
+              55,
+              48
+            ],
+            "source": "fallback",
+            "technique": "open",
+            "upstroke": true
+          }
+        },
+        "errors": []
+      },
+      {
+        "id": "band-release-sister-16-synth",
+        "mode": "synth",
+        "song": "sister",
+        "seekRequested": 16,
+        "firstElapsed": 17.816,
+        "sampleRate": 48000,
+        "channels": 2,
+        "bits": 16,
+        "frames": 383040,
+        "duration": 7.98,
+        "peak": 0.4427490234375,
+        "rms": 0.07743448302353113,
+        "bpm": 117.44999999999999,
+        "app": "br-249-band-refinement",
+        "clock": {
+          "songId": "sister",
+          "contentSeconds": 25.925333333333334,
+          "barCount": 13,
+          "bpm": 117.45,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 138,
+          "sourceDuration": 281.287
+        },
+        "stats": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "rock",
+          "prepareMs": 808,
+          "pending": 5,
+          "bytes": 13610240,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 85,
+          "dropped": 0,
+          "last": {
+            "guitar": {
+              "at": 10.39741081311196,
+              "key": "guitar:40",
+              "rate": 1.0594630943592953,
+              "velocity": 0.44,
+              "technique": "open",
+              "upstroke": true
+            },
+            "drums": {
+              "at": 10.651610046828436,
+              "key": "drums:hat",
+              "rate": 1,
+              "velocity": 0.16
+            },
+            "bass": {
+              "at": 11.383410813111961,
+              "key": "bass:30",
+              "rate": 0.9438743126816935,
+              "velocity": 0.16
+            }
+          },
+          "guitarStrokes": {
+            "open": 22,
+            "palm": 2,
+            "cut": 0,
+            "up": 14,
+            "down": 10
+          },
+          "guitarVoicings": {
+            "attack": 0,
+            "harmonic": 16,
+            "fallback": 8
+          },
+          "lastStrum": {
+            "at": 10.383410813111961,
+            "notes": [
+              53,
+              48,
+              41
+            ],
+            "source": "harmonic",
+            "technique": "open",
+            "upstroke": true
+          }
+        },
+        "errors": []
+      },
+      {
+        "id": "band-release-i-got-a-feeling-16-synth",
+        "mode": "synth",
+        "song": "i-got-a-feeling",
+        "seekRequested": 16,
+        "firstElapsed": 17.818666666666665,
+        "sampleRate": 48000,
+        "channels": 2,
+        "bits": 16,
+        "frames": 383040,
+        "duration": 7.98,
+        "peak": 0.57196044921875,
+        "rms": 0.12286457739688847,
+        "bpm": 120.19,
+        "app": "br-249-band-refinement",
+        "clock": {
+          "songId": "i-got-a-feeling",
+          "contentSeconds": 25.93866666666667,
+          "barCount": 12,
+          "bpm": 120.19,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 185,
+          "sourceDuration": 368.718
+        },
+        "stats": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "rock",
+          "prepareMs": 850,
+          "pending": 12,
+          "bytes": 13610240,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 148,
+          "dropped": 0,
+          "last": {
+            "drums": {
+              "at": 13.072666222924786,
+              "key": "drums:kick",
+              "rate": 1,
+              "velocity": 0.16
+            },
+            "bass": {
+              "at": 12.526031727542474,
+              "key": "bass:36",
+              "rate": 0.9438743126816935,
+              "velocity": 0.58
+            },
+            "guitar": {
+              "at": 13.075434007266244,
+              "key": "guitar:70",
+              "rate": 1.0594630943592953,
+              "velocity": 0.583616,
+              "technique": "open",
+              "upstroke": false
+            }
+          },
+          "guitarStrokes": {
+            "open": 29,
+            "palm": 4,
+            "cut": 0,
+            "up": 16,
+            "down": 17
+          },
+          "guitarVoicings": {
+            "attack": 3,
+            "harmonic": 0,
+            "fallback": 30
+          },
+          "lastStrum": {
+            "at": 11.040883212690995,
+            "notes": [
+              55,
+              62,
+              67
+            ],
+            "source": "fallback",
+            "technique": "open",
+            "upstroke": false
+          }
+        },
+        "errors": []
+      },
+      {
+        "id": "band-release-under-the-moon-16-synth",
+        "mode": "synth",
+        "song": "under-the-moon",
+        "seekRequested": 16,
+        "firstElapsed": 17.826666666666668,
+        "sampleRate": 48000,
+        "channels": 2,
+        "bits": 16,
+        "frames": 383040,
+        "duration": 7.98,
+        "peak": 0.567901611328125,
+        "rms": 0.12323810722055223,
+        "bpm": 161.5,
+        "app": "br-249-band-refinement",
+        "clock": {
+          "songId": "under-the-moon",
+          "contentSeconds": 25.96,
+          "barCount": 17,
+          "bpm": 161.5,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 211,
+          "sourceDuration": 313.313
+        },
+        "stats": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "rock",
+          "prepareMs": 736,
+          "pending": 15,
+          "bytes": 13610240,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 127,
+          "dropped": 0,
+          "last": {
+            "drums": {
+              "at": 11.363623323013421,
+              "key": "drums:kick",
+              "rate": 1,
+              "velocity": 0.95
+            },
+            "bass": {
+              "at": 11.31625490196079,
+              "key": "bass:30",
+              "rate": 0.9438743126816935,
+              "velocity": 0.81
+            },
+            "guitar": {
+              "at": 11.737066047471624,
+              "key": "guitar:64",
+              "rate": 1.0594630943592953,
+              "velocity": 0.389312,
+              "technique": "open",
+              "upstroke": false
+            }
+          },
+          "guitarStrokes": {
+            "open": 28,
+            "palm": 0,
+            "cut": 0,
+            "up": 14,
+            "down": 14
+          },
+          "guitarVoicings": {
+            "attack": 0,
+            "harmonic": 4,
+            "fallback": 24
+          },
+          "lastStrum": {
+            "at": 11.723066047471624,
+            "notes": [
+              53,
+              60,
+              65
+            ],
+            "source": "fallback",
+            "technique": "open",
+            "upstroke": false
+          }
+        },
+        "errors": []
+      },
+      {
+        "id": "band-release-tabasco-6-synth",
+        "mode": "synth",
+        "song": "tabasco",
+        "seekRequested": 6,
+        "firstElapsed": 7.8293333333333335,
+        "sampleRate": 48000,
+        "channels": 2,
+        "bits": 16,
+        "frames": 383040,
+        "duration": 7.98,
+        "peak": 0.551239013671875,
+        "rms": 0.11726695875595126,
+        "bpm": 132.51000000000002,
+        "app": "br-249-band-refinement",
+        "clock": {
+          "songId": "tabasco",
+          "contentSeconds": 15.941333333333333,
+          "barCount": 9,
+          "bpm": 132.51,
+          "instrumentMakeup": 2.2654265100292412,
+          "totalBars": 25,
+          "sourceDuration": 44.722
+        },
+        "stats": {
+          "enabled": true,
+          "tone": "crunch",
+          "guitarStyle": "rock",
+          "prepareMs": 707,
+          "pending": 19,
+          "bytes": 13610240,
+          "roomWet": 0.35,
+          "roomNodes": 26,
+          "played": 168,
+          "dropped": 0,
+          "last": {
+            "drums": {
+              "at": 11.221301754641047,
+              "key": "drums:snare",
+              "rate": 1,
+              "velocity": 0.41867417924930916
+            },
+            "bass": {
+              "at": 9.898309712474537,
+              "key": "bass:36",
+              "rate": 1.0594630943592953,
+              "velocity": 0.79
+            },
+            "guitar": {
+              "at": 11.061279601539514,
+              "key": "guitar:61",
+              "rate": 1,
+              "velocity": 0.7863680000000001,
+              "technique": "open",
+              "upstroke": false
+            }
+          },
+          "guitarStrokes": {
+            "open": 28,
+            "palm": 2,
+            "cut": 0,
+            "up": 16,
+            "down": 14
+          },
+          "guitarVoicings": {
+            "attack": 0,
+            "harmonic": 0,
+            "fallback": 30
+          },
+          "lastStrum": {
+            "at": 11.047279601539515,
+            "notes": [
+              49,
+              56,
+              61
+            ],
+            "source": "fallback",
+            "technique": "open",
+            "upstroke": false
+          }
+        },
+        "errors": []
+      }
+    ],
+    "continuous_probes": 6,
+    "continuous_seconds": 60,
+    "max_pending": 48,
+    "tones": [
+      "acoustic",
+      "crunch",
+      "drive"
+    ],
+    "seek_rates": [
+      100,
+      80,
+      120,
+      100
+    ],
+    "articulations": [
+      "rock",
+      "open",
+      "cut",
+      "palm"
+    ],
+    "mute_peak": 2.996766852447763e-06,
+    "stop_peak": 5.09834717377089e-06,
+    "stop_pending": 0,
+    "reset_peak": 0.336883008480072,
+    "offline_peak": 0.33550456166267395,
+    "cached": {
+      "audio/physical-band/instruments.mjs?v=6": 200,
+      "audio/physical-band/bank-worker.mjs?v=4": 200,
+      "audio/physical-band/bank.mjs?v=4": 200,
+      "audio/physical-band/dsp.mjs?v=4": 200,
+      "audio/physical-band/score.mjs?v=4": 200,
+      "audio/physical-band/room.mjs?v=1": 200,
+      "audio/physical-band/electric-string.mjs?v=1": 200,
+      "audio/physical-band/rhythm-synthesis.mjs?v=1": 200
+    },
+    "horizontal_overflow": false,
+    "page_errors": [],
+    "console_limits": "Pre-gesture Tone warnings and a local favicon 404 remain; page exceptions are measured separately."
+  },
+  "limits": [
+    "Original recordings and separation bleed are unchanged. These are finite modal/spectral instruments, not measured models of the particular original instruments.",
+    "Broad-band and pitch-class distributions are diagnostics, not note accuracy or perceived realism. Mixed results remain and original high-frequency content is often underrepresented.",
+    "Guitar control/candidate comparison used the same preceding .14 guitar normalization in both arms; final band calibration uses .12. It is an isolated harmony diagnostic, not a final mix comparison.",
+    "No new attacks, articulation transcription, vocal reconstruction, octave ground truth or physical-iPhone load guarantee. Bass/drum scores remain unchanged."
+  ]
+}

@@ -1,4 +1,4 @@
-import { renderInstrumentBank } from "./bank.mjs?v=3";
+import { renderInstrumentBank } from "./bank.mjs?v=4";
 self.onmessage = () => {
   try {
     const bank = renderInstrumentBank((progress) => self.postMessage({ progress }));

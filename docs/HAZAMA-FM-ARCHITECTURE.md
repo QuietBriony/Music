@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-12: v416は本人の「そのままARCBにも反映」を受け、v414のギターとv415のベース・生ドラムを通常ARCB 7曲へ採用。低弦の余韻、弱いスネアのワイヤー、共通アンプ／roomを既存schedulerで鳴らす。53 buffer／13,610,240 bytes、bank v4／adapter v6。使っていないピアノ設定によるジャズ和音の混入を修正し、原音otherをストローク単位で再分析する。音声・model・依存・公開先の追加なし。原音ファイルを保持し、分離漏れと本人の聴感・実iPhoneの確認は継続。[測定と境界](ARCB-MIX-MEASUREMENT.md)。
+
 2026-10-12（組み合わせ保存・909可視化）: Workbenchの同期画面で名前付き保存。既存Strudel下書きへコードと元の303／909の全16パターン・正確な音色・固定・候補・混ぜ具合を保存し、一覧／戻すボタンで停止状態に復元。旧コード／FILEは維持、既存FILEを上書きしない。JSONバックアップは組み合わせを含む場合schema 2。909は基本4パートを配置でき、全11パートの打点数・音量・サイコロ候補を表示。音色の選択はソロではない。候補追加だけでは打点を増やさず、音量0は保持。新規音声・依存・hostingなし。保存失敗／復元rollback／全11音同時tick／旧backup互換を検証。ブラウザと公開版・最終gateの証跡は対応PR。本人聴感と実iPhoneは未確認。
 
 2026-10-12（Strudel＋元の303／909）: Workbenchの「一緒に鳴らす」を明示選択すると、Strudelのscheduler／AudioContextで元の303×2＋909も駆動する。元の音源・サイコロ・楽器固定・フェーダー・FILEを保持。PCは左右、スマホは縦に配置し、停止してもフレーズを保持する。単独画面の「Strudelと一緒に」はsessionStorageで現パターン・固定を一度だけ持ち込み、FILEを上書きしない。初回の同期実装では保存は2つだったが、上記の組み合わせ保存で統合済み。音符変換は未実装。新音源・依存・hostingなし。元の単独clock、FM／Band Room／Core Rigは保持。実Strudel時計のdeadline／BPM／再評価とStop競合、旧FILE／コード互換を検証。公開完了と最終gateは対応PRの証跡を参照。本人の聴感と実iPhoneは未確認。
@@ -93,9 +95,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v415`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v416`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-248`, `band-room.css?v=br-94`。
+> `band-room.js?v=br-249`, `band-room.css?v=br-94`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

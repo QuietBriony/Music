@@ -1,5 +1,12 @@
 # Session Ledger — music-stack
 
+## 2026-10-12 — codex / ARCB band adoption and renewed score analysis v416
+
+- Scope: existing Music-audio-stability, initial base 1b59d659884857589bdecd1a3d17a1e413c917a1; synchronized main 010ca5fb1587c7ebb01d0cf30e0788408e97a407; same conversation, no child tasks. Owner explicitly requested adopting all three instruments into normal ARCB.
+- Change: promote finite modal guitar/bass/drums, quiet snare and three-second guitar buffers. Fix the inactive piano preference influencing native rock chords; analyze existing other stems per attack with exact-row binding. Raw originals, engine.js and other runtimes retained.
+- Baseline: strict 43 PASS / 0 FAIL / 0 SKIP, exit 0, five repository states unchanged. Baseline actual browser mix/stem and guitar solo captures cover seven songs. Final waveform, browser, full-stack and publication proof will be recorded on this work's PR at the exact final HEAD.
+- Evidence: output/playwright/arcb-band-refinement/. CPU-only analysis; no new audio/model/dependency/hosting. Separation artifacts, unverified notes and actual iPhone/human listening remain distinct from numeric measurements.
+
 ## 2026-10-12 — 組み合わせの名前付き保存と909全パートの可視化
 
 - scope: Codex、単一会話。base afe1434。既存Workbench／Listenのみ。

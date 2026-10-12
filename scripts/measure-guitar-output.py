@@ -53,9 +53,12 @@ def compare(captures, baseline, candidate):
             meta=json.loads(wav.with_suffix('.json').read_text())
             y,sr=sf.read(wav,always_2d=True)
             stem=Path(f'presets/tabasco-stems/{meta["song"]}/other.mp3')
-            ref,_=librosa.load(stem,sr=sr,mono=False)
+            # Decode only the measured excerpt, with padding around resampling
+            # boundaries. Comparing a short take need not decode two full songs.
+            offset=max(0,meta['firstElapsed']-1)
+            ref,_=librosa.load(stem,sr=sr,mono=False,offset=offset,duration=len(y)/sr+2)
             ref=ref.T if ref.ndim==2 else ref[:,None]
-            a=round(meta['firstElapsed']*sr); ref=ref[a:a+len(y)]
+            a=round((meta['firstElapsed']-offset)*sr); ref=ref[a:a+len(y)]
             v=pitch_classes(y,sr); target=pitch_classes(ref,sr)
             vectors.append({'cosine_distance':round(float(1-v@target),6),
               'output_pitch_class_energy':v.tolist(),'reference_pitch_class_energy':target.tolist(),
