@@ -1,5 +1,14 @@
 # Session Ledger — music-stack
 
+## 2026-10-12 — 元の303×2＋909を同じ音源のモジュール操作面へ
+
+- agent: Codex。単一会話・subagentなし。base main `73bfc5d`、既存Music／Workbenchへ反映。
+- change: 低音／返し／ドラムの3カード、元の連動サイコロ・楽器固定・個別dice・音色／音量フェーダー・戻り先。元画面・FILE保存は保持。
+- boundaries: 音源／clock／元のrandomizer／FILE schemaは変更なし。Strudelとは切り替えて使う。音・clock同期／自由配線は未実装。新規音声・依存・hostingなし。
+- validation: 元のDataを使う9テストで固定・音量／BPM維持・復元・全faderのsave/apply・SONG保護・FILE互換を確認。CUAローカルで演奏中フェーダー・固定dice・復元・打楽器追加・FILE導線、1366/390/320幅の横overflowなしを確認。
+- baseline: strict stack-check PASS 41 / FAIL 0 / SKIP 0、0 BAD。最終gate・main・公開反映の完了証跡は本作業PRへ記録する。
+- next: 本人の聴感と実iPhoneで操作性を確認。未保存の一時戻り先はFILE／パターン切替で破棄する。
+
 ## 2026-10-12 — codex / BL-051 guitar sustain candidate v414
 
 - Scope: Music-audio-stability, base main c928fcd7a52be4c5aaebceef7abfc67798d0a4af. Same conversation; no child tasks.

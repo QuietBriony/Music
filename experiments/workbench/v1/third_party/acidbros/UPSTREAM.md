@@ -10,6 +10,7 @@
 - Local `js/ui/UI.js` change: MIDI access is requested from Settings > Refresh rather than on page load.
 - Local `js/main.js` / `js/workbench-bridge.js` change: same-origin, explicit FILE selection and one-shot BPM transfer for the parent workbench; a selected local FILE can also open full-page via `?file=`. This bridge never starts transport or converts patterns.
 - Local whitespace-only cleanup: trailing spaces in `TR909.js`, `UnifiedSynth.js`, and `MidiManager.js`.
+- Local `index.html` / `js/main.js` integration (2026-10-12): first-party `src/machine-rack/` is copied to `js/workbench-rack/` at build time. `?rack=1` exposes three cards over the existing Data/UI/AudioEngine; the original screen remains available. The adapter reuses the original randomizer with temporary unit locks, preserves current levels and offers a pattern-scoped return point. Tone faders write the original knobs/settings and FILE schema is unchanged. The bridge emits a local UI-refresh event after parent commands. No upstream synthesis or clock code is replaced.
 
 The four WAV files total **438,798 bytes**. Their SHA-256 hashes are:
 

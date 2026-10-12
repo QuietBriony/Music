@@ -47,6 +47,7 @@ export function initWorkbenchBridge() {
         } else if (command.type === 'read-tempo') {
             reply('tempo-read', { bpm: AudioEngine.tempo });
         }
+        document.dispatchEvent(new Event('workbench-machine-changed'));
     });
 
     reply('ready', { bpm: AudioEngine.tempo, fileId: FileManager.currentFileId });
