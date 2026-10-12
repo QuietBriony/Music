@@ -1,5 +1,17 @@
 # Session Ledger — music-stack
 
+v417追加検証: START前の「厚め」選択・保存復元で無音になる条件を再現。停止中のAudioContextには予約rampを積まず初期gainを直接設定し、再生中のみ40msで切り替える。変更前3条件が無音、変更後は同条件とliveの全4条件で実出力を確認。
+
+## 2026-10-12 — ARCB rhythm alignment and original live mastering (v417 / BL-050)
+
+- Scope: owner's bass/drum transcription and original-live-feel request; same conversation, existing Music worktree and hosting.
+- Source: retain original audio hashes, existing bass pitches/velocities, guitar harmony and the 53-buffer bank. Correct 249 bass attacks / 128 repeated plucks and 4,122 drum attacks / 287 coincident cymbal hypotheses. TABASCO drum score remains unresolved.
+- Original: live/dense selector in existing sound mix; live bypasses global saturation, widening and extra room, retaining stem controls. Both paths receive master volume, background duck and post-limiter REC. Continuous output ceiling protects live transients.
+- Offline: failed HEAD previously rejected even cached original stems. On a network exception, accept only a cached complete status-200 GET; reject missing/partial cache and ordinary HTTP failures. Existing service-worker storage and source URLs retained.
+- Evidence: 18 early/mid/late independent drum-flux windows; seven normal AI mix and seven vocal-on original captures; numeric source/capture hashes in docs/arcb-rhythm-live-measurement-20261012.json. Local evidence: output/playwright/rhythm-live/.
+- Baseline: strict 43 PASS / 0 FAIL / 0 SKIP and audit 0 BAD / 0 WARN; five repository states unchanged. Final synchronized candidate/merged HEAD gates, review, browser and existing-host publication results are recorded on this work's PR.
+- Boundaries: no new audio, model, dependency, host or protected-engine change. Detector agreement and crest are not a listening score; source separation, classifications, missing notes and actual iPhone/listening remain open.
+
 ## 2026-10-12 — 試奏台に歌詞・声のテイク録音
 
 - scope: Codex、単一会話。base main a3f65d5。既存Workbench／Listen／manualを更新。

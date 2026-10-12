@@ -1,10 +1,14 @@
-# Band Room - Changelog (v65 -> v416 compact)
+# Band Room - Changelog (v65 -> v417 compact)
+
+## v417 — 2026-10-12
+
+Recheck local original bass/drums on CPU. Correct 249 bass attacks, split 128 supported repeated notes, align 4,122 drum attacks and add 287 low-level coincident cymbal hypotheses. Preserve existing pitches/velocities and guitar harmony; retain TABASCO's unresolved drum fallback. Add an original-recording live master with slow gentle compression, native stereo/room and bounded output; keep the previous dense path selectable and persistent. Both paths share volume, recorder and output protection. Pre-START profile changes set an initial gain directly instead of queuing suspended-context ramps, preventing a silent dense start. A failed HEAD availability probe now accepts a complete cached original GET; online HTTP failures and partial/missing cache entries remain unavailable. No new recordings, models, dependencies or hosts. Cache `hazama-fm-v417`, client `br-250`, CSS br-95; bank v4 / adapter v6 unchanged.
+
+Current sw.js VERSION: v417. Latest Band Room runtime change: v417 (rhythm alignment and original live mastering). HAZAMA playability candidate remains v401.
 
 ## v416 — 2026-10-12
 
 Promote the auditioned electric guitar, bass and acoustic percussion to normal ARCB after the owner explicitly requested adoption. Prepare 53 finite buffers (13,610,240 bytes) in the existing Worker; keep the scheduler, amp, room and recorder. A quiet-snare buffer changes wire/body balance. Native rock fallback no longer inherits a disabled piano preference and turns into jazz chords. Conservative attack-specific harmony reads existing other stems on CPU, with exact-row binding and confidence rejection. Original recordings remain unchanged. Cache `hazama-fm-v416`, client `br-249`, bank/worker v4, adapter v6; CSS br-94.
-
-Current sw.js VERSION: v416. Latest Band Room runtime change: v416 (ARCB band promotion and attack-level harmony). HAZAMA playability candidate remains v401.
 
 ## v415 — 2026-10-12
 

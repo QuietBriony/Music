@@ -87,6 +87,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 
   v412はbass由来のguitar根音を原音otherから確かな234小節だけ補正。実solo RECの7区間を独立STFTで比較し、補正sourceの出た6区間のpitch-class分布差が縮小。和音の正答率ではなく、リフの途中変化と分離漏れ・採譜漏れは継続。全打点、強弱、bass/drums、音源と負荷予算を保持。
 
+  2026-10-12 v417: bass打点249・同音再発音128、drums打点4,122・同時cymbal候補287を原音から補正。独立fluxとの18区間比較、通常7曲REC。原音live/dense切替で録音の強弱を保持。未採譜TABASCO drums、誤分類・音高・本人聴感は未完。
+
 ### BL-041 — HAZAMA を main Band selector へ昇格する実機判定
 - priority : P1
 - repo     : Music

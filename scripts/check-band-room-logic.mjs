@@ -83,10 +83,51 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-249-band-refinement", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v416", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-250-rhythm-live", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v417", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
+const originalCeiling = windowMock.BandRoomTestHooks.originalOutputCeiling;
+const setOriginalGate = windowMock.BandRoomTestHooks.setOriginalMasteringGate;
+const gateCalls = [];
+const gate = { gain: {
+  cancelScheduledValues: time => gateCalls.push(["cancel", time]),
+  setValueAtTime: (value, time) => gateCalls.push(["set", value, time]),
+  rampTo: (value, time) => gateCalls.push(["ramp", value, time])
+} };
+windowMock.Tone.context = { state: "suspended", currentTime: 0 };
+setOriginalGate(null, 1);
+setOriginalGate(gate, 1);
+assert.deepEqual(gateCalls, [["cancel", 0], ["set", 1, 0]],
+  "Pre-START profile selection must replace queued automation with an initial gain");
+gateCalls.length = 0;
+windowMock.Tone.context.state = "running";
+setOriginalGate(gate, 0);
+assert.deepEqual(gateCalls, [["ramp", 0, 0.04]], "Playing profile changes retain the short crossfade");
+delete windowMock.Tone.context;
+const stemAvailable = windowMock.BandRoomTestHooks.stemUrlAvailable;
+sandbox.fetch = async () => { throw new Error("offline"); };
+sandbox.caches = { match: async () => ({ status: 200 }) };
+assert.equal(await stemAvailable("presets/tabasco-stems/human-fly/bass.mp3"), true,
+  "A failed HEAD must not reject a complete cached original");
+sandbox.caches.match = async () => undefined;
+assert.equal(await stemAvailable("missing.mp3"), false);
+sandbox.caches.match = async () => ({ status: 206 });
+assert.equal(await stemAvailable("partial.mp3"), false);
+sandbox.caches.match = async () => { throw new Error("cache denied"); };
+assert.equal(await stemAvailable("denied.mp3"), false);
+sandbox.fetch = async () => ({ ok: false });
+sandbox.caches.match = async () => { throw new Error("HTTP failure must not use stale cache"); };
+assert.equal(await stemAvailable("removed.mp3"), false);
+delete sandbox.fetch; delete sandbox.caches;
+for (const sample of [-0.7, -0.1, 0, 0.1, 0.7]) assert.equal(originalCeiling(sample), sample);
+let last = 0;
+for (let sample = 0; sample <= 4; sample += 0.002) {
+  const output = originalCeiling(sample);
+  assert.ok(output >= last && output < 0.901, "Original transients must be monotonic and bounded at high volume");
+  assert.equal(originalCeiling(-sample), -output, "The output ceiling must not add DC asymmetry");
+  last = output;
+}
 const performanceStructure = windowMock.BandRoomTestHooks.transcribedPerformanceStructure;
 const scheduleWindow = windowMock.BandRoomTestHooks.physicalScheduleWindow;
 const fallbackAllowed = windowMock.BandRoomTestHooks.transcribedFallbackAllowed;
@@ -522,14 +563,14 @@ assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor
 assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
-assert.match(html, /band-room\.css\?v=br-94/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-249/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.css\?v=br-95/, "Band Room HTML should reference the current CSS cache marker");
+assert.match(html, /band-room\.js\?v=br-250/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
-assert.match(sw, /band-room\.css\?v=br-94/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-249/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.css\?v=br-95/, "Service worker should precache the current Band Room CSS marker");
+assert.match(sw, /band-room\.js\?v=br-250/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
