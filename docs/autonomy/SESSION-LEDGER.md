@@ -1,5 +1,13 @@
 # Session Ledger — music-stack
 
+## 2026-10-12 — 試奏台に歌詞・声のテイク録音
+
+- scope: Codex、単一会話。base main a3f65d5。既存Workbench／Listen／manualを更新。
+- feature: マイク準備とRECを分け、ミックス／dry voice／backingをMediaRecorderで端末保存。元303単独とStrudel同期で同じ操作。演奏fader／AUTOは継続。
+- persistence: takeに開始時の演奏snapshotと歌詞。IndexedDBは12件／250 MB、1 takeは5分／40 MB。quota失敗はメモリ保持してダウンロード。無断evictionやアップロードなし。設定JSONは既存backup読込で下書きへ追加できる。
+- validation: mic許可取消・拒否・device切断、出力交換、2回REC、encoder失敗、容量上限をunit検証。実ブラウザの合成2音でmix・声・演奏の分離。Ambient＋303を56秒録音しnon-silent、再読込／JSON復元形式を確認。最終gate・公開版証跡は本作業PR。
+- boundaries: 本人用のオリジナル歌詞はrepo外のTXT。実マイク・実iPhone・入力遅延と本人の声の聴感は未確認。自動カウントイン・歌詞追従・DAW式overdubはなし。通常session backupへ音声・歌詞は混ぜない。
+
 ## 2026-10-12 — 固定を残す303／909 AUTO
 
 - scope: Codex、単一会話。base main 9a704d6。既存WorkbenchとListen／manualのみ。

@@ -1,6 +1,7 @@
 import { createMachineRack, UNITS, SYNTH_CONTROLS, DRUMS } from './model.js';
 import { carryMachine } from './handoff.js';
 import { createRackAuto } from './auto.js';
+import { initVocalBooth } from '../../../../vocal-booth.js';
 
 export function initMachineRack({data,ui,audio,knobs}) {
   const model=createMachineRack({data,ui,knobs});
@@ -26,11 +27,25 @@ export function initMachineRack({data,ui,audio,knobs}) {
       </details>
     </section>`;
   document.body.prepend(host);
+  let vocalBooth;
+  if (window.parent === window) {
+    const style=document.createElement('link'); style.rel='stylesheet'; style.href='/vocal-booth.css'; document.head.append(style);
+    const vocalParent=document.createElement('div'); host.append(vocalParent);
+    vocalBooth=initVocalBooth({parent:vocalParent,
+      getSources:()=>audio.isPlaying && audio.outputGain ? [audio.outputGain] : [],
+      snapshot:title=>({strudel:{drafts:[{id:crypto.randomUUID(),title,savedAt:new Date().toISOString(),
+        code:`setcpm(${audio.tempo/4})\nsilence`,joint:{version:1,level:1,machine:window.musicMachineLink.capture()}}],levels:{},decks:{}},acidbros:{files:[]}}),
+      stopPlayback:()=>audio.stop(),
+    });
+    const vocalButton=document.createElement('button'); vocalButton.type='button'; vocalButton.textContent='歌詞・録音';
+    vocalButton.addEventListener('click',()=>vocalBooth.open());host.querySelector('.wbr-view').append(vocalButton);
+  }
   const find=id=>host.querySelector('#wbr-'+id),panel=find('panel'),status=find('status');
   const auto=createRackAuto({data,audio,model,notify:()=>render()});audio.rackAuto=auto;
   find('link').hidden = window.parent !== window;
   find('link').addEventListener('click', () => {
     try {
+      if (vocalBooth?.busy()) throw new Error('録音を終え、未保存テイクをダウンロードしてから切り替えてください。');
       carryMachine(data, window.sessionStorage);
       audio.stop();
       window.location.assign('/?stage=ambient&link=1&carry=1&bpm='+Math.round(audio.tempo));
