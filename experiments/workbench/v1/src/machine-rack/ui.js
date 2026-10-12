@@ -16,7 +16,7 @@ export function initMachineRack({data,ui,audio,knobs}) {
         <p>低音は元の303の2号機、返しは1号機。元のサイコロが2台の音程関係・アクセント・スライドを作ります。固定した楽器はサイコロで変わらず、手では音色を触れます。こちらのサイコロと戻す操作では各音量・BPMを保ちます。</p>
         <p>明るさはフィルターの開き、みょんは共鳴。うねりの深さは音の立ち上がりの変化量、長さはその余韻。残響はディレイの量。数値は元の機材のつまみと同じでHzや秒ではありません。音量0で次の発音を抜き、残響は自然に残ります。</p>
         <p>「ここを戻り先に」は今開いているパターンの目印。端末に残すには「FILE · 保存／開く」→ SAVE。16パターンやSONGをつなぐ詳しい編集は「元の操作画面へ」。画面を替えても同じ演奏です。</p>
-        <p>この3モジュールは同時に鳴ります。Workbenchの「一緒に鳴らす」ではStrudelと時計・音声接続を共有します。保存はStrudelのコードと、こちらのFILEの2つ。自由なケーブル配線はありません。</p>
+        <p>この3モジュールは同時に鳴ります。「一緒に鳴らす」ではStrudelと時計・音声接続を共有し、「組み合わせを保存」で両側のフレーズ・音色・固定を名前付き保存できます。単独のFILEは音符・音色、パート固定はこのブラウザの設定に残ります。自由なケーブル配線はありません。</p>
       </details>
     </section>`;
   document.body.prepend(host);
@@ -34,6 +34,7 @@ export function initMachineRack({data,ui,audio,knobs}) {
   });
   const actionControls=[],faders=[],locks=new Map(),waves=new Map(),summaries=new Map(),drumRows=new Map();
   let active=false,pending=false,queued=false,drum='bd',linkedPlayback=false;
+  let kickLock,snareDice,hatsDice;
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
   function act(fn,message) {
     try { const changed=fn();status.textContent=changed===false?'固定中です。変える楽器の固定を外してください。':message; }
@@ -65,13 +66,24 @@ export function initMachineRack({data,ui,audio,knobs}) {
       wave.addEventListener('change',()=>act(()=>model.wave(unit,wave.value),'波形を変更しました。'));waveLabel.append(wave);card.append(waveLabel);waves.set(unit,wave);
       const bank=el('div',null,'wbr-faders');card.append(bank);SYNTH_CONTROLS.forEach(control=>addFader(bank,unit,control));
     } else {
-      button(card,'基本4パートを組む',()=>act(()=>model.basicDrums(),'キック・スネア・閉／開ハットを組みました。音色・音量・303はそのまま。'));
-      const parts=el('details',null,'wbr-drum-parts');parts.append(el('summary','全11パート・サイコロ候補'));
+      const quick=el('div',null,'wbr-actions');card.append(quick);
+      kickLock=button(quick,'キックを固定',()=>act(()=>model.lockDrum('bd'),'キックの固定を変更しました。手のフェーダーは使えます。'));
+      kickLock.setAttribute('aria-label','キックを固定');
+      snareDice=button(quick,'🎲 スネアだけ',()=>act(()=>model.randomize('sd'),'スネアだけを変えました。他の打点・音色・音量はそのまま。'));
+      hatsDice=button(quick,'🎲 ハットだけ',()=>act(()=>model.randomize('hats'),'固定していない閉／開ハットだけを変えました。他のパートはそのまま。'));
+      card.append(el('p','固定は打点と音色をサイコロ・基本4パートから守ります。手動フェーダーは使えます。','wbr-summary'));
+      button(card,'基本4パートを組む',()=>act(()=>model.basicDrums(),'固定パートを残し、キック・スネア・閉／開ハットを組みました。音色・音量・303はそのまま。'));
+      const parts=el('details',null,'wbr-drum-parts');parts.append(el('summary','全11パート・固定・サイコロ候補'));
       button(parts,'全11パートを候補に',()=>act(()=>model.drumCandidates(DRUMS.map(([id])=>id)),'全11パートを候補にしました。「この楽器だけ」で組み替えます。'));
       for(const [id,title] of DRUMS) {
-        const row=el('label',null,'wbr-drum-row'),box=el('input'),info=el('span');box.type='checkbox';box.setAttribute('aria-label',title+'をサイコロ候補に');
+        const row=el('div',null,'wbr-drum-row'),label=el('label'),box=el('input'),info=el('span');box.type='checkbox';box.setAttribute('aria-label',title+'をサイコロ候補に');
         box.addEventListener('change',()=>act(()=>model.drumCandidates(DRUMS.map(([id])=>id).filter(key=>key===id?box.checked:data.active909Tracks.includes(key))),'サイコロ候補を変えました。今の打点はそのまま。'));
-        row.append(box,info);parts.append(row);drumRows.set(id,{box,info,title});
+        label.append(box,info);row.append(label);
+        const lock=button(row,'固定',()=>act(()=>model.lockDrum(id),title+'の固定を変更しました。'));
+        lock.setAttribute('aria-label',title+'のサイコロ固定');
+        const dice=button(row,'🎲',()=>act(()=>model.randomize(id),title+'だけを変えました。'));
+        dice.setAttribute('aria-label',title+'だけサイコロ');
+        parts.append(row);drumRows.set(id,{box,info,title,lock,dice});
       }
       card.append(parts);
       card.append(el('p','下の選択は音色の編集対象です。ソロ再生ではありません。','wbr-summary'));
@@ -87,12 +99,18 @@ export function initMachineRack({data,ui,audio,knobs}) {
   function render() {
     if(!active) return;
     const state=model.read();
-    for(const [id,{box,info,title}] of drumRows) {
+    actionControls.forEach(b=>{b.disabled=!state.editable||pending;});
+    for(const [id,{box,info,title,lock,dice}] of drumRows) {
       const track=state.units.tr909?.tracks[id],hits=track?.steps?.filter(Boolean).length || 0;
       box.checked=state.tracks.includes(id);box.disabled=!state.editable||pending||state.locks.tr909;
+      lock.disabled=box.disabled;lock.setAttribute('aria-pressed',String(Boolean(state.drumLocks[id])));lock.textContent=state.drumLocks[id]?'固定中':'固定';
+      dice.disabled=box.disabled||Boolean(state.drumLocks[id]);
       info.textContent=title+' · '+hits+'打 · 音量'+Math.round(track?.level || 0)+(track?.level===0?'（無音）':!hits?'（打点なし）':'');
     }
-    actionControls.forEach(b=>{b.disabled=!state.editable||pending;});
+    kickLock.disabled=!state.editable||pending||state.locks.tr909;
+    kickLock.setAttribute('aria-pressed',String(Boolean(state.drumLocks.bd)));kickLock.textContent=state.drumLocks.bd?'キック固定中':'キックを固定';
+    snareDice.disabled=kickLock.disabled||Boolean(state.drumLocks.sd);
+    hatsDice.disabled=kickLock.disabled||Boolean(state.drumLocks.ch&&state.drumLocks.oh);
     for(const id of ['dice','keep','restore']) find(id).disabled=!state.editable||pending||(id==='restore'&&!state.canRestore);
     for(const [id,b] of locks) {b.setAttribute('aria-pressed',String(state.locks[id]));b.textContent=state.locks[id]?'固定中':'固定';}
     for(const [id,select] of waves) {select.disabled=!state.editable||pending;select.value=state.units[id]?.settings.waveform || 'sawtooth';}

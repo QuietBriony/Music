@@ -69,6 +69,7 @@ export function createMachineLink({ audio, ui, data }) {
       catch(error) { applyMachineState({data,audio,ui},previous); showTempo(); throw error; }
       // A combined save is an independent snapshot, not an edit of a named FILE.
       FileManager.currentFileId=null;
+      data.saveSettings();
       notice();
     },
     connect(host) {

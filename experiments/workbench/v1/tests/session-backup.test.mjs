@@ -32,9 +32,9 @@ const jointFixture = () => ({ version:1,level:.37,machine:captureMachineState({
   exportFullState:()=>acidData,
 }, {tempo:137,swing:50}) });
 
-test('combined saves survive backup import, retain same-code/different-machine versions, and require schema 2',()=>{
+test('combined saves survive backup import, retain same-code/different-machine versions, and require schema 3',()=>{
   const current=fixture();current.strudel.drafts[0].joint=jointFixture();
-  const text=backupText(current,savedAt);assert.equal(JSON.parse(text).schema_version,2);
+  const text=backupText(current,savedAt);assert.equal(JSON.parse(text).schema_version,3);
   const parsed=parseBackup(text);assert.deepEqual(parsed.strudel.drafts[0].joint,current.strudel.drafts[0].joint);
   const incoming=parseBackup(text);incoming.strudel.drafts[0].joint.machine.locks.tr909=false;
   const merged=mergeBackup(current,incoming,()=> 'second-version',importedAt);
@@ -49,6 +49,11 @@ test('combined saves survive backup import, retain same-code/different-machine v
   assert.throws(()=>writeBackupState(storage,invalid),/音量/);
   assert.deepEqual(readBackupState(storage),merged.state,'invalid imports cannot partially replace existing saves');
   assert.equal(JSON.parse(backupText(fixture())).schema_version,1,'old code-only backups remain compatible');
+  const legacy=JSON.parse(text);legacy.schema_version=2;legacy.strudel.drafts[0].joint.machine.version=1;
+  delete legacy.strudel.drafts[0].joint.machine.drumLocks;
+  assert.ok(Object.values(parseBackup(JSON.stringify(legacy)).strudel.drafts[0].joint.machine.drumLocks).every(v=>v===false));
+  current.strudel.drafts[0].joint.machine.drumLocks.bd=true;
+  assert.equal(parseBackup(backupText(current,savedAt)).strudel.drafts[0].joint.machine.drumLocks.bd,true);
 });
 
 class MemoryStorage {

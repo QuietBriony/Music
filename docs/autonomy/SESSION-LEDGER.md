@@ -1,5 +1,13 @@
 # Session Ledger — music-stack
 
+## 2026-10-12 — 909のパート固定と部分サイコロ
+
+- scope: Codex、単一会話。base 010ca5f、ARCB更新を含むmain 66419ceへ同期。既存Workbench／Listenを更新。
+- change: キック固定、スネア／ハットだけdice、全11声の個別固定とdice。元画面のdiceも固定打点・音色を保護。手動操作・音量・BPMは維持。
+- persistence: 既存settings・タブ内handoff・combined snapshot v2、backup schema 3。旧snapshot v1／backup 1・2を移行、native FILE形式は維持。
+- validation: 元randomizerの反復で固定キック・シンバルが不変、他パートの変化と部分diceの対象制限、global固定／SONG保護、save／backup／handoff／失敗rollbackを確認。最終gateと公開CUA証跡は対応PR。
+- boundaries: 新規音声・依存・hostingなし。本人の聴感・実iPhoneは別途確認。
+
 ## 2026-10-12 — codex / ARCB band adoption and renewed score analysis v416
 
 - Scope: existing Music-audio-stability, initial base 1b59d659884857589bdecd1a3d17a1e413c917a1; synchronized main 010ca5fb1587c7ebb01d0cf30e0788408e97a407; same conversation, no child tasks. Owner explicitly requested adopting all three instruments into normal ARCB.
