@@ -20,7 +20,9 @@ test('the optional acid module has its local code, worklets, icons, and four int
     'js/audio/ClockProcessor.js', 'assets/favicon.png', 'assets/DSEG7Classic-Bold.woff2']) {
     assert.ok(existsSync(join(root, path)), path + ' is missing');
   }
-  for (const file of filesUnder(join(root, 'js'))) {
+  // The first-party rack adapter is injected at build time. Check the actual
+  // deployed import graph as well as the pinned upstream assets below.
+  for (const file of filesUnder(resolve(root, '../../dist/modules/acidbros/js'))) {
     const code = readFileSync(file, 'utf8');
     for (const match of code.matchAll(/(?:from\s*|import\()\s*['"]([^'"]+)['"]/g)) {
       if (match[1].startsWith('.')) {

@@ -210,7 +210,7 @@ function renderAcidFiles() {
       }
     });
     const fullPage = makeElement('a', '', '全画面 ↗');
-    fullPage.href = '/modules/acidbros/?file=' + encodeURIComponent(file.id);
+    fullPage.href = '/modules/acidbros/?rack=1&file=' + encodeURIComponent(file.id);
     fullPage.target = '_blank';
     fullPage.rel = 'noopener';
     fullPage.addEventListener('click', openAcidFullPage);
@@ -269,7 +269,7 @@ function openAcidModule({ updateUrl = true, scroll = true, fileId = null } = {})
   acidModuleOpen.setAttribute('aria-expanded', 'true');
   acidModuleOpen.textContent = '303＋909を閉じる';
   acidModuleStatus.textContent = '303＋909を読み込み中…';
-  acidModuleFrame.src = '/modules/acidbros/';
+  acidModuleFrame.src = '/modules/acidbros/?rack=1';
   if (updateUrl) setModuleUrl(true);
   if (scroll) {
     const reveal = () => setTimeout(() => {
@@ -301,7 +301,7 @@ window.addEventListener('message', (event) => {
   if (message.type === 'ready') {
     acidBridgeReady = true;
     syncAcidBridgeControls();
-    acidModuleStatus.textContent = '準備できました（' + message.bpm + ' BPM）。中のRUNを押すと音が出ます。';
+    acidModuleStatus.textContent = '準備できました（' + message.bpm + ' BPM）。中のRUNで3モジュールを演奏。固定・サイコロ・フェーダーで遊べます。';
     if (pendingAcidFileId) sendAcidCommand({ type: 'load-file', fileId: pendingAcidFileId });
   } else if (message.type === 'file-loaded') {
     pendingAcidFileId = null;

@@ -41,6 +41,7 @@ await cp(join(root, 'src', 'patterns'), join(output, 'patterns'), {
 await cp(join(root, 'src', '_headers'), join(output, '_headers'));
 await cp(join(root, 'LICENSE'), join(output, 'LICENSE'));
 await cp(join(root, 'third_party', 'acidbros'), join(output, 'modules', 'acidbros'), { recursive: true });
+await cp(join(root, 'src', 'machine-rack'), join(output, 'modules', 'acidbros', 'js', 'workbench-rack'), { recursive: true });
 await cp(join(root, 'node_modules', '@strudel', 'repl', 'dist'), join(output, 'vendor', 'strudel'), { recursive: true });
 const replPath = join(output, 'vendor', 'strudel', 'index.js');
 await writeFile(replPath, synthInitBundle(await readFile(replPath, 'utf8')));

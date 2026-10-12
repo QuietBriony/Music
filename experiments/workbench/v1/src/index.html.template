@@ -232,10 +232,10 @@
           <article class="module-card module-card-acid">
             <span class="module-number">02 / MACHINE</span>
             <h3>元の303×2＋909 · acidBros</h3>
-            <p>16ステップとつまみで演奏する別の楽器。開くとコード側の演奏は止まります。音符・音色はコードへ自動で入りません。</p>
+            <p>元の音のまま、低音・返し・ドラムの3モジュールを一緒に演奏。好きな楽器を固定して、ほかをサイコロで変え、音色をフェーダーで触れます。</p>
             <div class="module-card-actions">
               <button id="acid-module-open" type="button" aria-controls="acid-module-stage" aria-expanded="false">切り替えて開く</button>
-              <a id="acid-module-card-full" href="/modules/acidbros/" target="_blank" rel="noopener">全画面で開く ↗</a>
+              <a id="acid-module-card-full" href="/modules/acidbros/?rack=1" target="_blank" rel="noopener">全画面で開く ↗</a>
             </div>
           </article>
         </div>
@@ -255,14 +255,14 @@
           <div class="module-stage-actions">
             <div><strong>acidBros / 303 × 2 ＋ 909</strong><span>RUNで音を出す。閉じると演奏が止まります。</span></div>
             <div>
-              <a id="acid-module-full" href="/modules/acidbros/" target="_blank" rel="noopener">全画面で開く ↗</a>
+              <a id="acid-module-full" href="/modules/acidbros/?rack=1" target="_blank" rel="noopener">全画面で開く ↗</a>
               <button id="acid-module-close" type="button">閉じて停止</button>
             </div>
           </div>
           <p id="acid-module-status" role="status">読み込み前です。</p>
           <iframe id="acid-module-frame" title="acidBros 303と909の演奏画面" allow="autoplay; midi" loading="lazy"></iframe>
-          <p class="module-stage-note">FILEで保存してから閉じてください。保存先はこの端末のブラウザです。コード・2デッキと音やステップは相互に渡しません。</p>
-          <p class="module-stage-note">スマホで操作面が狭い時は「全画面で開く」。303のCUTOFFは明るさ、RESONANCEは「ミョン」、DECAYはうねりの長さ。909は各ドラムの行をタップして打点を置きます。</p>
+          <p class="module-stage-note">RUN → 好きな楽器を固定 → ほかをサイコロ。気に入ったら「FILE · 保存／開く」→ SAVE。「元の操作画面へ」で16ステップやSONGも編集できます。Strudelとは切り替えて使い、音やステップは相互に渡しません。</p>
+          <p class="module-stage-note">スマホで操作面が狭い時は「全画面で開く」。303の明るさはフィルター、みょんは共鳴、長さはうねりの余韻。元の操作画面では909の各ドラムの行をタップして打点も編集できます。</p>
         </div>
       </section>
 
