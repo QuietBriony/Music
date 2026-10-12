@@ -1913,6 +1913,20 @@ body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
 }
 
 #br-volume label,
+#br-original-mastering {
+  min-width: 0;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--bg-2);
+  font: inherit;
+}
+#br-original-mastering-help { color: var(--text-sub); font-size: 12px; line-height: 1.6; }
+#br-space :disabled { opacity: 0.4; cursor: not-allowed; }
+
 #br-space label {
   display: flex;
   align-items: center;

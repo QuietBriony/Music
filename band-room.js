@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-249-band-refinement";
-  const BANDROOM_RELEASE_VERSION = "v416";
+  const BANDROOM_APP_VERSION = "br-250-rhythm-live";
+  const BANDROOM_RELEASE_VERSION = "v417";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -140,6 +140,10 @@
   // ---- Tone.js nodes -------------------------------------------
 
   let masterGain = null;
+  let originalMasterGain = null;
+  let originalLiveGate = null;
+  let originalDenseGate = null;
+  let originalMastering = "live";
   let masterLimiter = null;
   let masterHardwareOutput = null;
   let masterPlaybackDest = null;
@@ -476,6 +480,16 @@
   //   stemBus.* → makeStemMasterBus → masterGain → shared remaster → limiter
   function makeStemMasterBus(dest) {
     const input  = new Tone.Gain(1);
+    // Preserve the recording's own stereo image and room. The live path has
+    // one slow, gentle compressor and shares only output protection with AI.
+    // The previous chain remains available for an explicit A/B comparison.
+    const liveHp = new Tone.Filter({ frequency: 28, type: "highpass", Q: 0.707 });
+    const liveComp = new Tone.Compressor({ threshold: -16, ratio: 1.35, attack: 0.035, release: 0.18, knee: 8 });
+    const liveCeiling = new Tone.WaveShaper(originalOutputCeiling, 8193).connect(masterLimiter);
+    originalMasterGain = new Tone.Gain(masterGain.gain.value).connect(liveCeiling);
+    originalLiveGate = new Tone.Gain(originalMastering === "live" ? 0.45 : 0).connect(originalMasterGain);
+    originalDenseGate = new Tone.Gain(originalMastering === "dense" ? 1 : 0).connect(dest);
+    input.connect(liveHp); liveHp.connect(liveComp); liveComp.connect(originalLiveGate);
     // v354: the 原音 stem-master ran an always-on 2x-oversampled grit distortion
     // in every mode — a standing CPU cost that helped choke 原音 on phones (audit
     // MSC-1). Gate the oversampling to device; desktop keeps the v322 wall density.
@@ -512,8 +526,44 @@
     sat.connect(satWet);
     satDry.connect(makeup);
     satWet.connect(makeup);
-    makeup.connect(dest);
+    makeup.connect(originalDenseGate);
     return input;
+  }
+
+  function setOriginalMastering(value) {
+    originalMastering = value === "dense" ? "dense" : "live";
+    const select = $("br-original-mastering");
+    if (select) select.value = originalMastering;
+    setOriginalMasteringGate(originalLiveGate, originalMastering === "live" ? 0.45 : 0);
+    setOriginalMasteringGate(originalDenseGate, originalMastering === "dense" ? 1 : 0);
+    syncOriginalMasteringControls();
+  }
+
+  function setOriginalMasteringGate(gate, value) {
+    if (!gate) return;
+    // Before START the context is suspended: set the actual initial gain,
+    // without stacking ramps for restored preferences and a changed selection.
+    if (Tone.context.state !== "running") {
+      gate.gain.cancelScheduledValues(0);
+      gate.gain.setValueAtTime(value, Tone.context.currentTime);
+    } else {
+      gate.gain.rampTo(value, 0.04);
+    }
+  }
+
+  function originalOutputCeiling(value) {
+    // Unity below -3.1 dBFS; bound fast transients even before the shared
+    // compressor/limiter reacts. The transfer is continuous with unity slope.
+    const magnitude = Math.abs(value);
+    return magnitude <= 0.7 ? value : Math.sign(value) * (0.7 + 0.2 * Math.tanh((magnitude - 0.7) / 0.2));
+  }
+
+  function syncOriginalMasteringControls() {
+    const live = currentMode === "stems" && originalMastering === "live";
+    ["br-space-reverb", "br-space-width", "br-tape-warmth"].forEach((id) => {
+      const element = $(id); if (element) element.disabled = live;
+    });
+    document.querySelectorAll(".br-master-preset").forEach((button) => { button.disabled = live; });
   }
 
   // v220 / v271 / v301: section role → instrumentBus gain target. Real bands shape
@@ -2001,6 +2051,7 @@
   function captureSnapshot() {
     const snap = {
       mode: currentMode,
+      originalMastering,
       kitSource: state.kitSource,
       kitProfile: state.kitProfile,
       sliders: {},
@@ -2017,6 +2068,7 @@
 
   function restoreSnapshot(snap) {
     if (!snap) return;
+    if (snap.originalMastering) setOriginalMastering(snap.originalMastering);
     Object.entries(snap.sliders || {}).forEach(([id, v]) => {
       const el = document.getElementById(id);
       if (el) {
@@ -2920,6 +2972,7 @@
   }
 
   function updatePlaybackModeStatus() {
+    syncOriginalMasteringControls();
     const status = $("br-mode-status");
     if (!status) return;
     const band = currentBand();
@@ -3218,6 +3271,11 @@
       const head = await fetch(url, { method: "HEAD" });
       return head.ok;
     } catch (e) {
+      // HEAD deliberately bypasses the service worker. A failed network probe
+      // must not reject a complete cached GET that Tone.Player can decode.
+      try {
+        if (typeof caches !== "undefined") return (await caches.match(url))?.status === 200;
+      } catch (cacheError) {}
       return false;
     }
   }
@@ -4776,6 +4834,12 @@
       BANDROOM_RELEASE_VERSION,
       HAZAMA_SAFETY_DRUM_SOURCE,
       BANDROOM_STORAGE_SCHEMA_VERSION,
+      originalOutputCeiling,
+      setOriginalMasteringGate,
+      stemUrlAvailable,
+      originalMasteringDiagnostics: () => ({ profile: originalMastering,
+        live: originalLiveGate?.gain.value, dense: originalDenseGate?.gain.value,
+        volume: originalMasterGain?.gain.value, sharedVolume: masterGain?.gain.value }),
       getCurrentMode: () => currentMode,   // QA-loop BR-01 testability: read-only mode probe (stems|synth)
       aiLightRuntimeEnabled,               // v364: phone-clean band composition probes
       aiLayerLightRuntimeEnabled,
@@ -7795,15 +7859,18 @@
     if (nowMs - bgTransitionDuckAtMs < 2500) return;
     bgTransitionDuckAtMs = nowMs;
     try {
-      const g = masterGain.gain;
-      const restore = g.value;
-      if (!(restore > 0.02)) return;  // master already silent — nothing to mask
-      const t0 = Tone.context.currentTime;
-      g.cancelScheduledValues(t0);
-      g.setValueAtTime(restore, t0);
-      g.linearRampToValueAtTime(0.0001, t0 + 0.05);   // fast duck under the glitch
-      g.setValueAtTime(0.0001, t0 + 0.60);            // hold through the throttle window
-      g.linearRampToValueAtTime(restore, t0 + 0.92);  // smooth restore
+      for (const output of [masterGain, originalMasterGain]) {
+        if (!output) continue;
+        const g = output.gain;
+        const restore = g.value;
+        if (!(restore > 0.02)) continue;  // already silent
+        const t0 = Tone.context.currentTime;
+        g.cancelScheduledValues(t0);
+        g.setValueAtTime(restore, t0);
+        g.linearRampToValueAtTime(0.0001, t0 + 0.05);
+        g.setValueAtTime(0.0001, t0 + 0.60);
+        g.linearRampToValueAtTime(restore, t0 + 0.92);
+      }
     } catch (e) {}
   }
 
@@ -8525,6 +8592,11 @@
     });
 
     // Vocal FX sliders (chorus / delay / reverb — vocal stem only)
+    $("br-original-mastering")?.addEventListener("change", (event) => {
+      setOriginalMastering(event.target.value);
+      schedulePrefsSave();
+    });
+    syncOriginalMasteringControls();
     const vfxChorus = $("br-vfx-chorus");
     if (vfxChorus) {
       vfxChorus.addEventListener("input", () => {
@@ -8671,6 +8743,9 @@
       ensureMaster();
       if (masterGain) {
         try { masterGain.gain.rampTo(gain, seconds); } catch (e) {}
+      }
+      if (originalMasterGain) {
+        try { originalMasterGain.gain.rampTo(gain, seconds); } catch (e) {}
       }
     }
 
@@ -10313,6 +10388,7 @@
     try {
       const prefs = {
         bandId: state.currentBandId,
+        originalMastering,
         storageSchemaVersion: BANDROOM_STORAGE_SCHEMA_VERSION,
         mixPrefsVersion: MIX_PREFS_VERSION,
         // Mode intentionally NOT persisted — the normal entrance always opens
@@ -10361,6 +10437,7 @@
 
   function applyPrefs(prefs) {
     if (!prefs) return;
+    setOriginalMastering(prefs.originalMastering);
     prefs = migratePrefsForCurrentMix(prefs);
     // Sliders + toggles — re-trigger 'input'/'change' so handlers run
     if (prefs.sliders) {

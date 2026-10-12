@@ -1,5 +1,11 @@
 # Codex CLI Handoff — Music Stack
 
+v417追加検証: START前の「厚め」選択・保存復元で無音になる条件を再現。停止中のAudioContextには予約rampを積まず初期gainを直接設定し、再生中のみ40msで切り替える。変更前3条件が無音、変更後は同条件とliveの全4条件で実出力を確認。
+
+v417追記: 原音のHEADネットワーク例外時は保存済み200 GETを確認する。既存cacheのない原音を再生可能とは表示しない。
+
+2026-10-12: v417 / br-250は既存bass/drumsの原音をCPU再解析し、bass 249打点・128弾き直し、drums 4,122打点・287同時cymbalを補正。元の音高、guitar注釈、音声ファイルとbankを保持。原音はlive/dense切替を追加し、liveが全体の重複圧縮・歪み・widener・残響を迂回して単一の緩いcompと出力保護を通る。volume/RECは両方に効く。TABASCOの未採譜drums、分離漏れ・分類・実聴は継続。[測定と境界](ARCB-MIX-MEASUREMENT.md)。
+
 2026-10-12（歌詞・ローカル録音）: Workbenchと元の303単独に同じ「歌詞・録音」を追加。明示的なマイク準備／RECだけで、既存出力を分岐してmix・dry voice・backingを録る。再生経路・clockは変更しない。声モニターなし、mixのみgain0.7。5分／40 MBで停止、IndexedDBは12件／250 MB、満杯なら上書きせずダウンロードを案内。名前・歌詞、開始時のcode／machine snapshot／固定／AUTOと音声を同じtakeに保持し、音声・歌詞TXT・既存schemaの設定JSONを別途取り出す。通常backupの形式は不変。途中の演奏操作ログ・自動カウントイン・歌詞追従・入力遅延補正・DAW編集は含まない。隠れた画面／中断／mic切断で終了。新音源・依存・hostingなし、歌詞本文・録音はrepo／サーバーに追加しない。実ブラウザの合成2周波数で3録音の分離、同期演奏の実出力56秒、保存／再読込／exportを確認。実マイクとiPhoneは未確認。最終gateと公開証跡は対応PR。
 
 2026-10-12（ラックの穏やかなAUTO）: 既存303／909ラックに初期OFFのAUTOと2／4／8／16小節間隔。既存schedule入口だけで進め、単独Worklet／fallback／Strudel同期で時計を増やさない。鳴っている候補の未固定1声をアクセント・スライド・裏拍・音色で小さく変え、前の変奏を戻して音数・音程モチーフの蓄積を避ける。固定キック／303、音量／BPM／無音は保持。手動dice／fader／元画面編集を新基準にし、ドラッグ中は変更を待つ。停止・PATTERN切替で小節進行をリセット、SONGは変更しない。settings／handoff／combined snapshot v3／backup schema 4にAUTO設定を保存、旧版はAUTO OFF。復元は停止状態で再生位置は含めない。新規音声・依存・hostingなし。最終gate／公開CUA証跡は対応PR、本人聴感と実iPhoneは未確認。
@@ -236,8 +242,8 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v416`。Band Room runtime markerは`band-room.js?v=br-249` /
-  `band-room.css?v=br-94`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
+- 現行cacheは`hazama-fm-v417`。Band Room runtime markerは`band-room.js?v=br-250` /
+  `band-room.css?v=br-95`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
   ASR由来の`tabasco-lyrics-timed.json`を使う。`presets/tabasco-songs.json` v2は

@@ -1,5 +1,12 @@
 # Runtime Browser Listening Checklist
 
+## Rhythm alignment and original live master (v417 / BL-050)
+
+- Compare early/middle/late score windows with independent drum spectral flux; check bass split pitch evidence, original note retention, final releases and per-bar limits.
+- Capture normal seven-song AI mixes and original full mixes. Read peak, true peak, crest and stereo power as diagnostics, never a realism percentage. Keep audio local.
+- Compare original live/dense while playing, reload the saved choice, mute/volume zero, seek, mode changes, Stop and RESET. Space controls only apply to dense/AI; original volume and REC apply to both.
+- Verify high-volume original transients remain bounded, dense mode retains previous routing, native bank remains 13,610,240 bytes, no dropped notes and cached offline starts.
+
 ## ARCB band adoption (v416 / BL-051 + BL-050)
 
 - Owner explicitly requested normal-song adoption of the three instruments. Run all seven songs, three tones and four articulations with at most 128 sources; Stop/seek/mute/reset/offline must release old sound.
@@ -212,9 +219,9 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `band-room.html`, and `sw.js`. Current repo markers include
   `engine.js?v=fm-119`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-81`, `audio/ai-fills.js?v=fm-71`,
-  `style.css?v=fm-28`, `band-room.css?v=br-94`,
-  `band-room.js?v=br-249`, `audio/audio-safety.js?v=br-68`,
-  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v416`.
+  `style.css?v=fm-28`, `band-room.css?v=br-95`,
+  `band-room.js?v=br-250`, `audio/audio-safety.js?v=br-68`,
+  `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v417`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
   old `hazama-fm-v394-*` caches are removed after activation. With the network disabled,
   confirm Band Room still lists all 7 Tabasco songs, loads their drum frames and final lyrics,

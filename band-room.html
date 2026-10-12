@@ -6,7 +6,7 @@
 <title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-94" />
+<link rel="stylesheet" href="band-room.css?v=br-95" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -27,7 +27,7 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-249" defer></script>
+<script src="band-room.js?v=br-250" defer></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
 <script type="module" src="audio/physical-band/rhythm-preview.mjs?v=1"></script>
@@ -367,6 +367,8 @@
         <div class="br-sound-grid">
           <section id="br-space" aria-label="Mastering">
             <h3>space</h3>
+            <label data-scope="stems"><span>原音の仕上げ</span><select id="br-original-mastering" aria-describedby="br-original-mastering-help"><option value="live">ライブ · 録音の響き</option><option value="dense">厚め · 従来の仕上げ</option></select></label>
+            <p class="br-help" id="br-original-mastering-help" data-scope="stems">ライブは打感・強弱と録音の余韻を生かします。厚めを選ぶと、下の空間・歪みを追加調整できます。</p>
             <div id="br-master-presets">
               <button type="button" class="br-master-preset" data-preset="neutral">neutral</button>
               <button type="button" class="br-master-preset" data-preset="vertical-room">live room</button>

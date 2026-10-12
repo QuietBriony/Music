@@ -1,5 +1,7 @@
 # Collab: claude code と codex の並列開発プレイブック
 
+2026-10-12: v417のcurrent marker同期に追従。単一会話での再レビュー、同期後の最終HEADと5 repo状態を結び付ける既存gate契約を維持。
+
 2026-10-12: 現行runtimeはARCBへ新しい3楽器と打点単位の和音補正を採用したv416。cache tupleの更新も、下記の最終HEADに紐づく全体gateとレビューの契約を使う。
 
 Music repo を **claude code (Anthropic) と codex (OpenAI) の両方** で
