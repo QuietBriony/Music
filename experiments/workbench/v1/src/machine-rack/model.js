@@ -28,6 +28,7 @@ function applyLevels(pattern, values) {
 }
 
 export function createMachineRack({data,ui,knobs}) {
+  data.drumLocks ||= {};
   let checkpoint;
   function current() {
     const pattern=data.patterns[data.currentPatternId];
@@ -51,7 +52,7 @@ export function createMachineRack({data,ui,knobs}) {
       if (data.mode==='pattern') data.saveCurrentSettingsToPattern();
       const pattern=current();
       return {editable:data.mode==='pattern',patternId:data.currentPatternId,units:clone(pattern?.units || {}),
-        locks:{...data.unitLocks},tracks:[...data.active909Tracks],canRestore:Boolean(checkpoint)};
+        locks:{...data.unitLocks},drumLocks:{...data.drumLocks},tracks:[...data.active909Tracks],canRestore:Boolean(checkpoint)};
     },
     remember,
     drumCandidates(ids) {
@@ -64,9 +65,9 @@ export function createMachineRack({data,ui,knobs}) {
       const pattern=editable();
       if (data.unitLocks.tr909) throw new Error('909の固定を外してからビートを組んでください。');
       if (!checkpoint) remember();
-      data.active909Tracks=['bd','sd','ch','oh'];
+      data.active909Tracks=[...new Set(['bd','sd','ch','oh',...data.active909Tracks.filter(id=>data.drumLocks[id])])];
       const hits={bd:[0,4,8,12],sd:[4,12],ch:[0,4,8,12],oh:[2,6,10,14]};
-      for(const [id,track] of Object.entries(pattern.units.tr909.tracks)) track.steps=Array.from({length:16},(_,i)=>hits[id]?.includes(i)?1:0);
+      for(const [id,track] of Object.entries(pattern.units.tr909.tracks)) if(!data.drumLocks[id]) track.steps=Array.from({length:16},(_,i)=>hits[id]?.includes(i)?1:0);
       data.saveSettings(); refresh();
     },
     restore() {
@@ -79,24 +80,39 @@ export function createMachineRack({data,ui,knobs}) {
       data.saveSettings();refresh();return true;
     },
     randomize(target='all') {
-      if (target!=='all' && !ids.includes(target)) throw new Error('楽器を選んでください。');
+      const selected=target==='hats'?['ch','oh']:DRUMS.some(([id])=>id===target)?[target]:null;
+      const unitTarget=selected?'tr909':target;
+      if (unitTarget!=='all' && !ids.includes(unitTarget)) throw new Error('楽器を選んでください。');
       const pattern=editable();
-      if (!ids.some(id=>(target==='all'||target===id)&&!data.unitLocks[id])) return false;
+      const freeDrums=DRUMS.map(([id])=>id).filter(id=>!data.drumLocks[id]&&(!selected||selected.includes(id)));
+      if (!ids.some(id=>(unitTarget==='all'||unitTarget===id)&&!data.unitLocks[id]&&(id!=='tr909'||freeDrums.length))) return false;
       if (!checkpoint) remember();
-      const original=clone(pattern.units),volume=levels(pattern),locks={...data.unitLocks};
+      const original=clone(pattern.units),volume=levels(pattern),locks={...data.unitLocks},drumLocks={...data.drumLocks},tracks=[...data.active909Tracks];
       try {
-        for (const id of ids) data.unitLocks[id]=Boolean(locks[id] || (target!=='all' && target!==id));
+        for (const id of ids) data.unitLocks[id]=Boolean(locks[id] || (unitTarget!=='all' && unitTarget!==id));
+        if(selected) {
+          data.drumLocks=Object.fromEntries(DRUMS.map(([id])=>[id,Boolean(drumLocks[id]||!selected.includes(id))]));
+          // An explicit voice dice makes that voice a candidate, without removing others.
+          data.active909Tracks=[...new Set([...tracks,...freeDrums])];
+        }
         // Reuse the original bass-to-answer note selection, accent, slide and drums.
         data.randomize();
         applyLevels(pattern,volume);
       } catch (error) {
         pattern.units=original;
+        data.active909Tracks=tracks;
         throw error;
       } finally {
         data.unitLocks=locks;
+        data.drumLocks=drumLocks;
         refresh();
       }
+      data.saveSettings();
       return true;
+    },
+    lockDrum(id) {
+      if(!DRUMS.some(([key])=>key===id)) throw new Error('打楽器を選んでください。');
+      editable(); data.drumLocks[id]=!data.drumLocks[id]; data.saveSettings();
     },
     lock(id) {
       if (!ids.includes(id)) throw new Error('楽器を選んでください。');

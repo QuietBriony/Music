@@ -18,6 +18,7 @@ export const Data = {
         tr909: false
     },
     active909Tracks: ['bd'], // Default list of visible 909 tracks
+    drumLocks: {}, // Workbench: per-voice dice protection, separate from candidates.
     customSampleMap: {}, // trackId -> customSampleId (saved globally)
 
     // Pattern Bank (16 Patterns)
@@ -69,7 +70,11 @@ export const Data = {
         this.song = [0];
 
         // Randomize initial values after initialization
+        // A new empty bank has no saved phrase to protect yet.
+        const drumLocks = this.drumLocks;
+        this.drumLocks = {};
         this.randomize();
+        this.drumLocks = drumLocks;
     },
 
     loadSettings() {
@@ -84,6 +89,8 @@ export const Data = {
                 if (parsed.active909Tracks) {
                     this.active909Tracks = parsed.active909Tracks;
                 }
+                this.drumLocks = Object.fromEntries(Object.keys(this.getDefaultTR909Settings())
+                    .map(id => [id, parsed.drumLocks?.[id] === true]));
                 if (parsed.customSampleMap) {
                     this.customSampleMap = parsed.customSampleMap;
                 }
@@ -98,6 +105,7 @@ export const Data = {
             localStorage.setItem('acidbros-settings', JSON.stringify({
                 keepSoundSettings: this.keepSoundSettings,
                 unitLocks: this.unitLocks,
+                drumLocks: this.drumLocks,
                 active909Tracks: this.active909Tracks,
                 customSampleMap: this.customSampleMap
             }));
@@ -650,6 +658,13 @@ export const Data = {
     },
 
     randomize() {
+        // Preserve the complete locked voice, including silent steps and tone.
+        // This also protects dice in the original editing screen.
+        this.saveCurrentSettingsToPattern();
+        const drumTracks = this.patterns[this.currentPatternId]?.units?.tr909?.tracks;
+        const heldDrums = Object.fromEntries(Object.entries(drumTracks || {})
+            .filter(([id]) => this.drumLocks[id])
+            .map(([id, track]) => [id, JSON.parse(JSON.stringify(track))]));
         const setK = (id, min, max) => {
             if (window.knobInstances[id]) {
                 const val = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -829,6 +844,11 @@ export const Data = {
             }
         }
 
+        if (Object.keys(heldDrums).length) {
+            Object.assign(drumTracks, heldDrums);
+            this.applyTR909Settings(drumTracks);
+            if (UI.refreshParamCache) UI.refreshParamCache(this.currentPatternId);
+        }
         UI.renderAll();
     },
 

@@ -155,6 +155,7 @@ test('rack edits remain compatible with the original full FILE encoding',()=>{
 
 test('real native full encoding handoff keeps PATTERN editable, the selected phrase and dice locks',()=>{
   const r=rig();r.data.currentPatternId=5;r.data.applyPatternSettings(5);r.model.randomize();r.model.lock('tb303_2');
+  r.model.lockDrum('bd');
   const before=snapshot(r),values=new Map();
   const storage={setItem:(k,v)=>values.set(k,v),getItem:k=>values.get(k),removeItem:k=>values.delete(k)};
   carryMachine(r.data,storage);
@@ -164,7 +165,59 @@ test('real native full encoding handoff keeps PATTERN editable, the selected phr
   takeMachine(target.data,storage,BinaryFormatDecoder);
   assert.equal(target.data.currentPatternId,5);assert.equal(target.model.read().editable,true);
   assert.equal(target.data.unitLocks.tb303_2,true);
+  assert.equal(target.data.drumLocks.bd,true);
   assert.deepEqual(snapshot(target).tb303_2.sequence,before.tb303_2.sequence);
   target.model.randomize('tb303_1');
   assert.deepEqual(snapshot(target).tb303_2.sequence,before.tb303_2.sequence);
+});
+
+test('kick and cymbal locks preserve exact steps and tone across native, module and combination dice',()=>{
+  const r=rig();r.model.basicDrums();r.model.set('bd','level',21);r.model.set('bd','tune',33);
+  r.data.patterns[0].units.tr909.tracks.bd.steps[7]=2;r.model.lockDrum('bd');r.model.lockDrum('cr');
+  const before=snapshot(r).tr909.tracks;
+  const variations=new Set();
+  for(let i=0;i<24;i++) {
+    if(i%3===0) r.data.randomize(); else r.model.randomize(i%3===1?'tr909':'all');
+    const now=snapshot(r).tr909.tracks;
+    assert.deepEqual(now.bd,before.bd);assert.deepEqual(now.cr,before.cr);
+    variations.add(JSON.stringify(now.ch.steps));
+  }
+  assert.ok(variations.size>1,'unlocked hats still vary');
+  r.model.set('bd','tune',67);assert.equal(r.model.read().units.tr909.tracks.bd.tune,67,'manual fader remains usable');
+  r.model.basicDrums();assert.deepEqual(snapshot(r).tr909.tracks.bd.steps,before.bd.steps);
+});
+
+test('voice and hat-pair dice change only requested unlocked voices; tempo and levels remain stable',()=>{
+  const r=rig();r.model.randomize();r.model.lockDrum('bd');r.model.lockDrum('oh');
+  for(const target of ['sd','hats',...DRUMS.map(([id])=>id).filter(id=>!['bd','oh'].includes(id))]) {
+    const before=snapshot(r),volume=volumes(before),tempo=r.audio.tempo,locks={...r.data.drumLocks};
+    r.model.randomize(target);const after=snapshot(r);
+    const changed=target==='hats'?['ch']:[target];
+    for(const [id] of DRUMS) if(!changed.includes(id)) assert.deepEqual(after.tr909.tracks[id],before.tr909.tracks[id],target+' protects '+id);
+    assert.deepEqual(after.tb303_1,before.tb303_1);assert.deepEqual(after.tb303_2,before.tb303_2);
+    assert.deepEqual(volumes(after),volume);assert.equal(r.audio.tempo,tempo);assert.deepEqual(r.data.drumLocks,locks);
+  }
+  assert.equal(r.model.randomize('bd'),false);
+  r.model.lockDrum('ch');assert.equal(r.model.randomize('hats'),false);
+  r.model.lock('tr909');assert.equal(r.model.randomize('sd'),false);
+});
+
+test('part locks survive named snapshot, settings and handoff, while old snapshots default unlocked',()=>{
+  const r=rig();r.model.basicDrums();r.model.lockDrum('bd');r.model.lockDrum('oh');
+  const saved=captureMachineState(r.data,r.audio);r.model.lockDrum('bd');
+  applyMachineState(r,decodeMachineState(saved,BinaryFormatDecoder));assert.equal(r.data.drumLocks.bd,true);
+  const old={...saved,version:1};delete old.drumLocks;
+  applyMachineState(r,decodeMachineState(old,BinaryFormatDecoder));assert.ok(Object.values(r.data.drumLocks).every(v=>!v));
+  r.model.lockDrum('bd');r.data.drumLocks={};r.data.loadSettings();assert.equal(r.data.drumLocks.bd,true);
+  r.data.init();assert.equal(r.data.drumLocks.bd,true);assert.ok(snapshot(r).tr909.tracks.bd.steps.some(Boolean),'fresh bank is seeded before global locks take effect');
+  assert.throws(()=>decodeMachineState({...saved,drumLocks:{bd:'yes'}},BinaryFormatDecoder),/固定/);
+});
+
+test('partial dice failure rolls back candidates and temporary protection; SONG stays protected',()=>{
+  const r=rig();r.model.basicDrums();r.model.lockDrum('bd');
+  const before=snapshot(r),locks={...r.data.drumLocks},tracks=[...r.data.active909Tracks];
+  r.data.randomize=()=>{r.data.patterns[0].units.tr909.tracks.bd.steps.fill(0);throw Error('dice failed');};
+  assert.throws(()=>r.model.randomize('cr'),/dice failed/);assert.deepEqual(snapshot(r),before);
+  assert.deepEqual(r.data.drumLocks,locks);assert.deepEqual(r.data.active909Tracks,tracks);
+  r.data.mode='song';assert.throws(()=>r.model.lockDrum('bd'),/SONG/);assert.throws(()=>r.model.randomize('hats'),/SONG/);
 });

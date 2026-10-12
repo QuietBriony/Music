@@ -2,7 +2,7 @@ const KEY = 'music-machine-handoff-v1';
 // Tab-local and one-use: bring the current unsaved phrase into the host without
 // overwriting a FILE or putting score/sample metadata in a public URL.
 export function carryMachine(data, storage) {
-  const payload = { code:data.exportFullState(), pattern:data.currentPatternId, mode:data.mode, locks:{...data.unitLocks} };
+  const payload = { code:data.exportFullState(), pattern:data.currentPatternId, mode:data.mode, locks:{...data.unitLocks}, drumLocks:{...data.drumLocks} };
   storage.setItem(KEY, JSON.stringify(payload));
 }
 export function takeMachine(data, storage, Decoder) {
@@ -20,5 +20,6 @@ export function takeMachine(data, storage, Decoder) {
   // PATTERN. Preserve the user's editing mode explicitly in this handoff.
   data.mode = payload.mode;
   for (const unit of ['tb303_1','tb303_2','tr909']) data.unitLocks[unit] = payload.locks?.[unit] === true;
+  data.drumLocks=Object.fromEntries(['bd','sd','lt','mt','ht','rs','cp','ch','oh','cr','rd'].map(id=>[id,payload.drumLocks?.[id]===true]));
   return true;
 }
