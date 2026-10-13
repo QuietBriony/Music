@@ -1,5 +1,13 @@
 # Session Ledger — music-stack
 
+## 2026-10-13 — ギターの打点と連続ストロークの和音を再照合（v420 / BL-050）
+
+- Scope: 本人の「再現できる限り」の継続。単一会話、既存Music／公開先。
+- Change: 5曲351打点をenergyとspectral fluxの両方で照合し、note-off／強弱／小節所属を保って補正。5の和音をCQTの3区間一致、密集時の前側一致、別のlinear STFTで検査して追加。既存注釈を各行とhashへ結び直す。
+- Evidence: 原音otherと実post-masterのguitar solo／3楽器合奏を同じ時刻範囲で比較。詳細と失敗を含む録音条件はdocs/ARCB-MIX-MEASUREMENT.mdと作業PR。
+- Validation: baseline 43 PASS / 0 FAIL / 0 SKIP、audit 0 BAD / 0 WARN、5 repo不変。最終候補／merge後HEADの全体gateと公開照合は対応PRへ記録。
+- Limits: 元録音、bass/drums、53-buffer bankは保持。分離漏れ・未採譜・音色／奏法の一致、実iPhoneと本人聴感は継続。
+
 ## 2026-10-13 — 短いTABASCOのドラム譜を回復（v419 / BL-050）
 
 - Scope: 本人の継続改善依頼。単一会話、同じMusicと公開先。

@@ -110,8 +110,8 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-252-short-song-drums", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v419", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-253-guitar-performance", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v420", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
 const originalCeiling = windowMock.BandRoomTestHooks.originalOutputCeiling;
@@ -194,6 +194,17 @@ for (const song of bandsRegistry.bands.tabasco.songs) {
   assert.equal(attacks.stem_sha256, metadata.stem_sha256, `${song.id}: attack inference uses the same original recording`);
   assert.equal(attackVoicings(line).size, attacks.attacks.length, `${song.id}: every published attack must pass its exact-row binding`);
   assert.ok(attacks.attacks.length < line.events.length, `${song.id}: ambiguous attacks keep their earlier notes`);
+  const performance = line.performance_refinement;
+  assert.equal(performance?.method, 'guitar-performance-v1');
+  assert.equal(performance.source_sha256, metadata.stem_sha256, `${song.id}: guitar timing and voicings use the same original`);
+  assert.match(performance.input_line_sha256, /^[a-f0-9]{64}$/);
+  assert.ok(Number.isInteger(performance.moved) && performance.moved >= 0 && performance.moved <= line.events.length);
+  assert.ok(Number.isInteger(performance.voicings_added) && performance.voicings_added >= 0 && performance.voicings_added <= attacks.attacks.length);
+  for (let i = 0; i < line.events.length; i++) {
+    const row = line.events[i];
+    assert.ok(row.length === 5 && row.every(Number.isFinite) && row[2] > 0 && row[1] >= 0 && row[1] < 16);
+    if (i) assert.ok(row[0]*16+row[1] >= line.events[i-1][0]*16+line.events[i-1][1], 'Guitar attack order must be retained');
+  }
 }
 const line = { bpm_fit:117.45, events:[strum(0),strum(16)], harmonic_voicings:{format:"bar-voicings-v1",bpm_fit:117.45,events_count:2,bars:[[0,[43,50,55],.6,.1,1]]}};
 const attackLine = { bpm_fit:117.45, events:[strum(0),strum(2)], attack_voicings:{format:"attack-voicings-v1",bpm_fit:117.45,events_count:2,attacks:[[1,strum(2),[40,47,52],.65,.12,1]]}};
@@ -591,13 +602,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-95/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-252/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-253/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-95/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-252/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-253/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");

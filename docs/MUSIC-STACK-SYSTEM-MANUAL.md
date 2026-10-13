@@ -1,5 +1,7 @@
 # Music Stack — 全体像と使い方
 
+2026-10-13 v420: 原音otherの帯域エネルギーとspectral fluxを照合し、5曲のギター351打点を約12〜65 ms前へ補正。note-offと強弱を保持し、ベース・ドラムと同じ原音時刻に寄せた。連続ストロークの前後で安定し、CQTとlinear STFTの両方が支持する5和音を追加。従来の和音注釈は補正後の各行へ結び直す。原音・他パート・音源bankは保持。分離漏れと未採譜／曖昧な音は残り、完全再現・聴感合格とはしない。cache `hazama-fm-v420` / client `br-253`。
+
 2026-10-13 v419: 短いTABASCOを200打以上の固定条件で除外していた採譜処理を修正。原音drumsから204打を採用し、うち128打を立ち上がりへ合わせ、10打の弱い同時cymbalを補った。曲の進行に沿うドラム譜を通常ARCBで使用する。AIの開始／seekでは音の予約時刻と再生時計を一致させ、look-ahead分の先走りを修正。ギター・ベースの譜面、音源bank、原音と仕上げは保持。クラス推定・分離漏れと実iPhone聴感は未解決。cache `hazama-fm-v419` / client `br-252`。
 
 **普段の入口は [Music Stack Listen](../listen.html)。このページは「何を、どこで、どう使うか」の正本です。**
@@ -30,7 +32,7 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 
 | 公開ページ | 用途 |
 |---|---|
-| [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=synth) | ARCBをギター・ベース・ドラムで合奏。原音からベースの弾き直しとドラムの打点・同時打ちを補正。短いTABASCOも曲に沿ったドラム譜で演奏。AIの開始・途中移動の時計も補正。原音の仕上げはライブ／厚めで比較できます。 |
+| [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=synth) | ARCBをギター・ベース・ドラムで合奏。原音からベースの弾き直しとドラムの打点・同時打ちを補正。ギターの打点と連続ストロークの和音も原音へ補正。短いTABASCOも曲に沿ったドラム譜で演奏。AIの開始・途中移動の時計も補正。原音の仕上げはライブ／厚めで比較できます。 |
 | [Hazama FM](../fm.html) | ジャンルを選んで、ラジオのように流す。 |
 | [Music Core Rig](../index.html) | つまみを動かし、アシッドやIDMの音を探る。 |
 | [Lyric Lab](../lyric-lab.html) | 歌詞・曲のアイデア・制作指示を一曲ずつ残す。 |

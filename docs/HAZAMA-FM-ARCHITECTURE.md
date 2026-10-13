@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-13 v420: 原音otherの帯域エネルギーとspectral fluxを照合し、5曲のギター351打点を約12〜65 ms前へ補正。note-offと強弱を保持し、ベース・ドラムと同じ原音時刻に寄せた。連続ストロークの前後で安定し、CQTとlinear STFTの両方が支持する5和音を追加。従来の和音注釈は補正後の各行へ結び直す。原音・他パート・音源bankは保持。分離漏れと未採譜／曖昧な音は残り、完全再現・聴感合格とはしない。cache `hazama-fm-v420` / client `br-253`。
+
 2026-10-13 v419: 短いTABASCOを200打以上の固定条件で除外していた採譜処理を修正。原音drumsから204打を採用し、うち128打を立ち上がりへ合わせ、10打の弱い同時cymbalを補った。曲の進行に沿うドラム譜を通常ARCBで使用する。AIの開始／seekでは音の予約時刻と再生時計を一致させ、look-ahead分の先走りを修正。ギター・ベースの譜面、音源bank、原音と仕上げは保持。クラス推定・分離漏れと実iPhone聴感は未解決。cache `hazama-fm-v419` / client `br-252`。
 
 2026-10-13（録音後の聴き返し）: 録音直後に最新テイクへ移動し、ミックス／声だけ／演奏だけを同じプレーヤーで選択試聴。切替は先頭から、棚更新では選択と試聴位置を保持する。歌詞へ戻ると現在の下書きを開き、録音・演奏・マイクは自動開始しない。音声／TXT／JSONの取り出しは折りたたみへ。端末内の既存テイク形式と録音エンジンは保持。最終HEADのgateと実ブラウザ・公開証跡は対応PR。実iPhone／実マイク収録は本人確認。
@@ -117,9 +119,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v419`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v420`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-252`, `band-room.css?v=br-95`。
+> `band-room.js?v=br-253`, `band-room.css?v=br-95`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

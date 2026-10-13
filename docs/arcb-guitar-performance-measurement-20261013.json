@@ -1,0 +1,5807 @@
+{
+  "release": "v420 / br-253",
+  "source_baseline": "fb60374f4f2d786a67c1e8ace146058045ea2014",
+  "synced_main": "a9fbbf0f63b81d17febdb47d81063e024cb72070",
+  "method": "Bounded time-domain energy attacks with linear spectral-flux confirmation; sustained CQT voicings checked with a different STFT representation. Browser output used to withhold unsupported proposals.",
+  "parameters": {
+    "energy_band_hz": [
+      140,
+      2800
+    ],
+    "energy_window_samples": 221,
+    "sample_rate": 22050,
+    "hop_samples": 128,
+    "timing_shift_s": [
+      -0.065,
+      -0.012
+    ],
+    "rounding_steps": 0.01,
+    "min_preceding_gap_s": 0.065,
+    "flux_fft": 1024,
+    "flux_band_hz": [
+      600,
+      3500
+    ],
+    "flux_agreement_s": 0.023,
+    "harmony_after_s": [
+      0.06,
+      0.36
+    ],
+    "cqt_similarity_min": 0.65,
+    "cqt_pc_margin_min": 0.12,
+    "cqt_improvement_min": 0.12,
+    "three_window_agreement": 1,
+    "dense_pre_window_s": [
+      -0.18,
+      -0.025
+    ],
+    "dense_pre_similarity_min": 0.6,
+    "dense_pre_margin_min": 0.08,
+    "stft_fft": 4096,
+    "stft_band_hz": [
+      75,
+      3500
+    ],
+    "stft_similarity_min": 0.48,
+    "stft_improvement_min": 0.05
+  },
+  "adoption": {
+    "timing": 351,
+    "harmony": 5,
+    "withheld_timing": 117,
+    "withheld_harmony": 26,
+    "reason": "Full-model proposals did not consistently improve output. Sister and I Got a Feeling retain their original performance; Under the Moon retains original voicings. This is a reviewed subset, not an accuracy claim."
+  },
+  "songs": [
+    {
+      "song": "human-fly",
+      "source_sha256": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
+      "input_line_sha256": "1acfb09a5ee72ee73afa3d5182f8222ac28d0addb95e183f3e7aaea18bf117f0",
+      "output_line_sha256": "99a0079f25e8df0e8e30178830689bed7af7bb724eb9c5af59002db86683cf9e",
+      "events": 688,
+      "moved": 15,
+      "voicings_added": 1,
+      "withheld": {
+        "timing": 0,
+        "harmony": 0
+      },
+      "median_shift_ms": -34.483,
+      "moves": [
+        {
+          "index": 30,
+          "old": 10.413793,
+          "new": 10.390805,
+          "delta_ms": -22.989,
+          "ratio": 2.04
+        },
+        {
+          "index": 33,
+          "old": 11.1341,
+          "new": 11.104725,
+          "delta_ms": -29.374,
+          "ratio": 10.069
+        },
+        {
+          "index": 42,
+          "old": 15.337165,
+          "new": 15.296296,
+          "delta_ms": -40.868,
+          "ratio": 4.199
+        },
+        {
+          "index": 46,
+          "old": 16.683269,
+          "new": 16.666667,
+          "delta_ms": -16.603,
+          "ratio": 2.409
+        },
+        {
+          "index": 102,
+          "old": 39.323116,
+          "new": 39.288633,
+          "delta_ms": -34.483,
+          "ratio": 2.067
+        },
+        {
+          "index": 242,
+          "old": 83.673052,
+          "new": 83.627075,
+          "delta_ms": -45.977,
+          "ratio": 2.308
+        },
+        {
+          "index": 287,
+          "old": 96.757344,
+          "new": 96.727969,
+          "delta_ms": -29.374,
+          "ratio": 2.405
+        },
+        {
+          "index": 437,
+          "old": 148.409962,
+          "new": 148.375479,
+          "delta_ms": -34.483,
+          "ratio": 2.587
+        },
+        {
+          "index": 439,
+          "old": 150.058748,
+          "new": 150.029374,
+          "delta_ms": -29.374,
+          "ratio": 4.52
+        },
+        {
+          "index": 506,
+          "old": 167.822478,
+          "new": 167.781609,
+          "delta_ms": -40.868,
+          "ratio": 2.649
+        },
+        {
+          "index": 598,
+          "old": 201.816092,
+          "new": 201.781609,
+          "delta_ms": -34.483,
+          "ratio": 2.103
+        },
+        {
+          "index": 609,
+          "old": 204.509579,
+          "new": 204.457216,
+          "delta_ms": -52.363,
+          "ratio": 2.475
+        },
+        {
+          "index": 643,
+          "old": 216.177522,
+          "new": 216.131545,
+          "delta_ms": -45.977,
+          "ratio": 2.402
+        },
+        {
+          "index": 644,
+          "old": 217.849298,
+          "new": 217.796935,
+          "delta_ms": -52.363,
+          "ratio": 2.874
+        },
+        {
+          "index": 687,
+          "old": 233.754789,
+          "new": 233.738186,
+          "delta_ms": -16.603,
+          "ratio": 2.203
+        }
+      ],
+      "harmony_proposals": [
+        {
+          "index": 17,
+          "time_s": 4.83014,
+          "old_notes": [
+            53,
+            60,
+            65
+          ],
+          "notes": [
+            41,
+            48,
+            53
+          ],
+          "cqt_old": 0.5550091104837297,
+          "cqt_new": 0.6806470803661844,
+          "margin": 0.1495699301518374,
+          "pre_attack_agrees": false,
+          "stft_old": 0.5830046671752918,
+          "stft_new": 0.6736830643036257,
+          "accepted": true,
+          "adopted": true
+        }
+      ]
+    },
+    {
+      "song": "electric-sheep",
+      "source_sha256": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6",
+      "input_line_sha256": "db44c3bd7d4addb818379cc7356e7abb1068afa8f4d3e3a9804e1083740d41c0",
+      "output_line_sha256": "7c3f03e2b81d91cb7331a699cdf8b2e0de8cf339bc786079c6cce9513ff99bc0",
+      "events": 786,
+      "moved": 185,
+      "voicings_added": 2,
+      "withheld": {
+        "timing": 0,
+        "harmony": 0
+      },
+      "median_shift_ms": -29.025,
+      "moves": [
+        {
+          "index": 4,
+          "old": 1.010062,
+          "new": 0.986842,
+          "delta_ms": -23.22,
+          "ratio": 9.712
+        },
+        {
+          "index": 8,
+          "old": 1.613777,
+          "new": 1.590557,
+          "delta_ms": -23.22,
+          "ratio": 5.45
+        },
+        {
+          "index": 9,
+          "old": 1.718266,
+          "new": 1.689241,
+          "delta_ms": -29.025,
+          "ratio": 2.747
+        },
+        {
+          "index": 11,
+          "old": 2.217492,
+          "new": 2.182663,
+          "delta_ms": -34.83,
+          "ratio": 2.011
+        },
+        {
+          "index": 12,
+          "old": 2.414861,
+          "new": 2.385836,
+          "delta_ms": -29.025,
+          "ratio": 4.518
+        },
+        {
+          "index": 14,
+          "old": 3.018576,
+          "new": 2.983746,
+          "delta_ms": -34.83,
+          "ratio": 6.216
+        },
+        {
+          "index": 16,
+          "old": 3.448142,
+          "new": 3.424923,
+          "delta_ms": -23.22,
+          "ratio": 9.204
+        },
+        {
+          "index": 24,
+          "old": 4.748452,
+          "new": 4.719427,
+          "delta_ms": -29.025,
+          "ratio": 4.467
+        },
+        {
+          "index": 29,
+          "old": 5.445046,
+          "new": 5.416022,
+          "delta_ms": -29.025,
+          "ratio": 2.312
+        },
+        {
+          "index": 30,
+          "old": 5.804954,
+          "new": 5.775929,
+          "delta_ms": -29.025,
+          "ratio": 10.044
+        },
+        {
+          "index": 32,
+          "old": 6.060372,
+          "new": 6.025542,
+          "delta_ms": -34.83,
+          "ratio": 3.77
+        },
+        {
+          "index": 35,
+          "old": 6.501548,
+          "new": 6.472523,
+          "delta_ms": -29.025,
+          "ratio": 7.511
+        },
+        {
+          "index": 37,
+          "old": 6.838235,
+          "new": 6.803406,
+          "delta_ms": -34.83,
+          "ratio": 4.674
+        },
+        {
+          "index": 38,
+          "old": 7.198142,
+          "new": 7.163313,
+          "delta_ms": -34.83,
+          "ratio": 7.054
+        },
+        {
+          "index": 40,
+          "old": 7.52322,
+          "new": 7.494195,
+          "delta_ms": -29.025,
+          "ratio": 4.488
+        },
+        {
+          "index": 43,
+          "old": 7.976006,
+          "new": 7.941176,
+          "delta_ms": -34.83,
+          "ratio": 2.994
+        },
+        {
+          "index": 47,
+          "old": 8.81192,
+          "new": 8.771285,
+          "delta_ms": -40.635,
+          "ratio": 6.185
+        },
+        {
+          "index": 48,
+          "old": 9.136997,
+          "new": 9.107972,
+          "delta_ms": -29.025,
+          "ratio": 4.823
+        },
+        {
+          "index": 49,
+          "old": 9.508514,
+          "new": 9.479489,
+          "delta_ms": -29.025,
+          "ratio": 8.38
+        },
+        {
+          "index": 51,
+          "old": 9.775542,
+          "new": 9.740712,
+          "delta_ms": -34.83,
+          "ratio": 5.347
+        },
+        {
+          "index": 54,
+          "old": 10.205108,
+          "new": 10.176084,
+          "delta_ms": -29.025,
+          "ratio": 3.957
+        },
+        {
+          "index": 55,
+          "old": 10.437307,
+          "new": 10.402477,
+          "delta_ms": -34.83,
+          "ratio": 4.222
+        },
+        {
+          "index": 56,
+          "old": 10.541796,
+          "new": 10.506966,
+          "delta_ms": -34.83,
+          "ratio": 4.72
+        },
+        {
+          "index": 59,
+          "old": 10.890093,
+          "new": 10.855263,
+          "delta_ms": -34.83,
+          "ratio": 7.893
+        },
+        {
+          "index": 69,
+          "old": 12.55031,
+          "new": 12.521285,
+          "delta_ms": -29.025,
+          "ratio": 5.176
+        },
+        {
+          "index": 71,
+          "old": 12.770898,
+          "new": 12.736068,
+          "delta_ms": -34.83,
+          "ratio": 4.342
+        },
+        {
+          "index": 73,
+          "old": 13.223684,
+          "new": 13.194659,
+          "delta_ms": -29.025,
+          "ratio": 5.75
+        },
+        {
+          "index": 81,
+          "old": 14.245356,
+          "new": 14.216331,
+          "delta_ms": -29.025,
+          "ratio": 2.195
+        },
+        {
+          "index": 83,
+          "old": 14.663313,
+          "new": 14.634288,
+          "delta_ms": -29.025,
+          "ratio": 8.36
+        },
+        {
+          "index": 89,
+          "old": 15.754644,
+          "new": 15.731424,
+          "delta_ms": -23.22,
+          "ratio": 17.915
+        },
+        {
+          "index": 91,
+          "old": 16.010062,
+          "new": 15.969427,
+          "delta_ms": -40.635,
+          "ratio": 9.427
+        },
+        {
+          "index": 96,
+          "old": 16.753096,
+          "new": 16.724071,
+          "delta_ms": -29.025,
+          "ratio": 11.799
+        },
+        {
+          "index": 97,
+          "old": 16.996904,
+          "new": 16.973684,
+          "delta_ms": -23.22,
+          "ratio": 6.612
+        },
+        {
+          "index": 101,
+          "old": 17.728328,
+          "new": 17.705108,
+          "delta_ms": -23.22,
+          "ratio": 11.124
+        },
+        {
+          "index": 103,
+          "old": 17.995356,
+          "new": 17.948916,
+          "delta_ms": -46.44,
+          "ratio": 8.739
+        },
+        {
+          "index": 105,
+          "old": 18.343653,
+          "new": 18.303019,
+          "delta_ms": -40.635,
+          "ratio": 6.691
+        },
+        {
+          "index": 107,
+          "old": 18.71517,
+          "new": 18.697755,
+          "delta_ms": -17.415,
+          "ratio": 10.137
+        },
+        {
+          "index": 108,
+          "old": 18.970588,
+          "new": 18.929954,
+          "delta_ms": -40.635,
+          "ratio": 10.174
+        },
+        {
+          "index": 112,
+          "old": 19.702012,
+          "new": 19.667183,
+          "delta_ms": -34.83,
+          "ratio": 7.516
+        },
+        {
+          "index": 114,
+          "old": 19.95743,
+          "new": 19.916796,
+          "delta_ms": -40.635,
+          "ratio": 5.782
+        },
+        {
+          "index": 119,
+          "old": 20.677245,
+          "new": 20.642415,
+          "delta_ms": -34.83,
+          "ratio": 7.163
+        },
+        {
+          "index": 120,
+          "old": 20.932663,
+          "new": 20.903638,
+          "delta_ms": -29.025,
+          "ratio": 3.43
+        },
+        {
+          "index": 122,
+          "old": 21.29257,
+          "new": 21.251935,
+          "delta_ms": -40.635,
+          "ratio": 5.302
+        },
+        {
+          "index": 124,
+          "old": 21.652477,
+          "new": 21.623452,
+          "delta_ms": -29.025,
+          "ratio": 7.808
+        },
+        {
+          "index": 126,
+          "old": 21.896285,
+          "new": 21.86726,
+          "delta_ms": -29.025,
+          "ratio": 6.666
+        },
+        {
+          "index": 131,
+          "old": 22.51161,
+          "new": 22.47678,
+          "delta_ms": -34.83,
+          "ratio": 3.281
+        },
+        {
+          "index": 138,
+          "old": 23.486842,
+          "new": 23.457817,
+          "delta_ms": -29.025,
+          "ratio": 2.222
+        },
+        {
+          "index": 140,
+          "old": 23.835139,
+          "new": 23.80031,
+          "delta_ms": -34.83,
+          "ratio": 4.804
+        },
+        {
+          "index": 142,
+          "old": 24.206656,
+          "new": 24.177632,
+          "delta_ms": -29.025,
+          "ratio": 3.585
+        },
+        {
+          "index": 144,
+          "old": 24.578173,
+          "new": 24.549149,
+          "delta_ms": -29.025,
+          "ratio": 15.217
+        },
+        {
+          "index": 146,
+          "old": 24.821981,
+          "new": 24.792957,
+          "delta_ms": -29.025,
+          "ratio": 7.56
+        },
+        {
+          "index": 148,
+          "old": 25.193498,
+          "new": 25.152864,
+          "delta_ms": -40.635,
+          "ratio": 8.597
+        },
+        {
+          "index": 150,
+          "old": 25.565015,
+          "new": 25.535991,
+          "delta_ms": -29.025,
+          "ratio": 3.454
+        },
+        {
+          "index": 154,
+          "old": 26.168731,
+          "new": 26.139706,
+          "delta_ms": -29.025,
+          "ratio": 8.319
+        },
+        {
+          "index": 156,
+          "old": 26.551858,
+          "new": 26.517028,
+          "delta_ms": -34.83,
+          "ratio": 7.596
+        },
+        {
+          "index": 159,
+          "old": 26.900155,
+          "new": 26.865325,
+          "delta_ms": -34.83,
+          "ratio": 2.557
+        },
+        {
+          "index": 164,
+          "old": 27.770898,
+          "new": 27.747678,
+          "delta_ms": -23.22,
+          "ratio": 6.009
+        },
+        {
+          "index": 173,
+          "old": 29.222136,
+          "new": 29.187307,
+          "delta_ms": -34.83,
+          "ratio": 9.195
+        },
+        {
+          "index": 180,
+          "old": 30.162539,
+          "new": 30.139319,
+          "delta_ms": -23.22,
+          "ratio": 3.32
+        },
+        {
+          "index": 187,
+          "old": 31.404799,
+          "new": 31.381579,
+          "delta_ms": -23.22,
+          "ratio": 18.817
+        },
+        {
+          "index": 191,
+          "old": 32.113003,
+          "new": 32.078173,
+          "delta_ms": -34.83,
+          "ratio": 11.342
+        },
+        {
+          "index": 192,
+          "old": 32.49613,
+          "new": 32.467105,
+          "delta_ms": -29.025,
+          "ratio": 6.73
+        },
+        {
+          "index": 194,
+          "old": 32.728328,
+          "new": 32.705108,
+          "delta_ms": -23.22,
+          "ratio": 6.393
+        },
+        {
+          "index": 197,
+          "old": 33.169505,
+          "new": 33.146285,
+          "delta_ms": -23.22,
+          "ratio": 4.287
+        },
+        {
+          "index": 198,
+          "old": 33.401703,
+          "new": 33.366873,
+          "delta_ms": -34.83,
+          "ratio": 5.499
+        },
+        {
+          "index": 199,
+          "old": 33.506192,
+          "new": 33.477167,
+          "delta_ms": -29.025,
+          "ratio": 3.195
+        },
+        {
+          "index": 200,
+          "old": 33.866099,
+          "new": 33.837074,
+          "delta_ms": -29.025,
+          "ratio": 10.285
+        },
+        {
+          "index": 203,
+          "old": 34.237616,
+          "new": 34.202786,
+          "delta_ms": -34.83,
+          "ratio": 4.558
+        },
+        {
+          "index": 205,
+          "old": 34.585913,
+          "new": 34.551084,
+          "delta_ms": -34.83,
+          "ratio": 4.062
+        },
+        {
+          "index": 208,
+          "old": 35.166409,
+          "new": 35.143189,
+          "delta_ms": -23.22,
+          "ratio": 7.787
+        },
+        {
+          "index": 210,
+          "old": 35.537926,
+          "new": 35.508901,
+          "delta_ms": -29.025,
+          "ratio": 2.09
+        },
+        {
+          "index": 212,
+          "old": 35.793344,
+          "new": 35.758514,
+          "delta_ms": -34.83,
+          "ratio": 3.225
+        },
+        {
+          "index": 214,
+          "old": 36.24613,
+          "new": 36.2113,
+          "delta_ms": -34.83,
+          "ratio": 7.611
+        },
+        {
+          "index": 217,
+          "old": 36.582817,
+          "new": 36.547988,
+          "delta_ms": -34.83,
+          "ratio": 7.264
+        },
+        {
+          "index": 223,
+          "old": 37.592879,
+          "new": 37.563854,
+          "delta_ms": -29.025,
+          "ratio": 8.242
+        },
+        {
+          "index": 225,
+          "old": 37.848297,
+          "new": 37.807663,
+          "delta_ms": -40.635,
+          "ratio": 4.376
+        },
+        {
+          "index": 231,
+          "old": 38.7887,
+          "new": 38.75387,
+          "delta_ms": -34.83,
+          "ratio": 5.105
+        },
+        {
+          "index": 233,
+          "old": 39.241486,
+          "new": 39.206656,
+          "delta_ms": -34.83,
+          "ratio": 5.005
+        },
+        {
+          "index": 235,
+          "old": 39.485294,
+          "new": 39.444659,
+          "delta_ms": -40.635,
+          "ratio": 6.162
+        },
+        {
+          "index": 237,
+          "old": 39.93808,
+          "new": 39.903251,
+          "delta_ms": -34.83,
+          "ratio": 5.727
+        },
+        {
+          "index": 238,
+          "old": 40.065789,
+          "new": 40.036765,
+          "delta_ms": -29.025,
+          "ratio": 2.616
+        },
+        {
+          "index": 242,
+          "old": 40.623065,
+          "new": 40.576625,
+          "delta_ms": -46.44,
+          "ratio": 2.661
+        },
+        {
+          "index": 245,
+          "old": 40.971362,
+          "new": 40.942337,
+          "delta_ms": -29.025,
+          "ratio": 3.59
+        },
+        {
+          "index": 246,
+          "old": 41.319659,
+          "new": 41.290635,
+          "delta_ms": -29.025,
+          "ratio": 6.552
+        },
+        {
+          "index": 248,
+          "old": 41.667957,
+          "new": 41.644737,
+          "delta_ms": -23.22,
+          "ratio": 5.909
+        },
+        {
+          "index": 249,
+          "old": 42.027864,
+          "new": 41.993034,
+          "delta_ms": -34.83,
+          "ratio": 6.42
+        },
+        {
+          "index": 251,
+          "old": 42.376161,
+          "new": 42.341331,
+          "delta_ms": -34.83,
+          "ratio": 2.283
+        },
+        {
+          "index": 252,
+          "old": 42.50387,
+          "new": 42.463235,
+          "delta_ms": -40.635,
+          "ratio": 2.532
+        },
+        {
+          "index": 257,
+          "old": 43.316563,
+          "new": 43.293344,
+          "delta_ms": -23.22,
+          "ratio": 3.392
+        },
+        {
+          "index": 259,
+          "old": 43.68808,
+          "new": 43.659056,
+          "delta_ms": -29.025,
+          "ratio": 7.058
+        },
+        {
+          "index": 272,
+          "old": 45.859133,
+          "new": 45.830108,
+          "delta_ms": -29.025,
+          "ratio": 8.704
+        },
+        {
+          "index": 274,
+          "old": 46.19582,
+          "new": 46.166796,
+          "delta_ms": -29.025,
+          "ratio": 14.716
+        },
+        {
+          "index": 277,
+          "old": 46.544118,
+          "new": 46.509288,
+          "delta_ms": -34.83,
+          "ratio": 2.976
+        },
+        {
+          "index": 278,
+          "old": 46.811146,
+          "new": 46.776316,
+          "delta_ms": -34.83,
+          "ratio": 2.262
+        },
+        {
+          "index": 282,
+          "old": 47.4613,
+          "new": 47.432276,
+          "delta_ms": -29.025,
+          "ratio": 5.392
+        },
+        {
+          "index": 284,
+          "old": 47.821207,
+          "new": 47.786378,
+          "delta_ms": -34.83,
+          "ratio": 6.629
+        },
+        {
+          "index": 286,
+          "old": 48.192724,
+          "new": 48.157895,
+          "delta_ms": -34.83,
+          "ratio": 15.436
+        },
+        {
+          "index": 288,
+          "old": 48.436533,
+          "new": 48.401703,
+          "delta_ms": -34.83,
+          "ratio": 7.508
+        },
+        {
+          "index": 289,
+          "old": 48.541022,
+          "new": 48.506192,
+          "delta_ms": -34.83,
+          "ratio": 2.152
+        },
+        {
+          "index": 291,
+          "old": 48.78483,
+          "new": 48.76161,
+          "delta_ms": -23.22,
+          "ratio": 6.394
+        },
+        {
+          "index": 292,
+          "old": 49.040248,
+          "new": 49.005418,
+          "delta_ms": -34.83,
+          "ratio": 2.329
+        },
+        {
+          "index": 293,
+          "old": 49.167957,
+          "new": 49.138932,
+          "delta_ms": -29.025,
+          "ratio": 13.046
+        },
+        {
+          "index": 297,
+          "old": 49.748452,
+          "new": 49.725232,
+          "delta_ms": -23.22,
+          "ratio": 2.899
+        },
+        {
+          "index": 298,
+          "old": 50.119969,
+          "new": 50.090944,
+          "delta_ms": -29.025,
+          "ratio": 7.661
+        },
+        {
+          "index": 301,
+          "old": 50.491486,
+          "new": 50.462461,
+          "delta_ms": -29.025,
+          "ratio": 2.988
+        },
+        {
+          "index": 302,
+          "old": 50.700464,
+          "new": 50.677245,
+          "delta_ms": -23.22,
+          "ratio": 4.258
+        },
+        {
+          "index": 304,
+          "old": 51.083591,
+          "new": 51.054567,
+          "delta_ms": -29.025,
+          "ratio": 14.451
+        },
+        {
+          "index": 311,
+          "old": 52.035604,
+          "new": 52.012384,
+          "delta_ms": -23.22,
+          "ratio": 7.85
+        },
+        {
+          "index": 315,
+          "old": 52.650929,
+          "new": 52.627709,
+          "delta_ms": -23.22,
+          "ratio": 2.264
+        },
+        {
+          "index": 317,
+          "old": 52.894737,
+          "new": 52.865712,
+          "delta_ms": -29.025,
+          "ratio": 3.735
+        },
+        {
+          "index": 319,
+          "old": 53.126935,
+          "new": 53.092105,
+          "delta_ms": -34.83,
+          "ratio": 3.036
+        },
+        {
+          "index": 321,
+          "old": 53.637771,
+          "new": 53.608746,
+          "delta_ms": -29.025,
+          "ratio": 4.862
+        },
+        {
+          "index": 323,
+          "old": 53.974458,
+          "new": 53.951238,
+          "delta_ms": -23.22,
+          "ratio": 9.899
+        },
+        {
+          "index": 325,
+          "old": 54.241486,
+          "new": 54.206656,
+          "delta_ms": -34.83,
+          "ratio": 9.792
+        },
+        {
+          "index": 327,
+          "old": 54.601393,
+          "new": 54.566563,
+          "delta_ms": -34.83,
+          "ratio": 6.388
+        },
+        {
+          "index": 328,
+          "old": 54.891641,
+          "new": 54.851006,
+          "delta_ms": -40.635,
+          "ratio": 3.211
+        },
+        {
+          "index": 329,
+          "old": 54.99613,
+          "new": 54.9613,
+          "delta_ms": -34.83,
+          "ratio": 8.01
+        },
+        {
+          "index": 331,
+          "old": 55.239938,
+          "new": 55.216718,
+          "delta_ms": -23.22,
+          "ratio": 3.737
+        },
+        {
+          "index": 333,
+          "old": 55.588235,
+          "new": 55.559211,
+          "delta_ms": -29.025,
+          "ratio": 6.907
+        },
+        {
+          "index": 334,
+          "old": 55.959752,
+          "new": 55.930728,
+          "delta_ms": -29.025,
+          "ratio": 9.135
+        },
+        {
+          "index": 338,
+          "old": 56.575077,
+          "new": 56.551858,
+          "delta_ms": -23.22,
+          "ratio": 8.613
+        },
+        {
+          "index": 350,
+          "old": 58.258514,
+          "new": 58.223684,
+          "delta_ms": -34.83,
+          "ratio": 2.898
+        },
+        {
+          "index": 357,
+          "old": 59.338235,
+          "new": 59.309211,
+          "delta_ms": -29.025,
+          "ratio": 3.821
+        },
+        {
+          "index": 365,
+          "old": 60.417957,
+          "new": 60.371517,
+          "delta_ms": -46.44,
+          "ratio": 2.278
+        },
+        {
+          "index": 366,
+          "old": 60.534056,
+          "new": 60.505031,
+          "delta_ms": -29.025,
+          "ratio": 3.297
+        },
+        {
+          "index": 596,
+          "old": 113.964009,
+          "new": 113.934985,
+          "delta_ms": -29.025,
+          "ratio": 7.674
+        },
+        {
+          "index": 598,
+          "old": 114.207817,
+          "new": 114.167183,
+          "delta_ms": -40.635,
+          "ratio": 3.409
+        },
+        {
+          "index": 600,
+          "old": 114.625774,
+          "new": 114.590944,
+          "delta_ms": -34.83,
+          "ratio": 8.332
+        },
+        {
+          "index": 605,
+          "old": 115.299149,
+          "new": 115.264319,
+          "delta_ms": -34.83,
+          "ratio": 5.038
+        },
+        {
+          "index": 606,
+          "old": 115.566176,
+          "new": 115.519737,
+          "delta_ms": -46.44,
+          "ratio": 5.283
+        },
+        {
+          "index": 609,
+          "old": 115.984133,
+          "new": 115.949303,
+          "delta_ms": -34.83,
+          "ratio": 7.082
+        },
+        {
+          "index": 614,
+          "old": 116.692337,
+          "new": 116.669118,
+          "delta_ms": -23.22,
+          "ratio": 4.213
+        },
+        {
+          "index": 621,
+          "old": 117.888158,
+          "new": 117.859133,
+          "delta_ms": -29.025,
+          "ratio": 3.041
+        },
+        {
+          "index": 624,
+          "old": 118.317724,
+          "new": 118.2887,
+          "delta_ms": -29.025,
+          "ratio": 7.411
+        },
+        {
+          "index": 626,
+          "old": 118.573142,
+          "new": 118.538313,
+          "delta_ms": -34.83,
+          "ratio": 5.888
+        },
+        {
+          "index": 628,
+          "old": 118.979489,
+          "new": 118.950464,
+          "delta_ms": -29.025,
+          "ratio": 6.449
+        },
+        {
+          "index": 630,
+          "old": 119.211687,
+          "new": 119.176858,
+          "delta_ms": -34.83,
+          "ratio": 5.03
+        },
+        {
+          "index": 633,
+          "old": 119.641254,
+          "new": 119.606424,
+          "delta_ms": -34.83,
+          "ratio": 5.626
+        },
+        {
+          "index": 635,
+          "old": 119.885062,
+          "new": 119.856037,
+          "delta_ms": -29.025,
+          "ratio": 5.664
+        },
+        {
+          "index": 637,
+          "old": 120.221749,
+          "new": 120.192724,
+          "delta_ms": -29.025,
+          "ratio": 5.995
+        },
+        {
+          "index": 642,
+          "old": 121.278251,
+          "new": 121.237616,
+          "delta_ms": -40.635,
+          "ratio": 3.578
+        },
+        {
+          "index": 644,
+          "old": 121.545279,
+          "new": 121.510449,
+          "delta_ms": -34.83,
+          "ratio": 2.629
+        },
+        {
+          "index": 646,
+          "old": 121.998065,
+          "new": 121.96904,
+          "delta_ms": -29.025,
+          "ratio": 7.281
+        },
+        {
+          "index": 649,
+          "old": 122.334752,
+          "new": 122.323142,
+          "delta_ms": -11.61,
+          "ratio": 2.338
+        },
+        {
+          "index": 653,
+          "old": 122.915248,
+          "new": 122.886223,
+          "delta_ms": -29.025,
+          "ratio": 6.013
+        },
+        {
+          "index": 656,
+          "old": 123.356424,
+          "new": 123.333204,
+          "delta_ms": -23.22,
+          "ratio": 4.998
+        },
+        {
+          "index": 661,
+          "old": 124.041409,
+          "new": 124.018189,
+          "delta_ms": -23.22,
+          "ratio": 3.705
+        },
+        {
+          "index": 662,
+          "old": 124.157508,
+          "new": 124.122678,
+          "delta_ms": -34.83,
+          "ratio": 5.124
+        },
+        {
+          "index": 665,
+          "old": 124.645124,
+          "new": 124.616099,
+          "delta_ms": -29.025,
+          "ratio": 5.199
+        },
+        {
+          "index": 666,
+          "old": 124.993421,
+          "new": 124.970201,
+          "delta_ms": -23.22,
+          "ratio": 3.185
+        },
+        {
+          "index": 671,
+          "old": 125.724845,
+          "new": 125.69582,
+          "delta_ms": -29.025,
+          "ratio": 5.454
+        },
+        {
+          "index": 672,
+          "old": 125.957043,
+          "new": 125.922214,
+          "delta_ms": -34.83,
+          "ratio": 5.31
+        },
+        {
+          "index": 674,
+          "old": 126.38661,
+          "new": 126.357585,
+          "delta_ms": -29.025,
+          "ratio": 5.568
+        },
+        {
+          "index": 677,
+          "old": 126.723297,
+          "new": 126.688467,
+          "delta_ms": -34.83,
+          "ratio": 2.903
+        },
+        {
+          "index": 679,
+          "old": 127.048375,
+          "new": 127.01935,
+          "delta_ms": -29.025,
+          "ratio": 5.758
+        },
+        {
+          "index": 688,
+          "old": 128.441563,
+          "new": 128.412539,
+          "delta_ms": -29.025,
+          "ratio": 3.753
+        },
+        {
+          "index": 692,
+          "old": 129.196207,
+          "new": 129.172988,
+          "delta_ms": -23.22,
+          "ratio": 8.587
+        },
+        {
+          "index": 694,
+          "old": 129.451625,
+          "new": 129.422601,
+          "delta_ms": -29.025,
+          "ratio": 14.434
+        },
+        {
+          "index": 699,
+          "old": 130.18305,
+          "new": 130.142415,
+          "delta_ms": -40.635,
+          "ratio": 5.956
+        },
+        {
+          "index": 705,
+          "old": 131.042183,
+          "new": 131.007353,
+          "delta_ms": -34.83,
+          "ratio": 2.73
+        },
+        {
+          "index": 706,
+          "old": 131.158282,
+          "new": 131.117647,
+          "delta_ms": -40.635,
+          "ratio": 9.018
+        },
+        {
+          "index": 708,
+          "old": 131.494969,
+          "new": 131.448529,
+          "delta_ms": -46.44,
+          "ratio": 2.232
+        },
+        {
+          "index": 710,
+          "old": 132.110294,
+          "new": 132.075464,
+          "delta_ms": -34.83,
+          "ratio": 11.641
+        },
+        {
+          "index": 712,
+          "old": 132.365712,
+          "new": 132.336687,
+          "delta_ms": -29.025,
+          "ratio": 6.089
+        },
+        {
+          "index": 713,
+          "old": 132.470201,
+          "new": 132.435372,
+          "delta_ms": -34.83,
+          "ratio": 2.45
+        },
+        {
+          "index": 717,
+          "old": 133.097136,
+          "new": 133.062307,
+          "delta_ms": -34.83,
+          "ratio": 16.062
+        },
+        {
+          "index": 720,
+          "old": 133.445433,
+          "new": 133.410604,
+          "delta_ms": -34.83,
+          "ratio": 6.027
+        },
+        {
+          "index": 721,
+          "old": 133.700851,
+          "new": 133.666022,
+          "delta_ms": -34.83,
+          "ratio": 4.816
+        },
+        {
+          "index": 724,
+          "old": 134.060759,
+          "new": 134.025929,
+          "delta_ms": -34.83,
+          "ratio": 17.133
+        },
+        {
+          "index": 726,
+          "old": 134.385836,
+          "new": 134.351006,
+          "delta_ms": -34.83,
+          "ratio": 5.552
+        },
+        {
+          "index": 727,
+          "old": 134.652864,
+          "new": 134.635449,
+          "delta_ms": -17.415,
+          "ratio": 2.191
+        },
+        {
+          "index": 728,
+          "old": 134.908282,
+          "new": 134.885062,
+          "delta_ms": -23.22,
+          "ratio": 11.078
+        },
+        {
+          "index": 729,
+          "old": 135.14048,
+          "new": 135.11726,
+          "delta_ms": -23.22,
+          "ratio": 16.681
+        },
+        {
+          "index": 731,
+          "old": 135.662926,
+          "new": 135.628096,
+          "delta_ms": -34.83,
+          "ratio": 4.942
+        },
+        {
+          "index": 733,
+          "old": 135.999613,
+          "new": 135.964783,
+          "delta_ms": -34.83,
+          "ratio": 4.317
+        },
+        {
+          "index": 737,
+          "old": 136.614938,
+          "new": 136.580108,
+          "delta_ms": -34.83,
+          "ratio": 3.275
+        },
+        {
+          "index": 739,
+          "old": 136.974845,
+          "new": 136.94582,
+          "delta_ms": -29.025,
+          "ratio": 11.014
+        },
+        {
+          "index": 743,
+          "old": 137.57856,
+          "new": 137.549536,
+          "delta_ms": -29.025,
+          "ratio": 5.912
+        },
+        {
+          "index": 745,
+          "old": 137.950077,
+          "new": 137.926858,
+          "delta_ms": -23.22,
+          "ratio": 4.875
+        },
+        {
+          "index": 747,
+          "old": 138.205495,
+          "new": 138.176471,
+          "delta_ms": -29.025,
+          "ratio": 7.82
+        },
+        {
+          "index": 751,
+          "old": 138.92531,
+          "new": 138.896285,
+          "delta_ms": -29.025,
+          "ratio": 6.033
+        },
+        {
+          "index": 753,
+          "old": 139.192337,
+          "new": 139.157508,
+          "delta_ms": -34.83,
+          "ratio": 9.569
+        },
+        {
+          "index": 757,
+          "old": 139.888932,
+          "new": 139.848297,
+          "delta_ms": -40.635,
+          "ratio": 2.48
+        },
+        {
+          "index": 767,
+          "old": 141.537539,
+          "new": 141.496904,
+          "delta_ms": -40.635,
+          "ratio": 5.979
+        },
+        {
+          "index": 773,
+          "old": 142.524381,
+          "new": 142.495356,
+          "delta_ms": -29.025,
+          "ratio": 3.89
+        }
+      ],
+      "harmony_proposals": [
+        {
+          "index": 335,
+          "time_s": 56.087461,
+          "old_notes": [
+            59,
+            66,
+            71
+          ],
+          "notes": [
+            62,
+            69,
+            74
+          ],
+          "cqt_old": 0.06185786465302932,
+          "cqt_new": 0.6931021763297613,
+          "margin": 0.2691433047915113,
+          "pre_attack_agrees": true,
+          "stft_old": 0.31142162606321055,
+          "stft_new": 0.5514682695106103,
+          "accepted": true,
+          "adopted": true
+        },
+        {
+          "index": 336,
+          "time_s": 56.21517,
+          "old_notes": [
+            59,
+            66,
+            71
+          ],
+          "notes": [
+            62,
+            69,
+            74
+          ],
+          "cqt_old": 0.05789259864047124,
+          "cqt_new": 0.6993570756554603,
+          "margin": 0.2588573429277742,
+          "pre_attack_agrees": true,
+          "stft_old": 0.19690068062271407,
+          "stft_new": 0.6420948327287126,
+          "accepted": true,
+          "adopted": true
+        }
+      ]
+    },
+    {
+      "song": "hey",
+      "source_sha256": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a",
+      "input_line_sha256": "f73228bb4dca55edc33a9fd753ffa625ceaf39fd220e73e55c36fd4d29446cc8",
+      "output_line_sha256": "67954bc346500aca188d7802ffeef862dcb80b8d2e86867e82f595e2d0c5ee2a",
+      "events": 976,
+      "moved": 50,
+      "voicings_added": 2,
+      "withheld": {
+        "timing": 0,
+        "harmony": 0
+      },
+      "median_shift_ms": -28.705,
+      "moves": [
+        {
+          "index": 61,
+          "old": 16.079541,
+          "new": 16.050836,
+          "delta_ms": -28.705,
+          "ratio": 3.291
+        },
+        {
+          "index": 77,
+          "old": 20.09693,
+          "new": 20.073217,
+          "delta_ms": -23.712,
+          "ratio": 6.498
+        },
+        {
+          "index": 292,
+          "old": 81.002995,
+          "new": 80.974291,
+          "delta_ms": -28.705,
+          "ratio": 2.002
+        },
+        {
+          "index": 294,
+          "old": 81.490973,
+          "new": 81.46726,
+          "delta_ms": -23.712,
+          "ratio": 4.482
+        },
+        {
+          "index": 435,
+          "old": 129.659705,
+          "new": 129.642233,
+          "delta_ms": -17.472,
+          "ratio": 8.179
+        },
+        {
+          "index": 449,
+          "old": 133.65463,
+          "new": 133.630918,
+          "delta_ms": -23.712,
+          "ratio": 6.768
+        },
+        {
+          "index": 464,
+          "old": 137.659539,
+          "new": 137.635827,
+          "delta_ms": -23.712,
+          "ratio": 13.649
+        },
+        {
+          "index": 467,
+          "old": 138.135036,
+          "new": 138.100092,
+          "delta_ms": -34.945,
+          "ratio": 4.721
+        },
+        {
+          "index": 484,
+          "old": 143.093435,
+          "new": 143.063483,
+          "delta_ms": -29.953,
+          "ratio": 4.52
+        },
+        {
+          "index": 492,
+          "old": 145.600716,
+          "new": 145.572011,
+          "delta_ms": -28.705,
+          "ratio": 5.732
+        },
+        {
+          "index": 494,
+          "old": 146.111157,
+          "new": 146.082453,
+          "delta_ms": -28.705,
+          "ratio": 6.492
+        },
+        {
+          "index": 593,
+          "old": 177.794742,
+          "new": 177.766037,
+          "delta_ms": -28.705,
+          "ratio": 5.514
+        },
+        {
+          "index": 605,
+          "old": 181.765954,
+          "new": 181.737249,
+          "delta_ms": -28.705,
+          "ratio": 2.168
+        },
+        {
+          "index": 612,
+          "old": 183.25235,
+          "new": 183.217406,
+          "delta_ms": -34.945,
+          "ratio": 4.104
+        },
+        {
+          "index": 613,
+          "old": 183.786505,
+          "new": 183.756552,
+          "delta_ms": -29.953,
+          "ratio": 2.94
+        },
+        {
+          "index": 616,
+          "old": 184.517847,
+          "new": 184.487894,
+          "delta_ms": -29.953,
+          "ratio": 3.545
+        },
+        {
+          "index": 620,
+          "old": 185.794575,
+          "new": 185.765871,
+          "delta_ms": -28.705,
+          "ratio": 3.486
+        },
+        {
+          "index": 622,
+          "old": 186.282553,
+          "new": 186.25884,
+          "delta_ms": -23.712,
+          "ratio": 5.049
+        },
+        {
+          "index": 664,
+          "old": 197.81055,
+          "new": 197.775605,
+          "delta_ms": -34.945,
+          "ratio": 11.92
+        },
+        {
+          "index": 680,
+          "old": 202.292204,
+          "new": 202.257259,
+          "delta_ms": -34.945,
+          "ratio": 5.999
+        },
+        {
+          "index": 683,
+          "old": 203.301855,
+          "new": 203.273151,
+          "delta_ms": -28.705,
+          "ratio": 4.365
+        },
+        {
+          "index": 685,
+          "old": 203.999501,
+          "new": 203.969548,
+          "delta_ms": -29.953,
+          "ratio": 3.929
+        },
+        {
+          "index": 686,
+          "old": 204.521175,
+          "new": 204.49871,
+          "delta_ms": -22.464,
+          "ratio": 8.218
+        },
+        {
+          "index": 764,
+          "old": 226.498877,
+          "new": 226.470172,
+          "delta_ms": -28.705,
+          "ratio": 5.525
+        },
+        {
+          "index": 767,
+          "old": 226.986854,
+          "new": 226.95815,
+          "delta_ms": -28.705,
+          "ratio": 6.267
+        },
+        {
+          "index": 769,
+          "old": 227.486064,
+          "new": 227.462351,
+          "delta_ms": -23.712,
+          "ratio": 3.695
+        },
+        {
+          "index": 771,
+          "old": 228.007738,
+          "new": 227.979033,
+          "delta_ms": -28.705,
+          "ratio": 2.314
+        },
+        {
+          "index": 774,
+          "old": 228.762792,
+          "new": 228.734088,
+          "delta_ms": -28.705,
+          "ratio": 2.087
+        },
+        {
+          "index": 782,
+          "old": 230.53873,
+          "new": 230.516266,
+          "delta_ms": -22.464,
+          "ratio": 12.969
+        },
+        {
+          "index": 785,
+          "old": 231.026708,
+          "new": 230.998003,
+          "delta_ms": -28.705,
+          "ratio": 4.693
+        },
+        {
+          "index": 786,
+          "old": 231.538398,
+          "new": 231.514685,
+          "delta_ms": -23.712,
+          "ratio": 3.311
+        },
+        {
+          "index": 788,
+          "old": 232.037607,
+          "new": 232.007655,
+          "delta_ms": -29.953,
+          "ratio": 7.032
+        },
+        {
+          "index": 790,
+          "old": 232.524336,
+          "new": 232.489392,
+          "delta_ms": -34.945,
+          "ratio": 2.076
+        },
+        {
+          "index": 791,
+          "old": 232.780181,
+          "new": 232.751477,
+          "delta_ms": -28.705,
+          "ratio": 4.659
+        },
+        {
+          "index": 798,
+          "old": 234.556119,
+          "new": 234.533655,
+          "delta_ms": -22.464,
+          "ratio": 7.298
+        },
+        {
+          "index": 801,
+          "old": 235.055329,
+          "new": 235.026625,
+          "delta_ms": -28.705,
+          "ratio": 3.213
+        },
+        {
+          "index": 803,
+          "old": 235.543306,
+          "new": 235.514602,
+          "delta_ms": -28.705,
+          "ratio": 2.816
+        },
+        {
+          "index": 806,
+          "old": 236.053748,
+          "new": 236.025044,
+          "delta_ms": -28.705,
+          "ratio": 3.478
+        },
+        {
+          "index": 807,
+          "old": 236.565438,
+          "new": 236.535485,
+          "delta_ms": -29.953,
+          "ratio": 2.058
+        },
+        {
+          "index": 809,
+          "old": 237.052167,
+          "new": 237.023463,
+          "delta_ms": -28.705,
+          "ratio": 3.89
+        },
+        {
+          "index": 816,
+          "old": 238.538564,
+          "new": 238.509859,
+          "delta_ms": -28.705,
+          "ratio": 4.185
+        },
+        {
+          "index": 818,
+          "old": 238.991597,
+          "new": 238.967884,
+          "delta_ms": -23.712,
+          "ratio": 3.924
+        },
+        {
+          "index": 820,
+          "old": 239.502038,
+          "new": 239.479574,
+          "delta_ms": -22.464,
+          "ratio": 4.484
+        },
+        {
+          "index": 822,
+          "old": 239.990016,
+          "new": 239.966303,
+          "delta_ms": -23.712,
+          "ratio": 3.125
+        },
+        {
+          "index": 826,
+          "old": 240.988435,
+          "new": 240.95349,
+          "delta_ms": -34.945,
+          "ratio": 2.737
+        },
+        {
+          "index": 827,
+          "old": 241.196855,
+          "new": 241.16815,
+          "delta_ms": -28.705,
+          "ratio": 4.271
+        },
+        {
+          "index": 833,
+          "old": 242.486064,
+          "new": 242.457359,
+          "delta_ms": -28.705,
+          "ratio": 11.732
+        },
+        {
+          "index": 834,
+          "old": 242.961561,
+          "new": 242.932856,
+          "delta_ms": -28.705,
+          "ratio": 2.891
+        },
+        {
+          "index": 836,
+          "old": 243.484483,
+          "new": 243.455778,
+          "delta_ms": -28.705,
+          "ratio": 2.379
+        },
+        {
+          "index": 838,
+          "old": 243.95998,
+          "new": 243.925035,
+          "delta_ms": -34.945,
+          "ratio": 3.256
+        }
+      ],
+      "harmony_proposals": [
+        {
+          "index": 156,
+          "time_s": 41.505533,
+          "old_notes": [
+            55,
+            62,
+            67
+          ],
+          "notes": [
+            43,
+            50,
+            55
+          ],
+          "cqt_old": 0.41708475143355067,
+          "cqt_new": 0.659892143709953,
+          "margin": 0.25494325231667603,
+          "pre_attack_agrees": true,
+          "stft_old": 0.5163332537220376,
+          "stft_new": 0.7425188730142395,
+          "accepted": true,
+          "adopted": true
+        },
+        {
+          "index": 278,
+          "time_s": 77.055495,
+          "old_notes": [
+            52,
+            59,
+            64
+          ],
+          "notes": [
+            43,
+            50,
+            55
+          ],
+          "cqt_old": 0.0414390588122894,
+          "cqt_new": 0.663689303970942,
+          "margin": 0.21395066501848214,
+          "pre_attack_agrees": false,
+          "stft_old": 0.40028086653465733,
+          "stft_new": 0.7646470601112904,
+          "accepted": true,
+          "adopted": true
+        }
+      ]
+    },
+    {
+      "song": "sister",
+      "source_sha256": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06",
+      "input_line_sha256": "2a0b17475b412d0f1092ac81a463fe53c06892aa8524705483de65c403d4985f",
+      "output_line_sha256": "6058f0c4c2a6d721ea209d80dab96addbe0475809382f418b609d46810d2b5ca",
+      "events": 772,
+      "moved": 0,
+      "voicings_added": 0,
+      "withheld": {
+        "timing": 39,
+        "harmony": 11
+      },
+      "median_shift_ms": null,
+      "moves": [],
+      "harmony_proposals": [
+        {
+          "index": 29,
+          "time_s": 15.720307,
+          "old_notes": [
+            45,
+            52,
+            57
+          ],
+          "notes": [
+            46,
+            53,
+            58
+          ],
+          "cqt_old": 0.40560177260112507,
+          "cqt_new": 0.717646186585579,
+          "margin": 0.14971678806088873,
+          "pre_attack_agrees": true,
+          "stft_old": 0.4785003072866006,
+          "stft_new": 0.7241824749824028,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 156,
+          "time_s": 67.268199,
+          "old_notes": [
+            48,
+            55,
+            60
+          ],
+          "notes": [
+            41,
+            48,
+            53
+          ],
+          "cqt_old": 0.3375261051978428,
+          "cqt_new": 0.654459621402218,
+          "margin": 0.194932778920051,
+          "pre_attack_agrees": true,
+          "stft_old": 0.575089142717927,
+          "stft_new": 0.7673272959185986,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 189,
+          "time_s": 75.348659,
+          "old_notes": [
+            48,
+            55,
+            60
+          ],
+          "notes": [
+            41,
+            48,
+            53
+          ],
+          "cqt_old": 0.35568541856298336,
+          "cqt_new": 0.6620841948909919,
+          "margin": 0.2882283920516706,
+          "pre_attack_agrees": true,
+          "stft_old": 0.5361146472672463,
+          "stft_new": 0.7332486975802568,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 190,
+          "time_s": 75.487867,
+          "old_notes": [
+            48,
+            55,
+            60
+          ],
+          "notes": [
+            41,
+            48,
+            53
+          ],
+          "cqt_old": 0.34766209519416696,
+          "cqt_new": 0.6816315460000597,
+          "margin": 0.306470549305832,
+          "pre_attack_agrees": true,
+          "stft_old": 0.5432165630344137,
+          "stft_new": 0.7277668680343258,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 220,
+          "time_s": 83.591315,
+          "old_notes": [
+            51,
+            58,
+            63
+          ],
+          "notes": [
+            50,
+            57,
+            62
+          ],
+          "cqt_old": 0.44826923931254914,
+          "cqt_new": 0.7034450316952756,
+          "margin": 0.17735093352437636,
+          "pre_attack_agrees": true,
+          "stft_old": 0.45538005442407703,
+          "stft_new": 0.6598312140730072,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 221,
+          "time_s": 83.730524,
+          "old_notes": [
+            51,
+            58,
+            63
+          ],
+          "notes": [
+            50,
+            57,
+            62
+          ],
+          "cqt_old": 0.420135556848599,
+          "cqt_new": 0.7172366017532787,
+          "margin": 0.21497126708095704,
+          "pre_attack_agrees": true,
+          "stft_old": 0.43573526479580194,
+          "stft_new": 0.6824478753836558,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 534,
+          "time_s": 189.974457,
+          "old_notes": [
+            52,
+            59,
+            64
+          ],
+          "notes": [
+            45,
+            52,
+            57
+          ],
+          "cqt_old": 0.34970306809890017,
+          "cqt_new": 0.7057330980604908,
+          "margin": 0.29021803257401757,
+          "pre_attack_agrees": true,
+          "stft_old": 0.5577866237302537,
+          "stft_new": 0.7687898864745161,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 550,
+          "time_s": 193.074074,
+          "old_notes": [
+            55,
+            62,
+            67
+          ],
+          "notes": [
+            48,
+            55,
+            60
+          ],
+          "cqt_old": 0.21114987311392722,
+          "cqt_new": 0.6612813266104679,
+          "margin": 0.1679237079716045,
+          "pre_attack_agrees": true,
+          "stft_old": 0.43849259136893975,
+          "stft_new": 0.6940160722546627,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 551,
+          "time_s": 193.213282,
+          "old_notes": [
+            55,
+            62,
+            67
+          ],
+          "notes": [
+            48,
+            55,
+            60
+          ],
+          "cqt_old": 0.3782120847885142,
+          "cqt_new": 0.6859869987008644,
+          "margin": 0.253599466894325,
+          "pre_attack_agrees": true,
+          "stft_old": 0.46855800252527513,
+          "stft_new": 0.7023616742366191,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 574,
+          "time_s": 197.85696,
+          "old_notes": [
+            55,
+            62,
+            67
+          ],
+          "notes": [
+            45,
+            52,
+            57
+          ],
+          "cqt_old": 0.05421480488311646,
+          "cqt_new": 0.6697269654886064,
+          "margin": 0.2404753450155187,
+          "pre_attack_agrees": true,
+          "stft_old": 0.3201092258994339,
+          "stft_new": 0.7009048139169228,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 575,
+          "time_s": 197.97318,
+          "old_notes": [
+            55,
+            62,
+            67
+          ],
+          "notes": [
+            45,
+            52,
+            57
+          ],
+          "cqt_old": 0.06496737535458219,
+          "cqt_new": 0.7109924134191389,
+          "margin": 0.2925058389940024,
+          "pre_attack_agrees": true,
+          "stft_old": 0.31137740954612025,
+          "stft_new": 0.7226374419777954,
+          "accepted": true,
+          "adopted": false
+        }
+      ]
+    },
+    {
+      "song": "i-got-a-feeling",
+      "source_sha256": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81",
+      "input_line_sha256": "fa30363d8494f92bf847c74d72afed25e5ad88edf6213705f38bb516b8f3c506",
+      "output_line_sha256": "85b5fb67225d18013c944e73f835af116924fb6347bd04b5753f728d1fdb57c4",
+      "events": 1237,
+      "moved": 0,
+      "voicings_added": 0,
+      "withheld": {
+        "timing": 78,
+        "harmony": 11
+      },
+      "median_shift_ms": null,
+      "moves": [],
+      "harmony_proposals": [
+        {
+          "index": 18,
+          "time_s": 5.990515,
+          "old_notes": [
+            52,
+            59,
+            64
+          ],
+          "notes": [
+            47,
+            54,
+            59
+          ],
+          "cqt_old": 0.1924899461298683,
+          "cqt_new": 0.6997568752480043,
+          "margin": 0.24782627061820817,
+          "pre_attack_agrees": true,
+          "stft_old": 0.4524061090813696,
+          "stft_new": 0.7466476122124579,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 19,
+          "time_s": 6.187703,
+          "old_notes": [
+            52,
+            59,
+            64
+          ],
+          "notes": [
+            47,
+            54,
+            59
+          ],
+          "cqt_old": 0.18853608849283332,
+          "cqt_new": 0.6993249272197607,
+          "margin": 0.2511429605233665,
+          "pre_attack_agrees": true,
+          "stft_old": 0.4341399626650712,
+          "stft_new": 0.7041085103430066,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 43,
+          "time_s": 14.152592,
+          "old_notes": [
+            55,
+            62,
+            67
+          ],
+          "notes": [
+            47,
+            54,
+            59
+          ],
+          "cqt_old": 0.24793407430978318,
+          "cqt_new": 0.7035692429512561,
+          "margin": 0.26009406368801286,
+          "pre_attack_agrees": true,
+          "stft_old": 0.319793967107151,
+          "stft_new": 0.7703021767847636,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 44,
+          "time_s": 14.395956,
+          "old_notes": [
+            55,
+            62,
+            67
+          ],
+          "notes": [
+            47,
+            54,
+            59
+          ],
+          "cqt_old": 0.275475824881504,
+          "cqt_new": 0.6615328987992867,
+          "margin": 0.19273313970914968,
+          "pre_attack_agrees": true,
+          "stft_old": 0.40169034964636763,
+          "stft_new": 0.703141995072134,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 60,
+          "time_s": 19.37682,
+          "old_notes": [
+            55,
+            62,
+            67
+          ],
+          "notes": [
+            43,
+            50,
+            55
+          ],
+          "cqt_old": 0.48354088481648005,
+          "cqt_new": 0.6735235498371046,
+          "margin": 0.13419473415267757,
+          "pre_attack_agrees": false,
+          "stft_old": 0.5760799735893778,
+          "stft_new": 0.7846465263393945,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 95,
+          "time_s": 29.732923,
+          "old_notes": [
+            59,
+            66,
+            71
+          ],
+          "notes": [
+            47,
+            54,
+            59
+          ],
+          "cqt_old": 0.6089219830770146,
+          "cqt_new": 0.7668729803283783,
+          "margin": 0.2700647079173991,
+          "pre_attack_agrees": true,
+          "stft_old": 0.547844886056377,
+          "stft_new": 0.7440510599251227,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 179,
+          "time_s": 51.769282,
+          "old_notes": [
+            55,
+            62,
+            67
+          ],
+          "notes": [
+            43,
+            50,
+            55
+          ],
+          "cqt_old": 0.3239174269026204,
+          "cqt_new": 0.6843056476662657,
+          "margin": 0.29207750772211327,
+          "pre_attack_agrees": true,
+          "stft_old": 0.5111665766542093,
+          "stft_new": 0.7702874844754936,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 226,
+          "time_s": 64.087278,
+          "old_notes": [
+            57,
+            64,
+            69
+          ],
+          "notes": [
+            43,
+            50,
+            55
+          ],
+          "cqt_old": 0.030537174492195444,
+          "cqt_new": 0.6521599118431458,
+          "margin": 0.23173253870128407,
+          "pre_attack_agrees": true,
+          "stft_old": 0.30722617994273366,
+          "stft_new": 0.7241975594552774,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 915,
+          "time_s": 255.430568,
+          "old_notes": [
+            54,
+            61,
+            66
+          ],
+          "notes": [
+            47,
+            54,
+            59
+          ],
+          "cqt_old": 0.4497299486958636,
+          "cqt_new": 0.6692772133701606,
+          "margin": 0.21954726467429697,
+          "pre_attack_agrees": true,
+          "stft_old": 0.54794553991282,
+          "stft_new": 0.7718795626723106,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 940,
+          "time_s": 263.754888,
+          "old_notes": [
+            49,
+            56,
+            61
+          ],
+          "notes": [
+            47,
+            54,
+            59
+          ],
+          "cqt_old": 0.08000033584264216,
+          "cqt_new": 0.675153567502078,
+          "margin": 0.19700757679427972,
+          "pre_attack_agrees": true,
+          "stft_old": 0.3672898135331455,
+          "stft_new": 0.7449491300375379,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 943,
+          "time_s": 264.800732,
+          "old_notes": [
+            49,
+            56,
+            61
+          ],
+          "notes": [
+            43,
+            50,
+            55
+          ],
+          "cqt_old": 0.3209482213520944,
+          "cqt_new": 0.6528741550448973,
+          "margin": 0.22885667273201193,
+          "pre_attack_agrees": false,
+          "stft_old": 0.4734049248410683,
+          "stft_new": 0.7824927461923981,
+          "accepted": true,
+          "adopted": false
+        }
+      ]
+    },
+    {
+      "song": "under-the-moon",
+      "source_sha256": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8",
+      "input_line_sha256": "74e55b4b54862e510057a49295fad947cca6aee856dcf792cbdd1b56c0d84f05",
+      "output_line_sha256": "ace03e2917bd24fe6c9d2e1366fa537340db9dd2d2e909acbef2bb433df25d8b",
+      "events": 882,
+      "moved": 74,
+      "voicings_added": 0,
+      "withheld": {
+        "timing": 0,
+        "harmony": 4
+      },
+      "median_shift_ms": -29.721,
+      "moves": [
+        {
+          "index": 10,
+          "old": 2.832817,
+          "new": 2.798452,
+          "delta_ms": -34.365,
+          "ratio": 2.69
+        },
+        {
+          "index": 33,
+          "old": 7.987616,
+          "new": 7.958824,
+          "delta_ms": -28.793,
+          "ratio": 4.725
+        },
+        {
+          "index": 40,
+          "old": 9.427245,
+          "new": 9.398452,
+          "delta_ms": -28.793,
+          "ratio": 3.75
+        },
+        {
+          "index": 159,
+          "old": 49.2613,
+          "new": 49.243653,
+          "delta_ms": -17.647,
+          "ratio": 4.951
+        },
+        {
+          "index": 169,
+          "old": 54.218266,
+          "new": 54.189474,
+          "delta_ms": -28.793,
+          "ratio": 12.706
+        },
+        {
+          "index": 189,
+          "old": 63.286068,
+          "new": 63.257276,
+          "delta_ms": -28.793,
+          "ratio": 4.17
+        },
+        {
+          "index": 200,
+          "old": 66.315789,
+          "new": 66.29257,
+          "delta_ms": -23.22,
+          "ratio": 2.873
+        },
+        {
+          "index": 205,
+          "old": 67.488854,
+          "new": 67.45356,
+          "delta_ms": -35.294,
+          "ratio": 3.085
+        },
+        {
+          "index": 212,
+          "old": 69.439319,
+          "new": 69.410526,
+          "delta_ms": -28.793,
+          "ratio": 4.562
+        },
+        {
+          "index": 215,
+          "old": 70.205573,
+          "new": 70.164706,
+          "delta_ms": -40.867,
+          "ratio": 2.842
+        },
+        {
+          "index": 219,
+          "old": 70.750774,
+          "new": 70.721981,
+          "delta_ms": -28.793,
+          "ratio": 3.987
+        },
+        {
+          "index": 222,
+          "old": 72.481115,
+          "new": 72.452322,
+          "delta_ms": -28.793,
+          "ratio": 6.089
+        },
+        {
+          "index": 232,
+          "old": 75.59257,
+          "new": 75.563777,
+          "delta_ms": -28.793,
+          "ratio": 5.153
+        },
+        {
+          "index": 235,
+          "old": 76.77678,
+          "new": 76.747988,
+          "delta_ms": -28.793,
+          "ratio": 15.126
+        },
+        {
+          "index": 246,
+          "old": 80.050774,
+          "new": 80.016409,
+          "delta_ms": -34.365,
+          "ratio": 6.158
+        },
+        {
+          "index": 251,
+          "old": 81.781115,
+          "new": 81.751393,
+          "delta_ms": -29.721,
+          "ratio": 4.096
+        },
+        {
+          "index": 255,
+          "old": 82.965325,
+          "new": 82.935604,
+          "delta_ms": -29.721,
+          "ratio": 3.81
+        },
+        {
+          "index": 256,
+          "old": 83.081424,
+          "new": 83.058204,
+          "delta_ms": -23.22,
+          "ratio": 4.037
+        },
+        {
+          "index": 259,
+          "old": 84.195975,
+          "new": 84.172755,
+          "delta_ms": -23.22,
+          "ratio": 3.033
+        },
+        {
+          "index": 261,
+          "old": 84.79969,
+          "new": 84.776471,
+          "delta_ms": -23.22,
+          "ratio": 4.65
+        },
+        {
+          "index": 325,
+          "old": 109.28452,
+          "new": 109.250155,
+          "delta_ms": -34.365,
+          "ratio": 2.592
+        },
+        {
+          "index": 349,
+          "old": 118.747059,
+          "new": 118.729412,
+          "delta_ms": -17.647,
+          "ratio": 2.628
+        },
+        {
+          "index": 352,
+          "old": 119.779876,
+          "new": 119.751084,
+          "delta_ms": -28.793,
+          "ratio": 3.522
+        },
+        {
+          "index": 353,
+          "old": 119.965635,
+          "new": 119.936842,
+          "delta_ms": -28.793,
+          "ratio": 2.376
+        },
+        {
+          "index": 379,
+          "old": 131.192879,
+          "new": 131.157585,
+          "delta_ms": -35.294,
+          "ratio": 2.722
+        },
+        {
+          "index": 383,
+          "old": 132.586068,
+          "new": 132.557276,
+          "delta_ms": -28.793,
+          "ratio": 3.893
+        },
+        {
+          "index": 392,
+          "old": 137.264396,
+          "new": 137.230031,
+          "delta_ms": -34.365,
+          "ratio": 4.55
+        },
+        {
+          "index": 402,
+          "old": 140.282972,
+          "new": 140.243034,
+          "delta_ms": -39.938,
+          "ratio": 4.972
+        },
+        {
+          "index": 407,
+          "old": 141.606502,
+          "new": 141.583282,
+          "delta_ms": -23.22,
+          "ratio": 6.326
+        },
+        {
+          "index": 412,
+          "old": 143.371207,
+          "new": 143.324768,
+          "delta_ms": -46.44,
+          "ratio": 5.227
+        },
+        {
+          "index": 417,
+          "old": 144.660372,
+          "new": 144.631579,
+          "delta_ms": -28.793,
+          "ratio": 4.2
+        },
+        {
+          "index": 422,
+          "old": 146.425077,
+          "new": 146.389783,
+          "delta_ms": -35.294,
+          "ratio": 4.566
+        },
+        {
+          "index": 427,
+          "old": 147.725387,
+          "new": 147.696594,
+          "delta_ms": -28.793,
+          "ratio": 4.502
+        },
+        {
+          "index": 432,
+          "old": 149.431579,
+          "new": 149.391641,
+          "delta_ms": -39.938,
+          "ratio": 2.42
+        },
+        {
+          "index": 436,
+          "old": 150.54613,
+          "new": 150.517337,
+          "delta_ms": -28.793,
+          "ratio": 5.798
+        },
+        {
+          "index": 442,
+          "old": 152.426935,
+          "new": 152.39257,
+          "delta_ms": -34.365,
+          "ratio": 7.126
+        },
+        {
+          "index": 447,
+          "old": 153.774613,
+          "new": 153.744892,
+          "delta_ms": -29.721,
+          "ratio": 13.133
+        },
+        {
+          "index": 452,
+          "old": 155.492879,
+          "new": 155.457585,
+          "delta_ms": -35.294,
+          "ratio": 8.096
+        },
+        {
+          "index": 456,
+          "old": 156.781115,
+          "new": 156.746749,
+          "delta_ms": -34.365,
+          "ratio": 4.671
+        },
+        {
+          "index": 461,
+          "old": 158.452941,
+          "new": 158.418576,
+          "delta_ms": -34.365,
+          "ratio": 2.118
+        },
+        {
+          "index": 470,
+          "old": 161.425077,
+          "new": 161.384211,
+          "delta_ms": -40.867,
+          "ratio": 8.675
+        },
+        {
+          "index": 475,
+          "old": 163.016099,
+          "new": 162.986378,
+          "delta_ms": -29.721,
+          "ratio": 2.393
+        },
+        {
+          "index": 505,
+          "old": 173.66192,
+          "new": 173.627554,
+          "delta_ms": -34.365,
+          "ratio": 2.462
+        },
+        {
+          "index": 510,
+          "old": 176.030341,
+          "new": 176.001548,
+          "delta_ms": -28.793,
+          "ratio": 2.402
+        },
+        {
+          "index": 524,
+          "old": 181.394118,
+          "new": 181.365325,
+          "delta_ms": -28.793,
+          "ratio": 2.302
+        },
+        {
+          "index": 543,
+          "old": 186.014861,
+          "new": 185.980495,
+          "delta_ms": -34.365,
+          "ratio": 3.977
+        },
+        {
+          "index": 546,
+          "old": 186.734675,
+          "new": 186.717028,
+          "delta_ms": -17.647,
+          "ratio": 2.1
+        },
+        {
+          "index": 722,
+          "old": 258.240557,
+          "new": 258.211765,
+          "delta_ms": -28.793,
+          "ratio": 15.598
+        },
+        {
+          "index": 732,
+          "old": 261.259133,
+          "new": 261.224768,
+          "delta_ms": -34.365,
+          "ratio": 6.416
+        },
+        {
+          "index": 738,
+          "old": 263.105573,
+          "new": 263.064706,
+          "delta_ms": -40.867,
+          "ratio": 5.463
+        },
+        {
+          "index": 740,
+          "old": 263.836533,
+          "new": 263.802167,
+          "delta_ms": -34.365,
+          "ratio": 2.314
+        },
+        {
+          "index": 748,
+          "old": 266.065635,
+          "new": 266.036842,
+          "delta_ms": -28.793,
+          "ratio": 4.466
+        },
+        {
+          "index": 753,
+          "old": 267.331579,
+          "new": 267.285139,
+          "delta_ms": -46.44,
+          "ratio": 5.794
+        },
+        {
+          "index": 762,
+          "old": 270.257276,
+          "new": 270.234056,
+          "delta_ms": -23.22,
+          "ratio": 7.271
+        },
+        {
+          "index": 767,
+          "old": 271.940248,
+          "new": 271.905882,
+          "delta_ms": -34.365,
+          "ratio": 7.374
+        },
+        {
+          "index": 771,
+          "old": 273.252632,
+          "new": 273.223839,
+          "delta_ms": -28.793,
+          "ratio": 5.134
+        },
+        {
+          "index": 780,
+          "old": 276.224768,
+          "new": 276.201548,
+          "delta_ms": -23.22,
+          "ratio": 5.994
+        },
+        {
+          "index": 785,
+          "old": 277.8613,
+          "new": 277.826935,
+          "delta_ms": -34.365,
+          "ratio": 6.683
+        },
+        {
+          "index": 799,
+          "old": 280.763777,
+          "new": 280.740557,
+          "delta_ms": -23.22,
+          "ratio": 4.9
+        },
+        {
+          "index": 803,
+          "old": 281.878328,
+          "new": 281.855108,
+          "delta_ms": -23.22,
+          "ratio": 2.924
+        },
+        {
+          "index": 808,
+          "old": 283.515789,
+          "new": 283.49257,
+          "delta_ms": -23.22,
+          "ratio": 2.599
+        },
+        {
+          "index": 814,
+          "old": 284.862539,
+          "new": 284.827245,
+          "delta_ms": -35.294,
+          "ratio": 3.039
+        },
+        {
+          "index": 819,
+          "old": 286.534365,
+          "new": 286.505573,
+          "delta_ms": -28.793,
+          "ratio": 2.98
+        },
+        {
+          "index": 821,
+          "old": 287.25418,
+          "new": 287.218885,
+          "delta_ms": -35.294,
+          "ratio": 2.219
+        },
+        {
+          "index": 823,
+          "old": 287.660062,
+          "new": 287.625697,
+          "delta_ms": -34.365,
+          "ratio": 3.732
+        },
+        {
+          "index": 824,
+          "old": 287.822601,
+          "new": 287.788235,
+          "delta_ms": -34.365,
+          "ratio": 3.226
+        },
+        {
+          "index": 829,
+          "old": 289.447988,
+          "new": 289.40805,
+          "delta_ms": -39.938,
+          "ratio": 5.072
+        },
+        {
+          "index": 833,
+          "old": 290.713932,
+          "new": 290.678638,
+          "delta_ms": -35.294,
+          "ratio": 11.398
+        },
+        {
+          "index": 836,
+          "old": 291.816409,
+          "new": 291.782043,
+          "delta_ms": -34.365,
+          "ratio": 2.944
+        },
+        {
+          "index": 839,
+          "old": 292.478638,
+          "new": 292.455418,
+          "delta_ms": -23.22,
+          "ratio": 20.522
+        },
+        {
+          "index": 843,
+          "old": 293.198452,
+          "new": 293.157585,
+          "delta_ms": -40.867,
+          "ratio": 8.179
+        },
+        {
+          "index": 851,
+          "old": 295.136842,
+          "new": 295.096904,
+          "delta_ms": -39.938,
+          "ratio": 4.353
+        },
+        {
+          "index": 860,
+          "old": 298.132198,
+          "new": 298.097833,
+          "delta_ms": -34.365,
+          "ratio": 6.147
+        },
+        {
+          "index": 865,
+          "old": 299.455728,
+          "new": 299.421362,
+          "delta_ms": -34.365,
+          "ratio": 5.387
+        }
+      ],
+      "harmony_proposals": [
+        {
+          "index": 198,
+          "time_s": 65.747368,
+          "old_notes": [
+            59,
+            66,
+            71
+          ],
+          "notes": [
+            46,
+            53,
+            58
+          ],
+          "cqt_old": 0.38083752783600844,
+          "cqt_new": 0.6632833273658107,
+          "margin": 0.1719455734520291,
+          "pre_attack_agrees": true,
+          "stft_old": 0.2929484723928497,
+          "stft_new": 0.6191525133101347,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 739,
+          "time_s": 263.268111,
+          "old_notes": [
+            58,
+            65,
+            70
+          ],
+          "notes": [
+            49,
+            56,
+            61
+          ],
+          "cqt_old": 0.13638960002298697,
+          "cqt_new": 0.6563904574310531,
+          "margin": 0.2088136796968439,
+          "pre_attack_agrees": false,
+          "stft_old": 0.41657404997178693,
+          "stft_new": 0.6162731339005657,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 758,
+          "time_s": 269.15387,
+          "old_notes": [
+            58,
+            65,
+            70
+          ],
+          "notes": [
+            49,
+            56,
+            61
+          ],
+          "cqt_old": 0.24286016751405803,
+          "cqt_new": 0.651242998960839,
+          "margin": 0.12469338551371079,
+          "pre_attack_agrees": false,
+          "stft_old": 0.45615811745795276,
+          "stft_new": 0.6509990524653693,
+          "accepted": true,
+          "adopted": false
+        },
+        {
+          "index": 791,
+          "time_s": 279.370588,
+          "old_notes": [
+            59,
+            66,
+            71
+          ],
+          "notes": [
+            49,
+            56,
+            61
+          ],
+          "cqt_old": 0.10703306862813469,
+          "cqt_new": 0.6623240345641849,
+          "margin": 0.21628635063957125,
+          "pre_attack_agrees": true,
+          "stft_old": 0.2980358900529584,
+          "stft_new": 0.61235691142165,
+          "accepted": true,
+          "adopted": false
+        }
+      ]
+    },
+    {
+      "song": "tabasco",
+      "source_sha256": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2",
+      "input_line_sha256": "6ca244534ab547f27d361efc3fe757c13306bb32ca5c3c1fe7a167ca6c2adc30",
+      "output_line_sha256": "c699f7e1067849dbf5afa164ce97c9797f4dbf5f8f8e8fd376be77b708ef5107",
+      "events": 85,
+      "moved": 27,
+      "voicings_added": 0,
+      "withheld": {
+        "timing": 0,
+        "harmony": 0
+      },
+      "median_shift_ms": -35.092,
+      "moves": [
+        {
+          "index": 0,
+          "old": 0.812769,
+          "new": 0.795789,
+          "delta_ms": -16.98,
+          "ratio": 177.832
+        },
+        {
+          "index": 12,
+          "old": 10.71655,
+          "new": 10.675798,
+          "delta_ms": -40.752,
+          "ratio": 2.439
+        },
+        {
+          "index": 23,
+          "old": 13.363142,
+          "new": 13.328051,
+          "delta_ms": -35.092,
+          "ratio": 2.453
+        },
+        {
+          "index": 28,
+          "old": 14.710211,
+          "new": 14.686439,
+          "delta_ms": -23.772,
+          "ratio": 2.092
+        },
+        {
+          "index": 38,
+          "old": 17.716776,
+          "new": 17.687344,
+          "delta_ms": -29.432,
+          "ratio": 2.32
+        },
+        {
+          "index": 46,
+          "old": 26.505547,
+          "new": 26.476115,
+          "delta_ms": -29.432,
+          "ratio": 5.04
+        },
+        {
+          "index": 48,
+          "old": 27.201721,
+          "new": 27.167761,
+          "delta_ms": -33.96,
+          "ratio": 2.532
+        },
+        {
+          "index": 50,
+          "old": 27.678288,
+          "new": 27.643197,
+          "delta_ms": -35.092,
+          "ratio": 2.742
+        },
+        {
+          "index": 51,
+          "old": 28.014489,
+          "new": 27.973738,
+          "delta_ms": -40.752,
+          "ratio": 3.318
+        },
+        {
+          "index": 54,
+          "old": 29.025357,
+          "new": 28.984605,
+          "delta_ms": -40.752,
+          "ratio": 2.391
+        },
+        {
+          "index": 58,
+          "old": 30.441476,
+          "new": 30.400724,
+          "delta_ms": -40.752,
+          "ratio": 3.048
+        },
+        {
+          "index": 59,
+          "old": 30.788997,
+          "new": 30.749377,
+          "delta_ms": -39.62,
+          "ratio": 3.758
+        },
+        {
+          "index": 61,
+          "old": 31.579126,
+          "new": 31.549694,
+          "delta_ms": -29.432,
+          "ratio": 3.81
+        },
+        {
+          "index": 62,
+          "old": 31.892687,
+          "new": 31.863256,
+          "delta_ms": -29.432,
+          "ratio": 3.814
+        },
+        {
+          "index": 65,
+          "old": 32.566221,
+          "new": 32.51981,
+          "delta_ms": -46.412,
+          "ratio": 2.578
+        },
+        {
+          "index": 68,
+          "old": 34.040072,
+          "new": 34.006113,
+          "delta_ms": -33.96,
+          "ratio": 4.457
+        },
+        {
+          "index": 71,
+          "old": 34.887933,
+          "new": 34.852841,
+          "delta_ms": -35.092,
+          "ratio": 3.391
+        },
+        {
+          "index": 73,
+          "old": 35.863708,
+          "new": 35.828617,
+          "delta_ms": -35.092,
+          "ratio": 3.303
+        },
+        {
+          "index": 75,
+          "old": 36.664025,
+          "new": 36.635726,
+          "delta_ms": -28.3,
+          "ratio": 2.445
+        },
+        {
+          "index": 76,
+          "old": 37.001358,
+          "new": 36.977587,
+          "delta_ms": -23.772,
+          "ratio": 3.452
+        },
+        {
+          "index": 77,
+          "old": 37.337559,
+          "new": 37.302468,
+          "delta_ms": -35.092,
+          "ratio": 2.454
+        },
+        {
+          "index": 78,
+          "old": 37.651121,
+          "new": 37.616029,
+          "delta_ms": -35.092,
+          "ratio": 2.891
+        },
+        {
+          "index": 79,
+          "old": 37.976002,
+          "new": 37.94091,
+          "delta_ms": -35.092,
+          "ratio": 5.618
+        },
+        {
+          "index": 80,
+          "old": 38.417478,
+          "new": 38.388046,
+          "delta_ms": -29.432,
+          "ratio": 2.509
+        },
+        {
+          "index": 81,
+          "old": 38.766131,
+          "new": 38.736699,
+          "delta_ms": -29.432,
+          "ratio": 2.149
+        },
+        {
+          "index": 82,
+          "old": 39.427213,
+          "new": 39.392121,
+          "delta_ms": -35.092,
+          "ratio": 3.291
+        },
+        {
+          "index": 83,
+          "old": 39.752094,
+          "new": 39.718134,
+          "delta_ms": -33.96,
+          "ratio": 2.671
+        }
+      ],
+      "harmony_proposals": []
+    }
+  ],
+  "initial_trial": {
+    "method": "Same absolute source range, timestamped browser post-master PCM; original other or other+bass+drums. No loudness gain fitted. Normalized pitch-class and power fractions; no time warp or lag fitting.",
+    "clips": [
+      {
+        "song": "electric-sheep",
+        "part": "guitar",
+        "seek": 54,
+        "common_range_s": [
+          54.04266666666666,
+          61.742666666666665
+        ],
+        "source_sha256": {
+          "other": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6"
+        },
+        "before": {
+          "pitch_class_distance": 0.399652,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -3.2,
+              2.37,
+              0.75,
+              -24.99,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.26,
+            "level_difference_db": 3.13
+          },
+          "peak": 0.57843,
+          "attack_match": {
+            "reference": 44,
+            "candidate": 49,
+            "matched": 17,
+            "precision": 0.347,
+            "recall": 0.386,
+            "f1": 0.366,
+            "median_abs_delta_ms": 11.6,
+            "mean_signed_delta_ms": -3.4,
+            "velocity_flux_correlation": -0.206
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.384382,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -3.87,
+              2.42,
+              0.68,
+              -24.99,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.39,
+            "level_difference_db": 3.11
+          },
+          "peak": 0.553802,
+          "attack_match": {
+            "reference": 44,
+            "candidate": 49,
+            "matched": 21,
+            "precision": 0.429,
+            "recall": 0.477,
+            "f1": 0.452,
+            "median_abs_delta_ms": 17.4,
+            "mean_signed_delta_ms": 0.8,
+            "velocity_flux_correlation": -0.243
+          }
+        },
+        "capture_sha256": [
+          "49cb94d663658c1adf18ab7e90f0ecf2527d30272c620d09acc8faab70bd6efc",
+          "31a5bbc2dfa9e7be9d71a7b06ddb442c469aeeaceb60f323cb2ed0d552fb5eb7"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "hey",
+        "part": "guitar",
+        "seek": 39,
+        "common_range_s": [
+          39.050666666666665,
+          46.745333333333335
+        ],
+        "source_sha256": {
+          "other": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a"
+        },
+        "before": {
+          "pitch_class_distance": 0.32516,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -22.01,
+              9.51,
+              20.03,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 10.31,
+            "level_difference_db": 3.61
+          },
+          "peak": 0.560547,
+          "attack_match": {
+            "reference": 25,
+            "candidate": 31,
+            "matched": 8,
+            "precision": 0.258,
+            "recall": 0.32,
+            "f1": 0.286,
+            "median_abs_delta_ms": 8.7,
+            "mean_signed_delta_ms": 6.5,
+            "velocity_flux_correlation": 0.034
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.324566,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -21.11,
+              9.57,
+              19.8,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 10.1,
+            "level_difference_db": 3.55
+          },
+          "peak": 0.549713,
+          "attack_match": {
+            "reference": 25,
+            "candidate": 32,
+            "matched": 8,
+            "precision": 0.25,
+            "recall": 0.32,
+            "f1": 0.281,
+            "median_abs_delta_ms": 8.7,
+            "mean_signed_delta_ms": 8.0,
+            "velocity_flux_correlation": 0.181
+          }
+        },
+        "capture_sha256": [
+          "338a497142cbc94751e13cd29de23201a263689b40e1133d6254c6954d3600c7",
+          "7fc562caf7fc79fcf40f133e3628662b08fb35ea1a1065651166376af6463b53"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "human-fly",
+        "part": "guitar",
+        "seek": 3,
+        "common_range_s": [
+          3.048,
+          10.742666666666667
+        ],
+        "source_sha256": {
+          "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+        },
+        "before": {
+          "pitch_class_distance": 0.15862,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -14.05,
+              4.31,
+              7.07,
+              -1.25,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 5.33,
+            "level_difference_db": -0.47
+          },
+          "peak": 0.531006,
+          "attack_match": {
+            "reference": 27,
+            "candidate": 25,
+            "matched": 3,
+            "precision": 0.12,
+            "recall": 0.111,
+            "f1": 0.115,
+            "median_abs_delta_ms": 11.6,
+            "mean_signed_delta_ms": -15.5,
+            "velocity_flux_correlation": 0.975
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.139193,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -13.44,
+              4.31,
+              6.96,
+              -1.25,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 5.19,
+            "level_difference_db": -0.46
+          },
+          "peak": 0.55957,
+          "attack_match": {
+            "reference": 27,
+            "candidate": 25,
+            "matched": 5,
+            "precision": 0.2,
+            "recall": 0.185,
+            "f1": 0.192,
+            "median_abs_delta_ms": 11.6,
+            "mean_signed_delta_ms": -17.4,
+            "velocity_flux_correlation": 0.454
+          }
+        },
+        "capture_sha256": [
+          "d99c8a7cee1cbc4f0ce46b335e655fa50e41a2c79219824a55bf44f601749b9e",
+          "db402f82c03fa10dfba57bb28f4fb1403b0f267c3649dbd242b8ec9dc4b9cc45"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "i-got-a-feeling",
+        "part": "guitar",
+        "seek": 12,
+        "common_range_s": [
+          12.040000000000001,
+          19.740000000000002
+        ],
+        "source_sha256": {
+          "other": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81"
+        },
+        "before": {
+          "pitch_class_distance": 0.141774,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -22.32,
+              0.56,
+              12.0,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.98,
+            "level_difference_db": 13.57
+          },
+          "peak": 0.464386,
+          "attack_match": {
+            "reference": 30,
+            "candidate": 26,
+            "matched": 2,
+            "precision": 0.077,
+            "recall": 0.067,
+            "f1": 0.071,
+            "median_abs_delta_ms": 20.3,
+            "mean_signed_delta_ms": 8.7,
+            "velocity_flux_correlation": null
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.144821,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -20.04,
+              0.65,
+              11.76,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.49,
+            "level_difference_db": 13.53
+          },
+          "peak": 0.440613,
+          "attack_match": {
+            "reference": 30,
+            "candidate": 26,
+            "matched": 3,
+            "precision": 0.115,
+            "recall": 0.1,
+            "f1": 0.107,
+            "median_abs_delta_ms": 29.0,
+            "mean_signed_delta_ms": 17.4,
+            "velocity_flux_correlation": 0.942
+          }
+        },
+        "capture_sha256": [
+          "10132bc8ad2d7523c60cf4e3fc85956a95fe16a6254a07d923aba5a1a34243df",
+          "34bc792f721260828c2d97715883758745a452915526b2e84e36706dee769bb9"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "sister",
+        "part": "guitar",
+        "seek": 66,
+        "common_range_s": [
+          66.048,
+          73.74
+        ],
+        "source_sha256": {
+          "other": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06"
+        },
+        "before": {
+          "pitch_class_distance": 0.117135,
+          "balance": {
+            "band_difference_db": [
+              -0.72,
+              -12.3,
+              4.56,
+              4.81,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 4.48,
+            "level_difference_db": 4.04
+          },
+          "peak": 0.536163,
+          "attack_match": {
+            "reference": 36,
+            "candidate": 36,
+            "matched": 8,
+            "precision": 0.222,
+            "recall": 0.222,
+            "f1": 0.222,
+            "median_abs_delta_ms": 29.0,
+            "mean_signed_delta_ms": 4.4,
+            "velocity_flux_correlation": 0.893
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.120543,
+          "balance": {
+            "band_difference_db": [
+              -0.82,
+              -12.5,
+              4.62,
+              4.42,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 4.47,
+            "level_difference_db": 3.45
+          },
+          "peak": 0.493011,
+          "attack_match": {
+            "reference": 36,
+            "candidate": 36,
+            "matched": 6,
+            "precision": 0.167,
+            "recall": 0.167,
+            "f1": 0.167,
+            "median_abs_delta_ms": 23.2,
+            "mean_signed_delta_ms": -9.7,
+            "velocity_flux_correlation": 0.506
+          }
+        },
+        "capture_sha256": [
+          "d0b1cf6ba696ee812a13f1e7e9cfdd8f7a11d514224237a763b51983219765e3",
+          "aae2065316cb1e2b79094ec0534b3376494701f82778be39cf06c76cf4f10d81"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "tabasco",
+        "part": "guitar",
+        "seek": 16,
+        "common_range_s": [
+          16.048,
+          23.740000000000002
+        ],
+        "source_sha256": {
+          "other": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2"
+        },
+        "before": {
+          "pitch_class_distance": 0.779623,
+          "balance": {
+            "band_difference_db": [
+              -1.91,
+              -13.85,
+              2.17,
+              -3.9,
+              -5.06,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 5.38,
+            "level_difference_db": 2.61
+          },
+          "peak": 0.481079,
+          "attack_match": {
+            "reference": 35,
+            "candidate": 21,
+            "matched": 3,
+            "precision": 0.143,
+            "recall": 0.086,
+            "f1": 0.107,
+            "median_abs_delta_ms": 5.8,
+            "mean_signed_delta_ms": -1.9,
+            "velocity_flux_correlation": 1.0
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.793404,
+          "balance": {
+            "band_difference_db": [
+              -1.91,
+              -14.04,
+              2.23,
+              -4.36,
+              -5.06,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 5.52,
+            "level_difference_db": 2.81
+          },
+          "peak": 0.536072,
+          "attack_match": {
+            "reference": 35,
+            "candidate": 19,
+            "matched": 6,
+            "precision": 0.316,
+            "recall": 0.171,
+            "f1": 0.222,
+            "median_abs_delta_ms": 20.3,
+            "mean_signed_delta_ms": 7.7,
+            "velocity_flux_correlation": 0.888
+          }
+        },
+        "capture_sha256": [
+          "95a17a6575730e93f1132d45c52caa3c549ed7e07e28c395910a5a8cee81551b",
+          "acfc78d8b0dd7475bba8f18a04060aa1091fa9a0c6abf9b183a165b99de45bbe"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "under-the-moon",
+        "part": "guitar",
+        "seek": 64,
+        "common_range_s": [
+          64.048,
+          71.74
+        ],
+        "source_sha256": {
+          "other": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8"
+        },
+        "before": {
+          "pitch_class_distance": 0.049089,
+          "balance": {
+            "band_difference_db": [
+              1.42,
+              -12.74,
+              5.19,
+              2.73,
+              -21.75,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 8.76,
+            "level_difference_db": 5.41
+          },
+          "peak": 0.541229,
+          "attack_match": {
+            "reference": 27,
+            "candidate": 30,
+            "matched": 2,
+            "precision": 0.067,
+            "recall": 0.074,
+            "f1": 0.07,
+            "median_abs_delta_ms": 14.5,
+            "mean_signed_delta_ms": -14.5,
+            "velocity_flux_correlation": null
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.064387,
+          "balance": {
+            "band_difference_db": [
+              1.1,
+              -12.15,
+              5.3,
+              2.26,
+              -21.75,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 8.51,
+            "level_difference_db": 5.22
+          },
+          "peak": 0.543549,
+          "attack_match": {
+            "reference": 27,
+            "candidate": 29,
+            "matched": 6,
+            "precision": 0.207,
+            "recall": 0.222,
+            "f1": 0.214,
+            "median_abs_delta_ms": 14.5,
+            "mean_signed_delta_ms": 11.6,
+            "velocity_flux_correlation": -0.501
+          }
+        },
+        "capture_sha256": [
+          "07bdca1daa4178193a16cf6024011417add5bb0636fb7fedd2f80bce739125a1",
+          "8b09cacb58e6fcd08d628072f30c4e037a65fe3e76c5f7cc19b2123dab09eb4c"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "electric-sheep",
+        "part": "band",
+        "seek": 54,
+        "common_range_s": [
+          54.08,
+          61.74
+        ],
+        "source_sha256": {
+          "other": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6",
+          "bass": "369fcdb6b59c6de1fe1f9e271b4fd52e24aa8bfbba1e22e04103dcec3c92a297",
+          "drums": "935036c51a438cb0eb9ee05a29403f7cef0bb82fae90aee899f517a2952e6404"
+        },
+        "before": {
+          "pitch_class_distance": 0.159331,
+          "balance": {
+            "band_difference_db": [
+              13.68,
+              -6.54,
+              1.91,
+              0.69,
+              -12.37,
+              4.04
+            ],
+            "core_band_mean_absolute_difference_db": 7.04,
+            "level_difference_db": -0.18
+          },
+          "peak": 0.595734
+        },
+        "after": {
+          "pitch_class_distance": 0.1566,
+          "balance": {
+            "band_difference_db": [
+              13.72,
+              -6.69,
+              1.99,
+              0.52,
+              -12.31,
+              4.08
+            ],
+            "core_band_mean_absolute_difference_db": 7.05,
+            "level_difference_db": -0.15
+          },
+          "peak": 0.576538
+        },
+        "capture_sha256": [
+          "affa4ee46a865ef0482f239faca615f37280e9f2adceb139503cf6db0baab8dc",
+          "08e5b5838de9d61fcc36d0e5c24d5010bdb5b601b994cc3df3d212c872165fad"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "hey",
+        "part": "band",
+        "seek": 39,
+        "common_range_s": [
+          39.050666666666665,
+          46.742666666666665
+        ],
+        "source_sha256": {
+          "other": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a",
+          "bass": "bffc7e34eb26a8d7c580bf11cace981fcb6ba924fcc8c38cc5ba322cc79e5298",
+          "drums": "c9468c23c8cbef60b788ff8954c0632453161d07d1ec67b314d04fdcb6a30b0a"
+        },
+        "before": {
+          "pitch_class_distance": 0.307931,
+          "balance": {
+            "band_difference_db": [
+              8.79,
+              -12.62,
+              7.34,
+              8.03,
+              -5.26,
+              3.18
+            ],
+            "core_band_mean_absolute_difference_db": 8.41,
+            "level_difference_db": 2.64
+          },
+          "peak": 0.563873
+        },
+        "after": {
+          "pitch_class_distance": 0.299765,
+          "balance": {
+            "band_difference_db": [
+              8.85,
+              -12.42,
+              7.37,
+              7.71,
+              -5.25,
+              3.24
+            ],
+            "core_band_mean_absolute_difference_db": 8.32,
+            "level_difference_db": 2.64
+          },
+          "peak": 0.563049
+        },
+        "capture_sha256": [
+          "048d2d29f010b17920fb3bfe8ce7665b5f668617b383a787a7dd1dbf955b0458",
+          "3bad1abd89f2ac2fd530bf8aebc43ba0a31760ed2e7588e6768e0ef103bba10a"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "human-fly",
+        "part": "band",
+        "seek": 3,
+        "common_range_s": [
+          3.045333333333333,
+          10.74
+        ],
+        "source_sha256": {
+          "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
+          "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+          "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88"
+        },
+        "before": {
+          "pitch_class_distance": 0.154649,
+          "balance": {
+            "band_difference_db": [
+              -5.93,
+              -13.75,
+              4.24,
+              6.88,
+              -3.97,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.95,
+            "level_difference_db": -0.54
+          },
+          "peak": 0.558167
+        },
+        "after": {
+          "pitch_class_distance": 0.133656,
+          "balance": {
+            "band_difference_db": [
+              -5.93,
+              -13.4,
+              4.26,
+              6.67,
+              -3.97,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.84,
+            "level_difference_db": -0.66
+          },
+          "peak": 0.550781
+        },
+        "capture_sha256": [
+          "1b0dd0236ef11817db5355ea6e791d16edce9ef1f09626fcd01f8736953bb790",
+          "ec8ddfd94866593e803ccc12dca1dd5a20dcc999a0910708e8f4fbe40af121d7"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "i-got-a-feeling",
+        "part": "band",
+        "seek": 12,
+        "common_range_s": [
+          12.178666666666667,
+          19.790666666666667
+        ],
+        "source_sha256": {
+          "other": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81",
+          "bass": "cfcc470fb787a69c443853cd6b62e3ca6f5ebeab5924672d14cf23f0b51c46e3",
+          "drums": "52fbb4048a68e8ef662ac79cf755f774cd103e719917ea43cf68b8ecb2eb0dca"
+        },
+        "before": {
+          "pitch_class_distance": 0.140477,
+          "balance": {
+            "band_difference_db": [
+              8.15,
+              -8.63,
+              0.59,
+              7.79,
+              -9.87,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 7.01,
+            "level_difference_db": 11.57
+          },
+          "peak": 0.55191
+        },
+        "after": {
+          "pitch_class_distance": 0.161412,
+          "balance": {
+            "band_difference_db": [
+              8.39,
+              -8.5,
+              0.48,
+              7.52,
+              -9.9,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.96,
+            "level_difference_db": 11.62
+          },
+          "peak": 0.485626
+        },
+        "capture_sha256": [
+          "52161650023dd98751c2ac721741dd3a2218ea39c1e235a99bcc18d7cc67bd7d",
+          "ccf030984b6e62323259a7addfdf0a88266e1baa5dedd12ecfc216b3c0d0aab8"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "sister",
+        "part": "band",
+        "seek": 66,
+        "common_range_s": [
+          66.04533333333335,
+          73.74266666666666
+        ],
+        "source_sha256": {
+          "other": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06",
+          "bass": "67f9bb28fd9f1b0e63c73ffda795534521ce5eae73dece1ce4704e0bde2b4dec",
+          "drums": "cad60ebac3b54df8878e09adc42918ce694dbc689e32616421c60a883acdc48f"
+        },
+        "before": {
+          "pitch_class_distance": 0.130781,
+          "balance": {
+            "band_difference_db": [
+              7.28,
+              -11.62,
+              3.55,
+              3.39,
+              -1.13,
+              0.66
+            ],
+            "core_band_mean_absolute_difference_db": 5.39,
+            "level_difference_db": 3.39
+          },
+          "peak": 0.553284
+        },
+        "after": {
+          "pitch_class_distance": 0.15247,
+          "balance": {
+            "band_difference_db": [
+              7.22,
+              -11.59,
+              3.59,
+              3.19,
+              -1.12,
+              0.65
+            ],
+            "core_band_mean_absolute_difference_db": 5.34,
+            "level_difference_db": 3.34
+          },
+          "peak": 0.541748
+        },
+        "capture_sha256": [
+          "7e07fb8a7c3621c3024280b145db567bac60dc346f48d0619ba165bec3995889",
+          "fba1efe5a3563b16748c892ea2e573c707da83d0d04246e1f79110e592307af7"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "tabasco",
+        "part": "band",
+        "seek": 16,
+        "common_range_s": [
+          16.048,
+          23.745333333333335
+        ],
+        "source_sha256": {
+          "other": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2",
+          "bass": "794f80c4a54b21dc209db23a3b81e00ebaa24be1ef2bc66174ee407efc439c37",
+          "drums": "780518047c6c79efc9d8208f41fccd7c25fec10b2439790ce03df67768f07086"
+        },
+        "before": {
+          "pitch_class_distance": 0.392296,
+          "balance": {
+            "band_difference_db": [
+              9.33,
+              -8.22,
+              1.07,
+              -4.16,
+              -9.41,
+              0.77
+            ],
+            "core_band_mean_absolute_difference_db": 6.44,
+            "level_difference_db": -0.99
+          },
+          "peak": 0.534454
+        },
+        "after": {
+          "pitch_class_distance": 0.372735,
+          "balance": {
+            "band_difference_db": [
+              9.47,
+              -8.12,
+              0.67,
+              -4.05,
+              -9.19,
+              0.99
+            ],
+            "core_band_mean_absolute_difference_db": 6.3,
+            "level_difference_db": -1.19
+          },
+          "peak": 0.521423
+        },
+        "capture_sha256": [
+          "b1ccdfbf47a08172cbf01774e22747b5c7078b6d84b6d3e7884362368d6f2a08",
+          "8002354cd71f4cf9a295b874df67e906b325f757410b8a3db5a2259b832f8e9f"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "under-the-moon",
+        "part": "band",
+        "seek": 64,
+        "common_range_s": [
+          64.08,
+          71.75066666666666
+        ],
+        "source_sha256": {
+          "other": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8",
+          "bass": "bb6c470965b051f25cc8816b3f7fdf3104fa1c601dcaec2e70d9317a2a37818c",
+          "drums": "7463b1475b3887206d97a3a2fe4ac7a0b7a0dcadd2e41bee8e3deea038311a2b"
+        },
+        "before": {
+          "pitch_class_distance": 0.043176,
+          "balance": {
+            "band_difference_db": [
+              9.04,
+              -8.15,
+              4.74,
+              0.34,
+              -16.13,
+              -0.17
+            ],
+            "core_band_mean_absolute_difference_db": 7.68,
+            "level_difference_db": 4.13
+          },
+          "peak": 0.561188
+        },
+        "after": {
+          "pitch_class_distance": 0.067265,
+          "balance": {
+            "band_difference_db": [
+              9.25,
+              -7.76,
+              4.63,
+              -0.01,
+              -15.99,
+              -0.05
+            ],
+            "core_band_mean_absolute_difference_db": 7.53,
+            "level_difference_db": 4.18
+          },
+          "peak": 0.577545
+        },
+        "capture_sha256": [
+          "3a60f6260c9b2f38d0da17c24a4c49a9cf39e943d6fa267aa5c7e445dc5b7f36",
+          "effa9a4447f2b4e5094e525a725175b96fff32fe0e56020297afcde77bac528a"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "ablation": [
+    {
+      "song": "sister",
+      "range": [
+        66.05066666666667,
+        73.73733333333332
+      ],
+      "pitch_distance": {
+        "before": 0.11703238812106886,
+        "after": 0.12044349761550455,
+        "harmony": 0.15049189845962818,
+        "timing": 0.14257093152196487
+      }
+    },
+    {
+      "song": "i-got-a-feeling",
+      "range": [
+        12.090666666666667,
+        19.740000000000002
+      ],
+      "pitch_distance": {
+        "before": 0.14478481114291353,
+        "after": 0.1458496173916931,
+        "harmony": 0.15072302242932056,
+        "timing": 0.16558264265010914
+      }
+    },
+    {
+      "song": "under-the-moon",
+      "range": [
+        64.048,
+        71.74
+      ],
+      "pitch_distance": {
+        "before": 0.04908908204065876,
+        "after": 0.06438664170156616,
+        "harmony": 0.06505321727224656,
+        "timing": 0.04846397208886977
+      }
+    }
+  ],
+  "final_output": {
+    "method": "Same absolute source range, timestamped browser post-master PCM; original other or other+bass+drums. No loudness gain fitted. Normalized pitch-class and power fractions; no time warp or lag fitting.",
+    "clips": [
+      {
+        "song": "electric-sheep",
+        "part": "guitar",
+        "seek": 108,
+        "common_range_s": [
+          108.048,
+          115.74
+        ],
+        "source_sha256": {
+          "other": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6"
+        },
+        "before": {
+          "pitch_class_distance": 0.280467,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -13.7,
+              1.68,
+              0.45,
+              -17.25,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.62,
+            "level_difference_db": 3.17
+          },
+          "peak": 0.54892,
+          "attack_match": {
+            "reference": 43,
+            "candidate": 43,
+            "matched": 2,
+            "precision": 0.047,
+            "recall": 0.047,
+            "f1": 0.047,
+            "median_abs_delta_ms": 29.0,
+            "mean_signed_delta_ms": -29.0,
+            "velocity_flux_correlation": null
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.279189,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -13.94,
+              1.71,
+              0.36,
+              -17.25,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.65,
+            "level_difference_db": 2.82
+          },
+          "peak": 0.538849,
+          "attack_match": {
+            "reference": 43,
+            "candidate": 43,
+            "matched": 6,
+            "precision": 0.14,
+            "recall": 0.14,
+            "f1": 0.14,
+            "median_abs_delta_ms": 17.4,
+            "mean_signed_delta_ms": 8.7,
+            "velocity_flux_correlation": 0.788
+          }
+        },
+        "capture_sha256": [
+          "c581dfb8c4a998bcf8567d0a0433a87b32999f0cf08b73e6a44dc4c233ae54ee",
+          "e0aa29c48b87f549ac017aa6ce82a57e5482cf335920a7b544dda23be3626aba"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "electric-sheep",
+        "part": "guitar",
+        "seek": 54,
+        "common_range_s": [
+          54.04266666666666,
+          61.74
+        ],
+        "source_sha256": {
+          "other": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6"
+        },
+        "before": {
+          "pitch_class_distance": 0.399652,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -3.2,
+              2.37,
+              0.75,
+              -24.99,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.26,
+            "level_difference_db": 3.13
+          },
+          "peak": 0.57843,
+          "attack_match": {
+            "reference": 44,
+            "candidate": 49,
+            "matched": 17,
+            "precision": 0.347,
+            "recall": 0.386,
+            "f1": 0.366,
+            "median_abs_delta_ms": 11.6,
+            "mean_signed_delta_ms": -3.4,
+            "velocity_flux_correlation": -0.206
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.396653,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -3.57,
+              2.44,
+              0.64,
+              -24.99,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.33,
+            "level_difference_db": 3.23
+          },
+          "peak": 0.563202,
+          "attack_match": {
+            "reference": 44,
+            "candidate": 49,
+            "matched": 20,
+            "precision": 0.408,
+            "recall": 0.455,
+            "f1": 0.43,
+            "median_abs_delta_ms": 23.2,
+            "mean_signed_delta_ms": 3.5,
+            "velocity_flux_correlation": -0.141
+          }
+        },
+        "capture_sha256": [
+          "49cb94d663658c1adf18ab7e90f0ecf2527d30272c620d09acc8faab70bd6efc",
+          "8e23506d6e2619d41a306c387311a464e52db1017bafb91a86d6a85649e0e3a3"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "hey",
+        "part": "guitar",
+        "seek": 166,
+        "common_range_s": [
+          166.05066666666667,
+          173.748
+        ],
+        "source_sha256": {
+          "other": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a"
+        },
+        "before": {
+          "pitch_class_distance": 0.260868,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -20.74,
+              3.68,
+              5.19,
+              -5.49,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 7.02,
+            "level_difference_db": 3.06
+          },
+          "peak": 0.542145,
+          "attack_match": {
+            "reference": 31,
+            "candidate": 20,
+            "matched": 2,
+            "precision": 0.1,
+            "recall": 0.065,
+            "f1": 0.078,
+            "median_abs_delta_ms": 20.3,
+            "mean_signed_delta_ms": -20.3,
+            "velocity_flux_correlation": null
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.25075,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -20.61,
+              3.56,
+              5.55,
+              -5.49,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 7.04,
+            "level_difference_db": 2.99
+          },
+          "peak": 0.54538,
+          "attack_match": {
+            "reference": 31,
+            "candidate": 20,
+            "matched": 2,
+            "precision": 0.1,
+            "recall": 0.065,
+            "f1": 0.078,
+            "median_abs_delta_ms": 23.2,
+            "mean_signed_delta_ms": -23.2,
+            "velocity_flux_correlation": null
+          }
+        },
+        "capture_sha256": [
+          "181862618c6a5d240258fbac8cafb545863fe134d8be5ecf1753dabd87b2f6db",
+          "d05d81111c65d10ec1b2ae8da7db4f8ec661cd9f8d1fb7db970ec937fd9c6e53"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "hey",
+        "part": "guitar",
+        "seek": 39,
+        "common_range_s": [
+          39.04533333333333,
+          46.745333333333335
+        ],
+        "source_sha256": {
+          "other": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a"
+        },
+        "before": {
+          "pitch_class_distance": 0.325181,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -22.02,
+              9.51,
+              19.97,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 10.3,
+            "level_difference_db": 3.61
+          },
+          "peak": 0.560547,
+          "attack_match": {
+            "reference": 25,
+            "candidate": 31,
+            "matched": 8,
+            "precision": 0.258,
+            "recall": 0.32,
+            "f1": 0.286,
+            "median_abs_delta_ms": 5.8,
+            "mean_signed_delta_ms": 7.3,
+            "velocity_flux_correlation": -0.002
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.303309,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -21.05,
+              9.57,
+              19.7,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 10.07,
+            "level_difference_db": 3.5
+          },
+          "peak": 0.549622,
+          "attack_match": {
+            "reference": 25,
+            "candidate": 32,
+            "matched": 9,
+            "precision": 0.281,
+            "recall": 0.36,
+            "f1": 0.316,
+            "median_abs_delta_ms": 11.6,
+            "mean_signed_delta_ms": 7.1,
+            "velocity_flux_correlation": 0.02
+          }
+        },
+        "capture_sha256": [
+          "338a497142cbc94751e13cd29de23201a263689b40e1133d6254c6954d3600c7",
+          "05e751173f26202383a495924a587bce085bc9d96e8a88b1a3c709b48a3d2e19"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "human-fly",
+        "part": "guitar",
+        "seek": 165,
+        "common_range_s": [
+          165.04266666666666,
+          172.73999999999998
+        ],
+        "source_sha256": {
+          "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+        },
+        "before": {
+          "pitch_class_distance": 0.258951,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -23.31,
+              2.69,
+              8.31,
+              -0.72,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 7.0,
+            "level_difference_db": 7.88
+          },
+          "peak": 0.518677,
+          "attack_match": {
+            "reference": 40,
+            "candidate": 40,
+            "matched": 11,
+            "precision": 0.275,
+            "recall": 0.275,
+            "f1": 0.275,
+            "median_abs_delta_ms": 5.8,
+            "mean_signed_delta_ms": 4.2,
+            "velocity_flux_correlation": -0.151
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.258316,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -23.58,
+              2.72,
+              8.23,
+              -0.72,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 7.05,
+            "level_difference_db": 8.16
+          },
+          "peak": 0.552521,
+          "attack_match": {
+            "reference": 40,
+            "candidate": 41,
+            "matched": 13,
+            "precision": 0.317,
+            "recall": 0.325,
+            "f1": 0.321,
+            "median_abs_delta_ms": 11.6,
+            "mean_signed_delta_ms": 4.0,
+            "velocity_flux_correlation": -0.182
+          }
+        },
+        "capture_sha256": [
+          "5ab8724827bfc6909431f5bc2acc1461ef0030fdc2e83989e51e512c16ba269b",
+          "79d578943700f1b445b990e8799f3a3adba4849276f1ba4c1e3ac942ca2a1081"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "human-fly",
+        "part": "guitar",
+        "seek": 3,
+        "common_range_s": [
+          3.0533333333333332,
+          10.748
+        ],
+        "source_sha256": {
+          "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+        },
+        "before": {
+          "pitch_class_distance": 0.158054,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -14.05,
+              4.31,
+              7.06,
+              -1.25,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 5.34,
+            "level_difference_db": -0.47
+          },
+          "peak": 0.531006,
+          "attack_match": {
+            "reference": 27,
+            "candidate": 25,
+            "matched": 3,
+            "precision": 0.12,
+            "recall": 0.111,
+            "f1": 0.115,
+            "median_abs_delta_ms": 23.2,
+            "mean_signed_delta_ms": -21.3,
+            "velocity_flux_correlation": 0.994
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.16181,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -13.47,
+              4.34,
+              6.74,
+              -1.25,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 5.16,
+            "level_difference_db": -0.51
+          },
+          "peak": 0.548492,
+          "attack_match": {
+            "reference": 27,
+            "candidate": 25,
+            "matched": 5,
+            "precision": 0.2,
+            "recall": 0.185,
+            "f1": 0.192,
+            "median_abs_delta_ms": 23.2,
+            "mean_signed_delta_ms": -19.7,
+            "velocity_flux_correlation": 0.467
+          }
+        },
+        "capture_sha256": [
+          "d99c8a7cee1cbc4f0ce46b335e655fa50e41a2c79219824a55bf44f601749b9e",
+          "0e5ad6e7794ed8d72585e980d0919fc69c09c24036c2612510b788935d1f4d0f"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "i-got-a-feeling",
+        "part": "guitar",
+        "seek": 12,
+        "common_range_s": [
+          12.040000000000001,
+          19.740000000000002
+        ],
+        "source_sha256": {
+          "other": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81"
+        },
+        "before": {
+          "pitch_class_distance": 0.141774,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -22.32,
+              0.56,
+              12.0,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.98,
+            "level_difference_db": 13.57
+          },
+          "peak": 0.464386,
+          "attack_match": {
+            "reference": 30,
+            "candidate": 26,
+            "matched": 2,
+            "precision": 0.077,
+            "recall": 0.067,
+            "f1": 0.071,
+            "median_abs_delta_ms": 20.3,
+            "mean_signed_delta_ms": 8.7,
+            "velocity_flux_correlation": null
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.163586,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -21.92,
+              0.6,
+              11.91,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.89,
+            "level_difference_db": 13.32
+          },
+          "peak": 0.462128,
+          "attack_match": {
+            "reference": 30,
+            "candidate": 26,
+            "matched": 2,
+            "precision": 0.077,
+            "recall": 0.067,
+            "f1": 0.071,
+            "median_abs_delta_ms": 20.3,
+            "mean_signed_delta_ms": 8.7,
+            "velocity_flux_correlation": null
+          }
+        },
+        "capture_sha256": [
+          "10132bc8ad2d7523c60cf4e3fc85956a95fe16a6254a07d923aba5a1a34243df",
+          "4d778f57af424e335987d201908b02eeb9b36e98dfd432429962b688e942da31"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "sister",
+        "part": "guitar",
+        "seek": 66,
+        "common_range_s": [
+          66.048,
+          73.74
+        ],
+        "source_sha256": {
+          "other": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06"
+        },
+        "before": {
+          "pitch_class_distance": 0.117135,
+          "balance": {
+            "band_difference_db": [
+              -0.72,
+              -12.3,
+              4.56,
+              4.81,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 4.48,
+            "level_difference_db": 4.04
+          },
+          "peak": 0.536163,
+          "attack_match": {
+            "reference": 36,
+            "candidate": 36,
+            "matched": 8,
+            "precision": 0.222,
+            "recall": 0.222,
+            "f1": 0.222,
+            "median_abs_delta_ms": 29.0,
+            "mean_signed_delta_ms": 4.4,
+            "velocity_flux_correlation": 0.893
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.143141,
+          "balance": {
+            "band_difference_db": [
+              -0.57,
+              -12.16,
+              4.58,
+              4.66,
+              0.0,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 4.39,
+            "level_difference_db": 3.51
+          },
+          "peak": 0.523956,
+          "attack_match": {
+            "reference": 36,
+            "candidate": 36,
+            "matched": 7,
+            "precision": 0.194,
+            "recall": 0.194,
+            "f1": 0.194,
+            "median_abs_delta_ms": 23.2,
+            "mean_signed_delta_ms": -10.0,
+            "velocity_flux_correlation": 0.568
+          }
+        },
+        "capture_sha256": [
+          "d0b1cf6ba696ee812a13f1e7e9cfdd8f7a11d514224237a763b51983219765e3",
+          "bc2c3f29e32a9fabca714c9aa7714bda01986dfb52a7e341bd44c6e8073a6f1b"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "tabasco",
+        "part": "guitar",
+        "seek": 16,
+        "common_range_s": [
+          16.042666666666666,
+          23.740000000000002
+        ],
+        "source_sha256": {
+          "other": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2"
+        },
+        "before": {
+          "pitch_class_distance": 0.780161,
+          "balance": {
+            "band_difference_db": [
+              -1.91,
+              -13.87,
+              2.17,
+              -3.9,
+              -5.07,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 5.38,
+            "level_difference_db": 2.6
+          },
+          "peak": 0.481079,
+          "attack_match": {
+            "reference": 36,
+            "candidate": 20,
+            "matched": 4,
+            "precision": 0.2,
+            "recall": 0.111,
+            "f1": 0.143,
+            "median_abs_delta_ms": 5.8,
+            "mean_signed_delta_ms": -4.4,
+            "velocity_flux_correlation": 0.947
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.760737,
+          "balance": {
+            "band_difference_db": [
+              -1.91,
+              -14.07,
+              2.2,
+              -4.13,
+              -5.07,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 5.48,
+            "level_difference_db": 2.13
+          },
+          "peak": 0.484802,
+          "attack_match": {
+            "reference": 36,
+            "candidate": 19,
+            "matched": 7,
+            "precision": 0.368,
+            "recall": 0.194,
+            "f1": 0.255,
+            "median_abs_delta_ms": 23.2,
+            "mean_signed_delta_ms": 11.6,
+            "velocity_flux_correlation": 0.858
+          }
+        },
+        "capture_sha256": [
+          "95a17a6575730e93f1132d45c52caa3c549ed7e07e28c395910a5a8cee81551b",
+          "c42138edb7c3a7ddb519e33b7aab22ec9d9e3ed8cb965790b3611ab74f41699b"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "tabasco",
+        "part": "guitar",
+        "seek": 30,
+        "common_range_s": [
+          30.048,
+          37.73733333333333
+        ],
+        "source_sha256": {
+          "other": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2"
+        },
+        "before": {
+          "pitch_class_distance": 0.133337,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -14.23,
+              4.03,
+              -3.59,
+              -7.59,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 5.89,
+            "level_difference_db": 8.28
+          },
+          "peak": 0.568146,
+          "attack_match": {
+            "reference": 37,
+            "candidate": 22,
+            "matched": 4,
+            "precision": 0.182,
+            "recall": 0.108,
+            "f1": 0.136,
+            "median_abs_delta_ms": 20.3,
+            "mean_signed_delta_ms": 4.4,
+            "velocity_flux_correlation": -0.609
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.13323,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -14.15,
+              4.08,
+              -3.73,
+              -7.59,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 5.91,
+            "level_difference_db": 8.33
+          },
+          "peak": 0.586975,
+          "attack_match": {
+            "reference": 37,
+            "candidate": 23,
+            "matched": 8,
+            "precision": 0.348,
+            "recall": 0.216,
+            "f1": 0.267,
+            "median_abs_delta_ms": 14.5,
+            "mean_signed_delta_ms": 9.4,
+            "velocity_flux_correlation": 0.098
+          }
+        },
+        "capture_sha256": [
+          "071b5f2db0b6d92cfa502d87880ac5f94f7afd169f2a00b2ce1b9928d95a95f9",
+          "67c1967412062dbebe6b56a70f8cec956960f8036086235829537b805b747f47"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "under-the-moon",
+        "part": "guitar",
+        "seek": 266,
+        "common_range_s": [
+          266.05066666666664,
+          273.74533333333335
+        ],
+        "source_sha256": {
+          "other": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8"
+        },
+        "before": {
+          "pitch_class_distance": 0.148412,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -15.16,
+              5.19,
+              4.37,
+              -17.2,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 8.39,
+            "level_difference_db": 5.78
+          },
+          "peak": 0.605988,
+          "attack_match": {
+            "reference": 25,
+            "candidate": 25,
+            "matched": 2,
+            "precision": 0.08,
+            "recall": 0.08,
+            "f1": 0.08,
+            "median_abs_delta_ms": 17.4,
+            "mean_signed_delta_ms": 11.6,
+            "velocity_flux_correlation": null
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.187899,
+          "balance": {
+            "band_difference_db": [
+              0.0,
+              -15.12,
+              5.21,
+              4.3,
+              -17.2,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 8.37,
+            "level_difference_db": 5.79
+          },
+          "peak": 0.598358,
+          "attack_match": {
+            "reference": 25,
+            "candidate": 25,
+            "matched": 6,
+            "precision": 0.24,
+            "recall": 0.24,
+            "f1": 0.24,
+            "median_abs_delta_ms": 17.4,
+            "mean_signed_delta_ms": 13.5,
+            "velocity_flux_correlation": 0.842
+          }
+        },
+        "capture_sha256": [
+          "106964b97a02a2abc31428324f136118cbda163609f93a69f33203880e2dde01",
+          "34c52320864af690ea6101a568a3db88adf7ebe1175b105a54345ba318ca3a60"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "under-the-moon",
+        "part": "guitar",
+        "seek": 64,
+        "common_range_s": [
+          64.048,
+          71.74266666666665
+        ],
+        "source_sha256": {
+          "other": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8"
+        },
+        "before": {
+          "pitch_class_distance": 0.049089,
+          "balance": {
+            "band_difference_db": [
+              1.42,
+              -12.74,
+              5.19,
+              2.73,
+              -21.75,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 8.76,
+            "level_difference_db": 5.41
+          },
+          "peak": 0.541229,
+          "attack_match": {
+            "reference": 27,
+            "candidate": 30,
+            "matched": 2,
+            "precision": 0.067,
+            "recall": 0.074,
+            "f1": 0.07,
+            "median_abs_delta_ms": 11.6,
+            "mean_signed_delta_ms": -11.6,
+            "velocity_flux_correlation": null
+          }
+        },
+        "after": {
+          "pitch_class_distance": 0.049853,
+          "balance": {
+            "band_difference_db": [
+              0.71,
+              -12.87,
+              5.25,
+              2.56,
+              -21.75,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 8.63,
+            "level_difference_db": 5.55
+          },
+          "peak": 0.54834,
+          "attack_match": {
+            "reference": 27,
+            "candidate": 30,
+            "matched": 6,
+            "precision": 0.2,
+            "recall": 0.222,
+            "f1": 0.211,
+            "median_abs_delta_ms": 23.2,
+            "mean_signed_delta_ms": 13.5,
+            "velocity_flux_correlation": 0.049
+          }
+        },
+        "capture_sha256": [
+          "07bdca1daa4178193a16cf6024011417add5bb0636fb7fedd2f80bce739125a1",
+          "b3f0b08fe1bcdad32d8e37eb5171b308bbd543a7e9d379c1b8e0dbe80a6bd999"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "electric-sheep",
+        "part": "band",
+        "seek": 54,
+        "common_range_s": [
+          54.08,
+          61.745333333333335
+        ],
+        "source_sha256": {
+          "other": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6",
+          "bass": "369fcdb6b59c6de1fe1f9e271b4fd52e24aa8bfbba1e22e04103dcec3c92a297",
+          "drums": "935036c51a438cb0eb9ee05a29403f7cef0bb82fae90aee899f517a2952e6404"
+        },
+        "before": {
+          "pitch_class_distance": 0.159331,
+          "balance": {
+            "band_difference_db": [
+              13.68,
+              -6.54,
+              1.91,
+              0.69,
+              -12.37,
+              4.04
+            ],
+            "core_band_mean_absolute_difference_db": 7.04,
+            "level_difference_db": -0.17
+          },
+          "peak": 0.595734
+        },
+        "after": {
+          "pitch_class_distance": 0.156586,
+          "balance": {
+            "band_difference_db": [
+              13.59,
+              -6.88,
+              2.09,
+              0.63,
+              -12.38,
+              3.98
+            ],
+            "core_band_mean_absolute_difference_db": 7.11,
+            "level_difference_db": -0.55
+          },
+          "peak": 0.558502
+        },
+        "capture_sha256": [
+          "affa4ee46a865ef0482f239faca615f37280e9f2adceb139503cf6db0baab8dc",
+          "5fb1c2a69230f5b335c427389f1deca77f220bc5aa79bcb88aea12b1228fdc1a"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "hey",
+        "part": "band",
+        "seek": 39,
+        "common_range_s": [
+          39.050666666666665,
+          46.73466666666667
+        ],
+        "source_sha256": {
+          "other": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a",
+          "bass": "bffc7e34eb26a8d7c580bf11cace981fcb6ba924fcc8c38cc5ba322cc79e5298",
+          "drums": "c9468c23c8cbef60b788ff8954c0632453161d07d1ec67b314d04fdcb6a30b0a"
+        },
+        "before": {
+          "pitch_class_distance": 0.307931,
+          "balance": {
+            "band_difference_db": [
+              8.79,
+              -12.62,
+              7.34,
+              8.03,
+              -5.26,
+              3.18
+            ],
+            "core_band_mean_absolute_difference_db": 8.41,
+            "level_difference_db": 2.63
+          },
+          "peak": 0.563873
+        },
+        "after": {
+          "pitch_class_distance": 0.298247,
+          "balance": {
+            "band_difference_db": [
+              8.83,
+              -12.36,
+              7.36,
+              7.79,
+              -5.16,
+              3.31
+            ],
+            "core_band_mean_absolute_difference_db": 8.3,
+            "level_difference_db": 2.55
+          },
+          "peak": 0.55304
+        },
+        "capture_sha256": [
+          "048d2d29f010b17920fb3bfe8ce7665b5f668617b383a787a7dd1dbf955b0458",
+          "664cf911c231b11a79aab7cf6bd509706b6d93d93d48e5a3f3bd27fdc30d2a65"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "human-fly",
+        "part": "band",
+        "seek": 3,
+        "common_range_s": [
+          3.04,
+          10.74
+        ],
+        "source_sha256": {
+          "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
+          "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+          "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88"
+        },
+        "before": {
+          "pitch_class_distance": 0.155179,
+          "balance": {
+            "band_difference_db": [
+              -5.92,
+              -13.75,
+              4.24,
+              6.88,
+              -3.96,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.95,
+            "level_difference_db": -0.54
+          },
+          "peak": 0.558167
+        },
+        "after": {
+          "pitch_class_distance": 0.15268,
+          "balance": {
+            "band_difference_db": [
+              -5.92,
+              -13.46,
+              4.29,
+              6.47,
+              -3.96,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 6.82,
+            "level_difference_db": -0.57
+          },
+          "peak": 0.551636
+        },
+        "capture_sha256": [
+          "1b0dd0236ef11817db5355ea6e791d16edce9ef1f09626fcd01f8736953bb790",
+          "43e8a204ffae2b29bb545cab49b3f812260eb26aed89c37b50f1134ffe940951"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "i-got-a-feeling",
+        "part": "band",
+        "seek": 12,
+        "common_range_s": [
+          12.178666666666667,
+          19.740000000000002
+        ],
+        "source_sha256": {
+          "other": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81",
+          "bass": "cfcc470fb787a69c443853cd6b62e3ca6f5ebeab5924672d14cf23f0b51c46e3",
+          "drums": "52fbb4048a68e8ef662ac79cf755f774cd103e719917ea43cf68b8ecb2eb0dca"
+        },
+        "before": {
+          "pitch_class_distance": 0.143044,
+          "balance": {
+            "band_difference_db": [
+              8.18,
+              -8.64,
+              0.6,
+              7.76,
+              -9.84,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 7.01,
+            "level_difference_db": 11.59
+          },
+          "peak": 0.55191
+        },
+        "after": {
+          "pitch_class_distance": 0.168795,
+          "balance": {
+            "band_difference_db": [
+              8.28,
+              -8.69,
+              0.56,
+              7.7,
+              -9.9,
+              0.0
+            ],
+            "core_band_mean_absolute_difference_db": 7.02,
+            "level_difference_db": 11.76
+          },
+          "peak": 0.507324
+        },
+        "capture_sha256": [
+          "52161650023dd98751c2ac721741dd3a2218ea39c1e235a99bcc18d7cc67bd7d",
+          "3df427a06c4a465c31e7fa42c5a218f90f05a94734870941e1c0b322a46f3f51"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "sister",
+        "part": "band",
+        "seek": 66,
+        "common_range_s": [
+          66.04533333333333,
+          73.74266666666666
+        ],
+        "source_sha256": {
+          "other": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06",
+          "bass": "67f9bb28fd9f1b0e63c73ffda795534521ce5eae73dece1ce4704e0bde2b4dec",
+          "drums": "cad60ebac3b54df8878e09adc42918ce694dbc689e32616421c60a883acdc48f"
+        },
+        "before": {
+          "pitch_class_distance": 0.130781,
+          "balance": {
+            "band_difference_db": [
+              7.28,
+              -11.62,
+              3.55,
+              3.39,
+              -1.13,
+              0.66
+            ],
+            "core_band_mean_absolute_difference_db": 5.39,
+            "level_difference_db": 3.39
+          },
+          "peak": 0.553284
+        },
+        "after": {
+          "pitch_class_distance": 0.125402,
+          "balance": {
+            "band_difference_db": [
+              7.12,
+              -11.6,
+              3.58,
+              3.45,
+              -1.13,
+              0.68
+            ],
+            "core_band_mean_absolute_difference_db": 5.38,
+            "level_difference_db": 3.39
+          },
+          "peak": 0.551086
+        },
+        "capture_sha256": [
+          "7e07fb8a7c3621c3024280b145db567bac60dc346f48d0619ba165bec3995889",
+          "d2c1a15296beb03ef5fbd6bc0476aca7c47c4ceeabc1fa4c09a56f41a9996c5e"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "tabasco",
+        "part": "band",
+        "seek": 16,
+        "common_range_s": [
+          16.048,
+          23.748
+        ],
+        "source_sha256": {
+          "other": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2",
+          "bass": "794f80c4a54b21dc209db23a3b81e00ebaa24be1ef2bc66174ee407efc439c37",
+          "drums": "780518047c6c79efc9d8208f41fccd7c25fec10b2439790ce03df67768f07086"
+        },
+        "before": {
+          "pitch_class_distance": 0.392296,
+          "balance": {
+            "band_difference_db": [
+              9.33,
+              -8.22,
+              1.07,
+              -4.16,
+              -9.41,
+              0.77
+            ],
+            "core_band_mean_absolute_difference_db": 6.44,
+            "level_difference_db": -0.99
+          },
+          "peak": 0.534454
+        },
+        "after": {
+          "pitch_class_distance": 0.370696,
+          "balance": {
+            "band_difference_db": [
+              9.43,
+              -8.05,
+              0.77,
+              -4.12,
+              -9.3,
+              0.86
+            ],
+            "core_band_mean_absolute_difference_db": 6.33,
+            "level_difference_db": -1.07
+          },
+          "peak": 0.543549
+        },
+        "capture_sha256": [
+          "b1ccdfbf47a08172cbf01774e22747b5c7078b6d84b6d3e7884362368d6f2a08",
+          "b4821f6b59caf6acc1c3900f42d96bac2147fbed35703dd25efd8c20b1abe2a9"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      },
+      {
+        "song": "under-the-moon",
+        "part": "band",
+        "seek": 64,
+        "common_range_s": [
+          64.08800000000001,
+          71.78
+        ],
+        "source_sha256": {
+          "other": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8",
+          "bass": "bb6c470965b051f25cc8816b3f7fdf3104fa1c601dcaec2e70d9317a2a37818c",
+          "drums": "7463b1475b3887206d97a3a2fe4ac7a0b7a0dcadd2e41bee8e3deea038311a2b"
+        },
+        "before": {
+          "pitch_class_distance": 0.043015,
+          "balance": {
+            "band_difference_db": [
+              9.06,
+              -8.16,
+              4.72,
+              0.35,
+              -16.13,
+              -0.17
+            ],
+            "core_band_mean_absolute_difference_db": 7.68,
+            "level_difference_db": 4.14
+          },
+          "peak": 0.561188
+        },
+        "after": {
+          "pitch_class_distance": 0.042977,
+          "balance": {
+            "band_difference_db": [
+              9.11,
+              -7.56,
+              4.61,
+              0.24,
+              -16.21,
+              -0.26
+            ],
+            "core_band_mean_absolute_difference_db": 7.55,
+            "level_difference_db": 4.25
+          },
+          "peak": 0.594391
+        },
+        "capture_sha256": [
+          "3a60f6260c9b2f38d0da17c24a4c49a9cf39e943d6fa267aa5c7e445dc5b7f36",
+          "5b9f0013523692c5a589370256fc0b486666094e644ccdd7cf9b3d363b0f4d44"
+        ],
+        "dropped": [
+          0,
+          0
+        ]
+      }
+    ]
+  },
+  "controlled_native_output": [
+    {
+      "song": "human-fly",
+      "start": 3,
+      "duration": 3,
+      "before": {
+        "pitch_distance": 0.2157539202105041,
+        "attacks": {
+          "reference": 12,
+          "candidate": 12,
+          "matched": 7,
+          "precision": 0.583,
+          "recall": 0.583,
+          "f1": 0.583,
+          "median_abs_delta_ms": 23.2,
+          "mean_signed_delta_ms": 24.0,
+          "velocity_flux_correlation": 0.803
+        },
+        "sha256": "97784d7251ec017823796ccc1cf3f35e9542f919501efcdbff55baf42a013969"
+      },
+      "final": {
+        "pitch_distance": 0.20914197058498096,
+        "attacks": {
+          "reference": 12,
+          "candidate": 12,
+          "matched": 7,
+          "precision": 0.583,
+          "recall": 0.583,
+          "f1": 0.583,
+          "median_abs_delta_ms": 23.2,
+          "mean_signed_delta_ms": 24.0,
+          "velocity_flux_correlation": 0.856
+        },
+        "sha256": "4e3466a41b01ed7cd7415f50eca09889a47b671549f90c1dccc19c48a21832c8"
+      },
+      "repeat_max_pcm_error": 3.0517578125e-05
+    },
+    {
+      "song": "electric-sheep",
+      "start": 54,
+      "duration": 3,
+      "before": {
+        "pitch_distance": 0.3550548904114127,
+        "attacks": {
+          "reference": 17,
+          "candidate": 18,
+          "matched": 16,
+          "precision": 0.889,
+          "recall": 0.941,
+          "f1": 0.914,
+          "median_abs_delta_ms": 23.2,
+          "mean_signed_delta_ms": 21.0,
+          "velocity_flux_correlation": 0.284
+        },
+        "sha256": "10180c15c43f4165578db0034bb38a2946a76e2ac7404e3584d32f7af50fe40f"
+      },
+      "final": {
+        "pitch_distance": 0.3290063926279556,
+        "attacks": {
+          "reference": 17,
+          "candidate": 18,
+          "matched": 16,
+          "precision": 0.889,
+          "recall": 0.941,
+          "f1": 0.914,
+          "median_abs_delta_ms": 17.4,
+          "mean_signed_delta_ms": 4.7,
+          "velocity_flux_correlation": -0.043
+        },
+        "sha256": "9eb08c4bdc3a7984ce303763de4398aece41811d93584c6903fda214af932802"
+      },
+      "repeat_max_pcm_error": 3.0517578125e-05
+    },
+    {
+      "song": "hey",
+      "start": 39,
+      "duration": 3,
+      "before": {
+        "pitch_distance": 0.6926024915473222,
+        "attacks": {
+          "reference": 9,
+          "candidate": 13,
+          "matched": 7,
+          "precision": 0.538,
+          "recall": 0.778,
+          "f1": 0.636,
+          "median_abs_delta_ms": 17.4,
+          "mean_signed_delta_ms": 14.9,
+          "velocity_flux_correlation": -0.608
+        },
+        "sha256": "84df95bd44c8e56d889129b54ba03d353cc689b7d9af09e22fecf32fc3277be3"
+      },
+      "final": {
+        "pitch_distance": 0.693441416635822,
+        "attacks": {
+          "reference": 9,
+          "candidate": 13,
+          "matched": 7,
+          "precision": 0.538,
+          "recall": 0.778,
+          "f1": 0.636,
+          "median_abs_delta_ms": 17.4,
+          "mean_signed_delta_ms": 16.6,
+          "velocity_flux_correlation": -0.479
+        },
+        "sha256": "f299d0272356ba5535d4b98788e0c125bc52ef54f660590b7ddaa1b73338763a"
+      },
+      "repeat_max_pcm_error": 3.0517578125e-05
+    },
+    {
+      "song": "sister",
+      "start": 66,
+      "duration": 3,
+      "before": {
+        "pitch_distance": 0.19515613968387113,
+        "attacks": {
+          "reference": 18,
+          "candidate": 18,
+          "matched": 5,
+          "precision": 0.278,
+          "recall": 0.278,
+          "f1": 0.278,
+          "median_abs_delta_ms": 29.0,
+          "mean_signed_delta_ms": 22.1,
+          "velocity_flux_correlation": 0.577
+        },
+        "sha256": "29157f875a84c5450a9baa5b8c04a94c987f5bb53bf506dd9474fd7bdd0eac5f"
+      },
+      "final": {
+        "pitch_distance": 0.19515604137194442,
+        "attacks": {
+          "reference": 18,
+          "candidate": 18,
+          "matched": 5,
+          "precision": 0.278,
+          "recall": 0.278,
+          "f1": 0.278,
+          "median_abs_delta_ms": 29.0,
+          "mean_signed_delta_ms": 22.1,
+          "velocity_flux_correlation": 0.578
+        },
+        "sha256": "f7848c461f471494159577117b7679e7e0aa9b2ddb6bedf385fcc8315c082aa4"
+      },
+      "repeat_max_pcm_error": 3.0517578125e-05
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start": 12,
+      "duration": 3,
+      "before": {
+        "pitch_distance": 0.2924183696008402,
+        "attacks": {
+          "reference": 13,
+          "candidate": 11,
+          "matched": 10,
+          "precision": 0.909,
+          "recall": 0.769,
+          "f1": 0.833,
+          "median_abs_delta_ms": 23.2,
+          "mean_signed_delta_ms": 20.3,
+          "velocity_flux_correlation": 0.144
+        },
+        "sha256": "ab9980414ba9fb7eaf013a4a460d56fe87a9b3f6d8ce9d23b5d39f96fbbe009a"
+      },
+      "final": {
+        "pitch_distance": 0.2924185681721361,
+        "attacks": {
+          "reference": 13,
+          "candidate": 11,
+          "matched": 10,
+          "precision": 0.909,
+          "recall": 0.769,
+          "f1": 0.833,
+          "median_abs_delta_ms": 23.2,
+          "mean_signed_delta_ms": 20.3,
+          "velocity_flux_correlation": 0.144
+        },
+        "sha256": "9058ff0167fe2f29cb1776e9c229243a9880a52730a6c3cd1e04639d80b40441"
+      },
+      "repeat_max_pcm_error": 3.0517578125e-05
+    },
+    {
+      "song": "under-the-moon",
+      "start": 64,
+      "duration": 3,
+      "before": {
+        "pitch_distance": 0.32529276135799057,
+        "attacks": {
+          "reference": 10,
+          "candidate": 11,
+          "matched": 8,
+          "precision": 0.727,
+          "recall": 0.8,
+          "f1": 0.762,
+          "median_abs_delta_ms": 23.2,
+          "mean_signed_delta_ms": 22.5,
+          "velocity_flux_correlation": 0.483
+        },
+        "sha256": "ceed14a6106e2ace4e78deadd2bba463a6d15b6a0aa6e1e2218fd415cb652439"
+      },
+      "final": {
+        "pitch_distance": 0.323901650709813,
+        "attacks": {
+          "reference": 10,
+          "candidate": 11,
+          "matched": 8,
+          "precision": 0.727,
+          "recall": 0.8,
+          "f1": 0.762,
+          "median_abs_delta_ms": 23.2,
+          "mean_signed_delta_ms": 19.6,
+          "velocity_flux_correlation": 0.417
+        },
+        "sha256": "f8f1ed2ff27b700ef6ae62a21bd1e49435af28b38403db815e4d34b36f17af67"
+      },
+      "repeat_max_pcm_error": 3.0517578125e-05
+    },
+    {
+      "song": "tabasco",
+      "start": 16,
+      "duration": 3,
+      "before": {
+        "pitch_distance": 0.9608596230556585,
+        "attacks": {
+          "reference": 19,
+          "candidate": 11,
+          "matched": 9,
+          "precision": 0.818,
+          "recall": 0.474,
+          "f1": 0.6,
+          "median_abs_delta_ms": 23.2,
+          "mean_signed_delta_ms": 18.7,
+          "velocity_flux_correlation": 0.783
+        },
+        "sha256": "2284fa09ad45d7dbe754e826ddbe051db871cc3d2cead8497d69f58189b604af"
+      },
+      "final": {
+        "pitch_distance": 0.9621367007415632,
+        "attacks": {
+          "reference": 19,
+          "candidate": 11,
+          "matched": 9,
+          "precision": 0.818,
+          "recall": 0.474,
+          "f1": 0.6,
+          "median_abs_delta_ms": 17.4,
+          "mean_signed_delta_ms": 14.2,
+          "velocity_flux_correlation": 0.768
+        },
+        "sha256": "6e1302643213c07210fa08bd616f1925fe7f50cc98d58a81db572db83b6fa4d2"
+      },
+      "repeat_max_pcm_error": 3.0517578125e-05
+    }
+  ],
+  "browser": {
+    "actual_captures": 24,
+    "final_guitar_sections": 12,
+    "final_full_band_sections": 7,
+    "baseline_late_sections": 5,
+    "peak_max": 0.6060166954994202,
+    "dropped": 0,
+    "bank_bytes": 13610240,
+    "clock_cases": 9,
+    "clock_max_delta_s": 7.105427357601002e-15,
+    "scope": "Desktop Chromium only; no physical iPhone or subjective listening claim"
+  },
+  "limits": [
+    "Other includes separation bleed and other instruments. Neither detector nor chord template has human transcription labels.",
+    "Post-master captures share an absolute content interval but include run-to-run variation: the two unchanged control scores also show spectral differences. These aggregate numbers cannot certify an improvement or exact note accuracy.",
+    "The controlled native adapter renders use exact scheduling, 2 s pre-roll and 3 s crops, post-crunch without global master or room. Final repetitions and unchanged-score controls differ by at most one PCM16 LSB. They do not certify whole-band sound.",
+    "Controlled pitch-class distance improves in three sections, increases slightly in two, and is unchanged in the two preserved controls. Chroma cannot validate octave or fret choice.",
+    "No new audio, sample, model, dependency or hosting. Original 28 MP3s, bass/drum scores and synthesis bank retained.",
+    "Initial contaminated/overlapping test runs were rejected and recaptured; raw trial logs remain local. No subjective fidelity percentage is reported."
+  ],
+  "reproduce": "python -X utf8 scripts/refine-guitar-performance.py --baseline-ref fb60374 --spectrum-cache output/playwright/arcb-band-refinement --out <report.json> (cache is optional; --write refuses already-refined or baseline-ref input)"
+}

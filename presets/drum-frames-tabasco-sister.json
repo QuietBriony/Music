@@ -15763,6 +15763,13 @@
     [669,[115,2.3,2.0,53,1.0],[51,58,63],0.70551,0.20378,1.0],
     [693,[120,5.39,2.0,58,0.94],[46,53,58],0.71459,0.20808,1.0]
    ]
+  },
+  "performance_refinement": {
+   "method": "guitar-performance-v1",
+   "source_sha256": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06",
+   "input_line_sha256": "2a0b17475b412d0f1092ac81a463fe53c06892aa8524705483de65c403d4985f",
+   "moved": 0,
+   "voicings_added": 0
   }
  },
  "drum_line": {
