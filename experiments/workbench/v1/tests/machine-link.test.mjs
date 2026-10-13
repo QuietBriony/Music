@@ -45,6 +45,15 @@ test('Stop during asynchronous initialization cannot start a delayed machine',as
   await r.link.prepare(r.ctx);assert.equal(r.audio.isPlaying,true);
   await r.link.disconnect();
 });
+test('vocal transport uses native command cancellation and preserves the current score',async()=>{
+  const r=rig();await r.link.disconnect();const score=r.data;
+  let restart,stops=0,finish;
+  r.audio.play=value=>{restart=value;return new Promise(resolve=>{finish=resolve;});};
+  r.audio.stop=()=>{stops++;};
+  const starting=r.link.playCurrent();r.link.stopCurrent();finish();await starting;
+  assert.equal(restart,false,'already-playing native audio must not restart the bar');
+  assert.equal(stops,1);assert.equal(r.data,score);assert.equal(r.audio.externalTransport,null);
+});
 test('moving from standalone closes only its own old context and retains the score',async()=>{
   const r=rig(),old={...r.ctx};r.audio.ctx=old;const data=r.data;
   await r.link.prepare(r.ctx);assert.equal(old.closed,true);assert.equal(r.ctx.closed,false);

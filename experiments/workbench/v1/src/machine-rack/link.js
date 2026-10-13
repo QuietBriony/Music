@@ -59,6 +59,9 @@ export function createMachineLink({ audio, ui, data }) {
     tempo: value => { if (value !== audio.tempo) showTempo(); notice(); },
   };
   return {
+    // Use the native transport's cancellation guard without unloading the frame.
+    playCurrent: () => audio.play(false),
+    stopCurrent: () => audio.stop(),
     recordingSource: () => audio.isPlaying ? audio.outputGain : null,
     capture: () => captureMachineState(data,audio),
     validate: snapshot => { decodeMachineState(snapshot,BinaryFormatDecoder); },

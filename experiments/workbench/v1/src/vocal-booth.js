@@ -4,7 +4,7 @@ import { backupText } from './session-backup.js';
 import { BUILTIN_LYRICS, createLyricDrafts, lyricSections } from './vocal-lyrics.js';
 
 const time = ms => Math.floor(ms / 60000) + ':' + String(Math.floor(ms / 1000) % 60).padStart(2,'0');
-export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isBusy = () => false }) {
+export function initVocalBooth({ parent, getSources, snapshot, playPlayback, stopPlayback, isBusy = () => false }) {
   const host = document.createElement('details'); host.className = 'vocal-booth'; host.id = 'vocal-booth';
   host.innerHTML = `<summary>歌詞・録音 <span>声を重ねて、テイクを残す</span></summary>
     <div class="vocal-content">
@@ -22,6 +22,10 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
         <p id="vocal-draft-status" role="status">内蔵歌詞はファイル不要。書き換えた歌詞と名前はこのブラウザだけに自動保存します。</p>
       </div><div class="vocal-controls">
         <div id="vocal-capture-home"><div id="vocal-capture">
+        <div class="vocal-backing" aria-label="今の演奏">
+          <div class="vocal-actions"><button type="button" id="vocal-play">▶ 演奏を再開</button><button type="button" id="vocal-pause">■ 演奏を止める</button><span id="vocal-play-state" role="status">演奏停止中</span></div>
+          <p class="vocal-note">今のフレーズ・音色で再生。録音は下の「録音開始」から。</p>
+        </div>
         <details id="vocal-setup" class="vocal-setup" open><summary>マイク・録音の準備 <span id="vocal-setup-state">マイクOFF</span></summary>
         <label>録音するもの<select id="vocal-mode"><option value="voice">演奏 ＋ 声（声だけ／演奏だけも残す）</option><option value="backing">演奏だけ（マイク不要）</option></select></label>
         <div id="vocal-mic">
@@ -70,6 +74,7 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
   const store = openTakeStore(window.indexedDB); const pending = new Map();
   let takes = [], selected = null, urls = [], partURLs = {}, timer, draftUnsaved = false;
   let latestTakeId = '', refreshGeneration = 0, readerReturn = 'read';
+  let playPending = false, playGeneration = 0;
   const say = text => { $('status').textContent = text; };
   const draft = () => ({title:$('title').value.trim() || '声のスケッチ', lyrics:$('lyrics').value});
   const editableDraft = () => ({title:$('title').value, lyrics:$('lyrics').value});
@@ -178,7 +183,7 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
     $('mic').hidden = $('mode').value !== 'voice';
     $('arm').disabled = active || requesting || $('mode').value !== 'voice';
     $('disarm').disabled = !recorder.stream && !requesting;
-    $('record').disabled = active || requesting || ($('mode').value === 'voice' && !recorder.stream);
+    renderPlayback();
     $('stop').disabled = recorder.state !== 'recording';
     for (const id of ['review','audition','listen-part','next']) $(id).disabled=active || requesting;
     $('audition').disabled ||= !partURLs[$('listen-part').value];
@@ -190,6 +195,35 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
     if (requesting) say('ブラウザのマイク許可を待っています。「マイクを切る」で中止できます。');
     if (recorder.state === 'armed') say('マイク準備OK。声のメーターを確認して「録音開始」。声はスピーカーへ返しません。');
   }
+  function renderPlayback() {
+    const sources=getSources(), playing=sources.some(source=>source.context?.state === 'running');
+    const preparing=playPending || isBusy(), locked=recorder.active || recorder.state === 'requesting';
+    $('play').disabled=!playPlayback || playing || preparing || locked;
+    $('pause').disabled=locked || (!sources.length && !preparing);
+    $('play-state').textContent=preparing ? '演奏を準備中…' : playing ? '演奏中' : '演奏停止中';
+    $('record').disabled=locked || preparing || !playing || ($('mode').value === 'voice' && !recorder.stream);
+  }
+  function stopBacking() {
+    ++playGeneration; playPending=false;
+    stopPlayback(); renderPlayback();
+  }
+  $('play').addEventListener('click', async () => {
+    if (!playPlayback || playPending || isBusy() || recorder.active || recorder.state === 'requesting') return;
+    const token=++playGeneration;
+    $('player').pause(); playPending=true; renderPlayback();
+    try {
+      await playPlayback();
+      if (token !== playGeneration) return;
+      say(getSources().some(source=>source.context?.state === 'running')
+        ? '今の演奏を再開しました。声を重ねる時はマイクを準備し、「録音開始」。'
+        : '演奏を再開できませんでした。編集・演奏に戻り、再生状態を確認してください。');
+    } catch(error) { if (token === playGeneration) say('再生できませんでした。' + error.message); }
+    finally { if (token === playGeneration) { playPending=false; renderPlayback(); } }
+  });
+  $('pause').addEventListener('click', () => {
+    if (recorder.active || recorder.state === 'requesting') return;
+    stopBacking(); say('演奏を止めました。フレーズ・音色はそのまま。再開して次のテイクを録れます。');
+  });
   $('gain').addEventListener('input', () => { recorder.level($('gain').value); $('gain-value').textContent = Math.round(recorder.voiceLevel*100)+'%'; });
   $('arm').addEventListener('click', async () => { try { await recorder.arm(); } catch(error) { say('マイクを準備できませんでした。' + error.message); } });
   $('disarm').addEventListener('click', () => { recorder.disarm(); if (!recorder.active) say('マイクを切りました。'); });
@@ -220,7 +254,7 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
   });
   $('next').addEventListener('click', () => {
     $('player').pause();
-    say('今の歌詞で次を録れます。演奏が止まっていたら、演奏画面で再生してから録音してください。前のテイクは棚に残ります。');
+    say('「演奏を再開」から次を録れます。今のフレーズ・歌詞を使い、前のテイクは棚に残ります。');
     openReader();
   });
   function selectPart() {
@@ -277,15 +311,16 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
   $('audition').addEventListener('click', async () => {
     if (recorder.active || recorder.state==='requesting') return;
     if (!$('player').paused) { $('player').pause(); return; }
+    const source=$('player').src;
     try { await $('player').play(); }
-    catch { $('listen-note').textContent='このブラウザでは再生できません。音声を取り出して別のプレーヤーで開いてください。'; }
+    catch(error) { if (error.name !== 'AbortError' && $('player').src === source) $('listen-note').textContent='このブラウザでは再生できません。音声を取り出して別のプレーヤーで開いてください。'; }
   });
   for (const type of ['play','pause','ended','emptied']) $('player').addEventListener(type, () => {
     $('audition').textContent=$('player').paused ? '▶ テイクを聴く' : 'Ⅱ 試聴を一時停止';
   });
   $('player').addEventListener('play', () => {
     if (recorder.active || recorder.state === 'requesting') { $('player').pause(); say('録音を終えてからテイクを聴けます。'); return; }
-    recorder.disarm(); stopPlayback();
+    recorder.disarm(); stopBacking();
   });
   $('use-text').addEventListener('click', () => {
     if (!selected) return;
@@ -306,7 +341,7 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
     clearInterval(timer);
     if (host.open || recorder.active || recorder.stream) {
       timer = setInterval(() => {
-        recorder.refresh(); const peak=recorder.peak(); $('meter').value=Math.min(1,peak);
+        recorder.refresh(); renderPlayback(); const peak=recorder.peak(); $('meter').value=Math.min(1,peak);
         $('meter-label').textContent=!recorder.stream?'マイクOFF':peak>=.95?'大きすぎます · 声を下げる':peak>.01?'声を受信中':'入力待ち';
         if (recorder.active) $('clock').textContent=time(Date.now()-recorder.startedAt)+' / 5:00';
       },150);
@@ -320,5 +355,5 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
   window.addEventListener('pagehide', () => recorder.disarm());
   render();
   return { open() { host.open=true; host.scrollIntoView({block:'start'}); },
-    refresh:()=>recorder.refresh(), busy:()=>recorder.active || recorder.state==='requesting' || pending.size>0 };
+    refresh:()=>{recorder.refresh(); renderPlayback();}, busy:()=>recorder.active || recorder.state==='requesting' || playPending || pending.size>0 };
 }

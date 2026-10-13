@@ -24,6 +24,9 @@
 .vocal-booth #vocal-draft-status,.vocal-guide {font-size:12px;color:#c7b6c9;}
 .vocal-note {color:#dbc7d5;font-size:13px;margin:4px 0 12px;}
 .vocal-booth #vocal-read {border-color:#c878a2;background:#493049;}
+.vocal-backing {border-bottom:1px solid #514354;padding-bottom:2px;}
+.vocal-backing #vocal-play-state {font-size:12px;color:#dcc4d9;}
+.vocal-reader .vocal-backing .vocal-note {font-size:11px;margin:4px 0;}
 .vocal-reader {width:min(780px,calc(100% - 16px));height:calc(100% - 24px);height:calc(100dvh - 24px);max-width:none;max-height:none;margin:auto;padding:18px;border:1px solid #a47999;border-radius:14px;background:#1b171e;color:#f6eef4;overflow:hidden;}
 .vocal-reader[open] {display:grid;grid-template-rows:auto auto minmax(80px,1fr) minmax(0,auto);gap:8px;}
 .vocal-reader::backdrop {background:#08060ce6;}
