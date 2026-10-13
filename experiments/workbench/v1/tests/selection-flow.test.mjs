@@ -44,7 +44,7 @@ const handlers = [
   between('function hasUnsavedChanges()', 'function readDrafts()'),
   between('function readDrafts()', 'function writeDrafts('),
   between('async function openDraft(', 'function backupCounts('),
-  between("playButton.addEventListener('click'", 'function warnUnsavedExit('),
+  between('async function playCurrent()', 'function warnUnsavedExit('),
   'const openPerformance = ({' + between('  async openCode(', '  fader(key, value)') + '}).openCode;',
 ].join('\n');
 
@@ -195,6 +195,32 @@ test('linked play, update and stop retain the machine frame and saved Strudel bo
   await h.play();await h.context.updateButton.click();await h.stop();
   assert.equal(h.closedMachine,0);assert.equal(clocks,1);assert.equal(machineStops,1);
   assert.equal(h.editor.code,before);assert.equal(h.state().playing,false);
+});
+
+test('vocal audition and restart retain the embedded native frame and route only its transport',async()=>{
+  const h=harness();let plays=0,stops=0;
+  Object.assign(h.context,{acidModuleStage:{hidden:false},acidModuleFrame:{contentWindow:{musicMachineLink:{
+    async playCurrent(){plays++;},stopCurrent(){stops++;},
+  }}}});
+  const before=h.editor.code;
+  await h.context.playVocalBacking();h.context.stopVocalBacking();await h.context.playVocalBacking();
+  assert.equal(plays,2);assert.equal(stops,1);assert.equal(h.closedMachine,0);
+  assert.equal(h.evaluated,0);assert.equal(h.editor.code,before);
+});
+
+test('vocal restart uses the linked clock and Stop cancels pending preparation',async()=>{
+  const h=harness(),gate=deferred();let stopped=0;
+  Object.assign(h.context,{joint:true,connectJointFrame(){},machineLink:{prepare:()=>gate.promise},stopJoint(){stopped++;}});
+  const starting=h.context.playVocalBacking();await setImmediate();h.context.stopVocalBacking();
+  gate.resolve(true);await starting;
+  assert.equal(stopped,1);assert.equal(h.closedMachine,0);assert.equal(h.evaluated,0);
+  assert.equal(h.state().playing,false);assert.equal(h.state().wantsPlayback,false);
+});
+
+test('vocal restart without a native module plays the current Strudel code',async()=>{
+  const h=harness();h.context.acidModuleStage={hidden:true};const before=h.editor.code;
+  await h.context.playVocalBacking();assert.equal(h.state().playing,true);
+  h.context.stopVocalBacking();assert.equal(h.state().playing,false);assert.equal(h.editor.code,before);
 });
 
 test('each existing shelf work loads its own code and needs explicit Play when stopped', async () => {

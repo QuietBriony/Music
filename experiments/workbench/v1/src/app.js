@@ -1415,7 +1415,7 @@ function focusSaveButton() {
   (document.body.classList.contains('performance-view') ? document.querySelector('#set-save') : saveButton).focus();
 }
 cancelDraftButton.addEventListener('click', () => { draftForm.hidden = true; focusSaveButton(); });
-playButton.addEventListener('click', async () => {
+async function playCurrent() {
   if (busy || !activeEditor?.editor) return;
   if (!joint) closeAcidModule();
   busy = true;
@@ -1430,7 +1430,8 @@ playButton.addEventListener('click', async () => {
     busy = false;
     queueControlSync();
   }
-});
+}
+playButton.addEventListener('click', playCurrent);
 updateButton.addEventListener('click', async () => {
   if (busy || !activeEditor?.editor) return;
   if (!joint) closeAcidModule();
@@ -1455,6 +1456,19 @@ stopButton.addEventListener('click', () => {
   status.textContent = '停止しました。';
   queueControlSync();
 });
+function playVocalBacking() {
+  if (!joint && !acidModuleStage.hidden) {
+    const link = acidModuleFrame.contentWindow?.musicMachineLink;
+    if (!link) throw new Error('303／909の読み込みを待ってから再生してください。');
+    return link.playCurrent();
+  }
+  return playCurrent();
+}
+function stopVocalBacking() {
+  // Auditioning a take must retain unsaved native phrases, tones and locks.
+  if (!joint && !acidModuleStage.hidden) acidModuleFrame.contentWindow?.musicMachineLink?.stopCurrent();
+  else stopButton.click();
+}
 function warnUnsavedExit(event) {
   if (!hasUnsavedChanges()) return;
   event.preventDefault();
@@ -1542,7 +1556,7 @@ const vocalBooth = initVocalBooth({
     return {strudel:{drafts:[{id:crypto.randomUUID(), title, savedAt:new Date().toISOString(), code,
       ...(linked ? {joint:linked} : {})}], levels:{}, decks:{}}, acidbros:{files:[]}};
   },
-  stopPlayback: () => stopButton.click(), isBusy: () => busy,
+  playPlayback: playVocalBacking, stopPlayback: stopVocalBacking, isBusy: () => busy,
 });
 document.querySelector('#vocal-open').addEventListener('click', () => vocalBooth.open());
 loadCatalog();

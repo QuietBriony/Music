@@ -8,6 +8,14 @@
 - Validation: baseline 43 PASS / 0 FAIL / 0 SKIP、audit 0 BAD / 0 WARN、5 repo不変。最終候補／merge後HEADの全体gateと公開照合は対応PRへ記録。
 - Limits: 元録音、bass/drums、53-buffer bankは保持。分離漏れ・未採譜・音色／奏法の一致、実iPhoneと本人聴感は継続。
 
+## 2026-10-13 — 歌詞画面で次の演奏を再開
+
+- scope: 単一会話、既存Workbench／303単独／Listen。base main a9fbbf0、7a9cfbfへ同期。
+- feature: 拡大歌詞の中で演奏の再開／停止。試聴後に現在のフレーズ・音色で次の録音へ進める。
+- preservation: 埋込303／909単独の試聴停止でiframeを閉じず、未保存の編集と固定を保持。既存transportの停止トークンを利用し、準備完了の遅延による再生復帰を防ぐ。
+- validation: 4種類の接続の振分け、準備中停止、RECとマイクの明示操作を回帰検証。最終HEADのstrict gate／ブラウザ／公開証跡は対応PR。
+- boundaries: 新音源・依存・保存schema変更・hostingなし。実iPhone／実マイク収録は本人確認。
+
 ## 2026-10-13 — 短いTABASCOのドラム譜を回復（v419 / BL-050）
 
 - Scope: 本人の継続改善依頼。単一会話、同じMusicと公開先。

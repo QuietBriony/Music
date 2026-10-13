@@ -28,6 +28,7 @@ export function initMachineRack({data,ui,audio,knobs}) {
     </section>`;
   document.body.prepend(host);
   let vocalBooth;
+  let active=false,pending=false,queued=false,drum='bd',linkedPlayback=false;
   if (window.parent === window) {
     const style=document.createElement('link'); style.rel='stylesheet'; style.href='/vocal-booth.css'; document.head.append(style);
     const vocalParent=document.createElement('div'); host.append(vocalParent);
@@ -35,7 +36,7 @@ export function initMachineRack({data,ui,audio,knobs}) {
       getSources:()=>audio.isPlaying && audio.outputGain ? [audio.outputGain] : [],
       snapshot:title=>({strudel:{drafts:[{id:crypto.randomUUID(),title,savedAt:new Date().toISOString(),
         code:`setcpm(${audio.tempo/4})\nsilence`,joint:{version:1,level:1,machine:window.musicMachineLink.capture()}}],levels:{},decks:{}},acidbros:{files:[]}}),
-      stopPlayback:()=>audio.stop(),
+      playPlayback:()=>startPlayback(false), stopPlayback, isBusy:()=>pending,
     });
     const vocalButton=document.createElement('button'); vocalButton.type='button'; vocalButton.textContent='歌詞・録音';
     vocalButton.addEventListener('click',()=>vocalBooth.open());host.querySelector('.wbr-view').append(vocalButton);
@@ -55,7 +56,6 @@ export function initMachineRack({data,ui,audio,knobs}) {
     if (event.key === 'Escape' && audio.externalTransport) { event.preventDefault(); audio.stop(); }
   });
   const actionControls=[],faders=[],locks=new Map(),waves=new Map(),summaries=new Map(),drumRows=new Map();
-  let active=false,pending=false,queued=false,drum='bd',linkedPlayback=false;
   let kickLock,snareDice,hatsDice;
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
   function act(fn,message) {
@@ -183,13 +183,16 @@ export function initMachineRack({data,ui,audio,knobs}) {
     audio.setTempo(value);ui.updateTempoUI();
   },'3モジュールのBPMを変更しました。'));
   let transport=0;
-  find('run').addEventListener('click',async()=>{
+  async function startPlayback(restart=true) {
+    if(pending) return;
     const token=++transport;pending=true;status.textContent='音を準備中…';render();
-    try { await audio.play(true);if(token===transport) status.textContent=audio.isPlaying?(audio.externalTransport?'Strudelと同期演奏中。固定・サイコロ・音色で遊べます。':'3モジュールを演奏中。固定・サイコロ・音色で遊べます。'):'もう一度RUNを押して音声接続を確認してください。'; }
+    try { await audio.play(restart);if(token===transport) status.textContent=audio.isPlaying?(audio.externalTransport?'Strudelと同期演奏中。固定・サイコロ・音色で遊べます。':'3モジュールを演奏中。固定・サイコロ・音色で遊べます。'):'もう一度RUNを押して音声接続を確認してください。'; }
     catch(error) {if(token===transport)status.textContent=error.message || '再生できませんでした。';}
     finally {if(token===transport){pending=false;render();}}
-  });
-  find('stop').addEventListener('click',()=>{transport++;audio.stop();pending=false;status.textContent='停止しました。フレーズと音色はそのまま残っています。';render();});
+  }
+  function stopPlayback() {transport++;audio.stop();pending=false;status.textContent='停止しました。フレーズと音色はそのまま残っています。';render();}
+  find('run').addEventListener('click',()=>startPlayback());
+  find('stop').addEventListener('click',stopPlayback);
   find('file').addEventListener('click',()=>{show(false);document.getElementById('fileManagerBtn').click();});
   const queueRender=()=>{if(!active||queued)return;queued=true;queueMicrotask(()=>{queued=false;render();});};
   for(const name of ['input','change','pointerup']) document.addEventListener(name,event=>{if(!host.contains(event.target))queueRender();});
