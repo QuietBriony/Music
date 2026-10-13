@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve, sep } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG_PATH = "presets/tabasco-songs.json";
@@ -218,6 +219,24 @@ for (const [index, song] of catalog.songs.entries()) {
   }
   assert.equal(frame.events_extracted_from, `presets/tabasco-stems/${song.id}/drums.mp3`, `${label} extracted-event source drift`);
   assertTrackedFile(frame.events_extracted_from, `${label}.events_extracted_from`);
+  if (song.id === "tabasco") {
+    // A short song must not silently return to its repeated frame fallback.
+    const line = frame.drum_line;
+    assert.ok(line?.events?.length > 0, "TABASCO requires its recovered drum performance");
+    assert.equal(line.bpm_fit, frame.bass_line.bpm_fit, "Bass and drums must share the same source clock");
+    const sourceHash = createHash("sha256").update(readFileSync(resolve(ROOT, frame.events_extracted_from))).digest("hex");
+    assert.equal(line.rhythm_refinement.source_sha256, sourceHash, "Reanalysis required after a source change");
+    const bars = new Map();
+    for (const row of line.events) {
+      assert.ok(row.length === 5 && row.every(Number.isFinite));
+      assert.ok(Number.isInteger(row[0]) && row[0] >= 0 && row[1] >= 0 && row[1] < 16);
+      assert.ok(row[2] > 0 && Number.isInteger(row[3]) && row[3] >= 0 && row[3] < 4 && row[4] > 0 && row[4] <= 1);
+      assert.ok((row[0] * 16 + row[1]) * 15 / line.bpm_fit < frame.performance_duration_s);
+      bars.set(row[0], (bars.get(row[0]) || 0) + 1);
+    }
+    assert.ok(Math.max(...bars.values()) <= 24, "Native drum trigger budget exceeded");
+    assert.ok(new Set(line.events.map(row => row[3])).has(0) && line.events.some(row => row[3] === 1));
+  }
   assert.equal(song.drum_frames.format, frame.format, `${label} inventory frame format drift`);
   assert.equal(song.drum_frames.version, frame.version, `${label} inventory frame version drift`);
   assert.equal(song.drum_frames.total_bars, frame.total_bars, `${label} inventory total_bars drift`);

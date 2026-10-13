@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-13 v419: 短いTABASCOを200打以上の固定条件で除外していた採譜処理を修正。原音drumsから204打を採用し、うち128打を立ち上がりへ合わせ、10打の弱い同時cymbalを補った。曲の進行に沿うドラム譜を通常ARCBで使用する。AIの開始／seekでは音の予約時刻と再生時計を一致させ、look-ahead分の先走りを修正。ギター・ベースの譜面、音源bank、原音と仕上げは保持。クラス推定・分離漏れと実iPhone聴感は未解決。cache `hazama-fm-v419` / client `br-252`。
+
 2026-10-13（歌詞・録音の操作整理）: 歌詞選択の直下に拡大表示、文章編集は折りたたみへ。大きな歌詞の画面に同じマイク準備・入力音量・RECを移し、録音開始後は準備をたたむ。「読む場所」で行単位の角括弧見出しへ移動する。未準備の声録音は開始不可。保存時に最新の歌詞棚を読み、別曲の編集を保持し、同一曲の競合は上書きせずTXT退避を案内。未保存編集の離脱警告も追加。録音エンジン・音・保存形式・既存hostingは維持。最終gate／実ブラウザ／公開照合は本作業PR、実iPhone／実マイクは本人確認。
 
 2026-10-12（内蔵歌詞）: 本人の明示依頼でオリジナル「残響の住所」初稿だけをWorkbenchへ同梱。歌詞選択でファイル不要、全画面の歌詞表示から同じRECを操作する。自分の下書きと内蔵曲の編集を別々に端末保存し、従来v1の歌詞を維持。切替の保存失敗は現在の歌詞を保ち、録音中の歌詞変更を防ぐ。PWAに同梱しオフラインでも表示。新しい音源・依存・hostingなし。個人の編集・録音は公開せず、曲進行に合わせた自動スクロールは未実装。実iPhone／実マイクは本人確認、最終gateと公開検証は本作業PR。
@@ -248,7 +250,7 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v418`。Band Room runtime markerは`band-room.js?v=br-251` /
+- 現行cacheは`hazama-fm-v419`。Band Room runtime markerは`band-room.js?v=br-252` /
   `band-room.css?v=br-95`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ

@@ -1,5 +1,14 @@
 # Session Ledger — music-stack
 
+## 2026-10-13 — 短いTABASCOのドラム譜を回復（v419 / BL-050）
+
+- Scope: 本人の継続改善依頼。単一会話、同じMusicと公開先。
+- Cause: 44.722秒の曲から194打を抽出しても、固定200打の採用条件で全譜面を捨てていた。
+- Change: 短曲用の打数と曲内coverageを検査。既存譜は拒否時に消さず、新しい補完スクリプトも上書きを拒否する。128打を原音の立ち上がりへ補正し、10の同時cymbal仮説を足した204打で演奏する。bass/guitar/原音ファイルは保持。
+- Clock: native AIのTone.now()＋30 msとcontent時計に同じ絶対時刻を使用。従来はlook-ahead込み約130 ms早く時計が進んでいた。80/100/120%の開始・seekを検証する。
+- Validation: 変更前の43 PASS / 0 FAIL / 0 SKIP、audit 0 BAD / 0 WARNと5 repo不変を確認。最終候補／merge後の同一HEAD検証、公開照合とブラウザ結果は対応PRへ記録。譜面の独立帯域検査と実際のRECは測定資料へ戻す。
+- Limits: cymbal/tom分類・分離漏れは未解決。数値を聴感や正答率としない。実iPhoneと本人の判断は継続。
+
 ## 2026-10-13 — スマホの歌詞・録音導線と複数画面の下書き保護
 
 - scope: 単一会話、既存Workbench／303単独とListen、base main caed013。

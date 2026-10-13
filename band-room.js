@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-251-mastering-intent";
-  const BANDROOM_RELEASE_VERSION = "v418";
+  const BANDROOM_APP_VERSION = "br-252-short-song-drums";
+  const BANDROOM_RELEASE_VERSION = "v419";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -3348,11 +3348,19 @@
     return (state.playbackStartOffsetSec || 0) + audioElapsed * rate;
   }
 
-  function resetPlaybackClock(offsetSec = state.playbackStartOffsetSec || 0) {
+  function resetPlaybackClock(offsetSec = state.playbackStartOffsetSec || 0, scheduledAudioStart = null) {
     state.playbackStartOffsetSec = Math.max(0, Number(offsetSec) || 0);
     state.playbackStartedAtMs = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
-    state.playbackStartedAtAudioSec = audioClockSeconds();
+    state.playbackStartedAtAudioSec = Number.isFinite(scheduledAudioStart) ? scheduledAudioStart : audioClockSeconds();
     state.playbackRateAtStart = playbackRateMultiplier();
+  }
+
+  function startNativeTransportClock(contentSec) {
+    // Tone's relative start includes its look-ahead. Share the exact absolute
+    // start with the content clock, so seek/REC do not run ahead of the music.
+    const scheduledStart = Tone.now() + 0.03;
+    Tone.Transport.start(scheduledStart, transportSecondForContent(contentSec));
+    resetPlaybackClock(contentSec, scheduledStart);
   }
 
   function formatPlaybackTime(seconds) {
@@ -7676,9 +7684,11 @@
 
     resetPlaybackHealthState();
     scheduleBar();
-    if (currentMode === "synth" && physicalArcbEnabled()) Tone.Transport.start("+0.03", transportSecondForContent(stemOffsetSec));
-    else Tone.Transport.start();
-    resetPlaybackClock(stemOffsetSec);
+    if (currentMode === "synth" && physicalArcbEnabled()) startNativeTransportClock(stemOffsetSec);
+    else {
+      Tone.Transport.start();
+      resetPlaybackClock(stemOffsetSec);
+    }
     state.lastStemResyncAtMs = 0;
     if (currentMode === "stems") {
       startStemPlayback(stemOffsetSec);
@@ -8028,7 +8038,16 @@
     resetPlaybackClock(targetSec);
     resetPlaybackHealthState();
     scheduleBar();
-    try { Tone.Transport.start("+0.03", transportSecondForContent(targetSec)); } catch (e) { try { Tone.Transport.start("+0.03"); } catch (err) {} }
+    try {
+      if (physicalArcbEnabled()) startNativeTransportClock(targetSec);
+      else Tone.Transport.start("+0.03", transportSecondForContent(targetSec));
+    } catch (e) {
+      try {
+        const scheduledStart = Tone.now() + 0.03;
+        Tone.Transport.start(scheduledStart);
+        if (physicalArcbEnabled()) resetPlaybackClock(targetSec, scheduledStart);
+      } catch (err) {}
+    }
     if (reason !== "timeline-seek") console.warn("[Band Room] restarted AI scheduler after stall:", reason);
     return true;
   }

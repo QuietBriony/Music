@@ -1,10 +1,14 @@
-# Band Room - Changelog (v65 -> v418 compact)
+# Band Room - Changelog (v65 -> v419 compact)
+
+## v419 — 2026-10-13
+
+2026-10-13 v419: 短いTABASCOを200打以上の固定条件で除外していた採譜処理を修正。原音drumsから204打を採用し、うち128打を立ち上がりへ合わせ、10打の弱い同時cymbalを補った。曲の進行に沿うドラム譜を通常ARCBで使用する。AIの開始／seekでは音の予約時刻と再生時計を一致させ、look-ahead分の先走りを修正。ギター・ベースの譜面、音源bank、原音と仕上げは保持。クラス推定・分離漏れと実iPhone聴感は未解決。cache `hazama-fm-v419` / client `br-252`。
 
 ## v418 — 2026-10-12
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v418. Latest Band Room runtime change: v418 (mastering selection during boot). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v419. Latest Band Room runtime change: v419 (short-song drum performance). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 
