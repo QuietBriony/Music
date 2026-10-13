@@ -25,7 +25,7 @@
 .vocal-note {color:#dbc7d5;font-size:13px;margin:4px 0 12px;}
 .vocal-booth #vocal-read {border-color:#c878a2;background:#493049;}
 .vocal-reader {width:min(780px,calc(100% - 16px));height:calc(100% - 24px);height:calc(100dvh - 24px);max-width:none;max-height:none;margin:auto;padding:18px;border:1px solid #a47999;border-radius:14px;background:#1b171e;color:#f6eef4;overflow:hidden;}
-.vocal-reader[open] {display:grid;grid-template-rows:auto auto minmax(80px,1fr) auto;gap:8px;}
+.vocal-reader[open] {display:grid;grid-template-rows:auto auto minmax(80px,1fr) minmax(0,auto);gap:8px;}
 .vocal-reader::backdrop {background:#08060ce6;}
 .vocal-reader-head {display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .vocal-reader-head h3 {color:#f6eef4;font-size:18px;line-height:1.4;margin:0;overflow-wrap:anywhere;}
@@ -38,11 +38,14 @@
 .vocal-reader .vocal-setup[open] {max-height:32dvh;overflow:auto;overscroll-behavior:contain;}
 .vocal-reader .vocal-setup label {font-size:13px;}
 .vocal-reader-text {overflow:auto;overscroll-behavior:contain;white-space:pre-wrap;overflow-wrap:anywhere;font-size:clamp(19px,3vw,24px);line-height:1.9;padding:8px 8px 40px;}
-.vocal-reader #vocal-reader-transport {border-top:1px solid #695267;}
+.vocal-reader #vocal-reader-transport {border-top:1px solid #695267;min-height:0;max-height:55dvh;overflow:auto;overscroll-behavior:contain;}
 .vocal-reader .vocal-actions {gap:8px;margin:10px 0 4px;}
 .vocal-reader #vocal-status {font-size:12px;line-height:1.5;min-height:0;margin:6px 0 0;}
 .vocal-takes {border-top:1px solid #514354;margin-top:20px;padding-top:6px;}
 .vocal-takes audio {width:100%;max-width:600px;}
+.vocal-takes h3 {color:#f6eef4;}
+.vocal-takes #vocal-take-info {overflow-wrap:anywhere;}
+.vocal-booth #vocal-review {width:100%;margin-top:8px;border-color:#c878a2;background:#493049;}
 .vocal-booth [hidden] {display:none!important;}
 @media(max-width:800px) {.vocal-grid {grid-template-columns:minmax(0,1fr);gap:10px;}.vocal-booth {padding:12px;}.vocal-booth summary span {display:block;margin-left:0;}}
 @media(max-width:480px) {.vocal-reader {padding:12px;gap:8px;}.vocal-reader .vocal-actions button {flex:1;font-size:13px;padding:8px;}.vocal-reader #vocal-clock {font-size:12px;}}

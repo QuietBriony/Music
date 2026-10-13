@@ -33,6 +33,7 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
         <div id="vocal-transport">
           <div class="vocal-actions"><button type="button" id="vocal-record">● 録音開始</button><button type="button" id="vocal-stop" disabled>■ 録音を終える</button><output id="vocal-clock">0:00 / 5:00</output></div>
           <p id="vocal-status" role="status">演奏を再生し、「マイクを準備」。演奏だけなら「録音するもの」を切り替えます。</p>
+          <button type="button" id="vocal-review" hidden>録ったテイクを確認 ↓</button>
         </div></div></div>
         <details class="vocal-guide"><summary>語り・ラップを録るコツと保存先</summary>
           <p>速いビートは半分の速さで数え、1行を1〜2小節で。まずキックと低音を固定、返しの303を少し下げ、AUTOは8小節。短い語り → ラップ → 同じ言葉の繰り返し → 演奏だけ、の順に試します。</p>
@@ -45,8 +46,14 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
       </div></div>
       <section class="vocal-takes" aria-label="この端末の録音テイク"><h3>テイクを聴き比べる</h3>
         <div class="vocal-actions"><label>録音テイク<select id="vocal-takes"><option value="">まだ録音がありません</option></select></label><button id="vocal-refresh" type="button">棚を更新</button></div>
-        <div id="vocal-take-detail" hidden><p id="vocal-take-info"></p><audio id="vocal-player" controls preload="none"></audio>
+        <div id="vocal-take-detail" hidden><p id="vocal-take-info"></p>
+          <div class="vocal-actions"><label>聴く音<select id="vocal-listen-part"></select></label><button type="button" id="vocal-audition">▶ テイクを聴く</button></div>
+          <audio id="vocal-player" controls preload="metadata" aria-label="録音テイクの再生"></audio>
+          <p id="vocal-listen-note" class="vocal-note" role="status"></p>
+          <div class="vocal-actions"><button type="button" id="vocal-next">歌詞へ戻る・次のテイク</button></div>
+          <details id="vocal-export"><summary>音声・歌詞・演奏設定を取り出す</summary>
           <div id="vocal-downloads" class="vocal-actions"></div>
+          </details>
           <div class="vocal-actions"><button type="button" id="vocal-use-text">このテイクの歌詞を編集欄へ戻す</button><button type="button" id="vocal-delete">このテイクを削除</button></div>
           <p id="vocal-delete-confirm" hidden>この端末のテイクを削除します。<button type="button" id="vocal-delete-yes">削除する</button><button type="button" id="vocal-delete-no">キャンセル</button></p>
         </div>
@@ -61,7 +68,8 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
   parent.append(host);
   const $ = id => host.querySelector('#vocal-' + id);
   const store = openTakeStore(window.indexedDB); const pending = new Map();
-  let takes = [], selected = null, urls = [], timer, draftUnsaved = false;
+  let takes = [], selected = null, urls = [], partURLs = {}, timer, draftUnsaved = false;
+  let latestTakeId = '', refreshGeneration = 0, readerReturn = 'read';
   const say = text => { $('status').textContent = text; };
   const draft = () => ({title:$('title').value.trim() || '声のスケッチ', lyrics:$('lyrics').value});
   const editableDraft = () => ({title:$('title').value, lyrics:$('lyrics').value});
@@ -103,7 +111,7 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
     }
   });
   $('title').addEventListener('input', saveText); $('lyrics').addEventListener('input', saveText);
-  $('read').addEventListener('click', () => {
+  function openReader() {
     $('reader-title').textContent=draft().title;
     $('reader-text').replaceChildren(); $('section').replaceChildren();
     const sections=lyricSections($('lyrics').value || '歌詞を選ぶか、編集欄に書いてから開いてください。');
@@ -118,18 +126,23 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
     $('setup').open=$('mode').value === 'voice' && !recorder.stream && !recorder.active;
     $('reader-transport').append($('capture'));
     $('reader').showModal(); $('reader-text').scrollTop=0;
-  });
+  }
+  $('read').addEventListener('click', openReader);
   $('section').addEventListener('change', () => {
     const block=$('reader-text').children[Number($('section').value)];
     if (block) $('reader-text').scrollTop += block.getBoundingClientRect().top - $('reader-text').getBoundingClientRect().top - 8;
   });
   $('reader-close').addEventListener('click', () => $('reader').close());
-  $('reader').addEventListener('close', () => { $('capture-home').append($('capture')); $('setup').open=true; $('read').focus(); });
+  $('reader').addEventListener('close', () => {
+    $('capture-home').append($('capture')); $('setup').open=true;
+    $(readerReturn).focus(); $(readerReturn).scrollIntoView({block:'center'}); readerReturn='read';
+  });
   // Reading keys scroll/close the dialog, not the background live set or MIDI mappings.
   for (const type of ['keydown','keyup']) $('reader').addEventListener(type, event => event.stopPropagation());
   function addDownload(parent, text, blob, name) {
     const a = document.createElement('a'), url = URL.createObjectURL(blob); urls.push(url);
     a.textContent = text; a.href = url; a.download = name; parent.append(a);
+    return url;
   }
   function downloadText() {
     const a = document.createElement('a'), data = draft();
@@ -155,7 +168,8 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
       pending.set(take.id,take);
       try { await store.put(take); pending.delete(take.id); say(take.reason + '。テイクをこの端末に保存しました。'); }
       catch (error) { say('端末保存に失敗。この画面を閉じず、下の音声をダウンロードしてください。' + error.message); }
-      await refreshTakes(take.id);
+      await refreshTakes(take.id, take);
+      latestTakeId=take.id; $('review').hidden=false;
     },
   });
   function render() {
@@ -166,6 +180,8 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
     $('disarm').disabled = !recorder.stream && !requesting;
     $('record').disabled = active || requesting || ($('mode').value === 'voice' && !recorder.stream);
     $('stop').disabled = recorder.state !== 'recording';
+    for (const id of ['review','audition','listen-part','next']) $(id).disabled=active || requesting;
+    $('audition').disabled ||= !partURLs[$('listen-part').value];
     for (const id of ['song','title','lyrics','file','use-text']) $(id).disabled=active;
     $('record').textContent = recorder.state === 'recording' ? '● 録音中' : recorder.state === 'finishing' ? '保存中…' : '● 録音開始';
     $('setup-state').textContent=requesting ? '許可待ち' : recorder.stream ? 'マイクON' : $('mode').value === 'backing' ? '演奏だけ' : 'マイクOFF';
@@ -188,6 +204,7 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
       $('player').pause();
       const session=snapshot(draft().title); backupText(session); // Validate portable restore before recording.
       recorder.start({withVoice:$('mode').value === 'voice', metadata:{...draft(), session, capturedAt:'start'}});
+      $('review').hidden=true;
       $('clock').textContent='0:00 / 5:00';
       if ($('reader').open) $('setup').open=false;
       say($('mode').value === 'voice' ? '録音中。歌詞を見ながら声を重ねてください。終わったら「録音を終える」。'
@@ -195,32 +212,77 @@ export function initVocalBooth({ parent, getSources, snapshot, stopPlayback, isB
     } catch(error) { say(error.message); }
   });
   $('stop').addEventListener('click', () => recorder.stop());
+  $('review').addEventListener('click', () => {
+    if (recorder.active || !takes.some(take=>take.id===latestTakeId)) return;
+    $('takes').value=latestTakeId; selectTake();
+    if ($('reader').open) { readerReturn='takes'; $('reader').close(); }
+    else { $('takes').focus(); $('takes').scrollIntoView({block:'center'}); }
+  });
+  $('next').addEventListener('click', () => {
+    $('player').pause();
+    say('今の歌詞で次を録れます。演奏が止まっていたら、演奏画面で再生してから録音してください。前のテイクは棚に残ります。');
+    openReader();
+  });
+  function selectPart() {
+    $('player').pause(); $('player').removeAttribute('src');
+    const key=$('listen-part').value;
+    if (partURLs[key]) $('player').src=partURLs[key];
+    $('player').load();
+    $('listen-note').textContent = key === 'voice' ? '声だけの原音。録音時の声フェーダーを通す前の音です。'
+      : key === 'backing' ? '演奏だけ。声は含みません。ミックスの録音音量補正（70%）を通す前の音です。'
+      : key ? '再生するとライブ演奏を止めて、このテイクを聴けます。音を切り替えると先頭から。'
+      : '再生できる音声がありません。歌詞と演奏設定は取り出せます。';
+    $('audition').disabled=!partURLs[key] || recorder.active || recorder.state==='requesting';
+  }
   function selectTake() {
+    const next=takes.find(take => take.id === $('takes').value);
+    // A shelf refresh must not rewind a take that is being auditioned.
+    if (selected && selected.id === next?.id) return;
     $('player').pause(); $('player').removeAttribute('src'); $('player').load();
-    urls.forEach(url => URL.revokeObjectURL(url)); urls = [];
-    selected = takes.find(take => take.id === $('takes').value);
+    urls.forEach(url => URL.revokeObjectURL(url)); urls = []; partURLs={};
+    selected = next;
     $('take-detail').hidden = !selected; $('delete-confirm').hidden = true;
     if (!selected) return;
     const take = selected, base = 'music-take-' + take.createdAt.replaceAll(/[:.]/g,'-');
+    $('export').open=pending.has(take.id);
     $('take-info').textContent = take.title + ' · ' + time(take.durationMs) + ' · ' + (takeBytes(take)/1024/1024).toFixed(1) + ' MB'
       + (pending.has(take.id) ? ' · 未保存：ダウンロードしてください' : ' · この端末に保存済み') + (take.partial ? ' · 一部録音エラー' : '');
-    const mixURL = URL.createObjectURL(take.audio.mix); urls.push(mixURL); $('player').src = mixURL;
-    $('downloads').replaceChildren();
+    $('downloads').replaceChildren(); $('listen-part').replaceChildren();
     for (const [key,label] of [['mix','ミックス音声'],['voice','声だけ'],['backing','演奏だけ']]) {
-      if (take.audio[key]) addDownload($('downloads'),label,take.audio[key],base+'-'+key+'.'+recordingExtension(take.audio[key].type));
+      if (!take.audio[key]?.size) continue;
+      partURLs[key]=addDownload($('downloads'),label,take.audio[key],base+'-'+key+'.'+recordingExtension(take.audio[key].type));
+      const option=document.createElement('option'); option.value=key;
+      option.textContent=key==='mix' && !take.audio.voice ? '演奏（今回の録音）' : label; $('listen-part').append(option);
     }
     addDownload($('downloads'),'歌詞TXT',new Blob([take.title+'\n\n'+take.lyrics],{type:'text/plain;charset=utf-8'}),base+'-lyrics.txt');
     addDownload($('downloads'),'演奏設定JSON',new Blob([backupText(take.session)],{type:'application/json'}),base+'-session.json');
+    selectPart();
   }
-  async function refreshTakes(id = $('takes').value) {
-    try { takes = await store.list(); } catch (error) { say('テイク棚を読み込めません。' + error.message); takes = []; }
-    takes.push(...pending.values()); takes.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  async function refreshTakes(id, addedTake) {
+    const generation=++refreshGeneration;
+    let stored;
+    try { stored = await store.list(); } catch (error) { say('テイク棚を読み込めません。' + error.message); stored = takes; }
+    if (generation !== refreshGeneration) return;
+    id ??= $('takes').value;
+    takes=[...new Map([...stored, ...pending.values(), ...(addedTake ? [addedTake] : [])].map(take=>[take.id,take])).values()];
+    takes.sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
     $('takes').replaceChildren();
     if (!takes.length) { const o=document.createElement('option'); o.textContent='まだ録音がありません'; o.value=''; $('takes').append(o); }
     for (const take of takes) { const o=document.createElement('option'); o.value=take.id; o.textContent=take.title+' · '+new Date(take.createdAt).toLocaleString('ja-JP'); $('takes').append(o); }
     $('takes').value = takes.some(t=>t.id===id) ? id : (takes[0]?.id || ''); selectTake();
+    if (!takes.some(take=>take.id===latestTakeId)) $('review').hidden=true;
   }
   $('takes').addEventListener('change', selectTake); $('refresh').addEventListener('click',()=>refreshTakes());
+  $('listen-part').addEventListener('change', selectPart);
+  $('audition').addEventListener('click', async () => {
+    if (recorder.active || recorder.state==='requesting') return;
+    if (!$('player').paused) { $('player').pause(); return; }
+    try { await $('player').play(); }
+    catch { $('listen-note').textContent='このブラウザでは再生できません。音声を取り出して別のプレーヤーで開いてください。'; }
+  });
+  for (const type of ['play','pause','ended','emptied']) $('player').addEventListener(type, () => {
+    $('audition').textContent=$('player').paused ? '▶ テイクを聴く' : 'Ⅱ 試聴を一時停止';
+  });
   $('player').addEventListener('play', () => {
     if (recorder.active || recorder.state === 'requesting') { $('player').pause(); say('録音を終えてからテイクを聴けます。'); return; }
     recorder.disarm(); stopPlayback();
