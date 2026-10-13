@@ -337,6 +337,28 @@ def extract_drum_line(bpm: float, total_steps: int, offset: float = 0, duration=
     return out
 
 
+def drum_score_usable(events, bpm, duration):
+    """Coverage gate, not an accuracy score; short songs need fewer hits.
+
+    Keep the historical counts for recordings >=90 seconds. Require both
+    core voices and coverage across the recording, so a short noisy burst
+    cannot qualify a mostly empty transcription.
+    """
+    if not np.isfinite(duration) or duration < 8 or not np.isfinite(bpm) or bpm <= 0:
+        return False
+    valid = [r for r in events if len(r) == 5 and all(np.isfinite(r)) and
+             0 <= r[1] < 16 and r[2] > 0 and r[3] in range(4) and 0 < r[4] <= 1 and
+             0 <= (r[0] * 16 + r[1]) * 15 / bpm < duration]
+    if len(valid) != len(events):
+        return False
+    scale = min(1., duration / 90.)
+    counts = [sum(r[3] == cls for r in valid) for cls in range(4)]
+    occupied = {min(3, int((r[0] * 16 + r[1]) * 15 / bpm / duration * 4)) for r in valid}
+    return (len(valid) >= max(32, np.ceil(200 * scale)) and
+            counts[0] >= max(8, np.ceil(50 * scale)) and
+            counts[1] >= max(5, np.ceil(30 * scale)) and len(occupied) >= 3)
+
+
 def main() -> None:
     data = json.loads(SONG_JSON.read_text(encoding="utf-8"))
     nominal = float(data["bpm"])
@@ -377,7 +399,8 @@ def main() -> None:
         names = {0: "kick", 1: "snare", 2: "hat", 3: "crash"}
         per_class = {names[k]: v for k, v in sorted(counts.items())}
         kick_n, snare_n = per_class.get("kick", 0), per_class.get("snare", 0)
-        drums_ok = len(drums) >= 200 and kick_n >= 50 and snare_n >= 30
+        duration = librosa.get_duration(path=str(STEM_DIR / "drums.mp3"))
+        drums_ok = drum_score_usable(drums, bpm, duration)
         print(f"{SONG}: bpm {bpm:.2f}")
         print(f"drum_line: {len(drums)} hits {per_class}")
         print(f"embed: drum_line={'YES' if drums_ok else 'NO'}")
@@ -387,7 +410,7 @@ def main() -> None:
                                      "classes": ["kick", "snare", "hat", "crash"],
                                      "source": "onset + band-energy/decay classify on drums.mp3", "events": drums}
             else:
-                data.pop("drum_line", None)
+                raise ValueError("Drum coverage rejected; retaining the existing file unchanged")
             SONG_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
             print(f"WROTE {SONG_JSON}")
         return

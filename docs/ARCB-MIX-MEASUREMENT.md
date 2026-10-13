@@ -1,4 +1,34 @@
-# ARCB — 合奏の測定と補正（現行 v417）
+# ARCB — 合奏の測定と補正（現行 v419）
+
+## 短い曲のドラム譜と再生時計（v419 / 2026-10-13）
+
+44.722秒のTABASCOは194打を抽出できていたが、固定200打の採用条件で全譜面を捨て、同じframeを繰り返していた。
+短曲は長さに応じた打数と曲内4区間中3区間以上のcoverageを検査する。90秒以上の旧200打・kick50・snare30条件は保持。
+拒否時に既存譜を消さない。専用の補完処理も既存drum_lineの上書きを拒否する。
+128打を原音の立ち上がりへ合わせ、10打の弱い同時cymbal仮説を追加。204打（kick131 / snare62 / cymbal11）、最大12打／小節。
+音長・強弱・細かい打点を保持し、bassの132.51 BPMと同じ時計を使う。原音・他6曲・ギター／ベース譜・音源bankは保持。
+
+実出力の比較で、native AIの開始／seekにToneのlook-ahead＋30 msを使う一方、再生時計が即座に始まり約130 ms先行する不具合を発見。
+両方に同じ絶対AudioContext時刻を渡すよう修正した。元の原音／legacy時計は保持する。
+最初のREC比較はOpus・WAV変換後に時計を読んでおり、遅れと処理負荷が混入したため、判定証拠に使わない。
+最終比較は同じpost-masterの音をAudioWorkletで6秒直接収集し、最初のaudio frame時刻から原音区間を指定する。
+
+独立な帯域spectral fluxと±30 msで照合。下表は各録音で全帯域共通の±120 ms以内の遅れ補正を許したF1で、採譜正答率ではない。
+補正なしの値、実際の区間、補正量、source/capture hashも[測定JSON](arcb-short-drums-measurement-20261013.json)に残す。時間伸縮はしない。
+
+| 比較位置 | kick 旧 → 新 | snare 旧 → 新 | 高域 旧 → 新 |
+|---|---:|---:|---:|
+| 2秒付近 | 0.240 → 0.688 | 0.333 → 0.737 | 0.118 → 0.643 |
+| 16秒付近 | 0.148 → 0.500 | 0.304 → 0.444 | 0.170 → 0.429 |
+| 30秒付近 | 0.609 → 0.667 | 0.538 → 0.667 | 0.500 → 0.387 |
+
+kick/snareは3区間とも改善。終盤の高域は改善せず、シンバル／タム分類や分離漏れが残る。
+全captureでPCM clippingなし、dropped notes 0。53 buffer／13,610,240 bytesと128 source上限を保持。
+原音のライブ／厚めの仕上げは同じ。比較はsample-aligned／loudness-matched A/Bではなく、主観聴感・実iPhone評価を代行しない。
+再解析: `python -X utf8 scripts/complete-tabasco-drums.py --out <report.json>`。`--write`は欠けたTABASCOの譜面にだけ適用。
+回帰: `--self-test`、`node scripts/check-band-room-logic.mjs`、`node scripts/check-tabasco-songs-catalog.mjs`。
+ローカルの収集／失敗／再測定の証跡は`output/playwright/band-polish/`。
+
 
 v417追加検証: START前の「厚め」選択・保存復元で無音になる条件を再現。停止中のAudioContextには予約rampを積まず初期gainを直接設定し、再生中のみ40msで切り替える。変更前3条件が無音、変更後は同条件とliveの全4条件で実出力を確認。
 
