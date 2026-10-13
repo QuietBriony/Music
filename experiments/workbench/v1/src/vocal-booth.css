@@ -6,8 +6,9 @@
 .vocal-grid {display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;}
 .vocal-booth label {display:flex;flex-direction:column;gap:5px;margin:8px 0;min-width:0;}
 .vocal-booth input:not([type=range]),.vocal-booth textarea,.vocal-booth select {width:100%;min-width:0;max-width:100%;padding:10px;border:1px solid #695c6d;border-radius:7px;background:#110f16;color:#f2e9f0;font:inherit;}
+.vocal-booth input:not([type=range]),.vocal-booth select {font-size:16px;}
 .vocal-booth textarea {resize:vertical;line-height:1.9;font-size:17px;min-height:290px;}
-.vocal-booth input[type=range] {width:100%;min-height:36px;accent-color:#ee97bc;writing-mode:horizontal-tb;}
+.vocal-booth input[type=range] {width:100%;margin:0;min-height:36px;accent-color:#ee97bc;writing-mode:horizontal-tb;}
 .vocal-booth button,.vocal-booth .vocal-downloads a {min-height:44px;}
 .vocal-booth button {border:1px solid #806680;border-radius:7px;background:#352b3a;color:#f8f1f8;font:inherit;padding:8px 12px;cursor:pointer;white-space:normal;}
 .vocal-booth button:disabled {opacity:.5;cursor:default;}
@@ -24,11 +25,18 @@
 .vocal-note {color:#dbc7d5;font-size:13px;margin:4px 0 12px;}
 .vocal-booth #vocal-read {border-color:#c878a2;background:#493049;}
 .vocal-reader {width:min(780px,calc(100% - 16px));height:calc(100% - 24px);height:calc(100dvh - 24px);max-width:none;max-height:none;margin:auto;padding:18px;border:1px solid #a47999;border-radius:14px;background:#1b171e;color:#f6eef4;overflow:hidden;}
-.vocal-reader[open] {display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:12px;}
+.vocal-reader[open] {display:grid;grid-template-rows:auto auto minmax(80px,1fr) auto;gap:8px;}
 .vocal-reader::backdrop {background:#08060ce6;}
 .vocal-reader-head {display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .vocal-reader-head h3 {color:#f6eef4;font-size:18px;line-height:1.4;margin:0;overflow-wrap:anywhere;}
 .vocal-reader-head button {flex-shrink:0;font-size:13px;}
+.vocal-reader .vocal-reader-jump {margin:0;font-size:12px;}
+.vocal-reader .vocal-reader-jump select {font-size:16px;padding:8px;min-height:44px;}
+.vocal-reader-section + .vocal-reader-section {margin-top:1.5em;}
+.vocal-setup > summary {cursor:pointer;min-height:44px;line-height:1.5;padding:10px 0;font-weight:600;}
+.vocal-booth .vocal-setup summary span {display:inline;margin-left:8px;font-weight:400;}
+.vocal-reader .vocal-setup[open] {max-height:32dvh;overflow:auto;overscroll-behavior:contain;}
+.vocal-reader .vocal-setup label {font-size:13px;}
 .vocal-reader-text {overflow:auto;overscroll-behavior:contain;white-space:pre-wrap;overflow-wrap:anywhere;font-size:clamp(19px,3vw,24px);line-height:1.9;padding:8px 8px 40px;}
 .vocal-reader #vocal-reader-transport {border-top:1px solid #695267;}
 .vocal-reader .vocal-actions {gap:8px;margin:10px 0 4px;}
