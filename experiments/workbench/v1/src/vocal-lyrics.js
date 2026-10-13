@@ -51,9 +51,12 @@ const clean = draft => {
   return {title: draft.title.slice(0,80), lyrics: draft.lyrics.slice(0,50000)};
 };
 
-// Each choice owns its draft. Persist both the outgoing text and selection in
-// one write, so quota/permission failures cannot discard the visible draft.
-export function createLyricDrafts(storage) {
+const content = (drafts, id) => {
+  const song = BUILTIN_LYRICS.find(song => song.id === id);
+  return {...(drafts[id] || {title: song?.title || '', lyrics: song?.lyrics || ''})};
+};
+const same = (a, b) => a.title === b.title && a.lyrics === b.lyrics;
+function readShelf(storage) {
   let selected, drafts = {};
   const raw = storage.getItem(LYRIC_DRAFT_KEY);
   if (raw !== null) {
@@ -66,16 +69,38 @@ export function createLyricDrafts(storage) {
     if (legacy !== null) drafts.custom = clean(JSON.parse(legacy));
     selected = drafts.custom?.title || drafts.custom?.lyrics ? 'custom' : BUILTIN_LYRICS[0].id;
   }
-  const current = () => {
-    const song = BUILTIN_LYRICS.find(song => song.id === selected);
-    return {...(drafts[selected] || {title: song?.title || '', lyrics: song?.lyrics || ''})};
-  };
+  return {selected, drafts};
+}
+
+// Merge the latest shelf on every write: the standalone rack and Workbench
+// can be open together. Conflicting edits keep both the stored and visible text.
+export function createLyricDrafts(storage) {
+  let {selected, drafts} = readShelf(storage);
+  const current = () => content(drafts, selected);
   function write(draft, next = selected) {
     if (!known(next)) throw new Error('この歌詞は選べません。');
-    const updated = {...drafts, [selected]: clean(draft)};
+    const incoming = clean(draft), baseline = current();
+    const latest = readShelf(storage), saved = content(latest.drafts, selected);
+    if (!same(incoming, baseline) && !same(saved, baseline) && !same(incoming, saved)) {
+      const error = new Error('別画面でこの歌詞が更新されています。今の文章はTXTで保存してから開き直してください。');
+      error.code = 'LYRIC_CONFLICT'; throw error;
+    }
+    const updated = {...latest.drafts, [selected]: same(incoming, baseline) ? saved : incoming};
     storage.setItem(LYRIC_DRAFT_KEY, JSON.stringify({version:2, selected:next, drafts:updated}));
     drafts = updated; selected = next;
     return current();
   }
   return {get selected(){return selected;}, current, save:write, choose:(id,draft)=>write(draft,id)};
+}
+
+// Only whole-line [section headings] are navigation markers. Text is rendered
+// as textContent by the reader, never interpreted as HTML or musical commands.
+export function lyricSections(text) {
+  const sections = [{heading:'', text:''}];
+  for (const line of text.split('\n')) {
+    const heading = line.match(/^\s*\[([^\]\r\n]{1,160})\]\s*\r?$/u)?.[1];
+    if (heading) sections.push({heading, text:line});
+    else sections.at(-1).text += (sections.at(-1).text ? '\n' : '') + line;
+  }
+  return sections.filter(section => section.text.trim());
 }

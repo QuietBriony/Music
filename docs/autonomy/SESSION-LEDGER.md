@@ -1,5 +1,13 @@
 # Session Ledger — music-stack
 
+## 2026-10-13 — スマホの歌詞・録音導線と複数画面の下書き保護
+
+- scope: 単一会話、既存Workbench／303単独とListen、base main caed013。
+- feature: 選択の直下から拡大歌詞へ。文章編集をたたみ、同じマイク準備・入力音量・REC／停止を拡大画面でも利用。「読む場所」で前後のHookを区別して移動。
+- safety: 最新歌詞棚への曲別マージ、同一曲の競合時は保存・切替を中止。今の文章は維持しTXT退避を案内。未保存で離脱する時に警告。保存schemaはv2のまま、旧稿も保持。
+- validation: 複数画面の別曲保存、同曲競合、古い無編集画面の切替、保存後の破損、章抽出を回帰検証。最終HEADのstrict gateと実ブラウザ・公開証跡は対応PR。
+- boundaries: 新規音・依存・hostingなし。エンジン・AUTO・音量は変更なし。実iPhone／実マイク収録は本人確認。
+
 ## 2026-10-12 — ファイル不要の内蔵歌詞と録音用の大きな表示
 
 - scope: Codex、単一会話。base main e08b34c、351e925へ同期。既存WorkbenchとListen／manual。
