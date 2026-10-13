@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-252-short-song-drums";
-  const BANDROOM_RELEASE_VERSION = "v419";
+  const BANDROOM_APP_VERSION = "br-253-guitar-performance";
+  const BANDROOM_RELEASE_VERSION = "v420";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";

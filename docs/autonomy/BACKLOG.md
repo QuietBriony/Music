@@ -47,7 +47,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : runtime / verify
 - agent    : codex | claude
 - human-gate: yes（2026-10-12本人が通常ARCBへの反映を明示指示。今回の昇格は承認済み、実iPhoneと聴感の判定は継続）
-- status   : wip — codex 2026-10-12。v416で本人の明示指示により新3楽器を通常ARCBへ採用。v419は短いTABASCOのドラム全譜を回復。打点単位の和音再分析と合奏測定へ進めた。本人の聴感・実iPhoneと完全な採譜は継続
+- status   : wip — codex 2026-10-12。v416で本人の明示指示により新3楽器を通常ARCBへ採用。v419は短いTABASCOのドラム全譜を回復。v420は原音と照合してギター351打点と5和音を補正。打点単位の和音再分析と合奏測定へ進めた。本人の聴感・実iPhoneと完全な採譜は継続
 - source   : 2026-10-01本人の物理モデル参考画像、ロック→ジャズ、旧アプリ整理・archive承認
 - detail   : `audio/physical-band/`を既存Band Room内の任意試奏として実装。
   2026-10-01に8小節の候補まで実装済み。

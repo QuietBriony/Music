@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-13 v420: 原音otherの帯域エネルギーとspectral fluxを照合し、5曲のギター351打点を約12〜65 ms前へ補正。note-offと強弱を保持し、ベース・ドラムと同じ原音時刻に寄せた。連続ストロークの前後で安定し、CQTとlinear STFTの両方が支持する5和音を追加。従来の和音注釈は補正後の各行へ結び直す。原音・他パート・音源bankは保持。分離漏れと未採譜／曖昧な音は残り、完全再現・聴感合格とはしない。cache `hazama-fm-v420` / client `br-253`。
+
 2026-10-13 v419: 短いTABASCOを200打以上の固定条件で除外していた採譜処理を修正。原音drumsから204打を採用し、うち128打を立ち上がりへ合わせ、10打の弱い同時cymbalを補った。曲の進行に沿うドラム譜を通常ARCBで使用する。AIの開始／seekでは音の予約時刻と再生時計を一致させ、look-ahead分の先走りを修正。ギター・ベースの譜面、音源bank、原音と仕上げは保持。クラス推定・分離漏れと実iPhone聴感は未解決。cache `hazama-fm-v419` / client `br-252`。
 
 2026-10-13（録音後の聴き返し）: 録音直後に最新テイクへ移動し、ミックス／声だけ／演奏だけを同じプレーヤーで選択試聴。切替は先頭から、棚更新では選択と試聴位置を保持する。歌詞へ戻ると現在の下書きを開き、録音・演奏・マイクは自動開始しない。音声／TXT／JSONの取り出しは折りたたみへ。端末内の既存テイク形式と録音エンジンは保持。最終HEADのgateと実ブラウザ・公開証跡は対応PR。実iPhone／実マイク収録は本人確認。
@@ -252,7 +254,7 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v419`。Band Room runtime markerは`band-room.js?v=br-252` /
+- 現行cacheは`hazama-fm-v420`。Band Room runtime markerは`band-room.js?v=br-253` /
   `band-room.css?v=br-95`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ

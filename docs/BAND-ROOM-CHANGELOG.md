@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v419 compact)
+# Band Room - Changelog (v65 -> v420 compact)
+
+## v420 — 2026-10-13
+
+2026-10-13 v420: 原音otherの帯域エネルギーとspectral fluxを照合し、5曲のギター351打点を約12〜65 ms前へ補正。note-offと強弱を保持し、ベース・ドラムと同じ原音時刻に寄せた。連続ストロークの前後で安定し、CQTとlinear STFTの両方が支持する5和音を追加。従来の和音注釈は補正後の各行へ結び直す。原音・他パート・音源bankは保持。分離漏れと未採譜／曖昧な音は残り、完全再現・聴感合格とはしない。cache `hazama-fm-v420` / client `br-253`。
 
 ## v419 — 2026-10-13
 
@@ -8,7 +12,7 @@
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v419. Latest Band Room runtime change: v419 (short-song drum performance). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v420. Latest Band Room runtime change: v420 (guitar performance alignment). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

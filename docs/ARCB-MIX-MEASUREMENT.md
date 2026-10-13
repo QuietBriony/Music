@@ -1,4 +1,53 @@
-# ARCB — 合奏の測定と補正（現行 v419）
+# ARCB — 合奏の測定と補正（現行 v420）
+
+## ギターの打点・和音を再照合（v420 / 2026-10-13）
+
+原音otherの140–2800 Hz帯域エネルギーと、600–3500 Hzのspectral fluxが一致する近傍だけを補正。
+最大約65 ms前へ合わせ、音を切る時刻・強弱・順序・小節所属を保持する。ベース／ドラム譜と原音28 MP3は変更しない。
+和音はストローク後のCQT 3区間が一致し、密集箇所では直前も一致、別のlinear STFTでも旧和音より支持される候補に限る。
+既存の和音注釈は、補正後の行とhashへ結び直した。同時発音数の上限、53 buffer／13,610,240 bytesは増やさない。
+
+| 曲 | 採用した打点補正 | 追加和音 |
+|---|---:|---:|
+| human-fly | 15 | 1 |
+| electric-sheep | 185 | 2 |
+| hey | 50 | 2 |
+| sister | 0 | 0 |
+| i-got-a-feeling | 0 | 0 |
+| under-the-moon | 74 | 0 |
+| tabasco | 27 | 0 |
+
+全候補468打点／31和音のうち、実出力の比較で支持が一貫しなかった117打点／26和音は見送り。
+SisterとI Got a Feelingの演奏、Under the Moonの和音は従来のまま。
+候補の評価、採否、source/input/output hash、実際の比較値は[測定JSON](arcb-guitar-performance-measurement-20261013.json)に残す。
+
+通常ブラウザのpost-masterでは全7曲の合奏とギター単体、採用5曲の別の後半区間も収集した。
+AudioWorkletの最初のframe時刻を使い、前後で共通する原音時刻へ切り揃える。時間伸縮・遅れの最適化はしない。
+ただし変更しなかった2曲にも走行間のスペクトル差があり、この値だけで改善を断定しない。
+初回のguide混入と重なった検証操作は判定から除き、再収集した。録音はGitへ追加しない。
+
+そこで同じnative音源adapterをOfflineAudioContextで鳴らす確認も追加。
+共通の2秒pre-roll＋正確な3秒切り出し、クランチ直後、global master／roomを含めない条件。
+同じ譜面の反復と変更しない2曲の比較は、PCM16の1段階以内で一致。
+下表は原音otherとのpitch-class距離（小さいほど近い）。3区間縮小、2区間小幅拡大、2曲不変。
+音域・奏法・人の聴感を保証する指標ではなく、特定ギターの完全な再現を主張しない。
+
+| 同条件の楽器出力 | 旧 | 採用版 |
+|---|---:|---:|
+| human-fly | 0.2158 | 0.2091 |
+| electric-sheep | 0.3551 | 0.3290 |
+| hey | 0.6926 | 0.6934 |
+| sister | 0.1952 | 0.1952 |
+| i-got-a-feeling | 0.2924 | 0.2924 |
+| under-the-moon | 0.3253 | 0.3239 |
+| tabasco | 0.9609 | 0.9621 |
+
+通常再生の最終24 captureはclipping／dropped notesなし。80／100／120%の開始・途中移動・停止も確認。
+公開版のasset照合、candidateとmerged HEADそれぞれの43件gate／auditは対応PRに記録する。
+再解析は`scripts/refine-guitar-performance.py`。既存cacheはsource／parameter／array hashで検査し、
+補正済み譜面への二重適用と、解析中に変わった譜面への書込みを拒否する。
+分離漏れ・曖昧な和音・未採譜と音色／奏法の差、実iPhoneの長時間負荷は継続課題。
+
 
 ## 短い曲のドラム譜と再生時計（v419 / 2026-10-13）
 
