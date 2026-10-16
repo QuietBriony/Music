@@ -1,4 +1,5 @@
 // Versioned, bounded machine snapshots. No audio initialization or storage writes.
+import { normalizeRackScenes } from './rack-scenes-state.js';
 const require = (condition, message) => { if (!condition) throw new Error(message); };
 // FILE saves are opaque full-project binary strings. Check the container before
 // adding one to storage; decoding/importing it into the audio engine is deferred
@@ -70,7 +71,8 @@ export function normalizeMachineState(value) {
     keepSoundSettings:value.keepSoundSettings, tempo:value.tempo, swing:value.swing,
     locks:Object.fromEntries([...synths,'tr909'].map(id => [id,value.locks[id]])),
     drumLocks:Object.fromEntries(drums.map(id=>[id,value.version>=2 && value.drumLocks[id]])),
-    rackAuto:value.version===3?{enabled:value.rackAuto.enabled,bars:value.rackAuto.bars}:{enabled:false,bars:4}, tracks:[...value.tracks], tones };
+    rackAuto:value.version===3?{enabled:value.rackAuto.enabled,bars:value.rackAuto.bars}:{enabled:false,bars:4}, tracks:[...value.tracks], tones,
+    ...(value.rackScenes!==undefined?{rackScenes:normalizeRackScenes(value.rackScenes)}:{}) };
 }
 export function normalizeJointState(value) {
   require(value?.version === 1 && number(value.level,0,1), '組み合わせの音量・保存形式が不正です');
@@ -82,6 +84,7 @@ export function captureMachineState(data, audio) {
     keepSoundSettings:data.keepSoundSettings, tempo:audio.tempo, swing:audio.swing,
     locks:data.unitLocks, drumLocks:Object.fromEntries(drums.map(id=>[id,data.drumLocks?.[id]===true])), tracks:data.active909Tracks,
     rackAuto:data.rackAuto || {enabled:false,bars:4},
+    ...(data.rackScenes?{rackScenes:data.rackScenes}:{}),
     tones:data.patterns.map(p => Object.fromEntries(synths.map(id => [id,p.units[id].settings]))) });
 }
 export function decodeMachineState(value, Decoder) {
@@ -101,6 +104,7 @@ export function applyMachineState({data,audio,ui}, decoded) {
   data.unitLocks={...s.locks}; data.active909Tracks=[...s.tracks]; data.customSampleMap=state.customSampleMap || {};
   data.drumLocks={...s.drumLocks};
   data.rackAuto={...s.rackAuto};
+  if(s.rackScenes)data.rackScenes=s.rackScenes;
   audio.tempo=s.tempo; audio.swing=s.swing;
   data.applyPatternSettings(s.pattern);
   audio.instruments.get('tr909')?.setCustomSampleMap?.(data.customSampleMap);

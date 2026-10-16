@@ -16,6 +16,7 @@ for (const file of ['vocal-recorder.js', 'vocal-store.js', 'vocal-booth.js', 'vo
 }
 await cp(join(root, 'src', 'machine-clock.js'), join(output, 'machine-clock.js'));
 await cp(join(root, 'src', 'machine-state.js'), join(output, 'machine-state.js'));
+for(const file of ['rack-scenes-state.js','rack-scenes.js'])await cp(join(root,'src',file),join(output,file));
 await cp(join(root, 'src', 'performance.js'), join(output, 'performance.js'));
 await cp(join(root, 'src', 'performance-layout.js'), join(output, 'performance-layout.js'));
 await cp(join(root, 'src', 'performance-code.js'), join(output, 'performance-code.js'));

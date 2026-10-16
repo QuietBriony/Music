@@ -10,6 +10,9 @@ import { captureMachineState, decodeMachineState, applyMachineState } from '../s
 import { TR909 } from '../third_party/acidbros/js/audio/TR909.js';
 import { createRackAuto } from '../src/machine-rack/auto.js';
 import { varyVoice } from '../src/machine-rack/variation.js';
+import { createRackScenes, MACROS } from '../src/rack-scenes.js';
+import { emptyRackScenes, normalizeRackScenes, normalizeSceneTones } from '../src/rack-scenes-state.js';
+import { backupText, parseBackup } from '../src/session-backup.js';
 
 // Exercise the pinned machine's real randomizer and save/apply mappings, with
 // native knob/radio DOM substitutes. No audio, browser, storage or network.
@@ -38,6 +41,102 @@ function rig() {
   return {data,model,audio,knobs,inputs,ui};
 }
 const snapshot = r=>structuredClone(r.data.patterns[r.data.currentPatternId].units);
+function sceneRig(storage) {
+  const r=rig(),values=new Map();
+  storage ||= {getItem:key=>values.get(key)??null,setItem:(key,v)=>values.set(key,v)};
+  const scenes=createRackScenes({...r,storage});
+  const tickBar=()=>{scenes.tick(1,15);scenes.tick(2,0);};
+  return {...r,scenes,values,storage,tickBar};
+}
+test('macro patches preserve notes, levels, tempo, candidates and locked voices on the real native model',()=>{
+  const r=sceneRig();r.model.randomize();r.data.unitLocks.tb303_2=true;r.data.drumLocks.bd=true;
+  const before=snapshot(r),tracks=[...r.data.active909Tracks];
+  for(const macro of MACROS)r.scenes.macro(macro.id,100);
+  const after=snapshot(r);
+  assert.deepEqual(after.tb303_2,before.tb303_2);assert.deepEqual(after.tr909.tracks.bd,before.tr909.tracks.bd);
+  assert.deepEqual(after.tb303_1.sequence,before.tb303_1.sequence);
+  assert.equal(after.tb303_1.settings.volume,before.tb303_1.settings.volume);
+  for(const [id,voice] of Object.entries(after.tr909.tracks)) {
+    assert.deepEqual(voice.steps,before.tr909.tracks[id].steps);assert.equal(voice.level,before.tr909.tracks[id].level);
+  }
+  assert.equal(after.tb303_1.settings.reso,10);assert.equal(after.tb303_1.settings.delayWet,40);
+  assert.deepEqual([...r.data.active909Tracks],tracks);assert.equal(r.audio.tempo,127);
+  assert.equal(r.audio.isPlaying,undefined,'macro cannot start audio');
+});
+test('saved scenes recall at the next native bar, latest request wins, and Stop cancels pending recall',()=>{
+  const r=sceneRig();r.scenes.macro('hard',0);r.scenes.save(0,'soft');
+  r.scenes.macro('hard',100);r.scenes.save(1,'hard');
+  r.audio.isPlaying=true;r.scenes.tick(0,5);r.scenes.recall(0);
+  assert.equal(r.model.toneState().tb303_1.reso,10);r.scenes.tick(1,15);
+  assert.equal(r.model.toneState().tb303_1.reso,10);r.scenes.tick(2,0);
+  assert.equal(r.model.toneState().tb303_1.reso,2);
+  r.scenes.recall(0);r.scenes.recall(1);r.tickBar();assert.equal(r.model.toneState().tb303_1.reso,10);
+  r.scenes.recall(0);r.scenes.reset();r.tickBar();assert.equal(r.model.toneState().tb303_1.reso,10);
+});
+test('macro feedback follows only free voices and all-locked targets are explicitly unavailable',()=>{
+  const r=sceneRig();r.data.unitLocks.tb303_2=true;r.scenes.macro('space',100);
+  assert.equal(r.scenes.macroValue('space'),100,'a fixed 303 must not drag a live fader value back');
+  const before=snapshot(r);r.data.unitLocks.tb303_1=true;
+  assert.equal(r.scenes.macroValue('space'),null);assert.equal(r.scenes.macro('space',0),false);
+  assert.deepEqual(snapshot(r),before);
+});
+test('scene AUTO uses only stored tones and respects duplicate ticks, drag release, locks and SONG mode',()=>{
+  const r=sceneRig();r.scenes.macro('hard',0);r.scenes.save(0,'A');r.scenes.macro('hard',100);r.scenes.save(1,'B');
+  r.scenes.configure(true,4);r.audio.isPlaying=true;r.scenes.tick(0,0);
+  for(let i=0;i<3;i++)r.tickBar();assert.equal(r.model.toneState().tb303_1.reso,10);
+  r.tickBar();assert.equal(r.model.toneState().tb303_1.reso,2);
+  for(let i=0;i<8;i++)r.scenes.tick(1,0);assert.equal(r.scenes.read().remaining,4);
+  r.scenes.touch(true);for(let i=0;i<6;i++)r.tickBar();r.scenes.touch(false);
+  r.tickBar();assert.equal(r.model.toneState().tb303_1.reso,2,'release starts a fresh interval');
+  r.data.unitLocks.tb303_1=true;for(let i=0;i<3;i++)r.tickBar();
+  assert.equal(r.model.toneState().tb303_1.reso,2);assert.equal(r.model.toneState().tb303_2.reso,10);
+  const before=snapshot(r);r.data.mode='song';for(let i=0;i<8;i++)r.tickBar();assert.deepEqual(snapshot(r),before);
+});
+test('scene bank survives reload and combined JSON without changing the existing machine version',()=>{
+  const r=sceneRig();r.scenes.macro('space',75);r.scenes.save(7,'空間');
+  const reloaded=sceneRig(r.storage);assert.equal(reloaded.scenes.read().bank.slots[7].name,'空間');
+  const saved=captureMachineState(r.data,r.audio);assert.equal(saved.version,3);
+  const text=backupText({strudel:{drafts:[{id:'scene-check',title:'場面',savedAt:'2026-10-16T00:00:00.000Z',code:'silence',joint:{version:1,level:.55,machine:saved}}],levels:{},decks:{}},acidbros:{files:[]}});
+  assert.equal(JSON.parse(text).schema_version,4);
+  assert.equal(parseBackup(text).strudel.drafts[0].joint.machine.rackScenes.slots[7].name,'空間');
+  const target=sceneRig();applyMachineState(target,decodeMachineState(JSON.parse(JSON.stringify(saved)),BinaryFormatDecoder));
+  assert.equal(target.scenes.read().bank.slots[7].tones.tb303_1.delayWet,30);
+  assert.match(target.scenes.read().message,/復元しました/);
+  assert.equal(sceneRig(target.storage).scenes.read().bank.slots[7].name,'空間');
+  const older=structuredClone(saved);delete older.rackScenes;
+  applyMachineState(target,decodeMachineState(older,BinaryFormatDecoder));
+  assert.equal(target.scenes.read().bank.slots[7].name,'空間','an older backup must not erase the scene bank');
+});
+test('failed save and competing tab writes do not replace the scene bank or the other tab data',()=>{
+  const r=sceneRig();r.scenes.save(0,'A');const before=JSON.stringify(r.scenes.read().bank);
+  r.storage.setItem=()=>{throw new Error('quota');};assert.throws(()=>r.scenes.save(1,'B'),/quota/);
+  assert.equal(JSON.stringify(r.scenes.read().bank),before);
+  const a=sceneRig(),b=sceneRig(a.storage);a.scenes.save(0,'別画面');
+  assert.throws(()=>b.scenes.save(1,'競合'),/別の画面/);
+  assert.equal(sceneRig(a.storage).scenes.read().bank.slots[0].name,'別画面');
+});
+test('scene normalization rejects malformed or oversized banks and strips unrelated fields',()=>{
+  const r=sceneRig(),bank=emptyRackScenes();bank.slots[0]={name:'A',tones:r.model.toneState()};
+  bank.slots[0].tones.tb303_1.volume=0;
+  assert.equal(normalizeRackScenes(bank).slots[0].tones.tb303_1.volume,undefined);
+  for(const change of [v=>v.slots.push(null),v=>v.slots[0].name='x'.repeat(49),v=>v.slots[0].tones.tb303_1.reso=16,v=>v.auto.enabled=true]) {
+    const bad=structuredClone(bank);change(bad);assert.throws(()=>normalizeRackScenes(bad));
+  }
+  assert.deepEqual(normalizeSceneTones(r.model.toneState()),r.model.toneState());
+});
+test('a corrupt scene shelf remains intact and does not block manual tone controls',()=>{
+  const r=sceneRig({getItem:()=>'{broken',setItem(){throw new Error('must not write');}});
+  r.scenes.macro('hard',50);assert.equal(r.model.toneState().tb303_1.reso,6);
+  assert.throws(()=>r.scenes.save(0,'A'),/保存欄/);
+});
+test('scene clock replaces evolution only when active and enabling evolution disables scene AUTO',()=>{
+  const r=sceneRig();r.scenes.save(0,'A');r.scenes.save(1,'B');r.scenes.configure(true,4);
+  let evolved=0;const auto=createRackAuto({...r,scenePlayer:r.scenes,model:{evolve(){evolved++;}}});
+  r.data.rackAuto.enabled=true;r.audio.isPlaying=true;auto.tick(0,0);
+  for(let i=0;i<8;i++){auto.tick(1,15);auto.tick(2,0);}assert.equal(evolved,0);
+  auto.configure(true,2);assert.equal(r.scenes.read().bank.auto.enabled,false);
+  for(let i=0;i<4;i++){auto.tick(1,15);auto.tick(2,0);}assert.ok(evolved>0);
+});
 const volumes = units=>[units.tb303_1.settings.volume,units.tb303_2.settings.volume,...Object.values(units.tr909.tracks).map(t=>t.level)];
 
 test('combined snapshot restores all patterns, fractional tone, mode, locks and drum candidates',()=>{

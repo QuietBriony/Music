@@ -49,6 +49,34 @@ export function createMachineRack({data,ui,knobs}) {
     checkpoint={pattern,units:clone(pattern.units),tracks:[...data.active909Tracks]};
   }
   return {
+    toneState() {
+      const pattern=editable();
+      return Object.fromEntries([...ids.slice(0,2),...DRUMS.map(([id])=>id)].map(unit=>{
+        const synth=ids.slice(0,2).includes(unit),source=synth?pattern.units[unit].settings:pattern.units.tr909.tracks[unit];
+        const controls=(synth?SYNTH_CONTROLS:DRUMS.find(([id])=>id===unit)[2]).filter(([key])=>!['volume','level'].includes(key));
+        return [unit,{...Object.fromEntries(controls.map(([key])=>[key,source[key]])),...(synth?{waveform:source.waveform}:{})}];
+      }));
+    },
+    applyTonePatch(tones) {
+      const pattern=editable(),patches=[];
+      for(const [unit,values] of Object.entries(tones)) {
+        const synth=ids.slice(0,2).includes(unit),controls=synth?SYNTH_CONTROLS:DRUMS.find(([id])=>id===unit)?.[2];
+        if(!controls)throw new Error('音色の楽器が不正です。');
+        const allowed=controls.filter(([key])=>!['volume','level'].includes(key));
+        const patch={};
+        for(const [key,, ,min,max] of allowed) {
+          if(!Number.isFinite(values[key])||values[key]<min||values[key]>max)throw new Error('音色の値が範囲外です。');
+          patch[key]=values[key];
+        }
+        if(synth){if(!['sawtooth','square'].includes(values.waveform))throw new Error('波形が不正です。');patch.waveform=values.waveform;}
+        if(data.unitLocks[synth?unit:'tr909']||(!synth&&data.drumLocks[unit]))continue;
+        const target=synth?pattern.units[unit].settings:pattern.units.tr909.tracks[unit];
+        patches.push([target,patch,Object.fromEntries(Object.keys(patch).map(key=>[key,target[key]]))]);
+      }
+      for(const [target,patch] of patches)Object.assign(target,patch);
+      try {data.applyPatternSettings(data.currentPatternId);ui.refreshParamCache(data.currentPatternId);}
+      catch(error){for(const [target,,before] of patches)Object.assign(target,before);try{data.applyPatternSettings(data.currentPatternId);}catch{}throw error;}
+    },
     read() {
       if (data.mode==='pattern') data.saveCurrentSettingsToPattern();
       const pattern=current();
