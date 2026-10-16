@@ -1,6 +1,7 @@
 import { createMachineRack, UNITS, SYNTH_CONTROLS, DRUMS } from './model.js';
 import { carryMachine } from './handoff.js';
 import { createRackAuto } from './auto.js';
+import { createRackScenes, MACROS } from '../../../../rack-scenes.js';
 import { initVocalBooth } from '../../../../vocal-booth.js';
 
 export function initMachineRack({data,ui,audio,knobs}) {
@@ -16,6 +17,16 @@ export function initMachineRack({data,ui,audio,knobs}) {
         <label>変化の間隔 <select id="wbr-interval" aria-label="303／909 AUTOの変化間隔"><option value="2">2小節</option><option value="4" selected>4小節</option><option value="8">8小節</option><option value="16">16小節</option></select></label>
         <span id="wbr-auto-status" role="status">固定を残して、少しずつ変化</span></div>
       <p id="wbr-status" role="status">RUN → 気に入った楽器を固定 → ほかをサイコロで変える。</p>
+      <section class="wbr-scenes" aria-label="まとめ操作と音色の場面">
+        <h2>響きをまとめて遊ぶ</h2><p class="wbr-summary">固定した楽器は守る。音符・打点・音量・BPMを保って、音色だけを動かします。</p>
+        <div class="wbr-scene-work"><div id="wbr-macros" class="wbr-macros"></div><div class="wbr-scene-bank">
+        <div id="wbr-scene-slots" class="wbr-scene-slots" aria-label="音色の場面AからH"></div>
+        <div class="wbr-scene-edit"><label>場面の名前<input id="wbr-scene-name" maxlength="48" placeholder="例：やわらかい、うねる"></label><button id="wbr-scene-save" type="button">今の音色をAへ保存</button><button id="wbr-scene-remove" type="button" disabled>選んだ場面を空に</button></div>
+        <p id="wbr-scene-confirm" hidden><span></span><button id="wbr-scene-yes" type="button">実行する</button><button id="wbr-scene-no" type="button">キャンセル</button></p>
+        <div class="wbr-auto"><button id="wbr-scene-auto" type="button" aria-pressed="false">場面AUTO · OFF</button><label>巡る間隔<select id="wbr-scene-bars" aria-label="音色の場面を巡る間隔"><option value="4">4小節</option><option value="8" selected>8小節</option><option value="16">16小節</option></select></label></div>
+        </div></div><p id="wbr-scene-status" role="status"></p>
+        <details class="wbr-guide"><summary>まとめフェーダー・場面の使い方</summary><p>硬さ：303の明るさ・共鳴、キックの硬さ、スネアのざらつき。うねり：303の深さ・長さ、ハットの余韻。空間：2台の303のディレイ量。値は動かす範囲の割合で、元のつまみのHzや秒ではありません。個別操作後の表示は平均の目安です。固定した楽器はまとめ操作と場面切替の対象から外れ、個別フェーダーでは触れます。</p><p>音色を作り、A〜Hを選んで名前を付けて保存。保存済みボタンで停止中はすぐ、演奏中は次の小節で音色を呼び出します。空の場面は選ぶだけ。場面AUTOは保存した2つ以上をA→H順に巡り、従来の303／909 AUTOとは切り替えて使います。ドラッグや手動操作を優先し、次の変化を待ちます。STOPで切替予約を取り消し、音色を保ちます。PATTERN専用です。</p><p>場面はこの端末のブラウザへ保存し、Strudelとの「組み合わせを保存」と設定JSONにも含めます。単独FILEは従来どおりフレーズと現在の音色だけ。場面は音符・打点・音量・BPM・固定・Strudelを切り替えません。音色を変えると音量感が変わるため、必要に応じて音量フェーダーで調整してください。</p></details>
+      </section>
       <div id="wbr-cards" class="wbr-cards"></div>
       <details class="wbr-guide"><summary>どうつながる？ 保存・フェーダーの使い方</summary>
         <p>低音は元の303の2号機、返しは1号機。元のサイコロが2台の音程関係・アクセント・スライドを作ります。固定した楽器はサイコロで変わらず、手では音色を触れます。こちらのサイコロと戻す操作では各音量・BPMを保ちます。</p>
@@ -42,7 +53,9 @@ export function initMachineRack({data,ui,audio,knobs}) {
     vocalButton.addEventListener('click',()=>vocalBooth.open());host.querySelector('.wbr-view').append(vocalButton);
   }
   const find=id=>host.querySelector('#wbr-'+id),panel=find('panel'),status=find('status');
-  const auto=createRackAuto({data,audio,model,notify:()=>render()});audio.rackAuto=auto;
+  let sceneStorage;try{sceneStorage=window.localStorage;}catch{}
+  const scenes=createRackScenes({data,audio,model,storage:sceneStorage,notify:()=>render()});
+  const auto=createRackAuto({data,audio,model,scenePlayer:scenes,notify:()=>render()});audio.rackAuto=auto;
   find('link').hidden = window.parent !== window;
   find('link').addEventListener('click', () => {
     try {
@@ -57,6 +70,8 @@ export function initMachineRack({data,ui,audio,knobs}) {
   });
   const actionControls=[],faders=[],locks=new Map(),waves=new Map(),summaries=new Map(),drumRows=new Map();
   let kickLock,snareDice,hatsDice;
+  let sceneSelected=0,sceneConfirm=null,sceneBankSeen=null;
+  const sceneButtons=[],macroInputs=[];
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
   function act(fn,message) {
     auto.manual();
@@ -76,6 +91,39 @@ export function initMachineRack({data,ui,audio,knobs}) {
     input.addEventListener('input',()=>act(()=>model.set(unit,key,Number(input.value)),'音色を変更しました。FILE → SAVEで残せます。'));
     faders.push({unit,key,label,input,out});
   }
+  for(const macro of MACROS) {
+    const label=el('label',null,'wbr-fader'),title=el('span',macro.title),out=el('output'),input=el('input');
+    Object.assign(input,{type:'range',min:0,max:100,step:1});input.setAttribute('aria-label','まとめ '+macro.title);
+    label.title=macro.help;label.append(title,out,input);find('macros').append(label);
+    input.addEventListener('input',()=>act(()=>scenes.macro(macro.id,Number(input.value)),'まとめ音色を変更しました。場面へ保存できます。'));
+    macroInputs.push({id:macro.id,input,out});
+  }
+  for(let i=0;i<8;i++) {
+    const b=button(find('scene-slots'),'',()=>{
+      sceneSelected=i;sceneConfirm=null;find('scene-confirm').hidden=true;
+      find('scene-name').value=scenes.read().bank.slots[i]?.name||'';
+      act(()=>{if(scenes.read().bank.slots[i])scenes.recall(i);},'場面'+String.fromCharCode(65+i)+'を選択。音色を作って保存できます。');
+    },false);sceneButtons.push(b);
+  }
+  function confirmScene(action) {
+    const slot=scenes.read().bank.slots[sceneSelected];
+    if(!slot&&action==='save'){act(()=>scenes.save(sceneSelected,find('scene-name').value),'音色の場面を保存しました。');return;}
+    sceneConfirm={index:sceneSelected,action};find('scene-confirm').hidden=false;
+    find('scene-confirm').querySelector('span').textContent=String.fromCharCode(65+sceneSelected)+' · '+slot.name+(action==='save'?'を今の音色で上書きします。':'を空にします。');
+  }
+  find('scene-save').addEventListener('click',()=>confirmScene('save'));
+  find('scene-remove').addEventListener('click',()=>confirmScene('remove'));
+  find('scene-no').addEventListener('click',()=>{sceneConfirm=null;find('scene-confirm').hidden=true;});
+  find('scene-yes').addEventListener('click',()=>{
+    if(!sceneConfirm)return;const {index,action}=sceneConfirm;sceneConfirm=null;find('scene-confirm').hidden=true;
+    act(()=>action==='save'?scenes.save(index,find('scene-name').value):scenes.remove(index),'場面の保存を変更しました。');
+  });
+  find('scene-auto').addEventListener('click',()=>act(()=>{
+    const enabled=!scenes.read().bank.auto.enabled;
+    if(enabled)auto.configure(false,data.rackAuto.bars);
+    scenes.configure(enabled,Number(find('scene-bars').value));
+  },'場面AUTOを切り替えました。'));
+  find('scene-bars').addEventListener('change',()=>act(()=>scenes.configure(scenes.read().bank.auto.enabled,Number(find('scene-bars').value)),'場面の間隔を変更しました。'));
   for (const [unit,title] of UNITS) {
     const card=el('article',null,'wbr-card'),heading=el('div',null,'wbr-card-heading');
     heading.append(el('h2',title));const lock=button(heading,'固定',()=>act(()=>model.lock(unit),'サイコロの固定を変更しました。'));
@@ -123,6 +171,30 @@ export function initMachineRack({data,ui,audio,knobs}) {
     if(!active) return;
     const state=model.read();
     const motion=auto.read();
+    const sceneState=scenes.read(),sceneLocked=!state.editable||pending;
+    if(sceneBankSeen!==sceneState.bank) {
+      if(sceneState.current===null){sceneSelected=Math.max(0,sceneState.bank.slots.findIndex(Boolean));find('scene-name').value=sceneState.bank.slots[sceneSelected]?.name||'';sceneConfirm=null;find('scene-confirm').hidden=true;}
+      sceneBankSeen=sceneState.bank;
+    }
+    for(const {id,input,out} of macroInputs) {
+      const value=sceneLocked?null:scenes.macroValue(id);
+      input.disabled=sceneLocked||value===null;
+      if(value!==null&&document.activeElement!==input)input.value=value;
+      out.textContent=!state.editable?'PATTERN専用':pending?'準備中':value===null?'対象が固定中':input.value+'%';
+    }
+    sceneButtons.forEach((b,i)=>{
+      b.disabled=sceneLocked;b.setAttribute('aria-pressed',String(sceneSelected===i));
+      b.textContent=String.fromCharCode(65+i)+' · '+(sceneState.bank.slots[i]?.name||'空');
+      if(sceneState.queued===i)b.textContent+='（次の小節）';else if(sceneState.current===i)b.textContent+=' ♪';
+    });
+    find('scene-save').textContent='今の音色を'+String.fromCharCode(65+sceneSelected)+'へ'+(sceneState.bank.slots[sceneSelected]?'上書き':'保存');
+    for(const id of ['scene-save','scene-name','scene-bars','scene-yes'])find(id).disabled=sceneLocked;
+    find('scene-remove').disabled=sceneLocked||!sceneState.bank.slots[sceneSelected];
+    find('scene-auto').disabled=sceneLocked||(!sceneState.bank.auto.enabled&&sceneState.bank.slots.filter(Boolean).length<2);
+    find('scene-auto').setAttribute('aria-pressed',String(sceneState.bank.auto.enabled));
+    find('scene-auto').textContent='場面AUTO · '+(sceneState.bank.auto.enabled?'ON':'OFF');
+    find('scene-bars').value=String(sceneState.bank.auto.bars);
+    find('scene-status').textContent=sceneState.message+(sceneState.bank.auto.enabled?' · 次の場面まで'+sceneState.remaining+'小節':'');
     find('auto').setAttribute('aria-pressed',String(motion.enabled));
     find('auto').textContent='303／909 AUTO · '+(motion.enabled?'ON':'OFF');
     find('auto').disabled=!state.editable||pending;find('interval').disabled=!state.editable||pending;

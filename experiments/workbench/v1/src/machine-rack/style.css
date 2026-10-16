@@ -40,3 +40,18 @@
 .wbr-drum-row label {display:flex;align-items:center;gap:8px;min-width:0;overflow-wrap:anywhere;}
 .wbr-drum-row button {padding:8px;}
 .wbr-drum-row input {width:20px;height:20px;flex-shrink:0;}
+.wbr-scenes {margin:14px 0;padding:14px;border:1px solid #697b59;border-radius:12px;background:#20291f;}
+.wbr-scenes h2 {margin:0;font-size:1.1rem;color:#eeeade;text-shadow:none;-webkit-text-fill-color:#eeeade;}
+.wbr-scene-work {display:grid;grid-template-columns:minmax(200px,.55fr) minmax(0,1fr);gap:16px;align-items:start;}
+.wbr-macros {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.wbr-macros .wbr-fader span {font-size:.9rem;min-height:0;}
+.wbr-macros .wbr-fader input {height:110px;}
+.wbr-scene-slots {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+.wbr-scene-slots button {min-width:0;overflow-wrap:anywhere;font-size:.8rem;padding:8px;}
+.wbr-scene-edit {display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-top:10px;}
+.wbr-scene-edit label {flex:1;min-width:130px;font-size:.8rem;display:grid;gap:4px;}
+.wbr-scenes input[type=text],#wbr-scene-name {width:100%;min-height:44px;box-sizing:border-box;border:1px solid #7e7867;border-radius:8px;padding:8px;background:#151e16;color:#f8f2e2;font-size:16px;}
+#wbr-scene-status {font-size:.8rem;line-height:1.6;overflow-wrap:anywhere;margin-bottom:0;}
+#wbr-scene-confirm {padding:10px;border:1px solid #c8a36a;border-radius:8px;font-size:.85rem;}
+#wbr-scene-confirm button {margin:5px;}
+@media(max-width:650px){.wbr-scene-work{grid-template-columns:minmax(0,1fr);}.wbr-scenes{padding:10px;}.wbr-macros .wbr-fader input{height:85px;}.wbr-scene-edit button{flex:1;}.wbr-scene-slots{grid-template-columns:repeat(4,minmax(0,1fr));}}

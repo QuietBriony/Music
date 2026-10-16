@@ -9,6 +9,15 @@
 - Validation: baselineは43 PASS / 0 FAIL / 0 SKIP、audit 0 BAD / 0 WARN、5 repo状態不変。最終候補とmerge後HEADの同一gate・公開照合は対応PRへ記録。
 - Limits: 原音分離前のmixは今回入力にない。weighted stem sumと同じ保護処理を基準とし、分離漏れを修復したとは言わない。本人聴感と実iPhoneは継続。
 
+## 2026-10-16 — 303／909のまとめ音色と場面AUTO
+
+- scope: 本人が推奨案の実装を依頼。単一会話、既存WorkbenchとListen、base main 1d0f63f、e33e62fへ同期。
+- feature: 3マクロ、音色場面8枠、次の小節での呼出、保存済み場面を巡るAUTO。
+- preservation: 固定と全音符・打点・音量・BPMを保つ。従来AUTOとは切替。既存音声clockのみを利用。
+- storage: 端末内の名前付き棚、組み合わせ／設定JSONの任意拡張。旧バックアップでは棚を消さず、失敗・競合を上書きしない。
+- validation: 実native modelの保持・境界・ドラッグ・保存／復元・失敗・競合をテスト。最終HEADの全体gateとブラウザ／公開証跡は本作業PR。
+- boundaries: 音源本体・依存・音声・hostingの新規追加なし。場面は音色のみ。実iPhoneと本人聴感は未確認。
+
 ## 2026-10-13 — ギターの打点と連続ストロークの和音を再照合（v420 / BL-050）
 
 - Scope: 本人の「再現できる限り」の継続。単一会話、既存Music／公開先。

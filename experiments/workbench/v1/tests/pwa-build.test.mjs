@@ -17,7 +17,7 @@ test('PWA release contains the complete self-hosted app and valid home-screen as
   }
   const release = JSON.parse(await readFile(new URL('offline-assets.json', dist)));
   const urls = release.assets.map((file) => file.url);
-  for (const path of ['/vocal-booth.js','/vocal-booth.css','/vocal-lyrics.js']) assert.ok(urls.includes(path), 'lyrics and reader available offline: '+path);
+  for (const path of ['/vocal-booth.js','/vocal-booth.css','/vocal-lyrics.js','/rack-scenes.js','/rack-scenes-state.js']) assert.ok(urls.includes(path), 'reader and scene controls available offline: '+path);
   for (const path of ['/index.html', '/app.js', '/pwa.js', '/session-backup.js', '/manifest.webmanifest',
     '/vendor/strudel/index.js', '/modules/acidbros/index.html', '/modules/acidbros/js/workbench-rack/ui.js', '/modules/acidbros/js/workbench-rack/model.js', '/modules/acidbros/js/workbench-rack/style.css', '/patterns/acid-303-909.txt', '/live-code.js', '/live-plan.js', '/musical-dice.js', '/instrument-voices.js', '/performance-layout.js']) assert.ok(urls.includes(path), path);
   const appCode = await readFile(new URL('app.js', dist), 'utf8');
