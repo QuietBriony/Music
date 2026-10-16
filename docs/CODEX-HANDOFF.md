@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-16 v421: 原音のライブ経路を各stemのEQ・声のコーラス／残響より前から合流させる。録音に含まれる位相と余韻を保ち、曲別trim・パート音量／ミュート・全体音量・REC・出力保護は共通。声は従来のdry量0.78に合わせる。厚めは従来のEQ／FX経路。ライブでは効かない声FXも無効表示し、設定値は保存する。原音・AIの音源／採譜は保持。数値は録音への忠実度を測るもので、本人聴感・実iPhoneの合格とはしない。cache `hazama-fm-v421` / client `br-254`。
+
 2026-10-13 v420: 原音otherの帯域エネルギーとspectral fluxを照合し、5曲のギター351打点を約12〜65 ms前へ補正。note-offと強弱を保持し、ベース・ドラムと同じ原音時刻に寄せた。連続ストロークの前後で安定し、CQTとlinear STFTの両方が支持する5和音を追加。従来の和音注釈は補正後の各行へ結び直す。原音・他パート・音源bankは保持。分離漏れと未採譜／曖昧な音は残り、完全再現・聴感合格とはしない。cache `hazama-fm-v420` / client `br-253`。
 
 2026-10-13（歌詞画面から演奏を再開）: 歌詞・録音と拡大歌詞に今の演奏の再開／停止を追加。Strudel単独・同期・埋込303／909単独・全画面単独を既存transportへ振り分ける。試聴時の停止では単独native iframeを閉じず、未保存のフレーズ・音色・固定を保持する。録音とマイクは自動開始せず、音声準備中／停止中はRECを無効にする。準備中の停止と古い非同期応答を保護。音声・依存・保存schema・hostingは不変。最終HEADのgateと実ブラウザ・公開照合は対応PR。実iPhone／実マイクは本人確認。
@@ -256,7 +258,7 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v420`。Band Room runtime markerは`band-room.js?v=br-253` /
+- 現行cacheは`hazama-fm-v421`。Band Room runtime markerは`band-room.js?v=br-254` /
   `band-room.css?v=br-95`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
