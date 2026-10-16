@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v420 compact)
+# Band Room - Changelog (v65 -> v421 compact)
+
+## v421 — 2026-10-16
+
+2026-10-16 v421: 原音のライブ経路を各stemのEQ・声のコーラス／残響より前から合流させる。録音に含まれる位相と余韻を保ち、曲別trim・パート音量／ミュート・全体音量・REC・出力保護は共通。声は従来のdry量0.78に合わせる。厚めは従来のEQ／FX経路。ライブでは効かない声FXも無効表示し、設定値は保存する。原音・AIの音源／採譜は保持。数値は録音への忠実度を測るもので、本人聴感・実iPhoneの合格とはしない。cache `hazama-fm-v421` / client `br-254`。
 
 ## v420 — 2026-10-13
 
@@ -12,7 +16,7 @@
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v420. Latest Band Room runtime change: v420 (guitar performance alignment). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v421. Latest Band Room runtime change: v421 (coherent original-live stem sum). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

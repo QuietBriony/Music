@@ -19,8 +19,8 @@
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-253-guitar-performance";
-  const BANDROOM_RELEASE_VERSION = "v420";
+  const BANDROOM_APP_VERSION = "br-254-original-live-coherence";
+  const BANDROOM_RELEASE_VERSION = "v421";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -141,6 +141,8 @@
 
   let masterGain = null;
   let originalMasterGain = null;
+  let originalLiveInput = null;
+  const originalLiveStemBuses = {};
   let originalLiveGate = null;
   let originalDenseGate = null;
   let originalMastering = "live";
@@ -321,17 +323,22 @@
 
   function makeStemEQChain(stem) {
     // Returns { input, output } — caller connects player → input, output → bus
+    // Keep an unfiltered tap: separated stems need the same phase response
+    // when recombined in live mode. Dense mode retains the existing EQ/FX.
+    const input = new Tone.Gain(1);
     if (stem === "drums") {
       const hp = new Tone.Filter({ frequency: 45, type: "highpass", Q: 0.55 });
       const eq = new Tone.EQ3({ low: 0.2, mid: -0.2, high: 0.7, lowFrequency: 220, highFrequency: 4200 });
       hp.connect(eq);
-      return { input: hp, output: eq };
+      input.connect(hp);
+      return { input, output: eq };
     }
     if (stem === "bass") {
       const hp = new Tone.Filter({ frequency: 34, type: "highpass", Q: 0.55 });
       const lp = new Tone.Filter({ frequency: 3600, type: "lowpass", Q: 0.55 });
       hp.connect(lp);
-      return { input: hp, output: lp };
+      input.connect(hp);
+      return { input, output: lp };
     }
     if (stem === "vocals") {
       // v198: voice the vocal to settle into the mix — pull the word/consonant
@@ -343,13 +350,15 @@
       const deEss = new Tone.Filter({ frequency: 6200, type: "peaking", Q: 1.0, gain: -4.5 });
       hp.connect(presence);
       presence.connect(deEss);
-      return { input: hp, output: deEss };
+      input.connect(hp);
+      return { input, output: deEss };
     }
     // other
     const hp = new Tone.Filter({ frequency: 120, type: "highpass", Q: 0.55 });
     const shelf = new Tone.EQ3({ low: -0.35, mid: 0.2, high: 0.85, lowFrequency: 220, highFrequency: 4600 });
     hp.connect(shelf);
-    return { input: hp, output: shelf };
+    input.connect(hp);
+    return { input, output: shelf };
   }
 
   // v198: non-vocal "band polish" bus. drums/bass/guitar/chords sum here
@@ -478,9 +487,11 @@
   // polish bus), so 原音 is voiced independently. Stems still tap their own
   // per-stem recorder destinations PRE this bus, so stems-pack export is
   // unaffected.
-  //   stemBus.* → makeStemMasterBus → masterGain → shared remaster → limiter
+  // Dense: processed stemBus.* → input → masterGain → shared remaster → limiter
+  // Live: pre-EQ inputs → paired faders → originalLiveInput → live protection
   function makeStemMasterBus(dest) {
     const input  = new Tone.Gain(1);
+    originalLiveInput = new Tone.Gain(1);
     // Preserve the recording's own stereo image and room. The live path has
     // one slow, gentle compressor and shares only output protection with AI.
     // The previous chain remains available for an explicit A/B comparison.
@@ -490,7 +501,7 @@
     originalMasterGain = new Tone.Gain(masterGain.gain.value).connect(liveCeiling);
     originalLiveGate = new Tone.Gain(originalMastering === "live" ? 0.45 : 0).connect(originalMasterGain);
     originalDenseGate = new Tone.Gain(originalMastering === "dense" ? 1 : 0).connect(dest);
-    input.connect(liveHp); liveHp.connect(liveComp); liveComp.connect(originalLiveGate);
+    originalLiveInput.connect(liveHp); liveHp.connect(liveComp); liveComp.connect(originalLiveGate);
     // v354: the 原音 stem-master ran an always-on 2x-oversampled grit distortion
     // in every mode — a standing CPU cost that helped choke 原音 on phones (audit
     // MSC-1). Gate the oversampling to device; desktop keeps the v322 wall density.
@@ -560,9 +571,23 @@
     return magnitude <= 0.7 ? value : Math.sign(value) * (0.7 + 0.2 * Math.tanh((magnitude - 0.7) / 0.2));
   }
 
+  function originalLiveStemLevel(stem, value) {
+    // Match the previous vocal dry level without adding its chorus or room.
+    return value * (stem === "vocals" ? 0.78 : 1);
+  }
+
+  function setOriginalStemLevel(stem, value) {
+    const level = clamp(Number(value) || 0, 0, 1);
+    if (stemBus[stem]) stemBus[stem].gain.rampTo(level, 0.08);
+    if (originalLiveStemBuses[stem]) {
+      originalLiveStemBuses[stem].gain.rampTo(originalLiveStemLevel(stem, level), 0.08);
+    }
+  }
+
   function syncOriginalMasteringControls() {
     const live = currentMode === "stems" && originalMastering === "live";
-    ["br-space-reverb", "br-space-width", "br-tape-warmth"].forEach((id) => {
+    ["br-space-reverb", "br-space-width", "br-tape-warmth",
+      "br-vfx-chorus", "br-vfx-delay", "br-vfx-reverb"].forEach((id) => {
       const element = $(id); if (element) element.disabled = live;
     });
     document.querySelectorAll(".br-master-preset").forEach((button) => { button.disabled = live; });
@@ -776,7 +801,7 @@
     // path has makeInstrumentPolishBus; 原音 had nothing). Stems summed here.
     const stemMaster = makeStemMasterBus(masterGain);
 
-    // Original-stem buses → per-stem EQ → stemMaster → masterGain
+    // Dense original-stem buses follow the per-stem EQ; live taps are below.
     // v167: slightly lower full-stem defaults so the remaster chain glues
     // instead of constantly living on the limiter.
     stemBus.drums  = new Tone.Gain(0.92).connect(stemMaster);
@@ -853,10 +878,19 @@
     // Vocal stem EQ → vocalChorus (so EQ runs before FX chain)
     stemEQs.vocals.output.connect(vocalChorus);
 
+    // Live originals sum before the individual EQs and vocal FX. Preserve
+    // per-song trims, mute, faders and the shared output/REC protection.
+    for (const stem of STEM_NAMES) {
+      const bus = new Tone.Gain(originalLiveStemLevel(stem, stemBus[stem].gain.value)).connect(originalLiveInput);
+      stemEQs[stem].input.connect(bus);
+      originalLiveStemBuses[stem] = bus;
+    }
+
     // External vocal bus — feeds INTO vocalChorus (shares vocal FX chain
     // with stem vocals so chorus/echo/reverb apply to both)
     externalVocalBus = new Tone.Gain(0.78);
     externalVocalBus.connect(vocalChorus);
+    externalVocalBus.connect(originalLiveStemBuses.vocals);
 
     return masterGain;
   }
@@ -4849,7 +4883,9 @@
       stemUrlAvailable,
       originalMasteringDiagnostics: () => ({ profile: originalMastering,
         live: originalLiveGate?.gain.value, dense: originalDenseGate?.gain.value,
-        volume: originalMasterGain?.gain.value, sharedVolume: masterGain?.gain.value }),
+        volume: originalMasterGain?.gain.value, sharedVolume: masterGain?.gain.value,
+        liveSource: "pre-eq-pre-vocal-fx",
+        liveStemLevels: Object.fromEntries(Object.entries(originalLiveStemBuses).map(([stem, bus]) => [stem, bus.gain.value])) }),
       getCurrentMode: () => currentMode,   // QA-loop BR-01 testability: read-only mode probe (stems|synth)
       aiLightRuntimeEnabled,               // v364: phone-clean band composition probes
       aiLayerLightRuntimeEnabled,
@@ -8591,10 +8627,7 @@
       if (!el) return;
       el.addEventListener("input", () => {
         ensureMaster();
-        const bus = stemBus[stem];
-        if (bus) {
-          try { bus.gain.rampTo(Number(el.value) / 100, 0.08); } catch (e) {}
-        }
+        try { setOriginalStemLevel(stem, Number(el.value) / 100); } catch (e) {}
       });
     });
 

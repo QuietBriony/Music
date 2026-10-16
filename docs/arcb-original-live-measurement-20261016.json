@@ -1,0 +1,918 @@
+{
+  "release": "v421",
+  "baseline": "1d0f63f04297ba045f1ca9f94211b4102aea7b27",
+  "date": "2026-10-16",
+  "problem": "Live master bypassed the global dense master but still included separate stem EQ phase responses and vocal chorus/room.",
+  "change": "Sum pre-EQ stem inputs through paired faders into the existing live HP/slow comp/ceiling/limiter; preserve per-song trims and vocal dry gain .78.",
+  "methods": {
+    "isolated": "Actual ensureMaster from before/candidate source, Tone.Offline at 32kHz, same source excerpts, faders and trims, seeded reverb, 2s pre-roll, exact 3s crop. Reference uses the same final protection with the weighted unprocessed stem sum. No lag fit, time warp or loudness fit.",
+    "normal": "16 ordinary timestamped post-master AudioWorklet captures; 3 baseline live/dense pairs plus 7 candidate live and 3 candidate dense. These have run-to-run variation and are safety checks, not bit-exact A/B."
+  },
+  "source_crops": [
+    {
+      "song": "human-fly",
+      "start": 14,
+      "duration": 6,
+      "stem": "vocals",
+      "source_sha256": "05f87f119b6afdc55afe436cf0b91f04fe828207f4042d0759af9b206f5f09b8",
+      "crop_sha256": "f4d91dfe11e8e2d0f30af9a0b9ecc4c0d1e35b6302d1882791de719a7dc00b6a"
+    },
+    {
+      "song": "human-fly",
+      "start": 14,
+      "duration": 6,
+      "stem": "drums",
+      "source_sha256": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88",
+      "crop_sha256": "3a473ed673153a7b7247856647a06313ec2304dd4edef376b38aa0de25087b1f"
+    },
+    {
+      "song": "human-fly",
+      "start": 14,
+      "duration": 6,
+      "stem": "bass",
+      "source_sha256": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+      "crop_sha256": "5070807ef013d10574f5c5ecdbca65ee8428858d323e4d7f42c3937fa19c413d"
+    },
+    {
+      "song": "human-fly",
+      "start": 14,
+      "duration": 6,
+      "stem": "other",
+      "source_sha256": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
+      "crop_sha256": "79f452ea614e135e25786266650229f82d5933ca4805cec854b378b31b844c8e"
+    },
+    {
+      "song": "electric-sheep",
+      "start": 14,
+      "duration": 6,
+      "stem": "vocals",
+      "source_sha256": "5c7bed1281919471543c29b942985bb891beb1ec38bec3ce06b8d21e92aff45f",
+      "crop_sha256": "c47352f287487cc44ca2e9ea24301fcbcfc73969a1a5054b4e7d7f126704254e"
+    },
+    {
+      "song": "electric-sheep",
+      "start": 14,
+      "duration": 6,
+      "stem": "drums",
+      "source_sha256": "935036c51a438cb0eb9ee05a29403f7cef0bb82fae90aee899f517a2952e6404",
+      "crop_sha256": "ca7ddeda550faba45ab20256caa742377d4e7e919fe3746b6deeb27b61634a69"
+    },
+    {
+      "song": "electric-sheep",
+      "start": 14,
+      "duration": 6,
+      "stem": "bass",
+      "source_sha256": "369fcdb6b59c6de1fe1f9e271b4fd52e24aa8bfbba1e22e04103dcec3c92a297",
+      "crop_sha256": "380668f1238e78b400bfcc54dcdbdf2f01830447dcfb402ec0ebcb2b9c2fc22f"
+    },
+    {
+      "song": "electric-sheep",
+      "start": 14,
+      "duration": 6,
+      "stem": "other",
+      "source_sha256": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6",
+      "crop_sha256": "bb1ae9769ce91e7944127777a6713d8a99c2456142d49a533eacd08d51d808c0"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start": 178,
+      "duration": 6,
+      "stem": "vocals",
+      "source_sha256": "fac5ab206c9410038f632e7c7e8333c1af2787181612929bab6290ec174d032c",
+      "crop_sha256": "d2cc71e20c789fb3a1c6e9aeaaeca9d1fa558245685b484f706f3187214ec78d"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start": 178,
+      "duration": 6,
+      "stem": "drums",
+      "source_sha256": "52fbb4048a68e8ef662ac79cf755f774cd103e719917ea43cf68b8ecb2eb0dca",
+      "crop_sha256": "18f22d07c0e884f4808de65fd01d44d46f8a66ffd23a7996b55b7dc3bcddf6d9"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start": 178,
+      "duration": 6,
+      "stem": "bass",
+      "source_sha256": "cfcc470fb787a69c443853cd6b62e3ca6f5ebeab5924672d14cf23f0b51c46e3",
+      "crop_sha256": "7e8ff1a6425a7b1547814e1e2cb762eb4bc8b44fdd863c9bb40998f14929d787"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start": 178,
+      "duration": 6,
+      "stem": "other",
+      "source_sha256": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81",
+      "crop_sha256": "6d1c26f297b403a7599818fc552883af1a35944c68ca0adff6925d6bf83d6f94"
+    },
+    {
+      "song": "hey",
+      "start": 37,
+      "duration": 6,
+      "stem": "vocals",
+      "source_sha256": "34c46c8ea7947a450bc9b479993d43d376d4dfe8a5f66dec1b9b3f4652947a9c",
+      "crop_sha256": "52f01d820fe4a0a6e437b76a4fb1ddb9e326e7fc52b3b1ef7a8840e46804a241"
+    },
+    {
+      "song": "hey",
+      "start": 37,
+      "duration": 6,
+      "stem": "drums",
+      "source_sha256": "c9468c23c8cbef60b788ff8954c0632453161d07d1ec67b314d04fdcb6a30b0a",
+      "crop_sha256": "4157cf048325491dea5f84f38dfe50545fa5e31147d21f78c84552c0b9b44d01"
+    },
+    {
+      "song": "hey",
+      "start": 37,
+      "duration": 6,
+      "stem": "bass",
+      "source_sha256": "bffc7e34eb26a8d7c580bf11cace981fcb6ba924fcc8c38cc5ba322cc79e5298",
+      "crop_sha256": "b6e9404fbe2587425d5a793f8d17cce0db920842c5ce31dd7a1ab53524a7f318"
+    },
+    {
+      "song": "hey",
+      "start": 37,
+      "duration": 6,
+      "stem": "other",
+      "source_sha256": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a",
+      "crop_sha256": "e770d569d5d5a9fb03249cbb79d130b08b42b3e9b72ef976ccfd24514fe3809d"
+    },
+    {
+      "song": "sister",
+      "start": 64,
+      "duration": 6,
+      "stem": "vocals",
+      "source_sha256": "ac6467fe47e478b06cc8b9847b03b249a4ce6f5702c39386a112535bbcc66231",
+      "crop_sha256": "1625c5571739ce052fcedeb4a560f670ed4b66ed785062834b384603a09a9a07"
+    },
+    {
+      "song": "sister",
+      "start": 64,
+      "duration": 6,
+      "stem": "drums",
+      "source_sha256": "cad60ebac3b54df8878e09adc42918ce694dbc689e32616421c60a883acdc48f",
+      "crop_sha256": "1dc9b8ec5d21736f61883be8d24d0c99e4063608489bd6273d1a353cf31edeea"
+    },
+    {
+      "song": "sister",
+      "start": 64,
+      "duration": 6,
+      "stem": "bass",
+      "source_sha256": "67f9bb28fd9f1b0e63c73ffda795534521ce5eae73dece1ce4704e0bde2b4dec",
+      "crop_sha256": "815a3cb2c2259c88fd725923c5c6aa7557fc0904e81e144d5f3b8b4fb1897fa9"
+    },
+    {
+      "song": "sister",
+      "start": 64,
+      "duration": 6,
+      "stem": "other",
+      "source_sha256": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06",
+      "crop_sha256": "9755295a2f9068833d1e04bcfc49f29c9451d5fddefaf6ec9807f65423fc3a55"
+    },
+    {
+      "song": "under-the-moon",
+      "start": 62,
+      "duration": 6,
+      "stem": "vocals",
+      "source_sha256": "5357d59826d44bd0559dc55813b7973b12105b2119c3fea72d8b025b4bde377f",
+      "crop_sha256": "e0b67764f1dfc01b2a95d09d9493c6195380961d4a4cee20a6d16b3e7cac07f5"
+    },
+    {
+      "song": "under-the-moon",
+      "start": 62,
+      "duration": 6,
+      "stem": "drums",
+      "source_sha256": "7463b1475b3887206d97a3a2fe4ac7a0b7a0dcadd2e41bee8e3deea038311a2b",
+      "crop_sha256": "28cee970a737d6edac0c8791ead6f8d1c5ebfb05c2926515592e15d40699dae2"
+    },
+    {
+      "song": "under-the-moon",
+      "start": 62,
+      "duration": 6,
+      "stem": "bass",
+      "source_sha256": "bb6c470965b051f25cc8816b3f7fdf3104fa1c601dcaec2e70d9317a2a37818c",
+      "crop_sha256": "3e362e4686836fd33f1555762497ec8c091e996fa54f0047cc147094f3c2e02a"
+    },
+    {
+      "song": "under-the-moon",
+      "start": 62,
+      "duration": 6,
+      "stem": "other",
+      "source_sha256": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8",
+      "crop_sha256": "82bc2ea965343d265c935714e028e43e37b8753548a501e3caa96f74714a93b2"
+    },
+    {
+      "song": "tabasco",
+      "start": 14,
+      "duration": 6,
+      "stem": "vocals",
+      "source_sha256": "57051fc4ed9744ba9b7b79b1b214e80f82ea1b421e2960fa0ecf934aaa4e3445",
+      "crop_sha256": "5620c67e7387f673b13e4c0b254bc0ce34e8ccf8aa0f9ed8999142cbcd1592e0"
+    },
+    {
+      "song": "tabasco",
+      "start": 14,
+      "duration": 6,
+      "stem": "drums",
+      "source_sha256": "780518047c6c79efc9d8208f41fccd7c25fec10b2439790ce03df67768f07086",
+      "crop_sha256": "a98b8b7f016089a52dac1f1fc3054e72e969221189606b7bd1c43c35d869d373"
+    },
+    {
+      "song": "tabasco",
+      "start": 14,
+      "duration": 6,
+      "stem": "bass",
+      "source_sha256": "794f80c4a54b21dc209db23a3b81e00ebaa24be1ef2bc66174ee407efc439c37",
+      "crop_sha256": "56616fd2406d139f8d74d79a852bf3c954f2d29ce597912f22a6e73fbbc0e674"
+    },
+    {
+      "song": "tabasco",
+      "start": 14,
+      "duration": 6,
+      "stem": "other",
+      "source_sha256": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2",
+      "crop_sha256": "566584dee4fb5a0ef4356f96d2bbd12f5bcdd28060c3a70505d71bbc8071bb6e"
+    }
+  ],
+  "runtime_sha256": {
+    "before": "2d592a989ab8c8d4bdec817ec2e546998c7daccbe99f6718cc31c9fd438029f7",
+    "candidate_dsp_before_version_bump": "66b73b28a8370b90b0fbf5e35f66f73c186c0e91e56bb983a8448237fe724501"
+  },
+  "isolated": [
+    {
+      "song": "human-fly",
+      "source_interval": [
+        16,
+        19
+      ],
+      "stats": {
+        "before": {
+          "peak": 0.31074321269989014,
+          "rms": 0.06265517739153813,
+          "crest_db": 13.908893751587721,
+          "side_mid_db": -30.529626086034256
+        },
+        "after": {
+          "peak": 0.4398123323917389,
+          "rms": 0.07600722526406929,
+          "crest_db": 15.248250489819075,
+          "side_mid_db": -33.458348059106655
+        },
+        "reference": {
+          "peak": 0.43981119990348816,
+          "rms": 0.07600723834706077,
+          "crest_db": 15.248226629100465,
+          "side_mid_db": -33.45847486682064
+        },
+        "dense-before": {
+          "peak": 0.4004323482513428,
+          "rms": 0.09357615219173984,
+          "crest_db": 12.62727941473549,
+          "side_mid_db": -18.240507618543795
+        },
+        "dense-after": {
+          "peak": 0.40043625235557556,
+          "rms": 0.09357616173391314,
+          "crest_db": 12.627363213615476,
+          "side_mid_db": -18.240508654311046
+        }
+      },
+      "residual_to_weighted_unprocessed_reference_db": {
+        "before": -4.802484196286368,
+        "after": -89.40931975163835
+      },
+      "dense_max_abs_delta": 9.924173355102539e-06,
+      "pcm_sha256": {
+        "before": "dee4c34116062b8cb21e295d3d71ce9d2aca200fe57de74bc1563d21bf9a8637",
+        "after": "28e5f667cbb2c61ac8afb7137eccdd15419bf116d059cf5eab36945472ba4016",
+        "reference": "bb03e63fc7d7f073e72671790184610a06235bb931a4c1fdcb4f9a99482aac98",
+        "dense-before": "693df55108d51bd160859b2477814316d9a20349cec7dc5f37b9735b0b99bd1c",
+        "dense-after": "09f0b2d14ea87f05d4eaf2581d51bde5d609dd06fc5076efde0a0ecb5e561b0c"
+      }
+    },
+    {
+      "song": "electric-sheep",
+      "source_interval": [
+        16,
+        19
+      ],
+      "stats": {
+        "before": {
+          "peak": 0.48832806944847107,
+          "rms": 0.06397148257129151,
+          "crest_db": 17.6545054546666,
+          "side_mid_db": -20.97977476911013
+        },
+        "after": {
+          "peak": 0.47361695766448975,
+          "rms": 0.07414163895067313,
+          "crest_db": 16.10730123123519,
+          "side_mid_db": -19.92315321018446
+        },
+        "reference": {
+          "peak": 0.47361814975738525,
+          "rms": 0.07414161990810894,
+          "crest_db": 16.10732532446098,
+          "side_mid_db": -19.923147314003472
+        },
+        "dense-before": {
+          "peak": 0.431713730096817,
+          "rms": 0.08089191930684865,
+          "crest_db": 14.545814421818024,
+          "side_mid_db": -10.547823662201793
+        },
+        "dense-after": {
+          "peak": 0.4317153990268707,
+          "rms": 0.08089191815614781,
+          "crest_db": 14.545848123447138,
+          "side_mid_db": -10.547823298376597
+        }
+      },
+      "residual_to_weighted_unprocessed_reference_db": {
+        "before": -5.741524900362287,
+        "after": -87.95130321596093
+      },
+      "dense_max_abs_delta": 1.068413257598877e-05,
+      "pcm_sha256": {
+        "before": "cfd90038cca4c409fd94498dfbba1687c84e2b97f02b467d0fd158970b8bb100",
+        "after": "c6ba96a9153d17a5325a4ed7d1adab53b03af96dedd7926e78427e2f01ab4a9a",
+        "reference": "825bf392bc4afecb504be624c62387aa659a482105d4d3011e1da98831846cff",
+        "dense-before": "2264f49f8d3f45f135074a222eedcbac8262b6f220c404128072690461a96b80",
+        "dense-after": "45f038c0919cd96c13642e97fb65af63bc0b539253c6a17c234824eda4f05b87"
+      }
+    },
+    {
+      "song": "i-got-a-feeling",
+      "source_interval": [
+        180,
+        183
+      ],
+      "stats": {
+        "before": {
+          "peak": 0.2880735695362091,
+          "rms": 0.056372612395445804,
+          "crest_db": 14.16870505691387,
+          "side_mid_db": -23.488713432312682
+        },
+        "after": {
+          "peak": 0.38591626286506653,
+          "rms": 0.07119753118664814,
+          "crest_db": 14.680562920508871,
+          "side_mid_db": -25.38982643458205
+        },
+        "reference": {
+          "peak": 0.3859170377254486,
+          "rms": 0.07119746940046756,
+          "crest_db": 14.680587898154954,
+          "side_mid_db": -25.38987972167974
+        },
+        "dense-before": {
+          "peak": 0.3604300320148468,
+          "rms": 0.08618263011117426,
+          "crest_db": 12.428024534315014,
+          "side_mid_db": -12.705724397228696
+        },
+        "dense-after": {
+          "peak": 0.36042967438697815,
+          "rms": 0.08618263160804422,
+          "crest_db": 12.428015765087979,
+          "side_mid_db": -12.705724150303631
+        }
+      },
+      "residual_to_weighted_unprocessed_reference_db": {
+        "before": -5.794427400571585,
+        "after": -81.01360953269923
+      },
+      "dense_max_abs_delta": 9.67457890510559e-06,
+      "pcm_sha256": {
+        "before": "2b73f89fc67b1fc6796d2a1c4d97202e1bb0498c5ef0a574339ad6341102a946",
+        "after": "501f1b45291bc177515cc55c383a4a3181582caf4f5d99b0dd1a8651b4f88373",
+        "reference": "4ff4d1876fe5b0383af012893586d3525d9936a6fb26b0c81730f98570e85545",
+        "dense-before": "07abeeef5320bb2680ea0b6a098611d6d81b8e0a1a9c4199d1e2209b4773fd69",
+        "dense-after": "9313bdf9b57378d55f1c333ede26c0210e18e7e6ef3730530e97fd1f1cedb84d"
+      }
+    },
+    {
+      "song": "hey",
+      "source_interval": [
+        39,
+        42
+      ],
+      "stats": {
+        "before": {
+          "peak": 0.34262189269065857,
+          "rms": 0.04485096873125749,
+          "crest_db": 17.660865641939306,
+          "side_mid_db": -18.72023785395838
+        },
+        "after": {
+          "peak": 0.4872974157333374,
+          "rms": 0.0634660857427249,
+          "crest_db": 17.705047881774558,
+          "side_mid_db": -18.399159819161618
+        },
+        "reference": {
+          "peak": 0.4872934818267822,
+          "rms": 0.06346608802569095,
+          "crest_db": 17.70497744867128,
+          "side_mid_db": -18.399159775225435
+        },
+        "dense-before": {
+          "peak": 0.39822953939437866,
+          "rms": 0.059176672263099264,
+          "crest_db": 16.559658640748253,
+          "side_mid_db": -10.938461085959199
+        },
+        "dense-after": {
+          "peak": 0.3982319235801697,
+          "rms": 0.05917665571903328,
+          "crest_db": 16.559713071019353,
+          "side_mid_db": -10.938456075306117
+        }
+      },
+      "residual_to_weighted_unprocessed_reference_db": {
+        "before": -4.27018664968069,
+        "after": -90.00902961369492
+      },
+      "dense_max_abs_delta": 1.1712312698364258e-05,
+      "pcm_sha256": {
+        "before": "fa16d6e647ef6fdd2bb23456cf90d89304bc29774601edd4089b318b44151072",
+        "after": "271f15d10ce6f65149d61c2cee89c75ba7e4131ab348c98b569da9c01bf4cea8",
+        "reference": "6a6ad0bab9ad32ed7c95a99f5595cb783da958478e1bfc1d428de7a8a75188e5",
+        "dense-before": "819bdfdc8813bc8fca0df818b6a606f30361b15b41e3dcd0d3224133c2bca5fa",
+        "dense-after": "23a79ae8010cf954a19740141be8fcc95062669ca1ad731f169f096735c2b6d6"
+      }
+    },
+    {
+      "song": "sister",
+      "source_interval": [
+        66,
+        69
+      ],
+      "stats": {
+        "before": {
+          "peak": 0.3249671459197998,
+          "rms": 0.051454717172600896,
+          "crest_db": 16.008285215378482,
+          "side_mid_db": -32.21264920148133
+        },
+        "after": {
+          "peak": 0.48104432225227356,
+          "rms": 0.06840668099604238,
+          "crest_db": 16.94173147051577,
+          "side_mid_db": -39.62143211799879
+        },
+        "reference": {
+          "peak": 0.4810456335544586,
+          "rms": 0.06840669105736864,
+          "crest_db": 16.941753870244142,
+          "side_mid_db": -39.62142553540286
+        },
+        "dense-before": {
+          "peak": 0.41457632184028625,
+          "rms": 0.08397362619549233,
+          "crest_db": 13.86923173172617,
+          "side_mid_db": -18.97008199526589
+        },
+        "dense-after": {
+          "peak": 0.41457679867744446,
+          "rms": 0.0839735562106475,
+          "crest_db": 13.869248961002157,
+          "side_mid_db": -18.97006947028331
+        }
+      },
+      "residual_to_weighted_unprocessed_reference_db": {
+        "before": -3.5900246215538507,
+        "after": -89.33799944942925
+      },
+      "dense_max_abs_delta": 4.999339580535889e-05,
+      "pcm_sha256": {
+        "before": "5ff969be6e37cacfedcbb08169a950b136d0aff24495916c1e0f567408142d92",
+        "after": "ec258e7920d2c8a159a52e25992eb400f7daad63852a56d5d37914ba9126113b",
+        "reference": "271c777a7ee1acd3a8c3b1dcb967a646ffa75dbfa8d22f40e0da944f40704368",
+        "dense-before": "aab3ab1944a4e489bb9916c782f25d377e35f8eff6d9b9714a16825af4c7689d",
+        "dense-after": "6b760a3d80d69ad06e74f5c137fa78f7bd235bf86ab14b01f42c2b72d484b1f5"
+      }
+    },
+    {
+      "song": "under-the-moon",
+      "source_interval": [
+        64,
+        67
+      ],
+      "stats": {
+        "before": {
+          "peak": 0.2647859454154968,
+          "rms": 0.04639826526957193,
+          "crest_db": 15.127863718273616,
+          "side_mid_db": -23.773182938187333
+        },
+        "after": {
+          "peak": 0.4154832065105438,
+          "rms": 0.05974291760904582,
+          "crest_db": 16.845340932586048,
+          "side_mid_db": -23.78088596483891
+        },
+        "reference": {
+          "peak": 0.41547951102256775,
+          "rms": 0.059742919401057616,
+          "crest_db": 16.845263415633386,
+          "side_mid_db": -23.78088221032541
+        },
+        "dense-before": {
+          "peak": 0.37272170186042786,
+          "rms": 0.0813691819959317,
+          "crest_db": 13.218494607835446,
+          "side_mid_db": -13.691402196156927
+        },
+        "dense-after": {
+          "peak": 0.3727222979068756,
+          "rms": 0.08136918654960443,
+          "crest_db": 13.218508011974317,
+          "side_mid_db": -13.69140280090021
+        }
+      },
+      "residual_to_weighted_unprocessed_reference_db": {
+        "before": -4.012558533194749,
+        "after": -88.54118009865255
+      },
+      "dense_max_abs_delta": 9.804964065551758e-06,
+      "pcm_sha256": {
+        "before": "f9de2f2ca9465d272ee71cbf9833276ff01da9036bcf3919601cf539e281f23f",
+        "after": "b0455cb94911539b868a3c4c33c0682e83966f570f03d2bd855117d66c6944c2",
+        "reference": "76be94bc73698b1ed20f5a1e489c8a112070b116d2f6b5416daddd3b14b51bcc",
+        "dense-before": "7ec89fd7125ad08b45142ef9287ffa48c40e1cd0491b046c430b0eb470408527",
+        "dense-after": "4f724647448e75f017ab6830bed910fbd27b71eea90bb271ca3fe17ba2326fd2"
+      }
+    },
+    {
+      "song": "tabasco",
+      "source_interval": [
+        16,
+        19
+      ],
+      "stats": {
+        "before": {
+          "peak": 0.37093615531921387,
+          "rms": 0.06543718130288727,
+          "crest_db": 15.069491647644925,
+          "side_mid_db": -23.146761275154866
+        },
+        "after": {
+          "peak": 0.4503850042819977,
+          "rms": 0.07616342679625061,
+          "crest_db": 15.436748924382496,
+          "side_mid_db": -22.737713101509463
+        },
+        "reference": {
+          "peak": 0.45038583874702454,
+          "rms": 0.07616346331876102,
+          "crest_db": 15.436760852295702,
+          "side_mid_db": -22.737716524181927
+        },
+        "dense-before": {
+          "peak": 0.45470377802848816,
+          "rms": 0.09509938176627915,
+          "crest_db": 13.59101738081385,
+          "side_mid_db": -13.517722283860309
+        },
+        "dense-after": {
+          "peak": 0.45470160245895386,
+          "rms": 0.09509939375458613,
+          "crest_db": 13.59097472737419,
+          "side_mid_db": -13.517728707567837
+        }
+      },
+      "residual_to_weighted_unprocessed_reference_db": {
+        "before": -4.9976688999747525,
+        "after": -88.12271264331558
+      },
+      "dense_max_abs_delta": 1.1295080184936523e-05,
+      "pcm_sha256": {
+        "before": "d0218e46cd00a5a5b8014567a6516e73257d28d998055ef44aee22f124ad98ed",
+        "after": "6da1c8ce43255362b91e18a7a8a23a19daa38f09ed08ead9ba10f7f2bec82bb4",
+        "reference": "dbeadf82c6f076cb0f8a90226043215f3b128890be24837b6235dd183f9db9fa",
+        "dense-before": "2d38d3cfa188b4ba43bc6cff26b28c7947cfd07fcfb279abf79de9be20de035a",
+        "dense-after": "5e9f4ff0c0e5456430843cad256a7f1281f40f02c12466c71f45eb15f5bc9cf4"
+      }
+    }
+  ],
+  "normal": [
+    {
+      "id": "live-master-after-dense-electric-sheep-16-stems",
+      "source_start": 15.892,
+      "duration": 5,
+      "master": {
+        "profile": "dense",
+        "live": 0,
+        "dense": 1,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947,
+        "liveSource": "pre-eq-pre-vocal-fx",
+        "liveStemLevels": {
+          "vocals": 0.42900000000000005,
+          "drums": 0.92,
+          "bass": 0.91,
+          "other": 0.91
+        }
+      },
+      "peak": 0.4463868737220764,
+      "rms": 0.09056224761137346,
+      "wav_sha256": "c3d469a4971f99b6d8404d9c37b528845a9727cda2cc7696e2ed98b5549b09ea"
+    },
+    {
+      "id": "live-master-after-dense-human-fly-16-stems",
+      "source_start": 15.897333333333332,
+      "duration": 5,
+      "master": {
+        "profile": "dense",
+        "live": 0,
+        "dense": 1,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947,
+        "liveSource": "pre-eq-pre-vocal-fx",
+        "liveStemLevels": {
+          "vocals": 0.42900000000000005,
+          "drums": 0.92,
+          "bass": 0.91,
+          "other": 0.91
+        }
+      },
+      "peak": 0.4507339894771576,
+      "rms": 0.1004855364370359,
+      "wav_sha256": "c02c2721efe6017ee17dbf8bc14bc3e6031dfde05a970f5afc237fb5cf7c6d19"
+    },
+    {
+      "id": "live-master-after-dense-i-got-a-feeling-180-stems",
+      "source_start": 179.89466666666667,
+      "duration": 5,
+      "master": {
+        "profile": "dense",
+        "live": 0,
+        "dense": 1,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947,
+        "liveSource": "pre-eq-pre-vocal-fx",
+        "liveStemLevels": {
+          "vocals": 0.42900000000000005,
+          "drums": 0.92,
+          "bass": 0.91,
+          "other": 0.91
+        }
+      },
+      "peak": 0.473071426153183,
+      "rms": 0.10268329192249115,
+      "wav_sha256": "2584962439ac0c7b5eec1ab9a24f77b6f9bfc261ee65184861dfd59112d3c984"
+    },
+    {
+      "id": "live-master-after-live-electric-sheep-16-stems",
+      "source_start": 15.892,
+      "duration": 5,
+      "master": {
+        "profile": "live",
+        "live": 0.45,
+        "dense": 0,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947,
+        "liveSource": "pre-eq-pre-vocal-fx",
+        "liveStemLevels": {
+          "vocals": 0.42900000000000005,
+          "drums": 0.92,
+          "bass": 0.91,
+          "other": 0.91
+        }
+      },
+      "peak": 0.4749426543712616,
+      "rms": 0.06729402143669634,
+      "wav_sha256": "d8429f7b2d2ee154e567ce6fa68e92cd88f6b025a686a915e2e7764871106fb5"
+    },
+    {
+      "id": "live-master-after-live-hey-39-stems",
+      "source_start": 38.88933333333333,
+      "duration": 5,
+      "master": {
+        "profile": "live",
+        "live": 0.45,
+        "dense": 0,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947,
+        "liveSource": "pre-eq-pre-vocal-fx",
+        "liveStemLevels": {
+          "vocals": 0.42900000000000005,
+          "drums": 0.92,
+          "bass": 0.91,
+          "other": 0.91
+        }
+      },
+      "peak": 0.5142965316772461,
+      "rms": 0.05685154871207671,
+      "wav_sha256": "beedbd7d3f808242b01046c1f2c4b6afe2e096dae7816a212d2087f8202dd731"
+    },
+    {
+      "id": "live-master-after-live-human-fly-16-stems",
+      "source_start": 15.902666666666667,
+      "duration": 5,
+      "master": {
+        "profile": "live",
+        "live": 0.45,
+        "dense": 0,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947,
+        "liveSource": "pre-eq-pre-vocal-fx",
+        "liveStemLevels": {
+          "vocals": 0.42900000000000005,
+          "drums": 0.92,
+          "bass": 0.91,
+          "other": 0.91
+        }
+      },
+      "peak": 0.42642825841903687,
+      "rms": 0.063475768852649,
+      "wav_sha256": "eaed07bfeddef6c9a4625ae0b28fe2c89d10b1f4ea6396efe5afa31f364a6cb0"
+    },
+    {
+      "id": "live-master-after-live-i-got-a-feeling-180-stems",
+      "source_start": 179.88933333333333,
+      "duration": 5,
+      "master": {
+        "profile": "live",
+        "live": 0.45,
+        "dense": 0,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947,
+        "liveSource": "pre-eq-pre-vocal-fx",
+        "liveStemLevels": {
+          "vocals": 0.42900000000000005,
+          "drums": 0.92,
+          "bass": 0.91,
+          "other": 0.91
+        }
+      },
+      "peak": 0.4261268675327301,
+      "rms": 0.06678554811524691,
+      "wav_sha256": "6f5827f9ff76da73303f943a1ac93e91923176752ef5ca8e17edda0898891154"
+    },
+    {
+      "id": "live-master-after-live-sister-66-stems",
+      "source_start": 65.88666666666667,
+      "duration": 5,
+      "master": {
+        "profile": "live",
+        "live": 0.45,
+        "dense": 0,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947,
+        "liveSource": "pre-eq-pre-vocal-fx",
+        "liveStemLevels": {
+          "vocals": 0.42900000000000005,
+          "drums": 0.92,
+          "bass": 0.91,
+          "other": 0.91
+        }
+      },
+      "peak": 0.33727195858955383,
+      "rms": 0.06299443490164773,
+      "wav_sha256": "5cfcb5303c37930a61b5ef2a7286bb2eff7f4b1bb9d3104f55c82ad59dd85f5f"
+    },
+    {
+      "id": "live-master-after-live-tabasco-16-stems",
+      "source_start": 15.894666666666666,
+      "duration": 5,
+      "master": {
+        "profile": "live",
+        "live": 0.45,
+        "dense": 0,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947,
+        "liveSource": "pre-eq-pre-vocal-fx",
+        "liveStemLevels": {
+          "vocals": 0.42900000000000005,
+          "drums": 0.92,
+          "bass": 0.91,
+          "other": 0.91
+        }
+      },
+      "peak": 0.538182258605957,
+      "rms": 0.07230273698513386,
+      "wav_sha256": "f44bf739561704c5bf3017173082c26078249260ae0521246e7bd5bdb9b12c0c"
+    },
+    {
+      "id": "live-master-after-live-under-the-moon-64-stems",
+      "source_start": 63.89733333333333,
+      "duration": 5,
+      "master": {
+        "profile": "live",
+        "live": 0.45,
+        "dense": 0,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947,
+        "liveSource": "pre-eq-pre-vocal-fx",
+        "liveStemLevels": {
+          "vocals": 0.42900000000000005,
+          "drums": 0.92,
+          "bass": 0.91,
+          "other": 0.91
+        }
+      },
+      "peak": 0.43755042552948,
+      "rms": 0.05851299052280631,
+      "wav_sha256": "0cadc5bff942fd6f0c4a56995e7165d06411a443b78ea2d7c240a15f712d8978"
+    },
+    {
+      "id": "live-master-before-dense-electric-sheep-16-stems",
+      "source_start": 15.894666666666666,
+      "duration": 5,
+      "master": {
+        "profile": "dense",
+        "live": 0,
+        "dense": 1,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947
+      },
+      "peak": 0.4350426197052002,
+      "rms": 0.09033506099636936,
+      "wav_sha256": "85174ee3401057043c07bdb1c88d147b8913749f3a20b52faf8b413eb4d460c4"
+    },
+    {
+      "id": "live-master-before-dense-human-fly-16-stems",
+      "source_start": 15.894666666666668,
+      "duration": 5,
+      "master": {
+        "profile": "dense",
+        "live": 0,
+        "dense": 1,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947
+      },
+      "peak": 0.43569517135620117,
+      "rms": 0.10116851934124281,
+      "wav_sha256": "e8e7d258223b373a2b0aadca70bbeaf45dd8b5551adaf33a092bbe85260e2ace"
+    },
+    {
+      "id": "live-master-before-dense-i-got-a-feeling-180-stems",
+      "source_start": 179.892,
+      "duration": 5,
+      "master": {
+        "profile": "dense",
+        "live": 0,
+        "dense": 1,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947
+      },
+      "peak": 0.4296707212924957,
+      "rms": 0.10280218307741998,
+      "wav_sha256": "f16c440eb2b91ce168825949015552039e9fb690f2fdc00bbaafeee9984f1b7d"
+    },
+    {
+      "id": "live-master-before-live-electric-sheep-16-stems",
+      "source_start": 15.9,
+      "duration": 5,
+      "master": {
+        "profile": "live",
+        "live": 0.45,
+        "dense": 0,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947
+      },
+      "peak": 0.47892215847969055,
+      "rms": 0.06021012146096404,
+      "wav_sha256": "e23bd743c3f37f3273c9ab29772154614684c6dcaae7b868a79c26f90cdb8dbc"
+    },
+    {
+      "id": "live-master-before-live-human-fly-16-stems",
+      "source_start": 15.9,
+      "duration": 5,
+      "master": {
+        "profile": "live",
+        "live": 0.45,
+        "dense": 0,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947
+      },
+      "peak": 0.30618616938591003,
+      "rms": 0.055387870392821045,
+      "wav_sha256": "949c4671ad0bc5f4f48e97cb9f254a2d34827bffafe35390c78c413ec63d7dd3"
+    },
+    {
+      "id": "live-master-before-live-i-got-a-feeling-180-stems",
+      "source_start": 179.89999999999998,
+      "duration": 5,
+      "master": {
+        "profile": "live",
+        "live": 0.45,
+        "dense": 0,
+        "volume": 1.0695011257604947,
+        "sharedVolume": 1.0695011257604947
+      },
+      "peak": 0.32810425758361816,
+      "rms": 0.05377516108459714,
+      "wav_sha256": "90681e25fc9f5d52d2e530f5a9b241c02ab7331b7308939422dfa162098075aa"
+    }
+  ],
+  "limits": [
+    "The reference is the existing separated stems at their retained trims/faders, through the same live protection, not the unavailable unseparated source mix.",
+    "Residual is waveform agreement with that engineering reference, not perceptual quality, transcription accuracy, or restored separation.",
+    "Normal output varies between runs. Dense controlled outputs differ by at most two PCM16 levels; the shared native DSP is not claimed bit-identical.",
+    "No human/iPhone listening or long mobile workload was performed. AI synthesis/transcription and original MP3 bytes were retained."
+  ]
+}

@@ -32,7 +32,7 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 
 | 公開ページ | 用途 |
 |---|---|
-| [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=synth) | ARCBをギター・ベース・ドラムで合奏。原音からベースの弾き直しとドラムの打点・同時打ちを補正。ギターの打点と連続ストロークの和音も原音へ補正。短いTABASCOも曲に沿ったドラム譜で演奏。AIの開始・途中移動の時計も補正。原音の仕上げはライブ／厚めで比較できます。 |
+| [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=synth) | ARCBをギター・ベース・ドラムで合奏。原音からベースの弾き直しとドラムの打点・同時打ちを補正。ギターの打点と連続ストロークの和音も原音へ補正。短いTABASCOも曲に沿ったドラム譜で演奏。AIの開始・途中移動の時計も補正。原音ライブは声に追加の広がりをかけず、録音の余韻を生かします。従来の厚めと比較できます。 |
 | [Hazama FM](../fm.html) | ジャンルを選んで、ラジオのように流す。 |
 | [Music Core Rig](../index.html) | つまみを動かし、アシッドやIDMの音を探る。 |
 | [Lyric Lab](../lyric-lab.html) | 歌詞・曲のアイデア・制作指示を一曲ずつ残す。 |

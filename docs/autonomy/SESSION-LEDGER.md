@@ -1,5 +1,14 @@
 # Session Ledger — music-stack
 
+## 2026-10-16 — 原音ライブのまとまりを保つ経路（v421 / BL-050）
+
+- Scope: 本人の「磨き進めて／ライブ原音よくなった？」。同じ会話とMusic-audio-stability、同期main 1d0f63f。新規の公開先なし。
+- Cause: v417のliveでも前段の個別EQとvocal chorus／roomが残り、分離stemの再合成に異なる位相と追加残響が入っていた。
+- Change: 個別EQ前から4つのlive faderを通して合流。曲別trim、vocal dry量0.78、mute／volume／RECと緩いHP／comp・出力上限は保持。denseは既存経路。無効な声FXをライブで無効表示し、保存値は保持。
+- Evidence: 通常のpost-master PCMと、実ensureMasterを使う同条件OfflineAudioContext比較。元28 MP3のhash、条件・限界と測定をdocs/ARCB-MIX-MEASUREMENT.mdへ戻す。録音をGitへ追加しない。
+- Validation: baselineは43 PASS / 0 FAIL / 0 SKIP、audit 0 BAD / 0 WARN、5 repo状態不変。最終候補とmerge後HEADの同一gate・公開照合は対応PRへ記録。
+- Limits: 原音分離前のmixは今回入力にない。weighted stem sumと同じ保護処理を基準とし、分離漏れを修復したとは言わない。本人聴感と実iPhoneは継続。
+
 ## 2026-10-13 — ギターの打点と連続ストロークの和音を再照合（v420 / BL-050）
 
 - Scope: 本人の「再現できる限り」の継続。単一会話、既存Music／公開先。
