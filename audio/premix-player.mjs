@@ -1,6 +1,6 @@
-// One streaming media element, one gain, no PCM decode or stem reconstruction.
-export const PREMIX_GAIN_DB = -2.2;
-export const PREMIX_GAIN = 10 ** (PREMIX_GAIN_DB / 20);
+// One streaming media element; lightweight mastering and matched original A/B.
+import { createPremixMastering } from "./premix-mastering.mjs?v=1";
+export { PREMIX_GAIN_DB, PREMIX_GAIN } from "./premix-mastering.mjs?v=1";
 
 export function premixMediaUrl(path, pageHref = globalThis.location?.href || "http://localhost/") {
   const host = new URL(pageHref).hostname;
@@ -11,11 +11,12 @@ export function premixMediaUrl(path, pageHref = globalThis.location?.href || "ht
 }
 
 export function createPremixPlayer({ media, getContext, onChange = () => {} }) {
-  let context, source, output, song, token = 0, volume = 1, graphReady = false;
+  let context, source, output, mastering, song, token = 0, volume = 1, graphReady = false;
+  let profile = "live";
   let phase = "idle", error = "", offset = 0, loaded = false;
   media.preload = "none";
   media.crossOrigin = "anonymous"; // Set before src so cross-host Web Audio is not muted.
-  const snapshot = () => ({ songId: song?.id, phase, error, volume,
+  const snapshot = () => ({ songId: song?.id, phase, error, volume, profile,
     position: loaded && media.readyState > 0 ? media.currentTime : offset,
     duration: loaded && Number.isFinite(media.duration) ? media.duration : song?.original_mix.duration_s || 0 });
   const notify = () => onChange(snapshot());
@@ -45,6 +46,7 @@ export function createPremixPlayer({ media, getContext, onChange = () => {} }) {
     }
     pause();
     loaded = false; offset = 0; error = ""; song = next;
+    mastering?.configure(song.id, profile, false);
     media.removeAttribute("src"); media.load();
     notify();
   }
@@ -57,7 +59,8 @@ export function createPremixPlayer({ media, getContext, onChange = () => {} }) {
         context = getContext();
         source = context.createMediaElementSource(media);
         output = context.createGain(); output.gain.value = 0;
-        source.connect(output); output.connect(context.destination);
+        mastering = createPremixMastering(context, source, output, { songId: song.id, profile });
+        output.connect(context.destination);
         graphReady = true;
         context.addEventListener("statechange", () => {
           if (context.state !== "running" && phase === "playing") pause();
@@ -66,7 +69,7 @@ export function createPremixPlayer({ media, getContext, onChange = () => {} }) {
       if (!graphReady) throw new Error("音声出力を準備できません。ページを開き直してください。");
       if (!loaded) { loaded = true; media.src = premixMediaUrl(song.original_mix.url); }
       if (media.ended) seek(0);
-      gain(PREMIX_GAIN * volume);
+      gain(volume);
       // Both calls remain inside the user's gesture, including iOS.
       const resume = context.resume();
       const playing = media.play();
@@ -97,8 +100,13 @@ export function createPremixPlayer({ media, getContext, onChange = () => {} }) {
     const next = Number(value);
     if (!Number.isFinite(next)) return;
     volume = Math.max(0, Math.min(1, next));
-    gain(phase === "playing" || phase === "loading" ? PREMIX_GAIN * volume : 0);
+    gain(phase === "playing" || phase === "loading" ? volume : 0);
     notify();
   }
-  return { play, pause, stop, seek, select, setVolume, snapshot };
+  function setProfile(value) {
+    profile = value === "original" ? "original" : "live";
+    mastering?.configure(song?.id, profile);
+    notify();
+  }
+  return { play, pause, stop, seek, select, setVolume, setProfile, snapshot };
 }

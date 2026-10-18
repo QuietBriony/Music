@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v424 compact)
+# Band Room - Changelog (v65 -> v425 compact)
+
+## v425 — 2026-10-19
+
+2026-10-19 v425: 分離前の仮ミックス7曲に、26 Hzの低域整理・230 Hzの−1.5 dB・3.2 kHzからの+0.5 dBの軽いライブ補正を追加。圧縮・gate・追加残響・幅の拡張は使わず、原音ファイルを保持する。元の仮ミックスとのA/Bは曲ごとに音量を合わせ、40 msで切替。パート別は歌・ギターほか・ベース・ドラムのminus-oneをワンタップで選べる。分離漏れと元録音の歪みは残り、分離品質の向上を意味しない。cache `hazama-fm-v425` / client `band-room.js?v=br-258` / CSS `band-room.css?v=br-97`。
 
 ## v424 — 2026-10-18
 
@@ -33,7 +37,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v424. Latest Band Room runtime change: v424 (sustained bass holds). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v425. Latest Band Room runtime change: v425 (premix mastering and instrument practice). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

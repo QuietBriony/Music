@@ -1,4 +1,4 @@
-import { createPremixPlayer } from "./premix-player.mjs?v=2";
+import { createPremixPlayer } from "./premix-player.mjs?v=3";
 
 const original = document.documentElement.dataset.brSurface === "original";
 const $ = (id) => document.getElementById(id);
@@ -30,7 +30,8 @@ async function boot() {
   }));
   if (songs.length !== 7) throw new Error("catalog");
   const select = $("br-premix-song"), play = $("br-premix-play"), seek = $("br-premix-seek"), volume = $("br-premix-volume");
-  const media = $("br-premix-audio");
+  const media = $("br-premix-audio"), mastering = $("br-premix-mastering");
+  const preferenceKey = "br.premix.mastering.v1";
   let context, player;
   const time = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   function render(state) {
@@ -39,7 +40,8 @@ async function boot() {
     if (document.activeElement !== seek) seek.value = String(state.position);
     $("br-premix-time").textContent = `${time(state.position)} / ${time(state.duration)}`;
     $("br-premix-volume-value").value = `${Math.round(state.volume * 100)}%`;
-    $("br-premix-status").textContent = state.error || ({ loading: "原音を準備しています…", playing: "分離前の仮ミックスを再生中", idle: "再生で原音を読み込みます。", ended: "曲が終わりました。" }[state.phase] || "");
+    mastering.value = state.profile;
+    $("br-premix-status").textContent = state.error || ({ loading: "原音を準備しています…", playing: state.profile === "live" ? "ライブ補正で再生中" : "元の仮ミックスを再生中（比較用の音量調整のみ）", idle: "再生で原音を読み込みます。", ended: "曲が終わりました。" }[state.phase] || "");
     if ("mediaSession" in navigator) {
       navigator.mediaSession.playbackState = state.phase === "playing" ? "playing" : "paused";
       try { navigator.mediaSession.setPositionState({ duration: state.duration, playbackRate: 1, position: Math.min(state.duration, state.position) }); } catch {}
@@ -69,6 +71,12 @@ async function boot() {
     choose(songs[(index + direction + songs.length) % songs.length].id);
   }
   choose(query.get("song") || query.get("songId") || songs[0].id);
+  try { player.setProfile(localStorage.getItem(preferenceKey)); } catch {}
+  mastering.disabled = false;
+  mastering.addEventListener("change", () => {
+    player.setProfile(mastering.value);
+    try { localStorage.setItem(preferenceKey, mastering.value); } catch {}
+  });
   play.disabled = false; $("br-premix-stop").disabled = false; select.disabled = false;
   play.addEventListener("click", toggle);
   $("br-premix-stop").addEventListener("click", () => player.stop());
@@ -92,5 +100,5 @@ async function boot() {
     }
   }
   $("br-subtitle").textContent = "Tabasco. LIVE · 分離前の仮ミックス";
-  $("br-boot-status").textContent = "v423 · ライブ原音";
+  $("br-boot-status").textContent = "v425 · ライブ原音";
 }

@@ -1,5 +1,14 @@
 # Session Ledger — music-stack
 
+## 2026-10-19 — 仮ミックスの軽いマスタリングとパート別カラオケ（v425 / BL-050）
+
+2026-10-19 v425: 分離前の仮ミックス7曲に、26 Hzの低域整理・230 Hzの−1.5 dB・3.2 kHzからの+0.5 dBの軽いライブ補正を追加。圧縮・gate・追加残響・幅の拡張は使わず、原音ファイルを保持する。元の仮ミックスとのA/Bは曲ごとに音量を合わせ、40 msで切替。パート別は歌・ギターほか・ベース・ドラムのminus-oneをワンタップで選べる。分離漏れと元録音の歪みは残り、分離品質の向上を意味しない。cache `hazama-fm-v425` / client `band-room.js?v=br-258` / CSS `band-room.css?v=br-97`。
+
+- Scope: 本人の原音マスタリング改善・楽器ごとの練習の依頼。単一会話・所有worktree、同期main 438e7b8。既存の入口とhostingを流用。
+- Evidence: 実Web Audioで7曲を全長処理し、独立したFFmpeg EBU R128で音量・LRA・true peakを比較。音声ファイルはbyte不変。詳細はARCB-MIX-MEASUREMENT.md。
+- Validation: baseline 44 PASS / 0 FAIL / 0 SKIP、audit 0 BAD / 0 WARN、5 repo状態不変。最終working／candidate／merged gate、同じ会話での差分再レビュー、公開照合は対応PR。証拠はoutput/playwright/premix-master-20261019。
+- Limits: 数値は聴感合格や分離品質の証明ではない。元からの歪み・にじみ、実iPhoneと本人の聴感は残る。AIと従来のパート別の音声処理は保持。
+
 ## 2026-10-18 — 長いベース保持音の途切れを修正（v424 / BL-050）
 
 2026-10-18 v424: AIベースの長い保持音が3秒の音源末尾で途切れる問題を修正。ベースだけ16 kHz／8秒へ延ばし、譜面の音長・自然減衰と次音でのdampingを保つ。53 buffer／15,274,240 bytes、再生node数と128発の上限は維持。原音・採譜イベント・ギター／ドラム音色は保持。分離前原音の終端を7曲の譜面metadataへ結び、ベースのreleaseを録音終端以内に収める。シーク直後の小節処理を確実に起動し、全パートが1小節遅れて鳴るケースも修正。分離前原音も参照し、裏付けの弱い音高変更は不採用。cache `hazama-fm-v424` / client `br-257` / bank v5 / adapter v7。

@@ -2913,4 +2913,7 @@ html[data-br-surface="original"] :is(#br-master-vol-bar, #br-help-toggle, #br-kb
 #br-premix-stop { grid-column: 2; grid-row: 1; }
 #br-premix-status { min-height: 28px; color: var(--air-soft); }
 #br-premix a { color: var(--air-soft); }
+#br-stems .br-toggle-all { min-height: 44px; font-size: 12px; }
+#br-stems .br-toggle-all[aria-pressed="true"] { border-color: var(--air); color: var(--air-soft); background: rgba(108, 209, 204, .12); }
+#br-stems .br-help { flex-basis: 100%; margin: 4px 0; line-height: 1.6; }
 #br-premix :focus-visible, #br-listening-mode a:focus-visible { outline: 2px solid var(--air-soft); outline-offset: 3px; }

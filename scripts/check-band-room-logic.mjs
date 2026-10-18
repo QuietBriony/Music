@@ -141,8 +141,8 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-257-bass-sustain", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v424", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-258-premix-master", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v425", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
 const originalCeiling = windowMock.BandRoomTestHooks.originalOutputCeiling;
@@ -683,14 +683,14 @@ assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor
 assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
-assert.match(html, /band-room\.css\?v=br-96/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-257/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.css\?v=br-97/, "Band Room HTML should reference the current CSS cache marker");
+assert.match(html, /band-room\.js\?v=br-258/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
-assert.match(sw, /band-room\.css\?v=br-96/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-257/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.css\?v=br-97/, "Service worker should precache the current Band Room CSS marker");
+assert.match(sw, /band-room\.js\?v=br-258/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
@@ -871,7 +871,15 @@ assert.match(bridgeSingleFlightSource, /decision === "queue"[\s\S]{0,500}pending
 assert.match(html, /id="br-mode-status"[^>]*role="status"[^>]*aria-live="polite"/, "Band-specific playback limitations should be announced next to the mode controls");
 assert.doesNotMatch(html, /HAZAMA は AI 再現専用/, "The quick guide must not retain the pre-v397 HAZAMA synth-only claim");
 assert.match(html, /HAZAMA 02[\s\S]{0,260}02固有ではなく[\s\S]{0,160}01 の frames[\s\S]{0,160}比較基準は02の 📻 原音/, "The quick guide should clearly disclose HAZAMA 02's non-specific provisional AI recreation");
-assert.match(html, /data-toggle-all="stems-karaoke">KARAOKE（vocal off）<\/button>/, "Original stems should expose the human-take karaoke action in the primary layer controls");
+assert.match(html, /data-toggle-all="stems-karaoke">歌う（声を消す）<\/button>/, "Original stems should expose the vocal karaoke action in the primary layer controls");
+for (const part of ["vocals", "bass", "drums", "other"]) {
+  const values = windowMock.BandRoomTestHooks.practiceStemToggleState(part);
+  assert.equal(values[part], false);
+  assert.equal(Object.values(values).filter(Boolean).length, 3, "Exactly the selected part should be removed");
+}
+assert.equal(windowMock.BandRoomTestHooks.practiceStemToggleState("invalid"), null);
+assert.ok(Object.values(windowMock.BandRoomTestHooks.practiceStemToggleState("all")).every(Boolean));
+assert.ok(Object.values(windowMock.BandRoomTestHooks.practiceStemToggleState("off")).every((x) => !x));
 for (const action of ["synth-on", "synth-off"]) {
   assert.match(bindUiSource, new RegExp(`action === "${action}"[\\s\\S]{0,300}\\[[^\\]]*"arp"[^\\]]*\\]`), `${action} should include the HAZAMA arp lane so layer-isolation listening is truthful`);
 }
