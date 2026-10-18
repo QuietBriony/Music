@@ -3286,5 +3286,11 @@
    "split": 0,
    "added": 10
   }
+ },
+ "premix_reference": {
+  "sha256": "62659d83164c4730e95f20cccbaba33a0b7c32b8d540f9de74e0982a65a1d8a7",
+  "active_end_s": 42.653878,
+  "stem_offset_s": 0.025056689,
+  "method": "Last decoded 11025-Hz stereo sample above 1e-7 amplitude; offset measured from premix to separated-stem timeline"
  }
 }

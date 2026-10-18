@@ -60,7 +60,7 @@
         "title": "Band Room / ARCB・Tabasco",
         "href": "band-room.html?band=tabasco&song=human-fly&mode=original",
         "action": "開く",
-        "public_summary": "Tabascoのライブ原音7曲を、分離前の仮ミックスから直接再生。パート別の練習と、ギター・ベース・ドラムのAI再現も同じ入口で選べます。",
+        "public_summary": "Tabascoのライブ原音7曲を、分離前の仮ミックスから直接再生。パート別の練習と、ギター・ベース・ドラムのAI再現も同じ入口で選べます。AIベースの長い音と曲末の余韻を改善し、途中再生で1小節ずれる問題も修正しました。",
         "purpose": "当時の仮ミックスのバランス・定位・余韻をそのまま聴く。パート別は従来の分離音源、AI再現は採譜を3楽器の合成音で演奏。ギターはクランチ／ディストーションと4奏法。HAZAMAは別の既存音源。",
         "first_step": "ライブ原音 → 曲を選ぶ → 再生。パートを消して練習するときはパート別、合奏の合成音を聴くときはAI再現 → START。聴き方を切り替えると停止します。",
         "outputs": "ライブ原音は7 M4Aを1曲ずつストリーム再生。パート別／AI再現では従来のmix REC・4 stems pack・listening note。",

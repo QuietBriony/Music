@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-256-premix-range";
-  const BANDROOM_RELEASE_VERSION = "v423";
+  const BANDROOM_APP_VERSION = "br-257-bass-sustain";
+  const BANDROOM_RELEASE_VERSION = "v424";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -1128,7 +1128,7 @@
     physicalArcbAbort?.abort(); physicalArcbAbort = abort;
     const began = bandRoomNowMs();
     try {
-      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=6");
+      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=7");
       const context = Tone.getContext().rawContext;
       const bank = await physicalArcbModule.prepareInstrumentBank(context, {
         signal: abort.signal,
@@ -3390,12 +3390,13 @@
     state.playbackRateAtStart = playbackRateMultiplier();
   }
 
-  function startNativeTransportClock(contentSec) {
+  function startNativeTransportClock(contentSec, resumeBar = null) {
     // Tone's relative start includes its look-ahead. Share the exact absolute
     // start with the content clock, so seek/REC do not run ahead of the music.
     const scheduledStart = Tone.now() + 0.03;
     Tone.Transport.start(scheduledStart, transportSecondForContent(contentSec));
     resetPlaybackClock(contentSec, scheduledStart);
+    if (resumeBar) resumeBar(scheduledStart);
   }
 
   function formatPlaybackTime(seconds) {
@@ -4912,6 +4913,7 @@
       physicalArcbEnabled,
       transcribedPerformanceBpm,
       transcribedPerformanceStructure,
+      transcribedBassLimit,
       transcribedFallbackAllowed,
       transcribedGuitarStroke,
       validatedGuitarVoicings,
@@ -6567,6 +6569,24 @@
     return picked.sort((a, b) => (Number(a[1]) || 0) - (Number(b[1]) || 0));
   }
 
+  // Only constrain the native bass when a finite, source-backed premix end is
+  // present. Uncertain pitches remain untouched; digital tail silence is not
+  // a reason to keep exciting the separated stem's residual bass notes.
+  function transcribedBassLimit(row, data, subTime) {
+    const reference = data?.premix_reference;
+    const end = reference?.active_end_s;
+    const offset = reference?.stem_offset_s;
+    const fit = data?.bass_line?.bpm_fit;
+    const duration = data?.performance_duration_s;
+    if (!Number.isFinite(end) || end <= 0 || !Number.isFinite(duration) || end > duration ||
+        !Number.isFinite(offset) || Math.abs(offset) > 0.1 ||
+        !Number.isFinite(fit) || fit < 30 || fit > 300 ||
+        !Number.isFinite(subTime) || subTime <= 0 ||
+        !/^[a-f0-9]{64}$/.test(reference?.sha256 || "")) return Infinity;
+    const step = 15 / fit;
+    return Math.max(0, (end + offset - (row[0] * 16 + row[1]) * step) * subTime / step);
+  }
+
   function playTranscribedBar(synth, lineKey, ctx, time) {
     const rows = rowsForLightTranscribedPlayback(lineKey, transcribedNotesForBar(lineKey, state.barCount));
     if (!rows.length) return !allowsTranscribedFallback(lineKey);
@@ -6582,7 +6602,9 @@
         : rawDurSteps;
       const durSec = Math.max(0.05, durSteps * ctx.subTime);
       const note = Tone.Frequency(Number(row[3]) || 36, "midi").toNote();
-      try { synth.triggerAttackRelease(note, durSec, t, Number(row[4]) || 0.6); } catch (e) {}
+      const options = synth._physical && lineKey === "bass_line"
+        ? { maxDuration: transcribedBassLimit(row, state.songData, ctx.subTime) } : undefined;
+      try { synth.triggerAttackRelease(note, durSec, t, Number(row[4]) || 0.6, options); } catch (e) {}
     });
     return true;
   }
@@ -7556,14 +7578,12 @@
     if (currentMode === "synth" && physicalArcbEnabled()) {
       const offset = transportSecondForContent(state.pendingSeekOffsetSec || 0);
       const schedule = physicalScheduleWindow(offset, Tone.Transport.bpm.value);
-      // Resume the rest of the selected bar now, then continue at its next
-      // boundary. The native adapter ignores elapsed attacks in this one bar.
-      if (schedule.phase > 0.001) {
-        state.scheduledIds.push(Tone.Transport.scheduleOnce(time => runBar(time - schedule.phase), offset));
-        state.scheduledIds.push(Tone.Transport.scheduleRepeat(runBar, "1m", schedule.nextBoundary));
-      } else {
-        state.scheduledIds.push(Tone.Transport.scheduleRepeat(runBar, "1m", offset));
-      }
+      // Bootstrap the selected bar from the exact audio start. A one-shot at
+      // the Transport seek offset can fall before its first tick and be missed,
+      // leaving the score one bar behind every subsequent repeat. The native
+      // adapter ignores elapsed attacks in this first (possibly partial) bar.
+      state.scheduledIds.push(Tone.Transport.scheduleRepeat(runBar, "1m", schedule.nextBoundary));
+      return time => runBar(time - schedule.phase);
     } else {
       state.scheduledIds.push(Tone.Transport.scheduleRepeat(runBar, "1m"));
     }
@@ -7720,8 +7740,8 @@
     state.scheduledIds = [];
 
     resetPlaybackHealthState();
-    scheduleBar();
-    if (currentMode === "synth" && physicalArcbEnabled()) startNativeTransportClock(stemOffsetSec);
+    const resumeBar = scheduleBar();
+    if (currentMode === "synth" && physicalArcbEnabled()) startNativeTransportClock(stemOffsetSec, resumeBar);
     else {
       Tone.Transport.start();
       resetPlaybackClock(stemOffsetSec);
@@ -8074,9 +8094,9 @@
     setTimelineStateForSecond(targetSec);
     resetPlaybackClock(targetSec);
     resetPlaybackHealthState();
-    scheduleBar();
+    const resumeBar = scheduleBar();
     try {
-      if (physicalArcbEnabled()) startNativeTransportClock(targetSec);
+      if (physicalArcbEnabled()) startNativeTransportClock(targetSec, resumeBar);
       else Tone.Transport.start("+0.03", transportSecondForContent(targetSec));
     } catch (e) {
       try {

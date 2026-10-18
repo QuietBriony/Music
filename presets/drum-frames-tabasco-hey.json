@@ -27842,5 +27842,11 @@
    "added": 83
   }
  },
- "performance_duration_s": 304.927
+ "performance_duration_s": 304.927,
+ "premix_reference": {
+  "sha256": "771947789488013c096800e5c7664c59c4aa7a5ec040e57e84ef5d2eb42c7bf8",
+  "active_end_s": 302.856327,
+  "stem_offset_s": 0.025056689,
+  "method": "Last decoded 11025-Hz stereo sample above 1e-7 amplitude; offset measured from premix to separated-stem timeline"
+ }
 }

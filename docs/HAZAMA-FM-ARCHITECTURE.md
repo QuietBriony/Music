@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-18 v424: AIベースの長い保持音が3秒の音源末尾で途切れる問題を修正。ベースだけ16 kHz／8秒へ延ばし、譜面の音長・自然減衰と次音でのdampingを保つ。53 buffer／15,274,240 bytes、再生node数と128発の上限は維持。原音・採譜イベント・ギター／ドラム音色は保持。分離前原音の終端を7曲の譜面metadataへ結び、ベースのreleaseを録音終端以内に収める。シーク直後の小節処理を確実に起動し、全パートが1小節遅れて鳴るケースも修正。分離前原音も参照し、裏付けの弱い音高変更は不採用。cache `hazama-fm-v424` / client `br-257` / bank v5 / adapter v7。
+
 2026-10-18 v423: 公開環境でCloudflare Pagesの音声Range要求が200の全体応答になることを確認。原音の音声だけを既存の同一Music GitHub Pagesへ向け、206の部分読み込みで途中移動できるようにする。CORSをsrc設定前に有効化し、Web Audioの消音を防ぐ。入口・7音源のbyte内容・共通−2.2 dB・AIの採譜と音色は保持。原音moduleにも版を付け、旧PWA cacheの参照を避ける。cache `hazama-fm-v423` / client `br-256` / CSS `br-96`。
 
 2026-10-18 v422: Tabascoの原音入口は、本人が公開承認した分離前の仮ミックス7曲を1本ずつストリーム再生する。共通−2.2 dBのみ。原音ではstem／AIエンジンを起動せず、パート別・AIは明示リンクで停止して切り替える。原音のオンライン要件、残るにじみ、実iPhone・本人聴感の未確認を明示。cache `hazama-fm-v422` / client `br-255` / CSS `br-96`。
@@ -131,7 +133,7 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > Current cache / asset tuple: `hazama-fm-v421`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-256`, `band-room.css?v=br-96`。
+> `band-room.js?v=br-257`, `band-room.css?v=br-96`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

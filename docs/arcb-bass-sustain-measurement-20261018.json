@@ -1,0 +1,1537 @@
+{
+  "baseline_commit": "eb3b7b450be92acd6997066492d92def9694cb8e",
+  "scope": "Native bass sustain, premix-ending bound and first-bar scheduling after seek; no new pitches, score attacks, voices or recordings",
+  "bank": {
+    "before_bytes": 13610240,
+    "after_bytes": 15274240,
+    "buffers": 53,
+    "bass_rate_hz": 16000,
+    "bass_seconds": 8,
+    "other_rate_hz": 32000,
+    "voice_cap": 128,
+    "node_count_unchanged": true
+  },
+  "sources": [
+    {
+      "song": "electric-sheep",
+      "score_before_sha256": "0dd433cb48735d9b0ceff83e600886be0a58c0733c7d6e84f69aff64771ae571",
+      "score_after_sha256": "e1d40b41099acb0ecc4dc64ca57b6c37c3dd7121ca01bde1ef9f878296d07370",
+      "reference": {
+        "sha256": "65fc141a8d52bf2fa6278b31962bcc2b631750dad89ac0f9c16f861737be1e67",
+        "active_end_s": 147.189116,
+        "stem_offset_s": 0.025056689,
+        "method": "Last decoded 11025-Hz stereo sample above 1e-7 amplitude; offset measured from premix to separated-stem timeline"
+      }
+    },
+    {
+      "song": "hey",
+      "score_before_sha256": "327d1fe41393cb54fe14f1780696b5c13cfdd6ace8a5c94c65f0e1ee052d2ce3",
+      "score_after_sha256": "665b5be9d5f5a6abe89191ed6d7ac8d1c6637ed932f05dd3e20d7759103ec5c7",
+      "reference": {
+        "sha256": "771947789488013c096800e5c7664c59c4aa7a5ec040e57e84ef5d2eb42c7bf8",
+        "active_end_s": 302.856327,
+        "stem_offset_s": 0.025056689,
+        "method": "Last decoded 11025-Hz stereo sample above 1e-7 amplitude; offset measured from premix to separated-stem timeline"
+      }
+    },
+    {
+      "song": "human-fly",
+      "score_before_sha256": "362fc954df28c13b2884fa415ce0e8c4ca0b20e9cdbf3694163f95c12c843852",
+      "score_after_sha256": "d1a95a562d958feb7fd3279eb72a2caada436ace133bc8b5ea49baf2a0fb39b3",
+      "reference": {
+        "sha256": "0f014916b85cb4182774b8ab371f489b826c76bcb2b3f93ca42f5c95471b6ab9",
+        "active_end_s": 234.864308,
+        "stem_offset_s": 0.025056689,
+        "method": "Last decoded 11025-Hz stereo sample above 1e-7 amplitude; offset measured from premix to separated-stem timeline"
+      }
+    },
+    {
+      "song": "i-got-a-feeling",
+      "score_before_sha256": "8ee65e7f929b503887862eaab871586247c620b90ac4747db06f88b05b8c5e7f",
+      "score_after_sha256": "a11c252082fda1979025ff5d63debb58714eae875629045061d52cf4f8dec952",
+      "reference": {
+        "sha256": "cb454a1116006750cda8f9635427182c97fb85327b0023884065e1eb613614fd",
+        "active_end_s": 365.550204,
+        "stem_offset_s": 0.025056689,
+        "method": "Last decoded 11025-Hz stereo sample above 1e-7 amplitude; offset measured from premix to separated-stem timeline"
+      }
+    },
+    {
+      "song": "sister",
+      "score_before_sha256": "f80028cf7f15bb932c8072203607aaf3c2c842d9a3491eb04c1d457fd2224a23",
+      "score_after_sha256": "0fbe92d6bab60775fcd62e00833e33e5865894b2f9dc6dbde55e5e6e648e2562",
+      "reference": {
+        "sha256": "fe1676f7cfa31076162bb8c9007dda5c60648ccd5b9f7837f82f2427239ca18c",
+        "active_end_s": 281.099048,
+        "stem_offset_s": 0.025056689,
+        "method": "Last decoded 11025-Hz stereo sample above 1e-7 amplitude; offset measured from premix to separated-stem timeline"
+      }
+    },
+    {
+      "song": "tabasco",
+      "score_before_sha256": "c85108688524252f0a78be98f86d9b6c42aa619b593641e8a1e93cb07f774532",
+      "score_after_sha256": "f4e39540e4df0d0985ace3bdcb71f07d7bd5b48f1c2ed3df20a98b0c7a9f0730",
+      "reference": {
+        "sha256": "62659d83164c4730e95f20cccbaba33a0b7c32b8d540f9de74e0982a65a1d8a7",
+        "active_end_s": 42.653878,
+        "stem_offset_s": 0.025056689,
+        "method": "Last decoded 11025-Hz stereo sample above 1e-7 amplitude; offset measured from premix to separated-stem timeline"
+      }
+    },
+    {
+      "song": "under-the-moon",
+      "score_before_sha256": "70c99940e87d7fbd3f10bb27427981390f6ee2d8d51ac5600bb80154ef4b9585",
+      "score_after_sha256": "23a38c967789a188179c51a206ae774ccd862febb889b3e143d2040c1e0c47b6",
+      "reference": {
+        "sha256": "bb06e242380dd72c9440aca064ce89a0bebef115c432f26c1eb3c8a6a94327b5",
+        "active_end_s": 309.91356,
+        "stem_offset_s": 0.025056689,
+        "method": "Last decoded 11025-Hz stereo sample above 1e-7 amplitude; offset measured from premix to separated-stem timeline"
+      }
+    }
+  ],
+  "isolated_long_holds": [
+    {
+      "song": "human-fly",
+      "start": 34.053639846743295,
+      "note": 31,
+      "missing_gate_seconds": 0.34973082951558476,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.01349298283457756,
+      "early_spectral_cosine": 1.0,
+      "early_level_delta_db": -0.0008756563756648099
+    },
+    {
+      "song": "human-fly",
+      "start": 99.62835249042146,
+      "note": 31,
+      "missing_gate_seconds": 0.5004332560800777,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.01349298283457756,
+      "early_spectral_cosine": 1.0,
+      "early_level_delta_db": -0.0008756563756648099
+    },
+    {
+      "song": "human-fly",
+      "start": 150.1455938697318,
+      "note": 31,
+      "missing_gate_seconds": 0.5591816596560819,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.01349298283457756,
+      "early_spectral_cosine": 1.0,
+      "early_level_delta_db": -0.0008756563756648099
+    },
+    {
+      "song": "human-fly",
+      "start": 234.7381864623244,
+      "note": 29,
+      "missing_gate_seconds": 1.59300279865902,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.013780870474874973,
+      "early_spectral_cosine": 1.0000001192092896,
+      "early_level_delta_db": -0.0008851857838842333
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start": 94.14219153007738,
+      "note": 30,
+      "missing_gate_seconds": 0.5643564356435604,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.013705025427043438,
+      "early_spectral_cosine": 1.0,
+      "early_level_delta_db": -0.0007824145001669973
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start": 98.15833263998668,
+      "note": 30,
+      "missing_gate_seconds": 0.4482902071719792,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.013705025427043438,
+      "early_spectral_cosine": 1.0,
+      "early_level_delta_db": -0.0007824145001669973
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start": 283.59722106664447,
+      "note": 30,
+      "missing_gate_seconds": 0.7964888925867513,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.013705025427043438,
+      "early_spectral_cosine": 1.0,
+      "early_level_delta_db": -0.0007824145001669973
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start": 287.69573175804976,
+      "note": 30,
+      "missing_gate_seconds": 0.6342457775189132,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.013705025427043438,
+      "early_spectral_cosine": 1.0,
+      "early_level_delta_db": -0.0007824145001669973
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start": 291.7131208919211,
+      "note": 30,
+      "missing_gate_seconds": 0.49446709376820763,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.013705025427043438,
+      "early_spectral_cosine": 1.0,
+      "early_level_delta_db": -0.0007824145001669973
+    },
+    {
+      "song": "sister",
+      "start": 273.2962962962963,
+      "note": 31,
+      "missing_gate_seconds": 3.7980066915845385,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.01349298283457756,
+      "early_spectral_cosine": 1.0,
+      "early_level_delta_db": -0.0008756563756648099
+    },
+    {
+      "song": "under-the-moon",
+      "start": 301.32538699690406,
+      "note": 37,
+      "missing_gate_seconds": 0.17302102480323933,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.013669133186340332,
+      "early_spectral_cosine": 1.0,
+      "early_level_delta_db": -0.0017038466787137928
+    },
+    {
+      "song": "under-the-moon",
+      "start": 305.42229102167187,
+      "note": 39,
+      "missing_gate_seconds": 0.7848297213622573,
+      "old_tail_rms": 0.0,
+      "new_tail_rms": 0.012151684612035751,
+      "early_spectral_cosine": 0.9999998807907104,
+      "early_level_delta_db": -0.0020679381940555183
+    }
+  ],
+  "isolated_endings": [
+    {
+      "song": "tabasco",
+      "phase": "before",
+      "begin": 34.678934689,
+      "end": 42.678934689,
+      "tailRms": 0.003714545507562243,
+      "activeRms": 0.08081121963200531,
+      "stats": {
+        "pending": 13,
+        "bytes": 13610240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 13,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 7.466186433934119,
+            "key": "bass:51",
+            "rate": 0.9438743126816935,
+            "velocity": 0.16
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "tabasco",
+      "phase": "after",
+      "begin": 34.678934689,
+      "end": 42.678934689,
+      "tailRms": 0,
+      "activeRms": 0.08076388551741437,
+      "stats": {
+        "pending": 13,
+        "bytes": 15274240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 13,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 7.466186433934119,
+            "key": "bass:51",
+            "rate": 0.9438743126816935,
+            "velocity": 0.16
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "hey",
+      "phase": "before",
+      "begin": 294.881383689,
+      "end": 302.881383689,
+      "tailRms": 0.006289084047516435,
+      "activeRms": 0.08996721732611228,
+      "stats": {
+        "pending": 24,
+        "bytes": 13610240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 24,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 7.674569385299037,
+            "key": "bass:45",
+            "rate": 1.0594630943592953,
+            "velocity": 0.16
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "hey",
+      "phase": "after",
+      "begin": 294.881383689,
+      "end": 302.881383689,
+      "tailRms": 0,
+      "activeRms": 0.0898626945467416,
+      "stats": {
+        "pending": 24,
+        "bytes": 15274240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 24,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 7.674569385299037,
+            "key": "bass:45",
+            "rate": 1.0594630943592953,
+            "velocity": 0.16
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "i-got-a-feeling",
+      "phase": "before",
+      "begin": 357.575260689,
+      "end": 365.575260689,
+      "tailRms": 0,
+      "activeRms": 0.044480337429384474,
+      "stats": {
+        "pending": 2,
+        "bytes": 13610240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 2,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 4.280550942583318,
+            "key": "bass:45",
+            "rate": 0.9438743126816935,
+            "velocity": 0.65
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "i-got-a-feeling",
+      "phase": "after",
+      "begin": 357.575260689,
+      "end": 365.575260689,
+      "tailRms": 0,
+      "activeRms": 0.04460713544257521,
+      "stats": {
+        "pending": 2,
+        "bytes": 15274240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 2,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 4.280550942583318,
+            "key": "bass:45",
+            "rate": 0.9438743126816935,
+            "velocity": 0.65
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "under-the-moon",
+      "phase": "before",
+      "begin": 301.938616689,
+      "end": 309.938616689,
+      "tailRms": 0.012855215778851126,
+      "activeRms": 0.0316513793238421,
+      "stats": {
+        "pending": 5,
+        "bytes": 13610240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 5,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 7.89451024598452,
+            "key": "bass:30",
+            "rate": 0.9438743126816935,
+            "velocity": 0.16
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "under-the-moon",
+      "phase": "after",
+      "begin": 301.938616689,
+      "end": 309.938616689,
+      "tailRms": 0,
+      "activeRms": 0.03176384317869347,
+      "stats": {
+        "pending": 5,
+        "bytes": 15274240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 5,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 7.89451024598452,
+            "key": "bass:30",
+            "rate": 0.9438743126816935,
+            "velocity": 0.16
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "electric-sheep",
+      "phase": "before",
+      "begin": 139.214172689,
+      "end": 147.214172689,
+      "tailRms": 0.013011408644732084,
+      "activeRms": 0.08477119731723279,
+      "stats": {
+        "pending": 16,
+        "bytes": 13610240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 16,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 7.883350530814255,
+            "key": "bass:30",
+            "rate": 0.9438743126816935,
+            "velocity": 0.16
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "electric-sheep",
+      "phase": "after",
+      "begin": 139.214172689,
+      "end": 147.214172689,
+      "tailRms": 0,
+      "activeRms": 0.08474588397025316,
+      "stats": {
+        "pending": 16,
+        "bytes": 15274240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 16,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 7.883350530814255,
+            "key": "bass:30",
+            "rate": 0.9438743126816935,
+            "velocity": 0.16
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "human-fly",
+      "phase": "before",
+      "begin": 226.889364689,
+      "end": 234.889364689,
+      "tailRms": 0.012747903513028016,
+      "activeRms": 0.10066069288524991,
+      "stats": {
+        "pending": 16,
+        "bytes": 13610240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 16,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 7.848821773324403,
+            "key": "bass:30",
+            "rate": 0.9438743126816935,
+            "velocity": 0.16
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "human-fly",
+      "phase": "after",
+      "begin": 226.889364689,
+      "end": 234.889364689,
+      "tailRms": 0,
+      "activeRms": 0.1005707230755469,
+      "stats": {
+        "pending": 16,
+        "bytes": 15274240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 16,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 7.848821773324403,
+            "key": "bass:30",
+            "rate": 0.9438743126816935,
+            "velocity": 0.16
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "sister",
+      "phase": "before",
+      "begin": 273.124104689,
+      "end": 281.124104689,
+      "tailRms": 0,
+      "activeRms": 0.03854445582531487,
+      "stats": {
+        "pending": 2,
+        "bytes": 13610240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 2,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 0.17219160729632677,
+            "key": "bass:30",
+            "rate": 1.0594630943592953,
+            "velocity": 0.78
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    },
+    {
+      "song": "sister",
+      "phase": "after",
+      "begin": 273.124104689,
+      "end": 281.124104689,
+      "tailRms": 0,
+      "activeRms": 0.03880199354041116,
+      "stats": {
+        "pending": 2,
+        "bytes": 15274240,
+        "roomWet": 0,
+        "roomNodes": 0,
+        "played": 2,
+        "dropped": 0,
+        "last": {
+          "bass": {
+            "at": 0.17219160729632677,
+            "key": "bass:30",
+            "rate": 1.0594630943592953,
+            "velocity": 0.78
+          }
+        },
+        "guitarStrokes": {
+          "open": 0,
+          "palm": 0,
+          "cut": 0,
+          "up": 0,
+          "down": 0
+        },
+        "guitarVoicings": {
+          "attack": 0,
+          "harmonic": 0,
+          "fallback": 0
+        }
+      }
+    }
+  ],
+  "post_master_band": [
+    {
+      "song": "human-fly",
+      "interval": [
+        36.96,
+        37.2
+      ],
+      "low_band_rms": {
+        "before": 0.09017250739697864,
+        "final": 0.09268134336628013,
+        "premix": 0.0455362858797668
+      },
+      "captures": {
+        "before": {
+          "content_start": 35.49133333333334,
+          "peak": 0.56060791015625,
+          "file": "premix-sustain-before-human-fly-35p6-synth.wav"
+        },
+        "final": {
+          "content_start": 35.49933333333333,
+          "peak": 0.554290771484375,
+          "file": "premix-sustain-final-human-fly-35p6-synth.wav"
+        }
+      }
+    },
+    {
+      "song": "i-got-a-feeling",
+      "interval": [
+        97.22,
+        97.64
+      ],
+      "low_band_rms": {
+        "before": 0.051928257438636306,
+        "final": 0.05758536312162352,
+        "premix": 0.035830313800718515
+      },
+      "captures": {
+        "before": {
+          "content_start": 95.49133333333333,
+          "peak": 0.556793212890625,
+          "file": "premix-sustain-before-i-got-a-feeling-95p6-synth.wav"
+        },
+        "final": {
+          "content_start": 95.49133333333333,
+          "peak": 0.566253662109375,
+          "file": "premix-sustain-final-i-got-a-feeling-95p6-synth.wav"
+        }
+      }
+    },
+    {
+      "song": "sister",
+      "interval": [
+        276.25,
+        278.8
+      ],
+      "low_band_rms": {
+        "before": 0.00017960670676299065,
+        "final": 0.01253624825342273,
+        "premix": 0.005166679303119348
+      },
+      "captures": {
+        "before": {
+          "content_start": 274.6966666666667,
+          "peak": 0.135894775390625,
+          "file": "premix-sustain-before-sister-274p8-synth.wav"
+        },
+        "final": {
+          "content_start": 274.69933333333336,
+          "peak": 0.144378662109375,
+          "file": "premix-sustain-final-sister-274p8-synth.wav"
+        }
+      }
+    },
+    {
+      "song": "under-the-moon",
+      "interval": [
+        308.5,
+        309.1
+      ],
+      "low_band_rms": {
+        "before": 0.0011394388848540214,
+        "final": 0.010512016240469152,
+        "premix": 0.004702392375284577
+      },
+      "captures": {
+        "before": {
+          "content_start": 306.7833333333333,
+          "peak": 0.44549560546875,
+          "file": "premix-sustain-before-under-the-moon-306p9-synth.wav"
+        },
+        "final": {
+          "content_start": 306.794,
+          "peak": 0.44793701171875,
+          "file": "premix-sustain-final-under-the-moon-306p9-synth.wav"
+        }
+      }
+    }
+  ],
+  "live_scheduled_onsets": [
+    {
+      "song": "human-fly",
+      "speed": 80,
+      "seek": 0,
+      "count": 2,
+      "maxError": 1.021405182655144e-14,
+      "rows": [
+        {
+          "expected": 2.8326947637292506,
+          "actual": 2.8326947637292466,
+          "error": -3.9968028886505635e-15
+        },
+        {
+          "expected": 2.971902937420168,
+          "actual": 2.9719029374201784,
+          "error": 1.021405182655144e-14
+        }
+      ]
+    },
+    {
+      "song": "human-fly",
+      "speed": 80,
+      "seek": 16,
+      "count": 11,
+      "maxError": 0.0011707109408369831,
+      "rows": [
+        {
+          "expected": 17.056194125159635,
+          "actual": 17.057364836100472,
+          "error": 0.0011707109408369831
+        },
+        {
+          "expected": 17.403575989782894,
+          "actual": 17.404746700723717,
+          "error": 0.0011707109408227723
+        },
+        {
+          "expected": 17.706257982120093,
+          "actual": 17.70742869306088,
+          "error": 0.0011707109407872451
+        },
+        {
+          "expected": 18.26309067688382,
+          "actual": 18.264261387824607,
+          "error": 0.0011707109407872451
+        },
+        {
+          "expected": 18.611749680715235,
+          "actual": 18.61292039165603,
+          "error": 0.0011707109407943506
+        },
+        {
+          "expected": 18.78544061302682,
+          "actual": 18.786611323967648,
+          "error": 0.001170710940826325
+        },
+        {
+          "expected": 19.122605363984718,
+          "actual": 19.1237760749255,
+          "error": 0.0011707109407836924
+        },
+        {
+          "expected": 19.586206896551772,
+          "actual": 19.587377607492556,
+          "error": 0.0011707109407836924
+        },
+        {
+          "expected": 19.738186462324393,
+          "actual": 19.739357173265223,
+          "error": 0.0011707109408298777
+        },
+        {
+          "expected": 20.108556832694802,
+          "actual": 20.109727543635593,
+          "error": 0.0011707109407907978
+        },
+        {
+          "expected": 20.26053639846748,
+          "actual": 20.261707109408263,
+          "error": 0.0011707109407836924
+        }
+      ]
+    },
+    {
+      "song": "human-fly",
+      "speed": 80,
+      "seek": 232,
+      "count": 4,
+      "maxError": 0.0003192848020034944,
+      "rows": [
+        {
+          "expected": 232.52107279693487,
+          "actual": 232.52107279693487,
+          "error": 0
+        },
+        {
+          "expected": 233.2286079182631,
+          "actual": 233.2282886334611,
+          "error": -0.0003192848020034944
+        },
+        {
+          "expected": 234.1698595146871,
+          "actual": 234.1695402298851,
+          "error": -0.0003192848020034944
+        },
+        {
+          "expected": 234.7381864623244,
+          "actual": 234.7378671775224,
+          "error": -0.0003192848020034944
+        }
+      ]
+    },
+    {
+      "song": "human-fly",
+      "speed": 100,
+      "seek": 0,
+      "count": 2,
+      "maxError": 1.0658141036401503e-14,
+      "rows": [
+        {
+          "expected": 2.8326947637292506,
+          "actual": 2.832694763729247,
+          "error": -3.552713678800501e-15
+        },
+        {
+          "expected": 2.971902937420168,
+          "actual": 2.971902937420179,
+          "error": 1.0658141036401503e-14
+        }
+      ]
+    },
+    {
+      "song": "human-fly",
+      "speed": 100,
+      "seek": 16,
+      "count": 11,
+      "maxError": 0.0011707109408369831,
+      "rows": [
+        {
+          "expected": 17.056194125159635,
+          "actual": 17.057364836100472,
+          "error": 0.0011707109408369831
+        },
+        {
+          "expected": 17.403575989782894,
+          "actual": 17.404746700723717,
+          "error": 0.0011707109408227723
+        },
+        {
+          "expected": 17.706257982120064,
+          "actual": 17.70742869306088,
+          "error": 0.0011707109408156668
+        },
+        {
+          "expected": 18.26309067688379,
+          "actual": 18.264261387824607,
+          "error": 0.0011707109408156668
+        },
+        {
+          "expected": 18.611749680715207,
+          "actual": 18.612920391656015,
+          "error": 0.0011707109408085614
+        },
+        {
+          "expected": 18.78544061302682,
+          "actual": 18.786611323967644,
+          "error": 0.0011707109408227723
+        },
+        {
+          "expected": 19.12260536398469,
+          "actual": 19.123776074925498,
+          "error": 0.0011707109408085614
+        },
+        {
+          "expected": 19.586206896551715,
+          "actual": 19.587377607492545,
+          "error": 0.0011707109408298777
+        },
+        {
+          "expected": 19.738186462324393,
+          "actual": 19.739357173265216,
+          "error": 0.0011707109408227723
+        },
+        {
+          "expected": 20.108556832694774,
+          "actual": 20.109727543635582,
+          "error": 0.0011707109408085614
+        },
+        {
+          "expected": 20.260536398467423,
+          "actual": 20.26170710940826,
+          "error": 0.0011707109408369831
+        }
+      ]
+    },
+    {
+      "song": "human-fly",
+      "speed": 100,
+      "seek": 232,
+      "count": 4,
+      "maxError": 0.0003192848020603378,
+      "rows": [
+        {
+          "expected": 232.52107279693487,
+          "actual": 232.5210727969349,
+          "error": 2.842170943040401e-14
+        },
+        {
+          "expected": 233.2286079182631,
+          "actual": 233.22828863346103,
+          "error": -0.0003192848020603378
+        },
+        {
+          "expected": 234.1698595146871,
+          "actual": 234.16954022988506,
+          "error": -0.0003192848020319161
+        },
+        {
+          "expected": 234.7381864623244,
+          "actual": 234.73786717752233,
+          "error": -0.0003192848020603378
+        }
+      ]
+    },
+    {
+      "song": "human-fly",
+      "speed": 120,
+      "seek": 0,
+      "count": 2,
+      "maxError": 3.1530333899354446e-14,
+      "rows": [
+        {
+          "expected": 2.832694763729279,
+          "actual": 2.8326947637292474,
+          "error": -3.1530333899354446e-14
+        },
+        {
+          "expected": 2.971902937420168,
+          "actual": 2.971902937420181,
+          "error": 1.2878587085651816e-14
+        }
+      ]
+    },
+    {
+      "song": "human-fly",
+      "speed": 120,
+      "seek": 16,
+      "count": 11,
+      "maxError": 0.0011707109408618521,
+      "rows": [
+        {
+          "expected": 17.056194125159635,
+          "actual": 17.057364836100472,
+          "error": 0.0011707109408369831
+        },
+        {
+          "expected": 17.403575989782894,
+          "actual": 17.404746700723713,
+          "error": 0.0011707109408192196
+        },
+        {
+          "expected": 17.706257982120064,
+          "actual": 17.707428693060873,
+          "error": 0.0011707109408085614
+        },
+        {
+          "expected": 18.26309067688379,
+          "actual": 18.264261387824607,
+          "error": 0.0011707109408156668
+        },
+        {
+          "expected": 18.611749680715235,
+          "actual": 18.61292039165602,
+          "error": 0.0011707109407836924
+        },
+        {
+          "expected": 18.78544061302682,
+          "actual": 18.78661132396764,
+          "error": 0.0011707109408192196
+        },
+        {
+          "expected": 19.122605363984718,
+          "actual": 19.123776074925495,
+          "error": 0.001170710940776587
+        },
+        {
+          "expected": 19.586206896551687,
+          "actual": 19.58737760749255,
+          "error": 0.0011707109408618521
+        },
+        {
+          "expected": 19.73818646232442,
+          "actual": 19.739357173265216,
+          "error": 0.0011707109407943506
+        },
+        {
+          "expected": 20.108556832694774,
+          "actual": 20.10972754363559,
+          "error": 0.0011707109408156668
+        },
+        {
+          "expected": 20.26053639846745,
+          "actual": 20.261707109408256,
+          "error": 0.0011707109408050087
+        }
+      ]
+    },
+    {
+      "song": "human-fly",
+      "speed": 120,
+      "seek": 232,
+      "count": 4,
+      "maxError": 0.0003192848020319161,
+      "rows": [
+        {
+          "expected": 232.52107279693487,
+          "actual": 232.52107279693487,
+          "error": 0
+        },
+        {
+          "expected": 233.2286079182631,
+          "actual": 233.22828863346106,
+          "error": -0.0003192848020319161
+        },
+        {
+          "expected": 234.1698595146871,
+          "actual": 234.16954022988506,
+          "error": -0.0003192848020319161
+        },
+        {
+          "expected": 234.7381864623244,
+          "actual": 234.73786717752236,
+          "error": -0.0003192848020319161
+        }
+      ]
+    },
+    {
+      "song": "hey",
+      "speed": 100,
+      "seek": 39,
+      "count": 13,
+      "maxError": 0.0007488143772675926,
+      "rows": [
+        {
+          "expected": 39.286546301688986,
+          "actual": 39.28654630168899,
+          "error": 7.105427357601002e-15
+        },
+        {
+          "expected": 39.77452367085448,
+          "actual": 39.77452367085448,
+          "error": 0
+        },
+        {
+          "expected": 40.029120559114745,
+          "actual": 40.0283717447375,
+          "error": -0.0007488143772462763
+        },
+        {
+          "expected": 40.261253016057935,
+          "actual": 40.26050420168067,
+          "error": -0.0007488143772675926
+        },
+        {
+          "expected": 40.48215325734253,
+          "actual": 40.4814044429653,
+          "error": -0.0007488143772320655
+        },
+        {
+          "expected": 40.59821948581413,
+          "actual": 40.59747067143689,
+          "error": -0.0007488143772391709
+        },
+        {
+          "expected": 41.040019968383376,
+          "actual": 41.03927115400615,
+          "error": -0.00074881437722496
+        },
+        {
+          "expected": 41.2484399700474,
+          "actual": 41.24769115567019,
+          "error": -0.0007488143772107492
+        },
+        {
+          "expected": 41.73641733921289,
+          "actual": 41.735668524835674,
+          "error": -0.0007488143772178546
+        },
+        {
+          "expected": 42.14202512688246,
+          "actual": 42.1412763125052,
+          "error": -0.0007488143772604872
+        },
+        {
+          "expected": 42.281803810633164,
+          "actual": 42.281054996255925,
+          "error": -0.0007488143772391709
+        },
+        {
+          "expected": 43.268990764622686,
+          "actual": 43.26824195024544,
+          "error": -0.0007488143772462763
+        },
+        {
+          "expected": 43.79066478076379,
+          "actual": 43.78991596638655,
+          "error": -0.0007488143772391709
+        }
+      ]
+    },
+    {
+      "song": "electric-sheep",
+      "speed": 100,
+      "seek": 54,
+      "count": 14,
+      "maxError": 0.0005804953560399895,
+      "rows": [
+        {
+          "expected": 54.10797213622291,
+          "actual": 54.10797213622292,
+          "error": 7.105427357601002e-15
+        },
+        {
+          "expected": 54.34597523219816,
+          "actual": 54.34597523219815,
+          "error": -7.105427357601002e-15
+        },
+        {
+          "expected": 54.74071207430342,
+          "actual": 54.74071207430341,
+          "error": -7.105427357601002e-15
+        },
+        {
+          "expected": 54.91486068111456,
+          "actual": 54.91486068111456,
+          "error": 0
+        },
+        {
+          "expected": 55.05417956656348,
+          "actual": 55.05417956656348,
+          "error": 0
+        },
+        {
+          "expected": 55.321207430340564,
+          "actual": 55.321207430340564,
+          "error": 0
+        },
+        {
+          "expected": 55.54179566563468,
+          "actual": 55.54179566563468,
+          "error": 0
+        },
+        {
+          "expected": 55.681114551083596,
+          "actual": 55.681114551083596,
+          "error": 0
+        },
+        {
+          "expected": 56.04102167182663,
+          "actual": 56.040441176470594,
+          "error": -0.000580495356032884
+        },
+        {
+          "expected": 56.26160990712074,
+          "actual": 56.26102941176471,
+          "error": -0.000580495356032884
+        },
+        {
+          "expected": 56.52863777089783,
+          "actual": 56.5280572755418,
+          "error": -0.000580495356032884
+        },
+        {
+          "expected": 56.667956656346746,
+          "actual": 56.66737616099071,
+          "error": -0.000580495356032884
+        },
+        {
+          "expected": 57.260061919504636,
+          "actual": 57.25948142414861,
+          "error": -0.0005804953560257786
+        },
+        {
+          "expected": 57.50386996904025,
+          "actual": 57.50328947368421,
+          "error": -0.0005804953560399895
+        }
+      ]
+    },
+    {
+      "song": "i-got-a-feeling",
+      "speed": 100,
+      "seek": 16,
+      "count": 14,
+      "maxError": 0.0007072135785257672,
+      "rows": [
+        {
+          "expected": 16.13694982943673,
+          "actual": 16.136949829436727,
+          "error": -3.552713678800501e-15
+        },
+        {
+          "expected": 16.206839171312083,
+          "actual": 16.20683917131209,
+          "error": 7.105427357601002e-15
+        },
+        {
+          "expected": 16.287960728845974,
+          "actual": 16.287960728845995,
+          "error": 2.1316282072803006e-14
+        },
+        {
+          "expected": 16.613694982943684,
+          "actual": 16.613694982943674,
+          "error": -1.0658141036401503e-14
+        },
+        {
+          "expected": 16.833347200266246,
+          "actual": 16.833347200266246,
+          "error": 0
+        },
+        {
+          "expected": 17.07795989683001,
+          "actual": 17.07795989683002,
+          "error": 1.0658141036401503e-14
+        },
+        {
+          "expected": 17.286379898494033,
+          "actual": 17.28637989849405,
+          "error": 1.7763568394002505e-14
+        },
+        {
+          "expected": 17.40244612696563,
+          "actual": 17.40244612696564,
+          "error": 1.0658141036401503e-14
+        },
+        {
+          "expected": 18.04143439554042,
+          "actual": 18.040727181961895,
+          "error": -0.0007072135785257672
+        },
+        {
+          "expected": 18.238622181545907,
+          "actual": 18.237914967967388,
+          "error": -0.0007072135785186617
+        },
+        {
+          "expected": 18.586820866960636,
+          "actual": 18.586113653382146,
+          "error": -0.00070721357849024
+        },
+        {
+          "expected": 18.842665779182937,
+          "actual": 18.84195856560446,
+          "error": -0.0007072135784760292
+        },
+        {
+          "expected": 19.062317996505556,
+          "actual": 19.061610782927033,
+          "error": -0.0007072135785222144
+        },
+        {
+          "expected": 19.353107579665505,
+          "actual": 19.35240036608703,
+          "error": -0.0007072135784760292
+        }
+      ]
+    },
+    {
+      "song": "sister",
+      "speed": 100,
+      "seek": 272,
+      "count": 7,
+      "maxError": 5.684341886080802e-14,
+      "rows": [
+        {
+          "expected": 271.85696040868453,
+          "actual": 271.8569604086846,
+          "error": 5.684341886080802e-14
+        },
+        {
+          "expected": 272.00766283524905,
+          "actual": 272.00766283524905,
+          "error": 0
+        },
+        {
+          "expected": 272.22860791826315,
+          "actual": 272.2286079182631,
+          "error": -5.684341886080802e-14
+        },
+        {
+          "expected": 272.35632183908046,
+          "actual": 272.35632183908046,
+          "error": 0
+        },
+        {
+          "expected": 272.5300127713921,
+          "actual": 272.5300127713921,
+          "error": 0
+        },
+        {
+          "expected": 273.1570881226054,
+          "actual": 273.1570881226054,
+          "error": 0
+        },
+        {
+          "expected": 273.2962962962963,
+          "actual": 273.2962962962963,
+          "error": 0
+        }
+      ]
+    },
+    {
+      "song": "under-the-moon",
+      "speed": 100,
+      "seek": 64,
+      "count": 6,
+      "maxError": 0.00038699690405508136,
+      "rows": [
+        {
+          "expected": 64.55108359133129,
+          "actual": 64.55108359133128,
+          "error": -1.4210854715202004e-14
+        },
+        {
+          "expected": 65.3517027863777,
+          "actual": 65.35170278637771,
+          "error": 1.4210854715202004e-14
+        },
+        {
+          "expected": 65.88668730650159,
+          "actual": 65.88707430340558,
+          "error": 0.00038699690399823794
+        },
+        {
+          "expected": 66.07244582043342,
+          "actual": 66.07283281733747,
+          "error": 0.00038699690405508136
+        },
+        {
+          "expected": 66.43188854489165,
+          "actual": 66.43227554179568,
+          "error": 0.00038699690402665965
+        },
+        {
+          "expected": 67.58080495356037,
+          "actual": 67.5811919504644,
+          "error": 0.00038699690402665965
+        }
+      ]
+    },
+    {
+      "song": "tabasco",
+      "speed": 100,
+      "seek": 16,
+      "count": 7,
+      "maxError": 0.0011508565391373793,
+      "rows": [
+        {
+          "expected": 16.660629386461405,
+          "actual": 16.659478529922268,
+          "error": -0.0011508565391373793
+        },
+        {
+          "expected": 16.828163912157578,
+          "actual": 16.827013055618444,
+          "error": -0.0011508565391338266
+        },
+        {
+          "expected": 17.15417704324202,
+          "actual": 17.15302618670289,
+          "error": -0.0011508565391302739
+        },
+        {
+          "expected": 19.435136970794662,
+          "actual": 19.433986114255536,
+          "error": -0.0011508565391267211
+        },
+        {
+          "expected": 19.57437174552864,
+          "actual": 19.573220888989518,
+          "error": -0.0011508565391231684
+        },
+        {
+          "expected": 19.783789902648863,
+          "actual": 19.782639046109736,
+          "error": -0.0011508565391267211
+        },
+        {
+          "expected": 19.899252886574597,
+          "actual": 19.898102030035478,
+          "error": -0.0011508565391196157
+        }
+      ]
+    }
+  ],
+  "pitch_review": {
+    "method": "YIN sustained-window proposals checked against independent fundamental energy in bass stem and unseparated premix",
+    "score_notes": 3630,
+    "proposals": 2,
+    "adopted": 0
+  },
+  "conditions": [
+    "Isolated bank comparison: same native adapter, 48 kHz offline output; source gate and a later test note, no global master/room. Initial 0.1–2.5 s measures only early timbre, not realism.",
+    "Ending test: actual final bass score events with eight seconds of preroll and two seconds after the reference end; no global master or room.",
+    "Post-master band: clean service-worker-blocked browser, AudioWorklet 48 kHz PCM16 at 100% speed, same corrected scheduler and rock/crunch/room35, bass/drums/guitar ON, guide OFF. Only the old/new instrument adapter and bank vary; this isolates sustain, not the complete old-release timing. Four selected intervals, source offset 1105/44100 s, no timing or gain optimization.",
+    "Onsets: live native-adapter calls compared to exact Transport audio start and source score timestamps. Seven songs, Human Fly at 80/100/120% and three seek positions. This measures scheduling accuracy, not acoustic attack detection.",
+    "Provisional captures affected by filename rejection, service-worker caching, practice-speed state or the unfixed seek scheduler are excluded. Initial timing-test windows with no bass attacks in Sister were corrected to an active score interval."
+  ],
+  "limits": [
+    "Low-band output still differs in level from the premix; a restored sustain is not an overall similarity score.",
+    "The isolated unbounded bank test has 12 cases, but the actual app separately caps the short final Human Fly note at the premix end.",
+    "The finite eight-second bass bank covers the observed original-speed holds; at very slow practice speeds a stretched hold can still exceed the buffer.",
+    "Digital trailing silence is an upper bound for bass release, not proof of a note-off time inside the song. Other instruments and room decay are unchanged.",
+    "Ambiguous bass pitch proposals were rejected; guitar/drum pitch and articulation limitations remain.",
+    "Actual iPhone/Bluetooth, long background sessions and human listening not verified."
+  ]
+}

@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v423";
+const VERSION = "hazama-fm-v424";
 const CACHE_PREFIX = "hazama-fm-";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
@@ -26,7 +26,7 @@ const PRECACHE_URLS = [
   "lyric-lab.js",
   "band-room.html",
   "band-room.css?v=br-96",
-  "band-room.js?v=br-256",
+  "band-room.js?v=br-257",
   "audio/premix-entry.js?v=1",
   "audio/premix-preview.mjs?v=2",
   "audio/premix-player.mjs?v=2",
@@ -34,19 +34,19 @@ const PRECACHE_URLS = [
   "audio/physical-band/preview.mjs?v=5",
   "audio/physical-band/guitar-audition.mjs?v=2",
   "audio/physical-band/electric-string.mjs?v=1",
-  "audio/physical-band/rhythm-synthesis.mjs?v=1",
-  "audio/physical-band/rhythm-audition.mjs?v=1",
-  "audio/physical-band/rhythm-worker.mjs?v=1",
-  "audio/physical-band/rhythm-preview.mjs?v=1",
+  "audio/physical-band/rhythm-synthesis.mjs?v=2",
+  "audio/physical-band/rhythm-audition.mjs?v=2",
+  "audio/physical-band/rhythm-worker.mjs?v=2",
+  "audio/physical-band/rhythm-preview.mjs?v=2",
   "audio/physical-band/guitar-audition-worker.mjs?v=2",
   "audio/physical-band/guitar-audition-preview.mjs?v=2",
   "audio/physical-band/render-worker.mjs?v=4",
   "audio/physical-band/score.mjs?v=4",
   "audio/physical-band/dsp.mjs?v=4",
   "audio/physical-band/amp.mjs?v=1",
-  "audio/physical-band/bank.mjs?v=4",
-  "audio/physical-band/bank-worker.mjs?v=4",
-  "audio/physical-band/instruments.mjs?v=6",
+  "audio/physical-band/bank.mjs?v=5",
+  "audio/physical-band/bank-worker.mjs?v=5",
+  "audio/physical-band/instruments.mjs?v=7",
   "audio/physical-band/room.mjs?v=1",
   "docs/PHYSICAL-BAND-REHEARSAL.md",
   "presets/drum-frames-tabasco-human-fly.json",

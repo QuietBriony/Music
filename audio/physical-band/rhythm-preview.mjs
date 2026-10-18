@@ -1,4 +1,4 @@
-import { RHYTHM_RATE, RHYTHM_SECONDS, prepareRhythm } from "./rhythm-audition.mjs?v=1";
+import { RHYTHM_RATE, RHYTHM_SECONDS, prepareRhythm } from "./rhythm-audition.mjs?v=2";
 const panel = document.getElementById("br-rhythm-audition");
 if (panel) {
   if (location.hash === "#br-rhythm-audition") panel.open = true;
@@ -36,7 +36,7 @@ if (panel) {
   }
   function synthStems(signal) {
     return new Promise((resolve, reject) => {
-      const task = new Worker(new URL("./rhythm-worker.mjs?v=1", import.meta.url), { type: "module" });
+      const task = new Worker(new URL("./rhythm-worker.mjs?v=2", import.meta.url), { type: "module" });
       worker = task; let settled = false;
       const finish = (error, stems) => {
         if (settled) return; settled = true;

@@ -1,6 +1,6 @@
 import { renderString, renderDrum } from "./dsp.mjs?v=4";
 import { renderElectricString } from "./electric-string.mjs?v=1";
-import { renderElectricBass, renderAcousticDrum } from "./rhythm-synthesis.mjs?v=1";
+import { renderElectricBass, renderAcousticDrum } from "./rhythm-synthesis.mjs?v=2";
 import { createGuitarAmp } from "./amp.mjs?v=1";
 import { createBandRoom } from "./room.mjs?v=1";
 

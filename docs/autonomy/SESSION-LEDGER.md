@@ -1,5 +1,14 @@
 # Session Ledger — music-stack
 
+## 2026-10-18 — 長いベース保持音の途切れを修正（v424 / BL-050）
+
+2026-10-18 v424: AIベースの長い保持音が3秒の音源末尾で途切れる問題を修正。ベースだけ16 kHz／8秒へ延ばし、譜面の音長・自然減衰と次音でのdampingを保つ。53 buffer／15,274,240 bytes、再生node数と128発の上限は維持。原音・採譜イベント・ギター／ドラム音色は保持。分離前原音の終端を7曲の譜面metadataへ結び、ベースのreleaseを録音終端以内に収める。シーク直後の小節処理を確実に起動し、全パートが1小節遅れて鳴るケースも修正。分離前原音も参照し、裏付けの弱い音高変更は不採用。cache `hazama-fm-v424` / client `br-257` / bank v5 / adapter v7。
+
+- Scope: 本人の「磨きまわして」、単一会話・所有Music-audio-stability、同期main eb3b7b4。既存公開先を流用。
+- Evidence: 7曲のベースをCPU再照合し、音高の変更候補は不採用。既存譜の12保持音でbufferがgateより0.17〜3.80秒早く終わることを確認。同じadapterの前後出力と通常合奏を比較。詳細はARCB-MIX-MEASUREMENT.md。
+- Validation: baseline 44 PASS / 0 FAIL / 0 SKIP、audit 0 BAD / 0 WARN、5 repo状態不変。最終working／candidate／merged gate、同じ会話の差分再レビュー、公開照合を対応PRへ記録。証拠はoutput/playwright/premix-band-refine-20261018。
+- Limits: 未採譜／分離漏れとギター／ドラムの再現、実iPhoneと本人聴感は残る。今回は録音への差し替えや音程の推測変更をしない。
+
 ## 2026-10-18 — 原音の部分読み込みを既存配信先で修正（v423 / BL-050）
 
 2026-10-18 v423: 公開環境でCloudflare Pagesの音声Range要求が200の全体応答になることを確認。原音の音声だけを既存の同一Music GitHub Pagesへ向け、206の部分読み込みで途中移動できるようにする。CORSをsrc設定前に有効化し、Web Audioの消音を防ぐ。入口・7音源のbyte内容・共通−2.2 dB・AIの採譜と音色は保持。原音moduleにも版を付け、旧PWA cacheの参照を避ける。cache `hazama-fm-v423` / client `br-256` / CSS `br-96`。
