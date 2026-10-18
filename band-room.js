@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-257-bass-sustain";
-  const BANDROOM_RELEASE_VERSION = "v424";
+  const BANDROOM_APP_VERSION = "br-258-premix-master";
+  const BANDROOM_RELEASE_VERSION = "v425";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -2966,6 +2966,23 @@
     return { ...current, vocals: true };
   }
 
+  function practiceStemToggleState(part) {
+    if (!["vocals", "drums", "bass", "other", "all", "off"].includes(part)) return null;
+    return Object.fromEntries(["vocals", "drums", "bass", "other"].map((stem) => [stem, part !== "off" && stem !== part]));
+  }
+
+  function syncStemPracticeControls() {
+    const current = Object.fromEntries(["vocals", "drums", "bass", "other"].map((stem) => [stem, $("br-toggle-stem-" + stem)?.checked !== false]));
+    const muted = Object.keys(current).filter((stem) => !current[stem]);
+    const part = muted.length === 0 ? "all" : muted.length === 4 ? "off" : muted.length === 1 ? muted[0] : "custom";
+    const actions = { "stems-on": "all", "stems-off": "off", "stems-karaoke": "vocals", "stems-minus-other": "other", "stems-minus-bass": "bass", "stems-minus-drums": "drums" };
+    for (const [action, value] of Object.entries(actions)) {
+      document.querySelector(`[data-toggle-all="${action}"]`)?.setAttribute("aria-pressed", String(part === value));
+    }
+    const status = $("br-practice-status");
+    if (status) status.textContent = ({ all: "全パートを再生", off: "全パートを消音", vocals: "歌の練習：声を消しています", other: "ギターの練習：ギターほか（other）を消しています", bass: "ベースの練習：ベースを消しています", drums: "ドラムの練習：ドラムを消しています", custom: "パートの組み合わせを個別に選択中" })[part];
+  }
+
   function stemKaraokeActiveFromState(mode, stems = {}) {
     return mode === "stems" && stems.vocals === false &&
       ["drums", "bass", "other"].every((stem) => stems[stem] !== false);
@@ -3010,6 +3027,7 @@
 
   function updatePlaybackModeStatus() {
     syncOriginalMasteringControls();
+    syncStemPracticeControls();
     const status = $("br-mode-status");
     if (!status) return;
     const band = currentBand();
@@ -4888,6 +4906,7 @@
         volume: originalMasterGain?.gain.value, sharedVolume: masterGain?.gain.value,
         liveSource: "pre-eq-pre-vocal-fx",
         liveStemLevels: Object.fromEntries(Object.entries(originalLiveStemBuses).map(([stem, bus]) => [stem, bus.gain.value])) }),
+      stemPlaybackDiagnostics: () => Object.fromEntries(Object.entries(stemPlayers).map(([stem, player]) => [stem, { muted: player.mute, loaded: player.loaded, state: player.state }])),
       getCurrentMode: () => currentMode,   // QA-loop BR-01 testability: read-only mode probe (stems|synth)
       aiLightRuntimeEnabled,               // v364: phone-clean band composition probes
       aiLayerLightRuntimeEnabled,
@@ -4897,6 +4916,7 @@
       directKaraokeRequested,
       karaokeStemToggleState,
       stemKaraokeActiveFromState,
+      practiceStemToggleState,
       stemKaraokeActive,
       setStemToggleChecked,
       togglePreferenceIsSessionOnly,
@@ -8969,7 +8989,11 @@
           ["vocals", "drums", "bass", "other"].forEach((s) => setToggle("br-toggle-stem-" + s, false));
         } else if (action === "stems-karaoke") {
           setStemKaraokeActive(true);
+        } else if (action?.startsWith("stems-minus-")) {
+          const values = practiceStemToggleState(action.slice("stems-minus-".length));
+          if (values) Object.entries(values).forEach(([stem, on]) => setToggle("br-toggle-stem-" + stem, on));
         }
+        syncStemPracticeControls();
       });
     });
     function setToggle(id, on) {

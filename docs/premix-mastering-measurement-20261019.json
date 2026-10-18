@@ -1,0 +1,177 @@
+{
+  "date": "2026-10-19",
+  "method": "Full-length original AAC decoded and rendered with native OfflineAudioContext. Candidate EQ at 44100 Hz, exact shipped createPremixMastering graph at 48000 Hz. Independent FFmpeg EBU R128 integrated loudness, loudness range, oversampled true peak. Original is gain-only, matched per song; no loudness normalization across different songs. No human listening certification.",
+  "filters": [
+    {
+      "type": "highpass",
+      "hz": 26,
+      "Q": 0.707
+    },
+    {
+      "type": "peaking",
+      "hz": 230,
+      "Q": 0.8,
+      "gain_db": -1.5
+    },
+    {
+      "type": "highshelf",
+      "hz": 3200,
+      "gain_db": 0.5
+    }
+  ],
+  "rows": [
+    {
+      "song": "tabasco",
+      "source_sha256": "62659d83164c4730e95f20cccbaba33a0b7c32b8d540f9de74e0982a65a1d8a7",
+      "original_gain_db": -2.2,
+      "live_gain_db": -1.9,
+      "original": {
+        "lufs": -15.5,
+        "lra": 2.4,
+        "true_peak_dbtp": -2.3
+      },
+      "live_44100": {
+        "lufs": -15.5,
+        "lra": 2.4,
+        "true_peak": -1.5
+      },
+      "live_48000": {
+        "lufs": -15.5,
+        "lra": 2.5,
+        "true_peak_dbtp": -1.5
+      }
+    },
+    {
+      "song": "hey",
+      "source_sha256": "771947789488013c096800e5c7664c59c4aa7a5ec040e57e84ef5d2eb42c7bf8",
+      "original_gain_db": -2.2,
+      "live_gain_db": -1.8,
+      "original": {
+        "lufs": -17.1,
+        "lra": 7.4,
+        "true_peak_dbtp": -2.3
+      },
+      "live_44100": {
+        "lufs": -17.1,
+        "lra": 7.8,
+        "true_peak": -2.1
+      },
+      "live_48000": {
+        "lufs": -17.2,
+        "lra": 7.8,
+        "true_peak_dbtp": -2.1
+      }
+    },
+    {
+      "song": "i-got-a-feeling",
+      "source_sha256": "cb454a1116006750cda8f9635427182c97fb85327b0023884065e1eb613614fd",
+      "original_gain_db": -2.5,
+      "live_gain_db": -2.2,
+      "original": {
+        "lufs": -15.8,
+        "lra": 11.2,
+        "true_peak_dbtp": -2.1
+      },
+      "live_44100": {
+        "lufs": -15.8,
+        "lra": 11.9,
+        "true_peak": -1.5
+      },
+      "live_48000": {
+        "lufs": -15.8,
+        "lra": 11.9,
+        "true_peak_dbtp": -1.5
+      }
+    },
+    {
+      "song": "under-the-moon",
+      "source_sha256": "bb06e242380dd72c9440aca064ce89a0bebef115c432f26c1eb3c8a6a94327b5",
+      "original_gain_db": -2.2,
+      "live_gain_db": -1.8,
+      "original": {
+        "lufs": -17.8,
+        "lra": 9.4,
+        "true_peak_dbtp": -2.8
+      },
+      "live_44100": {
+        "lufs": -17.8,
+        "lra": 9.8,
+        "true_peak": -2.6
+      },
+      "live_48000": {
+        "lufs": -17.8,
+        "lra": 9.8,
+        "true_peak_dbtp": -2.6
+      }
+    },
+    {
+      "song": "electric-sheep",
+      "source_sha256": "65fc141a8d52bf2fa6278b31962bcc2b631750dad89ac0f9c16f861737be1e67",
+      "original_gain_db": -2.9,
+      "live_gain_db": -2.7,
+      "original": {
+        "lufs": -15.4,
+        "lra": 3.5,
+        "true_peak_dbtp": -2.2
+      },
+      "live_44100": {
+        "lufs": -15.4,
+        "lra": 3.6,
+        "true_peak": -1.5
+      },
+      "live_48000": {
+        "lufs": -15.4,
+        "lra": 3.6,
+        "true_peak_dbtp": -1.5
+      }
+    },
+    {
+      "song": "human-fly",
+      "source_sha256": "0f014916b85cb4182774b8ab371f489b826c76bcb2b3f93ca42f5c95471b6ab9",
+      "original_gain_db": -2.7,
+      "live_gain_db": -2.3,
+      "original": {
+        "lufs": -15.5,
+        "lra": 4.6,
+        "true_peak_dbtp": -2.4
+      },
+      "live_44100": {
+        "lufs": -15.5,
+        "lra": 5.0,
+        "true_peak": -1.5
+      },
+      "live_48000": {
+        "lufs": -15.5,
+        "lra": 5.0,
+        "true_peak_dbtp": -1.5
+      }
+    },
+    {
+      "song": "sister",
+      "source_sha256": "fe1676f7cfa31076162bb8c9007dda5c60648ccd5b9f7837f82f2427239ca18c",
+      "original_gain_db": -2.2,
+      "live_gain_db": -1.7,
+      "original": {
+        "lufs": -16.0,
+        "lra": 15.0,
+        "true_peak_dbtp": -2.6
+      },
+      "live_44100": {
+        "lufs": -16.0,
+        "lra": 15.3,
+        "true_peak": -2.3
+      },
+      "live_48000": {
+        "lufs": -16.0,
+        "lra": 15.3,
+        "true_peak_dbtp": -2.3
+      }
+    }
+  ],
+  "limits": [
+    "Gentle tonal correction, not source separation or restoration of missing multitracks.",
+    "No new compression, gate, widening or reverb; recorded bleed, distortion and codec limits remain.",
+    "Existing separated-stem mastering and AI instrument sound unchanged.",
+    "Desktop Chromium output; real iPhone and owner listening not certified."
+  ]
+}
