@@ -1,4 +1,4 @@
-import { GUITAR_KEYS, BASS_KEYS, nearestKey, MAX_BANK_BYTES } from "./bank.mjs?v=4";
+import { GUITAR_KEYS, BASS_KEYS, nearestKey, MAX_BANK_BYTES } from "./bank.mjs?v=5";
 import { createGuitarAmp } from "./amp.mjs?v=1";
 import { createBandRoom } from "./room.mjs?v=1";
 
@@ -10,7 +10,7 @@ export async function prepareInstrumentBank(context, { signal, progress = () => 
   if (cached?.context === context) return cached;
   cached = undefined;
   const bank = await new Promise((resolve, reject) => {
-    const worker = new Worker(new URL("./bank-worker.mjs?v=4", import.meta.url), { type: "module" });
+    const worker = new Worker(new URL("./bank-worker.mjs?v=5", import.meta.url), { type: "module" });
     let settled = false;
     const finish = (error, value) => {
       if (settled) return;
@@ -32,7 +32,9 @@ export async function prepareInstrumentBank(context, { signal, progress = () => 
   if (bank.bytes > MAX_BANK_BYTES || bank.sampleRate !== 32000) throw new Error("Invalid instrument bank");
   const buffers = new Map();
   for (const [key, samples] of Object.entries(bank.samples)) {
-    const buffer = context.createBuffer(1, samples.length, bank.sampleRate);
+    const rate = bank.sampleRates?.[key];
+    if (rate !== (key.startsWith("bass:") ? 16000 : 32000)) throw new Error("Invalid instrument sample rate");
+    const buffer = context.createBuffer(1, samples.length, rate);
     buffer.copyToChannel(samples, 0); buffers.set(key, buffer);
   }
   cached = { context, buffers, bytes: bank.bytes };
@@ -80,8 +82,9 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
     }
   }
 
-  function fire(part, key, time, velocity, rate = 1, duration = Infinity, technique = "open", upstroke = false) {
+  function fire(part, key, time, velocity, rate = 1, duration = Infinity, technique = "open", upstroke = false, maxDuration = Infinity) {
     if (disposed || !Number.isFinite(time) || !Number.isFinite(velocity) || velocity <= 0) return;
+    if (!(maxDuration >= 0.035)) return;
     if (time < context.currentTime - 0.05) return; // elapsed attacks when resuming inside a bar
     const buffer = bank.buffers.get(key);
     if (!buffer || pending.size >= 128) { stats.dropped++; return; }
@@ -93,7 +96,7 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
     const articulated = part === "guitar" && (palm || technique === "cut");
     const hold = Number.isFinite(duration) ? Math.max(articulated ? 0.025 : (part === "guitar" ? 0.2 : 0.12), duration) : Infinity;
     const tail = articulated ? (palm ? 0.065 : 0.025) : (part === "guitar" ? 1.8 : (part === "bass" ? 1.4 : 0.3));
-    const length = Math.max(0.035, Math.min(buffer.duration / rate, hold + tail));
+    const length = Math.min(maxDuration, Math.max(0.035, Math.min(buffer.duration / rate, hold + tail)));
     const releaseAt = at + Math.min(hold, length - 0.025);
     const level = Math.min(1, velocity) * (part === "guitar" ? 0.9 : (part === "melody" ? 0.46 : 1));
     gain.gain.setValueAtTime(level, at);
@@ -115,8 +118,9 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
   function string(part, keys) {
     return {
       _physical: true,
-      triggerAttackRelease(notes, duration, time, velocity = 0.7, { technique = "open", upstroke = false, sweep = 0.007, voicingSource = "fallback" } = {}) {
+      triggerAttackRelease(notes, duration, time, velocity = 0.7, { technique = "open", upstroke = false, sweep = 0.007, voicingSource = "fallback", maxDuration = Infinity } = {}) {
         if (disposed || !Number.isFinite(velocity) || velocity <= 0) return;
+        if (!(maxDuration >= 0.035)) return;
         const gate = Math.max(0.02, Number(seconds(duration)) || 0.2);
         if (Number(time) < context.currentTime - 0.05) return;
         const at = Math.max(context.currentTime, Number(time));
@@ -136,7 +140,7 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
           const key = part === "guitar" && technique === "palm" ? "palm" : (part === "melody" ? "guitar" : part);
           const offset = part === "guitar" ? i * spread : 0;
           // One fretting-hand release closes all strings of a cut together.
-          fire(part, `${key}:${root}`, at + offset, velocity * (part === "guitar" ? 1 - i * 0.06 : 1), 2 ** ((pitch - root) / 12), articulated ? Math.max(0.025, gate - offset) : gate, technique, upstroke);
+          fire(part, `${key}:${root}`, at + offset, velocity * (part === "guitar" ? 1 - i * 0.06 : 1), 2 ** ((pitch - root) / 12), articulated ? Math.max(0.025, gate - offset) : gate, technique, upstroke, maxDuration - offset);
         });
         if (part === "guitar" && stats.played > playedBefore) {
           stats.guitarStrokes[["palm", "cut"].includes(technique) ? technique : "open"]++;

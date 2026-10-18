@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v423 compact)
+# Band Room - Changelog (v65 -> v424 compact)
+
+## v424 — 2026-10-18
+
+2026-10-18 v424: AIベースの長い保持音が3秒の音源末尾で途切れる問題を修正。ベースだけ16 kHz／8秒へ延ばし、譜面の音長・自然減衰と次音でのdampingを保つ。53 buffer／15,274,240 bytes、再生node数と128発の上限は維持。原音・採譜イベント・ギター／ドラム音色は保持。分離前原音の終端を7曲の譜面metadataへ結び、ベースのreleaseを録音終端以内に収める。シーク直後の小節処理を確実に起動し、全パートが1小節遅れて鳴るケースも修正。分離前原音も参照し、裏付けの弱い音高変更は不採用。cache `hazama-fm-v424` / client `br-257` / bank v5 / adapter v7。
 
 ## v423 — 2026-10-18
 
@@ -29,7 +33,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v423. Latest Band Room runtime change: v423 (range-capable existing audio host). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v424. Latest Band Room runtime change: v424 (sustained bass holds). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

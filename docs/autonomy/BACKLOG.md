@@ -65,6 +65,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   BL-050の採譜忠実度の改善は継続する。
 
 ### BL-050 — Band Room AI 再現のパート別忠実度（原曲どおりに叩く・弾く）
+- update 2026-10-18: v424でAIベースの3秒bufferによる長音の途切れを修正。原音を基準にした残る採譜／音色の評価は継続。
 - priority : P1
 - repo     : Music
 - scope    : runtime / verify

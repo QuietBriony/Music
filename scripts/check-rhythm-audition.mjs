@@ -23,5 +23,5 @@ assert.throws(() => matchRhythmPair(a, new Float32Array(1000)));
 assert.throws(() => rhythmMetrics(new Float32Array([NaN])));
 const html = readFileSync('band-room.html', 'utf8'), sw = readFileSync('sw.js', 'utf8');
 assert.ok(html.includes('id="br-rhythm-audition"'));
-for (const file of ['rhythm-synthesis', 'rhythm-audition', 'rhythm-worker', 'rhythm-preview']) assert.ok(sw.includes(`audio/physical-band/${file}.mjs?v=1`));
+for (const file of ['rhythm-synthesis', 'rhythm-audition', 'rhythm-worker', 'rhythm-preview']) assert.ok(sw.includes(`audio/physical-band/${file}.mjs?v=2`));
 console.log('Rhythm audition: fixed isolated/groove score, finite stems, memory budget, level/headroom matching and offline assets passed');

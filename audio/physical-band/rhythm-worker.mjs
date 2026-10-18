@@ -1,4 +1,4 @@
-import { renderRhythmStems } from "./rhythm-audition.mjs?v=1";
+import { renderRhythmStems } from "./rhythm-audition.mjs?v=2";
 self.onmessage = () => {
   try {
     const stems = renderRhythmStems();

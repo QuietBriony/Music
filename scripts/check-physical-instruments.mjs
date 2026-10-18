@@ -4,23 +4,26 @@ import { midiFrequency } from '../audio/physical-band/dsp.mjs';
 import { createPhysicalBand, prepareInstrumentBank } from '../audio/physical-band/instruments.mjs';
 const bank=renderInstrumentBank();
 assert.ok(bank.bytes<MAX_BANK_BYTES); assert.equal(Object.keys(bank.samples).length,53);
-function pitch(data,note){
- const period=32000/midiFrequency(note), from=1920, to=Math.min(data.length-Math.ceil(period*1.2),7680), s=new Map();
+function pitch(data,note,rate=32000){
+ const period=rate/midiFrequency(note), from=Math.round(rate*.06), to=Math.min(data.length-Math.ceil(period*1.2),Math.round(rate*.24)), s=new Map();
  for(let lag=Math.floor(period*.9);lag<=Math.ceil(period*1.1);lag++){let dot=0,a=0,b=0;for(let i=from;i<to;i++){dot+=data[i]*data[i+lag];a+=data[i]**2;b+=data[i+lag]**2;}s.set(lag,dot/Math.sqrt(a*b));}
  const [lag,c]=[...s].sort((a,b)=>b[1]-a[1])[0], l=s.get(lag-1),r=s.get(lag+1);
- return 32000/(lag+.5*(l-r)/(l-2*c+r));
+ return rate/(lag+.5*(l-r)/(l-2*c+r));
 }
 for(const [key,data] of Object.entries(bank.samples)){
  assert.ok(data.every(Number.isFinite),key);assert.ok(data.at(-1)===0);assert.ok(data.some(x=>Math.abs(x)>.02));
  const mean=data.reduce((sum,x)=>sum+x,0)/data.length;assert.ok(Math.abs(mean)<.0001,`${key} DC ${mean}`);
- if(!key.startsWith('drums')&&!key.startsWith('palm')){const n=+key.split(':')[1],cents=1200*Math.log2(pitch(data,n)/midiFrequency(n));assert.ok(Math.abs(cents)<20,`${key}: ${cents}`);}
+ assert.equal(bank.sampleRates[key],key.startsWith('bass:')?16000:32000);
+ if(!key.startsWith('drums')&&!key.startsWith('palm')){const n=+key.split(':')[1],cents=1200*Math.log2(pitch(data,n,bank.sampleRates[key])/midiFrequency(n));assert.ok(Math.abs(cents)<20,`${key}: ${cents}`);}
 }
 for(let n=24;n<=84;n++){const keys=n<40?BASS_KEYS:GUITAR_KEYS; assert.ok(Math.abs(nearestKey(n,keys)-n)<=1);}
-const rms=(data,from,to)=>Math.sqrt(data.slice(Math.round(from*32000),Math.round(to*32000)).reduce((sum,x)=>sum+x*x,0)/Math.round((to-from)*32000));
+const rms=(data,from,to,rate=32000)=>Math.sqrt(data.slice(Math.round(from*rate),Math.round(to*rate)).reduce((sum,x)=>sum+x*x,0)/Math.round((to-from)*rate));
 assert.ok(rms(bank.samples['guitar:49'],.4,.65)>.001,'Open string retains an audible body after a short score gate');
-assert.ok(rms(bank.samples['bass:36'],.4,.65)>.003,'Bass body survives a short score gate');
+assert.ok(rms(bank.samples['bass:36'],.4,.65,16000)>.003,'Bass body survives a short score gate');
 assert.ok(rms(bank.samples['guitar:40'],1.6,1.9)/rms(bank.samples['guitar:40'],.08,.38)>.18,'Promoted electric guitar retains its low-string ring');
-assert.ok(rms(bank.samples['bass:27'],1.6,1.9)/rms(bank.samples['bass:27'],.08,.38)>.22,'Promoted electric bass retains its low-note body');
+assert.ok(rms(bank.samples['bass:27'],1.6,1.9,16000)/rms(bank.samples['bass:27'],.08,.38,16000)>.22,'Promoted electric bass retains its low-note body');
+assert.ok(rms(bank.samples['bass:30'],3.2,3.6,16000)>.003,'A scored long hold must not end at the old three-second buffer limit');
+assert.ok(rms(bank.samples['bass:30'],6,6.5,16000)>.0001,'The final Sister bass note retains its decaying fundamental');
 assert.ok(rms(bank.samples['palm:49'],.3,.5)<rms(bank.samples['guitar:49'],.3,.5)*.1,'Explicit palm articulation remains short');
 assert.ok(rms(bank.samples['drums:snare'],.2,.35)>.003,'Snare has a decaying body after its attack');
 assert.ok(bank.samples['drums:crash'].length===96000 && rms(bank.samples['drums:crash'],.8,1.1)>.006,'Promoted cymbal keeps a natural finite tail');
@@ -30,7 +33,7 @@ assert.notDeepEqual(bank.samples['drums:snare'],bank.samples['drums:snare-soft']
 const made=[];const param=()=>({value:0,setValueAtTime(){},linearRampToValueAtTime(){},setTargetAtTime(){},cancelScheduledValues(){}});
 function node(){const n={gain:param(),frequency:param(),Q:param(),pan:param(),delayTime:param(),playbackRate:param(),connect(){},disconnect(){this.disconnected=true;},start(t){this.startAt=t;},stop(t){this.stopAt=t;}};made.push(n);return n;}
 const context={currentTime:2,createGain:node,createBiquadFilter:node,createWaveShaper:node,createBufferSource:node,createDelay:node,createStereoPanner:node};
-const buffers=new Map(Object.entries(bank.samples).map(([k,s])=>[k,{duration:s.length/32000}]));
+const buffers=new Map(Object.entries(bank.samples).map(([k,s])=>[k,{duration:s.length/bank.sampleRates[k]}]));
 const band=createPhysicalBand(context,{buffers,bytes:bank.bytes},{},{connect:(s,t)=>s.connect(t),seconds:Number,midi:Number});
 band.bass.triggerAttackRelease(36,.2,1,.8);band.drums.snare.triggerAttackRelease('16n',1,.7);
 assert.equal(band.snapshot().pending,0,'Elapsed attacks on a mid-bar seek must not burst together at the current time');
@@ -48,6 +51,20 @@ assert.equal(band.snapshot().last.drums.key,'drums:snare-soft');
 band.drums.snare.triggerAttackRelease('16n',3.9,.8);
 assert.equal(band.snapshot().last.drums.key,'drums:snare');
 band.drums.dispose();
+let longStart=made.length;
+band.bass.triggerAttackRelease(31,6.63,3,.8);
+const longBass=made.slice(longStart).find(n=>Number.isFinite(n.startAt));
+assert.ok(longBass.stopAt>9.63,'Pitch-shifted bank sustains the complete scored hold, not just the first three seconds');
+band.bass.triggerAttackRelease(36,.12,4.2,.8);
+assert.ok(longBass.stopAt<=4.261,'A longer buffer must still damp promptly on the next bass note');
+band.bass.releaseAll();
+longStart=made.length;
+band.bass.triggerAttackRelease(31,6.63,3,.8,{maxDuration:1.2});
+const boundedBass=made.slice(longStart).find(n=>Number.isFinite(n.startAt));
+assert.ok(Math.abs(boundedBass.stopAt-4.2)<1e-8,'Recording end bounds the complete release, including a long buffer');
+band.bass.releaseAll();longStart=made.length;
+for(const maxDuration of [0,-1,NaN,.01])band.bass.triggerAttackRelease(31,6.63,3,.8,{maxDuration});
+assert.equal(made.length,longStart,'Out-of-recording notes allocate no audio nodes');
 let start=made.length;
 band.guitar.triggerAttackRelease([48,55,60],.12,4,.8,{technique:'cut',upstroke:true,sweep:.003});
 const cut=made.slice(start).filter(n=>Number.isFinite(n.startAt));

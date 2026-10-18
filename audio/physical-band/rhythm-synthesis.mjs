@@ -25,7 +25,7 @@ function advance(modes) {
 export function renderElectricBass({ note, duration, velocity = 1, technique = "finger" }, rate = 32000) {
   validate(rate, velocity);
   if (!Number.isFinite(note) || note < 24 || note > 60) throw new Error("Invalid bass note");
-  if (!Number.isFinite(duration) || duration < 0.02 || duration > 3) throw new Error("Invalid bass duration");
+  if (!Number.isFinite(duration) || duration < 0.02 || duration > 8) throw new Error("Invalid bass duration");
   if (!["finger", "mute"].includes(technique)) throw new Error("Invalid bass technique");
   const f0 = 440 * 2 ** ((note - 69) / 12), muted = technique === "mute";
   const t60 = (muted ? 0.55 : 10.5) / (1 + 0.12 * (note - 28) / 12);
