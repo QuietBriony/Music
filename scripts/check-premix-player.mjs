@@ -2,7 +2,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import vm from "node:vm";
-import { createPremixPlayer, PREMIX_GAIN } from "../audio/premix-player.mjs";
+import { createPremixPlayer, PREMIX_GAIN, premixMediaUrl } from "../audio/premix-player.mjs";
+
+const sourcePath = "presets/tabasco-premix/hey.m4a";
+for (const host of ["music-stack.pages.dev", "preview.music-stack.pages.dev"]) {
+  assert.equal(premixMediaUrl(sourcePath, `https://${host}/band-room`), `https://quietbriony.github.io/Music/${sourcePath}`);
+}
+for (const host of ["127.0.0.1:8767", "quietbriony.github.io", "unrelated.pages.dev", "music-stack.pages.dev.example.org"]) {
+  assert.equal(premixMediaUrl(sourcePath, `https://${host}/band-room`), sourcePath);
+}
 
 const catalog = JSON.parse(readFileSync("presets/bands.json", "utf8")).bands.tabasco.songs;
 const proof = JSON.parse(readFileSync("presets/tabasco-premix/provenance.json", "utf8"));
@@ -52,6 +60,7 @@ const output = { gain: { value: 0, cancelScheduledValues() {}, setValueAtTime(v)
 const context = { currentTime: 0, state: "running", destination: {}, addEventListener() {}, resume: () => Promise.resolve(),
   createMediaElementSource() { ++sources; return { connect() {} }; }, createGain: () => output };
 const p = createPremixPlayer({ media, getContext: () => { ++contextCalls; return context; } });
+assert.equal(media.crossOrigin, "anonymous");
 p.select(catalog[0]);
 assert.equal(contextCalls, 0); assert.equal(media.src, "");
 p.seek(12); assert.equal(p.snapshot().position, 12);

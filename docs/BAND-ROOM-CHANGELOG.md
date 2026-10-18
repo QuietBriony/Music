@@ -1,4 +1,10 @@
-# Band Room - Changelog (v65 -> v422 compact)
+# Band Room - Changelog (v65 -> v423 compact)
+
+## v423 — 2026-10-18
+
+2026-10-18 v423: 公開環境でCloudflare Pagesの音声Range要求が200の全体応答になることを確認。原音の音声だけを既存の同一Music GitHub Pagesへ向け、206の部分読み込みで途中移動できるようにする。CORSをsrc設定前に有効化し、Web Audioの消音を防ぐ。入口・7音源のbyte内容・共通−2.2 dB・AIの採譜と音色は保持。原音moduleにも版を付け、旧PWA cacheの参照を避ける。cache `hazama-fm-v423` / client `br-256` / CSS `br-96`。
+
+Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/serving-pages/#behavior 。実配信も200／GitHub Pagesは206+CORSを確認。新規hostingは作らない。
 
 ## v422 — 2026-10-18
 
@@ -23,7 +29,7 @@
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v422. Latest Band Room runtime change: v422 (stream original premix). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v423. Latest Band Room runtime change: v423 (range-capable existing audio host). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

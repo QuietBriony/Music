@@ -2,10 +2,19 @@
 export const PREMIX_GAIN_DB = -2.2;
 export const PREMIX_GAIN = 10 ** (PREMIX_GAIN_DB / 20);
 
+export function premixMediaUrl(path, pageHref = globalThis.location?.href || "http://localhost/") {
+  const host = new URL(pageHref).hostname;
+  // Pages currently returns full 200 responses to Range. Reuse our existing
+  // GitHub Pages copy, whose 206 + CORS responses allow seeking on phones.
+  return host === "music-stack.pages.dev" || host.endsWith(".music-stack.pages.dev")
+    ? new URL(path, "https://quietbriony.github.io/Music/").href : path;
+}
+
 export function createPremixPlayer({ media, getContext, onChange = () => {} }) {
   let context, source, output, song, token = 0, volume = 1, graphReady = false;
   let phase = "idle", error = "", offset = 0, loaded = false;
   media.preload = "none";
+  media.crossOrigin = "anonymous"; // Set before src so cross-host Web Audio is not muted.
   const snapshot = () => ({ songId: song?.id, phase, error, volume,
     position: loaded && media.readyState > 0 ? media.currentTime : offset,
     duration: loaded && Number.isFinite(media.duration) ? media.duration : song?.original_mix.duration_s || 0 });
@@ -55,7 +64,7 @@ export function createPremixPlayer({ media, getContext, onChange = () => {} }) {
         });
       }
       if (!graphReady) throw new Error("音声出力を準備できません。ページを開き直してください。");
-      if (!loaded) { loaded = true; media.src = song.original_mix.url; }
+      if (!loaded) { loaded = true; media.src = premixMediaUrl(song.original_mix.url); }
       if (media.ended) seek(0);
       gain(PREMIX_GAIN * volume);
       // Both calls remain inside the user's gesture, including iOS.
