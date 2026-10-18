@@ -1,4 +1,4 @@
-import { createPremixPlayer } from "./premix-player.mjs";
+import { createPremixPlayer } from "./premix-player.mjs?v=2";
 
 const original = document.documentElement.dataset.brSurface === "original";
 const $ = (id) => document.getElementById(id);
@@ -92,5 +92,5 @@ async function boot() {
     }
   }
   $("br-subtitle").textContent = "Tabasco. LIVE · 分離前の仮ミックス";
-  $("br-boot-status").textContent = "v422 · ライブ原音";
+  $("br-boot-status").textContent = "v423 · ライブ原音";
 }

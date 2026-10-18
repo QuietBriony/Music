@@ -1,5 +1,12 @@
 # Session Ledger — music-stack
 
+## 2026-10-18 — 原音の部分読み込みを既存配信先で修正（v423 / BL-050）
+
+2026-10-18 v423: 公開環境でCloudflare Pagesの音声Range要求が200の全体応答になることを確認。原音の音声だけを既存の同一Music GitHub Pagesへ向け、206の部分読み込みで途中移動できるようにする。CORSをsrc設定前に有効化し、Web Audioの消音を防ぐ。入口・7音源のbyte内容・共通−2.2 dB・AIの採譜と音色は保持。原音moduleにも版を付け、旧PWA cacheの参照を避ける。cache `hazama-fm-v423` / client `br-256` / CSS `br-96`。
+
+- v422の公開検証で見つけた配信側のRange非対応に対処。7曲の再生・消音・停止とPWA更新はv422でも通過したが、Cloudflare直配信のRangeは200だった。全14件206として完了扱いにしない。既存GitHub Pages音声の206/CORSを利用する。
+- baselineは同一c53123f HEADの直前のmerged gate（44 PASS / 0 FAIL / 0 SKIP、audit 0 BAD / 0 WARN、5 repo状態不変）。修正後のworking／candidate／mergedで全体gateを再実行し、同じ会話で差分再レビュー。ログは `output/playwright/premix-range-20261018/`。候補・merged SHAと公開証拠をPRへ戻す。本人聴感と実iPhoneは未確認。
+
 ## 2026-10-18 — 分離前の仮ミックスを既存Band Roomへ（v422 / BL-050）
 
 2026-10-18 v422: Tabascoの通常入口を、本人が公開承認した分離前の仮ミックス7曲の直接再生へ変更。M4Aはbyte一致のまま、再生時の共通−2.2 dBだけを加える。単一media elementをストリーム再生し、原音では既存のstem／AIエンジンを起動しない。ライブ原音／パート別／AI再現は同じページの明示リンクで切り替え、停止して開く。HAZAMAと明示的な練習リンクは既存経路。元からのにじみ・録音品質は残る。実iPhoneと本人聴感は未確認。cache `hazama-fm-v422` / client `br-255` / CSS `br-96`。

@@ -1,5 +1,7 @@
 # Runtime Browser Listening Checklist
 
+2026-10-18 v423: 公開環境でCloudflare Pagesの音声Range要求が200の全体応答になることを確認。原音の音声だけを既存の同一Music GitHub Pagesへ向け、206の部分読み込みで途中移動できるようにする。CORSをsrc設定前に有効化し、Web Audioの消音を防ぐ。入口・7音源のbyte内容・共通−2.2 dB・AIの採譜と音色は保持。原音moduleにも版を付け、旧PWA cacheの参照を避ける。cache `hazama-fm-v423` / client `br-256` / CSS `br-96`。
+
 2026-10-18 v422: Tabascoの原音入口は、本人が公開承認した分離前の仮ミックス7曲を1本ずつストリーム再生する。共通−2.2 dBのみ。原音ではstem／AIエンジンを起動せず、パート別・AIは明示リンクで停止して切り替える。原音のオンライン要件、残るにじみ、実iPhone・本人聴感の未確認を明示。cache `hazama-fm-v422` / client `br-255` / CSS `br-96`。
 
 2026-10-16 v421: 原音のライブ経路を各stemのEQ・声のコーラス／残響より前から合流させる。録音に含まれる位相と余韻を保ち、曲別trim・パート音量／ミュート・全体音量・REC・出力保護は共通。声は従来のdry量0.78に合わせる。厚めは従来のEQ／FX経路。ライブでは効かない声FXも無効表示し、設定値は保存する。原音・AIの音源／採譜は保持。数値は録音への忠実度を測るもので、本人聴感・実iPhoneの合格とはしない。cache `hazama-fm-v421` / client `br-254`。
