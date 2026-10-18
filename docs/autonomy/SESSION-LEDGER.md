@@ -1,5 +1,13 @@
 # Session Ledger — music-stack
 
+## 2026-10-18 — 分離前の仮ミックスを既存Band Roomへ（v422 / BL-050）
+
+2026-10-18 v422: Tabascoの通常入口を、本人が公開承認した分離前の仮ミックス7曲の直接再生へ変更。M4Aはbyte一致のまま、再生時の共通−2.2 dBだけを加える。単一media elementをストリーム再生し、原音では既存のstem／AIエンジンを起動しない。ライブ原音／パート別／AI再現は同じページの明示リンクで切り替え、停止して開く。HAZAMAと明示的な練習リンクは既存経路。元からのにじみ・録音品質は残る。実iPhoneと本人聴感は未確認。cache `hazama-fm-v422` / client `br-255` / CSS `br-96`。
+
+- 所有worktree: `C:\workspace\music-stack\Music-audio-stability`。同期main `70eee305e41bd7bf10b9c7a3529b31a3db7f0be6`。本人の7曲公開承認をAGENTSへ限定記録。単一会話で実装・再レビュー。
+- 検証と候補／merged HEADはこの作業のPRへ記録する。baseline／precommit／candidate／mergedの全体gateとaudit、5 repo fingerprint、元ファイルSHA256一致、実ブラウザの再生／seek／停止／エラーを照合。証跡は `output/playwright/premix-release-20261018/`。
+- 残件: 仮ミックスに元からあるにじみ、AIの不確かな採譜、本人聴感・実iPhone。原音直接再生とAI音源は区別する。
+
 ## 2026-10-16 — 原音ライブのまとまりを保つ経路（v421 / BL-050）
 
 - Scope: 本人の「磨き進めて／ライブ原音よくなった？」。同じ会話とMusic-audio-stability、同期main 1d0f63f。新規の公開先なし。

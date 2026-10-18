@@ -1,4 +1,11 @@
-# Band Room - Changelog (v65 -> v421 compact)
+# Band Room - Changelog (v65 -> v422 compact)
+
+## v422 — 2026-10-18
+
+2026-10-18 v422: Tabascoの通常入口を、本人が公開承認した分離前の仮ミックス7曲の直接再生へ変更。M4Aはbyte一致のまま、再生時の共通−2.2 dBだけを加える。単一media elementをストリーム再生し、原音では既存のstem／AIエンジンを起動しない。ライブ原音／パート別／AI再現は同じページの明示リンクで切り替え、停止して開く。HAZAMAと明示的な練習リンクは既存経路。元からのにじみ・録音品質は残る。実iPhoneと本人聴感は未確認。cache `hazama-fm-v422` / client `br-255` / CSS `br-96`。
+
+- Owner-approved source provenance: `presets/tabasco-premix/provenance.json` (7 assets, 46,658,249 bytes). No new site, model or dependency.
+- Stop/cancel invalidates pending playback; mute and headroom use Web Audio gain on mobile. No audio prefetch on installation. Track changes stay stopped.
 
 ## v421 — 2026-10-16
 
@@ -16,7 +23,7 @@
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v421. Latest Band Room runtime change: v421 (coherent original-live stem sum). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v422. Latest Band Room runtime change: v422 (stream original premix). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

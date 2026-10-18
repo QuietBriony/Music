@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-18 v422: Tabascoの通常入口を、本人が公開承認した分離前の仮ミックス7曲の直接再生へ変更。M4Aはbyte一致のまま、再生時の共通−2.2 dBだけを加える。単一media elementをストリーム再生し、原音では既存のstem／AIエンジンを起動しない。ライブ原音／パート別／AI再現は同じページの明示リンクで切り替え、停止して開く。HAZAMAと明示的な練習リンクは既存経路。元からのにじみ・録音品質は残る。実iPhoneと本人聴感は未確認。cache `hazama-fm-v422` / client `br-255` / CSS `br-96`。
+
 2026-10-16 v421: 原音のライブ経路を各stemのEQ・声のコーラス／残響より前から合流させる。録音に含まれる位相と余韻を保ち、曲別trim・パート音量／ミュート・全体音量・REC・出力保護は共通。声は従来のdry量0.78に合わせる。厚めは従来のEQ／FX経路。ライブでは効かない声FXも無効表示し、設定値は保存する。原音・AIの音源／採譜は保持。数値は録音への忠実度を測るもので、本人聴感・実iPhoneの合格とはしない。cache `hazama-fm-v421` / client `br-254`。
 
 2026-10-16（まとめ音色・場面）: 既存303／909ラックへ硬さ・うねり・空間の3マクロ、音色場面A〜Hと4／8／16小節の場面AUTOを追加。音符・打点・音量・BPM・固定を保持し、固定パートへの書込みを除外。既存clockの小節境界で切替、停止と手動操作は予約を取り消し、ドラッグ後は間隔を数え直す。従来AUTOと切替。場面棚は端末内と組み合わせJSONのmachine v3任意拡張へ保存し、旧保存を維持する。依存・音声・hostingは追加なし。最終HEADのgate、ブラウザ、公開照合は対応PR。実iPhoneと本人聴感は未確認。
@@ -260,8 +262,8 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v421`。Band Room runtime markerは`band-room.js?v=br-254` /
-  `band-room.css?v=br-95`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
+- 現行cacheは`hazama-fm-v422`。Band Room runtime markerは`band-room.js?v=br-255` /
+  `band-room.css?v=br-96`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
   ASR由来の`tabasco-lyrics-timed.json`を使う。`presets/tabasco-songs.json` v2は

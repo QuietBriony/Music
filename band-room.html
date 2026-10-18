@@ -6,7 +6,8 @@
 <title>Band Room — Air Rock Connect Box</title>
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
-<link rel="stylesheet" href="band-room.css?v=br-95" />
+<script src="audio/premix-entry.js?v=1"></script>
+<link rel="stylesheet" href="band-room.css?v=br-96" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -27,7 +28,8 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-254" defer></script>
+<script src="band-room.js?v=br-255" defer></script>
+<script type="module" src="audio/premix-preview.mjs?v=1"></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
 <script type="module" src="audio/physical-band/rhythm-preview.mjs?v=1"></script>
@@ -172,6 +174,33 @@
   </div>
 
   <main id="br-main">
+    <nav id="br-listening-mode" aria-label="聴き方">
+      <a data-mode="original" data-label="ライブ原音" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=original">ライブ原音</a>
+      <a data-mode="stems" data-label="パート別" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">パート別</a>
+      <a data-mode="synth" data-label="AI再現" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth">AI再現</a>
+    </nav>
+    <section id="br-premix" aria-labelledby="br-premix-heading">
+      <p class="br-premix-eyebrow">TABASCO. LIVE · 7 TRACKS</p>
+      <h2 id="br-premix-heading">バンドの音、そのまま。</h2>
+      <p>残っていた、分離前の仮ミックス。ギター・ベース・ドラム・声を、当時のバランスと余韻で聴く。</p>
+      <label for="br-premix-song">曲を選ぶ</label>
+      <select id="br-premix-song" disabled aria-label="ライブ原音の曲"></select>
+      <audio id="br-premix-audio" preload="none"></audio>
+      <div class="br-premix-transport">
+        <button id="br-premix-prev" type="button" aria-label="前の曲を選ぶ">前の曲</button>
+        <button id="br-premix-play" type="button" disabled>再生</button>
+        <button id="br-premix-stop" type="button" disabled>停止・先頭へ</button>
+        <button id="br-premix-next" type="button" aria-label="次の曲を選ぶ">次の曲</button>
+      </div>
+      <label for="br-premix-seek">再生位置 <output id="br-premix-time">0:00 / 0:00</output></label>
+      <input id="br-premix-seek" type="range" min="0" max="0" value="0" step="0.1" />
+      <label for="br-premix-volume">音量 <output id="br-premix-volume-value">100%</output></label>
+      <input id="br-premix-volume" type="range" min="0" max="100" value="100" step="1" />
+      <p id="br-premix-status" role="status" aria-live="polite">曲一覧を準備しています…</p>
+      <p class="br-help">原ファイルを再圧縮せず再生。音量だけ全曲共通で−2.2 dBに調整しています。分離前から入っているにじみは残ります。</p>
+      <p class="br-help">パートを消して練習するなら「パート別」、採譜した音符を合成音で鳴らすなら「AI再現」。切り替えると停止します。原音はオンラインで1曲ずつ読み込みます。</p>
+      <a href="listen.html">← Listenの一覧へ</a>
+    </section>
 
     <!-- ===== CORE (always visible) ===== -->
 
@@ -186,7 +215,7 @@
     <section id="br-mode" aria-label="Playback mode" aria-describedby="br-mode-status">
       <label class="br-radio">
         <input type="radio" name="br-mode" value="stems" checked />
-        <span>📻 原音</span>
+        <span>📻 パート別</span>
       </label>
       <label class="br-radio">
         <input type="radio" name="br-mode" value="synth" />
@@ -201,6 +230,7 @@
         </select>
       </label>
       <p id="br-mode-status" role="status" aria-live="polite" hidden></p>
+      <p class="br-help">パート別は分離した4音源の練習ミックスです。Tabascoの分離前の録音は上の「ライブ原音」で聴けます。</p>
     </section>
 
     <section id="br-arcb-instruments" hidden aria-label="ARCBの新しい楽器音">

@@ -53,14 +53,40 @@
       "sources": [{ "repo": "Music", "path": "fm.html" }, { "repo": "Music", "path": "fm.js" }, { "repo": "Music", "path": "audio/music-recorder.js" }]
     },
     {
-      "id": "band-room", "repo": "Music", "group": "browser", "status": "implemented",
-      "title": "Band Room / ARCB・Tabasco", "href": "band-room.html?band=tabasco&song=human-fly&mode=synth", "action": "開く",
-      "public_summary": "ARCBをギター・ベース・ドラムで合奏。原音からベースの弾き直しとドラムの打点・同時打ちを補正。ギターの打点と連続ストロークの和音も原音へ補正。短いTABASCOも曲に沿ったドラム譜で演奏。AIの開始・途中移動の時計も補正。原音ライブは声に追加の広がりをかけず、録音の余韻を生かします。従来の厚めと比較できます。",
-      "purpose": "ARCB 7曲へ比較試奏の3楽器を採用。低弦・胴鳴り・金属の余韻を鳴らす。原音を再分析してストロークごとにも和音・音域を補正し、曖昧な区間は従来の音符を保持。ギター3音色とロック／響かせる／カッティング／パームミュートの弾き方。上下のストローク、弦の余韻と共通の空気感。合奏の音量・帯域・時計を測定して補正。採譜空白は余韻を残し、未採譜melodyを明示。HAZAMAは別の既存音源。",
-      "first_step": "ARCBの曲を選び、AI再現でSTART。各パートを消して原音と聴き比べる。原音の仕上げはsound mix → ライブ／厚め。ギターはクランチ／ディストーション、弾き方はロックから。",
-      "outputs": "mix REC／4 stems pack／listening note。MIDI読込は先頭1小節のドラム用。",
-      "boundary": "melodyは採れた歌の音程を弦でなぞる。未採譜の曲は鳴らさず表示。歌声は未再現。ギター和音・奏法は近似で、原音の完全再現と実iPhone長時間負荷は未保証。HAZAMA 02は01 frames共有の暫定版。MIDI OUTはclock、INはphrase/section操作。",
-      "sources": [{ "repo": "Music", "path": "band-room.html" }, { "repo": "Music", "path": "band-room.js" }, { "repo": "Music", "path": "presets/bands.json" }]
+        "id": "band-room",
+        "repo": "Music",
+        "group": "browser",
+        "status": "implemented",
+        "title": "Band Room / ARCB・Tabasco",
+        "href": "band-room.html?band=tabasco&song=human-fly&mode=original",
+        "action": "開く",
+        "public_summary": "Tabascoのライブ原音7曲を、分離前の仮ミックスから直接再生。パート別の練習と、ギター・ベース・ドラムのAI再現も同じ入口で選べます。",
+        "purpose": "当時の仮ミックスのバランス・定位・余韻をそのまま聴く。パート別は従来の分離音源、AI再現は採譜を3楽器の合成音で演奏。ギターはクランチ／ディストーションと4奏法。HAZAMAは別の既存音源。",
+        "first_step": "ライブ原音 → 曲を選ぶ → 再生。パートを消して練習するときはパート別、合奏の合成音を聴くときはAI再現 → START。聴き方を切り替えると停止します。",
+        "outputs": "ライブ原音は7 M4Aを1曲ずつストリーム再生。パート別／AI再現では従来のmix REC・4 stems pack・listening note。",
+        "boundary": "原音は現存する仮ミックスで、元の録音トラックは残っていません。再圧縮なし、全曲共通−2.2 dBのみ。元からあるにじみは残ります。原音はオンライン再生で、自動連続再生・REC・パート操作はありません。曲変更は停止状態。AI再現は歌声・曖昧な音符・奏法を完全再現するものではなく、原音ファイルへの差し替えでもありません。HAZAMA 02は01 frames共有の暫定版。実iPhone長時間負荷と本人聴感は未確認。",
+        "sources": [
+          {
+            "repo": "Music",
+            "path": "band-room.html"
+          },
+          {
+            "repo": "Music",
+            "path": "band-room.js"
+          },
+          {
+            "repo": "Music",
+            "path": "presets/bands.json"
+          },
+          {
+            "repo": "Music",
+            "path": "audio/premix-player.mjs"
+          },
+          {
+            "repo": "Music",
+            "path": "presets/tabasco-premix/provenance.json"
+          }
+        ]
     },
     {
       "id": "lyric-lab", "repo": "Music", "group": "planning", "status": "implemented",

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "owner_approval": "2026-10-18: publish these seven surviving Tabasco premixes in the existing Music repository and Pages",
+  "source_role": "Owner-supplied premix before source separation. Raw recordings and multitracks no longer exist.",
+  "processing": "Files copied byte-for-byte. Playback gain only: -2.2 dB, common to all tracks. No new EQ, compression, reverb, separation or synthesis.",
+  "format": "AAC-LC, 44100 Hz, stereo, M4A container; original lossy encoding retained",
+  "files": [
+    {
+      "song_id": "tabasco",
+      "path": "presets/tabasco-premix/tabasco.m4a",
+      "bytes": 1311725,
+      "sha256": "62659d83164c4730e95f20cccbaba33a0b7c32b8d540f9de74e0982a65a1d8a7",
+      "title": "TABASCO",
+      "track": "01",
+      "duration_s": 44.721633
+    },
+    {
+      "song_id": "hey",
+      "path": "presets/tabasco-premix/hey.m4a",
+      "bytes": 9808785,
+      "sha256": "771947789488013c096800e5c7664c59c4aa7a5ec040e57e84ef5d2eb42c7bf8",
+      "title": "Hey",
+      "track": "02",
+      "duration_s": 304.924444
+    },
+    {
+      "song_id": "i-got-a-feeling",
+      "path": "presets/tabasco-premix/i-got-a-feeling.m4a",
+      "bytes": 9509755,
+      "sha256": "cb454a1116006750cda8f9635427182c97fb85327b0023884065e1eb613614fd",
+      "title": "I got a feeling",
+      "track": "03",
+      "duration_s": 368.73288
+    },
+    {
+      "song_id": "under-the-moon",
+      "path": "presets/tabasco-premix/under-the-moon.m4a",
+      "bytes": 7993253,
+      "sha256": "bb06e242380dd72c9440aca064ce89a0bebef115c432f26c1eb3c8a6a94327b5",
+      "title": "Under the Moon",
+      "track": "04",
+      "duration_s": 313.330068
+    },
+    {
+      "song_id": "electric-sheep",
+      "path": "presets/tabasco-premix/electric-sheep.m4a",
+      "bytes": 4911887,
+      "sha256": "65fc141a8d52bf2fa6278b31962bcc2b631750dad89ac0f9c16f861737be1e67",
+      "title": "Electric Sheep",
+      "track": "05",
+      "duration_s": 150.093787
+    },
+    {
+      "song_id": "human-fly",
+      "path": "presets/tabasco-premix/human-fly.m4a",
+      "bytes": 6005067,
+      "sha256": "0f014916b85cb4182774b8ab371f489b826c76bcb2b3f93ca42f5c95471b6ab9",
+      "title": "Human Fly",
+      "track": "06",
+      "duration_s": 239.490612
+    },
+    {
+      "song_id": "sister",
+      "path": "presets/tabasco-premix/sister.m4a",
+      "bytes": 7117777,
+      "sha256": "fe1676f7cfa31076162bb8c9007dda5c60648ccd5b9f7837f82f2427239ca18c",
+      "title": "Sister",
+      "track": "07",
+      "duration_s": 281.286531
+    }
+  ]
+}

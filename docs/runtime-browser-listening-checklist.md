@@ -1,5 +1,7 @@
 # Runtime Browser Listening Checklist
 
+2026-10-18 v422: Tabascoの原音入口は、本人が公開承認した分離前の仮ミックス7曲を1本ずつストリーム再生する。共通−2.2 dBのみ。原音ではstem／AIエンジンを起動せず、パート別・AIは明示リンクで停止して切り替える。原音のオンライン要件、残るにじみ、実iPhone・本人聴感の未確認を明示。cache `hazama-fm-v422` / client `br-255` / CSS `br-96`。
+
 2026-10-16 v421: 原音のライブ経路を各stemのEQ・声のコーラス／残響より前から合流させる。録音に含まれる位相と余韻を保ち、曲別trim・パート音量／ミュート・全体音量・REC・出力保護は共通。声は従来のdry量0.78に合わせる。厚めは従来のEQ／FX経路。ライブでは効かない声FXも無効表示し、設定値は保存する。原音・AIの音源／採譜は保持。数値は録音への忠実度を測るもので、本人聴感・実iPhoneの合格とはしない。cache `hazama-fm-v421` / client `br-254`。
 
 2026-10-13 v420: 原音otherの帯域エネルギーとspectral fluxを照合し、5曲のギター351打点を約12〜65 ms前へ補正。note-offと強弱を保持し、ベース・ドラムと同じ原音時刻に寄せた。連続ストロークの前後で安定し、CQTとlinear STFTの両方が支持する5和音を追加。従来の和音注釈は補正後の各行へ結び直す。原音・他パート・音源bankは保持。分離漏れと未採譜／曖昧な音は残り、完全再現・聴感合格とはしない。cache `hazama-fm-v420` / client `br-253`。
@@ -227,7 +229,7 @@ Run this when a PR touches `sw.js`, `fm.html`, or installed-app cache busting.
   `band-room.html`, and `sw.js`. Current repo markers include
   `engine.js?v=fm-119`, `fm.css?v=fm-54`, `fm.js?v=fm-72`,
   `audio/genre-flavor.js?v=fm-81`, `audio/ai-fills.js?v=fm-71`,
-  `style.css?v=fm-28`, `band-room.css?v=br-95`,
+  `style.css?v=fm-28`, `band-room.css?v=br-96`,
   `band-room.js?v=br-251`, `audio/audio-safety.js?v=br-68`,
   `manifest-band-room.webmanifest?v=br-icon-1`, and `hazama-fm-v418`.
 - For v395 Tabasco inventory retirement, update an existing installed PWA and confirm the
