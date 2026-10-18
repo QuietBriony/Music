@@ -3,7 +3,7 @@
   "format": "band-registry",
   "purpose": "band-room.html が読み込む band 一覧と各バンドの曲カタログ。新バンド追加はここに entry 追加 + 該当 stems / drum-frames を所定パスに配置するだけ。",
   "policy": {
-    "stores_audio": "stems_dir / optional stems_variants.stems_dir 配下のみ (Demucs 分離 mp3 or local generated preview mp3)",
+    "stores_audio": "stems_dir / optional stems_variants.stems_dir 配下のみ (Demucs 分離 mp3 or local generated preview mp3); owner-approved Tabasco premix originals: presets/tabasco-premix/*.m4a (2026-10-18)",
     "stores_lyrics_inline": false
   },
   "bands": {
@@ -19,7 +19,9 @@
           "production_visible": false,
           "local_preview": true,
           "stems_dir": "presets/ai-recreation-stems/tabasco",
-          "songs": ["human-fly"],
+          "songs": [
+            "human-fly"
+          ],
           "fallback_to_original": true,
           "stems": {
             "drums": "drums.mp3",
@@ -38,7 +40,12 @@
           "title": "TABASCO",
           "bpm": 136,
           "key": "D minor",
-          "duration_s": 44
+          "duration_s": 44,
+          "original_mix": {
+            "url": "presets/tabasco-premix/tabasco.m4a",
+            "duration_s": 44.721633,
+            "gain_db": -2.2
+          }
         },
         {
           "id": "hey",
@@ -53,6 +60,11 @@
             "drums_db": 2.3,
             "bass_db": 2.8,
             "other_db": 1.2
+          },
+          "original_mix": {
+            "url": "presets/tabasco-premix/hey.m4a",
+            "duration_s": 304.924444,
+            "gain_db": -2.2
           }
         },
         {
@@ -67,6 +79,11 @@
             "drums_db": 2.3,
             "bass_db": 2.6,
             "other_db": 1.2
+          },
+          "original_mix": {
+            "url": "presets/tabasco-premix/i-got-a-feeling.m4a",
+            "duration_s": 368.73288,
+            "gain_db": -2.2
           }
         },
         {
@@ -82,6 +99,11 @@
             "drums_db": 2.4,
             "bass_db": 3.2,
             "other_db": 1.7
+          },
+          "original_mix": {
+            "url": "presets/tabasco-premix/under-the-moon.m4a",
+            "duration_s": 313.330068,
+            "gain_db": -2.2
           }
         },
         {
@@ -94,6 +116,11 @@
           "kit_profile": "lcd-motorik",
           "stem_mastering": {
             "vocals_db": 1.4
+          },
+          "original_mix": {
+            "url": "presets/tabasco-premix/electric-sheep.m4a",
+            "duration_s": 150.093787,
+            "gain_db": -2.2
           }
         },
         {
@@ -109,6 +136,11 @@
             "drums_db": 2.4,
             "bass_db": 2.0,
             "other_db": 1.6
+          },
+          "original_mix": {
+            "url": "presets/tabasco-premix/human-fly.m4a",
+            "duration_s": 239.490612,
+            "gain_db": -2.2
           }
         },
         {
@@ -123,6 +155,11 @@
             "drums_db": 2.5,
             "bass_db": 2.7,
             "other_db": 1.8
+          },
+          "original_mix": {
+            "url": "presets/tabasco-premix/sister.m4a",
+            "duration_s": 281.286531,
+            "gain_db": -2.2
           }
         }
       ]
@@ -134,7 +171,10 @@
       "scene": "hypnotic dub-techno · 128 BPM · Underworld lineage (Rick Smith 相当=AI / Karl Hyde 相当=user)",
       "ui_hidden": true,
       "ui_hidden_note": "BL-041 AMBER。v401 AI authored-rest候補の人間再試聴と実mobile確認が未完了。メインの band selector には出さず、?band=hazama or ?dev=1 からのみアクセス。",
-      "playback_modes": ["stems", "synth"],
+      "playback_modes": [
+        "stems",
+        "synth"
+      ],
       "default_playback_mode": "stems",
       "playback_mode_note": "📻 原音 = 01メロウ / 02 Hard完成レンダーの Demucs 4-stem。🎛 AI 再現 = v401 authored-rest候補（02は01 authored framesデータ共有の暫定版。実演の微細な揺らぎは曲IDごと）。",
       "stems_dir": "presets/hazama-stems",

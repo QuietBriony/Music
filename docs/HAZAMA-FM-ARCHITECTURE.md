@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-18 v422: Tabascoの原音入口は、本人が公開承認した分離前の仮ミックス7曲を1本ずつストリーム再生する。共通−2.2 dBのみ。原音ではstem／AIエンジンを起動せず、パート別・AIは明示リンクで停止して切り替える。原音のオンライン要件、残るにじみ、実iPhone・本人聴感の未確認を明示。cache `hazama-fm-v422` / client `br-255` / CSS `br-96`。
+
 2026-10-16 v421: 原音のライブ経路を各stemのEQ・声のコーラス／残響より前から合流させる。録音に含まれる位相と余韻を保ち、曲別trim・パート音量／ミュート・全体音量・REC・出力保護は共通。声は従来のdry量0.78に合わせる。厚めは従来のEQ／FX経路。ライブでは効かない声FXも無効表示し、設定値は保存する。原音・AIの音源／採譜は保持。数値は録音への忠実度を測るもので、本人聴感・実iPhoneの合格とはしない。cache `hazama-fm-v421` / client `br-254`。
 
 2026-10-16（まとめ音色・場面）: 既存303／909ラックへ硬さ・うねり・空間の3マクロ、音色場面A〜Hと4／8／16小節の場面AUTOを追加。音符・打点・音量・BPM・固定を保持し、固定パートへの書込みを除外。既存clockの小節境界で切替、停止と手動操作は予約を取り消し、ドラッグ後は間隔を数え直す。従来AUTOと切替。場面棚は端末内と組み合わせJSONのmachine v3任意拡張へ保存し、旧保存を維持する。依存・音声・hostingは追加なし。最終HEADのgate、ブラウザ、公開照合は対応PR。実iPhoneと本人聴感は未確認。
@@ -127,7 +129,7 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > Current cache / asset tuple: `hazama-fm-v421`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-254`, `band-room.css?v=br-95`。
+> `band-room.js?v=br-255`, `band-room.css?v=br-96`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

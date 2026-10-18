@@ -2889,3 +2889,28 @@ body.br-bg-audio #br-audio-route-status {
   outline: 2px solid var(--accent-glass);
   outline-offset: 3px;
 }
+
+/* v422: streaming original; the practice engine remains behind explicit links. */
+#br-listening-mode { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+#br-listening-mode a { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 18px; border: 1px solid var(--panel-border); border-radius: 999px; color: var(--text); text-decoration: none; }
+#br-listening-mode a[aria-current="page"] { border-color: var(--air); background: rgba(10,186,181,.16); }
+#br-premix { display: none; max-width: 660px; margin: 0 auto 28px; padding: clamp(16px,4vw,32px); border: 1px solid var(--panel-border); border-radius: 20px; background: var(--panel); line-height: 1.75; }
+html[data-br-surface="original"] #br-premix { display: block; }
+html[data-br-surface="original"] #br-main > :not(#br-listening-mode):not(#br-premix):not(#br-footer):not(#br-sw-update) { display: none !important; }
+html[data-br-surface="original"] :is(#br-master-vol-bar, #br-help-toggle, #br-kbd-hint) { display: none !important; }
+#br-premix h2 { margin: 4px 0 14px; font-size: clamp(23px,6vw,32px); }
+#br-premix .br-premix-eyebrow { color: var(--air-soft); font-size: 12px; letter-spacing: .12em; }
+#br-premix .br-help { font-size: 13px; color: var(--text-sub); }
+#br-premix label { display: flex; justify-content: space-between; margin-top: 16px; }
+#br-premix select, #br-premix button { font: inherit; color: var(--text); background: var(--bg-2); border: 1px solid var(--panel-border); border-radius: 10px; min-height: 48px; padding: 8px 12px; }
+#br-premix select, #br-premix input { width: 100%; min-width: 0; }
+#br-premix input { min-height: 36px; accent-color: var(--air); }
+#br-premix button { cursor: pointer; }
+#br-premix button:disabled { opacity: .5; }
+#br-premix-play { border-color: var(--air) !important; flex-grow: 1; }
+.br-premix-transport { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 18px 0; }
+#br-premix-play { grid-column: 1; grid-row: 1; }
+#br-premix-stop { grid-column: 2; grid-row: 1; }
+#br-premix-status { min-height: 28px; color: var(--air-soft); }
+#br-premix a { color: var(--air-soft); }
+#br-premix :focus-visible, #br-listening-mode a:focus-visible { outline: 2px solid var(--air-soft); outline-offset: 3px; }

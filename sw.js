@@ -7,7 +7,7 @@
    - Bypasses Range requests (audio streams) and non-GET.
 ========================================================= */
 
-const VERSION = "hazama-fm-v421";
+const VERSION = "hazama-fm-v422";
 const CACHE_PREFIX = "hazama-fm-";
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
@@ -25,8 +25,12 @@ const PRECACHE_URLS = [
   "lyric-lab.css",
   "lyric-lab.js",
   "band-room.html",
-  "band-room.css?v=br-95",
-  "band-room.js?v=br-254",
+  "band-room.css?v=br-96",
+  "band-room.js?v=br-255",
+  "audio/premix-entry.js?v=1",
+  "audio/premix-preview.mjs?v=1",
+  "audio/premix-player.mjs",
+  "presets/tabasco-premix/provenance.json",
   "audio/physical-band/preview.mjs?v=5",
   "audio/physical-band/guitar-audition.mjs?v=2",
   "audio/physical-band/electric-string.mjs?v=1",
@@ -57,10 +61,6 @@ const PRECACHE_URLS = [
   "presets/drum-frames-hazama-still-moving-hard.json",
   "docs/hazama-lyrics.md",
   "presets/online-samples-catalog.json",
-  "presets/tabasco-stems/human-fly/vocals.mp3",
-  "presets/tabasco-stems/human-fly/drums.mp3",
-  "presets/tabasco-stems/human-fly/bass.mp3",
-  "presets/tabasco-stems/human-fly/other.mp3",
   "docs/tabasco-lyrics-draft.md",
   "docs/tabasco-lyrics-burroughs.md",
   "docs/tabasco-lyrics-final.md",
@@ -258,6 +258,10 @@ self.addEventListener("fetch", (event) => {
   if (request.headers.get("range")) return;
 
   const url = new URL(request.url);
+
+  // Original premixes are streamed on demand. Never clone whole recordings
+  // into the PWA cache (including browsers that omit Range on the first GET).
+  if (url.pathname.includes("/presets/tabasco-premix/") && url.pathname.endsWith(".m4a")) return;
 
   // Authenticated Cloudflare Pages Functions own their cache semantics. In
   // particular, Lyric Lab responses contain private shelf data and declare

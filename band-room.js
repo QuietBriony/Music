@@ -18,9 +18,10 @@
   "use strict";
 
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
+  if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-254-original-live-coherence";
-  const BANDROOM_RELEASE_VERSION = "v421";
+  const BANDROOM_APP_VERSION = "br-255-premix-original";
+  const BANDROOM_RELEASE_VERSION = "v422";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -8266,6 +8267,7 @@
   }
 
   function setBodyPlaybackMode(mode = currentMode) {
+    window.dispatchEvent(new CustomEvent("band-room:selection", { detail: { band: state.currentBandId, song: state.currentSongId, mode } }));
     if (document.body) document.body.dataset.mode = mode;
     syncPhysicalInstrumentUi();
     // v306: karaoke (stems) vs section-block (synth) lyric view differs by mode
@@ -10095,6 +10097,9 @@
   }
 
   function updateMediaSession(playState) {
+    window.dispatchEvent(new CustomEvent("band-room:selection", { detail: {
+      band: state.currentBandId, song: state.currentSongId, mode: currentMode
+    } }));
     if (!("mediaSession" in navigator)) return;
     ensureMediaSessionHandlers();
     try {
