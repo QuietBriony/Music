@@ -28,9 +28,9 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="audio/stem-live-mix.js?v=2" defer></script>
-<script src="band-room.js?v=br-260" defer></script>
-<script type="module" src="audio/premix-preview.mjs?v=5"></script>
+<script src="audio/stem-live-mix.js?v=3" defer></script>
+<script src="band-room.js?v=br-261" defer></script>
+<script type="module" src="audio/premix-preview.mjs?v=6"></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
 <script type="module" src="audio/physical-band/rhythm-preview.mjs?v=2"></script>
@@ -433,7 +433,7 @@
 
         <section id="br-coherent-mix" aria-label="調和ミックスのバランス" data-scope="stems">
           <h3>調和ミックスのバランス</h3>
-          <p class="br-help">80が基準。声の突出と余分な反射を抑え、バンドの打感と元の余韻を残します。自分の音量設定は保持されます。音を消す練習ボタンも使えます。</p>
+          <p class="br-help">80が基準。追加の響きの重なりを抑え、声と楽器の打感・録音に残る余韻を保ちます。自分の音量設定は保持されます。音を消す練習ボタンも使えます。</p>
           <label><span>ボーカル</span><input type="range" id="br-live-vocals" min="0" max="100" value="80" /></label>
           <label><span>ドラム</span><input type="range" id="br-live-drums" min="0" max="100" value="80" /></label>
           <label><span>ベース</span><input type="range" id="br-live-bass" min="0" max="100" value="80" /></label>

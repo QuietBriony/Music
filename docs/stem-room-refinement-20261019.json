@@ -1,0 +1,5951 @@
+{
+  "date": "2026-10-19",
+  "release": "v428",
+  "baseline_commit": "10f57d9afd1b3dd1f78dbdb6fc1c03e08ace32b2",
+  "factory_sha256": "f43e3e365ab470f98cda767fe2eb9752f33709bd1041c242cd658f05f76812d8",
+  "method": "Unchanged seven premixes and 28 separated MP3s. Native OfflineAudioContext at 48 kHz using production factory. Four fixed windows/song inherited from v427 (prior, active vocal/band ratio, loud drums, energy drop). Raw original aligned by 1105/44100 seconds, stereo RMS matched. These are signal proxies, not verified lyric/event labels. Added room is isolated by subtracting otherwise-identical zero-room output without RMS normalization. Original-based 5 ms envelope peaks compare attack -10..+20 ms and tail +50..250 ms. Full song uses faders80/master100/loudness-1/blend gate .45 and unchanged song trims, independently measured by FFmpeg EBU R128/true peak. No listening verdict is claimed.",
+  "selection": {
+    "adopted": "light",
+    "alternatives": [
+      "baseline",
+      "shaped",
+      "dry"
+    ],
+    "reason": "Lower only common room gain to .65; preserve relative part sends, existing EQ, direct signal and recorded tails. Less envelope deviation than shaped room, with similar original-referenced tail/attack error. Zero-room is a diagnostic comparator, not adopted because user requests some common live space. All measured original-reference improvements are small, not a clarity or separation score."
+  },
+  "window_comparison": {
+    "bands": [
+      [
+        40,
+        120
+      ],
+      [
+        120,
+        300
+      ],
+      [
+        300,
+        1000
+      ],
+      [
+        1000,
+        4000
+      ],
+      [
+        4000,
+        12000
+      ]
+    ],
+    "summary": {
+      "baseline": {
+        "mean_abs_band_delta_db": 0.4403,
+        "high_band_mean_delta_db": 0.2617,
+        "min_envelope_correlation": 1
+      },
+      "light": {
+        "mean_abs_band_delta_db": 0.4363,
+        "high_band_mean_delta_db": 0.263,
+        "min_envelope_correlation": 0.9993343
+      },
+      "shaped": {
+        "mean_abs_band_delta_db": 0.4319,
+        "high_band_mean_delta_db": 0.2548,
+        "min_envelope_correlation": 0.9980575
+      },
+      "dry": {
+        "mean_abs_band_delta_db": 0.4311,
+        "high_band_mean_delta_db": 0.2595,
+        "min_envelope_correlation": 0.9945178
+      }
+    },
+    "rows": [
+      {
+        "song": "tabasco",
+        "kind": "prior",
+        "start_s": 14.025056689342403,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.7542,
+              -0.4839,
+              -0.134,
+              0.3512,
+              0.458
+            ],
+            "crest_db": 16.3901
+          },
+          "light": {
+            "band_db": [
+              0.7496,
+              -0.4796,
+              -0.1311,
+              0.3392,
+              0.4554
+            ],
+            "crest_db": 16.4056,
+            "envelope_correlation": 0.9999526,
+            "envelope_delta_db_p5_p95": [
+              -0.0666,
+              0.0649
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.7435,
+              -0.4783,
+              -0.134,
+              0.3497,
+              0.4553
+            ],
+            "crest_db": 16.4119,
+            "envelope_correlation": 0.999842,
+            "envelope_delta_db_p5_p95": [
+              -0.1154,
+              0.1185
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.7359,
+              -0.4729,
+              -0.1196,
+              0.3239,
+              0.4481
+            ],
+            "crest_db": 16.4288,
+            "envelope_correlation": 0.9996099,
+            "envelope_delta_db_p5_p95": [
+              -0.1881,
+              0.1882
+            ]
+          }
+        }
+      },
+      {
+        "song": "tabasco",
+        "kind": "vocal-forward",
+        "start_s": 12,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.8777,
+              -0.4101,
+              -0.0699,
+              0.3151,
+              0.4798
+            ],
+            "crest_db": 15.685
+          },
+          "light": {
+            "band_db": [
+              0.8749,
+              -0.406,
+              -0.0748,
+              0.3112,
+              0.4794
+            ],
+            "crest_db": 15.6941,
+            "envelope_correlation": 0.9999407,
+            "envelope_delta_db_p5_p95": [
+              -0.0716,
+              0.065
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.8695,
+              -0.4081,
+              -0.071,
+              0.3194,
+              0.4797
+            ],
+            "crest_db": 15.7137,
+            "envelope_correlation": 0.9998122,
+            "envelope_delta_db_p5_p95": [
+              -0.1211,
+              0.1111
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.8642,
+              -0.3997,
+              -0.0793,
+              0.3119,
+              0.4765
+            ],
+            "crest_db": 15.7049,
+            "envelope_correlation": 0.9995188,
+            "envelope_delta_db_p5_p95": [
+              -0.1974,
+              0.1906
+            ]
+          }
+        }
+      },
+      {
+        "song": "tabasco",
+        "kind": "drum-loud",
+        "start_s": 18,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.6975,
+              -0.5382,
+              -0.1694,
+              0.3659,
+              0.4427
+            ],
+            "crest_db": 16.3322
+          },
+          "light": {
+            "band_db": [
+              0.6929,
+              -0.5343,
+              -0.1624,
+              0.3515,
+              0.4399
+            ],
+            "crest_db": 16.3478,
+            "envelope_correlation": 0.9999533,
+            "envelope_delta_db_p5_p95": [
+              -0.0708,
+              0.0662
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.687,
+              -0.5335,
+              -0.1665,
+              0.3615,
+              0.4399
+            ],
+            "crest_db": 16.3543,
+            "envelope_correlation": 0.9998462,
+            "envelope_delta_db_p5_p95": [
+              -0.118,
+              0.1204
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.6791,
+              -0.5281,
+              -0.1424,
+              0.331,
+              0.4319
+            ],
+            "crest_db": 16.3709,
+            "envelope_correlation": 0.999615,
+            "envelope_delta_db_p5_p95": [
+              -0.1979,
+              0.2037
+            ]
+          }
+        }
+      },
+      {
+        "song": "tabasco",
+        "kind": "decay",
+        "start_s": 35,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.7388,
+              -0.4315,
+              -0.0461,
+              0.3554,
+              0.3476
+            ],
+            "crest_db": 18.003
+          },
+          "light": {
+            "band_db": [
+              0.735,
+              -0.4254,
+              -0.0395,
+              0.3414,
+              0.3416
+            ],
+            "crest_db": 18.0025,
+            "envelope_correlation": 0.9999812,
+            "envelope_delta_db_p5_p95": [
+              -0.065,
+              0.0793
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.7265,
+              -0.421,
+              -0.0358,
+              0.3378,
+              0.3356
+            ],
+            "crest_db": 17.9959,
+            "envelope_correlation": 0.9999181,
+            "envelope_delta_db_p5_p95": [
+              -0.1125,
+              0.1756
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.7233,
+              -0.4152,
+              -0.0235,
+              0.3224,
+              0.33
+            ],
+            "crest_db": 17.9964,
+            "envelope_correlation": 0.9998486,
+            "envelope_delta_db_p5_p95": [
+              -0.1819,
+              0.2281
+            ]
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "prior",
+        "start_s": 37.02505668934241,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.8521,
+              -0.1451,
+              -0.0505,
+              0.5534,
+              0.1089
+            ],
+            "crest_db": 19.6742
+          },
+          "light": {
+            "band_db": [
+              0.8277,
+              -0.1353,
+              -0.0732,
+              0.5235,
+              0.0867
+            ],
+            "crest_db": 19.6624,
+            "envelope_correlation": 0.9998795,
+            "envelope_delta_db_p5_p95": [
+              -0.1039,
+              0.1226
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.8024,
+              -0.128,
+              -0.0711,
+              0.5097,
+              0.0684
+            ],
+            "crest_db": 19.6412,
+            "envelope_correlation": 0.9993089,
+            "envelope_delta_db_p5_p95": [
+              -0.24,
+              0.2989
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.7758,
+              -0.1165,
+              -0.1113,
+              0.4715,
+              0.0434
+            ],
+            "crest_db": 19.6337,
+            "envelope_correlation": 0.9990263,
+            "envelope_delta_db_p5_p95": [
+              -0.2953,
+              0.3396
+            ]
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "vocal-forward",
+        "start_s": 267,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.5719,
+              -0.1149,
+              0.0379,
+              -0.37,
+              0.2338
+            ],
+            "crest_db": 15.4674
+          },
+          "light": {
+            "band_db": [
+              1.5826,
+              -0.111,
+              0.0252,
+              -0.3747,
+              0.2496
+            ],
+            "crest_db": 15.4937,
+            "envelope_correlation": 0.9996903,
+            "envelope_delta_db_p5_p95": [
+              -0.0941,
+              0.0855
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.5793,
+              -0.1306,
+              0.0444,
+              -0.3591,
+              0.2545
+            ],
+            "crest_db": 15.5053,
+            "envelope_correlation": 0.9989505,
+            "envelope_delta_db_p5_p95": [
+              -0.1783,
+              0.148
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.5883,
+              -0.1101,
+              0.0112,
+              -0.3738,
+              0.2696
+            ],
+            "crest_db": 15.5268,
+            "envelope_correlation": 0.9974758,
+            "envelope_delta_db_p5_p95": [
+              -0.2666,
+              0.2487
+            ]
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "drum-loud",
+        "start_s": 97,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.1054,
+              -0.2994,
+              -0.0477,
+              0.004,
+              0.1219
+            ],
+            "crest_db": 15.7522
+          },
+          "light": {
+            "band_db": [
+              1.1122,
+              -0.2968,
+              -0.0632,
+              0.0042,
+              0.1324
+            ],
+            "crest_db": 15.7308,
+            "envelope_correlation": 0.9999062,
+            "envelope_delta_db_p5_p95": [
+              -0.0763,
+              0.0722
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.1062,
+              -0.3,
+              -0.0556,
+              0.0105,
+              0.1331
+            ],
+            "crest_db": 15.7486,
+            "envelope_correlation": 0.9995459,
+            "envelope_delta_db_p5_p95": [
+              -0.1679,
+              0.1486
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.1176,
+              -0.2935,
+              -0.0853,
+              0.0114,
+              0.1493
+            ],
+            "crest_db": 15.6843,
+            "envelope_correlation": 0.9992412,
+            "envelope_delta_db_p5_p95": [
+              -0.2202,
+              0.2102
+            ]
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "decay",
+        "start_s": 295,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.6018,
+              -0.7112,
+              0.1817,
+              0.5824,
+              0.2924
+            ],
+            "crest_db": 15.4333
+          },
+          "light": {
+            "band_db": [
+              0.5826,
+              -0.7183,
+              0.2025,
+              0.5339,
+              0.2717
+            ],
+            "crest_db": 15.4166,
+            "envelope_correlation": 0.9998411,
+            "envelope_delta_db_p5_p95": [
+              -0.0931,
+              0.1322
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.5925,
+              -0.6869,
+              0.1771,
+              0.558,
+              0.2829
+            ],
+            "crest_db": 15.4641,
+            "envelope_correlation": 0.9998011,
+            "envelope_delta_db_p5_p95": [
+              -0.0975,
+              0.1614
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.5386,
+              -0.7345,
+              0.2424,
+              0.4478,
+              0.2315
+            ],
+            "crest_db": 15.4628,
+            "envelope_correlation": 0.9987035,
+            "envelope_delta_db_p5_p95": [
+              -0.267,
+              0.37
+            ]
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "prior",
+        "start_s": 178.0250566893424,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.5708,
+              0.1761,
+              -0.125,
+              -0.3083,
+              0.2699
+            ],
+            "crest_db": 15.6771
+          },
+          "light": {
+            "band_db": [
+              1.5796,
+              0.2183,
+              -0.1488,
+              -0.319,
+              0.2711
+            ],
+            "crest_db": 15.7034,
+            "envelope_correlation": 0.9996013,
+            "envelope_delta_db_p5_p95": [
+              -0.1134,
+              0.0991
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.557,
+              0.2441,
+              -0.1417,
+              -0.3297,
+              0.2444
+            ],
+            "crest_db": 15.6761,
+            "envelope_correlation": 0.9991888,
+            "envelope_delta_db_p5_p95": [
+              -0.1275,
+              0.1732
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.581,
+              0.2887,
+              -0.1888,
+              -0.3319,
+              0.2638
+            ],
+            "crest_db": 15.7375,
+            "envelope_correlation": 0.9967644,
+            "envelope_delta_db_p5_p95": [
+              -0.3204,
+              0.277
+            ]
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "vocal-forward",
+        "start_s": 263,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.3119,
+              -0.0644,
+              0.0748,
+              -0.162,
+              0.0599
+            ],
+            "crest_db": 14.3517
+          },
+          "light": {
+            "band_db": [
+              1.2928,
+              -0.0404,
+              0.0564,
+              -0.2097,
+              0.0326
+            ],
+            "crest_db": 14.442,
+            "envelope_correlation": 0.9993343,
+            "envelope_delta_db_p5_p95": [
+              -0.1755,
+              0.1959
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.2399,
+              -0.0189,
+              0.0395,
+              -0.2486,
+              -0.0235
+            ],
+            "crest_db": 14.3007,
+            "envelope_correlation": 0.9980575,
+            "envelope_delta_db_p5_p95": [
+              -0.3655,
+              0.3415
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.2336,
+              0.0016,
+              0.0243,
+              -0.2966,
+              -0.0357
+            ],
+            "crest_db": 14.5822,
+            "envelope_correlation": 0.9945178,
+            "envelope_delta_db_p5_p95": [
+              -0.5146,
+              0.5562
+            ]
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "drum-loud",
+        "start_s": 338,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.1226,
+              -0.0332,
+              -0.1365,
+              -0.3438,
+              0.709
+            ],
+            "crest_db": 15.0352
+          },
+          "light": {
+            "band_db": [
+              1.1375,
+              -0.0083,
+              -0.1518,
+              -0.3626,
+              0.7224
+            ],
+            "crest_db": 15.0516,
+            "envelope_correlation": 0.9995549,
+            "envelope_delta_db_p5_p95": [
+              -0.0925,
+              0.0751
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.1219,
+              -0.018,
+              -0.1332,
+              -0.3597,
+              0.7075
+            ],
+            "crest_db": 15.0438,
+            "envelope_correlation": 0.9993906,
+            "envelope_delta_db_p5_p95": [
+              -0.0866,
+              0.0943
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.1536,
+              0.0306,
+              -0.1759,
+              -0.3894,
+              0.7403
+            ],
+            "crest_db": 15.0705,
+            "envelope_correlation": 0.9963418,
+            "envelope_delta_db_p5_p95": [
+              -0.2704,
+              0.2189
+            ]
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "decay",
+        "start_s": 359,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.9381,
+              -0.1169,
+              0.2824,
+              -0.4024,
+              -0.4837
+            ],
+            "crest_db": 16.5668
+          },
+          "light": {
+            "band_db": [
+              0.9357,
+              -0.086,
+              0.2865,
+              -0.4309,
+              -0.4919
+            ],
+            "crest_db": 16.4196,
+            "envelope_correlation": 0.9998512,
+            "envelope_delta_db_p5_p95": [
+              -0.1216,
+              0.1853
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.9211,
+              -0.0614,
+              0.2764,
+              -0.4286,
+              -0.5061
+            ],
+            "crest_db": 16.5542,
+            "envelope_correlation": 0.9997421,
+            "envelope_delta_db_p5_p95": [
+              -0.1943,
+              0.253
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.9136,
+              -0.0399,
+              0.2956,
+              -0.4777,
+              -0.5128
+            ],
+            "crest_db": 16.1209,
+            "envelope_correlation": 0.9987689,
+            "envelope_delta_db_p5_p95": [
+              -0.3567,
+              0.5431
+            ]
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "prior",
+        "start_s": 62.02505668934241,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.3109,
+              -0.1207,
+              -0.2793,
+              0.1439,
+              0.2327
+            ],
+            "crest_db": 16.8518
+          },
+          "light": {
+            "band_db": [
+              1.3279,
+              -0.1291,
+              -0.2707,
+              0.1373,
+              0.2416
+            ],
+            "crest_db": 16.773,
+            "envelope_correlation": 0.9997143,
+            "envelope_delta_db_p5_p95": [
+              -0.0975,
+              0.1004
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.3155,
+              -0.1095,
+              -0.2905,
+              0.138,
+              0.2252
+            ],
+            "crest_db": 16.6033,
+            "envelope_correlation": 0.9988087,
+            "envelope_delta_db_p5_p95": [
+              -0.1732,
+              0.1956
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.3459,
+              -0.1464,
+              -0.2472,
+              0.1283,
+              0.2513
+            ],
+            "crest_db": 16.6093,
+            "envelope_correlation": 0.9976415,
+            "envelope_delta_db_p5_p95": [
+              -0.2737,
+              0.2869
+            ]
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "vocal-forward",
+        "start_s": 212,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.1466,
+              -0.1613,
+              -0.0402,
+              -0.2437,
+              -0.4917
+            ],
+            "crest_db": 15.7208
+          },
+          "light": {
+            "band_db": [
+              1.1514,
+              -0.1453,
+              -0.0837,
+              -0.2932,
+              -0.4859
+            ],
+            "crest_db": 15.7764,
+            "envelope_correlation": 0.9996932,
+            "envelope_delta_db_p5_p95": [
+              -0.1328,
+              0.1233
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.1332,
+              -0.1434,
+              -0.0783,
+              -0.2685,
+              -0.4968
+            ],
+            "crest_db": 15.8287,
+            "envelope_correlation": 0.9987301,
+            "envelope_delta_db_p5_p95": [
+              -0.2595,
+              0.2241
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.1485,
+              -0.118,
+              -0.1514,
+              -0.3777,
+              -0.4824
+            ],
+            "crest_db": 15.8659,
+            "envelope_correlation": 0.99753,
+            "envelope_delta_db_p5_p95": [
+              -0.3833,
+              0.3462
+            ]
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "drum-loud",
+        "start_s": 166,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.0065,
+              -0.5367,
+              0.2983,
+              0.571,
+              0.5711
+            ],
+            "crest_db": 16.3984
+          },
+          "light": {
+            "band_db": [
+              0.9903,
+              -0.4981,
+              0.2607,
+              0.5413,
+              0.5538
+            ],
+            "crest_db": 16.3515,
+            "envelope_correlation": 0.999828,
+            "envelope_delta_db_p5_p95": [
+              -0.1025,
+              0.0652
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.9986,
+              -0.4539,
+              0.1754,
+              0.5722,
+              0.5628
+            ],
+            "crest_db": 16.3117,
+            "envelope_correlation": 0.9992769,
+            "envelope_delta_db_p5_p95": [
+              -0.2269,
+              0.1348
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.9532,
+              -0.4308,
+              0.1956,
+              0.4907,
+              0.5187
+            ],
+            "crest_db": 16.2571,
+            "envelope_correlation": 0.9986415,
+            "envelope_delta_db_p5_p95": [
+              -0.2943,
+              0.1821
+            ]
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "decay",
+        "start_s": 303,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.5595,
+              0.0222,
+              -0.3287,
+              -0.0897,
+              -1.0836
+            ],
+            "crest_db": 15.7057
+          },
+          "light": {
+            "band_db": [
+              0.5892,
+              0.0155,
+              -0.2907,
+              -0.0266,
+              -1.0363
+            ],
+            "crest_db": 15.702,
+            "envelope_correlation": 0.9999465,
+            "envelope_delta_db_p5_p95": [
+              -0.0754,
+              0.0998
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.6022,
+              0.0108,
+              -0.2572,
+              0.0102,
+              -1.0032
+            ],
+            "crest_db": 15.7656,
+            "envelope_correlation": 0.9997733,
+            "envelope_delta_db_p5_p95": [
+              -0.1578,
+              0.2062
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.6399,
+              0.0023,
+              -0.2129,
+              0.1006,
+              -0.949
+            ],
+            "crest_db": 15.7725,
+            "envelope_correlation": 0.9995545,
+            "envelope_delta_db_p5_p95": [
+              -0.2185,
+              0.2905
+            ]
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "prior",
+        "start_s": 14.025056689342403,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.4863,
+              -0.4541,
+              0.0367,
+              0.3438,
+              0.3232
+            ],
+            "crest_db": 16.5514
+          },
+          "light": {
+            "band_db": [
+              0.4866,
+              -0.4472,
+              0.0391,
+              0.3326,
+              0.3181
+            ],
+            "crest_db": 16.5494,
+            "envelope_correlation": 0.99995,
+            "envelope_delta_db_p5_p95": [
+              -0.0492,
+              0.0485
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.4826,
+              -0.4516,
+              0.0516,
+              0.3356,
+              0.3089
+            ],
+            "crest_db": 16.5578,
+            "envelope_correlation": 0.9998241,
+            "envelope_delta_db_p5_p95": [
+              -0.0907,
+              0.0875
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.4803,
+              -0.437,
+              0.0463,
+              0.3177,
+              0.3068
+            ],
+            "crest_db": 16.5383,
+            "envelope_correlation": 0.9995944,
+            "envelope_delta_db_p5_p95": [
+              -0.1383,
+              0.14
+            ]
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "vocal-forward",
+        "start_s": 131,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.7388,
+              -0.4589,
+              0.0112,
+              0.2263,
+              0.3642
+            ],
+            "crest_db": 16.7395
+          },
+          "light": {
+            "band_db": [
+              0.7337,
+              -0.4369,
+              0.0129,
+              0.2007,
+              0.3532
+            ],
+            "crest_db": 16.7057,
+            "envelope_correlation": 0.9999092,
+            "envelope_delta_db_p5_p95": [
+              -0.0677,
+              0.064
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.7206,
+              -0.4274,
+              0.0214,
+              0.198,
+              0.3342
+            ],
+            "crest_db": 16.6412,
+            "envelope_correlation": 0.9997251,
+            "envelope_delta_db_p5_p95": [
+              -0.0922,
+              0.1091
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.7153,
+              -0.4008,
+              0.0204,
+              0.1597,
+              0.3305
+            ],
+            "crest_db": 16.6342,
+            "envelope_correlation": 0.9992699,
+            "envelope_delta_db_p5_p95": [
+              -0.1874,
+              0.1849
+            ]
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "drum-loud",
+        "start_s": 80,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.6147,
+              -0.5603,
+              0.0811,
+              0.3695,
+              0.3211
+            ],
+            "crest_db": 16.6549
+          },
+          "light": {
+            "band_db": [
+              0.6128,
+              -0.5552,
+              0.0811,
+              0.3611,
+              0.3194
+            ],
+            "crest_db": 16.6571,
+            "envelope_correlation": 0.9998343,
+            "envelope_delta_db_p5_p95": [
+              -0.0801,
+              0.0953
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.5898,
+              -0.5738,
+              0.1085,
+              0.3388,
+              0.2974
+            ],
+            "crest_db": 16.6398,
+            "envelope_correlation": 0.9994318,
+            "envelope_delta_db_p5_p95": [
+              -0.1305,
+              0.2092
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.6015,
+              -0.5498,
+              0.0845,
+              0.3497,
+              0.3125
+            ],
+            "crest_db": 16.653,
+            "envelope_correlation": 0.9986427,
+            "envelope_delta_db_p5_p95": [
+              -0.2263,
+              0.275
+            ]
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "decay",
+        "start_s": 141,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.4784,
+              -0.5741,
+              0.2064,
+              0.2975,
+              0.0573
+            ],
+            "crest_db": 19.6361
+          },
+          "light": {
+            "band_db": [
+              0.4842,
+              -0.552,
+              0.1811,
+              0.2917,
+              0.0637
+            ],
+            "crest_db": 19.6433,
+            "envelope_correlation": 0.9999883,
+            "envelope_delta_db_p5_p95": [
+              -0.0596,
+              0.0534
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              0.4651,
+              -0.5621,
+              0.212,
+              0.2869,
+              0.0516
+            ],
+            "crest_db": 19.6471,
+            "envelope_correlation": 0.9999766,
+            "envelope_delta_db_p5_p95": [
+              -0.0909,
+              0.0813
+            ]
+          },
+          "dry": {
+            "band_db": [
+              0.4882,
+              -0.5143,
+              0.1353,
+              0.2856,
+              0.0751
+            ],
+            "crest_db": 19.6498,
+            "envelope_correlation": 0.9999062,
+            "envelope_delta_db_p5_p95": [
+              -0.1692,
+              0.1549
+            ]
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "prior",
+        "start_s": 14.025056689342403,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.2255,
+              -0.3006,
+              0.1006,
+              -0.0981,
+              0.252
+            ],
+            "crest_db": 14.3568
+          },
+          "light": {
+            "band_db": [
+              1.2462,
+              -0.2941,
+              0.0884,
+              -0.1027,
+              0.259
+            ],
+            "crest_db": 14.3613,
+            "envelope_correlation": 0.9996929,
+            "envelope_delta_db_p5_p95": [
+              -0.0976,
+              0.0995
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.248,
+              -0.3033,
+              0.1005,
+              -0.1073,
+              0.2496
+            ],
+            "crest_db": 14.3376,
+            "envelope_correlation": 0.99912,
+            "envelope_delta_db_p5_p95": [
+              -0.1897,
+              0.1628
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.2725,
+              -0.2866,
+              0.073,
+              -0.104,
+              0.2638
+            ],
+            "crest_db": 14.4057,
+            "envelope_correlation": 0.9974816,
+            "envelope_delta_db_p5_p95": [
+              -0.2805,
+              0.286
+            ]
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "vocal-forward",
+        "start_s": 68,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.625,
+              -0.0812,
+              -0.0493,
+              -0.2928,
+              0.4205
+            ],
+            "crest_db": 13.9526
+          },
+          "light": {
+            "band_db": [
+              1.6429,
+              -0.0325,
+              -0.0707,
+              -0.2848,
+              0.4382
+            ],
+            "crest_db": 13.9986,
+            "envelope_correlation": 0.9995925,
+            "envelope_delta_db_p5_p95": [
+              -0.1393,
+              0.1104
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.6317,
+              -0.0047,
+              -0.0763,
+              -0.2916,
+              0.4294
+            ],
+            "crest_db": 14.0048,
+            "envelope_correlation": 0.9992874,
+            "envelope_delta_db_p5_p95": [
+              -0.176,
+              0.164
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.6589,
+              0.0451,
+              -0.1063,
+              -0.2638,
+              0.4584
+            ],
+            "crest_db": 14.067,
+            "envelope_correlation": 0.9967288,
+            "envelope_delta_db_p5_p95": [
+              -0.3985,
+              0.3137
+            ]
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "drum-loud",
+        "start_s": 195,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.3773,
+              -0.1454,
+              -0.0813,
+              -0.1778,
+              0.6389
+            ],
+            "crest_db": 13.3371
+          },
+          "light": {
+            "band_db": [
+              1.3816,
+              -0.1359,
+              -0.0841,
+              -0.1978,
+              0.6413
+            ],
+            "crest_db": 13.303,
+            "envelope_correlation": 0.9997662,
+            "envelope_delta_db_p5_p95": [
+              -0.0849,
+              0.0797
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.3671,
+              -0.14,
+              -0.0788,
+              -0.1943,
+              0.6288
+            ],
+            "crest_db": 13.4122,
+            "envelope_correlation": 0.9995005,
+            "envelope_delta_db_p5_p95": [
+              -0.1237,
+              0.1288
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.3769,
+              -0.1267,
+              -0.0834,
+              -0.2287,
+              0.6374
+            ],
+            "crest_db": 13.2262,
+            "envelope_correlation": 0.9981256,
+            "envelope_delta_db_p5_p95": [
+              -0.2355,
+              0.2308
+            ]
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "decay",
+        "start_s": 230,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.6354,
+              -0.186,
+              0.1042,
+              1.1129,
+              1.3326
+            ],
+            "crest_db": 16.4681
+          },
+          "light": {
+            "band_db": [
+              1.5967,
+              -0.1675,
+              0.0523,
+              1.0841,
+              1.2869
+            ],
+            "crest_db": 16.445,
+            "envelope_correlation": 0.9999658,
+            "envelope_delta_db_p5_p95": [
+              -0.1101,
+              0.0849
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.5351,
+              -0.1525,
+              0.0227,
+              1.0181,
+              1.2224
+            ],
+            "crest_db": 16.4333,
+            "envelope_correlation": 0.9998796,
+            "envelope_delta_db_p5_p95": [
+              -0.1703,
+              0.1701
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.5195,
+              -0.1368,
+              -0.0327,
+              1.0374,
+              1.2
+            ],
+            "crest_db": 16.3977,
+            "envelope_correlation": 0.9997316,
+            "envelope_delta_db_p5_p95": [
+              -0.3169,
+              0.2413
+            ]
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "prior",
+        "start_s": 64.0250566893424,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.2155,
+              0.0042,
+              -0.1653,
+              0.4773,
+              -0.1241
+            ],
+            "crest_db": 15.8604
+          },
+          "light": {
+            "band_db": [
+              1.2344,
+              -0.0128,
+              -0.1556,
+              0.4713,
+              -0.098
+            ],
+            "crest_db": 15.8638,
+            "envelope_correlation": 0.9996277,
+            "envelope_delta_db_p5_p95": [
+              -0.1166,
+              0.1136
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.2361,
+              -0.0538,
+              -0.1264,
+              0.4966,
+              -0.0858
+            ],
+            "crest_db": 15.8677,
+            "envelope_correlation": 0.9994169,
+            "envelope_delta_db_p5_p95": [
+              -0.1504,
+              0.165
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.2573,
+              -0.0512,
+              -0.131,
+              0.4633,
+              -0.059
+            ],
+            "crest_db": 15.8565,
+            "envelope_correlation": 0.9969433,
+            "envelope_delta_db_p5_p95": [
+              -0.3289,
+              0.3268
+            ]
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "vocal-forward",
+        "start_s": 20,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.4613,
+              0.0189,
+              -0.0535,
+              0.3858,
+              0.1027
+            ],
+            "crest_db": 13.3047
+          },
+          "light": {
+            "band_db": [
+              1.4795,
+              -0.0147,
+              -0.0255,
+              0.3721,
+              0.1447
+            ],
+            "crest_db": 13.3337,
+            "envelope_correlation": 0.9997903,
+            "envelope_delta_db_p5_p95": [
+              -0.0967,
+              0.169
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.4899,
+              -0.0684,
+              0.0215,
+              0.449,
+              0.1897
+            ],
+            "crest_db": 13.3126,
+            "envelope_correlation": 0.9994573,
+            "envelope_delta_db_p5_p95": [
+              -0.1651,
+              0.2732
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.5009,
+              -0.0836,
+              0.0312,
+              0.3537,
+              0.2125
+            ],
+            "crest_db": 13.375,
+            "envelope_correlation": 0.9982143,
+            "envelope_delta_db_p5_p95": [
+              -0.2879,
+              0.4891
+            ]
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "drum-loud",
+        "start_s": 266,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.4633,
+              -0.0792,
+              -0.3253,
+              -0.1749,
+              0.8919
+            ],
+            "crest_db": 15.2975
+          },
+          "light": {
+            "band_db": [
+              1.4501,
+              -0.0775,
+              -0.3158,
+              -0.1894,
+              0.8807
+            ],
+            "crest_db": 15.2726,
+            "envelope_correlation": 0.999562,
+            "envelope_delta_db_p5_p95": [
+              -0.1276,
+              0.139
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.444,
+              -0.07,
+              -0.3186,
+              -0.1922,
+              0.8774
+            ],
+            "crest_db": 15.4096,
+            "envelope_correlation": 0.9991301,
+            "envelope_delta_db_p5_p95": [
+              -0.1612,
+              0.1792
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.4108,
+              -0.084,
+              -0.2861,
+              -0.211,
+              0.8488
+            ],
+            "crest_db": 15.2114,
+            "envelope_correlation": 0.9963419,
+            "envelope_delta_db_p5_p95": [
+              -0.3597,
+              0.405
+            ]
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "decay",
+        "start_s": 175,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.2056,
+              -0.1076,
+              -0.1881,
+              -0.0867,
+              0.4799
+            ],
+            "crest_db": 19.2671
+          },
+          "light": {
+            "band_db": [
+              1.2205,
+              -0.093,
+              -0.2081,
+              -0.0755,
+              0.4916
+            ],
+            "crest_db": 19.284,
+            "envelope_correlation": 0.99994,
+            "envelope_delta_db_p5_p95": [
+              -0.083,
+              0.1049
+            ]
+          },
+          "shaped": {
+            "band_db": [
+              1.2002,
+              -0.1107,
+              -0.1796,
+              -0.0967,
+              0.4713
+            ],
+            "crest_db": 19.2658,
+            "envelope_correlation": 0.9998843,
+            "envelope_delta_db_p5_p95": [
+              -0.2053,
+              0.1549
+            ]
+          },
+          "dry": {
+            "band_db": [
+              1.2364,
+              -0.07,
+              -0.238,
+              -0.051,
+              0.5049
+            ],
+            "crest_db": 19.3037,
+            "envelope_correlation": 0.9995077,
+            "envelope_delta_db_p5_p95": [
+              -0.2325,
+              0.3096
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "room_comparison": {
+    "summary": {
+      "baseline": {
+        "mean_envelope_correlation_to_original": 0.9839611072891533,
+        "mean_abs_tail_attack_error_to_original_db": 0.32727903485602783,
+        "mean_added_room_relative_dry_db": -24.52688509336093,
+        "mean_added_room_200_800_relative_dry_db": -23.136647108006777
+      },
+      "light": {
+        "mean_envelope_correlation_to_original": 0.9849179664041746,
+        "mean_abs_tail_attack_error_to_original_db": 0.31485215049621357,
+        "mean_added_room_relative_dry_db": -28.268581387626035,
+        "mean_added_room_200_800_relative_dry_db": -26.87838005839751
+      },
+      "shaped": {
+        "mean_envelope_correlation_to_original": 0.9847853281334411,
+        "mean_abs_tail_attack_error_to_original_db": 0.31566870454276313,
+        "mean_added_room_relative_dry_db": -27.461438714607173,
+        "mean_added_room_200_800_relative_dry_db": -25.401902547825642
+      },
+      "dry": {
+        "mean_envelope_correlation_to_original": 0.985627081069517,
+        "mean_abs_tail_attack_error_to_original_db": 0.3032817304192992,
+        "mean_added_room_relative_dry_db": -280.3437685371775,
+        "mean_added_room_200_800_relative_dry_db": -275.90455101145193
+      }
+    },
+    "rows": [
+      {
+        "song": "tabasco",
+        "kind": "prior",
+        "peaks": 33,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9562762034515269,
+            "envelope_correlation_to_original": 0.9822504657057537,
+            "tail_attack_error_to_original_db": [
+              -0.04236880182518998,
+              0.20691677954939358,
+              -0.39587783332276594,
+              -0.10383436921494305,
+              -0.1275624404306983,
+              -0.21529707398472375,
+              0.25466601677159995,
+              -0.6263784592130444,
+              -0.15229622218395278,
+              0.6638983666850642,
+              -0.11059729177352118,
+              0.20785422661406283,
+              -0.34458716732022054,
+              -0.14819298545529824,
+              -0.050455683385705274,
+              -0.24838667651757707,
+              -0.6168218812772805,
+              -0.48742955246361763,
+              -0.3740856839712974,
+              0.20535467517881667,
+              -0.24710168204302185,
+              -0.15380804521422364,
+              0.7293939356489831,
+              -0.3928821845226702,
+              0.11553020643197742,
+              -0.14213240190352483,
+              0.046061720554533836,
+              -0.32264254320359065,
+              -0.2797923387259509,
+              -0.15136641724778244,
+              -0.2898228788710524,
+              0.5453707616772028,
+              -0.12903856950594683
+            ],
+            "added_room_relative_dry_db": -27.059036446313513,
+            "added_room_200_800_relative_dry_db": -24.598511666791257
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9569595995047809,
+            "envelope_correlation_to_original": 0.9826485958666671,
+            "tail_attack_error_to_original_db": [
+              -0.06419642086617827,
+              0.21627623950259256,
+              -0.3815140244427946,
+              -0.11084804337830167,
+              -0.1319539938693861,
+              -0.19988905144234792,
+              0.24581462987429714,
+              -0.6215109525528817,
+              -0.1379382738271051,
+              0.6480323729748756,
+              -0.1345560643675041,
+              0.1852705561374277,
+              -0.3127071427752419,
+              -0.13981086646945873,
+              -0.05367391486537487,
+              -0.26304099216882637,
+              -0.6011971993289711,
+              -0.4623473823699422,
+              -0.35538549399278807,
+              0.17421690802831336,
+              -0.25938596606738074,
+              -0.1749170739425261,
+              0.7332305540828363,
+              -0.3973903935600207,
+              0.1154270483263784,
+              -0.14981776364169264,
+              0.04539199694620466,
+              -0.2826812048103058,
+              -0.27269516440182784,
+              -0.14515089797840597,
+              -0.29084924093094067,
+              0.5352585754382608,
+              -0.11892479739336803
+            ],
+            "added_room_relative_dry_db": -30.800718557125407,
+            "added_room_200_800_relative_dry_db": -28.34024888571026
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9570488666685344,
+            "envelope_correlation_to_original": 0.9827030523782332,
+            "tail_attack_error_to_original_db": [
+              -0.08588285358707903,
+              0.21241331712590128,
+              -0.37796634847352095,
+              -0.08953718180258896,
+              -0.15761163542892387,
+              -0.16755303640748176,
+              0.2311599076224118,
+              -0.6497037531628287,
+              -0.10791056787074105,
+              0.621217012124323,
+              -0.14957563373005023,
+              0.1381080530339558,
+              -0.337521214812444,
+              -0.13722236350763695,
+              -0.052225948802119504,
+              -0.2676049097328965,
+              -0.5904920361058421,
+              -0.4525830087056537,
+              -0.34926972726021166,
+              0.1623508923514665,
+              -0.2713204940570684,
+              -0.1754465255102482,
+              0.7377778699651358,
+              -0.40193853113166966,
+              0.1377207801861715,
+              -0.18735039144426935,
+              0.03623621337771632,
+              -0.2368948397655597,
+              -0.269346669304797,
+              -0.1455768892629612,
+              -0.26733031573952015,
+              0.5203203577830293,
+              -0.11163169179899235
+            ],
+            "added_room_relative_dry_db": -30.128344439180495,
+            "added_room_200_800_relative_dry_db": -26.725083056386683
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9576160690902769,
+            "envelope_correlation_to_original": 0.9830924203733309,
+            "tail_attack_error_to_original_db": [
+              -0.09837304699350202,
+              0.23889353420760262,
+              -0.35267378342141686,
+              -0.12274874764389487,
+              -0.1353047296115797,
+              -0.1658440694085268,
+              0.23020461953234173,
+              -0.6091307858559096,
+              -0.11074253369341491,
+              0.6167000947607044,
+              -0.1729222656574958,
+              0.14980018693866715,
+              -0.25217340630791263,
+              -0.13110231276724726,
+              -0.057620833807845884,
+              -0.2873846709862766,
+              -0.567863217053709,
+              -0.40688971884853764,
+              -0.3162206468432949,
+              0.12055574612816766,
+              -0.2798480260887892,
+              -0.21029103105450675,
+              0.7513402745597295,
+              -0.40273935465374144,
+              0.11973231884062052,
+              -0.15855870182112142,
+              0.047252400577758036,
+              -0.19946165164459906,
+              -0.2562667051343457,
+              -0.1320366386767926,
+              -0.2876219030191445,
+              0.5177947747616454,
+              -0.09840352497532567
+            ],
+            "added_room_relative_dry_db": -282.89200921737455,
+            "added_room_200_800_relative_dry_db": -276.8887704113949
+          }
+        }
+      },
+      {
+        "song": "tabasco",
+        "kind": "vocal-forward",
+        "peaks": 22,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.968097999494944,
+            "envelope_correlation_to_original": 0.9836526300053702,
+            "tail_attack_error_to_original_db": [
+              -0.3930480499968434,
+              -0.2188814579895091,
+              0.1241814122535283,
+              -0.35924533568084893,
+              -0.3905395949143653,
+              -0.16116668801704748,
+              -0.04326671614576316,
+              0.20841743059498885,
+              -0.39475864815740014,
+              -0.10523392838135237,
+              -0.13154555728190243,
+              -0.21574243457368514,
+              0.25248465615071014,
+              -0.6257821337375393,
+              -0.14782311228598655,
+              0.6005888202985752,
+              -0.1105262775840039,
+              0.20824507766073808,
+              -0.34355782896391585,
+              -0.14949577958611537,
+              -0.04192305357795423,
+              -0.2485077630391732
+            ],
+            "added_room_relative_dry_db": -26.849755614435725,
+            "added_room_200_800_relative_dry_db": -25.01548007669198
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9687998011693906,
+            "envelope_correlation_to_original": 0.9841313097145716,
+            "tail_attack_error_to_original_db": [
+              -0.3486468490970762,
+              -0.22345655496461614,
+              0.11880959269437241,
+              -0.35522749734731196,
+              -0.35299525593372527,
+              -0.1788219743943289,
+              -0.065051383434227,
+              0.21791447073853565,
+              -0.3803911877258157,
+              -0.11224369829034853,
+              -0.1362547729296404,
+              -0.20043814982047525,
+              0.24360924702236675,
+              -0.6208833630884971,
+              -0.13328967146969628,
+              0.5863540001920688,
+              -0.13438157015189045,
+              0.18570082887610617,
+              -0.3116879688286254,
+              -0.14038068565147022,
+              -0.04488295530025699,
+              -0.2632588253446322
+            ],
+            "added_room_relative_dry_db": -30.591402056075797,
+            "added_room_200_800_relative_dry_db": -28.757218169243263
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.968854918668926,
+            "envelope_correlation_to_original": 0.9841477098569401,
+            "tail_attack_error_to_original_db": [
+              -0.27950702211915956,
+              -0.20482000231278796,
+              0.12172348395835275,
+              -0.34741996403415687,
+              -0.3227254830898767,
+              -0.1923242243717942,
+              -0.0867536606571111,
+              0.21435520294342503,
+              -0.3769370014364366,
+              -0.09101099845446026,
+              -0.16178715310729963,
+              -0.1681267194515348,
+              0.2289414257226532,
+              -0.6491464053577127,
+              -0.1031189524148175,
+              0.5692471170681583,
+              -0.1493131938443586,
+              0.1383361916626411,
+              -0.336642927196217,
+              -0.13771287706476099,
+              -0.04328997928649603,
+              -0.2678338071133366
+            ],
+            "added_room_relative_dry_db": -30.041546649886264,
+            "added_room_200_800_relative_dry_db": -27.261235894960798
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.96945231828543,
+            "envelope_correlation_to_original": 0.9846453689142295,
+            "tail_attack_error_to_original_db": [
+              -0.2699397700687953,
+              -0.22430734808625896,
+              0.11681946644924057,
+              -0.342970111448893,
+              -0.28434386318612326,
+              -0.21059141486595756,
+              -0.0990258531611179,
+              0.24067074547759315,
+              -0.3518104620243019,
+              -0.12417030468109136,
+              -0.14034181555420222,
+              -0.16643480831115331,
+              0.22794556685178113,
+              -0.6085462656733318,
+              -0.1056970712973051,
+              0.5594481307941723,
+              -0.172639592320337,
+              0.15034143528166233,
+              -0.25150709114624803,
+              -0.13066376193883278,
+              -0.048281742243325265,
+              -0.28760518226067155
+            ],
+            "added_room_relative_dry_db": -282.8246355902274,
+            "added_room_200_800_relative_dry_db": -277.25396157036545
+          }
+        }
+      },
+      {
+        "song": "tabasco",
+        "kind": "drum-loud",
+        "peaks": 22,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.958355661069301,
+            "envelope_correlation_to_original": 0.979187511560966,
+            "tail_attack_error_to_original_db": [
+              0.20823669097735475,
+              -0.3436023477399104,
+              -0.14948919601276278,
+              -0.041933530350673376,
+              -0.2485406414966045,
+              -0.6171235457679254,
+              -0.4874114643062004,
+              -0.37393197848346915,
+              0.20810609798673774,
+              -0.24349787847794424,
+              -0.15227848415565992,
+              0.7295848618569734,
+              -0.39258010048192116,
+              0.11758734251046521,
+              -0.13947309079387527,
+              0.04614866784751348,
+              -0.321923970763935,
+              -0.2782684337963497,
+              -0.15449435655801702,
+              -0.29038766100130964,
+              0.4806188875713824,
+              -0.1301167901645801
+            ],
+            "added_room_relative_dry_db": -27.007362992261143,
+            "added_room_200_800_relative_dry_db": -24.197939794852665
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9589985000516693,
+            "envelope_correlation_to_original": 0.9795359136584384,
+            "tail_attack_error_to_original_db": [
+              0.18569703975501373,
+              -0.3116658857933725,
+              -0.14042542208396702,
+              -0.04488888012464187,
+              -0.26326158471744776,
+              -0.6011964726559671,
+              -0.4622809162025652,
+              -0.3552114557945263,
+              0.1767130327308042,
+              -0.2557872493716129,
+              -0.17347585313221403,
+              0.7337409005098321,
+              -0.3972465356888151,
+              0.11757850399980363,
+              -0.14719664264024246,
+              0.04549569074997928,
+              -0.28229491883429425,
+              -0.2712857972187015,
+              -0.148339509977935,
+              -0.2913963392963481,
+              0.47630143766113653,
+              -0.11998372251151856
+            ],
+            "added_room_relative_dry_db": -30.749049639449282,
+            "added_room_200_800_relative_dry_db": -27.93969423456904
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9590534813822473,
+            "envelope_correlation_to_original": 0.9795779664989493,
+            "tail_attack_error_to_original_db": [
+              0.13834723826276907,
+              -0.33651656128123,
+              -0.1376902184317379,
+              -0.043306680497677164,
+              -0.2678439731219955,
+              -0.590584963931315,
+              -0.45231746700599196,
+              -0.34914448202700843,
+              0.16461905517466136,
+              -0.26781739295268636,
+              -0.17435778802301272,
+              0.7383627090506959,
+              -0.40163876900108697,
+              0.14020463676258155,
+              -0.18521539863123415,
+              0.03633208016994993,
+              -0.23673494226900615,
+              -0.2679624664861233,
+              -0.14913208705950298,
+              -0.26782713635680544,
+              0.46871797780529123,
+              -0.11285836380519942
+            ],
+            "added_room_relative_dry_db": -30.01144403662471,
+            "added_room_200_800_relative_dry_db": -26.23464685280908
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.959570814471005,
+            "envelope_correlation_to_original": 0.9799043750017685,
+            "tail_attack_error_to_original_db": [
+              0.15034543774738296,
+              -0.25145128229894453,
+              -0.13079379245501832,
+              -0.04830811545703595,
+              -0.2876172533846484,
+              -0.5673829434856594,
+              -0.4066966168774728,
+              -0.3161659234086489,
+              0.12254577029045333,
+              -0.2762769037925059,
+              -0.20909887691824824,
+              0.752759240557956,
+              -0.4028305858960639,
+              0.12196772693920588,
+              -0.15636608088393178,
+              0.047338316585874174,
+              -0.19947186026384056,
+              -0.2549772897635947,
+              -0.13531172842947337,
+              -0.2881660359118925,
+              0.47004901525269727,
+              -0.09932692946229871
+            ],
+            "added_room_relative_dry_db": -282.9498863911202,
+            "added_room_200_800_relative_dry_db": -276.86478421462465
+          }
+        }
+      },
+      {
+        "song": "tabasco",
+        "kind": "decay",
+        "peaks": 19,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.973505574346314,
+            "envelope_correlation_to_original": 0.9915005923640037,
+            "tail_attack_error_to_original_db": [
+              -0.40806162952145275,
+              0.43683831840263565,
+              -0.5628593934536381,
+              0.357186669457894,
+              0.25072911142534204,
+              -0.3464490913870879,
+              0.0868603592774142,
+              -0.13047997245810983,
+              0.06201789388090795,
+              -0.2284242251335673,
+              0.1709974944860031,
+              0.049761201007809674,
+              -0.1230944897762214,
+              1.4533328828743788,
+              -0.7956193142044361,
+              -0.5980882457465762,
+              0.12042327927610774,
+              -0.12967313846305717,
+              0.30595830759069464
+            ],
+            "added_room_relative_dry_db": -27.511788264761545,
+            "added_room_200_800_relative_dry_db": -26.240475630134785
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9740850292520594,
+            "envelope_correlation_to_original": 0.9917488655683708,
+            "tail_attack_error_to_original_db": [
+              -0.3860101133051188,
+              0.4447850720744966,
+              -0.5645212637157044,
+              0.34579868335946884,
+              0.24120743092198937,
+              -0.3310550870751445,
+              0.099656197077032,
+              -0.1360242381539587,
+              0.06358749857363755,
+              -0.2396435167690436,
+              0.13104445110842544,
+              0.03926731736377587,
+              -0.13499758050037336,
+              1.4161681702488147,
+              -0.7705598119918315,
+              -0.5774229308963528,
+              0.09973951911503942,
+              -0.12353143292377111,
+              0.30138166239455977
+            ],
+            "added_room_relative_dry_db": -31.253471430277354,
+            "added_room_200_800_relative_dry_db": -29.98219064709764
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9741790945095239,
+            "envelope_correlation_to_original": 0.9918745731555831,
+            "tail_attack_error_to_original_db": [
+              -0.3618536637668237,
+              0.42799597276039414,
+              -0.5764799416276336,
+              0.32712324793196146,
+              0.2542968300468065,
+              -0.3012549036900509,
+              0.11938507010648891,
+              -0.13232488060863812,
+              0.046110791448641386,
+              -0.24933908824635687,
+              0.10020301901589246,
+              0.029834409732504952,
+              -0.14268299012498797,
+              1.4081376517076933,
+              -0.74741052283483,
+              -0.5671120659212439,
+              0.08619642869941746,
+              -0.08401279028995234,
+              0.2907259404296525
+            ],
+            "added_room_relative_dry_db": -30.761616283432506,
+            "added_room_200_800_relative_dry_db": -29.05861287137267
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9745989525540912,
+            "envelope_correlation_to_original": 0.9920683645418593,
+            "tail_attack_error_to_original_db": [
+              -0.34009140567528195,
+              0.4622129236181225,
+              -0.5652138692785966,
+              0.32729088967470243,
+              0.21903968164758503,
+              -0.2965770708761948,
+              0.1269766013009328,
+              -0.14359527059490773,
+              0.07375193619303388,
+              -0.2581417924480869,
+              0.061729553629632505,
+              0.021878207689775664,
+              -0.14987375964395966,
+              1.346248522470405,
+              -0.7221680735001961,
+              -0.5367848052736419,
+              0.06557957377470469,
+              -0.11096821137109614,
+              0.30043471723736204
+            ],
+            "added_room_relative_dry_db": -280.77599128174097,
+            "added_room_200_800_relative_dry_db": -274.22298567372786
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "prior",
+        "peaks": 28,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9770260225375665,
+            "envelope_correlation_to_original": 0.9889270446485977,
+            "tail_attack_error_to_original_db": [
+              -0.44154727457634624,
+              0.043827454809210575,
+              -0.27243390014411073,
+              0.5417601496036832,
+              0.33400482450745816,
+              0.618987044082653,
+              -0.2087511050948791,
+              0.2689026632841325,
+              -0.237002376049114,
+              -0.7632634013057851,
+              -0.016214308028579483,
+              -0.10965612334116859,
+              -0.39305792972416853,
+              -0.13886164181160865,
+              0.05782996401259055,
+              -0.5243982770154529,
+              -0.05369069601560916,
+              -0.2910228593762376,
+              0.3105077302973669,
+              -0.6459873954995166,
+              -0.20755331367221075,
+              -0.4558813045939658,
+              0.2512805888873082,
+              -0.22922954884117352,
+              0.4784145532655426,
+              -0.5639271241947252,
+              -0.17384580183745513,
+              -1.0783883811492343
+            ],
+            "added_room_relative_dry_db": -25.964847807388132,
+            "added_room_200_800_relative_dry_db": -23.87523547634028
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9780840818998568,
+            "envelope_correlation_to_original": 0.9896705290330485,
+            "tail_attack_error_to_original_db": [
+              -0.2954519841070129,
+              -0.05020427476826361,
+              -0.1660894783249618,
+              0.5021268270246062,
+              0.3348564626220881,
+              0.6236506134268166,
+              -0.22482465714427874,
+              0.2735292738390598,
+              -0.27410888972325687,
+              -0.7647927724004684,
+              0.0003972699079080044,
+              -0.053405649902511954,
+              -0.440310738237212,
+              -0.001319072705699753,
+              -0.03509861154609162,
+              -0.5625069403517253,
+              -0.10504448490929263,
+              -0.27043839505499,
+              0.26160296263740346,
+              -0.6494715735698886,
+              -0.1418507499619004,
+              -0.4816331308779134,
+              0.16915307038387617,
+              -0.23736245706991,
+              0.4430222650564293,
+              -0.49703510914161875,
+              -0.18657759882309932,
+              -1.0847785721535805
+            ],
+            "added_room_relative_dry_db": -29.706532438814484,
+            "added_room_200_800_relative_dry_db": -27.616975450985382
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9787887079805359,
+            "envelope_correlation_to_original": 0.9898781776233343,
+            "tail_attack_error_to_original_db": [
+              -0.0629516575283835,
+              -0.19180803692413217,
+              -0.04816163073373181,
+              0.453996710982544,
+              0.337027567020978,
+              0.6651934251024022,
+              -0.25321631885408385,
+              0.2931814010891216,
+              -0.3169223301309785,
+              -0.8205960188663177,
+              0.010608130743518185,
+              0.03154701087325407,
+              -0.5349390030695051,
+              0.1660910972264471,
+              -0.16325612314807003,
+              -0.6092610200497992,
+              -0.137409365058474,
+              -0.20892196814298103,
+              0.21677717893372517,
+              -0.7161951875166714,
+              0.0071467681570016595,
+              -0.5281974138848327,
+              0.09483166633786055,
+              -0.25759798358346053,
+              0.4606308986741059,
+              -0.40043254322362287,
+              -0.17663690849295755,
+              -1.1608906462344386
+            ],
+            "added_room_relative_dry_db": -32.89044106378067,
+            "added_room_200_800_relative_dry_db": -28.86678358476486
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9792429072714847,
+            "envelope_correlation_to_original": 0.990332659650692,
+            "tail_attack_error_to_original_db": [
+              -0.019613263686117932,
+              -0.21470491614076836,
+              0.0289839670540335,
+              0.43157560587886445,
+              0.3366109062974446,
+              0.6317137228479601,
+              -0.25482672400241796,
+              0.28386989783016836,
+              -0.3328865808656314,
+              -0.7580712308194444,
+              0.03274479952787801,
+              0.057212986696528745,
+              -0.5185974259635788,
+              0.2504010050172525,
+              -0.1951962149811166,
+              -0.6326848434277297,
+              -0.19036896696365346,
+              -0.22614082579193173,
+              0.1750219285200183,
+              -0.6451323473124191,
+              -0.002956942373886662,
+              -0.5247299580460556,
+              0.032917783259932776,
+              -0.2505938417667952,
+              0.38499158579392123,
+              -0.3641320312641305,
+              -0.20911346239905093,
+              -1.0854512757532158
+            ],
+            "added_room_relative_dry_db": -278.9302844086082,
+            "added_room_200_800_relative_dry_db": -272.55380849844676
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "vocal-forward",
+        "peaks": 22,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9693956233305719,
+            "envelope_correlation_to_original": 0.9745525363979652,
+            "tail_attack_error_to_original_db": [
+              0.49221599740746846,
+              -0.7511080089654008,
+              -0.48778780871629834,
+              -0.11173478606067322,
+              0.1919439019250726,
+              -0.55293521236027,
+              -0.17507907514081483,
+              0.7746350000332844,
+              -0.9101987378950767,
+              -0.6867680326094794,
+              0.12811102713085898,
+              -0.2704480614401268,
+              -0.367622569567851,
+              -0.638625132627201,
+              0.024927892974057453,
+              -0.19988772707602953,
+              0.17826242339036302,
+              0.14659755553800302,
+              0.22068112531195982,
+              -0.42902466211941803,
+              -0.4465049780316348,
+              -0.11069119574888608
+            ],
+            "added_room_relative_dry_db": -22.902133820470315,
+            "added_room_200_800_relative_dry_db": -21.469067605374708
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9709249672931769,
+            "envelope_correlation_to_original": 0.9754900865103916,
+            "tail_attack_error_to_original_db": [
+              0.47660585461643734,
+              -0.7407534734953893,
+              -0.3951131141303357,
+              -0.11204270167912744,
+              0.1647765276477351,
+              -0.5520411085331536,
+              -0.284266492407076,
+              0.8040914095402014,
+              -0.9300939536891712,
+              -0.7053862150314458,
+              0.09639497527720664,
+              -0.3552558496190308,
+              -0.3545398373682578,
+              -0.6599433233046517,
+              -0.0533553175900634,
+              -0.1891462858648767,
+              0.16958344653109197,
+              0.15527833802064528,
+              0.18879467214774204,
+              -0.4851107369354306,
+              -0.4820800082933898,
+              -0.04939201521202086
+            ],
+            "added_room_relative_dry_db": -26.64384667076191,
+            "added_room_200_800_relative_dry_db": -25.210804262545246
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9705646966503199,
+            "envelope_correlation_to_original": 0.9747220141688765,
+            "tail_attack_error_to_original_db": [
+              0.5666146747257219,
+              -0.7458859679233694,
+              -0.4338365861699529,
+              -0.11649624965987693,
+              0.14899061595743746,
+              -0.537167029934797,
+              -0.39297784676253267,
+              0.9165520285944373,
+              -1.0162710134620123,
+              -0.6952063514711995,
+              0.07936693297939446,
+              -0.3347891275489925,
+              -0.38206314561883703,
+              -0.6778308790047993,
+              -0.03497564132918207,
+              -0.152683227219077,
+              0.18152117167411108,
+              0.16572244794402824,
+              0.2884374080756684,
+              -0.5588762334768314,
+              -0.491701189902233,
+              -0.06625007828345297
+            ],
+            "added_room_relative_dry_db": -25.371880072539312,
+            "added_room_200_800_relative_dry_db": -23.797361744509065
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9721673996219339,
+            "envelope_correlation_to_original": 0.9756530969029702,
+            "tail_attack_error_to_original_db": [
+              0.46015511976651524,
+              -0.7145662049448545,
+              -0.21768924143541746,
+              -0.10798459583002495,
+              0.11787203521422818,
+              -0.5472717641430624,
+              -0.48924538386183325,
+              0.875141807360083,
+              -0.9637772296686038,
+              -0.727734680047349,
+              0.05363465048988214,
+              -0.49455344033515036,
+              -0.31971595694330324,
+              -0.6918016843242571,
+              -0.19861297900189734,
+              -0.1663395162220871,
+              0.14543553967440281,
+              0.17570120139464374,
+              0.12926883766254615,
+              -0.5829005020368241,
+              -0.5444499450935165,
+              0.06987788843222931
+            ],
+            "added_room_relative_dry_db": -282.3242542285278,
+            "added_room_200_800_relative_dry_db": -277.0324113563921
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "drum-loud",
+        "peaks": 22,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9693009856245086,
+            "envelope_correlation_to_original": 0.9776283317873913,
+            "tail_attack_error_to_original_db": [
+              -0.638269816046507,
+              -0.6491131128708698,
+              -0.09312964544233981,
+              -0.4688662586449075,
+              0.17233693901650177,
+              -0.5759764602458102,
+              -0.007296612855359541,
+              -0.42044949726068026,
+              0.2023618097880595,
+              -0.8689350415889816,
+              -0.6742191391098413,
+              -0.8409248806774636,
+              -1.0172191378739335,
+              -0.22825327493996195,
+              -0.5755580111965157,
+              -0.45755340142220025,
+              -0.563062568819058,
+              -0.8628490876126547,
+              -0.6025270684884836,
+              -0.5102892129496039,
+              -0.9128126086450612,
+              -0.20740269991907834
+            ],
+            "added_room_relative_dry_db": -25.831769960369225,
+            "added_room_200_800_relative_dry_db": -23.648036958659976
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9700871883983521,
+            "envelope_correlation_to_original": 0.9781459166151387,
+            "tail_attack_error_to_original_db": [
+              -0.6208679726110944,
+              -0.6442992125091003,
+              -0.058144930968311304,
+              -0.5415569497515982,
+              0.19051056362060598,
+              -0.6128533312555673,
+              0.047013750608794425,
+              -0.46223665666872193,
+              0.19199862241281673,
+              -0.8388488221076695,
+              -0.7015005082758354,
+              -0.8639968066014783,
+              -1.0367313705093038,
+              -0.2189486983554607,
+              -0.6283304719661027,
+              -0.45543801308395615,
+              -0.5665168214316179,
+              -0.8973119062252861,
+              -0.6033517356599347,
+              -0.5188977857083898,
+              -0.9087385595171558,
+              -0.23688084889298278
+            ],
+            "added_room_relative_dry_db": -29.573465585913485,
+            "added_room_200_800_relative_dry_db": -27.38977668949125
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9698273234621718,
+            "envelope_correlation_to_original": 0.9781040605188472,
+            "tail_attack_error_to_original_db": [
+              -0.6000413837165013,
+              -0.6517867312719581,
+              -0.01871194913876817,
+              -0.5976203654492398,
+              0.20172246525189985,
+              -0.6425804160588813,
+              0.14805641936764014,
+              -0.5032146133935109,
+              0.1982104149574857,
+              -0.7597210773903571,
+              -0.7171138538866706,
+              -0.8907581247639014,
+              -1.0428393184647877,
+              -0.25013072146789295,
+              -0.6691709146125344,
+              -0.4534792536539207,
+              -0.6198369164958013,
+              -0.962192965066988,
+              -0.6021575427554788,
+              -0.5373996524455062,
+              -0.8820983315208144,
+              -0.24436053535442337
+            ],
+            "added_room_relative_dry_db": -29.182339569522505,
+            "added_room_200_800_relative_dry_db": -26.26973707765703
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9707338490592555,
+            "envelope_correlation_to_original": 0.9785154365640606,
+            "tail_attack_error_to_original_db": [
+              -0.5826924675821523,
+              -0.6276233251447243,
+              0.01273830026788536,
+              -0.6699335846547987,
+              0.2262918069745562,
+              -0.6781784926034033,
+              0.1501723970908868,
+              -0.5367296815772931,
+              0.17426684569413675,
+              -0.7788903449731537,
+              -0.7455589081389911,
+              -0.9015705867851134,
+              -1.0678409177823731,
+              -0.19818059478556815,
+              -0.720572489786667,
+              -0.4473332229213698,
+              -0.5652282965114068,
+              -0.9555907014185525,
+              -0.5983022244271439,
+              -0.5301096745125644,
+              -0.8962220400373129,
+              -0.28833762822421694
+            ],
+            "added_room_relative_dry_db": -282.33306079778197,
+            "added_room_200_800_relative_dry_db": -277.4070080153483
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "decay",
+        "peaks": 20,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9806112563867814,
+            "envelope_correlation_to_original": 0.991426182274134,
+            "tail_attack_error_to_original_db": [
+              -0.4020800875668269,
+              -0.16262928992832792,
+              0.3355892280868602,
+              -0.4322346781967752,
+              -0.22175757537911522,
+              -0.19961522801338738,
+              0.13934290977916322,
+              0.17943665164083356,
+              0.2954163622493784,
+              -0.058155732046611064,
+              0.41378037588520833,
+              -0.1528632069175342,
+              -0.44197330226849774,
+              0.19532473556238372,
+              0.5356580500037098,
+              0.05434405172627699,
+              -0.1864676904683198,
+              -0.054789063462875376,
+              0.07793618969243321,
+              0.19622450395045998
+            ],
+            "added_room_relative_dry_db": -25.166081401570306,
+            "added_room_200_800_relative_dry_db": -24.52585134159674
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9814422562741777,
+            "envelope_correlation_to_original": 0.992228581286577,
+            "tail_attack_error_to_original_db": [
+              -0.3955767143929614,
+              -0.19665769816328682,
+              0.29024554649206946,
+              -0.44568985532015293,
+              -0.24420231706193896,
+              -0.1850585710912278,
+              0.1861032111439772,
+              0.14939836609668944,
+              0.23598432289680948,
+              -0.06825487580067158,
+              0.3757566849325107,
+              -0.11881074598664743,
+              -0.4213658161586098,
+              0.25452658907015224,
+              0.5019745622925453,
+              0.042892240395868975,
+              -0.203133335946017,
+              -0.004253894633388988,
+              0.0733973136030871,
+              0.1501206929758494
+            ],
+            "added_room_relative_dry_db": -28.907774754363054,
+            "added_room_200_800_relative_dry_db": -28.267591594192186
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9813409425109537,
+            "envelope_correlation_to_original": 0.9915810018325004,
+            "tail_attack_error_to_original_db": [
+              -0.40494624700002424,
+              -0.17380530038512498,
+              0.3213886916900499,
+              -0.44604243864001014,
+              -0.22690161604112014,
+              -0.18160215956974857,
+              0.26457881026772095,
+              0.12245099103122414,
+              0.22904639778608793,
+              -0.06542758963428241,
+              0.34548849219204936,
+              -0.17017752607746317,
+              -0.42516055240769024,
+              0.2895143400807463,
+              0.5517284310555821,
+              0.06619701960202368,
+              -0.18833590512457565,
+              -0.10661018640101272,
+              0.0678356482392658,
+              0.13976593880591448
+            ],
+            "added_room_relative_dry_db": -27.272232073009004,
+            "added_room_200_800_relative_dry_db": -26.224515077481417
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9820125173953638,
+            "envelope_correlation_to_original": 0.9928747322665993,
+            "tail_attack_error_to_original_db": [
+              -0.38013705206886117,
+              -0.25928896941555735,
+              0.20748780743567075,
+              -0.46815347429273735,
+              -0.28316681788424436,
+              -0.15516096756772613,
+              0.27367279404664424,
+              0.09497287552136147,
+              0.1260552883276227,
+              -0.08420145164508686,
+              0.30908526539510994,
+              -0.050033081352200526,
+              -0.37739291739833103,
+              0.3599281257436042,
+              0.4386306583950374,
+              0.024186544185693715,
+              -0.23173726203950507,
+              0.08894676211054575,
+              0.06853484435256685,
+              0.07287342767699023
+            ],
+            "added_room_relative_dry_db": -279.43979628032145,
+            "added_room_200_800_relative_dry_db": -276.07134722942595
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "prior",
+        "peaks": 33,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9620462636726121,
+            "envelope_correlation_to_original": 0.9744377410820231,
+            "tail_attack_error_to_original_db": [
+              0.15939508714429973,
+              0.2666503796771682,
+              0.1864968504196618,
+              -0.05474273562782983,
+              -0.5508364201100531,
+              0.1761356092189299,
+              -0.3739582823431604,
+              -0.2009312692369407,
+              0.07274405676473306,
+              -0.39066306647686355,
+              0.4151644698978689,
+              -0.25095658364253604,
+              -0.30099002653094153,
+              -0.18409885400774906,
+              -0.3282303314667754,
+              -0.04034515100522551,
+              -0.008532601733364231,
+              -0.6507278357741755,
+              0.014067501911614766,
+              -0.25483925995294854,
+              0.23302621223658626,
+              -0.13480787306904318,
+              -1.1535610559508953,
+              0.3953420840776065,
+              0.5294943605467486,
+              -0.5970234469770723,
+              -0.20986982067417914,
+              0.19346892939758353,
+              -0.539897218855673,
+              0.13507597938336602,
+              -0.5014306838301765,
+              -0.41952295203724344,
+              -0.22056829650146748
+            ],
+            "added_room_relative_dry_db": -22.66993953495717,
+            "added_room_200_800_relative_dry_db": -21.866692393529284
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9632650294519888,
+            "envelope_correlation_to_original": 0.9754073309342566,
+            "tail_attack_error_to_original_db": [
+              0.1655205295860478,
+              0.2687735823629378,
+              0.0865836005218501,
+              -0.02978950687493942,
+              -0.5718148488156152,
+              0.1400851681873565,
+              -0.4268359427806949,
+              -0.30289405100276157,
+              0.07060031079037898,
+              -0.4548932649006425,
+              0.3717973591728748,
+              -0.21114042295958768,
+              -0.29348981431705945,
+              -0.19051462463772761,
+              -0.2701336548183928,
+              -0.04138172662172401,
+              0.015085197342437517,
+              -0.6523117585196032,
+              0.0037965457533966074,
+              -0.27620486914087294,
+              0.20002017933200822,
+              -0.10601645979288765,
+              -1.1519133221378013,
+              0.3712408803022482,
+              0.38464758925231735,
+              -0.6152173171050679,
+              -0.2112275141561839,
+              0.14175588086891544,
+              -0.5728944368650857,
+              0.18722727705012499,
+              -0.510503672357844,
+              -0.43429166744293735,
+              -0.24269590976448407
+            ],
+            "added_room_relative_dry_db": -26.41164817898455,
+            "added_room_200_800_relative_dry_db": -25.608421129061956
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9625639148121823,
+            "envelope_correlation_to_original": 0.9747223421053194,
+            "tail_attack_error_to_original_db": [
+              0.21485166642453457,
+              0.3646696903212998,
+              0.1102941891029916,
+              -0.02472220332818842,
+              -0.550495104289668,
+              0.1807942850085995,
+              -0.3717388525856302,
+              -0.25625252640135865,
+              0.05094525134107286,
+              -0.44841708459182383,
+              0.3670665859503339,
+              -0.16702992498573543,
+              -0.24704601051129704,
+              -0.16911045900525967,
+              -0.2004938853304603,
+              -0.06335501132697363,
+              0.0573855119958262,
+              -0.6548011011363113,
+              0.020891182165083677,
+              -0.2258964280638711,
+              0.1885434815311422,
+              -0.21616019775900597,
+              -1.1142179787925297,
+              0.36444352312577255,
+              0.3631450435399506,
+              -0.5799776425093972,
+              -0.2212477777040487,
+              0.1551884525796594,
+              -0.5712663208268562,
+              0.15758051737258078,
+              -0.4859096747363245,
+              -0.437001365378725,
+              -0.20374508934409752
+            ],
+            "added_room_relative_dry_db": -24.76576506760547,
+            "added_room_200_800_relative_dry_db": -23.94426147096114
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9638411232468714,
+            "envelope_correlation_to_original": 0.9753506977778802,
+            "tail_attack_error_to_original_db": [
+              0.18357607731072711,
+              0.2958113412833905,
+              -0.08710161939696004,
+              0.022213387480875646,
+              -0.6188292474674821,
+              0.08994983822616476,
+              -0.5139720879302083,
+              -0.4876724020049148,
+              0.06835825564551268,
+              -0.56182292927575,
+              0.2945118719495436,
+              -0.13556498739904876,
+              -0.27967041455199526,
+              -0.2002774533739322,
+              -0.16488498703102294,
+              -0.03887875988124101,
+              0.06180132998583154,
+              -0.6402390348487237,
+              -0.01753525483351326,
+              -0.31069559880477016,
+              0.14854580386904015,
+              -0.057947270000426876,
+              -1.1394683021070717,
+              0.334444802410526,
+              0.12938111348026204,
+              -0.6464106765442126,
+              -0.21557539959674177,
+              0.062367490581992424,
+              -0.6252153022757403,
+              0.27511396277980193,
+              -0.5242484622624737,
+              -0.4576232909549107,
+              -0.2825094585228185
+            ],
+            "added_room_relative_dry_db": -282.58808291545796,
+            "added_room_200_800_relative_dry_db": -277.4807221341553
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "vocal-forward",
+        "peaks": 23,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9495444617606774,
+            "envelope_correlation_to_original": 0.9857726540868138,
+            "tail_attack_error_to_original_db": [
+              -0.3104883030861494,
+              0.7074329162337687,
+              0.13968880990550958,
+              -0.09178430403749838,
+              -0.3658603869528356,
+              0.5796373615136696,
+              0.4722646497405125,
+              -0.6931753232464701,
+              0.8686323011620266,
+              0.019987940899122147,
+              0.23086977970722922,
+              -0.44476988995361477,
+              -0.1602081556955976,
+              -0.2791342781357069,
+              0.02753194331351483,
+              -0.7324908138695823,
+              0.3639118438623652,
+              -0.0707409867772738,
+              0.19229716409519454,
+              0.09109154485254178,
+              -0.2788778919024433,
+              0.21977603138886392,
+              -0.18556158858738225
+            ],
+            "added_room_relative_dry_db": -20.649491744691503,
+            "added_room_200_800_relative_dry_db": -19.947840150496955
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9513090421199546,
+            "envelope_correlation_to_original": 0.988476481101883,
+            "tail_attack_error_to_original_db": [
+              -0.2749475456422723,
+              0.648878585479979,
+              0.11901405259211306,
+              -0.082187338422123,
+              -0.3766252314507046,
+              0.42616414980082107,
+              0.31588229490049535,
+              -0.511110905857294,
+              0.7638915261269937,
+              0.0012002695028416888,
+              0.2096653100721504,
+              -0.29289747867992144,
+              -0.17153062282725007,
+              -0.2357819311704672,
+              0.05320181921340683,
+              -0.40161327550141435,
+              0.3282421886510227,
+              -0.10577908583923001,
+              0.13856637774343894,
+              0.03874435798093745,
+              -0.1892911011683045,
+              0.18159883832999002,
+              -0.12225023383770339
+            ],
+            "added_room_relative_dry_db": -24.391212716637693,
+            "added_room_200_800_relative_dry_db": -23.689582596773576
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9518217646254874,
+            "envelope_correlation_to_original": 0.9880899274862612,
+            "tail_attack_error_to_original_db": [
+              -0.2868668140251076,
+              0.5345802509455986,
+              0.13840242566202487,
+              -0.07673528712766053,
+              -0.49827743110532907,
+              0.29269084865635664,
+              0.06037420288216033,
+              -0.32120499773076494,
+              0.695600497788925,
+              -0.0305978616868956,
+              0.17882074322860708,
+              -0.11391423971557746,
+              -0.18883651489722825,
+              -0.13261883011149322,
+              -0.02453403258443254,
+              -0.35027485871581887,
+              0.3163541419666829,
+              -0.1118183046497302,
+              0.049603944608959394,
+              0.09846994941404219,
+              -0.03541331165454409,
+              0.24786600787775748,
+              -0.22195291823755126
+            ],
+            "added_room_relative_dry_db": -23.82756706761315,
+            "added_room_200_800_relative_dry_db": -22.604096386064132
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9519031249108344,
+            "envelope_correlation_to_original": 0.9900645510031667,
+            "tail_attack_error_to_original_db": [
+              -0.20987203574774704,
+              0.5393067313686988,
+              0.09116978686808896,
+              -0.061010315276898375,
+              -0.3994199117462367,
+              0.13919719710785428,
+              0.043552937480451526,
+              -0.16974501577019252,
+              0.5703921410535053,
+              -0.03043686166464088,
+              0.1726499376730226,
+              -0.012377925947717472,
+              -0.19339450143968495,
+              -0.12872057266194092,
+              0.10116454473077363,
+              0.24284015304886042,
+              0.2691733635434339,
+              -0.16664740443762394,
+              0.06161708163930202,
+              -0.03829631917366649,
+              -0.020989129408674256,
+              0.1138364927589528,
+              -0.005756527066384187
+            ],
+            "added_room_relative_dry_db": -275.8581098718095,
+            "added_room_200_800_relative_dry_db": -273.5208837250659
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "drum-loud",
+        "peaks": 21,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9716609630959501,
+            "envelope_correlation_to_original": 0.9661928754091548,
+            "tail_attack_error_to_original_db": [
+              -0.3338317081895741,
+              -0.1177128362671489,
+              0.03125716564064618,
+              -0.10658185942064513,
+              0.46976167897645915,
+              0.19718747923973884,
+              -0.32284171182369303,
+              -0.594490955995655,
+              -0.1722033612301428,
+              -0.14916530145758622,
+              0.0005725087338011026,
+              -0.11160074816471355,
+              -0.2760321718685277,
+              0.40972384780113824,
+              0.269506236201441,
+              -0.2545501966974706,
+              0.34607182568543937,
+              0.2850440866386892,
+              0.013114473345877398,
+              0.04156659145200958,
+              -0.2645434396551354
+            ],
+            "added_room_relative_dry_db": -23.721621567464524,
+            "added_room_200_800_relative_dry_db": -23.42144360396353
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9727201874763939,
+            "envelope_correlation_to_original": 0.9668729036186096,
+            "tail_attack_error_to_original_db": [
+              -0.3319588650501708,
+              -0.09704510414371281,
+              0.020098675792927345,
+              -0.12471621024161372,
+              0.4904604542027431,
+              0.1619879706612684,
+              -0.3007324020916702,
+              -0.5262938685541982,
+              -0.18714289801457173,
+              -0.20056999007789678,
+              -0.03775210481061164,
+              -0.09579594780375233,
+              -0.3012630031771124,
+              0.5170875725337574,
+              0.23737724180015962,
+              -0.250629574353062,
+              0.3650026135185529,
+              0.3134175783618818,
+              0.020072220264662544,
+              0.05385457308700303,
+              -0.2819958544836394
+            ],
+            "added_room_relative_dry_db": -27.463324218850204,
+            "added_room_200_800_relative_dry_db": -27.163176754950314
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9723121288680047,
+            "envelope_correlation_to_original": 0.9666806123102442,
+            "tail_attack_error_to_original_db": [
+              -0.3096185565904679,
+              -0.08370841373393656,
+              0.02258442118843096,
+              -0.12476137090967221,
+              0.5171840493135589,
+              0.1849385231853533,
+              -0.3583666438210986,
+              -0.5869744269210813,
+              -0.13314037409483648,
+              -0.1977219449695673,
+              -0.04467968445772219,
+              -0.0809407306491402,
+              -0.2695547619231138,
+              0.43184988750051856,
+              0.19940033609218155,
+              -0.2455220286017785,
+              0.39191490026875897,
+              0.34926524853578744,
+              0.01110673999773315,
+              0.10335493347210978,
+              -0.2699969821899171
+            ],
+            "added_room_relative_dry_db": -25.823980719310914,
+            "added_room_200_800_relative_dry_db": -25.360530274369346
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9733604159347723,
+            "envelope_correlation_to_original": 0.9663810560570196,
+            "tail_attack_error_to_original_db": [
+              -0.3250837763150378,
+              -0.05384967862167933,
+              0.002703885518957172,
+              -0.1555140141457949,
+              0.5442549166336037,
+              0.09838733126604231,
+              -0.2560965983679093,
+              -0.38939904324200003,
+              -0.21694180115941375,
+              -0.2908346563250144,
+              -0.1079137147938477,
+              -0.0641929956130588,
+              -0.33938128124508804,
+              0.7102812652687591,
+              0.17976259637408087,
+              -0.24292430127381093,
+              0.4011994818467186,
+              0.37089989427751524,
+              0.03298944219144506,
+              0.07661891316004166,
+              -0.3096048015664654
+            ],
+            "added_room_relative_dry_db": -283.37482811184833,
+            "added_room_200_800_relative_dry_db": -277.61801384232393
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "decay",
+        "peaks": 16,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9832953750097329,
+            "envelope_correlation_to_original": 0.9947838678348135,
+            "tail_attack_error_to_original_db": [
+              -0.13403235986109785,
+              -0.110453552318444,
+              0.41559011042451877,
+              -0.036729331549724686,
+              -0.01970606625122162,
+              0.5794519505507243,
+              0.16869952888116502,
+              -0.5140300621676843,
+              0.1639756671362037,
+              0.21335732759928017,
+              -0.23325851802590103,
+              0.6292756428941062,
+              -0.4611163966555929,
+              0.39881370487588486,
+              -0.05838167581763798,
+              0.20868738269213338
+            ],
+            "added_room_relative_dry_db": -21.986772039938366,
+            "added_room_200_800_relative_dry_db": -21.732709131423405
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9849787737089273,
+            "envelope_correlation_to_original": 0.995126641662544,
+            "tail_attack_error_to_original_db": [
+              -0.03472820530555701,
+              -0.16340938159530927,
+              0.2586541378718419,
+              -0.05993006948594559,
+              -0.05348918091881005,
+              0.5105263041124946,
+              0.10128508494945776,
+              -0.4335544068526419,
+              0.1692910203652268,
+              0.11109701362586488,
+              -0.16963806837170936,
+              0.6039772849965734,
+              -0.35355014902931314,
+              0.27406492762828627,
+              -0.032664203246827395,
+              0.194584439051098
+            ],
+            "added_room_relative_dry_db": -25.728486964251594,
+            "added_room_200_800_relative_dry_db": -25.474440378007884
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9844060958070343,
+            "envelope_correlation_to_original": 0.9948398025070023,
+            "tail_attack_error_to_original_db": [
+              -0.09048995873205214,
+              -0.12649511370969746,
+              0.28025883074295743,
+              -0.014939957277472327,
+              -0.024757455346487323,
+              0.5560123975809477,
+              0.05182908847271661,
+              -0.5551806681410008,
+              0.1369060759537396,
+              0.12244060700104731,
+              -0.33736108218356153,
+              0.6153953648998507,
+              -0.23014371553753588,
+              0.5078720014232267,
+              0.03281363795691039,
+              0.21484085716418821
+            ],
+            "added_room_relative_dry_db": -23.72356713182828,
+            "added_room_200_800_relative_dry_db": -23.15869217053928
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9860699627761847,
+            "envelope_correlation_to_original": 0.9949166025813605,
+            "tail_attack_error_to_original_db": [
+              0.14908939736427418,
+              -0.2647687545455941,
+              -0.041524843444470994,
+              -0.09617279651926658,
+              -0.10833138265560427,
+              0.39086444122569697,
+              -0.036208219898074656,
+              -0.28324765538804875,
+              0.18283626415823673,
+              -0.07845295599298363,
+              -0.029935505089194403,
+              0.5616881107790692,
+              -0.1506091004009309,
+              0.02990325381880332,
+              0.022288994138710994,
+              0.1725808523747494
+            ],
+            "added_room_relative_dry_db": -278.69296596377137,
+            "added_room_200_800_relative_dry_db": -275.828487713103
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "prior",
+        "peaks": 34,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9583469801055398,
+            "envelope_correlation_to_original": 0.9741978424222799,
+            "tail_attack_error_to_original_db": [
+              0.48088457262133844,
+              0.2686466620056347,
+              -0.06571152529114777,
+              0.23161667354796855,
+              -0.12527250781573418,
+              -0.06309398392783683,
+              -0.5460852507378426,
+              -0.29585035521970804,
+              0.3092019112106199,
+              -0.4004857740512162,
+              -0.13472948001639917,
+              0.39252625051803713,
+              -0.3531604868260332,
+              0.26332451148164093,
+              -0.31138305613415795,
+              -0.41000045063259405,
+              0.11179285684408424,
+              0.1590386911768793,
+              -0.60445576966548,
+              -0.08958957792458211,
+              0.1596906814659007,
+              -0.5412355725737696,
+              -0.2715689487097528,
+              0.1608822937044576,
+              -0.6360198061827327,
+              0.15256588936346782,
+              -0.29562057172603007,
+              0.6716805137836759,
+              -0.34166261466290226,
+              -0.6215942151366618,
+              -0.9017217658941403,
+              0.047794959917016655,
+              -0.084334830409865,
+              -0.5766511396783303
+            ],
+            "added_room_relative_dry_db": -23.10239232123581,
+            "added_room_200_800_relative_dry_db": -21.504052894152593
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.959204447158256,
+            "envelope_correlation_to_original": 0.9756360232454122,
+            "tail_attack_error_to_original_db": [
+              0.48671401091161837,
+              0.2734520961343607,
+              -0.08223054251866024,
+              0.23064994406023342,
+              -0.15157878807195768,
+              -0.0669969173473568,
+              -0.42344948791474657,
+              -0.37913679267703504,
+              0.2376248378378948,
+              -0.44888065086342266,
+              -0.1627102222990775,
+              0.37945924675597986,
+              -0.3481982906517276,
+              0.29328710727043017,
+              -0.2566141609781729,
+              -0.44595853401103946,
+              0.08059005982676082,
+              0.14616142068592342,
+              -0.6001648559538406,
+              -0.04906728579527275,
+              0.15194434876106855,
+              -0.6293020476626063,
+              -0.21454133366000194,
+              0.17737456273184282,
+              -0.696559584389683,
+              0.17273359894150753,
+              -0.3456439363511774,
+              0.6901713287012219,
+              -0.35344760874408454,
+              -0.5810095607487513,
+              -0.7965115303607746,
+              -6.142717436130596e-05,
+              -0.1345723467625568,
+              -0.5804104483437764
+            ],
+            "added_room_relative_dry_db": -26.844107957736377,
+            "added_room_200_800_relative_dry_db": -25.245788229756485
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9585007461751153,
+            "envelope_correlation_to_original": 0.9760843733814619,
+            "tail_attack_error_to_original_db": [
+              0.5096905286950824,
+              0.2744780719975175,
+              -0.10745968341448542,
+              0.21504654540978008,
+              -0.17478661763499215,
+              -0.053309690021246636,
+              -0.25901071367991335,
+              -0.413566742735187,
+              0.1290571737782059,
+              -0.45375562898559263,
+              -0.13698800374543563,
+              0.303765775673867,
+              -0.35562288143998266,
+              0.3315516070184201,
+              -0.20800809097731054,
+              -0.4245336951648011,
+              0.07503752438877354,
+              0.15244403550494834,
+              -0.5890451755108375,
+              0.03171755639469165,
+              0.10313315278991864,
+              -0.5980887890749522,
+              -0.15136372103351703,
+              0.19189677991560128,
+              -0.6589276947479323,
+              0.14460353346438204,
+              -0.33828646918156435,
+              0.7327546111036956,
+              -0.3885506126012581,
+              -0.5401219767610552,
+              -0.7354747764628518,
+              -0.06417359943972145,
+              -0.10716013493956611,
+              -0.6017004070381828
+            ],
+            "added_room_relative_dry_db": -26.251756862475006,
+            "added_room_200_800_relative_dry_db": -24.270581252837417
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9592876102107009,
+            "envelope_correlation_to_original": 0.9767457407668615,
+            "tail_attack_error_to_original_db": [
+              0.49886921585729915,
+              0.28609751294349994,
+              -0.10889201510795488,
+              0.23145942314387957,
+              -0.1941822178019903,
+              -0.0756945197344634,
+              -0.18780526828142285,
+              -0.5265905254429271,
+              0.09342300040220652,
+              -0.5306543276754394,
+              -0.2086443293290765,
+              0.36072973846892076,
+              -0.33812068562550257,
+              0.35371878864329465,
+              -0.1473053460452638,
+              -0.5069989615908139,
+              0.015150386972481833,
+              0.13182442413520956,
+              -0.5841615386326349,
+              0.030970678735187995,
+              0.1365584004629372,
+              -0.7900797698372442,
+              -0.10886840032876166,
+              0.21762728353262606,
+              -0.7963261048483514,
+              0.2173683894836036,
+              -0.43098774457036404,
+              0.7265707143576687,
+              -0.36920275404626945,
+              -0.4963102006634612,
+              -0.5974658308214771,
+              -0.0803704162180372,
+              -0.2302278044037478,
+              -0.595536653754956
+            ],
+            "added_room_relative_dry_db": -280.2969112143928,
+            "added_room_200_800_relative_dry_db": -276.3796711378669
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "vocal-forward",
+        "peaks": 22,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9364926807701152,
+            "envelope_correlation_to_original": 0.9707856048532035,
+            "tail_attack_error_to_original_db": [
+              -2.5222120294146135,
+              0.19628722830056944,
+              0.15893526359955268,
+              -0.31038944637377563,
+              -0.08802249731560119,
+              0.5676083812926995,
+              0.046395238262838756,
+              0.1545795206811138,
+              -0.11028470265445992,
+              0.65156257235172,
+              0.1697354722163098,
+              -0.10201211518694511,
+              0.11740651549352227,
+              -0.15497476559604717,
+              -0.401253572344225,
+              0.6552323649820231,
+              0.43553197913554875,
+              0.527184728339098,
+              0.6117751861191634,
+              -0.4802114959381898,
+              0.005015206751903811,
+              -0.10511510033340365
+            ],
+            "added_room_relative_dry_db": -23.6082391821865,
+            "added_room_200_800_relative_dry_db": -21.873065661115145
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9380521599452486,
+            "envelope_correlation_to_original": 0.9718044219471027,
+            "tail_attack_error_to_original_db": [
+              -2.473965987601584,
+              0.28932363509210557,
+              0.15017848052294447,
+              -0.24739342461353964,
+              -0.06520062427493345,
+              0.4751021184295636,
+              0.016120727122619805,
+              0.16529833441241992,
+              -0.16989097311621368,
+              0.6264695248660987,
+              0.17805180067987836,
+              -0.10842084504963304,
+              0.10564193588067866,
+              -0.15548438870640624,
+              -0.4092813336557781,
+              0.5195957058039353,
+              0.3921923200652877,
+              0.4635630234495003,
+              0.5486449392634003,
+              -0.45479132374226433,
+              0.11033435199688624,
+              -0.036324167637633575
+            ],
+            "added_room_relative_dry_db": -27.349921687031763,
+            "added_room_200_800_relative_dry_db": -25.614788680968495
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9384294151247475,
+            "envelope_correlation_to_original": 0.9727055447299547,
+            "tail_attack_error_to_original_db": [
+              -2.5011374961231208,
+              0.28662417829459796,
+              0.1265181933477204,
+              -0.2645185168607985,
+              -0.0477099349173975,
+              0.35670767454926455,
+              0.005895499344445554,
+              0.15973390333487947,
+              -0.1788309283651159,
+              0.6811300206116342,
+              0.17569959625008336,
+              -0.07780884409904512,
+              0.06458573289170227,
+              -0.14018933053687077,
+              -0.3978405710526993,
+              0.33440012960283116,
+              0.39193214277589217,
+              0.41993990352448085,
+              0.5088099513743733,
+              -0.4379781016676935,
+              0.18550126051516047,
+              0.012586572674488261
+            ],
+            "added_room_relative_dry_db": -27.35919039423452,
+            "added_room_200_800_relative_dry_db": -24.650232132374697
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9396304273426962,
+            "envelope_correlation_to_original": 0.9722104212661977,
+            "tail_attack_error_to_original_db": [
+              -2.397918669445308,
+              0.46383786313806974,
+              0.13783398601120944,
+              -0.11824329458495209,
+              -0.014044732453653896,
+              0.31190308513607956,
+              -0.033434871068038774,
+              0.18658578751063803,
+              -0.27511934669917604,
+              0.586148844931413,
+              0.19883862763493187,
+              -0.11918647804144636,
+              0.081310386724042,
+              -0.15383496686396114,
+              -0.421127323029455,
+              0.2763672242351789,
+              0.31574288914023985,
+              0.3475829629312004,
+              0.4363611674294039,
+              -0.4102033016582926,
+              0.3057220372862113,
+              0.08455432357369252
+            ],
+            "added_room_relative_dry_db": -271.10808658183134,
+            "added_room_200_800_relative_dry_db": -267.3697462012806
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "drum-loud",
+        "peaks": 21,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9564732686129305,
+            "envelope_correlation_to_original": 0.9761231419629468,
+            "tail_attack_error_to_original_db": [
+              0.10624946904422927,
+              -0.44903515772336844,
+              0.27028099836182395,
+              0.24491595017285928,
+              -0.43622092694277514,
+              -0.06955766722277978,
+              -0.43968747791122237,
+              0.21376962559185975,
+              0.04683531462531576,
+              -0.3407320552125501,
+              -0.4798210028930878,
+              -0.5928948487769681,
+              -0.2348394174420676,
+              0.08221460304095062,
+              0.09781546196286173,
+              0.041089820383874986,
+              0.2018508306124278,
+              0.04319369835917808,
+              -0.220766478009922,
+              -0.004902293532837554,
+              -0.057163485884020204
+            ],
+            "added_room_relative_dry_db": -25.931105095916195,
+            "added_room_200_800_relative_dry_db": -24.11997137234039
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.958679301579466,
+            "envelope_correlation_to_original": 0.9781789475777788,
+            "tail_attack_error_to_original_db": [
+              0.08397265264854425,
+              -0.42178710364218563,
+              0.2754468909526837,
+              0.16261543410708312,
+              -0.4907262863860119,
+              -0.029102797410707426,
+              -0.38676102932835615,
+              0.22369736055162415,
+              0.026557504796360654,
+              -0.3578859290195897,
+              -0.37743317739338256,
+              -0.5530796531074849,
+              -0.2545254289121739,
+              0.08370005920545878,
+              0.0811113370347405,
+              0.021765036100593882,
+              0.1380998390631658,
+              0.023826173468035616,
+              -0.2047107645278956,
+              -0.007338380256405763,
+              -0.07432285771043823
+            ],
+            "added_room_relative_dry_db": -29.672794173641563,
+            "added_room_200_800_relative_dry_db": -27.86170447529615
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9601765314470684,
+            "envelope_correlation_to_original": 0.9787080434403153,
+            "tail_attack_error_to_original_db": [
+              0.06176101330527661,
+              -0.5248330277534996,
+              0.2585921502517978,
+              0.23040581083530642,
+              -0.5894348751231909,
+              0.03208871172919725,
+              -0.3373053554650636,
+              0.26411117629161573,
+              -0.01732439375627237,
+              -0.5003035617677121,
+              -0.2703126318530513,
+              -0.6735753135757641,
+              -0.25759156985118636,
+              0.09402309856421062,
+              0.07506187031960421,
+              0.014960080174866164,
+              0.15925198003665542,
+              0.03669402365246199,
+              -0.22077390670986474,
+              -0.08755173640679459,
+              -0.07896935587420462
+            ],
+            "added_room_relative_dry_db": -29.44909914196885,
+            "added_room_200_800_relative_dry_db": -26.84723351269287
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.961966844695718,
+            "envelope_correlation_to_original": 0.9810219293452166,
+            "tail_attack_error_to_original_db": [
+              0.046171547922320144,
+              -0.36388077246150363,
+              0.2913481034032097,
+              0.012073633846815035,
+              -0.5868894939850114,
+              0.040521986936681964,
+              -0.2884468232438931,
+              0.24297139569750037,
+              -0.009267361450841172,
+              -0.3803690056163802,
+              -0.18678241477138435,
+              -0.47074448634223565,
+              -0.2878404259002947,
+              0.0846787436296029,
+              0.05187569255520863,
+              -0.01024769264942238,
+              0.020996652907911306,
+              -0.00822042190544181,
+              -0.1734376976107227,
+              -0.00424587904246021,
+              -0.09982476106334826
+            ],
+            "added_room_relative_dry_db": -281.3186265608187,
+            "added_room_200_800_relative_dry_db": -276.3835801503235
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "decay",
+        "peaks": 14,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.985360872276387,
+            "envelope_correlation_to_original": 0.9953710622217726,
+            "tail_attack_error_to_original_db": [
+              -0.49047788121983965,
+              0.009827194014692564,
+              0.4592732460808143,
+              0.8370656973939987,
+              -0.09688792497391058,
+              -0.1480324122902421,
+              0.20271922942207654,
+              0.04829737771060927,
+              0.16395602187069658,
+              0.06961636084736234,
+              -0.03601459957902042,
+              0.015324283656425353,
+              0.07637857050645613,
+              0.0780872348065964
+            ],
+            "added_room_relative_dry_db": -26.572008212498215,
+            "added_room_200_800_relative_dry_db": -25.56108808400363
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9856553738481073,
+            "envelope_correlation_to_original": 0.9958640753436062,
+            "tail_attack_error_to_original_db": [
+              -0.48193389308001755,
+              -0.03586486700444602,
+              0.4368751045747712,
+              0.7849621131017466,
+              -0.08986354204877794,
+              -0.17329963391455117,
+              0.19748734067552354,
+              0.030750841629952674,
+              0.10986056234672148,
+              0.059323757900626495,
+              -0.04004009381413054,
+              0.00417675392239461,
+              0.07351685956621234,
+              0.07319931734269214
+            ],
+            "added_room_relative_dry_db": -30.31368396050756,
+            "added_room_200_800_relative_dry_db": -29.302822589709994
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9852840246545262,
+            "envelope_correlation_to_original": 0.996194541158773,
+            "tail_attack_error_to_original_db": [
+              -0.4769970993320389,
+              -0.0856151565009976,
+              0.4331581488135825,
+              0.7202444158253389,
+              -0.08323973567501447,
+              -0.21092502598479523,
+              0.18848668212970843,
+              0.03486244019888485,
+              0.08716444283478308,
+              0.06330037900819585,
+              -0.040993653094377525,
+              0.017619483337135727,
+              0.048485464652755716,
+              0.06556484083617331
+            ],
+            "added_room_relative_dry_db": -32.977215401679885,
+            "added_room_200_800_relative_dry_db": -29.052896220633304
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9856122261129351,
+            "envelope_correlation_to_original": 0.9964452148181089,
+            "tail_attack_error_to_original_db": [
+              -0.4653581650012346,
+              -0.12236866919051581,
+              0.39485018253713833,
+              0.6805507380640725,
+              -0.0767595236368745,
+              -0.22086723792738372,
+              0.19006380408417556,
+              0.0006813644069074698,
+              0.009461498482888686,
+              0.04019254014486573,
+              -0.046280725935148315,
+              -0.016314835129497135,
+              0.069263495419422,
+              0.0631142201283883
+            ],
+            "added_room_relative_dry_db": -271.6181681642191,
+            "added_room_200_800_relative_dry_db": -265.75258411260484
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "prior",
+        "peaks": 32,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.966522644076949,
+            "envelope_correlation_to_original": 0.9930943036498763,
+            "tail_attack_error_to_original_db": [
+              0.4623366999327576,
+              0.09721414415535978,
+              -0.035123075417240024,
+              0.42824181084533475,
+              0.39296202636682365,
+              0.28699380814792264,
+              0.23471378290036915,
+              0.4322253666517657,
+              0.29618076462919873,
+              -0.34364678290751494,
+              0.30621873172084824,
+              0.23369956068484754,
+              0.026038830500800803,
+              0.24642375220109702,
+              0.03442028647263573,
+              0.14582939995437538,
+              0.6900324915948453,
+              0.20035662997560966,
+              0.34742303580635836,
+              0.37434501477395354,
+              -0.054748858832785796,
+              0.24231287053844142,
+              0.5337805334000079,
+              0.037617702038160505,
+              0.45246358804106457,
+              0.061653302490234374,
+              0.2132774308781129,
+              0.17540251919308947,
+              0.5237844904293376,
+              0.06539837870972676,
+              0.21006435455409367,
+              0.15747655585965514
+            ],
+            "added_room_relative_dry_db": -26.137126666207863,
+            "added_room_200_800_relative_dry_db": -25.56706528060918
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9672495791583505,
+            "envelope_correlation_to_original": 0.9933997441284533,
+            "tail_attack_error_to_original_db": [
+              0.43951587807816406,
+              0.06518248091321333,
+              -0.03219545907977128,
+              0.42130295031367915,
+              0.36472270730625134,
+              0.3028089630185411,
+              0.1947239781473029,
+              0.40702113977059984,
+              0.31690302424023287,
+              -0.3475999780653347,
+              0.3270106223465974,
+              0.2583657488290969,
+              0.026688781048200383,
+              0.23628183181277418,
+              0.004065763023880287,
+              0.2024099373468209,
+              0.6902978276365781,
+              0.19316013410355914,
+              0.3548432391054419,
+              0.37891008574770435,
+              -0.0677154913914424,
+              0.262077316363877,
+              0.5302677222510521,
+              0.05226784968361686,
+              0.46931013991857284,
+              0.060895855120596476,
+              0.22011507722761703,
+              0.1980622775300347,
+              0.5001948682565658,
+              0.06760330167030881,
+              0.21904182112579207,
+              0.1480790721523455
+            ],
+            "added_room_relative_dry_db": -29.87881285378865,
+            "added_room_200_800_relative_dry_db": -29.308797782659322
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9672802078072175,
+            "envelope_correlation_to_original": 0.9933775617711331,
+            "tail_attack_error_to_original_db": [
+              0.43916802262622934,
+              0.02288902561236572,
+              -0.03014097970684837,
+              0.4639777994242431,
+              0.3226328915372205,
+              0.3146640963176246,
+              0.16637068477725192,
+              0.411513572658035,
+              0.32412148141177965,
+              -0.37906120509708696,
+              0.3532033425683436,
+              0.2488463229217297,
+              0.026594937380341133,
+              0.23957786143107462,
+              -0.022288746090476153,
+              0.2628451758678727,
+              0.6711988788386694,
+              0.18247694741750564,
+              0.34640958403926003,
+              0.3845630478638151,
+              -0.06439396965992605,
+              0.2756142872500744,
+              0.56270197039915,
+              0.05311602488840039,
+              0.5091100684086389,
+              0.06423592755552887,
+              0.25151257228274426,
+              0.21153890250868557,
+              0.5002098092860363,
+              0.07474288939601692,
+              0.2187575875206038,
+              0.14453850301450544
+            ],
+            "added_room_relative_dry_db": -28.968200641735994,
+            "added_room_200_800_relative_dry_db": -27.863778055013707
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9678338320659501,
+            "envelope_correlation_to_original": 0.9936406288003802,
+            "tail_attack_error_to_original_db": [
+              0.40204922866896453,
+              0.007999428363491212,
+              -0.02100294810159742,
+              0.4176687345412171,
+              0.3156531836261154,
+              0.34064887142550315,
+              0.12562104770938642,
+              0.3637911594510044,
+              0.3625062955303573,
+              -0.351746593941475,
+              0.3672601095327579,
+              0.3111173082880647,
+              0.030360695730722753,
+              0.22125459553166404,
+              -0.04331987423444872,
+              0.31271169220086215,
+              0.695163697664062,
+              0.1860016914986844,
+              0.37065573623023873,
+              0.39427459279749044,
+              -0.08831220322126843,
+              0.2945124337304206,
+              0.5306471309144696,
+              0.08548536915578975,
+              0.503772711108522,
+              0.06511546651976818,
+              0.23813676373618042,
+              0.2440325395036842,
+              0.46035100773876314,
+              0.07780256509120598,
+              0.2435552996768262,
+              0.13676001828681805
+            ],
+            "added_room_relative_dry_db": -282.762687749287,
+            "added_room_200_800_relative_dry_db": -277.5848463905828
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "vocal-forward",
+        "peaks": 23,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9684128058011974,
+            "envelope_correlation_to_original": 0.9854959500938334,
+            "tail_attack_error_to_original_db": [
+              -0.13494911749500682,
+              0.23890237470266995,
+              0.26636606628595594,
+              -0.12597092859440506,
+              0.08561665048500289,
+              0.2363651141320271,
+              -0.4078632394546662,
+              -0.14701183695666792,
+              0.18772741855850672,
+              -0.21398277721189496,
+              -0.027774111839653948,
+              0.041297729046801734,
+              0.3077173914502396,
+              0.2932596089385693,
+              -0.10054093306143752,
+              0.36297400145711145,
+              0.4745618416158317,
+              -0.24747720999396572,
+              0.5265938180304719,
+              0.2594175255646327,
+              -0.09564461282962489,
+              0.09758067535239157,
+              0.1442545079299049
+            ],
+            "added_room_relative_dry_db": -24.923884422885884,
+            "added_room_200_800_relative_dry_db": -24.362172674146
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9694335514218896,
+            "envelope_correlation_to_original": 0.9861565060217032,
+            "tail_attack_error_to_original_db": [
+              -0.1294590897403416,
+              0.2730158436402783,
+              0.25157790932335766,
+              -0.14698292103691735,
+              0.06735494864065528,
+              0.23018209282672997,
+              -0.39601011601421376,
+              -0.16969351298754437,
+              0.18746234156817376,
+              -0.22050764698122327,
+              0.012661623737280081,
+              0.04483171751254389,
+              0.3529771658634595,
+              0.2992810570115698,
+              -0.10180644885620183,
+              0.3648684466402703,
+              0.4401397211884426,
+              -0.2592940165719999,
+              0.47242342865570297,
+              0.26105319564927765,
+              -0.11243986760590508,
+              0.11732269793580485,
+              0.17808147174134792
+            ],
+            "added_room_relative_dry_db": -28.66558005792482,
+            "added_room_200_800_relative_dry_db": -28.103915296441887
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9695847901642747,
+            "envelope_correlation_to_original": 0.9862575544331701,
+            "tail_attack_error_to_original_db": [
+              -0.11852127697520354,
+              0.29555822403642495,
+              0.27329683468081223,
+              -0.1329473363317737,
+              0.07264421708492352,
+              0.2308639650930462,
+              -0.38017768473176883,
+              -0.16052980897903063,
+              0.17746952704842123,
+              -0.21819402424579648,
+              0.0051914153724386125,
+              0.05925418402728733,
+              0.40075763464109815,
+              0.3548588320801873,
+              -0.09328313801120647,
+              0.4207460667445262,
+              0.4065245089013034,
+              -0.26206087230736985,
+              0.44117928518109517,
+              0.2637355481067374,
+              -0.11258132889298045,
+              0.09611785741452472,
+              0.1642436659280353
+            ],
+            "added_room_relative_dry_db": -27.619745881575348,
+            "added_room_200_800_relative_dry_db": -26.365806841987084
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.970311818421283,
+            "envelope_correlation_to_original": 0.9868364860925306,
+            "tail_attack_error_to_original_db": [
+              -0.11399030134074994,
+              0.3389246227964733,
+              0.2312892088192342,
+              -0.17666043502335693,
+              0.039270421687308765,
+              0.23042921658048243,
+              -0.37177810527971467,
+              -0.21543266473703598,
+              0.1914891175019955,
+              -0.22979942742324289,
+              0.09352822899769642,
+              0.053738667039138655,
+              0.44036590663116404,
+              0.3127547614351538,
+              -0.0927548204506472,
+              0.3776411337702774,
+              0.38204562470016157,
+              -0.2720257908828225,
+              0.3737809503738756,
+              0.27369015686833276,
+              -0.13795941522515198,
+              0.1559215315540703,
+              0.24484531735078008
+            ],
+            "added_room_relative_dry_db": -282.2326772319309,
+            "added_room_200_800_relative_dry_db": -276.6539429036469
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "drum-loud",
+        "peaks": 22,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9722044525266503,
+            "envelope_correlation_to_original": 0.9901979198872061,
+            "tail_attack_error_to_original_db": [
+              0.008781673568624804,
+              0.027971715863688296,
+              0.7908733115938533,
+              0.6141001018735199,
+              0.12520922801262913,
+              -0.1366466102600148,
+              0.729941697102297,
+              0.4175204925878866,
+              -0.38220845729081887,
+              0.13998922470246633,
+              -0.015949443440836042,
+              0.04902750575632053,
+              0.03604675454611872,
+              0.3777539372873031,
+              0.11583212593958958,
+              -0.08687379121721994,
+              0.5877419407040785,
+              0.3174474663345279,
+              -0.3247411819923611,
+              -0.024181291751713685,
+              -0.12415816675985028,
+              0.6349730895664889
+            ],
+            "added_room_relative_dry_db": -25.421890861306004,
+            "added_room_200_800_relative_dry_db": -24.014554366424328
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9729522354443202,
+            "envelope_correlation_to_original": 0.9911408415447563,
+            "tail_attack_error_to_original_db": [
+              0.016635152187511437,
+              0.010871769372655216,
+              0.7890000566304458,
+              0.6263073264881989,
+              0.11842926035030654,
+              -0.13299005565936017,
+              0.7343286793390837,
+              0.41515568761023225,
+              -0.3819277378733128,
+              0.11042169925007439,
+              0.02041820990696186,
+              0.062392097712237415,
+              0.04969029342561582,
+              0.38391455660560014,
+              0.12076454884160093,
+              -0.049458588469401654,
+              0.5085869621355008,
+              0.27577017402717185,
+              -0.32053136794482917,
+              0.048486410008792724,
+              -0.10122909264774446,
+              0.6343987815904768
+            ],
+            "added_room_relative_dry_db": -29.163578464451007,
+            "added_room_200_800_relative_dry_db": -27.756279416155824
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.972999395501777,
+            "envelope_correlation_to_original": 0.9912849226584667,
+            "tail_attack_error_to_original_db": [
+              0.013429813947118063,
+              -0.016786920201103506,
+              0.800169066741045,
+              0.6237086280134339,
+              0.1160803620414006,
+              -0.126197020163346,
+              0.7452122265601755,
+              0.4029030482721909,
+              -0.37731018202926503,
+              0.047157289665221924,
+              0.022088518357864295,
+              0.05450796858478446,
+              0.02990765724460953,
+              0.3829526379902428,
+              0.12051395763846706,
+              -0.060329324249409844,
+              0.502656700301378,
+              0.3012048393998299,
+              -0.3281440514451335,
+              0.17597315734682972,
+              -0.20252783084616607,
+              0.6485099217654202
+            ],
+            "added_room_relative_dry_db": -27.80560408421085,
+            "added_room_200_800_relative_dry_db": -25.929041726429514
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9734315020139793,
+            "envelope_correlation_to_original": 0.9919911563155762,
+            "tail_attack_error_to_original_db": [
+              0.0325143975336033,
+              -0.019255165507713556,
+              0.7854563435761532,
+              0.6508048831218107,
+              0.107368860258644,
+              -0.124297297770811,
+              0.744557248766395,
+              0.4135924879342392,
+              -0.3799554191800931,
+              0.06343408656378724,
+              0.09409243469089157,
+              0.09217082449433711,
+              0.07584205657675414,
+              0.40031604754130434,
+              0.13412715439762035,
+              0.025706032464873463,
+              0.36132141378812854,
+              0.2006934966272329,
+              -0.3107638665253756,
+              0.18934222146052515,
+              -0.06274750470822257,
+              0.6377255814852063
+            ],
+            "added_room_relative_dry_db": -282.4829623820905,
+            "added_room_200_800_relative_dry_db": -278.68716241661616
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "decay",
+        "peaks": 10,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9751565995981126,
+            "envelope_correlation_to_original": 0.9974054734050313,
+            "tail_attack_error_to_original_db": [
+              -0.008136543612164537,
+              0.13827526776000099,
+              0.27542634284768885,
+              0.40314258429960814,
+              0.17305903950253754,
+              0.7337839019041881,
+              0.08546287975456279,
+              0.3364858479545536,
+              -0.34271069161099643,
+              -0.36330864165599763
+            ],
+            "added_room_relative_dry_db": -26.051939972135756,
+            "added_room_200_800_relative_dry_db": -25.781792097116075
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.975818054055413,
+            "envelope_correlation_to_original": 0.9974882215806758,
+            "tail_attack_error_to_original_db": [
+              0.021923950996967534,
+              0.11059206645691733,
+              0.23492669211185202,
+              0.42308543320676106,
+              0.15018191091313948,
+              0.7378083471492252,
+              0.09777422664343338,
+              0.3432632141288896,
+              -0.3393898602252688,
+              -0.3845103678075841
+            ],
+            "added_room_relative_dry_db": -29.793618767489942,
+            "added_room_200_800_relative_dry_db": -29.523510536980318
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9757352060824562,
+            "envelope_correlation_to_original": 0.9974193596973592,
+            "tail_attack_error_to_original_db": [
+              0.016691056808094018,
+              0.10246915218607855,
+              0.2020342059389999,
+              0.4817433013927843,
+              0.16714085137666324,
+              0.7275324126998939,
+              0.08925422884952228,
+              0.37436996612776996,
+              -0.35290412655128817,
+              -0.42345868193635816
+            ],
+            "added_room_relative_dry_db": -28.719890953545054,
+            "added_room_200_800_relative_dry_db": -27.654157012425237
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9762669786256157,
+            "envelope_correlation_to_original": 0.9975617163490423,
+            "tail_attack_error_to_original_db": [
+              0.07841397913980419,
+              0.0622232936012308,
+              0.16448263952533226,
+              0.461952401683587,
+              0.11177656772673306,
+              0.750398690566866,
+              0.12053082160290585,
+              0.35604207607830096,
+              -0.33320722370636663,
+              -0.4193614159061152
+            ],
+            "added_room_relative_dry_db": -278.7253434839224,
+            "added_room_200_800_relative_dry_db": -273.66395280376054
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "prior",
+        "peaks": 32,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9577693249691654,
+            "envelope_correlation_to_original": 0.9720921490269708,
+            "tail_attack_error_to_original_db": [
+              0.08750356575196161,
+              -0.5690062484425962,
+              0.09848723186018082,
+              -1.082779119025341,
+              0.1607583354199491,
+              0.2367592744485476,
+              -1.4670000735021915,
+              -0.37145609307353844,
+              -1.7278302566798036,
+              1.1839290474302815,
+              0.44282586550742087,
+              -1.0855175305578064,
+              0.07555935918756429,
+              -0.9744075728415926,
+              -0.5275101260167858,
+              0.2389691844405648,
+              0.7305927407078143,
+              -0.5936502336959011,
+              -0.11626013512496947,
+              0.08800554735520638,
+              -0.1492927822182799,
+              0.31769994555079606,
+              0.2753367709303052,
+              -1.1228784948774209,
+              0.596925852101153,
+              -0.36609668605896584,
+              -0.19798244812798993,
+              -0.3418292284044191,
+              0.3660856330568998,
+              -0.3499467683397137,
+              -1.4589120771493729,
+              -0.18558723961955614
+            ],
+            "added_room_relative_dry_db": -23.492022905616203,
+            "added_room_200_800_relative_dry_db": -21.91127457553039
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9589061237345693,
+            "envelope_correlation_to_original": 0.9737628325649452,
+            "tail_attack_error_to_original_db": [
+              0.07465657518615476,
+              -0.48290615425725303,
+              0.13495760887220687,
+              -1.0609417486757877,
+              0.13527791804626954,
+              0.26602612660295755,
+              -1.4865775838873532,
+              -0.3844652434813578,
+              -1.7133351561583812,
+              1.0932863425956016,
+              0.42926318390619045,
+              -1.0207054704501854,
+              0.029305695331779624,
+              -0.9408119171104747,
+              -0.5027510622548967,
+              0.26413958456256315,
+              0.6550342504027257,
+              -0.6118307651211037,
+              -0.16132912475617456,
+              0.22503198750676567,
+              -0.1546905869050592,
+              0.3158159145168917,
+              0.23900475172205926,
+              -1.1557985127811419,
+              0.6051223802511603,
+              -0.42639286532302645,
+              -0.21730184400821573,
+              -0.2743676382295994,
+              0.30554587632315,
+              -0.23811442068281163,
+              -1.4426785705556515,
+              -0.22329442877836359
+            ],
+            "added_room_relative_dry_db": -27.233738257161797,
+            "added_room_200_800_relative_dry_db": -25.653008538193795
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9585372509409379,
+            "envelope_correlation_to_original": 0.9731890842886682,
+            "tail_attack_error_to_original_db": [
+              0.09796217774195703,
+              -0.42398259460046717,
+              0.1317691019018974,
+              -1.075212077609037,
+              0.10603116774378307,
+              0.27113013948805254,
+              -1.5215846567760014,
+              -0.39439914170113477,
+              -1.7150384274707235,
+              1.1346907332001002,
+              0.4080347755190179,
+              -1.0043633278690292,
+              -0.06562023825686736,
+              -0.9171783176347938,
+              -0.5110389364078989,
+              0.3589937250273483,
+              0.6384236594311906,
+              -0.6424939429648377,
+              -0.08674098716770295,
+              0.15622902706004194,
+              -0.12831967794987964,
+              0.3599093283021735,
+              0.16288725946463822,
+              -1.1799434842029575,
+              0.43214462859662417,
+              -0.37678109634337353,
+              -0.2572269601516992,
+              -0.22568475934943444,
+              0.25316407052713874,
+              -0.35763182659082116,
+              -1.4170298934462449,
+              -0.23740186270023456
+            ],
+            "added_room_relative_dry_db": -26.035894542884286,
+            "added_room_200_800_relative_dry_db": -24.049700143629167
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9596279336688993,
+            "envelope_correlation_to_original": 0.9752196666265176,
+            "tail_attack_error_to_original_db": [
+              0.05040535923048939,
+              -0.31292524714849,
+              0.20097949443360852,
+              -1.014582302182765,
+              0.09444886625282667,
+              0.3246579169561379,
+              -1.5183673671572184,
+              -0.4067063158651796,
+              -1.6814958404136995,
+              0.9286294328794429,
+              0.4143280971617975,
+              -0.8995475900776723,
+              -0.05725597599802623,
+              -0.8753598228749677,
+              -0.4486633636915518,
+              0.310196588895847,
+              0.5131610449257127,
+              -0.6372858973338511,
+              -0.23814725862412445,
+              0.49853520363006787,
+              -0.16309150729355615,
+              0.3193068684016045,
+              0.16487157416720644,
+              -1.2123988118847437,
+              0.5975895247958845,
+              -0.5349723084384799,
+              -0.2295718123047923,
+              -0.16305946786090209,
+              0.18803735997796167,
+              -0.029955141239026872,
+              -1.4062337333210402,
+              -0.28942108396714916
+            ],
+            "added_room_relative_dry_db": -282.85105935830177,
+            "added_room_200_800_relative_dry_db": -279.6385476367524
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "vocal-forward",
+        "peaks": 21,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9697774828692783,
+            "envelope_correlation_to_original": 0.9838443622635595,
+            "tail_attack_error_to_original_db": [
+              -0.039308674104927555,
+              0.13950701230093632,
+              -0.1728449478458871,
+              -0.6803251402361985,
+              0.2800936367746969,
+              -0.19176853743451439,
+              -0.7832864278757619,
+              -0.1302015579341671,
+              -0.3967406188368452,
+              0.6179931808927339,
+              0.0650247212737034,
+              0.1164644775079342,
+              -0.9620714625940892,
+              0.11041724438268552,
+              -0.14920986283525206,
+              -0.6092960889738999,
+              -0.10432221505114914,
+              -0.17230439835634836,
+              -0.5902880392532106,
+              -0.015425185923748863,
+              -0.5255728905308357
+            ],
+            "added_room_relative_dry_db": -22.013791067612875,
+            "added_room_200_800_relative_dry_db": -21.111134826362353
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9716356339667817,
+            "envelope_correlation_to_original": 0.9858323951192193,
+            "tail_attack_error_to_original_db": [
+              -0.0753370749811344,
+              0.18497702413785966,
+              -0.13574880711294357,
+              -0.6720719860669995,
+              0.2376806146625685,
+              -0.19883425633052632,
+              -0.7961838654463236,
+              -0.13116169811158107,
+              -0.35737938740884534,
+              0.49506512807888736,
+              0.020617845239637056,
+              0.16277228288178547,
+              -0.9543274942480027,
+              0.04202641489274728,
+              -0.1352867525713961,
+              -0.62347791458396,
+              -0.06400638619006926,
+              -0.15510392402764372,
+              -0.6175160235086965,
+              -0.020201169299780553,
+              -0.5564273270021141
+            ],
+            "added_room_relative_dry_db": -25.75550190187693,
+            "added_room_200_800_relative_dry_db": -24.85286738493073
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9705910026382348,
+            "envelope_correlation_to_original": 0.985010000842494,
+            "tail_attack_error_to_original_db": [
+              -0.09036119525110697,
+              0.13821890188057528,
+              -0.09251207595318522,
+              -0.6581561464808052,
+              0.27810892821212185,
+              -0.1167522988586911,
+              -0.6436123857279945,
+              -0.24515539654834506,
+              -0.17997076604398998,
+              0.5998315343483673,
+              -0.01020671107735538,
+              0.14567786590805332,
+              -0.9465915856380138,
+              -0.050081810491005796,
+              -0.11485322132444686,
+              -0.6416641274107837,
+              -0.0883592852227193,
+              -0.19861050337702313,
+              -0.6753818358757959,
+              -0.0321321428872432,
+              -0.5435457882083337
+            ],
+            "added_room_relative_dry_db": -23.696335292109808,
+            "added_room_200_800_relative_dry_db": -22.691191587741763
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9731227349404206,
+            "envelope_correlation_to_original": 0.9872296935763785,
+            "tail_attack_error_to_original_db": [
+              -0.13310190584837134,
+              0.26642606711841843,
+              -0.08323685238455392,
+              -0.6527666918297754,
+              0.16825053755471542,
+              -0.20460043921997073,
+              -0.8058942690080428,
+              -0.12618543444859243,
+              -0.285784199580255,
+              0.2823522662378135,
+              -0.05714987885487566,
+              0.2617057646416656,
+              -0.9317537004422998,
+              -0.08000720632812364,
+              -0.10547295393397516,
+              -0.644692635267945,
+              0.01925100225338161,
+              -0.11899779646201747,
+              -0.6619016493602032,
+              -0.017627974152648385,
+              -0.6102515649462252
+            ],
+            "added_room_relative_dry_db": -282.9426080769867,
+            "added_room_200_800_relative_dry_db": -279.70724459210436
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "drum-loud",
+        "peaks": 22,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9686361333257654,
+            "envelope_correlation_to_original": 0.977620340964906,
+            "tail_attack_error_to_original_db": [
+              -0.5244167466955711,
+              -0.4816450836858355,
+              -0.3088508045817937,
+              0.2058170093626721,
+              0.1786934867444474,
+              0.4194444150797807,
+              0.21245835230307097,
+              0.5105966240163857,
+              -0.10863565708266254,
+              -0.5408876825854234,
+              -0.5006856118554603,
+              -0.4399332809793368,
+              -0.08059654510005565,
+              -0.10702043610801865,
+              0.5210535287935656,
+              0.014538569380240673,
+              0.026795128669285795,
+              -0.5187810910017552,
+              0.2821058973979378,
+              0.4937438571450148,
+              0.07688335788167233,
+              -0.30136286748942
+            ],
+            "added_room_relative_dry_db": -23.351298335750062,
+            "added_room_200_800_relative_dry_db": -21.96185965887426
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9698783766078796,
+            "envelope_correlation_to_original": 0.9788145934301521,
+            "tail_attack_error_to_original_db": [
+              -0.5438419826913691,
+              -0.44721731374338614,
+              -0.3191244685120571,
+              0.18525923354519414,
+              0.17668856189870974,
+              0.3665561478286321,
+              0.1721189352752197,
+              0.4853689078742591,
+              -0.08831272118436528,
+              -0.5626921944383838,
+              -0.4407046021461989,
+              -0.35274637127848196,
+              -0.10134056149377635,
+              -0.07371653691269903,
+              0.5402104158879286,
+              0.0025979620851828145,
+              0.02721810188191931,
+              -0.5312693264298867,
+              0.2610927339150191,
+              0.4161623279632405,
+              0.054406938599727006,
+              -0.2955205697164871
+            ],
+            "added_room_relative_dry_db": -27.093011574973666,
+            "added_room_200_800_relative_dry_db": -25.70359031035501
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9695598459987189,
+            "envelope_correlation_to_original": 0.97824324495039,
+            "tail_attack_error_to_original_db": [
+              -0.5465363698251159,
+              -0.45316952824869094,
+              -0.3364268122680776,
+              0.17393525932040355,
+              0.15305918484293413,
+              0.43885234107288884,
+              0.1607032303657676,
+              0.44835742002787704,
+              0.006292154272644179,
+              -0.5365115433508061,
+              -0.41665747190068014,
+              -0.43881344015515733,
+              -0.1360930466381336,
+              -0.13355028235193367,
+              0.5808302898911402,
+              -0.011451169441493825,
+              0.02955853410060172,
+              -0.45005942258291576,
+              0.30448420788160524,
+              0.5325729372341721,
+              0.10709127436704469,
+              -0.31569043091793936
+            ],
+            "added_room_relative_dry_db": -25.25610850789697,
+            "added_room_200_800_relative_dry_db": -23.61499021145566
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9707311169856313,
+            "envelope_correlation_to_original": 0.9798797494682363,
+            "tail_attack_error_to_original_db": [
+              -0.5812098984650248,
+              -0.37865613056418557,
+              -0.333732543295421,
+              0.15030115013957346,
+              0.18405701318653822,
+              0.2804478757839952,
+              0.10583463745691413,
+              0.44678750183607985,
+              -0.058828555781485825,
+              -0.5939233851186101,
+              -0.3233324396233641,
+              -0.19247556033484114,
+              -0.1282671511891218,
+              -0.01532100872519876,
+              0.572173074413346,
+              -0.013677416192842351,
+              0.03573889294947552,
+              -0.5444453878681248,
+              0.233867188316228,
+              0.28700546127850846,
+              0.0269767876415572,
+              -0.28089302655396864
+            ],
+            "added_room_relative_dry_db": -282.93779522487887,
+            "added_room_200_800_relative_dry_db": -279.7046118805169
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "decay",
+        "peaks": 13,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9794210080811054,
+            "envelope_correlation_to_original": 0.9953596139450515,
+            "tail_attack_error_to_original_db": [
+              -0.792927118101185,
+              -0.5222184523907991,
+              0.5429317484407512,
+              -0.5023804056958134,
+              -0.5940403281888536,
+              0.22689500627767312,
+              -0.024245754988475365,
+              -0.5352624738934173,
+              0.11394972950091442,
+              0.09190663017960282,
+              -0.6661364560363703,
+              -0.37864795253551353,
+              -0.23324269186455382
+            ],
+            "added_room_relative_dry_db": -26.116163194655513,
+            "added_room_200_800_relative_dry_db": -22.935967090154357
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9797788888916892,
+            "envelope_correlation_to_original": 0.9956212896702614,
+            "tail_attack_error_to_original_db": [
+              -0.8252517933754349,
+              -0.4837262256157473,
+              0.5112737364281026,
+              -0.5646352488454296,
+              -0.5417622653897345,
+              0.2507416760446657,
+              0.01783060986851348,
+              -0.505379728163379,
+              0.09191784483873744,
+              0.04865373781100191,
+              -0.6381385003241027,
+              -0.3771362315136182,
+              -0.22988803915534373
+            ],
+            "added_room_relative_dry_db": -29.857844919797927,
+            "added_room_200_800_relative_dry_db": -26.67769166063995
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9795547975864642,
+            "envelope_correlation_to_original": 0.9956985030990303,
+            "tail_attack_error_to_original_db": [
+              -0.8073020020092203,
+              -0.44779231381117546,
+              0.4844475320133454,
+              -0.5321211973772533,
+              -0.4792104418379215,
+              0.23222692773470532,
+              0.05784514736141988,
+              -0.4627444466545656,
+              0.03633658088134939,
+              0.022329222028672963,
+              -0.5957941245368938,
+              -0.37014568031527206,
+              -0.22746904571463222
+            ],
+            "added_room_relative_dry_db": -29.513732388342024,
+            "added_room_200_800_relative_dry_db": -24.94733850369051
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9797103930925573,
+            "envelope_correlation_to_original": 0.9958832777244444,
+            "tail_attack_error_to_original_db": [
+              -0.881390941750841,
+              -0.4064262106890473,
+              0.449417633837136,
+              -0.6741368724342962,
+              -0.44597901910481497,
+              0.2921517850804758,
+              0.09495925006609651,
+              -0.449217287489764,
+              0.05277243405989562,
+              -0.023683116321304654,
+              -0.5808519614167302,
+              -0.3733109666422423,
+              -0.22414953438103247
+            ],
+            "added_room_relative_dry_db": -279.79604488578366,
+            "added_room_200_800_relative_dry_db": -274.42060815780064
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "prior",
+        "peaks": 36,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.96804546372523,
+            "envelope_correlation_to_original": 0.9839755439113059,
+            "tail_attack_error_to_original_db": [
+              0.3795406126948895,
+              0.24779176323738827,
+              -0.4371340633573726,
+              -0.31231548191379677,
+              0.22898916434469907,
+              -0.1327259130147409,
+              0.01626579032958897,
+              -0.03167327436285117,
+              0.047680655292466234,
+              -0.11674141604968336,
+              -0.14428739606219776,
+              -0.37859312571647097,
+              0.11862168246947447,
+              -0.08959305164642739,
+              0.09815160326159234,
+              -0.19983872563671223,
+              0.298856099675074,
+              0.017668728152871793,
+              -0.381954747987852,
+              0.5809690277334241,
+              -0.6789571648666373,
+              -0.5348209730440563,
+              0.3801484374773907,
+              -0.04096551974082829,
+              -0.4543645117824293,
+              0.4913444700410041,
+              0.04013749239341724,
+              -0.5805806872352006,
+              -0.35493640322316455,
+              -0.020651589218742217,
+              0.09128090752686102,
+              -0.06876570054630915,
+              -0.5254528344690468,
+              -0.35412690957992105,
+              -0.43316737706707276,
+              0.6669797756148554
+            ],
+            "added_room_relative_dry_db": -23.31738878036503,
+            "added_room_200_800_relative_dry_db": -22.088120822606342
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9694046684722281,
+            "envelope_correlation_to_original": 0.985857792812373,
+            "tail_attack_error_to_original_db": [
+              0.39807585801647294,
+              0.2169641931682751,
+              -0.4177339885211837,
+              -0.3178922805266131,
+              0.2453335783667452,
+              -0.17522916199699612,
+              0.005613310647786918,
+              -0.004377922728507677,
+              0.05223084961759916,
+              -0.20662709534948354,
+              -0.10995475139925115,
+              -0.422859361371382,
+              0.07907713724820903,
+              -0.11429325489181297,
+              0.015184710552850422,
+              -0.2670223786774062,
+              0.15560163970382113,
+              -0.034821094008278486,
+              -0.3630336701643464,
+              0.5016435692558474,
+              -0.6458894732656972,
+              -0.4950513137099617,
+              0.27982303614543014,
+              -0.00821132907483979,
+              -0.3979180396169326,
+              0.5381846724747232,
+              -0.007410698696281415,
+              -0.5902963763167524,
+              -0.4079659930482826,
+              0.017206576904569282,
+              0.07228894419176601,
+              -0.046517618129484184,
+              -0.5518773502936702,
+              -0.21984646085180004,
+              -0.4582044769630209,
+              0.6061560501485772
+            ],
+            "added_room_relative_dry_db": -27.05909852746531,
+            "added_room_200_800_relative_dry_db": -25.829852235682637
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9690260713998632,
+            "envelope_correlation_to_original": 0.9851986672817665,
+            "tail_attack_error_to_original_db": [
+              0.41096509528798775,
+              0.2449039910790356,
+              -0.4095061441964578,
+              -0.3351564964686373,
+              0.16505252171184637,
+              -0.18261718952421635,
+              -0.01338994232174573,
+              -0.11186706316885608,
+              0.03146582023086797,
+              -0.2726020119930834,
+              -0.12427457956306887,
+              -0.4182830329681333,
+              0.13175067461228418,
+              -0.11712809645206557,
+              0.029587922313275117,
+              -0.2261782536139485,
+              0.21124125576796238,
+              -0.08517886532327967,
+              -0.33174595035856536,
+              0.47101260847356574,
+              -0.5410037303611386,
+              -0.46501375870619066,
+              0.2908100357149661,
+              0.03176427389325154,
+              -0.2501347354309529,
+              0.4158851347812509,
+              -0.06097030019600069,
+              -0.5316405885240769,
+              -0.49645484840632914,
+              -0.1663195609529291,
+              0.13681494954198392,
+              -0.09446652928455324,
+              -0.6350261233652614,
+              -0.15126917901240955,
+              -0.46405711489750834,
+              0.6744839233955484
+            ],
+            "added_room_relative_dry_db": -25.425804613401365,
+            "added_room_200_800_relative_dry_db": -23.78886776330831
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9705046745144174,
+            "envelope_correlation_to_original": 0.9874282823476896,
+            "tail_attack_error_to_original_db": [
+              0.43132260957651747,
+              0.16536501112545388,
+              -0.3746186418702768,
+              -0.3255194142357043,
+              0.28514741557809575,
+              -0.24586500644462816,
+              -0.02102488938665059,
+              0.053447633982229625,
+              0.06557029495464928,
+              -0.3700926728144096,
+              -0.043631104698532264,
+              -0.49963682319192015,
+              0.008885233417550764,
+              -0.1470260579496081,
+              -0.1340564399074169,
+              -0.3840687091088766,
+              -0.10748501091698648,
+              -0.1285844920320649,
+              -0.3253666638477455,
+              0.36798303077451777,
+              -0.5738247858687178,
+              -0.41072694688209976,
+              0.09973856916325685,
+              0.04593181005345359,
+              -0.2764367628021127,
+              0.564531670440823,
+              -0.08947359416309641,
+              -0.6008230484291222,
+              -0.5024998854574401,
+              0.0909574065469636,
+              0.05960487361649047,
+              -0.0009459688626636265,
+              -0.5941705472478198,
+              0.031861209897019405,
+              -0.5078764467011738,
+              0.48841200931862083
+            ],
+            "added_room_relative_dry_db": -280.8365371787044,
+            "added_room_200_800_relative_dry_db": -278.5489535886756
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "vocal-forward",
+        "peaks": 20,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9558034915168581,
+            "envelope_correlation_to_original": 0.9952174809234176,
+            "tail_attack_error_to_original_db": [
+              0.1904804914220538,
+              0.01846495710848961,
+              -0.21489728577482325,
+              -1.109947564292952,
+              -0.07883647447107212,
+              -0.04886603561222014,
+              0.43361205565402106,
+              0.02544303539588358,
+              0.20723355389473497,
+              0.022739034846246398,
+              0.2377091031734757,
+              0.06393303736716938,
+              0.22983585487864744,
+              0.11287366466069432,
+              -0.1823473615936458,
+              0.39443294477975155,
+              -0.21573286179688456,
+              0.48795115031746694,
+              -0.3796359202774575,
+              -0.28541446733200804
+            ],
+            "added_room_relative_dry_db": -22.968707151954018,
+            "added_room_200_800_relative_dry_db": -22.570378438071792
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9577213911534997,
+            "envelope_correlation_to_original": 0.9960637968029159,
+            "tail_attack_error_to_original_db": [
+              0.10879742223065691,
+              -0.0016300752625544312,
+              -0.22181708593262894,
+              -0.7873374818860319,
+              -0.056410169625782824,
+              -0.027210756022514992,
+              0.4652977447627231,
+              0.010758062043606922,
+              0.30085948695068865,
+              -0.004865540825291781,
+              0.27460728011238444,
+              0.08718856153427357,
+              0.19627643954287688,
+              0.05562327162385822,
+              -0.14001431120295635,
+              0.29507736280853536,
+              -0.14505326230606813,
+              0.27258637504848315,
+              -0.18957393309155712,
+              -0.09430711191472518
+            ],
+            "added_room_relative_dry_db": -26.71042326265855,
+            "added_room_200_800_relative_dry_db": -26.312110849073292
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9566933768621468,
+            "envelope_correlation_to_original": 0.995651511514121,
+            "tail_attack_error_to_original_db": [
+              0.12306600015850422,
+              -0.02025310994043017,
+              -0.24159716786963825,
+              -0.4915756567030751,
+              -0.012171566857049232,
+              -0.005895213968669211,
+              0.46177602851417365,
+              -0.007939242236773725,
+              0.27651126491058164,
+              0.012713111219210038,
+              0.20121209466671708,
+              0.09302105595397547,
+              0.3234392012257383,
+              0.10233497384859053,
+              -0.2081242855008291,
+              0.38020607291965747,
+              -0.26361086205494577,
+              0.5443458307013821,
+              -0.3423550906145576,
+              -0.1627935565516232
+            ],
+            "added_room_relative_dry_db": -25.53324078997094,
+            "added_room_200_800_relative_dry_db": -24.653459250959123
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9598262689201122,
+            "envelope_correlation_to_original": 0.9964863061958502,
+            "tail_attack_error_to_original_db": [
+              -0.04064937002683067,
+              -0.03986243341819895,
+              -0.23339281605945406,
+              -0.19834141581877995,
+              -0.011006859374749656,
+              0.021090283107553454,
+              0.5280808113306277,
+              -0.00863891331778785,
+              0.47575510741611726,
+              -0.05874429576851581,
+              0.3579099518935589,
+              0.135548427389796,
+              0.13435489067859185,
+              -0.05368531260839704,
+              -0.058620525013064806,
+              0.10291463267146983,
+              -0.007053066088537625,
+              -0.1104097004652459,
+              0.1741366887710687,
+              0.2665416977301982
+            ],
+            "added_room_relative_dry_db": -275.6637493686855,
+            "added_room_200_800_relative_dry_db": -274.40760874854834
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "drum-loud",
+        "peaks": 24,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.96843622400473,
+            "envelope_correlation_to_original": 0.9746398836438787,
+            "tail_attack_error_to_original_db": [
+              -0.6225839538431418,
+              -1.1471102898133192,
+              -0.9877462071381494,
+              -0.9940971073344822,
+              -0.5713264730268213,
+              -1.0718700846619416,
+              -0.37323931563271984,
+              -0.8614813889082367,
+              0.05200231495423946,
+              -0.4495486613807871,
+              -0.5693625305861234,
+              -0.41486096716802434,
+              -0.5558205344528515,
+              -1.1678299000315402,
+              -0.4092841387490518,
+              -0.3430726428535369,
+              -0.7963042603240078,
+              -0.498327613301057,
+              -0.07876420760698766,
+              -0.6168605947397612,
+              -0.6963486707944992,
+              -0.5998683780180611,
+              -0.4312551304613228,
+              -0.35945401685950773
+            ],
+            "added_room_relative_dry_db": -22.70939511729396,
+            "added_room_200_800_relative_dry_db": -20.391679496747585
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9701387083354265,
+            "envelope_correlation_to_original": 0.9770417602115123,
+            "tail_attack_error_to_original_db": [
+              -0.618721451050377,
+              -1.06117921453481,
+              -1.0003001327999672,
+              -0.9943088138494196,
+              -0.5927966676426055,
+              -1.082611810178316,
+              -0.40639767633772017,
+              -0.8608902402678771,
+              -0.018195231705023573,
+              -0.4386619894921999,
+              -0.5982800383341296,
+              -0.4358582837726659,
+              -0.5428478921104123,
+              -1.1858205826832329,
+              -0.41234650276614193,
+              -0.37582509836285816,
+              -0.7233872787710744,
+              -0.5162072157618536,
+              -0.1206607053867561,
+              -0.6580449639789638,
+              -0.5161586777778189,
+              -0.5380802046930828,
+              -0.4161550086913355,
+              -0.190293192865292
+            ],
+            "added_room_relative_dry_db": -26.451094865994754,
+            "added_room_200_800_relative_dry_db": -24.133407935144177
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9702133382236953,
+            "envelope_correlation_to_original": 0.9764179119527963,
+            "tail_attack_error_to_original_db": [
+              -0.6426631324274757,
+              -1.0812403409992997,
+              -1.0726504612723482,
+              -0.972090153996914,
+              -0.6017257464330452,
+              -1.0677296381978263,
+              -0.38781962049034924,
+              -0.8695740168925266,
+              -0.022557265499062673,
+              -0.3651162805034418,
+              -0.6572869671514723,
+              -0.401345632896577,
+              -0.5896238225983854,
+              -1.2753098310956696,
+              -0.393499607672549,
+              -0.39993150993033044,
+              -0.7222365269334432,
+              -0.522141829501986,
+              -0.02844431951327353,
+              -0.5477102343938705,
+              -0.5395607310454762,
+              -0.6179980672478953,
+              -0.3208466263137355,
+              -0.2349424409045533
+            ],
+            "added_room_relative_dry_db": -24.556393397976816,
+            "added_room_200_800_relative_dry_db": -21.95170292215427
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9715957344177821,
+            "envelope_correlation_to_original": 0.97929448613102,
+            "tail_attack_error_to_original_db": [
+              -0.6041670526662309,
+              -0.9030304911223053,
+              -1.0109361486928958,
+              -0.9918464864324106,
+              -0.6252357579629866,
+              -1.0994723380684777,
+              -0.4740092526696631,
+              -0.8576298792148478,
+              -0.1376537740529935,
+              -0.4011222990639087,
+              -0.6597984425250778,
+              -0.46841230819332,
+              -0.5177896635188075,
+              -1.2099854683517512,
+              -0.4050820101085426,
+              -0.4327420511431175,
+              -0.5803982694880796,
+              -0.5371102231527158,
+              -0.19361770178630966,
+              -0.7386602714262505,
+              -0.16030384066595627,
+              -0.42439021336870475,
+              -0.37853739832358624,
+              0.13423993080691976
+            ],
+            "added_room_relative_dry_db": -282.85010775728074,
+            "added_room_200_800_relative_dry_db": -278.99736817674585
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "decay",
+        "peaks": 12,
+        "variants": {
+          "baseline": {
+            "waveform_correlation_to_original": 0.9716555184857251,
+            "envelope_correlation_to_original": 0.9951778977640644,
+            "tail_attack_error_to_original_db": [
+              0.2569085187554445,
+              0.7677621747770722,
+              -0.8515001036770271,
+              -0.18462322757996574,
+              0.528869128471321,
+              -0.5123599393361249,
+              -0.2745342822783208,
+              -0.5662350340022173,
+              -0.1293819268655252,
+              -0.46755852798401065,
+              -0.08445414684507657,
+              -0.6025157362459108
+            ],
+            "added_room_relative_dry_db": -23.714828131864678,
+            "added_room_200_800_relative_dry_db": -21.53265785607987
+          },
+          "light": {
+            "waveform_correlation_to_original": 0.9725649917166865,
+            "envelope_correlation_to_original": 0.9955566617455243,
+            "tail_attack_error_to_original_db": [
+              0.17151376366777882,
+              0.6136433145080376,
+              -0.8224457331084225,
+              -0.1446841933695726,
+              0.4835256579227929,
+              -0.5188590741265413,
+              -0.2860173319968782,
+              -0.5155503333983931,
+              -0.13557290668455346,
+              -0.49210952101033634,
+              -0.09900065138580172,
+              -0.5930864864818304
+            ],
+            "added_room_relative_dry_db": -27.456534409523627,
+            "added_room_200_800_relative_dry_db": -25.27438492051421
+          },
+          "shaped": {
+            "waveform_correlation_to_original": 0.9726572010699833,
+            "envelope_correlation_to_original": 0.995627122094355,
+            "tail_attack_error_to_original_db": [
+              0.2544226102947378,
+              0.6572781342856406,
+              -0.8473740191222143,
+              -0.11289222541808197,
+              0.4445984482218748,
+              -0.5019526671465808,
+              -0.23586878020918522,
+              -0.46273838605534445,
+              -0.13299213863128045,
+              -0.5213931028504408,
+              -0.10372631078339656,
+              -0.5988211376834371
+            ],
+            "added_room_relative_dry_db": -25.95134694065994,
+            "added_room_200_800_relative_dry_db": -23.41673773990983
+          },
+          "dry": {
+            "waveform_correlation_to_original": 0.9729193099804336,
+            "envelope_correlation_to_original": 0.9958841524874833,
+            "tail_attack_error_to_original_db": [
+              0.008440858311463573,
+              0.3332325061682919,
+              -0.7500712856063911,
+              -0.07278969510844036,
+              0.4024050802331658,
+              -0.5206522546739079,
+              -0.2990064264048877,
+              -0.408941034139763,
+              -0.14438679996663373,
+              -0.5245139911983507,
+              -0.12029879489089113,
+              -0.5728186568195657
+            ],
+            "added_room_relative_dry_db": -278.2182487632649,
+            "added_room_200_800_relative_dry_db": -274.6838150384536
+          }
+        }
+      }
+    ]
+  },
+  "full_songs": [
+    {
+      "song": "tabasco",
+      "source_sha256": "62659d83164c4730e95f20cccbaba33a0b7c32b8d540f9de74e0982a65a1d8a7",
+      "stem_sha256": {
+        "vocals": "57051fc4ed9744ba9b7b79b1b214e80f82ea1b421e2960fa0ecf934aaa4e3445",
+        "drums": "780518047c6c79efc9d8208f41fccd7c25fec10b2439790ce03df67768f07086",
+        "bass": "794f80c4a54b21dc209db23a3b81e00ebaa24be1ef2bc66174ee407efc439c37",
+        "other": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2"
+      },
+      "before_v427": {
+        "lufs": -17.6,
+        "lra": 2.4,
+        "true_peak_dbtp": -3.7
+      },
+      "after_v428": {
+        "lufs": -17.6,
+        "lra": 2.4,
+        "true_peak_dbtp": -3.7
+      },
+      "original_live_v425": {
+        "lufs": -15.5,
+        "lra": 2.5,
+        "true_peak_dbtp": -1.5
+      },
+      "gain_db_unchanged": -0.2,
+      "mono_fold_loss_db": -0.0187,
+      "matched_rms_envelope_correlation": 0.9999464,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.0797,
+        0.0922
+      ]
+    },
+    {
+      "song": "hey",
+      "source_sha256": "771947789488013c096800e5c7664c59c4aa7a5ec040e57e84ef5d2eb42c7bf8",
+      "stem_sha256": {
+        "vocals": "34c46c8ea7947a450bc9b479993d43d376d4dfe8a5f66dec1b9b3f4652947a9c",
+        "drums": "c9468c23c8cbef60b788ff8954c0632453161d07d1ec67b314d04fdcb6a30b0a",
+        "bass": "bffc7e34eb26a8d7c580bf11cace981fcb6ba924fcc8c38cc5ba322cc79e5298",
+        "other": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a"
+      },
+      "before_v427": {
+        "lufs": -19.4,
+        "lra": 6.8,
+        "true_peak_dbtp": -3.6
+      },
+      "after_v428": {
+        "lufs": -19.4,
+        "lra": 6.8,
+        "true_peak_dbtp": -3.6
+      },
+      "original_live_v425": {
+        "lufs": -17.2,
+        "lra": 7.8,
+        "true_peak_dbtp": -2.1
+      },
+      "gain_db_unchanged": 0.2,
+      "mono_fold_loss_db": -0.0511,
+      "matched_rms_envelope_correlation": 0.9998922,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.0915,
+        0.1184
+      ]
+    },
+    {
+      "song": "i-got-a-feeling",
+      "source_sha256": "cb454a1116006750cda8f9635427182c97fb85327b0023884065e1eb613614fd",
+      "stem_sha256": {
+        "vocals": "fac5ab206c9410038f632e7c7e8333c1af2787181612929bab6290ec174d032c",
+        "drums": "52fbb4048a68e8ef662ac79cf755f774cd103e719917ea43cf68b8ecb2eb0dca",
+        "bass": "cfcc470fb787a69c443853cd6b62e3ca6f5ebeab5924672d14cf23f0b51c46e3",
+        "other": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81"
+      },
+      "before_v427": {
+        "lufs": -19.4,
+        "lra": 10.8,
+        "true_peak_dbtp": -4.2
+      },
+      "after_v428": {
+        "lufs": -19.4,
+        "lra": 10.8,
+        "true_peak_dbtp": -4.2
+      },
+      "original_live_v425": {
+        "lufs": -15.8,
+        "lra": 11.9,
+        "true_peak_dbtp": -1.5
+      },
+      "gain_db_unchanged": -1.2,
+      "mono_fold_loss_db": -0.0141,
+      "matched_rms_envelope_correlation": 0.9998594,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.1077,
+        0.1254
+      ]
+    },
+    {
+      "song": "under-the-moon",
+      "source_sha256": "bb06e242380dd72c9440aca064ce89a0bebef115c432f26c1eb3c8a6a94327b5",
+      "stem_sha256": {
+        "vocals": "5357d59826d44bd0559dc55813b7973b12105b2119c3fea72d8b025b4bde377f",
+        "drums": "7463b1475b3887206d97a3a2fe4ac7a0b7a0dcadd2e41bee8e3deea038311a2b",
+        "bass": "bb6c470965b051f25cc8816b3f7fdf3104fa1c601dcaec2e70d9317a2a37818c",
+        "other": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8"
+      },
+      "before_v427": {
+        "lufs": -19.2,
+        "lra": 9.1,
+        "true_peak_dbtp": -3.6
+      },
+      "after_v428": {
+        "lufs": -19.2,
+        "lra": 9.2,
+        "true_peak_dbtp": -3.6
+      },
+      "original_live_v425": {
+        "lufs": -17.8,
+        "lra": 9.8,
+        "true_peak_dbtp": -2.6
+      },
+      "gain_db_unchanged": 1.1,
+      "mono_fold_loss_db": -0.015,
+      "matched_rms_envelope_correlation": 0.9998672,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.1147,
+        0.1116
+      ]
+    },
+    {
+      "song": "electric-sheep",
+      "source_sha256": "65fc141a8d52bf2fa6278b31962bcc2b631750dad89ac0f9c16f861737be1e67",
+      "stem_sha256": {
+        "vocals": "5c7bed1281919471543c29b942985bb891beb1ec38bec3ce06b8d21e92aff45f",
+        "drums": "935036c51a438cb0eb9ee05a29403f7cef0bb82fae90aee899f517a2952e6404",
+        "bass": "369fcdb6b59c6de1fe1f9e271b4fd52e24aa8bfbba1e22e04103dcec3c92a297",
+        "other": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6"
+      },
+      "before_v427": {
+        "lufs": -17.3,
+        "lra": 3.8,
+        "true_peak_dbtp": -3.8
+      },
+      "after_v428": {
+        "lufs": -17.3,
+        "lra": 3.8,
+        "true_peak_dbtp": -3.8
+      },
+      "original_live_v425": {
+        "lufs": -15.4,
+        "lra": 3.6,
+        "true_peak_dbtp": -1.5
+      },
+      "gain_db_unchanged": -0.6,
+      "mono_fold_loss_db": -0.061,
+      "matched_rms_envelope_correlation": 0.9999494,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.0596,
+        0.0545
+      ]
+    },
+    {
+      "song": "human-fly",
+      "source_sha256": "0f014916b85cb4182774b8ab371f489b826c76bcb2b3f93ca42f5c95471b6ab9",
+      "stem_sha256": {
+        "vocals": "05f87f119b6afdc55afe436cf0b91f04fe828207f4042d0759af9b206f5f09b8",
+        "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88",
+        "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+        "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+      },
+      "before_v427": {
+        "lufs": -17.0,
+        "lra": 4.5,
+        "true_peak_dbtp": -3.4
+      },
+      "after_v428": {
+        "lufs": -17.0,
+        "lra": 4.5,
+        "true_peak_dbtp": -3.4
+      },
+      "original_live_v425": {
+        "lufs": -15.5,
+        "lra": 5.0,
+        "true_peak_dbtp": -1.5
+      },
+      "gain_db_unchanged": 0.9,
+      "mono_fold_loss_db": -0.0025,
+      "matched_rms_envelope_correlation": 0.999794,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.1117,
+        0.1025
+      ]
+    },
+    {
+      "song": "sister",
+      "source_sha256": "fe1676f7cfa31076162bb8c9007dda5c60648ccd5b9f7837f82f2427239ca18c",
+      "stem_sha256": {
+        "vocals": "ac6467fe47e478b06cc8b9847b03b249a4ce6f5702c39386a112535bbcc66231",
+        "drums": "cad60ebac3b54df8878e09adc42918ce694dbc689e32616421c60a883acdc48f",
+        "bass": "67f9bb28fd9f1b0e63c73ffda795534521ce5eae73dece1ce4704e0bde2b4dec",
+        "other": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06"
+      },
+      "before_v427": {
+        "lufs": -17.8,
+        "lra": 14.6,
+        "true_peak_dbtp": -3.6
+      },
+      "after_v428": {
+        "lufs": -17.8,
+        "lra": 14.6,
+        "true_peak_dbtp": -3.6
+      },
+      "original_live_v425": {
+        "lufs": -16.0,
+        "lra": 15.3,
+        "true_peak_dbtp": -2.3
+      },
+      "gain_db_unchanged": 1.1,
+      "mono_fold_loss_db": -0.0023,
+      "matched_rms_envelope_correlation": 0.9998719,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.1197,
+        0.1145
+      ]
+    }
+  ],
+  "instrument_windows": [
+    {
+      "song": "tabasco",
+      "part": "drums",
+      "peaks": 20,
+      "envelope_correlation": 0.9999771,
+      "median_tail_to_attack_delta_db": -0.0054,
+      "max_abs_tail_to_attack_delta_db": 0.0225
+    },
+    {
+      "song": "tabasco",
+      "part": "bass",
+      "peaks": 16,
+      "envelope_correlation": 0.9999941,
+      "median_tail_to_attack_delta_db": -0.0024,
+      "max_abs_tail_to_attack_delta_db": 0.0196
+    },
+    {
+      "song": "tabasco",
+      "part": "other",
+      "peaks": 18,
+      "envelope_correlation": 0.999907,
+      "median_tail_to_attack_delta_db": -0.0028,
+      "max_abs_tail_to_attack_delta_db": 0.0754
+    },
+    {
+      "song": "tabasco",
+      "part": "vocals",
+      "peaks": 14,
+      "envelope_correlation": 0.9996804,
+      "median_tail_to_attack_delta_db": -0.0286,
+      "max_abs_tail_to_attack_delta_db": 0.3475
+    },
+    {
+      "song": "hey",
+      "part": "drums",
+      "peaks": 20,
+      "envelope_correlation": 0.999984,
+      "median_tail_to_attack_delta_db": -0.0152,
+      "max_abs_tail_to_attack_delta_db": 0.0412
+    },
+    {
+      "song": "hey",
+      "part": "bass",
+      "peaks": 16,
+      "envelope_correlation": 0.9999933,
+      "median_tail_to_attack_delta_db": 0.0091,
+      "max_abs_tail_to_attack_delta_db": 0.0318
+    },
+    {
+      "song": "hey",
+      "part": "other",
+      "peaks": 18,
+      "envelope_correlation": 0.9996798,
+      "median_tail_to_attack_delta_db": -0.0021,
+      "max_abs_tail_to_attack_delta_db": 0.0807
+    },
+    {
+      "song": "hey",
+      "part": "vocals",
+      "peaks": 22,
+      "envelope_correlation": 0.9996908,
+      "median_tail_to_attack_delta_db": 0.0029,
+      "max_abs_tail_to_attack_delta_db": 0.1039
+    },
+    {
+      "song": "i-got-a-feeling",
+      "part": "drums",
+      "peaks": 17,
+      "envelope_correlation": 0.9999844,
+      "median_tail_to_attack_delta_db": -0.0002,
+      "max_abs_tail_to_attack_delta_db": 0.0275
+    },
+    {
+      "song": "i-got-a-feeling",
+      "part": "bass",
+      "peaks": 12,
+      "envelope_correlation": 0.9999958,
+      "median_tail_to_attack_delta_db": 0.0008,
+      "max_abs_tail_to_attack_delta_db": 0.0257
+    },
+    {
+      "song": "i-got-a-feeling",
+      "part": "other",
+      "peaks": 17,
+      "envelope_correlation": 0.9998297,
+      "median_tail_to_attack_delta_db": 0.0213,
+      "max_abs_tail_to_attack_delta_db": 0.1544
+    },
+    {
+      "song": "i-got-a-feeling",
+      "part": "vocals",
+      "peaks": 17,
+      "envelope_correlation": 0.9995114,
+      "median_tail_to_attack_delta_db": -0.0375,
+      "max_abs_tail_to_attack_delta_db": 0.3409
+    },
+    {
+      "song": "under-the-moon",
+      "part": "drums",
+      "peaks": 16,
+      "envelope_correlation": 0.9999808,
+      "median_tail_to_attack_delta_db": -0.0074,
+      "max_abs_tail_to_attack_delta_db": 0.0214
+    },
+    {
+      "song": "under-the-moon",
+      "part": "bass",
+      "peaks": 13,
+      "envelope_correlation": 0.9999995,
+      "median_tail_to_attack_delta_db": -0.0004,
+      "max_abs_tail_to_attack_delta_db": 0.0067
+    },
+    {
+      "song": "under-the-moon",
+      "part": "other",
+      "peaks": 13,
+      "envelope_correlation": 0.9999404,
+      "median_tail_to_attack_delta_db": -0.0057,
+      "max_abs_tail_to_attack_delta_db": 0.077
+    },
+    {
+      "song": "under-the-moon",
+      "part": "vocals",
+      "peaks": 16,
+      "envelope_correlation": 0.9997429,
+      "median_tail_to_attack_delta_db": 0.0128,
+      "max_abs_tail_to_attack_delta_db": 0.1992
+    },
+    {
+      "song": "electric-sheep",
+      "part": "drums",
+      "peaks": 21,
+      "envelope_correlation": 0.9999807,
+      "median_tail_to_attack_delta_db": -0.0051,
+      "max_abs_tail_to_attack_delta_db": 0.0191
+    },
+    {
+      "song": "electric-sheep",
+      "part": "bass",
+      "peaks": 11,
+      "envelope_correlation": 0.9999925,
+      "median_tail_to_attack_delta_db": 0.0008,
+      "max_abs_tail_to_attack_delta_db": 0.0398
+    },
+    {
+      "song": "electric-sheep",
+      "part": "other",
+      "peaks": 13,
+      "envelope_correlation": 0.999976,
+      "median_tail_to_attack_delta_db": 0.0153,
+      "max_abs_tail_to_attack_delta_db": 0.0426
+    },
+    {
+      "song": "electric-sheep",
+      "part": "vocals",
+      "peaks": 20,
+      "envelope_correlation": 0.9998473,
+      "median_tail_to_attack_delta_db": 0.0089,
+      "max_abs_tail_to_attack_delta_db": 0.3055
+    },
+    {
+      "song": "human-fly",
+      "part": "drums",
+      "peaks": 23,
+      "envelope_correlation": 0.9999833,
+      "median_tail_to_attack_delta_db": -0.0001,
+      "max_abs_tail_to_attack_delta_db": 0.0241
+    },
+    {
+      "song": "human-fly",
+      "part": "bass",
+      "peaks": 12,
+      "envelope_correlation": 0.9999976,
+      "median_tail_to_attack_delta_db": 0.0019,
+      "max_abs_tail_to_attack_delta_db": 0.027
+    },
+    {
+      "song": "human-fly",
+      "part": "other",
+      "peaks": 11,
+      "envelope_correlation": 0.999965,
+      "median_tail_to_attack_delta_db": 0.0081,
+      "max_abs_tail_to_attack_delta_db": 0.0664
+    },
+    {
+      "song": "human-fly",
+      "part": "vocals",
+      "peaks": 19,
+      "envelope_correlation": 0.9996733,
+      "median_tail_to_attack_delta_db": 0.0336,
+      "max_abs_tail_to_attack_delta_db": 0.1534
+    },
+    {
+      "song": "sister",
+      "part": "drums",
+      "peaks": 24,
+      "envelope_correlation": 0.9999664,
+      "median_tail_to_attack_delta_db": -0.0008,
+      "max_abs_tail_to_attack_delta_db": 0.1115
+    },
+    {
+      "song": "sister",
+      "part": "bass",
+      "peaks": 12,
+      "envelope_correlation": 0.9999921,
+      "median_tail_to_attack_delta_db": -0.0001,
+      "max_abs_tail_to_attack_delta_db": 0.0541
+    },
+    {
+      "song": "sister",
+      "part": "other",
+      "peaks": 23,
+      "envelope_correlation": 0.9998009,
+      "median_tail_to_attack_delta_db": -0.0028,
+      "max_abs_tail_to_attack_delta_db": 0.1128
+    },
+    {
+      "song": "sister",
+      "part": "vocals",
+      "peaks": 14,
+      "envelope_correlation": 0.9998015,
+      "median_tail_to_attack_delta_db": 0.0509,
+      "max_abs_tail_to_attack_delta_db": 0.3005
+    }
+  ],
+  "processing": {
+    "room_gain_before_after": [
+      1,
+      0.65
+    ],
+    "added_room_change_db": -3.7417,
+    "nodes": 34,
+    "direct_path_change": false,
+    "part_gain_or_relative_send_change": false,
+    "eq_change": false,
+    "delay_times_change": false,
+    "added_compression": false,
+    "added_gate": false,
+    "new_audio_or_dependencies": false
+  },
+  "limits": [
+    "Reduces only artificially added reflections; it does not remove the original recording room, source distortion or separation bleed. This is a small refinement.",
+    "RMS-matched spectral/envelope comparisons do not prove perceived clarity, intelligibility, natural shared distance, instrument identity or real iPhone performance.",
+    "Original playback bytes/processor, synthesis and scores, legacy live/dense and saved user faders are unchanged. Original-tab/remix comparison still needs volume matching.",
+    "Full-mix REC includes the mix; four-stem pack retains legacy separate taps without shared room."
+  ]
+}
