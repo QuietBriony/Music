@@ -7,7 +7,7 @@
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
 <script src="audio/premix-entry.js?v=1"></script>
-<link rel="stylesheet" href="band-room.css?v=br-97" />
+<link rel="stylesheet" href="band-room.css?v=br-98" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -28,8 +28,9 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="band-room.js?v=br-258" defer></script>
-<script type="module" src="audio/premix-preview.mjs?v=3"></script>
+<script src="audio/stem-live-mix.js?v=1" defer></script>
+<script src="band-room.js?v=br-259" defer></script>
+<script type="module" src="audio/premix-preview.mjs?v=4"></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
 <script type="module" src="audio/physical-band/rhythm-preview.mjs?v=2"></script>
@@ -176,7 +177,7 @@
   <main id="br-main">
     <nav id="br-listening-mode" aria-label="聴き方">
       <a data-mode="original" data-label="ライブ原音" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=original">ライブ原音</a>
-      <a data-mode="stems" data-label="パート別" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">パート別</a>
+      <a data-mode="stems" data-label="パート別・再ミックス" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">パート別・再ミックス</a>
       <a data-mode="synth" data-label="AI再現" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=synth">AI再現</a>
     </nav>
     <section id="br-premix" aria-labelledby="br-premix-heading">
@@ -235,7 +236,7 @@
         </select>
       </label>
       <p id="br-mode-status" role="status" aria-live="polite" hidden></p>
-      <p class="br-help">パート別は分離した4音源の練習ミックスです。Tabascoの分離前の録音は上の「ライブ原音」で聴けます。</p>
+      <p class="br-help">パート別は声と楽器をまとめ直した「調和ミックス」が標準です。各パートを消して練習できます。sound mixで以前の仕上げと比較・基準への復帰ができます。Tabascoの分離前の録音は上の「ライブ原音」で聴けます。</p>
     </section>
 
     <section id="br-arcb-instruments" hidden aria-label="ARCBの新しい楽器音">
@@ -407,8 +408,8 @@
         <div class="br-sound-grid">
           <section id="br-space" aria-label="Mastering">
             <h3>space</h3>
-            <label data-scope="stems"><span>原音の仕上げ</span><select id="br-original-mastering" aria-describedby="br-original-mastering-help"><option value="live">ライブ · 録音の響き</option><option value="dense">厚め · 従来の仕上げ</option></select></label>
-            <p class="br-help" id="br-original-mastering-help" data-scope="stems">ライブは各パートのEQ・声の空間加工を通さず、録音の打感と余韻をまとめます。パート音量とミュートは使えます。厚めではEQと声・全体の空間加工を使えます。</p>
+            <label data-scope="stems"><span>パート別の仕上げ</span><select id="br-original-mastering" aria-describedby="br-original-mastering-help"><option value="blend">調和 · ライブ再ミックス</option><option value="live">以前のライブ設定</option><option value="dense">厚め · 従来の仕上げ</option></select></label>
+            <p class="br-help" id="br-original-mastering-help" data-scope="stems">調和は声と楽器のバランスを組み直し、短い部屋鳴りを共有します。以前の音量・EQ・声の広がり設定は重ねません。元の仮ミックスとは「ライブ原音」で比較できます。分離漏れは残ります。</p>
             <div id="br-master-presets">
               <button type="button" class="br-master-preset" data-preset="neutral">neutral</button>
               <button type="button" class="br-master-preset" data-preset="vertical-room">live room</button>
@@ -430,6 +431,15 @@
           </section>
         </div>
 
+        <section id="br-coherent-mix" aria-label="調和ミックスのバランス" data-scope="stems">
+          <h3>調和ミックスのバランス</h3>
+          <p class="br-help">80が今回の基準。声だけを深く響かせず、バンドと同じ短い響きにまとめます。音を消す練習ボタンも使えます。</p>
+          <label><span>ボーカル</span><input type="range" id="br-live-vocals" min="0" max="100" value="80" /></label>
+          <label><span>ドラム</span><input type="range" id="br-live-drums" min="0" max="100" value="80" /></label>
+          <label><span>ベース</span><input type="range" id="br-live-bass" min="0" max="100" value="80" /></label>
+          <label><span>ギターほか</span><input type="range" id="br-live-other" min="0" max="100" value="80" /></label>
+        </section>
+        <button type="button" id="br-coherent-reset" data-scope="stems">調和ミックスの基準に戻す</button>
         <section id="br-volume-stems" aria-label="Stem volumes" data-scope="stems">
           <h3>stems</h3>
           <label><span>vocal</span><input type="range" id="br-vol-stem-vocals" min="0" max="100" value="55" /></label>

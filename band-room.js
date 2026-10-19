@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-258-premix-master";
-  const BANDROOM_RELEASE_VERSION = "v425";
+  const BANDROOM_APP_VERSION = "br-259-coherent-live";
+  const BANDROOM_RELEASE_VERSION = "v426";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -146,9 +146,11 @@
   const originalLiveStemBuses = {};
   let originalLiveGate = null;
   let originalDenseGate = null;
-  let originalMastering = "live";
+  let originalMastering = "blend";
+  let coherentStemMix = null, originalBlendGate = null;
   let originalMasteringWasChosen = false;
   let masterLimiter = null;
+  let masterSilenceGate = null;
   let masterHardwareOutput = null;
   let masterPlaybackDest = null;
   let backgroundBridgeAudio = null;
@@ -498,7 +500,7 @@
     // The previous chain remains available for an explicit A/B comparison.
     const liveHp = new Tone.Filter({ frequency: 28, type: "highpass", Q: 0.707 });
     const liveComp = new Tone.Compressor({ threshold: -16, ratio: 1.35, attack: 0.035, release: 0.18, knee: 8 });
-    const liveCeiling = new Tone.WaveShaper(originalOutputCeiling, 8193).connect(masterLimiter);
+    const liveCeiling = new Tone.WaveShaper(originalOutputCeiling, 8193).connect(masterSilenceGate);
     originalMasterGain = new Tone.Gain(masterGain.gain.value).connect(liveCeiling);
     originalLiveGate = new Tone.Gain(originalMastering === "live" ? 0.45 : 0).connect(originalMasterGain);
     originalDenseGate = new Tone.Gain(originalMastering === "dense" ? 1 : 0).connect(dest);
@@ -545,12 +547,28 @@
 
   function setOriginalMastering(value, fromUser = false) {
     if (fromUser) originalMasteringWasChosen = true;
-    originalMastering = value === "dense" ? "dense" : "live";
+    originalMastering = ["live", "dense"].includes(value) ? value : "blend";
     const select = $("br-original-mastering");
     if (select) select.value = originalMastering;
     setOriginalMasteringGate(originalLiveGate, originalMastering === "live" ? 0.45 : 0);
     setOriginalMasteringGate(originalDenseGate, originalMastering === "dense" ? 1 : 0);
+    setOriginalMasteringGate(originalBlendGate, originalMastering === "blend" ? 0.45 : 0);
     syncOriginalMasteringControls();
+  }
+
+  function restoredStemProfile(prefs) {
+    return prefs?.stemMixVersion === 1 || prefs?.originalMastering === "dense"
+      ? prefs.originalMastering : "blend";
+  }
+
+  function ensureCoherentStemMix() {
+    if (coherentStemMix) return coherentStemMix;
+    coherentStemMix = window.RecordedStemMix.create(Tone.getContext().rawContext);
+    originalBlendGate = new Tone.Gain(originalMastering === "blend" ? 0.45 : 0).connect(originalMasterGain);
+    Tone.connect(coherentStemMix.output, originalBlendGate);
+    Tone.connect(externalVocalBus, coherentStemMix.inputs.vocals);
+    for (const stem of STEM_NAMES) coherentStemMix.setLevel(stem, Number($("br-live-" + stem)?.value ?? 80) / 100);
+    return coherentStemMix;
   }
 
   function setOriginalMasteringGate(gate, value) {
@@ -586,7 +604,10 @@
   }
 
   function syncOriginalMasteringControls() {
-    const live = currentMode === "stems" && originalMastering === "live";
+    const live = currentMode === "stems" && originalMastering !== "dense";
+    const blendPanel = $("br-coherent-mix"), legacyPanel = $("br-volume-stems");
+    if (blendPanel) blendPanel.hidden = originalMastering !== "blend";
+    if (legacyPanel) legacyPanel.hidden = originalMastering === "blend";
     ["br-space-reverb", "br-space-width", "br-tape-warmth",
       "br-vfx-chorus", "br-vfx-delay", "br-vfx-reverb"].forEach((id) => {
       const element = $(id); if (element) element.disabled = live;
@@ -680,6 +701,9 @@
     // other HP). Two-stage compression: comp1 catches peaks gently, EQ tilts,
     // comp2 glues. Tape sat parallel-wet for harmonic gel.
     masterLimiter = new Tone.Limiter({ threshold: -1.0 });
+    // Master zero must also silence tails already inside the legacy room.
+    // Put the mute before the shared limiter/REC/bridge taps; nonzero stays unity.
+    masterSilenceGate = new Tone.Gain(1).connect(masterLimiter);
     masterHardwareOutput = new Tone.Gain(1).toDestination();
     masterLimiter.connect(masterHardwareOutput);
     // v71: meter tap on the limiter input — measures the final pre-clip RMS
@@ -733,9 +757,9 @@
     masterTapeSat.connect(masterTapeSatWet);
     masterReverb.connect(masterWetGain);
     masterTapeSatDry.connect(masterDryGain);
-    masterDryGain.connect(masterLimiter);
-    masterTapeSatWet.connect(masterLimiter);
-    masterWetGain.connect(masterLimiter);
+    masterDryGain.connect(masterSilenceGate);
+    masterTapeSatWet.connect(masterSilenceGate);
+    masterWetGain.connect(masterSilenceGate);
 
     // Per-stem EQ chains — created once, connected when players load
     stemEQs.drums = makeStemEQChain("drums");
@@ -1915,6 +1939,7 @@
       fadeOut: 0.20,
       loop: true
     }).connect(stemEQs[stem].input);
+    Tone.connect(externalStemPlayers[stem], ensureCoherentStemMix().inputs[stem]);
     return Tone.loaded().then(() => {
       if (status) status.textContent = `loaded: ${fileBlob.name} (${(fileBlob.size/1024/1024).toFixed(1)} MB)`;
       return true;
@@ -3593,6 +3618,7 @@
   async function loadStemsForSong(songId) {
     if (!stemBus.vocals) ensureMaster();
     disposeStemPlayers();
+    ensureCoherentStemMix().setSong(songId);
     const band = currentBand();
     if (!band) {
       setStemsStatus("(no band loaded)");
@@ -3631,6 +3657,7 @@
             player = new Tone.Player({
               url: candidate.url, autostart: false, fadeIn: 0.15, fadeOut: 0.30, loop: false
             }).connect(trimGain);
+            Tone.connect(player, coherentStemMix.inputs[stem]);
             await Tone.loaded();
             loadedResult = { stem, player, trimGain, source: candidate.source, fallback: candidate.fallback };
             return loadedResult;
@@ -4899,10 +4926,12 @@
       HAZAMA_SAFETY_DRUM_SOURCE,
       BANDROOM_STORAGE_SCHEMA_VERSION,
       originalOutputCeiling,
+      restoredStemProfile,
       setOriginalMasteringGate,
       stemUrlAvailable,
       originalMasteringDiagnostics: () => ({ profile: originalMastering,
         live: originalLiveGate?.gain.value, dense: originalDenseGate?.gain.value,
+        blend: originalBlendGate?.gain.value, coherent: coherentStemMix?.diagnostics(),
         volume: originalMasterGain?.gain.value, sharedVolume: masterGain?.gain.value,
         liveSource: "pre-eq-pre-vocal-fx",
         liveStemLevels: Object.fromEntries(Object.entries(originalLiveStemBuses).map(([stem, bus]) => [stem, bus.gain.value])) }),
@@ -8663,6 +8692,23 @@
       });
     });
 
+    // The new balance is independent of saved legacy EQ/volume settings.
+    for (const stem of STEM_NAMES) {
+      $("br-live-" + stem)?.addEventListener("input", event => {
+        // Before first stem playback the slider itself is the stored value.
+        // Restoring hidden sliders in AI mode must not create this audio graph.
+        coherentStemMix?.setLevel(stem, Number(event.target.value) / 100);
+      });
+    }
+    $("br-coherent-reset")?.addEventListener("click", () => {
+      setOriginalMastering("blend", true);
+      for (const stem of STEM_NAMES) {
+        const el = $("br-live-" + stem);
+        if (el) { el.value = "80"; el.dispatchEvent(new Event("input")); }
+      }
+      schedulePrefsSave();
+    });
+
     // Stem volume sliders
     ["vocals", "drums", "bass", "other"].forEach((stem) => {
       const el = $("br-vol-stem-" + stem);
@@ -8843,6 +8889,7 @@
       if (originalMasterGain) {
         try { originalMasterGain.gain.rampTo(gain, seconds); } catch (e) {}
       }
+      setOriginalMasteringGate(masterSilenceGate, gain > 0 ? 1 : 0);
     }
 
     function applyMasterVol(value) {
@@ -10492,6 +10539,7 @@
       const prefs = {
         bandId: state.currentBandId,
         originalMastering,
+        stemMixVersion: 1,
         storageSchemaVersion: BANDROOM_STORAGE_SCHEMA_VERSION,
         mixPrefsVersion: MIX_PREFS_VERSION,
         // Mode intentionally NOT persisted — the normal entrance always opens
@@ -10542,7 +10590,7 @@
     if (!prefs) return;
     // Song/stem loading is asynchronous; a choice made during that wait wins
     // over the older saved value captured at the beginning of boot.
-    if (!originalMasteringWasChosen) setOriginalMastering(prefs.originalMastering);
+    if (!originalMasteringWasChosen) setOriginalMastering(restoredStemProfile(prefs));
     prefs = migratePrefsForCurrentMix(prefs);
     // Sliders + toggles — re-trigger 'input'/'change' so handlers run
     if (prefs.sliders) {

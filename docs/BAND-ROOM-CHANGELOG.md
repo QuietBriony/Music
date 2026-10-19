@@ -1,4 +1,10 @@
-# Band Room - Changelog (v65 -> v425 compact)
+# Band Room - Changelog (v65 -> v426 compact)
+
+## v426 — 2026-10-19
+
+2026-10-19 v426: パート別の標準を「調和 · ライブ再ミックス」へ。4音源を従来の曲別boost・EQ・声FXの手前で取り出し、独立した基準音量、声の低域／突出帯域の軽い整理、全パート共通の19–139 msの短い反射でまとめる。新しい圧縮・歪み・長い残響・幅の拡張は加えない。7曲の全長測定で曲別headroomを校正。新しいバランスは80が基準、旧カスタム音量は保存して以前のライブ／厚めで呼び出せる。ライブ原音のv425補正・AI音源・採譜は不変。cache `hazama-fm-v426` / client `band-room.js?v=br-259` / CSS `band-room.css?v=br-98`。
+
+測定: `docs/stem-live-mix-measurement-20261019.json`。分離済みMP3の漏れ・元録音のにじみは残る。完成した分離／実iPhone試聴の証明ではない。全体RECは新ミックスを収録、4 stems packは従来の個別EQ後tapのままで共通roomを含まない。
 
 ## v425 — 2026-10-19
 
@@ -37,7 +43,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v425. Latest Band Room runtime change: v425 (premix mastering and instrument practice). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v426. Latest Band Room runtime change: v426 (coherent recorded-stem mix). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

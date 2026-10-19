@@ -1,0 +1,307 @@
+{
+  "date": "2026-10-19",
+  "method": "All seven complete existing stem sets decoded at 48000 Hz and rendered with the shipped native RecordedStemMix factory. Default faders 80, master volume 100 / loudness -1 dB / profile gate .45. Independent FFmpeg EBU R128 and oversampled true peak. All defaults stay below the existing output ceiling knee, so no new compressor, saturation or limiting is used to make up loudness. Spectral comparison uses 12-second source segments, fixed 1105/44100 second alignment and RMS matching. Real browser post-master PCM plus mute, faders, seek, profile, REC and lifecycle are checked separately.",
+  "rows": [
+    {
+      "song": "tabasco",
+      "source_sha256": "62659d83164c4730e95f20cccbaba33a0b7c32b8d540f9de74e0982a65a1d8a7",
+      "stem_sha256": {
+        "vocals": "57051fc4ed9744ba9b7b79b1b214e80f82ea1b421e2960fa0ecf934aaa4e3445",
+        "drums": "780518047c6c79efc9d8208f41fccd7c25fec10b2439790ce03df67768f07086",
+        "bass": "794f80c4a54b21dc209db23a3b81e00ebaa24be1ef2bc66174ee407efc439c37",
+        "other": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2"
+      },
+      "gain_db": -0.2,
+      "prototype": {
+        "lufs": -17.2,
+        "lra": 2.5,
+        "true_peak_dbtp": -3.0
+      },
+      "premix_reference": {
+        "lufs": -15.5,
+        "lra": 2.5,
+        "true_peak_dbtp": -1.5
+      },
+      "mix": {
+        "lufs": -17.4,
+        "lra": 2.5,
+        "true_peak_dbtp": -3.2
+      },
+      "matched_rms_band_delta_db": {
+        "40-120": 0.559,
+        "120-300": -0.674,
+        "300-1000": -0.322,
+        "1000-4000": 0.386,
+        "4000-12000": 1.199
+      },
+      "segment_s": [
+        14,
+        26
+      ],
+      "stereo_correlation": 0.987152,
+      "mono_fold_loss_db": -0.029,
+      "original_comparison_loudness_delta_lu": -1.9
+    },
+    {
+      "song": "hey",
+      "source_sha256": "771947789488013c096800e5c7664c59c4aa7a5ec040e57e84ef5d2eb42c7bf8",
+      "stem_sha256": {
+        "vocals": "34c46c8ea7947a450bc9b479993d43d376d4dfe8a5f66dec1b9b3f4652947a9c",
+        "drums": "c9468c23c8cbef60b788ff8954c0632453161d07d1ec67b314d04fdcb6a30b0a",
+        "bass": "bffc7e34eb26a8d7c580bf11cace981fcb6ba924fcc8c38cc5ba322cc79e5298",
+        "other": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a"
+      },
+      "gain_db": 0.2,
+      "prototype": {
+        "lufs": -19.3,
+        "lra": 7.1,
+        "true_peak_dbtp": -3.4
+      },
+      "premix_reference": {
+        "lufs": -17.2,
+        "lra": 7.8,
+        "true_peak_dbtp": -2.1
+      },
+      "mix": {
+        "lufs": -19.1,
+        "lra": 7.1,
+        "true_peak_dbtp": -3.2
+      },
+      "matched_rms_band_delta_db": {
+        "40-120": 0.796,
+        "120-300": -0.187,
+        "300-1000": -0.074,
+        "1000-4000": 0.791,
+        "4000-12000": 1.083
+      },
+      "segment_s": [
+        37,
+        49
+      ],
+      "stereo_correlation": 0.976309,
+      "mono_fold_loss_db": -0.064,
+      "original_comparison_loudness_delta_lu": -1.9
+    },
+    {
+      "song": "i-got-a-feeling",
+      "source_sha256": "cb454a1116006750cda8f9635427182c97fb85327b0023884065e1eb613614fd",
+      "stem_sha256": {
+        "vocals": "fac5ab206c9410038f632e7c7e8333c1af2787181612929bab6290ec174d032c",
+        "drums": "52fbb4048a68e8ef662ac79cf755f774cd103e719917ea43cf68b8ecb2eb0dca",
+        "bass": "cfcc470fb787a69c443853cd6b62e3ca6f5ebeab5924672d14cf23f0b51c46e3",
+        "other": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81"
+      },
+      "gain_db": -1.2,
+      "prototype": {
+        "lufs": -17.8,
+        "lra": 11.1,
+        "true_peak_dbtp": -2.0
+      },
+      "premix_reference": {
+        "lufs": -15.8,
+        "lra": 11.9,
+        "true_peak_dbtp": -1.5
+      },
+      "mix": {
+        "lufs": -19.0,
+        "lra": 11.1,
+        "true_peak_dbtp": -3.2
+      },
+      "matched_rms_band_delta_db": {
+        "40-120": 1.213,
+        "120-300": -0.135,
+        "300-1000": -0.293,
+        "1000-4000": -0.197,
+        "4000-12000": 0.984
+      },
+      "segment_s": [
+        178,
+        190
+      ],
+      "stereo_correlation": 0.995003,
+      "mono_fold_loss_db": -0.011,
+      "original_comparison_loudness_delta_lu": -3.2
+    },
+    {
+      "song": "under-the-moon",
+      "source_sha256": "bb06e242380dd72c9440aca064ce89a0bebef115c432f26c1eb3c8a6a94327b5",
+      "stem_sha256": {
+        "vocals": "5357d59826d44bd0559dc55813b7973b12105b2119c3fea72d8b025b4bde377f",
+        "drums": "7463b1475b3887206d97a3a2fe4ac7a0b7a0dcadd2e41bee8e3deea038311a2b",
+        "bass": "bb6c470965b051f25cc8816b3f7fdf3104fa1c601dcaec2e70d9317a2a37818c",
+        "other": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8"
+      },
+      "gain_db": 1.1,
+      "prototype": {
+        "lufs": -19.9,
+        "lra": 9.4,
+        "true_peak_dbtp": -4.3
+      },
+      "premix_reference": {
+        "lufs": -17.8,
+        "lra": 9.8,
+        "true_peak_dbtp": -2.6
+      },
+      "mix": {
+        "lufs": -18.8,
+        "lra": 9.4,
+        "true_peak_dbtp": -3.2
+      },
+      "matched_rms_band_delta_db": {
+        "40-120": 1.016,
+        "120-300": -0.349,
+        "300-1000": -0.413,
+        "1000-4000": 0.287,
+        "4000-12000": 0.946
+      },
+      "segment_s": [
+        62,
+        74
+      ],
+      "stereo_correlation": 0.993473,
+      "mono_fold_loss_db": -0.016,
+      "original_comparison_loudness_delta_lu": -1.0
+    },
+    {
+      "song": "electric-sheep",
+      "source_sha256": "65fc141a8d52bf2fa6278b31962bcc2b631750dad89ac0f9c16f861737be1e67",
+      "stem_sha256": {
+        "vocals": "5c7bed1281919471543c29b942985bb891beb1ec38bec3ce06b8d21e92aff45f",
+        "drums": "935036c51a438cb0eb9ee05a29403f7cef0bb82fae90aee899f517a2952e6404",
+        "bass": "369fcdb6b59c6de1fe1f9e271b4fd52e24aa8bfbba1e22e04103dcec3c92a297",
+        "other": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6"
+      },
+      "gain_db": -0.6,
+      "prototype": {
+        "lufs": -16.3,
+        "lra": 3.8,
+        "true_peak_dbtp": -2.6
+      },
+      "premix_reference": {
+        "lufs": -15.4,
+        "lra": 3.6,
+        "true_peak_dbtp": -1.5
+      },
+      "mix": {
+        "lufs": -16.9,
+        "lra": 3.8,
+        "true_peak_dbtp": -3.2
+      },
+      "matched_rms_band_delta_db": {
+        "40-120": 0.243,
+        "120-300": -0.694,
+        "300-1000": -0.204,
+        "1000-4000": 0.407,
+        "4000-12000": 0.991
+      },
+      "segment_s": [
+        14,
+        26
+      ],
+      "stereo_correlation": 0.975658,
+      "mono_fold_loss_db": -0.053,
+      "original_comparison_loudness_delta_lu": -1.5
+    },
+    {
+      "song": "human-fly",
+      "source_sha256": "0f014916b85cb4182774b8ab371f489b826c76bcb2b3f93ca42f5c95471b6ab9",
+      "stem_sha256": {
+        "vocals": "05f87f119b6afdc55afe436cf0b91f04fe828207f4042d0759af9b206f5f09b8",
+        "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88",
+        "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+        "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+      },
+      "gain_db": 0.9,
+      "prototype": {
+        "lufs": -17.6,
+        "lra": 4.7,
+        "true_peak_dbtp": -4.1
+      },
+      "premix_reference": {
+        "lufs": -15.5,
+        "lra": 5.0,
+        "true_peak_dbtp": -1.5
+      },
+      "mix": {
+        "lufs": -16.7,
+        "lra": 4.7,
+        "true_peak_dbtp": -3.2
+      },
+      "matched_rms_band_delta_db": {
+        "40-120": 1.066,
+        "120-300": -0.407,
+        "300-1000": 0.061,
+        "1000-4000": 0.137,
+        "4000-12000": 1.18
+      },
+      "segment_s": [
+        14,
+        26
+      ],
+      "stereo_correlation": 0.99831,
+      "mono_fold_loss_db": -0.004,
+      "original_comparison_loudness_delta_lu": -1.2
+    },
+    {
+      "song": "sister",
+      "source_sha256": "fe1676f7cfa31076162bb8c9007dda5c60648ccd5b9f7837f82f2427239ca18c",
+      "stem_sha256": {
+        "vocals": "ac6467fe47e478b06cc8b9847b03b249a4ce6f5702c39386a112535bbcc66231",
+        "drums": "cad60ebac3b54df8878e09adc42918ce694dbc689e32616421c60a883acdc48f",
+        "bass": "67f9bb28fd9f1b0e63c73ffda795534521ce5eae73dece1ce4704e0bde2b4dec",
+        "other": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06"
+      },
+      "gain_db": 1.1,
+      "prototype": {
+        "lufs": -18.6,
+        "lra": 14.8,
+        "true_peak_dbtp": -4.3
+      },
+      "premix_reference": {
+        "lufs": -16.0,
+        "lra": 15.3,
+        "true_peak_dbtp": -2.3
+      },
+      "mix": {
+        "lufs": -17.5,
+        "lra": 14.8,
+        "true_peak_dbtp": -3.2
+      },
+      "matched_rms_band_delta_db": {
+        "40-120": 1.073,
+        "120-300": -0.096,
+        "300-1000": -0.132,
+        "1000-4000": 0.569,
+        "4000-12000": 0.93
+      },
+      "segment_s": [
+        64,
+        76
+      ],
+      "stereo_correlation": 0.999546,
+      "mono_fold_loss_db": -0.001,
+      "original_comparison_loudness_delta_lu": -1.5
+    }
+  ],
+  "room": {
+    "shared": true,
+    "reflection_seconds": [
+      0.019,
+      0.031,
+      0.047,
+      0.067,
+      0.097,
+      0.139
+    ],
+    "feedback": false,
+    "stereo_widening": false,
+    "standing_nodes": 34
+  },
+  "limits": [
+    "No human listening or real iPhone certification. Numbers validate bounds and signal changes, not naturalness.",
+    "Four separated MP3 stems still contain bleed and separation artifacts. No missing original multitrack was recovered.",
+    "The remix intentionally leaves headroom and is quieter than the original tab by the measured per-song loudness delta; comparison requires volume matching.",
+    "Live original v425 EQ, original file bytes, all stem MP3s and AI instruments/scores remain unchanged.",
+    "Full mix REC follows this profile. Four-stem export retains the legacy individual tap and excludes the shared room."
+  ]
+}

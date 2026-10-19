@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-19 v426: パート別の標準を「調和 · ライブ再ミックス」へ。4音源を従来の曲別boost・EQ・声FXの手前で取り出し、独立した基準音量、声の低域／突出帯域の軽い整理、全パート共通の19–139 msの短い反射でまとめる。新しい圧縮・歪み・長い残響・幅の拡張は加えない。7曲の全長測定で曲別headroomを校正。新しいバランスは80が基準、旧カスタム音量は保存して以前のライブ／厚めで呼び出せる。ライブ原音のv425補正・AI音源・採譜は不変。cache `hazama-fm-v426` / client `band-room.js?v=br-259` / CSS `band-room.css?v=br-98`。
+
 2026-10-19 v425: 分離前の仮ミックス7曲に、26 Hzの低域整理・230 Hzの−1.5 dB・3.2 kHzからの+0.5 dBの軽いライブ補正を追加。圧縮・gate・追加残響・幅の拡張は使わず、原音ファイルを保持する。元の仮ミックスとのA/Bは曲ごとに音量を合わせ、40 msで切替。パート別は歌・ギターほか・ベース・ドラムのminus-oneをワンタップで選べる。分離漏れと元録音の歪みは残り、分離品質の向上を意味しない。cache `hazama-fm-v425` / client `band-room.js?v=br-258` / CSS `band-room.css?v=br-97`。
 
 2026-10-18 v424: AIベースの長い保持音が3秒の音源末尾で途切れる問題を修正。ベースだけ16 kHz／8秒へ延ばし、譜面の音長・自然減衰と次音でのdampingを保つ。53 buffer／15,274,240 bytes、再生node数と128発の上限は維持。原音・採譜イベント・ギター／ドラム音色は保持。分離前原音の終端を7曲の譜面metadataへ結び、ベースのreleaseを録音終端以内に収める。シーク直後の小節処理を確実に起動し、全パートが1小節遅れて鳴るケースも修正。分離前原音も参照し、裏付けの弱い音高変更は不採用。cache `hazama-fm-v424` / client `br-257` / bank v5 / adapter v7。
@@ -268,7 +270,7 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v425`。Band Room runtime markerは`band-room.js?v=br-258` /
+- 現行cacheは`hazama-fm-v426`。Band Room runtime markerは`band-room.js?v=br-259` /
   `band-room.css?v=br-96`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
