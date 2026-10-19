@@ -100,5 +100,5 @@ async function boot() {
     }
   }
   $("br-subtitle").textContent = "Tabasco. LIVE · 分離前の仮ミックス";
-  $("br-boot-status").textContent = "v429 · ライブ原音";
+  $("br-boot-status").textContent = "v430 · ライブ原音";
 }

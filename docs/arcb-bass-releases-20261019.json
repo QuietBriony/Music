@@ -1,0 +1,547 @@
+{
+  "release": "v430",
+  "method": "source-backed-bass-release-v1",
+  "parameters": {
+    "sample_rate": 16000,
+    "hop_s": 0.02,
+    "minimum_quiet_s": 0.4,
+    "quiet_rms_dbfs": -55,
+    "quiet_peak_dbfs": -38,
+    "minimum_attack_rms_dbfs": -40,
+    "minimum_stem_drop_db": 20,
+    "minimum_premix_harmonic_drop_db": 12,
+    "fade_s": 0.15
+  },
+  "count": 8,
+  "songs": [
+    {
+      "song": "electric-sheep",
+      "source_sha256": "369fcdb6b59c6de1fe1f9e271b4fd52e24aa8bfbba1e22e04103dcec3c92a297",
+      "premix_sha256": "65fc141a8d52bf2fa6278b31962bcc2b631750dad89ac0f9c16f861737be1e67",
+      "accepted": [],
+      "rejected": [
+        {
+          "index": 164,
+          "row": [
+            33,
+            0.1,
+            2.0,
+            28,
+            0.98
+          ],
+          "at_s": 61.31191950464397,
+          "hold_end_s": 61.544117647058826,
+          "quiet_s": [
+            61.660000000000004,
+            67.72
+          ],
+          "release_end_s": 61.81,
+          "natural_end_s": 62.944117647058825,
+          "stem_attack_dbfs": -21.20774094497967,
+          "stem_quiet_dbfs": -72.83536787433997,
+          "premix_harmonic_drop_db": 1.58700410696812
+        }
+      ]
+    },
+    {
+      "song": "hey",
+      "source_sha256": "bffc7e34eb26a8d7c580bf11cace981fcb6ba924fcc8c38cc5ba322cc79e5298",
+      "premix_sha256": "771947789488013c096800e5c7664c59c4aa7a5ec040e57e84ef5d2eb42c7bf8",
+      "accepted": [
+        {
+          "index": 195,
+          "row": [
+            38,
+            13.21,
+            1.58,
+            38,
+            0.51
+          ],
+          "at_s": 77.52849654713371,
+          "hold_end_s": 77.7256843331392,
+          "quiet_s": [
+            77.78,
+            78.94
+          ],
+          "release_end_s": 77.93,
+          "natural_end_s": 78.98129128879275,
+          "stem_attack_dbfs": -34.915139688601954,
+          "stem_quiet_dbfs": -70.41460080136483,
+          "premix_harmonic_drop_db": 17.939451984411715
+        }
+      ],
+      "rejected": [
+        {
+          "index": 514,
+          "row": [
+            104,
+            6.42,
+            4.19,
+            28,
+            0.57
+          ],
+          "at_s": 208.4724186704385,
+          "hold_end_s": 208.99534071054165,
+          "quiet_s": [
+            209.0,
+            225.26
+          ],
+          "release_end_s": 209.15,
+          "natural_end_s": 210.39534071054166,
+          "stem_attack_dbfs": -34.65718364344184,
+          "stem_quiet_dbfs": -68.02000250409206,
+          "premix_harmonic_drop_db": 5.951018063121946
+        },
+        {
+          "index": 739,
+          "row": [
+            150,
+            11.53,
+            0.65,
+            42,
+            0.73
+          ],
+          "at_s": 300.96472252267245,
+          "hold_end_s": 301.04584408020634,
+          "quiet_s": [
+            301.3,
+            304.92
+          ],
+          "release_end_s": 301.45,
+          "natural_end_s": 301.9195557034695,
+          "stem_attack_dbfs": -29.904716346904298,
+          "stem_quiet_dbfs": -64.66326509070531,
+          "premix_harmonic_drop_db": -0.7124236380604785
+        }
+      ]
+    },
+    {
+      "song": "human-fly",
+      "source_sha256": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+      "premix_sha256": "0f014916b85cb4182774b8ab371f489b826c76bcb2b3f93ca42f5c95471b6ab9",
+      "accepted": [],
+      "rejected": [
+        {
+          "index": 291,
+          "row": [
+            48,
+            12.09,
+            26.09,
+            31,
+            0.73
+          ],
+          "at_s": 99.62835249042146,
+          "hold_end_s": 102.96040868454662,
+          "quiet_s": [
+            102.98,
+            103.46000000000001
+          ],
+          "release_end_s": 103.13000000000001,
+          "natural_end_s": 103.56574712643679,
+          "stem_attack_dbfs": -27.532241760638875,
+          "stem_quiet_dbfs": -65.57673064971038,
+          "premix_harmonic_drop_db": 6.705720979886067
+        },
+        {
+          "index": 560,
+          "row": [
+            87,
+            15.36,
+            3.0,
+            31,
+            0.73
+          ],
+          "at_s": 179.73946360153255,
+          "hold_end_s": 180.12260536398466,
+          "quiet_s": [
+            180.1,
+            188.16
+          ],
+          "release_end_s": 180.27260536398467,
+          "natural_end_s": 181.52260536398467,
+          "stem_attack_dbfs": -31.48289817500384,
+          "stem_quiet_dbfs": -74.37229936974786,
+          "premix_harmonic_drop_db": 2.352119285988607
+        }
+      ]
+    },
+    {
+      "song": "i-got-a-feeling",
+      "source_sha256": "cfcc470fb787a69c443853cd6b62e3ca6f5ebeab5924672d14cf23f0b51c46e3",
+      "premix_sha256": "cb454a1116006750cda8f9635427182c97fb85327b0023884065e1eb613614fd",
+      "accepted": [
+        {
+          "index": 304,
+          "row": [
+            77,
+            2.42,
+            5.48,
+            35,
+            0.89
+          ],
+          "at_s": 154.05857392461937,
+          "hold_end_s": 154.74249105582828,
+          "quiet_s": [
+            154.82,
+            155.68
+          ],
+          "release_end_s": 154.97,
+          "natural_end_s": 155.73226890756303,
+          "stem_attack_dbfs": -28.830841550986854,
+          "stem_quiet_dbfs": -69.85586948655441,
+          "premix_harmonic_drop_db": 24.09750280190311
+        },
+        {
+          "index": 308,
+          "row": [
+            78,
+            15.81,
+            8.28,
+            35,
+            0.8
+          ],
+          "at_s": 157.7265163491139,
+          "hold_end_s": 158.75988018969963,
+          "quiet_s": [
+            158.84,
+            159.62
+          ],
+          "release_end_s": 158.99,
+          "natural_end_s": 159.66728845993845,
+          "stem_attack_dbfs": -28.844003709259965,
+          "stem_quiet_dbfs": -67.86955310867539,
+          "premix_harmonic_drop_db": 31.145982286456384
+        },
+        {
+          "index": 311,
+          "row": [
+            80,
+            5.95,
+            1.95,
+            45,
+            0.89
+          ],
+          "at_s": 160.4896414011149,
+          "hold_end_s": 160.7330060737166,
+          "quiet_s": [
+            160.82,
+            161.70000000000002
+          ],
+          "release_end_s": 160.97,
+          "natural_end_s": 161.74524835676846,
+          "stem_attack_dbfs": -27.24120391080078,
+          "stem_quiet_dbfs": -64.91398644410016,
+          "premix_harmonic_drop_db": 16.39620186065496
+        },
+        {
+          "index": 315,
+          "row": [
+            82,
+            5.95,
+            2.23,
+            45,
+            0.72
+          ],
+          "at_s": 164.48331807970712,
+          "hold_end_s": 164.76162742324652,
+          "quiet_s": [
+            164.76,
+            165.66
+          ],
+          "release_end_s": 164.91162742324653,
+          "natural_end_s": 165.3907263499459,
+          "stem_attack_dbfs": -33.712367583414604,
+          "stem_quiet_dbfs": -67.69643972276046,
+          "premix_harmonic_drop_db": 16.044871887359314
+        }
+      ],
+      "rejected": [
+        {
+          "index": 573,
+          "row": [
+            181,
+            3.43,
+            0.65,
+            44,
+            0.65
+          ],
+          "at_s": 361.8558116315833,
+          "hold_end_s": 361.9369331891172,
+          "quiet_s": [
+            362.88,
+            368.7
+          ],
+          "release_end_s": 363.03,
+          "natural_end_s": 363.3369331891172,
+          "stem_attack_dbfs": -31.84930928536534,
+          "stem_quiet_dbfs": -62.51648381629906,
+          "premix_harmonic_drop_db": -8.615706453610198
+        }
+      ]
+    },
+    {
+      "song": "sister",
+      "source_sha256": "67f9bb28fd9f1b0e63c73ffda795534521ce5eae73dece1ce4704e0bde2b4dec",
+      "premix_sha256": "fe1676f7cfa31076162bb8c9007dda5c60648ccd5b9f7837f82f2427239ca18c",
+      "accepted": [
+        {
+          "index": 424,
+          "row": [
+            133,
+            11.91,
+            51.91,
+            31,
+            0.78
+          ],
+          "at_s": 273.2962962962963,
+          "hold_end_s": 279.9259259259259,
+          "quiet_s": [
+            278.8,
+            280.42
+          ],
+          "release_end_s": 280.0759259259259,
+          "natural_end_s": 281.124104689,
+          "stem_attack_dbfs": -30.05835889255492,
+          "stem_quiet_dbfs": -57.29537656882456,
+          "premix_harmonic_drop_db": 23.358948975120953
+        }
+      ],
+      "rejected": [
+        {
+          "index": 67,
+          "row": [
+            40,
+            8.0,
+            3.0,
+            39,
+            0.37
+          ],
+          "at_s": 82.75862068965517,
+          "hold_end_s": 83.14176245210729,
+          "quiet_s": [
+            83.08,
+            91.52
+          ],
+          "release_end_s": 83.29176245210729,
+          "natural_end_s": 84.54176245210729,
+          "stem_attack_dbfs": -36.99466897102009,
+          "stem_quiet_dbfs": -63.241263388293085,
+          "premix_harmonic_drop_db": 8.049622193486911
+        }
+      ]
+    },
+    {
+      "song": "tabasco",
+      "source_sha256": "794f80c4a54b21dc209db23a3b81e00ebaa24be1ef2bc66174ee407efc439c37",
+      "premix_sha256": "62659d83164c4730e95f20cccbaba33a0b7c32b8d540f9de74e0982a65a1d8a7",
+      "accepted": [
+        {
+          "index": 11,
+          "row": [
+            3,
+            0.05,
+            1.8,
+            37,
+            0.95
+          ],
+          "at_s": 5.4392121349332125,
+          "hold_end_s": 5.642970341860992,
+          "quiet_s": [
+            5.76,
+            6.34
+          ],
+          "release_end_s": 5.91,
+          "natural_end_s": 6.480647498302014,
+          "stem_attack_dbfs": -23.310075423968904,
+          "stem_quiet_dbfs": -70.03107417135479,
+          "premix_harmonic_drop_db": 13.003967891460132
+        }
+      ],
+      "rejected": [
+        {
+          "index": 18,
+          "row": [
+            3,
+            15.69,
+            1.13,
+            37,
+            0.73
+          ],
+          "at_s": 7.209644555127915,
+          "hold_end_s": 7.337559429477021,
+          "quiet_s": [
+            7.32,
+            8.02
+          ],
+          "release_end_s": 7.487559429477021,
+          "natural_end_s": 7.781304052524336,
+          "stem_attack_dbfs": -34.2615967054055,
+          "stem_quiet_dbfs": -67.72691192490211,
+          "premix_harmonic_drop_db": -10.531350432763517
+        },
+        {
+          "index": 26,
+          "row": [
+            5,
+            5.95,
+            8.3,
+            37,
+            0.96
+          ],
+          "at_s": 9.72945438080145,
+          "hold_end_s": 10.669006112746208,
+          "quiet_s": [
+            10.700000000000001,
+            11.4
+          ],
+          "release_end_s": 10.850000000000001,
+          "natural_end_s": 11.484043468417479,
+          "stem_attack_dbfs": -21.38636682697751,
+          "stem_quiet_dbfs": -65.73759243152502,
+          "premix_harmonic_drop_db": 3.3426949831847566
+        },
+        {
+          "index": 27,
+          "row": [
+            6,
+            4.92,
+            9.74,
+            37,
+            0.9
+          ],
+          "at_s": 11.424043468417478,
+          "hold_end_s": 12.526601765904461,
+          "quiet_s": [
+            12.48,
+            13.18
+          ],
+          "release_end_s": 12.676601765904461,
+          "natural_end_s": 13.237496038034866,
+          "stem_attack_dbfs": -23.26706841669195,
+          "stem_quiet_dbfs": -65.15667138091233,
+          "premix_harmonic_drop_db": 6.158336332569533
+        },
+        {
+          "index": 31,
+          "row": [
+            7,
+            10.92,
+            1.9,
+            37,
+            0.85
+          ],
+          "at_s": 13.914421553090333,
+          "hold_end_s": 14.129499660402988,
+          "quiet_s": [
+            14.120000000000001,
+            14.9
+          ],
+          "release_end_s": 14.279499660402989,
+          "natural_end_s": 14.955856916459137,
+          "stem_attack_dbfs": -21.21093802558012,
+          "stem_quiet_dbfs": -65.89626546794581,
+          "premix_harmonic_drop_db": 6.567506241580446
+        },
+        {
+          "index": 33,
+          "row": [
+            8,
+            9.38,
+            3.44,
+            37,
+            0.79
+          ],
+          "at_s": 15.551279148743491,
+          "hold_end_s": 15.940683721983246,
+          "quiet_s": [
+            15.94,
+            16.64
+          ],
+          "release_end_s": 16.090683721983247,
+          "natural_end_s": 16.7206293864614,
+          "stem_attack_dbfs": -21.642062900666414,
+          "stem_quiet_dbfs": -68.72195406334868,
+          "premix_harmonic_drop_db": -2.2242263060757352
+        },
+        {
+          "index": 36,
+          "row": [
+            9,
+            7.54,
+            4.36,
+            37,
+            0.93
+          ],
+          "at_s": 17.15417704324202,
+          "hold_end_s": 17.64772470002264,
+          "quiet_s": [
+            17.68,
+            18.400000000000002
+          ],
+          "release_end_s": 17.83,
+          "natural_end_s": 19.047724700022638,
+          "stem_attack_dbfs": -20.804297322241105,
+          "stem_quiet_dbfs": -67.02985892454075,
+          "premix_harmonic_drop_db": -0.8904725283718022
+        }
+      ]
+    },
+    {
+      "song": "under-the-moon",
+      "source_sha256": "bb6c470965b051f25cc8816b3f7fdf3104fa1c601dcaec2e70d9317a2a37818c",
+      "premix_sha256": "bb06e242380dd72c9440aca064ce89a0bebef115c432f26c1eb3c8a6a94327b5",
+      "accepted": [
+        {
+          "index": 606,
+          "row": [
+            205,
+            8.38,
+            40.75,
+            39,
+            0.65
+          ],
+          "at_s": 305.42229102167187,
+          "hold_end_s": 309.2071207430341,
+          "quiet_s": [
+            309.3,
+            313.3
+          ],
+          "release_end_s": 309.45,
+          "natural_end_s": 309.89312693498454,
+          "stem_attack_dbfs": -36.63070413156304,
+          "stem_quiet_dbfs": -66.96123107989938,
+          "premix_harmonic_drop_db": 30.22994906716041
+        }
+      ],
+      "rejected": [
+        {
+          "index": 147,
+          "row": [
+            57,
+            2.07,
+            24.19,
+            37,
+            0.89
+          ],
+          "at_s": 84.89814241486069,
+          "hold_end_s": 87.14489164086687,
+          "quiet_s": [
+            87.12,
+            88.02
+          ],
+          "release_end_s": 87.29489164086688,
+          "natural_end_s": 88.08631578947369,
+          "stem_attack_dbfs": -31.389935664516102,
+          "stem_quiet_dbfs": -69.8591337279945,
+          "premix_harmonic_drop_db": -4.379479112343841
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Separated stems can lose real components; only matching drops in the surviving premix are accepted.",
+    "No pitch, onset, velocity or scored-hold change. Only additional synthetic release is bounded.",
+    "Harmonic-band energy is evidence of a rest, not isolation of the bass or perceptual certification.",
+    "Ambiguous rests including Human Fly 180 s remain unchanged."
+  ]
+}

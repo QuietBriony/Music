@@ -1,0 +1,212 @@
+{
+  "date": "2026-10-19",
+  "reference": "Accepted v425 direct premix live mastering, unchanged through v429.",
+  "method": "21 eight-second native OfflineAudioContext stereo renders across seven premixes. Trial adds only a 230 Hz Q0.8 -0.75 dB bell after the current graph. Same input and context; RMS matched before independent 120-450/2000-6000 Hz third-order Butterworth analysis.",
+  "source_sha256": {
+    "electric-sheep": "65fc141a8d52bf2fa6278b31962bcc2b631750dad89ac0f9c16f861737be1e67",
+    "hey": "771947789488013c096800e5c7664c59c4aa7a5ec040e57e84ef5d2eb42c7bf8",
+    "human-fly": "0f014916b85cb4182774b8ab371f489b826c76bcb2b3f93ca42f5c95471b6ab9",
+    "i-got-a-feeling": "cb454a1116006750cda8f9635427182c97fb85327b0023884065e1eb613614fd",
+    "sister": "fe1676f7cfa31076162bb8c9007dda5c60648ccd5b9f7837f82f2427239ca18c",
+    "tabasco": "62659d83164c4730e95f20cccbaba33a0b7c32b8d540f9de74e0982a65a1d8a7",
+    "under-the-moon": "bb06e242380dd72c9440aca064ce89a0bebef115c432f26c1eb3c8a6a94327b5"
+  },
+  "factory_sha256": "04a8a59eee505c5a039bf47cf13275398e10b54de37671f6ebdf2c29c39065b3",
+  "rows": [
+    {
+      "song": "electric-sheep",
+      "start_s": 120,
+      "trial_rms_match_db": 0.2682947802915605,
+      "body_120_450_delta_db": -0.29224087804581345,
+      "presence_2k_6k_delta_db": 0.2631619326706673,
+      "envelope_correlation": 0.9993341402305819,
+      "peak": 0.7667351961135864
+    },
+    {
+      "song": "electric-sheep",
+      "start_s": 140,
+      "trial_rms_match_db": 0.22242518372905654,
+      "body_120_450_delta_db": -0.3359925894330381,
+      "presence_2k_6k_delta_db": 0.21677509196114875,
+      "envelope_correlation": 0.9998511396724686,
+      "peak": 0.837524950504303
+    },
+    {
+      "song": "electric-sheep",
+      "start_s": 60,
+      "trial_rms_match_db": 0.1964309924018291,
+      "body_120_450_delta_db": -0.3498257892537844,
+      "presence_2k_6k_delta_db": 0.192545244890472,
+      "envelope_correlation": 0.9997187622457486,
+      "peak": 0.7347325682640076
+    },
+    {
+      "song": "hey",
+      "start_s": 170,
+      "trial_rms_match_db": 0.3428893592087568,
+      "body_120_450_delta_db": -0.21702200701322027,
+      "presence_2k_6k_delta_db": 0.3372128707547037,
+      "envelope_correlation": 0.998699553848953,
+      "peak": 0.7383837103843689
+    },
+    {
+      "song": "hey",
+      "start_s": 240,
+      "trial_rms_match_db": 0.29274131970587264,
+      "body_120_450_delta_db": -0.25331641406295646,
+      "presence_2k_6k_delta_db": 0.28533805312530847,
+      "envelope_correlation": 0.9995559913450006,
+      "peak": 0.7004678249359131
+    },
+    {
+      "song": "hey",
+      "start_s": 77,
+      "trial_rms_match_db": 0.3565125826220188,
+      "body_120_450_delta_db": -0.1624630832869175,
+      "presence_2k_6k_delta_db": 0.3497755342646317,
+      "envelope_correlation": 0.9995494670348544,
+      "peak": 0.7252289652824402
+    },
+    {
+      "song": "human-fly",
+      "start_s": 145,
+      "trial_rms_match_db": 0.34030255027824746,
+      "body_120_450_delta_db": -0.18439264291657093,
+      "presence_2k_6k_delta_db": 0.33110733979780504,
+      "envelope_correlation": 0.997973847043401,
+      "peak": 0.7548475861549377
+    },
+    {
+      "song": "human-fly",
+      "start_s": 180,
+      "trial_rms_match_db": 0.2912134188107114,
+      "body_120_450_delta_db": -0.1914187954796303,
+      "presence_2k_6k_delta_db": 0.2816655606467863,
+      "envelope_correlation": 0.999740122374902,
+      "peak": 0.6613831520080566
+    },
+    {
+      "song": "human-fly",
+      "start_s": 68,
+      "trial_rms_match_db": 0.22706930846575374,
+      "body_120_450_delta_db": -0.26172002617363305,
+      "presence_2k_6k_delta_db": 0.21677752282629384,
+      "envelope_correlation": 0.9992010531041882,
+      "peak": 0.7320236563682556
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start_s": 154,
+      "trial_rms_match_db": 0.3626187235171373,
+      "body_120_450_delta_db": -0.2066925322744616,
+      "presence_2k_6k_delta_db": 0.35477915240678753,
+      "envelope_correlation": 0.9990798394328548,
+      "peak": 0.6913226842880249
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start_s": 270,
+      "trial_rms_match_db": 0.34705729842581995,
+      "body_120_450_delta_db": -0.2222011886022078,
+      "presence_2k_6k_delta_db": 0.3383508547432239,
+      "envelope_correlation": 0.9994311127311969,
+      "peak": 0.4084199368953705
+    },
+    {
+      "song": "i-got-a-feeling",
+      "start_s": 64,
+      "trial_rms_match_db": 0.3518069282813954,
+      "body_120_450_delta_db": -0.20157846640549593,
+      "presence_2k_6k_delta_db": 0.344377980121217,
+      "envelope_correlation": 0.9984613028673457,
+      "peak": 0.7622096538543701
+    },
+    {
+      "song": "sister",
+      "start_s": 145,
+      "trial_rms_match_db": 0.28801600704020974,
+      "body_120_450_delta_db": -0.21758235128520098,
+      "presence_2k_6k_delta_db": 0.2794920610144899,
+      "envelope_correlation": 0.9988727210941633,
+      "peak": 0.7846406698226929
+    },
+    {
+      "song": "sister",
+      "start_s": 230,
+      "trial_rms_match_db": 0.29906057172597794,
+      "body_120_450_delta_db": -0.20207132330810604,
+      "presence_2k_6k_delta_db": 0.2918908750336682,
+      "envelope_correlation": 0.9991196146376172,
+      "peak": 0.7448208928108215
+    },
+    {
+      "song": "sister",
+      "start_s": 72,
+      "trial_rms_match_db": 0.30955610604686223,
+      "body_120_450_delta_db": -0.18725928918780632,
+      "presence_2k_6k_delta_db": 0.30027925105122555,
+      "envelope_correlation": 0.9994989705479864,
+      "peak": 0.5940253138542175
+    },
+    {
+      "song": "tabasco",
+      "start_s": 14,
+      "trial_rms_match_db": 0.28638123159860257,
+      "body_120_450_delta_db": -0.2439456876617756,
+      "presence_2k_6k_delta_db": 0.28080795490394733,
+      "envelope_correlation": 0.9995903089665276,
+      "peak": 0.8245897889137268
+    },
+    {
+      "song": "tabasco",
+      "start_s": 21,
+      "trial_rms_match_db": 0.28528403605627856,
+      "body_120_450_delta_db": -0.25130265836094534,
+      "presence_2k_6k_delta_db": 0.27998283193858803,
+      "envelope_correlation": 0.9995942543767534,
+      "peak": 0.858588695526123
+    },
+    {
+      "song": "tabasco",
+      "start_s": 5,
+      "trial_rms_match_db": 0.3709844627710255,
+      "body_120_450_delta_db": -0.16053408707626732,
+      "presence_2k_6k_delta_db": 0.36442323126487974,
+      "envelope_correlation": 0.9996127517856267,
+      "peak": 0.7947168350219727
+    },
+    {
+      "song": "under-the-moon",
+      "start_s": 160,
+      "trial_rms_match_db": 0.396649613415056,
+      "body_120_450_delta_db": -0.15541356277626892,
+      "presence_2k_6k_delta_db": 0.3912985328470726,
+      "envelope_correlation": 0.9992636899605186,
+      "peak": 0.6462795734405518
+    },
+    {
+      "song": "under-the-moon",
+      "start_s": 250,
+      "trial_rms_match_db": 0.30161688205658144,
+      "body_120_450_delta_db": -0.23112281982592828,
+      "presence_2k_6k_delta_db": 0.29313863149284547,
+      "envelope_correlation": 0.9992126218745225,
+      "peak": 0.5781391263008118
+    },
+    {
+      "song": "under-the-moon",
+      "start_s": 70,
+      "trial_rms_match_db": 0.2691656586063601,
+      "body_120_450_delta_db": -0.2964619254114937,
+      "presence_2k_6k_delta_db": 0.26280854169839585,
+      "envelope_correlation": 0.9984840756446515,
+      "peak": 0.68775475025177
+    }
+  ],
+  "decision": "Not adopted. A blanket cut reduces the low-mid body along with any masking; the measurements do not establish a perceptual improvement over the owner-approved current mix. Further work should target specific sections and compare at equal level.",
+  "limits": [
+    "No multitracks remain; a stereo premix cannot independently restore instruments or room tone.",
+    "Spectral changes and envelope correlation do not certify clarity, realism or listener preference.",
+    "Original and coherent-remix DSP/audio remain unchanged."
+  ]
+}

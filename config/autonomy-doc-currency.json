@@ -38,7 +38,7 @@
         "Current control-plane snapshot",
         "Historical TASK E",
         "config/external-dependencies.json",
-        "hazama-fm-v429",
+        "hazama-fm-v430",
         "last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287",
         "worker-gaming",
         "worker.gpu"
@@ -119,7 +119,7 @@
         "engine.js?v=fm-119",
         "fm.css?v=fm-54",
         "fm.js?v=fm-72",
-        "hazama-fm-v429",
+        "hazama-fm-v430",
         "last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287",
         "lyric-lab.html",
         "manifest-band-room.webmanifest",

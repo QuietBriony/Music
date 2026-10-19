@@ -175,8 +175,8 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-262-arcb-balance", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v429", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-263-source-rests", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v430", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
 const originalCeiling = windowMock.BandRoomTestHooks.originalOutputCeiling;
@@ -374,6 +374,44 @@ for (const song of bandsRegistry.bands.tabasco.songs) {
 }
 const fittedLine = bpm_fit => ({bpm_fit, events:[[0,0,1,48,.6]]});
 const bassLimit = windowMock.BandRoomTestHooks.transcribedBassLimit;
+const validateBassReleases = windowMock.BandRoomTestHooks.validatedBassReleases;
+const releaseReport = JSON.parse(readFileSync('docs/arcb-bass-releases-20261019.json', 'utf8'));
+assert.equal(releaseReport.count, 8);
+let boundedReleases = 0;
+for (const source of releaseReport.songs) {
+  const data = JSON.parse(readFileSync(`presets/drum-frames-tabasco-${source.song}.json`, 'utf8'));
+  const releases = validateBassReleases(data), line = data.bass_line;
+  assert.equal(releases.size, source.accepted.length);
+  for (const part of ['source', 'premix']) {
+    const path = part === 'source' ? `presets/tabasco-stems/${source.song}/bass.mp3` : `presets/tabasco-premix/${source.song}.m4a`;
+    assert.equal(createHash('sha256').update(readFileSync(path)).digest('hex'), source[part + '_sha256']);
+  }
+  for (const item of source.accepted) {
+    boundedReleases++;
+    const row = line.events[item.index], step = 15 / line.bpm_fit;
+    assert.deepEqual(row, item.row);
+    assert.ok(item.premix_harmonic_drop_db >= 12 && item.stem_quiet_dbfs < -55);
+    assert.equal(releases.get(row), item.release_end_s);
+    for (const speed of [.8, 1, 1.2]) {
+      const length = bassLimit(row, data, step / speed, releases);
+      assert.ok(Math.abs(length - (item.release_end_s - item.at_s) / speed) < 1e-8);
+      assert.ok(length > row[2] * step / speed, 'The scored hold remains intact at every speed');
+    }
+    for (let column = 0; column < 5; column++) {
+      const stale = structuredClone(data); stale.bass_line.events[item.index][column] += .01;
+      assert.equal(validateBassReleases(stale).size, 0, 'Any edited note value invalidates the bound release');
+    }
+  }
+  if (!source.accepted.length) continue;
+  for (const damage of [d => d.bass_line.release_limits.events_count++, d => d.bass_line.release_limits.bpm_fit++,
+    d => d.bass_line.release_limits.premix_sha256 = 'a'.repeat(64), d => d.bass_line.release_limits.source_sha256 = 'bad',
+    d => d.bass_line.release_limits.entries[0][2] = 0, d => d.bass_line.release_limits.entries[0][2] += 10,
+    d => d.bass_line.release_limits.entries.push(d.bass_line.release_limits.entries[0])]) {
+    const stale = structuredClone(data); damage(stale);
+    assert.equal(validateBassReleases(stale).size, 0, 'Stale, duplicate or destructive release metadata fails closed');
+  }
+}
+assert.equal(boundedReleases, 8);
 const boundData={performance_duration_s:20,bass_line:{bpm_fit:120},premix_reference:{active_end_s:10,stem_offset_s:.025,sha256:'a'.repeat(64)}};
 assert.equal(bassLimit([4,0,40,31,.8],{...boundData,performance_duration_s:undefined},.125),Infinity,'Missing source duration must not truncate a song');
 for(const rate of [.8,1,1.2]){
@@ -742,13 +780,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-98/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-262/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-263/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-98/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-262/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-263/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
