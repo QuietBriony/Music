@@ -1548,7 +1548,7 @@ body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
   border: 0;
 }
 
-#br-volume-stems {
+:is(#br-volume-stems, #br-coherent-mix) {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1558,13 +1558,13 @@ body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
   background: var(--panel);
 }
 
-#br-volume-stems label,
-#br-volume-stems input[type="range"]::-webkit-slider-thumb,
-#br-volume-stems input[type="range"]::-moz-range-thumb {
+:is(#br-volume-stems, #br-coherent-mix) label,
+:is(#br-volume-stems, #br-coherent-mix) input[type="range"]::-webkit-slider-thumb,
+:is(#br-volume-stems, #br-coherent-mix) input[type="range"]::-moz-range-thumb {
   /* inherit volume label styles */
 }
 
-#br-volume-stems label {
+:is(#br-volume-stems, #br-coherent-mix) label {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1574,9 +1574,9 @@ body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
   color: var(--text-sub);
 }
 
-#br-volume-stems label span { min-width: 60px; }
+:is(#br-volume-stems, #br-coherent-mix) label span { min-width: 60px; }
 
-#br-volume-stems input[type="range"] {
+:is(#br-volume-stems, #br-coherent-mix) input[type="range"] {
   flex: 1;
   appearance: none;
   height: 4px;
@@ -1585,7 +1585,7 @@ body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
   outline: none;
 }
 
-#br-volume-stems input[type="range"]::-webkit-slider-thumb {
+:is(#br-volume-stems, #br-coherent-mix) input[type="range"]::-webkit-slider-thumb {
   appearance: none;
   width: 14px;
   height: 14px;
@@ -1594,7 +1594,7 @@ body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
   cursor: pointer;
 }
 
-#br-volume-stems input[type="range"]::-moz-range-thumb {
+:is(#br-volume-stems, #br-coherent-mix) input[type="range"]::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -1987,7 +1987,7 @@ body[data-mode="stems"] #br-mode label.br-reconstruct { opacity: 0.45; }
 
 #br-sound-mix #br-space,
 #br-sound-mix #br-vocal-fx,
-#br-sound-mix #br-volume-stems,
+#br-sound-mix :is(#br-volume-stems, #br-coherent-mix),
 #br-sound-mix #br-volume {
   padding: 12px 14px;
   border-radius: 8px;
@@ -2917,3 +2917,7 @@ html[data-br-surface="original"] :is(#br-master-vol-bar, #br-help-toggle, #br-kb
 #br-stems .br-toggle-all[aria-pressed="true"] { border-color: var(--air); color: var(--air-soft); background: rgba(108, 209, 204, .12); }
 #br-stems .br-help { flex-basis: 100%; margin: 4px 0; line-height: 1.6; }
 #br-premix :focus-visible, #br-listening-mode a:focus-visible { outline: 2px solid var(--air-soft); outline-offset: 3px; }
+
+/* The profile selector retains legacy controls without displaying two balances. */
+#br-coherent-mix[hidden], #br-volume-stems[hidden] { display: none !important; }
+#br-coherent-reset { min-height: 44px; padding: 8px 14px; border: 1px solid var(--panel-border); border-radius: 8px; background: var(--panel); color: var(--text); cursor: pointer; }

@@ -141,12 +141,36 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-258-premix-master", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v425", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-259-coherent-live", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v426", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
 const originalCeiling = windowMock.BandRoomTestHooks.originalOutputCeiling;
 const setOriginalGate = windowMock.BandRoomTestHooks.setOriginalMasteringGate;
+// v426: migrate the old default, retain an explicitly chosen legacy profile,
+// and never reinterpret the user's legacy faders as the new calibrated mix.
+const restoredStemProfile = windowMock.BandRoomTestHooks.restoredStemProfile;
+assert.equal(restoredStemProfile(null), "blend");
+assert.equal(restoredStemProfile({ originalMastering: "live" }), "blend");
+assert.equal(restoredStemProfile({ originalMastering: "dense" }), "dense");
+for (const profile of ["blend", "live", "dense"]) {
+  assert.equal(restoredStemProfile({ stemMixVersion: 1, originalMastering: profile }), profile);
+}
+assert.match(source, /Tone\.connect\(player, coherentStemMix\.inputs\[stem\]\)/, "New mix receives the player before old song trims");
+assert.match(source, /Tone\.connect\(externalStemPlayers\[stem\], ensureCoherentStemMix\(\)\.inputs\[stem\]\)/);
+assert.match(source, /Tone\.connect\(externalVocalBus, coherentStemMix\.inputs\.vocals\)/);
+assert.match(source, /ensureCoherentStemMix\(\)\.setSong\(songId\)/);
+assert.match(html, /audio\/stem-live-mix\.js\?v=1/);
+assert.match(sw, /audio\/stem-live-mix\.js\?v=1/);
+const stemMixSandbox = { console };
+vm.runInNewContext(readFileSync("audio/stem-live-mix.js", "utf8"), stemMixSandbox);
+const validMixLevel = stemMixSandbox.RecordedStemMix.validLevel;
+assert.equal(validMixLevel(0), 0, "A zero fader must mute dry and room");
+assert.equal(validMixLevel(0.47), 0.47);
+assert.equal(validMixLevel(-4), 0);
+assert.equal(validMixLevel(40), 1);
+assert.equal(validMixLevel(NaN), 0.8);
+assert.equal(validMixLevel(Infinity), 0.8);
 // Live and dense must follow the same fader, including a true zero. Reusing
 // only the processed bus would leave the new unfiltered path at its old level.
 {
@@ -173,11 +197,11 @@ const setOriginalGate = windowMock.BandRoomTestHooks.setOriginalMasteringGate;
   ctx.document = { querySelectorAll: () => [] };
   ctx.currentMode = "stems";
   vm.runInNewContext(source.slice(source.indexOf("  function syncOriginalMasteringControls("), source.indexOf("  // v220 / v271 / v301:")), ctx);
-  for (const profile of ["live", "dense", "live"]) {
+  for (const profile of ["live", "dense", "blend", "live"]) {
     ctx.originalMastering = profile;
     ctx.syncOriginalMasteringControls();
     for (const control of controls.values()) {
-      assert.equal(control.disabled, profile === "live");
+      assert.equal(control.disabled, profile !== "dense");
       assert.equal(control.value, "19", "Profile switching must retain the saved dense FX amount");
     }
   }
@@ -683,14 +707,14 @@ assert.match(verticalRoomPreset, /warmth:\s*12/, "vertical-room should add floor
 assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not raise startup loudness");
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
-assert.match(html, /band-room\.css\?v=br-97/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-258/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.css\?v=br-98/, "Band Room HTML should reference the current CSS cache marker");
+assert.match(html, /band-room\.js\?v=br-259/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
-assert.match(sw, /band-room\.css\?v=br-97/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-258/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.css\?v=br-98/, "Service worker should precache the current Band Room CSS marker");
+assert.match(sw, /band-room\.js\?v=br-259/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");

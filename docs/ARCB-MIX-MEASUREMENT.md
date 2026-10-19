@@ -1,4 +1,30 @@
-# ARCB — 合奏の測定と補正（現行 v425）
+# ARCB — 合奏の測定と補正（現行 v426）
+
+2026-10-19 v426: パート別の標準を「調和 · ライブ再ミックス」へ。4音源を従来の曲別boost・EQ・声FXの手前で取り出し、独立した基準音量、声の低域／突出帯域の軽い整理、全パート共通の19–139 msの短い反射でまとめる。新しい圧縮・歪み・長い残響・幅の拡張は加えない。7曲の全長測定で曲別headroomを校正。新しいバランスは80が基準、旧カスタム音量は保存して以前のライブ／厚めで呼び出せる。ライブ原音のv425補正・AI音源・採譜は不変。cache `hazama-fm-v426` / client `band-room.js?v=br-259` / CSS `band-room.css?v=br-98`。
+
+## 分離パートをまとめ直す調和ミックス（v426 / 2026-10-19）
+
+以前のlive経路にも、曲別のstem boostと異なる既定fader、声の0.78倍が残っていた。
+v426はplayerの出力から直接、新しいmixへ分岐する。旧EQ・声chorus・長いroom・boostを重ねず、
+声0.86、ドラム1、ベース0.97、ギターほか1を出発点とする。声は65 Hz high-passと
+2.8 kHzの−0.8 dBで軽く整理し、全体は26 Hz high-pass、230 Hz −1.2 dB、3.2 kHz shelf +0.5 dB。
+声と楽器が同じ200–4800 Hzのroomを共有する。19/31/47/67/97/139 msの反射だけを加え、
+feedback・modulation・stereo wideningは使わない。直接音は遅らせず、sendも各faderとmuteに追従する。
+
+7曲全長を出荷するnative factoryで48 kHz処理し、別のFFmpegでLUFS/LRA/true peakを測定。
+既定の80 fader / volume100 / loudness−1 dBでは全曲−3.2 dBTP、LRAは2.5–14.8 LU。
+原音との12秒区間の比較は既知の25.057 ms offsetとRMSを合わせ、帯域別差とmono foldを確認した。
+これは音量・位相・帯域の検証であり、聴感の自然さや完全な音源分離の証明ではない。
+曲別の測定値・素材hash・比較音量差は[測定JSON](stem-live-mix-measurement-20261019.json)。
+
+旧カスタム音量は保存し、新mixのfader（80が基準）と混同しない。古い既定liveは新mixへ移行、
+明示したdenseとv426以降の選択は保持する。「調和ミックスの基準に戻す」は新faderだけを戻し、再生しない。
+全体RECは新mixを含むpost-limiter、4 stems packは従来の個別EQ後tapで共通roomは含まない。
+master volume0は最終段のgateでも遮断し、旧roomの尾がREC／background bridgeへ残らないようにした。
+zero以外はunityで、AI音源・採譜・非zeroの音色には変更を加えない。
+
+Web Audioの[DelayNode](https://developer.mozilla.org/en-US/docs/Web/API/DelayNode)と既存の
+gain/filterを使用。新dependency・新音源・GPU処理はない。新graphは34 nodesでstem経路を使う時にだけ作成し、再利用する。
 
 ## 現存する仮ミックスの仕上げとパート練習（v425 / 2026-10-19）
 
