@@ -1,5 +1,12 @@
 # Session Ledger — music-stack
 
+## 2026-10-19 — 原音を基準に声とバンドの距離感を整える（v427 / BL-050）
+
+2026-10-19 v427: 調和ミックスを分離前原音の28区間と音量を合わせて比較。声の基準を0.86→0.84、2.8 kHzを−0.8→−1.2 dB、全体の3.2 kHz shelfを+0.5→−0.5 dBへ。声のroom sendを0.22→0.18、共通反射は遅い成分を減らして近い反射へ配分。楽器の直接音を遅らせず、圧縮・gate・新しい残響を追加しない。原音ファイル・AI・旧仕上げ・個人のfader設定は保持。cache `hazama-fm-v427` / client `band-room.js?v=br-260` / CSS `band-room.css?v=br-98` / stem mix v2。
+
+- 単一会話・既存Music／Pages。baseline / working / candidate / mergedの全体gateと差分再レビュー、公開版のhash・再生・PWA確認は対応PRとoutput/playwright/coherent-refine-20261019へ記録。
+- 7曲の素材は保持。声の強い区間だけでなくドラム・音の引く区間も比較。分離漏れ・実iPhone・本人聴感は未確認。
+
 ## 2026-10-19 — 声とバンドの調和ミックス（v426 / BL-050）
 
 2026-10-19 v426: パート別の標準を「調和 · ライブ再ミックス」へ。4音源を従来の曲別boost・EQ・声FXの手前で取り出し、独立した基準音量、声の低域／突出帯域の軽い整理、全パート共通の19–139 msの短い反射でまとめる。新しい圧縮・歪み・長い残響・幅の拡張は加えない。7曲の全長測定で曲別headroomを校正。新しいバランスは80が基準、旧カスタム音量は保存して以前のライブ／厚めで呼び出せる。ライブ原音のv425補正・AI音源・採譜は不変。cache `hazama-fm-v426` / client `band-room.js?v=br-259` / CSS `band-room.css?v=br-98`。

@@ -4,12 +4,14 @@
 (function (root) {
   "use strict";
   const PARTS = ["vocals", "drums", "bass", "other"];
-  const LEVELS = { vocals: 0.86, drums: 1, bass: 0.97, other: 1 };
-  const SENDS = { vocals: 0.22, drums: 0.10, bass: 0.04, other: 0.13 };
+  const LEVELS = { vocals: 0.84, drums: 1, bass: 0.97, other: 1 };
+  const SENDS = { vocals: 0.18, drums: 0.10, bass: 0.04, other: 0.13 };
+  // v427: reference-matched top end; gentler vocal presence and less late echo.
+  // Comparison and limits: docs/stem-live-refinement-20261019.json.
   // Short common reflections: keep the original direct signal and stereo
   // image intact. A mono-compatible room does not widen the extracted bleed.
-  const TAPS = [[0.019, 0.30], [0.031, 0.25], [0.047, 0.19],
-    [0.067, 0.13], [0.097, 0.08], [0.139, 0.05]];
+  const TAPS = [[0.019, 0.34], [0.031, 0.26], [0.047, 0.20],
+    [0.067, 0.115], [0.097, 0.06], [0.139, 0.025]];
   const SONG_DB = Object.freeze({"tabasco": -0.2, "hey": 0.2, "i-got-a-feeling": -1.2, "under-the-moon": 1.1, "electric-sheep": -0.6, "human-fly": 0.9, "sister": 1.1});
   const validLevel = value => Number.isFinite(Number(value)) ? Math.max(0, Math.min(1, Number(value))) : 0.8;
   function create(context) {
@@ -32,14 +34,14 @@
       const input = gain(1), fader = gain(LEVELS[part]), send = gain(SENDS[part]);
       inputs[part] = input; faders[part] = fader; levels[part] = 0.8;
       if (part === "vocals") {
-        const hp = filter("highpass", 65), presence = filter("peaking", 2800, -0.8, 0.8);
+        const hp = filter("highpass", 65), presence = filter("peaking", 2800, -1.2, 0.8);
         input.connect(hp); hp.connect(presence); presence.connect(fader);
       } else input.connect(fader);
       // Both dry and room follow the same fader/mute, so minus-one stays honest.
       fader.connect(sum); fader.connect(send); send.connect(room);
     }
     const hp = filter("highpass", 26), mud = filter("peaking", 230, -1.2, 0.8);
-    const air = filter("highshelf", 3200, 0.5), output = gain(1);
+    const air = filter("highshelf", 3200, -0.5), output = gain(1);
     sum.connect(hp); hp.connect(mud); mud.connect(air); air.connect(output);
     const set = (param, value) => {
       const now = context.currentTime;

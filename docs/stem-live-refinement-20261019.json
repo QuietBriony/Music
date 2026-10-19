@@ -1,0 +1,1820 @@
+{
+  "date": "2026-10-19",
+  "release": "v427",
+  "baseline_commit": "f967ffc3067c81d2555fed3f590396025c1fe340",
+  "factory_sha256": "83d35b96d525b9fcb7d446ad27a4a148e1552b06e1f0e7dc4b1965d8ec845cc9",
+  "method": "Unchanged seven premixes and 28 separated MP3s. Native OfflineAudioContext at 48 kHz using shipped factory. Four windows/song chosen by prior measurement, highest active 8 s vocal/band energy, loudest 8 s drums and active energy drop; these categories are signal proxies, not verified vocal/event labels. Reference is unprocessed premix, aligned by 1105/44100 s, interval stereo RMS matched. Full-song output is default faders80/master100/loudness-1/blend gate .45 with unchanged song trims; FFmpeg EBU R128 and true peak. Isolated instrument windows compare all prominent 5 ms envelope peaks, attack -10..+20 ms vs tail +50..250 ms, RMS matched. No ear judgment is claimed.",
+  "selection": {
+    "adopted": "gentle",
+    "rejected": "deeper",
+    "reason": "Gentle reduces excess high-band energy while better retaining full-band spectral shape and envelope than deeper vocal attenuation. Do not turn these differences into a fidelity score."
+  },
+  "window_comparison": {
+    "bands": [
+      [
+        40,
+        120
+      ],
+      [
+        120,
+        300
+      ],
+      [
+        300,
+        1000
+      ],
+      [
+        1000,
+        4000
+      ],
+      [
+        4000,
+        12000
+      ]
+    ],
+    "summary": {
+      "baseline": {
+        "mean_abs_band_delta_db": 0.5761,
+        "high_band_mean_delta_db": 1.0907,
+        "min_envelope_correlation": 1
+      },
+      "gentle": {
+        "mean_abs_band_delta_db": 0.4403,
+        "high_band_mean_delta_db": 0.2617,
+        "min_envelope_correlation": 0.9959132
+      },
+      "deeper": {
+        "mean_abs_band_delta_db": 0.5057,
+        "high_band_mean_delta_db": 0.2351,
+        "min_envelope_correlation": 0.9892238
+      }
+    },
+    "rows": [
+      {
+        "song": "tabasco",
+        "kind": "prior",
+        "start_s": 14.025056689342403,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.5594,
+              -0.6742,
+              -0.3222,
+              0.3861,
+              1.1995
+            ],
+            "crest_db": 16.6089
+          },
+          "gentle": {
+            "band_db": [
+              0.7542,
+              -0.4839,
+              -0.134,
+              0.3512,
+              0.458
+            ],
+            "crest_db": 16.3901,
+            "envelope_correlation": 0.9990845,
+            "envelope_delta_db_p5_p95": [
+              -0.3926,
+              0.15
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.7556,
+              -0.4828,
+              -0.1372,
+              0.3484,
+              0.459
+            ],
+            "crest_db": 16.3912,
+            "envelope_correlation": 0.9990932,
+            "envelope_delta_db_p5_p95": [
+              -0.3915,
+              0.1509
+            ]
+          }
+        }
+      },
+      {
+        "song": "tabasco",
+        "kind": "vocal-forward",
+        "start_s": 12,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.7213,
+              -0.562,
+              -0.2181,
+              0.4176,
+              1.2559
+            ],
+            "crest_db": 15.7078
+          },
+          "gentle": {
+            "band_db": [
+              0.8777,
+              -0.4101,
+              -0.0699,
+              0.3151,
+              0.4798
+            ],
+            "crest_db": 15.685,
+            "envelope_correlation": 0.9993016,
+            "envelope_delta_db_p5_p95": [
+              -0.3346,
+              0.1186
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.8805,
+              -0.4074,
+              -0.0749,
+              0.3078,
+              0.4808
+            ],
+            "crest_db": 15.6879,
+            "envelope_correlation": 0.9993118,
+            "envelope_delta_db_p5_p95": [
+              -0.3326,
+              0.1196
+            ]
+          }
+        }
+      },
+      {
+        "song": "tabasco",
+        "kind": "drum-loud",
+        "start_s": 18,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.482,
+              -0.7494,
+              -0.3782,
+              0.3624,
+              1.1652
+            ],
+            "crest_db": 16.5302
+          },
+          "gentle": {
+            "band_db": [
+              0.6975,
+              -0.5383,
+              -0.1694,
+              0.3659,
+              0.4427
+            ],
+            "crest_db": 16.3322,
+            "envelope_correlation": 0.9989571,
+            "envelope_delta_db_p5_p95": [
+              -0.3962,
+              0.1613
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.6989,
+              -0.5373,
+              -0.1736,
+              0.3645,
+              0.4443
+            ],
+            "crest_db": 16.3332,
+            "envelope_correlation": 0.9989683,
+            "envelope_delta_db_p5_p95": [
+              -0.3943,
+              0.1624
+            ]
+          }
+        }
+      },
+      {
+        "song": "tabasco",
+        "kind": "decay",
+        "start_s": 35,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.6306,
+              -0.5369,
+              -0.1531,
+              0.4599,
+              1.1402
+            ],
+            "crest_db": 18.0627
+          },
+          "gentle": {
+            "band_db": [
+              0.7388,
+              -0.4315,
+              -0.0461,
+              0.3554,
+              0.3476
+            ],
+            "crest_db": 18.0032,
+            "envelope_correlation": 0.9998515,
+            "envelope_delta_db_p5_p95": [
+              -0.2678,
+              0.0814
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.739,
+              -0.4321,
+              -0.045,
+              0.3555,
+              0.3478
+            ],
+            "crest_db": 18.0031,
+            "envelope_correlation": 0.9998506,
+            "envelope_delta_db_p5_p95": [
+              -0.2679,
+              0.0826
+            ]
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "prior",
+        "start_s": 37.02505668934241,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.7956,
+              -0.1866,
+              -0.0738,
+              0.7907,
+              1.083
+            ],
+            "crest_db": 20.0597
+          },
+          "gentle": {
+            "band_db": [
+              0.852,
+              -0.1451,
+              -0.0505,
+              0.5534,
+              0.1089
+            ],
+            "crest_db": 19.6743,
+            "envelope_correlation": 0.999617,
+            "envelope_delta_db_p5_p95": [
+              -0.2745,
+              0.0818
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.8773,
+              -0.1376,
+              -0.0836,
+              0.518,
+              -0.0288
+            ],
+            "crest_db": 19.6988,
+            "envelope_correlation": 0.9991519,
+            "envelope_delta_db_p5_p95": [
+              -0.5006,
+              0.1056
+            ]
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "vocal-forward",
+        "start_s": 267,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.3083,
+              -0.3412,
+              -0.0584,
+              -0.1098,
+              1.0607
+            ],
+            "crest_db": 15.438
+          },
+          "gentle": {
+            "band_db": [
+              1.5719,
+              -0.1149,
+              0.0379,
+              -0.37,
+              0.2338
+            ],
+            "crest_db": 15.4672,
+            "envelope_correlation": 0.9976886,
+            "envelope_delta_db_p5_p95": [
+              -0.2786,
+              0.2201
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.8307,
+              0.0731,
+              -0.0186,
+              -0.7414,
+              0.2204
+            ],
+            "crest_db": 15.5383,
+            "envelope_correlation": 0.9917696,
+            "envelope_delta_db_p5_p95": [
+              -0.5552,
+              0.4624
+            ]
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "drum-loud",
+        "start_s": 97,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.9649,
+              -0.4135,
+              -0.1443,
+              0.1999,
+              0.9647
+            ],
+            "crest_db": 15.7505
+          },
+          "gentle": {
+            "band_db": [
+              1.1054,
+              -0.2994,
+              -0.0477,
+              0.004,
+              0.1219
+            ],
+            "crest_db": 15.7521,
+            "envelope_correlation": 0.9995773,
+            "envelope_delta_db_p5_p95": [
+              -0.2228,
+              0.0928
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.1678,
+              -0.2894,
+              -0.0719,
+              -0.0622,
+              0.0802
+            ],
+            "crest_db": 15.8036,
+            "envelope_correlation": 0.9990706,
+            "envelope_delta_db_p5_p95": [
+              -0.3311,
+              0.1461
+            ]
+          }
+        }
+      },
+      {
+        "song": "hey",
+        "kind": "decay",
+        "start_s": 295,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.5207,
+              -0.775,
+              0.1203,
+              0.7269,
+              1.1028
+            ],
+            "crest_db": 15.6128
+          },
+          "gentle": {
+            "band_db": [
+              0.6018,
+              -0.7112,
+              0.1817,
+              0.5824,
+              0.2924
+            ],
+            "crest_db": 15.4334,
+            "envelope_correlation": 0.9998529,
+            "envelope_delta_db_p5_p95": [
+              -0.1531,
+              0.0634
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.6206,
+              -0.7291,
+              0.1824,
+              0.5997,
+              0.3141
+            ],
+            "crest_db": 15.457,
+            "envelope_correlation": 0.9997446,
+            "envelope_delta_db_p5_p95": [
+              -0.1752,
+              0.0856
+            ]
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "prior",
+        "start_s": 178.0250566893424,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.2132,
+              -0.1352,
+              -0.2934,
+              -0.1971,
+              0.9845
+            ],
+            "crest_db": 15.5349
+          },
+          "gentle": {
+            "band_db": [
+              1.5709,
+              0.1761,
+              -0.125,
+              -0.3083,
+              0.2699
+            ],
+            "crest_db": 15.6771,
+            "envelope_correlation": 0.9959132,
+            "envelope_delta_db_p5_p95": [
+              -0.501,
+              0.2497
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.8958,
+              0.4377,
+              -0.1675,
+              -0.5361,
+              0.3347
+            ],
+            "crest_db": 16.0077,
+            "envelope_correlation": 0.9892238,
+            "envelope_delta_db_p5_p95": [
+              -0.5686,
+              0.57
+            ]
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "vocal-forward",
+        "start_s": 263,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.143,
+              -0.1178,
+              0.0481,
+              0.1046,
+              1.0771
+            ],
+            "crest_db": 14.3564
+          },
+          "gentle": {
+            "band_db": [
+              1.3119,
+              -0.0644,
+              0.0748,
+              -0.162,
+              0.0599
+            ],
+            "crest_db": 14.3516,
+            "envelope_correlation": 0.9995042,
+            "envelope_delta_db_p5_p95": [
+              -0.1589,
+              0.2201
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.5527,
+              -0.0136,
+              0.0652,
+              -0.4663,
+              -0.1075
+            ],
+            "crest_db": 14.3323,
+            "envelope_correlation": 0.9984797,
+            "envelope_delta_db_p5_p95": [
+              -0.2553,
+              0.5933
+            ]
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "drum-loud",
+        "start_s": 338,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.8172,
+              -0.332,
+              -0.3035,
+              -0.1995,
+              1.3437
+            ],
+            "crest_db": 14.8555
+          },
+          "gentle": {
+            "band_db": [
+              1.1226,
+              -0.0332,
+              -0.1365,
+              -0.3438,
+              0.709
+            ],
+            "crest_db": 15.0352,
+            "envelope_correlation": 0.9985158,
+            "envelope_delta_db_p5_p95": [
+              -0.2207,
+              0.1495
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.3219,
+              0.1616,
+              -0.1862,
+              -0.6057,
+              0.8678
+            ],
+            "crest_db": 15.2344,
+            "envelope_correlation": 0.989311,
+            "envelope_delta_db_p5_p95": [
+              -0.4226,
+              0.3349
+            ]
+          }
+        }
+      },
+      {
+        "song": "i-got-a-feeling",
+        "kind": "decay",
+        "start_s": 359,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.7621,
+              -0.2847,
+              0.165,
+              -0.1849,
+              0.4617
+            ],
+            "crest_db": 17.1567
+          },
+          "gentle": {
+            "band_db": [
+              0.9381,
+              -0.1169,
+              0.2824,
+              -0.4024,
+              -0.4837
+            ],
+            "crest_db": 16.5667,
+            "envelope_correlation": 0.9995558,
+            "envelope_delta_db_p5_p95": [
+              -0.2414,
+              0.1787
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.1153,
+              0.0589,
+              0.375,
+              -0.696,
+              -0.7045
+            ],
+            "crest_db": 16.1703,
+            "envelope_correlation": 0.9978062,
+            "envelope_delta_db_p5_p95": [
+              -0.5221,
+              0.3498
+            ]
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "prior",
+        "start_s": 62.02505668934241,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.0155,
+              -0.3487,
+              -0.4125,
+              0.2868,
+              0.9459
+            ],
+            "crest_db": 16.9636
+          },
+          "gentle": {
+            "band_db": [
+              1.3109,
+              -0.1207,
+              -0.2793,
+              0.1439,
+              0.2327
+            ],
+            "crest_db": 16.852,
+            "envelope_correlation": 0.9967443,
+            "envelope_delta_db_p5_p95": [
+              -0.3659,
+              0.1881
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.501,
+              -0.066,
+              -0.3812,
+              0.0855,
+              0.251
+            ],
+            "crest_db": 16.9321,
+            "envelope_correlation": 0.9932293,
+            "envelope_delta_db_p5_p95": [
+              -0.4026,
+              0.3482
+            ]
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "vocal-forward",
+        "start_s": 212,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.9818,
+              -0.2032,
+              -0.0407,
+              0.0235,
+              0.5378
+            ],
+            "crest_db": 15.7225
+          },
+          "gentle": {
+            "band_db": [
+              1.1466,
+              -0.1613,
+              -0.0402,
+              -0.2437,
+              -0.4917
+            ],
+            "crest_db": 15.7208,
+            "envelope_correlation": 0.9989408,
+            "envelope_delta_db_p5_p95": [
+              -0.209,
+              0.2064
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.3889,
+              -0.1657,
+              -0.0983,
+              -0.543,
+              -0.6901
+            ],
+            "crest_db": 15.6572,
+            "envelope_correlation": 0.9972858,
+            "envelope_delta_db_p5_p95": [
+              -0.3901,
+              0.4833
+            ]
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "drum-loud",
+        "start_s": 166,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.8215,
+              -0.6494,
+              0.1039,
+              0.7349,
+              1.2991
+            ],
+            "crest_db": 16.4607
+          },
+          "gentle": {
+            "band_db": [
+              1.0064,
+              -0.5367,
+              0.2983,
+              0.571,
+              0.5711
+            ],
+            "crest_db": 16.3983,
+            "envelope_correlation": 0.9990444,
+            "envelope_delta_db_p5_p95": [
+              -0.2074,
+              0.1359
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.064,
+              -0.6116,
+              0.3552,
+              0.6284,
+              0.6288
+            ],
+            "crest_db": 16.4559,
+            "envelope_correlation": 0.9982529,
+            "envelope_delta_db_p5_p95": [
+              -0.225,
+              0.1814
+            ]
+          }
+        }
+      },
+      {
+        "song": "under-the-moon",
+        "kind": "decay",
+        "start_s": 303,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.5168,
+              0.0071,
+              -0.3148,
+              0.1233,
+              0.0091
+            ],
+            "crest_db": 15.7287
+          },
+          "gentle": {
+            "band_db": [
+              0.5595,
+              0.0222,
+              -0.3287,
+              -0.0897,
+              -1.0836
+            ],
+            "crest_db": 15.706,
+            "envelope_correlation": 0.9999755,
+            "envelope_delta_db_p5_p95": [
+              -0.0921,
+              0.0643
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.5885,
+              0.0313,
+              -0.3841,
+              -0.1412,
+              -1.4049
+            ],
+            "crest_db": 15.736,
+            "envelope_correlation": 0.9999059,
+            "envelope_delta_db_p5_p95": [
+              -0.2287,
+              0.1009
+            ]
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "prior",
+        "start_s": 14.025056689342403,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.243,
+              -0.6938,
+              -0.2043,
+              0.4074,
+              0.9907
+            ],
+            "crest_db": 16.3769
+          },
+          "gentle": {
+            "band_db": [
+              0.4863,
+              -0.4541,
+              0.0367,
+              0.3438,
+              0.3232
+            ],
+            "crest_db": 16.5514,
+            "envelope_correlation": 0.9991411,
+            "envelope_delta_db_p5_p95": [
+              -0.4147,
+              0.1545
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.4891,
+              -0.4517,
+              0.0376,
+              0.3355,
+              0.3254
+            ],
+            "crest_db": 16.5477,
+            "envelope_correlation": 0.9991197,
+            "envelope_delta_db_p5_p95": [
+              -0.4193,
+              0.1546
+            ]
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "vocal-forward",
+        "start_s": 131,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.4686,
+              -0.6971,
+              -0.2127,
+              0.3272,
+              0.9976
+            ],
+            "crest_db": 16.5867
+          },
+          "gentle": {
+            "band_db": [
+              0.7388,
+              -0.4589,
+              0.0112,
+              0.2263,
+              0.3642
+            ],
+            "crest_db": 16.7395,
+            "envelope_correlation": 0.9992037,
+            "envelope_delta_db_p5_p95": [
+              -0.4355,
+              0.1458
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.8048,
+              -0.4523,
+              -0.0012,
+              0.1721,
+              0.4191
+            ],
+            "crest_db": 16.7853,
+            "envelope_correlation": 0.9984934,
+            "envelope_delta_db_p5_p95": [
+              -0.4982,
+              0.1876
+            ]
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "drum-loud",
+        "start_s": 80,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.4361,
+              -0.7351,
+              -0.1018,
+              0.4824,
+              1.0649
+            ],
+            "crest_db": 16.6296
+          },
+          "gentle": {
+            "band_db": [
+              0.6147,
+              -0.5603,
+              0.0811,
+              0.3695,
+              0.3211
+            ],
+            "crest_db": 16.6549,
+            "envelope_correlation": 0.9989275,
+            "envelope_delta_db_p5_p95": [
+              -0.4656,
+              0.135
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.6161,
+              -0.5603,
+              0.0806,
+              0.368,
+              0.3231
+            ],
+            "crest_db": 16.6565,
+            "envelope_correlation": 0.9989324,
+            "envelope_delta_db_p5_p95": [
+              -0.4633,
+              0.1352
+            ]
+          }
+        }
+      },
+      {
+        "song": "electric-sheep",
+        "kind": "decay",
+        "start_s": 141,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              0.2371,
+              -0.8161,
+              -0.0386,
+              0.4193,
+              0.7168
+            ],
+            "crest_db": 19.7105
+          },
+          "gentle": {
+            "band_db": [
+              0.4784,
+              -0.5741,
+              0.2064,
+              0.2975,
+              0.0573
+            ],
+            "crest_db": 19.6363,
+            "envelope_correlation": 0.9998033,
+            "envelope_delta_db_p5_p95": [
+              -0.1953,
+              0.2312
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              0.482,
+              -0.5716,
+              0.2026,
+              0.2947,
+              0.0613
+            ],
+            "crest_db": 19.6399,
+            "envelope_correlation": 0.9997967,
+            "envelope_delta_db_p5_p95": [
+              -0.1929,
+              0.2354
+            ]
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "prior",
+        "start_s": 14.025056689342403,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.0663,
+              -0.4066,
+              0.0607,
+              0.1367,
+              1.1797
+            ],
+            "crest_db": 14.7718
+          },
+          "gentle": {
+            "band_db": [
+              1.2255,
+              -0.3006,
+              0.1006,
+              -0.0981,
+              0.252
+            ],
+            "crest_db": 14.3566,
+            "envelope_correlation": 0.9986419,
+            "envelope_delta_db_p5_p95": [
+              -0.2591,
+              0.1691
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.3933,
+              -0.226,
+              0.0427,
+              -0.3533,
+              0.1663
+            ],
+            "crest_db": 14.1897,
+            "envelope_correlation": 0.9955702,
+            "envelope_delta_db_p5_p95": [
+              -0.3525,
+              0.3762
+            ]
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "vocal-forward",
+        "start_s": 68,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.368,
+              -0.3119,
+              -0.084,
+              -0.1113,
+              1.2575
+            ],
+            "crest_db": 14.0378
+          },
+          "gentle": {
+            "band_db": [
+              1.6249,
+              -0.0812,
+              -0.0493,
+              -0.2928,
+              0.4205
+            ],
+            "crest_db": 13.9524,
+            "envelope_correlation": 0.9988801,
+            "envelope_delta_db_p5_p95": [
+              -0.2485,
+              0.1783
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.981,
+              0.2357,
+              -0.1108,
+              -0.5323,
+              0.5057
+            ],
+            "crest_db": 13.865,
+            "envelope_correlation": 0.9952998,
+            "envelope_delta_db_p5_p95": [
+              -0.4295,
+              0.4928
+            ]
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "drum-loud",
+        "start_s": 195,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.1838,
+              -0.327,
+              -0.1313,
+              0.0396,
+              1.4671
+            ],
+            "crest_db": 13.5049
+          },
+          "gentle": {
+            "band_db": [
+              1.3773,
+              -0.1454,
+              -0.0813,
+              -0.1778,
+              0.6389
+            ],
+            "crest_db": 13.3372,
+            "envelope_correlation": 0.998782,
+            "envelope_delta_db_p5_p95": [
+              -0.2108,
+              0.1403
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.5736,
+              0.0334,
+              -0.1528,
+              -0.4549,
+              0.6811
+            ],
+            "crest_db": 13.1309,
+            "envelope_correlation": 0.9944347,
+            "envelope_delta_db_p5_p95": [
+              -0.411,
+              0.3465
+            ]
+          }
+        }
+      },
+      {
+        "song": "human-fly",
+        "kind": "decay",
+        "start_s": 230,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.5606,
+              -0.217,
+              0.172,
+              1.2377,
+              2.1781
+            ],
+            "crest_db": 16.4578
+          },
+          "gentle": {
+            "band_db": [
+              1.6354,
+              -0.186,
+              0.1042,
+              1.1129,
+              1.3326
+            ],
+            "crest_db": 16.4682,
+            "envelope_correlation": 0.9999734,
+            "envelope_delta_db_p5_p95": [
+              -0.1241,
+              0.0552
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.716,
+              -0.143,
+              -0.081,
+              1.1585,
+              1.4152
+            ],
+            "crest_db": 16.424,
+            "envelope_correlation": 0.9998473,
+            "envelope_delta_db_p5_p95": [
+              -0.2412,
+              0.1268
+            ]
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "prior",
+        "start_s": 64.0250566893424,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.0733,
+              -0.0961,
+              -0.1317,
+              0.5687,
+              0.93
+            ],
+            "crest_db": 15.7912
+          },
+          "gentle": {
+            "band_db": [
+              1.2155,
+              0.0042,
+              -0.1653,
+              0.4773,
+              -0.1241
+            ],
+            "crest_db": 15.8606,
+            "envelope_correlation": 0.9990278,
+            "envelope_delta_db_p5_p95": [
+              -0.1588,
+              0.1593
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.4287,
+              0.1135,
+              -0.2705,
+              0.4959,
+              -0.3418
+            ],
+            "crest_db": 16.0889,
+            "envelope_correlation": 0.9969254,
+            "envelope_delta_db_p5_p95": [
+              -0.3381,
+              0.3722
+            ]
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "vocal-forward",
+        "start_s": 20,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.2865,
+              -0.0129,
+              -0.0342,
+              0.4977,
+              1.1343
+            ],
+            "crest_db": 13.2852
+          },
+          "gentle": {
+            "band_db": [
+              1.4613,
+              0.0189,
+              -0.0535,
+              0.3858,
+              0.1027
+            ],
+            "crest_db": 13.3048,
+            "envelope_correlation": 0.9998263,
+            "envelope_delta_db_p5_p95": [
+              -0.1517,
+              0.2161
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.8112,
+              0.0522,
+              -0.0939,
+              0.3521,
+              0.0106
+            ],
+            "crest_db": 13.38,
+            "envelope_correlation": 0.9994816,
+            "envelope_delta_db_p5_p95": [
+              -0.2244,
+              0.5985
+            ]
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "drum-loud",
+        "start_s": 266,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.2843,
+              -0.2306,
+              -0.3399,
+              0.014,
+              1.6852
+            ],
+            "crest_db": 15.4934
+          },
+          "gentle": {
+            "band_db": [
+              1.4633,
+              -0.0792,
+              -0.3253,
+              -0.1749,
+              0.8919
+            ],
+            "crest_db": 15.2976,
+            "envelope_correlation": 0.9990792,
+            "envelope_delta_db_p5_p95": [
+              -0.1977,
+              0.1372
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.6571,
+              0.071,
+              -0.4524,
+              -0.4122,
+              1.0083
+            ],
+            "crest_db": 15.3858,
+            "envelope_correlation": 0.9967232,
+            "envelope_delta_db_p5_p95": [
+              -0.34,
+              0.3246
+            ]
+          }
+        }
+      },
+      {
+        "song": "sister",
+        "kind": "decay",
+        "start_s": 175,
+        "variants": {
+          "baseline": {
+            "band_db": [
+              1.0263,
+              -0.2618,
+              -0.2144,
+              0.0807,
+              1.3072
+            ],
+            "crest_db": 19.2066
+          },
+          "gentle": {
+            "band_db": [
+              1.2056,
+              -0.1076,
+              -0.1881,
+              -0.0867,
+              0.4799
+            ],
+            "crest_db": 19.2671,
+            "envelope_correlation": 0.9998113,
+            "envelope_delta_db_p5_p95": [
+              -0.2001,
+              0.1798
+            ]
+          },
+          "deeper": {
+            "band_db": [
+              1.3618,
+              0.003,
+              -0.317,
+              -0.2304,
+              0.5146
+            ],
+            "crest_db": 19.4258,
+            "envelope_correlation": 0.9993421,
+            "envelope_delta_db_p5_p95": [
+              -0.2869,
+              0.3351
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "full_songs": [
+    {
+      "song": "tabasco",
+      "source_sha256": "62659d83164c4730e95f20cccbaba33a0b7c32b8d540f9de74e0982a65a1d8a7",
+      "stem_sha256": {
+        "vocals": "57051fc4ed9744ba9b7b79b1b214e80f82ea1b421e2960fa0ecf934aaa4e3445",
+        "drums": "780518047c6c79efc9d8208f41fccd7c25fec10b2439790ce03df67768f07086",
+        "bass": "794f80c4a54b21dc209db23a3b81e00ebaa24be1ef2bc66174ee407efc439c37",
+        "other": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2"
+      },
+      "before_v426": {
+        "lufs": -17.4,
+        "lra": 2.5,
+        "true_peak_dbtp": -3.2
+      },
+      "after_v427": {
+        "lufs": -17.6,
+        "lra": 2.4,
+        "true_peak_dbtp": -3.7
+      },
+      "original_live_v425": {
+        "lufs": -15.5,
+        "lra": 2.5,
+        "true_peak_dbtp": -1.5
+      },
+      "gain_db_unchanged": -0.2,
+      "mono_fold_loss_db": -0.0187,
+      "matched_rms_envelope_correlation": 0.9996281,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.3519,
+        0.1
+      ]
+    },
+    {
+      "song": "hey",
+      "source_sha256": "771947789488013c096800e5c7664c59c4aa7a5ec040e57e84ef5d2eb42c7bf8",
+      "stem_sha256": {
+        "vocals": "34c46c8ea7947a450bc9b479993d43d376d4dfe8a5f66dec1b9b3f4652947a9c",
+        "drums": "c9468c23c8cbef60b788ff8954c0632453161d07d1ec67b314d04fdcb6a30b0a",
+        "bass": "bffc7e34eb26a8d7c580bf11cace981fcb6ba924fcc8c38cc5ba322cc79e5298",
+        "other": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a"
+      },
+      "before_v426": {
+        "lufs": -19.1,
+        "lra": 7.1,
+        "true_peak_dbtp": -3.2
+      },
+      "after_v427": {
+        "lufs": -19.4,
+        "lra": 6.8,
+        "true_peak_dbtp": -3.6
+      },
+      "original_live_v425": {
+        "lufs": -17.2,
+        "lra": 7.8,
+        "true_peak_dbtp": -2.1
+      },
+      "gain_db_unchanged": 0.2,
+      "mono_fold_loss_db": -0.0511,
+      "matched_rms_envelope_correlation": 0.999279,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.3121,
+        0.1673
+      ]
+    },
+    {
+      "song": "i-got-a-feeling",
+      "source_sha256": "cb454a1116006750cda8f9635427182c97fb85327b0023884065e1eb613614fd",
+      "stem_sha256": {
+        "vocals": "fac5ab206c9410038f632e7c7e8333c1af2787181612929bab6290ec174d032c",
+        "drums": "52fbb4048a68e8ef662ac79cf755f774cd103e719917ea43cf68b8ecb2eb0dca",
+        "bass": "cfcc470fb787a69c443853cd6b62e3ca6f5ebeab5924672d14cf23f0b51c46e3",
+        "other": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81"
+      },
+      "before_v426": {
+        "lufs": -19.0,
+        "lra": 11.1,
+        "true_peak_dbtp": -3.2
+      },
+      "after_v427": {
+        "lufs": -19.4,
+        "lra": 10.8,
+        "true_peak_dbtp": -4.2
+      },
+      "original_live_v425": {
+        "lufs": -15.8,
+        "lra": 11.9,
+        "true_peak_dbtp": -1.5
+      },
+      "gain_db_unchanged": -1.2,
+      "mono_fold_loss_db": -0.014,
+      "matched_rms_envelope_correlation": 0.9990988,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.254,
+        0.2292
+      ]
+    },
+    {
+      "song": "under-the-moon",
+      "source_sha256": "bb06e242380dd72c9440aca064ce89a0bebef115c432f26c1eb3c8a6a94327b5",
+      "stem_sha256": {
+        "vocals": "5357d59826d44bd0559dc55813b7973b12105b2119c3fea72d8b025b4bde377f",
+        "drums": "7463b1475b3887206d97a3a2fe4ac7a0b7a0dcadd2e41bee8e3deea038311a2b",
+        "bass": "bb6c470965b051f25cc8816b3f7fdf3104fa1c601dcaec2e70d9317a2a37818c",
+        "other": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8"
+      },
+      "before_v426": {
+        "lufs": -18.8,
+        "lra": 9.4,
+        "true_peak_dbtp": -3.2
+      },
+      "after_v427": {
+        "lufs": -19.2,
+        "lra": 9.1,
+        "true_peak_dbtp": -3.6
+      },
+      "original_live_v425": {
+        "lufs": -17.8,
+        "lra": 9.8,
+        "true_peak_dbtp": -2.6
+      },
+      "gain_db_unchanged": 1.1,
+      "mono_fold_loss_db": -0.015,
+      "matched_rms_envelope_correlation": 0.9989376,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.3198,
+        0.2307
+      ]
+    },
+    {
+      "song": "electric-sheep",
+      "source_sha256": "65fc141a8d52bf2fa6278b31962bcc2b631750dad89ac0f9c16f861737be1e67",
+      "stem_sha256": {
+        "vocals": "5c7bed1281919471543c29b942985bb891beb1ec38bec3ce06b8d21e92aff45f",
+        "drums": "935036c51a438cb0eb9ee05a29403f7cef0bb82fae90aee899f517a2952e6404",
+        "bass": "369fcdb6b59c6de1fe1f9e271b4fd52e24aa8bfbba1e22e04103dcec3c92a297",
+        "other": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6"
+      },
+      "before_v426": {
+        "lufs": -16.9,
+        "lra": 3.8,
+        "true_peak_dbtp": -3.2
+      },
+      "after_v427": {
+        "lufs": -17.3,
+        "lra": 3.8,
+        "true_peak_dbtp": -3.8
+      },
+      "original_live_v425": {
+        "lufs": -15.4,
+        "lra": 3.6,
+        "true_peak_dbtp": -1.5
+      },
+      "gain_db_unchanged": -0.6,
+      "mono_fold_loss_db": -0.0609,
+      "matched_rms_envelope_correlation": 0.9991007,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.4291,
+        0.1924
+      ]
+    },
+    {
+      "song": "human-fly",
+      "source_sha256": "0f014916b85cb4182774b8ab371f489b826c76bcb2b3f93ca42f5c95471b6ab9",
+      "stem_sha256": {
+        "vocals": "05f87f119b6afdc55afe436cf0b91f04fe828207f4042d0759af9b206f5f09b8",
+        "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88",
+        "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+        "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+      },
+      "before_v426": {
+        "lufs": -16.7,
+        "lra": 4.7,
+        "true_peak_dbtp": -3.2
+      },
+      "after_v427": {
+        "lufs": -17.0,
+        "lra": 4.5,
+        "true_peak_dbtp": -3.4
+      },
+      "original_live_v425": {
+        "lufs": -15.5,
+        "lra": 5.0,
+        "true_peak_dbtp": -1.5
+      },
+      "gain_db_unchanged": 0.9,
+      "mono_fold_loss_db": -0.0025,
+      "matched_rms_envelope_correlation": 0.9992214,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.2332,
+        0.1774
+      ]
+    },
+    {
+      "song": "sister",
+      "source_sha256": "fe1676f7cfa31076162bb8c9007dda5c60648ccd5b9f7837f82f2427239ca18c",
+      "stem_sha256": {
+        "vocals": "ac6467fe47e478b06cc8b9847b03b249a4ce6f5702c39386a112535bbcc66231",
+        "drums": "cad60ebac3b54df8878e09adc42918ce694dbc689e32616421c60a883acdc48f",
+        "bass": "67f9bb28fd9f1b0e63c73ffda795534521ce5eae73dece1ce4704e0bde2b4dec",
+        "other": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06"
+      },
+      "before_v426": {
+        "lufs": -17.5,
+        "lra": 14.8,
+        "true_peak_dbtp": -3.2
+      },
+      "after_v427": {
+        "lufs": -17.8,
+        "lra": 14.6,
+        "true_peak_dbtp": -3.6
+      },
+      "original_live_v425": {
+        "lufs": -16.0,
+        "lra": 15.3,
+        "true_peak_dbtp": -2.3
+      },
+      "gain_db_unchanged": 1.1,
+      "mono_fold_loss_db": -0.0023,
+      "matched_rms_envelope_correlation": 0.9996377,
+      "matched_rms_envelope_delta_db_p5_p95": [
+        -0.1717,
+        0.1824
+      ]
+    }
+  ],
+  "instrument_windows": [
+    {
+      "song": "tabasco",
+      "part": "drums",
+      "peaks": 20,
+      "envelope_correlation": 0.9989644,
+      "median_tail_to_attack_delta_db": -0.2837,
+      "max_abs_tail_to_attack_delta_db": 0.5293
+    },
+    {
+      "song": "tabasco",
+      "part": "bass",
+      "peaks": 16,
+      "envelope_correlation": 0.9999984,
+      "median_tail_to_attack_delta_db": -0.0011,
+      "max_abs_tail_to_attack_delta_db": 0.0096
+    },
+    {
+      "song": "tabasco",
+      "part": "other",
+      "peaks": 18,
+      "envelope_correlation": 0.9999601,
+      "median_tail_to_attack_delta_db": -0.003,
+      "max_abs_tail_to_attack_delta_db": 0.0807
+    },
+    {
+      "song": "hey",
+      "part": "drums",
+      "peaks": 20,
+      "envelope_correlation": 0.9996674,
+      "median_tail_to_attack_delta_db": -0.5317,
+      "max_abs_tail_to_attack_delta_db": 0.7061
+    },
+    {
+      "song": "hey",
+      "part": "bass",
+      "peaks": 16,
+      "envelope_correlation": 0.9999986,
+      "median_tail_to_attack_delta_db": -0.0011,
+      "max_abs_tail_to_attack_delta_db": 0.007
+    },
+    {
+      "song": "hey",
+      "part": "other",
+      "peaks": 18,
+      "envelope_correlation": 0.9999528,
+      "median_tail_to_attack_delta_db": 0.0023,
+      "max_abs_tail_to_attack_delta_db": 0.0335
+    },
+    {
+      "song": "i-got-a-feeling",
+      "part": "drums",
+      "peaks": 17,
+      "envelope_correlation": 0.9981928,
+      "median_tail_to_attack_delta_db": -0.5317,
+      "max_abs_tail_to_attack_delta_db": 0.7297
+    },
+    {
+      "song": "i-got-a-feeling",
+      "part": "bass",
+      "peaks": 12,
+      "envelope_correlation": 0.999999,
+      "median_tail_to_attack_delta_db": -0.0002,
+      "max_abs_tail_to_attack_delta_db": 0.004
+    },
+    {
+      "song": "i-got-a-feeling",
+      "part": "other",
+      "peaks": 17,
+      "envelope_correlation": 0.999951,
+      "median_tail_to_attack_delta_db": -0.0125,
+      "max_abs_tail_to_attack_delta_db": 0.1501
+    },
+    {
+      "song": "under-the-moon",
+      "part": "drums",
+      "peaks": 17,
+      "envelope_correlation": 0.9985862,
+      "median_tail_to_attack_delta_db": -0.4819,
+      "max_abs_tail_to_attack_delta_db": 0.7345
+    },
+    {
+      "song": "under-the-moon",
+      "part": "bass",
+      "peaks": 13,
+      "envelope_correlation": 0.9999997,
+      "median_tail_to_attack_delta_db": -0.0008,
+      "max_abs_tail_to_attack_delta_db": 0.0021
+    },
+    {
+      "song": "under-the-moon",
+      "part": "other",
+      "peaks": 13,
+      "envelope_correlation": 0.9999948,
+      "median_tail_to_attack_delta_db": -0.0006,
+      "max_abs_tail_to_attack_delta_db": 0.0352
+    },
+    {
+      "song": "electric-sheep",
+      "part": "drums",
+      "peaks": 21,
+      "envelope_correlation": 0.998523,
+      "median_tail_to_attack_delta_db": -0.3471,
+      "max_abs_tail_to_attack_delta_db": 0.8422
+    },
+    {
+      "song": "electric-sheep",
+      "part": "bass",
+      "peaks": 11,
+      "envelope_correlation": 0.9999988,
+      "median_tail_to_attack_delta_db": -0.0,
+      "max_abs_tail_to_attack_delta_db": 0.0074
+    },
+    {
+      "song": "electric-sheep",
+      "part": "other",
+      "peaks": 12,
+      "envelope_correlation": 0.9997442,
+      "median_tail_to_attack_delta_db": 0.0511,
+      "max_abs_tail_to_attack_delta_db": 0.3229
+    },
+    {
+      "song": "human-fly",
+      "part": "drums",
+      "peaks": 23,
+      "envelope_correlation": 0.9991969,
+      "median_tail_to_attack_delta_db": -0.389,
+      "max_abs_tail_to_attack_delta_db": 0.6868
+    },
+    {
+      "song": "human-fly",
+      "part": "bass",
+      "peaks": 12,
+      "envelope_correlation": 0.9999993,
+      "median_tail_to_attack_delta_db": -0.0031,
+      "max_abs_tail_to_attack_delta_db": 0.0064
+    },
+    {
+      "song": "human-fly",
+      "part": "other",
+      "peaks": 11,
+      "envelope_correlation": 0.9999969,
+      "median_tail_to_attack_delta_db": -0.0033,
+      "max_abs_tail_to_attack_delta_db": 0.0254
+    },
+    {
+      "song": "sister",
+      "part": "drums",
+      "peaks": 24,
+      "envelope_correlation": 0.9993316,
+      "median_tail_to_attack_delta_db": -0.2897,
+      "max_abs_tail_to_attack_delta_db": 0.6014
+    },
+    {
+      "song": "sister",
+      "part": "bass",
+      "peaks": 12,
+      "envelope_correlation": 0.9999985,
+      "median_tail_to_attack_delta_db": -0.0003,
+      "max_abs_tail_to_attack_delta_db": 0.0137
+    },
+    {
+      "song": "sister",
+      "part": "other",
+      "peaks": 23,
+      "envelope_correlation": 0.9999694,
+      "median_tail_to_attack_delta_db": -0.0016,
+      "max_abs_tail_to_attack_delta_db": 0.0578
+    }
+  ],
+  "processing": {
+    "vocal_gain_before_after": [
+      0.86,
+      0.84
+    ],
+    "vocal_presence_db_before_after": [
+      -0.8,
+      -1.2
+    ],
+    "master_shelf_db_before_after": [
+      0.5,
+      -0.5
+    ],
+    "vocal_room_send_before_after": [
+      0.22,
+      0.18
+    ],
+    "room_taps_seconds": [
+      0.019,
+      0.031,
+      0.047,
+      0.067,
+      0.097,
+      0.139
+    ],
+    "room_weights_before": [
+      0.3,
+      0.25,
+      0.19,
+      0.13,
+      0.08,
+      0.05
+    ],
+    "room_weights_after": [
+      0.34,
+      0.26,
+      0.2,
+      0.115,
+      0.06,
+      0.025
+    ],
+    "nodes": 34,
+    "added_compression": false,
+    "added_gate": false,
+    "direct_delay": false,
+    "new_audio_or_dependencies": false
+  },
+  "limits": [
+    "This is a conservative balance/tone/early-reflection refinement, not new source separation or recovered multitracks. Bleed and source distortion remain.",
+    "Selected-window reference matching and envelope preservation do not prove vocal intelligibility, natural distance, instrument identity or real iPhone playback.",
+    "Original playback processing and bytes, synthesis/score, old live/dense mixes and user faders are unchanged. Original-tab/remix comparison still needs volume matching.",
+    "Full-mix REC includes the remix; four-stem pack retains legacy separate taps without shared room."
+  ]
+}
