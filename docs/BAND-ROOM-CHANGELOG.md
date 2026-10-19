@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v429 compact)
+# Band Room - Changelog (v65 -> v430 compact)
+
+## v430 — 2026-10-19
+
+2026-10-19 v430: AIベースの休符を分離音源と分離前原音の両方へ照合。5曲8音だけ、譜面の音長より後の追加releaseを制限し、バンドが止まる間を保つ。音程・打点・強弱・譜面の保持音長、楽器bankと−3 dB基準は維持。原曲系は7曲21区間で低中域をさらに削る案を比較し、不採用。本人が評価した原音マスタリング／調和ミックスを維持。cache `hazama-fm-v430` / client `band-room.js?v=br-263` / CSS `band-room.css?v=br-98` / adapter v8。
 
 ## v429 — 2026-10-19
 
@@ -61,7 +65,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v429. Latest Band Room runtime change: v429 (native bass balance and scoped trial entry). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v430. Latest Band Room runtime change: v430 (source-backed bass rests). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

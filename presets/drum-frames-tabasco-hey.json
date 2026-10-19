@@ -6461,6 +6461,26 @@
     "maximum_rms_dbfs": -65,
     "maximum_peak_dbfs": -45
    }
+  },
+  "release_limits": {
+   "method": "source-backed-bass-release-v1",
+   "events_count": 743,
+   "bpm_fit": 120.19,
+   "source_sha256": "bffc7e34eb26a8d7c580bf11cace981fcb6ba924fcc8c38cc5ba322cc79e5298",
+   "premix_sha256": "771947789488013c096800e5c7664c59c4aa7a5ec040e57e84ef5d2eb42c7bf8",
+   "entries": [
+    [
+     195,
+     [
+      38,
+      13.21,
+      1.58,
+      38,
+      0.51
+     ],
+     77.93
+    ]
+   ]
   }
  },
  "chord_progression_legacy": {

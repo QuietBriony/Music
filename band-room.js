@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-262-arcb-balance";
-  const BANDROOM_RELEASE_VERSION = "v429";
+  const BANDROOM_APP_VERSION = "br-263-source-rests";
+  const BANDROOM_RELEASE_VERSION = "v430";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -4963,6 +4963,7 @@
       transcribedPerformanceBpm,
       transcribedPerformanceStructure,
       transcribedBassLimit,
+      validatedBassReleases,
       transcribedFallbackAllowed,
       transcribedGuitarStroke,
       validatedGuitarVoicings,
@@ -6476,6 +6477,7 @@
         transcribedLineCache.guitarVoicings = validatedGuitarVoicings(state.songData.guitar_line);
         transcribedLineCache.guitarAttackVoicings = validatedGuitarAttackVoicings(state.songData.guitar_line);
       }
+      if (lineKey === "bass_line") transcribedLineCache.bassReleases = validatedBassReleases(state.songData);
     }
     return byBar.get(absBar) || null;
   }
@@ -6618,10 +6620,33 @@
     return picked.sort((a, b) => (Number(a[1]) || 0) - (Number(b[1]) || 0));
   }
 
+  function validatedBassReleases(data) {
+    const result = new Map(), line = data?.bass_line, limits = line?.release_limits;
+    if (limits?.method !== "source-backed-bass-release-v1" || !Array.isArray(line?.events) ||
+        limits.events_count !== line.events.length || limits.bpm_fit !== line.bpm_fit ||
+        !Number.isFinite(line.bpm_fit) || line.bpm_fit < 30 || line.bpm_fit > 300 ||
+        !/^[a-f0-9]{64}$/.test(limits.source_sha256 || "") ||
+        !/^[a-f0-9]{64}$/.test(limits.premix_sha256 || "") || limits.premix_sha256 !== data?.premix_reference?.sha256 ||
+        !Array.isArray(limits.entries) || limits.entries.length > 128) return result;
+    const step = 15 / line.bpm_fit;
+    for (const entry of limits.entries) {
+      if (!Array.isArray(entry) || entry.length !== 3) return new Map();
+      const [index, original, end] = entry, row = line.events[index];
+      if (!Number.isInteger(index) || !Array.isArray(row) || row.length !== 5 || result.has(row) ||
+          !Array.isArray(original) || original.length !== 5 ||
+          original.some((n, i) => !Number.isFinite(n) || n !== row[i]) || !Number.isFinite(end)) return new Map();
+      const holdEnd = (row[0] * 16 + row[1] + Math.max(.5, row[2])) * step;
+      // Metadata may shorten only the added release, never a pitched hold.
+      if (end < holdEnd + .1 || end > holdEnd + 1.4) return new Map();
+      result.set(row, end);
+    }
+    return result;
+  }
+
   // Only constrain the native bass when a finite, source-backed premix end is
   // present. Uncertain pitches remain untouched; digital tail silence is not
   // a reason to keep exciting the separated stem's residual bass notes.
-  function transcribedBassLimit(row, data, subTime) {
+  function transcribedBassLimit(row, data, subTime, releases) {
     const reference = data?.premix_reference;
     const end = reference?.active_end_s;
     const offset = reference?.stem_offset_s;
@@ -6633,7 +6658,9 @@
         !Number.isFinite(subTime) || subTime <= 0 ||
         !/^[a-f0-9]{64}$/.test(reference?.sha256 || "")) return Infinity;
     const step = 15 / fit;
-    return Math.max(0, (end + offset - (row[0] * 16 + row[1]) * step) * subTime / step);
+    const releaseEnd = releases?.get(row);
+    const contentEnd = Number.isFinite(releaseEnd) ? Math.min(end + offset, releaseEnd) : end + offset;
+    return Math.max(0, (contentEnd - (row[0] * 16 + row[1]) * step) * subTime / step);
   }
 
   function playTranscribedBar(synth, lineKey, ctx, time) {
@@ -6652,7 +6679,7 @@
       const durSec = Math.max(0.05, durSteps * ctx.subTime);
       const note = Tone.Frequency(Number(row[3]) || 36, "midi").toNote();
       const options = synth._physical && lineKey === "bass_line"
-        ? { maxDuration: transcribedBassLimit(row, state.songData, ctx.subTime) } : undefined;
+        ? { maxDuration: transcribedBassLimit(row, state.songData, ctx.subTime, transcribedLineCache.bassReleases) } : undefined;
       try { synth.triggerAttackRelease(note, durSec, t, Number(row[4]) || 0.6, options); } catch (e) {}
     });
     return true;
