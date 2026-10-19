@@ -1,25 +1,26 @@
 {
   "release": "v429",
-  "scope": "Native Tabasco AI bass balance only; v428 original/remix unchanged. HAZAMA trial visibility fixed independently.",
+  "scope": "Native Tabasco AI bass balance and near-silent short detection cleanup; v428 original/remix unchanged. HAZAMA trial visibility fixed independently.",
   "method": {
     "capture": "Simultaneous actual browser post-fader guitar/bass/drums and stereo post-master float PCM, 48000 Hz, 8 seconds. Compared over shared content interval.",
     "reference": "Existing separated bass and drums at identical content time; 35–12000 Hz second-order Butterworth bandpass; stereo channel energy averaged.",
     "level": "20 log10(bass RMS / drums RMS), before shared AI compression. Same default faders: bass84/drums52/guitar88. No loudness score inferred.",
-    "choice": "Conservative -3 dB in existing native bass note gain, selected from seven discovery windows, checked on three different held-out windows.",
+    "choice": "Conservative -3 dB in existing native bass note gain, selected from seven discovery windows, checked on three different follow-up windows.",
     "source_clock": "Reference is stem-clock aligned. Premix timing offset is not used when comparing to stems.",
     "cost": "Unchanged 53 buffers / 15,274,240 bytes, nodes, source capacity and no audio download."
   },
+  "noise_floor_report": "arcb-bass-noise-floor-20261019.json",
   "summary": {
     "discovery": {
       "windows": 7,
-      "before_mean_absolute_error_db": 6.742728571428571,
-      "after_mean_absolute_error_db": 3.9352142857142858,
+      "before_mean_absolute_error_db": 6.751728571428571,
+      "after_mean_absolute_error_db": 3.937014285714285,
       "improved_windows": 7
     },
-    "held_out": {
+    "follow_up": {
       "windows": 3,
-      "before_mean_absolute_error_db": 13.464866666666666,
-      "after_mean_absolute_error_db": 10.462833333333334,
+      "before_mean_absolute_error_db": 13.460633333333332,
+      "after_mean_absolute_error_db": 9.446533333333333,
       "improved_windows": 3
     }
   },
@@ -29,23 +30,23 @@
       "requested_start_s": 18,
       "comparison": "discovery",
       "common_content_start_s": 18.019333333333336,
-      "duration_s": 7.986604166666667,
-      "reference_bass_to_drums_db": -10.0565,
+      "duration_s": 7.9919375,
+      "reference_bass_to_drums_db": -10.0378,
       "before_v428": {
-        "bass_to_drums_db": -3.8978,
-        "absolute_reference_error_db": 6.1587,
+        "bass_to_drums_db": -3.8397,
+        "absolute_reference_error_db": 6.1981,
         "post_master_peak": 0.463721,
-        "post_master_rms": 0.107416
+        "post_master_rms": 0.107421
       },
       "after_v429": {
-        "bass_to_drums_db": -6.9167,
-        "absolute_reference_error_db": 3.1397,
-        "post_master_peak": 0.49302,
-        "post_master_rms": 0.113119
+        "bass_to_drums_db": -6.9002,
+        "absolute_reference_error_db": 3.1376,
+        "post_master_peak": 0.487909,
+        "post_master_rms": 0.113708
       },
       "capture_sha256": {
         "before": "a3d22e9e2a2dc3710684f9015f781189ae381c775918ad7825c9d5aa1566fa56",
-        "after": "ccfad6a751bc5528213339e789bb0993567ef25cc67941ea0d39bbcde5956260"
+        "after": "145221015a4f9dfa82bdd2bd9ede6b609f03fcaeb86cc736308582ea1bad4dd2"
       },
       "source_sha256": {
         "other": "7a760e40e50c1c46118a8f4d52327499d881bd56dbb8e9ab81a2e86e878e85f2",
@@ -57,24 +58,24 @@
       "song": "hey",
       "requested_start_s": 80,
       "comparison": "discovery",
-      "common_content_start_s": 80.01666666666667,
-      "duration_s": 7.9972916666666665,
-      "reference_bass_to_drums_db": -4.4347,
+      "common_content_start_s": 80.01933333333334,
+      "duration_s": 7.997270833333333,
+      "reference_bass_to_drums_db": -4.4348,
       "before_v428": {
-        "bass_to_drums_db": 4.0291,
-        "absolute_reference_error_db": 8.4638,
+        "bass_to_drums_db": 4.0289,
+        "absolute_reference_error_db": 8.4637,
         "post_master_peak": 0.580473,
-        "post_master_rms": 0.133423
+        "post_master_rms": 0.133389
       },
       "after_v429": {
-        "bass_to_drums_db": 1.0357,
-        "absolute_reference_error_db": 5.4704,
-        "post_master_peak": 0.584006,
-        "post_master_rms": 0.128101
+        "bass_to_drums_db": 1.0361,
+        "absolute_reference_error_db": 5.4709,
+        "post_master_peak": 0.579413,
+        "post_master_rms": 0.129091
       },
       "capture_sha256": {
         "before": "ebc68133582f8d2849a9e394edb87494d94cd72edc953b729faaf4d7f07b5520",
-        "after": "2f716fc2d7119280d5c1abe6f044ae20105991b5e93f9c38d14746b36809bd28"
+        "after": "61de0f75655c32fbdd116dfeb5a5d1d130595fb699c6fad07b1901eda4a79db7"
       },
       "source_sha256": {
         "other": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a",
@@ -87,23 +88,23 @@
       "requested_start_s": 65,
       "comparison": "discovery",
       "common_content_start_s": 65.006,
-      "duration_s": 7.997270833333333,
-      "reference_bass_to_drums_db": -3.2345,
+      "duration_s": 7.999958333333334,
+      "reference_bass_to_drums_db": -3.2354,
       "before_v428": {
-        "bass_to_drums_db": 4.7717,
-        "absolute_reference_error_db": 8.0061,
+        "bass_to_drums_db": 4.7691,
+        "absolute_reference_error_db": 8.0045,
         "post_master_peak": 0.583825,
-        "post_master_rms": 0.129966
+        "post_master_rms": 0.129954
       },
       "after_v429": {
-        "bass_to_drums_db": 1.7717,
-        "absolute_reference_error_db": 5.0061,
-        "post_master_peak": 0.603833,
-        "post_master_rms": 0.127006
+        "bass_to_drums_db": 1.7714,
+        "absolute_reference_error_db": 5.0068,
+        "post_master_peak": 0.583393,
+        "post_master_rms": 0.125312
       },
       "capture_sha256": {
         "before": "ae169386d69fe25c4de6f5e1be94a397672a8f4e8efc791ab03fbd5b0bf63666",
-        "after": "f49956198b1f68a82dcbdcaa4282b9303cd7633f0c522dbf5c5e9417904e8271"
+        "after": "514e770f81fd94de0072dc7fcbfbb2ac803ecfeeb0211e85b190fb2392407975"
       },
       "source_sha256": {
         "other": "a17b0c03d152e6888fdd23d823964c56b2604845396a8e92be818209763d1c81",
@@ -125,14 +126,14 @@
         "post_master_rms": 0.12367
       },
       "after_v429": {
-        "bass_to_drums_db": 3.096,
-        "absolute_reference_error_db": 6.0995,
-        "post_master_peak": 0.61281,
-        "post_master_rms": 0.121325
+        "bass_to_drums_db": 3.0978,
+        "absolute_reference_error_db": 6.1014,
+        "post_master_peak": 0.613547,
+        "post_master_rms": 0.119213
       },
       "capture_sha256": {
         "before": "bb44abeeafe330d9d0a40ccb1c2d2ebebd0f6a6a408428006b3e6e3783b6aad5",
-        "after": "76331170900be1e657902aa2c14118f1a324e89b86b7bfb283e382021fb7d8f2"
+        "after": "cbc6af494eb6336b7861df34a5e09345f6c03109665824c7ff0f3f0c7836e364"
       },
       "source_sha256": {
         "other": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8",
@@ -145,23 +146,23 @@
       "requested_start_s": 75,
       "comparison": "discovery",
       "common_content_start_s": 75.01133333333333,
-      "duration_s": 7.9972916666666665,
-      "reference_bass_to_drums_db": -0.4333,
+      "duration_s": 7.994625,
+      "reference_bass_to_drums_db": -0.4332,
       "before_v428": {
-        "bass_to_drums_db": 6.2274,
-        "absolute_reference_error_db": 6.6607,
+        "bass_to_drums_db": 6.2303,
+        "absolute_reference_error_db": 6.6635,
         "post_master_peak": 0.458139,
-        "post_master_rms": 0.109212
+        "post_master_rms": 0.109172
       },
       "after_v429": {
-        "bass_to_drums_db": 3.2354,
-        "absolute_reference_error_db": 3.6687,
-        "post_master_peak": 0.459281,
-        "post_master_rms": 0.10205
+        "bass_to_drums_db": 3.2276,
+        "absolute_reference_error_db": 3.6608,
+        "post_master_peak": 0.458571,
+        "post_master_rms": 0.101595
       },
       "capture_sha256": {
         "before": "1cd9b275d5a6f339a8dbc884299b01d37a253b16432f3d2519b48b6698bccfbc",
-        "after": "f58e27b06c848a981a66fc1f141cb4dcaaa0d81445e31657a4dd8cf49de108f0"
+        "after": "ff95cf25dd56c8e71a39260ea3fd7fa1876d8b5ff12bbc7766d48a453ef0285c"
       },
       "source_sha256": {
         "other": "b0db5652cdd552d5194d3cf751ee0cfd19d781fd7e847e3304f967dcceaf5db6",
@@ -173,24 +174,24 @@
       "song": "human-fly",
       "requested_start_s": 68,
       "comparison": "discovery",
-      "common_content_start_s": 68.00866666666667,
-      "duration_s": 7.997270833333333,
-      "reference_bass_to_drums_db": -1.8226,
+      "common_content_start_s": 68.006,
+      "duration_s": 7.9972916666666665,
+      "reference_bass_to_drums_db": -1.8457,
       "before_v428": {
-        "bass_to_drums_db": 4.6637,
-        "absolute_reference_error_db": 6.4863,
+        "bass_to_drums_db": 4.6627,
+        "absolute_reference_error_db": 6.5084,
         "post_master_peak": 0.532159,
-        "post_master_rms": 0.130827
+        "post_master_rms": 0.130842
       },
       "after_v429": {
-        "bass_to_drums_db": 1.6616,
-        "absolute_reference_error_db": 3.4842,
-        "post_master_peak": 0.544773,
-        "post_master_rms": 0.129552
+        "bass_to_drums_db": 1.6637,
+        "absolute_reference_error_db": 3.5094,
+        "post_master_peak": 0.533489,
+        "post_master_rms": 0.128282
       },
       "capture_sha256": {
         "before": "f06424eed6f9511058746ab5a8e11a3f0564b2f863055030f6aa3b98c29cc675",
-        "after": "99d87983ebe561f70e6b1f6d473860e2414e331a50f3bdd4547d0ef9f05842dd"
+        "after": "6375faeeb67632214da7ae21a9a38448cb31f20443269267ad40454af0f4cbeb"
       },
       "source_sha256": {
         "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
@@ -203,23 +204,23 @@
       "requested_start_s": 72,
       "comparison": "discovery",
       "common_content_start_s": 72.01133333333334,
-      "duration_s": 7.997270833333333,
-      "reference_bass_to_drums_db": -7.16,
+      "duration_s": 7.994604166666667,
+      "reference_bass_to_drums_db": -7.161,
       "before_v428": {
-        "bass_to_drums_db": -4.8379,
-        "absolute_reference_error_db": 2.3221,
+        "bass_to_drums_db": -4.8385,
+        "absolute_reference_error_db": 2.3225,
         "post_master_peak": 0.554079,
-        "post_master_rms": 0.113486
+        "post_master_rms": 0.113482
       },
       "after_v429": {
-        "bass_to_drums_db": -7.8379,
-        "absolute_reference_error_db": 0.6779,
-        "post_master_peak": 0.562796,
-        "post_master_rms": 0.109501
+        "bass_to_drums_db": -7.8332,
+        "absolute_reference_error_db": 0.6722,
+        "post_master_peak": 0.579934,
+        "post_master_rms": 0.110973
       },
       "capture_sha256": {
         "before": "751d29eba5e3e047390a45b2e42ac90482b88d6247a4956198025d724670cbcc",
-        "after": "25913be8fc3ff2259e93c4b8f66a3ccb48891db838cff1a00851d775a7f78fb6"
+        "after": "001cb972d863611e55b1fc979403d4ec2148071589973509c9e2bff1840366d4"
       },
       "source_sha256": {
         "other": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06",
@@ -230,10 +231,10 @@
     {
       "song": "hey",
       "requested_start_s": 170,
-      "comparison": "held_out",
+      "comparison": "follow_up",
       "common_content_start_s": 170.0113333333333,
-      "duration_s": 7.997270833333333,
-      "reference_bass_to_drums_db": -3.4579,
+      "duration_s": 7.9972916666666665,
+      "reference_bass_to_drums_db": -3.458,
       "before_v428": {
         "bass_to_drums_db": 4.458,
         "absolute_reference_error_db": 7.9159,
@@ -241,14 +242,14 @@
         "post_master_rms": 0.126197
       },
       "after_v429": {
-        "bass_to_drums_db": 1.4532,
-        "absolute_reference_error_db": 4.9111,
-        "post_master_peak": 0.563243,
-        "post_master_rms": 0.12398
+        "bass_to_drums_db": 1.4625,
+        "absolute_reference_error_db": 4.9205,
+        "post_master_peak": 0.564954,
+        "post_master_rms": 0.121723
       },
       "capture_sha256": {
         "before": "ece9ba3c1312c88ac3b3d214e0f035308c61866f32c74d3abfe68e7c52e9d0fb",
-        "after": "d4a314d549210cfb9021d6525c2e5630ebb53b7d11e3ce3d33747d96590f0fe7"
+        "after": "e566a6658c749d6f76709a76e00b12605e75789da8b5a20fc27800b726cd1183"
       },
       "source_sha256": {
         "other": "ca49c8a2412322e69f7878fc820f9ecb4f0aed7d2a5d61d472b347feacfec76a",
@@ -259,25 +260,25 @@
     {
       "song": "human-fly",
       "requested_start_s": 180,
-      "comparison": "held_out",
-      "common_content_start_s": 180.00866666666667,
-      "duration_s": 7.997270833333333,
-      "reference_bass_to_drums_db": -23.3791,
+      "comparison": "follow_up",
+      "common_content_start_s": 180.006,
+      "duration_s": 7.999958333333334,
+      "reference_bass_to_drums_db": -23.3739,
       "before_v428": {
-        "bass_to_drums_db": 3.0753,
-        "absolute_reference_error_db": 26.4544,
+        "bass_to_drums_db": 3.0603,
+        "absolute_reference_error_db": 26.4342,
         "post_master_peak": 0.497331,
-        "post_master_rms": 0.092473
+        "post_master_rms": 0.092534
       },
       "after_v429": {
-        "bass_to_drums_db": 0.0678,
-        "absolute_reference_error_db": 23.4469,
-        "post_master_peak": 0.507617,
-        "post_master_rms": 0.093706
+        "bass_to_drums_db": -2.974,
+        "absolute_reference_error_db": 20.3999,
+        "post_master_peak": 0.518929,
+        "post_master_rms": 0.090111
       },
       "capture_sha256": {
         "before": "5b5c94098a31629cd9722019aa1f2ed7d2e418e2bf1a58acdbd77058874e499b",
-        "after": "4f6a677b326ce3b447670946257d92f9cea93b16e3083ce4cae75f1430c796bf"
+        "after": "e7ca7072fa00a3fa86bfb865ea0db8d74bf12667ac864bc91a33e03c575a7ddf"
       },
       "source_sha256": {
         "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
@@ -288,25 +289,25 @@
     {
       "song": "sister",
       "requested_start_s": 145,
-      "comparison": "held_out",
-      "common_content_start_s": 145.06199999999998,
-      "duration_s": 7.949291666666666,
+      "comparison": "follow_up",
+      "common_content_start_s": 145.07533333333333,
+      "duration_s": 7.935958333333334,
       "reference_bass_to_drums_db": -2.2195,
       "before_v428": {
-        "bass_to_drums_db": 3.8048,
-        "absolute_reference_error_db": 6.0243,
+        "bass_to_drums_db": 3.8123,
+        "absolute_reference_error_db": 6.0318,
         "post_master_peak": 0.559539,
-        "post_master_rms": 0.123472
+        "post_master_rms": 0.123452
       },
       "after_v429": {
-        "bass_to_drums_db": 0.811,
-        "absolute_reference_error_db": 3.0305,
-        "post_master_peak": 0.544096,
-        "post_master_rms": 0.1179
+        "bass_to_drums_db": 0.7997,
+        "absolute_reference_error_db": 3.0192,
+        "post_master_peak": 0.535502,
+        "post_master_rms": 0.118403
       },
       "capture_sha256": {
         "before": "c23128822935aaf02478d218e4003cf817e029b1143ad5fb1de9f431e048988f",
-        "after": "1ffcc8a9e2919f59ce7bedd55fc594ed8454a9e854ce7ef04b7f423b29704d87"
+        "after": "e545d22c168c3935739e1f9d400fcc376da762f2a06e11c43ad69c67c466a6f8"
       },
       "source_sha256": {
         "other": "8513a8178cf00dd54e8940a65833c923c8f700afbcf7fd7a89de898d5dbeec06",
@@ -319,7 +320,7 @@
   "limits": [
     "Separated stems contain bleed; they do not uniquely identify original live instrument balance.",
     "Short-window relative energy is not perceived clarity, transcription accuracy or realism.",
-    "Guitar chords, drum classes, ambiguous notes and vocal recreation still need work. No score changes in this release.",
+    "Guitar chords, drum classes, ambiguous notes and vocal recreation still need work. 116 near-silent floor-velocity short detections removed; retained notes unchanged.",
     "No physical iPhone or owner listening certification. Lower bass affects shared compression response; post-master loudness may change."
   ]
 }

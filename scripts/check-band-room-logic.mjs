@@ -66,6 +66,27 @@ sandbox.globalThis = sandbox;
 
 vm.runInNewContext(source, sandbox, { filename: "band-room.js" });
 
+// Noise-floor cleanup is evidence-bound and only removes short detections at
+// the old velocity floor. Never retime/repitch the surviving performance.
+{
+  const report=JSON.parse(readFileSync('docs/arcb-bass-noise-floor-20261019.json','utf8'));
+  const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+  assert.equal(report.removed,116);
+  assert.equal(report.songs.length,7);
+  for(const item of report.songs){
+    const line=JSON.parse(readFileSync(`presets/drum-frames-tabasco-${item.song}.json`,'utf8')).bass_line;
+    assert.equal(hash(readFileSync(`presets/tabasco-stems/${item.song}/bass.mp3`)),item.source_sha256);
+    assert.equal(hash(JSON.stringify(line.events)),item.output_events_sha256);
+    assert.equal(line.events.length,item.input_count-item.rejected.length);
+    for(const rejected of item.rejected){
+      assert.ok(rejected.row[4]<=.16 && rejected.row[2]*15/line.bpm_fit<=.25);
+      assert.ok(rejected.rms_dbfs< -65 && rejected.peak_dbfs< -45);
+      assert.ok(rejected.context_s[0]<rejected.time_s && rejected.context_s[1]>rejected.time_s+.29);
+    }
+    if(item.rejected.length)assert.equal(line.noise_floor_refinement.removed,item.rejected.length);
+  }
+}
+
 // Ordinary album links cannot expose unrelated trial bands or restore a
 // previously selected hidden band. Direct trial links and dev preview survive.
 {

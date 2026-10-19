@@ -1,10 +1,12 @@
 # ARCB — 合奏の測定と補正（現行 v429）
 
-2026-10-19 v429: AI再現のベースを原音の同区間へ照合し、既存note gainで−3 dB。音程・打点・強弱比・長い余韻、ギター／ドラム音源は維持。原曲系のv428調和ミックスは保持。HAZAMAは公開済みの試作として専用入口を残し、Tabascoの通常リンクで未完成バンドが表示される条件を修正。正式昇格は行わない。cache `hazama-fm-v429` / client `band-room.js?v=br-262` / CSS `band-room.css?v=br-98` / adapter v8。
+2026-10-19 v429: AIベースの前出を−3 dBで抑え、ほぼ無音の分離音源から最低音量へ持ち上げられた短い検出116音を6曲から除外。前後を含むRMS −65 dBFS未満・peak −45 dBFS未満、velocity 0.16以下・長さ0.25秒以下に限定。残す音符の音程・打点・強弱・長い余韻、ギター／ドラム音源は維持。原曲系のv428調和ミックスは保持。HAZAMAは公開済みの試作として専用入口を残し、Tabascoの通常リンクで未完成バンドが表示される条件を修正。正式昇格は行わない。cache `hazama-fm-v429` / client `band-room.js?v=br-262` / CSS `band-room.css?v=br-98` / adapter v8。
 
 ## AIベースの釣り合い（v429 / 2026-10-19）
 
-実ブラウザーでギター・ベース・ドラムのpost-fader出力とpost-masterを同時に採取。原音の同区間を35–12000 Hzの同条件で測り、ドラムに対する相対音量を比較する。7曲の基準区間でベースが前出する傾向を確認し、控えめな−3 dBを採用。追加区間で確認し、詳細とhashは[測定JSON](arcb-bass-balance-20261019.json)へ。
+[除外音の測定JSON](arcb-bass-noise-floor-20261019.json)は全116音の元行・時刻・source hash・前後RMS／peakを収録。`scripts/refine-bass-noise-floor.py --baseline-ref ff20753d47cd688c2468789bba06f47002db2e4b --out <report>`で再現できる。分離失敗の可能性は残るため、全ての弱い音を削除する判断には広げない。
+
+実ブラウザーでギター・ベース・ドラムのpost-fader出力とpost-masterを同時に採取。原音の同区間を35–12000 Hzの同条件で測り、ドラムに対する相対音量を比較する。7曲の基準区間でベースが前出する傾向を確認し、控えめな−3 dBを採用。追加区間で最低velocityのノイズ発音も確認し、6曲116音を除外。詳細とhashは[測定JSON](arcb-bass-balance-20261019.json)へ。
 
 既存note gainだけを変更し、node・PCM・圧縮・サンプル取得を増やさない。アタック／余韻の比とvelocity比は不変。ギターやドラムの音色、原曲系のv428仕上げは保持。原音の分離漏れ、未確定の音符と奏法は残る。数字を再現率や聴感合格にはしない。
 

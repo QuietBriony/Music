@@ -564,44 +564,9 @@
   "events": [
    [
     0,
-    6.67,
-    1.23,
-    53,
-    0.16
-   ],
-   [
-    0,
     9.85,
     3.18,
     52,
-    0.16
-   ],
-   [
-    0,
-    13.03,
-    1.13,
-    51,
-    0.16
-   ],
-   [
-    0,
-    14.56,
-    0.72,
-    52,
-    0.16
-   ],
-   [
-    0,
-    15.28,
-    0.82,
-    51,
-    0.16
-   ],
-   [
-    1,
-    0.1,
-    1.85,
-    50,
     0.16
    ],
    [
@@ -1107,13 +1072,6 @@
     5.74,
     50,
     0.16
-   ],
-   [
-    23,
-    4.31,
-    0.82,
-    50,
-    0.16
    ]
   ],
   "rhythm_refinement": {
@@ -1123,6 +1081,21 @@
    "moved": 16,
    "split": 8,
    "added": 0
+  },
+  "noise_floor_refinement": {
+   "method": "near-silence-context-v1",
+   "source_sha256": "794f80c4a54b21dc209db23a3b81e00ebaa24be1ef2bc66174ee407efc439c37",
+   "input_events_sha256": "cafbc120ef9c90048cb707f7fc1a4052370ceca913ad0c64d219c96c24a4f4ef",
+   "removed": 6,
+   "parameters": {
+    "sample_rate": 16000,
+    "maximum_velocity": 0.16,
+    "maximum_duration_s": 0.25,
+    "context_before_s": 0.12,
+    "minimum_context_after_s": 0.3,
+    "maximum_rms_dbfs": -65,
+    "maximum_peak_dbfs": -45
+   }
   }
  },
  "chord_progression_legacy": {
