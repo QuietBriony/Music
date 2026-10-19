@@ -30,8 +30,8 @@ assert.ok(bank.samples['drums:crash'].length===96000 && rms(bank.samples['drums:
 assert.notDeepEqual(bank.samples['drums:snare'],bank.samples['drums:snare-soft'],'Quiet snare has its own wire/body balance');
 // Exercise the actual adapter: fractional pitches, scheduling, hard STOP of
 // future notes, capacity bound, and disconnect of every source and amp node.
-const made=[];const param=()=>({value:0,setValueAtTime(){},linearRampToValueAtTime(){},setTargetAtTime(){},cancelScheduledValues(){}});
-function node(){const n={gain:param(),frequency:param(),Q:param(),pan:param(),delayTime:param(),playbackRate:param(),connect(){},disconnect(){this.disconnected=true;},start(t){this.startAt=t;},stop(t){this.stopAt=t;}};made.push(n);return n;}
+const made=[];const param=()=>({value:0,events:[],setValueAtTime(value,time){this.events.push([value,time]);},linearRampToValueAtTime(){},setTargetAtTime(){},cancelScheduledValues(){}});
+function node(){const n={gain:param(),frequency:param(),Q:param(),pan:param(),delayTime:param(),playbackRate:param(),connect(target){this.target=target;},disconnect(){this.disconnected=true;},start(t){this.startAt=t;},stop(t){this.stopAt=t;}};made.push(n);return n;}
 const context={currentTime:2,createGain:node,createBiquadFilter:node,createWaveShaper:node,createBufferSource:node,createDelay:node,createStereoPanner:node};
 const buffers=new Map(Object.entries(bank.samples).map(([k,s])=>[k,{duration:s.length/bank.sampleRates[k]}]));
 const band=createPhysicalBand(context,{buffers,bytes:bank.bytes},{},{connect:(s,t)=>s.connect(t),seconds:Number,midi:Number});
@@ -40,6 +40,7 @@ assert.equal(band.snapshot().pending,0,'Elapsed attacks on a mid-bar seek must n
 band.bass.triggerAttackRelease(26.5,.4,3,.8);band.guitar.triggerAttackRelease([48,55,60],.2,3,.8);band.drums.kick.triggerAttackRelease('C1','16n',3,.6);
 let snap=band.snapshot();assert.equal(snap.pending,5);assert.equal(snap.last.bass.rate,2**(-.5/12));
 const firstBass=made.find(n=>n.startAt===3);
+assert.ok(Math.abs(firstBass.target.gain.events[0][0]-.8*10**(-3/20))<1e-12,'Native bass trim happens in its existing note gain, before the shared room and master');
 assert.ok(firstBass.stopAt>4,'Short bass score gate does not chop the body');
 assert.ok(made.filter(n=>n.startAt>=3&&n.startAt<3.02).every(n=>n.stopAt>3.45),'Strings in one stroke do not choke each other');
 band.bass.triggerAttackRelease(36,.12,3.6,.8);

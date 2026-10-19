@@ -66,6 +66,40 @@ sandbox.globalThis = sandbox;
 
 vm.runInNewContext(source, sandbox, { filename: "band-room.js" });
 
+// Noise-floor cleanup is evidence-bound and only removes short detections at
+// the old velocity floor. Never retime/repitch the surviving performance.
+{
+  const report=JSON.parse(readFileSync('docs/arcb-bass-noise-floor-20261019.json','utf8'));
+  const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+  assert.equal(report.removed,116);
+  assert.equal(report.songs.length,7);
+  for(const item of report.songs){
+    const line=JSON.parse(readFileSync(`presets/drum-frames-tabasco-${item.song}.json`,'utf8')).bass_line;
+    assert.equal(hash(readFileSync(`presets/tabasco-stems/${item.song}/bass.mp3`)),item.source_sha256);
+    assert.equal(hash(JSON.stringify(line.events)),item.output_events_sha256);
+    assert.equal(line.events.length,item.input_count-item.rejected.length);
+    for(const rejected of item.rejected){
+      assert.ok(rejected.row[4]<=.16 && rejected.row[2]*15/line.bpm_fit<=.25);
+      assert.ok(rejected.rms_dbfs< -65 && rejected.peak_dbfs< -45);
+      assert.ok(rejected.context_s[0]<rejected.time_s && rejected.context_s[1]>rejected.time_s+.29);
+    }
+    if(item.rejected.length)assert.equal(line.noise_floor_refinement.removed,item.rejected.length);
+  }
+}
+
+// Ordinary album links cannot expose unrelated trial bands or restore a
+// previously selected hidden band. Direct trial links and dev preview survive.
+{
+  const scope={URLSearchParams,window:{location:{search:''}},state:{bandsRegistry:{bands:{tabasco:{},hazama:{ui_hidden:true},draft:{ui_hidden:true}}}}};
+  vm.runInNewContext(source.slice(source.indexOf('  function hiddenBandsUnlocked('),source.indexOf('  function renderBandSelector()')),scope);
+  for(const [search,expected] of [['',['tabasco']],['?band=tabasco',['tabasco']],['?band=unknown',['tabasco']],['?band=hazama',['tabasco','hazama']],['?bandId=hazama',['tabasco','hazama']],['?dev=1',['tabasco','hazama','draft']]]){
+    scope.window.location.search=search;
+    assert.deepEqual(Array.from(scope.visibleBandIds()),expected,search||'normal entry');
+    assert.equal(scope.hiddenBandsUnlocked('hazama'),expected.includes('hazama'));
+  }
+  assert.match(source,/hiddenBandsUnlocked\(prefs\.bandId\)/,'Saved hidden-band restore uses the same explicit scope');
+}
+
 // Test the real start/elapsed functions against an audio clock with look-ahead.
 // A UI clock started at the current time leads all notes by 130 ms here.
 {
@@ -141,8 +175,8 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-261-coherent-room", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v428", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-262-arcb-balance", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v429", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
 const originalCeiling = windowMock.BandRoomTestHooks.originalOutputCeiling;
@@ -708,13 +742,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-98/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-261/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-262/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-98/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-261/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-262/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
@@ -1480,7 +1514,7 @@ function expectTimedLyricsContractFailure(label, timedLyrics, mutate, pattern) {
 
 assert.ok(existsSync("docs/tabasco-lyrics-timed.json"), "Karaoke timed-lyrics data file should exist");
 const timedLyrics = JSON.parse(readFileSync("docs/tabasco-lyrics-timed.json", "utf8"));
-const authorityHookAnchor = "\n  function hiddenBandsUnlocked() {";
+const authorityHookAnchor = "\n  function hiddenBandsUnlocked(bandId) {";
 assert.equal(
   source.split(authorityHookAnchor).length - 1,
   1,
