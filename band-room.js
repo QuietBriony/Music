@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-261-coherent-room";
-  const BANDROOM_RELEASE_VERSION = "v428";
+  const BANDROOM_APP_VERSION = "br-262-arcb-balance";
+  const BANDROOM_RELEASE_VERSION = "v429";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -1152,7 +1152,7 @@
     physicalArcbAbort?.abort(); physicalArcbAbort = abort;
     const began = bandRoomNowMs();
     try {
-      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=7");
+      physicalArcbModule ||= await import("./audio/physical-band/instruments.mjs?v=8");
       const context = Tone.getContext().rawContext;
       const bank = await physicalArcbModule.prepareInstrumentBank(context, {
         signal: abort.signal,
@@ -9369,20 +9369,21 @@
 
   // Hidden bands (ui_hidden:true, e.g. HAZAMA WIP) stay out of the main band
   // selector until finished. They're reachable via the footer "◦ hazama" entry
-  // or ?band=<id> / ?bandId= / ?dev=1, which flips this unlock on.
-  function hiddenBandsUnlocked() {
+  // or an explicit link to that hidden band. A normal ?band=tabasco link
+  // must not reveal every unfinished band. ?dev=1 remains the full preview.
+  function hiddenBandsUnlocked(bandId) {
     try {
       const p = new URLSearchParams(window.location.search || "");
-      if (p.get("band") || p.get("bandId")) return true;
       if (p.get("dev") === "1") return true;
+      const requested = p.get("band") || p.get("bandId");
+      return !!bandId && requested === bandId;
     } catch (e) {}
     return false;
   }
 
   function visibleBandIds() {
     const bands = state.bandsRegistry?.bands || {};
-    const unlocked = hiddenBandsUnlocked();
-    return Object.keys(bands).filter((id) => unlocked || !bands[id].ui_hidden);
+    return Object.keys(bands).filter((id) => !bands[id].ui_hidden || hiddenBandsUnlocked(id));
   }
 
   function renderBandSelector() {
@@ -11464,7 +11465,7 @@
     // Restore band-level prefs only. Track always starts at 01 on reload.
     const prefs = loadPrefs();
     if (prefs && prefs.bandId && state.bandsRegistry?.bands?.[prefs.bandId]
-        && (!state.bandsRegistry.bands[prefs.bandId].ui_hidden || hiddenBandsUnlocked())) {
+        && (!state.bandsRegistry.bands[prefs.bandId].ui_hidden || hiddenBandsUnlocked(prefs.bandId))) {
       const band = state.bandsRegistry.bands[prefs.bandId];
       const firstSong = firstSongForBand(band);
       if (firstSong) {

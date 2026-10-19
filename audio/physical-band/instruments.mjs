@@ -98,7 +98,10 @@ export function createPhysicalBand(context, bank, targets, { connect, disconnect
     const tail = articulated ? (palm ? 0.065 : 0.025) : (part === "guitar" ? 1.8 : (part === "bass" ? 1.4 : 0.3));
     const length = Math.min(maxDuration, Math.max(0.035, Math.min(buffer.duration / rate, hold + tail)));
     const releaseAt = at + Math.min(hold, length - 0.025);
-    const level = Math.min(1, velocity) * (part === "guitar" ? 0.9 : (part === "melody" ? 0.46 : 1));
+    // The native bass bank was louder relative to the drums than the source
+    // across all seven measured songs. A modest trim preserves its attack,
+    // long decay and velocity ratios; it adds no compressor or runtime node.
+    const level = Math.min(1, velocity) * (part === "guitar" ? 0.9 : (part === "melody" ? 0.46 : (part === "bass" ? 10 ** (-3 / 20) : 1)));
     gain.gain.setValueAtTime(level, at);
     gain.gain.setValueAtTime(level, releaseAt);
     gain.gain.linearRampToValueAtTime(0, at + length);

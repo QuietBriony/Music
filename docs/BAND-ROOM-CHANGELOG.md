@@ -1,4 +1,10 @@
-# Band Room - Changelog (v65 -> v428 compact)
+# Band Room - Changelog (v65 -> v429 compact)
+
+## v429 — 2026-10-19
+
+2026-10-19 v429: AI再現のベースを原音の同区間へ照合し、既存note gainで−3 dB。音程・打点・強弱比・長い余韻、ギター／ドラム音源は維持。原曲系のv428調和ミックスは保持。HAZAMAは公開済みの試作として専用入口を残し、Tabascoの通常リンクで未完成バンドが表示される条件を修正。正式昇格は行わない。cache `hazama-fm-v429` / client `band-room.js?v=br-262` / CSS `band-room.css?v=br-98` / adapter v8。
+
+測定と限界は `docs/arcb-bass-balance-20261019.json`。音量バランスの補正であり、採譜精度や楽器の完全再現の合格ではない。
 
 ## v428 — 2026-10-19
 
@@ -55,7 +61,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v428. Latest Band Room runtime change: v427 (reference-matched coherent mix). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v429. Latest Band Room runtime change: v429 (native bass balance and scoped trial entry). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 
