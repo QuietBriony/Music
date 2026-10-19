@@ -36,7 +36,7 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 
 | 公開ページ | 用途 |
 |---|---|
-| [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=original) | Tabascoのライブ原音7曲を、軽い補正／元の仮ミックスで聴き比べ。声とバンドをまとめた調和ミックス、歌・ギター・ベース・ドラムを消す練習、3楽器のAI再現を同じ入口で選べます。 |
+| [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=original) | Tabascoのライブ原音7曲を、軽い補正／元の仮ミックスで聴き比べ。声の突出と余分な反射を抑え、打感と余韻を保つ調和ミックス、歌・ギター・ベース・ドラムを消す練習、3楽器のAI再現を同じ入口で選べます。 |
 | [Hazama FM](../fm.html) | ジャンルを選んで、ラジオのように流す。 |
 | [Music Core Rig](../index.html) | つまみを動かし、アシッドやIDMの音を探る。 |
 | [Lyric Lab](../lyric-lab.html) | 歌詞・曲のアイデア・制作指示を一曲ずつ残す。 |

@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-19 v427: 調和ミックスを分離前原音の28区間と音量を合わせて比較。声の基準を0.86→0.84、2.8 kHzを−0.8→−1.2 dB、全体の3.2 kHz shelfを+0.5→−0.5 dBへ。声のroom sendを0.22→0.18、共通反射は遅い成分を減らして近い反射へ配分。楽器の直接音を遅らせず、圧縮・gate・新しい残響を追加しない。原音ファイル・AI・旧仕上げ・個人のfader設定は保持。cache `hazama-fm-v427` / client `band-room.js?v=br-260` / CSS `band-room.css?v=br-98` / stem mix v2。
+
 2026-10-19 v426: パート別の標準を「調和 · ライブ再ミックス」へ。4音源を従来の曲別boost・EQ・声FXの手前で取り出し、独立した基準音量、声の低域／突出帯域の軽い整理、全パート共通の19–139 msの短い反射でまとめる。新しい圧縮・歪み・長い残響・幅の拡張は加えない。7曲の全長測定で曲別headroomを校正。新しいバランスは80が基準、旧カスタム音量は保存して以前のライブ／厚めで呼び出せる。ライブ原音のv425補正・AI音源・採譜は不変。cache `hazama-fm-v426` / client `band-room.js?v=br-259` / CSS `band-room.css?v=br-98`。
 
 2026-10-19 v425: 分離前の仮ミックス7曲に、26 Hzの低域整理・230 Hzの−1.5 dB・3.2 kHzからの+0.5 dBの軽いライブ補正を追加。圧縮・gate・追加残響・幅の拡張は使わず、原音ファイルを保持する。元の仮ミックスとのA/Bは曲ごとに音量を合わせ、40 msで切替。パート別は歌・ギターほか・ベース・ドラムのminus-oneをワンタップで選べる。分離漏れと元録音の歪みは残り、分離品質の向上を意味しない。cache `hazama-fm-v425` / client `band-room.js?v=br-258` / CSS `band-room.css?v=br-97`。
@@ -135,9 +137,9 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > `last_verified_commit: fdef2dbf222b65d9445d7a060cc70443d1259287`
 >
-> Current cache / asset tuple: `hazama-fm-v421`, `engine.js?v=fm-119`,
+> Current cache / asset tuple: `hazama-fm-v427`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-257`, `band-room.css?v=br-96`。
+> `band-room.js?v=br-260`, `band-room.css?v=br-98`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:
