@@ -6,8 +6,8 @@
   const PARTS = ["vocals", "drums", "bass", "other"];
   const LEVELS = { vocals: 0.84, drums: 1, bass: 0.97, other: 1 };
   const SENDS = { vocals: 0.18, drums: 0.10, bass: 0.04, other: 0.13 };
-  // v427: reference-matched top end; gentler vocal presence and less late echo.
-  // Comparison and limits: docs/stem-live-refinement-20261019.json.
+  // v428: lower only the added common reflections; retain recorded attacks/tails.
+  // Comparison and limits: docs/stem-room-refinement-20261019.json.
   // Short common reflections: keep the original direct signal and stereo
   // image intact. A mono-compatible room does not widen the extracted bleed.
   const TAPS = [[0.019, 0.34], [0.031, 0.26], [0.047, 0.20],
@@ -22,7 +22,7 @@
       const n = keep(context.createBiquadFilter()); n.type = type;
       n.frequency.value = frequency; n.gain.value = db; n.Q.value = q; return n;
     };
-    const sum = gain(1), room = gain(1);
+    const sum = gain(1), room = gain(0.65);
     const roomHp = filter("highpass", 200), roomLp = filter("lowpass", 4800);
     room.connect(roomHp); roomHp.connect(roomLp);
     for (const [seconds, amount] of TAPS) {

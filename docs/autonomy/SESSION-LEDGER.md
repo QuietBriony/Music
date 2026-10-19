@@ -1,5 +1,12 @@
 # Session Ledger — music-stack
 
+## 2026-10-19 — 追加の響きの重なりを抑える（v428 / BL-050）
+
+2026-10-19 v428: 調和ミックスの共通反射だけを0.65倍（−3.74 dB）へ。7曲28区間で原音・v427・帯域制限案・反射なしの診断案と比較し、追加反射の重なりを控えめにする。直接音、録音済みの余韻、パート間の音量・send比、EQ・反射時刻は保持。gate・圧縮や新しい音源は加えない。cache `hazama-fm-v428` / client `band-room.js?v=br-261` / CSS `band-room.css?v=br-98` / stem mix v3。
+
+- 単一会話・既存Music／Pages。baseline / working / candidate / mergedの全体gateと差分再レビュー、公開hash・再生・PWA確認は対応PRとoutput/playwright/coherent-smear-20261019へ記録。
+- 原音・AI・旧仕上げ・個人設定は保持。分離漏れと元録音のにじみは残り、数値は聴感合格を意味しない。
+
 ## 2026-10-19 — 原音を基準に声とバンドの距離感を整える（v427 / BL-050）
 
 2026-10-19 v427: 調和ミックスを分離前原音の28区間と音量を合わせて比較。声の基準を0.86→0.84、2.8 kHzを−0.8→−1.2 dB、全体の3.2 kHz shelfを+0.5→−0.5 dBへ。声のroom sendを0.22→0.18、共通反射は遅い成分を減らして近い反射へ配分。楽器の直接音を遅らせず、圧縮・gate・新しい残響を追加しない。原音ファイル・AI・旧仕上げ・個人のfader設定は保持。cache `hazama-fm-v427` / client `band-room.js?v=br-260` / CSS `band-room.css?v=br-98` / stem mix v2。

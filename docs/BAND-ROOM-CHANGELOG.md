@@ -1,4 +1,10 @@
-# Band Room - Changelog (v65 -> v427 compact)
+# Band Room - Changelog (v65 -> v428 compact)
+
+## v428 — 2026-10-19
+
+2026-10-19 v428: 調和ミックスの共通反射だけを0.65倍（−3.74 dB）へ。7曲28区間で原音・v427・帯域制限案・反射なしの診断案と比較し、追加反射の重なりを控えめにする。直接音、録音済みの余韻、パート間の音量・send比、EQ・反射時刻は保持。gate・圧縮や新しい音源は加えない。cache `hazama-fm-v428` / client `band-room.js?v=br-261` / CSS `band-room.css?v=br-98` / stem mix v3。
+
+測定と限界は `docs/stem-room-refinement-20261019.json`。分離漏れを除去したことを意味しない。
 
 ## v427 — 2026-10-19
 
@@ -49,7 +55,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v427. Latest Band Room runtime change: v427 (reference-matched coherent mix). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v428. Latest Band Room runtime change: v427 (reference-matched coherent mix). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 
