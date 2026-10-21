@@ -1,5 +1,10 @@
 # Codex CLI Handoff — Music Stack
 
+> 検証経路: 本文の全件検査は通常経路。AGENTSの「Worker JSON handoff 限定経路」と
+> [専用定義](WORKER-HANDOFF-GATE.md) の全条件を満たす追跡済み2ファイルだけは、専用回帰試験と実在する独立レビューで置換できる。
+> 基点・排他所有・レビュー真正性が未確認なら full gate を要求し、実行できなければ停止する。
+> AGENTS・gate・runner・文書自身は対象外。このルール変更PRの例外は別途明示承認が必要。
+
 2026-10-19 v430: AIベースの休符を分離音源と分離前原音の両方へ照合。5曲8音だけ、譜面の音長より後の追加releaseを制限し、バンドが止まる間を保つ。音程・打点・強弱・譜面の保持音長、楽器bankと−3 dB基準は維持。原曲系は7曲21区間で低中域をさらに削る案を比較し、不採用。本人が評価した原音マスタリング／調和ミックスを維持。cache `hazama-fm-v430` / client `band-room.js?v=br-263` / CSS `band-room.css?v=br-98` / adapter v8。
 
 2026-10-19 v429: AIベースの前出を−3 dBで抑え、ほぼ無音の分離音源から最低音量へ持ち上げられた短い検出116音を6曲から除外。前後を含むRMS −65 dBFS未満・peak −45 dBFS未満、velocity 0.16以下・長さ0.25秒以下に限定。残す音符の音程・打点・強弱・長い余韻、ギター／ドラム音源は維持。原曲系のv428調和ミックスは保持。HAZAMAは公開済みの試作として専用入口を残し、Tabascoの通常リンクで未完成バンドが表示される条件を修正。正式昇格は行わない。cache `hazama-fm-v429` / client `band-room.js?v=br-262` / CSS `band-room.css?v=br-98` / adapter v8。
