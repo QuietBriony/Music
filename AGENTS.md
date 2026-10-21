@@ -83,7 +83,7 @@ music-stack 全体の自走開発は `docs/autonomy/` のエンジンで運用�
 - 作業待ち行列（次にやること）: [docs/autonomy/BACKLOG.md](docs/autonomy/BACKLOG.md)
 - セッション記録: [docs/autonomy/SESSION-LEDGER.md](docs/autonomy/SESSION-LEDGER.md)
 - 5 repo 一括検証: `node scripts/stack-check.mjs` — 各 repo の既存チェックを集約。
-  **`0 BAD` が commit の前提**（下記 Integrity gate の単一入口）。
+  **`0 BAD` が通常の commit 前提**。下記「Worker JSON handoff 限定経路」の全条件を満たす場合だけ置換できる。
 
 ---
 
@@ -93,7 +93,7 @@ music-stack 全体の自走開発は `docs/autonomy/` のエンジンで運用�
    - Hazama FM 用の追加は `fm.js` / `fm.css` / `audio/genre-flavor.js` で吸収する
    - どうしても engine 内部を触る必要があるときは **必ず `MusicRadioBrainState` 周辺のような明確に境界が引ける箇所** に限定する
    - 例外: cache buster / VERSION の bump、Music Core Rig と Hazama FM が共有する短い runtime cue API のみ
-2. **検証済み PR / branch の agent merge は許可**。user が作業を任せた範囲の PR / branch は、`node scripts/stack-check.mjs` で `0 BAD`、mergeable / clean、かつ今回の作業に属すると確認できれば main へ merge・pushし、merged branch を削除してよい。古い PR・他 agent の未検証作業・判断不能な branch は混ぜず、final で残件として明示する。
+2. **検証済み PR / branch の agent merge は許可**。user が作業を任せた範囲の PR / branch は、`node scripts/stack-check.mjs` で `0 BAD`（または下記限定経路の `NARROW_GATE_PASS` と実在する独立レビュー）、mergeable / clean、かつ今回の作業に属すると確認できれば main へ merge・pushし、merged branch を削除してよい。古い PR・他 agent の未検証作業・判断不能な branch は混ぜず、final で残件として明示する。
 3. **音源 / サンプル / 歌詞は原則 repo に追加しない**。例外として owner が2026-09-29に明示許可した独立試奏台の `experiments/workbench/v1/third_party/acidbros/assets/samples/tr909/` の4 WAV（合計438,798 bytes）のみ同梱する。この例外を他の音源やCore Rig / FM / Band Roomへ広げない。出所とhashは`experiments/workbench/v1/third_party/acidbros/UPSTREAM.md`。
    - 2026-10-12の本人の「歌詞もアプリからそのまま選べるように」により、この会話で作ったオリジナル「残響の住所」初稿だけを `experiments/workbench/v1/src/vocal-lyrics.js` へ同梱・公開する。個人の編集歌詞・録音・他作品の歌詞には許可を広げない。
    - 2026-10-18の本人の明示承認により、既存Music／Pagesでの原音直接再生用に `presets/tabasco-premix/` の7 M4A（合計46,658,249 bytes）のみ追加・公開する。分離前の現存する仮ミックスであり、元のマルチトラックではない。出所・対象7曲・SHA-256は同ディレクトリの `provenance.json`。他音源への許可に広げない。
@@ -124,9 +124,34 @@ node scripts/check-band-room-logic.mjs
 node scripts/check-fm-route-badge.mjs
 ```
 
-`0 BAD, 0 WARN` の状態でのみ commit する。BAD があれば commit せず原因解決。
+通常経路では `0 BAD, 0 WARN` の状態でのみ commit する。BAD があれば commit せず原因解決。下記限定経路に該当しなければ、この条件は変わらない。
 
 これが claude code / codex どちらでも回るので、**両 agent が同じ整合性ゲートを共有**できる。
+
+### Worker JSON handoff 限定経路
+
+既定は従来の5 repo全件検査と上記 Integrity gate。例外は、追跡済みの
+`scripts/worker-gaming-pipeline.py` と
+`scripts/tests/test_worker_gaming_pipeline.py` だけの変更で、
+[docs/WORKER-HANDOFF-GATE.md](docs/WORKER-HANDOFF-GATE.md) の全条件を満たす候補に限る。
+ファイル名だけでは許可しない。source の `_read_json` の既定の判定範囲だけを変更し、
+他の処理・副作用・固定fixture・既存テスト契約を変えないことを機械検査と独立レビューで確認する。
+
+確認済みの現行main基点に含まれる未変更のgateを使い、最終候補と一致する専用回帰試験、
+実在する別担当の独立レビュー、専用checkoutの排他所有を確認した
+`NARROW_GATE_PASS` だけが、上記全件／Integrity検査を置換できる。
+JSONの自己申告だけでレビュー真正性や排他所有を確認済みにしない。
+基点・所有・レビューが不明、対象外ファイル、dirty／未追跡／ignored内容、
+検査失敗・未レビュー・候補差分変更があれば従来の full gate を要求する。
+full gate を権限・設定・他repo書込などの制約内で実行できなければ停止し、合格扱いしない。
+自動で別経路・昇格・設定変更・再試行へ進まない。
+
+AGENTS、gate本体とそのテスト、runner、文書自身の変更はこの例外の対象外であり、
+このルール自身を限定経路で承認しない。この条項だけが、他のMusic作業文書にある
+一般的な全件検査必須条件に対する限定例外である。他の変更は従来どおり。
+mergeable／clean、担当scope、公開承認、必要な実行承認の条件は維持する。
+OS実行ポリシー、Git trust、権限、認証、network、安全保護の変更を許可する条項ではない。
+
 
 `audit.py` が見る範囲:
 - preset JSON (Hazama FM 6 ファイル) の schema / version 整合
