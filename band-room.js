@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-264-guitar-lines";
-  const BANDROOM_RELEASE_VERSION = "v431";
+  const BANDROOM_APP_VERSION = "br-265-human-fly-dub";
+  const BANDROOM_RELEASE_VERSION = "v432";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -148,6 +148,7 @@
   let originalDenseGate = null;
   let originalMastering = "blend";
   let coherentStemMix = null, originalBlendGate = null;
+  let stemPlaybackAnchor = null;
   let originalMasteringWasChosen = false;
   let masterLimiter = null;
   let masterSilenceGate = null;
@@ -547,12 +548,19 @@
 
   function setOriginalMastering(value, fromUser = false) {
     if (fromUser) originalMasteringWasChosen = true;
-    originalMastering = ["live", "dense"].includes(value) ? value : "blend";
+    originalMastering = value === "dub" && humanFlyDubSupported() ? "dub"
+      : ["live", "dense"].includes(value) ? value : "blend";
+    if (originalMastering === "dub" && state.started && STEM_NAMES.some(p => !stemPlayers[p])) {
+      originalMastering = "blend";
+      setStemsStatus("Dubには4パートが必要です。停止して再読み込みしてください。");
+    }
     const select = $("br-original-mastering");
     if (select) select.value = originalMastering;
     setOriginalMasteringGate(originalLiveGate, originalMastering === "live" ? 0.45 : 0);
     setOriginalMasteringGate(originalDenseGate, originalMastering === "dense" ? 1 : 0);
-    setOriginalMasteringGate(originalBlendGate, originalMastering === "blend" ? 0.45 : 0);
+    setOriginalMasteringGate(originalBlendGate, ["blend", "dub"].includes(originalMastering) ? 0.45 : 0);
+    if (state.started && currentMode === "stems") syncRecordedDub();
+    else coherentStemMix?.stopDub();
     syncOriginalMasteringControls();
   }
 
@@ -564,11 +572,31 @@
   function ensureCoherentStemMix() {
     if (coherentStemMix) return coherentStemMix;
     coherentStemMix = window.RecordedStemMix.create(Tone.getContext().rawContext);
-    originalBlendGate = new Tone.Gain(originalMastering === "blend" ? 0.45 : 0).connect(originalMasterGain);
+    originalBlendGate = new Tone.Gain(["blend", "dub"].includes(originalMastering) ? 0.45 : 0).connect(originalMasterGain);
     Tone.connect(coherentStemMix.output, originalBlendGate);
     Tone.connect(externalVocalBus, coherentStemMix.inputs.vocals);
     for (const stem of STEM_NAMES) coherentStemMix.setLevel(stem, Number($("br-live-" + stem)?.value ?? 80) / 100);
     return coherentStemMix;
+  }
+
+  function humanFlyDubSupported() {
+    return state.currentBandId === "tabasco" && state.currentSongId === "human-fly";
+  }
+
+  function syncRecordedDub() {
+    if (!coherentStemMix) return;
+    if (originalMastering !== "dub" || currentMode !== "stems" || !humanFlyDubSupported() ||
+        !stemPlaybackAnchor || STEM_NAMES.some(p => !stemPlayers[p])) {
+      coherentStemMix.stopDub(); return;
+    }
+    const now = audioClockSeconds(), anchor = stemPlaybackAnchor;
+    const at = Math.max(now, anchor.at);
+    const offset = anchor.offset + Math.max(0, now - anchor.at) * anchor.rate;
+    const duration = Number(state.songData?.performance_duration_s);
+    if (!Number.isFinite(duration) || offset >= duration) { coherentStemMix.stopDub(); return; }
+    coherentStemMix.startDub({ at, offset, rate: anchor.rate,
+      bpm: Number(state.songData?.guitar_line?.bpm_fit), duration });
+    for (const part of STEM_NAMES) coherentStemMix.setDubMuted(part, $("br-toggle-stem-" + part)?.checked === false);
   }
 
   function setOriginalMasteringGate(gate, value) {
@@ -604,10 +632,17 @@
   }
 
   function syncOriginalMasteringControls() {
+    if (originalMastering === "dub" && !humanFlyDubSupported()) { setOriginalMastering("blend"); return; }
+    const dubPanel = $("br-dub-mix");
+    if (dubPanel) dubPanel.hidden = currentMode !== "stems" || !humanFlyDubSupported();
+    const dubOption = $("br-original-mastering")?.querySelector('option[value="dub"]');
+    if (dubOption) dubOption.disabled = !humanFlyDubSupported();
+    $("br-dub-listen")?.setAttribute("aria-pressed", String(originalMastering === "dub"));
+    $("br-dub-compare")?.setAttribute("aria-pressed", String(originalMastering === "blend"));
     const live = currentMode === "stems" && originalMastering !== "dense";
     const blendPanel = $("br-coherent-mix"), legacyPanel = $("br-volume-stems");
-    if (blendPanel) blendPanel.hidden = originalMastering !== "blend";
-    if (legacyPanel) legacyPanel.hidden = originalMastering === "blend";
+    if (blendPanel) blendPanel.hidden = !["blend", "dub"].includes(originalMastering);
+    if (legacyPanel) legacyPanel.hidden = ["blend", "dub"].includes(originalMastering);
     ["br-space-reverb", "br-space-width", "br-tape-warmth",
       "br-vfx-chorus", "br-vfx-delay", "br-vfx-reverb"].forEach((id) => {
       const element = $(id); if (element) element.disabled = live;
@@ -2876,6 +2911,7 @@
   }
 
   function disposeStemPlayers() {
+    coherentStemMix?.stopDub(); stemPlaybackAnchor = null;
     Object.keys(stemPlayers).forEach((k) => {
       const p = stemPlayers[k];
       if (p) {
@@ -3706,15 +3742,20 @@
     } else {
       setStemsStatus(`stems loaded (${loaded}/4 · ${variantLabel} missing, original fallback)`);
     }
+    if (originalMastering === "dub" && loaded !== 4) {
+      setStemsStatus("Dubには4パートが必要です。読み込みをやり直してください。"); return false;
+    }
     return true;
   }
 
   function startStemPlayback(offsetSec = 0) {
     if (!stemPlayers.vocals && !stemPlayers.drums && !stemPlayers.bass && !stemPlayers.other) return false;
-    // Sync start: schedule all at the same Transport position
-    const startAt = "+0.15";  // small delay so all loaded buffers can fire together
+    // One audio-clock time for all four stems and the Dub arrangement.
+    const startAt = Tone.now() + 0.15;
     // v76: apply current tempo slider to playbackRate at start
     const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
+    stemPlaybackAnchor = { at: startAt, offset: offsetSec, rate: tempoMult };
+    syncRecordedDub();
     Object.entries(stemPlayers).forEach(([stem, player]) => {
       if (!player) return;
       try {
@@ -3736,6 +3777,7 @@
   }
 
   function stopStemPlayback() {
+    coherentStemMix?.stopDub(); stemPlaybackAnchor = null;
     Object.values(stemPlayers).forEach((player) => {
       if (player) {
         try { player.stop(); } catch (e) {}
@@ -4057,7 +4099,7 @@
     const variant = selectedStemVariant(songId);
     if (loadedStemsSongId === songId && loadedStemsVariant === variant.key && Object.values(stemPlayers).some(Boolean)) {
       updateSongTimelineDisplay();
-      return true;
+      return originalMastering !== "dub" || STEM_NAMES.every(p => !!stemPlayers[p]);
     }
     return loadStemsForSong(songId);
   }
@@ -4933,6 +4975,8 @@
       restoredStemProfile,
       setOriginalMasteringGate,
       stemUrlAvailable,
+      humanFlyDubSupported,
+      stemPlaybackAnchor: () => stemPlaybackAnchor && { ...stemPlaybackAnchor },
       originalMasteringDiagnostics: () => ({ profile: originalMastering,
         live: originalLiveGate?.gain.value, dense: originalDenseGate?.gain.value,
         blend: originalBlendGate?.gain.value, coherent: coherentStemMix?.diagnostics(),
@@ -5036,6 +5080,7 @@
       state.songData = data;
       transcribedLineCache = { songId: null, lines: {} };
       state.currentSongId = songId;
+      syncOriginalMasteringControls();
       syncPhysicalInstrumentUi();
       syncStemVariantSelect(songId);
       state.barCount = 0;
@@ -8122,8 +8167,10 @@
     const guardDuration = fullSongDurationGuardSec();
     if (guardDuration && expectedOffset >= guardDuration - 0.6) return false;
 
-    const startAt = "+0.05";
+    const startAt = Tone.now() + 0.05;
     const tempoMult = playbackRateMultiplier();
+    stemPlaybackAnchor = { at: startAt, offset: expectedOffset, rate: tempoMult };
+    syncRecordedDub();
     Object.entries(stemPlayers).forEach(([stem, player]) => {
       if (!player) return;
       const playerDuration = playerDurationSeconds(player) || guardDuration;
@@ -8784,10 +8831,15 @@
         if (player) {
           player.mute = !el.checked;
         }
+        coherentStemMix?.setDubMuted(stem, !el.checked);
         updatePlaybackModeStatus();
         setButtonState($("br-play")?.dataset.state || "idle");
       });
     });
+
+    for (const [id, profile] of [["br-dub-listen", "dub"], ["br-dub-compare", "blend"]]) {
+      $(id)?.addEventListener("click", () => { setOriginalMastering(profile, true); schedulePrefsSave(); });
+    }
 
     // Vocal FX sliders (chorus / delay / reverb — vocal stem only)
     $("br-original-mastering")?.addEventListener("change", (event) => {
@@ -8852,6 +8904,11 @@
     if (tempoEl) {
       tempoEl.addEventListener("input", () => {
         const mult = Number(tempoEl.value) / 100;
+        if (stemPlaybackAnchor) {
+          const now = audioClockSeconds(), old = stemPlaybackAnchor;
+          stemPlaybackAnchor = { at: Math.max(now, old.at),
+            offset: old.offset + Math.max(0, now - old.at) * old.rate, rate: mult };
+        }
         if (state.started) {
           resetPlaybackClock(playbackContentElapsedSec());
           state.playbackRateAtStart = Number.isFinite(mult) && mult > 0 ? mult : 1;
@@ -8866,6 +8923,7 @@
           if (!p) return;
           try { p.playbackRate = mult; } catch (e) {}
         });
+        if (state.started && originalMastering === "dub") syncRecordedDub();
       });
     }
 
@@ -11629,6 +11687,8 @@
     if (currentMode === "stems" && directKaraokeRequested()) {
       setStemKaraokeActive(true);
     }
+    if (new URLSearchParams(window.location.search).get("mix") === "dub" &&
+        humanFlyDubSupported() && currentMode === "stems") setOriginalMastering("dub", true);
 
     // Global save hook — any input/change anywhere in main triggers a
     // debounced write. Doesn't fire for child elements of #br-lyrics

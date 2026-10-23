@@ -15,7 +15,9 @@
   const SONG_DB = Object.freeze({"tabasco": -0.2, "hey": 0.2, "i-got-a-feeling": -1.2, "under-the-moon": 1.1, "electric-sheep": -0.6, "human-fly": 0.9, "sister": 1.1});
   const validLevel = value => Number.isFinite(Number(value)) ? Math.max(0, Math.min(1, Number(value))) : 0.8;
   function create(context) {
-    const nodes = [], inputs = {}, faders = {}, levels = {};
+    const nodes = [], inputs = {}, faders = {}, levels = {}, direct = {}, roomSends = {};
+    let dub = null, retiredDub = null;
+    const muted = { vocals: false, other: false };
     const keep = node => { nodes.push(node); return node; };
     const gain = value => { const n = keep(context.createGain()); n.gain.value = value; return n; };
     const filter = (type, frequency, db = 0, q = 0.707) => {
@@ -38,6 +40,7 @@
         input.connect(hp); hp.connect(presence); presence.connect(fader);
       } else input.connect(fader);
       // Both dry and room follow the same fader/mute, so minus-one stays honest.
+      roomSends[part] = send;
       fader.connect(sum); fader.connect(send); send.connect(room);
     }
     const hp = filter("highpass", 26), mud = filter("peaking", 230, -1.2, 0.8);
@@ -49,17 +52,53 @@
       if (context.state !== "running") param.setValueAtTime(value, now);
       else { param.setValueAtTime(param.value, now); param.linearRampToValueAtTime(value, now + 0.04); }
     };
+    function stopDub() {
+      retiredDub?.destroy(); retiredDub = dub;
+      dub?.dispose(); dub = null;
+      for (const route of Object.values(direct)) set(route.gain, 1);
+    }
+    function startDub(options) {
+      root.RecordedDubMix.validate(options);
+      stopDub();
+      // Preserve the original graph until Dub is actually selected. Only two
+      // unity routes remain after A/B; no echo nodes run in ordinary playback.
+      for (const part of ["vocals", "other"]) {
+        if (direct[part]) continue;
+        const fader = faders[part], send = roomSends[part], route = gain(1);
+        fader.disconnect(sum); fader.disconnect(send); fader.connect(route);
+        route.connect(sum); route.connect(send); direct[part] = route;
+      }
+      dub = root.RecordedDubMix.create(context, { inputs: faders, direct, output: sum });
+      dub.schedule(options);
+      for (const part of Object.keys(direct)) dub.setMuted(part, muted[part] || levels[part] === 0);
+    }
+    function flushDub() {
+      if (!dub) return;
+      const options = dub.diagnostics().settings, at = Math.max(context.currentTime, options.at);
+      const offset = options.offset + Math.max(0, at - options.at) * options.rate;
+      if (offset >= options.duration) stopDub();
+      else startDub({ ...options, at, offset });
+    }
     return {
       inputs, output,
       setLevel(part, value) {
         if (!faders[part]) return;
+        const wasZero = levels[part] === 0;
         levels[part] = validLevel(value);
         set(faders[part].gain, LEVELS[part] * levels[part] / 0.8);
+        if (direct[part] && wasZero !== (levels[part] === 0)) flushDub();
+      },
+      startDub, stopDub,
+      setDubMuted(part, value) {
+        if (!Object.hasOwn(muted, part)) return;
+        if (muted[part] === Boolean(value)) return;
+        muted[part] = Boolean(value); flushDub();
       },
       setSong(song) { set(output.gain, 10 ** ((Object.hasOwn(SONG_DB, song) ? SONG_DB[song] : 0) / 20)); },
       diagnostics() { return { levels: { ...levels }, gains: Object.fromEntries(PARTS.map(p => [p, faders[p].gain.value])),
-        output: output.gain.value, nodes: nodes.length, roomLastReflectionSeconds: 0.139, source: "pre-trim-pre-eq" }; },
-      dispose() { for (const node of nodes) node.disconnect(); }
+        output: output.gain.value, nodes: nodes.length, roomLastReflectionSeconds: 0.139, source: "pre-trim-pre-eq",
+        dub: dub?.diagnostics() || null }; },
+      dispose() { dub?.destroy(); retiredDub?.destroy(); dub = null; retiredDub = null; for (const node of nodes) node.disconnect(); }
     };
   }
   root.RecordedStemMix = Object.freeze({ create, validLevel });

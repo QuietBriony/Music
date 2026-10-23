@@ -282,6 +282,28 @@ html, body {
   color: rgba(232, 255, 252, 1);
 }
 
+#br-dub-mix {
+  padding: 16px;
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+#br-dub-mix .br-help { font-size: 12px; line-height: 1.65; color: var(--text-sub); }
+#br-dub-mix button {
+  min-height: 44px;
+  margin: 0 6px 6px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--panel-border);
+  border-radius: 22px;
+  background: transparent;
+  color: var(--accent-glass);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+#br-dub-mix button[aria-pressed="true"] { background: rgba(10, 186, 181, 0.18); border-color: var(--accent-glass); }
+#br-dub-mix button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
 #br-track-select {
   width: 100%;
   min-width: 0;
