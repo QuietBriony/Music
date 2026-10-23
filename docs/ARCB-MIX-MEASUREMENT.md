@@ -1,4 +1,18 @@
-# ARCB — 合奏の測定と補正（現行 v430）
+# ARCB — 合奏の測定と補正（現行 v431）
+
+2026-10-23 v431: AIギターの4曲26打点を、固定の和音から原音に裏付けのある単音リフへ補正。分離otherと分離前原音の異なる周波数解析が一致し、声とベースの漏れを抑える判定も通した候補に限定。実native出力で周波数の一致が悪化した3候補は見送り。打点・強弱・音長・奏法、ベース／ドラム、原曲マスタリングと調和ミックスは保持。途中移動で古いTransportの予約が小節位置を進める競合も修正し、全パートを選んだ譜面時刻から再開する。nativeの停止も先読み待ちを挟まず、音声時計の現在時刻で確定する。cache `hazama-fm-v431` / client `band-room.js?v=br-264` / CSS `band-room.css?v=br-98` / adapter v8。
+
+## 単音リフの音程を原音と照合（v431 / 2026-10-23）
+
+[再解析の根拠](arcb-guitar-single-notes-20261023.json)と[実合成出力の比較](arcb-guitar-single-measurement-20261023.json)。既存採譜には、固定の進行根音から常に3音を作るfallbackが残っていた。今回は発音の追加や全曲の再採譜をせず、既存の打点へ単音注釈を結合する。Hey 9、I Got a Feeling 11、Sister 1、Under the Moon 5打点。原曲の差し替えや新しいサンプルはない。
+
+CQTの3分割が同じ単音で一致、別のlinear FFTでもotherと分離前premixの最有力音が一致することを要求。歌のRMSは−45 dBFS未満、otherは−40 dBFSより大きく、基本／第2倍音の帯域ではotherがbassより6 dB以上強い区間だけ。単音の倍音周辺に80%以上のpowerがあることも要する。29候補を実native factoryとcrunch ampで同条件renderし、3候補は独立pitch-class比較が悪化したため採用しない。残る26候補はother／premix両方との比較で差が縮まった。数値は実際のギターの完全な単音判定や聴感の改善率ではない。
+
+音程以外の打点・強弱・音長・up/down・奏法と余韻、音源bank、bass/drumの採譜・音声処理を保持。runtimeはsource hash・tempo・元の各行へ注釈を結び、不整合なら既存voicingへ戻る。電話側で再解析しない。原曲系は本人が評価したv425マスタリング／v428調和を保持する。
+
+I Got a Feelingの39.9秒への途中移動で、古いTransportの位置setterが旧repeat処理を走らせ、小節位置を進めることも確認。nativeではstop/cancel後の明示offsetによる再開だけを使う。legacy／stemsのsync動作は保持。実schedulerの26打点を照合し、音程と予約時刻を検査する。
+
+再実行: `python scripts/refine-guitar-single-notes.py --baseline-ref 689ff9c --spectrum-cache <既存CQT cache> --out report.json`。cache省略時はCPUで再解析する。音声比較はprivate audition／ignored outputだけへ保存。
 
 2026-10-19 v430: AIベースの休符を分離音源と分離前原音の両方へ照合。5曲8音だけ、譜面の音長より後の追加releaseを制限し、バンドが止まる間を保つ。音程・打点・強弱・譜面の保持音長、楽器bankと−3 dB基準は維持。原曲系は7曲21区間で低中域をさらに削る案を比較し、不採用。本人が評価した原音マスタリング／調和ミックスを維持。cache `hazama-fm-v430` / client `band-room.js?v=br-263` / CSS `band-room.css?v=br-98` / adapter v8。
 

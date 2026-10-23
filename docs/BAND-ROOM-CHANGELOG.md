@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v430 compact)
+# Band Room - Changelog (v65 -> v431 compact)
+
+## v431 — 2026-10-23
+
+2026-10-23 v431: AIギターの4曲26打点を、固定の和音から原音に裏付けのある単音リフへ補正。分離otherと分離前原音の異なる周波数解析が一致し、声とベースの漏れを抑える判定も通した候補に限定。実native出力で周波数の一致が悪化した3候補は見送り。打点・強弱・音長・奏法、ベース／ドラム、原曲マスタリングと調和ミックスは保持。途中移動で古いTransportの予約が小節位置を進める競合も修正し、全パートを選んだ譜面時刻から再開する。nativeの停止も先読み待ちを挟まず、音声時計の現在時刻で確定する。cache `hazama-fm-v431` / client `band-room.js?v=br-264` / CSS `band-room.css?v=br-98` / adapter v8。
 
 ## v430 — 2026-10-19
 
@@ -65,7 +69,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v430. Latest Band Room runtime change: v430 (source-backed bass rests). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v431. Latest Band Room runtime change: v431 (source-backed guitar single notes). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

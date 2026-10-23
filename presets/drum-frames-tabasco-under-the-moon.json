@@ -19189,7 +19189,75 @@
    "input_line_sha256": "74e55b4b54862e510057a49295fad947cca6aee856dcf792cbdd1b56c0d84f05",
    "moved": 74,
    "voicings_added": 0
-  }
+  },
+  "single_note_voicings": {
+  "method": "source-backed-guitar-single-v1",
+  "events_count": 882,
+  "bpm_fit": 161.5,
+  "source_sha256": {
+    "other": "9a9769d90dabbe073498425f9557e2f9d03ede870bd43aa36a7a695c92126ec8",
+    "bass": "bb6c470965b051f25cc8816b3f7fdf3104fa1c601dcaec2e70d9317a2a37818c",
+    "vocals": "5357d59826d44bd0559dc55813b7973b12105b2119c3fea72d8b025b4bde377f",
+    "premix": "bb06e242380dd72c9440aca064ce89a0bebef115c432f26c1eb3c8a6a94327b5"
+  },
+  "entries": [
+    [
+      14,
+      [
+        2,
+        2.63,
+        2.0,
+        53,
+        0.64
+      ],
+      50
+    ],
+    [
+      41,
+      [
+        6,
+        7.5,
+        2.0,
+        50,
+        0.79
+      ],
+      50
+    ],
+    [
+      46,
+      [
+        7,
+        4.63,
+        2.0,
+        48,
+        0.77
+      ],
+      48
+    ],
+    [
+      71,
+      [
+        12,
+        13.75,
+        2.0,
+        53,
+        0.56
+      ],
+      53
+    ],
+    [
+      495,
+      [
+        114,
+        7.89,
+        2.0,
+        51,
+        0.83
+      ],
+      63
+    ]
+  ]
+}
  },
  "drum_line": {
   "granularity": 16,

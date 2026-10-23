@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-23 v431: AIギターの4曲26打点を、固定の和音から原音に裏付けのある単音リフへ補正。分離otherと分離前原音の異なる周波数解析が一致し、声とベースの漏れを抑える判定も通した候補に限定。実native出力で周波数の一致が悪化した3候補は見送り。打点・強弱・音長・奏法、ベース／ドラム、原曲マスタリングと調和ミックスは保持。途中移動で古いTransportの予約が小節位置を進める競合も修正し、全パートを選んだ譜面時刻から再開する。nativeの停止も先読み待ちを挟まず、音声時計の現在時刻で確定する。cache `hazama-fm-v431` / client `band-room.js?v=br-264` / CSS `band-room.css?v=br-98` / adapter v8。
+
 > 検証経路: 本文の全件検査は通常経路。AGENTSの「Worker JSON handoff 限定経路」と
 > [専用定義](WORKER-HANDOFF-GATE.md) の全条件を満たす追跡済み2ファイルだけは、専用回帰試験と実在する独立レビューで置換できる。
 > 基点・排他所有・レビュー真正性が未確認なら full gate を要求し、実行できなければ停止する。
@@ -150,7 +152,7 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > Current cache / asset tuple: `hazama-fm-v427`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-263`, `band-room.css?v=br-98`。
+> `band-room.js?v=br-264`, `band-room.css?v=br-98`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:
