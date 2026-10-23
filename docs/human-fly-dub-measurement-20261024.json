@@ -1,0 +1,241 @@
+{
+  "release": "v432",
+  "song": "human-fly",
+  "sample_rate": 48000,
+  "channels": 2,
+  "rows": [
+    {
+      "mode": "baseline",
+      "lufs": -17.0,
+      "lra": 4.5,
+      "true_peak_dbtp": -3.4,
+      "sample_peak": 0.6734077334403992,
+      "crest_db": 16.518,
+      "sha256": "68f896d7c52dbec1362a401ea4d5aec482c72af336cbc9b0c77db2c00d7ff49c"
+    },
+    {
+      "mode": "blend",
+      "lufs": -17.0,
+      "lra": 4.5,
+      "true_peak_dbtp": -3.4,
+      "sample_peak": 0.673410177230835,
+      "crest_db": 16.518,
+      "sha256": "28d93cbe5a10b9af33e8d90a78a0b5d153aea8503ac66c53463c7cf9f5b3503d"
+    },
+    {
+      "mode": "dub",
+      "lufs": -18.6,
+      "lra": 5.0,
+      "true_peak_dbtp": -3.6,
+      "sample_peak": 0.6639806032180786,
+      "crest_db": 18.053,
+      "sha256": "3b97bcd2e4935d25d26205c79cebbe542ceade72b68b271c7755397e88ce45a0"
+    }
+  ],
+  "ordinary_mix_difference_snr_db": 83.023,
+  "native_browser_comparisons": [
+    {
+      "mode": "baseline",
+      "length": 11591549,
+      "peak": 0.6734077334403992,
+      "maxDifference": 0,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 34,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq"
+      }
+    },
+    {
+      "mode": "baseline-repeat",
+      "length": 11591549,
+      "peak": 0.673410177230835,
+      "maxDifference": 5.7637691497802734e-05,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 34,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq"
+      }
+    },
+    {
+      "mode": "blend",
+      "length": 11591549,
+      "peak": 0.673410177230835,
+      "maxDifference": 6.237626075744629e-05,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 34,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": null
+      }
+    },
+    {
+      "mode": "dub",
+      "length": 11591549,
+      "peak": 0.6639806032180786,
+      "maxDifference": 0,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 36,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "active": true,
+          "nodes": 30,
+          "taps": 4,
+          "lastEchoSeconds": 1.5325670498084292,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 0.8199999928474426,
+            "other": 0.7599999904632568
+          },
+          "sends": {
+            "vocals": 0.04500000178813934,
+            "other": 0.02500000037252903
+          }
+        }
+      }
+    },
+    {
+      "mode": "rhythm-baseline",
+      "length": 11591549,
+      "peak": 0.6115384101867676,
+      "maxDifference": 0,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 34,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq"
+      }
+    },
+    {
+      "mode": "rhythm-dub",
+      "length": 11591549,
+      "peak": 0.6115357875823975,
+      "maxDifference": 4.49642539024353e-05,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 36,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "active": true,
+          "nodes": 30,
+          "taps": 4,
+          "lastEchoSeconds": 1.5325670498084292,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 0.8199999928474426,
+            "other": 0.7599999904632568
+          },
+          "sends": {
+            "vocals": 0.04500000178813934,
+            "other": 0.02500000037252903
+          }
+        }
+      }
+    }
+  ],
+  "method": "Full 239.49s existing four MP3 stems plus 2s tail, production RecordedStemMix / RecordedDubMix factories, default .45 blend gate and 1.8 * -1dB master scale, Chromium OfflineAudioContext. No extra shared limiter in this conservative pre-limiter measurement.",
+  "limits": [
+    "Not a human listening or real iPhone certification. Existing separated-stem bleed remains.",
+    "Repeated baseline renders themselves differ at up to 0.000058 absolute sample amplitude. Ordinary mix difference is within the same numerical scale; no bit-identity claim.",
+    "The arrangement uses source-time bars, not detected lyrics/phrase ends."
+  ],
+  "sources": {
+    "vocals": "05f87f119b6afdc55afe436cf0b91f04fe828207f4042d0759af9b206f5f09b8",
+    "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88",
+    "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+    "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+  },
+  "code_sha256": {
+    "audio/dub-mix.js": "e3374f3a213a0946ba0fe735e7b4f6767fbac19d479fc5ff8ee27bd6cab602fe",
+    "audio/stem-live-mix.js": "b6cf4f6a3445d4f9237e94b95a7f0aa837d8095e760edcc99dfd0bc302fb7e09"
+  }
+}

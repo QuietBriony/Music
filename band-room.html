@@ -7,7 +7,7 @@
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
 <script src="audio/premix-entry.js?v=1"></script>
-<link rel="stylesheet" href="band-room.css?v=br-98" />
+<link rel="stylesheet" href="band-room.css?v=br-99" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -28,9 +28,10 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="audio/stem-live-mix.js?v=3" defer></script>
-<script src="band-room.js?v=br-264" defer></script>
-<script type="module" src="audio/premix-preview.mjs?v=9"></script>
+<script src="audio/dub-mix.js?v=1" defer></script>
+<script src="audio/stem-live-mix.js?v=4" defer></script>
+<script src="band-room.js?v=br-265" defer></script>
+<script type="module" src="audio/premix-preview.mjs?v=10"></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
 <script type="module" src="audio/physical-band/rhythm-preview.mjs?v=2"></script>
@@ -239,6 +240,14 @@
       <p class="br-help">パート別は声と楽器をまとめ直した「調和ミックス」が標準です。各パートを消して練習できます。sound mixで以前の仕上げと比較・基準への復帰ができます。Tabascoの分離前の録音は上の「ライブ原音」で聴けます。</p>
     </section>
 
+    <section id="br-dub-mix" hidden aria-label="Human Fly Dub mix" data-scope="stems">
+      <strong>Human Fly · Dub mix</strong>
+      <p class="br-help">ベースとドラムを軸に、歌とギターを引き、フレーズを4回の暗い反響へ。元の分離パートを使った別ミックスです。分離漏れは残ります。</p>
+      <button type="button" id="br-dub-listen" aria-pressed="false">Dubで聴く</button>
+      <button type="button" id="br-dub-compare" aria-pressed="true">調和と比べる</button>
+      <p class="br-help">選んでから下のSTART。再生中も同じ位置で比較できます。ほかの曲では調和へ戻ります。</p>
+    </section>
+
     <section id="br-arcb-instruments" hidden aria-label="ARCBの新しい楽器音">
       <strong>ARCB · 弦の響きと生ドラムの合奏</strong>
       <label>ギターの音 <select id="br-arcb-guitar-tone" aria-label="ARCBギターの音"><option value="acoustic">クリーン</option><option value="crunch" selected>クランチ</option><option value="drive">ディストーション</option></select></label>
@@ -408,7 +417,7 @@
         <div class="br-sound-grid">
           <section id="br-space" aria-label="Mastering">
             <h3>space</h3>
-            <label data-scope="stems"><span>パート別の仕上げ</span><select id="br-original-mastering" aria-describedby="br-original-mastering-help"><option value="blend">調和 · ライブ再ミックス</option><option value="live">以前のライブ設定</option><option value="dense">厚め · 従来の仕上げ</option></select></label>
+            <label data-scope="stems"><span>パート別の仕上げ</span><select id="br-original-mastering" aria-describedby="br-original-mastering-help"><option value="blend">調和 · ライブ再ミックス</option><option value="dub">Dub · Human Fly</option><option value="live">以前のライブ設定</option><option value="dense">厚め · 従来の仕上げ</option></select></label>
             <p class="br-help" id="br-original-mastering-help" data-scope="stems">調和は声と楽器のバランスを組み直し、短い部屋鳴りを共有します。以前の音量・EQ・声の広がり設定は重ねません。元の仮ミックスとは「ライブ原音」で比較できます。分離漏れは残ります。</p>
             <div id="br-master-presets">
               <button type="button" class="br-master-preset" data-preset="neutral">neutral</button>

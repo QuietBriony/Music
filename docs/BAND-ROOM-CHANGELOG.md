@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v431 compact)
+# Band Room - Changelog (v65 -> v432 compact)
+
+## v432 — 2026-10-24
+
+2026-10-24 v432: Human Flyの分離原音から任意のDubミックスを追加。ベースとドラムを保ち、7つの区間で歌とギターを引き、直前のフレーズを暗くなる4回の反響へ送る。調和と同じ位置で比較でき、ミュート・停止・途中移動で古い反響を消す。通常の調和、ライブ原音の補正、AI採譜と音源は維持。cache `hazama-fm-v432` / client `band-room.js?v=br-265` / CSS `band-room.css?v=br-99` / adapter v8。
 
 ## v431 — 2026-10-23
 
@@ -69,7 +73,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v431. Latest Band Room runtime change: v431 (source-backed guitar single notes). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v432. Latest Band Room runtime change: v432 (optional Human Fly Dub mix). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 
