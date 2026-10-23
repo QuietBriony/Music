@@ -267,6 +267,12 @@
           </div>
           <p class="module-stage-note">BPMはボタンを押した時だけ渡します。右のボタンは303＋909を止め、Strudelのコードを編集します。単独モード用です。「一緒に鳴らす」ではStrudelがテンポと時計を担当します。</p>
         </section>
+        <details class="audio-help">
+          <summary>別の音源も試す · Re-Rebirth</summary>
+          <p>303×2・808・909と、ツマミ操作の録音を別サイトで試せます。今の演奏を停止してから開き、戻る時は向こうも停止してください。保存棚・BPM同期・録音はこの試奏台とは別です。</p>
+          <p><a href="https://rb.varyform.info/" target="_blank" rel="noopener noreferrer">Re-Rebirthを別タブで開く ↗</a> · <a href="https://github.com/varyform/re-rebirth" target="_blank" rel="noopener noreferrer">作者の説明・ソース ↗</a></p>
+          <p>PLAYで試聴。PCはSpaceで再生／停止、2でパターン編集。スマホはPATTERNSで楽器を大きく表示できます。この試奏台の保存データは渡されません。</p>
+        </details>
         <div id="acid-module-stage" class="module-stage" hidden>
           <div class="module-stage-actions">
             <div><strong>acidBros / 303 × 2 ＋ 909</strong><span>RUNで音を出す。閉じると演奏が止まります。</span></div>

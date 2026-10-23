@@ -6,11 +6,11 @@ export const SCENE_TONES={tb303_1:synth,tb303_2:synth,
   rs:{},cp:{decay:100},ch:{ch_tune:100,ch_decay:100},oh:{oh_tune:100,oh_decay:100},
   cr:{cr_tune:100},rd:{rd_tune:100}};
 export const MACROS=[
-  {id:'hard',title:'硬さ',help:'303の明るさ・共鳴、キックの硬さ、スネアのざらつき',targets:[
+  {id:'hard',title:'硬さ',low:'柔らかい',high:'明るく鋭い',help:'303の明るさ・共鳴、キックの硬さ、スネアのざらつき',targets:[
     ['tb303_1','cutoff',20,80],['tb303_2','cutoff',20,80],['tb303_1','reso',2,10],['tb303_2','reso',2,10],['bd','attack',20,70],['sd','snappy',20,80]]},
-  {id:'motion',title:'うねり',help:'303のうねりの深さ・長さ、閉／開ハットの余韻',targets:[
+  {id:'motion',title:'うねり',low:'短く控えめ',high:'深く長い',help:'303のうねりの深さ・長さ、閉／開ハットの余韻',targets:[
     ['tb303_1','env',20,80],['tb303_2','env',20,80],['tb303_1','decay',15,70],['tb303_2','decay',15,70],['ch','ch_decay',15,55],['oh','oh_decay',20,65]]},
-  {id:'space',title:'空間',help:'2台の303のディレイ量。音量・ディレイ時間はそのまま',targets:[['tb303_1','delayWet',0,40],['tb303_2','delayWet',0,40]]},
+  {id:'space',title:'空間',low:'近い',high:'残響が広がる',help:'2台の303のディレイ量。音量・ディレイ時間はそのまま',targets:[['tb303_1','delayWet',0,40],['tb303_2','delayWet',0,40]]},
 ];
 const fail=()=>{throw new Error('音色の場面データが不正です。保存元のアプリで確認してください。');};
 export function normalizeSceneTones(value) {
