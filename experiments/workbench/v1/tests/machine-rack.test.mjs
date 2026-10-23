@@ -80,6 +80,42 @@ test('macro feedback follows only free voices and all-locked targets are explici
   assert.equal(r.scenes.macroValue('space'),null);assert.equal(r.scenes.macro('space',0),false);
   assert.deepEqual(snapshot(r),before);
 });
+test('overwrite confirmation saves its captured tones while AUTO keeps the current live performance',()=>{
+  const r=sceneRig();r.model.randomize();r.scenes.macro('hard',0);r.scenes.save(0,'soft');
+  r.scenes.macro('hard',100);r.scenes.save(1,'hard');
+  r.scenes.macro('hard',35);const captured=r.model.toneState();
+  r.scenes.configure(true,4);r.audio.isPlaying=true;r.scenes.tick(0,0);
+  for(let i=0;i<4;i++)r.tickBar();
+  const live=snapshot(r);assert.notDeepEqual(r.model.toneState(),captured);
+  r.scenes.save(1,'captured',captured);
+  assert.deepEqual(snapshot(r),live,'saving a snapshot never recalls it');
+  assert.equal(r.scenes.read().bank.slots[1].tones.tb303_1.cutoff,41);
+  assert.equal(r.scenes.read().current,0,'AUTO cursor stays with the live scene');
+  assert.equal(r.scenes.read().bank.auto.enabled,true);
+  captured.tb303_1.cutoff=99;assert.equal(r.scenes.read().bank.slots[1].tones.tb303_1.cutoff,41,'saved data is detached');
+  r.audio.isPlaying=false;r.scenes.recall(1);assert.equal(r.model.toneState().tb303_1.cutoff,41);
+});
+
+test('scene edit indicator follows audible tones, including locked manual edits, without treating levels as tone edits',()=>{
+  const r=sceneRig();r.scenes.save(0,'A');assert.equal(r.scenes.read().edited,false);
+  r.model.set('tb303_1','volume',17);assert.equal(r.scenes.read().edited,false);
+  r.data.unitLocks.tb303_1=true;r.model.set('tb303_1','cutoff',42);assert.equal(r.scenes.read().edited,true);
+  r.scenes.recall(0);assert.equal(r.model.toneState().tb303_1.cutoff,42,'recall still protects the lock');
+  assert.equal(r.scenes.read().edited,false,'indicator compares to the effective recalled tones');
+  r.scenes.macro('hard',100);assert.equal(r.scenes.read().edited,true);
+  r.data.currentPatternId=1;r.data.applyPatternSettings(1);assert.equal(r.scenes.read().current,null);
+});
+
+test('invalid captured tones and failed storage leave shelf and live music intact',()=>{
+  const r=sceneRig();r.scenes.save(0,'original');const before=JSON.stringify(r.scenes.read().bank),live=snapshot(r);
+  const invalid=r.model.toneState();invalid.tb303_1.cutoff=Infinity;
+  assert.throws(()=>r.scenes.save(0,'invalid',invalid),/不正/);
+  assert.equal(JSON.stringify(r.scenes.read().bank),before);assert.deepEqual(snapshot(r),live);
+  r.storage.setItem=()=>{throw Error('quota');};
+  assert.throws(()=>r.scenes.save(0,'fail',r.model.toneState()),/quota/);
+  assert.equal(JSON.stringify(r.scenes.read().bank),before);assert.deepEqual(snapshot(r),live);
+});
+
 test('scene AUTO uses only stored tones and respects duplicate ticks, drag release, locks and SONG mode',()=>{
   const r=sceneRig();r.scenes.macro('hard',0);r.scenes.save(0,'A');r.scenes.macro('hard',100);r.scenes.save(1,'B');
   r.scenes.configure(true,4);r.audio.isPlaying=true;r.scenes.tick(0,0);

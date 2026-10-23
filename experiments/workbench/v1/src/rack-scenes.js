@@ -8,6 +8,7 @@ export function createRackScenes({data,audio,model,storage,notify=()=>{}}) {
   try {raw=storage.getItem(KEY);if(raw&&raw.length>40000)throw new Error();data.rackScenes=raw?normalizeRackScenes(JSON.parse(raw)):emptyRackScenes();}
   catch {blocked=true;data.rackScenes=emptyRackScenes();message='場面の保存欄を読めません。元のデータを保護しています。まとめフェーダーは使えます。';}
   let bank=data.rackScenes;
+  let appliedTones=null,appliedPattern=null;
   if(incoming)data.rackScenes=incoming;
   function reset(){lastStep=null;bars=0;queued=null;pattern=null;}
   function sync() {
@@ -16,7 +17,7 @@ export function createRackScenes({data,audio,model,storage,notify=()=>{}}) {
       const next=normalizeRackScenes(data.rackScenes);
       try {persist(next);message='保存した組み合わせの音色場面を復元しました。';}
       catch(error){bank=next;data.rackScenes=bank;blocked=true;message='場面を画面へ復元しましたが端末保存できません。組み合わせを保存してください。'+error.message;}
-      reset();current=null;
+      reset();current=null;appliedTones=null;appliedPattern=null;
       if(next.auto.enabled&&data.rackAuto?.enabled){data.rackAuto.enabled=false;data.saveSettings?.();}
     }
   }
@@ -32,11 +33,17 @@ export function createRackScenes({data,audio,model,storage,notify=()=>{}}) {
   function apply(index) {
     const slot=bank.slots[index];if(!slot)throw new Error('空の場面です。今の音色を保存してください。');
     model.applyTonePatch(slot.tones);current=index;queued=null;bars=0;
+    appliedTones=normalizeSceneTones(model.toneState());appliedPattern=data.patterns[data.currentPatternId];
     message=String.fromCharCode(65+index)+' · '+slot.name+'。固定パートと音符・音量は保持。';
   }
   return {
     reset,manual,touch(value){const was=touching;touching=value;if(value||was)manual();},
-    read(){sync();return {bank,current,queued,remaining:Math.max(1,bank.auto.bars-bars),message};},
+    read(){
+      sync();
+      if(appliedPattern!==data.patterns[data.currentPatternId]){current=null;appliedTones=null;}
+      const edited=Boolean(appliedTones&&data.mode==='pattern'&&JSON.stringify(appliedTones)!==JSON.stringify(normalizeSceneTones(model.toneState())));
+      return {bank,current,queued,edited,remaining:Math.max(1,bank.auto.bars-bars),message};
+    },
     macroValue(id) {
       const macro=MACROS.find(m=>m.id===id),targets=freeTargets(macro),tones=model.toneState();
       return targets.length?Math.round(targets.reduce((n,[unit,key,min,max])=>n+Math.max(0,Math.min(1,(tones[unit][key]-min)/(max-min))),0)/targets.length*100):null;
@@ -49,10 +56,17 @@ export function createRackScenes({data,audio,model,storage,notify=()=>{}}) {
       for(const [unit,key,min,max] of macro.targets)tones[unit][key]=min+(max-min)*value/100;
       model.applyTonePatch(tones);message=macro.title+'を変更。固定・音符・打点・音量を保持。';notify();
     },
-    save(index,name) {
+    save(index,name,tones=model.toneState()) {
       sync();if(!Number.isInteger(index)||index<0||index>7)throw new Error('保存する場面を選んでください。');
-      const next=structuredClone(bank);next.slots[index]={name:String(name).trim().slice(0,48)||String.fromCharCode(65+index),tones:normalizeSceneTones(model.toneState())};
-      persist(next);current=index;queued=null;message='場面'+String.fromCharCode(65+index)+'をこの端末に保存しました。';notify();
+      const live=normalizeSceneTones(model.toneState()),next=structuredClone(bank);
+      next.slots[index]={name:String(name).trim().slice(0,48)||String.fromCharCode(65+index),tones:normalizeSceneTones(tones)};
+      persist(next);
+      // Confirm the click-time snapshot even if AUTO or a fader has moved on.
+      // Saving is storage-only: never replay the snapshot over the live sound.
+      if(JSON.stringify(live)===JSON.stringify(next.slots[index].tones)){
+        current=index;appliedTones=live;appliedPattern=data.patterns[data.currentPatternId];
+      }else if(current===index){current=null;appliedTones=null;}
+      queued=null;message='場面'+String.fromCharCode(65+index)+'をこの端末に保存しました。演奏中の音色はそのまま。';notify();
     },
     remove(index) {
       sync();if(!Number.isInteger(index)||index<0||index>7)throw new Error('場面を選んでください。');

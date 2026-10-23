@@ -1,5 +1,7 @@
 # acidBros snapshot
 
+2026-10-23 first-party rack polish: tone recall buttons are separate from the save destination selector. Overwrite confirmation keeps a click-time tone snapshot without recalling it into the live performance. Effective recalled tones report subsequent edits; fixed parts, notes, levels, tempo and native FILE format remain unchanged. Macro direction hints are visible on touch screens. Re-Rebirth is an external comparison link only; no upstream code, song or audio from that project is bundled.
+
 - Upstream: https://github.com/acidsound/acidBros
 - Source commit: `f0b348a7a641f76689b8ca97f3c1e4b90ab9c44e` (v153, 2026-05-02)
 - Upstream README license declaration: MIT License
