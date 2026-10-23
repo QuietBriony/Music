@@ -287,8 +287,29 @@ export const FileManager = {
             const importData = JSON.parse(fileContent);
             if (importData.version === 1 && Array.isArray(importData.files)) {
                 const existingFiles = this.getFileList();
-                const mergedFiles = [...importData.files, ...existingFiles];
-                this.saveFileList(mergedFiles);
+                const versionKey = file => JSON.stringify([file.name, file.data, file.created, file.modified]);
+                const versions = new Set(existingFiles.map(versionKey));
+                const usedIds = new Set(existingFiles.map(file => file.id));
+                const reservedIds = new Set([...usedIds, ...importData.files.map(file => file.id)]);
+                const importedFiles = [];
+                let importIndex = 0;
+                for (const file of importData.files) {
+                    const version = versionKey(file);
+                    if (versions.has(version)) continue;
+                    let id = file.id;
+                    if (usedIds.has(id)) {
+                        do {
+                            id = `import-${Date.now()}-${++importIndex}`;
+                        } while (reservedIds.has(id));
+                    }
+                    importedFiles.push({ ...file, id });
+                    versions.add(version);
+                    usedIds.add(id);
+                    reservedIds.add(id);
+                }
+                if (importedFiles.length) {
+                    this.saveFileList([...importedFiles, ...existingFiles]);
+                }
                 return true;
             }
         } catch (e) {
