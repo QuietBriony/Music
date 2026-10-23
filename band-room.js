@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-263-source-rests";
-  const BANDROOM_RELEASE_VERSION = "v430";
+  const BANDROOM_APP_VERSION = "br-264-guitar-lines";
+  const BANDROOM_RELEASE_VERSION = "v431";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -3489,7 +3489,11 @@
     state.sectionBarStart = mapped.sectionBarStart;
     state.pendingSeekOffsetSec = targetSec;
     state.playbackStartOffsetSec = targetSec;
-    if (options.syncTransport !== false) {
+    // Native playback restarts below with an explicit offset. Moving the
+    // still-running Transport here can dispatch the OLD repeat callback and
+    // advance barCount before the new partial bar is scheduled (e.g. IGAF at
+    // 39.9 seconds). Keep the mapped score position until stop/cancel/start.
+    if (options.syncTransport !== false && !(currentMode === "synth" && physicalArcbEnabled())) {
       try { Tone.Transport.seconds = transportSecondForContent(targetSec); } catch (e) {}
     }
     updateSectionDisplay();
@@ -4968,6 +4972,7 @@
       transcribedGuitarStroke,
       validatedGuitarVoicings,
       validatedGuitarAttackVoicings,
+      validatedGuitarSingleNotes,
       guitarVoicingFromMidi,
       physicalScheduleWindow,
       playbackClockDiagnostics: () => ({ songId: state.currentSongId, contentSeconds: playbackContentElapsedSec(), barCount: state.barCount, bpm: playbackBaseBpm(), instrumentMakeup: instrumentMakeup?.gain.value, totalBars: playbackStructure()?.reduce((sum, section) => sum + section.bars, 0), sourceDuration: state.songData?.performance_duration_s }),
@@ -6476,6 +6481,7 @@
         ordered.forEach((row, i) => transcribedLineCache.guitarNeighbors.set(row, { previous: ordered[i - 1], next: ordered[i + 1] }));
         transcribedLineCache.guitarVoicings = validatedGuitarVoicings(state.songData.guitar_line);
         transcribedLineCache.guitarAttackVoicings = validatedGuitarAttackVoicings(state.songData.guitar_line);
+        transcribedLineCache.guitarSingleNotes = validatedGuitarSingleNotes(state.songData);
       }
       if (lineKey === "bass_line") transcribedLineCache.bassReleases = validatedBassReleases(state.songData);
     }
@@ -6551,6 +6557,25 @@
           notes.at(-1) - notes[0] > 24 || ![similarity, margin, agreement].every(Number.isFinite) ||
           similarity < 0.65 || similarity > 1 || margin < 0.12 || margin > 1 || agreement !== 1) return new Map();
       result.set(row, notes.slice());
+    }
+    return result;
+  }
+
+  function validatedGuitarSingleNotes(song) {
+    const line = song?.guitar_line, data = line?.single_note_voicings, result = new Map();
+    if (data?.method !== "source-backed-guitar-single-v1" || !Array.isArray(line?.events) ||
+        data.events_count !== line.events.length || data.bpm_fit !== line.bpm_fit ||
+        !Array.isArray(data.entries) || !["other", "bass", "vocals", "premix"].every(part =>
+          /^[a-f0-9]{64}$/.test(data.source_sha256?.[part] || "")) ||
+        data.source_sha256.premix !== song.premix_reference?.sha256 ||
+        data.source_sha256.other !== line.harmonic_voicings?.stem_sha256) return result;
+    for (const entry of data.entries) {
+      if (!Array.isArray(entry) || entry.length !== 3) return new Map();
+      const [index, original, note] = entry, row = line.events[index];
+      if (!Number.isInteger(index) || !Array.isArray(row) || row.length !== 5 || result.has(row) ||
+          !Array.isArray(original) || original.length !== 5 || original.some((n, i) => !Number.isFinite(n) || n !== row[i]) ||
+          !Number.isInteger(note) || note < 40 || note > 76) return new Map();
+      result.set(row, [note]);
     }
     return result;
   }
@@ -6871,7 +6896,8 @@
       const durSteps = light ? Math.min(rawDurSteps, 1.6) : rawDurSteps;
       const durSec = Math.max(0.045, durSteps * ctx.subTime * 0.96);
       const vel = clamp(((Number(row[4]) || 0.55) * 0.96 + 0.02) * (!guitarSynth._physical && isUpstroke ? 0.88 : 1), 0.16, 0.98);
-      const attack = guitarSynth._physical ? transcribedLineCache.guitarAttackVoicings?.get(row) : null;
+      const attack = guitarSynth._physical ? (transcribedLineCache.guitarSingleNotes?.get(row)
+        || transcribedLineCache.guitarAttackVoicings?.get(row)) : null;
       const measured = attack || (guitarSynth._physical ? transcribedLineCache.guitarVoicings?.get(row[0]) : null);
       const voicing = measured ? measured.slice(0, notesPerStrum).map(note => Tone.Frequency(note, "midi").toNote())
         : guitarVoicingFromMidi(row[3], ctx.chord, isJazzy, notesPerStrum, !!guitarSynth._physical);
@@ -8163,7 +8189,10 @@
     if (!state.started || !isBandAiPlaybackMode()) return false;
     const targetSec = clampPlaybackSecond(targetSecond);
     try { releaseSustainedSynths(reason); } catch (e) {}
-    try { Tone.Transport.stop(); } catch (e) {}
+    // Native sources are released immediately. Stop their old clock at the
+    // same raw audio time: Tone's default look-ahead stop otherwise leaves a
+    // brief running window in which a newly registered repeat can fire early.
+    try { Tone.Transport.stop(physicalArcbEnabled() ? audioClockSeconds() : undefined); } catch (e) {}
     try { Tone.Transport.cancel(0); } catch (e) {}
     state.scheduledIds.forEach((id) => { try { Tone.Transport.clear(id); } catch (e) {} });
     state.scheduledIds = [];

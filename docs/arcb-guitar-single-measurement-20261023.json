@@ -1,0 +1,567 @@
+{
+  "method": "Independent linear FFT pitch-class cosine of actual post-amp PCM, level normalized; not perceptual accuracy",
+  "rows": [
+    {
+      "song": "hey",
+      "index": 161,
+      "time_s": 42.56260920209668,
+      "source_comparison": {
+        "other": {
+          "before": 0.8916222524657725,
+          "after": 0.9765304678182861,
+          "delta": 0.08490821535251362
+        },
+        "premix": {
+          "before": 0.9021766310792622,
+          "after": 0.9720690001945373,
+          "delta": 0.06989236911527504
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "b23eeadcd5a92719b4fcdfbf385d2eabc2e6f4edc9800d8cda5e1e43f0a92825"
+    },
+    {
+      "song": "hey",
+      "index": 494,
+      "time_s": 146.08245278309343,
+      "source_comparison": {
+        "other": {
+          "before": 0.9091914808954865,
+          "after": 0.9749538261904965,
+          "delta": 0.06576234529500989
+        },
+        "premix": {
+          "before": 0.9132831622280263,
+          "after": 0.9563068816710298,
+          "delta": 0.04302371944300335
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "5233da4d6cb860a3f1f9c0b329b44a406d29ec08c2ab913cfc1a89cbd2dbfc05"
+    },
+    {
+      "song": "hey",
+      "index": 634,
+      "time_s": 189.82319660537482,
+      "source_comparison": {
+        "other": {
+          "before": 0.37139703770893023,
+          "after": 0.713652018672916,
+          "delta": 0.34225498096398566
+        },
+        "premix": {
+          "before": 0.44921171554292727,
+          "after": 0.7245946559375539,
+          "delta": 0.2753829403946265
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "e0a712da1f28b2367c9aec274dbb2788a398f0e2ff80e1f43c7f64062dc0e171"
+    },
+    {
+      "song": "hey",
+      "index": 646,
+      "time_s": 192.61003411265494,
+      "source_comparison": {
+        "other": {
+          "before": 0.8315062592961097,
+          "after": 0.9506539078694223,
+          "delta": 0.11914764857331275
+        },
+        "premix": {
+          "before": 0.8130165235774004,
+          "after": 0.8665285115184782,
+          "delta": 0.05351198794107771
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "2e95b7db7a9b54c3dde4c4b7098210384dbf2129aae69d7ab7de37ee82531f62"
+    },
+    {
+      "song": "hey",
+      "index": 651,
+      "time_s": 194.35102753972876,
+      "source_comparison": {
+        "other": {
+          "before": 0.09131185752835666,
+          "after": 0.9318850323754269,
+          "delta": 0.8405731748470702
+        },
+        "premix": {
+          "before": 0.2894673975245735,
+          "after": 0.8502740931767543,
+          "delta": 0.5608066956521809
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "06103ec1d4a9aad0f67c938214211fa30c1d80d5544d3e6e7ae57fd996e598f3"
+    },
+    {
+      "song": "hey",
+      "index": 655,
+      "time_s": 195.31450203843914,
+      "source_comparison": {
+        "other": {
+          "before": 0.8236079533504619,
+          "after": 0.9102497554881116,
+          "delta": 0.08664180213764974
+        },
+        "premix": {
+          "before": 0.7917702025426607,
+          "after": 0.8373545698267859,
+          "delta": 0.04558436728412506
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "2cd049d701242b219feae1956163747ac97200fd2dd08181527f906dd48094bc"
+    },
+    {
+      "song": "hey",
+      "index": 666,
+      "time_s": 198.3097595473833,
+      "source_comparison": {
+        "other": {
+          "before": 0.05643765274138643,
+          "after": 0.9199814106854559,
+          "delta": 0.8635437579440695
+        },
+        "premix": {
+          "before": 0.19995523595535744,
+          "after": 0.8928176127346537,
+          "delta": 0.6928623767792962
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "0a9a3a7cba0468857ebf897ff79c25d7f6c916145acf83490d349c07bcbf3c16"
+    },
+    {
+      "song": "hey",
+      "index": 680,
+      "time_s": 202.2572593393793,
+      "source_comparison": {
+        "other": {
+          "before": 0.2170928630539028,
+          "after": 0.9301867085714498,
+          "delta": 0.7130938455175468
+        },
+        "premix": {
+          "before": 0.3297216956213807,
+          "after": 0.8695291546594385,
+          "delta": 0.5398074590380578
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "ec8bde91f31c8cd0059818444d8b243c406c1a6730dc8134fac4aa4f6d9e97af"
+    },
+    {
+      "song": "hey",
+      "index": 835,
+      "time_s": 243.06639487478157,
+      "source_comparison": {
+        "other": {
+          "before": 0.13063464169971647,
+          "after": 0.875493281447468,
+          "delta": 0.7448586397477515
+        },
+        "premix": {
+          "before": 0.46526932222013806,
+          "after": 0.7372882451086336,
+          "delta": 0.2720189228884955
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "8331b2f5b74fc3d4c7228ae8253183f47ecceebc082fca7656f962860f6fd982"
+    },
+    {
+      "song": "sister",
+      "index": 36,
+      "time_s": 17.44955300127714,
+      "source_comparison": {
+        "other": {
+          "before": 0.20116924113760484,
+          "after": 0.9410132718273825,
+          "delta": 0.7398440306897776
+        },
+        "premix": {
+          "before": 0.20789034933934047,
+          "after": 0.9425687321505196,
+          "delta": 0.7346783828111787
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "0e1a0c9e181fd19187c3f160ef5959d58f02b5dfc0f49d123c4f3b41df1c0152"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 76,
+      "time_s": 23.893418753640066,
+      "source_comparison": {
+        "other": {
+          "before": 0.9269294805668238,
+          "after": 0.8657248395871703,
+          "delta": -0.06120464097965392
+        },
+        "premix": {
+          "before": 0.9348051249111506,
+          "after": 0.8266520499722452,
+          "delta": -0.1081530749389054
+        }
+      },
+      "adopted": false,
+      "capture_sha256": "0a87553583aa5bd339372b62d3600f7d1474d71206b9cd177afe4d2cfc612a05"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 135,
+      "time_s": 40.379815292453614,
+      "source_comparison": {
+        "other": {
+          "before": 0.1881412230553455,
+          "after": 0.9151038140679087,
+          "delta": 0.7269625910125631
+        },
+        "premix": {
+          "before": 0.21850795218027808,
+          "after": 0.9152620254277619,
+          "delta": 0.6967540732474835
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "6be86fd912670b2ddc1b721fd4d7994569d9e4fcd5606bf0d893e2af575e3336"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 148,
+      "time_s": 43.94417172809718,
+      "source_comparison": {
+        "other": {
+          "before": 0.8622923857305024,
+          "after": 0.8419065065697987,
+          "delta": -0.020385879160703762
+        },
+        "premix": {
+          "before": 0.8566438296384042,
+          "after": 0.8415312590948971,
+          "delta": -0.015112570543507054
+        }
+      },
+      "adopted": false,
+      "capture_sha256": "d94b64a6514f30885b49158fdbff6697804355c0e05db24113bbb24accd8b371"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 170,
+      "time_s": 49.47042183209917,
+      "source_comparison": {
+        "other": {
+          "before": 0.25943971425051143,
+          "after": 0.972408397409321,
+          "delta": 0.7129686831588097
+        },
+        "premix": {
+          "before": 0.3455130116613111,
+          "after": 0.8915035974666521,
+          "delta": 0.545990585805341
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "57f1b6a0fff6f3d25ee42bb6043f0718327703134a2bb9bb8685d65e18470a39"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 651,
+      "time_s": 175.03161660703884,
+      "source_comparison": {
+        "other": {
+          "before": 0.7861526317004204,
+          "after": 0.9056072615761145,
+          "delta": 0.11945462987569394
+        },
+        "premix": {
+          "before": 0.7759317673504315,
+          "after": 0.8865309325613197,
+          "delta": 0.11059916521088806
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "c4a59831614b2446f6a995d699e26dde3653262ce1bc1011596ee149230901a8"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 748,
+      "time_s": 210.0124802396206,
+      "source_comparison": {
+        "other": {
+          "before": 0.20447676069109277,
+          "after": 0.9862708191982283,
+          "delta": 0.7817940585071355
+        },
+        "premix": {
+          "before": 0.28621964058544697,
+          "after": 0.8899267986933972,
+          "delta": 0.6037071581079503
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "12552679e3fe9c3bf18f8c4e013c9f722a3a5dfbd90749e6d0b5e1ba2679d3c6"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 755,
+      "time_s": 211.765953906315,
+      "source_comparison": {
+        "other": {
+          "before": 0.8005785670246092,
+          "after": 0.9033330108856594,
+          "delta": 0.10275444386105018
+        },
+        "premix": {
+          "before": 0.7504037410017772,
+          "after": 0.7959835059229338,
+          "delta": 0.0455797649211566
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "e21b2f4e0d973f8c20a200c9b8458a2851ef435d8ccc4bb84360f56a62190ca5"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 765,
+      "time_s": 214.18088027290125,
+      "source_comparison": {
+        "other": {
+          "before": 0.8071716076433706,
+          "after": 0.9493979898764998,
+          "delta": 0.14222638223312917
+        },
+        "premix": {
+          "before": 0.7693361908529461,
+          "after": 0.8241988481679683,
+          "delta": 0.054862657315022136
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "1be034b419e02deacb25e274435403a16524183f03cd282e3d0f0711e40f5540"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 766,
+      "time_s": 214.529078958316,
+      "source_comparison": {
+        "other": {
+          "before": 0.9209963625661951,
+          "after": 0.9604951199794464,
+          "delta": 0.03949875741325121
+        },
+        "premix": {
+          "before": 0.8622002429024789,
+          "after": 0.8776555549151176,
+          "delta": 0.015455312012638663
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "fe4e557eafc330f66df5a04a56910225437316e7b1e16a1eb742923992849486"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 771,
+      "time_s": 216.31749729594807,
+      "source_comparison": {
+        "other": {
+          "before": 0.9076217925553366,
+          "after": 0.9388728463859817,
+          "delta": 0.03125105383064502
+        },
+        "premix": {
+          "before": 0.8749601561530541,
+          "after": 0.8818781048692785,
+          "delta": 0.006917948716224462
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "2a6573efa7d65853f9a6682ff43019ae1dcbb16456e2325f088c5667428d64cf"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 772,
+      "time_s": 216.58457442382894,
+      "source_comparison": {
+        "other": {
+          "before": 0.9775624077934632,
+          "after": 0.9688008256281541,
+          "delta": -0.008761582165309322
+        },
+        "premix": {
+          "before": 0.9084802125977199,
+          "after": 0.8925921072035992,
+          "delta": -0.015888105394120885
+        }
+      },
+      "adopted": false,
+      "capture_sha256": "d25eb2b0ca57a7d2a8e90f7b40f06d486433787c000f9262e0632e2412828f82"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 774,
+      "time_s": 217.06007155337383,
+      "source_comparison": {
+        "other": {
+          "before": 0.3472152082942094,
+          "after": 0.9714469580646599,
+          "delta": 0.6242317497704504
+        },
+        "premix": {
+          "before": 0.6491412292051691,
+          "after": 0.8155938661957784,
+          "delta": 0.16645263699060922
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "359e3c6dd28dd0130a8f01ac4eecc1be401fc76e04598da93381113f138dd49d"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 776,
+      "time_s": 217.582993593477,
+      "source_comparison": {
+        "other": {
+          "before": 0.8018714154057714,
+          "after": 0.9415389966694899,
+          "delta": 0.1396675812637183
+        },
+        "premix": {
+          "before": 0.8642176719652087,
+          "after": 0.9493099316431769,
+          "delta": 0.08509225967796828
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "a85c2b3a94e21c06e926dacb1e13ae28f39322eb9b64ba6242f4f327e841e2d2"
+    },
+    {
+      "song": "i-got-a-feeling",
+      "index": 782,
+      "time_s": 219.3239870205508,
+      "source_comparison": {
+        "other": {
+          "before": 0.22864938391852063,
+          "after": 0.9715431089912466,
+          "delta": 0.742893725072726
+        },
+        "premix": {
+          "before": 0.48450225094068156,
+          "after": 0.8291000193831055,
+          "delta": 0.34459776844242385
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "2abe9067a91dc5df1f04806db22f9905d777266e494278b4ae7a4db2602cd616"
+    },
+    {
+      "song": "under-the-moon",
+      "index": 14,
+      "time_s": 3.2164086687306503,
+      "source_comparison": {
+        "other": {
+          "before": 0.4093229464763551,
+          "after": 0.9454469573849189,
+          "delta": 0.5361240109085638
+        },
+        "premix": {
+          "before": 0.4144105441411944,
+          "after": 0.9454750714906474,
+          "delta": 0.5310645273494528
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "be428fa84defd8ddd3ed281f285c92b10c89d5c7f1f4d40db352c1ad1477eeda"
+    },
+    {
+      "song": "under-the-moon",
+      "index": 41,
+      "time_s": 9.613003095975232,
+      "source_comparison": {
+        "other": {
+          "before": 0.6977265213081226,
+          "after": 0.8271302232789962,
+          "delta": 0.12940370197087359
+        },
+        "premix": {
+          "before": 0.6966899729566376,
+          "after": 0.8267694859303423,
+          "delta": 0.13007951297370468
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "b0fe02e858b1d98676f58eaeb51c5ea42060d590aae469a47a906726f5b83c5e"
+    },
+    {
+      "song": "under-the-moon",
+      "index": 46,
+      "time_s": 10.83250773993808,
+      "source_comparison": {
+        "other": {
+          "before": 0.7824871348624557,
+          "after": 0.9304471855018555,
+          "delta": 0.14796005063939968
+        },
+        "premix": {
+          "before": 0.7923557875004797,
+          "after": 0.9282882676163398,
+          "delta": 0.13593248011585987
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "189418ec182fac6b68915ae0e7dbaf365ee24c6e700c2f8febe86e20f391e96e"
+    },
+    {
+      "song": "under-the-moon",
+      "index": 71,
+      "time_s": 19.109907120743035,
+      "source_comparison": {
+        "other": {
+          "before": 0.81087634552591,
+          "after": 0.934349190363869,
+          "delta": 0.12347284483795895
+        },
+        "premix": {
+          "before": 0.8287435684719265,
+          "after": 0.926139033384435,
+          "delta": 0.09739546491250849
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "d623f683aebca84e7c2f4f2bc73248b99d8fe9245ef0ee5ac87fa72899d50aa0"
+    },
+    {
+      "song": "under-the-moon",
+      "index": 495,
+      "time_s": 170.14458204334366,
+      "source_comparison": {
+        "other": {
+          "before": 0.8415303995810819,
+          "after": 0.9464645357309773,
+          "delta": 0.10493413614989544
+        },
+        "premix": {
+          "before": 0.8542485354636261,
+          "after": 0.9203269514441375,
+          "delta": 0.06607841598051117
+        }
+      },
+      "adopted": true,
+      "capture_sha256": "ca5ce14f300c8eef4774a1776e3fa0c0caeb8ed1ec80d7d9f15bcaf1fe464581"
+    }
+  ],
+  "factory_sha256": "38a5d40a996c9d2de615d2c5138a54f5826c37eb5d29310de609510a7be12969",
+  "conditions": {
+    "tone": "crunch",
+    "room": 0,
+    "sample_rate": 48000,
+    "same_attack_velocity_gate_articulation": true
+  },
+  "limits": [
+    "Pitch-class cosine is not perceptual fidelity or polyphonic ground truth.",
+    "Twenty-six adopted and three explicitly withheld. No new source recordings or physical iPhone validation."
+  ]
+}
