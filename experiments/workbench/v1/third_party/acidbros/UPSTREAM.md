@@ -46,3 +46,7 @@ Combined snapshots use machine v3 / backup schema 4 and migrate older versions w
 ## First-party tone scenes (2026-10-16)
 
 The first-party rack adds three bounded tone macros and eight named tone scenes, driven by the existing scheduler adapter at bar boundaries. Notes, hits, levels, tempo and locks are excluded; locked voices are protected. No upstream synthesis, clock, assets or FILE codec changes. `rack-scenes.js` and `rack-scenes-state.js` are served at the workbench root. A local scene bank is also carried as an optional `rackScenes` field in machine v3 combined snapshots; old snapshots retain the existing bank. Native FILE saves still contain only their existing score and current tones.
+
+## Native FILE import repeatability (2026-10-23)
+
+Local `FileManager.js` keeps identical saved versions from being added again by FILE IMPORT. Incoming ID collisions receive a fresh ID, preserving existing records and the selected FILE. New records still precede the existing shelf; the FILE codec, audio code and storage keys are unchanged. This prevents new duplicate IDs from blocking Workbench combined backup export. It does not rewrite or repair pre-existing duplicate or invalid records.
