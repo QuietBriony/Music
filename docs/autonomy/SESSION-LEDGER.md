@@ -1,5 +1,11 @@
 # Session Ledger — music-stack
 
+## 2026-10-24 — Human Fly Dubのリズムと反響を再構成（v435）
+
+2026-10-24 v435: Human Fly Dubを、リズムを保つversionへ組み直す。全体停止と1〜2拍の断片をやめ、ベース／ドラムを土台に声の語尾・ギター・選んだスネアが暗くなるfeedback echoへ応答する。ギターとドラムの帯域、反響の長さ・左右をフレーズで動かし、中盤は2小節のベース＋ドラムを8小節回す。声21・ギター54・スネア45のsource cueをCPUで選定。音源ファイルと曲の長さ・比較位置は保持。cache `hazama-fm-v435` / client `band-room.js?v=br-268` / CSS `band-room.css?v=br-99` / adapter v8。
+
+v434は本人が「音を止めるだけで面白くない」と不採用評価。検証で分かる動作・波形と、本人が聴く面白さを混同しない。新しいechoのfeedback上限は0.685、loop内filter Q=0.5と微分gain 1以下のtanhで増幅しない設計。ばね状の短いdrum returnは手続きIRで、録音素材ではない。普通の調和経路はfilterをbypassし、A/B・Stop／seek／tempo／mute／0で旧echoを破棄。CPU/nativeのみ。原音／AI採譜・bankとWorkbenchは変更しない。証跡は対応PRと`output/playwright/human-fly-dub-console-20261024`。本人／実iPhoneの採用は未確認。
+
 ## 2026-10-24 — Human Fly Dubの展開（v434）
 
 2026-10-24 v434: Human Fly Dubに5つの展開を追加。ベース／ギターの2拍ループ、ギターの1拍ループ、ドラムの2拍ループを既存録音から短く切り出し、ドラム／低音の抜き差し、反響だけの間、最後の1拍の静寂から全員で戻る。約29秒、61秒、127秒、163秒、225秒。音程と曲の長さは変えず、調和と同じ位置で比較。追加音声ファイルはなく、短いコピーだけをRAMへ作る。cache `hazama-fm-v434` / client `band-room.js?v=br-267` / CSS `band-room.css?v=br-99` / adapter v8。

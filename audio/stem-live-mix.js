@@ -1,5 +1,5 @@
 /* Recorded-stem mix. Direct inputs must precede legacy EQ and song boosts.
- * Native Web Audio only; no samples, modulation, feedback or network access.
+ * Native Web Audio; ordinary reflections stay separate from optional Dub.
  * The same factory is rendered offline for full-song measurement. */
 (function (root) {
   "use strict";
@@ -15,7 +15,7 @@
   const SONG_DB = Object.freeze({"tabasco": -0.2, "hey": 0.2, "i-got-a-feeling": -1.2, "under-the-moon": 1.1, "electric-sheep": -0.6, "human-fly": 0.9, "sister": 1.1});
   const validLevel = value => Number.isFinite(Number(value)) ? Math.max(0, Math.min(1, Number(value))) : 0.8;
   function create(context) {
-    const nodes = [], inputs = {}, faders = {}, levels = {}, direct = {}, roomSends = {}, processors = {}, sourceGates = {};
+    const nodes = [], inputs = {}, faders = {}, levels = {}, direct = {}, roomSends = {}, processors = {}, sourceGates = {}, tones = {}, toneGains = {}, bypassGains = {};
     let dub = null, retiredDub = null, dubBuffers = null;
     const muted = { vocals: false, drums: false, bass: false, other: false };
     const keep = node => { nodes.push(node); return node; };
@@ -57,6 +57,10 @@
       dub?.dispose(); dub = null; dubBuffers = null;
       for (const route of Object.values(direct)) set(route.gain, 1);
       for (const route of Object.values(sourceGates)) set(route.gain, 1);
+      for (const part of Object.keys(tones)) {
+        set(toneGains[part].gain, 0); set(bypassGains[part].gain, 1);
+        set(tones[part].frequency, tones[part].frequency.value);
+      }
     }
     function startDub(options, buffers = dubBuffers) {
       root.RecordedDubMix.validate(options);
@@ -68,12 +72,18 @@
       for (const part of PARTS) {
         if (direct[part]) continue;
         const fader = faders[part], send = roomSends[part], route = gain(1);
-        fader.disconnect(sum); fader.disconnect(send); fader.connect(route);
+        const tone = filter("lowpass", context.sampleRate * 0.45, 0, 0.5);
+        tones[part] = tone; toneGains[part] = gain(0); bypassGains[part] = gain(1);
+        fader.disconnect(sum); fader.disconnect(send);
+        fader.connect(tone); tone.connect(toneGains[part]); toneGains[part].connect(route);
+        fader.connect(bypassGains[part]); bypassGains[part].connect(route);
         route.connect(sum); route.connect(send); direct[part] = route;
         const source = gain(1); sourceGates[part] = source;
         inputs[part].disconnect(processors[part]); inputs[part].connect(source); source.connect(processors[part]);
       }
-      dub = root.RecordedDubMix.create(context, { inputs: faders, direct, sources: sourceGates,
+      // Equal linear fades retain the exact unfiltered ordinary route.
+      for (const part of PARTS) { set(toneGains[part].gain, 1); set(bypassGains[part].gain, 0); }
+      dub = root.RecordedDubMix.create(context, { inputs: faders, direct, sources: sourceGates, tones,
         loopTargets: processors, buffers: dubBuffers,
         muted: Object.fromEntries(PARTS.map(p=>[p,muted[p]||levels[p]===0])), output: sum });
       dub.schedule(options);
@@ -104,7 +114,8 @@
       setSong(song) { set(output.gain, 10 ** ((Object.hasOwn(SONG_DB, song) ? SONG_DB[song] : 0) / 20)); },
       diagnostics() { return { levels: { ...levels }, gains: Object.fromEntries(PARTS.map(p => [p, faders[p].gain.value])),
         output: output.gain.value, nodes: nodes.length, roomLastReflectionSeconds: 0.139, source: "pre-trim-pre-eq",
-        dub: dub?.diagnostics() || null }; },
+        dub: dub?.diagnostics() || null,
+        dubToneHz: Object.fromEntries(Object.entries(tones).map(([p, n]) => [p, n.frequency.value])) }; },
       dispose() { dub?.destroy(); retiredDub?.destroy(); dub = null; retiredDub = null; dubBuffers = null; for (const node of nodes) node.disconnect(); }
     };
   }
