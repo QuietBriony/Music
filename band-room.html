@@ -28,10 +28,10 @@
 <script src="https://unpkg.com/tone@14.8.49/build/Tone.js" defer></script>
 <script src="audio/audio-safety.js?v=br-68" defer></script>
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
-<script src="audio/dub-mix.js?v=1" defer></script>
+<script src="audio/dub-mix.js?v=2" defer></script>
 <script src="audio/stem-live-mix.js?v=4" defer></script>
-<script src="band-room.js?v=br-265" defer></script>
-<script type="module" src="audio/premix-preview.mjs?v=10"></script>
+<script src="band-room.js?v=br-266" defer></script>
+<script type="module" src="audio/premix-preview.mjs?v=11"></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
 <script type="module" src="audio/physical-band/rhythm-preview.mjs?v=2"></script>
@@ -242,7 +242,7 @@
 
     <section id="br-dub-mix" hidden aria-label="Human Fly Dub mix" data-scope="stems">
       <strong>Human Fly · Dub mix</strong>
-      <p class="br-help">ベースとドラムを軸に、歌とギターを引き、フレーズを4回の暗い反響へ。元の分離パートを使った別ミックスです。分離漏れは残ります。</p>
+      <p class="br-help">ベースとドラムの打感を残し、声の語尾とギターのひと弾きを4回の暗い反響へ。少し左右へ返し、声とギターが戻る時には反響を奥へ。元の分離パートを使うため、分離漏れは残ります。</p>
       <button type="button" id="br-dub-listen" aria-pressed="false">Dubで聴く</button>
       <button type="button" id="br-dub-compare" aria-pressed="true">調和と比べる</button>
       <p class="br-help">選んでから下のSTART。再生中も同じ位置で比較できます。ほかの曲では調和へ戻ります。</p>

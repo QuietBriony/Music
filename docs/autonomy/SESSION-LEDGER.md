@@ -1,5 +1,11 @@
 # Session Ledger — music-stack
 
+## 2026-10-24 — Human Fly Dubの語尾・反響を調整（v433）
+
+2026-10-24 v433: Human FlyのDubを語尾とギターの打点へ合わせる。声6箇所は帯域エネルギーが18 dB以上落ちる位置から引き、ギター7箇所は打点と230 msの胴鳴りを残してから引く。常時echo sendをやめ、選んだ語尾／ストロークだけを反響へ。声は付点8分、ギターは4分で応答し、小さく左右へ返して戻り際は奥へ下げる。ベースとドラムの経路・打点・余韻は保持。cache `hazama-fm-v433` / client `band-room.js?v=br-266` / CSS `band-room.css?v=br-99` / adapter v8。
+
+source cueの正本は`docs/human-fly-dub-cues-20261024.json`。CPUで原音の帯域包絡とotherの立ち上がりを照合し、クライアントでは固定時刻の軽いautomationだけを使う。新音源・依存・hostingなし。証跡は対応PRと`output/playwright/human-fly-dub-refine-20261024`。歌詞の理解や本人／実iPhoneの試聴合格は主張しない。
+
 ## 2026-10-24 — Human Fly Dub（v432）
 
 2026-10-24 v432: Human Flyの分離原音から任意のDubミックスを追加。ベースとドラムを保ち、7つの区間で歌とギターを引き、直前のフレーズを暗くなる4回の反響へ送る。調和と同じ位置で比較でき、ミュート・停止・途中移動で古い反響を消す。通常の調和、ライブ原音の補正、AI採譜と音源は維持。cache `hazama-fm-v432` / client `band-room.js?v=br-265` / CSS `band-room.css?v=br-99` / adapter v8。

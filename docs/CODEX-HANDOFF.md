@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-24 v433: Human FlyのDubを語尾とギターの打点へ合わせる。声6箇所は帯域エネルギーが18 dB以上落ちる位置から引き、ギター7箇所は打点と230 msの胴鳴りを残してから引く。常時echo sendをやめ、選んだ語尾／ストロークだけを反響へ。声は付点8分、ギターは4分で応答し、小さく左右へ返して戻り際は奥へ下げる。ベースとドラムの経路・打点・余韻は保持。cache `hazama-fm-v433` / client `band-room.js?v=br-266` / CSS `band-room.css?v=br-99` / adapter v8。
+
 2026-10-24 v432: Human Flyの分離原音から任意のDubミックスを追加。ベースとドラムを保ち、7つの区間で歌とギターを引き、直前のフレーズを暗くなる4回の反響へ送る。調和と同じ位置で比較でき、ミュート・停止・途中移動で古い反響を消す。通常の調和、ライブ原音の補正、AI採譜と音源は維持。cache `hazama-fm-v432` / client `band-room.js?v=br-265` / CSS `band-room.css?v=br-99` / adapter v8。
 
 2026-10-23: 独立試奏台の音色場面は呼び出しと保存先を分離。上書き確認は保存ボタン時点の音色を保持し、現在の演奏を変えない。フェーダーの上下説明と編集あり表示、Re-Rebirthの外部比較導線を追加。外部音源は同梱・同期せず、既存の固定／保存形式／時計を維持。詳細は`experiments/workbench/v1/README.md`。
@@ -289,7 +291,7 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v432`。Band Room runtime markerは`band-room.js?v=br-265` /
+- 現行cacheは`hazama-fm-v433`。Band Room runtime markerは`band-room.js?v=br-266` /
   `band-room.css?v=br-98`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
