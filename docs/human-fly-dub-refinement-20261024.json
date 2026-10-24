@@ -1,0 +1,485 @@
+{
+  "release": "v433",
+  "song": "human-fly",
+  "sample_rate": 48000,
+  "channels": 2,
+  "full_song_rows": [
+    {
+      "mode": "before",
+      "lufs": -18.6,
+      "lra": 5.0,
+      "true_peak_dbtp": -3.6,
+      "sample_peak": 0.6639822721481323,
+      "mono_fold_db": -0.003,
+      "crest_db": 18.062,
+      "sha256": "a954f8c3cce3f4592a958eefb8cba70f88c288c5b0d5ca157b0473999ec87c9b"
+    },
+    {
+      "mode": "after",
+      "lufs": -18.5,
+      "lra": 4.6,
+      "true_peak_dbtp": -3.6,
+      "sample_peak": 0.6623842120170593,
+      "mono_fold_db": -0.003,
+      "crest_db": 17.852,
+      "sha256": "06c4806e3ad5683364865178dba2d0256682d785fd3afebcc7b111187ca2393d"
+    },
+    {
+      "mode": "echo-before",
+      "lufs": -43.2,
+      "lra": 21.5,
+      "true_peak_dbtp": -16.0,
+      "sample_peak": 0.15790800750255585,
+      "mono_fold_db": -0.0012,
+      "crest_db": 31.548,
+      "sha256": "5eeaeeb54e32b1c11656ae0d35f197f4fe6c04c5433a248fd0c8402f576f21a8"
+    },
+    {
+      "mode": "echo-after",
+      "lufs": -33.2,
+      "lra": 18.1,
+      "true_peak_dbtp": -12.8,
+      "sample_peak": 0.2296913117170334,
+      "mono_fold_db": -0.0906,
+      "crest_db": 37.371,
+      "sha256": "b1294ba3bdcc39819149eb184ba4e7104d0a1ab274094414b87eeefb7dd8b975"
+    }
+  ],
+  "native_comparisons": [
+    {
+      "mode": "before",
+      "length": 11615549,
+      "peak": 0.6639822721481323,
+      "maxDifference": 0,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 36,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "active": true,
+          "nodes": 30,
+          "taps": 4,
+          "lastEchoSeconds": 1.5325670498084292,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 0.8199999928474426,
+            "other": 0.7599999904632568
+          },
+          "sends": {
+            "vocals": 0.04500000178813934,
+            "other": 0.02500000037252903
+          }
+        }
+      }
+    },
+    {
+      "mode": "after",
+      "length": 11615549,
+      "peak": 0.6623842120170593,
+      "maxDifference": 0,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 36,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "revision": 2,
+          "active": true,
+          "nodes": 40,
+          "taps": 4,
+          "echoBeats": {
+            "vocals": 0.75,
+            "other": 1
+          },
+          "lastEchoSeconds": 2.0434227330779056,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 0.8199999928474426,
+            "other": 0.7599999904632568
+          },
+          "sends": {
+            "vocals": 0,
+            "other": 0
+          },
+          "wet": {
+            "vocals": 0.6000000238418579,
+            "other": 0.6000000238418579
+          }
+        }
+      }
+    },
+    {
+      "mode": "ordinary",
+      "length": 11615549,
+      "peak": 0.6734054088592529,
+      "maxDifference": 0,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 34,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": null
+      }
+    },
+    {
+      "mode": "ordinary-after",
+      "length": 11615549,
+      "peak": 0.6734105944633484,
+      "maxDifference": 7.058680057525635e-05,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 36,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": null
+      }
+    },
+    {
+      "mode": "rhythm-before",
+      "length": 11615549,
+      "peak": 0.6115339398384094,
+      "maxDifference": 0,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 36,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "active": true,
+          "nodes": 30,
+          "taps": 4,
+          "lastEchoSeconds": 1.5325670498084292,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 0.8199999928474426,
+            "other": 0.7599999904632568
+          },
+          "sends": {
+            "vocals": 0.04500000178813934,
+            "other": 0.02500000037252903
+          }
+        }
+      }
+    },
+    {
+      "mode": "rhythm-after",
+      "length": 11615549,
+      "peak": 0.6115411520004272,
+      "maxDifference": 5.08725643157959e-05,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 36,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "revision": 2,
+          "active": true,
+          "nodes": 40,
+          "taps": 4,
+          "echoBeats": {
+            "vocals": 0.75,
+            "other": 1
+          },
+          "lastEchoSeconds": 2.0434227330779056,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 0.8199999928474426,
+            "other": 0.7599999904632568
+          },
+          "sends": {
+            "vocals": 0,
+            "other": 0
+          },
+          "wet": {
+            "vocals": 0.6000000238418579,
+            "other": 0.6000000238418579
+          }
+        }
+      }
+    },
+    {
+      "mode": "echo-before",
+      "length": 11615549,
+      "peak": 0.15790800750255585,
+      "maxDifference": 0,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1,
+        "nodes": 36,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "active": true,
+          "nodes": 30,
+          "taps": 4,
+          "lastEchoSeconds": 1.5325670498084292,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 1,
+            "other": 1
+          },
+          "sends": {
+            "vocals": 0.04500000178813934,
+            "other": 0.02500000037252903
+          }
+        }
+      }
+    },
+    {
+      "mode": "echo-after",
+      "length": 11615549,
+      "peak": 0.2296913117170334,
+      "maxDifference": 0,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1,
+        "nodes": 36,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "revision": 2,
+          "active": true,
+          "nodes": 40,
+          "taps": 4,
+          "echoBeats": {
+            "vocals": 0.75,
+            "other": 1
+          },
+          "lastEchoSeconds": 2.0434227330779056,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 1,
+            "other": 1
+          },
+          "sends": {
+            "vocals": 0,
+            "other": 0
+          },
+          "wet": {
+            "vocals": 0.6000000238418579,
+            "other": 0.6000000238418579
+          }
+        }
+      }
+    }
+  ],
+  "echo_quiet_windows": [
+    {
+      "source_start_s": 5,
+      "echo-before_rms_dbfs": -59.793,
+      "echo-after_rms_dbfs": -300.0
+    },
+    {
+      "source_start_s": 20,
+      "echo-before_rms_dbfs": -52.598,
+      "echo-after_rms_dbfs": -300.0
+    },
+    {
+      "source_start_s": 40,
+      "echo-before_rms_dbfs": -57.249,
+      "echo-after_rms_dbfs": -300.0
+    },
+    {
+      "source_start_s": 80,
+      "echo-before_rms_dbfs": -51.513,
+      "echo-after_rms_dbfs": -300.0
+    },
+    {
+      "source_start_s": 180,
+      "echo-before_rms_dbfs": -51.947,
+      "echo-after_rms_dbfs": -300.0
+    },
+    {
+      "source_start_s": 210,
+      "echo-before_rms_dbfs": -53.249,
+      "echo-after_rms_dbfs": -300.0
+    }
+  ],
+  "exit_comparison": [
+    {
+      "old_exit_s": 28.6079,
+      "new_exit_s": 28.63,
+      "old_vocal_dbfs": -31.68,
+      "new_vocal_dbfs": -35.104
+    },
+    {
+      "old_exit_s": 61.3027,
+      "new_exit_s": 60.01,
+      "old_vocal_dbfs": -22.271,
+      "new_vocal_dbfs": -34.442
+    },
+    {
+      "old_exit_s": 93.9974,
+      "new_exit_s": 94.27,
+      "old_vocal_dbfs": -12.524,
+      "new_vocal_dbfs": -34.132
+    },
+    {
+      "old_exit_s": 126.6922,
+      "new_exit_s": 123.97,
+      "old_vocal_dbfs": -12.307,
+      "new_vocal_dbfs": -30.282
+    },
+    {
+      "old_exit_s": 192.0817,
+      "new_exit_s": 194.83,
+      "old_vocal_dbfs": -37.003,
+      "new_vocal_dbfs": -34.751
+    },
+    {
+      "old_exit_s": 224.7765,
+      "new_exit_s": 224.21,
+      "old_vocal_dbfs": -16.114,
+      "new_vocal_dbfs": -37.929
+    }
+  ],
+  "median_vocal_energy_change_at_exit_db": -15.073,
+  "method": "Production RecordedStemMix and old/new RecordedDubMix in Chromium OfflineAudioContext, full existing four-stem recording plus 2.5s tail. Default .45 gate and 1.8 * -1dB master. Echo-only capture is the production Dub return before coherent master EQ/song trim. No shared limiter is used for the conservative peak test.",
+  "source_sha256": {
+    "vocals": "05f87f119b6afdc55afe436cf0b91f04fe828207f4042d0759af9b206f5f09b8",
+    "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
+    "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+    "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88"
+  },
+  "code_sha256": {
+    "audio/dub-mix.js": "d5c25729f97ab1e7ab1856106fb2064a88b4814bc1d735d19ff1a892908af459",
+    "audio/stem-live-mix.js": "b6cf4f6a3445d4f9237e94b95a7f0aa837d8095e760edcc99dfd0bc302fb7e09"
+  },
+  "limits": [
+    "Vocal band-energy ends and bright other attacks are not lyric recognition or certified isolated guitar.",
+    "Exit-energy and quiet-window improvements do not quantify subjective pleasure.",
+    "Small native numerical variation is tolerated at 0.0001 absolute amplitude; no bit-identity claim.",
+    "Source bleed, real iPhone and human listening remain."
+  ]
+}

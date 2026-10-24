@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v432 compact)
+# Band Room - Changelog (v65 -> v433 compact)
+
+## v433 — 2026-10-24
+
+2026-10-24 v433: Human FlyのDubを語尾とギターの打点へ合わせる。声6箇所は帯域エネルギーが18 dB以上落ちる位置から引き、ギター7箇所は打点と230 msの胴鳴りを残してから引く。常時echo sendをやめ、選んだ語尾／ストロークだけを反響へ。声は付点8分、ギターは4分で応答し、小さく左右へ返して戻り際は奥へ下げる。ベースとドラムの経路・打点・余韻は保持。cache `hazama-fm-v433` / client `band-room.js?v=br-266` / CSS `band-room.css?v=br-99` / adapter v8。
 
 ## v432 — 2026-10-24
 
@@ -73,7 +77,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v432. Latest Band Room runtime change: v432 (optional Human Fly Dub mix). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v433. Latest Band Room runtime change: v433 (source-aligned Human Fly Dub throws). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

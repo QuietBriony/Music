@@ -1,0 +1,127 @@
+{
+  "bpm": 117.45,
+  "analysis": {
+    "sample_rate": 12000,
+    "vocal_hop_s": 0.02,
+    "vocal_band_hz": [
+      350,
+      3500
+    ],
+    "other_hop_s": 0.005,
+    "other_band_hz": [
+      900,
+      5000
+    ],
+    "min_pre_db": -22,
+    "min_drop_db": 18,
+    "note": "Energy and bright-attack cues, not word recognition or isolated guitar certification."
+  },
+  "cues": [
+    {
+      "section_bar": 8,
+      "vocal": {
+        "end": 28.61,
+        "return": 30.97,
+        "pre_db": -13.26,
+        "drop_db": 25.2
+      },
+      "guitar": {
+        "attack": 28.7725,
+        "cut": 29.0025,
+        "return": 31.09,
+        "flux": 0.0090905
+      }
+    },
+    {
+      "section_bar": 24,
+      "vocal": {
+        "end": 59.99,
+        "return": 62.0334,
+        "pre_db": -15.43,
+        "drop_db": 24.98
+      },
+      "guitar": {
+        "attack": 60.4975,
+        "cut": 60.7275,
+        "return": 62.1534,
+        "flux": 0.0033594
+      }
+    },
+    {
+      "section_bar": 40,
+      "vocal": {
+        "end": 94.25,
+        "return": 95.7826,
+        "pre_db": -11.54,
+        "drop_db": 24.45
+      },
+      "guitar": {
+        "attack": 94.7325,
+        "cut": 94.9625,
+        "return": 95.9026,
+        "flux": 0.0070486
+      }
+    },
+    {
+      "section_bar": 56,
+      "vocal": {
+        "end": 123.95,
+        "return": 126.5043,
+        "pre_db": -12.05,
+        "drop_db": 24.73
+      },
+      "guitar": {
+        "attack": 124.5075,
+        "cut": 124.7375,
+        "return": 126.6243,
+        "flux": 0.0034836
+      }
+    },
+    {
+      "section_bar": 72,
+      "vocal": null,
+      "guitar": {
+        "attack": 160.4175,
+        "cut": 160.6475,
+        "return": 161.5504,
+        "flux": 0.0039857
+      }
+    },
+    {
+      "section_bar": 88,
+      "vocal": {
+        "end": 194.81,
+        "return": 198.39,
+        "pre_db": -11.94,
+        "drop_db": 20.24
+      },
+      "guitar": {
+        "attack": 195.2275,
+        "cut": 195.4575,
+        "return": 198.51,
+        "flux": 0.0097186
+      }
+    },
+    {
+      "section_bar": 104,
+      "vocal": {
+        "end": 224.19,
+        "return": 226.59,
+        "pre_db": -11.76,
+        "drop_db": 42.64
+      },
+      "guitar": {
+        "attack": 224.5175,
+        "cut": 224.7475,
+        "return": 226.71,
+        "flux": 0.0135116
+      }
+    }
+  ],
+  "source_sha256": {
+    "vocals": "05f87f119b6afdc55afe436cf0b91f04fe828207f4042d0759af9b206f5f09b8",
+    "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
+    "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+    "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88"
+  }
+}
