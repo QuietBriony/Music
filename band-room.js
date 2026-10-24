@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-267-dub-arrangement";
-  const BANDROOM_RELEASE_VERSION = "v434";
+  const BANDROOM_APP_VERSION = "br-268-dub-console";
+  const BANDROOM_RELEASE_VERSION = "v435";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";

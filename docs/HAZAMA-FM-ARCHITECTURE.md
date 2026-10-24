@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-24 v435: Human Fly Dubを、リズムを保つversionへ組み直す。全体停止と1〜2拍の断片をやめ、ベース／ドラムを土台に声の語尾・ギター・選んだスネアが暗くなるfeedback echoへ応答する。ギターとドラムの帯域、反響の長さ・左右をフレーズで動かし、中盤は2小節のベース＋ドラムを8小節回す。声21・ギター54・スネア45のsource cueをCPUで選定。音源ファイルと曲の長さ・比較位置は保持。cache `hazama-fm-v435` / client `band-room.js?v=br-268` / CSS `band-room.css?v=br-99` / adapter v8。
+
 2026-10-24 v434: Human Fly Dubに5つの展開を追加。ベース／ギターの2拍ループ、ギターの1拍ループ、ドラムの2拍ループを既存録音から短く切り出し、ドラム／低音の抜き差し、反響だけの間、最後の1拍の静寂から全員で戻る。約29秒、61秒、127秒、163秒、225秒。音程と曲の長さは変えず、調和と同じ位置で比較。追加音声ファイルはなく、短いコピーだけをRAMへ作る。cache `hazama-fm-v434` / client `band-room.js?v=br-267` / CSS `band-room.css?v=br-99` / adapter v8。
 
 2026-10-24 v433: Human FlyのDubを語尾とギターの打点へ合わせる。声6箇所は帯域エネルギーが18 dB以上落ちる位置から引き、ギター7箇所は打点と230 msの胴鳴りを残してから引く。常時echo sendをやめ、選んだ語尾／ストロークだけを反響へ。声は付点8分、ギターは4分で応答し、小さく左右へ返して戻り際は奥へ下げる。ベースとドラムの経路・打点・余韻は保持。cache `hazama-fm-v433` / client `band-room.js?v=br-266` / CSS `band-room.css?v=br-99` / adapter v8。
@@ -160,7 +162,7 @@ test／namima-labはエッセンス回収済みを照合して正式GitHub archi
 >
 > Current cache / asset tuple: `hazama-fm-v427`, `engine.js?v=fm-119`,
 > `style.css?v=fm-28`, `fm.css?v=fm-54`, `audio/genre-flavor.js?v=fm-81`, `fm.js?v=fm-72`,
-> `band-room.js?v=br-267`, `band-room.css?v=br-99`。
+> `band-room.js?v=br-268`, `band-room.css?v=br-99`。
 > 公開deploy済みかどうかは別契約で、この値は現在のrepo treeを表す。
 >
 > **Historical v113-v115 update (cross-app 音色整合)**:

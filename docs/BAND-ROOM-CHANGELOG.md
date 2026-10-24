@@ -1,4 +1,10 @@
-# Band Room - Changelog (v65 -> v434 compact)
+# Band Room - Changelog (v65 -> v435 compact)
+
+## v435 — 2026-10-24
+
+2026-10-24 v435: Human Fly Dubを、リズムを保つversionへ組み直す。全体停止と1〜2拍の断片をやめ、ベース／ドラムを土台に声の語尾・ギター・選んだスネアが暗くなるfeedback echoへ応答する。ギターとドラムの帯域、反響の長さ・左右をフレーズで動かし、中盤は2小節のベース＋ドラムを8小節回す。声21・ギター54・スネア45のsource cueをCPUで選定。音源ファイルと曲の長さ・比較位置は保持。cache `hazama-fm-v435` / client `band-room.js?v=br-268` / CSS `band-room.css?v=br-99` / adapter v8。
+
+本人がv434を「音を止めるだけでDubとして面白くない」と評価。操作・数値検証を音楽的な面白さの合格とせず、土台と反響の関係を作り直す。主観的な採用は本人の聴感で判定する。
 
 ## v434 — 2026-10-24
 
@@ -81,7 +87,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v434. Latest Band Room runtime change: v434 (recorded-part Dub arrangement and loops). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v435. Latest Band Room runtime change: v435 (continuous rhythm and moving Dub returns). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

@@ -1,0 +1,1130 @@
+{
+  "release": "v435",
+  "song": "human-fly",
+  "sample_rate": 48000,
+  "channels": 2,
+  "rows": [
+    {
+      "mode": "before",
+      "lufs": -18.6,
+      "lra": 8.5,
+      "true_peak_dbtp": -3.6,
+      "sample_peak": 0.6623834371566772,
+      "mono_fold_db": -0.003,
+      "sha256": "82be2a702d36e651851695a41b0c077e26cc6a808edc24969b4bf96523b59a10"
+    },
+    {
+      "mode": "after",
+      "lufs": -19.9,
+      "lra": 6.9,
+      "true_peak_dbtp": -3.4,
+      "sample_peak": 0.6725592017173767,
+      "mono_fold_db": -0.0397,
+      "sha256": "91f5728a5b6a0523c0ebfd41d27637d79c6a7b1684a9fab136e4efdf9039a451"
+    },
+    {
+      "mode": "effects-only",
+      "lufs": -26.5,
+      "lra": 14.2,
+      "true_peak_dbtp": -6.2,
+      "sample_peak": 0.48934802412986755,
+      "mono_fold_db": -0.3012,
+      "sha256": "c065f43ca4c0f248598d1b4584b811220d173a09d23249ee029f08afa0a874a5"
+    },
+    {
+      "mode": "rhythm-after",
+      "lufs": -23.1,
+      "lra": 7.5,
+      "true_peak_dbtp": -4.2,
+      "sample_peak": 0.6164575815200806,
+      "mono_fold_db": -0.0067,
+      "sha256": "348d6ad9cca718261b1e88c7f771dd895485f49af07e25ed7686eb0f26a103e2"
+    },
+    {
+      "mode": "groove-only",
+      "lufs": -22.8,
+      "lra": 4.6,
+      "true_peak_dbtp": -7.4,
+      "sample_peak": 0.42511892318725586,
+      "mono_fold_db": -0.0018,
+      "sha256": "013bf95b62c061efd967d53a3772807a11bb7fba4f7d642e306de6d38a6ecf1b"
+    }
+  ],
+  "native_comparisons": [
+    {
+      "mode": "before",
+      "length": 11975549,
+      "peak": 0.6623834371566772,
+      "maxDifference": 0,
+      "renderMs": 15302.40000000596,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 42,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "revision": 3,
+          "active": true,
+          "nodes": 60,
+          "loops": {
+            "nodes": 19,
+            "bytes": 2942520,
+            "jobs": [
+              {
+                "scene": 1,
+                "part": "bass",
+                "start": 29.62962962962963,
+                "end": 31.673052362707537,
+                "donor": 28.607918263090678,
+                "cycle": 1.0217113665389528,
+                "at": 29.62962962962963,
+                "stopAt": 31.673052362707537,
+                "phase": 0,
+                "cycleSeconds": 1.0217083333333334
+              },
+              {
+                "scene": 1,
+                "part": "other",
+                "start": 29.62962962962963,
+                "end": 31.673052362707537,
+                "donor": 28.607918263090678,
+                "cycle": 1.0217113665389528,
+                "at": 29.62962962962963,
+                "stopAt": 31.673052362707537,
+                "phase": 0,
+                "cycleSeconds": 1.0217083333333334
+              },
+              {
+                "scene": 2,
+                "part": "bass",
+                "start": 61.30268199233717,
+                "end": 65.38952745849298,
+                "donor": 60.28097062579821,
+                "cycle": 1.0217113665389528,
+                "at": 61.30268199233717,
+                "stopAt": 65.38952745849298,
+                "phase": 0,
+                "cycleSeconds": 1.0217083333333334
+              },
+              {
+                "scene": 2,
+                "part": "other",
+                "start": 61.30268199233717,
+                "end": 65.38952745849298,
+                "donor": 60.28097062579821,
+                "cycle": 1.0217113665389528,
+                "at": 61.30268199233717,
+                "stopAt": 65.38952745849298,
+                "phase": 0,
+                "cycleSeconds": 1.0217083333333334
+              },
+              {
+                "scene": 3,
+                "part": "other",
+                "start": 126.69220945083015,
+                "end": 129.757343550447,
+                "donor": 125.6704980842912,
+                "cycle": 0.5108556832694764,
+                "at": 126.69220945083015,
+                "stopAt": 129.757343550447,
+                "phase": 0,
+                "cycleSeconds": 0.5108541666666667
+              },
+              {
+                "scene": 4,
+                "part": "drums",
+                "start": 167.56066411238825,
+                "end": 170.62579821200512,
+                "donor": 166.53895274584931,
+                "cycle": 1.0217113665389528,
+                "at": 167.56066411238825,
+                "stopAt": 170.62579821200512,
+                "phase": 0,
+                "cycleSeconds": 1.0217083333333334
+              },
+              {
+                "scene": 5,
+                "part": "bass",
+                "start": 224.77650063856962,
+                "end": 226.81992337164752,
+                "donor": 223.75478927203065,
+                "cycle": 1.0217113665389528,
+                "at": 224.77650063856962,
+                "stopAt": 226.81992337164752,
+                "phase": 0,
+                "cycleSeconds": 1.0217083333333334
+              },
+              {
+                "scene": 5,
+                "part": "other",
+                "start": 224.77650063856962,
+                "end": 226.81992337164752,
+                "donor": 223.75478927203065,
+                "cycle": 1.0217113665389528,
+                "at": 224.77650063856962,
+                "stopAt": 226.81992337164752,
+                "phase": 0,
+                "cycleSeconds": 1.0217083333333334
+              }
+            ],
+            "active": 0
+          },
+          "scenes": [
+            {
+              "id": 1,
+              "cue": 0,
+              "start": 28.607918263090678,
+              "loopAt": 29.62962962962963,
+              "echoAt": 31.673052362707537,
+              "back": 32.69476372924649,
+              "parts": [
+                "bass",
+                "other"
+              ],
+              "donor": 28.607918263090678,
+              "cycle": 1.0217113665389528,
+              "drumsOut": 28.607918263090678,
+              "bassOut": 31.673052362707537,
+              "hush": null
+            },
+            {
+              "id": 2,
+              "cue": 1,
+              "start": 61.30268199233717,
+              "loopAt": 61.30268199233717,
+              "echoAt": 65.38952745849298,
+              "back": 67.43295019157088,
+              "parts": [
+                "bass",
+                "other"
+              ],
+              "donor": 60.28097062579821,
+              "cycle": 1.0217113665389528,
+              "drumsOut": 61.30268199233717,
+              "bassOut": 65.38952745849298,
+              "hush": null
+            },
+            {
+              "id": 3,
+              "cue": 3,
+              "start": 126.69220945083015,
+              "loopAt": 126.69220945083015,
+              "echoAt": 129.757343550447,
+              "back": 130.77905491698596,
+              "parts": [
+                "other"
+              ],
+              "donor": 125.6704980842912,
+              "cycle": 0.5108556832694764,
+              "drumsOut": 129.757343550447,
+              "bassOut": 126.69220945083015,
+              "hush": null
+            },
+            {
+              "id": 4,
+              "cue": 4,
+              "start": 163.47381864623244,
+              "loopAt": 167.56066411238825,
+              "echoAt": 170.62579821200512,
+              "back": 171.64750957854406,
+              "parts": [
+                "drums"
+              ],
+              "donor": 166.53895274584931,
+              "cycle": 1.0217113665389528,
+              "drumsOut": 170.62579821200512,
+              "bassOut": 170.62579821200512,
+              "hush": null
+            },
+            {
+              "id": 5,
+              "cue": 6,
+              "start": 224.77650063856962,
+              "loopAt": 224.77650063856962,
+              "echoAt": 226.81992337164752,
+              "back": 228.86334610472542,
+              "parts": [
+                "bass",
+                "other"
+              ],
+              "donor": 223.75478927203065,
+              "cycle": 1.0217113665389528,
+              "drumsOut": 224.77650063856962,
+              "bassOut": 226.81992337164752,
+              "hush": 228.35249042145594
+            }
+          ],
+          "taps": 4,
+          "echoBeats": {
+            "vocals": 0.75,
+            "other": 1
+          },
+          "lastEchoSeconds": 2.0434227330779056,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 0.8199999928474426,
+            "drums": 1,
+            "bass": 1,
+            "other": 0.7599999904632568
+          },
+          "sources": {
+            "vocals": 1,
+            "drums": 1,
+            "bass": 1,
+            "other": 1
+          },
+          "sends": {
+            "vocals": 0,
+            "other": 0
+          },
+          "wet": {
+            "vocals": 0.6000000238418579,
+            "other": 0.6000000238418579
+          }
+        }
+      }
+    },
+    {
+      "mode": "after",
+      "length": 11975549,
+      "peak": 0.6725592017173767,
+      "maxDifference": 0,
+      "renderMs": 19464,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 54,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "revision": 4,
+          "active": true,
+          "nodes": 36,
+          "feedbackLimit": 0.685,
+          "loops": {
+            "nodes": 6,
+            "bytes": 3138704,
+            "jobs": [
+              {
+                "scene": 5,
+                "part": "bass",
+                "start": 114.43167305236271,
+                "end": 130.77905491698596,
+                "donor": 118.51851851851852,
+                "cycle": 4.086845466155811,
+                "at": 114.43167305236271,
+                "stopAt": 130.77905491698596,
+                "phase": 0,
+                "cycleSeconds": 4.086854166666667
+              },
+              {
+                "scene": 5,
+                "part": "drums",
+                "start": 114.43167305236271,
+                "end": 130.77905491698596,
+                "donor": 118.51851851851852,
+                "cycle": 4.086845466155811,
+                "at": 114.43167305236271,
+                "stopAt": 130.77905491698596,
+                "phase": 0,
+                "cycleSeconds": 4.086854166666667
+              }
+            ],
+            "active": 0
+          },
+          "scenes": [
+            {
+              "id": 1,
+              "name": "intro",
+              "start": 0,
+              "end": 16.347381864623244
+            },
+            {
+              "id": 2,
+              "name": "song",
+              "start": 16.347381864623244,
+              "end": 49.04214559386973
+            },
+            {
+              "id": 3,
+              "name": "rhythm-version",
+              "start": 49.04214559386973,
+              "end": 81.73690932311622
+            },
+            {
+              "id": 4,
+              "name": "voice-return",
+              "start": 81.73690932311622,
+              "end": 114.43167305236271
+            },
+            {
+              "id": 5,
+              "name": "groove-version",
+              "start": 114.43167305236271,
+              "end": 130.77905491698596
+            },
+            {
+              "id": 6,
+              "name": "guitar-space",
+              "start": 130.77905491698596,
+              "end": 179.8212005108557
+            },
+            {
+              "id": 7,
+              "name": "echo-answer",
+              "start": 179.8212005108557,
+              "end": 196.16858237547893
+            },
+            {
+              "id": 8,
+              "name": "song-return",
+              "start": 196.16858237547893,
+              "end": 212.51596424010216
+            },
+            {
+              "id": 9,
+              "name": "dub-outro",
+              "start": 212.51596424010216,
+              "end": 239.491
+            }
+          ],
+          "echoBeats": {
+            "vocals": 1,
+            "other": 0.75,
+            "drums": 0.75
+          },
+          "springBytes": 422400,
+          "lastEchoSeconds": 9.327322623715293,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 0.07999999821186066,
+            "drums": 1,
+            "bass": 1.0800000429153442,
+            "other": 0.05999999865889549
+          },
+          "sources": {
+            "vocals": 1,
+            "drums": 1,
+            "bass": 1,
+            "other": 1
+          },
+          "sends": {
+            "vocals": 0,
+            "other": 0,
+            "drums": 0
+          },
+          "feedback": {
+            "vocals": 0.36000001430511475,
+            "other": 0.4300000071525574,
+            "drums": 0.30000001192092896
+          },
+          "wet": {
+            "vocals": 0,
+            "other": 0,
+            "drums": 0
+          }
+        },
+        "dubToneHz": {
+          "vocals": 18000,
+          "drums": 6600,
+          "bass": 4200,
+          "other": 1600
+        }
+      }
+    },
+    {
+      "mode": "ordinary-before",
+      "length": 11975549,
+      "peak": 0.673412561416626,
+      "maxDifference": 0,
+      "renderMs": 3539.300000011921,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 34,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": null
+      }
+    },
+    {
+      "mode": "ordinary-after",
+      "length": 11975549,
+      "peak": 0.6734130382537842,
+      "maxDifference": 6.354227662086487e-05,
+      "renderMs": 5897,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 54,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": null,
+        "dubToneHz": {
+          "vocals": 21600,
+          "drums": 21600,
+          "bass": 21600,
+          "other": 21600
+        }
+      }
+    },
+    {
+      "mode": "effects-only",
+      "length": 11975549,
+      "peak": 0.48934802412986755,
+      "maxDifference": 0,
+      "renderMs": 14703.59999999404,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1,
+        "nodes": 54,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "revision": 4,
+          "active": true,
+          "nodes": 36,
+          "feedbackLimit": 0.685,
+          "loops": {
+            "nodes": 6,
+            "bytes": 3138704,
+            "jobs": [
+              {
+                "scene": 5,
+                "part": "bass",
+                "start": 114.43167305236271,
+                "end": 130.77905491698596,
+                "donor": 118.51851851851852,
+                "cycle": 4.086845466155811,
+                "at": 114.43167305236271,
+                "stopAt": 130.77905491698596,
+                "phase": 0,
+                "cycleSeconds": 4.086854166666667
+              },
+              {
+                "scene": 5,
+                "part": "drums",
+                "start": 114.43167305236271,
+                "end": 130.77905491698596,
+                "donor": 118.51851851851852,
+                "cycle": 4.086845466155811,
+                "at": 114.43167305236271,
+                "stopAt": 130.77905491698596,
+                "phase": 0,
+                "cycleSeconds": 4.086854166666667
+              }
+            ],
+            "active": 0
+          },
+          "scenes": [
+            {
+              "id": 1,
+              "name": "intro",
+              "start": 0,
+              "end": 16.347381864623244
+            },
+            {
+              "id": 2,
+              "name": "song",
+              "start": 16.347381864623244,
+              "end": 49.04214559386973
+            },
+            {
+              "id": 3,
+              "name": "rhythm-version",
+              "start": 49.04214559386973,
+              "end": 81.73690932311622
+            },
+            {
+              "id": 4,
+              "name": "voice-return",
+              "start": 81.73690932311622,
+              "end": 114.43167305236271
+            },
+            {
+              "id": 5,
+              "name": "groove-version",
+              "start": 114.43167305236271,
+              "end": 130.77905491698596
+            },
+            {
+              "id": 6,
+              "name": "guitar-space",
+              "start": 130.77905491698596,
+              "end": 179.8212005108557
+            },
+            {
+              "id": 7,
+              "name": "echo-answer",
+              "start": 179.8212005108557,
+              "end": 196.16858237547893
+            },
+            {
+              "id": 8,
+              "name": "song-return",
+              "start": 196.16858237547893,
+              "end": 212.51596424010216
+            },
+            {
+              "id": 9,
+              "name": "dub-outro",
+              "start": 212.51596424010216,
+              "end": 239.491
+            }
+          ],
+          "echoBeats": {
+            "vocals": 1,
+            "other": 0.75,
+            "drums": 0.75
+          },
+          "springBytes": 422400,
+          "lastEchoSeconds": 9.327322623715293,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 1,
+            "drums": 1,
+            "bass": 1,
+            "other": 1
+          },
+          "sources": {
+            "vocals": 1,
+            "drums": 1,
+            "bass": 1,
+            "other": 1
+          },
+          "sends": {
+            "vocals": 0,
+            "other": 0,
+            "drums": 0
+          },
+          "feedback": {
+            "vocals": 0.36000001430511475,
+            "other": 0.4300000071525574,
+            "drums": 0.30000001192092896
+          },
+          "wet": {
+            "vocals": 0,
+            "other": 0,
+            "drums": 0
+          }
+        },
+        "dubToneHz": {
+          "vocals": 21600,
+          "drums": 21600,
+          "bass": 21600,
+          "other": 21600
+        }
+      }
+    },
+    {
+      "mode": "rhythm-after",
+      "length": 11975549,
+      "peak": 0.6164575815200806,
+      "maxDifference": 0,
+      "renderMs": 18292.90000000596,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0
+        },
+        "gains": {
+          "vocals": 0,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 0
+        },
+        "output": 1.1091748476028442,
+        "nodes": 54,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "revision": 4,
+          "active": true,
+          "nodes": 36,
+          "feedbackLimit": 0.685,
+          "loops": {
+            "nodes": 6,
+            "bytes": 3138704,
+            "jobs": [
+              {
+                "scene": 5,
+                "part": "bass",
+                "start": 114.43167305236271,
+                "end": 130.77905491698596,
+                "donor": 118.51851851851852,
+                "cycle": 4.086845466155811,
+                "at": 114.43167305236271,
+                "stopAt": 130.77905491698596,
+                "phase": 0,
+                "cycleSeconds": 4.086854166666667
+              },
+              {
+                "scene": 5,
+                "part": "drums",
+                "start": 114.43167305236271,
+                "end": 130.77905491698596,
+                "donor": 118.51851851851852,
+                "cycle": 4.086845466155811,
+                "at": 114.43167305236271,
+                "stopAt": 130.77905491698596,
+                "phase": 0,
+                "cycleSeconds": 4.086854166666667
+              }
+            ],
+            "active": 0
+          },
+          "scenes": [
+            {
+              "id": 1,
+              "name": "intro",
+              "start": 0,
+              "end": 16.347381864623244
+            },
+            {
+              "id": 2,
+              "name": "song",
+              "start": 16.347381864623244,
+              "end": 49.04214559386973
+            },
+            {
+              "id": 3,
+              "name": "rhythm-version",
+              "start": 49.04214559386973,
+              "end": 81.73690932311622
+            },
+            {
+              "id": 4,
+              "name": "voice-return",
+              "start": 81.73690932311622,
+              "end": 114.43167305236271
+            },
+            {
+              "id": 5,
+              "name": "groove-version",
+              "start": 114.43167305236271,
+              "end": 130.77905491698596
+            },
+            {
+              "id": 6,
+              "name": "guitar-space",
+              "start": 130.77905491698596,
+              "end": 179.8212005108557
+            },
+            {
+              "id": 7,
+              "name": "echo-answer",
+              "start": 179.8212005108557,
+              "end": 196.16858237547893
+            },
+            {
+              "id": 8,
+              "name": "song-return",
+              "start": 196.16858237547893,
+              "end": 212.51596424010216
+            },
+            {
+              "id": 9,
+              "name": "dub-outro",
+              "start": 212.51596424010216,
+              "end": 239.491
+            }
+          ],
+          "echoBeats": {
+            "vocals": 1,
+            "other": 0.75,
+            "drums": 0.75
+          },
+          "springBytes": 422400,
+          "lastEchoSeconds": 9.327322623715293,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 0.07999999821186066,
+            "drums": 1,
+            "bass": 1.0800000429153442,
+            "other": 0.05999999865889549
+          },
+          "sources": {
+            "vocals": 1,
+            "drums": 1,
+            "bass": 1,
+            "other": 1
+          },
+          "sends": {
+            "vocals": 0,
+            "other": 0,
+            "drums": 0
+          },
+          "feedback": {
+            "vocals": 0.36000001430511475,
+            "other": 0.4300000071525574,
+            "drums": 0.30000001192092896
+          },
+          "wet": {
+            "vocals": 0,
+            "other": 0,
+            "drums": 0
+          }
+        },
+        "dubToneHz": {
+          "vocals": 18000,
+          "drums": 6600,
+          "bass": 4200,
+          "other": 1600
+        }
+      }
+    },
+    {
+      "mode": "groove-only",
+      "length": 11975549,
+      "peak": 0.42511892318725586,
+      "maxDifference": 0,
+      "renderMs": 6710.5,
+      "diagnostics": {
+        "levels": {
+          "vocals": 0.8,
+          "drums": 0.8,
+          "bass": 0.8,
+          "other": 0.8
+        },
+        "gains": {
+          "vocals": 0.8399999737739563,
+          "drums": 1,
+          "bass": 0.9700000286102295,
+          "other": 1
+        },
+        "output": 1.1091748476028442,
+        "nodes": 54,
+        "roomLastReflectionSeconds": 0.139,
+        "source": "pre-trim-pre-eq",
+        "dub": {
+          "revision": 4,
+          "active": true,
+          "nodes": 36,
+          "feedbackLimit": 0.685,
+          "loops": {
+            "nodes": 6,
+            "bytes": 3138704,
+            "jobs": [
+              {
+                "scene": 5,
+                "part": "bass",
+                "start": 114.43167305236271,
+                "end": 130.77905491698596,
+                "donor": 118.51851851851852,
+                "cycle": 4.086845466155811,
+                "at": 114.43167305236271,
+                "stopAt": 130.77905491698596,
+                "phase": 0,
+                "cycleSeconds": 4.086854166666667
+              },
+              {
+                "scene": 5,
+                "part": "drums",
+                "start": 114.43167305236271,
+                "end": 130.77905491698596,
+                "donor": 118.51851851851852,
+                "cycle": 4.086845466155811,
+                "at": 114.43167305236271,
+                "stopAt": 130.77905491698596,
+                "phase": 0,
+                "cycleSeconds": 4.086854166666667
+              }
+            ],
+            "active": 0
+          },
+          "scenes": [
+            {
+              "id": 1,
+              "name": "intro",
+              "start": 0,
+              "end": 16.347381864623244
+            },
+            {
+              "id": 2,
+              "name": "song",
+              "start": 16.347381864623244,
+              "end": 49.04214559386973
+            },
+            {
+              "id": 3,
+              "name": "rhythm-version",
+              "start": 49.04214559386973,
+              "end": 81.73690932311622
+            },
+            {
+              "id": 4,
+              "name": "voice-return",
+              "start": 81.73690932311622,
+              "end": 114.43167305236271
+            },
+            {
+              "id": 5,
+              "name": "groove-version",
+              "start": 114.43167305236271,
+              "end": 130.77905491698596
+            },
+            {
+              "id": 6,
+              "name": "guitar-space",
+              "start": 130.77905491698596,
+              "end": 179.8212005108557
+            },
+            {
+              "id": 7,
+              "name": "echo-answer",
+              "start": 179.8212005108557,
+              "end": 196.16858237547893
+            },
+            {
+              "id": 8,
+              "name": "song-return",
+              "start": 196.16858237547893,
+              "end": 212.51596424010216
+            },
+            {
+              "id": 9,
+              "name": "dub-outro",
+              "start": 212.51596424010216,
+              "end": 239.491
+            }
+          ],
+          "echoBeats": {
+            "vocals": 1,
+            "other": 0.75,
+            "drums": 0.75
+          },
+          "springBytes": 422400,
+          "lastEchoSeconds": 9.327322623715293,
+          "settings": {
+            "bpm": 117.45,
+            "duration": 239.491,
+            "at": 0,
+            "offset": 0,
+            "rate": 1
+          },
+          "direct": {
+            "vocals": 0.07999999821186066,
+            "drums": 1,
+            "bass": 1.0800000429153442,
+            "other": 0.05999999865889549
+          },
+          "sources": {
+            "vocals": 1,
+            "drums": 1,
+            "bass": 1,
+            "other": 1
+          },
+          "sends": {
+            "vocals": 0,
+            "other": 0,
+            "drums": 0
+          },
+          "feedback": {
+            "vocals": 0,
+            "other": 0,
+            "drums": 0
+          },
+          "wet": {
+            "vocals": 0,
+            "other": 0,
+            "drums": 0
+          }
+        },
+        "dubToneHz": {
+          "vocals": 18000,
+          "drums": 6600,
+          "bass": 4200,
+          "other": 1600
+        }
+      }
+    }
+  ],
+  "effect_windows": [
+    {
+      "source_s": [
+        5,
+        15
+      ],
+      "effect_rms_dbfs": -25.98,
+      "effect_to_mix_db": -3.58,
+      "rhythm_rms_dbfs": -31.55
+    },
+    {
+      "source_s": [
+        20,
+        35
+      ],
+      "effect_rms_dbfs": -32.18,
+      "effect_to_mix_db": -11.32,
+      "rhythm_rms_dbfs": -25.31
+    },
+    {
+      "source_s": [
+        50,
+        75
+      ],
+      "effect_rms_dbfs": -33.76,
+      "effect_to_mix_db": -9.03,
+      "rhythm_rms_dbfs": -25.81
+    },
+    {
+      "source_s": [
+        116,
+        130
+      ],
+      "effect_rms_dbfs": -31.19,
+      "effect_to_mix_db": -8.08,
+      "rhythm_rms_dbfs": -24.42
+    },
+    {
+      "source_s": [
+        160,
+        175
+      ],
+      "effect_rms_dbfs": -32.33,
+      "effect_to_mix_db": -5.81,
+      "rhythm_rms_dbfs": -30.66
+    },
+    {
+      "source_s": [
+        185,
+        198
+      ],
+      "effect_rms_dbfs": -32.42,
+      "effect_to_mix_db": -9.5,
+      "rhythm_rms_dbfs": -24.81
+    },
+    {
+      "source_s": [
+        215,
+        230
+      ],
+      "effect_rms_dbfs": -26.84,
+      "effect_to_mix_db": -3.97,
+      "rhythm_rms_dbfs": -25.75
+    }
+  ],
+  "rhythm_at_previous_stops": [
+    {
+      "source_s": 31.8,
+      "rhythm_rms_dbfs": -25.43
+    },
+    {
+      "source_s": 65.7,
+      "rhythm_rms_dbfs": -25.07
+    },
+    {
+      "source_s": 129.8,
+      "rhythm_rms_dbfs": -25.15
+    },
+    {
+      "source_s": 170.7,
+      "rhythm_rms_dbfs": -30.2
+    },
+    {
+      "source_s": 228.4,
+      "rhythm_rms_dbfs": -24.66
+    }
+  ],
+  "paired_two_bar_loop_correlation": 0.9999999999627563,
+  "method": "Production factories, complete original four stems plus 10s tail. Direct output follows the same coherent .45 gate and 1.8 * -1dB master. Effect-only output is captured separately before coherent EQ, with its .9dB song trim. No shared limiter in the conservative peak test. Groove-only captures the paired recorded loop with effects excluded.",
+  "code_sha256": {
+    "audio/dub-arrangement.js": "ad721e743646e0729b375c21b0ea68829b9be3addc83efea35aad2dbf5dd6d9e",
+    "audio/dub-mix.js": "f55dc99d45b7ef41743a3d5a4e5faac411a211cbac71e6eefd59a97e4f040e39",
+    "audio/stem-live-mix.js": "7e8df0b1980b18de1297f44a15b4c081d648acef7a0c21d32e81c0dae4f6be9a"
+  },
+  "source_sha256": {
+    "vocals": "05f87f119b6afdc55afe436cf0b91f04fe828207f4042d0759af9b206f5f09b8",
+    "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
+    "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88",
+    "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1"
+  },
+  "limits": [
+    "The owner rejected v434 despite its passing operation checks. Numbers do not certify an interesting Dub arrangement.",
+    "No original multitracks exist: source-separation bleed remains.",
+    "Human listening and actual iPhone performance are not certified.",
+    "Native numerical variation is bounded at .0001 for ordinary route comparison."
+  ]
+}
