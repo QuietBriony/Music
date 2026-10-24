@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-266-dub-phrases";
-  const BANDROOM_RELEASE_VERSION = "v433";
+  const BANDROOM_APP_VERSION = "br-267-dub-arrangement";
+  const BANDROOM_RELEASE_VERSION = "v434";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -595,7 +595,8 @@
     const duration = Number(state.songData?.performance_duration_s);
     if (!Number.isFinite(duration) || offset >= duration) { coherentStemMix.stopDub(); return; }
     coherentStemMix.startDub({ at, offset, rate: anchor.rate,
-      bpm: Number(state.songData?.guitar_line?.bpm_fit), duration });
+      bpm: Number(state.songData?.guitar_line?.bpm_fit), duration },
+      Object.fromEntries(STEM_NAMES.map(part => [part, stemPlayers[part].buffer.get()])));
     for (const part of STEM_NAMES) coherentStemMix.setDubMuted(part, $("br-toggle-stem-" + part)?.checked === false);
   }
 

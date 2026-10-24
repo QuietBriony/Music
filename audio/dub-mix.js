@@ -1,9 +1,10 @@
-/* Human Fly dub arrangement: source-time automation and four finite echoes.
- * Original stem data, bass/drum attacks and the shared recording path remain.
+/* Human Fly Dub: five recorded-part loop/dropout scenes and finite echoes.
+ * Original files and the ordinary mix remain; scene returns follow source time.
  * No feedback loop, oscillator, new recording, worker or analysis at runtime. */
 (function (root) {
   "use strict";
   const PARTS = ["vocals", "other"];
+  const ALL_PARTS = ["vocals", "drums", "bass", "other"];
   const BASE = { vocals: 0.82, other: 0.76 };
   const TAPS = [0.45, 0.26, 0.14, 0.07];
   const ECHO_BEATS = { vocals: 0.75, other: 1 };
@@ -42,7 +43,7 @@
       window(curves.other.send, attack + 0.03, attack + 0.18, 0.58, 0, 0.055, 0.11);
       window(curves.other.wet, attack + 0.31, guitarBack - 0.14, 1, 0.6);
     }
-    return curves;
+    return root.RecordedDubArrangement.apply(curves,bpm,duration,CUES);
   }
   function valueAt(points, second) {
     for (let i = 1; i < points.length; i++) {
@@ -52,17 +53,18 @@
     }
     return points.at(-1)[1];
   }
-  function create(context, { inputs, direct, output }) {
+  function create(context, { inputs, direct, sources, loopTargets, buffers, muted: initialMute = {}, output }) {
     const nodes = [], sends = {}, exits = {}, ducks = {}, connections = [];
-    let disposed = false, timer = null, settings = null, curves = null;
+    let disposed = false, timer = null, settings = null, curves = null, loops = null;
     const keep = n => { nodes.push(n); return n; };
     const gain = value => { const n = keep(context.createGain()); n.gain.value = value; return n; };
     const filter = (type, frequency) => { const n = keep(context.createBiquadFilter()); n.type = type; n.frequency.value = frequency; n.Q.value = 0.707; return n; };
     const delays = [];
+    const echo = gain(1); echo.connect(output);
     for (const part of PARTS) {
       const send = gain(0), hp = filter("highpass", part === "vocals" ? 340 : 420), wet = gain(1), duck = gain(0.6);
       sends[part] = send; exits[part] = wet; ducks[part] = duck; duck.connect(wet);
-      inputs[part].connect(send); connections.push([inputs[part], send]); send.connect(hp); wet.connect(output);
+      inputs[part].connect(send); connections.push([inputs[part], send]); send.connect(hp); wet.connect(echo);
       let previous = hp;
       for (let i = 0; i < TAPS.length; i++) {
         const delay = keep(context.createDelay(1.2));
@@ -88,6 +90,7 @@
     }
     function destroy() {
       disposed = true;
+      loops?.destroy(); loops = null; buffers = null;
       if (timer !== null) { clearTimeout(timer); timer = null; }
       for (const [input, target] of connections.splice(0)) { try { input.disconnect(target); } catch {} }
       for (const node of nodes) node.disconnect();
@@ -96,28 +99,40 @@
       schedule(options) {
         if (disposed) throw new Error("Disposed dub mix");
         validate(options); settings = { ...options }; curves = plan(options.bpm, options.duration);
+        loops?.destroy();
+        loops = root.RecordedDubArrangement.createLoops(context,options,buffers,loopTargets,initialMute);
+        for (const part of ALL_PARTS) {
+          automate(direct[part].gain,curves[part].dry,options);
+          automate(sources[part].gain,curves[part].source,options);
+        }
+        automate(echo.gain,root.RecordedDubArrangement.echoGate(options.bpm,options.duration),options);
         for (const { node, part } of delays) node.delayTime.value = 60 * ECHO_BEATS[part] / (options.bpm * options.rate);
         for (const part of PARTS) {
-          automate(direct[part].gain, curves[part].dry, options);
           automate(sends[part].gain, curves[part].send, options);
           automate(ducks[part].gain, curves[part].wet, options);
         }
       },
       setMuted(part, muted) {
+        initialMute[part]=Boolean(muted);
+        loops?.setMuted(part,muted);
         if (!exits[part]) return;
         const p = exits[part].gain, now = context.currentTime;
         p.cancelScheduledValues(now); p.setValueAtTime(p.value, now); p.linearRampToValueAtTime(muted ? 0 : 1, now + 0.015);
       },
       diagnostics() {
-        return { revision: 2, active: !disposed, nodes: disposed ? 0 : nodes.length, taps: TAPS.length,
+        return { revision: 3, active: !disposed, nodes: disposed ? 0 : nodes.length+(loops?.diagnostics().nodes||0),
+          loops: loops?.diagnostics() || null, scenes: settings ? root.RecordedDubArrangement.build(settings.bpm,settings.duration).scenes : [],
+          taps: TAPS.length,
           echoBeats: { ...ECHO_BEATS }, lastEchoSeconds: settings ? 240 / (settings.bpm * settings.rate) : 0,
-          settings, direct: Object.fromEntries(PARTS.map(p => [p, direct[p].gain.value])),
+          settings, direct: Object.fromEntries(ALL_PARTS.map(p => [p, direct[p].gain.value])),
+          sources: Object.fromEntries(ALL_PARTS.map(p => [p, sources[p].gain.value])),
           sends: Object.fromEntries(PARTS.map(p => [p, sends[p].gain.value])),
           wet: Object.fromEntries(PARTS.map(p => [p, ducks[p].gain.value])) };
       },
       destroy,
       dispose() {
         if (disposed) return; disposed = true;
+        loops?.fade();
         for (const part of PARTS) {
           sends[part].gain.cancelScheduledValues(context.currentTime);
           sends[part].gain.setValueAtTime(0, context.currentTime);

@@ -1,5 +1,11 @@
 # Session Ledger — music-stack
 
+## 2026-10-24 — Human Fly Dubの展開（v434）
+
+2026-10-24 v434: Human Fly Dubに5つの展開を追加。ベース／ギターの2拍ループ、ギターの1拍ループ、ドラムの2拍ループを既存録音から短く切り出し、ドラム／低音の抜き差し、反響だけの間、最後の1拍の静寂から全員で戻る。約29秒、61秒、127秒、163秒、225秒。音程と曲の長さは変えず、調和と同じ位置で比較。追加音声ファイルはなく、短いコピーだけをRAMへ作る。cache `hazama-fm-v434` / client `band-room.js?v=br-267` / CSS `band-room.css?v=br-99` / adapter v8。
+
+既存の4 decoded buffersを使い、最大8つの有限loop sourceを音声時計へ予約。元の全曲sourceは進めたまま、loop対象だけ切り替え、現在位置へ戻す。先頭末尾2.5msをtaperし、短いコピーを再利用。mute／0／Stop／seek／tempo／A-Bでloopを停止・位置復元する。原音とAI採譜・bankは保持。証跡は対応PRと`output/playwright/human-fly-dub-dj-20261024`。実iPhoneと本人聴感は未確認。
+
 ## 2026-10-24 — Human Fly Dubの語尾・反響を調整（v433）
 
 2026-10-24 v433: Human FlyのDubを語尾とギターの打点へ合わせる。声6箇所は帯域エネルギーが18 dB以上落ちる位置から引き、ギター7箇所は打点と230 msの胴鳴りを残してから引く。常時echo sendをやめ、選んだ語尾／ストロークだけを反響へ。声は付点8分、ギターは4分で応答し、小さく左右へ返して戻り際は奥へ下げる。ベースとドラムの経路・打点・余韻は保持。cache `hazama-fm-v433` / client `band-room.js?v=br-266` / CSS `band-room.css?v=br-99` / adapter v8。

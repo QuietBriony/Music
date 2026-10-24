@@ -1,0 +1,169 @@
+{
+  "release": "v434",
+  "song": "human-fly",
+  "bpm": 117.45,
+  "duration": 239.491,
+  "scenes": [
+    {
+      "id": 1,
+      "cue": 0,
+      "start": 28.607918263090678,
+      "loopAt": 29.62962962962963,
+      "echoAt": 31.673052362707537,
+      "back": 32.69476372924649,
+      "parts": [
+        "bass",
+        "other"
+      ],
+      "donor": 28.607918263090678,
+      "cycle": 1.0217113665389528,
+      "drumsOut": 28.607918263090678,
+      "bassOut": 31.673052362707537,
+      "hush": null
+    },
+    {
+      "id": 2,
+      "cue": 1,
+      "start": 61.30268199233717,
+      "loopAt": 61.30268199233717,
+      "echoAt": 65.38952745849298,
+      "back": 67.43295019157088,
+      "parts": [
+        "bass",
+        "other"
+      ],
+      "donor": 60.28097062579821,
+      "cycle": 1.0217113665389528,
+      "drumsOut": 61.30268199233717,
+      "bassOut": 65.38952745849298,
+      "hush": null
+    },
+    {
+      "id": 3,
+      "cue": 3,
+      "start": 126.69220945083015,
+      "loopAt": 126.69220945083015,
+      "echoAt": 129.757343550447,
+      "back": 130.77905491698596,
+      "parts": [
+        "other"
+      ],
+      "donor": 125.6704980842912,
+      "cycle": 0.5108556832694764,
+      "drumsOut": 129.757343550447,
+      "bassOut": 126.69220945083015,
+      "hush": null
+    },
+    {
+      "id": 4,
+      "cue": 4,
+      "start": 163.47381864623244,
+      "loopAt": 167.56066411238825,
+      "echoAt": 170.62579821200512,
+      "back": 171.64750957854406,
+      "parts": [
+        "drums"
+      ],
+      "donor": 166.53895274584931,
+      "cycle": 1.0217113665389528,
+      "drumsOut": 170.62579821200512,
+      "bassOut": 170.62579821200512,
+      "hush": null
+    },
+    {
+      "id": 5,
+      "cue": 6,
+      "start": 224.77650063856962,
+      "loopAt": 224.77650063856962,
+      "echoAt": 226.81992337164752,
+      "back": 228.86334610472542,
+      "parts": [
+        "bass",
+        "other"
+      ],
+      "donor": 223.75478927203065,
+      "cycle": 1.0217113665389528,
+      "drumsOut": 224.77650063856962,
+      "bassOut": 226.81992337164752,
+      "hush": 228.35249042145594
+    }
+  ],
+  "loops": [
+    {
+      "scene": 1,
+      "part": "bass",
+      "start": 29.62962962962963,
+      "end": 31.673052362707537,
+      "donor": 28.607918263090678,
+      "cycle": 1.0217113665389528
+    },
+    {
+      "scene": 1,
+      "part": "other",
+      "start": 29.62962962962963,
+      "end": 31.673052362707537,
+      "donor": 28.607918263090678,
+      "cycle": 1.0217113665389528
+    },
+    {
+      "scene": 2,
+      "part": "bass",
+      "start": 61.30268199233717,
+      "end": 65.38952745849298,
+      "donor": 60.28097062579821,
+      "cycle": 1.0217113665389528
+    },
+    {
+      "scene": 2,
+      "part": "other",
+      "start": 61.30268199233717,
+      "end": 65.38952745849298,
+      "donor": 60.28097062579821,
+      "cycle": 1.0217113665389528
+    },
+    {
+      "scene": 3,
+      "part": "other",
+      "start": 126.69220945083015,
+      "end": 129.757343550447,
+      "donor": 125.6704980842912,
+      "cycle": 0.5108556832694764
+    },
+    {
+      "scene": 4,
+      "part": "drums",
+      "start": 167.56066411238825,
+      "end": 170.62579821200512,
+      "donor": 166.53895274584931,
+      "cycle": 1.0217113665389528
+    },
+    {
+      "scene": 5,
+      "part": "bass",
+      "start": 224.77650063856962,
+      "end": 226.81992337164752,
+      "donor": 223.75478927203065,
+      "cycle": 1.0217113665389528
+    },
+    {
+      "scene": 5,
+      "part": "other",
+      "start": 224.77650063856962,
+      "end": 226.81992337164752,
+      "donor": 223.75478927203065,
+      "cycle": 1.0217113665389528
+    }
+  ],
+  "method": "Existing decoded recordings; beat-aligned native buffer loops. Each copy has a 2.5ms half-cosine taper at its edges. Original full-song players keep their clock; source gates replace only the selected parts until the return. No source audio files are changed.",
+  "limits": [
+    "Separated bleed remains.",
+    "Loops reuse short original phrases; this does not reconstruct missing original multitracks.",
+    "No new media is published."
+  ],
+  "source_sha256": {
+    "vocals": "05f87f119b6afdc55afe436cf0b91f04fe828207f4042d0759af9b206f5f09b8",
+    "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88",
+    "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1",
+    "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce"
+  }
+}
