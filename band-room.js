@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-268-dub-console";
-  const BANDROOM_RELEASE_VERSION = "v435";
+  const BANDROOM_APP_VERSION = "br-269-vocal-space";
+  const BANDROOM_RELEASE_VERSION = "v436";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -2913,6 +2913,7 @@
 
   function disposeStemPlayers() {
     coherentStemMix?.stopDub(); stemPlaybackAnchor = null;
+    coherentStemMix?.setRoomActive(false);
     Object.keys(stemPlayers).forEach((k) => {
       const p = stemPlayers[k];
       if (p) {
@@ -3751,6 +3752,8 @@
 
   function startStemPlayback(offsetSec = 0) {
     if (!stemPlayers.vocals && !stemPlayers.drums && !stemPlayers.bass && !stemPlayers.other) return false;
+    coherentStemMix?.setRoomActive(true);
+    for (const part of STEM_NAMES) coherentStemMix?.setDubMuted(part, $("br-toggle-stem-" + part)?.checked === false);
     // One audio-clock time for all four stems and the Dub arrangement.
     const startAt = Tone.now() + 0.15;
     // v76: apply current tempo slider to playbackRate at start
@@ -3779,6 +3782,7 @@
 
   function stopStemPlayback() {
     coherentStemMix?.stopDub(); stemPlaybackAnchor = null;
+    coherentStemMix?.setRoomActive(false);
     Object.values(stemPlayers).forEach((player) => {
       if (player) {
         try { player.stop(); } catch (e) {}

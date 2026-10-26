@@ -30,9 +30,9 @@
 <!-- Magenta DrumsRNN and @tonejs/midi are loaded on demand by band-room.js. -->
 <script src="audio/dub-arrangement.js?v=2" defer></script>
 <script src="audio/dub-mix.js?v=4" defer></script>
-<script src="audio/stem-live-mix.js?v=6" defer></script>
-<script src="band-room.js?v=br-268" defer></script>
-<script type="module" src="audio/premix-preview.mjs?v=13"></script>
+<script src="audio/stem-live-mix.js?v=7" defer></script>
+<script src="band-room.js?v=br-269" defer></script>
+<script type="module" src="audio/premix-preview.mjs?v=14"></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
 <script type="module" src="audio/physical-band/rhythm-preview.mjs?v=2"></script>
@@ -419,7 +419,7 @@
           <section id="br-space" aria-label="Mastering">
             <h3>space</h3>
             <label data-scope="stems"><span>パート別の仕上げ</span><select id="br-original-mastering" aria-describedby="br-original-mastering-help"><option value="blend">調和 · ライブ再ミックス</option><option value="dub">Dub · Human Fly</option><option value="live">以前のライブ設定</option><option value="dense">厚め · 従来の仕上げ</option></select></label>
-            <p class="br-help" id="br-original-mastering-help" data-scope="stems">調和は声と楽器のバランスを組み直し、短い部屋鳴りを共有します。以前の音量・EQ・声の広がり設定は重ねません。元の仮ミックスとは「ライブ原音」で比較できます。分離漏れは残ります。</p>
+            <p class="br-help" id="br-original-mastering-help" data-scope="stems">調和は元の演奏を保ち、声と楽器を短く滑らかな残響で同じ空間へ。Dubはその空間を土台に、音の出し引き・ループ・長いエコーで曲を組み替えます。以前の音量・EQ・声の広がり設定は重ねません。元の仮ミックスとは「ライブ原音」で比較できます。分離漏れは残ります。</p>
             <div id="br-master-presets">
               <button type="button" class="br-master-preset" data-preset="neutral">neutral</button>
               <button type="button" class="br-master-preset" data-preset="vertical-room">live room</button>
@@ -443,7 +443,7 @@
 
         <section id="br-coherent-mix" aria-label="調和ミックスのバランス" data-scope="stems">
           <h3>調和ミックスのバランス</h3>
-          <p class="br-help">80が基準。追加の響きの重なりを抑え、声と楽器の打感・録音に残る余韻を保ちます。自分の音量設定は保持されます。音を消す練習ボタンも使えます。</p>
+          <p class="br-help">80が基準。声の輪郭を残し、語尾が楽器と同じ空間にほどける短い残響を加えます。直接音の打感・録音に残る余韻は保ちます。自分の音量設定は保持されます。音を消す練習ボタンも使えます。</p>
           <label><span>ボーカル</span><input type="range" id="br-live-vocals" min="0" max="100" value="80" /></label>
           <label><span>ドラム</span><input type="range" id="br-live-drums" min="0" max="100" value="80" /></label>
           <label><span>ベース</span><input type="range" id="br-live-bass" min="0" max="100" value="80" /></label>

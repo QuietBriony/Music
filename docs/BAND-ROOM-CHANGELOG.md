@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v435 compact)
+# Band Room - Changelog (v65 -> v436 compact)
+
+## v436 — 2026-10-26
+
+2026-10-26 v436: 調和とDubの共通空間を更新。声の直接音・EQ・楽器の打感を保ち、19–139 msの近い反射に、52 msから暗く滑らかに減衰する最長720 msの共通残響を加える。声のsendを0.18→0.24へ。単一の手続きstereo IRで、録音素材の追加なし。途中移動・比較・mute・fader zeroで古いroomを消去。調和は元の演奏、Dubは出し引き・loop・echoによる別編曲。cache `hazama-fm-v436` / client `band-room.js?v=br-269` / CSS `band-room.css?v=br-99` / stem mix v7。
 
 ## v435 — 2026-10-24
 
@@ -87,7 +91,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v435. Latest Band Room runtime change: v435 (continuous rhythm and moving Dub returns). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v436. Latest Band Room runtime change: v436 (shared diffuse room and vocal space). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 
