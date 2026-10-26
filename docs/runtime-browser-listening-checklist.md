@@ -1,5 +1,7 @@
 # Runtime Browser Listening Checklist
 
+2026-10-26 v437: Human Fly Dubの声とギターを呼応させる。声8フレーズを語頭から戻し、語尾をechoへ。ギターは33打点に絞り、10箇所の返答／アクセントを強める。歌の間は反響だけを引き、間で広げ、繰り返しを左右へ渡して暗くほどく。ベース／ドラムの音量・打点・2小節loop・スネア反響と、調和の共通roomは保持。cache `hazama-fm-v437` / client `band-room.js?v=br-270` / CSS `band-room.css?v=br-99` / arrangement v3 / Dub v5。
+
 2026-10-26 v436: 調和とDubの共通空間を更新。声の直接音・EQ・楽器の打感を保ち、19–139 msの近い反射に、52 msから暗く滑らかに減衰する最長720 msの共通残響を加える。声のsendを0.18→0.24へ。単一の手続きstereo IRで、録音素材の追加なし。途中移動・比較・mute・fader zeroで古いroomを消去。調和は元の演奏、Dubは出し引き・loop・echoによる別編曲。cache `hazama-fm-v436` / client `band-room.js?v=br-269` / CSS `band-room.css?v=br-99` / stem mix v7。
 
 2026-10-24 v435: Human Fly Dubを、リズムを保つversionへ組み直す。全体停止と1〜2拍の断片をやめ、ベース／ドラムを土台に声の語尾・ギター・選んだスネアが暗くなるfeedback echoへ応答する。ギターとドラムの帯域、反響の長さ・左右をフレーズで動かし、中盤は2小節のベース＋ドラムを8小節回す。声21・ギター54・スネア45のsource cueをCPUで選定。音源ファイルと曲の長さ・比較位置は保持。cache `hazama-fm-v435` / client `band-room.js?v=br-268` / CSS `band-room.css?v=br-99` / adapter v8。
