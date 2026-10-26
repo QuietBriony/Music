@@ -5,18 +5,47 @@
   "use strict";
   const PARTS = ["vocals", "drums", "bass", "other"];
   const LEVELS = { vocals: 0.84, drums: 1, bass: 0.97, other: 1 };
-  const SENDS = { vocals: 0.18, drums: 0.10, bass: 0.04, other: 0.13 };
-  // v428: lower only the added common reflections; retain recorded attacks/tails.
-  // Comparison and limits: docs/stem-room-refinement-20261019.json.
-  // Short common reflections: keep the original direct signal and stereo
-  // image intact. A mono-compatible room does not widen the extracted bleed.
+  const SENDS = { vocals: 0.24, drums: 0.10, bass: 0.04, other: 0.13 };
+  // v436: keep the direct balance and close reflections. A short diffuse
+  // return gives vocal endings room without extending the Dub repeat bus.
+  // Comparison and limits: docs/stem-vocal-space-20261026.json.
   const TAPS = [[0.019, 0.34], [0.031, 0.26], [0.047, 0.20],
     [0.067, 0.115], [0.097, 0.06], [0.139, 0.025]];
+  // Finite, deterministic room: preserve the close reflections, diffuse the
+  // late return instead of extending discrete echoes. No downloaded IR.
+  const ROOM_SECONDS = 0.72, ROOM_TAIL_ENERGY = 0.22;
+  const roomBuffers = new WeakMap();
+  function roomImpulse(context) {
+    if (roomBuffers.has(context)) return roomBuffers.get(context);
+    const rate = context.sampleRate, n = Math.ceil(rate * ROOM_SECONDS);
+    const buffer = context.createBuffer(2, n, rate);
+    let seed = 0x71e3b94d;
+    const noise = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return (seed >>> 0) / 2147483648 - 1; };
+    const tail = [new Float32Array(n), new Float32Array(n)];
+    const state = [0, 0], energy = [0, 0];
+    for (let i = Math.ceil(rate * 0.052); i < n; i++) {
+      const t = i / rate, age = t - 0.052, shared = noise();
+      const envelope = Math.min(1, age / 0.018) * Math.exp(-6.9078 * age / 0.48) * Math.min(1, (ROOM_SECONDS - t) / 0.02);
+      // The late reflections darken as they decay. Most energy is shared
+      // between channels, leaving a modest stereo field and a stable centre.
+      const alpha = 1 - Math.exp(-2 * Math.PI * (3600 - 2100 * Math.min(1, age / 0.5)) / rate);
+      for (let ch = 0; ch < 2; ch++) {
+        state[ch] += alpha * (0.8 * shared + 0.6 * noise() - state[ch]);
+        const v = state[ch] * envelope; tail[ch][i] = v; energy[ch] += v * v;
+      }
+    }
+    for (let ch = 0; ch < 2; ch++) {
+      const data = buffer.getChannelData(ch), scale = Math.sqrt(ROOM_TAIL_ENERGY / energy[ch]);
+      for (let i = 0; i < n; i++) data[i] = tail[ch][i] * scale;
+      for (const [seconds, amount] of TAPS) data[Math.round(seconds * rate)] += amount;
+    }
+    roomBuffers.set(context, buffer); return buffer;
+  }
   const SONG_DB = Object.freeze({"tabasco": -0.2, "hey": 0.2, "i-got-a-feeling": -1.2, "under-the-moon": 1.1, "electric-sheep": -0.6, "human-fly": 0.9, "sister": 1.1});
   const validLevel = value => Number.isFinite(Number(value)) ? Math.max(0, Math.min(1, Number(value))) : 0.8;
   function create(context) {
     const nodes = [], inputs = {}, faders = {}, levels = {}, direct = {}, roomSends = {}, processors = {}, sourceGates = {}, tones = {}, toneGains = {}, bypassGains = {};
-    let dub = null, retiredDub = null, dubBuffers = null;
+    let dub = null, retiredDub = null, dubBuffers = null, roomActive = true;
     const muted = { vocals: false, drums: false, bass: false, other: false };
     const keep = node => { nodes.push(node); return node; };
     const gain = value => { const n = keep(context.createGain()); n.gain.value = value; return n; };
@@ -24,13 +53,25 @@
       const n = keep(context.createBiquadFilter()); n.type = type;
       n.frequency.value = frequency; n.gain.value = db; n.Q.value = q; return n;
     };
+    // Acquire the optional native capability before connecting other nodes.
+    const roomVerb = keep(context.createConvolver());
     const sum = gain(1), room = gain(0.65);
     const roomHp = filter("highpass", 200), roomLp = filter("lowpass", 4800);
     room.connect(roomHp); roomHp.connect(roomLp);
-    for (const [seconds, amount] of TAPS) {
-      const delay = keep(context.createDelay(0.15)), tap = gain(amount);
-      delay.delayTime.value = seconds;
-      roomLp.connect(delay); delay.connect(tap); tap.connect(sum);
+    const roomReturn = gain(1);
+    roomVerb.normalize = false;
+    const impulse = roomImpulse(context); roomVerb.buffer = impulse;
+    roomLp.connect(roomVerb); roomVerb.connect(roomReturn); roomReturn.connect(sum);
+    function resetRoom() {
+      // Clear earlier words/hits on a transport jump or minus-one change.
+      // Reuse the small IR; do not retain an old convolver or schedule timers.
+      roomVerb.buffer = null; roomVerb.buffer = impulse;
+      const now = context.currentTime;
+      roomReturn.gain.cancelScheduledValues(now);
+      if (context.state === "running") {
+        roomReturn.gain.setValueAtTime(0, now);
+        roomReturn.gain.linearRampToValueAtTime(roomActive ? 1 : 0, now + 0.02);
+      } else roomReturn.gain.setValueAtTime(roomActive ? 1 : 0, now);
     }
     for (const part of PARTS) {
       const input = gain(1), fader = gain(LEVELS[part]), send = gain(SENDS[part]);
@@ -52,7 +93,17 @@
       if (context.state !== "running") param.setValueAtTime(value, now);
       else { param.setValueAtTime(param.value, now); param.linearRampToValueAtTime(value, now + 0.04); }
     };
+    function syncRoomSend(part) {
+      const param = roomSends[part].gain;
+      if (muted[part] || levels[part] === 0) {
+        // A muted source may still be fading upstream. Stop feeding that
+        // fade into the new room after its previous history was cleared.
+        param.cancelScheduledValues(context.currentTime);
+        param.setValueAtTime(0, context.currentTime);
+      } else set(param, SENDS[part]);
+    }
     function stopDub() {
+      resetRoom();
       retiredDub?.destroy(); retiredDub = dub;
       dub?.dispose(); dub = null; dubBuffers = null;
       for (const route of Object.values(direct)) set(route.gain, 1);
@@ -103,20 +154,22 @@
         const wasZero = levels[part] === 0;
         levels[part] = validLevel(value);
         set(faders[part].gain, LEVELS[part] * levels[part] / 0.8);
+        if (wasZero !== (levels[part] === 0)) { syncRoomSend(part); resetRoom(); }
         if (direct[part] && wasZero !== (levels[part] === 0)) flushDub();
       },
-      startDub, stopDub,
+      startDub, stopDub, resetRoom,
+      setRoomActive(value) { roomActive = Boolean(value); resetRoom(); },
       setDubMuted(part, value) {
         if (!Object.hasOwn(muted, part)) return;
         if (muted[part] === Boolean(value)) return;
-        muted[part] = Boolean(value); flushDub();
+        muted[part] = Boolean(value); syncRoomSend(part); resetRoom(); flushDub();
       },
       setSong(song) { set(output.gain, 10 ** ((Object.hasOwn(SONG_DB, song) ? SONG_DB[song] : 0) / 20)); },
       diagnostics() { return { levels: { ...levels }, gains: Object.fromEntries(PARTS.map(p => [p, faders[p].gain.value])),
-        output: output.gain.value, nodes: nodes.length, roomLastReflectionSeconds: 0.139, source: "pre-trim-pre-eq",
+        output: output.gain.value, nodes: nodes.length, roomActive, roomLastReflectionSeconds: ROOM_SECONDS, roomBytes: impulse.length * 8, roomVocalSend: SENDS.vocals, source: "pre-trim-pre-eq",
         dub: dub?.diagnostics() || null,
         dubToneHz: Object.fromEntries(Object.entries(tones).map(([p, n]) => [p, n.frequency.value])) }; },
-      dispose() { dub?.destroy(); retiredDub?.destroy(); dub = null; retiredDub = null; dubBuffers = null; for (const node of nodes) node.disconnect(); }
+      dispose() { dub?.destroy(); retiredDub?.destroy(); dub = null; retiredDub = null; dubBuffers = null; roomVerb.buffer = null; for (const node of nodes) node.disconnect(); }
     };
   }
   root.RecordedStemMix = Object.freeze({ create, validLevel });

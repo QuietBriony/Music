@@ -1,5 +1,11 @@
 # Session Ledger — music-stack
 
+## 2026-10-26 — 調和とDubの声・共通空間（v436）
+
+2026-10-26 v436: 調和とDubの共通空間を更新。声の直接音・EQ・楽器の打感を保ち、19–139 msの近い反射に、52 msから暗く滑らかに減衰する最長720 msの共通残響を加える。声のsendを0.18→0.24へ。単一の手続きstereo IRで、録音素材の追加なし。途中移動・比較・mute・fader zeroで古いroomを消去。調和は元の演奏、Dubは出し引き・loop・echoによる別編曲。cache `hazama-fm-v436` / client `band-room.js?v=br-269` / CSS `band-room.css?v=br-99` / stem mix v7。
+
+28区間の原音照合で深め案は打感包絡の変化が大きく不採用。控えめ案は声の距離と語尾を作る制作判断であり、原音再現率の向上ではない。直接音の音量・EQ・原音bytes・採譜／AI bank・Dubの展開とechoは保持。新roomは24nodes、Dub選択後44nodes、IRは48k stereo276480bytes。CPU/nativeのみ。全長測定と操作検証の証跡は対応PRと`output/playwright/coherent-vocal-space-20261026`。本人耳と実iPhoneは未確認。
+
 ## 2026-10-24 — Human Fly Dubのリズムと反響を再構成（v435）
 
 2026-10-24 v435: Human Fly Dubを、リズムを保つversionへ組み直す。全体停止と1〜2拍の断片をやめ、ベース／ドラムを土台に声の語尾・ギター・選んだスネアが暗くなるfeedback echoへ応答する。ギターとドラムの帯域、反響の長さ・左右をフレーズで動かし、中盤は2小節のベース＋ドラムを8小節回す。声21・ギター54・スネア45のsource cueをCPUで選定。音源ファイルと曲の長さ・比較位置は保持。cache `hazama-fm-v435` / client `band-room.js?v=br-268` / CSS `band-room.css?v=br-99` / adapter v8。

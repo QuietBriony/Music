@@ -41,11 +41,17 @@ const raw=new Float32Array(8000*240);for(let i=0;i<raw.length;i++)raw[i]=.2*Math
 const hash=()=>createHash('sha256').update(new Uint8Array(raw.buffer)).digest('hex'),originalHash=hash();
 const buffer={length:raw.length,sampleRate:8000,numberOfChannels:1,duration:240,getChannelData:()=>raw},buffers=Object.fromEntries(['vocals','drums','bass','other'].map(p=>[p,{...buffer}]));
 for(const bad of [{bpm:0},{rate:0},{offset:-1},{duration:Infinity},{at:NaN},{rate:2}])assert.throws(()=>dub.validate({...opts,...bad}));
-const mix=sb.RecordedStemMix.create(context);assert.equal(nodes.length,34);assert.equal(mix.diagnostics().dub,null);
-assert.throws(()=>mix.startDub({...opts,bpm:NaN},buffers));assert.equal(nodes.length,34);
+const mix=sb.RecordedStemMix.create(context);assert.equal(nodes.length,24);assert.equal(mix.diagnostics().dub,null);
+assert.equal(mix.diagnostics().roomBytes,276480);
+const roomNode=nodes.find(n=>n.buffer);const roomBuffer=roomNode.buffer;
+mix.setRoomActive(false);assert.equal(mix.diagnostics().roomActive,false);
+mix.stopDub();assert.equal(mix.diagnostics().roomActive,false,'A pending stop/reset must not reopen the room');
+mix.setRoomActive(true);assert.equal(mix.diagnostics().roomActive,true);
+assert.equal(roomNode.buffer,roomBuffer,'Transport changes reuse the finite room buffer');
+assert.throws(()=>mix.startDub({...opts,bpm:NaN},buffers));assert.equal(nodes.length,24);
 for(const rate of [.5,.8,1,1.2,1.5]){
   clock=2;mix.startDub({...opts,at:clock,offset:118,rate},buffers);const d=mix.diagnostics().dub;
-  assert.equal(d.revision,4);assert.equal(d.nodes,36);assert.equal(mix.diagnostics().nodes,54);assert.equal(d.springBytes,422400);assert.equal(d.loops.jobs.length,2);assert.ok(d.loops.bytes<300000);
+  assert.equal(d.revision,4);assert.equal(d.nodes,36);assert.equal(mix.diagnostics().nodes,44);assert.equal(d.springBytes,422400);assert.equal(d.loops.jobs.length,2);assert.ok(d.loops.bytes<300000);
   assert.equal(d.echoBeats.other,.75);assert.equal(d.echoBeats.vocals,1);assert.equal(d.echoBeats.drums,.75);assert.ok(d.lastEchoSeconds>8/rate);
   for(const j of d.loops.jobs){assert.ok(j.at>=clock&&j.stopAt>j.at);assert.ok(Math.abs(j.stopAt-(clock+(j.end-118)/rate))<1e-8);assert.ok(Math.abs(j.phase-(118-j.start)%j.cycleSeconds)<1e-8);}
   assert.ok(timers.size<=1);
@@ -56,15 +62,16 @@ for(const shape of nodes.filter(n=>n.curve)){
 for(const n of nodes.filter(n=>n.type==='lowpass'&&n.Q.value===.5))assert.ok(n.frequency.events.every(e=>e[1]>0&&e[1]<=context.sampleRate*.45));
 const first=mix.diagnostics().dub.settings;clock=3;mix.setDubMuted('vocals',true);assert.ok(mix.diagnostics().dub.settings.offset>first.offset);
 for(const p of ['vocals','bass','drums','other']){mix.setDubMuted(p,true);mix.setDubMuted(p,false);mix.setLevel(p,0);mix.setLevel(p,.8);}
-assert.equal(allocations,3,'Only two short rhythm copies and one cached reverb IR');assert.equal(hash(),originalHash);
+assert.equal(allocations,4,'Two short rhythm copies, one cached room IR and one Dub IR');assert.equal(hash(),originalHash);
 mix.stopDub();assert.equal(mix.diagnostics().dub,null);for(const fn of [...timers.values()])fn();
 assert.ok(Object.values(mix.inputs).every(n=>n.links.length));
 // Every future source/filter/dry automation is cancelled on a normal return.
-for(const n of nodes.slice(34,54))for(const param of [n.gain,n.frequency])assert.ok(param.events.every(e=>e[0]<=clock+.04));
+for(const n of nodes.slice(24,44))for(const param of [n.gain,n.frequency])assert.ok(param.events.every(e=>e[0]<=clock+.04));
 mix.dispose();assert.equal(nodes.filter(n=>n.links.length).length,0);
+assert.equal(roomNode.buffer,null,'Dispose drops the active convolver buffer');
 delete context.createStereoPanner;const fallback=sb.RecordedStemMix.create(context);fallback.startDub({...opts,at:clock,offset:118},buffers);assert.equal(fallback.diagnostics().dub.nodes,36);fallback.dispose();assert.equal(nodes.filter(n=>n.links.length).length,0);
 const c44={...context,sampleRate:44100},mix44=sb.RecordedStemMix.create(c44);mix44.startDub({...opts,at:clock,offset:118},buffers);assert.equal(mix44.diagnostics().dub.springBytes,388080);mix44.dispose();
-const failed=sb.RecordedStemMix.create({...context,createConvolver(){throw Error('Unavailable convolver');}});assert.throws(()=>failed.startDub({...opts,at:clock,offset:118},buffers));failed.dispose();assert.equal(nodes.filter(n=>n.links.length).length,0,'A constructor failure disconnects every partially built echo loop');
+let convolvers=0;const failed=sb.RecordedStemMix.create({...context,createConvolver(){if(++convolvers>1)throw Error('Unavailable Dub convolver');return context.createConvolver();}});assert.throws(()=>failed.startDub({...opts,at:clock,offset:118},buffers));failed.dispose();assert.equal(nodes.filter(n=>n.links.length).length,0,'A constructor failure disconnects every partially built echo loop');
 assert.throws(()=>arr.validateBuffers({...buffers,bass:null},opts));
 const evidence=JSON.parse(readFileSync('docs/human-fly-dub-console-cues-20261024.json','utf8'));
 for(const[p,h]of Object.entries(evidence.source_sha256))assert.equal(createHash('sha256').update(readFileSync(`presets/tabasco-stems/human-fly/${p}.mp3`)).digest('hex'),h);
