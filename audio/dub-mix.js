@@ -83,7 +83,7 @@
         const p=b.exit.gain,now=context.currentTime;p.cancelScheduledValues(now);p.setValueAtTime(p.value,now);p.linearRampToValueAtTime(muted?0:1,now+.015);
       },
       diagnostics(){
-        return{revision:4,active:!disposed,nodes:disposed?0:nodes.length+(loops?.diagnostics().nodes||0),feedbackLimit:.685,
+        return{revision:5,active:!disposed,nodes:disposed?0:nodes.length+(loops?.diagnostics().nodes||0),feedbackLimit:.685,
           loops:loops?.diagnostics()||null,scenes:settings?root.RecordedDubArrangement.build(settings.bpm,settings.duration).scenes:[],
           echoBeats:{...ECHO_BEATS},springBytes:impulse.length*impulse.numberOfChannels*4,lastEchoSeconds:settings?Math.log(.001)/Math.log(.685)*60/(settings.bpm*settings.rate):0,
           settings,direct:Object.fromEntries(ALL_PARTS.map(p=>[p,direct[p].gain.value])),sources:Object.fromEntries(ALL_PARTS.map(p=>[p,sources[p].gain.value])),

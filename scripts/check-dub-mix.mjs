@@ -51,7 +51,7 @@ assert.equal(roomNode.buffer,roomBuffer,'Transport changes reuse the finite room
 assert.throws(()=>mix.startDub({...opts,bpm:NaN},buffers));assert.equal(nodes.length,24);
 for(const rate of [.5,.8,1,1.2,1.5]){
   clock=2;mix.startDub({...opts,at:clock,offset:118,rate},buffers);const d=mix.diagnostics().dub;
-  assert.equal(d.revision,4);assert.equal(d.nodes,36);assert.equal(mix.diagnostics().nodes,44);assert.equal(d.springBytes,422400);assert.equal(d.loops.jobs.length,2);assert.ok(d.loops.bytes<300000);
+  assert.equal(d.revision,5);assert.equal(d.nodes,36);assert.equal(mix.diagnostics().nodes,44);assert.equal(d.springBytes,422400);assert.equal(d.loops.jobs.length,2);assert.ok(d.loops.bytes<300000);
   assert.equal(d.echoBeats.other,.75);assert.equal(d.echoBeats.vocals,1);assert.equal(d.echoBeats.drums,.75);assert.ok(d.lastEchoSeconds>8/rate);
   for(const j of d.loops.jobs){assert.ok(j.at>=clock&&j.stopAt>j.at);assert.ok(Math.abs(j.stopAt-(clock+(j.end-118)/rate))<1e-8);assert.ok(Math.abs(j.phase-(118-j.start)%j.cycleSeconds)<1e-8);}
   assert.ok(timers.size<=1);
@@ -76,5 +76,24 @@ assert.throws(()=>arr.validateBuffers({...buffers,bass:null},opts));
 const evidence=JSON.parse(readFileSync('docs/human-fly-dub-console-cues-20261024.json','utf8'));
 for(const[p,h]of Object.entries(evidence.source_sha256))assert.equal(createHash('sha256').update(readFileSync(`presets/tabasco-stems/human-fly/${p}.mp3`)).digest('hex'),h);
 const arrangement=readFileSync('audio/dub-arrangement.js','utf8');for(const[k,n]of [['VOICES','vocal_ends'],['GUITARS','guitar_attacks'],['SNARES','snare_attacks']])assert.deepEqual(JSON.parse(arrangement.match(new RegExp(`const ${k} = (.*);`))[1]),evidence[n]);
-for(const f of ['band-room.html','sw.js'])assert.ok(readFileSync(f,'utf8').includes('audio/dub-mix.js?v=4'));
+const dialogue=JSON.parse(readFileSync('docs/human-fly-dub-dialogue-cues-20261026.json','utf8'));
+assert.deepEqual(dialogue.source_sha256,evidence.source_sha256);
+for(const[k,n]of [['VOCAL_PHRASES','vocal_phrases'],['GUITAR_THROWS','guitar_throws'],['GUITAR_ANSWERS','guitar_answers']])assert.deepEqual(JSON.parse(arrangement.match(new RegExp(`const ${k} = (.*);`))[1]),dialogue[n]);
+for(const[start,end]of dialogue.vocal_phrases)for(let t=start;t<=end;t+=.05)assert.ok(value(plan.vocals.dry,t)>=.7199,'Selected phrases keep their lead-in, not just a last syllable');
+const beat=60/opts.bpm;
+for(const [part,t]of [['vocals',59.985],['other',62.65]]){
+ const a=part==='vocals'?t-.36:t+.012,delay=beat*(part==='vocals'?1:.75);
+ const sides=[1,2,3].map(i=>value(plan[part].pan,a+delay*i));
+ assert.ok(sides[0]*sides[1]<0&&sides[1]*sides[2]<0,'Echo repeats cross sides');
+ assert.ok(value(plan[part].cutoff,t+delay*4)<value(plan[part].cutoff,t+delay),'Later repeats darken');
+}
+assert.ok(value(plan.vocals.wet,59.7)<value(plan.vocals.wet,60.4),'Return opens after lead phrase');
+for(const bpm of [110,117.45,125])for(const duration of [1,6,16,60,118,131,234,239.491,600]){
+ const p=arr.plan(bpm,duration);
+ for(const curve of Object.values(p))for(const points of Object.values(curve))for(let i=0;i<points.length;i++){
+  const[t,v]=points[i];assert.ok(Number.isFinite(t)&&Number.isFinite(v)&&t>=0&&t<=duration);
+  if(i)assert.ok(t>points[i-1][0]);
+ }
+}
+for(const f of ['band-room.html','sw.js'])assert.ok(readFileSync(f,'utf8').includes('audio/dub-mix.js?v=5'));
 console.log('Human Fly Dub console: continuous rhythm, source-backed phrase response, bounded damped feedback, 2-bar loop phase, ordinary bypass, mute/seek/rate/Stop ownership passed');

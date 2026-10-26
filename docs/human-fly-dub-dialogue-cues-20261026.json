@@ -1,0 +1,142 @@
+{
+  "source_sha256": {
+    "vocals": "05f87f119b6afdc55afe436cf0b91f04fe828207f4042d0759af9b206f5f09b8",
+    "other": "56dcb82f6672c1bf8bb8a74f443410bb11670d3aae73e5ef974b2b12db8019ce",
+    "drums": "0e5895c9435f87f485b3d34c44055420eae5bcd39ab342ab181de61c24355b88",
+    "bass": "9b1837e6d2f5bda3046cc0029e99bc17ea4dddc2ca64936ef651685353da93b1"
+  },
+  "vocal_phrases": [
+    [
+      52.94,
+      59.985
+    ],
+    [
+      91.57,
+      94.255
+    ],
+    [
+      116.6,
+      117.665
+    ],
+    [
+      124.38,
+      129.845
+    ],
+    [
+      164.37,
+      165.315
+    ],
+    [
+      175.24,
+      176.205
+    ],
+    [
+      221.57,
+      224.175
+    ],
+    [
+      228.62,
+      233.315
+    ]
+  ],
+  "guitar_throws": [
+    5.36,
+    14.04,
+    21.66,
+    29.64,
+    34.06,
+    38.2,
+    50.71,
+    58.73,
+    62.65,
+    67.13,
+    74.9,
+    83.33,
+    91.43,
+    95.22,
+    99.13,
+    108.04,
+    115.85,
+    119.87,
+    123.61,
+    131.92,
+    140.58,
+    148.91,
+    152.86,
+    161.21,
+    168.99,
+    177.27,
+    181.17,
+    185.34,
+    193.76,
+    201.76,
+    209.7,
+    218.38,
+    226.44
+  ],
+  "guitar_answers": [
+    34.06,
+    62.65,
+    95.22,
+    119.87,
+    131.92,
+    152.86,
+    168.99,
+    177.27,
+    181.17,
+    226.44
+  ],
+  "voice_guitar_pairs": [
+    {
+      "voice_phrase": [
+        52.94,
+        59.985
+      ],
+      "guitar_attack": 62.65
+    },
+    {
+      "voice_phrase": [
+        91.57,
+        94.255
+      ],
+      "guitar_attack": 95.22
+    },
+    {
+      "voice_phrase": [
+        116.6,
+        117.665
+      ],
+      "guitar_attack": 119.87
+    },
+    {
+      "voice_phrase": [
+        124.38,
+        129.845
+      ],
+      "guitar_attack": 131.92
+    },
+    {
+      "voice_phrase": [
+        164.37,
+        165.315
+      ],
+      "guitar_attack": 168.99
+    },
+    {
+      "voice_phrase": [
+        175.24,
+        176.205
+      ],
+      "guitar_attack": 177.27
+    },
+    {
+      "voice_phrase": [
+        221.57,
+        224.175
+      ],
+      "guitar_attack": 226.44
+    }
+  ],
+  "method": "Reuse SHA-verified 12kHz band envelopes. Close 70ms and remove islands shorter than80ms; group active regions across gaps<350ms. Select eight phrase endings from previously measured cues. Guitar throws are a sparser subset of existing attacks, with ten specific answers/instrumental accents. These are mix decisions based on audio envelopes, not lyric recognition.",
+  "rhythm": "All drums/bass curves, rhythm loop source/boundaries and snare throws remain identical to v436."
+}

@@ -65,6 +65,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   BL-050の採譜忠実度の改善は継続する。
 
 ### BL-050 — Band Room AI 再現のパート別忠実度（原曲どおりに叩く・弾く）
+- update 2026-10-26: Human Fly Dubの声をフレーズ単位で戻し、ギターの反響と応答させる。歌の間のreturn duckと反復ごとの左右移動。リズム経路・原音・AI採譜は維持。
 - update 2026-10-26: 本人の空間・質感改善指示で、調和とDubの共通roomを短いdiffuse tailへ。声のsendを増やし直接音を保持。原音再現率と制作上の空間演出は別。AI採譜／bankはこの変更に含めない。
 - update 2026-10-24: v434 Dubは本人が「止めるだけ」と評価。v435はbass/drumsを保ち、声・guitar・snareのfeedback/帯域/左右と2小節のrhythm versionへ再構成。操作合格と音楽的採用を分け、次は本人の聴感で判断。
 - update 2026-10-24: v434は本人のDub展開指示で録音の短いループと5場面の抜き差しを追加。source全曲の時計を保持し、元の位置で合奏へ戻す。原曲・AI再現精度の改善とは別の編曲。

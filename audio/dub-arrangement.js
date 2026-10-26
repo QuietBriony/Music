@@ -7,6 +7,9 @@
   const VOICES = [17.085, 28.595, 40.285, 52.295, 59.985, 84.075, 94.255, 113.405, 117.665, 125.245, 129.845, 136.295, 144.765, 165.315, 176.205, 194.785, 202.445, 216.115, 224.175, 227.235, 233.315];
   const GUITARS = [5.36, 9.82, 14.04, 17.54, 21.66, 25.74, 29.64, 34.06, 38.2, 46.73, 50.71, 54.39, 58.73, 62.65, 67.13, 71.05, 74.9, 79.3, 83.33, 86.89, 91.43, 95.22, 99.13, 103.29, 108.04, 112.08, 115.85, 119.87, 123.61, 128.3, 131.92, 136.26, 140.58, 144.78, 148.91, 152.86, 161.21, 164.48, 168.99, 172.72, 177.27, 181.17, 185.34, 189.8, 193.76, 197.69, 201.76, 205.99, 209.7, 213.92, 218.38, 221.99, 226.44, 230.13];
   const SNARES = [11.345, 14.465, 18.515, 23.525, 28.545, 31.555, 34.515, 40.245, 47.835, 52.605, 55.435, 60.225, 63.025, 67.825, 71.615, 77.495, 87.305, 91.325, 97.195, 100.145, 105.795, 109.585, 113.325, 116.125, 122.025, 123.985, 129.845, 136.775, 141.975, 146.675, 149.745, 152.555, 178.215, 187.545, 190.995, 195.315, 198.285, 204.165, 205.755, 212.225, 216.085, 218.125, 224.195, 228.245, 231.295];
+  const VOCAL_PHRASES = [[52.94, 59.985], [91.57, 94.255], [116.6, 117.665], [124.38, 129.845], [164.37, 165.315], [175.24, 176.205], [221.57, 224.175], [228.62, 233.315]];
+  const GUITAR_THROWS = [5.36, 14.04, 21.66, 29.64, 34.06, 38.2, 50.71, 58.73, 62.65, 67.13, 74.9, 83.33, 91.43, 95.22, 99.13, 108.04, 115.85, 119.87, 123.61, 131.92, 140.58, 148.91, 152.86, 161.21, 168.99, 177.27, 181.17, 185.34, 193.76, 201.76, 209.7, 218.38, 226.44];
+  const GUITAR_ANSWERS = [34.06, 62.65, 95.22, 119.87, 131.92, 152.86, 168.99, 177.27, 181.17, 226.44];
   const prepared = new WeakMap();
   function valueAt(points, second) {
     for (let i = 1; i < points.length; i++) {
@@ -57,7 +60,9 @@
       const sends=[],feedback=[],pan=[],hooks=[],drift=[];let n=0;
       // Translate snare sends with the repeated two-bar rhythm phrase.
       const actual=part==="drums"&&loops.length ? events.filter(t=>t<loops[0].start||t>=loops[0].end).concat(...[0,1,2,3].map(i=>events.filter(t=>t>=58*bar&&t<60*bar).map(t=>t-2*bar+i*2*bar))).sort((a,b)=>a-b) : events;
-      for(const t of actual){
+      // Voice/guitar use the phrase dialogue below; only the snare keeps
+      // this original return pattern. The cue arrays retain source provenance.
+      for(const t of part==="drums"?actual:[]){
         if(t<.8||t+beat*6>=duration)continue;
         const a=isVoice?t-.44:t+.012,b=isVoice?t+.025:t+(isGuitar?.19:.085),amount=isVoice?.64:isGuitar?1.35:.62;
         sends.push([[a-.035,0],[a,amount],[b,amount],[b+.06,0]]);
@@ -73,6 +78,68 @@
       c.send=overlay(c.send,sends,true);c.feedback=overlay(c.feedback,feedback,true);c.pan=overlay(c.pan,pan);c.drift=overlay(c.drift,drift);
       if(hooks.length)c.dry=overlay(c.dry,hooks,true);
       const at=Math.min(duration-1,234.7);c.wet=overlay(c.wet,[[[at,valueAt(c.wet,at)],[duration,0]]]);
+    }
+    return dialogue(curves,bpm,duration);
+  }
+  function dialogue(curves,bpm,duration) {
+    const beat=60/bpm,bar=4*beat;
+    const sceneAt=t=>Math.max(0,SECTIONS.findLastIndex(s=>s[0]*bar<=t));
+    function multiply(a,b) {
+      const knots=[...new Set([...a.map(p=>p[0]),...b.map(p=>p[0])])].sort((x,y)=>x-y);
+      const times=knots.flatMap((t,i)=>i?[.5*(knots[i-1]+t),t]:[t]);
+      return times.map(t=>[t,valueAt(a,t)*valueAt(b,t)]);
+    }
+    for(const part of ["vocals","other"]){
+      const c=curves[part],voice=part==="vocals",events=voice?VOCAL_PHRASES.map(p=>p[1]):GUITAR_THROWS;
+      const sends=[],feedback=[],pan=[],hooks=[],tone=[],returns=[];
+      const delay=beat*(voice?1:.75),baseFeedback=voice?.30:.34;
+      c.send=[[0,0],[duration,0]];c.feedback=[[0,baseFeedback],[duration,baseFeedback]];c.pan=[[0,0],[duration,0]];c.drift=[[0,1],[duration,1]];
+      // Start from section-level direct rides, not the old short fragment gates.
+      const levels=voice?[.76,.80,.08,.76,.06,.10,.12,.80,.08]:[.58,.36,.08,.48,.04,.52,.07,.48,.06];
+      c.dry=[[0,levels[0]]];
+      for(let i=1;i<SECTIONS.length;i++){const t=SECTIONS[i][0]*bar;if(t>=duration)break;c.dry.push([Math.max(c.dry.at(-1)[0]+.001,t-1.1),levels[i-1]],[t,levels[i]]);}
+      c.dry.push([duration,c.dry.at(-1)[1]]);
+      let index=0;
+      for(const t of events){
+        // Leave room for every knot; shortened previews cannot schedule
+        // returns or filter transitions beyond their declared duration.
+        if(t<.8||t+delay*8>=duration)continue;
+        const section=sceneAt(t),answer=!voice&&GUITAR_ANSWERS.includes(t),open=[2,4,5,6,8].includes(section);
+        const a=voice?t-.36:t+.012,b=voice?t+.025:t+.29;
+        const amount=voice?(open?.82:.45):(answer?1.22:open?.78:.38);
+        const repeats=voice?(open?5:3):(answer?6:open?4:2);
+        const peakFeedback=voice?(open?.66:.48):(answer?.68:open?.57:.42);
+        const finish=Math.min(duration,t+delay*(repeats+2));
+        sends.push([[a-.035,0],[a,amount],[b,amount],[Math.min(duration,b+.06),0]]);
+        feedback.push([[a-.06,baseFeedback],[a,peakFeedback],[t+delay*2,peakFeedback],[finish,baseFeedback]]);
+        const side=(index++%2?1:-1)*(voice?.32:.38),points=[[a-.05,0]];
+        // Each delayed answer travels to the other side. Move during the gap
+        // between repetitions rather than panning a whole phrase as one block.
+        for(let i=1;i<=repeats;i++){
+          const arrival=a+delay*i,position=side*(i%2?1:-1);
+          if(arrival+.12>=duration)break;
+          points.push([arrival-.06,position],[arrival+.12,position]);
+        }
+        points.push([finish,0]);pan.push(points);
+        const start=voice?VOCAL_PHRASES.find(p=>p[1]===t)[0]:t-.015;
+        const end=voice?t+.045:t+.30,high=voice?.72:answer?.58:.45;
+        hooks.push([[Math.max(0,start-.06),valueAt(c.dry,start-.06)],[start,Math.max(high,valueAt(c.dry,start))],[end,Math.max(high,valueAt(c.dry,end))],[Math.min(duration,end+.18),valueAt(c.dry,end+.18)]]);
+        const bright=voice?(open?4100:3600):(answer?4700:3500),dark=voice?1800:1500;
+        tone.push([[a-.05,valueAt(c.cutoff,a-.05)],[a,bright],[t+delay*1.5,bright*.80],[t+delay*repeats,dark],[finish,valueAt(c.cutoff,finish)]]);
+        const base=valueAt(c.wet,t),lift=voice?(open?1.14:.78):(answer?1.18:open?.96:.62);
+        returns.push([[a-.04,base],[a+delay,Math.max(base,lift)],[t+delay*2,Math.max(base,lift)],[finish,valueAt(c.wet,finish)]]);
+      }
+      c.send=overlay(c.send,sends,true);c.feedback=overlay(c.feedback,feedback,true);c.pan=overlay(c.pan,pan);
+      c.dry=overlay(c.dry,hooks,true);c.cutoff=overlay(c.cutoff,tone);c.wet=overlay(c.wet,returns,true);
+    }
+    // Give the lead phrase room, then let the returns breathe in its wake.
+    // Only the echo output ducks. The feedback repeats and rhythm keep running.
+    const lead=curves.vocals.dry;
+    for(const part of ["vocals","other"]){
+      const duck=lead.map(([t,v])=>[t,1-(part==="vocals"?.64:.70)*Math.max(0,Math.min(1,(v-.15)/.57))]);
+      curves[part].wet=multiply(curves[part].wet,duck);
+      const end=Math.min(duration-1,234.7);
+      curves[part].wet=overlay(curves[part].wet,[[[end,valueAt(curves[part].wet,end)],[duration,0]]]);
     }
     return curves;
   }
