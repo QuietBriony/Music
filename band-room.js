@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-270-dub-dialogue";
-  const BANDROOM_RELEASE_VERSION = "v437";
+  const BANDROOM_APP_VERSION = "br-271-start-diagnostics";
+  const BANDROOM_RELEASE_VERSION = "v438";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -7781,13 +7781,14 @@
     setButtonState("starting");
     setStartStatus("");
     setPlaybackStartSelectionBusy(true);
+    const startTrace = { step: "起動準備" };
     try {
       await yieldToUi();
       if (!playbackStartStillAllowed(startContract)) {
         abortPlaybackStart("selection-changed");
         return false;
       }
-      return await startPlaybackBoot(Object.assign({}, opts, { startContract }));
+      return await startPlaybackBoot(Object.assign({}, opts, { startContract, startTrace }));
     } catch (e) {
       console.warn("[Band Room] startPlayback failed:", e);
       stopPlayback({ resetPosition: false, keepBackgroundBridge: false, updateMedia: true });
@@ -7795,7 +7796,9 @@
       state.started = false;
       state.starting = false;
       setButtonState("idle");
-      setStartStatus("再生を開始できませんでした。もう一度 START、直らなければ RESET AUDIO を試してください。", "error");
+      const detail = String(e?.message || e?.name || "不明なエラー")
+        .replace(/https?:\/\/\S+/g, "[URL]").replace(/\s+/g, " ").slice(0, 140);
+      setStartStatus(`再生を開始できませんでした（${startTrace.step}: ${detail}）。この表示を控えて、更新後にもう一度 START を押してください。`, "error");
       return false;
     } finally {
       setPlaybackStartSelectionBusy(false);
@@ -7840,12 +7843,14 @@
       return false;
     }
 
+    if (opts.startTrace) opts.startTrace.step = "音声ミックスの準備";
     ensureMaster();
     await yieldToUi();
     if (!playbackStartStillAllowed(opts.startContract)) {
       abortPlaybackStart("selection-changed");
       return false;
     }
+    if (opts.startTrace) opts.startTrace.step = "音源の読み込み";
     const backgroundBridgeStart = startBackgroundAudioBridge();
     if (currentMode === "synth") setButtonState("preparing-ai");
     const playbackReady = await preparePlaybackAssetsForCurrentMode("start");
@@ -7874,6 +7879,7 @@
 
     // v76: respect the tempo slider when starting (so re-start at 80% stays at 80%)
     const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
+    if (opts.startTrace) opts.startTrace.step = "再生時計の準備";
     Tone.Transport.bpm.value = playbackBaseBpm() * tempoMult;
 
     const bpm = playbackBaseBpm();
@@ -7900,12 +7906,14 @@
     }
     state.lastStemResyncAtMs = 0;
     if (currentMode === "stems") {
+      if (opts.startTrace) opts.startTrace.step = "パート別の再生";
       startStemPlayback(stemOffsetSec);
       startExternalVocalIfEnabled(stemOffsetSec);
       // v87: per-stem external replacements
       ["drums", "bass", "other"].forEach((s) => startExternalStemIfEnabled(s, stemOffsetSec));
     }
 
+    if (opts.startTrace) opts.startTrace.step = "再生画面の更新";
     state.started = true;
     state.starting = false;
     setButtonState("playing");
