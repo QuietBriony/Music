@@ -62,13 +62,14 @@ for(const shape of nodes.filter(n=>n.curve)){
 for(const n of nodes.filter(n=>n.type==='lowpass'&&n.Q.value===.5))assert.ok(n.frequency.events.every(e=>e[1]>0&&e[1]<=context.sampleRate*.45));
 const first=mix.diagnostics().dub.settings;clock=3;mix.setDubMuted('vocals',true);assert.ok(mix.diagnostics().dub.settings.offset>first.offset);
 for(const p of ['vocals','bass','drums','other']){mix.setDubMuted(p,true);mix.setDubMuted(p,false);mix.setLevel(p,0);mix.setLevel(p,.8);}
-assert.equal(allocations,4,'Two short rhythm copies, one cached room IR and one Dub IR');assert.equal(hash(),originalHash);
+assert.equal(allocations,6,'Two short rhythm copies, room/Dub IRs and two cached one-frame clear buffers');assert.equal(hash(),originalHash);
 mix.stopDub();assert.equal(mix.diagnostics().dub,null);for(const fn of [...timers.values()])fn();
 assert.ok(Object.values(mix.inputs).every(n=>n.links.length));
 // Every future source/filter/dry automation is cancelled on a normal return.
 for(const n of nodes.slice(24,44))for(const param of [n.gain,n.frequency])assert.ok(param.events.every(e=>e[0]<=clock+.04));
 mix.dispose();assert.equal(nodes.filter(n=>n.links.length).length,0);
-assert.equal(roomNode.buffer,null,'Dispose drops the active convolver buffer');
+assert.equal(roomNode.buffer.length,1,'Dispose replaces the active IR with one silent frame');
+assert.equal(roomNode.buffer.getChannelData(0)[0],0);
 delete context.createStereoPanner;const fallback=sb.RecordedStemMix.create(context);fallback.startDub({...opts,at:clock,offset:118},buffers);assert.equal(fallback.diagnostics().dub.nodes,36);fallback.dispose();assert.equal(nodes.filter(n=>n.links.length).length,0);
 const c44={...context,sampleRate:44100},mix44=sb.RecordedStemMix.create(c44);mix44.startDub({...opts,at:clock,offset:118},buffers);assert.equal(mix44.diagnostics().dub.springBytes,388080);mix44.dispose();
 let convolvers=0;const failed=sb.RecordedStemMix.create({...context,createConvolver(){if(++convolvers>1)throw Error('Unavailable Dub convolver');return context.createConvolver();}});assert.throws(()=>failed.startDub({...opts,at:clock,offset:118},buffers));failed.dispose();assert.equal(nodes.filter(n=>n.links.length).length,0,'A constructor failure disconnects every partially built echo loop');
@@ -95,5 +96,5 @@ for(const bpm of [110,117.45,125])for(const duration of [1,6,16,60,118,131,234,2
   if(i)assert.ok(t>points[i-1][0]);
  }
 }
-for(const f of ['band-room.html','sw.js'])assert.ok(readFileSync(f,'utf8').includes('audio/dub-mix.js?v=6'));
+for(const f of ['band-room.html','sw.js'])assert.ok(readFileSync(f,'utf8').includes('audio/dub-mix.js?v=7'));
 console.log('Human Fly Dub console: continuous rhythm, source-backed phrase response, bounded damped feedback, 2-bar loop phase, ordinary bypass, mute/seek/rate/Stop ownership passed');
