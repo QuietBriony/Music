@@ -16,7 +16,8 @@
   const ROOM_SECONDS = 0.72, ROOM_TAIL_ENERGY = 0.22;
   const roomBuffers = new WeakMap();
   function roomImpulse(context) {
-    if (roomBuffers.has(context)) return roomBuffers.get(context);
+    const cached = roomBuffers.get(context);
+    if (cached && cached.sampleRate === context.sampleRate) return cached;
     const rate = context.sampleRate, n = Math.ceil(rate * ROOM_SECONDS);
     const buffer = context.createBuffer(2, n, rate);
     let seed = 0x71e3b94d;
@@ -45,7 +46,7 @@
   const validLevel = value => Number.isFinite(Number(value)) ? Math.max(0, Math.min(1, Number(value))) : 0.8;
   function create(context) {
     const nodes = [], inputs = {}, faders = {}, levels = {}, direct = {}, roomSends = {}, processors = {}, sourceGates = {}, tones = {}, toneGains = {}, bypassGains = {};
-    let dub = null, retiredDub = null, dubBuffers = null, roomActive = true;
+    let dub = null, retiredDub = null, dubBuffers = null, roomActive = true, roomRateFallback = false;
     const muted = { vocals: false, drums: false, bass: false, other: false };
     const keep = node => { nodes.push(node); return node; };
     const gain = value => { const n = keep(context.createGain()); n.gain.value = value; return n; };
@@ -60,18 +61,34 @@
     room.connect(roomHp); roomHp.connect(roomLp);
     const roomReturn = gain(1);
     roomVerb.normalize = false;
-    const impulse = roomImpulse(context); roomVerb.buffer = impulse;
+    let impulse = roomImpulse(context);
+    const isRateMismatch = error => error?.name === "NotSupportedError" && /sample.?rate/i.test(String(error.message || ""));
+    function installRoomImpulse() {
+      roomVerb.buffer = null;
+      impulse = roomImpulse(context);
+      try {
+        roomVerb.buffer = impulse;
+        roomRateFallback = false;
+      } catch (error) {
+        if (!isRateMismatch(error)) throw error;
+        // Some iOS audio sessions change rate while starting or changing route.
+        // Keep the direct mix audible if WebKit still rejects the fresh buffer.
+        roomRateFallback = true;
+      }
+    }
+    installRoomImpulse();
     roomLp.connect(roomVerb); roomVerb.connect(roomReturn); roomReturn.connect(sum);
     function resetRoom() {
       // Clear earlier words/hits on a transport jump or minus-one change.
-      // Reuse the small IR; do not retain an old convolver or schedule timers.
-      roomVerb.buffer = null; roomVerb.buffer = impulse;
+      // Rebuild the IR only when the context rate changes. WebKit requires a
+      // convolver buffer at the current rate, including after audio resume.
+      installRoomImpulse();
       const now = context.currentTime;
       roomReturn.gain.cancelScheduledValues(now);
       if (context.state === "running") {
         roomReturn.gain.setValueAtTime(0, now);
-        roomReturn.gain.linearRampToValueAtTime(roomActive ? 1 : 0, now + 0.02);
-      } else roomReturn.gain.setValueAtTime(roomActive ? 1 : 0, now);
+        roomReturn.gain.linearRampToValueAtTime(roomActive && !roomRateFallback ? 1 : 0, now + 0.02);
+      } else roomReturn.gain.setValueAtTime(roomActive && !roomRateFallback ? 1 : 0, now);
     }
     for (const part of PARTS) {
       const input = gain(1), fader = gain(LEVELS[part]), send = gain(SENDS[part]);
@@ -167,7 +184,7 @@
       setSong(song) { set(output.gain, 10 ** ((Object.hasOwn(SONG_DB, song) ? SONG_DB[song] : 0) / 20)); },
       diagnostics() { return { levels: { ...levels }, gains: Object.fromEntries(PARTS.map(p => [p, faders[p].gain.value])),
         output: output.gain.value, nodes: nodes.length, roomActive, roomLastReflectionSeconds: ROOM_SECONDS, roomBytes: impulse.length * 8, roomVocalSend: SENDS.vocals, source: "pre-trim-pre-eq",
-        dub: dub?.diagnostics() || null,
+        roomRateFallback, roomSampleRate: impulse.sampleRate, dub: dub?.diagnostics() || null,
         dubToneHz: Object.fromEntries(Object.entries(tones).map(([p, n]) => [p, n.frequency.value])) }; },
       dispose() { dub?.destroy(); retiredDub?.destroy(); dub = null; retiredDub = null; dubBuffers = null; roomVerb.buffer = null; for (const node of nodes) node.disconnect(); }
     };

@@ -95,5 +95,5 @@ for(const bpm of [110,117.45,125])for(const duration of [1,6,16,60,118,131,234,2
   if(i)assert.ok(t>points[i-1][0]);
  }
 }
-for(const f of ['band-room.html','sw.js'])assert.ok(readFileSync(f,'utf8').includes('audio/dub-mix.js?v=5'));
+for(const f of ['band-room.html','sw.js'])assert.ok(readFileSync(f,'utf8').includes('audio/dub-mix.js?v=6'));
 console.log('Human Fly Dub console: continuous rhythm, source-backed phrase response, bounded damped feedback, 2-bar loop phase, ordinary bypass, mute/seek/rate/Stop ownership passed');

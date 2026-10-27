@@ -12,7 +12,8 @@
     if(!Number.isFinite(bpm)||bpm<110||bpm>125||!Number.isFinite(duration)||duration<1||duration>600||!Number.isFinite(rate)||rate<.5||rate>1.5||!Number.isFinite(offset)||offset<0||offset>duration||!Number.isFinite(at)||at<0)throw new Error("Invalid Human Fly dub timeline");
   }
   function spring(context){
-    if(impulseCache.has(context))return impulseCache.get(context);
+    const cached=impulseCache.get(context);
+    if(cached&&cached.sampleRate===context.sampleRate)return cached;
     const sr=context.sampleRate,b=context.createBuffer(2,Math.round(sr*1.1),sr);let seed=1951;
     for(let ch=0;ch<2;ch++){
       const x=b.getChannelData(ch);let energy=0;
@@ -28,7 +29,7 @@
     impulseCache.set(context,b);return b;
   }
   function create(context,{inputs,direct,sources,tones,loopTargets,buffers,muted:initialMute={},output}){
-    const nodes=[],buses={},connections=[],impulse=spring(context);let disposed=false,timer=null,settings=null,curves=null,loops=null;
+    const nodes=[],buses={},connections=[],impulse=spring(context);let disposed=false,timer=null,settings=null,curves=null,loops=null,springRateFallback=false;
     const keep=n=>{nodes.push(n);return n;};
     const gain=value=>{const n=keep(context.createGain());n.gain.value=value;return n;};
     const filter=(type,f)=>{const n=keep(context.createBiquadFilter());n.type=type;n.frequency.value=f;n.Q.value=.5;return n;};
@@ -44,8 +45,13 @@
       buses[part]={send,hp,lp,delay,feedback,pan,wet,exit};
       if(part==="drums"){
         const springHp=filter("highpass",650),convolver=keep(context.createConvolver()),amount=gain(.25);
-        convolver.normalize=false;convolver.buffer=impulse;
-        send.connect(springHp);springHp.connect(convolver);convolver.connect(amount);amount.connect(wet);
+        convolver.normalize=false;
+        try { convolver.buffer=impulse; }
+        catch(error) {
+          if(error?.name!=="NotSupportedError"||!/sample.?rate/i.test(String(error.message||"")))throw error;
+          springRateFallback=true;
+        }
+        if(!springRateFallback){send.connect(springHp);springHp.connect(convolver);convolver.connect(amount);amount.connect(wet);}
       }
     } } catch(error) { destroy(); throw error; }
     function automate(param,points,{at,offset,rate}){
@@ -85,7 +91,7 @@
       diagnostics(){
         return{revision:5,active:!disposed,nodes:disposed?0:nodes.length+(loops?.diagnostics().nodes||0),feedbackLimit:.685,
           loops:loops?.diagnostics()||null,scenes:settings?root.RecordedDubArrangement.build(settings.bpm,settings.duration).scenes:[],
-          echoBeats:{...ECHO_BEATS},springBytes:impulse.length*impulse.numberOfChannels*4,lastEchoSeconds:settings?Math.log(.001)/Math.log(.685)*60/(settings.bpm*settings.rate):0,
+          echoBeats:{...ECHO_BEATS},springBytes:impulse.length*impulse.numberOfChannels*4,springRateFallback,lastEchoSeconds:settings?Math.log(.001)/Math.log(.685)*60/(settings.bpm*settings.rate):0,
           settings,direct:Object.fromEntries(ALL_PARTS.map(p=>[p,direct[p].gain.value])),sources:Object.fromEntries(ALL_PARTS.map(p=>[p,sources[p].gain.value])),
           sends:Object.fromEntries(PARTS.map(p=>[p,buses[p].send.gain.value])),feedback:Object.fromEntries(PARTS.map(p=>[p,buses[p].feedback.gain.value])),
           wet:Object.fromEntries(PARTS.map(p=>[p,buses[p].wet.gain.value]))};

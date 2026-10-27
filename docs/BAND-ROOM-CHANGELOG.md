@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v438 compact)
+# Band Room - Changelog (v65 -> v439 compact)
+
+## v439 — 2026-10-27
+
+2026-10-27 v439: iPhoneのパート別で報告された残響バッファと音声コンテキストのサンプルレート不一致に対応。レート変更時に残響を作り直し、それでもWebKitが拒否する場合は該当残響を省いて4パートとDubのエコーを継続し、互換再生と表示する。通常時のミックス・保存設定・原音は維持。実iPhoneでの再試聴は未確認。cache `hazama-fm-v439` / client `band-room.js?v=br-272` / CSS `band-room.css?v=br-99` / stem mix v8 / Dub v6。
 
 ## v438 — 2026-10-27
 
@@ -99,7 +103,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v438. Latest Band Room runtime change: v438 (manual update and start diagnostics). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v439. Latest Band Room runtime change: v439 (iOS stem room rate recovery). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 
