@@ -2953,6 +2953,20 @@ html[data-br-surface="original"] :is(#br-master-vol-bar, #br-help-toggle, #br-kb
 .br-acid-actions label { display:flex; align-items:center; gap:6px; min-height:44px; font-size:12px; }
 .br-acid-speed { display:flex; align-items:center; gap:12px; min-height:44px; font-size:13px; }
 .br-acid-speed input { width:min(220px,46vw); min-height:36px; accent-color:var(--air); touch-action:none; }
+.br-live-scenes { margin:14px 0; padding:10px; border:1px solid var(--panel-border); border-radius:10px; }
+#br-acid-live details { margin:14px 0; }
+#br-acid-live summary { min-height:44px; padding:10px 0; cursor:pointer; font-size:14px; color:var(--air-soft); }
+.br-live-master { display:flex; gap:8px; align-items:center; min-height:44px; }
+.br-live-drum-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); gap:10px; }
+.br-live-drum-cards .br-acid-faders { gap:4px; }
+.br-live-horizontal { display:grid; gap:8px; }
+.br-live-horizontal label { display:grid; grid-template-columns:110px minmax(0,1fr) 32px; align-items:center; min-height:44px; gap:8px; font-size:12px; }
+.br-live-horizontal input { width:100%; accent-color:var(--air); touch-action:none; }
+.br-live-pads { display:grid; grid-template-columns:repeat(8,minmax(0,1fr)); gap:4px; margin:12px 0; }
+#br-acid-live .br-live-pads button { padding:4px; min-width:0; font-size:12px; }
+#br-acid-live .br-live-accent { border-color:var(--accent); color:var(--accent); }
+.br-live-source #br-stems { margin:8px 0; }
+.br-live-source #br-coherent-mix { margin:12px 0; }
 .br-acid-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
 .br-acid-card { min-width:0; padding:12px; border:1px solid var(--panel-border); border-radius:10px; }
 .br-acid-notes { overflow-wrap:anywhere; min-height:38px; font:12px/1.7 ui-monospace,monospace; color:var(--air-soft); }

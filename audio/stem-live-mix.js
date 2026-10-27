@@ -52,6 +52,7 @@
   const SONG_DB = Object.freeze({"tabasco": -0.2, "hey": 0.2, "i-got-a-feeling": -1.2, "under-the-moon": 1.1, "electric-sheep": -0.6, "human-fly": 0.9, "sister": 1.1});
   const validLevel = value => Number.isFinite(Number(value)) ? Math.max(0, Math.min(1, Number(value))) : 0.8;
   function create(context) {
+    const liveTaps = new Map();
     const nodes = [], inputs = {}, faders = {}, levels = {}, direct = {}, roomSends = {}, processors = {}, sourceGates = {}, tones = {}, toneGains = {}, bypassGains = {};
     let dub = null, retiredDub = null, dubBuffers = null, roomActive = true, roomRateFallback = false;
     const muted = { vocals: false, drums: false, bass: false, other: false };
@@ -128,6 +129,13 @@
         param.setValueAtTime(0, context.currentTime);
       } else set(param, SENDS[part]);
     }
+    function closeMutedTaps(part) {
+      for (const [gate, info] of [...liveTaps]) if (info.part === part) {
+        const off = muted[part] || levels[part] === 0;
+        gate.gain.cancelScheduledValues(context.currentTime); gate.gain.setValueAtTime(off ? 0 : 1, context.currentTime);
+        if (off) info.onMute?.();
+      }
+    }
     function stopDub() {
       resetRoom();
       retiredDub?.destroy(); retiredDub = dub;
@@ -175,10 +183,18 @@
     }
     return {
       inputs, output,
+      tap(part, target, onMute) {
+        if (!faders[part]) throw new Error("Unknown live effect part");
+        const gate = context.createGain(); gate.gain.value = muted[part] || levels[part] === 0 ? 0 : 1;
+        faders[part].connect(gate); gate.connect(target); liveTaps.set(gate, { part, onMute });
+        return () => { try { faders[part].disconnect(gate); } catch {} gate.disconnect(); liveTaps.delete(gate); };
+      },
+      setRoomAmount(value) { set(room.gain, Math.max(0, Math.min(1, Number(value) || 0))); },
       setLevel(part, value) {
         if (!faders[part]) return;
         const wasZero = levels[part] === 0;
         levels[part] = validLevel(value);
+        closeMutedTaps(part);
         set(faders[part].gain, LEVELS[part] * levels[part] / 0.8);
         if (wasZero !== (levels[part] === 0)) { syncRoomSend(part); resetRoom(); }
         if (direct[part] && wasZero !== (levels[part] === 0)) flushDub();
@@ -189,6 +205,7 @@
         if (!Object.hasOwn(muted, part)) return;
         if (muted[part] === Boolean(value)) return;
         muted[part] = Boolean(value); syncRoomSend(part); resetRoom(); flushDub();
+        closeMutedTaps(part);
       },
       setSong(song) { set(output.gain, 10 ** ((Object.hasOwn(SONG_DB, song) ? SONG_DB[song] : 0) / 20)); },
       diagnostics() { return { levels: { ...levels }, gains: Object.fromEntries(PARTS.map(p => [p, faders[p].gain.value])),
@@ -196,6 +213,8 @@
         roomRateFallback, roomSampleRate: impulse.sampleRate, dub: dub?.diagnostics() || null,
         dubToneHz: Object.fromEntries(Object.entries(tones).map(([p, n]) => [p, n.frequency.value])) }; },
       dispose() {
+        for (const [gate, info] of [...liveTaps]) { info.onMute?.(); try { faders[info.part].disconnect(gate); } catch {} gate.disconnect(); }
+        liveTaps.clear();
         dub?.destroy(); retiredDub?.destroy(); dub = null; retiredDub = null; dubBuffers = null;
         try { roomVerb.buffer = clearBuffer(context); }
         catch (error) { if (!isRateMismatch(error)) throw error; }

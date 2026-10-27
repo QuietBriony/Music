@@ -70,6 +70,12 @@ for(const n of nodes.slice(24,44))for(const param of [n.gain,n.frequency])assert
 mix.dispose();assert.equal(nodes.filter(n=>n.links.length).length,0);
 assert.equal(roomNode.buffer.length,1,'Dispose replaces the active IR with one silent frame');
 assert.equal(roomNode.buffer.getChannelData(0)[0],0);
+const live=sb.RecordedStemMix.create(context),target=new Node();let mutedTaps=0;
+const untap=live.tap('vocals',target,()=>mutedTaps++);
+live.setLevel('vocals',0);assert.equal(mutedTaps,1,'Zero also closes a post-fader live throw');
+live.setLevel('vocals',.8);live.setDubMuted('vocals',true);assert.equal(mutedTaps,2);
+untap();live.setDubMuted('vocals',false);live.setRoomAmount(.3);live.dispose();assert.equal(mutedTaps,2,'Detached effect is no longer called');
+assert.equal(nodes.filter(n=>n.links.length).length,0);
 delete context.createStereoPanner;const fallback=sb.RecordedStemMix.create(context);fallback.startDub({...opts,at:clock,offset:118},buffers);assert.equal(fallback.diagnostics().dub.nodes,36);fallback.dispose();assert.equal(nodes.filter(n=>n.links.length).length,0);
 const c44={...context,sampleRate:44100},mix44=sb.RecordedStemMix.create(c44);mix44.startDub({...opts,at:clock,offset:118},buffers);assert.equal(mix44.diagnostics().dub.springBytes,388080);mix44.dispose();
 let convolvers=0;const failed=sb.RecordedStemMix.create({...context,createConvolver(){if(++convolvers>1)throw Error('Unavailable Dub convolver');return context.createConvolver();}});assert.throws(()=>failed.startDub({...opts,at:clock,offset:118},buffers));failed.dispose();assert.equal(nodes.filter(n=>n.links.length).length,0,'A constructor failure disconnects every partially built echo loop');

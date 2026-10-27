@@ -1,25 +1,31 @@
 // Human Fly's optional live arrangement. Motifs use root/fifth/octave first;
 // the extra suspended tones avoid guessing major/minor from a root-only score.
+import {drumDefaults,validateDrums} from './acid-live-drums.mjs?v=1';
+import {sceneSettings} from './acid-live-scenes.mjs?v=1';
 export const PARTS = ['bass', 'reply'];
 const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const INTERVALS = [0, 2, 5, 7, 12];
 const clone = value => JSON.parse(JSON.stringify(value));
 const step = (n, accent = false, slide = false) => ({ n, active: n !== null, accent, slide });
 export function defaults() {
-  return { version: 1, auto: false, parts: {
-    bass: { locked: false, volume: 66, cutoff: 24, reso: 7.2, env: 42, decay: 30, delay: 12,
+  return { version: 2, auto: false, arrangement:{auto:false,scene:'keep',progress:.5}, drums:drumDefaults(),fx:{echo:35,tone:42,room:65}, parts: {
+    bass: { enabled:true, locked: false, volume: 66, cutoff: 24, reso: 7.2, env: 42, decay: 30, delay: 12,
       steps: [step(0,true),step(null),step(null),step(0,false,true),step(0),step(null),step(3),step(null),step(0,true),step(null),step(4,false,true),step(3),step(0),step(null),step(3),step(null)] },
-    reply: { locked: false, volume: 30, cutoff: 32, reso: 8.2, env: 53, decay: 24, delay: 28,
+    reply: { enabled:true, locked: false, volume: 30, cutoff: 32, reso: 8.2, env: 53, decay: 24, delay: 28,
       steps: [step(null),step(null),step(3),step(null),step(null),step(0,false,true),step(4),step(null),step(null),step(3,true),step(null),step(4,false,true),step(3),step(null),step(0),step(null)] }
   }};
 }
 export function validate(value) {
-  if (value?.version !== 1 || typeof value.auto !== 'boolean') throw Error('Acidの保存形式が違います。');
-  const result = {version:1, auto:value.auto, parts:{}};
+  if (![1,2].includes(value?.version) || typeof value.auto !== 'boolean') throw Error('Acidの保存形式が違います。');
+  const legacy=value.version===1;
+  const result = {version:2, auto:value.auto, arrangement:legacy?{auto:false,scene:'keep',progress:.5}:sceneSettings(value.arrangement),
+    drums:legacy?drumDefaults():validateDrums(value.drums),fx:legacy?{echo:35,tone:42,room:65}:{...value.fx},parts:{}};
+  for(const k of ['echo','tone','room'])if(!Number.isFinite(result.fx[k])||result.fx[k]<0||result.fx[k]>100)throw Error('エフェクトの値が範囲外です。');
   for (const part of PARTS) {
     const p = value.parts?.[part];
     if (!p || typeof p.locked !== 'boolean' || !Array.isArray(p.steps) || p.steps.length !== 16) throw Error('303のフレーズは16ステップです。');
-    const clean = {locked:p.locked};
+    if(!legacy&&typeof p.enabled!=='boolean')throw Error('303のON/OFFが不正です。');
+    const clean = {enabled:legacy?true:p.enabled,locked:p.locked};
     for (const key of ['volume','cutoff','reso','env','decay','delay']) {
       if (!Number.isFinite(p[key]) || p[key] < 0 || p[key] > (key === 'reso' ? 12 : 100)) throw Error('303のフェーダー値が範囲外です。');
       clean[key] = p[key];
@@ -85,4 +91,14 @@ export function voiceSteps(steps, part, chord) {
 export function voiceParams(part, rate = 1) {
   return {tune:1200*Math.log2(rate),cutoff:part.cutoff/100,reso:part.reso,env:part.env/100,
     decay:part.decay,vol:.42,wave:'sawtooth',delayWet:part.delay,delayTime:18.75,delayFeedback:30};
+}
+export function validatePerformanceContext(value) {
+  if(value==null)return null;
+  if(!Number.isFinite(value.tempo)||value.tempo<50||value.tempo>120||!Number.isFinite(value.position)||value.position<0||value.position>600||typeof value.instruments!=='boolean'||!['blend','dub'].includes(value.mastering))throw Error('曲とアレンジの保存設定が不正です。');
+  const levels={},enabled={};
+  for(const part of ['vocals','drums','bass','other']){
+    if(!Number.isFinite(value.levels?.[part])||value.levels[part]<0||value.levels[part]>100||typeof value.enabled?.[part]!=='boolean')throw Error('元の4パートの保存設定が不正です。');
+    levels[part]=value.levels[part];enabled[part]=value.enabled[part];
+  }
+  return {tempo:value.tempo,position:value.position,instruments:value.instruments,mastering:value.mastering,levels,enabled};
 }
