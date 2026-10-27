@@ -14,9 +14,10 @@ const NOTE_INDEX = Object.freeze({
 });
 
 export class TB303 {
-    constructor(ctx, output) {
+    constructor(ctx, output, { createFilter } = {}) {
         this.ctx = ctx;
         this.output = output;
+        this.createFilter = createFilter;
         this.activeState = null; // { osc, filter, gain, freq }
         this.lastDelaySettings = null;
         this._didWarnWorkletFallback = false;
@@ -181,7 +182,7 @@ export class TB303 {
             let cutParam = null;
 
             try {
-                filter = new AudioWorkletNode(this.ctx, 'tb303-filter');
+                filter = this.createFilter ? this.createFilter() : new AudioWorkletNode(this.ctx, 'tb303-filter');
                 isWorkletFilter = true;
             } catch (e) {
                 if (!this._didWarnWorkletFallback) {

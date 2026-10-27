@@ -52,3 +52,7 @@ The first-party rack adds three bounded tone macros and eight named tone scenes,
 ## Native FILE import repeatability (2026-10-23)
 
 Local `FileManager.js` keeps identical saved versions from being added again by FILE IMPORT. Incoming ID collisions receive a fresh ID, preserving existing records and the selected FILE. New records still precede the existing shelf; the FILE codec, audio code and storage keys are unchanged. This prevents new duplicate IDs from blocking Workbench combined backup export. It does not rewrite or repair pre-existing duplicate or invalid records.
+
+## Band Room optional voice reuse (2026-10-28)
+
+Human Fly Acid LIVE imports the existing TB303 class and filter worklet only. An optional constructor `createFilter` factory lets Tone 14 create a compatible AudioWorkletNode in its own context; the standalone/native default remains unchanged. No oscillator, filter, envelope, slide or delay algorithm is replaced. The first-party adapter owns two voices, one future host-clock event, conservative output, STOP/seek/rate disposal and the live panel. The four 909 WAV files remain scoped to the original independent workbench; this feature does not load them. MIT attribution is linked from the panel.

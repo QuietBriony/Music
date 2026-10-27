@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-273-ios-convolver-clear";
-  const BANDROOM_RELEASE_VERSION = "v440";
+  const BANDROOM_APP_VERSION = "br-274-acid-live";
+  const BANDROOM_RELEASE_VERSION = "v441";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -148,6 +148,8 @@
   let originalDenseGate = null;
   let originalMastering = "blend";
   let coherentStemMix = null, originalBlendGate = null;
+  let acidLivePanel = null, acidLiveEngine = null, acidLiveContext = null;
+  let acidLiveEnabled = false, acidLiveGeneration = 0;
   let stemPlaybackAnchor = null;
   let originalMasteringWasChosen = false;
   let masterLimiter = null;
@@ -583,6 +585,97 @@
     return state.currentBandId === "tabasco" && state.currentSongId === "human-fly";
   }
 
+  function acidLiveSupported() { return humanFlyDubSupported() && currentMode === "stems"; }
+  function stopAcidLive() {
+    acidLiveGeneration++;
+    acidLiveEngine?.stop();
+    if (acidLivePanel && acidLiveEnabled) acidLivePanel.setStatus("303は停止中です。曲と同じSTARTで再開します。");
+  }
+  function syncAcidLiveUi() {
+    const section = $("br-acid-live");
+    if (section) section.hidden = !acidLiveSupported();
+    document.body?.classList.toggle("br-acid-open", acidLiveSupported() && $("br-acid-controls")?.hidden === false);
+    if (!acidLiveSupported()) {
+      stopAcidLive(); acidLiveEnabled = false; acidLivePanel?.setEnabled(false);
+    }
+  }
+  async function prepareAcidLive() {
+    if (!acidLiveEnabled || !acidLiveSupported() || !acidLivePanel) return false;
+    const context = Tone.getContext().rawContext;
+    if (!acidLiveEngine || acidLiveContext !== context) {
+      acidLiveEngine?.dispose(); acidLiveContext = context;
+      acidLiveEngine = acidLivePanel.createEngine({ context, transport: Tone.Transport,
+        loadFilter: () => context.audioWorklet.addModule(new URL("experiments/workbench/v1/third_party/acidbros/js/audio/TB303FilterProcessor.js?v=br-441", window.location.href)),
+        createFilter: () => Tone.getContext().createAudioWorkletNode("tb303-filter"),
+        connect: node => Tone.connect(node, originalMasterGain),
+        onStatus: info => acidLivePanel?.playing(info)
+      });
+    }
+    await acidLiveEngine.prepare();
+    acidLiveEngine.configure(acidLivePanel.state());
+    return true;
+  }
+  function syncAcidLivePlayback(retime = false) {
+    if (!acidLiveEnabled || !acidLiveSupported() || !stemPlaybackAnchor || !acidLiveEngine?.diagnostics().prepared) {
+      acidLiveEngine?.stop(); return;
+    }
+    const now = audioClockSeconds(), old = stemPlaybackAnchor;
+    const at = Math.max(now + 0.04, old.at), offset = old.offset + Math.max(0, at - old.at) * old.rate;
+    const duration = Number(state.songData?.performance_duration_s);
+    if (!Number.isFinite(duration) || offset >= duration) { acidLiveEngine.stop(); return; }
+    acidLiveEngine[retime ? "retime" : "start"]({ at, offset, rate: old.rate,
+      bpm: Number(state.songData?.guitar_line?.bpm_fit) || playbackBaseBpm(), duration, song: state.songData });
+  }
+  async function enableAcidLive(value) {
+    acidLiveEnabled = Boolean(value) && acidLiveSupported();
+    acidLivePanel?.setEnabled(acidLiveEnabled);
+    if (!acidLiveEnabled) { stopAcidLive(); acidLivePanel?.setStatus("303 OFF。原演奏はそのまま続きます。"); return; }
+    const token = ++acidLiveGeneration;
+    if (!state.started) { acidLivePanel?.setStatus("303 ON。STARTで曲と一緒に開始します。"); return; }
+    try {
+      acidLivePanel.setStatus("303を準備中…");
+      await prepareAcidLive();
+      if (token === acidLiveGeneration && state.started && acidLiveEnabled && acidLiveSupported()) syncAcidLivePlayback();
+    } catch (error) {
+      if (token !== acidLiveGeneration) return;
+      acidLiveEnabled = false; acidLiveEngine?.stop(); acidLivePanel?.setEnabled(false);
+      acidLivePanel?.setStatus("303を開始できませんでした：" + error.message);
+    }
+  }
+  function initAcidLiveControls() {
+    $("br-acid-open")?.addEventListener("click", async () => {
+      const button = $("br-acid-open"), host = $("br-acid-controls");
+      if (!host || !acidLiveSupported()) return;
+      if (!host.hidden) {
+        await enableAcidLive(false); host.hidden = true; document.body.classList.remove("br-acid-open"); button.textContent = "303で遊ぶ"; button.setAttribute("aria-expanded", "false"); return;
+      }
+      button.disabled = true;
+      try {
+        if (!acidLivePanel) {
+          const { createAcidPanel } = await import("./audio/acid-live-panel.mjs?v=1");
+          if (!acidLiveSupported()) return;
+          acidLivePanel = createAcidPanel({ host,
+            tempo: Number($("br-tempo-mult")?.value || 100),
+            onTempo: value => { const input = $("br-tempo-mult"); if (input) { input.value = value; input.dispatchEvent(new Event("input")); } },
+            storage: { getItem: key => window.localStorage.getItem(key), setItem: (key,value) => window.localStorage.setItem(key,value) },
+            onEnable: enableAcidLive,
+            onChange: config => acidLiveEngine?.configure(config),
+            onMix: mode => {
+              if (!acidLiveSupported()) return;
+              if (mode === "original") $("br-acid-live")?.parentElement?.querySelector('[data-toggle-all="stems-on"]')?.click();
+              else {
+                const bass = $("br-toggle-stem-bass");
+                if (bass?.checked) { bass.checked = false; bass.dispatchEvent(new Event("change")); }
+              }
+            }
+          });
+        }
+        host.hidden = false; document.body.classList.add("br-acid-open"); button.textContent = "303を停止して閉じる"; button.setAttribute("aria-expanded", "true");
+      } catch (error) { button.textContent = "303を開き直す"; setStartStatus("303の操作を開けませんでした：" + error.message, "error"); }
+      finally { button.disabled = false; }
+    });
+  }
+
   function syncRecordedMixFallbackStatus() {
     const info = coherentStemMix?.diagnostics();
     if (info?.roomRateFallback || info?.dub?.springRateFallback) {
@@ -643,6 +736,7 @@
   }
 
   function syncOriginalMasteringControls() {
+    syncAcidLiveUi();
     if (originalMastering === "dub" && !humanFlyDubSupported()) { setOriginalMastering("blend"); return; }
     const dubPanel = $("br-dub-mix");
     if (dubPanel) dubPanel.hidden = currentMode !== "stems" || !humanFlyDubSupported();
@@ -3788,10 +3882,12 @@
         console.warn("[Band Room] stem start failed:", stem, e);
       }
     });
+    syncAcidLivePlayback();
     return true;
   }
 
   function stopStemPlayback() {
+    stopAcidLive();
     coherentStemMix?.stopDub(); stemPlaybackAnchor = null;
     coherentStemMix?.setRoomActive(false);
     Object.values(stemPlayers).forEach((player) => {
@@ -4992,6 +5088,8 @@
       setOriginalMasteringGate,
       stemUrlAvailable,
       humanFlyDubSupported,
+      acidLiveDiagnostics: () => ({ enabled: acidLiveEnabled, supported: acidLiveSupported(),
+        engine: acidLiveEngine?.diagnostics() || null, state: acidLivePanel?.state() || null }),
       stemPlaybackAnchor: () => stemPlaybackAnchor && { ...stemPlaybackAnchor },
       originalMasteringDiagnostics: () => ({ profile: originalMastering,
         live: originalLiveGate?.gain.value, dense: originalDenseGate?.gain.value,
@@ -7882,6 +7980,11 @@
       );
       return false;
     }
+    if (acidLiveEnabled && acidLiveSupported()) {
+      if (opts.startTrace) opts.startTrace.step = "303の準備";
+      await prepareAcidLive();
+      if (!playbackStartStillAllowed(opts.startContract)) { abortPlaybackStart("selection-changed"); return false; }
+    }
     if (!tonePlaybackContextReady()) {
       abortPlaybackStart("tone-context-suspended-after-prep");
       setStartStatus("準備中にブラウザの音声が停止しました。画面をタップしてから、もう一度 START を押してください。", "error");
@@ -8195,6 +8298,7 @@
     const tempoMult = playbackRateMultiplier();
     stemPlaybackAnchor = { at: startAt, offset: expectedOffset, rate: tempoMult };
     syncRecordedDub();
+    syncAcidLivePlayback();
     Object.entries(stemPlayers).forEach(([stem, player]) => {
       if (!player) return;
       const playerDuration = playerDurationSeconds(player) || guardDuration;
@@ -8355,6 +8459,7 @@
   }
 
   function stopPlayback(options = {}) {
+    stopAcidLive();
     window.dispatchEvent(new CustomEvent("band-room:playback-stopped"));
     clearAutoAdvanceTimer();
     // A whole bar has already been scheduled on the audio clock. Transport
@@ -8649,6 +8754,7 @@
   // ---- UI bindings --------------------------------------------
 
   function bindUI() {
+    initAcidLiveControls();
     $("br-arcb-guitar-style")?.addEventListener("change", (event) => {
       physicalGuitarStyle = event.target.value;
     });
@@ -8939,6 +9045,7 @@
           clearAutoAdvanceTimer();
         }
         if (tempoRead) tempoRead.textContent = tempoEl.value + "%";
+        acidLivePanel?.setTempo(Number(tempoEl.value));
         const baseBpm = playbackBaseBpm();
         const targetBpm = baseBpm * mult;
         try { Tone.Transport.bpm.rampTo(targetBpm, 0.4); } catch (e) {}
@@ -8948,6 +9055,7 @@
           try { p.playbackRate = mult; } catch (e) {}
         });
         if (state.started && originalMastering === "dub") syncRecordedDub();
+        if (state.started && acidLiveEnabled) syncAcidLivePlayback(true);
       });
     }
 

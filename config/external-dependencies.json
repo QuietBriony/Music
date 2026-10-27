@@ -53,7 +53,7 @@
     {
       "id": "acidbros-workbench-module",
       "kind": "browser_script",
-      "consumers": ["experiments/workbench/v1/build.mjs", "experiments/workbench/v1/src/index.html.template", "experiments/workbench/v1/third_party/acidbros"],
+      "consumers": ["audio/acid-live.mjs", "experiments/workbench/v1/build.mjs", "experiments/workbench/v1/src/index.html.template", "experiments/workbench/v1/third_party/acidbros"],
       "source_url": "https://github.com/acidsound/acidBros/tree/f0b348a7a641f76689b8ca97f3c1e4b90ab9c44e",
       "runtime_urls": [],
       "version": "v153",
@@ -146,7 +146,7 @@
     {
       "id": "strudel-repl-workbench",
       "kind": "browser_script",
-      "consumers": ["experiments/workbench/v1/build.mjs", "experiments/workbench/v1/src/index.html.template"],
+      "consumers": ["audio/acid-live.mjs", "experiments/workbench/v1/build.mjs", "experiments/workbench/v1/src/index.html.template"],
       "source_url": "https://www.npmjs.com/package/@strudel/repl/v/1.3.0",
       "runtime_urls": [],
       "version": "1.3.0",
@@ -273,7 +273,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v440-runtime",
+        "target": "hazama-fm-v441-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -325,7 +325,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v440-runtime",
+        "target": "hazama-fm-v441-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -375,7 +375,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v440-runtime",
+        "target": "hazama-fm-v441-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -426,7 +426,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v440-runtime",
+        "target": "hazama-fm-v441-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -497,7 +497,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v440-runtime",
+        "target": "hazama-fm-v441-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -555,7 +555,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v440-runtime",
+        "target": "hazama-fm-v441-runtime",
         "tracked_in_git": false
       },
       "execution": {
@@ -613,7 +613,7 @@
       },
       "storage": {
         "class": "browser_runtime_cache",
-        "target": "hazama-fm-v440-runtime",
+        "target": "hazama-fm-v441-runtime",
         "tracked_in_git": false
       },
       "execution": {
