@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v437 compact)
+# Band Room - Changelog (v65 -> v438 compact)
+
+## v438 — 2026-10-27
+
+2026-10-27 v438: Band Room上部に更新確認を追加。確認だけでは演奏や録音を止めず、再読み込みは明示操作。開始例外は処理段階と理由を表示し、原因不明のRESET AUDIO誘導を避ける。音源・保存形式・音声経路は変更しない。iPhoneの再生エラー原因と実機確認は未解決。cache `hazama-fm-v438` / client `band-room.js?v=br-271` / CSS `band-room.css?v=br-99`。
 
 ## v437 — 2026-10-26
 
@@ -95,7 +99,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v437. Latest Band Room runtime change: v437 (vocal phrases and guitar echo dialogue). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v438. Latest Band Room runtime change: v438 (manual update and start diagnostics). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

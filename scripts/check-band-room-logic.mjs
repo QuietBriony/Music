@@ -209,8 +209,8 @@ assert.equal(normalizedDrumFloorSection("verse-1"), "verse");
 
 const migratePrefsForCurrentMix = windowMock.BandRoomTestHooks?.migratePrefsForCurrentMix;
 assert.equal(typeof migratePrefsForCurrentMix, "function", "migratePrefsForCurrentMix should be exposed");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-270-dub-dialogue", "Band Room should expose the current app version");
-assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v437", "Band Room should expose the current user-facing release version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_APP_VERSION, "br-271-start-diagnostics", "Band Room should expose the current app version");
+assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_RELEASE_VERSION, "v438", "Band Room should expose the current user-facing release version");
 assert.equal(windowMock.BandRoomTestHooks?.BANDROOM_STORAGE_SCHEMA_VERSION, 2, "Band Room should expose the current storage schema version");
 const performanceBpm = windowMock.BandRoomTestHooks.transcribedPerformanceBpm;
 const originalCeiling = windowMock.BandRoomTestHooks.originalOutputCeiling;
@@ -855,13 +855,13 @@ assert.match(verticalRoomPreset, /loudness:\s*-1/, "vertical-room should not rai
 assert.doesNotMatch(verticalRoomPreset, /synth_profile|chord_instrument|bass_instrument|guitar_instrument|voice_instrument|kit_source|guitar_on/, "vertical-room should be mastering-only and not alter AI instruments");
 assert.match(html, /data-preset="vertical-room">live room<\/button>/, "Band Room should expose the live-room preset button");
 assert.match(html, /band-room\.css\?v=br-99/, "Band Room HTML should reference the current CSS cache marker");
-assert.match(html, /band-room\.js\?v=br-270/, "Band Room HTML should reference the current JS cache marker");
+assert.match(html, /band-room\.js\?v=br-271/, "Band Room HTML should reference the current JS cache marker");
 const swVersion = sw.match(/const VERSION = "(hazama-fm-v\d+)";/)?.[1];
 const latestChangelogVersion = changelog.match(/hazama-fm-v\d+/)?.[0];
 assert.match(swVersion || "", /^hazama-fm-v\d+$/, "Service worker should carry a well-formed cache version");
 assert.equal(swVersion, latestChangelogVersion, "Service worker cache version should match the latest changelog entry");
 assert.match(sw, /band-room\.css\?v=br-99/, "Service worker should precache the current Band Room CSS marker");
-assert.match(sw, /band-room\.js\?v=br-270/, "Service worker should precache the current Band Room JS marker");
+assert.match(sw, /band-room\.js\?v=br-271/, "Service worker should precache the current Band Room JS marker");
 // v344: AI synth timbre uplift (bass sub / voice 3rd-formant+body / chord fat+filter-LFO / polish-bus body)
 assert.match(source, /sub\.triggerAttackRelease\(f, dur, time/, "AI bass should layer a clean sub-oscillator for body (v344)");
 assert.match(source, /const formant3 = new Tone\.Filter/, "AI vocal should add a 3rd formant for presence (v344)");
@@ -986,6 +986,28 @@ const sourceSection = (startMarker, endMarker, maxLength = 12000) => {
 };
 const startPlaybackSource = sourceSection("async function startPlayback(opts = {})", "async function startPlaybackBoot(opts = {})");
 const startPlaybackBootSource = sourceSection("async function startPlaybackBoot(opts = {})", "function tonePlaybackContextReady()");
+// A failed iPhone start must expose a useful, bounded reason without requiring
+// the user to clear their saved audio settings. Exercise the real catch path.
+{
+  let status = "", busy = false;
+  const state = { started: false, starting: false };
+  const context = { state, console: { warn() {} },
+    playbackSelectionTransitionInFlight: () => false,
+    createPlaybackStartContract: () => ({}), window: { dispatchEvent() {} }, CustomEvent: class {},
+    setButtonState() {}, setStartStatus(text) { status = text; },
+    setPlaybackStartSelectionBusy(value) { busy = value; },
+    yieldToUi: async () => {}, playbackStartStillAllowed: () => true,
+    startPlaybackBoot: async ({ startTrace }) => {
+      startTrace.step = "パート別の再生";
+      throw new TypeError("audio node failed https://example.invalid/private-token");
+    },
+    stopPlayback() {}, releaseSustainedSynths() {} };
+  vm.runInNewContext(startPlaybackSource, context);
+  assert.equal(await context.startPlayback(), false);
+  assert.match(status, /パート別の再生: audio node failed \[URL\]/);
+  assert.doesNotMatch(status, /private-token|RESET AUDIO/);
+  assert.equal(state.started, false); assert.equal(state.starting, false); assert.equal(busy, false);
+}
 const playbackContractSource = sourceSection("function applyBandPlaybackModeContract(previousBandId = null)", "// v213: per-band / per-song kit profile");
 const selectBandSource = sourceSection("async function selectBand(bandId)", "// v99: render the per-voice override grid");
 const loadSongSource = sourceSection("async function loadSong(songId, options = {})", "function syncTrackButtons()");

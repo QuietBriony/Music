@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-27 v438: Band Room上部に更新確認を追加。確認だけでは演奏や録音を止めず、再読み込みは明示操作。開始例外は処理段階と理由を表示し、原因不明のRESET AUDIO誘導を避ける。音源・保存形式・音声経路は変更しない。iPhoneの再生エラー原因と実機確認は未解決。cache `hazama-fm-v438` / client `band-room.js?v=br-271` / CSS `band-room.css?v=br-99`。
+
 2026-10-27: 独立試奏台の上部に単曲の作品音量を追加。既存LEVELとコード・作品別設定に連動し、A/Bや接続できないコードでは隠す。端末・車の音量は別。
 
 2026-10-27: 独立試奏台の試作・A/B画面に今の演奏名と上部の再生／停止を追加。作品棚とコード・音量へ移動でき、演奏中の作品切替と既存のPlay／Stopを共用。LIVE・元の303／909・同期演奏は各専用操作を使う。
@@ -303,8 +305,8 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
   素材/依存追加なし。実iPhoneの背景/画面ロック/車載継続、音楽的好みは未判定。
 - browser / sample / worker / model / connectome data依存は`config/external-dependencies.json`の28件が正本。
   ACE-Step / Demucs / Whisperのweightはrepo外、tracked weightは0。
-- 現行cacheは`hazama-fm-v437`。Band Room runtime markerは`band-room.js?v=br-270` /
-  `band-room.css?v=br-98`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
+- 現行cacheは`hazama-fm-v438`。Band Room runtime markerは`band-room.js?v=br-271` /
+  `band-room.css?v=br-99`。実音・mobile・車載 / Bluetoothを自律checkだけで合格扱いにしない。
 - Tabascoのregistry / catalog duration正本は`presets/bands.json`、BPM / key / 構成は
   7 drum-frame、canonical / fallback歌詞はfinal lyrics。stems karaokeは5曲だけ
   ASR由来の`tabasco-lyrics-timed.json`を使う。`presets/tabasco-songs.json` v2は
