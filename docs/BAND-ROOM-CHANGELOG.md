@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v439 compact)
+# Band Room - Changelog (v65 -> v440 compact)
+
+## v440 — 2026-10-27
+
+2026-10-27 v440: v439でも続いたiPhoneの残響レートエラーに対応。Tone 14同梱のSafari向けnullクリア処理が44100 Hz固定のため、残響のリセット・破棄を現コンテキストのレートに合う1フレーム無音で行う。実Toneを通すSafari互換挙動でv439の同じエラーを再現。通常の残響・4パート・Dub展開は維持。実iPhoneでの再試聴は未確認。cache `hazama-fm-v440` / client `band-room.js?v=br-273` / CSS `band-room.css?v=br-99` / stem mix v9 / Dub v7。
 
 ## v439 — 2026-10-27
 
@@ -103,7 +107,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v439. Latest Band Room runtime change: v439 (iOS stem room rate recovery). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v440. Latest Band Room runtime change: v440 (Tone/Safari convolver clear). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

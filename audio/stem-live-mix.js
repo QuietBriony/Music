@@ -15,6 +15,13 @@
   // late return instead of extending discrete echoes. No downloaded IR.
   const ROOM_SECONDS = 0.72, ROOM_TAIL_ENERGY = 0.22;
   const roomBuffers = new WeakMap();
+  const clearBuffers = new WeakMap();
+  function clearBuffer(context) {
+    const cached = clearBuffers.get(context);
+    if (cached && cached.sampleRate === context.sampleRate) return cached;
+    const buffer = context.createBuffer(1, 1, context.sampleRate);
+    clearBuffers.set(context, buffer); return buffer;
+  }
   function roomImpulse(context) {
     const cached = roomBuffers.get(context);
     if (cached && cached.sampleRate === context.sampleRate) return cached;
@@ -64,9 +71,11 @@
     let impulse = roomImpulse(context);
     const isRateMismatch = error => error?.name === "NotSupportedError" && /sample.?rate/i.test(String(error.message || ""));
     function installRoomImpulse() {
-      roomVerb.buffer = null;
       impulse = roomImpulse(context);
       try {
+        // Tone 14's Safari null-buffer workaround uses 44100 Hz. A matching
+        // one-frame silent IR clears the old history without that workaround.
+        if (roomVerb.buffer) roomVerb.buffer = clearBuffer(context);
         roomVerb.buffer = impulse;
         roomRateFallback = false;
       } catch (error) {
@@ -186,7 +195,12 @@
         output: output.gain.value, nodes: nodes.length, roomActive, roomLastReflectionSeconds: ROOM_SECONDS, roomBytes: impulse.length * 8, roomVocalSend: SENDS.vocals, source: "pre-trim-pre-eq",
         roomRateFallback, roomSampleRate: impulse.sampleRate, dub: dub?.diagnostics() || null,
         dubToneHz: Object.fromEntries(Object.entries(tones).map(([p, n]) => [p, n.frequency.value])) }; },
-      dispose() { dub?.destroy(); retiredDub?.destroy(); dub = null; retiredDub = null; dubBuffers = null; roomVerb.buffer = null; for (const node of nodes) node.disconnect(); }
+      dispose() {
+        dub?.destroy(); retiredDub?.destroy(); dub = null; retiredDub = null; dubBuffers = null;
+        try { roomVerb.buffer = clearBuffer(context); }
+        catch (error) { if (!isRateMismatch(error)) throw error; }
+        finally { for (const node of nodes) node.disconnect(); }
+      }
     };
   }
   root.RecordedStemMix = Object.freeze({ create, validLevel });

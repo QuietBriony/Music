@@ -5,6 +5,12 @@
   const PARTS=["vocals","other","drums"],ALL_PARTS=["vocals","drums","bass","other"];
   const ECHO_BEATS={vocals:1,other:.75,drums:.75},RAMP=.04;
   const impulseCache=new WeakMap();
+  const clearCache=new WeakMap();
+  function clearBuffer(context){
+    const cached=clearCache.get(context);
+    if(cached&&cached.sampleRate===context.sampleRate)return cached;
+    const buffer=context.createBuffer(1,1,context.sampleRate);clearCache.set(context,buffer);return buffer;
+  }
   // Unity or lower differential gain: together with Q=.5 filters and the
   // <=.685 return gain, the delay loop cannot regenerate growing energy.
   const tapeCurve=Float32Array.from({length:8193},(_,i)=>Math.tanh(2.2*(i/4096-1))/2.2);
@@ -65,7 +71,7 @@
       disposed=true;loops?.destroy();loops=null;buffers=null;
       if(timer!==null){clearTimeout(timer);timer=null;}
       for(const[input,target]of connections.splice(0)){try{input.disconnect(target);}catch{}}
-      for(const node of nodes){node.disconnect();if("buffer"in node){try{node.buffer=null;}catch{}}}
+      for(const node of nodes){node.disconnect();if("buffer"in node){try{node.buffer=clearBuffer(context);}catch{}}}
     }
     return{
       schedule(options){
