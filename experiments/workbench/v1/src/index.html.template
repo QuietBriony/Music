@@ -39,6 +39,10 @@
         <button id="vocal-open" type="button" aria-controls="vocal-booth">歌詞・録音</button>
       </nav>
       <p id="play-route" class="play-route" data-mode="library">試作のコードを演奏。A/Bミックスとライブセットは同じStrudelで、元の303×2＋909は切り替えて演奏します。</p>
+      <section id="quick-transport" class="quick-transport" aria-label="試作をすぐ再生" hidden>
+        <div class="quick-transport-current"><span>今の演奏</span><strong id="quick-current">読み込み中…</strong><p id="quick-status">準備中…</p></div>
+        <div class="quick-transport-actions"><button id="quick-play" type="button" disabled>▶ 再生</button><button id="quick-stop" type="button" disabled>■ 停止</button><a href="#library-title">試作を選ぶ ↓</a><a href="#editor-title">コードと音量 ↓</a></div>
+      </section>
       <div id="vocal-host"></div>
       <details class="audio-help">
         <summary>音が出ない・端末の音量ボタンが効かない時</summary>

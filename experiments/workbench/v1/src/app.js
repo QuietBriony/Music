@@ -38,6 +38,13 @@ const confirmAccept = document.querySelector('#confirm-accept');
 const playButton = document.querySelector('#play');
 const updateButton = document.querySelector('#update');
 const stopButton = document.querySelector('#stop');
+const quickTransport = document.querySelector('#quick-transport');
+const quickCurrent = document.querySelector('#quick-current');
+const quickStatus = document.querySelector('#quick-status');
+const quickPlay = document.querySelector('#quick-play');
+const quickStop = document.querySelector('#quick-stop');
+quickPlay.addEventListener('click', () => playButton.click());
+quickStop.addEventListener('click', () => stopButton.click());
 const acidFaderPanel = document.querySelector('#acid-faders');
 const acidFaderHelp = document.querySelector('#acid-faders-help');
 const acidFaders = [...acidFaderPanel.querySelectorAll('[data-acid-fader]')];
@@ -594,6 +601,12 @@ function queueControlSync() {
 function syncPlayModes() {
   const machine = !joint && !acidModuleStage.hidden;
   const set = !machine && document.body.classList.contains('performance-view');
+  quickTransport.hidden = joint || machine || set;
+  quickCurrent.textContent = currentWork.textContent;
+  quickStatus.textContent = busy && wantsPlayback ? '再生の準備中…'
+    : status.textContent.includes('acidBrosではRUN') ? '停止中。再生で今のコードを鳴らせます。' : status.textContent;
+  quickPlay.disabled = busy || playButton.disabled;
+  quickStop.disabled = stopButton.disabled;
   libraryMode.setAttribute('aria-pressed', String(!machine && !set));
   machineMode.setAttribute('aria-pressed', String(machine));
   document.querySelector('#performance-open').setAttribute('aria-pressed', String(set));
@@ -1420,6 +1433,7 @@ async function playCurrent() {
   if (!joint) closeAcidModule();
   busy = true;
   wantsPlayback = true;
+  queueControlSync();
   try {
     const acidHint = acidSliderDeclarations(currentCode())
       ? ' 画面の縦フェーダーで音を変えられます。' : '';
