@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-27: 独立試奏台の試作・A/B画面に今の演奏名と上部の再生／停止を追加。作品棚とコード・音量へ移動でき、既存のPlay／Stopと演奏時計を共用する。詳細は`experiments/workbench/v1/README.md`。
+
 2026-10-26 v437: Human Fly Dubの声とギターを呼応させる。声8フレーズを語頭から戻し、語尾をechoへ。ギターは33打点に絞り、10箇所の返答／アクセントを強める。歌の間は反響だけを引き、間で広げ、繰り返しを左右へ渡して暗くほどく。ベース／ドラムの音量・打点・2小節loop・スネア反響と、調和の共通roomは保持。cache `hazama-fm-v437` / client `band-room.js?v=br-270` / CSS `band-room.css?v=br-99` / arrangement v3 / Dub v5。
 
 2026-10-26 v436: 調和とDubの共通空間を更新。声の直接音・EQ・楽器の打感を保ち、19–139 msの近い反射に、52 msから暗く滑らかに減衰する最長720 msの共通残響を加える。声のsendを0.18→0.24へ。単一の手続きstereo IRで、録音素材の追加なし。途中移動・比較・mute・fader zeroで古いroomを消去。調和は元の演奏、Dubは出し引き・loop・echoによる別編曲。cache `hazama-fm-v436` / client `band-room.js?v=br-269` / CSS `band-room.css?v=br-99` / stem mix v7。
