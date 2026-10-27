@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-271-start-diagnostics";
-  const BANDROOM_RELEASE_VERSION = "v438";
+  const BANDROOM_APP_VERSION = "br-272-ios-stem-rate";
+  const BANDROOM_RELEASE_VERSION = "v439";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -583,11 +583,20 @@
     return state.currentBandId === "tabasco" && state.currentSongId === "human-fly";
   }
 
+  function syncRecordedMixFallbackStatus() {
+    const info = coherentStemMix?.diagnostics();
+    if (info?.roomRateFallback || info?.dub?.springRateFallback) {
+      setStemsStatus("互換再生中：一部の残響を省略しています。");
+    } else if ($("br-stems-status")?.textContent?.startsWith("互換再生中：")) {
+      setStemsStatus(`stems loaded (${STEM_NAMES.filter(part => !!stemPlayers[part]).length}/4)`);
+    }
+  }
+
   function syncRecordedDub() {
     if (!coherentStemMix) return;
     if (originalMastering !== "dub" || currentMode !== "stems" || !humanFlyDubSupported() ||
         !stemPlaybackAnchor || STEM_NAMES.some(p => !stemPlayers[p])) {
-      coherentStemMix.stopDub(); return;
+      coherentStemMix.stopDub(); syncRecordedMixFallbackStatus(); return;
     }
     const now = audioClockSeconds(), anchor = stemPlaybackAnchor;
     const at = Math.max(now, anchor.at);
@@ -598,6 +607,7 @@
       bpm: Number(state.songData?.guitar_line?.bpm_fit), duration },
       Object.fromEntries(STEM_NAMES.map(part => [part, stemPlayers[part].buffer.get()])));
     for (const part of STEM_NAMES) coherentStemMix.setDubMuted(part, $("br-toggle-stem-" + part)?.checked === false);
+    syncRecordedMixFallbackStatus();
   }
 
   function setOriginalMasteringGate(gate, value) {
@@ -3760,6 +3770,7 @@
     const tempoMult = Number($("br-tempo-mult")?.value || 100) / 100;
     stemPlaybackAnchor = { at: startAt, offset: offsetSec, rate: tempoMult };
     syncRecordedDub();
+    syncRecordedMixFallbackStatus();
     Object.entries(stemPlayers).forEach(([stem, player]) => {
       if (!player) return;
       try {

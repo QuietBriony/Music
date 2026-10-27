@@ -1,5 +1,7 @@
 # Runtime Browser Listening Checklist
 
+2026-10-27 v439: iPhoneのパート別で報告された残響バッファと音声コンテキストのサンプルレート不一致に対応。レート変更時に残響を作り直し、それでもWebKitが拒否する場合は該当残響を省いて4パートとDubのエコーを継続し、互換再生と表示する。通常時のミックス・保存設定・原音は維持。実iPhoneでの再試聴は未確認。cache `hazama-fm-v439` / client `band-room.js?v=br-272` / CSS `band-room.css?v=br-99` / stem mix v8 / Dub v6。
+
 2026-10-27 v438: Band Room上部に更新確認を追加。確認だけでは演奏や録音を止めず、再読み込みは明示操作。開始例外は処理段階と理由を表示し、原因不明のRESET AUDIO誘導を避ける。音源・保存形式・音声経路は変更しない。iPhoneの再生エラー原因と実機確認は未解決。cache `hazama-fm-v438` / client `band-room.js?v=br-271` / CSS `band-room.css?v=br-99`。
 
 2026-10-26 v437: Human Fly Dubの声とギターを呼応させる。声8フレーズを語頭から戻し、語尾をechoへ。ギターは33打点に絞り、10箇所の返答／アクセントを強める。歌の間は反響だけを引き、間で広げ、繰り返しを左右へ渡して暗くほどく。ベース／ドラムの音量・打点・2小節loop・スネア反響と、調和の共通roomは保持。cache `hazama-fm-v437` / client `band-room.js?v=br-270` / CSS `band-room.css?v=br-99` / arrangement v3 / Dub v5。

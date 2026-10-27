@@ -1,5 +1,9 @@
 # Session Ledger — music-stack
 
+## 2026-10-27 — iPhoneのパート別残響レート対応
+
+2026-10-27 v439: iPhoneのパート別で報告された残響バッファと音声コンテキストのサンプルレート不一致に対応。レート変更時に残響を作り直し、それでもWebKitが拒否する場合は該当残響を省いて4パートとDubのエコーを継続し、互換再生と表示する。通常時のミックス・保存設定・原音は維持。実iPhoneでの再試聴は未確認。cache `hazama-fm-v439` / client `band-room.js?v=br-272` / CSS `band-room.css?v=br-99` / stem mix v8 / Dub v6。
+
 ## 2026-10-27 — iPhone再生診断と手動更新
 
 2026-10-27 v438: Band Room上部に更新確認を追加。確認だけでは演奏や録音を止めず、再読み込みは明示操作。開始例外は処理段階と理由を表示し、原因不明のRESET AUDIO誘導を避ける。音源・保存形式・音声経路は変更しない。iPhoneの再生エラー原因と実機確認は未解決。cache `hazama-fm-v438` / client `band-room.js?v=br-271` / CSS `band-room.css?v=br-99`。
