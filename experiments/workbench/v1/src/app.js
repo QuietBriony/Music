@@ -51,6 +51,9 @@ const acidFaders = [...acidFaderPanel.querySelectorAll('[data-acid-fader]')];
 const singleLevelPanel = document.querySelector('#single-level-panel');
 const singleLevelFader = document.querySelector('#single-level');
 const singleLevelOutput = document.querySelector('#single-level-output');
+const quickLevelWrap = document.querySelector('#quick-level-wrap');
+const quickLevel = document.querySelector('#quick-level');
+const quickLevelOutput = document.querySelector('#quick-level-output');
 const minimalPlaybackPanel = document.querySelector('#minimal-playback-panel');
 const minimalPlaybackMode = document.querySelector('#minimal-playback-mode');
 const minimalPlaybackDetail = document.querySelector('#minimal-playback-detail');
@@ -745,11 +748,15 @@ function syncMixFaders() {
   const single = managedSliderValue(code, SINGLE_LEVEL);
   const isDeck = Boolean(deckPairFromCode(code));
   singleLevelPanel.hidden = isDeck || single === null;
+  quickLevelWrap.hidden = isDeck || single === null;
   deckFadersPanel.hidden = !isDeck;
   if (single !== null && !isDeck) {
     singleLevelFader.value = single;
     singleLevelOutput.textContent = Math.round(single * 100) + '%';
     singleLevelFader.disabled = busy;
+    quickLevel.value = single;
+    quickLevelOutput.textContent = singleLevelOutput.textContent;
+    quickLevel.disabled = busy;
   }
   if (isDeck) {
     const names = { a: DECK_A_LEVEL, b: DECK_B_LEVEL, cross: DECK_XFADE };
@@ -776,6 +783,7 @@ function applyManagedFader(name, value) {
 }
 
 singleLevelFader.addEventListener('input', () => applyManagedFader(SINGLE_LEVEL, singleLevelFader.value));
+quickLevel.addEventListener('input', () => applyManagedFader(SINGLE_LEVEL, quickLevel.value));
 const deckNameByFader = { a: DECK_A_LEVEL, b: DECK_B_LEVEL, cross: DECK_XFADE };
 deckFaders.forEach((fader) => fader.addEventListener('input', () => {
   const key = fader.dataset.deckFader;

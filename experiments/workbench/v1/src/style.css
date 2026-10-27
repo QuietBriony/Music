@@ -19,6 +19,10 @@ h1 { margin: 0; font-size: clamp(1.65rem, 4vw, 2.6rem); line-height: 1.15; }
 .quick-transport-current span { display: block; color: #a6c6b2; font-size: .75rem; }
 .quick-transport-current strong { display: block; margin-top: 3px; overflow-wrap: anywhere; }
 .quick-transport-current p { margin: 4px 0 0; color: #c5d4cc; font-size: .8rem; line-height: 1.45; }
+.quick-level { display: grid; grid-template-columns: auto minmax(100px, 1fr); align-items: center; gap: 2px 12px; max-width: 420px; margin-top: 10px; color: #d6e9da; font-size: .8rem; }
+.quick-level span { white-space: nowrap; }
+.quick-level input { width: 100%; min-height: 44px; margin: 0; }
+.quick-level small { grid-column: 1 / -1; color: #a8beb1; }
 .quick-transport-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .quick-transport-actions button { min-height: 44px; }
 .quick-transport-actions #quick-play { background: #b6d89d; border-color: #b6d89d; color: #142011; font-weight: 700; }
