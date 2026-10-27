@@ -1,5 +1,12 @@
 # Session Ledger — music-stack
 
+## 2026-10-27 — Band Room追加手順とregistry説明の整合
+
+ガイド冒頭・commit直前とregistryの `purpose` / `policy.stores_audio` を現行 AGENTS Hard rules 3 に整合。
+対象・用途・配置先を限定例外へ照合し、配置・生成・掲載はrepoへの追加・公開の承認を意味しないと明記。
+currency対象のhandoff / architecture / 本記録も同期。音源・曲一覧・再生設定・runtimeは変更なし。
+既存素材の包括的provenance決定は行わず、BL-035は残件。
+
 ## 2026-10-27 — Tone/Safariの残響クリア対応
 
 2026-10-27 v440: v439でも続いたiPhoneの残響レートエラーに対応。Tone 14同梱のSafari向けnullクリア処理が44100 Hz固定のため、残響のリセット・破棄を現コンテキストのレートに合う1フレーム無音で行う。実Toneを通すSafari互換挙動でv439の同じエラーを再現。通常の残響・4パート・Dub展開は維持。実iPhoneでの再試聴は未確認。cache `hazama-fm-v440` / client `band-room.js?v=br-273` / CSS `band-room.css?v=br-99` / stem mix v9 / Dub v7。

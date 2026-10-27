@@ -1,9 +1,9 @@
 {
   "version": 1,
   "format": "band-registry",
-  "purpose": "band-room.html が読み込む band 一覧と各バンドの曲カタログ。新バンド追加はここに entry 追加 + 該当 stems / drum-frames を所定パスに配置するだけ。",
+  "purpose": "band-room.html が読み込む band 一覧と各バンドの曲カタログ。reference_libraries を含む本 registry への登録・掲載や、素材の配置・生成は、音源・サンプル・歌詞の repo への追加・公開の承認を意味しない。追加前に対象・用途・配置先を現行 AGENTS.md Hard rules 3 の限定例外と照合する。",
   "policy": {
-    "stores_audio": "stems_dir / optional stems_variants.stems_dir 配下のみ (Demucs 分離 mp3 or local generated preview mp3); owner-approved Tabasco premix originals: presets/tabasco-premix/*.m4a (2026-10-18)",
+    "stores_audio": "既存音源の参照先: stems_dir / optional stems_variants.stems_dir 配下、および presets/tabasco-premix/。保存先や生成形式の記載は音源の追加・公開の承認ではない。対象・用途・配置先は現行 AGENTS.md Hard rules 3 の限定例外を照合する。",
     "stores_lyrics_inline": false
   },
   "bands": {

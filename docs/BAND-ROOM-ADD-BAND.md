@@ -1,6 +1,12 @@
 # Band Room — 新バンド追加手順
 
 band-room.html は `presets/bands.json` を読み込んで、登録されたバンドの曲を再生します。
+
+音源・サンプル・歌詞の repo への追加は、現行の [AGENTS.md](../AGENTS.md) Hard rules 3 に従い原則禁止です。
+作業前に、対象・用途・配置先が現行 AGENTS に記録された限定例外の範囲内か照合してください。
+素材の配置・生成や registry への掲載は、repo への追加・公開の承認を意味しません。
+以下は技術上の手順であり、新しい許可や既存素材への包括的な承認を定めるものではありません。
+
 新しいバンドを追加する流れ:
 
 ## 1. 音源を所定の場所に置く
@@ -85,6 +91,10 @@ deep-link でも正しい mode を自動選択する。必要なら `playback_mo
 VERSION も bump。
 
 ## 6. デプロイ
+
+実行前に、stage 対象の音源ごとに対象・用途・配置先を現行の [AGENTS.md](../AGENTS.md) Hard rules 3 の限定例外と再照合してください。
+配置・生成・registry 掲載だけでは追加・公開は承認されません。限定例外への該当を確認できない音源は、`git add` / `commit` / `push` の対象にしないでください。
+下記は、限定例外の範囲内であることを確認できた場合の手順です。
 
 ```bash
 git add -- presets/bands.json presets/<band-id>-stems/ scripts/
