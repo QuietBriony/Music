@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-27（Band Room registry説明）: `presets/bands.json` の `purpose` / `policy.stores_audio` は登録と既存参照先の説明であり、音源追加・公開を許可するデータではない。追加ガイドで現行 AGENTS Hard rules 3 の対象・用途・配置先を照合する。曲一覧・再生設定・音源・runtimeの変更はなく、BL-035の包括的provenance決定は継続。
+
 2026-10-27 v440: v439でも続いたiPhoneの残響レートエラーに対応。Tone 14同梱のSafari向けnullクリア処理が44100 Hz固定のため、残響のリセット・破棄を現コンテキストのレートに合う1フレーム無音で行う。実Toneを通すSafari互換挙動でv439の同じエラーを再現。通常の残響・4パート・Dub展開は維持。実iPhoneでの再試聴は未確認。cache `hazama-fm-v440` / client `band-room.js?v=br-273` / CSS `band-room.css?v=br-99` / stem mix v9 / Dub v7。
 
 2026-10-27 v439: iPhoneのパート別で報告された残響バッファと音声コンテキストのサンプルレート不一致に対応。レート変更時に残響を作り直し、それでもWebKitが拒否する場合は該当残響を省いて4パートとDubのエコーを継続し、互換再生と表示する。通常時のミックス・保存設定・原音は維持。実iPhoneでの再試聴は未確認。cache `hazama-fm-v439` / client `band-room.js?v=br-272` / CSS `band-room.css?v=br-99` / stem mix v8 / Dub v6。
