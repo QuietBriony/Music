@@ -1,5 +1,7 @@
 # Band Room — 総合マニュアル（現行 playability）
 
+2026-10-28 v441: Human Flyのパート別に任意のAcid LIVEを追加。既存acidBrosの303を2台、同じ音声コンテキスト／原音ミックスの全体出力へ接続し、録音の開始位置と採譜BPMを基準に発音。重ねる／ベースを303へ／元の4パート、個別音量・音色・固定・サイコロ、8小節ごとの小変化、端末保存とJSON編集を用意。初期OFF・開くだけでは音声を作らず、STOP／seek／曲・モード切替で旧発音を破棄し、速さの変更は録音に追従。新音源や独立した再生時計は追加しない。音符は根音推定へ追従し、生演奏の揺れを補正するものではない。v440は本人がiPhoneでDub再生成功を確認。Acidの本人聴感／実iPhoneは未確認。cache `hazama-fm-v441` / client `band-room.js?v=br-274` / CSS `band-room.css?v=br-100`。
+
 2026-10-27 v440: v439でも続いたiPhoneの残響レートエラーに対応。Tone 14同梱のSafari向けnullクリア処理が44100 Hz固定のため、残響のリセット・破棄を現コンテキストのレートに合う1フレーム無音で行う。実Toneを通すSafari互換挙動でv439の同じエラーを再現。通常の残響・4パート・Dub展開は維持。実iPhoneでの再試聴は未確認。cache `hazama-fm-v440` / client `band-room.js?v=br-273` / CSS `band-room.css?v=br-99` / stem mix v9 / Dub v7。
 
 2026-10-27 v439: iPhoneのパート別で報告された残響バッファと音声コンテキストのサンプルレート不一致に対応。レート変更時に残響を作り直し、それでもWebKitが拒否する場合は該当残響を省いて4パートとDubのエコーを継続し、互換再生と表示する。通常時のミックス・保存設定・原音は維持。実iPhoneでの再試聴は未確認。cache `hazama-fm-v439` / client `band-room.js?v=br-272` / CSS `band-room.css?v=br-99` / stem mix v8 / Dub v6。

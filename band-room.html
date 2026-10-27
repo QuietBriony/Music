@@ -7,7 +7,7 @@
 <meta name="description" content="Tabasco LIVE revival — drum-floor groove + click + lyrics for solo vocal practice and band jam." />
 
 <script src="audio/premix-entry.js?v=1"></script>
-<link rel="stylesheet" href="band-room.css?v=br-99" />
+<link rel="stylesheet" href="band-room.css?v=br-100" />
 <link rel="manifest" href="manifest-band-room.webmanifest?v=br-icon-1" />
 <link rel="apple-touch-icon" href="icons/band-room-apple-touch-icon.png" />
 <meta name="theme-color" content="#05090b" />
@@ -31,7 +31,7 @@
 <script src="audio/dub-arrangement.js?v=3" defer></script>
 <script src="audio/dub-mix.js?v=7" defer></script>
 <script src="audio/stem-live-mix.js?v=9" defer></script>
-<script src="band-room.js?v=br-273" defer></script>
+<script src="band-room.js?v=br-274" defer></script>
 <script type="module" src="audio/premix-preview.mjs?v=15"></script>
 <script type="module" src="audio/physical-band/preview.mjs?v=5"></script>
 <script type="module" src="audio/physical-band/guitar-audition-preview.mjs?v=2"></script>
@@ -294,6 +294,13 @@
       <div id="br-meter" aria-hidden="true"><div id="br-meter-fill"></div></div>
       <canvas id="br-spectrum" width="280" height="36" aria-hidden="true"></canvas>
       <nav id="br-section-nav" aria-label="Section quick nav"></nav>
+    </section>
+
+    <section id="br-acid-live" hidden aria-label="Human Flyを303でライブアレンジ" data-scope="stems">
+      <strong>Human Fly · Acid LIVE</strong>
+      <p class="br-help">試奏台の303を2台、同じ演奏へ。元のドラムに重ねたり、ベースを交代させて、固定・サイコロ・フェーダーで遊べます。</p>
+      <button type="button" id="br-acid-open" aria-expanded="false" aria-controls="br-acid-controls">303で遊ぶ</button>
+      <div id="br-acid-controls" hidden></div>
     </section>
 
     <details id="br-feedback-pad" class="br-feedback-pad">

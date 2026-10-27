@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v440 compact)
+# Band Room - Changelog (v65 -> v441 compact)
+
+## v441 — 2026-10-28
+
+2026-10-28 v441: Human Flyのパート別に任意のAcid LIVEを追加。既存acidBrosの303を2台、同じ音声コンテキスト／原音ミックスの全体出力へ接続し、録音の開始位置と採譜BPMを基準に発音。重ねる／ベースを303へ／元の4パート、個別音量・音色・固定・サイコロ、8小節ごとの小変化、端末保存とJSON編集を用意。初期OFF・開くだけでは音声を作らず、STOP／seek／曲・モード切替で旧発音を破棄し、速さの変更は録音に追従。新音源や独立した再生時計は追加しない。音符は根音推定へ追従し、生演奏の揺れを補正するものではない。v440は本人がiPhoneでDub再生成功を確認。Acidの本人聴感／実iPhoneは未確認。cache `hazama-fm-v441` / client `band-room.js?v=br-274` / CSS `band-room.css?v=br-100`。
 
 ## v440 — 2026-10-27
 
@@ -107,7 +111,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v440. Latest Band Room runtime change: v440 (Tone/Safari convolver clear). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v441. Latest Band Room runtime change: v441 (Human Fly Acid LIVE). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

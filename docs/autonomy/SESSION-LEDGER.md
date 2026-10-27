@@ -1,5 +1,9 @@
 # Session Ledger — music-stack
 
+## 2026-10-28 — Human Flyを303でライブアレンジ
+
+2026-10-28 v441: Human Flyのパート別に任意のAcid LIVEを追加。既存acidBrosの303を2台、同じ音声コンテキスト／原音ミックスの全体出力へ接続し、録音の開始位置と採譜BPMを基準に発音。重ねる／ベースを303へ／元の4パート、個別音量・音色・固定・サイコロ、8小節ごとの小変化、端末保存とJSON編集を用意。初期OFF・開くだけでは音声を作らず、STOP／seek／曲・モード切替で旧発音を破棄し、速さの変更は録音に追従。新音源や独立した再生時計は追加しない。音符は根音推定へ追従し、生演奏の揺れを補正するものではない。v440は本人がiPhoneでDub再生成功を確認。Acidの本人聴感／実iPhoneは未確認。cache `hazama-fm-v441` / client `band-room.js?v=br-274` / CSS `band-room.css?v=br-100`。
+
 ## 2026-10-27 — Band Room追加手順とregistry説明の整合
 
 ガイド冒頭・commit直前とregistryの `purpose` / `policy.stores_audio` を現行 AGENTS Hard rules 3 に整合。
