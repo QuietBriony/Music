@@ -30,13 +30,22 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 <!-- public-pages:begin -->
 普段のブックマークは [Music Stack Listen](https://music-stack.pages.dev/listen.html)。公開先を増やさず、既存のページと道具をここから辿ります。
 
+### 今日は、どんな音で遊ぶ？
+
+- **バンドの芯を聴く** — 打感と、部屋の余韻。 Human Flyのライブ原音から。仕上げを切り替えて、声と楽器の距離を聴く。 [原音を聴く](../band-room.html?band=tabasco&song=human-fly&mode=original) → [一人抜いて演奏する](../band-room.html?band=tabasco&song=human-fly&mode=stems)
+- **反響で、会話する** — 低音を残して、声とギターを遠くへ。 Human Flyの「Dubで聴く」を選ぶ。次は「楽器・声で遊ぶ」でエコーを一度だけ送って、返りを待つ。 [Dubとライブ操作へ](../band-room.html?band=tabasco&song=human-fly&mode=stems) → [リズムだけを掘る](https://quietbriony.github.io/drum-floor/)
+- **つまみから、景色を変える** — 反復の中に、小さな事件。 試奏台で再生し、明るさを一つ動かす。気に入った音を固定してから、別のパートを変える。 [アシッドを鳴らす](https://music-private-live-workbench.pages.dev/?stage=techno) → [音の密度を探る](../index.html) → [ラジオに任せる](../fm.html)
+- **触って、間を楽しむ** — ひとふし弾いて、こだまを待つ。 Namimaをなぞって手を離す。響きがほどけたら、chillのピアノでひと息。 [水面で遊ぶ](https://quietbriony.github.io/namima/) → [ピアノでひと息](https://quietbriony.github.io/chill/session.html)
+
+いい瞬間は[Lyric Lab](../lyric-lab.html)で作品メモへ。次の一手は[Desk](https://quietbriony.github.io/openclaw/)で一つ決める。
+
 ### Music — バンド・ラジオ・作品棚
 
 同じMusicの中にある4つの画面。ロック／ジャズの試奏もBand Roomから。
 
 | 公開ページ | 用途 |
 |---|---|
-| [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=original) | Tabascoのライブ原音7曲を、軽い補正／元の仮ミックスで聴き比べ。追加の響きの重なりを減らし、声と楽器の打感・元の余韻を保つ調和ミックス、歌・ギター・ベース・ドラムを消す練習、3楽器のAI再現を同じ入口で選べます。 Human FlyのDubはベースとドラムの打感を残し、声を一フレーズ戻してギターの反響で応答。歌の間は響きを引き、隙間で左右へ広げ、中盤は2小節のグルーヴを回します。 調和は元の演奏に短く滑らかな共有リバーブ。Dubは出し引きと長い反響で展開する別ミックスです。 |
+| [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=original) | ライブ原音・調和ミックス・パートを抜く練習・AI再現を比較。Human FlyはDubや303のライブ操作も。 |
 | [Hazama FM](../fm.html) | ジャンルを選んで、ラジオのように流す。 |
 | [Music Core Rig](../index.html) | つまみを動かし、アシッドやIDMの音を探る。 |
 | [Lyric Lab](../lyric-lab.html) | 歌詞・曲のアイデア・制作指示を一曲ずつ残す。 |
@@ -47,7 +56,7 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 
 | 公開ページ | 用途 |
 |---|---|
-| [Strudel Live Workbench](https://music-private-live-workbench.pages.dev/) | 再生しながら、フレーズと楽器を変えて保存。LIVEはシンプル表示から始まり、全操作で打点・素材A/B・コードまで触れる。10試作のジャンル棚も同じ入口。 元の303×2＋909も、固定・サイコロ・縦フェーダーの3モジュールで遊べる。「一緒に鳴らす」でStrudelと同期し、組み合わせを名前付き保存。909はキックを固定し、スネア・ハットだけをサイコロで変えられる。全11パートの打点・音量・固定を確認できる。 内蔵の「残響の住所」を選び、大きな歌詞を見ながら声を重ねて録音。ミックス・声・演奏と開始時の設定を端末に残す。 元の303／909に硬さ・うねり・空間のまとめフェーダーと音色場面A〜H。固定と音符・打点・音量・BPMを保ち、場面AUTOで保存した響きを巡る。 音色の呼び出しと保存先を分け、上書き確認中も作った響きを保持。フェーダーの上下の効き方を表示。Re-Rebirthは同じ入口から別タブで比較。 |
+| [Strudel Live Workbench](https://music-private-live-workbench.pages.dev/) | テクノ・アシッド・アンビエントを演奏。音色を固定し、展開を変え、気に入った試作を残す。 |
 
 ### ほかの道具 — 静かな音・リズム・段取り
 
@@ -56,9 +65,9 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 | 公開ページ | 用途 |
 |---|---|
 | [Chill Session](https://quietbriony.github.io/chill/session.html) | ピアノと余白。ベースやドラムを少しずつ足す。 |
-| [Namima](https://quietbriony.github.io/namima/) | 水と波紋の映像に、穏やかな音を合わせる。 |
+| [Namima](https://quietbriony.github.io/namima/) | 指で音をつなぐ水面。手を離すと、こだまと小さな変奏が返る。 |
 | [Drum Floor](https://quietbriony.github.io/drum-floor/) | ドラムのノリ・休符・強弱を試す。 |
-| [OpenClaw Desk](https://quietbriony.github.io/openclaw/) | 制作の段取りと、次に進む道具を確認する。 |
+| [OpenClaw Desk](https://quietbriony.github.io/openclaw/) | 今日の目的と次の一手を決める。音は出さず、演奏する道具へ渡す。 |
 
 [MusicのGitHub Pages版](https://quietbriony.github.io/Music/listen.html)は同じ道具の別入口。Lyric Labの端末間同期は既存Cloudflare/D1の認証が必要です。
 録音・実験・映像はListenの既存sectionへ。test／namima-labは履歴保管で、演奏アプリの一覧には含めません。

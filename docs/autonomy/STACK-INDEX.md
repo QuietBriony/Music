@@ -11,6 +11,8 @@ music-stack を触るエージェントが **最初に読む構造マップ**。
 道具の役割・実装状態・入口は`config/music-stack-tools.json`から同じ一覧を生成し、
 `check-music-stack-guide.mjs`で表示と根拠pathを検証する。5 repo構成・private境界は不変。
 
+制作の判断は[Musicで育てる楽しさ](../MUSIC-EXPERIENCE-DIRECTION.md)へ。打感・余韻・間・音の返事を、各アプリの役割に合わせる。本人の試聴と計測を分け、改善時はこの基準から始める。
+
 ## Active repos (5)
 
 ローカル配置: `C:\workspace\music-stack\<repo>`

@@ -87,6 +87,27 @@ function validate(data) {
     }
   }
   assert.ok(publicIds.size > 0);
+  const pathIds = new Set();
+  assert.ok(navigation.play_paths.length >= 1 && navigation.play_paths.length <= 6);
+  for (const path of navigation.play_paths) {
+    assert.match(path.id, slug);
+    assert.ok(!pathIds.has(path.id), `Repeated play path: ${path.id}`);
+    pathIds.add(path.id);
+    for (const field of ["title", "feel", "first"]) assert.ok(typeof path[field] === "string" && path[field].trim());
+    assert.ok(path.steps.length >= 1 && path.steps.length <= 3);
+    for (const step of path.steps) {
+      assert.ok(publicIds.has(step.tool_id), `Play path must use an existing public app: ${step.tool_id}`);
+      assert.ok(typeof step.label === "string" && step.label.trim());
+      if (step.href) {
+        safeHref(step.href);
+        const tool = data.tools.find(tool => tool.id === step.tool_id);
+        const base = "https://music-stack.pages.dev/";
+        const destination = new URL(step.href, base);
+        const canonical = new URL(tool.href, base);
+        assert.equal(destination.origin + destination.pathname, canonical.origin + canonical.pathname, "Play paths may vary a known app query, not invent a destination");
+      }
+    }
+  }
 }
 
 validate(catalog);
@@ -150,7 +171,10 @@ for (const mutate of [
   (data) => { data.public_navigation.bookmark = "https://new-site.pages.dev/listen.html"; },
   (data) => { data.public_navigation.groups[0].tool_ids.push("visual-composer"); },
   (data) => { data.public_navigation.groups[0].tool_ids.push("unknown-app"); },
-  (data) => { data.public_navigation.groups[0].tool_ids.push(data.public_navigation.groups[0].tool_ids[0]); }
+  (data) => { data.public_navigation.groups[0].tool_ids.push(data.public_navigation.groups[0].tool_ids[0]); },
+  (data) => { data.public_navigation.play_paths[0].steps[0].tool_id = "unknown-app"; },
+  (data) => { data.public_navigation.play_paths[0].steps[0].href = "https://music-stack.pages.dev/new-portal.html"; },
+  (data) => { data.public_navigation.play_paths.push(data.public_navigation.play_paths[0]); }
 ]) {
   const fixture = structuredClone(catalog);
   mutate(fixture);

@@ -85,6 +85,11 @@
       gap: 8px;
       justify-content: flex-end;
     }
+    .top-more { position:relative; }
+    .top-more summary { padding:9px 12px; min-height:44px; box-sizing:border-box; cursor:pointer; border:1px solid var(--line); border-radius:8px; font-size:.78rem; line-height:1.5; }
+    .top-more[open] { flex-basis:100%; }
+    .top-more[open] summary { margin-bottom:8px; }
+    .top-more a { margin:0 4px 6px 0; }
 
     .top-actions a,
     .mini-link {
@@ -392,6 +397,22 @@
     .yearbook p { margin: 6px 0; color: var(--muted); font-size: .88rem; line-height: 1.8; }
     .yearbook a { text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
     .bookmark-panel { padding: 18px; border: 1px solid var(--cyan); border-radius: 8px; background: var(--panel-strong); }
+    .play-paths { padding:24px 0 10px; }
+    .play-paths > h3 { font-size:clamp(1.4rem,4vw,2.1rem); font-weight:600; margin:0; }
+    .path-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:20px 0; }
+    .play-path { --path-color:var(--cyan); position:relative; padding:24px; border:1px solid var(--line); border-top:3px solid var(--path-color); border-radius:12px; background:linear-gradient(145deg,rgba(27,62,69,.64),var(--panel)); min-width:0; }
+    .play-path[data-play-path="dub"] { --path-color:var(--amber); }
+    .play-path[data-play-path="acid"] { --path-color:var(--rose); }
+    .play-path[data-play-path="water"] { --path-color:var(--blue); }
+    .play-path h4 { font-size:1.35rem; margin:8px 0 14px; font-weight:650; }
+    .play-path p { color:var(--muted); font-size:.88rem; line-height:1.8; margin:0; }
+    .play-path .path-feel { color:var(--path-color); font-size:.8rem; }
+    .path-actions { display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:16px; }
+    .path-actions a { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; border-bottom:1px solid var(--path-color); font-size:.85rem; }
+    .path-actions a:hover { color:var(--path-color); }
+    .keep-moment { font-size:.85rem; color:var(--muted); line-height:1.9; }
+    .keep-moment a { color:var(--cyan); text-decoration:underline; text-underline-offset:4px; }
+    @media (max-width:560px) { .path-grid { grid-template-columns:1fr; } .play-path { padding:20px; } .play-paths { padding-top:12px; } }
     .bookmark-panel strong, .bookmark-panel a { display: block; line-height: 1.7; }
     .bookmark-panel a { color: var(--cyan); overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 3px; min-height: 44px; padding: 8px 0; }
     .bookmark-panel p { color: var(--muted); margin: 0; font-size: .85rem; line-height: 1.7; }
@@ -454,18 +475,51 @@
       <nav class="top-actions" aria-label="Primary pages">
         <a href="#public-pages">公開ページ一覧</a>
         <a href="#return-here">続きから</a>
+        <details class="top-more"><summary>探す・振り返る</summary>
         <a href="#collection-map">全体を把握</a>
         <a href="#play-by-style">ジャンル・フォルダ</a>
         <a href="#yearbook">年鑑・索引</a>
         <a href="#recorded-works">前の音を聴く</a>
         <a href="#start-here">今すぐ遊ぶ</a>
+        </details>
       </nav>
     </header>
 
     <main>
     <section id="public-pages" aria-labelledby="public-pages-title">
-      <div class="section-head"><h2 id="public-pages-title">どこを開く？ 公開ページ一覧</h2><p class="section-note">用途から選んで、そのまま開く。</p></div>
+      <div class="section-head"><h2 id="public-pages-title">公開ページ一覧</h2><p class="section-note">気分から選んで、そのまま開く。</p></div>
 <!-- public-pages:begin -->
+<div class="play-paths" aria-labelledby="play-paths-title">
+  <h3 id="play-paths-title">今日は、どんな音で遊ぶ？</h3>
+  <p class="guide-note">打感、余韻、間、意外な返し。気になるところから一つ。</p>
+  <div class="path-grid">
+    <article class="play-path" data-play-path="live">
+      <p class="path-feel">打感と、部屋の余韻。</p>
+      <h4>バンドの芯を聴く</h4>
+      <p>Human Flyのライブ原音から。仕上げを切り替えて、声と楽器の距離を聴く。</p>
+      <div class="path-actions"><a href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=original">原音を聴く <span aria-hidden="true">→</span></a><a href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">一人抜いて演奏する <span aria-hidden="true">→</span></a></div>
+    </article>
+    <article class="play-path" data-play-path="dub">
+      <p class="path-feel">低音を残して、声とギターを遠くへ。</p>
+      <h4>反響で、会話する</h4>
+      <p>Human Flyの「Dubで聴く」を選ぶ。次は「楽器・声で遊ぶ」でエコーを一度だけ送って、返りを待つ。</p>
+      <div class="path-actions"><a href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=stems">Dubとライブ操作へ <span aria-hidden="true">→</span></a><a href="https://quietbriony.github.io/drum-floor/">リズムだけを掘る <span aria-hidden="true">→</span></a></div>
+    </article>
+    <article class="play-path" data-play-path="acid">
+      <p class="path-feel">反復の中に、小さな事件。</p>
+      <h4>つまみから、景色を変える</h4>
+      <p>試奏台で再生し、明るさを一つ動かす。気に入った音を固定してから、別のパートを変える。</p>
+      <div class="path-actions"><a href="https://music-private-live-workbench.pages.dev/?stage=techno">アシッドを鳴らす <span aria-hidden="true">→</span></a><a href="index.html">音の密度を探る <span aria-hidden="true">→</span></a><a href="fm.html">ラジオに任せる <span aria-hidden="true">→</span></a></div>
+    </article>
+    <article class="play-path" data-play-path="water">
+      <p class="path-feel">ひとふし弾いて、こだまを待つ。</p>
+      <h4>触って、間を楽しむ</h4>
+      <p>Namimaをなぞって手を離す。響きがほどけたら、chillのピアノでひと息。</p>
+      <div class="path-actions"><a href="https://quietbriony.github.io/namima/">水面で遊ぶ <span aria-hidden="true">→</span></a><a href="https://quietbriony.github.io/chill/session.html">ピアノでひと息 <span aria-hidden="true">→</span></a></div>
+    </article>
+  </div>
+  <p class="keep-moment">いい瞬間ができたら、<a href="lyric-lab.html">Lyric Labで作品メモを残す</a>。次に試すことは<a href="https://quietbriony.github.io/openclaw/">Deskで一つ決める</a>。</p>
+</div>
 <div class="bookmark-panel">
   <strong>いつも戻るのは、このページ。</strong>
   <a href="https://music-stack.pages.dev/listen.html">music-stack.pages.dev/listen.html</a>
@@ -475,7 +529,7 @@
   <h3>Music — バンド・ラジオ・作品棚</h3>
   <p class="guide-note">同じMusicの中にある4つの画面。ロック／ジャズの試奏もBand Roomから。</p>
   <div class="public-grid">
-    <a class="public-entry" data-public-entry="band-room" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=original"><strong>Band Room / ARCB・Tabasco <span aria-hidden="true">→</span></strong><span>Tabascoのライブ原音7曲を、軽い補正／元の仮ミックスで聴き比べ。追加の響きの重なりを減らし、声と楽器の打感・元の余韻を保つ調和ミックス、歌・ギター・ベース・ドラムを消す練習、3楽器のAI再現を同じ入口で選べます。 Human FlyのDubはベースとドラムの打感を残し、声を一フレーズ戻してギターの反響で応答。歌の間は響きを引き、隙間で左右へ広げ、中盤は2小節のグルーヴを回します。 調和は元の演奏に短く滑らかな共有リバーブ。Dubは出し引きと長い反響で展開する別ミックスです。</span></a>
+    <a class="public-entry" data-public-entry="band-room" href="band-room.html?band=tabasco&amp;song=human-fly&amp;mode=original"><strong>Band Room / ARCB・Tabasco <span aria-hidden="true">→</span></strong><span>ライブ原音・調和ミックス・パートを抜く練習・AI再現を比較。Human FlyはDubや303のライブ操作も。</span></a>
     <a class="public-entry" data-public-entry="hazama-fm" href="fm.html"><strong>Hazama FM <span aria-hidden="true">→</span></strong><span>ジャンルを選んで、ラジオのように流す。</span></a>
     <a class="public-entry" data-public-entry="core-rig" href="index.html"><strong>Music Core Rig <span aria-hidden="true">→</span></strong><span>つまみを動かし、アシッドやIDMの音を探る。</span></a>
     <a class="public-entry" data-public-entry="lyric-lab" href="lyric-lab.html"><strong>Lyric Lab <span aria-hidden="true">→</span></strong><span>歌詞・曲のアイデア・制作指示を一曲ずつ残す。</span></a>
@@ -485,7 +539,7 @@
   <h3>試奏台 — テクノ・アシッド・アンビエント</h3>
   <p class="guide-note">試作ミックス、ライブセット、303／909は同じ試奏台。「一緒に鳴らす」で同期して重ねられます。</p>
   <div class="public-grid">
-    <a class="public-entry" data-public-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/"><strong>Strudel Live Workbench <span aria-hidden="true">→</span></strong><span>再生しながら、フレーズと楽器を変えて保存。LIVEはシンプル表示から始まり、全操作で打点・素材A/B・コードまで触れる。10試作のジャンル棚も同じ入口。 元の303×2＋909も、固定・サイコロ・縦フェーダーの3モジュールで遊べる。「一緒に鳴らす」でStrudelと同期し、組み合わせを名前付き保存。909はキックを固定し、スネア・ハットだけをサイコロで変えられる。全11パートの打点・音量・固定を確認できる。 内蔵の「残響の住所」を選び、大きな歌詞を見ながら声を重ねて録音。ミックス・声・演奏と開始時の設定を端末に残す。 元の303／909に硬さ・うねり・空間のまとめフェーダーと音色場面A〜H。固定と音符・打点・音量・BPMを保ち、場面AUTOで保存した響きを巡る。 音色の呼び出しと保存先を分け、上書き確認中も作った響きを保持。フェーダーの上下の効き方を表示。Re-Rebirthは同じ入口から別タブで比較。</span></a>
+    <a class="public-entry" data-public-entry="strudel-workbench" href="https://music-private-live-workbench.pages.dev/"><strong>Strudel Live Workbench <span aria-hidden="true">→</span></strong><span>テクノ・アシッド・アンビエントを演奏。音色を固定し、展開を変え、気に入った試作を残す。</span></a>
   </div>
 </div>
 <div class="public-box" data-public-box="siblings">
@@ -493,9 +547,9 @@
   <p class="guide-note">前からある4つのアプリ。それぞれの役割を残して使います。</p>
   <div class="public-grid">
     <a class="public-entry" data-public-entry="chill" href="https://quietbriony.github.io/chill/session.html"><strong>Chill Session <span aria-hidden="true">→</span></strong><span>ピアノと余白。ベースやドラムを少しずつ足す。</span></a>
-    <a class="public-entry" data-public-entry="namima" href="https://quietbriony.github.io/namima/"><strong>Namima <span aria-hidden="true">→</span></strong><span>水と波紋の映像に、穏やかな音を合わせる。</span></a>
+    <a class="public-entry" data-public-entry="namima" href="https://quietbriony.github.io/namima/"><strong>Namima <span aria-hidden="true">→</span></strong><span>指で音をつなぐ水面。手を離すと、こだまと小さな変奏が返る。</span></a>
     <a class="public-entry" data-public-entry="drum-floor" href="https://quietbriony.github.io/drum-floor/"><strong>Drum Floor <span aria-hidden="true">→</span></strong><span>ドラムのノリ・休符・強弱を試す。</span></a>
-    <a class="public-entry" data-public-entry="desk" href="https://quietbriony.github.io/openclaw/"><strong>OpenClaw Desk <span aria-hidden="true">→</span></strong><span>制作の段取りと、次に進む道具を確認する。</span></a>
+    <a class="public-entry" data-public-entry="desk" href="https://quietbriony.github.io/openclaw/"><strong>OpenClaw Desk <span aria-hidden="true">→</span></strong><span>今日の目的と次の一手を決める。音は出さず、演奏する道具へ渡す。</span></a>
   </div>
 </div>
 <nav class="index-links" aria-label="公開ページの続き"><a class="mini-link" href="#recorded-works">録音・公開デモを聴く →</a><a class="mini-link" href="#sound-experiments">音の実験 →</a><a class="mini-link" href="#visual-release">映像・公開 →</a><a class="mini-link" href="#tool-map">詳しい機能と使い方 →</a></nav>

@@ -1,5 +1,14 @@
 # Session Ledger — music-stack
 
+## 2026-10-28 — 音の好みと遊び方をつなぐ
+
+本人の過去の要望を `docs/MUSIC-EXPERIENCE-DIRECTION.md` に整理。打感・胴・余韻、声と楽器の同じ空間、Dubの呼応、触った反応と間を共通の判断基準にした。
+Listenの先頭に4つの遊び方を置き、既存のBand Room／試奏台／Core／FM／Namima／chill／drum-floorをつなぐ。Lyric Labの作品メモとDeskの次の一手へ戻す。
+案内は既存catalogからListen/manualへ生成し、公開カードの長文とスマホの上部navigationを短縮。新しいhostingや音源、engineの変更はない。
+Namimaの別PR候補はv13。水面の等高線、指の青緑の波紋と暖色のこだま、表に出した映像切替、日本語の景色名、ひと休みと手動再開、reduced motion対応。audio.jsは変更なし。
+390×844のブラウザで開始・drag・映像切替・休止・Enter再開、Listenのレイアウトを確認。実iPhoneの操作／聴感は未確認。
+検証はMusicの`node scripts/stack-check.mjs`と`python -X utf8 scripts/audit.py`、Namimaの既存startup／gesture／PWA検査と描画回帰検査。公開はレビュー後とし、この記録自体を公開完了の証拠にはしない。
+
 ## 2026-10-28 — Human Flyの展開と声のライブ操作
 
 2026-10-28 v442: Human Flyの「楽器・声で遊ぶ」に、2台の303と合成の電子ドラム5パートを接続。64小節で余白→グルーヴ→ビルド→山場→抜く→戻す展開、場面の手動キープ、個別固定・サイコロと16ステップ編集を追加。固定パートは出入り・音色変化からも保護し、手で触った追加パートは2小節優先。声／ギターの短い音だけを送る暗いエコー、量・明るさ・共通リバーブを追加。元の4パート操作欄をライブ欄へ移し、閉じると元へ戻す。同じSTART／STOP・音声コンテキスト・録音出力を使い、STOP・seek・ミュート・音量0で反響も破棄。保存は303・ドラム・固定・展開・FX・原音4パート・速さ・位置を一括復元し、停止したままSTARTを待つ。旧303保存も音を変えず読み込み。新音源ファイルは追加せず、既存MITのUnifiedSynthとノイズ合成を使用。初期OFF、Human Flyのパート別だけが対象。生演奏の揺れ補正・実iPhoneでの新機能試聴は未確認。cache `hazama-fm-v442` / client `band-room.js?v=br-275` / CSS `band-room.css?v=br-101` / stem mix v10。
