@@ -28,10 +28,11 @@
     "groups": [
       {
         "id": "music",
-        "title": "Music — バンド・ラジオ・作品棚",
-        "note": "同じMusicの中にある4つの画面。ロック／ジャズの試奏もBand Roomから。",
+        "title": "Music — バンド・練習・作品棚",
+        "note": "演奏・練習・作品棚を同じMusicから。ギターと三線は「一音ずつ」で練習できます。",
         "tool_ids": [
           "band-room",
+          "practice",
           "hazama-fm",
           "core-rig",
           "lyric-lab"
@@ -133,6 +134,38 @@
     ]
   },
   "tools": [
+    {
+      "id": "practice",
+      "repo": "Music",
+      "group": "browser",
+      "status": "implemented",
+      "title": "一音ずつ — ギターと三線",
+      "href": "practice/index.html",
+      "action": "練習する",
+      "public_summary": "ギターはTAB譜、三線は工工四。正しい音を待つ練習と、ガイドを繰り返して一緒に弾く練習を選べます。",
+      "purpose": "単音の正解を待ちながら、自分の速さでギターと三線を練習する。",
+      "first_step": "楽器と練習を選び、マイクで始める。ガイドに合わせて弾く時は、範囲と速さを選んで繰り返す。楽器がない時は画面で試す。",
+      "outputs": "練習・調弦・感度の設定を端末内に保存。録音・送信なし。PWAは初回準備後にオフライン利用可能。",
+      "boundary": "初版は短い独自フレーズと単音のみ。外部楽譜の直読、和音・歌・装飾奏法の採点、紙譜面の取込は未対応。ガイド再生中はマイク採点を停止。マイクだけでは指・弦は確定できません。実楽器・実iPhoneの精度確認は別です。",
+      "sources": [
+        {
+          "repo": "Music",
+          "path": "practice/index.html"
+        },
+        {
+          "repo": "Music",
+          "path": "practice/app.mjs"
+        },
+        {
+          "repo": "Music",
+          "path": "practice/music.mjs"
+        },
+        {
+          "repo": "Music",
+          "path": "docs/PRACTICE.md"
+        }
+      ]
+    },
     {
       "id": "core-rig", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Music Core Rig", "href": "index.html", "action": "開く",

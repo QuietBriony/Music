@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f6f3ec">
+  <meta name="description" content="ギターはTAB譜、三線は工工四。弾いた音を聴いて、あなたのペースで一音ずつ進む練習。">
+  <title>一音ずつ — ギターと三線の練習 | Music Stack</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css?v=2">
+  <script type="module" src="app.mjs?v=2"></script>
+</head>
+<body>
+<div class="page">
+  <header class="topbar"><a href="../listen.html">← Music Stack</a><div><span id="offline-state">PWAを準備中</span><button id="install" hidden>ホーム画面に追加</button></div></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">PLAY AT YOUR OWN PACE</p><h1>一音ずつ。</h1><p class="lead">弾けたら、次へ。<br>譜面があなたを待ってくれる練習。</p></div><span class="edition">GUITAR / SANSHIN<br>はじめの練習 · 試作 01</span></div>
+    <div class="instrument-switch" role="group" aria-label="楽器"><button id="guitar" aria-pressed="true">ギター <span>TAB</span></button><button id="sanshin" aria-pressed="false">三線 <span>工工四</span></button></div>
+    <div class="setup"><label>練習すること<select id="lesson"></select></label><label id="tuning-label" hidden>本調子の基準<select id="tuning"><option value="0">C：ド・ファ・ド</option><option value="-1">B：シ・ミ・シ</option><option value="-2">B♭：シ♭・ミ♭・シ♭</option><option value="-3">A：ラ・レ・ラ</option><option value="2">D：レ・ソ・レ</option></select></label></div>
+    <p id="lesson-detail" class="lesson-detail"></p>
+    <div class="workspace">
+      <section class="listening" aria-labelledby="target-heading">
+        <div class="card-top"><h2 id="target-heading">次に弾く音</h2><span id="input-label">準備できたら始めましょう</span></div>
+        <div id="target" class="target"><span id="target-main">0</span><span id="target-name">E2</span></div>
+        <p id="position" class="position"></p>
+        <button id="reference" class="reference">♪ この音を聴く</button>
+        <div class="tuner" aria-label="目標の音程との差"><span>低い</span><div class="tuner-track"><i></i><b id="needle"></b></div><span>高い</span></div>
+        <div class="heard"><span>聴こえている音</span><strong id="heard">—</strong><span id="cents">—</span></div>
+        <div class="level"><span id="level"></span></div>
+        <p id="feedback" role="status" aria-live="polite">マイクか画面を選んで始めましょう。</p>
+        <div class="start-buttons"><button id="mic-start" class="primary">マイクで始める</button><button id="touch-start" class="secondary">画面で試す</button></div>
+        <div class="transport"><button id="stop" disabled>停止</button><button id="restart">最初から</button></div>
+        <p class="mic-note">マイク音声は端末内で判定します。録音・送信はしません。</p>
+      </section>
+      <section class="score-card" aria-labelledby="score-heading">
+        <div class="card-top"><h2 id="score-heading">TAB譜</h2><span id="progress-text">1 / 12</span></div>
+        <progress id="progress" value="0" max="12" aria-label="練習の進み具合"></progress>
+        <p id="score-help" class="small">数字はフレット。0は開放弦。音符を押すと、その位置から練習できます。</p>
+        <div id="score" class="score"></div>
+        <div class="loop"><label><input id="loop-enabled" type="checkbox"> 繰り返す</label><div><label>はじめ<select id="loop-start" aria-label="繰り返しの最初の音"></select></label><span>〜</span><label>おわり<select id="loop-end" aria-label="繰り返しの最後の音"></select></label></div></div>
+        <div class="demo"><button id="demo">♪ ガイドに合わせて弾く</button><label>速さ<select id="tempo"><option value="60">ゆっくり</option><option value="85" selected>ふつう</option><option value="110">速め</option></select></label></div>
+        <p class="practice-note">「ガイド」は一定の速さで流れます。「繰り返す」で同じ範囲を何度でも。音程を確かめたい時は「マイクで始める」へ。</p>
+        <div id="touch-panel" class="touch-panel" hidden><p>下の音を押して進めます。マイク判定とは別の体験です。</p><div id="touch-keys"></div></div>
+        <p class="practice-note">同じ音が続くときは、前の音を止めて弾き直します。お手本の音がマイクに入る場合はイヤホンをお使いください。</p>
+      </section>
+    </div>
+    <details class="help"><summary>使い方・今回できること</summary><div><p><strong>ギター：</strong>標準チューニング E A D G B E の単音練習です。まず開放弦で音を合わせてから、短いメロディーへ進みます。和音の採点はまだ含みません。</p><p><strong>三線：</strong>本調子の工工四です。実際の調弦と基準を合わせてください。右の列から下へ読みます。今回は合・乙・老・四・上・中・工・五・六を使う短い練習で、尺の音や装飾奏法・歌の採点は含みません。</p><p>正しい音が少し安定すると進みます。マイクだけでは押さえた指や弦は確定できません。静かな場所で、一音ずつ弾いてください。音が拾いにくい場合は下の感度を調整します。</p><label>マイク感度<select id="sensitivity"><option value="0.003">小さな音も拾う</option><option value="0.006" selected>標準</option><option value="0.014">周りの音を抑える</option></select></label><p>iPhoneはSafariの共有メニューから「ホーム画面に追加」。Androidはブラウザのインストールから追加できます。「オフライン準備OK」の表示後は、この練習を通信なしで開けます。端末によっては再度マイクの許可が必要です。</p><p>練習と調弦の設定だけをこの端末に保存します。権限を拒否した場合も「画面で試す」は使えます。実際のギター・三線・iPhoneでの判定精度は調整中です。</p></div></details>
+  </main>
+  <footer><span>MUSIC STACK / PRACTICE 01</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
+</div>
+</body>
+</html>
