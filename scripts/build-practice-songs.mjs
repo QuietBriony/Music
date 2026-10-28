@@ -1,4 +1,4 @@
-// Reproduce our two symbolic MIDI exercises. Pass the original Mutopia MIDI as argv[2].
+// Reproduce our symbolic MIDI exercises. Pass the original Mutopia Amazing Grace MIDI as argv[2].
 // Never downloads sources or imports recordings/lyrics.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -27,12 +27,19 @@ if (process.argv[1]?.replaceAll('\\', '/').endsWith('/build-practice-songs.mjs')
   const chords = [[0,'G'],[6,'G'],[10.5,'C'],[15,'G'],[19.5,'G'],[24,'G'],[28.5,'D'],[33,'D'],[37.5,'G'],[42,'G'],[46.5,'C'],[51,'G'],[55.5,'G'],[60,'G'],[63,'D'],[64.5,'G']].map(([beat,chord])=>({beat,chord}));
   const grace = encodeMidi(notes, { signature: [9, 8], chords, name: 'Amazing Grace - simple melody' });
   const phrases = [[48,48,55,55,57,57,55],[53,53,52,52,50,50,48],[55,55,53,53,52,52,50],[55,55,53,53,52,52,50],[48,48,55,55,57,57,55],[53,53,52,52,50,50,48]];
-  let beat = 0; const twinkle = encodeMidi(phrases.flatMap(phrase => phrase.map((midi,i) => { const beats = i === 6 ? 2 : 1; const n = {midi,beat,beats}; beat += beats; return n; })), { name: 'Twinkle - sanshin melody' });
+  const twinkleChords = [[0,'C'],[8,'Fmaj7'],[10,'C'],[12,'G7'],[14,'C'],[16,'G7'],[20,'C'],[22,'G7'],[24,'G7'],[28,'C'],[30,'G7'],[32,'C'],[40,'Fmaj7'],[42,'C'],[44,'G7'],[46,'C']].map(([beat,chord])=>({beat,chord}));
+  let beat = 0; const twinkle = encodeMidi(phrases.flatMap(phrase => phrase.map((midi,i) => { const beats = i === 6 ? 2 : 1; const n = {midi,beat,beats}; beat += beats; return n; })), { name: 'Twinkle - melody', chords:twinkleChords });
+  const opening=[52,52,53,55,55,53,52,50,48,48,50,52], ending1=[[52,1.5],[50,.5],[50,2]], ending2=[[50,1.5],[48,.5],[48,2]];
+  beat=0;
+  const odeNotes=[...opening.map(m=>[m,1]),...ending1,...opening.map(m=>[m,1]),...ending2].map(([midi,beats])=>{const note={midi,beat,beats};beat+=beats;return note;});
+  const odeChords=[[0,'C'],[4,'G7'],[8,'C'],[12,'G7'],[16,'C'],[20,'G7'],[24,'C'],[28,'G7'],[30,'C']].map(([beat,chord])=>({beat,chord}));
+  const ode=encodeMidi(odeNotes,{name:'Ode to Joy - opening theme',chords:odeChords});
   writeFileSync('practice/songs/amazing-grace.mid', grace); writeFileSync('practice/songs/twinkle.mid', twinkle);
+  writeFileSync('practice/songs/ode-to-joy.mid',ode);
   const provenance = JSON.parse(readFileSync('practice/songs/provenance.json', 'utf8'));
   const hash = value => createHash('sha256').update(value).digest('hex');
   provenance.songs[0].source_sha256 = hash(source);
   for (const song of provenance.songs) song.sha256 = hash(readFileSync(`practice/songs/${song.file}`));
   writeFileSync('practice/songs/provenance.json', JSON.stringify(provenance, null, 2) + '\n');
-  console.log('Two symbolic practice MIDIs generated; hashes recorded.');
+  console.log('Three symbolic practice MIDIs generated; hashes recorded.');
 }

@@ -1,5 +1,7 @@
 # Hazama FM — システム全体像
 
+2026-10-28 練習PWA v4：先頭にギター6弦・三線3弦を固定して合わせる調弦画面。TAB/コード図/工工四の読み方・練習手順、33コードと4つの進行、ギター3曲・三線2曲の内蔵練習を用意。希望5曲は導入コードと参照レッスン・演奏へつなぎ、全譜内蔵とは扱わない。手元の歌詞は端末だけに保存・手動行送り。音声の録音・送信なし。専用cache `music-practice-v4`。実楽器・実iPhoneの精度は未確認。
+
 2026-10-28 練習PWA v3：ギターAmazing Grace（CC BY-SA 3.0派生MIDI）と三線きらきら星（新規入力CC0）を各1曲。MIDIファイル/URLからTAB・工工四と音長・休み・テンポを連動。G/C/Dのコード図と画面の指板・ストローク、マイクでの一弦ずつの確認を追加。専用cache `music-practice-v3`に2曲も保存。詳細と利用条件は`docs/PRACTICE.md`、`practice/songs/provenance.json`。root cache・録音・認証は変更なし。実楽器・実iPhoneは未確認。
 
 2026-10-28 Namima v14: 色味だけの変化から、5つの背景（水面／庭／灯りの部屋／夕景／月あかり）へ。直接選択と次の景色を表に出し、おまかせは即時に一つ進めてから28〜42秒ごとに巡る。背景は最大2枚・長辺1600pxのキャッシュと1.8秒の遷移を使い、reduced motionでは即時切替。既存の手動開始・metadata-only SYNC・合成音源を維持。Musicの公開案内を同じcatalog/rendererで更新。実iPhoneの表示・聴感は未確認。Music本体のcacheは既存hazama-fm-v443を保持。

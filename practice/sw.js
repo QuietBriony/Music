@@ -1,6 +1,6 @@
 // Deliberately scoped to /practice/. Never changes the root Music PWA cache.
-const CACHE = 'music-practice-v3';
-const SHELL = ['./', './index.html', './style.css?v=3', './app.mjs?v=3', './music.mjs?v=3', './midi.mjs?v=3', './chords.mjs?v=3', './scores.mjs?v=3', './songs/amazing-grace.mid', './songs/twinkle.mid', './songs/provenance.json', './manifest.webmanifest', './icon.svg', '../icons/icon-192.png', '../icons/icon-512.png', '../icons/apple-touch-icon.png'];
+const CACHE = 'music-practice-v4';
+const SHELL = ['./', './index.html', './style.css?v=4', './presets.css?v=4', './app.mjs?v=4', './music.mjs?v=4', './midi.mjs?v=4', './chords.mjs?v=4', './scores.mjs?v=4', './tuner.mjs?v=4', './learning.mjs?v=4', './songs/amazing-grace.mid', './songs/twinkle.mid', './songs/ode-to-joy.mid', './songs/provenance.json', './manifest.webmanifest', './icon.svg', '../icons/icon-192.png', '../icons/icon-512.png', '../icons/apple-touch-icon.png'];
 const URLS = new Set(SHELL.map(path => new URL(path, self.location.href).href));
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('music-practice-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));

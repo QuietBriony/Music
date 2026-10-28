@@ -24,8 +24,20 @@
       "attribution": "Traditional melody, newly entered as a simple 42-note exercise by Music Stack. The linked public-domain edition is a reference, not the imported arrangement.",
       "license": "CC0-1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "changes": "New symbolic transcription of the traditional melody in C, tempo 90, for sanshin honchoshi. No lyrics.",
-      "sha256": "e8d3fc97b769ae9a58c6ddc177d148136c54696e6eeffb2346abe2b7cc5c5747"
+      "changes": "New symbolic transcription of the traditional melody in C, tempo 90, for sanshin honchoshi and guitar. Added suggested C/Fmaj7/G7 chord markers. No lyrics.",
+      "sha256": "d345ad5cdff7a6f1c17a30365f9ee62dac5e756d4e8e2c7611daf21d9329338b"
+    },
+    {
+      "id": "ode-to-joy",
+      "title": "歓喜の歌（主題）",
+      "file": "ode-to-joy.mid",
+      "composer": "Ludwig van Beethoven (1770–1827)",
+      "source": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=528",
+      "attribution": "Beethoven's public-domain theme, newly entered as a 30-note beginner exercise by Music Stack. The linked Mutopia public-domain SATB edition is a reference; its arrangement was not imported.",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "changes": "New symbolic transcription of the opening theme in C, tempo 90, with suggested C/G7 chord markers. No lyrics or recordings.",
+      "sha256": "c686ddb489ffc2dd07ef8fa81143874c3b607443e0b743e4696d676c3e9d3a54"
     }
   ]
 }
