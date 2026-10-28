@@ -1,14 +1,15 @@
 // Human Fly's optional live arrangement. Motifs use root/fifth/octave first;
 // the extra suspended tones avoid guessing major/minor from a root-only score.
 import {drumDefaults,validateDrums} from './acid-live-drums.mjs?v=1';
-import {sceneSettings} from './acid-live-scenes.mjs?v=1';
+import {sceneSettings} from './acid-live-scenes.mjs?v=2';
+import {versionNotes} from './human-fly-versions.mjs?v=1';
 export const PARTS = ['bass', 'reply'];
 const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const INTERVALS = [0, 2, 5, 7, 12];
 const clone = value => JSON.parse(JSON.stringify(value));
 const step = (n, accent = false, slide = false) => ({ n, active: n !== null, accent, slide });
 export function defaults() {
-  return { version: 2, auto: false, arrangement:{auto:false,scene:'keep',progress:.5}, drums:drumDefaults(),fx:{echo:35,tone:42,room:65}, parts: {
+  return { version: 2, auto: false, arrangement:{auto:false,scene:'keep',progress:.5,work:'custom',gain:1}, drums:drumDefaults(),fx:{echo:35,tone:42,room:65}, parts: {
     bass: { enabled:true, locked: false, volume: 66, cutoff: 24, reso: 7.2, env: 42, decay: 30, delay: 12,
       steps: [step(0,true),step(null),step(null),step(0,false,true),step(0),step(null),step(3),step(null),step(0,true),step(null),step(4,false,true),step(3),step(0),step(null),step(3),step(null)] },
     reply: { enabled:true, locked: false, volume: 30, cutoff: 32, reso: 8.2, env: 53, decay: 24, delay: 28,
@@ -18,7 +19,7 @@ export function defaults() {
 export function validate(value) {
   if (![1,2].includes(value?.version) || typeof value.auto !== 'boolean') throw Error('Acidの保存形式が違います。');
   const legacy=value.version===1;
-  const result = {version:2, auto:value.auto, arrangement:legacy?{auto:false,scene:'keep',progress:.5}:sceneSettings(value.arrangement),
+  const result = {version:2, auto:value.auto, arrangement:legacy?{auto:false,scene:'keep',progress:.5,work:'custom',gain:1}:sceneSettings(value.arrangement),
     drums:legacy?drumDefaults():validateDrums(value.drums),fx:legacy?{echo:35,tone:42,room:65}:{...value.fx},parts:{}};
   for(const k of ['echo','tone','room'])if(!Number.isFinite(result.fx[k])||result.fx[k]<0||result.fx[k]>100)throw Error('エフェクトの値が範囲外です。');
   for (const part of PARTS) {
@@ -51,7 +52,7 @@ export function dice(value, part, random = Math.random) {
   return next;
 }
 export function stepsForBar(value, part, bar) {
-  const p = value.parts[part], steps = clone(p.steps);
+  const p = value.parts[part], steps = p.locked?clone(p.steps):versionNotes(value.arrangement.work??'custom',part,bar,p.steps);
   // An eight-bar question/answer: change one accent or slide, then return to
   // the saved motif. Never add notes, touch levels, or vary a locked phrase.
   if (value.auto && !p.locked && Math.floor(bar / 8) % 2 === 1 && PARTS[Math.floor(bar / 16) % 2] === part) {

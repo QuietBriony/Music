@@ -2954,6 +2954,11 @@ html[data-br-surface="original"] :is(#br-master-vol-bar, #br-help-toggle, #br-kb
 .br-acid-speed { display:flex; align-items:center; gap:12px; min-height:44px; font-size:13px; }
 .br-acid-speed input { width:min(220px,46vw); min-height:36px; accent-color:var(--air); touch-action:none; }
 .br-live-scenes { margin:14px 0; padding:10px; border:1px solid var(--panel-border); border-radius:10px; }
+.br-version-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+.br-version-cards article { padding:14px; border:1px solid var(--panel-border); border-radius:12px; background:rgba(10,186,181,.035); }
+#br-acid-live .br-version-cards button { width:100%; font-size:15px; min-height:48px; }
+.br-version-cards p { font-size:13px; line-height:1.7; margin-bottom:0; color:var(--text-sub); }
+.br-finished-versions h3 { margin-bottom:8px; }
 #br-acid-live details { margin:14px 0; }
 #br-acid-live summary { min-height:44px; padding:10px 0; cursor:pointer; font-size:14px; color:var(--air-soft); }
 .br-live-master { display:flex; gap:8px; align-items:center; min-height:44px; }

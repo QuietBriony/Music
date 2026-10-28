@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v442 compact)
+# Band Room - Changelog (v65 -> v443 compact)
+
+## v443 — 2026-10-28
+
+2026-10-28 v443: Human Flyに曲として聴く3版「Shadow Dub」「Acid Drive」「Acid Dub」を同梱。選ぶと音色・原音4パート・速さ・位置をセットし、既存A-Bループを解除して冒頭から明示再生。完走後は次曲へ進まず停止する。Shadow Dubは元のベース／ドラムと声・ギターのDub反響に短いシンセの応答。Acid Driveは原音ベース／ドラムを303と電子ドラムへ交代。Acid Dubは元のドラムを残し303の低音と控えめなハットを加える。ランダムな選曲や64小節反復ではなく、8／24／32／48／64／72／88／96／112小節の曲構成に沿って出入り・フィルター・短い返しを固定。ブレイクから最後の山へ戻り、録音の終わりに向けて追加楽器を減衰。既存保存の1枠は選択だけで上書きしない。調整は折りたたみ、固定・サイコロ・音色・JSON・保存は維持。追加ライブラリ・音源・歌詞・hostingはなし。同じ音声時計と出力を使い、生演奏のテンポ揺れは補正しない。実iPhoneの3版試聴と本人の聴感確認は未実施。cache `hazama-fm-v443` / client `band-room.js?v=br-276` / CSS `band-room.css?v=br-102`。
 
 ## v442 — 2026-10-28
 
@@ -115,7 +119,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v442. Latest Band Room runtime change: v442 (Human Fly live arrangement). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v443. Latest Band Room runtime change: v443 (Human Fly finished versions). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

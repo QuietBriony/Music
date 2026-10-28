@@ -1,16 +1,18 @@
-import {defaults,validate,dice,PARTS,validatePerformanceContext} from './acid-live-state.mjs?v=2';
-import {createAcidLive} from './acid-live.mjs?v=2';
+import {defaults,validate,dice,PARTS,validatePerformanceContext} from './acid-live-state.mjs?v=3';
+import {createAcidLive} from './acid-live.mjs?v=3';
 import {DRUMS,drumDice} from './acid-live-drums.mjs?v=1';
-import {SCENES,sceneAt} from './acid-live-scenes.mjs?v=1';
+import {SCENES,sceneAt} from './acid-live-scenes.mjs?v=2';
 import {createLiveEffects} from './acid-live-fx.mjs?v=1';
+import {VERSIONS,makeVersion} from './human-fly-versions.mjs?v=1';
 const KEY='music-band-room-human-fly-acid-v1';
 const TITLES={bass:'303 · 低音',reply:'303 · 返し'};
 const FADERS=[['volume','音量',100,1],['cutoff','明るさ',100,1],['reso','みょん',12,.1],['env','うねり',100,1],['decay','長さ',100,1],['delay','残響',100,1]];
 const ranges=(id,controls,drum=false)=>controls.map(([key,label,max,step])=>`<label><span>${label}</span><input type="range" min="0" max="${max}" step="${step}" data-acid-part="${id}" data-acid-param="${key}" ${drum?'data-live-drum="true"':''} aria-label="${drum?DRUMS.find(([p])=>p===id)[1]:TITLES[id]} ${label}"><output></output></label>`).join('');
-export function createAcidPanel({host,onEnable,onChange,onMix,onTempo,onEcho,onFx,captureContext=()=>null,restoreContext=()=>{},tempo=100,storage}) {
+export function createAcidPanel({host,onEnable,onChange,onMix,onTempo,onEcho,onFx,onPlay,captureContext=()=>null,restoreContext=()=>{},tempo=100,storage}) {
  let config=defaults(),enabled=false,saved=null,currentScene=sceneAt(config.arrangement,0),holdStatusUntil=0;
  try {const v=JSON.parse(storage.getItem(KEY));if(v?.song==='tabasco/human-fly')saved={state:validate(v.state),context:validatePerformanceContext(v.context)};}catch{}
- host.innerHTML=`<div class="br-acid-actions"><button type="button" data-acid="enable" aria-pressed="false">追加楽器 OFF</button><button type="button" data-live-preset>展開つき303＋909</button><button type="button" data-acid="replace">ベースを303へ</button><button type="button" data-live-replace-drums>ドラムを909へ</button><button type="button" data-acid="original">元の4パートへ</button></div>
+ host.innerHTML=`<section class="br-finished-versions" aria-label="Human Flyの完成アレンジ"><h3>曲として聴く</h3><p class="br-help">選ぶと冒頭から再生。曲の歌・山場・ブレイク・終わりに合わせた固定アレンジです。</p><div class="br-version-cards">${VERSIONS.map(v=>`<article><button type="button" data-human-version="${v.id}" aria-pressed="false">▶ ${v.title}</button><p>${v.note}</p></article>`).join('')}</div><p class="br-help">約4分・117.45 BPM。手元の保存枠はそのまま残ります。下の調整を開けば、鳴らしながら音色や抜き差しも変えられます。</p></section>
+ <details class="br-version-edit"><summary>音色・パートを調整する</summary><div class="br-acid-actions"><button type="button" data-acid="enable" aria-pressed="false">追加楽器 OFF</button><button type="button" data-live-preset>展開つき303＋909</button><button type="button" data-acid="replace">ベースを303へ</button><button type="button" data-live-replace-drums>ドラムを909へ</button><button type="button" data-acid="original">元の4パートへ</button></div>
  <section class="br-live-scenes" aria-label="アレンジの場面"><div class="br-acid-actions"><button type="button" data-live-scene-auto aria-pressed="false">展開AUTO · OFF</button><span data-live-scene-status role="status">そのまま</span></div><div class="br-acid-actions">${SCENES.map(s=>`<button type="button" data-live-scene="${s.id}" aria-pressed="false">${s.name}</button>`).join('')}</div><p class="br-help">AUTOは余白→グルーヴ→ビルド→山場→抜く→戻す、64小節の流れ。場面ボタンでAUTOを止め、その場面をキープします。固定した追加パートは出入り・音色の自動変化からも守ります。</p></section>
  <div class="br-acid-actions"><button type="button" data-live-echo="vocals">声にエコーを投げる</button><button type="button" data-live-echo="other">ギターにエコーを投げる</button></div>
  <details class="br-live-source"><summary>歌・ギターほか・ベース・ドラムを触る</summary><div data-live-source-host></div></details>
@@ -22,8 +24,8 @@ export function createAcidPanel({host,onEnable,onChange,onMix,onTempo,onEcho,onF
  <details><summary>16ステップを打ち替える</summary><label>編集する音<select data-live-drum-edit>${DRUMS.map(([id,title])=>`<option value="${id}">${title}</option>`).join('')}</select></label><div class="br-live-pads" aria-label="電子ドラムの16ステップ">${Array.from({length:16},(_,i)=>`<button type="button" data-live-step="${i}" aria-label="ドラム ${i+1}番の打点" aria-pressed="false">${i+1}</button>`).join('')}</div><p class="br-help">押すたびに休符→打つ→アクセント→休符。固定していても手では編集できます。キックを固定し、ハットやスネアだけサイコロで変えてみてください。</p></details><p class="br-help">キック・スネア・クラップは既存acidBrosの合成、ハットはノイズ合成です。新しいWAVは取り込まずに鳴らします。</p></details>
  <div class="br-acid-actions"><button type="button" data-acid="auto" aria-pressed="false">フレーズ小変化 · OFF</button><button type="button" data-acid="save">アレンジをまとめて保存</button><button type="button" data-acid="restore">保存を戻す（停止）</button></div>
  <p class="br-help">小変化は303のアクセント／スライドを8小節ごとに変えて元へ。展開AUTOは音量とフィルターの土台へ出入り・起伏を加え、ビルドの終わりだけ短いスネアの返し。手で触ったパートは2小節手動優先、その後AUTOへ戻ります。固定中はそのまま保ちます。元の4パートの音量・選択はAUTOで変えません。</p>
- <details><summary>追加楽器とエフェクトの設定をコードで見る・変える</summary><textarea class="br-acid-code" aria-label="ライブアレンジ設定JSON" spellcheck="false"></textarea><button type="button" data-acid="apply">コードを反映</button><p class="br-help">303のnは0=根音、1=2度、2=4度、3=5度、4=オクターブ、null=休符。drumsのstepsは0=休符、1=打つ、2=アクセント。arrangementが展開、fxがエコーと空間です。音符は採譜の根音に追従し、生演奏の揺れ補正は行いません。</p></details>
- <p class="br-help">保存はこのブラウザだけ。303・ドラム・固定・展開・エフェクトに加え、曲の4パート・速さ・位置も戻します。録音ファイルは含みません。復元は曲を止めて行い、STARTは自分で押します。旧303保存も読み込めます。音源：<a href="experiments/workbench/v1/third_party/acidbros/LICENSE" target="_blank" rel="noopener">acidBros · MIT</a>。</p><p data-acid-status role="status" aria-live="polite">追加楽器はOFF。曲をSTARTし、声やギターにエコーだけ投げることもできます。</p>`;
+ <details><summary>追加楽器とエフェクトの設定をコードで見る・変える</summary><textarea class="br-acid-code" aria-label="ライブアレンジ設定JSON" spellcheck="false"></textarea><button type="button" data-acid="apply">コードを反映</button><p class="br-help">303のnは0=根音、1=2度、2=4度、3=5度、4=オクターブ、null=休符。drumsのstepsは0=休符、1=打つ、2=アクセント。arrangementが展開（gainは追加楽器のミックス比0〜4）、fxがエコーと空間です。音符は採譜の根音に追従し、生演奏の揺れ補正は行いません。</p></details>
+ <p class="br-help">保存はこのブラウザだけ。303・ドラム・固定・展開・エフェクトに加え、曲の4パート・速さ・位置も戻します。録音ファイルは含みません。復元は曲を止めて行い、STARTは自分で押します。旧303保存も読み込めます。音源：<a href="experiments/workbench/v1/third_party/acidbros/LICENSE" target="_blank" rel="noopener">acidBros · MIT</a>。</p></details><p data-acid-status role="status" aria-live="polite">上の3版は選ぶだけで再生できます。追加楽器を自分で組む操作は「音色・パートを調整する」から。</p>`;
  const find=id=>host.querySelector(`[data-acid="${id}"]`),status=host.querySelector('[data-acid-status]'),sceneLabel=host.querySelector('[data-live-scene-status]');
  const now=()=>Date.now();
  function setStatus(text){status.textContent=text;holdStatusUntil=now()+2200;}
@@ -31,6 +33,7 @@ export function createAcidPanel({host,onEnable,onChange,onMix,onTempo,onEcho,onF
  function renderScene(){const s=config.arrangement.auto?currentScene:sceneAt(config.arrangement,0);sceneLabel.textContent=s.name+(config.arrangement.auto?` · あと${s.remaining||1}小節`:' · キープ');const auto=host.querySelector('[data-live-scene-auto]');auto.textContent='展開AUTO · '+(config.arrangement.auto?'ON':'OFF');auto.setAttribute('aria-pressed',String(config.arrangement.auto));for(const b of host.querySelectorAll('[data-live-scene]'))b.setAttribute('aria-pressed',String(b.dataset.liveScene===s.id));}
  function renderPads(){const id=host.querySelector('[data-live-drum-edit]').value;for(const b of host.querySelectorAll('[data-live-step]')){const v=config.drums.parts[id].steps[Number(b.dataset.liveStep)];b.setAttribute('aria-pressed',String(v>0));b.classList.toggle('br-live-accent',v===2);b.textContent=(Number(b.dataset.liveStep)+1)+(v===2?'!':'');}}
  function render(){
+  for(const b of host.querySelectorAll('[data-human-version]'))b.setAttribute('aria-pressed',String(b.dataset.humanVersion===config.arrangement.work));
   find('enable').textContent=enabled?'追加楽器 ON':'追加楽器 OFF';find('enable').setAttribute('aria-pressed',String(enabled));find('auto').textContent='フレーズ小変化 · '+(config.auto?'ON':'OFF');find('auto').setAttribute('aria-pressed',String(config.auto));find('restore').disabled=!saved;
   for(const p of PARTS){host.querySelector(`[data-acid-lock="${p}"]`).checked=config.parts[p].locked;host.querySelector(`[data-live-synth-on="${p}"]`).checked=config.parts[p].enabled;host.querySelector(`[data-acid-dice="${p}"]`).disabled=config.parts[p].locked;host.querySelector(`[data-acid-notes="${p}"]`).textContent=config.parts[p].steps.map(s=>s.active?String(s.n)+(s.accent?'!':'')+(s.slide?'~':''):'·').join(' ');}
   host.querySelector('[data-live-drums-on]').checked=config.drums.enabled;
@@ -41,14 +44,19 @@ export function createAcidPanel({host,onEnable,onChange,onMix,onTempo,onEcho,onF
  }
  function publish(text,options){onChange(validate(config),options);onFx?.(config.fx);render();if(text)setStatus(text);}
  function enable(value){enabled=value;render();onEnable(value);}
+ for(const b of host.querySelectorAll('[data-human-version]'))b.addEventListener('click',async()=>{
+  const buttons=[...host.querySelectorAll('[data-human-version]')];buttons.forEach(n=>n.disabled=true);
+  try{const next=makeVersion(b.dataset.humanVersion,defaults());restoreContext(validatePerformanceContext(next.context));config=validate(next.state);currentScene=sceneAt(config.arrangement,0);publish();enable(true);setTempo(next.context.tempo);setStatus(VERSIONS.find(v=>v.id===b.dataset.humanVersion).title+' を冒頭から準備しています…');if(await onPlay?.()===false)setStatus('準備しました。上のSTARTでも再生できます。');}
+  catch(e){setStatus('再生できません：'+e.message);}finally{buttons.forEach(n=>n.disabled=false);}
+ });
  setTempo(tempo);host.querySelector('[data-acid-speed]').addEventListener('input',e=>{setTempo(Number(e.target.value));onTempo(Number(e.target.value));});
  find('enable').addEventListener('click',()=>enable(!enabled));
  find('replace').addEventListener('click',()=>{config.parts.bass.enabled=true;onMix('replace');publish();enable(true);setStatus('元のベースを303へ交代しました。');});
  host.querySelector('[data-live-replace-drums]').addEventListener('click',()=>{config.drums.enabled=true;onMix('drums');host.querySelector('.br-live-drum-details').open=true;publish();enable(true);setStatus('元のドラムを電子ドラムへ交代しました。');});
- host.querySelector('[data-live-preset]').addEventListener('click',()=>{for(const p of PARTS)config.parts[p].enabled=true;config.drums.enabled=true;config.auto=true;config.arrangement.auto=true;onMix('both');publish();enable(true);setStatus('歌・ギターは選択を保ち、303＋909で展開します。');});
- find('original').addEventListener('click',()=>{enable(false);config.fx.room=65;onMix('original');publish();setStatus('追加楽器とエコーを止め、元の4パートへ戻しました。');});
- for(const b of host.querySelectorAll('[data-live-scene]'))b.addEventListener('click',()=>{config.arrangement={auto:false,scene:b.dataset.liveScene,progress:.5};publish('次の打点から「'+SCENES.find(s=>s.id===b.dataset.liveScene).name+'」をキープします。');});
- host.querySelector('[data-live-scene-auto]').addEventListener('click',()=>{if(config.arrangement.auto)config.arrangement={auto:false,scene:currentScene.id,progress:currentScene.progress};else config.arrangement.auto=true;publish(config.arrangement.auto?'展開AUTO ON。固定を残して場面を巡ります。':'今の場面をキープします。');});
+ host.querySelector('[data-live-preset]').addEventListener('click',()=>{for(const p of PARTS)config.parts[p].enabled=true;config.drums.enabled=true;config.auto=true;config.arrangement.auto=true;config.arrangement.work='custom';config.arrangement.gain=1;onMix('both');publish();enable(true);setStatus('歌・ギターは選択を保ち、303＋909で展開します。');});
+ find('original').addEventListener('click',()=>{enable(false);config.arrangement.work='custom';config.arrangement.gain=1;config.fx.room=65;onMix('original');publish();setStatus('追加楽器とエコーを止め、元の4パートへ戻しました。');});
+ for(const b of host.querySelectorAll('[data-live-scene]'))b.addEventListener('click',()=>{config.arrangement={...config.arrangement,auto:false,scene:b.dataset.liveScene,progress:.5};publish('次の打点から「'+SCENES.find(s=>s.id===b.dataset.liveScene).name+'」をキープします。');});
+ host.querySelector('[data-live-scene-auto]').addEventListener('click',()=>{if(config.arrangement.auto)config.arrangement={...config.arrangement,auto:false,scene:currentScene.id,progress:currentScene.progress};else config.arrangement.auto=true;publish(config.arrangement.auto?'展開AUTO ON。固定を残して場面を巡ります。':'今の場面をキープします。');});
  for(const b of host.querySelectorAll('[data-live-echo]'))b.addEventListener('click',()=>{try{if(onEcho(b.dataset.liveEcho,config.fx))setStatus((b.dataset.liveEcho==='vocals'?'声':'ギター')+'の短い音を、暗い反響へ送りました。');}catch(e){setStatus(e.message);}});
  for(const input of host.querySelectorAll('[data-live-fx]'))input.addEventListener('input',()=>{config.fx[input.dataset.liveFx]=Number(input.value);publish();});
  find('auto').addEventListener('click',()=>{config.auto=!config.auto;publish('フレーズ小変化 '+(config.auto?'ON':'OFF'));});
@@ -65,7 +73,7 @@ export function createAcidPanel({host,onEnable,onChange,onMix,onTempo,onEcho,onF
  find('restore').addEventListener('click',()=>{if(saved)try{const next=validate(saved.state),context=validatePerformanceContext(saved.context);restoreContext(context);config=next;publish('保存したアレンジへ戻しました。STARTで再開できます。');}catch(e){setStatus('復元できません：'+e.message);}});
  find('apply').addEventListener('click',()=>{try{config=validate(JSON.parse(host.querySelector('textarea').value));publish('コードを反映しました。');}catch(e){setStatus('反映できません：'+e.message);}});
  render();
- return {createEngine:createAcidLive,createEffects:createLiveEffects,sourceHost:()=>host.querySelector('[data-live-source-host]'),state:()=>validate(config),setStatus,setTempo,
+ return {createEngine:createAcidLive,createEffects:createLiveEffects,isFinished:()=>config.arrangement.work!=='custom',sourceHost:()=>host.querySelector('[data-live-source-host]'),state:()=>validate(config),setStatus,setTempo,
   setEnabled(value){enabled=value;render();},
   playing(info){currentScene=info.scene||sceneAt(config.arrangement,info.bar-1);renderScene();if(now()>holdStatusUntil)status.textContent=`演奏中 · ${info.bar}小節目 · ${info.chord} · ${currentScene.name}`;}
  };
