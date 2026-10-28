@@ -1,5 +1,7 @@
 # Music Stack Integration Index
 
+2026-10-28・本人指示: 通常のMusic改善は公開前の人間レビュー・別担当の独立レビュー・本人試聴待ちを必須にしない。必須検証と差分確認を通した版を既存本番へ出し、PWAで聴いてから調整する。5 repoのAGENTSと現行プレイブックを同期。全件gate・cache・担当scope・変更履歴・公開反映の検証は維持。
+
 ## まず使う／全体を理解する
 
 - [Music Stack Listen](../listen.html): 日常の総合入口。別の管理アプリを増やさない。

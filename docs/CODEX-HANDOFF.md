@@ -1,5 +1,17 @@
 # Codex CLI Handoff — Music Stack
 
+## 通常の改善は検証後に本番へ（2026-10-28・本人指示）
+
+本人が任せたMusic関連の改善は、公開前の人間レビュー・試聴承認を必須にしない。
+PWAは既存の本番へ出してから本人が聴く運用とし、実装 → 必須検証 → 自分の差分確認 →
+merge / main push → 既存の本番へdeploy → 公開版とPWAの更新確認 → 本人の感想で調整、まで進める。
+通常の全件検査経路では、別担当の独立レビューも公開の必須条件にしない。
+同じ最終HEADのstack-check（FAIL 0 / SKIP 0 / 0 BAD）、各repoの必須検査、cache同期、
+担当scope・clean状態・変更履歴・公開反映の証拠・ロールバック手段は維持する。
+実iPhoneの聴感が未確認でも公開を止めず、未確認と明記して本番での試聴へ渡す。
+新しい公開先、未承認の音源追加、認証や権限の変更、外部機器のarm・record・MIDI送信などは
+この通常公開ルールへ含めない。各アプリ自身の手動開始・metadata-onlyの境界も維持する。
+
 2026-10-28: Listenに「バンドの芯」「Dubの会話」「つまみの変化」「触って間を楽しむ」の4つの遊び方を追加。既存アプリの確認済みURLへ渡し、Lyric Labの作品メモとDeskの次の一手へつなぐ。公開カードの長文を短くし、catalogと同じrendererでmanualへ反映。好みの制作基準は[Musicで育てる楽しさ](MUSIC-EXPERIENCE-DIRECTION.md)へ。静的な案内と画面の改善で、音源・engine・保存・自動再生は変更しない。cacheは既存`hazama-fm-v442`を保持。
 
 2026-10-28 v442: Human Flyの「楽器・声で遊ぶ」に、2台の303と合成の電子ドラム5パートを接続。64小節で余白→グルーヴ→ビルド→山場→抜く→戻す展開、場面の手動キープ、個別固定・サイコロと16ステップ編集を追加。固定パートは出入り・音色変化からも保護し、手で触った追加パートは2小節優先。声／ギターの短い音だけを送る暗いエコー、量・明るさ・共通リバーブを追加。元の4パート操作欄をライブ欄へ移し、閉じると元へ戻す。同じSTART／STOP・音声コンテキスト・録音出力を使い、STOP・seek・ミュート・音量0で反響も破棄。保存は303・ドラム・固定・展開・FX・原音4パート・速さ・位置を一括復元し、停止したままSTARTを待つ。旧303保存も音を変えず読み込み。新音源ファイルは追加せず、既存MITのUnifiedSynthとノイズ合成を使用。初期OFF、Human Flyのパート別だけが対象。生演奏の揺れ補正・実iPhoneでの新機能試聴は未確認。cache `hazama-fm-v442` / client `band-room.js?v=br-275` / CSS `band-room.css?v=br-101` / stem mix v10。
@@ -337,7 +349,7 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
 4. 自分のscopeの差分をレビューし、`git diff --check`とAGENTSのcommit前gate・全体gateを通して候補commitを作る。
 5. 自分のcleanなworktreeで最新main・共有docsを同期し、衝突を解消した**最終HEAD**で
    `node scripts/stack-check.mjs`を再実行。終了コード0、FAIL 0 / SKIP 0、0 BADとauditの0 BAD / 0 WARNが必要。
-   `--allow-skip`の診断結果を完了証拠にせず、同じHEADのログ・独立レビュー対象を確認する。
+   `--allow-skip`の診断結果を完了証拠にせず、同じHEADのログ・差分確認を残す。通常経路では独立レビューを必須にせず、本番PWAへ公開して本人の感想で調整する。限定経路の独立レビュー条件は専用定義に従う。
    HEADや検査対象repoの状態が変わったら旧証跡は失効し、検証・必要レビューを再確認する。
    詳細は`COLLAB-CLAUDE-AND-CODEX.md`の「同じHEADの完了証跡」と「作業後」に従う。
    `BACKLOG.md`と`SESSION-LEDGER.md`の記録更新後も候補HEADを一致させる。
@@ -358,7 +370,7 @@ Windowsの根拠は[Job Objects](https://learn.microsoft.com/en-us/windows/win32
 - **承認・保留の出典**: 原発言の文言、会話・メッセージIDと日時、取得方法、対象操作、
   実行側が原発言を確認できたか。個人情報や秘匿IDの実値は公開repoへ載せずprivate側で保持する。
 - **実行証拠**: 実際に使ったコマンド、終了コード、同じHEADのPASS/FAIL/SKIP・0 BAD/0 WARN、
-  ログの場所、独立レビューの対象HEADと未解決事項、PR差分・必須check・mergeableの確認結果。
+  ログの場所、差分確認と未解決事項、PR差分・必須check・mergeableの確認結果。限定経路を使う場合は独立レビューの対象HEADも記録する。
 - **完了判定**: commit、push、PR作成、merge、remote mainのSHA、公開URLへの反映を
   それぞれ実行済み・未実行・結果未確認に分ける。mergeと公開反映を一つの結果にまとめない。
 - **停止と再開**: 拒否・失敗した操作と対象、返された理由、残るリスク、再開に必要な
