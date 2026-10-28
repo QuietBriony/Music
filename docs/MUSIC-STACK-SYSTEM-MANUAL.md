@@ -30,13 +30,14 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 <!-- public-pages:begin -->
 普段のブックマークは [Music Stack Listen](https://music-stack.pages.dev/listen.html)。公開先を増やさず、既存のページと道具をここから辿ります。
 
-### Music — バンド・ラジオ・作品棚
+### Music — バンド・練習・作品棚
 
-同じMusicの中にある4つの画面。ロック／ジャズの試奏もBand Roomから。
+演奏・練習・作品棚を同じMusicから。ギターと三線は「一音ずつ」で練習できます。
 
 | 公開ページ | 用途 |
 |---|---|
 | [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=original) | Tabascoのライブ原音7曲を、軽い補正／元の仮ミックスで聴き比べ。追加の響きの重なりを減らし、声と楽器の打感・元の余韻を保つ調和ミックス、歌・ギター・ベース・ドラムを消す練習、3楽器のAI再現を同じ入口で選べます。 Human FlyのDubはベースとドラムの打感を残し、声を一フレーズ戻してギターの反響で応答。歌の間は響きを引き、隙間で左右へ広げ、中盤は2小節のグルーヴを回します。 調和は元の演奏に短く滑らかな共有リバーブ。Dubは出し引きと長い反響で展開する別ミックスです。 |
+| [一音ずつ — ギターと三線](../practice/index.html) | ギターはTAB譜、三線は工工四。マイクで正しい音を弾けたら次へ。画面だけでも試せます。 |
 | [Hazama FM](../fm.html) | ジャンルを選んで、ラジオのように流す。 |
 | [Music Core Rig](../index.html) | つまみを動かし、アシッドやIDMの音を探る。 |
 | [Lyric Lab](../lyric-lab.html) | 歌詞・曲のアイデア・制作指示を一曲ずつ残す。 |
@@ -133,6 +134,7 @@ cloud認証まで合格済みという意味ではありません。候補・手
 
 | 道具・入口 | 今できること／最初の一手 | 保存・境界 | 状態・実装根拠 |
 |---|---|---|---|
+| [一音ずつ — ギターと三線](../practice/index.html) | 単音の正解を待ちながら、自分の速さでギターと三線を練習する。<br>楽器と練習を選び、マイクで始める。楽器がない時は画面で試す。三線は本調子の基準を実際の調弦に合わせる。 | 練習・調弦・感度の設定を端末内に保存。録音・送信なし。PWAは初回準備後にオフライン利用可能。<br>初版は短い独自フレーズと単音のみ。和音・歌・装飾奏法の採点や紙譜面の取込は未対応。マイクだけでは指・弦は確定できません。合成信号の検証と実楽器・実iPhoneの精度確認は別です。 | 実装あり・実音評価は別<br>[Music/practice/index.html](https://github.com/QuietBriony/Music/blob/main/practice/index.html) / [Music/practice/app.mjs](https://github.com/QuietBriony/Music/blob/main/practice/app.mjs) / [Music/practice/music.mjs](https://github.com/QuietBriony/Music/blob/main/practice/music.mjs) / [Music/docs/PRACTICE.md](https://github.com/QuietBriony/Music/blob/main/docs/PRACTICE.md) |
 | [Music Core Rig](../index.html) | 密度と質感をつまみで演奏する中心の音源。アシッドやIDM探索の入口。<br>START → AUTO MIXを手動に → CULTのACIDを試し、まず一つのfaderだけ動かす。 | RECの音声ファイル／SYNCの設定JSON。<br>Hazama FMと同じengine。汎用ピアノロールや303専用16-stepエディタではない。 | 実装あり・実音評価は別<br>[Music/index.html](https://github.com/QuietBriony/Music/blob/main/index.html) / [Music/docs/USAGE-MUSIC-CORE-RIG.md](https://github.com/QuietBriony/Music/blob/main/docs/USAGE-MUSIC-CORE-RIG.md) / [Music/audio/music-recorder.js](https://github.com/QuietBriony/Music/blob/main/audio/music-recorder.js) |
 | [Hazama FM](../fm.html) | ジャンルとenergyを選んで流す、少ない操作のラジオ。<br>START → techno / ambient / pianoなどを一つ選び、60–90秒聴く。 | RECの音声ファイル／SYNCの設定・聴感文脈。<br>軽量設定で追加音色の残響・歪み負荷を抑える。YouTubeのhazamaチャンネルとは別のアプリ。新曲をAIモデルで生成・投稿するボタンではない。 | 実装あり・実音評価は別<br>[Music/fm.html](https://github.com/QuietBriony/Music/blob/main/fm.html) / [Music/fm.js](https://github.com/QuietBriony/Music/blob/main/fm.js) / [Music/audio/music-recorder.js](https://github.com/QuietBriony/Music/blob/main/audio/music-recorder.js) |
 | [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=original) | 現存する仮ミックスの強弱と余韻を保ち、こもりと輪郭を軽く整える。分離パートは担当する楽器を消して練習。AI再現は採譜を合成音で演奏する。<br>ライブ原音 → 再生 → 仕上げを切り替えて聴き比べ。再ミックスを聴くならパート別・再ミックス → START。演奏するなら ギターを弾く／ベースを弾く／ドラムを叩く／歌う → START。全パートで戻せます。 DubはHuman Fly → パート別・再ミックス → Dubで聴く → START。Dubは冒頭から反響が加わり、約49秒からリズム主体、約1:54から2小節グルーヴの展開。調和と比べるで戻せます。 更新は画面上部の「更新を確認」→「リロード」。再生・録音は停止します。 | ライブ原音は7 M4Aを1曲ずつストリーム再生。パート別／AI再現では従来のmix REC・4 stems pack・listening note。<br>元の録音トラックは残っていません。原ファイルは再圧縮せず、ライブ補正は再生時のEQと曲別音量のみ。元の仮ミックスとの比較音量を合わせています。元からのにじみ・歪みと分離漏れは残ります。ギター用はotherを消すため、ほかの楽器も消えます。パート別の標準は独立した調和ミックス。sound mixで基準へ復帰・旧仕上げと比較できます。旧音量設定は保存。全体RECは新ミックス、4 stems packは従来tapです。AI再現はベースの前出と短い誤発音を整理し、原音でも確認できる休符8箇所の余分な伸びを調整。音の立ち上がりと譜面の長音は維持。ギターは原音から単音と推定した4曲26打点で、一律の和音をリフの音程へ補正。途中移動で小節が先へ進む再生競合も修正。原音は既存GitHub Pagesから1曲ずつオンライン再生。曲変更・聴き方の切替は停止。自動連続再生・原音のRECは未対応。AI再現は歌声・曖昧な音符・奏法の完全再現ではありません。HAZAMAは試作として公開済み。Band Room下部の専用リンクから入り、通常のTabasco選択肢には混ぜません。02のAIは01 frames共有の暫定版。実iPhoneと本人聴感は未確認。 Human Flyのライブ欄は任意ONの303×2と合成ドラム5パート。64小節の展開AUTOと場面キープ、個別固定・サイコロ・16ステップ編集、声／ギターのエコー、残響フェーダーを用意。元の4パートを同じ欄で操作し、曲のSTART／STOP・途中移動・速さと全体RECへ連動。音色・打点・固定・展開・FX・4パート・速さ・位置を端末保存し、停止して復元。旧303保存も可。初期OFF。生演奏の揺れ補正やWorkbenchのFILE統合は未対応。 Human FlyのDubは既存分離パートの別ミックス。元のベースとドラムを保ち、声・ギター・スネアの反響、帯域・左右の動きを組みます。中盤は2小節のリズムを反復。曲の長さは同じです。新しい合成演奏や音源ではありません。全体RECには反響を含み、4 stems packは従来の個別tap。 iPhoneの残響クリアは、端末のレートに合う無音バッファで行います。残響のレートがなお合わない場合は、一部の残響を省く互換再生に切り替わります。 | 実装あり・実音評価は別<br>[Music/band-room.html](https://github.com/QuietBriony/Music/blob/main/band-room.html) / [Music/band-room.js](https://github.com/QuietBriony/Music/blob/main/band-room.js) / [Music/presets/bands.json](https://github.com/QuietBriony/Music/blob/main/presets/bands.json) / [Music/audio/premix-player.mjs](https://github.com/QuietBriony/Music/blob/main/audio/premix-player.mjs) / [Music/presets/tabasco-premix/provenance.json](https://github.com/QuietBriony/Music/blob/main/presets/tabasco-premix/provenance.json) / [Music/audio/premix-mastering.mjs](https://github.com/QuietBriony/Music/blob/main/audio/premix-mastering.mjs) |

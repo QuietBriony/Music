@@ -26,12 +26,22 @@
     "bookmark": "https://music-stack.pages.dev/listen.html",
     "mirror": "https://quietbriony.github.io/Music/listen.html",
     "groups": [
-      { "id": "music", "title": "Music — バンド・ラジオ・作品棚", "note": "同じMusicの中にある4つの画面。ロック／ジャズの試奏もBand Roomから。", "tool_ids": ["band-room", "hazama-fm", "core-rig", "lyric-lab"] },
+      { "id": "music", "title": "Music — バンド・練習・作品棚", "note": "演奏・練習・作品棚を同じMusicから。ギターと三線は「一音ずつ」で練習できます。", "tool_ids": ["band-room", "practice", "hazama-fm", "core-rig", "lyric-lab"] },
       { "id": "workbench", "title": "試奏台 — テクノ・アシッド・アンビエント", "note": "試作ミックス、ライブセット、303／909は同じ試奏台。「一緒に鳴らす」で同期して重ねられます。", "tool_ids": ["strudel-workbench"] },
       { "id": "siblings", "title": "ほかの道具 — 静かな音・リズム・段取り", "note": "前からある4つのアプリ。それぞれの役割を残して使います。", "tool_ids": ["chill", "namima", "drum-floor", "desk"] }
     ]
   },
   "tools": [
+    {
+      "id": "practice", "repo": "Music", "group": "browser", "status": "implemented",
+      "title": "一音ずつ — ギターと三線", "href": "practice/index.html", "action": "練習する",
+      "public_summary": "ギターはTAB譜、三線は工工四。マイクで正しい音を弾けたら次へ。画面だけでも試せます。",
+      "purpose": "単音の正解を待ちながら、自分の速さでギターと三線を練習する。",
+      "first_step": "楽器と練習を選び、マイクで始める。楽器がない時は画面で試す。三線は本調子の基準を実際の調弦に合わせる。",
+      "outputs": "練習・調弦・感度の設定を端末内に保存。録音・送信なし。PWAは初回準備後にオフライン利用可能。",
+      "boundary": "初版は短い独自フレーズと単音のみ。和音・歌・装飾奏法の採点や紙譜面の取込は未対応。マイクだけでは指・弦は確定できません。合成信号の検証と実楽器・実iPhoneの精度確認は別です。",
+      "sources": [{ "repo": "Music", "path": "practice/index.html" }, { "repo": "Music", "path": "practice/app.mjs" }, { "repo": "Music", "path": "practice/music.mjs" }, { "repo": "Music", "path": "docs/PRACTICE.md" }]
+    },
     {
       "id": "core-rig", "repo": "Music", "group": "browser", "status": "implemented",
       "title": "Music Core Rig", "href": "index.html", "action": "開く",
