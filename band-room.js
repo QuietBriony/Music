@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-275-live-arrangement";
-  const BANDROOM_RELEASE_VERSION = "v442";
+  const BANDROOM_APP_VERSION = "br-276-finished-versions";
+  const BANDROOM_RELEASE_VERSION = "v443";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -682,18 +682,19 @@
       const button = $("br-acid-open"), host = $("br-acid-controls");
       if (!host || !acidLiveSupported()) return;
       if (!host.hidden) {
-        await enableAcidLive(false); acidLiveEffects?.stop(); coherentStemMix?.setRoomAmount(.65); placeAcidSourceControls(false); host.hidden = true; document.body.classList.remove("br-acid-open"); button.textContent = "楽器・声で遊ぶ"; button.setAttribute("aria-expanded", "false"); return;
+        await enableAcidLive(false); acidLiveEffects?.stop(); coherentStemMix?.setRoomAmount(.65); placeAcidSourceControls(false); host.hidden = true; document.body.classList.remove("br-acid-open"); button.textContent = "Dub／Acidを聴く"; button.setAttribute("aria-expanded", "false"); return;
       }
       button.disabled = true;
       try {
         if (!acidLivePanel) {
-          const { createAcidPanel } = await import("./audio/acid-live-panel.mjs?v=2");
+          const { createAcidPanel } = await import("./audio/acid-live-panel.mjs?v=3");
           if (!acidLiveSupported()) return;
           acidLivePanel = createAcidPanel({ host,
             tempo: Number($("br-tempo-mult")?.value || 100),
             onTempo: value => { const input = $("br-tempo-mult"); if (input) { input.value = value; input.dispatchEvent(new Event("input")); } },
             storage: { getItem: key => window.localStorage.getItem(key), setItem: (key,value) => window.localStorage.setItem(key,value) },
             onEnable: enableAcidLive,
+            onPlay: async () => { clearLoopRange(); refreshLoopVisuals(); await Tone.start(); return startPlayback(); },
             onChange: (config, options) => acidLiveEngine?.configure(config, options),
             onEcho: throwAcidEcho, onFx: applyAcidEffects,
             captureContext: () => ({ tempo: Number($("br-tempo-mult")?.value || 100), position: clampPlaybackSecond(state.started ? playbackContentElapsedSec() : Number(state.pendingSeekOffsetSec ?? state.playbackStartOffsetSec ?? 0)),
@@ -5432,6 +5433,12 @@
     if (shouldDelayAutoAdvanceForFullSong()) {
       autoAdvanceInFlight = false;
       queueAutoAdvanceToNextSong();
+      return;
+    }
+    if (acidLiveEnabled && acidLiveSupported() && acidLivePanel?.isFinished() &&
+        !(state.loopA != null && state.loopB != null)) {
+      stopPlayback({ resetPosition: true });
+      acidLivePanel.setStatus("最後まで再生しました。3版のボタンで冒頭から聴き直せます。");
       return;
     }
     const nextSong = nextSongAfterCurrent();

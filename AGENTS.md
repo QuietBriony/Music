@@ -1,5 +1,17 @@
 # AGENTS.md — Music repo operating contract
 
+## 通常の改善は検証後に本番へ（2026-10-28・本人指示）
+
+本人が任せたMusic関連の改善は、公開前の人間レビュー・試聴承認を必須にしない。
+PWAは既存の本番へ出してから本人が聴く運用とし、実装 → 必須検証 → 自分の差分確認 →
+merge / main push → 既存の本番へdeploy → 公開版とPWAの更新確認 → 本人の感想で調整、まで進める。
+通常の全件検査経路では、別担当の独立レビューも公開の必須条件にしない。
+同じ最終HEADのstack-check（FAIL 0 / SKIP 0 / 0 BAD）、各repoの必須検査、cache同期、
+担当scope・clean状態・変更履歴・公開反映の証拠・ロールバック手段は維持する。
+実iPhoneの聴感が未確認でも公開を止めず、未確認と明記して本番での試聴へ渡す。
+新しい公開先、未承認の音源追加、認証や権限の変更、外部機器のarm・record・MIDI送信などは
+この通常公開ルールへ含めない。各アプリ自身の手動開始・metadata-onlyの境界も維持する。
+
 このリポを触る agent (claude code / codex / 他) が **最初に読む** 共通ルール。
 Hazama FM と Music Core Rig を壊さずに磨くための最低契約事項。
 
@@ -103,7 +115,7 @@ music-stack 全体の自走開発は `docs/autonomy/` のエンジンで運用�
    - sidecar（docs / schema / JSON）を先に作る
    - 直接コードコピーや `engine.js` への即接続は禁止
    - 試運転は feature flag または adapter で off-by-default
-   - 昇格は人の試聴 / preview 後、PR で 1 件ずつ
+   - 通常のPWA改善は検証済みpreviewをPRで1件ずつ反映し、本番公開後の本人試聴で調整する
    - 既存の default 再生 / OUTPUT / recorder / AutoMix / pads は変えない
 7. **端末 identity は fail-closed**。Music repo の local git config に
    `music.machineName` と `music.machineHost` の両方が必要。
@@ -190,7 +202,7 @@ git add -A && git commit -m "..." && git push
 
 | 状況 | 推奨 |
 |---|---|
-| Hazama FM の UI/UX 改修 | feature branch (`feature/<topic>`) → PR → review → merge |
+| Hazama FM の UI/UX 改修 | feature branch (`feature/<topic>`) → PR → 検証・差分確認 → agent merge・既存本番へdeploy |
 | 音量・LEVEL_BY_GENRE 微調整 | main 直 push 可 (claude code の 1 行変更パターン) |
 | engine.js 改変 | **必ず PR**、`stack-check` 0 BAD と差分レビュー必須。user が merge まで任せた作業は検証後に agent merge 可 |
 | docs only | main 直 push 可 |
@@ -232,7 +244,7 @@ python -X utf8 scripts/audit.py
 
 - 強み: 各 sister repo の事情に詳しい、ローカル test 実行、PR 完結
 - 担当しやすい範囲: sister repo の export 増強、Music 内の deep refactor、特定の narrow なバグ修正
-- engine.js に手を入れる必要があるときは codex が PR を立てて user 承認 → merge
+- engine.js に手を入れる必要があるときは codex が PR を立てて必須検証・差分確認後に merge（engineの変更境界は維持）
 
 ### 並列開発 (両方が同時に動く場合)
 

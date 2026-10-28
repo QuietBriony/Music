@@ -1,5 +1,13 @@
 # Session Ledger — music-stack
 
+## 2026-10-28 — 練習PWAを既存本番へつなぐ
+
+本人の通常公開方針に合わせて、初版を最新mainへ同期。既存Listenの遊び方を残して練習へのリンクを統合。
+ガイドの指定範囲の反復を追加し、ガイド再生中とマイク判定を切り替える。専用cacheは`music-practice-v2`。
+Chromeでガイド反復・停止・採点分離・cache更新と、従来の16項目を確認。
+オンライン譜面の候補はMutopia／PDMX／PORTAMAを調査。外部曲集の直読は未実装と明記。
+新しいhosting・音源・認証設定は追加しない。実楽器・実iPhoneの精度確認は本番で継続する。
+
 ## 2026-10-28 — ギターと三線の練習PWA初版
 
 本人の「とりあえず作ってみる」を受け、`practice/index.html`に単音の正解を待つ練習を追加。
@@ -10,6 +18,27 @@ Listenとmanualは同じ`config/music-stack-tools.json`とrendererで更新。
 開始時stack-checkはPASS 51 / FAIL 0 / SKIP 0。専用検査で単音・倍音44信号、雑音、同音連打、移調を確認。
 Chromeで画面・合成マイクstream・停止／許可待ち取消／拒否・背景移動・オフライン・390 px幅の16項目を確認。
 実楽器・実iPhoneの精度確認は残す。詳細と検証方法は`docs/PRACTICE.md`。
+
+## 2026-10-28 — Human FlyのDub・Acid・Acid Dubを曲アレンジに
+
+2026-10-28 v443: Human Flyに曲として聴く3版「Shadow Dub」「Acid Drive」「Acid Dub」を同梱。選ぶと音色・原音4パート・速さ・位置をセットし、既存A-Bループを解除して冒頭から明示再生。完走後は次曲へ進まず停止する。Shadow Dubは元のベース／ドラムと声・ギターのDub反響に短いシンセの応答。Acid Driveは原音ベース／ドラムを303と電子ドラムへ交代。Acid Dubは元のドラムを残し303の低音と控えめなハットを加える。ランダムな選曲や64小節反復ではなく、8／24／32／48／64／72／88／96／112小節の曲構成に沿って出入り・フィルター・短い返しを固定。ブレイクから最後の山へ戻り、録音の終わりに向けて追加楽器を減衰。既存保存の1枠は選択だけで上書きしない。調整は折りたたみ、固定・サイコロ・音色・JSON・保存は維持。追加ライブラリ・音源・歌詞・hostingはなし。同じ音声時計と出力を使い、生演奏のテンポ揺れは補正しない。実iPhoneの3版試聴と本人の聴感確認は未実施。cache `hazama-fm-v443` / client `band-room.js?v=br-276` / CSS `band-room.css?v=br-102`。
+
+
+
+## 2026-10-28 — 本番PWAで聴く公開運用へ
+
+2026-10-28・本人指示: 通常のMusic改善は公開前の人間レビュー・別担当の独立レビュー・本人試聴待ちを必須にしない。必須検証と差分確認を通した版を既存本番へ出し、PWAで聴いてから調整する。5 repoのAGENTSと現行プレイブックを同期。全件gate・cache・担当scope・変更履歴・公開反映の検証は維持。
+
+本人の「レビュー必須外して。本番デプロイしてからしかPWAで聴けん」に基づく変更。通常改善の公開待ちを解消し、MusicとNamimaの検証済み候補を既存mainへfast-forwardした。公開反映は配信先で別途検証し、コードのmergeだけで完了扱いしない。音源・音の設定・アプリ動作・検証scriptはこのルール整備では変更しない。
+
+## 2026-10-28 — 音の好みと遊び方をつなぐ
+
+本人の過去の要望を `docs/MUSIC-EXPERIENCE-DIRECTION.md` に整理。打感・胴・余韻、声と楽器の同じ空間、Dubの呼応、触った反応と間を共通の判断基準にした。
+Listenの先頭に4つの遊び方を置き、既存のBand Room／試奏台／Core／FM／Namima／chill／drum-floorをつなぐ。Lyric Labの作品メモとDeskの次の一手へ戻す。
+案内は既存catalogからListen/manualへ生成し、公開カードの長文とスマホの上部navigationを短縮。新しいhostingや音源、engineの変更はない。
+Namimaの別PR候補はv13。水面の等高線、指の青緑の波紋と暖色のこだま、表に出した映像切替、日本語の景色名、ひと休みと手動再開、reduced motion対応。audio.jsは変更なし。
+390×844のブラウザで開始・drag・映像切替・休止・Enter再開、Listenのレイアウトを確認。実iPhoneの操作／聴感は未確認。
+検証はMusicの`node scripts/stack-check.mjs`と`python -X utf8 scripts/audit.py`、Namimaの既存startup／gesture／PWA検査と描画回帰検査。公開はレビュー後とし、この記録自体を公開完了の証拠にはしない。
 
 ## 2026-10-28 — Human Flyの展開と声のライブ操作
 

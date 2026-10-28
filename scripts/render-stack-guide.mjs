@@ -16,7 +16,21 @@ const sourceHref = ({ repo, path }) => `https://github.com/QuietBriony/${repo}/b
 
 export function renderPublicHtml(catalog) {
   const navigation = catalog.public_navigation;
-  return `<div class="bookmark-panel">
+  const stepHref = (step) => step.href || catalog.tools.find(tool => tool.id === step.tool_id).href;
+  return `<div class="play-paths" aria-labelledby="play-paths-title">
+  <h3 id="play-paths-title">今日は、どんな音で遊ぶ？</h3>
+  <p class="guide-note">打感、余韻、間、意外な返し。気になるところから一つ。</p>
+  <div class="path-grid">
+${navigation.play_paths.map(path => `    <article class="play-path" data-play-path="${escapeHtml(path.id)}">
+      <p class="path-feel">${escapeHtml(path.feel)}</p>
+      <h4>${escapeHtml(path.title)}</h4>
+      <p>${escapeHtml(path.first)}</p>
+      <div class="path-actions">${path.steps.map(step => `<a href="${escapeHtml(stepHref(step))}">${escapeHtml(step.label)} <span aria-hidden="true">→</span></a>`).join("")}</div>
+    </article>`).join("\n")}
+  </div>
+  <p class="keep-moment">いい瞬間ができたら、<a href="lyric-lab.html">Lyric Labで作品メモを残す</a>。次に試すことは<a href="https://quietbriony.github.io/openclaw/">Deskで一つ決める</a>。</p>
+</div>
+<div class="bookmark-panel">
   <strong>いつも戻るのは、このページ。</strong>
   <a href="${escapeHtml(navigation.bookmark)}">${escapeHtml(navigation.bookmark.replace("https://", ""))}</a>
   <p>ここをブックマークすれば、作品も道具も同じ入口から辿れます。</p>
@@ -38,6 +52,12 @@ ${group.tool_ids.map((id) => {
 export function renderPublicMarkdown(catalog) {
   const navigation = catalog.public_navigation;
   return `普段のブックマークは [Music Stack Listen](${navigation.bookmark})。公開先を増やさず、既存のページと道具をここから辿ります。
+
+### 今日は、どんな音で遊ぶ？
+
+${navigation.play_paths.map(path => `- **${mdText(path.title)}** — ${mdText(path.feel)} ${mdText(path.first)} ${path.steps.map(step => `[${mdText(step.label)}](${docHref(step.href || catalog.tools.find(tool => tool.id === step.tool_id).href)})`).join(" → ")}`).join("\n")}
+
+いい瞬間は[Lyric Lab](../lyric-lab.html)で作品メモへ。次の一手は[Desk](https://quietbriony.github.io/openclaw/)で一つ決める。
 
 ${navigation.groups.map((group) => `### ${mdText(group.title)}
 

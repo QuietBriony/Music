@@ -20,8 +20,8 @@ Simply Guitar本体・教材・曲集の移植ではなく、単音の正解を�
 ## PWA
 
 `practice/manifest.webmanifest`、`practice/sw.js`を使用。SW scopeは`practice/`内。
-`music-practice-v1`に自分の画面・モジュール・アイコンだけを保存する。
-既存rootの`hazama-fm-v442`と他のアプリcacheを削除・更新しない。
+`music-practice-v2`に自分の画面・モジュール・アイコンだけを保存する。
+既存rootのService Workerと他のアプリcacheを削除・更新しない。
 HTTPSまたはlocalhostでマイク利用可。SWの有効化後に「オフライン準備OK」を表示する。
 初回の準備には通信が必要。オフライン再読み込みはブラウザで確認し、実iPhoneは別途確認する。
 
@@ -38,3 +38,28 @@ HTTPSまたはlocalhostでマイク利用可。SWの有効化後に「オフラ�
 [PickHero](https://github.com/Artemarius/PickHero)（PC・待ちモード）、
 [PORTAMA](https://www.portama.com/sanshin/)（三線用Web）。コードのコピーや依存追加はしていない。
 本調子の開放音・音名の参考：[新垣三線店の調子解説](https://support.arakaki34.com/%E5%8F%96%E3%82%8A%E6%89%B1%E3%81%84/%E8%AA%BF%E5%AD%90%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6/)。
+
+## ガイドとオンライン譜面の方針（2026-10-28・v2）
+
+ガイドを流しながら一緒に弾く練習を追加。「繰り返す」がONなら指定範囲を停止するまで反復する。
+速さを3段階で選べる。ガイド中はマイク判定を停止するため、ガイド自身を正解に数えない。
+自分のペースで音程を確かめたい時は「マイクで始める」に切り替える。音源ファイルの追加はない。
+v2ではclientの版と専用cacheを同期し、現在のappが保存されたことを確かめてオフライン準備を表示する。
+Chromeでギター／三線のガイド反復・停止後の再開なし・ガイド自身を採点しないこと、
+旧practice cacheの削除とroot cacheの保持を確認。初版の16項目の操作・マイク・オフライン検証も再確認した。
+
+オンライン譜面の直読・外部曲集の自動取得はこの版に含めない。次は音高と音長を持つMusicXML/MIDIから
+単旋律を取り出し、TAB／工工四の表示と合成ガイドへつなぐ。PDFや画像は別途楽譜認識と確認が必要。
+各譜面の出所・利用条件・版を残し、URL読込が許可されない配信元はファイル読込を使う。
+
+調査した候補：
+
+| 候補 | 用途・確認したこと | 取り込み前に残ること |
+|---|---|---|
+| [Mutopia](https://www.mutopiaproject.org/) | ギター等のPDF・MIDI・LilyPond。譜面ごとに利用条件がある。[きらきら星の原旋律を含む2ギター版](https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=2236)はPublic Domain表記 | 完成版は初心者向けの短い単音練習ではないため、声部と範囲を選ぶ |
+| [PDMX](https://github.com/pnlong/PDMX) | 曲集拡張用のMusicXML等の候補。提供元は`no_license_conflict`を推奨 | 個別の利用条件と楽器・声部の適合を照合。全量ダウンロードや導入は行わない |
+| [PORTAMA工工四エディター](https://www.portama.com/editor/) | 工工四の作成・再生、JSON保存、MIDI読込がある | [規約](https://www.portama.com/help/terms.html)に再生・PDF取得の条件はあるが、他アプリへの自動転載許可は確認できていない。参考・外部利用候補 |
+
+ギターはまず「きらきら星」「歓喜の歌」のような短い単音旋律が候補。
+三線は工工四が読みやすい伝統曲を候補にし、楽曲の古さと個別の編曲・譜面データの利用条件を混同しない。
+Sitesで別の公開先は作らず、既存Cloudflare `music-stack` とListenから使う。

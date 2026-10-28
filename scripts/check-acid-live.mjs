@@ -5,8 +5,31 @@ import {createAcidLive} from '../audio/acid-live.mjs';
 import {drumDice,drumPreset} from '../audio/acid-live-drums.mjs';
 import {sceneAt,effective303,drumPattern} from '../audio/acid-live-scenes.mjs';
 import {createLiveEffects} from '../audio/acid-live-fx.mjs';
+import {VERSIONS,makeVersion,versionScene} from '../audio/human-fly-versions.mjs';
 
 const initial=defaults();assert.deepEqual(validate(initial),initial);
+const works=VERSIONS.map(v=>makeVersion(v.id,defaults()));
+assert.equal(new Set(works.map(v=>JSON.stringify(v))).size,3,'Three versions must be different configurations');
+for(const [i,v]of works.entries()){
+ assert.deepEqual(validate(v.state),v.state);assert.deepEqual(validatePerformanceContext(v.context),v.context);
+ assert.deepEqual(makeVersion(VERSIONS[i].id,defaults()),v,'Finished version is deterministic');
+ const a=v.state.arrangement;
+ assert.equal(sceneAt(a,64).phase,64,'Finished form must not loop at 64 bars');
+ assert.equal(sceneAt(a,96).phase,96);assert.equal(sceneAt(a,118).bass,0);assert.equal(sceneAt(a,118).reply,0);
+ assert.equal(sceneAt(a,118).kick,0);assert.equal(sceneAt(a,118).hat,0);
+ const fixed=structuredClone(v.state);fixed.parts.bass.locked=true;
+ assert.deepEqual(stepsForBar(fixed,'bass',3),fixed.parts.bass.steps);
+ assert.deepEqual(dice(fixed,'bass',()=>.9),fixed);
+}
+assert.equal(works[0].context.mastering,'dub');assert.equal(works[0].context.enabled.bass,true);assert.equal(works[0].state.drums.enabled,false);
+assert.equal(works[1].context.mastering,'blend');assert.equal(works[1].context.enabled.drums,false);assert.equal(works[1].state.drums.parts.kick.enabled,true);
+assert.equal(works[2].context.enabled.drums,true);assert.equal(works[2].state.drums.parts.kick.enabled,false);
+assert.equal(versionScene('acid-drive',90).kick,0);assert.equal(versionScene('acid-drive',96).kick,1);
+assert.ok(versionScene('acid-drive',96).reply>versionScene('acid-drive',56).reply);
+assert.throws(()=>validate({...initial,arrangement:{...initial.arrangement,work:'unknown'}}));
+assert.throws(()=>validate({...initial,arrangement:{...initial.arrangement,gain:4.1}}));
+const oldV2=structuredClone(initial);delete oldV2.arrangement.work;delete oldV2.arrangement.gain;
+assert.deepEqual(validate(oldV2),initial,'v442 saved mixes retain unity gain and their original sound');
 const legacy=structuredClone(initial);legacy.version=1;delete legacy.drums;delete legacy.arrangement;delete legacy.fx;
 for(const p of PARTS)delete legacy.parts[p].enabled;
 const migrated=validate(legacy);assert.equal(migrated.drums.enabled,false);assert.equal(migrated.arrangement.scene,'keep');
@@ -113,7 +136,7 @@ fx.configure({echo:0,tone:42});assert.equal(fx.diagnostics().buses,0);assert.equ
 fx.throw('vocals',117.45);assert.equal(fx.diagnostics().buses,0);assert.throws(()=>fx.throw('bass',120));
 fx.configure({echo:35,tone:42});fx.throw('other',120);fx.stop();assert.equal(fx.diagnostics().nodes,0);
 const html=readFileSync('band-room.html','utf8'),source=readFileSync('band-room.js','utf8');
-assert.match(html,/br-acid-live[\s\S]*楽器・声で遊ぶ/);
+assert.match(html,/br-acid-live[\s\S]*Dub／Acidを聴く/);
 assert.match(source,/function stopStemPlayback\(\)\s*\{\s*stopAcidLive\(\)/);
 assert.match(source,/state.started && acidLiveEnabled\) syncAcidLivePlayback\(true\)/);
 console.log('Acid LIVE: v1 migration, scene arc, pinned motifs, temporary fills, five drums, finite echoes, common clock and Stop isolation passed');

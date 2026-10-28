@@ -1,5 +1,17 @@
 # Collab: claude code と codex の並列開発プレイブック
 
+## 通常の改善は検証後に本番へ（2026-10-28・本人指示）
+
+本人が任せたMusic関連の改善は、公開前の人間レビュー・試聴承認を必須にしない。
+PWAは既存の本番へ出してから本人が聴く運用とし、実装 → 必須検証 → 自分の差分確認 →
+merge / main push → 既存の本番へdeploy → 公開版とPWAの更新確認 → 本人の感想で調整、まで進める。
+通常の全件検査経路では、別担当の独立レビューも公開の必須条件にしない。
+同じ最終HEADのstack-check（FAIL 0 / SKIP 0 / 0 BAD）、各repoの必須検査、cache同期、
+担当scope・clean状態・変更履歴・公開反映の証拠・ロールバック手段は維持する。
+実iPhoneの聴感が未確認でも公開を止めず、未確認と明記して本番での試聴へ渡す。
+新しい公開先、未承認の音源追加、認証や権限の変更、外部機器のarm・record・MIDI送信などは
+この通常公開ルールへ含めない。各アプリ自身の手動開始・metadata-onlyの境界も維持する。
+
 2026-10-26 v437: Human Fly Dubの声とギターを呼応させる。声8フレーズを語頭から戻し、語尾をechoへ。ギターは33打点に絞り、10箇所の返答／アクセントを強める。歌の間は反響だけを引き、間で広げ、繰り返しを左右へ渡して暗くほどく。ベース／ドラムの音量・打点・2小節loop・スネア反響と、調和の共通roomは保持。cache `hazama-fm-v437` / client `band-room.js?v=br-270` / CSS `band-room.css?v=br-99` / arrangement v3 / Dub v5。
 
 2026-10-26 v436: 調和とDubの共通空間を更新。声の直接音・EQ・楽器の打感を保ち、19–139 msの近い反射に、52 msから暗く滑らかに減衰する最長720 msの共通残響を加える。声のsendを0.18→0.24へ。単一の手続きstereo IRで、録音素材の追加なし。途中移動・比較・mute・fader zeroで古いroomを消去。調和は元の演奏、Dubは出し引き・loop・echoによる別編曲。cache `hazama-fm-v436` / client `band-room.js?v=br-269` / CSS `band-room.css?v=br-99` / stem mix v7。
@@ -129,7 +141,8 @@ Claude単独・Codex単独・並走・引継ぎのどの入口でも、最新mai
 個別4checkは原因調査とAGENTSのcommit前検査に使えるが、全体gateの代用にはしない。
 
 記録するのは作業worktreeの絶対path、同期したmainのSHA、候補の`git rev-parse HEAD`、実行コマンド、
-終了コードとPASS/FAIL/SKIP、auditの0 BAD / 0 WARN、ログの場所、独立レビューの対象HEADと未解決事項。
+終了コードとPASS/FAIL/SKIP、auditの0 BAD / 0 WARN、ログの場所、差分確認と未解決事項。通常の全件検査経路では独立レビューを必須にしない。
+限定経路を選ぶ場合だけ、その定義に従う実在の独立レビューと対象HEADも記録する。
 5 repoの検査対象もHEADとdirtyの有無を控える。実行後のHEAD・作業差分と対象repoの状態が変わったら証拠は失効する。
 rebase・merge・衝突解消・追加commitの後は、古いログを流用せず新しい最終HEADで全体gateと必要レビューを再確認する。
 文書検査はこの手順の省略を検出するだけで、実際に検証を実行した証明にはならない。
@@ -194,7 +207,7 @@ claude code はこのパターンを使わず、`gh pr merge` を直接呼ぶか
 - 対象 PR / branch が今回 user から任された作業に属する
 - mergeable / clean な状態
 - 「作業後」の同期・衝突解消後の最終HEADで`node scripts/stack-check.mjs`が終了コード0、FAIL 0 / SKIP 0、0 BAD
-- `--allow-skip`による診断ログを使わず、独立レビューの対象HEADと検証したHEADが一致し、未解決の問題がない
+- `--allow-skip`による診断ログを使わず、差分確認と検証したHEADが一致し、未解決の問題がない。通常経路では独立レビュー・公開前の本人試聴を必須にせず、本番PWAへ出してから本人の感想で調整する
 - engine.js を含む場合は差分レビュー済み
 - branch deletion は --delete-branch 付き
 

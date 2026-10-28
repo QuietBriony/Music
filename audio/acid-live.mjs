@@ -1,7 +1,7 @@
 import { TB303 } from '../experiments/workbench/v1/third_party/acidbros/js/audio/TB303.js?v=br-441';
-import { PARTS, defaults, validate, stepsForBar, chordAt, voiceSteps, voiceParams } from './acid-live-state.mjs?v=2';
+import { PARTS, defaults, validate, stepsForBar, chordAt, voiceSteps, voiceParams } from './acid-live-state.mjs?v=3';
 import { DRUMS, createDrumVoices } from './acid-live-drums.mjs?v=1';
-import { sceneAt, effective303, drumPattern } from './acid-live-scenes.mjs?v=1';
+import { sceneAt, effective303, drumPattern } from './acid-live-scenes.mjs?v=2';
 
 // Reuse acidBros voices, but let Band Room own the context, output and clock.
 // Only one future event is owned here; no interval or independent transport.
@@ -26,6 +26,8 @@ export function createAcidLive({context, transport, createFilter, loadFilter, co
   function stop() { generation++;clearEvent();retire();anchor=null;lastBar=-1;cached=null;holds={};lastScene=null; }
   function levels(time=context.currentTime,position=Math.max(0,lastBar)) {
     if (!graph) return;
+    const mix=.22*(config.arrangement.gain??1);
+    if(graph.lastMix!==mix){graph.lastMix=mix;graph.output.gain.cancelScheduledValues(time);graph.output.gain.setTargetAtTime(mix,time,.035);}
     const scene=sceneAt(config.arrangement,position);
     for (const p of PARTS) {
       const value=effective303(config.parts[p],p,scene,(holds[p]||0)>position).gain;
@@ -42,7 +44,7 @@ export function createAcidLive({context, transport, createFilter, loadFilter, co
     for (const p of PARTS) {
       const gain=context.createGain();gain.gain.value=config.parts[p].volume/100;gain.connect(output);gains[p]=gain;
     }
-    graph={output,voices,levels:gains,last:{},drums:null};levels();
+    graph={output,voices,levels:gains,last:{},drums:null};levels(context.currentTime,anchor.offset*anchor.bpm/240);
   }
   function enqueue(index, token) {
     if (token!==generation || !anchor || !graph) return;
@@ -97,7 +99,7 @@ export function createAcidLive({context, transport, createFilter, loadFilter, co
       enqueue(Math.ceil(options.offset*options.bpm/15-1e-7),generation);
     },
     stop,
-    diagnostics:()=>({prepared,fallback,active:!!graph,ownedEvents:event===null?0:1,voices:graph?Object.keys(graph.voices).length:0,drums:graph?.drums?.diagnostics()||null,scene:lastScene?.id||null,sceneAuto:config.arrangement.auto,played,bar:lastBar+1,anchor:anchor?{at:anchor.at,offset:anchor.offset,rate:anchor.rate,bpm:anchor.bpm}:null}),
+    diagnostics:()=>({prepared,fallback,active:!!graph,ownedEvents:event===null?0:1,voices:graph?Object.keys(graph.voices).length:0,drums:graph?.drums?.diagnostics()||null,scene:lastScene?.id||null,phase:lastScene?.phase??null,sceneName:lastScene?.name||null,work:config.arrangement.work,sceneAuto:config.arrangement.auto,played,bar:lastBar+1,anchor:anchor?{at:anchor.at,offset:anchor.offset,rate:anchor.rate,bpm:anchor.bpm}:null}),
     dispose:stop
   };
 }

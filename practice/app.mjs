@@ -1,4 +1,4 @@
-import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=1';
+import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=2';
 
 const $ = id => document.getElementById(id);
 const STORAGE = 'music-practice-settings-v1';
@@ -38,7 +38,7 @@ function stopAll() {
   if (oldContext && oldContext.state !== 'closed') oldContext.close().catch(() => {});
   mode = 'idle'; demoIndex = -1; $('stop').disabled = true;
   $('mic-start').disabled = $('touch-start').disabled = false;
-  $('input-label').textContent = '停止中'; $('demo').textContent = '♪ お手本を通して聴く';
+  $('input-label').textContent = '停止中'; $('demo').textContent = '♪ ガイドに合わせて弾く';
   $('level').style.width = '0%'; $('heard').textContent = '—'; $('cents').textContent = '—'; $('needle').style.left = '50%';
   $('touch-panel').hidden = true;
 }
@@ -200,12 +200,17 @@ async function demo() {
   if (mode === 'demo') { stopAll(); render(); feedback('お手本を止めました。'); return; }
   stopAll(); mode = 'demo'; $('stop').disabled = false;
   const ticket = epoch, [start, end] = bounds(), interval = 60000 / Number($('tempo').value);
-  $('input-label').textContent = 'お手本を再生中'; $('demo').textContent = '■ お手本を止める';
-  feedback('お手本は合成音です。聴き終わったら、自分で弾いてみましょう。');
-  let index = start;
+  $('input-label').textContent = 'ガイドを再生中'; $('demo').textContent = '■ ガイドを止める';
+  feedback('ガイドに合わせて弾きましょう。この練習ではマイクの採点を止めています。');
+  let index = start, cycle = 1;
   const next = async () => {
     if (ticket !== epoch) return;
-    if (index >= end) { stopAll(); render(); feedback('お手本が終わりました。マイクか画面で練習できます。'); return; }
+    if (index >= end) {
+      if ($('loop-enabled').checked) {
+        index = start; cycle++;
+        feedback(`ガイド ${cycle}周目。音を聴きながら、一緒に弾いてみましょう。`);
+      } else { stopAll(); render(); feedback('ガイドが終わりました。マイクか画面で練習できます。'); return; }
+    }
     demoIndex = index; renderScore();
     try { await tone(notes[index++].midi, Math.min(0.65, interval / 1100)); }
     catch (error) { if (ticket === epoch) { stopAll(); render(); feedback(error.message); } return; }
@@ -250,10 +255,24 @@ window.addEventListener('beforeinstallprompt', event => { event.preventDefault()
 $('install').onclick = async () => { if (installPrompt) { await installPrompt.prompt(); installPrompt = null; $('install').hidden = true; } };
 window.addEventListener('appinstalled', () => { $('install').hidden = true; });
 if ('serviceWorker' in navigator && window.isSecureContext) {
-  navigator.serviceWorker.register('./sw.js', { scope: './' }).then(registration => {
-    const ready = () => { $('offline-state').textContent = 'オフライン準備OK'; };
+  navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' }).then(registration => {
+    const ready = async () => {
+      try {
+        const cache = await caches.open('music-practice-v2');
+        if (await cache.match(new URL('./app.mjs?v=2', location.href).href)) $('offline-state').textContent = 'オフライン準備OK';
+      } catch { $('offline-state').textContent = 'オンラインで利用できます'; }
+    };
+    const watch = worker => {
+      if (!worker) return;
+      if (worker.state === 'activated') ready();
+      worker.addEventListener('statechange', () => {
+        if (worker.state === 'activated') ready();
+        if (worker.state === 'redundant') $('offline-state').textContent = 'オンラインで利用できます';
+      });
+    };
     if (registration.active) ready();
-    const worker = registration.installing || registration.waiting;
-    if (worker) worker.addEventListener('statechange', () => { if (worker.state === 'activated') ready(); });
+    watch(registration.installing || registration.waiting);
+    registration.addEventListener('updatefound', () => watch(registration.installing));
+    registration.update().catch(() => {});
   }).catch(() => { $('offline-state').textContent = 'オンラインで利用できます'; });
 } else $('offline-state').textContent = 'オンラインで利用できます';

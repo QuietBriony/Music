@@ -9,8 +9,8 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=1">
-  <script type="module" src="app.mjs?v=1"></script>
+  <link rel="stylesheet" href="style.css?v=2">
+  <script type="module" src="app.mjs?v=2"></script>
 </head>
 <body>
 <div class="page">
@@ -40,7 +40,8 @@
         <p id="score-help" class="small">数字はフレット。0は開放弦。音符を押すと、その位置から練習できます。</p>
         <div id="score" class="score"></div>
         <div class="loop"><label><input id="loop-enabled" type="checkbox"> 繰り返す</label><div><label>はじめ<select id="loop-start" aria-label="繰り返しの最初の音"></select></label><span>〜</span><label>おわり<select id="loop-end" aria-label="繰り返しの最後の音"></select></label></div></div>
-        <div class="demo"><button id="demo">♪ お手本を通して聴く</button><label>速さ<select id="tempo"><option value="60">ゆっくり</option><option value="85" selected>ふつう</option><option value="110">速め</option></select></label></div>
+        <div class="demo"><button id="demo">♪ ガイドに合わせて弾く</button><label>速さ<select id="tempo"><option value="60">ゆっくり</option><option value="85" selected>ふつう</option><option value="110">速め</option></select></label></div>
+        <p class="practice-note">「ガイド」は一定の速さで流れます。「繰り返す」で同じ範囲を何度でも。音程を確かめたい時は「マイクで始める」へ。</p>
         <div id="touch-panel" class="touch-panel" hidden><p>下の音を押して進めます。マイク判定とは別の体験です。</p><div id="touch-keys"></div></div>
         <p class="practice-note">同じ音が続くときは、前の音を止めて弾き直します。お手本の音がマイクに入る場合はイヤホンをお使いください。</p>
       </section>

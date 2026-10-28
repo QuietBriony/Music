@@ -1,5 +1,17 @@
 # Autonomous Run — プレイブック
 
+## 通常の改善は検証後に本番へ（2026-10-28・本人指示）
+
+本人が任せたMusic関連の改善は、公開前の人間レビュー・試聴承認を必須にしない。
+PWAは既存の本番へ出してから本人が聴く運用とし、実装 → 必須検証 → 自分の差分確認 →
+merge / main push → 既存の本番へdeploy → 公開版とPWAの更新確認 → 本人の感想で調整、まで進める。
+通常の全件検査経路では、別担当の独立レビューも公開の必須条件にしない。
+同じ最終HEADのstack-check（FAIL 0 / SKIP 0 / 0 BAD）、各repoの必須検査、cache同期、
+担当scope・clean状態・変更履歴・公開反映の証拠・ロールバック手段は維持する。
+実iPhoneの聴感が未確認でも公開を止めず、未確認と明記して本番での試聴へ渡す。
+新しい公開先、未承認の音源追加、認証や権限の変更、外部機器のarm・record・MIDI送信などは
+この通常公開ルールへ含めない。各アプリ自身の手動開始・metadata-onlyの境界も維持する。
+
 music-stack を 1 session 進めるための定型手順。Claude / Codex / 人間の誰が回しても
 同じ品質になるよう、開始から締めまでをここに固定する。
 
@@ -35,7 +47,7 @@ node scripts/stack-check.mjs            # → "0 BAD" を確認
 BACKLOG から、**この session で完了でき、`human-gate=no` または gate を踏める**
 最上位 item を 1〜数個選ぶ:
 
-- `human-gate: yes` で実機 / 試聴が要る item は自律ランでは **実装 + PR まで**。検証は人間。
+- `human-gate: yes`でも、通常のPWA改善は必須検証後に既存本番へ公開する。本人の実機・試聴結果は公開後に確認し、未確認を合格扱いしない。外部機器の操作など個別の実行承認は別途守る。
 - `scope: engine` は対象外。
 - 並列でやるなら **write scope が repo 単位で完全分離** している item だけ（衝突回避）。
 
@@ -47,7 +59,7 @@ BACKLOG から、**この session で完了でき、`human-gate=no` または ga
 - cache buster を伴う UI 変更は、その repo の `AGENTS.md` の同期 bump 手順に従う
 - currency manifestの監視pathを変えた場合は、対応するcurrent docも同じworktreeで更新する。
   `check-autonomy-doc-currency.mjs`はdirty sourceだけ、またはdocより新しいcommitted sourceを拒否する
-- engine.js / index.html / style.css は触らない（要・人間）
+- engine.jsの変更境界はMusic/AGENTS.mdを守る。index.html / style.cssの通常UI改善も、必須検証後に既存本番へ公開する
 
 ## 5. 検証
 
