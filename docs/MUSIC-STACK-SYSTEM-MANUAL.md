@@ -65,7 +65,7 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 | 公開ページ | 用途 |
 |---|---|
 | [Chill Session](https://quietbriony.github.io/chill/session.html) | ピアノと余白。ベースやドラムを少しずつ足す。 |
-| [Namima](https://quietbriony.github.io/namima/) | 指で音をつなぐ水面。手を離すと、こだまと小さな変奏が返る。 |
+| [Namima](https://quietbriony.github.io/namima/) | 水面・庭・灯り・夕景・月あかりを切り替え、指で音をつなぐ。おまかせで景色が巡り、こだまが返る。 |
 | [Drum Floor](https://quietbriony.github.io/drum-floor/) | ドラムのノリ・休符・強弱を試す。 |
 | [OpenClaw Desk](https://quietbriony.github.io/openclaw/) | 今日の目的と次の一手を決める。音は出さず、演奏する道具へ渡す。 |
 
@@ -153,7 +153,7 @@ cloud認証まで合格済みという意味ではありません。候補・手
 | 道具・入口 | 今できること／最初の一手 | 保存・境界 | 状態・実装根拠 |
 |---|---|---|---|
 | [Chill Session](https://quietbriony.github.io/chill/session.html) | ピアノと余白を中心に、ゆっくり変化する静かな演奏。<br>START。まずピアノだけを聴き、必要な時だけBASS / DRUMSを足す。 | ブラウザ演奏／quiet-piano recipeとsession文脈。<br>独立したactiveアプリ。汎用アンビエントに統一せず、長い休符とピアノの役割を残す。実音の好みの判定は別。 | 実装あり・実音評価は別<br>[chill/session.html](https://github.com/QuietBriony/chill/blob/main/session.html) / [chill/engine.js](https://github.com/QuietBriony/chill/blob/main/engine.js) / [chill/AGENTS.md](https://github.com/QuietBriony/chill/blob/main/AGENTS.md) |
-| [Namima](https://quietbriony.github.io/namima/) | 水・庭・穏やかな空気のための、映像付きアンビエント。<br>Tap to start → 音と波紋を聴く。ほかのプレイヤーは止めて比較する。 | ブラウザの音・映像／安全なmoodの翻訳。<br>同じrepoのオフライン周波数レンダーとは別物。暗いアシッドや強い低域を既定音へ混ぜない。 | 実装あり・実音評価は別<br>[namima/audio.js](https://github.com/QuietBriony/namima/blob/main/audio.js) / [namima/sketch.js](https://github.com/QuietBriony/namima/blob/main/sketch.js) / [namima/music-session-adapter.js](https://github.com/QuietBriony/namima/blob/main/music-session-adapter.js) |
+| [Namima](https://quietbriony.github.io/namima/) | 水・庭・穏やかな空気のための、映像付きアンビエント。<br>景色を選ぶ／次の景色 → Tap to start → なぞって音をつなぐ。おまかせは押すとすぐ景色が変わり、約30〜40秒で巡る。ほかのプレイヤーは止めて比較する。 | ブラウザの音・映像／安全なmoodの翻訳。<br>同じrepoのオフライン周波数レンダーとは別物。暗いアシッドや強い低域を既定音へ混ぜない。 | 実装あり・実音評価は別<br>[namima/audio.js](https://github.com/QuietBriony/namima/blob/main/audio.js) / [namima/sketch.js](https://github.com/QuietBriony/namima/blob/main/sketch.js) / [namima/music-session-adapter.js](https://github.com/QuietBriony/namima/blob/main/music-session-adapter.js) |
 
 ### 作品を残す・次の段取りを決める
 

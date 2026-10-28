@@ -239,9 +239,9 @@
     {
       "id": "namima", "repo": "namima", "group": "quiet", "status": "implemented",
       "title": "Namima", "href": "https://quietbriony.github.io/namima/", "action": "開く",
-      "public_summary": "指で音をつなぐ水面。手を離すと、こだまと小さな変奏が返る。",
+      "public_summary": "水面・庭・灯り・夕景・月あかりを切り替え、指で音をつなぐ。おまかせで景色が巡り、こだまが返る。",
       "purpose": "水・庭・穏やかな空気のための、映像付きアンビエント。",
-      "first_step": "Tap to start → 音と波紋を聴く。ほかのプレイヤーは止めて比較する。",
+      "first_step": "景色を選ぶ／次の景色 → Tap to start → なぞって音をつなぐ。おまかせは押すとすぐ景色が変わり、約30〜40秒で巡る。ほかのプレイヤーは止めて比較する。",
       "outputs": "ブラウザの音・映像／安全なmoodの翻訳。",
       "boundary": "同じrepoのオフライン周波数レンダーとは別物。暗いアシッドや強い低域を既定音へ混ぜない。",
       "sources": [{ "repo": "namima", "path": "audio.js" }, { "repo": "namima", "path": "sketch.js" }, { "repo": "namima", "path": "music-session-adapter.js" }]
