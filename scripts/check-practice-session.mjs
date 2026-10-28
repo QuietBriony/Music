@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { readLyrics,normalizeCues,lyricAt,lrcText,readChordSheet } from '../practice/lyrics.mjs';
+import { LYRIC_PRESETS } from '../practice/lyric-presets.mjs';
+import { chordExercise,scoreNotes } from '../practice/scores.mjs';
+const parsed=readLyrics('[ar:My own song]\n[00:00.00]My first line\n[00:02.50][00:09.00]My second line');
+assert.deepEqual(parsed.lines,['My first line','My second line']);assert.deepEqual(parsed.cues,[{line:0,time:0},{line:1,time:2.5},{line:1,time:9}]);
+assert.equal(lyricAt(parsed.cues,2.49),0);assert.equal(lyricAt(parsed.cues,2.5),1);assert.equal(lyricAt(parsed.cues,-1),-1);
+assert.deepEqual(readLyrics(lrcText(parsed.lines,parsed.cues)).cues,[{line:0,time:0},{line:1,time:2.5},{line:2,time:9}]);
+assert.deepEqual(readLyrics(lrcText(['Minute boundary'],[{line:0,time:59.999}])).cues,[{line:0,time:60}]);
+assert.deepEqual(readLyrics('<img src=x>\n<script>literal text</script>').lines,['<img src=x>','<script>literal text</script>']);
+assert.throws(()=>readLyrics('x'.repeat(20001)));assert.throws(()=>readLyrics('x\n'.repeat(201)));assert.throws(()=>readLyrics('[00:99]Bad time'));
+assert.deepEqual(normalizeCues([null,4,{line:0,time:3},{line:1,time:-1},{line:90,time:0},{line:0,time:NaN}],2),[{line:0,time:3}]);
+const sheet=readChordSheet('{title:My own exercise}\n[C]One [Am]two\n[F]Three [G]four');
+assert.deepEqual(sheet.names,['C','Am','F','G']);assert.equal(sheet.text,'One two\nThree four');assert.equal(sheet.title,'My own exercise');
+assert.equal(sheet.cues[1].time,8*60/85);assert.equal(scoreNotes(chordExercise(sheet.names),'chords','guitar',{chords:true}).cues.length,4);
+assert.throws(()=>readChordSheet('[Unknown]line'),/未対応/);assert.throws(()=>readChordSheet('No chord tokens'));
+assert.throws(()=>readChordSheet('[C]line\n'.repeat(65)),/64/);
+for(const preset of Object.values(LYRIC_PRESETS)){const data=readLyrics(preset.text);assert.ok(preset.cues.every(c=>c.line<data.lines.length));assert.ok(preset.source.startsWith('https:'));}
+assert.equal(lyricAt(LYRIC_PRESETS['song:twinkle'].cues,16*.666667),2);
+const lyricsSource=readFileSync('practice/lyrics.mjs','utf8');assert.doesNotMatch(lyricsSource,/innerHTML|fetch\(|XMLHttpRequest|sendBeacon/);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['session.css?v=5','lyrics.mjs?v=5','lyric-presets.mjs?v=5','songs/lyrics-provenance.json','polyphonic.mjs?v=5'])assert.ok(sw.includes(path),path);
+console.log('Practice session: LRC, repeated timestamps, lyrics bounds, chord-sheet adapter, timing, safe local text and PWA coverage PASS');

@@ -23,7 +23,7 @@ for(const [instrument,studies] of Object.entries(STUDIES)){
     assert.ok(study.note.length>0,'accurate scope label');
   }
 }
-const source=readFileSync('practice/learning.mjs','utf8');
+const source=readFileSync('practice/lyrics.mjs','utf8');
 assert.doesNotMatch(source,/fetch\(|XMLHttpRequest|sendBeacon|innerHTML/,'personal lyrics remain local text');
-assert.match(source,/textContent=lines\[line\]/);
+assert.match(source,/textContent=data.lines\[active\]/);
 console.log('Practice learning: guitar/sanshin tuning, high/low/octaves, five reference studies, safe local lyric display PASS');

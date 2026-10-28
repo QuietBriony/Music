@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-29 練習PWA v5：練習開始で目標音・現在のコード図・歌詞・6音/6コードの譜面を同じ画面にまとめ、スマホの操作を下に固定。歌詞はガイド時計／譜面の正解進行へ追従。Amazing Graceときらきら星にPublic Domain英語原詞を追加し、出所は`practice/songs/lyrics-provenance.json`。手元のLRC・行の位置合わせ・LRC書出し、コード付きテキストから1コード4拍の仮練習を作る。コード全体のスペクトル判定は試験版を明示し、一弦ずつも維持。指や転回形は判定しない。希望5曲の全譜・歌詞全文は未同梱。専用cache `music-practice-v5`、root runtimeと録音・送信・認証は変更なし。Chromeの39項目と合成330和音などを検証し、実楽器・実iPhoneは未確認。
+
 2026-10-28 練習PWA v4：先頭にギター6弦・三線3弦を固定して合わせる調弦画面。TAB/コード図/工工四の読み方・練習手順、33コードと4つの進行、ギター3曲・三線2曲の内蔵練習を用意。希望5曲は導入コードと参照レッスン・演奏へつなぎ、全譜内蔵とは扱わない。手元の歌詞は端末だけに保存・手動行送り。音声の録音・送信なし。専用cache `music-practice-v4`。実楽器・実iPhoneの精度は未確認。
 
 2026-10-28 練習PWA v3：ギターAmazing Grace（CC BY-SA 3.0派生MIDI）と三線きらきら星（新規入力CC0）を各1曲。MIDIファイル/URLからTAB・工工四と音長・休み・テンポを連動。G/C/Dのコード図と画面の指板・ストローク、マイクでの一弦ずつの確認を追加。専用cache `music-practice-v3`に2曲も保存。詳細と利用条件は`docs/PRACTICE.md`、`practice/songs/provenance.json`。root cache・録音・認証は変更なし。実楽器・実iPhoneは未確認。

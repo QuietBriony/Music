@@ -28,28 +28,16 @@ export const BASICS = {
   ],links:[['本調子のチンダミ・基礎動画（宜保和也）','https://gibokazuya.com/youtube/'],['三線と工工四の教室・動画（宮里英克）','https://miyazatohidekatsu.com/sanshin/'],['工工四を読んでみる（三線ショップ島風）','https://shimakaji.com/user_data/sanshin_05_6.php']]}
 };
 export function mountLearning({onPractice,onBasics,onLeave}) {
-  const $=id=>document.getElementById(id);let instrument='guitar',selected='santeria',lines=[],line=0;
-  const key=()=>`music-practice-local-lyrics-v1:${selected}`;
+  const $=id=>document.getElementById(id);let instrument='guitar',selected='santeria';
   const anchor=(title,url)=>{const a=document.createElement('a');a.textContent=title+' ↗';a.href=url;a.target='_blank';a.rel='noopener';a.addEventListener('click',onLeave);return a;};
-  function showLine(){ $('lyric-current').textContent=lines[line]||'歌詞を貼り付けると、ここに一行ずつ表示できます。';$('lyric-position').textContent=lines.length?`${line+1} / ${lines.length}`:'未入力';$('lyric-prev').disabled=line<=0;$('lyric-next').disabled=line>=lines.length-1;}
   function showStudy(){
     const study=STUDIES[instrument].find(s=>s.id===selected)||STUDIES[instrument][0];selected=study.id;
     $('study-title').textContent=`${study.title} / ${study.artist}`;$('study-focus').textContent=study.focus;$('study-note').textContent=study.note;
     $('study-links').replaceChildren(anchor(study.label,study.lesson),...(study.video?[anchor('YouTubeで見る',study.video)]:[]),...(study.score?[anchor('工工四の参照（Lrschneider / CC BY-SA 4.0）',study.score)]:[]));
     $('study-practice').textContent=study.names?'この曲の導入コードを練習':'先に合・四・工を練習';
-    $('study-practice').onclick=()=>study.names?onPractice(study.names,`${study.title} · 導入のコード`):onBasics();
-    let stored={};try{stored=JSON.parse(localStorage.getItem(key())||'{}')||{};}catch{}
-    $('lyric-input').value=typeof stored.text==='string'?stored.text.slice(0,20000):'';
-    lines=$('lyric-input').value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).slice(0,200);line=0;showLine();
-    $('lyric-status').textContent='歌詞は手元のテキストを貼り付けて使います。行送りは手動です。';
+    $('study-practice').onclick=()=>study.names?onPractice(study.names,`${study.title} · 導入のコード`,`study:${study.id}`):onBasics(`study:${study.id}`,study.title);
   }
   $('study-select').onchange=()=>{selected=$('study-select').value;showStudy();};
-  $('lyric-save').onclick=()=>{
-    const text=$('lyric-input').value.slice(0,20000);lines=text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).slice(0,200);line=0;showLine();
-    try{localStorage.setItem(key(),JSON.stringify({text}));$('lyric-status').textContent='この端末に保存しました。送信・公開はしません。';}catch{$('lyric-status').textContent='表示しました。端末への保存はできませんでした。';}
-  };
-  $('lyric-clear').onclick=()=>{try{localStorage.removeItem(key());}catch{}$('lyric-input').value='';lines=[];line=0;showLine();$('lyric-status').textContent='この曲の歌詞を端末から削除しました。';};
-  $('lyric-prev').onclick=()=>{line=Math.max(0,line-1);showLine();};$('lyric-next').onclick=()=>{line=Math.min(lines.length-1,line+1);showLine();};
   return function render(next){
     instrument=next;const basics=BASICS[instrument];$('learn-title').textContent=basics.title;
     $('learn-steps').replaceChildren(...basics.steps.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));

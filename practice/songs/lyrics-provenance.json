@@ -1,0 +1,8 @@
+{
+  "scope": "English public-domain stanzas for the requested integrated lyrics feature. No modern Japanese translations or lyrics of the requested copyrighted songs are bundled.",
+  "authorization": "Owner requested lyrics and a complete practice flow in this conversation, 2026-10-29.",
+  "texts": [
+    {"id":"amazing-grace","author":"John Newton (1725–1807)","year":1779,"source":"https://library.intervarsity.org/library/amazing-grace","license":"Public Domain","changes":"First stanza only, punctuation normalized, phrase timing added for the beginner score."},
+    {"id":"twinkle","author":"Jane Taylor (1783–1824)","year":1806,"source":"https://poets.org/poem/star/print","license":"Public Domain","changes":"Opening stanza of The Star. First two lines repeated to fit the familiar six-phrase melody; phrase timing added. No modern translation."}
+  ]
+}
