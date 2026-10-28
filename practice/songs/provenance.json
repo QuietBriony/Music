@@ -1,0 +1,31 @@
+{
+  "description": "Symbolic MIDI notes only. No recordings, samples or lyrics.",
+  "songs": [
+    {
+      "id": "amazing-grace",
+      "title": "Amazing Grace",
+      "file": "amazing-grace.mid",
+      "composer": "Traditional",
+      "source": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1832",
+      "source_midi": "https://www.mutopiaproject.org/ftp/Traditional/amazing-mutopia/amazing-mutopia.mid",
+      "attribution": "Trad. / Arr.: Breizh Partitions, typeset by Breizh Partitions (2012), via Mutopia Project, piece 1832.",
+      "license": "CC-BY-SA-3.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "changes": "Removed short bagpipe grace notes; extended each main note to the next onset; transposed down 8 semitones to G; tempo 90; added suggested G/C/D chord markers. This adapted MIDI and its note data retain CC BY-SA 3.0. App code is separate.",
+      "source_sha256": "cc4cbec98afe0776d35e26333103e0bab7e7b078f2928c96022e0f42bd2a10f5",
+      "sha256": "41cc591dd4f6cbcc3182dec3d017e3e96e8057eae9626628dc30d03efd004ec5"
+    },
+    {
+      "id": "twinkle",
+      "title": "きらきら星",
+      "file": "twinkle.mid",
+      "composer": "Traditional French melody (Ah! vous dirai-je, maman)",
+      "source": "https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=2236",
+      "attribution": "Traditional melody, newly entered as a simple 42-note exercise by Music Stack. The linked public-domain edition is a reference, not the imported arrangement.",
+      "license": "CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "changes": "New symbolic transcription of the traditional melody in C, tempo 90, for sanshin honchoshi. No lyrics.",
+      "sha256": "e8d3fc97b769ae9a58c6ddc177d148136c54696e6eeffb2346abe2b7cc5c5747"
+    }
+  ]
+}

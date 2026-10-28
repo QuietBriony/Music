@@ -56,9 +56,10 @@ for (const instrument of Object.keys(LESSONS)) {
 const manifest = JSON.parse(readFileSync('practice/manifest.webmanifest', 'utf8'));
 assert.equal(manifest.scope, './'); assert.equal(manifest.start_url, './index.html');
 const sw = readFileSync('practice/sw.js', 'utf8');
-assert.match(sw, /music-practice-v2/); assert.doesNotMatch(sw, /hazama-fm-/);
-for (const file of ['index.html', 'style.css', 'app.mjs', 'music.mjs', 'manifest.webmanifest', 'icon.svg']) {
+assert.match(sw, /music-practice-v3/); assert.doesNotMatch(sw, /hazama-fm-/);
+for (const file of ['index.html', 'style.css', 'app.mjs', 'music.mjs', 'midi.mjs', 'chords.mjs', 'scores.mjs', 'songs/amazing-grace.mid', 'songs/twinkle.mid', 'songs/provenance.json', 'manifest.webmanifest', 'icon.svg']) {
   assert.ok(existsSync(`practice/${file}`)); assert.ok(sw.includes(file), `${file} needs offline coverage`);
 }
 assert.doesNotMatch(readFileSync('practice/app.mjs', 'utf8'), /MediaRecorder|fetch\(|XMLHttpRequest|sendBeacon/);
+assert.match(readFileSync('practice/midi.mjs','utf8'), /credentials: 'omit'/);
 console.log('Practice: 44 pitch fixtures, silence/noise, repeats, onset, exact octave, loop bounds, transposition and local-only PWA PASS');

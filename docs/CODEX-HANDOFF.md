@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-10-28 練習PWA v3：ギターAmazing Grace（CC BY-SA 3.0派生MIDI）と三線きらきら星（新規入力CC0）を各1曲。MIDIファイル/URLからTAB・工工四と音長・休み・テンポを連動。G/C/Dのコード図と画面の指板・ストローク、マイクでの一弦ずつの確認を追加。専用cache `music-practice-v3`に2曲も保存。詳細と利用条件は`docs/PRACTICE.md`、`practice/songs/provenance.json`。root cache・録音・認証は変更なし。実楽器・実iPhoneは未確認。
+
 2026-10-28 Namima v14: 色味だけの変化から、5つの背景（水面／庭／灯りの部屋／夕景／月あかり）へ。直接選択と次の景色を表に出し、おまかせは即時に一つ進めてから28〜42秒ごとに巡る。背景は最大2枚・長辺1600pxのキャッシュと1.8秒の遷移を使い、reduced motionでは即時切替。既存の手動開始・metadata-only SYNC・合成音源を維持。Musicの公開案内を同じcatalog/rendererで更新。実iPhoneの表示・聴感は未確認。Music本体のcacheは既存hazama-fm-v443を保持。
 
 2026-10-28 練習PWA v2：ガイドを聴きながら弾く練習に指定範囲の連続反復を追加。ガイド中はマイク判定を止め、単音の正解を待つ練習と切り替える。専用`music-practice-v2`とclient版を同期。オンライン譜面の候補は`docs/PRACTICE.md`へ記録し、この版で外部曲集の直読を実装済みとはしない。今回の本人方針に従い、通常の全件検査と差分確認後は既存本番へ公開し、独立レビュー待ちは設けない。

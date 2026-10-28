@@ -9,17 +9,25 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=2">
-  <script type="module" src="app.mjs?v=2"></script>
+  <link rel="stylesheet" href="style.css?v=3">
+  <script type="module" src="app.mjs?v=3"></script>
 </head>
 <body>
 <div class="page">
   <header class="topbar"><a href="../listen.html">← Music Stack</a><div><span id="offline-state">PWAを準備中</span><button id="install" hidden>ホーム画面に追加</button></div></header>
   <main>
-    <div class="intro"><div><p class="eyebrow">PLAY AT YOUR OWN PACE</p><h1>一音ずつ。</h1><p class="lead">弾けたら、次へ。<br>譜面があなたを待ってくれる練習。</p></div><span class="edition">GUITAR / SANSHIN<br>はじめの練習 · 試作 01</span></div>
+    <div class="intro"><div><p class="eyebrow">PLAY AT YOUR OWN PACE</p><h1>一音ずつ。</h1><p class="lead">弾けたら、次へ。<br>譜面があなたを待ってくれる練習。</p></div><span class="edition">GUITAR / SANSHIN<br>MIDIとコード · 試作 02</span></div>
     <div class="instrument-switch" role="group" aria-label="楽器"><button id="guitar" aria-pressed="true">ギター <span>TAB</span></button><button id="sanshin" aria-pressed="false">三線 <span>工工四</span></button></div>
-    <div class="setup"><label>練習すること<select id="lesson"></select></label><label id="tuning-label" hidden>本調子の基準<select id="tuning"><option value="0">C：ド・ファ・ド</option><option value="-1">B：シ・ミ・シ</option><option value="-2">B♭：シ♭・ミ♭・シ♭</option><option value="-3">A：ラ・レ・ラ</option><option value="2">D：レ・ソ・レ</option></select></label></div>
+    <div class="setup"><label>練習すること<select id="lesson"></select></label><label id="style-label" hidden>ギターの練習<select id="practice-style"><option value="melody">メロディー</option><option value="chords">コード · G / C / D</option></select></label><label id="tuning-label" hidden>本調子の基準<select id="tuning"><option value="0">C：ド・ファ・ド</option><option value="-1">B：シ・ミ・シ</option><option value="-2">B♭：シ♭・ミ♭・シ♭</option><option value="-3">A：ラ・レ・ラ</option><option value="2">D：レ・ソ・レ</option></select></label></div>
     <p id="lesson-detail" class="lesson-detail"></p>
+    <details class="midi-import"><summary>MIDIファイル・URLから練習する</summary><div class="midi-inputs"><label>端末の.mid / .midi（1 MBまで）<input id="midi-file" type="file" accept=".mid,.midi,audio/midi,audio/x-midi"></label><form id="midi-url-form"><label>公開されているMIDIのURL<input id="midi-url" type="url" placeholder="https://…/melody.mid" aria-label="MIDIのURL"></label><button type="submit">読み込む</button></form></div><p class="practice-note">音高と長さからTAB・工工四とガイドを作ります。ファイルはアップロードしません。URLは配信元がブラウザからの読込を許可している場合に使えます。PDF・画像・音声からの変換は未対応です。</p></details>
+    <div id="midi-options" class="midi-options" hidden><label>旋律トラック<select id="midi-track"></select></label><label>移調（半音）<select id="midi-shift"></select></label><label class="check-label"><input id="high-voice" type="checkbox"> 高い音を旋律として読む</label></div>
+    <p id="midi-status" class="small" role="status"></p>
+    <p id="song-credit" class="song-credit" hidden><span id="credit-text"></span> <a id="credit-link" target="_blank" rel="noopener">出所・楽譜 ↗</a> · <a href="songs/provenance.json" target="_blank" rel="noopener">利用条件</a></p>
+    <section id="chord-panel" class="chord-panel" aria-label="ギターのコードと指板">
+      <div class="chord-example"><div><h2><strong id="chord-name">G</strong> の押さえ方</h2><div id="chord-diagram"></div></div><div><p id="chord-instruction"></p><p class="small">○ 開放 · × 弾かない<br>指番号：1 人差し指 / 2 中指 / 3 薬指 / 4 小指</p><p class="small">マイクではコードを押さえたまま、表示する弦を一本ずつ。画面では指板を押してストロークできます。</p></div></div>
+      <details id="fret-details"><summary>画面で弦を押さえる</summary><p id="shape-status" class="small"></p><div id="fretboard" class="fretboard" aria-label="ギターの指板"></div><div class="fret-actions"><div id="chord-choices" aria-label="コードの形をセット"><button data-chord="G">G</button><button data-chord="C">C</button><button data-chord="D">D</button></div><button id="strum" class="primary">↓ ストローク</button></div><p class="practice-note">上から6弦 → 1弦。各弦の○・×・フレットを選びます。G / C / Dボタンで形を試すこともできます。</p></details>
+    </section>
     <div class="workspace">
       <section class="listening" aria-labelledby="target-heading">
         <div class="card-top"><h2 id="target-heading">次に弾く音</h2><span id="input-label">準備できたら始めましょう</span></div>
@@ -41,14 +49,15 @@
         <div id="score" class="score"></div>
         <div class="loop"><label><input id="loop-enabled" type="checkbox"> 繰り返す</label><div><label>はじめ<select id="loop-start" aria-label="繰り返しの最初の音"></select></label><span>〜</span><label>おわり<select id="loop-end" aria-label="繰り返しの最後の音"></select></label></div></div>
         <div class="demo"><button id="demo">♪ ガイドに合わせて弾く</button><label>速さ<select id="tempo"><option value="60">ゆっくり</option><option value="85" selected>ふつう</option><option value="110">速め</option></select></label></div>
-        <p class="practice-note">「ガイド」は一定の速さで流れます。「繰り返す」で同じ範囲を何度でも。音程を確かめたい時は「マイクで始める」へ。</p>
-        <div id="touch-panel" class="touch-panel" hidden><p>下の音を押して進めます。マイク判定とは別の体験です。</p><div id="touch-keys"></div></div>
+        <label class="check-label backing"><input id="backing" type="checkbox" checked> ギターのガイドにコードを添える</label>
+        <p class="practice-note">MIDIのガイドは音の長さ・休み・テンポを使って進みます。「ふつう」は元の速さ、「ゆっくり」は約70%、「速め」は約130%。ガイド中のマイク採点は停止します。</p>
+        <div id="touch-panel" class="touch-panel" hidden><p id="touch-description">下の音を押して進めます。マイク判定とは別の体験です。</p><div id="touch-keys"></div></div>
         <p class="practice-note">同じ音が続くときは、前の音を止めて弾き直します。お手本の音がマイクに入る場合はイヤホンをお使いください。</p>
       </section>
     </div>
-    <details class="help"><summary>使い方・今回できること</summary><div><p><strong>ギター：</strong>標準チューニング E A D G B E の単音練習です。まず開放弦で音を合わせてから、短いメロディーへ進みます。和音の採点はまだ含みません。</p><p><strong>三線：</strong>本調子の工工四です。実際の調弦と基準を合わせてください。右の列から下へ読みます。今回は合・乙・老・四・上・中・工・五・六を使う短い練習で、尺の音や装飾奏法・歌の採点は含みません。</p><p>正しい音が少し安定すると進みます。マイクだけでは押さえた指や弦は確定できません。静かな場所で、一音ずつ弾いてください。音が拾いにくい場合は下の感度を調整します。</p><label>マイク感度<select id="sensitivity"><option value="0.003">小さな音も拾う</option><option value="0.006" selected>標準</option><option value="0.014">周りの音を抑える</option></select></label><p>iPhoneはSafariの共有メニューから「ホーム画面に追加」。Androidはブラウザのインストールから追加できます。「オフライン準備OK」の表示後は、この練習を通信なしで開けます。端末によっては再度マイクの許可が必要です。</p><p>練習と調弦の設定だけをこの端末に保存します。権限を拒否した場合も「画面で試す」は使えます。実際のギター・三線・iPhoneでの判定精度は調整中です。</p></div></details>
+    <details class="help"><summary>使い方・今回できること</summary><div><p><strong>ギター：</strong>標準調弦 E A D G B E。Amazing GraceはメロディーとG・C・Dのコード練習を選べます。マイクのコード練習は一弦ずつの音程確認です。ストローク全体や指の位置をマイクで採点する機能は含みません。</p><p><strong>三線：</strong>本調子の工工四。実際の調弦と基準を合わせてください。右の列から下へ読みます。きらきら星を1曲入れました。指板の距離は楽器によるため、表示は勘所の目安です。装飾奏法・歌は採点しません。</p><p><strong>MIDI：</strong>SMF形式0・1、PPQ時間、512音までの旋律に対応。トラックと移調を選べます。「高い音」は各発音時の最高音を取り出す簡易方式です。自動コード推定は行わず、コードはchord:Gのようなマーカーがある場合に表示します。移調した時は元のコードを添えません。</p><p>正しい音が少し安定すると進みます。マイクだけでは押さえた指や弦は確定できません。静かな場所で、一音ずつ弾いてください。</p><label>マイク感度<select id="sensitivity"><option value="0.003">小さな音も拾う</option><option value="0.006" selected>標準</option><option value="0.014">周りの音を抑える</option></select></label><p>iPhoneはSafariの共有メニューから「ホーム画面に追加」。Androidはブラウザのインストールから追加できます。「オフライン準備OK」の後は、収録2曲も通信なしで使えます。自分のMIDIは端末から選び直してください。</p><p>練習と調弦の設定だけを端末に保存します。音声は録音・送信せず、権限を拒否した場合も画面で試せます。実楽器・実iPhoneでの判定精度は引き続き調整します。</p></div></details>
   </main>
-  <footer><span>MUSIC STACK / PRACTICE 01</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
+  <footer><span>MUSIC STACK / PRACTICE 02</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
 </div>
 </body>
 </html>
