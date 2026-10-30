@@ -29,3 +29,16 @@ button:focus-visible,summary:focus-visible,select:focus-visible,input:focus-visi
 body.focused:is([data-mode=touch],[data-mode=demo]) .listening :is(.tuner,.heard,.level){display:none}
 .easy-song-card{display:flex;justify-content:space-between;gap:18px;align-items:center;background:#e9eee2;border:1px solid #ccd8c5;border-radius:12px;padding:17px;margin-top:14px}.easy-song-card strong{font-size:.85rem;color:var(--green)}.easy-song-card p{font-size:.7rem;line-height:1.7;color:var(--muted);margin:6px 0 0}.easy-song-card button{background:var(--green);color:white;white-space:nowrap;font-size:.72rem;min-height:44px}.study-stages{display:flex;gap:8px;flex-wrap:wrap}.study-stages button{font-size:.75rem;min-height:44px}.study-stages button:first-child{background:var(--green);color:white}
 @media(max-width:650px){.easy-song-card{flex-direction:column;align-items:stretch;gap:12px}.easy-song-card button{width:100%}.study-stages{flex-direction:column}.study-stages button{text-align:left}}
+
+/* Keep manual lyric controls reachable during focused practice. */
+body.focused #session-lyrics[data-has-lyrics=true] .lyric-mini-nav{display:flex!important}
+.session-lyrics .lyric-mini-nav{flex-wrap:wrap}.session-lyrics .lyric-mini-nav button{min-height:44px;font-size:.72rem}
+#lyric-display-label{display:flex;flex-direction:row;align-items:center;gap:8px;font-size:.72rem;margin-top:8px}#lyric-display{min-height:40px;font-size:.75rem}
+#session-lyric-reading{font-size:.85rem;color:var(--green)}#session-lyric-meaning{font-size:.94rem;border-left:3px solid var(--green);padding-left:10px;line-height:1.7}
+#session-lyric-manual{font-size:.68rem}#lyric-overview{margin-top:10px;font-size:.8rem}#lyric-overview summary{min-height:36px;padding:8px 0;cursor:pointer}
+#lyric-overview-lines>div{padding:12px 0;border-bottom:1px solid #c9d4c4}#lyric-overview-lines button{font-size:.85rem;min-height:44px;text-align:left}#lyric-overview-lines button[aria-pressed=true]{background:var(--green);color:white}
+#lyric-overview-lines p{padding-left:10px;font-size:.82rem}#lyric-overview-lines [data-lyric-field=words]{font-size:.72rem;color:var(--muted)}#lyric-source-links{display:flex;flex-wrap:wrap;gap:14px;font-size:.7rem}
+.lyric-notes-editor{margin:15px 0;padding:12px;border:1px solid var(--line);border-radius:10px}.lyric-notes-editor label{margin:10px 0}.lyric-notes-editor textarea{width:100%;font:inherit;padding:10px}
+.beginner-path{padding:18px 20px;margin:18px 0;border:1px solid #ccd8c5;border-radius:13px;background:#edf0e6}.beginner-path h2{font-size:1rem;margin:0}.beginner-path p{font-size:.82rem;line-height:1.75}.beginner-path>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.beginner-path button{font-size:.78rem;min-height:48px;text-align:left}.beginner-path>a{font-size:.76rem}.beginner-path .small{font-size:.7rem}
+body.focused #beginner-path,body.singalong-mode #beginner-path{display:none}
+@media(max-width:650px){.beginner-path{padding:16px}.beginner-path>div{grid-template-columns:1fr}.beginner-path button{min-height:44px}#session-lyric-meaning{font-size:.84rem}#session-lyric-reading{font-size:.78rem}}

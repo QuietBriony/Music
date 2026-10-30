@@ -1,0 +1,11 @@
+{
+  "checked": "2026-10-30",
+  "scope": "Links and teaching principles only. No course, screenshots, video, or app assets copied. All buttons and short exercises are implemented independently.",
+  "references": [
+    {"name":"Simply Guitar (Simply)","url":"https://www.hellosimply.com/simply-guitar","use":"Step-by-step interactive lessons and practice feedback as a product reference, not a claim of equivalent recognition quality."},
+    {"name":"JustinGuitar Beginner Grade 1","url":"https://www.justinguitar.com/modules/beginner-1-first-steps","use":"Short chord-change repetitions. App's slow Em/Am drill has no speed quota or copied curriculum."},
+    {"name":"宮里英克の三線教室","url":"https://miyazatohidekatsu.com/sanshin/","use":"Teacher demonstration links and the existing manually loaded official YouTube embeds."},
+    {"name":"栗山新也 三線教室・勘所","url":"https://ks-sanshin.com/三線の勘所とは？初心者が押さえられるようにな/","use":"Link to photographs and explanations of hand placement; no photographs copied."},
+    {"name":"沖縄県・沖縄の音楽","url":"https://www.pref.okinawa.jp/kyoiku/kodomo/1002688/1002693.html","use":"Cultural context and first-verse meaning of Tinsagu; new wording, no audio copied."}
+  ]
+}

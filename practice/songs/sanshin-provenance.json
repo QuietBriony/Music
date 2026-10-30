@@ -1,6 +1,6 @@
 {
   "checked": "2026-10-30",
-  "scope": "Original fretless diagrams and factual fingering metadata; teacher videos are embedded only on request. No recordings, photographs or third-party lyrics are copied.",
+  "scope": "Original fretless diagrams and factual fingering metadata; teacher videos are embedded only on request. No recordings or photographs are copied. The licensed Tinsagu first-verse text is covered separately by lyrics-provenance.json.",
   "fingering": {
     "source": "https://ks-sanshin.com/三線の勘所とは？初心者が押さえられるようにな/",
     "credit": "栗山新也 沖縄三線教室: 勘所と基本の運指を確認。図・文章はMusic Stackが新たに作成。",
@@ -14,7 +14,7 @@
     "attribution": "Kunkunshi for Tinsagu nu Hana, Lrschneider (2017), Wikimedia Commons, CC BY-SA 4.0. Adaptation by Music Stack.",
     "license": "CC-BY-SA-4.0",
     "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
-    "changes": "First verse with surrounding instrumental phrase. Transcribed the large symbols right-to-left, top-to-bottom; omitted small ornamental notes, set each cell to one beat at 85 BPM in C-F-C honchoshi. Retains the one-cell rest. 63 notes across 64 beats. This adapted MIDI and the note data in build-practice-sanshin.mjs retain CC BY-SA 4.0; application code is separate. No lyrics or source image are bundled.",
+    "changes": "First verse with surrounding instrumental phrase. Transcribed the large symbols right-to-left, top-to-bottom; omitted small ornamental notes, set each cell to one beat at 85 BPM in C-F-C honchoshi. Retains the one-cell rest. 63 notes across 64 beats. This adapted MIDI and the note data in build-practice-sanshin.mjs retain CC BY-SA 4.0; application code is separate. No source image is bundled. v14 adds the first-verse text and original explanations under the same CC BY-SA 4.0 license; see lyrics-provenance.json.",
     "sha256": "0a0911672c388607b25b66fe5feceac8cd42ab097690f3bfa01ca2d41a3858c5"
   },
   "videos": [

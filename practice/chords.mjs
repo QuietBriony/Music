@@ -1,4 +1,4 @@
-import { SANSHIN_POSITIONS } from './sanshin-core.mjs?v=13';
+import { SANSHIN_POSITIONS } from './sanshin-core.mjs?v=14';
 // String order in shapes: sixth (low E) to first (high e). -1 means muted.
 export const GUITAR_OPEN = [40, 45, 50, 55, 59, 64];
 export const CHORDS = {

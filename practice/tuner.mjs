@@ -1,4 +1,4 @@
-import { centsFrom, noteName } from './music.mjs?v=13';
+import { centsFrom, noteName } from './music.mjs?v=14';
 export function tuningStrings(instrument, transpose=0) {
   return instrument==='guitar'?[40,45,50,55,59,64].map((midi,i)=>({midi,string:6-i,fret:0,position:`${6-i}弦・開放`,label:`${6-i}弦 ${noteName(midi)}`})):
     [{midi:48,symbol:'合',string:3,name:'男弦'},{midi:53,symbol:'四',string:2,name:'中弦'},{midi:60,symbol:'工',string:1,name:'女弦'}].map(n=>({...n,midi:n.midi+transpose,fret:0,position:`${n.name}・開放`,label:`${n.name} ${noteName(n.midi+transpose)}`}));
