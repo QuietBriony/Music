@@ -1,4 +1,4 @@
-import { CHORDS } from './chords.mjs?v=7';
+import { CHORDS } from './chords.mjs?v=8';
 export const SING_SHAPES={...CHORDS,
  F:{frets:[-1,-1,3,2,1,-1],fingers:[0,0,3,2,1,0]},
  Fm:{frets:[-1,-1,3,1,1,-1],fingers:[0,0,3,1,2,0]},
@@ -39,5 +39,5 @@ export function fingeringText(name){
 }
 export function normalizeSingState(value,stepCount){
  return{index:Number.isInteger(value?.index)&&value.index>=0&&value.index<=stepCount?value.index:0,capo:Number.isInteger(value?.capo)&&value.capo>=0&&value.capo<=7?value.capo:0,
- a:Number.isFinite(value?.a)&&value.a>=0&&value.a<=7200?value.a:null,b:Number.isFinite(value?.b)&&value.b>=0&&value.b<=7200?value.b:null,loop:false};
+ a:Number.isFinite(value?.a)&&value.a>=0&&value.a<=7200?value.a:null,b:Number.isFinite(value?.b)&&value.b>=0&&value.b<=7200?value.b:null,loop:false,follow:value?.follow!==false,offset:Number.isFinite(value?.offset)&&Math.abs(value.offset)<=2?value.offset:0,videoTime:Number.isFinite(value?.videoTime)&&value.videoTime>=0&&value.videoTime<=7200?value.videoTime:0};
 }

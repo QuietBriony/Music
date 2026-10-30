@@ -1,5 +1,5 @@
-import { melodyNotes } from './midi.mjs?v=7';
-import { CHORDS, chordNotes, mapMelody } from './chords.mjs?v=7';
+import { melodyNotes } from './midi.mjs?v=8';
+import { CHORDS, chordNotes, mapMelody } from './chords.mjs?v=8';
 export const SONGS = {
   guitar: [
     { id: 'amazing-grace', title: 'Amazing Grace', file: 'amazing-grace.mid', chords: 'G・C・D', detail: 'G・C・Dで弾く伝統曲。まずはコードを押さえて、一弦ずつ。', source: 'https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1832', credit: 'Trad. / Arr.: Breizh Partitions (2012) · Mutopia · CC BY-SA 3.0。装飾音を省きGへ移調、コードを追加。' },

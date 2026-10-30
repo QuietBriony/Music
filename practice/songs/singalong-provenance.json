@@ -8,10 +8,46 @@
     "reference_lesson": "https://note.com/mickeykogure/n/n41986bc8627a",
     "use": "Only an official YouTube embed/link and a non-lyric harmonic practice sequence. No video, audio, lyrics, PDF or visual score are copied into this repository or offline cache.",
     "verification": "Browser player played successfully. Opening, verse, instrumental and ending frames were inspected. Capo 4 and the C-shaped chord family are shown by the video. The final two C/Am/Dm/G phrases and Fm/C ending were inspected.",
-    "scope": "The 110 chord targets follow the video's harmonic order as a preparation aid. They have no original rhythmic notation or timestamps. The microphone advances the learner's target, not the video's playback position; users can align or skip targets themselves.",
+    "scope": "110 harmonic targets with manually aligned video timing. Repeated phrases are interpolated between inspected anchors. Chord labels and numeric seconds only; no lyrics or original score notation. The embedded player clock drives the current target.",
     "simplification": "F and Fm use three-string, three-finger voicings. Caug is a three-string C/E/G-sharp shape. Their pitch classes are retained. Diagram frets are relative to the capo.",
     "rights_boundary": "The creator's lyrics and performance remain inside the YouTube player. External playback requires network and publisher availability. No claimed redistribution license or guaranteed permanent embedding availability."
   },
   "api": "https://developers.google.com/youtube/iframe_api_reference",
-  "manual_start": "No YouTube request until the learner explicitly loads a video. No microphone request until its own start button. Video and microphone stop on leaving/backgrounding."
+  "manual_start": "No YouTube request until the learner explicitly loads a video. No microphone request until its own start button. Video and microphone stop on leaving/backgrounding.",
+  "synchronization_request": "Owner requested that the current chord diagram follow the embedded Time yo Tomare video automatically.",
+  "timing_method": "Manually align chord changes against the official embedded video and its guitar fingering. Store only chord names, numeric timing and section labels. Do not download or redistribute video, audio or lyrics.",
+  "timing_verification": {
+    "positions_seconds": [
+      13,
+      14,
+      18,
+      22.4,
+      24,
+      28,
+      44.7,
+      66,
+      97,
+      116,
+      118.3,
+      150,
+      174,
+      195,
+      210,
+      222,
+      230,
+      234,
+      236,
+      238,
+      240,
+      242,
+      244,
+      246,
+      248,
+      250,
+      255
+    ],
+    "method": "Official embedded player was paused and sought; decoded frames and guitar fingering were inspected. Timing is a practice guide rather than an official score. A device-local -2 to +2 second display offset is available. Screenshots remain ignored, outside published source.",
+    "performance_end_seconds": 259.2,
+    "outro": "Provider outro has started by 260 seconds; do not grade it as guitar practice."
+  }
 }
