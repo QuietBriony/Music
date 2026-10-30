@@ -37,5 +37,22 @@
     "Alternate shapes are for comparison; changing the guide does not change the exercise, capo or video position.",
     "Guide uses right-handed guitar/left fretting-hand orientation; hand anatomy schematic is not motion capture or a universal required joint angle."
   ],
-  "verification": "The official F player played at 61 seconds and paused. B, C and common finger-placement players were also loaded, explicitly played and paused in the browser. Teacher frames are brought into view after loading/playing; late SDK completion after close cannot create a hidden player. No media files were downloaded."
+  "verification": "The official F player played at 61 seconds and paused. B, C and common finger-placement players were also loaded, explicitly played and paused in the browser. Teacher frames are brought into view after loading/playing; late SDK completion after close cannot create a hidden player. No media files were downloaded.",
+  "refinements": {
+    "version": 10,
+    "request": "Owner asked to continue polishing the practice app.",
+    "implementation": "Original finger-transition descriptions computed from the exact two selected grip shapes; next different chord is supplied by the current exercise. Original per-string troubleshooting text, no automated sound or posture grading. No new media assets.",
+    "sources": [
+      {
+        "url": "https://www.fender.com/articles/techniques/5-ways-to-stop-fret-buzz",
+        "creator": "Fender / Dan Macy",
+        "scope": "Read 2026-10-30: fret proximity, moderate pressure and gentle picking; persistent fret buzz may come from guitar setup. Original short Japanese guidance; no text/image copied."
+      }
+    ],
+    "boundaries": [
+      "Previewing the next grip does not advance the exercise or change the capo/video position.",
+      "Keep a finger only when its complete positions and barre range match in both selected shapes.",
+      "The per-string checks are listening guidance, not microphone scoring."
+    ]
+  }
 }

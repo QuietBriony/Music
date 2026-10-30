@@ -1,8 +1,8 @@
-import { TOKIYO_VIDEO_ID,TOKIYO_TIMES,TOKIYO_END,cueAt } from './video-cues.mjs?v=9';
-import { STUDIES } from './learning.mjs?v=9';
-import { SING_SHAPES,TOKIYO_STEPS,readSteps,videoId,validRange,fingeringText,normalizeSingState,sectionStarts } from './singalong-core.mjs?v=9';
-import { detectChord,ChordGate } from './polyphonic.mjs?v=9';
-import { lessonPlayer } from './youtube.mjs?v=9';
+import { TOKIYO_VIDEO_ID,TOKIYO_TIMES,TOKIYO_END,cueAt } from './video-cues.mjs?v=10';
+import { STUDIES } from './learning.mjs?v=10';
+import { SING_SHAPES,TOKIYO_STEPS,readSteps,videoId,validRange,fingeringText,normalizeSingState,sectionStarts } from './singalong-core.mjs?v=10';
+import { detectChord,ChordGate } from './polyphonic.mjs?v=10';
+import { lessonPlayer } from './youtube.mjs?v=10';
 const STORAGE='music-practice-singalong-v1';
 const lessons=Object.entries(STUDIES).flatMap(([instrument,items])=>items.map(s=>({...s,instrument,video:s.id==='tokiyo'?'https://www.youtube.com/watch?v=KgKycz0uHbM':s.video||s.lesson})));
 const text=(id,value)=>{const e=document.getElementById(id);if(e.textContent!==String(value))e.textContent=value;};
@@ -84,11 +84,11 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide}){
   pause();destroyPlayer();selected=lessons.find(s=>s.id===id)||lessons[0];const stored=saved.bySong?.[selected.id];
   steps=selected.id==='tokiyo'?TOKIYO_STEPS:[];$('sing-code-input').value=typeof stored?.custom==='string'?stored.custom.slice(0,20000):'';
   if($('sing-code-input').value)try{steps=readSteps($('sing-code-input').value);}catch{$('sing-code-input').value='';}
-  customOrder=$('sing-code-input').value;state=normalizeSingState(stored,steps.length);if(following())state.index=cueAt(TOKIYO_TIMES,state.videoTime,state.offset).index;if(!stored)state.capo=selected.id==='tokiyo'?4:0;
+  customOrder=$('sing-code-input').value;state=normalizeSingState(stored,steps.length);if(following())state.index=cueAt(TOKIYO_TIMES,state.videoTime,state.offset).index;if(!stored)state.capo=selected.id==='tokiyo'?4:0;if(!steps.length)$('sing-chord-picker').value=selected.referenceChord||'C';
   $('sing-course').value=selected.id;$('sing-source').href=selected.video;$('sing-lesson-link').href=selected.lesson;
   $('sing-outside').href=selected.video;
   $('sing-source').textContent=videoId(selected.video)?'YouTubeで開く ↗':'解説ページで開く ↗';$('sing-load').disabled=!videoId(selected.video);
-  text('sing-reference-note',selected.id==='tokiyo'?'オーリーズの音楽室の歌詞・コード付き通し演奏。カポ4のコード名を案内します。':selected.instrument==='sanshin'?'三線の参考動画です。全曲の工工四・コード順は未設定です。この画面の指の図はギター用です。':'参考動画・演奏です。動画のキー・カポ・譜面表示を確認してください。全曲のコード順は未設定です。');
+  text('sing-reference-note',selected.referenceNote||(selected.id==='tokiyo'?'オーリーズの音楽室の歌詞・コード付き通し演奏。カポ4のコード名を案内します。':selected.instrument==='sanshin'?'三線の参考動画です。全曲の工工四・コード順は未設定です。この画面の指の図はギター用です。':'参考動画・演奏です。動画のキー・カポ・譜面表示を確認してください。全曲のコード順は未設定です。'));
   makeTrack();render();status(modeMessage());store();
  }
  async function loadVideo(){
@@ -119,7 +119,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide}){
  }
  $('sing-course').replaceChildren(...lessons.map(s=>new Option(`${s.title} / ${s.artist}`,s.id)));
  $('sing-chord-picker').replaceChildren(...Object.keys(SING_SHAPES).map(n=>new Option(n,n)));$('sing-capo').replaceChildren(...Array.from({length:8},(_,i)=>new Option(i?`カポ${i}`:'カポなし',i)));
- $('sing-hand-open').onclick=()=>{pause();const name=$('sing-chord-picker').value;onHandGuide({name,shape:SING_SHAPES[name],capo:state.capo});};
+ $('sing-hand-open').onclick=()=>{pause();const name=$('sing-chord-picker').value,target=steps[state.index],next=target?.name===name?steps.slice(state.index+1).find(s=>s.name!==name):null;onHandGuide({name,shape:SING_SHAPES[name],capo:state.capo,next:next?{name:next.name,shape:SING_SHAPES[next.name]}:null});};
  $('sing-course').onchange=()=>select($('sing-course').value);$('sing-load').onclick=loadVideo;
  $('sing-play').onclick=()=>{if(ready)player.playVideo();};$('sing-pause').onclick=()=>{pause();status('止めました。再生は自分で再開できます。');};$('sing-back').onclick=()=>{if(ready)player.seekTo(Math.max(0,player.getCurrentTime()-5),true);};
  $('sing-speed').onchange=()=>{if(ready)player.setPlaybackRate(Number($('sing-speed').value));};

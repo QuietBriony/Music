@@ -19,7 +19,7 @@ for(const capo of [0,2,4,7])for(const name of ['C','Caug','Am','Dm','G','Em','A'
  const found=detectChord(spectrum(midis),48000,16384,{rms:.1,capo});assert.equal(found.name,name,`${name}, capo ${capo}`);assert.ok(found.confidence>=.65);checked++;
 }
 assert.equal(detectChord(spectrum([52,56,59]),48000,16384,{rms:.1,capo:4}).name,'C','capo-aware C shape is an E sounding chord');
-const sw=readFileSync('practice/sw.js','utf8');for(const name of ['singalong.mjs?v=9','singalong-core.mjs?v=9','youtube.mjs?v=9','singalong.css?v=9','songs/singalong-provenance.json'])assert.ok(sw.includes(name));assert.doesNotMatch(sw,/www\.youtube|googlevideo/);
+const sw=readFileSync('practice/sw.js','utf8');for(const name of ['singalong.mjs?v=10','singalong-core.mjs?v=10','youtube.mjs?v=10','singalong.css?v=10','songs/singalong-provenance.json'])assert.ok(sw.includes(name));assert.doesNotMatch(sw,/www\.youtube|googlevideo/);
 const source=readFileSync('practice/singalong.mjs','utf8');assert.doesNotMatch(source,/MediaRecorder|sendBeacon|innerHTML/);
 console.log(`Singalong: 110 harmonic targets, 11 sections, safe video URLs, loop bounds, local sequence validation and ${checked} capo-aware chord mixtures PASS`);
 
@@ -38,5 +38,5 @@ assert.deepEqual(inspected.filter(([time,name])=>TOKIYO_STEPS[cueAt(TOKIYO_TIMES
 assert.equal(normalizeSingState({offset:Infinity,videoTime:-4,follow:false},110).offset,0);
 assert.equal(normalizeSingState({offset:.4,videoTime:87.25,follow:false},110).videoTime,87.25);
 assert.equal(normalizeSingState({offset:.4,videoTime:87.25,follow:false},110).follow,false);
-assert.ok(sw.includes('video-cues.mjs?v=9'));
+assert.ok(sw.includes('video-cues.mjs?v=10'));
 console.log('Video sync: all 110 boundary pairs, backward seeks, offset bounds and 27 inspected reference positions PASS');

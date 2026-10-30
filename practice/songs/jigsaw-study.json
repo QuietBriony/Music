@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-30",
+  "request": "Owner requested Radiohead Jigsaw Falling Into Place as another practice song.",
+  "reference": {
+    "creator": "Cole Johnstone (BEST GUITAR TUTORIALS)",
+    "video": "https://www.youtube.com/watch?v=daD3x6XudqY",
+    "scope": "Creator describes a standard-tuning lesson and lists Bm among its intro chords. Official embed/link only."
+  },
+  "additional_context": {
+    "creator": "Dave Doing Guitar",
+    "video": "https://www.youtube.com/watch?v=uDsTt3YMbcw",
+    "scope": "Creator explicitly teaches DADF#BE tuning. Not selected for standard-tuning in-app chord diagrams."
+  },
+  "implementation_plan": "Standard-tuning reference video plus an original Bm-only preparation drill; no copied riff, score, lyric or complete harmonic sequence. Timed chord synchronization is not claimed for this course.",
+  "boundaries": [
+    "The preparation drill is not the full song or its rhythm.",
+    "In-app diagrams and chord recognition remain for standard EADGBE tuning.",
+    "Teacher media remain in the official player and are never cached or downloaded."
+  ]
+}
