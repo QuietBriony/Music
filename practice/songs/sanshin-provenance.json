@@ -41,5 +41,19 @@
       "source": "https://ameblo.jp/irei-blog/entry-12356649318.html",
       "boundary": "Existing reference metadata only; manual finger lookup."
     }
-  ]
+  ],
+  "external_score_references": [
+    {
+      "song": "時代の流れ",
+      "author": "豊岡マッシー / 三線教室 ONLINE 東京",
+      "url": "https://toyosanshin.hatenablog.com/entry/2020/12/30/120612",
+      "checked": "2026-10-30",
+      "boundary": "External link only. Different teacher from the embedded Miyazato video; arrangement and notation may differ. No score image, transcription or lyrics copied."
+    }
+  ],
+  "tuning_reference": {
+    "url": "https://komesu34.com/pages/how-to-tune",
+    "checked": "2026-10-30",
+    "note": "Honchoshi number 3 is B-E-B, ordered male-middle-female strings. The female string is one octave above the male. The same symbols shift with the selected tuning."
+  }
 }

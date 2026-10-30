@@ -9,14 +9,15 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=15">
-  <link rel="stylesheet" href="presets.css?v=15">
-  <link rel="stylesheet" href="session.css?v=15">
-  <link rel="stylesheet" href="singalong.css?v=15">
-  <link rel="stylesheet" href="hand-guide.css?v=15">
-  <link rel="stylesheet" href="sanshin.css?v=15">
-  <link rel="stylesheet" href="tablet.css?v=15">
-  <script type="module" src="app.mjs?v=15"></script>
+  <link rel="stylesheet" href="style.css?v=16">
+  <link rel="stylesheet" href="presets.css?v=16">
+  <link rel="stylesheet" href="session.css?v=16">
+  <link rel="stylesheet" href="singalong.css?v=16">
+  <link rel="stylesheet" href="hand-guide.css?v=16">
+  <link rel="stylesheet" href="sanshin.css?v=16">
+  <link rel="stylesheet" href="tablet.css?v=16">
+  <link rel="stylesheet" href="full-score.css?v=16">
+  <script type="module" src="app.mjs?v=16"></script>
 </head>
 <body>
 <div class="page">
@@ -40,11 +41,11 @@
       <details class="sing-custom-details"><summary>ほかの曲も通して弾く・コードの並びを入れる</summary><p>好きな曲の参考動画を選び、ギター用の曲順のコード名を空白か矢印で区切って入れられます。歌詞は動画で見ます。入力した並びはこの曲に、この端末だけで保存します。</p><label>コードの並び（512個まで）<textarea id="sing-code-input" rows="4" maxlength="20000" placeholder="C Am Dm G C"></textarea></label><button id="sing-code-save">この曲の並びにする</button><button id="sing-code-reset">用意された並びに戻す</button></details>
       <details class="sing-ipad-help"><summary>iPadとiPhoneの使い分け</summary><p>まずiPadの同じ画面で動画とコード図を見る使い方がおすすめです。YouTubeを別ウインドウで開き、このアプリと左右に並べることもできます。自動のコード表示は、この画面内のYouTube動画に対応します。YouTubeアプリや別端末で流す動画の位置には連動しません。</p><a href="https://support.apple.com/ja-jp/125309" target="_blank" rel="noopener">iPadで2つのウインドウを並べる（Apple）↗</a><p>マイクを使うときは動画の音をイヤホンへ。歌声やスピーカーの音で、和音の判定が不安定になることがあります。</p></details>
     </section>
-    <label id="tuning-label" class="tuning-choice" hidden>本調子の基準<select id="tuning"><option value="0">C：ド・ファ・ド</option><option value="-1">B：シ・ミ・シ</option><option value="-2">B♭：シ♭・ミ♭・シ♭</option><option value="-3">A：ラ・レ・ラ</option><option value="2">D：レ・ソ・レ</option></select></label>
+    <label id="tuning-label" class="tuning-choice" hidden>本調子の基準<select id="tuning"><option value="0">C・F・C（ド・ファ・ド）</option><option value="-1">B・E・B（シ・ミ・シ）</option><option value="-2">B♭・E♭・B♭（シ♭・ミ♭・シ♭）</option><option value="-3">A・D・A（ラ・レ・ラ）</option><option value="2">D・G・D（レ・ソ・レ）</option></select></label>
 
     <section id="sanshin-songs" aria-label="三線の曲を始める">
-      <article><h2>てぃんさぐぬ花</h2><p>まずは1節。工工四・指の位置に、歌詞・読み方・標準語の意味を添えて。ガイド音を聴き、短い範囲から練習できます。</p><button id="sanshin-start-tinsagu" class="primary">工工四と指図で練習</button><button id="sanshin-video-tinsagu">先生の動画も見る</button></article>
-      <article><h2>時代の流れ</h2><p>工工四・歌詞付きの先生の動画で練習。分からない文字で止めて、指の位置を確認できます。</p><button id="sanshin-start-jidai" class="primary">動画と指の位置を開く</button><p class="small">指図は文字を押して切り替えます。工工四と歌詞は動画に表示されます。</p></article>
+      <article><h2>てぃんさぐぬ花</h2><p>まずは1節。工工四・指の位置に、歌詞・読み方・標準語の意味を添えて。全体の譜面は、マイクなしでも見ながら進められます。</p><button id="sanshin-full-tinsagu" class="primary">1節の工工四を全体で見る</button><button id="sanshin-start-tinsagu">工工四と指図で練習</button><button id="sanshin-video-tinsagu">先生の動画も見る</button></article>
+      <article><h2>時代の流れ</h2><p>工工四・歌詞付きの先生の動画で練習。分からない文字で止めて、指の位置を確認できます。</p><button id="sanshin-start-jidai" class="primary">動画と指の位置を開く</button><p><a id="jidai-sheet-link" href="https://toyosanshin.hatenablog.com/entry/2020/12/30/120612" target="_blank" rel="noopener">工工四の掲載ページ（豊岡マッシー） ↗</a></p><p class="small">アプリ内の譜面・自動送りは未収録です。指図は文字を押して切り替えます。別の先生の譜面は、動画と節回しが違う場合があります。</p></article>
     </section>
     <section class="preset-section" aria-labelledby="preset-heading"><h2 id="preset-heading">曲を選ぶ</h2><p class="small">曲は入っています。選ぶだけで、楽譜とお手本を使えます。</p><div id="preset-songs" class="preset-songs"></div><div id="easy-song-card" class="easy-song-card"><div><strong>時間よ止まれ · 矢沢永吉</strong><p>まずはCとAmだけ。カポなし・ゆっくり、下へ1回ずつ。</p></div><div class="easy-song-actions"><button id="singalong-song-start">歌詞・動画と1曲通す</button><button id="easy-song-start">2つのコードから始める</button></div></div></section>
     <div class="setup"><label>曲・基礎練習<select id="lesson"></select></label><label id="style-label" hidden>ギターの練習<select id="practice-style"><option value="melody">メロディー</option><option value="chords">コード</option></select></label></div>
@@ -74,10 +75,10 @@
     </section>
       <section id="sanshin-panel" hidden aria-label="三線の今と次の指の位置"><div id="sanshin-target"></div><button id="sanshin-help">ほかの文字・手の形を見る</button><p class="sanshin-guide-note">正面から見た棹。点線は位置の目安で、フレットではありません。</p></section>
       <section class="score-card" aria-labelledby="score-heading">
-        <div class="card-top"><h2 id="score-heading">TAB譜</h2><span id="progress-text">1 / 12</span></div>
+        <div class="card-top"><h2 id="score-heading">TAB譜</h2><button id="full-score-open" hidden>工工四を全体で見る</button><span id="progress-text">1 / 12</span></div>
         <progress id="progress" value="0" max="12" aria-label="練習の進み具合"></progress>
         <p id="score-help" class="small">数字はフレット。0は開放弦。音符を押すと、その位置から練習できます。</p>
-        <p id="sanshin-credit" hidden>Lrschneider (2017) の工工四から1節を簡略化。小さい飾り音を省略、1マス1拍・本調子C。<a href="https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png" target="_blank" rel="noopener">原譜</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · <a href="songs/sanshin-provenance.json" target="_blank" rel="noopener">変更・出所</a> · <a href="songs/tinsagu.mid" download>MIDI</a></p>
+        <p id="sanshin-credit" hidden>Lrschneider (2017) の工工四から1節を簡略化。小さい飾り音を省略、1マス1拍。原譜は本調子C（選んだ調弦へ移調）。<a href="https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png" target="_blank" rel="noopener">原譜</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · <a href="songs/sanshin-provenance.json" target="_blank" rel="noopener">変更・出所</a> · <a href="songs/tinsagu.mid" download>MIDI</a></p>
         <div id="score" class="score"></div><div class="score-pager"><button id="score-prev" aria-label="前の譜面">←</button><span id="score-range"></span><button id="score-next" aria-label="次の譜面">→</button></div>
         <div class="loop-quick"><span id="loop-summary">全体を練習</span><button id="loop-visible">表示中を繰り返す</button><button id="loop-all" hidden>全体に戻す</button></div><details class="loop-details"><summary>反復範囲を細かく指定</summary><div class="loop"><label><input id="loop-enabled" type="checkbox"> 繰り返す</label><div><label>はじめ<select id="loop-start" aria-label="繰り返しの最初の音"></select></label><span>〜</span><label>おわり<select id="loop-end" aria-label="繰り返しの最後の音"></select></label></div></div></details>
         <label class="check-label backing"><input id="backing" type="checkbox" checked> ギターのガイドにコードを添える</label>
@@ -93,7 +94,7 @@
     <details class="local-lyrics learning-card" id="lyric-editor"><summary>歌詞と譜面の位置を合わせる</summary><h3 id="lyric-song-title"></h3><p class="small">歌詞はこの端末だけに保存します。LRCの[00:12.50]形式で時刻を入れるか、行を選んで「現在の位置に合わせる」を押します。[C]歌詞[Am]のようなコード付きテキストから、コード譜と仮ガイドを作ることもできます。</p><label class="lyric-file-label">歌詞ファイルを開く（UTF-8・80 KBまで）<input id="lyric-file" type="file" accept=".txt,.lrc,.cho,.chordpro,text/plain"></label><p class="small">時刻付きのLRCも選べます。開くだけでは今の歌詞を上書きしません。</p><label>歌詞・LRC・コード付きテキスト（2万字・200行まで）<textarea id="lyric-input" maxlength="20000" rows="7" placeholder="ここに手元の歌詞やLRCを貼り付ける"></textarea></label><div class="lyric-actions"><button id="lyric-save">端末に保存して表示</button><button id="chord-sheet-import">コード譜と歌詞を読み込む</button><button id="lyric-download">LRCで保存</button><button id="lyric-clear">この曲の歌詞を削除</button><button id="lyric-restore" hidden>収録歌詞に戻す</button></div><p id="lyric-status" class="small" role="status"></p><details class="lyric-notes-editor"><summary>読み方・標準語の意味を付ける（任意）</summary><p class="small">歌詞を先に保存し、同じ行数で入れます。空行で省略できます。歌詞を変更すると、以前の読み方・意味は外れます。入力内容はこの端末だけに保存します。</p><label>読み方<textarea id="lyric-reading-input" rows="4" maxlength="20000"></textarea></label><label>標準語の意味・訳<textarea id="lyric-meaning-input" rows="4" maxlength="20000"></textarea></label><button id="lyric-notes-save">読み方と意味を保存</button></details><label>合わせる歌詞の行<select id="lyric-line"></select></label><p id="lyric-time" class="small"></p><div class="lyric-actions"><button id="lyric-mark">この行を現在の位置に合わせる</button><button id="lyric-unmark">この行の時刻を外す</button></div><label class="check-label"><input id="lyric-follow" type="checkbox"> 譜面・ガイドに追従</label><p id="lyric-cues" class="small"></p><p id="lyric-credit" class="small"></p><p id="lyric-current" class="lyric-current"></p><div class="lyric-actions"><button id="lyric-prev">前の行</button><span id="lyric-position"></span><button id="lyric-next">次の行</button></div></details>
     <details class="help"><summary>設定・今回できること</summary><div><p>調弦はギター標準調弦と三線の本調子。曲の練習では正しい単音が少し安定すると進みます。コードは一弦ずつの確認か、コード全体を推定する試験機能を選べます。転回形や指の位置はマイクだけでは確定できません。</p><label>マイク感度<select id="sensitivity"><option value="0.003">小さな音も拾う</option><option value="0.006" selected>標準</option><option value="0.014">周りの音を抑える</option></select></label><p>内蔵の曲はAmazing Grace・きらきら星・歓喜の歌の練習版です。「好きな曲」の参照動画と、曲全体の譜面データの内蔵は区別しています。時間よ止まれは歌詞・コード付き通し動画と、3段階のかんたん練習。Santeria・Blackbirdは導入コードの簡易練習、Jigsaw Falling Into Placeは標準調弦＋カポ2のかんたん伴奏で通し動画にコード図が追従、三線は、てぃんさぐぬ花の1節をやさしい工工四と自動の指図で練習できます。時代の流れは先生の動画と手動の指図で練習し、工工四と歌詞は動画に表示されます。</p><p>MIDIは形式0/1・PPQ・512音までの旋律。PDF・画像・録音からの採譜は未対応です。歌詞は端末だけに保存し、LRCや位置合わせで譜面・ガイドに追従できます。Santeria・Blackbirdなどの歌詞全文は同梱しません。</p><p>iPhoneはSafariの共有から「ホーム画面に追加」。Androidはブラウザのインストールから追加できます。「オフライン準備OK」の後は、調弦・内蔵曲・コード・読み方を通信なしで使えます。参照動画を見るときは通信が必要です。</p><p>音声は録音・送信しません。実楽器・実iPhoneでの精度は未確認です。</p></div></details>
   </main>
-  <footer><span>MUSIC STACK / PRACTICE 15</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
+  <footer><span>MUSIC STACK / PRACTICE 16</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
 </div>
 <dialog id="hand-dialog" aria-labelledby="hand-title">
  <header id="hand-header" class="hand-header"><div><small>指をひとつずつ、置いてみる</small><h2 id="hand-title">手の作り方</h2></div><button id="hand-close">練習へ戻る ×</button><nav aria-label="押さえ方の見方"><button id="hand-to-steps">指の順番</button><button id="hand-to-change" hidden>つなぎ方</button><button id="hand-to-posture">手の形</button><button id="hand-to-video">手元動画</button></nav></header>
@@ -112,13 +113,20 @@
    <p id="sanshin-video-note"></p>
    <div class="sanshin-video-controls"><button id="sanshin-play" disabled>▶ 再生</button><button id="sanshin-pause" disabled>一時停止</button><button id="sanshin-back" disabled>5秒戻る</button><label>速さ<select id="sanshin-speed" disabled><option value="1">ふつう</option></select></label><span id="sanshin-video-time">0:00</span></div>
    <div class="sanshin-video-controls"><button id="sanshin-score-start" disabled hidden>前奏から再生（3:30）</button><button id="sanshin-a" disabled>A：ここから</button><button id="sanshin-b" disabled>B：ここまで</button><label><input type="checkbox" id="sanshin-loop" disabled> 反復</label><span id="sanshin-loop-state"></span></div>
-   <p id="sanshin-video-status" role="status"></p><a id="sanshin-source" target="_blank" rel="noopener">譜面・解説 ↗</a><a id="sanshin-outside" target="_blank" rel="noopener">YouTubeで見る ↗</a>
+   <p id="sanshin-video-status" role="status"></p><a id="sanshin-score-source" href="https://toyosanshin.hatenablog.com/entry/2020/12/30/120612" target="_blank" rel="noopener" hidden>時代の流れの工工四を掲載ページで見る（豊岡マッシー） ↗</a><p id="sanshin-score-source-note" hidden>別の先生の工工四です。動画と節回し・譜割りが違う場合があります。アプリ内の譜面・自動送りは未収録です。</p><a id="sanshin-source" target="_blank" rel="noopener">譜面・解説 ↗</a><a id="sanshin-outside" target="_blank" rel="noopener">YouTubeで見る ↗</a>
    <p>動画は通信が必要です。指図は動画と自動では進みません。</p>
   </section>
   <section aria-label="工工四の文字から指を確認"><p class="sanshin-guide-note">分からない文字を押すと、動画を止めて指を確認できます。</p><div id="sanshin-letters" role="group" aria-label="調べたい文字"></div><div class="sanshin-guide-heading"><strong id="sanshin-symbol"></strong><span id="sanshin-reading"></span></div><div class="sanshin-guide-diagrams"><div id="sanshin-neck"></div><div><div id="sanshin-hand"></div><p id="sanshin-finger"></p></div></div><p id="sanshin-tip"></p>
    <p class="sanshin-guide-note">棹は正面、左手は手のひら側から見た図。1 人差し指・2 中指・4 小指。点線は勘所の目安で、実際の棹にフレットはありません。楽器の大きさに合わせ、耳とマイクで位置を調整しましょう。</p><a id="sanshin-fingering-source" href="https://ks-sanshin.com/三線の勘所とは？初心者が押さえられるようにな/" target="_blank" rel="noopener">勘所と指の基本を写真で確認（栗山新也 三線教室） ↗</a>
   </section>
  </div></div>
+</dialog>
+<dialog id="full-score-dialog" aria-labelledby="full-score-title">
+ <header><h2 id="full-score-title">工工四全体</h2><button id="full-score-close">練習へ戻る ×</button></header>
+ <div class="sheet-options"><p>各段の右上から下へ、次は左の列。段も右から左へ。<br>文字を押すと、その音と指の位置を確認できます。</p><label>本調子<select id="full-score-tuning"></select></label></div>
+ <div id="full-score-sheet" aria-label="工工四の全体"></div>
+ <div class="sheet-controls"><div id="full-score-finger"></div><p id="full-score-position"></p><div class="sheet-buttons"><button id="full-score-previous">前の音</button><button id="full-score-next">次の音</button><button id="full-score-guide" class="primary">♪ ガイドで進む</button><button id="full-score-stop" disabled>停止</button><button id="full-score-all" hidden>全体のガイドを聴く</button></div><div><p id="full-score-status" role="status"></p><span id="full-score-range"></span></div></div>
+ <p id="full-score-credit"></p>
 </dialog>
 </body>
 </html>

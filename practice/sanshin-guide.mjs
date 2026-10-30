@@ -1,6 +1,6 @@
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=15';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=15';
-import { lessonPlayer } from './youtube.mjs?v=15';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=16';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=16';
+import { lessonPlayer } from './youtube.mjs?v=16';
 export const SANSHIN_VIDEOS = {
   tinsagu:{title:'てぃんさぐぬ花',video:'XkmKijcH63s',credit:'宮里英克沖縄三線教室',source:'https://miyazatohidekatsu.com/sanshin/'},
   jidai:{title:'時代の流れ',video:'xtf0OAu-qVY',credit:'宮里英克沖縄三線教室',source:'https://miyazatohidekatsu.com/sanshin/',scoreAt:210},
@@ -82,7 +82,7 @@ export function mountSanshinGuide({onTakeOver}) {
   $('b').onclick=()=>{const end=currentTime();if(end-a<1){status('Aより1秒以上先をBにしてください。');return;}b=end;loop=true;remember();controls();};
   $('loop').onchange=()=>{loop=$('loop').checked&&b-a>=1;remember();controls();};
   $('close').onclick=()=>dialog.close();dialog.addEventListener('close',destroy);
-  for(const id of ['source','outside','fingering-source'])$(id).addEventListener('click',pause);
+  for(const id of ['source','outside','fingering-source','score-source'])$(id).addEventListener('click',pause);
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&dialog.open){destroy();status('画面を離れたので停止しました。「動画を読み込む」で再開できます。');}});
   window.addEventListener('pagehide',destroy);
   return {
@@ -91,6 +91,7 @@ export function mountSanshinGuide({onTakeOver}) {
       if(song){try{const saved=JSON.parse(localStorage.getItem(storageKey(song))||'{}');position=Number.isFinite(saved.position)?Math.max(0,saved.position):0;a=Number.isFinite(saved.a)?Math.max(0,saved.a):0;b=Number.isFinite(saved.b)?Math.max(0,saved.b):0;loop=saved.loop===true&&b-a>=1;}catch{/* Start fresh. */}}
       const course=SANSHIN_VIDEOS[song];$('video').hidden=!course;
       $('score-start').hidden=!course?.scoreAt;
+      $('score-source').hidden=$('score-source-note').hidden=song!=='jidai';
       $('video-note').textContent=song==='jidai'?'初めに先生の解説、途中から工工四と歌詞が表示されます。「前奏から再生」で3:30から始められます。動画と同じ調弦に合わせ、まず短い部分を繰り返しましょう。':'先生の動画を聴いて、同じ調弦に合わせます。工工四は動画や先生の掲載ページで確認できます。';
       $('title').textContent=course?`${course.title} · 動画と指の位置`:'工工四から、指の位置を調べる';
       if(course){$('source').href=course.source;$('source').textContent=`先生の掲載ページ（${course.credit}） ↗`;$('outside').href=`https://www.youtube.com/watch?v=${course.video}`;}

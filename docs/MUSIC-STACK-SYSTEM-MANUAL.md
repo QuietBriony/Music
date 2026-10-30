@@ -46,7 +46,7 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 | 公開ページ | 用途 |
 |---|---|
 | [Band Room / ARCB・Tabasco](../band-room.html?band=tabasco&song=human-fly&mode=original) | ライブ原音・調和ミックス・パート練習・AI再現を比較。Human FlyはShadow Dub / Acid Drive / Acid Dubを選び、約4分の曲アレンジも聴けます。 |
-| [一音ずつ — ギターと三線](../practice/index.html) | 音名・Hz・針で調弦。iPadの横向きでは指図・譜面・歌詞を並べて練習。てぃんさぐぬ花1節は読み方・対訳つき。ギターは動画と自動のコード図、時代の流れは先生の動画で。 |
+| [一音ずつ — ギターと三線](../practice/index.html) | 三線はB・E・B調弦に対応。てぃんさぐぬ花1節の工工四を全体表示し、指図・ガイド・手動送りで練習。時代の流れは動画と工工四の掲載ページへ。ギターは動画と自動のコード図。 |
 | [Hazama FM](../fm.html) | ジャンルを選んで、ラジオのように流す。 |
 | [Music Core Rig](../index.html) | つまみを動かし、アシッドやIDMの音を探る。 |
 | [Lyric Lab](../lyric-lab.html) | 歌詞・曲のアイデア・制作指示を一曲ずつ残す。 |

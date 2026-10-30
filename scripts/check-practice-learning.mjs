@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { tuningStrings,tunerReading,detectTuningPitch,TunerTracker } from '../practice/tuner.mjs';
+import { tuningStrings,tunerReading,detectTuningPitch,TunerTracker,tuningGate } from '../practice/tuner.mjs';
+import { sheetEntries } from '../practice/full-score.mjs';
 import { STUDIES,BASICS } from '../practice/learning.mjs';
 import { chordExercise,scoreNotes } from '../practice/scores.mjs';
-import { frequencyFor,centsFrom,detectPitch } from '../practice/music.mjs';
+import { frequencyFor,centsFrom,detectPitch,NoteFollower } from '../practice/music.mjs';
 import { SANSHIN_POSITIONS,sanshinPosition,neckY } from '../practice/sanshin-core.mjs';
 import { neckDiagram,handDiagram } from '../practice/sanshin-view.mjs';
 import { SANSHIN_VIDEOS } from '../practice/sanshin-guide.mjs';
@@ -64,6 +65,17 @@ assert.equal(createHash('sha256').update(tinsagu).digest('hex'),meta.tinsagu.sha
 assert.equal(meta.tinsagu.license,'CC-BY-SA-4.0');assert.equal(TINSAGU_COLUMNS.join('').length,64);
 assert.equal(parsed.endBeat,64);assert.equal(parsed.groups[0].notes.length,63);assert.equal(parsed.groups[0].notes[29].beat,30,'One-beat rest at cell 30');
 const tinsaguNotes=mapMelody(parsed.groups[0].notes,'sanshin');
+const sheet=sheetEntries(tinsaguNotes);
+assert.equal(sheet.length,64);assert.equal(sheet.filter(c=>c.rest).length,1);assert.equal(sheet[29].beats,1);
+assert.deepEqual(sheet.filter(c=>!c.rest).map(c=>c.index),Array.from({length:63},(_,i)=>i),'Whole sheet keeps all note indices through the rest');
+for(const tuning of [-1,0]){
+ const target=tinsaguNotes[0].midi+tuning,gate=tuningGate(.006),follower=new NoteFollower([{midi:target},{midi:target}],{gate});
+ const samples=Float32Array.from({length:8192},(_,i)=>.003*Math.sin(2*Math.PI*frequencyFor(target)*i/48000));
+ assert.equal(detectPitch(samples,48000,.006).frequency,null,'Quiet lesson input used to be rejected');
+ const heard=detectPitch(samples,48000,gate);assert.ok(heard.frequency);
+ follower.feed(heard,0);assert.equal(follower.feed(heard,150).matched,true);assert.equal(follower.feed(heard,600).matched,false,'One sustained pluck cannot consume repeated notes');
+ const wrong=new NoteFollower([{midi:target+1}],{gate});wrong.feed(heard,0);assert.equal(wrong.feed(heard,200).matched,false,'A B/C tuning mismatch is not accepted');
+}
 assert.equal(tinsaguNotes.map(n=>n.symbol).join(''),'中中工上四合四五中中工上四合四五中中工上四合四五中中七九八七八中中工上四合四五中中工上四合四五中中工上四合四五中中工上四合四五');
 for(const tuning of [-3,-2,-1,0,2]){
  const notes=mapMelody(parsed.groups[0].notes,'sanshin',{tuning});
@@ -72,5 +84,5 @@ for(const tuning of [-3,-2,-1,0,2]){
 }
 assert.equal(SANSHIN_VIDEOS.jidai.video,'xtf0OAu-qVY');
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=15','sanshin-view.mjs?v=15','sanshin-guide.mjs?v=15','sanshin.css?v=15','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=16','sanshin-view.mjs?v=16','sanshin-guide.mjs?v=16','sanshin.css?v=16','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
 console.log('Practice learning: tuning, seven studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
