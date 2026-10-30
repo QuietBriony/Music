@@ -1,13 +1,13 @@
-import { TOKIYO_VIDEO_ID,TOKIYO_TIMES,TOKIYO_END,cueAt } from './video-cues.mjs?v=8';
-import { STUDIES } from './learning.mjs?v=8';
-import { SING_SHAPES,TOKIYO_STEPS,readSteps,videoId,validRange,fingeringText,normalizeSingState,sectionStarts } from './singalong-core.mjs?v=8';
-import { detectChord,ChordGate } from './polyphonic.mjs?v=8';
-import { lessonPlayer } from './youtube.mjs?v=8';
+import { TOKIYO_VIDEO_ID,TOKIYO_TIMES,TOKIYO_END,cueAt } from './video-cues.mjs?v=9';
+import { STUDIES } from './learning.mjs?v=9';
+import { SING_SHAPES,TOKIYO_STEPS,readSteps,videoId,validRange,fingeringText,normalizeSingState,sectionStarts } from './singalong-core.mjs?v=9';
+import { detectChord,ChordGate } from './polyphonic.mjs?v=9';
+import { lessonPlayer } from './youtube.mjs?v=9';
 const STORAGE='music-practice-singalong-v1';
 const lessons=Object.entries(STUDIES).flatMap(([instrument,items])=>items.map(s=>({...s,instrument,video:s.id==='tokiyo'?'https://www.youtube.com/watch?v=KgKycz0uHbM':s.video||s.lesson})));
 const text=(id,value)=>{const e=document.getElementById(id);if(e.textContent!==String(value))e.textContent=value;};
 const $=id=>document.getElementById(id);
-export function mountSingalong({onTakeOver,onChange}){
+export function mountSingalong({onTakeOver,onChange,onHandGuide}){
  let saved={};try{saved=JSON.parse(localStorage.getItem(STORAGE)||'{}')||{};}catch{}
  let selected=lessons.find(s=>s.id===saved.selected)||lessons[0],steps=[],customOrder='',state={},active=false,player=null,ready=false,playerTicket=0,timer=null;
  let inputTicket=0,stream=null,ctx=null,source=null,analyser=null,silent=null,meter=null;
@@ -68,6 +68,7 @@ export function mountSingalong({onTakeOver,onChange}){
   for(const id of ['sing-earlier','sing-later','sing-offset-reset'])$(id).disabled=!canFollow();
   if(!following())text('sing-next-countdown','');
   text('sing-mic',following()?'今のコードをマイクで確認（試験）':'マイクで合ったら次へ（試験）');
+  $('sing-hand-open').hidden=selected.instrument!=='guitar';
   $('sing-capo').value=state.capo;$('sing-chord-picker').value=name;renderDiagram(name);
   text('sing-capo-note',state.capo?`カポ${state.capo}。図の数字はカポから数えます。`:'カポなし。図の数字はナットから数えます。');
   if(target)$('sing-sections').value=steps.find(s=>s.section===target.section)?.index??0;
@@ -118,6 +119,7 @@ export function mountSingalong({onTakeOver,onChange}){
  }
  $('sing-course').replaceChildren(...lessons.map(s=>new Option(`${s.title} / ${s.artist}`,s.id)));
  $('sing-chord-picker').replaceChildren(...Object.keys(SING_SHAPES).map(n=>new Option(n,n)));$('sing-capo').replaceChildren(...Array.from({length:8},(_,i)=>new Option(i?`カポ${i}`:'カポなし',i)));
+ $('sing-hand-open').onclick=()=>{pause();const name=$('sing-chord-picker').value;onHandGuide({name,shape:SING_SHAPES[name],capo:state.capo});};
  $('sing-course').onchange=()=>select($('sing-course').value);$('sing-load').onclick=loadVideo;
  $('sing-play').onclick=()=>{if(ready)player.playVideo();};$('sing-pause').onclick=()=>{pause();status('止めました。再生は自分で再開できます。');};$('sing-back').onclick=()=>{if(ready)player.seekTo(Math.max(0,player.getCurrentTime()-5),true);};
  $('sing-speed').onchange=()=>{if(ready)player.setPlaybackRate(Number($('sing-speed').value));};
@@ -140,5 +142,5 @@ export function mountSingalong({onTakeOver,onChange}){
  $('sing-code-save').onclick=()=>{try{const next=readSteps($('sing-code-input').value);stopInput();steps=next;customOrder=$('sing-code-input').value;state.follow=false;state.index=0;store();makeTrack();render();status('コードの並びをこの曲に保存しました。動画とは自動同期しません。');}catch(e){status(e.message);}};
  $('sing-code-reset').onclick=()=>{customOrder='';$('sing-code-input').value='';stopInput();steps=selected.id==='tokiyo'?TOKIYO_STEPS:[];state.index=0;state.videoTime=0;state.follow=canFollow();if(ready&&following())player.seekTo(0,true);store();makeTrack();render();};
  document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();if(active)status('画面を離れたので、動画とマイクを止めました。');}});window.addEventListener('pagehide',pause);
- return{open(id){onTakeOver();active=true;if(id)select(id);else select(selected.id);document.body.classList.add('singalong-mode');$('view-singalong').setAttribute('aria-pressed','true');onChange(true);window.scrollTo({top:0,behavior:'instant'});},close(){active=false;pause();destroyPlayer();document.body.classList.remove('singalong-mode');$('view-singalong').setAttribute('aria-pressed','false');onChange(false);}};
+ return{pause,open(id){onTakeOver();active=true;if(id)select(id);else select(selected.id);document.body.classList.add('singalong-mode');$('view-singalong').setAttribute('aria-pressed','true');onChange(true);window.scrollTo({top:0,behavior:'instant'});},close(){active=false;pause();destroyPlayer();document.body.classList.remove('singalong-mode');$('view-singalong').setAttribute('aria-pressed','false');onChange(false);}};
 }

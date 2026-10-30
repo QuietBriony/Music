@@ -1,14 +1,15 @@
-import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=8';
-import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=8';
-import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=8';
-import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=8';
-import { tuningStrings, tunerReading } from './tuner.mjs?v=8';
-import { mountLearning,STUDIES } from './learning.mjs?v=8';
-import { detectChord, ChordGate } from './polyphonic.mjs?v=8';
-import { mountLyrics } from './lyrics.mjs?v=8';
-import { LYRIC_PRESETS } from './lyric-presets.mjs?v=8';
-import { PracticeProgress,progressKey } from './progress.mjs?v=8';
-import { mountSingalong } from './singalong.mjs?v=8';
+import { mountHandGuide } from './hand-guide.mjs?v=9';
+import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=9';
+import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=9';
+import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=9';
+import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=9';
+import { tuningStrings, tunerReading } from './tuner.mjs?v=9';
+import { mountLearning,STUDIES } from './learning.mjs?v=9';
+import { detectChord, ChordGate } from './polyphonic.mjs?v=9';
+import { mountLyrics } from './lyrics.mjs?v=9';
+import { LYRIC_PRESETS } from './lyric-presets.mjs?v=9';
+import { PracticeProgress,progressKey } from './progress.mjs?v=9';
+import { mountSingalong } from './singalong.mjs?v=9';
 
 const $ = id => document.getElementById(id);
 const STORAGE = 'music-practice-settings-v1';
@@ -35,7 +36,7 @@ const voices = new Set();
 const feedback = text => { if ($('feedback').textContent !== text) $('feedback').textContent = text; };
 function save() {
   if(view==='practice')practiceSnapshot={instrument,lesson:lessonId,practiceStyle,chordNames:lessonId==='chord'?midiModel.markers.map(c=>c.chord):null,chordTitle:lessonId==='chord'?midiTitle:null,sessionId,sessionTitle,easyPractice:midiModel?.easy===true};
-  try { localStorage.setItem(STORAGE, JSON.stringify({ uiVersion:8, view, instrument, lesson:lessonId, transpose, gate, practiceStyle,chordCheck,practiceSnapshot,tempo:Number($('tempo').value),countIn:$('count-in').checked,backing:$('backing').checked,singalong:singalongOpen })); } catch { /* Storage is optional. */ }
+  try { localStorage.setItem(STORAGE, JSON.stringify({ uiVersion:9, view, instrument, lesson:lessonId, transpose, gate, practiceStyle,chordCheck,practiceSnapshot,tempo:Number($('tempo').value),countIn:$('count-in').checked,backing:$('backing').checked,singalong:singalongOpen })); } catch { /* Storage is optional. */ }
 }
 function storeProgress(){
  if(view!=='practice'||!progressId||loading||!follower)return;
@@ -137,6 +138,7 @@ function renderChord(note) {
   if (instrument !== 'guitar') return;
   const name = currentChord(note), shape = CHORDS[name];
   $('chord-name').textContent = name;
+  $('chord-hand-open').textContent=`${name}・手の形`;$('chord-hand-open').setAttribute('aria-label',`${name}の手の形を見る`);
   const x = i => 25 + i * 24;
   let svg = '<svg viewBox="0 0 170 166" role="img" aria-label="'+name+'の押さえ方。数字は指番号">';
   for (let i=0;i<6;i++) svg += `<line x1="${x(i)}" x2="${x(i)}" y1="31" y2="145"/><text x="${x(i)}" y="163">${6-i}</text>`;
@@ -531,7 +533,9 @@ const lyricEditor=mountLyrics({defaults:LYRIC_PRESETS,onImport:async value=>{
   if(ticket!==loadEpoch)return false;
   startChordExercise(value.names,value.title,identity);lyricEditor.import(value);render();return true;
 }});
-const singalong=mountSingalong({onTakeOver:()=>{cancelLoad();stopAll();setFocus(false);},onChange:open=>{singalongOpen=open;$('view-tuner').setAttribute('aria-pressed',String(!open&&view==='tuner'));$('view-practice').setAttribute('aria-pressed',String(!open&&view==='practice'));save();}});
+const singalong=mountSingalong({onHandGuide:options=>handGuide.open(options),onTakeOver:()=>{cancelLoad();stopAll();setFocus(false);},onChange:open=>{singalongOpen=open;$('view-tuner').setAttribute('aria-pressed',String(!open&&view==='tuner'));$('view-practice').setAttribute('aria-pressed',String(!open&&view==='practice'));save();}});
+const handGuide=mountHandGuide({pausePractice:()=>{cancelLoad();stopAll();singalong.pause();}});
+$('chord-hand-open').onclick=()=>handGuide.open({name:$('chord-name').textContent,shape:CHORDS[$('chord-name').textContent],capo:0});
 function restorePractice(snapshot){
   if(snapshot?.instrument&&snapshot.instrument!==instrument){selectSong(SONGS[instrument][0].id);return;}
   if(instrument==='guitar'&&snapshot?.lesson==='chord'&&Array.isArray(snapshot.chordNames)&&snapshot.chordNames.length>0&&snapshot.chordNames.length<=64&&snapshot.chordNames.every(name=>Object.hasOwn(CHORDS,name))){startChordExercise(snapshot.chordNames,String(snapshot.chordTitle||'コードの練習').slice(0,80),String(snapshot.sessionId||`chords:${snapshot.chordNames.join(',')}`).slice(0,200),{easy:snapshot.easyPractice===true,restoring:true});return;}
@@ -551,8 +555,8 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
   navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' }).then(registration => {
     const ready = async () => {
       try {
-        const cache = await caches.open('music-practice-v8');
-        const paths=['./app.mjs?v=8',...new Set(Object.values(SONGS).flat().map(song=>`./songs/${song.file}`))];
+        const cache = await caches.open('music-practice-v9');
+        const paths=['./app.mjs?v=9',...new Set(Object.values(SONGS).flat().map(song=>`./songs/${song.file}`))];
         if((await Promise.all(paths.map(path=>cache.match(new URL(path,location.href).href)))).every(Boolean))$('offline-state').textContent = 'オフライン準備OK';
       } catch { $('offline-state').textContent = 'オンラインで利用できます'; }
     };
