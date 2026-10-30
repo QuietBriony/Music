@@ -1,0 +1,14 @@
+{
+  "id": "tokiyo",
+  "title": "時間よ止まれ",
+  "artist": "矢沢永吉",
+  "request_date": "2026-10-30",
+  "scope": "Original short chord-switching drills for the requested song. No copied full score, lyric, melody or audio. Uniform four-beat timing is a learning scaffold, not the original phrasing.",
+  "references": [
+    {"url":"https://gakufu.gakki.me/m/data/big00022.html","use":"Link to the publisher's beginner chart. The app drill uses common open shapes C, Em, G7, Am and Dm, without the full chart or lyrics."},
+    {"url":"https://note.com/mickeykogure/n/n41986bc8627a","use":"Creator's own beginner lesson introduction; link to the associated lesson video."}
+  ],
+  "key": "Practice with no capo in C, lower than the original recording. Do not play along with the recording using the app's no-capo pitch targets.",
+  "stages": ["C/Am switching", "Dm/G7 switching", "C/Em/G7/Am/Dm/G7 six-chord practice"],
+  "guide": "One synthesized chord strum at the beginning of each four-beat block; no recording or sampled instrument."
+}

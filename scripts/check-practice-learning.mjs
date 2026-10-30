@@ -14,16 +14,19 @@ for(const instrument of ['guitar','sanshin'])for(const n of tuningStrings(instru
   assert.equal(tunerReading(detect(1200),n.midi).status,'check');
   assert.equal(tunerReading({...detect(0),rms:0},n.midi).status,'waiting');
 }
-assert.deepEqual(Object.values(STUDIES).flat().map(s=>s.id),['santeria','blackbird','tinsagu','tsukinu','jidai']);
+assert.deepEqual(Object.values(STUDIES).flat().map(s=>s.id),['tokiyo','santeria','blackbird','tinsagu','tsukinu','jidai']);
 for(const [instrument,studies] of Object.entries(STUDIES)){
   assert.ok(BASICS[instrument].steps.length>=5);
   for(const study of studies){
     for(const field of ['lesson','video','score'])if(study[field])assert.equal(new URL(study[field]).protocol,'https:');
-    if(study.names){const model=chordExercise(study.names);assert.equal(scoreNotes(model,'chords','guitar',{chords:true}).cues.length,4);}
+    if(study.names){const model=chordExercise(study.names);assert.equal(scoreNotes(model,'chords','guitar',{chords:true}).cues.length,study.names.length);}
     assert.ok(study.note.length>0,'accurate scope label');
   }
 }
 const source=readFileSync('practice/lyrics.mjs','utf8');
 assert.doesNotMatch(source,/fetch\(|XMLHttpRequest|sendBeacon|innerHTML/,'personal lyrics remain local text');
 assert.match(source,/textContent=data.lines\[active\]/);
-console.log('Practice learning: guitar/sanshin tuning, high/low/octaves, five reference studies, safe local lyric display PASS');
+const easy=STUDIES.guitar.find(s=>s.id==='tokiyo');assert.equal(easy.stages.length,3);assert.deepEqual(easy.stages[0].names,['C','Am','C','Am']);assert.deepEqual(easy.stages[1].names,['Dm','G7','Dm','G7']);
+for(const stage of easy.stages){const score=scoreNotes(chordExercise(stage.names),'chords','guitar',{chords:true});assert.equal(score.cues.length,stage.names.length);assert.ok(score.notes.every(n=>n.fret<=3));}
+assert.match(readFileSync('practice/songs/tokiyo-study.json','utf8'),/No copied full score/);
+console.log('Practice learning: guitar/sanshin tuning, high/low/octaves, six reference studies, three easy stages and safe local lyric display PASS');

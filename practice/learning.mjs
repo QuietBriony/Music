@@ -1,6 +1,7 @@
 // Curated reference metadata only. No third-party scores, lyrics, recordings or embeds.
 export const STUDIES = {
   guitar:[
+    {id:'tokiyo',title:'時間よ止まれ',artist:'矢沢永吉',focus:'まずCとAmの2つだけ。1・2・3・4と数えて、1で下へ1回弾きます。慣れたらDmとG7、最後に6コードへ。',names:['C','Em','G7','Am','Dm','G7'],stages:[{title:'1. CとAmだけ',names:['C','Am','C','Am']},{title:'2. DmとG7だけ',names:['Dm','G7','Dm','G7']},{title:'3. 6コードをつなぐ',names:['C','Em','G7','Am','Dm','G7']}],lesson:'https://note.com/mickeykogure/n/n41986bc8627a',video:'https://www.youtube.com/watch?v=apHhVfpeAh4',chart:'https://gakufu.gakki.me/m/data/big00022.html',label:'小暮貢朗「ギターで歌おうch」の解説',note:'アプリはカポなし・低いキーの準備練習です。セーハなし、1コード4拍の仮ガイド。原曲の全譜・リズム・歌詞は同梱しません。参考動画とはキーやカポ位置が異なります。'},
     {id:'santeria',title:'Santeria',artist:'Sublime',focus:'E → G# → C#m → Bの短いコード練習。まず各音を確かめ、次に裏拍で軽く弾く練習へ。',names:['E','G#','C#m','B'],lesson:'https://creativeguitarstudio.blogspot.com/2018/04/qwik-songs-004-santeria-by-sublime.html',label:'Creative Guitar Studioの解説・動画',note:'冒頭の和音を使う簡易練習です。曲全体の構成・ソロは参照レッスンへ。'},
     {id:'blackbird',title:'Blackbird',artist:'The Beatles',focus:'G → Am7 → G/B → Gの和音を、一弦ずつ確かめる導入練習。親指の低音と指で弾く高音を分けて聴きます。',names:['G','Am7','G/B','G'],lesson:'https://www.justinguitar.com/songs/the-beatles-blackbird-chords-tabs-guitar-lesson-sb-113',video:'https://www.youtube.com/watch?v=mEn2SEwZKNE',label:'JustinGuitarの解説',note:'原曲の運指や二音の動きは動画で確認します。このアプリ内は和音の準備練習です。'}
   ],
@@ -28,12 +29,14 @@ export const BASICS = {
   ],links:[['本調子のチンダミ・基礎動画（宜保和也）','https://gibokazuya.com/youtube/'],['三線と工工四の教室・動画（宮里英克）','https://miyazatohidekatsu.com/sanshin/'],['工工四を読んでみる（三線ショップ島風）','https://shimakaji.com/user_data/sanshin_05_6.php']]}
 };
 export function mountLearning({onPractice,onBasics,onLeave}) {
-  const $=id=>document.getElementById(id);let instrument='guitar',selected='santeria';
+  const $=id=>document.getElementById(id);let instrument='guitar',selected='tokiyo';
   const anchor=(title,url)=>{const a=document.createElement('a');a.textContent=title+' ↗';a.href=url;a.target='_blank';a.rel='noopener';a.addEventListener('click',onLeave);return a;};
   function showStudy(){
     const study=STUDIES[instrument].find(s=>s.id===selected)||STUDIES[instrument][0];selected=study.id;
     $('study-title').textContent=`${study.title} / ${study.artist}`;$('study-focus').textContent=study.focus;$('study-note').textContent=study.note;
-    $('study-links').replaceChildren(anchor(study.label,study.lesson),...(study.video?[anchor('YouTubeで見る',study.video)]:[]),...(study.score?[anchor('工工四の参照（Lrschneider / CC BY-SA 4.0）',study.score)]:[]));
+    $('study-links').replaceChildren(anchor(study.label,study.lesson),...(study.video?[anchor('YouTubeで見る',study.video)]:[]),...(study.chart?[anchor('初心者向けコード譜を見る',study.chart)]:[]),...(study.score?[anchor('工工四の参照（Lrschneider / CC BY-SA 4.0）',study.score)]:[]));
+    $('study-stages').replaceChildren(...(study.stages||[]).map((stage,i)=>{const button=document.createElement('button');button.textContent=stage.title;button.onclick=()=>onPractice(stage.names,`${study.title} · ${stage.title}`,`study:${study.id}:${i}`,{easy:true});return button;}));
+    $('study-practice').hidden=!!study.stages;
     $('study-practice').textContent=study.names?'この曲の導入コードを練習':'先に合・四・工を練習';
     $('study-practice').onclick=()=>study.names?onPractice(study.names,`${study.title} · 導入のコード`,`study:${study.id}`):onBasics(`study:${study.id}`,study.title);
   }

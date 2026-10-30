@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { readLyrics,normalizeCues,lyricAt,lrcText,readChordSheet } from '../practice/lyrics.mjs';
+import { readLyrics,normalizeCues,lyricAt,lrcText,readChordSheet,readLyricFile } from '../practice/lyrics.mjs';
 import { LYRIC_PRESETS } from '../practice/lyric-presets.mjs';
 import { chordExercise,scoreNotes } from '../practice/scores.mjs';
 const parsed=readLyrics('[ar:My own song]\n[00:00.00]My first line\n[00:02.50][00:09.00]My second line');
@@ -19,5 +19,10 @@ assert.throws(()=>readChordSheet('[C]line\n'.repeat(65)),/64/);
 for(const preset of Object.values(LYRIC_PRESETS)){const data=readLyrics(preset.text);assert.ok(preset.cues.every(c=>c.line<data.lines.length));assert.ok(preset.source.startsWith('https:'));}
 assert.equal(lyricAt(LYRIC_PRESETS['song:twinkle'].cues,16*.666667),2);
 const lyricsSource=readFileSync('practice/lyrics.mjs','utf8');assert.doesNotMatch(lyricsSource,/innerHTML|fetch\(|XMLHttpRequest|sendBeacon/);
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['session.css?v=5','lyrics.mjs?v=5','lyric-presets.mjs?v=5','songs/lyrics-provenance.json','polyphonic.mjs?v=5'])assert.ok(sw.includes(path),path);
+assert.equal(await readLyricFile({size:24,text:async()=> '\uFEFF[00:01]My own line'}),'[00:01]My own line');
+await assert.rejects(()=>readLyricFile({size:80001,text:async()=>{throw new Error('must not read');}}),/80 KB/);
+await assert.rejects(()=>readLyricFile({size:20001,text:async()=> 'x'.repeat(20001)}),/2万字/);
+await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\0binary'}),/UTF-8/);
+await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\uFFFD'}),/UTF-8/);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['progress.mjs?v=6','songs/tokiyo-study.json','session.css?v=6','lyrics.mjs?v=6','lyric-presets.mjs?v=6','songs/lyrics-provenance.json','polyphonic.mjs?v=6'])assert.ok(sw.includes(path),path);
 console.log('Practice session: LRC, repeated timestamps, lyrics bounds, chord-sheet adapter, timing, safe local text and PWA coverage PASS');
