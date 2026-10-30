@@ -1,8 +1,16 @@
 # ギターと三線を一音ずつ練習する
 
-2026-10-31 v17。既存Musicの[一音ずつ](../practice/index.html)をListenから開く。
+2026-10-31 v18。既存Musicの[一音ずつ](../practice/index.html)をListenから開く。
 Simply Guitarの教材を移植せず、音の正解を待つ練習と、MIDIの長さ・テンポで流れるガイドを用意した。
 既存Cloudflare `music-stack` / GitHub Pagesを使い、新しい公開先は作らない。
+
+## Apple Musicのギター練習9曲（v18）
+
+共有リストの9録音を元の順番で選択できる。Where Did You Sleep Last Night (Live Acoustic)、Woman (2010 Digital Remaster)、Could You Be Loved、イマジン、Your Song、サンテリア、ブラックバード (2009 Digital Remaster)、時間よ止まれ (Remastered 2022)、Jigsaw Falling Into Place。`practice/songs/guitar-playlist.json`に公開ページから照合した曲名・歌手・録音ID・原曲URLと教材を記録する。
+
+ギターの曲練習画面から原曲を聴き、先生の動画とコード図へ進める。時間よ止まれ・Jigsawは既存の通し動画で自動のコード図を使い、ほかの7曲は手動でコードを選んで手の形を調べる。新規5曲の全曲コード順・同期時刻は未設定。原曲と教材のキー・調弦・カポが異なる場合があると案内する。SanteriaはMarty Musicのギターレッスンを使用。
+
+選択曲と3つの自己チェックは`music-practice-guitar-playlist-v1`へ端末保存し、三線のメモや個人歌詞と分ける。曲リスト・メモ・コード図はオフラインで使用可。原曲・動画・外部の解説は通信が必要。共有リストの後日更新を自動取得する機能や、Apple Musicの再生・歌詞との同期はない。
 
 ## Apple Musicの三線練習7曲（v17）
 

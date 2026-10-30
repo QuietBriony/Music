@@ -1,13 +1,14 @@
-import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=17';
+import { GUITAR_PLAYLIST } from './guitar-playlist.mjs?v=18';
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=18';
 // Curated reference metadata only. No third-party scores, lyrics, recordings or embeds.
-import { PREPARED_COURSES } from './singalong-courses.mjs?v=17';
+import { PREPARED_COURSES } from './singalong-courses.mjs?v=18';
 export const STUDIES = {
   guitar:[
     {id:'tokiyo',title:'時間よ止まれ',artist:'矢沢永吉',focus:'まずCとAmの2つだけ。1・2・3・4と数えて、1で下へ1回弾きます。慣れたらDmとG7、最後に6コードへ。',names:['C','Em','G7','Am','Dm','G7'],stages:[{title:'1. CとAmだけ',names:['C','Am','C','Am']},{title:'2. DmとG7だけ',names:['Dm','G7','Dm','G7']},{title:'3. 6コードをつなぐ',names:['C','Em','G7','Am','Dm','G7']}],lesson:'https://note.com/mickeykogure/n/n41986bc8627a',video:'https://www.youtube.com/watch?v=apHhVfpeAh4',chart:'https://gakufu.gakki.me/m/data/big00022.html',label:'小暮貢朗「ギターで歌おうch」の解説',note:'アプリはカポなし・低いキーの準備練習です。セーハなし、1コード4拍の仮ガイド。原曲の全譜・リズム・歌詞は同梱しません。参考動画とはキーやカポ位置が異なります。'},
-    {id:'santeria',title:'Santeria',artist:'Sublime',focus:'E → G# → C#m → Bの短いコード練習。まず各音を確かめ、次に裏拍で軽く弾く練習へ。',names:['E','G#','C#m','B'],lesson:'https://creativeguitarstudio.blogspot.com/2018/04/qwik-songs-004-santeria-by-sublime.html',label:'Creative Guitar Studioの解説・動画',note:'冒頭の和音を使う簡易練習です。曲全体の構成・ソロは参照レッスンへ。'},
+    {video:'https://www.youtube.com/watch?v=sHaCB68F1Ko',id:'santeria',title:'Santeria',artist:'Sublime',focus:'E → G# → C#m → Bの短いコード練習。まず各音を確かめ、次に裏拍で軽く弾く練習へ。',names:['E','G#','C#m','B'],lesson:'https://www.youtube.com/watch?v=sHaCB68F1Ko',label:'Marty Musicの解説',note:'冒頭の和音を使う簡易練習です。曲全体の構成・ソロは参照レッスンへ。'},
     {id:'blackbird',title:'Blackbird',artist:'The Beatles',focus:'G → Am7 → G/B → Gの和音を、一弦ずつ確かめる導入練習。親指の低音と指で弾く高音を分けて聴きます。',names:['G','Am7','G/B','G'],lesson:'https://www.justinguitar.com/songs/the-beatles-blackbird-chords-tabs-guitar-lesson-sb-113',video:'https://www.youtube.com/watch?v=mEn2SEwZKNE',label:'JustinGuitarの解説',note:'原曲の運指や二音の動きは動画で確認します。このアプリ内は和音の準備練習です。'},
     {id:'jigsaw',title:'Jigsaw Falling Into Place',artist:'Radiohead',focus:'「この曲を1曲通して練習」から、標準調弦＋カポ2のかんたん伴奏へ。動画に合わせてAm・E・Cmaj7などの図が進みます。まず0.75倍で、コードの切替で下に1回ずつ弾いてみましょう。',names:['Bm','Bm','Bm','Bm'],referenceChord:'Bm',practiceLabel:'先にBmの押さえ方を練習',practiceTitle:'Jigsaw · Bmの準備',lesson:'https://www.youtube.com/watch?v=daD3x6XudqY',video:'https://www.youtube.com/watch?v=daD3x6XudqY',label:'Cole Johnstoneの標準調弦レッスン（英語）',referenceNote:'通し伴奏は標準調弦 EADGBE＋カポ2。図のコード名はカポから数えます。動画に合わせて自動で進み、速度・A/B反復も使えます。',note:'準備ボタンはカポなしのBm練習です。通し伴奏は標準調弦＋カポ2で、細かなリフ・低音・装飾を省いた練習版。通し動画の変則調弦の運指とは異なります。解説リンクはCole Johnstoneの標準調弦レッスンです。'}
-  ],
+  ].concat(GUITAR_PLAYLIST.tracks.filter(t=>!['tokiyo','santeria','blackbird','jigsaw'].includes(t.id)).map(t=>({...t,label:t.credit+'の解説',practiceLabel:'先に開放弦を確認',referenceNote:t.note,referenceChord:'C'}))),
   sanshin:SANSHIN_PLAYLIST.tracks.map(t=>({...t,lesson:t.source,video:`https://www.youtube.com/watch?v=${t.video}`,label:`${t.credit}の教材`,score:t.sheets[0].url,scoreLabel:t.sheets[0].label}))
 };
 export const BASICS = {

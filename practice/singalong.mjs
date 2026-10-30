@@ -1,9 +1,9 @@
-import { cueAt } from './video-cues.mjs?v=17';
-import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=17';
-import { STUDIES } from './learning.mjs?v=17';
-import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=17';
-import { detectChord,ChordGate } from './polyphonic.mjs?v=17';
-import { lessonPlayer } from './youtube.mjs?v=17';
+import { cueAt } from './video-cues.mjs?v=18';
+import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=18';
+import { STUDIES } from './learning.mjs?v=18';
+import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=18';
+import { detectChord,ChordGate } from './polyphonic.mjs?v=18';
+import { lessonPlayer } from './youtube.mjs?v=18';
 const STORAGE='music-practice-singalong-v1';
 const lessons=Object.entries(STUDIES).flatMap(([instrument,items])=>items.map(s=>({...s,instrument,video:PREPARED_COURSES[s.id]?.url||s.video||s.lesson})));
 const text=(id,value)=>{const e=document.getElementById(id);if(e.textContent!==String(value))e.textContent=value;};

@@ -1,6 +1,6 @@
 // Our easy accompaniment to this particular full cover. No lyrics, TAB or media.
 // Standard EADGBE + capo 2. Bass inversions and ornamental notes are simplified.
-import { songSteps } from './singalong-core.mjs?v=17';
+import { songSteps } from './singalong-core.mjs?v=18';
 export const JIGSAW_VIDEO_ID='x0YbxY-u7fI';
 export const JIGSAW_END=270.2;
 const sections=[

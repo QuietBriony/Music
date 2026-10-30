@@ -1,4 +1,4 @@
-import { CHORDS } from './chords.mjs?v=17';
+import { CHORDS } from './chords.mjs?v=18';
 export const SING_SHAPES={...CHORDS,
  F:{frets:[-1,-1,3,2,1,-1],fingers:[0,0,3,2,1,0]},
  Fm:{frets:[-1,-1,3,1,1,-1],fingers:[0,0,3,1,2,0]},
