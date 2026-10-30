@@ -1,0 +1,45 @@
+{
+  "checked": "2026-10-30",
+  "scope": "Original fretless diagrams and factual fingering metadata; teacher videos are embedded only on request. No recordings, photographs or third-party lyrics are copied.",
+  "fingering": {
+    "source": "https://ks-sanshin.com/三線の勘所とは？初心者が押さえられるようにな/",
+    "credit": "栗山新也 沖縄三線教室: 勘所と基本の運指を確認。図・文章はMusic Stackが新たに作成。",
+    "mapping": "乙・上・五=index; 老・中・六=middle; 尺・七・八=little. 九 extends the little-finger position toward the body. 尺 has low/high variants. Positions are proportional pitch-based illustrations, not measured distances or a universal school-specific fingering."
+  },
+  "tinsagu": {
+    "file": "tinsagu.mid",
+    "source": "https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png",
+    "source_image": "https://upload.wikimedia.org/wikipedia/commons/2/29/Kunkunshi_for_Tinsagu_nu_Hana.png",
+    "source_sha256": "014482d72c51f3562ceb9cccb996b5fffb531f006c4f8e2337b4405ea24281cf",
+    "attribution": "Kunkunshi for Tinsagu nu Hana, Lrschneider (2017), Wikimedia Commons, CC BY-SA 4.0. Adaptation by Music Stack.",
+    "license": "CC-BY-SA-4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "changes": "First verse with surrounding instrumental phrase. Transcribed the large symbols right-to-left, top-to-bottom; omitted small ornamental notes, set each cell to one beat at 85 BPM in C-F-C honchoshi. Retains the one-cell rest. 63 notes across 64 beats. This adapted MIDI and the note data in build-practice-sanshin.mjs retain CC BY-SA 4.0; application code is separate. No lyrics or source image are bundled.",
+    "sha256": "0a0911672c388607b25b66fe5feceac8cd42ab097690f3bfa01ca2d41a3858c5"
+  },
+  "videos": [
+    {
+      "id": "tinsagu",
+      "video_id": "XkmKijcH63s",
+      "title": "練習曲04 てぃんさぐぬ花（譜面あり）",
+      "author": "宮里英克沖縄三線教室",
+      "source": "https://miyazatohidekatsu.com/sanshin/"
+    },
+    {
+      "id": "jidai",
+      "video_id": "xtf0OAu-qVY",
+      "title": "練習曲48 時代の流れ（譜面あり）",
+      "author": "宮里英克沖縄三線教室",
+      "source": "https://miyazatohidekatsu.com/sanshin/",
+      "boundary": "Teacher video shows its score and lyrics on screen (verified at 210, 300, 540, 600 seconds). Only the official embed is displayed; no full transcription or lyric text is bundled. Finger lookup is manual.",
+      "score_chapter_seconds": 210
+    },
+    {
+      "id": "tsukinu",
+      "video_id": "7GmB2WV4D4A",
+      "author": "伊禮俊一",
+      "source": "https://ameblo.jp/irei-blog/entry-12356649318.html",
+      "boundary": "Existing reference metadata only; manual finger lookup."
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { CHORDS } from './chords.mjs?v=12';
+import { CHORDS } from './chords.mjs?v=13';
 export const LYRIC_LIMIT=20000;
 export function readLyrics(text){
  if(typeof text!=='string'||text.length>LYRIC_LIMIT)throw new Error('歌詞は2万字までです。');
@@ -53,6 +53,7 @@ export function mountLyrics({defaults={},onImport}){
  const storage=()=>`music-practice-session-lyrics-v2:${key}`;
  function persist(){try{localStorage.setItem(storage(),JSON.stringify({version:2,text:data.lines.join('\n'),cues:data.cues,follow}));return true;}catch{return false;}}
  function render(){
+  $('session-lyrics').dataset.empty=String(!data.lines.length&&!hint);
   const current=follow?lyricAt(data.cues,currentTime):manual;
   const active=current<0?0:Math.min(data.lines.length-1,current);
   $('session-lyric-current').textContent=data.lines[active]||hint?.primary||'歌詞を入れると、演奏に合わせてここに表示できます。';

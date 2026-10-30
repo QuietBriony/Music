@@ -1,5 +1,5 @@
-import { melodyNotes } from './midi.mjs?v=12';
-import { CHORDS, chordNotes, mapMelody } from './chords.mjs?v=12';
+import { melodyNotes } from './midi.mjs?v=13';
+import { CHORDS, chordNotes, mapMelody } from './chords.mjs?v=13';
 export const SONGS = {
   guitar: [
     { id: 'amazing-grace', title: 'Amazing Grace', file: 'amazing-grace.mid', chords: 'G・C・D', detail: 'G・C・Dで弾く伝統曲。まずはコードを押さえて、一弦ずつ。', source: 'https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1832', credit: 'Trad. / Arr.: Breizh Partitions (2012) · Mutopia · CC BY-SA 3.0。装飾音を省きGへ移調、コードを追加。' },
@@ -7,6 +7,7 @@ export const SONGS = {
     { id:'ode-to-joy', title:'歓喜の歌', file:'ode-to-joy.mid', chords:'C・G7', detail:'ベートーヴェンの主題を短い練習に。CとG7の切り替えから。', source:'https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=528', credit:'L. v. Beethoven · 主題を新たに入力、Cへ移調、練習用コードを追加 · MIDIはCC0。' }
   ],
   sanshin: [
+    { id:'tinsagu', title:'てぃんさぐぬ花（1節・やさしい版）', file:'tinsagu.mid', detail:'前後の間奏を含む1節。小さい飾り音を省いた63音。指図・ガイド・マイクで最後まで練習できます。', source:'https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png', credit:'Lrschneider (2017) / Wikimedia Commons · CC BY-SA 4.0。大きい文字を1拍ずつ、本調子Cに設定。装飾音を省略。', terms:'songs/sanshin-provenance.json' },
     { id:'twinkle', title:'きらきら星', file:'twinkle.mid', detail:'本調子の合・乙・老・四・上・中で弾く、42音の旋律です。', source:'https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=2236', credit:'フランス伝承旋律を新たに入力 · MIDIはCC0。' },
     { id:'ode-to-joy', title:'歓喜の歌', file:'ode-to-joy.mid', detail:'合・乙・老・四・上で弾く、30音の主題です。', source:'https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=528', credit:'L. v. Beethoven · 主題を新たに入力、Cへ移調 · MIDIはCC0。' }
   ]

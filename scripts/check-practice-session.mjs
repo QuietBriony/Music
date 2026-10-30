@@ -24,5 +24,5 @@ await assert.rejects(()=>readLyricFile({size:80001,text:async()=>{throw new Erro
 await assert.rejects(()=>readLyricFile({size:20001,text:async()=> 'x'.repeat(20001)}),/2万字/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\0binary'}),/UTF-8/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\uFFFD'}),/UTF-8/);
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['progress.mjs?v=12','songs/tokiyo-study.json','session.css?v=12','lyrics.mjs?v=12','lyric-presets.mjs?v=12','songs/lyrics-provenance.json','polyphonic.mjs?v=12'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['progress.mjs?v=13','songs/tokiyo-study.json','session.css?v=13','lyrics.mjs?v=13','lyric-presets.mjs?v=13','songs/lyrics-provenance.json','polyphonic.mjs?v=13'])assert.ok(sw.includes(path),path);
 console.log('Practice session: LRC, repeated timestamps, lyrics bounds, chord-sheet adapter, timing, safe local text and PWA coverage PASS');

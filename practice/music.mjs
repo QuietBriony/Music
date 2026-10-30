@@ -1,17 +1,11 @@
 // Original, dependency-free single-note exercises and detector for Music Stack.
+import { sanshinPosition } from './sanshin-core.mjs?v=13';
 export const frequencyFor = (midi) => 440 * 2 ** ((midi - 69) / 12);
 export const centsFrom = (frequency, midi) => 1200 * Math.log2(frequency / frequencyFor(midi));
 export function noteName(midi) {
   return `${['C', 'C♯', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'][((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`;
 }
 const guitar = (string, fret) => ({ string, fret, midi: [0, 64, 59, 55, 50, 45, 40][string] + fret });
-const positions = {
-  '合': [3, 0, 48, '男弦・開放'], '乙': [3, 2, 50, '男弦・人差し指'],
-  '老': [3, 4, 52, '男弦・小指'], '四': [2, 0, 53, '中弦・開放'],
-  '上': [2, 2, 55, '中弦・人差し指'], '中': [2, 4, 57, '中弦・小指'],
-  '工': [1, 0, 60, '女弦・開放'], '五': [1, 2, 62, '女弦・人差し指'],
-  '六': [1, 4, 64, '女弦・小指']
-};
 export const LESSONS = {
   guitar: [
     { id: 'open', title: '01 開放弦をひとつずつ', detail: '左手は押さえず、6弦から1弦へ。ほかの弦は軽く止めます。', notes: [6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 6].map(s => guitar(s, 0)) },
@@ -22,7 +16,7 @@ export const LESSONS = {
     { id: 'open', title: '01 合・四・工の開放弦', detail: '本調子の3本をひとつずつ。左手は押さえずに弾きます。', symbols: '合四工四合合四工' },
     { id: 'positions', title: '02 勘所をゆっくり往復', detail: '右の列から下へ読みます。音を聴きながら、勘所をひとつずつ確かめます。', symbols: '合乙老四上中工中上四老乙合' },
     { id: 'phrase', title: '03 短いフレーズを弾く', detail: '同じ音の続くところも、一音ずつ弾き直しましょう。', symbols: '工五六五工工上工' }
-  ].map(lesson => ({ ...lesson, notes: [...lesson.symbols].map(symbol => { const [string, fret, midi, position] = positions[symbol]; return { symbol, string, fret, midi, position }; }) }))
+  ].map(lesson => ({ ...lesson, notes: [...lesson.symbols].map(symbol => ({ ...sanshinPosition(symbol) })) }))
 };
 export function lessonNotes(instrument, id, transpose = 0) {
   const lessons = LESSONS[instrument] || LESSONS.guitar;

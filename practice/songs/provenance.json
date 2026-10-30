@@ -38,6 +38,19 @@
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "changes": "New symbolic transcription of the opening theme in C, tempo 90, with suggested C/G7 chord markers. No lyrics or recordings.",
       "sha256": "c686ddb489ffc2dd07ef8fa81143874c3b607443e0b743e4696d676c3e9d3a54"
+    },
+    {
+      "id": "tinsagu",
+      "title": "てぃんさぐぬ花（1節・やさしい版）",
+      "file": "tinsagu.mid",
+      "source": "https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png",
+      "source_image": "https://upload.wikimedia.org/wikipedia/commons/2/29/Kunkunshi_for_Tinsagu_nu_Hana.png",
+      "source_sha256": "014482d72c51f3562ceb9cccb996b5fffb531f006c4f8e2337b4405ea24281cf",
+      "attribution": "Kunkunshi for Tinsagu nu Hana, Lrschneider (2017), Wikimedia Commons, CC BY-SA 4.0. Adaptation by Music Stack.",
+      "license": "CC-BY-SA-4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "changes": "First verse with surrounding instrumental phrase. Transcribed the large symbols right-to-left, top-to-bottom; omitted small ornamental notes, set each cell to one beat at 85 BPM in C-F-C honchoshi. Retains the one-cell rest. 63 notes across 64 beats. This adapted MIDI and the note data in build-practice-sanshin.mjs retain CC BY-SA 4.0; application code is separate. No lyrics or source image are bundled.",
+      "sha256": "0a0911672c388607b25b66fe5feceac8cd42ab097690f3bfa01ca2d41a3858c5"
     }
   ]
 }

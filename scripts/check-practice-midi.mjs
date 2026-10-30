@@ -50,7 +50,7 @@ const provenance=JSON.parse(readFileSync('practice/songs/provenance.json','utf8'
 for(const song of provenance.songs){
   const data=readFileSync(`practice/songs/${song.file}`), midi=parseMidi(data), notes=melodyNotes(midi,midi.groups[0].id);
   assert.equal(createHash('sha256').update(data).digest('hex'),song.sha256);
-  const expected={'amazing-grace':[47,72,16],'twinkle':[42,48,16],'ode-to-joy':[30,32,9]}[song.id];
+  const expected={'amazing-grace':[47,72,16],'twinkle':[42,48,16],'ode-to-joy':[30,32,9],'tinsagu':[63,64,0]}[song.id];
   assert.equal(notes.length,expected[0]);assert.equal(midi.endBeat,expected[1]);
   for(const [instrument,songs] of Object.entries(SONGS))if(songs.some(s=>s.id===song.id)){
     const score=scoreNotes(midi,midi.groups[0].id,instrument);
@@ -74,4 +74,4 @@ await assert.rejects(fetchMidi('https://source.example/huge.mid'),/大き/);
 globalThis.fetch=async()=>new Response('not midi',{headers:{'content-length':String(MIDI_LIMITS.bytes+1)}});
 await assert.rejects(fetchMidi('https://source.example/huge.mid'),/1 MB/);
 globalThis.fetch=nativeFetch;delete globalThis.location;
-console.log('Practice MIDI: SMF/tempo/limits, 33 chord voicings, four progressions, three licensed song hashes PASS');
+console.log('Practice MIDI: SMF/tempo/limits, 33 chord voicings, four progressions, four licensed song hashes PASS');
