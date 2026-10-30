@@ -11,10 +11,38 @@
     "video": "https://www.youtube.com/watch?v=uDsTt3YMbcw",
     "scope": "Creator explicitly teaches DADF#BE tuning. Not selected for standard-tuning in-app chord diagrams."
   },
-  "implementation_plan": "Standard-tuning reference video plus an original Bm-only preparation drill; no copied riff, score, lyric or complete harmonic sequence. Timed chord synchronization is not claimed for this course.",
+  "implementation_plan": "A full 101-target, 14-section easy accompaniment for the specified cover. Eight existing open chord shapes, EADGBE + capo 2, no barre. Bm→Am, F#/A#→E, Dmaj7→Cmaj7, D6→Am7 (same pitch classes with different bass), Gmaj7→Fmaj7, F#m/F#m7→Em, Em/Em9→Dm, A→G. Bm/D is reduced to Am. Harmonic embellishments and bass motion are omitted, not presented as the original guitar part.",
   "boundaries": [
-    "The preparation drill is not the full song or its rhythm.",
-    "In-app diagrams and chord recognition remain for standard EADGBE tuning.",
+    "The Bm preparation remains separate; the video course supplies a complete simplified accompaniment, not the original riff or exact bass/finger performance.",
+    "App accompaniment and chord recognition use standard EADGBE + capo 2; the performance video uses DADF#BE, and its fret positions must not be copied to the standard-tuned guitar.",
     "Teacher media remain in the official player and are never cached or downloaded."
-  ]
+  ],
+  "full_song_request": "Owner explicitly requested one complete easy-chord accompaniment with chord diagrams following the video clock.",
+  "performance": {
+    "creator": "imamuzx",
+    "video": "https://www.youtube.com/watch?v=x0YbxY-u7fI",
+    "scope": "Full sung acoustic cover, including its additional final chorus; embed/link only. Video uses DADF#BE. App accompaniment is its own simplified standard EADGBE + capo 2 voicing guide."
+  },
+  "harmonic_references": [
+    {
+      "url": "https://faber-product-media.s3.amazonaws.com/687cc0f3-d65e-40eb-b01a-ffc4b57b7de0",
+      "scope": "Publisher preview confirms harmonic families and alternate tuning; no notation, TAB, diagram or image copied."
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=Kr4hwUY_Lhs",
+      "creator": "Nikola Gugoski",
+      "scope": "Public primary tutorial, section structure cross-check only; no downloadable TAB accessed."
+    }
+  ],
+  "timing": {
+    "method": "Manual decoded-frame inspection of the official embedded cover at 2-second sampling; hand and on-screen chord/bass patterns cross-checked, then a coarse simplified accompaniment was aligned. The guide is approximate and supports a device-local +/-2 second display adjustment.",
+    "performance_end_seconds": 270.2,
+    "sample_range_seconds": [
+      6,
+      270
+    ],
+    "decoded_samples": 133,
+    "stored_data": "Chord labels, section names and numeric seconds only. All verification screenshots remain ignored and outside the release archive.",
+    "actual_media_duration_seconds": 270.461
+  }
 }

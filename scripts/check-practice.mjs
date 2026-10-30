@@ -56,7 +56,7 @@ for (const instrument of Object.keys(LESSONS)) {
 const manifest = JSON.parse(readFileSync('practice/manifest.webmanifest', 'utf8'));
 assert.equal(manifest.scope, './'); assert.equal(manifest.start_url, './index.html');
 const sw = readFileSync('practice/sw.js', 'utf8');
-assert.match(sw, /music-practice-v10/); assert.doesNotMatch(sw, /hazama-fm-/);
+assert.match(sw, /music-practice-v11/); assert.doesNotMatch(sw, /hazama-fm-/);
 for (const file of ['index.html', 'style.css', 'presets.css', 'app.mjs', 'music.mjs', 'midi.mjs', 'chords.mjs', 'scores.mjs', 'tuner.mjs', 'learning.mjs', 'songs/amazing-grace.mid', 'songs/twinkle.mid', 'songs/ode-to-joy.mid', 'songs/provenance.json', 'manifest.webmanifest', 'icon.svg']) {
   assert.ok(existsSync(`practice/${file}`)); assert.ok(sw.includes(file), `${file} needs offline coverage`);
 }

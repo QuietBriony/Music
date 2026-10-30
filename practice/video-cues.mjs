@@ -17,11 +17,11 @@ export const TOKIYO_TIMES=[
  233.2,235.9,237.25,238.6,241.3,244,245.35,246.7,
  249.4,254.3
 ];
-export function cueAt(times,time,offset=0){
+export function cueAt(times,time,offset=0,end=TOKIYO_END){
  if(!times.length||!Number.isFinite(time))return null;
  const position=Math.max(0,time)+(Number.isFinite(offset)?Math.max(-2,Math.min(2,offset)):0);
  let low=0,high=times.length;
  while(low<high){const mid=(low+high)>>1;if(times[mid]<=position)low=mid+1;else high=mid;}
  const index=Math.max(0,low-1);
- return{index,remaining:times[index+1]===undefined?null:Math.max(0,times[index+1]-position),ended:position>=TOKIYO_END};
+ return{index,remaining:times[index+1]===undefined?null:Math.max(0,times[index+1]-position),ended:Number.isFinite(end)&&position>=end};
 }

@@ -1,10 +1,11 @@
 // Curated reference metadata only. No third-party scores, lyrics, recordings or embeds.
+import { PREPARED_COURSES } from './singalong-courses.mjs?v=11';
 export const STUDIES = {
   guitar:[
     {id:'tokiyo',title:'時間よ止まれ',artist:'矢沢永吉',focus:'まずCとAmの2つだけ。1・2・3・4と数えて、1で下へ1回弾きます。慣れたらDmとG7、最後に6コードへ。',names:['C','Em','G7','Am','Dm','G7'],stages:[{title:'1. CとAmだけ',names:['C','Am','C','Am']},{title:'2. DmとG7だけ',names:['Dm','G7','Dm','G7']},{title:'3. 6コードをつなぐ',names:['C','Em','G7','Am','Dm','G7']}],lesson:'https://note.com/mickeykogure/n/n41986bc8627a',video:'https://www.youtube.com/watch?v=apHhVfpeAh4',chart:'https://gakufu.gakki.me/m/data/big00022.html',label:'小暮貢朗「ギターで歌おうch」の解説',note:'アプリはカポなし・低いキーの準備練習です。セーハなし、1コード4拍の仮ガイド。原曲の全譜・リズム・歌詞は同梱しません。参考動画とはキーやカポ位置が異なります。'},
     {id:'santeria',title:'Santeria',artist:'Sublime',focus:'E → G# → C#m → Bの短いコード練習。まず各音を確かめ、次に裏拍で軽く弾く練習へ。',names:['E','G#','C#m','B'],lesson:'https://creativeguitarstudio.blogspot.com/2018/04/qwik-songs-004-santeria-by-sublime.html',label:'Creative Guitar Studioの解説・動画',note:'冒頭の和音を使う簡易練習です。曲全体の構成・ソロは参照レッスンへ。'},
     {id:'blackbird',title:'Blackbird',artist:'The Beatles',focus:'G → Am7 → G/B → Gの和音を、一弦ずつ確かめる導入練習。親指の低音と指で弾く高音を分けて聴きます。',names:['G','Am7','G/B','G'],lesson:'https://www.justinguitar.com/songs/the-beatles-blackbird-chords-tabs-guitar-lesson-sb-113',video:'https://www.youtube.com/watch?v=mEn2SEwZKNE',label:'JustinGuitarの解説',note:'原曲の運指や二音の動きは動画で確認します。このアプリ内は和音の準備練習です。'},
-    {id:'jigsaw',title:'Jigsaw Falling Into Place',artist:'Radiohead',focus:'まずBmを1つ、ゆっくり鳴らすところから。「手の形」で指の順番と3本だけの形も見比べられます。その後「3. 弾き語りで1曲」の解説動画を0.75倍にして、短い範囲を繰り返します。',names:['Bm','Bm','Bm','Bm'],referenceChord:'Bm',practiceLabel:'先にBmの押さえ方を練習',practiceTitle:'Jigsaw · Bmの準備',lesson:'https://www.youtube.com/watch?v=daD3x6XudqY',video:'https://www.youtube.com/watch?v=daD3x6XudqY',label:'Cole Johnstoneの標準調弦レッスン（英語）',referenceNote:'Cole Johnstoneの標準調弦 EADGBE・カポなしの解説（英語）。まずBmの形を表示します。動画の速度・A/B反復を使えます。全曲のコード順と自動同期は未設定です。',note:'アプリ内はBmだけの準備練習で、原曲の進行・リフ・リズムは再現していません。この動画は標準調弦版です。別の変則調弦の解説へ移る場合、このアプリの標準調弦用コード図を流用しないでください。'}
+    {id:'jigsaw',title:'Jigsaw Falling Into Place',artist:'Radiohead',focus:'「この曲を1曲通して練習」から、標準調弦＋カポ2のかんたん伴奏へ。動画に合わせてAm・E・Cmaj7などの図が進みます。まず0.75倍で、コードの切替で下に1回ずつ弾いてみましょう。',names:['Bm','Bm','Bm','Bm'],referenceChord:'Bm',practiceLabel:'先にBmの押さえ方を練習',practiceTitle:'Jigsaw · Bmの準備',lesson:'https://www.youtube.com/watch?v=daD3x6XudqY',video:'https://www.youtube.com/watch?v=daD3x6XudqY',label:'Cole Johnstoneの標準調弦レッスン（英語）',referenceNote:'通し伴奏は標準調弦 EADGBE＋カポ2。図のコード名はカポから数えます。動画に合わせて自動で進み、速度・A/B反復も使えます。',note:'準備ボタンはカポなしのBm練習です。通し伴奏は標準調弦＋カポ2で、細かなリフ・低音・装飾を省いた練習版。通し動画の変則調弦の運指とは異なります。解説リンクはCole Johnstoneの標準調弦レッスンです。'}
   ],
   sanshin:[
     {id:'tinsagu',title:'てぃんさぐぬ花',artist:'沖縄民謡',focus:'本調子を合わせ、動画を短く区切って、工工四の文字を声に出してから弾きます。',lesson:'https://miyazatohidekatsu.com/sanshin/',video:'https://www.youtube.com/watch?v=mDGIJr9wNQw',label:'宮里英克の三線教室・譜面',score:'https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png',note:'曲の全譜をアプリに同梱していません。譜面・教室動画を参照し、先に開放弦と勘所を確認できます。'},
@@ -29,7 +30,7 @@ export const BASICS = {
     '1フレーズを口ずさむ → 工工四を読む → ゆっくり弾く、の順で。最初から全部を通さず、短い範囲を繰り返します。'
   ],links:[['本調子のチンダミ・基礎動画（宜保和也）','https://gibokazuya.com/youtube/'],['三線と工工四の教室・動画（宮里英克）','https://miyazatohidekatsu.com/sanshin/'],['工工四を読んでみる（三線ショップ島風）','https://shimakaji.com/user_data/sanshin_05_6.php']]}
 };
-export function mountLearning({onPractice,onBasics,onLeave}) {
+export function mountLearning({onPractice,onBasics,onLeave,onSingalong}) {
   const $=id=>document.getElementById(id);let instrument='guitar',selected='tokiyo';
   const anchor=(title,url)=>{const a=document.createElement('a');a.textContent=title+' ↗';a.href=url;a.target='_blank';a.rel='noopener';a.addEventListener('click',onLeave);return a;};
   function showStudy(){
@@ -40,6 +41,7 @@ export function mountLearning({onPractice,onBasics,onLeave}) {
     $('study-practice').hidden=!!study.stages;
     $('study-practice').textContent=study.practiceLabel||(study.names?'この曲の導入コードを練習':'先に合・四・工を練習');
     $('study-practice').onclick=()=>study.names?onPractice(study.names,study.practiceTitle||`${study.title} · 導入のコード`,`study:${study.id}`):onBasics(`study:${study.id}`,study.title);
+    const songButton=$('study-song');if(songButton){songButton.textContent=PREPARED_COURSES[study.id]?'この曲を1曲通して練習':'参考動画とコード図を開く';songButton.onclick=()=>onSingalong(study.id);}
   }
   $('study-select').onchange=()=>{selected=$('study-select').value;showStudy();};
   return function render(next){
