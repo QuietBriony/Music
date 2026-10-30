@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-30",
+  "request": "Owner requested whole-song singing practice with lyrics, chord fingering and microphone feedback, and selected reference video first.",
+  "tokiyo": {
+    "video": "https://www.youtube.com/watch?v=KgKycz0uHbM",
+    "creator": "オーリーズの音楽室",
+    "title": "時間よ止まれ / 矢沢永吉",
+    "reference_lesson": "https://note.com/mickeykogure/n/n41986bc8627a",
+    "use": "Only an official YouTube embed/link and a non-lyric harmonic practice sequence. No video, audio, lyrics, PDF or visual score are copied into this repository or offline cache.",
+    "verification": "Browser player played successfully. Opening, verse, instrumental and ending frames were inspected. Capo 4 and the C-shaped chord family are shown by the video. The final two C/Am/Dm/G phrases and Fm/C ending were inspected.",
+    "scope": "The 110 chord targets follow the video's harmonic order as a preparation aid. They have no original rhythmic notation or timestamps. The microphone advances the learner's target, not the video's playback position; users can align or skip targets themselves.",
+    "simplification": "F and Fm use three-string, three-finger voicings. Caug is a three-string C/E/G-sharp shape. Their pitch classes are retained. Diagram frets are relative to the capo.",
+    "rights_boundary": "The creator's lyrics and performance remain inside the YouTube player. External playback requires network and publisher availability. No claimed redistribution license or guaranteed permanent embedding availability."
+  },
+  "api": "https://developers.google.com/youtube/iframe_api_reference",
+  "manual_start": "No YouTube request until the learner explicitly loads a video. No microphone request until its own start button. Video and microphone stop on leaving/backgrounding."
+}

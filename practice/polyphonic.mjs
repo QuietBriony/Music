@@ -1,18 +1,18 @@
 // Original, conservative spectral template fitting. No recordings or external model.
-import { frequencyFor } from './music.mjs?v=6';
-import { CHORDS, chordNotes } from './chords.mjs?v=6';
+import { frequencyFor } from './music.mjs?v=7';
+import { CHORDS, chordNotes } from './chords.mjs?v=7';
 const sinc=x=>Math.abs(x)<1e-9?1:Math.sin(Math.PI*x)/(Math.PI*x);
 const blackman=x=>Math.abs(.42*sinc(x)+.25*(sinc(x-1)+sinc(x+1))+.04*(sinc(x-2)+sinc(x+2)));
 const families=[...new Map(Object.keys(CHORDS).map(name=>{
  const required=[...new Set(chordNotes(name).map(n=>n.midi%12))],pcs=CHORDS[name].omitsFifth?[...new Set([...required,(chordNotes(name)[0].midi+7)%12])]:required;
  return[name.split('/')[0],{name:name.split('/')[0],pcs,required}];
-})).values()];
+})).values(),{name:'Caug',pcs:[0,4,8],required:[0,4,8]}];
 const cache=new Map();
-function dictionary(sampleRate,fftSize){
- const key=`${sampleRate}:${fftSize}`;if(cache.has(key))return cache.get(key);
+function dictionary(sampleRate,fftSize,capo){
+ const key=`${sampleRate}:${fftSize}:${capo}`;if(cache.has(key))return cache.get(key);
  const maxBin=Math.min(fftSize/2-1,Math.ceil(3000*fftSize/sampleRate)),templates=[];
  for(let midi=36;midi<=83;midi++)for(const cents of [-12,0,12])for(const bright of [false,true]){
-  const points=new Map(),fundamental=frequencyFor(midi)*2**(cents/1200);
+  const points=new Map(),fundamental=frequencyFor(midi+capo)*2**(cents/1200);
   for(let h=1;h<=7;h++){
    const centre=fundamental*h*fftSize/sampleRate;if(centre>maxBin-3)break;
    const harmonic=bright?(h===1?.55:1/(h-1)**1.2):1/h**1.3;
@@ -23,9 +23,10 @@ function dictionary(sampleRate,fftSize){
  }
  const result={maxBin,templates};if(cache.size>=3)cache.delete(cache.keys().next().value);cache.set(key,result);return result;
 }
-export function detectChord(decibels,sampleRate,fftSize,{rms=0,gate=.006}={}){
+export function detectChord(decibels,sampleRate,fftSize,{rms=0,gate=.006,capo=0}={}){
  if(rms<gate)return{name:null,confidence:0,status:'quiet',pitches:[]};
- const {maxBin,templates}=dictionary(sampleRate,fftSize),spectrum=new Float64Array(maxBin+1);
+ if(!Number.isInteger(capo)||capo<0||capo>7)return{name:null,confidence:0,status:'unclear',pitches:[]};
+ const {maxBin,templates}=dictionary(sampleRate,fftSize,capo),spectrum=new Float64Array(maxBin+1);
  let peak=0,energy=0;for(let i=1;i<=maxBin;i++){const value=Number.isFinite(decibels[i])?Math.max(0,10**(decibels[i]/20)-.00002):0;spectrum[i]=value;peak=Math.max(peak,value);}
  if(peak<.0001)return{name:null,confidence:0,status:'quiet',pitches:[]};
  for(let i=1;i<=maxBin;i++){spectrum[i]/=peak;energy+=spectrum[i]**2;}

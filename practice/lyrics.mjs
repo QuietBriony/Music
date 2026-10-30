@@ -1,4 +1,4 @@
-import { CHORDS } from './chords.mjs?v=6';
+import { CHORDS } from './chords.mjs?v=7';
 export const LYRIC_LIMIT=20000;
 export function readLyrics(text){
  if(typeof text!=='string'||text.length>LYRIC_LIMIT)throw new Error('歌詞は2万字までです。');

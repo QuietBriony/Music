@@ -1,0 +1,114 @@
+import { STUDIES } from './learning.mjs?v=7';
+import { SING_SHAPES,TOKIYO_STEPS,readSteps,videoId,validRange,fingeringText,normalizeSingState,sectionStarts } from './singalong-core.mjs?v=7';
+import { detectChord,ChordGate } from './polyphonic.mjs?v=7';
+import { lessonPlayer } from './youtube.mjs?v=7';
+const STORAGE='music-practice-singalong-v1';
+const lessons=Object.entries(STUDIES).flatMap(([instrument,items])=>items.map(s=>({...s,instrument,video:s.id==='tokiyo'?'https://www.youtube.com/watch?v=KgKycz0uHbM':s.video||s.lesson})));
+const text=(id,value)=>{const e=document.getElementById(id);if(e.textContent!==String(value))e.textContent=value;};
+const $=id=>document.getElementById(id);
+export function mountSingalong({onTakeOver,onChange}){
+ let saved={};try{saved=JSON.parse(localStorage.getItem(STORAGE)||'{}')||{};}catch{}
+ let selected=lessons.find(s=>s.id===saved.selected)||lessons[0],steps=[],state={},active=false,player=null,ready=false,playerTicket=0,timer=null;
+ let inputTicket=0,stream=null,ctx=null,source=null,analyser=null,silent=null,meter=null;
+ const gate=new ChordGate();
+ const status=value=>text('sing-status',value);
+ const store=()=>{try{const bySong={...(saved.bySong||{}),[selected.id]:{index:state.index,capo:state.capo,a:state.a,b:state.b,custom:$('sing-code-input').value.slice(0,20000)}};saved={selected:selected.id,bySong};localStorage.setItem(STORAGE,JSON.stringify(saved));return true;}catch{status('この端末に保存できません。今の画面では練習を続けられます。');return false;}};
+ function stopInput(){
+  inputTicket++;clearInterval(meter);meter=null;stream?.getTracks().forEach(t=>t.stop());stream=null;
+  for(const node of [source,analyser,silent])try{node?.disconnect();}catch{}source=analyser=silent=null;
+  const old=ctx;ctx=null;if(old&&old.state!=='closed')old.close().catch(()=>{});
+  gate.reset();$('sing-mic').disabled=!steps.length||state.index>=steps.length;$('sing-mic-stop').disabled=true;text('sing-heard','—');
+ }
+ function pause(){try{player?.pauseVideo?.();}catch{}stopInput();}
+ function destroyPlayer(){playerTicket++;ready=false;clearInterval(timer);timer=null;try{player?.destroy?.();}catch{}player=null;$('sing-player').replaceChildren();$('sing-load').hidden=false;setPlayerControls(false);}
+ function setPlayerControls(value){for(const id of ['sing-play','sing-pause','sing-back','sing-a','sing-b','sing-loop','sing-speed'])$(id).disabled=!value;}
+ function renderDiagram(name){
+  const shape=SING_SHAPES[name],host=$('sing-diagram');host.replaceChildren();if(!shape)return;
+  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 180 164');svg.setAttribute('role','img');svg.setAttribute('aria-label',`${name}の押さえ方。指番号は1人差し指、2中指、3薬指、4小指`);
+  const add=(tag,attrs,value)=>{const e=document.createElementNS(ns,tag);for(const [k,v]of Object.entries(attrs))e.setAttribute(k,v);if(value!==undefined)e.textContent=value;svg.append(e);};
+  for(let i=0;i<6;i++){const x=28+i*25;add('line',{x1:x,x2:x,y1:32,y2:136});add('text',{x,y:156},6-i);}
+  for(let f=0;f<=6;f++)add('line',{x1:28,x2:153,y1:32+f*17.3,y2:32+f*17.3,class:f===0?'nut':''});
+  if(shape.barre){const b=shape.barre;add('line',{x1:28+(6-b.from)*25,x2:28+(6-b.to)*25,y1:32+(b.fret-.5)*17.3,y2:32+(b.fret-.5)*17.3,class:'barre'});}
+  shape.frets.forEach((f,i)=>{const x=28+i*25;if(f<=0)add('text',{x,y:21},f<0?'×':'○');else{const y=32+(f-.5)*17.3;add('circle',{cx:x,cy:y,r:8});add('text',{x,y:y+3.5,class:'finger'},shape.fingers[i]);}});host.append(svg);
+  text('sing-fingering',fingeringText(name));
+  $('sing-fingers').replaceChildren(...shape.frets.flatMap((f,i)=>{if(f<=0)return[];const li=document.createElement('li');li.textContent=`${['','人差し指','中指','薬指','小指'][shape.fingers[i]]}：${6-i}弦の${f}フレット`;return[li];}));
+ }
+ function render(){
+  const target=steps[Math.min(state.index,steps.length-1)],name=target?.name||$('sing-chord-picker').value||'C';
+  text('sing-course-title',`${selected.title} / ${selected.artist}`);text('sing-target',state.index>=steps.length&&steps.length?'✓':name);
+  text('sing-target-label',steps.length?state.index>=steps.length?'コードを一通り確認しました':'次に押さえるコード':selected.instrument==='sanshin'?'ギター用コード図':'押さえ方を確認');
+  text('sing-next',steps[state.index+1]?.name||'—');text('sing-section',target?.title||'参考動画とコード図');
+  text('sing-progress',steps.length?`${Math.min(state.index+1,steps.length)} / ${steps.length}コード`:'曲のコードを下で選べます');
+  $('sing-advance').disabled=!steps.length||state.index>=steps.length;$('sing-previous').disabled=!steps.length||state.index<=0;
+  $('sing-mic').disabled=!steps.length||state.index>=steps.length||!!stream;
+  $('sing-capo').value=state.capo;$('sing-chord-picker').value=name;renderDiagram(name);
+  text('sing-capo-note',state.capo?`カポ${state.capo}。図の数字はカポから数えます。`:'カポなし。図の数字はナットから数えます。');
+  if(target)$('sing-sections').value=steps.find(s=>s.section===target.section)?.index??0;
+  for(const b of $('sing-chord-track').querySelectorAll('[data-step]')){const i=Number(b.dataset.step);b.setAttribute('aria-current',String(i===state.index));b.classList.toggle('passed',i<state.index);}
+  text('sing-loop-state',state.a!==null&&state.b!==null?`${state.a.toFixed(1)}〜${state.b.toFixed(1)}秒`:'AとBを動画の位置で決めます');$('sing-loop').checked=state.loop;
+ }
+ function makeTrack(){
+  $('sing-chord-track').replaceChildren(...steps.map((s,i)=>{const b=document.createElement('button');b.textContent=s.name;b.dataset.step=i;b.setAttribute('aria-label',`${i+1}番目 ${s.title} ${s.name}`);return b;}));
+  $('sing-sections').replaceChildren(...sectionStarts(steps).map(s=>new Option(s.title,s.index)));
+ }
+ function advance(){if(state.index>=steps.length)return;state.index++;store();render();if(state.index>=steps.length){stopInput();status('最後までコードを確認しました。歌い方やタイミングの採点ではありません。');}}
+ function select(id){
+  pause();destroyPlayer();selected=lessons.find(s=>s.id===id)||lessons[0];const stored=saved.bySong?.[selected.id];
+  steps=selected.id==='tokiyo'?TOKIYO_STEPS:[];$('sing-code-input').value=typeof stored?.custom==='string'?stored.custom.slice(0,20000):'';
+  if($('sing-code-input').value)try{steps=readSteps($('sing-code-input').value);}catch{$('sing-code-input').value='';}
+  state=normalizeSingState(stored,steps.length);if(!stored)state.capo=selected.id==='tokiyo'?4:0;
+  $('sing-course').value=selected.id;$('sing-source').href=selected.video;$('sing-lesson-link').href=selected.lesson;
+  $('sing-outside').href=selected.video;
+  $('sing-source').textContent=videoId(selected.video)?'YouTubeで開く ↗':'解説ページで開く ↗';$('sing-load').disabled=!videoId(selected.video);
+  text('sing-reference-note',selected.id==='tokiyo'?'オーリーズの音楽室の歌詞・コード付き通し演奏。カポ4のコード名を案内します。':selected.instrument==='sanshin'?'三線の参考動画です。全曲の工工四・コード順は未設定です。この画面の指の図はギター用です。':'参考動画・演奏です。動画のキー・カポ・譜面表示を確認してください。全曲のコード順は未設定です。');
+  makeTrack();render();status('コード図は自分の進行です。動画とは自動同期しません。動画の音はイヤホンで聴くと、マイクの判定に入りにくくなります。');store();
+ }
+ async function loadVideo(){
+  const id=videoId(selected.video);if(!id)return;pause();destroyPlayer();const ticket=playerTicket;$('sing-load').disabled=true;status('YouTubeを準備しています…');
+  try{const created=await lessonPlayer($('sing-player'),id,{
+   onReady:e=>{if(ticket!==playerTicket||!active){try{e.target.destroy();}catch{}return;}player=e.target;ready=true;$('sing-load').hidden=true;$('sing-load').disabled=false;setPlayerControls(true);
+    const rates=player.getAvailablePlaybackRates?.()||[1];$('sing-speed').replaceChildren(...rates.filter(r=>r<=1).map(r=>new Option(`${r===1?'ふつう':r+'倍'}`,r)));$('sing-speed').value='1';status('準備できました。動画の再生を押してください。コード図は手動かマイクで進みます。');
+   },
+   onError:e=>{if(ticket!==playerTicket)return;ready=false;setPlayerControls(false);$('sing-load').disabled=false;$('sing-load').hidden=false;status(`動画を開けませんでした（${Number(e.data)||'通信'}）。「YouTubeで開く」から配信元で見ることもできます。`);},
+   onPlaybackRateChange:e=>{if(ticket===playerTicket)$('sing-speed').value=String(e.data);},
+   onStateChange:e=>{if(ticket!==playerTicket)return;if(e.data===0&&state.loop&&validRange(state.a,state.b,player?.getDuration?.())){player.seekTo(state.a,true);player.playVideo();}}
+  },()=>ticket===playerTicket&&active);if(ticket!==playerTicket||!active){try{created?.destroy();}catch{}return;}player=created;
+  timer=setInterval(()=>{if(!ready||!active)return;try{const time=player.getCurrentTime()||0;text('sing-video-time',`${Math.floor(time/60)}:${String(Math.floor(time%60)).padStart(2,'0')}`);if(state.loop&&player.getPlayerState()===1&&time>=state.b){player.seekTo(state.a,true);}}catch{}},200);
+  }catch(error){if(ticket===playerTicket){$('sing-load').disabled=false;status(error.message);}}
+ }
+ async function startInput(){
+  if(!steps.length||state.index>=steps.length)return;onTakeOver();stopInput();render();const ticket=inputTicket;$('sing-mic').disabled=true;$('sing-mic-stop').disabled=false;status('マイクの許可を待っています。動画の音はイヤホンで聴いてください。');let acquired;
+  try{
+   if(!navigator.mediaDevices?.getUserMedia)throw new Error('マイクはHTTPSかlocalhostで使えます。');const Audio=window.AudioContext||window.webkitAudioContext;ctx=new Audio({latencyHint:'interactive'});const audio=ctx;await audio.resume();if(ticket!==inputTicket)return;
+   acquired=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});if(ticket!==inputTicket){acquired.getTracks().forEach(t=>t.stop());return;}
+   stream=acquired;source=audio.createMediaStreamSource(stream);analyser=audio.createAnalyser();analyser.fftSize=16384;analyser.smoothingTimeConstant=.1;silent=audio.createGain();silent.gain.value=0;source.connect(analyser);analyser.connect(silent).connect(audio.destination);
+   acquired.getTracks().forEach(t=>t.addEventListener('ended',()=>{if(stream===acquired){stopInput();status('マイクが切断されました。もう一度始めてください。');}}));
+   const wave=new Float32Array(analyser.fftSize),spectrum=new Float32Array(analyser.frequencyBinCount);status('和音を聴いて次へ進めます（試験）。歌声・周囲の音で検出できないことがあります。');
+   meter=setInterval(()=>{if(!analyser||!stream)return;analyser.getFloatTimeDomainData(wave);const rms=Math.sqrt(wave.reduce((s,v)=>s+v*v,0)/wave.length);analyser.getFloatFrequencyData(spectrum);const found=detectChord(spectrum,audio.sampleRate,16384,{rms,capo:state.capo});text('sing-heard',found.name||'—');
+    if(gate.feed(found,steps[state.index]?.name,performance.now(),rms)){const name=steps[state.index].name;advance();if(state.index<steps.length)status(`${name}を確認しました。次の押さえ方を準備しましょう。`);}
+   },80);
+  }catch(error){if(ticket!==inputTicket){acquired?.getTracks().forEach(t=>t.stop());return;}stopInput();status(error.name==='NotAllowedError'?'マイクが許可されていません。手動の「次へ」でも進められます。':error.message||'マイクを開始できませんでした。');}
+ }
+ $('sing-course').replaceChildren(...lessons.map(s=>new Option(`${s.title} / ${s.artist}`,s.id)));
+ $('sing-chord-picker').replaceChildren(...Object.keys(SING_SHAPES).map(n=>new Option(n,n)));$('sing-capo').replaceChildren(...Array.from({length:8},(_,i)=>new Option(i?`カポ${i}`:'カポなし',i)));
+ $('sing-course').onchange=()=>select($('sing-course').value);$('sing-load').onclick=loadVideo;
+ $('sing-play').onclick=()=>{if(ready)player.playVideo();};$('sing-pause').onclick=()=>{pause();status('止めました。再生は自分で再開できます。');};$('sing-back').onclick=()=>{if(ready)player.seekTo(Math.max(0,player.getCurrentTime()-5),true);};
+ $('sing-speed').onchange=()=>{if(ready)player.setPlaybackRate(Number($('sing-speed').value));};
+ $('sing-a').onclick=()=>{state.a=player.getCurrentTime();state.loop=false;if(state.b!==null&&state.b<=state.a)state.b=null;store();render();};
+ $('sing-b').onclick=()=>{const b=player.getCurrentTime();if(!validRange(state.a,b,player.getDuration())){status('Aより1秒以上後ろでBを決めてください。');return;}state.b=b;store();render();};
+ $('sing-loop').onchange=()=>{if($('sing-loop').checked&&!validRange(state.a,state.b,player.getDuration())){state.loop=false;status('先にAとBを決めてください。');}else state.loop=$('sing-loop').checked;render();};
+ $('sing-advance').onclick=()=>{gate.reset();advance();};$('sing-previous').onclick=()=>{gate.reset();state.index=Math.max(0,state.index-1);store();render();};
+ $('sing-restart').onclick=()=>{pause();state.index=0;state.loop=false;if(ready)player.seekTo(0,true);store();render();status('最初に戻りました。動画・マイクは自分で開始してください。');};
+ $('sing-sections').onchange=()=>{stopInput();state.index=Number($('sing-sections').value);store();render();status('コード図の位置を変えました。動画の位置はプレーヤーで合わせてください。');};
+ $('sing-chord-track').onclick=e=>{const button=e.target.closest('[data-step]');if(!button)return;stopInput();state.index=Number(button.dataset.step);store();render();};
+ $('sing-chord-picker').onchange=()=>{stopInput();renderDiagram($('sing-chord-picker').value);text('sing-target',$('sing-chord-picker').value);text('sing-target-label','押さえ方の確認（進行位置は変えません）');};
+ $('sing-capo').onchange=()=>{stopInput();state.capo=Number($('sing-capo').value);store();render();};
+ $('sing-mic').onclick=startInput;$('sing-mic-stop').onclick=()=>{stopInput();status('マイクを止めました。');};
+ for(const id of ['sing-source','sing-lesson-link'])$(id).addEventListener('click',pause);
+ $('sing-outside').addEventListener('click',pause);
+ $('sing-layout').onclick=()=>{const only=document.body.classList.toggle('sing-diagram-only');if(only){try{player?.pauseVideo?.();}catch{}state.loop=false;}text('sing-layout',only?'動画も並べる':'コード図を大きく');};
+ $('sing-code-save').onclick=()=>{try{const next=readSteps($('sing-code-input').value);stopInput();steps=next;state.index=0;store();makeTrack();render();status('コードの並びをこの曲に保存しました。動画とは自動同期しません。');}catch(e){status(e.message);}};
+ $('sing-code-reset').onclick=()=>{$('sing-code-input').value='';stopInput();steps=selected.id==='tokiyo'?TOKIYO_STEPS:[];state.index=0;store();makeTrack();render();};
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();if(active)status('画面を離れたので、動画とマイクを止めました。');}});window.addEventListener('pagehide',pause);
+ return{open(id){onTakeOver();active=true;if(id)select(id);else select(selected.id);document.body.classList.add('singalong-mode');$('view-singalong').setAttribute('aria-pressed','true');onChange(true);window.scrollTo({top:0,behavior:'instant'});},close(){active=false;pause();destroyPlayer();document.body.classList.remove('singalong-mode');$('view-singalong').setAttribute('aria-pressed','false');onChange(false);}};
+}
