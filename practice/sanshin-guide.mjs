@@ -1,6 +1,6 @@
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=14';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=14';
-import { lessonPlayer } from './youtube.mjs?v=14';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=15';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=15';
+import { lessonPlayer } from './youtube.mjs?v=15';
 export const SANSHIN_VIDEOS = {
   tinsagu:{title:'てぃんさぐぬ花',video:'XkmKijcH63s',credit:'宮里英克沖縄三線教室',source:'https://miyazatohidekatsu.com/sanshin/'},
   jidai:{title:'時代の流れ',video:'xtf0OAu-qVY',credit:'宮里英克沖縄三線教室',source:'https://miyazatohidekatsu.com/sanshin/',scoreAt:210},

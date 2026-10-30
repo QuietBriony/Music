@@ -1,5 +1,5 @@
 // Original, dependency-free single-note exercises and detector for Music Stack.
-import { sanshinPosition } from './sanshin-core.mjs?v=14';
+import { sanshinPosition } from './sanshin-core.mjs?v=15';
 export const frequencyFor = (midi) => 440 * 2 ** ((midi - 69) / 12);
 export const centsFrom = (frequency, midi) => 1200 * Math.log2(frequency / frequencyFor(midi));
 export function noteName(midi) {
@@ -26,7 +26,7 @@ export function lessonNotes(instrument, id, transpose = 0) {
 
 // YIN-style cumulative normalized difference. Downsample to <=16 kHz, then
 // scan a bounded 65–1200 Hz range. No recording or external inference service.
-export function detectPitch(input, sampleRate, gate = 0.006) {
+export function detectPitch(input, sampleRate, gate = 0.006, { threshold = 0.16 } = {}) {
   let power = 0;
   for (const sample of input) power += sample * sample;
   const rms = Math.sqrt(power / input.length);
@@ -49,7 +49,7 @@ export function detectPitch(input, sampleRate, gate = 0.006) {
     difference[lag] = cumulative > 0 ? sum * lag / cumulative : 1;
   }
   for (let lag = min; lag < max - 1; lag++) {
-    if (difference[lag] >= 0.16) continue;
+    if (difference[lag] >= threshold) continue;
     while (lag + 1 < max && difference[lag + 1] < difference[lag]) lag++;
     const left = difference[lag - 1], center = difference[lag], right = difference[lag + 1];
     const denominator = 2 * (2 * center - right - left);

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { tuningStrings,tunerReading } from '../practice/tuner.mjs';
+import { tuningStrings,tunerReading,detectTuningPitch,TunerTracker } from '../practice/tuner.mjs';
 import { STUDIES,BASICS } from '../practice/learning.mjs';
 import { chordExercise,scoreNotes } from '../practice/scores.mjs';
-import { frequencyFor } from '../practice/music.mjs';
+import { frequencyFor,centsFrom,detectPitch } from '../practice/music.mjs';
 import { SANSHIN_POSITIONS,sanshinPosition,neckY } from '../practice/sanshin-core.mjs';
 import { neckDiagram,handDiagram } from '../practice/sanshin-view.mjs';
 import { SANSHIN_VIDEOS } from '../practice/sanshin-guide.mjs';
@@ -13,6 +13,20 @@ import { tinsaguMidi,TINSAGU_COLUMNS } from './build-practice-sanshin.mjs';
 import { createHash } from 'node:crypto';
 assert.deepEqual(tuningStrings('guitar').map(n=>n.midi),[40,45,50,55,59,64]);
 assert.deepEqual(tuningStrings('sanshin').map(n=>n.midi),[48,53,60]);
+// Quiet plucked strings previously moved the level meter but failed the lesson
+// amplitude gate. Exercise the actual tuner detector, not only canned readings.
+let tuningSeed=57;const random=()=>((tuningSeed=(1664525*tuningSeed+1013904223)>>>0)/2**32-.5)*2;
+for(const rate of [44100,48000])for(const midi of [40,45,48,50,53,55,60,62,64])for(const amplitude of [.003,.006,.05]){
+ const hz=frequencyFor(midi),samples=Float32Array.from({length:8192},(_,i)=>{const p=2*Math.PI*hz*i/rate;return amplitude*(Math.sin(p)+.85*Math.sin(p*2)+.3*Math.sin(p*3))+.3*amplitude*random();});
+ if(amplitude===.003)assert.equal(detectPitch(samples.subarray(0,4096),rate,.006).frequency,null,'Regression reproduces the old gate');
+ const heard=detectTuningPitch(samples,rate);assert.ok(heard.frequency&&Math.abs(centsFrom(heard.frequency,midi))<10,`Quiet tuning ${rate}/${midi}/${amplitude}`);
+}
+for(const samples of [new Float32Array(8192),new Float32Array(8192).fill(.1),Float32Array.from({length:8192},()=>random()*.2)])assert.equal(detectTuningPitch(samples,48000).frequency,null,'Silence/DC/random noise cannot tune a string');
+const tracker=new TunerTracker(),openC={frequency:frequencyFor(48),clarity:.95,rms:.003};
+assert.equal(tracker.feed(openC,48).status,'settling');assert.equal(tracker.feed(openC,48).status,'settling');assert.equal(tracker.feed(openC,48).status,'matched');
+assert.equal(tracker.feed({...openC,frequency:frequencyFor(60)},48).status,'settling');tracker.feed({...openC,frequency:frequencyFor(60)},48);assert.equal(tracker.feed({...openC,frequency:frequencyFor(60)},48).status,'check','A wrong octave is never folded into a match');
+assert.equal(tracker.feed({...openC,frequency:null,rms:.03,clarity:0},48).reason,'unclear');assert.equal(tracker.feed({...openC,frequency:null,rms:0},48).reason,'quiet');
+assert.equal(tracker.feed(openC,53).status,'settling','Changing string clears stability');
 for(const transpose of [-3,-2,-1,0,2])assert.deepEqual(tuningStrings('sanshin',transpose).map(n=>n.midi),[48,53,60].map(n=>n+transpose));
 for(const instrument of ['guitar','sanshin'])for(const n of tuningStrings(instrument)){
   const detect=cents=>({frequency:frequencyFor(n.midi)*2**(cents/1200),rms:.1,clarity:.99});
@@ -58,5 +72,5 @@ for(const tuning of [-3,-2,-1,0,2]){
 }
 assert.equal(SANSHIN_VIDEOS.jidai.video,'xtf0OAu-qVY');
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=14','sanshin-view.mjs?v=14','sanshin-guide.mjs?v=14','sanshin.css?v=14','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=15','sanshin-view.mjs?v=15','sanshin-guide.mjs?v=15','sanshin.css?v=15','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
 console.log('Practice learning: tuning, seven studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');

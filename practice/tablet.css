@@ -1,0 +1,52 @@
+/* A tuner remains readable without a pitch; silence is not a centered match. */
+body[data-view=tuner] #practice-stage{display:grid;max-width:720px;grid-template-columns:minmax(0,1fr);grid-template-areas:'strings' 'toolbar' 'listening';gap:14px;scroll-margin-top:12px}
+body[data-view=tuner] #practice-stage>.tuner-setup{grid-area:strings;min-width:0;margin:0;padding:20px;background:#fffdf8;border:1px solid var(--line);border-radius:14px}
+body[data-view=tuner] #sanshin-panel{display:none!important}
+body[data-view=tuner] #tuner-strings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+body[data-view=tuner] #tuner-strings button{min-width:0;font-size:.92rem;min-height:58px}
+.tuner-setup>label{max-width:280px}.tuner-input{border-top:1px solid #ffffff26;padding-top:12px;margin-top:14px}
+#detected-frequency{font-size:1.1rem;font-variant-numeric:tabular-nums;color:#eef5e9}
+#tuner-input-status{font-size:.78rem;line-height:1.7;color:#c1cebb;margin:7px 0 0;min-height:2.8em}
+body[data-view=tuner] .level{height:7px}
+#practice-stage[data-tuning=matched] .tuner-track{box-shadow:0 0 0 2px #99c58b}
+#practice-stage[data-tuning=matched] .tuner-track b{background:#bde4ad}
+
+/* Use the available window, including iPad rotation and Split View resizing. */
+@media(min-width:900px) and (orientation:landscape){
+ .page{max-width:1440px;padding:0 24px}
+ .intro{padding:24px 0 18px}.intro h1{font-size:3rem}.intro .lead br{display:none}.intro .eyebrow{margin-bottom:8px}
+ body[data-view=tuner] #practice-stage{max-width:1120px;grid-template-columns:minmax(280px,.9fr) minmax(360px,1.1fr);grid-template-areas:'strings listening' 'toolbar listening';align-items:start}
+ body[data-view=tuner] #practice-stage>.listening{height:100%;padding:24px 28px}
+ body[data-view=tuner] .target{height:108px}body[data-view=tuner] .target>span:first-child{font-size:5.2rem}
+ body[data-view=tuner] #practice-stage>.session-toolbar{align-self:start;margin:0}
+ body[data-view=tuner] #practice-stage .session-buttons{grid-template-columns:1fr 1fr}
+ body[data-view=tuner] .tuner{margin-top:18px}body[data-view=tuner] #feedback{min-height:3.5em;margin-bottom:0}
+ body.focused .page{max-width:1440px;padding:10px 20px 22px}
+ body.focused .instrument-switch{width:260px;max-width:none}body.focused .instrument-switch span,body.focused .view-switch button{white-space:nowrap}
+ body.focused[data-view=practice] #practice-stage{grid-template-columns:minmax(190px,.8fr) minmax(220px,.95fr) minmax(280px,1.2fr);grid-template-areas:'listening chord lyrics' 'score score lyrics' 'toolbar toolbar toolbar';align-items:start;gap:12px}
+ body.focused[data-diagram=false][data-view=practice] #practice-stage{grid-template-columns:minmax(300px,1.4fr) minmax(280px,1fr);grid-template-areas:'listening lyrics' 'score lyrics' 'toolbar toolbar'}
+ body.focused #practice-stage>.session-lyrics{max-height:calc(100dvh - 215px);overflow:auto;align-self:stretch}
+ body.focused #practice-stage>.session-toolbar{position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:24;box-shadow:0 -3px 15px #27302812}
+ body.focused #practice-stage .session-buttons{grid-template-columns:repeat(6,minmax(0,1fr))}
+ body.focused #practice-stage .session-buttons button{min-height:44px;font-size:.76rem}
+ body.focused .session-settings{margin-top:8px;gap:18px}
+ body.focused .score-card{padding:12px 16px}body.focused #practice-stage .score{max-height:180px;margin-bottom:5px}
+ body.focused #practice-stage .score .kunkun{grid-template-rows:repeat(3,50px);grid-auto-columns:64px}
+ body.focused #practice-stage .score .kunkun button{padding:4px;line-height:1.1}body.focused #practice-stage .score .kunkun small{line-height:1.2}
+ body.focused #sanshin-credit{font-size:.6rem;margin:7px 0}
+ body.focused #sanshin-panel .sanshin-neck{max-height:150px}
+ body.focused .session-lyrics #session-lyric-current{font-size:1.15rem}body.focused #session-lyric-reading{font-size:.85rem}body.focused #session-lyric-meaning{font-size:1rem}
+ .singalong-mode .page{max-width:1440px}.sing-heading{margin:12px 0}.sing-heading h1{font-size:1.7rem}
+ .sing-workspace{grid-template-columns:minmax(0,1.4fr) minmax(270px,.8fr);align-items:start}
+ #sanshin-dialog{width:min(1280px,calc(100vw - 24px));max-height:96dvh}
+ #sanshin-dialog-body{max-height:calc(96dvh - 76px)}.sanshin-guide-layout{grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr)}
+}
+@media(min-width:900px) and (orientation:landscape) and (max-height:850px){
+ body.focused[data-view=practice] .score-card{display:grid;grid-template-columns:minmax(140px,.8fr) minmax(220px,1fr);column-gap:12px}
+ body.focused .score-card>:not(.score-pager):not(.loop-quick){grid-column:1/-1}
+ body.focused .score-card .score-pager{grid-column:1;margin:4px 0;gap:6px}
+ body.focused .score-card .loop-quick{grid-column:2;margin:4px 0;justify-content:end;gap:6px}
+ body.focused #practice-stage .score .kunkun{grid-template-rows:repeat(2,50px)}
+ body.focused #sanshin-panel .sanshin-neck{max-height:130px}
+}
+@media(max-width:650px){body[data-view=tuner] #practice-stage>.tuner-setup{padding:16px}body[data-view=tuner] #tuner-strings button{font-size:.83rem;padding:10px 5px}.tuner-input{padding-top:10px}#tuner-input-status{font-size:.75rem}}
