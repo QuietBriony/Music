@@ -1,4 +1,4 @@
-import { SANSHIN_POSITIONS, sanshinPosition, neckY, positionTip } from './sanshin-core.mjs?v=16';
+import { SANSHIN_POSITIONS, sanshinPosition, neckY, positionTip } from './sanshin-core.mjs?v=17';
 const xFor = string => 42 + (3-string)*48;
 export function neckDiagram(symbol) {
   const p=sanshinPosition(symbol);if(!p)return '';

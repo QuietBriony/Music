@@ -1,5 +1,6 @@
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=17';
 // Curated reference metadata only. No third-party scores, lyrics, recordings or embeds.
-import { PREPARED_COURSES } from './singalong-courses.mjs?v=16';
+import { PREPARED_COURSES } from './singalong-courses.mjs?v=17';
 export const STUDIES = {
   guitar:[
     {id:'tokiyo',title:'時間よ止まれ',artist:'矢沢永吉',focus:'まずCとAmの2つだけ。1・2・3・4と数えて、1で下へ1回弾きます。慣れたらDmとG7、最後に6コードへ。',names:['C','Em','G7','Am','Dm','G7'],stages:[{title:'1. CとAmだけ',names:['C','Am','C','Am']},{title:'2. DmとG7だけ',names:['Dm','G7','Dm','G7']},{title:'3. 6コードをつなぐ',names:['C','Em','G7','Am','Dm','G7']}],lesson:'https://note.com/mickeykogure/n/n41986bc8627a',video:'https://www.youtube.com/watch?v=apHhVfpeAh4',chart:'https://gakufu.gakki.me/m/data/big00022.html',label:'小暮貢朗「ギターで歌おうch」の解説',note:'アプリはカポなし・低いキーの準備練習です。セーハなし、1コード4拍の仮ガイド。原曲の全譜・リズム・歌詞は同梱しません。参考動画とはキーやカポ位置が異なります。'},
@@ -7,11 +8,7 @@ export const STUDIES = {
     {id:'blackbird',title:'Blackbird',artist:'The Beatles',focus:'G → Am7 → G/B → Gの和音を、一弦ずつ確かめる導入練習。親指の低音と指で弾く高音を分けて聴きます。',names:['G','Am7','G/B','G'],lesson:'https://www.justinguitar.com/songs/the-beatles-blackbird-chords-tabs-guitar-lesson-sb-113',video:'https://www.youtube.com/watch?v=mEn2SEwZKNE',label:'JustinGuitarの解説',note:'原曲の運指や二音の動きは動画で確認します。このアプリ内は和音の準備練習です。'},
     {id:'jigsaw',title:'Jigsaw Falling Into Place',artist:'Radiohead',focus:'「この曲を1曲通して練習」から、標準調弦＋カポ2のかんたん伴奏へ。動画に合わせてAm・E・Cmaj7などの図が進みます。まず0.75倍で、コードの切替で下に1回ずつ弾いてみましょう。',names:['Bm','Bm','Bm','Bm'],referenceChord:'Bm',practiceLabel:'先にBmの押さえ方を練習',practiceTitle:'Jigsaw · Bmの準備',lesson:'https://www.youtube.com/watch?v=daD3x6XudqY',video:'https://www.youtube.com/watch?v=daD3x6XudqY',label:'Cole Johnstoneの標準調弦レッスン（英語）',referenceNote:'通し伴奏は標準調弦 EADGBE＋カポ2。図のコード名はカポから数えます。動画に合わせて自動で進み、速度・A/B反復も使えます。',note:'準備ボタンはカポなしのBm練習です。通し伴奏は標準調弦＋カポ2で、細かなリフ・低音・装飾を省いた練習版。通し動画の変則調弦の運指とは異なります。解説リンクはCole Johnstoneの標準調弦レッスンです。'}
   ],
-  sanshin:[
-    {id:'tinsagu',title:'てぃんさぐぬ花',artist:'沖縄民謡',focus:'本調子を合わせ、動画を短く区切って、工工四の文字を声に出してから弾きます。',lesson:'https://miyazatohidekatsu.com/sanshin/',video:'https://www.youtube.com/watch?v=XkmKijcH63s',label:'宮里英克の三線教室・譜面',score:'https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png',note:'1節の工工四・指図・歌詞・読み方・意味を収録。歌詞は手動で送れます。先生の動画とは装飾・速さが異なります。'},
-    {id:'tsukinu',title:'月ぬ美しゃ',artist:'八重山民謡',focus:'ゆったりした歌の流れを先に聴き、1フレーズずつ口ずさんでから三線を重ねます。動画の調弦・キーを確かめて合わせます。',lesson:'https://ameblo.jp/irei-blog/entry-12356649318.html',video:'https://www.youtube.com/watch?v=7GmB2WV4D4A',label:'伊禮俊一の工工四付き練習動画',note:'歌詞・工工四は配信元の動画で確認できます。曲の全譜をアプリに転載していません。'},
-    {id:'jidai',title:'時代の流れ',artist:'三線で弾き語り',focus:'先生の工工四付き動画を見ながら、分からない文字を押して指の位置を確認。5秒戻る・ゆっくり再生・A/B反復で、短い部分から練習できます。',lesson:'https://miyazatohidekatsu.com/sanshin/',video:'https://www.youtube.com/watch?v=xtf0OAu-qVY',label:'宮里英克の三線教室・譜面',note:'動画と指図をアプリ内で表示。指図は文字を選んで手動で切り替えます。曲全体の音符・歌詞・自動追従は未収録です。'}
-  ]
+  sanshin:SANSHIN_PLAYLIST.tracks.map(t=>({...t,lesson:t.source,video:`https://www.youtube.com/watch?v=${t.video}`,label:`${t.credit}の教材`,score:t.sheets[0].url,scoreLabel:t.sheets[0].label}))
 };
 export const BASICS = {
   guitar:{title:'TABとコード図の読み方',steps:[
@@ -36,7 +33,7 @@ export function mountLearning({onPractice,onBasics,onLeave,onSingalong}) {
   function showStudy(){
     const study=STUDIES[instrument].find(s=>s.id===selected)||STUDIES[instrument][0];selected=study.id;
     $('study-title').textContent=`${study.title} / ${study.artist}`;$('study-focus').textContent=study.focus;$('study-note').textContent=study.note;
-    $('study-links').replaceChildren(anchor(study.label,study.lesson),...(study.video?[anchor('YouTubeで見る',study.video)]:[]),...(study.chart?[anchor('初心者向けコード譜を見る',study.chart)]:[]),...(study.score?[anchor('工工四の参照（Lrschneider / CC BY-SA 4.0）',study.score)]:[]));
+    $('study-links').replaceChildren(anchor(study.label,study.lesson),...(study.video?[anchor('YouTubeで見る',study.video)]:[]),...(study.chart?[anchor('初心者向けコード譜を見る',study.chart)]:[]),...(study.score?[anchor(study.scoreLabel||'工工四の参照',study.score)]:[]));
     $('study-stages').replaceChildren(...(study.stages||[]).map((stage,i)=>{const button=document.createElement('button');button.textContent=stage.title;button.onclick=()=>onPractice(stage.names,`${study.title} · ${stage.title}`,`study:${study.id}:${i}`,{easy:true});return button;}));
     $('study-practice').hidden=!!study.stages;
     $('study-practice').textContent=study.practiceLabel||(study.names?'この曲の導入コードを練習':'先に合・四・工を練習');

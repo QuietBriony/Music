@@ -1,3 +1,4 @@
+import { SANSHIN_PLAYLIST } from '../practice/sanshin-playlist.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { tuningStrings,tunerReading,detectTuningPitch,TunerTracker,tuningGate } from '../practice/tuner.mjs';
@@ -36,7 +37,7 @@ for(const instrument of ['guitar','sanshin'])for(const n of tuningStrings(instru
   assert.equal(tunerReading(detect(1200),n.midi).status,'check');
   assert.equal(tunerReading({...detect(0),rms:0},n.midi).status,'waiting');
 }
-assert.deepEqual(Object.values(STUDIES).flat().map(s=>s.id),['tokiyo','santeria','blackbird','jigsaw','tinsagu','tsukinu','jidai']);
+assert.deepEqual(Object.values(STUDIES).flat().map(s=>s.id),['tokiyo','santeria','blackbird','jigsaw','shimauta','jidai','warabigami','nadasoso','sanshinnohana','tinsagu','tsukinu']);
 for(const [instrument,studies] of Object.entries(STUDIES)){
   assert.ok(BASICS[instrument].steps.length>=5);
   for(const study of studies){
@@ -45,6 +46,9 @@ for(const [instrument,studies] of Object.entries(STUDIES)){
     assert.ok(study.note.length>0,'accurate scope label');
   }
 }
+assert.deepEqual(SANSHIN_PLAYLIST,JSON.parse(readFileSync('practice/songs/sanshin-playlist.json','utf8')),'Offline UI metadata matches the inspectable playlist source');
+assert.deepEqual(SANSHIN_PLAYLIST.tracks.map(t=>t.appleId),['1481952783','896534388','1467728468','1838687755','1838717174','279394371','724943335'],'Exact seven recordings from the supplied playlist, in original order');
+for(const t of SANSHIN_PLAYLIST.tracks){assert.equal(new URL(t.appleUrl).searchParams.get('i'),t.appleId);assert.equal(SANSHIN_VIDEOS[t.id].video,t.video);assert.ok(t.sheets.length&&t.focus&&t.note);}
 const source=readFileSync('practice/lyrics.mjs','utf8');
 assert.doesNotMatch(source,/fetch\(|XMLHttpRequest|sendBeacon|innerHTML/,'personal lyrics remain local text');
 assert.match(source,/textContent=data.lines\[active\]/);
@@ -84,5 +88,5 @@ for(const tuning of [-3,-2,-1,0,2]){
 }
 assert.equal(SANSHIN_VIDEOS.jidai.video,'xtf0OAu-qVY');
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=16','sanshin-view.mjs?v=16','sanshin-guide.mjs?v=16','sanshin.css?v=16','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
-console.log('Practice learning: tuning, seven studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=17','sanshin-view.mjs?v=17','sanshin-guide.mjs?v=17','sanshin.css?v=17','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+console.log('Practice learning: tuning, eleven studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');

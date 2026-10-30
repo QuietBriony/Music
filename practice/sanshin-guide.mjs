@@ -1,11 +1,8 @@
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=16';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=16';
-import { lessonPlayer } from './youtube.mjs?v=16';
-export const SANSHIN_VIDEOS = {
-  tinsagu:{title:'てぃんさぐぬ花',video:'XkmKijcH63s',credit:'宮里英克沖縄三線教室',source:'https://miyazatohidekatsu.com/sanshin/'},
-  jidai:{title:'時代の流れ',video:'xtf0OAu-qVY',credit:'宮里英克沖縄三線教室',source:'https://miyazatohidekatsu.com/sanshin/',scoreAt:210},
-  tsukinu:{title:'月ぬ美しゃ',video:'7GmB2WV4D4A',credit:'伊禮俊一',source:'https://ameblo.jp/irei-blog/entry-12356649318.html'}
-};
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=17';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=17';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=17';
+import { lessonPlayer } from './youtube.mjs?v=17';
+export const SANSHIN_VIDEOS = Object.fromEntries(SANSHIN_PLAYLIST.tracks.map(t=>[t.id,t]));
 const storageKey=id=>`music-practice-sanshin-video-${id}-v1`;
 const timeLabel=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 export function mountSanshinGuide({onTakeOver}) {
@@ -91,7 +88,9 @@ export function mountSanshinGuide({onTakeOver}) {
       if(song){try{const saved=JSON.parse(localStorage.getItem(storageKey(song))||'{}');position=Number.isFinite(saved.position)?Math.max(0,saved.position):0;a=Number.isFinite(saved.a)?Math.max(0,saved.a):0;b=Number.isFinite(saved.b)?Math.max(0,saved.b):0;loop=saved.loop===true&&b-a>=1;}catch{/* Start fresh. */}}
       const course=SANSHIN_VIDEOS[song];$('video').hidden=!course;
       $('score-start').hidden=!course?.scoreAt;
-      $('score-source').hidden=$('score-source-note').hidden=song!=='jidai';
+      $('score-source').hidden=$('score-source-note').hidden=!course;
+      if(course){$('score-source').href=course.sheets[0].url;$('score-source').textContent=course.sheets[0].label+' ↗';$('score-source-note').textContent=course.note;}
+      $('extra-sheets').replaceChildren(...(course?.sheets.slice(1)||[]).map(sheet=>{const a=document.createElement('a');a.href=sheet.url;a.textContent=sheet.label+' ↗';a.target='_blank';a.rel='noopener';a.onclick=pause;return a;}));
       $('video-note').textContent=song==='jidai'?'初めに先生の解説、途中から工工四と歌詞が表示されます。「前奏から再生」で3:30から始められます。動画と同じ調弦に合わせ、まず短い部分を繰り返しましょう。':'先生の動画を聴いて、同じ調弦に合わせます。工工四は動画や先生の掲載ページで確認できます。';
       $('title').textContent=course?`${course.title} · 動画と指の位置`:'工工四から、指の位置を調べる';
       if(course){$('source').href=course.source;$('source').textContent=`先生の掲載ページ（${course.credit}） ↗`;$('outside').href=`https://www.youtube.com/watch?v=${course.video}`;}

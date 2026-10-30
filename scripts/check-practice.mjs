@@ -95,11 +95,11 @@ for (const instrument of Object.keys(LESSONS)) {
 const manifest = JSON.parse(readFileSync('practice/manifest.webmanifest', 'utf8'));
 assert.equal(manifest.scope, './'); assert.equal(manifest.start_url, './index.html');
 const sw = readFileSync('practice/sw.js', 'utf8');
-assert.match(sw, /music-practice-v16/); assert.doesNotMatch(sw, /hazama-fm-/);
+assert.match(sw, /music-practice-v17/); assert.doesNotMatch(sw, /hazama-fm-/);
 for (const file of ['index.html', 'style.css', 'presets.css', 'app.mjs', 'music.mjs', 'midi.mjs', 'chords.mjs', 'scores.mjs', 'tuner.mjs', 'learning.mjs', 'songs/amazing-grace.mid', 'songs/twinkle.mid', 'songs/ode-to-joy.mid', 'songs/provenance.json', 'manifest.webmanifest', 'icon.svg']) {
   assert.ok(existsSync(`practice/${file}`)); assert.ok(sw.includes(file), `${file} needs offline coverage`);
 }
-assert.ok(sw.includes('instrument-voice.mjs?v=16'),'Synthesizer is available offline');
+assert.ok(sw.includes('instrument-voice.mjs?v=17'),'Synthesizer is available offline');
 assert.doesNotMatch(readFileSync('practice/app.mjs', 'utf8'), /MediaRecorder|fetch\(|XMLHttpRequest|sendBeacon/);
 assert.match(readFileSync('practice/midi.mjs','utf8'), /credentials: 'omit'/);
 console.log('Practice: plucked guitar/sanshin pitch, decay, distinct spectra and guide tails at 44.1/48 kHz; 44 pitch fixtures, silence/noise, repeats, onset, exact octave, loops, transposition and local-only PWA PASS');
