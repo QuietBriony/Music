@@ -2,7 +2,7 @@ import { GUITAR_PLAYLIST } from '../practice/guitar-playlist.mjs';
 import { SANSHIN_PLAYLIST } from '../practice/sanshin-playlist.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { tuningStrings,tunerReading,detectTuningPitch,TunerTracker,tuningGate } from '../practice/tuner.mjs';
+import { tuningStrings,tunerReading,detectTuningPitch,TunerTracker,tuningGate,tunerInputGate } from '../practice/tuner.mjs';
 import { sheetEntries } from '../practice/full-score.mjs';
 import { STUDIES,BASICS } from '../practice/learning.mjs';
 import { chordExercise,scoreNotes } from '../practice/scores.mjs';
@@ -26,15 +26,34 @@ for(const rate of [44100,48000])for(const midi of [40,45,48,50,53,55,60,62,64])f
 }
 for(const samples of [new Float32Array(8192),new Float32Array(8192).fill(.1),Float32Array.from({length:8192},()=>random()*.2)])assert.equal(detectTuningPitch(samples,48000).frequency,null,'Silence/DC/random noise cannot tune a string');
 const tracker=new TunerTracker(),openC={frequency:frequencyFor(48),clarity:.95,rms:.003};
-assert.equal(tracker.feed(openC,48).status,'settling');assert.equal(tracker.feed(openC,48).status,'settling');assert.equal(tracker.feed(openC,48).status,'matched');
+assert.equal(tracker.feed(openC,48).status,'settling');assert.equal(tracker.feed(openC,48).status,'matched');assert.equal(tracker.feed(openC,48).status,'matched');
 assert.equal(tracker.feed({...openC,frequency:frequencyFor(60)},48).status,'settling');tracker.feed({...openC,frequency:frequencyFor(60)},48);assert.equal(tracker.feed({...openC,frequency:frequencyFor(60)},48).status,'check','A wrong octave is never folded into a match');
 assert.equal(tracker.feed({...openC,frequency:null,rms:.03,clarity:0},48).reason,'unclear');assert.equal(tracker.feed({...openC,frequency:null,rms:0},48).reason,'quiet');
 assert.equal(tracker.feed(openC,53).status,'settling','Changing string clears stability');
+// Decaying plucks retain their observed pitch, but silence cannot confirm it.
+const heldTracker=new TunerTracker(),silent={frequency:null,rms:0,clarity:0};
+assert.equal(heldTracker.feed(silent,48,.006,0).frequency,null);
+assert.equal(heldTracker.feed(openC,48,.006,10).status,'settling');
+let held=heldTracker.feed(silent,48,.006,70);assert.equal(held.held,true);assert.equal(held.status,'settling');assert.equal(held.frequency,openC.frequency);
+assert.equal(heldTracker.feed(openC,48,.006,130).status,'matched');
+held=heldTracker.feed(silent,48,.006,1000);assert.equal(held.status,'matched');assert.equal(held.held,true);
+held=heldTracker.feed(silent,48,.006,5000);assert.equal(held.status,'held');assert.equal(held.frequency,openC.frequency);
+heldTracker.reset();assert.equal(heldTracker.feed(silent,48,.006,5100).frequency,null);
+const toward=new TunerTracker(),pitched=cents=>({...openC,frequency:frequencyFor(48)*2**(cents/1200)});
+for(const [cents,expected] of [[-110,'low'],[-65,'near'],[-35,'near'],[-12,'matched']]){
+ for(let i=0;i<4;i++)toward.feed(pitched(cents),48,.006,6000+cents*10+i*60);
+ const result=toward.feed(pitched(cents),48,.006,6200+cents*10);assert.equal(result.status,expected);if(cents>-110)assert.equal(result.trend,'closer');
+}
+for(let i=0;i<4;i++)assert.notEqual(toward.feed(pitched(1200),48,.006,8000+i*60).status,'matched');
+assert.equal(toward.feed(silent,53,.006,8500).frequency,null,'Changing the target clears the retained pitch');
+const weak=Float32Array.from({length:8192},(_,i)=>.0016*Math.sin(2*Math.PI*frequencyFor(48)*i/48000));
+assert.equal(detectPitch(weak,48000,tuningGate(.006)).frequency,null,'Regression: old tuning amplitude gate dropped a decaying pluck');
+assert.ok(detectTuningPitch(weak,48000).frequency);assert.ok(tunerInputGate(.006)<tuningGate(.006));
 for(const transpose of [-3,-2,-1,0,2])assert.deepEqual(tuningStrings('sanshin',transpose).map(n=>n.midi),[48,53,60].map(n=>n+transpose));
 for(const instrument of ['guitar','sanshin'])for(const n of tuningStrings(instrument)){
   const detect=cents=>({frequency:frequencyFor(n.midi)*2**(cents/1200),rms:.1,clarity:.99});
   assert.equal(tunerReading(detect(0),n.midi).status,'matched');
-  assert.equal(tunerReading(detect(30),n.midi).status,'high');assert.equal(tunerReading(detect(-30),n.midi).status,'low');
+  assert.equal(tunerReading(detect(30),n.midi).status,'near');assert.equal(tunerReading(detect(30),n.midi).direction,'high');assert.equal(tunerReading(detect(-30),n.midi).status,'near');assert.equal(tunerReading(detect(-30),n.midi).direction,'low');
   assert.equal(tunerReading(detect(1200),n.midi).status,'check');
   assert.equal(tunerReading({...detect(0),rms:0},n.midi).status,'waiting');
 }
@@ -92,5 +111,5 @@ for(const tuning of [-3,-2,-1,0,2]){
 }
 assert.equal(SANSHIN_VIDEOS.jidai.video,'xtf0OAu-qVY');
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=18','sanshin-view.mjs?v=18','sanshin-guide.mjs?v=18','sanshin.css?v=18','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=19','sanshin-view.mjs?v=19','sanshin-guide.mjs?v=19','sanshin.css?v=19','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
 console.log('Practice learning: tuning, sixteen studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
