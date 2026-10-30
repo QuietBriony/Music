@@ -1,6 +1,45 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { LESSONS, lessonNotes, frequencyFor, centsFrom, detectPitch, NoteFollower } from '../practice/music.mjs';
+import { renderPluck, pluckDuration } from '../practice/instrument-voice.mjs';
+
+// Render the actual instrument model, independently measure its pitch and ring.
+const rms = (samples, rate, start, seconds = .12) => {
+  const slice = samples.subarray(Math.round(start * rate), Math.round((start + seconds) * rate));
+  return Math.sqrt(slice.reduce((sum, x) => sum + x*x, 0) / slice.length);
+};
+const harmonicPower = (samples, rate, hz, start = .03, seconds = .15) => {
+  let real = 0, imaginary = 0;
+  for (let i = Math.round(start*rate); i < Math.round((start+seconds)*rate); i++) {
+    real += samples[i] * Math.cos(2*Math.PI*hz*i/rate);
+    imaginary += samples[i] * Math.sin(2*Math.PI*hz*i/rate);
+  }
+  return real*real + imaginary*imaginary;
+};
+for (const sampleRate of [44100,48000]) {
+  for (const instrument of ['guitar','sanshin']) {
+    for (const midi of instrument === 'guitar' ? [40,45,50,55,59,64] : [45,46,47,48,50,53,60,62]) {
+      const duration = pluckDuration(instrument,.55,true);
+      const samples = renderPluck({instrument,midi,sampleRate,duration});
+      assert.ok(samples.every(Number.isFinite));
+      assert.equal(samples[0],0); assert.equal(samples.at(-1),0);
+      assert.ok(Math.max(...samples.subarray(0,4096).map(Math.abs)) <= .881);
+      const detection = detectPitch(samples.subarray(Math.round(sampleRate*.15),Math.round(sampleRate*.15)+4096),sampleRate,.001);
+      assert.ok(detection.frequency && Math.abs(centsFrom(detection.frequency,midi)) < 6, `${instrument} ${midi} must remain a tuning reference`);
+      assert.ok(rms(samples,sampleRate,2.5) > .006, `${instrument} ${midi} has an audible tail beyond the previous .55 seconds`);
+      assert.ok(rms(samples,sampleRate,2.5) < rms(samples,sampleRate,.25)*.65, 'The string decays naturally');
+      assert.ok(rms(samples,sampleRate,duration-.12) < rms(samples,sampleRate,2.5)*.2, 'The end fades rather than cuts');
+      const guide = renderPluck({instrument,midi,sampleRate,duration:pluckDuration(instrument)});
+      assert.ok(rms(guide,sampleRate,1.2) > .01, 'Guide and touch notes also ring');
+    }
+  }
+  const guitar = renderPluck({instrument:'guitar',midi:60,sampleRate,duration:3});
+  const sanshin = renderPluck({instrument:'sanshin',midi:60,sampleRate,duration:3});
+  const brightness = data => [2,3,4,5,6].reduce((sum,h)=>sum+harmonicPower(data,sampleRate,frequencyFor(60)*h),0)/harmonicPower(data,sampleRate,frequencyFor(60));
+  assert.ok(brightness(sanshin) > brightness(guitar)*1.4, 'Sanshin has a distinct brighter bachi/string attack');
+}
+assert.throws(()=>renderPluck({midi:NaN,sampleRate:48000,duration:3}),RangeError);
+assert.throws(()=>renderPluck({midi:60,sampleRate:48000,duration:1000}),RangeError);
 
 // Independent signal fixtures: the detector never receives their target MIDI.
 for (const sampleRate of [44100, 48000]) {
@@ -56,10 +95,11 @@ for (const instrument of Object.keys(LESSONS)) {
 const manifest = JSON.parse(readFileSync('practice/manifest.webmanifest', 'utf8'));
 assert.equal(manifest.scope, './'); assert.equal(manifest.start_url, './index.html');
 const sw = readFileSync('practice/sw.js', 'utf8');
-assert.match(sw, /music-practice-v11/); assert.doesNotMatch(sw, /hazama-fm-/);
+assert.match(sw, /music-practice-v12/); assert.doesNotMatch(sw, /hazama-fm-/);
 for (const file of ['index.html', 'style.css', 'presets.css', 'app.mjs', 'music.mjs', 'midi.mjs', 'chords.mjs', 'scores.mjs', 'tuner.mjs', 'learning.mjs', 'songs/amazing-grace.mid', 'songs/twinkle.mid', 'songs/ode-to-joy.mid', 'songs/provenance.json', 'manifest.webmanifest', 'icon.svg']) {
   assert.ok(existsSync(`practice/${file}`)); assert.ok(sw.includes(file), `${file} needs offline coverage`);
 }
+assert.ok(sw.includes('instrument-voice.mjs?v=12'),'Synthesizer is available offline');
 assert.doesNotMatch(readFileSync('practice/app.mjs', 'utf8'), /MediaRecorder|fetch\(|XMLHttpRequest|sendBeacon/);
 assert.match(readFileSync('practice/midi.mjs','utf8'), /credentials: 'omit'/);
-console.log('Practice: 44 pitch fixtures, silence/noise, repeats, onset, exact octave, loop bounds, transposition and local-only PWA PASS');
+console.log('Practice: plucked guitar/sanshin pitch, decay, distinct spectra and guide tails at 44.1/48 kHz; 44 pitch fixtures, silence/noise, repeats, onset, exact octave, loops, transposition and local-only PWA PASS');

@@ -1,15 +1,16 @@
-import { mountHandGuide } from './hand-guide.mjs?v=11';
-import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=11';
-import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=11';
-import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=11';
-import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=11';
-import { tuningStrings, tunerReading } from './tuner.mjs?v=11';
-import { mountLearning,STUDIES } from './learning.mjs?v=11';
-import { detectChord, ChordGate } from './polyphonic.mjs?v=11';
-import { mountLyrics } from './lyrics.mjs?v=11';
-import { LYRIC_PRESETS } from './lyric-presets.mjs?v=11';
-import { PracticeProgress,progressKey } from './progress.mjs?v=11';
-import { mountSingalong } from './singalong.mjs?v=11';
+import { mountHandGuide } from './hand-guide.mjs?v=12';
+import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=12';
+import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=12';
+import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=12';
+import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=12';
+import { tuningStrings, tunerReading } from './tuner.mjs?v=12';
+import { mountLearning,STUDIES } from './learning.mjs?v=12';
+import { detectChord, ChordGate } from './polyphonic.mjs?v=12';
+import { mountLyrics } from './lyrics.mjs?v=12';
+import { LYRIC_PRESETS } from './lyric-presets.mjs?v=12';
+import { PracticeProgress,progressKey } from './progress.mjs?v=12';
+import { mountSingalong } from './singalong.mjs?v=12';
+import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=12';
 
 const $ = id => document.getElementById(id);
 const STORAGE = 'music-practice-settings-v1';
@@ -33,10 +34,11 @@ let progressId='',restoredProgress=null;
 let context = null, micStream = null, analyser = null, source = null, silent = null;
 let epoch = 0, meterTimer = null, demoTimer = null, suppressUntil = 0, flashUntil = 0, demoIndex = -1;
 const voices = new Set();
+let referenceVoice = null, referenceActive = false, referenceTicket = 0;
 const feedback = text => { if ($('feedback').textContent !== text) $('feedback').textContent = text; };
 function save() {
   if(view==='practice')practiceSnapshot={instrument,lesson:lessonId,practiceStyle,chordNames:lessonId==='chord'?midiModel.markers.map(c=>c.chord):null,chordTitle:lessonId==='chord'?midiTitle:null,sessionId,sessionTitle,easyPractice:midiModel?.easy===true};
-  try { localStorage.setItem(STORAGE, JSON.stringify({ uiVersion:11, view, instrument, lesson:lessonId, transpose, gate, practiceStyle,chordCheck,practiceSnapshot,tempo:Number($('tempo').value),countIn:$('count-in').checked,backing:$('backing').checked,singalong:singalongOpen })); } catch { /* Storage is optional. */ }
+  try { localStorage.setItem(STORAGE, JSON.stringify({ uiVersion:12, view, instrument, lesson:lessonId, transpose, gate, practiceStyle,chordCheck,practiceSnapshot,tempo:Number($('tempo').value),countIn:$('count-in').checked,backing:$('backing').checked,singalong:singalongOpen })); } catch { /* Storage is optional. */ }
 }
 function storeProgress(){
  if(view!=='practice'||!progressId||loading||!follower)return;
@@ -74,6 +76,24 @@ function stopVoices() {
   for (const voice of voices) { try { voice.stop(); voice.disconnect(); } catch { /* Already ended. */ } }
   voices.clear();
 }
+function stopReference() {
+  referenceTicket++; referenceActive = false;
+  const previous = referenceVoice; referenceVoice = null;
+  if (previous) { voices.delete(previous); try { previous.stop(); previous.disconnect(); } catch { /* Already ended. */ } }
+  $('reference').textContent = '♪ この音を聴く';
+  $('reference').setAttribute('aria-pressed', 'false');
+  // Let the loudspeaker's last sound die away before accepting a real pluck.
+  suppressUntil = performance.now() + 350;
+  chordGate.reset(); if (follower) follower.candidateAt = null;
+  if (mode === 'idle') {
+    $('input-label').textContent = '停止中';
+    $('stop').disabled = voices.size === 0;
+    if (!referenceVoice && $('stop').disabled && context) {
+      const old = context; context = null;
+      if (old.state !== 'closed') old.close().catch(() => {});
+    }
+  }
+}
 function stopAll() {
   epoch++;
   clearInterval(meterTimer); clearTimeout(demoTimer); meterTimer = demoTimer = null;
@@ -81,7 +101,7 @@ function stopAll() {
   micStream = null;
   for (const node of [source, analyser, silent]) { try { node?.disconnect(); } catch { /* Disconnected. */ } }
   source = analyser = silent = null;
-  stopVoices();
+  stopReference(); stopVoices(); suppressUntil = 0;
   const oldContext = context; context = null;
   if (oldContext && oldContext.state !== 'closed') oldContext.close().catch(() => {});
   mode = 'idle'; demoIndex = -1; $('stop').disabled = true;
@@ -101,7 +121,17 @@ async function audio() {
   await active.resume();
   return active;
 }
-function scheduleTone(ctx, midi, duration = 0.55, when = ctx.currentTime, volume = 0.12) {
+function scheduleTone(ctx, midi, duration = 0.55, when = ctx.currentTime, volume = 0.12, reference = false) {
+  if (ctx.state === 'closed') return null;
+  const voice = schedulePluck(ctx, { instrument, midi, duration: pluckDuration(instrument, duration, reference), when, volume });
+  if (!voice) return null;
+  // A long imported score must not accumulate unbounded ringing voices.
+  if (voices.size >= 48) { const oldest = voices.values().next().value; try { oldest.stop(); } catch { /* Already ended. */ } voices.delete(oldest); }
+  voices.add(voice);
+  voice.addEventListener('ended', () => voices.delete(voice), { once: true });
+  return voice;
+}
+function scheduleClick(ctx, midi, duration, when, volume) {
   if (ctx.state === 'closed') return;
   duration = Math.max(.04, Math.min(8, duration));
   const oscillator = ctx.createOscillator(), gain = ctx.createGain();
@@ -431,13 +461,16 @@ async function demo() {
     const audioEvents=midiModel?.easy&&practiceStyle==='chords'?events.filter((e,i)=>i===0||notes[e.index].cueIndex!==notes[events[i-1].index].cueIndex).flatMap(first=>events.filter(e=>notes[e.index].cueIndex===notes[first.index].cueIndex).map((e,i)=>({...e,time:first.time+i*.03,duration:1.3/speed}))):events;
     const backing = instrument==='guitar' && practiceStyle==='melody' && $('backing').checked ? cues.filter(c=>c.time>=base && c.time<base+span*speed).map(c=>({time:(c.time-base)/speed,chord:c.chord})) : [];
     const beat=(midiModel?.tempos?.[0]?.mpqn/1e6||60/85)/speed,count=$('count-in').checked?4:0;
-    const origin=ctx.currentTime+.06;for(let i=0;i<count;i++)scheduleTone(ctx,i===0?84:79,.045,origin+i*beat,.04);
+    const origin=ctx.currentTime+.06;for(let i=0;i<count;i++)scheduleClick(ctx,i===0?84:79,.045,origin+i*beat,.04);
     let began=origin+count*beat, scheduled=0, chordScheduled=0, visual=-1, cycle=1,counted=!count;
     const pump=()=>{
       if(ticket!==epoch)return;
       const elapsed=ctx.currentTime-began;
       if(elapsed>=span){
-        if(!$('loop-enabled').checked){stopAll();render();feedback('ガイドが終わりました。マイクか画面で練習できます。');return;}
+        if(!$('loop-enabled').checked){
+          if(voices.size){feedback('最後の音の余韻を聴いています。');demoTimer=setTimeout(pump,25);return;}
+          stopAll();render();feedback('ガイドが終わりました。マイクか画面で練習できます。');return;
+        }
         began+=span; scheduled=chordScheduled=0;visual=-1;cycle++; feedback(`ガイド ${cycle}周目。一緒に弾いてみましょう。`);
       }
       const now=ctx.currentTime-began;
@@ -465,7 +498,7 @@ $('edit-lyrics').onclick=()=>{setFocus(false);lyricEditor.open();};
 $('score-prev').onclick=()=>{scorePage=Math.max(0,lastScorePage-1);renderScore();};
 $('score-next').onclick=()=>{scorePage=lastScorePage+1;renderScore();};
 $('chord-check').onchange=()=>{chordCheck=$('chord-check').value;stopAll();chordGate.reset();save();render();feedback(chordCheck==='strum'?'コード全体の推定は試験機能です。転回形や指の位置は確定できません。':'コードを押さえ、大きく表示する弦を一本ずつ弾きます。');};
-$('tuner-strings').onclick=event=>{const b=event.target.closest('[data-tune]');if(b){tunerIndex=Number(b.dataset.tune);render();feedback('選んだ弦を一本だけ鳴らして、針と高低を確かめましょう。');}};
+$('tuner-strings').onclick=event=>{const b=event.target.closest('[data-tune]');if(b){if(referenceActive)stopReference();tunerIndex=Number(b.dataset.tune);render();feedback('選んだ弦を一本だけ鳴らして、針と高低を確かめましょう。');}};
 $('preset-songs').onclick=event=>{const button=event.target.closest('[data-preset-song]');if(button)selectSong(button.dataset.presetSong);};
 $('easy-song-start').onclick=()=>{$('study-select').value='tokiyo';$('study-select').onchange();const study=STUDIES.guitar.find(s=>s.id==='tokiyo');const stage=study.stages[0];startChordExercise(stage.names,`${study.title} · ${stage.title}`,`study:${study.id}:0`,{easy:true});};
 $('chord-library').onclick=event=>{const button=event.target.closest('[data-practice-chord]');if(button)startChordExercise([button.dataset.practiceChord],`${button.dataset.practiceChord}の練習`);};
@@ -517,11 +550,25 @@ $('score').onclick = event => {
 };
 $('reference').onclick = async () => {
   if (follower.done || loading) return;
+  if (referenceActive) { stopReference(); feedback('お手本を止めました。弦を一本だけ弾いて確かめましょう。'); return; }
   if (mode === 'demo') { stopAll(); render(); }
-  const ticket = epoch;
-  suppressUntil = performance.now() + 1250; follower.candidateAt = null;
-  feedback('お手本を再生中。マイク判定は少し待ちます。');
-  try { await tone(notes[view==='tuner'?tunerIndex:follower.index].midi);if(ticket===epoch){suppressUntil=performance.now()+1250;chordGate.reset();} } catch (error) { if (ticket === epoch) feedback(error.message); }
+  const ticket = epoch, request = ++referenceTicket;
+  referenceActive = true; suppressUntil = Infinity; follower.candidateAt = null; chordGate.reset();
+  $('reference').textContent = '■ お手本を止める'; $('reference').setAttribute('aria-pressed', 'true'); $('stop').disabled = false;
+  if (mode === 'idle') $('input-label').textContent = 'お手本を再生中';
+  $('heard').textContent = '—'; $('cents').textContent = '—';
+  feedback('弦の響きと余韻を聴いてみましょう。お手本が鳴る間はマイク判定を待ちます。');
+  try {
+    const ctx = await audio();
+    if (ticket !== epoch || request !== referenceTicket || !referenceActive || ctx.state === 'closed') return;
+    referenceVoice = scheduleTone(ctx, notes[view==='tuner'?tunerIndex:follower.index].midi, .55, ctx.currentTime, .18, true);
+    if (!referenceVoice) throw new Error('お手本を再生できませんでした。もう一度お試しください。');
+    referenceVoice.addEventListener('ended', () => {
+      if (ticket !== epoch || request !== referenceTicket) return;
+      referenceVoice = null; stopReference();
+      feedback(mode === 'mic' ? '余韻が消えたら、弦を一本だけ弾いて確かめましょう。' : 'もう一度聴くか、マイクで弦の音を確かめられます。');
+    }, { once: true });
+  } catch (error) { if (ticket === epoch && request === referenceTicket) { stopReference(); feedback(error.message); } }
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden) { cancelLoad(); stopAll(); render(); feedback('画面を離れたので停止しました。もう一度始めてください。'); } });
 window.addEventListener('pagehide', () => {cancelLoad();stopAll();});
@@ -555,8 +602,8 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
   navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' }).then(registration => {
     const ready = async () => {
       try {
-        const cache = await caches.open('music-practice-v11');
-        const paths=['./app.mjs?v=11',...new Set(Object.values(SONGS).flat().map(song=>`./songs/${song.file}`))];
+        const cache = await caches.open('music-practice-v12');
+        const paths=['./app.mjs?v=12',...new Set(Object.values(SONGS).flat().map(song=>`./songs/${song.file}`))];
         if((await Promise.all(paths.map(path=>cache.match(new URL(path,location.href).href)))).every(Boolean))$('offline-state').textContent = 'オフライン準備OK';
       } catch { $('offline-state').textContent = 'オンラインで利用できます'; }
     };

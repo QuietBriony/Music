@@ -1,5 +1,13 @@
 # Runtime Browser Listening Checklist
 
+## Practice plucked strings (v12)
+
+- Load silently; start no microphone or PCM generation until the matching manual action. Play guitar and sanshin references through their tails; repeat and stop with either reference or Stop.
+- Reference playback suppresses microphone grading for its full duration plus 350ms. A real pluck afterward should work. Rapid toggles, pending resume, string/instrument/view changes, hidden/pagehide and hand guides must release old sound without a delayed restart.
+- Guide, touch notes and chord strokes use the selected plucked timbre. Guide onsets, count-in and score/lyric clocks stay aligned; its final release finishes naturally. Loop at the original tempo with bounded overlapping tails; Stop immediately.
+- Render actual Web Audio for low/high strings and chords. Inspect pitch, decay, nonzero tail, headroom, finite samples and silent endpoints. Measurements do not certify perceived realism.
+- Check the existing PWA update, offline reference/guide and saved songs/lyrics. Real iPhone and real-instrument listening remain unverified until the owner reports it.
+
 2026-10-28 v443: Human Flyに曲として聴く3版「Shadow Dub」「Acid Drive」「Acid Dub」を同梱。選ぶと音色・原音4パート・速さ・位置をセットし、既存A-Bループを解除して冒頭から明示再生。完走後は次曲へ進まず停止する。Shadow Dubは元のベース／ドラムと声・ギターのDub反響に短いシンセの応答。Acid Driveは原音ベース／ドラムを303と電子ドラムへ交代。Acid Dubは元のドラムを残し303の低音と控えめなハットを加える。ランダムな選曲や64小節反復ではなく、8／24／32／48／64／72／88／96／112小節の曲構成に沿って出入り・フィルター・短い返しを固定。ブレイクから最後の山へ戻り、録音の終わりに向けて追加楽器を減衰。既存保存の1枠は選択だけで上書きしない。調整は折りたたみ、固定・サイコロ・音色・JSON・保存は維持。追加ライブラリ・音源・歌詞・hostingはなし。同じ音声時計と出力を使い、生演奏のテンポ揺れは補正しない。実iPhoneの3版試聴と本人の聴感確認は未実施。cache `hazama-fm-v443` / client `band-room.js?v=br-276` / CSS `band-room.css?v=br-102`。
 
 2026-10-28 v442: Human Flyの「楽器・声で遊ぶ」に、2台の303と合成の電子ドラム5パートを接続。64小節で余白→グルーヴ→ビルド→山場→抜く→戻す展開、場面の手動キープ、個別固定・サイコロと16ステップ編集を追加。固定パートは出入り・音色変化からも保護し、手で触った追加パートは2小節優先。声／ギターの短い音だけを送る暗いエコー、量・明るさ・共通リバーブを追加。元の4パート操作欄をライブ欄へ移し、閉じると元へ戻す。同じSTART／STOP・音声コンテキスト・録音出力を使い、STOP・seek・ミュート・音量0で反響も破棄。保存は303・ドラム・固定・展開・FX・原音4パート・速さ・位置を一括復元し、停止したままSTARTを待つ。旧303保存も音を変えず読み込み。新音源ファイルは追加せず、既存MITのUnifiedSynthとノイズ合成を使用。初期OFF、Human Flyのパート別だけが対象。生演奏の揺れ補正・実iPhoneでの新機能試聴は未確認。cache `hazama-fm-v442` / client `band-room.js?v=br-275` / CSS `band-room.css?v=br-101` / stem mix v10。
