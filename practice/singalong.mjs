@@ -1,10 +1,10 @@
-import { MicInputBoost } from './mic-input.mjs?v=21';
-import { cueAt } from './video-cues.mjs?v=21';
-import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=21';
-import { STUDIES } from './learning.mjs?v=21';
-import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=21';
-import { detectChord,ChordGate } from './polyphonic.mjs?v=21';
-import { lessonPlayer } from './youtube.mjs?v=21';
+import { MicInputBoost } from './mic-input.mjs?v=22';
+import { cueAt } from './video-cues.mjs?v=22';
+import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=22';
+import { STUDIES } from './learning.mjs?v=22';
+import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=22';
+import { detectChord,ChordGate } from './polyphonic.mjs?v=22';
+import { lessonPlayer } from './youtube.mjs?v=22';
 const STORAGE='music-practice-singalong-v1';
 const lessons=Object.entries(STUDIES).flatMap(([instrument,items])=>items.map(s=>({...s,instrument,video:PREPARED_COURSES[s.id]?.url||s.video||s.lesson})));
 const text=(id,value)=>{const e=document.getElementById(id);if(e.textContent!==String(value))e.textContent=value;};

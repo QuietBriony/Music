@@ -9,16 +9,16 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=21">
-  <link rel="stylesheet" href="presets.css?v=21">
-  <link rel="stylesheet" href="session.css?v=21">
-  <link rel="stylesheet" href="singalong.css?v=21">
-  <link rel="stylesheet" href="hand-guide.css?v=21">
-  <link rel="stylesheet" href="sanshin.css?v=21">
-  <link rel="stylesheet" href="tablet.css?v=21">
-  <link rel="stylesheet" href="full-score.css?v=21">
-  <link rel="stylesheet" href="guitar-playlist.css?v=21">
-  <script type="module" src="app.mjs?v=21"></script>
+  <link rel="stylesheet" href="style.css?v=22">
+  <link rel="stylesheet" href="presets.css?v=22">
+  <link rel="stylesheet" href="session.css?v=22">
+  <link rel="stylesheet" href="singalong.css?v=22">
+  <link rel="stylesheet" href="hand-guide.css?v=22">
+  <link rel="stylesheet" href="sanshin.css?v=22">
+  <link rel="stylesheet" href="tablet.css?v=22">
+  <link rel="stylesheet" href="full-score.css?v=22">
+  <link rel="stylesheet" href="guitar-playlist.css?v=22">
+  <script type="module" src="app.mjs?v=22"></script>
 </head>
 <body>
 <div class="page">
@@ -112,7 +112,7 @@
 
         <p class="practice-note">同じ音が続くときは、前の音を止めて弾き直します。お手本の音がマイクに入る場合はイヤホンをお使いください。</p>
       </section>
-    <section class="session-lyrics" id="session-lyrics" aria-label="歌詞"><div><span id="session-lyric-status">歌詞</span><button id="edit-lyrics">歌詞・同期を編集</button></div><label id="lyric-display-label" hidden>表示<select id="lyric-display"><option value="lyrics">歌詞だけ</option><option value="reading">読み方つき</option><option value="parallel" selected>対訳つき</option></select></label><p id="session-lyric-current"></p><p id="session-lyric-reading" hidden></p><p id="session-lyric-meaning" hidden></p><p id="session-lyric-next"></p><p id="session-lyric-manual" class="small" hidden>歌うペースで「次の行」を押してください。</p><div class="lyric-mini-nav"><button id="session-lyric-prev">前の行</button><button id="session-lyric-forward">次の行</button><button id="session-lyric-follow" hidden>譜面への追従に戻す</button></div><details id="lyric-overview" hidden><summary>歌詞をまとめて見る・行を選ぶ</summary><div id="lyric-overview-lines"></div><p id="lyric-overview-note" class="small"></p><p id="lyric-overview-credit" class="small"></p><div id="lyric-source-links"></div></details></section>
+    <section class="session-lyrics" id="session-lyrics" aria-label="歌詞"><div><span id="session-lyric-status">歌詞</span><button id="edit-lyrics">歌詞・同期を編集</button></div><label id="lyric-display-label" hidden>表示<select id="lyric-display"><option value="lyrics">歌詞だけ</option><option value="reading">読み方つき</option><option value="parallel" selected>対訳つき</option></select></label><p id="session-lyric-current"></p><p id="session-lyric-reading" hidden></p><p id="session-lyric-meaning" hidden></p><p id="session-lyric-next"></p><p id="session-lyric-manual" class="small" hidden>歌うペースで「次の行」を押してください。</p><div class="lyric-mini-nav"><button id="session-lyric-prev">前の行</button><button id="session-lyric-forward">次の行</button><button id="session-lyric-follow" hidden>譜面への追従に戻す</button></div><details id="lyric-reference" class="lyric-reference" hidden><summary>読み方・対訳を参考に見る</summary><div id="lyric-reference-lines"></div></details><details id="lyric-overview" hidden><summary>歌詞をまとめて見る・行を選ぶ</summary><div id="lyric-overview-lines"></div><p id="lyric-overview-note" class="small"></p><p id="lyric-overview-credit" class="small"></p><div id="lyric-source-links"></div></details></section>
     </div>
     <section class="session-configuration learning-card" id="guitar-tools"><div class="session-config-header"><h2>コードと指板を確かめる</h2><button id="resume-focus">練習画面へ戻る</button></div><div><p id="chord-instruction"></p><p id="chord-barre" class="small"></p><p class="small">○ 開放 · × 弾かない<br>指番号：1 人差し指 / 2 中指 / 3 薬指 / 4 小指</p><p class="small">マイクではコードを押さえたまま、表示する弦を一本ずつ。画面では指板を押してストロークできます。</p></div>      <details class="chord-catalog"><summary>コードを選ぶ · 33種類</summary><p class="small">名前を押すと、そのコードの練習に切り替わります。曲に戻るときは、上の曲を選びます。</p><div id="chord-library"></div><h2>コードをつなぐ練習</h2><div id="progression-choices" class="progression-choices"></div></details>      <details id="fret-details"><summary>画面で弦を押さえる</summary><p id="shape-status" class="small"></p><div id="fretboard" class="fretboard" aria-label="ギターの指板"></div><div class="fret-actions"><div id="chord-choices" aria-label="コードの形をセット"><button data-chord="G">G</button><button data-chord="C">C</button><button data-chord="D">D</button></div></div><p class="practice-note">上から6弦 → 1弦。各弦の○・×・0〜6フレットを選びます。「形を指板に置く」でお手本を試すこともできます。</p></details></section>
     <section class="learning-card"><h2 id="learn-title">読み方と練習の順番</h2><ol id="learn-steps"></ol><div id="learn-links" class="reference-links"></div></section>
@@ -120,7 +120,7 @@
     <details class="local-lyrics learning-card" id="lyric-editor"><summary>歌詞と譜面の位置を合わせる</summary><h3 id="lyric-song-title"></h3><p class="small">歌詞はこの端末だけに保存します。LRCの[00:12.50]形式で時刻を入れるか、行を選んで「現在の位置に合わせる」を押します。[C]歌詞[Am]のようなコード付きテキストから、コード譜と仮ガイドを作ることもできます。</p><label class="lyric-file-label">歌詞ファイルを開く（UTF-8・80 KBまで）<input id="lyric-file" type="file" accept=".txt,.lrc,.cho,.chordpro,text/plain"></label><p class="small">時刻付きのLRCも選べます。開くだけでは今の歌詞を上書きしません。</p><label>歌詞・LRC・コード付きテキスト（2万字・200行まで）<textarea id="lyric-input" maxlength="20000" rows="7" placeholder="ここに手元の歌詞やLRCを貼り付ける"></textarea></label><div class="lyric-actions"><button id="lyric-save">端末に保存して表示</button><button id="chord-sheet-import">コード譜と歌詞を読み込む</button><button id="lyric-download">LRCで保存</button><button id="lyric-clear">この曲の歌詞を削除</button><button id="lyric-restore" hidden>収録歌詞に戻す</button></div><p id="lyric-status" class="small" role="status"></p><details class="lyric-notes-editor"><summary>読み方・標準語の意味を付ける（任意）</summary><p class="small">歌詞を先に保存し、同じ行数で入れます。空行で省略できます。歌詞を変更すると、以前の読み方・意味は外れます。入力内容はこの端末だけに保存します。</p><label>読み方<textarea id="lyric-reading-input" rows="4" maxlength="20000"></textarea></label><label>標準語の意味・訳<textarea id="lyric-meaning-input" rows="4" maxlength="20000"></textarea></label><button id="lyric-notes-save">読み方と意味を保存</button></details><label>合わせる歌詞の行<select id="lyric-line"></select></label><p id="lyric-time" class="small"></p><div class="lyric-actions"><button id="lyric-mark">この行を現在の位置に合わせる</button><button id="lyric-unmark">この行の時刻を外す</button></div><label class="check-label"><input id="lyric-follow" type="checkbox"> 譜面・ガイドに追従</label><p id="lyric-cues" class="small"></p><p id="lyric-credit" class="small"></p><p id="lyric-current" class="lyric-current"></p><div class="lyric-actions"><button id="lyric-prev">前の行</button><span id="lyric-position"></span><button id="lyric-next">次の行</button></div></details>
     <details class="help"><summary>設定・今回できること</summary><div><p>調弦はギター標準調弦と三線の本調子。曲の練習では正しい単音が少し安定すると進みます。コードは一弦ずつの確認か、コード全体を推定する試験機能を選べます。転回形や指の位置はマイクだけでは確定できません。</p><label>マイク感度<select id="sensitivity"><option value="0.003">小さな音も拾う</option><option value="0.006" selected>標準</option><option value="0.014">周りの音を抑える</option></select></label><p>内蔵の曲はAmazing Grace・きらきら星・歓喜の歌の練習版です。「好きな曲」の参照動画と、曲全体の譜面データの内蔵は区別しています。時間よ止まれは歌詞・コード付き通し動画と、3段階のかんたん練習。Santeria・Blackbirdは導入コードの簡易練習、Jigsaw Falling Into Placeは標準調弦＋カポ2のかんたん伴奏で通し動画にコード図が追従、三線は、てぃんさぐぬ花の1節をやさしい工工四と自動の指図で練習できます。時代の流れは先生の動画と手動の指図で練習し、工工四と歌詞は動画に表示されます。</p><p>MIDIは形式0/1・PPQ・512音までの旋律。PDF・画像・録音からの採譜は未対応です。歌詞は端末だけに保存し、LRCや位置合わせで譜面・ガイドに追従できます。Santeria・Blackbirdなどの歌詞全文は同梱しません。</p><p>iPhoneはSafariの共有から「ホーム画面に追加」。Androidはブラウザのインストールから追加できます。「オフライン準備OK」の後は、調弦・内蔵曲・コード・読み方を通信なしで使えます。参照動画を見るときは通信が必要です。</p><p>音声は録音・送信しません。実楽器・実iPhoneでの精度は未確認です。</p></div></details>
   </main>
-  <footer><span>MUSIC STACK / PRACTICE 21</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
+  <footer><span>MUSIC STACK / PRACTICE 22</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
 </div>
 <dialog id="hand-dialog" aria-labelledby="hand-title">
  <header id="hand-header" class="hand-header"><div><small>指をひとつずつ、置いてみる</small><h2 id="hand-title">手の作り方</h2></div><button id="hand-close">練習へ戻る ×</button><nav aria-label="押さえ方の見方"><button id="hand-to-steps">指の順番</button><button id="hand-to-change" hidden>つなぎ方</button><button id="hand-to-posture">手の形</button><button id="hand-to-video">手元動画</button></nav></header>
@@ -149,10 +149,11 @@
 </dialog>
 <dialog id="full-score-dialog" aria-labelledby="full-score-title">
  <header><h2 id="full-score-title">工工四全体</h2><button id="full-score-close">練習へ戻る ×</button></header>
- <div class="sheet-options"><p>各段の右上から下へ、次は左の列。段も右から左へ。<br>文字を押すと、その音と指の位置を確認できます。</p><label>本調子<select id="full-score-tuning"></select></label></div>
+ <div class="sheet-options"><p>各段の右上から下へ、次は左の列。段も右から左へ。<br>文字の横が歌う言葉。文字を押すと、その音と指の位置を確認できます。</p><label>本調子<select id="full-score-tuning"></select></label><label class="sheet-follow"><input id="full-score-follow" type="checkbox" checked>演奏位置に自動追従</label><button id="full-score-current">今の音へ</button></div>
  <div id="full-score-sheet" aria-label="工工四の全体"></div>
- <div class="sheet-controls"><div id="full-score-finger"></div><p id="full-score-position"></p><div class="sheet-buttons"><button id="full-score-previous">前の音</button><button id="full-score-next">次の音</button><button id="full-score-guide" class="primary">♪ ガイドで進む</button><button id="full-score-stop" disabled>停止</button><button id="full-score-all" hidden>全体のガイドを聴く</button></div><div><p id="full-score-status" role="status"></p><span id="full-score-range"></span></div></div>
- <section id="full-score-lyrics" aria-label="ガイドに連動する歌詞" hidden><span id="full-score-lyric-status"></span><p id="full-score-lyric-current"></p><p id="full-score-lyric-reading" hidden></p><p id="full-score-lyric-meaning" hidden></p><p id="full-score-lyric-next"></p></section>
+ <div class="sheet-controls"><div id="full-score-finger"></div><p id="full-score-position"></p><div class="sheet-buttons"><button id="full-score-previous">前の音</button><button id="full-score-next">次の音</button><button id="full-score-guide" class="primary">♪ ガイドで進む</button><button id="full-score-mic">マイクで進む</button><button id="full-score-stop" disabled>停止</button><button id="full-score-all" hidden>全体のガイドを聴く</button></div><div><p id="full-score-status" role="status"></p><span id="full-score-range"></span></div></div>
+ <section id="full-score-lyrics" aria-label="ガイドに連動する歌詞" hidden><span id="full-score-lyric-status"></span><p id="full-score-lyric-current"></p><p id="full-score-lyric-next"></p></section>
+ <details id="full-score-reference" class="lyric-reference" hidden><summary>読み方・対訳を参考に見る</summary><div id="full-score-reference-lines"></div></details>
  <p id="full-score-credit"></p>
 </dialog>
 </body>

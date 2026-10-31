@@ -67,3 +67,11 @@ body[data-view=tuner] .practice-input{display:none!important}#practice-input-sta
 #score-follow{font-size:.68rem;padding:6px 10px;min-height:38px}.score-pager{flex-wrap:wrap}
 #tuning-reminder{padding:10px;border:1px solid #ccaf7b;background:#fff3d6;border-radius:8px;margin:8px 0}
 #tuning-reminder button{font-size:.7rem;min-height:40px;margin:4px}#tuner-kind-label{margin-bottom:12px}#tuning-source{display:inline-block;font-size:.7rem;margin:0 0 15px}
+
+/* Keep the words next to the note rather than in a separate translation pane. */
+#score .kunkun.kunkun-strip{grid-template-rows:repeat(3,64px);grid-auto-columns:76px}
+#score .kunkun-strip button{display:grid;grid-template-columns:minmax(0,1fr) 24px;grid-template-rows:1fr auto;align-items:center;gap:2px}
+#score .kunkun-strip strong{font:1.7rem/1.1 serif}#score .kunkun-strip small{grid-column:1/-1;font-size:9px}
+.score-note-lyric{font:14px/1.2 system-ui;color:#335b4c;writing-mode:vertical-rl;justify-self:center;max-height:3em;overflow:hidden}
+.score-note-lyric[data-kind=line]{writing-mode:horizontal-tb;grid-column:1/-1;font-size:11px;max-height:2.4em}
+.lyric-reference{font-size:.72rem;line-height:1.6;margin-top:10px}.lyric-reference summary{cursor:pointer;min-height:36px;padding:7px 0}.lyric-reference>div>div{padding:10px 0;border-top:1px solid var(--line)}.lyric-reference p{margin:4px 0;font-size:.75rem}

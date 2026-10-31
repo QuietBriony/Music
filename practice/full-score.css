@@ -22,3 +22,11 @@ body.focused #tuning-label select{min-height:36px;font-size:.72rem;padding:6px 2
 #full-score-lyrics{flex-shrink:0;padding:8px 18px;border-top:1px solid var(--line);background:#e9eee2;max-height:24dvh;overflow:auto}
 #full-score-lyric-status{font-size:.65rem;color:var(--muted)}#full-score-lyric-current{font-size:1.05rem;font-weight:650;margin:4px 0}
 #full-score-lyric-next,#full-score-lyric-reading,#full-score-lyric-meaning{font-size:.75rem;line-height:1.5;margin:3px 0}
+
+.sheet-cell{display:grid;grid-template-columns:minmax(0,1fr) 22px;grid-template-rows:1fr auto;gap:1px;padding:4px}
+.sheet-cell small{grid-column:1/-1}.sheet-cell strong{font-size:1.65rem}.sheet-cell .score-note-lyric{font-size:14px}
+.sheet-column-grid{grid-template-rows:repeat(4,68px);grid-template-columns:repeat(4,minmax(55px,1fr))}
+.sheet-block{flex-basis:245px;max-width:310px}.sheet-options{gap:6px 12px}.sheet-follow{white-space:nowrap}.sheet-follow input{width:18px;height:18px;accent-color:var(--green)}
+#full-score-current{min-height:38px;font-size:.7rem;padding:6px 10px}#full-score-reference{margin:0;padding:0 18px;flex-shrink:0;max-height:28dvh;overflow:auto;border-top:1px solid var(--line)}
+#full-score-lyrics{max-height:15dvh;padding:6px 18px}#full-score-lyric-current{margin:3px 0}#full-score-lyric-next{font-size:.7rem}
+@media(max-width:650px){.sheet-block{flex-basis:245px;max-width:360px}.sheet-options .sheet-follow{font-size:.68rem}#full-score-reference{padding:0 12px}}
