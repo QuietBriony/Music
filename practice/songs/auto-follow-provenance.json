@@ -8,56 +8,56 @@
       "id": "under-the-bridge",
       "video": "GLvohMXgcBo",
       "bpm": 85.8,
-      "duration": 268,
+      "duration": 267.161,
       "source": "https://chordu.com/chords-tabs-red-hot-chili-peppers-under-the-bridge-id_GLvohMXgcBo"
     },
     {
       "id": "blackbird",
-      "video": "y_70M2GC3jw",
-      "bpm": 149.45,
-      "duration": 391.701,
-      "source": "https://chordu.com/chords-tabs-the-beatles-blackbird-chase-eagleson-cover--id_y_70M2GC3jw"
+      "video": "Man4Xw8Xypo",
+      "bpm": 94.25,
+      "duration": 138.401,
+      "source": "https://chordu.com/chords-tabs-the-beatles-blackbird-id_Man4Xw8Xypo"
     },
     {
       "id": "imagine",
-      "video": "hJOs03sMna4",
-      "bpm": 150,
-      "duration": 196.441,
-      "source": "https://chordu.com/chords-tabs-raef-imagine-john-lennon-cover--id_hJOs03sMna4"
+      "video": "YkgkThdzX-8",
+      "bpm": 75.8,
+      "duration": 233.921,
+      "source": "https://chordu.com/chords-tabs-john-lennon-imagine-id_YkgkThdzX-8"
     },
     {
       "id": "woman",
-      "video": "K9yBG6oyPP4",
-      "bpm": 81.3,
-      "duration": 197.061,
-      "source": "https://chordu.com/chords-tabs-john-lennon-women-with-lyrics-1980-high-quality-cover-version--id_K9yBG6oyPP4"
+      "video": "ZhfWiU8wGCc",
+      "bpm": 79.5,
+      "duration": 214.101,
+      "source": "https://chordu.com/chords-tabs-john-lennon-woman-id_ZhfWiU8wGCc"
     },
     {
       "id": "your-song",
       "video": "GlPlfCy1urI",
       "bpm": 128.95,
-      "duration": 229,
+      "duration": 228.341,
       "source": "https://chordu.com/chords-tabs-elton-john-your-song-id_GlPlfCy1urI"
     },
     {
       "id": "could-you-be-loved",
-      "video": "pYFOPu-WowQ",
-      "bpm": 105,
-      "duration": 208.421,
-      "source": "https://chordu.com/chords-tabs-wretch-32-covers-bob-marley-s-could-you-be-loved-id_pYFOPu-WowQ"
+      "video": "1ti2YCFgCoI",
+      "bpm": 103.1,
+      "duration": 240.941,
+      "source": "https://chordu.com/chords-tabs-bob-marley-could-you-be-loved-id_1ti2YCFgCoI"
     },
     {
       "id": "sleep-last-night",
-      "video": "1yH5gbXI7DQ",
-      "bpm": 150,
-      "duration": 255.081,
-      "source": "https://chordu.com/chords-tabs-in-the-pines-where-did-you-sleep-last-night-leadbelly-cover-id_1yH5gbXI7DQ"
+      "video": "hEMm7gxBYSc",
+      "bpm": 107.9,
+      "duration": 411.401,
+      "source": "https://chordu.com/chords-tabs-nirvana-where-did-you-sleep-last-night-id_hEMm7gxBYSc"
     },
     {
       "id": "santeria",
       "video": "AEYN5w4T_aM",
       "bpm": 90.65,
-      "duration": 196,
+      "duration": 195.561,
       "source": "https://chordu.com/chords-tabs-sublime-santeria-id_AEYN5w4T_aM"
     }
   ],
@@ -77,10 +77,10 @@
       186,
       256
     ],
-    "end": 258.5
+    "end": 258.181
   },
   "manual_start": "All media still loads and starts only after the learner acts. No microphone start, recorder, audio upload or third-party analysis request is added at runtime.",
   "limitations": "Source videos must remain embeddable. Automated chords include errors, omit passing notes and inversions, and do not replace instruction. Modern lyrics and sanshin melodic scores stay inside publisher videos or learner-provided text.",
-  "playback_checked": "2026-10-31: five replacement cover performances, YES MY LOVE, the two existing mapped videos and eight sanshin videos reached PLAYING via the normal YouTube API. Under the Bridge, Your Song and Santeria sources refused embedding with error 150; no bypass. Those use a clearly labeled local timer with the publisher video on a separate screen and manual synchronization.",
-  "duration_policy": "The five playable alternatives use observed player duration; stale source beat events beyond the actual duration are discarded. Blackbird reference metadata had a longer duration than the current video, so its tail was clipped. Timing and harmonic accuracy remain unverified."
+  "playback_checked": "2026-10-31: all eight public harmonic-reference videos reached PLAYING using the normal YouTube API on the actual https://music-stack.pages.dev origin. The two existing mapped videos, YES MY LOVE and eight sanshin lessons also reached PLAYING. Localhost returned error 150 for some licensed recordings; the published origin did not. No restriction bypass or source media copy. The optional separate-device clock requires explicit start and manual synchronization.",
+  "duration_policy": "Use actual player duration observed on the published origin. Discard any stale numerical beat events beyond the actual duration. Harmonic and musical timing accuracy remain unverified."
 }

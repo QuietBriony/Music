@@ -66,7 +66,6 @@ console.log('Two prepared courses: Jigsaw 101 targets/14 sections/eight open sha
 
 assert.equal(Object.keys(PREPARED_COURSES).length,11);
 assert.equal(Object.values(PREPARED_COURSES).filter(c=>c.estimated).length,9);
-assert.deepEqual(Object.entries(PREPARED_COURSES).filter(([,c])=>c.embedBlocked).map(([id])=>id).sort(),['santeria','under-the-bridge','your-song']);
 for(const [key,course] of Object.entries(PREPARED_COURSES)){
  assert.equal(course.steps.length,course.times.length,key);assert.ok(course.times.length>0&&course.times.length<=1024);
  for(let i=0;i<course.times.length;i++){

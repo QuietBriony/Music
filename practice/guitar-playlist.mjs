@@ -15,7 +15,7 @@ export const GUITAR_PLAYLIST = {
       "video": "https://www.youtube.com/watch?v=lIKzfrSoWcM",
       "credit": "JustinGuitar",
       "focus": "まず先生のリズムを口で数えてから、短い部分を下向きのストロークで。録音と教材の調弦が同じか確かめましょう。",
-      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使用し、Apple Musicの再生には自動連動しません。 自動送りはカバー演奏用です。Apple Musicの原曲とは演奏・キー・長さが異なる場合があります。",
+      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使います。Apple Musicの再生には自動連動しません。",
       "sheets": [
         {
           "label": "先生のギターレッスン（英語）",
@@ -23,7 +23,7 @@ export const GUITAR_PLAYLIST = {
         },
         {
           "label": "推定ガイドの参照元（ChordU）",
-          "url": "https://chordu.com/chords-tabs-in-the-pines-where-did-you-sleep-last-night-leadbelly-cover-id_1yH5gbXI7DQ"
+          "url": "https://chordu.com/chords-tabs-nirvana-where-did-you-sleep-last-night-id_hEMm7gxBYSc"
         }
       ],
       "actionLabel": "動画とコード図で自動送り（推定・目安）"
@@ -39,7 +39,7 @@ export const GUITAR_PLAYLIST = {
       "video": "https://www.youtube.com/watch?v=JgOLRV_62Do",
       "credit": "GuitarLessons365 / Carl Brown",
       "focus": "歌の一行を聴き、先生が示すコードを一つずつ確認。難しい形は手の形ガイドを開いて、一本ずつ鳴らします。",
-      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使用し、Apple Musicの再生には自動連動しません。 自動送りはカバー演奏用です。Apple Musicの原曲とは演奏・キー・長さが異なる場合があります。",
+      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使います。Apple Musicの再生には自動連動しません。",
       "sheets": [
         {
           "label": "先生のギターレッスン（英語）",
@@ -47,7 +47,7 @@ export const GUITAR_PLAYLIST = {
         },
         {
           "label": "推定ガイドの参照元（ChordU）",
-          "url": "https://chordu.com/chords-tabs-john-lennon-women-with-lyrics-1980-high-quality-cover-version--id_K9yBG6oyPP4"
+          "url": "https://chordu.com/chords-tabs-john-lennon-woman-id_ZhfWiU8wGCc"
         }
       ],
       "actionLabel": "動画とコード図で自動送り（推定・目安）"
@@ -63,7 +63,7 @@ export const GUITAR_PLAYLIST = {
       "video": "https://www.youtube.com/watch?v=jY_o7oGw2L8",
       "credit": "Jon MacLennan",
       "focus": "右手のリズムを先に聴き、弦を軽く触って音を短く切る練習から。速さを落とし、短い範囲を繰り返します。",
-      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使用し、Apple Musicの再生には自動連動しません。 自動送りはカバー演奏用です。Apple Musicの原曲とは演奏・キー・長さが異なる場合があります。",
+      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使います。Apple Musicの再生には自動連動しません。",
       "sheets": [
         {
           "label": "先生のギターレッスン（英語）",
@@ -71,7 +71,7 @@ export const GUITAR_PLAYLIST = {
         },
         {
           "label": "推定ガイドの参照元（ChordU）",
-          "url": "https://chordu.com/chords-tabs-wretch-32-covers-bob-marley-s-could-you-be-loved-id_pYFOPu-WowQ"
+          "url": "https://chordu.com/chords-tabs-bob-marley-could-you-be-loved-id_1ti2YCFgCoI"
         }
       ],
       "actionLabel": "動画とコード図で自動送り（推定・目安）"
@@ -87,7 +87,7 @@ export const GUITAR_PLAYLIST = {
       "video": "https://www.youtube.com/watch?v=tm7ic8UlSsE",
       "credit": "Drue James",
       "focus": "先生の指弾きを短く区切り、低い音と高い音を別々に確かめます。歌を重ねる前に、ゆっくり一行つなぎましょう。",
-      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使用し、Apple Musicの再生には自動連動しません。 自動送りはカバー演奏用です。Apple Musicの原曲とは演奏・キー・長さが異なる場合があります。",
+      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使います。Apple Musicの再生には自動連動しません。",
       "sheets": [
         {
           "label": "先生のギターレッスン（英語）",
@@ -95,7 +95,7 @@ export const GUITAR_PLAYLIST = {
         },
         {
           "label": "推定ガイドの参照元（ChordU）",
-          "url": "https://chordu.com/chords-tabs-raef-imagine-john-lennon-cover--id_hJOs03sMna4"
+          "url": "https://chordu.com/chords-tabs-john-lennon-imagine-id_YkgkThdzX-8"
         }
       ],
       "actionLabel": "動画とコード図で自動送り（推定・目安）"
@@ -111,7 +111,7 @@ export const GUITAR_PLAYLIST = {
       "video": "https://www.youtube.com/watch?v=uTqrALDT2Ag",
       "credit": "JustinGuitar",
       "focus": "ピアノの原曲を聴いて歌の流れをつかみ、ギター用の解説で指を確認。まず一行ずつ、速さを落として練習します。",
-      "note": "配信動画の埋め込み制限により、YouTubeを別画面で開き、コードの時間送りを手動で同時開始します。動画との自動同期はできません。コードは推定・目安で、誤判定や切替位置のずれがあります。歌詞は動画・字幕か手元テキストを使います。Apple Musicの再生には連動しません。",
+      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使います。Apple Musicの再生には自動連動しません。",
       "sheets": [
         {
           "label": "先生のギターレッスン（英語）",
@@ -122,7 +122,7 @@ export const GUITAR_PLAYLIST = {
           "url": "https://chordu.com/chords-tabs-elton-john-your-song-id_GlPlfCy1urI"
         }
       ],
-      "actionLabel": "別画面の動画とコード時間送り（手動同期）"
+      "actionLabel": "動画とコード図で自動送り（推定・目安）"
     },
     {
       "id": "santeria",
@@ -135,7 +135,7 @@ export const GUITAR_PLAYLIST = {
       "video": "https://www.youtube.com/watch?v=sHaCB68F1Ko",
       "credit": "Marty Music",
       "focus": "E → G# → C#m → Bの短いコード練習。まず各音を確かめ、次に裏拍で軽く弾く練習へ。",
-      "note": "配信動画の埋め込み制限により、YouTubeを別画面で開き、コードの時間送りを手動で同時開始します。動画との自動同期はできません。コードは推定・目安で、誤判定や切替位置のずれがあります。歌詞は動画・字幕か手元テキストを使います。Apple Musicの再生には連動しません。",
+      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使います。Apple Musicの再生には自動連動しません。",
       "sheets": [
         {
           "label": "Marty Musicのギターレッスン（英語）",
@@ -146,7 +146,7 @@ export const GUITAR_PLAYLIST = {
           "url": "https://chordu.com/chords-tabs-sublime-santeria-id_AEYN5w4T_aM"
         }
       ],
-      "actionLabel": "別画面の動画とコード時間送り（手動同期）"
+      "actionLabel": "動画とコード図で自動送り（推定・目安）"
     },
     {
       "id": "blackbird",
@@ -159,7 +159,7 @@ export const GUITAR_PLAYLIST = {
       "video": "https://www.youtube.com/watch?v=mEn2SEwZKNE",
       "credit": "JustinGuitarの解説",
       "focus": "G → Am7 → G/B → Gの和音を、一弦ずつ確かめる導入練習。親指の低音と指で弾く高音を分けて聴きます。",
-      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使用し、Apple Musicの再生には自動連動しません。 自動送りはカバー演奏用です。Apple Musicの原曲とは演奏・キー・長さが異なる場合があります。",
+      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使います。Apple Musicの再生には自動連動しません。",
       "sheets": [
         {
           "label": "弾き方の解説",
@@ -167,7 +167,7 @@ export const GUITAR_PLAYLIST = {
         },
         {
           "label": "推定ガイドの参照元（ChordU）",
-          "url": "https://chordu.com/chords-tabs-the-beatles-blackbird-chase-eagleson-cover--id_y_70M2GC3jw"
+          "url": "https://chordu.com/chords-tabs-the-beatles-blackbird-id_Man4Xw8Xypo"
         }
       ],
       "actionLabel": "動画とコード図で自動送り（推定・目安）"
@@ -247,7 +247,7 @@ export const GUITAR_PLAYLIST = {
       "video": "https://www.youtube.com/watch?v=8d3E1YP8ZzI",
       "credit": "Marty Music",
       "focus": "イントロは後回しにして、まず歌の部分を動画で確認。動画を止めてコードを選び、飾りを入れず下向きに1回ずつ鳴らすところから。イントロは別の解説で少しずつ練習しましょう。",
-      "note": "配信動画の埋め込み制限により、YouTubeを別画面で開き、コードの時間送りを手動で同時開始します。動画との自動同期はできません。コードは推定・目安で、誤判定や切替位置のずれがあります。歌詞は動画・字幕か手元テキストを使います。Apple Musicの再生には連動しません。",
+      "note": "用意した動画に、推定・目安のコード図が自動で追従します。誤判定や切替位置のずれがあります。正確な採譜や歌唱の採点ではありません。歌詞は動画・字幕か手元のテキストを使います。Apple Musicの再生には自動連動しません。",
       "sheets": [
         {
           "label": "歌の部分・サビ・終盤のギター解説（英語）",
@@ -266,7 +266,7 @@ export const GUITAR_PLAYLIST = {
           "url": "https://chordu.com/chords-tabs-red-hot-chili-peppers-under-the-bridge-id_GLvohMXgcBo"
         }
       ],
-      "actionLabel": "別画面の動画とコード時間送り（手動同期）"
+      "actionLabel": "動画とコード図で自動送り（推定・目安）"
     }
   ]
 };
