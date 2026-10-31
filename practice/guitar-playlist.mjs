@@ -1,4 +1,4 @@
-import { songSupport } from './song-support.mjs?v=24';
+import { songSupport } from './song-support.mjs?v=25';
 export const GUITAR_PLAYLIST = {
   "title": "ギター練習",
   "url": "https://music.apple.com/jp/playlist/%E3%82%AE%E3%82%BF%E3%83%BC%E7%B7%B4%E7%BF%92/pl.u-BNA664eIY6kjLD",
@@ -183,6 +183,30 @@ export const GUITAR_PLAYLIST = {
         }
       ],
       "actionLabel": "動画と自動のコード図で1曲練習"
+    },
+    {
+      "id": "yes-my-love",
+      "title": "YES MY LOVE (Remastered 2022)",
+      "artist": "矢沢永吉",
+      "appleId": "1636243735",
+      "appleUrl": "https://music.apple.com/jp/album/yes-my-love-remastered-2022/1636243484?i=1636243735",
+      "durationMs": 238453,
+      "lesson": "https://www.youtube.com/watch?v=kr1n2Pzn4eA",
+      "video": "https://www.youtube.com/watch?v=kr1n2Pzn4eA",
+      "credit": "邦楽ギターコード集・山田まさひろ",
+      "focus": "初心者向けのコード付き動画を、一行ずつ止めて練習。まず下向きに1回ずつ弾き、分からないコードは図と手の形で確認しましょう。",
+      "note": "シンプルにしたコードを示す参考動画です。全曲のコード順・動画に合わせた自動コード送りは未設定です。動画を止めてコードを選ぶか、手元のコード付き歌詞を読み込んで練習できます。原曲と教材のキー・カポは別に確認してください。",
+      "sheets": [
+        {
+          "label": "初心者向け・コード付きギター動画",
+          "url": "https://www.youtube.com/watch?v=kr1n2Pzn4eA"
+        },
+        {
+          "label": "歌詞とコードを参照（J-Total Music）",
+          "url": "https://music.j-total.net/data/036ya/011_yazawa_eikiti/003.html"
+        }
+      ],
+      "actionLabel": "参考動画とコード図を開く（手動）"
     }
   ]
 };

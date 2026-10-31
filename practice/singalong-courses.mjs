@@ -1,6 +1,6 @@
-import { TOKIYO_STEPS,normalizeSingState } from './singalong-core.mjs?v=24';
-import { TOKIYO_VIDEO_ID,TOKIYO_TIMES,TOKIYO_END } from './video-cues.mjs?v=24';
-import { JIGSAW_STEPS,JIGSAW_TIMES,JIGSAW_END,JIGSAW_VIDEO_ID } from './jigsaw-cues.mjs?v=24';
+import { TOKIYO_STEPS,normalizeSingState } from './singalong-core.mjs?v=25';
+import { TOKIYO_VIDEO_ID,TOKIYO_TIMES,TOKIYO_END } from './video-cues.mjs?v=25';
+import { JIGSAW_STEPS,JIGSAW_TIMES,JIGSAW_END,JIGSAW_VIDEO_ID } from './jigsaw-cues.mjs?v=25';
 
 export const PREPARED_COURSES={
  tokiyo:{key:'tokiyo-v1',legacy:true,video:TOKIYO_VIDEO_ID,url:`https://www.youtube.com/watch?v=${TOKIYO_VIDEO_ID}`,steps:TOKIYO_STEPS,times:TOKIYO_TIMES,end:TOKIYO_END,capo:4,note:'オーリーズの音楽室の歌詞・コード付き通し演奏。カポ4のコード名を案内します。'},
