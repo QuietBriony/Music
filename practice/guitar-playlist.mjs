@@ -1,4 +1,4 @@
-import { songSupport } from './song-support.mjs?v=23';
+import { songSupport } from './song-support.mjs?v=24';
 export const GUITAR_PLAYLIST = {
   "title": "ギター練習",
   "url": "https://music.apple.com/jp/playlist/%E3%82%AE%E3%82%BF%E3%83%BC%E7%B7%B4%E7%BF%92/pl.u-BNA664eIY6kjLD",

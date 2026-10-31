@@ -1,24 +1,24 @@
-import { mountScoreStrip } from './score-strip.mjs?v=23';
-import { MicInputBoost,mountMicGainControls } from './mic-input.mjs?v=23';
-import { mountGuitarPlaylist } from './guitar-playlist.mjs?v=23';
-import { mountSanshinPlaylist } from './sanshin-playlist.mjs?v=23';
-import { mountHandGuide } from './hand-guide.mjs?v=23';
-import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=23';
-import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=23';
-import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=23';
-import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=23';
-import { SANSHIN_TUNINGS,sanshinTuning,tuningLabel,tuningStrings, tuningGate, detectTuningPitch, TunerTracker } from './tuner.mjs?v=23';
-import { mountFullScore } from './full-score.mjs?v=23';
-import { mountLearning,STUDIES } from './learning.mjs?v=23';
-import { detectChord, ChordGate } from './polyphonic.mjs?v=23';
-import { mountLyrics } from './lyrics.mjs?v=23';
-import { LYRIC_PRESETS } from './lyric-presets.mjs?v=23';
-import { PracticeProgress,progressKey } from './progress.mjs?v=23';
-import { mountSingalong } from './singalong.mjs?v=23';
-import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=23';
+import { mountScoreStrip } from './score-strip.mjs?v=24';
+import { MicInputBoost,mountMicGainControls } from './mic-input.mjs?v=24';
+import { mountGuitarPlaylist } from './guitar-playlist.mjs?v=24';
+import { mountSanshinPlaylist } from './sanshin-playlist.mjs?v=24';
+import { mountHandGuide } from './hand-guide.mjs?v=24';
+import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=24';
+import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=24';
+import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=24';
+import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=24';
+import { SANSHIN_TUNINGS,sanshinTuning,tuningLabel,tuningStrings, tuningGate, detectTuningPitch, TunerTracker } from './tuner.mjs?v=24';
+import { mountFullScore } from './full-score.mjs?v=24';
+import { mountLearning,STUDIES } from './learning.mjs?v=24';
+import { detectChord, ChordGate } from './polyphonic.mjs?v=24';
+import { mountLyrics } from './lyrics.mjs?v=24';
+import { LYRIC_PRESETS } from './lyric-presets.mjs?v=24';
+import { PracticeProgress,progressKey } from './progress.mjs?v=24';
+import { mountSingalong } from './singalong.mjs?v=24';
+import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=24';
 
-import { renderSanshinTarget } from './sanshin-view.mjs?v=23';
-import { mountSanshinGuide } from './sanshin-guide.mjs?v=23';
+import { renderSanshinTarget } from './sanshin-view.mjs?v=24';
+import { mountSanshinGuide } from './sanshin-guide.mjs?v=24';
 
 const $ = id => document.getElementById(id);
 const tunerTracker=new TunerTracker();
@@ -702,8 +702,8 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
   navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' }).then(registration => {
     const ready = async () => {
       try {
-        const cache = await caches.open('music-practice-v23');
-        const paths=['./app.mjs?v=23',...new Set(Object.values(SONGS).flat().map(song=>`./songs/${song.file}`))];
+        const cache = await caches.open('music-practice-v24');
+        const paths=['./app.mjs?v=24',...new Set(Object.values(SONGS).flat().map(song=>`./songs/${song.file}`))];
         if((await Promise.all(paths.map(path=>cache.match(new URL(path,location.href).href)))).every(Boolean))$('offline-state').textContent = 'オフライン準備OK';
       } catch { $('offline-state').textContent = 'オンラインで利用できます'; }
     };

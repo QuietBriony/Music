@@ -1,5 +1,5 @@
-import { gripChoices,fingerSteps,soundingStrings,gripTips,FINGER_NAMES,handLesson,fingerMoves,stringCheck } from './hand-guide-core.mjs?v=23';
-import { lessonPlayer } from './youtube.mjs?v=23';
+import { gripChoices,fingerSteps,soundingStrings,gripTips,FINGER_NAMES,handLesson,fingerMoves,stringCheck } from './hand-guide-core.mjs?v=24';
+import { lessonPlayer } from './youtube.mjs?v=24';
 const $=id=>document.getElementById(id),ns='http://www.w3.org/2000/svg';
 const colors=['','#245f9a','#915100','#804ba1','#14776f'];
 function element(tag,attrs={},value){const e=document.createElementNS(ns,tag);for(const [k,v]of Object.entries(attrs))e.setAttribute(k,v);if(value!==undefined)e.textContent=value;return e;}
