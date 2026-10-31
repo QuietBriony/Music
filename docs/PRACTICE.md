@@ -1,10 +1,16 @@
 # ギターと三線を一音ずつ練習する
 
-2026-10-31 v25。既存Musicの[一音ずつ](../practice/index.html)をListenから開く。
+2026-10-31 v26。既存Musicの[一音ずつ](../practice/index.html)をListenから開く。
 Simply Guitarの教材を移植せず、音の正解を待つ練習と、MIDIの長さ・テンポで流れるガイドを用意した。
 既存Cloudflare `music-stack` / GitHub Pagesを使い、新しい公開先は作らない。
 
 スマートフォンはコード図・歌詞・動画の順で表示し、歌詞未入力の案内がコード図を操作ボタンの下へ押し出さない配置にした（v24）。iPad横向きの動画・コード図・歌詞の3列は保持。動画表示を切り替えた状態も390×844で確認する。
+
+## Under the Bridge（v26）
+
+2026-10-31 練習PWA v26：ギターへRed Hot Chili Peppers「Under the Bridge」を追加。歌の部分・サビ・終盤のMarty Music解説を主教材に、イントロ専用解説とJustinGuitar参照を併記。既存曲順・保存キーを保持し末尾へ追加、ギター11曲・三線8曲。全曲のコード順・自動送りは未設定と表示。音源・歌詞・外部譜面は同梱せず、動画とマイクは手動開始。専用cache v26。実機は未確認。
+
+原曲はBlood Sugar Sex Magikのフル版を参照し、短いMixed版と区別。Apple Musicの元プレイリストは変更しない。
 
 ## 追加曲（v25）
 

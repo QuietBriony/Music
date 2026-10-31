@@ -1,6 +1,6 @@
-import { noteName } from './music.mjs?v=25';
-import { neckDiagram } from './sanshin-view.mjs?v=25';
-import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=25';
+import { noteName } from './music.mjs?v=26';
+import { neckDiagram } from './sanshin-view.mjs?v=26';
+import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=26';
 
 // Keep note indices separate from rests: selecting a cell must seek the actual
 // note, and must never count as a correct microphone answer.

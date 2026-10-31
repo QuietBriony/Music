@@ -1,5 +1,5 @@
 // Mount the complete phrase once; moving the viewport never replaces notes.
-import { scoreLyricAnnotations,setScoreLyric } from './score-lyrics.mjs?v=25';
+import { scoreLyricAnnotations,setScoreLyric } from './score-lyrics.mjs?v=26';
 export function mountScoreStrip(viewport){
  let previous=null,grid=null,anchor=null,sheet={},annotationNotes=null,annotationLines=null,annotationCues=null,annotationSyllables=null;
  function annotate(){

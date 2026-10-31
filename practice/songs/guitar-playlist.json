@@ -206,6 +206,34 @@
         }
       ],
       "actionLabel": "参考動画とコード図を開く（手動）"
+    },
+    {
+      "id": "under-the-bridge",
+      "title": "Under the Bridge",
+      "artist": "レッド・ホット・チリ・ペッパーズ",
+      "appleId": "945581840",
+      "appleUrl": "https://music.apple.com/jp/album/under-the-bridge/945581828?i=945581840",
+      "durationMs": 264206,
+      "lesson": "https://www.youtube.com/watch?v=8d3E1YP8ZzI",
+      "video": "https://www.youtube.com/watch?v=8d3E1YP8ZzI",
+      "credit": "Marty Music",
+      "focus": "イントロは後回しにして、まず歌の部分を動画で確認。動画を止めてコードを選び、飾りを入れず下向きに1回ずつ鳴らすところから。イントロは別の解説で少しずつ練習しましょう。",
+      "note": "歌の部分・サビ・終盤を説明する参考動画です。全曲のコード順・動画に合わせた自動コード送りは未設定です。動画を止めて押さえ方を選ぶか、手元のコード付き歌詞を読み込んで練習できます。原曲のイントロや細かな装飾は、別のイントロ解説を参照してください。",
+      "sheets": [
+        {
+          "label": "歌の部分・サビ・終盤のギター解説（英語）",
+          "url": "https://www.youtube.com/watch?v=8d3E1YP8ZzI"
+        },
+        {
+          "label": "イントロ専用のギター解説（英語）",
+          "url": "https://www.youtube.com/watch?v=RJlQ9WOYrwA"
+        },
+        {
+          "label": "JustinGuitarの解説（英語）",
+          "url": "https://www.justinguitar.com/songs/red-hot-chili-peppers-under-the-bridge-1-3-chords-tabs-guitar-lesson-st-312"
+        }
+      ],
+      "actionLabel": "参考動画とコード図を開く（手動）"
     }
   ]
 }
