@@ -1,4 +1,4 @@
-import { CHORDS,GUITAR_OPEN } from './chords.mjs?v=19';
+import { CHORDS,GUITAR_OPEN } from './chords.mjs?v=20';
 export const FINGER_NAMES=['','人差し指','中指','薬指','小指'];
 export const SMALL_GRIPS={
  F:{frets:[-1,-1,3,2,1,-1],fingers:[0,0,3,2,1,0]},

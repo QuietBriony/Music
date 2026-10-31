@@ -1,5 +1,5 @@
-import { noteName } from './music.mjs?v=19';
-import { neckDiagram } from './sanshin-view.mjs?v=19';
+import { noteName } from './music.mjs?v=20';
+import { neckDiagram } from './sanshin-view.mjs?v=20';
 
 // Keep note indices separate from rests: selecting a cell must seek the actual
 // note, and must never count as a correct microphone answer.

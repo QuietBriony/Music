@@ -1,5 +1,5 @@
 // Original, dependency-free single-note exercises and detector for Music Stack.
-import { sanshinPosition } from './sanshin-core.mjs?v=19';
+import { sanshinPosition } from './sanshin-core.mjs?v=20';
 export const frequencyFor = (midi) => 440 * 2 ** ((midi - 69) / 12);
 export const centsFrom = (frequency, midi) => 1200 * Math.log2(frequency / frequencyFor(midi));
 export function noteName(midi) {
@@ -60,14 +60,14 @@ export function detectPitch(input, sampleRate, gate = 0.006, { threshold = 0.16 
 }
 
 export class NoteFollower {
-  constructor(notes, { start = 0, end = notes.length, tolerance = 45, hold = 130, gate = 0.006 } = {}) {
+  constructor(notes, { start = 0, end = notes.length, tolerance = 45, hold = 130, gate = 0.006, dropout = 0 } = {}) {
     this.notes = notes; this.start = start; this.end = end;
-    this.tolerance = tolerance; this.hold = hold; this.gate = gate; this.reset();
+    this.tolerance = tolerance; this.hold = hold; this.gate = gate; this.dropout = dropout; this.reset();
   }
   reset(index = this.start) {
     this.index = index; this.done = false; this.lastMidi = null;
     this.acceptedAt = -Infinity; this.armed = true; this.candidateAt = null;
-    this.quietAt = null; this.lastRms = 0;
+    this.quietAt = null; this.lastRms = 0; this.voicedMs=0;this.lastGoodAt=null;this.previousGood=false;
   }
   accept(now) {
     this.lastMidi = this.notes[this.index].midi; this.acceptedAt = now;
@@ -82,7 +82,11 @@ export class NoteFollower {
     } else this.quietAt = null;
     if (now - this.acceptedAt > 220 && rms > Math.max(this.gate * 2, this.lastRms * 1.7)) this.armed = true;
     this.lastRms = rms;
-    if (!frequency || clarity < 0.84 || rms < this.gate) { this.candidateAt = null; return { status: 'listening', matched: false }; }
+    if (!frequency || clarity < 0.84 || rms < this.gate) {
+      this.previousGood=false;
+      if(!this.dropout||this.lastGoodAt===null||now-this.lastGoodAt>this.dropout)this.candidateAt=null;
+      return { status: 'listening', matched: false };
+    }
     const target = this.notes[this.index].midi;
     const cents = centsFrom(frequency, target);
     if (Math.abs(cents) > this.tolerance) {
@@ -92,8 +96,11 @@ export class NoteFollower {
     }
     if (this.lastMidi === target && !this.armed) { this.candidateAt = null; return { status: 'pluck', cents, matched: false }; }
     if (now - this.acceptedAt < 220) return { status: 'hold', cents, matched: false };
-    this.candidateAt ??= now;
-    if (now - this.candidateAt >= this.hold) return { ...this.accept(now), status: 'matched', cents };
+    if(this.candidateAt===null){this.candidateAt=now;this.voicedMs=0;}
+    else if(this.dropout&&now-this.lastGoodAt>this.dropout){this.candidateAt=now;this.voicedMs=0;}
+    else if(this.dropout&&this.previousGood)this.voicedMs+=now-this.lastGoodAt;
+    this.lastGoodAt=now;this.previousGood=true;
+    if ((this.dropout?this.voicedMs:now-this.candidateAt) >= this.hold) return { ...this.accept(now), status: 'matched', cents };
     return { status: 'hold', cents, matched: false };
   }
 }

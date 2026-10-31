@@ -103,6 +103,16 @@ for(const tuning of [-1,0]){
  follower.feed(heard,0);assert.equal(follower.feed(heard,150).matched,true);assert.equal(follower.feed(heard,600).matched,false,'One sustained pluck cannot consume repeated notes');
  const wrong=new NoteFollower([{midi:target+1}],{gate});wrong.feed(heard,0);assert.equal(wrong.feed(heard,200).matched,false,'A B/C tuning mismatch is not accepted');
 }
+// A short missing-pitch frame must not erase all accumulated voiced evidence,
+// and missing time itself must never count towards a correct note.
+const tolerant=new NoteFollower([{midi:57},{midi:57}],{gate:.0015,dropout:90});
+const soft={frequency:frequencyFor(57),clarity:.97,rms:.002},gap={frequency:null,clarity:0,rms:.002};
+tolerant.feed(soft,0);tolerant.feed(soft,45);tolerant.feed(gap,90);
+assert.equal(tolerant.feed(soft,135).matched,false);assert.equal(tolerant.feed(soft,180).matched,false);assert.equal(tolerant.feed(soft,225).matched,true);
+assert.equal(tolerant.feed(soft,600).matched,false,'Continuous ringing cannot consume the repeated note');
+const isolated=new NoteFollower([{midi:57}],{gate:.0015,dropout:90});isolated.feed(soft,0);for(const now of [45,90,135,180,300])assert.equal(isolated.feed(gap,now).matched,false);assert.equal(isolated.feed(soft,350).matched,false,'A later isolated frame starts fresh');
+const pausedEvidence=new NoteFollower([{midi:57}],{gate:.0015,dropout:120});pausedEvidence.feed(soft,0);assert.equal(pausedEvidence.feed(soft,1000).matched,false,'Unobserved pause cannot count as voiced evidence');
+const wrongSoft=new NoteFollower([{midi:58}],{gate:.0015,dropout:90});wrongSoft.feed(soft,0);assert.equal(wrongSoft.feed(soft,200).matched,false,'Amplified wrong semitone is still wrong');
 assert.equal(tinsaguNotes.map(n=>n.symbol).join(''),'中中工上四合四五中中工上四合四五中中工上四合四五中中七九八七八中中工上四合四五中中工上四合四五中中工上四合四五中中工上四合四五');
 for(const tuning of [-3,-2,-1,0,2]){
  const notes=mapMelody(parsed.groups[0].notes,'sanshin',{tuning});
@@ -111,5 +121,5 @@ for(const tuning of [-3,-2,-1,0,2]){
 }
 assert.equal(SANSHIN_VIDEOS.jidai.video,'xtf0OAu-qVY');
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=19','sanshin-view.mjs?v=19','sanshin-guide.mjs?v=19','sanshin.css?v=19','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=20','sanshin-view.mjs?v=20','sanshin-guide.mjs?v=20','sanshin.css?v=20','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
 console.log('Practice learning: tuning, sixteen studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');

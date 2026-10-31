@@ -1,7 +1,7 @@
-import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=19';
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=19';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=19';
-import { lessonPlayer } from './youtube.mjs?v=19';
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=20';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=20';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=20';
+import { lessonPlayer } from './youtube.mjs?v=20';
 export const SANSHIN_VIDEOS = Object.fromEntries(SANSHIN_PLAYLIST.tracks.map(t=>[t.id,t]));
 const storageKey=id=>`music-practice-sanshin-video-${id}-v1`;
 const timeLabel=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;

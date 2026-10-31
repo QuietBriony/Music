@@ -1,6 +1,6 @@
 // Original, conservative spectral template fitting. No recordings or external model.
-import { frequencyFor } from './music.mjs?v=19';
-import { CHORDS, chordNotes } from './chords.mjs?v=19';
+import { frequencyFor } from './music.mjs?v=20';
+import { CHORDS, chordNotes } from './chords.mjs?v=20';
 const sinc=x=>Math.abs(x)<1e-9?1:Math.sin(Math.PI*x)/(Math.PI*x);
 const blackman=x=>Math.abs(.42*sinc(x)+.25*(sinc(x-1)+sinc(x+1))+.04*(sinc(x-2)+sinc(x+2)));
 const families=[...new Map(Object.keys(CHORDS).map(name=>{
