@@ -75,3 +75,5 @@ body[data-view=tuner] .practice-input{display:none!important}#practice-input-sta
 .score-note-lyric{font:14px/1.2 system-ui;color:#335b4c;writing-mode:vertical-rl;justify-self:center;max-height:3em;overflow:hidden}
 .score-note-lyric[data-kind=line]{writing-mode:horizontal-tb;grid-column:1/-1;font-size:11px;max-height:2.4em}
 .lyric-reference{font-size:.72rem;line-height:1.6;margin-top:10px}.lyric-reference summary{cursor:pointer;min-height:36px;padding:7px 0}.lyric-reference>div>div{padding:10px 0;border-top:1px solid var(--line)}.lyric-reference p{margin:4px 0;font-size:.75rem}
+
+@media(max-width:650px){body.focused[data-instrument=guitar] #session-lyrics[data-following=true] .lyric-mini-nav{display:none!important}}

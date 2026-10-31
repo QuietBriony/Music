@@ -9,16 +9,16 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=22">
-  <link rel="stylesheet" href="presets.css?v=22">
-  <link rel="stylesheet" href="session.css?v=22">
-  <link rel="stylesheet" href="singalong.css?v=22">
-  <link rel="stylesheet" href="hand-guide.css?v=22">
-  <link rel="stylesheet" href="sanshin.css?v=22">
-  <link rel="stylesheet" href="tablet.css?v=22">
-  <link rel="stylesheet" href="full-score.css?v=22">
-  <link rel="stylesheet" href="guitar-playlist.css?v=22">
-  <script type="module" src="app.mjs?v=22"></script>
+  <link rel="stylesheet" href="style.css?v=23">
+  <link rel="stylesheet" href="presets.css?v=23">
+  <link rel="stylesheet" href="session.css?v=23">
+  <link rel="stylesheet" href="singalong.css?v=23">
+  <link rel="stylesheet" href="hand-guide.css?v=23">
+  <link rel="stylesheet" href="sanshin.css?v=23">
+  <link rel="stylesheet" href="tablet.css?v=23">
+  <link rel="stylesheet" href="full-score.css?v=23">
+  <link rel="stylesheet" href="guitar-playlist.css?v=23">
+  <script type="module" src="app.mjs?v=23"></script>
 </head>
 <body>
 <div class="page">
@@ -31,14 +31,14 @@
     <section id="beginner-path" class="beginner-path" aria-labelledby="beginner-title"><h2 id="beginner-title">まずは5分。できるところから。</h2><p id="beginner-tip"></p><div><button id="beginner-tune">1. 調弦する</button><button id="beginner-drill"></button><button id="beginner-song"></button></div><p class="small">準備できたら「この音を聴く」か「ガイドに合わせて弾く」。マイクは押したときだけ始まります。</p><a href="#learn-title" id="beginner-resources">構え方・読み方を教材で見る ↓</a></section>
     <section id="singalong-screen" aria-label="動画とコード図で弾き語り">
       <div class="sing-heading"><div><p class="eyebrow">SING & PLAY</p><h1>歌いながら、1曲。</h1><p>動画で歌詞とリズムを見て、コード図で押さえ方を確認します。</p></div><span>マイクは和音の確認だけ。歌声の採点はしません。</span></div>
-      <label class="sing-course-label">練習する曲<select id="sing-course"></select></label><h2 id="sing-course-title"></h2><div class="sing-layout-controls"><button id="sing-layout">コード図を大きく</button><a id="sing-outside" target="_blank" rel="noopener">動画を別画面で開く ↗</a></div>
-      <div class="sing-follow-controls"><label><input id="sing-follow" type="checkbox" checked> 動画に合わせてコード図を進める</label><span id="sing-follow-note"></span></div>
+      <label class="sing-course-label">練習する曲<select id="sing-course"></select></label><h2 id="sing-course-title"></h2><div class="sing-layout-controls"><button id="sing-layout">コード図を大きく</button><button id="sing-warmup" hidden>先に導入コードを練習</button><a id="sing-outside" target="_blank" rel="noopener">動画を別画面で開く ↗</a></div>
+      <p id="sing-support" class="song-support"></p><div class="sing-follow-controls"><label><input id="sing-follow" type="checkbox" checked> 動画に合わせてコード図を進める</label><span id="sing-follow-note"></span></div>
       <div class="sing-workspace">
         <div class="sing-video-card"><div id="sing-player"></div><div class="sing-load-area"><button id="sing-load" class="primary">YouTubeの動画を読み込む</button><p id="sing-reference-note"></p><p class="small">押したときだけYouTubeへ接続します。動画・歌詞は配信元の表示を使います。動画は通信が必要です。</p></div><div class="sing-video-controls"><button id="sing-play" disabled>▶ 再生</button><button id="sing-pause" disabled>■ 動画・マイクを止める</button><button id="sing-back" disabled>5秒戻る</button><label>動画の速さ<select id="sing-speed" disabled><option value="1">ふつう</option></select></label><span id="sing-video-time">0:00</span></div><div class="sing-loop-controls"><button id="sing-a" disabled>A：ここから</button><button id="sing-b" disabled>B：ここまで</button><label><input id="sing-loop" type="checkbox" disabled> ここを繰り返す</label><span id="sing-loop-state"></span></div><div class="sing-source-links"><a id="sing-source" target="_blank" rel="noopener">YouTubeで開く ↗</a><a id="sing-lesson-link" target="_blank" rel="noopener">参考レッスン ↗</a></div></div>
         <section class="sing-shape-card" aria-label="次に押さえるコード"><div class="sing-target-row"><div><span id="sing-target-label">次に押さえるコード</span><strong id="sing-target">C</strong></div><div class="sing-next">その次<strong id="sing-next">—</strong><span id="sing-next-countdown"></span></div></div><p id="sing-section"></p><div id="sing-diagram"></div><button id="sing-hand-open" class="hand-open-guide">手の形・指の置き方を見る</button><p class="sing-legend">○ 開放 · × 弾かない<br>1 人差し指 · 2 中指 · 3 薬指 · 4 小指</p><label class="sing-capo-label">動画に合わせるカポ<select id="sing-capo"></select></label><p id="sing-capo-note"></p><details><summary>指を置く位置を読む</summary><ol id="sing-fingers"></ol><p id="sing-fingering"></p></details></section>
       </div>
-      <div class="sing-performance-controls"><div><button id="sing-previous">← 前のコード</button><button id="sing-advance" class="primary">次のコード →</button><button id="sing-restart">最初から</button></div><div><button id="sing-mic">マイクで合ったら次へ（試験）</button><button id="sing-mic-stop" disabled>マイク停止</button><label class="sing-mic-boost-label">音を拾う強さ<select id="sing-mic-boost"></select></label><span>検出 <strong id="sing-heard">—</strong></span><span id="sing-progress"></span></div><p id="sing-status" role="status"></p></div>
-      <details class="sing-position-details"><summary>コードの位置を合わせる・押さえ方を探す</summary><p>「動画に合わせてコード図を進める」がONなら、選んだコードへ動画も移動します。OFFなら自分のペースで図を進めます。</p><details class="sing-offset-controls"><summary>図の切替タイミングを調整</summary><p>手作業で合わせた時刻ガイドです。図が遅く感じる時は「少し早く」で調整できます。</p><button id="sing-earlier">少し早く</button><button id="sing-later">少し遅く</button><button id="sing-offset-reset">標準に戻す</button><output id="sing-offset-value">標準</output></details><label>曲のまとまり<select id="sing-sections"></select></label><div id="sing-chord-track"></div><label>コードの押さえ方を調べる<select id="sing-chord-picker"></select></label></details>
+      <section id="sing-lyrics-host" aria-label="この曲の歌詞とコード"></section><div class="sing-performance-controls"><div><button id="sing-previous">← 前のコード</button><button id="sing-advance" class="primary">次のコード →</button><button id="sing-restart">最初から</button></div><div><button id="sing-mic">マイクで合ったら次へ（試験）</button><button id="sing-mic-stop" disabled>マイク停止</button><label class="sing-mic-boost-label">音を拾う強さ<select id="sing-mic-boost"></select></label><span>検出 <strong id="sing-heard">—</strong></span><span id="sing-progress"></span></div><p id="sing-status" role="status"></p></div>
+      <details id="sing-position-details" class="sing-position-details"><summary>コードの位置を合わせる・押さえ方を探す</summary><p>「動画に合わせてコード図を進める」がONなら、選んだコードへ動画も移動します。OFFなら自分のペースで図を進めます。</p><details class="sing-offset-controls"><summary>図の切替タイミングを調整</summary><p>手作業で合わせた時刻ガイドです。図が遅く感じる時は「少し早く」で調整できます。</p><button id="sing-earlier">少し早く</button><button id="sing-later">少し遅く</button><button id="sing-offset-reset">標準に戻す</button><output id="sing-offset-value">標準</output></details><label>曲のまとまり<select id="sing-sections"></select></label><div id="sing-chord-track"></div><label>コードの押さえ方を調べる<select id="sing-chord-picker"></select></label></details>
       <details class="sing-custom-details"><summary>ほかの曲も通して弾く・コードの並びを入れる</summary><p>好きな曲の参考動画を選び、ギター用の曲順のコード名を空白か矢印で区切って入れられます。歌詞は動画で見ます。入力した並びはこの曲に、この端末だけで保存します。</p><label>コードの並び（512個まで）<textarea id="sing-code-input" rows="4" maxlength="20000" placeholder="C Am Dm G C"></textarea></label><button id="sing-code-save">この曲の並びにする</button><button id="sing-code-reset">用意された並びに戻す</button></details>
       <details class="sing-ipad-help"><summary>iPadとiPhoneの使い分け</summary><p>まずiPadの同じ画面で動画とコード図を見る使い方がおすすめです。YouTubeを別ウインドウで開き、このアプリと左右に並べることもできます。自動のコード表示は、この画面内のYouTube動画に対応します。YouTubeアプリや別端末で流す動画の位置には連動しません。</p><a href="https://support.apple.com/ja-jp/125309" target="_blank" rel="noopener">iPadで2つのウインドウを並べる（Apple）↗</a><p>マイクを使うときは動画の音をイヤホンへ。歌声やスピーカーの音で、和音の判定が不安定になることがあります。</p></details>
     </section>
@@ -46,7 +46,7 @@
      <div class="card-top"><h2 id="guitar-playlist-heading">ギター練習 · リストの9曲</h2><a id="guitar-playlist-source" href="https://music.apple.com/jp/playlist/%E3%82%AE%E3%82%BF%E3%83%BC%E7%B7%B4%E7%BF%92/pl.u-BNA664eIY6kjLD" target="_blank" rel="noopener">Apple Musicのリスト ↗</a></div>
      <p class="small">2026年10月31日時点の曲順。原曲を聴いて、教材とコード図で練習します。</p>
      <label>練習する曲<select id="guitar-playlist-select"></select></label>
-     <h3 id="guitar-playlist-title"></h3><p id="guitar-playlist-artist"></p><p id="guitar-playlist-focus"></p>
+     <p id="guitar-playlist-support" class="song-support"></p><h3 id="guitar-playlist-title"></h3><p id="guitar-playlist-artist"></p><p id="guitar-playlist-focus"></p>
      <ol class="playlist-steps"><li>原曲を聴いて、一行口ずさむ</li><li>教材の調弦・カポを確認する</li><li>コードを確かめ、短い部分から歌を重ねる</li></ol>
      <div class="playlist-actions"><button id="guitar-playlist-open" class="primary">参考動画とコード図を開く</button><a id="guitar-playlist-apple" target="_blank" rel="noopener">この原曲をApple Musicで聴く ↗</a></div>
      <div id="guitar-playlist-sheets"></div><p id="guitar-playlist-scope" class="small"></p>
@@ -60,7 +60,7 @@
       <div class="card-top"><h2 id="playlist-heading">三線練習 · リストの7曲</h2><a href="https://music.apple.com/jp/playlist/%E4%B8%89%E7%B7%9A%E7%B7%B4%E7%BF%92/pl.u-PDb42ZZuJZ06jp" target="_blank" rel="noopener" id="playlist-source">Apple Musicのリスト ↗</a></div>
       <p class="small">原曲を聴いて、先生の動画と短い部分から。2026年10月31日時点の曲順です。</p>
       <label>練習する曲<select id="playlist-select"></select></label>
-      <div class="playlist-detail"><div><h3 id="playlist-title"></h3><p id="playlist-artist"></p><p id="playlist-focus"></p></div>
+      <div class="playlist-detail"><div><p id="playlist-support" class="song-support"></p><h3 id="playlist-title"></h3><p id="playlist-artist"></p><p id="playlist-focus"></p></div>
       <ol class="playlist-steps"><li>原曲を聴いて、一行口ずさむ</li><li>動画の調弦を確かめてチンダミ</li><li>短い部分をゆっくり反復し、歌を重ねる</li></ol>
       <div class="playlist-actions"><button id="playlist-open" class="primary">工工四・動画と指の位置で練習</button><a id="playlist-apple" target="_blank" rel="noopener">この原曲をApple Musicで聴く ↗</a></div>
       <div id="playlist-sheets"></div><p id="playlist-scope" class="small"></p>
@@ -120,7 +120,7 @@
     <details class="local-lyrics learning-card" id="lyric-editor"><summary>歌詞と譜面の位置を合わせる</summary><h3 id="lyric-song-title"></h3><p class="small">歌詞はこの端末だけに保存します。LRCの[00:12.50]形式で時刻を入れるか、行を選んで「現在の位置に合わせる」を押します。[C]歌詞[Am]のようなコード付きテキストから、コード譜と仮ガイドを作ることもできます。</p><label class="lyric-file-label">歌詞ファイルを開く（UTF-8・80 KBまで）<input id="lyric-file" type="file" accept=".txt,.lrc,.cho,.chordpro,text/plain"></label><p class="small">時刻付きのLRCも選べます。開くだけでは今の歌詞を上書きしません。</p><label>歌詞・LRC・コード付きテキスト（2万字・200行まで）<textarea id="lyric-input" maxlength="20000" rows="7" placeholder="ここに手元の歌詞やLRCを貼り付ける"></textarea></label><div class="lyric-actions"><button id="lyric-save">端末に保存して表示</button><button id="chord-sheet-import">コード譜と歌詞を読み込む</button><button id="lyric-download">LRCで保存</button><button id="lyric-clear">この曲の歌詞を削除</button><button id="lyric-restore" hidden>収録歌詞に戻す</button></div><p id="lyric-status" class="small" role="status"></p><details class="lyric-notes-editor"><summary>読み方・標準語の意味を付ける（任意）</summary><p class="small">歌詞を先に保存し、同じ行数で入れます。空行で省略できます。歌詞を変更すると、以前の読み方・意味は外れます。入力内容はこの端末だけに保存します。</p><label>読み方<textarea id="lyric-reading-input" rows="4" maxlength="20000"></textarea></label><label>標準語の意味・訳<textarea id="lyric-meaning-input" rows="4" maxlength="20000"></textarea></label><button id="lyric-notes-save">読み方と意味を保存</button></details><label>合わせる歌詞の行<select id="lyric-line"></select></label><p id="lyric-time" class="small"></p><div class="lyric-actions"><button id="lyric-mark">この行を現在の位置に合わせる</button><button id="lyric-unmark">この行の時刻を外す</button></div><label class="check-label"><input id="lyric-follow" type="checkbox"> 譜面・ガイドに追従</label><p id="lyric-cues" class="small"></p><p id="lyric-credit" class="small"></p><p id="lyric-current" class="lyric-current"></p><div class="lyric-actions"><button id="lyric-prev">前の行</button><span id="lyric-position"></span><button id="lyric-next">次の行</button></div></details>
     <details class="help"><summary>設定・今回できること</summary><div><p>調弦はギター標準調弦と三線の本調子。曲の練習では正しい単音が少し安定すると進みます。コードは一弦ずつの確認か、コード全体を推定する試験機能を選べます。転回形や指の位置はマイクだけでは確定できません。</p><label>マイク感度<select id="sensitivity"><option value="0.003">小さな音も拾う</option><option value="0.006" selected>標準</option><option value="0.014">周りの音を抑える</option></select></label><p>内蔵の曲はAmazing Grace・きらきら星・歓喜の歌の練習版です。「好きな曲」の参照動画と、曲全体の譜面データの内蔵は区別しています。時間よ止まれは歌詞・コード付き通し動画と、3段階のかんたん練習。Santeria・Blackbirdは導入コードの簡易練習、Jigsaw Falling Into Placeは標準調弦＋カポ2のかんたん伴奏で通し動画にコード図が追従、三線は、てぃんさぐぬ花の1節をやさしい工工四と自動の指図で練習できます。時代の流れは先生の動画と手動の指図で練習し、工工四と歌詞は動画に表示されます。</p><p>MIDIは形式0/1・PPQ・512音までの旋律。PDF・画像・録音からの採譜は未対応です。歌詞は端末だけに保存し、LRCや位置合わせで譜面・ガイドに追従できます。Santeria・Blackbirdなどの歌詞全文は同梱しません。</p><p>iPhoneはSafariの共有から「ホーム画面に追加」。Androidはブラウザのインストールから追加できます。「オフライン準備OK」の後は、調弦・内蔵曲・コード・読み方を通信なしで使えます。参照動画を見るときは通信が必要です。</p><p>音声は録音・送信しません。実楽器・実iPhoneでの精度は未確認です。</p></div></details>
   </main>
-  <footer><span>MUSIC STACK / PRACTICE 22</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
+  <footer><span>MUSIC STACK / PRACTICE 23</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
 </div>
 <dialog id="hand-dialog" aria-labelledby="hand-title">
  <header id="hand-header" class="hand-header"><div><small>指をひとつずつ、置いてみる</small><h2 id="hand-title">手の作り方</h2></div><button id="hand-close">練習へ戻る ×</button><nav aria-label="押さえ方の見方"><button id="hand-to-steps">指の順番</button><button id="hand-to-change" hidden>つなぎ方</button><button id="hand-to-posture">手の形</button><button id="hand-to-video">手元動画</button></nav></header>
@@ -140,7 +140,7 @@
    <div class="sanshin-video-controls"><button id="sanshin-play" disabled>▶ 再生</button><button id="sanshin-pause" disabled>一時停止</button><button id="sanshin-back" disabled>5秒戻る</button><label>速さ<select id="sanshin-speed" disabled><option value="1">ふつう</option></select></label><span id="sanshin-video-time">0:00</span></div>
    <div class="sanshin-video-controls"><button id="sanshin-score-start" disabled hidden>前奏から再生（3:30）</button><button id="sanshin-a" disabled>A：ここから</button><button id="sanshin-b" disabled>B：ここまで</button><label><input type="checkbox" id="sanshin-loop" disabled> 反復</label><span id="sanshin-loop-state"></span></div>
    <p id="sanshin-video-status" role="status"></p><a id="sanshin-score-source" href="https://toyosanshin.hatenablog.com/entry/2020/12/30/120612" target="_blank" rel="noopener" hidden>時代の流れの工工四を掲載ページで見る（豊岡マッシー） ↗</a><span id="sanshin-extra-sheets"></span><p id="sanshin-score-source-note" hidden>別の先生の工工四です。動画と節回し・譜割りが違う場合があります。アプリ内の譜面・自動送りは未収録です。</p><a id="sanshin-source" target="_blank" rel="noopener">譜面・解説 ↗</a><a id="sanshin-outside" target="_blank" rel="noopener">YouTubeで見る ↗</a>
-   <p>動画は通信が必要です。指図は動画と自動では進みません。</p>
+   <section id="sanshin-lyrics-host" aria-label="この曲の歌詞と位置合わせ"></section><p>動画は通信が必要です。指図は動画と自動では進みません。</p>
   </section>
   <section aria-label="工工四の文字から指を確認"><p class="sanshin-guide-note">分からない文字を押すと、動画を止めて指を確認できます。</p><div id="sanshin-letters" role="group" aria-label="調べたい文字"></div><div class="sanshin-guide-heading"><strong id="sanshin-symbol"></strong><span id="sanshin-reading"></span></div><div class="sanshin-guide-diagrams"><div id="sanshin-neck"></div><div><div id="sanshin-hand"></div><p id="sanshin-finger"></p></div></div><p id="sanshin-tip"></p>
    <p class="sanshin-guide-note">棹は正面、左手は手のひら側から見た図。1 人差し指・2 中指・4 小指。点線は勘所の目安で、実際の棹にフレットはありません。楽器の大きさに合わせ、耳とマイクで位置を調整しましょう。</p><a id="sanshin-fingering-source" href="https://ks-sanshin.com/三線の勘所とは？初心者が押さえられるようにな/" target="_blank" rel="noopener">勘所と指の基本を写真で確認（栗山新也 三線教室） ↗</a>
@@ -149,7 +149,7 @@
 </dialog>
 <dialog id="full-score-dialog" aria-labelledby="full-score-title">
  <header><h2 id="full-score-title">工工四全体</h2><button id="full-score-close">練習へ戻る ×</button></header>
- <div class="sheet-options"><p>各段の右上から下へ、次は左の列。段も右から左へ。<br>文字の横が歌う言葉。文字を押すと、その音と指の位置を確認できます。</p><label>本調子<select id="full-score-tuning"></select></label><label class="sheet-follow"><input id="full-score-follow" type="checkbox" checked>演奏位置に自動追従</label><button id="full-score-current">今の音へ</button></div>
+ <div class="sheet-options"><p id="full-score-reading">各段の右上から下へ、次は左の列。段も右から左へ。<br>文字の横が歌う言葉。文字を押すと、その音と指の位置を確認できます。</p><label>本調子<select id="full-score-tuning"></select></label><label class="sheet-follow"><input id="full-score-follow" type="checkbox" checked>演奏位置に自動追従</label><button id="full-score-current">今の音へ</button></div>
  <div id="full-score-sheet" aria-label="工工四の全体"></div>
  <div class="sheet-controls"><div id="full-score-finger"></div><p id="full-score-position"></p><div class="sheet-buttons"><button id="full-score-previous">前の音</button><button id="full-score-next">次の音</button><button id="full-score-guide" class="primary">♪ ガイドで進む</button><button id="full-score-mic">マイクで進む</button><button id="full-score-stop" disabled>停止</button><button id="full-score-all" hidden>全体のガイドを聴く</button></div><div><p id="full-score-status" role="status"></p><span id="full-score-range"></span></div></div>
  <section id="full-score-lyrics" aria-label="ガイドに連動する歌詞" hidden><span id="full-score-lyric-status"></span><p id="full-score-lyric-current"></p><p id="full-score-lyric-next"></p></section>

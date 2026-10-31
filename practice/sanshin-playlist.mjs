@@ -1,3 +1,4 @@
+import { songSupport } from './song-support.mjs?v=23';
 export const SANSHIN_PLAYLIST = {
   "title": "三線練習",
   "url": "https://music.apple.com/jp/playlist/%E4%B8%89%E7%B7%9A%E7%B7%B4%E7%BF%92/pl.u-PDb42ZZuJZ06jp",
@@ -152,6 +153,7 @@ export function mountSanshinPlaylist({onOpen,onLeave}){
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({selected:selected.id,progress}));}catch{/* Optional. */}};
  function anchor(item){const a=document.createElement('a');a.textContent=item.label+' ↗';a.href=item.url;a.target='_blank';a.rel='noopener';a.onclick=onLeave;return a;}
  function render(){
+  $('support').textContent=songSupport('sanshin',selected.id).badge+' · '+songSupport('sanshin',selected.id).detail;
   $('select').value=selected.id;$('title').textContent=selected.title;$('artist').textContent=`原曲：${selected.artist}`;
   $('focus').textContent=selected.focus;$('scope').textContent=selected.note;
   $('apple').href=selected.appleUrl;$('apple').onclick=onLeave;

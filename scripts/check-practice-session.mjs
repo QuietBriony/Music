@@ -7,6 +7,7 @@ import { normalizeLyricNotes,readParallelNotes } from '../practice/lyric-notes.m
 import { chordExercise,scoreNotes } from '../practice/scores.mjs';
 const parsed=readLyrics('[ar:My own song]\n[00:00.00]My first line\n[00:02.50][00:09.00]My second line');
 assert.deepEqual(parsed.lines,['My first line','My second line']);assert.deepEqual(parsed.cues,[{line:0,time:0},{line:1,time:2.5},{line:1,time:9}]);
+assert.equal(lyricAt(normalizeCues([{line:1,time:4*60/85}],2),4*60/85),1,'Fractional beat positions use the same millisecond precision as saved cues');
 assert.equal(lyricAt(parsed.cues,2.49),0);assert.equal(lyricAt(parsed.cues,2.5),1);assert.equal(lyricAt(parsed.cues,-1),-1);
 assert.deepEqual(readLyrics(lrcText(parsed.lines,parsed.cues)).cues,[{line:0,time:0},{line:1,time:2.5},{line:2,time:9}]);
 assert.deepEqual(readLyrics(lrcText(['Minute boundary'],[{line:0,time:59.999}])).cues,[{line:0,time:60}]);
@@ -50,5 +51,5 @@ await assert.rejects(()=>readLyricFile({size:80001,text:async()=>{throw new Erro
 await assert.rejects(()=>readLyricFile({size:20001,text:async()=> 'x'.repeat(20001)}),/2万字/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\0binary'}),/UTF-8/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\uFFFD'}),/UTF-8/);
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=22','songs/learning-provenance.json','progress.mjs?v=22','songs/tokiyo-study.json','session.css?v=22','lyrics.mjs?v=22','lyric-presets.mjs?v=22','songs/lyrics-provenance.json','polyphonic.mjs?v=22'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=23','songs/learning-provenance.json','progress.mjs?v=23','songs/tokiyo-study.json','session.css?v=23','lyrics.mjs?v=23','lyric-presets.mjs?v=23','songs/lyrics-provenance.json','polyphonic.mjs?v=23'])assert.ok(sw.includes(path),path);
 console.log('Practice session: LRC, repeated timestamps, lyrics bounds, chord-sheet adapter, timing, safe local text and PWA coverage PASS');

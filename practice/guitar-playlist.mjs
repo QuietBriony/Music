@@ -1,3 +1,4 @@
+import { songSupport } from './song-support.mjs?v=23';
 export const GUITAR_PLAYLIST = {
   "title": "ギター練習",
   "url": "https://music.apple.com/jp/playlist/%E3%82%AE%E3%82%BF%E3%83%BC%E7%B7%B4%E7%BF%92/pl.u-BNA664eIY6kjLD",
@@ -194,6 +195,7 @@ export function mountGuitarPlaylist({onOpen,onLeave}){
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({selected:selected.id,progress}));}catch{/* Optional. */}};
  function anchor(item){const a=document.createElement('a');a.textContent=item.label+' ↗';a.href=item.url;a.target='_blank';a.rel='noopener';a.onclick=onLeave;return a;}
  function render(){
+  $('support').textContent=songSupport('guitar',selected.id).badge+' · '+songSupport('guitar',selected.id).detail;
   $('select').value=selected.id;$('title').textContent=selected.title;$('artist').textContent=`原曲：${selected.artist}`;
   $('focus').textContent=selected.focus;$('scope').textContent=selected.note;
   $('apple').href=selected.appleUrl;$('apple').onclick=onLeave;

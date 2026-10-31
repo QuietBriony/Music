@@ -30,3 +30,12 @@ body.focused #tuning-label select{min-height:36px;font-size:.72rem;padding:6px 2
 #full-score-current{min-height:38px;font-size:.7rem;padding:6px 10px}#full-score-reference{margin:0;padding:0 18px;flex-shrink:0;max-height:28dvh;overflow:auto;border-top:1px solid var(--line)}
 #full-score-lyrics{max-height:15dvh;padding:6px 18px}#full-score-lyric-current{margin:3px 0}#full-score-lyric-next{font-size:.7rem}
 @media(max-width:650px){.sheet-block{flex-basis:245px;max-width:360px}.sheet-options .sheet-follow{font-size:.68rem}#full-score-reference{padding:0 12px}}
+
+#full-score-dialog[data-instrument=guitar] #full-score-sheet{direction:ltr}
+#full-score-dialog[data-instrument=guitar] .sheet-block{flex:1 0 100%;max-width:none}
+#full-score-dialog[data-instrument=guitar] .sheet-column-grid{grid-template-columns:repeat(auto-fit,minmax(94px,1fr));grid-template-rows:none;grid-auto-flow:row;direction:ltr;gap:5px}
+#full-score-dialog[data-instrument=guitar] .sheet-cell{min-height:88px;grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr auto;border-radius:7px}
+#full-score-dialog[data-instrument=guitar] .sheet-cell .score-note-lyric{writing-mode:horizontal-tb;grid-column:1;font-size:12px;line-height:1.5;max-height:3em}
+#full-score-dialog[data-instrument=guitar] .sheet-cell strong{font:600 1.55rem/1.2 system-ui}
+#full-score-dialog[data-instrument=guitar] .sheet-controls{grid-template-columns:115px minmax(0,1fr)}
+#full-score-finger svg{display:block;width:100%;max-height:135px}#full-score-finger svg line{stroke:#8b9786;stroke-width:1}#full-score-finger svg .nut{stroke-width:4}#full-score-finger svg .barre{stroke:var(--green);stroke-width:12;stroke-linecap:round}#full-score-finger svg circle{fill:var(--green)}#full-score-finger svg text{text-anchor:middle;fill:var(--ink);font:11px system-ui}#full-score-finger svg .finger{fill:white}

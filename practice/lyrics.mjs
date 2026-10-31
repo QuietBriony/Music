@@ -1,6 +1,6 @@
-import { renderLyricReference } from './score-lyrics.mjs?v=22';
-import { CHORDS } from './chords.mjs?v=22';
-import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=22';
+import { renderLyricReference } from './score-lyrics.mjs?v=23';
+import { CHORDS } from './chords.mjs?v=23';
+import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=23';
 export const LYRIC_LIMIT=20000;
 export function readLyrics(text){
  if(typeof text!=='string'||text.length>LYRIC_LIMIT)throw new Error('歌詞は2万字までです。');
@@ -22,7 +22,7 @@ export function readLyrics(text){
 export function normalizeCues(cues,lineCount){
  return (Array.isArray(cues)?cues:[]).filter(c=>c&&Number.isInteger(c.line)&&c.line>=0&&c.line<lineCount&&Number.isFinite(c.time)&&c.time>=0&&c.time<=7200).map(c=>({line:c.line,time:Math.round(c.time*1000)/1000})).sort((a,b)=>a.time-b.time||a.line-b.line).slice(0,1000);
 }
-export function lyricAt(cues,time){let line=-1;for(const cue of cues){if(cue.time>time+.0001)break;line=cue.line;}return line;}
+export function lyricAt(cues,time){let line=-1;for(const cue of cues){if(cue.time>Math.round(time*1000)/1000+.0000001)break;line=cue.line;}return line;}
 export function lrcText(lines,cues){
  const stamped=new Set(cues.map(c=>c.line));
  const stamp=time=>{const hundredths=Math.round(time*100),minutes=Math.floor(hundredths/6000),seconds=(hundredths%6000)/100;return `[${String(minutes).padStart(2,'0')}:${seconds.toFixed(2).padStart(5,'0')}]`;};
@@ -58,8 +58,8 @@ export function resolveLyricTiming(preset,stored,parsed){
  const cues=normalizeCues(upgrade?preset.cues:stored?stored.cues||parsed.cues:parsed.cues.length?parsed.cues:preset?.cues,parsed.lines.length);
  return{cues,follow:!!cues.length&&(upgrade||stored?.follow!==false),upgrade};
 }
-export function mountLyrics({defaults={},onImport,onDisplay=()=>{}}){
- const $=id=>document.getElementById(id);let key='',data={lines:[],cues:[]},manual=0,selected=0,currentTime=0,follow=true,credit='',hint=null;
+export function mountLyrics({defaults={},onImport,onDisplay=()=>{},prefix='',timelineLabel='譜面',importMessage='コードと歌詞を読み込みました。コードごと4拍の仮ガイドです。'}){
+ const $=id=>document.getElementById(prefix+id);let key='',data={lines:[],cues:[]},manual=0,selected=0,currentTime=0,follow=true,credit='',hint=null;
  let display='lyrics',overviewState='';const emptySyllables=[];try{const saved=localStorage.getItem('music-practice-lyrics-display-v1');if(['lyrics','reading','parallel'].includes(saved))display=saved;}catch{}
  const storage=()=>`music-practice-session-lyrics-v2:${key}`;
  function persist(){try{localStorage.setItem(storage(),JSON.stringify({version:2,text:data.lines.join('\n'),cues:data.cues,notes:data.notes||[],follow,syncVersion:defaults[key]?.syncVersion||0}));return true;}catch{return false;}}
@@ -82,7 +82,7 @@ export function mountLyrics({defaults={},onImport,onDisplay=()=>{}}){
  }
  function render(){
   $('session-lyrics').dataset.empty=String(!data.lines.length&&!hint);
-  $('session-lyrics').dataset.hasLyrics=String(!!data.lines.length);
+  $('session-lyrics').dataset.hasLyrics=String(!!data.lines.length);$('session-lyrics').dataset.following=String(follow&&data.cues.length>0);
   const current=follow?lyricAt(data.cues,currentTime):manual;
   const active=current<0?0:Math.min(data.lines.length-1,current);
   const preset=defaults[key],aligned=follow&&samePreset()&&JSON.stringify(data.cues)===JSON.stringify(normalizeCues(preset?.cues,data.lines.length));
@@ -100,15 +100,15 @@ export function mountLyrics({defaults={},onImport,onDisplay=()=>{}}){
    for(const button of $('lyric-overview-lines').querySelectorAll('button'))button.setAttribute('aria-pressed',String(Number(button.dataset.line)===active));
    overviewState=nextOverviewState;
   }
-  $('session-lyric-status').textContent=!data.lines.length?hint?'練習のコツ':'歌詞未入力':follow&&data.cues.length?`${active+1} / ${data.lines.length} · 譜面に追従`:`${active+1} / ${data.lines.length} · 手動`;
-  if(phase)$('session-lyric-status').textContent=`${phase==='intro'?'前奏':'後奏'} · 譜面に追従`;
+  $('session-lyric-status').textContent=!data.lines.length?hint?'練習のコツ':'歌詞未入力':follow&&data.cues.length?`${active+1} / ${data.lines.length} · ${timelineLabel}に追従`:`${active+1} / ${data.lines.length} · 手動`;
+  if(phase)$('session-lyric-status').textContent=`${phase==='intro'?'前奏':'後奏'} · ${timelineLabel}に追従`;
   $('lyric-current').textContent=data.lines[active]||'歌詞を貼り付けて、表示する行を選べます。';$('lyric-position').textContent=data.lines.length?`${active+1} / ${data.lines.length}`:'未入力';
   $('lyric-prev').disabled=!data.lines.length||active<=0;$('lyric-next').disabled=!data.lines.length||active>=data.lines.length-1;
   $('session-lyric-prev').disabled=$('lyric-prev').disabled;$('session-lyric-forward').disabled=$('lyric-next').disabled;
   $('session-lyric-follow').hidden=!data.cues.length||follow;
   $('session-lyric-manual').hidden=!data.lines.length||!!data.cues.length;
   $('lyric-follow').checked=follow;$('lyric-mark').disabled=!data.lines.length;
-  $('lyric-time').textContent=`譜面の位置 ${currentTime.toFixed(2)} 秒`;
+  $('lyric-time').textContent=`${timelineLabel}の位置 ${currentTime.toFixed(2)} 秒`;
   $('lyric-credit').textContent=credit;
   $('lyric-overview-credit').textContent=credit;
   onDisplay({sheet:{lines:data.lines,cues:data.cues,notes:data.notes,syllables:samePreset()&&JSON.stringify(data.cues)===JSON.stringify(normalizeCues(defaults[key]?.cues,data.lines.length))?defaults[key]?.syllables||emptySyllables:emptySyllables},hasLyrics:!!data.lines.length,status:$('session-lyric-status').textContent,current:$('session-lyric-current').textContent,next:$('session-lyric-next').textContent,reading:$('session-lyric-reading').hidden?'':$('session-lyric-reading').textContent,meaning:$('session-lyric-meaning').hidden?'':$('session-lyric-meaning').textContent});
@@ -138,7 +138,7 @@ export function mountLyrics({defaults={},onImport,onDisplay=()=>{}}){
  $('lyric-mark').onclick=()=>{if(!data.lines.length)return;const time=Math.round(currentTime*1000)/1000;data.cues=normalizeCues([...data.cues.filter(c=>c.line!==selected&&Math.abs(c.time-time)>.0005),{line:selected,time}],data.lines.length);follow=true;persist();editor();$('lyric-status').textContent=`${selected+1}行目を今の譜面の位置に合わせました。`;};
  $('lyric-unmark').onclick=()=>{data.cues=data.cues.filter(c=>c.line!==selected);persist();editor();};
  $('lyric-download').onclick=()=>{const blob=new Blob([lrcText(data.lines,data.cues)],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='practice-lyrics.lrc';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
- $('chord-sheet-import').onclick=async()=>{try{const result=await onImport(readChordSheet($('lyric-input').value));$('lyric-status').textContent=result===false?'コード譜の読込を取り消しました。':'コードと歌詞を読み込みました。コードごと4拍の仮ガイドです。';}catch(error){$('lyric-status').textContent=error.message;}};
+ $('chord-sheet-import').onclick=async()=>{try{const result=await onImport(readChordSheet($('lyric-input').value));$('lyric-status').textContent=result===false?'コード譜の読込を取り消しました。':importMessage;}catch(error){$('lyric-status').textContent=error.message;}};
  return{
   use(next,title){
    if(next===key){$('lyric-song-title').textContent=title;return;}fileEpoch++;key=next;currentTime=0;manual=selected=0;
@@ -151,7 +151,7 @@ export function mountLyrics({defaults={},onImport,onDisplay=()=>{}}){
    data={lines:parsed.lines,cues:timing.cues,notes:normalizeLyricNotes(Array.isArray(stored?.notes)?stored.notes:matches?preset?.notes:[],parsed.lines)};
    follow=timing.follow;credit=matches?preset.credit+(stored?.notes?' · 読み方・意味はこの端末の保存内容':''):stored?'この端末で入力した歌詞':'';$('lyric-input').value=text;$('lyric-song-title').textContent=title;$('lyric-restore').hidden=!preset;if(timing.upgrade&&stored)persist();editor();
   },
-  position(time){currentTime=Math.max(0,Number(time)||0);render();},
+  position(time,label=timelineLabel){timelineLabel=label;currentTime=Math.max(0,Number(time)||0);render();},
   hint(value){hint=value;render();},
   import(value){data={lines:readLyrics(value.text).lines,cues:normalizeCues(value.cues,readLyrics(value.text).lines.length)};follow=true;manual=selected=0;credit='この端末で入力した歌詞';$('lyric-input').value=value.text;persist();editor();},
   open(){ $('lyric-editor').open=true;$('lyric-editor').scrollIntoView({block:'center',behavior:'smooth'});}

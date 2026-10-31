@@ -1,12 +1,14 @@
-import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=22';
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=22';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=22';
-import { lessonPlayer } from './youtube.mjs?v=22';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=23';
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=23';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=23';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=23';
+import { lessonPlayer } from './youtube.mjs?v=23';
 export const SANSHIN_VIDEOS = Object.fromEntries(SANSHIN_PLAYLIST.tracks.map(t=>[t.id,t]));
 const storageKey=id=>`music-practice-sanshin-video-${id}-v1`;
 const timeLabel=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 export function mountSanshinGuide({onTakeOver}) {
   const $=id=>document.getElementById(`sanshin-${id}`),dialog=$('dialog');
+  const lyrics=mountVideoLyrics($('lyrics-host'),'sanshin-video-lyrics',{getVideoTime:currentTime});
   let song=null,player=null,ready=false,ticket=0,timer=null,position=0,a=0,b=0,loop=false,shown='合';
   function status(text){$('video-status').textContent=text;}
   function remember(){
@@ -20,7 +22,7 @@ export function mountSanshinGuide({onTakeOver}) {
     $('back').disabled=!ready||![1,2].includes(player?.getPlayerState?.());
     $('loop').disabled=!ready||b-a<1;$('loop').checked=loop;
     $('loop-state').textContent=b-a>=1?`${timeLabel(a)} → ${timeLabel(b)}`:'始めと終わりをA・Bで指定';
-    $('video-time').textContent=timeLabel(position);
+    $('video-time').textContent=timeLabel(position);lyrics.position({videoTime:position,stepTime:0,ready});
   }
   function destroy(){
     ticket++;clearInterval(timer);timer=null;
@@ -94,7 +96,7 @@ export function mountSanshinGuide({onTakeOver}) {
       $('video-note').textContent=song==='jidai'?'初めに先生の解説、途中から工工四と歌詞が表示されます。「前奏から再生」で3:30から始められます。動画と同じ調弦に合わせ、まず短い部分を繰り返しましょう。':'先生の動画を聴いて、同じ調弦に合わせます。工工四は動画や先生の掲載ページで確認できます。';
       $('title').textContent=course?`${course.title} · 動画と指の位置`:'工工四から、指の位置を調べる';
       if(course){$('source').href=course.source;$('source').textContent=`先生の掲載ページ（${course.credit}） ↗`;$('outside').href=`https://www.youtube.com/watch?v=${course.video}`;}
-      showSymbol(symbol);controls();status('「動画を読み込む」を押した時だけYouTubeへ接続します。');
+      lyrics.use(song?`video:sanshin:${song}`:'video:sanshin:lookup',course?.title||'工工四の指の確認');$('lyrics-host').hidden=!course;showSymbol(symbol);controls();status('「動画を読み込む」を押した時だけYouTubeへ接続します。');
       if(!dialog.open)dialog.showModal();$('dialog-body').scrollTop=0;
     },
     close(){if(dialog.open)dialog.close();destroy();},

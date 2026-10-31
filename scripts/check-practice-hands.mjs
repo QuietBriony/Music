@@ -40,7 +40,7 @@ assert.match(stringCheck(SMALL_GRIPS.Fm,1).title,/弾かない/);
 assert.match(stringCheck(CHORDS.Fm,3).title,/人差し指（セーハ）/);
 assert.match(stringCheck(CHORDS.C,1).title,/押さえず/);
 for(const lesson of Object.values(HAND_LESSONS)){assert.equal(videoId(lesson.video),lesson.video);assert.ok(lesson.start>=0&&lesson.page.startsWith('https://'));}
-const sw=readFileSync('practice/sw.js','utf8');for(const f of ['hand-guide.mjs?v=22','hand-guide-core.mjs?v=22','hand-guide.css?v=22','songs/hand-guide-provenance.json'])assert.ok(sw.includes(f));
+const sw=readFileSync('practice/sw.js','utf8');for(const f of ['hand-guide.mjs?v=23','hand-guide-core.mjs?v=23','hand-guide.css?v=23','songs/hand-guide-provenance.json'])assert.ok(sw.includes(f));
 const ui=readFileSync('practice/hand-guide.mjs','utf8');assert.doesNotMatch(ui,/MediaRecorder|getUserMedia|fetch\(|innerHTML|sendBeacon/);
-const app=readFileSync('practice/app.mjs','utf8');assert.ok(app.includes("caches.open('music-practice-v22')"),'offline readiness uses the installed cache');
+const app=readFileSync('practice/app.mjs','utf8');assert.ok(app.includes("caches.open('music-practice-v23')"),'offline readiness uses the installed cache');
 console.log(`Hand guide: all 34 chords, ${checked} grip choices, eight same-chord small grips, complete finger coverage, transition anchors/barres, per-string checks and offline files PASS`);

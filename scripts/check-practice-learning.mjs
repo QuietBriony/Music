@@ -1,9 +1,10 @@
+import { songSupport } from '../practice/song-support.mjs';
 import { GUITAR_PLAYLIST } from '../practice/guitar-playlist.mjs';
 import { SANSHIN_PLAYLIST } from '../practice/sanshin-playlist.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { tuningLabel,tuningStrings,tunerReading,detectTuningPitch,TunerTracker,tuningGate,tunerInputGate } from '../practice/tuner.mjs';
-import { sheetEntries } from '../practice/full-score.mjs';
+import { sheetEntries,practiceSheetEntries } from '../practice/full-score.mjs';
 import { STUDIES,BASICS } from '../practice/learning.mjs';
 import { chordExercise,scoreNotes } from '../practice/scores.mjs';
 import { frequencyFor,centsFrom,detectPitch,NoteFollower } from '../practice/music.mjs';
@@ -126,5 +127,10 @@ for(const tuning of [-3,-2,-1,0,2]){
 }
 assert.equal(SANSHIN_VIDEOS.jidai.video,'xtf0OAu-qVY');
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=22','sanshin-view.mjs?v=22','sanshin-guide.mjs?v=22','sanshin.css?v=22','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=23','sanshin-view.mjs?v=23','sanshin-guide.mjs?v=23','sanshin.css?v=23','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
 console.log('Practice learning: tuning, sixteen studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
+
+const guitarCourseNotes=scoreNotes(chordExercise(['C','Am']),'chords','guitar',{chords:true}).notes;
+const cards=practiceSheetEntries(guitarCourseNotes,{instrument:'guitar',chords:true});assert.equal(cards.length,2);assert.equal(cards[0].index,0);assert.equal(cards[0].end,cards[1].index);assert.equal(cards[1].end,guitarCourseNotes.length);
+assert.equal(practiceSheetEntries(guitarCourseNotes,{instrument:'guitar',chords:false}).length,guitarCourseNotes.length);
+const support=[...GUITAR_PLAYLIST.tracks.map(t=>songSupport('guitar',t.id)),...SANSHIN_PLAYLIST.tracks.map(t=>songSupport('sanshin',t.id))];assert.equal(support.length,16);assert.equal(support.filter(s=>s.badge==='自動コード').length,2);assert.equal(support.filter(s=>s.badge==='工工四＋歌詞').length,1);assert.ok(support.every(s=>s.detail&&s.badge));
