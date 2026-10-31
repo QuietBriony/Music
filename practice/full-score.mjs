@@ -1,5 +1,5 @@
-import { noteName } from './music.mjs?v=20';
-import { neckDiagram } from './sanshin-view.mjs?v=20';
+import { noteName } from './music.mjs?v=21';
+import { neckDiagram } from './sanshin-view.mjs?v=21';
 
 // Keep note indices separate from rests: selecting a cell must seek the actual
 // note, and must never count as a correct microphone answer.
@@ -66,5 +66,5 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning}){
   $('tuning').onchange=()=>onTuning(Number($('tuning').value));
   $('close').onclick=()=>dialog.close();
   dialog.addEventListener('close',onStop);
-  return{update,open(){onStop();dialog.showModal();renderedNotes=null;$('sheet').scrollTop=0;update(state);},close(){if(dialog.open)dialog.close();}};
+  return{update,lyrics(display){$('lyrics').hidden=!display.hasLyrics;for(const field of ['status','current','next','reading','meaning']){const el=$(`lyric-${field}`);el.textContent=display[field]||'';el.hidden=!el.textContent;}},open(){onStop();dialog.showModal();renderedNotes=null;$('sheet').scrollTop=0;update(state);},close(){if(dialog.open)dialog.close();}};
 }

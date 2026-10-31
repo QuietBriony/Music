@@ -2,8 +2,32 @@
   "scope": "Public-domain English stanzas and the traditional first verse of Tinsagu nu Hana. No lyrics or third-party translations of modern copyrighted songs are bundled.",
   "authorization": "Owner requested integrated lyrics on 2026-10-29 and beginner-friendly sanshin lyrics with a parallel Japanese meaning mode in this conversation on 2026-10-30.",
   "texts": [
-    {"id":"tinsagu","author":"Traditional Okinawan song; notation and phonetic text by Lrschneider (2017)","source":"https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png","license":"CC BY-SA 4.0","license_url":"https://creativecommons.org/licenses/by-sa/4.0/","source_sha256":"014482d72c51f3562ceb9cccb996b5fffb531f006c4f8e2337b4405ea24281cf","changes":"First verse only. Added editorial kanji, word spacing, an original plain-Japanese explanation and vocabulary notes. This adapted verse, readings and explanations are distributed under CC BY-SA 4.0. Readings use the score's chimisachi variant; variants in region and teacher's singing are expected. Lyrics advance manually by default; no unverified timings are claimed.","meaning_reference":"https://www.pref.okinawa.jp/kyoiku/kodomo/1002688/1002693.html","translation":"New wording for this app, checked against the prefecture's explanation; not a copied modern translation."},
-    {"id":"amazing-grace","author":"John Newton (1725–1807)","year":1779,"source":"https://library.intervarsity.org/library/amazing-grace","license":"Public Domain","changes":"First stanza only, punctuation normalized, phrase timing added for the beginner score."},
-    {"id":"twinkle","author":"Jane Taylor (1783–1824)","year":1806,"source":"https://poets.org/poem/star/print","license":"Public Domain","changes":"Opening stanza of The Star. First two lines repeated to fit the familiar six-phrase melody; phrase timing added. No modern translation."}
+    {
+      "id": "tinsagu",
+      "author": "Traditional Okinawan song; notation and phonetic text by Lrschneider (2017)",
+      "source": "https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png",
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "source_sha256": "014482d72c51f3562ceb9cccb996b5fffb531f006c4f8e2337b4405ea24281cf",
+      "changes": "First verse only. Added editorial kanji, word spacing, an original plain-Japanese explanation and vocabulary notes. This adapted verse, readings and explanations are distributed under CC BY-SA 4.0. Readings use the score's chimisachi variant; variants in region and teacher's singing are expected. v21 maps the large-symbol simplified sheet to phrase entrances at beats 16, 24, 32 and 40, with prelude beats 0–15 and outro from beat 44. One cell is one beat at the existing 85 BPM MIDI tempo. This is a practice alignment, not a transcription of a teacher recording; ornamentation and sung phrasing may differ. Added alignment metadata is also CC BY-SA 4.0.",
+      "meaning_reference": "https://www.pref.okinawa.jp/kyoiku/kodomo/1002688/1002693.html",
+      "translation": "New wording for this app, checked against the prefecture's explanation; not a copied modern translation."
+    },
+    {
+      "id": "amazing-grace",
+      "author": "John Newton (1725–1807)",
+      "year": 1779,
+      "source": "https://library.intervarsity.org/library/amazing-grace",
+      "license": "Public Domain",
+      "changes": "First stanza only, punctuation normalized, phrase timing added for the beginner score."
+    },
+    {
+      "id": "twinkle",
+      "author": "Jane Taylor (1783–1824)",
+      "year": 1806,
+      "source": "https://poets.org/poem/star/print",
+      "license": "Public Domain",
+      "changes": "Opening stanza of The Star. First two lines repeated to fit the familiar six-phrase melody; phrase timing added. No modern translation."
+    }
   ]
 }

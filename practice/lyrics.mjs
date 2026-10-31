@@ -1,5 +1,5 @@
-import { CHORDS } from './chords.mjs?v=20';
-import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=20';
+import { CHORDS } from './chords.mjs?v=21';
+import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=21';
 export const LYRIC_LIMIT=20000;
 export function readLyrics(text){
  if(typeof text!=='string'||text.length>LYRIC_LIMIT)throw new Error('歌詞は2万字までです。');
@@ -49,11 +49,19 @@ export async function readLyricFile(file){
  if(text.includes('\uFFFD')||text.includes('\0'))throw new Error('UTF-8のテキストで保存して、もう一度選んでください。');
  return text.replace(/^\uFEFF/,'');
 }
-export function mountLyrics({defaults={},onImport}){
+// Upgrade only the unchanged old preset without user timing; personal LRC and
+// an explicit manual choice made after the upgrade always win.
+export function resolveLyricTiming(preset,stored,parsed){
+ const matches=preset?.text===parsed.lines.join('\n');
+ const upgrade=!!(matches&&preset.syncVersion&&!stored?.syncVersion&&!normalizeCues(stored?.cues,parsed.lines.length).length&&!parsed.cues.length);
+ const cues=normalizeCues(upgrade?preset.cues:stored?stored.cues||parsed.cues:parsed.cues.length?parsed.cues:preset?.cues,parsed.lines.length);
+ return{cues,follow:!!cues.length&&(upgrade||stored?.follow!==false),upgrade};
+}
+export function mountLyrics({defaults={},onImport,onDisplay=()=>{}}){
  const $=id=>document.getElementById(id);let key='',data={lines:[],cues:[]},manual=0,selected=0,currentTime=0,follow=true,credit='',hint=null;
  let display='parallel',overviewState='';try{const saved=localStorage.getItem('music-practice-lyrics-display-v1');if(['lyrics','reading','parallel'].includes(saved))display=saved;}catch{}
  const storage=()=>`music-practice-session-lyrics-v2:${key}`;
- function persist(){try{localStorage.setItem(storage(),JSON.stringify({version:2,text:data.lines.join('\n'),cues:data.cues,notes:data.notes||[],follow}));return true;}catch{return false;}}
+ function persist(){try{localStorage.setItem(storage(),JSON.stringify({version:2,text:data.lines.join('\n'),cues:data.cues,notes:data.notes||[],follow,syncVersion:defaults[key]?.syncVersion||0}));return true;}catch{return false;}}
  const samePreset=()=>defaults[key]?.text===data.lines.join('\n');
  function overview(){
   overviewState='';
@@ -75,11 +83,14 @@ export function mountLyrics({defaults={},onImport}){
   $('session-lyrics').dataset.hasLyrics=String(!!data.lines.length);
   const current=follow?lyricAt(data.cues,currentTime):manual;
   const active=current<0?0:Math.min(data.lines.length-1,current);
+  const preset=defaults[key],aligned=follow&&samePreset()&&JSON.stringify(data.cues)===JSON.stringify(normalizeCues(preset?.cues,data.lines.length));
+  const phase=aligned&&preset?.singing?(currentTime+.001<preset.singing.start?'intro':currentTime+.001>=preset.singing.end?'outro':''):'';
   $('session-lyric-current').textContent=data.lines[active]||hint?.primary||'歌詞を入れると、演奏に合わせてここに表示できます。';
   $('session-lyric-next').textContent=data.lines.length?data.lines[active+1]||'':hint?.secondary||'';
   const annotation=data.notes?.[active],hasNotes=data.notes?.some(n=>n.reading||n.meaning);
   $('lyric-display-label').hidden=!hasNotes;$('lyric-display').value=display;
   for(const field of ['reading','meaning']){const el=$(`session-lyric-${field}`);el.textContent=annotation?.[field]||'';el.hidden=!el.textContent||display==='lyrics'||field==='meaning'&&display!=='parallel';}
+  if(phase){$('session-lyric-current').textContent=phase==='intro'?'前奏 — 歌い出しを準備':'後奏 — 最後まで弾きましょう';$('session-lyric-next').textContent=phase==='intro'?`次：${data.lines[0]}`:'';for(const field of ['reading','meaning'])$(`session-lyric-${field}`).hidden=true;}
   $('lyric-overview').hidden=!data.lines.length;
   const nextOverviewState=`${display}:${active}`;
   if(overviewState!==nextOverviewState){
@@ -88,6 +99,7 @@ export function mountLyrics({defaults={},onImport}){
    overviewState=nextOverviewState;
   }
   $('session-lyric-status').textContent=!data.lines.length?hint?'練習のコツ':'歌詞未入力':follow&&data.cues.length?`${active+1} / ${data.lines.length} · 譜面に追従`:`${active+1} / ${data.lines.length} · 手動`;
+  if(phase)$('session-lyric-status').textContent=`${phase==='intro'?'前奏':'後奏'} · 譜面に追従`;
   $('lyric-current').textContent=data.lines[active]||'歌詞を貼り付けて、表示する行を選べます。';$('lyric-position').textContent=data.lines.length?`${active+1} / ${data.lines.length}`:'未入力';
   $('lyric-prev').disabled=!data.lines.length||active<=0;$('lyric-next').disabled=!data.lines.length||active>=data.lines.length-1;
   $('session-lyric-prev').disabled=$('lyric-prev').disabled;$('session-lyric-forward').disabled=$('lyric-next').disabled;
@@ -97,6 +109,7 @@ export function mountLyrics({defaults={},onImport}){
   $('lyric-time').textContent=`譜面の位置 ${currentTime.toFixed(2)} 秒`;
   $('lyric-credit').textContent=credit;
   $('lyric-overview-credit').textContent=credit;
+  onDisplay({hasLyrics:!!data.lines.length,status:$('session-lyric-status').textContent,current:$('session-lyric-current').textContent,next:$('session-lyric-next').textContent,reading:$('session-lyric-reading').hidden?'':$('session-lyric-reading').textContent,meaning:$('session-lyric-meaning').hidden?'':$('session-lyric-meaning').textContent});
  }
  function editor(){
   $('lyric-line').replaceChildren(...data.lines.map((line,i)=>new Option(`${i+1}. ${line.slice(0,50)}`,i)));selected=Math.min(selected,Math.max(0,data.lines.length-1));$('lyric-line').value=selected;
@@ -132,8 +145,9 @@ export function mountLyrics({defaults={},onImport}){
    const preset=defaults[next];const text=typeof stored?.text==='string'?stored.text.slice(0,LYRIC_LIMIT):preset?.text||'';
    let parsed;try{parsed=readLyrics(text);$('lyric-status').textContent='この曲の歌詞と譜面の位置を合わせられます。';}catch(error){parsed={lines:[],cues:[]};$('lyric-status').textContent=`保存した歌詞を確認してください。${error.message}`;}
    const matches=preset?.text===parsed.lines.join('\n');
-   data={lines:parsed.lines,cues:normalizeCues(stored?stored.cues||parsed.cues:parsed.cues.length?parsed.cues:preset?.cues,parsed.lines.length),notes:normalizeLyricNotes(Array.isArray(stored?.notes)?stored.notes:matches?preset?.notes:[],parsed.lines)};
-   follow=!!data.cues.length&&stored?.follow!==false;credit=matches?preset.credit+(stored?.notes?' · 読み方・意味はこの端末の保存内容':''):stored?'この端末で入力した歌詞':'';$('lyric-input').value=text;$('lyric-song-title').textContent=title;$('lyric-restore').hidden=!preset;editor();
+   const timing=resolveLyricTiming(preset,stored,parsed);
+   data={lines:parsed.lines,cues:timing.cues,notes:normalizeLyricNotes(Array.isArray(stored?.notes)?stored.notes:matches?preset?.notes:[],parsed.lines)};
+   follow=timing.follow;credit=matches?preset.credit+(stored?.notes?' · 読み方・意味はこの端末の保存内容':''):stored?'この端末で入力した歌詞':'';$('lyric-input').value=text;$('lyric-song-title').textContent=title;$('lyric-restore').hidden=!preset;if(timing.upgrade&&stored)persist();editor();
   },
   position(time){currentTime=Math.max(0,Number(time)||0);render();},
   hint(value){hint=value;render();},

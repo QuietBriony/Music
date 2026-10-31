@@ -1,7 +1,12 @@
-import { centsFrom, noteName, detectPitch } from './music.mjs?v=20';
-export function tuningStrings(instrument, transpose=0) {
+import { centsFrom, noteName, detectPitch } from './music.mjs?v=21';
+export const SANSHIN_TUNINGS={honchoshi:{name:'本調子',reading:'ほんちょうし',offsets:[0,5,12],tip:'男弦・中弦・女弦がド・ファ・ドの関係。収録の工工四はこの調弦です。'},niage:{name:'二揚げ',reading:'にあげ・にあぎ',offsets:[0,7,12],tip:'本調子から中弦だけを全音上げます。ド・ソ・ドの関係。'},sansage:{name:'三下げ',reading:'さんさげ・さんさぎ',offsets:[0,5,10],tip:'本調子から女弦だけを全音下げます。ド・ファ・シ♭の関係。'}};
+export const sanshinTuning=kind=>SANSHIN_TUNINGS[kind]||SANSHIN_TUNINGS.honchoshi;
+export function tuningLabel(transpose=0,kind='honchoshi'){
+ const t=sanshinTuning(kind);return `${t.name} ${t.offsets.map(n=>noteName(48+transpose+n).replace(/\d/g,'').replace('#','♯').replace('A♯','B♭').replace('D♯','E♭')).join('・')}`;
+}
+export function tuningStrings(instrument, transpose=0,kind='honchoshi') {
   return instrument==='guitar'?[40,45,50,55,59,64].map((midi,i)=>({midi,string:6-i,fret:0,position:`${6-i}弦・開放`,label:`${6-i}弦 ${noteName(midi)}`})):
-    [{midi:48,symbol:'合',string:3,name:'男弦'},{midi:53,symbol:'四',string:2,name:'中弦'},{midi:60,symbol:'工',string:1,name:'女弦'}].map(n=>({...n,midi:n.midi+transpose,fret:0,position:`${n.name}・開放`,label:`${n.name} ${noteName(n.midi+transpose)}`}));
+    [{midi:48,symbol:'合',string:3,name:'男弦'},{midi:53,symbol:'四',string:2,name:'中弦'},{midi:60,symbol:'工',string:1,name:'女弦'}].map((n,i)=>{const midi=48+transpose+sanshinTuning(kind).offsets[i];return{...n,midi,fret:0,position:`${n.name}・開放`,label:`${n.name} ${noteName(midi)}`};});
 }
 export const tuningGate=gate=>Math.max(.0006,Math.min(.0035,gate/4));
 export const tunerInputGate=gate=>Math.max(.00035,Math.min(.0025,gate/6));

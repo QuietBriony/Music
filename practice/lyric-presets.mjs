@@ -1,15 +1,15 @@
 // Public-domain English texts and CC BY-SA 4.0 Tinsagu adaptation; see songs/lyrics-provenance.json.
 export const LYRIC_PRESETS={
  'song:tinsagu':{
-  text:'てぃんさぐぬ花や\n爪先に染みてぃ\n親ぬゆしぐとぅや\n肝に染みり',cues:[],
+  text:'てぃんさぐぬ花や\n爪先に染みてぃ\n親ぬゆしぐとぅや\n肝に染みり',cues:[16,24,32,40].map((beat,line)=>({time:beat*60/85,line})),syncVersion:1,singing:{start:16*60/85,end:44*60/85},
   notes:[
    {text:'てぃんさぐぬ花や',reading:'てぃんさぐぬ はなや',meaning:'ホウセンカの花の色は',words:'てぃんさぐ＝ホウセンカ ／ ぬ＝〜の'},
    {text:'爪先に染みてぃ',reading:'ちみさちに すみてぃ',meaning:'爪先を染めるもの。',words:'ちみさち＝爪先 ／ すみてぃ＝染めて'},
    {text:'親ぬゆしぐとぅや',reading:'うやぬ ゆしぐとぅや',meaning:'親から受けた教えは',words:'うや＝親 ／ ゆしぐとぅ＝教え・言い聞かせ'},
    {text:'肝に染みり',reading:'ちむに すみり',meaning:'心に深く留めよう。',words:'ちむ＝心 ／ すみり＝染めなさい（ここでは心に刻むこと）'}
   ],
-  note:'1節。意味は歌うためのやさしい意訳です。地域や歌い手により読み方が異なります。歌詞は「次の行」で送り、時刻を付ければ譜面に追従できます。',
-  credit:'沖縄の伝承歌 · Lrschneider (2017) の工工四から、漢字・読み方・意味を追加 · CC BY-SA 4.0',
+  note:'1節。意味は歌うためのやさしい意訳です。地域や歌い手により読み方が異なります。大きい譜字を1拍とした練習用の位置合わせで、前奏16拍・歌28拍・後奏20拍。ガイドの速さや反復に合わせて歌詞・読み方・意味が進みます。歌い手の節回しとは異なる場合があります。',
+  credit:'沖縄の伝承歌 · Lrschneider (2017) の工工四から、漢字・読み方・意味と練習用の歌詞位置を追加 · CC BY-SA 4.0',
   source:'https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png',license:'https://creativecommons.org/licenses/by-sa/4.0/'
  },
  'song:amazing-grace':{

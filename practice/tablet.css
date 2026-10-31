@@ -57,3 +57,13 @@ body[data-view=tuner] .target{height:80px}body[data-view=tuner] .target>span:fir
 body[data-view=tuner] #tuner-verdict{height:78px;min-height:78px;display:flex;align-items:center;justify-content:center}
 
 body[data-view=tuner] .practice-input{display:none!important}#practice-input-status{font-size:.7rem;line-height:1.7;color:#c7d3c1;min-height:2.6em}body.focused #practice-input-status{font-size:.65rem;min-height:2.4em;margin:5px 0}.practice-input select{min-height:40px;font-size:.72rem;max-width:245px}.sing-mic-boost-label{display:flex;flex-direction:row;align-items:center;gap:6px}.sing-mic-boost-label select{min-height:38px;font-size:.68rem;max-width:230px}
+
+/* The next columns are already mounted; RTL scrolling follows one column ahead. */
+#score.score-continuous{direction:rtl;max-height:none!important;overflow-x:auto;overscroll-behavior-x:contain;scroll-padding:4px}
+#score .kunkun.kunkun-strip{grid-template-rows:repeat(3,52px);grid-auto-columns:60px;width:max-content;min-width:100%;justify-content:start}
+#score .kunkun-strip button{min-height:44px;padding:4px;font-size:1.65rem;line-height:1.1}
+#score .kunkun-strip small{line-height:1.2}
+#score .kunkun-strip button:focus-visible{outline:3px solid var(--green);outline-offset:-3px}
+#score-follow{font-size:.68rem;padding:6px 10px;min-height:38px}.score-pager{flex-wrap:wrap}
+#tuning-reminder{padding:10px;border:1px solid #ccaf7b;background:#fff3d6;border-radius:8px;margin:8px 0}
+#tuning-reminder button{font-size:.7rem;min-height:40px;margin:4px}#tuner-kind-label{margin-bottom:12px}#tuning-source{display:inline-block;font-size:.7rem;margin:0 0 15px}

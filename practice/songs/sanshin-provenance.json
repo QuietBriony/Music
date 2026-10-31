@@ -1,5 +1,5 @@
 {
-  "checked": "2026-10-30",
+  "checked": "2026-10-31",
   "scope": "Original fretless diagrams and factual fingering metadata; teacher videos are embedded only on request. No recordings or photographs are copied. The licensed Tinsagu first-verse text is covered separately by lyrics-provenance.json.",
   "fingering": {
     "source": "https://ks-sanshin.com/三線の勘所とは？初心者が押さえられるようにな/",
@@ -54,6 +54,8 @@
   "tuning_reference": {
     "url": "https://komesu34.com/pages/how-to-tune",
     "checked": "2026-10-30",
-    "note": "Honchoshi number 3 is B-E-B, ordered male-middle-female strings. The female string is one octave above the male. The same symbols shift with the selected tuning."
+    "note": "Honchoshi number 3 is B-E-B, ordered male-middle-female strings. The female string is one octave above the male. The same symbols shift with the selected tuning.",
+    "mode_source": "https://support.arakaki34.com/wp-content/uploads/2018/09/4a77e182f2ad77e4be4c727fa0da6327.pdf",
+    "mode_note": "Arakaki Sanshin shop chart checked: B-E-B honchoshi, B-F#-B niage, B-E-A sansage. Alternative modes apply to the tuner only; the bundled position diagrams and score remain honchoshi."
   }
 }
