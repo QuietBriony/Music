@@ -1,5 +1,5 @@
 // Distinguish inspected maps from uncertain guides and publisher video scores.
-import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=27';
+import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=28';
 export function songSupport(instrument,id){
  if(instrument==='guitar'&&['tokiyo','jigsaw'].includes(id))return{badge:'自動コード',detail:'用意した動画にコード図が追従します。歌詞は動画か、自分のテキストを位置合わせして表示できます。'};
  if(instrument==='sanshin'&&id==='tinsagu')return{badge:'工工四＋歌詞',detail:'1節の簡略工工四・指図・歌詞で練習できます。先生の動画とは別の練習用の譜割りです。'};

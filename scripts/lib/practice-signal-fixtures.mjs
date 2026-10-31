@@ -1,8 +1,8 @@
 import {frequencyFor} from '../../practice/music.mjs';
-export function spectrum(midis,sampleRate=48000,{detune=0,harmonics=[1,.5,.26,.14,.08,.04,.02],noise=0}={}){
- const size=16384,re=new Float64Array(size),im=new Float64Array(size);let seed=34;
+export function spectrum(midis,sampleRate=48000,{detune=0,harmonics=[1,.5,.26,.14,.08,.04,.02],noise=0,fftSize=16384,weights=null}={}){
+ const size=fftSize,re=new Float64Array(size),im=new Float64Array(size);let seed=34;
  for(let i=0;i<size;i++){
-  let value=0;for(let j=0;j<midis.length;j++){const f=frequencyFor(midis[j])*2**(detune/1200);for(let h=0;h<harmonics.length;h++)value+=Math.sin(2*Math.PI*f*(h+1)*i/sampleRate+j*.41)*harmonics[h]/midis.length;}
+  let value=0;for(let j=0;j<midis.length;j++){const f=frequencyFor(midis[j])*2**(detune/1200);for(let h=0;h<harmonics.length;h++)value+=Math.sin(2*Math.PI*f*(h+1)*i/sampleRate+j*.41)*harmonics[h]*(weights?.[j]??1)/midis.length;}
   seed=(seed*1664525+1013904223)>>>0;value+=(seed/2**32-.5)*noise;
   re[i]=value*(.42-.5*Math.cos(2*Math.PI*i/size)+.08*Math.cos(4*Math.PI*i/size));
  }

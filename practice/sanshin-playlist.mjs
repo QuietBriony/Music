@@ -1,4 +1,4 @@
-import { songSupport } from './song-support.mjs?v=27';
+import { songSupport } from './song-support.mjs?v=28';
 export const SANSHIN_PLAYLIST = {
   "title": "三線練習",
   "url": "https://music.apple.com/jp/playlist/%E4%B8%89%E7%B7%9A%E7%B7%B4%E7%BF%92/pl.u-PDb42ZZuJZ06jp",

@@ -1,8 +1,8 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=27';
-import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=27';
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=27';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=27';
-import { lessonPlayer } from './youtube.mjs?v=27';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=28';
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=28';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=28';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=28';
+import { lessonPlayer } from './youtube.mjs?v=28';
 export const SANSHIN_VIDEOS = Object.fromEntries(SANSHIN_PLAYLIST.tracks.map(t=>[t.id,t]));
 const storageKey=id=>`music-practice-sanshin-video-${id}-v1`;
 const timeLabel=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;

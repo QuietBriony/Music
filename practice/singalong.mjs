@@ -1,15 +1,15 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=27';
-import { scoreLyricAnnotations,setScoreLyric } from './score-lyrics.mjs?v=27';
-import { songSupport } from './song-support.mjs?v=27';
-import { MicInputBoost } from './mic-input.mjs?v=27';
-import { cueAt } from './video-cues.mjs?v=27';
-import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=27';
-import { correctedCourse,practiceClock } from './harmony-timeline.mjs?v=27';
-import { SMALL_GRIPS } from './hand-guide-core.mjs?v=27';
-import { STUDIES } from './learning.mjs?v=27';
-import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=27';
-import { detectChord,ChordGate } from './polyphonic.mjs?v=27';
-import { lessonPlayer } from './youtube.mjs?v=27';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=28';
+import { scoreLyricAnnotations,setScoreLyric } from './score-lyrics.mjs?v=28';
+import { songSupport } from './song-support.mjs?v=28';
+import { MicInputBoost } from './mic-input.mjs?v=28';
+import { cueAt } from './video-cues.mjs?v=28';
+import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=28';
+import { correctedCourse,practiceClock } from './harmony-timeline.mjs?v=28';
+import { guitarShape,drawChord,fillFingerList,strumInstruction,gripCard } from './chord-guide.mjs?v=28';
+import { STUDIES } from './learning.mjs?v=28';
+import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=28';
+import { detectChord,ChordGate,chordAttackLevel } from './polyphonic.mjs?v=28';
+import { lessonPlayer } from './youtube.mjs?v=28';
 const STORAGE='music-practice-singalong-v1';
 const lessons=STUDIES.guitar.map(s=>({...s,instrument:'guitar',referenceVideo:s.video||s.lesson,video:PREPARED_COURSES[s.id]?.url||s.video||s.lesson}));
 const text=(id,value)=>{const e=document.getElementById(id);if(e.textContent!==String(value))e.textContent=value;};
@@ -36,7 +36,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
  const following=()=>canFollow()&&state.follow;
  const finishedVideo=()=>following()&&cueAt(course.times,state.videoTime,state.offset,course.end)?.ended;
  const modeMessage=()=>player?.localClock?'別画面用のコード時間送りです。動画との開始・ずれは手動で合わせます。':following()?(course.estimated?'推定・目安のコード図が動画に追従します。違う箇所は補正できます。マイクは曲の正誤採点ではありません。':'動画に合わせて今のコード図が自動で切り替わります。マイクは今のコードの確認に使えます。'):'コード図は手動か自分の演奏で進みます。動画の音はイヤホンで聴いてください。';
- const activeShape=name=>course?.estimated&&SMALL_GRIPS[name]||SING_SHAPES[name];
+ const activeShape=name=>guitarShape(name);
  const correctionKey=()=>`music-practice-cue-edits-v1:${selected.id}:${baseCourse?.key}`;
  function correctionSelection(){const i=Number($('sing-correct-step').value);$('sing-correct-name').value=steps[i]?.name||'N';$('sing-correct-time').value=course?.times?.[i]?.toFixed(3)||'0';}
  function saveCorrection(change){
@@ -74,15 +74,11 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
  function destroyPlayer(){playerTicket++;ready=false;clearInterval(timer);timer=null;try{player?.destroy?.();}catch{}player=null;$('sing-player').replaceChildren();$('sing-load').hidden=false;$('sing-load').disabled=false;text('sing-play','▶ 再生');text('sing-clock-note','');setPlayerControls(false);}
  function setPlayerControls(value){for(const id of ['sing-play','sing-pause','sing-back','sing-a','sing-b','sing-loop','sing-speed'])$(id).disabled=!value;$('sing-song-start').disabled=!value||!canFollow();$('sing-correction-mark').disabled=!value||!!customOrder||!course||!!player?.localClock;lyricPosition();}
  function renderDiagram(name){
-  const shape=activeShape(name),host=$('sing-diagram');host.replaceChildren();if(!shape){text('sing-fingering','音が始まるまで待ちます。');$('sing-fingers').replaceChildren();return;}
-  const ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 180 164');svg.setAttribute('role','img');svg.setAttribute('aria-label',`${name}の押さえ方。指番号は1人差し指、2中指、3薬指、4小指`);
-  const add=(tag,attrs,value)=>{const e=document.createElementNS(ns,tag);for(const [k,v]of Object.entries(attrs))e.setAttribute(k,v);if(value!==undefined)e.textContent=value;svg.append(e);};
-  for(let i=0;i<6;i++){const x=28+i*25;add('line',{x1:x,x2:x,y1:32,y2:136});add('text',{x,y:156},6-i);}
-  for(let f=0;f<=6;f++)add('line',{x1:28,x2:153,y1:32+f*17.3,y2:32+f*17.3,class:f===0?'nut':''});
-  if(shape.barre){const b=shape.barre;add('line',{x1:28+(6-b.from)*25,x2:28+(6-b.to)*25,y1:32+(b.fret-.5)*17.3,y2:32+(b.fret-.5)*17.3,class:'barre'});}
-  shape.frets.forEach((f,i)=>{const x=28+i*25;if(f<=0)add('text',{x,y:21},f<0?'×':'○');else{const y=32+(f-.5)*17.3;add('circle',{cx:x,cy:y,r:8});add('text',{x,y:y+3.5,class:'finger'},shape.fingers[i]);}});host.append(svg);
+  const details=$('sing-finger-details');if(details.dataset.chord!==name){if(document.body.dataset.guitarGuide==='fingers')details.open=true;details.dataset.chord=name;}
+  const shape=activeShape(name),host=$('sing-diagram');host.replaceChildren();if(!shape){text('sing-fingering','音が始まるまで待ちます。');$('sing-fingers').replaceChildren();text('sing-strum-guide','ここは弾かずに待ちます。');return;}
+  host.append(drawChord(name,shape));
   text('sing-fingering',fingeringText(name,shape));
-  $('sing-fingers').replaceChildren(...shape.frets.flatMap((f,i)=>{if(f<=0)return[];const li=document.createElement('li');li.textContent=`${['','人差し指','中指','薬指','小指'][shape.fingers[i]]}：${6-i}弦の${f}フレット`;return[li];}));
+  fillFingerList($('sing-fingers'),shape);text('sing-strum-guide',strumInstruction(shape));
  }
  function render(){
   const target=steps[Math.min(state.index,steps.length-1)],name=target?.name||$('sing-chord-picker').value||'C';
@@ -97,7 +93,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
   text('sing-offset-value',state.offset?`${Math.abs(state.offset).toFixed(1)}秒${state.offset>0?'早め':'遅め'}`:'標準');
   for(const id of ['sing-earlier','sing-later','sing-offset-reset'])$(id).disabled=!canFollow();
   if(!following())text('sing-next-countdown','');
-  text('sing-mic',following()?'今のコードをマイクで確認（試験）':'マイクで合ったら次へ（試験）');
+  text('sing-mic',following()&&ready?'今のコードをマイクで確認（試験）':'ジャーンと弾いて次へ（試験）');
   $('sing-hand-open').hidden=selected.instrument!=='guitar';$('sing-warmup').hidden=!selected.names&&!selected.stages;
   $('sing-hand-open').disabled=!activeShape(name);$('sing-correction-save').disabled=!course||!!customOrder;$('sing-correction-time-save').disabled=!course||!!customOrder;$('sing-correction-mark').disabled=!course||!!customOrder||!ready||!!player?.localClock;$('sing-correction-reset').disabled=!corrections;
   $('sing-song-start').disabled=!ready||!canFollow();
@@ -110,7 +106,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
   text('sing-loop-state',state.a!==null&&state.b!==null?`${state.a.toFixed(1)}〜${state.b.toFixed(1)}秒`:'AとBを動画の位置で決めます');$('sing-loop').checked=state.loop;lyricPosition();revealTrack();
  }
  function makeTrack(){
-  const editingIndex=Number($('sing-correct-step').value);trackAnnotation=null;$('sing-chord-track').replaceChildren(...steps.map((s,i)=>{const b=document.createElement('button'),label=document.createElement('strong'),lyric=document.createElement('span');label.textContent=s.silent?'休み':s.name;lyric.className='score-note-lyric sing-track-lyric';b.append(label,lyric);b.dataset.step=i;b.setAttribute('aria-label',`${i+1}番目 ${s.title} ${s.silent?'休み':s.name}`);return b;}));
+  const editingIndex=Number($('sing-correct-step').value);trackAnnotation=null;$('sing-chord-track').replaceChildren(...steps.map((s,i)=>{const b=document.createElement('button'),label=document.createElement('strong'),lyric=document.createElement('span');label.textContent=s.silent?'休み':s.name;lyric.className='score-note-lyric sing-track-lyric';b.append(label,gripCard(s.name,activeShape(s.name)),lyric);b.dataset.step=i;b.setAttribute('aria-label',`${i+1}番目 ${s.title} ${s.silent?'休み':s.name}`);return b;}));
   $('sing-sections').replaceChildren(...sectionStarts(steps).map(s=>new Option(s.title,s.index)));
   $('sing-correct-step').replaceChildren(...steps.map((s,i)=>new Option(`${i+1}. ${s.silent?'休み':s.name} · ${course?.times?.[i]?.toFixed(1)||'—'}秒`,i)));
   $('sing-correct-step').value=Math.min(editingIndex,Math.max(0,steps.length-1));correctionSelection();
@@ -147,6 +143,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
   }catch(error){if(ticket===playerTicket){$('sing-load').disabled=false;status(error.message);}}
  }
  async function startInput(){
+  if(following()&&!ready){state.follow=false;store();}
   if(!steps.length||state.index>=steps.length||finishedVideo()||steps[state.index]?.silent)return;$('sing-position-details').open=true;onTakeOver();stopInput();render();const ticket=inputTicket;$('sing-mic').disabled=true;$('sing-mic-stop').disabled=false;status('マイクの許可を待っています。動画の音はイヤホンで聴いてください。');let acquired;
   try{
    if(!navigator.mediaDevices?.getUserMedia)throw new Error('マイクはHTTPSかlocalhostで使えます。');const Audio=window.AudioContext||window.webkitAudioContext;ctx=new Audio({latencyHint:'interactive'});const audio=ctx;await audio.resume();if(ticket!==inputTicket)return;
@@ -156,11 +153,11 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
     if(ticket!==inputTicket){acquired.getTracks().forEach(t=>t.stop());return;}
     if(audio.state!=='running')throw new Error('音声を再開できませんでした。マイクをもう一度始めてください。');
    }
-   stream=acquired;source=audio.createMediaStreamSource(stream);analyser=audio.createAnalyser();analyser.fftSize=16384;analyser.smoothingTimeConstant=.1;silent=audio.createGain();silent.gain.value=0;inputBoost=new MicInputBoost(audio,source,analyser);analyser.connect(silent).connect(audio.destination);
+   stream=acquired;source=audio.createMediaStreamSource(stream);analyser=audio.createAnalyser();analyser.fftSize=8192;analyser.smoothingTimeConstant=.1;silent=audio.createGain();silent.gain.value=0;inputBoost=new MicInputBoost(audio,source,analyser);analyser.connect(silent).connect(audio.destination);
    acquired.getTracks().forEach(t=>t.addEventListener('ended',()=>{if(stream===acquired){stopInput();status('マイクが切断されました。もう一度始めてください。');}}));
    const wave=new Float32Array(analyser.fftSize),spectrum=new Float32Array(analyser.frequencyBinCount);status(following()?'動画に合わせて、今のコードを確認します（試験）。動画の音はイヤホンで聴いてください。':'和音を聴いて次へ進めます（試験）。歌声・周囲の音で検出できないことがあります。');
-   meter=setInterval(()=>{if(!analyser||!stream)return;analyser.getFloatTimeDomainData(wave);const rms=Math.sqrt(wave.reduce((s,v)=>s+v*v,0)/wave.length);if(inputBoost?.settling(gate,rms))return;analyser.getFloatFrequencyData(spectrum);const found=detectChord(spectrum,audio.sampleRate,16384,{rms,capo:state.capo});text('sing-heard',found.name||'—');
-    if(gate.feed(found,steps[state.index]?.name,performance.now(),rms)){const name=steps[state.index].name;if(following()){status(`${name}を確認しました。図は動画に合わせて進みます。`);return;}advance();if(state.index<steps.length)status(`${name}を確認しました。次の押さえ方を準備しましょう。`);}
+   meter=setInterval(()=>{if(!analyser||!stream)return;analyser.getFloatTimeDomainData(wave);const rms=Math.sqrt(wave.reduce((s,v)=>s+v*v,0)/wave.length);if(inputBoost?.settling(gate,rms))return;analyser.getFloatFrequencyData(spectrum);const found=detectChord(spectrum,audio.sampleRate,8192,{rms,capo:state.capo,expected:steps[state.index]?.name,previous:gate.last});text('sing-heard',found.name||'—');
+    if(gate.feed(found,steps[state.index]?.name,performance.now(),rms,.006,chordAttackLevel(wave))){const name=steps[state.index].name;if(following()){status(`${name}を確認しました。図は動画に合わせて進みます。`);return;}advance();if(state.index<steps.length)status(`${name}を確認しました。次の押さえ方を準備しましょう。`);}
    },80);
   }catch(error){if(ticket!==inputTicket){acquired?.getTracks().forEach(t=>t.stop());return;}stopInput();status(error.name==='NotAllowedError'?'マイクが許可されていません。手動の「次へ」でも進められます。':error.message||'マイクを開始できませんでした。');}
  }

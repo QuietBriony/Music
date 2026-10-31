@@ -1,6 +1,6 @@
 // Original, conservative spectral template fitting. No recordings or external model.
-import { frequencyFor } from './music.mjs?v=27';
-import { CHORDS, chordNotes } from './chords.mjs?v=27';
+import { frequencyFor } from './music.mjs?v=28';
+import { CHORDS, chordNotes } from './chords.mjs?v=28';
 const sinc=x=>Math.abs(x)<1e-9?1:Math.sin(Math.PI*x)/(Math.PI*x);
 const blackman=x=>Math.abs(.42*sinc(x)+.25*(sinc(x-1)+sinc(x+1))+.04*(sinc(x-2)+sinc(x+2)));
 const families=[...new Map(Object.keys(CHORDS).map(name=>{
@@ -23,7 +23,7 @@ function dictionary(sampleRate,fftSize,capo){
  }
  const result={maxBin,templates};if(cache.size>=3)cache.delete(cache.keys().next().value);cache.set(key,result);return result;
 }
-export function detectChord(decibels,sampleRate,fftSize,{rms=0,gate=.006,capo=0}={}){
+export function detectChord(decibels,sampleRate,fftSize,{rms=0,gate=.006,capo=0,expected=null,previous=null}={}){
  if(rms<gate)return{name:null,confidence:0,status:'quiet',pitches:[]};
  if(!Number.isInteger(capo)||capo<0||capo>7)return{name:null,confidence:0,status:'unclear',pitches:[]};
  const {maxBin,templates}=dictionary(sampleRate,fftSize,capo),spectrum=new Float64Array(maxBin+1);
@@ -44,8 +44,17 @@ export function detectChord(decibels,sampleRate,fftSize,{rms=0,gate=.006,capo=0}
  const chromaMax=Math.max(...chroma);if(!chromaMax)return{name:null,confidence:0,status:'unclear',pitches:active};
  const present=[...chroma].map((v,i)=>v>=chromaMax*.16?i:-1).filter(i=>i>=0);
  const fit=1-[...residual].reduce((s,v)=>s+v*v,0)/Math.max(energy,1e-10);
- if(present.length<3||present.length>5||fit<.55)return{name:null,confidence:0,status:'unclear',pitches:active};
+ if(present.length<3||fit<.55)return{name:null,confidence:0,status:'unclear',pitches:active};
  const total=[...chroma].reduce((s,v)=>s+v,0),candidates=[];
+ // All tones of the requested chord must be audible. Only tones belonging to
+ // the preceding accepted chord may account for a lingering string resonance.
+ const target=families.find(f=>f.name===expected?.split('/')[0]),before=families.find(f=>f.name===previous?.split('/')[0]);
+ if(target&&before&&target.required.every(pc=>chroma[pc]>=chromaMax*.18)){
+  const outside=[...chroma].reduce((s,v,pc)=>s+(target.pcs.includes(pc)?0:v),0)/total;
+  const unexplained=[...chroma].reduce((s,v,pc)=>s+(target.pcs.includes(pc)||before.pcs.includes(pc)?0:v),0)/total;
+  if(outside<=.26&&unexplained<=.035)return{name:target.name,confidence:Math.min(1,fit)*(1-unexplained)*(1-outside*.4),status:'chord',pitches:active,tail:outside>.14};
+ }
+ if(present.length>5)return{name:null,confidence:0,status:'unclear',pitches:active};
  for(const family of families){
   if(!family.required.every(pc=>chroma[pc]>=chromaMax*.16))continue;
   const outside=[...chroma].reduce((s,v,pc)=>s+(family.pcs.includes(pc)?0:v),0)/total;
@@ -59,16 +68,20 @@ export function detectChord(decibels,sampleRate,fftSize,{rms=0,gate=.006,capo=0}
 }
 export class ChordGate {
  constructor(){this.reset();}
- reset(){this.last=null;this.candidate=null;this.since=null;this.acceptedAt=-Infinity;this.quietAt=null;this.armed=true;this.lastRms=0;}
- feed(result,expected,now,rms,gate=.006){
-  if(rms<gate){this.quietAt??=now;if(now-this.quietAt>=80)this.armed=true;this.candidate=null;this.since=null;this.lastRms=rms;return false;}
+ reset(){this.last=null;this.candidate=null;this.since=null;this.lastGoodAt=null;this.interrupted=false;this.acceptedAt=-Infinity;this.quietAt=null;this.armed=true;this.lastRms=0;}
+ rebaseEnvelope(rms){this.lastRms=rms;this.candidate=null;this.since=null;this.lastGoodAt=null;if(this.last!==null)this.armed=false;}
+ feed(result,expected,now,rms,gate=.006,attackRms=rms){
+  if(rms<gate){this.quietAt??=now;if(now-this.quietAt>=80)this.armed=true;this.candidate=null;this.since=null;this.lastRms=attackRms;return false;}
   this.quietAt=null;
-  if(now-this.acceptedAt>260 && this.lastRms<rms*.45)this.armed=true;
-  this.lastRms=rms;const name=expected?.split('/')[0];
-  if(!name||result.name!==name||result.confidence<.65){this.candidate=null;this.since=null;return false;}
-  if(this.last===name&&!this.armed)return false;
-  if(this.candidate!==name){this.candidate=name;this.since=now;}
-  if(now-this.since<240||now-this.acceptedAt<280)return false;
+  if(now-this.acceptedAt>=160&&attackRms>Math.max(gate*1.5,this.lastRms*1.45)&&attackRms-this.lastRms>gate*.5)this.armed=true;
+  this.lastRms=attackRms;const name=expected?.split('/')[0];
+  if(!name||result.name!==name||result.confidence<.65){this.interrupted=true;if(result.name||this.lastGoodAt===null||now-this.lastGoodAt>160){this.candidate=null;this.since=null;}return false;}
+  const from=families.find(f=>f.name===this.last),to=families.find(f=>f.name===name),newTone=from&&to&&to.required.some(pc=>!from.pcs.includes(pc));
+  if(this.last&&!this.armed&&!newTone)return false;
+  if(this.candidate!==name||this.interrupted&&this.lastGoodAt!==null&&now-this.lastGoodAt>160){this.candidate=name;this.since=now;}
+  this.lastGoodAt=now;this.interrupted=false;
+  if(now-this.since<140||now-this.acceptedAt<280)return false;
   this.last=name;this.armed=false;this.acceptedAt=now;this.candidate=null;this.since=null;return true;
  }
 }
+export function chordAttackLevel(wave){let sum=0;const count=Math.min(2048,wave.length);for(let i=wave.length-count;i<wave.length;i++)sum+=wave[i]*wave[i];return count?Math.sqrt(sum/count):0;}

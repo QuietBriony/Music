@@ -1,4 +1,4 @@
-import { CHORDS,GUITAR_OPEN } from './chords.mjs?v=27';
+import { CHORDS,GUITAR_OPEN } from './chords.mjs?v=28';
 export const FINGER_NAMES=['','人差し指','中指','薬指','小指'];
 export const SMALL_GRIPS={
  F:{frets:[-1,-1,3,2,1,-1],fingers:[0,0,3,2,1,0]},
@@ -31,7 +31,8 @@ export function fingerSteps(shape){
  return order.flatMap(finger=>{
   const positions=shape.frets.flatMap((fret,i)=>fret>0&&shape.fingers[i]===finger?[{string:6-i,fret}]:[]);
   if(!positions.length)return[];
-  const barre=finger===1?shape.barre:null;
+  const partial=positions.length>1&&positions.every(p=>p.fret===positions[0].fret)&&positions[0].string-positions.at(-1).string+1===positions.length?{fret:positions[0].fret,from:positions[0].string,to:positions.at(-1).string}:null;
+  const barre=finger===1?shape.barre||partial:null;
   return[{finger,positions,barre:barre||null,text:barre?`${FINGER_NAMES[finger]}を${barre.fret}フレットに横向きに置き、${barre.from}〜${barre.to}弦をまとめて押さえる。`:`${FINGER_NAMES[finger]}：${positions.map(p=>`${p.string}弦の${p.fret}フレット`).join('・')}。指先を立てて置く。`}];
  });
 }

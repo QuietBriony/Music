@@ -18,6 +18,7 @@ export class MicInputBoost{
   // A gain change is not a new pluck. Establish its envelope before allowing
   // either follower to detect a new attack, retaining its last accepted note.
   tracker.candidateAt=null;tracker.candidate=null;tracker.since=null;tracker.quietAt=null;tracker.lastRms=rms;
+  tracker.rebaseEnvelope?.(rms);
   if(('lastMidi' in tracker?tracker.lastMidi:tracker.last)!==null)tracker.armed=false;
   return true;
  }

@@ -1,4 +1,4 @@
-import { SING_SHAPES } from './singalong-core.mjs?v=27';
+import { SING_SHAPES } from './singalong-core.mjs?v=28';
 
 const aliases={Db:'C#','D#':'Eb',Gb:'F#',Ab:'G#','A#':'Bb'};
 export function harmonyName(value){

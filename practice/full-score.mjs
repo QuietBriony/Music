@@ -1,6 +1,5 @@
-import { noteName } from './music.mjs?v=27';
-import { neckDiagram } from './sanshin-view.mjs?v=27';
-import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=27';
+import { noteName } from './music.mjs?v=28';
+import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=28';
 
 // Keep note indices separate from rests: selecting a cell must seek the actual
 // note, and must never count as a correct microphone answer.
@@ -41,7 +40,7 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
   new ResizeObserver(()=>reveal(false,false)).observe($('sheet'));
   function update(next){
     state=next;if(!dialog.open)return;
-    const guitar=state.instrument==='guitar';dialog.dataset.instrument=guitar?'guitar':'sanshin';
+    const guitar=state.instrument==='guitar';dialog.dataset.instrument=guitar?'guitar':'sanshin';dialog.dataset.chords=String(!!state.chords);
     $('title').textContent=`${state.title} · ${guitar?state.chords?'コード譜と歌詞':'TABと歌詞':'工工四全体'}`;
     $('tuning').closest('label').hidden=guitar;$('reading').textContent=guitar?(state.chords?'コードを左から右へ。枠を押すと、そのコードから練習できます。':'TABは左から右へ。数字はフレット、0は開放弦です。枠を押すと、その音から練習できます。'):'各段の右上から下へ、次は左の列。文字の横が歌う言葉です。';
     $('tuning').value=state.tuning;
@@ -55,7 +54,7 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
         for(const entry of entries.slice(start,start+16)){
           const cell=document.createElement(entry.rest?'div':'button'),symbol=document.createElement('strong'),detail=document.createElement('small');
           cell.className='sheet-cell';symbol.textContent=entry.rest?'休':guitar?(state.chords?entry.note.chord:entry.note.fret):entry.note.symbol;
-          detail.textContent=entry.rest?duration(entry.beats):guitar?(state.chords?`${entry.index+1}音目から · ${entry.end-entry.index}本の弦`:`${entry.note.string}弦 · ${duration(entry.note.beats)}`):`${entry.index+1} ${duration(entry.note.beats)}`;
+          detail.textContent=entry.rest?duration(entry.beats):guitar?(state.chords?state.strum?'ジャーンと1回':`${entry.index+1}音目から · ${entry.end-entry.index}本の弦`:`${entry.note.string}弦 · ${duration(entry.note.beats)}`):`${entry.index+1} ${duration(entry.note.beats)}`;
           const lyric=document.createElement('span');lyric.className='score-note-lyric';cell.append(symbol,lyric,detail);
           if(entry.rest){cell.classList.add('rest');cell.setAttribute('aria-label',`${duration(entry.beats)}休む`);}
           else{cell.dataset.index=entry.index;cell.dataset.end=entry.end??entry.index+1;cell.setAttribute('aria-label',`${entry.index+1}音目 ${entry.note.symbol||entry.note.chord||entry.note.fret} ${entry.note.position}`);cell.onclick=()=>onSeek(entry.index);}
@@ -76,8 +75,9 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
     }
     const note=state.notes[state.index];
     const playable=entries.filter(e=>!e.rest),active=playable.findIndex(e=>e.index<=state.index&&state.index<(e.end??e.index+1));
-    $('position').textContent=guitar&&state.chords?`${active+1} / ${playable.length}コード · ${note.chord} · ${state.mode==='demo'&&state.easy?'4拍で下へ1回':state.strum?'まとめて鳴らす':`${note.string}弦 ${note.fret===0?'開放':note.fret+'F'}`}`:`${state.index+1} / ${state.notes.length}音 · ${guitar?`${note.string}弦 ${note.fret}F`:note.symbol+' '+note.position} · ${noteName(note.midi)}`;
-    if(!guitar)$('finger').innerHTML=neckDiagram(note.symbol);
+    $('position').textContent=guitar&&state.chords?`${active+1} / ${playable.length}コード · ${note.chord} · ${state.mode==='demo'&&state.easy?'4拍で下へ1回':state.strum?'まとめて鳴らす':`${note.string}弦 ${note.fret===0?'開放':note.fret+'F'}`}`:`${state.index+1} / ${state.notes.length}音 · ${guitar?`${note.string}弦 ${note.fret}F`:note.symbol} · ${noteName(note.midi)}`;
+    $('instruction').textContent=guitar&&state.chords?state.guitarInstruction||'':'';
+    if(!guitar)$('finger').replaceChildren();
     else if(state.guitarDiagram)$('finger').replaceChildren(state.guitarDiagram.cloneNode(true));
     else{const label=document.createElement('strong');label.textContent=`${note.string}弦 ${note.fret===0?'開放':note.fret+'F'}`;$('finger').replaceChildren(label);}
     $('previous').disabled=active<=0;$('next').disabled=active===playable.length-1;
