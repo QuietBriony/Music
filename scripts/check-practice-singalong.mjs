@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { estimatedCourse,harmonyName,correctedCourse,practiceClock } from '../practice/harmony-timeline.mjs';
+import { SMALL_GRIPS } from '../practice/hand-guide-core.mjs';
 import { readFileSync } from 'node:fs';
 import { videoId,validRange,readSteps,TOKIYO_STEPS,SING_SHAPES,normalizeSingState,fingeringText,sectionStarts } from '../practice/singalong-core.mjs';
 import { detectChord } from '../practice/polyphonic.mjs';
@@ -21,7 +23,7 @@ for(const capo of [0,2,4,7])for(const name of ['C','Caug','Am','Dm','G','Em','A'
  const found=detectChord(spectrum(midis),48000,16384,{rms:.1,capo});assert.equal(found.name,name,`${name}, capo ${capo}`);assert.ok(found.confidence>=.65);checked++;
 }
 assert.equal(detectChord(spectrum([52,56,59]),48000,16384,{rms:.1,capo:4}).name,'C','capo-aware C shape is an E sounding chord');
-const sw=readFileSync('practice/sw.js','utf8');for(const name of ['singalong.mjs?v=26','singalong-core.mjs?v=26','youtube.mjs?v=26','singalong.css?v=26','songs/singalong-provenance.json'])assert.ok(sw.includes(name));assert.doesNotMatch(sw,/www\.youtube|googlevideo/);
+const sw=readFileSync('practice/sw.js','utf8');for(const name of ['singalong.mjs?v=27','singalong-core.mjs?v=27','youtube.mjs?v=27','singalong.css?v=27','songs/singalong-provenance.json'])assert.ok(sw.includes(name));assert.doesNotMatch(sw,/www\.youtube|googlevideo/);
 const source=readFileSync('practice/singalong.mjs','utf8');assert.doesNotMatch(source,/MediaRecorder|sendBeacon|innerHTML/);
 console.log(`Singalong: 110 harmonic targets, 11 sections, safe video URLs, loop bounds, local sequence validation and ${checked} capo-aware chord mixtures PASS`);
 
@@ -40,7 +42,7 @@ assert.deepEqual(inspected.filter(([time,name])=>TOKIYO_STEPS[cueAt(TOKIYO_TIMES
 assert.equal(normalizeSingState({offset:Infinity,videoTime:-4,follow:false},110).offset,0);
 assert.equal(normalizeSingState({offset:.4,videoTime:87.25,follow:false},110).videoTime,87.25);
 assert.equal(normalizeSingState({offset:.4,videoTime:87.25,follow:false},110).follow,false);
-assert.ok(sw.includes('video-cues.mjs?v=26'));
+assert.ok(sw.includes('video-cues.mjs?v=27'));
 console.log('Video sync: all 110 boundary pairs, backward seeks, offset bounds and 27 inspected reference positions PASS');
 
 assert.equal(JIGSAW_STEPS.length,101);assert.equal(JIGSAW_TIMES.length,101);assert.equal(new Set(JIGSAW_STEPS.map(s=>s.section)).size,14);
@@ -59,5 +61,32 @@ assert.equal(courseState(legacy,PREPARED_COURSES.tokiyo,TOKIYO_STEPS).videoTime,
 const migrated=courseState({...legacy,capo:0},PREPARED_COURSES.jigsaw,JIGSAW_STEPS);assert.equal(migrated.capo,2);assert.equal(migrated.index,0);assert.equal(migrated.videoTime,0);assert.equal(migrated.a,null);assert.equal(migrated.offset,0);assert.equal(migrated.follow,true);
 const same=courseState({...legacy,timeline:PREPARED_COURSES.jigsaw.key,capo:2},PREPARED_COURSES.jigsaw,JIGSAW_STEPS);assert.equal(same.videoTime,97.25);assert.equal(same.follow,false);
 const custom=courseState({index:1,capo:0,follow:false,videoTime:12},PREPARED_COURSES.jigsaw,readSteps('C Am'),true);assert.equal(custom.index,1);assert.equal(custom.capo,0);assert.equal(custom.videoTime,12);
-for(const file of ['singalong-courses.mjs?v=26','jigsaw-cues.mjs?v=26'])assert.ok(sw.includes(file));
+for(const file of ['singalong-courses.mjs?v=27','jigsaw-cues.mjs?v=27'])assert.ok(sw.includes(file));
 console.log('Two prepared courses: Jigsaw 101 targets/14 sections/eight open shapes, independent end times, capo-aware detection, legacy migration and custom-order preservation PASS');
+
+assert.equal(Object.keys(PREPARED_COURSES).length,11);
+assert.equal(Object.values(PREPARED_COURSES).filter(c=>c.estimated).length,9);
+assert.deepEqual(Object.entries(PREPARED_COURSES).filter(([,c])=>c.embedBlocked).map(([id])=>id).sort(),['santeria','under-the-bridge','your-song']);
+for(const [key,course] of Object.entries(PREPARED_COURSES)){
+ assert.equal(course.steps.length,course.times.length,key);assert.ok(course.times.length>0&&course.times.length<=1024);
+ for(let i=0;i<course.times.length;i++){
+  const time=course.times[i],step=course.steps[i];assert.equal(step.index,i);assert.ok(Number.isFinite(time)&&time>=0&&time<course.end);assert.ok(!i||time>course.times[i-1]);
+  assert.ok(step.silent?step.name==='N':Object.hasOwn(SING_SHAPES,step.name));assert.equal(cueAt(course.times,time,0,course.end).index,i);if(i)assert.equal(cueAt(course.times,time-.0001,0,course.end).index,i-1);
+ }
+ assert.equal(cueAt(course.times,course.end,0,course.end).ended,true);
+}
+assert.equal(harmonyName('A#'),'Bb');assert.equal(harmonyName('Dbm'),'C#m');assert.equal(harmonyName('D#m'),'Ebm');assert.equal(harmonyName('Gb'),'F#');assert.equal(harmonyName('Abm'),'G#m');assert.throws(()=>harmonyName('<script>'));
+const sample=estimatedCourse({id:'test',video:'abcdefghijk',bpm:120,duration:8,events:'0:N 2:Dbm 4:Gb 5:N',source:'https://source.example'});
+assert.deepEqual(sample.times,[0,.5,1.5,2]);assert.deepEqual(sample.steps.map(s=>s.name),['N','C#m','F#','N']);
+assert.throws(()=>estimatedCourse({id:'test',video:'abcdefghijk',bpm:120,duration:8,events:'2:C 1:G'}));
+assert.throws(()=>estimatedCourse({id:'test',video:'abcdefghijk',bpm:0,duration:8,events:'1:C'}));
+const edits={version:1,key:sample.key,changes:[{index:1,name:'Ebm',time:.8}]},changed=correctedCourse(sample,edits);
+assert.equal(changed.steps[1].name,'Ebm');assert.equal(changed.times[1],.8);assert.equal(sample.steps[1].name,'C#m');assert.equal(sample.times[1],.5);
+for(const change of [null,{index:-1},{index:4},{index:1,time:0},{index:1,time:1.5},{index:1,time:NaN},{index:1,name:'toString'},{index:1,name:'__proto__'}])assert.throws(()=>correctedCourse(sample,{version:1,key:sample.key,changes:[change]}));
+assert.throws(()=>correctedCourse(sample,{...edits,key:'another-video'}));assert.throws(()=>correctedCourse(sample,{...edits,changes:[{index:1},{index:1}]}));
+for(const capo of [0,2,4,7])for(const name of ['C#','Eb','F#','Bb','Ebm','F#m','G#m','Bbm'])for(const shape of [SING_SHAPES[name],SMALL_GRIPS[name]]){
+ const midis=shape.frets.flatMap((f,i)=>f<0?[]:[open[i]+f+capo]);assert.equal(detectChord(spectrum(midis),48000,16384,{rms:.1,capo}).name,name,`${name} compact/standard capo ${capo}`);
+}
+console.log('All 11 course boundaries, explicit 9 uncertain guides, rests, enharmonic names, isolated bounded corrections and 64 new compact/standard capo mixtures PASS');
+let ms=0;const clock=practiceClock(10,2,()=>ms);ms=1000;assert.equal(clock.getCurrentTime(),2);clock.playVideo();ms=3000;assert.equal(clock.getCurrentTime(),4);clock.pauseVideo();ms=5000;assert.equal(clock.getCurrentTime(),4);clock.playVideo();clock.setPlaybackRate(.5);ms=7000;assert.equal(clock.getCurrentTime(),5);clock.seekTo(9);ms=11000;assert.equal(clock.getCurrentTime(),10);clock.destroy();ms=20000;assert.equal(clock.getCurrentTime(),10);assert.equal(clock.getPlayerState(),2);
+console.log('Separate-device local clock: explicit start, pause, speed, seek, end clamp and destroy PASS');

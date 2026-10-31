@@ -1,4 +1,4 @@
-import { CHORDS,GUITAR_OPEN } from './chords.mjs?v=26';
+import { CHORDS,GUITAR_OPEN } from './chords.mjs?v=27';
 export const FINGER_NAMES=['','人差し指','中指','薬指','小指'];
 export const SMALL_GRIPS={
  F:{frets:[-1,-1,3,2,1,-1],fingers:[0,0,3,2,1,0]},
@@ -8,7 +8,15 @@ export const SMALL_GRIPS={
  Cm:{frets:[-1,-1,-1,5,4,3],fingers:[0,0,0,3,2,1]},
  Gm:{frets:[-1,-1,-1,3,3,3],fingers:[0,0,0,1,2,3]},
  'G#':{frets:[-1,-1,-1,5,4,4],fingers:[0,0,0,3,1,2]},
- 'C#m':{frets:[-1,-1,-1,6,5,4],fingers:[0,0,0,3,2,1]}
+ 'C#m':{frets:[-1,-1,-1,6,5,4],fingers:[0,0,0,3,2,1]},
+ 'C#':{frets:[-1,-1,-1,1,2,1],fingers:[0,0,0,1,3,2]},
+ Eb:{frets:[-1,-1,-1,3,4,3],fingers:[0,0,0,1,3,2]},
+ 'F#':{frets:[-1,-1,-1,3,2,2],fingers:[0,0,0,3,1,2]},
+ Bb:{frets:[-1,-1,-1,3,3,1],fingers:[0,0,0,2,3,1]},
+ Ebm:{frets:[-1,-1,-1,3,4,2],fingers:[0,0,0,2,3,1]},
+ 'F#m':{frets:[-1,-1,-1,2,2,2],fingers:[0,0,0,1,2,3]},
+ 'G#m':{frets:[-1,-1,-1,4,4,4],fingers:[0,0,0,1,2,3]},
+ Bbm:{frets:[-1,-1,-1,3,2,1],fingers:[0,0,0,3,2,1]}
 };
 const equal=(a,b)=>a.frets.every((f,i)=>f===b.frets[i]&&a.fingers[i]===b.fingers[i]);
 export function gripChoices(name,current){

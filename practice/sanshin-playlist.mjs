@@ -1,4 +1,4 @@
-import { songSupport } from './song-support.mjs?v=26';
+import { songSupport } from './song-support.mjs?v=27';
 export const SANSHIN_PLAYLIST = {
   "title": "三線練習",
   "url": "https://music.apple.com/jp/playlist/%E4%B8%89%E7%B7%9A%E7%B7%B4%E7%BF%92/pl.u-PDb42ZZuJZ06jp",
@@ -171,7 +171,7 @@ const KEY='music-practice-sanshin-playlist-v1';
 export function mountSanshinPlaylist({onOpen,onLeave}){
  const $=id=>document.getElementById(`playlist-${id}`);let stored={};
  try{const value=JSON.parse(localStorage.getItem(KEY)||'{}');if(value&&typeof value==='object'&&!Array.isArray(value))stored=value;}catch{/* Optional local state. */}
- const tracks=SANSHIN_PLAYLIST.tracks;let selected=tracks.find(t=>t.id===stored.selected)||tracks[0];
+ const tracks=SANSHIN_PLAYLIST.tracks;$('heading').textContent=`三線練習 · ${tracks.length}曲`;let selected=tracks.find(t=>t.id===stored.selected)||tracks[0];
  const progress=stored.progress&&typeof stored.progress==='object'&&!Array.isArray(stored.progress)?stored.progress:{};
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({selected:selected.id,progress}));}catch{/* Optional. */}};
  function anchor(item){const a=document.createElement('a');a.textContent=item.label+' ↗';a.href=item.url;a.target='_blank';a.rel='noopener';a.onclick=onLeave;return a;}

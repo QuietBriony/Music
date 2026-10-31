@@ -127,10 +127,10 @@ for(const tuning of [-3,-2,-1,0,2]){
 }
 assert.equal(SANSHIN_VIDEOS.jidai.video,'xtf0OAu-qVY');
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=26','sanshin-view.mjs?v=26','sanshin-guide.mjs?v=26','sanshin.css?v=26','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=27','sanshin-view.mjs?v=27','sanshin-guide.mjs?v=27','sanshin.css?v=27','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
 console.log('Practice learning: tuning, nineteen studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
 
 const guitarCourseNotes=scoreNotes(chordExercise(['C','Am']),'chords','guitar',{chords:true}).notes;
 const cards=practiceSheetEntries(guitarCourseNotes,{instrument:'guitar',chords:true});assert.equal(cards.length,2);assert.equal(cards[0].index,0);assert.equal(cards[0].end,cards[1].index);assert.equal(cards[1].end,guitarCourseNotes.length);
 assert.equal(practiceSheetEntries(guitarCourseNotes,{instrument:'guitar',chords:false}).length,guitarCourseNotes.length);
-const support=[...GUITAR_PLAYLIST.tracks.map(t=>songSupport('guitar',t.id)),...SANSHIN_PLAYLIST.tracks.map(t=>songSupport('sanshin',t.id))];assert.equal(support.length,19);assert.equal(support.filter(s=>s.badge==='自動コード').length,2);assert.equal(support.filter(s=>s.badge==='工工四＋歌詞').length,1);assert.ok(support.every(s=>s.detail&&s.badge));
+const support=[...GUITAR_PLAYLIST.tracks.map(t=>songSupport('guitar',t.id)),...SANSHIN_PLAYLIST.tracks.map(t=>songSupport('sanshin',t.id))];assert.equal(support.length,19);assert.equal(support.filter(s=>s.badge==='自動コード').length,2);assert.equal(support.filter(s=>s.quality==='estimated').length,9);assert.equal(support.filter(s=>s.badge==='動画の工工四').length,7);assert.equal(support.filter(s=>s.badge==='工工四＋歌詞').length,1);assert.ok(support.every(s=>s.detail&&s.badge));

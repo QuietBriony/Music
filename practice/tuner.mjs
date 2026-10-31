@@ -1,4 +1,4 @@
-import { centsFrom, noteName, detectPitch } from './music.mjs?v=26';
+import { centsFrom, noteName, detectPitch } from './music.mjs?v=27';
 export const SANSHIN_TUNINGS={honchoshi:{name:'本調子',reading:'ほんちょうし',offsets:[0,5,12],tip:'男弦・中弦・女弦がド・ファ・ドの関係。収録の工工四はこの調弦です。'},niage:{name:'二揚げ',reading:'にあげ・にあぎ',offsets:[0,7,12],tip:'本調子から中弦だけを全音上げます。ド・ソ・ドの関係。'},sansage:{name:'三下げ',reading:'さんさげ・さんさぎ',offsets:[0,5,10],tip:'本調子から女弦だけを全音下げます。ド・ファ・シ♭の関係。'}};
 export const sanshinTuning=kind=>SANSHIN_TUNINGS[kind]||SANSHIN_TUNINGS.honchoshi;
 export function tuningLabel(transpose=0,kind='honchoshi'){

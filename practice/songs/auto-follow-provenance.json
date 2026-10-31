@@ -1,0 +1,86 @@
+{
+  "checked": "2026-10-31",
+  "scope": "Non-lyric harmonic labels and numerical beat/timing facts only. No audio, video, lyrics, melodic notation, diagrams or website code are copied. These are uncertain reference guides, not a verified score or a claim of permission to redistribute source media.",
+  "source_access": "Normal public pages; default freely visible Simplified/Edited versions only. demoAccess=false, viewOnlyAccess=false, available=1 were checked. No authenticated, premium, hidden or restricted versions were read. Only selected chordObject, BPM and duration were retained.",
+  "time_mapping": "Public player advances a 1-based beat grid. Restate each beat b as max(0,(b-1)*60/BPM) seconds. Duplicate zero positions are merged. This grid and automatic harmonic analysis may be inaccurate; the app labels it estimated and permits personal corrections.",
+  "courses": [
+    {
+      "id": "under-the-bridge",
+      "video": "GLvohMXgcBo",
+      "bpm": 85.8,
+      "duration": 268,
+      "source": "https://chordu.com/chords-tabs-red-hot-chili-peppers-under-the-bridge-id_GLvohMXgcBo"
+    },
+    {
+      "id": "blackbird",
+      "video": "y_70M2GC3jw",
+      "bpm": 149.45,
+      "duration": 391.701,
+      "source": "https://chordu.com/chords-tabs-the-beatles-blackbird-chase-eagleson-cover--id_y_70M2GC3jw"
+    },
+    {
+      "id": "imagine",
+      "video": "hJOs03sMna4",
+      "bpm": 150,
+      "duration": 196.441,
+      "source": "https://chordu.com/chords-tabs-raef-imagine-john-lennon-cover--id_hJOs03sMna4"
+    },
+    {
+      "id": "woman",
+      "video": "K9yBG6oyPP4",
+      "bpm": 81.3,
+      "duration": 197.061,
+      "source": "https://chordu.com/chords-tabs-john-lennon-women-with-lyrics-1980-high-quality-cover-version--id_K9yBG6oyPP4"
+    },
+    {
+      "id": "your-song",
+      "video": "GlPlfCy1urI",
+      "bpm": 128.95,
+      "duration": 229,
+      "source": "https://chordu.com/chords-tabs-elton-john-your-song-id_GlPlfCy1urI"
+    },
+    {
+      "id": "could-you-be-loved",
+      "video": "pYFOPu-WowQ",
+      "bpm": 105,
+      "duration": 208.421,
+      "source": "https://chordu.com/chords-tabs-wretch-32-covers-bob-marley-s-could-you-be-loved-id_pYFOPu-WowQ"
+    },
+    {
+      "id": "sleep-last-night",
+      "video": "1yH5gbXI7DQ",
+      "bpm": 150,
+      "duration": 255.081,
+      "source": "https://chordu.com/chords-tabs-in-the-pines-where-did-you-sleep-last-night-leadbelly-cover-id_1yH5gbXI7DQ"
+    },
+    {
+      "id": "santeria",
+      "video": "AEYN5w4T_aM",
+      "bpm": 90.65,
+      "duration": 196,
+      "source": "https://chordu.com/chords-tabs-sublime-santeria-id_AEYN5w4T_aM"
+    }
+  ],
+  "yes_my_love": {
+    "source": "https://www.youtube.com/watch?v=kr1n2Pzn4eA",
+    "creator": "邦楽ギターコード集-山田まさひろ-",
+    "capo": 5,
+    "method": "Observed on-screen chord labels and coarse section frames at 2,8,12,16,20,24,28,40,52,92,100,126,180,182,200,218,232,248,250 seconds. Times are interval interpolations and explicitly approximate. No exact-chord verification claim. Dm7-5 is simplified to its F minor upper triad, omitting D.",
+    "section_anchors": [
+      2,
+      18,
+      34,
+      60,
+      96,
+      112,
+      140,
+      186,
+      256
+    ],
+    "end": 258.5
+  },
+  "manual_start": "All media still loads and starts only after the learner acts. No microphone start, recorder, audio upload or third-party analysis request is added at runtime.",
+  "limitations": "Source videos must remain embeddable. Automated chords include errors, omit passing notes and inversions, and do not replace instruction. Modern lyrics and sanshin melodic scores stay inside publisher videos or learner-provided text.",
+  "playback_checked": "2026-10-31: five replacement cover performances, YES MY LOVE, the two existing mapped videos and eight sanshin videos reached PLAYING via the normal YouTube API. Under the Bridge, Your Song and Santeria sources refused embedding with error 150; no bypass. Those use a clearly labeled local timer with the publisher video on a separate screen and manual synchronization.",
+  "duration_policy": "The five playable alternatives use observed player duration; stale source beat events beyond the actual duration are discarded. Blackbird reference metadata had a longer duration than the current video, so its tail was clipped. Timing and harmonic accuracy remain unverified."
+}

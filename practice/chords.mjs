@@ -1,4 +1,4 @@
-import { SANSHIN_POSITIONS } from './sanshin-core.mjs?v=26';
+import { SANSHIN_POSITIONS } from './sanshin-core.mjs?v=27';
 // String order in shapes: sixth (low E) to first (high e). -1 means muted.
 export const GUITAR_OPEN = [40, 45, 50, 55, 59, 64];
 export const CHORDS = {
@@ -34,7 +34,15 @@ export const CHORDS = {
   Gadd9: { frets: [3, 0, 0, 0, 0, 3], fingers: [2, 0, 0, 0, 0, 3] },
   'G#': { frets:[4,6,6,5,4,4],fingers:[1,3,4,2,1,1],barre:{fret:4,from:6,to:1} },
   'C#m': { frets:[-1,4,6,6,5,4],fingers:[0,1,3,4,2,1],barre:{fret:4,from:5,to:1} },
-  'G/B': { frets:[-1,2,0,0,3,3],fingers:[0,1,0,0,3,4] }
+  'G/B': { frets:[-1,2,0,0,3,3],fingers:[0,1,0,0,3,4] },
+  'C#': {frets:[-1,4,6,6,6,4],fingers:[0,1,2,3,4,1],barre:{fret:4,from:5,to:1}},
+  Eb: {frets:[-1,-1,1,3,4,3],fingers:[0,0,1,2,4,3]},
+  'F#': {frets:[2,4,4,3,2,2],fingers:[1,3,4,2,1,1],barre:{fret:2,from:6,to:1}},
+  Bb: {frets:[-1,1,3,3,3,1],fingers:[0,1,2,3,4,1],barre:{fret:1,from:5,to:1}},
+  Ebm: {frets:[-1,-1,1,3,4,2],fingers:[0,0,1,3,4,2]},
+  'F#m': {frets:[2,4,4,2,2,2],fingers:[1,3,4,1,1,1],barre:{fret:2,from:6,to:1}},
+  'G#m': {frets:[4,6,6,4,4,4],fingers:[1,3,4,1,1,1],barre:{fret:4,from:6,to:1}},
+  Bbm: {frets:[-1,1,3,3,2,1],fingers:[0,1,3,4,2,1],barre:{fret:1,from:5,to:1}}
 };
 export const CHORD_GROUPS = [
   { title: 'メジャー', names: ['C','D','E','F','G','A','B'] },
@@ -42,7 +50,8 @@ export const CHORD_GROUPS = [
   { title: 'セブンス', names: ['C7','D7','E7','G7','A7','B7'] },
   { title: 'maj7・m7', names: ['Cmaj7','Fmaj7','Dm7','Em7','Am7'] },
   { title: 'sus4・add9', names: ['Dsus4','Asus4','Esus4','Cadd9','Gadd9'] },
-  { title: '好きな曲から',names:['G#','C#m','G/B'] }
+  { title: '好きな曲から',names:['G#','C#m','G/B'] },
+  { title: 'ほかの調のコード',names:['C#','Eb','F#','Bb','Ebm','F#m','G#m','Bbm'] }
 ];
 export const PROGRESSIONS = [
   { id:'basic', title:'G → C → D', names:['G','C','D','G'] },

@@ -1,6 +1,6 @@
-import { renderLyricReference } from './score-lyrics.mjs?v=26';
-import { CHORDS } from './chords.mjs?v=26';
-import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=26';
+import { renderLyricReference } from './score-lyrics.mjs?v=27';
+import { CHORDS } from './chords.mjs?v=27';
+import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=27';
 export const LYRIC_LIMIT=20000;
 export function readLyrics(text){
  if(typeof text!=='string'||text.length>LYRIC_LIMIT)throw new Error('歌詞は2万字までです。');
@@ -35,7 +35,7 @@ export function readChordSheet(text){
   const heading=raw.match(/^\s*\{(?:title|t):\s*([^}]+)\}/i);if(heading){title=heading[1].slice(0,80);continue;}
   if(/^\s*\{/.test(raw))continue;
   const chords=[...raw.matchAll(/\[([^\]\r\n]+)\]/g)].map(m=>m[1]);
-  for(const name of chords)if(!Object.hasOwn(CHORDS,name))throw new Error(`未対応のコード「${name}」があります。33種類のコード名で指定してください。`);
+  for(const name of chords)if(!Object.hasOwn(CHORDS,name))throw new Error(`未対応のコード「${name}」があります。一覧にあるコード名で指定してください。`);
   const line=raw.replace(/\[[^\]\r\n]+\]/g,'').trim();
   if(line){cues.push({line:lines.length,time:names.length*4*60/85});lines.push(line);}
   names.push(...chords);if(names.length>64)throw new Error('コードは64個までです。短い範囲に分けてください。');

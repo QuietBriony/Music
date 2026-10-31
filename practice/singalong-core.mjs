@@ -1,4 +1,4 @@
-import { CHORDS } from './chords.mjs?v=26';
+import { CHORDS } from './chords.mjs?v=27';
 export const SING_SHAPES={...CHORDS,
  F:{frets:[-1,-1,3,2,1,-1],fingers:[0,0,3,2,1,0]},
  Fm:{frets:[-1,-1,3,1,1,-1],fingers:[0,0,3,1,2,0]},
@@ -33,8 +33,8 @@ export function readSteps(text){
  if(names.some(n=>!Object.hasOwn(SING_SHAPES,n)))throw new Error('未対応のコード名があります。下のコード一覧で確認してください。');
  return songSteps([{title:'自分の曲',names}]);
 }
-export function fingeringText(name){
- const s=SING_SHAPES[name];if(!s)return'';
+export function fingeringText(name,shape=SING_SHAPES[name]){
+ const s=shape;if(!s)return'';
  return s.frets.map((f,i)=>`${6-i}弦${f<0?'は弾かない':f===0?'は開放':`${f}フレット・${['','人差し指','中指','薬指','小指'][s.fingers[i]]}`}`).join('、')+'。';
 }
 export function normalizeSingState(value,stepCount){

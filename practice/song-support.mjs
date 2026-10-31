@@ -1,7 +1,8 @@
-// Describes verified app capabilities, not availability of a complete score.
+// Distinguish inspected maps from uncertain guides and publisher video scores.
+import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=27';
 export function songSupport(instrument,id){
  if(instrument==='guitar'&&['tokiyo','jigsaw'].includes(id))return{badge:'自動コード',detail:'用意した動画にコード図が追従します。歌詞は動画か、自分のテキストを位置合わせして表示できます。'};
  if(instrument==='sanshin'&&id==='tinsagu')return{badge:'工工四＋歌詞',detail:'1節の簡略工工四・指図・歌詞で練習できます。先生の動画とは別の練習用の譜割りです。'};
- if(instrument==='guitar'&&['santeria','blackbird'].includes(id))return{badge:'導入＋動画',detail:'導入コードと先生の教材を用意。自分のコード順・歌詞を入れると、演奏に合わせて進められます。全曲の自動コード時刻は未設定です。'};
- return{badge:'動画教材',detail:instrument==='guitar'?'先生の動画で弾き方を確認。自分のコード順・歌詞を曲別に保存できます。全曲の自動コード時刻は未設定です。':'先生の動画・工工四の参照と指の確認。自分の歌詞を動画の位置に合わせて表示できます。アプリ内の全曲工工四と自動の指図は未収録です。'};
+ if(instrument==='guitar'&&ESTIMATED_COURSES[id])return{badge:ESTIMATED_COURSES[id].embedBlocked?'時間送り（推定・手動同期）':'自動送り（推定・目安）',detail:ESTIMATED_COURSES[id].embedBlocked?'動画はYouTubeを別画面で開き、コードの時間送りを同時に開始します。自動同期はできません。誤りやずれは補正できます。':'動画にコード図が追従します。誤判定やずれがあるため補正できます。歌詞は動画・字幕か自分のテキストで。',quality:'estimated'};
+ return{badge:instrument==='sanshin'?'動画の工工四':'動画教材',detail:instrument==='guitar'?'先生の動画で弾き方を確認。自分のコード順・歌詞を曲別に保存できます。全曲の自動コード時刻は未設定です。':'教材動画内の工工四・歌詞を見て演奏を追います。止めて文字を選ぶと指を確認できます。アプリの指図は自動では進みません。'};
 }

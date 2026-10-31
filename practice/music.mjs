@@ -1,5 +1,5 @@
 // Original, dependency-free single-note exercises and detector for Music Stack.
-import { sanshinPosition } from './sanshin-core.mjs?v=26';
+import { sanshinPosition } from './sanshin-core.mjs?v=27';
 export const frequencyFor = (midi) => 440 * 2 ** ((midi - 69) / 12);
 export const centsFrom = (frequency, midi) => 1200 * Math.log2(frequency / frequencyFor(midi));
 export function noteName(midi) {
