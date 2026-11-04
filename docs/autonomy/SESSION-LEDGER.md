@@ -1,5 +1,7 @@
 # Session Ledger — music-stack
 
+2026-11-04 練習PWA v30：基礎練習は一覧を経由せず練習画面へ入り、選曲・設定は明示ボタンで戻す。スマホのコード練習は指図と指説明を横並び、検出表示を短くまとめ、操作は説明を覆わない位置へ。速さ・集音設定は開閉式。弾き語りは今／次のコード図と曲位置バーを先に表示し、表示・カポ・教材説明を設定へまとめる。現在のカポは練習カード内にも明記。白い指ガイドと緑の開始ボタンに配色・余白を統一。専用cache v30。判定・音源・曲時刻・保存キーは維持し、外部動画とマイクは手動開始。実iPad／iPhoneでの感触は未確認。
+
 ## 2026-11-04 — Lyric Lab legacy draft visibility / hazama-fm-v445
 
 Production read verification found legacy records with an empty final string and a nonempty draft. The reader now falls back to draft, then seed, without generating or changing stored text. Regression fixtures cover both cases and protect a newer offline legacy revision from an older cloud response. All private cloud records remain unchanged. Lyric assets use notebook-2; authentication and database schema are unchanged.

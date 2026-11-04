@@ -1,15 +1,15 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=29';
-import { scoreLyricAnnotations,setScoreLyric } from './score-lyrics.mjs?v=29';
-import { songSupport } from './song-support.mjs?v=29';
-import { MicInputBoost } from './mic-input.mjs?v=29';
-import { cueAt } from './video-cues.mjs?v=29';
-import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=29';
-import { correctedCourse,practiceClock } from './harmony-timeline.mjs?v=29';
-import { guitarShape,drawChord,fillFingerList,strumInstruction,gripCard } from './chord-guide.mjs?v=29';
-import { STUDIES } from './learning.mjs?v=29';
-import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=29';
-import { detectChord,ChordGate,chordAttackLevel } from './polyphonic.mjs?v=29';
-import { lessonPlayer } from './youtube.mjs?v=29';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=30';
+import { scoreLyricAnnotations,setScoreLyric } from './score-lyrics.mjs?v=30';
+import { songSupport } from './song-support.mjs?v=30';
+import { MicInputBoost } from './mic-input.mjs?v=30';
+import { cueAt } from './video-cues.mjs?v=30';
+import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=30';
+import { correctedCourse,practiceClock } from './harmony-timeline.mjs?v=30';
+import { guitarShape,drawChord,fillFingerList,strumInstruction,gripCard } from './chord-guide.mjs?v=30';
+import { STUDIES } from './learning.mjs?v=30';
+import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=30';
+import { detectChord,ChordGate,chordAttackLevel } from './polyphonic.mjs?v=30';
+import { lessonPlayer } from './youtube.mjs?v=30';
 const STORAGE='music-practice-singalong-v1';
 const lessons=STUDIES.guitar.map(s=>({...s,instrument:'guitar',referenceVideo:s.video||s.lesson,video:PREPARED_COURSES[s.id]?.url||s.video||s.lesson}));
 const text=(id,value)=>{const e=document.getElementById(id);if(e.textContent!==String(value))e.textContent=value;};
@@ -84,8 +84,8 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
   const target=steps[Math.min(state.index,steps.length-1)],name=target?.name||$('sing-chord-picker').value||'C';
   text('sing-course-title',`${selected.title} / ${selected.artist}`);text('sing-target',state.index>=steps.length&&steps.length?'✓':target?.silent?'休み':name);
   text('sing-target-label',following()?(finishedVideo()?'演奏おわり':target?.silent?'音が始まるまで待つ':'今押さえるコード'):steps.length?state.index>=steps.length?'コードを一通り確認しました':'次に押さえるコード':'曲のコードは未設定 · 下で押さえ方を選ぶ');
-  text('sing-next',steps[state.index+1]?.silent?'休み':steps[state.index+1]?.name||'—');text('sing-section',target?.title||'参考動画とコード図');
-  text('sing-progress',steps.length?`${Math.min(state.index+1,steps.length)} / ${steps.length}コード`:'曲のコードを下で選べます');
+  text('sing-next',steps[state.index+1]?.silent?'休み':steps[state.index+1]?.name||'—');const next=steps[state.index+1],nextShape=!next?.silent&&activeShape(next?.name);$('sing-next-diagram').replaceChildren(...(nextShape?[drawChord(next.name,nextShape)]:[]));$('sing-next-diagram').hidden=!nextShape;text('sing-section',target?.title||'参考動画とコード図');
+  text('sing-progress',steps.length?`${Math.min(state.index+1,steps.length)} / ${steps.length}コード`:'曲のコードを下で選べます');$('sing-song-progress').max=Math.max(1,steps.length);$('sing-song-progress').value=Math.min(state.index,steps.length);$('sing-song-progress').hidden=!steps.length;
   $('sing-advance').disabled=!steps.length||state.index>=steps.length||(following()&&state.index===steps.length-1);$('sing-previous').disabled=!steps.length||state.index<=0;
   $('sing-mic').disabled=!steps.length||state.index>=steps.length||!!ctx||finishedVideo()||!!target?.silent;
   $('sing-follow').checked=following();$('sing-follow').disabled=!canFollow();
@@ -100,7 +100,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
   $('sing-clock-start').disabled=!canFollow();
   if(!$('sing-timing-editor').open){$('sing-correct-step').value=Math.min(state.index,Math.max(0,steps.length-1));correctionSelection();}
   $('sing-capo').value=state.capo;$('sing-chord-picker').value=name;renderDiagram(name);
-  text('sing-capo-note',state.capo?`カポ${state.capo}。図の数字はカポから数えます。`:'カポなし。図の数字はナットから数えます。');
+  text('sing-capo-badge',state.capo?`カポ${state.capo} · 図はカポから数える`:'カポなし');text('sing-capo-note',state.capo?`カポ${state.capo}。図の数字はカポから数えます。`:'カポなし。図の数字はナットから数えます。');
   if(target)$('sing-sections').value=steps.find(s=>s.section===target.section)?.index??0;
   for(const b of $('sing-chord-track').querySelectorAll('[data-step]')){const i=Number(b.dataset.step);b.setAttribute('aria-current',String(i===state.index));b.classList.toggle('passed',i<state.index);}
   text('sing-loop-state',state.a!==null&&state.b!==null?`${state.a.toFixed(1)}〜${state.b.toFixed(1)}秒`:'AとBを動画の位置で決めます');$('sing-loop').checked=state.loop;lyricPosition();revealTrack();
@@ -123,7 +123,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
   $('sing-outside').href=selected.video;
   $('sing-source').textContent=videoId(selected.video)?'YouTubeで開く ↗':'解説ページで開く ↗';$('sing-load').disabled=!videoId(selected.video);text('sing-load','YouTubeの動画を読み込む');
   text('sing-reference-note',course?.note||selected.referenceNote||(selected.id==='tokiyo'?'オーリーズの音楽室の歌詞・コード付き通し演奏。カポ4のコード名を案内します。':selected.instrument==='sanshin'?'三線の参考動画です。全曲の工工四・コード順は未設定です。この画面の指の図はギター用です。':'参考動画・演奏です。動画のキー・カポ・譜面表示を確認してください。全曲のコード順は未設定です。'));
-  const support=songSupport('guitar',selected.id);lyrics.use(`video:guitar:${selected.id}`,selected.title);text('sing-support',support.badge+' · '+support.detail);$('sing-support').dataset.quality=course?.estimated?'estimated':'inspected';$('sing-analysis-source').hidden=!course?.source;if(course?.source)$('sing-analysis-source').href=course.source;makeTrack();render();status(modeMessage());store();
+  const support=songSupport('guitar',selected.id);lyrics.use(`video:guitar:${selected.id}`,selected.title);text('sing-support',support.badge+' · '+support.detail);$('sing-support').dataset.quality=course?.estimated?'estimated':'inspected';text('sing-guide-quality',course?.estimated?'自動送りは目安':'自動送りあり');$('sing-analysis-source').hidden=!course?.source;if(course?.source)$('sing-analysis-source').href=course.source;makeTrack();render();status(modeMessage());store();
  }
  function startTimer(){clearInterval(timer);timer=setInterval(()=>{if(!ready||!active)return;try{const time=player.getCurrentTime()||0;text('sing-video-time',`${Math.floor(time/60)}:${String(Math.floor(time%60)).padStart(2,'0')}`);if(state.loop&&player.getPlayerState()===1&&time>=state.b)player.seekTo(state.a,true);followVideo();lyricPosition();if(player.localClock&&time>=course.end)player.pauseVideo();}catch{}},100);}
  function localClock(){

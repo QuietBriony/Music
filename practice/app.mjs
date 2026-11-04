@@ -1,26 +1,26 @@
-import { mountPracticeShell } from './app-shell.mjs?v=29';
-import { mountScoreStrip } from './score-strip.mjs?v=29';
-import { MicInputBoost,mountMicGainControls } from './mic-input.mjs?v=29';
-import { mountGuitarPlaylist } from './guitar-playlist.mjs?v=29';
-import { mountSanshinPlaylist } from './sanshin-playlist.mjs?v=29';
-import { mountHandGuide } from './hand-guide.mjs?v=29';
-import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=29';
-import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=29';
-import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=29';
-import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=29';
-import { SANSHIN_TUNINGS,sanshinTuning,tuningLabel,tuningStrings, tuningGate, detectTuningPitch, TunerTracker } from './tuner.mjs?v=29';
-import { mountFullScore } from './full-score.mjs?v=29';
-import { mountLearning,STUDIES } from './learning.mjs?v=29';
-import { guitarShape,drawChord,fillFingerList,strumInstruction,fingerLines,mountGuitarGuides } from './chord-guide.mjs?v=29';
-import { detectChord, ChordGate,chordAttackLevel } from './polyphonic.mjs?v=29';
-import { mountLyrics } from './lyrics.mjs?v=29';
-import { LYRIC_PRESETS } from './lyric-presets.mjs?v=29';
-import { PracticeProgress,progressKey } from './progress.mjs?v=29';
-import { mountSingalong } from './singalong.mjs?v=29';
-import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=29';
+import { mountPracticeShell } from './app-shell.mjs?v=30';
+import { mountScoreStrip } from './score-strip.mjs?v=30';
+import { MicInputBoost,mountMicGainControls } from './mic-input.mjs?v=30';
+import { mountGuitarPlaylist } from './guitar-playlist.mjs?v=30';
+import { mountSanshinPlaylist } from './sanshin-playlist.mjs?v=30';
+import { mountHandGuide } from './hand-guide.mjs?v=30';
+import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=30';
+import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=30';
+import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=30';
+import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=30';
+import { SANSHIN_TUNINGS,sanshinTuning,tuningLabel,tuningStrings, tuningGate, detectTuningPitch, TunerTracker } from './tuner.mjs?v=30';
+import { mountFullScore } from './full-score.mjs?v=30';
+import { mountLearning,STUDIES } from './learning.mjs?v=30';
+import { guitarShape,drawChord,fillFingerList,strumInstruction,fingerLines,mountGuitarGuides } from './chord-guide.mjs?v=30';
+import { detectChord, ChordGate,chordAttackLevel } from './polyphonic.mjs?v=30';
+import { mountLyrics } from './lyrics.mjs?v=30';
+import { LYRIC_PRESETS } from './lyric-presets.mjs?v=30';
+import { PracticeProgress,progressKey } from './progress.mjs?v=30';
+import { mountSingalong } from './singalong.mjs?v=30';
+import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=30';
 
-import { renderSanshinTarget } from './sanshin-view.mjs?v=29';
-import { mountSanshinGuide } from './sanshin-guide.mjs?v=29';
+import { renderSanshinTarget } from './sanshin-view.mjs?v=30';
+import { mountSanshinGuide } from './sanshin-guide.mjs?v=30';
 
 const $ = id => document.getElementById(id);
 mountGuitarGuides();
@@ -81,7 +81,7 @@ function restorePosition(){
  }
  renderResume();
 }
-function setFocus(value){focused=!!value&&view==='practice';document.body.classList.toggle('focused',focused);$('focus-mode').setAttribute('aria-pressed',String(focused));$('focus-mode').textContent=focused?'曲・設定を見る':'練習に集中';}
+function setFocus(value){focused=!!value&&view==='practice';document.body.classList.toggle('focused',focused);$('focus-mode').setAttribute('aria-pressed',String(focused));$('focus-mode').textContent=focused?'練習を選ぶ・設定':'練習へ戻る';}
 function focusPractice(){if(view!=='practice')return;setFocus(true);window.scrollTo({top:0,behavior:'instant'});requestAnimationFrame(()=>{if(focused)window.scrollTo({top:0,behavior:'instant'});});}
 async function contentKey(data){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',data))].map(v=>v.toString(16).padStart(2,'0')).join('');}
 function bounds() { return $('loop-enabled').checked ? [Number($('loop-start').value), Number($('loop-end').value) + 1] : [0, notes.length]; }
@@ -551,7 +551,7 @@ async function demo() {
 
 for (const id of ['guitar', 'sanshin']) $(id).onclick = () => { cancelLoad(); instrument = id;sessionId=sessionTitle='';tunerIndex=0;midiModel=null; practiceStyle='melody'; lessonId = 'open'; $('loop-enabled').checked = false; setup();renderLearning(instrument);if(view==='practice')selectSong(SONGS[instrument][0].id); };
 $('view-tuner').onclick=()=>{singalong.close();cancelLoad();view='tuner';$('loop-enabled').checked=false;setup();};
-$('view-practice').onclick=()=>{singalong.close();cancelLoad();const previous=practiceSnapshot;view='practice';setup();if(!midiModel)restorePractice(previous);};
+$('view-practice').onclick=()=>{singalong.close();cancelLoad();const previous=practiceSnapshot;view='practice';setup();if(!midiModel)restorePractice(previous);focusPractice();};
 $('view-singalong').onclick=()=>instrument==='sanshin'?sanshinGuide.open('jidai'):singalong.open();$('singalong-song-start').onclick=()=>singalong.open('tokiyo');
 $('focus-mode').onclick=()=>setFocus(!focused);
 $('open-fretboard').onclick=()=>{setFocus(false);$('fret-details').open=true;$('fret-details').scrollIntoView({block:'center',behavior:'smooth'});};
@@ -709,8 +709,8 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
   navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' }).then(registration => {
     const ready = async () => {
       try {
-        const cache = await caches.open('music-practice-v29');
-        const paths=['./app.mjs?v=29',...new Set(Object.values(SONGS).flat().map(song=>`./songs/${song.file}`))];
+        const cache = await caches.open('music-practice-v30');
+        const paths=['./app.mjs?v=30',...new Set(Object.values(SONGS).flat().map(song=>`./songs/${song.file}`))];
         if((await Promise.all(paths.map(path=>cache.match(new URL(path,location.href).href)))).every(Boolean))$('offline-state').textContent = 'オフライン準備OK';
       } catch { $('offline-state').textContent = 'オンラインで利用できます'; }
     };

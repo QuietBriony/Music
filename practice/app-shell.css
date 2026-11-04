@@ -40,3 +40,56 @@ body.singalong-mode .topbar{display:flex}.song-browser{width:min(700px,calc(100v
 .sing-diagram-only .sing-performance-controls{width:100%;order:1}.sing-diagram-only #sing-lyrics-host{order:2}
 @media(min-width:1000px) and (orientation:landscape){.sing-workspace{grid-template-areas:'video shape lyrics' 'video shape actions';grid-template-rows:auto 1fr}.sing-workspace>.sing-performance-controls{align-self:start}}
 @media(max-width:650px){.sing-workspace{grid-template-areas:'shape' 'actions' 'lyrics' 'video'}}
+
+/* Clear hierarchy: song, position, current fingering, then optional settings. */
+:root{--accent:#86633e;--muted:#606c62}
+.view-switch button{border-radius:12px}.instrument-switch{border-radius:14px}.instrument-switch button{border-radius:10px}
+.topbar #browse-songs{background:#fffdf8;border-color:#c6d1c2}.topbar a{font-weight:600}
+button:hover:not(:disabled){border-color:#799b7e}button:active:not(:disabled){transform:translateY(1px)}
+:is(.session-toolbar,.sing-performance-controls,.sing-load-area,.easy-song-actions) button.primary{background:#285d47;color:#fff;border-color:#285d47}
+.sing-progress-summary{display:flex;gap:12px;align-items:center;margin:10px 0 14px;font-size:.75rem;color:var(--muted)}
+#sing-song-progress{flex:1;width:100%;height:5px;appearance:none;border:0;border-radius:9px;overflow:hidden;background:#dde5d9;margin:0}
+#sing-song-progress::-webkit-progress-bar{background:#dde5d9}#sing-song-progress::-webkit-progress-value{background:#447d5d;border-radius:9px}#sing-song-progress::-moz-progress-bar{background:#447d5d;border-radius:9px}#sing-progress{white-space:nowrap;font-variant-numeric:tabular-nums}
+.sing-settings{border:1px solid var(--line);border-radius:12px;background:#fffdf8;margin:10px 0;padding:0 14px}.sing-settings>summary{min-height:44px;padding:12px 0;font-size:.8rem;cursor:pointer;font-weight:600}
+#sing-guide-quality{float:right;font-size:.7rem;color:#5d6e5c;font-weight:400;margin-left:8px}.sing-settings .sing-layout-controls{margin:4px 0 14px;gap:12px}.sing-settings .song-support{margin:10px 0 14px}
+.sing-follow-controls{font-size:.8rem;margin:12px 0}.sing-follow-controls>span{font-size:.7rem}
+.sing-shape-card{background:#fffdf8;border-color:#bdcdbb;padding:18px;gap:8px 12px;box-shadow:0 5px 20px #29413208}
+.sing-target-row>div:first-child>span{display:inline-block;color:#285d47;font-size:.72rem;background:#edf3e9;border-radius:6px;padding:4px 7px}.sing-target-row>div:first-child>strong{font-size:3.4rem;letter-spacing:-.045em;line-height:1.25;margin-top:6px}
+.sing-target-row .sing-next{display:grid;grid-template-columns:minmax(24px,1fr) 68px;grid-template-areas:'label diagram' 'name diagram' 'count diagram';align-items:center;column-gap:6px;border-top:1px solid var(--line);padding-top:9px;margin-top:9px;font-size:.65rem}
+.sing-next>strong{grid-area:name}.sing-next-label{grid-area:label}#sing-next-countdown{grid-area:count}#sing-next-countdown:empty{display:none}#sing-next-diagram{grid-area:diagram;width:68px}#sing-next-diagram svg{width:68px;height:64px}
+body[data-guitar-guide=names] #sing-next-diagram{display:none}body[data-guitar-guide=names] .sing-target-row .sing-next{grid-template-columns:1fr}
+#sing-finger-details{border:0;border-top:1px solid var(--line);padding-top:12px;margin:4px 0}#sing-finger-details summary{font-weight:650;font-size:.8rem}#sing-finger-details .chord-finger-list{gap:6px;margin:12px 0}.chord-finger-list b{width:24px;height:24px;flex-basis:24px}
+.sing-legend{font-size:.65rem;line-height:1.6;margin:0;color:#69766b}#sing-section{font-size:.75rem;color:var(--muted);margin:4px 0}
+.sing-performance-controls{border:1px solid #cbd6c5;box-shadow:none;border-radius:14px}.sing-performance-controls>div:first-child{display:grid;grid-template-columns:1fr 1.2fr auto}.sing-performance-controls>div:nth-child(2){margin-top:10px}.sing-performance-controls #sing-mic{flex:1;min-height:48px;border-color:#8fa88e;background:#f0f5ed}.sing-performance-controls #sing-status{margin-top:10px;font-size:.75rem}
+body.focused .session-heading{padding:12px 0;align-items:center;gap:12px}body.focused .session-heading h2{font-size:1rem;line-height:1.6}body.focused .session-heading button{font-size:.75rem;min-height:44px;white-space:normal;flex-shrink:0;max-width:140px;background:#fffdf8}
+body.focused #practice-stage>.listening,body.focused #practice-stage>#chord-panel{border-radius:15px}body.focused #practice-stage>#chord-panel{background:#fffdf8;border-color:#bdcdbb}
+.song-result{border-radius:12px}.song-result:hover{background:#edf3e9}.song-browser h2{letter-spacing:-.025em}
+@media(max-width:650px){
+ .sing-course-label{font-size:.72rem;margin-top:12px;gap:5px}.sing-course-label select{min-height:48px;background:#fffdf8;border-color:#bccdbb;border-radius:12px;font-weight:650}
+ .sing-settings{margin:8px 0}.sing-progress-summary{margin:8px 0 12px}.sing-follow-controls{margin:9px 0;gap:5px}.sing-follow-controls>span{display:none}
+ .sing-shape-card{grid-template-columns:minmax(0,1fr) minmax(130px,.95fr);padding:16px;gap:6px 12px}.sing-shape-card #sing-diagram svg{width:100%;max-width:170px}
+ #sing-finger-details .chord-finger-list{gap:5px;margin:10px 0}.sing-performance-controls button{font-size:.8rem}.sing-performance-controls>div:first-child{gap:6px}.sing-performance-controls>div:first-child button{padding:10px 6px}
+ .sing-capo-label{display:flex;flex-direction:row;align-items:center;justify-content:space-between;font-size:.75rem;gap:10px}.sing-capo-label select{min-height:40px;max-width:115px}#sing-capo-note{font-size:.65rem;margin:3px 0}
+ body.focused .session-heading{padding:8px 0}body.focused .session-heading h2{font-size:.9rem}body.focused .session-heading button{max-width:118px;font-size:.72rem}
+}
+@media(max-width:360px){.sing-shape-card{padding:13px;gap:6px 8px;grid-template-columns:minmax(0,1fr) 126px}.sing-target-row .sing-next{grid-template-columns:minmax(20px,1fr) 56px}#sing-next-diagram,#sing-next-diagram svg{width:56px}.sing-target-row>div:first-child>strong{font-size:2.9rem}.sing-settings{padding-inline:10px}#sing-guide-quality{font-size:.65rem}.sing-performance-controls button{font-size:.75rem}}
+.practice-settings{border-top:1px solid var(--line);margin-top:10px}.practice-settings>summary{font-size:.8rem;min-height:44px;padding:12px 0;cursor:pointer;font-weight:600}body[data-view=tuner] .practice-settings{display:none}
+body.focused .guitar-reading-help{display:none}
+@media(max-width:650px){
+ body.focused[data-view=practice][data-instrument=guitar][data-chords=true] #practice-stage{grid-template-columns:minmax(0,1fr);grid-template-areas:'chord' 'listening' 'toolbar' 'lyrics' 'score'}
+ body.focused #practice-stage>.session-toolbar{position:static;padding:12px;border-radius:14px;box-shadow:none}
+ body.focused #practice-stage #chord-panel .chord-example{display:grid!important;grid-template-columns:130px minmax(0,1fr);gap:12px;align-items:start}
+ body.focused #chord-panel .guitar-guide-choice{margin:2px 0 12px;font-size:.7rem;gap:8px}body.focused #chord-panel .guitar-guide-choice select{max-width:190px;flex:1;min-width:0}
+ body.focused #native-chord-guide{min-width:0}body.focused #native-fingers li{font-size:.8rem!important}body.focused #native-strum-guide{font-size:.75rem!important}body.focused #practice-stage #chord-panel #chord-diagram svg{width:130px;height:120px}
+ body.focused[data-chords=true][data-instrument=guitar] #practice-stage>.listening{display:grid;grid-template-columns:62px minmax(0,1fr);gap:4px 12px;padding:12px 16px}
+ body.focused[data-chords=true][data-instrument=guitar] .listening :is(.card-top,.position,.tuner,#practice-input-status){display:none}
+ body.focused[data-chords=true][data-instrument=guitar] .listening .target{grid-column:1;grid-row:1/4;align-self:center;height:auto;justify-content:start;margin:0}
+ body.focused[data-chords=true][data-instrument=guitar] #practice-stage .listening .target>span:first-child{font-size:2rem;letter-spacing:-.06em}body.focused[data-chords=true][data-instrument=guitar] .listening .target>span:last-child{display:none}
+ body.focused[data-chords=true][data-instrument=guitar] .listening .heard{grid-column:2;grid-row:1;margin:0}body.focused[data-chords=true][data-instrument=guitar] .listening #feedback{grid-column:2;grid-row:2;margin:0;min-height:0;font-size:.75rem}
+ body.focused[data-chords=true][data-instrument=guitar] .listening .level{grid-column:2;grid-row:3;margin:5px 0 0}
+ body.focused[data-guitar-guide=names] #chord-panel .chord-example{grid-template-columns:1fr!important}
+}
+@media(max-width:360px){body.focused #practice-stage #chord-panel .chord-example{grid-template-columns:110px minmax(0,1fr);gap:8px}body.focused #practice-stage #chord-panel #chord-diagram svg{width:110px;height:110px}body.focused #native-fingers li{font-size:.75rem!important}}
+@media(max-width:650px){body.focused[data-view=practice][data-diagram=false] #practice-stage{grid-template-columns:minmax(0,1fr);grid-template-areas:'listening' 'toolbar' 'lyrics' 'score'}body.focused[data-diagram=false] #practice-input-status{grid-column:1/-1}}
+.sing-shape-card{grid-template-areas:'target diagram' 'section diagram' 'details details' 'capo capo'}.sing-capo-badge{grid-area:capo;margin:0;padding-top:8px;border-top:1px solid var(--line);font-size:.72rem;color:#5e6b5d}.sing-settings .sing-legend{margin:14px 0;font-size:.75rem}.sing-settings .sing-capo-label{margin:12px 0}.sing-settings #sing-capo-note{font-size:.75rem;margin:12px 0}
+@media(max-width:650px){.sing-shape-card{padding-block:14px}#sing-finger-details .chord-finger-list{margin:8px 0}.sing-settings .sing-capo-label{justify-content:flex-start}}
