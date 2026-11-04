@@ -1557,6 +1557,12 @@ async function cloudPull() {
     const response = await fetch("api/lyric-drafts?limit=500", { headers: syncHeaders(), cache: "no-store" });
     if (!response.ok) throw new Error(response.status === 401 ? "キーを確認してください" : "通信できませんでした");
     const { drafts } = await response.json(); if (!Array.isArray(drafts)) throw new Error("読み込み形式を確認してください");
+    // A legacy browser may have saved a newer local revision without syncing it.
+    // Keep it pending instead of replacing it with an older cloud record.
+    for (const local of state.library) {
+      const remote = drafts.find(item => item.id === local.id);
+      if (remote && Date.parse(local.updatedAt) > Date.parse(remote.updatedAt)) state.pending[local.id] = true;
+    }
     state.library = NB.mergeCloud(state.library, drafts, state.pending);
     for (const item of drafts) if (!state.pending[item.id] && !(state.working?.id === item.id && state.dirty) && !(state.resume?.item?.id === item.id)) state.bases[item.id] = item.updatedAt;
     state.cloudLoaded = true; state.cloudStatus = "connected";

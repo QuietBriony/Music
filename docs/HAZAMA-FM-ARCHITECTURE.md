@@ -1,5 +1,9 @@
 # Hazama FM — システム全体像
 
+## 2026-11-04 — Lyric Lab legacy draft visibility / hazama-fm-v445
+
+Production read verification found legacy records with an empty final string and a nonempty draft. The reader now falls back to draft, then seed, without generating or changing stored text. Regression fixtures cover both cases and protect a newer offline legacy revision from an older cloud response. All private cloud records remain unchanged. Lyric assets use notebook-2; authentication and database schema are unchanged.
+
 ## 2026-11-04 — Lyric Lab notebook / hazama-fm-v444
 
 Lyric Lab now opens on the poem shelf, with a separate reading view, personal

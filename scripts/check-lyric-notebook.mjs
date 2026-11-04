@@ -26,6 +26,8 @@ function harness(storage = new Map()) {
   return { elements, context, storage, run: code => vm.runInContext(code, context) };
 }
 const h = harness();
+assert.equal(h.run("NB.body({result:{final:'',draft:'legacy draft'},seed:'legacy seed'})"), "legacy draft");
+assert.equal(h.run("NB.body({result:{final:'',draft:''},seed:'legacy seed'})"), "legacy seed");
 await h.run("importLibraryJson({text: async () => JSON.stringify({drafts:[{id:'bad',result:{notes:'broken'}}]})})");
 assert.equal(h.run("state.library.length"), 0, "invalid backup must not mutate the library");
 const set = (id, value) => { h.elements[id].value = value; };
@@ -87,6 +89,14 @@ race.context.fetch = async () => {
 await race.run("saveFinal()");
 assert.equal(race.run("Object.keys(state.pending).length"), 1);
 assert.match(race.elements["ll-status"].textContent, /新しい変更/, "an older response must not claim a new edit was synced");
+
+const legacyStorage = new Map([["music-stack.lyric-lab.library.v1", JSON.stringify([{id:"offline-legacy",title:"Test",result:{final:"local revision"},updatedAt:"2026-02-01T00:00:00.000Z"}])]]);
+const legacy = harness(legacyStorage);
+legacy.elements["ll-sync-token-main"].value = "fixture-token";
+legacy.context.fetch = async () => ({ok:true,json:async()=>({drafts:[{id:"offline-legacy",result:{final:"older cloud"},updatedAt:"2026-01-01T00:00:00.000Z"}]})});
+await legacy.run("cloudPull()");
+assert.equal(legacy.run("state.library[0].result.final"), "local revision", "migration must not discard newer offline work");
+assert.equal(legacy.run("state.pending['offline-legacy']"), true);
 
 // Exercise the actual upsert SQL against SQLite, including stale devices.
 const api = await import(`data:text/javascript;base64,${Buffer.from(readFileSync("functions/api/lyric-drafts.js", "utf8")).toString("base64")}`);

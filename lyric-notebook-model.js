@@ -1,7 +1,7 @@
 /* Private notebook data helpers. No poems or credentials are bundled here. */
 (function (root) {
   const clone = value => JSON.parse(JSON.stringify(value));
-  const body = item => item?.result?.final ?? item?.result?.draft ?? item?.seed ?? "";
+  const body = item => item?.result?.final || item?.result?.draft || item?.seed || "";
   function checkpoint(previous, edited, now) {
     const next = clone(edited);
     const result = next.result ||= {};
