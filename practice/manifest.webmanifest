@@ -1,6 +1,6 @@
 {
   "id": "./index.html", "name": "一音ずつ — ギターと三線", "short_name": "一音ずつ",
-  "description": "TAB譜と工工四で、一音ずつ自分のペースで練習。",
+  "description": "コード図と指ガイド、工工四で練習。調弦から好きな曲の弾き語りまで。",
   "lang": "ja", "start_url": "./index.html", "scope": "./", "display": "standalone",
   "background_color": "#f6f3ec", "theme_color": "#f6f3ec",
   "icons": [
