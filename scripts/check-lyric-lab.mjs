@@ -26,8 +26,8 @@ for (const id of [
   assert.ok(ids.includes(id), `Lyric Lab should expose #${id}`);
 }
 
-for (const view of ["draft", "library", "final", "hook", "suno", "map"]) {
-  assert.match(html, new RegExp(`data-view="${view}"`), `Lyric Lab should expose the ${view} view`);
+for (const id of ["ll-shelf", "ll-reading", "ll-poem", "ll-note-form", "ll-note", "ll-history-list", "ll-editor", "ll-saved-state"]) {
+  assert.ok(ids.includes(id), `Notebook should expose ${id}`);
 }
 
 assert.match(client, /function startNewDraft\(\)/, "Shelf should start a new lyric workspace");
@@ -40,11 +40,9 @@ assert.match(client, /productionSource:\s*\$\("ll-production-source"\)/, "Shelf 
 assert.match(client, /productionTarget:\s*\$\("ll-production-target"\)/, "Shelf snapshots should persist the production target");
 assert.match(client, /function normalizedSourceUrl\(/, "Voice memo links should be normalized before rendering");
 assert.match(client, /currentControls\.direction === "hitotobi"/, "AI handoff should preserve direction-specific ending rules");
-assert.match(css, /\.ll-library-source-link/, "Voice memo shelf links should be styled");
 assert.match(css, /\.ll-source-link\[hidden\]\s*{\s*display:\s*none;/, "Empty voice memo links should stay hidden");
-assert.match(css, /\.ll-output\[data-view="final"\] \.ll-output-tools/, "Mobile final actions should have a stable layout");
 assert.match(css, /\.ll-production-grid/, "Production controls should have a stable grid");
-assert.match(css, /\.ll-library-tag\[data-kind="production"\]/, "Shelf routes should be visually distinct");
+assert.match(css, /white-space:pre-wrap/, "Poem line breaks should remain visible");
 
 assert.match(api, /constantTimeEqual/, "Cloud API should compare sync tokens without early exit");
 assert.match(api, /X-Lyric-Lab-Token/i, "Cloud API should require the Lyric Lab token header");

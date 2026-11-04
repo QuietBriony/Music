@@ -287,11 +287,11 @@
     {
       "id": "lyric-lab", "repo": "Music", "group": "planning", "status": "implemented",
       "title": "Lyric Lab", "href": "lyric-lab.html", "action": "開く",
-      "public_summary": "歌詞・曲のアイデア・制作指示を一曲ずつ残す。",
-      "purpose": "歌詞・曲の設計・制作指示を一曲ずつ整理する作品棚。",
-      "first_step": "既存作品を開く → 制作先とBPM等を確認 → 制作パケットをコピー。",
-      "outputs": "歌詞付き制作指示／歌詞を含まないScene metadata。",
-      "boundary": "ACE-Step等へ自動送信しない。端末間の作品棚同期は認証済みCloudflare/D1環境が別途必要。GitHub Pagesの入口だけでは保証されない。",
+      "public_summary": "詩を読む。ひとことを重ね、自分の言葉と音に育てる。",
+      "purpose": "詩・断片・自分の追記を残すノート。本文の原文と推敲履歴、声と音のメモを一緒に持つ。",
+      "first_step": "一覧から詩を開く → 読む → 「ひとこと足す」で追記。新しく書くなら「＋ 言葉を置く」。",
+      "outputs": "詩・追記・推敲履歴／音のメモと録音リンク／必要なときだけAI相談文・制作メモ。",
+      "boundary": "このブラウザに保存。既存Cloudflare版では同期キーで非公開D1へ同期。GitHub Pagesは端末保存のみ。録音やAIへの自動送信はしない。",
       "sources": [{ "repo": "Music", "path": "lyric-lab.js" }, { "repo": "Music", "path": "docs/LYRIC-LAB-USAGE.md" }, { "repo": "Music", "path": "functions/api/lyric-drafts.js" }]
     },
     {

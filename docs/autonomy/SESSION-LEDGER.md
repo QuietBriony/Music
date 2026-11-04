@@ -1,5 +1,27 @@
 # Session Ledger — music-stack
 
+## 2026-11-04 — Lyric Lab notebook / hazama-fm-v444
+
+Pre-commit gate: stack-check PASS 62 / FAIL 0 / SKIP 0 / 0 BAD; audit 0 BAD /
+0 WARN. Final committed HEAD is checked again before publication. Release receipts,
+private-data comparison and browser screenshots stay outside the public repository.
+
+Lyric Lab now opens on the poem shelf, with a separate reading view, personal
+notes, explicit revision saving, original/history disclosure and optional sound
+notes/links. Production controls are deferred. Private poems remain in existing
+authenticated D1/local storage; no private text or media is bundled in Git.
+The v2 local notebook migrates legacy data without generation on startup,
+retains unknown metadata, snapshots prior text and resumes unsaved work.
+Writes send only pending records with an expected cloud timestamp. Conflicts
+retain the local copy and offer a separate draft; auth and DB binding are unchanged.
+Validation includes notebook preservation/resume/quota tests, actual SQLite CAS
+tests, Cloudflare/PWA contract checks and the required final-HEAD stack-check.
+Browser verification covers the 390px shelf/read/note/revision flow; an actual
+iPhone device is not available. No audio runtime or external-device controls changed.
+Rollback: redeploy the previous production commit/export; retain D1 and v2 local
+notebook data. Do not overwrite private records during rollback.
+
+
 2026-11-04 練習PWA v29：スマートフォンの調弦・基礎練習・弾き語りを下部ナビに揃え、初期画面から調弦を開始できる配置へ。初歩の説明・調弦の手順・参考教材を開閉式にし、指ガイドの文字を拡大。ギター11曲・三線8曲を曲名／歌手名で検索でき、選択だけでは音声・動画・マイクを開始しない。弾き語りの操作をコード図の直後に並べ、指説明に重なる固定パネルを解消。感度と検出音は開閉式。教材アンカーを開いた後のオフライン再読込も、fragmentを除いた同一cacheから復帰。専用cache v29、保存キーと曲内容は維持。実iPad／iPhone・実ギターの感触は未確認。
 
 2026-10-31 練習PWA v28：ギターのコード練習を和音ストローク優先へ移行し、一弦ずつは明示選択で保持。8192点窓・短い安定待ち・短区間の音量立上りと新しい構成音で次へ進み、直前のコードで説明できる余韻だけを許容する。必要な音の欠落・違う和音・同じ余韻の重複・ゲイン変更による誤進行を防ぐ。コードの図と色付き指番号・弦／フレット・弾く弦を初期表示し、全11曲の曲順にも指図を併記。指ガイド／図のみ／コード名を端末保存。難しい和音は同じ構成音の簡易形を優先し、コードのお手本はその形をまとめて鳴らす。動画未読込のマイク練習は自分のペースで進行。三線の内蔵工工四と全体譜は常設の指図を隠し、文字・歌詞を中心に表示。手動の指位置参照と調弦は維持。音声は端末内解析のみ、マイク・動画・お手本は手動開始。専用cache v28。実iPad／実ギターの感触と判定精度は未確認。

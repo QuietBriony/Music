@@ -98,3 +98,20 @@ The D1 shelf is authenticated private data, not a PWA asset:
 
 Run `node scripts/check-cloudflare-pwa-contract.mjs` after changing the API,
 Service Worker routing, authentication, or cache cleanup behavior.
+
+## Notebook revisions and safe updates (2026-11-04)
+
+No schema or authentication migration is required. `result_json` now also holds
+`notes`, `original`, `revisions`, `soundNote` and `audioUrl`. Unknown settings and
+result fields survive editing; production notes are never regenerated on read.
+The atomic local bundle is `music-stack.lyric-lab.notebook.v2`; v1 library/token
+keys are read for migration. Backups include the unsaved workspace, never the token.
+
+For an update, send each draft with `baseUpdatedAt` equal to its last cloud
+`updatedAt`. New records use `baseUpdatedAt: null`. SQLite conditionally updates
+only the matching revision, returning 409 with `saved` and `conflicts` IDs otherwise.
+Requests without a base can insert new IDs but cannot overwrite existing records;
+older browser clients must refresh before saving existing works. The notebook
+posts one pending draft at a time and retains local data on failure/conflict.
+The 256 KB per-draft JSON limit remains; a limit failure is reported, not silently
+trimmed. Keep a backup and split large notebooks into separate works if needed.

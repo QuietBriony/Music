@@ -1252,7 +1252,7 @@ function buildAiHandoffPacket() {
   const currentControls = controls();
   const currentLyric = state.activeView === "final"
     ? $("ll-view-final").value.trim()
-    : (state.result?.draft || state.result?.final || "").trim();
+    : (state.result?.final || state.result?.draft || "").trim();
   const scene = state.result?.scene || null;
   const direction = directionProfile(currentControls.direction).label;
   const taste = tasteProfile(currentControls.taste).label;
@@ -1295,1072 +1295,382 @@ function buildAiHandoffPacket() {
     scene ? JSON.stringify(scene, null, 2) : "none",
     "",
     "current_lyric:",
-    currentLyric || "none"
+    currentLyric || "none",
+    "",
+    "本人の追記（結論にまとめず、引っかかりや余白も残す）:",
+    ...(state.result?.notes || []).map(note => note.text),
+    "",
+    "声と音のメモ:",
+    state.result?.soundNote || "未定"
   ].join("\n");
 }
 
-function generate() {
-  const text = $("ll-seed").value;
-  const lines = splitSeed(text);
-  const parts = classify(lines);
-  const currentControls = controls();
-  const built = buildDraft(parts, currentControls);
-  const scene = buildSceneMetadata(parts, built.title, currentControls);
-  const production = buildProductionPacket(built.title, built.draft, currentControls, scene);
-  const map = buildMap(parts, built.title, currentControls.sourceUrl, currentControls.direction, currentControls.taste, currentControls.dialect, currentControls.worldview, currentControls.distill, scene);
-  const previousFinal = state.currentId ? state.result?.final : "";
-  const previousStatus = state.currentId ? state.result?.status : "";
-  state.result = {
-    ...built,
-    production,
-    map,
-    scene,
-    parts,
-    final: previousFinal || built.draft,
-    status: previousStatus || "working"
-  };
-  render();
-  save();
+const NOTEBOOK_KEY = "music-stack.lyric-lab.notebook.v2";
+const NB = LyricNotebook;
+Object.assign(state, { pending: {}, bases: {}, conflicts: {}, working: null, dirty: false, editing: false, busy: false, storageFailed: false });
+const fieldNames = { productionSource: "production-source", productionTarget: "production-target" };
+const defaults = { productionSource: "notes", productionTarget: "ace-step", meter: "4/4", direction: "hitotobi", taste: "era-rap", dialect: "none", worldview: "gap", form: "full", voice: "collective", heat: "58", weird: "64" };
+const uid = () => `draft-${crypto.randomUUID()}`;
+function nowFor(item) {
+  return new Date(Math.max(Date.now(), (Date.parse(item?.updatedAt) || 0) + 1)).toISOString();
 }
-
-function render() {
-  const result = state.result;
-  const empty = "素材を貼って「下書きを作る」。";
-  $("ll-view-draft").textContent = result?.draft || empty;
-  $("ll-view-final").value = result?.final || result?.draft || "";
-  $("ll-view-hook").textContent = result?.hook || empty;
-  $("ll-view-suno").textContent = result?.production || result?.suno || empty;
-  $("ll-view-map").textContent = result?.map || empty;
-  renderChips("ll-hook-cuts", result?.parts?.hooks || [], "hook");
-  renderChips("ll-mantras", result?.parts?.mantras || [], "mantra");
-  renderChips("ll-images", result?.parts?.images || [], "image");
-  renderChips("ll-distill-anchors", distillProfile($("ll-distill").value).anchors || [], "distill");
-  renderProductionContext();
-  renderLibrary();
-  $("ll-status").textContent = result ? `${result.title} の下書きを作りました` : "";
+function status(message) { $("ll-status").textContent = message; }
+function syncTokenValue() { return $("ll-sync-token-main").value.trim(); }
+function syncHeaders() { return { "Content-Type": "application/json", "X-Lyric-Lab-Token": syncTokenValue() }; }
+function workspace() {
+  if (!state.working) return state.resume || null;
+  return { item: state.working, editing: state.editing, dirty: state.dirty, title: $("ll-title").value,
+    text: $("ll-view-final").value, note: $("ll-note").value, sound: $("ll-sound-note").value,
+    audio: $("ll-audio-url").value, seed: $("ll-seed").value, settings: controls() };
 }
-
-function renderChips(id, list, kind) {
-  const root = $(id);
-  root.innerHTML = "";
-  const items = list.length ? list : ["none"];
-  for (const item of items.slice(0, 18)) {
-    const span = document.createElement("span");
-    span.className = "ll-chip";
-    span.dataset.kind = kind;
-    span.textContent = item;
-    root.appendChild(span);
-  }
-}
-
-function activeText() {
-  if (state.activeView === "library") return librarySummaryText();
-  if (!state.result) return "";
-  if (state.activeView === "final") return $("ll-view-final").value;
-  return {
-    draft: state.result.draft,
-    final: state.result.final,
-    hook: state.result.hook,
-    suno: state.result.production || state.result.suno,
-    map: state.result.map
-  }[state.activeView] || state.result.draft;
-}
-
-async function copyText(text, label) {
-  if (!text) return;
+function persist() {
   try {
-    await navigator.clipboard.writeText(text);
-    $("ll-status").textContent = `${label}をコピーしました`;
+    localStorage.setItem(NOTEBOOK_KEY, JSON.stringify({ library: state.library, pending: state.pending, bases: state.bases, conflicts: state.conflicts, workspace: workspace() }));
+    state.storageFailed = false;
+    return true;
   } catch (error) {
-    $("ll-status").textContent = "コピーできませんでした";
+    state.storageFailed = true;
+    status("この端末に保存できませんでした。画面を閉じず、バックアップを取ってください。");
+    renderSaved();
+    return false;
   }
 }
-
-async function copyAiHandoff() {
-  if (!ensureResult()) {
-    $("ll-status").textContent = "AIへ渡す下書きがありません";
-    return;
-  }
-  if (state.activeView === "final") {
-    state.result.final = $("ll-view-final").value.trim() || state.result.draft;
-    updateProductionFromFinal();
-  }
-  await copyText(buildAiHandoffPacket(), "AI用データ");
-}
-
-function appendUniqueLines(textarea, lines) {
-  const current = splitSeed(textarea.value);
-  const next = unique([...current, ...lines]);
-  textarea.value = next.join("\n");
-}
-
-function distillToSeed() {
-  const profile = distillProfile($("ll-distill").value);
-  const additions = unique([
-    ...profile.anchors,
-    ...profile.sections.terms,
-    ...profile.sections.presets
-  ]).slice(0, 24);
-  if (!additions.length) {
-    $("ll-status").textContent = "思想蒸留に拾える言葉がありません";
-    return;
-  }
-  appendUniqueLines($("ll-seed"), additions);
-  state.currentId = null;
-  generate();
-  save();
-  $("ll-status").textContent = `${additions.length}個の言葉をネタへ移しました`;
-}
-
-function ensureResult() {
-  if (!state.result && hasDraftInput()) generate();
-  return Boolean(state.result);
-}
-
-function updateProductionFromFinal() {
-  if (!state.result) return;
-  const currentControls = controls();
-  const final = state.result.final || state.result.draft || "";
-  if (state.result.parts) {
-    state.result.scene = buildSceneMetadata(state.result.parts, state.result.title, currentControls);
-    state.result.map = buildMap(
-      state.result.parts,
-      state.result.title,
-      currentControls.sourceUrl,
-      currentControls.direction,
-      currentControls.taste,
-      currentControls.dialect,
-      currentControls.worldview,
-      currentControls.distill,
-      state.result.scene
-    );
-  }
-  state.result.production = buildProductionPacket(state.result.title, final, currentControls, state.result.scene);
-}
-
-function draftToFinal() {
-  if (!ensureResult()) {
-    $("ll-status").textContent = "磨く下書きがありません";
-    return;
-  }
-  state.result.final = state.result.draft;
-  state.result.status = "working";
-  updateProductionFromFinal();
-  setActiveView("final");
-  render();
-  saveDraftToLibrary();
-  $("ll-status").textContent = "下書きを編集画面へ移しました";
-}
-
-async function saveFinal(status = "working") {
-  if (!ensureResult()) {
-    $("ll-status").textContent = "保存する歌詞がありません";
-    return;
-  }
-  state.result.final = $("ll-view-final").value.trim() || state.result.draft;
-  state.result.status = status;
-  updateProductionFromFinal();
-  const item = saveDraftToLibrary();
-  render();
-  setActiveView("final");
-  $("ll-status").textContent = status === "fixed" ? `${state.result.title} を完成にしました` : "歌詞を保存しました";
-  if (item && syncTokenValue()) {
-    const message = status === "fixed"
-      ? `${item.title} を完成版としてクラウド保存しました`
-      : `${item.title} をクラウドにも保存しました`;
-    await cloudPush({ saveCurrent: false, keepView: true, successMessage: message });
-  }
-}
-
-function setActiveView(view) {
-  state.activeView = view;
-  const output = document.querySelector(".ll-output");
-  if (output) output.dataset.view = view;
-  for (const button of document.querySelectorAll(".ll-tab")) {
-    const active = button.dataset.view === view;
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-selected", String(active));
-  }
-  for (const pre of document.querySelectorAll(".ll-view")) {
-    pre.classList.toggle("is-active", pre.id === `ll-view-${view}`);
-  }
-  for (const tool of document.querySelectorAll(".ll-output-tools [data-views]")) {
-    tool.hidden = !tool.dataset.views.split(/\s+/).includes(view);
-  }
-  const toolbar = document.querySelector(".ll-output-toolbar");
-  if (toolbar) toolbar.hidden = view === "library";
-  $("ll-output-label").textContent = view === "final"
-    ? "歌詞を磨く"
-    : view === "suno"
-      ? `制作 / ${productionTargetLabel($("ll-production-target").value)}`
-      : (VIEW_LABELS[view] || view);
-}
-
-function openShelf() {
-  setActiveView("library");
-  document.querySelector(".ll-output")?.scrollIntoView({ block: "start", behavior: "smooth" });
-  save();
-  if (syncTokenValue() && !state.cloudLoaded && state.cloudStatus !== "syncing") {
-    void cloudPull({ quiet: true });
-  }
-}
-
-function startNewDraft() {
-  const hasWorkspace = hasDraftInput() || Boolean(state.result);
-  if (hasWorkspace && !window.confirm("現在の入力欄を空にして、新しい歌詞を始めますか？作品棚の保存済み作品は残ります。")) {
-    return;
-  }
-  $("ll-title").value = "";
-  $("ll-source-url").value = "";
-  $("ll-production-source").value = "notes";
-  $("ll-production-target").value = "ace-step";
-  $("ll-bpm").value = "";
-  $("ll-key").value = "";
-  $("ll-duration").value = "";
-  $("ll-meter").value = "4/4";
-  $("ll-seed").value = "";
-  $("ll-distill").value = "";
-  state.reroll = 0;
-  state.currentId = null;
-  state.result = null;
-  if (location.hash === "#shelf") {
-    history.replaceState(null, "", `${location.pathname}${location.search}`);
-  }
-  setActiveView("draft");
-  render();
-  save();
-  $("ll-status").textContent = "新しい歌詞を始めます";
-  requestAnimationFrame(() => {
-    document.querySelector(".ll-source")?.scrollIntoView({ block: "start", behavior: "smooth" });
-    $("ll-title").focus();
-  });
-}
-
-function draftSnapshot(id = state.currentId) {
-  const now = new Date().toISOString();
-  const result = state.result || null;
-  return {
-    id: id || `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    title: $("ll-title").value.trim() || result?.title || "Untitled",
-    sourceUrl: $("ll-source-url").value.trim(),
-    seed: $("ll-seed").value,
-    settings: {
-      productionSource: $("ll-production-source").value,
-      productionTarget: $("ll-production-target").value,
-      bpm: $("ll-bpm").value,
-      key: $("ll-key").value.trim(),
-      duration: $("ll-duration").value,
-      meter: $("ll-meter").value,
-      direction: $("ll-direction").value,
-      taste: $("ll-taste").value,
-      dialect: $("ll-dialect").value,
-      worldview: $("ll-worldview").value,
-      distill: $("ll-distill").value,
-      form: $("ll-form").value,
-      voice: $("ll-voice").value,
-      heat: $("ll-heat").value,
-      weird: $("ll-weird").value
-    },
-    result,
-    status: result?.status || "working",
-    reroll: state.reroll,
-    activeView: state.activeView,
-    createdAt: state.library.find((item) => item.id === id)?.createdAt || now,
-    updatedAt: now
-  };
-}
-
-function saveLibrary() {
+function restoreNotebook() {
   try {
-    localStorage.setItem(LIBRARY_KEY, JSON.stringify(state.library));
-  } catch (error) {
-    $("ll-status").textContent = "作品棚へ保存できませんでした";
-  }
-}
-
-function mergeLibraryDrafts(incoming) {
-  const byId = new Map(state.library.map((item) => [item.id, item]));
-  for (const item of incoming) {
-    if (!item || typeof item !== "object") continue;
-    const id = item.id || `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const current = byId.get(id);
-    const nextUpdated = String(item.updatedAt || "");
-    const currentUpdated = String(current?.updatedAt || "");
-    if (!current || nextUpdated >= currentUpdated) byId.set(id, { ...item, id });
-  }
-  state.library = [...byId.values()].sort((a, b) =>
-    String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""))
-  );
-}
-
-function loadLibrary() {
-  try {
-    const raw = localStorage.getItem(LIBRARY_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    state.library = Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    state.library = [];
-  }
-}
-
-function hasDraftInput() {
-  return Boolean($("ll-seed").value.trim() || $("ll-source-url").value.trim() || $("ll-distill").value.trim());
-}
-
-function saveDraftToLibrary() {
-  if (!hasDraftInput()) {
-    $("ll-status").textContent = "保存する歌詞がありません";
-    return null;
-  }
-  if (!state.result) generate();
-  if (state.result && state.activeView === "final") {
-    state.result.final = $("ll-view-final").value.trim() || state.result.draft;
-    state.result.status = state.result.status === "fixed" ? "fixed" : "working";
-    updateProductionFromFinal();
-  }
-  const item = draftSnapshot();
-  const index = state.library.findIndex((entry) => entry.id === item.id);
-  if (index >= 0) state.library[index] = item;
-  else state.library.unshift(item);
-  state.currentId = item.id;
-  saveLibrary();
-  renderLibrary();
-  save();
-  $("ll-status").textContent = `${item.title} を作品棚へ保存しました`;
-  return item;
-}
-
-async function saveDraftAndSync() {
-  const item = saveDraftToLibrary();
-  if (!item || !syncTokenValue()) return;
-  await cloudPush({ saveCurrent: false, keepView: true, successMessage: `${item.title} をクラウドにも保存しました` });
-}
-
-function nextTakeTitle(baseTitle) {
-  const base = (baseTitle || "Untitled").replace(/\s+take\s+\d+$/i, "").trim() || "Untitled";
-  const count = state.library.filter((item) =>
-    (item.title || "").replace(/\s+take\s+\d+$/i, "").trim() === base
-  ).length;
-  return `${base} take ${Math.max(2, count + 1)}`;
-}
-
-function forkDraftToLibrary() {
-  if (!hasDraftInput()) {
-    $("ll-status").textContent = "別案にする素材がありません";
-    return null;
-  }
-  const title = nextTakeTitle($("ll-title").value.trim() || state.result?.title);
-  state.currentId = null;
-  state.reroll += 1;
-  $("ll-title").value = title;
-  generate();
-  const item = draftSnapshot(null);
-  state.library.unshift(item);
-  state.currentId = item.id;
-  saveLibrary();
-  renderLibrary();
-  save();
-  $("ll-status").textContent = `${item.title} を別案として保存しました`;
-  return item;
-}
-
-async function forkDraftAndSync() {
-  const item = forkDraftToLibrary();
-  if (!item || !syncTokenValue()) return;
-  await cloudPush({ saveCurrent: false, keepView: true, successMessage: `${item.title} を別案としてクラウド保存しました` });
-}
-
-function loadDraftFromLibrary(id) {
-  const item = state.library.find((entry) => entry.id === id);
-  if (!item) return;
-  const openView = item.result ? "final" : "draft";
-  state.currentId = item.id;
-  $("ll-title").value = item.title || "";
-  $("ll-source-url").value = item.sourceUrl || "";
-  $("ll-production-source").value = item.settings?.productionSource || (item.sourceUrl ? "voice-memo" : "notes");
-  $("ll-production-target").value = item.settings?.productionTarget || "ace-step";
-  $("ll-bpm").value = item.settings?.bpm || "";
-  $("ll-key").value = item.settings?.key || "";
-  $("ll-duration").value = item.settings?.duration || "";
-  $("ll-meter").value = item.settings?.meter || "4/4";
-  $("ll-seed").value = item.seed || "";
-  $("ll-direction").value = item.settings?.direction || "hitotobi";
-  $("ll-taste").value = item.settings?.taste || "era-rap";
-  $("ll-dialect").value = item.settings?.dialect || "none";
-  $("ll-worldview").value = item.settings?.worldview || "gap";
-  $("ll-distill").value = item.settings?.distill || "";
-  $("ll-form").value = item.settings?.form || "full";
-  $("ll-voice").value = item.settings?.voice || "collective";
-  $("ll-heat").value = item.settings?.heat || "58";
-  $("ll-weird").value = item.settings?.weird || "64";
-  state.reroll = Number(item.reroll || 0);
-  state.activeView = openView;
-  state.result = item.result || null;
-  if (state.result) {
-    state.result.final = state.result.final || state.result.draft || "";
-    state.result.status = state.result.status || item.status || "working";
-    updateProductionFromFinal();
-  }
-  if (!state.result && $("ll-seed").value.trim()) generate();
-  else {
-    render();
-    save();
-  }
-  setActiveView(openView);
-  requestAnimationFrame(() => {
-    document.querySelector(".ll-output")?.scrollIntoView({ block: "start", behavior: "smooth" });
-  });
-  $("ll-status").textContent = `${item.title || "Untitled"} を開きました`;
-}
-
-async function deleteDraftFromLibrary(id) {
-  const item = state.library.find((entry) => entry.id === id);
-  if (!item) return;
-  if (!window.confirm(`「${item.title || "Untitled"}」を作品棚から削除しますか？`)) return;
-  state.library = state.library.filter((entry) => entry.id !== id);
-  if (state.currentId === id) state.currentId = null;
-  saveLibrary();
-  renderLibrary();
-  save();
-  $("ll-status").textContent = `${item.title || "Untitled"} を削除しました`;
-  if (!syncTokenValue()) return;
-  try {
-    const response = await fetch(`api/lyric-drafts?id=${encodeURIComponent(id)}`, {
-      method: "DELETE",
-      headers: syncHeaders()
-    });
-    if (!response.ok) throw new Error("cloud delete failed");
-    state.cloudCount = Math.max(0, Number(state.cloudCount || 1) - 1);
-    state.cloudStatus = "connected";
-    renderCloudState();
-    $("ll-status").textContent = `${item.title || "Untitled"} をクラウドからも削除しました`;
-  } catch (error) {
-    state.cloudStatus = "error";
-    renderCloudState("削除の同期に失敗");
-    $("ll-status").textContent = "端末から削除しました。クラウド削除は再試行してください";
-  }
-}
-
-function draftStatus(item) {
-  return item?.result?.status || item?.status || "working";
-}
-
-function draftStatusLabel(item) {
-  return draftStatus(item) === "fixed" ? "完成" : "制作中";
-}
-
-function draftDirection(item) {
-  return item?.settings?.direction || "hitotobi";
-}
-
-function draftTaste(item) {
-  return item?.settings?.taste || "era-rap";
-}
-
-function draftWorldview(item) {
-  return item?.settings?.worldview || "gap";
-}
-
-function draftDistill(item) {
-  return item?.settings?.distill || "";
-}
-
-function draftProductionSource(item) {
-  return item?.settings?.productionSource || (item?.sourceUrl ? "voice-memo" : "notes");
-}
-
-function draftProductionTarget(item) {
-  return item?.settings?.productionTarget || "ace-step";
-}
-
-function draftProductionRoute(item) {
-  return `${productionSourceProfile(draftProductionSource(item)).label} → ${productionTargetLabel(draftProductionTarget(item))}`;
-}
-
-function draftKind(item) {
-  if (item?.result?.scene?.no_lyrics) return "scene";
-  if (item?.sourceUrl) return "source";
-  if (draftStatus(item) === "fixed") return "lyric";
-  return "text";
-}
-
-function collapseText(value, max = 150) {
-  const text = String(value || "")
-    .replace(/^#\s+.*$/gm, "")
-    .replace(/\[[^\]]+\]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!text) return "";
-  return charLength(text) > max ? `${text.slice(0, max).trim()}...` : text;
-}
-
-function draftPreview(item) {
-  return collapseText(
-    item?.result?.final ||
-    item?.result?.draft ||
-    item?.result?.hook ||
-    item?.seed ||
-    item?.sourceUrl ||
-    "",
-    160
-  ) || "no preview yet";
-}
-
-function draftScenePressure(item) {
-  return collapseText(item?.result?.scene?.pressure || item?.result?.map || "", 130);
-}
-
-function formatLibraryDate(value) {
-  const date = new Date(value || "");
-  if (Number.isNaN(date.getTime())) return "";
-  return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-}
-
-function draftWorldviewLabel(item) {
-  const label = worldviewProfile(draftWorldview(item)).label;
-  return draftDistill(item).trim() ? `${label} + 蒸留` : label;
-}
-
-function filteredLibrary() {
-  const query = state.librarySearch.trim().toLowerCase();
-  const currentDirection = $("ll-direction").value;
-  return state.library.filter((item) => {
-    const status = draftStatus(item);
-    const direction = draftDirection(item);
-    if (state.libraryFilter === "current" && direction !== currentDirection) return false;
-    if (state.libraryFilter === "scene" && draftKind(item) !== "scene") return false;
-    if (state.libraryFilter === "fixed" && status !== "fixed") return false;
-    if (state.libraryFilter === "working" && status === "fixed") return false;
-    if (state.libraryFilter === "memo" && !item.sourceUrl) return false;
-    if (!query) return true;
-    const haystack = [
-      item.title,
-      item.seed,
-      item.sourceUrl,
-      draftDistill(item),
-      directionProfile(direction).label,
-      tasteProfile(draftTaste(item)).label,
-      draftWorldviewLabel(item),
-      draftKind(item),
-      item.result?.scene?.pressure,
-      item.result?.scene?.scene_id,
-      item.settings?.dialect,
-      draftProductionRoute(item),
-      item.settings?.bpm,
-      item.settings?.key,
-      item.settings?.duration,
-      item.settings?.meter,
-      status
-    ].join(" ").toLowerCase();
-    return haystack.includes(query);
-  });
-}
-
-function librarySummaryText() {
-  return filteredLibrary()
-    .map((item) => {
-      const label = directionProfile(draftDirection(item)).label;
-      const taste = tasteProfile(draftTaste(item)).label;
-      const worldview = draftWorldviewLabel(item);
-      return `- ${item.title || "Untitled"} [${draftStatus(item)} / ${label} / ${taste} / ${worldview} / ${draftProductionRoute(item)} / ${draftKind(item)}]`;
-    })
-    .join("\n");
-}
-
-function syncLibraryControls() {
-  for (const id of ["ll-library-search", "ll-library-search-main"]) {
-    const input = $(id);
-    if (input && input.value !== state.librarySearch) input.value = state.librarySearch;
-  }
-  for (const id of ["ll-library-filter", "ll-library-filter-main"]) {
-    const select = $(id);
-    if (select && select.value !== state.libraryFilter) select.value = state.libraryFilter;
-  }
-}
-
-function renderLibraryInto(root, items, limit = 24) {
-  if (!root) return;
-  const shelf = root.id === "ll-library-main";
-  root.innerHTML = "";
-  if (!items.length) {
-    const empty = document.createElement("div");
-    empty.className = "ll-library-empty";
-    empty.textContent = state.library.length ? "該当する作品はありません" : "作品はまだありません";
-    root.appendChild(empty);
-    return;
-  }
-  for (const item of items.slice(0, limit)) {
-    const row = document.createElement("div");
-    row.className = "ll-library-item";
-    if (shelf) row.classList.add("ll-library-card");
-    if (item.id === state.currentId) row.dataset.active = "true";
-    row.dataset.status = draftStatus(item);
-
-    const load = document.createElement("button");
-    load.type = "button";
-    load.className = "ll-library-load";
-    load.textContent = item.title || "Untitled";
-    load.addEventListener("click", () => loadDraftFromLibrary(item.id));
-
-    const meta = document.createElement("span");
-    meta.className = "ll-library-meta";
-    const label = directionProfile(draftDirection(item)).label;
-    const taste = tasteProfile(draftTaste(item)).label;
-    const worldview = draftWorldviewLabel(item);
-    const productionRoute = draftProductionRoute(item);
-    meta.textContent = `${draftStatusLabel(item)} / ${productionRoute} / ${label} / ${taste} / ${worldview}`;
-
-    const del = document.createElement("button");
-    del.type = "button";
-    del.className = "ll-library-delete";
-    del.textContent = "x";
-    del.setAttribute("aria-label", `${item.title || "作品"}を削除`);
-    del.addEventListener("click", () => void deleteDraftFromLibrary(item.id));
-
-    if (shelf) {
-      const top = document.createElement("div");
-      top.className = "ll-library-card-top";
-      const date = document.createElement("span");
-      date.className = "ll-library-date";
-      date.textContent = formatLibraryDate(item.updatedAt);
-      top.append(load, date);
-
-      const tags = document.createElement("div");
-      tags.className = "ll-library-shelf-tags";
-      for (const tag of [draftStatusLabel(item), productionRoute, label, worldview]) {
-        const chip = document.createElement("span");
-        chip.className = "ll-library-tag";
-        chip.dataset.kind = draftStatus(item) === "fixed" && tag === draftStatusLabel(item)
-          ? "fixed"
-          : tag === productionRoute
-            ? "production"
-            : "meta";
-        chip.textContent = tag;
-        tags.appendChild(chip);
-      }
-
-      const preview = document.createElement("p");
-      preview.className = "ll-library-preview";
-      preview.textContent = draftPreview(item);
-
-      const scenePressure = draftScenePressure(item);
-      const scene = document.createElement("p");
-      scene.className = "ll-library-scene";
-      scene.textContent = scenePressure ? `scene: ${scenePressure}` : "scene: not mapped yet";
-
-      const footer = document.createElement("div");
-      footer.className = "ll-library-card-footer";
-      const actions = document.createElement("div");
-      actions.className = "ll-library-card-actions";
-      const sourceUrl = normalizedSourceUrl(item.sourceUrl);
-      if (sourceUrl) {
-        const sourceProfile = productionSourceProfile(draftProductionSource(item));
-        const source = document.createElement("a");
-        source.className = "ll-library-source-link";
-        source.href = sourceUrl;
-        source.target = "_blank";
-        source.rel = "noopener noreferrer";
-        source.textContent = sourceProfile.label;
-        source.setAttribute("aria-label", `${item.title || "Untitled"} の${sourceProfile.label}を開く`);
-        actions.appendChild(source);
-      }
-      const open = document.createElement("button");
-      open.type = "button";
-      open.className = "ll-library-open-button";
-      open.textContent = "開く";
-      open.setAttribute("aria-label", `${item.title || "Untitled"} を開く`);
-      open.addEventListener("click", () => loadDraftFromLibrary(item.id));
-      del.textContent = "削除";
-      actions.append(open, del);
-      footer.append(meta, actions);
-
-      row.append(top, tags, preview, scene, footer);
+    $("ll-sync-token-main").value = localStorage.getItem(SYNC_TOKEN_KEY) || "";
+    const saved = JSON.parse(localStorage.getItem(NOTEBOOK_KEY) || "null");
+    if (saved) {
+      state.library = Array.isArray(saved.library) ? saved.library : [];
+      state.pending = saved.pending || {};
+      state.bases = saved.bases || {};
+      state.conflicts = saved.conflicts || {};
+      state.resume = saved.workspace?.dirty ? saved.workspace : null;
     } else {
-      row.append(load, meta, del);
+      state.library = JSON.parse(localStorage.getItem(LIBRARY_KEY) || "[]");
+      // A legacy library is an unverified local copy, never a bulk upload queue.
+      for (const item of state.library) state.bases[item.id] = item.updatedAt;
+      const old = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (old && (old.seed || old.result) && !old.currentId) {
+        const item = { id: uid(), title: old.title || "無題", seed: old.seed || "", settings: old, result: old.result || { final: old.seed || "" } };
+        state.resume = { item, editing: true, dirty: true, title: item.title, text: NB.body(item), seed: item.seed, settings: old };
+      }
     }
-    root.appendChild(row);
-  }
+  } catch (error) { status("端末の保存データを読み込めません。バックアップからの読み込みを確認してください。"); }
 }
-
-function syncTokenInputs(value = syncTokenValue()) {
-  for (const id of ["ll-sync-token", "ll-sync-token-main"]) {
-    const input = $(id);
-    if (input && input.value !== value) input.value = value;
-  }
+function renderSaved() {
+  let label = "";
+  if (state.storageFailed) label = "端末保存に失敗・画面を閉じないでください";
+  else if (state.dirty) label = "書きかけを端末に保持・保存はまだです";
+  else if (state.working) label = !state.library.some(i => i.id === state.working.id) ? "まだ保存していません" : state.pending[state.working.id] ? "この端末に保存済み・クラウド未同期" : state.bases[state.working.id] ? "保存済み" : "この端末に保存済み";
+  $("ll-saved-state").textContent = label;
+  $("ll-conflict").hidden = !state.conflicts[state.working?.id];
 }
-
-function setCloudSettingsOpen(open) {
-  const settings = $("ll-cloud-settings-main");
-  const toggle = $("ll-cloud-settings-toggle");
-  if (settings) settings.dataset.open = String(open);
-  if (toggle) toggle.setAttribute("aria-expanded", String(open));
+function dateLabel(value) {
+  const date = new Date(value);
+  return Number.isNaN(+date) ? "" : new Intl.DateTimeFormat("ja-JP", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(date);
 }
-
-function renderCloudState(message = "") {
-  const root = document.querySelector(".ll-library-cloud-tools");
-  const label = $("ll-cloud-state-main");
-  const hasToken = Boolean(syncTokenValue());
-  if (!hasToken && state.cloudStatus !== "syncing") state.cloudStatus = "idle";
-  if (hasToken && state.cloudStatus === "idle") state.cloudStatus = "ready";
-
-  const text = message || {
-    idle: "この端末は未接続",
-    ready: "同期キー保存済み",
-    syncing: "同期中...",
-    connected: `${state.cloudCount ?? state.library.length}作品・接続済み`,
-    error: "接続を確認してください"
-  }[state.cloudStatus] || "未接続";
-
-  if (root) root.dataset.state = state.cloudStatus;
-  if (label) label.textContent = text;
-  const disabled = !hasToken || state.cloudStatus === "syncing";
-  for (const id of ["ll-cloud-pull-main", "ll-cloud-push-main"]) {
-    const button = $(id);
-    if (button) button.disabled = disabled;
-  }
-  if (!hasToken || state.cloudStatus === "error") setCloudSettingsOpen(true);
-  else if (state.cloudStatus === "connected") setCloudSettingsOpen(false);
+function node(tag, text, className) {
+  const el = document.createElement(tag);
+  if (text != null) el.textContent = text;
+  if (className) el.className = className;
+  return el;
 }
-
 function renderLibrary() {
-  syncLibraryControls();
-  const items = filteredLibrary();
-  renderLibraryInto($("ll-library"), items, 24);
-  renderLibraryInto($("ll-library-main"), items, 200);
-  for (const id of ["ll-library-count", "ll-library-main-count"]) {
-    const count = $(id);
-    if (count) {
-      count.textContent = items.length === state.library.length
-        ? `${state.library.length}作品`
-        : `${items.length} / ${state.library.length}作品`;
-    }
+  const root = $("ll-library-main"); root.replaceChildren();
+  if (state.resume) {
+    const resume = node("button", "書きかけを続ける", "ll-resume");
+    resume.type = "button"; resume.onclick = resumeWorkspace; root.append(resume);
+  }
+  const q = state.librarySearch.toLowerCase();
+  const items = state.library.filter(item => [item.title, NB.body(item), item.seed, ...(item.result?.notes || []).map(n => n.text)].join("\n").toLowerCase().includes(q));
+  $("ll-library-main-count").textContent = state.library.length ? `${items.length}篇` : state.cloudLoaded ? "0篇" : "";
+  if (!items.length) root.append(node("p", q ? "その言葉はまだ見つかりません。" : state.cloudLoaded ? "一行から、置いていけます。" : "この端末では、まだ詩を読み込んでいません。以前の詩は「端末をつなぐ」から。新しく書くなら「＋ 言葉を置く」。", "ll-empty"));
+  for (const item of items) {
+    const card = node("button", null, "ll-card"); card.type = "button";
+    card.append(node("span", item.title || "無題", "ll-card-title"));
+    card.append(node("span", NB.body(item).slice(0, 160) || "本文のないメモ", "ll-card-preview"));
+    const notes = item.result?.notes?.length || 0;
+    card.append(node("span", `${dateLabel(item.updatedAt)}${notes ? ` · 追記 ${notes}` : ""}${state.pending[item.id] ? " · 未同期" : ""}`, "ll-card-date"));
+    card.onclick = () => loadDraftFromLibrary(item.id); root.append(card);
   }
   renderCloudState();
 }
-
-function exportLibraryJson() {
-  const payload = {
-    format: "music-stack-lyric-lab-library",
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    drafts: state.library
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `lyric-lab-${new Date().toISOString().slice(0, 10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-  $("ll-status").textContent = "作品棚のバックアップを作りました";
+function renderCloudState() {
+  const pendingCount = Object.keys(state.pending).length;
+  $("ll-cloud-state-main").textContent = state.busy ? "クラウドと同期中…" : state.cloudStatus === "error" ? "接続を確認してください・端末の詩は読めます" : state.cloudLoaded ? `接続済み${pendingCount ? ` · 未同期 ${pendingCount}篇` : " · 非公開のクラウドと同期"}` : syncTokenValue() ? "同期キーあり・まだ読み込んでいません" : "この端末だけで利用中";
+  $("ll-cloud-pull-main").disabled = state.busy || !syncTokenValue();
+  $("ll-cloud-push-main").hidden = !pendingCount;
+  $("ll-cloud-push-main").disabled = state.busy || !syncTokenValue();
+  $("ll-connect").disabled = state.busy;
+  $("ll-copy-token").hidden = !syncTokenValue();
 }
-
+function setFields(item) {
+  if (state.generatedForId !== item.id) {
+    state.generated = null;
+    $("ll-view-draft").textContent = "";
+  }
+  $("ll-title").value = item.title === "無題" ? "" : item.title || "";
+  $("ll-view-final").value = NB.body(item);
+  $("ll-source-url").value = item.sourceUrl || "";
+  $("ll-seed").value = item.seed || "";
+  for (const key of Object.keys(controls())) {
+    if (["title", "sourceUrl"].includes(key)) continue;
+    $("ll-" + (fieldNames[key] || key)).value = item.settings?.[key] ?? defaults[key] ?? "";
+  }
+  $("ll-note").value = "";
+  $("ll-sound-note").value = item.result?.soundNote || "";
+  $("ll-audio-url").value = item.result?.audioUrl || "";
+}
+function renderWork() {
+  const item = state.working; if (!item) return;
+  state.currentId = item.id; state.result = item.result;
+  state.reroll = Number(item.reroll || 0);
+  $("ll-work-title").textContent = item.title || "無題";
+  $("ll-poem").textContent = NB.body(item) || "（本文はまだありません）";
+  $("ll-editor").hidden = !state.editing;
+  $("ll-reading").hidden = state.editing;
+  $("ll-sound").hidden = state.editing;
+  $("ll-advanced").hidden = state.editing;
+  $("ll-edit-heading").textContent = state.library.some(i => i.id === item.id) ? "本文を磨く" : "言葉を置く";
+  const notes = $("ll-notes-list"); notes.replaceChildren();
+  for (const note of item.result?.notes || []) {
+    const el = node("article", null, "ll-note-entry");
+    el.append(node("p", note.text), node("time", dateLabel(note.createdAt))); notes.append(el);
+  }
+  const historyList = $("ll-history-list"); historyList.replaceChildren();
+  const versions = [...(item.result?.revisions || [])].reverse();
+  $("ll-history-label").textContent = `原文・これまでの版${versions.length ? `（${versions.length}）` : ""}`;
+  const original = item.result?.original || { text: item.result?.draft || NB.body(item), createdAt: item.createdAt };
+  for (const [label, version] of [["原文", original], ...versions.map(v => [dateLabel(v.createdAt), v])]) {
+    const detail = node("details"); detail.append(node("summary", label), node("pre", version.text)); historyList.append(detail);
+  }
+  const audioUrl = normalizedSourceUrl(item.result?.audioUrl);
+  $("ll-audio-link").hidden = !audioUrl; $("ll-audio-link").href = audioUrl || "#";
+  renderProductionContext(); renderProductionPreview(); renderSaved();
+}
+function showWork({ scroll = true } = {}) {
+  $("ll-shelf").hidden = true; $("ll-work").hidden = false;
+  state.activeView = state.editing ? "final" : "read";
+  history.replaceState(null, "", `#work=${encodeURIComponent(state.working.id)}`);
+  if (scroll) window.scrollTo({ top: 0 });
+}
+function canLeave() {
+  return !(state.dirty || state.resume) || window.confirm("書きかけの変更があります。変更を取り消して移動しますか？ 保存済みの本文・追記は残ります。");
+}
+function openShelf() {
+  if (!canLeave()) return;
+  state.working = null; state.dirty = false; state.editing = false; state.resume = null;
+  $("ll-shelf").hidden = false; $("ll-work").hidden = true;
+  history.replaceState(null, "", "#shelf"); persist(); renderLibrary(); window.scrollTo({ top: 0 });
+}
+function loadDraftFromLibrary(id) {
+  if (!canLeave()) return;
+  const item = state.library.find(i => i.id === id); if (!item) return;
+  state.working = NB.clone(item); state.dirty = false; state.editing = false; state.resume = null;
+  setFields(state.working); renderWork(); showWork(); persist(); $("ll-work-title").focus({ preventScroll: true });
+}
+function startNewDraft() {
+  if (!canLeave()) return;
+  state.working = { id: uid(), title: "無題", seed: "", sourceUrl: "", settings: {}, result: { final: "", draft: "", status: "working" } };
+  state.editing = true; state.dirty = false; state.resume = null;
+  setFields(state.working); renderWork(); showWork(); persist(); $("ll-view-final").focus();
+}
+function resumeWorkspace() {
+  const saved = state.resume; if (!saved) return;
+  state.working = NB.clone(saved.item); state.editing = saved.editing; state.dirty = true;
+  setFields({ ...saved.item, settings: saved.settings || saved.item.settings });
+  for (const [id, val] of Object.entries({ "ll-title": saved.title, "ll-view-final": saved.text, "ll-note": saved.note, "ll-sound-note": saved.sound, "ll-audio-url": saved.audio, "ll-seed": saved.seed })) $(id).value = val || "";
+  renderWork(); showWork(); persist();
+}
+function markDirty() { state.dirty = true; persist(); renderSaved(); }
+async function commitItem(edited, message, { clearNote = false } = {}) {
+  const scroll = state.editing || edited.id !== state.working?.id;
+  const previous = state.working?.id === edited.id && state.library.some(i => i.id === edited.id) ? state.working : state.library.find(i => i.id === edited.id);
+  const remainingNote = clearNote ? "" : $("ll-note").value;
+  // Save other visible notebook fields too; saving a note must never erase an
+  // unfinished sound annotation or source setting elsewhere on the same page.
+  if (state.working?.id === edited.id) {
+    edited.result ||= {};
+    edited.result.soundNote = $("ll-sound-note").value;
+    edited.result.audioUrl = $("ll-audio-url").value;
+    edited.seed = $("ll-seed").value;
+    edited.sourceUrl = $("ll-source-url").value;
+    edited.settings = { ...edited.settings, ...controls() };
+  }
+  const next = NB.checkpoint(previous, edited, nowFor(previous));
+  state.library = [next, ...state.library.filter(i => i.id !== next.id)];
+  state.pending[next.id] = true;
+  state.working = NB.clone(next); state.result = state.working.result;
+  state.dirty = false; state.editing = false; state.resume = null;
+  setFields(state.working);
+  $("ll-note").value = remainingNote;
+  state.dirty = Boolean(remainingNote);
+  if (!persist()) { renderWork(); return false; }
+  renderWork(); renderLibrary(); showWork({ scroll });
+  status(`${message} · この端末に保存済み`);
+  if (syncTokenValue()) await cloudPush();
+  return true;
+}
+async function saveFinal() {
+  if (!$("ll-view-final").value.trim()) { status("本文を一行から置いてください。"); return; }
+  const item = NB.clone(state.working);
+  item.title = $("ll-title").value.trim() || "無題";
+  item.result ||= {}; item.result.final = $("ll-view-final").value; item.result.title = item.title;
+  item.result.draft ??= item.result.final;
+  await commitItem(item, "この版を残しました");
+}
+async function addNote(event) {
+  event.preventDefault(); const text = $("ll-note").value.trim(); if (!text) return;
+  const item = NB.clone(state.working); item.result ||= {};
+  item.result.notes = [...(item.result.notes || []), { id: crypto.randomUUID(), text, createdAt: new Date().toISOString() }];
+  await commitItem(item, "追記を残しました", { clearNote: true });
+}
+async function forkDraftToLibrary() {
+  if (!canLeave()) return;
+  const copy = NB.fork(state.working, uid(), new Date().toISOString());
+  await commitItem(copy, "本文をそのまま別案にしました");
+}
+function renderProductionPreview() {
+  if (!state.working) return;
+  const item = state.working;
+  const packet = buildProductionPacket(item.title, NB.body(item), controls(), item.result?.scene);
+  $("ll-view-suno").textContent = [item.result?.production || item.result?.suno || "", item.result?.soundNote || "", packet].filter(Boolean).join("\n\n");
+}
+function generate() {
+  const parts = classify(splitSeed($("ll-seed").value));
+  state.reroll += 1;
+  const built = buildDraft(parts, controls());
+  state.generated = built; state.generatedForId = state.working.id; $("ll-view-draft").textContent = built.draft;
+  $("ll-view-draft").parentElement.open = true;
+  status("下書きを試しました。保存中の本文はそのままです。");
+}
+async function copyText(text, label = "本文") {
+  if (!text) { status("コピーする内容がまだありません。"); return; }
+  try { await navigator.clipboard.writeText(text); status(`${label}をコピーしました`); }
+  catch (error) { status("コピーできませんでした。本文を選択してコピーしてください。"); }
+}
+async function cloudPull() {
+  if (state.busy) return false;
+  if (!syncTokenValue()) { $("ll-cloud-settings-main").open = true; status(TOKEN_HELP); return false; }
+  state.busy = true; renderCloudState();
+  try {
+    const response = await fetch("api/lyric-drafts?limit=500", { headers: syncHeaders(), cache: "no-store" });
+    if (!response.ok) throw new Error(response.status === 401 ? "キーを確認してください" : "通信できませんでした");
+    const { drafts } = await response.json(); if (!Array.isArray(drafts)) throw new Error("読み込み形式を確認してください");
+    state.library = NB.mergeCloud(state.library, drafts, state.pending);
+    for (const item of drafts) if (!state.pending[item.id] && !(state.working?.id === item.id && state.dirty) && !(state.resume?.item?.id === item.id)) state.bases[item.id] = item.updatedAt;
+    state.cloudLoaded = true; state.cloudStatus = "connected";
+    $("ll-cloud-settings-main").open = false;
+    if (!state.working && !state.resume && location.hash.startsWith("#work=")) loadDraftFromLibrary(decodeURIComponent(location.hash.slice(6)));
+    // Do not replace an open editor, memo or an offline revision during a pull.
+    if (state.working && !state.dirty && !state.pending[state.working.id]) {
+      const fresh = state.library.find(i => i.id === state.working.id);
+      if (fresh) { state.working = NB.clone(fresh); setFields(state.working); renderWork(); }
+    }
+    if (persist()) status(`${drafts.length}篇を読み込みました`);
+    return true;
+  } catch (error) { state.cloudStatus = "error"; status(`クラウドを読めませんでした。${error.message}。端末の詩は残っています。`); $("ll-cloud-settings-main").open = true; return false; }
+  finally { state.busy = false; renderLibrary(); }
+}
+async function cloudPush() {
+  if (state.busy || !syncTokenValue()) return false;
+  state.busy = true; renderCloudState();
+  try {
+    for (const id of Object.keys(state.pending)) {
+      if (state.conflicts[id]) continue;
+      const item = NB.clone(state.library.find(i => i.id === id)); if (!item) continue;
+      const response = await fetch("api/lyric-drafts", { method: "POST", headers: syncHeaders(), body: JSON.stringify({ drafts: [{ ...item, baseUpdatedAt: state.bases[id] ?? null }] }) });
+      if (response.status === 409) { state.conflicts[id] = true; persist(); continue; }
+      if (!response.ok) throw new Error(response.status === 413 ? "履歴が保存上限を超えています。バックアップを取り、別作品として分けてください" : response.status === 401 ? "同期キーを確認してください" : "通信できませんでした");
+      state.bases[id] = item.updatedAt;
+      if (state.library.find(i => i.id === id)?.updatedAt === item.updatedAt) delete state.pending[id];
+      if (!persist()) return false;
+    }
+    state.cloudStatus = "connected";
+    const remaining = Object.keys(state.pending).length;
+    status(Object.keys(state.conflicts).length ? "別の端末の新しい版があるため、上書きせず止めました。未同期の作品を開いて確認してください。" : remaining ? `この端末に保存済み · 新しい変更が${remaining}篇あります。「未同期を送る」で同期できます。` : "クラウドにも保存済み · ほかの端末でも読めます");
+    return true;
+  } catch (error) { state.cloudStatus = "error"; status(`クラウドは未同期です。${error.message}。この端末の内容は残っています。`); return false; }
+  finally { state.busy = false; renderLibrary(); renderSaved(); }
+}
+async function resolveConflict() {
+  if (!canLeave()) return;
+  const oldId = state.working.id;
+  const copy = NB.fork(state.working, uid(), new Date().toISOString());
+  // First persist the local version under its own id, then refresh the original.
+  await commitItem(copy, "こちらの内容を別案に残しました");
+  if (state.storageFailed) return;
+  delete state.pending[oldId]; delete state.conflicts[oldId];
+  persist(); await cloudPull(); await cloudPush();
+}
+function exportLibraryJson() {
+  const payload = { format: "music-stack-lyric-lab-library", version: 2, exportedAt: new Date().toISOString(), drafts: state.library, workspace: workspace() || state.resume };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
+  const a = node("a"); a.href = url; a.download = `lyric-lab-${new Date().toISOString().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  status("作品・追記・履歴をバックアップしました");
+}
 async function importLibraryJson(file) {
   if (!file) return;
   try {
-    const text = await file.text();
-    const data = JSON.parse(text);
-    const incoming = Array.isArray(data) ? data : data.drafts;
-    if (!Array.isArray(incoming)) throw new Error("missing drafts");
-    mergeLibraryDrafts(incoming);
-    saveLibrary();
+    const data = JSON.parse(await file.text()); const drafts = Array.isArray(data) ? data : data.drafts;
+    if (!Array.isArray(drafts) || !drafts.every(i => i && typeof i === "object" && typeof i.id === "string"
+      && (!i.result || (typeof i.result === "object" && !Array.isArray(i.result)
+        && [i.result.notes, i.result.revisions].every(list => list == null || (Array.isArray(list) && list.every(n => n && typeof n.text === "string"))))))) throw new Error("format");
+    // Import as separate copies: never overwrite an existing/cloud version.
+    for (const draft of drafts) {
+      const item = NB.fork(draft, uid(), new Date().toISOString());
+      item.title = `${draft.title || "無題"}（読込）`; state.library.unshift(item); state.pending[item.id] = true;
+    }
+    if (data.workspace?.dirty && !state.resume) state.resume = data.workspace;
+    if (persist()) status(`${drafts.length}篇を別作品として読み込みました。クラウドへ残すには「未同期を送る」。`);
     renderLibrary();
-    $("ll-status").textContent = `${incoming.length}作品を復元しました`;
-  } catch (error) {
-    $("ll-status").textContent = "バックアップを復元できませんでした";
-  }
+  } catch (error) { status("バックアップを読み込めませんでした。JSONファイルを確認してください。"); }
 }
-
-function syncHeaders() {
-  const token = syncTokenValue();
-  const headers = { "Content-Type": "application/json" };
-  if (token) headers["X-Lyric-Lab-Token"] = token;
-  return headers;
-}
-
-function syncTokenValue() {
-  return ($("ll-sync-token-main")?.value || $("ll-sync-token")?.value || "").trim();
-}
-
-function focusCloudToken() {
-  setActiveView("library");
-  setCloudSettingsOpen(true);
-  requestAnimationFrame(() => ($("ll-sync-token-main") || $("ll-sync-token"))?.focus());
-}
-
-async function cloudPull({ quiet = false } = {}) {
-  try {
-    if (!syncTokenValue()) {
-      focusCloudToken();
-      $("ll-status").textContent = TOKEN_HELP;
-      renderCloudState();
-      return false;
-    }
-    state.cloudStatus = "syncing";
-    renderCloudState();
-    if (!quiet) $("ll-status").textContent = "クラウドを更新しています...";
-    const response = await fetch("api/lyric-drafts", { headers: syncHeaders() });
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) throw new Error("cloud token rejected");
-      throw new Error(await response.text());
-    }
-    const data = await response.json();
-    const incoming = Array.isArray(data.drafts) ? data.drafts : [];
-    mergeLibraryDrafts(incoming);
-    saveLibrary();
-    state.cloudStatus = "connected";
-    state.cloudLoaded = true;
-    state.cloudCount = incoming.length;
-    renderLibrary();
-    setActiveView("library");
-    $("ll-status").textContent = `クラウドから${incoming.length}作品を更新しました`;
-    return true;
-  } catch (error) {
-    state.cloudStatus = "error";
-    state.cloudLoaded = false;
-    const rejected = error.message === "cloud token rejected";
-    renderCloudState(rejected ? "同期キーを確認してください" : "クラウドに接続できません");
-    if (rejected) focusCloudToken();
-    $("ll-status").textContent = rejected ? "同期キーを確認してください" : "クラウドから更新できませんでした";
-    return false;
-  }
-}
-
-async function cloudPush({ saveCurrent = true, keepView = false, successMessage = "" } = {}) {
-  try {
-    if (!syncTokenValue()) {
-      focusCloudToken();
-      $("ll-status").textContent = TOKEN_HELP;
-      renderCloudState();
-      return false;
-    }
-    if (saveCurrent && hasDraftInput()) saveDraftToLibrary();
-    state.cloudStatus = "syncing";
-    renderCloudState();
-    $("ll-status").textContent = "クラウドへ保存しています...";
-    const response = await fetch("api/lyric-drafts", {
-      method: "POST",
-      headers: syncHeaders(),
-      body: JSON.stringify({ drafts: state.library })
-    });
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) throw new Error("cloud token rejected");
-      throw new Error(await response.text());
-    }
-    const data = await response.json();
-    state.cloudStatus = "connected";
-    state.cloudLoaded = true;
-    state.cloudCount = state.library.length;
-    renderCloudState();
-    if (!keepView) setActiveView("library");
-    $("ll-status").textContent = successMessage || `${data.count || 0}作品をクラウドへ保存しました`;
-    return true;
-  } catch (error) {
-    state.cloudStatus = "error";
-    const rejected = error.message === "cloud token rejected";
-    renderCloudState(rejected ? "同期キーを確認してください" : "クラウドに接続できません");
-    if (rejected) focusCloudToken();
-    $("ll-status").textContent = rejected ? "同期キーを確認してください" : "クラウドへ保存できませんでした";
-    return false;
-  }
-}
-
-function save() {
-  const payload = {
-    title: $("ll-title").value,
-    sourceUrl: $("ll-source-url").value,
-    productionSource: $("ll-production-source").value,
-    productionTarget: $("ll-production-target").value,
-    bpm: $("ll-bpm").value,
-    key: $("ll-key").value,
-    duration: $("ll-duration").value,
-    meter: $("ll-meter").value,
-    seed: $("ll-seed").value,
-    direction: $("ll-direction").value,
-    taste: $("ll-taste").value,
-    dialect: $("ll-dialect").value,
-    worldview: $("ll-worldview").value,
-    distill: $("ll-distill").value,
-    form: $("ll-form").value,
-    voice: $("ll-voice").value,
-    heat: $("ll-heat").value,
-    weird: $("ll-weird").value,
-    reroll: state.reroll,
-    activeView: state.activeView,
-    currentId: state.currentId
+function bindNotebook() {
+  $("ll-new-draft").onclick = startNewDraft;
+  document.querySelectorAll("[data-open-shelf]").forEach(el => el.onclick = event => { event.preventDefault(); openShelf(); });
+  $("ll-edit").onclick = () => { if (!canLeave()) return; setFields(state.working); state.dirty = false; state.editing = true; state.activeView = "final"; renderWork(); $("ll-view-final").focus(); };
+  $("ll-cancel-edit").onclick = () => { if (!canLeave()) return; state.editing = false; state.dirty = false; setFields(state.working); renderWork(); persist(); };
+  $("ll-save-final").onclick = saveFinal;
+  $("ll-note-form").onsubmit = addNote;
+  $("ll-fork-draft").onclick = forkDraftToLibrary;
+  $("ll-conflict-fork").onclick = resolveConflict;
+  $("ll-copy-view").onclick = () => copyText(NB.body(state.working));
+  $("ll-save-sound").onclick = async () => {
+    const raw = $("ll-audio-url").value.trim(); if (raw && !normalizedSourceUrl(raw)) { status("リンクは http または https のURLで入力してください。"); return; }
+    const item = NB.clone(state.working); item.result ||= {}; item.result.soundNote = $("ll-sound-note").value; item.result.audioUrl = raw; await commitItem(item, "音のメモを残しました");
   };
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    localStorage.setItem(SYNC_TOKEN_KEY, syncTokenValue());
-  } catch (error) {
-    // Ignore private-mode storage errors.
-  }
+  $("ll-save-settings").onclick = () => {
+    const item = NB.clone(state.working); item.seed = $("ll-seed").value; item.sourceUrl = $("ll-source-url").value;
+    item.settings = { ...item.settings, ...controls() }; return commitItem(item, "素材・設定を残しました");
+  };
+  $("ll-build").onclick = generate;
+  $("ll-use-draft").onclick = async () => {
+    if (!state.generated || !canLeave()) return;
+    const copy = NB.fork(state.working, uid(), new Date().toISOString()); copy.result = { ...state.generated, final: state.generated.draft, status: "working" }; await commitItem(copy, "試した下書きを別作品にしました");
+  };
+  $("ll-copy-ai-handoff").onclick = () => copyText(buildAiHandoffPacket(), "AIに相談する文");
+  $("ll-copy-production").onclick = () => { renderProductionPreview(); copyText($("ll-view-suno").textContent, "制作メモ"); };
+  $("ll-copy-intake-prompt").onclick = () => copyText(INTAKE_PROMPT, "思想質問");
+  $("ll-distill-to-seed").onclick = () => { const lines = distillProfile($("ll-distill").value).anchors || []; $("ll-seed").value = [$("ll-seed").value, ...lines].filter(Boolean).join("\n"); markDirty(); };
+  $("ll-library-search-main").oninput = e => { state.librarySearch = e.target.value; renderLibrary(); };
+  $("ll-connect").onclick = cloudPull; $("ll-cloud-pull-main").onclick = cloudPull; $("ll-cloud-push-main").onclick = cloudPush;
+  $("ll-sync-token-main").oninput = () => {
+    try { localStorage.setItem(SYNC_TOKEN_KEY, syncTokenValue()); } catch (error) { status("同期キーを端末に保存できませんでした"); }
+    state.cloudLoaded = false; state.cloudStatus = "idle"; renderCloudState();
+  };
+  $("ll-sync-token-main").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); void cloudPull(); } };
+  $("ll-copy-token").onclick = () => copyText(syncTokenValue(), "同期キー");
+  $("ll-export-json").onclick = exportLibraryJson;
+  $("ll-import-json").onclick = () => $("ll-import-file").click();
+  $("ll-import-file").onchange = e => { void importLibraryJson(e.target.files?.[0]); e.target.value = ""; };
+  document.querySelectorAll("#ll-work input, #ll-work textarea, #ll-work select").forEach(el => el.addEventListener("input", markDirty));
+  window.addEventListener("beforeunload", e => { if (state.dirty || state.storageFailed) { e.preventDefault(); e.returnValue = ""; } });
+  window.addEventListener("online", () => { if (syncTokenValue()) void cloudPush(); });
+  window.addEventListener("hashchange", () => { if (location.hash === "#shelf") openShelf(); else if (location.hash.startsWith("#work=")) loadDraftFromLibrary(decodeURIComponent(location.hash.slice(6))); });
 }
-
-function restore() {
-  try {
-    const storedToken = localStorage.getItem(SYNC_TOKEN_KEY) || "";
-    syncTokenInputs(storedToken);
-    state.cloudStatus = storedToken ? "ready" : "idle";
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    $("ll-title").value = data.title || "";
-    $("ll-source-url").value = data.sourceUrl || "";
-    $("ll-production-source").value = data.productionSource || (data.sourceUrl ? "voice-memo" : "notes");
-    $("ll-production-target").value = data.productionTarget || "ace-step";
-    $("ll-bpm").value = data.bpm || "";
-    $("ll-key").value = data.key || "";
-    $("ll-duration").value = data.duration || "";
-    $("ll-meter").value = data.meter || "4/4";
-    $("ll-seed").value = data.seed || "";
-    $("ll-direction").value = data.direction || "hitotobi";
-    $("ll-taste").value = data.taste || "era-rap";
-    $("ll-dialect").value = data.dialect || "none";
-    $("ll-worldview").value = data.worldview || "gap";
-    $("ll-distill").value = data.distill || "";
-    $("ll-form").value = data.form || "full";
-    $("ll-voice").value = data.voice || "collective";
-    $("ll-heat").value = data.heat || "58";
-    $("ll-weird").value = data.weird || "64";
-    state.reroll = Number(data.reroll || 0);
-    state.activeView = data.activeView || "draft";
-    state.currentId = data.currentId || null;
-  } catch (error) {
-    // Ignore broken saved drafts.
-  }
-}
-
-function refreshProductionHandoff() {
-  renderProductionContext();
-  if (!state.result) return;
-  updateProductionFromFinal();
-  $("ll-view-suno").textContent = state.result.production || state.result.suno || "";
-  $("ll-view-map").textContent = state.result.map || "";
-  renderLibrary();
-}
-
-function bind() {
-  $("ll-build").addEventListener("click", generate);
-  $("ll-reroll").addEventListener("click", () => {
-    state.reroll += 1;
-    generate();
-  });
-  $("ll-copy-all").addEventListener("click", () => copyText(state.result?.draft || "", "draft"));
-  $("ll-copy-view").addEventListener("click", () => copyText(activeText(), VIEW_LABELS[state.activeView] || state.activeView));
-  $("ll-copy-ai-handoff").addEventListener("click", () => void copyAiHandoff());
-  $("ll-copy-hook").addEventListener("click", () => copyText(state.result?.hook || "", "hook"));
-  $("ll-draft-to-final").addEventListener("click", draftToFinal);
-  $("ll-save-final").addEventListener("click", () => void saveFinal("working"));
-  $("ll-fix-final").addEventListener("click", () => void saveFinal("fixed"));
-  $("ll-save-draft").addEventListener("click", () => void saveDraftAndSync());
-  $("ll-fork-draft").addEventListener("click", () => void forkDraftAndSync());
-  $("ll-export-json").addEventListener("click", exportLibraryJson);
-  $("ll-import-json").addEventListener("click", () => $("ll-import-file").click());
-  $("ll-distill-to-seed").addEventListener("click", distillToSeed);
-  $("ll-copy-intake-prompt").addEventListener("click", () => copyText(INTAKE_PROMPT, "思想質問"));
-  $("ll-new-draft").addEventListener("click", startNewDraft);
-  for (const button of document.querySelectorAll("[data-open-shelf]")) {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      openShelf();
-    });
-  }
-  for (const id of ["ll-cloud-pull", "ll-cloud-pull-main"]) {
-    $(id)?.addEventListener("click", () => void cloudPull());
-  }
-  for (const id of ["ll-cloud-push", "ll-cloud-push-main"]) {
-    $(id)?.addEventListener("click", () => void cloudPush());
-  }
-  $("ll-cloud-settings-toggle")?.addEventListener("click", () => {
-    const settings = $("ll-cloud-settings-main");
-    const open = settings?.dataset.open !== "true";
-    setCloudSettingsOpen(open);
-    if (open) requestAnimationFrame(() => $("ll-sync-token-main")?.focus());
-  });
-  $("ll-import-file").addEventListener("change", (event) => {
-    importLibraryJson(event.target.files?.[0]);
-    event.target.value = "";
-  });
-  $("ll-view-final").addEventListener("input", () => {
-    if (!state.result) return;
-    state.result.final = $("ll-view-final").value;
-    if (state.result.status === "fixed") state.result.status = "working";
-    updateProductionFromFinal();
-    renderLibrary();
-  });
-  for (const id of ["ll-library-search", "ll-library-search-main"]) {
-    $(id).addEventListener("input", (event) => {
-      state.librarySearch = event.target.value;
-      renderLibrary();
-    });
-  }
-  for (const id of ["ll-library-filter", "ll-library-filter-main"]) {
-    $(id).addEventListener("change", (event) => {
-      state.libraryFilter = event.target.value;
-      renderLibrary();
-    });
-  }
-  for (const id of ["ll-sync-token", "ll-sync-token-main"]) {
-    $(id)?.addEventListener("input", (event) => {
-      syncTokenInputs(event.target.value);
-      state.cloudStatus = event.target.value.trim() ? "ready" : "idle";
-      state.cloudLoaded = false;
-      renderCloudState();
-      save();
-    });
-    $(id)?.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter") return;
-      event.preventDefault();
-      void cloudPull();
-    });
-  }
-  $("ll-clear").addEventListener("click", startNewDraft);
-  for (const button of document.querySelectorAll(".ll-tab")) {
-    button.addEventListener("click", () => {
-      setActiveView(button.dataset.view);
-      save();
-    });
-  }
-  for (const id of ["ll-title", "ll-source-url", "ll-production-source", "ll-production-target", "ll-bpm", "ll-key", "ll-duration", "ll-meter", "ll-seed", "ll-distill", "ll-direction", "ll-taste", "ll-dialect", "ll-worldview", "ll-form", "ll-voice", "ll-heat", "ll-weird"]) {
-    $(id).addEventListener("input", save);
-  }
-  for (const id of ["ll-source-url", "ll-production-source", "ll-production-target", "ll-bpm", "ll-key", "ll-duration", "ll-meter", "ll-distill", "ll-direction", "ll-taste", "ll-dialect", "ll-worldview", "ll-form", "ll-voice", "ll-heat", "ll-weird"]) {
-    $(id).addEventListener("input", refreshProductionHandoff);
-  }
-  $("ll-distill").addEventListener("input", () => renderChips("ll-distill-anchors", distillProfile($("ll-distill").value).anchors || [], "distill"));
-  $("ll-direction").addEventListener("change", renderLibrary);
-  $("ll-taste").addEventListener("change", renderLibrary);
-  $("ll-dialect").addEventListener("change", renderLibrary);
-  $("ll-worldview").addEventListener("change", renderLibrary);
-}
-
-function registerServiceWorker() {
-  if (!("serviceWorker" in navigator)) return;
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
-  });
-}
-
-loadLibrary();
-restore();
-const initialShelfRequested = location.hash === "#shelf" || new URLSearchParams(location.search).get("view") === "shelf";
-if (initialShelfRequested) {
-  state.activeView = "library";
-}
-bind();
-setActiveView(state.activeView);
-if (hasDraftInput()) generate();
-else render();
-registerServiceWorker();
-if (initialShelfRequested) {
-  requestAnimationFrame(() => {
-    document.querySelector(".ll-output")?.scrollIntoView({ block: "start" });
-  });
-  if (syncTokenValue()) void cloudPull({ quiet: true });
-}
-window.addEventListener("hashchange", () => {
-  if (location.hash === "#shelf") openShelf();
-});
+restoreNotebook(); bindNotebook(); renderLibrary();
+if (location.hash.startsWith("#work=") && !state.resume) loadDraftFromLibrary(decodeURIComponent(location.hash.slice(6)));
+if (syncTokenValue()) void cloudPull();
+else $("ll-cloud-settings-main").open = !state.library.length;
+if ("serviceWorker" in navigator) window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });

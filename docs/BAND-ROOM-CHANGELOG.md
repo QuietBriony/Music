@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v443 compact)
+# Band Room - Changelog (v65 -> v444 compact)
+
+## v444 — 2026-11-04
+
+Lyric Labを詩のノートへ整理。一覧→本文→追記を主にし、原文・推敲履歴・音のメモを保持。新規・別案で自動生成しない。端末の書きかけ復元、未接続表示、変更作品だけのD1同期と競合保護を追加。公開入口は既存Listen、認証方式とDBは継続。音源・非公開歌詞の追加なし。cache `hazama-fm-v444` / Lyric Lab `notebook-1`。
 
 ## v443 — 2026-10-28
 
@@ -119,7 +123,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v443. Latest Band Room runtime change: v443 (Human Fly finished versions). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v444. Latest Band Room runtime change: v443 (Human Fly finished versions). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

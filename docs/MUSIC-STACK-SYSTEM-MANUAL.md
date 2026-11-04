@@ -49,7 +49,7 @@ mainへのmergeだけではMusicのCloudflare手動配信は更新されない�
 | [一音ずつ — ギターと三線](../practice/index.html) | ギター11曲・三線8曲を曲名／歌手名で検索。調弦・基礎練習・弾き語りを切替。ギターは和音で次へ、コード図と指の説明付き（動画時刻は確認2曲・推定9曲）。三線は教材動画の工工四・歌詞、内蔵てぃんさぐぬ花は全体譜と歌詞。 |
 | [Hazama FM](../fm.html) | ジャンルを選んで、ラジオのように流す。 |
 | [Music Core Rig](../index.html) | つまみを動かし、アシッドやIDMの音を探る。 |
-| [Lyric Lab](../lyric-lab.html) | 歌詞・曲のアイデア・制作指示を一曲ずつ残す。 |
+| [Lyric Lab](../lyric-lab.html) | 詩を読む。ひとことを重ね、自分の言葉と音に育てる。 |
 
 ### 試奏台 — テクノ・アシッド・アンビエント
 
@@ -161,7 +161,7 @@ cloud認証まで合格済みという意味ではありません。候補・手
 
 | 道具・入口 | 今できること／最初の一手 | 保存・境界 | 状態・実装根拠 |
 |---|---|---|---|
-| [Lyric Lab](../lyric-lab.html) | 歌詞・曲の設計・制作指示を一曲ずつ整理する作品棚。<br>既存作品を開く → 制作先とBPM等を確認 → 制作パケットをコピー。 | 歌詞付き制作指示／歌詞を含まないScene metadata。<br>ACE-Step等へ自動送信しない。端末間の作品棚同期は認証済みCloudflare/D1環境が別途必要。GitHub Pagesの入口だけでは保証されない。 | 実装あり・実音評価は別<br>[Music/lyric-lab.js](https://github.com/QuietBriony/Music/blob/main/lyric-lab.js) / [Music/docs/LYRIC-LAB-USAGE.md](https://github.com/QuietBriony/Music/blob/main/docs/LYRIC-LAB-USAGE.md) / [Music/functions/api/lyric-drafts.js](https://github.com/QuietBriony/Music/blob/main/functions/api/lyric-drafts.js) |
+| [Lyric Lab](../lyric-lab.html) | 詩・断片・自分の追記を残すノート。本文の原文と推敲履歴、声と音のメモを一緒に持つ。<br>一覧から詩を開く → 読む → 「ひとこと足す」で追記。新しく書くなら「＋ 言葉を置く」。 | 詩・追記・推敲履歴／音のメモと録音リンク／必要なときだけAI相談文・制作メモ。<br>このブラウザに保存。既存Cloudflare版では同期キーで非公開D1へ同期。GitHub Pagesは端末保存のみ。録音やAIへの自動送信はしない。 | 実装あり・実音評価は別<br>[Music/lyric-lab.js](https://github.com/QuietBriony/Music/blob/main/lyric-lab.js) / [Music/docs/LYRIC-LAB-USAGE.md](https://github.com/QuietBriony/Music/blob/main/docs/LYRIC-LAB-USAGE.md) / [Music/functions/api/lyric-drafts.js](https://github.com/QuietBriony/Music/blob/main/functions/api/lyric-drafts.js) |
 | [OpenClaw Desk](https://quietbriony.github.io/openclaw/) | SYNCを読み、次の行き先・確認待ち・候補の段取りを見る制作卓。<br>Core RigかFMでSYNC → 同じブラウザのDeskでlatest packetを確認。 | review・routing案・人間が実行するコマンドの提示。<br>このrepoのDeskは音を出さず、機材操作・REC・upload・mergeを自動実行しない。汎用OpenClaw製品の説明ではない。 | 実装あり・実音評価は別<br>[openclaw/index.html](https://github.com/QuietBriony/openclaw/blob/main/index.html) / [openclaw/README.md](https://github.com/QuietBriony/openclaw/blob/main/README.md) / [openclaw/AGENTS.md](https://github.com/QuietBriony/openclaw/blob/main/AGENTS.md) |
 
 ### PCで作る・仕上げる・渡す

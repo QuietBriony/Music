@@ -156,7 +156,7 @@ async function upsertDrafts(db, request) {
   const drafts = rawDrafts.map(normalizeDraft);
   if (!drafts.length) return json({ ok: true, count: 0 });
 
-  const statements = drafts.map((draft) =>
+  const statements = drafts.map((draft, index) =>
     db.prepare(`
       INSERT INTO lyric_drafts (
         id, title, source_url, seed, settings_json, result_json, reroll,
@@ -172,6 +172,7 @@ async function upsertDrafts(db, request) {
         reroll = excluded.reroll,
         active_view = excluded.active_view,
         updated_at = excluded.updated_at
+      WHERE CASE WHEN ? THEN lyric_drafts.updated_at = ? ELSE 0 END
     `).bind(
       draft.id,
       draft.title,
@@ -182,12 +183,16 @@ async function upsertDrafts(db, request) {
       draft.reroll,
       draft.activeView,
       draft.createdAt,
-      draft.updatedAt
+      draft.updatedAt,
+      Object.hasOwn(rawDrafts[index], "baseUpdatedAt") ? 1 : 0,
+      rawDrafts[index].baseUpdatedAt ?? null
     )
   );
 
-  await db.batch(statements);
-  return json({ ok: true, count: drafts.length });
+  const results = await db.batch(statements);
+  const conflicts = drafts.filter((draft, index) => results[index]?.meta?.changes === 0).map(draft => draft.id);
+  const saved = drafts.filter(draft => !conflicts.includes(draft.id)).map(draft => draft.id);
+  return json({ ok: !conflicts.length, count: saved.length, saved, conflicts }, conflicts.length ? 409 : 200);
 }
 
 async function deleteDraft(db, url) {
