@@ -81,7 +81,7 @@ body.focused .guitar-reading-help{display:none}
  body.focused #practice-stage #chord-panel .chord-example{display:grid!important;grid-template-columns:130px minmax(0,1fr);gap:12px;align-items:start}
  body.focused #chord-panel .guitar-guide-choice{margin:2px 0 12px;font-size:.7rem;gap:8px}body.focused #chord-panel .guitar-guide-choice select{max-width:190px;flex:1;min-width:0}
  body.focused #native-chord-guide{min-width:0}body.focused #native-fingers li{font-size:.8rem!important}body.focused #native-strum-guide{font-size:.75rem!important}body.focused #practice-stage #chord-panel #chord-diagram svg{width:130px;height:120px}
- body.focused[data-chords=true][data-instrument=guitar] #practice-stage>.listening{display:grid;grid-template-columns:62px minmax(0,1fr);gap:4px 12px;padding:12px 16px}
+ body.focused[data-chords=true][data-instrument=guitar] #practice-stage>.listening{display:grid;grid-template-columns:minmax(62px,max-content) minmax(0,1fr);gap:4px 12px;padding:12px 16px}
  body.focused[data-chords=true][data-instrument=guitar] .listening :is(.card-top,.position,.tuner,#practice-input-status){display:none}
  body.focused[data-chords=true][data-instrument=guitar] .listening .target{grid-column:1;grid-row:1/4;align-self:center;height:auto;justify-content:start;margin:0}
  body.focused[data-chords=true][data-instrument=guitar] #practice-stage .listening .target>span:first-child{font-size:2rem;letter-spacing:-.06em}body.focused[data-chords=true][data-instrument=guitar] .listening .target>span:last-child{display:none}
