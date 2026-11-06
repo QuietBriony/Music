@@ -1,5 +1,5 @@
-import { noteName } from './music.mjs?v=35';
-import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=35';
+import { noteName } from './music.mjs?v=36';
+import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=36';
 
 // Keep note indices separate from rests: selecting a cell must seek the actual
 // note, and must never count as a correct microphone answer.

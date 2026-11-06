@@ -1,11 +1,11 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=35';
-import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=35';
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=35';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=35';
-import { lessonPlayer } from './youtube.mjs?v=35';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=36';
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=36';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=36';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=36';
+import { lessonPlayer } from './youtube.mjs?v=36';
 export const SANSHIN_VIDEOS = Object.fromEntries(SANSHIN_PLAYLIST.tracks.map(t=>[t.id,t]));
-import { SANSHIN_MATERIALS,ANATA_PERFORMANCE,ANATA_LESSON,sanshinMaterialChoice,sanshinSessionKey,sanshinLyricKey,lessonChapter } from './sanshin-materials.mjs?v=35';
-import { lessonWindow,lessonRange,performanceProgress,sanshinSession,addLessonMark } from './sanshin-session.mjs?v=35';
+import { SANSHIN_MATERIALS,ANATA_PERFORMANCE,ANATA_LESSON,sanshinMaterialChoice,sanshinSessionKey,sanshinLyricKey,lessonChapter } from './sanshin-materials.mjs?v=36';
+import { lessonWindow,lessonRange,performanceProgress,sanshinSession,addLessonMark } from './sanshin-session.mjs?v=36';
 const preferenceKey='music-practice-sanshin-material-anata-v1';
 const timeLabel=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 export function mountSanshinGuide({onTakeOver}) {
@@ -14,6 +14,10 @@ export function mountSanshinGuide({onTakeOver}) {
   let song=null,variant='original',player=null,ready=false,ticket=0,timer=null,position=0,a=0,b=0,loop=false,shown='合',rate=1,repeatSeconds=10,marks=[];
   const materialForSong=()=>song==='anata-ni'&&variant==='original'?ANATA_LESSON:SANSHIN_MATERIALS[song];
   const courseForSong=()=>song==='anata-ni'&&variant==='performance'?{...SANSHIN_VIDEOS[song],...ANATA_PERFORMANCE}:SANSHIN_VIDEOS[song];
+  const shortLandscape=matchMedia('(max-height:500px) and (orientation:landscape)');
+  function enlarge(value){dialog.dataset.enlarged=String(!!value&&!!song&&dialog.dataset.reading==='score');const active=dialog.dataset.enlarged==='true';$('enlarge').setAttribute('aria-pressed',String(active));$('enlarge').textContent=active?'メニュー':'大きく';$('enlarge').setAttribute('aria-label',active?'練習メニューも表示':'工工四の動画を大きく表示');$('dialog-body').scrollTop=0;}
+  $('enlarge').onclick=()=>enlarge(dialog.dataset.enlarged!=='true');
+  shortLandscape.addEventListener('change',()=>{if(dialog.open)enlarge(shortLandscape.matches);});
   function status(text){$('video-status').textContent=text;}
   function remember(){
     if(!song)return false;
@@ -31,6 +35,8 @@ export function mountSanshinGuide({onTakeOver}) {
     $('phrase-next').disabled=!ready||!loop||b-a<1||b>=window.end-1;
     $('phrase-previous').disabled=!ready||!loop||b-a<1||a<=window.start;
     $('continue').disabled=!ready||!loop;
+    $('quick-repeat').disabled=!range;$('quick-continue').disabled=$('continue').disabled;
+    $('quick-repeat').textContent=loop?'範囲を替える':`${repeatSeconds}秒反復`;$('quick-repeat').setAttribute('aria-pressed',String(loop));
     $('repeat-length').value=String(repeatSeconds);$('phrase').textContent=`ここから${repeatSeconds}秒を反復`;$('phrase-next').textContent=`次の${repeatSeconds}秒へ →`;
     $('seek').max=duration||1;if(document.activeElement!==$('seek'))$('seek').value=position;
     $('loop').disabled=!ready||b-a<1;$('loop').checked=loop;
@@ -58,6 +64,7 @@ export function mountSanshinGuide({onTakeOver}) {
   function pause(){if(ready){player.pauseVideo();position=currentTime();remember();controls();}}
   function readingMode(mode){
     if(mode==='score'&&!song)return;dialog.dataset.reading=mode;
+    $('enlarge').hidden=mode!=='score';enlarge(mode==='score'&&shortLandscape.matches);
     $('score-view').setAttribute('aria-pressed',String(mode==='score'));$('finger-view').setAttribute('aria-pressed',String(mode==='finger'));
     if(mode==='finger'){pause();$('finger-panel').scrollIntoView({block:'start',behavior:'instant'});status('動画を止めました。工工四の文字を選んで指を確認できます。');}
     else{$('dialog-body').scrollTop=0;status('動画内の工工四・歌詞を見て練習します。再生は自分で開始してください。');}
@@ -98,11 +105,11 @@ export function mountSanshinGuide({onTakeOver}) {
           },200);
         },
         onStateChange:event=>{if(own===ticket&&ready&&(event.data===2||event.data===0)){position=currentTime();remember();}},
-        onError:()=>{if(own!==ticket)return;destroy();$('material-details').open=true;status('動画を開けませんでした。下の「YouTubeで見る」から再生できます。');}
+        onError:()=>{if(own!==ticket)return;destroy();enlarge(false);$('material-details').open=true;status('動画を開けませんでした。下の「YouTubeで見る」から再生できます。');}
       },()=>own===ticket&&dialog.open,position);
       if(own!==ticket){try{instance?.destroy();}catch{/* Cancelled. */}return;}
       player=instance;
-    }catch{if(own===ticket){destroy();$('material-details').open=true;status('動画を読み込めませんでした。通信を確認するか、下の「YouTubeで見る」から開いてください。');}}
+    }catch{if(own===ticket){destroy();enlarge(false);$('material-details').open=true;status('動画を読み込めませんでした。通信を確認するか、下の「YouTubeで見る」から開いてください。');}}
   }
   function seek(time){
     if(!ready)return;const playing=player.getPlayerState()===1;position=Math.max(0,Math.min(Number(player.getDuration())||0,time));
@@ -115,6 +122,8 @@ export function mountSanshinGuide({onTakeOver}) {
   $('phrase-previous').onclick=()=>{if(ready)repeatFrom(Math.max(lessonWindow(materialForSong(),a,Number(player.getDuration())).start,a-repeatSeconds));};
   $('repeat-length').onchange=()=>{repeatSeconds=Number($('repeat-length').value);if(ready&&loop)repeatFrom(a);else{remember();controls();}};
   $('continue').onclick=()=>{if(!ready||!loop)return;const next=b;loop=false;seek(next);if($('finish-stop').checked&&materialForSong()?.end&&next>=materialForSong().end){pause();status('教材の演奏を最後まで練習しました。もう一度なら「最初から通して弾く」で。');}else{player.playVideo();status('反復を終えて、次の場所から続けています。');}};
+  $('quick-repeat').onclick=()=>{if(!ready)return;if(loop){enlarge(false);document.querySelector('.sanshin-repeat-card').scrollIntoView({block:'start',behavior:'instant'});}else repeatFrom(currentTime());};
+  $('quick-continue').onclick=()=>{$('continue').click();$('dialog-body').scrollTop=0;};
   $('mark').onclick=()=>{if(!ready)return;const result=addLessonMark(marks,loop?a:currentTime(),loop?b:null);marks=result.marks;const saved=remember();renderMarks();$('mark-status').textContent=!saved?'端末に保存できません。この画面を閉じるまではしおりを使えます。':result.reason==='added'?'この教材のしおりを端末に保存しました。':result.reason==='duplicate'?'この場所は保存済みです。':result.reason==='full'?'しおりは12個まで。不要なしおりを外して追加できます。':'この位置は保存できません。';};
   $('load').onclick=load;
   $('play').onclick=()=>{if(ready){if(loop&&(currentTime()<a||currentTime()>=b))player.seekTo(a,true);else if($('finish-stop').checked&&materialForSong()?.end&&currentTime()>=materialForSong().end)player.seekTo(materialForSong().start,true);player.playVideo();$('dialog-body').scrollTop=0;status('再生中。分からない文字を押すと一時停止して指を確認できます。');}};
@@ -138,6 +147,7 @@ export function mountSanshinGuide({onTakeOver}) {
       ({position,a,b,loop,rate,repeatSeconds,marks}=sanshinSession(stored,materialForSong()));renderMarks();$('mark-status').textContent=marks.length?'この教材に保存したしおりです。':'場所だけを端末に保存。動画や歌詞は保存しません。';
       const course=courseForSong();$('video').hidden=!course;
       $('reading-controls').hidden=!course;dialog.dataset.reading=course?'score':'finger';$('score-view').setAttribute('aria-pressed',String(!!course));$('finger-view').setAttribute('aria-pressed',String(!course));
+      $('enlarge').hidden=!course;enlarge(shortLandscape.matches);
       $('transport').hidden=!course;$('score-start').hidden=!course;$('score-start').textContent='最初から通して弾く';$('finish-stop').checked=true;$('material-details').open=false;
       const material=materialForSong();$('chapters').replaceChildren(...(material?.chapters||[]).map(([time,label])=>{const button=document.createElement('button');button.type='button';button.textContent=`${timeLabel(time)} ${label}`;button.onclick=()=>{loop=false;if(ready){pause();seek(time);}else{position=time;remember();controls();}status('練習する場所を選びました。再生は自分で始めてください。');};return button;}));
       $('score-source').hidden=$('score-source-note').hidden=!course;

@@ -1,6 +1,6 @@
-import { CHORDS } from './chords.mjs?v=35';
-import { SING_SHAPES } from './singalong-core.mjs?v=35';
-import { SMALL_GRIPS,FINGER_NAMES,fingerSteps,soundingStrings } from './hand-guide-core.mjs?v=35';
+import { CHORDS } from './chords.mjs?v=36';
+import { SING_SHAPES } from './singalong-core.mjs?v=36';
+import { SMALL_GRIPS,FINGER_NAMES,fingerSteps,soundingStrings } from './hand-guide-core.mjs?v=36';
 export const FINGER_COLORS=['','#245f9a','#915100','#804ba1','#14776f'];
 export const guitarShape=(name,easy=true)=>easy?(SMALL_GRIPS[name]||SING_SHAPES[name]):CHORDS[name];
 export const fingerLines=shape=>shape?fingerSteps(shape):[];
