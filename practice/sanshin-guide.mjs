@@ -1,11 +1,11 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=33';
-import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=33';
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=33';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=33';
-import { lessonPlayer } from './youtube.mjs?v=33';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=34';
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=34';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=34';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=34';
+import { lessonPlayer } from './youtube.mjs?v=34';
 export const SANSHIN_VIDEOS = Object.fromEntries(SANSHIN_PLAYLIST.tracks.map(t=>[t.id,t]));
-import { SANSHIN_MATERIALS,ANATA_PERFORMANCE,ANATA_LESSON,sanshinMaterialChoice,sanshinSessionKey,sanshinLyricKey,lessonChapter } from './sanshin-materials.mjs?v=33';
-import { timePhrase } from './song-coach.mjs?v=33';
+import { SANSHIN_MATERIALS,ANATA_PERFORMANCE,ANATA_LESSON,sanshinMaterialChoice,sanshinSessionKey,sanshinLyricKey,lessonChapter } from './sanshin-materials.mjs?v=34';
+import { timePhrase } from './song-coach.mjs?v=34';
 const preferenceKey='music-practice-sanshin-material-anata-v1';
 const timeLabel=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 export function mountSanshinGuide({onTakeOver}) {

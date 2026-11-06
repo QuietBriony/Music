@@ -1,4 +1,5 @@
-import { estimatedCourse } from './harmony-timeline.mjs?v=33';
+import { estimatedCourse } from './harmony-timeline.mjs?v=34';
+import { PHRASE_COURSES } from './material-arrangements.mjs?v=34';
 
 // Public harmonic labels and beat positions; publisher lyrics stay in the player.
 // See songs/material-provenance.json for inspected pages and corrections.
@@ -36,21 +37,25 @@ for(const spec of specs){const course=MATERIAL_COURSES[spec.id],beats=spec.event
 
 MATERIAL_COURSES.imagine.times[0]=3;
 
-// These publisher charts can be followed in the player. No unrelated native
-// timeline is attached until a map for that exact performance is available.
-const charts=[
- ['blackbird','2EPFtnTex9g',138.681,'MunsonMusic'],
- ['under-the-bridge','vPnURDDWMW0',246.741,'MunsonMusic'],
- ['sleep-last-night','YC8HVwq0Tks',273.161,'MunsonCovers'],
- ['your-song','8KBAuOBoemw',576.381,'MunsonCovers'],
- ['santeria','5wlQ-AYhb2M',0,'MunsonMusic'],
- ['could-you-be-loved','tXssLSMy3mk',209,'Chords For You']
-];
-for(const [id,video,end,credit] of charts)MATERIAL_COURSES[id]={key:`${id}-${video}-chart-v1`,video,url:`https://www.youtube.com/watch?v=${video}`,source:`https://www.youtube.com/watch?v=${video}`,end,capo:0,steps:[],times:[],material:true,lyricsInVideo:true,noNative:true,note:`${credit}の歌詞・コード付き教材。歌詞とコードは動画内の表示で追います。この教材にアプリのコード図を同期する時刻は準備中です。押さえ方はコード名を選んで確認できます。`};
+Object.assign(MATERIAL_COURSES,PHRASE_COURSES);
+const loved=estimatedCourse({id:'could-you-be-loved',video:'tXssLSMy3mk',source:'https://chordu.com/chords-tabs-could-you-be-loved-id_tXssLSMy3mk',bpm:150,duration:202,
+ events:'1:N 4:Bm 36:D 45:Bm 51:G 57:D 68:Bm 74:G 80:D 87:Bm 97:Em 109:Bm 121:Em 134:Bm 144:G 147:F#m 150:Em 155:Bm 167:G 170:F#m 173:A 179:D 184:Bm 190:G 196:Bm 199:D 208:Bm 213:G 221:D 225:Bm 306:Em 318:Bm 330:Em 341:Bm 353:G 356:F#m 359:Em 364:Bm 376:G 379:F#m 383:A 393:D 399:Bm 405:G 411:D 422:Bm 428:G 434:D 440:Bm 501:N'});
+Object.assign(loved,{key:'could-you-be-loved-tXssLSMy3mk-material-v2',material:true,lyricsInVideo:true,easyCapo:2,precision:'beat-estimate',note:'Chords For Youの歌詞・コード付き演奏。標準調弦・カポ2でAm・Dm・F・Em・G・Cの形を使います。表示される原調のコードとは名前が違いますが、同じ音の高さです。拍に沿う切替位置は目安です。'});
+const lovedSections=[[0,'前奏'],[14,'サビ'],[34,'1番'],[53,'1番・後半'],[71,'サビ'],[90,'間奏'],[118,'2番'],[136,'2番・後半'],[156,'最後のサビ'],[175.6,'最後の繰り返し'],[200,'演奏おわり']];
+loved.steps=loved.steps.map((step,i)=>{let section=0;while(section+1<lovedSections.length&&lovedSections[section+1][0]<=loved.times[i])section++;return {...step,section,title:lovedSections[section][1]};});
+MATERIAL_COURSES['could-you-be-loved']=loved;
+for(const [id,course] of Object.entries(MATERIAL_COURSES))if(course.key.endsWith('material-v2'))course.previousKey=`${id}-${course.video}-chart-v1`;
+
+// A v33 chart session has the same recording and lyric key. Upgrade only that
+// empty automatic guide; retain custom orders, original recordings and drafts.
+export function materialUpgradeState(stored,course){
+ if(!stored||!course?.previousKey||stored.material!==true||stored.custom||stored.timeline!==course.previousKey)return stored;
+ return {...stored,timeline:course.key,follow:true,arranged:true,capo:course.easyCapo??course.capo,index:0};
+}
 export function materialChoice(id,saved,requested){
  if(!MATERIAL_COURSES[id])return 'original';
  if(requested==='material'||requested==='original')return requested;
  // Existing sessions keep their recording, edits and timing until explicitly changed.
- return saved?.material===true?'material':saved||MATERIAL_COURSES[id].noNative?'original':'material';
+ return saved?.material===true?'material':saved?'original':'material';
 }
 export const materialLyricKey=(id,course)=>`video:guitar:${id}${course?.material?`:video:${course.video}`:''}`;

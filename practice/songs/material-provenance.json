@@ -17,9 +17,57 @@
       "bpm": 160.15,
       "duration": 235,
       "kind": "public simplified harmony; corrected with publisher video"
+    },
+    {
+      "id": "blackbird",
+      "video": "2EPFtnTex9g",
+      "harmonySource": "https://www.youtube.com/watch?v=2EPFtnTex9g",
+      "performanceEnd": 131,
+      "easyCapo": 0,
+      "kind": "publisher harmony, section anchors and within-phrase rhythmic interpolation; timing estimated"
+    },
+    {
+      "id": "under-the-bridge",
+      "video": "vPnURDDWMW0",
+      "harmonySource": "https://www.youtube.com/watch?v=vPnURDDWMW0",
+      "performanceEnd": 238,
+      "easyCapo": 2,
+      "kind": "publisher harmony, section anchors and within-phrase rhythmic interpolation; timing estimated"
+    },
+    {
+      "id": "sleep-last-night",
+      "video": "YC8HVwq0Tks",
+      "harmonySource": "https://www.youtube.com/watch?v=YC8HVwq0Tks",
+      "performanceEnd": 265,
+      "easyCapo": 0,
+      "kind": "publisher harmony, section anchors and within-phrase rhythmic interpolation; timing estimated"
+    },
+    {
+      "id": "your-song",
+      "video": "8KBAuOBoemw",
+      "harmonySource": "https://www.youtube.com/watch?v=8KBAuOBoemw",
+      "performanceEnd": 567,
+      "easyCapo": 0,
+      "kind": "publisher harmony, section anchors and within-phrase rhythmic interpolation; timing estimated"
+    },
+    {
+      "id": "santeria",
+      "video": "5wlQ-AYhb2M",
+      "harmonySource": "https://www.youtube.com/watch?v=5wlQ-AYhb2M",
+      "performanceEnd": 202,
+      "easyCapo": 4,
+      "kind": "publisher harmony, section anchors and within-phrase rhythmic interpolation; timing estimated"
+    },
+    {
+      "id": "could-you-be-loved",
+      "video": "tXssLSMy3mk",
+      "harmonySource": "https://www.youtube.com/watch?v=tXssLSMy3mk",
+      "performanceEnd": 202,
+      "easyCapo": 2,
+      "kind": "public beat estimate with publisher label corrections"
     }
   ],
-  "precision": "Both new native guides still use automatically estimated beat positions. Inspected chord pages are not evidence of exact change times. Rejected guessed whole-song section interpolations were not retained.",
+  "precision": "Imagine, Woman and Could You Be Loved retain public estimated beat positions with harmonic-label corrections from publisher displays. The other five lyric-material guides use inspected publisher harmonic order, sampled section anchors and rhythmic weights within each phrase. They remain phrase estimates, not individually verified chord-change timestamps or melodic transcriptions. No exact-timing/commercial-readiness claim.",
   "inspection": {
     "imagine": {
       "video": "oFWhUvOFQxc",
@@ -47,6 +95,43 @@
         182.7
       ],
       "corrections": "Eb-major chorus and E-major after modulation replace estimated upper-triad Gm/Abm labels; unrelated leading/trailing audio is not judged. Extensions are simplified. Teacher uses capo 1; easy native shapes use capo 3 at the same sounding pitch."
+    },
+    "blackbird": {
+      "video": "2EPFtnTex9g",
+      "source": "https://www.youtube.com/watch?v=2EPFtnTex9g",
+      "frames": "Sampled through the full performance in an embedded publisher player; 4-second page survey plus selected playback frames. Images stay in ignored local QA output.",
+      "corrections": "Slash bass motion omitted; harmonic accompaniment only. Recording-specific capo retained. Performance tail separated from promotional end cards."
+    },
+    "under-the-bridge": {
+      "video": "vPnURDDWMW0",
+      "source": "https://www.youtube.com/watch?v=vPnURDDWMW0",
+      "frames": "Sampled through the full performance in an embedded publisher player; 4-second page survey plus selected playback frames. Images stay in ignored local QA output.",
+      "corrections": "Slash bass motion omitted; harmonic accompaniment only. Recording-specific capo retained. Performance tail separated from promotional end cards."
+    },
+    "sleep-last-night": {
+      "video": "YC8HVwq0Tks",
+      "source": "https://www.youtube.com/watch?v=YC8HVwq0Tks",
+      "frames": "Sampled through the full performance in an embedded publisher player; 4-second page survey plus selected playback frames. Images stay in ignored local QA output.",
+      "corrections": "Slash bass motion omitted; harmonic accompaniment only. Recording-specific capo retained. Performance tail separated from promotional end cards."
+    },
+    "your-song": {
+      "video": "8KBAuOBoemw",
+      "source": "https://www.youtube.com/watch?v=8KBAuOBoemw",
+      "frames": "Sampled through the full performance in an embedded publisher player; 4-second page survey plus selected playback frames. Images stay in ignored local QA output.",
+      "corrections": "Publisher C-key arrangement, capo 0; second verse lines use C G E Am, chorus ending uses Am G D F then C Dm/G or C F/G. Long slow performance, not original recording timestamps."
+    },
+    "santeria": {
+      "video": "5wlQ-AYhb2M",
+      "source": "https://www.youtube.com/watch?v=5wlQ-AYhb2M",
+      "frames": "Sampled through the full performance in an embedded publisher player; 4-second page survey plus selected playback frames. Images stay in ignored local QA output.",
+      "corrections": "Slash bass motion omitted; harmonic accompaniment only. Recording-specific capo retained. Performance tail separated from promotional end cards."
+    },
+    "could-you-be-loved": {
+      "video": "tXssLSMy3mk",
+      "source": "https://www.youtube.com/watch?v=tXssLSMy3mk",
+      "frames": "Sampled through the full performance in an embedded publisher player; 4-second page survey plus selected playback frames. Images stay in ignored local QA output.",
+      "corrections": "Bm intro/interlude replace spurious B/C#/C#m/F# labels; E corrected to Em; final Bm vamp added from visible publisher chart. No inferred melodic notes.",
+      "harmonySource": "https://chordu.com/chords-tabs-could-you-be-loved-id_tXssLSMy3mk"
     }
   },
   "originalCorrections": {
@@ -64,7 +149,7 @@
     }
   },
   "sanshin": "Publisher videos visually inspected. Late performance sections of Shimauta, Jidai, Warabigami, Nadasoso and Tinsagu are separated from the preceding explanations. Course scope is stated rather than claiming every original verse. No native note-level maps are inferred from video images.",
-  "storage": "Each guitar material has independent position/capo/custom sequence and correction key. The old lyric key remains available on the original material. New videos receive a video-specific lyric key. No upload. Sanshin Anata performance has independent video-specific position and lyric keys; legacy lesson sessions remain reachable.",
+  "storage": "Each guitar material has independent position/capo/custom sequence and correction key. The old lyric key remains available on the original material. New videos receive a video-specific lyric key. No upload. Sanshin Anata performance has independent video-specific position and lyric keys; legacy lesson sessions remain reachable. v34 upgrades only the same-video v33 empty chart guide, preserving video time, A/B range, custom order and lyric key; new automatic guide enables follow and uses the recording-specific easy capo. Existing original choice stays original.",
   "media": "Manual load and manual playback. Missing/embedding-disabled videos use an explicit external publisher link. Only existing production hosts.",
   "sanshinPerformance": {
     "anata-ni": {

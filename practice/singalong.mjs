@@ -1,17 +1,17 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=33';
-import { scoreLyricAnnotations,setScoreLyric } from './score-lyrics.mjs?v=33';
-import { songSupport } from './song-support.mjs?v=33';
-import { MicInputBoost } from './mic-input.mjs?v=33';
-import { cueAt } from './video-cues.mjs?v=33';
-import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=33';
-import { MATERIAL_COURSES,materialChoice,materialLyricKey } from './material-courses.mjs?v=33';
-import { correctedCourse,practiceClock } from './harmony-timeline.mjs?v=33';
-import { guitarShape,drawChord,fillFingerList,strumInstruction,gripCard } from './chord-guide.mjs?v=33';
-import { STUDIES } from './learning.mjs?v=33';
-import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=33';
-import { detectChord,ChordGate,chordAttackLevel } from './polyphonic.mjs?v=33';
-import { lessonPlayer } from './youtube.mjs?v=33';
-import { EASY_CAPOS,transposeChord,arrangeCourse,availableCapos,nextChange,changeCue,chordPhrase,timeLabel } from './song-coach.mjs?v=33';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=34';
+import { scoreLyricAnnotations,setScoreLyric } from './score-lyrics.mjs?v=34';
+import { songSupport } from './song-support.mjs?v=34';
+import { MicInputBoost } from './mic-input.mjs?v=34';
+import { cueAt } from './video-cues.mjs?v=34';
+import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=34';
+import { MATERIAL_COURSES,materialChoice,materialLyricKey,materialUpgradeState } from './material-courses.mjs?v=34';
+import { correctedCourse,practiceClock } from './harmony-timeline.mjs?v=34';
+import { guitarShape,drawChord,fillFingerList,strumInstruction,gripCard } from './chord-guide.mjs?v=34';
+import { STUDIES } from './learning.mjs?v=34';
+import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=34';
+import { detectChord,ChordGate,chordAttackLevel } from './polyphonic.mjs?v=34';
+import { lessonPlayer } from './youtube.mjs?v=34';
+import { EASY_CAPOS,transposeChord,arrangeCourse,availableCapos,nextChange,changeCue,chordPhrase,timeLabel } from './song-coach.mjs?v=34';
 const STORAGE='music-practice-singalong-v1';
 const lessons=STUDIES.guitar.map(s=>({...s,instrument:'guitar',referenceVideo:s.video||s.lesson,video:PREPARED_COURSES[s.id]?.url||s.video||s.lesson}));
 const text=(id,value)=>{const e=document.getElementById(id);if(e.textContent!==String(value))e.textContent=value;};
@@ -53,7 +53,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
   player.seekTo(state.videoTime,true);if(!playing)player.pauseVideo();store();render();
  }
  function showPerformance(){const panel=document.querySelector('.sing-workspace');if(panel.getBoundingClientRect().top<0)panel.scrollIntoView({block:'start',behavior:'instant'});}
- function continueVideo(){if(!ready)return;waiting=false;$('sing-position-details').open=true;player.playVideo();render();showPerformance();}
+ function continueVideo(){if(!ready)return;waiting=false;if(course?.material&&finishedVideo()&&!state.loop){state.videoTime=Math.max(0,course.times[steps.findIndex(s=>!s.silent)]-state.offset);player.seekTo(state.videoTime,true);} $('sing-position-details').open=true;player.playVideo();render();showPerformance();}
  function renderClock(){
   const duration=Number(player?.getDuration?.())||course?.end||1;
   text('sing-video-time',`${timeLabel(state.videoTime||0)} / ${timeLabel(duration)}`);
@@ -75,6 +75,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
   if(!ready||!active||!following())return;
   const time=player.getCurrentTime();if(!Number.isFinite(time))return;
   state.videoTime=time;const cue=cueAt(course.times,time,state.offset,course.end);
+  if(cue.ended&&course.material&&!state.loop&&player.getPlayerState()===1){player.pauseVideo();status('通し演奏が終わりました。「再生」で演奏の始めからもう一度練習できます。');}
   if(state.index!==cue.index){const previous=steps[state.index];state.index=cue.index;gate.reset();
    if(state.waitChanges&&!cue.ended&&!steps[cue.index]?.silent&&previous?.name!==steps[cue.index]?.name&&player.getPlayerState()===1){waiting=true;player.pauseVideo();player.seekTo(Math.max(0,course.times[cue.index]-state.offset),true);player.pauseVideo();status('押さえ替えを待っています。指が置けたら「押さえた・続ける」。マイクを開始済みなら、今のコードの確認でも進めます。');}
    store();render();}
@@ -144,7 +145,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
  }
  function advance(){if(state.index>=steps.length)return;state.index++;store();render();if(state.index>=steps.length){stopInput();status('最後までコードを確認しました。歌い方やタイミングの採点ではありません。');}}
  function select(id,requested){
-  pause();destroyPlayer();selected={...(lessons.find(s=>s.id===id)||lessons[0])};const recent=saved.bySong?.[selected.id],variant=materialChoice(selected.id,recent,requested);baseCourse=(variant==='material'?MATERIAL_COURSES:PREPARED_COURSES)[selected.id]||null;course=baseCourse;corrections=null;const stored=saved.byVersion?.[`${selected.id}:${baseCourse?.key}`]||(recent?.material===!!baseCourse?.material||!recent?.material&&!baseCourse?.material?recent:null);if(baseCourse)selected.video=baseCourse.url;
+  pause();destroyPlayer();selected={...(lessons.find(s=>s.id===id)||lessons[0])};const recent=saved.bySong?.[selected.id],variant=materialChoice(selected.id,recent,requested);baseCourse=(variant==='material'?MATERIAL_COURSES:PREPARED_COURSES)[selected.id]||null;course=baseCourse;corrections=null;const oldChart=baseCourse?.material?saved.byVersion?.[`${selected.id}:${selected.id}-${baseCourse.video}-chart-v1`]:null;const stored=materialUpgradeState(saved.byVersion?.[`${selected.id}:${baseCourse?.key}`]||oldChart||(recent?.material===!!baseCourse?.material||!recent?.material&&!baseCourse?.material?recent:null),baseCourse);if(baseCourse)selected.video=baseCourse.url;
   if(baseCourse?.noNative)$('sing-position-details').open=true;
   $('sing-material-choice').hidden=!MATERIAL_COURSES[selected.id];$('sing-material').value=variant;$('sing-material').options[0].textContent=baseCourse?.noNative||MATERIAL_COURSES[selected.id]?.noNative?'歌詞付き教材（動画の譜面で練習）':'歌詞付き教材とコード図';
   $('sing-timing-editor').open=false;text('sing-correction-status','補正はこの曲・この動画だけに適用し、この端末に保存します。');
@@ -209,7 +210,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
  $('sing-material').onchange=()=>{store();select(selected.id,$('sing-material').value);};
  $('sing-course').onchange=()=>select($('sing-course').value);$('sing-load').onclick=loadVideo;
  $('sing-clock-start').onclick=localClock;
- $('sing-song-start').onclick=()=>{if(!ready||!canFollow())return;const index=steps.findIndex(s=>!s.silent);if(index<0)return;stopInput();state.follow=true;state.index=index;state.videoTime=Math.max(0,course.times[index]-state.offset);player.seekTo(state.videoTime,true);player.playVideo();$('sing-position-details').open=true;store();render();showPerformance();};
+ $('sing-song-start').onclick=()=>{if(!ready||!canFollow())return;const index=steps.findIndex(s=>!s.silent);if(index<0)return;stopInput();waiting=false;state.loop=false;state.waitChanges=false;state.follow=true;state.index=index;state.videoTime=Math.max(0,course.times[index]-state.offset);player.seekTo(state.videoTime,true);player.playVideo();$('sing-position-details').open=true;store();render();showPerformance();status('1曲通して練習します。反復と押さえ替え待ちを外しました。歌詞と今のコードを見て弾いてみましょう。');};
  $('sing-play').onclick=continueVideo;$('sing-continue').onclick=continueVideo;$('sing-pause').onclick=()=>{pause();status('止めました。再生は自分で再開できます。');};$('sing-back').onclick=()=>{if(ready)seekVideo(Math.max(0,player.getCurrentTime()-5));};
  $('sing-seek').onchange=()=>{stopInput();state.loop=false;seekVideo($('sing-seek').valueAsNumber);};
  $('sing-wait').onchange=()=>{state.waitChanges=$('sing-wait').checked;store();render();};
