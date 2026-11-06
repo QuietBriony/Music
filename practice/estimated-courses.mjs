@@ -1,5 +1,5 @@
-import { estimatedCourse } from './harmony-timeline.mjs?v=34';
-import { songSteps } from './singalong-core.mjs?v=34';
+import { estimatedCourse } from './harmony-timeline.mjs?v=35';
+import { songSteps } from './singalong-core.mjs?v=35';
 
 // Harmonic labels and numerical beat positions only. See songs/auto-follow-provenance.json.
 const specs=[

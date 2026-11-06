@@ -126,8 +126,37 @@ for(const tuning of [-3,-2,-1,0,2]){
  assert.deepEqual(notes.map(n=>n.midi),parsed.groups[0].notes.map(n=>n.midi+tuning));
 }
 assert.equal(SANSHIN_VIDEOS.jidai.video,'xtf0OAu-qVY');
+// Repeat windows stay inside the chosen explanation/performance and survive old saves.
+const {lessonWindow,lessonRange,performanceProgress,sanshinSession,addLessonMark}=await import('../practice/sanshin-session.mjs');
+const jidaiWindow={start:518,end:629};
+assert.deepEqual(lessonWindow(jidaiWindow,30,900),{start:0,end:518,performance:false});
+for(const length of [5,10,20]){
+ assert.deepEqual(lessonRange(jidaiWindow,518,900,length),{a:518,b:518+length});
+ assert.deepEqual(lessonRange(jidaiWindow,625,900,length),{a:625,b:629});
+ assert.deepEqual(lessonRange(jidaiWindow,515,900,length),{a:515,b:518});
+ assert.deepEqual(lessonRange(jidaiWindow,518,522,length),{a:518,b:522});
+}
+assert.equal(lessonRange(jidaiWindow,518,500,10),null);
+assert.equal(lessonRange(jidaiWindow,NaN,900,10),null);
+assert.equal(lessonRange(jidaiWindow,518,900,0),null);
+assert.deepEqual(performanceProgress(jidaiWindow,500),{duration:111,elapsed:0,ratio:0,phase:'lesson'});
+assert.deepEqual(performanceProgress(jidaiWindow,629),{duration:111,elapsed:111,ratio:1,phase:'ended'});
+assert.equal(performanceProgress(jidaiWindow,560).elapsed,42);
+assert.equal(performanceProgress({start:0,end:null},0),null);
+assert.equal(performanceProgress(jidaiWindow,NaN),null);
+assert.deepEqual(sanshinSession({position:540,a:530,b:550,loop:true},jidaiWindow),{position:540,a:530,b:550,loop:true,rate:1,repeatSeconds:10,marks:[]});
+assert.equal(sanshinSession({position:-1,rate:4,repeatSeconds:0,marks:[{time:NaN,end:null}]},jidaiWindow).position,518);
+let lessonMarks=[];
+for(let i=0;i<12;i++){const result=addLessonMark(lessonMarks,520+i*2);assert.equal(result.reason,'added');lessonMarks=result.marks;}
+assert.equal(addLessonMark(lessonMarks,580).reason,'full');
+assert.equal(addLessonMark(lessonMarks,520.1).reason,'duplicate');
+assert.equal(addLessonMark([],520,520.8).reason,'invalid');
+assert.equal(addLessonMark([],7201).reason,'invalid');
+const loopMark=addLessonMark([],530,535).marks;
+assert.deepEqual(sanshinSession({marks:loopMark,rate:.75,repeatSeconds:5},jidaiWindow).marks,loopMark);
+assert.equal(sanshinSession({a:500,b:499,loop:true},jidaiWindow).loop,false);
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=34','sanshin-view.mjs?v=34','sanshin-guide.mjs?v=34','sanshin.css?v=34','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=35','sanshin-view.mjs?v=35','sanshin-guide.mjs?v=35','sanshin.css?v=35','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
 console.log('Practice learning: tuning, nineteen studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
 
 const guitarCourseNotes=scoreNotes(chordExercise(['C','Am']),'chords','guitar',{chords:true}).notes;

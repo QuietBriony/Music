@@ -1,0 +1,64 @@
+/* Keep transport outside the scrolling score, including iPad split view. */
+#sanshin-dialog-body{flex:1 1 auto;overscroll-behavior:contain}
+#sanshin-dialog>header{padding:10px 16px}
+.sanshin-view-controls{padding:6px 16px}
+.sanshin-study-screen,.sanshin-study-tools{min-width:0}
+.sanshin-study-tools{display:grid;gap:12px;align-content:start}
+.sanshin-progress-card,.sanshin-repeat-card,.sanshin-bookmarks{padding:14px;border:1px solid var(--line);border-radius:12px;background:#fffdf8}
+#sanshin-progress-label{display:block;font-size:.74rem;color:var(--muted)}
+#sanshin-performance-time{display:block;font-size:1.45rem;font-variant-numeric:tabular-nums;margin:5px 0}
+#sanshin-performance-progress{display:block;width:100%;height:7px;accent-color:var(--green)}
+#sanshin-performance-progress[hidden]{display:none}
+#sanshin-chapter-state{margin-bottom:0}
+.sanshin-progress-card .small{margin-bottom:0;color:var(--muted)}
+.sanshin-repeat-card label{display:flex;flex-direction:row;align-items:center;justify-content:space-between;font-size:.8rem;margin:0 0 10px}
+.sanshin-repeat-card select{width:auto;min-height:44px}
+.sanshin-repeat-card>button,.sanshin-bookmarks>button{width:100%;min-height:44px;font-size:.8rem}
+.sanshin-repeat-nav{display:flex;gap:8px;margin:8px 0}
+.sanshin-repeat-nav button{flex:1;min-width:0;min-height:44px;font-size:.75rem;padding:8px}
+#sanshin-continue{background:var(--green);color:#fff}
+#sanshin-loop-state{display:block;margin-top:10px}
+#sanshin-marks{display:grid;gap:6px;max-height:200px;overflow:auto}
+#sanshin-marks>div{display:flex;gap:6px}
+#sanshin-marks button{min-height:44px;font-size:.76rem}
+#sanshin-marks button:first-child{flex:1;text-align:left;font-variant-numeric:tabular-nums}
+#sanshin-marks button:last-child{width:44px;padding:8px;font-size:1.1rem}
+#sanshin-mark-status{color:var(--muted);margin:7px 0}
+.sanshin-material-details{border-top:1px solid var(--line);padding-top:12px}
+.sanshin-material-details summary{min-height:44px;cursor:pointer;font-size:.8rem;line-height:1.6;padding:10px 0}
+#sanshin-dialog[data-reading=score] #sanshin-video{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+#sanshin-video[hidden]{display:none!important}
+#sanshin-dialog[data-reading=score] #sanshin-player:has(iframe){width:100%;margin:0}
+#sanshin-load[hidden]{display:none}
+#sanshin-video-status{margin:8px 0}
+.sanshin-transport{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px max(10px,env(safe-area-inset-bottom));background:#fffdf8;border-top:1px solid var(--line)}
+.sanshin-transport[hidden],#sanshin-dialog[data-reading=finger] .sanshin-transport{display:none}
+.sanshin-transport button,.sanshin-transport select{min-height:44px;font-size:.8rem}
+.sanshin-transport label{display:flex;align-items:center;flex-direction:row;gap:8px;font-size:.75rem;margin:0}
+.sanshin-transport select{width:auto}
+#sanshin-video-time{margin-left:auto;white-space:nowrap;color:var(--muted)}
+@media(min-width:900px) and (orientation:landscape){
+ #sanshin-dialog[data-reading=score] #sanshin-video{grid-template-columns:minmax(0,1fr) 270px;align-items:start}
+ .sanshin-material-details,#sanshin-lyrics-host{grid-column:1/-1}
+ .sanshin-study-screen{position:sticky;top:0;background:var(--paper,#f6f3ec)}
+}
+@media(min-width:650px) and (max-width:899px){.sanshin-study-tools{grid-template-columns:1fr 1fr}.sanshin-bookmarks{grid-column:1/-1}}
+@media(max-width:649px){
+ #sanshin-dialog{max-height:98dvh}#sanshin-dialog>header{padding:6px 12px}
+ .sanshin-view-controls{padding:5px 12px}.sanshin-view-controls span{display:none}
+ .sanshin-transport{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 12px max(8px,env(safe-area-inset-bottom))}
+ .sanshin-transport button{padding:8px 6px;white-space:nowrap}
+ .sanshin-transport #sanshin-score-start{grid-column:span 2}.sanshin-transport label{font-size:0;gap:0}
+ .sanshin-transport select{width:100%;font-size:.75rem;padding:6px}
+ #sanshin-video-time{display:none}.sanshin-progress-card,.sanshin-repeat-card,.sanshin-bookmarks{padding:12px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ #sanshin-dialog{max-height:100dvh;width:100vw!important;border-radius:0}
+ #sanshin-dialog>header{padding:3px 12px}#sanshin-title{font-size:.8rem}
+ .sanshin-view-controls{padding:2px 12px}.sanshin-view-controls button{min-height:32px;padding:4px 8px}
+ .sanshin-view-controls span{display:none}#sanshin-dialog-body{padding:8px 12px}
+ #sanshin-dialog[data-reading=score] #sanshin-video{grid-template-columns:minmax(0,1fr) 240px;align-items:start}
+ #sanshin-dialog[data-reading=score] #sanshin-player:has(iframe){max-width:calc((100dvh - 164px)*16/9);margin-inline:auto}
+ .sanshin-study-tools{grid-template-columns:1fr}.sanshin-material-details,#sanshin-lyrics-host{grid-column:1/-1}
+ .sanshin-transport{display:flex;padding:4px 12px;gap:6px}.sanshin-transport label{font-size:.7rem;gap:6px}.sanshin-transport button,.sanshin-transport select{font-size:.7rem;padding:6px 10px}
+}
