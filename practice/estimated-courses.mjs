@@ -1,5 +1,5 @@
-import { estimatedCourse } from './harmony-timeline.mjs?v=31';
-import { songSteps } from './singalong-core.mjs?v=31';
+import { estimatedCourse } from './harmony-timeline.mjs?v=32';
+import { songSteps } from './singalong-core.mjs?v=32';
 
 // Harmonic labels and numerical beat positions only. See songs/auto-follow-provenance.json.
 const specs=[
@@ -9,7 +9,7 @@ const specs=[
   "bpm": 85.8,
   "duration": 267.161,
   "source": "https://chordu.com/chords-tabs-red-hot-chili-peppers-under-the-bridge-id_GLvohMXgcBo",
-  "events": "2:D 7:F# 11:Bm 12:D 16:E 17:F# 21:Bm 22:D 27:F# 31:Bm 32:D 36:E 37:F# 42:E 44:B 47:C#m 48:G#m 49:A 51:E 52:B 55:C#m 56:A 59:Em 61:B 63:C#m 65:G#m 66:A 67:E 69:B 71:C#m 73:A 75:E 86:B 89:C#m 90:G#m 91:A 93:E 94:B 97:C#m 98:A 101:E 103:B 106:C#m 107:E 108:A 109:E 111:B 114:C#m 115:A 117:E 126:F#m 127:E 130:B 131:F#m 135:E 138:B 139:F#m 143:E 146:B 147:F#m 150:F# 151:E 154:B 155:F#m 158:E 159:D 160:B 163:C#m 164:G#m 165:A 166:E 168:B 171:C#m 172:A 175:E 176:B 179:E 181:A 183:E 184:B 187:A 191:E 192:B 195:C#m 196:G#m 197:A 199:E 201:B 203:C#m 205:A 207:E 216:D 217:E 219:B 221:F#m 225:E 227:B 229:F#m 233:E 235:B 237:F#m 241:E 243:B 245:F#m 247:A 249:C 251:G 253:F 255:A 257:Am 259:G 261:F 262:Am 263:A 265:C 267:G 269:F 275:E 277:G 279:A 280:Am 283:G 284:F 287:A 288:Am 291:G 292:F 294:A 296:Am 299:G 300:F 302:A 304:Am 306:G 308:Am 310:A 312:Am 314:G 315:F 318:A 319:Am 322:G 323:F 325:A 327:Am 330:G 331:F 333:A 335:Am 337:G 339:Am 341:A 343:Am 349:A 350:Am 357:A 359:Am 361:Em 363:F 365:A 367:Am 369:Em 371:Am 374:A 382:N"
+  "events": "2:D 7:F# 11:F# 12:D 16:D 17:F# 21:F# 22:D 27:F# 31:F# 32:D 36:D 37:F# 42:E 44:B 47:C#m 48:G#m 49:A 51:E 52:B 55:C#m 56:A 59:Em 61:B 63:C#m 65:G#m 66:A 67:E 69:B 71:C#m 73:A 75:E 86:B 89:C#m 90:G#m 91:A 93:E 94:B 97:C#m 98:A 101:E 103:B 106:C#m 107:E 108:A 109:E 111:B 114:C#m 115:A 117:E 126:F#m 127:E 130:B 131:F#m 135:E 138:B 139:F#m 143:E 146:B 147:F#m 150:F# 151:E 154:B 155:F#m 158:E 159:D 160:B 163:C#m 164:G#m 165:A 166:E 168:B 171:C#m 172:A 175:E 176:B 179:E 181:A 183:E 184:B 187:A 191:E 192:B 195:C#m 196:G#m 197:A 199:E 201:B 203:C#m 205:A 207:E 216:D 217:E 219:B 221:F#m 225:E 227:B 229:F#m 233:E 235:B 237:F#m 241:E 243:B 245:F#m 247:A 249:C 251:G 253:F 255:A 257:Am 259:G 261:F 262:Am 263:A 265:C 267:G 269:F 275:E 277:G 279:A 280:Am 283:G 284:F 287:A 288:Am 291:G 292:F 294:A 296:Am 299:G 300:F 302:A 304:Am 306:G 308:Am 310:A 312:Am 314:G 315:F 318:A 319:Am 322:G 323:F 325:A 327:Am 330:G 331:F 333:A 335:Am 337:G 339:Am 341:A 343:Am 349:A 350:Am 357:A 359:Am 361:Em 363:F 365:A 367:Am 369:Em 371:Am 374:A 382:N"
  },
  {
   "id": "blackbird",
@@ -81,7 +81,7 @@ const yesSections=[
  {title:'サビ',start:60,end:96,...combine(phrase(['Fm','G7','C'],3),phrase(['Dm7','G7','C'],2))},
  {title:'2番・前半',start:96,end:112,...opening},
  {title:'2番・後半',start:112,end:140,...rows},
- {title:'サビ・反復',start:140,end:186,...combine(phrase(['Fm','G7','C'],3),phrase(['Dm7','G7','C'],4))},
+ {title:'サビ・反復',start:140,end:186,...phrase(['Fm','G7','C'],7)},
  {title:'後奏',start:186,end:256,...combine(opening,rows,phrase(['Fm','G7','C'],2))}
 ];
 const yesTimes=yesSections.flatMap(s=>{let beat=0;const total=s.bars.reduce((a,b)=>a+b,0);return s.bars.map(b=>{const time=s.start+(s.end-s.start)*beat/total;beat+=b;return time;});});

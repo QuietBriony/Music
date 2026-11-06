@@ -82,5 +82,26 @@
   "manual_start": "All media still loads and starts only after the learner acts. No microphone start, recorder, audio upload or third-party analysis request is added at runtime.",
   "limitations": "Source videos must remain embeddable. Automated chords include errors, omit passing notes and inversions, and do not replace instruction. Modern lyrics and sanshin melodic scores stay inside publisher videos or learner-provided text.",
   "playback_checked": "2026-10-31: all eight public harmonic-reference videos reached PLAYING using the normal YouTube API on the actual https://music-stack.pages.dev origin. The two existing mapped videos, YES MY LOVE and eight sanshin lessons also reached PLAYING. Localhost returned error 150 for some licensed recordings; the published origin did not. No restriction bypass or source media copy. The optional separate-device clock requires explicit start and manual synchronization.",
-  "duration_policy": "Use actual player duration observed on the published origin. Discard any stale numerical beat events beyond the actual duration. Harmonic and musical timing accuracy remain unverified."
+  "duration_policy": "Use actual player duration observed on the published origin. Discard any stale numerical beat events beyond the actual duration. Harmonic and musical timing accuracy remain unverified.",
+  "review_2026_11_06": {
+    "scope": "Targeted harmonic corrections only. Timings remain estimates; personal correction indices and storage keys are unchanged. No lyrics, score images or media copied.",
+    "under-the-bridge": {
+      "source": "https://www.justinguitar.com/songs/red-hot-chili-peppers-under-the-bridge-1-3-chords-tabs-guitar-lesson-st-312",
+      "change": "Intro D/F# harmonic outline; remove passing-note false Bm/E labels at beats 11, 16, 21, 31, 36. Retain original grid/timestamps and indices."
+    },
+    "yes-my-love": {
+      "source": "https://www.youtube.com/watch?v=kr1n2Pzn4eA",
+      "observed_video_seconds": [
+        92,
+        180,
+        182,
+        200,
+        218,
+        232,
+        248
+      ],
+      "change": "The second chorus repeated Dm7-5/G7/C uses the existing Fm upper-triad simplification (D bass omitted), not Dm7. First chorus Dm7 ending retained. Section timing interpolation remains uncertain."
+    },
+    "arrangements": "Capo presets transpose the displayed chord roots by source capo minus selected capo, preserving sounding pitch classes. These are accompaniment shapes, not transcriptions of the original picking or bass line."
+  }
 }

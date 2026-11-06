@@ -1,4 +1,4 @@
-import { SING_SHAPES } from './singalong-core.mjs?v=31';
+import { SING_SHAPES } from './singalong-core.mjs?v=32';
 
 const aliases={Db:'C#','D#':'Eb',Gb:'F#',Ab:'G#','A#':'Bb'};
 export function harmonyName(value){
@@ -19,7 +19,7 @@ export function estimatedCourse(spec){
   if(times.length&&time===times.at(-1)){steps[steps.length-1]={...item,index:steps.length-1};continue;}
   steps.push(item);times.push(time);
  }
- return {key:`${id}-${video}-estimate-v1`,video,url:`https://www.youtube.com/watch?v=${video}`,capo:0,estimated:true,source,steps,times,end:duration,note:'公開動画の音から推定した簡略伴奏（試験）。コード名や切替位置に誤りがあります。標準調弦・カポなしで、細かなリフや転回形を省いた形です。原曲の運指とは異なります。歌詞は動画・字幕か自分のテキストで確認してください。'};
+ return {key:`${id}-${video}-estimate-v1`,video,url:`https://www.youtube.com/watch?v=${video}`,capo:0,estimated:true,source,steps,times,end:duration,note:'公開動画の音から推定した簡略伴奏（試験）。コード名や切替位置に誤りがあります。標準調弦で細かなリフや転回形を省いた形です。カポと押さえ方は画面の案内に合わせてください。原曲の運指とは異なります。歌詞は動画・字幕か自分のテキストで確認してください。'};
 }
 
 export function correctedCourse(base,raw){

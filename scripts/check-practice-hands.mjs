@@ -40,7 +40,7 @@ assert.match(stringCheck(SMALL_GRIPS.Fm,1).title,/弾かない/);
 assert.match(stringCheck(CHORDS.Fm,3).title,/人差し指（セーハ）/);
 assert.match(stringCheck(CHORDS.C,1).title,/押さえず/);
 for(const lesson of Object.values(HAND_LESSONS)){assert.equal(videoId(lesson.video),lesson.video);assert.ok(lesson.start>=0&&lesson.page.startsWith('https://'));}
-const sw=readFileSync('practice/sw.js','utf8');for(const f of ['hand-guide.mjs?v=31','hand-guide-core.mjs?v=31','hand-guide.css?v=31','songs/hand-guide-provenance.json'])assert.ok(sw.includes(f));
+const sw=readFileSync('practice/sw.js','utf8');for(const f of ['hand-guide.mjs?v=32','hand-guide-core.mjs?v=32','hand-guide.css?v=32','songs/hand-guide-provenance.json'])assert.ok(sw.includes(f));
 const ui=readFileSync('practice/hand-guide.mjs','utf8');assert.doesNotMatch(ui,/MediaRecorder|getUserMedia|fetch\(|innerHTML|sendBeacon/);
 const app=readFileSync('practice/app.mjs','utf8');assert.ok(app.includes("mountPracticeUpdates("));
 const updates=readFileSync("practice/app-update.mjs","utf8");assert.ok(updates.includes("workerVersion(navigator.serviceWorker.controller)"), "offline readiness checks the controlling worker");

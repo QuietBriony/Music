@@ -4,8 +4,10 @@ export function mountPracticeShell({ studies, onSong, onStop }) {
   const dialog = $('song-browser');
   const search = $('song-search');
   document.querySelector('.sing-workspace').append(document.querySelector('.sing-performance-controls'));
+  document.querySelector('.sing-performance-controls').insertBefore($('sing-phrase').parentElement, $('sing-status'));
   // Keep the position beside the song; sensitivity settings stay optional.
   document.querySelector('.sing-progress-summary').append($('sing-progress'));
+  $('sing-settings').append($('sing-easy').parentElement, $('sing-arrangement-note'));
   for (const selector of ['.sing-legend', '.sing-capo-label', '#sing-capo-note']) {
     $('sing-settings').append(document.querySelector(selector));
   }

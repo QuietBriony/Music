@@ -1,4 +1,4 @@
-export const PRACTICE_VERSION = '31';
+export const PRACTICE_VERSION = '32';
 
 // An old HTML document can outlive a deployment. Do not mount the new UI into it.
 export async function ensurePracticeShell(version = PRACTICE_VERSION) {

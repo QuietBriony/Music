@@ -38,9 +38,9 @@ body.singalong-mode .topbar{display:flex}.song-browser{width:min(700px,calc(100v
 #sing-input-options>span{display:inline-block;margin:10px 16px 0 0;font-size:.85rem}#sing-input-options .sing-mic-boost-label{margin-top:12px}
 .sing-course-label{margin:6px 0}.sing-layout-controls{margin:6px 0;gap:8px}
 .sing-workspace{grid-template-areas:'video shape' 'lyrics lyrics' 'actions actions'}
-.sing-workspace>.sing-performance-controls{grid-area:actions;position:static;margin:0}
+.sing-workspace>.sing-performance-controls{grid-area:actions;position:static;margin:0;min-width:0}
 .sing-diagram-only .sing-performance-controls{width:100%;order:1}.sing-diagram-only #sing-lyrics-host{order:2}
-@media(min-width:1000px) and (orientation:landscape){.sing-workspace{grid-template-areas:'video shape lyrics' 'video shape actions';grid-template-rows:auto 1fr}.sing-workspace>.sing-performance-controls{align-self:start}}
+@media(min-width:1000px) and (orientation:landscape){.sing-workspace{grid-template-columns:minmax(0,1.15fr) minmax(250px,.9fr) minmax(240px,.9fr);grid-template-areas:'video shape lyrics' 'video shape actions';grid-template-rows:auto 1fr}.sing-workspace>.sing-performance-controls{align-self:start}}
 @media(max-width:650px){.sing-workspace{grid-template-areas:'shape' 'actions' 'lyrics' 'video'}}
 
 /* Clear hierarchy: song, position, current fingering, then optional settings. */

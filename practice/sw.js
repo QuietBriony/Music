@@ -1,12 +1,13 @@
 // Deliberately scoped to /practice/. Never changes the root Music PWA cache.
-const CACHE = 'music-practice-v31';
-const SHELL = ['./lyric-notes.mjs?v=31', './songs/learning-provenance.json', './sanshin-core.mjs?v=31', './sanshin-view.mjs?v=31', './sanshin-guide.mjs?v=31', './sanshin.css?v=31', './songs/sanshin-provenance.json', './songs/tinsagu.mid', './', './index.html', './style.css?v=31', './presets.css?v=31', './app.mjs?v=31', './instrument-voice.mjs?v=31', './music.mjs?v=31', './midi.mjs?v=31', './chords.mjs?v=31', './scores.mjs?v=31', './singalong.mjs?v=31', './singalong-courses.mjs?v=31', './jigsaw-cues.mjs?v=31', './hand-guide.mjs?v=31', './hand-guide-core.mjs?v=31', './hand-guide.css?v=31', './songs/hand-guide-provenance.json', './songs/jigsaw-study.json', './video-cues.mjs?v=31', './singalong-core.mjs?v=31', './youtube.mjs?v=31', './singalong.css?v=31', './songs/singalong-provenance.json', './progress.mjs?v=31', './polyphonic.mjs?v=31', './lyrics.mjs?v=31', './lyric-presets.mjs?v=31', './session.css?v=31', './songs/lyrics-provenance.json', './songs/tokiyo-study.json', './tuner.mjs?v=31', './learning.mjs?v=31', './songs/amazing-grace.mid', './songs/twinkle.mid', './songs/ode-to-joy.mid', './songs/provenance.json', './manifest.webmanifest', './icon.svg', '../icons/icon-192.png', '../icons/icon-512.png', '../icons/apple-touch-icon.png'];
-SHELL.push('./song-support.mjs?v=31','./video-lyrics.mjs?v=31','./score-lyrics.mjs?v=31','./score-strip.mjs?v=31','./mic-input.mjs?v=31','./guitar-playlist.mjs?v=31','./guitar-playlist.css?v=31','./songs/guitar-playlist.json','./sanshin-playlist.mjs?v=31','./songs/sanshin-playlist.json','./tablet.css?v=31','./full-score.mjs?v=31','./full-score.css?v=31');
-SHELL.push('./chord-guide.mjs?v=31','./chord-guide.css?v=31');
-SHELL.push('./harmony-timeline.mjs?v=31','./estimated-courses.mjs?v=31','./auto-follow.css?v=31','./songs/auto-follow-provenance.json');
-SHELL.push('./app-shell.mjs?v=31','./app-shell.css?v=31');
-SHELL.push('./app-update.mjs?v=31','./first-song.mjs?v=31');
-const VERSION = '31';
+const CACHE = 'music-practice-v32';
+const SHELL = ['./lyric-notes.mjs?v=32', './songs/learning-provenance.json', './sanshin-core.mjs?v=32', './sanshin-view.mjs?v=32', './sanshin-guide.mjs?v=32', './sanshin.css?v=32', './songs/sanshin-provenance.json', './songs/tinsagu.mid', './', './index.html', './style.css?v=32', './presets.css?v=32', './app.mjs?v=32', './instrument-voice.mjs?v=32', './music.mjs?v=32', './midi.mjs?v=32', './chords.mjs?v=32', './scores.mjs?v=32', './singalong.mjs?v=32', './singalong-courses.mjs?v=32', './jigsaw-cues.mjs?v=32', './hand-guide.mjs?v=32', './hand-guide-core.mjs?v=32', './hand-guide.css?v=32', './songs/hand-guide-provenance.json', './songs/jigsaw-study.json', './video-cues.mjs?v=32', './singalong-core.mjs?v=32', './youtube.mjs?v=32', './singalong.css?v=32', './songs/singalong-provenance.json', './progress.mjs?v=32', './polyphonic.mjs?v=32', './lyrics.mjs?v=32', './lyric-presets.mjs?v=32', './session.css?v=32', './songs/lyrics-provenance.json', './songs/tokiyo-study.json', './tuner.mjs?v=32', './learning.mjs?v=32', './songs/amazing-grace.mid', './songs/twinkle.mid', './songs/ode-to-joy.mid', './songs/provenance.json', './manifest.webmanifest', './icon.svg', '../icons/icon-192.png', '../icons/icon-512.png', '../icons/apple-touch-icon.png'];
+SHELL.push('./song-support.mjs?v=32','./video-lyrics.mjs?v=32','./score-lyrics.mjs?v=32','./score-strip.mjs?v=32','./mic-input.mjs?v=32','./guitar-playlist.mjs?v=32','./guitar-playlist.css?v=32','./songs/guitar-playlist.json','./sanshin-playlist.mjs?v=32','./songs/sanshin-playlist.json','./tablet.css?v=32','./full-score.mjs?v=32','./full-score.css?v=32');
+SHELL.push('./chord-guide.mjs?v=32','./chord-guide.css?v=32');
+SHELL.push('./harmony-timeline.mjs?v=32','./estimated-courses.mjs?v=32','./auto-follow.css?v=32','./songs/auto-follow-provenance.json');
+SHELL.push('./app-shell.mjs?v=32','./app-shell.css?v=32');
+SHELL.push('./app-update.mjs?v=32','./first-song.mjs?v=32');
+SHELL.push('./song-coach.mjs?v=32');
+const VERSION = '32';
 const URLS = new Set(SHELL.map(path => new URL(path, self.location.href).href));
 const ASSET_PATHS = new Set([...URLS].map(url => new URL(url).pathname));
 const INDEX = new URL('./index.html', self.location.href).href;

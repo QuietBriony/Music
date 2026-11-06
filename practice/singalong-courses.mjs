@@ -1,7 +1,7 @@
-import { TOKIYO_STEPS,normalizeSingState } from './singalong-core.mjs?v=31';
-import { TOKIYO_VIDEO_ID,TOKIYO_TIMES,TOKIYO_END } from './video-cues.mjs?v=31';
-import { JIGSAW_STEPS,JIGSAW_TIMES,JIGSAW_END,JIGSAW_VIDEO_ID } from './jigsaw-cues.mjs?v=31';
-import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=31';
+import { TOKIYO_STEPS,normalizeSingState } from './singalong-core.mjs?v=32';
+import { TOKIYO_VIDEO_ID,TOKIYO_TIMES,TOKIYO_END } from './video-cues.mjs?v=32';
+import { JIGSAW_STEPS,JIGSAW_TIMES,JIGSAW_END,JIGSAW_VIDEO_ID } from './jigsaw-cues.mjs?v=32';
+import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=32';
 
 export const PREPARED_COURSES={
  ...ESTIMATED_COURSES,

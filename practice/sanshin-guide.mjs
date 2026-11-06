@@ -1,9 +1,10 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=31';
-import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=31';
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=31';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=31';
-import { lessonPlayer } from './youtube.mjs?v=31';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=32';
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=32';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=32';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=32';
+import { lessonPlayer } from './youtube.mjs?v=32';
 export const SANSHIN_VIDEOS = Object.fromEntries(SANSHIN_PLAYLIST.tracks.map(t=>[t.id,t]));
+import { timePhrase } from './song-coach.mjs?v=32';
 const storageKey=id=>`music-practice-sanshin-video-${id}-v1`;
 const timeLabel=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 export function mountSanshinGuide({onTakeOver}) {
@@ -20,9 +21,13 @@ export function mountSanshinGuide({onTakeOver}) {
     for(const id of ['play','pause','back','speed','a','b','score-start'])$(id).disabled=!ready;
     // YouTube seekTo may play a merely cued video. Rewind only an already playing/paused video.
     $('back').disabled=!ready||![1,2].includes(player?.getPlayerState?.());
+    const duration=Number(player?.getDuration?.())||0;
+    for(const id of ['seek','phrase'])$(id).disabled=!ready||duration<1;
+    $('phrase-next').disabled=!ready||b-a<1||b>=duration-1;
+    $('seek').max=duration||1;if(document.activeElement!==$('seek'))$('seek').value=position;
     $('loop').disabled=!ready||b-a<1;$('loop').checked=loop;
     $('loop-state').textContent=b-a>=1?`${timeLabel(a)} → ${timeLabel(b)}`:'始めと終わりをA・Bで指定';
-    $('video-time').textContent=timeLabel(position);lyrics.position({videoTime:position,stepTime:0,ready});
+    $('video-time').textContent=`${timeLabel(position)} / ${timeLabel(duration)}`;lyrics.position({videoTime:position,stepTime:0,ready});
   }
   function destroy(){
     ticket++;clearInterval(timer);timer=null;
@@ -78,10 +83,18 @@ export function mountSanshinGuide({onTakeOver}) {
       player=instance;
     }catch{if(own===ticket){destroy();status('動画を読み込めませんでした。通信を確認するか、YouTubeで開いてください。');}}
   }
+  function seek(time){
+    if(!ready)return;const playing=player.getPlayerState()===1;position=Math.max(0,Math.min(Number(player.getDuration())||0,time));
+    player.seekTo(position,true);if(!playing)player.pauseVideo();remember();controls();
+  }
+  function repeatFrom(time){const range=timePhrase(time,Number(player?.getDuration?.()));if(!range)return;a=range.a;b=range.b;loop=true;seek(a);status('10秒ずつ繰り返します。慣れたら「次の10秒へ」。通し練習は反復を外してください。');}
+  $('seek').onchange=()=>{loop=false;seek($('seek').valueAsNumber);};
+  $('phrase').onclick=()=>{if(ready)repeatFrom(currentTime());};
+  $('phrase-next').onclick=()=>{if(ready)repeatFrom(b);};
   $('load').onclick=load;
   $('play').onclick=()=>{if(ready){if(loop&&(currentTime()<a||currentTime()>=b))player.seekTo(a,true);player.playVideo();status('再生中。分からない文字を押すと一時停止して指を確認できます。');}};
   $('pause').onclick=()=>{pause();status('一時停止しています。');};
-  $('back').onclick=()=>{if(ready){position=Math.max(0,currentTime()-5);player.seekTo(position,true);remember();controls();}};
+  $('back').onclick=()=>{if(ready)seek(Math.max(0,currentTime()-5));};
   $('score-start').onclick=()=>{if(ready&&SANSHIN_VIDEOS[song]?.scoreAt){loop=false;position=SANSHIN_VIDEOS[song].scoreAt;player.seekTo(position,true);player.playVideo();remember();controls();status('前奏の工工四から再生しています。分からない文字を押すと止められます。');}};
   $('speed').onchange=()=>{if(ready)player.setPlaybackRate(Number($('speed').value));};
   $('a').onclick=()=>{a=currentTime();if(b-a<1){b=0;loop=false;}remember();controls();};
@@ -102,7 +115,7 @@ export function mountSanshinGuide({onTakeOver}) {
       if(course){$('score-source').href=course.sheets[0].url;$('score-source').textContent=course.sheets[0].label+' ↗';$('score-source-note').textContent=course.note;}
       $('extra-sheets').replaceChildren(...(course?.sheets.slice(1)||[]).map(sheet=>{const a=document.createElement('a');a.href=sheet.url;a.textContent=sheet.label+' ↗';a.target='_blank';a.rel='noopener';a.onclick=pause;return a;}));
       $('video-note').textContent=song==='jidai'?'初めに先生の解説、途中から工工四と歌詞が表示されます。「前奏から再生」で3:30から始められます。動画と同じ調弦に合わせ、まず短い部分を繰り返しましょう。':'先生の動画を聴いて、同じ調弦に合わせます。工工四は動画や先生の掲載ページで確認できます。';
-      $('title').textContent=course?`${course.title} · 動画と指の位置`:'工工四から、指の位置を調べる';
+      $('title').textContent=course?`${course.title} · 工工四と弾き語り`:'工工四から、指の位置を調べる';
       if(course){$('source').href=course.source;$('source').textContent=`先生の掲載ページ（${course.credit}） ↗`;$('outside').href=`https://www.youtube.com/watch?v=${course.video}`;}
       lyrics.use(song?`video:sanshin:${song}`:'video:sanshin:lookup',course?.title||'工工四の指の確認');$('lyrics-host').hidden=!course;showSymbol(symbol);controls();status('「動画を読み込む」を押した時だけYouTubeへ接続します。');
       if(!dialog.open)dialog.showModal();$('dialog-body').scrollTop=0;
