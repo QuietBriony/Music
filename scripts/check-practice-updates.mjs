@@ -1,0 +1,57 @@
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import { readFileSync } from 'node:fs';
+import { readFirstSong, FIRST_SONGS } from '../practice/first-song.mjs';
+
+const source = readFileSync('practice/sw.js', 'utf8');
+function fixture({ htmlVersion = '31' } = {}) {
+  const listeners = {}, stores = new Map();
+  let clients = [{ id: 'one', url: 'https://example.test/practice/' }], network = 0, skipped = 0;
+  const key = request => typeof request === 'string' ? request : request.url;
+  const cacheFor = name => {
+    if (!stores.has(name)) stores.set(name, new Map());
+    const entries = stores.get(name);
+    return { async match(request) { return entries.get(key(request))?.clone(); },
+      async addAll(requests) { for (const request of requests) entries.set(key(request), new Response(new URL(request.url).pathname.match(/practice\/(index.html)?$/) ? `<meta name="practice-version" content="${htmlVersion}">` : 'snapshot:' + request.url)); },
+      async put(request, response) { entries.set(key(request), response); } };
+  };
+  const caches = { open: async name => cacheFor(name), keys: async () => [...stores.keys()], delete: async name => stores.delete(name) };
+  vm.runInNewContext(source, { URL, Request, Response, caches, fetch: async () => { network++; return new Response('different-deployment'); },
+    self: { location: { href: 'https://example.test/practice/sw.js' }, clients: { claim: async () => {}, matchAll: async () => clients },
+      skipWaiting: async () => { skipped++; }, addEventListener: (type, listener) => { listeners[type] = listener; } } });
+  const fire = async (type, options = {}) => {
+    let promise; listeners[type]({ ...options, waitUntil: p => { promise = p; }, respondWith: p => { promise = p; } }); return promise;
+  };
+  return { fire, caches, stores, network: () => network, skipped: () => skipped, setClients: value => { clients = value; } };
+}
+
+const f = fixture();
+await (await f.caches.open('music-practice-v30')).put('https://example.test/practice/app.mjs?v=30', new Response('old-module'));
+await f.caches.open('unrelated-root-cache');
+await f.fire('install'); assert.equal(f.skipped(), 0, 'Installing an update does not interrupt practice');
+await f.fire('activate'); assert.ok(f.stores.has('music-practice-v30'), 'Activation preserves modules used by other tabs');
+for (const path of ['/?practice-update=31', '/index.html?from=home', '/index.html#reading-help']) {
+  const response = await f.fire('fetch', { request: { url: 'https://example.test/practice' + path, method: 'GET', mode: 'navigate' } });
+  assert.match(await response.text(), /content="31"/, 'Navigation gets the installed HTML, including queries and fragments');
+}
+const asset = await f.fire('fetch', { request: { url: 'https://example.test/practice/app.mjs?v=31', method: 'GET', mode: 'cors' } });
+assert.match(await asset.text(), /snapshot:/); assert.equal(f.network(), 0, 'A live deployment cannot mix new JS with installed HTML');
+const previous = await f.fire('fetch', { request: { url: 'https://example.test/practice/app.mjs?v=30', method: 'GET', mode: 'cors' } });
+assert.equal(await previous.text(), 'old-module', 'An older open tab gets its matching module');
+for (const request of [{ url: 'https://example.test/private', method: 'GET', mode: 'cors' }, { url: 'https://example.test/practice/', method: 'POST', mode: 'cors' }]) assert.equal(await f.fire('fetch', { request }), undefined);
+let reported; await f.fire('message', { data: { type: 'PRACTICE_VERSION' }, ports: [{ postMessage: value => { reported = value.version; } }] }); assert.equal(reported, '31');
+await f.fire('message', { data: { type: 'PRACTICE_ACTIVATE' }, ports: [] }); assert.equal(f.skipped(), 1, 'Activation needs the explicit update command');
+f.setClients([{ id: 'one', url: 'https://example.test/practice/' }, { id: 'two', url: 'https://example.test/practice/index.html' }]);
+await f.fire('message', { data: { type: 'PRACTICE_CLEAN', version: '31' }, source: { id: 'one' }, ports: [] }); assert.ok(f.stores.has('music-practice-v30'));
+f.setClients([{ id: 'one', url: 'https://example.test/practice/' }]);
+await f.fire('message', { data: { type: 'PRACTICE_CLEAN', version: '30' }, source: { id: 'one' }, ports: [] }); assert.ok(f.stores.has('music-practice-v30'), 'An old document cannot clean newer caches');
+await f.fire('message', { data: { type: 'PRACTICE_CLEAN', version: '31' }, source: { id: 'one' }, ports: [] });
+assert.ok(!f.stores.has('music-practice-v30')); assert.ok(f.stores.has('music-practice-v31')); assert.ok(f.stores.has('unrelated-root-cache'));
+const stale = fixture({ htmlVersion: '30' }); await stale.caches.open('music-practice-v30');
+await assert.rejects(() => stale.fire('install'), /Incomplete practice release/);
+assert.ok(!stale.stores.has('music-practice-v31')); assert.ok(stale.stores.has('music-practice-v30')); assert.equal(stale.skipped(), 0);
+assert.deepEqual(readFirstSong(null), { guitar: { step: 0 }, sanshin: { step: 0 } });
+assert.deepEqual(readFirstSong({ guitar: { step: 3 }, sanshin: { step: -1 }, injected: true }), { guitar: { step: 3 }, sanshin: { step: 0 } });
+assert.equal(readFirstSong({ guitar: { step: '3' } }).guitar.step, 0);
+assert.equal(FIRST_SONGS.guitar.song, 'twinkle'); assert.equal(FIRST_SONGS.sanshin.song, 'tinsagu');
+console.log('Practice updates: coherent snapshot, staged activation, old tabs, safe cleanup, stale HTML rejection and independent first-song progress PASS');
