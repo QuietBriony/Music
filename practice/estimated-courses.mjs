@@ -1,5 +1,5 @@
-import { estimatedCourse } from './harmony-timeline.mjs?v=32';
-import { songSteps } from './singalong-core.mjs?v=32';
+import { estimatedCourse } from './harmony-timeline.mjs?v=33';
+import { songSteps } from './singalong-core.mjs?v=33';
 
 // Harmonic labels and numerical beat positions only. See songs/auto-follow-provenance.json.
 const specs=[
@@ -86,3 +86,16 @@ const yesSections=[
 ];
 const yesTimes=yesSections.flatMap(s=>{let beat=0;const total=s.bars.reduce((a,b)=>a+b,0);return s.bars.map(b=>{const time=s.start+(s.end-s.start)*beat/total;beat+=b;return time;});});
 ESTIMATED_COURSES['yes-my-love']={key:'yes-my-love-kr1n2Pzn4eA-section-v1',video:'kr1n2Pzn4eA',url:'https://www.youtube.com/watch?v=kr1n2Pzn4eA',capo:5,estimated:true,precision:'section',source:'https://www.youtube.com/watch?v=kr1n2Pzn4eA',steps:songSteps(yesSections),times:yesTimes,end:258.181,note:'山田まさひろの歌詞・コード付き通し動画。カポ5。演奏区間を補間した目安の自動送りで、細かな切替にはずれがあります。Dm7-5はD音を省いたFmの3本の形に簡略化しています。合わないコード・位置は下の補正で直せます。歌詞は動画内に表示します。'};
+
+// Harmonic corrections only; preserve step identities and personal timing edits.
+// Primary teacher references and scope are recorded in material-provenance.json.
+const reviewedNames={
+ santeria:{Bm:'B','C#':'C#m',Eb:'B',Ebm:'B'},
+ 'sleep-last-night':{Ebm:'Eb','G#m':'G#'},
+ blackbird:{'C#':'A7'}
+};
+for(const [id,names] of Object.entries(reviewedNames)){
+ const course=ESTIMATED_COURSES[id];course.steps=course.steps.map(step=>({...step,name:names[step.name]||step.name}));
+ course.note+=' 教材の和音と照合して一部のコード名を修正済み。切替時刻や未確認の箇所は推定のままです。';
+}
+ESTIMATED_COURSES.blackbird.note+=' C♯の経過音は、教材のA7/C♯から低音を省いたA7で案内します。';

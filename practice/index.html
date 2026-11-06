@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="practice-version" content="32">
+  <meta name="practice-version" content="33">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f6f3ec">
   <meta name="description" content="ギターはコード図と指ガイド、三線は工工四。調弦から好きな曲の弾き語りまで、自分のペースで練習。">
@@ -10,19 +10,20 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="icon.svg">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=32">
-  <link rel="stylesheet" href="presets.css?v=32">
-  <link rel="stylesheet" href="session.css?v=32">
-  <link rel="stylesheet" href="singalong.css?v=32">
-  <link rel="stylesheet" href="hand-guide.css?v=32">
-  <link rel="stylesheet" href="sanshin.css?v=32">
-  <link rel="stylesheet" href="tablet.css?v=32">
-  <link rel="stylesheet" href="full-score.css?v=32">
-  <link rel="stylesheet" href="guitar-playlist.css?v=32">
-  <link rel="stylesheet" href="auto-follow.css?v=32">
-  <link rel="stylesheet" href="chord-guide.css?v=32">
-  <link rel="stylesheet" href="app-shell.css?v=32">
-  <script type="module" src="app.mjs?v=32"></script>
+  <link rel="stylesheet" href="style.css?v=33">
+  <link rel="stylesheet" href="presets.css?v=33">
+  <link rel="stylesheet" href="session.css?v=33">
+  <link rel="stylesheet" href="singalong.css?v=33">
+  <link rel="stylesheet" href="hand-guide.css?v=33">
+  <link rel="stylesheet" href="sanshin.css?v=33">
+  <link rel="stylesheet" href="tablet.css?v=33">
+  <link rel="stylesheet" href="full-score.css?v=33">
+  <link rel="stylesheet" href="guitar-playlist.css?v=33">
+  <link rel="stylesheet" href="auto-follow.css?v=33">
+  <link rel="stylesheet" href="chord-guide.css?v=33">
+  <link rel="stylesheet" href="app-shell.css?v=33">
+  <script type="module" src="app.mjs?v=33"></script>
+<link rel="stylesheet" href="./materials.css?v=33">
 </head>
 <body>
 <div class="page">
@@ -44,7 +45,7 @@
       <label class="sing-course-label">練習する曲<select id="sing-course"></select></label><h2 id="sing-course-title"></h2><div class="sing-progress-summary"><progress id="sing-song-progress" max="1" value="0" aria-label="曲の進み具合"></progress></div><details id="sing-settings" class="sing-settings"><summary>表示・練習の設定 <span id="sing-guide-quality"></span></summary><div class="sing-layout-controls"><button id="sing-layout">コード図を大きく</button><button id="sing-warmup" hidden>先に導入コードを練習</button><a id="sing-outside" target="_blank" rel="noopener">動画を別画面で開く ↗</a><label class="guitar-guide-choice">押さえ方の表示<select id="sing-guide-mode" data-guitar-guide-select><option value="fingers">指ガイド付き（はじめて）</option><option value="diagram">コード図だけ</option><option value="names">コード名だけ（慣れたら）</option></select></label></div>
       <p id="sing-support" class="song-support"></p></details><div class="sing-follow-controls"><label><input id="sing-follow" type="checkbox" checked> <span id="sing-follow-label">動画に合わせてコード図を進める</span></label><span id="sing-follow-note"></span></div>
       <div class="sing-workspace">
-        <div class="sing-video-card"><div id="sing-player"></div><div class="sing-load-area"><button id="sing-load" class="primary">YouTubeの動画を読み込む</button><p id="sing-reference-note"></p><button id="sing-clock-start">別画面の動画に合わせてコード送り</button><p id="sing-clock-note" class="small" role="status"></p><p class="small">押したときだけYouTubeへ接続します。動画・歌詞は配信元の表示を使います。動画は通信が必要です。</p></div><div class="sing-video-controls"><button id="sing-play" disabled>▶ 再生</button><button id="sing-pause" disabled>■ 動画・マイクを止める</button><button id="sing-back" disabled>5秒戻る</button><button id="sing-song-start" disabled>演奏の始めから</button><label>動画の速さ<select id="sing-speed" disabled><option value="1">ふつう</option></select></label><span id="sing-video-time">0:00</span></div><label class="song-seek-label">曲の位置<input id="sing-seek" type="range" min="0" max="1" step="0.1" value="0" disabled></label><div class="song-practice-tools"><button id="sing-phrase" disabled>ここから4コードを反復</button><button id="sing-phrase-next" disabled>次の区間へ</button><label><input id="sing-wait" type="checkbox"> 押さえ替えで待つ</label><button id="sing-continue" class="primary" hidden>押さえた・続ける ▶</button></div><div class="sing-loop-controls"><button id="sing-a" disabled>A：ここから</button><button id="sing-b" disabled>B：ここまで</button><label><input id="sing-loop" type="checkbox" disabled> ここを繰り返す</label><span id="sing-loop-state"></span></div><div class="sing-source-links"><a id="sing-source" target="_blank" rel="noopener">YouTubeで開く ↗</a><a id="sing-lesson-link" target="_blank" rel="noopener">参考レッスン ↗</a></div></div>
+        <div class="sing-video-card"><label id="sing-material-choice" class="material-choice" hidden>練習に使う動画<select id="sing-material"><option value="material">歌詞付き教材とコード図</option><option value="original">以前の参考動画と推定コード</option></select><span class="small">歌詞・補正・練習位置は動画別に保存します。</span></label><div id="sing-player"></div><div class="sing-load-area"><button id="sing-load" class="primary">YouTubeの動画を読み込む</button><p id="sing-reference-note"></p><button id="sing-clock-start">別画面の動画に合わせてコード送り</button><p id="sing-clock-note" class="small" role="status"></p><p class="small">押したときだけYouTubeへ接続します。動画・歌詞は配信元の表示を使います。動画は通信が必要です。</p></div><div class="sing-video-controls"><button id="sing-play" disabled>▶ 再生</button><button id="sing-pause" disabled>■ 動画・マイクを止める</button><button id="sing-back" disabled>5秒戻る</button><button id="sing-song-start" disabled>演奏の始めから</button><label>動画の速さ<select id="sing-speed" disabled><option value="1">ふつう</option></select></label><span id="sing-video-time">0:00</span></div><label class="song-seek-label">曲の位置<input id="sing-seek" type="range" min="0" max="1" step="0.1" value="0" disabled></label><div class="song-practice-tools"><button id="sing-phrase" disabled>ここから4コードを反復</button><button id="sing-phrase-next" disabled>次の区間へ</button><label><input id="sing-wait" type="checkbox"> 押さえ替えで待つ</label><button id="sing-continue" class="primary" hidden>押さえた・続ける ▶</button></div><div class="sing-loop-controls"><button id="sing-a" disabled>A：ここから</button><button id="sing-b" disabled>B：ここまで</button><label><input id="sing-loop" type="checkbox" disabled> ここを繰り返す</label><span id="sing-loop-state"></span></div><div class="sing-source-links"><a id="sing-source" target="_blank" rel="noopener">YouTubeで開く ↗</a><a id="sing-lesson-link" target="_blank" rel="noopener">参考レッスン ↗</a></div></div>
         <section class="sing-shape-card" aria-label="今と次に押さえるコード"><div class="sing-target-row"><div><span id="sing-target-label">次に押さえるコード</span><strong id="sing-target">C</strong></div><div class="sing-next"><span class="sing-next-label">次に変わるコード</span><strong id="sing-next">—</strong><span id="sing-next-countdown"></span><div id="sing-next-diagram" class="chord-track-grip"></div></div></div><p id="sing-section"></p><div id="sing-diagram"></div><details id="sing-finger-details" open><summary>指の置き方・弾く弦</summary><ol id="sing-fingers"></ol><p id="sing-strum-guide" class="chord-strum-guide"></p><p id="sing-fingering"></p></details><button id="sing-hand-open" class="hand-open-guide">手の形・指の置き方を見る</button><p class="sing-legend">○ 開放 · × 弾かない<br>1 人差し指 · 2 中指 · 3 薬指 · 4 小指</p><div class="song-practice-tools"><button id="sing-easy">かんたんな形</button><button id="sing-reference">元のコード</button></div><p id="sing-arrangement-note" class="small"></p><label class="sing-capo-label">カポとコード図を一緒に替える<select id="sing-capo"></select></label><p id="sing-capo-note"></p><p id="sing-capo-badge" class="sing-capo-badge"></p></section>
       </div>
       <section id="sing-lyrics-host" aria-label="この曲の歌詞とコード"></section><div class="sing-performance-controls"><div><button id="sing-previous">← 前のコード</button><button id="sing-advance" class="primary">次のコード →</button><button id="sing-restart">最初から</button></div><div><button id="sing-mic">マイクで合ったら次へ（試験）</button><button id="sing-mic-stop" disabled>マイク停止</button></div><p id="sing-status" role="status"></p></div>
@@ -132,7 +133,7 @@
     <details class="local-lyrics learning-card" id="lyric-editor"><summary>歌詞と譜面の位置を合わせる</summary><h3 id="lyric-song-title"></h3><p class="small">歌詞はこの端末だけに保存します。LRCの[00:12.50]形式で時刻を入れるか、行を選んで「現在の位置に合わせる」を押します。[C]歌詞[Am]のようなコード付きテキストから、コード譜と仮ガイドを作ることもできます。</p><label class="lyric-file-label">歌詞ファイルを開く（UTF-8・80 KBまで）<input id="lyric-file" type="file" accept=".txt,.lrc,.cho,.chordpro,text/plain"></label><p class="small">時刻付きのLRCも選べます。開くだけでは今の歌詞を上書きしません。</p><label>歌詞・LRC・コード付きテキスト（2万字・200行まで）<textarea id="lyric-input" maxlength="20000" rows="7" placeholder="ここに手元の歌詞やLRCを貼り付ける"></textarea></label><div class="lyric-actions"><button id="lyric-save">端末に保存して表示</button><button id="chord-sheet-import">コード譜と歌詞を読み込む</button><button id="lyric-download">LRCで保存</button><button id="lyric-clear">この曲の歌詞を削除</button><button id="lyric-restore" hidden>収録歌詞に戻す</button></div><p id="lyric-status" class="small" role="status"></p><details class="lyric-notes-editor"><summary>読み方・標準語の意味を付ける（任意）</summary><p class="small">歌詞を先に保存し、同じ行数で入れます。空行で省略できます。歌詞を変更すると、以前の読み方・意味は外れます。入力内容はこの端末だけに保存します。</p><label>読み方<textarea id="lyric-reading-input" rows="4" maxlength="20000"></textarea></label><label>標準語の意味・訳<textarea id="lyric-meaning-input" rows="4" maxlength="20000"></textarea></label><button id="lyric-notes-save">読み方と意味を保存</button></details><label>合わせる歌詞の行<select id="lyric-line"></select></label><p id="lyric-time" class="small"></p><div class="lyric-actions"><button id="lyric-mark">この行を現在の位置に合わせる</button><button id="lyric-unmark">この行の時刻を外す</button></div><label class="check-label"><input id="lyric-follow" type="checkbox"> 譜面・ガイドに追従</label><p id="lyric-cues" class="small"></p><p id="lyric-credit" class="small"></p><p id="lyric-current" class="lyric-current"></p><div class="lyric-actions"><button id="lyric-prev">前の行</button><span id="lyric-position"></span><button id="lyric-next">次の行</button></div></details>
     <details class="help"><summary>設定・今回できること</summary><div><p>調弦はギター標準調弦と三線の本調子。曲の練習では正しい単音が少し安定すると進みます。コードは一弦ずつの確認か、コード全体を推定する試験機能を選べます。転回形や指の位置はマイクだけでは確定できません。</p><label>マイク感度<select id="sensitivity"><option value="0.003">小さな音も拾う</option><option value="0.006" selected>標準</option><option value="0.014">周りの音を抑える</option></select></label><p>内蔵の曲はAmazing Grace・きらきら星・歓喜の歌の練習版です。「好きな曲」の参照動画と、曲全体の譜面データの内蔵は区別しています。時間よ止まれは歌詞・コード付き通し動画と、3段階のかんたん練習。Santeria・Blackbirdは導入コードの簡易練習、Jigsaw Falling Into Placeは標準調弦＋カポ2のかんたん伴奏で通し動画にコード図が追従、三線は、てぃんさぐぬ花の1節をやさしい工工四と自動の指図で練習できます。時代の流れは先生の動画と手動の指図で練習し、工工四と歌詞は動画に表示されます。</p><p>MIDIは形式0/1・PPQ・512音までの旋律。PDF・画像・録音からの採譜は未対応です。歌詞は端末だけに保存し、LRCや位置合わせで譜面・ガイドに追従できます。Santeria・Blackbirdなどの歌詞全文は同梱しません。</p><p>iPhoneはSafariの共有から「ホーム画面に追加」。Androidはブラウザのインストールから追加できます。「オフライン準備OK」の後は、調弦・内蔵曲・コード・読み方を通信なしで使えます。参照動画を見るときは通信が必要です。</p><p>音声は録音・送信しません。実楽器・実iPhoneでの精度は未確認です。</p></div></details>
   </main>
-  <footer><span>MUSIC STACK / PRACTICE 32</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
+  <footer><span>MUSIC STACK / PRACTICE 33</span><a href="../listen.html">Listenへ戻る ↗</a></footer>
 </div>
 <dialog id="hand-dialog" aria-labelledby="hand-title">
  <header id="hand-header" class="hand-header"><div><small>指をひとつずつ、置いてみる</small><h2 id="hand-title">手の作り方</h2></div><button id="hand-close">練習へ戻る ×</button><nav aria-label="押さえ方の見方"><button id="hand-to-steps">指の順番</button><button id="hand-to-change" hidden>つなぎ方</button><button id="hand-to-posture">手の形</button><button id="hand-to-video">手元動画</button></nav></header>
@@ -148,8 +149,8 @@
  <header><h2 id="sanshin-title">工工四から、指の位置を調べる</h2><button id="sanshin-close">練習へ戻る ×</button></header>
  <div id="sanshin-reading-controls" class="sanshin-view-controls" hidden><button id="sanshin-score-view" aria-pressed="true">動画の工工四を大きく見る</button><button id="sanshin-finger-view" aria-pressed="false">止めて指の位置を確認</button><span>工工四・歌詞は動画内の表示。アプリの指図は文字を選んで確認します。</span></div>
  <div id="sanshin-dialog-body"><div class="sanshin-guide-layout">
-  <section id="sanshin-video" hidden aria-label="三線の参考動画"><div id="sanshin-player"></div><button id="sanshin-load" class="primary">YouTubeの動画を読み込む</button>
-   <p id="sanshin-video-note"></p>
+  <section id="sanshin-video" hidden aria-label="三線の参考動画"><label id="sanshin-material-choice" class="material-choice" hidden>練習する教材<select id="sanshin-material"><option value="performance">歌詞・工工四付きの通し練習</option><option value="original">以前の指のレッスン</option></select></label><div id="sanshin-player"></div><button id="sanshin-load" class="primary">YouTubeの動画を読み込む</button>
+   <p id="sanshin-video-note"></p><nav id="sanshin-chapters" class="lesson-chapters" aria-label="教材の練習場所"></nav><p id="sanshin-chapter-state" class="lesson-position" role="status"></p><label class="lesson-finish"><input id="sanshin-finish-stop" type="checkbox" checked> 教材の演奏が終わったら止める</label>
    <div class="sanshin-video-controls"><button id="sanshin-play" disabled>▶ 再生</button><button id="sanshin-pause" disabled>一時停止</button><button id="sanshin-back" disabled>5秒戻る</button><label>速さ<select id="sanshin-speed" disabled><option value="1">ふつう</option></select></label><span id="sanshin-video-time">0:00</span></div>
    <label class="song-seek-label">曲の位置<input id="sanshin-seek" type="range" min="0" max="1" step="0.1" value="0" disabled></label><div class="song-practice-tools"><button id="sanshin-phrase" disabled>ここから10秒を反復</button><button id="sanshin-phrase-next" disabled>次の10秒へ</button><p class="small">まず聴く → ゆっくり弾く → 歌を重ねる。反復を外すと最後まで続きます。</p></div><div class="sanshin-video-controls"><button id="sanshin-score-start" disabled hidden>前奏から再生（3:30）</button><button id="sanshin-a" disabled>A：ここから</button><button id="sanshin-b" disabled>B：ここまで</button><label><input type="checkbox" id="sanshin-loop" disabled> 反復</label><span id="sanshin-loop-state"></span></div>
    <p id="sanshin-video-status" role="status"></p><a id="sanshin-score-source" href="https://toyosanshin.hatenablog.com/entry/2020/12/30/120612" target="_blank" rel="noopener" hidden>時代の流れの工工四を掲載ページで見る（豊岡マッシー） ↗</a><span id="sanshin-extra-sheets"></span><p id="sanshin-score-source-note" hidden>別の先生の工工四です。動画と節回し・譜割りが違う場合があります。アプリ内の譜面・自動送りは未収録です。</p><a id="sanshin-source" target="_blank" rel="noopener">譜面・解説 ↗</a><a id="sanshin-outside" target="_blank" rel="noopener">YouTubeで見る ↗</a>

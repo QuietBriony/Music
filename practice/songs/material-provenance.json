@@ -1,0 +1,104 @@
+{
+  "checked": "2026-11-06",
+  "scope": "Harmonic names, numerical times, source links and teaching navigation only. No lyrics, melodic scores, screenshots or audio/video are redistributed.",
+  "newNativeGuides": [
+    {
+      "id": "imagine",
+      "video": "oFWhUvOFQxc",
+      "harmonySource": "https://chordu.com/chords-tabs-imagine-id_oFWhUvOFQxc",
+      "bpm": 139.6,
+      "duration": 212,
+      "kind": "public simplified harmony; corrected with publisher video"
+    },
+    {
+      "id": "woman",
+      "video": "2WnFu1hij7c",
+      "harmonySource": "https://chordu.com/chords-tabs-woman-id_2WnFu1hij7c",
+      "bpm": 160.15,
+      "duration": 235,
+      "kind": "public simplified harmony; corrected with publisher video"
+    }
+  ],
+  "precision": "Both new native guides still use automatically estimated beat positions. Inspected chord pages are not evidence of exact change times. Rejected guessed whole-song section interpolations were not retained.",
+  "inspection": {
+    "imagine": {
+      "video": "oFWhUvOFQxc",
+      "frames": [
+        8,
+        16.7,
+        40,
+        46.6,
+        76.5,
+        91.6,
+        100,
+        121.5,
+        151.6,
+        160,
+        181.4
+      ],
+      "corrections": "D to Dm; stray Em to E in the chorus; final passing bass labels to C; non-performance tail to rests. Slash bass notes omitted."
+    },
+    "woman": {
+      "video": "2WnFu1hij7c",
+      "frames": [
+        23.3,
+        68.2,
+        122.8,
+        182.7
+      ],
+      "corrections": "Eb-major chorus and E-major after modulation replace estimated upper-triad Gm/Abm labels; unrelated leading/trailing audio is not judged. Extensions are simplified. Teacher uses capo 1; easy native shapes use capo 3 at the same sounding pitch."
+    }
+  },
+  "originalCorrections": {
+    "santeria": {
+      "source": "https://guitarlessons365.com/santeria-guitar-lesson-sublime/",
+      "changes": "Bm to B, C# to C#m, Eb/Ebm passing-bass labels to B. Timing and other sections remain estimates."
+    },
+    "sleep-last-night": {
+      "source": "https://songnotes.net/lessons/102/",
+      "changes": "Ebm/Abm estimates to Eb/Ab for the major E/A shapes in the half-step-down recording. Timing remains estimated."
+    },
+    "blackbird": {
+      "source": "https://www.youtube.com/watch?v=2EPFtnTex9g",
+      "changes": "C# estimates replaced with A7, the publisher A7/C# with its slash bass omitted. Other chromatic motion and timing remain unverified."
+    }
+  },
+  "sanshin": "Publisher videos visually inspected. Late performance sections of Shimauta, Jidai, Warabigami, Nadasoso and Tinsagu are separated from the preceding explanations. Course scope is stated rather than claiming every original verse. No native note-level maps are inferred from video images.",
+  "storage": "Each guitar material has independent position/capo/custom sequence and correction key. The old lyric key remains available on the original material. New videos receive a video-specific lyric key. No upload. Sanshin Anata performance has independent video-specific position and lyric keys; legacy lesson sessions remain reachable.",
+  "media": "Manual load and manual playback. Missing/embedding-disabled videos use an explicit external publisher link. Only existing production hosts.",
+  "sanshinPerformance": {
+    "anata-ni": {
+      "video": "yTmLDZZFDrA",
+      "source": "https://miyazatohidekatsu.com/sanshin/",
+      "start": 690,
+      "end": 865,
+      "inspected": [
+        505,
+        689,
+        692,
+        699,
+        709,
+        827,
+        849,
+        858,
+        869
+      ],
+      "scope": "Teacher arrangement from prelude through part 11; not every original repeat. Prior c9It3inn_qo lesson and private drafts remain independently selectable."
+    },
+    "sanshinnohana": {
+      "video": "Ot38HOn_y08",
+      "start": 180,
+      "end": 546,
+      "inspected": [
+        176,
+        186,
+        242,
+        403,
+        515,
+        535,
+        548,
+        559
+      ]
+    }
+  }
+}

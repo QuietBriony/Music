@@ -1,4 +1,4 @@
-import { mountLyrics } from './lyrics.mjs?v=32';
+import { mountLyrics } from './lyrics.mjs?v=33';
 
 // Reuse the same bounded, local-only lyric editor with independent DOM ids.
 export function mountVideoLyrics(host,prefix,{steps=false,onImport,onSheet=()=>{},getVideoTime=null}={}){
@@ -19,18 +19,18 @@ export function mountVideoLyrics(host,prefix,{steps=false,onImport,onSheet=()=>{
  $('lyric-editor').querySelector('p').textContent=hint.textContent;
  $('chord-sheet-import').hidden=$('chord-sheet-import').disabled=!onImport;
  if(onImport)$('chord-sheet-import').textContent='コードと歌詞を練習に使う';
- let id='',context={videoTime:0,stepTime:0,ready:false},lastDisplay=null;
+ let id='',context={videoTime:0,stepTime:0,ready:false},lastDisplay=null,inVideo=false;
  const key=()=>`music-practice-lyric-clock-v1:${id}`;
  const applyClock=()=>{api.position(clock.value==='steps'?context.stepTime:context.videoTime,clock.value==='steps'?'コード進行':'動画');};
  const api=mountLyrics({prefix:`${prefix}-`,timelineLabel:'動画',importMessage:'コード順と歌詞を保存しました。歌詞は1コード4拍の仮位置で、コードの進行に合わせます。',onImport:async value=>{
   const result=await onImport(value);if(result===false)return false;clock.value='steps';try{localStorage.setItem(key(),'steps');}catch{}api.import(value);applyClock();$('lyric-editor').open=false;return true;
- },onDisplay:display=>{lastDisplay=display;$('lyric-mark').disabled=!display.hasLyrics||(clock.value==='video'&&!context.ready);onSheet(display.sheet,clock.value);}});
+ },onDisplay:display=>{lastDisplay=display;host.dataset.source=inVideo&&!display.hasLyrics?'video':'text';$('lyric-mark').disabled=!display.hasLyrics||(clock.value==='video'&&!context.ready);onSheet(display.sheet,clock.value);}});
  const save=$('lyric-save').onclick;$('lyric-save').onclick=()=>{const previous=lastDisplay;save();if(lastDisplay!==previous)$('lyric-editor').open=false;};
  const mark=$('lyric-mark').onclick;$('lyric-mark').onclick=()=>{if(clock.value==='video'&&context.ready&&getVideoTime){const time=Number(getVideoTime());if(Number.isFinite(time)&&time>=0)context.videoTime=time;}applyClock();mark();};
  $('edit-lyrics').onclick=()=>api.open();
  clock.onchange=()=>{try{localStorage.setItem(key(),clock.value);}catch{}applyClock();};
  return{
-  use(next,title){if(next!==id){$('lyric-editor').open=false;$('lyric-reference').open=false;$('lyric-overview').open=false;}id=next;context={videoTime:0,stepTime:0,ready:false};let saved;try{saved=localStorage.getItem(key());}catch{}clock.value=steps&&saved==='steps'?'steps':'video';api.use(next,title);api.hint({primary:'歌詞は動画で見るか、手元の歌詞を下の編集欄へ。',secondary:'動画の位置に合わせると、この曲の歌詞も自動で進みます。'});applyClock();},
+  use(next,title,options={}){if(next!==id){$('lyric-editor').open=false;$('lyric-reference').open=false;$('lyric-overview').open=false;}id=next;inVideo=options.inVideo===true;context={videoTime:0,stepTime:0,ready:false};let saved;try{saved=localStorage.getItem(key());}catch{}clock.value=steps&&saved==='steps'?'steps':'video';api.use(next,title);api.hint({primary:inVideo?'歌詞は教材の画面で、演奏と一緒に進みます。':'歌詞は動画で見るか、手元の歌詞を下の編集欄へ。',secondary:inVideo?'自分の歌詞を使う場合は「編集」から。':'動画の位置に合わせると、この曲の歌詞も自動で進みます。'});applyClock();},
   position(value){context=value;applyClock();},
   open(){api.open();},
   get sheet(){return lastDisplay?.sheet;},get clock(){return clock.value;}

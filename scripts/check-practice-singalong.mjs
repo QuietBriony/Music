@@ -8,8 +8,26 @@ import { TOKIYO_TIMES,TOKIYO_VIDEO_ID,TOKIYO_END,cueAt } from '../practice/video
 import { spectrum } from './lib/practice-signal-fixtures.mjs';
 import { JIGSAW_STEPS,JIGSAW_TIMES,JIGSAW_END,JIGSAW_VIDEO_ID } from '../practice/jigsaw-cues.mjs';
 import { PREPARED_COURSES,courseState } from '../practice/singalong-courses.mjs';
+import { MATERIAL_COURSES,materialChoice,materialLyricKey } from '../practice/material-courses.mjs';
+import { SANSHIN_MATERIALS,sanshinMaterialChoice,sanshinSessionKey,sanshinLyricKey,lessonChapter } from '../practice/sanshin-materials.mjs';
 import { EASY_CAPOS,transposeChord,arrangeCourse,availableCapos,nextChange,changeCue,chordPhrase,timePhrase } from '../practice/song-coach.mjs';
 const id='KgKycz0uHbM';for(const url of [id,`https://youtu.be/${id}`,`https://www.youtube.com/watch?v=${id}`,`https://www.youtube-nocookie.com/embed/${id}`])assert.equal(videoId(url),id);
+assert.equal(Object.keys(MATERIAL_COURSES).length,8);
+for(const [id,course] of Object.entries(MATERIAL_COURSES)){
+ assert.equal(materialChoice(id,{videoTime:45}),'original');assert.equal(materialChoice(id,{material:true}),'material');
+ assert.equal(materialChoice(id,null),course.noNative?'original':'material');assert.equal(materialChoice(id,null,'original'),'original');
+ assert.notEqual(materialLyricKey(id,course),materialLyricKey(id,PREPARED_COURSES[id]));
+ if(course.noNative){assert.equal(course.steps.length,0);assert.equal(course.times.length,0);continue;}
+ const arranged=arrangeCourse(course,course.easyCapo);assert.equal(course.steps.length,course.times.length);assert.ok(course.estimated);
+ for(let i=0;i<course.times.length;i++){assert.ok(course.times[i]>=0&&course.times[i]<course.end&&(!i||course.times[i]>course.times[i-1]));assert.ok(course.steps[i].silent||SING_SHAPES[arranged.steps[i].name]);assert.equal(cueAt(course.times,course.times[i],0,course.end).index,i);}
+}
+assert.equal(materialLyricKey('imagine',PREPARED_COURSES.imagine),'video:guitar:imagine');
+assert.equal(Object.keys(SANSHIN_MATERIALS).length,8);
+for(const material of Object.values(SANSHIN_MATERIALS)){
+ assert.ok(material.start>=0);assert.ok(material.end===null||material.end>material.start);
+ for(let i=0;i<material.chapters.length;i++){const [time]=material.chapters[i];assert.ok(i===0||time>material.chapters[i-1][0]);assert.equal(lessonChapter(material,time).index,i);if(i)assert.equal(lessonChapter(material,time-.001).index,i-1);}
+}
+console.log('Materials: separate video/lyric identity, legacy preservation, two bounded guide timelines, six chart-only sources and eight chapter maps PASS');
 const pcs=(shape,capo)=>[...new Set(shape.frets.flatMap((f,i)=>f<0?[]:[([40,45,50,55,59,64][i]+f+capo)%12]))].sort((a,b)=>a-b);
 for(const [key,base] of Object.entries(PREPARED_COURSES)){
  const arranged=arrangeCourse(base,EASY_CAPOS[key]);assert.equal(arranged.key,base.key);assert.deepEqual(arranged.times,base.times);assert.ok(availableCapos(base).includes(EASY_CAPOS[key]));
@@ -40,7 +58,7 @@ for(const capo of [0,2,4,7])for(const name of ['C','Caug','Am','Dm','G','Em','A'
  const found=detectChord(spectrum(midis),48000,16384,{rms:.1,capo});assert.equal(found.name,name,`${name}, capo ${capo}`);assert.ok(found.confidence>=.65);checked++;
 }
 assert.equal(detectChord(spectrum([52,56,59]),48000,16384,{rms:.1,capo:4}).name,'C','capo-aware C shape is an E sounding chord');
-const sw=readFileSync('practice/sw.js','utf8');for(const name of ['singalong.mjs?v=32','singalong-core.mjs?v=32','youtube.mjs?v=32','singalong.css?v=32','songs/singalong-provenance.json'])assert.ok(sw.includes(name));assert.doesNotMatch(sw,/www\.youtube|googlevideo/);
+const sw=readFileSync('practice/sw.js','utf8');for(const name of ['singalong.mjs?v=33','singalong-core.mjs?v=33','youtube.mjs?v=33','singalong.css?v=33','songs/singalong-provenance.json'])assert.ok(sw.includes(name));assert.doesNotMatch(sw,/www\.youtube|googlevideo/);
 const source=readFileSync('practice/singalong.mjs','utf8');assert.doesNotMatch(source,/MediaRecorder|sendBeacon|innerHTML/);
 console.log(`Singalong: 110 harmonic targets, 11 sections, safe video URLs, loop bounds, local sequence validation and ${checked} capo-aware chord mixtures PASS`);
 
@@ -59,7 +77,7 @@ assert.deepEqual(inspected.filter(([time,name])=>TOKIYO_STEPS[cueAt(TOKIYO_TIMES
 assert.equal(normalizeSingState({offset:Infinity,videoTime:-4,follow:false},110).offset,0);
 assert.equal(normalizeSingState({offset:.4,videoTime:87.25,follow:false},110).videoTime,87.25);
 assert.equal(normalizeSingState({offset:.4,videoTime:87.25,follow:false},110).follow,false);
-assert.ok(sw.includes('video-cues.mjs?v=32'));
+assert.ok(sw.includes('video-cues.mjs?v=33'));
 console.log('Video sync: all 110 boundary pairs, backward seeks, offset bounds and 27 inspected reference positions PASS');
 
 assert.equal(JIGSAW_STEPS.length,101);assert.equal(JIGSAW_TIMES.length,101);assert.equal(new Set(JIGSAW_STEPS.map(s=>s.section)).size,14);
@@ -78,7 +96,7 @@ assert.equal(courseState(legacy,PREPARED_COURSES.tokiyo,TOKIYO_STEPS).videoTime,
 const migrated=courseState({...legacy,capo:0},PREPARED_COURSES.jigsaw,JIGSAW_STEPS);assert.equal(migrated.capo,2);assert.equal(migrated.index,0);assert.equal(migrated.videoTime,0);assert.equal(migrated.a,null);assert.equal(migrated.offset,0);assert.equal(migrated.follow,true);
 const same=courseState({...legacy,timeline:PREPARED_COURSES.jigsaw.key,capo:2},PREPARED_COURSES.jigsaw,JIGSAW_STEPS);assert.equal(same.videoTime,97.25);assert.equal(same.follow,false);
 const custom=courseState({index:1,capo:0,follow:false,videoTime:12},PREPARED_COURSES.jigsaw,readSteps('C Am'),true);assert.equal(custom.index,1);assert.equal(custom.capo,0);assert.equal(custom.videoTime,12);
-for(const file of ['singalong-courses.mjs?v=32','jigsaw-cues.mjs?v=32'])assert.ok(sw.includes(file));
+for(const file of ['singalong-courses.mjs?v=33','jigsaw-cues.mjs?v=33'])assert.ok(sw.includes(file));
 console.log('Two prepared courses: Jigsaw 101 targets/14 sections/eight open shapes, independent end times, capo-aware detection, legacy migration and custom-order preservation PASS');
 
 assert.equal(Object.keys(PREPARED_COURSES).length,11);
@@ -106,3 +124,11 @@ for(const capo of [0,2,4,7])for(const name of ['C#','Eb','F#','Bb','Ebm','F#m','
 console.log('All 11 course boundaries, explicit 9 uncertain guides, rests, enharmonic names, isolated bounded corrections and 64 new compact/standard capo mixtures PASS');
 let ms=0;const clock=practiceClock(10,2,()=>ms);ms=1000;assert.equal(clock.getCurrentTime(),2);clock.playVideo();ms=3000;assert.equal(clock.getCurrentTime(),4);clock.pauseVideo();ms=5000;assert.equal(clock.getCurrentTime(),4);clock.playVideo();clock.setPlaybackRate(.5);ms=7000;assert.equal(clock.getCurrentTime(),5);clock.seekTo(9);ms=11000;assert.equal(clock.getCurrentTime(),10);clock.destroy();ms=20000;assert.equal(clock.getCurrentTime(),10);assert.equal(clock.getPlayerState(),2);
 console.log('Separate-device local clock: explicit start, pause, speed, seek, end clamp and destroy PASS');
+
+assert.equal(sanshinMaterialChoice("anata-ni",null,false),"performance");
+assert.equal(sanshinMaterialChoice("anata-ni",null,true),"original");
+assert.equal(sanshinMaterialChoice("anata-ni","performance",true),"performance");
+assert.equal(sanshinMaterialChoice("anata-ni","performance",true,"original"),"original");
+assert.equal(sanshinSessionKey("anata-ni","original"),"music-practice-sanshin-video-anata-ni-v1");
+assert.notEqual(sanshinSessionKey("anata-ni","original"),sanshinSessionKey("anata-ni","performance"));
+assert.notEqual(sanshinLyricKey("anata-ni","original"),sanshinLyricKey("anata-ni","performance"));

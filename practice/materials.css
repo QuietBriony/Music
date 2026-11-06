@@ -1,0 +1,9 @@
+.material-choice{display:grid;gap:7px;margin:0 0 12px;font-weight:650;font-size:.8rem}.material-choice select{width:100%;font-weight:400}.material-choice .small{font-weight:400}
+.video-lyrics[data-source=video] .lyric-mini-nav,.video-lyrics[data-source=video] [id$=session-lyric-next],.video-lyrics[data-source=video] [id$=session-lyric-status]{display:none}
+.video-lyrics[data-source=video] [id$=session-lyric-current]{font-size:.8rem;line-height:1.6;margin:8px 0}
+.video-lyrics[data-source=video] .video-lyric-card{padding:10px 14px;margin-top:0;background:var(--paper,#fffdf8)}
+.lesson-chapters{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.lesson-chapters button{min-height:44px;font-size:.75rem;padding:8px 12px}.lesson-chapters button[aria-current=true]{background:var(--green);color:white}.lesson-position{font-size:.78rem;line-height:1.6;margin:8px 0}
+@media(min-width:1000px) and (orientation:landscape){.sing-workspace:has(#sing-lyrics-host[data-source=video]){grid-template-columns:minmax(0,1.7fr) minmax(270px,1fr);grid-template-areas:'video shape' 'lyrics actions';grid-template-rows:auto 1fr}.sing-workspace:has(#sing-lyrics-host[data-source=video]) .sing-video-card iframe{max-height:none}}
+@media(max-width:650px){.sing-workspace:has(#sing-lyrics-host[data-source=video]){grid-template-areas:'video' 'shape' 'actions' 'lyrics'}.sing-diagram-only .sing-workspace{display:flex}.material-choice{font-size:.75rem}}
+
+.lesson-finish{display:flex;flex-direction:row;align-items:center;gap:8px;font-size:.75rem;margin:12px 0}.lesson-finish input{width:auto;accent-color:var(--green)}

@@ -1,4 +1,4 @@
-import { SING_SHAPES } from './singalong-core.mjs?v=32';
+import { SING_SHAPES } from './singalong-core.mjs?v=33';
 
 const roots=['C','C#','D','Eb','E','F','F#','G','G#','A','Bb','B'];
 const aliases={Db:'C#','D#':'Eb',Gb:'F#',Ab:'G#','A#':'Bb'};

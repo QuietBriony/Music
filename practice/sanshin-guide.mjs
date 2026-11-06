@@ -1,20 +1,23 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=32';
-import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=32';
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=32';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=32';
-import { lessonPlayer } from './youtube.mjs?v=32';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=33';
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=33';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=33';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=33';
+import { lessonPlayer } from './youtube.mjs?v=33';
 export const SANSHIN_VIDEOS = Object.fromEntries(SANSHIN_PLAYLIST.tracks.map(t=>[t.id,t]));
-import { timePhrase } from './song-coach.mjs?v=32';
-const storageKey=id=>`music-practice-sanshin-video-${id}-v1`;
+import { SANSHIN_MATERIALS,ANATA_PERFORMANCE,ANATA_LESSON,sanshinMaterialChoice,sanshinSessionKey,sanshinLyricKey,lessonChapter } from './sanshin-materials.mjs?v=33';
+import { timePhrase } from './song-coach.mjs?v=33';
+const preferenceKey='music-practice-sanshin-material-anata-v1';
 const timeLabel=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 export function mountSanshinGuide({onTakeOver}) {
   const $=id=>document.getElementById(`sanshin-${id}`),dialog=$('dialog');
   const lyrics=mountVideoLyrics($('lyrics-host'),'sanshin-video-lyrics',{getVideoTime:currentTime});
-  let song=null,player=null,ready=false,ticket=0,timer=null,position=0,a=0,b=0,loop=false,shown='合';
+  let song=null,variant='original',player=null,ready=false,ticket=0,timer=null,position=0,a=0,b=0,loop=false,shown='合';
+  const materialForSong=()=>song==='anata-ni'&&variant==='original'?ANATA_LESSON:SANSHIN_MATERIALS[song];
+  const courseForSong=()=>song==='anata-ni'&&variant==='performance'?{...SANSHIN_VIDEOS[song],...ANATA_PERFORMANCE}:SANSHIN_VIDEOS[song];
   function status(text){$('video-status').textContent=text;}
   function remember(){
     if(!song)return;
-    try{localStorage.setItem(storageKey(song),JSON.stringify({position,a,b,loop}));}catch{/* Optional storage. */}
+    try{localStorage.setItem(sanshinSessionKey(song,variant),JSON.stringify({position,a,b,loop}));}catch{/* Optional storage. */}
   }
   function currentTime(){const t=Number(player?.getCurrentTime?.());return Number.isFinite(t)&&t>=0?t:position;}
   function controls(){
@@ -27,6 +30,7 @@ export function mountSanshinGuide({onTakeOver}) {
     $('seek').max=duration||1;if(document.activeElement!==$('seek'))$('seek').value=position;
     $('loop').disabled=!ready||b-a<1;$('loop').checked=loop;
     $('loop-state').textContent=b-a>=1?`${timeLabel(a)} → ${timeLabel(b)}`:'始めと終わりをA・Bで指定';
+    const material=materialForSong(),chapter=lessonChapter(material,position);for(const [i,button] of [...$('chapters').children].entries())button.setAttribute('aria-current',String(chapter?.index===i));$('chapter-state').textContent=chapter?`${chapter.label}${chapter.next?' · 次は '+chapter.next[1]:''}`:'';
     $('video-time').textContent=`${timeLabel(position)} / ${timeLabel(duration)}`;lyrics.position({videoTime:position,stepTime:0,ready});
   }
   function destroy(){
@@ -57,7 +61,7 @@ export function mountSanshinGuide({onTakeOver}) {
   }));
   async function load(){
     if(!song||!dialog.open)return;
-    destroy();const own=ticket,id=song,course=SANSHIN_VIDEOS[id];
+    destroy();const own=ticket,course=courseForSong();
     $('load').disabled=true;status('YouTubeの動画を読み込んでいます…');
     try{
       const instance=await lessonPlayer($('player'),course.video,{
@@ -72,7 +76,7 @@ export function mountSanshinGuide({onTakeOver}) {
           controls();status('準備できました。「再生」で始めます。動画の調弦を確かめて合わせましょう。');
           timer=setInterval(()=>{
             if(!ready||own!==ticket)return;position=currentTime();
-            if(loop&&b-a>=1&&player.getPlayerState()===1&&position>=b){player.seekTo(a,true);position=a;}
+            if(loop&&b-a>=1&&player.getPlayerState()===1&&position>=b){player.seekTo(a,true);position=a;}else if(!loop&&$('finish-stop').checked&&materialForSong()?.end&&position>=materialForSong().end&&player.getPlayerState()===1){player.pauseVideo();remember();status('教材の演奏が終わりました。「通しの始めへ」で、もう一度練習できます。');}
             controls();
           },200);
         },
@@ -92,10 +96,10 @@ export function mountSanshinGuide({onTakeOver}) {
   $('phrase').onclick=()=>{if(ready)repeatFrom(currentTime());};
   $('phrase-next').onclick=()=>{if(ready)repeatFrom(b);};
   $('load').onclick=load;
-  $('play').onclick=()=>{if(ready){if(loop&&(currentTime()<a||currentTime()>=b))player.seekTo(a,true);player.playVideo();status('再生中。分からない文字を押すと一時停止して指を確認できます。');}};
+  $('play').onclick=()=>{if(ready){if(loop&&(currentTime()<a||currentTime()>=b))player.seekTo(a,true);else if($('finish-stop').checked&&materialForSong()?.end&&currentTime()>=materialForSong().end)player.seekTo(materialForSong().start,true);player.playVideo();$('dialog-body').scrollTop=0;status('再生中。分からない文字を押すと一時停止して指を確認できます。');}};
   $('pause').onclick=()=>{pause();status('一時停止しています。');};
   $('back').onclick=()=>{if(ready)seek(Math.max(0,currentTime()-5));};
-  $('score-start').onclick=()=>{if(ready&&SANSHIN_VIDEOS[song]?.scoreAt){loop=false;position=SANSHIN_VIDEOS[song].scoreAt;player.seekTo(position,true);player.playVideo();remember();controls();status('前奏の工工四から再生しています。分からない文字を押すと止められます。');}};
+  $('score-start').onclick=()=>{if(!song)return;loop=false;const start=materialForSong()?.start||0;position=start;if(ready){seek(start);player.playVideo();$('dialog-body').scrollTop=0;}else remember();controls();status(ready?'通し演奏から再生しています。工工四と歌詞は動画内で進みます。':'通し演奏の位置を選びました。「動画を読み込む」で準備できます。');};
   $('speed').onchange=()=>{if(ready)player.setPlaybackRate(Number($('speed').value));};
   $('a').onclick=()=>{a=currentTime();if(b-a<1){b=0;loop=false;}remember();controls();};
   $('b').onclick=()=>{const end=currentTime();if(end-a<1){status('Aより1秒以上先をBにしてください。');return;}b=end;loop=true;remember();controls();};
@@ -104,22 +108,27 @@ export function mountSanshinGuide({onTakeOver}) {
   for(const id of ['source','outside','fingering-source','score-source'])$(id).addEventListener('click',pause);
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&dialog.open){destroy();status('画面を離れたので停止しました。「動画を読み込む」で再開できます。');}});
   window.addEventListener('pagehide',destroy);
-  return {
-    open(id=null,symbol='合'){
-      onTakeOver();destroy();song=Object.hasOwn(SANSHIN_VIDEOS,id)?id:null;position=a=b=0;loop=false;
-      if(song){try{const saved=JSON.parse(localStorage.getItem(storageKey(song))||'{}');position=Number.isFinite(saved.position)?Math.max(0,saved.position):0;a=Number.isFinite(saved.a)?Math.max(0,saved.a):0;b=Number.isFinite(saved.b)?Math.max(0,saved.b):0;loop=saved.loop===true&&b-a>=1;}catch{/* Start fresh. */}}
-      const course=SANSHIN_VIDEOS[song];$('video').hidden=!course;
+  function open(id=null,symbol='合',requested){
+      onTakeOver();destroy();song=Object.hasOwn(SANSHIN_VIDEOS,id)?id:null;
+      let preference=null,hasOld=false;try{preference=localStorage.getItem(preferenceKey);hasOld=!!localStorage.getItem(sanshinSessionKey(song,'original'));}catch{}
+      variant=sanshinMaterialChoice(song,preference,hasOld,requested);if(song==='anata-ni')try{localStorage.setItem(preferenceKey,variant);}catch{}
+      $('material-choice').hidden=song!=='anata-ni';$('material').value=variant;position=materialForSong()?.start||0;a=b=0;loop=false;
+      if(song){try{const saved=JSON.parse(localStorage.getItem(sanshinSessionKey(song,variant))||'{}');position=Number.isFinite(saved.position)?Math.max(0,saved.position):(materialForSong()?.start||0);a=Number.isFinite(saved.a)?Math.max(0,saved.a):0;b=Number.isFinite(saved.b)?Math.max(0,saved.b):0;loop=saved.loop===true&&b-a>=1;}catch{/* Start fresh. */}}
+      const course=courseForSong();$('video').hidden=!course;
       $('reading-controls').hidden=!course;dialog.dataset.reading=course?'score':'finger';$('score-view').setAttribute('aria-pressed',String(!!course));$('finger-view').setAttribute('aria-pressed',String(!course));
-      $('score-start').hidden=!course?.scoreAt;
+      $('score-start').hidden=!course;$('score-start').textContent='通しの始めへ';$('finish-stop').checked=true;
+      const material=materialForSong();$('chapters').replaceChildren(...(material?.chapters||[]).map(([time,label])=>{const button=document.createElement('button');button.type='button';button.textContent=`${timeLabel(time)} ${label}`;button.onclick=()=>{loop=false;if(ready){pause();seek(time);}else{position=time;remember();controls();}status('練習する場所を選びました。再生は自分で始めてください。');};return button;}));
       $('score-source').hidden=$('score-source-note').hidden=!course;
       if(course){$('score-source').href=course.sheets[0].url;$('score-source').textContent=course.sheets[0].label+' ↗';$('score-source-note').textContent=course.note;}
       $('extra-sheets').replaceChildren(...(course?.sheets.slice(1)||[]).map(sheet=>{const a=document.createElement('a');a.href=sheet.url;a.textContent=sheet.label+' ↗';a.target='_blank';a.rel='noopener';a.onclick=pause;return a;}));
-      $('video-note').textContent=song==='jidai'?'初めに先生の解説、途中から工工四と歌詞が表示されます。「前奏から再生」で3:30から始められます。動画と同じ調弦に合わせ、まず短い部分を繰り返しましょう。':'先生の動画を聴いて、同じ調弦に合わせます。工工四は動画や先生の掲載ページで確認できます。';
+      $('video-note').textContent=course?`${material?.tuning||'動画の調弦に合わせてから始めましょう。'} ${material?.scope||''} ページは教材の演奏に合わせて自動で切り替わります。`:'';
       $('title').textContent=course?`${course.title} · 工工四と弾き語り`:'工工四から、指の位置を調べる';
       if(course){$('source').href=course.source;$('source').textContent=`先生の掲載ページ（${course.credit}） ↗`;$('outside').href=`https://www.youtube.com/watch?v=${course.video}`;}
-      lyrics.use(song?`video:sanshin:${song}`:'video:sanshin:lookup',course?.title||'工工四の指の確認');$('lyrics-host').hidden=!course;showSymbol(symbol);controls();status('「動画を読み込む」を押した時だけYouTubeへ接続します。');
+      lyrics.use(song?sanshinLyricKey(song,variant):'video:sanshin:lookup',course?.title||'工工四の指の確認',{inVideo:!!course});$('lyrics-host').hidden=!course;showSymbol(symbol);controls();status('「動画を読み込む」を押した時だけYouTubeへ接続します。');
       if(!dialog.open)dialog.showModal();$('dialog-body').scrollTop=0;
-    },
+  }
+  $('material').onchange=()=>open(song,shown,$('material').value);
+  return {open,
     close(){if(dialog.open)dialog.close();destroy();},
     pause,
     get symbol(){return shown;}
