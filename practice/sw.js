@@ -16,8 +16,11 @@ self.addEventListener('install', event => event.waitUntil((async () => {
   try {
     await cache.addAll(SHELL.map(path => new Request(new URL(path, self.location.href), { cache: 'reload' })));
     for (const path of ['./', './index.html']) {
-      const response = await cache.match(new URL(path, self.location.href).href);
-      if (!(await response.text()).includes(`<meta name="practice-version" content="${VERSION}">`)) throw Error('Incomplete practice release');
+      const key = new URL(path, self.location.href).href, response = await cache.match(key);
+      if (!(await response.clone().text()).includes(`<meta name="practice-version" content="${VERSION}">`)) throw Error('Incomplete practice release');
+      // Pages redirects index.html to /. Navigation cannot reuse a followed redirect.
+      // Normalizing this identical HTML also repairs an already installed v31 cache.
+      if (response.redirected) await cache.put(key, new Response(response.body, { status: response.status, statusText: response.statusText, headers: response.headers }));
     }
   } catch (error) { await caches.delete(CACHE); throw error; }
 })()));
@@ -50,7 +53,7 @@ self.addEventListener('fetch', event => {
     const cache = await caches.open(CACHE), key = navigation ? INDEX : url.href;
     const cached = await cache.match(key);
     // A release is an immutable HTML / module / stylesheet snapshot until activation.
-    if (cached) return cached;
+    if (cached) return navigation && cached.redirected ? new Response(cached.body, { status: cached.status, statusText: cached.statusText, headers: cached.headers }) : cached;
     return fetch(event.request);
   })());
 });

@@ -11,8 +11,8 @@ function fixture({ htmlVersion = '31' } = {}) {
   const cacheFor = name => {
     if (!stores.has(name)) stores.set(name, new Map());
     const entries = stores.get(name);
-    return { async match(request) { return entries.get(key(request))?.clone(); },
-      async addAll(requests) { for (const request of requests) entries.set(key(request), new Response(new URL(request.url).pathname.match(/practice\/(index.html)?$/) ? `<meta name="practice-version" content="${htmlVersion}">` : 'snapshot:' + request.url)); },
+    return { async match(request) { const stored = entries.get(key(request)), copy = stored?.clone(); if (stored?.redirected) Object.defineProperty(copy, 'redirected', { value: true }); return copy; },
+      async addAll(requests) { for (const request of requests) { const response = new Response(new URL(request.url).pathname.match(/practice\/(index.html)?$/) ? `<meta name="practice-version" content="${htmlVersion}">` : 'snapshot:' + request.url); if (request.url.endsWith('/index.html')) Object.defineProperty(response, 'redirected', { value: true }); entries.set(key(request), response); } },
       async put(request, response) { entries.set(key(request), response); } };
   };
   const caches = { open: async name => cacheFor(name), keys: async () => [...stores.keys()], delete: async name => stores.delete(name) };
@@ -29,11 +29,17 @@ const f = fixture();
 await (await f.caches.open('music-practice-v30')).put('https://example.test/practice/app.mjs?v=30', new Response('old-module'));
 await f.caches.open('unrelated-root-cache');
 await f.fire('install'); assert.equal(f.skipped(), 0, 'Installing an update does not interrupt practice');
+assert.equal((await (await f.caches.open('music-practice-v31')).match('https://example.test/practice/index.html')).redirected, false, 'Install repairs redirected HTML without changing its content');
 await f.fire('activate'); assert.ok(f.stores.has('music-practice-v30'), 'Activation preserves modules used by other tabs');
 for (const path of ['/?practice-update=31', '/index.html?from=home', '/index.html#reading-help']) {
   const response = await f.fire('fetch', { request: { url: 'https://example.test/practice' + path, method: 'GET', mode: 'navigate' } });
+  assert.equal(response.redirected, false, 'Cached navigation never returns a followed redirect');
   assert.match(await response.text(), /content="31"/, 'Navigation gets the installed HTML, including queries and fragments');
 }
+const redirected = new Response('<meta name="practice-version" content="31">'); Object.defineProperty(redirected, 'redirected', { value: true });
+await (await f.caches.open('music-practice-v31')).put('https://example.test/practice/index.html', redirected);
+const repaired = await f.fire('fetch', { request: { url: 'https://example.test/practice/', method: 'GET', mode: 'navigate' } });
+assert.equal(repaired.redirected, false); assert.match(await repaired.text(), /content="31"/, 'Fetch also repairs an existing redirected navigation response');
 const asset = await f.fire('fetch', { request: { url: 'https://example.test/practice/app.mjs?v=31', method: 'GET', mode: 'cors' } });
 assert.match(await asset.text(), /snapshot:/); assert.equal(f.network(), 0, 'A live deployment cannot mix new JS with installed HTML');
 const previous = await f.fire('fetch', { request: { url: 'https://example.test/practice/app.mjs?v=30', method: 'GET', mode: 'cors' } });
