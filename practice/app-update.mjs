@@ -42,7 +42,8 @@ function workerVersion(worker) {
     const channel = new MessageChannel();
     const timer = setTimeout(() => { channel.port1.close(); resolve(null); }, 1200);
     channel.port1.onmessage = event => { clearTimeout(timer); channel.port1.close(); resolve(event.data?.version); };
-    worker.postMessage({ type: 'PRACTICE_VERSION' }, [channel.port2]);
+    try { worker.postMessage({ type: 'PRACTICE_VERSION' }, [channel.port2]); }
+    catch { clearTimeout(timer); channel.port1.close(); resolve(null); }
   });
 }
 
@@ -70,6 +71,9 @@ export function mountPracticeUpdates({ onPause }) {
     if (registration?.waiting) registration.waiting.postMessage({ type: 'PRACTICE_ACTIVATE' });
     else location.reload();
   };
+  // WebKit may keep register() pending while offline. An already controlling
+  // worker can confirm the installed snapshot without a network registration.
+  current();
   navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' }).then(async reg => {
     registration = reg;
     const waiting = async () => {
@@ -88,5 +92,5 @@ export function mountPracticeUpdates({ onPause }) {
     });
     reg.addEventListener('updatefound', () => watch(reg.installing)); watch(reg.installing);
     await current(); await waiting(); reg.update().catch(() => {});
-  }).catch(() => { state.textContent = 'オンラインで利用できます'; });
+  }).catch(async () => { if (await current() !== PRACTICE_VERSION) state.textContent = 'オンラインで利用できます'; });
 }

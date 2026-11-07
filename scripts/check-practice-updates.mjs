@@ -61,3 +61,19 @@ assert.deepEqual(readFirstSong({ guitar: { step: 3 }, sanshin: { step: -1 }, inj
 assert.equal(readFirstSong({ guitar: { step: '3' } }).guitar.step, 0);
 assert.equal(FIRST_SONGS.guitar.song, 'twinkle'); assert.equal(FIRST_SONGS.sanshin.song, 'tinsagu');
 console.log('Practice updates: coherent snapshot, staged activation, old tabs, safe cleanup, stale HTML rejection and independent first-song progress PASS');
+
+// A usable offline worker must not wait for WebKit's network registration.
+const updateSource=readFileSync('practice/app-update.mjs','utf8').replace(/^export /gm,'');
+async function offlineBoot({active=true,rejected=false,disappeared=false}={}){
+ const nodes=Object.fromEntries(['offline-state','practice-update','practice-update-now'].map(id=>[id,{textContent:'PWAを準備中',hidden:true}]));
+ class Channel{constructor(){this.port1={close(){}};this.port2={reply:data=>this.port1.onmessage?.({data})};}}
+ const controller=active?{postMessage(message,ports){if(disappeared)throw Error('Worker no longer active');if(message.type==='PRACTICE_VERSION')ports[0].reply({version:'36'});}}:null;
+ const serviceWorker={controller,addEventListener(){},register(){return rejected?Promise.reject(Error('Offline')):new Promise(()=>{});}};
+ vm.runInNewContext(updateSource+'\nmountPracticeUpdates({onPause(){}});',{document:{getElementById:id=>nodes[id]},navigator:{serviceWorker},window:{isSecureContext:true},MessageChannel:Channel,setTimeout,clearTimeout});
+ await new Promise(resolve=>setImmediate(resolve));return nodes['offline-state'].textContent;
+}
+assert.equal(await offlineBoot(),'オフライン準備OK','Pending registration cannot hide an installed offline shell');
+assert.equal(await offlineBoot({rejected:true}),'オフライン準備OK','Registration failure cannot erase confirmed offline readiness');
+assert.equal(await offlineBoot({active:false,rejected:true}),'オンラインで利用できます','No worker never claims offline readiness');
+assert.equal(await offlineBoot({disappeared:true,rejected:true}),'オンラインで利用できます','A worker disappearing during startup is handled');
+console.log('Practice offline boot: pending/rejected registration, ready controller and disappearing worker PASS');
