@@ -1,5 +1,28 @@
 # Session Ledger — music-stack
 
+## 2026-11-08 — Past creative intent rolled into the existing direction
+
+- Scope: docs only; direct owner request to integrate earlier music discussions
+  into reusable repository context and archive conversations after migration.
+- Updated `docs/MUSIC-EXPERIENCE-DIRECTION.md`: floor / groove, continuous timbre,
+  hands-on play, original-band rework, lyric thinking, and everyday listening.
+- Added `docs/examples/music-creative-intent.notes.json` and linked it from the
+  examples index. Its `music_intent` fragment follows the existing session schema;
+  the document is not an importable session or a runtime preset.
+- Evidence: available owner excerpts, conversation-search summaries, current repo
+  contracts, and saved creative notes. Full conversation and attachment migration
+  is not complete. A private source ledger keeps the remaining reconciliation.
+- Archive: no conversations archived by this run. Match each source and destination,
+  verify remaining attachments, and confirm the archive action before marking done.
+- Baseline: strict stack-check PASS 63 / FAIL 0 / SKIP 0 / 0 BAD after installing the
+  already declared offline-renderer test requirements in a separate check environment.
+  Final-candidate checks and the repository receipt are reported with the delivery.
+- Runtime, dependencies, workflows, audio, lyric bodies, private identifiers, and
+  machine state are unchanged. No new runtime, hosting project, or work catalog.
+- Backlog: no existing item claimed or closed; future implementation still follows
+  the current BACKLOG. Next creative step: reopen one existing work/revision, retain
+  one part, change one element, compare the same region, and save a child revision.
+
 2026-11-07 練習PWA v36：iPhone向けに三線の動画画面を全幅へ。再生・停止に加え、短い反復と「できた・続きへ」を画面下に固定。横向きは動画を大きく表示し、「メニュー」で反復長・しおり・調弦へ戻る。表示切替と回転は動画やマイクを開始せず、再生位置も保持。ノッチ・ホームバーの余白を考慮し、タッチ端末の入力欄は16px以上へ。Safari系のオフライン起動では、通信が必要な登録を待たず保存済み画面の準備状態を確認。既存の教材・保存位置・歌詞・速度を保持。ブラウザーでのiPhone相当表示と操作を検証し、実iPhoneの聴感・入力は未確認。
 
 2026-11-07 練習PWA v35：三線の教材画面を整理。再生・一時停止・5秒戻る・通し開始・速度をスクロールの外に固定し、iPad横画面は工工四動画と反復操作を左右に配置。教材の通し範囲を基準に残り位置を表示し、5／10／20秒反復は解説／演奏の境界を越えず、前後の区間と「できた・この先を弾く」で進める。苦手な場所のしおり（最大12個）、速度、反復長を動画ごとに端末へ保存。旧位置・A/B・歌詞と「あなたに」の2教材を保持。工工四・歌詞は既存の配信元動画で表示し、三線7曲の音符単位の内蔵譜は未整備。歌詞・旋律譜・音源の新規転載なし。実iPad／iPhoneの試奏は未確認。

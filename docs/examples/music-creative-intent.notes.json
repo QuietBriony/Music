@@ -1,0 +1,156 @@
+{
+  "document_type": "music-creative-intent-notes",
+  "document_version": 1,
+  "updated_on": "2026-11-08",
+  "status": "editorial_synthesis_for_owner_review",
+  "runtime_ready": false,
+  "purpose": "過去の制作意図を、既存のMusic Stackで次の制作へつなぐための説明用ノート。",
+  "authority": {
+    "creative_direction": "docs/MUSIC-EXPERIENCE-DIRECTION.md",
+    "integration": "docs/music-stack-integration-index.md",
+    "next_work": "docs/autonomy/BACKLOG.md",
+    "work_provenance": "docs/WORK-PROVENANCE-GUIDE.md",
+    "lyric_thinking": "docs/lyric-os/okinawa-local/README.md",
+    "existing_session_schema": "docs/schema/music-session-packet.schema.json"
+  },
+  "interpretation": {
+    "thesis": "この世界を普通に生きる身体のために、余白と低音のある場を作り、声・楽器・コードで触り、気に入った瞬間を作品として育て続ける。",
+    "attribution": "今回の編集上の統合案。本人の逐語引用や完成承認ではない。",
+    "source_scope": [
+      "owner_statement_excerpts",
+      "prior_conversation_search_summaries",
+      "current_repository_documents",
+      "saved_creative_notes"
+    ],
+    "full_conversation_export": false,
+    "numeric_preferences_inferred": false,
+    "universal_language_policy_inferred": false,
+    "owner_listening_verdict_inferred": false
+  },
+  "schema_relation": {
+    "complete_session_packet": false,
+    "fragment_pointer": "#/music_intent",
+    "target_pointer": "docs/schema/music-session-packet.schema.json#/properties/music_intent",
+    "note": "music_intent部分だけを既存schemaと照合する。全体はruntimeのimport形式ではない。"
+  },
+  "music_intent": {
+    "timbre": [
+      "低音の芯、弦の立ち上がりと胴、ドラムの打感を大切にする",
+      "音色キット・Pad・リズム・空間を連続して変える",
+      "静かなモードでは音数と刺激を増やしすぎない"
+    ],
+    "rhythm": [
+      "反復とポケットを土台に、声や楽器の入る間を残す",
+      "固定するパートと変奏するパートを分ける",
+      "BPM・密度・強弱・変化量を同じ一つの値として扱わない"
+    ],
+    "space": [
+      "声と楽器が同じ空間にいる距離を作る",
+      "Dubは呼びかけ、返事、反響、休符、戻り方までを編曲する",
+      "手を離したあとの尾と音の小さな返事を残す"
+    ],
+    "structure": [
+      "作品の目的に応じて床・歌もの・ロック・IDM・静かなAmbientを選ぶ",
+      "昔の自作曲は原音を参照し、調和・Dub・再構成を区別して育てる",
+      "生活の具体物から視点や時間の尺度を動かし、具体物へ帰る方法を試す"
+    ],
+    "gesture": [
+      "触ると結果が聴こえ、休む・戻す・残す操作が分かる",
+      "一つのパートを固定し、一要素だけ変えて同じ区間を比較する",
+      "気に入った版を既存work IDと親revisionへ紐づける"
+    ],
+    "safety": [
+      "metadata-only",
+      "実際の再生・録音・外部機器の開始は既存の手動境界を守る",
+      "計測の合格と本人の聴感を区別し、採用verdictを生成しない",
+      "歌詞本文・音声・私的なチャット原文をこのJSONに含めない"
+    ]
+  },
+  "modes": [
+    {
+      "id": "floor-dub-groove",
+      "intent": "反復、低域、余白、呼びかけと返事",
+      "destinations": [
+        "Music",
+        "drum-floor"
+      ],
+      "external_workflow": "既存VCV等の工程。実機接続は別途確認。"
+    },
+    {
+      "id": "original-band-rework",
+      "intent": "原音からデモを育て、声と楽器の演奏へ戻す",
+      "destinations": [
+        "Music"
+      ],
+      "surface": "Band Roomと既存DAW工程"
+    },
+    {
+      "id": "continuous-timbre",
+      "intent": "音色・密度・空間を連続して変える",
+      "destinations": [
+        "Music"
+      ],
+      "surface": "Core Rig / 既存試奏台"
+    },
+    {
+      "id": "daytime-water-garden",
+      "intent": "水と光、穏やかな音の返事",
+      "destinations": [
+        "namima"
+      ]
+    },
+    {
+      "id": "quiet-piano-rest",
+      "intent": "ピアノと休符、任意の小さな伴奏",
+      "destinations": [
+        "chill"
+      ]
+    },
+    {
+      "id": "words-and-song",
+      "intent": "具体物、観察の飛躍、生活の矛盾と感謝",
+      "destinations": [
+        "Music"
+      ],
+      "surface": "Lyric Lab / 既存Scene OS。歌詞本文は既存private保存先。"
+    }
+  ],
+  "revision_practice": {
+    "first_action": "既存の一つの作品・版・比較区間を選ぶ",
+    "keep": [
+      "work_id",
+      "parent_revision",
+      "source_provenance",
+      "changed_element",
+      "comparison_region",
+      "owner_feedback",
+      "measured_observations"
+    ],
+    "unset_until_work_selected": [
+      "bpm",
+      "key",
+      "duration",
+      "fader_values",
+      "seed",
+      "adoption_verdict"
+    ],
+    "reuse_existing_catalog": true,
+    "new_runtime_or_hosting_required": false
+  },
+  "migration": {
+    "source_level": "creative_intent_summary",
+    "full_chat_and_attachment_reconciliation": false,
+    "archive_policy": "移行先と元チャットを照合できた音楽チャットから、実際のアーカイブ操作を確認して記録する。",
+    "private_chat_identifiers_included": false,
+    "archived_chats_claimed": false
+  },
+  "execution": {
+    "automatic_import": false,
+    "starts_audio": false,
+    "records_audio": false,
+    "sends_midi": false,
+    "arms_external_devices": false,
+    "uploads": false,
+    "changes_runtime": false
+  }
+}

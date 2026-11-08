@@ -2,6 +2,10 @@
 
 These examples are metadata-only review fixtures for the Music Stack.
 
+- `music-creative-intent.notes.json`: an editorial synthesis of creative intent.
+  Only its `music_intent` fragment follows the existing session schema; the
+  whole document is neither an importable packet nor an executable preset.
+  [Creative direction](../MUSIC-EXPERIENCE-DIRECTION.md) remains its authority.
 - `music-session-packet.example.json`: a conductor packet emitted by Music.
 - `music-orchestra-packet.example.json`: a high-level mission/routing wrapper
   around a Music session packet.
