@@ -1,9 +1,15 @@
 // Distinguish inspected maps from uncertain guides and publisher video scores.
-import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=40';
+import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=41';
+export const SANSHIN_LYRIC_SCORES=['tinsagu','tsukinu'];
+// Every requested song has a lyric-score route. Only these native studies
+// promise note-by-note microphone following; other routes use the teacher video.
+export function sanshinLyricRoute(id){
+ return SANSHIN_LYRIC_SCORES.includes(id)?{kind:'score'}:{kind:'video',variant:id==='anata-ni'?'performance':'original'};
+}
 export function songSupport(instrument,id){
  if(instrument==='sanshin'&&id==='asatoya')return{badge:'工工四＋マイク',detail:'前奏＋1節のかんたん版。全画面の譜面が自分の音で進みます。歌詞と本来の譜割りは先生の教材で確認できます。'};
  if(instrument==='guitar'&&['tokiyo','jigsaw'].includes(id))return{badge:'自動コード',detail:'用意した動画にコード図が追従します。歌詞は動画か、自分のテキストを位置合わせして表示できます。'};
- if(instrument==='sanshin'&&id==='tinsagu')return{badge:'工工四＋歌詞',detail:'1節の簡略工工四・指図・歌詞で練習できます。先生の動画とは別の練習用の譜割りです。'};
+ if(instrument==='sanshin'&&SANSHIN_LYRIC_SCORES.includes(id))return{badge:'歌詞付き工工四 · 内蔵',detail:'1節のやさしい譜面に歌詞を併記。マイク・ガイド・手動で今の音と歌詞が進みます。先生の動画とは別の練習用の譜割りです。'};
  if(instrument==='guitar'&&ESTIMATED_COURSES[id])return{badge:'自動送り（推定・目安）',detail:'動画にコード図が追従します。誤判定やずれがあるため補正できます。歌詞は動画・字幕か自分のテキストで。',quality:'estimated'};
- return{badge:instrument==='sanshin'?'動画の工工四':'動画教材',detail:instrument==='guitar'?'先生の動画で弾き方を確認。自分のコード順・歌詞を曲別に保存できます。全曲の自動コード時刻は未設定です。':'教材動画内の工工四・歌詞を見て演奏を追います。止めて文字を選ぶと指を確認できます。アプリの指図は自動では進みません。'};
+ return{badge:instrument==='sanshin'?'歌詞付き工工四 · 教材動画':'動画教材',detail:instrument==='guitar'?'先生の動画で弾き方を確認。自分のコード順・歌詞を曲別に保存できます。全曲の自動コード時刻は未設定です。':'先生の動画内で、歌詞と工工四を一緒に見て練習。再生・ゆっくり再生・反復が使えます。内蔵の音符判定や、文字ごとの自動追従には未対応です。'};
 }

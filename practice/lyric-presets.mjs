@@ -1,5 +1,22 @@
-// Public-domain English texts and CC BY-SA 4.0 Tinsagu adaptation; see songs/lyrics-provenance.json.
+// Traditional/PD texts and CC BY-SA 4.0 Tinsagu adaptation; see songs/lyrics-provenance.json.
 export const LYRIC_PRESETS={
+ 'song:tsukinu':{
+  text:'月ぬ美しゃ 十日三日\n女童美しゃ 十七つ\nホーイ チョーガ',
+  cues:[16,24,32].map((beat,line)=>({time:beat*60/85,line})),syncVersion:1,singing:{start:16*60/85,end:42*60/85},
+  syllables:[
+   [16,'つく',0],[17,'ぬ',0],[18,'かい',0],[19,'しゃ',0],[20,'とぅか',0],[21,'みっ',0],[22,'か',0],
+   [24,'みや',1],[25,'らび',1],[26,'かい',1],[27,'しゃ',1],[28,'とぅ',1],[29,'なな',1],[30,'つ',1],
+   [32,'ほー',2],[34,'い',2],[36,'ちょー',2],[38,'が',2]
+  ].map(([beat,text,line])=>({beat,text,line})),
+  notes:[
+   {text:'月ぬ美しゃ 十日三日',reading:'つくぬ かいしゃ とぅかみっか',meaning:'月の美しさを、満ちる前の十三夜に重ねています。',words:'かいしゃ＝美しい ／ とぅかみっか＝十三日（旧暦）'},
+   {text:'女童美しゃ 十七つ',reading:'みやらび かいしゃ とぅななつ',meaning:'娘の美しい年ごろとして、十七歳を歌います。',words:'みやらび＝娘・若い女性 ／ とぅななつ＝十七歳'},
+   {text:'ホーイ チョーガ',reading:'ほーい ちょーが',meaning:'歌の結びに添える囃子です。',words:'語句の対訳より、先生の声を聴いて響きをまねてみましょう。'}
+  ],
+  note:'前奏・1節・囃子のやさしい本調子版。小さい飾り音を省き、1マス1拍で歌詞を配置しました。先生やApple Musicの演奏とは譜割りが異なります。読み方は一例で、地域・歌い手により発音が変わります。',
+  credit:'八重山の伝承歌 · 工工四は本調子用に新たに入力 · 歌詞位置・読み方・やさしい意味はMusic Stackの練習用 CC0',
+  source:'https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479'
+ },
  'song:tinsagu':{
   text:'てぃんさぐぬ花や\n爪先に染みてぃ\n親ぬゆしぐとぅや\n肝に染みり',cues:[16,24,32,40].map((beat,line)=>({time:beat*60/85,line})),syncVersion:1,singing:{start:16*60/85,end:45*60/85},
   syllables:[

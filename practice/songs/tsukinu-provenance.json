@@ -1,0 +1,25 @@
+{
+  "title": "月ぬ美しゃ（1節と囃子・本調子のやさしい版）",
+  "composer": "Traditional Yaeyama lullaby; no modern songwriter credited for the underlying traditional melody or first-verse words",
+  "scope": "New elementary monophonic study: introduction, first verse and refrain. Honchoshi C–F–C, straight one-beat cells at 85 BPM, four one-beat rests and a two-beat final note. This is not a synchronization to a recording or the complete arrangement of an Apple Music track.",
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "license_scope": "Music Stack dedicates its newly entered symbolic MIDI, elementary honchoshi arrangement, phonetic alignment and original short meanings to CC0. Traditional words and underlying melody are public domain. Third-party score layouts, performances, distinctive ornaments and modern translations are excluded.",
+  "rights_basis": {
+    "source": "https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479",
+    "fact": "Kyoiku Geijutsu identifies this as a traditional Yaeyama lullaby sung by girls caring for children, gives the traditional first-verse words, explains their meaning and identifies the Hoi Choga refrain. No modern Japanese lyric adaptation is used."
+  },
+  "melody_reference": {
+    "url": "https://toyosanshin.hatenablog.com/entry/2021/04/03/125128",
+    "credit": "豊岡マッシー・三線教室 ONLINE 東京",
+    "use": "Identify the common traditional first-verse and refrain pitch contour. The source uses niage; our new study uses equivalent pitches with easy honchoshi positions (niage shi→honchoshi jo, niage jo→honchoshi chu, low fa→honchoshi shi). Small ornaments, source layout, finger choices, printed rendition and expressive rhythm are not reproduced."
+  },
+  "traditional_text_reference": "https://ameblo.jp/irei-blog/entry-12356649318.html",
+  "changes": "Newly entered beginner honchoshi study. Main traditional melody only, uniform durations, omitted small ornaments, open middle string for the final low fa, held final note. First verse and refrain only. Phrase and phonetic cues refer exclusively to this study, not the linked teacher video. Guide sound uses the existing synthesized instrument voice; no recording is added.",
+  "lyrics": "Traditional first verse and Hoi Choga refrain. Readings are one practical example; regional pronunciation and spelling vary. The app's short meanings are newly written paraphrases, not copied modern translations.",
+  "generator": "scripts/build-practice-tsukinu.mjs",
+  "checked": "2026-11-15",
+  "sha256": "f0a2495e68fc92f08fdc5360aa29229e0e88a3cda5870ba4e5d5e99183dd40f7",
+  "notes": 37,
+  "beats": 42
+}

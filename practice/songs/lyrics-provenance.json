@@ -1,6 +1,6 @@
 {
-  "scope": "Public-domain English stanzas and the traditional first verse of Tinsagu nu Hana. No lyrics or third-party translations of modern copyrighted songs are bundled.",
-  "authorization": "Owner requested integrated lyrics on 2026-10-29 and beginner-friendly sanshin lyrics with a parallel Japanese meaning mode in this conversation on 2026-10-30.",
+  "scope": "Traditional first verses of Tinsagu and Tsukinu Kaisha, plus public-domain English stanzas. No modern copyrighted song lyrics or third-party modern translations are bundled.",
+  "authorization": "Owner requested integrated lyrics on 2026-10-29 and beginner-friendly sanshin lyrics with a parallel Japanese meaning mode in this conversation on 2026-10-30. Owner requested the same lyric-bearing kunkunshi experience for all sanshin songs on 2026-11-15; traditional Tsukinu first verse is included within that request.",
   "texts": [
     {
       "id": "tinsagu",
@@ -28,6 +28,16 @@
       "source": "https://poets.org/poem/star/print",
       "license": "Public Domain",
       "changes": "Opening stanza of The Star. First two lines repeated to fit the familiar six-phrase melody; phrase timing added. No modern translation."
+    },
+    {
+      "id": "tsukinu",
+      "author": "Traditional Yaeyama lullaby",
+      "source": "https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479",
+      "license": "Public Domain (traditional text); new alignment, readings and original plain-Japanese meanings CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "changes": "Traditional first verse and Hoi Choga refrain only. New honchoshi study has phrase entrances at beats16,24,32 and phonetic fragments beside their own notes. Preludebeats0–15; last note beat40 held for2beats. Not a transcription of a recording. New simple meanings and vocabulary are original paraphrases. No modern songwriter adaptation or published modern translation. Regional pronunciation and spelling vary.",
+      "notation_provenance": "songs/tsukinu-provenance.json",
+      "translation": "New wording for singing practice, checked against Kyoiku Geijutsu; no copied modern translation."
     }
   ]
 }

@@ -1,4 +1,4 @@
-// Lyric fragments belong to the existing CC BY-SA 4.0 Tinsagu adaptation.
+// Tinsagu fragments retain CC BY-SA 4.0; Tsukinu alignment is CC0.
 // See songs/lyrics-provenance.json. User text is always handled as plain text.
 export function scoreLyricAnnotations(notes,sheet={}){
  const result=notes.map(()=>({text:'',line:-1,kind:'line'}));

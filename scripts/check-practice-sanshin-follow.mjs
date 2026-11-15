@@ -4,6 +4,7 @@ import { frequencyFor,centsFrom,detectPitch } from '../practice/music.mjs';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { asatoyaMidi,asatoyaNotes,ASATOYA_PARTS } from './build-practice-asatoya.mjs';
+import {tsukinuMidi} from './build-practice-tsukinu.mjs';
 import { parseMidi } from '../practice/midi.mjs';
 import { scoreNotes } from '../practice/scores.mjs';
 import { sheetEntries } from '../practice/full-score.mjs';
@@ -14,6 +15,17 @@ const parsed=parseMidi(data),notes=scoreNotes(parsed,parsed.groups[0].id,'sanshi
 assert.equal(notes.length,92);assert.equal(parsed.endBeat,97);assert.equal(ASATOYA_PARTS.length,6);assert.equal(sheetEntries(notes).filter(n=>n.rest).length,4);
 assert.equal(meta.license,'CC0-1.0');assert.ok(!meta.lyrics.includes('サア'));assert.equal(asatoyaNotes().at(-1).beats,2);
 for(const transpose of [-3,-2,-1,0,2]){const shifted=scoreNotes(parsed,parsed.groups[0].id,'sanshin',{tuning:transpose}).notes;assert.deepEqual(shifted.map(n=>n.symbol),notes.map(n=>n.symbol));assert.deepEqual(shifted.map(n=>n.midi),notes.map(n=>n.midi+transpose));}
+const moonData=readFileSync('practice/songs/tsukinu.mid'),moonMeta=JSON.parse(readFileSync('practice/songs/tsukinu-provenance.json','utf8')),moon=parseMidi(moonData);
+assert.deepEqual(moonData,tsukinuMidi());assert.equal(createHash('sha256').update(moonData).digest('hex'),moonMeta.sha256);
+const moonScore=scoreNotes(moon,moon.groups[0].id,'sanshin').notes;
+assert.equal(sheetEntries(moonScore).filter(e=>e.rest).length,4);
+// Equivalent pitches of the familiar niage phrase in the new honchoshi study.
+assert.deepEqual(moonScore.filter(n=>n.beat>=16&&n.beat<32).map(n=>n.midi),[55,55,60,55,60,62,62,64,62,60,57,55,53,55,48]);
+for(const shift of [-3,-2,-1,0,2]){
+ const tuned=scoreNotes(moon,moon.groups[0].id,'sanshin',{tuning:shift}).notes;
+ assert.ok(tuned.every(n=>n.finger<=2),'The beginner study needs only open, index and middle-finger positions');
+ assert.deepEqual(tuned.map(n=>n.symbol),moonScore.map(n=>n.symbol));assert.deepEqual(tuned.map(n=>n.midi),moonScore.map(n=>n.midi+shift));
+}
 const signal=(midi,extra={})=>({frequency:frequencyFor(midi),rms:.02,clarity:.8,attack:.0005,...extra});
 const gap={frequency:null,clarity:0,rms:.003,attack:.0001};
 const soft=new SanshinFollower([{midi:53}],{gate:.0015});

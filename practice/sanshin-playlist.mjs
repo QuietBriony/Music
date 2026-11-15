@@ -1,4 +1,4 @@
-import { songSupport } from './song-support.mjs?v=40';
+import { songSupport,sanshinLyricRoute } from './song-support.mjs?v=41';
 export const SANSHIN_PLAYLIST = {
   "title": "三線練習",
   "url": "https://music.apple.com/jp/playlist/%E4%B8%89%E7%B7%9A%E7%B7%B4%E7%BF%92/pl.u-PDb42ZZuJZ06jp",
@@ -121,7 +121,8 @@ export const SANSHIN_PLAYLIST = {
         }
       ],
       "focus": "最初におすすめ。収録した1節を全体の工工四と指図で確認し、8音ほどの短い範囲から始めましょう。",
-      "note": "アプリ内はやさしくした1節（63音＋休符）です。全体の工工四・ガイド・マイク判定・歌詞の読み方と意味を使えます。原曲や先生の演奏とは装飾・速さが異なります。"
+      "note": "歌詞付きの内蔵工工四は、1節のやさしい練習版。マイク・ガイド・手動で進められます。先生の動画やApple Musicの原曲とは譜割り・飾り音・繰り返しが異なります。",
+      "native": true
     },
     {
       "id": "tsukinu",
@@ -139,8 +140,9 @@ export const SANSHIN_PLAYLIST = {
           "url": "https://ameblo.jp/irei-blog/entry-12356649318.html"
         }
       ],
-      "focus": "音を急いで詰めず、歌の間を先に聴きます。動画を一息ずつ反復し、三線だけ、歌だけ、最後に一緒に。",
-      "note": "原曲はApple Music、練習は先生の演奏です。キー・節回し・速さが異なる場合があります。工工四は動画・掲載先で確認し、指図は文字を選んで切り替えます。自動の音符送り・全曲判定は未収録です。"
+      "focus": "まず本調子で前奏をゆっくり。歌詞の読み方を見て、1節と囃子を三線だけ、歌だけ、最後に一緒に練習しましょう。",
+      "note": "歌詞付きの内蔵工工四は、1節のやさしい練習版。マイク・ガイド・手動で進められます。先生の動画やApple Musicの原曲とは譜割り・飾り音・繰り返しが異なります。",
+      "native": true
     },
     {
       "id": "anata-ni",
@@ -200,9 +202,11 @@ export function mountSanshinPlaylist({onOpen,onLeave}){
   $('focus').textContent=selected.focus;$('scope').textContent=selected.note;
   $('apple').hidden=!selected.appleUrl;if(selected.appleUrl)$('apple').href=selected.appleUrl;else $('apple').removeAttribute('href');$('apple').onclick=onLeave;
   $('sheets').replaceChildren(...selected.sheets.map(anchor));
-  $('open').textContent=selected.native?'全画面の工工四・マイクで練習':selected.id==='tinsagu'?'1節の工工四を全体で練習':'工工四・動画と指の位置で練習';
-  $('open').onclick=()=>onOpen(selected.id);
-  $('video').hidden=!selected.native;$('video').onclick=()=>onOpen(selected.id,'video');
+  const nativeLyrics=sanshinLyricRoute(selected.id).kind==='score';
+  $('open').textContent=nativeLyrics?'歌詞付き工工四を開く（1節）':'歌詞付き工工四の動画を開く';
+  $('open').onclick=()=>onOpen(selected.id,'lyrics');
+  $('native').hidden=selected.id!=='asatoya';$('native').onclick=()=>onOpen(selected.id,'score');
+  $('video').hidden=!nativeLyrics;$('video').onclick=()=>onOpen(selected.id,'video');
   const flags=Array.isArray(progress[selected.id])?progress[selected.id]:[];
   for(const input of $('progress').querySelectorAll('input'))input.checked=flags[Number(input.value)]===true;
  }

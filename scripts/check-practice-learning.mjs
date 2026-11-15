@@ -1,4 +1,4 @@
-import { songSupport } from '../practice/song-support.mjs';
+import { songSupport,sanshinLyricRoute,SANSHIN_LYRIC_SCORES } from '../practice/song-support.mjs';
 import { GUITAR_PLAYLIST } from '../practice/guitar-playlist.mjs';
 import { SANSHIN_PLAYLIST } from '../practice/sanshin-playlist.mjs';
 import assert from 'node:assert/strict';
@@ -102,6 +102,14 @@ assert.deepEqual(SANSHIN_PLAYLIST.basicTracks.map(t=>t.id),['asatoya']);
 assert.equal(SANSHIN_VIDEOS.asatoya.video,'wMFlMLMG1c0');
 assert.ok(!SANSHIN_PLAYLIST.basicTracks[0].appleUrl,'An added lesson is not presented as an Apple Music playlist recording');
 assert.equal(new URL(SANSHIN_VIDEOS.asatoya.sheets[0].url).hostname,'miyazatohidekatsu.com');
+assert.deepEqual(SANSHIN_LYRIC_SCORES,['tinsagu','tsukinu']);
+for(const t of [...SANSHIN_PLAYLIST.tracks,...SANSHIN_PLAYLIST.basicTracks]){
+ const route=sanshinLyricRoute(t.id);
+ if(SANSHIN_LYRIC_SCORES.includes(t.id)){assert.equal(route.kind,'score');assert.match(songSupport('sanshin',t.id).badge,/内蔵/);}
+ else{assert.equal(route.kind,'video');assert.ok(SANSHIN_VIDEOS[t.id].video,'Every remaining song has a teacher route, not an invented native score');}
+}
+assert.equal(sanshinLyricRoute('anata-ni').variant,'performance','The lyric action explicitly chooses the lyric-bearing teacher, even with an old finger-only lesson saved');
+assert.equal(sanshinLyricRoute('asatoya').kind,'video','Asatoya lyric practice uses the teacher; its separate native microphone study contains no lyrics');
 assert.deepEqual(GUITAR_PLAYLIST,JSON.parse(readFileSync('practice/songs/guitar-playlist.json','utf8')));
 assert.deepEqual(GUITAR_PLAYLIST.tracks.map(t=>t.appleId),['1440893075','1440848005','1469575893','1436922357','1440754861','1440839501','1441133834','1636234075','1109715469','1636243735','945581840']);
 for(const t of GUITAR_PLAYLIST.tracks)assert.equal(new URL(t.appleUrl).searchParams.get('i'),t.appleId);
@@ -183,10 +191,10 @@ const loopMark=addLessonMark([],530,535).marks;
 assert.deepEqual(sanshinSession({marks:loopMark,rate:.75,repeatSeconds:5},jidaiWindow).marks,loopMark);
 assert.equal(sanshinSession({a:500,b:499,loop:true},jidaiWindow).loop,false);
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=40','sanshin-view.mjs?v=40','sanshin-guide.mjs?v=40','sanshin.css?v=40','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=41','sanshin-view.mjs?v=41','sanshin-guide.mjs?v=41','sanshin.css?v=41','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
 console.log('Practice learning: tuning, twenty studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
 
 const guitarCourseNotes=scoreNotes(chordExercise(['C','Am']),'chords','guitar',{chords:true}).notes;
 const cards=practiceSheetEntries(guitarCourseNotes,{instrument:'guitar',chords:true});assert.equal(cards.length,2);assert.equal(cards[0].index,0);assert.equal(cards[0].end,cards[1].index);assert.equal(cards[1].end,guitarCourseNotes.length);
 assert.equal(practiceSheetEntries(guitarCourseNotes,{instrument:'guitar',chords:false}).length,guitarCourseNotes.length);
-const support=[...GUITAR_PLAYLIST.tracks.map(t=>songSupport('guitar',t.id)),...SANSHIN_PLAYLIST.tracks.map(t=>songSupport('sanshin',t.id))];assert.equal(support.length,19);assert.equal(support.filter(s=>s.badge==='自動コード').length,2);assert.equal(support.filter(s=>s.quality==='estimated').length,9);assert.equal(support.filter(s=>s.badge==='動画の工工四').length,7);assert.equal(support.filter(s=>s.badge==='工工四＋歌詞').length,1);assert.ok(support.every(s=>s.detail&&s.badge));
+const support=[...GUITAR_PLAYLIST.tracks.map(t=>songSupport('guitar',t.id)),...SANSHIN_PLAYLIST.tracks.map(t=>songSupport('sanshin',t.id))];assert.equal(support.length,19);assert.equal(support.filter(s=>s.badge==='自動コード').length,2);assert.equal(support.filter(s=>s.quality==='estimated').length,9);assert.equal(support.filter(s=>s.badge==='歌詞付き工工四 · 教材動画').length,6);assert.equal(support.filter(s=>s.badge==='歌詞付き工工四 · 内蔵').length,2);assert.ok(support.every(s=>s.detail&&s.badge));

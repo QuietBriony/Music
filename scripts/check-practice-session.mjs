@@ -5,6 +5,8 @@ import { readLyrics,resolveLyricTiming,normalizeCues,lyricAt,lrcText,readChordSh
 import { LYRIC_PRESETS } from '../practice/lyric-presets.mjs';
 import { normalizeLyricNotes,readParallelNotes } from '../practice/lyric-notes.mjs';
 import { chordExercise,scoreNotes } from '../practice/scores.mjs';
+import {parseMidi} from '../practice/midi.mjs';
+import {tsukinuMidi} from './build-practice-tsukinu.mjs';
 const parsed=readLyrics('[ar:My own song]\n[00:00.00]My first line\n[00:02.50][00:09.00]My second line');
 assert.deepEqual(parsed.lines,['My first line','My second line']);assert.deepEqual(parsed.cues,[{line:0,time:0},{line:1,time:2.5},{line:1,time:9}]);
 assert.equal(lyricAt(normalizeCues([{line:1,time:4*60/85}],2),4*60/85),1,'Fractional beat positions use the same millisecond precision as saved cues');
@@ -44,6 +46,16 @@ const inline=scoreLyricAnnotations(annotationNotes,tinsagu);
 assert.equal(inline[16].text,'てぃ');assert.equal(inline[43].text,'り');assert.equal(inline[44].text,'');
 assert.equal(inline[28].text,'す');assert.equal(inline[29].text,'み','Rest does not shift lyric positions');
 const personalInline=scoreLyricAnnotations(annotationNotes,{lines:['<script>plain text</script>'],cues:[{line:0,time:1}]});assert.equal(personalInline[2].text,'<script>plain text</script>');
+const moon=LYRIC_PRESETS['song:tsukinu'],moonMidi=parseMidi(tsukinuMidi()),moonNotes=scoreNotes(moonMidi,moonMidi.groups[0].id,'sanshin').notes;
+const moonSheet={...moon,lines:readLyrics(moon.text).lines},moonInline=scoreLyricAnnotations(moonNotes,moonSheet);
+assert.equal(moonNotes.length,37);assert.equal(moonMidi.endBeat,42);
+assert.deepEqual(moon.cues.map(c=>Math.round(c.time*85/60)),[16,24,32]);
+for(const s of moon.syllables){const i=moonNotes.findIndex(n=>n.beat===s.beat);assert.ok(i>=0,'A syllable must belong to a sounding cell, never a rest');assert.equal(moonInline[i].text,s.text);assert.equal(lyricAt(normalizeCues(moon.cues,3),moonNotes[i].time),s.line);}
+for(let line=0;line<3;line++)assert.equal(moon.syllables.filter(s=>s.line===line).map(s=>s.text).join(''),['つくぬかいしゃとぅかみっか','みやらびかいしゃとぅななつ','ほーいちょーが'][line]);
+assert.equal(moonInline.filter(s=>s.text).length,18);assert.equal(moonInline.filter((s,i)=>moonNotes[i].beat<16).some(s=>s.text),false,'The introduction carries no sung words');
+assert.equal(moon.notes.length,3);assert.ok(moon.notes.every(n=>n.reading&&n.meaning));
+assert.equal(resolveLyricTiming(moon,{cues:[{line:1,time:5}],follow:false},readLyrics(moon.text)).follow,false,'A personal manual lyric mode survives a new built-in preset');
+assert.deepEqual(resolveLyricTiming(moon,{cues:[{line:1,time:5}],follow:false},readLyrics(moon.text)).cues,[{line:1,time:5}]);
 assert.equal(scoreLyricAnnotations(annotationNotes,{lines:['No timing'],cues:[]}).every(n=>!n.text),true,'Untimed personal lyrics do not acquire invented placement');
 const lyricsSource=readFileSync('practice/lyrics.mjs','utf8');assert.doesNotMatch(lyricsSource,/innerHTML|fetch\(|XMLHttpRequest|sendBeacon/);
 assert.equal(await readLyricFile({size:24,text:async()=> '\uFEFF[00:01]My own line'}),'[00:01]My own line');
@@ -51,5 +63,5 @@ await assert.rejects(()=>readLyricFile({size:80001,text:async()=>{throw new Erro
 await assert.rejects(()=>readLyricFile({size:20001,text:async()=> 'x'.repeat(20001)}),/2万字/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\0binary'}),/UTF-8/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\uFFFD'}),/UTF-8/);
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=40','songs/learning-provenance.json','progress.mjs?v=40','songs/tokiyo-study.json','session.css?v=40','lyrics.mjs?v=40','lyric-presets.mjs?v=40','songs/lyrics-provenance.json','polyphonic.mjs?v=40'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=41','songs/learning-provenance.json','progress.mjs?v=41','songs/tokiyo-study.json','session.css?v=41','lyrics.mjs?v=41','lyric-presets.mjs?v=41','songs/lyrics-provenance.json','polyphonic.mjs?v=41'])assert.ok(sw.includes(path),path);
 console.log('Practice session: LRC, repeated timestamps, lyrics bounds, chord-sheet adapter, timing, safe local text and PWA coverage PASS');
