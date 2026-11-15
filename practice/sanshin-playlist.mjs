@@ -1,4 +1,4 @@
-import { songSupport } from './song-support.mjs?v=36';
+import { songSupport } from './song-support.mjs?v=37';
 export const SANSHIN_PLAYLIST = {
   "title": "三線練習",
   "url": "https://music.apple.com/jp/playlist/%E4%B8%89%E7%B7%9A%E7%B7%B4%E7%BF%92/pl.u-PDb42ZZuJZ06jp",
@@ -165,21 +165,39 @@ export const SANSHIN_PLAYLIST = {
       "focus": "初心者向けの工工四付き動画から、短い一節をゆっくり反復。工工四の分からない文字を押して指を確かめ、三線だけ、歌だけ、最後に一緒に練習しましょう。",
       "note": "原曲はMONGOL800、練習は先生の三線アレンジです。動画と同じ調弦に合わせてください。工工四は動画で確認し、指図は文字を選んで切り替えます。アプリ内の全曲工工四・自動の音符送り・全曲判定は未収録です。自分の歌詞は動画の位置に合わせて保存できます。"
     }
+  ],
+  "basicTracks": [
+    {
+      "id": "asatoya",
+      "title": "安里屋ゆんた",
+      "artist": "沖縄民謡 · 基礎練習",
+      "video": "wMFlMLMG1c0",
+      "source": "https://miyazatohidekatsu.com/sanshin/",
+      "credit": "宮里英克沖縄三線教室",
+      "sheets": [
+        {
+          "label": "工工四・全体を見る（先生のPDF）",
+          "url": "https://miyazatohidekatsu.com/wp-content/uploads/2023/05/8c36a00342ec0eedb543df5d99a7ae9a.pdf"
+        }
+      ],
+      "focus": "本調子で、まず前奏の短い部分から。先生と一緒に工工四を読み、0.75倍で三線だけを反復。慣れたら歌を口ずさみ、最後に弾きながら歌ってみましょう。",
+      "note": "基礎練習として追加した先生の教材です。工工四と歌詞は配信元の動画で確認できます。PDFでは全体を見渡せます。指の位置は文字を選んで確認。アプリ内の曲全体の音符判定・自動の指図は未収録です。"
+    }
   ]
 };
 const KEY='music-practice-sanshin-playlist-v1';
 export function mountSanshinPlaylist({onOpen,onLeave}){
  const $=id=>document.getElementById(`playlist-${id}`);let stored={};
  try{const value=JSON.parse(localStorage.getItem(KEY)||'{}');if(value&&typeof value==='object'&&!Array.isArray(value))stored=value;}catch{/* Optional local state. */}
- const tracks=SANSHIN_PLAYLIST.tracks;$('heading').textContent=`三線練習 · ${tracks.length}曲`;let selected=tracks.find(t=>t.id===stored.selected)||tracks[0];
+ const tracks=[...SANSHIN_PLAYLIST.tracks,...SANSHIN_PLAYLIST.basicTracks];$('heading').textContent=`三線練習 · ${tracks.length}曲`;let selected=tracks.find(t=>t.id===stored.selected)||tracks[0];
  const progress=stored.progress&&typeof stored.progress==='object'&&!Array.isArray(stored.progress)?stored.progress:{};
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({selected:selected.id,progress}));}catch{/* Optional. */}};
  function anchor(item){const a=document.createElement('a');a.textContent=item.label+' ↗';a.href=item.url;a.target='_blank';a.rel='noopener';a.onclick=onLeave;return a;}
  function render(){
   $('support').textContent=songSupport('sanshin',selected.id).badge+' · '+songSupport('sanshin',selected.id).detail;
-  $('select').value=selected.id;$('title').textContent=selected.title;$('artist').textContent=`原曲：${selected.artist}`;
+  $('select').value=selected.id;$('title').textContent=selected.title;$('artist').textContent=selected.appleUrl?`原曲：${selected.artist}`:`基礎練習 · ${selected.credit}`;
   $('focus').textContent=selected.focus;$('scope').textContent=selected.note;
-  $('apple').href=selected.appleUrl;$('apple').onclick=onLeave;
+  $('apple').hidden=!selected.appleUrl;if(selected.appleUrl)$('apple').href=selected.appleUrl;else $('apple').removeAttribute('href');$('apple').onclick=onLeave;
   $('sheets').replaceChildren(...selected.sheets.map(anchor));
   $('open').textContent=selected.id==='tinsagu'?'1節の工工四を全体で練習':'工工四・動画と指の位置で練習';
   $('open').onclick=()=>onOpen(selected.id);

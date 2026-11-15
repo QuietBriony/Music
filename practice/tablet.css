@@ -4,6 +4,10 @@ body[data-view=tuner] #practice-stage>.tuner-setup{grid-area:strings;min-width:0
 body[data-view=tuner] #sanshin-panel{display:none!important}
 body[data-view=tuner] #tuner-strings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 body[data-view=tuner] #tuner-strings button{min-width:0;font-size:.92rem;min-height:58px}
+body[data-view=tuner] #tuner-strings button[data-tuned=true]{border-color:#61865a;background:#e5efdc;color:#23422b}
+.tuner-auto-label{margin:4px 0;min-height:44px}
+#tuner-step-status{font-size:.8rem;line-height:1.7;color:#d7e7d0;margin:0 0 8px;min-height:2em}
+#tuner-complete button{min-height:48px;width:100%;font-size:.9rem;border-color:#b2db9d;background:#e4f3d9;color:#23422b}
 .tuner-setup>label{max-width:280px}.tuner-input{border-top:1px solid #ffffff26;padding-top:12px;margin-top:14px}
 #detected-frequency{font-size:1.1rem;font-variant-numeric:tabular-nums;color:#eef5e9}
 #tuner-input-status{font-size:.78rem;line-height:1.7;color:#c1cebb;margin:7px 0 0;min-height:2.8em}

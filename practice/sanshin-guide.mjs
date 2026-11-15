@@ -1,11 +1,11 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=36';
-import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=36';
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=36';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=36';
-import { lessonPlayer } from './youtube.mjs?v=36';
-export const SANSHIN_VIDEOS = Object.fromEntries(SANSHIN_PLAYLIST.tracks.map(t=>[t.id,t]));
-import { SANSHIN_MATERIALS,ANATA_PERFORMANCE,ANATA_LESSON,sanshinMaterialChoice,sanshinSessionKey,sanshinLyricKey,lessonChapter } from './sanshin-materials.mjs?v=36';
-import { lessonWindow,lessonRange,performanceProgress,sanshinSession,addLessonMark } from './sanshin-session.mjs?v=36';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=37';
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=37';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=37';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=37';
+import { lessonPlayer } from './youtube.mjs?v=37';
+export const SANSHIN_VIDEOS = Object.fromEntries([...SANSHIN_PLAYLIST.tracks,...SANSHIN_PLAYLIST.basicTracks].map(t=>[t.id,t]));
+import { SANSHIN_MATERIALS,ANATA_PERFORMANCE,ANATA_LESSON,sanshinMaterialChoice,sanshinSessionKey,sanshinLyricKey,lessonChapter } from './sanshin-materials.mjs?v=37';
+import { lessonWindow,lessonRange,performanceProgress,sanshinSession,addLessonMark } from './sanshin-session.mjs?v=37';
 const preferenceKey='music-practice-sanshin-material-anata-v1';
 const timeLabel=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 export function mountSanshinGuide({onTakeOver}) {
@@ -148,7 +148,7 @@ export function mountSanshinGuide({onTakeOver}) {
       const course=courseForSong();$('video').hidden=!course;
       $('reading-controls').hidden=!course;dialog.dataset.reading=course?'score':'finger';$('score-view').setAttribute('aria-pressed',String(!!course));$('finger-view').setAttribute('aria-pressed',String(!course));
       $('enlarge').hidden=!course;enlarge(shortLandscape.matches);
-      $('transport').hidden=!course;$('score-start').hidden=!course;$('score-start').textContent='最初から通して弾く';$('finish-stop').checked=true;$('material-details').open=false;
+      $('transport').hidden=!course;$('score-start').hidden=!course;$('score-start').textContent=materialForSong()?.startLabel||'最初から通して弾く';$('finish-stop').checked=true;$('material-details').open=false;
       const material=materialForSong();$('chapters').replaceChildren(...(material?.chapters||[]).map(([time,label])=>{const button=document.createElement('button');button.type='button';button.textContent=`${timeLabel(time)} ${label}`;button.onclick=()=>{loop=false;if(ready){pause();seek(time);}else{position=time;remember();controls();}status('練習する場所を選びました。再生は自分で始めてください。');};return button;}));
       $('score-source').hidden=$('score-source-note').hidden=!course;
       if(course){$('score-source').href=course.sheets[0].url;$('score-source').textContent=course.sheets[0].label+' ↗';$('score-source-note').textContent=course.note;}

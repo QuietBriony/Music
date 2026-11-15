@@ -1,4 +1,4 @@
-import { centsFrom, noteName, detectPitch } from './music.mjs?v=36';
+import { centsFrom, noteName, detectPitch } from './music.mjs?v=37';
 export const SANSHIN_TUNINGS={honchoshi:{name:'本調子',reading:'ほんちょうし',offsets:[0,5,12],tip:'男弦・中弦・女弦がド・ファ・ドの関係。収録の工工四はこの調弦です。'},niage:{name:'二揚げ',reading:'にあげ・にあぎ',offsets:[0,7,12],tip:'本調子から中弦だけを全音上げます。ド・ソ・ドの関係。'},sansage:{name:'三下げ',reading:'さんさげ・さんさぎ',offsets:[0,5,10],tip:'本調子から女弦だけを全音下げます。ド・ファ・シ♭の関係。'}};
 export const sanshinTuning=kind=>SANSHIN_TUNINGS[kind]||SANSHIN_TUNINGS.honchoshi;
 export function tuningLabel(transpose=0,kind='honchoshi'){
@@ -19,6 +19,33 @@ export function tunerReading(detection,midi,gate=.006) {
   if(!Number.isFinite(detection.frequency)||detection.frequency<=0 || detection.rms<tunerInputGate(gate) || detection.clarity<.65)return{cents:null,status:'waiting',reason:detection.rms<tunerInputGate(gate)?'quiet':'unclear'};
   const cents=centsFrom(detection.frequency,midi);
   return{cents,direction:cents>0?'high':'low',status:Math.abs(cents)>300?'check':Math.abs(cents)<=20?'matched':Math.abs(cents)<=80?'near':cents>0?'high':'low'};
+}
+// A sustained live match confirms a string. Retained readings never build a
+// confirmation; the short delay afterwards leaves time to see OK before moving.
+export class TuningProgress {
+  constructor(count=0){this.reset(count);}
+  reset(count){this.count=count;this.matched=new Set();this.cancel();}
+  cancel(){this.since=null;this.lastAt=null;this.pending=null;this.candidate=null;}
+  select(index){this.cancel();this.matched.delete(index);}
+  next(index){for(let step=1;step<=this.count;step++){const next=(index+step)%this.count;if(!this.matched.has(next)&&next!==index)return next;}return null;}
+  feed(reading,index,now=performance.now()){
+    if(!Number.isInteger(index)||index<0||index>=this.count)return null;
+    if(this.pending){
+      if(this.pending.index!==index){this.cancel();return null;}
+      if(now-this.pending.at<650)return {confirming:true,next:this.next(index)};
+      this.matched.add(index);const next=this.next(index);this.cancel();
+      return {accepted:index,next,complete:this.matched.size===this.count};
+    }
+    if(this.candidate!==index){this.cancel();this.candidate=index;}
+    if(reading.held||reading.status!=='matched'){
+      // A missing frame is not evidence of being in tune, even if the UI holds OK.
+      this.since=null;this.lastAt=null;return null;
+    }
+    if(this.lastAt===null||now-this.lastAt>240)this.since=now;
+    this.lastAt=now;
+    if(now-this.since<850)return null;
+    this.pending={index,at:now};return {confirming:true,next:this.next(index)};
+  }
 }
 export class TunerTracker {
   constructor(){this.reset();}

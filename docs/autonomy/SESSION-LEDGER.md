@@ -1,5 +1,7 @@
 # Session Ledger — music-stack
 
+2026-11-15 練習PWA v37：「安里屋ゆんた」を三線の基礎練習へ追加。宮里英克三線教室の工工四・歌詞付き教材と全体PDFへつなぎ、0.75倍・短い反復・しおりを使える。Apple Musicの8曲は保持し、追加の教材は別に記録。音符単位の内蔵譜・自動指図は未収録。調弦は○ OKが実際の入力で安定したら、次の未確認の弦へ自動で進む。表示に残した音や一瞬の一致だけでは進めず、OK表示の後に移る。全弦の完了を表示してマイクを停止し、基礎練習へ進める。自動送りはオフにでき、手動で弦を選び直せる。実楽器・実iPhoneの試奏は未確認。
+
 ## 2026-11-08 — Past creative intent rolled into the existing direction
 
 - Scope: docs only; direct owner request to integrate earlier music discussions

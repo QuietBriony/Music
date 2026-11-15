@@ -33,12 +33,12 @@ assert.equal(MATERIAL_COURSES.santeria.capo,4);assert.equal(MATERIAL_COURSES.san
 assert.equal(MATERIAL_COURSES['your-song'].easyCapo,0);assert.equal(MATERIAL_COURSES['sleep-last-night'].easyCapo,0);
 assert.deepEqual([...new Set(MATERIAL_COURSES['sleep-last-night'].steps.map(s=>s.name))],['E','A','G','B7']);
 assert.equal(materialLyricKey('imagine',PREPARED_COURSES.imagine),'video:guitar:imagine');
-assert.equal(Object.keys(SANSHIN_MATERIALS).length,8);
+assert.equal(Object.keys(SANSHIN_MATERIALS).length,9);
 for(const material of Object.values(SANSHIN_MATERIALS)){
  assert.ok(material.start>=0);assert.ok(material.end===null||material.end>material.start);
  for(let i=0;i<material.chapters.length;i++){const [time]=material.chapters[i];assert.ok(i===0||time>material.chapters[i-1][0]);assert.equal(lessonChapter(material,time).index,i);if(i)assert.equal(lessonChapter(material,time-.001).index,i-1);}
 }
-console.log('Materials: eight complete simplified timelines, six chart migrations, recording-specific capos, preserved drafts and eight Sanshin chapter maps PASS');
+console.log('Materials: eight complete simplified timelines, six chart migrations, recording-specific capos, preserved drafts and nine Sanshin lessons PASS');
 const pcs=(shape,capo)=>[...new Set(shape.frets.flatMap((f,i)=>f<0?[]:[([40,45,50,55,59,64][i]+f+capo)%12]))].sort((a,b)=>a-b);
 for(const [key,base] of Object.entries(PREPARED_COURSES)){
  const arranged=arrangeCourse(base,EASY_CAPOS[key]);assert.equal(arranged.key,base.key);assert.deepEqual(arranged.times,base.times);assert.ok(availableCapos(base).includes(EASY_CAPOS[key]));
@@ -69,7 +69,7 @@ for(const capo of [0,2,4,7])for(const name of ['C','Caug','Am','Dm','G','Em','A'
  const found=detectChord(spectrum(midis),48000,16384,{rms:.1,capo});assert.equal(found.name,name,`${name}, capo ${capo}`);assert.ok(found.confidence>=.65);checked++;
 }
 assert.equal(detectChord(spectrum([52,56,59]),48000,16384,{rms:.1,capo:4}).name,'C','capo-aware C shape is an E sounding chord');
-const sw=readFileSync('practice/sw.js','utf8');for(const name of ['singalong.mjs?v=36','singalong-core.mjs?v=36','youtube.mjs?v=36','singalong.css?v=36','songs/singalong-provenance.json'])assert.ok(sw.includes(name));assert.doesNotMatch(sw,/www\.youtube|googlevideo/);
+const sw=readFileSync('practice/sw.js','utf8');for(const name of ['singalong.mjs?v=37','singalong-core.mjs?v=37','youtube.mjs?v=37','singalong.css?v=37','songs/singalong-provenance.json'])assert.ok(sw.includes(name));assert.doesNotMatch(sw,/www\.youtube|googlevideo/);
 const source=readFileSync('practice/singalong.mjs','utf8');assert.doesNotMatch(source,/MediaRecorder|sendBeacon|innerHTML/);
 console.log(`Singalong: 110 harmonic targets, 11 sections, safe video URLs, loop bounds, local sequence validation and ${checked} capo-aware chord mixtures PASS`);
 
@@ -88,7 +88,7 @@ assert.deepEqual(inspected.filter(([time,name])=>TOKIYO_STEPS[cueAt(TOKIYO_TIMES
 assert.equal(normalizeSingState({offset:Infinity,videoTime:-4,follow:false},110).offset,0);
 assert.equal(normalizeSingState({offset:.4,videoTime:87.25,follow:false},110).videoTime,87.25);
 assert.equal(normalizeSingState({offset:.4,videoTime:87.25,follow:false},110).follow,false);
-assert.ok(sw.includes('video-cues.mjs?v=36'));
+assert.ok(sw.includes('video-cues.mjs?v=37'));
 console.log('Video sync: all 110 boundary pairs, backward seeks, offset bounds and 27 inspected reference positions PASS');
 
 assert.equal(JIGSAW_STEPS.length,101);assert.equal(JIGSAW_TIMES.length,101);assert.equal(new Set(JIGSAW_STEPS.map(s=>s.section)).size,14);
@@ -107,7 +107,7 @@ assert.equal(courseState(legacy,PREPARED_COURSES.tokiyo,TOKIYO_STEPS).videoTime,
 const migrated=courseState({...legacy,capo:0},PREPARED_COURSES.jigsaw,JIGSAW_STEPS);assert.equal(migrated.capo,2);assert.equal(migrated.index,0);assert.equal(migrated.videoTime,0);assert.equal(migrated.a,null);assert.equal(migrated.offset,0);assert.equal(migrated.follow,true);
 const same=courseState({...legacy,timeline:PREPARED_COURSES.jigsaw.key,capo:2},PREPARED_COURSES.jigsaw,JIGSAW_STEPS);assert.equal(same.videoTime,97.25);assert.equal(same.follow,false);
 const custom=courseState({index:1,capo:0,follow:false,videoTime:12},PREPARED_COURSES.jigsaw,readSteps('C Am'),true);assert.equal(custom.index,1);assert.equal(custom.capo,0);assert.equal(custom.videoTime,12);
-for(const file of ['singalong-courses.mjs?v=36','jigsaw-cues.mjs?v=36'])assert.ok(sw.includes(file));
+for(const file of ['singalong-courses.mjs?v=37','jigsaw-cues.mjs?v=37'])assert.ok(sw.includes(file));
 console.log('Two prepared courses: Jigsaw 101 targets/14 sections/eight open shapes, independent end times, capo-aware detection, legacy migration and custom-order preservation PASS');
 
 assert.equal(Object.keys(PREPARED_COURSES).length,11);

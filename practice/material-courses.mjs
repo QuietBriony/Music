@@ -1,5 +1,5 @@
-import { estimatedCourse } from './harmony-timeline.mjs?v=36';
-import { PHRASE_COURSES } from './material-arrangements.mjs?v=36';
+import { estimatedCourse } from './harmony-timeline.mjs?v=37';
+import { PHRASE_COURSES } from './material-arrangements.mjs?v=37';
 
 // Public harmonic labels and beat positions; publisher lyrics stay in the player.
 // See songs/material-provenance.json for inspected pages and corrections.

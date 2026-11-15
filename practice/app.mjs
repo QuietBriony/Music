@@ -1,38 +1,40 @@
-import { ensurePracticeShell, mountPracticeUpdates } from './app-update.mjs?v=36';
-import { mountFirstSong } from './first-song.mjs?v=36';
-import { mountPracticeShell } from './app-shell.mjs?v=36';
-import { mountScoreStrip } from './score-strip.mjs?v=36';
-import { MicInputBoost,mountMicGainControls } from './mic-input.mjs?v=36';
-import { mountGuitarPlaylist } from './guitar-playlist.mjs?v=36';
-import { mountSanshinPlaylist } from './sanshin-playlist.mjs?v=36';
-import { mountHandGuide } from './hand-guide.mjs?v=36';
-import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=36';
-import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=36';
-import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=36';
-import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=36';
-import { SANSHIN_TUNINGS,sanshinTuning,tuningLabel,tuningStrings, tuningGate, detectTuningPitch, TunerTracker } from './tuner.mjs?v=36';
-import { mountFullScore } from './full-score.mjs?v=36';
-import { mountLearning,STUDIES } from './learning.mjs?v=36';
-import { guitarShape,drawChord,fillFingerList,strumInstruction,fingerLines,mountGuitarGuides } from './chord-guide.mjs?v=36';
-import { detectChord, ChordGate,chordAttackLevel } from './polyphonic.mjs?v=36';
-import { mountLyrics } from './lyrics.mjs?v=36';
-import { LYRIC_PRESETS } from './lyric-presets.mjs?v=36';
-import { PracticeProgress,progressKey } from './progress.mjs?v=36';
-import { mountSingalong } from './singalong.mjs?v=36';
-import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=36';
+import { ensurePracticeShell, mountPracticeUpdates } from './app-update.mjs?v=37';
+import { mountFirstSong } from './first-song.mjs?v=37';
+import { mountPracticeShell } from './app-shell.mjs?v=37';
+import { mountScoreStrip } from './score-strip.mjs?v=37';
+import { MicInputBoost,mountMicGainControls } from './mic-input.mjs?v=37';
+import { mountGuitarPlaylist } from './guitar-playlist.mjs?v=37';
+import { mountSanshinPlaylist, SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=37';
+import { mountHandGuide } from './hand-guide.mjs?v=37';
+import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=37';
+import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=37';
+import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=37';
+import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=37';
+import { SANSHIN_TUNINGS,sanshinTuning,tuningLabel,tuningStrings, tuningGate, detectTuningPitch, TunerTracker, TuningProgress } from './tuner.mjs?v=37';
+import { mountFullScore } from './full-score.mjs?v=37';
+import { mountLearning,STUDIES } from './learning.mjs?v=37';
+import { guitarShape,drawChord,fillFingerList,strumInstruction,fingerLines,mountGuitarGuides } from './chord-guide.mjs?v=37';
+import { detectChord, ChordGate,chordAttackLevel } from './polyphonic.mjs?v=37';
+import { mountLyrics } from './lyrics.mjs?v=37';
+import { LYRIC_PRESETS } from './lyric-presets.mjs?v=37';
+import { PracticeProgress,progressKey } from './progress.mjs?v=37';
+import { mountSingalong } from './singalong.mjs?v=37';
+import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=37';
 
-import { renderSanshinTarget } from './sanshin-view.mjs?v=36';
-import { mountSanshinGuide } from './sanshin-guide.mjs?v=36';
+import { renderSanshinTarget } from './sanshin-view.mjs?v=37';
+import { mountSanshinGuide } from './sanshin-guide.mjs?v=37';
 
 if (await ensurePracticeShell()) {
 const $ = id => document.getElementById(id);
 mountGuitarGuides();
 const tunerTracker=new TunerTracker();
+const tuningProgress=new TuningProgress();
 const STORAGE = 'music-practice-settings-v1';
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem(STORAGE) || '{}') || {}; } catch { /* Private mode / unavailable storage is fine. */ }
 let instrument = saved.instrument === 'sanshin' ? 'sanshin' : 'guitar';
 let view = saved.view==='practice'?'practice':'tuner', tunerIndex=0;
+let tunerAuto=saved.tunerAuto!==false;
 let lessonId = LESSONS[instrument].some(item => item.id === saved.lesson) ? saved.lesson : 'open';
 let transpose = [0, -1, -2, -3, 2].includes(saved.transpose) ? saved.transpose : 0;
 let tuningKind=Object.hasOwn(SANSHIN_TUNINGS,saved.tuningKind)?saved.tuningKind:'honchoshi';
@@ -59,7 +61,7 @@ const feedback = text => { if ($('feedback').textContent !== text) $('feedback')
 const tunerInputStatus = text => {if($('tuner-input-status').textContent!==text)$('tuner-input-status').textContent=text;};
 function save() {
   if(view==='practice')practiceSnapshot={instrument,lesson:lessonId,practiceStyle,chordNames:lessonId==='chord'?midiModel.markers.map(c=>c.chord):null,chordTitle:lessonId==='chord'?midiTitle:null,sessionId,sessionTitle,easyPractice:midiModel?.easy===true};
-  try { localStorage.setItem(STORAGE, JSON.stringify({ uiVersion:23, view, instrument, lesson:lessonId, transpose, tuningKind, gate, practiceStyle,chordCheck,chordCheckRevision:2,practiceSnapshot,tempo:Number($('tempo').value),countIn:$('count-in').checked,backing:$('backing').checked,singalong:singalongOpen })); } catch { /* Storage is optional. */ }
+  try { localStorage.setItem(STORAGE, JSON.stringify({ uiVersion:23, view, instrument, lesson:lessonId, transpose, tuningKind, gate, tunerAuto, practiceStyle,chordCheck,chordCheckRevision:2,practiceSnapshot,tempo:Number($('tempo').value),countIn:$('count-in').checked,backing:$('backing').checked,singalong:singalongOpen })); } catch { /* Storage is optional. */ }
 }
 function storeProgress(){
  if(view!=='practice'||!progressId||loading||!follower)return;
@@ -135,10 +137,38 @@ function stopAll() {
   resetTunerDisplay();
 }
 function resetTunerDisplay(){
+  tuningProgress.cancel();$('tuner-complete').hidden=true;
   tunerTracker.reset();$('needle').hidden=view==='tuner';$('detected-frequency').textContent='— Hz';
   if(view==='tuner'){$('heard').textContent='—';$('cents').textContent='—';$('tuner-verdict').textContent='一本、鳴らしてください';$('practice-stage').dataset.held='false';}
   tunerInputStatus(mode==='mic'?'一本だけ弾いてください。':'マイクを始めると、入力の状態がここに出ます。');
   $('practice-stage').dataset.tuning='waiting';
+}
+function renderTuningProgress(){
+  const done=tuningProgress.matched.size,total=notes.length;
+  $('tuner-auto-next').checked=tunerAuto;
+  $('tuner-step-status').textContent=done===total?`○ ${total}本とも調弦できました`:`${done} / ${total}本 OK · ${notes[tunerIndex].label}${tunerAuto?'から順に自動で進みます':'を確認。次の弦は自分で選びます'}`;
+  for(const b of $('tuner-strings').querySelectorAll('[data-tune]')){
+    const index=Number(b.dataset.tune),matched=tuningProgress.matched.has(index);
+    b.dataset.tuned=String(matched);b.setAttribute('aria-pressed',String(index===tunerIndex));
+    b.querySelector('small').textContent=matched?'○ OK':`${frequencyFor(notes[index].midi).toFixed(1)} Hz`;
+  }
+}
+function followTuning(reading,now){
+  if(!tunerAuto)return false;
+  const progress=tuningProgress.feed(reading,tunerIndex,now);if(!progress)return false;
+  if(progress.confirming){
+    $('tuner-verdict').textContent='○ OK';$('practice-stage').dataset.tuning='matched';
+    feedback(progress.next===null?'○ 合いました。最後の弦を確認しました。':`○ 合いました。次は${notes[progress.next].label}へ。`);return true;
+  }
+  const label=notes[tunerIndex].label;
+  if(progress.complete){
+    stopAll();render();$('practice-stage').dataset.tuning='matched';$('tuner-verdict').textContent=`○ ${notes.length}本 OK`;
+    $('tuner-complete').hidden=false;$('input-label').textContent='調弦完了 · マイク停止';
+    tunerInputStatus('すべての弦が合ったのでマイクを止めました。気になる弦は選んで再確認できます。');
+    feedback('調弦できました！ 基礎練習へ進めます。');return true;
+  }
+  tunerIndex=progress.next;resetTunerDisplay();suppressUntil=now+300;render();
+  feedback(`○ ${label} OK。次は${notes[tunerIndex].label}を一本だけ弾いてください。`);return true;
 }
 async function audio() {
   if (!context || context.state === 'closed') {
@@ -300,7 +330,7 @@ function render() {
     $('target-main').textContent=n.symbol||noteName(n.midi).replace(/\d/g,'');$('target-name').textContent=`${noteName(n.midi)} · ${frequencyFor(n.midi).toFixed(1)} Hz`;
     $('position').textContent=`${n.position}（左手は押さえない）`;$('reference').disabled=false;
     if(instrument==='sanshin')renderSanshinTarget($('sanshin-target'),n,null);
-    for(const b of $('tuner-strings').querySelectorAll('[data-tune]'))b.setAttribute('aria-pressed',String(Number(b.dataset.tune)===tunerIndex));return;
+    renderTuningProgress();return;
   }
   const guiding = mode === 'demo', done = follower.done && !guiding;
   const index = guiding && demoIndex >= 0 ? demoIndex : Math.min(follower.index, follower.end - 1);
@@ -328,6 +358,7 @@ function setup() {
   scorePage=null;if(view==='tuner')setFocus(false);
   if(view==='tuner'){
     notes=tuningStrings(instrument,transpose,tuningKind);cues=[];tunerIndex=Math.min(tunerIndex,notes.length-1);
+    tuningProgress.reset(notes.length);
   }else if (midiModel) {
     const result = scoreNotes(midiModel, groupId, instrument, { shift: scoreShift, tuning: transpose, highVoice, chords: practiceStyle === 'chords' });
     notes = result.notes; cues = result.cues;
@@ -349,6 +380,7 @@ function setup() {
   $('tuning-reminder').hidden=instrument!=='sanshin'||view!=='practice'||tuningKind==='honchoshi';
   $('tuner-detail').textContent=instrument==='guitar'?'標準調弦 E2・A2・D3・G3・B3・E4。太い6弦から一本ずつ。':`${tuningLabel(transpose,tuningKind)}（${sanshinTuning(tuningKind).reading}）。男弦→中弦→女弦の順。${sanshinTuning(tuningKind).tip} B・E・Bは本調子。二揚げはB・F♯・B、三下げはB・E・Aです。`;
   $('lesson').innerHTML = '<optgroup label="曲のプリセット">'+SONGS[instrument].map(song=>`<option value="${song.id}">${song.title}</option>`).join('')+'</optgroup><optgroup label="基礎練習">'+LESSONS[instrument].map(l => `<option value="${l.id}">${l.title}</option>`).join('')+'</optgroup>' + (lessonId === 'import' ? '<option value="import">読み込んだMIDI</option>' : lessonId==='chord'?'<option value="chord">選んだコードの練習</option>':'');
+  if(instrument==='sanshin')$('lesson').insertAdjacentHTML('beforeend','<optgroup label="教材で基礎練習">'+SANSHIN_PLAYLIST.basicTracks.map(t=>`<option value="${t.id}">${t.title}（工工四付き動画）</option>`).join('')+'</optgroup>');
   $('lesson').value = lessonId; $('tuning').value = transpose; $('sensitivity').value = gate;$('tuner-sensitivity').value=gate;
   $('tuning-label').hidden = instrument !== 'sanshin';
   const selectedSong=SONGS[instrument].find(song=>song.id===lessonId);
@@ -422,6 +454,7 @@ function acceptChordCue(){
 async function startMic() {
   if (loading) return;
   stopAll();
+  if(view==='tuner'){tuningProgress.reset(notes.length);renderTuningProgress();}
   focusPractice();if(view==='tuner')$('tuner-verdict').closest('.listening').scrollIntoView({block:'start',behavior:'smooth'});chordGate.reset();
   if (follower.done) { matchedCount = rounds = 0; newFollower(); }
   follower.candidateAt = null; follower.lastRms = 0; follower.armed = true;
@@ -481,6 +514,7 @@ async function startMic() {
         const direction=result.direction==='high'?'少し高めです。糸巻きを少し緩めて、もう一度。':'少し低めです。糸巻きを少し張って、もう一度。';
         const labels={waiting:'一本、鳴らしてください',settling:'音を確認中',matched:'○ OK',near:'あと少し',high:'高い ↓',low:'低い ↑',check:'弦・音名を確認',held:'前の音を表示'};
         $('tuner-verdict').textContent=labels[result.status];
+        if(followTuning(result,now))return;
         if(result.held){
           tunerInputStatus('直前に拾った音と針を保持しています。今の音程を測るには、もう一度一本だけ弾いてください。');
           feedback(result.status==='matched'?'○ 直前の音は合っています。もう一度鳴らして確かめましょう。':result.status==='held'?'前の音を残しています。少し回したら、弾き直して針を確かめましょう。':result.status==='settling'?'音を捉えました。もう一度鳴らして確かめましょう。':'最後の音を残しています。'+(result.status==='check'?'選ぶ弦と音名・オクターブを確かめましょう。':direction));
@@ -567,14 +601,17 @@ $('score-follow').onclick=()=>{scorePage=null;renderScore();};
 $('tuner-kind').onchange=()=>{cancelLoad();tuningKind=$('tuner-kind').value;setup();};
 $('tuning-honchoshi').onclick=()=>{tuningKind='honchoshi';$('view-tuner').click();};
 $('chord-check').onchange=()=>{chordCheck=$('chord-check').value;$('score-heading').textContent=chordCheck==='strum'?'コードをつなぐ':'コードを一弦ずつ';stopAll();chordGate.reset();save();render();feedback(chordCheck==='strum'?'ジャーンと弾くと、次のコードへ進みます。指の位置は図で確認してください（和音判定は試験中）。':'コードを押さえ、大きく表示する弦を一本ずつ弾きます。');};
-$('tuner-clear').onclick=()=>{resetTunerDisplay();feedback('表示を消しました。選んだ弦を一本鳴らしてください。');};
-$('tuner-strings').onclick=event=>{const b=event.target.closest('[data-tune]');if(b){if(referenceActive)stopReference();tunerIndex=Number(b.dataset.tune);resetTunerDisplay();render();feedback('選んだ弦を一本だけ鳴らして、針と高低を確かめましょう。');}};
+$('tuner-clear').onclick=()=>{tuningProgress.select(tunerIndex);resetTunerDisplay();render();feedback('表示を消しました。選んだ弦を一本鳴らしてください。');};
+$('tuner-auto-next').onchange=()=>{tunerAuto=$('tuner-auto-next').checked;tuningProgress.cancel();save();render();feedback(tunerAuto?'○ OKが安定したら、次の弦へ進みます。':'同じ弦を続けて確認できます。次の弦は自分で選びます。');};
+$('tuner-to-practice').onclick=()=>$('view-practice').click();
+$('tuner-strings').onclick=event=>{const b=event.target.closest('[data-tune]');if(b){if(referenceActive)stopReference();tunerIndex=Number(b.dataset.tune);tuningProgress.select(tunerIndex);resetTunerDisplay();render();feedback('選んだ弦を一本だけ鳴らして、針と高低を確かめましょう。');}};
 $('preset-songs').onclick=event=>{const button=event.target.closest('[data-preset-song]');if(button)selectSong(button.dataset.presetSong);};
 $('easy-song-start').onclick=()=>{$('study-select').value='tokiyo';$('study-select').onchange();const study=STUDIES.guitar.find(s=>s.id==='tokiyo');const stage=study.stages[0];startChordExercise(stage.names,`${study.title} · ${stage.title}`,`study:${study.id}:0`,{easy:true});};
 $('chord-library').onclick=event=>{const button=event.target.closest('[data-practice-chord]');if(button)startChordExercise([button.dataset.practiceChord],`${button.dataset.practiceChord}の練習`);};
 $('progression-choices').onclick=event=>{const button=event.target.closest('[data-progression]');const p=PROGRESSIONS.find(p=>p.id===button?.dataset.progression);if(p)startChordExercise(p.names,p.title);};
 $('lesson').onchange = () => {
   const id=$('lesson').value;
+  if(instrument==='sanshin'&&SANSHIN_PLAYLIST.basicTracks.some(t=>t.id===id)){$('lesson').value=lessonId;sanshinGuide.open(id);return;}
   if(SONGS[instrument].some(song=>song.id===id))selectSong(id);
   else if(id!=='import'&&id!=='chord'){cancelLoad();sessionId=sessionTitle='';midiModel=null;practiceStyle='melody';lessonId=id;setup();$('midi-status').textContent='';}
 };
@@ -689,6 +726,7 @@ $('sanshin-start-tinsagu').onclick=startSanshinSong;
 $('sanshin-full-tinsagu').onclick=async()=>{if(await startSanshinSong())$('full-score-open').click();};
 $('sanshin-video-tinsagu').onclick=()=>sanshinGuide.open('tinsagu');
 $('sanshin-start-jidai').onclick=()=>sanshinGuide.open('jidai');
+$('sanshin-start-asatoya').onclick=()=>sanshinGuide.open('asatoya');
 $('sanshin-help').onclick=()=>sanshinGuide.open(null,notes[mode==='demo'?Math.max(0,demoIndex):view==='tuner'?tunerIndex:Math.min(follower.index,follower.end-1)]?.symbol);
 const handGuide=mountHandGuide({pausePractice:()=>{cancelLoad();stopAll();singalong.pause();}});
 $('chord-hand-open').onclick=()=>{const name=$('chord-name').textContent,note=notes[Math.min(follower.index,notes.length-1)],last=notes[follower.end-1],next=cues.find(c=>c.time>(note?.time??0)&&c.time<=(last?.time??0)&&c.chord!==name);handGuide.open({name,shape:practiceShape(name),capo:0,next:next?{name:next.chord,shape:practiceShape(next.chord)}:null});};

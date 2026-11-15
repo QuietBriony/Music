@@ -1,6 +1,7 @@
 // Positions are navigation aids, not a transcription of copyrighted melodies.
 // The publisher's player shows the score and lyrics in its own arrangement.
 export const SANSHIN_MATERIALS={
+ asatoya:{start:0,end:null,startLabel:'最初からレッスンを始める',tuning:'本調子 · 先生の基準の高さに合わせます。C–F–CやB–E–Bなど、高さを変えても本調子の関係は同じです。',scope:'解説からゆっくり一緒に練習する教材です。前奏の短い部分を反復してから、歌を重ねましょう。',chapters:[[0,'調弦・弾き方から練習']]},
  shimauta:{start:870,end:1120,scope:'先生の通し演奏。原曲の全番を収録した譜面ではありません。',chapters:[[0,'解説・調弦'],[600,'高い音の工工四'],[870,'通し演奏']]},
  jidai:{start:518,end:629,scope:'先生の通し演奏（2番まで）。工工四・歌詞のページが演奏と一緒に進みます。',chapters:[[0,'解説・調弦'],[210,'前奏の工工四'],[518,'通し演奏'],[577,'2番'],[620,'後奏']]},
  warabigami:{start:690,end:835,scope:'先生の通し練習。教材に表示される節を工工四と歌詞で追います。',chapters:[[0,'解説・調弦'],[400,'工工四で部分練習'],[690,'通し練習']]},

@@ -1,14 +1,14 @@
 // Deliberately scoped to /practice/. Never changes the root Music PWA cache.
-const CACHE = 'music-practice-v36';
-const SHELL = ['./lyric-notes.mjs?v=36', './songs/learning-provenance.json', './sanshin-core.mjs?v=36', './sanshin-view.mjs?v=36', './sanshin-guide.mjs?v=36', './sanshin.css?v=36', './songs/sanshin-provenance.json', './songs/tinsagu.mid', './', './index.html', './style.css?v=36', './presets.css?v=36', './app.mjs?v=36', './instrument-voice.mjs?v=36', './music.mjs?v=36', './midi.mjs?v=36', './chords.mjs?v=36', './scores.mjs?v=36', './singalong.mjs?v=36', './singalong-courses.mjs?v=36', './jigsaw-cues.mjs?v=36', './hand-guide.mjs?v=36', './hand-guide-core.mjs?v=36', './hand-guide.css?v=36', './songs/hand-guide-provenance.json', './songs/jigsaw-study.json', './video-cues.mjs?v=36', './singalong-core.mjs?v=36', './youtube.mjs?v=36', './singalong.css?v=36', './songs/singalong-provenance.json', './progress.mjs?v=36', './polyphonic.mjs?v=36', './lyrics.mjs?v=36', './lyric-presets.mjs?v=36', './session.css?v=36', './songs/lyrics-provenance.json', './songs/tokiyo-study.json', './tuner.mjs?v=36', './learning.mjs?v=36', './songs/amazing-grace.mid', './songs/twinkle.mid', './songs/ode-to-joy.mid', './songs/provenance.json', './manifest.webmanifest', './icon.svg', '../icons/icon-192.png', '../icons/icon-512.png', '../icons/apple-touch-icon.png'];
-SHELL.push('./song-support.mjs?v=36','./video-lyrics.mjs?v=36','./score-lyrics.mjs?v=36','./score-strip.mjs?v=36','./mic-input.mjs?v=36','./guitar-playlist.mjs?v=36','./guitar-playlist.css?v=36','./songs/guitar-playlist.json','./sanshin-playlist.mjs?v=36','./songs/sanshin-playlist.json','./tablet.css?v=36','./full-score.mjs?v=36','./full-score.css?v=36');
-SHELL.push('./chord-guide.mjs?v=36','./chord-guide.css?v=36');
-SHELL.push('./harmony-timeline.mjs?v=36','./estimated-courses.mjs?v=36','./auto-follow.css?v=36','./songs/auto-follow-provenance.json');
-SHELL.push('./app-shell.mjs?v=36','./app-shell.css?v=36');
-SHELL.push('./app-update.mjs?v=36','./first-song.mjs?v=36');
-SHELL.push('./song-coach.mjs?v=36','./material-courses.mjs?v=36','./material-arrangements.mjs?v=36','./sanshin-materials.mjs?v=36','./materials.css?v=36','./songs/material-provenance.json');
-const VERSION = '36';
-SHELL.push('./sanshin-session.mjs?v=36','./sanshin-study.css?v=36');
+const CACHE = 'music-practice-v37';
+const SHELL = ['./lyric-notes.mjs?v=37', './songs/learning-provenance.json', './sanshin-core.mjs?v=37', './sanshin-view.mjs?v=37', './sanshin-guide.mjs?v=37', './sanshin.css?v=37', './songs/sanshin-provenance.json', './songs/tinsagu.mid', './', './index.html', './style.css?v=37', './presets.css?v=37', './app.mjs?v=37', './instrument-voice.mjs?v=37', './music.mjs?v=37', './midi.mjs?v=37', './chords.mjs?v=37', './scores.mjs?v=37', './singalong.mjs?v=37', './singalong-courses.mjs?v=37', './jigsaw-cues.mjs?v=37', './hand-guide.mjs?v=37', './hand-guide-core.mjs?v=37', './hand-guide.css?v=37', './songs/hand-guide-provenance.json', './songs/jigsaw-study.json', './video-cues.mjs?v=37', './singalong-core.mjs?v=37', './youtube.mjs?v=37', './singalong.css?v=37', './songs/singalong-provenance.json', './progress.mjs?v=37', './polyphonic.mjs?v=37', './lyrics.mjs?v=37', './lyric-presets.mjs?v=37', './session.css?v=37', './songs/lyrics-provenance.json', './songs/tokiyo-study.json', './tuner.mjs?v=37', './learning.mjs?v=37', './songs/amazing-grace.mid', './songs/twinkle.mid', './songs/ode-to-joy.mid', './songs/provenance.json', './manifest.webmanifest', './icon.svg', '../icons/icon-192.png', '../icons/icon-512.png', '../icons/apple-touch-icon.png'];
+SHELL.push('./song-support.mjs?v=37','./video-lyrics.mjs?v=37','./score-lyrics.mjs?v=37','./score-strip.mjs?v=37','./mic-input.mjs?v=37','./guitar-playlist.mjs?v=37','./guitar-playlist.css?v=37','./songs/guitar-playlist.json','./sanshin-playlist.mjs?v=37','./songs/sanshin-playlist.json','./tablet.css?v=37','./full-score.mjs?v=37','./full-score.css?v=37');
+SHELL.push('./chord-guide.mjs?v=37','./chord-guide.css?v=37');
+SHELL.push('./harmony-timeline.mjs?v=37','./estimated-courses.mjs?v=37','./auto-follow.css?v=37','./songs/auto-follow-provenance.json');
+SHELL.push('./app-shell.mjs?v=37','./app-shell.css?v=37');
+SHELL.push('./app-update.mjs?v=37','./first-song.mjs?v=37');
+SHELL.push('./song-coach.mjs?v=37','./material-courses.mjs?v=37','./material-arrangements.mjs?v=37','./sanshin-materials.mjs?v=37','./materials.css?v=37','./songs/material-provenance.json');
+const VERSION = '37';
+SHELL.push('./sanshin-session.mjs?v=37','./sanshin-study.css?v=37');
 const URLS = new Set(SHELL.map(path => new URL(path, self.location.href).href));
 const ASSET_PATHS = new Set([...URLS].map(url => new URL(url).pathname));
 const INDEX = new URL('./index.html', self.location.href).href;

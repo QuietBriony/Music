@@ -3,7 +3,7 @@ import { GUITAR_PLAYLIST } from '../practice/guitar-playlist.mjs';
 import { SANSHIN_PLAYLIST } from '../practice/sanshin-playlist.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { tuningLabel,tuningStrings,tunerReading,detectTuningPitch,TunerTracker,tuningGate,tunerInputGate } from '../practice/tuner.mjs';
+import { tuningLabel,tuningStrings,tunerReading,detectTuningPitch,TunerTracker,TuningProgress,tuningGate,tunerInputGate } from '../practice/tuner.mjs';
 import { sheetEntries,practiceSheetEntries } from '../practice/full-score.mjs';
 import { STUDIES,BASICS } from '../practice/learning.mjs';
 import { chordExercise,scoreNotes } from '../practice/scores.mjs';
@@ -16,6 +16,29 @@ import { mapMelody } from '../practice/chords.mjs';
 import { tinsaguMidi,TINSAGU_COLUMNS } from './build-practice-sanshin.mjs';
 import { createHash } from 'node:crypto';
 assert.deepEqual(tuningStrings('guitar').map(n=>n.midi),[40,45,50,55,59,64]);
+const matchedReading={status:'matched',held:false},progress=new TuningProgress(3);
+assert.equal(progress.feed(matchedReading,0,0),null);
+assert.equal(progress.feed(matchedReading,0,900),null,'Two isolated matches cannot advance');
+assert.equal(progress.feed({...matchedReading,held:true},0,950),null,'Held OK never builds confirmation');
+for(let now=1000;now<=1780;now+=60)assert.equal(progress.feed(matchedReading,0,now),null);
+assert.deepEqual(progress.feed(matchedReading,0,1900),{confirming:true,next:1});
+assert.deepEqual(progress.feed({...matchedReading,held:true},0,2500),{confirming:true,next:1},'A confirmed OK stays visible before moving');
+assert.deepEqual(progress.feed({...matchedReading,held:true},0,2550),{accepted:0,next:1,complete:false});
+assert.equal(progress.matched.has(0),true);
+for(let now=2600;now<4000;now+=60)assert.equal(progress.feed({status:'check',held:false},1,now),null,'Previous-string tail cannot tune the next target');
+progress.select(2);assert.equal(progress.next(2),1,'Manual selection continues to an unchecked string');
+progress.reset(3);
+for(const index of [0,1,2]){
+ const base=index*2000;
+ for(let now=base;now<=base+900;now+=60)progress.feed(matchedReading,index,now);
+ assert.deepEqual(progress.feed(matchedReading,index,base+1560),{accepted:index,next:index===2?null:index+1,complete:index===2});
+}
+assert.equal(progress.matched.size,3);progress.select(1);assert.equal(progress.matched.size,2,'Rechecking a string removes its old OK');
+progress.reset(6);
+for(let now=0;now<=900;now+=60)progress.feed(matchedReading,0,now);
+progress.cancel();assert.equal(progress.feed(matchedReading,0,1600),null,'Stopping cancels a pending transition');
+for(let now=1660;now<=2560;now+=60)progress.feed(matchedReading,0,now);
+progress.select(4);assert.equal(progress.feed(matchedReading,4,3500),null,'Selecting a different string cancels the previous confirmation');
 for(const shift of [-3,-2,-1,0,2]){
  assert.deepEqual(tuningStrings('sanshin',shift,'niage').map(n=>n.midi),[48,55,60].map(n=>n+shift));
  assert.deepEqual(tuningStrings('sanshin',shift,'sansage').map(n=>n.midi),[48,53,58].map(n=>n+shift));
@@ -63,7 +86,7 @@ for(const instrument of ['guitar','sanshin'])for(const n of tuningStrings(instru
   assert.equal(tunerReading(detect(1200),n.midi).status,'check');
   assert.equal(tunerReading({...detect(0),rms:0},n.midi).status,'waiting');
 }
-assert.deepEqual(Object.values(STUDIES).flat().map(s=>s.id),['tokiyo','santeria','blackbird','jigsaw','sleep-last-night','woman','could-you-be-loved','imagine','your-song','yes-my-love','under-the-bridge','shimauta','jidai','warabigami','nadasoso','sanshinnohana','tinsagu','tsukinu','anata-ni']);
+assert.deepEqual(Object.values(STUDIES).flat().map(s=>s.id),['tokiyo','santeria','blackbird','jigsaw','sleep-last-night','woman','could-you-be-loved','imagine','your-song','yes-my-love','under-the-bridge','shimauta','jidai','warabigami','nadasoso','sanshinnohana','tinsagu','tsukinu','anata-ni','asatoya']);
 for(const [instrument,studies] of Object.entries(STUDIES)){
   assert.ok(BASICS[instrument].steps.length>=5);
   for(const study of studies){
@@ -75,6 +98,10 @@ for(const [instrument,studies] of Object.entries(STUDIES)){
 assert.deepEqual(SANSHIN_PLAYLIST,JSON.parse(readFileSync('practice/songs/sanshin-playlist.json','utf8')),'Offline UI metadata matches the inspectable playlist source');
 assert.deepEqual(SANSHIN_PLAYLIST.tracks.map(t=>t.appleId),['1481952783','896534388','1467728468','1838687755','1838717174','279394371','724943335','594418333'],'Original seven recordings retain their order; owner-requested addition is appended');
 for(const t of SANSHIN_PLAYLIST.tracks){assert.equal(new URL(t.appleUrl).searchParams.get('i'),t.appleId);assert.equal(SANSHIN_VIDEOS[t.id].video,t.video);assert.ok(t.sheets.length&&t.focus&&t.note);}
+assert.deepEqual(SANSHIN_PLAYLIST.basicTracks.map(t=>t.id),['asatoya']);
+assert.equal(SANSHIN_VIDEOS.asatoya.video,'wMFlMLMG1c0');
+assert.ok(!SANSHIN_PLAYLIST.basicTracks[0].appleUrl,'An added lesson is not presented as an Apple Music playlist recording');
+assert.equal(new URL(SANSHIN_VIDEOS.asatoya.sheets[0].url).hostname,'miyazatohidekatsu.com');
 assert.deepEqual(GUITAR_PLAYLIST,JSON.parse(readFileSync('practice/songs/guitar-playlist.json','utf8')));
 assert.deepEqual(GUITAR_PLAYLIST.tracks.map(t=>t.appleId),['1440893075','1440848005','1469575893','1436922357','1440754861','1440839501','1441133834','1636234075','1109715469','1636243735','945581840']);
 for(const t of GUITAR_PLAYLIST.tracks)assert.equal(new URL(t.appleUrl).searchParams.get('i'),t.appleId);
@@ -156,8 +183,8 @@ const loopMark=addLessonMark([],530,535).marks;
 assert.deepEqual(sanshinSession({marks:loopMark,rate:.75,repeatSeconds:5},jidaiWindow).marks,loopMark);
 assert.equal(sanshinSession({a:500,b:499,loop:true},jidaiWindow).loop,false);
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=36','sanshin-view.mjs?v=36','sanshin-guide.mjs?v=36','sanshin.css?v=36','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
-console.log('Practice learning: tuning, nineteen studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=37','sanshin-view.mjs?v=37','sanshin-guide.mjs?v=37','sanshin.css?v=37','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+console.log('Practice learning: tuning, twenty studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
 
 const guitarCourseNotes=scoreNotes(chordExercise(['C','Am']),'chords','guitar',{chords:true}).notes;
 const cards=practiceSheetEntries(guitarCourseNotes,{instrument:'guitar',chords:true});assert.equal(cards.length,2);assert.equal(cards[0].index,0);assert.equal(cards[0].end,cards[1].index);assert.equal(cards[1].end,guitarCourseNotes.length);
