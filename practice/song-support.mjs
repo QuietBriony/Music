@@ -1,5 +1,5 @@
 // Distinguish inspected maps from uncertain guides and publisher video scores.
-import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=38';
+import { ESTIMATED_COURSES } from './estimated-courses.mjs?v=39';
 export function songSupport(instrument,id){
  if(instrument==='sanshin'&&id==='asatoya')return{badge:'工工四＋マイク',detail:'前奏＋1節のかんたん版。全画面の譜面が自分の音で進みます。歌詞と本来の譜割りは先生の教材で確認できます。'};
  if(instrument==='guitar'&&['tokiyo','jigsaw'].includes(id))return{badge:'自動コード',detail:'用意した動画にコード図が追従します。歌詞は動画か、自分のテキストを位置合わせして表示できます。'};

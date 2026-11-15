@@ -1,4 +1,4 @@
-import { NoteFollower,detectPitch } from './music.mjs?v=38';
+import { NoteFollower,detectPitch } from './music.mjs?v=39';
 
 // Find a short bachi attack anywhere in the latest observation interval, so an
 // attack between microphone callbacks is not lost in the previous string's tail.
@@ -22,14 +22,20 @@ export class SanshinFollower extends NoteFollower{
   const attack=Number.isFinite(reading.attack)?reading.attack:0,rms=reading.rms||0;
   const baseline=this.attackBaseline,previousRms=this.lastRms;
   const repeated=this.lastMidi===this.notes[this.index]?.midi&&!this.done;
-  if(repeated&&now-this.acceptedAt>=240&&baseline!==null&&attack>Math.max(.00015,baseline*1.5)&&attack>this.previousAttack*1.35){
-   this.onset={until:now+135,floor:previousRms};
+  // Remember a fresh bachi before the acceptance cooldown ends. A previous
+  // pitch can be recognized late; its waiting time must not erase the next
+  // physical attack. The parent still enforces 220ms before voiced evidence.
+  if(this.onset&&(!repeated||now>this.onset.until))this.onset=null;
+  if(!this.onset&&repeated&&now-this.acceptedAt>=120&&baseline!==null&&attack>Math.max(.00015,this.previousAttack*1.35)){
+   this.onset={until:now+135,floor:previousRms,threshold:Math.max(.00015,Math.min(baseline,this.previousAttack)*1.5),peaked:false};
   }
   // The 12ms attack precedes the RMS rise of the 85ms pitch window. Confirm
   // their relationship across adjacent frames rather than requiring one frame.
   if(this.onset){
-   if(!repeated||now>this.onset.until)this.onset=null;
-   else if(rms>Math.max(this.gate*1.5,this.onset.floor*1.12)){
+   // A rising edge, its peak and the RMS rise can occupy different callbacks.
+   // Keep their shared pre-attack baseline; require all three observations.
+   this.onset.peaked ||= attack>this.onset.threshold;
+   if(this.onset.peaked&&rms>Math.max(this.gate*1.5,this.onset.floor*1.12)){
     this.armed=true;this.candidateAt=null;this.previousGood=false;this.repluck={until:now+300,floor:this.onset.floor};this.onset=null;
    }
   }
