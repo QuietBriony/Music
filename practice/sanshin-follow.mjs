@@ -1,4 +1,4 @@
-import { NoteFollower,detectPitch } from './music.mjs?v=39';
+import { NoteFollower,detectPitch } from './music.mjs?v=40';
 
 // Find a short bachi attack anywhere in the latest observation interval, so an
 // attack between microphone callbacks is not lost in the previous string's tail.

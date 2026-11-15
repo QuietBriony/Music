@@ -1,29 +1,30 @@
-import { ensurePracticeShell, mountPracticeUpdates } from './app-update.mjs?v=39';
-import { mountFirstSong } from './first-song.mjs?v=39';
-import { mountPracticeShell } from './app-shell.mjs?v=39';
-import { mountScoreStrip } from './score-strip.mjs?v=39';
-import { MicInputBoost,mountMicGainControls } from './mic-input.mjs?v=39';
-import { mountGuitarPlaylist } from './guitar-playlist.mjs?v=39';
-import { mountSanshinPlaylist, SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=39';
-import { mountHandGuide } from './hand-guide.mjs?v=39';
-import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=39';
-import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=39';
-import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=39';
-import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=39';
-import { SANSHIN_TUNINGS,sanshinTuning,tuningLabel,tuningStrings, tuningGate, detectTuningPitch, TunerTracker, TuningProgress } from './tuner.mjs?v=39';
-import { mountFullScore } from './full-score.mjs?v=39';
-import { SanshinFollower,detectSanshinPitch } from './sanshin-follow.mjs?v=39';
-import { mountLearning,STUDIES } from './learning.mjs?v=39';
-import { guitarShape,drawChord,fillFingerList,strumInstruction,fingerLines,mountGuitarGuides } from './chord-guide.mjs?v=39';
-import { detectChord, ChordGate,chordAttackLevel } from './polyphonic.mjs?v=39';
-import { mountLyrics } from './lyrics.mjs?v=39';
-import { LYRIC_PRESETS } from './lyric-presets.mjs?v=39';
-import { PracticeProgress,progressKey } from './progress.mjs?v=39';
-import { mountSingalong } from './singalong.mjs?v=39';
-import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=39';
+import { ensurePracticeShell, mountPracticeUpdates } from './app-update.mjs?v=40';
+import { mountMicPermissionInfo } from './mic-permission.mjs?v=40';
+import { mountFirstSong } from './first-song.mjs?v=40';
+import { mountPracticeShell } from './app-shell.mjs?v=40';
+import { mountScoreStrip } from './score-strip.mjs?v=40';
+import { MicInputBoost,mountMicGainControls } from './mic-input.mjs?v=40';
+import { mountGuitarPlaylist } from './guitar-playlist.mjs?v=40';
+import { mountSanshinPlaylist, SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=40';
+import { mountHandGuide } from './hand-guide.mjs?v=40';
+import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=40';
+import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=40';
+import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=40';
+import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=40';
+import { SANSHIN_TUNINGS,sanshinTuning,tuningLabel,tuningStrings, tuningGate, detectTuningPitch, TunerTracker, TuningProgress } from './tuner.mjs?v=40';
+import { mountFullScore } from './full-score.mjs?v=40';
+import { SanshinFollower,detectSanshinPitch } from './sanshin-follow.mjs?v=40';
+import { mountLearning,STUDIES } from './learning.mjs?v=40';
+import { guitarShape,drawChord,fillFingerList,strumInstruction,fingerLines,mountGuitarGuides } from './chord-guide.mjs?v=40';
+import { detectChord, ChordGate,chordAttackLevel } from './polyphonic.mjs?v=40';
+import { mountLyrics } from './lyrics.mjs?v=40';
+import { LYRIC_PRESETS } from './lyric-presets.mjs?v=40';
+import { PracticeProgress,progressKey } from './progress.mjs?v=40';
+import { mountSingalong } from './singalong.mjs?v=40';
+import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=40';
 
-import { renderSanshinTarget } from './sanshin-view.mjs?v=39';
-import { mountSanshinGuide } from './sanshin-guide.mjs?v=39';
+import { renderSanshinTarget } from './sanshin-view.mjs?v=40';
+import { mountSanshinGuide } from './sanshin-guide.mjs?v=40';
 
 if (await ensurePracticeShell()) {
 const $ = id => document.getElementById(id);
@@ -54,6 +55,7 @@ const chordGate=new ChordGate();
 const progressStore=new PracticeProgress({getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value)});
 let progressId='',restoredProgress=null;
 let context = null, micStream = null, analyser = null, source = null, silent = null, inputBoost=null;
+const micPermission = mountMicPermissionInfo({ active: () => !!micStream?.getTracks().some(track => track.readyState === 'live') });
 let epoch = 0, meterTimer = null, demoTimer = null, suppressUntil = 0, flashUntil = 0, demoIndex = -1;
 const voices = new Set();
 let referenceVoice = null, referenceActive = false, referenceTicket = 0;
@@ -124,6 +126,7 @@ function stopAll() {
   clearInterval(meterTimer); clearTimeout(demoTimer); meterTimer = demoTimer = null;
   if (micStream) micStream.getTracks().forEach(track => track.stop());
   micStream = null;
+  micPermission.stopped();
   for (const node of [source, analyser, silent]) { try { node?.disconnect(); } catch { /* Disconnected. */ } }
   source = analyser = silent = null;inputBoost?.disconnect();inputBoost=null;
   stopReference(); stopVoices(); suppressUntil = 0;
@@ -324,6 +327,8 @@ function renderScore() {
 }
 
 function render() {
+  $('mic-start').disabled = loading || mode === 'pending' || mode === 'mic';
+  $('mic-start').textContent = mode === 'mic' ? 'マイクで聴いています' : mode === 'pending' ? 'マイクを準備しています' : view === 'tuner' ? 'マイクで調弦を始める' : 'マイクで始める';
   document.body.dataset.mode=mode;if(mode!=='mic')$('practice-input-status').textContent='小さな音は「音を拾う強さ」で補正できます。周りの音も拾う場合は「通常」へ。';document.body.dataset.chordCheck=chordCheck;document.body.dataset.chords=String(practiceStyle==='chords'&&!!midiModel);
   $('touch-chord-actions').hidden=!(mode==='touch'&&practiceStyle==='chords'&&!!midiModel);
   if(view==='tuner'){
@@ -453,7 +458,7 @@ function acceptChordCue(){
   matchedCount+=remaining-1;advance(result);if(mode==='mic')feedback(`○ ${name} OK。余韻は止めず、次のコードを弾いてください。`);
 }
 async function startMic() {
-  if (loading) return;
+  if (loading || mode === 'mic' || mode === 'pending') return;
   stopAll();
   if(view==='tuner'){tuningProgress.reset(notes.length);renderTuningProgress();}
   if(!$('full-score-dialog').open)focusPractice();if(view==='tuner')$('tuner-verdict').closest('.listening').scrollIntoView({block:'start',behavior:'smooth'});chordGate.reset();
@@ -461,7 +466,7 @@ async function startMic() {
   follower.candidateAt = null; follower.lastRms = 0; follower.armed = true;
   const ticket = epoch;
   mode = 'pending'; $('stop').disabled = false; $('mic-start').disabled = $('touch-start').disabled = true;
-  $('input-label').textContent = 'マイクの許可を待っています'; feedback('マイクの使用を許可してください。'); render();
+  $('input-label').textContent = 'マイクを準備しています'; feedback('端末の許可画面が出た場合は「許可」を選んでください。'); render();
   let acquired = null;
   try {
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) throw new Error('マイクはHTTPSのページかlocalhostで使えます。「画面で試す」も利用できます。');
@@ -482,7 +487,7 @@ async function startMic() {
     silent = ctx.createGain(); silent.gain.value = 0;
     if(view==='practice')inputBoost=new MicInputBoost(ctx,source,analyser);else source.connect(analyser); analyser.connect(silent).connect(ctx.destination);
     for (const track of acquired.getTracks()) track.addEventListener('ended', () => { if (micStream === acquired) { stopAll(); render(); feedback('マイクが切断されました。もう一度始めてください。'); } });
-    mode = 'mic'; $('input-label').textContent = 'マイクで聴いています'; $('mic-start').disabled = false; $('touch-start').disabled = false;
+    mode = 'mic'; micPermission.used(); $('input-label').textContent = 'マイクで聴いています'; $('mic-start').disabled = false; $('touch-start').disabled = false;
     render();
     feedback(poly?'コードを押さえてジャーン。余韻を止めずに次のコードへ進めます（試験）。':'大きく表示されている音を、一音ずつ弾いてください。');
     const buffer = new Float32Array(analyser.fftSize),spectrum=new Float32Array(analyser.frequencyBinCount);
@@ -535,7 +540,7 @@ async function startMic() {
   } catch (error) {
     if (ticket !== epoch) { acquired?.getTracks().forEach(track => track.stop()); return; }
     acquired?.getTracks().forEach(track => track.stop());
-    stopAll(); render();
+    stopAll(); render(); micPermission.failed(error);
     feedback(error.name === 'NotAllowedError' ? 'マイクが許可されていません。ブラウザの設定で許可するか、「画面で試す」を選べます。' : error.name === 'NotFoundError' ? 'マイクが見つかりません。「画面で試す」からも練習できます。' : error.name === 'NotReadableError' ? 'マイクを開けませんでした。他のアプリの使用状況を確かめて、もう一度お試しください。' : error.message || 'マイクを開始できませんでした。');
   }
 }
@@ -770,5 +775,5 @@ let installPrompt = null;
 window.addEventListener('beforeinstallprompt', event => { event.preventDefault(); installPrompt = event; $('install').hidden = false; });
 $('install').onclick = async () => { if (installPrompt) { await installPrompt.prompt(); installPrompt = null; $('install').hidden = true; } };
 window.addEventListener('appinstalled', () => { $('install').hidden = true; });
-mountPracticeUpdates({onPause:()=>{cancelLoad();stopAll();singalong.pause();sanshinGuide.close();save();}});
+mountPracticeUpdates({onPause:()=>{cancelLoad();stopAll();singalong.pause();sanshinGuide.close();save();},onInfo:()=>micPermission.refresh()});
 }

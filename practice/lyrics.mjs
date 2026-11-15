@@ -1,6 +1,6 @@
-import { renderLyricReference } from './score-lyrics.mjs?v=39';
-import { CHORDS } from './chords.mjs?v=39';
-import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=39';
+import { renderLyricReference } from './score-lyrics.mjs?v=40';
+import { CHORDS } from './chords.mjs?v=40';
+import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=40';
 export const LYRIC_LIMIT=20000;
 export function readLyrics(text){
  if(typeof text!=='string'||text.length>LYRIC_LIMIT)throw new Error('歌詞は2万字までです。');
