@@ -39,3 +39,36 @@ body.focused #tuning-label select{min-height:36px;font-size:.72rem;padding:6px 2
 #full-score-dialog[data-instrument=guitar] .sheet-cell strong{font:600 1.55rem/1.2 system-ui}
 #full-score-dialog[data-instrument=guitar] .sheet-controls{grid-template-columns:115px minmax(0,1fr)}
 #full-score-finger svg{display:block;width:100%;max-height:135px}#full-score-finger svg line{stroke:#8b9786;stroke-width:1}#full-score-finger svg .nut{stroke-width:4}#full-score-finger svg .barre{stroke:var(--green);stroke-width:12;stroke-linecap:round}#full-score-finger svg circle{fill:var(--green)}#full-score-finger svg text{text-anchor:middle;fill:var(--ink);font:11px system-ui}#full-score-finger svg .finger{fill:white}
+
+.sheet-header-actions{display:flex;gap:6px;flex-shrink:0}.sheet-header-actions button{min-height:44px;font-size:.75rem;padding:7px 10px}
+#full-score-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0;line-height:1.5}
+.sheet-cell:not(.has-lyric) strong{grid-column:1/-1}.sheet-cell .score-note-lyric:empty{display:none}
+#full-score-dialog[data-instrument=sanshin] .sheet-options{max-height:35dvh;overflow:auto;flex-shrink:0}.sheet-options select{min-width:0;max-width:100%}
+#full-score-sheet{flex:1;align-content:flex-start;scroll-padding:20px}
+.sheet-level{height:5px;background:#dce5d5;border-radius:4px;overflow:hidden;min-width:65px;max-width:110px}.sheet-level span{display:block;height:100%;width:0;background:#36774f}
+.sheet-input{display:grid;grid-template-columns:minmax(65px,110px) minmax(0,1fr);gap:4px 9px;align-items:center;min-width:0}.sheet-input #full-score-live{grid-column:1/-1;min-height:1.5em}.sheet-input #full-score-status,.sheet-input #full-score-range{grid-column:1/-1}
+#full-score-heard{font-size:.68rem;line-height:1.5;color:var(--muted)}#full-score-live{font-weight:550;overflow-wrap:anywhere}
+#full-score-dialog[data-done=true] #full-score-position{color:#276652}
+#full-score-dialog[data-instrument=sanshin]{inset:0;margin:0;width:100vw;height:100dvh;max-width:none;max-height:none;border:0;border-radius:0;padding:0 0 var(--practice-safe-bottom,0px)}
+#full-score-dialog[data-instrument=sanshin] header{padding: max(6px,var(--practice-safe-top,0px)) max(10px,var(--practice-safe-right,0px)) 6px max(10px,var(--practice-safe-left,0px))}
+#full-score-dialog[data-instrument=sanshin] .sheet-controls{grid-template-columns:minmax(0,1fr);gap:5px;padding:8px max(12px,var(--practice-safe-right,0px)) 8px max(12px,var(--practice-safe-left,0px))}
+#full-score-dialog[data-instrument=sanshin] #full-score-finger,#full-score-dialog[data-instrument=sanshin] #full-score-instruction{display:none}
+#full-score-dialog[data-instrument=sanshin] .sheet-block{flex:1 0 224px;max-width:310px}
+#full-score-dialog[data-instrument=sanshin] .sheet-column-grid{grid-template-rows:repeat(4,68px);grid-template-columns:repeat(4,minmax(52px,1fr))}
+#full-score-dialog[data-size=large] .sheet-block{flex-basis:292px;max-width:380px}#full-score-dialog[data-size=large] .sheet-column-grid{grid-template-rows:repeat(4,82px);grid-template-columns:repeat(4,minmax(65px,1fr))}#full-score-dialog[data-size=large] .sheet-cell strong{font-size:2rem}
+#full-score-dialog[data-focus=true] :is(.sheet-options,#full-score-credit,#full-score-reference,#full-score-status,#full-score-range){display:none}
+#full-score-dialog[data-instrument=sanshin][data-focus=true] :is(#full-score-previous,#full-score-guide,#full-score-all){display:none}
+#full-score-dialog[data-instrument=sanshin][data-focus=true] .sheet-buttons{flex-wrap:nowrap;gap:6px}
+#full-score-dialog[data-instrument=sanshin][data-focus=true] #full-score-mic{flex:1;background:#285d47;color:white;border-color:#285d47}
+#full-score-dialog[data-focus=true] #full-score-lyric-status,#full-score-dialog[data-focus=true] #full-score-lyric-next{display:none}
+#full-score-dialog[data-focus=true] #full-score-lyrics{max-height:55px;padding:5px 14px}#full-score-dialog[data-focus=true] #full-score-lyric-current{font-size:.9rem;line-height:1.5;margin:0}
+@media(max-height:500px) and (orientation:landscape){
+ #full-score-dialog[data-instrument=sanshin][data-focus=true] .sheet-controls{grid-template-columns:minmax(110px,.6fr) minmax(290px,1fr);column-gap:12px;padding-top:4px;padding-bottom:4px}
+ #full-score-dialog[data-instrument=sanshin][data-focus=true] .sheet-input{grid-column:1/-1;grid-template-columns:80px 100px minmax(0,1fr)}
+ #full-score-dialog[data-instrument=sanshin][data-focus=true] #full-score-live{grid-column:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ #full-score-dialog[data-instrument=sanshin][data-focus=true] #full-score-lyrics{display:none}
+ #full-score-dialog[data-instrument=sanshin] .sheet-column-grid{grid-template-rows:repeat(4,clamp(44px,calc((100dvh - 160px)/4),68px))}
+ #full-score-dialog[data-instrument=sanshin] #full-score-sheet{padding:4px max(10px,var(--practice-safe-right,0px)) 6px max(10px,var(--practice-safe-left,0px))}
+}
+@media(max-width:650px){#full-score-dialog[data-instrument=sanshin] .sheet-block{flex-basis:245px;max-width:380px}#full-score-dialog[data-instrument=sanshin] .sheet-controls p{font-size:.73rem}#full-score-dialog[data-instrument=sanshin] .sheet-buttons button{font-size:.75rem}#full-score-dialog[data-instrument=sanshin] #full-score-mic-boost{font-size:16px}.sheet-header-actions button{font-size:.72rem;padding-inline:8px}}
+#full-score-dialog[data-instrument=sanshin]:not([data-size=large]) .sheet-column-grid{grid-template-rows:repeat(4,var(--sheet-cell-height,68px))}

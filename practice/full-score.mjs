@@ -1,5 +1,5 @@
-import { noteName } from './music.mjs?v=37';
-import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=37';
+import { noteName } from './music.mjs?v=38';
+import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=38';
 
 // Keep note indices separate from rests: selecting a cell must seek the actual
 // note, and must never count as a correct microphone answer.
@@ -21,6 +21,9 @@ export function practiceSheetEntries(notes,{instrument,chords}={}){
 export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
   const $=id=>document.getElementById(`full-score-${id}`),dialog=$('dialog');
   let state=null,renderedNotes=null,renderedIndex=null,renderedKind='',entries=[],sheet={},annotationNotes=null,annotationLines=null,annotationCues=null,annotationSyllables=null,referenceLines=null,referenceNotes=null;
+  function focus(value){dialog.dataset.focus=String(!!value);$('focus').setAttribute('aria-pressed',String(!!value));$('focus').textContent=value?'設定':'譜面を広く';requestAnimationFrame(()=>{fit();reveal(true,false);});}
+  $('focus').onclick=()=>focus(dialog.dataset.focus!=='true');
+  $('size').onchange=()=>{dialog.dataset.size=$('size').value;fit();reveal(true,false);};
   const duration=beats=>Number.isFinite(beats)?`${Number(beats.toFixed(2))}拍`:'';
   function annotate(){
     if(!renderedNotes)return;
@@ -37,12 +40,19 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
     const target=b.height+20<=v.height?b.top-8:c.top-context;
     viewport.scrollTo({top:viewport.scrollTop+target-v.top,left:viewport.scrollLeft+(c.right>v.right?c.right-v.right:c.left<v.left?c.left-v.left:0),behavior:smooth&&!matchMedia('(prefers-reduced-motion: reduce)').matches?'smooth':'instant'});
   }
-  new ResizeObserver(()=>reveal(false,false)).observe($('sheet'));
+  function fit(){
+    if(!dialog.open||state?.instrument!=='sanshin'||dialog.dataset.size==='large')return;
+    const viewport=$('sheet'),blocks=[...viewport.querySelectorAll('.sheet-block')];if(!blocks.length)return;
+    const rows=new Set(blocks.map(b=>Math.round(b.offsetTop))).size,style=getComputedStyle(viewport),heading=blocks[0].querySelector('p').getBoundingClientRect().height+5;
+    const room=viewport.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-(rows-1)*parseFloat(style.rowGap||'0')-rows*heading;
+    const size=Math.max(44,Math.min(68,Math.floor(room/(rows*4))));viewport.style.setProperty('--sheet-cell-height',size+'px');
+  }
+  new ResizeObserver(()=>{fit();reveal(false,false);}).observe($('sheet'));
   function update(next){
     state=next;if(!dialog.open)return;
-    const guitar=state.instrument==='guitar';dialog.dataset.instrument=guitar?'guitar':'sanshin';dialog.dataset.chords=String(!!state.chords);
-    $('title').textContent=`${state.title} · ${guitar?state.chords?'コード譜と歌詞':'TABと歌詞':'工工四全体'}`;
-    $('tuning').closest('label').hidden=guitar;$('reading').textContent=guitar?(state.chords?'コードを左から右へ。枠を押すと、そのコードから練習できます。':'TABは左から右へ。数字はフレット、0は開放弦です。枠を押すと、その音から練習できます。'):'各段の右上から下へ、次は左の列。文字の横が歌う言葉です。';
+    const guitar=state.instrument==='guitar';dialog.dataset.instrument=guitar?'guitar':'sanshin';dialog.dataset.chords=String(!!state.chords);dialog.dataset.mode=state.mode;dialog.dataset.done=String(!!state.done);
+    $('title').textContent=`${state.title} · ${guitar?state.chords?'コード譜と歌詞':'TABと歌詞':'工工四'}`;
+    $('tuning').closest('label').hidden=guitar;$('reading').textContent=guitar?(state.chords?'コードを左から右へ。枠を押すと、そのコードから練習できます。':'TABは左から右へ。数字はフレット、0は開放弦です。枠を押すと、その音から練習できます。'):'各段の右上から下へ、次は左の列。色の枠が今の音です。枠を押すと、その音から練習できます。';
     $('tuning').value=state.tuning;
     const kind=`${state.instrument}:${state.chords}`;
     if(renderedNotes!==state.notes||renderedKind!==kind){
@@ -63,6 +73,7 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
         block.append(grid);blocks.push(block);
       }
       $('sheet').replaceChildren(...blocks);
+      requestAnimationFrame(fit);
     }
     annotate();
     for(const cell of $('sheet').querySelectorAll('[data-index]')){
@@ -75,7 +86,7 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
     }
     const note=state.notes[state.index];
     const playable=entries.filter(e=>!e.rest),active=playable.findIndex(e=>e.index<=state.index&&state.index<(e.end??e.index+1));
-    $('position').textContent=guitar&&state.chords?`${active+1} / ${playable.length}コード · ${note.chord} · ${state.mode==='demo'&&state.easy?'4拍で下へ1回':state.strum?'まとめて鳴らす':`${note.string}弦 ${note.fret===0?'開放':note.fret+'F'}`}`:`${state.index+1} / ${state.notes.length}音 · ${guitar?`${note.string}弦 ${note.fret}F`:note.symbol} · ${noteName(note.midi)}`;
+    $('position').textContent=state.done?'○ 最後まで弾けました':guitar&&state.chords?`${active+1} / ${playable.length}コード · ${note.chord} · ${state.mode==='demo'&&state.easy?'4拍で下へ1回':state.strum?'まとめて鳴らす':`${note.string}弦 ${note.fret===0?'開放':note.fret+'F'}`}`:`${state.index+1} / ${state.notes.length}音 · ${guitar?`${note.string}弦 ${note.fret}F`:note.symbol} · ${noteName(note.midi)}`;
     $('instruction').textContent=guitar&&state.chords?state.guitarInstruction||'':'';
     if(!guitar)$('finger').replaceChildren();
     else if(state.guitarDiagram)$('finger').replaceChildren(state.guitarDiagram.cloneNode(true));
@@ -84,6 +95,7 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
     $('guide').textContent=state.mode==='demo'?'■ ガイドを止める':'♪ ガイドで進む';
     $('stop').disabled=state.mode==='idle';
     $('mic').disabled=state.mode==='pending'||state.mode==='mic';$('mic').textContent=state.mode==='mic'?'マイクで聴いています':'マイクで進む';
+    if(state.mode!=='mic'){$('level').querySelector('span').style.width='0%';$('level').setAttribute('aria-valuenow','0');$('heard').textContent=state.mode==='pending'?'マイクを準備中':state.done?'演奏を確認しました · マイク停止':'マイクは押したときだけ始まります';}
     $('status').textContent=state.mode==='pending'?'マイクを準備しています。':state.mode==='demo'?'ガイドに合わせて音と歌詞が進みます。':state.mode==='mic'?'正しい音を弾くと、演奏位置が自動で見えるように進みます。':'ガイドかマイクで始めると、演奏位置が自動で見えるように進みます。';
     $('range').textContent=state.start===0&&state.end===state.notes.length?'全体を練習':`${state.start+1}〜${state.end}音の反復中（全体はすべて表示）`;
     $('all').hidden=state.start===0&&state.end===state.notes.length;
@@ -100,5 +112,5 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
   $('tuning').onchange=()=>onTuning(Number($('tuning').value));
   $('close').onclick=()=>dialog.close();
   dialog.addEventListener('close',onStop);
-  return{update,lyrics(display){sheet=display.sheet;annotate();$('lyrics').hidden=!display.hasLyrics;for(const field of ['status','current','next']){const el=$(`lyric-${field}`);if(el.textContent!==display[field])el.textContent=display[field]||'';el.hidden=!el.textContent;}$('reference').hidden=!sheet.notes?.some(n=>n.reading||n.meaning);if(referenceLines!==sheet.lines||referenceNotes!==sheet.notes){renderLyricReference($('reference-lines'),sheet.lines||[],sheet.notes);referenceLines=sheet.lines;referenceNotes=sheet.notes;}},open(){dialog.showModal();renderedNotes=null;$('sheet').scrollTop=0;update(state);reveal(true,false);},close(){if(dialog.open)dialog.close();}};
+  return{update,reading(detection){if(!dialog.open)return;const level=Math.max(0,Math.min(100,Math.round((detection.rms||0)*700)));$('level').querySelector('span').style.width=level+'%';$('level').setAttribute('aria-valuenow',String(level));const text=detection.name?`聴こえたコード ${detection.name}`:detection.frequency?`聴こえた音 ${noteName(Math.round(69+12*Math.log2(detection.frequency/440)))}`:'音を聴いています';if($('heard').textContent!==text)$('heard').textContent=text;},lyrics(display){sheet=display.sheet;annotate();$('lyrics').hidden=!display.hasLyrics;for(const field of ['status','current','next']){const el=$(`lyric-${field}`);if(el.textContent!==display[field])el.textContent=display[field]||'';el.hidden=!el.textContent;}$('reference').hidden=!sheet.notes?.some(n=>n.reading||n.meaning);if(referenceLines!==sheet.lines||referenceNotes!==sheet.notes){renderLyricReference($('reference-lines'),sheet.lines||[],sheet.notes);referenceLines=sheet.lines;referenceNotes=sheet.notes;}},open(){dialog.showModal();focus(state?.instrument==='sanshin');renderedNotes=null;$('sheet').scrollTop=0;update(state);reveal(true,false);},close(){if(dialog.open)dialog.close();}};
 }

@@ -1,4 +1,4 @@
-import { songSupport } from './song-support.mjs?v=37';
+import { songSupport } from './song-support.mjs?v=38';
 export const SANSHIN_PLAYLIST = {
   "title": "三線練習",
   "url": "https://music.apple.com/jp/playlist/%E4%B8%89%E7%B7%9A%E7%B7%B4%E7%BF%92/pl.u-PDb42ZZuJZ06jp",
@@ -180,8 +180,9 @@ export const SANSHIN_PLAYLIST = {
           "url": "https://miyazatohidekatsu.com/wp-content/uploads/2023/05/8c36a00342ec0eedb543df5d99a7ae9a.pdf"
         }
       ],
-      "focus": "本調子で、まず前奏の短い部分から。先生と一緒に工工四を読み、0.75倍で三線だけを反復。慣れたら歌を口ずさみ、最後に弾きながら歌ってみましょう。",
-      "note": "基礎練習として追加した先生の教材です。工工四と歌詞は配信元の動画で確認できます。PDFでは全体を見渡せます。指の位置は文字を選んで確認。アプリ内の曲全体の音符判定・自動の指図は未収録です。"
+      "focus": "全画面の工工四で、まず前奏から。マイクで正しい音を弾くと次へ進みます。短い音でも少しずつ確かめ、同じ音は弾き直しましょう。",
+      "note": "アプリ内は前奏＋1節・92音の等拍の基礎練習版。本調子の高さを選んで使えます。歌詞・飾り音・本来の歌の間は先生の動画とPDFで確認してください。動画の自動同期ではなく、自分の音で譜面が進みます。",
+      "native": true
     }
   ]
 };
@@ -199,8 +200,9 @@ export function mountSanshinPlaylist({onOpen,onLeave}){
   $('focus').textContent=selected.focus;$('scope').textContent=selected.note;
   $('apple').hidden=!selected.appleUrl;if(selected.appleUrl)$('apple').href=selected.appleUrl;else $('apple').removeAttribute('href');$('apple').onclick=onLeave;
   $('sheets').replaceChildren(...selected.sheets.map(anchor));
-  $('open').textContent=selected.id==='tinsagu'?'1節の工工四を全体で練習':'工工四・動画と指の位置で練習';
+  $('open').textContent=selected.native?'全画面の工工四・マイクで練習':selected.id==='tinsagu'?'1節の工工四を全体で練習':'工工四・動画と指の位置で練習';
   $('open').onclick=()=>onOpen(selected.id);
+  $('video').hidden=!selected.native;$('video').onclick=()=>onOpen(selected.id,'video');
   const flags=Array.isArray(progress[selected.id])?progress[selected.id]:[];
   for(const input of $('progress').querySelectorAll('input'))input.checked=flags[Number(input.value)]===true;
  }

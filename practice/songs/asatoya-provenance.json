@@ -1,0 +1,33 @@
+{
+  "title": "安里屋ゆんた（前奏＋1節・基礎練習版）",
+  "composer": "宮良長包 (Chohu Miyara, 1883–1939), based on the traditional Yaeyama song",
+  "scope": "New monophonic elementary study: introduction and one verse, honchoshi C–F–C, uniform one-beat cells at 85 BPM and a two-beat final note. It is a beginner practice arrangement, not a synchronization or full transcription of a teacher's recording.",
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "license_scope": "Music Stack dedicates its newly entered symbolic MIDI and elementary study arrangement to CC0. This does not license third-party sheet layouts, lyrics, recordings, or teaching arrangements.",
+  "rights_basis": {
+    "composer_source": "https://miyaracyohou.jimdofree.com/",
+    "composer_fact": "The Miyara Chohu Association records the composer's death on 1939-06-29 and lists Asatoya Yunta among his works.",
+    "term_source": "https://www.bunka.go.jp/seisaku/chosakuken/hokaisei/kantaiheiyo_chosakuken/1411890.html",
+    "term_basis": "The composer's underlying published melody is public domain in Japan. The 2018 term extension does not revive expired copyrights. Modern publisher and performer contributions are not covered by that status."
+  },
+  "melody_cross_checks": [
+    {
+      "url": "https://ameblo.jp/irei-blog/entry-12530046929.html",
+      "credit": "伊禮俊一・公式初心者レッスン",
+      "use": "Cross-check the basic introduction, first-verse pitch contours and honchoshi relation. No lyrics, files, recording or publisher layout bundled."
+    },
+    {
+      "url": "https://miyazatohidekatsu.com/wp-content/uploads/2023/05/8c36a00342ec0eedb543df5d99a7ae9a.pdf",
+      "credit": "宮里英克沖縄三線教室・公開教材",
+      "use": "Visual cross-check of common melody phrases and honchoshi. Publisher PDF, lyrics, compact ornaments, strike annotations and distinct performance phrasing are not bundled."
+    }
+  ],
+  "changes": "New plain-symbol practice entry using the basic shared melody. Straight one-beat durations replace expressive phrasing; ornamental strikes and compressed clusters are omitted, one verse is used, section pauses and a held final note are added. Guide sound is synthesized by the existing instrument voice. For authentic timing, ornament and singing, use the linked teacher lesson.",
+  "lyrics": "No lyric text is bundled. Existing teacher video/PDF references and local personal lyric entry remain available.",
+  "generator": "scripts/build-practice-asatoya.mjs",
+  "checked": "2026-11-15",
+  "sha256": "e5128bb8e2d4e89268dd951cc9f3729ad5ed9034f62c137aebf04c9beec4d85b",
+  "notes": 92,
+  "beats": 97
+}

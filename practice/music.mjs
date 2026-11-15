@@ -1,5 +1,5 @@
 // Original, dependency-free single-note exercises and detector for Music Stack.
-import { sanshinPosition } from './sanshin-core.mjs?v=37';
+import { sanshinPosition } from './sanshin-core.mjs?v=38';
 export const frequencyFor = (midi) => 440 * 2 ** ((midi - 69) / 12);
 export const centsFrom = (frequency, midi) => 1200 * Math.log2(frequency / frequencyFor(midi));
 export function noteName(midi) {
@@ -60,9 +60,9 @@ export function detectPitch(input, sampleRate, gate = 0.006, { threshold = 0.16 
 }
 
 export class NoteFollower {
-  constructor(notes, { start = 0, end = notes.length, tolerance = 45, hold = 130, gate = 0.006, dropout = 0 } = {}) {
+  constructor(notes, { start = 0, end = notes.length, tolerance = 45, hold = 130, gate = 0.006, dropout = 0, minClarity = 0.84, rearmRatio = 1.7 } = {}) {
     this.notes = notes; this.start = start; this.end = end;
-    this.tolerance = tolerance; this.hold = hold; this.gate = gate; this.dropout = dropout; this.reset();
+    this.tolerance = tolerance; this.hold = hold; this.gate = gate; this.dropout = dropout; this.minClarity=minClarity;this.rearmRatio=rearmRatio;this.reset();
   }
   reset(index = this.start) {
     this.index = index; this.done = false; this.lastMidi = null;
@@ -80,9 +80,9 @@ export class NoteFollower {
       this.quietAt ??= now;
       if (now - this.quietAt >= 65) this.armed = true;
     } else this.quietAt = null;
-    if (now - this.acceptedAt > 220 && rms > Math.max(this.gate * 2, this.lastRms * 1.7)) this.armed = true;
+    if (now - this.acceptedAt > 220 && rms > Math.max(this.gate * 2, this.lastRms * this.rearmRatio)) this.armed = true;
     this.lastRms = rms;
-    if (!frequency || clarity < 0.84 || rms < this.gate) {
+    if (!frequency || clarity < this.minClarity || rms < this.gate) {
       this.previousGood=false;
       if(!this.dropout||this.lastGoodAt===null||now-this.lastGoodAt>this.dropout)this.candidateAt=null;
       return { status: 'listening', matched: false };
