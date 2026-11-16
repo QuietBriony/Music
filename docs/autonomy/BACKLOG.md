@@ -39,7 +39,61 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 
 ---
 
+## 実機待ち（公開済み・実機確認待ちの一本化）
+
+2026-11-16 棚卸し。2026-09-23以降のSESSION-LEDGERから、公開済みで実iPhone／iPad・実楽器・実マイクの
+確認が残る機能を重複なしで集めた。詳細は該当itemと台帳の各版の記録を参照する。
+
+### 本人に頼む3件（この順）
+
+1. **練習PWAの調弦**（BL-053）: 実楽器で針と音名が出て残るか。○ OKが安定した後に次の弦へ自動で進むか（v15／v19／v37）。
+2. **安里屋ゆんたの工工四追従**（BL-053）: 三線の実音で内蔵工工四が1音ずつ進むか。同じ音の弾き直しを取りこぼさないか（v38／v39）。
+3. **Lyric Lab notebookへの書き込み**（BL-054）: iPhoneで1回メモか改訂を保存し、開き直して残っているか（v444／v445）。
+
+### それ以外（問題の報告がなければ採用扱い）
+
+2026-10-28の本人方針（本番へ出してからPWAで聴く・試す）により、下記は公開済みのまま採用として扱う。
+不具合や違和感の報告があった機能だけを調整する。聴感の判定は、本人の基準を聞いたうえでAIが推論で埋め、
+「AI判定（本人委任）」と明記する。本人の言葉は原文のまま区別する。
+
+- 練習PWA（BL-053）: ギターの和音ストローク判定と入力補正（v20／v28）、11曲の動画連動コード送り（推定の目安、v8〜v34）、
+  三線教材画面のiPhone全幅・横向き（v35／v36）、歌詞付き内蔵工工四（てぃんさぐぬ花 v22、月ぬ美しゃ v41）、
+  1曲練習の流れ（v31）、更新の案内とマイク許可（v40）、オフライン起動（v29／v31／v36）。
+- Band Room（BL-050／BL-051、休止中）: Human Flyの3版と303・電子ドラム・声のecho（v441〜v443）、Dub（v432〜v437）、
+  仮ミックスの原音直接再生・軽いマスタリング・パート別カラオケ（v422〜v428）、ARCBの新しい弦・ドラムとAI採譜の補正
+  （v407〜v431）の実iPhoneでの負荷と出音、更新確認と開始エラーの表示（v438）。
+- 試奏台 `experiments/workbench/`（BL-049、休止中）: ホーム画面追加・音の端末保存・機内モード、FILE／BPMとJSONの持ち運び
+  （2026-09-30）、303×2＋909とStrudelの共通時計（2026-10-12）、LIVE／AUTO・アンビエント、Minimal Techno 01・
+  Afterimage Synth、歌詞表示と声のテイク録音（実マイク、2026-10-12〜13）、音色保存と上部の再生・音量（2026-10-23／27）。
+- Namima v13／v14: 景色5種・波紋・映像切替のiPhone表示と操作感。
+- 確認済みで外したもの: Band Roomのパート別再生の残響レートエラー（v439／v440）。本人がiPhoneでDub再生成功を確認（v441の記録）。
+
+2026-09-23より前からの本人待ち（BL-003／004／022／026／028／031／041／048）は、ここで採用扱いにせず各itemの条件のまま残す。
+
+---
+
 ## P1
+
+### BL-053 — 練習PWA（ギター・三線）の実機確認と販売準備
+- priority : P1
+- repo     : Music
+- scope    : non-engine-code / verify
+- agent    : codex
+- human-gate: yes（実iPad／iPhone・実楽器の確認と、販売準備の方針は本人）
+- status   : wip — codex 2026-10-28（初版）〜2026-11-15（v41）の作業実績から2026-11-16の棚卸しで登録。v41を既存本番へ公開済み
+- source   : 2026-10-28 本人「とりあえず作ってみる」（ギターと三線の練習PWA初版）、2026-11-06 `docs/PRACTICE-READINESS.md`（販売に向けて）
+- detail   : `practice/`の独立PWA（専用cache `music-practice-vN`、rootの`hazama-fm-*`とは別）。
+  v1（2026-10-28）からv41（2026-11-15）まで、`practice/`へ45 commit。既存本番の`practice/sw.js`が
+  `music-practice-v41`を返すことを2026-11-16に確認。各版の内容はSESSION-LEDGER上部の「練習PWA vN」の記録、
+  使い方は`docs/PRACTICE.md`、販売前の状態表は`docs/PRACTICE-READINESS.md`。
+  公開済みの主な範囲: 調弦（針・音名の保持、○ OK後の次の弦への自動送り）、ギターの和音判定と11曲のコード送り
+  （多くは推定の目安）、三線の内蔵工工四（てぃんさぐぬ花・月ぬ美しゃの各1節は歌詞付き、安里屋ゆんたは歌詞なしの
+  基礎練習版）と教材動画、1曲練習、PWA更新とマイク許可の案内。
+  残る確認: 実iPad／iPhone・実楽器での音判定（取りこぼし、間違った音での進行、余韻の二重判定、歌声や動画の音の混入、
+  画面回転、マイク許可の拒否と復帰）。合成信号の回帰試験とは区別する。本人に頼む2件は上の「実機待ち」1・2。
+  販売準備は本人の方針待ちで、未決として記録する（この棚卸しでは決めない）: 画面に埋め込む先生の教材動画・PDFと、
+  内蔵工工四の出典の提供条件・権利、実際の初心者による試用、支払方法と購入後サポート。
+  完了条件: 実機待ち1・2の結果を反映し、販売準備の方針を本人が決めた時点で、残りを個別itemへ分ける。
 
 ### BL-051 — 小さな楽器中核を作り直し、ロックからジャズへ
 - priority : P1
@@ -63,8 +117,12 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   Radiohead／レッチリ的な輪郭・打感を方向性とする。実iPhone負荷と完全な音高・和音・奏法の一致は未達。
   v410は既存採譜の空白小節のfallbackを停止し、未採譜melodyを明示。Sisterの薄い区間の実REC差とsoloの休み・復帰を確認。
   BL-050の採譜忠実度の改善は継続する。
+  2026-11-16（棚卸し）: `band-room.js`は2026-10-28（v443）、`audio/physical-band/`は2026-10-19以降commitなし。
+  休止中。本人がBand Roomへ戻った時に再開する。既存claimは維持。
 
 ### BL-050 — Band Room AI 再現のパート別忠実度（原曲どおりに叩く・弾く）
+- update 2026-11-16（棚卸し）: `band-room.js`は2026-10-28（v443）以降commitなし。休止中で、本人がBand Roomへ戻った時に再開する。既存claimは維持。
+  未mergeのbranch `codex/bandroom-part-fidelity`（2e4ad1f）のruntime修正（採譜済みdrumのcrashを区間頭の自動crashで上書きしない判定）はee02065（#413）で取り込み済み。同branchのVM回帰テストは別作業で移植中。
 - update 2026-10-26: Human Fly Dubの声をフレーズ単位で戻し、ギターの反響と応答させる。歌の間のreturn duckと反復ごとの左右移動。リズム経路・原音・AI採譜は維持。
 - update 2026-10-26: 本人の空間・質感改善指示で、調和とDubの共通roomを短いdiffuse tailへ。声のsendを増やし直接音を保持。原音再現率と制作上の空間演出は別。AI採譜／bankはこの変更に含めない。
 - update 2026-10-24: v434 Dubは本人が「止めるだけ」と評価。v435はbass/drumsを保ち、声・guitar・snareのfeedback/帯域/左右と2小節のrhythm versionへ再構成。操作合格と音楽的採用を分け、次は本人の聴感で判断。
@@ -122,6 +180,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   gate 0.82–0.86へ整理し、bass runtimeはそこから発音を減らすだけのauthored-rest候補。
   Surfaceとreal mobileでのレイヤー別再試聴合格後のみ`ui_hidden`を外す。
   自律ランで `ui_hidden` を外さない。
+  2026-11-16（棚卸し）: 2026-08-11のAMBER以降、判定の記録なし。待っているのは実mobile（iPhone Safari／PWA）での01／02 × 原音／AI 4ケースの判定と、Surfaceでのレイヤー別再試聴。`ui_hidden`は維持。
 
 ### BL-035 — Band Room asset lane の契約 / provenance を一本化
 - priority : P1
@@ -135,6 +194,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   790 file / 約216 MiB。既存 Band Room asset を grandfather する範囲と、ACE-Step / Suno
   生成物・model weight を常に repo 外とする境界を owner が確定し、provenance manifest、
   `.gitignore`、増分 guard に落とす。既存 asset の削除 / 再圧縮は本 item に含めない。
+  2026-11-16（棚卸し）: AGENTS Rule 3には個別の例外3件（試奏台の909 4 WAV、歌詞初稿1件、仮ミックス7 M4A）が入った。待っているのは、既存Band Room assetを包括的に認める範囲と、生成物・model weightをrepo外とする境界の本人決定。
 
 ### BL-003 — 実車 / Bluetooth で hidden audio bridge を実機検証
 - priority : P1
@@ -146,6 +206,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - detail   : v145-v160 の hidden audio bridge / route badge / rearm は実装済み。
   残るは実車・BT 環境で車側 volume / track button にメディア音声として認識されるかの
   実機 validation。自律ランでは検証できない（人間が実機で確認）。
+  2026-11-16（棚卸し）: 待っているのは、本人が実車とBluetoothで接続し、車側の音量・曲送りボタンでBand Roomをメディア音声として操作できるかの1回の確認。
 
 ### BL-022 — Hazama FM ブラウザ再生の音詰まり（同時起動音での負荷スパイク）
 - priority : P1
@@ -173,6 +234,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   "playback"`（ラジオ用途で低レイテンシ不要・バッファ拡大でグリッチ耐性向上）。
   完了条件: 小 PR で出し、user が Pages の同時起動音シーンを試聴して詰まり減を確認。
   voice steal が可聴なら cap 値を上げ再調整。
+  2026-11-16（棚卸し）: 待っているのは、本人がPagesのHazama FMで同時起動音の場面を聴き、v187／v340の後で詰まりが減ったかの判定。
 
 ### BL-028 — Hazama FM `addAcousticFunField` の常時 DSP 負荷 + light ゲート不在（監査由来・FM 領分）
 - priority : P1
@@ -203,6 +265,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   （2 Reverb → 共有 send 1 本、oversample → 無し、AutoPanner → 静的 Panner）。高価値は 2 常時
   Reverb と oversampling。light OFF 時は出音キャラ不変を厳守（原音/デフォルト挙動は変えない）。
   完了条件: FM workstream が light ゲートを実装 → user 試聴で弱端末の詰まり減を確認。
+  2026-11-16（棚卸し）: 待っているのは、本人が弱い端末のHazama FMで🪶light（または`?aiLight=1`）にして、詰まりが減ったかの試聴判定。
 
 ### BL-046 — 既存作品・採用候補のprivate所在台帳
 - priority : P1
@@ -270,6 +333,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   FM・Band Room・Core Rig・Hazama本体は不変、音源や外部コードは取り込まない。
   人の評価を得た後、Openclaw-labで生成/評価方法を比較する材料にできるか検討。
   自動RSI接続、回路の自己改変、音質合格、実iPhone合格、既存runtimeへの昇格は含まない。
+  2026-11-16（棚卸し）: `experiments/listening-loop/`は2026-09-15以降commitなし。待っているのは、本人が20秒×3案を聴いて定型評価を1回入れること。
 
 ### BL-031 — Music recording review scorecard v2（plan #9・machine↔human 橋）
 - priority : P1
@@ -288,8 +352,26 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   次 tuning PR の根拠にする。出力は metadata-only の `review-result`。
   完了条件: user が実際に 1 パス採点して枠が回ることを確認 → close。scorecard 由来の
   `self_review` 重み/閾値 tuning は engine 凍結域の別 human-gated PR（BL-024 harness で検証）。
+  2026-11-16（棚卸し）: 待っているのは、本人が`docs/recording-review-scorecard.md`で1回採点すること（1–5の記入はagentが埋めないと本itemが規定）。
 
 ## P2
+
+### BL-054 — Lyric Lab notebook（詩の棚・メモ・改訂）の実iPhone確認
+- priority : P2
+- repo     : Music
+- scope    : non-engine-code / verify
+- agent    : human（iPhoneで1回書く）+ codex | claude（問題報告時の修正）
+- human-gate: yes（実iPhoneでの書き込み・読み直しは本人）
+- status   : wip — v444／v445を2026-11-04に既存本番へ公開済み。実iPhoneでの1回の書き込み確認待ち
+- source   : 2026-11-04 SESSION-LEDGER「Lyric Lab notebook / hazama-fm-v444」「Lyric Lab legacy draft visibility / hazama-fm-v445」
+- detail   : 進行中のLyric Lab itemが無かったため新規登録（API境界のBL-032、Listen導線のBL-039はDone）。
+  v444で詩の棚を入口にし、読む画面・個人メモ・明示的な改訂保存・原文と履歴の表示・任意の音メモ／リンクを追加。
+  v2の端末内notebookへ旧データを生成なしで移行し、書き込みは保留中の記録だけを期待するcloud時刻つきで送る。
+  衝突時は端末側を残して別の下書きにする。v445は旧記録で最終稿が空・下書きありの場合に下書き、次に種を表示し、
+  古いcloud応答が新しいオフラインの旧版を上書きしないことを回帰試験で固定。認証・DB schemaは不変。
+  既存本番のroot `sw.js`が`hazama-fm-v445`を返すことを2026-11-16に確認。390px幅のブラウザ検証のみで、
+  実iPhoneは未確認（実機待ち3）。私的な詩・メモの本文はrepoへ入れない。
+  完了条件: 本人がiPhoneで1回保存→開き直しで残ることを確認したらDoneへ。問題があれば同じitemで直す。
 
 ### BL-045 — 和声マップ＋アシッドの8小節session契約と独立preview
 - priority : P2
@@ -393,6 +475,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   Workbench83件／aggregate39件とChromeのUI15件／稼働clock24件PASS。本人が既存配信への反映を承認。
   音量を揃えたseed731／BPM128／8小節ABはlocalに保持。未聴取・実iPhone未評価で音質改善は未判定。
   音量差の質問は調査だけとし、masterや303 gainを変更しない。Afterimageとrelay候補は別作業のまま。
+  2026-11-16（棚卸し）: `experiments/workbench/`は2026-10-28以降commitなし。休止中。本人が試奏台へ戻った時に再開する。
+  既存claimは維持。
 
 ### BL-004 — Hazama FM 40Hz focus mode の depth A/B
 - priority : P2
@@ -407,6 +491,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
   **進捗（v188）**: A/B 機構を実装 — `fm.html?focusDepth=5`（5%）と `fm.html`
   （8%）を聴き比べ可能。focus status に現 depth を併記。`MusicFocusModulation
   .setDepth()` でも切替可。残るは試聴して 8%/5% を決め、default を確定すること。
+  2026-11-16（棚卸し）: 2026-05-18以降判定なし。待っているのは、本人が40Hz ONで`fm.html`（8%）と`fm.html?focusDepth=5`（5%）を聴き比べ、既定を選ぶこと。
 
 ### BL-006 — cross-repo listening review round
 - priority : P2
@@ -439,6 +524,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
     告知和音。ノブ: TIDE_PERIOD_MS / 区間境界 / 係数 / 告知 vel。
   - 判定観点: chill が裏→表で鳴り続けるか / namima で 3-4 分内に潮の変化に
     気づけるか / 告知和音がうるさくないか。
+  - 2026-11-16（棚卸し）: 待っているのは、上の4 PR（2026-06-13 merge）を公開版で聴いて、戻す／knob調整／そのままを決めること。
 
 ### BL-023 — ARM 版 `chouta-surface` の UR44 ドライバ安定化を調査
 - priority : P2
