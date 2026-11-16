@@ -114,6 +114,8 @@ shared master: masterGain(1.2) → comp×2 → EQ → widener → tape-sat + roo
 
 `check-band-room-logic.mjs` (band-room invariants incl. G-4 dispose-coverage, emergency fallback
 parity, and exact timed-lyrics ID / timeline bounds),
+`check-band-room-transcribed-drums.mjs` (runs the real scheduler in a VM: transcribed drums keep
+their own crashes, no generated section-entry crash; native + legacy clock),
 `check-tabasco-songs-catalog.mjs` (7-song registry / frame / lyrics / path / delivery drift),
 `check-js.mjs` (syntax), `check-fm-route-badge.mjs`, `check-runtime-doc-markers.mjs`,
 `check-audio-cost-gates.mjs` (G-1/G-2: no ungated always-on heavy node — band-room=FAIL,
