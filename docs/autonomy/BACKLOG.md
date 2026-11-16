@@ -59,13 +59,15 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - 練習PWA（BL-053）: ギターの和音ストローク判定と入力補正（v20／v28）、11曲の動画連動コード送り（推定の目安、v8〜v34）、
   三線教材画面のiPhone全幅・横向き（v35／v36）、歌詞付き内蔵工工四（てぃんさぐぬ花 v22、月ぬ美しゃ v41）、
   1曲練習の流れ（v31）、更新の案内とマイク許可（v40）、オフライン起動（v29／v31／v36）。
-- Band Room（BL-050／BL-051、休止中）: Human Flyの3版と303・電子ドラム・声のecho（v441〜v443）、Dub（v432〜v437）、
+- Band Room（BL-050／BL-051、休止中）: Human Flyの3版と303・電子ドラム・声のecho（v441〜v443）、Dub（v435〜v437。v434は本人が「音を止めるだけで面白くない」と不採用→v435で再構成）、
   仮ミックスの原音直接再生・軽いマスタリング・パート別カラオケ（v422〜v428）、ARCBの新しい弦・ドラムとAI採譜の補正
   （v407〜v431）の実iPhoneでの負荷と出音、更新確認と開始エラーの表示（v438）。
 - 試奏台 `experiments/workbench/`（BL-049、休止中）: ホーム画面追加・音の端末保存・機内モード、FILE／BPMとJSONの持ち運び
   （2026-09-30）、303×2＋909とStrudelの共通時計（2026-10-12）、LIVE／AUTO・アンビエント、Minimal Techno 01・
   Afterimage Synth、歌詞表示と声のテイク録音（実マイク、2026-10-12〜13）、音色保存と上部の再生・音量（2026-10-23／27）。
 - Namima v13／v14: 景色5種・波紋・映像切替のiPhone表示と操作感。
+- Band Room ARCB（v403〜v406）: ドラム測定、再生負荷の修正、physical bandの試奏、公開ページ一覧。
+- Listen: 先頭の「4つの遊び方」（2026-10-28、390px幅のブラウザでのみ確認）。
 - 確認済みで外したもの: Band Roomのパート別再生の残響レートエラー（v439／v440）。本人がiPhoneでDub再生成功を確認（v441の記録）。
 
 2026-09-23より前からの本人待ち（BL-003／004／022／026／028／031／041／048）は、ここで採用扱いにせず各itemの条件のまま残す。
@@ -80,7 +82,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code / verify
 - agent    : codex
 - human-gate: yes（実iPad／iPhone・実楽器の確認と、販売準備の方針は本人）
-- status   : wip — codex 2026-10-28（初版）〜2026-11-15（v41）の作業実績から2026-11-16の棚卸しで登録。v41を既存本番へ公開済み
+- status   : wip — codex 2026-10-28（初版）〜2026-11-15（v41）の作業実績から2026-11-16の棚卸しでClaudeが代理登録（Codexは同じ内容を別IDで登録しない）。v41を既存本番へ公開済み
 - source   : 2026-10-28 本人「とりあえず作ってみる」（ギターと三線の練習PWA初版）、2026-11-06 `docs/PRACTICE-READINESS.md`（販売に向けて）
 - detail   : `practice/`の独立PWA（専用cache `music-practice-vN`、rootの`hazama-fm-*`とは別）。
   v1（2026-10-28）からv41（2026-11-15）まで、`practice/`へ45 commit。既存本番の`practice/sw.js`が
@@ -122,7 +124,8 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 
 ### BL-050 — Band Room AI 再現のパート別忠実度（原曲どおりに叩く・弾く）
 - update 2026-11-16（棚卸し）: `band-room.js`は2026-10-28（v443）以降commitなし。休止中で、本人がBand Roomへ戻った時に再開する。既存claimは維持。
-  未mergeのbranch `codex/bandroom-part-fidelity`（2e4ad1f）のruntime修正（採譜済みdrumのcrashを区間頭の自動crashで上書きしない判定）はee02065（#413）で取り込み済み。同branchのVM回帰テストは別作業で移植中。
+  未mergeのbranch `codex/bandroom-part-fidelity`（2e4ad1f）のruntime修正（採譜済みdrumのcrashを区間頭の自動crashで上書きしない判定）はee02065（#413）で取り込み済み。同branchのVM回帰テストは#544（2026-11-16 merge、`scripts/check-band-room-transcribed-drums.mjs`、実カタログ7曲のcrash照合つき）で移植済み。
+  同branchに残るのは測定script `scripts/measure-transcribed-retention.mjs` と基準JSON `docs/examples/tabasco-transcribed-retention.json`（9/28時点のruntime SHAに紐づく）だけ。branchを閉じるかは本人判断。
 - update 2026-10-26: Human Fly Dubの声をフレーズ単位で戻し、ギターの反響と応答させる。歌の間のreturn duckと反復ごとの左右移動。リズム経路・原音・AI採譜は維持。
 - update 2026-10-26: 本人の空間・質感改善指示で、調和とDubの共通roomを短いdiffuse tailへ。声のsendを増やし直接音を保持。原音再現率と制作上の空間演出は別。AI採譜／bankはこの変更に含めない。
 - update 2026-10-24: v434 Dubは本人が「止めるだけ」と評価。v435はbass/drumsを保ち、声・guitar・snareのfeedback/帯域/左右と2小節のrhythm versionへ再構成。操作合格と音楽的採用を分け、次は本人の聴感で判断。
@@ -362,7 +365,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - scope    : non-engine-code / verify
 - agent    : human（iPhoneで1回書く）+ codex | claude（問題報告時の修正）
 - human-gate: yes（実iPhoneでの書き込み・読み直しは本人）
-- status   : wip — v444／v445を2026-11-04に既存本番へ公開済み。実iPhoneでの1回の書き込み確認待ち
+- status   : wip — codex 2026-11-04（v444／v445を既存本番へ公開済み。実iPhoneでの1回の書き込み確認待ち。2026-11-16の棚卸しでClaudeが作業実績から登録）
 - source   : 2026-11-04 SESSION-LEDGER「Lyric Lab notebook / hazama-fm-v444」「Lyric Lab legacy draft visibility / hazama-fm-v445」
 - detail   : 進行中のLyric Lab itemが無かったため新規登録（API境界のBL-032、Listen導線のBL-039はDone）。
   v444で詩の棚を入口にし、読む画面・個人メモ・明示的な改訂保存・原文と履歴の表示・任意の音メモ／リンクを追加。
