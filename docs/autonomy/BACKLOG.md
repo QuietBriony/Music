@@ -84,6 +84,7 @@ Claude と Codex が同時に回す前提。item の取り合いと shared file 
 - human-gate: yes（実iPad／iPhone・実楽器の確認と、販売準備の方針は本人）
 - status   : wip — codex 2026-10-28（初版）〜2026-11-15（v41）の作業実績から2026-11-16の棚卸しでClaudeが代理登録（Codexは同じ内容を別IDで登録しない）。v41を既存本番へ公開済み
 - source   : 2026-10-28 本人「とりあえず作ってみる」（ギターと三線の練習PWA初版）、2026-11-06 `docs/PRACTICE-READINESS.md`（販売に向けて）
+- update 2026-11-16（本人の方針）: 販売を目指す前提で「先に足場を固める」を本人が選択。実機確認（実機待ちの1・2）、教材の権利整理（先生の動画・PDFの埋め込みとリンク、内蔵工工四の出典）、初心者1人の試用を先に行う。その間の機能追加は本人の実機報告を起点に絞り、新しい曲・機能を先回りで増やさない。
 - detail   : `practice/`の独立PWA（専用cache `music-practice-vN`、rootの`hazama-fm-*`とは別）。
   v1（2026-10-28）からv41（2026-11-15）まで、`practice/`へ45 commit。既存本番の`practice/sw.js`が
   `music-practice-v41`を返すことを2026-11-16に確認。各版の内容はSESSION-LEDGER上部の「練習PWA vN」の記録、
