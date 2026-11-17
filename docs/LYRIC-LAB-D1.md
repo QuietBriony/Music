@@ -47,9 +47,9 @@ of one commit instead, from an x64 machine that is already logged in to
 wrangler (wrangler's `workerd` does not run on Windows ARM64):
 
 ```powershell
-git -C <Music clone> -c core.autocrlf=false archive --format=tar -o C:	emp\music-<sha>.tar <sha>
-mkdir C:	emp\music-deploy-<sha>; tar -xf C:	emp\music-<sha>.tar -C C:	emp\music-deploy-<sha>
-cd C:	emp\music-deploy-<sha>
+git -C <Music clone> -c core.autocrlf=false archive --format=tar -o C:\temp\music-<sha>.tar <sha>
+mkdir C:\temp\music-deploy-<sha>; tar -xf C:\temp\music-<sha>.tar -C C:\temp\music-deploy-<sha>
+cd C:\temp\music-deploy-<sha>
 npx wrangler@4.129.1 pages deployment list --project-name=music-stack   # read-only check first
 npx wrangler@4.129.1 pages deploy . --project-name=music-stack --branch=main --commit-hash=<sha> --commit-dirty=false
 ```
