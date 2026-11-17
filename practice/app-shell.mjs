@@ -1,5 +1,5 @@
 // Navigation and discovery only. Selecting a song never starts audio or capture.
-import { sanshinLyricRoute } from './song-support.mjs?v=41';
+import { sanshinLyricRoute } from './song-support.mjs?v=42';
 export function mountPracticeShell({ studies, onSong, onStop }) {
   const $ = id => document.getElementById(id);
   const dialog = $('song-browser');
@@ -23,7 +23,7 @@ export function mountPracticeShell({ studies, onSong, onStop }) {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'song-result';
       const title = document.createElement('strong'); title.textContent = song.title;
-      const detail = document.createElement('span'); detail.textContent = `${song.instrument === 'guitar' ? 'ギター · コード図' : sanshinLyricRoute(song.id).kind==='score'?'三線 · 歌詞付き工工四（内蔵1節）':'三線 · 歌詞付き工工四（教材動画）'} / ${song.artist}`;
+      const detail = document.createElement('span'); detail.textContent = `${song.instrument === 'guitar' ? 'ギター · コード図' : sanshinLyricRoute(song.id).kind==='score'?'三線 · 歌詞付き工工四（内蔵・1〜3番）':'三線 · 歌詞付き工工四（教材動画）'} / ${song.artist}`;
       button.append(title, detail);
       button.onclick = () => { dialog.close(); onSong(song.instrument, song.id); };
       return button;

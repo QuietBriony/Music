@@ -1,5 +1,5 @@
-import { noteName } from './music.mjs?v=41';
-import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=41';
+import { noteName } from './music.mjs?v=42';
+import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=42';
 
 // Keep note indices separate from rests: selecting a cell must seek the actual
 // note, and must never count as a correct microphone answer.
@@ -30,7 +30,7 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
     if(annotationNotes===renderedNotes&&annotationLines===sheet.lines&&annotationCues===sheet.cues&&annotationSyllables===sheet.syllables)return;
     const annotations=scoreLyricAnnotations(renderedNotes,sheet);
     for(const cell of $('sheet').querySelectorAll('[data-index]')){const i=Number(cell.dataset.index),end=Number(cell.dataset.end)||i+1,parts=annotations.slice(i,end).filter(a=>a.text);setScoreLyric(cell,parts.length?{...parts[0],text:parts.map(a=>a.text).join(' / ')}:null);}
-    annotationNotes=renderedNotes;annotationLines=sheet.lines;annotationCues=sheet.cues;annotationSyllables=sheet.syllables;
+    annotationNotes=renderedNotes;annotationLines=sheet.lines;annotationCues=sheet.cues;annotationSyllables=sheet.syllables;fit();
   }
   function reveal(force=false,smooth=true){
     if(!dialog.open||!state||(!force&&!$('follow').checked))return;
@@ -45,7 +45,9 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
     const viewport=$('sheet'),blocks=[...viewport.querySelectorAll('.sheet-block')];if(!blocks.length)return;
     const rows=new Set(blocks.map(b=>Math.round(b.offsetTop))).size,style=getComputedStyle(viewport),heading=blocks[0].querySelector('p').getBoundingClientRect().height+5;
     const room=viewport.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-(rows-1)*parseFloat(style.rowGap||'0')-rows*heading;
-    const size=Math.max(44,Math.min(68,Math.floor(room/(rows*4))));viewport.style.setProperty('--sheet-cell-height',size+'px');
+    const fragments=[...viewport.querySelectorAll('.score-note-lyric[data-kind="syllable"]')];
+    const minimum=Math.max(44,...fragments.map(n=>20+Math.min(4,[...n.textContent].length)*parseFloat(getComputedStyle(n).fontSize)));
+    const size=Math.max(Math.ceil(minimum),Math.min(68,Math.floor(room/(rows*4))));viewport.style.setProperty('--sheet-cell-height',size+'px');
   }
   new ResizeObserver(()=>{fit();reveal(false,false);}).observe($('sheet'));
   function update(next){

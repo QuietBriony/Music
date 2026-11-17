@@ -1,4 +1,4 @@
-import { videoId } from './singalong-core.mjs?v=41';
+import { videoId } from './singalong-core.mjs?v=42';
 let pending=null;
 export function youtubeAPI(){
  if(window.YT?.Player)return Promise.resolve(window.YT);

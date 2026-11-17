@@ -1,31 +1,32 @@
-import { ensurePracticeShell, mountPracticeUpdates } from './app-update.mjs?v=41';
-import { mountMicPermissionInfo } from './mic-permission.mjs?v=41';
-import { mountFirstSong } from './first-song.mjs?v=41';
-import { mountPracticeShell } from './app-shell.mjs?v=41';
-import { mountScoreStrip } from './score-strip.mjs?v=41';
-import { MicInputBoost,mountMicGainControls } from './mic-input.mjs?v=41';
-import { mountGuitarPlaylist } from './guitar-playlist.mjs?v=41';
-import { mountSanshinPlaylist, SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=41';
-import { mountHandGuide } from './hand-guide.mjs?v=41';
-import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=41';
-import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=41';
-import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=41';
-import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=41';
-import { SANSHIN_TUNINGS,sanshinTuning,tuningLabel,tuningStrings, tuningGate, detectTuningPitch, TunerTracker, TuningProgress } from './tuner.mjs?v=41';
-import { mountFullScore } from './full-score.mjs?v=41';
-import { SanshinFollower,detectSanshinPitch } from './sanshin-follow.mjs?v=41';
-import { mountLearning,STUDIES } from './learning.mjs?v=41';
-import { guitarShape,drawChord,fillFingerList,strumInstruction,fingerLines,mountGuitarGuides } from './chord-guide.mjs?v=41';
-import { detectChord, ChordGate,chordAttackLevel } from './polyphonic.mjs?v=41';
-import { mountLyrics } from './lyrics.mjs?v=41';
-import { LYRIC_PRESETS } from './lyric-presets.mjs?v=41';
-import { sanshinLyricRoute } from './song-support.mjs?v=41';
-import { PracticeProgress,progressKey } from './progress.mjs?v=41';
-import { mountSingalong } from './singalong.mjs?v=41';
-import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=41';
+import { ensurePracticeShell, mountPracticeUpdates } from './app-update.mjs?v=42';
+import { mountMicPermissionInfo } from './mic-permission.mjs?v=42';
+import { mountFirstSong } from './first-song.mjs?v=42';
+import { mountPracticeShell } from './app-shell.mjs?v=42';
+import { mountScoreStrip } from './score-strip.mjs?v=42';
+import { MicInputBoost,mountMicGainControls } from './mic-input.mjs?v=42';
+import { mountGuitarPlaylist } from './guitar-playlist.mjs?v=42';
+import { mountSanshinPlaylist, SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=42';
+import { mountHandGuide } from './hand-guide.mjs?v=42';
+import { LESSONS, lessonNotes, noteName, frequencyFor, detectPitch, NoteFollower } from './music.mjs?v=42';
+import { parseMidi, fetchMidi, MIDI_LIMITS, melodyNotes } from './midi.mjs?v=42';
+import { CHORDS, CHORD_GROUPS, PROGRESSIONS, GUITAR_OPEN, shapeMatches, bestShift } from './chords.mjs?v=42';
+import { SONGS, scoreNotes, chordExercise } from './scores.mjs?v=42';
+import { SANSHIN_TUNINGS,sanshinTuning,tuningLabel,tuningStrings, tuningGate, detectTuningPitch, TunerTracker, TuningProgress } from './tuner.mjs?v=42';
+import { mountFullScore } from './full-score.mjs?v=42';
+import { SanshinFollower,detectSanshinPitch } from './sanshin-follow.mjs?v=42';
+import { mountLearning,STUDIES } from './learning.mjs?v=42';
+import { guitarShape,drawChord,fillFingerList,strumInstruction,fingerLines,mountGuitarGuides } from './chord-guide.mjs?v=42';
+import { detectChord, ChordGate,chordAttackLevel } from './polyphonic.mjs?v=42';
+import { mountLyrics } from './lyrics.mjs?v=42';
+import { LYRIC_PRESETS } from './lyric-presets.mjs?v=42';
+import {mountMinyoVerses} from './minyo-verses.mjs?v=42';
+import { sanshinLyricRoute } from './song-support.mjs?v=42';
+import { PracticeProgress,progressKey } from './progress.mjs?v=42';
+import { mountSingalong } from './singalong.mjs?v=42';
+import { pluckDuration, schedulePluck } from './instrument-voice.mjs?v=42';
 
-import { renderSanshinTarget } from './sanshin-view.mjs?v=41';
-import { mountSanshinGuide } from './sanshin-guide.mjs?v=41';
+import { renderSanshinTarget } from './sanshin-view.mjs?v=42';
+import { mountSanshinGuide } from './sanshin-guide.mjs?v=42';
 
 if (await ensurePracticeShell()) {
 const $ = id => document.getElementById(id);
@@ -328,6 +329,7 @@ function renderScore() {
 }
 
 function render() {
+  verseChoice.use(view==='practice'&&instrument==='sanshin'?sessionId:null,{disabled:loading});
   $('mic-start').disabled = loading || mode === 'pending' || mode === 'mic';
   $('mic-start').textContent = mode === 'mic' ? 'マイクで聴いています' : mode === 'pending' ? 'マイクを準備しています' : view === 'tuner' ? 'マイクで調弦を始める' : 'マイクで始める';
   document.body.dataset.mode=mode;if(mode!=='mic')$('practice-input-status').textContent='小さな音は「音を拾う強さ」で補正できます。周りの音も拾う場合は「通常」へ。';document.body.dataset.chordCheck=chordCheck;document.body.dataset.chords=String(practiceStyle==='chords'&&!!midiModel);
@@ -427,7 +429,7 @@ function setup() {
   if(view==='practice'){
     sessionId ||= `exercise:${instrument}:${lessonId}`;
     const title=sessionTitle||selectedSong?.title||midiTitle||LESSONS[instrument].find(l=>l.id===lessonId)?.title||'練習';
-    $('session-title').textContent=title;lyricEditor.use(sessionId,title);lyricEditor.hint(midiModel?.easy?{primary:'1・2・3・4と数え、1で下へ1回。切り替えは止まって大丈夫。',secondary:sessionId==='beginner:guitar'?'指を置いたら一本ずつ。鳴る位置を確かめて、次の形へ。':'カポなし。原曲より低い練習用のキーです。'}:null);restorePosition();
+    $('session-title').textContent=title;lyricEditor.use(instrument==='sanshin'?verseChoice.choice(sessionId)?.key||sessionId:sessionId,title);lyricEditor.hint(midiModel?.easy?{primary:'1・2・3・4と数え、1で下へ1回。切り替えは止まって大丈夫。',secondary:sessionId==='beginner:guitar'?'指を置いたら一本ずつ。鳴る位置を確かめて、次の形へ。':'カポなし。原曲より低い練習用のキーです。'}:null);restorePosition();
     $('session-help').textContent=lessonId==='chord'?'コードを確かめ、譜面と歌詞を一緒に進めます。':'マイクは正解まで待ち、ガイドは曲の速さで進みます。';
   }else{$('session-title').textContent='一本ずつ調弦する';renderResume();}
   renderPickers();
@@ -698,6 +700,7 @@ const lyricEditor=mountLyrics({defaults:LYRIC_PRESETS,onDisplay:display=>{scoreS
   if(ticket!==loadEpoch)return false;
   startChordExercise(value.names,value.title,identity);lyricEditor.import(value);render();return true;
 }});
+const verseChoice=mountMinyoVerses({onChange:(choice,{saved})=>{const guided=mode==='demo'?demoIndex:null;stopAll();if(Number.isInteger(guided)&&guided>=0){newFollower(guided);storeProgress();}lyricEditor.use(choice.key,$('session-title').textContent);render();feedback(`${choice.verse}番に切り替えました。譜面の位置はそのまま。マイクやガイドは自分で再開できます。${saved?'':' 番の選択は端末に保存できませんでした。'}`);}});
 const singalong=mountSingalong({onWarmup:study=>{singalong.close();const stage=study.stages?.[0];startChordExercise(stage?.names||study.names,study.practiceTitle||`${study.title} · ${stage?.title||'導入コード'}`,stage?`study:${study.id}:0`:`study:${study.id}`,{easy:!!stage});focusPractice();render();},onHandGuide:options=>handGuide.open(options),onTakeOver:()=>{cancelLoad();stopAll();setFocus(false);},onChange:open=>{singalongOpen=open;$('view-tuner').setAttribute('aria-pressed',String(!open&&view==='tuner'));$('view-practice').setAttribute('aria-pressed',String(!open&&view==='practice'));save();}});
 const fullScore=mountFullScore({onSeek:seekScore,onStop:()=>{stopAll();render();},onGuide:all=>{if(all){$('loop-enabled').checked=false;newFollower();storeProgress();render();}return demo();},onMic:()=>startMic(),onTuning:value=>{$('tuning').value=value;$('tuning').onchange();}});
 $('full-score-tuning').replaceChildren(...[...$('tuning').options].map(option=>option.cloneNode(true)));

@@ -1,4 +1,4 @@
-import { songSupport,sanshinLyricRoute } from './song-support.mjs?v=41';
+import { songSupport,sanshinLyricRoute } from './song-support.mjs?v=42';
 export const SANSHIN_PLAYLIST = {
   "title": "三線練習",
   "url": "https://music.apple.com/jp/playlist/%E4%B8%89%E7%B7%9A%E7%B7%B4%E7%BF%92/pl.u-PDb42ZZuJZ06jp",
@@ -203,7 +203,7 @@ export function mountSanshinPlaylist({onOpen,onLeave}){
   $('apple').hidden=!selected.appleUrl;if(selected.appleUrl)$('apple').href=selected.appleUrl;else $('apple').removeAttribute('href');$('apple').onclick=onLeave;
   $('sheets').replaceChildren(...selected.sheets.map(anchor));
   const nativeLyrics=sanshinLyricRoute(selected.id).kind==='score';
-  $('open').textContent=nativeLyrics?'歌詞付き工工四を開く（1節）':'歌詞付き工工四の動画を開く';
+  $('open').textContent=nativeLyrics?'歌詞付き工工四を開く（1〜3番）':'歌詞付き工工四の動画を開く';
   $('open').onclick=()=>onOpen(selected.id,'lyrics');
   $('native').hidden=selected.id!=='asatoya';$('native').onclick=()=>onOpen(selected.id,'score');
   $('video').hidden=!nativeLyrics;$('video').onclick=()=>onOpen(selected.id,'video');

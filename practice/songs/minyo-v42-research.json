@@ -1,0 +1,126 @@
+{
+  "checked": "2026-11-17",
+  "base_commit": "084d72fba8747a93caa62ca6df59b34899be1868",
+  "brief": "docs/autonomy/BL-053-minyo-handoff.md",
+  "scope": "Research completed before runtime changes. Traditional lyrics only; existing MIDI bytes, pitch detection and score-progress keys are retained. No recordings, publisher images, modern lyrics or modern translations are bundled.",
+  "decisions": [
+    {
+      "song": "asatoya",
+      "adopted": false,
+      "reason": "伝承の八重山言葉を、現在の宮良長包の節・92音の内蔵譜へ配置できる裏付けを確認できなかった。伝承版と1934年の新しい版は区別する。囃子だけを共通と推定して追加することもしない。歌詞なしの既存譜と教材への参照は保持。",
+      "sources": [
+        {
+          "url": "https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479",
+          "use": "伝承ユンタ・節歌・1934年の新しい版の区別。現代歌詞本文は使用しない。"
+        },
+        {
+          "url": "https://miyazatohidekatsu.com/wp-content/uploads/2023/05/8c36a00342ec0eedb543df5d99a7ae9a.pdf",
+          "sha256": "886643114e6486f64206a644b02f5a62a6e467e1ce588e5c5f68272f25c37739",
+          "use": "既存譜の対象と歌の形の照合のみ。画像・歌詞・現代語訳は同梱しない。"
+        },
+        {
+          "url": "https://ameblo.jp/irei-blog/entry-12530046929.html",
+          "use": "v38で内蔵譜の基礎旋律を照合した既存教材。伝承歌詞の現行譜への対応を示す資料ではない。"
+        }
+      ]
+    },
+    {
+      "song": "tinsagu",
+      "adopted_verses": [
+        1,
+        2,
+        3
+      ],
+      "sources": [
+        {
+          "url": "https://www.pref.okinawa.lg.jp/kensei/kengaiyo/1014898.html",
+          "use": "県が、作者・発祥地不明で正式に統一された歌詞はなく一般に歌われる一例と説明し、1〜3番を掲載。伝承の本文と読みを確認。県の現代語訳は写さない。"
+        },
+        {
+          "url": "https://miyazatohidekatsu.com/wp-content/uploads/2023/05/98363fad07ef831d7134f72960746334.pdf",
+          "sha256": "d215f6c4d8ec9f536cd105af8a8c44967d48161db168df1ce15b3489e7026cf4",
+          "use": "1〜3番が共通の旋律区間へ載ることを目視照合。指位置・装飾・譜割り・画像・レイアウト・現代語訳は複製しない。"
+        }
+      ],
+      "alignment": "既存の63音・64拍のCC BY-SA4.0練習譜は変更せず、歌の入口16/24/32/40拍、終わり45拍へ、新たに26断片ずつ配置。県と先生の表記差は同一版に混ぜず県公表例を採用。",
+      "excluded": "4番以降は今回の県公表例と同等の出典・位置の確認を終えていないため入れない。"
+    },
+    {
+      "song": "tsukinu",
+      "adopted_verses": [
+        1,
+        2,
+        3
+      ],
+      "sources": [
+        {
+          "url": "https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479",
+          "use": "八重山の伝承子守唄としての説明、1・2番の本文と伝承の囃子を確認。"
+        },
+        {
+          "url": "https://www.ryukyumura.co.jp/official/oki100/vol24/",
+          "use": "実演する琉球村が八重山民謡と明記して掲載する伝承本文の1〜3番を照合。現代語訳は複製しない。 同ページは1〜3番・4番・5番以降で曲調と長さが変わることも明記。1〜3番の共通形だけを採用する根拠。"
+        },
+        {
+          "url": "https://ameblo.jp/irei-blog/entry-12356649318.html",
+          "use": "1〜3番の同じ歌の区間を工工四で照合し、読みの地域差を確認。先生独自の表記・装飾・現代語訳は複製しない。"
+        },
+        {
+          "url": "https://toyosanshin.hatenablog.com/entry/2021/04/03/125128",
+          "use": "共通の伝承本文と囃子、前回入力した基本旋律を照合。二揚げの先生の版をアプリの本調子譜と同一の運指とは扱わない。"
+        }
+      ],
+      "alignment": "既存の37音・42拍を変更せず、16/24/32拍からの句を各18断片で配置。これは1番分ずつ選ぶ等拍の練習用で、先生の演奏の同期採譜ではない。",
+      "excluded": "4番以降は句の長さや節・読みが変わり、現在の1節分の譜面に適切に配置する裏付けを十分確認できなかったため入れない。"
+    }
+  ],
+  "candidates_research_only": [
+    {
+      "title": "安波節",
+      "priority": 1,
+      "traditional_basis": [
+        {
+          "url": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
+          "fact": "国頭村安波に伝わる祭祀・祝いの歌で、古典・民謡の入門曲と説明。伝承の歌詞と8・8・8・6の形式を確認できる。"
+        },
+        {
+          "url": "https://www.ken.okigei.ac.jp/odb/r73k033/",
+          "fact": "沖縄県立芸術大学の民謡調査DBに1973年の国頭村安波での採録記録。録音の使用許可を意味しない。"
+        }
+      ],
+      "public_comparison_material": "https://o-chubun.chu.jp/g-kunkunshi.pdf",
+      "beginner": "最有力。ゆっくり歌と音を合わせやすく、まず短い1節から。",
+      "rights_scope": "伝承の節と本文を新規入力する候補。現代の譜面レイアウト・編曲・訳・録音は別。今回のアプリには追加しない。"
+    },
+    {
+      "title": "赤田首里殿内",
+      "priority": 2,
+      "traditional_basis": [
+        {
+          "url": "https://www.pref.okinawa.lg.jp/_res/projects/default_project/_page_/001/012/907/suimuikeikaku-001.pdf",
+          "fact": "沖縄県の首里杜整備計画で、赤田のみるくウンケーの伝統芸能として演奏される歌と説明。"
+        },
+        {
+          "url": "https://feirecord.theshop.jp/items/1838721",
+          "fact": "教材発行者が沖縄本島のわらべうたと明記。購入教材そのものを複製する権利を意味しない。"
+        }
+      ],
+      "public_comparison_material": "https://toyosanshin.hatenablog.com/entry/2021/03/14/121801",
+      "beginner": "短い反復句で楽しみやすい。三下げの教材を本調子と混ぜず、調弦と勘所を確認してから。",
+      "rights_scope": "伝承の元の歌詞・旋律に限定する候補。現代の付加節・教室独自の表記や編曲は別に確認。今回は未実装。"
+    },
+    {
+      "title": "谷茶前節",
+      "priority": 3,
+      "traditional_basis": [
+        {
+          "url": "https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479",
+          "fact": "教育芸術社が民謡と明記し、1726年の演芸の伝承、土地と歌詞の背景を説明。現代語訳や譜面を転載する許可ではない。"
+        }
+      ],
+      "public_comparison_material": "https://ameblo.jp/irei-blog/entry-12347911679.html",
+      "beginner": "速い踊りの曲のため、最初の1曲にはせず、ゆっくりの短い句で基礎曲の次に。",
+      "rights_scope": "伝承の基本旋律と確認できた古い本文を新規入力する候補。伊計離り節との接続や現代の囃子・編曲を自動で含めない。今回は未実装。"
+    }
+  ]
+}

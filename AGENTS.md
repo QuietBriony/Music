@@ -109,6 +109,13 @@ music-stack 全体の自走開発は `docs/autonomy/` のエンジンで運用�
 3. **音源 / サンプル / 歌詞は原則 repo に追加しない**。例外として owner が2026-09-29に明示許可した独立試奏台の `experiments/workbench/v1/third_party/acidbros/assets/samples/tr909/` の4 WAV（合計438,798 bytes）のみ同梱する。この例外を他の音源やCore Rig / FM / Band Roomへ広げない。出所とhashは`experiments/workbench/v1/third_party/acidbros/UPSTREAM.md`。
    - 2026-10-12の本人の「歌詞もアプリからそのまま選べるように」により、この会話で作ったオリジナル「残響の住所」初稿だけを `experiments/workbench/v1/src/vocal-lyrics.js` へ同梱・公開する。個人の編集歌詞・録音・他作品の歌詞には許可を広げない。
    - 2026-10-18の本人の明示承認により、既存Music／Pagesでの原音直接再生用に `presets/tabasco-premix/` の7 M4A（合計46,658,249 bytes）のみ追加・公開する。分離前の現存する仮ミックスであり、元のマルチトラックではない。出所・対象7曲・SHA-256は同ディレクトリの `provenance.json`。他音源への許可に広げない。
+   - 2026-11-17（JST、時刻不明）の本人のこの会話への直接入力により、練習PWAの歌詞に限り、次の曲別例外を追加する。原文：「歌詞の許可：安里屋ゆんた・てぃんさぐぬ花・月ぬ美しゃの、伝承の歌詞（2番以降も含む）はアプリに入れてOK。標準語の「新安里屋ユンタ」の歌詞は入れないで。」。伝承・出典・節への適合を確認した本文だけを使い、近現代曲や現代語訳・録音・画像には広げない。出所と許可は `practice/songs/lyrics-provenance.json`、調査判断は `practice/songs/minyo-v42-research.json`。
+     - 安里屋ゆんた：同日・上記原文の伝承歌詞のみ許可。v42では現在の宮良長包の節へ合う裏付けがないため歌詞は追加しない。「新安里屋ユンタ」の標準語歌詞を含めない。
+     - てぃんさぐぬ花：同日・上記原文により伝承歌詞の1〜3番を収録。Lrschneider / Music Stackの簡略譜へ加える歌詞位置・読み・独自の意味も CC BY-SA4.0 を維持する。
+     - 月ぬ美しゃ：同日・上記原文により伝承歌詞の1〜3番と確認した囃子を収録。新規の位置・読み・独自の意味は CC0。現代の別歌詞・編曲・訳は含めない。
+   - 2026-11-17（JST、時刻不明）の本人の直接入力の原文：「main の docs/autonomy/BL-053-minyo-handoff.md を読んで、そのとおりに v42 を進めてください。」。本人が採用した引き継ぎの権利条件6により、既存の英語歌詞2曲も曲別例外として明記する。
+     - Amazing Grace：同日・上記採用原文に基づき、既存の John Newton（1779）の英語第1節のみ。PD。新しい節・訳詞は追加しない。
+     - きらきら星：同日・上記採用原文に基づき、既存の Jane Taylor（1806）の英語原詞冒頭と練習用反復のみ。PD。日本語訳詞は含めない。
 4. **GitHub Actions の新規追加は user 承認必須**。現状は `audit.py` をローカル / CI 任意手動実行。
 5. **`presets/*.json` (Hazama FM 用 6 ファイル) と `presets/<legacy>.json` (engine 用 6 ファイル) を混同しない**。詳細は `presets/SCHEMA.md` Section 4.
 6. **外部 / sister repo からの harvest は非干渉で**:

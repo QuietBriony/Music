@@ -42,3 +42,5 @@ body.focused #session-lyrics[data-has-lyrics=true] .lyric-mini-nav{display:flex!
 .beginner-path{padding:18px 20px;margin:18px 0;border:1px solid #ccd8c5;border-radius:13px;background:#edf0e6}.beginner-path h2{font-size:1rem;margin:0}.beginner-path p{font-size:.82rem;line-height:1.75}.beginner-path>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.beginner-path button{font-size:.78rem;min-height:48px;text-align:left}.beginner-path>a{font-size:.76rem}.beginner-path .small{font-size:.7rem}
 body.focused #beginner-path,body.singalong-mode #beginner-path{display:none}
 @media(max-width:650px){.beginner-path{padding:16px}.beginner-path>div{grid-template-columns:1fr}.beginner-path button{min-height:44px}#session-lyric-meaning{font-size:.84rem}#session-lyric-reading{font-size:.78rem}}
+
+.minyo-verse-choice{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;max-width:100%}.minyo-verse-choice[hidden]{display:none}.minyo-verse-choice select{min-height:44px;min-width:66px;width:auto;padding:6px;font-size:16px}.session-lyrics>.minyo-verse-choice{margin:4px 12px 4px 0}

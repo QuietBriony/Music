@@ -1,4 +1,5 @@
 // Traditional/PD texts and CC BY-SA 4.0 Tinsagu adaptation; see songs/lyrics-provenance.json.
+import {additionalMinyoLyrics} from './minyo-lyrics.mjs?v=42';
 export const LYRIC_PRESETS={
  'song:tsukinu':{
   text:'月ぬ美しゃ 十日三日\n女童美しゃ 十七つ\nホーイ チョーガ',
@@ -46,3 +47,4 @@ export const LYRIC_PRESETS={
   credit:'Jane Taylor, The Star, 1806 · 原詞はPublic Domain · 冒頭2行を反復',source:'https://poets.org/poem/star/print'
  }
 };
+Object.assign(LYRIC_PRESETS,additionalMinyoLyrics(LYRIC_PRESETS));

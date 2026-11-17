@@ -1,5 +1,5 @@
 {
-  "description": "Symbolic MIDI notes only. No recordings, samples or lyrics.",
+  "description": "Symbolic MIDI exercises, with separately attributed lyric presets in lyric-presets.mjs and minyo-lyrics.mjs. Traditional Tinsagu/Tsukinu verses1–3 and existing PD English stanzas are documented in lyrics-provenance.json. No recordings, samples, Asatoya lyrics or modern song lyrics.",
   "songs": [
     {
       "id": "amazing-grace",
@@ -13,7 +13,12 @@
       "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
       "changes": "Removed short bagpipe grace notes; extended each main note to the next onset; transposed down 8 semitones to G; tempo 90; added suggested G/C/D chord markers. This adapted MIDI and its note data retain CC BY-SA 3.0. App code is separate.",
       "source_sha256": "cc4cbec98afe0776d35e26333103e0bab7e7b078f2928c96022e0f42bd2a10f5",
-      "sha256": "41cc591dd4f6cbcc3182dec3d017e3e96e8057eae9626628dc30d03efd004ec5"
+      "sha256": "41cc591dd4f6cbcc3182dec3d017e3e96e8057eae9626628dc30d03efd004ec5",
+      "lyrics": {
+        "preset": "song:amazing-grace",
+        "source_record": "lyrics-provenance.json",
+        "scope": "Existing public-domain English stanza only. MIDI contains no lyric events; the words are a separate app preset."
+      }
     },
     {
       "id": "twinkle",
@@ -24,8 +29,13 @@
       "attribution": "Traditional melody, newly entered as a simple 42-note exercise by Music Stack. The linked public-domain edition is a reference, not the imported arrangement.",
       "license": "CC0-1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "changes": "New symbolic transcription of the traditional melody in C, tempo 90, for sanshin honchoshi and guitar. Added suggested C/Fmaj7/G7 chord markers. No lyrics.",
-      "sha256": "d345ad5cdff7a6f1c17a30365f9ee62dac5e756d4e8e2c7611daf21d9329338b"
+      "changes": "New symbolic transcription of the traditional melody in C, tempo 90, for sanshin honchoshi and guitar. Added suggested C/Fmaj7/G7 chord markers. MIDI contains no lyric events; the English text is a separate credited app preset.",
+      "sha256": "d345ad5cdff7a6f1c17a30365f9ee62dac5e756d4e8e2c7611daf21d9329338b",
+      "lyrics": {
+        "preset": "song:twinkle",
+        "source_record": "lyrics-provenance.json",
+        "scope": "Existing public-domain English stanza only. MIDI contains no lyric events; the words are a separate app preset."
+      }
     },
     {
       "id": "ode-to-joy",
@@ -49,8 +59,19 @@
       "attribution": "Kunkunshi for Tinsagu nu Hana, Lrschneider (2017), Wikimedia Commons, CC BY-SA 4.0. Adaptation by Music Stack.",
       "license": "CC-BY-SA-4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
-      "changes": "First verse with surrounding instrumental phrase. Transcribed the large symbols right-to-left, top-to-bottom; omitted small ornamental notes, set each cell to one beat at 85 BPM in C-F-C honchoshi. Retains the one-cell rest. 63 notes across 64 beats. This adapted MIDI and the note data in build-practice-sanshin.mjs retain CC BY-SA 4.0; application code is separate. No lyrics or source image are bundled.",
-      "sha256": "0a0911672c388607b25b66fe5feceac8cd42ab097690f3bfa01ca2d41a3858c5"
+      "changes": "First verse with surrounding instrumental phrase. Transcribed the large symbols right-to-left, top-to-bottom; omitted small ornamental notes, set each cell to one beat at 85 BPM in C-F-C honchoshi. Retains the one-cell rest. 63 notes across 64 beats. This adapted MIDI and the note data in build-practice-sanshin.mjs retain CC BY-SA 4.0; application code is separate. The symbolic MIDI has no lyric events; traditional verses1–3 are separate credited app presets. No source image is bundled.",
+      "sha256": "0a0911672c388607b25b66fe5feceac8cd42ab097690f3bfa01ca2d41a3858c5",
+      "lyric_extension_v42": {
+        "verses": [
+          1,
+          2,
+          3
+        ],
+        "checked": "2026-11-17",
+        "source": "https://www.pref.okinawa.lg.jp/kensei/kengaiyo/1014898.html",
+        "license": "CC-BY-SA-4.0",
+        "note": "Lyrics are separate presets; the one-verse symbolic MIDI bytes are unchanged. Choose one verse at a time. See lyrics-provenance.json."
+      }
     },
     {
       "title": "安里屋ゆんた（前奏＋1節・基礎練習版）",
@@ -112,7 +133,18 @@
       "notes": 37,
       "beats": 42,
       "id": "tsukinu",
-      "file": "tsukinu.mid"
+      "file": "tsukinu.mid",
+      "lyric_extension_v42": {
+        "verses": [
+          1,
+          2,
+          3
+        ],
+        "checked": "2026-11-17",
+        "source": "https://www.ryukyumura.co.jp/official/oki100/vol24/",
+        "license": "CC0-1.0",
+        "note": "Lyrics are separate presets; the one-verse symbolic MIDI bytes are unchanged. Choose one verse at a time. See lyrics-provenance.json."
+      }
     }
   ]
 }

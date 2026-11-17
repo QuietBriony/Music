@@ -16,10 +16,23 @@
   },
   "traditional_text_reference": "https://ameblo.jp/irei-blog/entry-12356649318.html",
   "changes": "Newly entered beginner honchoshi study. Main traditional melody only, uniform durations, omitted small ornaments, open middle string for the final low fa, held final note. First verse and refrain only. Phrase and phonetic cues refer exclusively to this study, not the linked teacher video. Guide sound uses the existing synthesized instrument voice; no recording is added.",
-  "lyrics": "Traditional first verse and Hoi Choga refrain. Readings are one practical example; regional pronunciation and spelling vary. The app's short meanings are newly written paraphrases, not copied modern translations.",
+  "lyrics": "Traditional verses1–3 and Hoi Choga refrain, selected one verse at a time on the same unchanged beginner study. Readings are one practical example and regional pronunciation varies. Meanings are original plain-language paraphrases; no modern translation is copied.",
   "generator": "scripts/build-practice-tsukinu.mjs",
   "checked": "2026-11-15",
   "sha256": "f0a2495e68fc92f08fdc5360aa29229e0e88a3cda5870ba4e5d5e99183dd40f7",
   "notes": 37,
-  "beats": 42
+  "beats": 42,
+  "lyric_extension_v42": {
+    "checked": "2026-11-17",
+    "verses": [
+      1,
+      2,
+      3
+    ],
+    "source": "https://www.ryukyumura.co.jp/official/oki100/vol24/",
+    "license": "CC0-1.0",
+    "changes": "Existing one-verse MIDI unchanged. Separate lyric presets share the sounding-cell positions; new original readings, easy meanings and vocabulary. No teacher image, layout, ornament or modern translation copied.",
+    "authorization_record": "songs/lyrics-provenance.json",
+    "research_record": "songs/minyo-v42-research.json"
+  }
 }

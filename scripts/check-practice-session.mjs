@@ -3,6 +3,7 @@ import { scoreLyricAnnotations } from '../practice/score-lyrics.mjs';
 import { readFileSync } from 'node:fs';
 import { readLyrics,resolveLyricTiming,normalizeCues,lyricAt,lrcText,readChordSheet,readLyricFile } from '../practice/lyrics.mjs';
 import { LYRIC_PRESETS } from '../practice/lyric-presets.mjs';
+import {minyoVerse,readMinyoVerses,MINYO_VERSE_STORAGE} from '../practice/minyo-verses.mjs';
 import { normalizeLyricNotes,readParallelNotes } from '../practice/lyric-notes.mjs';
 import { chordExercise,scoreNotes } from '../practice/scores.mjs';
 import {parseMidi} from '../practice/midi.mjs';
@@ -22,6 +23,33 @@ assert.equal(sheet.cues[1].time,8*60/85);assert.equal(scoreNotes(chordExercise(s
 assert.throws(()=>readChordSheet('[Unknown]line'),/未対応/);assert.throws(()=>readChordSheet('No chord tokens'));
 assert.throws(()=>readChordSheet('[C]line\n'.repeat(65)),/64/);
 for(const preset of Object.values(LYRIC_PRESETS)){const data=readLyrics(preset.text);assert.ok(preset.cues.every(c=>c.line<data.lines.length));assert.ok(preset.source.startsWith('https:'));}
+assert.equal(Object.hasOwn(LYRIC_PRESETS,'song:asatoya'),false,'No unverified traditional text is imposed on the different modern Asatoya melody');
+for(const [song,count,beats]of[['tinsagu',26,[16,24,32,40]],['tsukinu',18,[16,24,32]]]){
+ const midi=parseMidi(readFileSync(`practice/songs/${song}.mid`)),notes=scoreNotes(midi,midi.groups[0].id,'sanshin').notes;
+ for(const verse of [2,3]){
+  const key=minyoVerse(`song:${song}`,verse).key,preset=LYRIC_PRESETS[key],lines=readLyrics(preset.text).lines,annotations=scoreLyricAnnotations(notes,{...preset,lines});
+  assert.equal(preset.syllables.length,count);assert.equal(annotations.filter(a=>a.text).length,count);
+  assert.deepEqual(preset.cues.map(c=>Math.round(c.time*85/60)),beats);
+  assert.deepEqual(preset.notes.map(n=>n.text),lines,'Readings and meanings belong to the chosen verse, not the previous text');
+  for(const s of preset.syllables){const i=notes.findIndex(n=>n.beat===s.beat);assert.ok(i>=0,'Lyric fragments attach to sounding cells, not rests');assert.equal(annotations[i].text,s.text);assert.equal(lyricAt(normalizeCues(preset.cues,lines.length),notes[i].time),s.line);}
+  for(let line=0;line<lines.length;line++)assert.equal(preset.syllables.filter(s=>s.line===line).map(s=>s.text).join(''),preset.notes[line].reading.replaceAll(' ',''));
+  assert.equal(resolveLyricTiming(preset,{cues:[{line:0,time:7}],follow:false},readLyrics(preset.text)).follow,false,'Selecting a verse does not overwrite private timing or manual mode');
+ }
+}
+assert.deepEqual(minyoVerse('song:tinsagu',1),{verse:1,key:'song:tinsagu'},'The existing first-verse private lyric key is unchanged');
+assert.equal(minyoVerse('song:tsukinu',2).key,'song:tsukinu:verse:2');
+for(const bad of [undefined,-1,0,4,'2',NaN,{},null])assert.equal(minyoVerse('song:tinsagu',bad).verse,1);
+for(const bad of ['__proto__','song:asatoya','song:amazing-grace',null])assert.equal(minyoVerse(bad,2),null);
+const storedSelection=readMinyoVerses({getItem:key=>{assert.equal(key,MINYO_VERSE_STORAGE);return JSON.stringify({'song:tinsagu':3,'song:tsukinu':2,'song:asatoya':1});}});
+assert.deepEqual(storedSelection,{'song:tinsagu':3,'song:tsukinu':2});
+assert.deepEqual(readMinyoVerses({getItem(){throw Error('blocked');}}),{});
+assert.deepEqual(readMinyoVerses({getItem:()=>'{bad'}),{});
+const lyricRights=JSON.parse(readFileSync('practice/songs/lyrics-provenance.json','utf8')),minyoResearch=JSON.parse(readFileSync('practice/songs/minyo-v42-research.json','utf8'));
+assert.deepEqual(lyricRights.authorization.by_song.map(s=>s.id),['asatoya','tinsagu','tsukinu','amazing-grace','twinkle']);
+assert.ok(lyricRights.authorization.by_song.every(s=>s.date==='2026-11-17'&&s.quote));
+assert.equal(minyoResearch.decisions.find(s=>s.song==='asatoya').adopted,false);
+assert.equal(minyoResearch.candidates_research_only.length,3,'Research candidates do not become runtime songs');
+for(const s of minyoResearch.decisions)for(const source of s.sources){assert.equal(new URL(source.url).protocol,'https:');if(source.sha256)assert.match(source.sha256,/^[a-f0-9]{64}$/);}
 assert.equal(lyricAt(LYRIC_PRESETS['song:twinkle'].cues,16*.666667),2);
 const personal=readParallelNotes(['First','Second'],'ふぁーすと\nせかんど','最初\n次');
 assert.equal(normalizeLyricNotes(personal,['Changed','Second'])[0].meaning,'','Changed lyric must not keep an unrelated meaning');
@@ -63,5 +91,5 @@ await assert.rejects(()=>readLyricFile({size:80001,text:async()=>{throw new Erro
 await assert.rejects(()=>readLyricFile({size:20001,text:async()=> 'x'.repeat(20001)}),/2万字/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\0binary'}),/UTF-8/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\uFFFD'}),/UTF-8/);
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=41','songs/learning-provenance.json','progress.mjs?v=41','songs/tokiyo-study.json','session.css?v=41','lyrics.mjs?v=41','lyric-presets.mjs?v=41','songs/lyrics-provenance.json','polyphonic.mjs?v=41'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=42','songs/learning-provenance.json','progress.mjs?v=42','songs/tokiyo-study.json','session.css?v=42','lyrics.mjs?v=42','lyric-presets.mjs?v=42','songs/lyrics-provenance.json','polyphonic.mjs?v=42'])assert.ok(sw.includes(path),path);
 console.log('Practice session: LRC, repeated timestamps, lyrics bounds, chord-sheet adapter, timing, safe local text and PWA coverage PASS');

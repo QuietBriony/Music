@@ -1,6 +1,50 @@
 {
-  "scope": "Traditional first verses of Tinsagu and Tsukinu Kaisha, plus public-domain English stanzas. No modern copyrighted song lyrics or third-party modern translations are bundled.",
-  "authorization": "Owner requested integrated lyrics on 2026-10-29 and beginner-friendly sanshin lyrics with a parallel Japanese meaning mode in this conversation on 2026-10-30. Owner requested the same lyric-bearing kunkunshi experience for all sanshin songs on 2026-11-15; traditional Tsukinu first verse is included within that request.",
+  "scope": "Traditional Tinsagu and Tsukinu verses1–3, plus existing public-domain English stanzas. No Asatoya lyric, modern song lyric, source image or third-party modern translation is bundled.",
+  "authorization": {
+    "date": "2026-11-17",
+    "timezone": "Asia/Tokyo",
+    "time": "Not available from the direct message; no exact time is inferred.",
+    "origin": "Owner direct input in this same conversation. The handoff document alone is not authorization.",
+    "permission_verbatim": "歌詞の許可：安里屋ゆんた・てぃんさぐぬ花・月ぬ美しゃの、伝承の歌詞（2番以降も含む）はアプリに入れてOK。標準語の「新安里屋ユンタ」の歌詞は入れないで。",
+    "adoption_verbatim": "main の docs/autonomy/BL-053-minyo-handoff.md を読んで、そのとおりに v42 を進めてください。",
+    "adopted_brief": "docs/autonomy/BL-053-minyo-handoff.md at 084d72fba8747a93caa62ca6df59b34899be1868",
+    "by_song": [
+      {
+        "id": "asatoya",
+        "date": "2026-11-17",
+        "quote": "歌詞の許可：安里屋ゆんた・てぃんさぐぬ花・月ぬ美しゃの、伝承の歌詞（2番以降も含む）はアプリに入れてOK。標準語の「新安里屋ユンタ」の歌詞は入れないで。",
+        "scope": "Traditional words, including later verses, only when source and fit are established. No modern standard-Japanese adaptation.",
+        "used": false
+      },
+      {
+        "id": "tinsagu",
+        "date": "2026-11-17",
+        "quote": "歌詞の許可：安里屋ゆんた・てぃんさぐぬ花・月ぬ美しゃの、伝承の歌詞（2番以降も含む）はアプリに入れてOK。標準語の「新安里屋ユンタ」の歌詞は入れないで。",
+        "scope": "Traditional words, including later verses, only when source and fit are established. No modern standard-Japanese adaptation.",
+        "used": true
+      },
+      {
+        "id": "tsukinu",
+        "date": "2026-11-17",
+        "quote": "歌詞の許可：安里屋ゆんた・てぃんさぐぬ花・月ぬ美しゃの、伝承の歌詞（2番以降も含む）はアプリに入れてOK。標準語の「新安里屋ユンタ」の歌詞は入れないで。",
+        "scope": "Traditional words, including later verses, only when source and fit are established. No modern standard-Japanese adaptation.",
+        "used": true
+      },
+      {
+        "id": "amazing-grace",
+        "date": "2026-11-17",
+        "quote": "main の docs/autonomy/BL-053-minyo-handoff.md を読んで、そのとおりに v42 を進めてください。",
+        "scope": "The owner adopted the brief, including rights condition6 listing the existing English lyric presets as exceptions. Existing stanza only; no extension and no Japanese translation."
+      },
+      {
+        "id": "twinkle",
+        "date": "2026-11-17",
+        "quote": "main の docs/autonomy/BL-053-minyo-handoff.md を読んで、そのとおりに v42 を進めてください。",
+        "scope": "The owner adopted the brief, including rights condition6 listing the existing English lyric presets as exceptions. Existing stanza only; no extension and no Japanese translation."
+      }
+    ],
+    "previous_recorded_summary": "Owner requested integrated lyrics on 2026-10-29 and beginner-friendly sanshin lyrics with a parallel Japanese meaning mode in this conversation on 2026-10-30. Owner requested the same lyric-bearing kunkunshi experience for all sanshin songs on 2026-11-15; traditional Tsukinu first verse is included within that request."
+  },
   "texts": [
     {
       "id": "tinsagu",
@@ -9,9 +53,17 @@
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
       "source_sha256": "014482d72c51f3562ceb9cccb996b5fffb531f006c4f8e2337b4405ea24281cf",
-      "changes": "First verse only. Added editorial kanji, word spacing, an original plain-Japanese explanation and vocabulary notes. This adapted verse, readings and explanations are distributed under CC BY-SA 4.0. Readings use the score's chimisachi variant; variants in region and teacher's singing are expected. Practice alignment maps the large-symbol simplified sheet to phrase entrances at beats 16, 24, 32 and 40, with prelude beats 0–15 and outro from beat 45. One cell is one beat at the existing 85 BPM MIDI tempo. This is a practice alignment, not a transcription of a teacher recording; ornamentation and sung phrasing may differ. Added alignment metadata is also CC BY-SA 4.0. v22 rechecked the source image and places 26 phonetic fragments beside their large-symbol cells. The final ri belongs to beat 44, so singing continues through that beat and the outro begins at 45. Small ornamental syllables share their simplified main cell; the rest at beat 29 does not shift labels. Fragments and their placement retain CC BY-SA 4.0.",
+      "changes": "v41 and earlier: First verse only. Added editorial kanji, word spacing, an original plain-Japanese explanation and vocabulary notes. This adapted verse, readings and explanations are distributed under CC BY-SA 4.0. Readings use the score's chimisachi variant; variants in region and teacher's singing are expected. Practice alignment maps the large-symbol simplified sheet to phrase entrances at beats 16, 24, 32 and 40, with prelude beats 0–15 and outro from beat 45. One cell is one beat at the existing 85 BPM MIDI tempo. This is a practice alignment, not a transcription of a teacher recording; ornamentation and sung phrasing may differ. Added alignment metadata is also CC BY-SA 4.0. v22 rechecked the source image and places 26 phonetic fragments beside their large-symbol cells. The final ri belongs to beat 44, so singing continues through that beat and the outro begins at 45. Small ornamental syllables share their simplified main cell; the rest at beat 29 does not shift labels. Fragments and their placement retain CC BY-SA 4.0. v42 adds separately selectable traditional verses2 and3 from the Okinawa Prefecture example. New per-cell fragments and original readings/meanings retain CC BY-SA4.0; the existing first-verse preset, MIDI and private lyric keys are unchanged. Government/teacher modern translations and layouts are not copied.",
       "meaning_reference": "https://www.pref.okinawa.jp/kyoiku/kodomo/1002688/1002693.html",
-      "translation": "New wording for this app, checked against the prefecture's explanation; not a copied modern translation."
+      "translation": "New wording for this app, checked against the prefecture's explanation; not a copied modern translation.",
+      "checked": "2026-11-17",
+      "verses": [
+        1,
+        2,
+        3
+      ],
+      "traditional_text_source": "https://www.pref.okinawa.lg.jp/kensei/kengaiyo/1014898.html",
+      "comparison_source": "https://miyazatohidekatsu.com/wp-content/uploads/2023/05/98363fad07ef831d7134f72960746334.pdf"
     },
     {
       "id": "amazing-grace",
@@ -19,7 +71,8 @@
       "year": 1779,
       "source": "https://library.intervarsity.org/library/amazing-grace",
       "license": "Public Domain",
-      "changes": "First stanza only, punctuation normalized, phrase timing added for the beginner score."
+      "changes": "First stanza only, punctuation normalized, phrase timing added for the beginner score.",
+      "checked": "2026-11-17"
     },
     {
       "id": "twinkle",
@@ -27,7 +80,8 @@
       "year": 1806,
       "source": "https://poets.org/poem/star/print",
       "license": "Public Domain",
-      "changes": "Opening stanza of The Star. First two lines repeated to fit the familiar six-phrase melody; phrase timing added. No modern translation."
+      "changes": "Opening stanza of The Star. First two lines repeated to fit the familiar six-phrase melody; phrase timing added. No modern translation.",
+      "checked": "2026-11-17"
     },
     {
       "id": "tsukinu",
@@ -35,9 +89,24 @@
       "source": "https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479",
       "license": "Public Domain (traditional text); new alignment, readings and original plain-Japanese meanings CC0-1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "changes": "Traditional first verse and Hoi Choga refrain only. New honchoshi study has phrase entrances at beats16,24,32 and phonetic fragments beside their own notes. Preludebeats0–15; last note beat40 held for2beats. Not a transcription of a recording. New simple meanings and vocabulary are original paraphrases. No modern songwriter adaptation or published modern translation. Regional pronunciation and spelling vary.",
+      "changes": "v41 and earlier: Traditional first verse and Hoi Choga refrain only. New honchoshi study has phrase entrances at beats16,24,32 and phonetic fragments beside their own notes. Preludebeats0–15; last note beat40 held for2beats. Not a transcription of a recording. New simple meanings and vocabulary are original paraphrases. No modern songwriter adaptation or published modern translation. Regional pronunciation and spelling vary. v42 adds selectable verses2 and3, each with18 new phonetic fragments on the unchanged37note practice score. Traditional refrain is confirmed by the publisher description and independent teacher examples. New readings/meanings/alignment are CC0. Modern Japanese lyric adaptations and source translations are excluded.",
       "notation_provenance": "songs/tsukinu-provenance.json",
-      "translation": "New wording for singing practice, checked against Kyoiku Geijutsu; no copied modern translation."
+      "translation": "New wording for singing practice, checked against Kyoiku Geijutsu; no copied modern translation.",
+      "checked": "2026-11-17",
+      "verses": [
+        1,
+        2,
+        3
+      ],
+      "traditional_text_sources": [
+        "https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479",
+        "https://www.ryukyumura.co.jp/official/oki100/vol24/"
+      ],
+      "comparison_sources": [
+        "https://ameblo.jp/irei-blog/entry-12356649318.html",
+        "https://toyosanshin.hatenablog.com/entry/2021/04/03/125128"
+      ]
     }
-  ]
+  ],
+  "decisions_source": "songs/minyo-v42-research.json"
 }
