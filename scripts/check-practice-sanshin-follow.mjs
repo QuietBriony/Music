@@ -9,6 +9,7 @@ import { parseMidi } from '../practice/midi.mjs';
 import { scoreNotes } from '../practice/scores.mjs';
 import { sheetEntries } from '../practice/full-score.mjs';
 import { renderPluck } from '../practice/instrument-voice.mjs';
+import {retainSanshinCapture,ListeningDisplay} from '../practice/full-score-support.mjs';
 const data=readFileSync('practice/songs/asatoya.mid'),meta=JSON.parse(readFileSync('practice/songs/asatoya-provenance.json','utf8'));
 assert.deepEqual(data,asatoyaMidi(),'Native Asatoya is reproducible from the elementary score');assert.equal(createHash('sha256').update(data).digest('hex'),meta.sha256);
 const parsed=parseMidi(data),notes=scoreNotes(parsed,parsed.groups[0].id,'sanshin').notes;
@@ -96,4 +97,24 @@ assert.equal(sanshinAttack(new Float32Array(4096).fill(.1),48000),0);
 const between=new Float32Array(4096);for(let i=between.length-1800;i<between.length-1300;i++)between[i]=.01*(i%2?1:-1);
 assert.ok(sanshinAttack(between,48000)>.005,'A bachi transient between callbacks is still observed');
 const oldTransient=new Float32Array(4096);for(let i=20;i<100;i++)oldTransient[i]=.01*(i%2?1:-1);assert.equal(sanshinAttack(oldTransient,48000),0,'An old transient does not keep rearming notes');
-console.log(`Sanshin follow: 72 quiet/detuned pitch fixtures, ${pluckPhases} independent pluck phases, three noisy string sequences, short voiced evidence, dropouts, fresh bachi attacks over tails, click/gain rejection and exact pitch boundaries PASS (${oldMisses} formerly missed noisy pitch frames)`);
+// Existing ringing must not become a new answer after a live range change.
+for(const acceptedMidi of [52,55]){
+ const old=new SanshinFollower([{midi:acceptedMidi},{midi:52}]);for(const now of [0,45,90])old.feed(signal(acceptedMidi),now);
+ for(let now=135;now<=540;now+=45)old.feed(signal(52,{rms:.012,attack:.0003}),now);
+ const next=new SanshinFollower([{midi:52},{midi:52}]);retainSanshinCapture(next,old,signal(52,{rms:.012,attack:.0003}),600);
+ for(let now=645;now<1100;now+=45)assert.equal(next.feed(signal(52,{rms:.012,attack:.0003}),now).matched,false,'A range change rejects the actual old ringing tone');
+ for(const [t,rms,attack]of[[1140,.018,.0014],[1185,.018,.0008],[1230,.017,.0006],[1275,.016,.0005]])next.feed(signal(52,{rms,attack}),t);
+ assert.equal(next.index,1,'A real re-pluck progresses without reacquiring capture');
+}
+const oldDifferent=new SanshinFollower([{midi:52},{midi:57}]);for(const now of [0,45,90])oldDifferent.feed(signal(52),now);
+const newDifferent=new SanshinFollower([{midi:57}]);retainSanshinCapture(newDifferent,oldDifferent,signal(52),500);
+for(let now=545;now<950;now+=45)assert.equal(newDifferent.feed(signal(52),now).matched,false);
+for(const now of [1000,1045,1090])newDifferent.feed(signal(57),now);
+assert.equal(newDifferent.done,true,'A different correct pitch progresses without a forced mute');
+const display=new ListeningDisplay();assert.equal(display.observe(signal(52),0).held,false);
+const held=display.observe({rms:0,frequency:null},500);assert.equal(held.held,true);assert.match(held.heard,/直前/,'A held label never claims a live observation');
+assert.equal(display.observe({rms:0,frequency:null},1200).held,false);
+assert.equal(display.observe(signal(64,{clarity:.2}),1300).state,'unclear','Uncertain pitch never becomes a confident display');
+display.accepted(52,1400);assert.match(display.observe(null,1500).accepted,/○.*OK/);assert.equal(display.observe(null,2100).accepted,'');
+display.reset();assert.equal(display.observe(null,2200).accepted,'');assert.equal(display.observe(null,2200).held,false);
+console.log(`Sanshin follow: 72 quiet/detuned pitch fixtures, ${pluckPhases} independent pluck phases, noise/dropout/onset guards, live range rebasing and honest held-pitch feedback PASS (${oldMisses} formerly missed noisy pitch frames)`);

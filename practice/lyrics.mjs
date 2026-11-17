@@ -1,7 +1,7 @@
-import { renderLyricReference } from './score-lyrics.mjs?v=44';
-import { CHORDS } from './chords.mjs?v=44';
-import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=44';
-import {packLyricRecord,migratePresetCopy} from './lyric-storage.mjs?v=44';
+import { renderLyricReference } from './score-lyrics.mjs?v=45';
+import { CHORDS } from './chords.mjs?v=45';
+import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=45';
+import {packLyricRecord,migratePresetCopy} from './lyric-storage.mjs?v=45';
 export const LYRIC_LIMIT=20000;
 export function readLyrics(text){
  if(typeof text!=='string'||text.length>LYRIC_LIMIT)throw new Error('歌詞は2万字までです。');
@@ -161,6 +161,7 @@ export function mountLyrics({defaults={},onImport,onDisplay=()=>{},prefix='',tim
    void migratePresetCopy(next,original,preset).then(record=>{if(record!==original&&key===next&&revision===own){apply(record);persist();}}).catch(()=>{});
   },
   position(time,label=timelineLabel){timelineLabel=label;currentTime=Math.max(0,Number(time)||0);render();},
+  followScore(){if(data.cues.length){follow=true;persist();render();}},
   hint(value){hint=value;render();},
   import(value){data={lines:readLyrics(value.text).lines,cues:normalizeCues(value.cues,readLyrics(value.text).lines.length)};follow=true;manual=selected=0;credit='この端末で入力した歌詞';$('lyric-input').value=value.text;persist();editor();},
   open(){ $('lyric-editor').open=true;$('lyric-editor').scrollIntoView({block:'center',behavior:'smooth'});}

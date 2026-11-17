@@ -1,6 +1,6 @@
 // Traditional/PD texts and CC BY-SA 4.0 Tinsagu adaptation; see songs/lyrics-provenance.json.
-import {additionalMinyoLyrics} from './minyo-lyrics.mjs?v=44';
-import {FOLK_LYRICS} from './folk-lyrics.mjs?v=44';
+import {additionalMinyoLyrics} from './minyo-lyrics.mjs?v=45';
+import {FOLK_LYRICS} from './folk-lyrics.mjs?v=45';
 export const LYRIC_PRESETS={
  'song:tsukinu':{
   text:'月ぬ美しゃ 十日三日\n女童美しゃ 十七つ\nホーイ チョーガ',

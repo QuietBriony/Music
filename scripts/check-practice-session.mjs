@@ -1,4 +1,5 @@
 import {lyricManualLine} from '../practice/lyrics.mjs';
+import {scoreSungLines,adjacentSungLine} from '../practice/full-score-support.mjs';
 import {packLyricRecord,migratePresetCopy} from '../practice/lyric-storage.mjs';
 import {createHash} from 'node:crypto';
 import {lyricPhraseRange} from '../practice/score-lyrics.mjs';
@@ -97,7 +98,7 @@ await assert.rejects(()=>readLyricFile({size:80001,text:async()=>{throw new Erro
 await assert.rejects(()=>readLyricFile({size:20001,text:async()=> 'x'.repeat(20001)}),/2万字/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\0binary'}),/UTF-8/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\uFFFD'}),/UTF-8/);
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=44','songs/learning-provenance.json','progress.mjs?v=44','songs/tokiyo-study.json','session.css?v=44','lyrics.mjs?v=44','lyric-presets.mjs?v=44','songs/lyrics-provenance.json','polyphonic.mjs?v=44'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=45','songs/learning-provenance.json','progress.mjs?v=45','songs/tokiyo-study.json','session.css?v=45','lyrics.mjs?v=45','lyric-presets.mjs?v=45','songs/lyrics-provenance.json','polyphonic.mjs?v=45'])assert.ok(sw.includes(path),path);
 
 const ahaData=ahaMidi(),ahaModel=parseMidi(ahaData),ahaScore=scoreNotes(ahaModel,ahaModel.groups[0].id,'sanshin').notes,aha=LYRIC_PRESETS['song:aha'];
 assert.deepEqual(Buffer.from(ahaData),readFileSync('practice/songs/aha.mid'),'The generated elementary Aha score is reproducible');
@@ -172,4 +173,11 @@ assert.ok(ahaRights.rights_basis.notation_basis.endsWith('/about-kunkunshi-2021/
 assert.equal(lyricRights.texts.find(t=>t.id==='tancha').refrain_source,'https://www.ryukyumura.co.jp/official/oki100/vol5/');
 assert.ok(folkRights.decisions.every(d=>d.sources.every(s=>s.url&&s.use)),'Each cited source has an explicit use');
 assert.ok(!LYRIC_PRESETS['video:sanshin:akata'].credit.includes('文化庁'),'An unavailable source is not credited as an active reference');
-console.log('Practice session: lyric parsing, verified sung-line loops, compact preset storage/migration, private edits and PWA coverage PASS');
+const sung=scoreSungLines(ahaScore,ahaSheet);assert.equal(sung.length,4);
+assert.equal(adjacentSungLine(ahaScore,ahaSheet,0,1).line,0,'An introduction advances to the first sung line');
+assert.equal(adjacentSungLine(ahaScore,ahaSheet,sung[0].start,1).line,1);
+assert.equal(adjacentSungLine(ahaScore,ahaSheet,sung[1].end,-1).line,1,'Interlude navigation returns to the preceding sung line');
+assert.equal(adjacentSungLine(ahaScore,ahaSheet,sung[3].start,1),null);
+assert.equal(adjacentSungLine(ahaScore,{...ahaSheet,manualLine:2},0,-1).line,1);
+assert.deepEqual(scoreSungLines(ahaScore,{...ahaSheet,presetTiming:false}),[],'Personal timing is never assigned inferred score positions');
+console.log('Practice session: lyric parsing, verified sung-line loops, line navigation, compact preset storage/migration, private edits and PWA coverage PASS');

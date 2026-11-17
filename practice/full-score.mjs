@@ -1,5 +1,6 @@
-import { noteName } from './music.mjs?v=44';
-import { scoreLyricAnnotations,setScoreLyric,renderLyricReference,lyricPhraseRange } from './score-lyrics.mjs?v=44';
+import { noteName } from './music.mjs?v=45';
+import { scoreLyricAnnotations,setScoreLyric,renderLyricReference,lyricPhraseRange } from './score-lyrics.mjs?v=45';
+import {scoreSungLines,adjacentSungLine,ListeningDisplay} from './full-score-support.mjs?v=45';
 
 // Keep note indices separate from rests: selecting a cell must seek the actual
 // note, and must never count as a correct microphone answer.
@@ -18,9 +19,10 @@ export function practiceSheetEntries(notes,{instrument,chords}={}){
  entries.forEach((e,i)=>e.end=entries[i+1]?.index??notes.length);return entries;
 }
 
-export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic,onLoop=()=>{}}){
+export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic,onLoop=()=>{},onLine=()=>{},onLyricFollow=()=>{},onSoftInput=()=>{}}){
   const $=id=>document.getElementById(`full-score-${id}`),dialog=$('dialog');
   let state=null,renderedNotes=null,renderedIndex=null,renderedKind='',entries=[],sheet={},annotationNotes=null,annotationLines=null,annotationCues=null,annotationSyllables=null,referenceLines=null,referenceNotes=null;
+  const listening=new ListeningDisplay(),text=(el,value)=>{if(el.textContent!==value)el.textContent=value;};
   function focus(value){dialog.dataset.focus=String(!!value);$('focus').setAttribute('aria-pressed',String(!!value));$('focus').textContent=value?'設定':'譜面を広く';requestAnimationFrame(()=>{fit();reveal(true,false);});}
   $('focus').onclick=()=>focus(dialog.dataset.focus!=='true');
   $('size').onchange=()=>{dialog.dataset.size=$('size').value;fit();reveal(true,false);};
@@ -56,14 +58,30 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic,onLoop=()=>
   function phraseControls(){
     const range=phrase();
     for(const button of dialog.querySelectorAll('[data-score-phrase]')){
-      button.hidden=!range;button.disabled=!range;button.textContent=repeating(range)?'反復を終える':button.hasAttribute('data-score-phrase-inline')?'一行反復':'この行を反復';
+      button.hidden=!range;button.disabled=!range;text(button,repeating(range)?'反復を終える':'この行を反復');
       button.setAttribute('aria-pressed',String(repeating(range)));
       if(range)button.setAttribute('aria-label',`${range.line+1}行目「${range.text}」${repeating(range)?'の反復を終える':'を反復する'}`);
     }
+    const native=state?.instrument==='sanshin',lines=native?scoreSungLines(state.notes,sheet):[];
+    for(const [id,delta]of[['line-previous',-1],['line-next',1]]){
+      const next=native?adjacentSungLine(state.notes,sheet,state.index,delta):null;
+      $(id).hidden=!lines.length;$(id).disabled=!next;
+      $(id).setAttribute('aria-label',next?`${next.line+1}行目「${next.text}」から練習`:(delta>0?'次の行はありません':'前の行はありません'));
+      text($(id),delta>0&&next&&state.index<lines[0].start?'歌い出しへ':delta>0?'次の行':'前の行');
+    }
+    $('lyric-follow').hidden=!native||!lines.length||sheet.follow!==false;
+    $('lyric-actions').hidden=!lines.length;
+    const current=range||lines.find(r=>state.index>=r.start&&state.index<r.end),ahead=lines.find(r=>r.start>state?.index);
+    text($('phrase-state'),repeating(range)?`${range.line+1}行目を反復 · ${(state.rounds||0)+1}周目`:lines.length&&!current?ahead?(state.index<lines[0].start?'前奏 · 歌い出しを準備':'間奏 · 次の行へ'):'後奏':current?`${current.line+1} / ${sheet.lines.length}行 · ${sheet.follow===false?'手動表示':'譜面に連動'}`:'');
+    $('phrase-state').hidden=!$('phrase-state').textContent;
   }
   for(const button of dialog.querySelectorAll('[data-score-phrase]'))button.onclick=()=>{const range=phrase();if(range)onLoop(repeating(range)?null:range,state.index);};
+  for(const [id,delta]of[['line-previous',-1],['line-next',1]])$(id).onclick=()=>{if(!state)return;const range=adjacentSungLine(state.notes,sheet,state.index,delta);if(range)onLine(range,state.loop);};
+  $('lyric-follow').onclick=onLyricFollow;
+  $('soft-input').onclick=()=>{onSoftInput();$('soft-input').disabled=$('mic-boost').value==='16';};
+  $('mic-boost').addEventListener('change',()=>{$('soft-input').disabled=$('mic-boost').value==='16';});
   function update(next){
-    state=next;if(!dialog.open)return;
+    if(state?.mode!==next.mode)listening.reset();state=next;if(!dialog.open)return;
     const guitar=state.instrument==='guitar';dialog.dataset.instrument=guitar?'guitar':'sanshin';dialog.dataset.chords=String(!!state.chords);dialog.dataset.mode=state.mode;dialog.dataset.done=String(!!state.done);
     $('title').textContent=`${state.title} · ${guitar?state.chords?'コード譜と歌詞':'TABと歌詞':'工工四'}`;
     $('tuning').closest('label').hidden=guitar;$('reading').textContent=guitar?(state.chords?'コードを左から右へ。枠を押すと、そのコードから練習できます。':'TABは左から右へ。数字はフレット、0は開放弦です。枠を押すと、その音から練習できます。'):'各段の右上から下へ、次は左の列。色の枠が今の音です。枠を押すと、その音から練習できます。';
@@ -109,7 +127,8 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic,onLoop=()=>
     $('guide').textContent=state.mode==='demo'?'■ ガイドを止める':'♪ ガイドで進む';
     $('stop').disabled=state.mode==='idle';
     $('mic').disabled=state.mode==='pending'||state.mode==='mic';$('mic').textContent=state.mode==='mic'?'マイクで聴いています':'マイクで進む';
-    if(state.mode!=='mic'){$('level').querySelector('span').style.width='0%';$('level').setAttribute('aria-valuenow','0');$('heard').textContent=state.mode==='pending'?'マイクを準備中':state.done?'演奏を確認しました · マイク停止':'マイクは押したときだけ始まります';}
+    if(state.mode!=='mic'){$('level').querySelector('span').style.width='0%';$('level').setAttribute('aria-valuenow','0');$('heard').textContent=state.mode==='pending'?'マイクを準備中':state.done?'演奏を確認しました · マイク停止':'マイクは押したときだけ始まります';$('accepted').textContent='';dialog.dataset.listening=state.done?'matched':'idle';}
+    $('soft-input').hidden=guitar;$('soft-input').disabled=$('mic-boost').value==='16';
     $('status').textContent=state.mode==='pending'?'マイクを準備しています。':state.mode==='demo'?'ガイドに合わせて音と歌詞が進みます。':state.mode==='mic'?'正しい音を弾くと、演奏位置が自動で見えるように進みます。':'ガイドかマイクで始めると、演奏位置が自動で見えるように進みます。';
     $('range').textContent=state.start===0&&state.end===state.notes.length?'全体を練習':`${state.start+1}〜${state.end}音の反復中（全体はすべて表示）`;
     $('all').hidden=state.start===0&&state.end===state.notes.length;
@@ -127,5 +146,12 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic,onLoop=()=>
   $('tuning').onchange=()=>onTuning(Number($('tuning').value));
   $('close').onclick=()=>dialog.close();
   dialog.addEventListener('close',onStop);
-  return{update,reading(detection){if(!dialog.open)return;const level=Math.max(0,Math.min(100,Math.round((detection.rms||0)*700)));$('level').querySelector('span').style.width=level+'%';$('level').setAttribute('aria-valuenow',String(level));const text=detection.name?`聴こえたコード ${detection.name}`:detection.frequency?`聴こえた音 ${noteName(Math.round(69+12*Math.log2(detection.frequency/440)))}`:'音を聴いています';if($('heard').textContent!==text)$('heard').textContent=text;},lyrics(display){sheet=display.sheet;annotate();phraseControls();$('lyrics').hidden=!display.hasLyrics;for(const field of ['status','current','next']){const el=$(`lyric-${field}`);if(el.textContent!==display[field])el.textContent=display[field]||'';el.hidden=!el.textContent;}$('reference').hidden=!sheet.notes?.some(n=>n.reading||n.meaning);if(referenceLines!==sheet.lines||referenceNotes!==sheet.notes){renderLyricReference($('reference-lines'),sheet.lines||[],sheet.notes);referenceLines=sheet.lines;referenceNotes=sheet.notes;}},open(){dialog.showModal();focus(state?.instrument==='sanshin');renderedNotes=null;$('sheet').scrollTop=0;update(state);reveal(true,false);},close(){if(dialog.open)dialog.close();}};
+  function showReading(detection,now=performance.now()){
+    if(!dialog.open)return;
+    const result=listening.observe(detection,now,{gate:state?.gate});
+    $('level').querySelector('span').style.width=result.level+'%';$('level').setAttribute('aria-valuenow',String(result.level));
+    text($('heard'),state?.instrument==='sanshin'?result.heard:detection.name?`聴こえたコード ${detection.name}`:detection.frequency?`聴こえた音 ${noteName(Math.round(69+12*Math.log2(detection.frequency/440)))}`:'音を聴いています');
+    text($('accepted'),result.accepted);dialog.dataset.listening=result.state;
+  }
+  return{update,reading:showReading,accepted(midi,now){if(state?.instrument!=='sanshin')return;listening.accepted(midi,now);if(dialog.open){text($('accepted'),`○ ${noteName(midi)} OK`);dialog.dataset.listening='matched';}},resetListening(){listening.reset();if(dialog.open){$('accepted').textContent='';dialog.dataset.listening='waiting';}},lyrics(display){sheet=display.sheet;annotate();phraseControls();$('lyrics').hidden=!display.hasLyrics;for(const field of ['status','current','next','reading']){const el=$(`lyric-${field}`);text(el,display[field]||'');el.hidden=!el.textContent;}$('reference').hidden=!sheet.notes?.some(n=>n.reading||n.meaning);if(referenceLines!==sheet.lines||referenceNotes!==sheet.notes){renderLyricReference($('reference-lines'),sheet.lines||[],sheet.notes);referenceLines=sheet.lines;referenceNotes=sheet.notes;}},open(){dialog.showModal();focus(state?.instrument==='sanshin');renderedNotes=null;$('sheet').scrollTop=0;update(state);reveal(true,false);},close(){if(dialog.open)dialog.close();}};
 }
