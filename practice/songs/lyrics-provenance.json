@@ -1,5 +1,5 @@
 {
-  "scope": "Traditional Tinsagu and Tsukinu verses1–3, plus existing public-domain English stanzas. No Asatoya lyric, modern song lyric, source image or third-party modern translation is bundled.",
+  "scope": "Traditional Tinsagu/Tsukinu verses1–3, traditional Aha first stanza and Akata/Tancha first-stanza reading companions; existing PD English stanzas. Per-song owner authorization and source boundaries below. No Asatoya or modern song lyrics.",
   "authorization": {
     "date": "2026-11-17",
     "timezone": "Asia/Tokyo",
@@ -41,6 +41,39 @@
         "date": "2026-11-17",
         "quote": "main の docs/autonomy/BL-053-minyo-handoff.md を読んで、そのとおりに v42 を進めてください。",
         "scope": "The owner adopted the brief, including rights condition6 listing the existing English lyric presets as exceptions. Existing stanza only; no extension and no Japanese translation."
+      },
+      {
+        "id": "aha",
+        "title": "安波節",
+        "date": "2026-11-17",
+        "timezone": "Asia/Tokyo",
+        "exact_time": "not supplied",
+        "question": "次候補の「安波節・赤田首里殿内・谷茶前節」に、出典と節を確認できた伝承歌詞（まず1番と伝承の囃子）を収録してよいですか？",
+        "quote": "3曲の伝承歌詞も収録してOK",
+        "scope": "Only the sourced traditional first stanza and verified traditional refrain. Aha has native score alignment; Akata/Tancha have manual reading companions with teacher videos. No permission is inferred for recordings, score images, modern lyrics, third-party translations or modern arrangements.",
+        "used": true
+      },
+      {
+        "id": "akata",
+        "title": "赤田首里殿内",
+        "date": "2026-11-17",
+        "timezone": "Asia/Tokyo",
+        "exact_time": "not supplied",
+        "question": "次候補の「安波節・赤田首里殿内・谷茶前節」に、出典と節を確認できた伝承歌詞（まず1番と伝承の囃子）を収録してよいですか？",
+        "quote": "3曲の伝承歌詞も収録してOK",
+        "scope": "Only the sourced traditional first stanza and verified traditional refrain. Aha has native score alignment; Akata/Tancha have manual reading companions with teacher videos. No permission is inferred for recordings, score images, modern lyrics, third-party translations or modern arrangements.",
+        "used": true
+      },
+      {
+        "id": "tancha",
+        "title": "谷茶前節",
+        "date": "2026-11-17",
+        "timezone": "Asia/Tokyo",
+        "exact_time": "not supplied",
+        "question": "次候補の「安波節・赤田首里殿内・谷茶前節」に、出典と節を確認できた伝承歌詞（まず1番と伝承の囃子）を収録してよいですか？",
+        "quote": "3曲の伝承歌詞も収録してOK",
+        "scope": "Only the sourced traditional first stanza and verified traditional refrain. Aha has native score alignment; Akata/Tancha have manual reading companions with teacher videos. No permission is inferred for recordings, score images, modern lyrics, third-party translations or modern arrangements.",
+        "used": true
       }
     ],
     "previous_recorded_summary": "Owner requested integrated lyrics on 2026-10-29 and beginner-friendly sanshin lyrics with a parallel Japanese meaning mode in this conversation on 2026-10-30. Owner requested the same lyric-bearing kunkunshi experience for all sanshin songs on 2026-11-15; traditional Tsukinu first verse is included within that request."
@@ -106,6 +139,58 @@
         "https://ameblo.jp/irei-blog/entry-12356649318.html",
         "https://toyosanshin.hatenablog.com/entry/2021/04/03/125128"
       ]
+    },
+    {
+      "id": "aha",
+      "author": "Traditional Okinawan folk song; Music Stack original readings and explanations",
+      "source": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
+      "checked": "2026-11-17",
+      "license": "Public-domain traditional text; new Music Stack explanations and Aha alignment CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "comparison_source": [
+        "https://u-ryukyu.repo.nii.ac.jp/record/2007799/files/No43p229.pdf",
+        "https://mabui.jp/ahabushi/",
+        "https://ameblo.jp/irei-blog/entry-12341377812.html"
+      ],
+      "translation": "New plain-language explanations by Music Stack; no source translation copied.",
+      "verses": [
+        1
+      ],
+      "changes": "Aha first-stanza note/phrase alignment on the new elementary study. Teacher inflections, original timing and ornaments omitted."
+    },
+    {
+      "id": "akata",
+      "author": "Traditional Okinawan folk song; Music Stack original readings and explanations",
+      "source": "https://www.ryukyumura.co.jp/official/oki100/vol1/",
+      "checked": "2026-11-17",
+      "license": "Public-domain traditional text; new Music Stack explanations and Aha alignment CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "comparison_source": [
+        "https://www.kodomogeijutsu.go.jp/junkai/dl/covid/r04/f80.pdf",
+        "https://toyosanshin.hatenablog.com/entry/2021/03/14/121801"
+      ],
+      "translation": "New plain-language explanations by Music Stack; no source translation copied.",
+      "verses": [
+        1
+      ],
+      "changes": "First stanza and verified refrain as a manual reading companion. No automatic video-time cues or note-by-note score inferred. Private text and cue data take precedence."
+    },
+    {
+      "id": "tancha",
+      "author": "Traditional Okinawan folk song; Music Stack original readings and explanations",
+      "source": "https://www.nt-okinawa.or.jp/images/lyrics/2026.4/20260404-lyrics.pdf",
+      "checked": "2026-11-17",
+      "license": "Public-domain traditional text; new Music Stack explanations and Aha alignment CC0-1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "comparison_source": [
+        "https://www.ryukyumura.co.jp/official/oki100/vol5/",
+        "https://ameblo.jp/irei-blog/entry-12347911679.html"
+      ],
+      "translation": "New plain-language explanations by Music Stack; no source translation copied.",
+      "verses": [
+        1
+      ],
+      "changes": "First stanza and verified refrain as a manual reading companion. No automatic video-time cues or note-by-note score inferred. Private text and cue data take precedence."
     }
   ],
   "decisions_source": "songs/minyo-v42-research.json"

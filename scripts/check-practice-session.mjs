@@ -1,3 +1,6 @@
+import {lyricManualLine} from '../practice/lyrics.mjs';
+import {lyricPhraseRange} from '../practice/score-lyrics.mjs';
+import {ahaMidi,AHA_CYCLE} from './build-practice-aha.mjs';
 import assert from 'node:assert/strict';
 import { scoreLyricAnnotations } from '../practice/score-lyrics.mjs';
 import { readFileSync } from 'node:fs';
@@ -45,7 +48,7 @@ assert.deepEqual(storedSelection,{'song:tinsagu':3,'song:tsukinu':2});
 assert.deepEqual(readMinyoVerses({getItem(){throw Error('blocked');}}),{});
 assert.deepEqual(readMinyoVerses({getItem:()=>'{bad'}),{});
 const lyricRights=JSON.parse(readFileSync('practice/songs/lyrics-provenance.json','utf8')),minyoResearch=JSON.parse(readFileSync('practice/songs/minyo-v42-research.json','utf8'));
-assert.deepEqual(lyricRights.authorization.by_song.map(s=>s.id),['asatoya','tinsagu','tsukinu','amazing-grace','twinkle']);
+assert.deepEqual(lyricRights.authorization.by_song.map(s=>s.id),['asatoya','tinsagu','tsukinu','amazing-grace','twinkle','aha','akata','tancha']);
 assert.ok(lyricRights.authorization.by_song.every(s=>s.date==='2026-11-17'&&s.quote));
 assert.equal(minyoResearch.decisions.find(s=>s.song==='asatoya').adopted,false);
 assert.equal(minyoResearch.candidates_research_only.length,3,'Research candidates do not become runtime songs');
@@ -91,5 +94,28 @@ await assert.rejects(()=>readLyricFile({size:80001,text:async()=>{throw new Erro
 await assert.rejects(()=>readLyricFile({size:20001,text:async()=> 'x'.repeat(20001)}),/2万字/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\0binary'}),/UTF-8/);
 await assert.rejects(()=>readLyricFile({size:5,text:async()=> '\uFFFD'}),/UTF-8/);
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=42','songs/learning-provenance.json','progress.mjs?v=42','songs/tokiyo-study.json','session.css?v=42','lyrics.mjs?v=42','lyric-presets.mjs?v=42','songs/lyrics-provenance.json','polyphonic.mjs?v=42'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['lyric-notes.mjs?v=43','songs/learning-provenance.json','progress.mjs?v=43','songs/tokiyo-study.json','session.css?v=43','lyrics.mjs?v=43','lyric-presets.mjs?v=43','songs/lyrics-provenance.json','polyphonic.mjs?v=43'])assert.ok(sw.includes(path),path);
+
+const ahaData=ahaMidi(),ahaModel=parseMidi(ahaData),ahaScore=scoreNotes(ahaModel,ahaModel.groups[0].id,'sanshin').notes,aha=LYRIC_PRESETS['song:aha'];
+assert.deepEqual(Buffer.from(ahaData),readFileSync('practice/songs/aha.mid'),'The generated elementary Aha score is reproducible');
+assert.equal(AHA_CYCLE.length,53);assert.equal(ahaScore.length,92);assert.equal(ahaModel.endBeat,107);
+const ahaSheet={...aha,lines:readLyrics(aha.text).lines,follow:true},ahaInline=scoreLyricAnnotations(ahaScore,ahaSheet);
+assert.equal(ahaInline.filter(s=>s.text).length,30);
+for(const fragment of aha.syllables){const i=ahaScore.findIndex(n=>n.beat===fragment.beat);assert.ok(i>=0,'Aha phonetics belong to a sounding cell');assert.equal(ahaInline[i].text,fragment.text);assert.equal(lyricAt(normalizeCues(aha.cues,4),ahaScore[i].time),fragment.line);}
+for(let i=0;i<4;i++)assert.equal(aha.syllables.filter(s=>s.line===i).map(s=>s.text).join(''),aha.notes[i].reading.replaceAll(' ',''));
+for(const beat of [0,8,28,61,81,105]){
+ const i=ahaScore.findIndex(n=>n.beat===beat),range=lyricPhraseRange(ahaScore,ahaSheet,i);
+ assert.ok(range&&range.end>range.start);assert.ok(ahaScore[range.start].time+.001>=aha.cues[range.line].time);
+ assert.equal(lyricAt(normalizeCues(aha.cues,4),ahaScore[range.start].time),range.line);
+ assert.ok(ahaScore[range.end-1].time<([28,61,81,96][range.line])*60/85);
+}
+assert.equal(lyricPhraseRange(ahaScore,{...ahaSheet,follow:false},10),null,'Private manual mode cannot acquire a guessed practice loop');
+assert.equal(lyricPhraseRange(ahaScore,{lines:['No times'],cues:[]},0),null);
+assert.equal(lyricPhraseRange([],{lines:['Empty score'],cues:[{line:0,time:0}]},0),null);
+const unsorted=lyricPhraseRange(ahaScore,{...ahaSheet,cues:[...aha.cues].reverse()},0);assert.equal(unsorted.line,0,'Cue order is normalized without mutating personal data');
+for(const id of ['akata','tancha']){const p=LYRIC_PRESETS[`video:sanshin:${id}`];assert.ok(p.text&&p.notes.every(n=>n.reading&&n.meaning));assert.deepEqual(p.cues,[],'Unverified teacher-video timing is never fabricated');assert.equal(Object.hasOwn(LYRIC_PRESETS,`song:${id}`),false,'No unverified native score route is advertised');}
+for(const bad of [undefined,-1,4,'2',NaN,Infinity,null])assert.equal(lyricManualLine(bad,4),0);assert.equal(lyricManualLine(2,4),2);assert.equal(lyricManualLine(0,0),0);
+assert.equal(minyoVerse('song:aha',1),null,'A single-stanza song does not expose the other songs verse selector');
+assert.equal(JSON.parse(readFileSync('practice/songs/folk-v43-provenance.json','utf8')).authorization.answer,'3曲の伝承歌詞も収録してOK');
+
 console.log('Practice session: LRC, repeated timestamps, lyrics bounds, chord-sheet adapter, timing, safe local text and PWA coverage PASS');

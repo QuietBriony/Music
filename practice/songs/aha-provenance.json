@@ -1,0 +1,35 @@
+{
+  "title": "安波節（1番・本調子の基礎練習）",
+  "checked": "2026-11-17",
+  "author": "Traditional; newly entered elementary study by Music Stack",
+  "source": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "scope": "Traditional first stanza, two matching upper/lower-phrase cycles. Honchoshi C–F–C; one cell per beat, omitted small ornaments and vocal Hari inflections, two-beat final note. A new practice rendering, not a recording transcription.",
+  "rights_basis": {
+    "source": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
+    "fact": "The performing teacher identifies the song as handed down in Aha, Kunigami and used for celebrations. A 1993 Ryukyu University teaching paper p265 independently shows the same basic traditional contour and explains its beginner suitability."
+  },
+  "comparison_sources": [
+    {
+      "url": "https://u-ryukyu.repo.nii.ac.jp/record/2007799/files/No43p229.pdf",
+      "page": 265,
+      "sha256": "a9c7a28f0e0b6b119443c77fe5fd8ac1bb2e0725df7c1a49aa25ad73c5e03973"
+    },
+    {
+      "url": "https://mabui.jp/wp-content/uploads/2022/06/ahabushi-musical-score.pdf",
+      "sha256": "59e50cd79c4ca605e122d43fc1439b4da416030feefe71920d6f93ae11dee912"
+    },
+    {
+      "url": "https://ameblo.jp/irei-blog/entry-12341377812.html",
+      "use": "Basic contour comparison; modern vocal inflections, layout and translation excluded."
+    }
+  ],
+  "changes": "New symbolic entry of common large-note contour. Omit small intra-cell notes; repeat the basic cycle for the lower couplet as indicated by the traditional lower-couplet instruction. Align first words to the preceding sounding cell at beats8/61 rather than a vocal onset on rest9/62. New original readings, easy meanings and vocabulary. Equal beats do not reproduce a teacher performance.",
+  "lyrics": "Traditional first stanza only, separately attributed preset song:aha. Readings are an example; regional variations exist. No modern translation copied.",
+  "generator": "scripts/build-practice-aha.mjs",
+  "authorization_record": "lyrics-provenance.json",
+  "sha256": "5352d647cbc784d3c0c5da36fb3e2d60cc59ca2852435b64e1382aff7be204af",
+  "notes": 92,
+  "beats": 107
+}

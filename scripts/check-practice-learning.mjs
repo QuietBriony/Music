@@ -86,7 +86,7 @@ for(const instrument of ['guitar','sanshin'])for(const n of tuningStrings(instru
   assert.equal(tunerReading(detect(1200),n.midi).status,'check');
   assert.equal(tunerReading({...detect(0),rms:0},n.midi).status,'waiting');
 }
-assert.deepEqual(Object.values(STUDIES).flat().map(s=>s.id),['tokiyo','santeria','blackbird','jigsaw','sleep-last-night','woman','could-you-be-loved','imagine','your-song','yes-my-love','under-the-bridge','shimauta','jidai','warabigami','nadasoso','sanshinnohana','tinsagu','tsukinu','anata-ni','asatoya']);
+assert.deepEqual(Object.values(STUDIES).flat().map(s=>s.id),['tokiyo','santeria','blackbird','jigsaw','sleep-last-night','woman','could-you-be-loved','imagine','your-song','yes-my-love','under-the-bridge','shimauta','jidai','warabigami','nadasoso','sanshinnohana','tinsagu','tsukinu','anata-ni','asatoya','aha','akata','tancha']);
 for(const [instrument,studies] of Object.entries(STUDIES)){
   assert.ok(BASICS[instrument].steps.length>=5);
   for(const study of studies){
@@ -98,11 +98,11 @@ for(const [instrument,studies] of Object.entries(STUDIES)){
 assert.deepEqual(SANSHIN_PLAYLIST,JSON.parse(readFileSync('practice/songs/sanshin-playlist.json','utf8')),'Offline UI metadata matches the inspectable playlist source');
 assert.deepEqual(SANSHIN_PLAYLIST.tracks.map(t=>t.appleId),['1481952783','896534388','1467728468','1838687755','1838717174','279394371','724943335','594418333'],'Original seven recordings retain their order; owner-requested addition is appended');
 for(const t of SANSHIN_PLAYLIST.tracks){assert.equal(new URL(t.appleUrl).searchParams.get('i'),t.appleId);assert.equal(SANSHIN_VIDEOS[t.id].video,t.video);assert.ok(t.sheets.length&&t.focus&&t.note);}
-assert.deepEqual(SANSHIN_PLAYLIST.basicTracks.map(t=>t.id),['asatoya']);
+assert.deepEqual(SANSHIN_PLAYLIST.basicTracks.map(t=>t.id),['asatoya','aha','akata','tancha']);
 assert.equal(SANSHIN_VIDEOS.asatoya.video,'wMFlMLMG1c0');
 assert.ok(!SANSHIN_PLAYLIST.basicTracks[0].appleUrl,'An added lesson is not presented as an Apple Music playlist recording');
 assert.equal(new URL(SANSHIN_VIDEOS.asatoya.sheets[0].url).hostname,'miyazatohidekatsu.com');
-assert.deepEqual(SANSHIN_LYRIC_SCORES,['tinsagu','tsukinu']);
+assert.deepEqual(SANSHIN_LYRIC_SCORES,['tinsagu','tsukinu','aha']);
 for(const t of [...SANSHIN_PLAYLIST.tracks,...SANSHIN_PLAYLIST.basicTracks]){
  const route=sanshinLyricRoute(t.id);
  if(SANSHIN_LYRIC_SCORES.includes(t.id)){assert.equal(route.kind,'score');assert.match(songSupport('sanshin',t.id).badge,/内蔵/);}
@@ -191,8 +191,8 @@ const loopMark=addLessonMark([],530,535).marks;
 assert.deepEqual(sanshinSession({marks:loopMark,rate:.75,repeatSeconds:5},jidaiWindow).marks,loopMark);
 assert.equal(sanshinSession({a:500,b:499,loop:true},jidaiWindow).loop,false);
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=42','sanshin-view.mjs?v=42','sanshin-guide.mjs?v=42','sanshin.css?v=42','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
-console.log('Practice learning: tuning, twenty studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=43','sanshin-view.mjs?v=43','sanshin-guide.mjs?v=43','sanshin.css?v=43','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+console.log('Practice learning: tuning, twenty-three studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
 
 const guitarCourseNotes=scoreNotes(chordExercise(['C','Am']),'chords','guitar',{chords:true}).notes;
 const cards=practiceSheetEntries(guitarCourseNotes,{instrument:'guitar',chords:true});assert.equal(cards.length,2);assert.equal(cards[0].index,0);assert.equal(cards[0].end,cards[1].index);assert.equal(cards[1].end,guitarCourseNotes.length);

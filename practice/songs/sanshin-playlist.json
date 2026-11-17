@@ -184,6 +184,70 @@
       "focus": "全画面の工工四で、まず前奏から。マイクで正しい音を弾くと次へ進みます。短い音でも少しずつ確かめ、同じ音は弾き直しましょう。",
       "note": "アプリ内は前奏＋1節・92音の等拍の基礎練習版。本調子の高さを選んで使えます。歌詞・飾り音・本来の歌の間は先生の動画とPDFで確認してください。動画の自動同期ではなく、自分の音で譜面が進みます。",
       "native": true
+    },
+    {
+      "id": "aha",
+      "title": "安波節",
+      "artist": "沖縄民謡 · 次の基礎練習",
+      "video": "GOO7yXvEEUY",
+      "source": "https://miyazatohidekatsu.com/sanshin/",
+      "credit": "宮里英克沖縄三線教室",
+      "sheets": [
+        {
+          "label": "工工四付き動画の掲載ページ",
+          "url": "https://miyazatohidekatsu.com/sanshin/"
+        },
+        {
+          "label": "伝承本文の出典",
+          "url": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/"
+        }
+      ],
+      "focus": "次の1曲におすすめ。本調子の1番を、歌詞付き工工四で一行ずつ練習。慣れたら全体を通しましょう。",
+      "note": "アプリ内の1番は等拍の本調子・基礎練習。先生の工工四や演奏とは節回し・譜割りが異なります。",
+      "native": true
+    },
+    {
+      "id": "akata",
+      "title": "赤田首里殿内",
+      "artist": "沖縄民謡 · 次の基礎練習",
+      "video": "qB0Ggzu2X18",
+      "source": "https://miyazatohidekatsu.com/sanshin/",
+      "credit": "宮里英克沖縄三線教室",
+      "sheets": [
+        {
+          "label": "工工四付き動画の掲載ページ",
+          "url": "https://miyazatohidekatsu.com/sanshin/"
+        },
+        {
+          "label": "伝承本文の出典",
+          "url": "https://www.ryukyumura.co.jp/official/oki100/vol1/"
+        }
+      ],
+      "focus": "反復の多い手遊び歌。先生の工工四動画を短く区切り、アプリの読み方・意味も参考に歌ってみましょう。",
+      "note": "工工四と自動の進行は先生の動画内で確認します。アプリには伝承の1番と囃子の読み方・意味を収録。この歌詞欄は手動送りで、内蔵音符判定や動画への自動同期は未設定です。",
+      "native": false
+    },
+    {
+      "id": "tancha",
+      "title": "谷茶前節",
+      "artist": "沖縄民謡 · 次の基礎練習",
+      "video": "KxlQFMX3yEw",
+      "source": "https://miyazatohidekatsu.com/sanshin/",
+      "credit": "宮里英克沖縄三線教室",
+      "sheets": [
+        {
+          "label": "工工四付き動画の掲載ページ",
+          "url": "https://miyazatohidekatsu.com/sanshin/"
+        },
+        {
+          "label": "伝承本文の出典",
+          "url": "https://www.nt-okinawa.or.jp/images/lyrics/2026.4/20260404-lyrics.pdf"
+        }
+      ],
+      "focus": "少し慣れたら挑戦。まず先生のゆっくり再生と5〜10秒の反復で。歌詞の読み方も一行ずつ確認できます。",
+      "note": "工工四と自動の進行は先生の動画内で確認します。アプリには伝承の1番と囃子の読み方・意味を収録。この歌詞欄は手動送りで、内蔵音符判定や動画への自動同期は未設定です。",
+      "native": false
     }
-  ]
+  ],
+  "basic_checked": "2026-11-17"
 }

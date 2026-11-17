@@ -1,0 +1,52 @@
+{
+  "checked": "2026-11-17",
+  "base_commit": "a39ac10c7cf947ca262faa6e2e59377fa421b184",
+  "request": "磨き進めて　次候補とかも",
+  "authorization": {
+    "question": "次候補の「安波節・赤田首里殿内・谷茶前節」に、出典と節を確認できた伝承歌詞（まず1番と伝承の囃子）を収録してよいですか？",
+    "answer": "3曲の伝承歌詞も収録してOK",
+    "date": "2026-11-17",
+    "timezone": "Asia/Tokyo",
+    "exact_time": "not supplied"
+  },
+  "decisions": [
+    {
+      "id": "aha",
+      "title": "安波節",
+      "delivery": "Native equal-beat honchoshi first stanza, lyrics/readings/original meanings and microphone/guide/manual following",
+      "sources": [
+        "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
+        "https://u-ryukyu.repo.nii.ac.jp/record/2007799/files/No43p229.pdf",
+        "https://mabui.jp/ahabushi/",
+        "https://ameblo.jp/irei-blog/entry-12341377812.html"
+      ],
+      "beginner": "Slow traditional contour, no new tuning. Practice a sung line before the whole stanza.",
+      "excluded": "Small ornaments, vocal Hari fillers, teacher layout/translation/recording and later stanzas."
+    },
+    {
+      "id": "akata",
+      "title": "赤田首里殿内",
+      "delivery": "Teacher video score plus first-stanza/refrain reading companion; manual lyric-line navigation",
+      "sources": [
+        "https://www.ryukyumura.co.jp/official/oki100/vol1/",
+        "https://www.kodomogeijutsu.go.jp/junkai/dl/covid/r04/f80.pdf",
+        "https://toyosanshin.hatenablog.com/entry/2021/03/14/121801"
+      ],
+      "beginner": "Repetitive hand-play song. The teacher version may use a different tuning; confirm it before playing.",
+      "excluded": "Native note-by-note transcription and video time cues remain unverified. Do not infer honchoshi finger positions from the comparison score."
+    },
+    {
+      "id": "tancha",
+      "title": "谷茶前節",
+      "delivery": "Teacher video score plus first-stanza/refrain reading companion; manual lyric-line navigation",
+      "sources": [
+        "https://www.nt-okinawa.or.jp/images/lyrics/2026.4/20260404-lyrics.pdf",
+        "https://www.ryukyumura.co.jp/official/oki100/vol5/",
+        "https://ameblo.jp/irei-blog/entry-12347911679.html"
+      ],
+      "beginner": "After the slow songs; use the teacher slow-play and5/10second repeat.",
+      "excluded": "Native note-by-note transcription and exact lyric time cues remain unverified. Do not include the Ikei Hanari connection, later modern lyrics or source translation."
+    }
+  ],
+  "recordings_images": "Comparison only, none bundled. External music-research download data was not used. One v42 public comparison PDF host no longer resolves; alternative university and teacher sources are recorded."
+}

@@ -1,5 +1,5 @@
-import { noteName } from './music.mjs?v=42';
-import { scoreLyricAnnotations,setScoreLyric,renderLyricReference } from './score-lyrics.mjs?v=42';
+import { noteName } from './music.mjs?v=43';
+import { scoreLyricAnnotations,setScoreLyric,renderLyricReference,lyricPhraseRange } from './score-lyrics.mjs?v=43';
 
 // Keep note indices separate from rests: selecting a cell must seek the actual
 // note, and must never count as a correct microphone answer.
@@ -18,7 +18,7 @@ export function practiceSheetEntries(notes,{instrument,chords}={}){
  entries.forEach((e,i)=>e.end=entries[i+1]?.index??notes.length);return entries;
 }
 
-export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
+export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic,onLoop=()=>{}}){
   const $=id=>document.getElementById(`full-score-${id}`),dialog=$('dialog');
   let state=null,renderedNotes=null,renderedIndex=null,renderedKind='',entries=[],sheet={},annotationNotes=null,annotationLines=null,annotationCues=null,annotationSyllables=null,referenceLines=null,referenceNotes=null;
   function focus(value){dialog.dataset.focus=String(!!value);$('focus').setAttribute('aria-pressed',String(!!value));$('focus').textContent=value?'設定':'譜面を広く';requestAnimationFrame(()=>{fit();reveal(true,false);});}
@@ -30,7 +30,7 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
     if(annotationNotes===renderedNotes&&annotationLines===sheet.lines&&annotationCues===sheet.cues&&annotationSyllables===sheet.syllables)return;
     const annotations=scoreLyricAnnotations(renderedNotes,sheet);
     for(const cell of $('sheet').querySelectorAll('[data-index]')){const i=Number(cell.dataset.index),end=Number(cell.dataset.end)||i+1,parts=annotations.slice(i,end).filter(a=>a.text);setScoreLyric(cell,parts.length?{...parts[0],text:parts.map(a=>a.text).join(' / ')}:null);}
-    annotationNotes=renderedNotes;annotationLines=sheet.lines;annotationCues=sheet.cues;annotationSyllables=sheet.syllables;fit();
+    annotationNotes=renderedNotes;annotationLines=sheet.lines;annotationCues=sheet.cues;annotationSyllables=sheet.syllables;fit();phraseControls();
   }
   function reveal(force=false,smooth=true){
     if(!dialog.open||!state||(!force&&!$('follow').checked))return;
@@ -50,6 +50,17 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
     const size=Math.max(Math.ceil(minimum),Math.min(68,Math.floor(room/(rows*4))));viewport.style.setProperty('--sheet-cell-height',size+'px');
   }
   new ResizeObserver(()=>{fit();reveal(false,false);}).observe($('sheet'));
+  const phrase=()=>state?.instrument==='sanshin'?lyricPhraseRange(state.notes,sheet,state.index):null;
+  const repeating=range=>!!range&&state.loop===true&&state.start===range.start&&state.end===range.end;
+  function phraseControls(){
+    const range=phrase();
+    for(const button of dialog.querySelectorAll('[data-score-phrase]')){
+      button.hidden=!range;button.disabled=!range;button.textContent=repeating(range)?'反復を終える':'この行を反復';
+      button.setAttribute('aria-pressed',String(repeating(range)));
+      if(range)button.setAttribute('aria-label',`${range.line+1}行目「${range.text}」${repeating(range)?'の反復を終える':'を反復する'}`);
+    }
+  }
+  for(const button of dialog.querySelectorAll('[data-score-phrase]'))button.onclick=()=>{const range=phrase();if(range)onLoop(repeating(range)?null:range,state.index);};
   function update(next){
     state=next;if(!dialog.open)return;
     const guitar=state.instrument==='guitar';dialog.dataset.instrument=guitar?'guitar':'sanshin';dialog.dataset.chords=String(!!state.chords);dialog.dataset.mode=state.mode;dialog.dataset.done=String(!!state.done);
@@ -101,6 +112,7 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic}){
     $('status').textContent=state.mode==='pending'?'マイクを準備しています。':state.mode==='demo'?'ガイドに合わせて音と歌詞が進みます。':state.mode==='mic'?'正しい音を弾くと、演奏位置が自動で見えるように進みます。':'ガイドかマイクで始めると、演奏位置が自動で見えるように進みます。';
     $('range').textContent=state.start===0&&state.end===state.notes.length?'全体を練習':`${state.start+1}〜${state.end}音の反復中（全体はすべて表示）`;
     $('all').hidden=state.start===0&&state.end===state.notes.length;
+    phraseControls();
   }
   function navigate(delta){const playable=entries.filter(e=>!e.rest),active=playable.findIndex(e=>e.index<=state.index&&state.index<(e.end??e.index+1));onSeek(playable[Math.max(0,Math.min(playable.length-1,active+delta))].index);}
   $('previous').onclick=()=>navigate(-1);

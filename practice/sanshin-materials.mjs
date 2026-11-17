@@ -1,6 +1,9 @@
 // Positions are navigation aids, not a transcription of copyrighted melodies.
 // The publisher's player shows the score and lyrics in its own arrangement.
 export const SANSHIN_MATERIALS={
+ aha:{start:0,end:null,startLabel:'解説からレッスンを始める',tuning:'内蔵の基礎練習は本調子。動画と同じ高さで歌う場合は先生の説明と音を確かめてください。',scope:'先生の工工四・歌を参考にする教材です。アプリ内の等拍の1番とは歌の間や飾り音が異なります。',chapters:[[0,'解説からゆっくり']]},
+ akata:{start:0,end:null,startLabel:'解説からレッスンを始める',tuning:'三下げなど、教材で使う調弦を先生の説明で確認してください。本調子の指位置をそのまま当てはめないようにします。',scope:'工工四は先生の動画で進みます。アプリの伝承1番・囃子は「次の行」で読み、読み方・意味を参考にできます。',chapters:[[0,'調弦・解説から練習']]},
+ tancha:{start:0,end:null,startLabel:'解説からレッスンを始める',tuning:'本調子・二揚げ・三下げなど歌い方で変わる曲です。選んだ先生の調弦と高さを確認してください。',scope:'慣れてから、ゆっくり再生と短い反復で。工工四は動画内で進み、アプリの伝承1番・囃子の欄は手動送りです。',chapters:[[0,'調弦・解説から練習']]},
  asatoya:{start:0,end:null,startLabel:'最初からレッスンを始める',tuning:'本調子 · 先生の基準の高さに合わせます。C–F–CやB–E–Bなど、高さを変えても本調子の関係は同じです。',scope:'解説からゆっくり一緒に練習する教材です。前奏の短い部分を反復してから、歌を重ねましょう。',chapters:[[0,'調弦・弾き方から練習']]},
  shimauta:{start:870,end:1120,scope:'先生の通し演奏。原曲の全番を収録した譜面ではありません。',chapters:[[0,'解説・調弦'],[600,'高い音の工工四'],[870,'通し演奏']]},
  jidai:{start:518,end:629,scope:'先生の通し演奏（2番まで）。工工四・歌詞のページが演奏と一緒に進みます。',chapters:[[0,'解説・調弦'],[210,'前奏の工工四'],[518,'通し演奏'],[577,'2番'],[620,'後奏']]},
