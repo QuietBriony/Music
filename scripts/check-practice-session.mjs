@@ -151,6 +151,14 @@ assert.deepEqual((await migratePresetCopy('fixture',{...record,cues:ownCues},aft
 assert.equal((await migratePresetCopy('fixture',record,undefined,known)).preset,true,'A removed bundled item leaves no copied lyrics in the migrated record');
 assert.equal(resolveLyricTiming(beforePreset,ref,readLyrics(beforePreset.text)).follow,false,'A reference keeps explicit manual mode and uses current preset cues');
 assert.deepEqual(resolveLyricTiming(beforePreset,ref,readLyrics(beforePreset.text)).cues,beforePreset.cues);
+const twinklePreset=LYRIC_PRESETS['song:twinkle'],twinkleModel=parseMidi(readFileSync('practice/songs/twinkle.mid')),twinkleNotes=scoreNotes(twinkleModel,twinkleModel.groups[0].id,'sanshin').notes;
+for(const cue of twinklePreset.cues){
+ const index=twinkleNotes.findIndex(n=>n.time+.001>=cue.time),s={...twinklePreset,lines:readLyrics(twinklePreset.text).lines,presetTiming:true};
+ const range=lyricPhraseRange(twinkleNotes,s,index);assert.ok(range,'The existing Twinkle line loop remains available');assert.equal(range.line,cue.line);
+ assert.ok(twinkleNotes[range.end-1].time<twinklePreset.lineEnds[cue.line]);assert.ok((twinkleNotes[range.end-1].stepSeconds-twinkleNotes[range.end-1].duration)/.666667<=3.001);
+ assert.deepEqual(lyricPhraseRange(twinkleNotes,{...s,follow:false,manualLine:cue.line},0),range);
+ assert.equal(lyricPhraseRange(twinkleNotes,{...s,presetTiming:false},index),null,'Private Twinkle timing is not guessed');
+}
 for(const verse of [2,3]){
  const tin=LYRIC_PRESETS[`song:tinsagu:verse:${verse}`],moon=LYRIC_PRESETS[`song:tsukinu:verse:${verse}`];
  assert.equal(tin.scoreSource,LYRIC_PRESETS['song:tinsagu'].source,'Later verses retain the licensed notation source link');

@@ -16,7 +16,7 @@ export function scoreLyricAnnotations(notes,sheet={}){
 // Resolve a sung line against this score's own clock, independently of rests.
 // Personal manual lyrics never acquire a guessed practice range.
 export function lyricPhraseRange(notes,sheet={},index=0){
- if(!notes.length||sheet.presetTiming!==true||!sheet.syllables?.length)return null;
+ if(!notes.length||sheet.presetTiming!==true||!sheet.syllables?.length&&!sheet.lineEnds?.length)return null;
  const cues=(sheet.cues||[]).filter(c=>Number.isFinite(c.time)&&c.time>=0&&Number.isInteger(c.line)&&sheet.lines?.[c.line]).sort((a,b)=>a.time-b.time);
  if(!cues.length)return null;
  const time=notes[Math.max(0,Math.min(notes.length-1,index))]?.time;
@@ -24,8 +24,11 @@ export function lyricPhraseRange(notes,sheet={},index=0){
  let at=0;while(at+1<cues.length&&cues[at+1].time<=time+.001)at++;
  if(Number.isInteger(sheet.manualLine)){at=cues.findIndex(c=>c.line===sheet.manualLine);if(at<0)return null;}
  const cue=cues[at],start=notes.findIndex(n=>n.time+.001>=cue.time);
- const lastBeat=Math.max(...sheet.syllables.filter(s=>s.line===cue.line).map(s=>s.beat));
- const last=notes.findIndex(n=>Math.abs(n.beat-lastBeat)<.01),end=last+1;
+ const fragments=sheet.syllables?.filter(s=>s.line===cue.line)||[],lastBeat=Math.max(...fragments.map(s=>s.beat));
+ // Existing Twinkle has line timing but no per-syllable labels. Its explicit
+ // verified line ends preserve that exercise without inferring private timing.
+ const until=sheet.lineEnds?.[cue.line];
+ const last=fragments.length?notes.findIndex(n=>Math.abs(n.beat-lastBeat)<.01):Number.isFinite(until)?notes.reduce((found,n,i)=>n.time+.001>=cue.time&&n.time<until-.001?i:found,-1):-1,end=last+1;
  if(start<0||last<start)return null;
  // Automatic score following offers no sung-line loop during an instrumental gap.
  if(!Number.isInteger(sheet.manualLine)&&(time+.001<cue.time||index>last))return null;

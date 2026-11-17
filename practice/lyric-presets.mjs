@@ -45,6 +45,7 @@ export const LYRIC_PRESETS={
  'song:twinkle':{
   text:'Twinkle, twinkle, little star,\nHow I wonder what you are,\nUp above the world so high,\nLike a diamond in the sky.\nTwinkle, twinkle, little star,\nHow I wonder what you are.',
   cues:[0,8,16,24,32,40].map((beat,line)=>({time:beat*.666667,line})),
+  lineEnds:[8,16,24,32,40,48].map(beat=>beat*.666667),
   credit:'Jane Taylor, The Star, 1806 · 原詞はPublic Domain · 冒頭2行を反復',source:'https://poets.org/poem/star/print'
  }
 };
