@@ -1,6 +1,8 @@
-// Basic traditional melody, newly entered as an equal-beat beginner study.
-// Compare university No43 p265 and the independently published teacher sheets.
-// Small ornaments, vocal inflections and teacher layout are deliberately omitted.
+// Classical Aha Bushi:53 large-cell order and lyric placement entered from
+// mabui.jp/ahabushi/ (its base: Kawada1965), checked against Nomura-school
+// traditional contour in Ryukyu University1993 No43 p265. Retain large pitch
+// symbols/rests only; exclude author-specific ornaments, vocal marks and layout.
+// App layout, equal beats and rendering are new; see songs/aha-provenance.json.
 import {readFileSync,writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {encodeMidi} from './build-practice-songs.mjs';

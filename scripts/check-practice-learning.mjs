@@ -191,7 +191,7 @@ const loopMark=addLessonMark([],530,535).marks;
 assert.deepEqual(sanshinSession({marks:loopMark,rate:.75,repeatSeconds:5},jidaiWindow).marks,loopMark);
 assert.equal(sanshinSession({a:500,b:499,loop:true},jidaiWindow).loop,false);
 for(const id of Object.keys(SANSHIN_VIDEOS))assert.ok(STUDIES.sanshin.find(s=>s.id===id)?.video.endsWith(SANSHIN_VIDEOS[id].video));
-const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=43','sanshin-view.mjs?v=43','sanshin-guide.mjs?v=43','sanshin.css?v=43','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
+const sw=readFileSync('practice/sw.js','utf8');for(const path of ['sanshin-core.mjs?v=44','sanshin-view.mjs?v=44','sanshin-guide.mjs?v=44','sanshin.css?v=44','songs/sanshin-provenance.json','songs/tinsagu.mid'])assert.ok(sw.includes(path),path);
 console.log('Practice learning: tuning, twenty-three studies, three easy stages, 14 sanshin finger positions, licensed/reproducible 63-note Tinsagu with rest/transposition, video references and PWA PASS');
 
 const guitarCourseNotes=scoreNotes(chordExercise(['C','Am']),'chords','guitar',{chords:true}).notes;

@@ -1,16 +1,22 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=43';
-import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=43';
-import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=43';
-import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=43';
-import { lessonPlayer } from './youtube.mjs?v=43';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=44';
+import { SANSHIN_PLAYLIST } from './sanshin-playlist.mjs?v=44';
+import { SANSHIN_POSITIONS, sanshinPosition, positionTip } from './sanshin-core.mjs?v=44';
+import { neckDiagram,handDiagram } from './sanshin-view.mjs?v=44';
+import { lessonPlayer } from './youtube.mjs?v=44';
 export const SANSHIN_VIDEOS = Object.fromEntries([...SANSHIN_PLAYLIST.tracks,...SANSHIN_PLAYLIST.basicTracks].map(t=>[t.id,t]));
-import { SANSHIN_MATERIALS,ANATA_PERFORMANCE,ANATA_LESSON,sanshinMaterialChoice,sanshinSessionKey,sanshinLyricKey,lessonChapter } from './sanshin-materials.mjs?v=43';
-import { lessonWindow,lessonRange,performanceProgress,sanshinSession,addLessonMark } from './sanshin-session.mjs?v=43';
+import { SANSHIN_MATERIALS,ANATA_PERFORMANCE,ANATA_LESSON,sanshinMaterialChoice,sanshinSessionKey,sanshinLyricKey,lessonChapter } from './sanshin-materials.mjs?v=44';
+import { lessonWindow,lessonRange,performanceProgress,sanshinSession,addLessonMark } from './sanshin-session.mjs?v=44';
 const preferenceKey='music-practice-sanshin-material-anata-v1';
 const timeLabel=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 export function mountSanshinGuide({onTakeOver}) {
   const $=id=>document.getElementById(`sanshin-${id}`),dialog=$('dialog');
-  const lyrics=mountVideoLyrics($('lyrics-host'),'sanshin-video-lyrics',{getVideoTime:currentTime});
+  const lyrics=mountVideoLyrics($('lyrics-host'),'sanshin-video-lyrics',{getVideoTime:currentTime,onDisplay:display=>{
+    $('lyric-nav').hidden=!display.hasLyrics||display.sheet.follow;
+    $('lyric-nav-status').textContent=display.status;
+    for(const [id,source]of[['lyric-prev','session-lyric-prev'],['lyric-next','session-lyric-forward']]){
+      const original=document.getElementById(`sanshin-video-lyrics-${source}`);$(id).disabled=original.disabled;$(id).onclick=()=>original.click();
+    }
+  }});
   let song=null,variant='original',player=null,ready=false,ticket=0,timer=null,position=0,a=0,b=0,loop=false,shown='合',rate=1,repeatSeconds=10,marks=[];
   const materialForSong=()=>song==='anata-ni'&&variant==='original'?ANATA_LESSON:SANSHIN_MATERIALS[song];
   const courseForSong=()=>song==='anata-ni'&&variant==='performance'?{...SANSHIN_VIDEOS[song],...ANATA_PERFORMANCE}:SANSHIN_VIDEOS[song];

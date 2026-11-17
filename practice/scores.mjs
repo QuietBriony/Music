@@ -1,5 +1,5 @@
-import { melodyNotes } from './midi.mjs?v=43';
-import { CHORDS, chordNotes, mapMelody } from './chords.mjs?v=43';
+import { melodyNotes } from './midi.mjs?v=44';
+import { CHORDS, chordNotes, mapMelody } from './chords.mjs?v=44';
 export const SONGS = {
   guitar: [
     { id: 'amazing-grace', title: 'Amazing Grace', file: 'amazing-grace.mid', chords: 'G・C・D', detail: 'G・C・Dで弾く伝統曲。まずはコードを押さえて、一弦ずつ。', source: 'https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=1832', credit: 'Trad. / Arr.: Breizh Partitions (2012) · Mutopia · CC BY-SA 3.0。装飾音を省きGへ移調、コードを追加。' },
@@ -10,7 +10,7 @@ export const SONGS = {
     { id:'asatoya', title:'安里屋ゆんた（前奏＋1節・やさしい版）', file:'asatoya.mid', detail:'前奏と1節を、大きな工工四とマイクで。飾り音を省き、文字を1拍ずつにした練習版。歌詞・先生の譜割りは教材動画で確認できます。', source:'https://ameblo.jp/irei-blog/entry-12530046929.html', credit:'曲：宮良長包／八重山の伝承曲に基づく。Music Stackが基本旋律を等拍の練習データとして新たに入力 · MIDIと練習用配列 CC0。歌詞・録音・教材PDFは同梱しません。', terms:'songs/asatoya-provenance.json' },
     { id:'tinsagu', title:'てぃんさぐぬ花（やさしい版）', file:'tinsagu.mid', detail:'歌詞は1〜3番から選べます。前後の間奏を含む1節分、小さい飾り音を省いた63音。指図・ガイド・マイクで最後まで練習できます。', source:'https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png', credit:'Lrschneider (2017) / Wikimedia Commons · CC BY-SA 4.0。大きい文字を1拍ずつ、本調子Cに設定。装飾音を省略。', terms:'songs/sanshin-provenance.json' },
     { id:'tsukinu', title:'月ぬ美しゃ（やさしい版）', file:'tsukinu.mid', detail:'歌詞は1〜3番から。前奏・1番分・囃子を、同じ歌詞付き工工四で練習します。本調子のやさしい位置へ置き換え、文字を1拍ずつにした練習版。マイク・ガイド・手動送りに対応します。', source:'https://toyosanshin.hatenablog.com/entry/2021/04/03/125128', credit:'八重山の伝承歌。基本旋律を本調子用に新たに入力し、飾り音を省いた等拍の練習版 · MIDI・歌詞位置・独自の意味説明 CC0。先生の動画とは譜割りが異なります。', terms:'songs/tsukinu-provenance.json' },
-    {id:'aha',title:'安波節（1番・やさしい版）',file:'aha.mid',detail:'次の民謡におすすめ。祝いの1番を、本調子・歌詞付き工工四で。歌の一行だけ反復してから、上下の句を通して練習できます。',source:'https://mabui.jp/ahabushi/',credit:'国頭村安波の伝承歌。基本旋律を本調子・等拍の練習用に新たに入力 · MIDI・独自の読み・説明・歌詞位置 CC0。先生の演奏とは間や節回しが異なります。',terms:'songs/aha-provenance.json'},
+    {id:'aha',title:'安波節（1番・やさしい版）',file:'aha.mid',detail:'古典の基礎練習。祝いの1番を、本調子・歌詞付き工工四で。歌の一行だけ反復してから、上下の句を通して練習できます。',source:'https://mabui.jp/ahabushi/',credit:'古典の安波節。mabui（川田1965を底本）の大きい譜字と歌詞位置を用い、野村流の公開資料で基本旋律を照合。読みはks-sanshinによる。アプリの等拍配置・MIDI・独自の意味説明 CC0。',terms:'songs/aha-provenance.json'},
     { id:'twinkle', title:'きらきら星', file:'twinkle.mid', detail:'本調子の合・乙・老・四・上・中で弾く、42音の旋律です。', source:'https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=2236', credit:'フランス伝承旋律を新たに入力 · MIDIはCC0。' },
     { id:'ode-to-joy', title:'歓喜の歌', file:'ode-to-joy.mid', detail:'合・乙・老・四・上で弾く、30音の主題です。', source:'https://www.mutopiaproject.org/cgibin/piece-info.cgi?id=528', credit:'L. v. Beethoven · 主題を新たに入力、Cへ移調 · MIDIはCC0。' }
   ]

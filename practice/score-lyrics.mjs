@@ -16,16 +16,20 @@ export function scoreLyricAnnotations(notes,sheet={}){
 // Resolve a sung line against this score's own clock, independently of rests.
 // Personal manual lyrics never acquire a guessed practice range.
 export function lyricPhraseRange(notes,sheet={},index=0){
- if(!notes.length||sheet.follow===false)return null;
+ if(!notes.length||sheet.presetTiming!==true||!sheet.syllables?.length)return null;
  const cues=(sheet.cues||[]).filter(c=>Number.isFinite(c.time)&&c.time>=0&&Number.isInteger(c.line)&&sheet.lines?.[c.line]).sort((a,b)=>a.time-b.time);
  if(!cues.length)return null;
  const time=notes[Math.max(0,Math.min(notes.length-1,index))]?.time;
  if(!Number.isFinite(time))return null;
  let at=0;while(at+1<cues.length&&cues[at+1].time<=time+.001)at++;
+ if(Number.isInteger(sheet.manualLine)){at=cues.findIndex(c=>c.line===sheet.manualLine);if(at<0)return null;}
  const cue=cues[at],start=notes.findIndex(n=>n.time+.001>=cue.time);
- const until=cues[at+1]?.time??(Number.isFinite(sheet.singing?.end)?sheet.singing.end:Infinity);
- const after=notes.findIndex(n=>n.time+.001>=until),end=after<0?notes.length:after;
- return start>=0&&end>start?{start,end,line:cue.line,text:sheet.lines[cue.line]}:null;
+ const lastBeat=Math.max(...sheet.syllables.filter(s=>s.line===cue.line).map(s=>s.beat));
+ const last=notes.findIndex(n=>Math.abs(n.beat-lastBeat)<.01),end=last+1;
+ if(start<0||last<start)return null;
+ // Automatic score following offers no sung-line loop during an instrumental gap.
+ if(!Number.isInteger(sheet.manualLine)&&(time+.001<cue.time||index>last))return null;
+ return {start,end,line:cue.line,text:sheet.lines[cue.line]};
 }
 export function setScoreLyric(cell,annotation){
  const label=cell.querySelector('.score-note-lyric');

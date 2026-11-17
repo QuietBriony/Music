@@ -1,4 +1,4 @@
-import { songSupport,sanshinLyricRoute } from './song-support.mjs?v=43';
+import { songSupport,sanshinLyricRoute } from './song-support.mjs?v=44';
 export const SANSHIN_PLAYLIST = {
   "title": "三線練習",
   "url": "https://music.apple.com/jp/playlist/%E4%B8%89%E7%B7%9A%E7%B7%B4%E7%BF%92/pl.u-PDb42ZZuJZ06jp",
@@ -189,7 +189,7 @@ export const SANSHIN_PLAYLIST = {
     {
       "id": "aha",
       "title": "安波節",
-      "artist": "沖縄民謡 · 次の基礎練習",
+      "artist": "琉球古典音楽 · 基礎練習",
       "video": "GOO7yXvEEUY",
       "source": "https://miyazatohidekatsu.com/sanshin/",
       "credit": "宮里英克沖縄三線教室",
@@ -199,8 +199,8 @@ export const SANSHIN_PLAYLIST = {
           "url": "https://miyazatohidekatsu.com/sanshin/"
         },
         {
-          "label": "伝承本文の出典",
-          "url": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/"
+          "label": "古典の本文・照合した教材",
+          "url": "https://mabui.jp/ahabushi/"
         }
       ],
       "focus": "次の1曲におすすめ。本調子の1番を、歌詞付き工工四で一行ずつ練習。慣れたら全体を通しましょう。",

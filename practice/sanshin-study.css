@@ -5,6 +5,9 @@
 #sanshin-dialog>header h2{min-width:0}
 #sanshin-dialog[data-enlarged=true] :is(#sanshin-reading-controls,.sanshin-study-tools,.sanshin-material-details,#sanshin-lyrics-host,#sanshin-material-choice){display:none}
 #sanshin-dialog[data-enlarged=true] #sanshin-video{grid-template-columns:minmax(0,1fr)}
+.sanshin-lyric-nav{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px max(12px,var(--practice-safe-right)) 6px max(12px,var(--practice-safe-left));border-top:1px solid var(--line);background:#e9eee2}
+.sanshin-lyric-nav[hidden],#sanshin-dialog[data-reading=finger] .sanshin-lyric-nav{display:none}
+.sanshin-lyric-nav button{min-height:44px;padding:6px 12px;font-size:.8rem;white-space:nowrap}.sanshin-lyric-nav span{min-width:0;font-size:.7rem;color:var(--muted)}
 #sanshin-dialog-body{flex:1 1 auto;overscroll-behavior:contain}
 #sanshin-dialog>header{padding:10px 16px}
 .sanshin-view-controls{padding:6px 16px}

@@ -1,8 +1,8 @@
-import { mountLyrics } from './lyrics.mjs?v=43';
-import {FOLK_LYRICS} from './folk-lyrics.mjs?v=43';
+import { mountLyrics } from './lyrics.mjs?v=44';
+import {FOLK_LYRICS} from './folk-lyrics.mjs?v=44';
 
 // Reuse the same bounded, local-only lyric editor with independent DOM ids.
-export function mountVideoLyrics(host,prefix,{steps=false,onImport,onSheet=()=>{},getVideoTime=null}={}){
+export function mountVideoLyrics(host,prefix,{steps=false,onImport,onSheet=()=>{},onDisplay=()=>{},getVideoTime=null}={}){
  const originals=[document.getElementById('session-lyrics'),document.getElementById('lyric-editor')],map=new Map();
  const copies=originals.map(node=>node.cloneNode(true));copies[0].className='video-lyric-card';copies[1].classList.remove('learning-card');
  for(const root of copies)for(const control of root.querySelectorAll('[data-minyo-verse-choice]'))control.remove();
@@ -26,7 +26,7 @@ export function mountVideoLyrics(host,prefix,{steps=false,onImport,onSheet=()=>{
  const applyClock=()=>{api.position(clock.value==='steps'?context.stepTime:context.videoTime,clock.value==='steps'?'コード進行':'動画');};
  const api=mountLyrics({defaults:FOLK_LYRICS,prefix:`${prefix}-`,timelineLabel:'動画',importMessage:'コード順と歌詞を保存しました。歌詞は1コード4拍の仮位置で、コードの進行に合わせます。',onImport:async value=>{
   const result=await onImport(value);if(result===false)return false;clock.value='steps';try{localStorage.setItem(key(),'steps');}catch{}api.import(value);applyClock();$('lyric-editor').open=false;return true;
- },onDisplay:display=>{lastDisplay=display;host.dataset.source=inVideo&&!display.hasLyrics?'video':'text';$('lyric-mark').disabled=!display.hasLyrics||(clock.value==='video'&&!context.ready);onSheet(display.sheet,clock.value);}});
+ },onDisplay:display=>{lastDisplay=display;host.dataset.source=inVideo&&!display.hasLyrics?'video':'text';$('lyric-mark').disabled=!display.hasLyrics||(clock.value==='video'&&!context.ready);onSheet(display.sheet,clock.value);onDisplay(display);}});
  const save=$('lyric-save').onclick;$('lyric-save').onclick=()=>{const previous=lastDisplay;save();if(lastDisplay!==previous)$('lyric-editor').open=false;};
  const mark=$('lyric-mark').onclick;$('lyric-mark').onclick=()=>{if(clock.value==='video'&&context.ready&&getVideoTime){const time=Number(getVideoTime());if(Number.isFinite(time)&&time>=0)context.videoTime=time;}applyClock();mark();};
  $('edit-lyrics').onclick=()=>api.open();

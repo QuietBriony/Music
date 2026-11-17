@@ -1,4 +1,4 @@
-import { SING_SHAPES } from './singalong-core.mjs?v=43';
+import { SING_SHAPES } from './singalong-core.mjs?v=44';
 
 // Simplified accompaniment, tied to the publisher's recording. Only harmonic
 // labels are stored. Section anchors are visually sampled; changes within each

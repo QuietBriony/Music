@@ -149,37 +149,48 @@
     {
       "title": "安波節（1番・本調子の基礎練習）",
       "checked": "2026-11-17",
-      "author": "Traditional; newly entered elementary study by Music Stack",
-      "source": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
+      "author": "Anonymous traditional Ryukyuan classical song; elementary rendering by Music Stack",
+      "source": "https://mabui.jp/ahabushi/",
       "license": "CC0-1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "scope": "Traditional first stanza, two matching upper/lower-phrase cycles. Honchoshi C–F–C; one cell per beat, omitted small ornaments and vocal Hari inflections, two-beat final note. A new practice rendering, not a recording transcription.",
+      "scope": "Classical Aha Bushi first stanza, distinct from the village original song. The 53-cell large-symbol order and lyric positions follow mabui (based on Kawada1965), with small notes and vocal/playing marks omitted. Original app layout, equal beats and MIDI rendering; not an independently composed melody.",
       "rights_basis": {
-        "source": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
-        "fact": "The performing teacher identifies the song as handed down in Aha, Kunigami and used for celebrations. A 1993 Ryukyu University teaching paper p265 independently shows the same basic traditional contour and explains its beginner suitability."
+        "source": "https://mabui.jp/ahabushi/",
+        "fact": "mabui classifies this version as classical music and distinguishes the village original text. Its notation page identifies Kawada Matsuo, Ryukyu Bunka Shureikai1965 as the base. Only the traditional large pitch symbols and rests are retained; no right to Kawada’s creative notation/arrangement, modern layout, translation or recording is asserted.",
+        "notation_basis": "https://mabui.jp/about-kunkunshi-2021/",
+        "comparison": "https://u-ryukyu.repo.nii.ac.jp/record/2007799/files/No43p229.pdf",
+        "comparison_page": 265,
+        "comparison_result": "Visually compared the first53 large cells through the lower-couplet instruction with the1993 Nomura-school example. The traditional contour/rest order agrees, including the opening 工七五工中合工合工. Small intra-cell ornaments, vocal marks, portamento, original spacing and layout are excluded. The university page also contains an extra following-cycle lead-in; it is not an additional source for the app’s cell layout."
       },
       "comparison_sources": [
         {
-          "url": "https://u-ryukyu.repo.nii.ac.jp/record/2007799/files/No43p229.pdf",
-          "page": 265,
-          "sha256": "a9c7a28f0e0b6b119443c77fe5fd8ac1bb2e0725df7c1a49aa25ad73c5e03973"
-        },
-        {
           "url": "https://mabui.jp/wp-content/uploads/2022/06/ahabushi-musical-score.pdf",
+          "use": "Direct source of the53 large-cell order and lyric positions; mabui identifies Kawada1965 as its base.",
           "sha256": "59e50cd79c4ca605e122d43fc1439b4da416030feefe71920d6f93ae11dee912"
         },
         {
+          "url": "https://u-ryukyu.repo.nii.ac.jp/record/2007799/files/No43p229.pdf",
+          "page": 265,
+          "sha256": "a9c7a28f0e0b6b119443c77fe5fd8ac1bb2e0725df7c1a49aa25ad73c5e03973",
+          "use": "Traditional Nomura-school contour comparison, first53 large cells; ornaments and layout not copied."
+        },
+        {
+          "url": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
+          "use": "Source of existing phonetic readings; not the source claimed for the classical lyric text."
+        },
+        {
           "url": "https://ameblo.jp/irei-blog/entry-12341377812.html",
-          "use": "Basic contour comparison; modern vocal inflections, layout and translation excluded."
+          "use": "Teacher comparison only; not copied layout, performance timing or translation."
         }
       ],
-      "changes": "New symbolic entry of common large-note contour. Omit small intra-cell notes; repeat the basic cycle for the lower couplet as indicated by the traditional lower-couplet instruction. Align first words to the preceding sounding cell at beats8/61 rather than a vocal onset on rest9/62. New original readings, easy meanings and vocabulary. Equal beats do not reproduce a teacher performance.",
-      "lyrics": "Traditional first stanza only, separately attributed preset song:aha. Readings are an example; regional variations exist. No modern translation copied.",
+      "changes": "The53-cell order and first-stanza lyric positions were entered from mabui’s score, based on Kawada1965, not independently invented. The same traditional large-symbol contour was checked against the1993 Nomura-school teaching example p265. Repeat the basic cycle for the lower couplet. Omit small ornaments/Hari and arrange one cell per beat. Singing starts are shifted from rest9/62 to sounding beat8/61 for this exercise. Readings follow ks-sanshin; explanations and app rendering are newly written.",
+      "lyrics": "Classical first stanza from mabui’s public text, also shown in the1993 paper. Readings follow ks-sanshin. No village original stanza or additional lyric is added.",
       "generator": "scripts/build-practice-aha.mjs",
       "authorization_record": "lyrics-provenance.json",
       "sha256": "5352d647cbc784d3c0c5da36fb3e2d60cc59ca2852435b64e1382aff7be204af",
       "notes": 92,
       "beats": 107,
+      "license_scope": "CC0 covers only Music Stack’s new MIDI rendering, equal-beat app alignment and original explanations. It does not license source editions, author-specific marks, modern readings/arrangements, translations or recordings.",
       "id": "aha",
       "file": "aha.mid"
     }

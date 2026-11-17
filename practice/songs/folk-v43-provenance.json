@@ -12,41 +12,98 @@
   "decisions": [
     {
       "id": "aha",
-      "title": "安波節",
+      "title": "安波節（古典）",
       "delivery": "Native equal-beat honchoshi first stanza, lyrics/readings/original meanings and microphone/guide/manual following",
       "sources": [
-        "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
-        "https://u-ryukyu.repo.nii.ac.jp/record/2007799/files/No43p229.pdf",
-        "https://mabui.jp/ahabushi/",
-        "https://ameblo.jp/irei-blog/entry-12341377812.html"
+        {
+          "url": "https://mabui.jp/ahabushi/",
+          "use": "Classical classification and existing first-stanza text; village original is a distinct stanza, not added."
+        },
+        {
+          "url": "https://mabui.jp/wp-content/uploads/2022/06/ahabushi-musical-score.pdf",
+          "use": "Actual direct source of large-cell order and lyric positions, not merely comparison."
+        },
+        {
+          "url": "https://mabui.jp/about-kunkunshi-2021/",
+          "use": "Identifies Kawada Matsuo1965 as mabui’s base; original marks/layout are outside app reuse."
+        },
+        {
+          "url": "https://u-ryukyu.repo.nii.ac.jp/record/2007799/files/No43p229.pdf",
+          "use": "p265 Nomura-school traditional large-note contour comparison; no layout, modern phrasing or translation copied."
+        },
+        {
+          "url": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
+          "use": "Existing phonetic readings attributed to this teacher source; not claimed as original Music Stack readings."
+        },
+        {
+          "url": "https://ameblo.jp/irei-blog/entry-12341377812.html",
+          "use": "Teacher contour comparison only."
+        }
       ],
       "beginner": "Slow traditional contour, no new tuning. Practice a sung line before the whole stanza.",
-      "excluded": "Small ornaments, vocal Hari fillers, teacher layout/translation/recording and later stanzas."
+      "excluded": "Small ornaments, vocal Hari fillers, teacher layout/translation/recording and later stanzas.",
+      "refrain": "No new refrain or Hari fillers included.",
+      "provenance": "See aha-provenance.json for the53-cell comparison and limited CC0 scope."
     },
     {
       "id": "akata",
       "title": "赤田首里殿内",
       "delivery": "Teacher video score plus first-stanza/refrain reading companion; manual lyric-line navigation",
       "sources": [
-        "https://www.ryukyumura.co.jp/official/oki100/vol1/",
-        "https://www.kodomogeijutsu.go.jp/junkai/dl/covid/r04/f80.pdf",
-        "https://toyosanshin.hatenablog.com/entry/2021/03/14/121801"
+        {
+          "url": "https://www.ryukyumura.co.jp/official/oki100/vol1/",
+          "use": "First stanza and its complete hand-play refrain shape; current primary credit.",
+          "refrain_use": "adopted published shape"
+        },
+        {
+          "url": "https://toyosanshin.hatenablog.com/entry/2021/03/14/121801",
+          "use": "Teacher comparison; not the source of the adopted two Tancha refrain lines.",
+          "refrain_use": "not used to substantiate the appended refrain"
+        }
       ],
       "beginner": "Repetitive hand-play song. The teacher version may use a different tuning; confirm it before playing.",
-      "excluded": "Native note-by-note transcription and video time cues remain unverified. Do not infer honchoshi finger positions from the comparison score."
+      "excluded": "Native note-by-note transcription and video time cues remain unverified. Do not infer honchoshi finger positions from the comparison score.",
+      "unavailable_source": {
+        "url": "https://www.kodomogeijutsu.go.jp/junkai/dl/covid/r04/f80.pdf",
+        "checked": "2026-11-17",
+        "status": {
+          "url": "https://www.kodomogeijutsu.go.jp/junkai/dl/covid/r04/f80.pdf",
+          "status": 404,
+          "error": "HTTP Error 404: Not Found"
+        },
+        "use": "Removed from active app credit; older cached PDF is not relied on."
+      }
     },
     {
       "id": "tancha",
       "title": "谷茶前節",
       "delivery": "Teacher video score plus first-stanza/refrain reading companion; manual lyric-line navigation",
       "sources": [
-        "https://www.nt-okinawa.or.jp/images/lyrics/2026.4/20260404-lyrics.pdf",
-        "https://www.ryukyumura.co.jp/official/oki100/vol5/",
-        "https://ameblo.jp/irei-blog/entry-12347911679.html"
+        {
+          "url": "https://www.nt-okinawa.or.jp/images/lyrics/2026.4/20260404-lyrics.pdf",
+          "use": "First-stanza body/repeat only; the two appended refrain lines do not occur here.",
+          "refrain_use": "not used to substantiate the appended refrain"
+        },
+        {
+          "url": "https://www.ryukyumura.co.jp/official/oki100/vol5/",
+          "use": "Only source among those cited containing these exact two refrain lines; app adopts this published shape, not a cross-source verified refrain.",
+          "refrain_use": "adopted published shape"
+        },
+        {
+          "url": "https://ameblo.jp/irei-blog/entry-12347911679.html",
+          "use": "Teacher comparison; not the source of the adopted two Tancha refrain lines.",
+          "refrain_use": "not used to substantiate the appended refrain"
+        }
       ],
       "beginner": "After the slow songs; use the teacher slow-play and5/10second repeat.",
-      "excluded": "Native note-by-note transcription and exact lyric time cues remain unverified. Do not include the Ikei Hanari connection, later modern lyrics or source translation."
+      "excluded": "Native note-by-note transcription and exact lyric time cues remain unverified. Do not include the Ikei Hanari connection, later modern lyrics or source translation.",
+      "refrain": "The two existing refrain lines are sourced solely to Ryukyumura vol.5. National Theatre PDF and Irei do not contain them; Kyogei differs. No new refrain added."
     }
   ],
-  "recordings_images": "Comparison only, none bundled. External music-research download data was not used. One v42 public comparison PDF host no longer resolves; alternative university and teacher sources are recorded."
+  "recordings_images": "Comparison only, none bundled. External music-research download data was not used. One v42 public comparison PDF host no longer resolves; alternative university and teacher sources are recorded.",
+  "v44_correction": {
+    "request": "main の docs/autonomy/BL-053-v44-handoff.md を読んで、v44 で直してください。新しい曲や歌詞は足さないで。",
+    "date": "2026-11-17",
+    "scope": "Existing records/credits and two original-meaning paraphrases only. No new song, lyric text, stanza, refrain, MIDI or teacher asset."
+  }
 }

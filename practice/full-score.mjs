@@ -1,5 +1,5 @@
-import { noteName } from './music.mjs?v=43';
-import { scoreLyricAnnotations,setScoreLyric,renderLyricReference,lyricPhraseRange } from './score-lyrics.mjs?v=43';
+import { noteName } from './music.mjs?v=44';
+import { scoreLyricAnnotations,setScoreLyric,renderLyricReference,lyricPhraseRange } from './score-lyrics.mjs?v=44';
 
 // Keep note indices separate from rests: selecting a cell must seek the actual
 // note, and must never count as a correct microphone answer.
@@ -46,7 +46,8 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic,onLoop=()=>
     const rows=new Set(blocks.map(b=>Math.round(b.offsetTop))).size,style=getComputedStyle(viewport),heading=blocks[0].querySelector('p').getBoundingClientRect().height+5;
     const room=viewport.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)-(rows-1)*parseFloat(style.rowGap||'0')-rows*heading;
     const fragments=[...viewport.querySelectorAll('.score-note-lyric[data-kind="syllable"]')];
-    const minimum=Math.max(44,...fragments.map(n=>20+Math.min(4,[...n.textContent].length)*parseFloat(getComputedStyle(n).fontSize)));
+    const short=matchMedia('(max-height:500px) and (orientation:landscape)').matches;
+    const minimum=Math.max(44,...fragments.map(n=>(short?16:20)+Math.min(4,[...n.textContent].length)*parseFloat(getComputedStyle(n).fontSize)));
     const size=Math.max(Math.ceil(minimum),Math.min(68,Math.floor(room/(rows*4))));viewport.style.setProperty('--sheet-cell-height',size+'px');
   }
   new ResizeObserver(()=>{fit();reveal(false,false);}).observe($('sheet'));
@@ -55,7 +56,7 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic,onLoop=()=>
   function phraseControls(){
     const range=phrase();
     for(const button of dialog.querySelectorAll('[data-score-phrase]')){
-      button.hidden=!range;button.disabled=!range;button.textContent=repeating(range)?'反復を終える':'この行を反復';
+      button.hidden=!range;button.disabled=!range;button.textContent=repeating(range)?'反復を終える':button.hasAttribute('data-score-phrase-inline')?'一行反復':'この行を反復';
       button.setAttribute('aria-pressed',String(repeating(range)));
       if(range)button.setAttribute('aria-label',`${range.line+1}行目「${range.text}」${repeating(range)?'の反復を終える':'を反復する'}`);
     }
@@ -126,5 +127,5 @@ export function mountFullScore({onSeek,onGuide,onStop,onTuning,onMic,onLoop=()=>
   $('tuning').onchange=()=>onTuning(Number($('tuning').value));
   $('close').onclick=()=>dialog.close();
   dialog.addEventListener('close',onStop);
-  return{update,reading(detection){if(!dialog.open)return;const level=Math.max(0,Math.min(100,Math.round((detection.rms||0)*700)));$('level').querySelector('span').style.width=level+'%';$('level').setAttribute('aria-valuenow',String(level));const text=detection.name?`聴こえたコード ${detection.name}`:detection.frequency?`聴こえた音 ${noteName(Math.round(69+12*Math.log2(detection.frequency/440)))}`:'音を聴いています';if($('heard').textContent!==text)$('heard').textContent=text;},lyrics(display){sheet=display.sheet;annotate();$('lyrics').hidden=!display.hasLyrics;for(const field of ['status','current','next']){const el=$(`lyric-${field}`);if(el.textContent!==display[field])el.textContent=display[field]||'';el.hidden=!el.textContent;}$('reference').hidden=!sheet.notes?.some(n=>n.reading||n.meaning);if(referenceLines!==sheet.lines||referenceNotes!==sheet.notes){renderLyricReference($('reference-lines'),sheet.lines||[],sheet.notes);referenceLines=sheet.lines;referenceNotes=sheet.notes;}},open(){dialog.showModal();focus(state?.instrument==='sanshin');renderedNotes=null;$('sheet').scrollTop=0;update(state);reveal(true,false);},close(){if(dialog.open)dialog.close();}};
+  return{update,reading(detection){if(!dialog.open)return;const level=Math.max(0,Math.min(100,Math.round((detection.rms||0)*700)));$('level').querySelector('span').style.width=level+'%';$('level').setAttribute('aria-valuenow',String(level));const text=detection.name?`聴こえたコード ${detection.name}`:detection.frequency?`聴こえた音 ${noteName(Math.round(69+12*Math.log2(detection.frequency/440)))}`:'音を聴いています';if($('heard').textContent!==text)$('heard').textContent=text;},lyrics(display){sheet=display.sheet;annotate();phraseControls();$('lyrics').hidden=!display.hasLyrics;for(const field of ['status','current','next']){const el=$(`lyric-${field}`);if(el.textContent!==display[field])el.textContent=display[field]||'';el.hidden=!el.textContent;}$('reference').hidden=!sheet.notes?.some(n=>n.reading||n.meaning);if(referenceLines!==sheet.lines||referenceNotes!==sheet.notes){renderLyricReference($('reference-lines'),sheet.lines||[],sheet.notes);referenceLines=sheet.lines;referenceNotes=sheet.notes;}},open(){dialog.showModal();focus(state?.instrument==='sanshin');renderedNotes=null;$('sheet').scrollTop=0;update(state);reveal(true,false);},close(){if(dialog.open)dialog.close();}};
 }

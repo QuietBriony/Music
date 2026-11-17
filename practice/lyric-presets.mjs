@@ -1,6 +1,6 @@
 // Traditional/PD texts and CC BY-SA 4.0 Tinsagu adaptation; see songs/lyrics-provenance.json.
-import {additionalMinyoLyrics} from './minyo-lyrics.mjs?v=43';
-import {FOLK_LYRICS} from './folk-lyrics.mjs?v=43';
+import {additionalMinyoLyrics} from './minyo-lyrics.mjs?v=44';
+import {FOLK_LYRICS} from './folk-lyrics.mjs?v=44';
 export const LYRIC_PRESETS={
  'song:tsukinu':{
   text:'月ぬ美しゃ 十日三日\n女童美しゃ 十七つ\nホーイ チョーガ',
@@ -17,7 +17,7 @@ export const LYRIC_PRESETS={
   ],
   note:'前奏・1節・囃子のやさしい本調子版。小さい飾り音を省き、1マス1拍で歌詞を配置しました。先生やApple Musicの演奏とは譜割りが異なります。読み方は一例で、地域・歌い手により発音が変わります。',
   credit:'八重山の伝承歌 · 工工四は本調子用に新たに入力 · 歌詞位置・読み方・やさしい意味はMusic Stackの練習用 CC0',
-  source:'https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479'
+  source:'https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479',license:'https://creativecommons.org/publicdomain/zero/1.0/'
  },
  'song:tinsagu':{
   text:'てぃんさぐぬ花や\n爪先に染みてぃ\n親ぬゆしぐとぅや\n肝に染みり',cues:[16,24,32,40].map((beat,line)=>({time:beat*60/85,line})),syncVersion:1,singing:{start:16*60/85,end:45*60/85},

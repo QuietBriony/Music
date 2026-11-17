@@ -77,3 +77,9 @@ body.focused #tuning-label select{min-height:36px;font-size:.72rem;padding:6px 2
 
 [data-score-phrase]{min-height:44px;font-size:.75rem;padding:6px 10px;white-space:nowrap;background:#fffdf8}[data-score-phrase][hidden]{display:none}
 #full-score-lyrics{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 10px}#full-score-lyric-status,#full-score-lyric-next{grid-column:1}#full-score-lyrics>[data-score-phrase]{grid-column:2;grid-row:1/4}#full-score-lyrics[hidden]{display:none}
+[data-score-phrase-inline]{display:none}
+@media(max-height:500px) and (orientation:landscape){
+ #full-score-dialog[data-instrument=sanshin] .sheet-buttons [data-score-phrase-inline]:not([hidden]){display:block;padding-inline:8px;flex:none}
+ #full-score-dialog[data-instrument=sanshin] .sheet-cell .score-note-lyric{font-size:11px}
+ #full-score-dialog[data-instrument=sanshin] .sheet-cell{padding:3px}
+}

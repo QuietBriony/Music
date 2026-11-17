@@ -1,5 +1,5 @@
 // Navigation and discovery only. Selecting a song never starts audio or capture.
-import { sanshinLyricRoute } from './song-support.mjs?v=43';
+import { sanshinLyricRoute } from './song-support.mjs?v=44';
 export function mountPracticeShell({ studies, onSong, onStop }) {
   const $ = id => document.getElementById(id);
   const dialog = $('song-browser');

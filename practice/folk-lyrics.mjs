@@ -1,5 +1,6 @@
 // Traditional first stanzas authorized by the owner on 2026-11-17.
-// New explanations and equal-beat Aha alignment: Music Stack, CC0.
+// Aha large-cell order/alignment: mabui (Kawada1965 base), Nomura comparison.
+// Aha readings: ks-sanshin. New explanations/app rendering: Music Stack, CC0.
 // Other two stanzas are reading companions; their video timing is not inferred.
 const cue=(beat,line)=>({time:beat*60/85,line});
 const ahaRows=[
@@ -15,13 +16,13 @@ export const FOLK_LYRICS={
   syllables:ahaRows.flatMap(([beats,texts],line)=>beats.map((beat,i)=>({beat,text:texts[i],line}))),
   notes:[
    {text:'かれよしの遊び',reading:'かりゆしぬ あしび',meaning:'お祝いの席で、みんなと楽しむひととき。',words:'かりゆし＝めでたいこと ／ あしび＝歌や踊りを楽しむこと'},
-   {text:'うちはれてからや',reading:'うちはりてぃ からや',meaning:'気持ちが晴れ、うちとけたからには、',words:'うちはりてぃ＝心が晴れて・うちとけて ／ からや＝〜からには'},
+   {text:'うちはれてからや',reading:'うちはりてぃ からや',meaning:'祝いの席で、ためらわず歌や踊りに加わる気持ちです。',words:'うちはりてぃ＝心が晴れて・うちとけて ／ からや＝〜からには'},
    {text:'夜のあけててだの',reading:'ゆぬ あきてぃ てぃだぬ',meaning:'夜が明け、太陽が顔を出すまで、',words:'ゆ＝夜 ／ てぃだ＝太陽'},
    {text:'あがるまでも',reading:'あがる までぃん',meaning:'この楽しい時間を一緒に過ごそう、と歌います。',words:'までぃん＝〜までも'}
   ],
   note:'本調子で1番を歌う等拍の基礎練習です。上下の句で基本の旋律を繰り返します。小さな飾り音・ハリなどの節回しを省略し、休符上の歌い出しを直前の主音へ寄せた独自の練習位置です。先生の録音とは同期しません。',
-  credit:'国頭村安波の伝承歌 · 基本旋律を新たに入力 · 読み・やさしい意味・歌詞位置：Music Stack CC0',
-  source:'https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/',license:'https://creativecommons.org/publicdomain/zero/1.0/'
+  credit:'古典の安波節 · 大きい譜字・歌詞位置：mabui（川田1965を底本）、野村流資料と照合 · 読み：ks-sanshin · アプリの等拍配置・独自の意味：Music Stack CC0',
+  source:'https://mabui.jp/ahabushi/',license:'https://creativecommons.org/publicdomain/zero/1.0/'
  },
  'video:sanshin:akata':{
   text:'赤田首里殿内\n黄金灯籠下ぎてぃ\nうりが明がりば\n弥勒迎け\nシーヤープー シーヤープー\nミーミンメー ミーミンメー\nヒージントー ヒージントー\nイーユヌミー イーユヌミー',cues:[],
@@ -36,7 +37,7 @@ export const FOLK_LYRICS={
    {text:'イーユヌミー イーユヌミー',reading:'いーゆぬみー いーゆぬみー',meaning:'魚の目を表す手遊びを添える句です。',words:'いーゆ＝魚 ／ みー＝目'}
   ],
   note:'1番と伝承の囃子の読みものです。歌詞の表記・囃子には地域差があります。工工四と進み方は先生の動画を使い、この欄は「次の行」で送ります。アプリ内の音符判定や動画への歌詞自動同期は未設定です。',
-  credit:'首里の伝承歌 · 琉球村・文化庁事業の公開教材で本文を照合 · 新しい読み・やさしい意味：Music Stack CC0',
+  credit:'首里の伝承歌 · 本文・囃子の出典：琉球村 vol.1 · 新しい読み・やさしい意味：Music Stack CC0',
   source:'https://www.ryukyumura.co.jp/official/oki100/vol1/',license:'https://creativecommons.org/publicdomain/zero/1.0/'
  },
  'video:sanshin:tancha':{
@@ -48,8 +49,8 @@ export const FOLK_LYRICS={
    {text:'ナンチャマシマシ',reading:'なんちゃましまし',meaning:'歌と踊りを盛り上げる囃子です。',words:'囃子は地域・歌い手で言い方が異なります。'},
    {text:'ディアンガソイソイ',reading:'でぃあんがそいそい',meaning:'みんなで調子を合わせて楽しむ掛け声です。',words:'言葉の対訳より、先生の歌のリズムを聴いてみましょう。'}
   ],
-  note:'谷茶前節の1番と確認できた囃子だけ。伊計離節との接続は含めません。工工四は先生の動画を見て、歌詞のこの欄は「次の行」で送ります。教材によって本文・囃子・調弦が違うため、音符単位の内蔵同期は未設定です。',
-  credit:'恩納村谷茶の伝承歌 · 国立劇場おきなわ・琉球村の公表本文を照合 · 新しい読み・やさしい意味：Music Stack CC0',
+  note:'谷茶前節の1番と、琉球村 vol.5 に掲載された形の囃子だけ。伊計離節との接続は含めません。工工四は先生の動画を見て、歌詞のこの欄は「次の行」で送ります。教材によって本文・囃子・調弦が違うため、音符単位の内蔵同期は未設定です。',
+  credit:'恩納村谷茶の伝承歌 · 1番：国立劇場おきなわ、囃子2行：琉球村 vol.5 の掲載形のみ · 新しい読み・やさしい意味：Music Stack CC0',
   source:'https://www.nt-okinawa.or.jp/images/lyrics/2026.4/20260404-lyrics.pdf',license:'https://creativecommons.org/publicdomain/zero/1.0/'
  }
 };

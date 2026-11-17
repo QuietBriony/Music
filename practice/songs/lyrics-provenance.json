@@ -86,7 +86,7 @@
       "license": "CC BY-SA 4.0",
       "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
       "source_sha256": "014482d72c51f3562ceb9cccb996b5fffb531f006c4f8e2337b4405ea24281cf",
-      "changes": "v41 and earlier: First verse only. Added editorial kanji, word spacing, an original plain-Japanese explanation and vocabulary notes. This adapted verse, readings and explanations are distributed under CC BY-SA 4.0. Readings use the score's chimisachi variant; variants in region and teacher's singing are expected. Practice alignment maps the large-symbol simplified sheet to phrase entrances at beats 16, 24, 32 and 40, with prelude beats 0–15 and outro from beat 45. One cell is one beat at the existing 85 BPM MIDI tempo. This is a practice alignment, not a transcription of a teacher recording; ornamentation and sung phrasing may differ. Added alignment metadata is also CC BY-SA 4.0. v22 rechecked the source image and places 26 phonetic fragments beside their large-symbol cells. The final ri belongs to beat 44, so singing continues through that beat and the outro begins at 45. Small ornamental syllables share their simplified main cell; the rest at beat 29 does not shift labels. Fragments and their placement retain CC BY-SA 4.0. v42 adds separately selectable traditional verses2 and3 from the Okinawa Prefecture example. New per-cell fragments and original readings/meanings retain CC BY-SA4.0; the existing first-verse preset, MIDI and private lyric keys are unchanged. Government/teacher modern translations and layouts are not copied.",
+      "changes": "v41 and earlier: First verse only. Added editorial kanji, word spacing, an original plain-Japanese explanation and vocabulary notes. This adapted verse, readings and explanations are distributed under CC BY-SA 4.0. Readings use the score's chimisachi variant; variants in region and teacher's singing are expected. Practice alignment maps the large-symbol simplified sheet to phrase entrances at beats 16, 24, 32 and 40, with prelude beats 0–15 and outro from beat 45. One cell is one beat at the existing 85 BPM MIDI tempo. This is a practice alignment, not a transcription of a teacher recording; ornamentation and sung phrasing may differ. Added alignment metadata is also CC BY-SA 4.0. v22 rechecked the source image and places 26 phonetic fragments beside their large-symbol cells. The final ri belongs to beat 44, so singing continues through that beat and the outro begins at 45. Small ornamental syllables share their simplified main cell; the rest at beat 29 does not shift labels. Fragments and their placement retain CC BY-SA 4.0. v42 adds separately selectable traditional verses2 and3 from the Okinawa Prefecture example. New per-cell fragments and original meanings retain CC BY-SA4.0; verses2–3 readings follow the Okinawa Prefecture furigana; the existing first-verse preset, MIDI and private lyric keys are unchanged. Government/teacher modern translations and layouts are not copied.",
       "meaning_reference": "https://www.pref.okinawa.jp/kyoiku/kodomo/1002688/1002693.html",
       "translation": "New wording for this app, checked against the prefecture's explanation; not a copied modern translation.",
       "checked": "2026-11-17",
@@ -96,7 +96,10 @@
         3
       ],
       "traditional_text_source": "https://www.pref.okinawa.lg.jp/kensei/kengaiyo/1014898.html",
-      "comparison_source": "https://miyazatohidekatsu.com/wp-content/uploads/2023/05/98363fad07ef831d7134f72960746334.pdf"
+      "comparison_source": "https://miyazatohidekatsu.com/wp-content/uploads/2023/05/98363fad07ef831d7134f72960746334.pdf",
+      "reading_source": "https://www.pref.okinawa.lg.jp/kensei/kengaiyo/1014898.html",
+      "reading_attribution": "Verses2–3 readings follow the prefecture’s published furigana, not newly authored readings.",
+      "score_source": "https://commons.wikimedia.org/wiki/File:Kunkunshi_for_Tinsagu_nu_Hana.png"
     },
     {
       "id": "amazing-grace",
@@ -142,45 +145,58 @@
     },
     {
       "id": "aha",
-      "author": "Traditional Okinawan folk song; Music Stack original readings and explanations",
-      "source": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
+      "author": "Anonymous Ryukyuan classical song; readings follow ks-sanshin; new explanations by Music Stack",
+      "source": "https://mabui.jp/ahabushi/",
       "checked": "2026-11-17",
-      "license": "Public-domain traditional text; new Music Stack explanations and Aha alignment CC0-1.0",
+      "license": "Traditional classical text; Music Stack original explanations and app alignment CC0-1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "comparison_source": [
+        "https://mabui.jp/wp-content/uploads/2022/06/ahabushi-musical-score.pdf",
+        "https://mabui.jp/about-kunkunshi-2021/",
         "https://u-ryukyu.repo.nii.ac.jp/record/2007799/files/No43p229.pdf",
-        "https://mabui.jp/ahabushi/",
-        "https://ameblo.jp/irei-blog/entry-12341377812.html"
+        "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/"
       ],
       "translation": "New plain-language explanations by Music Stack; no source translation copied.",
       "verses": [
         1
       ],
-      "changes": "Aha first-stanza note/phrase alignment on the new elementary study. Teacher inflections, original timing and ornaments omitted."
+      "changes": "The53-cell order and first-stanza lyric positions were entered from mabui’s score, based on Kawada1965, not independently invented. The same traditional large-symbol contour was checked against the1993 Nomura-school teaching example p265. Repeat the basic cycle for the lower couplet. Omit small ornaments/Hari and arrange one cell per beat. Singing starts are shifted from rest9/62 to sounding beat8/61 for this exercise. Readings follow ks-sanshin; explanations and app rendering are newly written.",
+      "notation_source": "https://mabui.jp/wp-content/uploads/2022/06/ahabushi-musical-score.pdf",
+      "reading_source": "https://ks-sanshin.com/youtubeチャンネルに「安波節」を追加しました♪～歌/",
+      "license_scope": "CC0 covers only Music Stack’s new MIDI rendering, equal-beat app alignment and original explanations. It does not license source editions, author-specific marks, modern readings/arrangements, translations or recordings."
     },
     {
       "id": "akata",
       "author": "Traditional Okinawan folk song; Music Stack original readings and explanations",
       "source": "https://www.ryukyumura.co.jp/official/oki100/vol1/",
       "checked": "2026-11-17",
-      "license": "Public-domain traditional text; new Music Stack explanations and Aha alignment CC0-1.0",
+      "license": "Public-domain traditional text; new Music Stack reading companion and explanations CC0-1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "comparison_source": [
-        "https://www.kodomogeijutsu.go.jp/junkai/dl/covid/r04/f80.pdf",
         "https://toyosanshin.hatenablog.com/entry/2021/03/14/121801"
       ],
       "translation": "New plain-language explanations by Music Stack; no source translation copied.",
       "verses": [
         1
       ],
-      "changes": "First stanza and verified refrain as a manual reading companion. No automatic video-time cues or note-by-note score inferred. Private text and cue data take precedence."
+      "changes": "First stanza and the refrain shape documented by Ryukyumura vol.1 as a manual reading companion. No video-time cues or native score inferred.",
+      "source_unavailable": {
+        "url": "https://www.kodomogeijutsu.go.jp/junkai/dl/covid/r04/f80.pdf",
+        "checked": "2026-11-17",
+        "direct_result": {
+          "url": "https://www.kodomogeijutsu.go.jp/junkai/dl/covid/r04/f80.pdf",
+          "status": 404,
+          "error": "HTTP Error 404: Not Found"
+        },
+        "note": "The review reported404. The search engine still exposes an older cached PDF; it is not relied on as a currently available source. App credit uses Ryukyumura only."
+      }
     },
     {
       "id": "tancha",
       "author": "Traditional Okinawan folk song; Music Stack original readings and explanations",
       "source": "https://www.nt-okinawa.or.jp/images/lyrics/2026.4/20260404-lyrics.pdf",
       "checked": "2026-11-17",
-      "license": "Public-domain traditional text; new Music Stack explanations and Aha alignment CC0-1.0",
+      "license": "Public-domain traditional text; new Music Stack reading companion and explanations CC0-1.0",
       "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
       "comparison_source": [
         "https://www.ryukyumura.co.jp/official/oki100/vol5/",
@@ -190,8 +206,12 @@
       "verses": [
         1
       ],
-      "changes": "First stanza and verified refrain as a manual reading companion. No automatic video-time cues or note-by-note score inferred. Private text and cue data take precedence."
+      "changes": "First-stanza body checked against National Theatre Okinawa; the two refrain lines use only the shape printed by Ryukyumura vol.5. The National Theatre PDF and Irei blog do not verify those two refrain lines; Kyogei uses a different shape/position. No general traditional-refrain consensus or synchronization is claimed.",
+      "refrain_source": "https://www.ryukyumura.co.jp/official/oki100/vol5/"
     }
   ],
-  "decisions_source": "songs/minyo-v42-research.json"
+  "decisions_source": [
+    "songs/minyo-v42-research.json",
+    "songs/folk-v43-provenance.json"
+  ]
 }

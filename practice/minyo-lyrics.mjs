@@ -1,4 +1,5 @@
-// Traditional words only; new readings and explanations by Music Stack.
+// Traditional words only. Tinsagu2–3 readings follow Okinawa Prefecture’s
+// published furigana. Explanations/alignment are by Music Stack.
 // Tinsagu adaptations remain CC BY-SA4.0; Tsukinu additions are CC0.
 // Sources, authorization and the limits of this practice alignment are in
 // songs/lyrics-provenance.json and songs/minyo-v42-research.json.
@@ -13,7 +14,7 @@ function fragments(beats,rows){
 export function additionalMinyoLyrics(base){
  const tin=base['song:tinsagu'],moon=base['song:tsukinu'];
  const tinSource='https://www.pref.okinawa.lg.jp/kensei/kengaiyo/1014898.html';
- const tinCredit='沖縄県公表の伝承歌詞の例 · 旋律の簡略譜：Lrschneider (2017) / Music Stack · 新しい歌詞位置・読み方・やさしい意味も CC BY-SA 4.0';
+ const tinCredit='沖縄県公表の伝承歌詞の例 · 旋律の簡略譜：Lrschneider (2017) / Music Stack · 読みは沖縄県の掲載ふりがなによる · 新しい歌詞位置・やさしい意味は CC BY-SA 4.0';
  const tinNote=number=>`${number}番。沖縄県公表の歌詞の例を、既存の1節分の簡略譜に配置しました。歌詞位置はこのアプリの等拍練習用です。先生の譜面や歌の間、地域の発音とは異なる場合があります。`;
  const moonCredit='八重山の伝承歌 · 歌詞の出典は教育芸術社・琉球村、節の照合は伊禮俊一・豊岡マッシー · 新しい歌詞位置・読み方・やさしい意味は Music Stack CC0';
  const moonNote=number=>`${number}番と囃子。前奏から、既存の1節分のやさしい本調子譜で練習します。歌い方・発音には地域差があり、等拍の歌詞位置は先生や原曲の演奏と異なります。`;
@@ -26,7 +27,7 @@ export function additionalMinyoLyrics(base){
     {text:'読みば読まりしが',reading:'ゆみば ゆまりしが',meaning:'星なら、一つずつ数えられるかもしれません。',words:'ゆみ＝ここでは数えること ／ しが＝けれど'},
     {text:'親ぬゆしぐとぅや',reading:'うやぬ ゆしぐとぅや',meaning:'親から受け取った言葉や教えは、',words:'うや＝親 ／ ゆしぐとぅ＝教え・言い聞かせ'},
     {text:'読みやならぬ',reading:'ゆみや ならぬ',meaning:'数えきれないほどある、と歌います。',words:'ならぬ＝できない'}
-   ],note:tinNote(2),credit:tinCredit,source:tinSource
+   ],note:tinNote(2),credit:tinCredit,source:tinSource,scoreSource:tin.source
   },
   'song:tinsagu:verse:3':{...tin,
    text:'夜走らす船や\n子ぬ方星目当てぃ\n我ぬ生ちぇる親や\n我ぬどぅ目当てぃ',
@@ -36,13 +37,13 @@ export function additionalMinyoLyrics(base){
     {text:'子ぬ方星目当てぃ',reading:'にぬふぁぶし みあてぃ',meaning:'北極星を頼りに、向かう先を定めます。',words:'にぬふぁぶし＝北極星 ／ みあてぃ＝目印・頼り'},
     {text:'我ぬ生ちぇる親や',reading:'わぬ なちぇる うやや',meaning:'私を産み、育ててくれた親にとっては、',words:'わぬ＝私 ／ なちぇる＝産んだ ／ うや＝親'},
     {text:'我ぬどぅ目当てぃ',reading:'わぬどぅ みあてぃ',meaning:'子の姿こそが、大切な目印なのです。',words:'歌の意味をつかむための、やさしい意訳です。'}
-   ],note:tinNote(3),credit:tinCredit,source:tinSource
+   ],note:tinNote(3),credit:tinCredit,source:tinSource,scoreSource:tin.source
   },
   'song:tsukinu:verse:2':{...moon,
    text:'東から上りおる 大月ぬ夜\n沖縄ん八重山ん 照らしょうり\nホーイ チョーガ',
    syllables:fragments(MOON_BEATS,[['ある','から','あーり','おる','うふ','つきぬ','ゆー'],['うき','なん','やい','まん','てぃ','らしょ','ーり'],['ほー','い','ちょー','が']]),
    notes:[
-    {text:'東から上りおる 大月ぬ夜',reading:'あるから あーりおる うふつきぬゆー',meaning:'東の空に、大きな月がのぼる夜。',words:'ある＝東 ／ うふつき＝大きな月 ／ ゆ＝夜'},
+    {text:'東から上りおる 大月ぬ夜',reading:'あるから あーりおる うふつきぬゆー',meaning:'夜空の月を仰ぎ、その明かりに願いを託す場面です。',words:'ある＝東 ／ うふつき＝大きな月 ／ ゆ＝夜'},
     {text:'沖縄ん八重山ん 照らしょうり',reading:'うきなん やいまん てぃらしょーり',meaning:'沖縄も八重山も、その光で包んでほしいと願います。',words:'やいま＝八重山 ／ てぃらしょうり＝照らしてください'},
     {...moon.notes[2]}
    ],note:moonNote(2),credit:moonCredit,source:'https://www.kyogei.co.jp/shirabe/kyoudo/text47.html?p=1479'
