@@ -1,9 +1,9 @@
-import {defaults,validate,dice,PARTS,validatePerformanceContext} from './acid-live-state.mjs?v=3';
-import {createAcidLive} from './acid-live.mjs?v=3';
+import {defaults,validate,dice,PARTS,validatePerformanceContext} from './acid-live-state.mjs?v=4';
+import {createAcidLive} from './acid-live.mjs?v=4';
 import {DRUMS,drumDice} from './acid-live-drums.mjs?v=1';
-import {SCENES,sceneAt} from './acid-live-scenes.mjs?v=2';
+import {SCENES,sceneAt} from './acid-live-scenes.mjs?v=3';
 import {createLiveEffects} from './acid-live-fx.mjs?v=1';
-import {VERSIONS,makeVersion} from './human-fly-versions.mjs?v=1';
+import {VERSIONS,makeVersion} from './human-fly-versions.mjs?v=2';
 const KEY='music-band-room-human-fly-acid-v1';
 const TITLES={bass:'303 · 低音',reply:'303 · 返し'};
 const FADERS=[['volume','音量',100,1],['cutoff','明るさ',100,1],['reso','みょん',12,.1],['env','うねり',100,1],['decay','長さ',100,1],['delay','残響',100,1]];
@@ -73,7 +73,9 @@ export function createAcidPanel({host,onEnable,onChange,onMix,onTempo,onEcho,onF
  find('restore').addEventListener('click',()=>{if(saved)try{const next=validate(saved.state),context=validatePerformanceContext(saved.context);restoreContext(context);config=next;publish('保存したアレンジへ戻しました。STARTで再開できます。');}catch(e){setStatus('復元できません：'+e.message);}});
  find('apply').addEventListener('click',()=>{try{config=validate(JSON.parse(host.querySelector('textarea').value));publish('コードを反映しました。');}catch(e){setStatus('反映できません：'+e.message);}});
  render();
- return {createEngine:createAcidLive,createEffects:createLiveEffects,isFinished:()=>config.arrangement.work!=='custom',sourceHost:()=>host.querySelector('[data-live-source-host]'),state:()=>validate(config),setStatus,setTempo,
+ return {createEngine:createAcidLive,createEffects:createLiveEffects,isFinished:()=>config.arrangement.work!=='custom',
+  usesVocalPickup:()=>config.arrangement.auto && config.arrangement.work==='acid-dub',
+  sourceHost:()=>host.querySelector('[data-live-source-host]'),state:()=>validate(config),setStatus,setTempo,
   setEnabled(value){enabled=value;render();},
   playing(info){currentScene=info.scene||sceneAt(config.arrangement,info.bar-1);renderScene();if(now()>holdStatusUntil)status.textContent=`演奏中 · ${info.bar}小節目 · ${info.chord} · ${currentScene.name}`;}
  };

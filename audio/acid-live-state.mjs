@@ -1,8 +1,8 @@
 // Human Fly's optional live arrangement. Motifs use root/fifth/octave first;
 // the extra suspended tones avoid guessing major/minor from a root-only score.
 import {drumDefaults,validateDrums} from './acid-live-drums.mjs?v=1';
-import {sceneSettings} from './acid-live-scenes.mjs?v=2';
-import {versionNotes} from './human-fly-versions.mjs?v=1';
+import {sceneSettings} from './acid-live-scenes.mjs?v=3';
+import {versionNotes} from './human-fly-versions.mjs?v=2';
 export const PARTS = ['bass', 'reply'];
 const NOTES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const INTERVALS = [0, 2, 5, 7, 12];
@@ -51,8 +51,8 @@ export function dice(value, part, random = Math.random) {
     : step(null));
   return next;
 }
-export function stepsForBar(value, part, bar) {
-  const p = value.parts[part], steps = p.locked?clone(p.steps):versionNotes(value.arrangement.work??'custom',part,bar,p.steps);
+export function stepsForBar(value, part, bar, held=false) {
+  const p = value.parts[part], steps = p.locked?clone(p.steps):versionNotes(value.arrangement.work??'custom',part,bar,p.steps,value.arrangement.auto && !held);
   // An eight-bar question/answer: change one accent or slide, then return to
   // the saved motif. Never add notes, touch levels, or vary a locked phrase.
   if (value.auto && !p.locked && Math.floor(bar / 8) % 2 === 1 && PARTS[Math.floor(bar / 16) % 2] === part) {

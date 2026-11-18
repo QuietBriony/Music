@@ -5,7 +5,7 @@ import {createAcidLive} from '../audio/acid-live.mjs';
 import {drumDice,drumPreset} from '../audio/acid-live-drums.mjs';
 import {sceneAt,effective303,drumPattern} from '../audio/acid-live-scenes.mjs';
 import {createLiveEffects} from '../audio/acid-live-fx.mjs';
-import {VERSIONS,makeVersion,versionScene} from '../audio/human-fly-versions.mjs';
+import {VERSIONS,makeVersion,versionScene,sourceStepSeconds} from '../audio/human-fly-versions.mjs';
 
 const initial=defaults();assert.deepEqual(validate(initial),initial);
 const works=VERSIONS.map(v=>makeVersion(v.id,defaults()));
@@ -24,6 +24,24 @@ for(const [i,v]of works.entries()){
 assert.equal(works[0].context.mastering,'dub');assert.equal(works[0].context.enabled.bass,true);assert.equal(works[0].state.drums.enabled,false);
 assert.equal(works[1].context.mastering,'blend');assert.equal(works[1].context.enabled.drums,false);assert.equal(works[1].state.drums.parts.kick.enabled,true);
 assert.equal(works[2].context.enabled.drums,true);assert.equal(works[2].state.drums.parts.kick.enabled,false);
+const hybrid=works[2].state, fit=117.45;
+for(let i=92*16;i<=99*16;i++){
+ const t=sourceStepSeconds(i,fit,true),straight=sourceStepSeconds(i,fit,false);
+ assert.ok(t<sourceStepSeconds(i+1,fit,true) && Math.abs(t-straight)<15/fit);
+ if(i<=93*16||i>=98*16)assert.equal(t,straight);
+}
+assert.equal(sourceStepSeconds(96*16,fit,true),196.120);
+assert.equal(sourceStepSeconds(96*16-4,fit,true),195.593);
+for(let i=96*16-4;i<96*16;i++)for(const part of ['bass','reply','hat','open','clap']){
+ assert.equal(versionScene('acid-dub',i/16)[part],0,'One beat of recorded rhythm without added parts');
+}
+assert.equal(versionScene('acid-dub',96).bass,1);assert.equal(versionScene('acid-dub',96).reply,0);
+assert.deepEqual(stepsForBar(hybrid,'bass',96).flatMap((s,i)=>s.active?[i]:[]),[0,6,11]);
+const pinnedReturn=structuredClone(hybrid);pinnedReturn.parts.bass.locked=true;
+assert.deepEqual(stepsForBar(pinnedReturn,'bass',96),hybrid.parts.bass.steps);
+assert.deepEqual(stepsForBar(hybrid,'bass',96,true),hybrid.parts.bass.steps);
+const keptScene=structuredClone(hybrid);keptScene.arrangement.auto=false;
+assert.deepEqual(stepsForBar(keptScene,'bass',96),hybrid.parts.bass.steps);
 assert.equal(versionScene('acid-drive',90).kick,0);assert.equal(versionScene('acid-drive',96).kick,1);
 assert.ok(versionScene('acid-drive',96).reply>versionScene('acid-drive',56).reply);
 assert.throws(()=>validate({...initial,arrangement:{...initial.arrangement,work:'unknown'}}));
@@ -99,6 +117,19 @@ engine.start(anchor);
 for(let i=0;i<300;i++){const at=tick();assert.ok(Math.abs(at-(.2+i*15/117.45))<=.5/384+1e-9,'Host wake-up stays within half a tick of the exact recording anchor');}
 assert.equal(peak,1);assert.ok(engine.diagnostics().played>200);
 const oldOutput=outputs.at(-1);engine.stop();assert.equal(events.size,0);assert.equal(oldOutput.links.length,0);assert.equal(engine.diagnostics().voices,0);
+// Seeking into the rest, or between the straight and delayed attack, must
+// schedule the recorded kick once at its source time even at practice speed.
+const synthReturn=structuredClone(hybrid);synthReturn.drums.enabled=false;
+engine.configure(synthReturn);
+for(const rate of [.5,1,1.2])for(const [offset,attack] of [[195.61,196.120],[198.74,198.760]]){
+ const at=ctx.currentTime+.2, baseline=nodes.length;
+ engine.start({...anchor,at,offset,rate});
+ while(!nodes.slice(baseline).some(n=>n.starts)) {assert.ok(events.size && ctx.currentTime<at+2);tick();}
+ const starts=nodes.slice(baseline).flatMap(n=>n.starts||[]);
+ assert.equal(starts.length,1);assert.ok(Math.abs(starts[0]-(at+(attack-offset)/rate))<1e-7);
+ engine.stop();assert.equal(events.size,0);
+}
+engine.configure(initial);
 // Capture a callback that escaped cancellation, then restart. It must be inert.
 engine.start({...anchor,at:ctx.currentTime+.2,offset:40,rate:1.2});
 const stale=[...events.values()][0].fn;engine.stop();

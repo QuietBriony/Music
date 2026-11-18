@@ -33,7 +33,7 @@
       return [t,active.length ? (lift?Math.max(valueAt(points,t),...active.map(w=>valueAt(w,t))):valueAt(active.at(-1),t)) : valueAt(points,t)];
     });
   }
-  function plan(bpm,duration) {
+  function plan(bpm,duration,vocalPickup=false) {
     const {loops}=build(bpm,duration),bar=240/bpm,beat=bar/4;
     function rides(values,fade=1.1) {
       const points=[[0,values[0]]];
@@ -79,9 +79,9 @@
       if(hooks.length)c.dry=overlay(c.dry,hooks,true);
       const at=Math.min(duration-1,234.7);c.wet=overlay(c.wet,[[[at,valueAt(c.wet,at)],[duration,0]]]);
     }
-    return dialogue(curves,bpm,duration);
+    return dialogue(curves,bpm,duration,vocalPickup);
   }
-  function dialogue(curves,bpm,duration) {
+  function dialogue(curves,bpm,duration,vocalPickup) {
     const beat=60/bpm,bar=4*beat;
     const sceneAt=t=>Math.max(0,SECTIONS.findLastIndex(s=>s[0]*bar<=t));
     function multiply(a,b) {
@@ -131,6 +131,14 @@
       }
       c.send=overlay(c.send,sends,true);c.feedback=overlay(c.feedback,feedback,true);c.pan=overlay(c.pan,pan);
       c.dry=overlay(c.dry,hooks,true);c.cutoff=overlay(c.cutoff,tone);c.wet=overlay(c.wet,returns,true);
+    }
+    if (vocalPickup && duration >= 196.12) {
+      // Acid Dub: bring the recorded line forward and send just its ending
+      // into the existing one-beat echo, before the kick returns at 196.120.
+      const vocal=curves.vocals;
+      vocal.dry=overlay(vocal.dry,[[[192.23,valueAt(vocal.dry,192.23)],[192.30,.56],
+        [194.77,.56],[194.93,valueAt(vocal.dry,194.93)]]],true);
+      vocal.send=overlay(vocal.send,[[[194.46,0],[194.50,.55],[194.775,.55],[194.81,0]]],true);
     }
     // Give the lead phrase room, then let the returns breathe in its wake.
     // Only the echo output ducks. The feedback repeats and rhythm keep running.

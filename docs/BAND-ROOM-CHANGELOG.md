@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v445 compact)
+# Band Room - Changelog (v65 -> v446 compact)
+
+## v446 — 2026-11-18
+
+Human Fly「Acid Dub」の3:10〜3:20を編曲。歌の語尾を既存のエコーへ送り、195.593秒から追加楽器を一拍休ませ、196.120秒の生キックで303の低音を戻す。既存の録音と音声時計を使い、途中再生・速さ変更も同じ打点に合わせる。共通PWAは hazama-fm-v446。
 
 ## v445 — 2026-11-04
 
@@ -127,7 +131,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v445. Latest Band Room runtime change: v443 (Human Fly finished versions). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v446. Latest Band Room runtime change: v446 (Human Fly Acid Dub return). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

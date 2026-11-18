@@ -1,4 +1,4 @@
-import {WORKS,versionScene,versionDrums} from './human-fly-versions.mjs?v=1';
+import {WORKS,versionScene,versionDrums} from './human-fly-versions.mjs?v=2';
 export const SCENES = [
   {id:'space',name:'余白',bass:.7,reply:0,kick:.65,snare:0,hat:.35,open:0,clap:0,cutoff:-10},
   {id:'groove',name:'グルーヴ',bass:1,reply:.35,kick:1,snare:.85,hat:.7,open:.25,clap:0,cutoff:0},

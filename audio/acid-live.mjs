@@ -1,13 +1,15 @@
 import { TB303 } from '../experiments/workbench/v1/third_party/acidbros/js/audio/TB303.js?v=br-441';
-import { PARTS, defaults, validate, stepsForBar, chordAt, voiceSteps, voiceParams } from './acid-live-state.mjs?v=3';
+import { PARTS, defaults, validate, stepsForBar, chordAt, voiceSteps, voiceParams } from './acid-live-state.mjs?v=4';
 import { DRUMS, createDrumVoices } from './acid-live-drums.mjs?v=1';
-import { sceneAt, effective303, drumPattern } from './acid-live-scenes.mjs?v=2';
+import { sceneAt, effective303, drumPattern } from './acid-live-scenes.mjs?v=3';
+import { sourceStepSeconds } from './human-fly-versions.mjs?v=2';
 
 // Reuse acidBros voices, but let Band Room own the context, output and clock.
 // Only one future event is owned here; no interval or independent transport.
 export function createAcidLive({context, transport, createFilter, loadFilter, connect, onStatus = () => {}, drumFactory=createDrumVoices}) {
   let config=defaults(), prepared=false, preparing=null, fallback=false, generation=0, event=null, anchor=null, graph=null, lastBar=-1, played=0, cached=null;
   let holds={},lastScene=null;
+  let followReturn=false,lastStep=-1;
   function clearEvent() { if (event !== null) transport.clear(event); event=null; }
   function retire() {
     if (!graph) return;
@@ -23,8 +25,8 @@ export function createAcidLive({context, transport, createFilter, loadFilter, co
     graph.drums?.dispose();
     graph=null;
   }
-  function stop() { generation++;clearEvent();retire();anchor=null;lastBar=-1;cached=null;holds={};lastScene=null; }
-  function levels(time=context.currentTime,position=Math.max(0,lastBar)) {
+  function stop() { generation++;clearEvent();retire();anchor=null;lastBar=-1;lastStep=-1;cached=null;holds={};lastScene=null; }
+  function levels(time=context.currentTime,position=Math.max(0,lastStep)/16) {
     if (!graph) return;
     const mix=.22*(config.arrangement.gain??1);
     if(graph.lastMix!==mix){graph.lastMix=mix;graph.output.gain.cancelScheduledValues(time);graph.output.gain.setTargetAtTime(mix,time,.035);}
@@ -48,22 +50,29 @@ export function createAcidLive({context, transport, createFilter, loadFilter, co
   }
   function enqueue(index, token) {
     if (token!==generation || !anchor || !graph) return;
-    const sixteenth=15/anchor.bpm;
-    // Skip missed beats instead of emitting a burst after a blocked UI/resume.
-    index=Math.max(index,Math.ceil((anchor.offset+Math.max(0,context.currentTime+.012-anchor.at)*anchor.rate)/sixteenth-1e-7));
-    const content=index*sixteenth;
+    const earliest=anchor.offset+Math.max(0,context.currentTime+.012-anchor.at)*anchor.rate;
+    // Each recorded attack is within one sixteenth of the score. Start one
+    // step back on seek/resume so a late kick in that step is still reachable.
+    index=Math.max(index,Math.floor(earliest*anchor.bpm/15)-1);
+    let content=sourceStepSeconds(index,anchor.bpm,followReturn);
+    while(content<earliest-1e-8) content=sourceStepSeconds(++index,anchor.bpm,followReturn);
     if (content>=anchor.duration) { stop();return; }
     const at=anchor.at+(content-anchor.offset)/anchor.rate;
     const ticks=transport.getTicksAtTime(at);
     event=transport.scheduleOnce(() => {
-      event=null;
       if (token!==generation || !anchor || !graph) return;
+      event=null;
+      lastStep=index;
       const bar=Math.floor(index/16), step=index%16;
       if (at>=context.currentTime-.025 && context.state==='running') {
         const chord=chordAt(anchor.song,bar);
         const scene=sceneAt(config.arrangement,index/16);lastScene=scene;levels(Math.max(at,context.currentTime),index/16);
-        if (!cached || cached.bar!==bar) cached={bar, sequences:Object.fromEntries(PARTS.map(p=>[p,voiceSteps(stepsForBar(config,p,bar),p,chord)])),
-          previous:Object.fromEntries(PARTS.map(p=>[p,voiceSteps(stepsForBar(config,p,Math.max(0,bar-1)),p,chordAt(anchor.song,Math.max(0,bar-1)))[15]]))};
+        if (!cached || cached.bar!==bar) {
+          const phrase=(part,measure,root)=>voiceSteps(stepsForBar(config,part,measure,(holds[part]||0)>measure),part,root);
+          const prior=Math.max(0,bar-1), priorChord=chordAt(anchor.song,prior);
+          cached={bar,sequences:Object.fromEntries(PARTS.map(p=>[p,phrase(p,bar,chord)])),
+            previous:Object.fromEntries(PARTS.map(p=>[p,phrase(p,prior,priorChord)[15]]))};
+        }
         for (const p of PARTS) {
           const settings=effective303(config.parts[p],p,scene,(holds[p]||0)>index/16);
           if(!config.parts[p].enabled||settings.gain===0){graph.voices[p]?.stop(Math.max(at,context.currentTime));continue;}
@@ -86,17 +95,24 @@ export function createAcidLive({context, transport, createFilter, loadFilter, co
       if (!prepared && !preparing) preparing=Promise.resolve().then(loadFilter).catch(()=>{fallback=true;}).then(()=>{prepared=true;}).finally(()=>{preparing=null;});
       await preparing;
     },
-    configure(value,{part}={}) { config=validate(value);if(part)holds[part]=Math.max(0,lastBar)+2;cached=null;levels(); },
+    configure(value,{part}={}) {
+      config=validate(value);
+      const wasFollowing=followReturn;
+      followReturn=config.arrangement.auto && config.arrangement.work==='acid-dub';
+      if(part)holds[part]=Math.max(0,lastBar)+2;
+      cached=null;levels();
+      if(event!==null && wasFollowing!==followReturn){clearEvent();enqueue(lastStep+1,++generation);}
+    },
     start(options) {
       stop();
       if (!prepared) throw Error('303の準備が終わっていません。');
       validClock(options);
-      anchor={...options};build();played=0;enqueue(Math.ceil(options.offset*options.bpm/15-1e-7),generation);
+      anchor={...options};build();played=0;enqueue(0,generation);
     },
     retime(options) {
       if (!graph) return this.start(options);
-      validClock(options);generation++;clearEvent();anchor={...options};cached=null;
-      enqueue(Math.ceil(options.offset*options.bpm/15-1e-7),generation);
+      validClock(options);generation++;clearEvent();anchor={...options};cached=null;lastStep=-1;
+      enqueue(0,generation);
     },
     stop,
     diagnostics:()=>({prepared,fallback,active:!!graph,ownedEvents:event===null?0:1,voices:graph?Object.keys(graph.voices).length:0,drums:graph?.drums?.diagnostics()||null,scene:lastScene?.id||null,phase:lastScene?.phase??null,sceneName:lastScene?.name||null,work:config.arrangement.work,sceneAuto:config.arrangement.auto,played,bar:lastBar+1,anchor:anchor?{at:anchor.at,offset:anchor.offset,rate:anchor.rate,bpm:anchor.bpm}:null}),

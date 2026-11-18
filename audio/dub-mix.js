@@ -75,7 +75,7 @@
     }
     return{
       schedule(options){
-        if(disposed)throw new Error("Disposed dub mix");validate(options);settings={...options};curves=root.RecordedDubArrangement.plan(options.bpm,options.duration);
+        if(disposed)throw new Error("Disposed dub mix");validate(options);settings={...options};curves=root.RecordedDubArrangement.plan(options.bpm,options.duration,options.vocalPickup);
         loops?.destroy();loops=root.RecordedDubArrangement.createLoops(context,options,buffers,loopTargets,initialMute);
         for(const p of ALL_PARTS){
           automate(direct[p].gain,curves[p].dry,options);automate(sources[p].gain,curves[p].source,options);

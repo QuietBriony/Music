@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-276-finished-versions";
-  const BANDROOM_RELEASE_VERSION = "v443";
+  const BANDROOM_APP_VERSION = "br-277-acid-dub-return";
+  const BANDROOM_RELEASE_VERSION = "v446";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -153,6 +153,7 @@
   let acidLiveEffects = null, acidEffectsContext = null;
   const acidSourceSlots = new Map();
   let stemPlaybackAnchor = null;
+  let acidVocalPickup = false;
   let originalMasteringWasChosen = false;
   let masterLimiter = null;
   let masterSilenceGate = null;
@@ -588,6 +589,12 @@
   }
 
   function acidLiveSupported() { return humanFlyDubSupported() && currentMode === "stems"; }
+  function syncAcidVocalPickup() {
+    const pickup = acidLiveEnabled && acidLiveSupported() && acidLivePanel?.usesVocalPickup() === true;
+    if (acidVocalPickup === pickup) return;
+    acidVocalPickup = pickup;
+    if (state.started && originalMastering === "dub" && stemPlaybackAnchor) syncRecordedDub();
+  }
   function stopAcidLive() {
     acidLiveGeneration++;
     acidLiveEngine?.stop();
@@ -630,7 +637,7 @@
     placeAcidSourceControls(acidLiveSupported() && $("br-acid-controls")?.hidden === false);
     document.body?.classList.toggle("br-acid-open", acidLiveSupported() && $("br-acid-controls")?.hidden === false);
     if (!acidLiveSupported()) {
-      stopAcidLive(); coherentStemMix?.setRoomAmount(.65); acidLiveEnabled = false; acidLivePanel?.setEnabled(false);
+      stopAcidLive(); coherentStemMix?.setRoomAmount(.65); acidLiveEnabled = false; acidLivePanel?.setEnabled(false); syncAcidVocalPickup();
     }
   }
   async function prepareAcidLive() {
@@ -664,6 +671,7 @@
   async function enableAcidLive(value) {
     acidLiveEnabled = Boolean(value) && acidLiveSupported();
     acidLivePanel?.setEnabled(acidLiveEnabled);
+    syncAcidVocalPickup();
     if (!acidLiveEnabled) { acidLiveGeneration++; acidLiveEngine?.stop(); acidLivePanel?.setStatus("追加楽器OFF。原演奏と手動エコーは使えます。"); return; }
     const token = ++acidLiveGeneration;
     if (!state.started) { acidLivePanel?.setStatus("追加楽器ON。STARTで曲と一緒に開始します。"); return; }
@@ -673,7 +681,7 @@
       if (token === acidLiveGeneration && state.started && acidLiveEnabled && acidLiveSupported()) syncAcidLivePlayback();
     } catch (error) {
       if (token !== acidLiveGeneration) return;
-      acidLiveEnabled = false; acidLiveEngine?.stop(); acidLivePanel?.setEnabled(false);
+      acidLiveEnabled = false; acidLiveEngine?.stop(); acidLivePanel?.setEnabled(false); syncAcidVocalPickup();
       acidLivePanel?.setStatus("303を開始できませんでした：" + error.message);
     }
   }
@@ -687,7 +695,7 @@
       button.disabled = true;
       try {
         if (!acidLivePanel) {
-          const { createAcidPanel } = await import("./audio/acid-live-panel.mjs?v=3");
+          const { createAcidPanel } = await import("./audio/acid-live-panel.mjs?v=4");
           if (!acidLiveSupported()) return;
           acidLivePanel = createAcidPanel({ host,
             tempo: Number($("br-tempo-mult")?.value || 100),
@@ -695,7 +703,7 @@
             storage: { getItem: key => window.localStorage.getItem(key), setItem: (key,value) => window.localStorage.setItem(key,value) },
             onEnable: enableAcidLive,
             onPlay: async () => { clearLoopRange(); refreshLoopVisuals(); await Tone.start(); return startPlayback(); },
-            onChange: (config, options) => acidLiveEngine?.configure(config, options),
+            onChange: (config, options) => { acidLiveEngine?.configure(config, options); syncAcidVocalPickup(); },
             onEcho: throwAcidEcho, onFx: applyAcidEffects,
             captureContext: () => ({ tempo: Number($("br-tempo-mult")?.value || 100), position: clampPlaybackSecond(state.started ? playbackContentElapsedSec() : Number(state.pendingSeekOffsetSec ?? state.playbackStartOffsetSec ?? 0)),
               instruments: acidLiveEnabled, mastering: ["blend", "dub"].includes(originalMastering) ? originalMastering : "blend",
@@ -752,7 +760,7 @@
     const offset = anchor.offset + Math.max(0, now - anchor.at) * anchor.rate;
     const duration = Number(state.songData?.performance_duration_s);
     if (!Number.isFinite(duration) || offset >= duration) { coherentStemMix.stopDub(); return; }
-    coherentStemMix.startDub({ at, offset, rate: anchor.rate,
+    coherentStemMix.startDub({ at, offset, rate: anchor.rate, vocalPickup: acidVocalPickup,
       bpm: Number(state.songData?.guitar_line?.bpm_fit), duration },
       Object.fromEntries(STEM_NAMES.map(part => [part, stemPlayers[part].buffer.get()])));
     for (const part of STEM_NAMES) coherentStemMix.setDubMuted(part, $("br-toggle-stem-" + part)?.checked === false);

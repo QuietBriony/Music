@@ -22,6 +22,13 @@ const sb={console,Float32Array,setTimeout:fn=>{timers.set(++serial,fn);return se
 for(const f of ['audio/dub-arrangement.js','audio/dub-mix.js','audio/stem-live-mix.js'])vm.runInContext(readFileSync(f,'utf8'),sb);
 const dub=sb.RecordedDubMix,arr=sb.RecordedDubArrangement,opts={bpm:117.45,duration:239.491,rate:1,offset:0,at:0};
 const plan=dub.plan(opts.bpm,opts.duration),form=arr.build(opts.bpm,opts.duration),value=dub.valueAt;
+const pickup=arr.plan(opts.bpm,opts.duration,true);
+assert.equal(value(pickup.vocals.dry,193),.56);assert.equal(value(plan.vocals.dry,193),.12);
+assert.equal(value(pickup.vocals.send,194.7),.55);assert.equal(value(plan.vocals.send,194.7),0);
+for(const t of [0,52,190,196.12,231])for(const param of ['dry','send','wet']){
+ assert.ok(Math.abs(value(pickup.vocals[param],t)-value(plan.vocals[param],t))<1e-8);
+}
+assert.deepEqual(pickup.drums,plan.drums);assert.deepEqual(pickup.bass,plan.bass);
 assert.equal(form.scenes.length,9);assert.equal(form.loops.length,2);
 for(let t=0;t<opts.duration;t+=.071){
   assert.equal(value(plan.drums.dry,t),1,'The drummer is never stopped by the arrangement');
@@ -102,5 +109,5 @@ for(const bpm of [110,117.45,125])for(const duration of [1,6,16,60,118,131,234,2
   if(i)assert.ok(t>points[i-1][0]);
  }
 }
-for(const f of ['band-room.html','sw.js'])assert.ok(readFileSync(f,'utf8').includes('audio/dub-mix.js?v=7'));
+for(const f of ['band-room.html','sw.js'])assert.ok(readFileSync(f,'utf8').includes('audio/dub-mix.js?v=8'));
 console.log('Human Fly Dub console: continuous rhythm, source-backed phrase response, bounded damped feedback, 2-bar loop phase, ordinary bypass, mute/seek/rate/Stop ownership passed');

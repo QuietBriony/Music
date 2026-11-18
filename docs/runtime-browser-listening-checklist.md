@@ -1,5 +1,9 @@
 # Runtime Browser Listening Checklist
 
+## Human Fly · Acid Dub
+
+With hazama-fm-v446 and band-room.js?v=br-277, seek to 3:10 during Acid Dub. Check that the recorded parts continue through the one-beat rest and that the low 303 returns on the kick at 196.120 seconds. Repeat at 80% speed, then check Stop and restore the other two versions.
+
 ## Practice plucked strings (v12)
 
 - Load silently; start no microphone or PCM generation until the matching manual action. Play guitar and sanshin references through their tails; repeat and stop with either reference or Stop.
