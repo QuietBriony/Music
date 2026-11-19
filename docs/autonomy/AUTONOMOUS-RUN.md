@@ -104,6 +104,10 @@ executionはmachine capabilityとoperatorの明示許可が揃う時だけで、
 
 ## Codex CLI で回す場合
 
+2026-11-17 時点の実態：Codex は worker（`worker-gaming`）の Codex デスクトップアプリのスレッドで動く。
+Claude は依頼文を repo に置き（例 `docs/autonomy/BL-053-v44-handoff.md`）、本人が自分の言葉の承認と一緒にスレッドへ送る。
+CLI は版が古いと本人の設定モデルが使えない（0.145.0 で確認）。SSH から `codex exec` を回す経路は使わない。下の CLI の手順は、CLI から始める場合の控え。
+
 このプレイブックは Claude / Codex どちらでも同じ手順。Codex CLI の場合:
 
 1. `cd C:\workspace\music-stack\Music`

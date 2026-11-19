@@ -1,6 +1,6 @@
 # BL-053 練習PWA v42：民謡の伴走を広げる（Codex 用の依頼文）
 
-2026-11-17 に Claude が書いた依頼文。worker（MyComputer）の Codex アプリにある、練習PWAのスレッド
+2026-11-17 に Claude が書いた依頼文。worker（`worker-gaming`）の Codex アプリにある、練習PWAのスレッド
 「ギターと三味線の練習PWA検討」（v1〜v41 を作ったスレッド）で使う。
 この文書だけでは本人の承認にならない。本人がスレッドに書いた言葉を承認として扱う（`docs/CODEX-HANDOFF.md`「dot・agent経由の依頼の受領票」）。
 
@@ -15,7 +15,7 @@
 
 ## 作業する場所
 
-- PC は worker（MyComputer）。Music repo は `C:\workspace\music-stack\Music`。
+- PC は worker（`worker-gaming`）。Music repo は `C:\workspace\music-stack\Music`。
 - まず `git -C C:\workspace\music-stack\Music fetch origin` で最新を取る（main 本体のファイルには触れない）。
 - 作業は worktree で行う。`C:\workspace\music-stack\Music-practice` が clean なら、そこで origin/main から branch `codex/practice-minyo-<日付>` を作る。clean でなければ新しい worktree を作る。
 - `C:\workspace\music-stack\Music` 本体（main、未保存の変更あり）と `C:\workspace\music-stack\music-ops` には触らない。pull・reset・stash・checkout もしない。

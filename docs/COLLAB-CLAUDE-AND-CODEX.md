@@ -225,6 +225,10 @@ user がこの指示を出した turn は、最後に全 repo の open PR / 作�
 
 ## claude code が codex を呼ぶフロー (orchestration)
 
+2026-11-17 時点の実態：Codex は worker（`worker-gaming`）の Codex デスクトップアプリで動く（Surface の Codex アプリからは、接続先を worker にして同じスレッドを使う）。
+通常は、Claude が依頼文を repo に置き、本人が自分の言葉の承認と一緒にスレッドへ送る。
+Claude が送った文だけでは本人の承認にならない（`docs/CODEX-HANDOFF.md`「dot・agent経由の依頼の受領票」）。下の手順は、同じ PC のアプリを操作した2026-07の記録。
+
 claude code は **computer-use MCP** 経由で Codex Desktop App を操作可能:
 
 1. `request_access` で ChatGPT / Codex に access 取得
