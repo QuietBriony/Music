@@ -1,0 +1,378 @@
+{
+  "checked": "2026-11-19",
+  "timezone": "Asia/Tokyo",
+  "scope": "All video IDs currently reachable through bundled embedded-video loaders; external link-only lessons are outside this list. User-provided video IDs are not classified.",
+  "method": {
+    "official_guide": "https://developers.google.com/youtube/data/guides/made_for_kids_status",
+    "status_reference": "https://developers.google.com/youtube/v3/docs/videos#status.madeForKids",
+    "attempt": "YouTube Data API videos.list, part=status, all bundled IDs, without credentials. No watch-page scraping or inferred audience classification.",
+    "http_status": 403,
+    "reason": "forbidden",
+    "result": "The app has no configured Data API lookup. The unauthenticated request was rejected, so madeForKids could not be confirmed. No API credential, OAuth, account or quota configuration added."
+  },
+  "playback": "All embeds use youtube-nocookie.com, autoplay=0, explicit consent and manual load; no app analytics. These measures are not a substitute for verifying madeForKids.",
+  "known_made_for_kids_policy": "No video is asserted to be not-made-for-kids. If a video is confirmed madeForKids, keep it external-link-only until its tracking treatment is verified against the official requirements.",
+  "videos": [
+    {
+      "id": "KtCfvLS00q8",
+      "uses": [
+        "sanshin:shimauta"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "xtf0OAu-qVY",
+      "uses": [
+        "sanshin:jidai"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "okh_qd2soiM",
+      "uses": [
+        "sanshin:warabigami"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "Y_fbowljnBE",
+      "uses": [
+        "sanshin:nadasoso"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "Ot38HOn_y08",
+      "uses": [
+        "sanshin:sanshinnohana"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "XkmKijcH63s",
+      "uses": [
+        "sanshin:tinsagu"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "7GmB2WV4D4A",
+      "uses": [
+        "sanshin:tsukinu"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "c9It3inn_qo",
+      "uses": [
+        "sanshin:anata-ni"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "wMFlMLMG1c0",
+      "uses": [
+        "sanshin:asatoya"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "GOO7yXvEEUY",
+      "uses": [
+        "sanshin:aha"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "qB0Ggzu2X18",
+      "uses": [
+        "sanshin:akata"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "KxlQFMX3yEw",
+      "uses": [
+        "sanshin:tancha"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "yTmLDZZFDrA",
+      "uses": [
+        "sanshin:anata-ni:performance"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "GLvohMXgcBo",
+      "uses": [
+        "guitar:reference:under-the-bridge"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "Man4Xw8Xypo",
+      "uses": [
+        "guitar:reference:blackbird"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "YkgkThdzX-8",
+      "uses": [
+        "guitar:reference:imagine"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "ZhfWiU8wGCc",
+      "uses": [
+        "guitar:reference:woman"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "GlPlfCy1urI",
+      "uses": [
+        "guitar:reference:your-song"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "1ti2YCFgCoI",
+      "uses": [
+        "guitar:reference:could-you-be-loved"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "hEMm7gxBYSc",
+      "uses": [
+        "guitar:reference:sleep-last-night"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "AEYN5w4T_aM",
+      "uses": [
+        "guitar:reference:santeria"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "kr1n2Pzn4eA",
+      "uses": [
+        "guitar:reference:yes-my-love"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "KgKycz0uHbM",
+      "uses": [
+        "guitar:reference:tokiyo"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "x0YbxY-u7fI",
+      "uses": [
+        "guitar:reference:jigsaw"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "oFWhUvOFQxc",
+      "uses": [
+        "guitar:material:imagine"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "2WnFu1hij7c",
+      "uses": [
+        "guitar:material:woman"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "5wlQ-AYhb2M",
+      "uses": [
+        "guitar:material:santeria"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "YC8HVwq0Tks",
+      "uses": [
+        "guitar:material:sleep-last-night"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "2EPFtnTex9g",
+      "uses": [
+        "guitar:material:blackbird"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "vPnURDDWMW0",
+      "uses": [
+        "guitar:material:under-the-bridge"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "8KBAuOBoemw",
+      "uses": [
+        "guitar:material:your-song"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "tXssLSMy3mk",
+      "uses": [
+        "guitar:material:could-you-be-loved"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "1xkjzhcWHMA",
+      "uses": [
+        "hand:f",
+        "hand:fm"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "gPCT6OYNmWg",
+      "uses": [
+        "hand:b"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "f18EV2dr008",
+      "uses": [
+        "hand:c"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    },
+    {
+      "id": "IscDj_-Nr0s",
+      "uses": [
+        "hand:basic"
+      ],
+      "madeForKids": null,
+      "verification": "unconfirmed",
+      "checked": "2026-11-19",
+      "evidence": "method above; no per-video status returned"
+    }
+  ]
+}

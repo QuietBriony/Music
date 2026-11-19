@@ -1,5 +1,5 @@
-import { mountLyrics } from './lyrics.mjs?v=45';
-import {FOLK_LYRICS} from './folk-lyrics.mjs?v=45';
+import { mountLyrics } from './lyrics.mjs?v=46';
+import {FOLK_LYRICS} from './folk-lyrics.mjs?v=46';
 
 // Reuse the same bounded, local-only lyric editor with independent DOM ids.
 export function mountVideoLyrics(host,prefix,{steps=false,onImport,onSheet=()=>{},onDisplay=()=>{},getVideoTime=null}={}){

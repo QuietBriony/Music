@@ -1,7 +1,7 @@
-import { renderLyricReference } from './score-lyrics.mjs?v=45';
-import { CHORDS } from './chords.mjs?v=45';
-import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=45';
-import {packLyricRecord,migratePresetCopy} from './lyric-storage.mjs?v=45';
+import { renderLyricReference } from './score-lyrics.mjs?v=46';
+import { CHORDS } from './chords.mjs?v=46';
+import { normalizeLyricNotes, readParallelNotes } from './lyric-notes.mjs?v=46';
+import {packLyricRecord,migratePresetCopy} from './lyric-storage.mjs?v=46';
 export const LYRIC_LIMIT=20000;
 export function readLyrics(text){
  if(typeof text!=='string'||text.length>LYRIC_LIMIT)throw new Error('歌詞は2万字までです。');

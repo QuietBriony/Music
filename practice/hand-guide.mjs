@@ -1,9 +1,12 @@
-import { gripChoices,fingerSteps,soundingStrings,gripTips,FINGER_NAMES,handLesson,fingerMoves,stringCheck } from './hand-guide-core.mjs?v=45';
-import { lessonPlayer } from './youtube.mjs?v=45';
+import {CONSENT_EVENT,POLICY_OPEN_EVENT,hasYouTubeConsent} from './privacy.mjs?v=46';
+import { gripChoices,fingerSteps,soundingStrings,gripTips,FINGER_NAMES,handLesson,fingerMoves,stringCheck } from './hand-guide-core.mjs?v=46';
+import { lessonPlayer } from './youtube.mjs?v=46';
 const $=id=>document.getElementById(id),ns='http://www.w3.org/2000/svg';
 const colors=['','#245f9a','#915100','#804ba1','#14776f'];
 function element(tag,attrs={},value){const e=document.createElementNS(ns,tag);for(const [k,v]of Object.entries(attrs))e.setAttribute(k,v);if(value!==undefined)e.textContent=value;return e;}
 export function mountHandGuide({pausePractice}){
+ window.addEventListener(POLICY_OPEN_EVENT,()=>{try{player?.pauseVideo?.();}catch{}});
+ window.addEventListener(CONSENT_EVENT,()=>{if(!hasYouTubeConsent()){destroyVideo();$('hand-video-status').textContent='動画への同意を取り消しました。指の図は使えます。';}});
  const dialog=$('hand-dialog');let name='',choices=[],choice=0,step=0,capo=0,origin=null,player=null,ticket=0,ready=false,pair=[],pairIndex=0,checkString=1;
  $('hand-title').tabIndex=-1;
  for(let string=6;string>=1;string--){const b=document.createElement('button'),label=document.createElement('strong'),detail=document.createElement('small');b.type='button';b.dataset.handString=string;label.textContent=`${string}弦`;b.append(label,detail);$('hand-string-buttons').append(b);}
@@ -53,7 +56,7 @@ export function mountHandGuide({pausePractice}){
   },()=>request===ticket&&dialog.open);if(request!==ticket||!dialog.open){created?.destroy();return;}player=created;
   }catch(e){if(request===ticket){$('hand-video-load').disabled=false;$('hand-video-status').textContent=e.message;}}
  }
- function jumpTo(id){const e=$(id);dialog.scrollTo({top:dialog.scrollTop+e.getBoundingClientRect().top-dialog.getBoundingClientRect().top-$('hand-header').offsetHeight-12,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
+ function jumpTo(id,instant=false){const e=$(id);dialog.scrollTo({top:dialog.scrollTop+e.getBoundingClientRect().top-dialog.getBoundingClientRect().top-$('hand-header').offsetHeight-12,behavior:instant||matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
  $('hand-to-steps').onclick=()=>jumpTo('hand-steps-section');$('hand-to-change').onclick=()=>jumpTo('hand-change-section');$('hand-to-posture').onclick=()=>jumpTo('hand-posture-section');$('hand-to-video').onclick=()=>jumpTo('hand-video-section');
  $('hand-close').onclick=close;dialog.addEventListener('cancel',e=>{e.preventDefault();close();});dialog.addEventListener('close',()=>{destroyVideo();document.body.classList.remove('hand-help-open');origin?.focus({preventScroll:true});});
  $('hand-shape').onchange=()=>{choice=Number($('hand-shape').value);pair[pairIndex].choice=choice;step=$('hand-sound-check').open?fingerSteps(choices[choice].shape).length-1:0;draw();};
@@ -62,7 +65,7 @@ export function mountHandGuide({pausePractice}){
  $('hand-string-buttons').onclick=e=>{const b=e.target.closest('[data-hand-string]');if(b){checkString=Number(b.dataset.handString);draw();}};
  $('hand-step-list').onclick=e=>{const b=e.target.closest('[data-step]');if(b){step=Number(b.dataset.step);draw();}};
  $('hand-next').onclick=()=>{step++;draw();};$('hand-prev').onclick=()=>{step--;draw();};$('hand-all').onclick=()=>{step=fingerSteps(choices[choice].shape).length-1;draw();};
- $('hand-video-load').onclick=loadVideo;$('hand-video-play').onclick=()=>{if(ready){jumpTo('hand-video-section');player.playVideo();}};$('hand-video-pause').onclick=()=>{if(ready)player.pauseVideo();};$('hand-source').onclick=()=>{if(ready)player.pauseVideo();};
+ $('hand-video-load').onclick=loadVideo;$('hand-video-play').onclick=()=>{if(ready){jumpTo('hand-player',true);player.playVideo();}};$('hand-video-pause').onclick=()=>{if(ready)player.pauseVideo();};$('hand-source').onclick=()=>{if(ready)player.pauseVideo();};
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&dialog.open){destroyVideo();$('hand-video-load').disabled=false;$('hand-video-status').textContent='画面を離れたので動画を停止しました。';}});window.addEventListener('pagehide',close);
  return{close,open(options){const available=gripChoices(options.name,options.shape);if(!available.length)return;pausePractice();capo=Number.isInteger(options.capo)?options.capo:0;origin=document.activeElement;
   pair=[{name:options.name,choices:available,choice:0}];const next=options.next,nextChoices=next?.name!==options.name?gripChoices(next?.name,next?.shape):[];if(nextChoices.length)pair.push({name:next.name,choices:nextChoices,choice:0});

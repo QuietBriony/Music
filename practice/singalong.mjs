@@ -1,22 +1,25 @@
-import { mountVideoLyrics } from './video-lyrics.mjs?v=45';
-import { scoreLyricAnnotations,setScoreLyric } from './score-lyrics.mjs?v=45';
-import { songSupport } from './song-support.mjs?v=45';
-import { MicInputBoost } from './mic-input.mjs?v=45';
-import { cueAt } from './video-cues.mjs?v=45';
-import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=45';
-import { MATERIAL_COURSES,materialChoice,materialLyricKey,materialUpgradeState } from './material-courses.mjs?v=45';
-import { correctedCourse,practiceClock } from './harmony-timeline.mjs?v=45';
-import { guitarShape,drawChord,fillFingerList,strumInstruction,gripCard } from './chord-guide.mjs?v=45';
-import { STUDIES } from './learning.mjs?v=45';
-import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=45';
-import { detectChord,ChordGate,chordAttackLevel } from './polyphonic.mjs?v=45';
-import { lessonPlayer } from './youtube.mjs?v=45';
-import { EASY_CAPOS,transposeChord,arrangeCourse,availableCapos,nextChange,changeCue,chordPhrase,timeLabel } from './song-coach.mjs?v=45';
+import {CONSENT_EVENT,POLICY_OPEN_EVENT,hasYouTubeConsent} from './privacy.mjs?v=46';
+import { mountVideoLyrics } from './video-lyrics.mjs?v=46';
+import { scoreLyricAnnotations,setScoreLyric } from './score-lyrics.mjs?v=46';
+import { songSupport } from './song-support.mjs?v=46';
+import { MicInputBoost } from './mic-input.mjs?v=46';
+import { cueAt } from './video-cues.mjs?v=46';
+import { PREPARED_COURSES,courseState } from './singalong-courses.mjs?v=46';
+import { MATERIAL_COURSES,materialChoice,materialLyricKey,materialUpgradeState } from './material-courses.mjs?v=46';
+import { correctedCourse,practiceClock } from './harmony-timeline.mjs?v=46';
+import { guitarShape,drawChord,fillFingerList,strumInstruction,gripCard } from './chord-guide.mjs?v=46';
+import { STUDIES } from './learning.mjs?v=46';
+import { SING_SHAPES,readSteps,videoId,validRange,fingeringText,sectionStarts } from './singalong-core.mjs?v=46';
+import { detectChord,ChordGate,chordAttackLevel } from './polyphonic.mjs?v=46';
+import { lessonPlayer } from './youtube.mjs?v=46';
+import { EASY_CAPOS,transposeChord,arrangeCourse,availableCapos,nextChange,changeCue,chordPhrase,timeLabel } from './song-coach.mjs?v=46';
 const STORAGE='music-practice-singalong-v1';
 const lessons=STUDIES.guitar.map(s=>({...s,instrument:'guitar',referenceVideo:s.video||s.lesson,video:PREPARED_COURSES[s.id]?.url||s.video||s.lesson}));
 const text=(id,value)=>{const e=document.getElementById(id);if(e.textContent!==String(value))e.textContent=value;};
 const $=id=>document.getElementById(id);
 export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
+ window.addEventListener(POLICY_OPEN_EVENT,()=>{pause();});
+ window.addEventListener(CONSENT_EVENT,()=>{if(!hasYouTubeConsent()){pause();destroyPlayer();status('動画への同意を取り消しました。内蔵譜の練習は続けられます。');}});
  let saved={};try{saved=JSON.parse(localStorage.getItem(STORAGE)||'{}')||{};}catch{}
  let selected=lessons.find(s=>s.id===saved.selected)||lessons[0],steps=[],course=null,baseCourse=null,corrections=null,customOrder='',state={},active=false,player=null,ready=false,playerTicket=0,timer=null;
  let inputTicket=0,stream=null,ctx=null,source=null,analyser=null,silent=null,meter=null,inputBoost=null;
@@ -53,7 +56,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
   player.seekTo(state.videoTime,true);if(!playing)player.pauseVideo();store();render();
  }
  function showPerformance(){const panel=document.querySelector('.sing-workspace');if(panel.getBoundingClientRect().top<0)panel.scrollIntoView({block:'start',behavior:'instant'});}
- function continueVideo(){if(!ready)return;waiting=false;if(course?.material&&finishedVideo()&&!state.loop){state.videoTime=Math.max(0,course.times[steps.findIndex(s=>!s.silent)]-state.offset);player.seekTo(state.videoTime,true);} $('sing-position-details').open=true;player.playVideo();render();showPerformance();}
+ function continueVideo(){if(!ready)return;if(!player.localClock&&document.body.classList.contains('sing-diagram-only')){status('動画を再開するには「動画も並べる」を押してください。');return;}waiting=false;if(course?.material&&finishedVideo()&&!state.loop){state.videoTime=Math.max(0,course.times[steps.findIndex(s=>!s.silent)]-state.offset);player.seekTo(state.videoTime,true);} $('sing-position-details').open=true;showPerformance();player.playVideo();render();}
  function renderClock(){
   const duration=Number(player?.getDuration?.())||course?.end||1;
   text('sing-video-time',`${timeLabel(state.videoTime||0)} / ${timeLabel(duration)}`);
@@ -235,7 +238,7 @@ export function mountSingalong({onTakeOver,onChange,onHandGuide,onWarmup}){
  $('sing-mic').onclick=startInput;$('sing-mic-stop').onclick=()=>{stopInput();status('マイクを止めました。');};
  for(const id of ['sing-source','sing-lesson-link','sing-analysis-source'])$(id).addEventListener('click',pause);
  $('sing-outside').addEventListener('click',pause);
- $('sing-layout').onclick=()=>{const only=document.body.classList.toggle('sing-diagram-only');if(only){try{player?.pauseVideo?.();}catch{}state.loop=false;}text('sing-layout',only?'動画も並べる':'コード図を大きく');};
+ $('sing-layout').onclick=()=>{const only=document.body.classList.toggle('sing-diagram-only');if(only){pause();state.loop=false;}text('sing-layout',only?'動画も並べる':'コード図を大きく');};
  $('sing-code-save').onclick=()=>{try{const next=readSteps($('sing-code-input').value);stopInput();steps=next;customOrder=$('sing-code-input').value;state.follow=false;state.index=0;store();makeTrack();render();status('コードの並びをこの曲に保存しました。動画とは自動同期しません。');}catch(e){status(e.message);}};
  $('sing-code-reset').onclick=()=>{customOrder='';$('sing-code-input').value='';stopInput();if(course?.estimated&&videoId(selected.video)!==course.video){store();select(selected.id);return;}steps=course?.steps||[];const arranged=state.arranged,waitChanges=state.waitChanges;state=courseState(null,course,steps);state.arranged=arranged;state.waitChanges=waitChanges;state.follow=canFollow();if(ready&&following())seekVideo(0);store();makeTrack();render();};
  document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();if(active)status('画面を離れたので、動画とマイクを止めました。');}});window.addEventListener('pagehide',pause);
