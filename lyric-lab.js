@@ -1298,7 +1298,7 @@ function buildAiHandoffPacket() {
     currentLyric || "none",
     "",
     "本人の追記（結論にまとめず、引っかかりや余白も残す）:",
-    ...(state.result?.notes || []).map(note => note.text),
+    ...(state.result?.notes || []).map(note => note.quote ? `「${note.quote}」\n${note.text}` : note.text),
     "",
     "声と音のメモ:",
     state.result?.soundNote || "未定"
@@ -1320,7 +1320,7 @@ function syncHeaders() { return { "Content-Type": "application/json", "X-Lyric-L
 function workspace() {
   if (!state.working) return state.resume || null;
   return { item: state.working, editing: state.editing, dirty: state.dirty, title: $("ll-title").value,
-    text: $("ll-view-final").value, note: $("ll-note").value, sound: $("ll-sound-note").value,
+    readingDirty: state.readingDirty, text: $("ll-view-final").value, note: $("ll-note").value, noteLine: $("ll-note-line").value, sound: $("ll-sound-note").value,
     audio: $("ll-audio-url").value, seed: $("ll-seed").value, settings: controls() };
 }
 function persist() {
@@ -1378,11 +1378,12 @@ function node(tag, text, className) {
 function renderLibrary() {
   const root = $("ll-library-main"); root.replaceChildren();
   if (state.resume) {
-    const resume = node("button", "書きかけを続ける", "ll-resume");
+    const title = state.resume.title || state.resume.item?.title || "無題";
+    const resume = node("button", `「${title}」の書きかけを続ける`, "ll-resume");
     resume.type = "button"; resume.onclick = resumeWorkspace; root.append(resume);
   }
   const q = state.librarySearch.toLowerCase();
-  const items = state.library.filter(item => [item.title, NB.body(item), item.seed, ...(item.result?.notes || []).map(n => n.text)].join("\n").toLowerCase().includes(q));
+  const items = state.library.filter(item => [item.title, NB.body(item), item.seed, ...(item.result?.notes || []).flatMap(n => [n.quote, n.text])].join("\n").toLowerCase().includes(q));
   $("ll-library-main-count").textContent = state.library.length ? `${items.length}篇` : state.cloudLoaded ? "0篇" : "";
   if (!items.length) root.append(node("p", q ? "その言葉はまだ見つかりません。" : state.cloudLoaded ? "一行から、置いていけます。" : "この端末では、まだ詩を読み込んでいません。以前の詩は「端末をつなぐ」から。新しく書くなら「＋ 言葉を置く」。", "ll-empty"));
   for (const item of items) {
@@ -1404,7 +1405,7 @@ function renderCloudState() {
   $("ll-connect").disabled = state.busy;
   $("ll-copy-token").hidden = !syncTokenValue();
 }
-function setFields(item) {
+function setFields(item, noteLine = "") {
   if (state.generatedForId !== item.id) {
     state.generated = null;
     $("ll-view-draft").textContent = "";
@@ -1418,9 +1419,37 @@ function setFields(item) {
     $("ll-" + (fieldNames[key] || key)).value = item.settings?.[key] ?? defaults[key] ?? "";
   }
   $("ll-note").value = "";
+  setNoteLines(NB.body(item), noteLine);
   $("ll-sound-note").value = item.result?.soundNote || "";
   $("ll-audio-url").value = item.result?.audioUrl || "";
 }
+function setNoteLines(body, selected) {
+  const select = $("ll-note-line");
+  const wholePoem = node("option", "詩全体に");
+  wholePoem.value = "";
+  select.replaceChildren(wholePoem);
+  const lines = new Set(body.split(/\r?\n/).filter(line => line.trim()));
+  // A draft annotation may refer to wording that has since been edited.
+  if (selected) lines.add(selected);
+  for (const line of lines) {
+    const option = node("option", line);
+    option.value = line;
+    select.append(option);
+  }
+  select.value = selected;
+}
+
+function renderNotes(container, notes) {
+  container.replaceChildren();
+  for (const note of notes) {
+    const entry = node("article", null, "ll-note-entry");
+    if (note.quote) entry.append(node("blockquote", note.quote));
+    entry.append(node("p", note.text));
+    entry.append(note.createdAt ? node("time", dateLabel(note.createdAt)) : node("small", "書きかけの追記"));
+    container.append(entry);
+  }
+}
+
 function renderWork() {
   const item = state.working; if (!item) return;
   state.currentId = item.id; state.result = item.result;
@@ -1432,10 +1461,14 @@ function renderWork() {
   $("ll-sound").hidden = state.editing;
   $("ll-advanced").hidden = state.editing;
   $("ll-edit-heading").textContent = state.library.some(i => i.id === item.id) ? "本文を磨く" : "言葉を置く";
-  const notes = $("ll-notes-list"); notes.replaceChildren();
-  for (const note of item.result?.notes || []) {
-    const el = node("article", null, "ll-note-entry");
-    el.append(node("p", note.text), node("time", dateLabel(note.createdAt))); notes.append(el);
+  const notes = item.result?.notes || [];
+  if (state.editing) {
+    const pending = $("ll-note").value.trim();
+    const references = pending ? [...notes, { text: pending, quote: $("ll-note-line").value }] : notes;
+    $("ll-edit-notes").hidden = references.length === 0;
+    renderNotes($("ll-edit-note-list"), references);
+  } else {
+    renderNotes($("ll-notes-list"), notes);
   }
   const historyList = $("ll-history-list"); historyList.replaceChildren();
   const versions = [...(item.result?.revisions || [])].reverse();
@@ -1458,12 +1491,18 @@ function canLeave() {
   return !(state.dirty || state.resume) || window.confirm("書きかけの変更があります。変更を取り消して移動しますか？ 保存済みの本文・追記は残ります。");
 }
 function openShelf() {
-  if (!canLeave()) return;
-  state.working = null; state.dirty = false; state.editing = false; state.resume = null;
+  if (state.working) {
+    if (state.dirty && !persist()) return;
+    state.resume = state.dirty ? workspace() : null;
+    state.working = null;
+    state.dirty = false;
+    state.editing = false;
+  }
   $("ll-shelf").hidden = false; $("ll-work").hidden = true;
   history.replaceState(null, "", "#shelf"); persist(); renderLibrary(); window.scrollTo({ top: 0 });
 }
 function loadDraftFromLibrary(id) {
+  if (!state.working && state.resume?.item?.id === id) return resumeWorkspace();
   if (!canLeave()) return;
   const item = state.library.find(i => i.id === id); if (!item) return;
   state.working = NB.clone(item); state.dirty = false; state.editing = false; state.resume = null;
@@ -1473,12 +1512,15 @@ function startNewDraft() {
   if (!canLeave()) return;
   state.working = { id: uid(), title: "無題", seed: "", sourceUrl: "", settings: {}, result: { final: "", draft: "", status: "working" } };
   state.editing = true; state.dirty = false; state.resume = null;
+  state.readingDirty = false;
   setFields(state.working); renderWork(); showWork(); persist(); $("ll-view-final").focus();
 }
 function resumeWorkspace() {
   const saved = state.resume; if (!saved) return;
   state.working = NB.clone(saved.item); state.editing = saved.editing; state.dirty = true;
-  setFields({ ...saved.item, settings: saved.settings || saved.item.settings });
+  state.resume = null;
+  state.readingDirty = saved.readingDirty ?? Boolean(saved.note || saved.noteLine);
+  setFields({ ...saved.item, sourceUrl: saved.settings?.sourceUrl ?? saved.item.sourceUrl, settings: saved.settings || saved.item.settings }, saved.noteLine || "");
   for (const [id, val] of Object.entries({ "ll-title": saved.title, "ll-view-final": saved.text, "ll-note": saved.note, "ll-sound-note": saved.sound, "ll-audio-url": saved.audio, "ll-seed": saved.seed })) $(id).value = val || "";
   renderWork(); showWork(); persist();
 }
@@ -1486,7 +1528,8 @@ function markDirty() { state.dirty = true; persist(); renderSaved(); }
 async function commitItem(edited, message, { clearNote = false } = {}) {
   const scroll = state.editing || edited.id !== state.working?.id;
   const previous = state.working?.id === edited.id && state.library.some(i => i.id === edited.id) ? state.working : state.library.find(i => i.id === edited.id);
-  const remainingNote = clearNote ? "" : $("ll-note").value;
+  const remainingNote = !clearNote && state.working?.id === edited.id ? $("ll-note").value : "";
+  const remainingLine = remainingNote ? $("ll-note-line").value : "";
   // Save other visible notebook fields too; saving a note must never erase an
   // unfinished sound annotation or source setting elsewhere on the same page.
   if (state.working?.id === edited.id) {
@@ -1502,7 +1545,7 @@ async function commitItem(edited, message, { clearNote = false } = {}) {
   state.pending[next.id] = true;
   state.working = NB.clone(next); state.result = state.working.result;
   state.dirty = false; state.editing = false; state.resume = null;
-  setFields(state.working);
+  setFields(state.working, remainingLine);
   $("ll-note").value = remainingNote;
   state.dirty = Boolean(remainingNote);
   if (!persist()) { renderWork(); return false; }
@@ -1522,7 +1565,10 @@ async function saveFinal() {
 async function addNote(event) {
   event.preventDefault(); const text = $("ll-note").value.trim(); if (!text) return;
   const item = NB.clone(state.working); item.result ||= {};
-  item.result.notes = [...(item.result.notes || []), { id: crypto.randomUUID(), text, createdAt: new Date().toISOString() }];
+  const note = { id: crypto.randomUUID(), text, createdAt: new Date().toISOString() };
+  const line = $("ll-note-line").value;
+  if (line) note.quote = line;
+  item.result.notes = [...(item.result.notes || []), note];
   await commitItem(item, "追記を残しました", { clearNote: true });
 }
 async function forkDraftToLibrary() {
@@ -1635,8 +1681,27 @@ async function importLibraryJson(file) {
 function bindNotebook() {
   $("ll-new-draft").onclick = startNewDraft;
   document.querySelectorAll("[data-open-shelf]").forEach(el => el.onclick = event => { event.preventDefault(); openShelf(); });
-  $("ll-edit").onclick = () => { if (!canLeave()) return; setFields(state.working); state.dirty = false; state.editing = true; state.activeView = "final"; renderWork(); $("ll-view-final").focus(); };
-  $("ll-cancel-edit").onclick = () => { if (!canLeave()) return; state.editing = false; state.dirty = false; setFields(state.working); renderWork(); persist(); };
+  $("ll-edit").onclick = () => {
+    state.readingDirty = state.dirty;
+    state.editing = true;
+    state.activeView = "final";
+    renderWork();
+    persist();
+    $("ll-view-final").focus();
+  };
+  $("ll-cancel-edit").onclick = () => {
+    const item = state.working;
+    const storedTitle = item.title === "無題" ? "" : item.title || "";
+    const bodyChanged = $("ll-title").value !== storedTitle || $("ll-view-final").value !== NB.body(item);
+    if (bodyChanged && !window.confirm("今回の題と本文の変更を取り消しますか？")) return;
+    $("ll-title").value = storedTitle;
+    $("ll-view-final").value = NB.body(item);
+    state.editing = false;
+    state.activeView = "read";
+    state.dirty = Boolean(state.readingDirty);
+    renderWork();
+    persist();
+  };
   $("ll-save-final").onclick = saveFinal;
   $("ll-note-form").onsubmit = addNote;
   $("ll-fork-draft").onclick = forkDraftToLibrary;

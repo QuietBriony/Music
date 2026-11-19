@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v447 compact)
+# Band Room - Changelog (v65 -> v448 compact)
+
+## v448 — 2026-11-19
+
+Lyric Labの追記に本文の一行を引用できる。推敲時にも追記を読める。共通PWAは hazama-fm-v448。
 
 ## v447 — 2026-11-19
 
@@ -135,7 +139,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v447. Latest Band Room runtime change: v447 (Tabasco live echo). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v448. Latest Band Room runtime change: v447 (Tabasco live echo). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

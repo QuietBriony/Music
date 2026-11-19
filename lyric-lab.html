@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Lyric Lab — 詩を置く</title>
 <meta name="description" content="詩を読み、ひとことを重ね、自分の言葉と音に育てるノート。" />
-<link rel="stylesheet" href="lyric-lab.css?v=notebook-2" />
+<link rel="stylesheet" href="lyric-lab.css?v=notebook-3" />
 <link rel="icon" href="icons/mixer-192.png" />
 <meta name="theme-color" content="#10110f" />
 </head>
@@ -37,12 +37,16 @@
     <div class="ll-work-nav"><button type="button" data-open-shelf>← 一覧へ</button><span id="ll-saved-state" role="status"></span></div>
     <div id="ll-conflict" class="ll-notice" hidden><p>別の端末で新しい版が保存されています。ここで書いた内容は端末に残っています。別案にすると、両方を残して同期できます。</p><button id="ll-conflict-fork" type="button">こちらを別案として残す</button></div>
     <div id="ll-reading">
-      <p class="ll-kicker">読む・重ねる</p><h1 id="ll-work-title" tabindex="-1"></h1>
+      <h1 id="ll-work-title" tabindex="-1"></h1>
       <article id="ll-poem" class="ll-poem" aria-label="詩の本文"></article>
       <div class="ll-actions"><button id="ll-edit" type="button">本文を磨く</button><button id="ll-copy-view" type="button">本文をコピー</button><button id="ll-fork-draft" type="button">別案をつくる</button></div>
       <section class="ll-notes" aria-labelledby="ll-note-heading"><h2 id="ll-note-heading">ひとこと足す</h2>
         <p class="ll-help">言い直し、引っかかった行、浮かんだ音。まとまらないままで。</p>
-        <form id="ll-note-form"><label class="ll-field"><span class="sr-only">追記する言葉</span><textarea id="ll-note" rows="3" placeholder="今の自分の言葉を、ここに。"></textarea></label><button class="primary" type="submit">追記を残す</button></form>
+        <form id="ll-note-form">
+          <label class="ll-field"><span>どこに書く？</span><select id="ll-note-line"><option value="">詩全体に</option></select></label>
+          <label class="ll-field"><span class="sr-only">追記する言葉</span><textarea id="ll-note" rows="3" placeholder="今の自分の言葉を、ここに。"></textarea></label>
+          <button class="primary" type="submit">追記を残す</button>
+        </form>
         <div id="ll-notes-list"></div>
       </section>
       <details class="ll-history"><summary id="ll-history-label">原文・これまでの版</summary><div id="ll-history-list"></div></details>
@@ -50,6 +54,10 @@
     <section id="ll-editor" hidden aria-labelledby="ll-edit-heading">
       <h1 id="ll-edit-heading">言葉を置く</h1><p class="ll-help">一行だけでも。本文を直すと、前の版は履歴に残ります。</p>
       <label class="ll-field"><span>題（あとからでも）</span><input id="ll-title" type="text" maxlength="240" autocomplete="off" placeholder="無題" /></label>
+      <details id="ll-edit-notes" hidden>
+        <summary>追記を見ながら書く</summary>
+        <div id="ll-edit-note-list"></div>
+      </details>
       <label class="ll-field"><span>本文</span><textarea id="ll-view-final" class="ll-editor-text" rows="12" placeholder="詩でも、まだ名前のない言葉でも。"></textarea></label>
       <div class="ll-actions"><button id="ll-save-final" class="primary" type="button">この版を保存</button><button id="ll-cancel-edit" type="button">読む画面へ戻る</button></div>
     </section>
@@ -215,7 +223,7 @@
     </details>
   </section>
 </main>
-<script src="lyric-notebook-model.js?v=notebook-2"></script>
-<script src="lyric-lab.js?v=notebook-2"></script>
+<script src="lyric-notebook-model.js?v=notebook-3"></script>
+<script src="lyric-lab.js?v=notebook-3"></script>
 </body>
 </html>

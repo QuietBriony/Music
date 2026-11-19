@@ -1,5 +1,7 @@
 # Band Room — 総合マニュアル（現行 playability）
 
+2026-11-19　Lyric Labの更新に伴う共通PWAのキャッシュは hazama-fm-v448。
+
 ## v447　ライブエコー
 
 画面下の版表示は v447。更新すると、キャッシュは `hazama-fm-v447`、画面は `band-room.js?v=br-278` と `band-room.css?v=br-103` に切り替わります。
