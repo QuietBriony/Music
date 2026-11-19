@@ -1,5 +1,7 @@
 # Codex CLI Handoff — Music Stack
 
+2026-11-19　Band Room v449。「Hey」と「Electric Sheep」のパート別で「掛け合いで遊ぶ」を押すと、お手本、あなたの番、締めの順に演奏できます。Heyは0:50からドラムの締めまで、Electric Sheepは0:59から歌の締めまで。標準速度では各28秒。終わると曲は続きます。 既存のステムと曲の音声時計を使う。
+
 2026-11-19　Lyric Labの行ごとの追記は私用ノートに保存する。使い方は [Lyric Lab](LYRIC-LAB-USAGE.md)。共通PWA hazama-fm-v448。
 
 2026-11-19　Band Room v447。Tabascoのパート別7曲に、フェーダーとミュートに連動するライブエコーを追加。Heyは0:50から歌とギター、Electric Sheepは0:59からギターとドラムで応答する。「お手本」で途中から鳴らし、曲名の横で停止できる。既存のHuman Flyの保存枠も使える。

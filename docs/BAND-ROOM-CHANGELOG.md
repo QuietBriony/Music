@@ -1,4 +1,8 @@
-# Band Room - Changelog (v65 -> v448 compact)
+# Band Room - Changelog (v65 -> v449 compact)
+
+## v449 — 2026-11-19
+
+「Hey」と「Electric Sheep」のパート別で「掛け合いで遊ぶ」を押すと、お手本、あなたの番、締めの順に演奏できます。Heyは0:50からドラムの締めまで、Electric Sheepは0:59から歌の締めまで。標準速度では各28秒。終わると曲は続きます。 共通PWAは hazama-fm-v449。
 
 ## v448 — 2026-11-19
 
@@ -139,7 +143,7 @@ Cloudflareの仕様: https://developers.cloudflare.com/pages/configuration/servi
 
 A live/dense selection or A/B recall made while the initial song is loading takes precedence over the older saved mastering choice. Untouched sessions still restore preferences. Source recordings, v417 synthesis/transcription and mastering DSP remain unchanged. Cache `hazama-fm-v418`, client `br-251`, CSS br-95, bank v4 / adapter v6.
 
-Current sw.js VERSION: v448. Latest Band Room runtime change: v447 (Tabasco live echo). HAZAMA playability candidate remains v401.
+Current sw.js VERSION: v449. Latest Band Room runtime change: v449 (Tabasco echo dialogue). HAZAMA playability candidate remains v401.
 
 ## v417 — 2026-10-12
 

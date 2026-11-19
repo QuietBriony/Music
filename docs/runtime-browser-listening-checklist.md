@@ -1,5 +1,7 @@
 # Runtime Browser Listening Checklist
 
+Band Room v449 uses band-room.js?v=br-279, band-room.css?v=br-104 and hazama-fm-v449. Play both dialogues, tap the closing part during your turn, hear the scheduled ending, then check exit, mute, tempo and STOP.
+
 Lyric Lab uses notebook-3 in hazama-fm-v448. Save a line note, change the line, then check the saved quotation in the editor.
 
 Band Room v447 uses hazama-fm-v447, band-room.js?v=br-278 and band-room.css?v=br-103. Start the Hey and Electric Sheep stem examples, listen for both distinct echoes, try a manual drum hit, then mute, seek, change tempo and stop. Check the Human Fly saved arrangement after updating.

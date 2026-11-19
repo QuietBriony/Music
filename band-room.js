@@ -20,8 +20,8 @@
   if (typeof window === "undefined" || typeof window.Tone === "undefined") return;
   if (document.documentElement?.dataset.brSurface === "original") return;
   const Tone = window.Tone;
-  const BANDROOM_APP_VERSION = "br-278-live-echo";
-  const BANDROOM_RELEASE_VERSION = "v447";
+  const BANDROOM_APP_VERSION = "br-279-echo-dialogue";
+  const BANDROOM_RELEASE_VERSION = "v449";
   const HAZAMA_SAFETY_DRUM_SOURCE = "tabasco/human-fly";
   let physicalArcb = null, physicalArcbAbort = null, physicalArcbModule = null;
   let physicalGuitarTone = "crunch";
@@ -151,6 +151,7 @@
   let acidLivePanel = null, acidLiveEngine = null, acidLiveContext = null;
   let acidLiveEnabled = false, acidLiveGeneration = 0;
   let acidLiveEffects = null, acidEffectsContext = null;
+  let stemEchoDialogue = null;
   const acidSourceSlots = new Map();
   let stemPlaybackAnchor = null;
   let acidVocalPickup = false;
@@ -597,6 +598,7 @@
   }
   function stopAcidLive() {
     acidLiveGeneration++;
+    endStemEchoDialogue();
     acidLiveEngine?.stop();
     acidLiveEffects?.stop();
     if (acidLivePanel && acidLiveEnabled) acidLivePanel.setStatus("追加楽器は停止中です。曲と同じSTARTで再開します。");
@@ -618,8 +620,10 @@
     if (acidLiveSupported() && acidLivePanel && $("br-acid-controls")?.hidden === false) coherentStemMix?.setRoomAmount(value.room / 100);
   }
   const stemEchoCues = {
-    hey: {start:50, phrase:"歌の語尾 → ギター", hits:[["vocals",52.54],["other",53.74]]},
-    "electric-sheep": {start:59, phrase:"ギターのリフ → ドラム", hits:[["other",61.24],["drums",64.04]]}
+    hey: {start:50, phrase:"歌の語尾 → ギター", hits:[["vocals",52.54],["other",53.74]],
+      turn:56.5, prompt:"歌が途切れたら、ギターかドラムを一度。", closing:["drums",74.78], end:78},
+    "electric-sheep": {start:59, phrase:"ギターのリフ → ドラム", hits:[["other",61.24],["drums",64.04]],
+      turn:66.5, prompt:"リフの切れ目で、ドラムを一度。", closing:["vocals",83.64], end:87}
   };
   const stemEchoNames = {vocals:"歌", other:"ギター", drums:"ドラム"};
   function stemEchoAvailable() {
@@ -628,18 +632,48 @@
   function echoPartAudible(part) {
     return stemPlayers[part] && $("br-toggle-stem-" + part)?.checked && Number($("br-live-" + part)?.value) > 0;
   }
-  function throwRecordedEcho(part, settings, createEffects, at) {
+  function makeRecordedEchoEffects(createEffects, context) {
+    return createEffects({ context,
+      tap: (name, node, onMute) => ensureCoherentStemMix().tap(name, node, onMute),
+      connect: node => Tone.connect(node, originalMasterGain) });
+  }
+  function endStemEchoDialogue() {
+    if (!stemEchoDialogue) return;
+    stemEchoDialogue.effects.dispose();
+    stemEchoDialogue = null;
+    const button = $("br-echo-duet");
+    button.setAttribute("aria-pressed", "false");
+    button.textContent = "▶ 掛け合いで遊ぶ";
+    $("br-echo-phase").hidden = true;
+  }
+  function updateStemEchoDialogue() {
+    if (!stemEchoDialogue) return;
+    const { cue, clock } = stemEchoDialogue;
+    const position = clock.offset + (audioClockSeconds() - clock.at) * clock.rate;
+    if (position >= cue.end) {
+      endStemEchoDialogue();
+      $("br-echo-status").textContent = "掛け合いはここまで。曲に合わせて自由に弾けます。";
+      return;
+    }
+    let message = "お手本 · " + cue.phrase;
+    if (position >= cue.closing[1]) message = "締め · " + stemEchoNames[cue.closing[0]];
+    else if (position >= cue.turn) message = "あなたの番 · " + cue.prompt;
+    const phase = $("br-echo-phase");
+    if (phase.textContent !== message) phase.textContent = message;
+  }
+  function throwRecordedEcho(part, settings, createEffects, at, effects = null) {
     if (!state.started || !stemPlaybackAnchor || !stemEchoAvailable()) throw new Error("パート別で曲をSTARTしてください。");
     if (!echoPartAudible(part)) throw new Error("このパートをオンにして、音量を上げてください。");
     const context = Tone.getContext().rawContext;
-    if (!acidLiveEffects || acidEffectsContext !== context) {
-      acidLiveEffects?.dispose(); acidEffectsContext = context;
-      acidLiveEffects = createEffects({ context,
-        tap: (name, node, onMute) => ensureCoherentStemMix().tap(name, node, onMute),
-        connect: node => Tone.connect(node, originalMasterGain) });
+    if (!effects) {
+      if (!acidLiveEffects || acidEffectsContext !== context) {
+        acidLiveEffects?.dispose(); acidEffectsContext = context;
+        acidLiveEffects = makeRecordedEchoEffects(createEffects, context);
+      }
+      effects = acidLiveEffects;
     }
-    acidLiveEffects.configure(settings);
-    acidLiveEffects.throw(part, (Number(state.songData?.guitar_line?.bpm_fit) || playbackBaseBpm()) * playbackRateMultiplier(), at);
+    effects.configure(settings);
+    effects.throw(part, (Number(state.songData?.guitar_line?.bpm_fit) || playbackBaseBpm()) * playbackRateMultiplier(), at);
     return settings.echo > 0;
   }
   function syncStemEchoControls(playState = $("br-play")?.dataset.state) {
@@ -652,14 +686,20 @@
     transport.disabled = playState !== "playing" && (!state.songData || playState === "starting");
     transport.textContent = playState === "playing" ? "■ STOP" : playState === "starting" ? "準備中…" : "▶ START";
     const cue = stemEchoCues[state.currentSongId], demo = $("br-echo-demo");
-    demo.hidden = !cue;
+    const duet = $("br-echo-duet");
+    duet.hidden = demo.hidden = !cue;
     if (cue) demo.textContent = `▶ お手本　${formatPlaybackTime(cue.start)}から ${cue.phrase}`;
-    demo.disabled = !state.songData || state.starting || playState === "starting";
+    duet.disabled = demo.disabled = !state.songData || state.starting || playState === "starting";
     for (const button of host.querySelectorAll("[data-stem-echo]")) button.disabled = playState !== "playing";
     if (playState !== "playing" || host.hidden) $("br-echo-status").textContent = "";
   }
-  async function performStemEcho(part) {
+  async function performStemEcho(part, dialogue = false) {
     if (!stemEchoAvailable() || state.starting || playbackSelectionTransitionInFlight()) return;
+    if (dialogue && stemEchoDialogue) {
+      endStemEchoDialogue();
+      $("br-echo-status").textContent = "掛け合いを終了しました。曲はそのまま続きます。";
+      return;
+    }
     const selection = createPlaybackStartContract(), anchor = stemPlaybackAnchor, cue = stemEchoCues[state.currentSongId];
     const sameSelection = () => playbackStartContractMatches(selection, createPlaybackStartContract());
     const status = $("br-echo-status"), settings = {echo:72, tone:44};
@@ -679,17 +719,33 @@
       if (!state.started && !await startPlayback({preservePosition:true})) return;
       const clock = stemPlaybackAnchor;
       if (!clock || !stemEchoAvailable() || !sameSelection() || Math.abs(clock.offset - cue.start) > .1) return;
+      // Keep the score's scheduled returns independent of live pad retriggers.
+      const effects = dialogue ? makeRecordedEchoEffects(createLiveEffects, Tone.getContext().rawContext) : null;
+      if (dialogue) {
+        stemEchoDialogue = { cue, clock, effects };
+        const button = $("br-echo-duet");
+        button.setAttribute("aria-pressed", "true");
+        button.textContent = "掛け合いを終える";
+        $("br-echo-phase").hidden = false;
+        updateStemEchoDialogue();
+      }
       let count = 0;
-      for (const [voice, second] of cue.hits) {
+      for (const [voice, second] of dialogue ? [...cue.hits, cue.closing] : cue.hits) {
         const at = clock.at + (second - clock.offset) / clock.rate;
         if (echoPartAudible(voice) && at > audioClockSeconds()) {
-          throwRecordedEcho(voice, settings, createLiveEffects, at);
+          throwRecordedEcho(voice, settings, createLiveEffects, at, effects);
           count++;
         }
       }
-      status.textContent = count ? "このフレーズの続きは、パッドで自由に返せます。" : "歌・ギター・ドラムのミュートと音量を確認してください。";
+      if (!count) {
+        if (dialogue) endStemEchoDialogue();
+        status.textContent = "歌・ギター・ドラムのミュートと音量を確認してください。";
+      } else status.textContent = dialogue ? "" : "このフレーズの続きは、パッドで自由に返せます。";
     } catch (error) {
-      if (sameSelection()) status.textContent = error.message;
+      if (sameSelection()) {
+        if (dialogue) endStemEchoDialogue();
+        status.textContent = error.message;
+      }
     }
   }
   function syncAcidLiveUi() {
@@ -701,7 +757,7 @@
       if (acidLiveEnabled) stopAcidLive();
       coherentStemMix?.setRoomAmount(.65); acidLiveEnabled = false; acidLivePanel?.setEnabled(false); syncAcidVocalPickup();
     }
-    if (!stemEchoAvailable()) acidLiveEffects?.stop();
+    if (!stemEchoAvailable()) { endStemEchoDialogue(); acidLiveEffects?.stop(); }
     syncStemEchoControls();
   }
   async function prepareAcidLive() {
@@ -3794,6 +3850,7 @@
   }
 
   function updateSongTimelineDisplay(previewSec = null) {
+    if (stemEchoDialogue) updateStemEchoDialogue();
     const seek = $("br-song-seek");
     const elapsedEl = $("br-song-elapsed");
     const durationEl = $("br-song-duration");
@@ -5218,6 +5275,7 @@
       stemUrlAvailable,
       humanFlyDubSupported,
       acidLiveDiagnostics: () => ({ enabled: acidLiveEnabled, supported: acidLiveSupported(), effects: acidLiveEffects?.diagnostics() || null,
+        dialogue: stemEchoDialogue?.effects.diagnostics() || null,
         engine: acidLiveEngine?.diagnostics() || null, state: acidLivePanel?.state() || null }),
       stemPlaybackAnchor: () => stemPlaybackAnchor && { ...stemPlaybackAnchor },
       originalMasteringDiagnostics: () => ({ profile: originalMastering,
@@ -8892,6 +8950,7 @@
   function bindUI() {
     initAcidLiveControls();
     $("br-echo-play")?.addEventListener("click", togglePlay);
+    $("br-echo-duet")?.addEventListener("click", () => performStemEcho(null, true));
     $("br-echo-demo")?.addEventListener("click", () => performStemEcho());
     for (const button of document.querySelectorAll("[data-stem-echo]")) {
       button.addEventListener("click", () => performStemEcho(button.dataset.stemEcho));
@@ -9186,6 +9245,7 @@
           clearAutoAdvanceTimer();
         }
         if (tempoRead) tempoRead.textContent = tempoEl.value + "%";
+        endStemEchoDialogue();
         acidLivePanel?.setTempo(Number(tempoEl.value));
         acidLiveEffects?.stop();
         const baseBpm = playbackBaseBpm();
